@@ -1,0 +1,55 @@
+Last update: 090925. Yang Yu (Hanchuan Peng lab)
+
+Bio-Formats Plugin 
+
+0. Preparation
+
+download boost (http://www.boost.org, recommend version 1.41.0 or higher) and make install boost
+download cmake (http://www.cmake.org/cmake/resources/software.html) and make install cmake
+# windows
+download ant (http://ant.apache.org)
+
+1. Downloading Bio-Formats
+
+svn co https://skyking.microscopy.wisc.edu/svn/java/trunk loci
+svn co https://jace.svn.sourceforge.net/svnroot/jace/trunk jace 
+
+# svn version loci 5698 jace 35
+
+2. Compiling Bio-Formats
+
+cd loci
+ant tools
+cd components/native/bf-cpp
+ant -Djace.home=/Users/yuy/work/jace
+
+#note that the last command must be absolute path, according to yuy
+#Windows: ant -Djace.home=C:/jace using '/' instead of '\'. Set JAVA_HOME make ant find javac.
+
+# for windows x64 compiling bf-cpp change the line of build.properties
+cmake.generator.windows = Visual Studio 9 2008 Win64
+
+3. Set the Build Results to your path
+
+# libjace.so / libjace.jnilib / jace.dll Jace shared library
+# libbfjace.so / libbfjace.dylib / bfjace.dll Bio-Formats C++ bindings
+# jace-runtime.jar  Jace Java classes needed at runtime
+# loci_tools.jar  Bio-Formats Java library needed at runtime 
+
+# above libs could be found at /loci/components/native/bf-cpp/build
+# bio-formats.jar at /loci/artifacts
+
+
+Compilation:
+
+# Example .pro file suppose corresponding libs copied to ../bioformat_lib/lib (32-bit) or ../bioformat_lib/lib64 (64-bit)
+# and corresponding header files (bio-formats.h, jace.h, loci-common.h and jace) copied to ../bioformat_lib/include 
+
+Compilation of bioformat_ex (Readimage_bioformat) needs to copy dependent libraries to V3D working directory.
+Compiling 64-bit version loci needs java 6 (1.6.0) or higher.
+
+# note in windows: dependent libboost will be boost_date_time and boost_thread
+
+
+September 22, 2009
+Contact us: Yang Yu (yuy@janelia.hhmi.org)

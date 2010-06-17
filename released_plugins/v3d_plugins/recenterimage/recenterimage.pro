@@ -1,0 +1,13 @@
+# revised by Hanchuan Peng
+# 2010-05-20. Note that there is a problem about non-VC compliers (e.g. gcc) may complain the redundant compiling of vcdiff.h/.cpp
+
+TEMPLATE      = lib
+CONFIG       += plugin warn_off
+INCLUDEPATH  += ../../basic_c_fun
+HEADERS       = recenterimageplugin.h
+HEADERS      += ../../basic_c_fun/vcdiff.h
+SOURCES       = recenterimageplugin.cpp
+SOURCES      += ../../basic_c_fun/vcdiff.cpp
+TARGET        = $$qtLibraryTarget(recenterimage)
+DESTDIR       = ../../v3d/plugins/ReCenter_Image
+
