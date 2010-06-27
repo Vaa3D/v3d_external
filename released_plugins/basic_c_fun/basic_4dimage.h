@@ -10,6 +10,7 @@
  * Last edit: 2009-Aug-21
  * Last edit: 2010-May-19: replace long with V3DLONG
  * Last edit: 2010-May-30: add the value_at() function for Image4DProxy class
+ * Last edit: 2010-Jun-26: add three new members rez_x, rez_y, and rez_z which indicate the pixel sizes and thus the anisotropy of the image
  *
  *******************************************************************************************
  */
@@ -30,6 +31,7 @@ public:
 	ImagePixelType datatype;
 	char imgSrcFile[1024]; //use a V3DLONG path to store the full path
 	int b_error;
+	double rez_x, rez_y, rez_z; //the resolution of a image pixel along the 3 axes
 
 public:
 	Image4DSimple() {
@@ -40,6 +42,7 @@ public:
 		timepacktype = TIME_PACK_NONE;
 		imgSrcFile[0] = '\0';
 		b_error = 0;
+		rez_x = rez_y = rez_z = 1;  
 	}
 	~Image4DSimple() {
 		cleanExistData();
@@ -53,6 +56,7 @@ public:
 		timepacktype = TIME_PACK_NONE;
 		imgSrcFile[0] = '\0';
 		b_error = 0;
+		rez_x = rez_y = rez_z = 1; 
 	}
 
 	//main interface to the data
@@ -85,6 +89,9 @@ public:
 	}
 	int isSuccess() {if (sz0<=0 || sz1<=0 || sz2<=0 || sz3<=0) b_error=1; return !b_error;}
 	bool valid() {return (!data1d || sz0<=0 || sz1<=0 || sz2<=0 || sz3<=0 || b_error || (datatype!=V3D_UINT8 && datatype!=V3D_UINT16 && datatype!=V3D_FLOAT32)) ?  false : true; }
+	double getRezX() {return rez_x;}
+	double getRezY() {return rez_y;}
+	double getRezZ() {return rez_z;}
 
 	void setXDim(V3DLONG v) {sz0=v;}
 	void setYDim(V3DLONG v) {sz1=v;}
@@ -94,7 +101,10 @@ public:
 	void setDatatype(ImagePixelType v) {datatype=v;}
 	void setTimePackType(TimePackType v) {timepacktype=v;}
 	bool setNewRawDataPointer(unsigned char *p) {if (!p) return false; if (data1d) delete []data1d; data1d = p; return true;}
-
+	bool setRezX(double a) { if (a<=0) return false; rez_x = a; return true;}
+	bool setRezY(double a) { if (a<=0) return false; rez_y = a; return true;}
+	bool setRezZ(double a) { if (a<=0) return false; rez_z = a; return true;}
+	
 	//this function is the main place to call if you want to set your own 1d pointer data to this data structure
 	bool setData(unsigned char *p, V3DLONG s0, V3DLONG s1, V3DLONG s2, V3DLONG s3, ImagePixelType dt)
 	{
