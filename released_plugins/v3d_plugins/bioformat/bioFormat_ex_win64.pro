@@ -31,5 +31,5 @@ LIBS		 += -L../../common_lib/winlib64/ -llibtiff
 
 TARGET        = $$qtLibraryTarget(readImage_bioformat)
 
-DESTDIR       = ../../v3d/plugins/unfinished/ImageIO_bioformat
+DESTDIR       = ../../v3d/plugins/ImageIO_bioformat
 

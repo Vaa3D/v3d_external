@@ -30,5 +30,5 @@ LIBS		 += -L../../common_lib/winlib/ -llibtiff
 TARGET        = $$qtLibraryTarget(readImage_bioformat)
 #QMAKE_POST_LINK = copy ../bioformat_lib/winlib/x64/* ../../v3d;
 
-DESTDIR       = ../../v3d/plugins/unfinished/ImageIO_bioformat
+DESTDIR       = ../../v3d/plugins/ImageIO_bioformat
 

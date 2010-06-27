@@ -15,5 +15,5 @@ SOURCES       = bioFormat_ex.cpp
 TARGET        = $$qtLibraryTarget(readImage_bioformat)
 QMAKE_POST_LINK = cp ../bioformat_lib/lib/* ../../v3d;
 
-DESTDIR       = ../../v3d/plugins/unfinished/ReadImage_bioformat
+DESTDIR       = ../../v3d/plugins/ReadImage_bioformat
 
