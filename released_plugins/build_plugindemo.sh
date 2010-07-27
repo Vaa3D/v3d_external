@@ -5,6 +5,7 @@
 # 
 # build only 1 sepecifed sub plugin project
 # sh build_plugindemo.sh -ddt
+# add a new -n for mac 32bit make
 
 cd v3d_plugins
  
@@ -16,6 +17,8 @@ for arg in $*; do
   #echo $arg		
   if [ $arg == "-m" ]; then
   	QMAKE_CONFIG="CONFIG+=x86_64"
+  elif [ $arg == "-n" ]; then
+  	QMAKE_CONFIG="CONFIG+=x86"
   elif [ ${arg:0:2} == "-d" ]; then
   	MYDIR="${arg:2}"
   else
