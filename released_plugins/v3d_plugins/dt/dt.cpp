@@ -181,13 +181,18 @@ void dtimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 	int end_t = clock();
 	printf("time eclapse %d s for dist computing!\n", (end_t-start_t)/1000000);
 	
-//	Image4DSimple p4DImage;
-//	p4DImage.setData((unsigned char*)pData, sz0, sz1, sz2, 1, subject->datatype);
-//	
-//	v3dhandle newwin = callback.newImageWindow();
-//	callback.setImage(newwin, &p4DImage);
-//	callback.setImageName(newwin, QString("distance transformed image"));
-//	callback.updateImageWindow(newwin);
+	Image4DSimple p4DImage;
+	p4DImage.setData((unsigned char*)pData, sz0, sz1, sz2, 1, subject->datatype);
 	
-	setPluginOutputAndDisplayUsingGlobalSetting(pData, sz0, sz1, sz2, sz3, callback);
+	v3dhandle newwin;
+	if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to use the existing window?"), QMessageBox::Yes, QMessageBox::No))
+		newwin = callback.currentImageWindow();
+	else
+		newwin = callback.newImageWindow();
+	
+	callback.setImage(newwin, &p4DImage);
+	callback.setImageName(newwin, QString("distance transformed image"));
+	callback.updateImageWindow(newwin);
+	
+//	setPluginOutputAndDisplayUsingGlobalSetting(pData, sz0, sz1, sz2, sz3, callback);
 }
