@@ -30,6 +30,7 @@ public:
 
 // QGroupBox *parent
 	ScaleInfo( QGroupBox *parent );
+	~ScaleInfo( );
 
 	// data
 	double enabled;     // is this scale enabled ?

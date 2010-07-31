@@ -21,6 +21,11 @@
 
 #include "scaleinfo.h"
 
+ScaleInfo::~ScaleInfo()
+{
+	printf("SCALE INFO : destructing scaleInfo.\n");
+}
+
 ScaleInfo::ScaleInfo( QGroupBox *parent ) // TODO: Generalized it (might have som QContainer ?)
 {
 

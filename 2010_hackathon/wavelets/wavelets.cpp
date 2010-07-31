@@ -48,61 +48,91 @@ WaveletPlugin::WaveletPlugin()
 
 void WaveletPlugin::addScaleButtonPressed()
 {
-	printf("add scale !\n");
+	printf("WAVELETS : add scale 2 !\n");
+
+	ScaleInfo *scaleInfo = new ScaleInfo( qBox );  // qbox
+	scaleInfoList->push_back( scaleInfo );
+
+	refreshScaleInterface();
+}
+
+void WaveletPlugin::removeScaleButtonPressed()
+{
+	printf("WAVELETS : remove scale !\n");
+	if ( !scaleInfoList->empty() )
+	{
+		ListType::iterator lend = scaleInfoList->end();
+		ScaleInfo *scaleInfo = (*lend);
+		delete scaleInfo;
+		scaleInfoList->pop_back( );
+	}
 
 	refreshScaleInterface();
 }
 
 void WaveletPlugin::refreshScaleInterface()
 {
-	printf("refresh Scale interface");
-/*
-	QLabel* scaleLabel = new QLabel("Scale x");
-	QCheckBox* enableCheckBox = new QCheckBox("Enabled");
-	QLineEdit* thresholdLineEdit = new QLineEdit("10");
+	printf("WAVELETS : refresh Scale interface\n");
+
+	removeScaleButton->setDisabled( scaleInfoList->empty() );
+
+
+	// remove everything in the layout.
+
+	/*
+	QLayoutItem *child;
+	while ((child = ui->gbCoeffs->layout()->takeAt(0)) != 0) {
+		ui->gbCoeffs->layout()->removeItem(child);
+
+		delete child->widget();
+		delete child;
+	}
 */
-	//formLayoutGroupBox
+	/*
+	QLayoutItem *child;
+	while ((child = ui->gbCoeffs->layout()->takeAt(0)) != 0)
+	{
+		formLayoutGroupBox
+	}*/
+	QLayoutItem *child;
+	while ((child = formLayoutGroupBox->takeAt(0)) != 0) {
+		formLayoutGroupBox->removeItem(child);
 
+		}
 
+	// write back all the scale interface
 
+	ListType::iterator litr = scaleInfoList->begin();
+	ListType::iterator lend = scaleInfoList->end();
 
-	ScaleInfo *scaleInfo = new ScaleInfo( qBox );  // qbox
-	formLayoutGroupBox->addRow( scaleInfo->groupBox );
-
-
-/*
- 	QGroupBox *qBox2= new QGroupBox( qBox );
-
-	QGridLayout *gridLayout = new QGridLayout( qBox2 );
-	gridLayout->addWidget( scaleLabel , 0 , 0 );
-	gridLayout->addWidget( enableCheckBox , 0 , 1 );
-	gridLayout->addWidget( thresholdLineEdit , 0 , 2 );
-	formLayoutGroupBox->addRow(qBox2);
-*/
-
-
+	while( litr != lend )
+	{
+		printf("adding scale interface..");
+		formLayoutGroupBox->addRow( (*litr)->groupBox );
+		++litr;
+	}
 
 }
 
 void WaveletPlugin::cancel()
 {
-	printf("cancel !\n");
+	printf("WAVELETS : cancel !\n");
 
 }
 
 void WaveletPlugin::sliderChange(int value )
 {
-	printf("slide change ! (value is : %i)\n" , value );
+	printf("WAVELETS : slide change ! (value is : %i)\n" , value );
 
 	if ( !sourceImage )
 	{
-		printf("no source image.. \n");
+		printf("WAVELETS : no source image.. \n");
 		return;
 	}
 
 	if ( !sourceImage->getRawData() )
 		{
-			printf("no data in source image.. \n");
+			printf("WAVELETS : no data in source image.. \n");
 			return;
 		}
 
@@ -110,18 +140,18 @@ void WaveletPlugin::sliderChange(int value )
 
 	if ( !imageRaw )
 	{
-		printf("no image.. \n");
+		printf("WAVELETS : no image.. \n");
 		return;
 	}
 
-	printf("enter1");
+	printf("WAVELETS : enter1");
 
 	for ( int i =0 ; i< 10000 ; i++ )
 		{
 		imageRaw[i] = value;
 		}
 
-	printf("enter2");
+	printf("WAVELETS : enter2");
 
 	myCallback->updateImageWindow(sourceWindow);
 
@@ -151,7 +181,7 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent)
 	QPushButton* ok     = new QPushButton("OK");
 
 	QPushButton* addScaleButton     = new QPushButton("Add");
-	QPushButton* removeScaleButton     = new QPushButton("Remove");
+	removeScaleButton     = new QPushButton("Remove");
 
 	QPushButton* cancel = new QPushButton("Cancel");
 	formLayout = new QFormLayout;
@@ -190,77 +220,10 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent)
 	myDialog->connect(slider, SIGNAL(valueChanged(int)), this, SLOT(sliderChange(int)));
 	myDialog->connect(cancel, SIGNAL(clicked()), this, SLOT(cancel()));
 	myDialog->connect(addScaleButton, SIGNAL(clicked()), this, SLOT(addScaleButtonPressed()));
+	myDialog->connect(removeScaleButton, SIGNAL(clicked()), this, SLOT(removeScaleButtonPressed()));
 
+	refreshScaleInterface();
 
 	myDialog->exec();
-
-
-
-
-//	dialog->connect(cancel, SIGNAL(clicked()), &dialog, SLOT(reject()));
-//	if (dialog->exec()!=QDialog::Accepted)
-//		return;
-
-
-
-
-	/*
-	int i1 = combo1->currentIndex();
-	int i2 = combo2->currentIndex();
-
-	Image4DSimple* image1 = callback.getImage(win_list[i1]);
-	Image4DSimple* image2 = callback.getImage(win_list[i2]);
-
-
-	if (!image1 || !image2)
-	{
-		QMessageBox::information(0, title, QObject::tr("No image is open."));
-		return;
-	}
-	if (image1->getDatatype()!=V3D_UINT8 || image2->getDatatype()!=V3D_UINT8)
-	{
-		QMessageBox::information(0, title, QObject::tr("This demo program only supports 8-bit data. Your current image data type is not supported."));
-		return;
-	}
-
-
-	V3DLONG N1 = image1->getTotalBytes();
-	unsigned char* newdata1d = new unsigned char[N1];
-
-	Image4DSimple tmp;
-	tmp.setData(newdata1d, image1->sz0,image1->sz1,image1->sz2,image1->sz3, image1->datatype);
-
-	Image4DProxy<Image4DSimple> p1(image1);
-	Image4DProxy<Image4DSimple> p2(image2);
-	Image4DProxy<Image4DSimple> p(&tmp);
-
-	Image4DProxy_foreach(p, x,y,z,c)
-	{
-		float f = 0;
-		float f1 = 0;
-		float f2 = 0;
-		if (p1.is_inner(x,y,z,c)) f1 = (*p1.at_uint8(x,y,z,c))/255.f;
-		if (p2.is_inner(x,y,z,c)) f2 = (*p2.at_uint8(x,y,z,c))/255.f;
-
-		switch (op)
-		{
-		case '+': f = f1 + f2; break;
-		case '-': f = f1 - f2; break;
-		case '*': f = f1 * f2; break;
-		}
-		f = fabs(f);
-		if (f>1) f = 1;
-
-		*p.at_uint8(x,y,z,c) = (unsigned char)(f*255);
-	}
-
-
-	v3dhandle newwin = callback.newImageWindow();
-	callback.setImage(newwin, &tmp);
-	callback.setImageName(newwin, "new_image_arithmetic");
-    callback.updateImageWindow(newwin);
-    */
-
-
 
 }

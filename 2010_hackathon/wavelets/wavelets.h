@@ -41,7 +41,9 @@ public:
 
     // wavelet input interface
 
-	std::list<ScaleInfo*> *scaleInfoList ;
+    typedef std::list<ScaleInfo*> ListType ;
+    ListType *scaleInfoList ;
+    QPushButton* removeScaleButton;
 
     // source image
     v3dhandle sourceWindow;
@@ -62,6 +64,7 @@ public slots:
 	void cancel();
 	void sliderChange( int value );
 	void addScaleButtonPressed();
+	void removeScaleButtonPressed();
 
 };
 
