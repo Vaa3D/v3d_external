@@ -56,12 +56,12 @@ public:
 	QStringList funclist() const {return QStringList();}
 	void dofunc(const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output, QWidget *parent) {}
 
-	void compute( V3DPluginCallback &callback, QWidget *parent);
+	void initGUI( V3DPluginCallback &callback, QWidget *parent);
 
 public slots:
 	void cancel();
 	void sliderChange( int value );
-	void processButtonPressed();
+	void addScaleButtonPressed();
 
 };
 

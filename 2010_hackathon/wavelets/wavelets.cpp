@@ -11,7 +11,6 @@
  *
  * This code is under GPL License
  *
- * tmp: this is a commit test
  *
  */
 #include <QtGui>
@@ -23,9 +22,6 @@
 #include "wavelets.h"
 #include "scaleinfo.h"
 
-
-//Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
-//The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(newwindow, WaveletPlugin);
 
 const QString title = "Wavelets";
@@ -42,7 +38,7 @@ QStringList WaveletPlugin::menulist() const
  */
 void WaveletPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
 {
-	compute( callback, parent );
+	initGUI( callback, parent );
 }
 
 WaveletPlugin::WaveletPlugin()
@@ -50,13 +46,9 @@ WaveletPlugin::WaveletPlugin()
 	scaleInfoList = new std::list<ScaleInfo*>();
 }
 
-void WaveletPlugin::processButtonPressed()
+void WaveletPlugin::addScaleButtonPressed()
 {
-	printf("process !\n");
-
-//	ScaleInfo *scaleInfo = new ScaleInfo();
-//	scaleInfoList->push_back( scaleInfo );
-//	printf("scale ok !\n");
+	printf("add scale !\n");
 
 	refreshScaleInterface();
 }
@@ -131,15 +123,6 @@ void WaveletPlugin::sliderChange(int value )
 
 	printf("enter2");
 
-	/*
- 	unsigned char* dataOut1d = new unsigned char[sourceImage->getTotalBytes()];
-	Image4DSimple outImage;
-	outImage.setData(dataOut1d, sourceImage->sz0, sourceImage->sz1, sourceImage->sz2, 1, sourceImage->datatype);
-	//v3dhandle newwin = callback.newImageWindow();
-	myCallback->setImage(sourceWindow, &outImage);
-	myCallback->setImageName(sourceWindow,"cloning test");
-*/
-
 	myCallback->updateImageWindow(sourceWindow);
 
 	// This would crash ( Bug reported on NTRC V3D Bug tracker )
@@ -147,9 +130,9 @@ void WaveletPlugin::sliderChange(int value )
 
 }
 
-void WaveletPlugin::compute( V3DPluginCallback &callback, QWidget *parent)
+void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent)
 {
-	// Build the interface.
+	// Building the main interface.
 
 	myCallback = &callback;
 
@@ -165,65 +148,15 @@ void WaveletPlugin::compute( V3DPluginCallback &callback, QWidget *parent)
 
 	sourceImage = p4DImage;
 
-
-
-	//myCallback->setImage(sourceWindow, &sourceImage);
-
-
-	    //convert first channel to double values
-	/*// working
-	unsigned char* dataOut1d = new unsigned char[p4DImage->getTotalBytes()];
-
-	Image4DSimple outImage;
-	outImage.setData(dataOut1d, p4DImage->sz0, p4DImage->sz1, p4DImage->sz2, 1, p4DImage->datatype);
-	//v3dhandle newwin = callback.newImageWindow();
-		callback.setImage(sourceWindow, &outImage);
-		callback.setImageName(sourceWindow,"cloning test");
-	    callback.updateImageWindow(sourceWindow);
-*/
-//	callback.setImage(sourceWindow, p4DImage);
-
-
-//	callback.setImageName(sourceWindow,"cloning test");
-
-//	return;
-
-
-//	    unsigned char* data1d = p4DImage->getRawData();//get raw data
-
-
-//	sourceImage = callback.getImage(0);
-
-
-
-
-
-/*
- 	 v3dhandleList win_list = callback.getImageWindowList();
-	if (win_list.size()<1)
-	{
-		QMessageBox::information(0, title, QObject::tr("Need at least 1 images."));
-		return;
-	}
-*/
-//	QStringList items;
-//	for (int i=0; i<win_list.size(); i++) items << callback.getImageName(win_list[i]);
-
-//	QDialog d(parent);
-//	QComboBox* combo1 = new QComboBox(); combo1->addItems(items);
-//	QComboBox* combo2 = new QComboBox(); combo2->addItems(items);
-
-
 	QPushButton* ok     = new QPushButton("OK");
 
-	QPushButton* processButton     = new QPushButton("Process");
+	QPushButton* addScaleButton     = new QPushButton("Add");
+	QPushButton* removeScaleButton     = new QPushButton("Remove");
 
 	QPushButton* cancel = new QPushButton("Cancel");
 	formLayout = new QFormLayout;
 
-	QLabel* label = new QLabel("Test");
-
-	formLayout->addRow( label );
+	formLayout->addRow( removeScaleButton , addScaleButton  );
 
 	QSlider *slider = new QSlider(Qt::Horizontal);
 	     slider->setFocusPolicy(Qt::StrongFocus);
@@ -238,22 +171,14 @@ void WaveletPlugin::compute( V3DPluginCallback &callback, QWidget *parent)
 	progressBar->setRange(0,100);
 	progressBar->setValue( 50 );
 
- 	formLayout->addRow( processButton );
-
-	// 	faire l'image a cet endroit
-	//Image4DSimple* image1 = callback.getImage(win_list[i1]);
-
-//	formLayout->addRow(QObject::tr("image1: "), combo1);
-//	formLayout->addRow(QObject::tr("image2: "), combo2);
-
-
+// 	formLayout->addRow( processButton );
  	formLayout->addRow( progressBar );
 
-	QLabel* label2 = new QLabel("Test");
+	//QLabel* label2 = new QLabel("Test");
  	qBox= new QGroupBox( myDialog );
 	formLayoutGroupBox = new QFormLayout();
 	qBox->setLayout( formLayoutGroupBox );
-	formLayoutGroupBox->addRow( label2 );
+	//formLayoutGroupBox->addRow( label2 );
 
  	formLayout->addRow(qBox);
 
@@ -264,7 +189,7 @@ void WaveletPlugin::compute( V3DPluginCallback &callback, QWidget *parent)
 	myDialog->connect(ok,     SIGNAL(clicked()), myDialog, SLOT(accept()));
 	myDialog->connect(slider, SIGNAL(valueChanged(int)), this, SLOT(sliderChange(int)));
 	myDialog->connect(cancel, SIGNAL(clicked()), this, SLOT(cancel()));
-	myDialog->connect(processButton, SIGNAL(clicked()), this, SLOT(processButtonPressed()));
+	myDialog->connect(addScaleButton, SIGNAL(clicked()), this, SLOT(addScaleButtonPressed()));
 
 
 	myDialog->exec();
