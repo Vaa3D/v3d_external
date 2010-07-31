@@ -11,6 +11,8 @@
  *
  * This code is under GPL License
  *
+ * tmp: this is a commit test
+ *
  */
 #include <QtGui>
 
