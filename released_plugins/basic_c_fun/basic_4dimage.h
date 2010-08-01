@@ -12,6 +12,7 @@
  * Last edit: 2010-May-30: add the value_at() function for Image4DProxy class
  * Last edit: 2010-Jun-26: add three new members rez_x, rez_y, and rez_z which indicate the pixel sizes and thus the anisotropy of the image
  *
+ * Last edit: 2010-Aug-1: add a function to determine if the data buffers of two images are exactly the same (but not their contents!) 
  *******************************************************************************************
  */
 
@@ -142,6 +143,20 @@ public:
 	bool saveImage(const char filename[]);
 	bool createImage(V3DLONG mysz0, V3DLONG mysz1, V3DLONG mysz2, V3DLONG mysz3, ImagePixelType mytype);
 	void createBlankImage(V3DLONG imgsz0, V3DLONG imgsz1, V3DLONG imgsz2, V3DLONG imgsz3, int imgdatatype);
+
+	//a function to check if the data buffer is the same as another image
+	bool isSameDataBuffer( Image4DSimple *p)
+	{
+	  if (!p) return false; // cannot be the same if the pointer to be compared is null
+	  if (data1d!=p->getRawData())
+		return false; //the data of course are different if the pointers are different
+	  else //there is a chance that the data pointers are the same, but their sizes are different
+          {
+            if (getTotalBytes() == p->getTotalBytes())
+              return false;
+	    else return true;	
+          }
+	}
 
 };
 
