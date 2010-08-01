@@ -14,7 +14,7 @@
  */
 
 #include <QtGui>
-
+#include <string>
 #include <math.h>
 #include <stdlib.h>
 #include <list>
@@ -24,20 +24,59 @@
 ScaleInfo::~ScaleInfo()
 {
 	printf("SCALE INFO : destructing scaleInfo.\n");
+
+	QLayoutItem *child;
+	while ((child = gridLayout->takeAt(0)) != 0) {
+		gridLayout->removeItem(child);
+	}
+
+	delete gridLayout ;
+	delete enableCheckBox ;
+	delete thresholdLineEdit;
+	delete groupBox ;
+
 }
 
-ScaleInfo::ScaleInfo( QGroupBox *parent ) // TODO: Generalized it (might have som QContainer ?)
+ScaleInfo::ScaleInfo( int scaleNumber , QGroupBox *parent ) // TODO: Generalized it (might have som QContainer ?)
 {
-
+	printf( "%i \n", scaleNumber );
 	groupBox = new QGroupBox( parent );
 	gridLayout = new QGridLayout( groupBox );
 
-	QLabel* scaleLabel = new QLabel("Scale x");
-	QCheckBox* enableCheckBox = new QCheckBox("Enabled");
-	QLineEdit* thresholdLineEdit = new QLineEdit("10");
+	char buff[50];
+	sprintf(buff, "Scale %i", scaleNumber);
 
-	gridLayout->addWidget( scaleLabel , 0 , 0 );
-	gridLayout->addWidget( enableCheckBox , 0 , 1 );
+	groupBox->setTitle( buff );
+
+	QLabel* thresholdLabel = new QLabel( "Threshold:" );
+	enableCheckBox = new QCheckBox("Enabled" );
+	enableCheckBox->setChecked( true );
+	thresholdLineEdit = new QLineEdit("10");
+
+	gridLayout->addWidget( enableCheckBox , 0 , 0 );
+	gridLayout->addWidget( thresholdLabel , 0 , 1 );
 	gridLayout->addWidget( thresholdLineEdit , 0 , 2 );
 
+	//dialog->
+	this->connect(enableCheckBox, SIGNAL(clicked()), this, SLOT(enableButtonPressed()));
+
 }
+
+void ScaleInfo::enableButtonPressed()
+{
+	printf("enable button pressed\n");
+	thresholdLineEdit->setEnabled( enableCheckBox->isChecked() );
+
+}
+
+
+
+
+
+
+
+
+
+
+
+

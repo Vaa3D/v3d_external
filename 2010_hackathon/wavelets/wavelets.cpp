@@ -48,23 +48,30 @@ WaveletPlugin::WaveletPlugin()
 
 void WaveletPlugin::addScaleButtonPressed()
 {
-	printf("WAVELETS : add scale 2 !\n");
+	printf("WAVELETS : add scale !\n");
 
-	ScaleInfo *scaleInfo = new ScaleInfo( qBox );  // qbox
+	ScaleInfo *scaleInfo = new ScaleInfo( scaleInfoList->size() , qBox );
 	scaleInfoList->push_back( scaleInfo );
-
+	printf("%p" , scaleInfo );
 	refreshScaleInterface();
 }
 
 void WaveletPlugin::removeScaleButtonPressed()
 {
 	printf("WAVELETS : remove scale !\n");
-	if ( !scaleInfoList->empty() )
+	if ( scaleInfoList->size() > 1 )
 	{
-		ListType::iterator lend = scaleInfoList->end();
-		ScaleInfo *scaleInfo = (*lend);
+
+		printf("1 !\n");
+		//ListType::iterator lend = scaleInfoList->end();
+		printf("2 !\n");
+		ScaleInfo *scaleInfo = scaleInfoList->back(); //(*lend);
+		printf("3 !\n");
+		printf("%p" , scaleInfo );
 		delete scaleInfo;
+		printf("4 !\n");
 		scaleInfoList->pop_back( );
+		printf("5 !\n");
 	}
 
 	refreshScaleInterface();
@@ -79,26 +86,10 @@ void WaveletPlugin::refreshScaleInterface()
 
 	// remove everything in the layout.
 
-	/*
-	QLayoutItem *child;
-	while ((child = ui->gbCoeffs->layout()->takeAt(0)) != 0) {
-		ui->gbCoeffs->layout()->removeItem(child);
-
-		delete child->widget();
-		delete child;
-	}
-*/
-	/*
-	QLayoutItem *child;
-	while ((child = ui->gbCoeffs->layout()->takeAt(0)) != 0)
-	{
-		formLayoutGroupBox
-	}*/
 	QLayoutItem *child;
 	while ((child = formLayoutGroupBox->takeAt(0)) != 0) {
 		formLayoutGroupBox->removeItem(child);
-
-		}
+	}
 
 	// write back all the scale interface
 
@@ -222,7 +213,10 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent)
 	myDialog->connect(addScaleButton, SIGNAL(clicked()), this, SLOT(addScaleButtonPressed()));
 	myDialog->connect(removeScaleButton, SIGNAL(clicked()), this, SLOT(removeScaleButtonPressed()));
 
-	refreshScaleInterface();
+	for (int i = 0 ; i < 4 ; i++ ) // add some scales.
+	{
+		addScaleButtonPressed();
+	}
 
 	myDialog->exec();
 

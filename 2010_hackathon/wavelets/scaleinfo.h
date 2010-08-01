@@ -22,15 +22,15 @@
 #include <stdlib.h>
 #include <list>
 
-class ScaleInfo
+class ScaleInfo : public QObject
 {
-//	 Q_OBJECT
+	 Q_OBJECT
 
 public:
 
 // QGroupBox *parent
-	ScaleInfo( QGroupBox *parent );
-	~ScaleInfo( );
+	ScaleInfo( int scalNumber , QGroupBox *parent );
+	virtual ~ScaleInfo( );
 
 	// data
 	double enabled;     // is this scale enabled ?
@@ -39,6 +39,12 @@ public:
 	// Qt Interface
 	QGroupBox *groupBox ; //= new QGroupBox( qBox );
 	QGridLayout *gridLayout ; //= new QGridLayout( qBox2 );
+	QCheckBox* enableCheckBox ;
+	QLineEdit* thresholdLineEdit;
+//	QDialog *myDialog;
+
+public slots:
+	void enableButtonPressed();
 
 };
 
