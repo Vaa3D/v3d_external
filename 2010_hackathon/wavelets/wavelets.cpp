@@ -247,9 +247,10 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent )
 // Should do : nothing
 void WaveletPlugin::dev1ButtonPressed()
 {
+	printf("dev 1 pressed\n");
 	// use myCallback if you need the one provide by
 	// WaveletPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)	//
-
+	printf("dev 1 finished\n");
 }
 
 // This is a dev button. Use it for test purpose !
@@ -257,9 +258,10 @@ void WaveletPlugin::dev1ButtonPressed()
 // Should do : nothing
 void WaveletPlugin::dev2ButtonPressed()
 {
+	printf("dev 2 pressed\n");
 	// use myCallback if you need the one provide by
 	// WaveletPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)	//
-
+	printf("dev 2 finished\n");
 }
 
 // This is a dev button. Use it for test purpose !
@@ -267,9 +269,10 @@ void WaveletPlugin::dev2ButtonPressed()
 // Should do : nothing
 void WaveletPlugin::dev3ButtonPressed()
 {
+	printf("dev 3 pressed\n");
 	// use myCallback if you need the one provide by
 	// WaveletPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)	//
-
+	printf("dev 3 finished\n");
 }
 
 // This is a dev button. Use it for test purpose !
@@ -277,9 +280,10 @@ void WaveletPlugin::dev3ButtonPressed()
 // Should do : nothing
 void WaveletPlugin::dev4ButtonPressed()
 {
+	printf("dev 4 pressed\n");
 	// use myCallback if you need the one provide by
 	// WaveletPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)	//
-
+	printf("dev 4 finished\n");
 }
 
 
