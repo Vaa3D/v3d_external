@@ -65,7 +65,10 @@ public slots:
 	void sliderChange( int value );
 	void addScaleButtonPressed();
 	void removeScaleButtonPressed();
-
+	void dev1ButtonPressed();
+	void dev2ButtonPressed();
+	void dev3ButtonPressed();
+	void dev4ButtonPressed();
 };
 
 #endif

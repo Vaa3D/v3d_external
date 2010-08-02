@@ -151,7 +151,7 @@ void WaveletPlugin::sliderChange(int value )
 
 }
 
-void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent)
+void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent )
 {
 	// Building the main interface.
 
@@ -177,6 +177,7 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent)
 	QPushButton* cancel = new QPushButton("Cancel");
 	formLayout = new QFormLayout;
 
+	qBox= new QGroupBox( myDialog );
 	formLayout->addRow( removeScaleButton , addScaleButton  );
 
 	QSlider *slider = new QSlider(Qt::Horizontal);
@@ -218,6 +219,77 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent)
 		addScaleButtonPressed();
 	}
 
+	QPushButton* dev1Button = new QPushButton("Dev #1");
+	QPushButton* dev2Button = new QPushButton("Dev #2");
+	QPushButton* dev3Button = new QPushButton("Dev #3");
+	QPushButton* dev4Button = new QPushButton("Dev #4");
+
+	formLayout->addRow(dev1Button, dev2Button);
+	formLayout->addRow(dev3Button, dev4Button);
+
+	myDialog->connect(dev1Button, SIGNAL(clicked()), this, SLOT(dev1ButtonPressed()));
+	myDialog->connect(dev2Button, SIGNAL(clicked()), this, SLOT(dev2ButtonPressed()));
+	myDialog->connect(dev3Button, SIGNAL(clicked()), this, SLOT(dev3ButtonPressed()));
+	myDialog->connect(dev4Button, SIGNAL(clicked()), this, SLOT(dev4ButtonPressed()));
+
+
+
+
+
 	myDialog->exec();
 
+
+
 }
+
+// This is a dev button. Use it for test purpose !
+// User : nobody
+// Should do : nothing
+void WaveletPlugin::dev1ButtonPressed()
+{
+	// use myCallback if you need the one provide by
+	// WaveletPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)	//
+
+}
+
+// This is a dev button. Use it for test purpose !
+// User : nobody
+// Should do : nothing
+void WaveletPlugin::dev2ButtonPressed()
+{
+	// use myCallback if you need the one provide by
+	// WaveletPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)	//
+
+}
+
+// This is a dev button. Use it for test purpose !
+// User : nobody
+// Should do : nothing
+void WaveletPlugin::dev3ButtonPressed()
+{
+	// use myCallback if you need the one provide by
+	// WaveletPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)	//
+
+}
+
+// This is a dev button. Use it for test purpose !
+// User : nobody
+// Should do : nothing
+void WaveletPlugin::dev4ButtonPressed()
+{
+	// use myCallback if you need the one provide by
+	// WaveletPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)	//
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
