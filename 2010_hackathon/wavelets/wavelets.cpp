@@ -163,7 +163,8 @@ void WaveletPlugin::sliderChange(int value )
  */
 void WaveletPlugin::copyOriginalImage()
 {
-	Image4DSimple *sourceImage = myCallback->getImage( myCallback->currentImageWindow() );
+//	Image4DSimple *sourceImage = myCallback->getImage( myCallback->currentImageWindow() );
+//	printf("p sourceimage %p \n", myCallback->getImage( myCallback->currentImageWindow() ) );
 
 	originalImageCopy = new Image4DSimple();
 	unsigned char *bufferSource = sourceImage->getRawData();
@@ -206,11 +207,17 @@ void WaveletPlugin::restoreOriginalImage()
 
 	memcpy( bufferCopy , bufferSource , originalImageCopy->getTotalBytes() );
 
-	printf("%d ", originalImageCopy->getTotalBytes() );
+	printf("%d \n", originalImageCopy->getTotalBytes() );
+	printf("%d \n", originalImageCopy->getXDim() );
+	printf("%d \n", originalImageCopy->getYDim() );
+	printf("%d \n", originalImageCopy->getZDim() );
+	printf("%d \n", originalImageCopy->getCDim() );
+	printf("%d \n", originalImageCopy->getDatatype() );
+	printf("p sourceimage %p \n", sourceImage );
 
-	sourceImage->setNewRawDataPointer( bufferCopy );
+	//sourceImage->setNewRawDataPointer( bufferCopy );
 
-	/*
+
 	sourceImage->setData(
 			bufferCopy ,
 			originalImageCopy->getXDim() ,
@@ -219,7 +226,8 @@ void WaveletPlugin::restoreOriginalImage()
 			originalImageCopy->getCDim() ,
 			originalImageCopy->getDatatype()
 			);
-*/
+
+
 
 	myCallback->updateImageWindow(sourceWindow);
 
