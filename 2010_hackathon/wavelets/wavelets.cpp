@@ -200,18 +200,17 @@ void WaveletPlugin::copyOriginalImage()
  */
 void WaveletPlugin::restoreOriginalImage()
 {
-	// Should have worked... but crash
-	//*sourceImage = *originalImageCopy;
-
-//	myCallback->updateImageWindow( myCallback->currentImageWindow() );
-
-	// so I use this:
 
 	unsigned char *bufferSource = originalImageCopy->getRawData();
 	unsigned char *bufferCopy = new unsigned char[originalImageCopy->getTotalBytes()];
 
-	memcpy( bufferCopy , bufferSource , sourceImage->getTotalBytes() );
+	memcpy( bufferCopy , bufferSource , originalImageCopy->getTotalBytes() );
 
+	printf("%d ", originalImageCopy->getTotalBytes() );
+
+	sourceImage->setNewRawDataPointer( bufferCopy );
+
+	/*
 	sourceImage->setData(
 			bufferCopy ,
 			originalImageCopy->getXDim() ,
@@ -220,14 +219,10 @@ void WaveletPlugin::restoreOriginalImage()
 			originalImageCopy->getCDim() ,
 			originalImageCopy->getDatatype()
 			);
-
-	// This should be uncommented when they fix the bug.
-	myCallback->updateImageWindow(sourceWindow);
-/*
-	v3dhandle newWindow = myCallback->newImageWindow();
-	myCallback->setImage( newWindow , originalImageCopy);
-	myCallback->updateImageWindow(newWindow);
 */
+
+	myCallback->updateImageWindow(sourceWindow);
+
 }
 
 
