@@ -61,17 +61,9 @@ void WaveletPlugin::removeScaleButtonPressed()
 	printf("WAVELETS : remove scale !\n");
 	if ( scaleInfoList->size() > 1 )
 	{
-
-		printf("1 !\n");
-		//ListType::iterator lend = scaleInfoList->end();
-		printf("2 !\n");
 		ScaleInfo *scaleInfo = scaleInfoList->back(); //(*lend);
-		printf("3 !\n");
-		printf("%p" , scaleInfo );
 		delete scaleInfo;
-		printf("4 !\n");
 		scaleInfoList->pop_back( );
-		printf("5 !\n");
 	}
 
 	refreshScaleInterface();
@@ -91,6 +83,9 @@ void WaveletPlugin::refreshScaleInterface()
 		formLayoutGroupBox->removeItem(child);
 	}
 
+//	qBox->adjustSize();
+	myDialog->adjustSize();
+
 	// write back all the scale interface
 
 	ListType::iterator litr = scaleInfoList->begin();
@@ -100,15 +95,24 @@ void WaveletPlugin::refreshScaleInterface()
 	{
 		printf("adding scale interface..");
 		formLayoutGroupBox->addRow( (*litr)->groupBox );
-		++litr;
+		litr++;
 	}
+
+
+
+	myDialog->adjustSize();
 
 }
 
 void WaveletPlugin::cancel()
 {
 	printf("WAVELETS : cancel !\n");
+	printf("WAVELETS : Restoring original image...\n");
 
+	// TODO: restore original image.
+
+	printf("WAVELETS : Restore done.\n");
+	myDialog->close();
 }
 
 void WaveletPlugin::sliderChange(int value )
@@ -151,6 +155,9 @@ void WaveletPlugin::sliderChange(int value )
 
 }
 
+/**
+ *	Init the GUI of the plugin.
+ */
 void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent )
 {
 	// Building the main interface.
@@ -175,9 +182,8 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent )
 	removeScaleButton     = new QPushButton("Remove");
 
 	QPushButton* cancel = new QPushButton("Cancel");
-	formLayout = new QFormLayout;
+	formLayout = new QFormLayout( myDialog );
 
-	qBox= new QGroupBox( myDialog );
 	formLayout->addRow( removeScaleButton , addScaleButton  );
 
 	QSlider *slider = new QSlider(Qt::Horizontal);
@@ -198,8 +204,8 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent )
 
 	//QLabel* label2 = new QLabel("Test");
  	qBox= new QGroupBox( myDialog );
-	formLayoutGroupBox = new QFormLayout();
-	qBox->setLayout( formLayoutGroupBox );
+	formLayoutGroupBox = new QFormLayout( qBox );
+	//qBox->setLayout( formLayoutGroupBox );
 	//formLayoutGroupBox->addRow( label2 );
 
  	formLayout->addRow(qBox);
