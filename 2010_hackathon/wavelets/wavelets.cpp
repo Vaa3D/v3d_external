@@ -21,6 +21,8 @@
 
 #include "wavelets.h"
 #include "scaleinfo.h"
+#include <v3d_basicdatatype.h>
+#include "../basic_c_fun/basic_landmark.h"
 
 Q_EXPORT_PLUGIN2(newwindow, WaveletPlugin);
 
@@ -104,13 +106,14 @@ void WaveletPlugin::refreshScaleInterface()
 
 }
 
+/**
+ * Cancel Action.
+ */
 void WaveletPlugin::cancel()
 {
 	printf("WAVELETS : cancel !\n");
 	printf("WAVELETS : Restoring original image...\n");
-
-	// TODO: restore original image.
-
+	restoreOriginalImage();
 	printf("WAVELETS : Restore done.\n");
 	myDialog->close();
 }
@@ -156,16 +159,83 @@ void WaveletPlugin::sliderChange(int value )
 }
 
 /**
+ * Copy original image
+ */
+void WaveletPlugin::copyOriginalImage()
+{
+	Image4DSimple *sourceImage = myCallback->getImage( myCallback->currentImageWindow() );
+
+	originalImageCopy = new Image4DSimple();
+	unsigned char *bufferSource = sourceImage->getRawData();
+	unsigned char *bufferCopy = new unsigned char[sourceImage->getTotalBytes()];
+	memcpy( bufferCopy , bufferSource , sourceImage->getTotalBytes() );
+
+	originalImageCopy->setData( bufferCopy , sourceImage->getXDim() , sourceImage->getYDim(),
+			sourceImage->getZDim(), sourceImage->getCDim() , sourceImage->getDatatype()
+			);
+
+//	sourceImage = originalImageCopy;
+
+//	myCallback->updateImageWindow( myCallback->currentImageWindow() );
+/*
+	originalImageCopy = new Image4DSimple();
+	unsigned char *bufferSource = sourceImage->getRawData();
+	unsigned char *bufferCopy = new unsigned char[sourceImage->getTotalBytes()];
+	memcpy( bufferCopy , bufferSource , sourceImage->getTotalBytes() );
+
+	printf( "size image : %d" , sourceImage->getTotalBytes() );
+
+	originalImageCopy->setData( bufferCopy , sourceImage->getXDim() , sourceImage->getYDim(),
+			sourceImage->getZDim(), sourceImage->getCDim() , sourceImage->getDatatype()
+			);
+
+	v3dhandle newWindow = myCallback->newImageWindow();
+	myCallback->setImage( newWindow , originalImageCopy);
+	myCallback->updateImageWindow(newWindow);
+*/
+}
+
+/**
+ * Restore original image.
+ */
+void WaveletPlugin::restoreOriginalImage()
+{
+	// Should have worked... but crash
+	//*sourceImage = *originalImageCopy;
+
+//	myCallback->updateImageWindow( myCallback->currentImageWindow() );
+
+	// so I use this:
+
+	unsigned char *bufferSource = originalImageCopy->getRawData();
+	unsigned char *bufferCopy = new unsigned char[originalImageCopy->getTotalBytes()];
+
+	memcpy( bufferCopy , bufferSource , sourceImage->getTotalBytes() );
+
+	sourceImage->setData(
+			bufferCopy ,
+			originalImageCopy->getXDim() ,
+			originalImageCopy->getYDim(),
+			originalImageCopy->getZDim(),
+			originalImageCopy->getCDim() ,
+			originalImageCopy->getDatatype()
+			);
+
+	// This should be uncommented when they fix the bug.
+	myCallback->updateImageWindow(sourceWindow);
+/*
+	v3dhandle newWindow = myCallback->newImageWindow();
+	myCallback->setImage( newWindow , originalImageCopy);
+	myCallback->updateImageWindow(newWindow);
+*/
+}
+
+
+/**
  *	Init the GUI of the plugin.
  */
 void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent )
 {
-	// Building the main interface.
-
-	myCallback = &callback;
-
-	myDialog = new QDialog(parent);
-
 	sourceWindow = callback.currentImageWindow();
 	Image4DSimple* p4DImage = callback.getImage(sourceWindow);
 	if (!p4DImage)
@@ -175,6 +245,16 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent )
 	}
 
 	sourceImage = p4DImage;
+
+	myCallback = &callback;
+
+	copyOriginalImage(); // for cancel purpose.
+
+	// Building the main interface.
+
+
+
+	myDialog = new QDialog(parent);
 
 	QPushButton* ok     = new QPushButton("OK");
 
@@ -195,9 +275,9 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent )
 
 	 	formLayout->addRow( slider );
 
-	QProgressBar *progressBar = new QProgressBar(  );
+	progressBar = new QProgressBar(  );
 	progressBar->setRange(0,100);
-	progressBar->setValue( 50 );
+	progressBar->setValue( 100 );
 
 // 	formLayout->addRow( processButton );
  	formLayout->addRow( progressBar );
@@ -230,6 +310,11 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent )
 	QPushButton* dev3Button = new QPushButton("Dev #3");
 	QPushButton* dev4Button = new QPushButton("Dev #4");
 
+	QPushButton* denoiseButton = new QPushButton("Denoise");
+	QPushButton* detectSpotsButton = new QPushButton("Detect spots");
+
+	formLayout->addRow( denoiseButton, detectSpotsButton );
+
 	formLayout->addRow(dev1Button, dev2Button);
 	formLayout->addRow(dev3Button, dev4Button);
 
@@ -237,6 +322,9 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent )
 	myDialog->connect(dev2Button, SIGNAL(clicked()), this, SLOT(dev2ButtonPressed()));
 	myDialog->connect(dev3Button, SIGNAL(clicked()), this, SLOT(dev3ButtonPressed()));
 	myDialog->connect(dev4Button, SIGNAL(clicked()), this, SLOT(dev4ButtonPressed()));
+
+	myDialog->connect(denoiseButton, SIGNAL(clicked()), this, SLOT(denoiseButtonPressed()));
+	myDialog->connect(detectSpotsButton, SIGNAL(clicked()), this, SLOT(detectSpotsButtonPressed()));
 
 
 
@@ -246,6 +334,41 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent )
 
 
 
+}
+
+/**
+ * Denoise
+ */
+void WaveletPlugin::denoiseButtonPressed()
+{
+	printf("WAVELET : denoise pressed\n");
+
+	// TODO: denoise code here
+
+	printf("WAVELET : denoise finished\n");
+}
+
+/**
+ * Detect spots
+ */
+void WaveletPlugin::detectSpotsButtonPressed()
+{
+	printf("WAVELET : detection spots pressed\n");
+	printf("test\n");
+
+	// building landmark test ( crashy )
+
+	LandmarkList list;
+
+	LocationSimple *ls = new LocationSimple( 10 , 10 , 10 );
+
+	list.push_back( *ls );
+
+	myCallback->setLandmark( sourceWindow , list );
+
+		// TODO: detection code here
+
+	printf("WAVELET : detection spots finished\n");
 }
 
 // This is a dev button. Use it for test purpose !
@@ -267,6 +390,7 @@ void WaveletPlugin::dev2ButtonPressed()
 	printf("dev 2 pressed\n");
 	// use myCallback if you need the one provide by
 	// WaveletPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)	//
+
 	printf("dev 2 finished\n");
 }
 

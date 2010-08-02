@@ -20,6 +20,7 @@
 #include <QtGui>
 #include <QtCore>
 #include <list>
+#include <v3d_basicdatatype.h>
 #include "scaleinfo.h"
 
 class WaveletPlugin : public QObject, public V3DPluginInterface
@@ -38,9 +39,11 @@ public:
     QFormLayout *formLayout;
     QFormLayout *formLayoutGroupBox;
     QGroupBox *qBox;
+    QProgressBar *progressBar;
 
     // wavelet input interface
 
+    typedef std::list<LocationSimple*> LocationSimpleListType ;
     typedef std::list<ScaleInfo*> ListType ;
     ListType *scaleInfoList ;
     QPushButton* removeScaleButton;
@@ -49,6 +52,12 @@ public:
     v3dhandle sourceWindow;
     Image4DSimple* sourceImage;
     V3DPluginCallback *myCallback;
+
+    // Copy of original Image;
+
+    Image4DSimple *originalImageCopy;
+    void copyOriginalImage();
+    void restoreOriginalImage();
 
     // Plugin stuff
 
@@ -69,6 +78,8 @@ public slots:
 	void dev2ButtonPressed();
 	void dev3ButtonPressed();
 	void dev4ButtonPressed();
+	void detectSpotsButtonPressed();
+	void denoiseButtonPressed();
 };
 
 #endif

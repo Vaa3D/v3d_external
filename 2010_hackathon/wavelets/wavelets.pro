@@ -2,9 +2,7 @@
 TEMPLATE      = lib
 CONFIG       += plugin warning_off 
 INCLUDEPATH  += ../../basic_c_fun
-HEADERS     = wavelets.h scaleinfo.h	
-				 
-				
+HEADERS     = wavelets.h scaleinfo.h			 
 				
 SOURCES     = wavelets.cpp scaleinfo.cpp
  			
