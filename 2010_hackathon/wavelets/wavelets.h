@@ -15,7 +15,8 @@
 #ifndef EXTRAFILTERSPLUGIN_H
 #define EXTRAFILTERSPLUGIN_H
 
-#define USING_FFT 1 // Do not compile for FFT
+
+#define USING_FFT 0 // Do not compile for FFT
 //#define USING_FFT 1 // compile for FFT
 
 #include <v3d_interface.h>

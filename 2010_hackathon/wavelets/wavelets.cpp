@@ -189,7 +189,7 @@ void WaveletPlugin::copyOriginalImage()
 	originalImageCopy = new Image4DSimple();
 	//printf("POINTER NULL? %b\n", originalImageCopy->getRawData()==NULL);
 	unsigned char *bufferSource = sourceImage->getRawData();
-	printf("\n\n Bytes= %dl,  size %dl\n\n", sourceImage->getTotalBytes()*sizeof(unsigned char), sourceImage->sz0*sourceImage->sz1*sourceImage->sz2*sourceImage->sz3);
+//	printf("\n\n Bytes= %dl,  size %dl\n\n", sourceImage->getTotalBytes()*sizeof(unsigned char), sourceImage->sz0*sourceImage->sz1*sourceImage->sz2*sourceImage->sz3);
 	unsigned char *bufferCopy = new unsigned char[sourceImage->getTotalBytes()];
 	memcpy( bufferCopy , bufferSource , sourceImage->getTotalBytes() );
 	
@@ -213,9 +213,9 @@ void WaveletPlugin::copyOriginalImage()
 			sourceImage->getZDim(), sourceImage->getCDim() , sourceImage->getDatatype()
 			);
 */
-	//v3dhandle newWindow = myCallback->newImageWindow();
-	//myCallback->setImage( newWindow , originalImageCopy);
-	//myCallback->updateImageWindow(newWindow);
+//	v3dhandle newWindow = myCallback->newImageWindow();
+//	myCallback->setImage( newWindow , originalImageCopy);
+//	myCallback->updateImageWindow(newWindow);
 
 }
 
@@ -224,20 +224,8 @@ void WaveletPlugin::copyOriginalImage()
  */
 void WaveletPlugin::restoreOriginalImage()
 {
-	unsigned char *bufferSource = originalImageCopy->getRawData();
-	unsigned char *bufferCopy = new unsigned char[originalImageCopy->getTotalBytes()];
-
-	memcpy( bufferCopy , bufferSource , originalImageCopy->getTotalBytes() );
-/*
-	printf("%dl \n", originalImageCopy->getTotalBytes() );
-	printf("%dl \n", originalImageCopy->getXDim() );
-	printf("%dl \n", originalImageCopy->getYDim() );
-	printf("%dl \n", originalImageCopy->getZDim() );
-	printf("%dl \n", originalImageCopy->getCDim() );
-	printf("%d \n", originalImageCopy->getDatatype() );
-	printf("p sourceimage %p \n", sourceImage );
-*/
-	// This will work ( it is the workaround of bug with setData )
+//	unsigned char *bufferSource = originalImageCopy->getRawData();
+//	unsigned char *bufferCopy = new unsigned char[originalImageCopy->getTotalBytes()];
 
 	sourceImage->setXDim( originalImageCopy->getXDim() );
 	sourceImage->setYDim( originalImageCopy->getYDim() );
@@ -245,11 +233,13 @@ void WaveletPlugin::restoreOriginalImage()
 	sourceImage->setCDim( originalImageCopy->getCDim() );
 	sourceImage->setDatatype( originalImageCopy->getDatatype() );
 
+	memcpy( sourceImage->getRawData() , originalImageCopy->getRawData() , originalImageCopy->getTotalBytes() );
+
 	printf("%d source" , sourceImage->getTotalBytes() );
 	printf("%d original" , originalImageCopy->getTotalBytes() );
 
-	//myCallback->updateImageWindow(sourceWindow);
-	myCallback->setImage(sourceWindow, sourceImage);
+	myCallback->updateImageWindow(sourceWindow);
+	//myCallback->setImage(sourceWindow, sourceImage);
 
 }
 
