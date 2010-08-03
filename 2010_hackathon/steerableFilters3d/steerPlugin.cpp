@@ -48,7 +48,6 @@ void steerPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, 
 {
    if (menu_name == tr("SteerableFilter3D"))
     {
-      //loadCube(callback, parent);
       doFiltering(callback, parent);
     }
 	else if (menu_name == tr("about this plugin"))
@@ -111,6 +110,8 @@ int steer3d(V3DPluginCallback &callback, SteerDialog* sd, uchar* data1d,V3DLONG 
 
    //printf("[steerPlugin] %d cube derivatives computed\n", (int)stf->cubeDerivs.size());
 
+#ifdef STEER_DEBUG
+   // display first three derivatives
    for(int i = 0; i < 3; i++)
    {
       Cube< float>* deriv = stf->cubeDerivs[i];
@@ -129,7 +130,7 @@ int steer3d(V3DPluginCallback &callback, SteerDialog* sd, uchar* data1d,V3DLONG 
       callback.setImageName(newwin, sout.str().c_str());
       callback.updateImageWindow(newwin);
    }
-   // TODO : release memory !!!!
+#endif
 
    stf->filter(theta,phi,alpha);
 
