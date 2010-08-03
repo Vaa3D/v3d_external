@@ -1,15 +1,10 @@
 
 TEMPLATE      = lib
-CONFIG       += plugin warning_off
-INCLUDEPATH  += ../../basic_c_fun
-CONFIG        += x86
-HEADERS     = wavelets.h scaleinfo.h
-
-
-SOURCES     = wavelets.cpp scaleinfo.cpp
-
-
+CONFIG       += plugin warning_off 
+INCLUDEPATH  += /Users/nicolas/prog/v3d/my_v3d_plugins/basic_c_fun
+HEADERS     = wavelets.h scaleinfo.h ioV3dUtils.h waveletConfigException.h waveletTransform.h		 
+SOURCES     = wavelets.cpp scaleinfo.cpp ioV3dUtils.cpp waveletConfigException.cpp waveletTransform.cpp
+LIBS          += -lfftw3 			
+			
 TARGET        = $$qtLibraryTarget(wavelets)
-DESTDIR       = /home/ibanez/bin/v3d/v3d_2.485_ubuntu9.1_64bit
-
-#/Applications/v3d/plugins/Wavelets #win32 qmake couldn't handle space in path
+DESTDIR       = .

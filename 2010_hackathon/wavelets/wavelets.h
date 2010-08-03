@@ -21,7 +21,12 @@
 #include <QtCore>
 #include <list>
 #include <v3d_basicdatatype.h>
+#include <fftw3.h>
+
 #include "scaleinfo.h"
+#include "ioV3dUtils.h"
+#include "waveletConfigException.h"
+#include "waveletTransform.h"
 
 class WaveletPlugin : public QObject, public V3DPluginInterface
 {
@@ -80,6 +85,10 @@ public slots:
 	void dev4ButtonPressed();
 	void detectSpotsButtonPressed();
 	void denoiseButtonPressed();
+	
+	void Cloning(V3DPluginCallback &callback, QWidget *parent);
+	void FFT(V3DPluginCallback &callback, QWidget *parent);
+	void WaveletTransform(V3DPluginCallback &callback, QWidget *parent);
 };
 
 #endif

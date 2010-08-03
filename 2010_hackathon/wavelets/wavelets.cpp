@@ -30,8 +30,7 @@ const QString title = "Wavelets";
 
 QStringList WaveletPlugin::menulist() const
 {
-    return QStringList()
-    << tr("Wavelets");
+    return QStringList()<< tr("Wavelets")<< tr("Cloning")<<tr("FFT")<<tr("Wavelet Transform");
 
 }
 
@@ -40,7 +39,22 @@ QStringList WaveletPlugin::menulist() const
  */
 void WaveletPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
 {
-	initGUI( callback, parent );
+	if (menu_name == tr("Wavelets"))
+	{
+		initGUI( callback, parent );
+	}
+	if (menu_name == tr("Cloning"))
+    {
+    	Cloning(callback, parent);
+    }
+    if (menu_name == tr("FFT"))
+    {
+    	FFT(callback, parent);
+    }
+    if (menu_name == tr("Wavelet Transform"))
+    {
+    	WaveletTransform(callback, parent);
+    }
 }
 
 WaveletPlugin::WaveletPlugin()
@@ -167,10 +181,13 @@ void WaveletPlugin::copyOriginalImage()
 //	printf("p sourceimage %p \n", myCallback->getImage( myCallback->currentImageWindow() ) );
 
 	originalImageCopy = new Image4DSimple();
+	//printf("POINTER NULL? %b\n", originalImageCopy->getRawData()==NULL);
 	unsigned char *bufferSource = sourceImage->getRawData();
+	printf("\n\n Bytes= %d,  size %d\n\n", sourceImage->getTotalBytes()*sizeof(unsigned char), sourceImage->sz0*sourceImage->sz1*sourceImage->sz2*sourceImage->sz3);
 	unsigned char *bufferCopy = new unsigned char[sourceImage->getTotalBytes()];
 	memcpy( bufferCopy , bufferSource , sourceImage->getTotalBytes() );
-
+	
+	//printf("buffer Copy %p", bufferCopy);
 	originalImageCopy->setData( bufferCopy , sourceImage->getXDim() , sourceImage->getYDim(),
 			sourceImage->getZDim(), sourceImage->getCDim() , sourceImage->getDatatype()
 			);
@@ -189,11 +206,11 @@ void WaveletPlugin::copyOriginalImage()
 	originalImageCopy->setData( bufferCopy , sourceImage->getXDim() , sourceImage->getYDim(),
 			sourceImage->getZDim(), sourceImage->getCDim() , sourceImage->getDatatype()
 			);
-
-	v3dhandle newWindow = myCallback->newImageWindow();
-	myCallback->setImage( newWindow , originalImageCopy);
-	myCallback->updateImageWindow(newWindow);
 */
+	//v3dhandle newWindow = myCallback->newImageWindow();
+	//myCallback->setImage( newWindow , originalImageCopy);
+	//myCallback->updateImageWindow(newWindow);
+
 }
 
 /**
@@ -203,31 +220,76 @@ void WaveletPlugin::restoreOriginalImage()
 {
 
 	unsigned char *bufferSource = originalImageCopy->getRawData();
+
+	//WORKS
+	//unsigned char *bufferCurrent = sourceImage->getRawData();
+	//memcpy( bufferCurrent , bufferSource , originalImageCopy->getTotalBytes() );
+
+
+	//DONT WORK
 	unsigned char *bufferCopy = new unsigned char[originalImageCopy->getTotalBytes()];
-
 	memcpy( bufferCopy , bufferSource , originalImageCopy->getTotalBytes() );
+	
+	v3dhandle sourceWindowN = myCallback->currentImageWindow();
+	Image4DSimple* p4DImageN = myCallback->getImage(sourceWindow);
+	
+	printf("\n\n ACTIVE image %p \n\n", p4DImageN);
+	printf("\n\n ACTIVE window %p \n\n", sourceWindowN);
+	
+	printf("\n\n SOURCE image %p \n\n", sourceImage);
+	bool b = sourceImage->setNewRawDataPointer( bufferCopy );
+	printf("\n\nSUCCESS SET DATA %d\n\n", b);
+	unsigned char *newBuffer = sourceImage->getRawData();
+	//POINTER COPY SUCCEEDS
+	if (bufferCopy==newBuffer)
+		printf("\n\nWORKS\n\n");
+	else
+		printf("\n\nDONT WORK\n\n");
+	
+	v3dhandle sourceWindowN2 = myCallback->currentImageWindow();
+	Image4DSimple* p4DImageN2 = myCallback->getImage(sourceWindowN2);
+	printf("\n\n ACTIVE image %p \n\n", p4DImageN2);
+	printf("\n\n ACTIVE window %p \n\n", sourceWindowN2);
+	//OK; datatype unchanged
+	printf("\n\nDATATYPE  %d\n\n", p4DImageN2->getDatatype()==originalImageCopy->getDatatype());
 
-	printf("%d \n", originalImageCopy->getTotalBytes() );
-	printf("%d \n", originalImageCopy->getXDim() );
-	printf("%d \n", originalImageCopy->getYDim() );
-	printf("%d \n", originalImageCopy->getZDim() );
-	printf("%d \n", originalImageCopy->getCDim() );
-	printf("%d \n", originalImageCopy->getDatatype() );
-	printf("p sourceimage %p \n", sourceImage );
+/*	v3dhandle newWindow = myCallback->newImageWindow();
+	myCallback->setImage( newWindow , originalImageCopy);
+	myCallback->updateImageWindow(newWindow);*/
 
-	//sourceImage->setNewRawDataPointer( bufferCopy );
-
-
-	sourceImage->setData(
-			bufferCopy ,
-			originalImageCopy->getXDim() ,
-			originalImageCopy->getYDim(),
-			originalImageCopy->getZDim(),
-			originalImageCopy->getCDim() ,
-			originalImageCopy->getDatatype()
-			);
-
-
+	//unsigned char *bufferSource = originalImageCopy->getRawData();
+	
+	
+	//printf("buffer Source %p", bufferSource);
+	//printf("\n\n Bytes= %d,  size %d\n\n", originalImageCopy->getTotalBytes()*sizeof(unsigned char), originalImageCopy->sz0*originalImageCopy->sz1*originalImageCopy->sz2*originalImageCopy->sz3);
+	
+ 	//unsigned char *bufferCopy = new unsigned char[originalImageCopy->getTotalBytes()];
+ 
+// 	memcpy( bufferCopy , bufferSource , originalImageCopy->getTotalBytes() );
+// 
+// 	printf("%d \n", originalImageCopy->getTotalBytes() );
+// 	printf("%d \n", originalImageCopy->getXDim() );
+// 	printf("%d \n", originalImageCopy->getYDim() );
+// 	printf("%d \n", originalImageCopy->getZDim() );
+// 	printf("%d \n", originalImageCopy->getCDim() );
+// 	printf("%d \n", originalImageCopy->getDatatype() );
+// 	printf("p sourceimage %p \n", sourceImage );
+// 
+// 	//sourceImage->setNewRawDataPointer( bufferCopy );
+// 
+// 
+	// bool success = sourceImage->setData(
+// 			bufferCopy ,
+// 			originalImageCopy->getXDim() ,
+// 			originalImageCopy->getYDim(),
+// 			originalImageCopy->getZDim(),
+// 			originalImageCopy->getCDim() ,
+// 			originalImageCopy->getDatatype()
+// 			);
+// 	if (success)
+// 	printf("---SUCCESS---\n");
+// 	else
+// 	printf("---FQILED---\n");
 
 	myCallback->updateImageWindow(sourceWindow);
 
@@ -414,9 +476,230 @@ void WaveletPlugin::dev3ButtonPressed()
 void WaveletPlugin::dev4ButtonPressed()
 {
 	printf("dev 4 pressed\n");
-	// use myCallback if you need the one provide by
-	// WaveletPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)	//
+	
+	
+	v3dhandle sourceWindow = myCallback->currentImageWindow();
+	Image4DSimple* p4DImage = myCallback->getImage(sourceWindow);
+	
+	printf("\n POINTERS %p   |    %p\n\n", p4DImage, &sourceWindow);
+	
+	
+	// 
+// 	//use myCallback if you need the one provide by
+// 	// WaveletPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)	//
+// 	
+// 	
+// 	unsigned char* imageRaw = sourceImage->getRawData();
+// 
+// 	if ( !imageRaw )
+// 	{
+// 		printf("WAVELETS : no image.. \n");
+// 		return;
+// 	}
+// 
+// 	printf("WAVELETS : enter1");
+// 
+// 	for ( int i =0 ; i< 10000 ; i++ )
+// 		{
+// 		imageRaw[i] = 255;
+// 		}
+// 
+// 	printf("WAVELETS : enter2");
+// 
+// 	myCallback->updateImageWindow(sourceWindow);
+	
 	printf("dev 4 finished\n");
+}
+
+void WaveletPlugin::FFT(V3DPluginCallback &callback, QWidget *parent)
+{
+	v3dhandle oldwin = callback.currentImageWindow();
+	Image4DSimple* p4DImage = callback.getImage(oldwin);
+	if (!p4DImage)
+	{
+		QMessageBox::information(0, "Cloning", QObject::tr("No image is open."));
+		return;
+	}
+	double* data1dD = channelToDoubleArray(p4DImage, 1);
+
+	//get dims
+    V3DLONG szx = p4DImage->getXDim();
+    V3DLONG szy = p4DImage->getYDim();
+    V3DLONG szz = p4DImage->getZDim();
+    V3DLONG sc = p4DImage->getCDim();
+    V3DLONG N = szx * szy * szz;
+  
+	// FFTW
+	//careful, fftw is using row major indexing = z dimension is varying first, while v3d is using column major indexing = x dimension is varying first
+	//the last dimension is cut in half (x dimension for v3d convention)
+	V3DLONG nxOut = ((szx / 2 + 1));
+	V3DLONG nyOut = szy;
+	V3DLONG nzOut = szz;
+	V3DLONG nOut = 	nxOut * nyOut * nzOut;
+	
+	//create output array
+	fftw_complex *out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * nOut);
+	
+	//prepare execution plan
+	fftw_plan p;
+	time_t seconds0 = time (NULL);
+	p = fftw_plan_dft_r2c_3d(szz, szy, szx, data1dD, out, FFTW_MEASURE);
+	//p = fftw_plan_dft_r2c_2d(szy, szx, data1dD, out, FFTW_ESTIMATE);
+
+ 	time_t seconds1 = time (NULL);
+	printf ("prepare %ld\n", seconds1-seconds0);
+
+	//execute plan
+	fftw_execute(p);
+ 	time_t seconds2 = time (NULL);
+	printf ("execute %ld\n", seconds2-seconds1);
+
+	
+	double max = 0;
+	double min = 0;	
+	for (int i = 0; i < nOut; i++)
+	{
+ 		double a0 = ((double*)out[i])[0];
+ 		double a1 = ((double*)out[i])[1];
+ 		data1dD[i] = log(sqrt(a0 * a0 + a1 * a1));
+ 		max = (max < data1dD[i]) ? data1dD[i] : max;	
+ 		min = (min > data1dD[i]) ? data1dD[i] : min;	
+	}
+	
+	rescaleForDisplay(data1dD, data1dD, nOut, p4DImage->datatype);
+	
+	//free memory
+	fftw_destroy_plan(p);
+	fftw_free(out);
+	
+	// output image 
+	Image4DSimple outImage;
+	unsigned char* dataOut1d = doubleArrayToCharArray(data1dD, nOut, p4DImage->datatype);
+    outImage.setData(dataOut1d, nxOut, p4DImage->sz1, p4DImage->sz2, 1, p4DImage->datatype);
+    v3dhandle newwin = callback.newImageWindow();
+	callback.setImage(newwin, &outImage);
+	callback.setImageName(newwin,"fft test");
+    callback.updateImageWindow(newwin);
+	free(data1dD);
+}
+
+void WaveletPlugin::Cloning(V3DPluginCallback &callback, QWidget *parent)
+{
+	v3dhandle oldwin = callback.currentImageWindow();
+	Image4DSimple* p4DImage = callback.getImage(oldwin);
+	if (!p4DImage)
+	{
+		QMessageBox::information(0, "Cloning", QObject::tr("No image is open."));
+		return;
+	}
+	double* data1dD = channelToDoubleArray(p4DImage, 1);
+
+	//get dims
+    V3DLONG szx = p4DImage->getXDim();
+    V3DLONG szy = p4DImage->getYDim();
+    V3DLONG szz = p4DImage->getZDim();
+    V3DLONG sc = p4DImage->getCDim();
+    V3DLONG N = szx * szy * szz;
+  
+	Image4DSimple outImage;
+	unsigned char* dataOut1d = doubleArrayToCharArray(data1dD, N, p4DImage->datatype);	
+    outImage.setData(dataOut1d, p4DImage->sz0, p4DImage->sz1, p4DImage->sz2, 1, p4DImage->datatype);
+    v3dhandle newwin = callback.newImageWindow();
+	callback.setImage(newwin, &outImage);
+	callback.setImageName(newwin,"cloning test");
+    callback.updateImageWindow(newwin);
+}
+
+void WaveletPlugin::WaveletTransform(V3DPluginCallback &callback, QWidget *parent)
+{
+	v3dhandle oldwin = callback.currentImageWindow();
+	Image4DSimple* p4DImage = callback.getImage(oldwin);
+	if (!p4DImage)
+	{
+		QMessageBox::information(0, "Cloning", QObject::tr("No image is open."));
+		return;
+	}
+	double* data1dD = channelToDoubleArray(p4DImage, 1);
+
+	//get dims
+    V3DLONG szx = p4DImage->getXDim();
+    V3DLONG szy = p4DImage->getYDim();
+    V3DLONG szz = p4DImage->getZDim();
+    V3DLONG sc = p4DImage->getCDim();
+    V3DLONG N = szx * szy * szz;
+
+	int numScales = 2;
+ 	//compute wavelet scales
+ 	double** resTab = NULL;
+	try { 		time_t seconds0 = time (NULL);
+ 			resTab = b3WaveletScales(data1dD, szx, szy, szz, numScales);
+ 			time_t seconds1 = time (NULL);
+ 			cout<<"Computation time = "<<(seconds1-seconds0);
+ 			}
+ 	catch(WaveletConfigException e)
+ 	{
+ 		cout<<"\nEXCEPTION\n";
+ 		cout<<e.what()<<"\n";
+ 		return;
+ 	}
+ 	
+ 	//compute waveletCoefficients
+ 	double* lowPassResidual = new double[N];
+ 	b3WaveletCoefficientsInplace(resTab, data1dD, lowPassResidual, numScales, N);
+	
+	delete(data1dD);
+		
+	//reconstruct image from coefficients
+	double* rec = new double[N];
+	b3WaveletReconstruction(resTab, lowPassResidual, rec, numScales, N);
+	
+
+	
+	//display reconstructed image
+	rescaleForDisplay(rec, rec, N, p4DImage->datatype);
+	unsigned char* dataOut1d = doubleArrayToCharArray(rec, N, p4DImage->datatype);
+	Image4DSimple outImage;
+	outImage.setData(dataOut1d, p4DImage->sz0, p4DImage->sz1, p4DImage->sz2, 1, p4DImage->datatype);
+	v3dhandle newwin = callback.newImageWindow();
+	callback.setImage(newwin, &outImage);
+	callback.setImageName(newwin, "reconstruction");
+	callback.updateImageWindow(newwin);
+	delete(rec);
+
+	
+	//output wavelet coefficients
+	for (int j = 0; j<numScales; j++)
+	{
+		//rescale
+		double* out = resTab[j];
+		rescaleForDisplay(out, out, N, p4DImage->datatype);
+		unsigned char* dataOut1d = doubleArrayToCharArray(out, N, p4DImage->datatype);
+    	Image4DSimple outImage;
+    	outImage.setData(dataOut1d, p4DImage->sz0, p4DImage->sz1, p4DImage->sz2, 1, p4DImage->datatype);
+    	v3dhandle newwin = callback.newImageWindow();
+		callback.setImage(newwin, &outImage);
+		char buffer [50];
+		sprintf(buffer, "wavelet scale %d", j+1);
+		callback.setImageName(newwin, buffer);
+    	callback.updateImageWindow(newwin);
+	}
+	for (int j = 0; j<numScales; j++)
+ 	{
+ 		free(resTab[j]);
+ 	}
+	delete(resTab);
+	
+	//output low pass image
+	rescaleForDisplay(lowPassResidual, lowPassResidual, N, p4DImage->datatype);
+	unsigned char* dataOut1dL = doubleArrayToCharArray(lowPassResidual, N, p4DImage->datatype);
+	Image4DSimple outImageL;
+	outImageL.setData(dataOut1dL, p4DImage->sz0, p4DImage->sz1, p4DImage->sz2, 1, p4DImage->datatype);
+	v3dhandle newwinL = callback.newImageWindow();
+	callback.setImage(newwinL, &outImageL);
+	callback.setImageName(newwinL, "low pass residual");
+	callback.updateImageWindow(newwinL);
+	
+	delete(lowPassResidual);	
 }
 
 
