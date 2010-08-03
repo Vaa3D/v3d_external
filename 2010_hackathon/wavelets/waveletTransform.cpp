@@ -4,6 +4,7 @@
 
 double** b3WaveletScalesOptimized(double* dataIn, int width, int height, int depth, int numScales) throw (WaveletConfigException)
 {
+
 	// if (numScales < 1)
 //  	{
 // 			throw WaveletConfigException("Invalid number of wavelet scales. Number of scales should be an integer >=1");

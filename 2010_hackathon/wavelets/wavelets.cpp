@@ -24,6 +24,8 @@
 #include <v3d_basicdatatype.h>
 #include "../basic_c_fun/basic_landmark.h"
 #include "waveletConfigException.h"
+#include <iostream>
+
 
 Q_EXPORT_PLUGIN2(newwindow, WaveletPlugin);
 
@@ -32,6 +34,7 @@ const QString title = "Wavelets";
 QStringList WaveletPlugin::menulist() const
 {
     return QStringList()<< tr("Wavelets")<< tr("Cloning")<<tr("FFT")<<tr("Wavelet Transform");
+
 
 }
 
@@ -186,7 +189,7 @@ void WaveletPlugin::copyOriginalImage()
 	originalImageCopy = new Image4DSimple();
 	//printf("POINTER NULL? %b\n", originalImageCopy->getRawData()==NULL);
 	unsigned char *bufferSource = sourceImage->getRawData();
-	printf("\n\n Bytes= %d,  size %d\n\n", sourceImage->getTotalBytes()*sizeof(unsigned char), sourceImage->sz0*sourceImage->sz1*sourceImage->sz2*sourceImage->sz3);
+	printf("\n\n Bytes= %dl,  size %dl\n\n", sourceImage->getTotalBytes()*sizeof(unsigned char), sourceImage->sz0*sourceImage->sz1*sourceImage->sz2*sourceImage->sz3);
 	unsigned char *bufferCopy = new unsigned char[sourceImage->getTotalBytes()];
 	memcpy( bufferCopy , bufferSource , sourceImage->getTotalBytes() );
 	
@@ -225,15 +228,15 @@ void WaveletPlugin::restoreOriginalImage()
 	unsigned char *bufferCopy = new unsigned char[originalImageCopy->getTotalBytes()];
 
 	memcpy( bufferCopy , bufferSource , originalImageCopy->getTotalBytes() );
-
-	printf("%d \n", originalImageCopy->getTotalBytes() );
-	printf("%d \n", originalImageCopy->getXDim() );
-	printf("%d \n", originalImageCopy->getYDim() );
-	printf("%d \n", originalImageCopy->getZDim() );
-	printf("%d \n", originalImageCopy->getCDim() );
+/*
+	printf("%dl \n", originalImageCopy->getTotalBytes() );
+	printf("%dl \n", originalImageCopy->getXDim() );
+	printf("%dl \n", originalImageCopy->getYDim() );
+	printf("%dl \n", originalImageCopy->getZDim() );
+	printf("%dl \n", originalImageCopy->getCDim() );
 	printf("%d \n", originalImageCopy->getDatatype() );
 	printf("p sourceimage %p \n", sourceImage );
-
+*/
 	// This will work ( it is the workaround of bug with setData )
 
 	sourceImage->setXDim( originalImageCopy->getXDim() );
@@ -466,6 +469,7 @@ void WaveletPlugin::dev4ButtonPressed()
 	printf("dev 4 finished\n");
 }
 
+
 #if USING_FFT
 void WaveletPlugin::FFT(V3DPluginCallback &callback, QWidget *parent)
 {
@@ -557,7 +561,8 @@ void WaveletPlugin::Cloning(V3DPluginCallback &callback, QWidget *parent)
     V3DLONG szz = p4DImage->getZDim();
     V3DLONG sc = p4DImage->getCDim();
     V3DLONG N = szx * szy * szz;
-  
+
+
 	Image4DSimple outImage;
 	unsigned char* dataOut1d = doubleArrayToCharArray(data1dD, N, p4DImage->datatype);	
     outImage.setData(dataOut1d, p4DImage->sz0, p4DImage->sz1, p4DImage->sz2, 1, p4DImage->datatype);
@@ -595,12 +600,11 @@ void WaveletPlugin::WaveletTransform(V3DPluginCallback &callback, QWidget *paren
  			else
  				resTab = b3WaveletScales2D(data1dD, szx, szy, numScales);
  			time_t seconds1 = time (NULL);
- 			cout<<"Computation time = "<<(seconds1-seconds0);
+ 			printf("Computation time : %d" , (seconds1-seconds0) );
  			}
  	catch(WaveletConfigException e)
  	{
- 		cout<<"\nEXCEPTION\n";
- 		cout<<e.what()<<"\n";
+ 		printf("\nEXCEPTION\n %s \n" , e.what() );
  		return;
  	}
 

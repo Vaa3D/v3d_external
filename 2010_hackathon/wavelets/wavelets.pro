@@ -1,4 +1,4 @@
-#if 1
+#if 0
 # nicolas's version
 TEMPLATE      = lib
 CONFIG       += plugin warning_off 
@@ -12,15 +12,15 @@ DESTDIR       = .
 
 #endif
 
-#if 0
+#if 1
 
 # fab's version
 
 TEMPLATE      = lib
 CONFIG       += plugin warning_off 
 INCLUDEPATH  += ../../basic_c_fun
-HEADERS     = wavelets.h scaleinfo.h ioV3dUtils.h waveletConfigException.h waveletTransform.h	
-SOURCES     = wavelets.cpp scaleinfo.cpp ioV3dUtils.cpp waveletConfigException.cpp waveletTransform.cpp
+HEADERS     = wavelets.h scaleinfo.h ioV3dUtils.h waveletConfigException.h waveletTransform.h 	
+SOURCES     = wavelets.cpp scaleinfo.cpp ioV3dUtils.cpp waveletConfigException.cpp waveletTransform.cpp 
 TARGET        = $$qtLibraryTarget(wavelets)
 DESTDIR       = ../../v3d/plugins/Wavelets
 #endif

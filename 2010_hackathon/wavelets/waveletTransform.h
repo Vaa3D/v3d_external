@@ -1,12 +1,11 @@
 #ifndef __WAVELETTRANSFORM_H__
 #define __WAVELETTRANSFORM_H__
 
-#include <iostream.h>
+#include <iostream>
 #include <stdlib.h>
 #include <math.h>
 
 #include "waveletConfigException.h"
-
 
 double** b3WaveletScales(double* dataIn, int szx, int szy, int szZ, int numScales)  throw (WaveletConfigException);
 double** b3WaveletScales2D(double* dataIn, int width, int height, int numScales) throw (WaveletConfigException);
