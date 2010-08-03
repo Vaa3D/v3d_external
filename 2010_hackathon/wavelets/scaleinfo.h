@@ -40,12 +40,15 @@ public:
 	QGroupBox *groupBox ; //= new QGroupBox( qBox );
 	QGridLayout *gridLayout ; //= new QGridLayout( qBox2 );
 	QCheckBox* enableCheckBox ;
-	QLineEdit* thresholdLineEdit;
+	//QLineEdit* thresholdLineEdit;
+	QSlider *thresholdSlider;
 //	QDialog *myDialog;
+	int thresholdValue;
+	bool enable;
 
 public slots:
 	void enableButtonPressed();
-
+	void sliderChange(int value );
 };
 
 

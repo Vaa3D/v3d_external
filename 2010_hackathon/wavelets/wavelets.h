@@ -51,6 +51,7 @@ public:
     QFormLayout *formLayoutGroupBox;
     QGroupBox *qBox;
     QProgressBar *progressBar;
+    QSlider *thresholdResidualScaleSlider;
 
     // wavelet input interface
 
@@ -86,6 +87,8 @@ public:
 	#endif
 	void WaveletTransform(V3DPluginCallback &callback, QWidget *parent);
 
+	int thresholdResidualScale ;
+
 public slots:
 	void cancel();
 	void sliderChange( int value );
@@ -97,7 +100,7 @@ public slots:
 	void dev4ButtonPressed();
 	void detectSpotsButtonPressed();
 	void denoiseButtonPressed();
-	
+	void sliderResidualChange(int value);
 
 };
 
