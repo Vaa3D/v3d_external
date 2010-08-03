@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'wavelets.h'
 **
-** Created: Tue Aug 3 01:52:14 2010
+** Created: Tue Aug 3 16:32:11 2010
 **      by: The Qt Meta Object Compiler version 61 (Qt 4.5.2)
 **
 ** WARNING! All changes made in this file will be lost!

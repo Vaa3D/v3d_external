@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'scaleinfo.h'
 **
-** Created: Tue Aug 3 01:52:17 2010
+** Created: Tue Aug 3 16:32:15 2010
 **      by: The Qt Meta Object Compiler version 61 (Qt 4.5.2)
 **
 ** WARNING! All changes made in this file will be lost!

@@ -245,22 +245,8 @@ void WaveletPlugin::restoreOriginalImage()
 	printf("%d source" , sourceImage->getTotalBytes() );
 	printf("%d original" , originalImageCopy->getTotalBytes() );
 
-	memcpy( sourceImage->getRawData() , originalImageCopy->getRawData() ,  originalImageCopy->getTotalBytes() );
-
-
-	//this will crash
-	/*
-	sourceImage->setData(
-				bufferCopy ,
-				originalImageCopy->getXDim() ,
-				originalImageCopy->getYDim(),
-				originalImageCopy->getZDim(),
-				originalImageCopy->getCDim() ,
-				originalImageCopy->getDatatype()
-				);
-	*/
-
-	myCallback->updateImageWindow(sourceWindow);
+	//myCallback->updateImageWindow(sourceWindow);
+	myCallback->setImage(sourceWindow, sourceImage);
 
 }
 
@@ -587,7 +573,7 @@ void WaveletPlugin::WaveletTransform(V3DPluginCallback &callback, QWidget *paren
 	Image4DSimple* p4DImage = callback.getImage(oldwin);
 	if (!p4DImage)
 	{
-		QMessageBox::information(0, "Cloning", QObject::tr("No image is open."));
+		QMessageBox::information(0, "WaveletTransform", QObject::tr("No image is open."));
 		return;
 	}
 	double* data1dD = channelToDoubleArray(p4DImage, 1);
@@ -602,8 +588,12 @@ void WaveletPlugin::WaveletTransform(V3DPluginCallback &callback, QWidget *paren
 	int numScales = 2;
  	//compute wavelet scales
  	double** resTab = NULL;
-	try { 		time_t seconds0 = time (NULL);
- 			resTab = b3WaveletScales(data1dD, szx, szy, szz, numScales);
+	try { 	
+			time_t seconds0 = time (NULL);
+ 			if (szz>1)
+ 				resTab = b3WaveletScales(data1dD, szx, szy, szz, numScales);
+ 			else
+ 				resTab = b3WaveletScales2D(data1dD, szx, szy, numScales);
  			time_t seconds1 = time (NULL);
  			cout<<"Computation time = "<<(seconds1-seconds0);
  			}
@@ -613,6 +603,7 @@ void WaveletPlugin::WaveletTransform(V3DPluginCallback &callback, QWidget *paren
  		cout<<e.what()<<"\n";
  		return;
  	}
+
  	
  	//compute waveletCoefficients
  	double* lowPassResidual = new double[N];
@@ -659,7 +650,7 @@ void WaveletPlugin::WaveletTransform(V3DPluginCallback &callback, QWidget *paren
  		free(resTab[j]);
  	}
 	delete(resTab);
-	
+
 	//output low pass image
 	rescaleForDisplay(lowPassResidual, lowPassResidual, N, p4DImage->datatype);
 	unsigned char* dataOut1dL = doubleArrayToCharArray(lowPassResidual, N, p4DImage->datatype);
