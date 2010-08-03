@@ -586,7 +586,7 @@ void WaveletPlugin::WaveletTransform(V3DPluginCallback &callback, QWidget *paren
 	try { 	
 			time_t seconds0 = time (NULL);
  			if (szz>1)
- 				resTab = b3WaveletScales(data1dD, szx, szy, szz, numScales);
+ 				resTab = b3WaveletScalesOptimized(data1dD, szx, szy, szz, numScales);
  			else
  				resTab = b3WaveletScales2D(data1dD, szx, szy, numScales);
  			time_t seconds1 = time (NULL);
