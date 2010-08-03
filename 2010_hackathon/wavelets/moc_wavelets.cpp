@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'wavelets.h'
 **
-** Created: Tue Aug 3 16:32:11 2010
+** Created: Tue Aug 3 16:57:39 2010
 **      by: The Qt Meta Object Compiler version 61 (Qt 4.5.2)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ static const uint qt_meta_data_WaveletPlugin[] = {
        2,       // revision
        0,       // classname
        0,    0, // classinfo
-      13,   12, // methods
+      10,   12, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -39,9 +39,6 @@ static const uint qt_meta_data_WaveletPlugin[] = {
      159,   14,   14,   14, 0x0a,
      179,   14,   14,   14, 0x0a,
      206,   14,   14,   14, 0x0a,
-     245,  229,   14,   14, 0x0a,
-     282,  229,   14,   14, 0x0a,
-     315,  229,   14,   14, 0x0a,
 
        0        // eod
 };
@@ -53,10 +50,7 @@ static const char qt_meta_stringdata_WaveletPlugin[] = {
     "dev1ButtonPressed()\0dev2ButtonPressed()\0"
     "dev3ButtonPressed()\0dev4ButtonPressed()\0"
     "detectSpotsButtonPressed()\0"
-    "denoiseButtonPressed()\0callback,parent\0"
-    "Cloning(V3DPluginCallback&,QWidget*)\0"
-    "FFT(V3DPluginCallback&,QWidget*)\0"
-    "WaveletTransform(V3DPluginCallback&,QWidget*)\0"
+    "denoiseButtonPressed()\0"
 };
 
 const QMetaObject WaveletPlugin::staticMetaObject = {
@@ -98,12 +92,9 @@ int WaveletPlugin::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 7: dev4ButtonPressed(); break;
         case 8: detectSpotsButtonPressed(); break;
         case 9: denoiseButtonPressed(); break;
-        case 10: Cloning((*reinterpret_cast< V3DPluginCallback(*)>(_a[1])),(*reinterpret_cast< QWidget*(*)>(_a[2]))); break;
-        case 11: FFT((*reinterpret_cast< V3DPluginCallback(*)>(_a[1])),(*reinterpret_cast< QWidget*(*)>(_a[2]))); break;
-        case 12: WaveletTransform((*reinterpret_cast< V3DPluginCallback(*)>(_a[1])),(*reinterpret_cast< QWidget*(*)>(_a[2]))); break;
         default: ;
         }
-        _id -= 13;
+        _id -= 10;
     }
     return _id;
 }
