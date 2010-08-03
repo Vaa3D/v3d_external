@@ -15,13 +15,19 @@
 #ifndef EXTRAFILTERSPLUGIN_H
 #define EXTRAFILTERSPLUGIN_H
 
+#define USING_FFT 0 // Do not compile for FFT
+//#define USING_FFT 1 // compile for FFT
+
 
 #include <v3d_interface.h>
 #include <QtGui>
 #include <QtCore>
 #include <list>
 #include <v3d_basicdatatype.h>
+
+#if USING_FFT
 #include <fftw3.h>
+#endif
 
 #include "scaleinfo.h"
 #include "ioV3dUtils.h"
@@ -74,6 +80,12 @@ public:
 
 	void initGUI( V3DPluginCallback &callback, QWidget *parent);
 
+	void Cloning(V3DPluginCallback &callback, QWidget *parent);
+	#if USING_FFT
+	void FFT(V3DPluginCallback &callback, QWidget *parent);
+	#endif
+	void WaveletTransform(V3DPluginCallback &callback, QWidget *parent);
+
 public slots:
 	void cancel();
 	void sliderChange( int value );
@@ -86,9 +98,7 @@ public slots:
 	void detectSpotsButtonPressed();
 	void denoiseButtonPressed();
 	
-	void Cloning(V3DPluginCallback &callback, QWidget *parent);
-	void FFT(V3DPluginCallback &callback, QWidget *parent);
-	void WaveletTransform(V3DPluginCallback &callback, QWidget *parent);
+
 };
 
 #endif

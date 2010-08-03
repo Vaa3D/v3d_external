@@ -23,6 +23,7 @@
 #include "scaleinfo.h"
 #include <v3d_basicdatatype.h>
 #include "../basic_c_fun/basic_landmark.h"
+#include "waveletConfigException.h"
 
 Q_EXPORT_PLUGIN2(newwindow, WaveletPlugin);
 
@@ -49,7 +50,9 @@ void WaveletPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback
     }
     if (menu_name == tr("FFT"))
     {
+#if USING_FFT
     	FFT(callback, parent);
+#endif
     }
     if (menu_name == tr("Wavelet Transform"))
     {
@@ -218,78 +221,44 @@ void WaveletPlugin::copyOriginalImage()
  */
 void WaveletPlugin::restoreOriginalImage()
 {
-
 	unsigned char *bufferSource = originalImageCopy->getRawData();
-
-	//WORKS
-	//unsigned char *bufferCurrent = sourceImage->getRawData();
-	//memcpy( bufferCurrent , bufferSource , originalImageCopy->getTotalBytes() );
-
-
-	//DONT WORK
 	unsigned char *bufferCopy = new unsigned char[originalImageCopy->getTotalBytes()];
+
 	memcpy( bufferCopy , bufferSource , originalImageCopy->getTotalBytes() );
-	
-	v3dhandle sourceWindowN = myCallback->currentImageWindow();
-	Image4DSimple* p4DImageN = myCallback->getImage(sourceWindow);
-	
-	printf("\n\n ACTIVE image %p \n\n", p4DImageN);
-	printf("\n\n ACTIVE window %p \n\n", sourceWindowN);
-	
-	printf("\n\n SOURCE image %p \n\n", sourceImage);
-	bool b = sourceImage->setNewRawDataPointer( bufferCopy );
-	printf("\n\nSUCCESS SET DATA %d\n\n", b);
-	unsigned char *newBuffer = sourceImage->getRawData();
-	//POINTER COPY SUCCEEDS
-	if (bufferCopy==newBuffer)
-		printf("\n\nWORKS\n\n");
-	else
-		printf("\n\nDONT WORK\n\n");
-	
-	v3dhandle sourceWindowN2 = myCallback->currentImageWindow();
-	Image4DSimple* p4DImageN2 = myCallback->getImage(sourceWindowN2);
-	printf("\n\n ACTIVE image %p \n\n", p4DImageN2);
-	printf("\n\n ACTIVE window %p \n\n", sourceWindowN2);
-	//OK; datatype unchanged
-	printf("\n\nDATATYPE  %d\n\n", p4DImageN2->getDatatype()==originalImageCopy->getDatatype());
 
-/*	v3dhandle newWindow = myCallback->newImageWindow();
-	myCallback->setImage( newWindow , originalImageCopy);
-	myCallback->updateImageWindow(newWindow);*/
+	printf("%d \n", originalImageCopy->getTotalBytes() );
+	printf("%d \n", originalImageCopy->getXDim() );
+	printf("%d \n", originalImageCopy->getYDim() );
+	printf("%d \n", originalImageCopy->getZDim() );
+	printf("%d \n", originalImageCopy->getCDim() );
+	printf("%d \n", originalImageCopy->getDatatype() );
+	printf("p sourceimage %p \n", sourceImage );
 
-	//unsigned char *bufferSource = originalImageCopy->getRawData();
-	
-	
-	//printf("buffer Source %p", bufferSource);
-	//printf("\n\n Bytes= %d,  size %d\n\n", originalImageCopy->getTotalBytes()*sizeof(unsigned char), originalImageCopy->sz0*originalImageCopy->sz1*originalImageCopy->sz2*originalImageCopy->sz3);
-	
- 	//unsigned char *bufferCopy = new unsigned char[originalImageCopy->getTotalBytes()];
- 
-// 	memcpy( bufferCopy , bufferSource , originalImageCopy->getTotalBytes() );
-// 
-// 	printf("%d \n", originalImageCopy->getTotalBytes() );
-// 	printf("%d \n", originalImageCopy->getXDim() );
-// 	printf("%d \n", originalImageCopy->getYDim() );
-// 	printf("%d \n", originalImageCopy->getZDim() );
-// 	printf("%d \n", originalImageCopy->getCDim() );
-// 	printf("%d \n", originalImageCopy->getDatatype() );
-// 	printf("p sourceimage %p \n", sourceImage );
-// 
-// 	//sourceImage->setNewRawDataPointer( bufferCopy );
-// 
-// 
-	// bool success = sourceImage->setData(
-// 			bufferCopy ,
-// 			originalImageCopy->getXDim() ,
-// 			originalImageCopy->getYDim(),
-// 			originalImageCopy->getZDim(),
-// 			originalImageCopy->getCDim() ,
-// 			originalImageCopy->getDatatype()
-// 			);
-// 	if (success)
-// 	printf("---SUCCESS---\n");
-// 	else
-// 	printf("---FQILED---\n");
+	// This will work ( it is the workaround of bug with setData )
+
+	sourceImage->setXDim( originalImageCopy->getXDim() );
+	sourceImage->setYDim( originalImageCopy->getYDim() );
+	sourceImage->setZDim( originalImageCopy->getZDim() );
+	sourceImage->setCDim( originalImageCopy->getCDim() );
+	sourceImage->setDatatype( originalImageCopy->getDatatype() );
+
+	printf("%d source" , sourceImage->getTotalBytes() );
+	printf("%d original" , originalImageCopy->getTotalBytes() );
+
+	memcpy( sourceImage->getRawData() , originalImageCopy->getRawData() ,  originalImageCopy->getTotalBytes() );
+
+
+	//this will crash
+	/*
+	sourceImage->setData(
+				bufferCopy ,
+				originalImageCopy->getXDim() ,
+				originalImageCopy->getYDim(),
+				originalImageCopy->getZDim(),
+				originalImageCopy->getCDim() ,
+				originalImageCopy->getDatatype()
+				);
+	*/
 
 	myCallback->updateImageWindow(sourceWindow);
 
@@ -511,6 +480,7 @@ void WaveletPlugin::dev4ButtonPressed()
 	printf("dev 4 finished\n");
 }
 
+#if USING_FFT
 void WaveletPlugin::FFT(V3DPluginCallback &callback, QWidget *parent)
 {
 	v3dhandle oldwin = callback.currentImageWindow();
@@ -582,6 +552,7 @@ void WaveletPlugin::FFT(V3DPluginCallback &callback, QWidget *parent)
     callback.updateImageWindow(newwin);
 	free(data1dD);
 }
+#endif
 
 void WaveletPlugin::Cloning(V3DPluginCallback &callback, QWidget *parent)
 {
