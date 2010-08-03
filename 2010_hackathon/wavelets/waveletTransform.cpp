@@ -3,38 +3,32 @@
 
 double** b3WaveletScalesOptimized(double* dataIn, int width, int height, int depth, int numScales) throw (WaveletConfigException)
 {
-if (numScales < 1)
+	if (numScales < 1)
  	{
 			throw WaveletConfigException("Invalid number of wavelet scales. Number of scales should be an integer >=1");
  	}
+ 	//check that image dimensions complies with the number of chosen scales
+ 	int minSize = 5+(numScales-1)*4;
+ 	if (width < minSize || height < minSize || depth < minSize)
+  	{
+  		char* buffer = new char[150];
+  		sprintf(buffer, "Number of scales too large for the size of the image. These settings require: width>%d, height >%d and depth >%d", minSize-1, minSize-1, minSize-1);
+  		throw WaveletConfigException(buffer);
+  	}
+ 	
  	//TODO: check dimensions vs number of scales
 			//B3 spline wavelet configuration
-			//int pad[] = {2, 4, 8, 16, 32, 64, 128, 256, 512};
-			//int step[] = {1, 2, 4, 8, 16, 32, 64, 128, 256};
 			double w2 =  ((double)1)/16;;
 			double w1 = ((double)1)/4;;
 			double w0 = ((double)3)/8;;
 		
 			int s;
-			int padMax = pow(2, numScales);
 			int stepS;
 			int wh = width*height;
 			int whd = wh*depth;
 			double** resArray = new double*[numScales];
-			//double* array1 = dataIn;
-			//double* arrayX = new double[whd];
- 			//double* arrayY = new double[whd];
- 			//double* arrayZ = new double[whd];
  			double* prevArray = dataIn;
  			double* currentArray = new double [whd];
- 			
- 			//compute the maximum scale in z direction
- 			int maxSz = 0;
- 			for (s = 1; s <= numScales; s++)
- 			{
- 				if(depth >= 2*pow(2, s))
- 					maxSz = s;
- 			}
  
  			int cntX, cntY, cntZ;
  			for (s = 1; s <= numScales; s++)//for each scale
@@ -222,11 +216,6 @@ if (numScales < 1)
  				currentArray = prevArray;
  				prevArray = tmp;
  				double* arrayZiter;
- 				if(depth<=2*pow(2, s-1))
- 				{
- 					stepS = pow(2, maxSz-1);
- 					sw = stepS*width;
- 				}
  				int swh = sw*height;
  				for (int x=0; x<width; x++)
  				{
@@ -320,17 +309,21 @@ double** b3WaveletScales(double* dataIn, int width, int height, int depth, int n
  	{
 			throw WaveletConfigException("Invalid number of wavelet scales. Number of scales should be an integer >=1");
  	}
- 	//TODO: check dimensions vs number of scales
+ 	//check that image dimensions complies with the number of chosen scales
+ 	int minSize = 5+(numScales-1)*4;
+ 	if (width < minSize || height < minSize || depth < minSize)
+  	{
+  		char* buffer = new char[150];
+  		sprintf(buffer, "Number of scales too large for the size of the image. These settings require: width>%d, height >%d and depth >%d", minSize-1, minSize-1, minSize-1);
+  		throw WaveletConfigException(buffer);
+  	}
 		
 			//B3 spline wavelet configuration
-			int pad[] = {2, 4, 8, 16, 32, 64, 128, 256, 512};
-			int step[] = {1, 2, 4, 8, 16, 32, 64, 128, 256};
 			double w2 =  ((double)1)/16;;
 			double w1 = ((double)1)/4;;
 			double w0 = ((double)3)/8;;
 		
 			int s;
-			int padMax = pad[numScales-1];
 			int stepS;
 			int wh = width*height;
 			int whd = wh*depth;
@@ -341,17 +334,11 @@ double** b3WaveletScales(double* dataIn, int width, int height, int depth, int n
  			double* arrayY = new double[whd];
  			double* arrayZ = new double[whd];
  
- 			int maxSz = 0;
- 			for (s = 1; s <= numScales; s++)
- 			{
- 				if(depth >= 2*pad[s-1]) maxSz = s;
- 			}
- 
  			int cntX, cntY, cntZ;
  			for (s = 1; s <= numScales; s++)//for each scale
  			{
+	 			stepS = pow(2, s-1);
  				//convolve along the x direction
- 				stepS = step[s-1];
  				int idx0 = 0;
  				int w2idx1;
  				int w1idx1;
@@ -492,11 +479,6 @@ double** b3WaveletScales(double* dataIn, int width, int height, int depth, int n
  						}
  					}
  				}
- 					if(depth <= 2*pad[s-1])
- 					{
- 						stepS = step[maxSz-1];
- 						sw = stepS*width;
- 					}
  					int swh = sw*height;
  					for (int x=0; x<width; x++)
  					{
@@ -581,17 +563,21 @@ double** b3WaveletScales2D(double* dataIn, int width, int height, int numScales)
  	{
 			throw WaveletConfigException("Invalid number of wavelet scales. Number of scales should be an integer >=1");
  	}
- 	//TODO: check dimensions vs number of scales
+ 	//check that image dimensions complies with the number of chosen scales
+ 	int minSize = 5+(numScales-1)*4;
+ 	if (width < minSize || height < minSize)
+  	{
+  		char* buffer = new char[150];
+  		sprintf(buffer, "Number of scales too large for the size of the image. These settings require: width>%d, height >%d", minSize-1, minSize-1);
+  		throw WaveletConfigException(buffer);
+  	}
 		
 			//B3 spline wavelet configuration
-			int pad[] = {2, 4, 8, 16, 32, 64, 128, 256, 512};
-			int step[] = {1, 2, 4, 8, 16, 32, 64, 128, 256};
 			double w2 =  ((double)1)/16;;
 			double w1 = ((double)1)/4;;
 			double w0 = ((double)3)/8;;
 		
 			int s;
-			int padMax = pad[numScales-1];
 			int stepS;
 			int wh = width*height;
 			double** resArray = new double*[numScales];
@@ -603,8 +589,8 @@ double** b3WaveletScales2D(double* dataIn, int width, int height, int numScales)
  			 int cntX, cntY;
  			for (s = 1; s <= numScales; s++)//for each scale
  			{
- 				//convolve along the x direction
- 				stepS = step[s-1];
+	 			stepS = pow(2, s-1);
+ 				//convolve along the x direction			
  				int idx0 = 0;
  				int w2idx1;
  				int w1idx1;

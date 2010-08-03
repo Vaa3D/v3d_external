@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'wavelets.h'
 **
-** Created: Tue Aug 3 20:03:44 2010
+** Created: Wed Aug 4 00:09:26 2010
 **      by: The Qt Meta Object Compiler version 61 (Qt 4.5.2)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ static const uint qt_meta_data_WaveletPlugin[] = {
        2,       // revision
        0,       // classname
        0,    0, // classinfo
-      10,   12, // methods
+      11,   12, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -39,6 +39,7 @@ static const uint qt_meta_data_WaveletPlugin[] = {
      159,   14,   14,   14, 0x0a,
      179,   14,   14,   14, 0x0a,
      206,   14,   14,   14, 0x0a,
+     229,   24,   14,   14, 0x0a,
 
        0        // eod
 };
@@ -50,7 +51,7 @@ static const char qt_meta_stringdata_WaveletPlugin[] = {
     "dev1ButtonPressed()\0dev2ButtonPressed()\0"
     "dev3ButtonPressed()\0dev4ButtonPressed()\0"
     "detectSpotsButtonPressed()\0"
-    "denoiseButtonPressed()\0"
+    "denoiseButtonPressed()\0sliderResidualChange(int)\0"
 };
 
 const QMetaObject WaveletPlugin::staticMetaObject = {
@@ -92,9 +93,10 @@ int WaveletPlugin::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 7: dev4ButtonPressed(); break;
         case 8: detectSpotsButtonPressed(); break;
         case 9: denoiseButtonPressed(); break;
+        case 10: sliderResidualChange((*reinterpret_cast< int(*)>(_a[1]))); break;
         default: ;
         }
-        _id -= 10;
+        _id -= 11;
     }
     return _id;
 }

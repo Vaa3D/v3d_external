@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'scaleinfo.h'
 **
-** Created: Tue Aug 3 18:09:19 2010
+** Created: Wed Aug 4 00:09:29 2010
 **      by: The Qt Meta Object Compiler version 61 (Qt 4.5.2)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,19 +23,21 @@ static const uint qt_meta_data_ScaleInfo[] = {
        2,       // revision
        0,       // classname
        0,    0, // classinfo
-       1,   12, // methods
+       2,   12, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
 
  // slots: signature, parameters, type, tag, flags
       11,   10,   10,   10, 0x0a,
+      39,   33,   10,   10, 0x0a,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_ScaleInfo[] = {
-    "ScaleInfo\0\0enableButtonPressed()\0"
+    "ScaleInfo\0\0enableButtonPressed()\0value\0"
+    "sliderChange(int)\0"
 };
 
 const QMetaObject ScaleInfo::staticMetaObject = {
@@ -64,9 +66,10 @@ int ScaleInfo::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
         case 0: enableButtonPressed(); break;
+        case 1: sliderChange((*reinterpret_cast< int(*)>(_a[1]))); break;
         default: ;
         }
-        _id -= 1;
+        _id -= 2;
     }
     return _id;
 }

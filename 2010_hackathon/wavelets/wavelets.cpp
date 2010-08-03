@@ -741,7 +741,7 @@ void WaveletPlugin::WaveletTransform(V3DPluginCallback &callback, QWidget *paren
  			else
  				resTab = b3WaveletScales2D(data1dD, szx, szy, numScales);
  			time_t seconds1 = time (NULL);
- 			printf("Computation time : %d" , (seconds1-seconds0) );
+ 			printf("\n Computation time : %d \n" , (seconds1-seconds0) );
  			}
  	catch(WaveletConfigException e)
  	{
