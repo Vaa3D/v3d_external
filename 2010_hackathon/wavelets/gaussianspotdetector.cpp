@@ -1,7 +1,19 @@
+/** 
+ * Written by
+ *
+ * 03-08-2010
+ *
+ * Ihor Smal
+ * Nicolas Chenouard
+ * Fabrice de Chaumont
+ *
+ * 
+ * This code is under GPL License
+ */
+
 
 #include <QtGui>
 #include <v3d_utils.h>
-//#include "../basic_c_fun/basic_landmark.h"
 #include "gaussianspotdetector.h"
 
 //Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
@@ -32,7 +44,7 @@ void thresholdWaveletCoeficients(double* coefs, int N, double sigma) {
 	}
 	var /= (N-1);
 	var = sqrt(var);
-	for (int i = 0; i < N; i++) {
+	for (V3DLONG i = 0; i < N; i++) {
 		coefs[i] = (abs(coefs[i]) >= var * sigma) ? coefs[i] : 0;
 	}
 	
@@ -67,14 +79,14 @@ void GaussianSpotDetector::WaveletsFilter(V3DPluginCallback &callback, QWidget *
 	if (okc) {
 		n_scales = QInputDialog::getInteger(parent, tr("Wavelet Filter Parameters"),
 										 tr("Enter number of scales: "),
-										 3, 1, 4, 1, &ok1);
+										 3, 1, 7, 1, &ok1);
 	} else 
 		return;
 	
 	if (ok1) {
 		sigma = QInputDialog::getDouble(parent, tr("Wavelet Filter Parameters"),
 										 tr("times stdev of wavelet coefs: "),
-										 2.0, 0.01, 5.0, 3, &ok2);
+										 2.0, 0.0, 5.0, 3, &ok2);
 	} else
 		return;
 	
@@ -83,7 +95,6 @@ void GaussianSpotDetector::WaveletsFilter(V3DPluginCallback &callback, QWidget *
 		{
 		
 		// get 1d double array
-		int c = 1; 
 		double* data1dD = v3d_utils::channelToDoubleArray(p4DImage, c);
 		
 		// FFTW
@@ -104,15 +115,15 @@ void GaussianSpotDetector::WaveletsFilter(V3DPluginCallback &callback, QWidget *
 		//execute plan
 		fftw_execute(p);
 
-			double** lowpassimage = new double* [n_scales]; 
+			double* lowpassimage = new double[N]; 
+			double* rec_image = new double[N];
+			
 			double** w_coef = new double* [n_scales];
 			fftw_complex** mask_f = new fftw_complex* [n_scales];
 			w_coef[0] = new double[n_scales * N]; 
-			lowpassimage[0] = new double[n_scales * N]; 
 			mask_f[0] = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * n_scales* nOut);  
 			for (int i = 1; i < n_scales; i++) {	
 				w_coef[i] = w_coef[i-1] + N;
-				lowpassimage[i] = lowpassimage[i-1] + N;
 				mask_f[i] = mask_f[i-1] + nOut;
 			}
 				
@@ -120,9 +131,9 @@ void GaussianSpotDetector::WaveletsFilter(V3DPluginCallback &callback, QWidget *
 			// create and transform the B3 spline kernel
 			//double b3_1d[] = {0.0625, 0.25, 0.375, 0.25, 0.0625};
 			double* b_mask = new double[N];
-			for (int k = 0; k < szz; k++) {
-				for (int j = 0; j < szy; j++) {
-					for (int i = 0; i < szx; i++) {
+			for (V3DLONG k = 0; k < szz; k++) {
+				for (V3DLONG j = 0; j < szy; j++) {
+					for (V3DLONG i = 0; i < szx; i++) {
 						b_mask[szx*szy*k + szx*j +i] = 0;
 					}
 				}
@@ -132,7 +143,7 @@ void GaussianSpotDetector::WaveletsFilter(V3DPluginCallback &callback, QWidget *
 
 				int nn = pow(2, sk) - 1;
 				double b3_1d_e[5+nn*4];
-				int center = (5+nn*4)/2;
+				V3DLONG center = (5+nn*4)/2;
 				b3_1d_e[center] = 0.375;
 				int iii = 0;
 				for (int ii = 0; ii < nn; ii++) {	
@@ -153,10 +164,11 @@ void GaussianSpotDetector::WaveletsFilter(V3DPluginCallback &callback, QWidget *
 				b3_1d_e[center - iii] = 0.0625;	
 				
 				
-				for (int k = szz/2-2*nn-2; k <= szz/2+2*nn+2; k++) {
-					for (int j = szy/2-2*nn-2; j < szy/2+2*nn+2; j++) {
-						for (int i = szx/2-2*nn-2; i < szx/2+2*nn+2; i++) {
-							b_mask[szx*szy*k + szx*j +i] = b3_1d_e[i - szx/2+2*nn+2]*
+				for (V3DLONG k = szz/2-2*nn-2; k <= szz/2+2*nn+2; k++) {
+					for (V3DLONG j = szy/2-2*nn-2; j < szy/2+2*nn+2; j++) {
+						for (V3DLONG i = szx/2-2*nn-2; i < szx/2+2*nn+2; i++) {
+							if (k >=0 && k < szz && j >=0 && j < szy && i >=0 && i < szx)
+								b_mask[szx*szy*k + szx*j +i] = b3_1d_e[i - szx/2+2*nn+2]*
 														   b3_1d_e[j - szy/2+2*nn+2]*
 														   b3_1d_e[k - szz/2+2*nn+2];
 						}
@@ -170,7 +182,7 @@ void GaussianSpotDetector::WaveletsFilter(V3DPluginCallback &callback, QWidget *
 
 				// filter
 				if (sk > 0) {
-					for (int i = 0; i < nOut; i++) {
+					for (V3DLONG i = 0; i < nOut; i++) {
 						double a0 = mask_f[sk][i][0];
 						double a1 = mask_f[sk][i][1];
 						double a = sqrt(a0 * a0 + a1 * a1);
@@ -178,7 +190,7 @@ void GaussianSpotDetector::WaveletsFilter(V3DPluginCallback &callback, QWidget *
 						mask_f[sk][i][1] = a * mask_f[sk-1][i][1];
 					}
 				} else {
-					for (int i = 0; i < nOut; i++) {
+					for (V3DLONG i = 0; i < nOut; i++) {
 						double a0 = mask_f[sk][i][0];
 						double a1 = mask_f[sk][i][1];
 						double a = sqrt(a0 * a0 + a1 * a1);
@@ -194,27 +206,27 @@ void GaussianSpotDetector::WaveletsFilter(V3DPluginCallback &callback, QWidget *
 			for (int sk = 0; sk < n_scales; sk++) {	
 
 				// inverse FFT
-				p = fftw_plan_dft_c2r_3d(szz, szy, szx, mask_f[sk], lowpassimage[sk], FFTW_ESTIMATE);
+				p = fftw_plan_dft_c2r_3d(szz, szy, szx, mask_f[sk], rec_image, FFTW_ESTIMATE);
 				fftw_execute(p);
 				// FFTW-specific normalization 
 				if (sk > 0) {
-					for (int i = 0; i < N; i++) {
-						lowpassimage[sk][i] /= N;
-						w_coef[sk][i] = lowpassimage[sk-1][i] - lowpassimage[sk][i];
+					for (V3DLONG i = 0; i < N; i++) {
+						w_coef[sk][i] = lowpassimage[i] - rec_image[i] / N;
+						lowpassimage[i] = rec_image[i] / N;
 					}
 				} else {
-					for (int i = 0; i < N; i++) {
-						lowpassimage[sk][i] /= N;
-						w_coef[sk][i] = data1dD[i] - lowpassimage[sk][i];
+					for (V3DLONG i = 0; i < N; i++) {
+						lowpassimage[i] = rec_image[i] / N;
+						w_coef[sk][i] = data1dD[i] - lowpassimage[i];
 					}
 				}
 				thresholdWaveletCoeficients(w_coef[sk], N, sigma);
 			}
 			
 			// reconstruct image 
-			double* rec_image = new double[N];
-			for (int i = 0; i < N; i++) {
-				rec_image[i] = lowpassimage[n_scales-1][i];
+			
+			for (V3DLONG i = 0; i < N; i++) {
+				rec_image[i] = lowpassimage[i];
 				//reconstruction without the firs scale
 				for (int sk = 1; sk < n_scales; sk++) {
 						rec_image[i] += w_coef[sk][i];
@@ -231,12 +243,14 @@ void GaussianSpotDetector::WaveletsFilter(V3DPluginCallback &callback, QWidget *
 				outImage.setData(dataOut1d, p4DImage->sz0, p4DImage->sz1, p4DImage->sz2, 1, p4DImage->datatype);
 				v3dhandle newwin = callback.newImageWindow();
 				callback.setImage(newwin, &outImage);
-				callback.setImageName(newwin,"Low pass scale");
+				char buffer [50];
+				sprintf(buffer, "wavelet scale %d", sk+1);
+				callback.setImageName(newwin,buffer);
 			}
 
 			// output image low pass image
 			Image4DSimple outImage;
-			unsigned char* dataOut1d = v3d_utils::doubleArrayToCharArray(lowpassimage[n_scales-1], N, p4DImage->datatype);
+			unsigned char* dataOut1d = v3d_utils::doubleArrayToCharArray(lowpassimage, N, p4DImage->datatype);
 			outImage.setData(dataOut1d, p4DImage->sz0, p4DImage->sz1, p4DImage->sz2, 1, p4DImage->datatype);
 			v3dhandle newwin = callback.newImageWindow();
 			callback.setImage(newwin, &outImage);
@@ -261,16 +275,14 @@ void GaussianSpotDetector::WaveletsFilter(V3DPluginCallback &callback, QWidget *
 			delete b_mask;
 			b_mask = NULL;
 			delete rec_image;
-			delete [] lowpassimage[0];
-			delete [] lowpassimage;
+			delete lowpassimage;
 			rec_image = 0;
 			lowpassimage = 0;
 			
 			
 			delete [] w_coef[0];
 			delete [] w_coef;
-			delete [] mask_f[0];
-			delete [] mask_f;
+			w_coef = 0;
 		
 			free(data1dD);
 			
@@ -363,13 +375,13 @@ void GaussianSpotDetector::GaussianFilter(V3DPluginCallback &callback, QWidget *
 		double* mask = new double[nOut];
 		const double pi = 3.141592;
 		
-		for (int k = -szz/2; k <= szz/2; k++) {
-			for (int j = -szy/2; j <= szy/2; j++) {
-				for (int i = 0; i <= szx/2; i++) {
-					int x = i; 
-					int y = (j + szy) % szy;
-					int z = (k + szz) % szz;
-					int index = nxOut * szy * z + nxOut * y + x;
+		for (V3DLONG k = -szz/2; k <= szz/2; k++) {
+			for (V3DLONG j = -szy/2; j <= szy/2; j++) {
+				for (V3DLONG i = 0; i <= szx/2; i++) {
+					V3DLONG x = i; 
+					V3DLONG y = (j + szy) % szy;
+					V3DLONG z = (k + szz) % szz;
+					V3DLONG index = nxOut * szy * z + nxOut * y + x;
 					mask[index] = exp(-(k * k) * sigmaz * sigmaz * 2 * pi * pi / (szz * szz)
 								  -(j * j) * sigmay * sigmay * 2 * pi * pi / (szy * szy)
 								  -(i * i) * sigmax * sigmax * 2 * pi * pi / (szx * szx)); 
@@ -378,7 +390,7 @@ void GaussianSpotDetector::GaussianFilter(V3DPluginCallback &callback, QWidget *
 		}
 		
 		// filter
-		for (int i = 0; i < nOut; i++) {
+		for (V3DLONG i = 0; i < nOut; i++) {
 			// 		double a0 = out[i][0];
 			//		double a1 = out[i][1];
 			//		double a = sqrt(a0 * a0 + a1 * a1);
@@ -394,7 +406,7 @@ void GaussianSpotDetector::GaussianFilter(V3DPluginCallback &callback, QWidget *
 		fftw_execute(p);
 	
 		// FFTW-specific normalization 
-		for (int i = 0; i < N; i++) {
+		for (V3DLONG i = 0; i < N; i++) {
 			data1dD[i] /= N;
 		}
 	
