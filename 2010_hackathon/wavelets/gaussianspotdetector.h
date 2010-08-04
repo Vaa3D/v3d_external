@@ -1,9 +1,18 @@
-/* gaussianspotdetector.h
- * 2010-08-31: created by Ihor Smal and Nicolas Chenouard
- */
+/** 
+* Written by
+*
+* 03-08-2010
+*
+* Ihor Smal
+* Nicolas Chenouard
+* Fabrice de Chaumont
+*
+* 
+* This code is under GPL License
+*/
 
-#ifndef __HELLOWORLD_H__
-#define __HELLOWORLD_H__
+#ifndef __GAUSSIANSPOTDETECTOR_H__
+#define __GAUSSIANSPOTDETECTOR_H__
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,11 +35,8 @@ public:
 	QStringList funclist() const {return QStringList();}
 	void dofunc(const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output, QWidget *parent) {}
 
-	void Cloning(V3DPluginCallback &callback, QWidget *parent);
+	void WaveletsFilter(V3DPluginCallback &callback, QWidget *parent);
 	void GaussianFilter(V3DPluginCallback &callback, QWidget *parent);
-
-	double* channelToDoubleArray(Image4DSimple* inputImage, int channel);
-	unsigned char* doubleArrayToCharArray(double* dataD, int numVoxels, ImagePixelType dataType);
 };
 
 #endif
