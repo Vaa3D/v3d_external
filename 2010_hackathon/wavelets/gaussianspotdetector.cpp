@@ -22,16 +22,16 @@ Q_EXPORT_PLUGIN2(gaussianspotdetector, GaussianSpotDetector)
 
 QStringList GaussianSpotDetector::menulist() const
 {
-    return QStringList() <<tr("Gaussian Spot Detector (FFTW)")<<tr("Wavelet-based Spot Detector (FFTW)");  
+    return QStringList() <<tr("Gaussian Spot Detector (using FFTW)")<<tr("Wavelet Filtering (using FFTW)");  
 }
 
 void GaussianSpotDetector::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
 {
-	if (menu_name == tr("Gaussian Spot Detector (FFTW)"))
+	if (menu_name == tr("Gaussian Spot Detector (using FFTW)"))
     {
     	GaussianFilter(callback, parent);
     }
-	if (menu_name == tr("Wavelet-based Spot Detector (FFTW)"))
+	if (menu_name == tr("Wavelet Filtering (using FFTW)"))
     {
     	WaveletsFilter(callback, parent);
     }
@@ -249,6 +249,7 @@ void GaussianSpotDetector::WaveletsFilter(V3DPluginCallback &callback, QWidget *
 			}
 
 			// output image low pass image
+			v3d_utils::rescaleForDisplay(lowpassimage, lowpassimage, N, p4DImage->datatype);
 			Image4DSimple outImage;
 			unsigned char* dataOut1d = v3d_utils::doubleArrayToCharArray(lowpassimage, N, p4DImage->datatype);
 			outImage.setData(dataOut1d, p4DImage->sz0, p4DImage->sz1, p4DImage->sz2, 1, p4DImage->datatype);
@@ -415,7 +416,7 @@ void GaussianSpotDetector::GaussianFilter(V3DPluginCallback &callback, QWidget *
 		fftw_free(out);
 	
 		// connected components ////////////////////////////////////////////////////////// 
-		LandmarkList cmList = v3d_utils::getConnectedComponents(data1dD, szx, szy, szz, threshold);
+		LandmarkList cmList = v3d_utils::getConnectedComponents2D(data1dD, szx, szy, szz, threshold);
 	
 		// output image 
 		Image4DSimple outImage;

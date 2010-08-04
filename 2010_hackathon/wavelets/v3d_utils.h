@@ -7,10 +7,11 @@
 class v3d_utils
 {
 public:
-	static unsigned char* doubleArrayToCharArray(double* data1dD, int numVoxels, ImagePixelType dataType);
+	static unsigned char* doubleArrayToCharArray(double* data1dD, V3DLONG numVoxels, ImagePixelType dataType);
 	static double* channelToDoubleArray(Image4DSimple* inputImage, int channel);
-	static LandmarkList getConnectedComponents(double* data1dD, int szx, int szy, int szz, double threshold);
-	static void rescaleForDisplay(double* input, double* output, int numVoxels, ImagePixelType dataType);
+	static LandmarkList getConnectedComponents(double* data1dD, V3DLONG szx, V3DLONG szy, V3DLONG szz, double threshold);
+	static LandmarkList getConnectedComponents2D(double* data1dD, V3DLONG szx, V3DLONG szy, V3DLONG szz, double threshold);
+	static void rescaleForDisplay(double* input, double* output, V3DLONG numVoxels, ImagePixelType dataType);
 ;
 
 };
