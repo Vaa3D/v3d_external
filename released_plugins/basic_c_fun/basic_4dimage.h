@@ -12,7 +12,8 @@
  * Last edit: 2010-May-30: add the value_at() function for Image4DProxy class
  * Last edit: 2010-Jun-26: add three new members rez_x, rez_y, and rez_z which indicate the pixel sizes and thus the anisotropy of the image
  *
- * Last edit: 2010-Aug-1: add a function to determine if the data buffers of two images are exactly the same (but not their contents!) 
+ * Last edit: 2010-Aug-1: add a function to determine if the data buffers of two images are exactly the same (but not their contents!)
+ * Last edit: 2010-Aug-3: add the put_at() function for Image4DProxy class
  *******************************************************************************************
  */
 
@@ -43,7 +44,7 @@ public:
 		timepacktype = TIME_PACK_NONE;
 		imgSrcFile[0] = '\0';
 		b_error = 0;
-		rez_x = rez_y = rez_z = 1;  
+		rez_x = rez_y = rez_z = 1;
 	}
 	~Image4DSimple() {
 		cleanExistData();
@@ -57,7 +58,7 @@ public:
 		timepacktype = TIME_PACK_NONE;
 		imgSrcFile[0] = '\0';
 		b_error = 0;
-		rez_x = rez_y = rez_z = 1; 
+		rez_x = rez_y = rez_z = 1;
 	}
 
 	//main interface to the data
@@ -83,9 +84,9 @@ public:
 		}
 	}
 	V3DLONG getTotalBytes() {return getUnitBytes()*sz0*sz1*sz2*sz3;}
-	unsigned char * getRawDataAtChannel(V3DLONG cid) 
+	unsigned char * getRawDataAtChannel(V3DLONG cid)
 	{
-		V3DLONG myid = cid; if (myid<0) myid=0; else if (myid>=sz3) myid = sz3-1; 
+		V3DLONG myid = cid; if (myid<0) myid=0; else if (myid>=sz3) myid = sz3-1;
 		return data1d + myid*getTotalUnitNumberPerChannel()*getUnitBytes();
 	}
 	int isSuccess() {if (sz0<=0 || sz1<=0 || sz2<=0 || sz3<=0) b_error=1; return !b_error;}
@@ -105,7 +106,7 @@ public:
 	bool setRezX(double a) { if (a<=0) return false; rez_x = a; return true;}
 	bool setRezY(double a) { if (a<=0) return false; rez_y = a; return true;}
 	bool setRezZ(double a) { if (a<=0) return false; rez_z = a; return true;}
-	
+
 	//this function is the main place to call if you want to set your own 1d pointer data to this data structure
 	bool setData(unsigned char *p, V3DLONG s0, V3DLONG s1, V3DLONG s2, V3DLONG s3, ImagePixelType dt)
 	{
@@ -154,7 +155,7 @@ public:
           {
             if (getTotalBytes() == p->getTotalBytes())
               return false;
-	    else return true;	
+	    else return true;
           }
 	}
 
@@ -162,6 +163,7 @@ public:
 
 bool convert_data_to_8bit(void * &img, V3DLONG * sz, int datatype);
 
+// Image4DProxy for easy accessing pixels in Image4DSimple
 template<class T> class Image4DProxy
 {
 public:
@@ -224,6 +226,16 @@ public:
 		}
 		return v;
 	}
+	inline void put_at(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c, double v)
+	{
+		switch (su)
+		{
+			case 1: *at_uint8(x,y,z,c) = (uint8)v; break;
+			case 2: *at_uint16(x,y,z,c) = (uint16)v; break;
+			case 4: *at_float32(x,y,z,c) = (float32)v; break;
+			default: *at_uint8(x,y,z,c) = (uint8)v; break;
+		}
+	}
 };
 #define Image4DProxy_foreach(p, x,y,z,c) \
 for (V3DLONG c = 0; c < p.sc; c++) \
@@ -239,15 +251,15 @@ struct V3D_Image3DBasic
 	V3DLONG sz0, sz1, sz2;
 	ImagePixelType datatype;
 	V3DLONG cid; //the color channel in the original 4D image
-	
+
 	V3D_Image3DBasic() {data1d=0; sz0=sz1=sz2=0; datatype=V3D_UNKNOWN; cid=-1;}
 	bool setData(Image4DSimple *p, V3DLONG myid)
 	{
 		if (!p || !p->valid() || myid<0 || myid>=p->getCDim())
 			return false;
-		cid = myid; 
+		cid = myid;
 		data1d = p->getRawDataAtChannel(cid);
-		sz0 = p->getXDim(); sz1 = p->getYDim(); sz2 = p->getZDim();  
+		sz0 = p->getXDim(); sz1 = p->getYDim(); sz2 = p->getZDim();
 		datatype = p->getDatatype();
 		return true;
 	}
