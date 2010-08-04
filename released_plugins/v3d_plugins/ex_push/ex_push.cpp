@@ -19,7 +19,7 @@ QStringList ExPushPlugin::menulist() const
 {
     return QStringList()
 		<< tr("Close and Open 3D viewer and Push Image")
-		<< tr("Object")
+		<< tr("Push Object and Screenshot of global 3d viewer")
 		<< tr("Set time points")
 		<< tr("About");
 }
@@ -30,7 +30,7 @@ void ExPushPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback,
     {
     	dopush(callback, parent, 1);
     }
-	else if (menu_name == tr("Object"))
+	else if (menu_name == tr("Push Object and Screenshot of global 3d viewer"))
 	{
     	dopush(callback, parent, 2);
 	}
@@ -118,6 +118,9 @@ void dopush(V3DPluginCallback &callback, QWidget *parent, int method_code)
 			callback.updateImageWindow(curwin);
 
 			callback.pushObjectIn3DWindow(curwin);
+			
+			QString BMPfilename = QString("/Users/pengh/temp/aaa_%1.bmp").arg(curloop);
+			screenShot3DWindow(curwin, BMPfilename);
 		}
 	}
 }
