@@ -1263,8 +1263,11 @@ void filterAndSwap(double* arrayIn, double* arrayOut, int width, int height, int
 			w1idx2 = w0idx + stepS;
 			w2idx2 = w1idx2 + stepS;
 			
-			cntX = 0;
-			while(cntX < stepS)
+		//	cntX = 0;
+			
+			double* end0 = w0idx + stepS;
+			while (w0idx<end0)
+	//		while(cntX < stepS)
 			{
 				*arrayOutIter = w2*((*w2idx1) + (*w2idx2)) + w1*((*w1idx1) + (*w1idx2)) + w0*(*w0idx);						
 				w1idx1--;
@@ -1273,10 +1276,12 @@ void filterAndSwap(double* arrayIn, double* arrayOut, int width, int height, int
 				w2idx2++;
 				w0idx++;
 				arrayOutIter+=hd;
-				cntX++;
+				//cntX++;
 			}
 			w1idx1++;
-			while(cntX < 2*stepS)
+			end0 = w0idx + stepS;
+			while (w0idx<end0)
+			//while(cntX < 2*stepS)
 			{
 				*arrayOutIter = w2*((*w2idx1) + (*w2idx2)) + w1*((*w1idx1) + (*w1idx2)) + w0*(*w0idx);							
 				w1idx1++;
@@ -1285,11 +1290,13 @@ void filterAndSwap(double* arrayIn, double* arrayOut, int width, int height, int
 				w2idx2++;
 				w0idx++;
 				arrayOutIter+=hd;
-				cntX++;
+				//cntX++;
 			}
 			w2idx1++;
 			//filter the center area of the image (no border issue)
-			while(cntX < width - 2*stepS)
+			end0 = w0idx + width - 4*stepS;
+			while (w0idx<end0)
+			//while(cntX < width - 2*stepS)
 			{	
 				*arrayOutIter = w2*((*w2idx1) + (*w2idx2)) + w1*((*w1idx1) + (*w1idx2)) + w0*(*w0idx);	
 				w1idx1++;
@@ -1298,11 +1305,13 @@ void filterAndSwap(double* arrayIn, double* arrayOut, int width, int height, int
 				w2idx2++;
 				w0idx++;
 				arrayOutIter+=hd;
-				cntX++;
+				//cntX++;
 			}
 			w2idx2--;
 			//manage the right border with mirror symmetry
-			while (cntX < width - stepS)
+			end0 = w0idx + stepS;
+			while (w0idx<end0)
+			//while (cntX < width - stepS)
 			{
 				*arrayOutIter = w2*((*w2idx1) + (*w2idx2)) + w1*((*w1idx1) + (*w1idx2)) + w0*(*w0idx);						
 				w1idx1++;
@@ -1311,10 +1320,12 @@ void filterAndSwap(double* arrayIn, double* arrayOut, int width, int height, int
 				w2idx2--;
 				w0idx++;
 				arrayOutIter+=hd;
-				cntX++;
+				//cntX++;
 			}
 			w1idx2--;
-			while (cntX < width)
+			end0 = w0idx + stepS;
+			while (w0idx<end0)
+//			while (cntX < width)
 			{
 				*arrayOutIter = w2*((*w2idx1) + (*w2idx2)) + w1*((*w1idx1) + (*w1idx2)) + w0*(*w0idx);						
 				w1idx1++;
@@ -1323,7 +1334,7 @@ void filterAndSwap(double* arrayIn, double* arrayOut, int width, int height, int
 				w2idx2--;
 				w0idx++;
 				arrayOutIter+=hd;
-				cntX++;
+				//cntX++;
 			}
 		}
 	}
