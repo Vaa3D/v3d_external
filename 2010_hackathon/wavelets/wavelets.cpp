@@ -271,8 +271,8 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent )
 
 	QPushButton* ok     = new QPushButton("OK");
 
-	QPushButton* addScaleButton     = new QPushButton("Add");
-	removeScaleButton     = new QPushButton("Remove");
+	QPushButton* addScaleButton     = new QPushButton("Add Scale");
+	removeScaleButton     = new QPushButton("Remove Scale");
 
 	QPushButton* cancel = new QPushButton("Cancel");
 	formLayout = new QFormLayout( myDialog );
@@ -286,7 +286,7 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent )
 	     slider->setSingleStep(1);
 	     slider->setMaximum(255);
 
-	 	formLayout->addRow( slider );
+//	 	formLayout->addRow( slider );
 
 		thresholdResidualScaleSlider = new QSlider(Qt::Horizontal);
 		thresholdResidualScaleSlider->setFocusPolicy(Qt::StrongFocus);
@@ -300,7 +300,7 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent )
 	progressBar->setValue( 100 );
 
 // 	formLayout->addRow( processButton );
- 	formLayout->addRow( progressBar );
+// 	formLayout->addRow( progressBar );
 
 	//QLabel* label2 = new QLabel("Test");
  	qBox= new QGroupBox( myDialog );
@@ -310,7 +310,6 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent )
 
  	formLayout->addRow(qBox);
 
-	formLayout->addRow(ok, cancel);
 	myDialog->setLayout(formLayout);
 	myDialog->setWindowTitle(QString("Wavelets"));
 
@@ -334,9 +333,10 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent )
 	QPushButton* detectSpotsButton = new QPushButton("Detect spots");
 
 	formLayout->addRow( denoiseButton, detectSpotsButton );
+	formLayout->addRow(ok, cancel);
 
-	formLayout->addRow(dev1Button, dev2Button);
-	formLayout->addRow(dev3Button, dev4Button);
+//	formLayout->addRow(dev1Button, dev2Button);
+//	formLayout->addRow(dev3Button, dev4Button);
 
 	myDialog->connect(dev1Button, SIGNAL(clicked()), this, SLOT(dev1ButtonPressed()));
 	myDialog->connect(dev2Button, SIGNAL(clicked()), this, SLOT(dev2ButtonPressed()));
