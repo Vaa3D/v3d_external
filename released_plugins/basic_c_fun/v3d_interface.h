@@ -9,7 +9,8 @@
 * 2010-06-01
 * 2010-06-02: add setPluginOutputAndDisplayUsingGlobalSetting()
 * 2010-06-03: add two others function to extract and assemble the results of different channels
-* 2010-08-03: add syncObjectIn3DWindow, reloadImageIn3DWindow, setTimepointIn3DWindow
+* 2010-08-03: add pushObjectIn3DWindow, pushImageIn3DWindow, pushTimepointIn3DWindow, open/close(ROI)3DWindow
+* 2010-08-04: "com.janelia.v3d.V3DPluginInterface/1.1"
 * ********************************************************************************************************
 */
 
@@ -17,6 +18,13 @@
 #define _V3D_INTERFACE_H_
 
 #include <QtCore>
+
+class V3DPluginInterface;
+class V3DSingleImageInterface;
+QT_BEGIN_NAMESPACE
+	Q_DECLARE_INTERFACE(V3DPluginInterface, "com.janelia.v3d.V3DPluginInterface/1.1");
+	Q_DECLARE_INTERFACE(V3DSingleImageInterface, "com.janelia.v3d.V3DSingleImageInterface/1.0");
+QT_END_NAMESPACE
 
 #include "basic_4dimage.h"
 #include "basic_surf_objs.h"
@@ -81,7 +89,7 @@ public:
 
 	virtual void pushObjectIn3DWindow(v3dhandle image_window) = 0;
 	virtual void pushImageIn3DWindow(v3dhandle image_window) = 0;
-	virtual int setTimepointIn3DWindow(v3dhandle image_window, int timepoint) = 0;
+	virtual int pushTimepointIn3DWindow(v3dhandle image_window, int timepoint) = 0;
 
 };
 
@@ -313,14 +321,6 @@ public:
     virtual void processImage(const QString & menu_name, Image4DSimple * image, QWidget * parent) = 0;
 };
 
-
-QT_BEGIN_NAMESPACE
-
-	Q_DECLARE_INTERFACE(V3DPluginInterface, "com.janelia.v3d.V3DPluginInterface/1.0");
-
-	Q_DECLARE_INTERFACE(V3DSingleImageInterface, "com.janelia.v3d.V3DSingleImageInterface/1.0");
-
-QT_END_NAMESPACE
 
 #endif /* _V3D_INTERFACE_H_ */
 

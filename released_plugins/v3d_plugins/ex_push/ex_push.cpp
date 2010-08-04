@@ -17,7 +17,7 @@ void dopush(V3DPluginCallback &callback, QWidget *parent, int method_code);
 const QString title = "Example for pushing image and objects";
 QStringList ExPushPlugin::menulist() const
 {
-    return QStringList() 
+    return QStringList()
 		<< tr("Close and Open 3D viewer and Push Image")
 		<< tr("Object")
 		<< tr("Set time points")
@@ -28,20 +28,20 @@ void ExPushPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback,
 {
     if (menu_name == tr("Close and Open 3D viewer and Push Image"))
     {
-    	dopush(callback, parent, 1); 
+    	dopush(callback, parent, 1);
     }
 	else if (menu_name == tr("Object"))
 	{
-    	dopush(callback, parent, 2); 
+    	dopush(callback, parent, 2);
 	}
 	else if (menu_name == tr("Set time points"))
 	{
-    	dopush(callback, parent, 3); 
+    	dopush(callback, parent, 3);
 	}
 	else
 	{
-    	dopush(callback, parent, 0); 
-	}	
+    	dopush(callback, parent, 0);
+	}
 }
 
 void dopush(V3DPluginCallback &callback, QWidget *parent, int method_code)
@@ -54,34 +54,34 @@ void dopush(V3DPluginCallback &callback, QWidget *parent, int method_code)
 	}
 	Image4DSimple *oldimg = callback.getImage(curwin);
 	V3DLONG oldsz0=oldimg->getXDim(), oldsz1=oldimg->getYDim(), oldsz2=oldimg->getZDim();
-	
+
 	if (method_code==1) //push image
-	{	
+	{
 		//close the current window
 		callback.close3DWindow(curwin);
-		
-		for (int j=1; j<1000; j++) //try to empty all existing events
-		{
-			QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-		}
-		
+
+//		//for (int j=1; j<1000; j++) //try to empty all existing events
+//		{
+//			QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+//		}
+
 		//now should be able to open the new window
 		callback.open3DWindow(curwin);
-		
+
 		//now push the data to the 3d viewer's display
 		for (int curloop=0; curloop<1; curloop++)
 		{
 //			Image4DSimple * oldimg = callback.getImage(curwin);
-//			
+//
 			Image4DSimple p4DImage;
 			unsigned char * pData = 0;
 			V3DLONG sz0=oldsz0*0.9, sz1=oldsz1*.9, sz2=oldsz2*.9, sz3=oldimg->getCDim();
 			V3DLONG totallen = sz0*sz1*sz2*sz3;
-			pData = new unsigned char [totallen];	
+			pData = new unsigned char [totallen];
 			memcpy(pData, oldimg->getRawData(), totallen);
-			
+
 			p4DImage.setData((unsigned char*)pData, sz0, sz1, sz2, sz3, V3D_UINT8);
-			
+
 			callback.setImage(curwin, &p4DImage);
 			callback.setImageName(curwin, QString("push now %1").arg(curloop));
 			callback.updateImageWindow(curwin);
@@ -93,7 +93,7 @@ void dopush(V3DPluginCallback &callback, QWidget *parent, int method_code)
 	{
 		//ensure the 3d viewer window is open; if not, then open it
 		callback.open3DWindow(curwin);
-		
+
 		//now push the data to the 3d viewer's display
 		for (int curloop=0; curloop<100; curloop++)
 		{
@@ -112,11 +112,11 @@ void dopush(V3DPluginCallback &callback, QWidget *parent, int method_code)
 
 				curlist << s;
 			}
-			
+
 			callback.setLandmark(curwin, curlist);
 			callback.setImageName(curwin, QString("push now %1").arg(curloop));
 			callback.updateImageWindow(curwin);
-			
+
 			callback.pushObjectIn3DWindow(curwin);
 		}
 	}

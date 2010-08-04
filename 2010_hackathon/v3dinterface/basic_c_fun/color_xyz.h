@@ -5,6 +5,7 @@
  * The License Information and User Agreement should be seen at http://penglab.janelia.org/proj/v3d .
  *
  * Last edit. 2009-Aug-21
+ * Last edit. 2010-Jan-19. Move Hanchuan_color_table here
  *
  */
 
@@ -187,7 +188,12 @@ struct BoundingBox {
 	XYZ Vabsmin() 	{return XYZ(ABSMIN(x0,x1), ABSMIN(y0,y1), ABSMIN(z0,z1));}
 	XYZ Vabsmax() 	{return XYZ(ABSMAX(x0,x1), ABSMAX(y0,y1), ABSMAX(z0,z1));}
 	bool isNegtive()	 	{return (Dx()<0 || Dy()<0 || Dz()<0);}
-	bool isInner(XYZ V) 	{return BETWEENEQ(x0,x1, V.x) && BETWEENEQ(y0,y1, V.y) && BETWEENEQ(z0,z1, V.z);}
+	bool isInner(XYZ V, float d=0) 	{
+		return BETWEENEQ(x0-d,x1+d, V.x) && BETWEENEQ(y0-d,y1+d, V.y) && BETWEENEQ(z0-d,z1+d, V.z);
+	}
+	void clamp(XYZ & V) {
+		V.x = CLAMP(x0, x1, V.x); V.y = CLAMP(y0, y1, V.y); V.z = CLAMP(z0, z1, V.z);
+	}
 	void expand(XYZ V) {
 		if (Dx()<0) { x0 = x1 = V.x;} else { x0=MIN(x0, V.x); x1=MAX(x1, V.x); }
 		if (Dy()<0) { y0 = y1 = V.y;} else { y0=MIN(y0, V.y); y1=MAX(y1, V.y); }
@@ -335,6 +341,30 @@ inline RGBA8 random_rgba8(unsigned char a)
 	return cc;
 }
 
+static unsigned char hanchuan_colortable[][3]={
+{255,   0,    0},
+{  0, 255,    0},
+{  0,   0,  255},
+{255, 255,    0},
+{  0, 255,  255},
+{255,   0,  255},
+{255, 128,    0},
+{  0, 255,  128},
+{128,   0,  255},
+{128, 255,    0},
+{  0, 128,  255},
+{255,   0,  128},
+{128,   0,    0},
+{  0, 128,    0},
+{  0,   0,  128},
+{128, 128,    0},
+{  0, 128,  128},
+{128,   0,  128},
+{255, 128,  128},
+{128, 255,  128},
+{128, 128,  255},
+};
+inline int hanchuan_colortable_size() {return sizeof(hanchuan_colortable)/3;}
 
 ////////////////////////////////////////////////////////////////////
 
