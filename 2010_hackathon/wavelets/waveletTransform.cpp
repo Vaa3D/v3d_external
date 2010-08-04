@@ -557,6 +557,220 @@ double** b3WaveletScales(double* dataIn, int width, int height, int depth, int n
 			return resArray;
 }
 
+double**  b3WaveletScales2DOptimized(double* dataIn, int width, int height, int numScales) throw (WaveletConfigException)
+{
+	if (numScales < 1)
+ 	{
+			throw WaveletConfigException("Invalid number of wavelet scales. Number of scales should be an integer >=1");
+ 	}
+ 	//check that image dimensions complies with the number of chosen scales
+ 	int minSize = 5+(numScales-1)*4;
+ 	if (width < minSize || height < minSize)
+  	{
+  		char* buffer = new char[150];
+  		sprintf(buffer, "Number of scales too large for the size of the image. These settings require: width>%d, height >%d", minSize-1, minSize-1);
+  		throw WaveletConfigException(buffer);
+  	}
+ 	
+ 	//TODO: check dimensions vs number of scales
+	//B3 spline wavelet configuration
+	double w2 =  ((double)1)/16;;
+	double w1 = ((double)1)/4;;
+	double w0 = ((double)3)/8;;
+		
+	int s;
+	int stepS;
+	int wh = width*height;
+	double** resArray = new double*[numScales];
+ 	double* prevArray = dataIn;
+ 	double* currentArray = new double [wh];
+ 
+ 	int cntX, cntY, cntZ;
+ 	for (s = 1; s <= numScales; s++)//for each scale
+ 	{
+ 		double* w0idx;
+ 		double* w1idx1;
+ 		double* w2idx1;
+ 		double* w1idx2;
+ 		double* w2idx2;
+
+ 		//convolve along the x direction
+ 		stepS = pow(2, s-1);
+ 				
+ 		double* arrayXiter;
+ 		for (int y=0; y<height; y++)
+ 		{
+ 			//manage the left border with mirror symmetry
+ 			arrayXiter = currentArray + y*width;//can be optimized further
+ 			w0idx = prevArray + y*width;
+ 			w1idx1 = w0idx + stepS-1;
+ 			w2idx1 = w1idx1 + stepS;
+ 			w1idx2 = w0idx + stepS;
+ 			w2idx2 = w1idx2 + stepS;
+ 						
+ 			cntX = 0;
+ 			while(cntX < stepS)
+ 			{
+ 				*arrayXiter = w2*((*w2idx1) + (*w2idx2)) + w1*((*w1idx1) + (*w1idx2)) + w0*(*w0idx);						
+ 				w1idx1--;
+ 				w2idx1--;
+ 				w1idx2++;
+ 				w2idx2++;
+ 				w0idx++;
+ 				arrayXiter++;
+ 				cntX++;
+ 			}
+ 			w1idx1++;
+ 			while(cntX < 2*stepS)
+ 			{
+ 							*arrayXiter = w2*((*w2idx1) + (*w2idx2)) + w1*((*w1idx1) + (*w1idx2)) + w0*(*w0idx);							
+ 							w1idx1++;
+ 							w2idx1--;
+ 							w1idx2++;
+ 							w2idx2++;
+ 							w0idx++;
+ 							arrayXiter++;
+ 							cntX++;
+ 						}
+ 						w2idx1++;
+ 						//filter the center area of the image (no border issue)
+ 						while(cntX < width - 2*stepS)
+ 						{	
+ 							*arrayXiter = w2*((*w2idx1) + (*w2idx2)) + w1*((*w1idx1) + (*w1idx2)) + w0*(*w0idx);	
+ 							w1idx1++;
+ 							w2idx1++;
+ 							w1idx2++;
+ 							w2idx2++;
+ 							w0idx++;
+ 							arrayXiter++;
+ 							cntX++;
+ 						}
+ 						w2idx2--;
+ 						//manage the right border with mirror symmetry
+ 						while (cntX < width - stepS)
+ 						{
+ 							*arrayXiter = w2*((*w2idx1) + (*w2idx2)) + w1*((*w1idx1) + (*w1idx2)) + w0*(*w0idx);						
+ 							w1idx1++;
+ 							w2idx1++;
+ 							w1idx2++;
+ 							w2idx2--;
+ 							w0idx++;
+ 							arrayXiter++;
+ 							cntX++;
+ 						}
+ 						w1idx2--;
+ 						while (cntX < width)
+ 						{
+ 							*arrayXiter = w2*((*w2idx1) + (*w2idx2)) + w1*((*w1idx1) + (*w1idx2)) + w0*(*w0idx);						
+ 							w1idx1++;
+ 							w2idx1++;
+ 							w1idx2--;
+ 							w2idx2--;
+ 							w0idx++;
+ 							arrayXiter++;
+ 							cntX++;
+ 						}
+ 						//arrayXiter += width;
+ 						//w0idx += width; 	
+ 					}
+ 				//Y axis transforms
+ 				//swap current and previous array;
+ 				if (s==1)
+ 				{
+ 					prevArray = currentArray;
+ 					currentArray = new double[wh];//re-allocate current array to preserve original data
+ 				}
+ 				else
+ 				{
+ 					double* tmp = currentArray;
+ 					currentArray = prevArray;
+ 					prevArray = tmp;
+ 				}
+ 				int sw = stepS*width;
+ 				double* arrayYiter;
+ 				for (int x=0; x<width; x++)
+ 					{
+ 						arrayYiter = currentArray + x; //can be optimized further
+ 						w0idx = prevArray + x;
+ 						w1idx1 = w0idx + sw - width;
+ 						w2idx1 = w1idx1 + sw;
+ 						w1idx2 = w0idx + sw;
+ 						w2idx2 = w1idx2 + sw;
+ 						cntY = 0;
+ 						while(cntY < stepS)
+ 						{
+ 							*arrayYiter = w2* ((*w2idx1) + (*w2idx2)) + w1*((*w1idx1) + (*w1idx2)) + w0*(*w0idx);						
+ 							w0idx+=width;
+ 							arrayYiter+=width;
+ 							w1idx1-=width;
+ 							w2idx1-=width;
+ 							w1idx2+=width;
+ 							w2idx2+=width;
+ 							cntY++;
+ 						}
+ 						w1idx1+=width;
+ 						while(cntY < 2*stepS)
+ 						{
+ 							*arrayYiter = w2* ((*w2idx1) + (*w2idx2)) + w1*((*w1idx1) + (*w1idx2)) + w0*(*w0idx);						
+ 							w0idx+=width;
+ 							arrayYiter+=width;
+ 							w1idx1+=width;
+ 							w2idx1-=width;
+ 							w1idx2+=width;
+ 							w2idx2+=width;
+ 							cntY++;
+ 						}
+ 						w2idx1+=width;
+ 						while(cntY < height - 2*stepS)
+ 						{
+ 							*arrayYiter = w2* ((*w2idx1) + (*w2idx2)) + w1*((*w1idx1) + (*w1idx2)) + w0*(*w0idx);						
+ 							w0idx+=width;
+ 							arrayYiter+=width;
+ 							w1idx1+=width;
+ 							w2idx1+=width;
+ 							w1idx2+=width;
+ 							w2idx2+=width;
+ 							cntY++;
+ 						}
+ 					w2idx2-=width;
+ 					while (cntY < height - stepS)
+ 					{
+ 						*arrayYiter = w2* ((*w2idx1) + (*w2idx2)) + w1*((*w1idx1) + (*w1idx2)) + w0*(*w0idx);						
+ 						w0idx+=width;
+ 						arrayYiter+=width;
+ 						w1idx1+=width;
+ 						w2idx1+=width;
+ 						w1idx2+=width;
+ 						w2idx2-=width;
+ 						cntY++;
+ 					}
+ 					w1idx2-=width;
+ 					while (cntY < height)
+ 					{
+ 						*arrayYiter = w2* ((*w2idx1) + (*w2idx2)) + w1*((*w1idx1) + (*w1idx2)) + w0*(*w0idx);						
+ 						w0idx+=width;
+ 						arrayYiter+=width;
+ 						w1idx1+=width;
+ 						w2idx1+=width;
+ 						w1idx2-=width;
+ 						w2idx2-=width;
+ 						cntY++;
+ 					}
+ 				}
+ 				//swap current and previous array
+ 				double* tmp = currentArray;
+ 				currentArray = prevArray;
+ 				prevArray = tmp;
+ 				
+ 				resArray[s-1] = new double[wh];
+ 				memcpy(resArray[s-1], prevArray, wh*sizeof(double));
+ 		}
+ 		delete[] currentArray;
+ 		delete[] prevArray;
+		return resArray;
+}
+
+
 double** b3WaveletScales2D(double* dataIn, int width, int height, int numScales) throw (WaveletConfigException)
 {
 	if (numScales < 1)
