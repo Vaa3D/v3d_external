@@ -739,7 +739,7 @@ void WaveletPlugin::WaveletTransform(V3DPluginCallback &callback, QWidget *paren
  			if (szz>1)
  				resTab = b3WaveletScalesOptimized(data1dD, szx, szy, szz, numScales);
  			else
- 				resTab = b3WaveletScales2D(data1dD, szx, szy, numScales);
+ 				resTab = b3WaveletScales2DOptimized(data1dD, szx, szy, numScales);
  			time_t seconds1 = time (NULL);
  			printf("\n Computation time : %d \n" , (seconds1-seconds0) );
  			}
