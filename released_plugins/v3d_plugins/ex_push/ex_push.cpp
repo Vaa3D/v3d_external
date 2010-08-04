@@ -52,6 +52,8 @@ void dopush(V3DPluginCallback &callback, QWidget *parent, int method_code)
 		v3d_msg("You don't have any image open in the main window.");
 		return;
 	}
+	Image4DSimple *oldimg = callback.getImage(curwin);
+	V3DLONG oldsz0=oldimg->getXDim(), oldsz1=oldimg->getYDim(), oldsz2=oldimg->getZDim();
 	
 	if (method_code==1) //push image
 	{	
@@ -69,11 +71,11 @@ void dopush(V3DPluginCallback &callback, QWidget *parent, int method_code)
 		//now push the data to the 3d viewer's display
 		for (int curloop=0; curloop<1; curloop++)
 		{
-			Image4DSimple * oldimg = callback.getImage(curwin);
-			
+//			Image4DSimple * oldimg = callback.getImage(curwin);
+//			
 			Image4DSimple p4DImage;
 			unsigned char * pData = 0;
-			V3DLONG sz0=oldimg->getXDim()*0.9, sz1=oldimg->getYDim()*.9, sz2=oldimg->getZDim()*.9, sz3=oldimg->getCDim();
+			V3DLONG sz0=oldsz0*0.9, sz1=oldsz1*.9, sz2=oldsz2*.9, sz3=oldimg->getCDim();
 			V3DLONG totallen = sz0*sz1*sz2*sz3;
 			pData = new unsigned char [totallen];	
 			memcpy(pData, oldimg->getRawData(), totallen);
@@ -93,15 +95,15 @@ void dopush(V3DPluginCallback &callback, QWidget *parent, int method_code)
 		callback.open3DWindow(curwin);
 		
 		//now push the data to the 3d viewer's display
-		for (int curloop=0; curloop<10; curloop++)
+		for (int curloop=0; curloop<100; curloop++)
 		{
 			LandmarkList curlist;
 			for (int i=0;i<20; i++)
 			{
 				LocationSimple s;
-				s.x = (i+1)*10;
-				s.y = s.x*2;
-				s.z = s.x/2;
+				s.x = rand()%oldsz0;
+				s.y = rand()%oldsz1;
+				s.z = rand()%oldsz2;
 				if (i<10)
 					s.radius = 10*i;
 				else {
