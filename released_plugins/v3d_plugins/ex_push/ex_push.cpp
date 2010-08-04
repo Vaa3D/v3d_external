@@ -102,7 +102,12 @@ void dopush(V3DPluginCallback &callback, QWidget *parent, int method_code)
 				s.x = (i+1)*10;
 				s.y = s.x*2;
 				s.z = s.x/2;
-				s.radius = 10;
+				if (i<10)
+					s.radius = 10*i;
+				else {
+					s.radius=s.radius*0.5;
+				}
+
 				curlist << s;
 			}
 			
