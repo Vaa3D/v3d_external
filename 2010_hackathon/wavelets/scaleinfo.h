@@ -36,6 +36,8 @@ public:
 	double enabled;     // is this scale enabled ?
 	double threshold;   // threshold in wavelet domain.
 
+	QLabel* thresholdValueLabel;
+
 	// Qt Interface
 	QGroupBox *groupBox ; //= new QGroupBox( qBox );
 	QGridLayout *gridLayout ; //= new QGridLayout( qBox2 );

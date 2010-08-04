@@ -32,7 +32,8 @@ ScaleInfo::~ScaleInfo()
 
 	delete gridLayout ;
 	delete enableCheckBox ;
-	delete thresholdSlider;
+	//delete thresholdSlider; // TODO: restore this delete.
+	// delete thresholdValueLabel;
 	delete groupBox ;
 
 }
@@ -51,6 +52,9 @@ ScaleInfo::ScaleInfo( int scaleNumber , QGroupBox *parent ) // TODO: Generalized
 	groupBox->setTitle( buff );
 
 	QLabel* thresholdLabel = new QLabel( "Threshold:" );
+	thresholdValueLabel = new QLabel( "0" );
+	thresholdValueLabel->setFixedSize(20,20);
+
 	enableCheckBox = new QCheckBox("Enabled" );
 	enableCheckBox->setChecked( true );
 //	thresholdLineEdit = new QLineEdit("10");
@@ -61,11 +65,12 @@ ScaleInfo::ScaleInfo( int scaleNumber , QGroupBox *parent ) // TODO: Generalized
 	thresholdSlider->setTickInterval(1);
 	thresholdSlider->setSingleStep(1);
 	thresholdSlider->setMaximum(20);
-
+	thresholdSlider->setFixedSize(100,20);
 
 	gridLayout->addWidget( enableCheckBox , 0 , 0 );
 	gridLayout->addWidget( thresholdLabel , 0 , 1 );
-	gridLayout->addWidget( thresholdSlider , 0 , 2 );
+	gridLayout->addWidget( thresholdValueLabel , 0 , 2 );
+	gridLayout->addWidget( thresholdSlider , 0 , 3 );
 
 	//dialog->
 	this->connect(enableCheckBox, SIGNAL(clicked()), this, SLOT(enableButtonPressed()));
@@ -83,6 +88,9 @@ void ScaleInfo::sliderChange(int value )
 {
 	thresholdValue = value;
 	printf( "%d" , thresholdValue );
+	char *text = new char[50];
+	sprintf( text , "%d" , value );
+	thresholdValueLabel->setText( text );
 }
 
 
