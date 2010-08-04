@@ -91,6 +91,9 @@ public:
 	virtual void pushImageIn3DWindow(v3dhandle image_window) = 0;
 	virtual int pushTimepointIn3DWindow(v3dhandle image_window, int timepoint) = 0;
 
+	virtual bool screenShot3DWindow(v3dhandle image_window, QString BMPfilename) = 0;
+	virtual bool screenShotROI3DWindow(v3dhandle image_window, QString BMPfilename) = 0;
+
 };
 
 //this is the major V3D plugin interface, and will be enhanced continuously
