@@ -77,7 +77,7 @@ public:
     // denoising Image
     double* data1dD;
     double** resTab;
-    void filterB3Wavelets();
+    void filterB3Wavelets(  bool displayDetection  );
     int numScales;
     V3DLONG szx;
     V3DLONG szy;
@@ -119,9 +119,9 @@ public:
 
 //	void CALLBACK callBack();
 
-	void updateWavelet();
-	void updateWaveletAskedByGUI();
-	void computeWavelets();
+	void updateWavelet( );
+	void updateWaveletAskedByGUI( );
+	void computeWavelets( bool displayDetection );
 
 public slots:
 	void cancel();

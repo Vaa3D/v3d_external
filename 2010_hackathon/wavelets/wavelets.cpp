@@ -125,7 +125,7 @@ void WaveletPlugin::refreshScaleInterface()
 
 	scaleComputationReady = false;
 
-	updateWaveletAskedByGUI();
+	updateWaveletAskedByGUI( );
 }
 
 /**
@@ -144,13 +144,13 @@ void WaveletPlugin::updateWaveletAskedByGUI()
 {
 	if ( liveUpdateCheckBox->isChecked() )
 	{
-		computeWavelets();
+		computeWavelets( false );
 	}
 }
 
 void WaveletPlugin::updateWavelet()
 {
-	computeWavelets();
+	computeWavelets( false );
 }
 
 void WaveletPlugin::sliderChange(int value )
@@ -424,7 +424,7 @@ void WaveletPlugin::sliderResidualChange(int value)
 
 }
 
-void WaveletPlugin::computeWavelets()
+void WaveletPlugin::computeWavelets( bool displayDetection )
 {
 	if ( !scaleComputationReady )
 	{
@@ -476,7 +476,7 @@ void WaveletPlugin::computeWavelets()
 
 		scaleComputationReady = true;
 	}
-	filterB3Wavelets();
+	filterB3Wavelets( displayDetection );
 
 }
 
@@ -489,7 +489,7 @@ void WaveletPlugin::denoiseButtonPressed()
 	updateWavelet();
 }
 
-void WaveletPlugin::filterB3Wavelets()
+void WaveletPlugin::filterB3Wavelets( bool displayDetection )
 {
 	// Copy back of resTab[]
 
@@ -584,20 +584,21 @@ void WaveletPlugin::filterB3Wavelets()
 
 	// perform detection
 
-	printf("\nDETECTION\n");
 	LandmarkList cmList;
-	if ( szz > 1 )
+	if ( displayDetection )
 	{
-		// 3D
-		cmList = v3d_utils::getConnectedComponents(rec, szx, szy, szz, 0 );
-	}else
-	{
-		// 2D
-		cmList = v3d_utils::getConnectedComponents2D(rec, szx, szy, szz, 0 );
+		printf("\nDETECTION\n");
+		if ( szz > 1 )
+		{
+			// 3D
+			cmList = v3d_utils::getConnectedComponents(rec, szx, szy, szz, 0 );
+		}else
+		{
+			// 2D
+			cmList = v3d_utils::getConnectedComponents2D(rec, szx, szy, szz, 0 );
+		}
+		printf("\nDETECTION FINISHED\n");
 	}
-
-	myCallback->setLandmark(sourceWindow, cmList); // center of mass
-	printf("\nDETECTION FINISHED\n");
 
 	//display reconstructed image
 	//rescaleForDisplay(rec, rec, N, originalImageCopy->datatype);
@@ -608,8 +609,18 @@ void WaveletPlugin::filterB3Wavelets()
 	Image4DSimple outImage;
 	outImage.setData(dataOut1d, originalImageCopy->sz0, originalImageCopy->sz1, originalImageCopy->sz2, 1, originalImageCopy->datatype);
 
-	myCallback->setImage(sourceWindow, &outImage);
-	myCallback->updateImageWindow(sourceWindow);
+	if ( displayDetection ) // BUG Issue: it is not possible to set detection in the current viewer.
+	{
+		v3dhandle newwin = myCallback->newImageWindow();
+		myCallback->setImage(newwin, &outImage);
+		myCallback->setImageName(newwin,"Detection");
+		myCallback->setLandmark(newwin, cmList);
+		myCallback->updateImageWindow( newwin );
+	}else
+	{
+		myCallback->setImage(sourceWindow, &outImage);
+		myCallback->updateImageWindow(sourceWindow);
+	}
 
 	delete(rec);
 
@@ -622,17 +633,7 @@ void WaveletPlugin::detectSpotsButtonPressed()
 	printf("WAVELET : detection spots pressed\n");
 	printf("test\n");
 
-	// building landmark test ( crashy )
-
-	LandmarkList list;
-
-	LocationSimple *ls = new LocationSimple( 10 , 10 , 10 );
-
-	list.push_back( *ls );
-
-	myCallback->setLandmark( sourceWindow , list );
-
-		// TODO: detection code here
+	computeWavelets( true );
 
 	printf("WAVELET : detection spots finished\n");
 }
