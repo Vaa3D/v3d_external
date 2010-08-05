@@ -27,10 +27,12 @@ LDFLAGS += $(subst x, x,$(ARCH_x86_64))
 # additional search path
 CC_FLAGS += $(patsubst %,-I%,$(subst ;, ,$(VPATH))) $(patsubst %,-L%,$(subst ;, ,$(VPATH)))
 
+
 ifneq ($(strip $(ARCH_x86_64)),)
 #LIBS = $(patsubst -ltiff,-L$(L_PATH) -ltiff64,$(LIBS))
 LIBS += -L. -L$(L_PATH) -ltiff64 -lz -lnewmat
 else
+CC_FLAGS += -m32
 LIBS += -L. -ltiff -lnewmat
 endif
 

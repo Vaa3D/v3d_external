@@ -49,9 +49,10 @@ for arg in $*; do
   
    if [ $arg == "-n" ]; then
    	  echo "Force to configure make for MACX -arch x86 (need 32-bit enabled Qt)"
-      ARGS+=" ARCH_x86=-archx86 " 
+      #ARGS+=" ARCHS=i386 " 
       V3D_PRO_FILE="v3d.pro"    # project file for qmake, 090706 RZC
 
+      QMAKE_CONFIG="CONFIG+=x86"
       LOCAL_DIR=$PWD/common_lib
  	  continue
    fi
@@ -62,6 +63,7 @@ for arg in $*; do
       ARGS+=" ARCH_x86_64=-archx86_64 " 
       V3D_PRO_FILE="v3d64.pro"    # project file for qmake, 090706 RZC
 
+      QMAKE_CONFIG="CONFIG+=x86_64"
       LOCAL_DIR=$PWD/common_lib
       #ADD_PATH="VPATH=$LOCAL_DIR/include:$LOCAL_DIR/lib_mac64"
       ADD_PATH=" I_PATH=$LOCAL_DIR/include L_PATH=$LOCAL_DIR/lib_mac64"
@@ -90,7 +92,7 @@ echo =========================================================
 echo qmake $V3D_PRO_FILE \"$QARGS\"
 echo make $ARGS
 echo =========================================================
-qmake $V3D_PRO_FILE $QARGS
+qmake $V3D_PRO_FILE $QARGS $QMAKE_CONFIG
 touch v3d_version_info.cpp
 make $ARGS
 cd ../
