@@ -7,6 +7,10 @@
 
 #include "waveletConfigException.h"
 
+void checkImageDimensions(int width, int height, int depth, int numScales) throw (WaveletConfigException);
+void checkImageDimensions2D(int width, int height, int numScales) throw (WaveletConfigException);
+
+double** b3WaveletCoefficients(double** coefficients, double* originalImage, int numScales, int numVoxels);
 void b3WaveletCoefficientsInplace(double** coefficients, double* originalImage, double* lowPass, int numScales, int numVoxels);
 void b3WaveletReconstruction(double** inputCoefficients, double* lowPassResidual, double* output, int numScales, int numVoxels);
 
