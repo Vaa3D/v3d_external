@@ -223,7 +223,7 @@ void WaveletPlugin::restoreOriginalImage()
 	printf("%d original\n" , originalImageCopy->getTotalBytes() );
 	printf("\n");
 
-//	myCallback->setImage(sourceWindow, originalImageCopy );
+	myCallback->setImage(sourceWindow, sourceImage );
 	myCallback->updateImageWindow(sourceWindow);
 
 }
@@ -467,10 +467,10 @@ void WaveletPlugin::computeWavelets( bool displayDetection )
 		for ( int i = 0 ; i < numScales ; i++ )
 		{
 			resTabCopy[i] = new double[N];
-			memcpy( resTabCopy[i] , resTab[i] , N * 8 );
+			memcpy( resTabCopy[i] , resTab[i] , N * sizeof(double) );
 		}
 		lowPassResidualCopy = new double[N];
-		memcpy( lowPassResidualCopy , lowPassResidual , N * 8 );
+		memcpy( lowPassResidualCopy , lowPassResidual , N * sizeof(double) );
 
 		// end of copy.
 
@@ -495,11 +495,11 @@ void WaveletPlugin::filterB3Wavelets( bool displayDetection )
 
 	for ( int i = 0 ; i < numScales ; i++ )
 	{
-		memcpy( resTab[i] , resTabCopy[i] , N * 8 );
+		memcpy( resTab[i] , resTabCopy[i] , N * sizeof(double) );
 	}
 	// Copy back of memCopy[]
 
-	memcpy( lowPassResidual , lowPassResidualCopy , N * 8 );
+	memcpy( lowPassResidual , lowPassResidualCopy , N * sizeof(double) );
 
 	int numScales = scaleInfoList->size();
 
