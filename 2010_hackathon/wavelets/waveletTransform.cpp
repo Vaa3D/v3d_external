@@ -1,5 +1,40 @@
 #include "waveletTransform.h"
 
+
+double** b3WaveletCoefficients(double** scaleCoefficients, double* originalImage, int numScales, int numVoxels)
+{
+	//numScales wavelet images to store, + one image for the low pass residual
+	double** waveletCoefficients = new double*[numScales+1];
+
+	//compute wavelet coefficients as the difference between scale coefficients of subsequent scales
+	double* iterPrev = originalImage;
+	double* iterCurrent =  scaleCoefficients[0];
+ 	double* currentImgEnd = iterCurrent + numVoxels;
+ 	
+ 	int j = 0;
+// 	for (int j = 0; j <numScales; j++)
+	while (j<numScales)
+ 	{
+ 		waveletCoefficients[j] = new double[numVoxels];
+		double* iterResult = waveletCoefficients[j];
+		while(iterCurrent<currentImgEnd)
+ 		{
+ 			(*iterResult) = (*iterPrev)-(*iterCurrent);
+ 			iterCurrent++;
+ 			iterPrev++;
+ 			iterResult++;
+ 		}
+ 		j++;
+ 		double* iterPrev = scaleCoefficients[j-1];
+		double* iterCurrent =  scaleCoefficients[j];
+ 		double* currentImgEnd = iterCurrent + numVoxels;
+ 	}	
+	//residual low pass image is the last wavelet Scale
+	waveletCoefficients[numScales] = new double[numVoxels];
+	memcpy(waveletCoefficients[numScales], scaleCoefficients[numScales-1], numVoxels*sizeof(double));
+	return waveletCoefficients;
+}
+
 void b3WaveletCoefficientsInplace(double** coefficients, double* originalImage, double* lowPass, int numScales, int numVoxels)
 {
 	//residual low pass image is the last wavelet Scale
@@ -170,7 +205,7 @@ double**  b3WaveletScales2D(double* dataIn, int width, int height, int numScales
 			throw WaveletConfigException("Invalid number of wavelet scales. Number of scales should be an integer >=1");
  	}
  	//check that image dimensions complies with the number of chosen scales
- 	int minSize = 5+(numScales-1)*4;
+ 	int minSize = 5+(pow(2, numScales-1)-1)*4;
  	if (width < minSize || height < minSize)
   	{
   		char* buffer = new char[150];
@@ -224,7 +259,7 @@ double**  b3WaveletScales(double* dataIn, int width, int height, int depth, int 
 			throw WaveletConfigException("Invalid number of wavelet scales. Number of scales should be an integer >=1");
  	}
  	//check that image dimensions complies with the number of chosen scales
- 	int minSize = 5+(numScales-1)*4;
+ 	int minSize = 5+(pow(2, numScales-1))*4;
  	if (width < minSize || height < minSize || depth < minSize)
   	{
   		char* buffer = new char[150];
