@@ -40,7 +40,8 @@ void ExPushPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback,
 	}
 	else
 	{
-    	dopush(callback, parent, 0);
+		QMessageBox::information(parent, "Version info", "Push Plugin 1.1");
+
 	}
 }
 
@@ -118,7 +119,7 @@ void dopush(V3DPluginCallback &callback, QWidget *parent, int method_code)
 
 			callback.pushObjectIn3DWindow(curwin);
 			callback.updateImageWindow(curwin);
-			
+
 			QString BMPfilename = QString("aaa_%1").arg(curloop);
 			callback.screenShot3DWindow(curwin, BMPfilename);
 		}

@@ -10,9 +10,9 @@
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(newwindow, NewWindowPlugin);
 
-void Invert(V3DPluginCallback &callback, QWidget *parent);
-void Threshold(V3DPluginCallback &callback, QWidget *parent);
-void Compute(char op, V3DPluginCallback &callback, QWidget *parent);
+void Invert(V3DPluginCallback &v3d, QWidget *parent);
+void Threshold(V3DPluginCallback &v3d, QWidget *parent);
+void Compute(char op, V3DPluginCallback &v3d, QWidget *parent);
 
 const QString title = "NewWindowPlugin demo";
 QStringList NewWindowPlugin::menulist() const
@@ -22,41 +22,47 @@ QStringList NewWindowPlugin::menulist() const
     << tr("Threshold...")
     << tr("Add 2 Images...")
     << tr("Differ 2 Images...")
-    << tr("Modulate 2 Images...");
+    << tr("Modulate 2 Images...")
+    << tr("about");
 }
 
-void NewWindowPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
+void NewWindowPlugin::domenu(const QString &menu_name, V3DPluginCallback &v3d, QWidget *parent)
 {
     if (menu_name == tr("Invert Color (in current window)"))
     {
-    	Invert(callback, parent);
+    	Invert(v3d, parent);
     }
     else
     if (menu_name == tr("Threshold..."))
     {
-    	Threshold(callback, parent);
+    	Threshold(v3d, parent);
     }
     else
     if (menu_name == tr("Add 2 Images..."))
     {
-    	Compute('+', callback, parent);
+    	Compute('+', v3d, parent);
     }
     else
     if (menu_name == tr("Differ 2 Images..."))
     {
-    	Compute('-', callback, parent);
+    	Compute('-', v3d, parent);
     }
     else
     if (menu_name == tr("Modulate 2 Images..."))
     {
-    	Compute('*', callback, parent);
+    	Compute('*', v3d, parent);
+    }
+    else
+    if (menu_name == tr("about"))
+    {
+    	QMessageBox::information(parent, title, "version 1.1");
     }
 }
 
-void Invert(V3DPluginCallback &callback, QWidget *parent)
+void Invert(V3DPluginCallback &v3d, QWidget *parent)
 {
-	v3dhandle oldwin = callback.currentImageWindow();
-	Image4DSimple* image = callback.getImage(oldwin);
+	v3dhandle oldwin = v3d.currentImageWindow();
+	Image4DSimple* image = v3d.getImage(oldwin);
 	if (! image)
 	{
 		QMessageBox::information(0, title, QObject::tr("No image is open."));
@@ -67,21 +73,21 @@ void Invert(V3DPluginCallback &callback, QWidget *parent)
 		QMessageBox::information(0, title, QObject::tr("This demo program only supports 8-bit data. Your current image data type is not supported."));
 		return;
 	}
-	
+
 	Image4DProxy<Image4DSimple> p(image);
 	for (uint8* ip=p.begin(); ip<=p.end(); ip++)
 	{
 		*ip = 255 - *ip;
 	}
 
-	callback.setImageName(oldwin, callback.getImageName(oldwin)+"_invert");
-	callback.updateImageWindow(oldwin);
+	v3d.setImageName(oldwin, v3d.getImageName(oldwin)+"_invert");
+	v3d.updateImageWindow(oldwin);
 }
 
-void Threshold(V3DPluginCallback &callback, QWidget *parent)
+void Threshold(V3DPluginCallback &v3d, QWidget *parent)
 {
-	v3dhandle oldwin = callback.currentImageWindow();
-	Image4DSimple* image = callback.getImage(oldwin);
+	v3dhandle oldwin = v3d.currentImageWindow();
+	Image4DSimple* image = v3d.getImage(oldwin);
 	if (! image)
 	{
 		QMessageBox::information(0, title, QObject::tr("No image is open."));
@@ -92,7 +98,7 @@ void Threshold(V3DPluginCallback &callback, QWidget *parent)
 		QMessageBox::information(0, title, QObject::tr("This demo program only supports 8-bit data. Your current image data type is not supported."));
 		return;
 	}
-	
+
 	bool ok;
     int threshold = QInputDialog::getInteger(parent, QObject::tr("Threshold"),
                                              QObject::tr("Enter threshold:"),
@@ -114,15 +120,15 @@ void Threshold(V3DPluginCallback &callback, QWidget *parent)
 		else *ip = *ip0;
 	}
 
-	v3dhandle newwin = callback.newImageWindow();
-	callback.setImage(newwin, &tmp);
-	callback.setImageName(newwin, callback.getImageName(oldwin)+"_threshold");
-    callback.updateImageWindow(newwin);
+	v3dhandle newwin = v3d.newImageWindow();
+	v3d.setImage(newwin, &tmp);
+	v3d.setImageName(newwin, v3d.getImageName(oldwin)+"_threshold");
+    v3d.updateImageWindow(newwin);
 }
 
-void Compute(char op, V3DPluginCallback &callback, QWidget *parent)
+void Compute(char op, V3DPluginCallback &v3d, QWidget *parent)
 {
-	v3dhandleList win_list = callback.getImageWindowList();
+	v3dhandleList win_list = v3d.getImageWindowList();
 	if (win_list.size()<1)
 	{
 		QMessageBox::information(0, title, QObject::tr("Need at least 1 images."));
@@ -130,7 +136,7 @@ void Compute(char op, V3DPluginCallback &callback, QWidget *parent)
 	}
 
 	QStringList items;
-	for (int i=0; i<win_list.size(); i++) items << callback.getImageName(win_list[i]);
+	for (int i=0; i<win_list.size(); i++) items << v3d.getImageName(win_list[i]);
 
 	QDialog d(parent);
 	QComboBox* combo1 = new QComboBox(); combo1->addItems(items);
@@ -152,10 +158,10 @@ void Compute(char op, V3DPluginCallback &callback, QWidget *parent)
 	int i1 = combo1->currentIndex();
 	int i2 = combo2->currentIndex();
 
-	Image4DSimple* image1 = callback.getImage(win_list[i1]);
-	Image4DSimple* image2 = callback.getImage(win_list[i2]);
-	
-	
+	Image4DSimple* image1 = v3d.getImage(win_list[i1]);
+	Image4DSimple* image2 = v3d.getImage(win_list[i2]);
+
+
 	if (!image1 || !image2)
 	{
 		QMessageBox::information(0, title, QObject::tr("No image is open."));
@@ -166,7 +172,7 @@ void Compute(char op, V3DPluginCallback &callback, QWidget *parent)
 		QMessageBox::information(0, title, QObject::tr("This demo program only supports 8-bit data. Your current image data type is not supported."));
 		return;
 	}
-	
+
 
 	V3DLONG N1 = image1->getTotalBytes();
 	unsigned char* newdata1d = new unsigned char[N1];
@@ -199,8 +205,8 @@ void Compute(char op, V3DPluginCallback &callback, QWidget *parent)
 	}
 
 
-	v3dhandle newwin = callback.newImageWindow();
-	callback.setImage(newwin, &tmp);
-	callback.setImageName(newwin, "new_image_arithmetic");
-    callback.updateImageWindow(newwin);
+	v3dhandle newwin = v3d.newImageWindow();
+	v3d.setImage(newwin, &tmp);
+	v3d.setImageName(newwin, "new_image_arithmetic");
+    v3d.updateImageWindow(newwin);
 }
