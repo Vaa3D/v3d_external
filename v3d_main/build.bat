@@ -22,7 +22,7 @@ set PATH=%PATH%;%MINGW_DIR%/bin;%LOCAL_DIR%/bin
 set VPATH=%LOCAL_DIR%/include;%LOCAL_DIR%/lib_win32;
 
 cd jba/c++ 
-call make %*
+call make -f jba.makefile %*
 cd ../../
 
 cd v3d
