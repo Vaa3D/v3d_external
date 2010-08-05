@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -87,19 +87,27 @@ V3d_PluginLoader::V3d_PluginLoader(QMenu* menuPlugin, MainWindow* mainwindow)
 {
 	this->v3d_menuPlugin = menuPlugin;
 	this->v3d_mainwindow = mainwindow;
+
 	plugin_menu.clear();
 
 	rescanPlugins();
 }
+
 void V3d_PluginLoader::clear()
 {
 	plugin_menu.clear();
-    foreach (QPluginLoader* loader, pluginList)
+
+	foreach (QPluginLoader* loader, pluginList)
     {
-    	delete loader;
+        if (loader->isLoaded())
+        {
+        	loader->unload();
+        }
+		delete loader;
     }
-    pluginList.clear();
-    pluginFilenameList.clear();
+	pluginList.clear();
+
+	pluginFilenameList.clear();
 }
 
 void V3d_PluginLoader::rescanPlugins()
@@ -109,6 +117,21 @@ void V3d_PluginLoader::rescanPlugins()
 	loadPlugins();
 
 	populateMenus();
+
+	foreach (QPluginLoader* loader, pluginList)
+    {
+        //100805 RZC: try to unload root instance of this plugin
+        while (loader->isLoaded())
+        {
+        	loader->unload();
+        }
+//        QObjectList list = loader->staticInstances();
+//        for ( ; list.size()>0; )
+//        {
+//        	loader->unload();
+//        	list = loader->staticInstances();
+//        }
+    }
 }
 
 void V3d_PluginLoader::loadPlugins()
@@ -183,7 +206,7 @@ void V3d_PluginLoader::searchPluginFiles(QMenu* menu)
         	qDebug()<< "plugin: " << fullpath;
             pluginFilenameList += fullpath;
 
-            pluginList.append(loader);
+            pluginList.append(loader); /////
 
             //--------------------------------------------------
         	QString iname = v3d_getInterfaceName(plugin);
@@ -201,7 +224,7 @@ void V3d_PluginLoader::searchPluginFiles(QMenu* menu)
 
         if (loader->isLoaded())
         {
-        	loader->unload();  //qDebug() << "unload: " <<fileName;
+        	loader->unload();     //qDebug() << "unload: " <<fileName;
         }
     }
 }
