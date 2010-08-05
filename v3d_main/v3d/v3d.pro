@@ -311,7 +311,8 @@ LIBS += -L../jba/c++  -L./jba/c++
 
 unix:LIBS += -L../common_lib/lib_unix
 unix:LIBS += -lm -ltiff \
-    -lv3dnewmat 
+    -lv3dnewmat \
+    -L/usr/lib/qt4/demos/shared -ldemo_shared
 #    -ljba \
 #    -lFL_cellseg \
 #    -lFL_brainseg 
