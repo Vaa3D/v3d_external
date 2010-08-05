@@ -54,7 +54,7 @@ public:
     dialog.AddDialogElement("BackgroundValue",0.0, 0.0, 255.0);
     dialog.AddDialogElement("ForegroundValue",0.0, 0.0, 255.0);
     dialog.AddDialogElement("NumberOfObjects",100.0, 0.0, 50000.0);
-    dialog.AddDialogElement("Attribute",0, 0.0, 10.0);
+    dialog.AddDialogElement("Attribute",0.0, 0.0, 10.0);
 
     if( dialog.exec() == QDialog::Accepted )
       {
