@@ -1,5 +1,26 @@
 #include "waveletTransform.h"
 
+void checkImageDimensions(int width, int height, int depth, int numScales) throw (WaveletConfigException)
+{
+	 //check that image dimensions complies with the number of chosen scales
+ 	int minSize = 5+(pow(2, numScales-1))*4;
+ 	if (width < minSize || height < minSize || depth < minSize)
+  	{
+  		char* buffer = new char[150];
+  		sprintf(buffer, "Number of scales too large for the size of the image. These settings require: width>%d, height >%d and depth >%d", minSize-1, minSize-1, minSize-1);
+  		throw WaveletConfigException(buffer);
+  	}
+}
+void checkImageDimensions2D(int width, int height, int numScales) throw (WaveletConfigException)
+{
+	int minSize = 5+(pow(2, numScales-1)-1)*4;
+ 	if (width < minSize || height < minSize)
+  	{
+  		char* buffer = new char[150];
+  		sprintf(buffer, "Number of scales too large for the size of the image. These settings require: width>%d, height >%d", minSize-1, minSize-1);
+  		throw WaveletConfigException(buffer);
+  	}
+}
 
 double** b3WaveletCoefficients(double** scaleCoefficients, double* originalImage, int numScales, int numVoxels)
 {
@@ -205,13 +226,11 @@ double**  b3WaveletScales2D(double* dataIn, int width, int height, int numScales
 			throw WaveletConfigException("Invalid number of wavelet scales. Number of scales should be an integer >=1");
  	}
  	//check that image dimensions complies with the number of chosen scales
- 	int minSize = 5+(pow(2, numScales-1)-1)*4;
- 	if (width < minSize || height < minSize)
-  	{
-  		char* buffer = new char[150];
-  		sprintf(buffer, "Number of scales too large for the size of the image. These settings require: width>%d, height >%d", minSize-1, minSize-1);
-  		throw WaveletConfigException(buffer);
-  	}
+ 	try{checkImageDimensions2D(width, height, numScales);}
+ 	catch(WaveletConfigException e)
+ 	{
+ 		throw(e);
+ 	}
 		
 	int s;
 	int stepS;
@@ -259,13 +278,11 @@ double**  b3WaveletScales(double* dataIn, int width, int height, int depth, int 
 			throw WaveletConfigException("Invalid number of wavelet scales. Number of scales should be an integer >=1");
  	}
  	//check that image dimensions complies with the number of chosen scales
- 	int minSize = 5+(pow(2, numScales-1))*4;
- 	if (width < minSize || height < minSize || depth < minSize)
-  	{
-  		char* buffer = new char[150];
-  		sprintf(buffer, "Number of scales too large for the size of the image. These settings require: width>%d, height >%d and depth >%d", minSize-1, minSize-1, minSize-1);
-  		throw WaveletConfigException(buffer);
-  	}
+ 	try{checkImageDimensions(width, height, depth, numScales);}
+ 	catch(WaveletConfigException e)
+ 	{
+ 		throw(e);
+ 	}
 		
 	int s;
 	int stepS;
