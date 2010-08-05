@@ -49,9 +49,10 @@ public:
     QDialog *myDialog;
     QFormLayout *formLayout;
     QFormLayout *formLayoutGroupBox;
-    QGroupBox *qBox;
+    QGroupBox *qBox; // box for scales stuff
     QProgressBar *progressBar;
     QSlider *thresholdResidualScaleSlider;
+    QLabel* thresholdResidualScaleLabel ;
 
     // wavelet input interface
 
@@ -59,11 +60,31 @@ public:
     typedef std::list<ScaleInfo*> ListType ;
     ListType *scaleInfoList ;
     QPushButton* removeScaleButton;
+    QPushButton* showOriginalButton;
+    QCheckBox* liveUpdateCheckBox ;
+    QCheckBox* useLowPassCheckBox ;
+
 
     // source image
     v3dhandle sourceWindow;
     Image4DSimple* sourceImage;
     V3DPluginCallback *myCallback;
+
+    // denoising Image
+    double* data1dD;
+    double** resTab;
+    void filterB3Wavelets();
+    int numScales;
+    V3DLONG szx;
+    V3DLONG szy;
+    V3DLONG szz;
+    V3DLONG sc;
+    V3DLONG N;
+    double* lowPassResidual;
+    bool scaleComputationReady ;
+
+    double* lowPassResidualCopy;
+    double** resTabCopy;
 
     // Copy of original Image;
 
@@ -89,6 +110,14 @@ public:
 
 	int thresholdResidualScale ;
 
+	// refresh CallBack
+
+//	void CALLBACK callBack();
+
+	void updateWavelet();
+	void updateWaveletAskedByGUI();
+	void computeWavelets();
+
 public slots:
 	void cancel();
 	void sliderChange( int value );
@@ -101,6 +130,9 @@ public slots:
 	void detectSpotsButtonPressed();
 	void denoiseButtonPressed();
 	void sliderResidualChange(int value);
+	void showOriginalPressed( );
+	void livePressed();
+	void useLowPassPressed();
 
 };
 
