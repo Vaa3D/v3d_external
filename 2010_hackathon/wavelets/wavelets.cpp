@@ -120,24 +120,18 @@ void WaveletPlugin::refreshScaleInterface()
 		formLayoutGroupBox->addRow( (*litr)->groupBox );
 		litr++;
 	}
+//
 
 	QGroupBox *groupBox2 ;
 	groupBox2 = new QGroupBox( qBox );
 	QGridLayout *gridLayout2 = new QGridLayout( groupBox2 );
 	groupBox2->setTitle( "LowPass Residual" );
 
-
-
 	gridLayout2->addWidget( useLowPassCheckBox , 0 , 0 );
 	gridLayout2->addWidget( thresholdResidualScaleLabel , 0 , 1 );
 	gridLayout2->addWidget( thresholdResidualScaleSlider , 0 , 2 );
 
 	formLayoutGroupBox->addRow( groupBox2 );
-
-//	formLayoutGroupBox->addRow( groupBox );
-
-//	formLayoutGroupBox->addRow( thresholdResidualScaleLabel );
-//	formLayoutGroupBox->addRow( useLowPassCheckBox, thresholdResidualScaleSlider );
 
 	myDialog->adjustSize();
 
@@ -181,40 +175,14 @@ void WaveletPlugin::sliderChange(int value )
  */
 void WaveletPlugin::copyOriginalImage()
 {
-//	Image4DSimple *sourceImage = myCallback->getImage( myCallback->currentImageWindow() );
-//	printf("p sourceimage %p \n", myCallback->getImage( myCallback->currentImageWindow() ) );
-
 	originalImageCopy = new Image4DSimple();
-	//printf("POINTER NULL? %b\n", originalImageCopy->getRawData()==NULL);
 	unsigned char *bufferSource = sourceImage->getRawData();
-//	printf("\n\n Bytes= %dl,  size %dl\n\n", sourceImage->getTotalBytes()*sizeof(unsigned char), sourceImage->sz0*sourceImage->sz1*sourceImage->sz2*sourceImage->sz3);
 	unsigned char *bufferCopy = new unsigned char[sourceImage->getTotalBytes()];
 	memcpy( bufferCopy , bufferSource , sourceImage->getTotalBytes() );
 	
-	//printf("buffer Copy %p", bufferCopy);
 	originalImageCopy->setData( bufferCopy , sourceImage->getXDim() , sourceImage->getYDim(),
 			sourceImage->getZDim(), sourceImage->getCDim() , sourceImage->getDatatype()
 			);
-
-//	sourceImage = originalImageCopy;
-
-//	myCallback->updateImageWindow( myCallback->currentImageWindow() );
-/*
-	originalImageCopy = new Image4DSimple();
-	unsigned char *bufferSource = sourceImage->getRawData();
-	unsigned char *bufferCopy = new unsigned char[sourceImage->getTotalBytes()];
-	memcpy( bufferCopy , bufferSource , sourceImage->getTotalBytes() );
-
-	printf( "size image : %d" , sourceImage->getTotalBytes() );
-
-	originalImageCopy->setData( bufferCopy , sourceImage->getXDim() , sourceImage->getYDim(),
-			sourceImage->getZDim(), sourceImage->getCDim() , sourceImage->getDatatype()
-			);
-*/
-//	v3dhandle newWindow = myCallback->newImageWindow();
-//	myCallback->setImage( newWindow , originalImageCopy);
-//	myCallback->updateImageWindow(newWindow);
-
 }
 
 void WaveletPlugin::showOriginalPressed()
@@ -228,9 +196,6 @@ void WaveletPlugin::showOriginalPressed()
  */
 void WaveletPlugin::restoreOriginalImage()
 {
-//	unsigned char *bufferSource = originalImageCopy->getRawData();
-//	unsigned char *bufferCopy = new unsigned char[originalImageCopy->getTotalBytes()];
-
 	sourceImage->setXDim( originalImageCopy->getXDim() );
 	sourceImage->setYDim( originalImageCopy->getYDim() );
 	sourceImage->setZDim( originalImageCopy->getZDim() );
@@ -243,8 +208,6 @@ void WaveletPlugin::restoreOriginalImage()
 	printf("%d original" , originalImageCopy->getTotalBytes() );
 
 	myCallback->updateImageWindow(sourceWindow);
-	//myCallback->setImage(sourceWindow, sourceImage);
-
 }
 
 
@@ -405,18 +368,10 @@ void WaveletPlugin::sliderResidualChange(int value)
 
 void WaveletPlugin::computeWavelets()
 {
-	if ( !scaleComputationReady )
+//	if ( !scaleComputationReady )
 	{
 		printf("WAVELET : denoise pressed\n");
 
-		//	originalImageCopy
-		//	v3dhandle oldwin = callback.currentImageWindow();
-		//	Image4DSimple* p4DImage = callback.getImage(oldwin);
-		//	if (!p4DImage)
-		//	{
-		//		QMessageBox::information(0, "WaveletTransform", QObject::tr("No image is open."));
-		//		return;
-		//	}
 		data1dD = channelToDoubleArray(originalImageCopy, 1);
 
 		//get dims
@@ -478,164 +433,100 @@ void WaveletPlugin::denoiseButtonPressed()
 
 void WaveletPlugin::filterB3Wavelets()
 {
-		// Copy back of resTab[]
+	// Copy back of resTab[]
 
-		for ( int i = 0 ; i < numScales ; i++ )
-		{
-			memcpy( resTab[i] , resTabCopy[i] , N * 8 );
-		}
-		// Copy back of memCopy[]
+	for ( int i = 0 ; i < numScales ; i++ )
+	{
+		memcpy( resTab[i] , resTabCopy[i] , N * 8 );
+	}
+	// Copy back of memCopy[]
 
-		memcpy( lowPassResidual , lowPassResidualCopy , N * 8 );
+	memcpy( lowPassResidual , lowPassResidualCopy , N * 8 );
 
 	int numScales = scaleInfoList->size();
- 	//compute wavelet scales
- 	double** resTab = NULL;
-	try {
-			time_t seconds0 = time (NULL);
- 			if (szz>1)
- 				resTab = b3WaveletScales(data1dD, szx, szy, szz, numScales);
- 			else
- 				resTab = b3WaveletScales2D(data1dD, szx, szy, numScales);
- 			time_t seconds1 = time (NULL);
- 			printf("Computation time : %d" , (seconds1-seconds0) );
- 			}
- 	catch(WaveletConfigException e)
- 	{
- 		printf("\nEXCEPTION\n %s \n" , e.what() );
- 		return;
- 	}
-
 
 	// filtering wavelets images
-		ListType::iterator litr = scaleInfoList->begin();
-		ListType::iterator lend = scaleInfoList->end();
+	ListType::iterator litr = scaleInfoList->begin();
+	ListType::iterator lend = scaleInfoList->end();
 
-	 	for ( int scale = 0 ; scale < numScales ; scale++ )
-	 	{
-	 		ScaleInfo *scaleInfo = *litr;
-	 		printf("current scale threshold : %d \n" , scaleInfo->thresholdValue );
+	for ( int scale = 0 ; scale < numScales ; scale++ )
+	{
+		ScaleInfo *scaleInfo = *litr;
+		printf("current scale threshold : %d \n" , scaleInfo->thresholdValue );
 
-	 		double currentScaleThresholdSquared = 0;
-	 		double *image = resTab[scale];
-	 		//double *imageTarget = resTab[scale];
+		double currentScaleThresholdSquared = 0;
+		double *image = resTab[scale];
+		//double *imageTarget = resTab[scale];
 
-	 		if ( scaleInfo->enable == true )
-	 		{
-	 			currentScaleThresholdSquared = scaleInfo->thresholdValue*scaleInfo->thresholdValue;
-	 			printf("\n current scale %d threshold squared: %f \n" , scale , currentScaleThresholdSquared );
+		if ( scaleInfo->enable == true )
+		{
+			currentScaleThresholdSquared = scaleInfo->thresholdValue*scaleInfo->thresholdValue;
+			printf("\n current scale %d threshold squared: %f \n" , scale , currentScaleThresholdSquared );
 
-	 			for ( int n=0 ; n < N ; n++ )
-	 			{
-	 				if ( image[n]*image[n] < currentScaleThresholdSquared )
-	 				{
-	 					image[n] = 0;
-	 				}
+			for ( int n=0 ; n < N ; n++ )
+			{
+				if ( image[n]*image[n] < currentScaleThresholdSquared )
+				{
+					image[n] = 0;
+				}
 
-	 			}
+			}
 
-	 		}else
-	 		{
-	 			for ( int n=0 ; n < N ; n++ )
-	 			{
-	 				image[n] = 0;
-	 			}
-	 		}
+		}else
+		{
+			for ( int n=0 ; n < N ; n++ )
+			{
+				image[n] = 0;
+			}
+		}
 
-	 		litr++; // increment scaleInfo;
-	 	}
+		litr++; // increment scaleInfo;
+	}
 	// end filtering wavelets images.
 
-	 	// filter lowPassResidual
+	// filter lowPassResidual
 
-	 	if ( !useLowPassCheckBox->isChecked()  )
-	 	{
-	 		for ( int n=0 ; n < N ; n++ )
-	 		{
-	 			lowPassResidual[n] = 0;
-	 		}
-	 	}
-	 	else
-	 	{
-
-	 		double thresholdResidualScaleSquare = thresholdResidualScale * thresholdResidualScale;
-	 		for ( int n=0 ; n < N ; n++ )
-	 		{
-	 			if ( lowPassResidual[n] < thresholdResidualScaleSquare )
-	 			{
-	 				lowPassResidual[n] = 0;
-	 			}
-	 		}
-
-	 	}
-
-		delete(data1dD);
-
-		//reconstruct image from coefficients
-		double* rec = new double[N];
-		b3WaveletReconstruction(resTab, lowPassResidual, rec, numScales, N);
-
-		//display reconstructed image
-		//rescaleForDisplay(rec, rec, N, originalImageCopy->datatype);
-		rescaleForDisplay(rec, rec, N, sourceImage->datatype);
-		//unsigned char* dataOut1d = doubleArrayToCharArray(rec, N, originalImageCopy->datatype);
-		unsigned char* dataOut1d = doubleArrayToCharArray(rec, N, sourceImage->datatype);
-
-		Image4DSimple outImage;
-		outImage.setData(dataOut1d, originalImageCopy->sz0, originalImageCopy->sz1, originalImageCopy->sz2, 1, originalImageCopy->datatype);
-
-		// crash.
-		//sourceImage->setData(dataOut1d, originalImageCopy->sz0, originalImageCopy->sz1, originalImageCopy->sz2, 1, originalImageCopy->datatype);
-
-//		memcpy( sourceImage->getRawData() , dataOut1d , originalImageCopy->getTotalBytes() );
-//		myCallback->updateImageWindow(sourceWindow);
-
-
-	//	v3dhandle newwin = myCallback->newImageWindow();
-			myCallback->setImage(sourceWindow, &outImage);
-			myCallback->updateImageWindow(sourceWindow);
-//		v3dhandle newwin = myCallback->newImageWindow();
-//		myCallback->setImage(newwin, &outImage);
-//		myCallback->setImageName(newwin, "reconstruction");
-//		myCallback->updateImageWindow(newwin);
-		delete(rec);
-
-	/*
-		//output wavelet coefficients
-		for (int j = 0; j<numScales; j++)
+	if ( !useLowPassCheckBox->isChecked()  )
+	{
+		for ( int n=0 ; n < N ; n++ )
 		{
-			//rescale
-			double* out = resTab[j];
-			rescaleForDisplay(out, out, N, originalImageCopy->datatype);
-			unsigned char* dataOut1d = doubleArrayToCharArray(out, N, originalImageCopy->datatype);
-	    	Image4DSimple outImage;
-	    	outImage.setData(dataOut1d, originalImageCopy->sz0, originalImageCopy->sz1, originalImageCopy->sz2, 1, originalImageCopy->datatype);
-	    	v3dhandle newwin = myCallback->newImageWindow();
-	    	myCallback->setImage(newwin, &outImage);
-			char buffer [50];
-			sprintf(buffer, "wavelet scale %d", j+1);
-			myCallback->setImageName(newwin, buffer);
-			myCallback->updateImageWindow(newwin);
+			lowPassResidual[n] = 0;
 		}
-		for (int j = 0; j<numScales; j++)
-	 	{
-	 		free(resTab[j]);
-	 	}
-		delete(resTab);
+	}
+	else
+	{
 
-		//output low pass image
-		rescaleForDisplay(lowPassResidual, lowPassResidual, N, originalImageCopy->datatype);
-		unsigned char* dataOut1dL = doubleArrayToCharArray(lowPassResidual, N, originalImageCopy->datatype);
-		Image4DSimple outImageL;
-		outImageL.setData(dataOut1dL, originalImageCopy->sz0, originalImageCopy->sz1, originalImageCopy->sz2, 1, originalImageCopy->datatype);
-		v3dhandle newwinL = myCallback->newImageWindow();
-		myCallback->setImage(newwinL, &outImageL);
-		myCallback->setImageName(newwinL, "low pass residual");
-		myCallback->updateImageWindow(newwinL);
+		double thresholdResidualScaleSquare = thresholdResidualScale * thresholdResidualScale;
+		for ( int n=0 ; n < N ; n++ )
+		{
+			if ( lowPassResidual[n] < thresholdResidualScaleSquare )
+			{
+				lowPassResidual[n] = 0;
+			}
+		}
 
-		delete(lowPassResidual);
-		printf("WAVELET : denoise finished\n");
-		*/
+	}
+
+	delete(data1dD);
+
+	//reconstruct image from coefficients
+	double* rec = new double[N];
+	b3WaveletReconstruction(resTab, lowPassResidual, rec, numScales, N);
+
+	//display reconstructed image
+	//rescaleForDisplay(rec, rec, N, originalImageCopy->datatype);
+	rescaleForDisplay(rec, rec, N, sourceImage->datatype);
+	//unsigned char* dataOut1d = doubleArrayToCharArray(rec, N, originalImageCopy->datatype);
+	unsigned char* dataOut1d = doubleArrayToCharArray(rec, N, sourceImage->datatype);
+
+	Image4DSimple outImage;
+	outImage.setData(dataOut1d, originalImageCopy->sz0, originalImageCopy->sz1, originalImageCopy->sz2, 1, originalImageCopy->datatype);
+
+	myCallback->setImage(sourceWindow, &outImage);
+	myCallback->updateImageWindow(sourceWindow);
+
+	delete(rec);
+
 }
 /**
  * Detect spots
