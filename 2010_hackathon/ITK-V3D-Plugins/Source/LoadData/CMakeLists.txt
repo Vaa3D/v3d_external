@@ -1,0 +1,4 @@
+
+SET(PLUGIN_GROUP_NAME "LoadData")
+
+CONFIGURE_V3D_PLUGIN(Load3DImageFile)
