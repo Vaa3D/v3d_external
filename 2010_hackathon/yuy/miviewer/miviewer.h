@@ -202,47 +202,227 @@ public:
 		//signal and slot
 		//connect(syn,     SIGNAL(clicked()), this, SLOT(paint(QPaintEvent *)));
 		
+		connect(combo_plane, SIGNAL(currentIndexChanged(int)), this, SLOT(update_windows()));
+		
+		connect(move_up,     SIGNAL(clicked()), this, SLOT(update_up()));
+		connect(move_down,     SIGNAL(clicked()), this, SLOT(update_down()));
+		connect(move_left,     SIGNAL(clicked()), this, SLOT(update_left()));
+		connect(move_right,     SIGNAL(clicked()), this, SLOT(update_right()));
+	
+		connect(spin_x, SIGNAL(valueChanged(int)), this, SLOT(update_windows()));
+		connect(spin_y, SIGNAL(valueChanged(int)), this, SLOT(update_windows()));
+		connect(spin_z, SIGNAL(valueChanged(int)), this, SLOT(update_windows()));
 		
 	}
-	
-//public:
-//	void paintEvent(QPaintEvent *event)
-//	{
-//		//
-//		//QWidget::paintEvent(event);
-//		
-//		//
-//		QPainter paint_xy; //( label_xy ); // label_xy->pixmap() ); //label_xy
-//		
-//		paint_xy.begin(label_xy);
-//		
-//		paint_xy.setPen( Qt::white );				// draw outline Qt::SolidLine
-//		paint_xy.setBrush( Qt::NoBrush );	// set random brush color colors[rand() % 255] Qt::NoBrush
-//		
-//		QPoint p1( roi_start_x, roi_start_y );    // p1 = top left
-//		QPoint p2( roi_end_x, roi_end_y );    // p2 = bottom right
-//		
-//		QRect r( p1, p2 );
-//		paint_xy.drawRect( r );
-//		
-//		paint_xy.end();
-//		
-//		qDebug()<<"paint ..."<<roi_start_x<<roi_start_y<<roi_end_x<<roi_end_y;
-//		
-//	}
 	
 public slots:
 	void update_windows()
 	{
+		plane_n = combo_plane->currentIndex();
+		
+		
 		
 	}
+	
+	void update_up()
+	{
+		plane_n = combo_plane->currentIndex();
+		
+		switch (plane_n) 
+		{
+			case 0:
+				// xy
+			case 1:
+				
+				// yz
+				roi_start_y--; roi_end_y--;
+				if(roi_start_y<0)
+				{
+					roi_start_y++; roi_end_y++;
+				}				
+				
+				break;
+				
+			case 2:
+				
+				// xz
+				roi_start_z--; roi_end_z--;
+				if(roi_start_z<0)
+				{
+					roi_start_z++; roi_end_z++;
+				}
+				
+				break;
+				
+			default:
+				break;
+		}
+	
+		
+		label_xy->roi_top = roi_start_x; label_xy->roi_left = roi_start_y;
+		label_xy->roi_bottom = roi_end_x; label_xy->roi_right = roi_end_y;
+		
+		label_zy->roi_top = roi_start_z; label_zy->roi_left = roi_start_y;
+		label_zy->roi_bottom = roi_end_z; label_zy->roi_right = roi_end_y;
+		
+		label_xz->roi_top = roi_start_x; label_xz->roi_left = roi_start_z;
+		label_xz->roi_bottom = roi_end_x; label_xz->roi_right = roi_end_z;
+		
+		
+	}
+	
+	void update_down()
+	{
+		plane_n = combo_plane->currentIndex();
+		
+		switch (plane_n) 
+		{
+			case 0:
+				// xy
+			case 1:
+				
+				// yz
+				roi_start_y++; roi_end_y++;
+				if(roi_start_y>=cy)
+				{
+					roi_start_y--; roi_end_y--;
+				}				
+				
+				break;
+				
+			case 2:
+				
+				// xz
+				roi_start_z++; roi_end_z++;
+				if(roi_start_z>=cz)
+				{
+					roi_start_z--; roi_end_z--;
+				}
+				
+				break;
+				
+			default:
+				break;
+		}
+		
+		
+		label_xy->roi_top = roi_start_x; label_xy->roi_left = roi_start_y;
+		label_xy->roi_bottom = roi_end_x; label_xy->roi_right = roi_end_y;
+		
+		label_zy->roi_top = roi_start_z; label_zy->roi_left = roi_start_y;
+		label_zy->roi_bottom = roi_end_z; label_zy->roi_right = roi_end_y;
+		
+		label_xz->roi_top = roi_start_x; label_xz->roi_left = roi_start_z;
+		label_xz->roi_bottom = roi_end_x; label_xz->roi_right = roi_end_z;
+		
+	}
+	
+	void update_left()
+	{
+		plane_n = combo_plane->currentIndex();
+		
+		switch (plane_n) 
+		{
+			case 0:
+				// xy
+			case 2:
+				
+				// xz
+				roi_start_x--; roi_end_x--;
+				if(roi_start_x<0)
+				{
+					roi_start_x++; roi_end_x++;
+				}
+				
+				break;
+				
+			case 1:
+				
+				// zy
+				roi_start_z--; roi_end_z--;
+				if(roi_start_z<0)
+				{
+					roi_start_z++; roi_end_z++;
+				}
+				
+				break;
+				
+			default:
+				break;
+		}
+		
+		
+		label_xy->roi_top = roi_start_x; label_xy->roi_left = roi_start_y;
+		label_xy->roi_bottom = roi_end_x; label_xy->roi_right = roi_end_y;
+		
+		label_zy->roi_top = roi_start_z; label_zy->roi_left = roi_start_y;
+		label_zy->roi_bottom = roi_end_z; label_zy->roi_right = roi_end_y;
+		
+		label_xz->roi_top = roi_start_x; label_xz->roi_left = roi_start_z;
+		label_xz->roi_bottom = roi_end_x; label_xz->roi_right = roi_end_z;
+		
+	}
+	
+	void update_right()
+	{
+		plane_n = combo_plane->currentIndex();
+		
+		switch (plane_n) 
+		{
+			case 0:
+				// xy
+			case 2:
+				
+				// xz
+				roi_start_x++; roi_end_x++;
+				if(roi_start_x>=cx)
+				{
+					roi_start_x--; roi_end_x--;
+				}
+				
+				break;
+				
+			case 1:
+				
+				// zy
+				roi_start_z++; roi_end_z++;
+				if(roi_start_z>=cz)
+				{
+					roi_start_z--; roi_end_z--;
+				}
+				
+				break;
+				
+			default:
+				break;
+		}
+		
+		
+		label_xy->roi_top = roi_start_x; label_xy->roi_left = roi_start_y;
+		label_xy->roi_bottom = roi_end_x; label_xy->roi_right = roi_end_y;
+		
+		label_zy->roi_top = roi_start_z; label_zy->roi_left = roi_start_y;
+		label_zy->roi_bottom = roi_end_z; label_zy->roi_right = roi_end_y;
+		
+		label_xz->roi_top = roi_start_x; label_xz->roi_left = roi_start_z;
+		label_xz->roi_bottom = roi_end_x; label_xz->roi_right = roi_end_z;
+	}
+	
 	
 	void update_roi(long start_x, long start_y, long start_z, long wx, long wy, long wz)
 	{
 		// ROI
 		roi_start_x = start_x, roi_start_y = start_y, roi_start_z = start_z;
 		roi_end_x = roi_start_x + wx, roi_end_y = roi_start_y + wy, roi_end_z = roi_start_z + wz;
-	
+		
+		label_xy->roi_top = roi_start_x; label_xy->roi_left = roi_start_y;
+		label_xy->roi_bottom = roi_end_x; label_xy->roi_right = roi_end_y;
+		
+		label_zy->roi_top = roi_start_z; label_zy->roi_left = roi_start_y;
+		label_zy->roi_bottom = roi_end_z; label_zy->roi_right = roi_end_y;
+		
+		label_xz->roi_top = roi_start_x; label_xz->roi_left = roi_start_z;
+		label_xz->roi_bottom = roi_end_x; label_xz->roi_right = roi_end_z;
 	}
 	
 	void update_triview(unsigned char *compressed1d, long cur_x, long cur_y, long cur_z)
@@ -330,6 +510,9 @@ public:
 	long wx, wy, wz;
 	long roi_start_x, roi_start_y, roi_start_z;
 	long roi_end_x, roi_end_y, roi_end_z;
+	
+	//control
+	int plane_n; // 0 xy 1 zy 2 xz
 	
 };
 
@@ -770,49 +953,6 @@ class IndexedData
 {
 	
 };
-
-
-// test
-class MicroscopeFocusControls: public QMainWindow
-{
-	Q_OBJECT
-	
-public:
-	MicroscopeFocusControls()
-	{
-		imageLabel = new QLabel;
-		imageLabel->setBackgroundRole(QPalette::Base);
-		imageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-		imageLabel->setScaledContents(true);
-		
-		scrollArea = new QScrollArea;
-		scrollArea->setBackgroundRole(QPalette::Dark);
-		scrollArea->setWidget(imageLabel);
-		setCentralWidget(scrollArea);
-		
-		setWindowTitle(tr("Focus Controls"));
-		resize(500, 400);
-		
-	};
-	
-	
-	public slots:
-	void update(QImage& qIM)
-	{
-		qDebug()<<"showing...";
-		imageLabel->setPixmap(QPixmap::fromImage(qIM));
-		qDebug()<<"shown...";
-		imageLabel->adjustSize();
-		qDebug()<<"adjusted...";
-	}
-	
-public:
-	
-	QLabel *imageLabel;
-	QScrollArea *scrollArea;
-	
-};
-
 
 
 #endif

@@ -8,7 +8,6 @@
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(miviewer, MIViewerPlugin);
 
-// pairwise stitching function
 //int focusControl(unsigned char *pData, IndexedData idata);
 int iViewer(V3DPluginCallback &callback, QWidget *parent);
 
