@@ -47,7 +47,8 @@ public:
     void refreshScaleInterface();
 
     // interace.
-    QDialog *myDialog;
+    //QDialog *myDialog;
+    QWidget *myDialog;
     QFormLayout *formLayout;
     QFormLayout *formLayoutGroupBox;
     QGroupBox *qBox; // box for scales stuff

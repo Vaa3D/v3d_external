@@ -265,7 +265,8 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent )
 
 
 
-	myDialog = new QDialog(parent);
+	//myDialog = new QDialog(parent);
+	myDialog = new QWidget( );
 
 	QPushButton* ok     = new QPushButton("OK");
 
@@ -385,7 +386,8 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent )
 
 	thresholdResidualScale = 0;
 
-	myDialog->exec();
+	//myDialog->exec();
+	myDialog->show();
 
 
 
