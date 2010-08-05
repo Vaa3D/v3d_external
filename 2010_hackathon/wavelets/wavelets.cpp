@@ -121,14 +121,6 @@ void WaveletPlugin::refreshScaleInterface()
 		litr++;
 	}
 
-	QGroupBox *groupBox = new QGroupBox( qBox );
-	QGridLayout *gridLayout = new QGridLayout( groupBox );
-	groupBox->setTitle( "LowPass Residual" );
-	gridLayout->addWidget( useLowPassCheckBox , 0 , 0 );
-	gridLayout->addWidget( thresholdResidualScaleLabel , 0 , 1 );
-	gridLayout->addWidget( thresholdResidualScaleSlider , 0 , 2 );
-	formLayoutGroupBox->addRow( groupBox );
-
 	myDialog->adjustSize();
 
 	scaleComputationReady = false;
@@ -282,10 +274,20 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent )
 	//QLabel* label2 = new QLabel("Test");
  	qBox= new QGroupBox( myDialog );
 	formLayoutGroupBox = new QFormLayout( qBox );
+
+
 	//qBox->setLayout( formLayoutGroupBox );
 	//formLayoutGroupBox->addRow( label2 );
 
  	formLayout->addRow(qBox);
+
+ 	QGroupBox *groupBox2 = new QGroupBox( qBox );
+	QGridLayout *gridLayout2 = new QGridLayout( groupBox2 );
+	groupBox2->setTitle( "LowPass Residual" );
+	gridLayout2->addWidget( useLowPassCheckBox , 0 , 0 );
+	gridLayout2->addWidget( thresholdResidualScaleLabel , 0 , 1 );
+	gridLayout2->addWidget( thresholdResidualScaleSlider , 0 , 2 );
+	formLayout->addRow( groupBox2 );
 
 	myDialog->setLayout(formLayout);
 	myDialog->setWindowTitle(QString("Wavelets"));
