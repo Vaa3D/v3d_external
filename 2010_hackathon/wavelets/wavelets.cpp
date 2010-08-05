@@ -120,7 +120,7 @@ void WaveletPlugin::refreshScaleInterface()
 		formLayoutGroupBox->addRow( (*litr)->groupBox );
 		litr++;
 	}
-//
+
 
 	QGroupBox *groupBox2 ;
 	groupBox2 = new QGroupBox( qBox );
@@ -130,6 +130,8 @@ void WaveletPlugin::refreshScaleInterface()
 	gridLayout2->addWidget( useLowPassCheckBox , 0 , 0 );
 	gridLayout2->addWidget( thresholdResidualScaleLabel , 0 , 1 );
 	gridLayout2->addWidget( thresholdResidualScaleSlider , 0 , 2 );
+
+
 
 	formLayoutGroupBox->addRow( groupBox2 );
 
@@ -207,7 +209,8 @@ void WaveletPlugin::restoreOriginalImage()
 	printf("%d source" , sourceImage->getTotalBytes() );
 	printf("%d original" , originalImageCopy->getTotalBytes() );
 
-	myCallback->updateImageWindow(sourceWindow);
+	//myCallback->updateImageWindow(sourceWindow);
+	myCallback->setImage(sourceWindow, originalImageCopy );
 }
 
 
