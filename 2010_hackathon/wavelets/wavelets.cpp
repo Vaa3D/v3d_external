@@ -171,6 +171,22 @@ void WaveletPlugin::copyOriginalImage()
 	originalImageCopy->setData( bufferCopy , sourceImage->getXDim() , sourceImage->getYDim(),
 			sourceImage->getZDim(), sourceImage->getCDim() , sourceImage->getDatatype()
 			);
+
+	sourceImage->setXDim( originalImageCopy->getXDim() );
+	sourceImage->setYDim( originalImageCopy->getYDim() );
+	sourceImage->setZDim( originalImageCopy->getZDim() );
+	sourceImage->setCDim( originalImageCopy->getCDim() );
+	sourceImage->setDatatype( originalImageCopy->getDatatype() );
+
+	memcpy( sourceImage->getRawData() , originalImageCopy->getRawData() , originalImageCopy->getTotalBytes() );
+
+	printf("%d source" , sourceImage->getTotalBytes() );
+	printf("%d original" , originalImageCopy->getTotalBytes() );
+	printf("\n");
+
+//	myCallback->setImage(sourceWindow, originalImageCopy );
+	myCallback->updateImageWindow(sourceWindow);
+
 }
 
 void WaveletPlugin::showOriginalPressed()
@@ -194,6 +210,7 @@ void WaveletPlugin::restoreOriginalImage()
 
 	printf("%d source" , sourceImage->getTotalBytes() );
 	printf("%d original" , originalImageCopy->getTotalBytes() );
+	printf("\n");
 
 //	myCallback->setImage(sourceWindow, originalImageCopy );
 	myCallback->updateImageWindow(sourceWindow);
