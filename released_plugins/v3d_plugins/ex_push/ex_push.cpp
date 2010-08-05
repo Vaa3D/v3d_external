@@ -115,12 +115,12 @@ void dopush(V3DPluginCallback &callback, QWidget *parent, int method_code)
 
 			callback.setLandmark(curwin, curlist);
 			callback.setImageName(curwin, QString("push now %1").arg(curloop));
-			callback.updateImageWindow(curwin);
 
 			callback.pushObjectIn3DWindow(curwin);
+			callback.updateImageWindow(curwin);
 			
-			QString BMPfilename = QString("/Users/pengh/temp/aaa_%1.bmp").arg(curloop);
-			screenShot3DWindow(curwin, BMPfilename);
+			QString BMPfilename = QString("/Users/pengh/temp/aaa_%1").arg(curloop);
+			callback.screenShot3DWindow(curwin, BMPfilename);
 		}
 	}
 }
