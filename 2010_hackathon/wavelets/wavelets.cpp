@@ -121,19 +121,13 @@ void WaveletPlugin::refreshScaleInterface()
 		litr++;
 	}
 
-
-	QGroupBox *groupBox2 ;
-	groupBox2 = new QGroupBox( qBox );
-	QGridLayout *gridLayout2 = new QGridLayout( groupBox2 );
-	groupBox2->setTitle( "LowPass Residual" );
-
-	gridLayout2->addWidget( useLowPassCheckBox , 0 , 0 );
-	gridLayout2->addWidget( thresholdResidualScaleLabel , 0 , 1 );
-	gridLayout2->addWidget( thresholdResidualScaleSlider , 0 , 2 );
-
-
-
-	formLayoutGroupBox->addRow( groupBox2 );
+	QGroupBox *groupBox = new QGroupBox( qBox );
+	QGridLayout *gridLayout = new QGridLayout( groupBox );
+	groupBox->setTitle( "LowPass Residual" );
+	gridLayout->addWidget( useLowPassCheckBox , 0 , 0 );
+	gridLayout->addWidget( thresholdResidualScaleLabel , 0 , 1 );
+	gridLayout->addWidget( thresholdResidualScaleSlider , 0 , 2 );
+	formLayoutGroupBox->addRow( groupBox );
 
 	myDialog->adjustSize();
 
@@ -209,8 +203,8 @@ void WaveletPlugin::restoreOriginalImage()
 	printf("%d source" , sourceImage->getTotalBytes() );
 	printf("%d original" , originalImageCopy->getTotalBytes() );
 
+	myCallback->setImage(sourceWindow, originalImageCopy );
 	myCallback->updateImageWindow(sourceWindow);
-	//myCallback->setImage(sourceWindow, originalImageCopy );
 }
 
 
@@ -371,7 +365,7 @@ void WaveletPlugin::sliderResidualChange(int value)
 
 void WaveletPlugin::computeWavelets()
 {
-//	if ( !scaleComputationReady )
+	if ( !scaleComputationReady )
 	{
 		printf("WAVELET : denoise pressed\n");
 
