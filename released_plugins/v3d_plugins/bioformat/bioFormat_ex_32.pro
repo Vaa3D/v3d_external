@@ -6,14 +6,14 @@ INCLUDEPATH  += /System/Library/Frameworks/JavaVM.framework/Headers \
                 dependent/include
 LIBS          = -framework JavaVM \
 		-L/usr/local/lib/ -lboost_thread \
-		dependent/lib/libbfcpp.dylib \
-		dependent/lib/libjace.dylib
+		dependent/maclib/i386/libbfcpp.dylib \
+		dependent/maclib/i386/libjace.dylib
 
 HEADERS       = bioFormat_ex.h
 SOURCES       = bioFormat_ex.cpp
 
 TARGET        = $$qtLibraryTarget(readImage_bioformat)
-QMAKE_POST_LINK = cp dependent/lib/* ../../v3d;
+QMAKE_POST_LINK = cp dependent/maclib/i386/* ../../v3d;
 
 DESTDIR       = ../../v3d/plugins/ReadImage_bioformat
 
