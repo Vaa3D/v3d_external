@@ -73,8 +73,8 @@ newmat_lobj = ${newmat_dir}newmat1.o ${newmat_dir}newmat2.o ${newmat_dir}newmat3
 
 .PHONY: libnewmat
 libnewmat : $(newmat_lobj)
-	$(AR) -cr libnewmat.a  $(newmat_lobj)
-	ranlib libnewmat.a
+	$(AR) -cr libv3dnewmat.a  $(newmat_lobj)
+	ranlib libv3dnewmat.a
 
 #.PHONY: libnewmat.a
 #libnewmat.a:    $(newmat_lobj)
@@ -85,7 +85,5 @@ libnewmat : $(newmat_lobj)
 .PHONY: clean
 clean :
 	rm $(newmat_lobj)
-	if [ -f libnewmat.a ]; then rm libnewmat.a; fi
-	rm ${JBALIB_OBJS} 
-	if [ -f libjba.a ]; then rm libjba.a; fi
+	if [ -f libv3dnewmat.a ]; then rm libv3dnewmat.a; fi
 

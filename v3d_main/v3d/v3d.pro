@@ -311,7 +311,7 @@ LIBS += -L../jba/c++  -L./jba/c++
 
 unix:LIBS += -L../common_lib/lib_unix
 unix:LIBS += -lm -ltiff \
-    -lnewmat 
+    -lv3dnewmat 
 #    -ljba \
 #    -lFL_cellseg \
 #    -lFL_brainseg 
@@ -324,7 +324,7 @@ macx:LIBS -= -ltiff  #do this because unix is a superset of macx
 macx:LIBS += -L../common_lib/lib_mac32
 macx:LIBS += -L./common_lib/lib_mac32
 macx:LIBS += -lm -ltiff32 \
-    -lnewmat 
+    -lv3dnewmat 
 #    -ljba \
 #    -lFL_cellseg \
 #    -lFL_brainseg 
@@ -336,7 +336,7 @@ macx:LIBS += -lm -ltiff32 \
 #    -framework GLUT
 
 win32:LIBS += -lm -ltiff \
-    -lnewmat 
+    -lv3dnewmat 
 #    -ljba \
 #    -lFL_cellseg \
 #    -lFL_brainseg
