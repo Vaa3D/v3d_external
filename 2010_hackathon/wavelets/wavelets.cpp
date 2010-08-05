@@ -209,8 +209,8 @@ void WaveletPlugin::restoreOriginalImage()
 	printf("%d source" , sourceImage->getTotalBytes() );
 	printf("%d original" , originalImageCopy->getTotalBytes() );
 
-	//myCallback->updateImageWindow(sourceWindow);
-	myCallback->setImage(sourceWindow, originalImageCopy );
+	myCallback->updateImageWindow(sourceWindow);
+	//myCallback->setImage(sourceWindow, originalImageCopy );
 }
 
 
