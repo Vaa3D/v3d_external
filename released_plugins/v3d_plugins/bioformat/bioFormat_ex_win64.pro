@@ -5,12 +5,12 @@ CONFIG		+= plugin warn_off
 CONFIG		+= x86_64
 
 INCLUDEPATH	  = ../../../v3d_main/basic_c_fun \
-                ../bioformat_lib/include \
+                dependent/include \
                 "C:\Program Files\Java\jdk1.6.0_21\include" \
                 "C:\Program Files\Java\jdk1.6.0_21\include\win32" \
                 "C:\work\bioformat\boost_1_43_0"
                 
-LIBS          = -L../bioformat_lib/winlib/x64/ -llibboost_thread-vc90-mt-1_43 \
+LIBS          = -L./dependent/winlib/x64/ -llibboost_thread-vc90-mt-1_43 \
 				-llibboost_date_time-vc90-mt-1_43 \
 				C:\work\v3d_2.0\plugin_demo\bioformat_lib\winlib\x64\jace.lib \
 				C:\work\v3d_2.0\plugin_demo\bioformat_lib\winlib\x64\bfcpp.lib \
@@ -31,5 +31,5 @@ LIBS		 += -L../../../v3d_main/common_lib/winlib64/ -llibtiff
 
 TARGET        = $$qtLibraryTarget(readImage_bioformat)
 
-DESTDIR       = ../../../v3d_main/v3d/plugins/ImageIO_bioformat
+DESTDIR       = ../../v3d/plugins/ImageIO_bioformat
 
