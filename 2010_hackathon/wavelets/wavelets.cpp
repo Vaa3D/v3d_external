@@ -187,20 +187,45 @@ void WaveletPlugin::showOriginalPressed()
  */
 void WaveletPlugin::restoreOriginalImage()
 {
+	printf("\nWAVELETS : Restore original Image \n");
+
 	sourceImage->setXDim( originalImageCopy->getXDim() );
 	sourceImage->setYDim( originalImageCopy->getYDim() );
 	sourceImage->setZDim( originalImageCopy->getZDim() );
 	sourceImage->setCDim( originalImageCopy->getCDim() );
 	sourceImage->setDatatype( originalImageCopy->getDatatype() );
 
+	if ( !originalImageCopy->getRawData() )
+	{
+		printf("\n no pointer for originalImageCopy !! \n");
+	}
+	if ( !sourceImage->getRawData() )
+	{
+		printf("\nno pointer for sourceImage !! \n");
+	}
+
+	// MAC OS Version **************************************************************
+/*
+//	memcpy( sourceImage->getRawData() , originalImageCopy->getRawData() , originalImageCopy->getTotalBytes() );
+
+	printf("%d source\n" , sourceImage->getTotalBytes() );
+	printf("%d original\n" , originalImageCopy->getTotalBytes() );
+	printf("\n");
+
+	myCallback->setImage(sourceWindow, originalImageCopy );
+	myCallback->updateImageWindow(sourceWindow);
+*/
+	// WINDOWS Version ************************************************************
+
 	memcpy( sourceImage->getRawData() , originalImageCopy->getRawData() , originalImageCopy->getTotalBytes() );
 
-	printf("%d source" , sourceImage->getTotalBytes() );
-	printf("%d original" , originalImageCopy->getTotalBytes() );
+	printf("%d source\n" , sourceImage->getTotalBytes() );
+	printf("%d original\n" , originalImageCopy->getTotalBytes() );
 	printf("\n");
 
 //	myCallback->setImage(sourceWindow, originalImageCopy );
 	myCallback->updateImageWindow(sourceWindow);
+
 }
 
 
