@@ -25,18 +25,6 @@ cd jba/c++
 call make %*
 cd ../../
 
-cd lobeseg
-call make %*
-cd ../
-
-cd cellseg
-call make -f FL_cellseg.makefile
-cd ../
-
-::cd neurolabi
-:: :: call update_library
-::cd ../
-
 cd v3d
 call qmake v3d.pro
 :: touch command for windows
