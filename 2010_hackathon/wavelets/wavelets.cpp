@@ -611,18 +611,18 @@ void WaveletPlugin::filterB3Wavelets( bool displayDetection )
 	Image4DSimple outImage;
 	outImage.setData(dataOut1d, originalImageCopy->sz0, originalImageCopy->sz1, originalImageCopy->sz2, 1, originalImageCopy->datatype);
 
-	if ( displayDetection ) // BUG Issue: it is not possible to set detection in the current viewer.
+//	if ( displayDetection ) // BUG Issue: it is not possible to set detection in the current viewer.
 	{
 		v3dhandle newwin = myCallback->newImageWindow();
 		myCallback->setImage(newwin, &outImage);
 		myCallback->setImageName(newwin,"Detection");
 		myCallback->setLandmark(newwin, cmList);
 		myCallback->updateImageWindow( newwin );
-	}else
-	{
-		myCallback->setImage(sourceWindow, &outImage);
-		myCallback->updateImageWindow(sourceWindow);
-	}
+//	}else
+//	{
+//		myCallback->setImage(sourceWindow, &outImage);
+//		myCallback->updateImageWindow(sourceWindow);
+//	}
 
 	delete(rec);
 
