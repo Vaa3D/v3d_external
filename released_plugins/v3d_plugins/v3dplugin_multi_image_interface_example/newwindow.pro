@@ -1,7 +1,7 @@
 
 TEMPLATE      = lib
 CONFIG       += plugin warning_off 
-INCLUDEPATH  += ../../basic_c_fun
+INCLUDEPATH  += ../../../v3d_main/basic_c_fun
 HEADERS       = newwindowplugin.h
 SOURCES       = newwindowplugin.cpp
 TARGET        = $$qtLibraryTarget(newwindow)

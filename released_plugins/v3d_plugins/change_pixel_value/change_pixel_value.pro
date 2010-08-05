@@ -1,7 +1,7 @@
 
 TEMPLATE      = lib
 CONFIG       += plugin warn_off
-INCLUDEPATH  += ../../basic_c_fun
+INCLUDEPATH  += ../../../v3d_main/basic_c_fun
 HEADERS       = updatepxlvalplugin.h
 SOURCES       = updatepxlvalplugin.cpp
 TARGET        = $$qtLibraryTarget(updatepxlval)

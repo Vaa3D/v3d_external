@@ -3,7 +3,7 @@
 
 TEMPLATE      = lib
 CONFIG       += plugin warn_off 
-INCLUDEPATH  += ../../basic_c_fun
+INCLUDEPATH  += ../../../v3d_main/basic_c_fun
 HEADERS       = edge_of_maskimg.h
 SOURCES       = edge_of_maskimg.cpp
 SOURCES      += ../../basic_c_fun/v3d_message.cpp

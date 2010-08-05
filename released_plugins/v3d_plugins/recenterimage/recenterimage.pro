@@ -3,11 +3,11 @@
 
 TEMPLATE      = lib
 CONFIG       += plugin warn_off
-INCLUDEPATH  += ../../basic_c_fun
+INCLUDEPATH  += ../../../v3d_main/basic_c_fun 
 HEADERS       = recenterimageplugin.h
-HEADERS      += ../../basic_c_fun/vcdiff.h
+HEADERS      += ../../../v3d_main/basic_c_fun/vcdiff.h
 SOURCES       = recenterimageplugin.cpp
-SOURCES      += ../../basic_c_fun/vcdiff.cpp
+SOURCES      += ../../../v3d_main/basic_c_fun/vcdiff.cpp
 TARGET        = $$qtLibraryTarget(recenterimage)
 DESTDIR       = ../../v3d/plugins/ReCenter_Image
 

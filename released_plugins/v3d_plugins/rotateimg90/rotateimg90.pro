@@ -3,7 +3,7 @@
 
 TEMPLATE      = lib
 CONFIG       += plugin warn_off 
-INCLUDEPATH  += ../../basic_c_fun
+INCLUDEPATH  += ../../../v3d_main/basic_c_fun
 HEADERS       = rotateimg90.h
 SOURCES       = rotateimg90.cpp
 TARGET        = $$qtLibraryTarget(rotateimg90)   #this should be the project name, i.e. the name of the .pro file

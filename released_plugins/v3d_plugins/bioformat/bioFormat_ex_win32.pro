@@ -2,7 +2,7 @@
 TEMPLATE	= lib
 CONFIG		+= plugin warn_off
 
-INCLUDEPATH	  = ../../basic_c_fun \
+INCLUDEPATH	  = ../../../v3d_main/basic_c_fun \
                 ../bioformat_lib/include \
                 "C:\Program Files (x86)\Java\jdk1.6.0_21\include" \
                 "C:\Program Files (x86)\Java\jdk1.6.0_21\include\win32" \
@@ -17,13 +17,13 @@ LIBS          = -L../bioformat_lib/winlib/x86/ -llibboost_thread-vc90-mt-1_43 \
 HEADERS       = bioFormat_ex.h
 SOURCES       = bioFormat_ex.cpp
 
-HEADERS		 += ../../basic_c_fun/mg_utilities.h \
-				../../basic_c_fun/mg_image_lib.h \
-				../../basic_c_fun/stackutil.h
+HEADERS		 += ../../../v3d_main/basic_c_fun/mg_utilities.h \
+				../../../v3d_main/basic_c_fun/mg_image_lib.h \
+				../../../v3d_main/basic_c_fun/stackutil.h
 				
-SOURCES      += ../../basic_c_fun/mg_utilities.cpp \
-				../../basic_c_fun/mg_image_lib.cpp \
-				../../basic_c_fun/stackutil.cpp
+SOURCES      += ../../../v3d_main/basic_c_fun/mg_utilities.cpp \
+				../../../v3d_main/basic_c_fun/mg_image_lib.cpp \
+				../../../v3d_main/basic_c_fun/stackutil.cpp
 				
 LIBS		 += -L../../common_lib/winlib/ -llibtiff
 

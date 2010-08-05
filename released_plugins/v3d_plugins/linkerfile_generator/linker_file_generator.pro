@@ -6,11 +6,11 @@
 TEMPLATE      = lib
 CONFIG       += qt plugin warn_off 
 
-INCLUDEPATH  += ../../basic_c_fun 
+INCLUDEPATH  += ../../../v3d_main/basic_c_fun  
 
 HEADERS       = linker_file_generator.h
 SOURCES       = linker_file_generator.cpp
-SOURCES       += ../../basic_c_fun/v3d_message.cpp
+SOURCES       += ../../../v3d_main/basic_c_fun/v3d_message.cpp
 
 TARGET        = $$qtLibraryTarget(linker_file_generator)   #this should be the project name, i.e. the name of the .pro file
 
