@@ -1,0 +1,372 @@
+<ui version="4.0" >
+ <class>SurfaceObjGeometryDialog</class>
+ <widget class="QDialog" name="SurfaceObjGeometryDialog" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>514</width>
+    <height>450</height>
+   </rect>
+  </property>
+  <property name="minimumSize" >
+   <size>
+    <width>514</width>
+    <height>450</height>
+   </size>
+  </property>
+  <property name="maximumSize" >
+   <size>
+    <width>600</width>
+    <height>450</height>
+   </size>
+  </property>
+  <property name="windowTitle" >
+   <string>Basic Geometry of Surface Object</string>
+  </property>
+  <widget class="QLabel" name="label_11" >
+   <property name="geometry" >
+    <rect>
+     <x>24</x>
+     <y>388</y>
+     <width>469</width>
+     <height>53</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Tip: "scaling" means scaling an object w/o changing the 3D location 
+of the center; "G-scaling" means just multiplying a scaling factor to the 
+current absolute coordinates.</string>
+   </property>
+   <property name="alignment" >
+    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+   </property>
+  </widget>
+  <widget class="QWidget" name="" >
+   <property name="geometry" >
+    <rect>
+     <x>19</x>
+     <y>14</y>
+     <width>478</width>
+     <height>365</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout" >
+    <item>
+     <layout class="QGridLayout" name="gridLayout" >
+      <item row="0" column="0" >
+       <widget class="QLabel" name="label_7" >
+        <property name="text" >
+         <string>axis</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" >
+       <widget class="QLabel" name="label_2" >
+        <property name="text" >
+         <string>X</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2" >
+       <widget class="QLabel" name="label_3" >
+        <property name="text" >
+         <string>Y</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3" >
+       <widget class="QLabel" name="label_4" >
+        <property name="text" >
+         <string>Z</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" >
+       <widget class="QLabel" name="label" >
+        <property name="text" >
+         <string>shift</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" >
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_shift_x" >
+        <property name="decimals" >
+         <number>4</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2" >
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_shift_y" >
+        <property name="decimals" >
+         <number>4</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3" >
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_shift_z" >
+        <property name="decimals" >
+         <number>4</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" >
+       <widget class="QLabel" name="label_5" >
+        <property name="text" >
+         <string>scaling * 1000</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" >
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_scale_x" >
+        <property name="decimals" >
+         <number>4</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2" >
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_scale_y" >
+        <property name="decimals" >
+         <number>4</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3" >
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_scale_z" >
+        <property name="decimals" >
+         <number>4</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" >
+       <widget class="QLabel" name="label_8" >
+        <property name="text" >
+         <string>mirror</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" >
+       <widget class="QCheckBox" name="checkBox_flip_x" >
+        <property name="text" >
+         <string>flip X</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="2" >
+       <widget class="QCheckBox" name="checkBox_flip_y" >
+        <property name="text" >
+         <string>flip Y</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="3" >
+       <widget class="QCheckBox" name="checkBox_flip_z" >
+        <property name="text" >
+         <string>flip Z</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0" >
+       <widget class="QLabel" name="label_6" >
+        <property name="text" >
+         <string>rotation 
+(around the axis)</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item rowspan="2" row="4" column="1" >
+       <widget class="QDial" name="dial_x" >
+        <property name="cursor" >
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+        <property name="autoFillBackground" >
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item rowspan="2" row="4" column="2" >
+       <widget class="QDial" name="dial_y" >
+        <property name="cursor" >
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+       </widget>
+      </item>
+      <item rowspan="2" row="4" column="3" >
+       <widget class="QDial" name="dial_z" >
+        <property name="cursor" >
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" >
+       <widget class="QCheckBox" name="checkBox_enable_rotation" >
+        <property name="text" >
+         <string>use rotation</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0" >
+       <widget class="QLabel" name="label_10" >
+        <property name="text" >
+         <string>G-scaling * 1000</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1" >
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_gscale_x" >
+        <property name="decimals" >
+         <number>4</number>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="2" >
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_gscale_y" >
+        <property name="decimals" >
+         <number>4</number>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="3" >
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_gscale_z" >
+        <property name="decimals" >
+         <number>4</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" >
+      <item>
+       <widget class="QLabel" name="label_9" >
+        <property name="text" >
+         <string>radius scaling * 1000</string>
+        </property>
+        <property name="alignment" >
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_scale_r" >
+        <property name="decimals" >
+         <number>4</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="Line" name="line_2" >
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" >
+      <item>
+       <widget class="QPushButton" name="pushButton_undo_last" >
+        <property name="text" >
+         <string>Undo/redo last change</string>
+        </property>
+        <property name="autoDefault" >
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_reset" >
+        <property name="text" >
+         <string>Reset</string>
+        </property>
+        <property name="autoDefault" >
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer>
+        <property name="orientation" >
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0" >
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_cancel" >
+        <property name="text" >
+         <string>Cancel</string>
+        </property>
+        <property name="autoDefault" >
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_ok" >
+        <property name="text" >
+         <string>OK</string>
+        </property>
+        <property name="autoDefault" >
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+ <designerdata>
+  <property name="gridDeltaX" >
+   <number>4</number>
+  </property>
+  <property name="gridDeltaY" >
+   <number>4</number>
+  </property>
+  <property name="gridSnapX" >
+   <bool>true</bool>
+  </property>
+  <property name="gridSnapY" >
+   <bool>true</bool>
+  </property>
+  <property name="gridVisible" >
+   <bool>true</bool>
+  </property>
+ </designerdata>
+</ui>

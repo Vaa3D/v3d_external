@@ -1,0 +1,16 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+   <file>pic/copy.png</file>
+   <file>pic/cut.png</file>
+   <file>pic/new.png</file>
+   <file>pic/open.png</file>
+   <file>pic/paste.png</file>
+   <file>pic/save.png</file>
+   <file>pic/import.png</file>
+   <file>pic/atlasView.png</file>
+   <file>pic/help.png</file>
+   <file>pic/default_xy_pic.jpg</file>
+   <file>pic/default_yz_pic.jpg</file>
+   <file>pic/default_zx_pic.jpg</file>
+</qresource>
+</RCC>

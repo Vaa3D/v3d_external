@@ -1,0 +1,5 @@
+100702: Linux redhatd v2.477. load atlas viewer and when reload the atlas
+file, crash.
+
+090118: 3d viewer refine landmark location, - the respective 3d location in triview is not update.
+

@@ -1,0 +1,169 @@
+<ui version="4.0" >
+ <class>Dialog_ImageResample</class>
+ <widget class="QDialog" name="Dialog_ImageResample" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>569</width>
+    <height>264</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Dialog</string>
+  </property>
+  <widget class="QWidget" name="layoutWidget" >
+   <property name="geometry" >
+    <rect>
+     <x>30</x>
+     <y>20</y>
+     <width>517</width>
+     <height>202</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout" >
+    <item>
+     <layout class="QGridLayout" name="gridLayout" >
+      <item row="0" column="0" >
+       <widget class="QLabel" name="label" >
+        <property name="text" >
+         <string>Axis/axes along which to resample image</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" >
+       <widget class="QComboBox" name="axesBox" >
+        <item>
+         <property name="text" >
+          <string>Z axis</string>
+         </property>
+        </item>
+        <item>
+         <property name="text" >
+          <string>XY axis (in proportion)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text" >
+          <string>XYZ axis (in proportion)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text" >
+          <string>X axis</string>
+         </property>
+        </item>
+        <item>
+         <property name="text" >
+          <string>Y axis</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0" >
+       <widget class="QLabel" name="label_3" >
+        <property name="text" >
+         <string>current pixel size (um) :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" >
+       <widget class="QDoubleSpinBox" name="currentpixelsizeBox" >
+        <property name="decimals" >
+         <number>4</number>
+        </property>
+        <property name="maximum" >
+         <double>1000000.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" >
+       <widget class="QLabel" name="label_4" >
+        <property name="text" >
+         <string>target pixel size (um) :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" >
+       <widget class="QDoubleSpinBox" name="targetpixelsizeBox" >
+        <property name="decimals" >
+         <number>4</number>
+        </property>
+        <property name="maximum" >
+         <double>1000000.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" >
+       <widget class="QLabel" name="label_2" >
+        <property name="text" >
+         <string>Voxel/pixel interpolation method:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" >
+       <widget class="QComboBox" name="interp_method_box" >
+        <property name="currentIndex" >
+         <number>1</number>
+        </property>
+        <item>
+         <property name="text" >
+          <string>nearest neighbor interpolation</string>
+         </property>
+        </item>
+        <item>
+         <property name="text" >
+          <string>linear interpolation</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2" >
+      <item>
+       <spacer name="horizontalSpacer" >
+        <property name="orientation" >
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0" >
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="cancelButton" >
+        <property name="text" >
+         <string>Cancel</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="okButton" >
+        <property name="text" >
+         <string>OK</string>
+        </property>
+        <property name="default" >
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QLabel" name="infolabel" >
+      <property name="text" >
+       <string>info: Image Resampling Options</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

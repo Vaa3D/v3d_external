@@ -1,0 +1,10 @@
+ <!DOCTYPE RCC><RCC version="1.0">
+ <qresource>
+	 <file>shader/lighting.txt</file>
+     <file>shader/color_vertex.txt</file>
+     <file>shader/vertex_normal.txt</file>
+     <file>shader/color_fragment.txt</file>
+     <file>shader/obj_fragment.txt</file>
+     <file>shader/tex_fragment.txt</file>
+ </qresource>
+ </RCC>
