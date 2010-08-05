@@ -198,7 +198,7 @@ void WaveletPlugin::restoreOriginalImage()
 	sourceImage->setCDim( originalImageCopy->getCDim() );
 	sourceImage->setDatatype( originalImageCopy->getDatatype() );
 
-	memcpy( sourceImage->getRawData() , originalImageCopy->getRawData() , originalImageCopy->getTotalBytes() );
+//	memcpy( sourceImage->getRawData() , originalImageCopy->getRawData() , originalImageCopy->getTotalBytes() );
 
 	printf("%d source" , sourceImage->getTotalBytes() );
 	printf("%d original" , originalImageCopy->getTotalBytes() );
