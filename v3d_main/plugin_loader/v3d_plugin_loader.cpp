@@ -99,10 +99,11 @@ void V3d_PluginLoader::clear()
 
 	foreach (QPluginLoader* loader, pluginList)
     {
-        if (loader->isLoaded())
-        {
-        	loader->unload();
-        }
+		//100805 RZC: this MUST don't called because it may cause model-less plugin to crash.
+//        if (loader->isLoaded())
+//        {
+//        	loader->unload();
+//        }
 		delete loader;
     }
 	pluginList.clear();
