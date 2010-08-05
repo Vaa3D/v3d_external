@@ -119,7 +119,7 @@ void dopush(V3DPluginCallback &callback, QWidget *parent, int method_code)
 			callback.pushObjectIn3DWindow(curwin);
 			callback.updateImageWindow(curwin);
 			
-			QString BMPfilename = QString("/Users/pengh/temp/aaa_%1").arg(curloop);
+			QString BMPfilename = QString("aaa_%1").arg(curloop);
 			callback.screenShot3DWindow(curwin, BMPfilename);
 		}
 	}
