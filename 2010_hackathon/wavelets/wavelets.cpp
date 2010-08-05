@@ -318,6 +318,23 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent )
 	gridLayout2->addWidget( thresholdResidualScaleSlider , 0 , 2 );
 	formLayout->addRow( groupBox2 );
 
+	thresholdFinalSlider = new QSlider(Qt::Horizontal);
+	thresholdFinalLabel = new QLabel("0");
+	thresholdFinalLabel->setFixedSize(20,20);
+
+ 	QGroupBox *groupBox3 = new QGroupBox( qBox );
+	QGridLayout *gridLayout3 = new QGridLayout( groupBox3 );
+	groupBox3->setTitle( "Final threshold" );
+	thresholdFinalSlider->setFocusPolicy(Qt::StrongFocus);
+	thresholdFinalSlider->setTickPosition(QSlider::TicksBothSides);
+	thresholdFinalSlider->setTickInterval(20);
+	thresholdFinalSlider->setSingleStep(1);
+	thresholdFinalSlider->setMaximum(255);
+	thresholdFinalLabel->setFixedSize(100,20);
+	gridLayout3->addWidget( thresholdFinalSlider , 0 , 0 );
+	gridLayout3->addWidget( thresholdFinalLabel , 0 , 1 );
+	formLayout->addRow( groupBox3 );
+
 	myDialog->setLayout(formLayout);
 	myDialog->setWindowTitle(QString("Wavelets"));
 
@@ -362,12 +379,25 @@ void WaveletPlugin::initGUI( V3DPluginCallback &callback, QWidget *parent )
 
 	myDialog->connect(thresholdResidualScaleSlider, SIGNAL(valueChanged(int)), this, SLOT(sliderResidualChange(int)));
 
+	myDialog->connect(thresholdFinalSlider, SIGNAL(valueChanged(int)), this, SLOT(thresholdFinalSliderChange(int)));
+
+
+
 	thresholdResidualScale = 0;
 
 	myDialog->exec();
 
 
 
+}
+
+void WaveletPlugin::thresholdFinalSliderChange( int value )
+{
+	thresholdFinal = value;
+	char * text = new char[50];
+	sprintf(text , "%d" , value  );
+	thresholdFinalLabel->setText( text );
+	updateWaveletAskedByGUI();
 }
 
 void WaveletPlugin::useLowPassPressed()
@@ -540,6 +570,34 @@ void WaveletPlugin::filterB3Wavelets()
 	//reconstruct image from coefficients
 	double* rec = new double[N];
 	b3WaveletReconstruction(resTab, lowPassResidual, rec, numScales, N);
+
+
+	// Final threshold
+
+	for ( int n = 0 ; n<N ; n++ )
+	{
+		if ( rec[n] < thresholdFinal )
+		{
+			rec[n]=0;
+		}
+	}
+
+	// perform detection
+
+	printf("\nDETECTION\n");
+	LandmarkList cmList;
+	if ( szz > 1 )
+	{
+		// 3D
+		cmList = v3d_utils::getConnectedComponents(rec, szx, szy, szz, 0 );
+	}else
+	{
+		// 2D
+		cmList = v3d_utils::getConnectedComponents2D(rec, szx, szy, szz, 0 );
+	}
+
+	myCallback->setLandmark(sourceWindow, cmList); // center of mass
+	printf("\nDETECTION FINISHED\n");
 
 	//display reconstructed image
 	//rescaleForDisplay(rec, rec, N, originalImageCopy->datatype);

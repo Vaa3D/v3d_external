@@ -24,6 +24,7 @@
 #include <QtCore>
 #include <list>
 #include <v3d_basicdatatype.h>
+#include <v3d_utils.h>
 
 #if USING_FFT
 #include <fftw3.h>
@@ -53,6 +54,9 @@ public:
     QProgressBar *progressBar;
     QSlider *thresholdResidualScaleSlider;
     QLabel* thresholdResidualScaleLabel ;
+
+    QSlider *thresholdFinalSlider;
+    QLabel* thresholdFinalLabel ;
 
     // wavelet input interface
 
@@ -109,6 +113,7 @@ public:
 	void WaveletTransform(V3DPluginCallback &callback, QWidget *parent);
 
 	int thresholdResidualScale ;
+	int thresholdFinal ;
 
 	// refresh CallBack
 
@@ -133,6 +138,7 @@ public slots:
 	void showOriginalPressed( );
 	void livePressed();
 	void useLowPassPressed();
+	void thresholdFinalSliderChange( int value );
 
 };
 
