@@ -22,7 +22,7 @@ echo make $ARGS
 echo ==========================================================
 
 cd jba/c++ 
-make $ARGS  
+make -f jba.makefile $ARGS  
 cd ../../
 
 cd v3d
