@@ -21,6 +21,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <list>
+//#include "wavelets.h"
+class WaveletPlugin;
 
 class ScaleInfo : public QObject
 {
@@ -29,7 +31,7 @@ class ScaleInfo : public QObject
 public:
 
 // QGroupBox *parent
-	ScaleInfo( int scalNumber , QGroupBox *parent );
+	ScaleInfo( WaveletPlugin *waveletPlugin , int scalNumber , QGroupBox *parent );
 	virtual ~ScaleInfo( );
 
 	// data
@@ -47,6 +49,13 @@ public:
 //	QDialog *myDialog;
 	int thresholdValue;
 	bool enable;
+
+//	int (WaveletPlugin::*callBack)( ) = NULL;
+
+	WaveletPlugin *waveletPlugin;
+
+//	WaveletPlugin *plugin;
+
 
 public slots:
 	void enableButtonPressed();

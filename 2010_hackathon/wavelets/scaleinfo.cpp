@@ -20,8 +20,9 @@
 #include <list>
 
 #include "scaleinfo.h"
+#include "wavelets.h"
 
-ScaleInfo::~ScaleInfo()
+ScaleInfo::~ScaleInfo(  )
 {
 	printf("SCALE INFO : destructing scaleInfo.\n");
 
@@ -38,8 +39,9 @@ ScaleInfo::~ScaleInfo()
 
 }
 
-ScaleInfo::ScaleInfo( int scaleNumber , QGroupBox *parent ) // TODO: Generalized it (might have som QContainer ?)
+ScaleInfo::ScaleInfo( WaveletPlugin *waveletPlugin , int scaleNumber , QGroupBox *parent ) // TODO: Generalized it (might have som QContainer ?)
 {
+	this->waveletPlugin = waveletPlugin;
 	printf( "%i \n", scaleNumber );
 	groupBox = new QGroupBox( parent );
 	gridLayout = new QGridLayout( groupBox );
@@ -64,7 +66,7 @@ ScaleInfo::ScaleInfo( int scaleNumber , QGroupBox *parent ) // TODO: Generalized
 	thresholdSlider->setTickPosition(QSlider::TicksBothSides);
 	thresholdSlider->setTickInterval(1);
 	thresholdSlider->setSingleStep(1);
-	thresholdSlider->setMaximum(20);
+	thresholdSlider->setMaximum(50);
 	thresholdSlider->setFixedSize(100,20);
 
 	gridLayout->addWidget( enableCheckBox , 0 , 0 );
@@ -82,6 +84,7 @@ void ScaleInfo::enableButtonPressed()
 	printf("enable button pressed\n");
 //	thresholdSlider->setEnabled( enableCheckBox->isChecked() );
 	enable = enableCheckBox->isChecked();
+	waveletPlugin->updateWaveletAskedByGUI();
 }
 
 void ScaleInfo::sliderChange(int value )
@@ -91,6 +94,10 @@ void ScaleInfo::sliderChange(int value )
 	char *text = new char[50];
 	sprintf( text , "%d" , value );
 	thresholdValueLabel->setText( text );
+	if (enable)
+	{
+		waveletPlugin->updateWaveletAskedByGUI();
+	}
 }
 
 
