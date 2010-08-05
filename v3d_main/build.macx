@@ -82,4 +82,5 @@ touch v3d_version_info.cpp
 make $ARGS
 cd ../
 
-
+cp -r ./v3d/v3d.app ../released_plugins/v3d/.
+cp -r ./v3d/v3d64.app ../released_plugins/v3d/.
