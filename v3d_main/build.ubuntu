@@ -25,18 +25,6 @@ cd jba/c++
 make $ARGS  
 cd ../../
 
-cd lobeseg
-make $ARGS 
-cd ../
-
-cd cellseg
-make -f FL_cellseg.makefile $ARGS 
-cd ../
-
-#cd neurolabi
-#: call update_library
-#cd ../
-
 cd v3d
 echo qmake v3d.pro \"$QARGS\"
 echo =========================================================
