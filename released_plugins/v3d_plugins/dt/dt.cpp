@@ -182,7 +182,7 @@ void dtimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 	printf("time eclapse %d s for dist computing!\n", (end_t-start_t)/1000000);
 	
 	Image4DSimple p4DImage;
-	p4DImage.setData((unsigned char*)pData, sz0, sz1, sz2, 1, subject->datatype);
+	p4DImage.setData((unsigned char*)pData, sz0, sz1, sz2, 1, subject->getDatatype());
 	
 	v3dhandle newwin;
 	if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to use the existing window?"), QMessageBox::Yes, QMessageBox::No))

@@ -108,7 +108,7 @@ void Threshold(V3DPluginCallback &v3d, QWidget *parent)
 	V3DLONG N = image->getTotalBytes();
 	unsigned char* newdata1d = new unsigned char[N];
 	Image4DSimple tmp;
-	tmp.setData(newdata1d, image->sz0,image->sz1,image->sz2,image->sz3, image->datatype);
+	tmp.setData(newdata1d, image->getXDim(),image->getYDim(),image->getZDim(),image->getCDim(), image->getDatatype());
 
 	Image4DProxy<Image4DSimple> p0(image);
 	Image4DProxy<Image4DSimple> p(&tmp);
@@ -178,7 +178,7 @@ void Compute(char op, V3DPluginCallback &v3d, QWidget *parent)
 	unsigned char* newdata1d = new unsigned char[N1];
 
 	Image4DSimple tmp;
-	tmp.setData(newdata1d, image1->sz0,image1->sz1,image1->sz2,image1->sz3, image1->datatype);
+	tmp.setData(newdata1d, image1->getXDim(),image1->getYDim(),image1->getZDim(),image1->getCDim(), image1->getDatatype());
 
 	Image4DProxy<Image4DSimple> p1(image1);
 	Image4DProxy<Image4DSimple> p2(image2);

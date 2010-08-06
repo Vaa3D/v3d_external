@@ -1,6 +1,7 @@
 /* movieZCswitch.cpp
  * 2009-09-22: create this program by Yang Yu
  * 2009-09-28. Last edit by Hanchuan Peng. only change the texts in the options
+ * 2010-08-06. by hanchuan Peng, to adapt to the patch of the image4dsimple data structure
  */
 
 #include <QtGui>
@@ -62,7 +63,7 @@ int changeMS(V3DPluginCallback &callback, QWidget *parent)
 	Image4DSimple p4DImage;
 	
 	unsigned char* image1d = image->getRawData();
-	V3DLONG sx=image->sz0, sy=image->sz1, sz=image->sz2, sc=image->sz3;
+	V3DLONG sx=image->getXDim(), sy=image->getYDim(), sz=image->getZDim(), sc=image->getCDim();
 	
 	V3DLONG ts_max = (sz>sc)?sz:sc;
 	
@@ -92,14 +93,14 @@ int changeMS(V3DPluginCallback &callback, QWidget *parent)
 
 	if(!(QString::compare(item, "4D {XYZ,Color} Stack --> 5D {XYZ,Color,Time} Stack")))
 	{
-		p4DImage.timepacktype = TIME_PACK_C;
+		p4DImage.setTimePackType(TIME_PACK_C);
 
 //		V3DLONG imagecount = image->getTDim();
 		
 		V3DLONG pagesz=sx*sy;
 		V3DLONG channelsz=sx*sy*sz;
 		
-		p4DImage.sz_time = timepoints;
+		p4DImage.setTDim(timepoints);
 		V3DLONG imagecount = timepoints;
 		
 		sz /= imagecount;
@@ -125,10 +126,10 @@ int changeMS(V3DPluginCallback &callback, QWidget *parent)
 	}
 	else if(!(QString::compare(item, "5D {XYZ,Color,Time} Stack --> 4D {XYZ,Color} Stack")))
 	{
-		p4DImage.timepacktype = TIME_PACK_Z;
+		p4DImage.setTimePackType(TIME_PACK_Z);
 		
 		V3DLONG pagesz=sx*sy;
-		V3DLONG channelsz=sx*sy*sz;
+//		V3DLONG channelsz=sx*sy*sz;
 //		V3DLONG imagecount = image->getTDim();
 		
 		V3DLONG imagecount = timepoints;
@@ -161,7 +162,7 @@ int changeMS(V3DPluginCallback &callback, QWidget *parent)
 	}
 
 	// show in v3d
-	p4DImage.setData(data1d, sx,sy,sz,sc, image->datatype);
+	p4DImage.setData(data1d, sx,sy,sz,sc, image->getDatatype());
 	
 	v3dhandle newwin = callback.newImageWindow();
 	callback.setImage(newwin, &p4DImage);

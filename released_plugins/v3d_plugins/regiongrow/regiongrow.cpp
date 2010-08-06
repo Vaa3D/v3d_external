@@ -613,7 +613,7 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	
 	
 	Image4DSimple p4DImage;
-	p4DImage.setData((unsigned char*)data1d, sx, sy, sz, 1, subject->datatype); // data1d
+	p4DImage.setData((unsigned char*)data1d, sx, sy, sz, 1, subject->getDatatype()); // data1d
 	
 	v3dhandle newwin = callback.newImageWindow();
 	callback.setImage(newwin, &p4DImage);
