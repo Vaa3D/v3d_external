@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <string.h>
+
 #include "waveletTransform.h"
 
 void checkImageDimensions(int width, int height, int depth, int numScales) throw (WaveletConfigException)
