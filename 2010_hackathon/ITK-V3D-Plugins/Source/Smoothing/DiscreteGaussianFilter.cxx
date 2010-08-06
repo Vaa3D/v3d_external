@@ -174,7 +174,7 @@ public:
 			long N = p4DImage->getTotalBytes();
 			unsigned char* newdata1d = new unsigned char[N];
 			Image4DSimple tmp;
-			tmp.setData(newdata1d, p4DImage->sz0,p4DImage->sz1,p4DImage->sz2,p4DImage->sz3, p4DImage->datatype);
+			tmp.setData(newdata1d, p4DImage );
 
 			//copy data back to the new image
 			while(!it.IsAtEnd())

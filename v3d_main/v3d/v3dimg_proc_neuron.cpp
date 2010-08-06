@@ -299,7 +299,7 @@ bool My4DImage::proj_trace_deformablepath_two_points(V3DLONG startmark_id, V3DLO
 		throw ("Color channel info is not valid in CHECK_DATA_trace_deformablepath MACRO();\n"); \
 		return false; \
 	} \
-	if (datatype!=V3D_UINT8 || !data4d_uint8 ) \
+	if (this->getDatatype()!=V3D_UINT8 || !data4d_uint8 ) \
 	{ \
 		v3d_msg ("Now supports UINT8 only in CHECK_DATA_trace_deformablepath MACRO.\n"); \
 		throw ("Now supports UINT8 only in CHECK_DATA_trace_deformablepath MACRO.\n"); \
@@ -1261,7 +1261,7 @@ bool My4DImage::proj_trace_profileNeuronSeg(V3DLONG node_id, NeuronTree *p_tree,
 
 				rr = subject_swc.row.at(i).data[5];
 
-				if (cx<0 || cx>=sz0 || cy<0 || cy>=sz1 || cz<0 || cz>=sz2)
+				if (cx<0 || cx>=this->getXDim() || cy<0 || cy>=this->getYDim() || cz<0 || cz>=this->getZDim())
 				{
 					v3d_msg(QString("coordinate of node %1 is not within the image rgn. Skip it.").arg(i), 0);
 					prof_total << int(-1); //in this case give it an invalid value
@@ -1281,12 +1281,12 @@ bool My4DImage::proj_trace_profileNeuronSeg(V3DLONG node_id, NeuronTree *p_tree,
 					}
 
 					double v = 0;
-					int xs=qBound(0, int(cx-rr), int(sz0-1)),
-						xe=qBound(0, int(cx+rr), int(sz0-1)),
-						ys=qBound(0, int(cy-rr), int(sz1-1)),
-						ye=qBound(0, int(cy+rr), int(sz1-1)),
-						zs=qBound(0, int(cz-rr), int(sz2-1)),
-						ze=qBound(0, int(cz+rr), int(sz2-1));
+					int xs=qBound(0, int(cx-rr), int(this->getXDim()-1)),
+						xe=qBound(0, int(cx+rr), int(this->getXDim()-1)),
+						ys=qBound(0, int(cy-rr), int(this->getYDim()-1)),
+						ye=qBound(0, int(cy+rr), int(this->getYDim()-1)),
+						zs=qBound(0, int(cz-rr), int(this->getZDim()-1)),
+						ze=qBound(0, int(cz+rr), int(this->getZDim()-1));
 					double d=rr*rr, tt;
 					V3DLONG n=0;
 					for (int kt=zs;kt<=ze;kt++)

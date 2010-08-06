@@ -137,8 +137,8 @@ bool XFormWidget::importGeneralImgSeries(const QStringList & mylist, TimePackTyp
 				v3d_msg("Fail to allocate memory for the image stack. Exit importing.\n");
 				return false;
 			}
-			imgData->sz_time = ntime;
-			imgData->timepacktype = timepacktype;
+			imgData->setTDim( ntime );
+			imgData->setTimePackType( timepacktype );
 		}
 		else
 		{
@@ -163,11 +163,11 @@ bool XFormWidget::importGeneralImgSeries(const QStringList & mylist, TimePackTyp
 			unsigned char * cur_target1d_block;
 			if (timepacktype==TIME_PACK_Z)
 			{
-				cur_target1d_block = imgData->data1d + (cur_ch*ntime + cur_time)*block_size;
+				cur_target1d_block = imgData->getRawData() + (cur_ch*ntime + cur_time)*block_size;
 			}
 			else
 			{
-				cur_target1d_block = imgData->data1d + (cur_ch + cur_time*ncolors)*block_size;
+				cur_target1d_block = imgData->getRawData() + (cur_ch + cur_time*ncolors)*block_size;
 			}
 			
 			//for (V3DLONG j=0; j<(block_size); j++)   cur_target1d_block[j] = cur_data1d_block[j];
@@ -535,7 +535,7 @@ bool XFormWidget::importLeicaData()
 			cur_data1d_datapage = cur_data1d;
 		else
 			cur_data1d_datapage = cur_data1d + cur_ch*curimgwid*curimghei;
-		unsigned char * cur_target1d = imgData->data1d+(V3DLONG(i%ncolors)*nzplanes + cur_page)*curimgwid*curimghei;
+		unsigned char * cur_target1d = imgData->getRawData()+(V3DLONG(i%ncolors)*nzplanes + cur_page)*curimgwid*curimghei;
 		for (V3DLONG j=0;j<curimgwid*curimghei;j++)
 		{
 			cur_target1d[j] = cur_data1d_datapage[j];

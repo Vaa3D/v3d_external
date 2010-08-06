@@ -980,13 +980,13 @@ void V3D_atlas_viewerDialog::pickAtlasRow(int i, int j)
 //	s = tr("%1").arg(int(imgdata->at(p_landmark->x, p_landmark->y, p_landmark->z, 0)));
 //	newItem = new QTableWidgetItem(s);	t->setItem(row, j++, newItem);
 //
-//	if (imgdata->sz3>=2)
+//	if (imgdata->getCDim()>=2)
 //		s = tr("%1").arg(int(imgdata->at(p_landmark->x, p_landmark->y, p_landmark->z, 1)));
 //	else
 //		s = tr("%1").arg(0);
 //	newItem = new QTableWidgetItem(s);	t->setItem(row, j++, newItem);
 //
-//	if (imgdata->sz3>=3)
+//	if (imgdata->getCDim()>=3)
 //		s = tr("%1").arg(int(imgdata->at(p_landmark->x, p_landmark->y, p_landmark->z, 2)));
 //	else
 //		s = tr("%1").arg(0);
@@ -1036,13 +1036,13 @@ bool V3D_atlas_viewerDialog::updateTableItem_Landmark(QTableWidget *t, int row, 
 		s = tr("%1").arg(int(imgdata->at(p_landmark->x, p_landmark->y, p_landmark->z, 0)));
 		newItem = new QTableWidgetItem(s);	t->setItem(row, j++, newItem);
 
-		if (imgdata->sz3>=2)
+		if (imgdata->getCDim()>=2)
 			s = tr("%1").arg(int(imgdata->at(p_landmark->x, p_landmark->y, p_landmark->z, 1)));
 		else
 			s = tr("%1").arg(0);
 		newItem = new QTableWidgetItem(s);	t->setItem(row, j++, newItem);
 
-		if (imgdata->sz3>=3)
+		if (imgdata->getCDim()>=3)
 			s = tr("%1").arg(int(imgdata->at(p_landmark->x, p_landmark->y, p_landmark->z, 2)));
 		else
 			s = tr("%1").arg(0);

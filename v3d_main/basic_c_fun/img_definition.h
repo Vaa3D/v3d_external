@@ -520,7 +520,7 @@ public:
 template <class T> class Vol3DSimple
 {
 private:
-    Size3D sz;
+  Size3D sz;
 	V3DLONG len;
 	T * data1d;
 	T *** data3d;

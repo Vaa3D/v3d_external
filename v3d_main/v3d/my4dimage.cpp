@@ -467,7 +467,7 @@ void My4DImage::getColorMapInfo(int & len, ImageDisplayColorType & c)
 
 void **** My4DImage::getData(ImagePixelType & dtype)
 {
-	dtype = datatype;
+	dtype = this->getDatatype();
 	if (dtype==V3D_UINT8 || dtype==V3D_UINT16)
 		return data4d_virtual;
 	else
@@ -476,14 +476,16 @@ void **** My4DImage::getData(ImagePixelType & dtype)
 
 double My4DImage::at(int x, int y, int z, int c) //return a double number because it can always be converted back to UINT8 and UINT16 without information loss
 { //return -1 in case error such as x,y,z,c are illegal values
-	if (!data4d_virtual || x<0 || y<0 || z<0 || c<0 || x>=sz0 || y>=sz1 || z>=sz2 || c>=sz3)
+	bool result =  (!data4d_virtual || x<0 || y<0 || z<0 || c<0 || 
+    x >= this->getXDim() || y >= this->getYDim() || z>=this->getZDim() || c>=this->getCDim() );
+	if ( result )
 	{
 		v3d_msg("error happened. Check the command line debuging info.");
 		printf("error happened. p=%ld x=%d y=%d z=%d c=%d\n", (V3DLONG)data4d_virtual, x, y, z, c);
 		return -1;
 	}
 
-	switch (datatype)
+	switch ( this->getDatatype() )
 	{
 		case V3D_UINT8:
 			return double(data4d_uint8[c][z][y][x]);
@@ -514,12 +516,12 @@ bool My4DImage::reshape(V3DLONG rsz0, V3DLONG rsz1, V3DLONG rsz2, V3DLONG rsz3)
 {
 	//if (!data4d_uint8) {v3d_msg("now only support unit8 in reshape().");  return false;}
 	
-	if (sz0==rsz0 && sz1==rsz1 && sz2==rsz2 && sz3==rsz3)
+	if (this->getXDim()==rsz0 && this->getYDim()==rsz1 && this->getZDim()==rsz2 && this->getCDim()==rsz3)
 	{
 		v3d_msg("The dimensions are the same. Do nothing.\n");
 		return true;
 	}
-	if (sz0*sz1*sz2*sz3 != rsz0*rsz1*rsz2*rsz3)
+	if (this->getXDim()*this->getYDim()*this->getZDim()*this->getCDim() != rsz0*rsz1*rsz2*rsz3)
 	{
 		v3d_msg("The dimensions do not match. The total number of pixels are not the same. Do nothing.\n");
 		return false;
@@ -527,14 +529,18 @@ bool My4DImage::reshape(V3DLONG rsz0, V3DLONG rsz1, V3DLONG rsz2, V3DLONG rsz3)
 
 	cleanExistData_only4Dpointers();
 
-	sz0=rsz0; sz1=rsz1; sz2=rsz2; sz3=rsz3;
+	this->setXDim(rsz0);
+  this->setYDim(rsz1);
+  this->setZDim(rsz2);
+  this->setCDim(rsz3);
+
 	setupData4D();
 
 	//update GUI
 
-	curFocusX = sz0/2; //-= bpos_x+1; //begin from first slices
-	curFocusY = sz1/2; //-= bpos_y+1;
-	curFocusZ = sz2/2; //-= bpos_z+1;
+	curFocusX = this->getXDim()/2; //-= bpos_x+1; //begin from first slices
+	curFocusY = this->getYDim()/2; //-= bpos_y+1;
+	curFocusZ = this->getZDim()/2; //-= bpos_z+1;
 
 	//update the color display mode, as the number of channels could change
 	if (p_mainWidget->getColorType()!=colorPseudoMaskColor && p_mainWidget->getColorType()!=colorHanchuanFlyBrainColor && p_mainWidget->getColorType()!=colorArnimFlyBrainColor) //otherwise does not need to change
@@ -597,12 +603,12 @@ bool My4DImage::permute(V3DLONG dimorder[4]) //081001: can also be impelemented 
 
 	//then generate a swap memory for data
 
-	V3DLONG tmp_dim[4]; tmp_dim[0]=sz0; tmp_dim[1]=sz1; tmp_dim[2]=sz2; tmp_dim[3]=sz3;
+	V3DLONG tmp_dim[4]; tmp_dim[0]=this->getXDim(); tmp_dim[1]=this->getYDim(); tmp_dim[2]=this->getZDim(); tmp_dim[3]=this->getCDim();
 	My4DImage * tmp_img = 0;
 	try
 	{
 		tmp_img = new My4DImage;
-		tmp_img->loadImage(tmp_dim[dimorder[0]], tmp_dim[dimorder[1]], tmp_dim[dimorder[2]], tmp_dim[dimorder[3]], datatype);
+		tmp_img->loadImage(tmp_dim[dimorder[0]], tmp_dim[dimorder[1]], tmp_dim[dimorder[2]], tmp_dim[dimorder[3]], this->getDatatype() );
 		if (!tmp_img->valid())
 		{
 			v3d_msg("Fail to produce a swap for image permutation. Do nothing.\n");
@@ -621,20 +627,20 @@ bool My4DImage::permute(V3DLONG dimorder[4]) //081001: can also be impelemented 
 	unsigned char **** tmp_data4d_uint8 = 0;
 
 	V3DLONG ind_array[4];
-	switch (datatype)
+	switch ( this->getDatatype() )
 	{
 		case V3D_UINT8:
 			tmp_data4d_uint8 = (unsigned char ****)tmp_img->getData();
-			for (c=0;c<sz3;c++)
+			for (c=0;c<this->getCDim();c++)
 			{
 				ind_array[3] = c;
-				for (k=0;k<sz2;k++)
+				for (k=0;k<this->getZDim();k++)
 				{
 					ind_array[2] = k;
-					for (j=0;j<sz1;j++)
+					for (j=0;j<this->getYDim();j++)
 					{
 						ind_array[1] = j;
-						for (i=0;i<sz0;i++)
+						for (i=0;i<this->getXDim();i++)
 						{
 							ind_array[0] = i;
 							tmp_data4d_uint8[ind_array[dimorder[3]]][ind_array[dimorder[2]]][ind_array[dimorder[1]]][ind_array[dimorder[0]]] = data4d_uint8[c][k][j][i];
@@ -645,16 +651,16 @@ bool My4DImage::permute(V3DLONG dimorder[4]) //081001: can also be impelemented 
 			break;
 		case V3D_UINT16:
 			tmp_data4d_uint16 = (USHORTINT16 ****)tmp_img->getData();
-			for (c=0;c<sz3;c++)
+			for (c=0;c<this->getCDim();c++)
 			{
 				ind_array[3] = c;
-				for (k=0;k<sz2;k++)
+				for (k=0;k<this->getZDim();k++)
 				{
 					ind_array[2] = k;
-					for (j=0;j<sz1;j++)
+					for (j=0;j<this->getYDim();j++)
 					{
 						ind_array[1] = j;
-						for (i=0;i<sz0;i++)
+						for (i=0;i<this->getXDim();i++)
 						{
 							ind_array[0] = i;
 							tmp_data4d_uint16[ind_array[dimorder[3]]][ind_array[dimorder[2]]][ind_array[dimorder[1]]][ind_array[dimorder[0]]] = data4d_uint16[c][k][j][i];
@@ -666,16 +672,16 @@ bool My4DImage::permute(V3DLONG dimorder[4]) //081001: can also be impelemented 
 
 		case V3D_FLOAT32:
 			tmp_data4d_float32 = (float ****)tmp_img->getData();
-			for (c=0;c<sz3;c++)
+			for (c=0;c<this->getCDim();c++)
 			{
 				ind_array[3] = c;
-				for (k=0;k<sz2;k++)
+				for (k=0;k<this->getZDim();k++)
 				{
 					ind_array[2] = k;
-					for (j=0;j<sz1;j++)
+					for (j=0;j<this->getYDim();j++)
 					{
 						ind_array[1] = j;
-						for (i=0;i<sz0;i++)
+						for (i=0;i<this->getXDim();i++)
 						{
 							ind_array[0] = i;
 							tmp_data4d_float32[ind_array[dimorder[3]]][ind_array[dimorder[2]]][ind_array[dimorder[1]]][ind_array[dimorder[0]]] = data4d_float32[c][k][j][i];
@@ -693,21 +699,28 @@ bool My4DImage::permute(V3DLONG dimorder[4]) //081001: can also be impelemented 
 	}
 
 	unsigned char *tmp_1d = tmp_img->getRawData();
+	unsigned char *dst_1d = this->getRawData();
 	for (i=0;i<getTotalBytes();i++)
-		data1d[i] = tmp_1d[i];
+    {
+		*dst_1d++ = *tmp_1d++;
+    }
 
 	if (tmp_img) {delete tmp_img; tmp_img=0;}
 
 	cleanExistData_only4Dpointers();
 
-	sz0 = tmp_dim[dimorder[0]], sz1=tmp_dim[dimorder[1]], sz2=tmp_dim[dimorder[2]], sz3=tmp_dim[dimorder[3]];
+	this->setXDim( tmp_dim[dimorder[0]] );
+  this->setYDim( tmp_dim[dimorder[1]] );
+  this->setZDim( tmp_dim[dimorder[2]] );
+  this->setCDim( tmp_dim[dimorder[3]] );
+
 	setupData4D();
 
 	//update GUI
 
-	curFocusX = sz0/2; //-= bpos_x+1; //begin from first slices
-	curFocusY = sz1/2; //-= bpos_y+1;
-	curFocusZ = sz2/2; //-= bpos_z+1;
+	curFocusX = this->getXDim()/2; //-= bpos_x+1; //begin from first slices
+	curFocusY = this->getYDim()/2; //-= bpos_y+1;
+	curFocusZ = this->getZDim()/2; //-= bpos_z+1;
 
 	//update the color display mode, as the number of channels could change
 	if (p_mainWidget->getColorType()!=colorPseudoMaskColor && p_mainWidget->getColorType()!=colorHanchuanFlyBrainColor && p_mainWidget->getColorType()!=colorArnimFlyBrainColor) //otherwise does not need to change
@@ -738,21 +751,21 @@ bool My4DImage::permute(V3DLONG dimorder[4]) //081001: can also be impelemented 
 double My4DImage::getChannalMinIntensity(V3DLONG channo) //if channo <0 or out of range, then return the in of all channels
 {
 	if (!p_vmin) return 0;
-	if (channo>=0 && channo<sz3) return p_vmin[channo];
-	else {V3DLONG tmppos; return maxInVector(p_vmin, sz3, tmppos);}
+	if (channo>=0 && channo<this->getCDim()) return p_vmin[channo];
+	else {V3DLONG tmppos; return maxInVector(p_vmin, this->getCDim(), tmppos);}
 }
 
 double My4DImage::getChannalMaxIntensity(V3DLONG channo) //if channo <0 or out of range, then return the max of all channels
 {
 	if (!p_vmax) return 0;
-	if (channo>=0 && channo<sz3) return p_vmax[channo];
-	else {V3DLONG tmppos; return maxInVector(p_vmin, sz3, tmppos);}
+	if (channo>=0 && channo<this->getCDim()) return p_vmax[channo];
+	else {V3DLONG tmppos; return maxInVector(p_vmin, this->getCDim(), tmppos);}
 }
 
 
 void My4DImage::setupData4D()
 {
-	if (b_error==1 || !data1d)
+	if (this->getError()==1 || ! this->getRawData() )
 	{
 		v3d_msg("Invalid input data for setting up 4D pointers setupData4D().\n", false);
 		return;
@@ -764,12 +777,12 @@ void My4DImage::setupData4D()
 		return;
 	}
 
-	switch (datatype)
+	switch ( this->getDatatype() )
 	{
 		case V3D_UINT8:
-			if (!new4dpointer_v3d(data4d_uint8, sz0, sz1, sz2, sz3, data1d))
+			if (!new4dpointer_v3d(data4d_uint8, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim(), this->getRawData() ))
 			{
-				b_error = 1;
+				this->setError( 1 );
 				return;
 			}
 			data4d_virtual = (void ****)data4d_uint8;
@@ -779,9 +792,9 @@ void My4DImage::setupData4D()
 			break;
 
 		case V3D_UINT16:
-			if (!new4dpointer_v3d(data4d_uint16, sz0, sz1, sz2, sz3, data1d))
+			if (!new4dpointer_v3d(data4d_uint16, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim(), this->getRawData() ))
 			{
-				b_error = 1;
+				this->setError( 1 );
 				return;
 			}
 			data4d_virtual = (void ****)data4d_uint16;
@@ -793,9 +806,9 @@ void My4DImage::setupData4D()
 			break;
 
 		case V3D_FLOAT32:
-			if (!new4dpointer_v3d(data4d_float32, sz0, sz1, sz2, sz3, data1d))
+			if (!new4dpointer_v3d(data4d_float32, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim(), this->getRawData() ))
 			{
-				b_error = 1;
+				this->setError( 1 );
 				return;
 			}
 			data4d_virtual = (void ****)data4d_float32;
@@ -805,22 +818,22 @@ void My4DImage::setupData4D()
 			break;
 
 		default:
-			b_error = 1;
+			this->setError( 1 );
 			v3d_msg("Invalid data type found in setupData4D(). Should never happen, - check with V3D developers.");
 			return;
 			//break;
 	}
 
-	curFocusX = sz0>>1; //begin from first slices
-	curFocusY = sz1>>1;
-	curFocusZ = sz2>>1;
+	curFocusX = this->getXDim()>>1; //begin from first slices
+	curFocusY = this->getYDim()>>1;
+	curFocusZ = this->getZDim()>>1;
 }
 
 
 
 bool My4DImage::updateminmaxvalues()
 {
-	if (b_error==1 || !data1d || sz3<=0 || sz0<=0 || sz1<=0 || sz2<=0)
+	if (this->getError() == 1 || !this->getRawData()  || this->getCDim()<=0 || this->getXDim()<=0 || this->getYDim()<=0 || this->getZDim()<=0)
 	{
 		v3d_msg("The image data is invalid.\n", false);
 		return false;
@@ -832,57 +845,57 @@ bool My4DImage::updateminmaxvalues()
 
 	try
 	{
-		p_vmax = new double [sz3];
-		p_vmin = new double [sz3];
+		p_vmax = new double [this->getCDim()];
+		p_vmin = new double [this->getCDim()];
 	}
 	catch (...)
 	{
 		v3d_msg("Error happened in allocating memory.\n");
-		b_error=1;
+		this->setError(1);
 		if (p_vmax) {delete []p_vmax; p_vmax=0;}
 		if (p_vmin) {delete []p_vmin; p_vmin=0;}
 		return false;
 	}
 
 	V3DLONG i, tmppos;
-	V3DLONG channelPageSize = V3DLONG(sz0)*sz1*sz2;
+	V3DLONG channelPageSize = V3DLONG(this->getXDim())*this->getYDim()*this->getZDim();
 
-	switch (datatype)
+	switch (this->getDatatype())
 	{
 		case V3D_UINT8:
-			for(i=0;i<sz3;i++)
+			for(i=0;i<this->getCDim();i++)
 			{
 				unsigned char minvv,maxvv;
 				V3DLONG tmppos_min, tmppos_max;
-				minMaxInVector((unsigned char *)(data1d+(V3DLONG)i*channelPageSize*sizeof(unsigned char)), channelPageSize, tmppos_min, minvv, tmppos_max, maxvv);
+				minMaxInVector((unsigned char *)(this->getRawData() +(V3DLONG)i*channelPageSize*sizeof(unsigned char)), channelPageSize, tmppos_min, minvv, tmppos_max, maxvv);
 				p_vmax[i] = maxvv; p_vmin[i] = minvv;
 			}
 			break;
 
 		case V3D_UINT16:
-			for(i=0;i<sz3;i++)
+			for(i=0;i<this->getCDim();i++)
 			{
 				USHORTINT16 minvv,maxvv;
 				V3DLONG tmppos_min, tmppos_max;
-				minMaxInVector((USHORTINT16 *)(data1d+(V3DLONG)i*channelPageSize*sizeof(USHORTINT16)), channelPageSize, tmppos_min, minvv, tmppos_max, maxvv);
+				minMaxInVector((USHORTINT16 *)(this->getRawData() +(V3DLONG)i*channelPageSize*sizeof(USHORTINT16)), channelPageSize, tmppos_min, minvv, tmppos_max, maxvv);
 				p_vmax[i] = maxvv; p_vmin[i] = minvv;
 				printf("channel [%ld] max=[%5.3f] min=[%5.3f]\n", i, p_vmax[i], p_vmin[i]);
 			}
 			break;
 
 		case V3D_FLOAT32:
-			for(i=0;i<sz3;i++)
+			for(i=0;i<this->getCDim();i++)
 			{
 				float minvv,maxvv;
 				V3DLONG tmppos_min, tmppos_max;
-				minMaxInVector((float *)(data1d+(V3DLONG)i*channelPageSize*sizeof(float)), channelPageSize, tmppos_min, minvv, tmppos_max, maxvv);
+				minMaxInVector((float *)(this->getRawData() +(V3DLONG)i*channelPageSize*sizeof(float)), channelPageSize, tmppos_min, minvv, tmppos_max, maxvv);
 				p_vmax[i] = maxvv; p_vmin[i] = minvv;
 				printf("channel [%ld] max=[%5.3f] min=[%5.3f]\n", i, p_vmax[i], p_vmin[i]);
 			}
 			break;
 
 		default:
-			b_error = 1;
+			this->setError(1);
 			v3d_msg("Invalid data type found in updateminmaxvalues(). Should never happen, - check with V3D developers.");
 			return false;
 	}
@@ -893,39 +906,39 @@ bool My4DImage::updateminmaxvalues()
 void My4DImage::loadImage(V3DLONG imgsz0, V3DLONG imgsz1, V3DLONG imgsz2, V3DLONG imgsz3, int imgdatatype) //an overloaded function to create a blank image
 {
 	Image4DSimple::createBlankImage(imgsz0, imgsz1, imgsz2, imgsz3, imgdatatype);
-	if (b_error==1 || !data1d)
+	if (this->getError()==1 || !this->getRawData() )
 	{
 		v3d_msg("Error happened in creating 1d data.\n");
 		return;
 	}
 
 	try {
-	p_vmax = new double [sz3];
-	p_vmin = new double [sz3];
+	p_vmax = new double [this->getCDim()];
+	p_vmin = new double [this->getCDim()];
 	}
 	catch (...)
 	{
 		v3d_msg("Error happened in allocating memory.\n");
-		b_error=1;
+		this->setError(1);
 		if (p_vmax) {delete []p_vmax; p_vmax=NULL;}
 		if (p_vmin) {delete []p_vmin; p_vmin=NULL;}
 		return;
 	}
 
 	V3DLONG i, tmppos;
-	V3DLONG channelPageSize = V3DLONG(sz0)*sz1*sz2;
+	V3DLONG channelPageSize = V3DLONG(this->getXDim())*this->getYDim()*this->getZDim();
 
-	switch (datatype)
+	switch (this->getDatatype())
 	{
 		case V3D_UINT8:
-			if (!new4dpointer(data4d_uint8, sz0, sz1, sz2, sz3, data1d))
+			if (!new4dpointer(data4d_uint8, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim(), this->getRawData() ))
 			{
-				b_error = 1;
+				this->setError(1);
 				return;
 			}
 			data4d_virtual = (void ****)data4d_uint8;
 
-			for(i=0;i<sz3;i++)
+			for(i=0;i<this->getCDim();i++)
 			{
 				p_vmax[i] = 0; //no need to compute as it is blank
 				p_vmin[i] = 0;
@@ -937,14 +950,14 @@ void My4DImage::loadImage(V3DLONG imgsz0, V3DLONG imgsz1, V3DLONG imgsz2, V3DLON
 			break;
 
 		case V3D_UINT16:
-			if (!new4dpointer(data4d_uint16, sz0, sz1, sz2, sz3, (USHORTINT16 *)data1d))
+			if (!new4dpointer(data4d_uint16, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim(), (USHORTINT16 *)this->getRawData() ))
 			{
-				b_error = 1;
+				this->setError(1);
 				return;
 			}
 			data4d_virtual = (void ****)data4d_uint16;
 
-			for(i=0;i<sz3;i++)
+			for(i=0;i<this->getCDim();i++)
 			{
 				p_vmax[i] = 0;
 				p_vmin[i] = 0;
@@ -958,14 +971,14 @@ void My4DImage::loadImage(V3DLONG imgsz0, V3DLONG imgsz1, V3DLONG imgsz2, V3DLON
 			break;
 
 		case V3D_FLOAT32:
-			if (!new4dpointer(data4d_float32, sz0, sz1, sz2, sz3, (float *)data1d))
+			if (!new4dpointer(data4d_float32, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim(), (float *)this->getRawData() ))
 			{
-				b_error = 1;
+				this->setError(1);
 				return;
 			}
 			data4d_virtual = (void ****)data4d_float32;
 
-			for(i=0;i<sz3;i++)
+			for(i=0;i<this->getCDim();i++)
 			{
 				p_vmax[i] = 0;
 				p_vmin[i] = 0;
@@ -976,14 +989,14 @@ void My4DImage::loadImage(V3DLONG imgsz0, V3DLONG imgsz1, V3DLONG imgsz2, V3DLON
 			break;
 
 		default:
-			b_error = 1;
+			this->setError(1);
 			return;
 			//break;
 	}
 
-	curFocusX = sz0>>1; //change to middle slide 090718. //begin from first slices. Original is 1, should be wrong. corrected to 0 on 060426
-	curFocusY = sz1>>1;
-	curFocusZ = sz2>>1;
+	curFocusX = this->getXDim()>>1; //change to middle slide 090718. //begin from first slices. Original is 1, should be wrong. corrected to 0 on 060426
+	curFocusY = this->getYDim()>>1;
+	curFocusZ = this->getZDim()>>1;
 }
 
 bool My4DImage::saveVANO_data()
@@ -999,7 +1012,7 @@ bool My4DImage::saveVANO_data()
 	);
 
 	//select the grayimage and mask image
-	if (datatype!=V3D_UINT8)
+	if ( this->getDatatype() != V3D_UINT8 )
 	{
 		v3d_msg("Now the VANO exporting program only supports 8bit data for the ORIGINAL (grayscale) stack. Check your data first.");
 		return false;
@@ -1025,7 +1038,7 @@ bool My4DImage::saveVANO_data()
 	QString linkerFile = QFileDialog::getSaveFileName(0,
 													  "Choose a filename to save under",
 													  //"./",
-													  QString(imgSrcFile)+".ano",
+													  QString(this->getFileName())+".ano",
 													  "Save VANO linker file format (*.ano)");
 
 	while (linkerFile.isEmpty()) //note that I used isEmpty() instead of isNull, although seems the Cancel operation will return a null string. phc 060422
@@ -1037,7 +1050,7 @@ bool My4DImage::saveVANO_data()
 		linkerFile = QFileDialog::getSaveFileName(0,
 												  "Choose a filename to save under",
 												  "./",
-												  //QString(imgSrcFile)+".ano",
+												  //QString(this->getFileName())+".ano",
 												  "Save VANO linker file format (*.ano)");
 	}
 
@@ -1102,7 +1115,7 @@ bool My4DImage::saveMovie()
 //	QString outputFile = QFileDialog::getSaveFileName(0,
 //													  "Choose a filename to save under",
 //													  //"./",
-//													  QString(imgSrcFile)+".cp.tif",
+//													  QString(this->getFileName())+".cp.tif",
 //													  "Save file format (*.raw *.tif)");
 //
 //	while (outputFile.isEmpty()) //note that I used isEmpty() instead of isNull, although seems the Cancel operation will return a null string. phc 060422
@@ -1132,7 +1145,7 @@ bool My4DImage::saveFile()
 	QString outputFile = QFileDialog::getSaveFileName(0,
 													  "Choose a filename to save under",
 													  //"./",
-													  QString(imgSrcFile)+".cp.tif",
+													  QString(this->getFileName())+".cp.tif",
 													  "Save file format (*.raw *.tif)");
 
 	while (outputFile.isEmpty()) //note that I used isEmpty() instead of isNull, although seems the Cancel operation will return a null string. phc 060422
@@ -1188,14 +1201,14 @@ void My4DImage::crop(int landmark_crop_opt)
 	QRect b_yz = p_yz_view->getRoiBoundingRect();
 	QRect b_zx = p_zx_view->getRoiBoundingRect();
 
-	V3DLONG bpos_x = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.left(), b_zx.left())), sz0-1),
-	bpos_y = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.top(),  b_yz.top())), sz1-1),
-	bpos_z = qBound(V3DLONG(0), V3DLONG(qMax(b_yz.left(), b_zx.top())), sz2-1),
+	V3DLONG bpos_x = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.left(), b_zx.left())), this->getXDim()-1),
+	bpos_y = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.top(),  b_yz.top())), this->getYDim()-1),
+	bpos_z = qBound(V3DLONG(0), V3DLONG(qMax(b_yz.left(), b_zx.top())), this->getZDim()-1),
 	bpos_c = 0;
-	V3DLONG epos_x = qBound(V3DLONG(0), V3DLONG(qMin(b_xy.right(), b_zx.right())), sz0-1),
-	epos_y = qBound(V3DLONG(0), V3DLONG(qMin(b_xy.bottom(), b_yz.bottom())), sz1-1),
-	epos_z = qBound(V3DLONG(0), V3DLONG(qMin(b_yz.right(), b_zx.bottom())), sz2-1),
-	epos_c = sz3-1;
+	V3DLONG epos_x = qBound(V3DLONG(0), V3DLONG(qMin(b_xy.right(), b_zx.right())), this->getXDim()-1),
+	epos_y = qBound(V3DLONG(0), V3DLONG(qMin(b_xy.bottom(), b_yz.bottom())), this->getYDim()-1),
+	epos_z = qBound(V3DLONG(0), V3DLONG(qMin(b_yz.right(), b_zx.bottom())), this->getZDim()-1),
+	epos_c = this->getCDim()-1;
 
 	if (bpos_x>epos_x || bpos_y>epos_y || bpos_z>epos_z)
 	{
@@ -1217,15 +1230,15 @@ void My4DImage::crop(V3DLONG bpos_x, V3DLONG epos_x, V3DLONG bpos_y, V3DLONG epo
 	if (!p_xy_view || !p_yz_view || !p_zx_view)
 		return;
 
-	bpos_x = qBound(V3DLONG(0), bpos_x, sz0-1);
-	bpos_y = qBound(V3DLONG(0), bpos_y, sz1-1);
-	bpos_z = qBound(V3DLONG(0), bpos_z, sz2-1);
-	bpos_c = qBound(V3DLONG(0), bpos_c, sz3-1);
+	bpos_x = qBound(V3DLONG(0), bpos_x, this->getXDim()-1);
+	bpos_y = qBound(V3DLONG(0), bpos_y, this->getYDim()-1);
+	bpos_z = qBound(V3DLONG(0), bpos_z, this->getZDim()-1);
+	bpos_c = qBound(V3DLONG(0), bpos_c, this->getCDim()-1);
 
-	epos_x = qBound(V3DLONG(0), epos_x, sz0-1);
-	epos_y = qBound(V3DLONG(0), epos_y, sz1-1);
-	epos_z = qBound(V3DLONG(0), epos_z, sz2-1);
-	epos_c = qBound(V3DLONG(0), epos_c, sz3-1);
+	epos_x = qBound(V3DLONG(0), epos_x, this->getXDim()-1);
+	epos_y = qBound(V3DLONG(0), epos_y, this->getYDim()-1);
+	epos_z = qBound(V3DLONG(0), epos_z, this->getZDim()-1);
+	epos_c = qBound(V3DLONG(0), epos_c, this->getCDim()-1);
 
 	if (bpos_x>epos_x || bpos_y>epos_y || bpos_z>epos_z)
 	{
@@ -1245,13 +1258,13 @@ void My4DImage::crop(V3DLONG bpos_x, V3DLONG epos_x, V3DLONG bpos_y, V3DLONG epo
     unsigned char **** ndata4d_uint8 = 0;
 
 	unsigned char * ndata1d = 0;
-	ImagePixelType ndatatype = datatype;
+	ImagePixelType ndatatype = this->getDatatype();
 
 	V3DLONG i,j,k,c, i0,j0,k0,c0;
 
 	try
 	{
-		switch (datatype)
+		switch ( this->getDatatype() )
 		{
 			case V3D_UINT8:
 				ndata1d = new unsigned char [nsz0 * nsz1 * nsz2 * nsz3];
@@ -1263,7 +1276,7 @@ void My4DImage::crop(V3DLONG bpos_x, V3DLONG epos_x, V3DLONG bpos_y, V3DLONG epo
 
 				if (!new4dpointer_v3d(ndata4d_uint8, nsz0, nsz1, nsz2, nsz3, ndata1d))
 				{
-					b_error = 1;
+					this->setError(1);
 					if (ndata1d) {delete ndata1d; ndata1d=0;}
 					return;
 				}
@@ -1293,7 +1306,7 @@ void My4DImage::crop(V3DLONG bpos_x, V3DLONG epos_x, V3DLONG bpos_y, V3DLONG epo
 
 				if (!new4dpointer_v3d(ndata4d_uint16, nsz0, nsz1, nsz2, nsz3, ndata1d))
 				{
-					b_error = 1;
+					this->setError(1);
 					if (ndata1d) {delete ndata1d; ndata1d=0;}
 					return;
 				}
@@ -1323,7 +1336,7 @@ void My4DImage::crop(V3DLONG bpos_x, V3DLONG epos_x, V3DLONG bpos_y, V3DLONG epo
 
 				if (!new4dpointer_v3d(ndata4d_float32, nsz0, nsz1, nsz2, nsz3, ndata1d))
 				{
-					b_error = 1;
+					this->setError(1);
 					if (ndata1d) {delete ndata1d; ndata1d=0;}
 					return;
 				}
@@ -1344,7 +1357,7 @@ void My4DImage::crop(V3DLONG bpos_x, V3DLONG epos_x, V3DLONG bpos_y, V3DLONG epo
 				break;
 
 			default:
-				b_error = 1;
+				this->setError(1);
 				if (ndata1d) {delete ndata1d; ndata1d=0;}
 				return;
 				//break;
@@ -1358,52 +1371,55 @@ void My4DImage::crop(V3DLONG bpos_x, V3DLONG epos_x, V3DLONG bpos_y, V3DLONG epo
 
 	cleanExistData_butKeepFileName();
 
-	data1d = ndata1d;
+	this->setRawDataPointer( ndata1d );
+
 	data4d_float32 = ndata4d_float32;
 	data4d_uint16 = ndata4d_uint16;
 	data4d_uint8 = ndata4d_uint8;
-	datatype = ndatatype;
-	sz0 = nsz0;
-	sz1 = nsz1;
-	sz2 = nsz2;
-	sz3 = nsz3;
+
+	this->setDatatype( ndatatype );
+
+	this->setXDim( nsz0 );
+	this->setYDim( nsz1 );
+	this->setZDim( nsz2 );
+	this->setCDim( nsz3 );
 
 	try
 	{
-		p_vmax = new double [sz3];
-		p_vmin = new double [sz3];
+		p_vmax = new double [this->getCDim()];
+		p_vmin = new double [this->getCDim()];
 	}
 	catch (...)
 	{
 		v3d_msg("Fail to allocate memory.");
-		b_error=1;
+		this->setError(1);
 		if (p_vmax) {delete []p_vmax; p_vmax=NULL;}
 		if (p_vmin) {delete []p_vmin; p_vmin=NULL;}
 		return;
 	}
 
 	V3DLONG tmppos;
-	V3DLONG channelPageSize = V3DLONG(sz0)*sz1*sz2;
+	V3DLONG channelPageSize = V3DLONG(this->getXDim())*this->getYDim()*this->getZDim();
 
-	switch (datatype)
+	switch ( this->getDatatype() )
 	{
 		case V3D_UINT8:
 			data4d_virtual = (void ****)data4d_uint8;
 
-			for(i=0;i<sz3;i++)
+			for(i=0;i<this->getCDim();i++)
 			{
-				p_vmax[i] = (double)maxInVector((unsigned char *)data1d+(V3DLONG)i*channelPageSize*sizeof(unsigned char), channelPageSize, tmppos);
-				p_vmin[i] = (double)minInVector((unsigned char *)data1d+(V3DLONG)i*channelPageSize*sizeof(unsigned char), channelPageSize, tmppos);
+				p_vmax[i] = (double)maxInVector((unsigned char *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(unsigned char), channelPageSize, tmppos);
+				p_vmin[i] = (double)minInVector((unsigned char *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(unsigned char), channelPageSize, tmppos);
 			}
 			break;
 
 		case V3D_UINT16:
 			data4d_virtual = (void ****)data4d_uint16;
 
-			for(i=0;i<sz3;i++)
+			for(i=0;i<this->getCDim();i++)
 			{
-				p_vmax[i] = (double)maxInVector((USHORTINT16 *)data1d+(V3DLONG)i*channelPageSize*sizeof(USHORTINT16), channelPageSize, tmppos);
-				p_vmin[i] = (double)minInVector((USHORTINT16 *)data1d+(V3DLONG)i*channelPageSize*sizeof(USHORTINT16), channelPageSize, tmppos);
+				p_vmax[i] = (double)maxInVector((USHORTINT16 *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(USHORTINT16), channelPageSize, tmppos);
+				p_vmin[i] = (double)minInVector((USHORTINT16 *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(USHORTINT16), channelPageSize, tmppos);
 			}
 
 			//v3d_msg("Warning: this data type UINT16 has not been supported in display yet.\n");
@@ -1413,10 +1429,10 @@ void My4DImage::crop(V3DLONG bpos_x, V3DLONG epos_x, V3DLONG bpos_y, V3DLONG epo
 		case V3D_FLOAT32:
 			data4d_virtual = (void ****)data4d_float32;
 
-			for(i=0;i<sz3;i++)
+			for(i=0;i<this->getCDim();i++)
 			{
-				p_vmax[i] = (double)maxInVector((float *)data1d+(V3DLONG)i*channelPageSize*sizeof(float), channelPageSize, tmppos);
-				p_vmin[i] = (double)minInVector((float *)data1d+(V3DLONG)i*channelPageSize*sizeof(float), channelPageSize, tmppos);
+				p_vmax[i] = (double)maxInVector((float *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(float), channelPageSize, tmppos);
+				p_vmin[i] = (double)minInVector((float *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(float), channelPageSize, tmppos);
 			}
 
 			v3d_msg("Warning: this data type FLOAT32 has not been supported in display yet.\n");
@@ -1424,14 +1440,14 @@ void My4DImage::crop(V3DLONG bpos_x, V3DLONG epos_x, V3DLONG bpos_y, V3DLONG epo
 			break;
 
 		default:
-			b_error = 1;
+			this->setError(1);
 			return;
 			//break;
 	}
 
-	curFocusX = sz0/2; //-= bpos_x+1; //begin from first slices
-	curFocusY = sz1/2; //-= bpos_y+1;
-	curFocusZ = sz2/2; //-= bpos_z+1;
+	curFocusX = this->getXDim()/2; //-= bpos_x+1; //begin from first slices
+	curFocusY = this->getYDim()/2; //-= bpos_y+1;
+	curFocusZ = this->getZDim()/2; //-= bpos_z+1;
 
 	//update the color display mode, as the number of channels could change
 	if (p_mainWidget->getColorType()!=colorPseudoMaskColor && p_mainWidget->getColorType()!=colorHanchuanFlyBrainColor && p_mainWidget->getColorType()!=colorArnimFlyBrainColor) //otherwise does not need to change
@@ -1485,7 +1501,7 @@ void My4DImage::crop(V3DLONG bpos_x, V3DLONG epos_x, V3DLONG bpos_y, V3DLONG epo
 
 bool My4DImage::maskBW_roi_bbox(unsigned char tval, V3DLONG c_min, V3DLONG c_max, ImageMaskingCode my_maskcode, bool b_inside=true)
 {
-	if (datatype!=V3D_UINT8)
+	if ( this->getDatatype() != V3D_UINT8 )
 	{
 		v3d_msg("only support UINT8 data in maskBW_roi_bbox();\n");
 		return false;
@@ -1502,15 +1518,15 @@ bool My4DImage::maskBW_roi_bbox(unsigned char tval, V3DLONG c_min, V3DLONG c_max
 
 	V3DLONG bpos_x, bpos_y, bpos_z, bpos_c, epos_x, epos_y, epos_z, epos_c;
 
-	bpos_x = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.left(), b_zx.left())), sz0-1),
-	bpos_y = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.top(),  b_yz.top())), sz1-1),
-	bpos_z = qBound(V3DLONG(0), V3DLONG(qMax(b_yz.left(), b_zx.top())), sz2-1),
-	bpos_c = qBound(V3DLONG(0), c_min, sz3-1);
+	bpos_x = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.left(), b_zx.left())), this->getXDim()-1),
+	bpos_y = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.top(),  b_yz.top())), this->getYDim()-1),
+	bpos_z = qBound(V3DLONG(0), V3DLONG(qMax(b_yz.left(), b_zx.top())), this->getZDim()-1),
+	bpos_c = qBound(V3DLONG(0), c_min, this->getCDim()-1);
 
-	epos_x = qBound(V3DLONG(0), V3DLONG(qMin(b_xy.right(), b_zx.right())), sz0-1),
-	epos_y = qBound(V3DLONG(0), V3DLONG(qMin(b_xy.bottom(), b_yz.bottom())), sz1-1),
-	epos_z = qBound(V3DLONG(0), V3DLONG(qMin(b_yz.right(), b_zx.bottom())), sz2-1),
-	epos_c = qBound(V3DLONG(0), c_max, sz3-1);
+	epos_x = qBound(V3DLONG(0), V3DLONG(qMin(b_xy.right(), b_zx.right())), this->getXDim()-1),
+	epos_y = qBound(V3DLONG(0), V3DLONG(qMin(b_xy.bottom(), b_yz.bottom())), this->getYDim()-1),
+	epos_z = qBound(V3DLONG(0), V3DLONG(qMin(b_yz.right(), b_zx.bottom())), this->getZDim()-1),
+	epos_c = qBound(V3DLONG(0), c_max, this->getCDim()-1);
 
 	if (my_maskcode==IMC_XYZ_INTERSECT)
 	{
@@ -1521,9 +1537,9 @@ bool My4DImage::maskBW_roi_bbox(unsigned char tval, V3DLONG c_min, V3DLONG c_max
 		}
 	}
 
-	if (my_maskcode==IMC_XY) {bpos_z=0; epos_z=sz2-1;}
-	else if (my_maskcode==IMC_YZ) {bpos_x=0; epos_x=sz0-1;}
-	else if (my_maskcode==IMC_XZ) {bpos_y=0; epos_y=sz1-1;}
+	if (my_maskcode==IMC_XY) {bpos_z=0; epos_z=this->getZDim()-1;}
+	else if (my_maskcode==IMC_YZ) {bpos_x=0; epos_x=this->getXDim()-1;}
+	else if (my_maskcode==IMC_XZ) {bpos_y=0; epos_y=this->getYDim()-1;}
 
 	//get the data 4d now
 	unsigned char **** d4d = data4d_uint8;
@@ -1532,9 +1548,9 @@ bool My4DImage::maskBW_roi_bbox(unsigned char tval, V3DLONG c_min, V3DLONG c_max
 
 	if (!b_inside) //add the b_inside part 090428
 	{
-		for (k=0;k<sz2;k++)
-			for (j=0;j<sz1;j++)
-				for (i=0;i<sz0;i++)
+		for (k=0;k<this->getZDim();k++)
+			for (j=0;j<this->getYDim();j++)
+				for (i=0;i<this->getXDim();i++)
 				{
 					if (k<bpos_z || k>epos_z || j<bpos_y || j>epos_y || i<bpos_x || i>epos_x)
 					{
@@ -1558,13 +1574,13 @@ bool My4DImage::maskBW_roi_bbox(unsigned char tval, V3DLONG c_min, V3DLONG c_max
 		else if (my_maskcode==IMC_XYZ_UNION)
 		{
 			bool b_setFlag=false;
-			for (k=0; k<sz2; k++)
+			for (k=0; k<this->getZDim(); k++)
 			{
 				b_setFlag = (k>=bpos_z && k<=epos_z) ? true : false;
-				for (j=0; j<sz1; j++)
+				for (j=0; j<this->getYDim(); j++)
 				{
 					if (!b_setFlag) b_setFlag = (j>=bpos_y && j<=epos_y) ? true : false;
-					for (i=0; i<sz0; i++)
+					for (i=0; i<this->getXDim(); i++)
 					{
 						if (!b_setFlag) b_setFlag = (i>=bpos_x && i<=epos_x) ? true : false;
 						if (b_setFlag)
@@ -1591,7 +1607,7 @@ bool My4DImage::maskBW_roi_bbox(unsigned char tval, V3DLONG c_min, V3DLONG c_max
 
 bool My4DImage::maskBW_roi(unsigned char tval, V3DLONG c_min, V3DLONG c_max, ImageMaskingCode my_maskcode, bool b_inside) //there is a bug in this program for seq masking which need to fixed later, phc 080424
 {
-	if (datatype!=V3D_UINT8)
+	if ( this->getDatatype() != V3D_UINT8 )
 	{
 		v3d_msg("only support UINT8 data in maskBW_roi_bbox();\n");
 		return false;
@@ -1612,19 +1628,19 @@ bool My4DImage::maskBW_roi(unsigned char tval, V3DLONG c_min, V3DLONG c_max, Ima
 
 	V3DLONG bpos_x, bpos_y, bpos_z, bpos_c, epos_x, epos_y, epos_z, epos_c;
 
-	bpos_x = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.left(), b_zx.left())), sz0-1),
-	bpos_y = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.top(),  b_yz.top())), sz1-1),
-	bpos_z = qBound(V3DLONG(0), V3DLONG(qMax(b_yz.left(), b_zx.top())), sz2-1),
-	bpos_c = qBound(V3DLONG(0), c_min, sz3-1);
+	bpos_x = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.left(), b_zx.left())), this->getXDim()-1),
+	bpos_y = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.top(),  b_yz.top())), this->getYDim()-1),
+	bpos_z = qBound(V3DLONG(0), V3DLONG(qMax(b_yz.left(), b_zx.top())), this->getZDim()-1),
+	bpos_c = qBound(V3DLONG(0), c_min, this->getCDim()-1);
 
-	epos_x = qBound(V3DLONG(0), V3DLONG(qMin(b_xy.right(), b_zx.right())), sz0-1),
-	epos_y = qBound(V3DLONG(0), V3DLONG(qMin(b_xy.bottom(), b_yz.bottom())), sz1-1),
-	epos_z = qBound(V3DLONG(0), V3DLONG(qMin(b_yz.right(), b_zx.bottom())), sz2-1),
-	epos_c = qBound(V3DLONG(0), c_max, sz3-1);
+	epos_x = qBound(V3DLONG(0), V3DLONG(qMin(b_xy.right(), b_zx.right())), this->getXDim()-1),
+	epos_y = qBound(V3DLONG(0), V3DLONG(qMin(b_xy.bottom(), b_yz.bottom())), this->getYDim()-1),
+	epos_z = qBound(V3DLONG(0), V3DLONG(qMin(b_yz.right(), b_zx.bottom())), this->getZDim()-1),
+	epos_c = qBound(V3DLONG(0), c_max, this->getCDim()-1);
 
-	if (my_maskcode==IMC_XY) {bpos_z=0; epos_z=sz2-1;}
-	else if (my_maskcode==IMC_YZ) {bpos_x=0; epos_x=sz0-1;}
-	else if (my_maskcode==IMC_XZ) {bpos_y=0; epos_y=sz1-1;}
+	if (my_maskcode==IMC_XY) {bpos_z=0; epos_z=this->getZDim()-1;}
+	else if (my_maskcode==IMC_YZ) {bpos_x=0; epos_x=this->getXDim()-1;}
+	else if (my_maskcode==IMC_XZ) {bpos_y=0; epos_y=this->getYDim()-1;}
 
 	//	if (bpos_x>epos_x) qSwap(bpos_x, epos_x);
 	//	if (bpos_y>epos_y) qSwap(bpos_y, epos_y);
@@ -1646,9 +1662,9 @@ bool My4DImage::maskBW_roi(unsigned char tval, V3DLONG c_min, V3DLONG c_max, Ima
 	//first handle rgn outside bounding box is necessary
 	if (!b_inside)
 	{
-		for (k=0;k<sz2;k++)
-			for (j=0;j<sz1;j++)
-				for (i=0;i<sz0;i++)
+		for (k=0;k<this->getZDim();k++)
+			for (j=0;j<this->getYDim();j++)
+				for (i=0;i<this->getXDim();i++)
 				{
 					if (k<bpos_z || k>epos_z || j<bpos_y || j>epos_y || i<bpos_x || i>epos_x)
 					{
@@ -1750,13 +1766,13 @@ bool My4DImage::maskBW_roi(unsigned char tval, V3DLONG c_min, V3DLONG c_max, Ima
 		//it seems for union case I do not need to handle the b_inside case here, as that set will be empty if b_inside is false. 090428
 
 		bool b_setFlag=false;
-		for (k=0; k<sz2; k++)
+		for (k=0; k<this->getZDim(); k++)
 		{
 			b_setFlag = (k>=bpos_z && k<=epos_z) ? true : false;
-			for (j=0; j<sz1; j++)
+			for (j=0; j<this->getYDim(); j++)
 			{
 				if (!b_setFlag) b_setFlag = (j>=bpos_y && j<=epos_y) ? true : false;
-				for (i=0; i<sz0; i++)
+				for (i=0; i<this->getXDim(); i++)
 				{
 					if (!b_setFlag) b_setFlag = (i>=bpos_x && i<=epos_x) ? true : false;
 					if (b_setFlag)
@@ -1781,7 +1797,7 @@ bool My4DImage::maskBW_roi(unsigned char tval, V3DLONG c_min, V3DLONG c_max, Ima
 
 bool My4DImage::maskBW_channel(V3DLONG mask_channel_no)
 {
-	if (datatype!=V3D_UINT8)
+	if ( this->getDatatype() != V3D_UINT8 )
 	{
 		v3d_msg("only support UINT8 data in maskBW_channel();\n");
 		return false;
@@ -1836,77 +1852,78 @@ bool My4DImage::setNewImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG ns
 	if (!ndata1d || nsz0<=0 || nsz1<=0 || nsz2<=0 || nsz2<=0) return false;
 	V3DLONG i;
 
-	V3DLONG sz_time_old = sz_time;
-	TimePackType timepacktype_old = timepacktype;
+	V3DLONG sz_time_old = this->getTDim();
+	TimePackType timepacktype_old = this->getTimePackType();
 	
 	cleanExistData_butKeepFileName();
 
-	data1d = ndata1d;
-	datatype = ndatatype;
-	sz0 = nsz0;
-	sz1 = nsz1;
-	sz2 = nsz2;
-	sz3 = nsz3;
+	this->setRawDataPointer( ndata1d );
+	this->setDatatype( ndatatype );
+	this->setXDim( nsz0 );
+	this->setXDim( nsz1 );
+	this->setXDim( nsz2 );
+	this->setXDim( nsz3 );
+
 	if (nszt<0)
 	{
-		sz_time = sz_time_old;
-		timepacktype = timepacktype_old;
+		this->setTDim( sz_time_old );
+		this->setTimePackType( timepacktype_old );
 	}
 	else {
-		sz_time = nszt;
-		timepacktype = tpk;
+		this->setTDim( nszt );
+		this->setTimePackType( tpk );
 	}
 
 	try
 	{
-		p_vmax = new double [sz3];
-		p_vmin = new double [sz3];
+		p_vmax = new double [this->getCDim()];
+		p_vmin = new double [this->getCDim()];
 	}
 	catch (...)
 	{
 		v3d_msg("Fail to allocate memory.\n");
-		b_error=1;
+		this->setError(1);
 		if (p_vmax) {delete []p_vmax; p_vmax=NULL;}
 		if (p_vmin) {delete []p_vmin; p_vmin=NULL;}
 		return false;
 	}
 
 	V3DLONG tmppos;
-	V3DLONG channelPageSize = (V3DLONG)sz0*sz1*sz2;
+	V3DLONG channelPageSize = (V3DLONG)this->getXDim()*this->getYDim()*this->getZDim();
 
-	switch (datatype)
+	switch ( this->getDatatype() )
 	{
 		case V3D_UINT8:
-			if (!new4dpointer_v3d(data4d_uint8, sz0, sz1, sz2, sz3, data1d))
+			if (!new4dpointer_v3d(data4d_uint8, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim(), this->getRawData() ))
 			{
-				b_error = 1;
-				if (data1d) {delete data1d; data1d=0;}
+				this->setError(1);
+        this->deleteRawDataAndSetPointerToNull();
 				return false;
 			}
 			data4d_virtual = (void ****)data4d_uint8;
 
-			for(i=0;i<sz3;i++)
+			for(i=0;i<this->getCDim();i++)
 			{
-				printf("my4dimage setimage %d [%d %d %d %d] %ld %p %p\n", i, sz0, sz1, sz2, sz3, channelPageSize, data1d, data4d_virtual);
+				printf("my4dimage setimage %d [%d %d %d %d] %ld %p %p\n", i, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim(), channelPageSize, this->getRawData(), data4d_virtual);
  
-				p_vmax[i] = (double)maxInVector((unsigned char *)data1d+(V3DLONG)i*channelPageSize*sizeof(unsigned char), channelPageSize, tmppos);
-				p_vmin[i] = (double)minInVector((unsigned char *)data1d+(V3DLONG)i*channelPageSize*sizeof(unsigned char), channelPageSize, tmppos);
+				p_vmax[i] = (double)maxInVector((unsigned char *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(unsigned char), channelPageSize, tmppos);
+				p_vmin[i] = (double)minInVector((unsigned char *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(unsigned char), channelPageSize, tmppos);
 			}
 			break;
 
 		case V3D_UINT16:
-			if (!new4dpointer_v3d(data4d_uint16, sz0, sz1, sz2, sz3, data1d))
+			if (!new4dpointer_v3d(data4d_uint16, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim(), this->getRawData() ))
 			{
-				b_error = 1;
-				if (data1d) {delete data1d; data1d=0;}
+				this->setError(1);
+        this->deleteRawDataAndSetPointerToNull();
 				return false;
 			}
 			data4d_virtual = (void ****)data4d_uint16;
 
-			for(i=0;i<sz3;i++)
+			for(i=0;i<this->getCDim();i++)
 			{
-				p_vmax[i] = (double)maxInVector((USHORTINT16 *)data1d+(V3DLONG)i*channelPageSize*sizeof(USHORTINT16), channelPageSize, tmppos);
-				p_vmin[i] = (double)minInVector((USHORTINT16 *)data1d+(V3DLONG)i*channelPageSize*sizeof(USHORTINT16), channelPageSize, tmppos);
+				p_vmax[i] = (double)maxInVector((USHORTINT16 *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(USHORTINT16), channelPageSize, tmppos);
+				p_vmin[i] = (double)minInVector((USHORTINT16 *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(USHORTINT16), channelPageSize, tmppos);
 			}
 
 			//printf("Warning: this data type UINT16 has not been supported in display yet.\n");
@@ -1916,18 +1933,18 @@ bool My4DImage::setNewImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG ns
 			break;
 
 		case V3D_FLOAT32:
-			if (!new4dpointer_v3d(data4d_float32, sz0, sz1, sz2, sz3, data1d))
+			if (!new4dpointer_v3d(data4d_float32, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim(), this->getRawData() ))
 			{
-				b_error = 1;
-				if (data1d) {delete data1d; data1d=0;}
+				this->setError(1);
+        this->deleteRawDataAndSetPointerToNull();
 				return false;
 			}
 			data4d_virtual = (void ****)data4d_float32;
 
-			for(i=0;i<sz3;i++)
+			for(i=0;i<this->getCDim();i++)
 			{
-				p_vmax[i] = (double)maxInVector((float *)data1d+(V3DLONG)i*channelPageSize*sizeof(float), channelPageSize, tmppos);
-				p_vmin[i] = (double)minInVector((float *)data1d+(V3DLONG)i*channelPageSize*sizeof(float), channelPageSize, tmppos);
+				p_vmax[i] = (double)maxInVector((float *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(float), channelPageSize, tmppos);
+				p_vmin[i] = (double)minInVector((float *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(float), channelPageSize, tmppos);
 			}
 
 			v3d_msg("Warning: this data type FLOAT32 has not been supported in display yet.\n");
@@ -1935,14 +1952,14 @@ bool My4DImage::setNewImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG ns
 			break;
 
 		default:
-			b_error = 1;
+			this->setError(1);
 			return false;
 			//break;
 	}
 
-	curFocusX = sz0/2; //-= bpos_x+1; //begin from first slices
-	curFocusY = sz1/2; //-= bpos_y+1;
-	curFocusZ = sz2/2; //-= bpos_z+1;
+	curFocusX = this->getXDim()/2; //-= bpos_x+1; //begin from first slices
+	curFocusY = this->getYDim()/2; //-= bpos_y+1;
+	curFocusZ = this->getZDim()/2; //-= bpos_z+1;
 
 	//update view
 
@@ -1970,22 +1987,22 @@ bool My4DImage::rotate(ImagePlaneDisplayType ptype, const Options_Rotate & r_opt
 {
 	if (!data4d_uint8) {v3d_msg("now only support unit8 in rotate().");  return false;}
 
-	V3DLONG insz[4]; insz[0]=sz0; insz[1]=sz1; insz[2]=sz2; insz[3]=sz3;
+	V3DLONG insz[4]; insz[0]=this->getXDim(); insz[1]=this->getYDim(); insz[2]=this->getZDim(); insz[3]=this->getCDim();
 	unsigned char * outvol1d=0;
 	V3DLONG *outsz=0;
 	bool b_res=false;
 	switch (ptype)
 	{
 		case imgPlaneX:
-			b_res = rotate_inPlaneX(data1d, insz, r_opt, outvol1d, outsz);
+			b_res = rotate_inPlaneX(this->getRawData(), insz, r_opt, outvol1d, outsz);
 			break;
 
 		case imgPlaneY:
-			b_res = rotate_inPlaneY(data1d, insz, r_opt, outvol1d, outsz);
+			b_res = rotate_inPlaneY(this->getRawData(), insz, r_opt, outvol1d, outsz);
 			break;
 
 		case imgPlaneZ:
-			b_res = rotate_inPlaneZ(data1d, insz, r_opt, outvol1d, outsz);
+			b_res = rotate_inPlaneZ(this->getRawData(), insz, r_opt, outvol1d, outsz);
 			break;
 
 		default:
@@ -1995,7 +2012,9 @@ bool My4DImage::rotate(ImagePlaneDisplayType ptype, const Options_Rotate & r_opt
 	//assign the rotated image to the current image and update the pointers
 
 	if (b_res)
-		setNewImageData(outvol1d, outsz[0], outsz[1], outsz[2], outsz[3], datatype);
+    {
+		setNewImageData(outvol1d, outsz[0], outsz[1], outsz[2], outsz[3], this->getDatatype());
+    }
 	else
 	{
 		v3d_msg("The rotate operation fails.\n");
@@ -2015,71 +2034,71 @@ bool My4DImage::flip(AxisCode my_axiscode)
 	if (!valid()) {return false;}
 	V3DLONG i,j,k,c;
 
-	switch (datatype)
+	switch ( this->getDatatype() )
 	{
 		case V3D_UINT8:
 			switch (my_axiscode)
 		{
 			case axis_x:
 			{
-				V3DLONG hsz0=floor((double)(sz0-1)/2.0); if (hsz0*2<sz0-1) hsz0+=1;
-				for (c=0;c<sz3;c++)
-					for (k=0;k<sz2;k++)
-						for (j=0;j<sz1;j++)
+				V3DLONG hsz0=floor((double)(this->getXDim()-1)/2.0); if (hsz0*2<this->getXDim()-1) hsz0+=1;
+				for (c=0;c<this->getCDim();c++)
+					for (k=0;k<this->getZDim();k++)
+						for (j=0;j<this->getYDim();j++)
 							for (i=0;i<hsz0;i++)
 							{
-								unsigned char tmpv = data4d_uint8[c][k][j][sz0-i-1];
-								data4d_uint8[c][k][j][sz0-1-i] = data4d_uint8[c][k][j][i];
+								unsigned char tmpv = data4d_uint8[c][k][j][this->getXDim()-i-1];
+								data4d_uint8[c][k][j][this->getXDim()-1-i] = data4d_uint8[c][k][j][i];
 								data4d_uint8[c][k][j][i] = tmpv;
 							}
 			}
 				break;
 			case axis_y:
 			{
-				V3DLONG hsz1=floor((double)(sz1-1)/2.0); if (hsz1*2<sz1-1) hsz1+=1;
-				qDebug("%d %d",sz1,hsz1);
-				for (c=0;c<sz3;c++)
-					for (k=0;k<sz2;k++)
+				V3DLONG hsz1=floor((double)(this->getYDim()-1)/2.0); if (hsz1*2<this->getYDim()-1) hsz1+=1;
+				qDebug("%d %d",this->getYDim(),hsz1);
+				for (c=0;c<this->getCDim();c++)
+					for (k=0;k<this->getZDim();k++)
 						for (j=0;j<hsz1;j++)
-							for (i=0;i<sz0;i++)
+							for (i=0;i<this->getXDim();i++)
 							{
-								unsigned char tmpv = data4d_uint8[c][k][sz1-j-1][i];
-								data4d_uint8[c][k][sz1-1-j][i] = data4d_uint8[c][k][j][i];
+								unsigned char tmpv = data4d_uint8[c][k][this->getYDim()-j-1][i];
+								data4d_uint8[c][k][this->getYDim()-1-j][i] = data4d_uint8[c][k][j][i];
 								data4d_uint8[c][k][j][i] = tmpv;
 							}
 			}
 				break;
 			case axis_z:
 			{
-				V3DLONG hsz2=floor((double)(sz2-1)/2.0); if (hsz2*2<sz2-1) hsz2+=1;
-				for (c=0;c<sz3;c++)
+				V3DLONG hsz2=floor((double)(this->getZDim()-1)/2.0); if (hsz2*2<this->getZDim()-1) hsz2+=1;
+				for (c=0;c<this->getCDim();c++)
 					for (k=0;k<hsz2;k++)
-						for (j=0;j<sz1;j++)
-							for (i=0;i<sz0;i++)
+						for (j=0;j<this->getYDim();j++)
+							for (i=0;i<this->getXDim();i++)
 							{
-								unsigned char tmpv = data4d_uint8[c][sz2-k-1][j][i];
-								data4d_uint8[c][sz2-1-k][j][i] = data4d_uint8[c][k][j][i];
+								unsigned char tmpv = data4d_uint8[c][this->getZDim()-k-1][j][i];
+								data4d_uint8[c][this->getZDim()-1-k][j][i] = data4d_uint8[c][k][j][i];
 								data4d_uint8[c][k][j][i] = tmpv;
 							}
 			}
 				break;
 			case axis_c:
 			{
-				V3DLONG hsz3=floor((double)(sz3-1)/2.0); if (hsz3*2<sz3-1) hsz3+=1;
+				V3DLONG hsz3=floor((double)(this->getCDim()-1)/2.0); if (hsz3*2<this->getCDim()-1) hsz3+=1;
 				for (c=0;c<hsz3;c++)
 				{
-					for (k=0;k<sz2;k++)
-						for (j=0;j<sz1;j++)
-							for (i=0;i<sz0;i++)
+					for (k=0;k<this->getZDim();k++)
+						for (j=0;j<this->getYDim();j++)
+							for (i=0;i<this->getXDim();i++)
 							{
-								unsigned char tmpv = data4d_uint8[sz3-c-1][k][j][i];
-								data4d_uint8[sz3-c-1][k][j][i] = data4d_uint8[c][k][j][i];
+								unsigned char tmpv = data4d_uint8[this->getCDim()-c-1][k][j][i];
+								data4d_uint8[this->getCDim()-c-1][k][j][i] = data4d_uint8[c][k][j][i];
 								data4d_uint8[c][k][j][i] = tmpv;
 							}
 
 					double tmpc;
-					tmpc = p_vmax[sz3-c-1]; p_vmax[sz3-c-1] = p_vmax[c]; p_vmax[c] = tmpc;
-					tmpc = p_vmin[sz3-c-1]; p_vmin[sz3-c-1] = p_vmin[c]; p_vmin[c] = tmpc;
+					tmpc = p_vmax[this->getCDim()-c-1]; p_vmax[this->getCDim()-c-1] = p_vmax[c]; p_vmax[c] = tmpc;
+					tmpc = p_vmin[this->getCDim()-c-1]; p_vmin[this->getCDim()-c-1] = p_vmin[c]; p_vmin[c] = tmpc;
 				}
 			}
 				break;
@@ -2093,63 +2112,63 @@ bool My4DImage::flip(AxisCode my_axiscode)
 		{
 			case axis_x:
 			{
-				V3DLONG hsz0=floor((double)(sz0-1)/2.0); if (hsz0*2<sz0-1) hsz0+=1;
-				for (c=0;c<sz3;c++)
-					for (k=0;k<sz2;k++)
-						for (j=0;j<sz1;j++)
+				V3DLONG hsz0=floor((double)(this->getXDim()-1)/2.0); if (hsz0*2<this->getXDim()-1) hsz0+=1;
+				for (c=0;c<this->getCDim();c++)
+					for (k=0;k<this->getZDim();k++)
+						for (j=0;j<this->getYDim();j++)
 							for (i=0;i<hsz0;i++)
 							{
-								unsigned short int tmpv = data4d_uint16[c][k][j][sz0-i-1];
-								data4d_uint16[c][k][j][sz0-1-i] = data4d_uint16[c][k][j][i];
+								unsigned short int tmpv = data4d_uint16[c][k][j][this->getXDim()-i-1];
+								data4d_uint16[c][k][j][this->getXDim()-1-i] = data4d_uint16[c][k][j][i];
 								data4d_uint16[c][k][j][i] = tmpv;
 							}
 			}
 				break;
 			case axis_y:
 			{
-				V3DLONG hsz1=floor((double)(sz1-1)/2.0); if (hsz1*2<sz1-1) hsz1+=1;
-				for (c=0;c<sz3;c++)
-					for (k=0;k<sz2;k++)
+				V3DLONG hsz1=floor((double)(this->getYDim()-1)/2.0); if (hsz1*2<this->getYDim()-1) hsz1+=1;
+				for (c=0;c<this->getCDim();c++)
+					for (k=0;k<this->getZDim();k++)
 						for (j=0;j<hsz1;j++)
-							for (i=0;i<sz0;i++)
+							for (i=0;i<this->getXDim();i++)
 							{
-								unsigned short int tmpv = data4d_uint16[c][k][sz1-j-1][i];
-								data4d_uint16[c][k][sz1-1-j][i] = data4d_uint16[c][k][j][i];
+								unsigned short int tmpv = data4d_uint16[c][k][this->getYDim()-j-1][i];
+								data4d_uint16[c][k][this->getYDim()-1-j][i] = data4d_uint16[c][k][j][i];
 								data4d_uint16[c][k][j][i] = tmpv;
 							}
 			}
 				break;
 			case axis_z:
 			{
-				V3DLONG hsz2=floor((double)(sz2-1)/2.0); if (hsz2*2<sz2-1) hsz2+=1;
-				for (c=0;c<sz3;c++)
+				V3DLONG hsz2=floor((double)(this->getZDim()-1)/2.0); if (hsz2*2<this->getZDim()-1) hsz2+=1;
+				for (c=0;c<this->getCDim();c++)
 					for (k=0;k<hsz2;k++)
-						for (j=0;j<sz1;j++)
-							for (i=0;i<sz0;i++)
+						for (j=0;j<this->getYDim();j++)
+							for (i=0;i<this->getXDim();i++)
 							{
-								unsigned short int tmpv = data4d_uint16[c][sz2-k-1][j][i];
-								data4d_uint16[c][sz2-1-k][j][i] = data4d_uint16[c][k][j][i];
+								unsigned short int tmpv = data4d_uint16[c][this->getZDim()-k-1][j][i];
+								data4d_uint16[c][this->getZDim()-1-k][j][i] = data4d_uint16[c][k][j][i];
 								data4d_uint16[c][k][j][i] = tmpv;
 							}
 			}
 				break;
 			case axis_c:
 			{
-				V3DLONG hsz3=floor((double)(sz3-1)/2.0); if (hsz3*2<sz3-1) hsz3+=1;
+				V3DLONG hsz3=floor((double)(this->getCDim()-1)/2.0); if (hsz3*2<this->getCDim()-1) hsz3+=1;
 				for (c=0;c<hsz3;c++)
 				{
-					for (k=0;k<sz2;k++)
-						for (j=0;j<sz1;j++)
-							for (i=0;i<sz0;i++)
+					for (k=0;k<this->getZDim();k++)
+						for (j=0;j<this->getYDim();j++)
+							for (i=0;i<this->getXDim();i++)
 							{
-								unsigned short int tmpv = data4d_uint16[sz3-c-1][k][j][i];
-								data4d_uint16[sz3-c-1][k][j][i] = data4d_uint16[c][k][j][i];
+								unsigned short int tmpv = data4d_uint16[this->getCDim()-c-1][k][j][i];
+								data4d_uint16[this->getCDim()-c-1][k][j][i] = data4d_uint16[c][k][j][i];
 								data4d_uint8[c][k][j][i] = tmpv;
 							}
 
 					double tmpc;
-					tmpc = p_vmax[sz3-c-1]; p_vmax[sz3-c-1] = p_vmax[c]; p_vmax[c] = tmpc;
-					tmpc = p_vmin[sz3-c-1]; p_vmin[sz3-c-1] = p_vmin[c]; p_vmin[c] = tmpc;
+					tmpc = p_vmax[this->getCDim()-c-1]; p_vmax[this->getCDim()-c-1] = p_vmax[c]; p_vmax[c] = tmpc;
+					tmpc = p_vmin[this->getCDim()-c-1]; p_vmin[this->getCDim()-c-1] = p_vmin[c]; p_vmin[c] = tmpc;
 				}
 			}
 				break;
@@ -2164,63 +2183,63 @@ bool My4DImage::flip(AxisCode my_axiscode)
 		{
 			case axis_x:
 			{
-				V3DLONG hsz0=floor((double)(sz0-1)/2.0); if (hsz0*2<sz0-1) hsz0+=1;
-				for (c=0;c<sz3;c++)
-					for (k=0;k<sz2;k++)
-						for (j=0;j<sz1;j++)
+				V3DLONG hsz0=floor((double)(this->getXDim()-1)/2.0); if (hsz0*2<this->getXDim()-1) hsz0+=1;
+				for (c=0;c<this->getCDim();c++)
+					for (k=0;k<this->getZDim();k++)
+						for (j=0;j<this->getYDim();j++)
 							for (i=0;i<hsz0;i++)
 							{
-								float tmpv = data4d_float32[c][k][j][sz0-i-1];
-								data4d_float32[c][k][j][sz0-1-i] = data4d_float32[c][k][j][i];
+								float tmpv = data4d_float32[c][k][j][this->getXDim()-i-1];
+								data4d_float32[c][k][j][this->getXDim()-1-i] = data4d_float32[c][k][j][i];
 								data4d_float32[c][k][j][i] = tmpv;
 							}
 			}
 				break;
 			case axis_y:
 			{
-				V3DLONG hsz1=floor((double)(sz1-1)/2.0); if (hsz1*2<sz1-1) hsz1+=1;
-				for (c=0;c<sz3;c++)
-					for (k=0;k<sz2;k++)
+				V3DLONG hsz1=floor((double)(this->getYDim()-1)/2.0); if (hsz1*2<this->getYDim()-1) hsz1+=1;
+				for (c=0;c<this->getCDim();c++)
+					for (k=0;k<this->getZDim();k++)
 						for (j=0;j<hsz1;j++)
-							for (i=0;i<sz0;i++)
+							for (i=0;i<this->getXDim();i++)
 							{
-								float tmpv = data4d_float32[c][k][sz1-j-1][i];
-								data4d_float32[c][k][sz1-1-j][i] = data4d_float32[c][k][j][i];
+								float tmpv = data4d_float32[c][k][this->getYDim()-j-1][i];
+								data4d_float32[c][k][this->getYDim()-1-j][i] = data4d_float32[c][k][j][i];
 								data4d_float32[c][k][j][i] = tmpv;
 							}
 			}
 				break;
 			case axis_z:
 			{
-				V3DLONG hsz2=floor((double)(sz2-1)/2.0); if (hsz2*2<sz2-1) hsz2+=1;
-				for (c=0;c<sz3;c++)
+				V3DLONG hsz2=floor((double)(this->getZDim()-1)/2.0); if (hsz2*2<this->getZDim()-1) hsz2+=1;
+				for (c=0;c<this->getCDim();c++)
 					for (k=0;k<hsz2;k++)
-						for (j=0;j<sz1;j++)
-							for (i=0;i<sz0;i++)
+						for (j=0;j<this->getYDim();j++)
+							for (i=0;i<this->getXDim();i++)
 							{
-								float tmpv = data4d_float32[c][sz2-k-1][j][i];
-								data4d_float32[c][sz2-1-k][j][i] = data4d_float32[c][k][j][i];
+								float tmpv = data4d_float32[c][this->getZDim()-k-1][j][i];
+								data4d_float32[c][this->getZDim()-1-k][j][i] = data4d_float32[c][k][j][i];
 								data4d_float32[c][k][j][i] = tmpv;
 							}
 			}
 				break;
 			case axis_c:
 			{
-				V3DLONG hsz3=floor((double)(sz3-1)/2.0); if (hsz3*2<sz3-1) hsz3+=1;
+				V3DLONG hsz3=floor((double)(this->getCDim()-1)/2.0); if (hsz3*2<this->getCDim()-1) hsz3+=1;
 				for (c=0;c<hsz3;c++)
 				{
-					for (k=0;k<sz2;k++)
-						for (j=0;j<sz1;j++)
-							for (i=0;i<sz0;i++)
+					for (k=0;k<this->getZDim();k++)
+						for (j=0;j<this->getYDim();j++)
+							for (i=0;i<this->getXDim();i++)
 							{
-								float tmpv = data4d_float32[sz3-c-1][k][j][i];
-								data4d_float32[sz3-c-1][k][j][i] = data4d_float32[c][k][j][i];
+								float tmpv = data4d_float32[this->getCDim()-c-1][k][j][i];
+								data4d_float32[this->getCDim()-c-1][k][j][i] = data4d_float32[c][k][j][i];
 								data4d_uint8[c][k][j][i] = tmpv;
 							}
 
 					double tmpc;
-					tmpc = p_vmax[sz3-c-1]; p_vmax[sz3-c-1] = p_vmax[c]; p_vmax[c] = tmpc;
-					tmpc = p_vmin[sz3-c-1]; p_vmin[sz3-c-1] = p_vmin[c]; p_vmin[c] = tmpc;
+					tmpc = p_vmax[this->getCDim()-c-1]; p_vmax[this->getCDim()-c-1] = p_vmax[c]; p_vmax[c] = tmpc;
+					tmpc = p_vmin[this->getCDim()-c-1]; p_vmin[this->getCDim()-c-1] = p_vmin[c]; p_vmin[c] = tmpc;
 				}
 			}
 				break;
@@ -2230,7 +2249,7 @@ bool My4DImage::flip(AxisCode my_axiscode)
 			break;
 
 		default:
-			b_error = 1;
+			this->setError(1);
 			return false;
 			//break;
 	}
@@ -2242,7 +2261,7 @@ bool My4DImage::flip(AxisCode my_axiscode)
 
 bool My4DImage::invertcolor(int channo) //channo < 0 will invert all channels. Only works for uint8
 {
-	if (datatype!=V3D_UINT8)
+	if ( this->getDatatype() !=V3D_UINT8)
 	{
 		v3d_msg("Now the color inversion program only supports 8bit data. Check your data first.\n");
 		return false;
@@ -2287,16 +2306,16 @@ bool My4DImage::scaleintensity(int channo, double lower_th, double higher_th, do
 	V3DLONG i,j,k,c;
 
 	V3DLONG channelPageSize = getTotalUnitNumberPerChannel();
-	switch (datatype)
+	switch ( this->getDatatype() )
 	{
 		case V3D_UINT8:
-			for (c=0;c<sz3;c++)
+			for (c=0;c<this->getCDim();c++)
 			{
 				if (channo>=0 && c!=channo)
 					continue;
-				for (k=0;k<sz2;k++)
-					for (j=0;j<sz1;j++)
-						for (i=0;i<sz0;i++)
+				for (k=0;k<this->getZDim();k++)
+					for (j=0;j<this->getYDim();j++)
+						for (i=0;i<this->getXDim();i++)
 						{
 							t = data4d_uint8[c][k][j][i];
 							if (t>higher_th) t=higher_th;
@@ -2306,21 +2325,21 @@ bool My4DImage::scaleintensity(int channo, double lower_th, double higher_th, do
 
 				//update the min and max
 				V3DLONG tmppos;
-				p_vmax[c] = (double)maxInVector((unsigned char *)data1d+c*channelPageSize, channelPageSize, tmppos);
-				p_vmin[c] = (double)minInVector((unsigned char *)data1d+c*channelPageSize, channelPageSize, tmppos);
+				p_vmax[c] = (double)maxInVector((unsigned char *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
+				p_vmin[c] = (double)minInVector((unsigned char *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
 				printf("updated channel [%ld] max=[%ld] min=[%d]\n", c, V3DLONG(p_vmax[c]), V3DLONG(p_vmin[c]));
 			}
 
 			break;
 
 		case V3D_UINT16:
-			for (c=0;c<sz3;c++)
+			for (c=0;c<this->getCDim();c++)
 			{
 				if (channo>=0 && c!=channo)
 					continue;
-				for (k=0;k<sz2;k++)
-					for (j=0;j<sz1;j++)
-						for (i=0;i<sz0;i++)
+				for (k=0;k<this->getZDim();k++)
+					for (j=0;j<this->getYDim();j++)
+						for (i=0;i<this->getXDim();i++)
 						{
 							t = data4d_uint16[c][k][j][i];
 							if (t>higher_th) t=higher_th;
@@ -2330,20 +2349,20 @@ bool My4DImage::scaleintensity(int channo, double lower_th, double higher_th, do
 
 				//update the min and max
 				V3DLONG tmppos;
-				p_vmax[c] = (double)maxInVector((USHORTINT16 *)data1d+c*channelPageSize, channelPageSize, tmppos);
-				p_vmin[c] = (double)minInVector((USHORTINT16 *)data1d+c*channelPageSize, channelPageSize, tmppos);
+				p_vmax[c] = (double)maxInVector((USHORTINT16 *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
+				p_vmin[c] = (double)minInVector((USHORTINT16 *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
 				printf("updated channel [%ld] max=[%ld] min=[%d]\n", c, V3DLONG(p_vmax[c]), V3DLONG(p_vmin[c]));
 			}
 			break;
 
 		case V3D_FLOAT32:
-			for (c=0;c<sz3;c++)
+			for (c=0;c<this->getCDim();c++)
 			{
 				if (channo>=0 && c!=channo)
 					continue;
-				for (k=0;k<sz2;k++)
-					for (j=0;j<sz1;j++)
-						for (i=0;i<sz0;i++)
+				for (k=0;k<this->getZDim();k++)
+					for (j=0;j<this->getYDim();j++)
+						for (i=0;i<this->getXDim();i++)
 						{
 							t = data4d_float32[c][k][j][i];
 							if (t>higher_th) t=higher_th;
@@ -2353,8 +2372,8 @@ bool My4DImage::scaleintensity(int channo, double lower_th, double higher_th, do
 
 				//update the min and max
 				V3DLONG tmppos;
-				p_vmax[c] = (double)maxInVector((float *)data1d+c*channelPageSize, channelPageSize, tmppos);
-				p_vmin[c] = (double)minInVector((float *)data1d+c*channelPageSize, channelPageSize, tmppos);
+				p_vmax[c] = (double)maxInVector((float *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
+				p_vmin[c] = (double)minInVector((float *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
 				printf("updated channel [%ld] max=[%5.3f] min=[%5.3f]\n", c, p_vmax[c], p_vmin[c]);
 			}
 			break;
@@ -2378,65 +2397,65 @@ bool My4DImage::thresholdintensity(int channo, double th) //anything < th will b
 	V3DLONG i,j,k,c;
 
 	V3DLONG channelPageSize = getTotalUnitNumberPerChannel();
-	switch (datatype)
+	switch ( this->getDatatype() )
 	{
 		case V3D_UINT8:
-			for (c=0;c<sz3;c++)
+			for (c=0;c<this->getCDim();c++)
 			{
 				if (channo>=0 && c!=channo)
 					continue;
-				for (k=0;k<sz2;k++)
-					for (j=0;j<sz1;j++)
-						for (i=0;i<sz0;i++)
+				for (k=0;k<this->getZDim();k++)
+					for (j=0;j<this->getYDim();j++)
+						for (i=0;i<this->getXDim();i++)
 						{
 							if (data4d_uint8[c][k][j][i]<th) data4d_uint8[c][k][j][i]=0;
 						}
 
 				//update the min and max
 				V3DLONG tmppos;
-				p_vmax[c] = (double)maxInVector((unsigned char *)data1d+c*channelPageSize, channelPageSize, tmppos);
-				p_vmin[c] = (double)minInVector((unsigned char *)data1d+c*channelPageSize, channelPageSize, tmppos);
+				p_vmax[c] = (double)maxInVector((unsigned char *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
+				p_vmin[c] = (double)minInVector((unsigned char *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
 				printf("updated channel [%ld] max=[%ld] min=[%d]\n", c, V3DLONG(p_vmax[c]), V3DLONG(p_vmin[c]));
 			}
 
 			break;
 
 		case V3D_UINT16:
-			for (c=0;c<sz3;c++)
+			for (c=0;c<this->getCDim();c++)
 			{
 				if (channo>=0 && c!=channo)
 					continue;
-				for (k=0;k<sz2;k++)
-					for (j=0;j<sz1;j++)
-						for (i=0;i<sz0;i++)
+				for (k=0;k<this->getZDim();k++)
+					for (j=0;j<this->getYDim();j++)
+						for (i=0;i<this->getXDim();i++)
 						{
 							if (data4d_uint16[c][k][j][i]<th) data4d_uint16[c][k][j][i]=0;
 						}
 
 				//update the min and max
 				V3DLONG tmppos;
-				p_vmax[c] = (double)maxInVector((USHORTINT16 *)data1d+c*channelPageSize, channelPageSize, tmppos);
-				p_vmin[c] = (double)minInVector((USHORTINT16 *)data1d+c*channelPageSize, channelPageSize, tmppos);
+				p_vmax[c] = (double)maxInVector((USHORTINT16 *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
+				p_vmin[c] = (double)minInVector((USHORTINT16 *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
 				printf("updated channel [%ld] max=[%ld] min=[%d]\n", c, V3DLONG(p_vmax[c]), V3DLONG(p_vmin[c]));
 			}
 			break;
 
 		case V3D_FLOAT32:
-			for (c=0;c<sz3;c++)
+			for (c=0;c<this->getCDim();c++)
 			{
 				if (channo>=0 && c!=channo)
 					continue;
-				for (k=0;k<sz2;k++)
-					for (j=0;j<sz1;j++)
-						for (i=0;i<sz0;i++)
+				for (k=0;k<this->getZDim();k++)
+					for (j=0;j<this->getYDim();j++)
+						for (i=0;i<this->getXDim();i++)
 						{
 							if (data4d_float32[c][k][j][i]<th) data4d_float32[c][k][j][i]=p_vmin[c];
 						}
 
 				//update the min and max
 				V3DLONG tmppos;
-				p_vmax[c] = (double)maxInVector((float *)data1d+c*channelPageSize, channelPageSize, tmppos);
-				p_vmin[c] = (double)minInVector((float *)data1d+c*channelPageSize, channelPageSize, tmppos);
+				p_vmax[c] = (double)maxInVector((float *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
+				p_vmin[c] = (double)minInVector((float *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
 				printf("updated channel [%ld] max=[%5.3f] min=[%5.3f]\n", c, p_vmax[c], p_vmin[c]);
 			}
 			break;
@@ -2460,65 +2479,65 @@ bool My4DImage::binarizeintensity(int channo, double th) //anything < th will be
 	V3DLONG i,j,k,c;
 
 	V3DLONG channelPageSize = getTotalUnitNumberPerChannel();
-	switch (datatype)
+	switch ( this->getDatatype() )
 	{
 		case V3D_UINT8:
-			for (c=0;c<sz3;c++)
+			for (c=0;c<this->getCDim();c++)
 			{
 				if (channo>=0 && c!=channo)
 					continue;
-				for (k=0;k<sz2;k++)
-					for (j=0;j<sz1;j++)
-						for (i=0;i<sz0;i++)
+				for (k=0;k<this->getZDim();k++)
+					for (j=0;j<this->getYDim();j++)
+						for (i=0;i<this->getXDim();i++)
 						{
 							data4d_uint8[c][k][j][i] = (data4d_uint8[c][k][j][i]<th)?0:1;
 						}
 
 				//update the min and max
 				V3DLONG tmppos;
-				p_vmax[c] = (double)maxInVector((unsigned char *)data1d+c*channelPageSize, channelPageSize, tmppos);
-				p_vmin[c] = (double)minInVector((unsigned char *)data1d+c*channelPageSize, channelPageSize, tmppos);
+				p_vmax[c] = (double)maxInVector((unsigned char *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
+				p_vmin[c] = (double)minInVector((unsigned char *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
 				printf("updated channel [%ld] max=[%ld] min=[%d]\n", c, V3DLONG(p_vmax[c]), V3DLONG(p_vmin[c]));
 			}
 
 			break;
 
 		case V3D_UINT16:
-			for (c=0;c<sz3;c++)
+			for (c=0;c<this->getCDim();c++)
 			{
 				if (channo>=0 && c!=channo)
 					continue;
-				for (k=0;k<sz2;k++)
-					for (j=0;j<sz1;j++)
-						for (i=0;i<sz0;i++)
+				for (k=0;k<this->getZDim();k++)
+					for (j=0;j<this->getYDim();j++)
+						for (i=0;i<this->getXDim();i++)
 						{
 							data4d_uint16[c][k][j][i] = (data4d_uint16[c][k][j][i]<th)?0:1;
 						}
 
 				//update the min and max
 				V3DLONG tmppos;
-				p_vmax[c] = (double)maxInVector((USHORTINT16 *)data1d+c*channelPageSize, channelPageSize, tmppos);
-				p_vmin[c] = (double)minInVector((USHORTINT16 *)data1d+c*channelPageSize, channelPageSize, tmppos);
+				p_vmax[c] = (double)maxInVector((USHORTINT16 *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
+				p_vmin[c] = (double)minInVector((USHORTINT16 *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
 				printf("updated channel [%ld] max=[%ld] min=[%d]\n", c, V3DLONG(p_vmax[c]), V3DLONG(p_vmin[c]));
 			}
 			break;
 
 		case V3D_FLOAT32:
-			for (c=0;c<sz3;c++)
+			for (c=0;c<this->getCDim();c++)
 			{
 				if (channo>=0 && c!=channo)
 					continue;
-				for (k=0;k<sz2;k++)
-					for (j=0;j<sz1;j++)
-						for (i=0;i<sz0;i++)
+				for (k=0;k<this->getZDim();k++)
+					for (j=0;j<this->getYDim();j++)
+						for (i=0;i<this->getXDim();i++)
 						{
 							data4d_float32[c][k][j][i] = (data4d_float32[c][k][j][i]<th)?0:1;
 						}
 
 				//update the min and max
 				V3DLONG tmppos;
-				p_vmax[c] = (double)maxInVector((float *)data1d+c*channelPageSize, channelPageSize, tmppos);
-				p_vmin[c] = (double)minInVector((float *)data1d+c*channelPageSize, channelPageSize, tmppos);
+				p_vmax[c] = (double)maxInVector((float *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
+				p_vmin[c] = (double)minInVector((float *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
 				printf("updated channel [%ld] max=[%5.3f] min=[%5.3f]\n", c, p_vmax[c], p_vmin[c]);
 			}
 			break;
@@ -2557,7 +2576,7 @@ void My4DImage::setFocusFeatureViewText()
 
 		tmps.append(" RGB = (");
 
-		switch (datatype)
+		switch ( this->getDatatype() )
 		{
 			case V3D_UINT8:
 			{
@@ -2690,17 +2709,18 @@ void My4DImage::cleanExistData_butKeepFileName()
 {
 	V3DLONG i;
 	char oldFileName[1024];
+  char * srcFileName = this->getFileName();
 	for (i=0;i<1024;i++)
 	{
-		oldFileName[i] = imgSrcFile[i];
-		if (imgSrcFile[i]=='\0') break;
+		oldFileName[i] = srcFileName[i];
+		if (srcFileName[i]=='\0') break;
 	}
 
 	cleanExistData();
 
 	for (i=0;i<1024;i++)
 	{
-		imgSrcFile[i] = oldFileName[i];
+		srcFileName[i] = oldFileName[i];
 		if (oldFileName[i]=='\0') break;
 	}
 }
@@ -2715,25 +2735,25 @@ void My4DImage::cleanExistData_only4Dpointers()
 {
 	if (data4d_uint8 || data4d_uint16 || data4d_float32 || data4d_virtual) //080416. Only try to free space and set up b_error flag if applicable
 	{
-		switch (datatype)
+		switch ( this->getDatatype() )
 		{
 			case V3D_UINT8:
-				delete4dpointer_v3d(data4d_uint8, sz0, sz1, sz2, sz3);
+				delete4dpointer_v3d(data4d_uint8, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim());
 				data4d_virtual = 0;
 				break;
 
 			case V3D_UINT16:
-				delete4dpointer_v3d(data4d_uint16, sz0, sz1, sz2, sz3);
+				delete4dpointer_v3d(data4d_uint16, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim());
 				data4d_virtual = 0;
 				break;
 
 			case V3D_FLOAT32:
-				delete4dpointer_v3d(data4d_float32, sz0, sz1, sz2, sz3);
+				delete4dpointer_v3d(data4d_float32, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim());
 				data4d_virtual = 0;
 				break;
 
 			default:
-				b_error = 1;
+				this->setError(1);
 				return;
 				//break;
 		}
@@ -2803,7 +2823,7 @@ void My4DImage::computePointNeighborMoment(int x, int y, int z, int c, double & 
 	//  USHORTINT16 *p1dtmp_uint16 = 0;
 	float *p1dtmp_float32 = 0;
 
-	switch(datatype)
+	switch( this->getDatatype() )
 	{
 		case V3D_UINT8:
 			//	  p1dtmp_uint8 = new unsigned char [(x1-x0+1)*(y1-y0+1)*(z1-z0+1)];
@@ -2880,7 +2900,7 @@ void My4DImage::computePointNeighborMoment(LocationSimple & L, int c) //overload
 bool My4DImage::proj_general_blend_atlasfiles() //081124
 {
 	if (listAtlasFiles.size()<=0) return false;
-	if (datatype!=1)
+	if ( this->getDatatype() !=1)
 	{
 		v3d_msg("Now only support UINT8.\n");
 		return false;
@@ -2888,7 +2908,7 @@ bool My4DImage::proj_general_blend_atlasfiles() //081124
 
 	int chan_id_to_load;
 	if (atlasColorBlendChannel<0) chan_id_to_load=0;
-	else if (atlasColorBlendChannel>=sz3) chan_id_to_load=sz3-1;
+	else if (atlasColorBlendChannel>=this->getCDim()) chan_id_to_load=this->getCDim()-1;
 	else chan_id_to_load =  atlasColorBlendChannel; //in this way, always assure the chan_to_load would be reasonable
 
 	bool b_use_FirstImgAsMask_option=true;
@@ -2896,7 +2916,7 @@ bool My4DImage::proj_general_blend_atlasfiles() //081124
 	unsigned char * tmpdata_1d=0;
 	V3DLONG *tmpdata_sz=0;
 	int tmpdata_type=0;
-	V3DLONG totalpagebytes = sz0*sz1*sz2*1;
+	V3DLONG totalpagebytes = this->getXDim()*this->getYDim()*this->getZDim()*1;
 	int k=0;
 	for (int i=0;i<listAtlasFiles.size();i++)
 	{
@@ -2914,7 +2934,7 @@ bool My4DImage::proj_general_blend_atlasfiles() //081124
 			printf("Ignore the %dth file [%s] for atlas view, as now only support 8-bit / 1 channel data.\n", i+1, qPrintable(listAtlasFiles[i].imgfile));
 			continue;
 		}
-		if (tmpdata_sz[0]!=sz0 || tmpdata_sz[1]!=sz1 || tmpdata_sz[2]!=sz2) //this can be done much faster later-on, as I can revise the loadImage to get the size info only before loading the entire stack
+		if (tmpdata_sz[0]!=this->getXDim() || tmpdata_sz[1]!=this->getYDim() || tmpdata_sz[2]!=this->getZDim()) //this can be done much faster later-on, as I can revise the loadImage to get the size info only before loading the entire stack
 		{
 			printf("Ignore the %dth file [%s] for atlas view, as it has different size from the current one.\n", i+1, qPrintable(listAtlasFiles[i].imgfile));
 			continue;
@@ -2923,11 +2943,11 @@ bool My4DImage::proj_general_blend_atlasfiles() //081124
 		if (k==1)
 		{
 			//first clear all old data
-			if (sz3!=3)
+			if (this->getCDim()!=3)
 			{
 				printf("The current image must have THREE channels so that to blend, - but V3D will create a blank 3-channel image to help.\n");
 
-				V3DLONG nsz0=sz0, nsz1=sz1, nsz2=sz2, nsz3=3;
+				V3DLONG nsz0=this->getXDim(), nsz1=this->getYDim(), nsz2=this->getZDim(), nsz3=3;
 				cleanExistData_butKeepFileName();
 
 				loadImage(nsz0, nsz1, nsz2, nsz3, 1); //now create a blank image
@@ -2942,7 +2962,10 @@ bool My4DImage::proj_general_blend_atlasfiles() //081124
 
 			qDebug("%d image: blending color weight = [%5.2f, %5.2f, %5.2f]\n", k, rr, gg, bb);
 
-			unsigned char *data1d_c0 = data1d, *data1d_c1 = data1d+totalpagebytes, *data1d_c2 = data1d+totalpagebytes*2;
+			unsigned char *data1d_c0 = (this->getRawData());
+      unsigned char *data1d_c1 = (this->getRawData())+totalpagebytes;
+      unsigned char *data1d_c2 = (this->getRawData())+totalpagebytes*2;
+
 			for (V3DLONG j=0;j<totalpagebytes;j++)
 			{
 				data1d_c0[j] = rr*tmpdata_1d[j];
@@ -2964,7 +2987,10 @@ bool My4DImage::proj_general_blend_atlasfiles() //081124
 
 			qDebug("%d image: blending color weight = [%5.2f, %5.2f, %5.2f]\n", k, rr, gg, bb);
 
-			unsigned char *data1d_c0 = data1d, *data1d_c1 = data1d+totalpagebytes, *data1d_c2 = data1d+totalpagebytes*2;
+			unsigned char *data1d_c0 = this->getRawData();
+      unsigned char *data1d_c1 = this->getRawData() + totalpagebytes;
+      unsigned char *data1d_c2 = this->getRawData() +totalpagebytes*2;
+
 			unsigned char c_r, c_g, c_b;
 
 			if (b_use_FirstImgAsMask_option && bUseFirstImgAsMask)
@@ -3511,24 +3537,24 @@ bool My4DImage::compute_rgn_stat(LocationSimple & pt, int channo)
 
 	int b_win_shape=1; //0 for cube and 1 for sphere
 	bool b_disp_CoM_etc=false; //if display center of mass and covariance info
-	switch (datatype)
+	switch ( this->getDatatype() )
 	{
 		case V3D_UINT8:
-			compute_win3d_pca(data4d_uint8[cc], sz0, sz1, sz2,
+			compute_win3d_pca(data4d_uint8[cc], this->getXDim(), this->getYDim(), this->getZDim(),
 							  xx, yy, zz,
 							  rr, rr, rr,
 							  pt.ev_pc1, pt.ev_pc2, pt.ev_pc3, b_win_shape, b_disp_CoM_etc);
 			break;
 
 		case V3D_UINT16:
-			compute_win3d_pca(data4d_uint16[cc], sz0, sz1, sz2,
+			compute_win3d_pca(data4d_uint16[cc], this->getXDim(), this->getYDim(), this->getZDim(),
 							  xx, yy, zz,
 							  rr, rr, rr,
 							  pt.ev_pc1, pt.ev_pc2, pt.ev_pc3, b_win_shape, b_disp_CoM_etc);
 			break;
 
 		case V3D_FLOAT32:
-			compute_win3d_pca(data4d_float32[cc], sz0, sz1, sz2,
+			compute_win3d_pca(data4d_float32[cc], this->getXDim(), this->getYDim(), this->getZDim(),
 							  xx, yy, zz,
 							  rr, rr, rr,
 							  pt.ev_pc1, pt.ev_pc2, pt.ev_pc3, b_win_shape, b_disp_CoM_etc);
@@ -3541,7 +3567,7 @@ bool My4DImage::compute_rgn_stat(LocationSimple & pt, int channo)
 
 	for (i=0;i<=rr;i++)
 	{
-		compute_win3d_pca(data4d_uint8[cc], sz0, sz1, sz2,
+		compute_win3d_pca(data4d_uint8[cc], this->getXDim(), this->getYDim(), this->getZDim(),
 						  xx, yy, zz,
 						  i, i, i,
 						  pt.ev_pc1, pt.ev_pc2, pt.ev_pc3, b_win_shape, b_disp_CoM_etc);
@@ -3692,18 +3718,18 @@ bool My4DImage::proj_general_principal_axis(ImagePlaneDisplayType ptype)
 	switch (ptype)
 	{
 		case imgPlaneX:
-			d0 = sz1; d1 = sz2;
+			d0 = this->getYDim(); d1 = this->getZDim();
 			sumdata1d = new float [(V3DLONG)d0*d1];
 			if (!sumdata1d) return false;
 			if(!new2dpointer(sumdata2d, d0, d1, sumdata1d)) {if (sumdata1d) {delete []sumdata1d; sumdata1d=0;} return false;}
 
-			for (k=0;k<sz2;k++)
+			for (k=0;k<this->getZDim();k++)
 			{
-				for (j=0;j<sz1;j++)
+				for (j=0;j<this->getYDim();j++)
 				{
 					double tmp=0;
-					for (i=0;i<sz0;i++)
-						for (c=0;c<sz3;c++)
+					for (i=0;i<this->getXDim();i++)
+						for (c=0;c<this->getCDim();c++)
 							tmp += float(data4d_uint8[c][k][j][i]);
 					sumdata2d[k][j]=tmp;
 				}
@@ -3711,18 +3737,18 @@ bool My4DImage::proj_general_principal_axis(ImagePlaneDisplayType ptype)
 			break;
 
 		case imgPlaneY:
-			d0 = sz0; d1 = sz2;
+			d0 = this->getXDim(); d1 = this->getZDim();
 			sumdata1d = new float [(V3DLONG)d0*d1];
 			if (!sumdata1d) return false;
 			if(!new2dpointer(sumdata2d, d0, d1, sumdata1d)) {if (sumdata1d) {delete []sumdata1d; sumdata1d=0;} return false;}
 
-			for (k=0;k<sz2;k++)
+			for (k=0;k<this->getZDim();k++)
 			{
-				for (i=0;i<sz0; i++)
+				for (i=0;i<this->getXDim(); i++)
 				{
 					double tmp=0;
-					for (j=0;j<sz1; j++)
-						for (c=0;c<sz3;c++)
+					for (j=0;j<this->getYDim(); j++)
+						for (c=0;c<this->getCDim();c++)
 							tmp += float(data4d_uint8[c][k][j][i]);
 					sumdata2d[k][i]=tmp;
 				}
@@ -3730,18 +3756,18 @@ bool My4DImage::proj_general_principal_axis(ImagePlaneDisplayType ptype)
 			break;
 
 		case imgPlaneZ:
-			d0 = sz0; d1 = sz1;
+			d0 = this->getXDim(); d1 = this->getYDim();
 			sumdata1d = new float [(V3DLONG)d0*d1];
 			if (!sumdata1d) return false;
 			if(!new2dpointer(sumdata2d, d0, d1, sumdata1d)) {if (sumdata1d) {delete []sumdata1d; sumdata1d=0;} return false;}
 
-			for (j=0;j<sz1;j++)
+			for (j=0;j<this->getYDim();j++)
 			{
-				for (i=0;i<sz0; i++)
+				for (i=0;i<this->getXDim(); i++)
 				{
 					double tmp=0;
-					for (k=0;k<sz2; k++)
-						for (c=0;c<sz3;c++)
+					for (k=0;k<this->getZDim(); k++)
+						for (c=0;c<this->getCDim();c++)
 							tmp += float(data4d_uint8[c][k][j][i]);
 					sumdata2d[j][i]=tmp;
 				}
@@ -3816,7 +3842,7 @@ bool My4DImage::proj_general_principal_axis(ImagePlaneDisplayType ptype)
 
 	//finally rotate image in plane
 
-	V3DLONG insz[4]; insz[0]=sz0; insz[1]=sz1; insz[2]=sz2; insz[3]=sz3;
+	V3DLONG insz[4]; insz[0]=this->getXDim(); insz[1]=this->getYDim(); insz[2]=this->getZDim(); insz[3]=this->getCDim();
 	unsigned char * outvol1d=0;
 	V3DLONG *outsz=0;
 	bool b_res=false;
@@ -3828,26 +3854,26 @@ bool My4DImage::proj_general_principal_axis(ImagePlaneDisplayType ptype)
 	{
 		case imgPlaneX:
 			tmp_opt.degree = -r_angle/180.0*3.141592635;
-			tmp_opt.center_x = (sz0-1.0)/2;
+			tmp_opt.center_x = (this->getXDim()-1.0)/2;
 			tmp_opt.center_y = d0mean;
 			tmp_opt.center_z = d1mean;
-			b_res = rotate_inPlaneX(data1d, insz, tmp_opt, outvol1d, outsz);
+			b_res = rotate_inPlaneX(this->getRawData(), insz, tmp_opt, outvol1d, outsz);
 			break;
 
 		case imgPlaneY:
 			tmp_opt.degree = -r_angle/180.0*3.141592635;
 			tmp_opt.center_x = d0mean;
-			tmp_opt.center_y = (sz1-1.0)/2;
+			tmp_opt.center_y = (this->getYDim()-1.0)/2;
 			tmp_opt.center_z = d1mean;
-			b_res = rotate_inPlaneY(data1d, insz, tmp_opt, outvol1d, outsz);
+			b_res = rotate_inPlaneY(this->getRawData(), insz, tmp_opt, outvol1d, outsz);
 			break;
 
 		case imgPlaneZ:
 			tmp_opt.degree = -r_angle/180.0*3.141592635;
 			tmp_opt.center_x = d0mean;
 			tmp_opt.center_y = d1mean;
-			tmp_opt.center_z = (sz2-1.0)/2;
-			b_res = rotate_inPlaneZ(data1d, insz, tmp_opt, outvol1d, outsz);
+			tmp_opt.center_z = (this->getZDim()-1.0)/2;
+			b_res = rotate_inPlaneZ(this->getRawData(), insz, tmp_opt, outvol1d, outsz);
 			break;
 
 		default:
@@ -3857,7 +3883,7 @@ bool My4DImage::proj_general_principal_axis(ImagePlaneDisplayType ptype)
 	//assign the rotated image to the current image and update the pointers
 
 	if (b_res)
-		setNewImageData(outvol1d, outsz[0], outsz[1], outsz[2], outsz[3], datatype);
+		setNewImageData(outvol1d, outsz[0], outsz[1], outsz[2], outsz[3],  this->getDatatype() );
 	else
 	{
 		v3d_msg("The rotate operation fails.\n");
@@ -3875,13 +3901,14 @@ bool My4DImage::proj_general_principal_axis(ImagePlaneDisplayType ptype)
 bool My4DImage::proj_general_resampling(ImageResamplingCode mycode, double target_rez, double cur_rez, int interp_method)
 {
 	V3DLONG cur_sz[4];
-	cur_sz[0] = sz0; cur_sz[1] = sz1; cur_sz[2] = sz2; cur_sz[3] = sz3;
+	cur_sz[0] = this->getXDim(); cur_sz[1] = this->getYDim(); cur_sz[2] = this->getZDim(); cur_sz[3] = this->getCDim();
 	double dfactor_x, dfactor_y, dfactor_z;
 
 	if (mycode==PRS_Z_ONLY)
 	{
 		dfactor_x = 1; dfactor_y = 1; dfactor_z = target_rez/cur_rez;
-		if(!reslice_Z(data1d, cur_sz, target_rez, cur_rez, interp_method)) //z-resampling for 4D data
+    unsigned char * data = this->getRawData();
+		if(!reslice_Z( data, cur_sz, target_rez, cur_rez, interp_method)) //z-resampling for 4D data
 			return false;
 	}
 	else
@@ -3904,71 +3931,78 @@ bool My4DImage::proj_general_resampling(ImageResamplingCode mycode, double targe
 				v3d_msg("Undefined/unsupported ImageResamplingCode found. Check the program.\n");
 				return false;
 		}
-		if (!resample3dimg_interp(data1d, cur_sz, dfactor_x, dfactor_y, dfactor_z, interp_method))
+    unsigned char * data = this->getRawData();
+		if (!resample3dimg_interp( data, cur_sz, dfactor_x, dfactor_y, dfactor_z, interp_method))
+      {
 			return false;
+      }
 	}
 
 	//remove the old 4D pointers, etc
 
-	switch (datatype)
+	switch ( this->getDatatype() )
 	{
 		case V3D_UINT8:
-			delete4dpointer_v3d(data4d_uint8, sz0, sz1, sz2, sz3);
+			delete4dpointer_v3d(data4d_uint8, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim());
 			data4d_virtual = 0;
 			break;
 
 		case V3D_UINT16:
-			delete4dpointer_v3d(data4d_uint16, sz0, sz1, sz2, sz3);
+			delete4dpointer_v3d(data4d_uint16, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim());
 			data4d_virtual = 0;
 			break;
 
 		case V3D_FLOAT32:
-			delete4dpointer_v3d(data4d_float32, sz0, sz1, sz2, sz3);
+			delete4dpointer_v3d(data4d_float32, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim());
 			data4d_virtual = 0;
 			break;
 
 		default:
-			b_error = 1;
+			this->setError(1);
 			return false;
 			//break;
 	}
 
 	//now create new 4D pointers
-	sz0 = cur_sz[0]; sz1 = cur_sz[1]; sz2 = cur_sz[2]; sz3 = cur_sz[3];
+	this->setXDim( cur_sz[0] );
+  this->setYDim( cur_sz[1] );
+  this->setZDim( cur_sz[2] );
+  this->setCDim( cur_sz[3] );
+
 	V3DLONG i;
 
-	V3DLONG channelPageSize = V3DLONG(sz0)*sz1*sz2;
+	V3DLONG channelPageSize = V3DLONG(this->getXDim())*this->getYDim()*this->getZDim();
 	V3DLONG tmppos;
-	switch (datatype)
+	switch ( this->getDatatype() )
 	{
 		case V3D_UINT8:
-			if (!new4dpointer_v3d(data4d_uint8, sz0, sz1, sz2, sz3, data1d))
+			if (!new4dpointer_v3d(data4d_uint8, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim(), this->getRawData()))
 			{
-				b_error = 1;
-				if (data1d) {delete []data1d; data1d=0;}
+				this->setError(1);
+        this->deleteRawDataAndSetPointerToNull();
 				return false;
 			}
 			data4d_virtual = (void ****)data4d_uint8;
-			for(i=0;i<sz3;i++)
+			for(i=0;i<this->getCDim();i++)
 			{
-				p_vmax[i] = (double)maxInVector((unsigned char *)data1d+(V3DLONG)i*channelPageSize*sizeof(unsigned char), channelPageSize, tmppos);
-				p_vmin[i] = (double)minInVector((unsigned char *)data1d+(V3DLONG)i*channelPageSize*sizeof(unsigned char), channelPageSize, tmppos);
+				p_vmax[i] = (double)maxInVector((unsigned char *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(unsigned char), channelPageSize, tmppos);
+				p_vmin[i] = (double)minInVector((unsigned char *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(unsigned char), channelPageSize, tmppos);
 			}
 
 			break;
 
 		case V3D_UINT16:
-			if (!new4dpointer_v3d(data4d_uint16, sz0, sz1, sz2, sz3, data1d))
+			if (!new4dpointer_v3d(data4d_uint16, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim(), (this->getRawData())))
 			{
-				b_error = 1;
-				if (data1d) {delete []data1d; data1d=0;}
+				this->setError(1);
+        this->deleteRawDataAndSetPointerToNull();
 				return false;
 			}
 			data4d_virtual = (void ****)data4d_uint16;
-			for(i=0;i<sz3;i++)
+			for(i=0;i<this->getCDim();i++)
 			{
-				p_vmax[i] = (double)maxInVector((USHORTINT16 *)data1d+(V3DLONG)i*channelPageSize*sizeof(USHORTINT16), channelPageSize, tmppos);
-				p_vmin[i] = (double)minInVector((USHORTINT16 *)data1d+(V3DLONG)i*channelPageSize*sizeof(USHORTINT16), channelPageSize, tmppos);
+				p_vmax[i] = (double)maxInVector((USHORTINT16 *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(USHORTINT16), channelPageSize, tmppos);
+				p_vmin[i] = (double)minInVector((USHORTINT16 *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(USHORTINT16), channelPageSize, tmppos);
 			}
 
 			//v3d_msg("Warning: this data type UINT16 has not been supported in display yet.\n");
@@ -3976,26 +4010,26 @@ bool My4DImage::proj_general_resampling(ImageResamplingCode mycode, double targe
 			break;
 
 		case V3D_FLOAT32:
-			if (!new4dpointer_v3d(data4d_float32, sz0, sz1, sz2, sz3, data1d))
+			if (!new4dpointer_v3d(data4d_float32, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim(), (this->getRawData())))
 			{
-				b_error = 1;
-				if (data1d) {delete []data1d; data1d=0;}
+				this->setError(1);
+        this->deleteRawDataAndSetPointerToNull();
 				return false;
 			}
 			data4d_virtual = (void ****)data4d_float32;
 
-			for(i=0;i<sz3;i++)
+			for(i=0;i<this->getCDim();i++)
 			{
-				p_vmax[i] = (double)maxInVector((float *)data1d+(V3DLONG)i*channelPageSize*sizeof(float), channelPageSize, tmppos);
-				p_vmin[i] = (double)minInVector((float *)data1d+(V3DLONG)i*channelPageSize*sizeof(float), channelPageSize, tmppos);
+				p_vmax[i] = (double)maxInVector((float *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(float), channelPageSize, tmppos);
+				p_vmin[i] = (double)minInVector((float *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(float), channelPageSize, tmppos);
 			}
 
 			v3d_msg("Warning: this data type FLOAT32 has not been supported in display yet.\n");
 			break;
 
 		default:
-			b_error = 1;
-			if (data1d) {delete []data1d; data1d=0;}
+			this->setError(1);
+      this->deleteRawDataAndSetPointerToNull();
 			v3d_msg("Warning: unknown data type.\n");
 			return false;
 			//break;
@@ -4003,9 +4037,9 @@ bool My4DImage::proj_general_resampling(ImageResamplingCode mycode, double targe
 
 	//
 
-	curFocusX = sz0/2; //-= bpos_x+1; //begin from first slices
-	curFocusY = sz1/2; //-= bpos_y+1;
-	curFocusZ = sz2/2; //-= bpos_z+1;
+	curFocusX = this->getXDim()/2; //-= bpos_x+1; //begin from first slices
+	curFocusY = this->getYDim()/2; //-= bpos_y+1;
+	curFocusZ = this->getZDim()/2; //-= bpos_z+1;
 
 	//update view
 
@@ -4111,7 +4145,7 @@ bool My4DImage::proj_general_projection(AxisCode myaxis, V3DLONG mincoord, V3DLO
 {
 	if (!p_mainWidget) return false;
 
-	if (datatype!=V3D_UINT8)
+	if ( this->getDatatype() !=V3D_UINT8)
 	{
 		v3d_msg("Now supports UINT8 only in proj_general_projection().\n");
 		return false;
@@ -4335,7 +4369,7 @@ bool My4DImage::proj_general_blend_channel_real(My4DImage * pBlendDstImg, My4DIm
 bool My4DImage::proj_general_split_channels(bool b_keepallchannels, int chno)
 {
 	if (!p_mainWidget) return false;
-	if (datatype!=V3D_UINT8)
+	if ( this->getDatatype() !=V3D_UINT8)
 	{
 		v3d_msg("Now the slpit-channels only supports 8bit data. Check your data first.");
 		return false;
@@ -4375,11 +4409,11 @@ bool My4DImage::proj_general_split_channels(bool b_keepallchannels, int chno)
 
 			//now assign values
 			V3DLONG i,j,k;
-			for (k=0; k<sz2; k++)
+			for (k=0; k<this->getZDim(); k++)
 			{
-				for (j=0; j<sz1; j++)
+				for (j=0; j<this->getYDim(); j++)
 				{
-					for (i=0; i<sz0; i++)
+					for (i=0; i<this->getXDim(); i++)
 					{
 						pDstImg_d3d[k][j][i] = pSrcImg_d3d[k][j][i];
 					}
@@ -4593,7 +4627,7 @@ bool My4DImage::proj_general_stitchTwoImages(V3DLONG channo)
 bool My4DImage::proj_general_hist_display()
 {
 	if (!valid()){v3d_msg("Invalid data");	return false;}
-	if (datatype!=V3D_UINT8 && datatype!=V3D_UINT16)
+	if ( this->getDatatype() !=V3D_UINT8 &&  this->getDatatype() !=V3D_UINT16)
 	{
 		v3d_msg("Only support convert the indexed 8/16 bits image in histogram display.\n");
 		return false;
@@ -4631,13 +4665,13 @@ bool My4DImage::proj_general_hist_display()
 		V3DLONG minv, maxv;
 		V3DLONG pos_min, pos_max;
 
-		if (datatype==V3D_UINT8)
+		if ( this->getDatatype() ==V3D_UINT8)
 		{
-			hs.compute(data1d + c*pagesz, pagesz);
+			hs.compute((this->getRawData()) + c*pagesz, pagesz);
 		}
-		else if (datatype==V3D_UINT16)
+		else if ( this->getDatatype() ==V3D_UINT16)
 		{
-			hs.compute((unsigned short int *)(data1d + c*pagesz*2), pagesz);
+			hs.compute((unsigned short int *)((this->getRawData()) + c*pagesz*2), pagesz);
 		}
 		else
 		{
@@ -4700,7 +4734,7 @@ bool My4DImage::proj_general_linear_adjustment()
 		return false;
 	}
 
-	if (datatype==V3D_UINT8)
+	if ( this->getDatatype() ==V3D_UINT8)
 	{
 		//TO DO Linear Adjustment
 		for (V3DLONG c=0;c<channels; c++)
@@ -4708,7 +4742,7 @@ bool My4DImage::proj_general_linear_adjustment()
 			V3DLONG i;
 			QVector<int> vec;
 
-			unsigned char *curp = data1d;
+			unsigned char *curp = this->getRawData();
 			V3DLONG icurp = c*pagesz;
 			curp += icurp;
 
@@ -4813,7 +4847,7 @@ bool My4DImage::proj_general_linear_adjustment()
 		}
 
 	}
-	else if (datatype==V3D_UINT16)
+	else if ( this->getDatatype() ==V3D_UINT16)
 	{
 		//TO DO Linear Adjustment
 		for (V3DLONG c=0;c<channels; c++)
@@ -4822,7 +4856,7 @@ bool My4DImage::proj_general_linear_adjustment()
 			QVector<int> vec;
 
 			V3DLONG maxori = 0, minori = 0;
-			USHORTINT16 *curp = (USHORTINT16 *)data1d;
+			USHORTINT16 *curp = (USHORTINT16 *)this->getRawData();
 			V3DLONG icurp = c*pagesz;
 			curp += icurp;
 
@@ -4931,9 +4965,14 @@ bool My4DImage::proj_general_linear_adjustment()
 	}
 
 	//show in a new widget
-	V3DLONG sz0 = getXDim(), sz1 = getYDim(), sz2 = getZDim(), sz3 = getCDim();
+	V3DLONG sz0 = getXDim();
+  V3DLONG sz1 = getYDim();
+  V3DLONG sz2 = getZDim();
+  V3DLONG sz3 = getCDim();
+
 	XFormWidget * newwin = getXWidget()->getMainControlWindow()->createMdiChild();
-	newwin->newProcessedImage("Linear Adjustment Image ", outvol1d, sz0, sz1, sz2, sz3, V3D_UINT8); //RGB with similarity=1 Blue (255) & similarity=0 Red (0)
+	newwin->newProcessedImage("Linear Adjustment Image ", outvol1d, 
+    this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim(), V3D_UINT8); //RGB with similarity=1 Blue (255) & similarity=0 Red (0)
 
 	newwin->show();
 	newwin->getImageData()->updateViews();
@@ -4948,7 +4987,7 @@ bool My4DImage::proj_general_hist_equalization(unsigned char lowerbound, unsigne
 	for (int c=0;c<getCDim(); c++)
 	{
 		//if (!hist_eq_uint8(data1d+c*pagesz, pagesz))
-		if (!hist_eq_range_uint8(data1d+c*pagesz, pagesz, lowerbound, higherbound))
+		if (!hist_eq_range_uint8(this->getRawData()+c*pagesz, pagesz, lowerbound, higherbound))
 		{
 			v3d_msg("Error happens in proj_general_hist_equalization();\n");
 			return false;
@@ -4969,7 +5008,7 @@ bool My4DImage::proj_general_convertIndexedImg2RGB()
 		v3d_msg("The colormap of the current image is unset yet. Do nothing to convert to RGB.\n");
 		return false;
 	}
-	if (datatype!=V3D_UINT8 && datatype!=V3D_UINT16)
+	if ( this->getDatatype() !=V3D_UINT8 &&  this->getDatatype() !=V3D_UINT16)
 	{
 		v3d_msg("Only support convert the indexed 8/16 bits image to RGB. You have a different datatype. Do nothing to convert to RGB.\n");
 		return false;
@@ -4997,7 +5036,7 @@ bool My4DImage::proj_general_convertIndexedImg2RGB()
 	ColorMap *pc = colorMap;
 	int clen = pc->len;
 
-	if (datatype==V3D_UINT16)
+	if ( this->getDatatype() ==V3D_UINT16)
 	{
 		USHORTINT16 *** p3d = data4d_uint16[0];
 
@@ -5066,21 +5105,21 @@ bool My4DImage::proj_general_scaleandconvert28bit(int lb, int ub) //lb, ub: lowe
 	
 	//now cpy data
 	V3DLONG i;
-	if (datatype==V3D_UINT8)
+	if ( this->getDatatype() ==V3D_UINT8)
 	{
-		unsigned char * cur_data1d = (unsigned char *)data1d;
+		unsigned char * cur_data1d = (unsigned char *)this->getRawData();
 		for (i=0;i<tunits;i++)
 			outvol1d[i] = cur_data1d[i];
 	}
-	else if (datatype==V3D_UINT16)
+	else if ( this->getDatatype() ==V3D_UINT16)
 	{
-		unsigned short int * cur_data1d = (unsigned short int *)data1d;
+		unsigned short int * cur_data1d = (unsigned short int *)this->getRawData();
 		for (i=0;i<tunits;i++)
 			outvol1d[i] = (unsigned char)(cur_data1d[i]);
 	}
-	else if (datatype==V3D_FLOAT32)
+	else if ( this->getDatatype() ==V3D_FLOAT32)
 	{
-		float * cur_data1d = (float *)data1d;
+		float * cur_data1d = (float *)this->getRawData();
 		for (i=0;i<tunits;i++)
 			outvol1d[i] = (unsigned char)(cur_data1d[i]);
 	}
@@ -5100,7 +5139,7 @@ bool My4DImage::proj_general_scaleandconvert28bit(int lb, int ub) //lb, ub: lowe
 bool My4DImage::proj_general_convert16bit_to_8bit(int shiftnbits)
 //shiftnbits will be 4 is the original data is 12-bit, or 8 if the original data uses all 16 bits. Should be 0 is just discard the upper 8-bits
 {
-	if (!valid() || datatype!=V3D_UINT16)
+	if (!valid() ||  this->getDatatype() !=V3D_UINT16)
 	{
 		v3d_msg("Your data is either invalid or not 16-bit image.\n");
 		return false;
@@ -5121,7 +5160,7 @@ bool My4DImage::proj_general_convert16bit_to_8bit(int shiftnbits)
 	}
 
 	//now cpy data
-	unsigned short int * cur_data1d = (unsigned short int *)data1d;
+	unsigned short int * cur_data1d = (unsigned short int *)this->getRawData();
 
 	V3DLONG i;
 	for (i=0;i<tunits;i++)
@@ -5135,7 +5174,7 @@ bool My4DImage::proj_general_convert16bit_to_8bit(int shiftnbits)
 
 bool My4DImage::proj_general_convert32bit_to_8bit(int shiftnbits)
 {
-	if (!valid() || datatype!=V3D_FLOAT32)
+	if (!valid() ||  this->getDatatype() !=V3D_FLOAT32)
 	{
 		v3d_msg("Your data is either invalid or not 32-bit image.\n");
 		return false;

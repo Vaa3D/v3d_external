@@ -54,17 +54,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 class Image4DSimple
 {
-	//the data members are set as public, but should avoid using them directly
-public:
-	unsigned char * data1d;
-	V3DLONG sz0, sz1, sz2, sz3;
-	V3DLONG sz_time;
-	TimePackType timepacktype;
-	ImagePixelType datatype;
-	char imgSrcFile[1024]; //use a V3DLONG path to store the full path
-	int b_error;
-	double rez_x, rez_y, rez_z; //the resolution of a image pixel along the 3 axes
-
 public:
 	Image4DSimple() {
 		data1d = 0;
@@ -98,6 +87,7 @@ public:
 	V3DLONG getZDim() {return sz2;}
 	V3DLONG getCDim() {return sz3;}
 	V3DLONG getTDim() {return sz_time;}
+	int getError() {return b_error;}
 	ImagePixelType getDatatype() {return datatype;}
 	TimePackType getTimePackType() {return timepacktype;}
 	V3DLONG getTotalUnitNumber() {return sz0*sz1*sz2*sz3;}
@@ -120,11 +110,23 @@ public:
 		return data1d + myid*getTotalUnitNumberPerChannel()*getUnitBytes();
 	}
 	int isSuccess() {if (sz0<=0 || sz1<=0 || sz2<=0 || sz3<=0) b_error=1; return !b_error;}
-	bool valid() {return (!data1d || sz0<=0 || sz1<=0 || sz2<=0 || sz3<=0 || b_error || (datatype!=V3D_UINT8 && datatype!=V3D_UINT16 && datatype!=V3D_FLOAT32)) ?  false : true; }
+	virtual bool valid() {
+    return (
+      !data1d ||
+       sz0<=0 ||  
+       sz1<=0 ||
+       sz2<=0 ||
+       sz3<=0 ||
+       b_error ||
+     (datatype!=V3D_UINT8 && 
+      datatype!=V3D_UINT16 && 
+      datatype!=V3D_FLOAT32)) ?  false : true; 
+    }
 	double getRezX() {return rez_x;}
 	double getRezY() {return rez_y;}
 	double getRezZ() {return rez_z;}
 
+  void setError( int v ) {b_error = v;}
 	void setXDim(V3DLONG v) {sz0=v;}
 	void setYDim(V3DLONG v) {sz1=v;}
 	void setZDim(V3DLONG v) {sz2=v;}
@@ -133,11 +135,19 @@ public:
 	void setDatatype(ImagePixelType v) {datatype=v;}
 	void setTimePackType(TimePackType v) {timepacktype=v;}
 	bool setNewRawDataPointer(unsigned char *p) {if (!p) return false; if (data1d) delete []data1d; data1d = p; return true;}
+  void setRawDataPointerToNull() { this->data1d = 0; }
+  void deleteRawDataAndSetPointerToNull() { if (data1d) {delete []data1d; data1d = 0;} }
+  void setRawDataPointer(unsigned char *p) { this->data1d = p; }
 	bool setRezX(double a) { if (a<=0) return false; rez_x = a; return true;}
 	bool setRezY(double a) { if (a<=0) return false; rez_y = a; return true;}
 	bool setRezZ(double a) { if (a<=0) return false; rez_z = a; return true;}
 
 	//this function is the main place to call if you want to set your own 1d pointer data to this data structure
+	bool setData(unsigned char *p, Image4DSimple * image )
+  {
+    bool result = this->setData( p, image->sz0, image->sz1, image->sz2, image->sz3, image->datatype );
+    return result;
+  }
 	bool setData(unsigned char *p, V3DLONG s0, V3DLONG s1, V3DLONG s2, V3DLONG s3, ImagePixelType dt)
 	{
 		if (p && s0>0 && s1>0 && s2>0 && s3>0 && (dt==V3D_UINT8 || dt==V3D_UINT16 || dt==V3D_FLOAT32))
@@ -188,6 +198,19 @@ public:
 	    else return true;
           }
 	}
+
+private:
+	unsigned char * data1d;
+	V3DLONG sz0;
+  V3DLONG sz1;
+  V3DLONG sz2;
+  V3DLONG sz3;
+	V3DLONG sz_time;
+	TimePackType timepacktype;
+	ImagePixelType datatype;
+	char imgSrcFile[1024]; //use a V3DLONG path to store the full path
+	int b_error;
+	double rez_x, rez_y, rez_z; //the resolution of a image pixel along the 3 axes
 
 };
 

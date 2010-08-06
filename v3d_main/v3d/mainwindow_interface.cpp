@@ -126,8 +126,8 @@ bool MainWindow::setImage(void* window, Image4DSimple *image)
 	{
 		qDebug()<<"MainWindow setImage now: "<< w << image;
 //image->data1d[100]=255;
-printf("[%p]\n", image->data1d);
-		return w->transferImageData(image, image->data1d)
+printf("[%p]\n", image->getRawData());
+		return w->transferImageData(image, image->getRawData())
 				&& w->setCurrentFileName(w->userFriendlyCurrentFile());
 	}
 	else return false;
@@ -295,18 +295,31 @@ bool XFormWidget::set3ViewROI(QList<QPolygon> & roi_list)
 	else return false;
 }
 
-bool XFormWidget::transferImageData(Image4DSimple *img, unsigned char *a)
+  bool XFormWidget::transferImageData(Image4DSimple *img, unsigned char *a) // FIXME: Why is "a" not used ?
 {
 	if (! img || !img->valid())  return false;
-	if (setImageData(img->data1d, img->sz0, img->sz1, img->sz2, img->sz3, img->datatype))
+
+  bool result = this->setImageData(
+    img->getRawData(), 
+    img->getXDim(), 
+    img->getYDim(), 
+    img->getZDim(),
+    img->getCDim(), 
+    img->getDatatype() );
+
+	if (result)
 	{
-		if (!imgData)  return false;
-		imgData->sz_time = img->sz_time;
-		imgData->timepacktype = img->timepacktype;
-		imgData->rez_x = img->rez_x; //100626
-		imgData->rez_y = img->rez_y;
-		imgData->rez_z = img->rez_z;
-		img->data1d = 0; return true;
+		if (! this->imgData)  return false;
+
+	  this->imgData->setTDim( img->getTDim() );
+	  this->imgData->setTimePackType( img->getTimePackType() );
+	  this->imgData->setRezX( img->getRezX() ); //100626
+	  this->imgData->setRezY( img->getRezY() );
+	  this->imgData->setRezZ( img->getRezZ() );
+
+	  img->setRawDataPointerToNull();
+
+    return true;
 	}
 	else return false;
 } //090818 RZC

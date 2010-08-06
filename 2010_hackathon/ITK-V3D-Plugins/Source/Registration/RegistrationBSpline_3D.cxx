@@ -362,7 +362,7 @@ public:
 //			long N = p4DImage_mov->getTotalBytes();
 //			unsigned char* newdata1d = new unsigned char[N];
 //			Image4DSimple tmp;
-//			tmp.setData(newdata1d, p4DImage_mov->sz0,p4DImage_mov->sz1,p4DImage_mov->sz2,p4DImage_mov->sz3, p4DImage_mov->datatype);
+//			tmp.setData(newdata1d, p4DImage_mov );
 //
 //			//copy data back to the new image
 //			while(!it.IsAtEnd())

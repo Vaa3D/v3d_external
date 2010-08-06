@@ -195,21 +195,24 @@ public:
 	void **** getData(ImagePixelType & dtype);
 	void **** getData() {return data4d_virtual;}
 	bool isEmpty() {return (!data4d_virtual) ?  true : false; }
-	bool valid() {return (!data4d_virtual || !data1d || sz0<=0 || sz1<=0 || sz2<=0 || sz3<=0 || b_error || (datatype!=V3D_UINT8 && datatype!=V3D_UINT16 && datatype!=V3D_FLOAT32)) ?  false : true; }
+
+	bool valid() {
+    return (!data4d_virtual || this->Image4DSimple::valid() ) ?  false : true;
+    }
 
 	void loadImage(char filename[]);
 	void setupData4D();
 	bool updateminmaxvalues();
 	void loadImage(V3DLONG imgsz0, V3DLONG imgsz1, V3DLONG imgsz2, V3DLONG imgsz3, int imgdatatype); //an overloaded function to create a blank image
 
-	void setFocusX(int x) {curFocusX = (x>=1 && x<= sz0) ? x-1 : -1;}
-	void setFocusY(int y) {curFocusY = (y>=1 && y<= sz1) ? y-1 : -1;}
-	void setFocusZ(int z) {curFocusZ = (z>=1 && z <=sz2) ? z-1 : -1;}
+	void setFocusX(int x) {curFocusX = (x>=1 && x <= this->getXDim()) ? x-1 : -1;}
+	void setFocusY(int y) {curFocusY = (y>=1 && y <= this->getYDim()) ? y-1 : -1;}
+	void setFocusZ(int z) {curFocusZ = (z>=1 && z <= this->getZDim()) ? z-1 : -1;}
 
 	My4DImage();
 	~My4DImage();
 
-	//private:
+	//private:   // FIXME: It should be private 
 	float **** data4d_float32;
 	USHORTINT16 **** data4d_uint16;
 	unsigned char **** data4d_uint8;
@@ -229,7 +232,8 @@ public:
 	bool bImgValScaleDisplay;
 	bool bLookingGlass;
 
-	ColorMap *colorMap; //080824: copied from wano
+	ColorMap *colorMap; //080824: copied from wano  // FIXME: It should be private.
+
 	void createColorMap(int len, ImageDisplayColorType c=colorPseudoMaskColor);
 	void switchColorMap(int len, ImageDisplayColorType c);
 	void getColorMapInfo(int &len, ImageDisplayColorType &c);
@@ -618,6 +622,7 @@ public:
 	bool saveFile(QString filename);
 
 	My4DImage * getImageData() {return imgData;} //080326
+
 	bool newProcessedImage(QString filename, unsigned char *ndata1d, V3DLONG nsz0, V3DLONG nsz1, V3DLONG nsz2, V3DLONG nsz3, ImagePixelType ndatatype); //080408
 	// for replace imageData and filename
 	bool setImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG nsz1, V3DLONG nsz2, V3DLONG nsz3, ImagePixelType ndatatype); //090818 RZC

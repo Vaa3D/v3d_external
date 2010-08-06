@@ -93,7 +93,10 @@ public:
 
 		fpa = new FeaturePointAttribute [nscales];
 
-		V3DLONG sz0 = image4D->sz0, sz1 = image4D->sz1, sz2 = image4D->sz2, sz3 = image4D->sz3;
+		V3DLONG sz0 = image4D->getXDim();
+    V3DLONG sz1 = image4D->getYDim();
+    V3DLONG sz2 = image4D->getZDim();
+    V3DLONG sz3 = image4D->getCDim();
 
 		//initial a float type pointer for computing difference
 		float **** pDiff = new float *** [sz3];
@@ -157,7 +160,7 @@ public:
 		int b_win_shape=1; //0 for cube and 1 for sphere for pca computation
 		bool b_disp_CoM_etc=false; //if display center of mass and covariance info
 
-		switch (image4D->datatype)
+		switch ( image4D->getDatatype() )
 		{
 			case V3D_UINT8:
 

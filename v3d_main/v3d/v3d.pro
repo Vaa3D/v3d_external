@@ -107,6 +107,7 @@ LIBS += -L$$SHARED_FOLDER \
 
 # the following trick was figured out by Ruan Zongcai
 CONFIG += warn_off  # only work for complier
+CONFIG += debug  # Fabrice and Luis tracking a bug
 #macx: QMAKE_LFLAGS += -fvisibility=hidden -fvisibility-inlines-hidden # turn off this type warnings
 #macx: QMAKE_CXXFLAGS += -gdwarf-2 # turn off visibility warnings
 # need Qt 4.5.0 above and reCreate Makefile, this will be automatic.

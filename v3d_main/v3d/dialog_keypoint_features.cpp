@@ -108,27 +108,27 @@ void KeypointFeaturesDialog::updateContent(const QList <ImgPixelFea> *p_anoTable
 		//thresholding get the foreground region
 		V3DLONG cc = statistics_channel->value()-1; if (cc<0) cc=0; if (cc>=imgdata->getCDim()) cc=imgdata->getCDim()-1;
 		float meanVal=0, stdVal=0;
-		V3DLONG channel_bytes = imgdata->sz2*imgdata->sz1*imgdata->sz0;
+		V3DLONG channel_bytes = imgdata->getZDim() * imgdata->getYDim() *imgdata->getZDim();
 		
-		switch (imgdata->datatype)
+		switch ( imgdata->getDatatype() )
 		{
 			case V3D_UINT8:
 
-				mean_and_std(imgdata->data1d + cc*channel_bytes, channel_bytes, meanVal, stdVal);
+				mean_and_std(imgdata->getRawData() + cc*channel_bytes, channel_bytes, meanVal, stdVal);
 				threshold->setText(tmp.setNum( meanVal + 1*stdVal ));
 
 				break;
 				
 			case V3D_UINT16:
 
-				mean_and_std(imgdata->data1d + cc*channel_bytes, channel_bytes, meanVal, stdVal);
+				mean_and_std(imgdata->getRawData() + cc*channel_bytes, channel_bytes, meanVal, stdVal);
 				threshold->setText(tmp.setNum( meanVal + 1*stdVal ));
 				
 				break;
 				
 			case V3D_FLOAT32:
 
-				mean_and_std(imgdata->data1d + cc*channel_bytes, channel_bytes, meanVal, stdVal);
+				mean_and_std(imgdata->getRawData() + cc*channel_bytes, channel_bytes, meanVal, stdVal);
 				threshold->setText(tmp.setNum( meanVal + 1*stdVal ));
 				
 				break;
@@ -252,7 +252,10 @@ void KeypointFeaturesDialog::compute_pointfea()
 	V3DLONG zz = V3DLONG(pt.z+0.5);
 	V3DLONG rr = pt.radius; if (rr<0) rr=0;
 	
-	V3DLONG sz0 = imgdata->sz0, sz1 = imgdata->sz1, sz2 = imgdata->sz2, sz3 = imgdata->sz3;
+	V3DLONG sz0 = imgdata->getXDim();
+  V3DLONG sz1 = imgdata->getYDim();
+  V3DLONG sz2 = imgdata->getZDim();
+  V3DLONG sz3 = imgdata->getCDim();
 
 	
 	pt.n = 4;
@@ -482,16 +485,19 @@ bool KeypointFeaturesDialog::compute_similarmap()
 	}
 
 	//do computation of similarity map
-	V3DLONG sz0 = imgdata->sz0, sz1 = imgdata->sz1, sz2 = imgdata->sz2, sz3 = imgdata->sz3;
-	
+	V3DLONG sz0 = imgdata->getXDim();
+  V3DLONG sz1 = imgdata->getYDim();
+  V3DLONG sz2 = imgdata->getZDim();
+  V3DLONG sz3 = imgdata->getCDim();
+
 	//initial a float type pointer for computing difference
 	float **** pDiff = new float *** [sz3];
-	if (!pDiff) 
-	{	
+	if (!pDiff)
+	{
 		printf("Memory allocate error for pDiff! \n");
 		return false;
 	}
-	
+
 	for (V3DLONG c=0;c<sz3; c++)
 	{
 		pDiff[c] = new float ** [sz2];
@@ -565,7 +571,7 @@ bool KeypointFeaturesDialog::compute_similarmap()
 	double thresh = threshold->text().toDouble();
 	int m = 0;
 	
-	switch (imgdata->datatype)
+	switch ( imgdata->getDatatype() )
 	{
 		case V3D_UINT8:
 			//compute distance instead of correlation
