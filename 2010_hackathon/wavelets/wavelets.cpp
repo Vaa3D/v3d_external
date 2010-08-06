@@ -447,9 +447,9 @@ void WaveletPlugin::computeWavelets( bool displayDetection )
 		try {
 			time_t seconds0 = time (NULL);
 			if (szz>1)
-				resTab = b3WaveletScales(data1dD, szx, szy, szz, numScales);
+				resTab = WaveletTransform::b3WaveletScales(data1dD, szx, szy, szz, numScales);
 			else
-				resTab = b3WaveletScales2D(data1dD, szx, szy, numScales);
+				resTab = WaveletTransform::b3WaveletScales2D(data1dD, szx, szy, numScales);
 			time_t seconds1 = time (NULL);
 			printf("Computation time : %d" , (seconds1-seconds0) );
 		}
@@ -461,7 +461,7 @@ void WaveletPlugin::computeWavelets( bool displayDetection )
 
 		//compute waveletCoefficients
 		lowPassResidual = new double[N];
-		b3WaveletCoefficientsInplace(resTab, data1dD, lowPassResidual, numScales, N);
+		WaveletTransform::b3WaveletCoefficientsInplace(resTab, data1dD, lowPassResidual, numScales, N);
 
 		// Create a copy of resTab[]
 
@@ -571,7 +571,7 @@ void WaveletPlugin::filterB3Wavelets( bool displayDetection )
 
 	//reconstruct image from coefficients
 	double* rec = new double[N];
-	b3WaveletReconstruction(resTab, lowPassResidual, rec, numScales, N);
+	WaveletTransform::b3WaveletReconstruction(resTab, lowPassResidual, rec, numScales, N);
 
 
 	// Final threshold
@@ -843,9 +843,9 @@ void WaveletPlugin::WaveletTransform(V3DPluginCallback &callback, QWidget *paren
 	try { 	
 			time_t seconds0 = time (NULL);
  			if (szz>1)
- 				resTab = b3WaveletScales(data1dD, szx, szy, szz, numScales);
+ 				resTab = WaveletTransform::b3WaveletScales(data1dD, szx, szy, szz, numScales);
  			else
- 				resTab = b3WaveletScales2D(data1dD, szx, szy, numScales);
+ 				resTab = WaveletTransform::b3WaveletScales2D(data1dD, szx, szy, numScales);
  			time_t seconds1 = time (NULL);
  			printf("\n Computation time : %d \n" , (seconds1-seconds0) );
  			}
@@ -858,13 +858,13 @@ void WaveletPlugin::WaveletTransform(V3DPluginCallback &callback, QWidget *paren
  	
  	//compute waveletCoefficients
  	double* lowPassResidual = new double[N];
- 	b3WaveletCoefficientsInplace(resTab, data1dD, lowPassResidual, numScales, N);
+ 	WaveletTransform::b3WaveletCoefficientsInplace(resTab, data1dD, lowPassResidual, numScales, N);
 	
 	delete(data1dD);
 		
 	//reconstruct image from coefficients
 	double* rec = new double[N];
-	b3WaveletReconstruction(resTab, lowPassResidual, rec, numScales, N);
+	WaveletTransform::b3WaveletReconstruction(resTab, lowPassResidual, rec, numScales, N);
 	
 
 	
