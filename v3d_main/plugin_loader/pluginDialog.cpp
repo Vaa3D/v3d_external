@@ -125,15 +125,14 @@ void PluginDialog::visitPlugins(const QString &path, const QStringList &fileName
     foreach (QString fileName, fileNameList)
     {
         QPluginLoader loader(dir.absoluteFilePath(fileName));
-        QObject *plugin = loader.instance();
+
+        QObject *plugin = loader.instance(); // a new instance
 
         if (plugin)
             populateTreeWidget(plugin, dir.relativeFilePath(fileName));//relativeFilePath
 
-        if (loader.isLoaded())
-        {
-        	loader.unload();        //qDebug() << "unload: " <<fileName;
-        }
+        loader.unload(); // unload this instance
+        //qDebug() << "unload: " <<fileName;
     }
 }
 

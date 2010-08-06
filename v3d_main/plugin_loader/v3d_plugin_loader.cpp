@@ -93,6 +93,13 @@ V3d_PluginLoader::V3d_PluginLoader(QMenu* menuPlugin, MainWindow* mainwindow)
 	rescanPlugins();
 }
 
+//QObject * QPluginLoader::instance () returns the root component object of the plugin.
+//The plugin is loaded if necessary.
+//If the root component object was destroyed, calling this function creates a new instance.
+//The root component, returned by this function, is not deleted when the QPluginLoader is destroyed.
+//If you want to ensure that the root component is deleted, you should call unload() as soon you don't need to access the core component anymore.
+//When the library is finally unloaded, the root component will automatically be deleted.
+
 void V3d_PluginLoader::clear()
 {
 	plugin_menu.clear();
@@ -100,10 +107,7 @@ void V3d_PluginLoader::clear()
 	foreach (QPluginLoader* loader, pluginList)
     {
 		//100805 RZC: this MUST don't called because it may cause model-less plugin to crash.
-//        if (loader->isLoaded())
-//        {
-//        	loader->unload();
-//        }
+       	loader->unload();
 		delete loader;
     }
 	pluginList.clear();
@@ -119,20 +123,20 @@ void V3d_PluginLoader::rescanPlugins()
 
 	populateMenus();
 
-	foreach (QPluginLoader* loader, pluginList)
-    {
-        //100805 RZC: try to unload root instance of this plugin
-        while (loader->isLoaded())
-        {
-        	loader->unload();
-        }
-//        QObjectList list = loader->staticInstances();
-//        for ( ; list.size()>0; )
+//	foreach (QPluginLoader* loader, pluginList)
+//    {
+//        //100805 RZC: try to unload root instance of this plugin
+//        while (loader->isLoaded())
 //        {
 //        	loader->unload();
-//        	list = loader->staticInstances();
 //        }
-    }
+////        QObjectList list = loader->staticInstances();
+////        for ( ; list.size()>0; )
+////        {
+////        	loader->unload();
+////        	list = loader->staticInstances();
+////        }
+//    }
 }
 
 void V3d_PluginLoader::loadPlugins()
@@ -198,10 +202,15 @@ void V3d_PluginLoader::searchPluginFiles(QMenu* menu)
     foreach (QString fileName, fileList)
     {
     	QString fullpath = pluginsDir.absoluteFilePath(fileName);
-        QPluginLoader* loader = new QPluginLoader(fullpath);
-        if (! loader) return;
 
-        QObject *plugin = loader->instance();
+    	QPluginLoader* loader = new QPluginLoader(fullpath);
+        if (! loader)
+        {
+        	qDebug("ERROR in V3d_PluginLoader::searchPluginFiles: new QPluginLoader(%s)", fullpath);
+        	return;
+        }
+
+        QObject *plugin = loader->instance(); //a new instance
         if (plugin)
         {
         	qDebug()<< "plugin: " << fullpath;
@@ -220,13 +229,10 @@ void V3d_PluginLoader::searchPluginFiles(QMenu* menu)
         }
         else
         {
-        	qDebug() << "fail instantiation: " <<fullpath;
+        	qDebug() << "Fail instantiation: " <<fullpath;
         }
 
-        if (loader->isLoaded())
-        {
-        	loader->unload();     //qDebug() << "unload: " <<fileName;
-        }
+//     	loader->unload();     //qDebug() << "unload: " <<fileName;
     }
 }
 
@@ -263,8 +269,19 @@ void V3d_PluginLoader::runPlugin()
     QAction *action = qobject_cast<QAction *>(sender());
     //V3DSingleImageInterface *iFilter = qobject_cast<V3DSingleImageInterface *>(action->parent());
     QPluginLoader *loader = qobject_cast<QPluginLoader *>(action->parent());
+    if (! loader)
+    {
+    	qDebug("ERROR in V3d_PluginLoader::runPlugin: qobject_cast<QPluginLoader *>");
+    	return;
+    }
 
+    loader->unload();
     QObject *plugin = loader->instance();
+
+//    //100806 RZC: instead of instance();
+//    loader->load();
+//    QObjectList list = loader->staticInstances();
+//    QObject *plugin = list.size()? list.at(0) : 0;
 
     runSingleImageInterface(plugin, action->text());
 
@@ -376,6 +393,8 @@ bool V3d_PluginLoader::callPluginFunc(const QString &plugin_name,
 
 //==================================================================
 
+
+#define __get_or_push_with_v3d__
 v3dhandleList V3d_PluginLoader::getImageWindowList() const
 {
 	v3dhandleList list;
