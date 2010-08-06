@@ -33,7 +33,6 @@ using namespace std;
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(steerPlugin, steerPlugin)
 
-int loadCube(V3DPluginCallback &callback, QWidget *parent);
 int doFiltering(V3DPluginCallback &callback, QWidget *parent);
 
 
@@ -138,14 +137,22 @@ int steer3d(V3DPluginCallback &callback, SteerDialog* sd, uchar* data1d,V3DLONG 
    cubeFloat2Uchar(stf->result->voxels_origin, outputData,cubeWidth,cubeHeight,cubeDepth);
 
    // show in v3d
-   const char* filename = "result";
+   //const char* filename = "result";
+
+   stringstream sFilename;
+   sFilename << "result_";
+   for(vector<double>::iterator itCoeffs = dcoeffs.begin();
+      itCoeffs != dcoeffs.end(); itCoeffs++)
+   {
+      sFilename << *itCoeffs;
+   }
+
    Image4DSimple p4DImageOutput;
    p4DImageOutput.setData(outputData,cubeWidth,cubeHeight,cubeDepth,sc,V3D_UINT8);
 
    v3dhandle newwin = callback.newImageWindow();
    callback.setImage(newwin, &p4DImageOutput);
-   callback.setImageName(newwin, filename);
-   //callback.setImageName(newwin,  callback.getImageName(oldwin)+"_changed");
+   callback.setImageName(newwin, sFilename.str().c_str());
    callback.updateImageWindow(newwin);
 
    delete stf;
@@ -190,96 +197,4 @@ int doFiltering(V3DPluginCallback &callback, QWidget *parent)
    delete sd;
    return 0;
 }
-
-int loadCube(V3DPluginCallback &callback, QWidget *parent)
-{
-   // open input file
-   QStringList listFiles = QFileDialog::getOpenFileNames(parent,QString("Choose a raw file to open..."));
-
-   foreach (QString filename, listFiles)
-   {
-      if(filename.isNull())
-      {
-         printf("[steerPlugin] No file specified\n");
-         return -1;
-      }
-
-      string sFilename= filename.toStdString();
-      sFilename = sFilename.substr(0,sFilename.find_last_of("."));
-
-      stringstream snfo;
-      snfo << sFilename << ".nfo";
-      ifstream info(snfo.str().c_str());
-      if(!info.good())
-        {
-          printf("[steerPlugin] Could not load %s\n", snfo.str().c_str());
-          return -1;
-        }
-
-      int sx,sy,sz;
-      int sc = 1;
-      ImagePixelType pixelType = V3D_UINT8;
-
-      string name;
-      string attribute;
-      while(info.good())
-        {
-          info >> name;
-          info >> attribute;
-          if(!strcmp(name.c_str(), "cubeDepth"))
-            {
-               sz = atoi(attribute.c_str());
-            }
-          else if(!strcmp(name.c_str(), "cubeHeight"))
-            sy = atoi(attribute.c_str());
-          else if(!strcmp(name.c_str(), "cubeWidth"))
-            sx = atoi(attribute.c_str());
-          else if(!strcmp(name.c_str(), "type"))
-            {
-              if(!strcmp(attribute.c_str(), "uchar"))
-                 pixelType = V3D_UINT8;
-              else
-                 pixelType = V3D_FLOAT32;
-            }
-           else
-             printf("[steerPlugin] Attribute %s and value %s not known\n", name.c_str(), attribute.c_str());
-        }
-      info.close();
-
-      ifstream ifs(filename.toStdString().c_str(), ios::binary);
-
-      V3DLONG N = sx*sy*sz;
-      unsigned char* data1d = 0;
-      if(pixelType == V3D_UINT8)
-      {
-         data1d = new unsigned char[N*sizeof(char)];
-         ifs.read((char*)data1d,N*sizeof(char));
-      }
-      else
-      {
-         float* fdata1d = new float[N];
-         ifs.read((char*)fdata1d,N*sizeof(float));
-
-         // convert to uchar
-         cubeFloat2Uchar(fdata1d,data1d,sx,sy,sz);
-         delete[] fdata1d;
-
-         // change type
-         pixelType = V3D_UINT8;
-      }
-
-      // show in v3d
-      Image4DSimple p4DImage;
-      p4DImage.setData(data1d, sx,sy,sz,sc,pixelType);
-
-      v3dhandle newwin = callback.newImageWindow();
-      callback.setImage(newwin, &p4DImage);
-      callback.setImageName(newwin, filename);
-      callback.updateImageWindow(newwin);
-   }
-
-	return 0;
-}
-
-
 
