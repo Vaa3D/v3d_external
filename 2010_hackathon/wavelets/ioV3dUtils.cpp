@@ -1,4 +1,4 @@
-#include "iov3dUtils.h"
+#include "ioV3dUtils.h"
 
 
 void rescaleForDisplay(double* input, double* output, int numVoxels, ImagePixelType dataType)
