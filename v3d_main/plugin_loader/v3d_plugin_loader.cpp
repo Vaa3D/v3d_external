@@ -106,22 +106,15 @@ void V3d_PluginLoader::clear()
 
 	foreach (QPluginLoader* loader, pluginList)
     {
-		//100805 RZC: this MUST don't called because it may cause model-less plugin to crash.
-       	loader->unload();
-		delete loader;
+        //while (loader->isLoaded())
+        	loader->unload();
+
+        delete loader;
     }
 	pluginList.clear();
 
 	pluginFilenameList.clear();
 }
-
-void V3d_PluginLoader::rescanPlugins()
-{
-	clear();
-
-	loadPlugins();
-
-	populateMenus();
 
 //	foreach (QPluginLoader* loader, pluginList)
 //    {
@@ -137,6 +130,14 @@ void V3d_PluginLoader::rescanPlugins()
 ////        	list = loader->staticInstances();
 ////        }
 //    }
+
+void V3d_PluginLoader::rescanPlugins()
+{
+	clear();
+
+	loadPlugins();
+
+	populateMenus();
 }
 
 void V3d_PluginLoader::loadPlugins()
@@ -232,7 +233,8 @@ void V3d_PluginLoader::searchPluginFiles(QMenu* menu)
         	qDebug() << "Fail instantiation: " <<fullpath;
         }
 
-//     	loader->unload();     //qDebug() << "unload: " <<fileName;
+        //unload or left ? is a problem
+     	//loader->unload();     //qDebug() << "unload: " <<fileName;
     }
 }
 
@@ -276,12 +278,13 @@ void V3d_PluginLoader::runPlugin()
     }
 
     loader->unload();
-    QObject *plugin = loader->instance();
 
-//    //100806 RZC: instead of instance();
-//    loader->load();
-//    QObjectList list = loader->staticInstances();
-//    QObject *plugin = list.size()? list.at(0) : 0;
+    QObject *plugin = loader->instance();
+    if (! loader)
+    {
+    	qDebug("ERROR in V3d_PluginLoader::runPlugin: loader->instance()");
+    	return;
+    }
 
     runSingleImageInterface(plugin, action->text());
 
