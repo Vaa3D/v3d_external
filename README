@@ -1,0 +1,19 @@
+This folder contains the source code of the V3D project.
+
+There are four sub-folders:
+
+* v3d_main:                the main V3D program. 
+* matlab_io_basicdatatype: matlab toolbox for file IO of some basic V3D data formats,
+                           including image file, surface files, neuron, markers, etc.
+* released_plugins:        the "standard" V3D plugins, including both examples and some 
+                           real utilities.
+* 2010_hackathon:          the source code of various projects developed in the 2010
+                           V3D hackathons. The V3D ITK plugins are also included there.
+
+
+Note that different sub-folders contain different software LICENSES. You MUST agree to
+these license terms before you access any parts of these source code.
+
+<Aug 6, 2010>
+
+
