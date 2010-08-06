@@ -14,7 +14,8 @@ SOURCES       = miviewer.cpp \
 		../../v3d_main/basic_c_fun/mg_utilities.cpp \
 		../../v3d_main/basic_c_fun/mg_image_lib.cpp
 
-LIBS         += -lm -ltiff
+LIBS         += -lm -lpthread
+LIBS	     += -L../../v3d_main/common_lib/lib_mac64 -ltiff64
 
 TARGET        = $$qtLibraryTarget(miviewer)
 DESTDIR       = ../../v3d64/plugins/miviewer
