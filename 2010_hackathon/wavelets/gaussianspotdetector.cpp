@@ -416,8 +416,12 @@ void GaussianSpotDetector::GaussianFilter(V3DPluginCallback &callback, QWidget *
 		fftw_free(out);
 	
 		// connected components ////////////////////////////////////////////////////////// 
-		LandmarkList cmList = v3d_utils::getConnectedComponents2D(data1dD, szx, szy, szz, threshold);
-	
+		LandmarkList cmList;
+		if (szz ==1) {
+			cmList = v3d_utils::getConnectedComponents2D(data1dD, szx, szy, szz, threshold);
+		} else {
+			cmList = v3d_utils::getConnectedComponents(data1dD, szx, szy, szz, threshold);
+		}
 		// output image 
 		Image4DSimple outImage;
 		unsigned char* dataOut1d = v3d_utils::doubleArrayToCharArray(data1dD, N, p4DImage->datatype);
