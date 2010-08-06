@@ -16,9 +16,9 @@
 
 TEMPLATE      = lib
 CONFIG       += plugin warning_off 
-INCLUDEPATH  += ../../basic_c_fun
+INCLUDEPATH  += ../../v3d_main/basic_c_fun
 HEADERS     = wavelets.h scaleinfo.h ioV3dUtils.h waveletConfigException.h waveletTransform.h v3d_utils.h 	
 SOURCES     = wavelets.cpp scaleinfo.cpp ioV3dUtils.cpp waveletConfigException.cpp waveletTransform.cpp v3d_utils.cpp
 TARGET        = $$qtLibraryTarget(wavelets)
-DESTDIR       = ../../v3d/plugins/Wavelets
+DESTDIR       = ../../v3d_main/v3d/plugins/Wavelets
 
