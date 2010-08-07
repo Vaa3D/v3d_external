@@ -1860,9 +1860,9 @@ bool My4DImage::setNewImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG ns
 	this->setRawDataPointer( ndata1d );
 	this->setDatatype( ndatatype );
 	this->setXDim( nsz0 );
-	this->setXDim( nsz1 );
-	this->setXDim( nsz2 );
-	this->setXDim( nsz3 );
+	this->setYDim( nsz1 );
+	this->setZDim( nsz2 );
+	this->setCDim( nsz3 );
 
 	if (nszt<0)
 	{
