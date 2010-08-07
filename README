@@ -12,8 +12,41 @@ There are a few sub-folders:
                            V3D hackathons. The V3D ITK plugins are also included there.
 
 
-Note that different sub-folders contain different software LICENSES. You MUST agree to
+*** Note that different sub-folders contain different software LICENSES. You MUST agree to
 these license terms before you access any parts of these source code.
+
+
+
+* How to build the V3D program
+
+You need to ensure that you have QT installed on your machine, and thus "qmake" is visible
+in your system's path. 
+
+You should also have c++ compiler, such as gcc 4.0 and above.
+
+To build V3D is very simple, just find a command line terminal and type one of the following 
+commands:
+
+	Mac, gcc compiler, 32bit build:  "sh ./build.macx -n -B -j4"
+	Mac, gcc compiler, 64bit build:  "sh ./build.macx -m -B -j4"
+	Linux, gcc compiler, 32bit build:  "sh ./build.linux -n -B -j4"
+	Linux, gcc compiler, 64bit build:  "sh ./build.linux -m -B -j4"
+	Windows, MinGW compiler, 32bit build:  "build.bat -B -j4"
+	Windows, MSVC compiler, 32bit build:  "build_msvc32.bat -B -j4"
+	Windows, MSVC compiler, 64bit build:  "build_msvc64.bat -B -j4"
+
+The successful, the V3D program will launch after the build. The actual program will be put
+under the ./v3d folder. You can directly run it next time, without a rebuild.
+
+
+If you write/use additional plugins for V3D, be sure to put these plugins into a subfolder
+called "plugins", which should be in the same folder where the execitable of v3d program resides. 
+You can then use V3D programs to rescan the plugins, without the need to restart V3D. Of course,
+these plugins should be produced using the same version of QT (of compatable versions), the same 
+operating system, the same compiler, and the same release type ("Release" or "Debug") of the 
+build.
+
+If you have a question, see the V3D website http://penglab.janelia.org/proj/v3d .
 
 <Aug 6, 2010>
 

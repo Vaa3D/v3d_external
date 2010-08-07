@@ -24,7 +24,10 @@ shopt -s expand_aliases;
 
 
 V3D_PRO_FILE="v3d.pro"    # default project file for qmake
-TIFFBITS="32"             # default use 32bit libtiff
+
+SYSTEMBITS="32"             # default use 32bit libtiff
+TIFFCOMPILE="NO"          # default do not compile libtiff
+
 
 # for each arg 
 
@@ -49,6 +52,10 @@ for arg in $*; do
       V3D_PRO_FILE="v3d_mactiger.pro"    # project file for qmake, 091012 PHC
       continue
    fi
+
+   if [ $arg == "-B" ]; then
+      TIFFCOMPILE="YES"
+   fi
  
 #32bit compiling
  
@@ -56,7 +63,7 @@ for arg in $*; do
    	  echo "Force to configure make for MACX -arch x86 (need 32-bit enabled Qt)"
       #ARGS+=" ARCHS=i386 " 
       V3D_PRO_FILE="v3d.pro"    # project file for qmake
-      TIFFBITS="32" 
+      SYSTEMBITS="32" 
 
       QMAKE_CONFIG="CONFIG+=x86"
       LOCAL_DIR=$PWD/common_lib
@@ -70,7 +77,7 @@ for arg in $*; do
    	  echo "If you specify -m and -n together, the behavior of this batch script is NOT well defined!!"
       ARGS+=" ARCH_x86_64=-archx86_64 " 
       V3D_PRO_FILE="v3d64.pro"    # project file for qmake
-      TIFFBITS="64" 
+      SYSTEMBITS="64" 
  
       QMAKE_CONFIG="CONFIG+=x86_64"
       LOCAL_DIR=$PWD/common_lib
@@ -96,14 +103,14 @@ echo =========================================================
 
 DOIT="YES"
 
-if [ $DOIT == "YES" ]; then
+if [ $TIFFCOMPILE == "YES" ]; then
   cd common_lib
   TIFFPATH=`pwd`
   cd build
-  if [ $TIFFBITS == "64" ]; then
+  if [ $SYSTEMBITS == "64" ]; then
     ../src_packages/tiff-3.8.2.1/configure -prefix=$TIFFPATH  CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64"
   fi
-  if [ $TIFFBITS == "32" ]; then
+  if [ $SYSTEMBITS == "32" ]; then
     ../src_packages/tiff-3.8.2.1/configure -prefix=$TIFFPATH  CFLAGS="-arch i386" CXXFLAGS="-arch i386"
   fi
   make clean
@@ -137,12 +144,15 @@ fi
 #copy some of the v3d programs to the released_plugin folders
 
 if [ $DOIT == "YES" ]; then
-  cp -r ./v3d/v3d.app ../v3d/.   #copy to the executable folder
-  cp -r ./v3d/v3d64.app ../v3d/. #copy to the executable folder
-  cp -r ./v3d/v3d.app ../released_plugins/v3d/.
-  cp -r ./v3d/v3d64.app ../released_plugins/v3d/.
+  if [ $SYSTEMBITS == "32" ]; then
+    cp -r ./v3d/v3d.app ../v3d/.   #copy to the executable folder
+    cp -r ./v3d/v3d.app ../released_plugins/v3d/.
+  fi
+  if [ $SYSTEMBITS == "64" ]; then
+    cp -r ./v3d/v3d64.app ../v3d/. #copy to the executable folder
+    cp -r ./v3d/v3d64.app ../released_plugins/v3d/.
+  fi  
 fi
-
 
 
 #build the v3d plugins
@@ -158,6 +168,14 @@ if [ $DOIT == "YES" ]; then
 fi
 
 #now automatically execute v3d
-open v3d/v3d.app &
-open v3d/v3d64.app &
+
+if [ $DOIT == "YES" ]; then
+  if [ $SYSTEMBITS == "32" ]; then
+    open v3d/v3d.app &
+  fi
+  if [ $SYSTEMBITS == "64" ]; then
+    open v3d/v3d64.app &
+  fi
+fi
+
 
