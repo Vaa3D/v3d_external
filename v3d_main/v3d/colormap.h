@@ -39,6 +39,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 enum ImageDisplayColorType 
 {
+	colorUnknown, 
 	colorGray, 
 	colorRedOnly, 
 	colorRed2Gray,

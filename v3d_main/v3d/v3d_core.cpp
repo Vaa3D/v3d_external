@@ -310,7 +310,6 @@ template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T **** p4d, V3DLONG sz0
   }
 
   //the wrong Ctype options should be disabled in the interface instead of a complicated logic management here
-
   switch (Ctype)
   {
 	case colorRedOnly:
@@ -546,7 +545,9 @@ template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T **** p4d, V3DLONG sz0
 	  }
 	  break;
 
+    case colorUnknown:
     default:
+
 	  break;
   }
 
@@ -706,6 +707,7 @@ template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T **** p4d, V3DLONG sz0
       }
 	  break;
 
+    case colorUnknown:
     default:
 	  break;
   }
@@ -872,6 +874,7 @@ template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T **** p4d, V3DLONG sz0
       }
 	  break;
 
+    case colorUnknown:
     default:
 	  break;
   }
@@ -2907,6 +2910,8 @@ void XFormWidget::initialize()
 	mypara_3Dview.b_use_512x512x256 = true;
 	mypara_3Dview.b_still_open = false;
 	mypara_3Dview.image4d = 0;
+
+  Ctype = colorUnknown;
 
 	atlasViewerDlg = 0; //081123
 
