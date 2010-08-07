@@ -137,7 +137,25 @@ if [ $DOIT == "YES" ]; then
   echo =========================================================
   qmake $V3D_PRO_FILE $QARGS $QMAKE_CONFIG
   touch v3d_version_info.cpp
+
+  if [ $SYSTEMBITS == "32" ]; then
+    rm -fr v3d.app
+  fi
+  if [ $SYSTEMBITS == "64" ]; then
+    rm -fr v3d64.app
+  fi
+
   make $ARGS
+  
+  if [ $SYSTEMBITS == "32" ]; then
+    cp v3d.icns v3d.app/Contents/Resources/.  
+    cp v3d.Info.plist v3d.app/Contents/Info.plist
+  fi
+  if [ $SYSTEMBITS == "64" ]; then
+    cp v3d.icns v3d64.app/Contents/Resources/.  
+    cp v3d64.Info.plist v3d64.app/Contents/Info.plist
+  fi
+  
   cd ../
 fi
 
