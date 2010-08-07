@@ -702,7 +702,7 @@ bool My4DImage::permute(V3DLONG dimorder[4]) //081001: can also be impelemented 
 	unsigned char *dst_1d = this->getRawData();
 	for (i=0;i<getTotalBytes();i++)
     {
-		*dst_1d++ = *tmp_1d++;
+		dst_1d[i] = tmp_1d[i];
     }
 
 	if (tmp_img) {delete tmp_img; tmp_img=0;}
@@ -2709,20 +2709,16 @@ void My4DImage::cleanExistData_butKeepFileName()
 {
 	V3DLONG i;
 	char oldFileName[1024];
-  char * srcFileName = this->getFileName();
+  const char * srcFileName = this->getFileName();
 	for (i=0;i<1024;i++)
 	{
 		oldFileName[i] = srcFileName[i];
 		if (srcFileName[i]=='\0') break;
 	}
 
-	cleanExistData();
+	this->cleanExistData();
 
-	for (i=0;i<1024;i++)
-	{
-		srcFileName[i] = oldFileName[i];
-		if (oldFileName[i]=='\0') break;
-	}
+  this->setFileName( oldFileName );
 }
 
 void My4DImage::cleanExistData()
