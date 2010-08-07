@@ -70,7 +70,7 @@ public:
 	}
 	void cleanExistData()
 	{
-		if (data1d) {delete []data1d; data1d = 0;}
+    this->deleteRawDataAndSetPointerToNull();
 		sz0 = sz1 = sz2 = sz3 = 0;
 		sz_time = 0;
 		datatype = V3D_UNKNOWN;
@@ -126,7 +126,6 @@ public:
 	double getRezY() {return rez_y;}
 	double getRezZ() {return rez_z;}
 
-  void setError( int v ) {b_error = v;}
 	void setXDim(V3DLONG v) {sz0=v;}
 	void setYDim(V3DLONG v) {sz1=v;}
 	void setZDim(V3DLONG v) {sz2=v;}
@@ -163,20 +162,27 @@ public:
 		return false;
 	}
 
-	bool setFileName(char * myfile)
+	bool setFileName(const char * myfile)
 	{
 		if (!myfile) return false;
 		V3DLONG clen=1023;
 		V3DLONG i;
 		for (i=0;i<clen;i++)
 		{
-			if (myfile[i]!='\0') imgSrcFile[i] = myfile[i];
-			else {imgSrcFile[i] = myfile[i]; break;}
+			if (myfile[i]!='\0')
+        {
+        imgSrcFile[i] = myfile[i];
+        }
+			else
+        {
+        imgSrcFile[i] = myfile[i];
+        break;
+        }
 		}
 		imgSrcFile[i]='\0';
 		return true;
 	}
-	char * getFileName() {return imgSrcFile;}
+	const char * getFileName() const { return imgSrcFile; }
 
 	//to call the following 4 functions you must link your project with basic_4dimage.cpp
 	//Normally for the plugin interfaces you don't need to call the following functions
@@ -198,6 +204,9 @@ public:
 	    else return true;
           }
 	}
+
+protected:
+  void setError( int v ) {b_error = v;}
 
 private:
 	unsigned char * data1d;
