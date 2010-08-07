@@ -3746,8 +3746,11 @@ bool XFormWidget::loadData()
 bool XFormWidget::setCTypeBasedOnImageData() //separate this out on 2010-08-01. by PHC
 {
     if (!imgData || !imgData->valid())
-	return false;
-
+	{
+		v3d_msg("Invalid data in setCTypeBasedOnImageData()");
+		return false;
+	}
+	
     if (imgData->getCDim()<1)
 	{
 	  printf("Error in data reading. The number of color channels cannot be smaller than 1!!\n");

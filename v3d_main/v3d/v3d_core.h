@@ -197,7 +197,7 @@ public:
 	bool isEmpty() {return (!data4d_virtual) ?  true : false; }
 
 	bool valid() {
-    return (!data4d_virtual || this->Image4DSimple::valid() ) ?  false : true;
+    return (!data4d_virtual || !(this->Image4DSimple::valid()) ) ?  false : true;
     }
 
 	void loadImage(char filename[]);
