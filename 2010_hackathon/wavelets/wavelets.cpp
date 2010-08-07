@@ -65,7 +65,9 @@ void WaveletPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback
 
 WaveletPlugin::WaveletPlugin()
 {
-	scaleInfoList = new std::list<ScaleInfo*>();
+	this->scaleInfoList = new std::list<ScaleInfo*>();
+  this->scaleComputationReady = false;
+  this->thresholdFinal = 0;
 }
 
 void WaveletPlugin::addScaleButtonPressed()
@@ -167,10 +169,8 @@ void WaveletPlugin::copyOriginalImage()
 	unsigned char *bufferSource = sourceImage->getRawData();
 	unsigned char *bufferCopy = new unsigned char[sourceImage->getTotalBytes()];
 	memcpy( bufferCopy , bufferSource , sourceImage->getTotalBytes() );
-	
-	originalImageCopy->setData( bufferCopy , sourceImage->getXDim() , sourceImage->getYDim(),
-			sourceImage->getZDim(), sourceImage->getCDim() , sourceImage->getDatatype()
-			);
+
+	originalImageCopy->setData( bufferCopy , sourceImage );
 
 
 
@@ -205,8 +205,9 @@ void WaveletPlugin::restoreOriginalImage()
 	}
 
 	// MAC OS Version **************************************************************
-/*
+
 //	memcpy( sourceImage->getRawData() , originalImageCopy->getRawData() , originalImageCopy->getTotalBytes() );
+#if 0
 
 	printf("%d source\n" , sourceImage->getTotalBytes() );
 	printf("%d original\n" , originalImageCopy->getTotalBytes() );
@@ -214,16 +215,22 @@ void WaveletPlugin::restoreOriginalImage()
 
 	myCallback->setImage(sourceWindow, originalImageCopy );
 	myCallback->updateImageWindow(sourceWindow);
-*/
+#endif
+
 	// WINDOWS Version ************************************************************
+
+
+	printf("%ld source\n" , sourceImage->getTotalBytes() );
+	printf("%ld original\n" , originalImageCopy->getTotalBytes() );
+	printf("\n");
 
 	memcpy( sourceImage->getRawData() , originalImageCopy->getRawData() , originalImageCopy->getTotalBytes() );
 
-	printf("%d source\n" , sourceImage->getTotalBytes() );
-	printf("%d original\n" , originalImageCopy->getTotalBytes() );
-	printf("\n");
-
 	myCallback->setImage(sourceWindow, sourceImage );
+
+  std::cout << "SLEEPING FOR 1 sec" << std::endl;
+  sleep( 1 ); 
+
 	myCallback->updateImageWindow(sourceWindow);
 
 }
@@ -433,7 +440,7 @@ void WaveletPlugin::computeWavelets( bool displayDetection )
 		printf("WAVELET : denoise pressed\n");
 
 		data1dD = channelToDoubleArray(originalImageCopy, 1);
-
+printf("channelToDoubleArray() data1dD %p\n", data1dD);
 		//get dims
 		szx = originalImageCopy->getXDim();
 		szy = originalImageCopy->getYDim();
@@ -447,9 +454,15 @@ void WaveletPlugin::computeWavelets( bool displayDetection )
 		try {
 			time_t seconds0 = time (NULL);
 			if (szz>1)
+        {
 				resTab = WaveletTransform::b3WaveletScales(data1dD, szx, szy, szz, numScales);
+printf("b3WaveletScales() data1dD %p\n", data1dD);
+        }
 			else
+        {
 				resTab = WaveletTransform::b3WaveletScales2D(data1dD, szx, szy, numScales);
+printf("b3WaveletScales2D() data1dD %p\n", data1dD);
+        }
 			time_t seconds1 = time (NULL);
 			printf("Computation time : %d" , (seconds1-seconds0) );
 		}
@@ -462,6 +475,10 @@ void WaveletPlugin::computeWavelets( bool displayDetection )
 		//compute waveletCoefficients
 		lowPassResidual = new double[N];
 		WaveletTransform::b3WaveletCoefficientsInplace(resTab, data1dD, lowPassResidual, numScales, N);
+printf("b3WaveletCoefficientsInplace() data1dD %p\n", data1dD);
+
+printf("DELETE () data1dD %p\n", data1dD);
+    delete [] data1dD;
 
 		// Create a copy of resTab[]
 
@@ -567,7 +584,7 @@ void WaveletPlugin::filterB3Wavelets( bool displayDetection )
 
 	}
 
-	delete(data1dD);
+//	delete(data1dD);  // FIXME
 
 	//reconstruct image from coefficients
 	double* rec = new double[N];
@@ -603,13 +620,13 @@ void WaveletPlugin::filterB3Wavelets( bool displayDetection )
 	}
 
 	//display reconstructed image
-	//rescaleForDisplay(rec, rec, N, originalImageCopy->datatype);
-	rescaleForDisplay(rec, rec, N, sourceImage->datatype);
-	//unsigned char* dataOut1d = doubleArrayToCharArray(rec, N, originalImageCopy->datatype);
-	unsigned char* dataOut1d = doubleArrayToCharArray(rec, N, sourceImage->datatype);
+	//rescaleForDisplay(rec, rec, N, originalImageCopy->getDatatype());
+	rescaleForDisplay(rec, rec, N, sourceImage->getDatatype());
+	//unsigned char* dataOut1d = doubleArrayToCharArray(rec, N, originalImageCopy->getDatatype());
+	unsigned char* dataOut1d = doubleArrayToCharArray(rec, N, sourceImage->getDatatype());
 
 	Image4DSimple outImage;
-	outImage.setData(dataOut1d, originalImageCopy->sz0, originalImageCopy->sz1, originalImageCopy->sz2, 1, originalImageCopy->datatype);
+	outImage.setData(dataOut1d, originalImageCopy );
 
 	if ( displayDetection ) // BUG Issue: it is not possible to set detection in the current viewer.
 	{
@@ -625,7 +642,8 @@ void WaveletPlugin::filterB3Wavelets( bool displayDetection )
 		myCallback->updateImageWindow(sourceWindow);
 	}
 
-	delete(rec);
+
+	delete [] rec;
 
 }
 /**
@@ -773,7 +791,7 @@ void WaveletPlugin::FFT(V3DPluginCallback &callback, QWidget *parent)
  		min = (min > data1dD[i]) ? data1dD[i] : min;	
 	}
 	
-	rescaleForDisplay(data1dD, data1dD, nOut, p4DImage->datatype);
+	rescaleForDisplay(data1dD, data1dD, nOut, p4DImage->getDatatype());
 	
 	//free memory
 	fftw_destroy_plan(p);
@@ -781,8 +799,8 @@ void WaveletPlugin::FFT(V3DPluginCallback &callback, QWidget *parent)
 	
 	// output image 
 	Image4DSimple outImage;
-	unsigned char* dataOut1d = doubleArrayToCharArray(data1dD, nOut, p4DImage->datatype);
-    outImage.setData(dataOut1d, nxOut, p4DImage->sz1, p4DImage->sz2, 1, p4DImage->datatype);
+	unsigned char* dataOut1d = doubleArrayToCharArray(data1dD, nOut, p4DImage->getDatatype());
+    outImage.setData(dataOut1d, nxOut, p4DImage->sz1, p4DImage->sz2, 1, p4DImage->getDatatype());
     v3dhandle newwin = callback.newImageWindow();
 	callback.setImage(newwin, &outImage);
 	callback.setImageName(newwin,"fft test");
@@ -811,8 +829,8 @@ void WaveletPlugin::Cloning(V3DPluginCallback &callback, QWidget *parent)
 
 
 	Image4DSimple outImage;
-	unsigned char* dataOut1d = doubleArrayToCharArray(data1dD, N, p4DImage->datatype);	
-    outImage.setData(dataOut1d, p4DImage->sz0, p4DImage->sz1, p4DImage->sz2, 1, p4DImage->datatype);
+	unsigned char* dataOut1d = doubleArrayToCharArray(data1dD, N, p4DImage->getDatatype());	
+    outImage.setData(dataOut1d, p4DImage );
     v3dhandle newwin = callback.newImageWindow();
 	callback.setImage(newwin, &outImage);
 	callback.setImageName(newwin,"cloning test");
@@ -869,10 +887,10 @@ void WaveletPlugin::WaveletTransform(V3DPluginCallback &callback, QWidget *paren
 
 	
 	//display reconstructed image
-	rescaleForDisplay(rec, rec, N, p4DImage->datatype);
-	unsigned char* dataOut1d = doubleArrayToCharArray(rec, N, p4DImage->datatype);
+	rescaleForDisplay(rec, rec, N, p4DImage->getDatatype());
+	unsigned char* dataOut1d = doubleArrayToCharArray(rec, N, p4DImage->getDatatype());
 	Image4DSimple outImage;
-	outImage.setData(dataOut1d, p4DImage->sz0, p4DImage->sz1, p4DImage->sz2, 1, p4DImage->datatype);
+	outImage.setData(dataOut1d, p4DImage );
 	v3dhandle newwin = callback.newImageWindow();
 	callback.setImage(newwin, &outImage);
 	callback.setImageName(newwin, "reconstruction");
@@ -885,10 +903,10 @@ void WaveletPlugin::WaveletTransform(V3DPluginCallback &callback, QWidget *paren
 	{
 		//rescale
 		double* out = resTab[j];
-		rescaleForDisplay(out, out, N, p4DImage->datatype);
-		unsigned char* dataOut1d = doubleArrayToCharArray(out, N, p4DImage->datatype);
+		rescaleForDisplay(out, out, N, p4DImage->getDatatype());
+		unsigned char* dataOut1d = doubleArrayToCharArray(out, N, p4DImage->getDatatype());
     	Image4DSimple outImage;
-    	outImage.setData(dataOut1d, p4DImage->sz0, p4DImage->sz1, p4DImage->sz2, 1, p4DImage->datatype);
+    	outImage.setData(dataOut1d, p4DImage );
     	v3dhandle newwin = callback.newImageWindow();
 		callback.setImage(newwin, &outImage);
 		char buffer [50];
@@ -903,10 +921,10 @@ void WaveletPlugin::WaveletTransform(V3DPluginCallback &callback, QWidget *paren
 	delete(resTab);
 
 	//output low pass image
-	rescaleForDisplay(lowPassResidual, lowPassResidual, N, p4DImage->datatype);
-	unsigned char* dataOut1dL = doubleArrayToCharArray(lowPassResidual, N, p4DImage->datatype);
+	rescaleForDisplay(lowPassResidual, lowPassResidual, N, p4DImage->getDatatype());
+	unsigned char* dataOut1dL = doubleArrayToCharArray(lowPassResidual, N, p4DImage->getDatatype());
 	Image4DSimple outImageL;
-	outImageL.setData(dataOut1dL, p4DImage->sz0, p4DImage->sz1, p4DImage->sz2, 1, p4DImage->datatype);
+	outImageL.setData(dataOut1dL, p4DImage );
 	v3dhandle newwinL = callback.newImageWindow();
 	callback.setImage(newwinL, &outImageL);
 	callback.setImageName(newwinL, "low pass residual");

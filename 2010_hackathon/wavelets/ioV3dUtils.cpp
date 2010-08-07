@@ -78,7 +78,7 @@ unsigned char* doubleArrayToCharArray(double* data1dD, int numVoxels, ImagePixel
 }
 
 double* channelToDoubleArray(Image4DSimple* inputImage, int channel)
-{	
+{
     unsigned char* data1d = inputImage->getRawData();//get raw data
     //V3DLONG totalpxls = p4DImage->getTotalBytes();
     V3DLONG pagesz = inputImage->getTotalUnitNumberPerChannel();
@@ -88,11 +88,11 @@ double* channelToDoubleArray(Image4DSimple* inputImage, int channel)
     V3DLONG szz = inputImage->getZDim();
     V3DLONG sc = inputImage->getCDim();
     V3DLONG N = szx * szy * szz;
-	
+
 	//convert first channel to double values
     double* data1dD = new double[N]; //(double*)malloc(sizeof(double)*N*M*P);
 	int offset = (channel-1)*N;
-	switch(inputImage->datatype)
+	switch(inputImage->getDatatype())
     {
     	case V3D_UINT8:
     	{
@@ -123,7 +123,7 @@ double* channelToDoubleArray(Image4DSimple* inputImage, int channel)
     	break;
     	case V3D_UNKNOWN:
     	default:
-			free(data1dD);
+        delete [] data1dD;
 			return NULL;
     }
     return data1dD;

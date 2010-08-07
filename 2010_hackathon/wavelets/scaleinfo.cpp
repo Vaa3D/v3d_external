@@ -41,12 +41,15 @@ ScaleInfo::~ScaleInfo(  )
 
 ScaleInfo::ScaleInfo( WaveletPlugin *waveletPlugin , int scaleNumber , QGroupBox *parent ) // TODO: Generalized it (might have som QContainer ?)
 {
-	this->waveletPlugin = waveletPlugin;
+  this->threshold = 0;	
+  this->thresholdValue = 0;
+	
+  this->waveletPlugin = waveletPlugin;
 	printf( "%i \n", scaleNumber );
 	groupBox = new QGroupBox( parent );
 	gridLayout = new QGridLayout( groupBox );
 
-	enable= true;
+	this->enable = true;
 
 	char buff[50];
 	sprintf(buff, "Scale %i", scaleNumber);

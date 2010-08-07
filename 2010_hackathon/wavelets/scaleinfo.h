@@ -35,7 +35,8 @@ public:
 	virtual ~ScaleInfo( );
 
 	// data
-	double enabled;     // is this scale enabled ?
+//	double enabled;     // is this scale enabled ?
+  bool enable;
 	double threshold;   // threshold in wavelet domain.
 
 	QLabel* thresholdValueLabel;
@@ -48,7 +49,6 @@ public:
 	QSlider *thresholdSlider;
 //	QDialog *myDialog;
 	int thresholdValue;
-	bool enable;
 
 //	int (WaveletPlugin::*callBack)( ) = NULL;
 

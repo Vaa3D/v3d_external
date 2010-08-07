@@ -115,7 +115,7 @@ double* v3d_utils::channelToDoubleArray(Image4DSimple* inputImage, int channel)
 	//convert first channel to double values
     double* data1dD = new double[N]; //(double*)malloc(sizeof(double)*N*M*P);
 	int offset = (channel-1)*N;
-	switch(inputImage->datatype)
+	switch(inputImage->getDatatype())
     {
     	case V3D_UINT8:
     	{
