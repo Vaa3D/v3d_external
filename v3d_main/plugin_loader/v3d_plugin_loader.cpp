@@ -478,7 +478,9 @@ bool V3d_PluginLoader::setImage(v3dhandle image_window, Image4DSimple* image)
 		qDebug() << "V3d_PluginLoader setImage: " << image_window << image;
 		Image4DSimple *targetP = v3d_mainwindow->getImage(image_window);
 		if (!targetP) //in this case, the pointers cannot be the same, and thus directly set data
+    {
 			return v3d_mainwindow->setImage(image_window, image);
+    }
 		else
 		{
 			if (targetP==image ||     // in this case no need for further judgment as the data MUST be the same
