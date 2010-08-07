@@ -71,6 +71,7 @@
 # 100801: separate module_jba.cpp
 # 100801: separate module_bdb.cpp
 # 100802: remove the three modules
+# 100807: remove some redundant libs
 # ######################################################################
 
 TEMPLATE = app
@@ -192,22 +193,6 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../jba/c++/jba_affine_xform.h \
     ../jba/c++/remove_nonaffine_points.h 
 
-#    ../lobeseg/lobeseg.h \
-
-#    ../cellseg/FL_cellSegmentation3D.h \
-#    ../cellseg/FL_main_brainseg.h \
-
-
-#    thread_regist.h \
-
-#	../atlas_builder/pointcloud_atlas_io.h \
-#    dialog_pointcloudatlas_linkerloader.h \
-#    ../neurolabi/c/tz_dimage_lib.h \
-
-
-# glwidget.h \
-# idrawmain.h \
-# HEADERS += mdichild.h
 SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../basic_c_fun/mg_image_lib.cpp \
     ../basic_c_fun/stackutil.cpp \
@@ -266,21 +251,6 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../worm_straighten_c/bfs_1root.cpp \
     ../worm_straighten_c/spline_cubic.cpp \
 	../jba/c++/histeq.cpp
-#    ../lobeseg/lobeseg.cpp \
-#    histeq.cpp \
-
-
-
-#    module_flseg.cpp \
-#    module_jba.cpp \
-#    module_bdb.cpp \
-
-#	../atlas_builder/pointcloud_atlas_io.cpp 
-#    dialog_pointcloudatlas_linkerloader.cpp \
-	
-# ../neurolabi/c/tz_dimage_lib.c
-# glwidget.cpp idrawmain.cpp \
-# SOURCES += mdichild.cpp
 
 FORMS += landmark_property.ui \
     surface_obj_annotation.ui \
@@ -303,38 +273,19 @@ RESOURCES += v3d.qrc
 RESOURCES += ../3drenderer/3drenderer.qrc
 QT += opengl
 
-INCLUDEPATH +=
-
 # 100802 RZC: need "-L./???" to start make at root dir of project (copy .pro to here)
 
-LIBS += -L../jba/c++  -L./jba/c++ 
-#    -L../cellseg  -L./cellseg 
+LIBS += -L../jba/c++  
 
 unix:LIBS += -L../common_lib/lib_unix
 unix:LIBS += -lm -ltiff \
     -lv3dnewmat \
     -L/usr/lib/qt4/demos/shared -ldemo_shared
-#    -ljba \
-#    -lFL_cellseg \
-#    -lFL_brainseg 
-#    -lfftw3 \
-#    -lfftw3f
-#    -lgsl
-#    -lglut
     
 macx:LIBS -= -ltiff  #do this because unix is a superset of macx
 macx:LIBS += -L../common_lib/lib_mac32
-macx:LIBS += -L./common_lib/lib_mac32
-macx:LIBS += -lm -ltiff32 \
+macx:LIBS += -lm -L../common_lib/lib  -ltiff \
     -lv3dnewmat 
-#    -ljba \
-#    -lFL_cellseg \
-#    -lFL_brainseg 
-#    -lgsl32
-#    -lneurolabi \
-#    -lmyers
-#    -lfftw3 \
-#    -lfftw3f \
 #    -framework GLUT
 
 win32:LIBS += -lm -ltiff \
@@ -343,6 +294,8 @@ win32:LIBS += -lm -ltiff \
 #    -lFL_cellseg \
 #    -lFL_brainseg
 #    -lglut32 # win32-mingw, on unix link libglut.a
+
+INCLUDEPATH += ../common_lib/include   
 
 INCLUDEPATH = $$unique(INCLUDEPATH)
 LIBS = $$unique(LIBS)

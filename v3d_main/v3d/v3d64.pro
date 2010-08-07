@@ -23,7 +23,8 @@ LIBS += -L../common_lib/lib_mac64
 # 090713 RZC cp tiff64/libtiff.a to libtiff64.a in /usr/local/lib
 LIBS -= -ltiff
 LIBS -= -ltiff32  #added on 090901
-LIBS += -ltiff64
+LIBS += -L../common_lib/lib -ltiff
+#-ltiff64
 
 # 090731 PHC cp /usrlocal/lib/libgsl.a to libgsl64.a in /usr/local/lib
 LIBS -= -lgsl

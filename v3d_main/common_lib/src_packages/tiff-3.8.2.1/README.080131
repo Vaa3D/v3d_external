@@ -1,0 +1,12 @@
+by Hanchuan PENG, 080131.
+
+This is an important reminder and should be saved for future reference.
+
+Gene previously spent a lot of time on solving the incompatibility between Matlab's libtiff and the open-src libtiff modules on Mac Book Pro (Intel based machine). It seems that his solution is to downgrade the libtiff using the Matlab's version, - otherwise it will not work for his machine.
+
+I showed today this is NOT true. I compiled  my customary  libtiff library  version  tiff-3.8.2.1  (so that I can read LSM file directly) and installed on my own library path ~/work/3rdsoft/lib  (to do this, just need to do "./configure --libdir=/Users/pengh/work/3rdsoft/lib" followed by "make" and "sudo make install"). Then I tried to compile my loadRaw2Stack_c.cpp and saveStack2File_c.cpp with the commands "mex saveStack2File_c.cpp mg_image_lib.o mg_utilities.o -L/Users/pengh/work/3rdsoft/lib -ltiff" and "mex loadRaw2Stack_c.cpp mg_image_lib.o mg_utilities.o -L/Users/pengh/work/3rdsoft/lib -ltiff". There was no error on this. However, when I tried to run loadRaw2Stack.m command (which calls loadRaw2Stack_c()), there was the error like what Gene got before, i.e. the incompatibility issue of Matlab and libtiff.  The solution I got is to copy my own customary libtiff dynamic link library to the Matlab's directory, i.e. "cd /Applications/MATLAB74//bin/maci/" and  "mv libtiff.3.dylib libtiff.3.dylib.old", followed by "cp ~/work/3rdsoft/lib/libtiff.3.dylib .". Then I can use loadRaw2Stack.m without a problem to read the lsm file and also use saveStack2File_c() to save it to either .tiff or .raw!!!
+
+Thus this is the solution, and should be done similarly to resolve the issue of Matlab & libtiff on Maci machines!!
+
+BTW, previously I did not have this problem when I  used the PwoerPC chipped Mac Book laptop.
+

@@ -1,7 +1,8 @@
 This folder contains the source code of the V3D project.
 
-There are four sub-folders:
+There are a few sub-folders:
 
+* v3d:                     the folder where the final executable and plugins will be copied to 
 * v3d_main:                the main V3D program. 
 * matlab_io_basicdatatype: matlab toolbox for file IO of some basic V3D data formats,
                            including image file, surface files, neuron, markers, etc.
