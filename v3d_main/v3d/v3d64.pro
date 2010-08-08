@@ -29,5 +29,5 @@ LIBS += -L../common_lib/lib -ltiff
 # 090731 PHC cp /usrlocal/lib/libgsl.a to libgsl64.a in /usr/local/lib
 LIBS -= -lgsl
 LIBS -= -lgsl32 #added on 090901
-LIBS += -lgsl64
+#LIBS += -lgsl64
 
