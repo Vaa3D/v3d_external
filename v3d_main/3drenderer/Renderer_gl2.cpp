@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -729,6 +729,7 @@ void Renderer_gl2::_streamTex(int stack_i, int slice_i, int step, int slice0, in
 		_copySliceFromStack(rgbaBuf, imageX,imageY,imageZ,  p_slice, sw,  stack_i, slice_i,  rgbaBuf_Yzx, rgbaBuf_Xzy);
 	}
 
+	setTexParam2D(); //100809
 	glTexSubImage2D(GL_TEXTURE_2D, // target
 		0, // level
 		0,0,  // offset

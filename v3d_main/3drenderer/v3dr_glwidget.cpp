@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -1479,7 +1479,8 @@ void V3dR_GLWidget::changeVolShadingOption()
 			//=============================================================================
 
 			// when initialize done, update status of control widgets
-			SEND_EVENT(this, QEvent::Type(QEvent_InitControlValue)); // use event instead of signal
+			//SEND_EVENT(this, QEvent::Type(QEvent_InitControlValue)); // use event instead of signal
+			emit signalVolumeCutRange(); //100809
 
 		}
 
@@ -1705,7 +1706,8 @@ void V3dR_GLWidget::updateImageData()
 	//=============================================================================
 
 	// when initialize done, update status of control widgets
-	SEND_EVENT(this, QEvent::Type(QEvent_InitControlValue)); // use event instead of signal
+	//SEND_EVENT(this, QEvent::Type(QEvent_InitControlValue)); // use event instead of signal
+	emit signalVolumeCutRange(); //100809
 
 	POST_updateGL();
 }
@@ -1750,6 +1752,7 @@ void V3dR_GLWidget::reloadData()
 	}
 	PROGRESS_PERCENT(100);
 
+	emit signalVolumeCutRange(); //100809
 	POST_EVENT(this, QEvent::Type(QEvent_OpenFiles)); // open objects after loading volume, 081025
 	POST_EVENT(this, QEvent::Type(QEvent_Ready));  //081124
 
@@ -1858,7 +1861,7 @@ void V3dR_GLWidget::customEvent(QEvent* e)
 		loadObjectsListFromFile();
 		break;
 
-	case QEvent_DropFiles:  // no use this
+	case QEvent_DropFiles:  // not use this
 		qDebug("V3dR_GLWidget::customEvent( QEvent_DropFiles )");
 		if (renderer)  renderer->loadObjectsFromFile( Q_CSTR(dropUrl) );
 		break;
