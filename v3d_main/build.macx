@@ -10,7 +10,8 @@ shopt -s expand_aliases;
 # 091012 updated by PHC
 # 100805 updated by PHC, add -n for 32bit compilation on Snow Leopard
 # 100807 updated by PHC, add the libtiff compile so that increase the convenience
-#
+# 100808 updated by PHC. fix a series of flag bugs
+# 
 # examples: 
 #    sh build.macx
 #    sh build.macx debug
@@ -26,8 +27,9 @@ shopt -s expand_aliases;
 V3D_PRO_FILE="v3d.pro"    # default project file for qmake
 
 SYSTEMBITS="32"             # default use 32bit libtiff
-TIFFCOMPILE="NO"          # default do not compile libtiff
-
+TIFFCOMPILE="NO"            # default do not compile libtiff
+V3DPLUGINSCOMPILE="NO"      # default do not compile v3d plugins
+NEWMATCOMPILE="NO"          # default do not compile newmat
 
 # for each arg 
 
@@ -55,6 +57,10 @@ for arg in $*; do
 
    if [ $arg == "-B" ]; then
       TIFFCOMPILE="YES"
+	  V3DPLUGINSCOMPILE="YES"
+	  NEWMATCOMPILE="YES"
+      QARGS+=" $arg " 
+	  continue
    fi
  
 #32bit compiling
@@ -87,7 +93,7 @@ for arg in $*; do
    fi
   
    if [ ${arg:0:1} == "-" ]; then
-      ARGS+=" $arg" 
+      QARGS+=" $arg " 
    else
       QARGS+=" CONFIG+=$arg" 
    fi
@@ -100,6 +106,9 @@ echo make $ARGS
 echo =========================================================
 
 #build the libtiff library
+
+echo $QARGS 
+echo $QMAKE_CONFIG
 
 DOIT="YES"
 
@@ -116,6 +125,7 @@ if [ $TIFFCOMPILE == "YES" ]; then
   make clean
   make 
   make install
+  mv ../lib/libtiff.a ../lib/libv3dtiff.a
   cd ../../
 fi
 
@@ -123,6 +133,9 @@ fi
 
 if [ $DOIT == "YES" ]; then
   cd jba/c++ 
+  if [ $NEWMATCOMPILE == "YES" ]; then  
+    make -f jba.makefile clean
+  fi
   make -f jba.makefile $ARGS
   cd ../../
 fi
@@ -132,10 +145,10 @@ fi
 if [ $DOIT == "YES" ]; then
   cd v3d
   echo =========================================================
-  echo qmake $V3D_PRO_FILE \"$QARGS\"
-  echo make $ARGS
+  echo qmake $V3D_PRO_FILE \"$QMAKE_CONFIG\"
+  echo make $QARGS $QMAKE_CONFIG
   echo =========================================================
-  qmake $V3D_PRO_FILE $QARGS $QMAKE_CONFIG
+  qmake $V3D_PRO_FILE 
   touch v3d_version_info.cpp
 
   if [ $SYSTEMBITS == "32" ]; then
@@ -145,7 +158,7 @@ if [ $DOIT == "YES" ]; then
     rm -fr v3d64.app
   fi
 
-  make $ARGS
+  make  $QARGS 
   
   if [ $SYSTEMBITS == "32" ]; then
     cp v3d.icns v3d.app/Contents/Resources/.  
@@ -164,11 +177,11 @@ fi
 if [ $DOIT == "YES" ]; then
   if [ $SYSTEMBITS == "32" ]; then
     cp -r ./v3d/v3d.app ../v3d/.   #copy to the executable folder
-    cp -r ./v3d/v3d.app ../released_plugins/v3d/.
+#    cp -r ./v3d/v3d.app ../released_plugins/v3d/.
   fi
   if [ $SYSTEMBITS == "64" ]; then
     cp -r ./v3d/v3d64.app ../v3d/. #copy to the executable folder
-    cp -r ./v3d/v3d64.app ../released_plugins/v3d/.
+#    cp -r ./v3d/v3d64.app ../released_plugins/v3d/.
   fi  
 fi
 
@@ -180,8 +193,16 @@ if [ $DOIT == "YES" ]; then
   echo =========================================================
   echo "Now build v3d plugins"
   echo =========================================================
-  sh build_plugindemo.sh $QARGS $QMAKE_CONFIG
-  cp -r v3d/plugins ../v3d/.     #copy to the executable folder
+  if [ $V3DPLUGINSCOMPILE == "YES" ]; then
+    rm -fr v3d/plugins
+	sh build_plugindemo.sh clean
+  fi
+  echo =========================================================
+  echo sh build_plugindemo.sh $*
+  echo =========================================================
+  sh build_plugindemo.sh $*    # for plugins, just pass the args to the batch compiling script
+  rm -fr ../v3d/plugins
+  mv -f v3d/plugins ../v3d/.     #copy to the executable folder
   cd ../
 fi
 

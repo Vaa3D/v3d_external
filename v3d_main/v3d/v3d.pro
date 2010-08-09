@@ -273,22 +273,22 @@ RESOURCES += v3d.qrc
 RESOURCES += ../3drenderer/3drenderer.qrc
 QT += opengl
 
-# 100802 RZC: need "-L./???" to start make at root dir of project (copy .pro to here)
+# 100802: need "-L./???" to start make at root dir of project (copy .pro to here)
 
 LIBS += -L../jba/c++  
 
 unix:LIBS += -L../common_lib/lib_unix
-unix:LIBS += -lm -ltiff \
+unix:LIBS += -lm -lv3dtiff \
     -lv3dnewmat \
     -L/usr/lib/qt4/demos/shared -ldemo_shared
     
 macx:LIBS -= -ltiff  #do this because unix is a superset of macx
 macx:LIBS += -L../common_lib/lib_mac32
-macx:LIBS += -lm -L../common_lib/lib  -ltiff \
+macx:LIBS += -lm -L../common_lib/lib  -lv3dtiff \
     -lv3dnewmat 
 #    -framework GLUT
 
-win32:LIBS += -lm -ltiff \
+win32:LIBS += -lm -lv3dtiff \
     -lv3dnewmat 
 #    -ljba \
 #    -lFL_cellseg \

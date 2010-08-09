@@ -1,7 +1,6 @@
 
 TEMPLATE      = lib
 CONFIG       += qt plugin warn_off
-CONFIG       += x86_64
 INCLUDEPATH  += ../../../v3d_main/basic_c_fun
 HEADERS       = regiongrow.h
 SOURCES       = regiongrow.cpp
