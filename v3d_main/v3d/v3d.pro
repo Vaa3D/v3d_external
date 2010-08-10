@@ -72,6 +72,7 @@
 # 100801: separate module_bdb.cpp
 # 100802: remove the three modules
 # 100807: remove some redundant libs
+# 100810: add xformwidget.h extracted from v3d_core.h
 # ######################################################################
 
 TEMPLATE = app
@@ -177,6 +178,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     dialog_maskroi.h \
     atlas_viewer.h \
     v3d_core.h \
+    xformwidget.h \
     mainwindow.h \
     dialog_watershed_para.h \
     FL_levelsetSegPara_dialog.h \

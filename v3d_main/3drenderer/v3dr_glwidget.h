@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -328,8 +328,8 @@ private:
 	int _CStransparency, _markerSize, _curChannel;
 	float _thickness;
 	int _Bright, _Contrast, sUpdate_bright, sUpdate_track;
-	bool _volCompress, _showAxes, _showBoundingBox, _absRot, _orthoView;
-	int _texFilter;
+	bool _showAxes, _showBoundingBox, _absRot, _orthoView;
+	bool _volCompress, _volFilter;
 
 	int _volumeTimePoint; float volumeTimPoint_fraction;
 
@@ -356,12 +356,12 @@ private:
 		_zoom=_xShift=_yShift=_zShift= dxShift=dyShift=dzShift=
 		_xCut0=_xCut1=_yCut0=_yCut1=_zCut0=_zCut1=_fCut=
 		_xCS=_yCS=_zCS=
-		_xClip0=_xClip1=_yClip0=_yClip1=_zClip0=_zClip1=0;
+		_xClip0=_xClip1=_yClip0=_yClip1=_zClip0=_zClip1 =0;
 		_CStransparency=0; _markerSize=1, _curChannel=1;
-		_thickness=1;
+		_thickness =1;
 		_Bright=_Contrast=sUpdate_bright=sUpdate_track=0;
-		_volCompress = _showAxes = _showBoundingBox = _absRot = _orthoView =false;
-		_texFilter = 1;
+		_showAxes = _showBoundingBox = _absRot = _orthoView =false;
+		_volCompress = _volFilter =true;
 
 		_volumeTimePoint=0; volumeTimPoint_fraction=0;
 	}

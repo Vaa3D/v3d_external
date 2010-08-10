@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -432,11 +432,12 @@ public: //for image processing, some of the parameters should be globally set
 		if (workspace) workspace->cascade();
 	}
 
+
+#define __used_by_v3d_interface__
 	QMenu *pluginProcMenu; // for dynamically hooking plug-in menu
 	V3d_PluginLoader *pluginLoader;
 
-public:	//2009-2010: used by V3D_PluginLoader
-
+public:	//2009-2010: used by V3D_PluginLoader 	// in mainwindow_interface.cpp
 	XFormWidget* currentImageWindow();
 	My4DImage* currentImage();
 	QList<void*> allWindowList();
@@ -457,14 +458,6 @@ public:	//2009-2010: used by V3D_PluginLoader
 	bool setSWC(void* window, NeuronTree & nt);
 	V3D_GlobalSetting getGlobalSetting();
 	bool setGlobalSetting( V3D_GlobalSetting &gs );
-
-	XFormWidget* open3DWindow(void* image_window);
-	XFormWidget* close3DWindow(void* image_window);
-	XFormWidget* openROI3DWindow(void* image_window);
-	XFormWidget* closeROI3DWindow(void* image_window);
-	XFormWidget* pushObjectIn3DWindow(void* image_window);
-	XFormWidget* pushImageIn3DWindow(void* image_window);
-	int pushTimepointIn3DWindow(void* image_window, int timepoint);
 
 };
 

@@ -88,7 +88,7 @@ V3d_PluginLoader::V3d_PluginLoader(QMenu* menuPlugin, MainWindow* mainwindow)
 	this->v3d_menuPlugin = menuPlugin;
 	this->v3d_mainwindow = mainwindow;
 
-	plugin_menu.clear();
+	pluginList.clear();
 
 	rescanPlugins();
 }
@@ -581,19 +581,27 @@ bool V3d_PluginLoader::setGlobalSetting( V3D_GlobalSetting & gs )
 	return false;
 }
 
+
+////////////////////////////////////////////////////////////////////////////
+//100810 RZC: add this macro
+#define if_XFormWidget(w, image_window) \
+	XFormWidget* w=0; \
+	if (v3d_mainwindow && (w = v3d_mainwindow->validateImageWindow(image_window)))
+
+
 void V3d_PluginLoader::open3DWindow(v3dhandle image_window)
 {
-	if (v3d_mainwindow)
+	if_XFormWidget(w, image_window)
 	{
-		XFormWidget* w = v3d_mainwindow->open3DWindow(image_window);
+		w->open3DWindow();
 		qDebug() << "V3d_PluginLoader open3DWindow: " << w <<"/"<< image_window;
 	}
 }
 void V3d_PluginLoader::close3DWindow(v3dhandle image_window)
 {
-	if (v3d_mainwindow)
+	if_XFormWidget(w, image_window)
 	{
-		XFormWidget* w = v3d_mainwindow->close3DWindow(image_window);
+		w->close3DWindow();
 		qDebug() << "V3d_PluginLoader close3DWindow: " << w <<"/"<< image_window;
 
 		pumpEvents(); //100804 RZC
@@ -601,17 +609,17 @@ void V3d_PluginLoader::close3DWindow(v3dhandle image_window)
 }
 void V3d_PluginLoader::openROI3DWindow(v3dhandle image_window)
 {
-	if (v3d_mainwindow)
+	if_XFormWidget(w, image_window)
 	{
-		XFormWidget* w = v3d_mainwindow->openROI3DWindow(image_window);
+		w->openROI3DWindow();
 		qDebug() << "V3d_PluginLoader openROI3DWindow: " << w <<"/"<< image_window;
 	}
 }
 void V3d_PluginLoader::closeROI3DWindow(v3dhandle image_window)
 {
-	if (v3d_mainwindow)
+	if_XFormWidget(w, image_window)
 	{
-		XFormWidget* w = v3d_mainwindow->closeROI3DWindow(image_window);
+		w->closeROI3DWindow();
 		qDebug() << "V3d_PluginLoader closeROI3DWindow: " << w <<"/"<< image_window;
 
 		pumpEvents(); //100804 RZC
@@ -620,18 +628,18 @@ void V3d_PluginLoader::closeROI3DWindow(v3dhandle image_window)
 
 void V3d_PluginLoader::pushObjectIn3DWindow(v3dhandle image_window)
 {
-	if (v3d_mainwindow)
+	if_XFormWidget(w, image_window)
 	{
-		XFormWidget* w = v3d_mainwindow->pushObjectIn3DWindow(image_window);
+		w->pushObjectIn3DWindow();
 		qDebug() << "V3d_PluginLoader pushObjectIn3DWindow: " << w <<"/"<< image_window;
 	}
 }
 
 void V3d_PluginLoader::pushImageIn3DWindow(v3dhandle image_window)
 {
-	if (v3d_mainwindow)
+	if_XFormWidget(w, image_window)
 	{
-		XFormWidget* w = v3d_mainwindow->pushImageIn3DWindow(image_window);
+		w->pushImageIn3DWindow();
 		qDebug() << "V3d_PluginLoader pushImageIn3DWindow: " << w <<"/"<< image_window;
 	}
 }
@@ -639,9 +647,9 @@ void V3d_PluginLoader::pushImageIn3DWindow(v3dhandle image_window)
 int V3d_PluginLoader::pushTimepointIn3DWindow(v3dhandle image_window, int timepoint)
 {
 	int t=0;
-	if (v3d_mainwindow)
+	if_XFormWidget(w, image_window)
 	{
-		t = v3d_mainwindow->pushTimepointIn3DWindow(image_window, timepoint);
+		t = w->pushTimepointIn3DWindow(timepoint);
 		qDebug() << "V3d_PluginLoader pushTimepointIn3DWindow: " << t <<"/"<< timepoint;
 	}
 	return t;
@@ -650,8 +658,7 @@ int V3d_PluginLoader::pushTimepointIn3DWindow(v3dhandle image_window, int timepo
 bool V3d_PluginLoader::screenShot3DWindow(v3dhandle image_window, QString filename)
 {
 	bool r =false;
-	XFormWidget* w=0;
-	if (v3d_mainwindow && (w = v3d_mainwindow->validateImageWindow(image_window)))
+	if_XFormWidget(w, image_window)
 	{
 		r = w->screenShot3DWindow(filename);
 		qDebug() << "V3d_PluginLoader screenShotIn3DWindow: " << r <<"/"<< filename;
@@ -660,8 +667,7 @@ bool V3d_PluginLoader::screenShot3DWindow(v3dhandle image_window, QString filena
 bool V3d_PluginLoader::screenShotROI3DWindow(v3dhandle image_window, QString filename)
 {
 	bool r =false;
-	XFormWidget* w=0;
-	if (v3d_mainwindow && (w = v3d_mainwindow->validateImageWindow(image_window)))
+	if_XFormWidget(w, image_window)
 	{
 		r = w->screenShotROI3DWindow(filename);
 		qDebug() << "V3d_PluginLoader screenShotROI3DWindow: " << r <<"/"<< filename;

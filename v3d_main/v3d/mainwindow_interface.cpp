@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -200,74 +200,8 @@ bool MainWindow::setGlobalSetting( V3D_GlobalSetting &gs )
 }
 
 
-XFormWidget* MainWindow::open3DWindow(void* image_window)
-{
-	XFormWidget* w = validateImageWindow(image_window);
-	if (w)
-	{
-		w->doImage3DView();;
-	}
-	return w;
-}
-XFormWidget* MainWindow::openROI3DWindow(void* image_window)
-{
-	XFormWidget* w = validateImageWindow(image_window);
-	if (w)
-	{
-		w->doImage3DLocalRoiView();
-	}
-	return w;
-}
-XFormWidget* MainWindow::close3DWindow(void* image_window)
-{
-	XFormWidget* w = validateImageWindow(image_window);
-	if (w)
-	{
-		w->close3DWindow();;
-	}
-	return w;
-}
-XFormWidget* MainWindow::closeROI3DWindow(void* image_window)
-{
-	XFormWidget* w = validateImageWindow(image_window);
-	if (w)
-	{
-		w->closeROI3DWindow();;
-	}
-	return w;
-}
-
-
-XFormWidget* MainWindow::pushObjectIn3DWindow(void* image_window)
-{
-	XFormWidget* w = validateImageWindow(image_window);
-	if (w)
-	{
-		w->pushObjectIn3DWindow();
-	}
-	return w;
-}
-XFormWidget* MainWindow::pushImageIn3DWindow(void* image_window)
-{
-	XFormWidget* w = validateImageWindow(image_window);
-	if (w)
-	{
-		w->pushImageIn3DWindow();
-	}
-	return w;
-}
-int MainWindow::pushTimepointIn3DWindow(void* image_window, int timepoint)
-{
-	XFormWidget* w = validateImageWindow(image_window);
-	int t =0;
-	if (w)
-	{
-		t = w->pushTimepointIn3DWindow(timepoint);
-	}
-	return t;
-}
-
-///XFormWidget/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+#define __XFormWidget_interface__
 
 QList<QPolygon> XFormWidget::get3ViewROI()
 {
@@ -300,11 +234,11 @@ bool XFormWidget::set3ViewROI(QList<QPolygon> & roi_list)
 	if (! img || !img->valid())  return false;
 
   bool result = this->setImageData(
-    img->getRawData(), 
-    img->getXDim(), 
-    img->getYDim(), 
+    img->getRawData(),
+    img->getXDim(),
+    img->getYDim(),
     img->getZDim(),
-    img->getCDim(), 
+    img->getCDim(),
     img->getDatatype() );
 
 	if (result)
@@ -324,6 +258,14 @@ bool XFormWidget::set3ViewROI(QList<QPolygon> & roi_list)
 	else return false;
 } //090818 RZC
 
+void XFormWidget::open3DWindow()
+{
+	doImage3DView();
+}
+void XFormWidget::openROI3DWindow()
+{
+	doImage3DLocalRoiView();
+}
 void XFormWidget::close3DWindow()
 {
 	if (mypara_3Dview.b_still_open && mypara_3Dview.window3D)

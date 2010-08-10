@@ -548,7 +548,7 @@ void V3dR_GLWidget::setVolCompress(bool s)
 {
 	if (renderer)
 	{
-		_volCompress = (renderer->tryTexCompress>0);
+		_volCompress = (renderer->tryTexCompress >0);
 		if (_volCompress != s)
 		{
 			toggleTexCompression();
