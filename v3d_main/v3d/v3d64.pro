@@ -17,17 +17,14 @@ macx { #090705 RZC
 
 include(v3d.pro)
 macx {
-LIBS += -L../common_lib/lib_mac64
+LIBS += -L../common_lib/lib_mac64 -L./common_lib/lib_mac64 #Eclipse need "-L./???" to start make at root dir of project (copy .pro to there)
 }
 
 # 090713 RZC cp tiff64/libtiff.a to libtiff64.a in /usr/local/lib
-LIBS -= -ltiff
 LIBS -= -ltiff32  #added on 090901
-LIBS += -L../common_lib/lib -ltiff
-#-ltiff64
+LIBS += -ltiff64
 
 # 090731 PHC cp /usrlocal/lib/libgsl.a to libgsl64.a in /usr/local/lib
-LIBS -= -lgsl
-LIBS -= -lgsl32 #added on 090901
+LIBS -= -lgsl32   #added on 090901
 #LIBS += -lgsl64
 
