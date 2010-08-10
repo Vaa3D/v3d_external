@@ -201,8 +201,16 @@ if [ $DOIT == "YES" ]; then
   echo sh build_plugindemo.sh $*
   echo =========================================================
   sh build_plugindemo.sh $*    # for plugins, just pass the args to the batch compiling script
-  rm -fr ../v3d/plugins
-  mv -f v3d/plugins ../v3d/.     #copy to the executable folder
+  
+  mkdir -p ../v3d/plugins
+  if [ $SYSTEMBITS == "32" ]; then
+    rm -fr ../v3d/plugins/32bit
+    mv -f v3d/plugins ../v3d/plugins/32bit     #copy to the executable folder
+  fi	
+  if [ $SYSTEMBITS == "64" ]; then
+    rm -fr ../v3d/plugins/64bit
+    mv -f v3d/plugins ../v3d/plugins/64bit     #copy to the executable folder
+  fi	
   cd ../
 fi
 

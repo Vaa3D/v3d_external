@@ -81,7 +81,7 @@ INCLUDEPATH += .
 
 # cross-OS-platform, cross-Qt-version, by RZC 080916, 080921, 080923, 090612
 QT_DIR = $$dirname(QMAKE_QMAKE)/..  # cross-Qt-version
-LOCAL_DIR = /usr/local 				# unix-liked platform: macx, unix, win32-msys-mingw
+LOCAL_DIR = ../common_lib/ 				# unix-liked platform: macx, unix, win32-msys-mingw
 
 MINGW_DIR = /mingw # platform: win32-msys-mingw
 win32 { # platform: win32-command-mingw
