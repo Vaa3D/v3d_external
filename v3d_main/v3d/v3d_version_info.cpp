@@ -38,7 +38,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include <QtGui>
 
-QString versionnumber = "V3D (2.502), V3D-Neuron (2.0), V3D Plugin Interface (1.1) ";
+QString versionnumber = "V3D (2.503), V3D-Neuron (2.0), V3D Plugin Interface (1.1) ";
 
 void v3d_aboutinfo()
 {
