@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -60,15 +60,19 @@ public:
 	int getCurTab() {if(tabOptions) return tabOptions->currentIndex(); else return -1;} // 090622 RZC
 
 protected:
-	V3dR_GLWidget* glwidget;
+	V3dR_GLWidget *glwidget, *active_widget;
 	Renderer_tex2* renderer;
 	int iLastTab;
 	bool bCanUndo, bMod;
+	bool bAttached;
+	QString title;
+	int last_marker;
 
 	void firstCreate();
 
 public slots:
 	virtual void linkTo(QWidget* w); //link to new view
+	void onAttached(bool);
 
 	void undo();
 
@@ -85,7 +89,8 @@ public slots:
 	void mapHanchuanColor() {selectedColor(1);}
 	void mapRandomColor()   {selectedColor(-1);}
 
-	void clickHandler(int row, int col);
+	void pressedClickHandler(int row, int col);
+	void doubleClickHandler(int row, int col);
 	void pickSurf(int row, int col);
 	void pickSWC(int row, int col);
 	void pickAPO(int row, int col);
@@ -97,6 +102,8 @@ public slots:
 	void findNext();
 	void findPrev();
 	void findAllHighlight();
+
+	void onMarkerLocalView();
 
 protected:
 	void setItemEditor();
@@ -123,10 +130,10 @@ protected:
 	QPushButton *okButton, *cancelButton, *undoButton,
 				*selectAllButton, *deselectAllButton, *inverseSelectButton,
 				*onSelectButton, *offSelectButton, *colorSelectButton,
-				*editNameCommentButton;
-	QCheckBox *accumulateLastHighlightHitsCheckBox;			
+				*editNameCommentButton, *markerLocalView;
 	QTabWidget *tabOptions;
 	QTableWidget *table[1+5];
+	QCheckBox *checkBox_accumulateLastHighlightHits, *checkBox_attachedToCurrentView;
 
 	// search group
 	QLabel *searchTextEditLabel, *searchTextResultLabel;
@@ -138,6 +145,27 @@ protected:
 	QList <NeuronTree> listNeuronTree;
 	QList <CellAPO> listCell;
 	QList <ImageMarker> listMarker;
+
+	void init_members()
+	{
+		glwidget = active_widget = 0;
+		renderer = 0;
+		iLastTab = -1;
+		bCanUndo = bMod = false;
+		bAttached = false;
+		title = tr("Object Manager");  //Object Pick/Color Options")); //090423 RZC: changed
+		last_marker = -1;
+
+		okButton=cancelButton=undoButton=0;
+		selectAllButton=deselectAllButton=inverseSelectButton=
+			onSelectButton=offSelectButton=colorSelectButton=editNameCommentButton=markerLocalView =0;
+		for (int i=0; i<=5; i++)  table[i]=0; //by PHC, 090521 change to 5
+		tabOptions=0;
+		checkBox_accumulateLastHighlightHits = checkBox_attachedToCurrentView =0;//100809 RZC
+		searchTextEditLabel=searchTextResultLabel = 0;
+		searchTextEdit =0;
+		doSearchTextNext=doSearchTextPrev=doSearchTextHighlightAllHits =0;
+	}
 };
 
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -55,19 +55,7 @@ V3dr_surfaceDialog::V3dr_surfaceDialog(V3dR_GLWidget* w, QWidget* parent)
 {
 	qDebug("V3dr_surfaceDialog::V3dr_surfaceDialog");
 
-	setWindowTitle(tr("Object Manager")); //Object Pick/Color Options")); //090423 RZC: changed
-
-	glwidget = 0;
-	renderer = 0;
-	iLastTab = -1;
-	bCanUndo = bMod = false;
-
-	okButton=cancelButton=undoButton=0;
-	selectAllButton=deselectAllButton=inverseSelectButton=
-		onSelectButton=offSelectButton=colorSelectButton=editNameCommentButton=0;
-	for (int i=0; i<=5; i++)  table[i]=0; //by PHC, 090521 change to 5
-	tabOptions=0;
-
+	init_members();//100809 RZC
 	firstCreate();
 	linkTo(w);/////
 
@@ -108,6 +96,11 @@ void V3dr_surfaceDialog::undo()
 
 void V3dr_surfaceDialog::linkTo(QWidget* w)
 {
+	//100809 RZC
+	active_widget = (V3dR_GLWidget*)w;
+	if (bAttached) return;
+
+	///////////////////////////////////////////////////////////////////////////
 	qDebug("  V3dr_surfaceDialog::linkTo ( %p )", w);
 	if (! w)  return;
 
@@ -119,6 +112,33 @@ void V3dr_surfaceDialog::linkTo(QWidget* w)
 
 	clearTables_fromTab();
 	createTables_addtoTab();
+}
+
+void V3dr_surfaceDialog::onAttached(bool b)
+{
+	//qDebug("  V3dr_surfaceDialog::onAttached = %d", b);
+
+	//if (checkBox_attachedToCurrentView && checkBox_attachedToCurrentView->isChecked())
+	if (b)
+	{
+		if (glwidget)
+		{
+			QString viewTitle = glwidget->getMainWindow()->windowTitle();
+			setWindowTitle(title + tr(" attached: ") + viewTitle);
+		}
+		bAttached = true;
+		//qDebug("  V3dr_surfaceDialog::( attached to %p )", glwidget);
+	}
+	else
+	{
+		bAttached = false;
+		setWindowTitle(title);
+		if (active_widget)
+		{
+			qDebug("  V3dr_surfaceDialog::( active of %p )", active_widget);
+			active_widget->updateTool();
+		}
+	}
 }
 
 void V3dr_surfaceDialog::clearTables_fromTab()
@@ -193,7 +213,10 @@ void V3dr_surfaceDialog::createTables_addtoTab()
 	if (table[stPointSet])      connect(table[stPointSet], SIGNAL(cellChanged(int,int)), this, SLOT(pickAPO_Set(int,int)));
 
 	for (int i=1; i<=5; i++) if (table[i])
-		connect(table[i], SIGNAL(cellDoubleClicked(int,int)), this, SLOT(clickHandler(int,int)));
+	{
+		connect(table[i], SIGNAL(cellDoubleClicked(int,int)), this, SLOT(doubleClickHandler(int,int)));
+		connect(table[i], SIGNAL(cellPressed(int,int)), this, SLOT(pressedClickHandler(int,int)));
+	}
 
 	for (int i=1; i<=5; i++) if (table[i])
 	{
@@ -218,33 +241,41 @@ void V3dr_surfaceDialog::firstCreate()
     deleteLayout->addWidget(deleteButton);
 
     QGroupBox* selectGroup = new QGroupBox("Select");
-    QVBoxLayout *selectLayout = new QVBoxLayout(selectGroup);
+    QGridLayout *selectLayout = new QGridLayout(selectGroup);
     selectAllButton = new QPushButton("All");
     deselectAllButton = new QPushButton("None");
     inverseSelectButton = new QPushButton("Inverse");
-    selectLayout->addWidget(selectAllButton);
-    selectLayout->addWidget(deselectAllButton);
-    selectLayout->addWidget(inverseSelectButton);
+    selectLayout->addWidget(selectAllButton,		1,0, 1,1);
+    selectLayout->addWidget(deselectAllButton,		2,0, 1,1);
+    selectLayout->addWidget(inverseSelectButton,	3,0, 1,1);
 
-	QGroupBox* changeGroup = new QGroupBox();//"Selected Change");
+	QGroupBox* changeGroup = new QGroupBox();//"Change");
     QGridLayout *changeLayout = new QGridLayout(changeGroup);
     onSelectButton = new QPushButton("On");
     offSelectButton = new QPushButton("Off");
     colorSelectButton = new QPushButton("Color >>");
     editNameCommentButton = new QPushButton("Name/Comments"); //by PHC, 090219
     undoButton = new QPushButton("Undo");
-	accumulateLastHighlightHitsCheckBox = new QCheckBox("Accumulate last highlight search");
-
     changeLayout->addWidget(onSelectButton,  		1,0, 1,1);
     changeLayout->addWidget(offSelectButton, 		1,1, 1,1);
     changeLayout->addWidget(colorSelectButton,		2,0, 1,2);
     changeLayout->addWidget(editNameCommentButton,	3,0, 1,2);
     changeLayout->addWidget(undoButton,				4,0, 1,2);
-    changeLayout->addWidget(accumulateLastHighlightHitsCheckBox,				5,0, 1,2);
+
+    markerLocalView = new QPushButton("Local 3D View around Marker");
+
+    QGroupBox* checkGroup = new QGroupBox("Options");
+    QGridLayout *checkLayout = new QGridLayout(checkGroup);
+    checkBox_attachedToCurrentView = new QCheckBox("Attached to 3D view");
+    checkLayout->addWidget(checkBox_attachedToCurrentView,			1,0, 1,2);
+    checkBox_accumulateLastHighlightHits = new QCheckBox("Accumulate last\n highlight search");
+    checkLayout->addWidget(checkBox_accumulateLastHighlightHits,	2,0, 1,2);
 
     buttonRgnLayout->addWidget(selectGroup);
     buttonRgnLayout->addWidget(changeGroup);
     //buttonRgnLayout->addWidget(deleteGroup);
+    //buttonRgnLayout->addWidget(markerLocalView);
+    buttonRgnLayout->addWidget(checkGroup);
     buttonRgnLayout->addStretch(0);
     buttonRgnLayout->setContentsMargins(0,0,0,0);
 
@@ -252,10 +283,10 @@ void V3dr_surfaceDialog::firstCreate()
     tabOptions = new QTabWidget(this); //tabOptions = new AutoTabWidget(this);//090117: commented by PHC
 	/////////////////////////////////////////////////////////
 
-	QGroupBox* tabBtnGroup = new QGroupBox();
-    QHBoxLayout *tabBtnLayout = new QHBoxLayout(tabBtnGroup);
-    tabBtnLayout->addWidget(tabOptions);
-    tabBtnLayout->addWidget(buttonGroup);
+	QGroupBox* tabAndBtnGroup = new QGroupBox();
+    QHBoxLayout *tabAndBtnLayout = new QHBoxLayout(tabAndBtnGroup);
+    tabAndBtnLayout->addWidget(tabOptions);
+    tabAndBtnLayout->addWidget(buttonGroup);
 
 	//search box
 	QGroupBox* searchGroup = new QGroupBox();
@@ -275,7 +306,7 @@ void V3dr_surfaceDialog::firstCreate()
 
 	//overall layout
     QVBoxLayout *allLayout = new QVBoxLayout(this);
-	allLayout->addWidget(tabBtnGroup);
+	allLayout->addWidget(tabAndBtnGroup);
 	allLayout->addWidget(searchGroup);
 
 	createMenuOfColor();
@@ -296,6 +327,11 @@ void V3dr_surfaceDialog::firstCreate()
 	if (searchTextEdit && doSearchTextHighlightAllHits) connect(doSearchTextHighlightAllHits, SIGNAL(clicked()), this, SLOT(findAllHighlight()));
 	if (searchTextEdit) connect(searchTextEdit, SIGNAL(returnPressed()), this, SLOT(findNext()));
 
+	//100809 RZC
+	if (checkBox_attachedToCurrentView) connect( checkBox_attachedToCurrentView, SIGNAL(toggled(bool)), this, SLOT(onAttached(bool)) );
+	if (markerLocalView) connect( markerLocalView, SIGNAL(clicked()), this, SLOT(onMarkerLocalView()) );
+
+	setWindowTitle(title);
 }
 
 QTableWidget* V3dr_surfaceDialog::currentTableWidget()
@@ -445,9 +481,33 @@ void V3dr_surfaceDialog::setItemEditor()
 	QItemEditorFactory::setDefaultFactory( new QItemEditorFactory(*QItemEditorFactory::defaultFactory()) );
 }
 
-void V3dr_surfaceDialog::clickHandler(int i, int j)
+void V3dr_surfaceDialog::pressedClickHandler(int i, int j)
 {
-	qDebug("	clickHandler( %d, %d )", i,j);
+	if (QApplication::mouseButtons()==Qt::RightButton)
+	{
+		qDebug("	pressedClickHandler( %d, %d ) rightButton", i,j);
+
+		QTableWidget* t = currentTableWidget();
+		//QTableWidgetItem *curItem = t->item(i,j);
+
+		if (t==table[stImageMarker])
+		{
+			qDebug("  marker #%d", i+1);
+			last_marker = i;
+
+			QMenu menu;
+			QAction* Act;
+		    Act = new QAction(tr("Local 3D View around this Marker"), this);
+		    connect(Act, SIGNAL(triggered()), this, SLOT(onMarkerLocalView()) );
+		    menu.addAction(Act);
+			menu.exec(QCursor::pos());
+		}
+	}
+}
+
+void V3dr_surfaceDialog::doubleClickHandler(int i, int j)
+{
+	qDebug("	doubleClickHandler( %d, %d )", i,j);
 
 	QTableWidget* t = currentTableWidget();
 	QTableWidgetItem *curItem = t->item(i,j);
@@ -1191,8 +1251,8 @@ void V3dr_surfaceDialog::findAllHighlight()
 	int top, left=0, bottom, right=t->columnCount()-1;
 
 	bool b_turnofflasthighlight = true;
-	if (accumulateLastHighlightHitsCheckBox)
-		b_turnofflasthighlight = !accumulateLastHighlightHitsCheckBox->isChecked();
+	if (checkBox_accumulateLastHighlightHits)
+		b_turnofflasthighlight = ! checkBox_accumulateLastHighlightHits->isChecked();
 
 	if (b_turnofflasthighlight)
 	{
@@ -1228,5 +1288,26 @@ void V3dr_surfaceDialog::findAllHighlight()
 	if (searchTextResultLabel) searchTextResultLabel->setText("Not found");
 	if (cnt_found>0)
 		v3d_msg(QString("There are totally %1 hits.\n").arg(cnt_found), 1);
+}
+
+void V3dr_surfaceDialog::onMarkerLocalView()
+{
+	qDebug("  V3dr_surfaceDialog::onMarkerLocalView");
+
+	Renderer_tex2* r = renderer;
+	if (! r)  return;
+	if (last_marker < 0 || last_marker >= r->listMarker.size()) return;
+
+#ifndef test_main_cpp
+	if (glwidget)
+	{
+		My4DImage* curImg = 0;         curImg = v3dr_getImage4d(r->_idep);
+		XFormWidget* curXWidget = 0;   curXWidget = v3dr_getXWidget(r->_idep);
+
+		if (curImg) curImg->cur_hit_landmark = last_marker;
+		if (curXWidget) curXWidget->doImage3DLocalMarkerView();
+
+	}
+#endif
 }
 

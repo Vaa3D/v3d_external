@@ -273,8 +273,6 @@ RESOURCES += v3d.qrc
 RESOURCES += ../3drenderer/3drenderer.qrc
 QT += opengl
 
-# 100802: need "-L./???" to start make at root dir of project (copy .pro to here)
-
 LIBS += -L../jba/c++  
 
 unix:LIBS += -L../common_lib/lib_unix
@@ -284,7 +282,7 @@ unix:LIBS += -lm -lv3dtiff \
     
 macx:LIBS -= -ltiff  #do this because unix is a superset of macx
 macx:LIBS += -L../common_lib/lib_mac32
-macx:LIBS += -lm -L../common_lib/lib  -lv3dtiff \
+macx:LIBS += -lm -lv3dtiff \
     -lv3dnewmat 
 #    -framework GLUT
 
@@ -296,6 +294,10 @@ win32:LIBS += -lm -lv3dtiff \
 #    -lglut32 # win32-mingw, on unix link libglut.a
 
 INCLUDEPATH += ../common_lib/include   
+
+# 100809 RZC: Eclipse need "-L./???" to start make at root dir of project (copy .pro to there)
+LIBS += -L./jba/c++  
+macx:LIBS += -L./common_lib/lib_mac32
 
 INCLUDEPATH = $$unique(INCLUDEPATH)
 LIBS = $$unique(LIBS)
