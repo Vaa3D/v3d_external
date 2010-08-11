@@ -22,7 +22,7 @@ LIBS += -L../common_lib/lib_mac64 -L./common_lib/lib_mac64 #Eclipse need "-L./??
 
 # 090713 RZC cp tiff64/libtiff.a to libtiff64.a in /usr/local/lib
 LIBS -= -ltiff32  #added on 090901
-LIBS += -ltiff64
+LIBS += -lv3dtiff
 
 # 090731 PHC cp /usrlocal/lib/libgsl.a to libgsl64.a in /usr/local/lib
 LIBS -= -lgsl32   #added on 090901
