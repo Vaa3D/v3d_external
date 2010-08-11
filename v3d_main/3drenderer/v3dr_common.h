@@ -175,12 +175,18 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 	}
 
 
+#ifndef PROGRESS_DIALOG
 #define PROGRESS_DIALOG(text, widget)  	QProgressDialog progress( QString(text), 0, 0, 100, (QWidget*)widget, Qt::Tool | Qt::WindowStaysOnTopHint);
+#endif
+
 extern QProgressDialog progress;
 #define PROGRESS_PARENT(widget)   progress.setParent( (QWidget*)widget ); //Qt::WShowModal
 #define PROGRESS_TEXT(text)   { QApplication::setActiveWindow(&progress);  progress.setLabelText( QString(text) );  progress.repaint();}
+
+#ifndef PROGRESS_PERCENT
 #define PROGRESS_PERCENT(i)	  { QApplication::setActiveWindow(&progress);  progress.setValue(i);  progress.repaint(); \
 								QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);} //exclude user input is more safe
+#endif
 
 //Each QThread can have its own event loop, exec(). It makes it possible to connect signals from other threads to slots in this threads.
 //It also makes it possible to use classes that require the event loop, such as QTimer and QTcpSocket.
