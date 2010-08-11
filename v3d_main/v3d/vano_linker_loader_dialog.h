@@ -53,11 +53,11 @@ public:
 
 protected:
 	QString _rawimgfile, _maskimgfile, _apofile, _linkerfile;
-	
+
 private:
 	void create();
 	void updateContent();
-	
+
 public slots:
 	void select_rawfile();
 	void select_maskfile();
@@ -65,7 +65,7 @@ public slots:
 	void change_rawfile(const QString & s);
 	void change_maskfile(const QString & s);
 	void change_apofile(const QString & s);
-	
+
 };
 
 
