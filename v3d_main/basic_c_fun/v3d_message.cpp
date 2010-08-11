@@ -38,7 +38,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <QtGui>
 #include <QString>
 
-void v3d_msg(const char *msg, bool b_disp_QTDialog)
+void v3d_msg(char *msg, bool b_disp_QTDialog)
 {
 	printf("%s\n", msg);
 	if (b_disp_QTDialog)
