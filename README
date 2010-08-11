@@ -19,12 +19,21 @@ these license terms before you access any parts of these source code.
 
 * How to build the V3D program
 
-You need to ensure that you have QT installed on your machine, and thus "qmake" is visible
+(step 1) You need to ensure that you have QT installed on your machine, and thus "qmake" is visible
 in your system's path. 
 
-You should also have c++ compiler, such as gcc 4.0 and above.
+(step 2) You should also have c++ compiler, such as gcc 4.0 and above.
 
-To build V3D is very simple, just find a command line terminal and type one of the following 
+(step 3) You will need to enter v3d_main/common_lib/src_packages folder, unzip the two packages:
+
+	tiff-3.8.2.1.tar.gz: run "tar zxvf tiff-3.8.2.1.tar.gz"
+	boost_1_38_0.tar.gz: run "tar zxvf boost_1_38_0.tar.gz" and 
+                             then run "mv boost_1_38_0/boost ../include/."
+
+	If you have a Windows system, you will need to unzip and put these packages into the respective
+	folders as well.
+ 
+(step 4) To build V3D is very simple, just find a command line terminal and type one of the following 
 commands:
 
 	Mac, gcc compiler, 32bit build:  "sh ./build.macx -n -B -j4"
