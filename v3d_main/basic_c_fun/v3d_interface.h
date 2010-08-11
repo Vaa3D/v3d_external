@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -49,9 +49,11 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include <QtCore>
 
+class V3DPluginInterface2;
 class V3DPluginInterface;
 class V3DSingleImageInterface;
 QT_BEGIN_NAMESPACE
+	Q_DECLARE_INTERFACE(V3DPluginInterface2, "com.janelia.v3d.V3DPluginInterface/2.0");
 	Q_DECLARE_INTERFACE(V3DPluginInterface, "com.janelia.v3d.V3DPluginInterface/1.1");
 	Q_DECLARE_INTERFACE(V3DSingleImageInterface, "com.janelia.v3d.V3DSingleImageInterface/1.0");
 QT_END_NAMESPACE
@@ -133,12 +135,35 @@ public:
 	virtual ~V3DPluginInterface() {}
 
 	virtual QStringList menulist() const = 0;
-	virtual void domenu(const QString & menu_name, V3DPluginCallback & callback, QWidget * parent) = 0;
+	virtual void domenu(const QString & menu_name, V3DPluginCallback & v3d, QWidget * parent) = 0;
 
 	virtual QStringList funclist() const = 0;
-	virtual void dofunc(const QString & func_name,
-			const V3DPluginArgList & input, V3DPluginArgList & output, QWidget * parent) = 0;
+	virtual void dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output,
+												QWidget * parent) = 0;
 };
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class V3DPluginCallback2 : public V3DPluginCallback
+{
+public:
+	virtual ~V3DPluginCallback2() {}
+};
+
+class V3DPluginInterface2
+{
+public:
+	virtual ~V3DPluginInterface2() {}
+
+	virtual QStringList menulist() const = 0;
+	virtual void domenu(const QString & menu_name, const V3DPluginCallback2 & v3d, const QWidget * parent) = 0;
+
+	virtual QStringList funclist() const = 0;
+	virtual void dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output,
+												const V3DPluginCallback2 & v3d, const QWidget * parent) = 0;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //a function for considering the global setting to extract the IDs of the channels for plugin processing
 inline QList<V3DLONG> getChannelListForProcessingFromGlobalSetting( V3DLONG nc, V3DPluginCallback & callback ) //nc is the # of channels in an image

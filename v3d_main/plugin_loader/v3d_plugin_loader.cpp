@@ -214,7 +214,7 @@ void V3d_PluginLoader::searchPluginFiles(QMenu* menu)
         QObject *plugin = loader->instance(); //a new instance
         if (plugin)
         {
-        	qDebug()<< "plugin: " << fullpath;
+        	//qDebug()<< "plugin: " << fullpath;
             pluginFilenameList += fullpath;
 
             pluginList.append(loader); /////

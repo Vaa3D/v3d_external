@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -487,9 +487,9 @@ void V3dr_colormapDialog::applyToImage()
 {
 	//qDebug("V3dr_colormapDialog::applyToImage");
 
-	if (QMessageBox::question(0, QObject::tr("Applying Colormap to Image"),
-						tr("Are you sure to APPLY current colormap to the image stack in tri-view ? \n\n"
-						   "(You can press Ctrl/Cmd-R to reload modified data into 3D viewer after applying colormap)."),
+	if (QMessageBox::question(0, QObject::tr("Applying Colormap to Image"),  //100810: Cmd-V instead of Cmd-R
+						tr("Are you sure to APPLY current colormap to the image stack in Tri-view ? \n\n"
+						   "(You can press Ctrl/Cmd-V to update the modified data into 3D-view after applying colormap)."),
 						QMessageBox::No | QMessageBox::Yes,
 						QMessageBox::Yes)
 		==QMessageBox::No)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -44,6 +44,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  *
  * Last edit: 2010-Aug-1: add a function to determine if the data buffers of two images are exactly the same (but not their contents!)
  * Last edit: 2010-Aug-3: add the put_at() function for Image4DProxy class
+ * Last edit: 2010-Aug-10: virtual destructor for other virtual functions in Image4DSimple
+ *
  *******************************************************************************************
  */
 
@@ -65,10 +67,10 @@ public:
 		b_error = 0;
 		rez_x = rez_y = rez_z = 1;
 	}
-	~Image4DSimple() {
+	virtual ~Image4DSimple() {
 		cleanExistData();
 	}
-	void cleanExistData()
+	virtual void cleanExistData()
 	{
     this->deleteRawDataAndSetPointerToNull();
 		sz0 = sz1 = sz2 = sz3 = 0;
@@ -113,14 +115,14 @@ public:
 	virtual bool valid() {
     return (
       !data1d ||
-       sz0<=0 ||  
+       sz0<=0 ||
        sz1<=0 ||
        sz2<=0 ||
        sz3<=0 ||
        b_error ||
-     (datatype!=V3D_UINT8 && 
-      datatype!=V3D_UINT16 && 
-      datatype!=V3D_FLOAT32)) ?  false : true; 
+     (datatype!=V3D_UINT8 &&
+      datatype!=V3D_UINT16 &&
+      datatype!=V3D_FLOAT32)) ?  false : true;
     }
 	double getRezX() {return rez_x;}
 	double getRezY() {return rez_y;}

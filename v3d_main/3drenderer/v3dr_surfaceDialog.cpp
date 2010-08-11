@@ -240,27 +240,28 @@ void V3dr_surfaceDialog::firstCreate()
     QPushButton *deleteButton = new QPushButton("Delete");
     deleteLayout->addWidget(deleteButton);
 
-    QGroupBox* selectGroup = new QGroupBox("Select");
+    QGroupBox* selectGroup = new QGroupBox();//"Select");
     QGridLayout *selectLayout = new QGridLayout(selectGroup);
-    selectAllButton = new QPushButton("All");
-    deselectAllButton = new QPushButton("None");
-    inverseSelectButton = new QPushButton("Inverse");
-    selectLayout->addWidget(selectAllButton,		1,0, 1,1);
-    selectLayout->addWidget(deselectAllButton,		2,0, 1,1);
-    selectLayout->addWidget(inverseSelectButton,	3,0, 1,1);
+    selectAllButton = new QPushButton("Select All");
+    deselectAllButton = new QPushButton("Select None");
+    inverseSelectButton = new QPushButton("Select Inverse");
+    selectLayout->addWidget(selectAllButton,		1,0, 1,1+1);
+    selectLayout->addWidget(deselectAllButton,		2,0, 1,1+1);
+    selectLayout->addWidget(inverseSelectButton,	3,0, 1,1+1);
 
-	QGroupBox* changeGroup = new QGroupBox();//"Change");
-    QGridLayout *changeLayout = new QGridLayout(changeGroup);
+//	QGroupBox* changeGroup = new QGroupBox();//"Change");
+//	QGridLayout *changeLayout = new QGridLayout(changeGroup);
+    QGridLayout *changeLayout = selectLayout;
     onSelectButton = new QPushButton("On");
     offSelectButton = new QPushButton("Off");
     colorSelectButton = new QPushButton("Color >>");
     editNameCommentButton = new QPushButton("Name/Comments"); //by PHC, 090219
     undoButton = new QPushButton("Undo");
-    changeLayout->addWidget(onSelectButton,  		1,0, 1,1);
-    changeLayout->addWidget(offSelectButton, 		1,1, 1,1);
-    changeLayout->addWidget(colorSelectButton,		2,0, 1,2);
-    changeLayout->addWidget(editNameCommentButton,	3,0, 1,2);
-    changeLayout->addWidget(undoButton,				4,0, 1,2);
+    changeLayout->addWidget(onSelectButton,  		1+3,0, 1,1);
+    changeLayout->addWidget(offSelectButton, 		1+3,1, 1,1);
+    changeLayout->addWidget(colorSelectButton,		2+3,0, 1,2);
+    changeLayout->addWidget(editNameCommentButton,	3+3,0, 1,2);
+    changeLayout->addWidget(undoButton,				4+3,0, 1,2);
 
     markerLocalView = new QPushButton("Local 3D View around Marker");
 
@@ -272,7 +273,7 @@ void V3dr_surfaceDialog::firstCreate()
     checkLayout->addWidget(checkBox_accumulateLastHighlightHits,	2,0, 1,2);
 
     buttonRgnLayout->addWidget(selectGroup);
-    buttonRgnLayout->addWidget(changeGroup);
+    //buttonRgnLayout->addWidget(changeGroup);
     //buttonRgnLayout->addWidget(deleteGroup);
     //buttonRgnLayout->addWidget(markerLocalView);
     buttonRgnLayout->addWidget(checkGroup);
