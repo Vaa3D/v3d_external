@@ -54,6 +54,7 @@ void pumpEvents()
 }
 
 //=======================================================
+// Qt Pulgin ONLY supports 1 interface in 1 plugin module
 
 QString     v3d_getInterfaceName(QObject *plugin)
 {
@@ -64,6 +65,9 @@ QString     v3d_getInterfaceName(QObject *plugin)
 
     V3DPluginInterface *iface = qobject_cast<V3DPluginInterface *>(plugin);
     if (iface )  return (name = "V3DPluginInterface/1.1");
+
+    V3DPluginInterface2 *iface2 = qobject_cast<V3DPluginInterface2 *>(plugin);
+    if (iface2 )  return (name = "V3DPluginInterface/2.0");
 
     return name;
 }
@@ -77,6 +81,9 @@ QStringList v3d_getInterfaceFeatures(QObject *plugin)
 
     V3DPluginInterface *iface = qobject_cast<V3DPluginInterface *>(plugin);
     if (iface )  return (qslist = iface->menulist());
+
+    V3DPluginInterface2 *iface2 = qobject_cast<V3DPluginInterface2 *>(plugin);
+    if (iface2 )  return (qslist = iface2->menulist());
 
     return qslist;
 }
@@ -277,8 +284,7 @@ void V3d_PluginLoader::runPlugin()
     	return;
     }
 
-    loader->unload();
-
+    loader->unload(); ///
     QObject *plugin = loader->instance();
     if (! loader)
     {
@@ -286,9 +292,10 @@ void V3d_PluginLoader::runPlugin()
     	return;
     }
 
-    runSingleImageInterface(plugin, action->text());
-
-    runPluginInterface(plugin, action->text());
+    bool done = false;
+    if (!done)  done = runSingleImageInterface(plugin, action->text());
+    if (!done)  done = runPluginInterface(plugin, action->text());
+    if (!done)  done = runPluginInterface2(plugin, action->text());
 
 // 100804 RZC: MUST do not unload plug-ins that has model-less dialog
 //    if (loader->isLoaded())
@@ -297,17 +304,17 @@ void V3d_PluginLoader::runPlugin()
 //    }
 }
 
-void V3d_PluginLoader::runSingleImageInterface(QObject* plugin, const QString &command)
+bool V3d_PluginLoader::runSingleImageInterface(QObject* plugin, const QString &command)
 {
     V3DSingleImageInterface *iFilter = qobject_cast<V3DSingleImageInterface *>(plugin);
+    bool done = (iFilter != 0);
     if (iFilter && v3d_mainwindow)
     {
         My4DImage* image = v3d_mainwindow->currentImage();
-
 		if (!image)
 		{
 			v3d_msg("No image is open.");
-			return;
+			return done;
 		}
 
 		//make a copy of the property of the image input.
@@ -344,14 +351,14 @@ void V3d_PluginLoader::runSingleImageInterface(QObject* plugin, const QString &c
 				if (image->setNewImageData(datanew, szx_new, szy_new, szz_new, szc_new, datatype_new)==false)
 				{
 					v3d_msg("Fail to update the new image content returned by the plugin to the window.");
-					return;
+					return done;
 				}
 
 			}
 			catch (...)
 			{
 				v3d_msg("Fail to allocate temporary memory of some other errors for handling the returned image contents of the plugin.");
-				return;
+				return done;
 			}
 		}
 		else //
@@ -362,14 +369,15 @@ void V3d_PluginLoader::runSingleImageInterface(QObject* plugin, const QString &c
 		//v3d_msg(QString("after %1 %2 %3 %4").arg(image->getXDim()).arg(image->getYDim()).arg(image->getZDim()).arg(image->getCDim()));
 
         if (image)  image->updateViews();
+        return done;
     }
+    return done;
 }
 
-void V3d_PluginLoader::runPluginInterface(QObject* plugin, const QString& command)
+bool V3d_PluginLoader::runPluginInterface(QObject* plugin, const QString& command)
 {
     V3DPluginInterface *iface = qobject_cast<V3DPluginInterface *>(plugin);
 	V3DPluginCallback *callback = dynamic_cast<V3DPluginCallback *>(this);
-
 	if (iface && callback)
     {
         try
@@ -381,8 +389,29 @@ void V3d_PluginLoader::runPluginInterface(QObject* plugin, const QString& comman
         {
         	v3d_msg(QString("The plugin [%1] fails to run. Check your plugin code please.").arg(command));
         }
-
+        return true;
     }
+	return false;
+}
+
+bool V3d_PluginLoader::runPluginInterface2(QObject* plugin, const QString& command)
+{
+    V3DPluginInterface2 *iface = qobject_cast<V3DPluginInterface2 *>(plugin);
+	V3DPluginCallback2 *callback = dynamic_cast<V3DPluginCallback2 *>(this);
+	if (iface && callback)
+    {
+        try
+        {
+        	//iFilter->domenu(command, *callback, (QWidget*)v3d_mainwindow);
+        	iface->domenu(command, *callback, (QWidget*)0); //do not pass the mainwindow widget
+        }
+        catch (...)
+        {
+        	v3d_msg(QString("The plugin [%1] fails to run. Check your plugin code please.").arg(command));
+        }
+        return true;
+    }
+	return false;
 }
 
 //====================================================================

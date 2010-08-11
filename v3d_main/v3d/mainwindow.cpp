@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -220,7 +220,7 @@ MainWindow::MainWindow()
 	procTracing_clear = 0;
 	procTracing_update3Dview = 0;
 	procTracing_save = 0;
-	
+
 	procCellSeg_localTemplate = 0;
 	procCellSeg_cellcounting = 0;
 	procCellSeg_watershed = 0;
@@ -801,7 +801,7 @@ void MainWindow::setup_global_imgproc_parameter_default()
 
 	global_setting.GPara_df_compute_method = (int)DF_GEN_TPS_LINEAR_INTERP;
 	global_setting.GPara_landmarkMatchingMethod = (int)MATCH_MI;
-	
+
 	global_setting.b_3dcurve_autodeform=false;
 	global_setting.b_3dcurve_autowidth=false;
 }
@@ -1306,24 +1306,24 @@ void MainWindow::updateMenus()
 		if (activeMdiChild()->getImageData()->getDatatype()==V3D_UINT8)
 		{
 			proc3DViewer->setEnabled(true);
-			proc3DViewer->setText("3D viewer for the entire image"); 
+			proc3DViewer->setText("3D viewer for the entire image");
 			proc3DLocalRoiViewer->setEnabled(true);
-			proc3DLocalRoiViewer->setText("3D viewer for Region of Interest (ROI)"); 
+			proc3DLocalRoiViewer->setText("3D viewer for Region of Interest (ROI)");
 		}
 		else
 		{
 			proc3DViewer->setEnabled(false);
-			proc3DViewer->setText("3D viewer for the entire image (only for 8-bit image)"); 
+			proc3DViewer->setText("3D viewer for the entire image (only for 8-bit image)");
 			proc3DLocalRoiViewer->setEnabled(false); //need to ensure the availability of roi later
-			proc3DLocalRoiViewer->setText("3D viewer for Region of Interest (ROI) (only for 8-bit image)"); 
+			proc3DLocalRoiViewer->setText("3D viewer for Region of Interest (ROI) (only for 8-bit image)");
 		}
 	}
 	else
 	{
 		proc3DViewer->setEnabled(hasMdiChild);
-		proc3DViewer->setText("3D viewer for the entire image (only for 8-bit image)"); 
+		proc3DViewer->setText("3D viewer for the entire image (only for 8-bit image)");
 		proc3DLocalRoiViewer->setEnabled(hasMdiChild); //need to ensure the availability of roi later
-		proc3DLocalRoiViewer->setText("3D viewer for Region of Interest (ROI) (only for 8-bit image)"); 
+		proc3DLocalRoiViewer->setText("3D viewer for Region of Interest (ROI) (only for 8-bit image)");
 	}
 }
 
@@ -1550,8 +1550,8 @@ void MainWindow::updateProcessingMenu()
 	proc_automarker_menu->addAction(procGeneral_automarker_entireimg);
 	proc_automarker_menu->addAction(procGeneral_automarker_roi);
 #endif
-	
-	
+
+
 /*
     advancedProcMenu->addAction(closeAct);
     advancedProcMenu->addAction(closeAllAct);
@@ -2076,7 +2076,7 @@ void MainWindow::readSettings()
     move(pos);
     resize(size);
 
-    V3DGlobalPreferenceDialog::readSettings(global_setting, settings); 
+    V3DGlobalPreferenceDialog::readSettings(global_setting, settings);
 }
 
 void MainWindow::writeSettings()
@@ -2085,7 +2085,7 @@ void MainWindow::writeSettings()
     settings.setValue("pos", pos());
     settings.setValue("size", size());
 
-    V3DGlobalPreferenceDialog::writeSettings(global_setting, settings); 
+    V3DGlobalPreferenceDialog::writeSettings(global_setting, settings);
 }
 
 
@@ -2097,6 +2097,7 @@ XFormWidget *MainWindow::createMdiChild()
     XFormWidget *child = new XFormWidget((QWidget *)0);
 
     workspace->addWindow(child);
+    //for (int j=1; j<1000; j++) QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents); //100811 RZC: no help for update the workspace->windowList()
     qDebug()<<"MainWindow::createMdiChild *** workspace->windowList:" << workspace->windowList() <<"+="<< child;
 
 	//to enable coomunication of child windows

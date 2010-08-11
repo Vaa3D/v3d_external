@@ -1,3 +1,6 @@
+/**
+*  100811 RZC: change to handle any type image using  Image4DProxy's value_at/put_at
+**/
 
 #include <QtGui>
 
@@ -14,7 +17,7 @@ void Invert(V3DPluginCallback &v3d, QWidget *parent);
 void Threshold(V3DPluginCallback &v3d, QWidget *parent);
 void Compute(char op, V3DPluginCallback &v3d, QWidget *parent);
 
-const QString title = "NewWindowPlugin demo";
+const QString title = "V3DPluginInterface demo";
 QStringList NewWindowPlugin::menulist() const
 {
     return QStringList()
@@ -53,9 +56,9 @@ void NewWindowPlugin::domenu(const QString &menu_name, V3DPluginCallback &v3d, Q
     	Compute('*', v3d, parent);
     }
     else
-    if (menu_name == tr("about"))
     {
-    	QMessageBox::information(parent, title, "version 1.1");
+    	QMessageBox::information(parent, title, "V3DPluginInterface Demo version 1.2"
+    			"\ndeveloped by Zongcai Ruan. (Janelia Research Farm Campus, HHMI)");
     }
 }
 
@@ -68,16 +71,25 @@ void Invert(V3DPluginCallback &v3d, QWidget *parent)
 		QMessageBox::information(0, title, QObject::tr("No image is open."));
 		return;
 	}
-	if (image->getDatatype()!=V3D_UINT8)
-	{
-		QMessageBox::information(0, title, QObject::tr("This demo program only supports 8-bit data. Your current image data type is not supported."));
-		return;
-	}
+//	if (image->getDatatype()!=V3D_UINT8)
+//	{
+//		QMessageBox::information(0, title, QObject::tr("This demo program only supports 8-bit data. Your current image data type is not supported."));
+//		return;
+//	}
 
 	Image4DProxy<Image4DSimple> p(image);
-	for (uint8* ip=p.begin(); ip<=p.end(); ip++)
+//	for (uint8* ip=p.begin(); ip<=p.end(); ip++)
+//	{
+//		*ip = 255 - *ip;
+//	}
+	Image4DProxy_foreach(p, x,y,z,c)
 	{
-		*ip = 255 - *ip;
+		double f = 0;
+		if (p.is_inner(x,y,z,c)) f = p.value_at(x,y,z,c);
+
+		f = 255-f;
+
+		p.put_at(x,y,z,c, (f));
 	}
 
 	v3d.setImageName(oldwin, v3d.getImageName(oldwin)+"_invert");
@@ -93,11 +105,11 @@ void Threshold(V3DPluginCallback &v3d, QWidget *parent)
 		QMessageBox::information(0, title, QObject::tr("No image is open."));
 		return;
 	}
-	if (image->getDatatype()!=V3D_UINT8)
-	{
-		QMessageBox::information(0, title, QObject::tr("This demo program only supports 8-bit data. Your current image data type is not supported."));
-		return;
-	}
+//	if (image->getDatatype()!=V3D_UINT8)
+//	{
+//		QMessageBox::information(0, title, QObject::tr("This demo program only supports 8-bit data. Your current image data type is not supported."));
+//		return;
+//	}
 
 	bool ok;
     int threshold = QInputDialog::getInteger(parent, QObject::tr("Threshold"),
@@ -112,12 +124,21 @@ void Threshold(V3DPluginCallback &v3d, QWidget *parent)
 
 	Image4DProxy<Image4DSimple> p0(image);
 	Image4DProxy<Image4DSimple> p(&tmp);
-	uint8 *ip0, *ip;
-	for (ip0=p0.begin(), ip=p.begin();
-		ip<=p.end(); ip0++, ip++)
-    {
-		if (*ip0 <= threshold)  *ip = 0;
-		else *ip = *ip0;
+//	uint8 *ip0, *ip;
+//	for (ip0=p0.begin(), ip=p.begin();
+//		ip<=p.end(); ip0++, ip++)
+//    {
+//		if (*ip0 <= threshold)  *ip = 0;
+//		else *ip = *ip0;
+//	}
+	Image4DProxy_foreach(p, x,y,z,c)
+	{
+		double f = 0;
+		if (p0.is_inner(x,y,z,c)) f = p0.value_at(x,y,z,c);
+
+		if (f <= threshold) f = 0;
+
+		p.put_at(x,y,z,c, (f));
 	}
 
 	v3dhandle newwin = v3d.newImageWindow();
@@ -167,11 +188,11 @@ void Compute(char op, V3DPluginCallback &v3d, QWidget *parent)
 		QMessageBox::information(0, title, QObject::tr("No image is open."));
 		return;
 	}
-	if (image1->getDatatype()!=V3D_UINT8 || image2->getDatatype()!=V3D_UINT8)
-	{
-		QMessageBox::information(0, title, QObject::tr("This demo program only supports 8-bit data. Your current image data type is not supported."));
-		return;
-	}
+//	if (image1->getDatatype()!=V3D_UINT8 || image2->getDatatype()!=V3D_UINT8)
+//	{
+//		QMessageBox::information(0, title, QObject::tr("This demo program only supports 8-bit data. Your current image data type is not supported."));
+//		return;
+//	}
 
 
 	V3DLONG N1 = image1->getTotalBytes();
@@ -186,11 +207,13 @@ void Compute(char op, V3DPluginCallback &v3d, QWidget *parent)
 
 	Image4DProxy_foreach(p, x,y,z,c)
 	{
-		float f = 0;
-		float f1 = 0;
-		float f2 = 0;
-		if (p1.is_inner(x,y,z,c)) f1 = (*p1.at_uint8(x,y,z,c))/255.f;
-		if (p2.is_inner(x,y,z,c)) f2 = (*p2.at_uint8(x,y,z,c))/255.f;
+		double f = 0;
+		double f1 = 0;
+		double f2 = 0;
+//		if (p1.is_inner(x,y,z,c)) f1 = (*p1.at_uint8(x,y,z,c))/255.f;
+//		if (p2.is_inner(x,y,z,c)) f2 = (*p2.at_uint8(x,y,z,c))/255.f;
+		if (p1.is_inner(x,y,z,c)) f1 = p1.value_at(x,y,z,c)/255.f;
+		if (p2.is_inner(x,y,z,c)) f2 = p2.value_at(x,y,z,c)/255.f;
 
 		switch (op)
 		{
@@ -201,7 +224,8 @@ void Compute(char op, V3DPluginCallback &v3d, QWidget *parent)
 		f = fabs(f);
 		if (f>1) f = 1;
 
-		*p.at_uint8(x,y,z,c) = (unsigned char)(f*255);
+//		*p.at_uint8(x,y,z,c) = (unsigned char)(f*255);
+		p.put_at(x,y,z,c, (f*255));
 	}
 
 

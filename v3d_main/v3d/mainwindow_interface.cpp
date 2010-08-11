@@ -57,14 +57,17 @@ QList<void*> MainWindow::allWindowList()
 {
 	QList<void*> list;
 	foreach (QWidget* w, workspace->windowList()) list << w;
-	qDebug()<<"MainWindow allWindowList: " << list;
+	//qDebug()<<"MainWindow allWindowList: " << list;
 	return list;
 }
 XFormWidget* MainWindow::validateImageWindow(void* window)
 {
-	XFormWidget* w = 0;
-	QList<void*> list = allWindowList();
-	//for (int i=0; i<list.size(); i++)  if (list[i]==window) {w = (XFormWidget*)window; break;}
+	//because createMdiChild() DOESNOT update the workspace->windowList(), so cannot to validate
+//	XFormWidget* w = 0;
+//	QList<void*> list = allWindowList();
+//	for (int i=0; i<list.size(); i++)  if (list[i]==window) {w = (XFormWidget*)window; break;}
+//	if (!w) qDebug()<<" invalidated window: "<< window;
+//	return (XFormWidget*)w;
 	return (XFormWidget*)window;
 }
 QString MainWindow::getWindowName(void* window)
@@ -83,6 +86,7 @@ QStringList MainWindow::allWindowNameList()
 XFormWidget* MainWindow::newImageWindow(const QString &name)
 {
 	XFormWidget* w = createMdiChild();
+	//qDebug()<<" allWindowList: "<<allWindowList(); //here is VERY STRANGE, workspace->addWindow(child) DOESNOT update the workspace->windowList()
 	if (w)
 	{
 		//w->show();

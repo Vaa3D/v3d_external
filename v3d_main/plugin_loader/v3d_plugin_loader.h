@@ -64,8 +64,9 @@ public slots:
     void runPlugin();
 
 protected:
-	void runSingleImageInterface(QObject* plugin, const QString& command);
-	void runPluginInterface(QObject* plugin, const QString& command);
+	bool runSingleImageInterface(QObject* plugin, const QString& command);
+	bool runPluginInterface(QObject* plugin, const QString& command);
+	bool runPluginInterface2(QObject* plugin, const QString& command);
 
 	void clear();
 	void loadPlugins(); //load only once

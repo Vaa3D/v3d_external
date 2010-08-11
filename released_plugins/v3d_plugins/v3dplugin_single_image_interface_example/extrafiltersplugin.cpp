@@ -10,6 +10,7 @@
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(extrafilters, ExtraFilters);
 
+const QString title = "V3DSingleImageInterface demo";
 QStringList ExtraFilters::menulist() const
 {
     return QStringList()
@@ -48,6 +49,11 @@ void ExtraFilters::processImage(const QString &arg, Image4DSimple *image, QWidge
             		data1d[i] = 0;
             }
         }
+    }
+    else
+    {
+    	QMessageBox::information(parent, title, "V3DSingleImageInterface Demo version 1.0"
+    			"\ndeveloped by Zongcai Ruan. (Janelia Research Farm Campus, HHMI)");
     }
 }
 
