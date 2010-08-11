@@ -282,7 +282,7 @@ unix:LIBS += -lm -lv3dtiff \
     -lv3dnewmat \
     -L/usr/lib/qt4/demos/shared -ldemo_shared
     
-macx:LIBS -= -ltiff  #do this because unix is a superset of macx
+#macx:LIBS -= -ltiff  #do this because unix is a superset of macx
 macx:LIBS += -L../common_lib/lib_mac32
 macx:LIBS += -lm -lv3dtiff \
     -lv3dnewmat 

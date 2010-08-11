@@ -5,7 +5,7 @@ Comments about Qt version and the compatibility with V3D
 
 1. Extract Qt source code.
 
- 1.1 qt-all-opensource-src-#.#.#.zip
+  1.1 qt-all-opensource-src-#.#.#.zip
 	Need to convert the configure script file form CR/LF format to LF format firstly,
 	otherwise a error is reported as follow:
 	
@@ -13,7 +13,7 @@ Comments about Qt version and the compatibility with V3D
 	
 	and must set $MAKE explicitly.  
 	
-1 .2 qt-all-opensource-src-#.#.#.tar.gz & qt-mac-opensource-src-#.#.#.tar.gz
+  1.2 qt-all-opensource-src-#.#.#.tar.gz & qt-mac-opensource-src-#.#.#.tar.gz
 	Must be extracted using command-line on Mac OS X as follows:
 	
 	tar -xzf qt-???-opensource-src-#.#.#.tar.gz
@@ -24,10 +24,10 @@ Comments about Qt version and the compatibility with V3D
 
 2. Tricks for fast making Qt.
 
- 2.1 Using configure -nomake examples
+  2.1 Using configure -nomake examples
 	to skip making examples, and save a lots of space in install directories.
 	
- 2.2 Using make -j<n>
+  2.2 Using make -j<n>
 	There -j4 is a good choice in practice for 4-core CPU.
 
 	
@@ -36,20 +36,21 @@ libraries (i.e. framework).
 
 	According to the help of Qt configure:
 	
- 3.1	64-bit archs will be built with the Cocoa framework.
+  3.1  64-bit archs will be built with the Cocoa framework.
 	
- 3.2 -no-framework and -static is not supported with -cocoa.
+  3.2  -no-framework and -static is not supported with -cocoa.
 	Specifying -cocoa option creates Qt binaries that requires Mac OS X 10.5 or higher.	
 
 	
-4. 	Until now the compatibility of Qt with V3D on MacX/Redhat/WinXP.
+4. Until now the compatibility of Qt with V3D on MacX/Redhat/WinXP.
 
+(09-07-15 "Over delete" had been solved by adding makeCurrent before using OpenGL resource)
  --------------------------------------------------------------------------------------------------
- Qt 	OS 		configure				issues
+ Qt 	OS 	configure				issues
  --------------------------------------------------------------------------------------------------
- 4.3.2 	MacX	32bit static	Widget layout is wrong,
-								Over delete OpenGL resources of 3D View when another 3D View just
-								overlapped this view was closed.
+ 4.3.2 	MacX	32bit static	Widget layout is wrong;	
+                                Over delete OpenGL resources of 3D View 
+                                when another 3D View just overlapped this view was closed.
 
  4.3.4 	MacX	32bit static	Over delete OpenGL resource.
 	
