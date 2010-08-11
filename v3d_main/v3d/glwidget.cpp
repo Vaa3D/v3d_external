@@ -96,7 +96,9 @@ GLWidget::~GLWidget()
 
 }
 
-void GLWidget::readAnoFile(QString file_anoText)
+// FIXME :  This function doesn't compile. Should we remove it ?
+#if 0
+bool GLWidget::readAnoFile(QString file_anoText)
 {
 	printf("anofile=[%s]\n", qPrintable(file_anoText));
 	
@@ -122,6 +124,7 @@ void GLWidget::readAnoFile(QString file_anoText)
 	else
 		return true;
 }
+#endif
 
 void GLWidget::setXRotation(int angle)
 {
