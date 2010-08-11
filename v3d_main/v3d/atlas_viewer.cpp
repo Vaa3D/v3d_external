@@ -47,7 +47,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //#define UPDATE_VIEW()   if (triview_widget)  triview_widget->update();
 ///////////////////////////////////////////////////////////
 #define UPDATE_VIEW(w)   {if(w) w->update();}
+#ifndef ACTIVATE
 #define ACTIVATE(w)	     {if(w) w->activateWindow();}
+#endif
 #define UPDATE_TABS()    {int i = getCurTab(); reCreateTables(glwidget); setCurTab(i);}
 ///////////////////////////////////////////////////////////
 
@@ -1234,7 +1236,7 @@ void V3D_atlas_viewerDialog::seeLandmarkProperty()
 				break; //only return true when the results are accepted, which will lead to an update operation below
 			}
 			landmarkView->fetchData(&(imgdata->listLandmarks), i);
-			qDebug("edit landmark [%ld]. data fetched [%s][%s][%d]", i,
+			qDebug("edit landmark [%d]. data fetched [%s][%s][%d]", i,
 				   imgdata->listLandmarks.at(i).name.c_str(), imgdata->listLandmarks.at(i).comments.c_str(),  int(imgdata->listLandmarks.at(i).shape));
 
 			//inportant: set the shape of the landmark
