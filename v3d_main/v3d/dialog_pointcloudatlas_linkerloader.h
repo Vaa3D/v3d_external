@@ -44,7 +44,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "ui_dialog_pointcloudatlas_linkerloader.h"
 
-#include "../atlas_builder/pointcloud_atlas_io.h"
+#include "pointcloud_atlas_io.h"
 
 class PointCloudAtlas_LinkerLoadDialog : public QDialog, private Ui_Dialog_pointcloudatlas_linkerloader
 {
