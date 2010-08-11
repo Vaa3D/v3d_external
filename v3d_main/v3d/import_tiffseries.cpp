@@ -79,7 +79,7 @@ bool XFormWidget::importGeneralImgSeries(const QStringList & mylist, TimePackTyp
     for (V3DLONG i = 0; i < ntime; ++i)
 	{
         QString tmpfileInfo = mylist.at(i);
-        printf("importing %ld file: {%s}\n", i, qPrintable(tmpfileInfo));
+        printf("importing %i file: {%s}\n", i, qPrintable(tmpfileInfo));
 		
 		unsigned char * cur_data1d=0;
 		V3DLONG * cur_sz=0;
@@ -110,7 +110,7 @@ bool XFormWidget::importGeneralImgSeries(const QStringList & mylist, TimePackTyp
 		if (i==0) ndatatype = cur_datatype;
 		if (cur_datatype != ndatatype)
 		{
-			printf("The current file has different data type [=%d] from first section [=%d]. Exit importing.\n", cur_datatype, ndatatype);
+			printf("The current file has different data type [=%ld] from first section [=%ld]. Exit importing.\n", cur_datatype, ndatatype);
 			v3d_msg("The current file has different data type\n");
 			if (cur_data1d) {delete []cur_data1d; cur_data1d=0;}
 			if (cur_sz) {delete []cur_sz; cur_sz=0;}

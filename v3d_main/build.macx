@@ -125,7 +125,7 @@ if [ $TIFFCOMPILE == "YES" ]; then
   make clean
   make 
   make install
-  cp ../lib/libtiff.a ../lib/libv3dtiff.a
+  mv ../lib/libtiff.a ../lib/libv3dtiff.a
   cd ../../
 fi
 

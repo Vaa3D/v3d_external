@@ -5,25 +5,6 @@ set(V3D_SRCS
   # atlas_window.cpp   looks for image_window.h : non-existing file : FIXME
   colormap.cpp
   dialog_keypoint_features.cpp
-  v3d_version_info.cpp
-# dialog_pointcloudatlas_linkerloader.cpp  # missing the pointcloud_atlas_io.h file.
-  dialog_rotate.cpp
-  dialog_watershed_para.cpp
-  glwidget.cpp
-  histogramsimple.cpp
-  v3dimg_proc_neuron.cpp
-  landmark_property_dialog.cpp
-  mainwindow_interface.cpp
-  idrawmain.cpp
-  rotate_image.cpp
-  v3dimgproc_entry.cpp
-  import_filelistname.cpp
-  import_tiffseries.cpp
-  mainwindow.cpp
-  mdichild.cpp
-  my4dimage.cpp
-  surfaceobj_geometry_dialog.cpp
-  v3d_core.cpp
   )
 
 QT4_WRAP_UI(QT_UI_SRCS
@@ -46,6 +27,25 @@ QT4_WRAP_UI(QT_UI_SRCS
   )
 
 QT4_WRAP_CPP(QT_MOC_SRCS
+  dialog_pointcloudatlas_linkerloader.cpp
+  dialog_rotate.cpp
+  dialog_watershed_para.cpp
+  glwidget.cpp
+  histogramsimple.cpp
+  idrawmain.cpp
+  import_filelistname.cpp
+  import_tiffseries.cpp
+  landmark_property_dialog.cpp
+  mainwindow.cpp
+  mainwindow_interface.cpp
+  mdichild.cpp
+  my4dimage.cpp
+  rotate_image.cpp
+  surfaceobj_geometry_dialog.cpp
+  v3d_core.cpp
+  v3dimgproc_entry.cpp
+  v3dimg_proc_neuron.cpp
+  v3d_version_info.cpp
   )
 
 include_directories(${V3D_BINARY_DIR}/v3d)
