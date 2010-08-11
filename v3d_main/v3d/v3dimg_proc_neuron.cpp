@@ -713,7 +713,7 @@ bool My4DImage::proj_trace_smooth_downsample_last_traced_neuron(CurveTracePara &
 		if (iseg <seg_begin || iseg >seg_end) continue; //091023
 
 		V_NeuronSWC & cur_seg = (tracedNeuron.seg[iseg]);
-		printf("#seg=%d(%d)", iseg, cur_seg.row.size());
+		printf("#seg=%d(%ld)", iseg, cur_seg.row.size());
 
 		vector<V_NeuronSWC_unit> & mUnit = cur_seg.row; // do in place
 		{
@@ -737,7 +737,7 @@ bool My4DImage::proj_trace_smooth_downsample_last_traced_neuron(CurveTracePara &
 			//-------------------------------------------------------------
 
 		}
-		printf(">>%d(%d) ", iseg, mUnit.size());
+		printf(">>%d(%ld) ", iseg, mUnit.size());
 
 		reset_simple_path_index (nexist, mUnit);
 		nexist += mUnit.size();
@@ -802,7 +802,7 @@ bool My4DImage::proj_trace_compute_radius_of_last_traced_neuron(CurveTracePara &
 		if (iseg <seg_begin || iseg >seg_end) continue; //091023
 
 		V_NeuronSWC & cur_seg = (tracedNeuron.seg[iseg]);
-		printf("#seg=%d(%d) ", iseg, cur_seg.row.size());
+		printf("#seg=%d(%ld) ", iseg, cur_seg.row.size());
 
 		std::vector<V_NeuronSWC_unit> & mUnit = cur_seg.row; // do in place
 		{
@@ -962,7 +962,7 @@ void My4DImage::proj_trace_history_redo(V_NeuronSWC_list & tNeuron)
 #define  CHECK_segment_id(seg_id, node_id, p_tree) \
 	if (node_id<0 || node_id>=tracedNeuron.nrows()) return false; \
 	V3DLONG seg_id = p_tree->listNeuron.at(node_id).seg_id;  \
-	if (seg_id<0) { printf("can not find seg_id of node (%d)\n", node_id); return false;}
+	if (seg_id<0) { printf("can not find seg_id of node (%ld)\n", node_id); return false;}
 
 
 bool My4DImage::proj_trace_changeNeuronSegType(V3DLONG node_id, NeuronTree *p_tree)
@@ -1544,21 +1544,21 @@ bool My4DImage::proj_trace_mergeOneClosebyNeuronSeg(V3DLONG node_id, NeuronTree 
 				if (sMergeT_segInd[j+1]>0) {mnodes << (j); mnodes_direction << 2; } //direction = 2 means keep before, remove behind
 			}
 		}
-		
+
 		for (V3DLONG tk=0;tk<mnodes.size();tk++) //chop to mnodes.size()+1 segments
 		{
 			if (mnodes_direction.at(tk)==1)
 			{
-				printf("push enter res_swc2 [%d] direction=1\n", splitSegs.size());
+				printf("push enter res_swc2 [%ld] direction=1\n", splitSegs.size());
 				V_NeuronSWC  res_swc1;
 				V3DLONG posend = slength-1; if (tk<mnodes.size()-1) posend = mnodes.at(tk+1);
 				for (j=mnodes.at(tk);j<=posend;j++)	res_swc1.append(subject_swc.row.at(j)); //note to include the breaking point
 				if (subject_swc.row[0].parent<0)
 					res_swc1.row[0].parent = -1;
 				res_swc1.b_linegraph=true; //this must be set
-				
+
 				splitSegs.push_back(res_swc1);
-				
+
 				//create a new segmention of two nodes, to connect to the main trunk
 				V_NeuronSWC res_swc2;
 				V_NeuronSWC_unit u = tracedNeuron.seg.at(sMergeT_segInd[mnodes.at(tk)-1]).row.at(sMergeT_nodeInd[mnodes.at(tk)-1]);
@@ -1568,11 +1568,11 @@ bool My4DImage::proj_trace_mergeOneClosebyNeuronSeg(V3DLONG node_id, NeuronTree 
 				res_swc2.row[1].data[0] = 1; res_swc2.row[1].parent = 0;
 				res_swc2.b_linegraph=true;
 				splitSegs.push_back(res_swc2);
-				printf("push res_swc2 [%d] direction=1\n", splitSegs.size());
+				printf("push res_swc2 [%ld] direction=1\n", splitSegs.size());
 			}
 			else
 			{
-				printf("push enter res_swc2 [%d] direction=2\n", splitSegs.size());
+				printf("push enter res_swc2 [%ld] direction=2\n", splitSegs.size());
 				V_NeuronSWC  res_swc1;
 				V3DLONG posbeg = 0; if (tk>=1) posbeg = mnodes.at(tk-1);
 				for (j=posbeg;j<=mnodes.at(tk);j++)	res_swc1.append(subject_swc.row.at(j)); //note to include the breaking point
