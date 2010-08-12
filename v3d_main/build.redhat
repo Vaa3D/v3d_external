@@ -4,29 +4,47 @@
 #echo This is a shell program to build the v3d program for redhat
 #echo Based on Mac version by Hanchuan Peng
 #echo 2008-12-05, by Hanchuan Peng
+#echo 2010-08-12, by Hanchuan Peng
 #echo -----------------------------------------------------------------
 #echo on
+
+#prepare the boost library 
+
+if [ ! -d common_lib/include/boost ]; then
+  cd common_lib/src_packages
+  tar zvxf boost_1_38_0.tar.gz
+  mv boost_1_38_0/boost ../include/.
+  cd ../../
+fi
+
+#prepare the tiff library
+
+if [ ! -f common_lib/lib/libv3dtiff.a ]; then
+  cd common_lib/src_packages
+  tar zxvf tiff-3.8.2.1.tar.gz
+  cd ../
+  tifpath=`pwd`
+  cd build
+  ../src_packages/tiff-3.8.2.1/configure --prefix=$tifpath
+  make clean
+  make -j4
+  make install
+  cd ../lib
+  mv libtiff.so libv3dtiff.so
+  mv libtiff.a libv3dtiff.a
+fi
+
 
 ARGS=$*
 QARGS="CONFIG+=$1"
 echo make $ARGS
 echo ==========================================================
 
+#compile newmat library
+
 cd jba/c++ 
-make $ARGS  
+make -f jba_linux.makefile $ARGS  
 cd ../../
-
-cd lobeseg
-make $ARGS 
-cd ../
-
-cd cellseg
-make -f FL_cellseg.makefile $ARGS 
-cd ../
-
-#cd neurolabi
-#: call update_library
-#cd ../
 
 cd v3d
 echo qmake v3d.pro \"$QARGS\"
@@ -34,5 +52,12 @@ echo =========================================================
 qmake v3d.pro $QARGS
 touch v3d_version_info.cpp
 make $ARGS
+cp v3d ../../v3d/.   #copy to the system's v3d folder
 cd ../
 
+
+cd ../released_plugins
+sh build_plugindemo.sh $ARGS
+cp -r v3d/plugins ../v3d/.
+
+cd ../v3d_main
