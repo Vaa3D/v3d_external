@@ -395,8 +395,617 @@ void V3dR_GLWidget::paintGL()
 	//CHECK_GLError_print(); //090715,090723
 }
 
+/////////////////////////////////////////////////////////////
+#define __event_handler__
 
-///////////////////////////////////////////////////
+bool V3dR_GLWidget::event(QEvent* e) //090427 RZC
+{
+	setAttribute(Qt::WA_Hover); // this control the QEvent::ToolTip and QEvent::HoverMove
+
+	bool event_tip = false;
+	QPoint pos;
+	switch (e->type())
+	{
+	case QEvent::ToolTip: {// not work under Mac 64bit, because default not set WA_Hover
+//		qDebug("QEvent::ToolTip in V3dR_GLWidget");
+		QHelpEvent* he = (QHelpEvent*)e;
+		pos = he->pos(); //globalPos();
+		event_tip = true;
+		break;
+		}
+//	case QEvent::HoverMove: {
+////		qDebug("QEvent::HoverMove in V3dR_GLWidget");
+//		QHoverEvent* he = (QHoverEvent*)e;
+//		pos = he->pos();
+//		event_tip = true;
+//		break;
+//		}
+//	case QEvent::MouseMove: {
+////		qDebug("QEvent::MouseMove in V3dR_GLWidget");
+//		QMouseEvent* he = (QMouseEvent*)e;
+//		pos = he->pos();
+//		event_tip = true;
+//		break;
+//		}
+	}
+	if (event_tip && renderer)
+	{
+		QPoint gpos = mapToGlobal(pos);
+		tipBuf[0] = '\0';
+		if (renderer->selectObj(pos.x(), pos.y(), false, tipBuf));
+		{
+			QToolTip::showText(gpos, QString(tipBuf), this);
+		}
+	}
+
+	return QGLWidget::event(e);
+}
+
+void V3dR_GLWidget::focusInEvent(QFocusEvent*)
+{
+	//qDebug("V3dR_GLWidget::focusInEvent");
+	_still_paint_off = false;
+}
+void V3dR_GLWidget::focusOutEvent(QFocusEvent*)
+{
+	//qDebug("V3dR_GLWidget::focusOutEvent");
+	if (_mouse_in_view)  _still_paint_off = true;
+}
+
+void V3dR_GLWidget::enterEvent(QEvent*)
+{
+	//qDebug("V3dR_GLWidget::enterEvent");
+	_mouse_in_view = true;
+	//setFocus();
+}
+void V3dR_GLWidget::leaveEvent(QEvent*)
+{
+	//qDebug("V3dR_GLWidget::leaveEvent");
+	_mouse_in_view = false;
+}
+
+void V3dR_GLWidget::customEvent(QEvent* e)
+{
+	switch(e->type())
+	{
+	case QEvent_OpenFiles:
+		qDebug("V3dR_GLWidget::customEvent( QEvent_OpenFiles )");
+		loadObjectsListFromFile();
+		break;
+
+	case QEvent_DropFiles:  // not use this
+		qDebug("V3dR_GLWidget::customEvent( QEvent_DropFiles )");
+		if (renderer)  renderer->loadObjectsFromFile( Q_CSTR(dropUrl) );
+		break;
+
+	case QEvent_InitControlValue:
+		qDebug("V3dR_GLWidget::customEvent( QEvent_InitControlValue )");
+		emit signalInitControlValue(); // V3dR_MainWindow->initControlValue
+		break;
+
+	case QEvent_Ready:
+		qDebug("V3dR_GLWidget::customEvent( QEvent_Ready )");
+		qDebug("-------------------------------------------------------------- Ready");
+		break;
+
+	}
+
+	POST_updateGL();
+}
+
+void V3dR_GLWidget::mouseDoubleClickEvent ( QMouseEvent * )//event )
+{
+    //reserve for future additional feature like clickable points
+}
+
+
+#define KM  QApplication::keyboardModifiers()
+#define IS_SHIFT_MODIFIER  (KM==Qt::ShiftModifier)
+#define IS_MODEL_MODIFIER  (KM==Qt::AltModifier || KM==ALT2_MODIFIER)
+#define WITH_SHIFT_MODIFIER  (KM & Qt::ShiftModifier)
+#define WITH_MODEL_MODIFIER  (KM & Qt::AltModifier || KM & ALT2_MODIFIER)
+
+#define MOUSE_SHIFT(dx, D)  (int(SHIFT_RANGE*2* float(dx)/D))
+#define MOUSE_ROT(dr, D)    (int(MOUSE_SENSITIVE*270* float(dr)/D) *ANGLE_TICK)
+
+//091015: use still_timer instead
+#define INTERACT_BUTTON     (event->buttons())// & Qt::LeftButton)
+#define POST_STILL_PAINT()   //{QTimer::singleShot(1000, this, SLOT(stillPaint())); _still = false;}
+
+
+void V3dR_GLWidget::paintEvent(QPaintEvent *event)
+{
+	QGLWidget::paintEvent(event);
+	_still_pending=true;
+}
+
+//void V3dR_GLWidget::stillPaint()
+//{
+//	if (_still)  return; // avoid re-enter
+//	if (_still_paint_off) return;
+//
+//	//QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 500);
+//	if (QCoreApplication::hasPendingEvents())
+//	{
+//		_still_pending = true;
+//		return; // do nothing if event loop is busy
+//	}
+//
+//	if (_still_pending)
+//	{
+//	    still_timer.stop();
+//		_still = true;
+//		DO_updateGL(); // update at once, stream texture for full resolution
+//		_still = false;
+//		_still_pending = false;
+//	    still_timer.start(still_timer_interval); //restart timer
+//	}
+//}
+
+void V3dR_GLWidget::mousePressEvent(QMouseEvent *event)
+{
+	//091025: use QMouseEvent::button()== not buttonS()&
+    //qDebug("V3dR_GLWidget::mousePressEvent  button = %d", event->button());
+
+	if (event->button()==Qt::LeftButton)
+		lastPos = event->pos();
+
+	if (event->button()==Qt::RightButton && renderer)
+	{
+		if (renderer->hitPoint(event->x(), event->y()))  //pop-up menu or marker definition
+		{
+			updateTool();
+		}
+		POST_updateGL();
+	}
+}
+
+void V3dR_GLWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+	//091025: use QMouseEvent::button()== not buttonS()&
+    //qDebug("V3dR_GLWidget::mouseReleaseEvent  button = %d", event->button());
+
+	if (event->button()==Qt::RightButton && renderer) //right-drag
+    {
+		(renderer->movePen(event->x(), event->y(), false));
+		updateTool();
+    }
+
+    _still_paint_off = false;
+	{
+		if (!_still)
+		{
+			POST_STILL_PAINT();
+		}
+		else
+		{
+			POST_updateGL();
+		}
+	}
+}
+
+void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
+{
+	//091025: use QMouseEvent::buttonS()& not button()==
+    //qDebug()<<"V3dR_GLWidget::mouseMoveEvent  buttonS = "<< event->buttons();
+
+    setFocus(); // accept KeyPressEvent, by RZC 080831
+	_still_paint_off = true;
+	_still = false;
+
+	int dx = event->x() - lastPos.x();
+	int dy = event->y() - lastPos.y();
+	lastPos = event->pos();
+
+	if (event->buttons() & Qt::RightButton && renderer) //right-drag for 3d curve
+		if ( ABS(dx) + ABS(dy) >=2 )
+	{
+		(renderer->movePen(event->x(), event->y(), true));
+
+		DO_updateGL(); // for update pen track
+		return;
+	}
+
+	if (event->buttons() & Qt::LeftButton)
+	{
+		//qDebug()<<"MoveEvent LeftButton";
+		int xRotStep = MOUSE_ROT(dy, MIN(viewW,viewH));
+		int yRotStep = MOUSE_ROT(dx, MIN(viewW,viewH));
+		int xShiftStep = MOUSE_SHIFT(dx, viewW);
+		int yShiftStep = MOUSE_SHIFT(dy, viewH);
+
+		// mouse control view space, transformed to model space, 081026
+		if (IS_SHIFT_MODIFIER) // shift+mouse control view space translation, 081104
+		{
+			setXShift(_xShift + xShiftStep);// move +view -model
+			setYShift(_yShift - yShiftStep);// move -view +model
+		}
+		else if (IS_MODEL_MODIFIER) // alt+mouse control model space rotation, 081104
+		{
+			modelRotation(yRotStep, xRotStep, 0); //swap y,x
+		}
+		else // default mouse controls view space rotation
+		{
+			viewRotation(xRotStep, yRotStep, 0);
+		}
+	}
+}
+
+void V3dR_GLWidget::wheelEvent(QWheelEvent *event)
+{
+	POST_STILL_PAINT();
+
+	setFocus(); // accept KeyPressEvent, by RZC 081028
+
+	float d = (event->delta())/100;  // ~480
+	//qDebug("V3dR_GLWidget::wheelEvent->delta = %g",d);
+	#define MOUSE_ZOOM(dz)    (int(dz*4* MOUSE_SENSITIVE));
+	#define MOUSE_ZROT(dz)    (int(dz*8* MOUSE_SENSITIVE));
+
+	int zoomStep = MOUSE_ZOOM(d);
+    int zRotStep = MOUSE_ZROT(d);
+
+    if (IS_SHIFT_MODIFIER) // shift+mouse control view space translation, 081104
+    {
+    	viewRotation(0, 0, zRotStep);
+    }
+    else if (IS_MODEL_MODIFIER) // alt+mouse control model space rotation, 081104
+    {
+    	modelRotation(0, 0, zRotStep);
+    }
+    else // default
+    {
+    	setZoom((-zoomStep) + _zoom); // scroll down to zoom in
+    }
+
+	event->accept();
+}
+
+void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make public function to finally overcome the crash problem of hook MainWindow
+{
+	switch (e->key())
+	{
+		case Qt::Key_1:		_holding_num[1] = true; 	break;
+		case Qt::Key_2:		_holding_num[2] = true; 	break;
+		case Qt::Key_3:		_holding_num[3] = true; 	break;
+		case Qt::Key_4:		_holding_num[4] = true; 	break;
+		case Qt::Key_5:		_holding_num[5] = true; 	break;
+		case Qt::Key_6:		_holding_num[6] = true; 	break;
+		case Qt::Key_7:		_holding_num[7] = true; 	break;
+		case Qt::Key_8:		_holding_num[8] = true; 	break;
+		case Qt::Key_9:		_holding_num[9] = true; 	break;
+
+		case Qt::Key_BracketLeft:
+		    {
+		        if (IS_MODEL_MODIFIER) // alt-mouse to control model space rotation, 081104
+		        	modelRotation(0, 0, +5);
+		        else
+		        	viewRotation(0, 0, +5);
+			}
+	  		break;
+		case Qt::Key_BracketRight:
+		    {
+		        if (IS_MODEL_MODIFIER) // alt-mouse to control model space rotation, 081104
+		        	modelRotation(0, 0, -5);
+		        else
+		        	viewRotation(0, 0, -5);
+			}
+	  		break;
+		case Qt::Key_Left: //100802: arrows key must use WITH_?_MODIFIER
+			{
+				if (WITH_MODEL_MODIFIER)
+		        	modelRotation(0, -5, 0);
+				else if (WITH_SHIFT_MODIFIER)
+					setXShift(_xShift -1);// move -model
+				else
+					setXShift(_xShift +1);// move +view
+			}
+			break;
+		case Qt::Key_Right:
+			{
+				if (WITH_MODEL_MODIFIER)
+		        	modelRotation(0, +5, 0);
+				else if (WITH_SHIFT_MODIFIER)
+					setXShift(_xShift +1);// move +model
+				else
+					setXShift(_xShift -1);// move -view
+			}
+			break;
+		case Qt::Key_Up:
+			{
+				if (WITH_MODEL_MODIFIER)
+		        	modelRotation(-5, 0, 0);
+				else if (WITH_SHIFT_MODIFIER)
+					setYShift(_yShift +1);// move +model
+				else
+					setYShift(_yShift -1);// move -view
+			}
+			break;
+		case Qt::Key_Down:
+			{
+				if (WITH_MODEL_MODIFIER)
+		        	modelRotation(+5, 0, 0);
+				else if (WITH_SHIFT_MODIFIER)
+					setYShift(_yShift -1);// move -model
+				else
+					setYShift(_yShift +1);// move +view
+			}
+			break;
+		case Qt::Key_Minus:
+		    {
+				setZoom(_zoom - 10); // zoom out
+			}
+	  		break;
+		case Qt::Key_Equal:
+		    {
+				setZoom(_zoom + 10); // zoom in
+			}
+	  		break;
+		case Qt::Key_Underscore:
+		    {
+		        emit changeMarkerSize(_markerSize - 1);
+			}
+	  		break;
+		case Qt::Key_Plus:
+		    {
+		        emit changeMarkerSize(_markerSize + 1);
+			}
+	  		break;
+		case Qt::Key_Backspace:
+		    {
+		        resetZoomShift();
+			}
+	  		break;
+		case Qt::Key_Backslash:
+		    {
+		        resetRotation();
+			}
+	  		break;
+		case Qt::Key_Comma:
+		    {
+		    	emit changeFrontCut(_fCut - 1);
+			}
+	  		break;
+		case Qt::Key_Period:
+			{
+				emit changeFrontCut(_fCut + 1);
+			}
+			break;
+		case Qt::Key_Slash:
+		    {
+		        emit changeXCSSlider((dataDim1()-1)/2);
+		        emit changeYCSSlider((dataDim2()-1)/2);
+		        emit changeZCSSlider((dataDim3()-1)/2);
+		    	emit changeFrontCut(0);
+			}
+	  		break;
+		case Qt::Key_Less:
+		    {
+		    	emit changeVolumeTimePoint(_volumeTimePoint - 1);
+			}
+	  		break;
+		case Qt::Key_Greater:
+			{
+				emit changeVolumeTimePoint(_volumeTimePoint + 1);
+			}
+			break;
+		case Qt::Key_Question:
+		    {
+		    	emit changeVolumeTimePoint(0);
+			}
+	  		break;
+
+	  		//// button shortcut //////////////////////////////////////////////////////////////////
+		case Qt::Key_B:
+		    if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
+		    {
+		    	setBright();
+			}
+	  		break;
+		case Qt::Key_R:
+		    if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
+		    {
+		    	reloadData();
+			}
+	  		break;
+		case Qt::Key_U:
+		    if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
+		    {
+		    	updateWithTriView();
+			}
+	  		break;
+//		case Qt::Key_I:
+//		    if ((KM==CTRL_MODIFIER || KM==Qt::ControlModifier))
+//		    {
+//		    	if (colormapDlg && !colormapDlg->isHidden()) colormapDlg->hide();
+//		    	else volumeColormapDialog();
+//			}
+//	  		break;
+//		case Qt::Key_O:
+//		    if ((KM==CTRL_MODIFIER || KM==Qt::ControlModifier))
+//		    {
+//		    	if (surfaceDlg && !surfaceDlg->isHidden()) surfaceDlg->hide();
+//		    	else surfaceSelectDialog();
+//			}
+//	  		break;
+
+	  		///// advanced OpenGL shortcut // use & instead of == //////////////////////////////////////////////////////
+		case Qt::Key_I:
+		    if ((KM & Qt::ShiftModifier) && //advanced
+		    	(KM & CTRL2_MODIFIER  ||  KM & Qt::ControlModifier))
+		    {
+		    	showGLinfo();
+			}
+	  		break;
+		case Qt::Key_G:
+		    if ((KM & Qt::ShiftModifier) && //advanced
+		    	(KM & CTRL2_MODIFIER  ||  KM & Qt::ControlModifier))
+		    {
+		    	toggleShader();
+			}
+	  		break;
+
+	  		///// volume texture operation //////////////////////////////////////////////////////
+		case Qt::Key_F:
+		    if ( (KM & CTRL2_MODIFIER || KM & Qt::ControlModifier))
+		    {
+		    	toggleTexFilter();
+			}
+	  		break;
+		case Qt::Key_T:
+		    if ((KM & Qt::ShiftModifier) && //advanced
+		    	(KM & CTRL2_MODIFIER || KM & Qt::ControlModifier))
+		    {
+		    	toggleTex2D3D();
+			}
+	  		break;
+		case Qt::Key_C:
+		    if ((KM & Qt::ShiftModifier) && //advanced
+		    	(KM & CTRL2_MODIFIER || KM & Qt::ControlModifier))
+		    {
+		    	toggleTexCompression();
+			}
+	  		break;
+		case Qt::Key_V:
+		    if ((KM & Qt::ShiftModifier) && //advanced
+		    	(KM & CTRL2_MODIFIER  ||  KM & Qt::ControlModifier))
+		    {
+		    	toggleTexStream();
+			}
+		    else if (KM==ALT2_MODIFIER || KM==Qt::AltModifier)
+		    {
+		    	changeVolShadingOption();
+			}
+		    else if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
+		    {
+		    	updateImageData();
+			}
+	  		break;
+
+	  		///// surface object operation //////////////////////////////////////////////////////
+		case Qt::Key_P:
+		    if ((KM & Qt::ShiftModifier) && //advanced
+		    	(KM & CTRL2_MODIFIER  ||  KM & Qt::ControlModifier))
+		    {
+		    	toggleObjShader();
+			}
+		    else if ((KM == CTRL2_MODIFIER || KM == Qt::ControlModifier))
+		    {
+		    	togglePolygonMode();
+			}
+		    else if (KM==ALT2_MODIFIER || KM==Qt::AltModifier)
+		    {
+		    	changeObjShadingOption();
+			}
+	  		break;
+
+	  		///// marker operation //////////////////////////////////////////////////////
+		case Qt::Key_Escape:
+			{
+				cancelSelect();
+			}
+			break;
+
+	  		///// cell operation ///////////////////////////////////////////////////////
+		case Qt::Key_N:
+		    if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
+		    {
+		    	toggleCellName();
+			}
+	  		break;
+
+	  		///// neuron operation //////////////////////////////////////////////////////
+		case Qt::Key_L:
+		    if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
+		    {
+		    	toggleLineType();
+			}
+		    else if (KM==ALT2_MODIFIER || KM==Qt::AltModifier)
+		    {
+		    	changeLineOption();
+			}
+	  		break;
+
+#ifndef test_main_cpp
+		case Qt::Key_Z: //undo the last tracing step if possible. by PHC, 090120
+		    if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
+		    {
+		    	if (v3dr_getImage4d(_idep) && renderer)
+		    	{
+		    		v3dr_getImage4d(_idep)->proj_trace_history_undo();
+		    		v3dr_getImage4d(_idep)->update_3drenderer_neuron_view(this, (Renderer_tex2*)renderer);//090924
+		    	}
+			}
+	  		break;
+		case Qt::Key_X: //090924 RZC: redo
+		    if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
+		    {
+		    	if (v3dr_getImage4d(_idep) && renderer)
+		    	{
+		    		v3dr_getImage4d(_idep)->proj_trace_history_redo();
+		    		v3dr_getImage4d(_idep)->update_3drenderer_neuron_view(this, (Renderer_tex2*)renderer);//090924
+		    	}
+			}
+	  		break;
+#endif
+	  		//////////////////////////////////////////////////////////////////////////////
+		default:
+			QGLWidget::keyPressEvent(e);
+			break;
+	}
+	update(); //091030: must be here for correct MarkerPos's view matrix
+	return;
+}
+
+void V3dR_GLWidget::handleKeyReleaseEvent(QKeyEvent * e)  //090428 RZC: make public function to finally overcome the crash problem of hook MainWindow
+{
+	switch (e->key())
+	{
+		case Qt::Key_1:		_holding_num[1] = false; 	break;
+		case Qt::Key_2:		_holding_num[2] = false; 	break;
+		case Qt::Key_3:		_holding_num[3] = false; 	break;
+		case Qt::Key_4:		_holding_num[4] = false; 	break;
+		case Qt::Key_5:		_holding_num[5] = false; 	break;
+		case Qt::Key_6:		_holding_num[6] = false; 	break;
+		case Qt::Key_7:		_holding_num[7] = false; 	break;
+		case Qt::Key_8:		_holding_num[8] = false; 	break;
+		case Qt::Key_9:		_holding_num[9] = false; 	break;
+
+		default:
+			QGLWidget::keyReleaseEvent(e);
+			break;
+	}
+	update(); //091030: must be here for correct MarkerPos's view matrix
+	return;
+}
+
+QString V3dR_GLWidget::Cut_altTip(int dim_i, int v, int minv, int maxv, int offset)
+{
+	if (!getRenderer() || getRenderer()->class_version()<2) return "";
+	Renderer_tex2* r = (Renderer_tex2*)getRenderer();
+	BoundingBox DB = r->getDataBox();
+
+	float minw, maxw;
+	switch(dim_i)
+	{
+		case 1:	 minw = DB.x0;  maxw = DB.x1;  break;
+		case 2:	 minw = DB.y0;  maxw = DB.y1;  break;
+		case 3:	 minw = DB.z0;  maxw = DB.z1;  break;
+		default: return "";
+	}
+	if (maxv - minv == 0 || maxv - minv == maxw - minw) return "";
+
+	float w = minw + (v - minv)*(maxw - minw)/(maxv - minv);
+	QString tip = QString(" : %1(%2~%3)").arg(w+offset).arg(minw+offset).arg(maxw+offset);
+	//qDebug()<<"		Cut_altTip "<<tip;
+	return tip;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+#define __begin_view3dcontrol_interface__
+///////////////////////////////////////////////////////////////////////////////////////////
 
 int V3dR_GLWidget::setVolumeTimePoint(int t)
 {
@@ -706,11 +1315,12 @@ void V3dR_GLWidget::setXRotation(int angle)
 {
 	NORMALIZE_angle( angle );
 	if (angle != _xRot) {
+		_absRot = false;
 		dxRot = angle-_xRot;        //qDebug("dxRot=%d",dxRot);
 		NORMALIZE_angleStep(dxRot);  //qDebug("dxRot=%d",dxRot);
-
 		_xRot = angle;
-        emit xRotationChanged(angle);
+
+		emit xRotationChanged(angle);
         POST_updateGL(); // post update to prevent shaking, by RZC 080910
     }
 }
@@ -719,11 +1329,12 @@ void V3dR_GLWidget::setYRotation(int angle)
 {
 	NORMALIZE_angle( angle );
 	if (angle != _yRot) {
+		_absRot = false;
 		dyRot = angle-_yRot;       //qDebug("dyRot=%d",dyRot);
-		NORMALIZE_angleStep(dyRot); qDebug("dyRot=%d",dyRot);
-
+		NORMALIZE_angleStep(dyRot); //qDebug("dyRot=%d",dyRot);
 		_yRot = angle;
-        emit yRotationChanged(angle);
+
+		emit yRotationChanged(angle);
         POST_updateGL(); // post update to prevent shaking, by RZC 080910
     }
 }
@@ -732,11 +1343,12 @@ void V3dR_GLWidget::setZRotation(int angle)
 {
 	NORMALIZE_angle( angle );
     if (angle != _zRot) {
+		_absRot = false;
 		dzRot = angle-_zRot;       //qDebug("dzRot=%d",dzRot);
 		NORMALIZE_angleStep(dzRot); //qDebug("dzRot=%d",dzRot);
-
 		_zRot = angle;
-        emit zRotationChanged(angle);
+
+		emit zRotationChanged(angle);
         POST_updateGL(); // post update to prevent shaking, by RZC 080910
     }
 }
@@ -817,19 +1429,22 @@ void V3dR_GLWidget::absoluteRotPose() //100723 RZC
 	NORMALIZE_angle(yRot);
 	NORMALIZE_angle(zRot);
 
-	_xRot = xRot;
-	_yRot = yRot;
-	_zRot = zRot;
+	doAbsoluteRot(xRot, yRot, zRot);
+}
+
+void V3dR_GLWidget::doAbsoluteRot(int xRot, int yRot, int zRot)
+{
+	NORMALIZE_angle(xRot);
+	NORMALIZE_angle(yRot);
+	NORMALIZE_angle(zRot);
 
 	emit xRotationChanged(xRot);
 	emit yRotationChanged(yRot);
 	emit zRotationChanged(zRot);
 
-	doAbsoluteRot();
-}
-
-void V3dR_GLWidget::doAbsoluteRot()
-{
+	_xRot = xRot;
+	_yRot = yRot;
+	_zRot = zRot;
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
@@ -839,8 +1454,10 @@ void V3dR_GLWidget::doAbsoluteRot()
 	glRotated( _yRot,  0,1,0);
 	glRotated( _zRot,  0,0,1);
 	glGetDoublev(GL_MODELVIEW_MATRIX, mRot);
-	dxRot=dyRot=dzRot= 0;
 	glPopMatrix();
+
+	dxRot=dyRot=dzRot= 0;
+	_absRot = true;
 
 	POST_updateGL();
 }
@@ -1760,615 +2377,13 @@ void V3dR_GLWidget::reloadData()
 	POST_updateGL();
 }
 
-QString V3dR_GLWidget::Cut_altTip(int dim_i, int v, int minv, int maxv, int offset)
-{
-	if (!getRenderer() || getRenderer()->class_version()<2) return "";
-	Renderer_tex2* r = (Renderer_tex2*)getRenderer();
-	BoundingBox DB = r->getDataBox();
-
-	float minw, maxw;
-	switch(dim_i)
-	{
-		case 1:	 minw = DB.x0;  maxw = DB.x1;  break;
-		case 2:	 minw = DB.y0;  maxw = DB.y1;  break;
-		case 3:	 minw = DB.z0;  maxw = DB.z1;  break;
-		default: return "";
-	}
-	if (maxv - minv == 0 || maxv - minv == maxw - minw) return "";
-
-	float w = minw + (v - minv)*(maxw - minw)/(maxv - minv);
-	QString tip = QString(" : %1(%2~%3)").arg(w+offset).arg(minw+offset).arg(maxw+offset);
-	//qDebug()<<"		Cut_altTip "<<tip;
-	return tip;
-}
-
-
-/////////////////////////////////////////////////////////////
-#define __event_handler__
-
-bool V3dR_GLWidget::event(QEvent* e) //090427 RZC
-{
-	setAttribute(Qt::WA_Hover); // this control the QEvent::ToolTip and QEvent::HoverMove
-
-	bool event_tip = false;
-	QPoint pos;
-	switch (e->type())
-	{
-	case QEvent::ToolTip: {// not work under Mac 64bit, because default not set WA_Hover
-//		qDebug("QEvent::ToolTip in V3dR_GLWidget");
-		QHelpEvent* he = (QHelpEvent*)e;
-		pos = he->pos(); //globalPos();
-		event_tip = true;
-		break;
-		}
-//	case QEvent::HoverMove: {
-////		qDebug("QEvent::HoverMove in V3dR_GLWidget");
-//		QHoverEvent* he = (QHoverEvent*)e;
-//		pos = he->pos();
-//		event_tip = true;
-//		break;
-//		}
-//	case QEvent::MouseMove: {
-////		qDebug("QEvent::MouseMove in V3dR_GLWidget");
-//		QMouseEvent* he = (QMouseEvent*)e;
-//		pos = he->pos();
-//		event_tip = true;
-//		break;
-//		}
-	}
-	if (event_tip && renderer)
-	{
-		QPoint gpos = mapToGlobal(pos);
-		tipBuf[0] = '\0';
-		if (renderer->selectObj(pos.x(), pos.y(), false, tipBuf));
-		{
-			QToolTip::showText(gpos, QString(tipBuf), this);
-		}
-	}
-
-	return QGLWidget::event(e);
-}
-
-void V3dR_GLWidget::focusInEvent(QFocusEvent*)
-{
-	//qDebug("V3dR_GLWidget::focusInEvent");
-	_still_paint_off = false;
-}
-void V3dR_GLWidget::focusOutEvent(QFocusEvent*)
-{
-	//qDebug("V3dR_GLWidget::focusOutEvent");
-	if (_mouse_in_view)  _still_paint_off = true;
-}
-
-void V3dR_GLWidget::enterEvent(QEvent*)
-{
-	//qDebug("V3dR_GLWidget::enterEvent");
-	_mouse_in_view = true;
-	//setFocus();
-}
-void V3dR_GLWidget::leaveEvent(QEvent*)
-{
-	//qDebug("V3dR_GLWidget::leaveEvent");
-	_mouse_in_view = false;
-}
-
-void V3dR_GLWidget::customEvent(QEvent* e)
-{
-	switch(e->type())
-	{
-	case QEvent_OpenFiles:
-		qDebug("V3dR_GLWidget::customEvent( QEvent_OpenFiles )");
-		loadObjectsListFromFile();
-		break;
-
-	case QEvent_DropFiles:  // not use this
-		qDebug("V3dR_GLWidget::customEvent( QEvent_DropFiles )");
-		if (renderer)  renderer->loadObjectsFromFile( Q_CSTR(dropUrl) );
-		break;
-
-	case QEvent_InitControlValue:
-		qDebug("V3dR_GLWidget::customEvent( QEvent_InitControlValue )");
-		emit signalInitControlValue(); // V3dR_MainWindow->initControlValue
-		break;
-
-	case QEvent_Ready:
-		qDebug("V3dR_GLWidget::customEvent( QEvent_Ready )");
-		qDebug("-------------------------------------------------------------- Ready");
-		break;
-
-	}
-
-	POST_updateGL();
-}
-
 void V3dR_GLWidget::cancelSelect()
 {
 	if (renderer) renderer->endSelectMode();
 }
 
-
-void V3dR_GLWidget::mouseDoubleClickEvent ( QMouseEvent * )//event )
-{
-    //reserve for future additional feature like clickable points
-}
+///////////////////////////////////////////////////////////////////////////////////////////
+#define __end_view3dcontrol_interface__
+///////////////////////////////////////////////////////////////////////////////////////////
 
 
-#define KM  QApplication::keyboardModifiers()
-#define IS_SHIFT_MODIFIER  (KM==Qt::ShiftModifier)
-#define IS_MODEL_MODIFIER  (KM==Qt::AltModifier || KM==ALT2_MODIFIER)
-#define WITH_SHIFT_MODIFIER  (KM & Qt::ShiftModifier)
-#define WITH_MODEL_MODIFIER  (KM & Qt::AltModifier || KM & ALT2_MODIFIER)
-
-#define MOUSE_SHIFT(dx, D)  (int(SHIFT_RANGE*2* float(dx)/D))
-#define MOUSE_ROT(dr, D)    (int(MOUSE_SENSITIVE*270* float(dr)/D) *ANGLE_TICK)
-
-//091015: use still_timer instead
-#define INTERACT_BUTTON     (event->buttons())// & Qt::LeftButton)
-#define POST_STILL_PAINT()   //{QTimer::singleShot(1000, this, SLOT(stillPaint())); _still = false;}
-
-
-void V3dR_GLWidget::paintEvent(QPaintEvent *event)
-{
-	QGLWidget::paintEvent(event);
-	_still_pending=true;
-}
-
-void V3dR_GLWidget::stillPaint()
-{
-	if (_still)  return; // avoid re-enter
-	if (_still_paint_off) return;
-
-	//QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 500);
-	if (QCoreApplication::hasPendingEvents())
-	{
-		_still_pending = true;
-		return; // do nothing if event loop is busy
-	}
-
-	if (_still_pending)
-	{
-	    still_timer.stop();
-		_still = true;
-		DO_updateGL(); // update at once, stream texture for full resolution
-		_still = false;
-		_still_pending = false;
-	    still_timer.start(still_timer_interval); //restart timer
-	}
-}
-
-void V3dR_GLWidget::mousePressEvent(QMouseEvent *event)
-{
-	//091025: use QMouseEvent::button()== not buttonS()&
-    //qDebug("V3dR_GLWidget::mousePressEvent  button = %d", event->button());
-
-	if (event->button()==Qt::LeftButton)
-		lastPos = event->pos();
-
-	if (event->button()==Qt::RightButton && renderer)
-	{
-		if (renderer->hitPoint(event->x(), event->y()))  //pop-up menu or marker definition
-		{
-			updateTool();
-		}
-		POST_updateGL();
-	}
-}
-
-void V3dR_GLWidget::mouseReleaseEvent(QMouseEvent *event)
-{
-	//091025: use QMouseEvent::button()== not buttonS()&
-    //qDebug("V3dR_GLWidget::mouseReleaseEvent  button = %d", event->button());
-
-	if (event->button()==Qt::RightButton && renderer) //right-drag
-    {
-		(renderer->movePen(event->x(), event->y(), false));
-		updateTool();
-    }
-
-    _still_paint_off = false;
-	{
-		if (!_still)
-		{
-			POST_STILL_PAINT();
-		}
-		else
-		{
-			POST_updateGL();
-		}
-	}
-}
-
-void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
-{
-	//091025: use QMouseEvent::buttonS()& not button()==
-    //qDebug()<<"V3dR_GLWidget::mouseMoveEvent  buttonS = "<< event->buttons();
-
-    setFocus(); // accept KeyPressEvent, by RZC 080831
-	_still_paint_off = true;
-	_still = false;
-
-	int dx = event->x() - lastPos.x();
-	int dy = event->y() - lastPos.y();
-	lastPos = event->pos();
-
-	if (event->buttons() & Qt::RightButton && renderer) //right-drag for 3d curve
-		if ( ABS(dx) + ABS(dy) >=2 )
-	{
-		(renderer->movePen(event->x(), event->y(), true));
-
-		DO_updateGL(); // for update pen track
-		return;
-	}
-
-	if (event->buttons() & Qt::LeftButton)
-	{
-		//qDebug()<<"MoveEvent LeftButton";
-		int xRotStep = MOUSE_ROT(dy, MIN(viewW,viewH));
-		int yRotStep = MOUSE_ROT(dx, MIN(viewW,viewH));
-		int xShiftStep = MOUSE_SHIFT(dx, viewW);
-		int yShiftStep = MOUSE_SHIFT(dy, viewH);
-
-		// mouse control view space, transformed to model space, 081026
-		if (IS_SHIFT_MODIFIER) // shift+mouse control view space translation, 081104
-		{
-			setXShift(_xShift + xShiftStep);// move +view -model
-			setYShift(_yShift - yShiftStep);// move -view +model
-		}
-		else if (IS_MODEL_MODIFIER) // alt+mouse control model space rotation, 081104
-		{
-			modelRotation(yRotStep, xRotStep, 0); //swap y,x
-		}
-		else // default mouse controls view space rotation
-		{
-			viewRotation(xRotStep, yRotStep, 0);
-		}
-	}
-}
-
-void V3dR_GLWidget::wheelEvent(QWheelEvent *event)
-{
-	POST_STILL_PAINT();
-
-	setFocus(); // accept KeyPressEvent, by RZC 081028
-
-	float d = (event->delta())/100;  // ~480
-	//qDebug("V3dR_GLWidget::wheelEvent->delta = %g",d);
-	#define MOUSE_ZOOM(dz)    (int(dz*4* MOUSE_SENSITIVE));
-	#define MOUSE_ZROT(dz)    (int(dz*8* MOUSE_SENSITIVE));
-
-	int zoomStep = MOUSE_ZOOM(d);
-    int zRotStep = MOUSE_ZROT(d);
-
-    if (IS_SHIFT_MODIFIER) // shift+mouse control view space translation, 081104
-    {
-    	viewRotation(0, 0, zRotStep);
-    }
-    else if (IS_MODEL_MODIFIER) // alt+mouse control model space rotation, 081104
-    {
-    	modelRotation(0, 0, zRotStep);
-    }
-    else // default
-    {
-    	setZoom((-zoomStep) + _zoom); // scroll down to zoom in
-    }
-
-	event->accept();
-}
-
-void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make public function to finally overcome the crash problem of hook MainWindow
-{
-	switch (e->key())
-	{
-		case Qt::Key_1:		_holding_num[1] = true; 	break;
-		case Qt::Key_2:		_holding_num[2] = true; 	break;
-		case Qt::Key_3:		_holding_num[3] = true; 	break;
-		case Qt::Key_4:		_holding_num[4] = true; 	break;
-		case Qt::Key_5:		_holding_num[5] = true; 	break;
-		case Qt::Key_6:		_holding_num[6] = true; 	break;
-		case Qt::Key_7:		_holding_num[7] = true; 	break;
-		case Qt::Key_8:		_holding_num[8] = true; 	break;
-		case Qt::Key_9:		_holding_num[9] = true; 	break;
-
-		case Qt::Key_BracketLeft:
-		    {
-		        if (IS_MODEL_MODIFIER) // alt-mouse to control model space rotation, 081104
-		        	modelRotation(0, 0, +5);
-		        else
-		        	viewRotation(0, 0, +5);
-			}
-	  		break;
-		case Qt::Key_BracketRight:
-		    {
-		        if (IS_MODEL_MODIFIER) // alt-mouse to control model space rotation, 081104
-		        	modelRotation(0, 0, -5);
-		        else
-		        	viewRotation(0, 0, -5);
-			}
-	  		break;
-		case Qt::Key_Left: //100802: arrows key must use WITH_?_MODIFIER
-			{
-				if (WITH_MODEL_MODIFIER)
-		        	modelRotation(0, -5, 0);
-				else if (WITH_SHIFT_MODIFIER)
-					setXShift(_xShift -1);// move -model
-				else
-					setXShift(_xShift +1);// move +view
-			}
-			break;
-		case Qt::Key_Right:
-			{
-				if (WITH_MODEL_MODIFIER)
-		        	modelRotation(0, +5, 0);
-				else if (WITH_SHIFT_MODIFIER)
-					setXShift(_xShift +1);// move +model
-				else
-					setXShift(_xShift -1);// move -view
-			}
-			break;
-		case Qt::Key_Up:
-			{
-				if (WITH_MODEL_MODIFIER)
-		        	modelRotation(-5, 0, 0);
-				else if (WITH_SHIFT_MODIFIER)
-					setYShift(_yShift +1);// move +model
-				else
-					setYShift(_yShift -1);// move -view
-			}
-			break;
-		case Qt::Key_Down:
-			{
-				if (WITH_MODEL_MODIFIER)
-		        	modelRotation(+5, 0, 0);
-				else if (WITH_SHIFT_MODIFIER)
-					setYShift(_yShift -1);// move -model
-				else
-					setYShift(_yShift +1);// move +view
-			}
-			break;
-		case Qt::Key_Minus:
-		    {
-				setZoom(_zoom - 10); // zoom out
-			}
-	  		break;
-		case Qt::Key_Equal:
-		    {
-				setZoom(_zoom + 10); // zoom in
-			}
-	  		break;
-		case Qt::Key_Underscore:
-		    {
-		        emit changeMarkerSize(_markerSize - 1);
-			}
-	  		break;
-		case Qt::Key_Plus:
-		    {
-		        emit changeMarkerSize(_markerSize + 1);
-			}
-	  		break;
-		case Qt::Key_Backspace:
-		    {
-		        resetZoomShift();
-			}
-	  		break;
-		case Qt::Key_Backslash:
-		    {
-		        resetRotation();
-			}
-	  		break;
-		case Qt::Key_Comma:
-		    {
-		    	emit changeFrontCut(_fCut - 1);
-			}
-	  		break;
-		case Qt::Key_Period:
-			{
-				emit changeFrontCut(_fCut + 1);
-			}
-			break;
-		case Qt::Key_Slash:
-		    {
-		        emit changeXCSSlider((dataDim1()-1)/2);
-		        emit changeYCSSlider((dataDim2()-1)/2);
-		        emit changeZCSSlider((dataDim3()-1)/2);
-		    	emit changeFrontCut(0);
-			}
-	  		break;
-		case Qt::Key_Less:
-		    {
-		    	emit changeVolumeTimePoint(_volumeTimePoint - 1);
-			}
-	  		break;
-		case Qt::Key_Greater:
-			{
-				emit changeVolumeTimePoint(_volumeTimePoint + 1);
-			}
-			break;
-		case Qt::Key_Question:
-		    {
-		    	emit changeVolumeTimePoint(0);
-			}
-	  		break;
-
-	  		//// button shortcut //////////////////////////////////////////////////////////////////
-		case Qt::Key_B:
-		    if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
-		    {
-		    	setBright();
-			}
-	  		break;
-		case Qt::Key_R:
-		    if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
-		    {
-		    	reloadData();
-			}
-	  		break;
-		case Qt::Key_U:
-		    if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
-		    {
-		    	updateWithTriView();
-			}
-	  		break;
-//		case Qt::Key_I:
-//		    if ((KM==CTRL_MODIFIER || KM==Qt::ControlModifier))
-//		    {
-//		    	if (colormapDlg && !colormapDlg->isHidden()) colormapDlg->hide();
-//		    	else volumeColormapDialog();
-//			}
-//	  		break;
-//		case Qt::Key_O:
-//		    if ((KM==CTRL_MODIFIER || KM==Qt::ControlModifier))
-//		    {
-//		    	if (surfaceDlg && !surfaceDlg->isHidden()) surfaceDlg->hide();
-//		    	else surfaceSelectDialog();
-//			}
-//	  		break;
-
-	  		///// advanced OpenGL shortcut // use & instead of == //////////////////////////////////////////////////////
-		case Qt::Key_I:
-		    if ((KM & Qt::ShiftModifier) && //advanced
-		    	(KM & CTRL2_MODIFIER  ||  KM & Qt::ControlModifier))
-		    {
-		    	showGLinfo();
-			}
-	  		break;
-		case Qt::Key_G:
-		    if ((KM & Qt::ShiftModifier) && //advanced
-		    	(KM & CTRL2_MODIFIER  ||  KM & Qt::ControlModifier))
-		    {
-		    	toggleShader();
-			}
-	  		break;
-
-	  		///// volume texture operation //////////////////////////////////////////////////////
-		case Qt::Key_F:
-		    if ( (KM & CTRL2_MODIFIER || KM & Qt::ControlModifier))
-		    {
-		    	toggleTexFilter();
-			}
-	  		break;
-		case Qt::Key_T:
-		    if ((KM & Qt::ShiftModifier) && //advanced
-		    	(KM & CTRL2_MODIFIER || KM & Qt::ControlModifier))
-		    {
-		    	toggleTex2D3D();
-			}
-	  		break;
-		case Qt::Key_C:
-		    if ((KM & Qt::ShiftModifier) && //advanced
-		    	(KM & CTRL2_MODIFIER || KM & Qt::ControlModifier))
-		    {
-		    	toggleTexCompression();
-			}
-	  		break;
-		case Qt::Key_V:
-		    if ((KM & Qt::ShiftModifier) && //advanced
-		    	(KM & CTRL2_MODIFIER  ||  KM & Qt::ControlModifier))
-		    {
-		    	toggleTexStream();
-			}
-		    else if (KM==ALT2_MODIFIER || KM==Qt::AltModifier)
-		    {
-		    	changeVolShadingOption();
-			}
-		    else if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
-		    {
-		    	updateImageData();
-			}
-	  		break;
-
-	  		///// surface object operation //////////////////////////////////////////////////////
-		case Qt::Key_P:
-		    if ((KM & Qt::ShiftModifier) && //advanced
-		    	(KM & CTRL2_MODIFIER  ||  KM & Qt::ControlModifier))
-		    {
-		    	toggleObjShader();
-			}
-		    else if ((KM == CTRL2_MODIFIER || KM == Qt::ControlModifier))
-		    {
-		    	togglePolygonMode();
-			}
-		    else if (KM==ALT2_MODIFIER || KM==Qt::AltModifier)
-		    {
-		    	changeObjShadingOption();
-			}
-	  		break;
-
-	  		///// marker operation //////////////////////////////////////////////////////
-		case Qt::Key_Escape:
-			{
-				cancelSelect();
-			}
-			break;
-
-	  		///// cell operation ///////////////////////////////////////////////////////
-		case Qt::Key_N:
-		    if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
-		    {
-		    	toggleCellName();
-			}
-	  		break;
-
-	  		///// neuron operation //////////////////////////////////////////////////////
-		case Qt::Key_L:
-		    if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
-		    {
-		    	toggleLineType();
-			}
-		    else if (KM==ALT2_MODIFIER || KM==Qt::AltModifier)
-		    {
-		    	changeLineOption();
-			}
-	  		break;
-
-#ifndef test_main_cpp
-		case Qt::Key_Z: //undo the last tracing step if possible. by PHC, 090120
-		    if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
-		    {
-		    	if (v3dr_getImage4d(_idep) && renderer)
-		    	{
-		    		v3dr_getImage4d(_idep)->proj_trace_history_undo();
-		    		v3dr_getImage4d(_idep)->update_3drenderer_neuron_view(this, (Renderer_tex2*)renderer);//090924
-		    	}
-			}
-	  		break;
-		case Qt::Key_X: //090924 RZC: redo
-		    if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
-		    {
-		    	if (v3dr_getImage4d(_idep) && renderer)
-		    	{
-		    		v3dr_getImage4d(_idep)->proj_trace_history_redo();
-		    		v3dr_getImage4d(_idep)->update_3drenderer_neuron_view(this, (Renderer_tex2*)renderer);//090924
-		    	}
-			}
-	  		break;
-#endif
-	  		//////////////////////////////////////////////////////////////////////////////
-		default:
-			QGLWidget::keyPressEvent(e);
-			break;
-	}
-	update(); //091030: must be here for correct MarkerPos's view matrix
-	return;
-}
-
-void V3dR_GLWidget::handleKeyReleaseEvent(QKeyEvent * e)  //090428 RZC: make public function to finally overcome the crash problem of hook MainWindow
-{
-	switch (e->key())
-	{
-		case Qt::Key_1:		_holding_num[1] = false; 	break;
-		case Qt::Key_2:		_holding_num[2] = false; 	break;
-		case Qt::Key_3:		_holding_num[3] = false; 	break;
-		case Qt::Key_4:		_holding_num[4] = false; 	break;
-		case Qt::Key_5:		_holding_num[5] = false; 	break;
-		case Qt::Key_6:		_holding_num[6] = false; 	break;
-		case Qt::Key_7:		_holding_num[7] = false; 	break;
-		case Qt::Key_8:		_holding_num[8] = false; 	break;
-		case Qt::Key_9:		_holding_num[9] = false; 	break;
-
-		default:
-			QGLWidget::keyReleaseEvent(e);
-			break;
-	}
-	update(); //091030: must be here for correct MarkerPos's view matrix
-	return;
-}

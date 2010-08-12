@@ -251,9 +251,9 @@ void V3dR_MainWindow::createControlWidgets()
 //	  checkBox_absoluteRot->setToolTip("Absolute rotation (around X-Y-Z sequentially from reset pose)");
 	rotReset = new QPushButton("Zero", rotateBarGroup);
 	  rotAbsolute = new QPushButton("Go", rotateBarGroup);
-	  rotAbsolute->setToolTip("go to rotation pose around X-Y-Z sequentially from zero pose");
+	  rotAbsolute->setToolTip("Go to rotation pose about X-Y-Z sequentially from Zero pose");
 	  rotAbsolutePose = new QPushButton("Freeze", rotateBarGroup);
-	  rotAbsolutePose->setToolTip("extract current rotation pose numbers to go back next time");
+	  rotAbsolutePose->setToolTip("Absolutize rotation pose about X-Y-Z sequentially for Going back next time");
 
 //    rotateBarBoxLayout->addWidget(xrotateLabel, 1, 0, 1, 5);
 //    rotateBarBoxLayout->addWidget(xRotSlider, 1, 6, 1, 15);

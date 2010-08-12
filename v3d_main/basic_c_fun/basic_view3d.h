@@ -66,8 +66,6 @@ public:
 	virtual void updateTool() =0;
 	virtual void updateControl() =0;
 
-	virtual void stillPaint() =0;
-
 	virtual int setVolumeTimePoint(int t) =0;
 	virtual void incVolumeTimePoint(float step) =0;
 
@@ -97,7 +95,7 @@ public:
 	virtual void modelRotation(int xRotStep, int yRotStep, int zRotStep) =0;
 	virtual void viewRotation(int xRotStep, int yRotStep, int zRotStep) =0;
 	virtual void absoluteRotPose() =0;
-	virtual void doAbsoluteRot() =0;
+	virtual void doAbsoluteRot(int xRot, int yRot, int zRot) =0;
 
 	virtual void setZoom(int r) =0;
 	virtual void setXShift(int s) =0;

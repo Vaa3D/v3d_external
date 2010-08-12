@@ -113,6 +113,9 @@ protected:
     static V3dr_surfaceDialog*  surfaceDlg;
 	//static SurfaceObjGeometryDialog *surfaceObjGeoDlg;
 
+protected slots:
+   	//virtual void stillPaint();
+
 
 #define __view3dcontrol_interface__
 public:
@@ -148,7 +151,7 @@ public:
 
 public slots:
 // most of format: set***(type) related to a change***(type)
-	virtual void stillPaint();
+	//virtual void stillPaint();
 
 	virtual int setVolumeTimePoint(int t);
 	virtual void incVolumeTimePoint(float step);
@@ -179,7 +182,7 @@ public slots:
 	virtual void modelRotation(int xRotStep, int yRotStep, int zRotStep);
 	virtual void viewRotation(int xRotStep, int yRotStep, int zRotStep);
 	virtual void absoluteRotPose();
-	virtual void doAbsoluteRot();
+	virtual void doAbsoluteRot(int xRot, int yRot, int zRot);
 
 	virtual void setZoom(int r);
 	virtual void setXShift(int s);

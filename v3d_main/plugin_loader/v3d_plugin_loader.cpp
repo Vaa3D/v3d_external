@@ -47,9 +47,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "pluginDialog.h"
 
 
-void pumpEvents()
+void pumpEvents(int loops=100)
 {
-	for (int j=1; j<1000; j++) //try to empty all existing events
+	for (int j=1; j<loops; j++) //try to empty all existing events
 	{
 		QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 	}
