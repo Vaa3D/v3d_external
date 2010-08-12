@@ -183,6 +183,7 @@ public slots:
 	virtual void viewRotation(int xRotStep, int yRotStep, int zRotStep);
 	virtual void absoluteRotPose();
 	virtual void doAbsoluteRot(int xRot, int yRot, int zRot);
+	virtual void lookAlong(float xLook, float yLook, float zLook); //100812 RZC
 
 	virtual void setZoom(int r);
 	virtual void setXShift(int s);

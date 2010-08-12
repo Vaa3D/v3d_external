@@ -1308,6 +1308,7 @@ void V3dr_surfaceDialog::onMarkerLocalView()
 		if (curImg) curImg->cur_hit_landmark = last_marker;
 		if (curXWidget) curXWidget->doImage3DLocalMarkerView();
 
+		//glwidget->lookAlong(1,1,1);
 	}
 #endif
 }

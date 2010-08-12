@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -122,6 +122,7 @@ protected:
 
 // public View control interface
 public:
+	virtual float getViewDistance() {return viewDistance;}
 	virtual void setZoom(float ratio);
 
 	virtual int setVolumeTimePoint(int t) {volTimeOffset = t-volTimePoint; volTimePoint = t; return volTimePoint;}

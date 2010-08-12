@@ -96,6 +96,7 @@ public:
 	virtual void viewRotation(int xRotStep, int yRotStep, int zRotStep) =0;
 	virtual void absoluteRotPose() =0;
 	virtual void doAbsoluteRot(int xRot, int yRot, int zRot) =0;
+	virtual void lookAlong(float xLook, float yLook, float zLook) =0;
 
 	virtual void setZoom(int r) =0;
 	virtual void setXShift(int s) =0;

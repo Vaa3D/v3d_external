@@ -22,6 +22,7 @@ QStringList ExPushPlugin::menulist() const
 		<< tr("Close and Open 3D viewer and Push Image")
 		<< tr("Push Object and Screenshot of global 3d viewer and also change 3d viewer")
 		<< tr("Push time point of 3d viewer")
+		<< tr("Look along direction in 3d viewer")
 		<< tr("About");
 }
 
@@ -38,6 +39,10 @@ void ExPushPlugin::domenu(const QString & menu_name, V3DPluginCallback2 & v3d, Q
 	else if (menu_name == tr("Push time point of 3d viewer"))
 	{
     	dopush(v3d, parent, 3);
+	}
+	else if (menu_name == tr("Look along direction in 3d viewer"))
+	{
+    	dopush(v3d, parent, 4);
 	}
 	else
 	{
@@ -144,6 +149,40 @@ void dopush(V3DPluginCallback2 &v3d, QWidget *parent, int method_code)
 		for (int t=0; t<szt; t++)
 		{
 			v3d.pushTimepointIn3DWindow(curwin, t);
+			v3d.updateImageWindow(curwin);
+		}
+	}
+	else if (method_code==4) //look along
+	{
+		QDialog d(parent);
+		QSpinBox* box1 = new QSpinBox(); box1->setRange(-100,100);
+		QSpinBox* box2 = new QSpinBox(); box2->setRange(-100,100);
+		QSpinBox* box3 = new QSpinBox(); box3->setRange(-100,100);
+		QPushButton* ok     = new QPushButton("OK");
+		QPushButton* cancel = new QPushButton("Cancel");
+		QFormLayout *formLayout = new QFormLayout;
+		formLayout->addRow(QObject::tr("xLook: "), box1);
+		formLayout->addRow(QObject::tr("yLook: "), box2);
+		formLayout->addRow(QObject::tr("zLook: "), box3);
+		formLayout->addRow(ok, cancel);
+		d.setLayout(formLayout);
+		d.setWindowTitle(QString("look along vector"));
+
+		d.connect(ok,     SIGNAL(clicked()), &d, SLOT(accept()));
+		d.connect(cancel, SIGNAL(clicked()), &d, SLOT(reject()));
+		while (d.exec()!=QDialog::Rejected)
+		{
+
+			int i1 = box1->value();
+			int i2 = box2->value();
+			int i3 = box3->value();
+
+			//ensure the 3d viewer window is open; if not, then open it
+			v3d.open3DWindow(curwin);
+
+			View3DControl *view = v3d.getView3DControl(curwin);
+			if (view)  view->lookAlong(i1,i2,i3);
+
 			v3d.updateImageWindow(curwin);
 		}
 	}

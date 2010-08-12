@@ -1004,6 +1004,7 @@ QString V3dR_GLWidget::Cut_altTip(int dim_i, int v, int minv, int maxv, int offs
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
+#define VIEW3DCONTROL
 #define __begin_view3dcontrol_interface__
 ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1432,7 +1433,7 @@ void V3dR_GLWidget::absoluteRotPose() //100723 RZC
 	doAbsoluteRot(xRot, yRot, zRot);
 }
 
-void V3dR_GLWidget::doAbsoluteRot(int xRot, int yRot, int zRot)
+void V3dR_GLWidget::doAbsoluteRot(int xRot, int yRot, int zRot) //100723 RZC
 {
 	NORMALIZE_angle(xRot);
 	NORMALIZE_angle(yRot);
@@ -1449,10 +1450,10 @@ void V3dR_GLWidget::doAbsoluteRot(int xRot, int yRot, int zRot)
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
-	// rotation order X--Y--Z
-	glRotated( _xRot,  1,0,0);
-	glRotated( _yRot,  0,1,0);
-	glRotated( _zRot,  0,0,1);
+		// rotation order X--Y--Z
+		glRotated( _xRot,  1,0,0);
+		glRotated( _yRot,  0,1,0);
+		glRotated( _zRot,  0,0,1);
 	glGetDoublev(GL_MODELVIEW_MATRIX, mRot);
 	glPopMatrix();
 
@@ -1462,41 +1463,27 @@ void V3dR_GLWidget::doAbsoluteRot(int xRot, int yRot, int zRot)
 	POST_updateGL();
 }
 
-//void V3dR_GLWidget::absXRotation(int angle)
-//{
-//	NORMALIZE_angle( angle );
-//	if (angle != _xRot)
-//	{
-////		if (_absRot)
-////			absRotationPose(angle, _yRot, _zRot);
-////		else
-//		    setXRotation(angle);
-//    }
-//}
-//
-//void V3dR_GLWidget::absYRotation(int angle)
-//{
-//	NORMALIZE_angle( angle );
-//	if (angle != _yRot)
-//	{
-////		if (_absRot)
-////			absRotationPose(_xRot, angle, _zRot);
-////		else
-//		    setYRotation(angle);
-//    }
-//}
-//
-//void V3dR_GLWidget::absZRotation(int angle)
-//{
-//	NORMALIZE_angle( angle );
-//	if (angle != _zRot)
-//	{
-////		if (_absRot)
-////			absRotationPose(_xRot, _yRot, angle);
-////		else
-//		    setZRotation(angle);
-//    }
-//}
+void V3dR_GLWidget::lookAlong(float xLook, float yLook, float zLook) //100812 RZC
+{
+	if (!renderer)  return;
+
+	float viewDist = renderer->getViewDistance();
+	XYZ view(-xLook, -yLook, -zLook); normalize(view);
+	XYZ eye = view * viewDist;
+	XYZ at(0,0,0);
+	XYZ up(0,1,0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+		gluLookAt(eye.x,eye.y,eye.z,
+				at.x,at.y,at.z,
+				up.x,up.y,up.z);
+	glGetDoublev(GL_MODELVIEW_MATRIX, mRot);
+	glPopMatrix();
+
+	absoluteRotPose();
+}
 
 
 void V3dR_GLWidget::resetZoomShift()
