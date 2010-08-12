@@ -96,10 +96,9 @@ void dopush(V3DPluginCallback2 &v3d, QWidget *parent, int method_code)
 	{
 		//ensure the 3d viewer window is open; if not, then open it
 		v3d.open3DWindow(curwin);
-		View3DControl *view = v3d.getView3DControl(curwin);
 
 		//now push the data to the 3d viewer's display
-		for (int curloop=0; curloop<100; curloop++)
+		for (int curloop=0; curloop<=100; curloop++)
 		{
 			LandmarkList curlist;
 			for (int i=0;i<20; i++)
@@ -122,7 +121,11 @@ void dopush(V3DPluginCallback2 &v3d, QWidget *parent, int method_code)
 
 			v3d.pushObjectIn3DWindow(curwin);
 
+			//100812 RZC: put here in loop is more safe, every loop checking makes sure that the view3d is open.
+			View3DControl *view = v3d.getView3DControl(curwin);
+			if (view)  view->setXRotation(curloop*360/100);
 			if (view)  view->setYRotation(curloop*360/100);
+			if (view)  view->setZRotation(curloop*360/100);
 
 			v3d.updateImageWindow(curwin);
 
