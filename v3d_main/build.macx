@@ -112,7 +112,53 @@ echo $QMAKE_CONFIG
 
 DOIT="YES"
 
-if [ $TIFFCOMPILE == "YES" ]; then
+#prepare boost library
+
+if [ ! -d common_lib/include/boost ]; then
+  cd common_lib/src_packages
+  tar zvxf boost_1_38_0.tar.gz
+  mv boost_1_38_0/boost ../include/.
+  cd ../../
+fi
+
+#prepare the tiff library
+
+if [ ! -f common_lib/lib/libv3dtiff.a ]; then
+  cd common_lib/src_packages
+  tar zxvf tiff-3.8.2.1.tar.gz
+  cd ../
+  TIFFPATH=`pwd`
+  cd build
+  if [ $SYSTEMBITS == "64" ]; then
+    ../src_packages/tiff-3.8.2.1/configure -prefix=$TIFFPATH  CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64"
+  fi
+  if [ $SYSTEMBITS == "32" ]; then
+    ../src_packages/tiff-3.8.2.1/configure -prefix=$TIFFPATH  CFLAGS="-arch i386" CXXFLAGS="-arch i386"
+  fi
+  make clean
+  make 
+  make install
+  
+  mv ../lib/libtiff.a ../lib/libv3dtiff.a
+
+  if [ ! -d ../lib_mac32 ]; then
+    mkdir ../lib_mac32
+  fi
+  if [ ! -d ../lib_mac64 ]; then
+    mkdir ../lib_mac64
+  fi
+  
+  if [ $SYSTEMBITS == "32" ]; then
+    cp ../lib/libv3dtiff.a ../lib_mac32/.
+  fi
+  if [ $SYSTEMBITS == "64" ]; then
+    cp ../lib/libv3dtiff.a ../lib_mac64/.
+  fi
+  
+  cd ../../
+fi
+
+if [ $TIFFCOMPILE == "YES1" ]; then
   cd common_lib
   TIFFPATH=`pwd`
   cd build
