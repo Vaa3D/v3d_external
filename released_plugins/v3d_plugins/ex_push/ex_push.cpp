@@ -6,12 +6,13 @@
 
 #include "ex_push.h"
 #include "v3d_message.h"
+//#include "/Users/pengh/work/v3d_external/v3d_main/3drenderer/v3dr_glwidget.h"
 
 //Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(ex_push, ExPushPlugin);
 
-void dopush(V3DPluginCallback &v3d, QWidget *parent, int method_code);
+void dopush(V3DPluginCallback2 &v3d, QWidget *parent, int method_code);
 
 //plugin funcs
 const QString title = "Example for pushing image and objects";
@@ -19,18 +20,18 @@ QStringList ExPushPlugin::menulist() const
 {
     return QStringList()
 		<< tr("Close and Open 3D viewer and Push Image")
-		<< tr("Push Object and Screenshot of global 3d viewer")
+		<< tr("Push Object and Screenshot of global 3d viewer and also change 3d viewer")
 		<< tr("Push time point of 3d viewer")
 		<< tr("About");
 }
 
-void ExPushPlugin::domenu(const QString &menu_name, V3DPluginCallback &v3d, QWidget *parent)
+void ExPushPlugin::domenu(const QString & menu_name, V3DPluginCallback2 & v3d, QWidget * parent)
 {
     if (menu_name == tr("Close and Open 3D viewer and Push Image"))
     {
     	dopush(v3d, parent, 1);
     }
-	else if (menu_name == tr("Push Object and Screenshot of global 3d viewer"))
+	else if (menu_name == tr("Push Object and Screenshot of global 3d viewer and also change 3d viewer"))
 	{
     	dopush(v3d, parent, 2);
 	}
@@ -40,13 +41,13 @@ void ExPushPlugin::domenu(const QString &menu_name, V3DPluginCallback &v3d, QWid
 	}
 	else
 	{
-		QMessageBox::information(parent, "Version info", "Push Plugin 1.0"
+		QMessageBox::information(parent, "Version info", "Push Plugin 1.0/2.0"
 				"\ndeveloped by Hanchuan Peng & Zongcai Ruan. (Janelia Research Farm Campus, HHMI)");
 
 	}
 }
 
-void dopush(V3DPluginCallback &v3d, QWidget *parent, int method_code)
+void dopush(V3DPluginCallback2 &v3d, QWidget *parent, int method_code)
 {
 	v3dhandle curwin = v3d.currentImageWindow();
 	if (!curwin)
@@ -119,10 +120,15 @@ void dopush(V3DPluginCallback &v3d, QWidget *parent, int method_code)
 			v3d.setImageName(curwin, QString("push now %1").arg(curloop));
 
 			v3d.pushObjectIn3DWindow(curwin);
+			
+			//View3DInterface *w3d = (View3DInterface *)v3d.getView3D(curwin);
+			V3dR_GLWidget *w3d = (V3dR_GLWidget *)v3d.getView3D(curwin);
+			w3d->setYRotation(curloop*360/100);
+			
 			v3d.updateImageWindow(curwin);
 
-			QString BMPfilename = QString("aaa_%1").arg(curloop);
-			v3d.screenShot3DWindow(curwin, BMPfilename);
+//			QString BMPfilename = QString("aaa_%1").arg(curloop);
+//			v3d.screenShot3DWindow(curwin, BMPfilename);
 		}
 	}
 	else if (method_code==3) //push timepoint

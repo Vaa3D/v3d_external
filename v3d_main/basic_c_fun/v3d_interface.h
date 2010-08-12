@@ -62,6 +62,7 @@ QT_END_NAMESPACE
 #include "basic_surf_objs.h"
 #include "basic_landmark.h"
 #include "v3d_global_preference.h"
+#include "basic_view3d.h"
 #include "v3d_message.h"
 
 struct V3DPluginArgItem
@@ -144,7 +145,7 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class View3DInterface;
+//class View3DInterface;
 
 class V3DPluginCallback2 : public V3DPluginCallback
 {
@@ -161,11 +162,11 @@ public:
 	virtual ~V3DPluginInterface2() {}
 
 	virtual QStringList menulist() const = 0;
-	virtual void domenu(const QString & menu_name, const V3DPluginCallback2 & v3d, const QWidget * parent) = 0;
+	virtual void domenu(const QString & menu_name, V3DPluginCallback2 & v3d, QWidget * parent) = 0;
 
 	virtual QStringList funclist() const = 0;
 	virtual void dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output,
-												const V3DPluginCallback2 & v3d, const QWidget * parent) = 0;
+												V3DPluginCallback2 & v3d, QWidget * parent) = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
