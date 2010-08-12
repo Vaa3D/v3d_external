@@ -144,10 +144,15 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+class View3DInterface;
+
 class V3DPluginCallback2 : public V3DPluginCallback
 {
 public:
 	virtual ~V3DPluginCallback2() {}
+
+	virtual const View3DInterface * getView3D(v3dhandle image_window) = 0;
+	virtual const View3DInterface * getLocalView3D(v3dhandle image_window) = 0;
 };
 
 class V3DPluginInterface2

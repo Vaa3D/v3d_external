@@ -39,6 +39,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3d_core.h"
 
 class V3dR_MainWindow;
+class V3dR_GLWidget;
 class MainWindow;
 struct iDrawExternalParameter
 {
@@ -289,6 +290,9 @@ public:    // in mainwindow_interface.cpp
 
 	bool screenShot3DWindow(QString filename);
 	bool screenShotROI3DWindow(QString filename);
+
+	V3dR_GLWidget * getView3D();
+	V3dR_GLWidget * getLocalView3D();
 
 };
 

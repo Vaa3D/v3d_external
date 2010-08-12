@@ -347,3 +347,17 @@ bool XFormWidget::screenShotROI3DWindow(QString filename)
 		return w->screenShot(filename);
 	}
 }
+
+
+V3dR_GLWidget * XFormWidget::getView3D()
+{
+	V3dR_GLWidget* w = 0;
+	if (mypara_3Dview.b_still_open && mypara_3Dview.window3D)
+			w = mypara_3Dview.window3D->getGLWidget();
+}
+V3dR_GLWidget * XFormWidget::getLocalView3D()
+{
+	V3dR_GLWidget* w = 0;
+	if (mypara_3Dlocalview.b_still_open && mypara_3Dlocalview.window3D)
+			w = mypara_3Dlocalview.window3D->getGLWidget();
+}

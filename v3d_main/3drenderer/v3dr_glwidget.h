@@ -41,6 +41,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3dr_common.h"
 #include "renderer.h"
 
+#include "../basic_c_fun/basic_view3d.h"
 
 class Renderer;
 class V3dR_MainWindow;
@@ -48,7 +49,7 @@ class V3dr_colormapDialog;
 class V3dr_surfaceDialog;
 //class SurfaceObjGeometryDialog;
 
-class V3dR_GLWidget : public QGLWidget
+class V3dR_GLWidget : public QGLWidget, View3DInterface
 {
     Q_OBJECT;
 //	friend class V3dR_MainWindow; //090710 RZC: to delete renderer before ~V3dR_GLWidget()
@@ -62,12 +63,9 @@ public:
     void deleteRenderer();  //090710 RZC: to delete renderer before ~V3dR_GLWidget()
     void createRenderer();  //090710 RZC: to create renderer at any time
 
-    void hideTool();
-    void showTool();
-    void updateTool();
-    void updateControl();
 	void handleKeyPressEvent(QKeyEvent * event); //for hook to MainWindow
 	void handleKeyReleaseEvent(QKeyEvent * event); //for hook to MainWindow
+    QString Cut_altTip(int dim_i, int v, int minv, int maxv, int offset);
 
     iDrawExternalParameter* getiDrawExternalParameter() {return _idep;}
     QWidget * getMainWindow() {return mainwindow;}
@@ -116,17 +114,22 @@ protected:
     static V3dr_surfaceDialog*  surfaceDlg;
 	//static SurfaceObjGeometryDialog *surfaceObjGeoDlg;
 
+
+#define __view3d_interface__
+//----------------------------------------------------------------------------------------
+// begin View3DInterface
+//----------------------------------------------------------------------------------------
 public:
 	int renderMode() const { return _renderMode; }
-	int dataDim1() { return _data_size[0]; }
-	int dataDim2() { return _data_size[1]; }
-	int dataDim3() { return _data_size[2]; }
-	int dataDim4() { return _data_size[3]; }
-	int dataDim5() { return _data_size[4]; }
+	int dataDim1() const { return _data_size[0]; }
+	int dataDim2() const { return _data_size[1]; }
+	int dataDim3() const { return _data_size[2]; }
+	int dataDim4() const { return _data_size[3]; }
+	int dataDim5() const { return _data_size[4]; }
 
-	int xRotation() const { return _xRot; }
-    int yRotation() const { return _yRot; }
-    int zRotation() const { return _zRot; }
+	int xRot() const { return _xRot; }
+    int yRot() const { return _yRot; }
+    int zRot() const { return _zRot; }
     int zoom() const { return _zoom; }
     int xShift() const { return _xShift; }
     int yShift() const { return _yShift; }
@@ -137,7 +140,10 @@ public:
     bool isShowBoundingBox() const { return (renderer)? renderer->bShowBoundingBox :false; }
     bool isShowAxes() 		const { return (renderer)? renderer->bShowAxes :false; }
 
-    QString Cut_altTip(int dim_i, int v, int minv, int maxv, int offset);
+    void hideTool();
+    void showTool();
+    void updateTool();
+    void updateControl();
 
 public slots:
 // most of format: set***(type) related to a change***(type)
@@ -245,6 +251,10 @@ public slots:
 	void updateImageData();
 	void reloadData();
 	void cancelSelect();
+
+//----------------------------------------------------------------------------------------
+// end View3DInterface
+//----------------------------------------------------------------------------------------
 
 signals:
 // most of format: change***(type)

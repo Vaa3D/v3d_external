@@ -703,3 +703,27 @@ bool V3d_PluginLoader::screenShotROI3DWindow(v3dhandle image_window, QString fil
 	}
 }
 
+
+//V3DPluginCallback2
+
+const View3DInterface * V3d_PluginLoader::getView3D(v3dhandle image_window)
+{
+	View3DInterface * vi = 0;
+	if_XFormWidget(w, image_window)
+	{
+		vi = (View3DInterface *)(w->getView3D());
+		qDebug() << "V3d_PluginLoader getView3D: " << w <<"/"<< image_window;
+	}
+	return vi;
+}
+const View3DInterface * V3d_PluginLoader::getLocalView3D(v3dhandle image_window)
+{
+	View3DInterface * vi = 0;
+	if_XFormWidget(w, image_window)
+	{
+		vi = (View3DInterface *)(w->getLocalView3D());
+		qDebug() << "V3d_PluginLoader getLocalView3D: " << w <<"/"<< image_window;
+	}
+	return vi;
+}
+

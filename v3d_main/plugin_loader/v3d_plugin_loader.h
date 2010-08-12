@@ -125,6 +125,11 @@ public:
 	virtual bool screenShot3DWindow(v3dhandle image_window, QString filename);
 	virtual bool screenShotROI3DWindow(v3dhandle image_window, QString filename);
 
+//V3DPluginCallback2
+public:
+	virtual const View3DInterface * getView3D(v3dhandle image_window);
+	virtual const View3DInterface * getLocalView3D(v3dhandle image_window);
+
 };
 
 #endif
