@@ -58,11 +58,13 @@ QT_BEGIN_NAMESPACE
 	Q_DECLARE_INTERFACE(V3DSingleImageInterface, "com.janelia.v3d.V3DSingleImageInterface/1.0");
 QT_END_NAMESPACE
 
+//==========================================================================================
+
 #include "basic_4dimage.h"
 #include "basic_surf_objs.h"
 #include "basic_landmark.h"
-#include "v3d_global_preference.h"
 #include "basic_view3d.h"
+#include "v3d_global_preference.h"
 #include "v3d_message.h"
 
 struct V3DPluginArgItem
@@ -115,6 +117,7 @@ public:
 	virtual V3D_GlobalSetting getGlobalSetting() = 0;
 	virtual bool setGlobalSetting( V3D_GlobalSetting & gs ) = 0;
 
+// 1.1 functions
 	virtual void open3DWindow(v3dhandle image_window) = 0;
 	virtual void close3DWindow(v3dhandle image_window) = 0;
 	virtual void openROI3DWindow(v3dhandle image_window) = 0;
@@ -143,17 +146,17 @@ public:
 												QWidget * parent) = 0;
 };
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//==========================================================================================
 
-//class View3DInterface;
+class View3DControl;
 
 class V3DPluginCallback2 : public V3DPluginCallback
 {
 public:
 	virtual ~V3DPluginCallback2() {}
 
-	virtual const View3DInterface * getView3D(v3dhandle image_window) = 0;
-	virtual const View3DInterface * getLocalView3D(v3dhandle image_window) = 0;
+	virtual View3DControl * getView3DControl(v3dhandle image_window) = 0;
+	virtual View3DControl * getLocalView3DControl(v3dhandle image_window) = 0;
 };
 
 class V3DPluginInterface2
@@ -169,7 +172,7 @@ public:
 												V3DPluginCallback2 & v3d, QWidget * parent) = 0;
 };
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//==========================================================================================
 
 //a function for considering the global setting to extract the IDs of the channels for plugin processing
 inline QList<V3DLONG> getChannelListForProcessingFromGlobalSetting( V3DLONG nc, V3DPluginCallback & callback ) //nc is the # of channels in an image

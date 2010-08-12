@@ -720,7 +720,7 @@ void V3dR_GLWidget::setYRotation(int angle)
 	NORMALIZE_angle( angle );
 	if (angle != _yRot) {
 		dyRot = angle-_yRot;       //qDebug("dyRot=%d",dyRot);
-		NORMALIZE_angleStep(dyRot); //qDebug("dyRot=%d",dyRot);
+		NORMALIZE_angleStep(dyRot); qDebug("dyRot=%d",dyRot);
 
 		_yRot = angle;
         emit yRotationChanged(angle);

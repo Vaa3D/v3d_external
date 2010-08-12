@@ -96,6 +96,7 @@ void dopush(V3DPluginCallback2 &v3d, QWidget *parent, int method_code)
 	{
 		//ensure the 3d viewer window is open; if not, then open it
 		v3d.open3DWindow(curwin);
+		View3DControl *view = v3d.getView3DControl(curwin);
 
 		//now push the data to the 3d viewer's display
 		for (int curloop=0; curloop<100; curloop++)
@@ -120,11 +121,9 @@ void dopush(V3DPluginCallback2 &v3d, QWidget *parent, int method_code)
 			v3d.setImageName(curwin, QString("push now %1").arg(curloop));
 
 			v3d.pushObjectIn3DWindow(curwin);
-			
-			//View3DInterface *w3d = (View3DInterface *)v3d.getView3D(curwin);
-			V3dR_GLWidget *w3d = (V3dR_GLWidget *)v3d.getView3D(curwin);
-			w3d->setYRotation(curloop*360/100);
-			
+
+			if (view)  view->setYRotation(curloop*360/100);
+
 			v3d.updateImageWindow(curwin);
 
 //			QString BMPfilename = QString("aaa_%1").arg(curloop);

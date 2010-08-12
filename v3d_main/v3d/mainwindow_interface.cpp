@@ -354,10 +354,32 @@ V3dR_GLWidget * XFormWidget::getView3D()
 	V3dR_GLWidget* w = 0;
 	if (mypara_3Dview.b_still_open && mypara_3Dview.window3D)
 			w = mypara_3Dview.window3D->getGLWidget();
+	return w;
 }
 V3dR_GLWidget * XFormWidget::getLocalView3D()
 {
 	V3dR_GLWidget* w = 0;
 	if (mypara_3Dlocalview.b_still_open && mypara_3Dlocalview.window3D)
 			w = mypara_3Dlocalview.window3D->getGLWidget();
+	return w;
 }
+//View3DControl * XFormWidget::getView3DControl()
+//{
+//	V3dR_GLWidget* w = 0;
+//	if (mypara_3Dview.b_still_open && mypara_3Dview.window3D)
+//			w = mypara_3Dview.window3D->getGLWidget();
+//	if (w)
+//		return w->getView3DControl();
+//	else
+//		return 0;
+//}
+//View3DControl * XFormWidget::getLocalView3DControl()
+//{
+//	V3dR_GLWidget* w = 0;
+//	if (mypara_3Dlocalview.b_still_open && mypara_3Dlocalview.window3D)
+//			w = mypara_3Dlocalview.window3D->getGLWidget();
+//	if (w)
+//		return w->getView3DControl();
+//	else
+//		return 0;
+//}

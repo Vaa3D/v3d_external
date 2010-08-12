@@ -49,7 +49,7 @@ QStringList v3d_getInterfaceFeatures(QObject *plugin);
 
 class MainWindow;
 
-class V3d_PluginLoader : public QObject, V3DPluginCallback2
+class V3d_PluginLoader : public QObject, public V3DPluginCallback2
 {
     Q_OBJECT;
 
@@ -127,8 +127,8 @@ public:
 
 //V3DPluginCallback2
 public:
-	virtual const View3DInterface * getView3D(v3dhandle image_window);
-	virtual const View3DInterface * getLocalView3D(v3dhandle image_window);
+	virtual View3DControl * getView3DControl(v3dhandle image_window);
+	virtual View3DControl * getLocalView3DControl(v3dhandle image_window);
 
 };
 

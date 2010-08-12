@@ -40,7 +40,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "v3dr_common.h"
 #include "renderer.h"
-
 #include "../basic_c_fun/basic_view3d.h"
 
 class Renderer;
@@ -49,7 +48,7 @@ class V3dr_colormapDialog;
 class V3dr_surfaceDialog;
 //class SurfaceObjGeometryDialog;
 
-class V3dR_GLWidget : public QGLWidget, View3DInterface
+class V3dR_GLWidget : public QGLWidget, public View3DControl
 {
     Q_OBJECT;
 //	friend class V3dR_MainWindow; //090710 RZC: to delete renderer before ~V3dR_GLWidget()
@@ -115,145 +114,144 @@ protected:
 	//static SurfaceObjGeometryDialog *surfaceObjGeoDlg;
 
 
-#define __view3d_interface__
+#define __view3dcontrol_interface__
+public:
+	View3DControl * getView3DControl() {return dynamic_cast<View3DControl *>(this);}
 //----------------------------------------------------------------------------------------
-// begin View3DInterface
+// begin View3DControl interface
 //----------------------------------------------------------------------------------------
 public:
-	int renderMode() const { return _renderMode; }
-	int dataDim1() const { return _data_size[0]; }
-	int dataDim2() const { return _data_size[1]; }
-	int dataDim3() const { return _data_size[2]; }
-	int dataDim4() const { return _data_size[3]; }
-	int dataDim5() const { return _data_size[4]; }
+	virtual int renderMode() const { return _renderMode; }
+	virtual int dataDim1() const { return _data_size[0]; }
+	virtual int dataDim2() const { return _data_size[1]; }
+	virtual int dataDim3() const { return _data_size[2]; }
+	virtual int dataDim4() const { return _data_size[3]; }
+	virtual int dataDim5() const { return _data_size[4]; }
 
-	int xRot() const { return _xRot; }
-    int yRot() const { return _yRot; }
-    int zRot() const { return _zRot; }
-    int zoom() const { return _zoom; }
-    int xShift() const { return _xShift; }
-    int yShift() const { return _yShift; }
-    int zShift() const { return _zShift; }
-    bool isAbsoluteRot()	const { return _absRot; }
+	virtual int xRot() const { return _xRot; }
+	virtual int yRot() const { return _yRot; }
+	virtual int zRot() const { return _zRot; }
+	virtual int zoom() const { return _zoom; }
+	virtual int xShift() const { return _xShift; }
+	virtual int yShift() const { return _yShift; }
+	virtual int zShift() const { return _zShift; }
+	virtual bool isAbsoluteRot()	const { return _absRot; }
 
-    bool isVolCompress() const { return (renderer)? renderer->tryTexCompress :false; }
-    bool isShowBoundingBox() const { return (renderer)? renderer->bShowBoundingBox :false; }
-    bool isShowAxes() 		const { return (renderer)? renderer->bShowAxes :false; }
+	virtual bool isVolCompress() const { return (renderer)? renderer->tryTexCompress :false; }
+	virtual bool isShowBoundingBox() const { return (renderer)? renderer->bShowBoundingBox :false; }
+	virtual bool isShowAxes() 		const { return (renderer)? renderer->bShowAxes :false; }
 
-    void hideTool();
-    void showTool();
-    void updateTool();
-    void updateControl();
+	virtual void hideTool();
+	virtual void showTool();
+	virtual void updateTool();
+	virtual void updateControl();
 
 public slots:
 // most of format: set***(type) related to a change***(type)
-	void stillPaint();
+	virtual void stillPaint();
 
-	int setVolumeTimePoint(int t);
-	void incVolumeTimePoint(float step);
+	virtual int setVolumeTimePoint(int t);
+	virtual void incVolumeTimePoint(float step);
 
-	void setRenderMode_Mip(bool b);
-	void setRenderMode_Alpha(bool b);
-	void setRenderMode_Cs3d(bool b);
+	virtual void setRenderMode_Mip(bool b);
+	virtual void setRenderMode_Alpha(bool b);
+	virtual void setRenderMode_Cs3d(bool b);
 
-	void setCSTransparent(int);
-	void setThickness(double);
-	void setCurChannel(int);
+	virtual void setCSTransparent(int);
+	virtual void setThickness(double);
+	virtual void setCurChannel(int);
 
-	void setChannelR(bool b);
-	void setChannelG(bool b);
-	void setChannelB(bool b);
-	void setVolCompress(bool b);
+	virtual void setChannelR(bool b);
+	virtual void setChannelG(bool b);
+	virtual void setChannelB(bool b);
+	virtual void setVolCompress(bool b);
 
-	void volumeColormapDialog();
-	void surfaceSelectDialog(int curTab=0); // 090505 RZC: add curTab
-	void surfaceSelectTab(int curTab=0); // 090522 RZC: just switch to curTab, no creating
-	void surfaceDialogHide(); //added 090220, by PHC for convenience
-	void annotationDialog(int dataClass, int surfaceType, int index);
+	virtual void volumeColormapDialog();
+	virtual void surfaceSelectDialog(int curTab=0); // 090505 RZC: add curTab
+	virtual void surfaceSelectTab(int curTab=0); // 090522 RZC: just switch to curTab, no creating
+	virtual void surfaceDialogHide(); //added 090220, by PHC for convenience
+	virtual void annotationDialog(int dataClass, int surfaceType, int index);
 
-	void setXRotation(int angle);
-    void setYRotation(int angle);
-    void setZRotation(int angle);
-	void resetRotation(bool b_emit=true);
-	void modelRotation(int xRotStep, int yRotStep, int zRotStep);
-	void viewRotation(int xRotStep, int yRotStep, int zRotStep);
-	void absoluteRotPose();
-	void doAbsoluteRot();
-//	void absXRotation(int angle);
-//	void absYRotation(int angle);
-//	void absZRotation(int angle);
+	virtual void setXRotation(int angle);
+	virtual void setYRotation(int angle);
+	virtual void setZRotation(int angle);
+	virtual void resetRotation(bool b_emit=true);
+	virtual void modelRotation(int xRotStep, int yRotStep, int zRotStep);
+	virtual void viewRotation(int xRotStep, int yRotStep, int zRotStep);
+	virtual void absoluteRotPose();
+	virtual void doAbsoluteRot();
 
-    void setZoom(int r);
-    void setXShift(int s);
-	void setYShift(int s);
-	void setZShift(int s);
-	void resetZoomShift();
+	virtual void setZoom(int r);
+	virtual void setXShift(int s);
+	virtual void setYShift(int s);
+	virtual void setZShift(int s);
+	virtual void resetZoomShift();
 
-	void enableFrontSlice(bool);
-	void enableXSlice(bool);
-	void enableYSlice(bool);
-	void enableZSlice(bool);
+	virtual void enableFrontSlice(bool);
+	virtual void enableXSlice(bool);
+	virtual void enableYSlice(bool);
+	virtual void enableZSlice(bool);
 
-	void setFrontCut(int s);
-    void setXCut0(int s);
-	void setYCut0(int s);
-	void setZCut0(int s);
-    void setXCut1(int s);
-	void setYCut1(int s);
-	void setZCut1(int s);
-    void setXCS(int s);
-	void setYCS(int s);
-	void setZCS(int s);
-    void setXClip0(int s);
-	void setYClip0(int s);
-	void setZClip0(int s);
-    void setXClip1(int s);
-	void setYClip1(int s);
-	void setZClip1(int s);
+	virtual void setFrontCut(int s);
+	virtual void setXCut0(int s);
+	virtual void setYCut0(int s);
+	virtual void setZCut0(int s);
+	virtual void setXCut1(int s);
+	virtual void setYCut1(int s);
+	virtual void setZCut1(int s);
+	virtual void setXCS(int s);
+	virtual void setYCS(int s);
+	virtual void setZCS(int s);
+	virtual void setXClip0(int s);
+	virtual void setYClip0(int s);
+	virtual void setZClip0(int s);
+	virtual void setXClip1(int s);
+	virtual void setYClip1(int s);
+	virtual void setZClip1(int s);
 
-	void enableShowAxes(bool b);
-	void enableShowBoundingBox(bool b);
-	void enableOrthoView(bool b);
-	void setBackgroundColor();
-	void setBright();
+	virtual void enableShowAxes(bool b);
+	virtual void enableShowBoundingBox(bool b);
+	virtual void enableOrthoView(bool b);
+	virtual void setBackgroundColor();
+	virtual void setBright();
 
-	void setShowMarkers(int s);
-	void setShowSurfObjects(int s);
-	void enableMarkerLabel(bool);
-	void setMarkerSize(int s);
-	void enableSurfStretch(bool);
-	void toggleCellName();
+	virtual void setShowMarkers(int s);
+	virtual void setShowSurfObjects(int s);
+	virtual void enableMarkerLabel(bool);
+	virtual void setMarkerSize(int s);
+	virtual void enableSurfStretch(bool);
+	virtual void toggleCellName();
 
-	void createSurfCurrentR();
-	void createSurfCurrentG();
-	void createSurfCurrentB();
-	void loadObjectsFromFile();
-	void loadObjectsFromFile(QString url);
-	void loadObjectsListFromFile();
-	void saveSurfFile();
+	virtual void createSurfCurrentR();
+	virtual void createSurfCurrentG();
+	virtual void createSurfCurrentB();
+	virtual void loadObjectsFromFile();
+	virtual void loadObjectsFromFile(QString url);
+	virtual void loadObjectsListFromFile();
+	virtual void saveSurfFile();
 
-	void togglePolygonMode();
-	void toggleLineType();
-	void toggleObjShader();
+	virtual void togglePolygonMode();
+	virtual void toggleLineType();
+	virtual void toggleObjShader();
 
-	void changeLineOption();
-	void changeVolShadingOption();
-	void changeObjShadingOption();
+	virtual void changeLineOption();
+	virtual void changeVolShadingOption();
+	virtual void changeObjShadingOption();
 
-	void toggleTexFilter();
-	void toggleTex2D3D();
-	void toggleTexCompression();
-	void toggleTexStream();
-	void toggleShader();
-	void showGLinfo();
+	virtual void toggleTexFilter();
+	virtual void toggleTex2D3D();
+	virtual void toggleTexCompression();
+	virtual void toggleTexStream();
+	virtual void toggleShader();
+	virtual void showGLinfo();
 
-	void updateWithTriView();
-	void updateImageData();
-	void reloadData();
-	void cancelSelect();
+	virtual void updateWithTriView();
+	virtual void updateImageData();
+	virtual void reloadData();
+	virtual void cancelSelect();
 
 //----------------------------------------------------------------------------------------
-// end View3DInterface
+// end View3DControl interface
 //----------------------------------------------------------------------------------------
 
 signals:

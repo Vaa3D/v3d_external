@@ -40,10 +40,12 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 */
 
 #include "../basic_c_fun/v3d_interface.h"
-#include "v3d_plugin_loader.h"
-#include "pluginDialog.h"
+#include "../3drenderer/v3dr_glwidget.h"
 #include "../v3d/mainwindow.h"
 #include "../v3d/v3d_core.h"
+#include "v3d_plugin_loader.h"
+#include "pluginDialog.h"
+
 
 void pumpEvents()
 {
@@ -706,23 +708,25 @@ bool V3d_PluginLoader::screenShotROI3DWindow(v3dhandle image_window, QString fil
 
 //V3DPluginCallback2
 
-const View3DInterface * V3d_PluginLoader::getView3D(v3dhandle image_window)
+View3DControl * V3d_PluginLoader::getView3DControl(v3dhandle image_window)
 {
-	View3DInterface * vi = 0;
+	View3DControl * vi = 0;
 	if_XFormWidget(w, image_window)
 	{
-		vi = (View3DInterface *)(w->getView3D());
-		qDebug() << "V3d_PluginLoader getView3D: " << w <<"/"<< image_window;
+		//vi = w->getView3DControl();
+		vi = dynamic_cast<View3DControl *>(w->getView3D());
+		qDebug() << "V3d_PluginLoader getView3DControl = "<< vi <<" : " << w <<"/"<< image_window;
 	}
 	return vi;
 }
-const View3DInterface * V3d_PluginLoader::getLocalView3D(v3dhandle image_window)
+View3DControl * V3d_PluginLoader::getLocalView3DControl(v3dhandle image_window)
 {
-	View3DInterface * vi = 0;
+	View3DControl * vi = 0;
 	if_XFormWidget(w, image_window)
 	{
-		vi = (View3DInterface *)(w->getLocalView3D());
-		qDebug() << "V3d_PluginLoader getLocalView3D: " << w <<"/"<< image_window;
+		//vi = w->getLocalView3DControl();
+		vi = dynamic_cast<View3DControl *>(w->getLocalView3D());
+		qDebug() << "V3d_PluginLoader getLocalView3DControl= "<< vi <<" : " << w <<"/"<< image_window;
 	}
 	return vi;
 }
