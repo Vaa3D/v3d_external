@@ -55,4 +55,4 @@ target_link_libraries( v3dbase newmat11 ${QT_LIBRARIES} )
 
 add_executable( v3d ${V3D_SRCS} )
 
-target_link_libraries( v3d v3dbase )
+target_link_libraries( v3d V3DInterface v3dbase )
