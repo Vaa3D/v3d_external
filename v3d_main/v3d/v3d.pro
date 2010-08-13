@@ -277,7 +277,7 @@ QT += opengl
 
 LIBS += -L../jba/c++  
 
-unix:LIBS += -L../common_lib/lib_unix
+unix:LIBS += -L../common_lib/lib
 unix:LIBS += -lm -lv3dtiff \
     -lv3dnewmat \
     -L/usr/lib/qt4/demos/shared -ldemo_shared

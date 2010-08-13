@@ -32,6 +32,7 @@ if [ ! -f common_lib/lib/libv3dtiff.a ]; then
   cd ../lib
   mv libtiff.so libv3dtiff.so
   mv libtiff.a libv3dtiff.a
+  cd ../../
 fi
 
 
@@ -61,3 +62,7 @@ sh build_plugindemo.sh $ARGS
 cp -r v3d/plugins ../v3d/.
 
 cd ../v3d_main
+
+cd ../v3d
+./v3d
+
