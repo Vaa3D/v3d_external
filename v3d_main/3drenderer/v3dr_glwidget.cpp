@@ -372,9 +372,9 @@ void V3dR_GLWidget::paintGL()
 	glGetDoublev(GL_MODELVIEW_MATRIX, mRot);
 	for (int i=0; i<3; i++)	mRot[i*4 +3]=mRot[3*4 +i]=0; mRot[3*4 +3]=1; // only reserve rotation, remove translation in mRot
 
-	glScaled(1,-1,-1); // make y-axis downward conformed with image coordinate
+	glScaled(flip_X,flip_Y,flip_Z); // make y-axis downward conformed with image coordinate
 
-	//glScaled(1,1, _thickness); // here may be out of view clip-space
+	//glScaled(1,1, _thickness); // here may be out of view clip-space, not used
 
 	//=========================================================================
 	// normalized space of [-1,+1]^3;
@@ -1467,11 +1467,13 @@ void V3dR_GLWidget::lookAlong(float xLook, float yLook, float zLook) //100812 RZ
 {
 	if (!renderer)  return;
 
-	float viewDist = renderer->getViewDistance();
-	XYZ view(-xLook, -yLook, -zLook); normalize(view);
-	XYZ eye = view * viewDist;
+	//XYZ view(-xLook, -yLook, -zLook);
+	XYZ view(-xLook*flip_X, -yLook*flip_Y, -zLook*flip_Z);
+	normalize(view);
+	XYZ eye = view * (renderer->getViewDistance());
 	XYZ at(0,0,0);
 	XYZ up(0,1,0);
+	if (cross(up, view)==0) up = up + 0.01;   //make sure that cross(up,view)!=0
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();

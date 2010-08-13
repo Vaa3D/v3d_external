@@ -290,8 +290,8 @@ void Renderer::initialize(int version)
 	glDisable (GL_FOG);
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glEnable(GL_POLYGON_OFFSET_FILL);
-	glPolygonOffset(1, +1); // deal z-fighting, 081121
+	//glEnable(GL_POLYGON_OFFSET_FILL);
+	//glPolygonOffset(0, +1); // deal z-fighting, 081121
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
@@ -362,7 +362,7 @@ void Renderer::setObjectSpace()
 	setBoundingBoxSpace( boundingBox );
 }
 
-void Renderer::setBoundingBoxSpace(BoundingBox& BB)
+void Renderer::setBoundingBoxSpace(BoundingBox BB)
 {
 
 	float DX = BB.Dx();
@@ -384,43 +384,35 @@ void Renderer::setBoundingBoxSpace(BoundingBox& BB)
 	glTranslated(t[0], t[1], t[2]);
 }
 
-void Renderer::drawBoundingBoxAndAxes(BoundingBox& BB, float BlineWidth, float AlineWidth)
+inline void box_quads(const BoundingBox & BB)
+{
+#define BB_VERTEX(xi,yi,zi)  glVertex3d(BB.x##xi, BB.y##yi, BB.z##zi)
+
+	BB_VERTEX(0, 0, 0);	BB_VERTEX(0, 1, 0);	BB_VERTEX(1, 1, 0); BB_VERTEX(1, 0, 0); //z=0
+	BB_VERTEX(0, 0, 1);	BB_VERTEX(0, 1, 1);	BB_VERTEX(1, 1, 1); BB_VERTEX(1, 0, 1); //z=1
+
+	BB_VERTEX(0, 0, 0);	BB_VERTEX(1, 0, 0);	BB_VERTEX(1, 0, 1); BB_VERTEX(0, 0, 1); //y=0
+	BB_VERTEX(0, 1, 0);	BB_VERTEX(1, 1, 0);	BB_VERTEX(1, 1, 1); BB_VERTEX(0, 1, 1); //y=1
+
+	BB_VERTEX(0, 0, 0);	BB_VERTEX(0, 0, 1);	BB_VERTEX(0, 1, 1); BB_VERTEX(0, 1, 0); //x=0
+	BB_VERTEX(1, 0, 0);	BB_VERTEX(1, 0, 1);	BB_VERTEX(1, 1, 1); BB_VERTEX(1, 1, 0); //x=1
+
+}
+void Renderer::drawBoundingBoxAndAxes(BoundingBox BB, float BlineWidth, float AlineWidth)
 {
 	float D = (BB.Dmax())*0.05f;
 	float td = D*0.3f;
-	float ld = BB.Dmax()*0.0001f;
+	float ld = BB.Dmax()*0.00001f;
 	XYZ A0 = BB.Vabsmin();
 	XYZ A1 = BB.V1() + D;
 
-	//BoundingBox& BB = boundingBox;
-	#define BB_VERTEX(xi,yi,zi)  glVertex3d(BB.x##xi, BB.y##yi, BB.z##zi)
-
 	glPushAttrib(GL_LINE_BIT | GL_POLYGON_BIT);
+			//| GL_DEPTH_BUFFER_BIT);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glEnable(GL_POLYGON_OFFSET_LINE);
 
-	// a indicator of coordinate direction
-	if (bShowAxes && AlineWidth>0)
-	{
-		glPolygonOffset(-.01, -2); // deal z-fighting, 081120
-
-		glLineWidth(AlineWidth); // work only before glBegin(), by RZC 080827
-		glBegin(GL_QUADS);
-		//glBegin(GL_LINES); // glPolygonOffset do NOT  influence GL_LINES
-		{
-			glColor3f(1, 0, 0);		glVertex3d(A0.x, A0.y, A0.z);     	glVertex3d(A1.x, A0.y, A0.z);
-									glVertex3d(A1.x, A0.y+ld, A0.z+ld); glVertex3d(A0.x, A0.y+ld, A0.z+ld);
-			glColor3f(0, 1, 0);		glVertex3d(A0.x, A0.y, A0.z);     	glVertex3d(A0.x, A1.y, A0.z);
-									glVertex3d(A0.x+ld, A1.y, A0.z+ld); glVertex3d(A0.x+ld, A0.y, A0.z+ld);
-			glColor3f(0, 0, 1);		glVertex3d(A0.x, A0.y, A0.z);     	glVertex3d(A0.x, A0.y, A1.z);
-									glVertex3d(A0.x+ld, A0.y+ld, A1.z); glVertex3d(A0.x+ld, A0.y+ld, A0.z);
-		}
-		glEnd();
-
-		glColor3f(1, 0, 0);		drawString(A1.x+td, A0.y, A0.z, "X", 1);
-		glColor3f(0, 1, 0);		drawString(A0.x, A1.y+td, A0.z, "Y", 1);
-		glColor3f(0, 0, 1);		drawString(A0.x, A0.y, A1.z+td, "Z", 1);
-	}
+//	glPolygonOffset(0, -1); // deal z-fighting, 081120
+//	glDepthFunc(GL_LEQUAL);
 
 	if (bShowBoundingBox && BlineWidth>0)
 	{
@@ -430,18 +422,29 @@ void Renderer::drawBoundingBoxAndAxes(BoundingBox& BB, float BlineWidth, float A
 		glBegin(GL_QUADS);
 		//glBegin(GL_LINES);
 		{
-			glColor3fv(color_line.c);
-
-			BB_VERTEX(0, 0, 0);	BB_VERTEX(0, 1, 0);	BB_VERTEX(1, 1, 0); BB_VERTEX(1, 0, 0); //z=0
-			BB_VERTEX(0, 0, 1);	BB_VERTEX(0, 1, 1);	BB_VERTEX(1, 1, 1); BB_VERTEX(1, 0, 1); //z=1
-
-			BB_VERTEX(0, 0, 0);	BB_VERTEX(1, 0, 0);	BB_VERTEX(1, 0, 1); BB_VERTEX(0, 0, 1); //y=0
-			BB_VERTEX(0, 1, 0);	BB_VERTEX(1, 1, 0);	BB_VERTEX(1, 1, 1); BB_VERTEX(0, 1, 1); //y=1
-
-			BB_VERTEX(0, 0, 0);	BB_VERTEX(0, 0, 1);	BB_VERTEX(0, 1, 1); BB_VERTEX(0, 1, 0); //x=0
-			BB_VERTEX(1, 0, 0);	BB_VERTEX(1, 0, 1);	BB_VERTEX(1, 1, 1); BB_VERTEX(1, 1, 0); //x=1
+			glColor3fv(color_line.c);	box_quads(BB);
 		}
 		glEnd();
+	}
+
+	// a indicator of coordinate direction
+	if (bShowAxes && AlineWidth>0)
+	{
+		glPolygonOffset(0, -2); // deal z-fighting, 081120
+
+		glLineWidth(AlineWidth); // work only before glBegin(), by RZC 080827
+		glBegin(GL_QUADS);
+		//glBegin(GL_LINES); // glPolygonOffset do NOT  influence GL_LINES
+		{
+			glColor3f(1, 0, 0);		box_quads( BoundingBox(A0, XYZ(A1.x, A0.y+ld, A0.z+ld)) );
+			glColor3f(0, 1, 0);		box_quads( BoundingBox(A0, XYZ(A0.x+ld, A1.y, A0.z+ld)) );
+			glColor3f(0, 0, 1);		box_quads( BoundingBox(A0, XYZ(A0.x+ld, A0.y+ld, A1.z)) );
+		}
+		glEnd();
+
+		glColor3f(1, 0, 0);		drawString(A1.x+td, A0.y, A0.z, "X", 1);
+		glColor3f(0, 1, 0);		drawString(A0.x, A1.y+td, A0.z, "Y", 1);
+		glColor3f(0, 0, 1);		drawString(A0.x, A0.y, A1.z+td, "Z", 1);
 	}
 
 	glPopAttrib();

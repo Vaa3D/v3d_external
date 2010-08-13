@@ -330,6 +330,7 @@ private:
 
 	int viewW, viewH;
 	GLdouble mRot[16];
+	static const int flip_X= +1, flip_Y= -1, flip_Z= -1; // make y-axis downward conformed with image coordinate
 	QPoint lastPos;
 
 	int _xRot, _yRot, _zRot, dxRot, dyRot, dzRot;

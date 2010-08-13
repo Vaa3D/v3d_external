@@ -1584,7 +1584,7 @@ void Renderer_tex2::drawUnitVolume()
 	{
 
 		int section = (renderMode == rmCrossSection);
-		// cross section ///////////////////////////////////////
+		// cross section =============================================
 		if (renderMode == rmCrossSection)
 		{
 			if (bXSlice)	drawStackX(-1, section, b_tex3d, b_stream);
@@ -1606,8 +1606,8 @@ void Renderer_tex2::drawUnitVolume()
 		{
 			drawStackZ(-1, section, b_tex3d, b_stream);
 		}
-		// volume ///////////////////////////////////////////////
-		else if ((fabs(ax) > fabs(ay)) && (fabs(ax) > fabs(az)))
+		// volume //=================================================
+		else if ((fabs(ax) >= fabs(ay)) && (fabs(ax) > fabs(az)))  //100813 |ax|==|ay|>|az|
 		{
 			//SLICE_COLOR.a *= 1+fabs(d.x);		glColor4fv(SLICE_COLOR.c);
 			drawStackX(ax, section, b_tex3d, b_stream);

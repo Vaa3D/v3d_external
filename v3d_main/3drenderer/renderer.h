@@ -114,8 +114,8 @@ protected:
 
 	virtual void setObjectSpace();
 	virtual void setSurfClipSpace();
-	virtual void setBoundingBoxSpace(BoundingBox& BB);
-	virtual void drawBoundingBoxAndAxes(BoundingBox& BB, float BlineWidth=1, float AlineWidth=3);
+	virtual void setBoundingBoxSpace(BoundingBox BB);
+	virtual void drawBoundingBoxAndAxes(BoundingBox BB, float BlineWidth=1, float AlineWidth=3);
 
 	virtual void updateVolCutRange();
 	virtual void updateSurfClipRange();
