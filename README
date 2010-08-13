@@ -38,8 +38,7 @@ commands:
 
 	Mac, gcc compiler, 32bit build:  "sh ./build.macx -n -B -j4"
 	Mac, gcc compiler, 64bit build:  "sh ./build.macx -m -B -j4"
-	Linux, gcc compiler, 32bit build:  "sh ./build.linux -n -B -j4"
-	Linux, gcc compiler, 64bit build:  "sh ./build.linux -m -B -j4"
+	Linux, gcc compiler (32- or 64-bit will depend on your OS automatically):  "sh ./build.linux -B -j4"
 	Windows, MinGW compiler, 32bit build:  "build.bat -B -j4"
 	Windows, MSVC compiler, 32bit build:  "build_msvc32.bat -B -j4"
 	Windows, MSVC compiler, 64bit build:  "build_msvc64.bat -B -j4"
@@ -47,6 +46,13 @@ commands:
 The successful, the V3D program will launch after the build. The actual program will be put
 under the ./v3d folder. You can directly run it next time, without a rebuild.
 
+Trouble-shooting: If after you have successfully built the V3D application, but cannot run it, it is
+                  likely to be a dynamic library dependency issue. This means that your QT library
+                  or something else has a dependency on a missing library. For example, on Ubuntu,
+                  sometimes the system lacks a libtiff library, which QT often needs it. Although
+                  V3D builds libtiff automatically and renames it as libv3dtiff, QT still needs 
+                  the library called libtiff.so. Thus you can copy the libtiff.so to a folder where
+                  searchable (e.g. by setting LD_LIBRARY_PATH environment variable).
 
 If you write/use additional plugins for V3D, be sure to put these plugins into a subfolder
 called "plugins", which should be in the same folder where the execitable of v3d program resides. 
