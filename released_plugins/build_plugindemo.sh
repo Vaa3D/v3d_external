@@ -24,7 +24,7 @@ for arg in $*; do
   else
   	MAKE_ARGS+=" $arg"
   fi
-done;
+done
 
 if [ ${#MYDIR} -gt 0 ]; then
   ALLDIRS=$MYDIR
@@ -44,7 +44,7 @@ for mydir in $ALLDIRS; do
   done;
   #fi
   cd ..
-done;  
+done  
 
 cd ..
 
