@@ -43,11 +43,12 @@ endif()
 
 add_subdirectory( common_lib )
 
+add_subdirectory( basic_c_fun )
+
 add_subdirectory( v3d )
 
 
 # add_subdirectory( 3drenderer )
-# add_subdirectory( basic_c_fun )
 # add_subdirectory( cellseg )
 # add_subdirectory( gmm )
 # add_subdirectory( graph )
