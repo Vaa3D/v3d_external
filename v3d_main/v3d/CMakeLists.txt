@@ -51,7 +51,11 @@ QT4_WRAP_CPP(QT_MOC_SRCS
 include_directories(${V3D_BINARY_DIR}/v3d)
 
 add_library(v3dbase ${QT_UI_SRCS} ${QT_MOC_SRCS})
-target_link_libraries( v3dbase newmat11 ${QT_LIBRARIES} )
+if( V3D_USE_OWN_NEWMAT )
+  target_link_libraries( v3dbase newmat11 ${QT_LIBRARIES} )
+else( V3D_USE_OWN_NEWMAT )
+  target_link_libraries( v3dbase newmat ${QT_LIBRARIES} )
+endif( V3D_USE_OWN_NEWMAT )
 
 add_executable( v3d ${V3D_SRCS} )
 
