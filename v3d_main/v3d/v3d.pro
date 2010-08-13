@@ -80,7 +80,7 @@ TARGET +=
 DEPENDPATH += . v3d
 INCLUDEPATH += . 
 
-# cross-OS-platform, cross-Qt-version, by RZC 080916, 080921, 080923, 090612
+# cross-OS-platform, cross-Qt-version
 QT_DIR = $$dirname(QMAKE_QMAKE)/..  # cross-Qt-version
 LOCAL_DIR = ../common_lib/ 				# unix-liked platform: macx, unix, win32-msys-mingw
 
@@ -279,10 +279,9 @@ LIBS += -L../jba/c++
 
 unix:LIBS += -L../common_lib/lib
 unix:LIBS += -lm -lv3dtiff \
-    -lv3dnewmat \
-    -L/usr/lib/qt4/demos/shared -ldemo_shared
+    -lv3dnewmat 
+#    -L/usr/lib/qt4/demos/shared -ldemo_shared
     
-#macx:LIBS -= -ltiff  #do this because unix is a superset of macx
 macx:LIBS += -L../common_lib/lib_mac32
 macx:LIBS += -lm -lv3dtiff \
     -lv3dnewmat 
@@ -290,9 +289,6 @@ macx:LIBS += -lm -lv3dtiff \
 
 win32:LIBS += -lm -lv3dtiff \
     -lv3dnewmat 
-#    -ljba \
-#    -lFL_cellseg \
-#    -lFL_brainseg
 #    -lglut32 # win32-mingw, on unix link libglut.a
 
 INCLUDEPATH += ../common_lib/include   
