@@ -14,6 +14,79 @@ Q_EXPORT_PLUGIN2(ex_push, ExPushPlugin);
 
 void dopush(V3DPluginCallback2 &v3d, QWidget *parent, int method_code);
 
+class lookPanel : public QDialog
+	{
+	public:
+		QSpinBox* box1;
+		QSpinBox* box2;
+		QSpinBox* box3;
+		V3DPluginCallback2 &v3d;
+		static lookPanel* panel;
+		
+		virtual ~lookPanel()
+		{
+			panel = 0;
+		}
+		lookPanel(V3DPluginCallback2 &_v3d, QWidget *parent) : QDialog(parent),
+		v3d(_v3d)
+		{
+			panel = this;
+			
+			box1 = new QSpinBox(); box1->setRange(-100,100);
+			box2 = new QSpinBox(); box2->setRange(-100,100);
+			box3 = new QSpinBox(); box3->setRange(-100,100);
+			QPushButton* ok     = new QPushButton("OK");
+			QPushButton* cancel = new QPushButton("Cancel");
+			QFormLayout *formLayout = new QFormLayout;
+			formLayout->addRow(QObject::tr("look along X: "), box1);
+			formLayout->addRow(QObject::tr("look along Y: "), box2);
+			formLayout->addRow(QObject::tr("look along Z: "), box3);
+			formLayout->addRow(ok, cancel);
+			
+			//QDialog d(parent);
+			setLayout(formLayout);
+			setWindowTitle(QString("look along vector"));
+			
+			connect(ok,     SIGNAL(clicked()), this, SLOT(accept()));
+			connect(cancel, SIGNAL(clicked()), this, SLOT(close()));
+		}
+		virtual void accept()
+		{
+			int i1 = box1->value();
+			int i2 = box2->value();
+			int i3 = box3->value();
+			
+			v3dhandle curwin = v3d.currentImageWindow();
+			if (curwin)//ensure the 3d viewer window is open; if not, then open it
+			{
+				v3d.open3DWindow(curwin);
+				
+				View3DControl *view = v3d.getView3DControl(curwin);
+				if (view)  view->lookAlong(i1,i2,i3);
+				
+				v3d.updateImageWindow(curwin);
+			}
+		}
+	};
+
+lookPanel* lookPanel::panel = 0;
+
+V3DLONG panel(V3DPluginCallback2 &v3d, QWidget *parent)
+{
+	if (lookPanel::panel)
+	{
+		lookPanel::panel->show();
+		return -1;
+	}
+	
+	lookPanel* p = new lookPanel(v3d, parent);
+	if (p)	p->show();
+	return (V3DLONG)p;
+}
+
+
+
+
 //plugin funcs
 const QString title = "Example for pushing image and objects";
 QStringList ExPushPlugin::menulist() const
@@ -52,7 +125,7 @@ void ExPushPlugin::domenu(const QString & menu_name, V3DPluginCallback2 & v3d, Q
 	}
 }
 
-int panel(V3DPluginCallback2 &v3d, QWidget *parent);
+//lookPanel* panel(V3DPluginCallback2 &v3d, QWidget *parent);
 
 
 void dopush(V3DPluginCallback2 &v3d, QWidget *parent, int method_code)
@@ -161,74 +234,4 @@ void dopush(V3DPluginCallback2 &v3d, QWidget *parent, int method_code)
 	}
 }
 
-
-class lookPanel : public QDialog
-{
-public:
-	QSpinBox* box1;
-	QSpinBox* box2;
-	QSpinBox* box3;
-	V3DPluginCallback2 &v3d;
-	static lookPanel* panel;
-
-	virtual ~lookPanel()
-	{
-		panel = 0;
-	}
-	lookPanel(V3DPluginCallback2 &_v3d, QWidget *parent) : QDialog(parent),
-		v3d(_v3d)
-	{
-		panel = this;
-
-		box1 = new QSpinBox(); box1->setRange(-100,100);
-		box2 = new QSpinBox(); box2->setRange(-100,100);
-		box3 = new QSpinBox(); box3->setRange(-100,100);
-		QPushButton* ok     = new QPushButton("OK");
-		QPushButton* cancel = new QPushButton("Cancel");
-		QFormLayout *formLayout = new QFormLayout;
-		formLayout->addRow(QObject::tr("look along X: "), box1);
-		formLayout->addRow(QObject::tr("look along Y: "), box2);
-		formLayout->addRow(QObject::tr("look along Z: "), box3);
-		formLayout->addRow(ok, cancel);
-
-		//QDialog d(parent);
-		setLayout(formLayout);
-		setWindowTitle(QString("look along vector"));
-
-		connect(ok,     SIGNAL(clicked()), this, SLOT(accept()));
-		connect(cancel, SIGNAL(clicked()), this, SLOT(close()));
-	}
-	virtual void accept()
-	{
-			int i1 = box1->value();
-			int i2 = box2->value();
-			int i3 = box3->value();
-
-			v3dhandle curwin = v3d.currentImageWindow();
-			if (curwin)//ensure the 3d viewer window is open; if not, then open it
-			{
-				v3d.open3DWindow(curwin);
-
-				View3DControl *view = v3d.getView3DControl(curwin);
-				if (view)  view->lookAlong(i1,i2,i3);
-
-				v3d.updateImageWindow(curwin);
-			}
-	}
-};
-
-lookPanel* lookPanel::panel = 0;
-
-int panel(V3DPluginCallback2 &v3d, QWidget *parent)
-{
-	if (lookPanel::panel)
-	{
-		lookPanel::panel->show();
-		return -1;
-	}
-
-	lookPanel* p = new lookPanel(v3d, parent);
-	if (p)	p->show();
-	return int(p);
-}
 
