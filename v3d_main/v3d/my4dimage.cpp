@@ -3680,7 +3680,7 @@ void My4DImage::exportNeuronToSWCFile()
 
 void My4DImage::updateViews()
 {
-	if (p_mainWidget)  p_mainWidget->show(); //090818 RZC for V3D_PluginLoader
+	if (p_mainWidget)  p_mainWidget->show(); //090818 for V3D_PluginLoader
 
 	//setUpdatesEnabled(true)
 
