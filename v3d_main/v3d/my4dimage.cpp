@@ -3544,18 +3544,50 @@ bool My4DImage::compute_rgn_stat(LocationSimple & pt, int channo)
 			break;
 	}
 
-	for (i=0;i<=rr;i++)
+	bool b_compute_all_radius=false;
+	if (b_compute_all_radius)
 	{
-		compute_win3d_pca(data4d_uint8[cc], this->getXDim(), this->getYDim(), this->getZDim(),
-						  xx, yy, zz,
-						  i, i, i,
-						  pt.ev_pc1, pt.ev_pc2, pt.ev_pc3, b_win_shape, b_disp_CoM_etc);
-		double Lscore = exp( -( (pt.ev_pc1-pt.ev_pc2)*(pt.ev_pc1-pt.ev_pc2) + (pt.ev_pc2-pt.ev_pc3)*(pt.ev_pc2-pt.ev_pc3) + (pt.ev_pc1-pt.ev_pc3)*(pt.ev_pc1-pt.ev_pc3) ) /
-						(pt.ev_pc1*pt.ev_pc1 + pt.ev_pc2*pt.ev_pc2 + pt.ev_pc3*pt.ev_pc3) );
-		double s_linear = (pt.ev_pc1-pt.ev_pc2)/(pt.ev_pc1+pt.ev_pc2+pt.ev_pc3);
-		double s_planar = 2.0*(pt.ev_pc2-pt.ev_pc3)/(pt.ev_pc1+pt.ev_pc2+pt.ev_pc3);
-		double s_sphere = 3.0*pt.ev_pc3/(pt.ev_pc1+pt.ev_pc2+pt.ev_pc3);
-		printf("r=%d \t lamba1=%5.3f lamba2=%5.3f lamba3=%5.3f L_score=%5.3f linear_c=%5.3f planar_c=%5.3f spherical_c=%5.3f\n", i, pt.ev_pc1, pt.ev_pc2, pt.ev_pc3, Lscore, s_linear, s_planar, s_sphere);
+		for (i=0;i<=rr;i++)
+		{
+			bool b_continue=true;
+			switch ( this->getDatatype() )
+			{
+				case V3D_UINT8:
+					compute_win3d_pca(data4d_uint8[cc], this->getXDim(), this->getYDim(), this->getZDim(),
+							  xx, yy, zz,
+							  i, i, i,
+							  pt.ev_pc1, pt.ev_pc2, pt.ev_pc3, b_win_shape, b_disp_CoM_etc);
+					break;
+				case V3D_UINT16:
+					compute_win3d_pca(data4d_uint16[cc], this->getXDim(), this->getYDim(), this->getZDim(),
+									  xx, yy, zz,
+									  i, i, i,
+									  pt.ev_pc1, pt.ev_pc2, pt.ev_pc3, b_win_shape, b_disp_CoM_etc);
+					break;
+					
+				case V3D_FLOAT32:
+					compute_win3d_pca(data4d_float32[cc], this->getXDim(), this->getYDim(), this->getZDim(),
+									  xx, yy, zz,
+									  i, i, i,
+									  pt.ev_pc1, pt.ev_pc2, pt.ev_pc3, b_win_shape, b_disp_CoM_etc);
+					break;
+					
+				default:
+					v3d_msg("Unsupported data type found in compute_rgn_stat(). \n");
+					b_continue=false;
+					break;
+			}
+			
+			if (!b_continue)
+				break;
+			
+			double Lscore = exp( -( (pt.ev_pc1-pt.ev_pc2)*(pt.ev_pc1-pt.ev_pc2) + (pt.ev_pc2-pt.ev_pc3)*(pt.ev_pc2-pt.ev_pc3) + (pt.ev_pc1-pt.ev_pc3)*(pt.ev_pc1-pt.ev_pc3) ) /
+							(pt.ev_pc1*pt.ev_pc1 + pt.ev_pc2*pt.ev_pc2 + pt.ev_pc3*pt.ev_pc3) );
+			double s_linear = (pt.ev_pc1-pt.ev_pc2)/(pt.ev_pc1+pt.ev_pc2+pt.ev_pc3);
+			double s_planar = 2.0*(pt.ev_pc2-pt.ev_pc3)/(pt.ev_pc1+pt.ev_pc2+pt.ev_pc3);
+			double s_sphere = 3.0*pt.ev_pc3/(pt.ev_pc1+pt.ev_pc2+pt.ev_pc3);
+			printf("r=%d \t lamba1=%5.3f lamba2=%5.3f lamba3=%5.3f L_score=%5.3f linear_c=%5.3f planar_c=%5.3f spherical_c=%5.3f\n", i, pt.ev_pc1, pt.ev_pc2, pt.ev_pc3, Lscore, s_linear, s_planar, s_sphere);
+		}
 	}
 
 	//now update the value of the respective
