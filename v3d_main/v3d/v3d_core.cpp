@@ -3385,8 +3385,8 @@ void XFormWidget::updateDataRelatedGUI()
 		
 		colorMapDispType->setEnabled(imgData->getCDim()==1);
 		
-		if (imgData->getDatatype()==V3D_UINT16 && imgData->getCDim()==1)
-			colorMapDispType->setChecked(true);
+		if (imgData->getCDim()<=1) //100815
+			colorRed2GrayType->setChecked(true);
 		else
 			colorAllType->setChecked(true);
 		
