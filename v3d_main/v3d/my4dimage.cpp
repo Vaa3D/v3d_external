@@ -402,7 +402,7 @@ My4DImage::My4DImage()
 
 	bLinkFocusViews = true;
 	bDisplayFocusCross = true;
-	bImgValScaleDisplay = false;
+	//bImgValScaleDisplay = false;
 	bLookingGlass = false;
 
 	p_vmax = NULL;
@@ -468,10 +468,10 @@ void My4DImage::getColorMapInfo(int & len, ImageDisplayColorType & c)
 void **** My4DImage::getData(ImagePixelType & dtype)
 {
 	dtype = this->getDatatype();
-	if (dtype==V3D_UINT8 || dtype==V3D_UINT16)
+	if (dtype==V3D_UINT8 || dtype==V3D_UINT16 || dtype==V3D_FLOAT32)
 		return data4d_virtual;
 	else
-		return NULL; //temnporarily allow only UINT8 and UINT16 data
+		return NULL; //temnporarily allow only UINT8, UINT16, and FLOAT32 data
 }
 
 double My4DImage::at(int x, int y, int z, int c) //return a double number because it can always be converted back to UINT8 and UINT16 without information loss
@@ -813,8 +813,8 @@ void My4DImage::setupData4D()
 			}
 			data4d_virtual = (void ****)data4d_float32;
 
-			v3d_msg("Warning: this data type FLOAT32 has not been supported in display yet.\n");
-
+			//FIXME: this may be a problem and need further test of float type for color indexing
+			//createColorMap(256); //just use 256 for a safe pool for cell editing. 
 			break;
 
 		default:
@@ -824,7 +824,7 @@ void My4DImage::setupData4D()
 			//break;
 	}
 
-	curFocusX = this->getXDim()>>1; //begin from first slices
+	curFocusX = this->getXDim()>>1; //begin from mid location
 	curFocusY = this->getYDim()>>1;
 	curFocusZ = this->getZDim()>>1;
 }
@@ -850,7 +850,7 @@ bool My4DImage::updateminmaxvalues()
 	}
 	catch (...)
 	{
-		v3d_msg("Error happened in allocating memory.\n");
+		v3d_msg("Error happened in allocating memory in updateminmaxvalues().\n");
 		this->setError(1);
 		if (p_vmax) {delete []p_vmax; p_vmax=0;}
 		if (p_vmin) {delete []p_vmin; p_vmin=0;}
@@ -869,6 +869,7 @@ bool My4DImage::updateminmaxvalues()
 				V3DLONG tmppos_min, tmppos_max;
 				minMaxInVector((unsigned char *)(this->getRawData() +(V3DLONG)i*channelPageSize*sizeof(unsigned char)), channelPageSize, tmppos_min, minvv, tmppos_max, maxvv);
 				p_vmax[i] = maxvv; p_vmin[i] = minvv;
+				v3d_msg(QString("channel %1 min=[%2] max=[%3]").arg(i).arg(p_vmin[i]).arg(p_vmax[i]),0);
 			}
 			break;
 
@@ -879,7 +880,7 @@ bool My4DImage::updateminmaxvalues()
 				V3DLONG tmppos_min, tmppos_max;
 				minMaxInVector((USHORTINT16 *)(this->getRawData() +(V3DLONG)i*channelPageSize*sizeof(USHORTINT16)), channelPageSize, tmppos_min, minvv, tmppos_max, maxvv);
 				p_vmax[i] = maxvv; p_vmin[i] = minvv;
-				printf("channel [%ld] max=[%5.3f] min=[%5.3f]\n", i, p_vmax[i], p_vmin[i]);
+				v3d_msg(QString("channel %1 min=[%2] max=[%3]").arg(i).arg(p_vmin[i]).arg(p_vmax[i]),0);
 			}
 			break;
 
@@ -890,7 +891,7 @@ bool My4DImage::updateminmaxvalues()
 				V3DLONG tmppos_min, tmppos_max;
 				minMaxInVector((float *)(this->getRawData() +(V3DLONG)i*channelPageSize*sizeof(float)), channelPageSize, tmppos_min, minvv, tmppos_max, maxvv);
 				p_vmax[i] = maxvv; p_vmin[i] = minvv;
-				printf("channel [%ld] max=[%5.3f] min=[%5.3f]\n", i, p_vmax[i], p_vmin[i]);
+				v3d_msg(QString("channel %1 min=[%2] max=[%3]").arg(i).arg(p_vmin[i]).arg(p_vmax[i]),0);
 			}
 			break;
 
@@ -984,7 +985,7 @@ void My4DImage::loadImage(V3DLONG imgsz0, V3DLONG imgsz1, V3DLONG imgsz2, V3DLON
 				p_vmin[i] = 0;
 			}
 
-			v3d_msg("Warning: this data type FLOAT32 has not been supported in display yet.\n");
+			v3d_msg("Warning: this data type FLOAT32 has not been supported in display yet - create blank image.\n");
 
 			break;
 
@@ -1435,7 +1436,7 @@ void My4DImage::crop(V3DLONG bpos_x, V3DLONG epos_x, V3DLONG bpos_y, V3DLONG epo
 				p_vmin[i] = (double)minInVector((float *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(float), channelPageSize, tmppos);
 			}
 
-			v3d_msg("Warning: this data type FLOAT32 has not been supported in display yet.\n");
+			v3d_msg("Warning: this data type FLOAT32 may not be supported in display yet, -- crop().\n");
 
 			break;
 
@@ -1936,7 +1937,7 @@ bool My4DImage::setNewImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG ns
 			if (!new4dpointer_v3d(data4d_float32, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim(), this->getRawData() ))
 			{
 				this->setError(1);
-        this->deleteRawDataAndSetPointerToNull();
+				this->deleteRawDataAndSetPointerToNull();
 				return false;
 			}
 			data4d_virtual = (void ****)data4d_float32;
@@ -1947,7 +1948,7 @@ bool My4DImage::setNewImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG ns
 				p_vmin[i] = (double)minInVector((float *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(float), channelPageSize, tmppos);
 			}
 
-			v3d_msg("Warning: this data type FLOAT32 has not been supported in display yet.\n");
+			v3d_msg("Warning: this data type FLOAT32 may not be supported in display yet -- setNewImageData().\n");
 
 			break;
 
@@ -1975,7 +1976,7 @@ bool My4DImage::setNewImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG ns
 	}
 
 	p_mainWidget->setCTypeBasedOnImageData(); //the colormap info should be reset based on updated data. 2010-08-01
-
+	
 	p_mainWidget->updateDataRelatedGUI();
     p_mainWidget->setWindowTitle_Suffix("_processed");
 
@@ -2386,6 +2387,14 @@ bool My4DImage::scaleintensity(int channo, double lower_th, double higher_th, do
 	return true;
 }
 
+bool My4DImage::getFlagImgValScaleDisplay() 
+{
+	if (!p_mainWidget) 
+		return false; 
+	else
+		return p_mainWidget->getFlagImgValScaleDisplay();
+}
+
 bool My4DImage::thresholdintensity(int channo, double th) //anything < th will be 0, others unchanged
 {
 	if (channo>=getCDim())
@@ -2550,118 +2559,88 @@ bool My4DImage::binarizeintensity(int channo, double th) //anything < th will be
 	return true;
 }
 
-void My4DImage::setFocusFeatureViewText()
+QString My4DImage::setFocusFeatureViewText()
 {
 	if (p_focusPointFeatureWidget)
 	{
 		// set the focus pixel information
 
-		QString tmps;
+		QString tmps = "Voxel type: ";
+		switch (getDatatype())
+		{
+			case V3D_UINT8: tmps.append("UINT8"); break;
+			case V3D_UINT16: tmps.append("UINT16"); break;
+			case V3D_FLOAT32: tmps.append("FLOAT32"); break;
+			default: tmps.append("Unrecognized type. "); return tmps; break;
+		}
+		tmps.append("; ");
 		if (p_mainWidget)
 		{
-			tmps.append("Current tri-view zoom = ");
-			QString c_zoom;
-			c_zoom.setNum(p_mainWidget->disp_zoom); tmps.append(c_zoom+" ");
+			tmps.append(QString("Tri-view zoom: %1<br>").arg(p_mainWidget->disp_zoom));
 		}
+		
+		tmps.append(QString("Focus: (%1, %2, %3)").arg(curFocusX+1).arg(curFocusY+1).arg(curFocusZ+1));
 
-		tmps.append("Focus pos(");
 		QString v1,v2,v3;
-		v1.setNum(curFocusX+1); v1.append(",");
-		v2.setNum(curFocusY+1); v2.append(",");
-		v3.setNum(curFocusZ+1); v3.append(")");
-		tmps.append(v1);
-		tmps.append(v2);
-		tmps.append(v3);
-		//p_focusPointFeatureWidget->setPlainText(tmps);
-
 		tmps.append(" RGB = (");
-
 		switch ( this->getDatatype() )
 		{
 			case V3D_UINT8:
-			{
-				int tmpr=0, tmpg=0, tmpb=0;
+				{
+					int tmpr=0, tmpg=0, tmpb=0;
 
-				unsigned char ****ptmp = (unsigned char ****)data4d_virtual;
-				if (getCDim()>=3)
-					tmpb = int(ptmp[2][curFocusZ][curFocusY][curFocusX]);
-				if (getCDim()>=2)
-					tmpg = int(ptmp[1][curFocusZ][curFocusY][curFocusX]);
-				if (getCDim()>=1)
-					tmpr = int(ptmp[0][curFocusZ][curFocusY][curFocusX]);
-
-				v1.setNum(tmpr); v1.append(",");
-				v2.setNum(tmpg); v2.append(",");
-				v3.setNum(tmpb); v3.append(")");
-			}
+					unsigned char ****ptmp = (unsigned char ****)data4d_virtual;
+					if (getCDim()>=3)
+						tmpb = int(ptmp[2][curFocusZ][curFocusY][curFocusX]);
+					if (getCDim()>=2)
+						tmpg = int(ptmp[1][curFocusZ][curFocusY][curFocusX]);
+					if (getCDim()>=1)
+						tmpr = int(ptmp[0][curFocusZ][curFocusY][curFocusX]);
+					tmps.append(QString("%1,%2,%3)<br>").arg(tmpr).arg(tmpg).arg(tmpb));
+				}
 				break;
 
 			case V3D_UINT16:
-			{
-				int tmpr=0, tmpg=0, tmpb=0;
+				{
+					int tmpr=0, tmpg=0, tmpb=0;
 
-				USHORTINT16 ****ptmp = (USHORTINT16 ****)data4d_virtual;
-				if (getCDim()>=3)
-					tmpb = int(ptmp[2][curFocusZ][curFocusY][curFocusX]);
-				if (getCDim()>=2)
-					tmpg = int(ptmp[1][curFocusZ][curFocusY][curFocusX]);
-				if (getCDim()>=1)
-					tmpr = int(ptmp[0][curFocusZ][curFocusY][curFocusX]);
-
-				v1.setNum(tmpr); v1.append(",");
-				v2.setNum(tmpg); v2.append(",");
-				v3.setNum(tmpb); v3.append(")");
-			}
+					USHORTINT16 ****ptmp = (USHORTINT16 ****)data4d_virtual;
+					if (getCDim()>=3)
+						tmpb = int(ptmp[2][curFocusZ][curFocusY][curFocusX]);
+					if (getCDim()>=2)
+						tmpg = int(ptmp[1][curFocusZ][curFocusY][curFocusX]);
+					if (getCDim()>=1)
+						tmpr = int(ptmp[0][curFocusZ][curFocusY][curFocusX]);
+					tmps.append(QString("%1,%2,%3)<br>").arg(tmpr).arg(tmpg).arg(tmpb));
+				}
 				break;
 
 			case V3D_FLOAT32:
-			{
-				float tmpr=0, tmpg=0, tmpb=0;
-
-				float ****ptmp = (float ****)data4d_virtual;
-				if (getCDim()>=3)
-					tmpb = (ptmp[2][curFocusZ][curFocusY][curFocusX]);
-				if (getCDim()>=2)
-					tmpg = (ptmp[1][curFocusZ][curFocusY][curFocusX]);
-				if (getCDim()>=1)
-					tmpr = (ptmp[0][curFocusZ][curFocusY][curFocusX]);
-
-				v1.setNum(tmpr); v1.append(",");
-				v2.setNum(tmpg); v2.append(",");
-				v3.setNum(tmpb); v3.append(")");
-			}
+				{
+					float tmpr=0, tmpg=0, tmpb=0;
+					float ****ptmp = (float ****)data4d_virtual;
+					if (getCDim()>=3)
+						tmpb = (ptmp[2][curFocusZ][curFocusY][curFocusX]);
+					if (getCDim()>=2)
+						tmpg = (ptmp[1][curFocusZ][curFocusY][curFocusX]);
+					if (getCDim()>=1)
+						tmpr = (ptmp[0][curFocusZ][curFocusY][curFocusX]);
+					tmps.append(QString("%1,%2,%3)<br>").arg(tmpr).arg(tmpg).arg(tmpb));
+				}
 				break;
-
 		}
 
-
-		tmps.append(v1);
-		tmps.append(v2);
-		tmps.append(v3);
-		//p_focusPointFeatureWidget->append(tmps);
-		p_focusPointFeatureWidget->setPlainText(tmps);
-
 		//display the stack min/max info
-
-		tmps = "Channel min/max: ";
+		tmps.append("Channel min/max: ");
 		V3DLONG i;
 		for (i=0;i<getCDim();i++)
 		{
-			tmps.append("C");
-			tmps.append(v1.setNum(i+1));
-			tmps.append("[min=");
-			tmps.append(v1.setNum(int(p_vmin[i])));
-			tmps.append(" max=");
-			tmps.append(v1.setNum(int(p_vmax[i])));
-			tmps.append("]");
-			if (i!=getCDim()-1)
-				tmps.append("; ");
+			tmps.append(QString("C%1 [min=%2, max=%3]; ").arg(i+1).arg(p_vmin[i]).arg(p_vmax[i]));
 		}
-		p_focusPointFeatureWidget->append(tmps);
-
+	
 		//display the defined location info
 
-		tmps = "Defined marker location: \n";
+		tmps.append("<br>Defined marker location: <br>");
 		int tmpx,tmpy,tmpz;
 		QString tmpc;
 		LocationSimple tmpLocation(0,0,0);
@@ -2679,7 +2658,7 @@ void My4DImage::setFocusFeatureViewText()
 			tmpc.setNum(tmpy); tmpc.append(",");
 			tmps.append(tmpc);
 			tmpc.setNum(tmpz);
-			if ((i+1)%5==0) tmpc.append("\n");
+			if ((i+1)%5==0) tmpc.append("<br>");
 			else tmpc.append("; ");
 			tmps.append(tmpc);
 
@@ -2698,11 +2677,15 @@ void My4DImage::setFocusFeatureViewText()
 			//	  tmpc.setNum(tmpLocation.getCurt()); tmpc.append("]\n");
 			//      tmps.append(tmpc);
 		}
-		p_focusPointFeatureWidget->append(tmps);
+		p_focusPointFeatureWidget->setText(tmps); //can also be setPlainText() or SetHtml()
+		//p_focusPointFeatureWidget->append(tmps);
 
 		//update
 		p_focusPointFeatureWidget->update();
+		return tmps;
 	}
+	else
+		return QString("The p_focusPointFeatureWidget pointer is invalid. You should NOT see this message at all. Please check with V3D development team.");
 }
 
 void My4DImage::cleanExistData_butKeepFileName()
@@ -4020,7 +4003,7 @@ bool My4DImage::proj_general_resampling(ImageResamplingCode mycode, double targe
 				p_vmin[i] = (double)minInVector((float *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(float), channelPageSize, tmppos);
 			}
 
-			v3d_msg("Warning: this data type FLOAT32 has not been supported in display yet.\n");
+			v3d_msg("Warning: this data type FLOAT32 may not be supported in display yet -- proj_general_resampling().\n");
 			break;
 
 		default:
@@ -4033,7 +4016,7 @@ bool My4DImage::proj_general_resampling(ImageResamplingCode mycode, double targe
 
 	//
 
-	curFocusX = this->getXDim()/2; //-= bpos_x+1; //begin from first slices
+	curFocusX = this->getXDim()/2; //-= bpos_x+1; //begin from mid slices
 	curFocusY = this->getYDim()/2; //-= bpos_y+1;
 	curFocusZ = this->getZDim()/2; //-= bpos_z+1;
 

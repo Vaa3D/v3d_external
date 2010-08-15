@@ -229,7 +229,7 @@ public:
 
 	bool bLinkFocusViews;
 	bool bDisplayFocusCross;
-	bool bImgValScaleDisplay;
+	//bool bImgValScaleDisplay; //removed on 100814
 	bool bLookingGlass;
 
 	ColorMap *colorMap; //080824: copied from wano  // FIXME: It should be private.
@@ -259,7 +259,7 @@ public:
 
 	void setFocusFeatureView(QTextBrowser *p) {p_focusPointFeatureWidget = p;}
 	QTextBrowser *getFocusFeatureView() {return p_focusPointFeatureWidget;}
-	void setFocusFeatureViewText();
+	QString setFocusFeatureViewText();
 
 	void setMainWidget(XFormWidget *p) {p_mainWidget=p;}
 	XFormWidget * getXWidget() {return p_mainWidget;}
@@ -269,8 +269,8 @@ public:
 	void setFlagDisplayFocusCross(bool t) {bDisplayFocusCross = t;}
 	bool getFlagDisplayFocusCross() {return bDisplayFocusCross;}
 
-	void setFlagImgValScaleDisplay(bool t) {bImgValScaleDisplay=t;}
-	bool getFlagImgValScaleDisplay() {return bImgValScaleDisplay;}
+	//void setFlagImgValScaleDisplay(bool t) {bImgValScaleDisplay=t;}
+	bool getFlagImgValScaleDisplay(); 
 
 	void setFlagLookingGlass(bool t) {bLookingGlass=t;}
 	bool getFlagLookingGlass() {return bLookingGlass;}
@@ -553,6 +553,9 @@ private:
 
 	bool b_moveCurrentLandmark;
 	V3DLONG ind_landmarkToBeChanged;
+
+private:
+	bool XFormView::internal_only_imgplane_op(); //100814. by PHC. added for better modulization in data display
 };
 
 struct BlendingImageInfo

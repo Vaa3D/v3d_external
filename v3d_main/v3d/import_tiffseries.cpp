@@ -205,7 +205,7 @@ bool XFormWidget::importGeneralImgSeries(const QStringList & mylist, TimePackTyp
     imgData->setFlagLinkFocusViews(bLinkFocusViews);
     imgData->setFlagDisplayFocusCross(bDisplayFocusCross);
 	
-    imgData->setFlagImgValScaleDisplay((imgValScaleDisplayCheckBox->checkState()==Qt::Checked) ? true : false);
+    //imgData->setFlagImgValScaleDisplay((imgValScaleDisplayCheckBox->checkState()==Qt::Checked) ? true : false); //disabled this 100814, PHC
 	
 	//now set the disp_zoom. 081114
 	
@@ -566,7 +566,7 @@ bool XFormWidget::importLeicaData()
     imgData->setFlagLinkFocusViews(bLinkFocusViews);
     imgData->setFlagDisplayFocusCross(bDisplayFocusCross);
 	
-    imgData->setFlagImgValScaleDisplay((imgValScaleDisplayCheckBox->checkState()==Qt::Checked) ? true : false);
+    //imgData->setFlagImgValScaleDisplay((imgValScaleDisplayCheckBox->checkState()==Qt::Checked) ? true : false); //disabled this 100814, PHC
 	
 	//now set the disp_zoom. 081114
 	

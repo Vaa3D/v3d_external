@@ -245,8 +245,6 @@ void My4DImage::update_3drenderer_neuron_view()
 	}
 }
 
-
-
 template <class T> QPixmap copyRaw2QPixmap(const T ** p2d, V3DLONG sz0, V3DLONG sz1)
 {
 	QImage tmpimg = QImage(sz0, sz1, QImage::Format_RGB32);
@@ -279,7 +277,16 @@ template <class T>  QPixmap copyRaw2QPixmap(const T ** p2dRed, const T ** p2dGre
 	return QPixmap::fromImage(tmpimg);
 }
 
-template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T **** p4d, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, ImageDisplayColorType Ctype, V3DLONG cpos, bool bIntensityRescale, double *p_vmax, double *p_vmin)
+template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T **** p4d, 
+												   V3DLONG sz0, 
+												   V3DLONG sz1, 
+												   V3DLONG sz2, 
+												   V3DLONG sz3, 
+												   ImageDisplayColorType Ctype, 
+												   V3DLONG cpos, 
+												   bool bIntensityRescale, 
+												   double *p_vmax, 
+												   double *p_vmin)
 {
 	QImage tmpimg = QImage(sz2, sz1, QImage::Format_RGB32);
 	int tr,tg,tb;
@@ -555,7 +562,16 @@ template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T **** p4d, V3DLONG sz0
 }
 
 
-template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T **** p4d, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, ImageDisplayColorType Ctype, V3DLONG cpos, bool bIntensityRescale, double *p_vmax, double *p_vmin)
+template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T **** p4d, 
+												   V3DLONG sz0, 
+												   V3DLONG sz1, 
+												   V3DLONG sz2, 
+												   V3DLONG sz3, 
+												   ImageDisplayColorType Ctype, 
+												   V3DLONG cpos, 
+												   bool bIntensityRescale, 
+												   double *p_vmax, 
+												   double *p_vmin)
 {
 	QImage tmpimg = QImage(sz0, sz2, QImage::Format_RGB32);
 	int tr,tg,tb;
@@ -715,7 +731,16 @@ template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T **** p4d, V3DLONG sz0
 	return QPixmap::fromImage(tmpimg);
 }
 
-template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T **** p4d, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, ImageDisplayColorType Ctype, V3DLONG cpos, bool bIntensityRescale, double *p_vmax, double *p_vmin)
+template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T **** p4d, 
+												   V3DLONG sz0, 
+												   V3DLONG sz1, 
+												   V3DLONG sz2, 
+												   V3DLONG sz3, 
+												   ImageDisplayColorType Ctype, 
+												   V3DLONG cpos, 
+												   bool bIntensityRescale, 
+												   double *p_vmax, 
+												   double *p_vmin)
 {
 	QImage tmpimg = QImage(sz0, sz1, QImage::Format_RGB32);
 	int tr,tg,tb;
@@ -1300,6 +1325,129 @@ XFormView::XFormView(QWidget *parent)
 	disp_height = disp_scale * pixmap.height();
 }
 
+bool XFormView::internal_only_imgplane_op()
+{
+	if (!imgData) return false;
+    ImagePixelType dtype;
+  	unsigned char **** p4d = (unsigned char ****)imgData->getData(dtype);	
+	if (!p4d) return false;
+	
+	if (dtype==V3D_UINT8)
+	{
+		if (imgData->getCDim()==1 && (Ctype==colorPseudoMaskColor || Ctype==colorArnimFlyBrainColor || Ctype==colorHanchuanFlyBrainColor))
+		{
+			if (imgData->colorMap)
+			{
+				pixmap = copyRaw2QPixmap_colormap( 
+												  (const void ****) p4d, dtype, 
+												  imgData->getXDim(), 
+												  imgData->getYDim(), 
+												  imgData->getZDim(), 
+												  imgData->getCDim(), 
+												  cur_focus_pos, 
+												  imgData->colorMap, Ptype);
+			}
+			else
+			{
+				v3d_msg("The image colormap has not been set yet (XFormView::setImgData()) for UINT8!\n");
+				return false;
+			}
+		}
+		else
+		{
+			pixmap = copyRaw2QPixmap( 
+									 (const unsigned char ****) p4d,
+									 imgData->getXDim(),
+									 imgData->getYDim(),
+									 imgData->getZDim(),
+									 imgData->getCDim(),
+									 Ctype, cur_focus_pos, Ptype,
+									 imgData->getFlagImgValScaleDisplay(),
+									 imgData->p_vmax,
+									 imgData->p_vmin);
+		}
+	}
+	else if (dtype==V3D_UINT16)  // this part need to change in the future when I want to scale the UINT16 and display it as grayscale-256
+	{
+		if (imgData->getCDim()==1)
+		{
+			if (imgData->colorMap && (Ctype==colorPseudoMaskColor || Ctype==colorArnimFlyBrainColor || Ctype==colorHanchuanFlyBrainColor))
+			{
+				pixmap = copyRaw2QPixmap_colormap(
+												  (const void ****) p4d,
+												  dtype,
+												  imgData->getXDim(),
+												  imgData->getYDim(),
+												  imgData->getZDim(),
+												  imgData->getCDim(),
+												  cur_focus_pos,
+												  imgData->colorMap, Ptype);
+			}
+			else
+			{
+				v3d_msg(QString("The image colormap has not been set yet (XFormView::setImgData()) for UINT16. imgData->colorMap=%1, Ctype=%2!\n").arg((V3DLONG)imgData->colorMap).arg((int)Ctype));
+				return false;
+			}
+		}
+		else
+		{
+			pixmap = copyRaw2QPixmap(
+									 (const unsigned short int ****) p4d, 
+									 imgData->getXDim(),
+									 imgData->getYDim(),
+									 imgData->getZDim(),
+									 imgData->getCDim(),
+									 Ctype, cur_focus_pos, Ptype,
+									 imgData->getFlagImgValScaleDisplay(),
+									 imgData->p_vmax,
+									 imgData->p_vmin);
+		}
+	}
+	else if (dtype==V3D_FLOAT32)
+	{
+		if (imgData->getCDim()==1)
+		{
+			if (imgData->colorMap && (Ctype==colorPseudoMaskColor || Ctype==colorArnimFlyBrainColor || Ctype==colorHanchuanFlyBrainColor))
+			{
+				pixmap = copyRaw2QPixmap_colormap(
+												  (const void ****) p4d,
+												  dtype,
+												  imgData->getXDim(),
+												  imgData->getYDim(),
+												  imgData->getZDim(),
+												  imgData->getCDim(),
+												  cur_focus_pos,
+												  imgData->colorMap, Ptype);
+			}
+			else
+			{
+				v3d_msg(QString("The image colormap has not been set yet (XFormView::setImgData()) for UINT16. imgData->colorMap=%1, Ctype=%2!\n").arg((V3DLONG)imgData->colorMap).arg((int)Ctype));
+				return false;
+			}
+		}
+		else
+		{
+			pixmap = copyRaw2QPixmap(
+									 (const float ****) p4d,
+									 imgData->getXDim(),
+									 imgData->getYDim(),
+									 imgData->getZDim(),
+									 imgData->getCDim(),
+									 Ctype, cur_focus_pos, Ptype,
+									 imgData->getFlagImgValScaleDisplay(),
+									 imgData->p_vmax,
+									 imgData->p_vmin);
+		}
+	}
+	else
+	{
+		v3d_msg("Right now only support UINT8, UINT16, and FLOAT32.\n", 0);
+		return false; //do nothing
+	}
+	
+	return true;
+}
+
 void XFormView::setImgData(ImagePlaneDisplayType ptype, My4DImage * pdata, ImageDisplayColorType ctype)
 {
 	Ptype = ptype; //which type of the display cutting plane the pixmap is going to get from pdata image
@@ -1324,7 +1472,7 @@ void XFormView::setImgData(ImagePlaneDisplayType ptype, My4DImage * pdata, Image
 				pixmap = QPixmap(":/pic/bg1.jpg");
 				break;
 		}
-		printf("The pixel map size is %d %d (for invalid imagedata)\n", pixmap.width(), pixmap.height());
+		v3d_msg(QString("The pixel map size is %1 %2 (for invalid imagedata)").arg(pixmap.width()).arg(pixmap.height()), 0);
 		
 		return;
 	}
@@ -1354,123 +1502,9 @@ void XFormView::setImgData(ImagePlaneDisplayType ptype, My4DImage * pdata, Image
 	}
 	else
 	{
-		//080824: copied from wano
-		if (dtype==V3D_UINT8)
-		{
-			if (imgData->getCDim()==1 && (Ctype==colorPseudoMaskColor || Ctype==colorArnimFlyBrainColor || Ctype==colorHanchuanFlyBrainColor))
-			{
-				if (imgData->colorMap)
-				{
-					pixmap = copyRaw2QPixmap_colormap( 
-													  (const void ****) p4d, dtype, 
-													  imgData->getXDim(), 
-													  imgData->getYDim(), 
-													  imgData->getZDim(), 
-													  imgData->getCDim(), 
-													  cur_focus_pos, 
-													  imgData->colorMap, Ptype);
-				}
-				else
-				{
-					v3d_msg("The image colormap has not been set yet (XFormView::setImgData()) for UINT8!\n");
-					return;
-				}
-			}
-			else
-			{
-				pixmap = copyRaw2QPixmap(  // FIXME: implement a variant of copyRaw2QPixmap that takes an imgData as parameter
-										 (const unsigned char ****) p4d,
-										 imgData->getXDim(),
-										 imgData->getYDim(),
-										 imgData->getZDim(),
-										 imgData->getCDim(),
-										 Ctype, cur_focus_pos, Ptype,
-										 imgData->getFlagImgValScaleDisplay(),
-										 imgData->p_vmax,
-										 imgData->p_vmin);
-			}
-		}
-		else if (dtype==V3D_UINT16)  // this part need to change in the future when I want to scale the UINT16 and display it as grayscale-256
-		{
-			if (imgData->getCDim()==1)
-			{
-				if (imgData->colorMap && (Ctype==colorPseudoMaskColor || Ctype==colorArnimFlyBrainColor || Ctype==colorHanchuanFlyBrainColor))
-				{
-					pixmap = copyRaw2QPixmap_colormap(
-													  (const void ****) p4d,
-													  dtype,
-													  imgData->getXDim(),
-													  imgData->getYDim(),
-													  imgData->getZDim(),
-													  imgData->getCDim(),
-													  cur_focus_pos,
-													  imgData->colorMap, Ptype);
-				}
-				else
-				{
-					v3d_msg(QString("The image colormap has not been set yet (XFormView::setImgData()) for UINT16. imgData->colorMap=%1, Ctype=%2!\n").arg((V3DLONG)imgData->colorMap).arg((int)Ctype));
-					return;
-				}
-			}
-			else
-			{
-				pixmap = copyRaw2QPixmap(
-										 (const unsigned short int ****) p4d, 
-										 imgData->getXDim(),
-										 imgData->getYDim(),
-										 imgData->getZDim(),
-										 imgData->getCDim(),
-										 Ctype, cur_focus_pos, Ptype,
-										 imgData->getFlagImgValScaleDisplay(),
-										 imgData->p_vmax,
-										 imgData->p_vmin);
-			}
-		}
-		else if (dtype==V3D_FLOAT32)
-		{
-			if (imgData->getCDim()==1)
-			{
-				if (imgData->colorMap && (Ctype==colorPseudoMaskColor || Ctype==colorArnimFlyBrainColor || Ctype==colorHanchuanFlyBrainColor))
-				{
-					pixmap = copyRaw2QPixmap_colormap(
-													  (const void ****) p4d,
-													  dtype,
-													  imgData->getXDim(),
-													  imgData->getYDim(),
-													  imgData->getZDim(),
-													  imgData->getCDim(),
-													  cur_focus_pos,
-													  imgData->colorMap, Ptype);
-				}
-				else
-				{
-					v3d_msg(QString("The image colormap has not been set yet (XFormView::setImgData()) for UINT16. imgData->colorMap=%1, Ctype=%2!\n").arg((V3DLONG)imgData->colorMap).arg((int)Ctype));
-					return;
-				}
-			}
-			else
-			{
-				pixmap = copyRaw2QPixmap(
-										 (const float ****) p4d,
-										 imgData->getXDim(),
-										 imgData->getYDim(),
-										 imgData->getZDim(),
-										 imgData->getCDim(),
-										 Ctype, cur_focus_pos, Ptype,
-										 imgData->getFlagImgValScaleDisplay(),
-										 imgData->p_vmax,
-										 imgData->p_vmin);
-			}
-		}
-		else
-		{
-			printf("Right now only support UINT8 (grayscale) and UINT16 (colormap).\n");
-			return; //do nothing
-		}
-		
+		internal_only_imgplane_op();
 	}
 }
-
 
 QRect XFormView::getRoiBoundingRect()
 {
@@ -1835,134 +1869,8 @@ void XFormView::changeFocusPlane(int c)
 		return;
 	
     cur_focus_pos = c;
-	//	pixmap = copyRaw2QPixmap((const unsigned char ****) p4d, imgData->sz0, imgData->sz1, imgData->sz2, imgData->sz3, Ctype, cur_focus_pos, Ptype,
-	//							 imgData->getFlagImgValScaleDisplay(),
-	//							 imgData->p_vmax,
-	//							 imgData->p_vmin);
-	//
-	if (dtype==V3D_UINT8)
-	{
-		if (imgData->getCDim()==1 && (Ctype==colorPseudoMaskColor || Ctype==colorArnimFlyBrainColor || Ctype==colorHanchuanFlyBrainColor))
-		{
-			if (imgData->colorMap)
-			{
-				pixmap = copyRaw2QPixmap_colormap(
-												  (const void ****) p4d,
-												  dtype,
-												  imgData->getXDim(),
-												  imgData->getYDim(),
-												  imgData->getZDim(),
-												  imgData->getCDim(),
-												  cur_focus_pos,
-												  imgData->colorMap,
-												  Ptype);
-			}
-			else
-			{
-				printf("The image colormap has not been set yet (changeFocusPlane())!\n");
-				return;
-			}
-		}
-		else
-		{
-			//qDebug("focus=%d [ptype=%d]", cur_focus_pos, int(Ptype));
-			pixmap = copyRaw2QPixmap(
-									 (const unsigned char ****) p4d,
-									 imgData->getXDim(),
-									 imgData->getYDim(),
-									 imgData->getZDim(),
-									 imgData->getCDim(),
-									 Ctype,
-									 cur_focus_pos,
-									 Ptype,
-									 imgData->getFlagImgValScaleDisplay(),
-									 imgData->p_vmax,
-									 imgData->p_vmin);
-		}
-	}
-	else if (dtype==V3D_UINT16)  // this part need to change in the future when I want to scale the UINT16 and display it as grayscale-256
-	{
-		if (imgData->getCDim()==1 && (Ctype==colorPseudoMaskColor || Ctype==colorArnimFlyBrainColor || Ctype==colorHanchuanFlyBrainColor))
-		{
-			if (imgData->colorMap)
-			{
-				pixmap = copyRaw2QPixmap_colormap(
-												  (const void ****) p4d,
-												  dtype,
-												  imgData->getXDim(),
-												  imgData->getYDim(),
-												  imgData->getZDim(),
-												  imgData->getCDim(),
-												  cur_focus_pos,
-												  imgData->colorMap,
-												  Ptype);
-			}
-			else
-			{
-				printf("The image colormap has not been set yet (changeFocusPlane())!\n");
-				return;
-			}
-		}
-		else
-		{
-			pixmap = copyRaw2QPixmap(
-									 (const unsigned short int ****) p4d,
-									 imgData->getXDim(),
-									 imgData->getYDim(),
-									 imgData->getZDim(),
-									 imgData->getCDim(),
-									 Ctype,
-									 cur_focus_pos,
-									 Ptype,
-									 imgData->getFlagImgValScaleDisplay(),
-									 imgData->p_vmax,
-									 imgData->p_vmin);
-		}
-	}
-	else if (dtype==V3D_FLOAT32)  //100814
-	{
-		if (imgData->getCDim()==1 && (Ctype==colorPseudoMaskColor || Ctype==colorArnimFlyBrainColor || Ctype==colorHanchuanFlyBrainColor))
-		{
-			if (imgData->colorMap)
-			{
-				pixmap = copyRaw2QPixmap_colormap(
-												  (const void ****) p4d,
-												  dtype,
-												  imgData->getXDim(),
-												  imgData->getYDim(),
-												  imgData->getZDim(),
-												  imgData->getCDim(),
-												  cur_focus_pos,
-												  imgData->colorMap,
-												  Ptype);
-			}
-			else
-			{
-				printf("The image colormap has not been set yet (changeFocusPlane())!\n");
-				return;
-			}
-		}
-		else
-		{
-			pixmap = copyRaw2QPixmap(
-									 (const float ****) p4d,
-									 imgData->getXDim(),
-									 imgData->getYDim(),
-									 imgData->getZDim(),
-									 imgData->getCDim(),
-									 Ctype,
-									 cur_focus_pos,
-									 Ptype,
-									 imgData->getFlagImgValScaleDisplay(),
-									 imgData->p_vmax,
-									 imgData->p_vmin);
-		}
-	}
-	else
-	{
-		printf("Right now only support UINT8 (grayscale) and UINT16 (colormap).\n");
-		return; //do nothing
-	}
+
+	internal_only_imgplane_op();
 	
 	switch (Ptype)
 	{
@@ -2005,98 +1913,8 @@ void XFormView::changeColorType(ImageDisplayColorType c)
 	if (!p4d)
 		return;
 	
-	//    pixmap = copyRaw2QPixmap((const unsigned char ****) p4d, imgData->sz0, imgData->sz1, imgData->sz2, imgData->sz3, Ctype, cur_focus_pos, Ptype,
-	//							 imgData->getFlagImgValScaleDisplay(),
-	//							 imgData->p_vmax,
-	//							 imgData->p_vmin);
-	//
+	internal_only_imgplane_op();
 	
-	//
-	if (dtype==V3D_UINT8)
-	{
-		if (imgData->getCDim()==1 && (Ctype==colorPseudoMaskColor || Ctype==colorArnimFlyBrainColor || Ctype==colorHanchuanFlyBrainColor))
-		{
-			if (imgData->colorMap)
-			{
-				pixmap = copyRaw2QPixmap_colormap(
-												  (const void ****) p4d,
-												  dtype,
-												  imgData->getXDim(),
-												  imgData->getYDim(),
-												  imgData->getZDim(),
-												  imgData->getCDim(),
-												  cur_focus_pos,
-												  imgData->colorMap,
-												  Ptype);
-			}
-			else
-			{
-				printf("The image colormap has not been set yet (changeColorType()) for UINT8!\n");
-				return;
-			}
-		}
-		else
-		{
-			pixmap = copyRaw2QPixmap(
-									 (const unsigned char ****) p4d,
-									 imgData->getXDim(),
-									 imgData->getYDim(),
-									 imgData->getZDim(),
-									 imgData->getCDim(),
-									 Ctype,
-									 cur_focus_pos,
-									 Ptype,
-									 imgData->getFlagImgValScaleDisplay(),
-									 imgData->p_vmax,
-									 imgData->p_vmin);
-		}
-	}
-	else if (dtype==V3D_UINT16)  // this part need to change in the future when I want to scale the UINT16 and display it as grayscale-256
-	{
-		if (imgData->getCDim()==1 && (Ctype==colorPseudoMaskColor || Ctype==colorArnimFlyBrainColor || Ctype==colorHanchuanFlyBrainColor))
-		{
-			if (imgData->colorMap)
-			{
-				pixmap = copyRaw2QPixmap_colormap(
-												  (const void ****) p4d,
-												  dtype,
-												  imgData->getXDim(),
-												  imgData->getYDim(),
-												  imgData->getZDim(),
-												  imgData->getCDim(),
-												  cur_focus_pos,
-												  imgData->colorMap,
-												  Ptype);
-			}
-			else
-			{
-				printf("The image colormap has not been set yet (changeColorType()) for UINT16!\n");
-				return;
-			}
-		}
-		else
-		{
-			pixmap = copyRaw2QPixmap(
-									 (const unsigned short int ****) p4d,
-									 imgData->getXDim(),
-									 imgData->getYDim(),
-									 imgData->getZDim(),
-									 imgData->getCDim(),
-									 Ctype,
-									 cur_focus_pos,
-									 Ptype,
-									 imgData->getFlagImgValScaleDisplay(),
-									 imgData->p_vmax,
-									 imgData->p_vmin);
-		}
-	}
-	else
-	{
-		printf("Right now only support UINT8 (grayscale) and UINT16 (colormap).\n");
-		return; //do nothing
-	}
-	
-	//
 	update();
 }
 
@@ -3396,6 +3214,14 @@ void XFormWidget::setWindowTitle_Suffix(char *sfix)
 	}
 }
 
+bool XFormWidget::getFlagImgValScaleDisplay()
+{
+	if (imgValScaleDisplayCheckBox)
+		return (imgValScaleDisplayCheckBox->checkState()==Qt::Checked) ? true : false;
+	else
+		return false;
+}
+
 void XFormWidget::updateDataRelatedGUI()
 {
 	if (imgData)
@@ -3520,6 +3346,9 @@ void XFormWidget::updateDataRelatedGUI()
 		colorMapDispType->setEnabled(true);
 		
 		imgValScaleDisplayCheckBox->setEnabled(true);
+		if (imgData->getDatatype()==V3D_UINT16 || imgData->getDatatype()==V3D_FLOAT32)
+			imgValScaleDisplayCheckBox->setCheckState(Qt::Checked); //100814. PHC. set 16/32bit data default to rescale for triview display
+		//imgData->setFlagImgValScaleDisplay((imgValScaleDisplayCheckBox->checkState()==Qt::Checked) ? true : false); //100814: PHC. move to here to avoid potential error
 		
 		if (imgData->getCDim()>=3) //081124
 		{
@@ -3699,22 +3528,20 @@ bool XFormWidget::loadData()
 	if (imgData->isEmpty())
 	{
 		delete imgData; imgData = 0;
-		printf("File open error : Fail to open the image file you specified. This could be due to \n(1) The file does not exist. \n(2) The file format is not supported (V3D only supports TIFF stacks, most Zeiss LSM files, and Hanchuan Peng's RAW files. TIFF stacks are widely used and can be easily generated using other tools such as ImageJ or Hanchuan Peng's Matlab image fileio toolbox). \n(3) Your image file is too big. Since on 32-bit machines, an image is at most 2G bytes, and opening tiff files need extra-space for temporary buffer, thus currently V3D has a limitaton on the size of images: TIFF and LSM files < 900M Bytes, and V3D's RAW file < 1.5G bytes. You can contact Hanchuan Peng to get a special version of V3D to handle very big image files.\n");
-		QMessageBox::information(0, QString("File open error"), QString("Fail to open the image file you specified. This could be due to <br><br>"
-																		"(1) The file does not exist. <br>"
-																		"(2) The file format is not supported (V3D only supports TIFF stacks, most Zeiss LSM files, and Hanchuan Peng's RAW files. TIFF stacks are widely used and can be easily generated using other tools such as ImageJ or Hanchuan Peng's Matlab image fileio toolbox). <br>"
-																		"(3) Your image file is too big. Since on 32-bit machines, an image is at most 2G bytes, and opening tiff files need extra-space for temporary buffer, thus currently V3D has a limitaton on the size of images: TIFF and LSM files less than 900M Bytes, and Hanchuan's RAW file less than 1.5G bytes. You can contact Hanchuan Peng to get a special version of V3D to handle very big image files.<br>"));
+		v3d_msg("File open error : Fail to open the image file you specified. This could be due to \n(1) The file does not exist. \n(2) The file format is not supported (V3D only supports TIFF stacks, most Zeiss LSM files, and Hanchuan Peng's RAW files. TIFF stacks are widely used and can be easily generated using other tools such as ImageJ or Hanchuan Peng's Matlab image fileio toolbox). \n(3) Your image file is too big. Since on 32-bit machines, an image is at most 2G bytes, and opening tiff files need extra-space for temporary buffer, thus currently V3D has a limitaton on the size of images: TIFF and LSM files < 900M Bytes, and V3D's RAW file < 1.5G bytes. You can contact Hanchuan Peng to get a special version of V3D to handle very big image files.\n", 0);
+		v3d_msg("Fail to open the image file you specified. This could be due to <br><br>"
+				"(1) The file does not exist. <br>"
+				"(2) The file format is not supported (V3D only supports TIFF stacks, most Zeiss LSM files, and Hanchuan Peng's RAW files. TIFF stacks are widely used and can be easily generated using other tools such as ImageJ or Hanchuan Peng's Matlab image fileio toolbox). <br>"
+				"(3) Your image file is too big. Since on 32-bit machines, an image is at most 2G bytes, and opening tiff files need extra-space for temporary buffer, thus currently V3D has a limitaton on the size of images: TIFF and LSM files less than 900M Bytes, and Hanchuan's RAW file less than 1.5G bytes. You can contact Hanchuan Peng to get a special version of V3D to handle very big image files.<br>");
 		return false;
 	}
 	
-	printf("img data size %ld %ld %ld %ld\n", imgData->getXDim(), imgData->getYDim(), imgData->getZDim(), imgData->getCDim());
+	v3d_msg(QString("img data size %1 %2 %3 %4\n").arg(imgData->getXDim()).arg(imgData->getYDim()).arg(imgData->getZDim()).arg(imgData->getCDim()), 0);
 	
     setCTypeBasedOnImageData();
 	
     imgData->setFlagLinkFocusViews(bLinkFocusViews);
     imgData->setFlagDisplayFocusCross(bDisplayFocusCross);
-	
-    imgData->setFlagImgValScaleDisplay((imgValScaleDisplayCheckBox->checkState()==Qt::Checked) ? true : false);
 	
 	//now set the disp_zoom. 081114
 	
@@ -3728,7 +3555,7 @@ bool XFormWidget::loadData()
 	
     updateDataRelatedGUI();
 	
-	reset(); //090718. PHC. force to update once, since sometimes the 16bit image does not diapl correctly (why all black but once click reset button everything correct?)
+	reset(); //090718. PHC. force to update once, since sometimes the 16bit image does not display correctly (why all black but once click reset button everything correct?)
 	return true;
 }
 
@@ -3747,7 +3574,9 @@ bool XFormWidget::setCTypeBasedOnImageData() //separate this out on 2010-08-01. 
 		return false;
 	}
 	
-	if (imgData->getDatatype()==V3D_UINT8)
+	if (imgData->getDatatype()==V3D_UINT8 || 
+		imgData->getDatatype()==V3D_UINT16 ||
+		imgData->getDatatype()==V3D_FLOAT32)
 	{
 		if (imgData->getCDim()>=3)
 			Ctype = colorRGB;
@@ -3756,13 +3585,13 @@ bool XFormWidget::setCTypeBasedOnImageData() //separate this out on 2010-08-01. 
 		else //==1
 			Ctype = colorRed2Gray;
 	}
-	else if (imgData->getDatatype()==V3D_UINT16) //080824
-	{
-		Ctype = colorPseudoMaskColor;
-	}
+//	else if (imgData->getDatatype()==V3D_UINT16) //080824
+//	{
+//		Ctype = colorPseudoMaskColor;
+//	}
 	else
 	{
-		printf("Seems you load a float32 bit data which is not supported for display at this moment.\n");
+		v3d_msg("Seems you load an unknown data which is not supported for display at this moment. -- setCTypeBasedOnImageData()", 0);
 		Ctype = colorRed2Gray;
 	}
 	
@@ -3859,7 +3688,7 @@ bool XFormWidget::setImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG nsz
     imgData->setFlagLinkFocusViews(bLinkFocusViews);
     imgData->setFlagDisplayFocusCross(bDisplayFocusCross);
 	
-    imgData->setFlagImgValScaleDisplay((imgValScaleDisplayCheckBox->checkState()==Qt::Checked) ? true : false);
+    //imgData->setFlagImgValScaleDisplay((imgValScaleDisplayCheckBox->checkState()==Qt::Checked) ? true : false);
 	
 	
 	//now set the disp_zoom. 081114
@@ -4279,7 +4108,7 @@ void XFormWidget::toggleImgValScaleDisplay()
 	{
 		if (imgData->isEmpty()==false)
 		{
-			imgData->setFlagImgValScaleDisplay((imgValScaleDisplayCheckBox->checkState()==Qt::Checked) ? true : false);
+			//imgData->setFlagImgValScaleDisplay((imgValScaleDisplayCheckBox->checkState()==Qt::Checked) ? true : false); //disable 100814
 			//printf("display cross %d\n", int(imgData->getFlagDisplayFocusCross()));
 		}
 	}

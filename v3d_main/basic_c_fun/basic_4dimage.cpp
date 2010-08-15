@@ -47,11 +47,11 @@ typedef unsigned short int USHORTINT16;
 
 void Image4DSimple::loadImage(char filename[])
 {
-	cleanExistData(); /* note that this variable must be initialized as NULL. */
+	cleanExistData(); // note that this variable must be initialized as NULL. 
 
 	strcpy(imgSrcFile, filename);
 
-	V3DLONG * tmp_sz = 0; /* note that this variable must be initialized as NULL. */
+	V3DLONG * tmp_sz = 0; // note that this variable must be initialized as NULL. 
 	int tmp_datatype = 0;
 
 	//060815, 060924, 070805
@@ -113,8 +113,8 @@ void Image4DSimple::loadImage(char filename[])
 			break;
 
 		case 4:
-			convert_data_to_8bit((void *&)data1d, tmp_sz, tmp_datatype);
-			datatype = V3D_UINT8; //FLOAT32;
+			//convert_data_to_8bit((void *&)data1d, tmp_sz, tmp_datatype);
+			datatype = V3D_FLOAT32; //FLOAT32;
 			break;
 
 		default:

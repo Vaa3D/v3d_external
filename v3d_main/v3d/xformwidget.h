@@ -119,6 +119,7 @@ public:
 
 	V3DLONG estimateRoughAmountUsedMemory(); //080810
 
+	bool getFlagImgValScaleDisplay(); //100814
 
 	My4DImage * selectSubjectImage();
 	My4DImage * selectImage();
