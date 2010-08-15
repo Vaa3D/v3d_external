@@ -2309,6 +2309,7 @@ int loadLsm2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 	tif = Open_Tiff(filename,"r");
 	if (!tif)
 	{
+		fprintf(stderr, "Open_TIFF function failed.\n");
 		fprintf(stderr, "Cannot open the specified LSM file in loadLsm2Stack(). \n");
 		return 1; //070805, by Hanchuan Peng
 	}
@@ -2418,7 +2419,7 @@ int loadLsmThumbnail2Stack(char * filename, unsigned char * & img, V3DLONG * & s
 	tif = Open_Tiff(filename,"r");
 	if (!tif)
 	{
-		fprintf(stderr, "Cannot open the specified LSM file in loadLsm2Stack(). \n");
+		fprintf(stderr, "Cannot open the specified LSM file in loadLsmThumbnail2Stack(). \n");
 		return 1; //070805, by Hanchuan Peng
 	}
 
@@ -2528,7 +2529,7 @@ int loadLsmThumbnail2Stack_middle(char * filename, unsigned char * & img, V3DLON
 	tif = Open_Tiff(filename,"r");
 	if (!tif)
 	{
-		fprintf(stderr, "Cannot open the specified LSM file in loadLsm2Stack(). \n");
+		fprintf(stderr, "Cannot open the specified LSM file in loadLsmThumbnail2Stack_middle(). \n");
 		return 1; //070805, by Hanchuan Peng
 	}
 
@@ -2640,7 +2641,7 @@ int loadLsm2Stack_middle(char * filename, unsigned char * & img, V3DLONG * & sz,
 	tif = Open_Tiff(filename,"r");
 	if (!tif)
 	{
-		fprintf(stderr, "Cannot open the specified LSM file in loadLsm2Stack(). \n");
+		fprintf(stderr, "Cannot open the specified LSM file in loadLsm2Stack_middle(). \n");
 		return 1; //070805, by Hanchuan Peng
 	}
 
