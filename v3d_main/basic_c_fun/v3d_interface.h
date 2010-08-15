@@ -373,6 +373,8 @@ inline bool assembleProcessedChannels2Image4DClass(QList<V3D_Image3DBasic> & pd,
 		case V3D_FLOAT32: return setPluginOutputAndDisplayUsingGlobalSetting((float *)pout, mysz0, mysz1, mysz2, mysz3, cb); break;
 		default: return false;
 	}
+	
+	if (pout) {delete []pout; pout=0;} //100815 per Aurelien & Luis suggestion.
 
 	return false;
 }
