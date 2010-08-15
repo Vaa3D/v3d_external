@@ -1385,8 +1385,16 @@ bool XFormView::internal_only_imgplane_op()
 			}
 			else
 			{
-				v3d_msg(QString("The image colormap has not been set yet (XFormView::setImgData()) for UINT16. imgData->colorMap=%1, Ctype=%2!\n").arg((V3DLONG)imgData->colorMap).arg((int)Ctype));
-				return false;
+				pixmap = copyRaw2QPixmap(
+										 (const unsigned short int ****) p4d, 
+										 imgData->getXDim(),
+										 imgData->getYDim(),
+										 imgData->getZDim(),
+										 imgData->getCDim(),
+										 Ctype, cur_focus_pos, Ptype,
+										 imgData->getFlagImgValScaleDisplay(),
+										 imgData->p_vmax,
+										 imgData->p_vmin);
 			}
 		}
 		else
@@ -1421,8 +1429,16 @@ bool XFormView::internal_only_imgplane_op()
 			}
 			else
 			{
-				v3d_msg(QString("The image colormap has not been set yet (XFormView::setImgData()) for UINT16. imgData->colorMap=%1, Ctype=%2!\n").arg((V3DLONG)imgData->colorMap).arg((int)Ctype));
-				return false;
+				pixmap = copyRaw2QPixmap(
+										 (const float ****) p4d,
+										 imgData->getXDim(),
+										 imgData->getYDim(),
+										 imgData->getZDim(),
+										 imgData->getCDim(),
+										 Ctype, cur_focus_pos, Ptype,
+										 imgData->getFlagImgValScaleDisplay(),
+										 imgData->p_vmax,
+										 imgData->p_vmin);
 			}
 		}
 		else
