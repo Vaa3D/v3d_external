@@ -228,7 +228,7 @@ inline QList<V3D_Image3DBasic> getChannelDataForProcessingFromGlobalSetting( Ima
 
 
 //a function for considering the global setting for data conversion
-template <class T> bool setPluginOutputAndDisplayUsingGlobalSetting(T * pluginoutputimg1d, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, V3DPluginCallback & callback)
+template <class T> bool setPluginOutputAndDisplayUsingGlobalSetting(T * pluginoutputimg1d, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, V3DPluginCallback & callback, const char* imageName=0)
 {
 	if (!pluginoutputimg1d || sz0<=0 || sz1<=0 || sz2<=0 || sz3<=0 )
 	{
@@ -315,7 +315,14 @@ template <class T> bool setPluginOutputAndDisplayUsingGlobalSetting(T * pluginou
 	v3dhandle mywin = ( gs.b_plugin_dispResInNewWindow ) ? callback.newImageWindow() : callback.currentImageWindow();
 
 	callback.setImage(mywin, &p4DImage);
-	callback.setImageName(mywin, QString("plugin_output_image"));
+        if(imageName != 0)
+          {
+            callback.setImageName(mywin, QString(imageName));
+          }
+        else
+          {
+            callback.setImageName(mywin, QString("plugin_output_image"));
+          }
 	callback.updateImageWindow(mywin);
 
 	return true;
