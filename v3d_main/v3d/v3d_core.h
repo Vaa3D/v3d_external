@@ -555,7 +555,7 @@ private:
 	V3DLONG ind_landmarkToBeChanged;
 
 private:
-	bool XFormView::internal_only_imgplane_op(); //100814. by PHC. added for better modulization in data display
+	bool internal_only_imgplane_op(); //100814. by PHC. added for better modulization in data display
 };
 
 struct BlendingImageInfo
