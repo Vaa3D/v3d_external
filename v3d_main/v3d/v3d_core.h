@@ -518,7 +518,7 @@ signals:
     void focusZChanged(int z_new);
 
 protected:
-    void keyPressEvent ( QKeyEvent * e);
+    void do_keyPressEvent ( QKeyEvent * e);
 
 public:
 	QPolygon roiPolygon;//061009

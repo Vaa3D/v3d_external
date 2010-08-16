@@ -27,10 +27,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 
 
-
-/* changed the include file name by PHC 060816*/
-/* 070713: George added lsm reading functions.*/
-//071113: change to make this work for Matlab on cluster
+//revised from an earlier version developed by Gene Myers
+// changed the include file name by PHC 060816
 //20100409: change exit to return
 
 
