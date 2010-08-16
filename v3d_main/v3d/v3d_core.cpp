@@ -3862,16 +3862,17 @@ void XFormWidget::updateDataRelatedGUI()
 		//landmarkLabelDispCheckBox->setEnabled(true);
 		
 		//imgProcessButton->setCheckable(true); //080402
-		if (imgData->getDatatype()==V3D_UINT8)
-		{
-			imgV3DButton->setEnabled(true);
-			//imgV3DROIButton->setEnabled(true);
-		}
-		else
-		{
-			imgV3DButton->setEnabled(false);
-			//imgV3DROIButton->setEnabled(false);
-		}
+		imgV3DButton->setEnabled(true); //100816. always enable, but will display a warning when the user click it.
+//		if (imgData->getDatatype()==V3D_UINT8)
+//		{
+//			imgV3DButton->setEnabled(true);
+//			//imgV3DROIButton->setEnabled(true);
+//		}
+//		else
+//		{
+//			imgV3DButton->setEnabled(false);
+//			//imgV3DROIButton->setEnabled(false);
+//		}
 		//setLayout(viewLayout);
 		
 		//resize(minimumSize());
@@ -5350,6 +5351,18 @@ void XFormWidget::createMenuOf3DViewer()
 
 void XFormWidget::doMenuOf3DViewer()
 {
+	if (!imgData || !imgData->valid())
+	{
+		v3d_msg("Invalid 3D image data in doMenuOf3DViewer().");
+		return;
+	}
+	
+	if (imgData->getDatatype() != V3D_UINT8)
+	{
+		v3d_msg("Your data type is not UINT8 yet, - you will need to convert to UINT8 to see the data in 3D. Go to main menu \"Image/Data\" -> \"Image type\" to convert.");
+		return;
+	}
+	
 	try 
 	{
 		menu3DViewer.exec(QCursor::pos());
