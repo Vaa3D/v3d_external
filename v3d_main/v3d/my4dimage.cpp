@@ -1419,8 +1419,8 @@ void My4DImage::crop(V3DLONG bpos_x, V3DLONG epos_x, V3DLONG bpos_y, V3DLONG epo
 
 			for(i=0;i<this->getCDim();i++)
 			{
-				p_vmax[i] = (double)maxInVector((USHORTINT16 *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(USHORTINT16), channelPageSize, tmppos);
-				p_vmin[i] = (double)minInVector((USHORTINT16 *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(USHORTINT16), channelPageSize, tmppos);
+				p_vmax[i] = (double)maxInVector((USHORTINT16 *)(this->getRawData())+(V3DLONG)i*channelPageSize, channelPageSize, tmppos);
+				p_vmin[i] = (double)minInVector((USHORTINT16 *)(this->getRawData())+(V3DLONG)i*channelPageSize, channelPageSize, tmppos);
 			}
 
 			//v3d_msg("Warning: this data type UINT16 has not been supported in display yet.\n");
@@ -1432,8 +1432,8 @@ void My4DImage::crop(V3DLONG bpos_x, V3DLONG epos_x, V3DLONG bpos_y, V3DLONG epo
 
 			for(i=0;i<this->getCDim();i++)
 			{
-				p_vmax[i] = (double)maxInVector((float *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(float), channelPageSize, tmppos);
-				p_vmin[i] = (double)minInVector((float *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(float), channelPageSize, tmppos);
+				p_vmax[i] = (double)maxInVector((float *)(this->getRawData())+(V3DLONG)i*channelPageSize, channelPageSize, tmppos);
+				p_vmin[i] = (double)minInVector((float *)(this->getRawData())+(V3DLONG)i*channelPageSize, channelPageSize, tmppos);
 			}
 
 			v3d_msg("Warning: this data type FLOAT32 may not be supported in display yet, -- crop().\n");
