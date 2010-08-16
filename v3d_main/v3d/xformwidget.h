@@ -138,7 +138,7 @@ public:
 	bool bDispMarkerLabel;
 
 protected:
-
+    //void keyPressEvent ( QKeyEvent * e); //100815, PHC
 	void closeEvent ( QCloseEvent * event );  //080814
 	//void focusInEvent ( QFocusEvent * event ); //080829
 

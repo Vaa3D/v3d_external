@@ -2869,6 +2869,448 @@ XFormWidget::~XFormWidget()
 	cleanData();
 }
 
+/*
+void XFormWidget::keyPressEvent(QKeyEvent * e)
+{
+//    //two temp variables for pop-up dialog
+//   	QStringList items;
+//    QString item;
+//	
+	
+//    double stepx = 1, stepy = 1; //default size is 1 pixel by pixel
+	//qDebug()<<"init: "<<stepx<<" "<<stepy;
+	
+	//printf("[%d]\n",e->modifiers()); //don't know why this cause a crash!!
+	
+    //if (e->modifiers()==Qt::ShiftModifier) //note that e->modifiers() does not work!!!
+	
+	if (!imgData || !imgData->valid()) return;
+//	if (imgData->isEmpty()) return;
+	
+	switch (e->key())
+	{
+		case Qt::Key_S:
+		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
+		    {
+				saveData();
+			}
+			break;
+			
+		case Qt::Key_Left: //for unknown reason, QT just does not recognize the combination of keymodifier and arrow!. by PHC, 090211.
+			if (QApplication::keyboardModifiers()==Qt::ControlModifier) //then scroll page by page
+			{
+				stepx = pixmap.width()/2.0, stepy = pixmap.height()/2.0;
+				qDebug()<<"ctrl pressed: "<<stepx<<" "<<stepy;
+			}
+			if (m_scale>1)
+			{
+				curDisplayCenter -= QPointF(stepx, 0);
+				if (curDisplayCenter.x() < (2-m_scale)*pixmap.width()/2.0-1)
+					curDisplayCenter.setX((2-m_scale)*pixmap.width()/2.0-1);
+				
+				update();
+		    }
+	  		break;
+			
+		case Qt::Key_Right:
+			if (QApplication::keyboardModifiers()==Qt::ControlModifier) //then scroll page by page
+			{
+				stepx = pixmap.width()/2.0, stepy = pixmap.height()/2.0;
+				qDebug()<<"ctrl pressed: "<<stepx<<" "<<stepy;
+			}
+			if (m_scale>1)
+			{
+				curDisplayCenter += QPointF(stepx, 0);
+				if (curDisplayCenter.x() > m_scale*pixmap.width()/2.0)
+					curDisplayCenter.setX(m_scale*pixmap.width()/2.0);
+				
+				update();
+		    }
+			break;
+			
+		case Qt::Key_Up:
+			if (QApplication::keyboardModifiers()==Qt::ControlModifier) //then scroll page by page
+			{
+				stepx = pixmap.width()/2.0, stepy = pixmap.height()/2.0;
+				qDebug()<<"ctrl pressed: "<<stepx<<" "<<stepy;
+			}
+			if (m_scale>1)
+			{
+				curDisplayCenter -= QPointF(0, stepy);
+				if (curDisplayCenter.y() < (2-m_scale)*pixmap.height()/2.0-1)
+					curDisplayCenter.setY((2-m_scale)*pixmap.height()/2.0-1);
+				
+				update();
+		    }
+			break;
+			
+		case Qt::Key_Down:
+			//case Qt::Key_8: //a test to show normal key modifier works!
+			if (QApplication::keyboardModifiers()==Qt::ControlModifier) //then scroll page by page
+			{
+				stepx = pixmap.width()/2.0, stepy = pixmap.height()/2.0;
+				qDebug()<<"ctrl pressed: "<<stepx<<" "<<stepy;
+			}
+			if (m_scale>1)
+			{
+				//qDebug()<<"real stepx="<<stepx<<" stepy="<<stepy;
+				curDisplayCenter += QPointF(0, stepy);
+				if (curDisplayCenter.y() > m_scale*pixmap.height()/2.0)
+					curDisplayCenter.setY(m_scale*pixmap.height()/2.0);
+				
+				update();
+		    }
+			break;
+			
+		case Qt::Key_N:
+		case Qt::Key_Period: //080403
+			switch (Ptype)
+		{
+			case imgPlaneX:
+				emit focusXChanged(imgData->curFocusX+1+1); //the first +1 to convert to the range [1, max]. The below is the same.
+				break;
+			case imgPlaneY:
+				emit focusYChanged(imgData->curFocusY+1+1);
+				break;
+			case imgPlaneZ:
+				emit focusZChanged(imgData->curFocusZ+1+1);
+				break;
+			default: //do nothing
+				break;
+		}
+			break;
+			
+		case Qt::Key_B: //add 'b' on 080109
+		case Qt::Key_Comma: //080403
+			switch (Ptype)
+		{
+			case imgPlaneX:
+				emit focusXChanged(imgData->curFocusX+1-1);
+				break;
+			case imgPlaneY:
+				emit focusYChanged(imgData->curFocusY+1-1);
+				break;
+			case imgPlaneZ:
+				emit focusZChanged(imgData->curFocusZ+1-1);
+				break;
+			default: //do nothing
+				break;
+		}
+			break;
+			
+		case Qt::Key_I:
+			imgData->getXWidget()->triview_zoomin();
+			break;
+			
+		case Qt::Key_O:
+		{
+			bool result = (
+						   imgData->getXWidget()->disp_zoom * imgData->getXDim() <= 1 ||
+						   imgData->getXWidget()->disp_zoom * imgData->getYDim() <= 1 ||
+						   imgData->getXWidget()->disp_zoom * imgData->getZDim() <= 1 );
+			
+			if ( result )
+			{
+				v3d_msg("Cannot zoom-out more, - one of the first 3 dims of the images has been displayed to <=1 pixel on the monitor.");
+				break;
+			}
+			imgData->getXWidget()->triview_zoomout();
+			break;
+		}
+			
+		case Qt::Key_1:
+			imgData->getXWidget()->triview_zoom1();
+			break;
+			
+		case Qt::Key_2:
+			imgData->getXWidget()->triview_zoom2();
+			break;
+			
+			//the following is another way to activate the pop-up menu or point-definition dialog at the pixel location. by PHC, 060312
+			
+#if COMPILE_TARGET_LEVEL != 0
+		case Qt::Key_M:
+		{
+			//first search if a landmark has been defined at the same location. If yes, modify that one. Otherwise add a new one.
+			
+			QList <LocationSimple> * tmplist = (QList <LocationSimple> *) &(imgData->listLandmarks);
+			int tmprownum; bool b_landmark_exist=false;
+			int cx = imgData->curFocusX+1, cy = imgData->curFocusY+1, cz = imgData->curFocusZ+1;
+			for (tmprownum=0;tmprownum<tmplist->count();tmprownum++)
+			{
+				if (int(tmplist->at(tmprownum).x)==cx && int(tmplist->at(tmprownum).y)==cy && int(tmplist->at(tmprownum).z)==cz)
+				{
+					b_landmark_exist=true;
+					printf("detected existing landmark no=[%d]\n", tmprownum);
+					break;
+				}
+			}
+			
+			LandmarkPropertyDialog *landmarkView = NULL;
+			if (!landmarkView)
+			{
+				if (b_landmark_exist)
+					landmarkView = new LandmarkPropertyDialog(tmplist, tmprownum, imgData);
+				else
+				{
+					LocationSimple tmp_location(cx, cy, cz);
+					//tmp_location.order = imgData->listLandmarks.count()+1;
+					QString tmp_label = "";
+					tmp_location.name = qPrintable(tmp_label.setNum(imgData->listLandmarks.count()+1).prepend("landmark "));
+					tmp_location.radius = imgData->getXWidget()->getMainControlWindow()->global_setting.default_marker_radius; //add a default landmark size
+					QList <LocationSimple> tmplist_1;
+					tmplist_1.append(tmp_location);
+					landmarkView = new LandmarkPropertyDialog(&tmplist_1, 0, imgData);
+				}
+			}
+			
+			int res = landmarkView->exec(); //note that as I request the user must either accept or change the cell property, I set it as a Modal dialog by calling exec() instead of show.
+			if (res!=QDialog::Accepted)
+			{
+				if (landmarkView) {delete landmarkView; landmarkView = NULL;}
+				break; //only return true when the results are accepted, which will lead to an update operation below
+			}
+			
+			//update the current item
+			if (!b_landmark_exist)
+			{
+				LocationSimple tmp_location(cx, cy, cz);
+				//QString tmp_label = ""; tmp_location.name = qPrintable(tmp_label.setNum(imgData->listLandmarks.count()+1).prepend("landmark ")); //no need to do again, as the content will be overwritten anyway
+				imgData->listLandmarks.append(tmp_location);
+				tmprownum = imgData->listLandmarks.count()-1;
+			}
+			landmarkView->fetchData(&(imgData->listLandmarks), tmprownum);
+			qDebug("data fetched [%s][%s] shape=[%d] radius=[%5.3f]",
+				   imgData->listLandmarks.at(tmprownum).name.c_str(), imgData->listLandmarks.at(tmprownum).comments.c_str(),  int(imgData->listLandmarks.at(tmprownum).shape),  float(imgData->listLandmarks.at(tmprownum).radius));
+			
+			//important: set the shape of the landmark
+			LocationSimple * p_tmp_location = (LocationSimple *) & (imgData->listLandmarks.at(tmprownum));
+			switch (p_tmp_location->shape)
+			{
+				case pxSphere:	p_tmp_location->inputProperty = pxLocaUseful; //qDebug("pxsphere");
+					break;
+				case pxCube: p_tmp_location->inputProperty = pxLocaNotUseful; //qDebug("pxcube");
+					break;
+				default: p_tmp_location->inputProperty = pxLocaUnsure; //qDebug("%d pxunsure", int(p_tmp_location->shape));
+					break;
+			}
+			
+			if (landmarkView) {delete landmarkView; landmarkView = NULL;}
+		}
+			break;
+			
+		case Qt::Key_H:
+		    dispHistogram();//in the future I can add a parameter to indicate the current view-id, so that I can only display the histogram of the current view (slice) instead of the whole stack
+			break;
+			
+		case Qt::Key_C:
+		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
+		    {
+				popupImageProcessingDialog(tr(" -- crop image using minMax bounding box in 3D (derived from ROIs)"));
+            }
+			else if (QApplication::keyboardModifiers()==Qt::ShiftModifier)
+			{
+				if (imgData->getCDim()!=1) break;
+				if(imgData->getDatatype()!=V3D_UINT16 && imgData->getDatatype()!=V3D_UINT8) //only work for UINT16/UINT8 1 channel data
+					break;
+				imgData->getXWidget()->switchMaskColormap();
+			}
+			break;
+			
+		case Qt::Key_R:
+		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
+		    {
+				Options_Rotate tmpopt;
+				tmpopt.degree=0.0;
+				tmpopt.b_keepSameSize=true;
+				tmpopt.fillcolor=0;
+				tmpopt.center_x = (imgData->getXDim()-1.0)/2;
+				tmpopt.center_y = (imgData->getYDim()-1.0)/2;
+				tmpopt.center_z = (imgData->getZDim()-1.0)/2;
+				
+				Dialog_Rotate tmpdlg;
+				tmpdlg.setContents(tmpopt);
+				
+				int dlg_res = tmpdlg.exec();
+				if (dlg_res)
+				{
+					tmpdlg.getContents(tmpopt);
+					imgData->rotate(Ptype, tmpopt);
+				}
+			}
+			break;
+			
+		case Qt::Key_D: //remove the last pos from roiVertexList
+		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
+		    {
+				//roiPolygon.erase(roiPolygon.end()-1);
+				if (roiPolygon.count()>0)
+				{
+					roiPolygon.pop_back();
+					update();
+				}
+			}
+			break;
+#endif
+			
+			
+#if COMPILE_TARGET_LEVEL == 2
+		case Qt::Key_P:
+		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
+		    {
+				popupImageProcessingDialog();
+			}
+			break;
+#endif
+			
+#if COMPILE_TARGET_LEVEL != 0
+		case Qt::Key_V:
+			if(imgData->getDatatype()!=V3D_UINT8) //only work for UINT8 data
+				break;
+			
+		    if (QApplication::keyboardModifiers()==Qt::ControlModifier) //launch the full-image 3d view
+		    {
+				imgData->getXWidget()->doImage3DView(true); //use the maximum display 512x512x256
+			}
+			else if (QApplication::keyboardModifiers()==Qt::ShiftModifier) //launch the local zoom-in view
+			{
+				imgData->getXWidget()->doImage3DLocalRoiView();
+			}
+			else if (QApplication::keyboardModifiers()==(Qt::ShiftModifier | Qt::ControlModifier)) //display the real size of an image. This may crash if not enough memory is available
+			{
+				if(QMessageBox::question (0, "",
+										  "You have just requested displaying 3D view for an image using the full resolution. if your machine does not have enough video memory, you may have a crash in the video memory which is hard to catch. "
+										  "Are you sure you want to continue?",
+										  QMessageBox::Yes, QMessageBox::No)
+				   == QMessageBox::Yes)
+				{
+					imgData->getXWidget()->doImage3DView(false);
+				}
+			}
+			break;
+#endif
+			
+#if COMPILE_TARGET_LEVEL == 2
+			
+#ifdef _ALLOW_ATLAS_IMAGE_MENU_
+		case Qt::Key_A: //activate the atlas viewer
+		case Qt::Key_F: //activate the find/search function
+		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
+		    {
+				
+				imgData->getXWidget()->launchAtlasViewer();
+			}
+			break;
+#endif
+			
+#ifdef _ALLOW_NEURONSEG_MENU_
+		case Qt::Key_T:
+			popupImageProcessingDialog(tr(" -- trace between two locations"));
+ 			break;
+			
+		case Qt::Key_Z: //undo the last tracing step if possible. by PHC, 090120
+		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
+		    {
+		    	if (imgData)
+					imgData->getXWidget()->popupImageProcessingDialog(tr(" -- undo last tracing step"));
+			}
+			break;
+#endif
+			
+#ifdef _ALLOW_IMGREG_MENU_
+		case Qt::Key_W:
+			popupImageProcessingDialog(tr(" -- Match one single landmark in another image"));
+ 			break;
+			
+		case Qt::Key_E:
+		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
+		    {
+				bool ok;
+				if (imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_landmarkMatchingMethod==(int)MATCH_INTENSITY)
+					item = tr("MATCH_INTENSITY");
+				else if (imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_landmarkMatchingMethod==(int)MATCH_CORRCOEF)
+					item = tr("MATCH_CORRCOEF");
+				else if (imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_landmarkMatchingMethod==(int)MATCH_MI)
+					item = tr("MATCH_MI");
+				else if (imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_landmarkMatchingMethod==(int)MATCH_IMOMENT)
+					item = tr("MATCH_IMOMENT");
+				else if (imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_landmarkMatchingMethod==(int)MATCH_MEANOFCIRCLES)
+					item = tr("MATCH_MEANOFCIRCLES");
+				else if (imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_landmarkMatchingMethod==(int)MATCH_MULTIPLE_MI_INT_CORR)
+					item = tr("MATCH_MULTIPLE_MI_INT_CORR");
+				else
+					item = tr("Undefined");
+				
+				if(QMessageBox::Yes == QMessageBox::question (0, "", tr("Your current landmark matching method is [ ") + item + tr("]<br> Do you change?"), QMessageBox::Yes, QMessageBox::No))
+				{
+					items << tr("MATCH_MI") << tr("MATCH_MULTIPLE_MI_INT_CORR") << tr("MATCH_INTENSITY") << tr("MATCH_CORRCOEF") << tr("MATCH_IMOMENT") << tr("MATCH_MEANOFCIRCLES");
+					item = QInputDialog::getItem(this, tr(""), tr("Please select a landmark matching method"), items, 0, false, &ok);
+					if (ok && !item.isEmpty())
+					{
+						if (item==tr("MATCH_INTENSITY"))
+							imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_landmarkMatchingMethod = (int)MATCH_INTENSITY;
+						else if (item==tr("MATCH_CORRCOEF"))
+							imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_landmarkMatchingMethod = (int)MATCH_CORRCOEF;
+						else if (item==tr("MATCH_MI"))
+							imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_landmarkMatchingMethod = (int)MATCH_MI;
+						else if (item==tr("MATCH_IMOMENT"))
+							imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_landmarkMatchingMethod = (int)MATCH_IMOMENT;
+						else if (item==tr("MATCH_MEANOFCIRCLES"))
+							imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_landmarkMatchingMethod = (int)MATCH_MEANOFCIRCLES;
+						else if (item==tr("MATCH_MULTIPLE_MI_INT_CORR"))
+							imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_landmarkMatchingMethod = (int)MATCH_MULTIPLE_MI_INT_CORR;
+						else
+							imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_landmarkMatchingMethod = (int)MATCH_MI;
+					}
+				}
+			}
+			else if (QApplication::keyboardModifiers()==Qt::ShiftModifier)
+			{
+				bool ok;
+				if (imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_df_compute_method==(int)DF_GEN_TPS)
+					item = tr("TPS");
+				else if (imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_df_compute_method==(int)DF_GEN_HIER_B_SPLINE)
+					item = tr("Hier-B-Spline");
+				else if (imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_df_compute_method==(int)DF_GEN_TPS_B_SPLINE)
+					item = tr("TPS-B-Spline-interpolation");
+				else if (imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_df_compute_method==(int)DF_GEN_TPS_LINEAR_INTERP)
+					item = tr("TPS-linear-interpolation");
+				else
+					item = tr("Undefined");
+				
+				if(QMessageBox::Yes == QMessageBox::question (0, "", tr("Your current displacement field computing method is [ ") + item + tr("]<br> Do you change?"), QMessageBox::Yes, QMessageBox::No))
+				{
+					items << tr("TPS-linear-interpolation") <<  tr("TPS-B-Spline-interpolation") << tr("TPS") << tr("Hier-B-Spline");
+					item = QInputDialog::getItem(this, tr(""), tr("Please select a displacement filed (DF) computing method"), items, 0, false, &ok);
+					if (ok && !item.isEmpty())
+					{
+						if (item==tr("TPS-linear-interpolation"))
+							imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_df_compute_method = (int)DF_GEN_TPS_LINEAR_INTERP;
+						else if (item==tr("TPS-B-Spline-interpolation"))
+							imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_df_compute_method = (int)DF_GEN_TPS_B_SPLINE;
+						else if (item==tr("TPS"))
+							imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_df_compute_method = (int)DF_GEN_TPS;
+						else if (item==tr("Hier-B-Spline"))
+							imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_df_compute_method = (int)DF_GEN_HIER_B_SPLINE;
+						else
+							imgData->getXWidget()->getMainControlWindow()->global_setting.GPara_df_compute_method = (int)DF_GEN_TPS;
+					}
+				}
+			}
+			break;
+#endif
+			
+#endif
+			
+		default:
+			break;
+	}
+	
+	return;
+}
+*/
+
+
 void XFormWidget::closeEvent(QCloseEvent *event) //080814: this function is specially added to assure the image data will be cleaned; so that have more memory for other stacks.
 //note the reason to overload this closeEvent function but not use the QWidget destructor is because seems Qt has a build-in bug in freeing ArthurFrame object in QString freeing
 {
