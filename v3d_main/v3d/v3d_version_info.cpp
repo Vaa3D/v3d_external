@@ -38,7 +38,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include <QtGui>
 
-QString versionnumber = "V3D (2.510), V3D-Neuron (2.0), V3D Plugin Interface (1.1) ";
+QString versionnumber = "V3D (2.510), V3D-Neuron (2.0), V3D Plugin Interface (2.0) ";
 
 void v3d_aboutinfo()
 {
@@ -57,7 +57,7 @@ void v3d_aboutinfo()
 		"You can also download a Matlab toolbox to read and write most of the basic data formats at the V3D website <a href=\"http://penglab.janelia.org/proj/v3d\">http://penglab.janelia.org/proj/v3d</a>."
 		"<br><table border=\"1\">"
 		"<tr><td>.TIF, .TIFF, .LSM (Tiff and LSM stacks) </td><td>3D image stacks. </td></tr>"
-		"<tr><td>.RAW (Hanchuan Peng's RAW) </td><td>a simple raw file which supports 8-bit unsigned char, 16-bit unsigned short, 32-bit single-precision float 4D image stacks. </td></tr>"
+		"<tr><td>.RAW (V3D's RAW) </td><td>a simple raw file which supports 8-bit unsigned char, 16-bit unsigned short, 32-bit single-precision float 4D image stacks. </td></tr>"
 		"<tr><td>.TIF (Series 2D tiff section) </td><td>the Leica scope produced series tiff files can be imported. </td></tr>"
 		"<tr><td>.SWC </td><td>reconstructed neurons or other relational data which can be described as a graph. </td></tr>"
 		"<tr><td>.APO </td><td>point cloud file used in WANO to describe the cells and any other image objects. </td></tr>"
@@ -71,12 +71,12 @@ void v3d_aboutinfo()
 		"<H3>Keyboard operations</H3>"
 		"When any view of images is active, the following short-cut keys can be used. </td></tr>"
 		"<br><table border=\"1\">"
-		"<tr><td>N/. </td><td>Move to the next focal plane.</td></tr>"
-		"<tr><td>B/, </td><td>Move to the previous focal plane.</td></tr>"
+		//"<tr><td>N/. </td><td>Move to the next focal plane.</td></tr>"
+		//"<tr><td>B/, </td><td>Move to the previous focal plane.</td></tr>"
 		"<tr><td>M </td><td>Add a new landmark.</td></tr>"
 		"<tr><td>I </td><td>Zoom-in by a factor 2.</td></tr>"
 		"<tr><td>O </td><td>Zoom-out by a a factor 2 (will not be effective if any displayed dimension of an image is <=1 pixel.</td></tr>"
-		"<tr><td>1/2 </td><td>set the tri-view zoom to x1 (no zoom-in or out) or x2 zoom. The windows may be zipped together but can be expaned by either slightly resizing the window boundary or click the cascade menu</td></tr>"
+		"<tr><td>1/2/3/4 </td><td>set the tri-view zoom to x1 (no zoom-in or out) or x2, x3, x4 zoom. The windows may be zipped together but can be expaned by either slightly resizing the window boundary or click the cascade menu</td></tr>"
 		"<tr><td>Ctrl-O (Windows, Linux) or Cmd-O (Mac) </td><td>Open an image stack. Note that you can also directly drag and drop an image file (Tiff stack or LSM or Hanchuan Peng's RAW files) into V3D to open it. </td></tr>"
 		"<tr><td>Ctrl-I (Windows, Linux) or Cmd-I (Mac) </td><td>Import Leica tiff series as an image stack. </td></tr>"
 		"<tr><td>Ctrl-S (Windows, Linux) or Cmd-S (Mac) </td><td>Save image file. </td></tr>"
@@ -104,9 +104,9 @@ void v3d_aboutinfo()
 		"</table><br>"
 		"<H3>Special debugging keys</H3>"
 		"<br><table border=\"1\">"
-		"<tr><td>Ctrl-E (Windows, Linux) or Cmd-E (Mac) </td><td>Change the landmark match method (useful for image registration). </td></tr>"
-		"<tr><td>Shift-E </td><td>Change the Displacement Field computing method. </td></tr>"
-		"<tr><td>W </td><td>short-cut to do find the best matching point for 1 single lamdmark. </td></tr>"
+		//"<tr><td>Ctrl-E (Windows, Linux) or Cmd-E (Mac) </td><td>Change the landmark match method (useful for image registration). </td></tr>"
+		//"<tr><td>Shift-E </td><td>Change the Displacement Field computing method. </td></tr>"
+		//"<tr><td>W </td><td>short-cut to do find the best matching point for 1 single lamdmark. </td></tr>"
 		"<tr><td>T </td><td>short-cut to trace a path between two landmarks (if landmarks defined). </td></tr>"
 		"</table><br>"
 
@@ -166,7 +166,7 @@ void v3d_aboutinfo()
 		"Jan 7 (v1.6), April 16 (v1.70), June 13 (v1.81), Aug, 20 (v1.90), Aug 22 (v1.91), Aug 29 (v1.924), Sept 4 (v1.93), Sept 10 (v1.94), Oct 8 (v1.95), "
 		"Oct 27 (v1.960), Nov 14 (v1.970), Dec 11 (v1.980), Dec 31 (v1.990), 2008. "
 		"Feb 20 (v2.000), May 4 (v2.032), May 16 (v2.100), May 20 (v2.110), June 10 (v2.121), July 5 (v2.140), July 13 (v2.200), Aug 1 (v2.300), Aug 14 (v2.310), Aug 20 (v2.320), Sept (v2.400), 2009. "
-		"Jan 31 (v2.449), 2010. "
+		"Jan 31 (v2.449), Feb-Aug (v2.4-v2.5, a number of important updates), 2010. "
 		"All rights reserved.<br><br> "
 		"Version Note: if you see a version number followed by a letter (e.g. 1.80a), this is a customized build for a particular research lab. "
 		"V3D also have additional image analysis modules, for further information, contact Hanchuan Peng.<br><br>";
