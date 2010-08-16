@@ -38,7 +38,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include <QtGui>
 
-QString versionnumber = "V3D (2.510), V3D-Neuron (2.0), V3D Plugin Interface (2.0) ";
+QString versionnumber = "V3D (2.511), V3D-Neuron (2.0), V3D Plugin Interface (2.0) ";
 
 void v3d_aboutinfo()
 {
@@ -82,7 +82,7 @@ void v3d_aboutinfo()
 		"<tr><td>Ctrl-S (Windows, Linux) or Cmd-S (Mac) </td><td>Save image file. </td></tr>"
 		"<tr><td>Ctrl-C (Windows, Linux) or Cmd-C (Mac) </td><td>Crop image based on the Region Of Interest (ROI) defined (see the Ctrl-click mouse operation to edit the ROI). </td></tr>"
 		"<tr><td>Shift-C </td><td>Switch among the three preset colormaps for an indexed/mask image (unsigned short int, 16bit). </td></tr>"
-		"<tr><td>Ctrl-D (Windows, Linux) or Cmd-D (Mac) </td><td>Delete the last added corner point of the ROI. </td></tr>"
+		//"<tr><td>Ctrl-D (Windows, Linux) or Cmd-D (Mac) </td><td>Delete the last added corner point of the ROI. </td></tr>"
 		"<tr><td>Ctrl-R (Windows, Linux) or Cmd-R (Mac) </td><td>Rotate image. </td></tr>"
 		"<tr><td>Ctrl-P (Windows, Linux) or Cmd-P (Mac) </td><td>Pop up the image processing dialog box. </td></tr>"
 		"<tr><td>Ctrl-V (Windows, Linux) or Cmd-V (Mac) </td><td>3D view of an image stack (will downsize to 512x512x256 if bigger than that size). </td></tr>"
@@ -96,7 +96,8 @@ void v3d_aboutinfo()
 		"<br><table border=\"1\">"
 		"<tr><td>Double-click anywhere close to any existing landmark </td><td>choose to move or delete a landmark.</td></tr>"
 		"<tr><td>Shift-click anywhere after selecting to move a landmark </td><td>move the specified landmark to a new location.</td></tr>"
-		"<tr><td>Ctrl-click  (Windows, Linux) or Cmd-click (Mac) anywhere </td><td>add a new corner point to a ROI.</td></tr>"
+		"<tr><td>Ctrl-click  (Windows, Linux) or Cmd-click (Mac) anywhere </td><td>add a new corner point to an ROI.</td></tr>"
+	    "<tr><td>Alt-click anywhere </td><td>remove the last added corner point in an ROI.</td></tr>"
 		"</table><br>"
 		"<H3>Wheel operations</H3>"
 		"<br><table border=\"1\">"

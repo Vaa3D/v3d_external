@@ -1736,6 +1736,14 @@ void XFormView::mouseLeftButtonPressEvent(QMouseEvent *e) //080101
 		roiPolygon << e->pos()/disp_scale;
 		update();
 	}
+	else if (QApplication::keyboardModifiers()==Qt::AltModifier) //100816
+	{
+		if (roiPolygon.count()>0)
+		{
+			roiPolygon.pop_back();
+			update();
+		}
+	}
 	else if (b_moveCurrentLandmark==true && ind_landmarkToBeChanged>=0 && QApplication::keyboardModifiers()==Qt::ShiftModifier)
 	{
 		QPoint cp = e->pos()/disp_scale;
