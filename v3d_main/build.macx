@@ -39,10 +39,20 @@ TIFFCOMPILE="NO"            # default do not compile libtiff
 V3DPLUGINSCOMPILE="NO"      # default do not compile v3d plugins
 NEWMATCOMPILE="NO"          # default do not compile newmat
 
+ARG_PLUGINS=
+
 # for each arg 
 
 for arg in $*; do
   #echo $arg		
+
+   if [ $arg == "-T" ]; then
+      TIFFCOMPILE="YES"
+	  continue
+   else
+      ARG_PLUGINS+=" $arg "      	  
+	  #echo $ARG_PLUGINS
+   fi
   
    if [ $arg == "debug" -o $arg == "release" ]; then
       ARGS+=" all"        # mac platform make doesn't has debug/release traget
@@ -70,11 +80,6 @@ for arg in $*; do
 	  continue
    fi
 
-   if [ $arg == "-T" ]; then
-      TIFFCOMPILE="YES"
-	  continue
-   fi
- 
 #32bit compiling
  
    if [ $arg == "-n" ]; then
@@ -234,10 +239,12 @@ fi
 
 if [ $DOIT == "YES" ]; then
   if [ $SYSTEMBITS == "32" ]; then
+    rm -fr ../v3d/v3d.app
     cp -r ./v3d/v3d.app ../v3d/.   #copy to the executable folder
 #    cp -r ./v3d/v3d.app ../released_plugins/v3d/.
   fi
   if [ $SYSTEMBITS == "64" ]; then
+    rm -fr ../v3d/v3d64.app
     cp -r ./v3d/v3d64.app ../v3d/. #copy to the executable folder
 #    cp -r ./v3d/v3d64.app ../released_plugins/v3d/.
   fi  
@@ -256,9 +263,9 @@ if [ $DOIT == "YES" ]; then
 	sh build_plugindemo.sh clean
   fi
   echo =========================================================
-  echo sh build_plugindemo.sh $*
+  echo sh build_plugindemo.sh $ARG_PLUGINS    #$*
   echo =========================================================
-  sh build_plugindemo.sh $*    # for plugins, just pass the args to the batch compiling script
+  sh build_plugindemo.sh $ARG_PLUGINS                  #$*    # for plugins, just pass the args to the batch compiling script
   
   mkdir -p ../v3d/plugins
   if [ $SYSTEMBITS == "32" ]; then
