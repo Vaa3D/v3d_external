@@ -694,6 +694,8 @@ bool V3d_PluginLoader::screenShot3DWindow(v3dhandle image_window, QString filena
 		r = w->screenShot3DWindow(filename);
 		qDebug() << "V3d_PluginLoader screenShotIn3DWindow: " << r <<"/"<< filename;
 	}
+
+	return r;
 }
 bool V3d_PluginLoader::screenShotROI3DWindow(v3dhandle image_window, QString filename)
 {
@@ -703,6 +705,8 @@ bool V3d_PluginLoader::screenShotROI3DWindow(v3dhandle image_window, QString fil
 		r = w->screenShotROI3DWindow(filename);
 		qDebug() << "V3d_PluginLoader screenShotROI3DWindow: " << r <<"/"<< filename;
 	}
+	
+	return r;
 }
 
 
