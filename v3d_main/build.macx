@@ -11,6 +11,14 @@ shopt -s expand_aliases;
 # 100805 updated by PHC, add -n for 32bit compilation on Snow Leopard
 # 100807 updated by PHC, add the libtiff compile so that increase the convenience
 # 100808 updated by PHC. fix a series of flag bugs
+# 100817 updated by PHC. add a new -T option
+#
+# Arguments:
+#    -jx                        #compile using some 'x' number of processors 
+#    -n                         #32bit compiling 
+#    -m                         #64bit compiling 
+#    -B                         #rebuild everything (except LIBTIFF library) 
+#    -T                         #rebuild LIBTIFF library 
 # 
 # examples: 
 #    sh build.macx
@@ -18,10 +26,10 @@ shopt -s expand_aliases;
 #    sh build.macx release
 #    sh build.macx clean
 #    sh build.macx all
-#    sh build.macx -B            #force to rebuild files listed in makefile
-#    sh build.macx -m            #make for 64-bit 
-#    sh build.macx -B -m -j4     #rebuild for 64-bit (not depend on order)
-#    sh build.macx -B -n -j4     #rebuild for 32-bit (not depend on order)
+#    sh build.macx -B            #force to rebuild files listed in makefile (without rebuild tiff library) 
+#    sh build.macx -m            #make for 64-bit (without rebuild tiff library) 
+#    sh build.macx -B -m -j4 -T    #rebuild for 64-bit (not depend on order), including the TIF library
+#    sh build.macx -B -n -j4 -T    #rebuild for 32-bit (not depend on order), including the TIF library
 
 
 V3D_PRO_FILE="v3d.pro"    # default project file for qmake
@@ -56,10 +64,14 @@ for arg in $*; do
    fi
 
    if [ $arg == "-B" ]; then
-      TIFFCOMPILE="YES"
 	  V3DPLUGINSCOMPILE="YES"
 	  NEWMATCOMPILE="YES"
       QARGS+=" $arg " 
+	  continue
+   fi
+
+   if [ $arg == "-T" ]; then
+      TIFFCOMPILE="YES"
 	  continue
    fi
  
@@ -123,7 +135,7 @@ fi
 
 #prepare the tiff library
 
-if [ ! -f common_lib/lib/libv3dtiff.a ]; then
+if [ $TIFFCOMPILE == "YES" -o ! -f common_lib/lib/libv3dtiff.a ]; then
   cd common_lib/src_packages
   tar zxvf tiff-3.8.2.1.tar.gz
   cd ../
