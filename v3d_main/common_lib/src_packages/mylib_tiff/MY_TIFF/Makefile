@@ -13,7 +13,7 @@ FLAGS += -O4
 all: mytiff.o $(APPS)
 
 %.o: %.p
-	awk -f manager.awk $< > $*.c
+	#awk -f manager.awk $< > $*.c
 	gcc -c $(FLAGS) $*.c
 	#rm $*.c
 
