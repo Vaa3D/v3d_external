@@ -70,6 +70,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  * 20090413: add simple MRC file reading and writing
  * 20090802: add raw5d read/write
  * 20100520: try to revise ZZBIG to allow big file, also add fstat check for windows large file size , instead of using fseek and ftell
+ * 20100816: add mylib interface, by PHC.
  */
 
 
@@ -3507,6 +3508,10 @@ bool ensure_file_exists_and_size_not_too_big(char *filename, V3DLONG sz_thres)
 	return true;
 }
 
+
+
+//
+
 bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & datatype)
 {
 	if (data1d)
@@ -3565,7 +3570,7 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 	}
 	else if ( strcasecmp(curFileSuffix, "raw5")==0 ) //read lsm stacks
 	{
-		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*ZZBIG)) //lsm file at most should be 900M bytes
+		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*ZZBIG)) //
 		{
 			printf("The lsm file may not exist or may be too big to load.\n");
 			return false;

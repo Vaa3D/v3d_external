@@ -53,24 +53,37 @@ void Image4DSimple::loadImage(char filename[])
 
 	V3DLONG * tmp_sz = 0; // note that this variable must be initialized as NULL. 
 	int tmp_datatype = 0;
+	int pixelnbits=1; //100817
 
 	//060815, 060924, 070805
 	char * curFileSurfix = getSurfix(imgSrcFile);
 	printf("The current input file has the surfix [%s]\n", curFileSurfix);
-	if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0) //read tiff stacks
+
+//commented 100817	
+//	if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0) //read tiff stacks
+//	{
+//		if (loadTif2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
+//		{
+//			v3d_msg("Error happens in TIF file reading. Stop. \n", false);
+//			b_error=1;
+//			return;
+//		}
+//	}
+//	else if ( strcasecmp(curFileSurfix, "lsm")==0 ) //read lsm stacks
+//	{
+//		if (loadLsm2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
+//		{
+//			v3d_msg("Error happens in LSM file reading. Stop. \n", false);
+//			b_error=1;
+//			return;
+//		}
+//	}
+	
+	if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0 || strcasecmp(curFileSurfix, "lsm")==0 ) //read tiff/lsm stacks
 	{
-		if (loadTif2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
+		if (loadTif2StackMylib(imgSrcFile, data1d, tmp_sz, tmp_datatype, pixelnbits))
 		{
 			v3d_msg("Error happens in TIF file reading. Stop. \n", false);
-			b_error=1;
-			return;
-		}
-	}
-	else if ( strcasecmp(curFileSurfix, "lsm")==0 ) //read lsm stacks
-	{
-		if (loadLsm2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
-		{
-			v3d_msg("Error happens in LSM file reading. Stop. \n", false);
 			b_error=1;
 			return;
 		}

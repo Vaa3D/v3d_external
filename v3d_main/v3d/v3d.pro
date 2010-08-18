@@ -129,6 +129,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../basic_c_fun/basic_landmark.h \
     ../basic_c_fun/v3d_interface.h \ 
     ../basic_c_fun/v3d_global_preference.h \
+	../basic_c_fun/imageio_mylib.h \
     ../plugin_loader/pluginDialog.h \
     ../plugin_loader/v3d_plugin_loader.h \
     ../graph/graph.h \
@@ -202,6 +203,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../basic_c_fun/v3d_message.cpp \
     ../basic_c_fun/basic_surf_objs.cpp \
     ../basic_c_fun/basic_4dimage.cpp \
+	../basic_c_fun/imageio_mylib.cpp \
     ../plugin_loader/v3d_plugin_loader.cpp \
     ../plugin_loader/pluginDialog.cpp \
     ../graph/dijk.cpp \
@@ -286,6 +288,7 @@ macx:LIBS += -L../common_lib/lib_mac32
 macx:LIBS += -lm -lv3dtiff \
     -lv3dnewmat 
 #    -framework GLUT
+macx:LIBS += -L/Users/pengh/work/genelib/mylib -lmylib	
 
 win32:LIBS += -lm -lv3dtiff \
     -lv3dnewmat 

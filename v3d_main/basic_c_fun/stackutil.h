@@ -47,6 +47,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  * 090413: add MRC rec file reading and writing
  * 090802: add .raw5d read and write interface
  * 100519: add v3d_basicdatatype.h
+ * 100817: add mylib interface, PHC
  */
 
 #ifndef __STACKUTIL__
@@ -89,11 +90,13 @@ void swap2bytes(void *targetp);
 void swap4bytes(void *targetp);
 char checkMachineEndian();
 
+
+//use libtiff to read tiff files. MUST < 2G
 int loadTif2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype);
 int loadTif2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype, int chan_id_to_load); //overload for convenience to read only 1 channel
 int saveStack2Tif(const char * filename, const unsigned char * img, const V3DLONG * sz, int datatype);
 
-//the following two functions are the major routines to load LSM file
+//the following two functions are the major routines to load LSM file using libtiff, the file should have a size < 2G
 int loadLsm2Stack_obsolete(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype); //070806
 int loadLsm2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype); //070806
 int loadLsm2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype, int chan_id_to_load);   //overload for convenience to read only 1 channel
@@ -130,6 +133,9 @@ bool ensure_file_exists_and_size_not_too_big(char *filename, V3DLONG sz_thres);
 bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & datatype); //070215
 bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & datatype, int chan_id_to_load); //081204
 bool saveImage(const char filename[], const unsigned char * data1d, const V3DLONG * sz, const int datatype); //070214
+
+
+#include "imageio_mylib.h" //100817. PHC
 
 #endif
 
