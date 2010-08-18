@@ -35,5 +35,5 @@ QT4_WRAP_CPP(QT_MOC_SRCS
 
 add_library( 3drenderer ${QT_MOC_SRCS} ${3DRenderer_SRCS} )
 
-target_link_libraries( 3drenderer ${OPENGL_LIBRARIES} )
+target_link_libraries( 3drenderer ${QT_QTOPENGL_LIBRARY} ${OPENGL_LIBRARIES} )
 
