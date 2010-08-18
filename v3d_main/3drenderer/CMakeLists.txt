@@ -1,6 +1,7 @@
 find_package(OpenGL REQUIRED)
 
 set(3DRenderer_SRCS
+  GLee_r.c
   barFigureDialog.cpp
   # glsl_r.cpp
   gradients.cpp
@@ -32,5 +33,7 @@ QT4_WRAP_CPP(QT_MOC_SRCS
   )
 
 
-add_library( 3drenderer ${QT_MOC_SRCS} ${3DRenderer_SRCS} ${OPENGL_LIBRARIES} )
+add_library( 3drenderer ${QT_MOC_SRCS} ${3DRenderer_SRCS} )
+
+target_link_libraries( 3drenderer ${OPENGL_LIBRARIES} )
 
