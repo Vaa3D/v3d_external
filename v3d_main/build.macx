@@ -42,8 +42,10 @@ SYSTEMBITS="32"             # default use 32bit libtiff
 TIFFCOMPILE="NO"            # default do not compile libtiff
 V3DPLUGINSCOMPILE="NO"      # default do not compile v3d plugins
 NEWMATCOMPILE="NO"          # default do not compile newmat
+MYLIBCOMPILE="NO"           # default do not comple mylibtiff
 
 ARG_PLUGINS=
+ARG_MYLIBTIFF=
 
 # for each arg 
 
@@ -52,6 +54,7 @@ for arg in $*; do
 
    if [ $arg == "-T" ]; then
       TIFFCOMPILE="YES"
+      MYLIBCOMPIL="YES"
 	  continue
    else
       ARG_PLUGINS+=" $arg "      	  
@@ -103,6 +106,7 @@ for arg in $*; do
    	  echo "Force to configure make for MACX -arch x86_64 (need 64-bit enabled Qt, version 4.5.0 above)" 
    	  echo "If you specify -m and -n together, the behavior of this batch script is NOT well defined!!"
       ARGS+=" ARCH_x86_64=-archx86_64 " 
+	  ARG_MYLIBTIFF+=" ARCH_x86_64=-archx86_64 " 
       V3D_PRO_FILE="v3d64.pro"    # project file for qmake
       SYSTEMBITS="64" 
  
@@ -179,21 +183,15 @@ if [ $TIFFCOMPILE == "YES" -o ! -f common_lib/lib/libv3dtiff.a ]; then
   cd ../../
 fi
 
-if [ $TIFFCOMPILE == "YES1" ]; then
-  cd common_lib
-  TIFFPATH=`pwd`
-  cd build
-  if [ $SYSTEMBITS == "64" ]; then
-    ../src_packages/tiff-3.8.2.1/configure -prefix=$TIFFPATH  CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64"
+#build the MYLIB library
+
+if [ $DOIT == "YES" -o ! -f common_lib/src_packages/mylib_tiff/libmylib.a ]; then
+  cd common_lib/src_packages/mylib_tiff 
+  if [ $MYLIBCOMPILE == "YES" ]; then  
+    make -f Makefile clean
   fi
-  if [ $SYSTEMBITS == "32" ]; then
-    ../src_packages/tiff-3.8.2.1/configure -prefix=$TIFFPATH  CFLAGS="-arch i386" CXXFLAGS="-arch i386"
-  fi
-  make clean
-  make 
-  make install
-  mv ../lib/libtiff.a ../lib/libv3dtiff.a
-  cd ../../
+  make -f Makefile $ARG_MYLIBTIFF
+  cd ../../../
 fi
 
 #build the libnewmat library

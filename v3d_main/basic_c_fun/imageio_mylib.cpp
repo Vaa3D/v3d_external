@@ -37,7 +37,7 @@
 #include "imageio_mylib.h"
 
 extern "C" {
-#include "../common_lib/src_package/mylib/image.h"
+#include "../common_lib/src_package/mylib_tiff/image.h"
 };
 
 void freeMylibBundle(Layer_Bundle * indata)
