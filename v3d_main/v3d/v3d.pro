@@ -288,7 +288,7 @@ macx:LIBS += -L../common_lib/lib_mac32
 macx:LIBS += -lm -lv3dtiff \
     -lv3dnewmat 
 #    -framework GLUT
-macx:LIBS += -L/Users/pengh/work/genelib/mylib -lmylib	
+macx:LIBS += -L../common_lib/src_package/mylib_tiff -lmylib	
 
 win32:LIBS += -lm -lv3dtiff \
     -lv3dnewmat 

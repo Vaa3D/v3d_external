@@ -37,8 +37,19 @@
 #include "imageio_mylib.h"
 
 extern "C" {
-#include "/Users/pengh/work/genelib/mylib/image.h"
+#include "../common_lib/src_package/mylib/image.h"
 };
+
+void freeMylibBundle(Layer_Bundle * indata)
+{
+	if (indata && indata->layers)
+	{
+		for (V3DLONG n=0; n<indata->num_layers; n++)
+			if (indata->layers[n]) {Kill_Array(indata->layers[n]); indata->layers[n]=0;} //still need to free space
+		
+		//do NOT free the bundle pointer itself, as Gene used the static pointer for the bundle!
+	}
+}
 
 int loadTif2StackMylib(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype, int &nbits)
 {
@@ -46,12 +57,77 @@ int loadTif2StackMylib(char * filename, unsigned char * & img, V3DLONG * & sz, i
 		return 1;
 	
 	//read data
+	V3DLONG n; //n for the number of layers
 	
-	Array * indata = Read_Image(filename, 0);
-	if (!indata)
+	Layer_Bundle * indata = Read_Images(filename); //not use Read_Image as there could be multiple layers
+	if (!indata || !indata->layers)
 	{
 		fprintf(stderr, "************* MYLIB Error MSG: [%s]\n", Image_Error());
 		return 1;
+	}
+	else
+	{
+		for (n=0;n<indata->num_layers;n++)
+			if (indata->layers[n] == NULL || indata->layers[n]->data == NULL)
+			{
+				fprintf(stderr, "************* MYLIB data structure corrupted. MYLIB error msg [%s]\n", Image_Error());
+				freeMylibBundle(indata);
+				return 1;
+			}
+	}
+	
+	//find the number of channels in the output data
+	V3DLONG nchannels=0;
+	for (n=0;n<indata->num_layers;n++)
+	{
+		if (indata->layers[n]->type != UINT8 && indata->layers[n]->type != UINT16 && indata->layers[n]->type != FLOAT32)
+		{
+			fprintf(stderr, "************* MYLIB returns a data type that is not oen of UINT8, UINT16, and FLOAT32. V3D cannot convert. Addition MYLIB error msg [%s].\n", Image_Error());
+			freeMylibBundle(indata);
+			return 1;
+		}
+		
+		if (indata->layers[n]->ndims>=4)
+		{
+			fprintf(stderr, "************* MYLIB returns a 5D or more-dimensional array. V3D cannot convert. Addition MYLIB error msg [%s].\n", Image_Error());
+			freeMylibBundle(indata);
+			return 1;
+		}
+		
+		if (indata->layers[n]->ndims<4)
+			nchannels += 1;
+		else
+			nchannels += indata->layers[n]->dims[3]; 
+		
+		//also do a redundant verification of the datatype & dims (Gene indicated this not needed, but I still add in case an error which will cause a crash)
+		if (n>0)
+		{
+			if (indata->layers[n]->type != indata->layers[n-1]->type || indata->layers[n]->scale != indata->layers[n-1]->scale || indata->layers[n]->kind != indata->layers[n-1]->kind)
+			{
+				fprintf(stderr, "************* MYLIB returns layers which have different datatypes/number-of-bits-per-pixels/kind. V3D cannot convert. Addition MYLIB error msg [%s].\n", Image_Error());
+				freeMylibBundle(indata);
+				return 1;
+			}
+			
+			if (indata->layers[n]->ndims != indata->layers[n-1]->ndims)
+			{
+				fprintf(stderr, "************* MYLIB returns layers which have different # of dimensions. V3D cannot convert. Addition MYLIB error msg [%s].\n", Image_Error());
+				fprintf(stderr, "************* layers %ld #dimensions = [%ld] and layer %ld #dimensions = [%ld] do NOT match.\n", n, (V3DLONG)(indata->layers[n]->ndims), n-1, (V3DLONG)(indata->layers[n-1]->ndims));
+				freeMylibBundle(indata);
+				return 1;
+			}
+			
+			for (V3DLONG j=0;j<indata->layers[n]->ndims;j++)
+			{
+				if (indata->layers[n]->dims[j] != indata->layers[n-1]->dims[j])
+				{
+					fprintf(stderr, "************* MYLIB returns layers which have different dimensions (sizes). V3D cannot convert. Addition MYLIB error msg [%s].\n", Image_Error());
+					fprintf(stderr, "************* layers %ld dimension %ld [%ld] and layer %ld dimension %ld [%ld] do NOT match.\n", n, j, (V3DLONG)(indata->layers[n]->dims[j]), n-1, j, (V3DLONG)(indata->layers[n-1]->dims[j]));
+					freeMylibBundle(indata);
+					return 1;
+				}
+			}
+		}
 	}
 	
 	//prepare the output buffer
@@ -78,30 +154,36 @@ int loadTif2StackMylib(char * filename, unsigned char * & img, V3DLONG * & sz, i
 	
 	//now copy data
 	
-	switch (indata->type)
+	switch (indata->layers[0]->type)
 	{
 		case UINT8:		datatype=1; break;
 		case UINT16:	datatype=2; break;
 		case FLOAT32:	datatype=4; break;
 		default:
-			fprintf(stderr, "Unsupport data type detected in loadTif2StackMylib().\n");
+			fprintf(stderr, "Unsupport data type detected in loadTif2StackMylib(). You should never see this message. Contact V3D developers!.\n");
 			return 1;
 	}
 	
-	nbits = indata->scale;
+	nbits = indata->layers[0]->scale;
 	
-	V3DLONG i, totalunits=1;
-	for (i=0;i<indata->ndims;i++)
+	V3DLONG i, unitsPerLayer=1;
+	V3DLONG upper = (indata->layers[0]->ndims);
+	if (upper>3) upper = 3; 
+	for (i=0;i<upper;i++)
 	{
-		sz[i] = indata->dims[i];
-		totalunits *= sz[i];
+		sz[i] = indata->layers[0]->dims[i];
+		unitsPerLayer *= sz[i];
 	}
-	for (i=indata->ndims;i<4;i++)
+	for (i=upper;i<3;i++)
 	{
 		sz[i] = 1;
+		// since sz[i] is 1, then no need to multiply to totalunits
 	}
+	sz[3] = nchannels; 
+	fprintf(stdout, "The dimensions of the image will be [%ld %ld %ld %ld].\n", sz[0], sz[1], sz[2], sz[3]);
 	
-	V3DLONG totallen = totalunits * datatype;
+	V3DLONG lengthPerLayers = unitsPerLayer * datatype;
+	V3DLONG totallen = lengthPerLayers * sz[3];
 	try
 	{
 		img = new unsigned char [totallen];
@@ -113,9 +195,16 @@ int loadTif2StackMylib(char * filename, unsigned char * & img, V3DLONG * & sz, i
 		return 1;
 	}
 	
-	memcpy(img, (unsigned char*)indata->data, totallen); //copy data
+	unsigned char *img1;
+	for (n=0, img1=img; n<indata->num_layers; n++)
+	{
+		printf("Now copy %ld layers...\n", n);
+		memcpy(img1, (unsigned char*)indata->layers[n]->data, (V3DLONG)(indata->layers[n]->size)*datatype); //copy data
+		img1 += (V3DLONG)(indata->layers[n]->size)*datatype;
+	}
 
-	if (indata) {Kill_Array(indata); indata=0;} //free the space
+	//free space
+	freeMylibBundle(indata);
 	return 0;
 }
 
