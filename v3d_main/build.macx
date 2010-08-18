@@ -54,7 +54,7 @@ for arg in $*; do
 
    if [ $arg == "-T" ]; then
       TIFFCOMPILE="YES"
-      MYLIBCOMPIL="YES"
+      MYLIBCOMPILE="YES"
 	  continue
    else
       ARG_PLUGINS+=" $arg "      	  
@@ -243,12 +243,10 @@ if [ $DOIT == "YES" ]; then
   if [ $SYSTEMBITS == "32" ]; then
     rm -fr ../v3d/v3d.app
     cp -r ./v3d/v3d.app ../v3d/.   #copy to the executable folder
-#    cp -r ./v3d/v3d.app ../released_plugins/v3d/.
   fi
   if [ $SYSTEMBITS == "64" ]; then
     rm -fr ../v3d/v3d64.app
     cp -r ./v3d/v3d64.app ../v3d/. #copy to the executable folder
-#    cp -r ./v3d/v3d64.app ../released_plugins/v3d/.
   fi  
 fi
 

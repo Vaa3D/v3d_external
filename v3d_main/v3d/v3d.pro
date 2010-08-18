@@ -129,7 +129,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../basic_c_fun/basic_landmark.h \
     ../basic_c_fun/v3d_interface.h \ 
     ../basic_c_fun/v3d_global_preference.h \
-	../basic_c_fun/imageio_mylib.h \
+    ../basic_c_fun/imageio_mylib.h \
     ../plugin_loader/pluginDialog.h \
     ../plugin_loader/v3d_plugin_loader.h \
     ../graph/graph.h \
@@ -140,7 +140,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_editing/neuron_xforms.h \
     ../neuron_editing/neuron_sim_scores.h \
     ../neuron_editing/v_neuronswc.h \
-	../neuron_editing/neuron_format_converter.h \
+    ../neuron_editing/neuron_format_converter.h \
     ../neuron_tracing/neuron_tracing.h \
     ../3drenderer/v3dr_mainwindow.h \
     ../3drenderer/v3dr_glwidget.h \
@@ -166,7 +166,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     opt_rotate.h \
     landmark_property_dialog.h \
     dialog_keypoint_features.h \
-	histogramsimple.h \
+    histogramsimple.h \
     compute_win_pca.h \
     compute_win_diff.h \
     surfaceobj_annotation_dialog.h \
@@ -203,7 +203,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../basic_c_fun/v3d_message.cpp \
     ../basic_c_fun/basic_surf_objs.cpp \
     ../basic_c_fun/basic_4dimage.cpp \
-	../basic_c_fun/imageio_mylib.cpp \
+    ../basic_c_fun/imageio_mylib.cpp \
     ../plugin_loader/v3d_plugin_loader.cpp \
     ../plugin_loader/pluginDialog.cpp \
     ../graph/dijk.cpp \
@@ -211,7 +211,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_editing/neuron_xforms.cpp \
     ../neuron_editing/neuron_sim_scores.cpp \
     ../neuron_editing/v_neuronswc.cpp \
-	../neuron_editing/neuron_format_converter.cpp \
+    ../neuron_editing/neuron_format_converter.cpp \
     ../neuron_tracing/dij_bgl.cpp \
     ../gmm/fit_gmm.cpp \
     ../cellseg/template_matching_seg.cpp \
@@ -237,13 +237,13 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     v3d_core.cpp \
     v3dimgproc_entry.cpp \
     my4dimage.cpp \
-	v3dimg_proc_neuron.cpp \
+    v3dimg_proc_neuron.cpp \
     colormap.cpp \
     rotate_image.cpp \
     dialog_rotate.cpp \
     landmark_property_dialog.cpp \
     dialog_keypoint_features.cpp \
-	histogramsimple.cpp \
+    histogramsimple.cpp \
     surfaceobj_geometry_dialog.cpp \
     import_filelistname.cpp \
     import_tiffseries.cpp \
@@ -254,7 +254,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../worm_straighten_c/mst_prim_c.cpp \
     ../worm_straighten_c/bfs_1root.cpp \
     ../worm_straighten_c/spline_cubic.cpp \
-	../jba/c++/histeq.cpp
+    ../jba/c++/histeq.cpp
 
 FORMS += landmark_property.ui \
     surface_obj_annotation.ui \
@@ -288,7 +288,7 @@ macx:LIBS += -L../common_lib/lib_mac32
 macx:LIBS += -lm -lv3dtiff \
     -lv3dnewmat 
 #    -framework GLUT
-macx:LIBS += -L../common_lib/src_package/mylib_tiff -lmylib	
+macx:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib	
 
 win32:LIBS += -lm -lv3dtiff \
     -lv3dnewmat 
