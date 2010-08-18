@@ -2,14 +2,13 @@ all: mylib
 
 # 64bit compilation on Macx
 CFLAGS += $(subst x, x,$(ARCH_x86_64))
-LDFLAGS += $(subst x, x,$(ARCH_x86_64))
 
 ifneq ($(strip $(ARCH_x86_64)),)
 else
-CC_FLAGS += -m32
+CFLAGS += -m32
 endif
 
-CFLAGS = -O4
+CFLAGS += -O4
 #CFLAGS += -m64
 
 modules = cdf.o fct.min.o linear.algebra.o array.o \
@@ -17,25 +16,26 @@ modules = cdf.o fct.min.o linear.algebra.o array.o \
           histogram.o
 
 %.o: %.p
-	awk -f manager.awk $< | awk -f generator.awk > $*.c
+	#awk -f manager.awk $< | awk -f generator.awk > $*.c
 	gcc -c $(CFLAGS) $*.c
 ifneq ($(CFLAGS),-g)
 	#rm $*.c
 endif
 
 mylib: $(modules)
-	cd MY_TIFF   && $(MAKE) && cd ..
+	cd MY_TIFF && $(MAKE) $* && cd ..
 	#cd MY_FFT    && $(MAKE) && cd ..
 	#cd DOCUMENTS && $(MAKE) && cd ..
 	#libtool -static -o libmylib.a $(modules) MY_FFT/myfft.o MY_TIFF/mytiff.o
 	libtool -static -o libmylib.a $(modules)  MY_TIFF/mytiff.o
-	rm $(modules)
+	#rm $(modules)
 
 clean:
 	cd MY_TIFF   && $(MAKE) clean && cd ..
 	#cd MY_FFT    && $(MAKE) clean && cd ..
 	#cd DOCUMENTS && $(MAKE) clean && cd ..
-	rm -f libmylib.a libmylib64.a $(modules:.o=.c) $(modules64:.o=.c)
+	rm *.o
+	rm -f libmylib.a libmylib64.a  #$(modules:.o=.c) $(modules64:.o=.c)
 
 package:
 	cd MY_TIFF   && $(MAKE) clean && cd ..
