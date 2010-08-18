@@ -49,8 +49,11 @@ int loadTif2StackMylib(char * filename, unsigned char * & img, V3DLONG * & sz, i
 	
 	Array * indata = Read_Image(filename, 0);
 	if (!indata)
+	{
+		fprintf(stderr, "************* MYLIB Error MSG: [%s]\n", Image_Error());
 		return 1;
-
+	}
+	
 	//prepare the output buffer
 	if (img)
 	{
