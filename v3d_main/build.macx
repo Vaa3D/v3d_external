@@ -20,6 +20,10 @@ shopt -s expand_aliases;
 #    -B                         #rebuild everything (except LIBTIFF library) 
 #    -T                         #rebuild LIBTIFF library 
 # 
+# Known problems: 
+#    (*) On Mac 10.4.11, Tiger, it seems bash does not recognize A+=" B" command. Thus the
+#        plugins will not build automatically after I added -T option.
+#
 # examples: 
 #    sh build.macx
 #    sh build.macx debug
