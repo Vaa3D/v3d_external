@@ -1,8 +1,7 @@
-APPS = tiffconvert tifftagger tiffRGB tiffshow mrc2tiff
 
 FLAGS += -O4
 
-all: mytiff.o $(APPS)
+all: mytiff.o 
 
 %.o: %.p
 	gcc -c $(FLAGS) $*.c
