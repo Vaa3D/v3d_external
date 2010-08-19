@@ -294,6 +294,7 @@ macx:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib
 win32:LIBS += -lm -lv3dtiff \
     -lv3dnewmat 
 #    -lglut32 # win32-mingw, on unix link libglut.a
+win32:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib	
 
 INCLUDEPATH += ../common_lib/include   
 
