@@ -1,4 +1,5 @@
-APPS = tiffconvert tifftagger tiffRGB tiffshow mrc2tiff
+APPS = 
+#tiffconvert tifftagger tiffRGB tiffshow mrc2tiff
 
 # 64bit compilation on Macx
 FLAGS += $(subst x, x,$(ARCH_x86_64))
