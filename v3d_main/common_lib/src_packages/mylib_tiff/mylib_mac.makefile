@@ -23,7 +23,7 @@ ifneq ($(CFLAGS),-g)
 endif
 
 mylib: $(modules)
-	cd MY_TIFF && $(MAKE) $* && cd ..
+	cd MY_TIFF && $(MAKE) -f mytiff_mac.makefile $* && cd ..
 	#cd MY_FFT    && $(MAKE) && cd ..
 	#cd DOCUMENTS && $(MAKE) && cd ..
 	#libtool -static -o libmylib.a $(modules) MY_FFT/myfft.o MY_TIFF/mytiff.o
@@ -31,14 +31,14 @@ mylib: $(modules)
 	#rm $(modules)
 
 clean:
-	cd MY_TIFF   && $(MAKE) clean && cd ..
+	cd MY_TIFF   && $(MAKE) -f mytiff_mac.makefile clean && cd ..
 	#cd MY_FFT    && $(MAKE) clean && cd ..
 	#cd DOCUMENTS && $(MAKE) clean && cd ..
 	rm *.o
 	rm -f libmylib.a libmylib64.a  #$(modules:.o=.c) $(modules64:.o=.c)
 
 package:
-	cd MY_TIFF   && $(MAKE) clean && cd ..
+	cd MY_TIFF   && $(MAKE) -f mytiff_mac.makefile clean && cd ..
 	#cd MY_FFT    && $(MAKE) clean && cd ..
 	#cd DOCUMENTS && $(MAKE) clean && cd ..
 	#tar -czf mylib.tar.gz DOCUMENTS/* MY_TIFF/* MY_FFT/* \

@@ -5,6 +5,7 @@
 #echo Based on Mac version by Hanchuan Peng
 #echo 2008-12-05, by Hanchuan Peng
 #echo 2010-08-12, by Hanchuan Peng
+#echo 2010-08018, by Hanchuan Peng
 #echo -----------------------------------------------------------------
 #echo on
 
@@ -34,6 +35,16 @@ if [ ! -f common_lib/lib/libv3dtiff.a ]; then
   ln -s libtiff.a libv3dtiff.a
   cd ../../
 fi
+
+#prepare MYLIB library
+
+if [ ! -f common_lib/src_packages/mylib_tiff/libmylib.a ]; then
+  cd common_lib/src_packages/mylib_tiff
+  make -f mylib_linux.makefile clean
+  make -f mylib_linux.makefile 
+  cd ../../../
+fi
+
 
 
 ARGS=$*

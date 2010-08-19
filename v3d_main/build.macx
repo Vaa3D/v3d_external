@@ -188,9 +188,9 @@ fi
 if [ $DOIT == "YES" -o ! -f common_lib/src_packages/mylib_tiff/libmylib.a ]; then
   cd common_lib/src_packages/mylib_tiff 
   if [ $MYLIBCOMPILE == "YES" ]; then  
-    make -f Makefile clean
+    make -f mylib_mac.makefile clean
   fi
-  make -f Makefile $ARG_MYLIBTIFF
+  make -f mylib_mac.makefile $ARG_MYLIBTIFF
   cd ../../../
 fi
 
