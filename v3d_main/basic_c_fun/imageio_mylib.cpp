@@ -87,7 +87,7 @@ int loadTif2StackMylib(char * filename, unsigned char * & img, V3DLONG * & sz, i
 			return 1;
 		}
 		
-		if (indata->layers[n]->ndims>=4)
+		if (indata->layers[n]->ndims>4)
 		{
 			fprintf(stderr, "************* MYLIB returns a 5D or more-dimensional array. V3D cannot convert. Addition MYLIB error msg [%s].\n", Image_Error());
 			freeMylibBundle(indata);
@@ -96,7 +96,7 @@ int loadTif2StackMylib(char * filename, unsigned char * & img, V3DLONG * & sz, i
 		
 		if (indata->layers[n]->ndims<4)
 			nchannels += 1;
-		else
+		else //==4
 			nchannels += indata->layers[n]->dims[3]; 
 		
 		//also do a redundant verification of the datatype & dims (Gene indicated this not needed, but I still add in case an error which will cause a crash)
@@ -198,7 +198,7 @@ int loadTif2StackMylib(char * filename, unsigned char * & img, V3DLONG * & sz, i
 	unsigned char *img1;
 	for (n=0, img1=img; n<indata->num_layers; n++)
 	{
-		printf("Now copy %ld layers...\n", n);
+		printf("Now copy layer %ld's data...\n", n);
 		memcpy(img1, (unsigned char*)indata->layers[n]->data, (V3DLONG)(indata->layers[n]->size)*datatype); //copy data
 		img1 += (V3DLONG)(indata->layers[n]->size)*datatype;
 	}

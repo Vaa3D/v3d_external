@@ -321,7 +321,7 @@ static void read_directory(TIFF *tif, Image *image, char *routine)   //  Used by
       uint8  *out;
 
       if (TIFFReadRGBAImage(tif,width,height,raster,0) == 0)
-        error("read of tif failed", NULL);
+        error("read of tif failed in read_directory()", NULL);
 
       in = raster;
       if (image->kind == GREY)

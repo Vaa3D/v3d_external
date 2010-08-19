@@ -59,33 +59,40 @@ void Image4DSimple::loadImage(char filename[])
 	char * curFileSurfix = getSurfix(imgSrcFile);
 	printf("The current input file has the surfix [%s]\n", curFileSurfix);
 
-//commented 100817	
-//	if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0) //read tiff stacks
-//	{
-//		if (loadTif2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
-//		{
-//			v3d_msg("Error happens in TIF file reading. Stop. \n", false);
-//			b_error=1;
-//			return;
-//		}
-//	}
-//	else if ( strcasecmp(curFileSurfix, "lsm")==0 ) //read lsm stacks
-//	{
-//		if (loadLsm2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
-//		{
-//			v3d_msg("Error happens in LSM file reading. Stop. \n", false);
-//			b_error=1;
-//			return;
-//		}
-//	}
-	
-	if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0 || strcasecmp(curFileSurfix, "lsm")==0 ) //read tiff/lsm stacks
+	if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0 ||
+		strcasecmp(curFileSurfix, "lsm")==0 ) //read tiff/lsm stacks
 	{
-		if (loadTif2StackMylib(imgSrcFile, data1d, tmp_sz, tmp_datatype, pixelnbits))
+/*
+		v3d_msg("Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
+		if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0)
 		{
-			v3d_msg("Error happens in TIF file reading. Stop. \n", false);
-			b_error=1;
-			return;
+			if (loadTif2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
+			{
+				v3d_msg("Error happens in TIF file reading (using libtiff). \n", false);
+				b_error=1;
+			}
+		}	
+		else //if ( strcasecmp(curFileSurfix, "lsm")==0 ) //read lsm stacks
+		{
+			if (loadLsm2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
+			{
+				v3d_msg("Error happens in LSM file reading (using libtiff, slightly revised by PHC). \n", false);
+				b_error=1;
+			}
+		}
+		
+		if(b_error) //then invoke MYLIB
+*/
+		{
+			v3d_msg("Now try to use MYLIB to read the TIFF/LSM again...\n",0);
+			if (loadTif2StackMylib(imgSrcFile, data1d, tmp_sz, tmp_datatype, pixelnbits))
+			{
+				v3d_msg("Error happens in TIF/LSM file reading (using MYLIB). Stop. \n", false);
+				b_error=1;
+				return;
+			}
+			else
+				b_error=0; //when succeed then reset b_error
 		}
 	}
 	else if ( strcasecmp(curFileSurfix, "mrc")==0 ) //read mrc stacks

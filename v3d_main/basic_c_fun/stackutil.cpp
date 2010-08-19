@@ -3175,7 +3175,7 @@ int read_tif_slice(TIFF *tif, unsigned char * pointer_first_page, V3DLONG width,
 
 		if (TIFFReadRGBAImage(tif,width,height,raster,0) == 0)
 		{
-			fprintf(stderr, "read of tif failed");
+			fprintf(stderr, "read of tif failed in read_tif_slice()");
 			if (raster) {delete []raster; raster=0;}
 			return 1;
 		}
