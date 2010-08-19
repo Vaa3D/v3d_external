@@ -64,5 +64,5 @@ endif( V3D_USE_OWN_NEWMAT )
 
 add_executable( v3d ${V3D_SRCS} )
 
-target_link_libraries( v3d V3DInterface v3dbase v3d_plugin_loader 3drenderer )
+target_link_libraries( v3d V3DInterface v3dbase v3d_plugin_loader 3drenderer ${TIFF_LIBRARIES} )
 
