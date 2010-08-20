@@ -30,10 +30,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 /*
  * basic_4dimage.cpp
- *
- *  Extract from v3d/my4dimage.cpp
- *  Aug 17, 2009: Zongcai Ruan
- *
+ * last update: 100819: Hanchuan Peng. use MYLIB only for Llinux and Mac, but not WIN32. FIXME: add VC support later.
  */
 
 #include "v3d_message.h"
@@ -62,7 +59,8 @@ void Image4DSimple::loadImage(char filename[])
 	if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0 ||
 		strcasecmp(curFileSurfix, "lsm")==0 ) //read tiff/lsm stacks
 	{
-/*
+#if defined _WIN32		
+
 		v3d_msg("Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
 		if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0)
 		{
@@ -81,8 +79,10 @@ void Image4DSimple::loadImage(char filename[])
 			}
 		}
 		
-		if(b_error) //then invoke MYLIB
-*/
+//		if(b_error) //then invoke MYLIB
+
+#else		
+
 		{
 			v3d_msg("Now try to use MYLIB to read the TIFF/LSM again...\n",0);
 			if (loadTif2StackMylib(imgSrcFile, data1d, tmp_sz, tmp_datatype, pixelnbits))
@@ -94,6 +94,8 @@ void Image4DSimple::loadImage(char filename[])
 			else
 				b_error=0; //when succeed then reset b_error
 		}
+
+#endif
 	}
 	else if ( strcasecmp(curFileSurfix, "mrc")==0 ) //read mrc stacks
 	{

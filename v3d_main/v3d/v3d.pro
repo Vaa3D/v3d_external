@@ -73,6 +73,7 @@
 # 100802: remove the three modules
 # 100807: remove some redundant libs
 # 100810: add xformwidget.h extracted from v3d_core.h
+# 100820: add restriction of the win32 to use MYLIB_TIFF 
 # ######################################################################
 
 TEMPLATE = app
@@ -129,7 +130,6 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../basic_c_fun/basic_landmark.h \
     ../basic_c_fun/v3d_interface.h \ 
     ../basic_c_fun/v3d_global_preference.h \
-    ../basic_c_fun/imageio_mylib.h \
     ../plugin_loader/pluginDialog.h \
     ../plugin_loader/v3d_plugin_loader.h \
     ../graph/graph.h \
@@ -195,6 +195,9 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../jba/c++/convert_type2uint8.h \
     ../jba/c++/jba_affine_xform.h \
     ../jba/c++/remove_nonaffine_points.h 
+unix:HEADERS += ../basic_c_fun/imageio_mylib.h 
+#macx:HEADERS += ../basic_c_fun/imageio_mylib.h 
+
 
 SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../basic_c_fun/mg_image_lib.cpp \
@@ -203,7 +206,6 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../basic_c_fun/v3d_message.cpp \
     ../basic_c_fun/basic_surf_objs.cpp \
     ../basic_c_fun/basic_4dimage.cpp \
-    ../basic_c_fun/imageio_mylib.cpp \
     ../plugin_loader/v3d_plugin_loader.cpp \
     ../plugin_loader/pluginDialog.cpp \
     ../graph/dijk.cpp \
@@ -255,6 +257,9 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../worm_straighten_c/bfs_1root.cpp \
     ../worm_straighten_c/spline_cubic.cpp \
     ../jba/c++/histeq.cpp
+unix:SOURCES += ../basic_c_fun/imageio_mylib.cpp
+#macx:SOURCES += ../basic_c_fun/imageio_mylib.cpp
+
 
 FORMS += landmark_property.ui \
     surface_obj_annotation.ui \
@@ -294,7 +299,8 @@ macx:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib
 win32:LIBS += -lm -lv3dtiff \
     -lv3dnewmat 
 #    -lglut32 # win32-mingw, on unix link libglut.a
-win32:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib	
+#win32:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib	#for win32 disable using MYLIB
+
 
 INCLUDEPATH += ../common_lib/include   
 
