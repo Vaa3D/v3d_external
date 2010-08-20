@@ -36,6 +36,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  * Last update: 20090618: Hanchuan Peng. add actMarkerZoomin3D for new local zoom-in 3D viewer
  * Last update: 20100211: Hanchuan Peng. add neuron seg merge closeby menuitem
  * Last update: 20100404: Hanchuan Peng. add the new merge closeby method and disable the old merge one branch menu
+ * Last update: 20100820: Hanchuan Peng. add a 3d curve and zoom function
  *
  *  Copyright Hanchuan Peng. All rights reserved.
  *
@@ -237,10 +238,12 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 
 #ifdef _ALLOW_3D_CURVE_
 			listAct.append(act = new QAction("", w)); act->setSeparator(true);
-			listAct.append(actCurveCreate1 = new QAction("1-right-stroke to define a 3D curve (Esc to finish)", w));
+			listAct.append(actCurveCreate1 = new QAction("1-right-stroke to define a 3D curve", w));
 			listAct.append(actCurveCreate2 = new QAction("2-right-strokes to define a 3D curve", w));
 			listAct.append(actCurveCreate3 = new QAction("3-right-strokes to define a 3D curve", w));
 			listAct.append(actCurveCreate_pointclick = new QAction("Series of right-clicks to define a 3D polyline (Esc to finish)", w));
+			listAct.append(act = new QAction("", w)); act->setSeparator(true);
+			listAct.append(actCurveCreate_zoom = new QAction("Zoom-in using ROI defined by 1-right-stroke 3d curve", w));
 #endif
 #endif
 		}
@@ -571,6 +574,9 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 		cntCur3DCurveMarkers=0; //reset
 		//if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::CrossCursor)); }
+	}
+	else if (act == actCurveCreate_zoom)
+	{
 	}
 
 #define __create_marker__ // dummy, just for easy locating
