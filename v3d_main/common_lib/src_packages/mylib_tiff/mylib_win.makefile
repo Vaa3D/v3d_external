@@ -16,8 +16,8 @@ mylib: $(modules)
 
 clean:
 	cd MY_TIFF   && $(MAKE) -f mytiff_win.makefile clean && cd ..
-	rm *.o
-	rm -f libmylib.a libmylib64.a  #$(modules:.o=.c) $(modules64:.o=.c)
+	del *.o
+	del libmylib.a libmylib64.a  #$(modules:.o=.c) $(modules64:.o=.c)
 
 package:
 	cd MY_TIFF   && $(MAKE) -f mytiff_win.makefile clean && cd ..

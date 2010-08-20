@@ -30,7 +30,7 @@ mrc2tiff: app.mrc2.c utilities.p mytiff.o
 	gcc $(FLAGS) -o mrc2tiff app.mrc2.c utilities.c mytiff.o
 
 clean:
-	rm -f *.o $(APPS) mytiff.tar.gz
+	del *.o $(APPS) mytiff.tar.gz
 
 package:
 	tar -zcf mytiff.tar.gz README INDEX *.h *.p app.*.c manager.awk Makefile
