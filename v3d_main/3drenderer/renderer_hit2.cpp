@@ -556,27 +556,34 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 	else if (act == actCurveCreate1)
 	{
 		selectMode = smCurveCreate1;
+		b_addthiscurve = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
 	else if (act == actCurveCreate2)
 	{
 		selectMode = smCurveCreate2;
+		b_addthiscurve = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
 	else if (act == actCurveCreate3)
 	{
 		selectMode = smCurveCreate3;
+		b_addthiscurve = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
 	else if (act == actCurveCreate_pointclick)
 	{
 		selectMode = smCurveCreate_pointclick;
+		b_addthiscurve = true;
 		cntCur3DCurveMarkers=0; //reset
 		//if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::CrossCursor)); }
 	}
 	else if (act == actCurveCreate_zoom)
 	{
+		selectMode = smCurveCreate1;
+		b_addthiscurve = false;
+		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
 
 #define __create_marker__ // dummy, just for easy locating
@@ -1724,7 +1731,17 @@ void Renderer_tex2::solveCurveCenter(vector <XYZ> & loc_vec_input)
 		smooth_curve(loc_vec, 5);
 #endif
 
-	addCurveSWC(loc_vec, chno);
+	if (b_addthiscurve)
+	{
+		addCurveSWC(loc_vec, chno);
+	}
+	else
+	{
+		b_addthiscurve = true; //in this case, always reset to default to draw curve to add to a swc instead of just just zoom
+		endSelectMode();
+		//FIXME. produce the zoom-in view. FIXME
+	}
+
 }
 
 void Renderer_tex2::solveCurveViews()
