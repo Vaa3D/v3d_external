@@ -1735,11 +1735,11 @@ void Renderer_tex2::solveCurveCenter(vector <XYZ> & loc_vec_input)
 	{
 		addCurveSWC(loc_vec, chno);
 	}
-	else
+	else //100821
 	{
 		b_addthiscurve = true; //in this case, always reset to default to draw curve to add to a swc instead of just just zoom
 		endSelectMode();
-		//FIXME. produce the zoom-in view. FIXME
+		produceZoomViewOf3DRoi(loc_vec); 
 	}
 
 }
