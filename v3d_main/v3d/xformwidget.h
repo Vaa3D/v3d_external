@@ -57,8 +57,8 @@ struct iDrawExternalParameter
 	//some external controls for the 3d viewer
 	//float zthickness; //the default z-thickness when start the 3d viewer. 100626
 
-	int b_local; // 0,1,2
-	LocationSimple local_start, local_size;//090628 RZC
+	int b_local; // 0,1,2,3
+	LocationSimple local_start, local_size;
 	QPoint local_win_pos;
 	QSize local_win_size;
 
@@ -131,6 +131,18 @@ public:
 	iDrawExternalParameter mypara_3Dview;
 	iDrawExternalParameter mypara_3Dlocalview;
 	V3D_atlas_viewerDialog *atlasViewerDlg;
+	
+	V3DLONG bbx0, bbx1, bby0, bby1, bbz0, bbz1; //by PHC. 100821. the current regional bbox. for curve based zoomin
+	void setLocal3DViewerBBox(V3DLONG x0, V3DLONG x1, V3DLONG y0, V3DLONG y1, V3DLONG z0, V3DLONG z1)
+	{
+		bbx0 = x0;
+		bbx1 = x1;
+		bby0 = y0;
+		bby1 = y1;
+		bbz0 = z0;
+		bbz1 = z1;
+	}
+	
 
 	double disp_zoom; //081114
 	bool b_use_dispzoom;
@@ -239,7 +251,7 @@ public slots:
 	void doImage3DView();
 	void doImage3DLocalMarkerView();
 	void doImage3DLocalRoiView();
-	void doImage3DLocalBBoxView(V3DLONG x0, V3DLONG x1, V3DLONG y0, V3DLONG y1, V3DLONG z0, V3DLONG z1);
+	void doImage3DLocalBBoxView(); //do not have arguments so that can be used as the slot of a timer signal
 	void doImage3DView(bool tmp_b_use_512x512x256, int b_local=0, V3DLONG bbx0=-1, V3DLONG bbx1=-1, V3DLONG bby0=-1, V3DLONG bby1=-1, V3DLONG bbz0=-1, V3DLONG bbz1=-1); 
 	void doMenuOf3DViewer();
 	void aboutInfo();

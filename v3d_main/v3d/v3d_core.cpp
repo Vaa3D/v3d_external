@@ -4208,10 +4208,10 @@ void XFormWidget::doImage3DLocalRoiView()
 	doImage3DView(true, 2); //2 for roi
 }
 
-void XFormWidget::doImage3DLocalBBoxView(V3DLONG x0, V3DLONG x1, V3DLONG y0, V3DLONG y1, V3DLONG z0, V3DLONG z1)
+void XFormWidget::doImage3DLocalBBoxView()  //do not have arguments so that can be used as the slot of a timer signal
 {
 	if (!imgData)  return;
-	doImage3DView(true, 3, x0, x1, y0, y1, z0, z1); //3 for bbox
+	doImage3DView(true, 3, bbx0, bbx1, bby0, bby1, bbz0, bbz1); //3 for bbox
 }
 
 void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG bbx0, V3DLONG bbx1, V3DLONG bby0, V3DLONG bby1, V3DLONG bbz0, V3DLONG bbz1) 
@@ -4238,7 +4238,7 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
 		else if (b_local==2)
 			QTimer::singleShot(1000, this, SLOT(doImage3DLocalRoiView()));
 		else if (b_local==3)
-			QTimer::singleShot(1000, this, SLOT(doImage3DLocalBBoxView(bbx0, bby0, bbz0, bbx1, bby1, bbz1)));
+			QTimer::singleShot(1000, this, SLOT(doImage3DLocalBBoxView())); //do not have arguments so that can be used as the slot of a timer signal
 		else
 			v3d_msg("Invalid b_local parameter in doImage3DView();");
 		

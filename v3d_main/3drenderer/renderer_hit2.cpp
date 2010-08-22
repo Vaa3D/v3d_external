@@ -242,7 +242,7 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 			listAct.append(actCurveCreate3 = new QAction("3-right-strokes to define a 3D curve", w));
 			listAct.append(actCurveCreate_pointclick = new QAction("Series of right-clicks to define a 3D polyline (Esc to finish)", w));
 			
-			if (!(((iDrawExternalParameter*)_idep)->b_local)) //only enable the menu for global 3d viewer. as it seems there is a bug in the local 3d viewer. by PHC, 100821
+			//if (!(((iDrawExternalParameter*)_idep)->b_local)) //only enable the menu for global 3d viewer. as it seems there is a bug in the local 3d viewer. by PHC, 100821
 			{
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				listAct.append(actCurveCreate_zoom = new QAction("Zoom-in using ROI defined by 1-right-stroke 3d curve", w));
@@ -1789,7 +1789,8 @@ void Renderer_tex2::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 		my -= margin; My += margin; if (my<0) my=0; if (My>curImg->getYDim()-1) My = curImg->getYDim()-1;
 		mz -= margin; Mz += margin; if (mz<0) mz=0; if (Mz>curImg->getZDim()-1) Mz = curImg->getZDim()-1;
 		
-		curXWidget->doImage3DLocalBBoxView(mx, Mx, my, My, mz, Mz);
+		curXWidget->setLocal3DViewerBBox(mx, Mx, my, My, mz, Mz);
+		curXWidget->doImage3DLocalBBoxView();
 		//QTimer::singleShot( 1000, curXWidget, SLOT(doImage3DLocalView()) ); 
 	}
 }
