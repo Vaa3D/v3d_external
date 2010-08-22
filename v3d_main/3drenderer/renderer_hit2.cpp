@@ -242,7 +242,7 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 			listAct.append(actCurveCreate3 = new QAction("3-right-strokes to define a 3D curve", w));
 			listAct.append(actCurveCreate_pointclick = new QAction("Series of right-clicks to define a 3D polyline (Esc to finish)", w));
 			
-			if (!b_local) //only enable the menu for global 3d viewer. as it seems there is a bug in the local 3d viewer. by PHC, 100821
+			if (!(((iDrawExternalParameter*)_idep)->b_local)) //only enable the menu for global 3d viewer. as it seems there is a bug in the local 3d viewer. by PHC, 100821
 			{
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				listAct.append(actCurveCreate_zoom = new QAction("Zoom-in using ROI defined by 1-right-stroke 3d curve", w));
