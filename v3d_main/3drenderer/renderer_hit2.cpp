@@ -171,18 +171,17 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 
 #define __right_click_popup_menu__ // dummy, just for easy locating
 
-//100731 RZC: moved here from beginning
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 #ifndef test_main_cpp
-	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep); //by PHC, 090119
-	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep); //090628 RZC
+	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep); 
+	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep); 
 
 	//qDebug("	_idep = %p, _idep->image4d = %p", _idep, ((iDrawExternalParameter*)_idep)->image4d);
 	//qDebug("	My4DImage* = %p, XFormWidget* = %p", curImg, curXWidget);
 
 #else
-	void* curImg=0; // 090423 RZC: for test_main_cpp
-	void* curXWidget = 0; //090628 RZC: for test_main_cpp
+	void* curImg=0; 
+	void* curXWidget = 0; 
 #endif
 
 	// right click popup menu
@@ -242,8 +241,12 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 			listAct.append(actCurveCreate2 = new QAction("2-right-strokes to define a 3D curve", w));
 			listAct.append(actCurveCreate3 = new QAction("3-right-strokes to define a 3D curve", w));
 			listAct.append(actCurveCreate_pointclick = new QAction("Series of right-clicks to define a 3D polyline (Esc to finish)", w));
-			listAct.append(act = new QAction("", w)); act->setSeparator(true);
-			listAct.append(actCurveCreate_zoom = new QAction("Zoom-in using ROI defined by 1-right-stroke 3d curve", w));
+			
+			if (!b_local) //only enable the menu for global 3d viewer. as it seems there is a bug in the local 3d viewer. by PHC, 100821
+			{
+				listAct.append(act = new QAction("", w)); act->setSeparator(true);
+				listAct.append(actCurveCreate_zoom = new QAction("Zoom-in using ROI defined by 1-right-stroke 3d curve", w));
+			}
 #endif
 #endif
 		}
@@ -773,7 +776,7 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 			}
 		}
 	}
-	else if (act==actMarkerZoomin3D) //by PHC, 090618. unfinished
+	else if (act==actMarkerZoomin3D) //by PHC, 090618. 
 	{
 		if (w && curImg && curXWidget)
 		{
@@ -1737,11 +1740,58 @@ void Renderer_tex2::solveCurveCenter(vector <XYZ> & loc_vec_input)
 	}
 	else //100821
 	{
-		b_addthiscurve = true; //in this case, always reset to default to draw curve to add to a swc instead of just just zoom
+		b_addthiscurve = true; //in this case, always reset to default to draw curve to add to a swc instead of just  zoom
 		endSelectMode();
+		
 		produceZoomViewOf3DRoi(loc_vec); 
 	}
 
+}
+
+void Renderer_tex2::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
+{
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+#ifndef test_main_cpp
+	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep); 
+	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep); 
+	
+	//qDebug("	_idep = %p, _idep->image4d = %p", _idep, ((iDrawExternalParameter*)_idep)->image4d);
+	//qDebug("	My4DImage* = %p, XFormWidget* = %p", curImg, curXWidget);
+	
+#else
+	void* curImg=0; 
+	void* curXWidget = 0; 
+#endif
+
+	if (w && curImg && curXWidget && loc_vec.size()>0)
+	{
+		double mx, Mx, my, My, mz, Mz;
+		mx = Mx = loc_vec.at(0).x;
+		my = My = loc_vec.at(0).y;
+		mz = Mz = loc_vec.at(0).z;
+		for (V3DLONG i=1; i<loc_vec.size(); i++)
+		{
+			XYZ & curpos = loc_vec.at(i);
+
+			if (curpos.x < mx) mx = curpos.x;
+			else if (curpos.x > Mx) Mx = curpos.x;
+
+			if (curpos.y < my) my = curpos.y;
+			else if (curpos.y > My) My = curpos.y;
+
+			if (curpos.z < mz) mz = curpos.z;
+			else if (curpos.z > Mz) Mz = curpos.z;
+		}
+		qDebug()<< mx << " " << Mx << " " << my << " " << My << " " << mz << " " << Mz << " ";
+		
+		V3DLONG margin=10;
+		mx -= margin; Mx += margin; if (mx<0) mx=0; if (Mx>curImg->getXDim()-1) Mx = curImg->getXDim()-1;
+		my -= margin; My += margin; if (my<0) my=0; if (My>curImg->getYDim()-1) My = curImg->getYDim()-1;
+		mz -= margin; Mz += margin; if (mz<0) mz=0; if (Mz>curImg->getZDim()-1) Mz = curImg->getZDim()-1;
+		
+		curXWidget->doImage3DLocalBBoxView(mx, Mx, my, My, mz, Mz);
+		//QTimer::singleShot( 1000, curXWidget, SLOT(doImage3DLocalView()) ); 
+	}
 }
 
 void Renderer_tex2::solveCurveViews()

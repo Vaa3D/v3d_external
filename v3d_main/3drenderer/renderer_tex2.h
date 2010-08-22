@@ -257,6 +257,9 @@ protected:
 
 	// in renderer_obj2.cpp
 	void addCurveSWC(vector<XYZ> &loc_list, int chno=0); //if no chno is specified, then assume to be the first channel
+	
+	//for local view
+	void produceZoomViewOf3DRoi(vector <XYZ> & loc_vec);
 
 
 // Volume Parameters /////////////////////////////////////////////

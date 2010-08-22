@@ -4208,8 +4208,17 @@ void XFormWidget::doImage3DLocalRoiView()
 	doImage3DView(true, 2); //2 for roi
 }
 
+void XFormWidget::doImage3DLocalBBoxView(V3DLONG x0, V3DLONG x1, V3DLONG y0, V3DLONG y1, V3DLONG z0, V3DLONG z1)
+{
+	if (!imgData)  return;
+	doImage3DView(true, 3, x0, x1, y0, y1, z0, z1); //3 for bbox
+}
 
-void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local) //b_local==1, use marker; b_local==2, use roi; b_local==0, use entire image
+void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG bbx0, V3DLONG bbx1, V3DLONG bby0, V3DLONG bby1, V3DLONG bbz0, V3DLONG bbz1) 
+	//b_local==0, use entire image
+	//b_local==1, use marker; 
+	//b_local==2, use roi; 
+	//b_local==3, use lower and upper bounding box in bbx0, bby0, ....
 {
 	if (!b_local && mypara_3Dview.b_still_open)
 	{
@@ -4228,6 +4237,8 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local) //b_loc
 			QTimer::singleShot(1000, this, SLOT(doImage3DLocalMarkerView()));
 		else if (b_local==2)
 			QTimer::singleShot(1000, this, SLOT(doImage3DLocalRoiView()));
+		else if (b_local==3)
+			QTimer::singleShot(1000, this, SLOT(doImage3DLocalBBoxView(bbx0, bby0, bbz0, bbx1, bby1, bbz1)));
 		else
 			v3d_msg("Invalid b_local parameter in doImage3DView();");
 		
@@ -4251,8 +4262,7 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local) //b_loc
 		V3DLONG nbytes = estimateRoughAmountUsedMemory();
 		if (nbytes>(V3DLONG)((double(1024)*1024*1024*th_use_memory)))
 		{
-			printf("You already used more than %5.2fG bytes for your images. Please close some stacks to assure you have enough memory.", th_use_memory);
-			QMessageBox::warning(0, "Memory warning", "You already used >1.1G bytes and may not be able to allocate enough memory for 3D volume rendering. Please close some stacks first.");
+			v3d_msg(QString("You already used more than %1G bytes for your images. Please close some stacks to assure you have enough memory.").arg(th_use_memory));
 			return;
 		}
 		
@@ -4267,58 +4277,72 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local) //b_loc
 			
 			mypara_3Dlocalview.b_local = b_local;
 		}
-		if (b_local==1 || b_local==2)
+		if (b_local==1 || b_local==2 || b_local==3)
 		{
 			V3DLONG x0, y0, z0, x1, y1, z1;
 			
-			if (b_local==1) //1 for marker
+			switch (b_local)
 			{
-				if (imgData->listLandmarks.size()>0)
-				{
-					//get the current marker
-					LocationSimple *pt = 0;
-					LocationSimple mypt;
-					mypt = imgData->listLandmarks.at(imgData->cur_hit_landmark);
-					mypt.x-=1; mypt.y-=1; mypt.z-=1;
-					pt = &mypt;
+				case 1: //1 for marker
+					if (imgData->listLandmarks.size()>0)
+					{
+						//get the current marker
+						LocationSimple *pt = 0;
+						LocationSimple mypt;
+						mypt = imgData->listLandmarks.at(imgData->cur_hit_landmark);
+						mypt.x-=1; mypt.y-=1; mypt.z-=1;
+						pt = &mypt;
+						
+						x0 = qBound((V3DLONG)0L, (V3DLONG)((*pt).x-64) , (imgData->getXDim()-1));
+						y0 = qBound((V3DLONG)0L, (V3DLONG)((*pt).y-64) , (imgData->getYDim()-1));
+						z0 = qBound((V3DLONG)0L, (V3DLONG)((*pt).z-64) , imgData->getZDim()-1);
+						x1 = qBound((V3DLONG)0L, (V3DLONG)((*pt).x+63) , imgData->getXDim()-1);
+						y1 = qBound((V3DLONG)0L, (V3DLONG)((*pt).y+63) , imgData->getYDim()-1);
+						z1 = qBound((V3DLONG)0L, (V3DLONG)((*pt).z+63) , imgData->getZDim()-1);
+						//					c0 = 0;
+						//					c1 = sz3-1;
+					}
+					break;
 					
-					x0 = qBound((V3DLONG)0L, (V3DLONG)((*pt).x-64) , (imgData->getXDim()-1));
-					y0 = qBound((V3DLONG)0L, (V3DLONG)((*pt).y-64) , (imgData->getYDim()-1));
-					z0 = qBound((V3DLONG)0L, (V3DLONG)((*pt).z-64) , imgData->getZDim()-1);
-					x1 = qBound((V3DLONG)0L, (V3DLONG)((*pt).x+63) , imgData->getXDim()-1);
-					y1 = qBound((V3DLONG)0L, (V3DLONG)((*pt).y+63) , imgData->getYDim()-1);
-					z1 = qBound((V3DLONG)0L, (V3DLONG)((*pt).z+63) , imgData->getZDim()-1);
-					//					c0 = 0;
-					//					c1 = sz3-1;
-				}
-			}
-			else //b_local==2 //2 for roi
-			{
-				QRect b_xy = imgData->p_xy_view->getRoiBoundingRect();
-				QRect b_yz = imgData->p_yz_view->getRoiBoundingRect();
-				QRect b_zx = imgData->p_zx_view->getRoiBoundingRect();
-				
-				V3DLONG bpos_x = qBound((V3DLONG)(0), V3DLONG(qMax(b_xy.left(), b_zx.left())), imgData->getXDim()-1),
-				bpos_y = qBound((V3DLONG)(0), V3DLONG(qMax(b_xy.top(),  b_yz.top())), imgData->getYDim()-1),
-				bpos_z = qBound((V3DLONG)(0), V3DLONG(qMax(b_yz.left(), b_zx.top())), imgData->getZDim()-1),
-				bpos_c = 0;
-				V3DLONG epos_x = qBound((V3DLONG)(0), V3DLONG(qMin(b_xy.right(), b_zx.right())), imgData->getXDim()-1),
-				epos_y = qBound((V3DLONG)(0), V3DLONG(qMin(b_xy.bottom(), b_yz.bottom())), imgData->getYDim()-1),
-				epos_z = qBound((V3DLONG)(0), V3DLONG(qMin(b_yz.right(), b_zx.bottom())), imgData->getZDim()-1),
-				epos_c = imgData->getCDim()-1;
-				
-				if (bpos_x>epos_x || bpos_y>epos_y || bpos_z>epos_z)
-				{
-					v3d_msg("The roi polygons in three views are not intersecting! No crop is done!\n");
-					return;
-				}
-				
-				x0 = bpos_x;
-				y0 = bpos_y;
-				z0 = bpos_z;
-				x1 = epos_x;
-				y1 = epos_y;
-				z1 = epos_z;
+				case 3:
+					x0 = qBound((V3DLONG)(bbx0), V3DLONG(0), imgData->getXDim()-1);
+					y0 = qBound((V3DLONG)(bby0), V3DLONG(0), imgData->getYDim()-1);
+					z0 = qBound((V3DLONG)(bbz0), V3DLONG(0), imgData->getZDim()-1);
+					x1 = qBound((V3DLONG)(bbx1), V3DLONG(0), imgData->getXDim()-1);
+					y1 = qBound((V3DLONG)(bby1), V3DLONG(0), imgData->getYDim()-1);
+					z1 = qBound((V3DLONG)(bbz1), V3DLONG(0), imgData->getZDim()-1);
+					
+					break;
+					
+				case 2: //2 for roi	
+				default:	
+					QRect b_xy = imgData->p_xy_view->getRoiBoundingRect();
+					QRect b_yz = imgData->p_yz_view->getRoiBoundingRect();
+					QRect b_zx = imgData->p_zx_view->getRoiBoundingRect();
+					
+					V3DLONG bpos_x = qBound((V3DLONG)(0), V3DLONG(qMax(b_xy.left(), b_zx.left())), imgData->getXDim()-1),
+					bpos_y = qBound((V3DLONG)(0), V3DLONG(qMax(b_xy.top(),  b_yz.top())), imgData->getYDim()-1),
+					bpos_z = qBound((V3DLONG)(0), V3DLONG(qMax(b_yz.left(), b_zx.top())), imgData->getZDim()-1),
+					bpos_c = 0;
+					V3DLONG epos_x = qBound((V3DLONG)(0), V3DLONG(qMin(b_xy.right(), b_zx.right())), imgData->getXDim()-1),
+					epos_y = qBound((V3DLONG)(0), V3DLONG(qMin(b_xy.bottom(), b_yz.bottom())), imgData->getYDim()-1),
+					epos_z = qBound((V3DLONG)(0), V3DLONG(qMin(b_yz.right(), b_zx.bottom())), imgData->getZDim()-1),
+					epos_c = imgData->getCDim()-1;
+					
+					if (bpos_x>epos_x || bpos_y>epos_y || bpos_z>epos_z)
+					{
+						v3d_msg("The roi polygons in three views are not intersecting! No crop is done!\n");
+						return;
+					}
+					
+					x0 = bpos_x;
+					y0 = bpos_y;
+					z0 = bpos_z;
+					x1 = epos_x;
+					y1 = epos_y;
+					z1 = epos_z;
+					
+					break;
 			}
 			
 			mypara_3Dlocalview.image4d = imgData;
@@ -4361,14 +4385,14 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local) //b_loc
 		}
 		catch (...)
 		{
-			QMessageBox::warning(0, "Memory warning", "You fail to open a 3D view window. You may have opened too many stacks (if so please close some first) or try to render a too-big 3D view (if so please contact Hanchuan Peng for a 64-bit version of V3D).");
-			printf("You fail to open a 3D view window. You may have opened too many stacks (if so please close some first) or try to render a too-big 3D view (if so please contact Hanchuan Peng for a 64-bit version of V3D).");
+			v3d_msg("You fail to open a 3D view window. You may have opened too many stacks (if so please close some first) or "
+					"try to render a too-big 3D view (if so please contact Hanchuan Peng for a 64-bit version of V3D).");
 			return;
 		}
 	}
 	else
 	{
-		printf("The image data is invalid() in doImage3DView().\n");
+		v3d_msg("The image data is invalid() in doImage3DView().\n", 0);
 		return;
 	}
 }

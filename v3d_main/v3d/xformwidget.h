@@ -239,7 +239,8 @@ public slots:
 	void doImage3DView();
 	void doImage3DLocalMarkerView();
 	void doImage3DLocalRoiView();
-	void doImage3DView(bool tmp_b_use_512x512x256, int b_local=0);
+	void doImage3DLocalBBoxView(V3DLONG x0, V3DLONG x1, V3DLONG y0, V3DLONG y1, V3DLONG z0, V3DLONG z1);
+	void doImage3DView(bool tmp_b_use_512x512x256, int b_local=0, V3DLONG bbx0=-1, V3DLONG bbx1=-1, V3DLONG bby0=-1, V3DLONG bby1=-1, V3DLONG bbz0=-1, V3DLONG bbz1=-1); 
 	void doMenuOf3DViewer();
 	void aboutInfo();
 
