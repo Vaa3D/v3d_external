@@ -4430,6 +4430,8 @@ bool My4DImage::proj_general_split_channels(bool b_keepallchannels, int chno)
 					}
 				}
 			}
+			pDstImg->p_vmax[0] = this->p_vmax[c];
+			pDstImg->p_vmin[0] = this->p_vmin[c];
 
 			//now show
 
