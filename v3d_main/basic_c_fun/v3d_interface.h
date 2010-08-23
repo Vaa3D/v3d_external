@@ -168,7 +168,7 @@ public:
 	virtual void domenu(const QString & menu_name, V3DPluginCallback2 & v3d, QWidget * parent) = 0;
 
 	virtual QStringList funclist() const = 0;
-	virtual void dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output,
+	virtual bool dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output,
 												V3DPluginCallback2 & v3d, QWidget * parent) = 0;
 };
 
@@ -380,7 +380,7 @@ inline bool assembleProcessedChannels2Image4DClass(QList<V3D_Image3DBasic> & pd,
 		case V3D_FLOAT32: return setPluginOutputAndDisplayUsingGlobalSetting((float *)pout, mysz0, mysz1, mysz2, mysz3, cb); break;
 		default: return false;
 	}
-	
+
 	if (pout) {delete []pout; pout=0;} //100815 per Aurelien & Luis suggestion.
 
 	return false;

@@ -15,7 +15,8 @@ QStringList ExtraFilters::menulist() const
 {
     return QStringList()
     << tr("Invert Color")
-    << tr("Threshold...");
+    << tr("Threshold...")
+    << tr("about");
 }
 
 void ExtraFilters::processImage(const QString &arg, Image4DSimple *image, QWidget *parent)
@@ -53,7 +54,7 @@ void ExtraFilters::processImage(const QString &arg, Image4DSimple *image, QWidge
     else
     {
     	QMessageBox::information(parent, title, "V3DSingleImageInterface Demo version 1.0"
-    			"\ndeveloped by Zongcai Ruan. (Janelia Research Farm Campus, HHMI)");
+    			"\ndeveloped by Zongcai Ruan 2009. (Janelia Farm Research Campus, HHMI)");
     }
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -74,7 +74,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //	#define LIMIT_VOLX 256
 //	#define LIMIT_VOLY 256
 
-#define IS_NOT_64BIT ((sizeof(void*)<8)? true:false)
+#define IS_LESS_64BIT ((sizeof(void*)<8)? true:false)
 #define IS_FITTED_VOLUME(dim1,dim2,dim3)  (dim1<=LIMIT_VOLX && dim2<=LIMIT_VOLY && dim3<=LIMIT_VOLZ)
 
 #define ANGLE_X0 (15)			//degree

@@ -769,9 +769,9 @@ void V3dR_MainWindow::connectSignal()
 //	if (checkBox_absoluteRot){
 //		connect(checkBox_absoluteRot, SIGNAL(toggled(bool)), glWidget, SLOT(enableAbsoluteRot(bool)));
 //	}
-	if (rotAbsolute){
-		connect(rotAbsolute, SIGNAL(clicked()), glWidget, SLOT(doAbsoluteRot()));
-	}
+//	if (rotAbsolute){
+//		connect(rotAbsolute, SIGNAL(clicked()), glWidget, SLOT(doAbsoluteRot()));
+//	}
 	if (rotAbsolutePose){
 		connect(rotAbsolutePose, SIGNAL(clicked()), glWidget, SLOT(absoluteRotPose()));
 	}

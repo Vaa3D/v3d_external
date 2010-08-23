@@ -109,7 +109,8 @@ PluginDialog::PluginDialog(const QString &appname,
                             QIcon::Normal, QIcon::On);
     interfaceIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirClosedIcon),
                             QIcon::Normal, QIcon::Off);
-    featureIcon.addPixmap(style()->standardPixmap(QStyle::SP_FileIcon));
+    menuIcon.addPixmap(style()->standardPixmap(QStyle::SP_FileIcon));
+    funcIcon.addPixmap(style()->standardPixmap(QStyle::SP_MessageBoxInformation));
 
     visitPlugins(path, fileNames);
 }
@@ -146,26 +147,36 @@ void PluginDialog::populateTreeWidget(QObject *plugin, const QString &fileName)
 
     if (plugin)
     {
-    	QString iname = v3d_getInterfaceName(plugin);
-        if (iname.size())
-            addTreeItems(pluginItem, iname, v3d_getInterfaceFeatures(plugin));
+		addTreeItems(pluginItem, (plugin));
     }
 }
 
-void PluginDialog::addTreeItems(QTreeWidgetItem *pluginItem,
-                            const QString &interfaceName,
-                            const QStringList &features)
+void PluginDialog::addTreeItems(QTreeWidgetItem *pluginItem, QObject *plugin)
 {
+	QString interfaceName = v3d_getInterfaceName(plugin);
+    if (interfaceName.size()<=0)
+    	return;
+
     QTreeWidgetItem *interfaceItem = new QTreeWidgetItem(pluginItem);
     interfaceItem->setText(0, interfaceName);
     interfaceItem->setIcon(0, interfaceIcon);
     QFont f = interfaceItem->font(0); f.setItalic(true);  interfaceItem->setFont(0, f);
 
-    foreach (QString feature, features)
+    QStringList menulist = v3d_getInterfaceMenuList(plugin);
+    foreach (QString feature, menulist)
     {
         //if (feature.endsWith("..."))  feature.chop(3);
         QTreeWidgetItem *featureItem = new QTreeWidgetItem(interfaceItem);
         featureItem->setText(0, feature);
-        featureItem->setIcon(0, featureIcon);
+        featureItem->setIcon(0, menuIcon);
+    }
+
+    QStringList funclist = v3d_getInterfaceFuncList(plugin);
+    foreach (QString feature, funclist)
+    {
+        //if (feature.endsWith("..."))  feature.chop(3);
+        QTreeWidgetItem *featureItem = new QTreeWidgetItem(interfaceItem);
+        featureItem->setText(0, feature);
+        featureItem->setIcon(0, funcIcon);
     }
 }

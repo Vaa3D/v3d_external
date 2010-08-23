@@ -45,7 +45,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 
 QString     v3d_getInterfaceName(QObject *plugin);
-QStringList v3d_getInterfaceFeatures(QObject *plugin);
+QStringList v3d_getInterfaceMenuList(QObject *plugin);
+QStringList v3d_getInterfaceFuncList(QObject *plugin);
 
 class MainWindow;
 
@@ -59,7 +60,7 @@ public:
 
 public slots:
 	void rescanPlugins();
-	void populateMenus(); //hook menu to v3d
+	void populateMenus(); //hook menu to v3d, called by rescanPlugins, MainWindow::updateProcessingMenu
 	void aboutPlugins();
     void runPlugin();
 

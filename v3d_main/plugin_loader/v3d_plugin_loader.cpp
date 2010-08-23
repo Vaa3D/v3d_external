@@ -74,7 +74,7 @@ QString     v3d_getInterfaceName(QObject *plugin)
     return name;
 }
 
-QStringList v3d_getInterfaceFeatures(QObject *plugin)
+QStringList v3d_getInterfaceMenuList(QObject *plugin)
 {
 	QStringList qslist;
 
@@ -86,6 +86,19 @@ QStringList v3d_getInterfaceFeatures(QObject *plugin)
 
     V3DPluginInterface2 *iface2 = qobject_cast<V3DPluginInterface2 *>(plugin);
     if (iface2 )  return (qslist = iface2->menulist());
+
+    return qslist;
+}
+
+QStringList v3d_getInterfaceFuncList(QObject *plugin)
+{
+	QStringList qslist;
+
+    V3DPluginInterface *iface = qobject_cast<V3DPluginInterface *>(plugin);
+    if (iface )  return (qslist = iface->funclist());
+
+    V3DPluginInterface2 *iface2 = qobject_cast<V3DPluginInterface2 *>(plugin);
+    if (iface2 )  return (qslist = iface2->funclist());
 
     return qslist;
 }
@@ -233,7 +246,7 @@ void V3d_PluginLoader::searchPluginFiles(QMenu* menu)
             if (iname.size())
             {
             	//addToMenu(menu, plugin, v3d_getInterfaceFeatures(plugin), SLOT(runPlugin()));
-            	addToMenu(menu, loader, v3d_getInterfaceFeatures(plugin), SLOT(runPlugin()));
+            	addToMenu(menu, loader, v3d_getInterfaceMenuList(plugin), SLOT(runPlugin()));
             }
             //----------------------------------------------------
         }
@@ -258,6 +271,7 @@ void V3d_PluginLoader::addToMenu(QMenu *menu,
     }
 }
 
+//hook menu to v3d, called by rescanPlugins, MainWindow::updateProcessingMenu
 void V3d_PluginLoader::populateMenus()
 {
 	if (v3d_menuPlugin)
@@ -288,7 +302,7 @@ void V3d_PluginLoader::runPlugin()
 
     loader->unload(); ///
     QObject *plugin = loader->instance();
-    if (! loader)
+    if (! plugin)
     {
     	qDebug("ERROR in V3d_PluginLoader::runPlugin: loader->instance()");
     	return;
@@ -389,7 +403,7 @@ bool V3d_PluginLoader::runPluginInterface(QObject* plugin, const QString& comman
         }
         catch (...)
         {
-        	v3d_msg(QString("The plugin [%1] fails to run. Check your plugin code please.").arg(command));
+        	v3d_msg(QString("The plugin fails to run [%1] . Check your plugin code please.").arg(command));
         }
         return true;
     }
@@ -409,7 +423,7 @@ bool V3d_PluginLoader::runPluginInterface2(QObject* plugin, const QString& comma
         }
         catch (...)
         {
-        	v3d_msg(QString("The plugin [%1] fails to run. Check your plugin code please.").arg(command));
+        	v3d_msg(QString("The plugin fails to run [%1]. Check your plugin code please.").arg(command));
         }
         return true;
     }
@@ -421,8 +435,52 @@ bool V3d_PluginLoader::runPluginInterface2(QObject* plugin, const QString& comma
 bool V3d_PluginLoader::callPluginFunc(const QString &plugin_name,
 		const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output)
 {
-	Q_UNUSED(plugin_name); Q_UNUSED(func_name); Q_UNUSED(input); Q_UNUSED(output);
-	return false;
+	QString fullpath = pluginsDir.absoluteFilePath(plugin_name);
+	qDebug()<<"callPluginFunc fullpath: " <<fullpath;
+	int idx = pluginFilenameList.indexOf(fullpath);
+	//qDebug()<<"callPluginFunc idx: " <<idx;
+	if (idx < 0)
+	{
+		qDebug()<<QString("ERROR: callPluginFunc cannot find this plugin_name: '%1'").arg(plugin_name);
+		return false;
+	}
+
+	Q_ASSERT(idx>=0 && idx<pluginList.size());
+	QPluginLoader *loader = pluginList.at(idx);
+
+	loader->unload(); ///
+    QObject *plugin = loader->instance();
+    if (! plugin)
+    {
+    	qDebug("ERROR in V3d_PluginLoader::callPluginFunc: loader->instance()");
+    	return false;
+    }
+
+//	QStringList funclist = v3d_getInterfaceFuncList(plugin);
+//	if (! funclist.contains(func_name))
+//	{
+//		qDebug()<<Qstring("ERROR: callPluginFunc cannot find this func_name: '%1' in '%2'").arg(func_name).arg(plugin_name);
+//		return false;
+//	}
+
+	V3DPluginInterface2 *iface = qobject_cast<V3DPluginInterface2 *>(plugin);
+	V3DPluginCallback2 *callback = dynamic_cast<V3DPluginCallback2 *>(this);
+	if (! (iface && callback) )
+	{
+		qDebug()<<QString("ERROR: callPluginFunc cannot cast (V3DPluginInterface2) of plugin '%1'").arg(plugin_name);
+		return false;
+	}
+
+    try
+    {
+    	return iface->dofunc(func_name, input, output, *callback, (QWidget*)0);
+    }
+    catch (...)
+    {
+    	v3d_msg(QString("The plugin fails to call [%1]. Check your plugin code please.").arg(func_name));
+		return false;
+    }
+	return true;
 }
 
 //==================================================================
@@ -705,7 +763,7 @@ bool V3d_PluginLoader::screenShotROI3DWindow(v3dhandle image_window, QString fil
 		r = w->screenShotROI3DWindow(filename);
 		qDebug() << "V3d_PluginLoader screenShotROI3DWindow: " << r <<"/"<< filename;
 	}
-	
+
 	return r;
 }
 

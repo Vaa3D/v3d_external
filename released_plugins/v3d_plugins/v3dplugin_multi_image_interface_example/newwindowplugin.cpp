@@ -58,7 +58,7 @@ void NewWindowPlugin::domenu(const QString &menu_name, V3DPluginCallback &v3d, Q
     else
     {
     	QMessageBox::information(parent, title, "V3DPluginInterface Demo version 1.2"
-    			"\ndeveloped by Zongcai Ruan. (Janelia Research Farm Campus, HHMI)");
+    			"\ndeveloped by Zongcai Ruan 2009-2010. (Janelia Farm Research Campus, HHMI)");
     }
 }
 

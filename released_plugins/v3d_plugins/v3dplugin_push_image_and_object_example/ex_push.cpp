@@ -6,7 +6,6 @@
 
 #include "ex_push.h"
 #include "v3d_message.h"
-//#include "/Users/pengh/work/v3d_external/v3d_main/3drenderer/v3dr_glwidget.h"
 
 //Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
@@ -22,7 +21,7 @@ class lookPanel : public QDialog
 		QSpinBox* box3;
 		V3DPluginCallback2 &v3d;
 		static lookPanel* panel;
-		
+
 		virtual ~lookPanel()
 		{
 			panel = 0;
@@ -31,7 +30,7 @@ class lookPanel : public QDialog
 		v3d(_v3d)
 		{
 			panel = this;
-			
+
 			box1 = new QSpinBox(); box1->setRange(-100,100);
 			box2 = new QSpinBox(); box2->setRange(-100,100);
 			box3 = new QSpinBox(); box3->setRange(-100,100);
@@ -42,11 +41,11 @@ class lookPanel : public QDialog
 			formLayout->addRow(QObject::tr("look along Y: "), box2);
 			formLayout->addRow(QObject::tr("look along Z: "), box3);
 			formLayout->addRow(ok, cancel);
-			
+
 			//QDialog d(parent);
 			setLayout(formLayout);
 			setWindowTitle(QString("look along vector"));
-			
+
 			connect(ok,     SIGNAL(clicked()), this, SLOT(accept()));
 			connect(cancel, SIGNAL(clicked()), this, SLOT(close()));
 		}
@@ -55,15 +54,15 @@ class lookPanel : public QDialog
 			int i1 = box1->value();
 			int i2 = box2->value();
 			int i3 = box3->value();
-			
+
 			v3dhandle curwin = v3d.currentImageWindow();
 			if (curwin)//ensure the 3d viewer window is open; if not, then open it
 			{
 				v3d.open3DWindow(curwin);
-				
+
 				View3DControl *view = v3d.getView3DControl(curwin);
 				if (view)  view->lookAlong(i1,i2,i3);
-				
+
 				v3d.updateImageWindow(curwin);
 			}
 		}
@@ -78,7 +77,7 @@ V3DLONG panel(V3DPluginCallback2 &v3d, QWidget *parent)
 		lookPanel::panel->show();
 		return -1;
 	}
-	
+
 	lookPanel* p = new lookPanel(v3d, parent);
 	if (p)	p->show();
 	return (V3DLONG)p;
@@ -120,7 +119,7 @@ void ExPushPlugin::domenu(const QString & menu_name, V3DPluginCallback2 & v3d, Q
 	else
 	{
 		QMessageBox::information(parent, "Version info", "Push Plugin 1.0/2.0"
-				"\ndeveloped by Hanchuan Peng & Zongcai Ruan. (Janelia Research Farm Campus, HHMI)");
+				"\ndeveloped by Hanchuan Peng & Zongcai Ruan. (Janelia Farm Research Campus, HHMI)");
 
 	}
 }

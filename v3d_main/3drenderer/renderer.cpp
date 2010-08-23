@@ -400,12 +400,6 @@ inline void box_quads(const BoundingBox & BB)
 }
 void Renderer::drawBoundingBoxAndAxes(BoundingBox BB, float BlineWidth, float AlineWidth)
 {
-	float D = (BB.Dmax())*0.05f;
-	float td = D*0.3f;
-	float ld = BB.Dmax()*0.00001f;
-	XYZ A0 = BB.Vabsmin();
-	XYZ A1 = BB.V1() + D;
-
 	glPushAttrib(GL_LINE_BIT | GL_POLYGON_BIT);
 			//| GL_DEPTH_BUFFER_BIT);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -414,23 +408,16 @@ void Renderer::drawBoundingBoxAndAxes(BoundingBox BB, float BlineWidth, float Al
 //	glPolygonOffset(0, -1); // deal z-fighting, 081120
 //	glDepthFunc(GL_LEQUAL);
 
-	if (bShowBoundingBox && BlineWidth>0)
-	{
-		glPolygonOffset(0, -1); // deal z-fighting, 081120
-
-		glLineWidth(BlineWidth); // work only before glBegin(), by RZC 080827
-		glBegin(GL_QUADS);
-		//glBegin(GL_LINES);
-		{
-			glColor3fv(color_line.c);	box_quads(BB);
-		}
-		glEnd();
-	}
-
 	// a indicator of coordinate direction
 	if (bShowAxes && AlineWidth>0)
 	{
-		glPolygonOffset(0, -2); // deal z-fighting, 081120
+		float D = (BB.Dmax())*0.05f;
+		float ld = BB.Dmax()*0.0001; //1e-4 is best
+		float td = D*0.3f;
+		XYZ A0 = BB.Vabsmin();
+		XYZ A1 = BB.V1() + D;
+
+		glPolygonOffset(-0.002, -2); //(-0.002, -2) for good z-fighting with bounding box, 081120,100823
 
 		glLineWidth(AlineWidth); // work only before glBegin(), by RZC 080827
 		glBegin(GL_QUADS);
@@ -445,6 +432,19 @@ void Renderer::drawBoundingBoxAndAxes(BoundingBox BB, float BlineWidth, float Al
 		glColor3f(1, 0, 0);		drawString(A1.x+td, A0.y, A0.z, "X", 1);
 		glColor3f(0, 1, 0);		drawString(A0.x, A1.y+td, A0.z, "Y", 1);
 		glColor3f(0, 0, 1);		drawString(A0.x, A0.y, A1.z+td, "Z", 1);
+	}
+
+	if (bShowBoundingBox && BlineWidth>0)
+	{
+		glPolygonOffset(0, -1); // deal z-fighting with volume, 081120
+
+		glLineWidth(BlineWidth); // work only before glBegin(), by RZC 080827
+		glBegin(GL_QUADS);
+		//glBegin(GL_LINES);
+		{
+			glColor3fv(color_line.c);	box_quads(BB);
+		}
+		glEnd();
 	}
 
 	glPopAttrib();
