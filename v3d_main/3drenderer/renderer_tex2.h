@@ -249,6 +249,7 @@ protected:
 
 	int cntCur3DCurveMarkers; //091226. marker cnt when define a curve using marker clicking
 	bool b_addthiscurve; //for 1-stroke curve based zoom-in, PHC 100821
+	bool b_addthismarker; //for 1-click based zoom-in, PHC 100821
 	QList< QList <MarkerPos> > list_listCurvePos; //screen projection position
 	void solveCurveCenter(vector <XYZ> & loc_vec_input);
 	void solveCurveViews();

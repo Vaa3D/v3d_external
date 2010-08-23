@@ -197,7 +197,8 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 			*actMarkerTraceFromStartPos=0, *actMarkerTraceFromStartPos_selPara=0, *actMarkerLineProfileFromStartPos=0, *actMarkerLineProfileFromStartPos_drawline=0, *actMarkerLabelAsStartPos=0,
 			*actMarkerTraceFromOnePos=0, *actMarkerTraceFromOnePosToOtherMarkers=0,
 
-			*actCurveCreate1=0, *actCurveCreate2=0, *actCurveCreate3=0, *actCurveCreate_pointclick=0, *actCurveCreate_zoom=0,
+			*actCurveCreate1=0, *actCurveCreate2=0, *actCurveCreate3=0, *actCurveCreate_pointclick=0, 
+			*actCurveCreate_zoom=0, *actMarkerCreate_zoom=0, 
 
 			*actNeuronToEditable=0, *actDecomposeNeuron=0, *actNeuronFinishEditing=0,
 			*actChangeNeuronSegType=0, *actChangeNeuronSegRadius=0, *actReverseNeuronSeg=0,
@@ -245,7 +246,8 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 			//if (!(((iDrawExternalParameter*)_idep)->b_local)) //only enable the menu for global 3d viewer. as it seems there is a bug in the local 3d viewer. by PHC, 100821
 			{
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
-				listAct.append(actCurveCreate_zoom = new QAction("Zoom-in using ROI defined by 1-right-stroke 3d curve", w));
+				listAct.append(actCurveCreate_zoom = new QAction("Zoom-in view: 1-right-stroke ROI", w));
+				listAct.append(actMarkerCreate_zoom = new QAction("Zoom-in view: 1-right-click ROI", w));
 			}
 #endif
 #endif
@@ -588,38 +590,50 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 		b_addthiscurve = false;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
-
+	
 #define __create_marker__ // dummy, just for easy locating
 
 	// real operation in selectObj() waiting next click
 	else if (act == actMarkerCreate1)
 	{
 		selectMode = smMarkerCreate1;
+		b_addthismarker = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::CrossCursor)); }
 	}
 	else if (act == actMarkerCreate2)
 	{
 		selectMode = smMarkerCreate2;
+		b_addthismarker = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::CrossCursor)); }
 	}
 	else if (act == actMarkerCreate3)
 	{
 		selectMode = smMarkerCreate3;
+		b_addthismarker = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::CrossCursor)); }
 	}
 	else if (act == actMarkerRefineT)
 	{
 		selectMode = smMarkerRefineT;
+		b_addthismarker = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::CrossCursor)); }
 	}
 	else if (act == actMarkerRefineC)
 	{
 		selectMode = smMarkerRefineC;
+		b_addthismarker = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::CrossCursor)); }
 	}
 	else if (act == actMarkerRefineLocal)
 	{
 		refineMarkerLocal(names[2]-1);
+		b_addthismarker = true;
+	}
+	else if (act == actMarkerCreate_zoom)
+	{
+		selectMode = smMarkerCreate1;
+		b_addthismarker = false;
+		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
 
 #ifndef test_main_cpp
@@ -1784,7 +1798,8 @@ void Renderer_tex2::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 		}
 		qDebug()<< mx << " " << Mx << " " << my << " " << My << " " << mz << " " << Mz << " ";
 		
-		V3DLONG margin=10;
+		V3DLONG margin=5; //the default margin is small
+		if (loc_vec.size()==1) margin=21; //for marker then define a bigger margin
 		mx -= margin; Mx += margin; if (mx<0) mx=0; if (Mx>curImg->getXDim()-1) Mx = curImg->getXDim()-1;
 		my -= margin; My += margin; if (my<0) my=0; if (My>curImg->getYDim()-1) My = curImg->getYDim()-1;
 		mz -= margin; Mz += margin; if (mz<0) mz=0; if (Mz>curImg->getZDim()-1) Mz = curImg->getZDim()-1;
@@ -1963,7 +1978,17 @@ void Renderer_tex2::solveMarkerCenter()
 	if (dataViewProcBox.isInner(loc, 0.5)) //100725 RZC
 		dataViewProcBox.clamp(loc); //100722 RZC
 
-	addMarker(loc);
+	if (b_addthismarker) //100822, PHC
+		addMarker(loc);
+	else //then zoom-in, 100822, PHC
+	{
+		b_addthismarker = true; //in this case, always reset to default to add a marker instead of just  zoom
+		endSelectMode();
+		
+		vector <XYZ> loc_vec;
+		loc_vec.push_back(loc);
+		produceZoomViewOf3DRoi(loc_vec); 
+	}
 }
 
 void Renderer_tex2::refineMarkerCenter()
