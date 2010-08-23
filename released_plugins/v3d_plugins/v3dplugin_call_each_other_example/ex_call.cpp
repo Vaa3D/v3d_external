@@ -1,6 +1,7 @@
-/* ex_push.cpp
- * an example program to test the push function in the plugin interface
- * 2010-08-3: by Hanchuan Peng
+/* ex_call.cpp
+ * an example program to test plugin-call-plugin function
+ * 2010-08-22: by Ruan ZC
+ * 2010-08-23: revised by Hanchuan Peng
  */
 
 
@@ -12,6 +13,30 @@
 Q_EXPORT_PLUGIN2(ex_push, ExCallPlugin);
 
 const QString title = "Example for plugin calling each other";
+
+#if defined(__APPLE__) //for Mac
+
+#if defined(__MAC_x86_64__)
+QString plugin_name = "64bit/V3D_Plugin_Example_call_each_other/libex_matrix_debug.dylib";
+#else
+QString plugin_name = "32bit/V3D_Plugin_Example_call_each_other/libex_matrix_debug.dylib";
+#endif
+
+#else
+
+#if defined (WIN32) || defined (_WIN32)
+
+QString plugin_name = "V3D_Plugin_Example_call_each_other/libex_matrix_debug.dll";  //for Windows
+
+#else
+
+QString plugin_name = "V3D_Plugin_Example_call_each_other/libex_matrix_debug.so";  //for Linux
+
+#endif
+
+#endif
+
+
 QStringList ExCallPlugin::menulist() const
 {
     return QStringList()
@@ -152,7 +177,6 @@ void matrixPanel::add()
 	arg.type = "double3x3"; arg.p = B;  input << arg;
 	arg.type = "double3x3"; arg.p = C;  output << arg;
 
-	QString plugin_name = "V3D_Plugin_Example_call_each_other/libex_matrix_debug.dylib";
 	QString func_name = "add_3x3";
 	if (! v3d.callPluginFunc(plugin_name, func_name, input, output) )
 		return;
@@ -171,7 +195,6 @@ void matrixPanel::mul()
 	arg.type = "double3x3"; arg.p = B;  input << arg;
 	arg.type = "double3x3"; arg.p = C;  output << arg;
 
-	QString plugin_name = "V3D_Plugin_Example_call_each_other/libex_matrix_debug.dylib";
 	QString func_name = "multiply_3x3";
 	if (! v3d.callPluginFunc(plugin_name, func_name, input, output) )
 		return;
@@ -189,7 +212,6 @@ void matrixPanel::at()
 	arg.type = "double3x3"; arg.p = A;  input << arg;
 	arg.type = "double3x3"; arg.p = C;  output << arg;
 
-	QString plugin_name = "V3D_Plugin_Example_call_each_other/libex_matrix_debug.dylib";
 	QString func_name = "transpose_3x3";
 	if (! v3d.callPluginFunc(plugin_name, func_name, input, output) )
 		return;
@@ -207,7 +229,6 @@ void matrixPanel::bt()
 	arg.type = "double3x3"; arg.p = B;  input << arg;
 	arg.type = "double3x3"; arg.p = C;  output << arg;
 
-	QString plugin_name = "V3D_Plugin_Example_call_each_other/libex_matrix_debug.dylib";
 	QString func_name = "transpose_3x3";
 	if (! v3d.callPluginFunc(plugin_name, func_name, input, output) )
 		return;
