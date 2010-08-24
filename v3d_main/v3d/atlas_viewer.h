@@ -104,6 +104,7 @@ public slots:
 	void pickAtlasRow(int row, int col);
 	void pickLandmark(int row, int col);
 	void highlightLandmark(int row, int col, int previous_row, int previous_col);
+	void pickColorChannel(int row, int col);
 
 	void seeLandmarkProperty();
 	void moveLandmarkUp();
@@ -119,7 +120,7 @@ protected:
 	QTableWidget* currentTableWidget();
 	QTableWidget* createTableAtlasRows();
 	QTableWidget* createTableLandmarks();
-	QTableWidget* createChannelManager();
+	QTableWidget* createColorChannelManager();
 	
 	QVector<bool> in_batch_stack;
 	void begin_batch() {in_batch_stack.push_back(true);}
@@ -133,7 +134,7 @@ protected:
 	QPushButton *okButton, *cancelButton, *undoButton,
 	*selectAllButton, *deselectAllButton, *inverseSelectButton,
 	*onSelectButton, *offSelectButton, *colorSelectButton;
-	QTableWidget *table[1+2];
+	QTableWidget *table[1+3]; //100824. PHC
 	QTabWidget *tabOptions;
 
 	//for the atlas viewer only

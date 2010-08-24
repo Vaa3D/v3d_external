@@ -182,6 +182,13 @@ struct InvidualAtlasFileInfo
 
 QList <InvidualAtlasFileInfo> readAtlasFormatFile(const char * filename); //081124
 
+struct DataChannelColor
+{
+	int n;			  // index
+	RGBA8 color;
+	bool on;
+};
+
 
 class V3dR_GLWidget;
 class Renderer_tex2;
@@ -202,6 +209,7 @@ public:
 
 	void loadImage(char filename[]);
 	void setupData4D();
+	void setupDefaultColorChannelMapping();
 	bool updateminmaxvalues();
 	void loadImage(V3DLONG imgsz0, V3DLONG imgsz1, V3DLONG imgsz2, V3DLONG imgsz3, int imgdatatype); //an overloaded function to create a blank image
 
@@ -233,6 +241,7 @@ public:
 	bool bLookingGlass;
 
 	ColorMap *colorMap; //080824: copied from wano  // FIXME: It should be private.
+	
 
 	void createColorMap(int len, ImageDisplayColorType c=colorPseudoMaskColor);
 	void switchColorMap(int len, ImageDisplayColorType c);
@@ -279,12 +288,13 @@ public:
 	V3DLONG find_closest_control_pt(int sx, int sy, int sz, double & dmin);
 	V3DLONG find_closest_control_pt_thres(int sx, int sy, int sz, double rr, double & dmin);
 
-	QList <LocationSimple> listLandmarks; //listUserDefinedLocation;
+	QList <DataChannelColor> listChannels; //100824
+	QList <LocationSimple> listLandmarks; 
 	QList <PtIndexAndParents> listLocationRelationship;
-	QList <InvidualAtlasFileInfo> listAtlasFiles; //081123
-	int atlasColorBlendChannel; //081206
-	bool bUseFirstImgAsMask; //081207
-	QString curSearchText; //081207
+	QList <InvidualAtlasFileInfo> listAtlasFiles; 
+	int atlasColorBlendChannel; 
+	bool bUseFirstImgAsMask; 
+	QString curSearchText; 
 
 	bool compute_rgn_stat(LocationSimple & pt, int channo);
 	void loadLandmarkFromFile();

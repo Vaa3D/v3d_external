@@ -57,7 +57,7 @@ V3D_atlas_viewerDialog::V3D_atlas_viewerDialog(XFormWidget* w) : QDialog() //w, 
 	qDebug("V3D_atlas_viewerDialog::V3D_atlas_viewerDialog");
 
 	setWindowFlags(Qt::Popup | Qt::Tool);
-	setWindowTitle(tr("Atlas viewer and image blender / landmark manager"));
+	setWindowTitle(tr("Atlas viewer and image blender / landmark manager / color channel manager"));
 	//setAttribute ( Qt::WA_DeleteOnClose, true ); // set this may cause exception
 
 	bCanUndo = false;
@@ -92,10 +92,15 @@ V3D_atlas_viewerDialog::V3D_atlas_viewerDialog(XFormWidget* w) : QDialog() //w, 
 	create();
 	setItemEditor();
 
-    this->resize(700,500);
+    this->resize(700,700);
 
-	//force the hiding of some button by calling tablChanged. 081217
-	if (table[1] && table[2]) (currentTableWidget()==table[1]) ? tabChanged(0) : tabChanged(1);
+	//force the hiding of some button by calling tablChanged. 081217. revised on 100824
+	if (table[1] && table[2] && table[3]) 
+	{
+		if (currentTableWidget()==table[1]) tabChanged(0);
+		else if (currentTableWidget()==table[2]) tabChanged(1);
+		else if (currentTableWidget()==table[3]) tabChanged(2);
+	}	
 }
 
 V3D_atlas_viewerDialog::~V3D_atlas_viewerDialog()
@@ -188,7 +193,8 @@ void V3D_atlas_viewerDialog::reCreateTables(XFormWidget* w)
 	if (table[1])	disconnect(table[1], SIGNAL(cellChanged(int,int)), this, SLOT(pickAtlasRow(int,int)));
 	if (table[2])	disconnect(table[2], SIGNAL(cellChanged(int,int)), this, SLOT(pickLandmark(int,int)));
 	if (table[2])	disconnect(table[2], SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(highlightLandmark(int,int,int,int))); //
-	for (int i=0; i<=2; i++)
+	if (table[3])	disconnect(table[3], SIGNAL(cellChanged(int,int)), this, SLOT(pickColorChannel(int,int)));
+	for (int i=0; i<=3; i++)
 		if (table[i])
 		{
 			delete table[i];  table[i]=0;
@@ -196,8 +202,9 @@ void V3D_atlas_viewerDialog::reCreateTables(XFormWidget* w)
 	createTables();
 
     int i;
- 	i= tabOptions->addTab(table[1], "Atlas viewer and image blender");
-	i= tabOptions->addTab(table[2], "Landmark manager");
+ 	i= tabOptions->addTab(table[1], "Atlas manager");
+	i= tabOptions->addTab(table[2], "Landmarks");
+	i= tabOptions->addTab(table[3], "Color channels");
 
 }
 
@@ -243,7 +250,8 @@ void V3D_atlas_viewerDialog::createTables()
 
 	table[1] = createTableAtlasRows();
 	table[2] = createTableLandmarks();
-	for (int i=1; i<=2; i++)
+	table[3] = createColorChannelManager();
+	for (int i=1; i<=3; i++)
 	{
 		if (table[i])
 		{
@@ -257,6 +265,7 @@ void V3D_atlas_viewerDialog::createTables()
 	if (table[1])	connect(table[1], SIGNAL(cellChanged(int,int)), this, SLOT(pickAtlasRow(int,int)));
 	if (table[2])	connect(table[2], SIGNAL(cellChanged(int,int)), this, SLOT(pickLandmark(int,int)));
 	if (table[2])	connect(table[2], SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(highlightLandmark(int,int,int,int)));
+	if (table[3])	connect(table[3], SIGNAL(cellChanged(int,int)), this, SLOT(pickColorChannel(int,int)));
 }
 
 
@@ -343,10 +352,12 @@ void V3D_atlas_viewerDialog::create()
     int i;
     //tabOptions = new AutoTabWidget();
     tabOptions = new QTabWidget(); //081210: by Hanchuan Peng. I don't like the autotab for atlas viewer
-	i= tabOptions->addTab(table[1], "Atlas viewer and image blender");
-	i= tabOptions->addTab(table[2], "Landmark manager");
+	i= tabOptions->addTab(table[1], "Atlas manager");
+	i= tabOptions->addTab(table[2], "Landmarks");
+	i= tabOptions->addTab(table[3], "Color channels");
 	tabOptions->setTabToolTip(1-1, "Blending image together");
 	tabOptions->setTabToolTip(2-1, "Managing landmarks");
+	tabOptions->setTabToolTip(3-1, "Managing data channel color mapping");
 
 	QGroupBox* tabGroup = new QGroupBox();
     QHBoxLayout *centralLayout = new QHBoxLayout(tabGroup);
@@ -412,7 +423,7 @@ QTableWidget* V3D_atlas_viewerDialog::currentTableWidget()
 	if (! tabOptions) return 0;
 
 	int k =  1+tabOptions->currentIndex();
-	Q_ASSERT(k>=1 && k<=2);
+	Q_ASSERT(k>=1 && k<=3);
 
 	return table[k];
 }
@@ -616,7 +627,7 @@ void V3D_atlas_viewerDialog::selectedColor(int map)
 
 void V3D_atlas_viewerDialog::tabChanged(int t)
 {
-	if (t!=0)
+	if (t==1)
 	{
 		if(channelSpinBox) channelSpinBox->hide();
 		if (channelSpinBoxLabel) channelSpinBoxLabel->hide();
@@ -647,7 +658,7 @@ void V3D_atlas_viewerDialog::tabChanged(int t)
 			}
 		}
 	}
-	else
+	else if (t==0 || t==2)
 	{
 		if(channelSpinBox) channelSpinBox->show();
 		if (channelSpinBoxLabel) channelSpinBoxLabel->show();
@@ -1397,4 +1408,92 @@ void V3D_atlas_viewerDialog::resetAllLandmarkComments()
 
 	//t->update();
 	t->resizeColumnsToContents();
+}
+
+QTableWidget* V3D_atlas_viewerDialog::createColorChannelManager()
+{
+	My4DImage* r = imgdata;
+	if (! r)  return 0;
+	
+	QStringList qsl;
+	qsl << "on/off" << "color" << "data channel";
+	int row = r->getCDim();
+	int col = qsl.size();
+	
+	if (r->listChannels.size() != row)
+	{
+		v3d_msg("Fail to run createColorChannelManager() as the number of color channels mismatches the color-mapping table.");
+		return 0;
+	}
+	
+	QTableWidget* t = new QTableWidget(row,col, this);
+	t->setHorizontalHeaderLabels(qsl);
+	
+	//qDebug("  create begin t->rowCount = %d", t->rowCount());
+	for (int i=0; i<row; i++)
+	{
+		int j=0;
+		QTableWidgetItem *newItem;
+		QString s;
+		
+		//s = tr("%1").arg("on");
+		newItem = new QTableWidgetItem(s);	t->setItem(i, j++, newItem);
+		newItem->setCheckState(BOOL_TO_CHECKED(r->listChannels[i].on));
+		
+		//s = tr("%1").arg("color");
+		newItem = new QTableWidgetItem(QVariant::Color);	t->setItem(i, j++, newItem);
+		{
+			// all of this is ok, caution of alpha. 081114
+			//newItem->setBackgroundColor(QCOLOR(r->listLabelS[i].color));
+			//newItem->setBackground(QBrush(QCOLOR(r->listLabelS[i].color)));
+			//newItem->setIcon(colorIcon(QCOLOR(r->listLabelS[i].color)));
+			newItem->setData(Qt::DecorationRole, VCOLOR(r->listChannels[i].color));
+			newItem->setData(Qt::DisplayRole, VCOLOR(r->listChannels[i].color));
+			//qDebug() << QCOLOR(r->listLabelS[i].color);
+			//qDebug() << newItem->data(0).type();
+		}
+		
+		s = tr("%1").arg(i+1);
+		newItem = new QTableWidgetItem(s);	t->setItem(i, j++, newItem);
+		
+		Q_ASSERT(j==col);
+	}
+	//qDebug("  end   t->rowCount = %d", t->rowCount());
+	
+	t->resizeColumnsToContents();
+	return t;	 
+}
+
+void V3D_atlas_viewerDialog::pickColorChannel(int i, int j)
+{
+	My4DImage* r = imgdata;
+	if (! r)  return;
+	if (i<0 || i>=r->getCDim())  return;
+	if (!table) return;
+
+	if (r->listChannels.size() != r->getCDim())
+	{
+		v3d_msg("Fail to run pickColorChannel() as the number of color channels mismatches the color-mapping table.");
+		return;
+	}
+	
+	
+	QTableWidget* t = table[3];
+	QTableWidgetItem *newItem = t->item(i,j);
+	
+	switch(j)
+	{
+		case 0:
+			r->listChannels[i].on = CHECKED_TO_BOOL(newItem->checkState());
+			break;
+		case 1:
+			r->listChannels[i].color = RGBA8V(newItem->data(0));
+			newItem->setData(Qt::DecorationRole, VCOLOR(r->listChannels[i].color));
+			break;
+	}
+	
+	t->resizeColumnsToContents();
+	UPDATE_VIEW(triview_widget);
+	bMod = true;
+	undoButton->setEnabled(bCanUndo && bMod);
 }

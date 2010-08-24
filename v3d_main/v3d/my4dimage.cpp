@@ -823,13 +823,44 @@ void My4DImage::setupData4D()
 			return;
 			//break;
 	}
+	
+	//set up the default color mapping table. 100824, PHC
+	setupDefaultColorChannelMapping();
+	
+	//
 
 	curFocusX = this->getXDim()>>1; //begin from mid location
 	curFocusY = this->getYDim()>>1;
 	curFocusZ = this->getZDim()>>1;
 }
 
-
+void My4DImage::setupDefaultColorChannelMapping() //20100824, PHC
+{
+	listChannels.clear();
+	for (V3DLONG i=0; i<this->getCDim(); i++)
+	{
+		DataChannelColor dc;
+		dc.n = i;
+		dc.on  = true;
+		V3DLONG tmp = i%7;
+		dc.color.a = 255;
+		dc.color.r  = dc.color.g = dc.color.b = 0;
+		switch (tmp)
+		{
+			case 0: dc.color.r = 255; break;
+			case 1: dc.color.g = 255; break;
+			case 2: dc.color.b = 255; break;
+			case 3: dc.color.r = 255; dc.color.g = 255; dc.color.b = 255; break;
+			case 4: dc.color.r = 255; dc.color.g = 255; break;
+			case 5: dc.color.r = 255; dc.color.b = 255; break;
+			case 6: dc.color.g = 255; dc.color.b = 255; break;
+			default:
+				v3d_msg("Your should never see this msg. Check with V3D developer.");
+		}
+		
+		listChannels.append(dc);
+	}
+}
 
 bool My4DImage::updateminmaxvalues()
 {
@@ -1898,7 +1929,7 @@ bool My4DImage::setNewImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG ns
 			if (!new4dpointer_v3d(data4d_uint8, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim(), this->getRawData() ))
 			{
 				this->setError(1);
-        this->deleteRawDataAndSetPointerToNull();
+				this->deleteRawDataAndSetPointerToNull();
 				return false;
 			}
 			data4d_virtual = (void ****)data4d_uint8;
@@ -1916,7 +1947,7 @@ bool My4DImage::setNewImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG ns
 			if (!new4dpointer_v3d(data4d_uint16, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim(), this->getRawData() ))
 			{
 				this->setError(1);
-        this->deleteRawDataAndSetPointerToNull();
+				this->deleteRawDataAndSetPointerToNull();
 				return false;
 			}
 			data4d_virtual = (void ****)data4d_uint16;
@@ -1958,6 +1989,8 @@ bool My4DImage::setNewImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG ns
 			//break;
 	}
 
+	setupDefaultColorChannelMapping(); //20100811. PHC
+	
 	curFocusX = this->getXDim()/2; //-= bpos_x+1; //begin from first slices
 	curFocusY = this->getYDim()/2; //-= bpos_y+1;
 	curFocusZ = this->getZDim()/2; //-= bpos_z+1;
