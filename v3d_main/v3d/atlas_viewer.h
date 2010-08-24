@@ -119,6 +119,7 @@ protected:
 	QTableWidget* currentTableWidget();
 	QTableWidget* createTableAtlasRows();
 	QTableWidget* createTableLandmarks();
+	QTableWidget* createChannelManager();
 	
 	QVector<bool> in_batch_stack;
 	void begin_batch() {in_batch_stack.push_back(true);}
