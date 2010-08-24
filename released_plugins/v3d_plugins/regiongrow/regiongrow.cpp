@@ -103,12 +103,12 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	
     unsigned char* pSbject = subject->getRawData();
 	
-	long sz0 = subject->getXDim();
-    long sz1 = subject->getYDim();
-    long sz2 = subject->getZDim();
-	long sz3 = subject->getCDim();
+	V3DLONG sz0 = subject->getXDim();
+    V3DLONG sz1 = subject->getYDim();
+    V3DLONG sz2 = subject->getZDim();
+	V3DLONG sz3 = subject->getCDim();
 	
-	long pagesz_sub = sz0*sz1*sz2;
+	V3DLONG pagesz_sub = sz0*sz1*sz2;
 	
 	//---------------------------------------------------------------------------------------------------------------------------------------------------
 	//finding the bounding box of ROI
@@ -125,78 +125,78 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	if(b_zx.left()==-1 || b_zx.top()==-1 || b_zx.right()==-1 || b_zx.bottom()==-1)
 		vzx=false;
 		
-	long bpos_x, bpos_y, bpos_z, bpos_c, epos_x, epos_y, epos_z, epos_c;
+	V3DLONG bpos_x, bpos_y, bpos_z, bpos_c, epos_x, epos_y, epos_z, epos_c;
 	
 	// 8 cases
 	if(vxy && vyz && vzx) // all 3 2d-views
 	{
-		bpos_x = qBound(long(0), long(qMax(b_xy.left(), b_zx.left())), sz0-1);
-		bpos_y = qBound(long(0), long(qMax(b_xy.top(),  b_yz.top())), sz1-1);
-		bpos_z = qBound(long(0), long(qMax(b_yz.left(), b_zx.top())), sz2-1);
+		bpos_x = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.left(), b_zx.left())), sz0-1);
+		bpos_y = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.top(),  b_yz.top())), sz1-1);
+		bpos_z = qBound(V3DLONG(0), V3DLONG(qMax(b_yz.left(), b_zx.top())), sz2-1);
 		
-		epos_x = qBound(long(0), long(qMin(b_xy.right(), b_zx.right())), sz0-1);
-		epos_y = qBound(long(0), long(qMin(b_xy.bottom(), b_yz.bottom())), sz1-1);
-		epos_z = qBound(long(0), long(qMin(b_yz.right(), b_zx.bottom())), sz2-1);
+		epos_x = qBound(V3DLONG(0), V3DLONG(qMin(b_xy.right(), b_zx.right())), sz0-1);
+		epos_y = qBound(V3DLONG(0), V3DLONG(qMin(b_xy.bottom(), b_yz.bottom())), sz1-1);
+		epos_z = qBound(V3DLONG(0), V3DLONG(qMin(b_yz.right(), b_zx.bottom())), sz2-1);
 	}
 	else if(!vxy && vyz && vzx) // 2 of 3
 	{
-		bpos_x = qBound(long(0), long(qMax(0, b_zx.left())), sz0-1);
-		bpos_y = qBound(long(0), long(qMax(0,  b_yz.top())), sz1-1);
-		bpos_z = qBound(long(0), long(qMax(b_yz.left(), b_zx.top())), sz2-1);
+		bpos_x = qBound(V3DLONG(0), V3DLONG(qMax(0, b_zx.left())), sz0-1);
+		bpos_y = qBound(V3DLONG(0), V3DLONG(qMax(0,  b_yz.top())), sz1-1);
+		bpos_z = qBound(V3DLONG(0), V3DLONG(qMax(b_yz.left(), b_zx.top())), sz2-1);
 		
-		epos_x = qBound(long(0), long(fmin(sz0-1, b_zx.right())), sz0-1);
-		epos_y = qBound(long(0), long(fmin(sz1-1, b_yz.bottom())), sz1-1);
-		epos_z = qBound(long(0), long(qMin(b_yz.right(), b_zx.bottom())), sz2-1);
+		epos_x = qBound(V3DLONG(0), V3DLONG(qMin(sz0-1, (V3DLONG)b_zx.right())), sz0-1);
+		epos_y = qBound(V3DLONG(0), V3DLONG(qMin(sz1-1, (V3DLONG)b_yz.bottom())), sz1-1);
+		epos_z = qBound(V3DLONG(0), V3DLONG(qMin(b_yz.right(), b_zx.bottom())), sz2-1);
 	}
 	else if(vxy && !vyz && vzx)
 	{
-		bpos_x = qBound(long(0), long(qMax(b_xy.left(), b_zx.left())), sz0-1);
-		bpos_y = qBound(long(0), long(qMax(b_xy.top(),  0)), sz1-1);
-		bpos_z = qBound(long(0), long(qMax(0, b_zx.top())), sz2-1);
+		bpos_x = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.left(), b_zx.left())), sz0-1);
+		bpos_y = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.top(),  0)), sz1-1);
+		bpos_z = qBound(V3DLONG(0), V3DLONG(qMax(0, b_zx.top())), sz2-1);
 		
-		epos_x = qBound(long(0), long(qMin(b_xy.right(), b_zx.right())), sz0-1);
-		epos_y = qBound(long(0), long(fmin(b_xy.bottom(), sz1-1)), sz1-1);
-		epos_z = qBound(long(0), long(fmin(sz2-1, b_zx.bottom())), sz2-1);
+		epos_x = qBound(V3DLONG(0), V3DLONG(qMin(b_xy.right(), b_zx.right())), sz0-1);
+		epos_y = qBound(V3DLONG(0), V3DLONG(qMin((V3DLONG)b_xy.bottom(), sz1-1)), sz1-1);
+		epos_z = qBound(V3DLONG(0), V3DLONG(qMin(sz2-1, (V3DLONG)b_zx.bottom())), sz2-1);
 	}
 	else if(vxy && vyz && !vzx)
 	{
-		bpos_x = qBound(long(0), long(qMax(b_xy.left(), 0)), sz0-1);
-		bpos_y = qBound(long(0), long(qMax(b_xy.top(),  b_yz.top())), sz1-1);
-		bpos_z = qBound(long(0), long(qMax(b_yz.left(), 0)), sz2-1);
+		bpos_x = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.left(), 0)), sz0-1);
+		bpos_y = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.top(),  b_yz.top())), sz1-1);
+		bpos_z = qBound(V3DLONG(0), V3DLONG(qMax(b_yz.left(), 0)), sz2-1);
 		
-		epos_x = qBound(long(0), long(fmin(b_xy.right(), sz0-1)), sz0-1);
-		epos_y = qBound(long(0), long(qMin(b_xy.bottom(), b_yz.bottom())), sz1-1);
-		epos_z = qBound(long(0), long(fmin(b_yz.right(), sz2-1)), sz2-1);
+		epos_x = qBound(V3DLONG(0), V3DLONG(qMin((V3DLONG)b_xy.right(), sz0-1)), sz0-1);
+		epos_y = qBound(V3DLONG(0), V3DLONG(qMin(b_xy.bottom(), b_yz.bottom())), sz1-1);
+		epos_z = qBound(V3DLONG(0), V3DLONG(qMin((V3DLONG)b_yz.right(), sz2-1)), sz2-1);
 	}
 	else if(vxy && !vyz && !vzx) // only 1 of 3
 	{
-		bpos_x = qBound(long(0), long(qMax(b_xy.left(), 0)), sz0-1);
-		bpos_y = qBound(long(0), long(qMax(b_xy.top(),  0)), sz1-1);
+		bpos_x = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.left(), 0)), sz0-1);
+		bpos_y = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.top(),  0)), sz1-1);
 		bpos_z = 0;
 		
-		epos_x = qBound(long(0), long(fmin(b_xy.right(), sz0-1)), sz0-1);
-		epos_y = qBound(long(0), long(fmin(b_xy.bottom(), sz1-1)), sz1-1);
+		epos_x = qBound(V3DLONG(0), V3DLONG(qMin((V3DLONG)b_xy.right(), sz0-1)), sz0-1);
+		epos_y = qBound(V3DLONG(0), V3DLONG(qMin((V3DLONG)b_xy.bottom(), sz1-1)), sz1-1);
 		epos_z = sz2-1;
 	}
 	else if(!vxy && vyz && !vzx)
 	{
 		bpos_x = 0;
-		bpos_y = qBound(long(0), long(qMax(0,  b_yz.top())), sz1-1);
-		bpos_z = qBound(long(0), long(qMax(b_yz.left(), 0)), sz2-1);
+		bpos_y = qBound(V3DLONG(0), V3DLONG(qMax(0,  b_yz.top())), sz1-1);
+		bpos_z = qBound(V3DLONG(0), V3DLONG(qMax(b_yz.left(), 0)), sz2-1);
 		
 		epos_x = sz0-1;
-		epos_y = qBound(long(0), long(fmin(sz1-1, b_yz.bottom())), sz1-1);
-		epos_z = qBound(long(0), long(fmin(b_yz.right(), sz2-1)), sz2-1);
+		epos_y = qBound(V3DLONG(0), V3DLONG(qMin(sz1-1, (V3DLONG)b_yz.bottom())), sz1-1);
+		epos_z = qBound(V3DLONG(0), V3DLONG(qMin((V3DLONG)b_yz.right(), sz2-1)), sz2-1);
 	}
 	else if(!vxy && !vyz && vzx)
 	{
-		bpos_x = qBound(long(0), long(qMax(0, b_zx.left())), sz0-1);
+		bpos_x = qBound(V3DLONG(0), V3DLONG(qMax(0, b_zx.left())), sz0-1);
 		bpos_y = 0;
-		bpos_z = qBound(long(0), long(qMax(0, b_zx.top())), sz2-1);
+		bpos_z = qBound(V3DLONG(0), V3DLONG(qMax(0, b_zx.top())), sz2-1);
 		
-		epos_x = qBound(long(0), long(fmin(sz0-1, b_zx.right())), sz0-1);
+		epos_x = qBound(V3DLONG(0), V3DLONG(qMin(sz0-1, (V3DLONG)b_zx.right())), sz0-1);
 		epos_y = sz1-1;
-		epos_z = qBound(long(0), long(fmin(sz2-1, b_zx.bottom())), sz2-1);
+		epos_z = qBound(V3DLONG(0), V3DLONG(qMin(sz2-1, (V3DLONG)b_zx.bottom())), sz2-1);
 	}
 	else // 0
 	{
@@ -212,17 +212,17 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	//qDebug("x %d y %d z %d x %d y %d z %d ",bpos_x,bpos_y,bpos_z,epos_x,epos_y,epos_z);
 
 	//ROI extraction
-	long sx = (epos_x-bpos_x)+1;
-    long sy = (epos_y-bpos_y)+1;
-    long sz = (epos_z-bpos_z)+1;
-	long sc = sz3; // 0,1,2
+	V3DLONG sx = (epos_x-bpos_x)+1;
+    V3DLONG sy = (epos_y-bpos_y)+1;
+    V3DLONG sz = (epos_z-bpos_z)+1;
+	V3DLONG sc = sz3; // 0,1,2
 	
 	//choose the channel stack
-	long pagesz = sx*sy*sz;
+	V3DLONG pagesz = sx*sy*sz;
 	
 	double meanv=0, stdv=0;
 	
-	long offset_sub = 0;
+	V3DLONG offset_sub = 0;
 	
 	//------------------------------------------------------------------------------------------------------------------------------------
 	
@@ -234,15 +234,15 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	}
 	else
 	{
-		for(long k=bpos_z; k<=epos_z; k++)
+		for(V3DLONG k=bpos_z; k<=epos_z; k++)
 		{
-			long offset_z = k*sz0*sz1;
-			long offset_crop_z = (k-bpos_z)*sx*sy;
-			for(long j=bpos_y; j<=epos_y; j++)
+			V3DLONG offset_z = k*sz0*sz1;
+			V3DLONG offset_crop_z = (k-bpos_z)*sx*sy;
+			for(V3DLONG j=bpos_y; j<=epos_y; j++)
 			{
-				long offset_y = j*sz0 + offset_z;
-				long offset_crop_y = (j-bpos_y)*sx + offset_crop_z;
-				for(long i=bpos_x; i<=epos_x; i++)
+				V3DLONG offset_y = j*sz0 + offset_z;
+				V3DLONG offset_crop_y = (j-bpos_y)*sx + offset_crop_z;
+				for(V3DLONG i=bpos_x; i<=epos_x; i++)
 				{
 					data1d[(i-bpos_x) + offset_crop_y] = pSbject[offset_sub + i+offset_y];
 					
@@ -253,7 +253,7 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	}
 	meanv /= pagesz;
 	
-	for(long i=0; i<pagesz; i++)
+	for(V3DLONG i=0; i<pagesz; i++)
 		stdv += (data1d[i] - meanv)*(data1d[i] - meanv);
 	
 	stdv /= (pagesz-1);
@@ -270,7 +270,7 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	unsigned char *bw = new unsigned char [pagesz];
 	unsigned int *L = new unsigned int [pagesz];
 	
-	for(long i=0; i<pagesz; i++)
+	for(V3DLONG i=0; i<pagesz; i++)
 	{
 		bw[i] = (data1d[i]>meanv)?1:0;
 		L[i] = 0;
@@ -280,12 +280,12 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	system("date");
 	
 	//
-	long offset_y, offset_z;
+	V3DLONG offset_y, offset_z;
 	
 	offset_y=sx;
 	offset_z=sx*sy;
 	
-	long neighborhood_13[13] = {-1, -offset_y, -offset_z,
+	V3DLONG neighborhood_13[13] = {-1, -offset_y, -offset_z,
 								-offset_y-1, -offset_y-offset_z, 
 								offset_y-1, offset_y-offset_z,
 								offset_z-1, -offset_z-1,
@@ -299,14 +299,14 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
     ntable = 0;
     lset[0] = 0;
 	
-	for(long k = 0; k < sz; k++) 
+	for(V3DLONG k = 0; k < sz; k++) 
 	{				
-		long idxk = k*offset_z;
-		for(long j = 0;  j < sy; j++) 
+		V3DLONG idxk = k*offset_z;
+		for(V3DLONG j = 0;  j < sy; j++) 
 		{
-			long idxj = idxk + j*offset_y;
+			V3DLONG idxj = idxk + j*offset_y;
 			
-			for(long i = 0, idx = idxj; i < sx;  i++, idx++) 
+			for(V3DLONG i = 0, idx = idxj; i < sx;  i++, idx++) 
 			{
 				
 				if(i==0 || i==sx-1 || j==0 || j==sy-1 || k==0 || k==sz-1)
@@ -390,14 +390,14 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
         lset[i] = find( lset, i );
 	
     // run image through the look-up table
-   	for(long k = 0; k < sz; k++) 
+   	for(V3DLONG k = 0; k < sz; k++) 
 	{				
-		long idxk = k*offset_z;
-		for(long j = 0;  j < sy; j++) 
+		V3DLONG idxk = k*offset_z;
+		for(V3DLONG j = 0;  j < sy; j++) 
 		{
-			long idxj = idxk + j*offset_y;
+			V3DLONG idxj = idxk + j*offset_y;
 			
-			for(long i = 0, idx = idxj; i < sx;  i++, idx++) 
+			for(V3DLONG i = 0, idx = idxj; i < sx;  i++, idx++) 
 			{
 				L[idx] = lset[ (int)L[idx] ];
 			}
@@ -408,14 +408,14 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
     for( int i = 0; i <= ntable; i++ )
         lset[i] = 0;
 	
-   	for(long k = 0; k < sz; k++) 
+   	for(V3DLONG k = 0; k < sz; k++) 
 	{				
-		long idxk = k*offset_z;
-		for(long j = 0;  j < sy; j++) 
+		V3DLONG idxk = k*offset_z;
+		for(V3DLONG j = 0;  j < sy; j++) 
 		{
-			long idxj = idxk + j*offset_y;
+			V3DLONG idxj = idxk + j*offset_y;
 			
-			for(long i = 0, idx = idxj; i < sx;  i++, idx++) 
+			for(V3DLONG i = 0, idx = idxj; i < sx;  i++, idx++) 
 			{
 				lset[ (int)L[idx] ]++;
 			}
@@ -432,14 +432,14 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	qDebug() << "how many objects found ..." << nobj;
 	
     // run through the look-up table again
-   	for(long k = 0; k < sz; k++) 
+   	for(V3DLONG k = 0; k < sz; k++) 
 	{				
-		long idxk = k*offset_z;
-		for(long j = 0;  j < sy; j++) 
+		V3DLONG idxk = k*offset_z;
+		for(V3DLONG j = 0;  j < sy; j++) 
 		{
-			long idxj = idxk + j*offset_y;
+			V3DLONG idxj = idxk + j*offset_y;
 			
-			for(long i = 0, idx = idxj; i < sx;  i++, idx++) 
+			for(V3DLONG i = 0, idx = idxj; i < sx;  i++, idx++) 
 			{
 				L[idx] = lset[ (int)L[idx] ];
 			}
@@ -453,7 +453,7 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	
 	int max_L=0;
 	
-	for(long i=0; i<pagesz; i++)
+	for(V3DLONG i=0; i<pagesz; i++)
 	{
 		if(max_L<L[i]) max_L = L[i];
 	}
@@ -462,7 +462,7 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	{
 		if(max_L<256)
 		{
-			for(long i=0; i<pagesz; i++)
+			for(V3DLONG i=0; i<pagesz; i++)
 			{
 				bw[i] = L[i];
 			}
@@ -470,7 +470,7 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 		}
 		else
 		{
-			for(long i=0; i<pagesz; i++)
+			for(V3DLONG i=0; i<pagesz; i++)
 			{
 				bw[i] = 255*(L[i])/max_L;
 			}
@@ -501,18 +501,18 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	// histogram of L
 	int *a = new int [nobj+1];
 	
-	for(long i=0;  i<=nobj; i++)
+	for(V3DLONG i=0;  i<=nobj; i++)
 	{
 		a[i] = 0;
 	}
 	
-	for(long i=0; i<pagesz; i++)
+	for(V3DLONG i=0; i<pagesz; i++)
 	{
 		a[ L[i] ] ++;
 	}
 	
 	//
-	int np = fmin(5, nobj);
+	int np = qMin(5, nobj);
 	
 	for(int i=1;  i<=nobj; i++) // 0 is background
 	{
@@ -562,14 +562,14 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	
 		int label=labelList.at(i_n).label;
 		
-		for(long k = 0; k < sz; k++) 
+		for(V3DLONG k = 0; k < sz; k++) 
 		{				
-			long idxk = k*offset_z;
-			for(long j = 0;  j < sy; j++) 
+			V3DLONG idxk = k*offset_z;
+			for(V3DLONG j = 0;  j < sy; j++) 
 			{
-				long idxj = idxk + j*offset_y;
+				V3DLONG idxj = idxk + j*offset_y;
 				
-				for(long i = 0, idx = idxj; i < sx;  i++, idx++) 
+				for(V3DLONG i = 0, idx = idxj; i < sx;  i++, idx++) 
 				{
 					
 					//
@@ -591,9 +591,9 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 		//
 		if (si>0)
 		{
-			long ncx = scx/si + 0.5 +1; 
-			long ncy = scy/si + 0.5 +1; 
-			long ncz = scz/si + 0.5 +1;
+			V3DLONG ncx = scx/si + 0.5 +1; 
+			V3DLONG ncy = scy/si + 0.5 +1; 
+			V3DLONG ncz = scz/si + 0.5 +1;
 		
 			qDebug() << "position ..." << ncx << ncy << ncz;
 			
