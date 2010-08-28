@@ -43,68 +43,60 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Renderer::Renderer()
+Renderer::Renderer(void* widget)
+	: widget(widget)
 {
 	qDebug(" Renderer::Renderer >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-    widget = 0;
     init_members();
 }
 
 Renderer::~Renderer()
 {
 	qDebug(" Renderer::~Renderer <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-
 	cleanObj();
 	cleanData();
-
 	//qDebug(" ------------------------------------------------------ Renderer shutdown");
 }
 
 void Renderer::makeCurrent()
 {
-	if (widget) // for multiple views concur (animate_timer or thread)
-	{
-		V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-//		QGLContext* ctx = (QGLContext*)w->context();
-//		if ( ctx && ctx->isValid() )
-			w->makeCurrent();
-	}
+	if (! widget)  return;
+
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+//	QGLContext* ctx = (QGLContext*)w->context();
+//	if ( ctx && ctx->isValid() )
+		w->makeCurrent();
 }
 
 void Renderer::drawString(float x, float y, float z, char* text, int shadow)
 {
-	if (widget) // for multiple views concur (animate_timer or thread)
+    if (! widget)  return;
+
+    if (shadow)
 	{
-	    if (shadow)
-	    {
-			glPushAttrib(GL_DEPTH_BUFFER_BIT);
-			glPushAttrib(GL_CURRENT_BIT);
-				glColor3ub(50,50,50);
-				//glColor3ub(200,200,200);
+		glPushAttrib(GL_DEPTH_BUFFER_BIT);
+		glPushAttrib(GL_CURRENT_BIT);
+			glColor3ub(50,50,50);
+			//glColor3ub(200,200,200);
 
-				QFont f;  f.setPointSize(f.pointSize()+1); f.setWeight(f.weight()+200);
-				((QGLWidget*)widget)->renderText(x,y,z, QString(text), f);
-			glPopAttrib();
-			glDepthFunc(GL_LEQUAL);
-	    }
+			QFont f;  f.setPointSize(f.pointSize()+1); f.setWeight(f.weight()+200);
+			((QGLWidget*)widget)->renderText(x,y,z, QString(text), f);
+		glPopAttrib();
+		glDepthFunc(GL_LEQUAL);
+	}
 
-		((QGLWidget*)widget)->renderText(x,y,z, QString(text));
+	((QGLWidget*)widget)->renderText(x,y,z, QString(text));
 
-		if (shadow)
-		{
-			glPopAttrib();
-		}
+	if (shadow)
+	{
+		glPopAttrib();
 	}
 }
 
 bool Renderer::beStill()
 {
-	if (widget) // for multiple views concur (animate_timer or thread)
-	{
-		V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-		return (w->getStill());
-	}
-	return false;
+	if (! widget)  return false;
+	return ((V3dR_GLWidget*)widget)->getStill();
 }
 
 const char* Renderer::try_vol_state()
@@ -145,9 +137,9 @@ void Renderer::setProjection()
 
 	if (bOrthoView)
 	{
-		double ow = 1.3*aspect*zoomRatio;
-		double oh = 1.3*zoomRatio;
-		glOrtho(-ow, ow, -oh, oh, viewNear, viewFar);
+		double halfw = 1.3*aspect *zoomRatio;
+		double halfh = 1.3        *zoomRatio;
+		glOrtho(-halfw, halfw, -halfh, halfh, viewNear, viewFar);
 	}
 	else
 	{
@@ -364,7 +356,6 @@ void Renderer::setObjectSpace()
 
 void Renderer::setBoundingBoxSpace(BoundingBox BB)
 {
-
 	float DX = BB.Dx();
 	float DY = BB.Dy();
 	float DZ = BB.Dz();
@@ -398,6 +389,7 @@ inline void box_quads(const BoundingBox & BB)
 	BB_VERTEX(1, 0, 0);	BB_VERTEX(1, 0, 1);	BB_VERTEX(1, 1, 1); BB_VERTEX(1, 1, 0); //x=1
 
 }
+
 void Renderer::drawBoundingBoxAndAxes(BoundingBox BB, float BlineWidth, float AlineWidth)
 {
 	glPushAttrib(GL_LINE_BIT | GL_POLYGON_BIT);
@@ -411,11 +403,11 @@ void Renderer::drawBoundingBoxAndAxes(BoundingBox BB, float BlineWidth, float Al
 	// a indicator of coordinate direction
 	if (bShowAxes && AlineWidth>0)
 	{
-		float D = (BB.Dmax())*0.05f;
-		float ld = BB.Dmax()*0.0001; //1e-4 is best
-		float td = D*0.3f;
+		float D = (BB.Dmax());
+		float ld = D*0.0001; //1e-4 is best
+		float td = D*0.015;
 		XYZ A0 = BB.Vabsmin();
-		XYZ A1 = BB.V1() + D;
+		XYZ A1 = BB.V1() + D*0.05;
 
 		glPolygonOffset(-0.002, -2); //(-0.002, -2) for good z-fighting with bounding box, 081120,100823
 
@@ -448,7 +440,76 @@ void Renderer::drawBoundingBoxAndAxes(BoundingBox BB, float BlineWidth, float Al
 	}
 
 	glPopAttrib();
+}
 
+void Renderer::drawScaleBar(float AlineWidth)
+{
+	// no scale here
+    GLdouble mRot[16];
+    glGetDoublev(GL_MODELVIEW_MATRIX, mRot);
+    for (int i=0; i<3; i++) mRot[i*4 +3]=mRot[3*4 +i]=0; mRot[3*4 +3]=1; // only reserve rotation, remove translation in mRot
+
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    double aspect = double(screenW)/MAX(screenH,1);
+    double halfw = 1.3*aspect;
+    double halfh = 1.3;
+    glOrtho(-halfw, halfw, -halfh, halfh, -1, 1000); // 1000 makes 0 at most front depth in z-buffer
+    glTranslated(+0.8, -1.15, 0); // put at right-bottom corner
+
+    double sbar = 0.1; // scale bar display size
+    glScaled(sbar*2, sbar*2, sbar*2); //[0,1]-->[-1,+1]
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glMultMatrixd(mRot); // last rotation pose
+
+    glPushAttrib(GL_LINE_BIT | GL_POLYGON_BIT);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glEnable(GL_POLYGON_OFFSET_LINE);
+
+	glColor3fv(color_line.c);
+
+	if (AlineWidth > 0)
+	{
+		BoundingBox BB = UNIT_BoundingBox;
+        float D = (BB.Dmax());
+        float ld = D*0.0001; //1e-4 is best
+        float td = 0.02;
+        XYZ A0 = BB.Vabsmin();
+        XYZ A1 = BB.V1();
+
+		glLineWidth(AlineWidth); // work only before glBegin(), by RZC 080827
+		glBegin(GL_QUADS);
+		{
+			//glColor3f(1, 0, 0);
+			box_quads(BoundingBox(A0, XYZ(A1.x, A0.y + ld, A0.z + ld)));
+			//glColor3f(0, 1, 0);
+			//box_quads(BoundingBox(A0, XYZ(A0.x + ld, A1.y, A0.z + ld)));
+			//glColor3f(0, 0, 1);
+			box_quads(BoundingBox(A0, XYZ(A0.x + ld, A0.y + ld, A1.z)));
+		}
+		glEnd();
+
+		////////////////////////////////////////
+        double sizeX = bufSize[0]/sampleScale[0];
+		double unitXscale = boundingBox.Dx()/boundingBox.Dmax();
+        double sizeXunit = sizeX / unitXscale;
+        char str[100];
+        sprintf(str, "%g", sizeXunit * sbar * zoomRatio);
+        //qDebug("sizeX=%g unitXscale=%g sizeXunit=%g", sizeX, unitXscale, sizeXunit);
+
+	    drawString(A1.x + td, A0.y, A0.z, str);
+		//glColor3f(1, 0, 0);		drawString(A1.x + td, A0.y, A0.z, "X");
+		//glColor3f(0, 1, 0);		drawString(A0.x, A1.y + td, A0.z, "Y");
+		//glColor3f(0, 0, 1);		drawString(A0.x, A0.y, A1.z + td, "Z");
+	}
+
+	glPopAttrib();
+    glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

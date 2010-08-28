@@ -71,8 +71,8 @@ public:
 	Renderer* getRenderer() {return renderer;}
 	QString getDataTitle() {return data_title;}
 	int getNumKeyHolding() {for(int i=1;i<=9; i++) if(_holding_num[i]) return i; return -1;}
-	bool getStill() 		{return _still;}
-	void setStill(bool b) 	{_still = b;} //change return type from bool to void, by PHC 2010-05-20.
+	bool getStill() 		{return _still;} //used by Renderer::beStil()
+	void setStill(bool b) 	{_still = b;}    //used by V3dR_MainWindow::doSaveMovie()
     void clearColormapDialog() {colormapDlg = 0;}
     void clearSurfaceDialog()  {surfaceDlg = 0;}
     bool screenShot(QString filename);
@@ -114,7 +114,7 @@ protected:
 	//static SurfaceObjGeometryDialog *surfaceObjGeoDlg;
 
 protected slots:
-   	//virtual void stillPaint();
+   	virtual void stillPaint();
 
 
 #define __view3dcontrol_interface__
@@ -313,8 +313,10 @@ signals:
     void changeZClip0(int s);
 	void changeZClip1(int s);
 
+	void changeOrthoView(bool b);
+
 private:
-	bool _still, _still_paint_off, _still_pending, _mouse_in_view;
+	bool _still, _stillpaint_disable, _stillpaint_pending, _mouse_in_view;
     QTimer still_timer;
     static const int still_timer_interval = 1000;
 
@@ -348,7 +350,7 @@ private:
 
 	void init_members()
 	{
-		_still = _still_paint_off = _still_pending = _mouse_in_view = false;
+		_still = _stillpaint_disable = _stillpaint_pending = _mouse_in_view = false;
 	    connect(&still_timer, SIGNAL(timeout()), this, SLOT(stillPaint())); //only connect once
 	    still_timer.start(still_timer_interval);
 

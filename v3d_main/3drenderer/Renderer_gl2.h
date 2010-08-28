@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -53,7 +53,7 @@ class Renderer_gl2 : public Renderer_tex2
 	friend class V3dr_colormapDialog; // for access colormap, colormap_curve
 
 public:
-	Renderer_gl2();
+	Renderer_gl2(void* widget);
 	virtual ~Renderer_gl2();
 	virtual const int class_version() {return 2;}
 

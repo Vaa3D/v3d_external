@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -75,13 +75,13 @@ class Renderer_tex2 : public Renderer
 	friend class V3dr_surfaceDialog; //for accessing all surface data structure
 
 public:
-	Renderer_tex2();
+	Renderer_tex2(void* widget);
 	virtual ~Renderer_tex2();
 	virtual const int class_version() {return 1;}
 
 public:
 // link to Data
-	virtual void setupData(void* p);
+	virtual void setupData(void* data);
 	virtual void cleanData();                      // makeCurrent
 	virtual const bool has_image()   {return (size4>0);}
 	virtual const BoundingBox getDataBox() {return dataBox;}
@@ -258,7 +258,7 @@ protected:
 
 	// in renderer_obj2.cpp
 	void addCurveSWC(vector<XYZ> &loc_list, int chno=0); //if no chno is specified, then assume to be the first channel
-	
+
 	//for local view
 	void produceZoomViewOf3DRoi(vector <XYZ> & loc_vec);
 

@@ -197,7 +197,7 @@ void V3dR_MainWindow::createControlWidgets()
 	colorButton = new QPushButton("Color >>", miscDisplayOptGroup);
 	brightButton = new QPushButton("Brighten", miscDisplayOptGroup);
 
-	checkBox_OrthoView = new QCheckBox("Parallel", miscDisplayOptGroup);
+	checkBox_OrthoView = new QCheckBox("Parallel (Scale bar)", miscDisplayOptGroup);
 
     movieSaveButton = new QPushButton("Save Movie", miscDisplayOptGroup);
     animateButton = new QPushButton("Animate >>", miscDisplayOptGroup);
@@ -919,7 +919,7 @@ void V3dR_MainWindow::connectSignal()
 	if (checkBox_OrthoView)
 	{
 		connect(checkBox_OrthoView, SIGNAL(toggled(bool)), glWidget, SLOT(enableOrthoView(bool)));
-		//connect(checkBox_OrthoView, SIGNAL(toggled(bool)), checkBox_OrthoView, SLOT(setChecked(bool)));
+		connect(glWidget, SIGNAL(changeOrthoView(bool)), checkBox_OrthoView, SLOT(setChecked(bool)));
 	}
 
 	if (colorButton)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -111,7 +111,7 @@ void v3d_aboutinfo()
 		"<tr><td>T </td><td>short-cut to trace a path between two landmarks (if landmarks defined). </td></tr>"
 		"</table><br>"
 
-		"<H3>For 3D viewer window short keys</H3>"
+		"<H3>For 3D view window short keys</H3>"
 		"<br><table border=\"1\">"
 		"<tr><td>Ctrl-W (Windows, Linux) or Cmd-W (Mac) </td><td>close current 3D viewer Window.</td></tr>"
 		"<tr><td>Ctrl-A (Windows, Linux) or Cmd-A (Mac) </td><td>toggle Animating the rotation of objects.</td></tr>"
@@ -133,6 +133,7 @@ void v3d_aboutinfo()
 		"<tr><td>Shift-Mouse-wheel, [ and ] </td>         <td>Rotation around z-axis of view space.</td></tr>"
 		"<tr><td>Alt-Mouse, Alt-arrows </td>              <td>Rotation around axes of objects itself.</td></tr>"
 		"<tr><td>\\ </td>                                 <td>Reset rotation.</td></tr>"
+		"<tr><td>Ctrl-\\ (Windows, Linux) or Cmd-\\ (Mac) </td><td>toggle Parallel projection (Scale bar).</td></tr>"
 		"<tr><td>Shift-Mouse, Shift-arrows </td>     <td>Shift the objects around.</td></tr>"
 		"<tr><td>Left, Right, Up, Down arrows </td>       <td>Shift the view window around.</td></tr>"
 		"<tr><td>Mouse-wheel, - and = </td>               <td>Zoom-out and zoom-in.</td></tr>"

@@ -203,19 +203,19 @@ void V3dR_GLWidget::choiceRenderer()
 	//if (strlen(glversion)>3 && glversion[0]>='2' && glversion[1]=='.' && glversion[2]>='0')
 	if (1 && supported_GLSL())
 	{
-		renderer = new Renderer_gl2();
+		renderer = new Renderer_gl2(this);
 	}
 	else  // 081215: this comment for special version without GL 2.0 support
 	if (1) //strlen(glversion)>3 && glversion[0]>='1' && glversion[1]=='.' && glversion[2]>='0')
 	{
-		renderer = new Renderer_tex2();
+		renderer = new Renderer_tex2(this);
 	}
 	else
 	{
-		renderer = new Renderer();
+		renderer = new Renderer(this);
 	}
 
-	if (renderer) renderer->widget = (void*)this; //081025
+	//if (renderer) renderer->widget = (void*)this; //081025 //100827 move to constructor parameter
 }
 
 // 091007 RZC: extract to function
@@ -444,12 +444,12 @@ bool V3dR_GLWidget::event(QEvent* e) //090427 RZC
 void V3dR_GLWidget::focusInEvent(QFocusEvent*)
 {
 	//qDebug("V3dR_GLWidget::focusInEvent");
-	_still_paint_off = false;
+	_stillpaint_disable = false;
 }
 void V3dR_GLWidget::focusOutEvent(QFocusEvent*)
 {
 	//qDebug("V3dR_GLWidget::focusOutEvent");
-	if (_mouse_in_view)  _still_paint_off = true;
+	if (_mouse_in_view)  _stillpaint_disable = true;
 }
 
 void V3dR_GLWidget::enterEvent(QEvent*)
@@ -508,39 +508,39 @@ void V3dR_GLWidget::mouseDoubleClickEvent ( QMouseEvent * )//event )
 #define MOUSE_SHIFT(dx, D)  (int(SHIFT_RANGE*2* float(dx)/D))
 #define MOUSE_ROT(dr, D)    (int(MOUSE_SENSITIVE*270* float(dr)/D) *ANGLE_TICK)
 
-//091015: use still_timer instead
 #define INTERACT_BUTTON     (event->buttons())// & Qt::LeftButton)
-#define POST_STILL_PAINT()   //{QTimer::singleShot(1000, this, SLOT(stillPaint())); _still = false;}
 
+//091015: use still_timer instead
+//#define DELAY_STILL_PAINT()  {QTimer::singleShot(1000, this, SLOT(stillPaint())); _still = false;}
 
 void V3dR_GLWidget::paintEvent(QPaintEvent *event)
 {
 	QGLWidget::paintEvent(event);
-	_still_pending=true;
+	_stillpaint_pending=true;
 }
 
-//void V3dR_GLWidget::stillPaint()
-//{
-//	if (_still)  return; // avoid re-enter
-//	if (_still_paint_off) return;
-//
-//	//QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 500);
-//	if (QCoreApplication::hasPendingEvents())
-//	{
-//		_still_pending = true;
-//		return; // do nothing if event loop is busy
-//	}
-//
-//	if (_still_pending)
-//	{
-//	    still_timer.stop();
-//		_still = true;
-//		DO_updateGL(); // update at once, stream texture for full resolution
-//		_still = false;
-//		_still_pending = false;
-//	    still_timer.start(still_timer_interval); //restart timer
-//	}
-//}
+void V3dR_GLWidget::stillPaint()
+{
+	if (_still)  return; // avoid re-enter
+	if (_stillpaint_disable) return;
+
+	if (QCoreApplication::hasPendingEvents())
+	{
+		_stillpaint_pending = true;
+		return;    // do nothing if event loop is busy
+	}
+
+	// here system must be idle
+	if (_stillpaint_pending)
+	{
+	    still_timer.stop();
+		_still = true;
+			DO_updateGL(); // update at once, stream texture for full resolution
+		_still = false;
+		_stillpaint_pending = false;
+	    still_timer.start(still_timer_interval); //restart timer
+	}
+}
 
 void V3dR_GLWidget::mousePressEvent(QMouseEvent *event)
 {
@@ -556,13 +556,14 @@ void V3dR_GLWidget::mousePressEvent(QMouseEvent *event)
 		{
 			updateTool();
 		}
+
 		POST_updateGL();
 	}
 }
 
 void V3dR_GLWidget::mouseReleaseEvent(QMouseEvent *event)
 {
-	//091025: use QMouseEvent::button()== not buttonS()&
+	//091025: use 'QMouseEvent::button()==' instead of 'buttons()&'
     //qDebug("V3dR_GLWidget::mouseReleaseEvent  button = %d", event->button());
 
 	if (event->button()==Qt::RightButton && renderer) //right-drag
@@ -571,27 +572,17 @@ void V3dR_GLWidget::mouseReleaseEvent(QMouseEvent *event)
 		updateTool();
     }
 
-    _still_paint_off = false;
-	{
-		if (!_still)
-		{
-			POST_STILL_PAINT();
-		}
-		else
-		{
-			POST_updateGL();
-		}
-	}
+    _stillpaint_disable = false;  _still=false;
+	POST_updateGL();
 }
 
 void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
-	//091025: use QMouseEvent::buttonS()& not button()==
-    //qDebug()<<"V3dR_GLWidget::mouseMoveEvent  buttonS = "<< event->buttons();
+	//091025: use 'QMouseEvent::buttons()&' instead of 'button()=='
+    //qDebug()<<"V3dR_GLWidget::mouseMoveEvent  buttons = "<< event->buttons();
 
+	_stillpaint_disable = true;  _still=false;
     setFocus(); // accept KeyPressEvent, by RZC 080831
-	_still_paint_off = true;
-	_still = false;
 
 	int dx = event->x() - lastPos.x();
 	int dy = event->y() - lastPos.y();
@@ -633,8 +624,6 @@ void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
 
 void V3dR_GLWidget::wheelEvent(QWheelEvent *event)
 {
-	POST_STILL_PAINT();
-
 	setFocus(); // accept KeyPressEvent, by RZC 081028
 
 	float d = (event->delta())/100;  // ~480
@@ -757,6 +746,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			}
 	  		break;
 		case Qt::Key_Backslash:
+			if ((KM & CTRL2_MODIFIER  ||  KM & Qt::ControlModifier))
+			{
+				emit changeOrthoView(!_orthoView);
+			}
+			else
 		    {
 		        resetRotation();
 			}
@@ -1812,10 +1806,12 @@ void V3dR_GLWidget::enableShowBoundingBox(bool s)
 void V3dR_GLWidget::enableOrthoView(bool s)
 {
 	//qDebug("V3dR_GLWidget::enableOrthoView = %i",s);
+	if (s != _orthoView)
 	if (renderer)
 	{
-		renderer->bOrthoView = _orthoView = (s>0);
+		renderer->bOrthoView = _orthoView = (s);
 		renderer->setupView(viewW, viewH);
+		emit changeOrthoView(s);
 		POST_updateGL();
 	}
 }

@@ -88,8 +88,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Renderer_tex2::Renderer_tex2()
-//	: Renderer()
+Renderer_tex2::Renderer_tex2(void* widget)
+	: Renderer(widget)
 {
 	qDebug("  Renderer_tex2::Renderer_tex2");
 	init_members();
@@ -358,7 +358,7 @@ void Renderer_tex2::paint()
 	glMatrixMode(GL_MODELVIEW);
 	// here, MUST BE normalized space of [-1,+1]^3;
 
-	glGetDoublev(GL_MODELVIEW_MATRIX, volumeViewMatrix); //no scale when here, used for drawUnitVolume()
+	glGetDoublev(GL_MODELVIEW_MATRIX, volumeViewMatrix); //no scale here, used for drawUnitVolume()
 
 	glPushMatrix();
 		setMarkerSpace(); // space to define marker & curve
@@ -423,7 +423,7 @@ void Renderer_tex2::paint()
 
 		if (sShowMarkers>0)
 		{
-			glPushMatrix(); //==================================================== Marker {
+			glPushMatrix(); //===================================================== Marker {
 
 			// marker defined in original image space ==>fit in [-1,+1]^3
 			setMarkerSpace();
@@ -431,7 +431,7 @@ void Renderer_tex2::paint()
 				drawMarker();  // just markers
 			glPopName();
 
-			glPopMatrix(); //============================================================ }
+			glPopMatrix(); //============================================================= }
 		}
 
 		disObjLighting();
@@ -441,24 +441,33 @@ void Renderer_tex2::paint()
 	{
 		if (bShowBoundingBox || bShowAxes)
 		{
-			glPushMatrix(); //================================= default bounding frame & axes {
+			glPushMatrix(); //========================== default bounding frame & axes {
 
 			// bounding box space ==>fit in [-1,+1]^3
 			setObjectSpace();
 			drawBoundingBoxAndAxes(boundingBox, 1, 3);
 
-			glPopMatrix(); //================================================================ }
+			glPopMatrix(); //========================================================= }
 		}
 
 		if (bShowBoundingBox2 && has_image() && !surfBoundingBox.isNegtive() )
 		{
-			glPushMatrix(); //=================================== surface object bounding box {
+			glPushMatrix(); //============================ surface object bounding box {
 
 			setSurfaceStretchSpace();
 			drawBoundingBoxAndAxes(surfBoundingBox, 1, 0);
 
-			glPopMatrix(); //================================================================ }
+			glPopMatrix(); //========================================================= }
 		}
+
+	    if (bOrthoView)
+	    {
+			glPushMatrix(); //============================================== scale bar {
+
+			drawScaleBar();
+
+			glPopMatrix(); //========================================================= }
+	    }
 	}
 
 	// must be at last

@@ -67,8 +67,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 
 
-Renderer_gl2::Renderer_gl2()
-//: Renderer_tex2()
+Renderer_gl2::Renderer_gl2(void* widget)
+	: Renderer_tex2(widget)
 {
 	qDebug("   Renderer_gl2::Renderer_gl2");
 	init_members();

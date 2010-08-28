@@ -45,8 +45,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Renderer
 // to create:
-//		renderer = new Renderer;
-//		renderer->setupData(p);
+//		renderer = new Renderer(widget);
+//		renderer->setupData(data);
 //		renderer->initialize();
 // optional: renderer->getLimitedDataSize(data_size);
 // to delete:
@@ -66,9 +66,10 @@ public:
 protected:
 	RenderMode renderMode;
 	SelectMode selectMode;
+	void* widget;
 
 public:
-	Renderer();
+	Renderer(void* widget); //100827 add widget
 	virtual ~Renderer();
 	virtual const int class_version() {return 0;}
 
@@ -79,8 +80,8 @@ public:
 
 public:
 // link to Data (volume & surface)
-	virtual void setupData(void* p) {};
-	virtual void cleanData()        {};
+	virtual void setupData(void* data) {};
+	virtual void cleanData()           {};
 	virtual void getLimitedDataSize(int size[5]) {for (int i=0;i<5;i++) size[i]=bufSize[i];};
 	virtual bool beLimitedDataSize() {return b_limitedsize;};
 	virtual void getBoundingBox(BoundingBox& bb) {bb = boundingBox;};
@@ -91,10 +92,10 @@ public:
 	virtual void reinitializeVol(int version=0) {};							//MUST makeCurrent for concurrent contexts
 	virtual void paint();								//link to QGLWidget::paintGL
 	virtual int hitPoint(int x, int y)					//called by mouse press event
-	{
-		if (selectMode==smObject)	return selectObj(x,y, true); //pop-up menu
-		else						return hitPen(x,y);			 //marker definition
-	}
+		{
+			if (selectMode==smObject)	return selectObj(x,y, true); //pop-up menu
+			else						return hitPen(x,y);			 //marker definition
+		}
 	virtual int selectObj(int x, int y, bool b_menu, char* pTip=0);			//MUST makeCurrent for concurrent contexts, 090715
 				// do glSelectBuffer                    //called by hitPoint, tool tip event
 	virtual int hitPen(int x, int y)					//called by hitPoint
@@ -116,6 +117,8 @@ protected:
 	virtual void setSurfClipSpace();
 	virtual void setBoundingBoxSpace(BoundingBox BB);
 	virtual void drawBoundingBoxAndAxes(BoundingBox BB, float BlineWidth=1, float AlineWidth=3);
+
+	virtual void drawScaleBar(float AlineWidth=3);
 
 	virtual void updateVolCutRange();
 	virtual void updateSurfClipRange();
@@ -178,14 +181,16 @@ public:
 
 
 public:
-	void* widget;
 	int sShowTrack, curChannel;
+
 	bool bShowBoundingBox, bShowBoundingBox2, bShowAxes, bOrthoView;
 	bool bShowCSline, bShowFSline, bFSlice, bXSlice, bYSlice, bZSlice;
 	float CSbeta, alpha_threshold;
 	RGBA32f color_background, color_background2, color_line, color_proxy;
+
 	int sShowMarkers, sShowSurfObjects, markerSize;
 	bool b_showMarkerLabel, b_showCellName, b_surfStretch;
+
 	int lineType, lineWidth, nodeSize, rootSize;
 	int polygonMode, tryObjShader;
 	int tryTexNPT, tryTex3D, tryTexCompress, tryVolShader, tryTexStream;
@@ -269,11 +274,11 @@ private:
 
 		//// perspective view frustum
 		screenW = screenH = 0;
-		viewAngle = 31.f;
-		zoomRatio = 1.f;
-	    viewNear = 1.f;
-	    viewDistance = 5.f;
-	    viewFar = 10.f;
+		viewAngle = 31;
+		zoomRatio = 1;
+	    viewNear = 1;
+	    viewFar = 10;
+        viewDistance = 5;
 
 	    b_error = b_selecting = false;
 
