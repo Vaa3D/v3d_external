@@ -781,8 +781,11 @@ template <class T> T maxInVector(T * p, V3DLONG len, V3DLONG &pos)
 	return a;
 }
 
-template <class T> void minMaxInVector(T * p, V3DLONG len, V3DLONG &pos_min, T &minv, V3DLONG &pos_max, T &maxv)
+template <class T> bool minMaxInVector(T * p, V3DLONG len, V3DLONG &pos_min, T &minv, V3DLONG &pos_max, T &maxv)
 {
+	if (!p || len <= 0)
+		return false;
+	
 	minv = maxv = p[0];
 	pos_min = pos_max = 0;
 	for (V3DLONG i=1;i<len;i++)
@@ -798,6 +801,8 @@ template <class T> void minMaxInVector(T * p, V3DLONG len, V3DLONG &pos_min, T &
 			pos_min = i;
 		}
 	}
+	
+	return true;
 }
 
 
@@ -1047,7 +1052,7 @@ template <class T> bool reslice_Z(T * & invol1d, V3DLONG * sz, double xy_rez, do
 
   V3DLONG xlen_out = sz[0];
   V3DLONG ylen_out = sz[1];
-  V3DLONG zlen_out = V3DLONG(floor((double(sz[2]-1) * z_rez)/xy_rez)) + 1; //if use ceil() then rish having no value at the border
+  V3DLONG zlen_out = V3DLONG((double(sz[2]) * z_rez)/xy_rez + 0.5); //if use ceil() then rish having no value at the border //remove sz[2]-1 on 100831, by PHC
   double z_rez_new = xy_rez;
   V3DLONG clen_out = sz[3];
 
@@ -1080,7 +1085,9 @@ template <class T> bool reslice_Z(T * & invol1d, V3DLONG * sz, double xy_rez, do
 	  {
 		  for (i=0; i<zlen_out; i++)
 		  {
-			  double curpz = i*z_rez_new/z_rez;
+			  double curpz = double(i)*z_rez_new/z_rez;
+			  if (curpz>=sz[2]-1) curpz=sz[2]-1; //100831, by PHC
+			  
 			  V3DLONG cpz0 = (V3DLONG)(floor(curpz)), cpz1 = (V3DLONG)(ceil(curpz));
 
 			  if (cpz0==cpz1)
@@ -1116,7 +1123,9 @@ template <class T> bool reslice_Z(T * & invol1d, V3DLONG * sz, double xy_rez, do
 	  {
 		  for (i=0; i<zlen_out; i++)
 		  {
-			  double curpz = i*z_rez_new/z_rez;
+			  double curpz = double(i)*z_rez_new/z_rez;
+			  if (curpz>=sz[2]-1) curpz=sz[2]-1; //100831, by PHC
+
 			  V3DLONG cpz0 = (V3DLONG)(floor(curpz)), cpz1 = (V3DLONG)(ceil(curpz));
 
 			  if (cpz0==cpz1)

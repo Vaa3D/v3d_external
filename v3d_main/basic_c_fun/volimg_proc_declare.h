@@ -77,7 +77,7 @@ template <class T> bool mean_and_std(T *data, V3DLONG n, T & ave, T & sdev, T ma
 template <class T> void moment(T *data, V3DLONG n, double & ave, double & adev, double & sdev, double & var, double & skew, double & curt);
 template <class T> T minInVector(T * p, V3DLONG len, V3DLONG &pos);
 template <class T> T maxInVector(T * p, V3DLONG len, V3DLONG &pos);
-template <class T> void minMaxInVector(T * p, V3DLONG len, V3DLONG &pos_min, T &minv, V3DLONG &pos_max, T &maxv);
+template <class T> bool minMaxInVector(T * p, V3DLONG len, V3DLONG &pos_min, T &minv, V3DLONG &pos_max, T &maxv);
 
 template <class T> bool fit_to_cube(T * & img, V3DLONG * sz, V3DLONG * sz_target);
 template <class T> bool downsample3dimg_1dpt(T * & img, V3DLONG * sz, double dfactor);

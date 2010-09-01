@@ -45,6 +45,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  * Last edit: 2010-Aug-1: add a function to determine if the data buffers of two images are exactly the same (but not their contents!)
  * Last edit: 2010-Aug-3: add the put_at() function for Image4DProxy class
  * Last edit: 2010-Aug-10: virtual destructor for other virtual functions in Image4DSimple
+ * Last edit: 2010-Aug-31: PHC. move private members to protected to fix the hackers' bug!.  
  *
  *******************************************************************************************
  */
@@ -210,19 +211,20 @@ public:
 protected:
   void setError( int v ) {b_error = v;}
 
-private:
 	unsigned char * data1d;
 	V3DLONG sz0;
-  V3DLONG sz1;
-  V3DLONG sz2;
-  V3DLONG sz3;
+	V3DLONG sz1;
+	V3DLONG sz2;
+	V3DLONG sz3;
 	V3DLONG sz_time;
 	TimePackType timepacktype;
 	ImagePixelType datatype;
 	char imgSrcFile[1024]; //use a V3DLONG path to store the full path
 	int b_error;
 	double rez_x, rez_y, rez_z; //the resolution of a image pixel along the 3 axes
-
+	
+	
+private:
 };
 
 bool convert_data_to_8bit(void * &img, V3DLONG * sz, int datatype);
