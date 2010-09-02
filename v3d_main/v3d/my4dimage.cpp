@@ -2352,12 +2352,6 @@ bool My4DImage::scaleintensity(int channo, double lower_th, double higher_th, do
 							else if (t<lower_th) t=lower_th;
 							data4d_uint8[c][k][j][i] = (unsigned char)((t - lower_th)*rate + target_min);
 						}
-				
-				//update the min and max
-				V3DLONG tmppos;
-				p_vmax[c] = (double)maxInVector((unsigned char *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
-				p_vmin[c] = (double)minInVector((unsigned char *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
-				printf("updated channel [%ld] max=[%ld] min=[%d]\n", c, V3DLONG(p_vmax[c]), V3DLONG(p_vmin[c]));
 			}
 			
 			break;
@@ -2376,12 +2370,6 @@ bool My4DImage::scaleintensity(int channo, double lower_th, double higher_th, do
 							else if (t<lower_th) t=lower_th;
 							data4d_uint16[c][k][j][i] = (USHORTINT16)((t - lower_th)*rate + target_min);
 						}
-				
-				//update the min and max
-				V3DLONG tmppos;
-				p_vmax[c] = (double)maxInVector((USHORTINT16 *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
-				p_vmin[c] = (double)minInVector((USHORTINT16 *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
-				printf("updated channel [%ld] max=[%ld] min=[%d]\n", c, V3DLONG(p_vmax[c]), V3DLONG(p_vmin[c]));
 			}
 			break;
 			
@@ -2399,18 +2387,20 @@ bool My4DImage::scaleintensity(int channo, double lower_th, double higher_th, do
 							else if (t<lower_th) t=lower_th;
 							data4d_float32[c][k][j][i] = (t - lower_th)*rate + target_min;
 						}
-				
-				//update the min and max
-				V3DLONG tmppos;
-				p_vmax[c] = (double)maxInVector((float *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
-				p_vmin[c] = (double)minInVector((float *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
-				printf("updated channel [%ld] max=[%5.3f] min=[%5.3f]\n", c, p_vmax[c], p_vmin[c]);
 			}
 			break;
 		default:
 			v3d_msg("invalid datatype in scaleintensity();\n");
 			return false;
 	}
+	
+	//update min and max
+	if (!updateminmaxvalues())
+	{
+		v3d_msg("Fail to run successfully updateminmaxvalues() in scaleintensity()..\n", false);
+		return false;
+	}
+	
 	
 	updateViews();
 	return true;
@@ -2448,12 +2438,6 @@ bool My4DImage::thresholdintensity(int channo, double th) //anything < th will b
 						{
 							if (data4d_uint8[c][k][j][i]<th) data4d_uint8[c][k][j][i]=0;
 						}
-				
-				//update the min and max
-				V3DLONG tmppos;
-				p_vmax[c] = (double)maxInVector((unsigned char *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
-				p_vmin[c] = (double)minInVector((unsigned char *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
-				printf("updated channel [%ld] max=[%ld] min=[%d]\n", c, V3DLONG(p_vmax[c]), V3DLONG(p_vmin[c]));
 			}
 			
 			break;
@@ -2469,12 +2453,6 @@ bool My4DImage::thresholdintensity(int channo, double th) //anything < th will b
 						{
 							if (data4d_uint16[c][k][j][i]<th) data4d_uint16[c][k][j][i]=0;
 						}
-				
-				//update the min and max
-				V3DLONG tmppos;
-				p_vmax[c] = (double)maxInVector((USHORTINT16 *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
-				p_vmin[c] = (double)minInVector((USHORTINT16 *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
-				printf("updated channel [%ld] max=[%ld] min=[%d]\n", c, V3DLONG(p_vmax[c]), V3DLONG(p_vmin[c]));
 			}
 			break;
 			
@@ -2489,18 +2467,20 @@ bool My4DImage::thresholdintensity(int channo, double th) //anything < th will b
 						{
 							if (data4d_float32[c][k][j][i]<th) data4d_float32[c][k][j][i]=p_vmin[c];
 						}
-				
-				//update the min and max
-				V3DLONG tmppos;
-				p_vmax[c] = (double)maxInVector((float *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
-				p_vmin[c] = (double)minInVector((float *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
-				printf("updated channel [%ld] max=[%5.3f] min=[%5.3f]\n", c, p_vmax[c], p_vmin[c]);
 			}
 			break;
 		default:
 			v3d_msg("invalid datatype in scaleintensity();\n");
 			return false;
 	}
+	
+	//update min and max
+	if (!updateminmaxvalues())
+	{
+		v3d_msg("Fail to run successfully updateminmaxvalues() in scaleintensity()..\n", false);
+		return false;
+	}
+	
 	
 	updateViews();
 	return true;
@@ -2530,12 +2510,6 @@ bool My4DImage::binarizeintensity(int channo, double th) //anything < th will be
 						{
 							data4d_uint8[c][k][j][i] = (data4d_uint8[c][k][j][i]<th)?0:1;
 						}
-				
-				//update the min and max
-				V3DLONG tmppos;
-				p_vmax[c] = (double)maxInVector((unsigned char *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
-				p_vmin[c] = (double)minInVector((unsigned char *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
-				printf("updated channel [%ld] max=[%ld] min=[%d]\n", c, V3DLONG(p_vmax[c]), V3DLONG(p_vmin[c]));
 			}
 			
 			break;
@@ -2551,12 +2525,6 @@ bool My4DImage::binarizeintensity(int channo, double th) //anything < th will be
 						{
 							data4d_uint16[c][k][j][i] = (data4d_uint16[c][k][j][i]<th)?0:1;
 						}
-				
-				//update the min and max
-				V3DLONG tmppos;
-				p_vmax[c] = (double)maxInVector((USHORTINT16 *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
-				p_vmin[c] = (double)minInVector((USHORTINT16 *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
-				printf("updated channel [%ld] max=[%ld] min=[%d]\n", c, V3DLONG(p_vmax[c]), V3DLONG(p_vmin[c]));
 			}
 			break;
 			
@@ -2571,18 +2539,20 @@ bool My4DImage::binarizeintensity(int channo, double th) //anything < th will be
 						{
 							data4d_float32[c][k][j][i] = (data4d_float32[c][k][j][i]<th)?0:1;
 						}
-				
-				//update the min and max
-				V3DLONG tmppos;
-				p_vmax[c] = (double)maxInVector((float *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
-				p_vmin[c] = (double)minInVector((float *)(this->getRawData())+c*channelPageSize, channelPageSize, tmppos);
-				printf("updated channel [%ld] max=[%5.3f] min=[%5.3f]\n", c, p_vmax[c], p_vmin[c]);
 			}
 			break;
 		default:
 			v3d_msg("invalid datatype in scaleintensity();\n");
 			return false;
 	}
+
+	//update min and max
+	if (!updateminmaxvalues())
+	{
+		v3d_msg("Fail to run successfully updateminmaxvalues() in scaleintensity()..\n", false);
+		return false;
+	}
+	
 	
 	updateViews();
 	return true;
@@ -5246,10 +5216,15 @@ bool My4DImage::proj_general_convert16bit_to_8bit(int shiftnbits)
 	//now cpy data
 	unsigned short int * cur_data1d = (unsigned short int *)this->getRawData();
 	
+	double dn = pow(2.0, double(shiftnbits));
 	V3DLONG i;
 	for (i=0;i<tunits;i++)
-		outvol1d[i] = (unsigned char)(cur_data1d[i]>>shiftnbits);
-	
+	{
+		double tmp = (double)(cur_data1d[i]) / dn;
+		if (tmp>255) outvol1d[i] = 255;
+		else
+			outvol1d[i] = (unsigned char)(tmp);
+	}
 	setNewImageData(outvol1d, tsz0, tsz1, tsz2, tsz3, V3D_UINT8);
 	
 	getXWidget()->reset(); //to force reset the color etc
@@ -5264,33 +5239,38 @@ bool My4DImage::proj_general_convert32bit_to_8bit(int shiftnbits)
 		return false;
 	}
 	
-	return proj_general_scaleandconvert28bit(0,255);
-	//
-	//	V3DLONG tsz0 = getXDim(), tsz1 = getYDim(), tsz2 = getZDim(), tsz3 = getCDim();
-	//	V3DLONG tunits =tsz0*tsz1*tsz2*tsz3;
-	//	V3DLONG tbytes = tunits;
-	//	unsigned char * outvol1d = 0;
-	//	try
-	//	{
-	//		outvol1d = new unsigned char [tbytes];
-	//	}
-	//	catch (...)
-	//	{
-	//		v3d_msg("Fail to allocate memory in proj_general_convert32bit_to_8bit().\n");
-	//		return false;
-	//	}
-	//
-	//	//now cpy data
-	//	float * cur_data1d = (float *)data1d;
-	//
-	//	V3DLONG i;
-	//	for (i=0;i<tunits;i++)
-	//		outvol1d[i] = (unsigned char)(cur_data1d[i]>>shiftnbits);
-	//
-	//	setNewImageData(outvol1d, tsz0, tsz1, tsz2, tsz3, V3D_UINT8);
-	//	getXWidget()->reset(); //to force reset the color etc
-	//
-	//	return true;
+//	return proj_general_scaleandconvert28bit(0,255);
+
+	V3DLONG tsz0 = getXDim(), tsz1 = getYDim(), tsz2 = getZDim(), tsz3 = getCDim();
+	V3DLONG tunits =tsz0*tsz1*tsz2*tsz3;
+	V3DLONG tbytes = tunits;
+	unsigned char * outvol1d = 0;
+	try
+	{
+		outvol1d = new unsigned char [tbytes];
+	}
+	catch (...)
+	{
+		v3d_msg("Fail to allocate memory in proj_general_convert32bit_to_8bit().\n");
+		return false;
+	}
+	
+	//now cpy data
+	float * cur_data1d = (float *)this->getRawData();
+	
+	double dn = pow(2.0, double(shiftnbits));
+	V3DLONG i;
+	for (i=0;i<tunits;i++)
+	{
+		double tmp = (double)(cur_data1d[i]) / dn;
+		if (tmp>255) outvol1d[i] = 255;
+		else
+			outvol1d[i] = (unsigned char)(tmp);
+	}
+	setNewImageData(outvol1d, tsz0, tsz1, tsz2, tsz3, V3D_UINT8);
+	
+	getXWidget()->reset(); //to force reset the color etc
+	return true;
 }
 
 
