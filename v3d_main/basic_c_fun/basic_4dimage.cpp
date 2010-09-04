@@ -41,8 +41,12 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 typedef unsigned short int USHORTINT16;
 
 
-
 void Image4DSimple::loadImage(char filename[])
+{
+	return this->loadImage(filename, false); //default don't use MYLib
+}
+
+void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 {
 	cleanExistData(); // note that this variable must be initialized as NULL. 
 
@@ -59,30 +63,7 @@ void Image4DSimple::loadImage(char filename[])
 	if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0 ||
 		strcasecmp(curFileSurfix, "lsm")==0 ) //read tiff/lsm stacks
 	{
-#if defined _WIN32		
-
-		v3d_msg("Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
-		if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0)
-		{
-			if (loadTif2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
-			{
-				v3d_msg("Error happens in TIF file reading (using libtiff). \n", false);
-				b_error=1;
-			}
-		}	
-		else //if ( strcasecmp(curFileSurfix, "lsm")==0 ) //read lsm stacks
-		{
-			if (loadLsm2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
-			{
-				v3d_msg("Error happens in LSM file reading (using libtiff, slightly revised by PHC). \n", false);
-				b_error=1;
-			}
-		}
-		
-//		if(b_error) //then invoke MYLIB
-
-#else		
-
+		if (b_useMyLib)
 		{
 			v3d_msg("Now try to use MYLIB to read the TIFF/LSM again...\n",0);
 			if (loadTif2StackMylib(imgSrcFile, data1d, tmp_sz, tmp_datatype, pixelnbits))
@@ -94,8 +75,26 @@ void Image4DSimple::loadImage(char filename[])
 			else
 				b_error=0; //when succeed then reset b_error
 		}
-
-#endif
+		else
+		{
+			v3d_msg("Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
+			if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0)
+			{
+				if (loadTif2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
+				{
+					v3d_msg("Error happens in TIF file reading (using libtiff). \n", false);
+					b_error=1;
+				}
+			}	
+			else //if ( strcasecmp(curFileSurfix, "lsm")==0 ) //read lsm stacks
+			{
+				if (loadLsm2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
+				{
+					v3d_msg("Error happens in LSM file reading (using libtiff, slightly revised by PHC). \n", false);
+					b_error=1;
+				}
+			}
+		}
 	}
 	else if ( strcasecmp(curFileSurfix, "mrc")==0 ) //read mrc stacks
 	{

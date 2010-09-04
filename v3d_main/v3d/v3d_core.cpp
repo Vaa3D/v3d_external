@@ -4008,6 +4008,10 @@ bool XFormWidget::loadData()
   	imgData = new My4DImage;
 	if (!imgData)
 		return false;
+	else { 
+		imgData->setMainWidget((XFormWidget *)this); //by PHC, added 100904 to ensure imgData can access global setting
+	}
+
 	
     printf("%s\n", openFileNameLabel.toAscii().data());
 	imgData->loadImage(openFileNameLabel.toAscii().data());  // imgData->loadImage("/Users/hanchuanpeng/work/v3d/test1.raw");

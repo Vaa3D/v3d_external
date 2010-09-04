@@ -401,9 +401,9 @@ My4DImage::My4DImage()
 	p_vmax = NULL;
 	p_vmin = NULL;
 	
-	colorMap = new ColorMap(colorPseudoMaskColor, 256); //initialize as 0. 060424
+	colorMap = new ColorMap(colorPseudoMaskColor, 256); 
 	
-	b_proj_worm_mst_diameter_set=false; //080318. default set to false
+	b_proj_worm_mst_diameter_set=false; 
 	
 	//global_setting.GPara_landmarkMatchingMethod = MATCH_MI; //080820
 	
@@ -500,7 +500,20 @@ void My4DImage::loadImage(char filename[])
 {
 	cleanExistData();
 	
-	Image4DSimple::loadImage(filename);
+	bool b_useMylib=false;
+#if defined _WIN32		
+	b_useMylib = false;
+#else
+	if (getXWidget())
+		b_useMylib = getXWidget()->getMainControlWindow()->global_setting.b_UseMylibTiff;
+	else
+	{
+		v3d_msg("The global setting cannot be accessed at this moment. Then use libTIFF for TIF/LSM reading in My4DImage::loadImage().");
+		b_useMylib = false;
+	}
+#endif
+	
+	Image4DSimple::loadImage(filename, b_useMylib);
 	
 	setupData4D();
 }
@@ -1919,17 +1932,6 @@ bool My4DImage::setNewImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG ns
 			}
 			data4d_virtual = (void ****)data4d_uint8;
 			
-//			for(i=0;i<this->getCDim();i++)
-//			{
-//				printf("my4dimage setimage %d [%d %d %d %d] %ld %p %p\n", i, this->getXDim(), this->getYDim(), this->getZDim(), this->getCDim(), channelPageSize, this->getRawData(), data4d_virtual);
-//
-//				unsigned char *datahead = (unsigned char  *)getRawDataAtChannel(i);
-//				p_vmax[i] = (double)maxInVector(datahead, channelPageSize, tmppos);
-//				p_vmin[i] = (double)minInVector(datahead, channelPageSize, tmppos);
-//				
-////				p_vmax[i] = (double)maxInVector((unsigned char *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(unsigned char), channelPageSize, tmppos);
-////				p_vmin[i] = (double)minInVector((unsigned char *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(unsigned char), channelPageSize, tmppos);
-//			}
 			break;
 			
 		case V3D_UINT16:
@@ -1941,17 +1943,6 @@ bool My4DImage::setNewImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG ns
 			}
 			data4d_virtual = (void ****)data4d_uint16;
 			
-//			for(i=0;i<this->getCDim();i++)
-//			{
-//				USHORTINT16 *datahead = (USHORTINT16 *)getRawDataAtChannel(i);
-//				p_vmax[i] = (double)maxInVector(datahead, channelPageSize, tmppos);
-//				p_vmin[i] = (double)minInVector(datahead, channelPageSize, tmppos);
-//				
-////				p_vmax[i] = (double)maxInVector((USHORTINT16 *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(USHORTINT16), channelPageSize, tmppos);
-////				p_vmin[i] = (double)minInVector((USHORTINT16 *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(USHORTINT16), channelPageSize, tmppos);
-//			}
-			
-			//printf("Warning: this data type UINT16 has not been supported in display yet.\n");
 			createColorMap(int(p_vmax[0])+1000); //add 1000 for a safe pool for cell editing.
 			printf("set the color map max=%d\n", int(p_vmax[0]));
 			
@@ -1965,17 +1956,6 @@ bool My4DImage::setNewImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG ns
 				return false;
 			}
 			data4d_virtual = (void ****)data4d_float32;
-			
-//			for(i=0;i<this->getCDim();i++)
-//			{
-//				float *datahead = (float *)getRawDataAtChannel(i);
-//				p_vmax[i] = (double)maxInVector(datahead, channelPageSize, tmppos);
-//				p_vmin[i] = (double)minInVector(datahead, channelPageSize, tmppos);
-////				p_vmax[i] = (double)maxInVector((float *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(float), channelPageSize, tmppos);
-////				p_vmin[i] = (double)minInVector((float *)(this->getRawData())+(V3DLONG)i*channelPageSize*sizeof(float), channelPageSize, tmppos);
-//			}
-			
-			//v3d_msg("Warning: this data type FLOAT32 may not be supported in display yet -- setNewImageData().\n");
 			
 			break;
 			
