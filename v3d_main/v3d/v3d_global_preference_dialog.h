@@ -37,6 +37,7 @@ v3d_global_preference_dialog.h
  2010-01-11
  2010-06-01
  2010-06-02
+ 2010-09-04: by PHC. add b_UseMylibTiff
 **
 ****************************************************************************/
 
@@ -87,6 +88,8 @@ public:
 		checkBox_autoVideoCard3DTex->setChecked(p->b_autoVideoCard3DTex);
 		checkBox_autoVideoCardNPTTex->setChecked(p->b_autoVideoCardNPTTex);
 		spinBox_autoVideoCardStreamMode->setRange(-1,2); spinBox_autoVideoCardStreamMode->setValue(p->autoVideoCardStreamMode);
+		
+		checkBox_libTiff_Mylib->setChecked(!(p->b_UseMylibTiff));
 
 
 		//image analysis
@@ -137,6 +140,7 @@ public:
 		p->b_autoVideoCard3DTex = checkBox_autoVideoCard3DTex->isChecked();
 		p->b_autoVideoCardNPTTex = checkBox_autoVideoCardNPTTex->isChecked();
 		p->autoVideoCardStreamMode = spinBox_autoVideoCardStreamMode->value();
+		p->b_UseMylibTiff = !(checkBox_libTiff_Mylib->isChecked());
 
 		//image analysis
 		p->GPara_landmarkMatchingMethod = comboBox_reg_markermatch_method->currentIndex(); //100601, by PHC: (PointMatchMethodType)comboBox_reg_markermatch_method->currentIndex();
@@ -178,6 +182,7 @@ public:
 		global_setting.b_autoVideoCard3DTex = settings.value("b_autoVideoCard3DTex", def.b_autoVideoCard3DTex).toBool();
 		global_setting.b_autoVideoCardNPTTex = settings.value("b_autoVideoCardNPTTex", def.b_autoVideoCardNPTTex).toBool();
 		global_setting.autoVideoCardStreamMode = settings.value("autoVideoCardStreamMode",def.autoVideoCardStreamMode).toInt();
+		global_setting.b_UseMylibTiff = settings.value("b_UseMylibTiff", def.b_autoVideoCardCompress).toBool();
 
 		//image analysis tab
 		global_setting.GPara_landmarkMatchingMethod = settings.value("GPara_landmarkMatchingMethod", def.GPara_landmarkMatchingMethod).toInt(); //by PHC, 100601: (PointMatchMethodType)
@@ -217,6 +222,7 @@ public:
 		settings.setValue("b_autoVideoCard3DTex", global_setting.b_autoVideoCard3DTex);
 		settings.setValue("b_autoVideoCardNPTTex", global_setting.b_autoVideoCardNPTTex);
 		settings.setValue("autoVideoCardStreamMode", global_setting.autoVideoCardStreamMode);
+		settings.setValue("b_UseMylibTiff", global_setting.b_UseMylibTiff);
 
 		//image analysis tab
 		settings.setValue("GPara_landmarkMatchingMethod", global_setting.GPara_landmarkMatchingMethod);

@@ -32,16 +32,16 @@
        <attribute name="title">
         <string>Main TriView Window</string>
        </attribute>
-       <widget class="QWidget" name="layoutWidget">
+       <widget class="QWidget" name="">
         <property name="geometry">
          <rect>
-          <x>50</x>
+          <x>12</x>
           <y>30</y>
-          <width>406</width>
-          <height>188</height>
+          <width>501</width>
+          <height>211</height>
          </rect>
         </property>
-        <layout class="QVBoxLayout">
+        <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
           <widget class="QCheckBox" name="checkBox_yaxis_up">
            <property name="text">
@@ -126,6 +126,13 @@
             </widget>
            </item>
           </layout>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_libTiff_Mylib">
+           <property name="text">
+            <string>Use Libtiff (ON) (for &lt;2G file) or MYLib (OFF) (for &gt;2G file) for TIFF/LSM file</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -303,11 +310,14 @@
          </rect>
         </property>
         <property name="title">
-         <string>3D image registration</string>
+         <string>3D image registration (disabled as of now; will be avaiable as a plugin)</string>
         </property>
         <layout class="QGridLayout">
          <item row="0" column="0">
           <widget class="QLabel" name="label_5">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>Landmark matching method</string>
            </property>
@@ -316,7 +326,7 @@
          <item row="0" column="1">
           <widget class="QComboBox" name="comboBox_reg_markermatch_method">
            <property name="enabled">
-            <bool>true</bool>
+            <bool>false</bool>
            </property>
            <item>
             <property name="text">
@@ -352,6 +362,9 @@
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="label_6">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string>Displacement filed 
 generating method</string>
@@ -360,6 +373,9 @@ generating method</string>
          </item>
          <item row="1" column="1">
           <widget class="QComboBox" name="comboBox_warpingfield_method">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <item>
             <property name="text">
              <string>TPS</string>

@@ -32,6 +32,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //by Hanchuan Peng
 // 2010-06-01
 // separated from v3d_global_preference_dialog.h, by PHC, 100601.
+// 2010-09-04: add b_UseMylibTiff
 
 #ifndef __V3D_GLOBAL_PREFERENCE_H__
 #define __V3D_GLOBAL_PREFERENCE_H__
@@ -45,6 +46,7 @@ struct V3D_GlobalSetting
 	bool b_autoRescale16bitDisplay;
 	int default_lookglass_size;
 	int default_marker_radius;
+	bool b_UseMylibTiff;
 
 	//3D viewer tab
 	bool b_autoOpenImg3DViewer;
@@ -93,6 +95,7 @@ struct V3D_GlobalSetting
 		b_autoVideoCard3DTex = false;
 		b_autoVideoCardNPTTex = false;
 		autoVideoCardStreamMode = 0;//1 for adaptive stream mode, 0 for 512x512x256 downsample. for others see dialog info
+		b_UseMylibTiff = false;
 
 		//image analysis tab
 		GPara_landmarkMatchingMethod = 0; //MATCH_MI; //(PointMatchMethodType)0;
