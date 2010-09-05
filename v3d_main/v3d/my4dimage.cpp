@@ -2173,7 +2173,7 @@ bool My4DImage::flip(AxisCode my_axiscode)
 							{
 								unsigned short int tmpv = data4d_uint16[this->getCDim()-c-1][k][j][i];
 								data4d_uint16[this->getCDim()-c-1][k][j][i] = data4d_uint16[c][k][j][i];
-								data4d_uint8[c][k][j][i] = tmpv;
+								data4d_uint16[c][k][j][i] = tmpv;
 							}
 					
 					double tmpc;
@@ -2244,7 +2244,7 @@ bool My4DImage::flip(AxisCode my_axiscode)
 							{
 								float tmpv = data4d_float32[this->getCDim()-c-1][k][j][i];
 								data4d_float32[this->getCDim()-c-1][k][j][i] = data4d_float32[c][k][j][i];
-								data4d_uint8[c][k][j][i] = tmpv;
+								data4d_float32[c][k][j][i] = tmpv;
 							}
 					
 					double tmpc;
