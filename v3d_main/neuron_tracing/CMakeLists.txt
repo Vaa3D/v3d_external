@@ -5,5 +5,5 @@ set(NeuronTracing_SRCS
 
 add_library( neuron_tracing ${NeuronTracing_SRCS} )
 
-target_link_libraries( neuron_tracing )
+target_link_libraries( neuron_tracing dijkstra )
 

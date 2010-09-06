@@ -81,6 +81,7 @@ target_link_libraries( v3d
   3drenderer
   neuron_tracing
   worm_straighten_c
-  ${TIFF_LIBRARIES}
+  mylib_tiff
+  ${QT4_DEMOS_LIBRARY}
   )
 

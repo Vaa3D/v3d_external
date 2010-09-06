@@ -37,6 +37,11 @@ find_path(QT4_DEMOS_INCLUDE_DIR
   /usr/lib/qt4/demos/shared/
   )
 
+find_library(QT4_DEMOS_LIBRARY
+  demo_shared
+  HINTS /usr/lib/qt4/demos/shared/
+  )
+
 if(NOT QT4_DEMOS_INCLUDE_DIR)
   message(FATAL "You need to install the Qt4 demo files")
 else()
@@ -44,6 +49,8 @@ else()
 endif()
 
 add_subdirectory( common_lib )
+
+add_subdirectory( graph )
 
 add_subdirectory( basic_c_fun )
 

@@ -2,6 +2,7 @@ SET(V3DInterface_SRCS
   basic_4dimage.cpp
   basic_memory.cpp
   basic_surf_objs.cpp
+  imageio_mylib.cpp
   mg_image_lib.cpp
   mg_utilities.cpp
   stackutil.cpp
