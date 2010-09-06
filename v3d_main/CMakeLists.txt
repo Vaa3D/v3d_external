@@ -64,13 +64,4 @@ add_subdirectory( 3drenderer )
 
 add_subdirectory( v3d )
 
-
-# add_subdirectory( cellseg )
-# add_subdirectory( gmm )
-# add_subdirectory( graph )
-# add_subdirectory( issues )
-# add_subdirectory( neuron_editing )
-# add_subdirectory( neuron_matching )
-# add_subdirectory( neuron_tracing )
-# add_subdirectory( worm_straighten_c )
-
+add_subdirectory( testing )
