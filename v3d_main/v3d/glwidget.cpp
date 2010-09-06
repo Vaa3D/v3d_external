@@ -96,6 +96,7 @@ GLWidget::~GLWidget()
 
 }
 
+#if 0
 void GLWidget::readAnoFile(QString file_anoText)
 {
 	printf("anofile=[%s]\n", qPrintable(file_anoText));
@@ -122,6 +123,7 @@ void GLWidget::readAnoFile(QString file_anoText)
 	else
 		return true;
 }
+#endif
 
 void GLWidget::setXRotation(int angle)
 {
