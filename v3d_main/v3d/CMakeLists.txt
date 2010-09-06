@@ -6,16 +6,15 @@ set(V3D_SRCS
   import_filelistname.cpp
   import_tiffseries.cpp
   # dialog_pointcloudatlas_linkerloader.cpp
-  # glwidget.cpp
+  glwidget.cpp
   histogramsimple.cpp
   mdichild.cpp
   my4dimage.cpp
   rotate_image.cpp
-  surfaceobj_geometry_dialog.cpp
   v3dimgproc_entry.cpp
   v3dimg_proc_neuron.cpp
   # vano_linker_loader_dialog.cpp
-  # atlas_viewer.cpp
+  atlas_viewer.cpp
   # atlas_window.cpp   looks for image_window.h : non-existing file : FIXME
   colormap.cpp
   mainwindow.cpp
@@ -44,16 +43,24 @@ QT4_WRAP_UI(QT_UI_SRCS
   )
 
 QT4_WRAP_CPP(QT_MOC_SRCS
+  atlas_viewer.h
   dialog_rotate.h
   dialog_watershed_para.h
+  dialog_imagecrop_bbox.h
+  dialog_maskroi.h
+  dialog_imageresample.h
+  dialog_curve_trace_para.h
+  dialog_keypoint_features.h
+  glwidget.h
   idrawmain.h
   import_filelist_dialog.h
   import_images_tool_dialog.h
+  landmark_property_dialog.h
   mdichild.h
   mainwindow.h
-  surfaceobj_geometry_dialog.h
   xformwidget.h
   v3d_core.h
+  v3d_global_preference_dialog.h
   )
 
 include_directories(
@@ -67,5 +74,14 @@ target_link_libraries( v3dbase v3dbase1 jba newmat11 ${QT_LIBRARIES} )
 
 add_executable( v3d ${V3D_SRCS} ${V3D_RCC_SRCS} )
 
-target_link_libraries( v3d v3dbase V3DInterface v3d_plugin_loader 3drenderer neuron_editing ${TIFF_LIBRARIES} )
+target_link_libraries( v3d
+  v3dbase
+  V3DInterface
+  v3d_plugin_loader
+  3drenderer
+  neuron_editing
+  neuron_tracing
+  worm_straighten_c
+  ${TIFF_LIBRARIES}
+  )
 

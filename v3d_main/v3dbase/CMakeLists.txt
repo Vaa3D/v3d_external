@@ -1,5 +1,6 @@
 set(V3DBASE_SRCS
   ../v3d/v3d_version_info.cpp
+  ../v3d/surfaceobj_geometry_dialog.cpp
   )
 
 QT4_WRAP_UI(QT_UI_SRCS
@@ -11,8 +12,12 @@ QT4_WRAP_UI(QT_UI_SRCS
   )
 
 QT4_WRAP_CPP(QT_MOC_SRCS
+  ../v3d/surfaceobj_geometry_dialog.h
+  ../v3d/surfaceobj_annotation_dialog.h
+  ../v3d/template_matching_cellseg_dialog.h
   )
 
 include_directories(${V3D_BINARY_DIR}/v3d)
+include_directories(${V3D_BINARY_DIR}/v3dbase)
 
 add_library(v3dbase1 ${QT_UI_SRCS} ${QT_MOC_SRCS} ${V3DBASE_SRCS})

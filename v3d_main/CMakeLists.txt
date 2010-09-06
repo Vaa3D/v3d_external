@@ -55,6 +55,10 @@ add_subdirectory( 3drenderer )
 
 add_subdirectory( neuron_editing )
 
+add_subdirectory( neuron_tracing )
+
+add_subdirectory( worm_straighten_c )
+
 add_subdirectory( jba )
 
 add_subdirectory( v3d )
