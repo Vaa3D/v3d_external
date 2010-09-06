@@ -47,15 +47,15 @@ add_subdirectory( common_lib )
 
 add_subdirectory( basic_c_fun )
 
+add_subdirectory( neuron_editing )
+
+add_subdirectory( neuron_tracing )
+
 add_subdirectory( v3dbase )
 
 add_subdirectory( plugin_loader )
 
 add_subdirectory( 3drenderer )
-
-add_subdirectory( neuron_editing )
-
-add_subdirectory( neuron_tracing )
 
 add_subdirectory( worm_straighten_c )
 

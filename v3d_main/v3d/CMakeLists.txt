@@ -79,7 +79,6 @@ target_link_libraries( v3d
   V3DInterface
   v3d_plugin_loader
   3drenderer
-  neuron_editing
   neuron_tracing
   worm_straighten_c
   ${TIFF_LIBRARIES}
