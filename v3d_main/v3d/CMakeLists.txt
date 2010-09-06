@@ -1,15 +1,15 @@
 set(V3D_SRCS
   main.cpp
-  # dialog_pointcloudatlas_linkerloader.cpp
   dialog_rotate.cpp
   dialog_watershed_para.cpp
-  # glwidget.cpp
-  histogramsimple.cpp
   idrawmain.cpp
   import_filelistname.cpp
   import_tiffseries.cpp
-  my4dimage.cpp
+  # dialog_pointcloudatlas_linkerloader.cpp
+  # glwidget.cpp
+  histogramsimple.cpp
   mdichild.cpp
+  my4dimage.cpp
   rotate_image.cpp
   surfaceobj_geometry_dialog.cpp
   v3dimgproc_entry.cpp
@@ -44,7 +44,14 @@ QT4_WRAP_UI(QT_UI_SRCS
   )
 
 QT4_WRAP_CPP(QT_MOC_SRCS
+  dialog_rotate.h
+  dialog_watershed_para.h
+  idrawmain.h
+  import_filelist_dialog.h
+  import_images_tool_dialog.h
+  mdichild.h
   mainwindow.h
+  surfaceobj_geometry_dialog.h
   xformwidget.h
   v3d_core.h
   )
@@ -64,5 +71,5 @@ endif( V3D_USE_OWN_NEWMAT )
 
 add_executable( v3d ${V3D_SRCS} ${V3D_RCC_SRCS} )
 
-target_link_libraries( v3d V3DInterface v3dbase v3d_plugin_loader 3drenderer ${TIFF_LIBRARIES} )
+target_link_libraries( v3d v3dbase V3DInterface v3d_plugin_loader 3drenderer neuron_editing ${TIFF_LIBRARIES} )
 

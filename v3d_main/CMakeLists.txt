@@ -62,6 +62,8 @@ add_subdirectory( plugin_loader )
 
 add_subdirectory( 3drenderer )
 
+add_subdirectory( neuron_editing )
+
 add_subdirectory( v3d )
 
 add_subdirectory( testing )
