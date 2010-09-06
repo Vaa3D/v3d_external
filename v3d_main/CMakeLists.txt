@@ -40,6 +40,17 @@ else( NOT V3D_USE_OWN_NEWMAT )
    add_subdirectory(jba)
 endif()
 
+find_path(QT4_DEMOS_INCLUDE_DIR
+  arthurwidgets.h
+  PATHS
+  /usr/lib/qt4/demos/shared/
+  )
+
+if(NOT QT4_DEMOS_INCLUDE_DIR)
+  message(FATAL "You need to install the Qt4 demo files")
+else()
+  include_directories(${QT4_DEMOS_INCLUDE_DIR})
+endif()
 
 add_subdirectory( common_lib )
 
