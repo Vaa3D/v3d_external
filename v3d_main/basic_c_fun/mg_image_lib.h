@@ -44,7 +44,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #define MG_IMAGE_LIB
 
-#include "../common_lib/include/tiffio.h"
+#include "tiffio.h"
 
    //  There are three kinds of images or stacks:
 

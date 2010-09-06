@@ -60,7 +60,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #endif
 
 extern "C" {
-#include "../common_lib/include/tiffio.h"
+#include "tiffio.h"
 };
 
 #include "v3d_basicdatatype.h"
