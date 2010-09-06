@@ -45,6 +45,8 @@ add_subdirectory( common_lib )
 
 add_subdirectory( basic_c_fun )
 
+add_subdirectory( v3dbase )
+
 add_subdirectory( plugin_loader )
 
 add_subdirectory( 3drenderer )

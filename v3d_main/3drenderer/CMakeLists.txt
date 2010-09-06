@@ -32,6 +32,7 @@ QT4_WRAP_CPP(QT_MOC_SRCS
   v3dr_surfaceDialog.h
   )
 
+include_directories( ${V3D_BINARY_DIR}/v3dbase )
 
 add_library( 3drenderer ${QT_MOC_SRCS} ${3DRenderer_SRCS} )
 
