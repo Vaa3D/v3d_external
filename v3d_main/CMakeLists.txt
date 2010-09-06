@@ -31,15 +31,6 @@ if( NOT V3D_USE_OWN_TIFF )
   find_package(TIFF REQUIRED)
 endif()
 
-
-option( V3D_USE_OWN_NEWMAT "Use the NEWMAT library source code distributed with v3d" OFF)
-
-if( NOT V3D_USE_OWN_NEWMAT )
-   #  find_package(NEWMAT REQUIRED)   # Luis: to install newmat as ubuntu package
-else( NOT V3D_USE_OWN_NEWMAT )
-   add_subdirectory(jba)
-endif()
-
 find_path(QT4_DEMOS_INCLUDE_DIR
   arthurwidgets.h
   PATHS
@@ -63,6 +54,8 @@ add_subdirectory( plugin_loader )
 add_subdirectory( 3drenderer )
 
 add_subdirectory( neuron_editing )
+
+add_subdirectory( jba )
 
 add_subdirectory( v3d )
 

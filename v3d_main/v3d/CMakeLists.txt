@@ -63,11 +63,7 @@ include_directories(
 
 add_library(v3dbase ${QT_UI_SRCS} ${QT_MOC_SRCS})
 
-if( V3D_USE_OWN_NEWMAT )
-  target_link_libraries( v3dbase v3dbase1 newmat11 ${QT_LIBRARIES} )
-else( V3D_USE_OWN_NEWMAT )
-  target_link_libraries( v3dbase v3dbase1 newmat ${QT_LIBRARIES} )
-endif( V3D_USE_OWN_NEWMAT )
+target_link_libraries( v3dbase v3dbase1 jba newmat11 ${QT_LIBRARIES} )
 
 add_executable( v3d ${V3D_SRCS} ${V3D_RCC_SRCS} )
 
