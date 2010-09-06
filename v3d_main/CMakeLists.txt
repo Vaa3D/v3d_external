@@ -68,6 +68,8 @@ add_subdirectory( worm_straighten_c )
 
 add_subdirectory( jba )
 
+add_subdirectory( cellseg )
+
 add_subdirectory( v3d )
 
 add_subdirectory( testing )

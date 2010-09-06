@@ -82,6 +82,7 @@ target_link_libraries( v3d
   neuron_tracing
   worm_straighten_c
   mylib_tiff
+  cellseg
   ${QT4_DEMOS_LIBRARY}
   )
 
