@@ -16,11 +16,10 @@
 
 #include "regiongrow.h"
 
-#include "../basic_c_fun/basic_surf_objs.h"
-#include "../basic_c_fun/stackutil.h"
-#include "../basic_c_fun/volimg_proc.h"
-#include "../basic_c_fun/img_definition.h"
-#include "../basic_c_fun/basic_landmark.h"
+#include <basic_surf_objs.h>
+#include <volimg_proc.h>
+#include <img_definition.h>
+#include <basic_landmark.h>
 
 #define INF 1E9
 #define PI 3.14159265
