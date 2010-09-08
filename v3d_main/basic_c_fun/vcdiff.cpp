@@ -48,6 +48,10 @@ int fabs(int x)
 	return (int)(fabs((double)x));
 }
 
+V3DLONG fabs(V3DLONG x)
+{
+	return (V3DLONG)(fabs((long double)x));
+}
 
 double log(int x)
 {

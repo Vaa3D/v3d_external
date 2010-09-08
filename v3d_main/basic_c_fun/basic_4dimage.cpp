@@ -63,7 +63,8 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 	if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0 ||
 		strcasecmp(curFileSurfix, "lsm")==0 ) //read tiff/lsm stacks
 	{
-		if (b_useMyLib)
+		//if (b_useMyLib) // 100908 changed for compilation under windows by yuy
+		#ifndef _WIN32
 		{
 			v3d_msg("Now try to use MYLIB to read the TIFF/LSM again...\n",0);
 			if (loadTif2StackMylib(imgSrcFile, data1d, tmp_sz, tmp_datatype, pixelnbits))
@@ -75,7 +76,8 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 			else
 				b_error=0; //when succeed then reset b_error
 		}
-		else
+		//else
+		#else
 		{
 			v3d_msg("Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
 			if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0)
@@ -95,6 +97,7 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 				}
 			}
 		}
+		#endif
 	}
 	else if ( strcasecmp(curFileSurfix, "mrc")==0 ) //read mrc stacks
 	{

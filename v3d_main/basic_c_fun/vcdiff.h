@@ -50,6 +50,8 @@ V3DLONG floor(V3DLONG x);
 
 int fabs(int x);
 
+V3DLONG fabs(V3DLONG x);
+
 double log(int x);
 
 V3DLONG lround(V3DLONG x);
