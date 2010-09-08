@@ -27,10 +27,10 @@ if(NOT V3D_BINARY_DIR)
 endif()
 
 
-set (LIBRARY_OUTPUT_PATH ${INSTALLATION_DIRECTORY}
+set (LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin
     CACHE INTERNAL "Output directory for the shared libraries.")
 
-set (EXECUTABLE_OUTPUT_PATH ${INSTALLATION_DIRECTORY}
+set (EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin
     CACHE INTERNAL "Output directory for the executables.")
 
 
