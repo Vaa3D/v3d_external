@@ -501,7 +501,7 @@ void My4DImage::loadImage(char filename[])
 	cleanExistData();
 	
 	bool b_useMylib=false;
-#if defined _WIN32		
+#if defined _WIN32 		
 	b_useMylib = false;
 #else
 	if (getXWidget())

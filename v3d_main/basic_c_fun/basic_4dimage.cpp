@@ -63,6 +63,28 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 	if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0 ||
 		strcasecmp(curFileSurfix, "lsm")==0 ) //read tiff/lsm stacks
 	{
+#if defined _WIN32 		
+		{
+			v3d_msg("Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
+			if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0)
+			{
+				if (loadTif2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
+				{
+					v3d_msg("Error happens in TIF file reading (using libtiff). \n", false);
+					b_error=1;
+				}
+			}	
+			else //if ( strcasecmp(curFileSurfix, "lsm")==0 ) //read lsm stacks
+			{
+				if (loadLsm2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
+				{
+					v3d_msg("Error happens in LSM file reading (using libtiff, slightly revised by PHC). \n", false);
+					b_error=1;
+				}
+			}
+		}
+		
+#else
 		if (b_useMyLib)
 		{
 			v3d_msg("Now try to use MYLIB to read the TIFF/LSM again...\n",0);
@@ -95,6 +117,8 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 				}
 			}
 		}
+#endif
+		
 	}
 	else if ( strcasecmp(curFileSurfix, "mrc")==0 ) //read mrc stacks
 	{
