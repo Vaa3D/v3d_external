@@ -1,2 +1,6 @@
-add_library( 5dstackconverter SHARED movieZCswitch.cpp )
-target_link_libraries( 5dstackconverter ${QT_LIBRARIES} )
+
+set(PLUGIN_SOURCES movieZCswitch.cpp )
+set(PLUGIN_HEADERS movieZCswitch.h )
+
+configure_v3d_plugin(5dstackconverter)
+

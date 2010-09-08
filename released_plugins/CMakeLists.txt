@@ -36,6 +36,8 @@ set (EXECUTABLE_OUTPUT_PATH ${INSTALLATION_DIRECTORY}
 
 include_directories( ${V3D_BASIC_C_FUN_SOURCE_DIR} )
 
+include(${PROJECT_SOURCE_DIR}/CMake/PluginConfiguration.cmake)
+
 add_subdirectory( v3d_plugins )
 add_subdirectory( special_v3d_plugins )
 
