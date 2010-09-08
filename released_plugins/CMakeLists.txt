@@ -22,17 +22,16 @@ if( V3D_BASIC_C_FUN_SOURCE_DIR )
   set( V3D_BASIC_C_FUN_BINARY_DIR  ${PROJECT_BINARY_DIR}/Source/basic_c_fun )
 endif( V3D_BASIC_C_FUN_SOURCE_DIR )
 
-if(NOT LIBRARY_OUTPUT_PATH)
-  set (LIBRARY_OUTPUT_PATH
-    ${INSTALLATION_DIRECTORY}
-    CACHE INTERNAL "Output directory for the shared libraries.")
-endif(NOT LIBRARY_OUTPUT_PATH)
+if(NOT V3D_BINARY_DIR)
+  message(FATAL "The V3D_BINARY_DIR is required. This must point to the location of the v3d executable")
+endif()
 
-if(NOT EXECUTABLE_OUTPUT_PATH)
-  set (EXECUTABLE_OUTPUT_PATH
-    ${INSTALLATION_DIRECTORY}
+
+set (LIBRARY_OUTPUT_PATH ${INSTALLATION_DIRECTORY}
+    CACHE INTERNAL "Output directory for the shared libraries.")
+
+set (EXECUTABLE_OUTPUT_PATH ${INSTALLATION_DIRECTORY}
     CACHE INTERNAL "Output directory for the executables.")
-endif(NOT EXECUTABLE_OUTPUT_PATH)
 
 
 include_directories( ${V3D_BASIC_C_FUN_SOURCE_DIR} )
