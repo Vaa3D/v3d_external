@@ -502,7 +502,7 @@ void My4DImage::loadImage(char filename[])
 	
 	bool b_useMylib=false;
 #if defined _WIN32		
-	b_useMylib = false;  
+	b_useMylib = false;
 #else
 	if (getXWidget())
 		b_useMylib = getXWidget()->getMainControlWindow()->global_setting.b_UseMylibTiff;
