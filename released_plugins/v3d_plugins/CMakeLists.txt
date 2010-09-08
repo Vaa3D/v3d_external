@@ -1,5 +1,5 @@
 add_subdirectory( 5dstackconverter )
-# add_subdirectory( canvas_eraser )
+add_subdirectory( canvas_eraser )
 # add_subdirectory( change_pixel_value )
 # add_subdirectory( CMakeLists.txt )
 # add_subdirectory( dt )
