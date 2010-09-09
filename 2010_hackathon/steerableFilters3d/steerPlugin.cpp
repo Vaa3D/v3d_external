@@ -51,7 +51,7 @@ void steerPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, 
     }
 	else if (menu_name == tr("about this plugin"))
 	{
-      QMessageBox::information(parent, "Version info", "SteerableFilter3D (28-July-2010) developed by Aurelien Lucchi");
+      QMessageBox::information(parent, "Version info", "SteerableFilter3D (28-July-2010) developed by German Gonzale and Aurelien Lucchi (Computer Vision laboratory at EPFL)");
 	}
 	
 }
@@ -168,9 +168,9 @@ int doFiltering(V3DPluginCallback &callback, QWidget *parent)
       //int nx = MAX(64,sd->getSigmaX()*32);
       //int ny = MAX(64,sd->getSigmaY()*32);
       //int nz = MAX(64,sd->getSigmaZ()*32);
-      int nx = sd->getSigmaX()*32;
-      int ny = sd->getSigmaY()*32;
-      int nz = sd->getSigmaZ()*32;
+      int nx = sd->getSigmaX()*32 + 1;
+      int ny = sd->getSigmaY()*32 + 1;
+      int nz = sd->getSigmaZ()*32 + 1;
       Cube<uchar>* diracCube = createDiracCube(nx,ny,nz);
       steer3d(callback,sd,diracCube->voxels_origin,nx,ny,nz,1);
       delete diracCube;

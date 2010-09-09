@@ -32,7 +32,7 @@ SteerableFilter3D::SteerableFilter3D(unsigned char* cubeData, long cubeDepth, lo
 
   vector< double > dcoeffs = readVectorDouble(vectorName);
   inferOrderAndOddEven(dcoeffs.size(), this->M, this->includeOddOrders,
-                       this->includeEvenOrders);
+                       this->includeEvenOrders, this->includeOrder0);
   initialize();
 
   //printf("[SteerableFilter3D] Loading cube (%d,%d,%d)\n", cubeDepth,cubeHeight,cubeWidth);
@@ -58,7 +58,7 @@ SteerableFilter3D::SteerableFilter3D(unsigned char* cubeData, long cubeDepth, lo
   sigma_z = s_z;
 
   inferOrderAndOddEven(dcoeffs.size(), this->M, this->includeOddOrders,
-                       this->includeEvenOrders);
+                       this->includeEvenOrders, this->includeOrder0);
   initialize();
 
   //printf("[SteerableFilter3D] Loading cube (%d,%d,%d)\n", cubeDepth,cubeHeight,cubeWidth);
@@ -94,7 +94,7 @@ SteerableFilter3D::~SteerableFilter3D()
 
 void SteerableFilter3D::initialize()
 {
-    oToIdx = (int****)malloc(4*sizeof(int***));
+    oToIdx = (int****)malloc(5*sizeof(int***));
 
     o0ToIdx = malloc3Darray(1);
     o1ToIdx = malloc3Darray(2);
@@ -419,7 +419,7 @@ void SteerableFilter3D::filter(double theta, double phi, double alpha)
   vector< float > tmp = rotatePhi(r_coeffs, phi);
   r_coeffs = rotateTheta(tmp, theta);
 
-  /*
+  std::cout << "coeffs\n";
   for(int i = 0; i < (int)coeffs.size(); i++){
      std::cout << i << ":" << coeffs[i] << " ";
   }
@@ -428,7 +428,10 @@ void SteerableFilter3D::filter(double theta, double phi, double alpha)
     std::cout << i << ":" << r_coeffs[i] << " ";
   }
   std::cout << std::endl;
-  */
+
+  std::cout << "includeOddOrders: " << includeOddOrders << std::endl;
+  std::cout << "includeEvenOrders: " << includeEvenOrders << std::endl;
+  std::cout << "includeOrder0: " << includeOrder0 << std::endl;
 
 #ifdef WITH_OPENMP
 #pragma omp parallel for

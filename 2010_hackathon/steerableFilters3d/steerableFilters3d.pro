@@ -14,7 +14,7 @@ SOURCES = steerPlugin.cpp \
     utils.cpp
 LIBS += `pkg-config --libs opencv`
 TARGET = $$qtLibraryTarget(steerableFilters3d)
-DESTDIR = ../../v3d_main/v3d/plugins/steerableFilters3d
+DESTDIR = ../../v3d/plugins/steerableFilters3d
 FORMS += steerdialog.ui
 QMAKE_CXXFLAGS += -fopenmp
 QMAKE_LFLAGS += -fopenmp

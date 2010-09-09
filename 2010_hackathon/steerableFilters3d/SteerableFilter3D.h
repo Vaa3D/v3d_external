@@ -288,6 +288,8 @@ public:
       exit(0);
     }
   }
+
+  /*
   //Compatibility hack
   static void inferOrderAndOddEven
   (int nCoeffs, int& order,
@@ -298,7 +300,7 @@ public:
                          includeOrder0);
 
   }
-
+*/
 
   // Puts in the result cube the filtered cube at orientation theta phi
   void filter(double theta, double phi);
