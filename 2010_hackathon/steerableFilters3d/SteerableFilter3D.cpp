@@ -161,7 +161,7 @@ void SteerableFilter3D::initialize()
 void SteerableFilter3D::loadDerivatives()
 {
   bool tmp_initialized = false;
-  Cube< float >* tmp;
+  Cube< float >* tmp = 0;
 
   //Now loads the derivatives
   int m,n,p,idx,ord;
@@ -183,6 +183,9 @@ void SteerableFilter3D::loadDerivatives()
      cubeDerivs.push_back(deriv);
     }
   }
+
+  if(tmp)
+     delete[] tmp;
 }
 
 void SteerableFilter3D::idx2deriv
