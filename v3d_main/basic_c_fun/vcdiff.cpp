@@ -50,7 +50,7 @@ int fabs(int x)
 
 V3DLONG fabs(V3DLONG x)
 {
-	return (V3DLONG)(fabs((long double)x));
+	return (V3DLONG)(fabs((double)x));
 }
 
 double log(int x)
