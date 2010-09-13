@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -173,15 +173,15 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 #ifndef test_main_cpp
-	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep); 
-	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep); 
+	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 
 	//qDebug("	_idep = %p, _idep->image4d = %p", _idep, ((iDrawExternalParameter*)_idep)->image4d);
 	//qDebug("	My4DImage* = %p, XFormWidget* = %p", curImg, curXWidget);
 
 #else
-	void* curImg=0; 
-	void* curXWidget = 0; 
+	void* curImg=0;
+	void* curXWidget = 0;
 #endif
 
 	// right click popup menu
@@ -197,8 +197,8 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 			*actMarkerTraceFromStartPos=0, *actMarkerTraceFromStartPos_selPara=0, *actMarkerLineProfileFromStartPos=0, *actMarkerLineProfileFromStartPos_drawline=0, *actMarkerLabelAsStartPos=0,
 			*actMarkerTraceFromOnePos=0, *actMarkerTraceFromOnePosToOtherMarkers=0,
 
-			*actCurveCreate1=0, *actCurveCreate2=0, *actCurveCreate3=0, *actCurveCreate_pointclick=0, 
-			*actCurveCreate_zoom=0, *actMarkerCreate_zoom=0, 
+			*actCurveCreate1=0, *actCurveCreate2=0, *actCurveCreate3=0, *actCurveCreate_pointclick=0,
+			*actCurveCreate_zoom=0, *actMarkerCreate_zoom=0,
 
 			*actNeuronToEditable=0, *actDecomposeNeuron=0, *actNeuronFinishEditing=0,
 			*actChangeNeuronSegType=0, *actChangeNeuronSegRadius=0, *actReverseNeuronSeg=0,
@@ -242,7 +242,7 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 			listAct.append(actCurveCreate2 = new QAction("2-right-strokes to define a 3D curve", w));
 			listAct.append(actCurveCreate3 = new QAction("3-right-strokes to define a 3D curve", w));
 			listAct.append(actCurveCreate_pointclick = new QAction("Series of right-clicks to define a 3D polyline (Esc to finish)", w));
-			
+
 			//if (!(((iDrawExternalParameter*)_idep)->b_local)) //only enable the menu for global 3d viewer. as it seems there is a bug in the local 3d viewer. by PHC, 100821
 			{
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
@@ -590,7 +590,7 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 		b_addthiscurve = false;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
-	
+
 #define __create_marker__ // dummy, just for easy locating
 
 	// real operation in selectObj() waiting next click
@@ -790,7 +790,7 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 			}
 		}
 	}
-	else if (act==actMarkerZoomin3D) //by PHC, 090618. 
+	else if (act==actMarkerZoomin3D) //by PHC, 090618.
 	{
 		if (w && curImg && curXWidget)
 		{
@@ -1193,6 +1193,8 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 	return update;
 }
 
+#define __interaction__
+
 void Renderer_tex2::endSelectMode()
 {
 	qDebug("  Renderer_tex2::endSelectMode");
@@ -1533,42 +1535,267 @@ void Renderer_tex2::updateTracedNeuron()
 #endif
 }
 
-//
-//static GLdouble modelMatrix[16];
-//static GLdouble projMatrix[16];
-//static GLint viewport[4];
-//
-//void getProject()
-//{
-//	glGetDoublev( GL_MODELVIEW_MATRIX, modelMatrix);
-//	modelMatrix[2*4 +3] += 0.02;
-//	glGetDoublev( GL_PROJECTION_MATRIX, projMatrix);
-//	glGetIntegerv( GL_VIEWPORT, viewport);
-//
-//}
-//
-//void volUnProject(float wx,float wy,
-//				  float *nz,
-//				  float *xobject,float *yobject,float *zobject)
-//{
-//	float zdepth;
-//	GLdouble xo,yo,zo;
-//
-//	glReadPixels(wx,viewport[3]-wy,1,1,GL_DEPTH_COMPONENT, GL_FLOAT, &zdepth);
-//	gluUnProject(wx,viewport[3]-wy, zdepth ,
-//				modelMatrix, projMatrix, viewport,
-//				&xo,&yo,&zo);
-//	if (nz) *nz = zdepth;
-//	if (xobject) *xobject = xo;
-//	if (yobject) *yobject = yo;
-//	if (zobject) *zobject = zo;
-//}
-////
-////           objX                 (winX - view[0])*2./view[2] -1
-////           objY   =  INV(PM)    (winY - view[1])*2./view[3] -1
-////           objZ                 (winZ)*2                    -1
-////            W                    1
-////
+void Renderer_tex2::loadLandmarks_from_file(const QString & filename)
+{
+#ifndef test_main_cpp
+
+	QList <ImageMarker> tmp_list = readMarker_file(filename);
+
+	if (tmp_list.size()>0) //only replace the current marker list when the list from file is non-empty
+	{
+		listMarker = tmp_list;
+
+		//should also update the marker list in the main tri-view window if there is one
+		V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+		My4DImage* curImg = 0;
+		if (w) curImg = v3dr_getImage4d(_idep); //->image4d;
+		if (curImg)
+		{
+			curImg->listLandmarks.clear();
+			for (V3DLONG j=0;j<listMarker.size();j++)
+			{
+				LocationSimple S;
+				S.inputProperty = pxLocaUseful;
+				// 090617 RZC: marker file is 1-based
+				S.x = listMarker[j].x;
+				S.y = listMarker[j].y;
+				S.z = listMarker[j].z;
+				S.color = listMarker[j].color; // 090508 RZC: hold same color
+				S.on = true;
+				//S.radius = listMarker[j].radius; // 090508 RZC: listMarker[j].radius only for 3D display
+				S.shape = (PxLocationMarkerShape)(listMarker[j].shape);
+				S.name = qPrintable(listMarker[j].name);
+				S.comments = qPrintable(listMarker[j].comment);
+
+				curImg->listLandmarks.append(S);
+			}
+		}
+	}
+
+#endif
+}
+
+void Renderer_tex2::saveLandmarks_to_file(const QString & filename)
+{
+#ifndef test_main_cpp
+	wirteMarker_file(filename, listMarker);
+#endif
+}
+
+
+#define __info_of_object__
+
+QString Renderer_tex2::info_Marker(int marker_i)
+{
+	QString tmpstr;
+	if (marker_i>=0 && marker_i<listMarker.size())
+	{
+		const ImageMarker & S = listMarker.at(marker_i);
+		tmpstr = QString("\n(%1, %2, %3)").arg(S.x).arg(S.y).arg(S.z);
+	}
+	return tmpstr;
+}
+QString Renderer_tex2::info_NeuronNode(int n_id, NeuronTree *p_tree)
+{
+	QString tmpstr, tmpstr1;
+	if (p_tree && n_id>=0 && n_id<p_tree->listNeuron.size())
+	{
+		tmpstr1.setNum(p_tree->listNeuron.at(n_id).n);    tmpstr1.prepend("\n 1) node #	= "); tmpstr.append(tmpstr1);
+		tmpstr1.setNum(p_tree->listNeuron.at(n_id).type); tmpstr1.prepend("\n 2) type	= "); tmpstr.append(tmpstr1);
+		tmpstr1.setNum(p_tree->listNeuron.at(n_id).x);    tmpstr1.prepend("\n 3) x coord	= "); tmpstr.append(tmpstr1);
+		tmpstr1.setNum(p_tree->listNeuron.at(n_id).y);    tmpstr1.prepend("\n 4) y coord	= "); tmpstr.append(tmpstr1);
+		tmpstr1.setNum(p_tree->listNeuron.at(n_id).z);    tmpstr1.prepend("\n 5) z coord	= "); tmpstr.append(tmpstr1);
+		tmpstr1.setNum(p_tree->listNeuron.at(n_id).r);    tmpstr1.prepend("\n 6) radius	= "); tmpstr.append(tmpstr1);
+		tmpstr1.setNum(p_tree->listNeuron.at(n_id).pn);   tmpstr1.prepend("\n 7) parent	= "); tmpstr.append(tmpstr1);
+
+		tmpstr += QString("\n segment (index) = %1 (%2)").arg(p_tree->listNeuron.at(n_id).seg_id).arg(p_tree->listNeuron.at(n_id).nodeinseg_id);
+	}
+	return tmpstr;
+}
+
+QString Renderer_tex2::info_SurfVertex(int n_id, Triangle * face, int label)
+{
+	QString tmpstr, tmpstr1;
+	if (face &&  n_id>=0 && n_id<3)
+	{
+		tmpstr1 = QString("\nlabel	= %1").arg(label); tmpstr.append(tmpstr1);
+		tmpstr1 = QString("\nvertex	= (%1, %2, %3)").arg(face->vertex[n_id][0]).arg(face->vertex[n_id][1]).arg(face->vertex[n_id][2]); tmpstr.append(tmpstr1);
+		tmpstr1 = QString("\nnormal	= (%1, %2, %3)").arg(face->normal[n_id][0]).arg(face->normal[n_id][1]).arg(face->normal[n_id][2]); tmpstr.append(tmpstr1);
+	}
+	return tmpstr;
+}
+
+
+
+V3DLONG Renderer_tex2::findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * ptree) //find the nearest node in a neuron in XY project of the display window
+{
+	if (!ptree) return -1;
+	QList <NeuronSWC> *p_listneuron = &(ptree->listNeuron);
+	if (!p_listneuron) return -1;
+
+	//qDebug()<<"win click position:"<<cx<<" "<<cy;
+
+	GLdouble px, py, pz, ix, iy, iz;
+
+	V3DLONG best_ind=-1; double best_dist=-1;
+	for (V3DLONG i=0;i<p_listneuron->size();i++)
+	{
+		ix = p_listneuron->at(i).x, iy = p_listneuron->at(i).y, iz = p_listneuron->at(i).z;
+		GLint res = gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz);// note: should use the saved modelview,projection and viewport matrix
+		py = viewport[3]-py; //the Y axis is reversed
+		if (res==GL_FALSE) {qDebug()<<"gluProject() fails for NeuronTree ["<<i<<"] node"; return -1;}
+		//qDebug()<<i<<" "<<px<<" "<<py<<" "<<pz<<"\n";
+
+		double cur_dist = (px-cx)*(px-cx)+(py-cy)*(py-cy);
+		if (i==0) {	best_dist = cur_dist; best_ind=0; }
+		else {	if (cur_dist<best_dist) {best_dist=cur_dist; best_ind = i;}}
+	}
+
+	//best_ind = p_listneuron->at(best_ind).n; // this no used, because it changed in V_NeuronSWC
+	return best_ind; //by PHC, 090209. return the index in the SWC file
+}
+
+Triangle * Renderer_tex2::findNearestSurfTriangle_WinXY(int cx, int cy, int & vertex_i, Triangle * plist)
+{
+	if (!plist) return NULL;
+
+	//qDebug()<<"win click position:"<<cx<<" "<<cy;
+
+	GLdouble px, py, pz, ix, iy, iz;
+
+	V3DLONG best_ind=-1, best_vertex=-1; double best_dist=-1;
+	Triangle * best_pT=NULL;
+	int i=0;
+	for (Triangle * pT=plist; pT->next!=NULL; pT=pT->next, i++)
+		for (int j=0; j<3; j++) // 3 vertexes in triangle
+		{
+			ix = pT->vertex[j][0], iy = pT->vertex[j][1], iz = pT->vertex[j][2];
+			GLint res = gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz); // note: should use the saved modelview,projection and viewport matrix
+			py = viewport[3]-py; //the Y axis is reversed
+			if (res==GL_FALSE) {qDebug()<<"gluProject() fails for Triangle ["<<i<<""<<j<<"] vertex"; return NULL;}
+			//qDebug()<<i<<" "<<px<<" "<<py<<" "<<pz<<"\n";
+
+			double cur_dist = (px-cx)*(px-cx)+(py-cy)*(py-cy);
+			if (i==0 && j==0) {	best_dist = cur_dist; best_ind=0; best_vertex=0; best_pT=pT;}
+			else {	if (cur_dist<best_dist) {best_dist=cur_dist; best_ind = i; best_vertex = j; best_pT=pT;}}
+		}
+
+	vertex_i = best_vertex;
+	return best_pT; //091020 RZC
+}
+
+
+double Renderer_tex2::computeSurfaceArea(int dc, int st, int index) //index is 1-based
+{
+	qDebug("  Renderer_tex2::computeSurfaceArea");
+
+	if (dc==dcSurface && st==stLabelSurface)
+	{
+		//LabelSurf &S = listLabelSurf[index-1];
+		Triangle* pT = list_listTriangle[index-1];
+
+		double sum = 0;
+		for (Triangle* p = pT; p!=NULL; p = p->next)
+		{
+			XYZ V[3];
+			for (int iCorner = 0; iCorner < 3; iCorner++)
+			{
+				V[iCorner] = XYZ(p->vertex[iCorner][0],p->vertex[iCorner][1],p->vertex[iCorner][2]);
+			}
+			double area = 0.5*norm( cross(V[1]-V[0], V[2]-V[0]) );
+
+			sum += area;
+		}
+		return sum;
+
+	}
+	return 0;
+}
+
+double Renderer_tex2::computeSurfaceVolume(int dc, int st, int index) //index is 1-based
+{
+	qDebug("  Renderer_tex2::computeSurfaceVolume");
+
+	if (dc==dcSurface && st==stLabelSurface)
+	{
+		//LabelSurf &S = listLabelSurf[index-1];
+		Triangle* pT = list_listTriangle[index-1];
+
+	}
+	return 0;
+}
+
+
+
+void Renderer_tex2::showLineProfile(int marker1, int marker2) // 0-based
+{
+	qDebug("  Renderer_tex2::showLineProfile");
+
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
+	XYZ V1 = XYZ(listMarker[marker1]) - XYZ(1,1,1); // 090505 RZC: marker position is 1-based
+	XYZ V2 = XYZ(listMarker[marker2]) - XYZ(1,1,1);
+	double length = norm(V1-V2);
+
+	//QVector<int> vec(300);	for (int i=0; i<vec.size(); i++) vec[i] = i; // for debug
+
+    //int nChannel = MIN(3, dim4); // up to 3 channels
+    int nChannel = dim4;
+	QVector< QVector<int> > vvec;
+	QStringList labelsLT;
+	for (int i=0; i<nChannel; i++)
+	{
+		QVector<int> vec = getLineProfile(V1, V2, i);
+		vvec.append( vec );
+		labelsLT.append( QString("channel %1").arg(i+1) );
+	}
+	QString labelRB = QString("length=%1").arg(length);
+
+	barFigureDialog *dlg = new barFigureDialog(vvec, labelsLT, labelRB, w, QSize(500, 150), QColor(50,50,50));
+	dlg->setWindowTitle(QObject::tr("Line Profile (marker #%1 --> marker #%2)").arg(marker1+1).arg(marker2+1));
+	dlg->show();
+
+}
+
+QVector<int> Renderer_tex2::getLineProfile(XYZ P1, XYZ P2, int chno)
+{
+	QVector<int> prof;
+
+#ifndef test_main_cpp
+
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	My4DImage* curImg = 0; if (w) curImg = v3dr_getImage4d(w->getiDrawExternalParameter());//->image4d; //by PHC, 090119
+
+	if (curImg && data4dp && chno>=0 &&  chno <dim4)
+	{
+
+		XYZ D = P2-P1;
+		double length = norm(D);
+		int nstep = int(length + 0.5);
+		double step = length/nstep;
+		normalize(D);
+
+		unsigned char* vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1);
+
+		for (int i=0; i<nstep; i++)
+		{
+			XYZ P = P1 + D*step*(i);
+//			XYZ P = P1 + (P2-P1)*(double(i)/(nstep-1));
+
+				int ix = int(P.x +0.5);
+				int iy = int(P.y +0.5);
+				int iz = int(P.z +0.5);
+				float value = sampling3dUINT8( vp, dim1, dim2, dim3, ix, iy, iz, 1,1,1);
+//				float value = sampling3dUINT8at( vp, dim1, dim2, dim3, P.x, P.y, P.z);
+
+			prof << int(value);
+		}
+	}
+#endif
+
+	return prof;
+}
+
 
 //##########################################################################################
 // 090617: NOTICE that marker position is 1-based to consist with LocatonSimple
@@ -1579,32 +1806,10 @@ void Renderer_tex2::updateTracedNeuron()
 // BUT IT IS STILL EASY TO BE CHAOS !!!
 //##########################################################################################
 //
-// 090716: marker coordinates Fully are handled in paint() and Original image space!!!
+// 090716: marker coordinates Fully are handled in paint() and Original image space!
 //
 //##########################################################################################
-#define __creat_marker_and_curve___
-
-void Renderer_tex2::_MarkerPos_to_NearFarPoint(const MarkerPos & pos, XYZ &loc0, XYZ &loc1)
-{
-	Matrix P(4,4);		P << pos.P;   P = P.t();    // OpenGL is row-inner / C is column-inner
-	Matrix M(4,4);		M << pos.MV;  M = M.t();
-	Matrix PM = P * M;
-	//cout << "P M PM \n" << P << endl << M << endl << PM << endl;
-
-	double x = (pos.x             - pos.view[0])*2.0/pos.view[2] -1;
-	double y = (pos.view[3]-pos.y - pos.view[1])*2.0/pos.view[3] -1; // OpenGL is bottom to top
-	//double z = 0,1;                              // the clip space depth from 0 to 1
-
-	ColumnVector pZ0(4); 	pZ0 << x << y << 0 << 1;
-	ColumnVector Z0 = PM.i() * pZ0;
-	Z0 = Z0 / Z0(4);
-	ColumnVector pZ1(4); 	pZ1 << x << y << 1 << 1;
-	ColumnVector Z1 = PM.i() * pZ1;
-	Z1 = Z1 / Z1(4);
-
-	loc0 = XYZ(Z0(1), Z0(2), Z0(3));
-	loc1 = XYZ(Z1(1), Z1(2), Z1(3));
-}
+#define __creat_curve_and_marker___
 
 void Renderer_tex2::solveCurveCenter(vector <XYZ> & loc_vec_input)
 {
@@ -1756,8 +1961,8 @@ void Renderer_tex2::solveCurveCenter(vector <XYZ> & loc_vec_input)
 	{
 		b_addthiscurve = true; //in this case, always reset to default to draw curve to add to a swc instead of just  zoom
 		endSelectMode();
-		
-		produceZoomViewOf3DRoi(loc_vec); 
+
+		produceZoomViewOf3DRoi(loc_vec);
 	}
 
 }
@@ -1766,15 +1971,15 @@ void Renderer_tex2::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 {
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 #ifndef test_main_cpp
-	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep); 
-	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep); 
-	
+	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
+
 	//qDebug("	_idep = %p, _idep->image4d = %p", _idep, ((iDrawExternalParameter*)_idep)->image4d);
 	//qDebug("	My4DImage* = %p, XFormWidget* = %p", curImg, curXWidget);
-	
+
 #else
-	void* curImg=0; 
-	void* curXWidget = 0; 
+	void* curImg=0;
+	void* curXWidget = 0;
 #endif
 
 	if (w && curImg && curXWidget && loc_vec.size()>0)
@@ -1797,16 +2002,16 @@ void Renderer_tex2::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 			else if (curpos.z > Mz) Mz = curpos.z;
 		}
 		qDebug()<< mx << " " << Mx << " " << my << " " << My << " " << mz << " " << Mz << " ";
-		
+
 		V3DLONG margin=5; //the default margin is small
 		if (loc_vec.size()==1) margin=21; //for marker then define a bigger margin
 		mx -= margin; Mx += margin; if (mx<0) mx=0; if (Mx>curImg->getXDim()-1) Mx = curImg->getXDim()-1;
 		my -= margin; My += margin; if (my<0) my=0; if (My>curImg->getYDim()-1) My = curImg->getYDim()-1;
 		mz -= margin; Mz += margin; if (mz<0) mz=0; if (Mz>curImg->getZDim()-1) Mz = curImg->getZDim()-1;
-		
+
 		curXWidget->setLocal3DViewerBBox(mx, Mx, my, My, mz, Mz);
 		curXWidget->doImage3DLocalBBoxView();
-		//QTimer::singleShot( 1000, curXWidget, SLOT(doImage3DLocalView()) ); 
+		//QTimer::singleShot( 1000, curXWidget, SLOT(doImage3DLocalView()) );
 	}
 }
 
@@ -1912,61 +2117,6 @@ void Renderer_tex2::solveCurveFromMarkers()
 }
 
 
-double Renderer_tex2::getDistanceOfMarkerPos(const MarkerPos & pos0, const MarkerPos & pos)
-{
-	XYZ Y1, Y2;
-	_MarkerPos_to_NearFarPoint(pos, Y1, Y2);
-
-	XYZ X1, X2;
-	_MarkerPos_to_NearFarPoint(pos0, X1, X2);
-
-	XYZ D  = Y2-Y1; normalize(D);
-	XYZ D0 = X2-X1; normalize(D0);
-	XYZ H = cross(D0, D); normalize(H);
-
-	double dist = fabs(dot(H, X1-Y1));
-	return dist;
-
-//	// pos's epipolar line in pos0's image space
-//
-//	Matrix P0(4,4);		P0 << pos0.P;   P0 = P0.t();    // OpenGL is row-inner / C is column-inner
-//	Matrix M0(4,4);		M0 << pos0.MV;  M0 = M0.t();
-//	Matrix PM0 = P0 * M0;
-//
-//	ColumnVector X0 = PM0 * Y0;
-//	X0 = X0 / X0(4);
-//	ColumnVector X1 = PM0 * Y1;
-//	X1 = X1 / X1(4);
-//
-//	XYZ A(X0(1), X0(2), X0(3));
-//	XYZ B(X1(1), X1(2), X1(3));
-//	XYZ L = cross(A, B);
-//
-//	// point to line in image
-//
-//	double x0 = (pos0.x              - pos0.view[0])*2.0/pos0.view[2] -1;
-//	double y0 = (pos0.view[3]-pos0.y - pos0.view[1])*2.0/pos0.view[3] -1; // OpenGL is bottom to top
-//	double dist = fabs(x0*L.x + y0*L.y + L.z)/sqrt(L.x*L.x + L.y*L.y);
-//	return dist;
-}
-
-XYZ Renderer_tex2::getCenterOfMarkerPos(const MarkerPos & pos)
-{
-	XYZ loc0, loc1;
-	_MarkerPos_to_NearFarPoint(pos, loc0, loc1);
-	//qDebug("loc0--loc1: (%g, %g, %g)--(%g, %g, %g)\n", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
-
-//	//100730 RZC
-//	// in View space, keep for dot(clip, pos)>=0
-//	double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
-//	// [0, 1] ==> [+1, -1]*(s)
-//	clipplane[3] = viewClip;
-//	ViewPlaneToModel(pos.MV, clipplane);
-
-	XYZ loc = getCenterOfLineProfile(loc0, loc1, 0);//clipplane);
-	return loc;
-}
-
 void Renderer_tex2::solveMarkerCenter()
 {
 	if (listMarkerPos.size()<1)  return;
@@ -1984,10 +2134,10 @@ void Renderer_tex2::solveMarkerCenter()
 	{
 		b_addthismarker = true; //in this case, always reset to default to add a marker instead of just  zoom
 		endSelectMode();
-		
+
 		vector <XYZ> loc_vec;
 		loc_vec.push_back(loc);
-		produceZoomViewOf3DRoi(loc_vec); 
+		produceZoomViewOf3DRoi(loc_vec);
 	}
 }
 
@@ -2003,48 +2153,6 @@ void Renderer_tex2::refineMarkerCenter()
 	updateMarkerLocation(currentMarkerName-1, loc);
 }
 
-XYZ Renderer_tex2::getLocationOfListMarkerPos()
-{
-	int N = listMarkerPos.size();
-	if (N<2)
-		qDebug("getLocationOfListMarkerPos ERROR: listMarkerPos.size()<2");
-
-	Matrix A(N*3, 4);
-	for (int i=0; i<N; i++)
-	{
-		const MarkerPos & pos = listMarkerPos.at(i);
-
-		double x = (pos.x             - pos.view[0])*2.0/pos.view[2] -1;
-		double y = (pos.view[3]-pos.y - pos.view[1])*2.0/pos.view[3] -1; // OpenGL is bottom to top
-		double z = 1;
-		Matrix Cx(3,3);
-		Cx  << 0 << -z << y
-			<< z << 0 << -x
-			<< -y << x << 0;
-
-		Matrix P(4,4);		P << pos.P;   P = P.t();    // OpenGL is row-inner / C is column-inner
-		Matrix M(4,4);		M << pos.MV;  M = M.t();
-		Matrix PM = P * M;
-		Matrix Pr(3, 4);
-		Pr.row(1) = PM.row(1);
-		Pr.row(2) = PM.row(2);
-		Pr.row(3) = PM.row(4);  // drop PM.row(3), index is 1-based
-		//cout << "Cx P M Pr \n" << Cx << endl << P << endl << M << endl << Pr << endl;
-
-		Matrix As = Cx * Pr;
-		//cout << i << " As \n" << As << endl;
-		A.rows(i*3+1, i*3+3) << As;
-	}
-
-	DiagonalMatrix D;  Matrix U, V;
-	SVD(A, D, U, V);
-	//cout << "svd: A D V\n" << A << endl << D << endl << V << endl;
-	ColumnVector X = V.column(4) / V(4,4);
-	//cout << "location: " << X.t() << endl;
-
-	XYZ loc(X(1), X(2), X(3));
-	return loc;
-}
 
 bool Renderer_tex2::isInBound(const XYZ & loc, float factor, bool b_message)
 {
@@ -2200,274 +2308,139 @@ void Renderer_tex2::updateMarkerLocation(int marker_id, XYZ &loc) //added by PHC
 #endif
 }
 
-#define __info_of_object__
 
-QString Renderer_tex2::info_Marker(int marker_i)
-{
-	QString tmpstr;
-	if (marker_i>=0 && marker_i<listMarker.size())
-	{
-		const ImageMarker & S = listMarker.at(marker_i);
-		tmpstr = QString("\n(%1, %2, %3)").arg(S.x).arg(S.y).arg(S.z);
-	}
-	return tmpstr;
-}
-QString Renderer_tex2::info_NeuronNode(int n_id, NeuronTree *p_tree)
-{
-	QString tmpstr, tmpstr1;
-	if (p_tree && n_id>=0 && n_id<p_tree->listNeuron.size())
-	{
-		tmpstr1.setNum(p_tree->listNeuron.at(n_id).n);    tmpstr1.prepend("\n 1) node #	= "); tmpstr.append(tmpstr1);
-		tmpstr1.setNum(p_tree->listNeuron.at(n_id).type); tmpstr1.prepend("\n 2) type	= "); tmpstr.append(tmpstr1);
-		tmpstr1.setNum(p_tree->listNeuron.at(n_id).x);    tmpstr1.prepend("\n 3) x coord	= "); tmpstr.append(tmpstr1);
-		tmpstr1.setNum(p_tree->listNeuron.at(n_id).y);    tmpstr1.prepend("\n 4) y coord	= "); tmpstr.append(tmpstr1);
-		tmpstr1.setNum(p_tree->listNeuron.at(n_id).z);    tmpstr1.prepend("\n 5) z coord	= "); tmpstr.append(tmpstr1);
-		tmpstr1.setNum(p_tree->listNeuron.at(n_id).r);    tmpstr1.prepend("\n 6) radius	= "); tmpstr.append(tmpstr1);
-		tmpstr1.setNum(p_tree->listNeuron.at(n_id).pn);   tmpstr1.prepend("\n 7) parent	= "); tmpstr.append(tmpstr1);
-
-		tmpstr += QString("\n segment (index) = %1 (%2)").arg(p_tree->listNeuron.at(n_id).seg_id).arg(p_tree->listNeuron.at(n_id).nodeinseg_id);
-	}
-	return tmpstr;
-}
-
-QString Renderer_tex2::info_SurfVertex(int n_id, Triangle * face, int label)
-{
-	QString tmpstr, tmpstr1;
-	if (face &&  n_id>=0 && n_id<3)
-	{
-		tmpstr1 = QString("\nlabel	= %1").arg(label); tmpstr.append(tmpstr1);
-		tmpstr1 = QString("\nvertex	= (%1, %2, %3)").arg(face->vertex[n_id][0]).arg(face->vertex[n_id][1]).arg(face->vertex[n_id][2]); tmpstr.append(tmpstr1);
-		tmpstr1 = QString("\nnormal	= (%1, %2, %3)").arg(face->normal[n_id][0]).arg(face->normal[n_id][1]).arg(face->normal[n_id][2]); tmpstr.append(tmpstr1);
-	}
-	return tmpstr;
-}
-
-
-V3DLONG Renderer_tex2::findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * ptree) //find the nearest node in a neuron in XY project of the display window
-{
-	if (!ptree) return -1;
-	QList <NeuronSWC> *p_listneuron = &(ptree->listNeuron);
-	if (!p_listneuron) return -1;
-
-	//qDebug()<<"win click position:"<<cx<<" "<<cy;
-
-	GLdouble px, py, pz, ix, iy, iz;
-
-	V3DLONG best_ind=-1; double best_dist=-1;
-	for (V3DLONG i=0;i<p_listneuron->size();i++)
-	{
-		ix = p_listneuron->at(i).x, iy = p_listneuron->at(i).y, iz = p_listneuron->at(i).z;
-		GLint res = gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz);// note: should use the saved modelview,projection and viewport matrix
-		py = viewport[3]-py; //the Y axis is reversed
-		if (res==GL_FALSE) {qDebug()<<"gluProject() fails for NeuronTree ["<<i<<"] node"; return -1;}
-		//qDebug()<<i<<" "<<px<<" "<<py<<" "<<pz<<"\n";
-
-		double cur_dist = (px-cx)*(px-cx)+(py-cy)*(py-cy);
-		if (i==0) {	best_dist = cur_dist; best_ind=0; }
-		else {	if (cur_dist<best_dist) {best_dist=cur_dist; best_ind = i;}}
-	}
-
-	//best_ind = p_listneuron->at(best_ind).n; // this no used, because it changed in V_NeuronSWC
-	return best_ind; //by PHC, 090209. return the index in the SWC file
-}
-
-Triangle * Renderer_tex2::findNearestSurfTriangle_WinXY(int cx, int cy, int & vertex_i, Triangle * plist)
-{
-	if (!plist) return NULL;
-
-	//qDebug()<<"win click position:"<<cx<<" "<<cy;
-
-	GLdouble px, py, pz, ix, iy, iz;
-
-	V3DLONG best_ind=-1, best_vertex=-1; double best_dist=-1;
-	Triangle * best_pT=NULL;
-	int i=0;
-	for (Triangle * pT=plist; pT->next!=NULL; pT=pT->next, i++)
-		for (int j=0; j<3; j++) // 3 vertexes in triangle
-		{
-			ix = pT->vertex[j][0], iy = pT->vertex[j][1], iz = pT->vertex[j][2];
-			GLint res = gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz); // note: should use the saved modelview,projection and viewport matrix
-			py = viewport[3]-py; //the Y axis is reversed
-			if (res==GL_FALSE) {qDebug()<<"gluProject() fails for Triangle ["<<i<<""<<j<<"] vertex"; return NULL;}
-			//qDebug()<<i<<" "<<px<<" "<<py<<" "<<pz<<"\n";
-
-			double cur_dist = (px-cx)*(px-cx)+(py-cy)*(py-cy);
-			if (i==0 && j==0) {	best_dist = cur_dist; best_ind=0; best_vertex=0; best_pT=pT;}
-			else {	if (cur_dist<best_dist) {best_dist=cur_dist; best_ind = i; best_vertex = j; best_pT=pT;}}
-		}
-
-	vertex_i = best_vertex;
-	return best_pT; //091020 RZC
-}
-
-
-void Renderer_tex2::loadLandmarks_from_file(const QString & filename)
-{
-#ifndef test_main_cpp
-
-	QList <ImageMarker> tmp_list = readMarker_file(filename);
-
-	if (tmp_list.size()>0) //only replace the current marker list when the list from file is non-empty
-	{
-		listMarker = tmp_list;
-
-		//should also update the marker list in the main tri-view window if there is one
-		V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-		My4DImage* curImg = 0;
-		if (w) curImg = v3dr_getImage4d(_idep); //->image4d;
-		if (curImg)
-		{
-			curImg->listLandmarks.clear();
-			for (V3DLONG j=0;j<listMarker.size();j++)
-			{
-				LocationSimple S;
-				S.inputProperty = pxLocaUseful;
-				// 090617 RZC: marker file is 1-based
-				S.x = listMarker[j].x;
-				S.y = listMarker[j].y;
-				S.z = listMarker[j].z;
-				S.color = listMarker[j].color; // 090508 RZC: hold same color
-				S.on = true;
-				//S.radius = listMarker[j].radius; // 090508 RZC: listMarker[j].radius only for 3D display
-				S.shape = (PxLocationMarkerShape)(listMarker[j].shape);
-				S.name = qPrintable(listMarker[j].name);
-				S.comments = qPrintable(listMarker[j].comment);
-
-				curImg->listLandmarks.append(S);
-			}
-		}
-	}
-
-#endif
-}
-
-void Renderer_tex2::saveLandmarks_to_file(const QString & filename)
-{
-#ifndef test_main_cpp
-	wirteMarker_file(filename, listMarker);
-#endif
-}
-
-
-double Renderer_tex2::computeSurfaceArea(int dc, int st, int index) //index is 1-based
-{
-	qDebug("  Renderer_tex2::computeSurfaceArea");
-
-	if (dc==dcSurface && st==stLabelSurface)
-	{
-		//LabelSurf &S = listLabelSurf[index-1];
-		Triangle* pT = list_listTriangle[index-1];
-
-		double sum = 0;
-		for (Triangle* p = pT; p!=NULL; p = p->next)
-		{
-			XYZ V[3];
-			for (int iCorner = 0; iCorner < 3; iCorner++)
-			{
-				V[iCorner] = XYZ(p->vertex[iCorner][0],p->vertex[iCorner][1],p->vertex[iCorner][2]);
-			}
-			double area = 0.5*norm( cross(V[1]-V[0], V[2]-V[0]) );
-
-			sum += area;
-		}
-		return sum;
-
-	}
-	return 0;
-}
-
-double Renderer_tex2::computeSurfaceVolume(int dc, int st, int index) //index is 1-based
-{
-	qDebug("  Renderer_tex2::computeSurfaceVolume");
-
-	if (dc==dcSurface && st==stLabelSurface)
-	{
-		//LabelSurf &S = listLabelSurf[index-1];
-		Triangle* pT = list_listTriangle[index-1];
-
-	}
-	return 0;
-}
-
-
-
-void Renderer_tex2::showLineProfile(int marker1, int marker2) // 0-based
-{
-	qDebug("  Renderer_tex2::showLineProfile");
-
-	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-
-	XYZ V1 = XYZ(listMarker[marker1]) - XYZ(1,1,1); // 090505 RZC: marker position is 1-based
-	XYZ V2 = XYZ(listMarker[marker2]) - XYZ(1,1,1);
-	double length = norm(V1-V2);
-
-	//QVector<int> vec(300);	for (int i=0; i<vec.size(); i++) vec[i] = i; // for debug
-
-    //int nChannel = MIN(3, dim4); // up to 3 channels
-    int nChannel = dim4;
-	QVector< QVector<int> > vvec;
-	QStringList labelsLT;
-	for (int i=0; i<nChannel; i++)
-	{
-		QVector<int> vec = getLineProfile(V1, V2, i);
-		vvec.append( vec );
-		labelsLT.append( QString("channel %1").arg(i+1) );
-	}
-	QString labelRB = QString("length=%1").arg(length);
-
-	barFigureDialog *dlg = new barFigureDialog(vvec, labelsLT, labelRB, w, QSize(500, 150), QColor(50,50,50));
-	dlg->setWindowTitle(QObject::tr("Line Profile (marker #%1 --> marker #%2)").arg(marker1+1).arg(marker2+1));
-	dlg->show();
-
-}
-
-QVector<int> Renderer_tex2::getLineProfile(XYZ P1, XYZ P2, int chno)
-{
-	QVector<int> prof;
-
-#ifndef test_main_cpp
-
-	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-	My4DImage* curImg = 0; if (w) curImg = v3dr_getImage4d(w->getiDrawExternalParameter());//->image4d; //by PHC, 090119
-
-	if (curImg && data4dp && chno>=0 &&  chno <dim4)
-	{
-
-		XYZ D = P2-P1;
-		double length = norm(D);
-		int nstep = int(length + 0.5);
-		double step = length/nstep;
-		normalize(D);
-
-		unsigned char* vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1);
-
-		for (int i=0; i<nstep; i++)
-		{
-			XYZ P = P1 + D*step*(i);
-//			XYZ P = P1 + (P2-P1)*(double(i)/(nstep-1));
-
-				int ix = int(P.x +0.5);
-				int iy = int(P.y +0.5);
-				int iz = int(P.z +0.5);
-				float value = sampling3dUINT8( vp, dim1, dim2, dim3, ix, iy, iz, 1,1,1);
-//				float value = sampling3dUINT8at( vp, dim1, dim2, dim3, P.x, P.y, P.z);
-
-			prof << int(value);
-		}
-	}
-#endif
-
-	return prof;
-}
+#define __computation__
 
 // in Image space (model space)
+void Renderer_tex2::_MarkerPos_to_NearFarPoint(const MarkerPos & pos, XYZ &loc0, XYZ &loc1)
+{
+	Matrix P(4,4);		P << pos.P;   P = P.t();    // OpenGL is row-inner / C is column-inner
+	Matrix M(4,4);		M << pos.MV;  M = M.t();
+	Matrix PM = P * M;
+	//cout << "P M PM \n" << P << endl << M << endl << PM << endl;
+
+	double x = (pos.x             - pos.view[0])*2.0/pos.view[2] -1;
+	double y = (pos.view[3]-pos.y - pos.view[1])*2.0/pos.view[3] -1; // OpenGL is bottom to top
+	//double z = 0,1;                              // the clip space depth from 0 to 1
+
+	ColumnVector pZ0(4); 	pZ0 << x << y << 0 << 1;
+	ColumnVector pZ1(4); 	pZ1 << x << y << 1 << 1;
+	if (bOrthoView)
+	{
+		pZ0(3) = -1;  //100913
+	}
+	ColumnVector Z0 = PM.i() * pZ0;       //cout << "Z0 \n" << Z0 << endl;
+	ColumnVector Z1 = PM.i() * pZ1;       //cout << "Z1 \n" << Z1 << endl;
+	Z0 = Z0 / Z0(4);
+	Z1 = Z1 / Z1(4);
+
+	loc0 = XYZ(Z0(1), Z0(2), Z0(3));
+	loc1 = XYZ(Z1(1), Z1(2), Z1(3));
+}
+
+double Renderer_tex2::getDistanceOfMarkerPos(const MarkerPos & pos0, const MarkerPos & pos)
+{
+	XYZ Y1, Y2;
+	_MarkerPos_to_NearFarPoint(pos, Y1, Y2);
+
+	XYZ X1, X2;
+	_MarkerPos_to_NearFarPoint(pos0, X1, X2);
+
+	XYZ D  = Y2-Y1; normalize(D);
+	XYZ D0 = X2-X1; normalize(D0);
+	XYZ H = cross(D0, D); normalize(H);
+
+	double dist = fabs(dot(H, X1-Y1));
+	return dist;
+
+//	// pos's epipolar line in pos0's image space
+//
+//	Matrix P0(4,4);		P0 << pos0.P;   P0 = P0.t();    // OpenGL is row-inner / C is column-inner
+//	Matrix M0(4,4);		M0 << pos0.MV;  M0 = M0.t();
+//	Matrix PM0 = P0 * M0;
+//
+//	ColumnVector X0 = PM0 * Y0;
+//	X0 = X0 / X0(4);
+//	ColumnVector X1 = PM0 * Y1;
+//	X1 = X1 / X1(4);
+//
+//	XYZ A(X0(1), X0(2), X0(3));
+//	XYZ B(X1(1), X1(2), X1(3));
+//	XYZ L = cross(A, B);
+//
+//	// point to line in image
+//
+//	double x0 = (pos0.x              - pos0.view[0])*2.0/pos0.view[2] -1;
+//	double y0 = (pos0.view[3]-pos0.y - pos0.view[1])*2.0/pos0.view[3] -1; // OpenGL is bottom to top
+//	double dist = fabs(x0*L.x + y0*L.y + L.z)/sqrt(L.x*L.x + L.y*L.y);
+//	return dist;
+}
+
+XYZ Renderer_tex2::getCenterOfMarkerPos(const MarkerPos & pos)
+{
+	XYZ loc0, loc1;
+	_MarkerPos_to_NearFarPoint(pos, loc0, loc1);
+	qDebug("loc0--loc1: (%g, %g, %g)--(%g, %g, %g)\n", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
+
+//	//100730 RZC
+//	// in View space, keep for dot(clip, pos)>=0
+//	double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+//	// [0, 1] ==> [+1, -1]*(s)
+//	clipplane[3] = viewClip;
+//	ViewPlaneToModel(pos.MV, clipplane);
+
+	XYZ loc = getCenterOfLineProfile(loc0, loc1, 0);//clipplane);
+	return loc;
+}
+
+XYZ Renderer_tex2::getLocationOfListMarkerPos()
+{
+	int N = listMarkerPos.size();
+	if (N<2)
+		qDebug("getLocationOfListMarkerPos ERROR: listMarkerPos.size()<2");
+
+	Matrix A(N*3, 4);
+	for (int i=0; i<N; i++)
+	{
+		const MarkerPos & pos = listMarkerPos.at(i);
+
+		double x = (pos.x             - pos.view[0])*2.0/pos.view[2] -1;
+		double y = (pos.view[3]-pos.y - pos.view[1])*2.0/pos.view[3] -1; // OpenGL is bottom to top
+		double z = 1;
+		Matrix Cx(3,3);
+		Cx  << 0 << -z << y
+			<< z << 0 << -x
+			<< -y << x << 0;
+
+		Matrix P(4,4);		P << pos.P;   P = P.t();    // OpenGL is row-inner / C is column-inner
+		Matrix M(4,4);		M << pos.MV;  M = M.t();
+		Matrix PM = P * M;
+		Matrix Pr(3, 4);
+		Pr.row(1) = PM.row(1);
+		Pr.row(2) = PM.row(2);
+		Pr.row(3) = PM.row(4);  // drop PM.row(3), index is 1-based
+		//cout << "Cx P M Pr \n" << Cx << endl << P << endl << M << endl << Pr << endl;
+
+		Matrix As = Cx * Pr;
+		//cout << i << " As \n" << As << endl;
+		A.rows(i*3+1, i*3+3) << As;
+	}
+
+	DiagonalMatrix D;  Matrix U, V;
+	SVD(A, D, U, V);
+	//cout << "svd: A D V\n" << A << endl << D << endl << V << endl;
+	ColumnVector X = V.column(4) / V(4,4);
+	//cout << "location: " << X.t() << endl;
+
+	XYZ loc(X(1), X(2), X(3));
+	return loc;
+}
+
 XYZ Renderer_tex2::getPointOnPlane(XYZ P1, XYZ P2, double plane[4]) //100731
 {
 	//         A*N + d
 	//  t = -------------
 	//        (A - B)*N
-//	XYZ N(plane[0],plane[1],plane[2]);   double d = plane[3];
-//	double t = (dot(P1, N) + d)/dot((P1-P2), N);
 	double t = (P1.x*plane[0] + P1.y*plane[1] + P1.z*plane[2] + plane[3])
 				/((P1.x-P2.x)*plane[0] + (P1.y-P2.y)*plane[1] + (P1.z-P2.z)*plane[2]);
 	XYZ loc = P1 + t*(P2-P1);
@@ -2477,17 +2450,6 @@ XYZ Renderer_tex2::getPointOnPlane(XYZ P1, XYZ P2, double plane[4]) //100731
 // in Image space (model space)
 XYZ Renderer_tex2::getPointOnSections(XYZ P1, XYZ P2, double f_plane[4]) //100801
 {
-//	double plane[4] = {0,0,0,0};
-//	switch (lastSliceType)
-//	{
-//	case 1: plane[0] = -1;  plane[3] = start1+ VOL_X0*(size1-1);   break;
-//	case 2: plane[1] = -1;  plane[3] = start2+ VOL_Y0*(size2-1);   break;
-//	case 3: plane[2] = -1;  plane[3] = start3+ VOL_Z0*(size3-1);   break;
-//	case 4: for (int i=0; i<4; i++) plane[i]=clipplane[i];  break;
-//	}
-//	qDebug()<<"sliceType:"<<lastSliceType<<"   plane:"<<plane[0]<<plane[1]<<plane[2]<<plane[3];
-//	return getPointOnPlane(P1,P2, plane);
-
 	double plane[4];
 	XYZ P = P2; // from the far location
 	XYZ loc;

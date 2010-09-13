@@ -15,7 +15,7 @@
 
 class ExMatrixPlugin : public QObject, public V3DPluginInterface2
 {
-    Q_OBJECT
+    Q_OBJECT;
     Q_INTERFACES(V3DPluginInterface2);
 
 public:
