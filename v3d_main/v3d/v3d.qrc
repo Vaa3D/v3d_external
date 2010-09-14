@@ -1,5 +1,7 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
+   <file>pic/Lockon.png</file>
+   <file>pic/Lockoff.png</file>
    <file>pic/copy.png</file>
    <file>pic/cut.png</file>
    <file>pic/new.png</file>

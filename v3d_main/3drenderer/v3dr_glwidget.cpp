@@ -1549,74 +1549,122 @@ void V3dR_GLWidget::setFrontCut(int s)
 		POST_updateGL();
 	}
 }
+
 void V3dR_GLWidget::setXCut0(int s)
 {
 	if (_xCut0 != s) {
+		int DX = MAX(0, dataDim1()-1);
+		if (s+dxCut>DX)  s = DX-dxCut;
+
 		_xCut0 = s;
 		if (renderer) renderer->setXCut0(s);
 
-		if (_xCut0>_xCut1)	setXCut1(_xCut0); //081029
+		if (_xCut0+dxCut>_xCut1)	setXCut1(_xCut0+dxCut); //081029,100913
+		if (dxCut && _xCut0+dxCut<_xCut1)	setXCut1(_xCut0+dxCut); //100913
 		emit changeXCut0(s);
 		POST_updateGL();
 	}
+	else emit changeXCut1(_xCut0+dxCut);
 }
+
 void V3dR_GLWidget::setXCut1(int s)
 {
 	if (_xCut1 != s) {
+		if (s-dxCut<0)  s = dxCut;
+
 		_xCut1 = s;
 		if (renderer) renderer->setXCut1(s);
 
-		if (_xCut0>_xCut1)	setXCut0(_xCut1); //081029
+		if (_xCut0>_xCut1-dxCut)	setXCut0(_xCut1-dxCut);
+		if (dxCut && _xCut0<_xCut1-dxCut)	setXCut0(_xCut1-dxCut); //100913
 		emit changeXCut1(s);
 		POST_updateGL();
 	}
+	else emit changeXCut0(_xCut1-dxCut);
 }
 
 void V3dR_GLWidget::setYCut0(int s)
 {
 	if (_yCut0 != s) {
+		int DY = MAX(0, dataDim2()-1);
+		if (s+dyCut>DY)  s = DY-dyCut;
+
 		_yCut0 = s;
 		if (renderer) renderer->setYCut0(s);
 
-		if (_yCut0>_yCut1)	setYCut1(_yCut0); //081029
+		if (_yCut0+dyCut>_yCut1)	setYCut1(_yCut0+dyCut);
+		if (dyCut && _yCut0+dyCut<_yCut1)	setYCut1(_yCut0+dyCut);
 		emit changeYCut0(s);
 		POST_updateGL();
 	}
+	else emit changeYCut1(_yCut0+dyCut);
 }
+
 void V3dR_GLWidget::setYCut1(int s)
 {
 	if (_yCut1 != s) {
+		if (s-dyCut<0)  s = dyCut;
+
 		_yCut1 = s;
 		if (renderer) renderer->setYCut1(s);
 
-		if (_yCut0>_yCut1)	setYCut0(_yCut1); //081029
+		if (_yCut0>_yCut1-dyCut)	setYCut0(_yCut1-dyCut);
+		if (dyCut && _yCut0<_yCut1-dyCut)	setYCut0(_yCut1-dyCut);
 		emit changeYCut1(s);
 		POST_updateGL();
 	}
+	else emit changeYCut0(_yCut1-dyCut);
 }
 
 void V3dR_GLWidget::setZCut0(int s)
 {
 	if (_zCut0 != s) {
+		int DZ = MAX(0, dataDim3()-1);
+		if (s+dzCut>DZ)  s = DZ-dzCut;
+
 		_zCut0 = s;
 		if (renderer) renderer->setZCut0(s);
 
-		if (_zCut0>_zCut1)	setZCut1(_zCut0); //081029
+		if (_zCut0+dzCut>_zCut1)	setZCut1(_zCut0+dzCut);
+		if (dzCut && _zCut0+dzCut<_zCut1)	setZCut1(_zCut0+dzCut);
 		emit changeZCut0(_zCut0);
 		POST_updateGL();
 	}
+	else emit changeZCut1(_zCut0+dzCut);
 }
+
 void V3dR_GLWidget::setZCut1(int s)
 {
 	if (_zCut1 != s) {
+		if (s-dzCut<0)  s = dzCut;
+
 		_zCut1 = s;
 		if (renderer) renderer->setZCut1(s);
 
-		if (_zCut0>_zCut1)	setZCut0(_zCut1); //081029
+		if (_zCut0>_zCut1-dzCut)	setZCut0(_zCut1-dzCut);
+		if (dzCut && _zCut0<_zCut1-dzCut)	setZCut0(_zCut1-dzCut);
 		emit changeZCut1(_zCut1);
 		POST_updateGL();
 	}
+	else emit changeZCut0(_zCut1-dzCut);
 }
+
+void V3dR_GLWidget::setXCutLock(bool b)
+{
+	if (b)	dxCut = _xCut1-_xCut0;
+	else    dxCut = 0;
+}
+void V3dR_GLWidget::setYCutLock(bool b)
+{
+	if (b)	dyCut = _yCut1-_yCut0;
+	else    dyCut = 0;
+}
+void V3dR_GLWidget::setZCutLock(bool b)
+{
+	if (b)	dzCut = _zCut1-_zCut0;
+	else    dzCut = 0;
+}
+
 
 void V3dR_GLWidget::setXCS(int s)
 {

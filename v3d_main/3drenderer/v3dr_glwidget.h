@@ -213,6 +213,10 @@ public slots:
 	virtual void setYClip1(int s);
 	virtual void setZClip1(int s);
 
+	virtual void setXCutLock(bool);
+	virtual void setYCutLock(bool);
+	virtual void setZCutLock(bool);
+
 	virtual void enableShowAxes(bool b);
 	virtual void enableShowBoundingBox(bool b);
 	virtual void enableOrthoView(bool b);
@@ -338,6 +342,7 @@ private:
 	int _xRot, _yRot, _zRot, dxRot, dyRot, dzRot;
 	int _zoom, _xShift, _yShift, _zShift, dxShift, dyShift, dzShift;
 	int _xCut0, _xCut1, _yCut0, _yCut1, _zCut0, _zCut1, _fCut;
+	int dxCut, dyCut, dzCut;
 	int _xCS, _yCS, _zCS;
 	int _xClip0, _xClip1, _yClip0, _yClip1, _zClip0, _zClip1;
 	int _CStransparency, _markerSize, _curChannel;
@@ -370,6 +375,7 @@ private:
 		_xRot=_yRot=_zRot= dxRot=dyRot=dzRot=
 		_zoom=_xShift=_yShift=_zShift= dxShift=dyShift=dzShift=
 		_xCut0=_xCut1=_yCut0=_yCut1=_zCut0=_zCut1=_fCut=
+		dxCut=dyCut=dzCut=
 		_xCS=_yCS=_zCS=
 		_xClip0=_xClip1=_yClip0=_yClip1=_zClip0=_zClip1 =0;
 		_CStransparency=0; _markerSize=1, _curChannel=1;

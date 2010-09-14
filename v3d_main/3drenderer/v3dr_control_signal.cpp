@@ -373,25 +373,49 @@ void V3dR_MainWindow::createControlWidgets()
 		zcminSlider = createCutPlaneSlider(d3);
 		zcmaxSlider = createCutPlaneSlider(d3);
 		fcutSlider = createRangeSlider(0, CLIP_RANGE);
+//		xcLock = new QCheckBox();
+//		ycLock = new QCheckBox();
+//		zcLock = new QCheckBox();
+		xcLock = new QToolButton(); xcLock->setCheckable(true);
+		ycLock = new QToolButton(); ycLock->setCheckable(true);
+		zcLock = new QToolButton(); zcLock->setCheckable(true);
 
 		cutPlaneRgnLayout[i] = new QGridLayout(cutPlaneGroup[i]);
 
-		cutPlaneRgnLayout[i]->addWidget(new QLabel("X-min"), 1, 0, 1, 5);
+//		cutPlaneRgnLayout[i]->addWidget(new QLabel("X-min"), 1, 0, 1, 5);
+//		cutPlaneRgnLayout[i]->addWidget(xcminSlider, 1, 6, 1, 15);
+//
+//		cutPlaneRgnLayout[i]->addWidget(new QLabel("X-max"), 2, 0, 1, 5);
+//		cutPlaneRgnLayout[i]->addWidget(xcmaxSlider, 2, 6, 1, 15);
+//
+//		cutPlaneRgnLayout[i]->addWidget(new QLabel("Y-min"), 3, 0, 1, 5);
+//		cutPlaneRgnLayout[i]->addWidget(ycminSlider, 3, 6, 1, 15);
+//
+//		cutPlaneRgnLayout[i]->addWidget(new QLabel("Y-max"), 4, 0, 1, 5);
+//		cutPlaneRgnLayout[i]->addWidget(ycmaxSlider, 4, 6, 1, 15);
+//
+//		cutPlaneRgnLayout[i]->addWidget(new QLabel("Z-min"), 5, 0, 1, 5);
+//		cutPlaneRgnLayout[i]->addWidget(zcminSlider, 5, 6, 1, 15);
+//
+//		cutPlaneRgnLayout[i]->addWidget(new QLabel("Z-max"), 6, 0, 1, 5);
+//		cutPlaneRgnLayout[i]->addWidget(zcmaxSlider, 6, 6, 1, 15);
+
+		cutPlaneRgnLayout[i]->addWidget(new QLabel("X-cut"), 1, 0, 1, 5);
 		cutPlaneRgnLayout[i]->addWidget(xcminSlider, 1, 6, 1, 15);
 
-		cutPlaneRgnLayout[i]->addWidget(new QLabel("X-max"), 2, 0, 1, 5);
+		cutPlaneRgnLayout[i]->addWidget(xcLock, 2, 1, 1, 3);
 		cutPlaneRgnLayout[i]->addWidget(xcmaxSlider, 2, 6, 1, 15);
 
-		cutPlaneRgnLayout[i]->addWidget(new QLabel("Y-min"), 3, 0, 1, 5);
+		cutPlaneRgnLayout[i]->addWidget(new QLabel("Y-cut"), 3, 0, 1, 5);
 		cutPlaneRgnLayout[i]->addWidget(ycminSlider, 3, 6, 1, 15);
 
-		cutPlaneRgnLayout[i]->addWidget(new QLabel("Y-max"), 4, 0, 1, 5);
+		cutPlaneRgnLayout[i]->addWidget(ycLock, 4, 1, 1, 3);
 		cutPlaneRgnLayout[i]->addWidget(ycmaxSlider, 4, 6, 1, 15);
 
-		cutPlaneRgnLayout[i]->addWidget(new QLabel("Z-min"), 5, 0, 1, 5);
+		cutPlaneRgnLayout[i]->addWidget(new QLabel("Z-cut"), 5, 0, 1, 5);
 		cutPlaneRgnLayout[i]->addWidget(zcminSlider, 5, 6, 1, 15);
 
-		cutPlaneRgnLayout[i]->addWidget(new QLabel("Z-max"), 6, 0, 1, 5);
+		cutPlaneRgnLayout[i]->addWidget(zcLock, 6, 1, 1, 3);
 		cutPlaneRgnLayout[i]->addWidget(zcmaxSlider, 6, 6, 1, 15);
 
 		QLabel* front_label=0;
@@ -841,6 +865,19 @@ void V3dR_MainWindow::connectSignal()
 		connect(zcmaxSlider, SIGNAL(valueChanged(int)), glWidget, SLOT(setZCut1(int)));
 	}
 
+	if (xcLock) {
+		connect(xcLock, SIGNAL(toggled(bool)), glWidget, SLOT(setXCutLock(bool)));
+		connect(xcLock, SIGNAL(toggled(bool)), this, SLOT(setXCutLockIcon(bool))); setXCutLockIcon(false);
+	}
+	if (ycLock) {
+		connect(ycLock, SIGNAL(toggled(bool)), glWidget, SLOT(setYCutLock(bool)));
+		connect(ycLock, SIGNAL(toggled(bool)), this, SLOT(setYCutLockIcon(bool))); setYCutLockIcon(false);
+	}
+	if (zcLock) {
+		connect(zcLock, SIGNAL(toggled(bool)), glWidget, SLOT(setZCutLock(bool)));
+		connect(zcLock, SIGNAL(toggled(bool)), this, SLOT(setZCutLockIcon(bool))); setZCutLockIcon(false);
+	}
+
 	///////////////////////////////
 	if (fcutSlider) {
 		connect(glWidget, SIGNAL(changeFrontCut(int)), fcutSlider, SLOT(setValue(int)));
@@ -1056,6 +1093,32 @@ void V3dR_MainWindow::initControlValue()
 	if (glWidget) glWidget->update();  // 081122, CAUTION: call updateGL from initializeGL will cause infinite loop call
 	//////////////////////////////////////////////////////////////////////////
 }
+
+void V3dR_MainWindow::setXCutLockIcon(bool b)
+{
+	if (! xcLock)  return;
+	if (b)
+		xcLock->setIcon(QIcon(":/pic/Lockon.png"));
+	else
+		xcLock->setIcon(QIcon(":/pic/Lockoff.png"));
+}
+void V3dR_MainWindow::setYCutLockIcon(bool b)
+{
+	if (! ycLock)  return;
+	if (b)
+		ycLock->setIcon(QIcon(":/pic/Lockon.png"));
+	else
+		ycLock->setIcon(QIcon(":/pic/Lockoff.png"));
+}
+void V3dR_MainWindow::setZCutLockIcon(bool b)
+{
+	if (! zcLock)  return;
+	if (b)
+		zcLock->setIcon(QIcon(":/pic/Lockon.png"));
+	else
+		zcLock->setIcon(QIcon(":/pic/Lockoff.png"));
+}
+
 
 void V3dR_MainWindow::initVolumeTimeRange()
 {

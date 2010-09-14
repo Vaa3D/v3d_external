@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -75,6 +75,11 @@ protected:
 
 public slots:
 	void postClose();
+
+	void setXCutLockIcon(bool);
+	void setYCutLockIcon(bool);
+	void setZCutLockIcon(bool);
+
 	void initControlValue(); // easy to edit, by RZC 080828, easy to reset 081122
 	void initVolumeTimeRange();
 	void initVolumeCutRange();  // called by initControlValue
@@ -210,7 +215,8 @@ protected:
 
     // cut plane control
     QAbstractSlider *xcminSlider, *xcmaxSlider, *ycminSlider, *ycmaxSlider, *zcminSlider, *zcmaxSlider, *fcutSlider;
-	QCheckBox *checkBox_xCS, *checkBox_yCS, *checkBox_zCS, *checkBox_fCS;
+    QAbstractButton *xcLock, *ycLock, *zcLock;
+    QCheckBox *checkBox_xCS, *checkBox_yCS, *checkBox_zCS, *checkBox_fCS;
     QAbstractSlider *xCSSlider, *yCSSlider, *zCSSlider, *fCSSlider;
     QAbstractSlider *xSminSlider, *xSmaxSlider, *ySminSlider, *ySmaxSlider, *zSminSlider, *zSmaxSlider;
     QStackedLayout *stackedCutPlane;
@@ -258,6 +264,7 @@ protected:
 		tabRotZoom=0;
 
 		xcminSlider=xcmaxSlider=ycminSlider=ycmaxSlider=zcminSlider=zcmaxSlider=fcutSlider=0;
+		xcLock=ycLock=zcLock=0;
 		checkBox_xCS=checkBox_yCS=checkBox_zCS=checkBox_fCS=0;
 	    xCSSlider=yCSSlider=zCSSlider=fCSSlider=0;
 	    xSminSlider=xSmaxSlider=ySminSlider=ySmaxSlider=zSminSlider=zSmaxSlider=0;
