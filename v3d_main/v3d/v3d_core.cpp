@@ -1733,7 +1733,8 @@ void XFormView::mouseLeftButtonPressEvent(QMouseEvent *e) //080101
 	//reserved for future editing of the the pop-up menu
 	if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 	{
-		roiPolygon << e->pos()/disp_scale;
+		QPoint cp = e->pos(); ///(disp_scale*m_scale) + pixmap.width()/2.0+0.5;  //100909
+		roiPolygon << cp;
 		update();
 	}
 	else if (QApplication::keyboardModifiers()==Qt::AltModifier) //100816
@@ -1746,7 +1747,7 @@ void XFormView::mouseLeftButtonPressEvent(QMouseEvent *e) //080101
 	}
 	else if (b_moveCurrentLandmark==true && ind_landmarkToBeChanged>=0 && QApplication::keyboardModifiers()==Qt::ShiftModifier)
 	{
-		QPoint cp = e->pos()/disp_scale;
+		QPoint cp = e->pos(); ///(disp_scale*m_scale); //100909
 		
 		int sx,sy,sz; //current selection location's x,y,z
 		
