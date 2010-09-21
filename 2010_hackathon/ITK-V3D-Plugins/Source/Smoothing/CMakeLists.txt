@@ -6,5 +6,6 @@ CONFIGURE_V3D_PLUGIN(DiscreteGaussianFilter)
 
 CONFIGURE_V3D_PLUGIN(GradientAnisotropicDiffusion)
 CONFIGURE_V3D_PLUGIN(CurvatureAnisotropicDiffusion)
+CONFIGURE_V3D_PLUGIN(CurvatureFlow)
 CONFIGURE_V3D_PLUGIN(MinMaxCurvatureFlow)
 CONFIGURE_V3D_PLUGIN(BilateralFilter)

@@ -3,27 +3,27 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include "GradientAnisotropicDiffusion.h"
+#include "CurvatureFlow.h"
 #include "V3DITKFilterSingleImage.h"
 
 // ITK Header Files
 #include "itkCastImageFilter.h"
-#include "itkGradientAnisotropicDiffusionImageFilter.h"
+#include "itkCurvatureFlowImageFilter.h"
 
 
 // Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
 // The value of PluginName should correspond to the TARGET specified in the
 // plugin's project file.
-Q_EXPORT_PLUGIN2(GradientAnisotropicDiffusion, GradientAnisotropicDiffusionPlugin)
+Q_EXPORT_PLUGIN2(CurvatureFlow, CurvatureFlowPlugin)
 
 
-QStringList GradientAnisotropicDiffusionPlugin::menulist() const
+QStringList CurvatureFlowPlugin::menulist() const
 {
-    return QStringList() << QObject::tr("ITK GradientAnisotropicDiffusion")
+    return QStringList() << QObject::tr("ITK CurvatureFlow")
             << QObject::tr("about this plugin");
 }
 
-QStringList GradientAnisotropicDiffusionPlugin::funclist() const
+QStringList CurvatureFlowPlugin::funclist() const
 {
     return QStringList();
 }
@@ -38,7 +38,7 @@ class PluginSpecialized : public V3DITKFilterSingleImage< TPixelType, TPixelType
   typedef itk::Image< float, 3 >                              FloatImageType;
 
   typedef itk::CastImageFilter< ImageType, FloatImageType >   InputCastFilterType;
-  typedef itk::GradientAnisotropicDiffusionImageFilter< FloatImageType, FloatImageType > FilterType;
+  typedef itk::CurvatureFlowImageFilter< FloatImageType, FloatImageType > FilterType;
   typedef itk::CastImageFilter< FloatImageType, ImageType >   OutputCastFilterType;
 
 public:
@@ -59,17 +59,15 @@ public:
 
   void Execute(const QString &menu_name, QWidget *parent)
     {
-    V3DITKGenericDialog dialog("GradientAnisotropicDiffusion");
+    V3DITKGenericDialog dialog("CurvatureFlow");
 
     dialog.AddDialogElement("Iterations",2.0, 1.0, 10.0);
     dialog.AddDialogElement("TimeStep",0.06, 0.001, 0.625);
-    dialog.AddDialogElement("Conductance",3.0, 1.0, 5.0);
 
     if( dialog.exec() == QDialog::Accepted )
       {
       this->m_Filter->SetNumberOfIterations( dialog.GetValue("Iterations") );
       this->m_Filter->SetTimeStep( dialog.GetValue("TimeStep") );
-      this->m_Filter->SetConductanceParameter( dialog.GetValue("Conductance") );
 
       this->Compute();
       }
@@ -111,18 +109,18 @@ private:
     }
 
 
-void GradientAnisotropicDiffusionPlugin::dofunc(const QString & func_name,
+void CurvatureFlowPlugin::dofunc(const QString & func_name,
     const V3DPluginArgList & input, V3DPluginArgList & output, QWidget * parent)
 {
   // empty by now
 }
 
 
-void GradientAnisotropicDiffusionPlugin::domenu(const QString & menu_name, V3DPluginCallback & callback, QWidget * parent)
+void CurvatureFlowPlugin::domenu(const QString & menu_name, V3DPluginCallback & callback, QWidget * parent)
 {
   if (menu_name == QObject::tr("about this plugin"))
     {
-    QMessageBox::information(parent, "Version info", "ITK GradientAnisotropicDiffusion 1.0 (2010-Jun-21): this plugin is developed by Luis Ibanez.");
+    QMessageBox::information(parent, "Version info", "ITK CurvatureFlow 1.0 (2010-Jun-21): this plugin is developed by Luis Ibanez.");
     return;
     }
 
