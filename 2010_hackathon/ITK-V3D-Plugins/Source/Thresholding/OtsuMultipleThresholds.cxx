@@ -48,7 +48,7 @@ public:
 
   void Execute(const QString &menu_name, QWidget *parent)
     {
-    V3DITKGenericDialog dialog("Otsu Multiple Threshold");
+    V3DITKGenericDialog dialog("OtsuMultipleThreshold");
 
     dialog.AddDialogElement("HistogramBins", 128, 1, 256);
     dialog.AddDialogElement("Thresholds", 5, 1, 10);
@@ -56,13 +56,12 @@ public:
 
     if( dialog.exec() == QDialog::Accepted )
       {
-      // this->m_Filter->SetNumberOfHistogramBins( dialog.GetValue("HistogramBins") );
-      // this->m_Filter->SetNumberOfThresholds( dialog.GetValue("Thresholds") );
-      // this->m_Filter->SetLabelOffset( dialog.GetValue("FirstLabel") );
+      this->m_Filter->SetNumberOfHistogramBins( dialog.GetValue("HistogramBins") );
+      this->m_Filter->SetNumberOfThresholds( dialog.GetValue("Thresholds") );
+      this->m_Filter->SetLabelOffset( dialog.GetValue("FirstLabel") );
 
       this->Compute();
       }
-
     }
 
   virtual void ComputeOneRegion()
@@ -71,6 +70,22 @@ public:
     this->m_Filter->SetInput( this->GetInput3DImage() );
 
     this->m_Filter->Update();
+
+    typedef typename FilterType::ThresholdVectorType  ThresholdVectorType;
+    typedef typename itk::NumericTraits< TPixelType >::PrintType  PrintType;
+
+    const ThresholdVectorType thresholds = this->m_Filter->GetThresholds();
+
+    typename ThresholdVectorType::const_iterator tir = thresholds.begin();
+    typename ThresholdVectorType::const_iterator tend = thresholds.end();
+
+    while( tir != tend )
+      {
+      const PrintType thresholdValue = static_cast< PrintType >( *tir );
+      std::cout << "Threshold = " << thresholdValue << std::endl;
+      ++tir;
+      }
+
 
     this->SetOutputImage( this->m_Filter->GetOutput() );
     }

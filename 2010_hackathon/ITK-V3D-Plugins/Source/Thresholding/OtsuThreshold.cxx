@@ -41,6 +41,7 @@ public:
   PluginSpecialized( V3DPluginCallback * callback ): Superclass(callback)
     {
     this->m_Filter = FilterType::New();
+    this->RegisterInternalFilter( this->m_Filter, 1.0 );
     }
 
   virtual ~PluginSpecialized() {};
@@ -48,19 +49,18 @@ public:
 
   void Execute(const QString &menu_name, QWidget *parent)
     {
-    V3DITKGenericDialog dialog("Otsu Threshold");
+    V3DITKGenericDialog dialog("OtsuThreshold");
 
-//    dialog.AddDialogElement("HistogramBins", 128, 1, 256);
+    dialog.AddDialogElement("HistogramBins", 128.0, 1.0, 256.0);
 
     if( dialog.exec() == QDialog::Accepted )
       {
-//      this->m_Filter->SetNumberOfHistogramBins( dialog.GetValue("HistogramBins") );
+      this->m_Filter->SetNumberOfHistogramBins( dialog.GetValue("HistogramBins") );
       this->m_Filter->SetInsideValue(0);
       this->m_Filter->SetOutsideValue(255);
 
       this->Compute();
       }
-
     }
 
   virtual void ComputeOneRegion()
@@ -69,6 +69,11 @@ public:
     this->m_Filter->SetInput( this->GetInput3DImage() );
 
     this->m_Filter->Update();
+
+    typedef typename itk::NumericTraits< TPixelType >::PrintType  PrintType;
+    const PrintType thresholdValue = static_cast< PrintType >( this->m_Filter->GetThreshold() );
+
+    std::cout << "Threshold = " << thresholdValue << std::endl;
 
     this->SetOutputImage( this->m_Filter->GetOutput() );
     }
