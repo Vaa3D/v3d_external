@@ -73,6 +73,13 @@ public:
 
     this->m_Filter->Update();
 
+    typedef typename itk::NumericTraits< TPixelType >::PrintType  PrintType;
+    const PrintType thresholdValue = static_cast< PrintType >( this->m_Filter->GetThresholdValue() );
+
+    std::cout << "Threshold = " << thresholdValue << std::endl;
+
+    std::cout << "Number of Objects = " << this->m_Filter->GetNumberOfObjects() << std::endl;
+
     this->SetOutputImage( this->m_Filter->GetOutput() );
     }
 
