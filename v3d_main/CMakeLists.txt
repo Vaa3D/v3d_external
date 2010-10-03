@@ -27,6 +27,8 @@ find_package(Qt4 REQUIRED)
 include( ${QT_USE_FILE} )
 include_directories( ${QT_INCLUDES} )
 
+find_package(OpenGL REQUIRED)
+
 option( V3D_USE_OWN_TIFF "Use the TIFF library source code distributed with v3d" OFF)
 
 if( NOT V3D_USE_OWN_TIFF )

@@ -83,6 +83,7 @@ target_link_libraries( v3d
   worm_straighten_c
   mylib_tiff
   cellseg
+  ${OPENGL_glu_LIBRARY}
   ${QT4_DEMOS_LIBRARY}
   )
 
