@@ -46,7 +46,7 @@ public:
 		gridLayout->addWidget(cancel, 0, 0);
 		gridLayout->addWidget(ok, 0, 1);
 		setLayout( gridLayout);
-		setWindowTitle(QString("Mean Filter"));
+		setWindowTitle(QString("Median Filter"));
 
 		connect(ok, SIGNAL(clicked()), this, SLOT(accept()));
 		connect(cancel, SIGNAL(clicked()), this, SLOT(reject()));

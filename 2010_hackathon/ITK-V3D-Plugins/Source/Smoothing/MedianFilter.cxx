@@ -79,7 +79,7 @@ public:
 		importFilter->SetImportPointer(data1d, numberOfPixels,importImageFilterWillOwnTheBuffer);
 
 		//------------------------------------------------------------------
-		//setup filter: Mean Filter
+		//setup filter: Median Filter
 		typedef itk::MedianImageFilter<ImageType_input,ImageType_input> FilterType;
 		typename FilterType::Pointer filter = FilterType::New();
 
