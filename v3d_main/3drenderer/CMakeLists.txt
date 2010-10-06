@@ -38,3 +38,7 @@ add_library( 3drenderer ${QT_MOC_SRCS} ${3DRenderer_SRCS} )
 
 target_link_libraries( 3drenderer ${QT_QTOPENGL_LIBRARY} ${OPENGL_LIBRARIES} )
 
+# Avoid link error on Mac Snow Leopard
+if(APPLE)
+  target_link_libraries( 3drenderer "-framework CoreServices" )
+endif()
