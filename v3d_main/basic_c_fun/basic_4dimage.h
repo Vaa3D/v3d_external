@@ -129,7 +129,10 @@ public:
 	double getRezX() {return rez_x;}
 	double getRezY() {return rez_y;}
 	double getRezZ() {return rez_z;}
-
+	double getOriginX() {return origin_x;}
+	double getOriginY() {return origin_y;}
+	double getOriginZ() {return origin_z;}
+	
 	void setXDim(V3DLONG v) {sz0=v;}
 	void setYDim(V3DLONG v) {sz1=v;}
 	void setZDim(V3DLONG v) {sz2=v;}
@@ -144,7 +147,10 @@ public:
 	bool setRezX(double a) { if (a<=0) return false; rez_x = a; return true;}
 	bool setRezY(double a) { if (a<=0) return false; rez_y = a; return true;}
 	bool setRezZ(double a) { if (a<=0) return false; rez_z = a; return true;}
-
+	void setOriginX(double a) { origin_x = a;}
+	void setOriginY(double a) { origin_y = a;}
+	void setOriginZ(double a) { origin_z = a;}
+	
 	//this function is the main place to call if you want to set your own 1d pointer data to this data structure
 	bool setData(unsigned char *p, Image4DSimple * image )
   {
