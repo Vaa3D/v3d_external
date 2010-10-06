@@ -1616,6 +1616,12 @@ void MainWindow::createActions()
     openAct->setStatusTip(tr("Open an existing image"));
     connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 
+	//for CB to change!
+//    openAct = new QAction(QIcon(":/pic/open.png"), tr("&Open web image/stack ..."), this);
+//    openAct->setShortcut(tr("Ctrl+W"));
+//    openAct->setStatusTip(tr("Open a web image"));
+//    connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
+	
     saveAct = new QAction(QIcon(":/pic/save.png"), tr("&Save or Save as"), this);
     saveAct->setShortcut(tr("Ctrl+S"));
     saveAct->setStatusTip(tr("Save the image to disk"));
