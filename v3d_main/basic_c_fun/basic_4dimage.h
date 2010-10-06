@@ -46,6 +46,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  * Last edit: 2010-Aug-3: add the put_at() function for Image4DProxy class
  * Last edit: 2010-Aug-10: virtual destructor for other virtual functions in Image4DSimple
  * Last edit: 2010-Aug-31: PHC. move private members to protected to fix the hackers' bug!.  
+ * Last edit: 2010-Oct-06. PHC. add the original_x,y,z fields
  *
  *******************************************************************************************
  */
@@ -223,6 +224,7 @@ protected:
 	char imgSrcFile[1024]; //use a V3DLONG path to store the full path
 	int b_error;
 	double rez_x, rez_y, rez_z; //the resolution of a image pixel along the 3 axes
+	double origin_x, origin_y, origin_z; //the "true" orgin of an image, in term of the physical units (not pixels) using resolution information
 	
 	
 private:
