@@ -31,10 +31,65 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3d_imaging.h"
 #include "../basic_c_fun/v3d_message.h"
 
+#include "../plugin_loader/v3d_plugin_loader.h"
+
+#ifdef __WIN32 
+#include "../sub_projects/imaging_piezo/microimaging.h"
+#endif
+
 bool v3d_imaging(const v3d_imaging_paras & p)
 {
-v3d_msg("Now try to do imaging");
-return true;
+	v3d_msg("Now try to do imaging", 0);
+	
+	try 
+	{
+		QDir pluginsDir = QDir(qApp->applicationDirPath());
+#if defined(Q_OS_WIN)
+		if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
+			pluginsDir.cdUp();
+#elif defined(Q_OS_MAC)
+		if (pluginsDir.dirName() == "MacOS") {
+			pluginsDir.cdUp();
+			pluginsDir.cdUp();
+			pluginsDir.cdUp();
+		}
+#endif
+		if (pluginsDir.cd("plugins/64bit/Canvas_Eraser")==false)
+		//if (pluginsDir.cd("plugins/imaging_piezo")==false)
+		{
+			v3d_msg("Cannot find ./plugins/imaging_piezo directory!");
+			return false;
+		}
+		
+		QStringList fileList = pluginsDir.entryList(QDir::Files);
+		if (fileList.size()<1)
+		{
+			v3d_msg("Cannot find any file in the ./plugins/imaging_piezo directory!");
+			return false;
+		}
+		
+		QString fullpath = pluginsDir.absoluteFilePath(fileList.at(0)); //always just use the first file (assume it is the only one) found in the folder as the "correct" dll
+		
+    	QPluginLoader* loader = new QPluginLoader(fullpath);
+        if (!loader)
+        {
+        	qDebug("ERROR in V3d_PluginLoader::searchPluginFiles the imaging module(%s)", fullpath);
+        	return false;
+        }
+		
+		v3d_msg(fullpath);
+		
+		V3d_PluginLoader mypluginloader;
+		mypluginloader.runPlugin(loader, QString("about this plugin"));
+		//mypluginloader.runPlugin(loader, "ROI_IMAGING");
+	}
+	catch (...)
+	{
+		v3d_msg("Imaging has a problem", 1);
+		return false;
+	}
+	
+	return true;
 }
 
 

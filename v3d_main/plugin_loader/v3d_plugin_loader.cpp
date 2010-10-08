@@ -115,6 +115,13 @@ V3d_PluginLoader::V3d_PluginLoader(QMenu* menuPlugin, MainWindow* mainwindow)
 	rescanPlugins();
 }
 
+V3d_PluginLoader::V3d_PluginLoader()
+{
+	this->v3d_menuPlugin = 0;
+	this->v3d_mainwindow = 0;
+}
+
+
 //QObject * QPluginLoader::instance () returns the root component object of the plugin.
 //The plugin is loaded if necessary.
 //If the root component object was destroyed, calling this function creates a new instance.
