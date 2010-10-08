@@ -317,6 +317,7 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
     if (!done)  done = runPluginInterface(plugin, menuString);
     if (!done)  done = runPluginInterface2(plugin, menuString);
 	
+	v3d_msg(QString("already run! done status=%1").arg(done));
 	// 100804 RZC: MUST do not unload plug-ins that has model-less dialog
 	//    if (loader->isLoaded())
 	//    {
