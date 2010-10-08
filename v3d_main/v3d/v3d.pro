@@ -74,6 +74,7 @@
 # 100807: remove some redundant libs
 # 100810: add xformwidget.h extracted from v3d_core.h
 # 100820: add restriction of the win32 to use MYLIB_TIFF 
+# 101008: add the imaging module
 # ######################################################################
 
 TEMPLATE = app
@@ -130,6 +131,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../basic_c_fun/basic_landmark.h \
     ../basic_c_fun/v3d_interface.h \ 
     ../basic_c_fun/v3d_global_preference.h \
+	../basic_c_fun/customary_structs/v3d_imaging_para.h \
     ../plugin_loader/pluginDialog.h \
     ../plugin_loader/v3d_plugin_loader.h \
     ../graph/graph.h \
@@ -155,6 +157,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../3drenderer/gradients.h \
     ../3drenderer/hoverpoints.h \
     ../3drenderer/barFigureDialog.h \
+	../imaging/v3d_imaging.h \
     v3d_global_preference_dialog.h \
     v3d_compile_constraints.h \
     v3d_version_info.h \
@@ -232,6 +235,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../3drenderer/gradients.cpp \
     ../3drenderer/hoverpoints.cpp \
     ../3drenderer/barFigureDialog.cpp \
+	../imaging/v3d_imaging.cpp \
     v3d_version_info.cpp \
     main.cpp \
     mainwindow.cpp \

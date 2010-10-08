@@ -37,6 +37,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  * Last update: 20100211: Hanchuan Peng. add neuron seg merge closeby menuitem
  * Last update: 20100404: Hanchuan Peng. add the new merge closeby method and disable the old merge one branch menu
  * Last update: 20100820: Hanchuan Peng. add a 3d curve and zoom function
+ * Last update: 20101008: Hanchuan Peng. add support to v3d_imaging
  *
  *  Copyright Hanchuan Peng. All rights reserved.
  *
@@ -57,6 +58,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "../neuron_editing/neuron_sim_scores.h"
 #include "../neuron_tracing/neuron_tracing.h"
+
+#include "../imaging/v3d_imaging.h"
 
 #endif
 
@@ -199,6 +202,7 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 
 			*actCurveCreate1=0, *actCurveCreate2=0, *actCurveCreate3=0, *actCurveCreate_pointclick=0,
 			*actCurveCreate_zoom=0, *actMarkerCreate_zoom=0,
+			*actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
 
 			*actNeuronToEditable=0, *actDecomposeNeuron=0, *actNeuronFinishEditing=0,
 			*actChangeNeuronSegType=0, *actChangeNeuronSegRadius=0, *actReverseNeuronSeg=0,
@@ -248,6 +252,12 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				listAct.append(actCurveCreate_zoom = new QAction("Zoom-in view: 1-right-stroke ROI", w));
 				listAct.append(actMarkerCreate_zoom = new QAction("Zoom-in view: 1-right-click ROI", w));
+//101008
+//#ifdef _WIN32 && _MSC_VER
+				listAct.append(act = new QAction("", w)); act->setSeparator(true);
+				listAct.append(actCurveCreate_zoom_imaging = new QAction("Zoom-in imaging: 1-right-stroke ROI", w));
+				listAct.append(actMarkerCreate_zoom_imaging = new QAction("Zoom-in imaging: 1-right-click ROI", w));
+//#endif
 			}
 #endif
 #endif
@@ -590,7 +600,14 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 		b_addthiscurve = false;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
-
+	else if (act == actCurveCreate_zoom_imaging)
+	{
+		selectMode = smCurveCreate1;
+		b_addthiscurve = false;
+		b_imaging = true;
+		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+	}
+	
 #define __create_marker__ // dummy, just for easy locating
 
 	// real operation in selectObj() waiting next click
@@ -635,7 +652,14 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 		b_addthismarker = false;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
-
+	else if (act == actMarkerCreate_zoom_imaging)
+	{
+		selectMode = smMarkerCreate1;
+		b_addthismarker = false;
+		b_imaging = true;
+		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+	}
+	
 #ifndef test_main_cpp
 
 	else if (act == actMarkerAutoSeed)
@@ -2012,6 +2036,28 @@ void Renderer_tex2::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 		curXWidget->setLocal3DViewerBBox(mx, Mx, my, My, mz, Mz);
 		curXWidget->doImage3DLocalBBoxView();
 		//QTimer::singleShot( 1000, curXWidget, SLOT(doImage3DLocalView()) );
+		
+//by PHC 101008
+		if (b_imaging)
+		{
+			b_imaging = false; //reset the status
+
+			//set up parameters
+			v3d_imaging_paras myimagingp;
+			myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call      
+			myimagingp.xs = mx;
+			myimagingp.ys = my;
+			myimagingp.zs = mz; //starting coordinates (in pixel space)
+			myimagingp.xe = Mx;
+			myimagingp.ye = My;
+			myimagingp.ze = Mz; //ending coordinates (in pixel space)
+			myimagingp.xrez = curImg->getRezX() / 2.0;
+			myimagingp.yrez = curImg->getRezY() / 2.0;
+			myimagingp.zrez = curImg->getRezZ() / 2.0; 
+			
+			//do imaging
+			v3d_imaging(myimagingp);
+		}
 	}
 }
 

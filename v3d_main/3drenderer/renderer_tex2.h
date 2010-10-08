@@ -250,6 +250,7 @@ protected:
 	int cntCur3DCurveMarkers; //091226. marker cnt when define a curve using marker clicking
 	bool b_addthiscurve; //for 1-stroke curve based zoom-in, PHC 100821
 	bool b_addthismarker; //for 1-click based zoom-in, PHC 100821
+	bool b_imaging; //for v3d_imaging, PHC 101008
 	QList< QList <MarkerPos> > list_listCurvePos; //screen projection position
 	void solveCurveCenter(vector <XYZ> & loc_vec_input);
 	void solveCurveViews();
@@ -324,6 +325,8 @@ private:
 		VOL_X0 = VOL_Y0 = VOL_Z0 = 0;
 		VOLUME_FILTER = 1;
 		SLICE_COLOR = XYZW(1,1,1,1);
+		
+		b_imaging = false; //101008
 	}
 
 
