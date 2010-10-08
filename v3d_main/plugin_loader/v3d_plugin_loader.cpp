@@ -289,35 +289,46 @@ void V3d_PluginLoader::aboutPlugins()
     dialog.exec();
 }
 
+void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuString)
+{
+    if (!loader)
+    {
+    	v3d_msg("ERROR in V3d_PluginLoader::runPlugin: invalid pointer to the plugin loader detected.");
+    	return;
+    }
+	
+    loader->unload(); ///
+    QObject *plugin = loader->instance();
+    if (!plugin)
+    {
+    	v3d_msg("ERROR in V3d_PluginLoader::runPlugin: loader->instance()");
+    	return;
+    }
+	
+    bool done = false;
+    if (!done)  done = runSingleImageInterface(plugin, menuString);
+    if (!done)  done = runPluginInterface(plugin, menuString);
+    if (!done)  done = runPluginInterface2(plugin, menuString);
+	
+	// 100804 RZC: MUST do not unload plug-ins that has model-less dialog
+	//    if (loader->isLoaded())
+	//    {
+	//    	loader->unload();      qDebug() << "unload: " <<fileName;
+	//    }
+}
+
 void V3d_PluginLoader::runPlugin()
 {
     QAction *action = qobject_cast<QAction *>(sender());
     //V3DSingleImageInterface *iFilter = qobject_cast<V3DSingleImageInterface *>(action->parent());
     QPluginLoader *loader = qobject_cast<QPluginLoader *>(action->parent());
-    if (! loader)
+    if (!loader)
     {
-    	qDebug("ERROR in V3d_PluginLoader::runPlugin: qobject_cast<QPluginLoader *>");
+    	v3d_msg("ERROR in V3d_PluginLoader::runPlugin: qobject_cast<QPluginLoader *>");
     	return;
     }
-
-    loader->unload(); ///
-    QObject *plugin = loader->instance();
-    if (! plugin)
-    {
-    	qDebug("ERROR in V3d_PluginLoader::runPlugin: loader->instance()");
-    	return;
-    }
-
-    bool done = false;
-    if (!done)  done = runSingleImageInterface(plugin, action->text());
-    if (!done)  done = runPluginInterface(plugin, action->text());
-    if (!done)  done = runPluginInterface2(plugin, action->text());
-
-// 100804 RZC: MUST do not unload plug-ins that has model-less dialog
-//    if (loader->isLoaded())
-//    {
-//    	loader->unload();      qDebug() << "unload: " <<fileName;
-//    }
+	
+	return runPlugin(loader, action->text());
 }
 
 bool V3d_PluginLoader::runSingleImageInterface(QObject* plugin, const QString &command)
@@ -340,7 +351,6 @@ bool V3d_PluginLoader::runSingleImageInterface(QObject* plugin, const QString &c
 
         try
         {
-        	//iFilter->processImage(command, (Image4DSimple*)image, (QWidget*)v3d_mainwindow);
         	iFilter->processImage(command, (Image4DSimple*)image, (QWidget*)0); //do not pass the mainwindow widget
         }
         catch (...)
@@ -356,9 +366,6 @@ bool V3d_PluginLoader::runSingleImageInterface(QObject* plugin, const QString &c
 		{
 			try
 			{
-//				image->cleanExistData_only4Dpointers();
-//				image->setupData4D();
-
 				unsigned char * datanew = new unsigned char [image->getTotalBytes()];
 				memcpy(datanew, image->getRawData(), image->getTotalBytes());
 
@@ -369,7 +376,6 @@ bool V3d_PluginLoader::runSingleImageInterface(QObject* plugin, const QString &c
 					v3d_msg("Fail to update the new image content returned by the plugin to the window.");
 					return done;
 				}
-
 			}
 			catch (...)
 			{
@@ -377,7 +383,7 @@ bool V3d_PluginLoader::runSingleImageInterface(QObject* plugin, const QString &c
 				return done;
 			}
 		}
-		else //
+		else 
 		{
 			image->updateminmaxvalues(); //since the data have been changed, thus the min max values should be updated even the sizes remain the same
 		}
@@ -398,7 +404,6 @@ bool V3d_PluginLoader::runPluginInterface(QObject* plugin, const QString& comman
     {
         try
         {
-        	//iFilter->domenu(command, *callback, (QWidget*)v3d_mainwindow);
         	iface->domenu(command, *callback, (QWidget*)0); //do not pass the mainwindow widget
         }
         catch (...)
@@ -418,7 +423,6 @@ bool V3d_PluginLoader::runPluginInterface2(QObject* plugin, const QString& comma
     {
         try
         {
-        	//iFilter->domenu(command, *callback, (QWidget*)v3d_mainwindow);
         	iface->domenu(command, *callback, (QWidget*)0); //do not pass the mainwindow widget
         }
         catch (...)

@@ -33,6 +33,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 * V3D's plug-in loading support functions
 *
 * 2009-08-11, Zongcai Ruan
+* Last change: 2010-10-08. Hanchuan Peng 
 *
 ***************************************************************************
 */
@@ -63,6 +64,7 @@ public slots:
 	void populateMenus(); //hook menu to v3d, called by rescanPlugins, MainWindow::updateProcessingMenu
 	void aboutPlugins();
     void runPlugin();
+	void runPlugin(QPluginLoader *loader, const QString & menuString); //by PHC, 101008
 
 protected:
 	bool runSingleImageInterface(QObject* plugin, const QString& command);
