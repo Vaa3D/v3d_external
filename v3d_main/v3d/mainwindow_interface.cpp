@@ -233,7 +233,7 @@ bool XFormWidget::set3ViewROI(QList<QPolygon> & roi_list)
 	else return false;
 }
 
-  bool XFormWidget::transferImageData(Image4DSimple *img, unsigned char *a) // FIXME: Why is "a" not used ?
+bool XFormWidget::transferImageData(Image4DSimple *img, unsigned char *a) // FIXME: Why is "a" not used ?
 {
 	if (! img || !img->valid())  return false;
 
@@ -254,13 +254,16 @@ bool XFormWidget::set3ViewROI(QList<QPolygon> & roi_list)
 	  this->imgData->setRezX( img->getRezX() ); //100626
 	  this->imgData->setRezY( img->getRezY() );
 	  this->imgData->setRezZ( img->getRezZ() );
-
+	  this->imgData->setOriginX( img->getOriginX() ); //101007
+	  this->imgData->setOriginY( img->getOriginY() );
+	  this->imgData->setOriginZ( img->getOriginZ() );
+		
 	  img->setRawDataPointerToNull();
 
     return true;
 	}
 	else return false;
-} //090818 RZC
+} 
 
 void XFormWidget::open3DWindow()
 {
