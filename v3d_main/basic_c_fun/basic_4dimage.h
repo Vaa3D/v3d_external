@@ -47,6 +47,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  * Last edit: 2010-Aug-10: virtual destructor for other virtual functions in Image4DSimple
  * Last edit: 2010-Aug-31: PHC. move private members to protected to fix the hackers' bug!.  
  * Last edit: 2010-Oct-06. PHC. add the original_x,y,z fields
+ * Last edit: 2010-Oct-7. PHC. add a customary void pointer for a unknown struct for parameters passing of plugins
  *
  *******************************************************************************************
  */
@@ -59,7 +60,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 class Image4DSimple
 {
 public:
-	Image4DSimple() {
+	Image4DSimple() 
+	{
 		data1d = 0;
 		sz0 = sz1 = sz2 = sz3 = 0;
 		sz_time = 0;
@@ -68,13 +70,17 @@ public:
 		imgSrcFile[0] = '\0';
 		b_error = 0;
 		rez_x = rez_y = rez_z = 1;
+		
+		origin_x = origin_y = origin_z = 0;
+		p_customStruct = 0;
 	}
-	virtual ~Image4DSimple() {
+	virtual ~Image4DSimple() 
+	{
 		cleanExistData();
 	}
 	virtual void cleanExistData()
 	{
-    this->deleteRawDataAndSetPointerToNull();
+		this->deleteRawDataAndSetPointerToNull();
 		sz0 = sz1 = sz2 = sz3 = 0;
 		sz_time = 0;
 		datatype = V3D_UNKNOWN;
@@ -83,7 +89,7 @@ public:
 		b_error = 0;
 		rez_x = rez_y = rez_z = 1;
 	}
-
+	
 	//main interface to the data
 	unsigned char * getRawData() {return data1d;}
 	V3DLONG getXDim() {return sz0;}
@@ -115,17 +121,17 @@ public:
 	}
 	int isSuccess() {if (sz0<=0 || sz1<=0 || sz2<=0 || sz3<=0) b_error=1; return !b_error;}
 	virtual bool valid() {
-    return (
-      !data1d ||
-       sz0<=0 ||
-       sz1<=0 ||
-       sz2<=0 ||
-       sz3<=0 ||
-       b_error ||
-     (datatype!=V3D_UINT8 &&
-      datatype!=V3D_UINT16 &&
-      datatype!=V3D_FLOAT32)) ?  false : true;
-    }
+		return (
+				!data1d ||
+				sz0<=0 ||
+				sz1<=0 ||
+				sz2<=0 ||
+				sz3<=0 ||
+				b_error ||
+				(datatype!=V3D_UINT8 &&
+				 datatype!=V3D_UINT16 &&
+				 datatype!=V3D_FLOAT32)) ?  false : true;
+	}
 	double getRezX() {return rez_x;}
 	double getRezY() {return rez_y;}
 	double getRezZ() {return rez_z;}
@@ -141,9 +147,9 @@ public:
 	void setDatatype(ImagePixelType v) {datatype=v;}
 	void setTimePackType(TimePackType v) {timepacktype=v;}
 	bool setNewRawDataPointer(unsigned char *p) {if (!p) return false; if (data1d) delete []data1d; data1d = p; return true;}
-  void setRawDataPointerToNull() { this->data1d = 0; }
-  void deleteRawDataAndSetPointerToNull() { if (data1d) {delete []data1d; data1d = 0;} }
-  void setRawDataPointer(unsigned char *p) { this->data1d = p; }
+	void setRawDataPointerToNull() { this->data1d = 0; }
+	void deleteRawDataAndSetPointerToNull() { if (data1d) {delete []data1d; data1d = 0;} }
+	void setRawDataPointer(unsigned char *p) { this->data1d = p; }
 	bool setRezX(double a) { if (a<=0) return false; rez_x = a; return true;}
 	bool setRezY(double a) { if (a<=0) return false; rez_y = a; return true;}
 	bool setRezZ(double a) { if (a<=0) return false; rez_z = a; return true;}
@@ -151,12 +157,16 @@ public:
 	void setOriginY(double a) { origin_y = a;}
 	void setOriginZ(double a) { origin_z = a;}
 	
+	void setCustomStructPointer(void *a) {p_customStruct = a;}
+	void * getCustomStructPointer() {return p_customStruct;}
+	bool isValidCustomStructPointer() {return (p_customStruct!=0)?true:false;}
+	
 	//this function is the main place to call if you want to set your own 1d pointer data to this data structure
 	bool setData(unsigned char *p, Image4DSimple * image )
-  {
-    bool result = this->setData( p, image->sz0, image->sz1, image->sz2, image->sz3, image->datatype );
-    return result;
-  }
+	{
+		bool result = this->setData( p, image->sz0, image->sz1, image->sz2, image->sz3, image->datatype );
+		return result;
+	}
 	bool setData(unsigned char *p, V3DLONG s0, V3DLONG s1, V3DLONG s2, V3DLONG s3, ImagePixelType dt)
 	{
 		if (p && s0>0 && s1>0 && s2>0 && s3>0 && (dt==V3D_UINT8 || dt==V3D_UINT16 || dt==V3D_FLOAT32))
@@ -171,7 +181,7 @@ public:
 			}
 		return false;
 	}
-
+	
 	bool setFileName(const char * myfile)
 	{
 		if (!myfile) return false;
@@ -180,20 +190,20 @@ public:
 		for (i=0;i<clen;i++)
 		{
 			if (myfile[i]!='\0')
-        {
-        imgSrcFile[i] = myfile[i];
-        }
+			{
+				imgSrcFile[i] = myfile[i];
+			}
 			else
-        {
-        imgSrcFile[i] = myfile[i];
-        break;
-        }
+			{
+				imgSrcFile[i] = myfile[i];
+				break;
+			}
 		}
 		imgSrcFile[i]='\0';
 		return true;
 	}
 	const char * getFileName() const { return imgSrcFile; }
-
+	
 	//to call the following 4 functions you must link your project with basic_4dimage.cpp
 	//Normally for the plugin interfaces you don't need to call the following functions
 	void loadImage(char filename[]);
@@ -201,24 +211,24 @@ public:
 	bool saveImage(const char filename[]);
 	bool createImage(V3DLONG mysz0, V3DLONG mysz1, V3DLONG mysz2, V3DLONG mysz3, ImagePixelType mytype);
 	void createBlankImage(V3DLONG imgsz0, V3DLONG imgsz1, V3DLONG imgsz2, V3DLONG imgsz3, int imgdatatype);
-
+	
 	//a function to check if the data buffer is the same as another image
 	bool isSameDataBuffer( Image4DSimple *p)
 	{
-	  if (!p) return false; // cannot be the same if the pointer to be compared is null
-	  if (data1d!=p->getRawData())
-		return false; //the data of course are different if the pointers are different
-	  else //there is a chance that the data pointers are the same, but their sizes are different
-          {
-            if (getTotalBytes() == p->getTotalBytes())
-              return false;
-	    else return true;
-          }
+		if (!p) return false; // cannot be the same if the pointer to be compared is null
+		if (data1d!=p->getRawData())
+			return false; //the data of course are different if the pointers are different
+		else //there is a chance that the data pointers are the same, but their sizes are different
+		{
+			if (getTotalBytes() == p->getTotalBytes())
+				return false;
+			else return true;
+		}
 	}
-
+	
 protected:
-  void setError( int v ) {b_error = v;}
-
+	void setError( int v ) {b_error = v;}
+	
 	unsigned char * data1d;
 	V3DLONG sz0;
 	V3DLONG sz1;
@@ -232,6 +242,7 @@ protected:
 	double rez_x, rez_y, rez_z; //the resolution of a image pixel along the 3 axes
 	double origin_x, origin_y, origin_z; //the "true" orgin of an image, in term of the physical units (not pixels) using resolution information
 	
+	void * p_customStruct; //a convenient pointer to pass back and forth some useful parameter information for a plugin
 	
 private:
 };
@@ -312,6 +323,7 @@ public:
 		}
 	}
 };
+
 #define Image4DProxy_foreach(p, x,y,z,c) \
 for (V3DLONG c = 0; c < p.sc; c++) \
 for (V3DLONG z = 0; z < p.sz; z++) \
@@ -326,7 +338,7 @@ struct V3D_Image3DBasic
 	V3DLONG sz0, sz1, sz2;
 	ImagePixelType datatype;
 	V3DLONG cid; //the color channel in the original 4D image
-
+	
 	V3D_Image3DBasic() {data1d=0; sz0=sz1=sz2=0; datatype=V3D_UNKNOWN; cid=-1;}
 	bool setData(Image4DSimple *p, V3DLONG myid)
 	{
