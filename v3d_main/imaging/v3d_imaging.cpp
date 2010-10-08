@@ -54,8 +54,8 @@ bool v3d_imaging(const v3d_imaging_paras & p)
 			pluginsDir.cdUp();
 		}
 #endif
-		//if (pluginsDir.cd("plugins/64bit/Canvas_Eraser")==false)
-		if (pluginsDir.cd("plugins/imaging_piezo")==false)
+		if (pluginsDir.cd("plugins/64bit/Canvas_Eraser")==false)
+		//if (pluginsDir.cd("plugins/imaging_piezo")==false)
 		{
 			v3d_msg("Cannot find ./plugins/imaging_piezo directory!");
 			return false;
@@ -80,8 +80,8 @@ bool v3d_imaging(const v3d_imaging_paras & p)
 		v3d_msg(fullpath);
 		
 		V3d_PluginLoader mypluginloader;
-		//mypluginloader.runPlugin(loader, QString("about this plugin"));
-		mypluginloader.runPlugin(loader, "ROI_IMAGING");
+		mypluginloader.runPlugin(loader, QString("about this plugin"));
+		//mypluginloader.runPlugin(loader, "ROI_IMAGING");
 	}
 	catch (...)
 	{
