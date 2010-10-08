@@ -40,13 +40,15 @@ from this software without specific prior written permission.
 #ifndef __V3D_IMAGING_PARA_H__
 #define __V3D_IMAGING_PARA_H__
 
-#include "v3d_basicdatatype.h"
+#include "../v3d_basicdatatype.h"
+#include "../basic_4dimage.h"
 
 struct v3d_imaging_paras
 {
-V3DLONG xs, ys, zs; //starting coordinates (in pixel space)
-V3DLONG xe, ye, ze; //ending coordinates (in pixel space)
-double xrez, yrez, zrez; //imaging step size in 3D (in physical space, and also assuming the unit (e.g. micron) is unchanging)
+	Image4DSimple *imgp; //the image data for a plugin to call	
+	V3DLONG xs, ys, zs; //starting coordinates (in pixel space)
+	V3DLONG xe, ye, ze; //ending coordinates (in pixel space)
+	double xrez, yrez, zrez; //imaging step size in 3D (in physical space, and also assuming the unit (e.g. micron) is unchanging)
 };
 
 #endif
