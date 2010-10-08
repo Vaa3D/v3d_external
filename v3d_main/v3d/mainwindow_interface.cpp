@@ -257,6 +257,7 @@ bool XFormWidget::transferImageData(Image4DSimple *img, unsigned char *a) // FIX
 	  this->imgData->setOriginX( img->getOriginX() ); //101007
 	  this->imgData->setOriginY( img->getOriginY() );
 	  this->imgData->setOriginZ( img->getOriginZ() );
+	  this->imgData->setCustomStructPointer( img->getCustomStructPointer() );
 		
 	  img->setRawDataPointerToNull();
 
