@@ -79,6 +79,7 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 		}
 		
 		QString fullpath = pluginsDir.absoluteFilePath(fileList.at(0)); //always just use the first file (assume it is the only one) found in the folder as the "correct" dll
+		//the real dll name should be "microimaging.dll"
 		
     	QPluginLoader* loader = new QPluginLoader(fullpath);
         if (!loader)
