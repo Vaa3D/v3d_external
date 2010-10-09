@@ -33,6 +33,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "../plugin_loader/v3d_plugin_loader.h"
 
+//#include "../v3d/v3d_core.h"
+#include "../v3d/mainwindow.h"
+
 #ifdef __WIN32 
 #include "../sub_projects/imaging_piezo/microimaging.h"
 #endif
@@ -43,6 +46,13 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 	
 	try 
 	{
+		XFormWidget *curw = mainwindow->activeMdiChild();
+		if (!curw)
+		{
+			v3d_msg("No window open yet.");
+			return false;
+		}
+
 		QDir pluginsDir = QDir(qApp->applicationDirPath());
 #if defined(Q_OS_WIN)
 		if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
@@ -55,7 +65,7 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 		}
 #endif
 		//if (pluginsDir.cd("plugins/64bit/Canvas_Eraser")==false)
-		if (pluginsDir.cd("plugins/imaging_piezo")==false)
+		if (pluginsDir.cd("plugins/imaging_piezo")==false) 
 		{
 			v3d_msg("Cannot find ./plugins/imaging_piezo directory!");
 			return false;
@@ -81,7 +91,10 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 		
 		V3d_PluginLoader mypluginloader(mainwindow);
 		//mypluginloader.runPlugin(loader, QString("about this plugin"));
+
+		curw->getImageData()->setCustomStructPointer((void *)(&p)); //to pass parameters to the imaging plugin
 		mypluginloader.runPlugin(loader, "ROI_IMAGING");
+		//mypluginloader.runPlugin(loader, "about");
 	}
 	catch (...)
 	{
