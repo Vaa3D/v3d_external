@@ -57,7 +57,7 @@ class V3d_PluginLoader : public QObject, public V3DPluginCallback2
 
 public:
     V3d_PluginLoader(QMenu* menuPlugin, MainWindow* mainwindow);
-    V3d_PluginLoader(); //by PHC, 101008. a convenience function for access plugin interface w/o a menu
+    V3d_PluginLoader(MainWindow* mainwindow); //by PHC, 101008. a convenience function for access plugin interface w/o a menu
     virtual ~V3d_PluginLoader() {clear();}
 
 public slots:

@@ -33,7 +33,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "../basic_c_fun/customary_structs/v3d_imaging_para.h"
 
-bool v3d_imaging(const v3d_imaging_paras & p);
+class MainWindow;
+bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p);
 
 #endif
 

@@ -37,7 +37,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../sub_projects/imaging_piezo/microimaging.h"
 #endif
 
-bool v3d_imaging(const v3d_imaging_paras & p)
+bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 {
 	v3d_msg("Now try to do imaging", 0);
 	
@@ -54,8 +54,8 @@ bool v3d_imaging(const v3d_imaging_paras & p)
 			pluginsDir.cdUp();
 		}
 #endif
-		if (pluginsDir.cd("plugins/64bit/Canvas_Eraser")==false)
-		//if (pluginsDir.cd("plugins/imaging_piezo")==false)
+		//if (pluginsDir.cd("plugins/64bit/Canvas_Eraser")==false)
+		if (pluginsDir.cd("plugins/imaging_piezo")==false)
 		{
 			v3d_msg("Cannot find ./plugins/imaging_piezo directory!");
 			return false;
@@ -79,9 +79,9 @@ bool v3d_imaging(const v3d_imaging_paras & p)
 		
 		v3d_msg(fullpath);
 		
-		V3d_PluginLoader mypluginloader;
-		mypluginloader.runPlugin(loader, QString("about this plugin"));
-		//mypluginloader.runPlugin(loader, "ROI_IMAGING");
+		V3d_PluginLoader mypluginloader(mainwindow);
+		//mypluginloader.runPlugin(loader, QString("about this plugin"));
+		mypluginloader.runPlugin(loader, "ROI_IMAGING");
 	}
 	catch (...)
 	{

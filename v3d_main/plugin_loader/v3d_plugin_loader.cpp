@@ -115,10 +115,10 @@ V3d_PluginLoader::V3d_PluginLoader(QMenu* menuPlugin, MainWindow* mainwindow)
 	rescanPlugins();
 }
 
-V3d_PluginLoader::V3d_PluginLoader()
+V3d_PluginLoader::V3d_PluginLoader(MainWindow* mainwindow)
 {
 	this->v3d_menuPlugin = 0;
-	this->v3d_mainwindow = 0;
+	this->v3d_mainwindow = mainwindow;
 }
 
 

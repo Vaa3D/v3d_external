@@ -2038,7 +2038,7 @@ void Renderer_tex2::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 		//QTimer::singleShot( 1000, curXWidget, SLOT(doImage3DLocalView()) );
 		
 //by PHC 101008
-		if (b_imaging)
+		if (b_imaging && curXWidget)
 		{
 			b_imaging = false; //reset the status
 
@@ -2056,7 +2056,7 @@ void Renderer_tex2::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 			myimagingp.zrez = curImg->getRezZ() / 2.0; 
 			
 			//do imaging
-			v3d_imaging(myimagingp);
+			v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
 		}
 	}
 }
