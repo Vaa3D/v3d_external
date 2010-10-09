@@ -88,7 +88,7 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
         	return false;
         }
 		
-		v3d_msg(fullpath);
+		v3d_msg(fullpath, 0);
 		
 		V3d_PluginLoader mypluginloader(mainwindow);
 		//mypluginloader.runPlugin(loader, QString("about this plugin"));
