@@ -52,7 +52,8 @@ typedef          double      float64;
 //Note that _WIN32 seems always defined for any windows application.
 //For more info see page for example: http://msdn.microsoft.com/en-us/library/b0084kay%28VS.80%29.aspx
 
-#if defined(_MSC_VER) && defined(_WIN64)
+#if defined(_MSC_VER) && (_WIN64)
+//#if defined(_MSC_VER) && defined(_WIN64) //correct?
 
 #define V3DLONG long long
 
