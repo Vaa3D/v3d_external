@@ -2042,6 +2042,13 @@ void Renderer_tex2::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 		{
 			b_imaging = false; //reset the status
 
+			//set the hiddenSelectWidget for the V3D mainwindow
+			if (!curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+			{
+				v3d_msg("Fail to set up the curHiddenSelectedXWidget for the V3D mainwindow. Do nothing.");
+				return;
+			}
+			
 			//set up parameters
 			v3d_imaging_paras myimagingp;
 			myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call      

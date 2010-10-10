@@ -2160,6 +2160,27 @@ XFormWidget ** MainWindow::retrieveAllMdiChild(int & nchild)
     return plist;
 }
 
+bool MainWindow::setCurHiddenSelectedWindow( XFormWidget* a) //by PHC, 101009
+{
+	bool b_found=false;
+    foreach (QWidget *window, workspace->windowList()) //ensure the value is valid (especially the window has not been closed)
+	{
+        if (a == qobject_cast<XFormWidget *>(window))
+		{b_found=true; break;}
+    }
+	if (b_found)
+	{
+		curHiddenSelectedXWidget = a;
+		return true;
+	}
+	else
+	{
+		curHiddenSelectedXWidget = 0; 
+		return false;
+	}
+}
+
+
 //the following are public slot processing functions
 //		      << tr(" -- masking image using bounding boxes in 3D (derived from ROIs)") //missing? 080613
 

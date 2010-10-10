@@ -48,6 +48,8 @@ typedef          long long   sint64;
 typedef          float       float32;
 typedef          double      float64;
 
+typedef void* v3dhandle;
+
 //2010-05-19: by Hanchuan Peng. add the MSVC specific version # (vc 2008 has a _MSC_VER=1500) and win64 macro. 
 //Note that _WIN32 seems always defined for any windows application.
 //For more info see page for example: http://msdn.microsoft.com/en-us/library/b0084kay%28VS.80%29.aspx

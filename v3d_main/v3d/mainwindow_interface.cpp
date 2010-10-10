@@ -53,6 +53,8 @@ My4DImage* MainWindow::currentImage()
 	if (w) return w->getImageData(); else return 0;
 }
 
+
+
 QList<void*> MainWindow::allWindowList()
 {
 	QList<void*> list;

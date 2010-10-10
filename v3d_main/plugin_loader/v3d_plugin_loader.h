@@ -93,6 +93,8 @@ public:
 
 	virtual v3dhandleList getImageWindowList() const;
 	virtual v3dhandle currentImageWindow();
+	virtual v3dhandle curHiddenSelectedWindow(); //by PHC 101009
+
 	virtual v3dhandle newImageWindow(QString name);
 	virtual void updateImageWindow(v3dhandle image_window);
 

@@ -80,7 +80,6 @@ typedef QList<LocationSimple>  LandmarkList;
 //typedef QList<NeuronSWC>       SWCList;
 //typedef QList<CellAPO>         APOList;
 
-typedef void* v3dhandle;
 typedef QList<v3dhandle>       v3dhandleList;
 
 // this is the export interface of V3D functions to plugin
@@ -93,6 +92,7 @@ public:
 
 	virtual v3dhandleList getImageWindowList() const = 0;
 	virtual v3dhandle currentImageWindow() = 0;
+	virtual v3dhandle curHiddenSelectedWindow() = 0; //by PHC, 20101009. curHiddenSelectedWindow may not be the *currentImageWindow* if the selection is done from a 3d viewer
 	virtual v3dhandle newImageWindow(QString name="new_image") = 0;
 	virtual void updateImageWindow(v3dhandle image_window) = 0;
 

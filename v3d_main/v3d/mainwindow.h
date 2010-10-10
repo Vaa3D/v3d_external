@@ -242,6 +242,7 @@ private:
 	QString strippedName(const QString &fullFileName);
 
 	QString curFile;
+	XFormWidget * curHiddenSelectedXWidget;
 
     QWorkspace *workspace;
     QSignalMapper *windowMapper;
@@ -440,6 +441,10 @@ public: //for image processing, some of the parameters should be globally set
 public:	//2009-2010: used by V3D_PluginLoader 	// in mainwindow_interface.cpp
 	XFormWidget* currentImageWindow();
 	My4DImage* currentImage();
+	
+	XFormWidget* curHiddenSelectedWindow() {return curHiddenSelectedXWidget;}
+	bool setCurHiddenSelectedWindow( XFormWidget* a);
+	
 	QList<void*> allWindowList();
 	XFormWidget* validateImageWindow(void* window);
 	QString getWindowName(void* window);

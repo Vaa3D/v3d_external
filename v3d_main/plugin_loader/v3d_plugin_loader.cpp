@@ -517,6 +517,15 @@ v3dhandle V3d_PluginLoader::currentImageWindow()
 	}
 	return v3dhandle(w);
 }
+v3dhandle V3d_PluginLoader::curHiddenSelectedWindow()
+{
+	XFormWidget* w = 0;
+	if (v3d_mainwindow)
+	{
+		w = v3d_mainwindow->curHiddenSelectedWindow();
+	}
+	return v3dhandle(w);
+}
 v3dhandle V3d_PluginLoader::newImageWindow(QString name)
 {
 	XFormWidget* w = 0;
