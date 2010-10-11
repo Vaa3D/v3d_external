@@ -53,6 +53,7 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
  April  2009: add preference menu item
  May 16, 2009: add import to atlas file menu and adjust other menus
  May 17, 2009: add import point cloud atlas menu
+ Oct 6, 2010: CMB add web URL open method
 **
 ****************************************************************************/
 
@@ -71,6 +72,8 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 #include "import_images_tool_dialog.h"
 
 #include "../jba/c++/jba_mainfunc.h"
+
+#include "DownloadManager.h" // CMB 08-Oct-2010
 
 //#include "dialog_pointcloudatlas_linkerloader.h"
 
@@ -108,6 +111,7 @@ MainWindow::MainWindow()
 
     newAct = 0;
     openAct = 0;
+    openWebUrlAct = 0; // CMB Oct-07-2010
     atlasViewAct = 0;
     saveAct = 0;
     saveAsAct = 0;
@@ -391,6 +395,43 @@ void MainWindow::open()
 {
     QString fileName = QFileDialog::getOpenFileName(this);
 	loadV3DFile(fileName);
+}
+
+// By CMB Oct-08-2010
+// Ask user for URL to download image stack from.
+void MainWindow::openWebUrl()
+{
+    // Pop a dialog to ask the user for
+    bool ok;
+    QString imageUrlText = QInputDialog::getText(this,
+            "Load Image/Stack from web URL",
+            "Type or paste web URL of Image/Stack:",
+            QLineEdit::Normal, 
+            "http://penglab.janelia.org/proj/v3d/ex_Repo_hb9_eve.tif",
+            &ok);
+    if (!ok) return; // User pressed Cancel or closed window
+    if (imageUrlText.isEmpty()) return; // User entered nothing
+    // Copy web url to local file.  So many methods would need to
+    // be changed to make this work with streams... CMB
+    QUrl imageUrl = QUrl::fromEncoded(imageUrlText.toLocal8Bit());
+    // Put local file into temp directory
+    QString fileName = DownloadManager::chooseLocalFileName(imageUrl);
+    QString tempDir = QDir::tempPath();
+    fileName = tempDir + "/" + fileName;
+    DownloadManager *downloadManager = new DownloadManager(this);
+    connect(downloadManager, SIGNAL(downloadFinishedSignal(QString)),
+            this, SLOT(finishedLoadingWebImage(QString)));
+    downloadManager->startDownload(imageUrl, fileName);
+}
+
+// This method is called once an asynchronous web download has completed.
+// By CMB Oct-08-2010
+void MainWindow::finishedLoadingWebImage(QString fileName)
+{
+    // false means Don't add local file name to recent files list
+	loadV3DFile(fileName, false);
+    // TODO - perhaps URL should be placed in recent file list
+    QFile::remove(fileName); // delete downloaded file
 }
 
 V3dR_MainWindow * MainWindow::find3DViewer(QString fileName)
@@ -1616,11 +1657,12 @@ void MainWindow::createActions()
     openAct->setStatusTip(tr("Open an existing image"));
     connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 
-	//for CB to change!
-//    openAct = new QAction(QIcon(":/pic/open.png"), tr("&Open web image/stack ..."), this);
-//    openAct->setShortcut(tr("Ctrl+W"));
-//    openAct->setStatusTip(tr("Open a web image"));
-//    connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
+    // New Open Web URL action, based on Open Action (openAct) example
+    // By CMB 06-Oct-2010
+    openWebUrlAct = new QAction(QIcon(":/pic/web.png"), tr("&Open web image/stack ..."), this);
+    openWebUrlAct->setShortcut(tr("Ctrl+W"));
+    openWebUrlAct->setStatusTip(tr("Open a web (URL) image"));
+    connect(openWebUrlAct, SIGNAL(triggered()), this, SLOT(openWebUrl()));
 	
     saveAct = new QAction(QIcon(":/pic/save.png"), tr("&Save or Save as"), this);
     saveAct->setShortcut(tr("Ctrl+S"));
@@ -1962,6 +2004,7 @@ void MainWindow::createMenus()
     fileMenu = menuBar()->addMenu(tr("&File"));
 //    fileMenu->addAction(newAct);
     fileMenu->addAction(openAct);
+    fileMenu->addAction(openWebUrlAct);
 //    fileMenu->addAction(procGeneral_open_image_in_windows);
 //    fileMenu->addAction(atlasViewAct);
     fileMenu->addAction(saveAct);
@@ -2057,6 +2100,7 @@ void MainWindow::createToolBars()
 
     //fileToolBar->addAction(newAct); //commented on 080313
     fileToolBar->addAction(openAct);
+    fileToolBar->addAction(openWebUrlAct);
 //    fileToolBar->addAction(import_GeneralImageFileAct);
 //    fileToolBar->addAction(atlasViewAct);
 	fileToolBar->addSeparator();

@@ -37,6 +37,7 @@ include_directories( ${V3D_BINARY_DIR}/v3dbase )
 add_library( 3drenderer ${QT_MOC_SRCS} ${3DRenderer_SRCS} )
 
 target_link_libraries( 3drenderer ${QT_QTOPENGL_LIBRARY} ${OPENGL_LIBRARIES} )
+target_link_libraries( 3drenderer imaging )
 
 # Avoid link error on Mac Snow Leopard
 if(APPLE)

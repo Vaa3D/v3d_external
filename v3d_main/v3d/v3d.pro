@@ -75,6 +75,7 @@
 # 100810: add xformwidget.h extracted from v3d_core.h
 # 100820: add restriction of the win32 to use MYLIB_TIFF 
 # 101008: add the imaging module
+# 101008: (CMB) add web url download
 # ######################################################################
 
 TEMPLATE = app
@@ -186,6 +187,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     mainwindow.h \
     dialog_watershed_para.h \
     FL_levelsetSegPara_dialog.h \
+    DownloadManager.h \
     ../worm_straighten_c/bdb_minus.h \
     ../worm_straighten_c/mst_prim_c.h \
     ../worm_straighten_c/bfs.h \
@@ -256,6 +258,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     vano_linker_loader_dialog.cpp \
     atlas_viewer.cpp \
     dialog_watershed_para.cpp \
+    DownloadManager.cpp \
     ../worm_straighten_c/bdb_minus.cpp \
     ../worm_straighten_c/mst_prim_c.cpp \
     ../worm_straighten_c/bfs_1root.cpp \
@@ -285,6 +288,7 @@ FORMS += landmark_property.ui \
 RESOURCES += v3d.qrc
 RESOURCES += ../3drenderer/3drenderer.qrc
 QT += opengl
+QT += network
 
 LIBS += -L../jba/c++  
 

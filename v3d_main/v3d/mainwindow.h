@@ -47,6 +47,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define MAINWINDOW_H
 
 #include <QtGui>
+// These two explicit includes make my IDE work better - CMB 08-Oct-2010
+#include <QMainWindow>
+#include <QWorkspace>
 
 #include "v3d_compile_constraints.h"
 
@@ -97,6 +100,8 @@ protected:
 public slots:
     void newFile();
     void open();
+    void openWebUrl(); // By CMB 08-Oct-2010
+    void finishedLoadingWebImage(QString fileName); // By CMB 08-Oct-2010
     void atlasView();
     void save();
     void saveAs();
@@ -279,6 +284,7 @@ private:
 
     QAction *newAct;
     QAction *openAct;
+    QAction *openWebUrlAct; // for web loading CMB
     QAction *atlasViewAct;
     QAction *saveAct;
     QAction *saveAsAct;

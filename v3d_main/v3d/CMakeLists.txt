@@ -22,6 +22,7 @@ set(V3D_SRCS
   v3d_core.cpp
   dialog_keypoint_features.cpp
   landmark_property_dialog.cpp
+  DownloadManager.cpp
   )
 
 set(V3D_RCCS v3d.qrc)
@@ -51,6 +52,7 @@ QT4_WRAP_CPP(QT_MOC_SRCS
   dialog_imageresample.h
   dialog_curve_trace_para.h
   dialog_keypoint_features.h
+  DownloadManager.h
   glwidget.h
   idrawmain.h
   import_filelist_dialog.h
@@ -87,3 +89,8 @@ target_link_libraries( v3d
   ${QT4_DEMOS_LIBRARY}
   )
 
+# CMB 11-Oct-2010
+# message("QtNetwork library = ${QT_QTNETWORK_LIBRARY}")
+if(QT_QTNETWORK_LIBRARY)
+  target_link_libraries(v3d ${QT_QTNETWORK_LIBRARY})
+endif()

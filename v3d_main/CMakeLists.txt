@@ -22,8 +22,19 @@ include(CTest)
 
 include(CPack)
 
+# Help find proper version of Qt by finding qmake first
+# Qt version 4.5.2 is required for compatibility with published plugins
+# October 2010 --cmb
+set(QT_DESIRED_VERSION 4.5.2)
+find_program(QT_QMAKE_EXECUTABLE qmake
+  PATHS
+    /usr/local/Trolltech/Qt-${QT_DESIRED_VERSION}/bin
+  NO_DEFAULT_PATH
+)
 
 find_package(Qt4 REQUIRED)
+set(QT_USE_NETWORK TRUE) # Oct-07-2010 CMB
+
 include( ${QT_USE_FILE} )
 include_directories( ${QT_INCLUDES} )
 
@@ -35,15 +46,19 @@ if( NOT V3D_USE_OWN_TIFF )
   find_package(TIFF REQUIRED)
 endif()
 
+# message("QTVERSION = ${QTVERSION}")
 find_path(QT4_DEMOS_INCLUDE_DIR
   arthurwidgets.h
   PATHS
   /usr/lib/qt4/demos/shared/
+  /usr/local/Trolltech/Qt-${QTVERSION}/demos/shared
   )
 
 find_library(QT4_DEMOS_LIBRARY
   demo_shared
-  HINTS /usr/lib/qt4/demos/shared/
+  HINTS 
+  /usr/lib/qt4/demos/shared/
+  /usr/local/Trolltech/Qt-${QTVERSION}/demos/shared
   )
 
 if(NOT QT4_DEMOS_INCLUDE_DIR)
@@ -66,6 +81,8 @@ add_subdirectory( v3dbase )
 
 add_subdirectory( plugin_loader )
 
+add_subdirectory( imaging ) # CMB Oct-11-2010
+
 add_subdirectory( 3drenderer )
 
 add_subdirectory( worm_straighten_c )
@@ -77,3 +94,4 @@ add_subdirectory( cellseg )
 add_subdirectory( v3d )
 
 add_subdirectory( testing )
+
