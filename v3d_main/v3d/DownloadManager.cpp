@@ -8,33 +8,9 @@
 // TODO - Use v3d logging system for messages
 
 #include "DownloadManager.h"
-#include <QApplication>
-#include <QLabel>
-#include <QMessageBox>
-#include <QPushButton>
-#include <QProgressDialog>
-#include <QInputDialog>
-#include <QLineEdit>
+#include <QFileInfo>
 
 using namespace std;
-
-void DownloadManager::startDownload(const QUrl &url, QString fileName)
-{
-    localFileName = fileName;
-    reply = nam->get(QNetworkRequest(url));
-
-    progressDialog->setMaximum(0); // zero means "unknown"
-    progressDialog->setValue(0);
-    connect(reply, SIGNAL(downloadProgress(qint64, qint64)),
-            this, SLOT(downloadProgressSlot(qint64, qint64)));
-    progressDialog->show();
-}
-
-void DownloadManager::downloadProgressSlot(qint64 bytesReceived, qint64 bytesTotal)
-{
-    progressDialog->setMaximum(bytesTotal);
-    progressDialog->setValue(bytesReceived);
-}
 
 DownloadManager::DownloadManager(QWidget *parent)
         : QObject(parent)
@@ -56,6 +32,46 @@ DownloadManager::DownloadManager(QWidget *parent)
             this, SLOT(finishedDownloadSlot(QNetworkReply*)));
 }
 
+void DownloadManager::getHeader(const QUrl& url)
+{
+    reply = nam->head(QNetworkRequest(url));
+    connect(reply, SIGNAL(finished(QNetworkReply*)),
+            this, SLOT(gotHeaderSlot(QNetworkReply*)));
+}
+
+void DownloadManager::gotHeaderSlot(QNetworkReply* headerReply) {
+    emit gotHeaderSignal(headerReply);
+}
+
+void DownloadManager::startDownload(const QUrl &url, QString fileName)
+{
+    localFileName = fileName;
+    reply = nam->get(QNetworkRequest(url));
+
+    progressDialog->setMaximum(0); // zero means "unknown"
+    progressDialog->setValue(0);
+    QString title = "Downloading file " + url.toString() + " ...";
+    progressDialog->setWindowTitle(title);
+    connect(reply, SIGNAL(downloadProgress(qint64, qint64)),
+            this, SLOT(downloadProgressSlot(qint64, qint64)));
+    progressDialog->show();
+}
+
+void DownloadManager::downloadProgressSlot(qint64 bytesReceived, qint64 bytesTotal)
+{
+    progressDialog->setMaximum(bytesTotal);
+    progressDialog->setValue(bytesReceived);
+    QString fileText = QFileInfo(reply->url().path()).fileName();
+    fileText = "Downloading file" + fileText;
+    int percent = 0;
+    QString percentText = "Computing time remaining...";
+    if (bytesTotal > 0) {
+        int percent = 100.0 * bytesReceived / bytesTotal;
+        percentText = QString::number(percent) + "% downloaded.";
+    }
+    progressDialog->setLabelText(fileText + "\n" + percentText);
+}
+
 void DownloadManager::cancelDownloadSlot()
 {
     progressDialog->hide();
@@ -73,6 +89,8 @@ void DownloadManager::cancelDownloadSlot()
 // static
 QString DownloadManager::chooseLocalFileName(const QUrl& url)
 {
+    // TODO - location should be in TEMPDIR, and should be
+    // set thus here, not in mainwindow.cpp
     QString fileName = QFileInfo(url.path()).fileName();
     if (fileName.isEmpty())
         fileName = "download";
@@ -97,18 +115,6 @@ void DownloadManager::finishedDownloadSlot(QNetworkReply* reply)
 {
     progressDialog->hide();
 
-    // message.setText("Finished downloading");
-    // message.exec(); // exec method make it modal
-
-    // Reading attributes of the reply
-    // e.g. the HTTP status code
-    QVariant statusCodeV =
-        reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
-    // Or the target URL if it was a redirect:
-    QVariant redirectionTargetUrl =
-        reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
-    // see CS001432 on how to handle this
-
     // no error received?
     if (reply->error() == QNetworkReply::NoError)
     {
@@ -120,6 +126,7 @@ void DownloadManager::finishedDownloadSlot(QNetworkReply* reply)
     // Some http error received
     else
     {
+        // TODO - how to report this...
         fprintf(stderr, "Http error\n");
     }
 

@@ -8,13 +8,12 @@
 #ifndef V3D_DOWNLOADMANAGER_H
 #define	V3D_DOWNLOADMANAGER_H
 
-#include <QtNetwork>
 #include <QNetworkAccessManager>
 #include <QUrl>
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QProgressDialog>
-#include <QMainWindow>
+#include <QString>
 
 // Download manager downloads a file from a URL
 class DownloadManager : public QObject
@@ -26,10 +25,12 @@ public:
     // of message dialogs and the progress dialog.
     DownloadManager(QWidget* parent = 0);
     static QString chooseLocalFileName(const QUrl& url);
+    void getHeader(const QUrl& url);
     void startDownload(const QUrl &url, QString fileName);
 
 signals:
     void downloadFinishedSignal(QString fileName);
+    void gotHeaderSignal(QNetworkReply* reply);
 
 public slots:
     void cancelDownloadSlot();
@@ -37,6 +38,7 @@ public slots:
 
 protected slots:
     void finishedDownloadSlot(QNetworkReply* reply);
+    void gotHeaderSlot(QNetworkReply* headerReply);
 
 private:
     QProgressDialog *progressDialog;
