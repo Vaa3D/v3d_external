@@ -431,7 +431,7 @@ void MainWindow::finishedLoadingWebImage(QString fileName)
     // Empty file name means something went wrong
     if (fileName.size() > 0) {
         // false means Don't add local file name to recent files list
-        loadV3DFile(fileName, false);
+        loadV3DFile(fileName);
     }
     // TODO - perhaps URL should be placed in recent file list
     // QFile::remove(fileName); // delete downloaded file
