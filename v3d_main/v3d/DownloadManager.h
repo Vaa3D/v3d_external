@@ -8,7 +8,6 @@
 #ifndef V3D_DOWNLOADMANAGER_H
 #define	V3D_DOWNLOADMANAGER_H
 
-#include <QNetworkAccessManager>
 #include <QUrl>
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -24,13 +23,12 @@ public:
     // The parent argument will be used as the GUI parent
     // of message dialogs and the progress dialog.
     DownloadManager(QWidget* parent = 0);
-    static QString chooseLocalFileName(const QUrl& url);
-    void getHeader(const QUrl& url);
+    // static QString chooseLocalFileName(const QUrl& url);
+    void startDownloadCheckCache(const QUrl& url, QString fileName);
     void startDownload(const QUrl &url, QString fileName);
 
 signals:
     void downloadFinishedSignal(QString fileName);
-    void gotHeaderSignal(QNetworkReply* reply);
 
 public slots:
     void cancelDownloadSlot();
@@ -42,9 +40,9 @@ protected slots:
 
 private:
     QProgressDialog *progressDialog;
-    QNetworkAccessManager *nam;
     QString localFileName;
-    QNetworkReply *reply; // remember to delete
+    QNetworkReply *replyFromGet; // remember to delete
+    QWidget *guiParent; // parent for message and progress dialogs
 };
 
 #endif	/* V3D_DOWNLOADMANAGER_H */

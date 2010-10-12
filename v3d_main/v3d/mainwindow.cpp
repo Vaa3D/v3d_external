@@ -414,24 +414,27 @@ void MainWindow::openWebUrl()
     // Copy web url to local file.  So many methods would need to
     // be changed to make this work with streams... CMB
     QUrl imageUrl = QUrl::fromEncoded(imageUrlText.toLocal8Bit());
-    // Put local file into temp directory
-    QString fileName = DownloadManager::chooseLocalFileName(imageUrl);
-    QString tempDir = QDir::tempPath();
-    fileName = tempDir + "/" + fileName;
+    QString localFileName = QFileInfo(imageUrl.path()).fileName();
+    QString localFilePath = QDir::tempPath();
+    QString fileName = localFilePath + "/" + localFileName;
+
     DownloadManager *downloadManager = new DownloadManager(this);
     connect(downloadManager, SIGNAL(downloadFinishedSignal(QString)),
             this, SLOT(finishedLoadingWebImage(QString)));
-    downloadManager->startDownload(imageUrl, fileName);
+    downloadManager->startDownloadCheckCache(imageUrl, fileName);
 }
 
 // This method is called once an asynchronous web download has completed.
 // By CMB Oct-08-2010
 void MainWindow::finishedLoadingWebImage(QString fileName)
 {
-    // false means Don't add local file name to recent files list
-	loadV3DFile(fileName, false);
+    // Empty file name means something went wrong
+    if (fileName.size() > 0) {
+        // false means Don't add local file name to recent files list
+        loadV3DFile(fileName, false);
+    }
     // TODO - perhaps URL should be placed in recent file list
-    QFile::remove(fileName); // delete downloaded file
+    // QFile::remove(fileName); // delete downloaded file
 }
 
 V3dR_MainWindow * MainWindow::find3DViewer(QString fileName)
