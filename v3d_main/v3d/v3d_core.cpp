@@ -1046,7 +1046,7 @@ QPixmap copyRaw2QPixmap_xPlanes_colormap(const void **** p4d, ImagePixelType dty
 			{
 				for (i=0;i<sz2;i++)
 				{
-					ind = V3DLONG(p3d_float32[i][j][curpos]);
+					ind = V3DLONG(fabs(p3d_float32[i][j][curpos]));
 					if (ind>=clen) ind = ind % clen;
 					tr = pc->map2d[ind][0];
 					tg = pc->map2d[ind][1];
@@ -1137,7 +1137,7 @@ QPixmap copyRaw2QPixmap_yPlanes_colormap(const void **** p4d, ImagePixelType dty
 			{
 				for (i=0;i<sz0;i++)
 				{
-					ind = V3DLONG(p3d_float32[j][curpos][i]);
+					ind = V3DLONG(fabs(p3d_float32[j][curpos][i]));
 					
 					if (ind>=clen) ind = ind % clen;
 					tr = pc->map2d[ind][0];
@@ -1228,7 +1228,7 @@ QPixmap copyRaw2QPixmap_zPlanes_colormap(const void **** p4d, ImagePixelType dty
 			{
 				for (i=0;i<sz0;i++)
 				{
-					ind = V3DLONG(p3d_float32[curpos][j][i]);
+					ind = V3DLONG(fabs(p3d_float32[curpos][j][i]));
 					if (ind>=clen) ind = ind % clen;
 					tr = pc->map2d[ind][0];
 					tg = pc->map2d[ind][1];
