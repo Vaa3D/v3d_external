@@ -2033,9 +2033,6 @@ void Renderer_tex2::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 		my -= margin; My += margin; if (my<0) my=0; if (My>curImg->getYDim()-1) My = curImg->getYDim()-1;
 		mz -= margin; Mz += margin; if (mz<0) mz=0; if (Mz>curImg->getZDim()-1) Mz = curImg->getZDim()-1;
 
-		curXWidget->setLocal3DViewerBBox(mx, Mx, my, My, mz, Mz);
-		//QTimer::singleShot( 1000, curXWidget, SLOT(doImage3DLocalView()) );
-		
 //by PHC 101008
 		if (b_imaging && curXWidget)
 		{
@@ -2066,6 +2063,9 @@ void Renderer_tex2::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 		}
 
 	
+		curXWidget->setLocal3DViewerBBox(mx, Mx, my, My, mz, Mz);
+		//QTimer::singleShot( 1000, curXWidget, SLOT(doImage3DLocalView()) );
+		
 		curXWidget->doImage3DLocalBBoxView(); //by PHC 101012. move from before if(b_imaging...)
 	
 	}
