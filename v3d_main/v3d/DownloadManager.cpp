@@ -112,7 +112,7 @@ void DownloadManager::startDownload(const QUrl &url, QString fileName)
     progressDialog->setValue(0);
     QString title = "Downloading file " + url.toString() + " ...";
     progressDialog->setWindowTitle(title);
-    progressDialog->show();
+    progressDialog->exec();
 }
 
 void DownloadManager::downloadProgressSlot(qint64 bytesReceived, qint64 bytesTotal)
