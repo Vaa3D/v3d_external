@@ -28,7 +28,7 @@ public:
     void startDownload(const QUrl &url, QString fileName);
 
 signals:
-    void downloadFinishedSignal(QString fileName);
+    void downloadFinishedSignal(QUrl url, QString fileName);
 
 public slots:
     void cancelDownloadSlot();

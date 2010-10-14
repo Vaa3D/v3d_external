@@ -66,8 +66,9 @@ void DownloadManager::gotHeaderSlot(QNetworkReply* headerReply)
                         if ( (remoteFileSize == localFileSize)
                                 && (remoteFileTime < localFileTime) ) 
                         {
-                            // In this one case we can use the caced file.
-                            emit downloadFinishedSignal(localFileName);
+                            // In this one case we can use the cached file.
+                            emit downloadFinishedSignal(headerReply->url(),
+                                    localFileName);
                             return;
                         }
                     }
@@ -138,34 +139,7 @@ void DownloadManager::cancelDownloadSlot()
         replyFromGet->disconnect();
         replyFromGet = 0;
     }
-
-    // emit downloadFinishedSignal("");
 }
-
-// static
-//QString DownloadManager::chooseLocalFileName(const QUrl& url)
-//{
-//    // TODO - location should be in TEMPDIR, and should be
-//    // set thus here, not in mainwindow.cpp
-//    QString fileName = QFileInfo(url.path()).fileName();
-//    if (fileName.isEmpty())
-//        fileName = "download";
-//    if (QFile::exists(fileName)) {
-//        // already exists, don't overwrite
-//        QFileInfo fileInfo(fileName); // e.g. "foo.tar.gz"
-//        QString fileExtension = fileInfo.completeSuffix(); // e.g. "tar.gz"
-//        QString fileRoot = fileName;
-//        fileRoot.chop(fileExtension.length()); // e.g. "foo."
-//        int i = 0;
-//        fileName = fileRoot + QString::number(i) + "." + fileExtension;
-//        while (QFile::exists(fileName)) {
-//            ++i;
-//            // e.g. foo.1.tar.gz
-//            fileName = fileRoot + QString::number(i) + "." + fileExtension;
-//        }
-//    }
-//    return fileName;
-//}
 
 void DownloadManager::finishedDownloadSlot(QNetworkReply* reply)
 {
@@ -178,14 +152,14 @@ void DownloadManager::finishedDownloadSlot(QNetworkReply* reply)
         localFile.open(QIODevice::WriteOnly);
         localFile.write(reply->readAll());
         localFile.close();
-        emit downloadFinishedSignal(localFileName);
+        emit downloadFinishedSignal(reply->url(), localFileName);
     }
     // Some http error received
     else
     {
         // TODO - how to report this...
         fprintf(stderr, "Http error\n");
-        emit downloadFinishedSignal("");
+        emit downloadFinishedSignal(reply->url(), "");
     }
 
     // We receive ownership of the reply object

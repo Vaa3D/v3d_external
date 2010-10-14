@@ -406,7 +406,7 @@ void MainWindow::openWebUrl()
     QString imageUrlText = QInputDialog::getText(this,
             "Load Image/Stack from web URL",
             "Type or paste web URL of Image/Stack:",
-            QLineEdit::Normal, 
+            QLineEdit::Normal,
             "http://penglab.janelia.org/proj/v3d/ex_Repo_hb9_eve.tif",
             &ok);
     if (!ok) return; // User pressed Cancel or closed window
@@ -414,24 +414,35 @@ void MainWindow::openWebUrl()
     // Copy web url to local file.  So many methods would need to
     // be changed to make this work with streams... CMB
     QUrl imageUrl = QUrl::fromEncoded(imageUrlText.toLocal8Bit());
-    QString localFileName = QFileInfo(imageUrl.path()).fileName();
+    loadV3DUrl(imageUrl);
+}
+
+void MainWindow::loadV3DUrl(QUrl url)
+{
+    QString localFileName = QFileInfo(url.path()).fileName();
     QString localFilePath = QDir::tempPath();
     QString fileName = localFilePath + "/" + localFileName;
 
     DownloadManager *downloadManager = new DownloadManager(this);
-    connect(downloadManager, SIGNAL(downloadFinishedSignal(QString)),
-            this, SLOT(finishedLoadingWebImage(QString)));
-    downloadManager->startDownloadCheckCache(imageUrl, fileName);
+    connect(downloadManager, SIGNAL(downloadFinishedSignal(QUrl, QString)),
+            this, SLOT(finishedLoadingWebImage(QUrl, QString)));
+    downloadManager->startDownloadCheckCache(url, fileName);
 }
 
 // This method is called once an asynchronous web download has completed.
 // By CMB Oct-08-2010
-void MainWindow::finishedLoadingWebImage(QString fileName)
+void MainWindow::finishedLoadingWebImage(QUrl url, QString fileName)
 {
     // Empty file name means something went wrong
     if (fileName.size() > 0) {
         // false means Don't add local file name to recent files list
-        loadV3DFile(fileName);
+        loadV3DFile(fileName, false);
+        // Set window title to URL
+        XFormWidget *image_window = findMdiChild(fileName);
+        if (image_window)
+            image_window->setWindowTitle(url.toString());
+        // Put URL in recent file list
+        setCurrentFile(url.toString());
     }
     // TODO - perhaps URL should be placed in recent file list
     // QFile::remove(fileName); // delete downloaded file
@@ -1036,7 +1047,15 @@ void MainWindow::func_procIO_import_atlas_imgfolder()
 void MainWindow::openRecentFile()
 {
 	QAction *action = qobject_cast<QAction *>(sender());
-	if (action)	{loadV3DFile(action->data().toString());}
+	if (action)	{
+        // File name might be a URL -- by CMB Oct-14-2010
+        QString fileOrUrl(action->data().toString());
+        QUrl url(fileOrUrl);
+        if (url.isValid())
+            loadV3DUrl(url);
+        else
+            loadV3DFile(fileOrUrl);
+    }
 }
 
 
@@ -1073,6 +1092,9 @@ void MainWindow::updateRecentFileActions()
 
 	for (int i = 0; i < numRecentFiles; ++i) {
 		QString text = tr("&%1 %2").arg(i + 1).arg(strippedName(files[i]));
+        // Entry might be a URL -- by CMB Oct-14-2010
+        if (QUrl(files[i]).isValid())
+            text = files[i];
 		recentFileActs[i]->setText(text);
 		recentFileActs[i]->setData(files[i]);
 		recentFileActs[i]->setVisible(true);
@@ -2181,7 +2203,9 @@ XFormWidget *MainWindow::findMdiChild(const QString &fileName)
 
     foreach (QWidget *window, workspace->windowList()) {
         XFormWidget *mdiChild = qobject_cast<XFormWidget *>(window);
-        if (mdiChild->userFriendlyCurrentFile() == canonicalFilePath)
+        QString mdiChildPath = // CMB Oct-14-2010
+                QFileInfo(mdiChild->userFriendlyCurrentFile()).canonicalFilePath();
+        if (mdiChildPath == canonicalFilePath)
             return mdiChild;
     }
     return 0;
