@@ -42,23 +42,47 @@ find_package(OpenGL REQUIRED)
 
 option( V3D_USE_OWN_TIFF "Use the TIFF library source code distributed with v3d" OFF)
 
-if( NOT V3D_USE_OWN_TIFF )
+if( V3D_USE_OWN_TIFF )
+  mark_as_advanced(TIFF_LIBRARY)
+  mark_as_advanced(TIFF_INCLUDE_DIR)
+else()
+  # CMake 2.8 FindTiff is very simple.  I need to give it some help on windows
+  FIND_PATH(TIFF_INCLUDE_DIR tiff.h
+	PATHS "$ENV{PROGRAMFILES}/tiff-3.8.2"
+	# PATHS "$ENV{PROGRAMFILES}/GnuWin32"
+	PATH_SUFFIXES include libtiff "")
+  SET(TIFF_NAMES ${TIFF_NAMES} tiff libtiff libtiff3 libtiff_i)
+  FIND_LIBRARY(TIFF_LIBRARY NAMES ${TIFF_NAMES}
+	PATHS "$ENV{PROGRAMFILES}/tiff-3.8.2"
+	# PATHS "$ENV{PROGRAMFILES}/GnuWin32"
+	PATH_SUFFIXES lib libtiff "")
+  # The unadorned FindTiff below
   find_package(TIFF REQUIRED)
+  include_directories(${TIFF_INCLUDE_DIR})
+  mark_as_advanced(CLEAR TIFF_LIBRARY)
+  mark_as_advanced(CLEAR TIFF_INCLUDE_DIR)
 endif()
 
 # message("QTVERSION = ${QTVERSION}")
 find_path(QT4_DEMOS_INCLUDE_DIR
   arthurwidgets.h
   PATHS
-  /usr/lib/qt4/demos/shared/
-  /usr/local/Trolltech/Qt-${QTVERSION}/demos/shared
-  )
+	/usr/lib/qt4
+	/usr/local/Trolltech/Qt-${QTVERSION}
+	"C:/Qt/${QTVERSION}"
+  PATH_SUFFIXES
+	demos/shared
+   )
 
 find_library(QT4_DEMOS_LIBRARY
   demo_shared
   HINTS 
-  /usr/lib/qt4/demos/shared/
-  /usr/local/Trolltech/Qt-${QTVERSION}/demos/shared
+	/usr/lib/qt4
+	/usr/local/Trolltech/Qt-${QTVERSION}
+	"C:/Qt/${QTVERSION}"
+  PATH_SUFFIXES
+	demos/shared
+	demos/shared/release # Windows
   )
 
 if(NOT QT4_DEMOS_INCLUDE_DIR)

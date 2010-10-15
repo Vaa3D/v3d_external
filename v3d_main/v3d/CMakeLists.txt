@@ -6,7 +6,7 @@ set(V3D_SRCS
   import_filelistname.cpp
   import_tiffseries.cpp
   # dialog_pointcloudatlas_linkerloader.cpp
-  glwidget.cpp
+  # glwidget.cpp # duplicate symbol in arthurwidget.cpp
   histogramsimple.cpp
   mdichild.cpp
   my4dimage.cpp
@@ -53,7 +53,7 @@ QT4_WRAP_CPP(QT_MOC_SRCS
   dialog_curve_trace_para.h
   dialog_keypoint_features.h
   DownloadManager.h
-  glwidget.h
+  # glwidget.h
   idrawmain.h
   import_filelist_dialog.h
   import_images_tool_dialog.h
@@ -83,11 +83,17 @@ target_link_libraries( v3d
   3drenderer
   neuron_tracing
   worm_straighten_c
-  mylib_tiff
+  # mylib_tiff
   cellseg
   ${OPENGL_glu_LIBRARY}
   ${QT4_DEMOS_LIBRARY}
   )
+  
+if (MSVC)
+  target_link_libraries(v3d ${TIFF_LIBRARY})
+else()
+  target_link_libraries(v3d mylib_tiff)
+endif()
 
 # CMB 11-Oct-2010
 # message("QtNetwork library = ${QT_QTNETWORK_LIBRARY}")
