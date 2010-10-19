@@ -401,42 +401,42 @@ void MainWindow::open()
 // Ask user for URL to download image stack from.
 void MainWindow::openWebUrl()
 {
-    // Pop a dialog to ask the user for
-    bool ok;
-    QString imageUrlText = QInputDialog::getText(this,
-            "Load Image/Stack from web URL",
-            "Type or paste web URL of Image/Stack:",
-            QLineEdit::Normal,
-            "http://penglab.janelia.org/proj/v3d/ex_Repo_hb9_eve.tif",
-            &ok);
-    if (!ok) return; // User pressed Cancel or closed window
-    if (imageUrlText.isEmpty()) return; // User entered nothing
-    // Copy web url to local file.  So many methods would need to
-    // be changed to make this work with streams... CMB
-    QUrl imageUrl = QUrl::fromEncoded(imageUrlText.toLocal8Bit());
-    loadV3DUrl(imageUrl);
+    // testing Oct-18-2010
+    DownloadManager *downloadManager = new DownloadManager(this);
+    // Pop a dialog to ask the user for URL
+    QUrl imageUrl = downloadManager->askUserForUrl();
+    bool b_cacheLocalFile = downloadManager->b_cacheFile;
+    if (! imageUrl.isValid())
+        return; // User entered nothing or error
+    loadV3DUrl(imageUrl, b_cacheLocalFile);
 }
 
-void MainWindow::loadV3DUrl(QUrl url)
+void MainWindow::loadV3DUrl(QUrl url, bool b_cacheLocalFile)
 {
     QString localFileName = QFileInfo(url.path()).fileName();
     QString localFilePath = QDir::tempPath();
     QString fileName = localFilePath + "/" + localFileName;
 
     DownloadManager *downloadManager = new DownloadManager(this);
-    connect(downloadManager, SIGNAL(downloadFinishedSignal(QUrl, QString)),
-            this, SLOT(finishedLoadingWebImage(QUrl, QString)));
-    downloadManager->startDownloadCheckCache(url, fileName);
+    connect(downloadManager, SIGNAL(downloadFinishedSignal(QUrl, QString, bool)),
+            this, SLOT(finishedLoadingWebImage(QUrl, QString, bool)));
+    downloadManager->b_cacheFile = b_cacheLocalFile;
+    if (b_cacheLocalFile)
+        downloadManager->startDownloadCheckCache(url, fileName);
+    else
+        downloadManager->startDownload(url, fileName);
 }
 
 // This method is called once an asynchronous web download has completed.
 // By CMB Oct-08-2010
-void MainWindow::finishedLoadingWebImage(QUrl url, QString fileName)
+void MainWindow::finishedLoadingWebImage(QUrl url, QString fileName, bool b_cacheLocalFile)
 {
     // Empty file name means something went wrong
     if (fileName.size() > 0) {
         // false means Don't add local file name to recent files list
         loadV3DFile(fileName, false);
+        if (! b_cacheLocalFile)
+            QFile::remove(fileName); // delete downloaded file
         // Set window title to URL
         XFormWidget *image_window = findMdiChild(fileName);
         if (image_window)
@@ -444,8 +444,6 @@ void MainWindow::finishedLoadingWebImage(QUrl url, QString fileName)
         // Put URL in recent file list
         setCurrentFile(url.toString());
     }
-    // TODO - perhaps URL should be placed in recent file list
-    // QFile::remove(fileName); // delete downloaded file
 }
 
 V3dR_MainWindow * MainWindow::find3DViewer(QString fileName)

@@ -51,18 +51,20 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 **
 ****************************************************************************/
 
-#ifndef GLWIDGET_H
-#define GLWIDGET_H
+#ifndef V3D_GLWIDGET_H
+#define V3D_GLWIDGET_H
 
 #include <QGLWidget>
 
-class GLWidget : public QGLWidget
+// by CMB 18-Oct-2010
+// class name GLWidget conflicts with name defined in arthurwidgets demo
+class V3D_Base_GLWidget : public QGLWidget
 {
     Q_OBJECT
 
 public:
-    GLWidget(QWidget *parent = 0);
-    ~GLWidget();
+    V3D_Base_GLWidget(QWidget *parent = 0);
+    ~V3D_Base_GLWidget();
 
     int xRotation() const { return xRot; }
     int yRotation() const { return yRot; }
@@ -115,4 +117,4 @@ private:
     QPoint lastPos;
 };
 
-#endif
+#endif // V3D_GLWIDGET_H

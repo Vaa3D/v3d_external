@@ -76,6 +76,7 @@
 # 100820: add restriction of the win32 to use MYLIB_TIFF 
 # 101008: add the imaging module
 # 101008: (CMB) add web url download
+# 101019: (CMB) add dialog_url_entry.ui
 # ######################################################################
 
 TEMPLATE = app
@@ -282,6 +283,7 @@ FORMS += landmark_property.ui \
     dialog_imageresample.ui \
     dialog_maskroi.ui \
     dialog_keypoint_features.ui \
+    dialog_url_entry.ui \
     FL_watershedSegPara.ui \
     FL_levelsetSegPara.ui 
 

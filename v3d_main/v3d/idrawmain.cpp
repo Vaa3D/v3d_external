@@ -63,7 +63,7 @@ iDrawMainWindow::iDrawMainWindow()
 	
     //setCentralWidget(centralWidget); //by PHC, 060809
 	
-    glWidget = new GLWidget;
+    glWidget = new V3D_Base_GLWidget;
     pixmapLabel = new QLabel;
 
     glWidgetArea = new QScrollArea;

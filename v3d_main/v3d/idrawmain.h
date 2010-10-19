@@ -62,7 +62,7 @@ class QLabel;
 class QMenu;
 class QScrollArea;
 class QSlider;
-class GLWidget;
+class V3D_Base_GLWidget;
 
 //class MainWindow : public QMainWindow
 class iDrawMainWindow : public QWidget
@@ -88,7 +88,7 @@ private:
     QWidget *centralWidget;
     QScrollArea *glWidgetArea;
     QScrollArea *pixmapLabelArea;
-    GLWidget *glWidget;
+    V3D_Base_GLWidget *glWidget;
     QLabel *pixmapLabel;
     QSlider *xSlider;
     QSlider *ySlider;

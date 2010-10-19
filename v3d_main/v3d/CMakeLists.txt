@@ -6,7 +6,7 @@ set(V3D_SRCS
   import_filelistname.cpp
   import_tiffseries.cpp
   # dialog_pointcloudatlas_linkerloader.cpp
-  # glwidget.cpp # duplicate symbol in arthurwidget.cpp
+  glwidget.cpp # duplicate symbol in arthurwidget.cpp
   histogramsimple.cpp
   mdichild.cpp
   my4dimage.cpp
@@ -41,6 +41,7 @@ QT4_WRAP_UI(QT_UI_SRCS
   FL_watershedSegPara.ui
   import_filelist_dialog.ui
   import_images_tool.ui
+  dialog_url_entry.ui
   )
 
 QT4_WRAP_CPP(QT_MOC_SRCS
@@ -53,7 +54,7 @@ QT4_WRAP_CPP(QT_MOC_SRCS
   dialog_curve_trace_para.h
   dialog_keypoint_features.h
   DownloadManager.h
-  # glwidget.h
+  glwidget.h
   idrawmain.h
   import_filelist_dialog.h
   import_images_tool_dialog.h

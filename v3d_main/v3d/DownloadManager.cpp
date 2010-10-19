@@ -12,11 +12,44 @@
 #include <QDateTime>
 #include <QNetworkAccessManager>
 #include <QMessageBox>
+#include <QCheckBox>
+#include <QDialog>
+#include <QPushButton>
+#include <QLabel>
+#include <QLineEdit>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QRegExpValidator>
 
 using namespace std;
 
+V3dUrlDialog::V3dUrlDialog(QWidget *parent) 
+    : QDialog(parent)
+{
+    setupUi(this);
+    QRegExp urlRegExp("https?://\\S+");
+    lineEdit->setValidator(new QRegExpValidator(urlRegExp, this));
+    // connect(openButton, SIGNAL(clicked()), this, SLOT(accept()));
+    // connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
+}
+
+void V3dUrlDialog::on_lineEdit_textChanged() {
+    QPushButton *openButton = buttonBox->button(QDialogButtonBox::Open);
+    openButton->setEnabled(lineEdit->hasAcceptableInput());
+}
+
+QUrl V3dUrlDialog::getUrl()
+{
+    QUrl url(lineEdit->text());
+    return url;
+}
+
+bool V3dUrlDialog::getKeepLocalCache() {
+    return checkBox->isChecked();
+}
+
 DownloadManager::DownloadManager(QWidget *parent)
-        : QObject(parent), guiParent(parent)
+        : QObject(parent), guiParent(parent), b_cacheFile(true)
 {
     progressDialog = new QProgressDialog(parent);
     // We don't allocate the QNetworkReply
@@ -30,8 +63,24 @@ DownloadManager::DownloadManager(QWidget *parent)
             this, SLOT(cancelDownloadSlot()));
 }
 
+QUrl DownloadManager::askUserForUrl()
+{
+    QUrl url;
+    V3dUrlDialog *urlDialog = new V3dUrlDialog(guiParent);
+    int returnValue = urlDialog->exec();
+    if (returnValue == QDialog::Accepted) {
+        url = urlDialog->getUrl();
+        b_cacheFile = urlDialog->checkBox->isChecked();
+        fprintf(stderr, "URL dialog accepted\n");
+    }
+    else {
+        fprintf(stderr, "URL dialog rejected\n");
+    }
+    return url;
+}
+
 void DownloadManager::startDownloadCheckCache(
-        const QUrl& url, QString fileName)
+        QUrl url, QString fileName)
 {
     localFileName = fileName;
     QNetworkAccessManager *headerNam = new QNetworkAccessManager(this);
@@ -68,7 +117,7 @@ void DownloadManager::gotHeaderSlot(QNetworkReply* headerReply)
                         {
                             // In this one case we can use the cached file.
                             emit downloadFinishedSignal(headerReply->url(),
-                                    localFileName);
+                                    localFileName, b_cacheFile);
                             return;
                         }
                     }
@@ -98,7 +147,7 @@ void DownloadManager::gotHeaderSlot(QNetworkReply* headerReply)
     startDownload(headerReply->url(), localFileName);
 }
 
-void DownloadManager::startDownload(const QUrl &url, QString fileName)
+void DownloadManager::startDownload(QUrl url, QString fileName)
 {
     localFileName = fileName;
     QNetworkAccessManager *nam = new QNetworkAccessManager(this);
@@ -111,7 +160,7 @@ void DownloadManager::startDownload(const QUrl &url, QString fileName)
 
     progressDialog->setMaximum(0); // zero means "unknown"
     progressDialog->setValue(0);
-    QString title = "Downloading file " + url.toString() + " ...";
+    QString title = tr("Downloading file") + " " + url.toString() + " ...";
     progressDialog->setWindowTitle(title);
     progressDialog->exec();
 }
@@ -120,12 +169,12 @@ void DownloadManager::downloadProgressSlot(qint64 bytesReceived, qint64 bytesTot
 {
     progressDialog->setMaximum(bytesTotal);
     progressDialog->setValue(bytesReceived);
-    QString fileText = "Downloading file " + localFileName;
+    QString fileText = tr("Downloading file") + " " + localFileName;
     int percent = 0;
-    QString percentText = "Computing time remaining...";
+    QString percentText = tr("Computing time remaining...");
     if (bytesTotal > 0) {
         int percent = 100.0 * bytesReceived / bytesTotal;
-        percentText = QString::number(percent) + "% downloaded.";
+        percentText = QString::number(percent) + "% " + tr("downloaded");
     }
     progressDialog->setLabelText(fileText + "\n" + percentText);
 }
@@ -152,14 +201,14 @@ void DownloadManager::finishedDownloadSlot(QNetworkReply* reply)
         localFile.open(QIODevice::WriteOnly);
         localFile.write(reply->readAll());
         localFile.close();
-        emit downloadFinishedSignal(reply->url(), localFileName);
+        emit downloadFinishedSignal(reply->url(), localFileName, b_cacheFile);
     }
     // Some http error received
     else
     {
         // TODO - how to report this...
         fprintf(stderr, "Http error\n");
-        emit downloadFinishedSignal(reply->url(), "");
+        emit downloadFinishedSignal(reply->url(), "", false);
     }
 
     // We receive ownership of the reply object

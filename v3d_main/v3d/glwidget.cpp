@@ -60,7 +60,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 //#include "cellanotablemodel.h"
 
-GLWidget::GLWidget(QWidget *parent)
+V3D_Base_GLWidget::V3D_Base_GLWidget(QWidget *parent)
     : QGLWidget(parent)
 {
     gear1 = 0;
@@ -82,7 +82,7 @@ GLWidget::GLWidget(QWidget *parent)
 //    animate_timer->start(20);
 }
 
-GLWidget::~GLWidget()
+V3D_Base_GLWidget::~V3D_Base_GLWidget()
 {
     makeCurrent();
     glDeleteLists(gear1, 1);
@@ -97,7 +97,7 @@ GLWidget::~GLWidget()
 }
 
 #if 0
-void GLWidget::readAnoFile(QString file_anoText)
+void V3D_Base_GLWidget::readAnoFile(QString file_anoText)
 {
 	printf("anofile=[%s]\n", qPrintable(file_anoText));
 	
@@ -125,7 +125,7 @@ void GLWidget::readAnoFile(QString file_anoText)
 }
 #endif
 
-void GLWidget::setXRotation(int angle)
+void V3D_Base_GLWidget::setXRotation(int angle)
 {
     normalizeAngle(&angle);
     if (angle != xRot) {
@@ -135,7 +135,7 @@ void GLWidget::setXRotation(int angle)
     }
 }
 
-void GLWidget::setYRotation(int angle)
+void V3D_Base_GLWidget::setYRotation(int angle)
 {
     normalizeAngle(&angle);
     if (angle != yRot) {
@@ -145,7 +145,7 @@ void GLWidget::setYRotation(int angle)
     }
 }
 
-void GLWidget::setZRotation(int angle)
+void V3D_Base_GLWidget::setZRotation(int angle)
 {
     normalizeAngle(&angle);
     if (angle != zRot) {
@@ -155,7 +155,7 @@ void GLWidget::setZRotation(int angle)
     }
 }
 
-void GLWidget::initializeGL()
+void V3D_Base_GLWidget::initializeGL()
 {
     static const GLfloat lightPos[4] = { 5.0f, 5.0f, 10.0f, 1.0f };
 //    static const GLfloat reflectance1[4] = { 0.8f, 0.1f, 0.0f, 1.0f };
@@ -180,7 +180,7 @@ void GLWidget::initializeGL()
     glEnable(GL_NORMALIZE);
 }
 
-void GLWidget::paintGL()
+void V3D_Base_GLWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -207,7 +207,7 @@ void GLWidget::paintGL()
     glPopMatrix();
 }
 
-void GLWidget::resizeGL(int width, int height)
+void V3D_Base_GLWidget::resizeGL(int width, int height)
 {
     int side = qMin(width, height);
     glViewport((width - side) / 2, (height - side) / 2, side, side);
@@ -220,12 +220,12 @@ void GLWidget::resizeGL(int width, int height)
     glTranslated(0.0, 0.0, -40.0);
 }
 
-void GLWidget::mousePressEvent(QMouseEvent *event)
+void V3D_Base_GLWidget::mousePressEvent(QMouseEvent *event)
 {
     lastPos = event->pos();
 }
 
-void GLWidget::mouseMoveEvent(QMouseEvent *event)
+void V3D_Base_GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
     int dx = event->x() - lastPos.x();
     int dy = event->y() - lastPos.y();
@@ -240,13 +240,13 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
     lastPos = event->pos();
 }
 
-void GLWidget::advanceGears()
+void V3D_Base_GLWidget::advanceGears()
 {
     gear1Rot += 2 * 16;
     updateGL();
 }
 
-GLuint GLWidget::makeGear(const GLfloat *reflectance, GLdouble innerRadius,
+GLuint V3D_Base_GLWidget::makeGear(const GLfloat *reflectance, GLdouble innerRadius,
                           GLdouble outerRadius, GLdouble thickness,
                           GLdouble toothSize, GLint toothCount)
 {
@@ -334,7 +334,7 @@ GLuint GLWidget::makeGear(const GLfloat *reflectance, GLdouble innerRadius,
     return list;
 }
 
-void GLWidget::drawGear(GLuint gear, GLdouble dx, GLdouble dy, GLdouble dz,
+void V3D_Base_GLWidget::drawGear(GLuint gear, GLdouble dx, GLdouble dy, GLdouble dz,
                         GLdouble angle)
 {
     glPushMatrix();
@@ -344,7 +344,7 @@ void GLWidget::drawGear(GLuint gear, GLdouble dx, GLdouble dy, GLdouble dz,
     glPopMatrix();
 }
 
-void GLWidget::normalizeAngle(int *angle)
+void V3D_Base_GLWidget::normalizeAngle(int *angle)
 {
     while (*angle < 0)
         *angle += 360 * 16;
@@ -352,7 +352,7 @@ void GLWidget::normalizeAngle(int *angle)
         *angle -= 360 * 16;
 }
 
-GLuint GLWidget::makeSphere(const GLfloat *reflectance, GLdouble radius)
+GLuint V3D_Base_GLWidget::makeSphere(const GLfloat *reflectance, GLdouble radius)
 {
 //    const double Pi = 3.14159265358979323846;
 //    int i, j;
@@ -375,7 +375,7 @@ GLuint GLWidget::makeSphere(const GLfloat *reflectance, GLdouble radius)
     return list;
 }
 
-void GLWidget::drawSphere(GLuint gear, GLdouble dx, GLdouble dy, GLdouble dz, GLdouble angle)
+void V3D_Base_GLWidget::drawSphere(GLuint gear, GLdouble dx, GLdouble dy, GLdouble dz, GLdouble angle)
 {
     glPushMatrix();
     glTranslated(dx, dy, dz);
