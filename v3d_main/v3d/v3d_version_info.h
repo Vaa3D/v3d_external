@@ -72,11 +72,11 @@ class VersionInfo {
 protected:
     void loadDataFromCString(const char* str) {
         std::istringstream ss(str);
-        ss >> major;
+        ss >> v3d_major_version;
         char dot;
         ss >> dot;
         assert(dot == '.');
-        ss >> minor;
+        ss >> v3d_minor_version;
         std::string letter;
         ss >> letter;
         specialLetter = QString(letter.c_str());
@@ -89,16 +89,16 @@ protected:
 
 public:
     // Initialize from (2, 532, "a")
-    VersionInfo(int major, int minor, const char* specialLetter = "")
-        : major(major), minor(minor), specialLetter(specialLetter)
+    VersionInfo(int v3d_major_version, int v3d_minor_version, const char* specialLetter = "")
+        : v3d_major_version(v3d_major_version), v3d_minor_version(v3d_minor_version), specialLetter(specialLetter)
     {
         osPlatform = BUILD_OS_INFO;
         buildTime = BUILD_TIME;
     }
     // Initialize from (2.532, "a")
     VersionInfo(float f, const char* specialLetter = "") {
-        major = int(f);
-        minor = int((f - major)*1000.01); // shift 3 digits to the left
+        v3d_major_version = int(f);
+        v3d_minor_version = int((f - v3d_major_version)*1000.01); // shift 3 digits to the left
         this->specialLetter = specialLetter;
         osPlatform = BUILD_OS_INFO;
         buildTime = BUILD_TIME;
@@ -118,8 +118,8 @@ public:
     }
 
     bool operator!=(const VersionInfo& rhs) const {
-        if (major != rhs.major) return true;
-        if (minor != rhs.minor) return true;
+        if (v3d_major_version != rhs.v3d_major_version) return true;
+        if (v3d_minor_version != rhs.v3d_minor_version) return true;
         if (specialLetter != rhs.specialLetter) return true;
         return false;
     }
@@ -129,33 +129,33 @@ public:
     }
 
     bool operator<(const VersionInfo& rhs) const {
-        if (major < rhs.major) return true;
-        if (major > rhs.major) return false;
-        if (minor < rhs.minor) return true;
-        if (minor > rhs.minor) return false;
+        if (v3d_major_version < rhs.v3d_major_version) return true;
+        if (v3d_major_version > rhs.v3d_major_version) return false;
+        if (v3d_minor_version < rhs.v3d_minor_version) return true;
+        if (v3d_minor_version > rhs.v3d_minor_version) return false;
         return false;
     }
 
     bool operator>(const VersionInfo& rhs) const {
-        if (major > rhs.major) return true;
-        if (major < rhs.major) return false;
-        if (minor > rhs.minor) return true;
-        if (minor < rhs.minor) return false;
+        if (v3d_major_version > rhs.v3d_major_version) return true;
+        if (v3d_major_version < rhs.v3d_major_version) return false;
+        if (v3d_minor_version > rhs.v3d_minor_version) return true;
+        if (v3d_minor_version < rhs.v3d_minor_version) return false;
         return false;
     }
 
-    int major; // e.g. 2
-    int minor; // always prints 3 digits, using leading zeros if needed
+    int v3d_major_version; // e.g. 2
+    int v3d_minor_version; // always prints 3 digits, using leading zeros if needed
     QString specialLetter; // optional
     QString osPlatform;
     QString buildTime;
 
     std::ostream& print(std::ostream& os) const
     {
-        os << major;
+        os << v3d_major_version;
         os << ".";
-        // Always print minor version with 3 digits, zero padded
-        os << std::setw(3) << std::setfill('0') << minor;
+        // Always print v3d_minor_version version with 3 digits, zero padded
+        os << std::setw(3) << std::setfill('0') << v3d_minor_version;
         os << qPrintable(specialLetter);
         return os;
     }

@@ -242,7 +242,7 @@ V3DVersionChecker::V3DVersionChecker(QWidget *guiParent)
 {}
 
 void V3DVersionChecker::checkForLatestVersion() {
-    QUrl versionUrl("http://localhost/~brunsc/v3d_version.txt");
+    QUrl versionUrl("http://brunsc-wm1.janelia.priv/~brunsc/v3d_version.txt");
     QNetworkAccessManager *nam = new QNetworkAccessManager(this);
     QNetworkReply *reply = nam->get(QNetworkRequest(versionUrl));
     connect(nam, SIGNAL(finished(QNetworkReply*)),
