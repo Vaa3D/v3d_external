@@ -34,6 +34,13 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef __V3D_VERSION_INFO_H__
 #define __V3D_VERSION_INFO_H__
 
+#include <iomanip>
+#include <sstream>
+#include <cassert>
+#include <QString>
+#include <QObject>
+class QNetworkReply;
+
 void v3d_aboutinfo();
 void v3d_Lite_info();
 
@@ -59,6 +66,124 @@ void v3d_Lite_info();
 	#define BUILD_BITS		"128-bit"
 #endif
 
+namespace v3d {
+
+class VersionInfo {
+protected:
+    void loadDataFromCString(const char* str) {
+        std::istringstream ss(str);
+        ss >> major;
+        char dot;
+        ss >> dot;
+        assert(dot == '.');
+        ss >> minor;
+        std::string letter;
+        ss >> letter;
+        specialLetter = QString(letter.c_str());
+        loadMetaData();
+    }
+    void loadMetaData() {
+        osPlatform = BUILD_OS_INFO;
+        buildTime = BUILD_TIME;
+    }
+
+public:
+    // Initialize from (2, 532, "a")
+    VersionInfo(int major, int minor, const char* specialLetter = "")
+        : major(major), minor(minor), specialLetter(specialLetter)
+    {
+        osPlatform = BUILD_OS_INFO;
+        buildTime = BUILD_TIME;
+    }
+    // Initialize from (2.532, "a")
+    VersionInfo(float f, const char* specialLetter = "") {
+        major = int(f);
+        minor = int((f - major)*1000.01); // shift 3 digits to the left
+        this->specialLetter = specialLetter;
+        osPlatform = BUILD_OS_INFO;
+        buildTime = BUILD_TIME;
+    }
+    // Initialize from ("2.532a")
+    VersionInfo(const char* str) {
+        loadDataFromCString(str);
+    }
+    VersionInfo(const QString& str) {
+        loadDataFromCString(qPrintable(str));
+    }
+
+    QString toQString() const {
+        std::ostringstream oss;
+        this->print(oss);
+        return QString(oss.str().c_str());
+    }
+
+    bool operator!=(const VersionInfo& rhs) const {
+        if (major != rhs.major) return true;
+        if (minor != rhs.minor) return true;
+        if (specialLetter != rhs.specialLetter) return true;
+        return false;
+    }
+
+    bool operator==(const VersionInfo& rhs) const {
+        return !(*this != rhs);
+    }
+
+    bool operator<(const VersionInfo& rhs) const {
+        if (major < rhs.major) return true;
+        if (major > rhs.major) return false;
+        if (minor < rhs.minor) return true;
+        if (minor > rhs.minor) return false;
+        return false;
+    }
+
+    bool operator>(const VersionInfo& rhs) const {
+        if (major > rhs.major) return true;
+        if (major < rhs.major) return false;
+        if (minor > rhs.minor) return true;
+        if (minor < rhs.minor) return false;
+        return false;
+    }
+
+    int major; // e.g. 2
+    int minor; // always prints 3 digits, using leading zeros if needed
+    QString specialLetter; // optional
+    QString osPlatform;
+    QString buildTime;
+
+    std::ostream& print(std::ostream& os) const
+    {
+        os << major;
+        os << ".";
+        // Always print minor version with 3 digits, zero padded
+        os << std::setw(3) << std::setfill('0') << minor;
+        os << qPrintable(specialLetter);
+        return os;
+    }
+};
+
+extern VersionInfo thisVersionOfV3D;
+
+class V3DVersionChecker : public QObject
+{
+    Q_OBJECT
+
+public:
+    V3DVersionChecker(QWidget *guiParent);
+    void checkForLatestVersion();
+
+private slots:
+    void gotVersion(QNetworkReply* reply);
+
+private:
+    QWidget *guiParent;
+};
+
+} // namespace v3d
+
+
+// inline to avoid multiply defined error
+inline std::ostream& operator<<(std::ostream& os, const v3d::VersionInfo& v) {
+    return v.print(os);
+}
+
 #endif
-
-

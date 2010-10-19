@@ -22,7 +22,6 @@ class QLineEdit;
 #include "ui_dialog_url_entry.h";
 
 // Custom dialog asks user for URL to download
-// This is a work in progress, and is not yet used in the V3D GUI
 class V3dUrlDialog : public QDialog, public Ui::V3dUrlDialog
 {
     Q_OBJECT

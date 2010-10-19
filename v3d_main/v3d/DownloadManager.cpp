@@ -71,10 +71,9 @@ QUrl DownloadManager::askUserForUrl()
     if (returnValue == QDialog::Accepted) {
         url = urlDialog->getUrl();
         b_cacheFile = urlDialog->checkBox->isChecked();
-        fprintf(stderr, "URL dialog accepted\n");
     }
     else {
-        fprintf(stderr, "URL dialog rejected\n");
+        // fprintf(stderr, "URL dialog rejected\n");
     }
     return url;
 }

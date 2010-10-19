@@ -15,6 +15,7 @@ QT4_WRAP_CPP(QT_MOC_SRCS
   ../v3d/surfaceobj_geometry_dialog.h
   ../v3d/surfaceobj_annotation_dialog.h
   ../v3d/template_matching_cellseg_dialog.h
+  ../v3d/v3d_version_info.h
   )
 
 include_directories(${V3D_BINARY_DIR}/v3d)

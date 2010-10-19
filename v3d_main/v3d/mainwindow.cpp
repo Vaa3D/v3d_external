@@ -267,6 +267,9 @@ MainWindow::MainWindow()
 	//090811 RZC
 	pluginLoader = new V3d_PluginLoader(pluginProcMenu, this);
 
+    qDebug("checking version...");
+    v3d::V3DVersionChecker *versionChecker = new v3d::V3DVersionChecker(this);
+    versionChecker->checkForLatestVersion();
 }
 
 //void MainWindow::postClose() //090812 RZC

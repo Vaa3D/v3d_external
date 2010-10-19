@@ -37,8 +37,15 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../basic_c_fun/v3d_message.h"
 
 #include <QtGui>
+#include <QNetworkReply>
 
-QString versionnumber = "V3D (2.534), V3D-Neuron (2.0), V3D Plugin Interface (2.1) ";
+namespace v3d {
+    // Set current version here.
+    VersionInfo thisVersionOfV3D(2.534);
+}
+QString versionnumber = "V3D (" +
+        v3d::thisVersionOfV3D.toQString() +
+        "), V3D-Neuron (2.0), V3D Plugin Interface (2.1) ";
 
 void v3d_aboutinfo()
 {
@@ -228,3 +235,54 @@ void v3d_Lite_info()
 //
 }
 
+namespace v3d {
+
+V3DVersionChecker::V3DVersionChecker(QWidget *guiParent)
+    : guiParent(guiParent)
+{}
+
+void V3DVersionChecker::checkForLatestVersion() {
+    QUrl versionUrl("http://localhost/~brunsc/v3d_version.txt");
+    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+    QNetworkReply *reply = nam->get(QNetworkRequest(versionUrl));
+    connect(nam, SIGNAL(finished(QNetworkReply*)),
+        this, SLOT(gotVersion(QNetworkReply*)));
+}
+
+void V3DVersionChecker::gotVersion(QNetworkReply* reply) {
+    if (reply->error() != QNetworkReply::NoError) {
+        qDebug("Problem downloading latest version information");
+        return; // error occurred, so don't bother
+    }
+    QString latestVersionString(reply->readAll());
+    v3d::VersionInfo latestVersion(latestVersionString);
+    if (latestVersion > v3d::thisVersionOfV3D) {
+        qDebug("There is a newer V3D version");
+        QMessageBox::StandardButton selectedButton =
+            QMessageBox::question(
+                guiParent,
+                "New V3D version available",
+                "There is a newer version of V3D available\n"
+                "Would you like to get the latest version now?\n"
+                "(Your web browser will open the V3D download page)",
+                QMessageBox::Cancel | QMessageBox::Open,
+                QMessageBox::Open);
+        if (selectedButton == QMessageBox::Open) {
+            // Open the user's browser to the V3D download page
+            bool b_openurl_worked = QDesktopServices::openUrl(
+                QUrl("http://penglab.janelia.org/proj/v3d/V3D/Download.html"));
+            if (! b_openurl_worked)
+                QMessageBox::warning(guiParent,
+                        "Error opening V3D download page", // title
+                        "Oops. V3D could not open your browser.\n"
+                        "Please browse to\n"
+                        "http://penglab.janelia.org/proj/v3d/V3D/Download.html\n"
+                        "to get the latest version");
+        }
+    }
+    else {
+        qDebug("V3D version is up to date");
+    }
+}
+
+} // namespace v3d
