@@ -37,7 +37,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../v3d/mainwindow.h"
 
 #ifdef __WIN32 
-#include "../sub_projects/imaging_piezo/microimaging.h"
+// #include "../sub_projects/imaging_piezo/microimaging.h"
 #endif
 
 bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
@@ -84,7 +84,7 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
     	QPluginLoader* loader = new QPluginLoader(fullpath);
         if (!loader)
         {
-        	qDebug("ERROR in V3d_PluginLoader::searchPluginFiles the imaging module(%s)", fullpath);
+        	qDebug("ERROR in V3d_PluginLoader::searchPluginFiles the imaging module(%s)", qPrintable(fullpath));
         	return false;
         }
 		

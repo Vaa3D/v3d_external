@@ -48,25 +48,39 @@ if( V3D_USE_OWN_TIFF )
 else()
   # CMake 2.8 FindTiff is very simple.  I need to give it some help on windows
   FIND_PATH(TIFF_INCLUDE_DIR tiff.h
-	PATHS "$ENV{PROGRAMFILES}/tiff-3.8.2"
-	# PATHS "$ENV{PROGRAMFILES}/GnuWin32"
+	# PATHS "$ENV{PROGRAMFILES}/tiff-3.8.2"
+	PATHS "$ENV{PROGRAMFILES}/GnuWin32"
 	PATH_SUFFIXES include libtiff "")
   SET(TIFF_NAMES ${TIFF_NAMES} tiff libtiff libtiff3 libtiff_i)
   FIND_LIBRARY(TIFF_LIBRARY NAMES ${TIFF_NAMES}
-	PATHS "$ENV{PROGRAMFILES}/tiff-3.8.2"
-	# PATHS "$ENV{PROGRAMFILES}/GnuWin32"
+	# PATHS "$ENV{PROGRAMFILES}/tiff-3.8.2"
+	PATHS "$ENV{PROGRAMFILES}/GnuWin32"
 	PATH_SUFFIXES lib libtiff "")
   # The unadorned FindTiff below
   find_package(TIFF REQUIRED)
   include_directories(${TIFF_INCLUDE_DIR})
   mark_as_advanced(CLEAR TIFF_LIBRARY)
   mark_as_advanced(CLEAR TIFF_INCLUDE_DIR)
+  # When building with MSYS on Windows, need to copy libtiff dlls
+  # message("CMake generator = ${CMAKE_GENERATOR}")
+  if(${CMAKE_GENERATOR} MATCHES "MSYS")
+    find_file(ZLIB_DLL
+      NAMES zlib1.dll
+      PATHS ${TIFF_INCLUDE_DIR}/../bin)
+    find_file(JPEG_DLL
+      NAMES jpeg62.dll
+      PATHS ${TIFF_INCLUDE_DIR}/../bin)
+    find_file(TIFF_DLL
+      NAMES libtiff3.dll
+      PATHS ${TIFF_INCLUDE_DIR}/../bin)
+  endif()
 endif()
 
 # message("QTVERSION = ${QTVERSION}")
 find_path(QT4_DEMOS_INCLUDE_DIR
   arthurwidgets.h
   PATHS
+        ${QT_LIBRARY_DIR}/..
 	/usr/lib/qt4
 	/usr/local/Trolltech/Qt-${QTVERSION}
 	"C:/Qt/${QTVERSION}"
@@ -77,6 +91,7 @@ find_path(QT4_DEMOS_INCLUDE_DIR
 find_library(QT4_DEMOS_LIBRARY
   demo_shared
   HINTS 
+        ${QT_LIBRARY_DIR}/..
 	/usr/lib/qt4
 	/usr/local/Trolltech/Qt-${QTVERSION}
 	"C:/Qt/${QTVERSION}"
@@ -119,3 +134,16 @@ add_subdirectory( v3d )
 
 add_subdirectory( testing )
 
+
+if(ZLIB_DLL)
+    install(PROGRAMS ${ZLIB_DLL}
+        DESTINATION ".")
+endif()
+if(JPEG_DLL)
+    install(PROGRAMS ${JPEG_DLL}
+        DESTINATION ".")
+endif()
+if(TIFF_DLL)
+    install(PROGRAMS ${TIFF_DLL}
+        DESTINATION ".")
+endif()

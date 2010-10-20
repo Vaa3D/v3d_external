@@ -236,7 +236,7 @@ void V3d_PluginLoader::searchPluginFiles(QMenu* menu)
     	QPluginLoader* loader = new QPluginLoader(fullpath);
         if (! loader)
         {
-        	qDebug("ERROR in V3d_PluginLoader::searchPluginFiles: new QPluginLoader(%s)", fullpath);
+        	qDebug("ERROR in V3d_PluginLoader::searchPluginFiles: new QPluginLoader(%s)", qPrintable(fullpath));
         	return;
         }
 
