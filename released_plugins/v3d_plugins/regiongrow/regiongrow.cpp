@@ -510,8 +510,8 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 		bpos_y = qBound(long(0), long(qMax(0,  b_yz.top())), sz1-1);
 		bpos_z = qBound(long(0), long(qMax(b_yz.left(), b_zx.top())), sz2-1);
 		
-		epos_x = qBound(long(0), long(fmin(sz0-1, b_zx.right())), sz0-1);
-		epos_y = qBound(long(0), long(fmin(sz1-1, b_yz.bottom())), sz1-1);
+		epos_x = qBound(long(0), long(qMin((V3DLONG)(sz0-1), (V3DLONG)b_zx.right())), sz0-1);
+		epos_y = qBound(long(0), long(qMin((V3DLONG)(sz1-1), (V3DLONG)b_yz.bottom())), sz1-1);
 		epos_z = qBound(long(0), long(qMin(b_yz.right(), b_zx.bottom())), sz2-1);
 	}
 	else if(vxy && !vyz && vzx)
@@ -521,8 +521,8 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 		bpos_z = qBound(long(0), long(qMax(0, b_zx.top())), sz2-1);
 		
 		epos_x = qBound(long(0), long(qMin(b_xy.right(), b_zx.right())), sz0-1);
-		epos_y = qBound(long(0), long(fmin(b_xy.bottom(), sz1-1)), sz1-1);
-		epos_z = qBound(long(0), long(fmin(sz2-1, b_zx.bottom())), sz2-1);
+		epos_y = qBound(long(0), long(qMin((V3DLONG)b_xy.bottom(), (V3DLONG)(sz1-1))), sz1-1);
+		epos_z = qBound(long(0), long(qMin((V3DLONG)(sz2-1), (V3DLONG)b_zx.bottom())), sz2-1);
 	}
 	else if(vxy && vyz && !vzx)
 	{
@@ -530,9 +530,9 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 		bpos_y = qBound(long(0), long(qMax(b_xy.top(),  b_yz.top())), sz1-1);
 		bpos_z = qBound(long(0), long(qMax(b_yz.left(), 0)), sz2-1);
 		
-		epos_x = qBound(long(0), long(fmin(b_xy.right(), sz0-1)), sz0-1);
+		epos_x = qBound(long(0), long(qMin((V3DLONG)b_xy.right(), (V3DLONG)(sz0-1))), sz0-1);
 		epos_y = qBound(long(0), long(qMin(b_xy.bottom(), b_yz.bottom())), sz1-1);
-		epos_z = qBound(long(0), long(fmin(b_yz.right(), sz2-1)), sz2-1);
+		epos_z = qBound(long(0), long(qMin((V3DLONG)b_yz.right(), (V3DLONG)(sz2-1))), sz2-1);
 	}
 	else if(vxy && !vyz && !vzx) // only 1 of 3
 	{
@@ -540,8 +540,8 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 		bpos_y = qBound(long(0), long(qMax(b_xy.top(),  0)), sz1-1);
 		bpos_z = 0;
 		
-		epos_x = qBound(long(0), long(fmin(b_xy.right(), sz0-1)), sz0-1);
-		epos_y = qBound(long(0), long(fmin(b_xy.bottom(), sz1-1)), sz1-1);
+		epos_x = qBound(long(0), long(qMin((V3DLONG)b_xy.right(), (V3DLONG)(sz0-1))), sz0-1);
+		epos_y = qBound(long(0), long(qMin((V3DLONG)b_xy.bottom(), (V3DLONG)(sz1-1))), sz1-1);
 		epos_z = sz2-1;
 	}
 	else if(!vxy && vyz && !vzx)
@@ -551,8 +551,8 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 		bpos_z = qBound(long(0), long(qMax(b_yz.left(), 0)), sz2-1);
 		
 		epos_x = sz0-1;
-		epos_y = qBound(long(0), long(fmin(sz1-1, b_yz.bottom())), sz1-1);
-		epos_z = qBound(long(0), long(fmin(b_yz.right(), sz2-1)), sz2-1);
+		epos_y = qBound(long(0), long(qMin((V3DLONG)(sz1-1), (V3DLONG)b_yz.bottom())), sz1-1);
+		epos_z = qBound(long(0), long(qMin((V3DLONG)b_yz.right(), (V3DLONG)(sz2-1))), sz2-1);
 	}
 	else if(!vxy && !vyz && vzx)
 	{
@@ -560,9 +560,9 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 		bpos_y = 0;
 		bpos_z = qBound(long(0), long(qMax(0, b_zx.top())), sz2-1);
 		
-		epos_x = qBound(long(0), long(fmin(sz0-1, b_zx.right())), sz0-1);
+		epos_x = qBound(long(0), long(qMin((V3DLONG)(sz0-1), (V3DLONG)b_zx.right())), sz0-1);
 		epos_y = sz1-1;
-		epos_z = qBound(long(0), long(fmin(sz2-1, b_zx.bottom())), sz2-1);
+		epos_z = qBound(long(0), long(qMin((V3DLONG)(sz2-1), (V3DLONG)b_zx.bottom())), sz2-1);
 	}
 	else // 0
 	{
@@ -925,7 +925,7 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	
 	long length;
 	
-	long n_rgn = stclList.size(); // fmin(5, nrgncopied);
+	long n_rgn = stclList.size(); // qMin(5, nrgncopied);
 	
 	qDebug() << "num of rgn ..." << n_rgn << nrgncopied;
 	
