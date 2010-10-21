@@ -1052,10 +1052,21 @@ void MainWindow::openRecentFile()
         // File name might be a URL -- by CMB Oct-14-2010
         QString fileOrUrl(action->data().toString());
         QUrl url(fileOrUrl);
+        // Note that file names are interpreted as "valid" URLs
         if (url.isValid())
-            loadV3DUrl(url);
-        else
-            loadV3DFile(fileOrUrl);
+        {
+            // Only download ftp, http, https, etc.
+            // not "file" nor empty "" URL scheme
+            if ( (! url.isRelative())
+              && (url.scheme() != "file") )
+            {
+                // qDebug("Recent URL chosen");
+                loadV3DUrl(url);
+                return;
+            }
+        }
+        // qDebug("Recent file chosen");
+        loadV3DFile(fileOrUrl);
     }
 }
 
