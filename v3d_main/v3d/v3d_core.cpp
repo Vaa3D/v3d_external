@@ -3189,11 +3189,11 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 
 #if COMPILE_TARGET_LEVEL != 0
 		case Qt::Key_V:
-			if(imgData->getDatatype()!=V3D_UINT8) //only work for UINT8 data
-			{
-				v3d_msg("Your data type is not UINT8 yet, - you will need to convert to UINT8 to see the data in 3D. Go to main menu \"Image/Data\" -> \"Image type\" to convert.");
-				break;
-			}
+//			if(imgData->getDatatype()!=V3D_UINT8) //only work for UINT8 data
+//			{
+//				v3d_msg("Your data type is not UINT8 yet, - you will need to convert to UINT8 to see the data in 3D. Go to main menu \"Image/Data\" -> \"Image type\" to convert.");
+//				break;
+//			}
 
 		    if (QApplication::keyboardModifiers()==Qt::ControlModifier) //launch the full-image 3d view
 		    {
