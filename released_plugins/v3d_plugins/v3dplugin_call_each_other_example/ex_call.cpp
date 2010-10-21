@@ -22,17 +22,13 @@ QString plugin_name = "64bit/V3D_Plugin_Example_call_each_other/libex_matrix_deb
 QString plugin_name = "32bit/V3D_Plugin_Example_call_each_other/libex_matrix_debug.dylib";
 #endif
 
-#else
-
-#if defined (WIN32) || defined (_WIN32)
+#elif defined (_WIN32) || defined (_WIN64)
 
 QString plugin_name = "V3D_Plugin_Example_call_each_other/libex_matrix_debug.dll";  //for Windows
 
 #else
 
 QString plugin_name = "V3D_Plugin_Example_call_each_other/libex_matrix_debug.so";  //for Linux
-
-#endif
 
 #endif
 

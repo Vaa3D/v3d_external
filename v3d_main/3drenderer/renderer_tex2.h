@@ -73,6 +73,7 @@ enum v3dr_SurfaceType { stSurfaceNone=0,
 class Renderer_tex2 : public Renderer
 {
 	friend class V3dr_surfaceDialog; //for accessing all surface data structure
+	friend class V3dr_colormapDialog;
 
 public:
 	Renderer_tex2(void* widget);
@@ -268,9 +269,10 @@ protected:
 protected:
 	void* _idep;
 	bool isSimulatedData;
+	int data_unitbytes;
 	unsigned char* data4dp;
 	unsigned char**** data4d_uint8;
-	// data4d_uint8[x4][x3][x2][x1]
+	// data4d_uint8[dim4][dim3][dim2][dim1]
 	V3DLONG dim1, dim2, dim3, dim4, dim5;
 	V3DLONG start1, start2, start3, start4, start5;
 	V3DLONG size1, size2, size3, size4, size5;
@@ -303,6 +305,7 @@ private:
 
 		_idep=0;
 		isSimulatedData=false;
+		data_unitbytes=0;
 		data4dp = 0;
 		data4d_uint8 = 0;
 		dim1=dim2=dim3=dim4=dim5=0;
@@ -325,7 +328,7 @@ private:
 		VOL_X0 = VOL_Y0 = VOL_Z0 = 0;
 		VOLUME_FILTER = 1;
 		SLICE_COLOR = XYZW(1,1,1,1);
-		
+
 		b_imaging = false; //101008
 	}
 

@@ -80,6 +80,7 @@ void V3dr_colormapDialog::linkTo(QWidget* w) //point to new view
 	glwidget = (V3dR_GLWidget*)w;
 	renderer = (Renderer_gl2*)(glwidget->getRenderer());
 
+	if (renderer && (renderer->data_unitbytes >1)) applyButton->setEnabled(false);
 	bCanUndo = bMod = false;
 
 	saveOldcurve();

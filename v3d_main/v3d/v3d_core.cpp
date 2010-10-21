@@ -1,28 +1,28 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
 
 /************
  ********* LICENSE NOTICE ************
- 
- This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
- 
+
+ This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
+
  You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
- 
+
  1. This package is free for non-profit research, but needs a special license for any commercial purpose. Please contact Hanchuan Peng for details.
- 
+
  2. You agree to appropriately cite this work in your related studies and publications.
- 
+
  Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) “V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,” Nature Biotechnology, Vol. 28, No. 4, pp. 348-353, DOI: 10.1038/nbt.1612. ( http://penglab.janelia.org/papersall/docpdf/2010_NBT_V3D.pdf )
- 
+
  Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstruction of 3D neuron structures using a graph-augmented deformable model,” Bioinformatics, Vol. 26, pp. i38-i46, 2010. ( http://penglab.janelia.org/papersall/docpdf/2010_Bioinfo_GD_ISMB2010.pdf )
- 
+
  3. This software is provided by the copyright holders (Hanchuan Peng), Howard Hughes Medical Institute, Janelia Farm Research Campus, and contributors "as is" and any express or implied warranties, including, but not limited to, any implied warranties of merchantability, non-infringement, or fitness for a particular purpose are disclaimed. In no event shall the copyright owner, Howard Hughes Medical Institute, Janelia Farm Research Campus, or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; reasonable royalties; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.
- 
+
  4. Neither the name of the Howard Hughes Medical Institute, Janelia Farm Research Campus, nor Hanchuan Peng, may be used to endorse or promote products derived from this software without specific prior written permission.
- 
+
  *************/
 
 
@@ -32,7 +32,7 @@
  **
  Copyright (C) 2006-2008 Hanchuan Peng. All rights reserved.
  Read the raw image file generated using Hanchuan Peng's program saveStack2Raw.m .
- 
+
  by Hanchuan Peng
  Feb 25, 2006
  Feb 28, 2006
@@ -183,7 +183,7 @@ double th_use_memory=1.5; //should be 1.1 for 32bit mac version of v3d
 
 #else
 #if defined (WIN32) || defined (_WIN32)
-#if defined (_WIN64) 
+#if defined (_WIN64)
 double th_use_memory=20.0; //allow use 8G window memory for 64bit windows
 #else
 double th_use_memory=1.5; //allow 1.5G memory for 32bit windows
@@ -224,23 +224,23 @@ void My4DImage::update_3drenderer_neuron_view()
 {
 	XFormWidget* xwidget = getXWidget();
 	if (! xwidget) return;
-	
+
 	if (xwidget->mypara_3Dview.b_still_open && xwidget->mypara_3Dview.window3D)
 	{
 		Renderer_tex2 * cur_renderer = (Renderer_tex2 *)(xwidget->mypara_3Dview.window3D->getGLWidget()->getRenderer());
-		
+
 		LOAD_traced_neuron(this, cur_renderer);
-		
+
 		xwidget->mypara_3Dview.window3D->getGLWidget()->updateTool(); // 090622 RZC
 	}
-	
+
 	//also update local view
 	if (xwidget->mypara_3Dlocalview.b_still_open && xwidget->mypara_3Dlocalview.window3D)
 	{
 		Renderer_tex2 * cur_renderer = (Renderer_tex2 *)(xwidget->mypara_3Dlocalview.window3D->getGLWidget()->getRenderer());
-		
+
 		LOAD_traced_neuron(this, cur_renderer);
-		
+
 		xwidget->mypara_3Dlocalview.window3D->getGLWidget()->updateTool();
 	}
 }
@@ -277,45 +277,45 @@ template <class T>  QPixmap copyRaw2QPixmap(const T ** p2dRed, const T ** p2dGre
 	return QPixmap::fromImage(tmpimg);
 }
 
-template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T **** p4d, 
-												   V3DLONG sz0, 
-												   V3DLONG sz1, 
-												   V3DLONG sz2, 
-												   V3DLONG sz3, 
-												   ImageDisplayColorType Ctype, 
-												   V3DLONG cpos, 
-												   bool bIntensityRescale, 
-												   double *p_vmax, 
+template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T **** p4d,
+												   V3DLONG sz0,
+												   V3DLONG sz1,
+												   V3DLONG sz2,
+												   V3DLONG sz3,
+												   ImageDisplayColorType Ctype,
+												   V3DLONG cpos,
+												   bool bIntensityRescale,
+												   double *p_vmax,
 												   double *p_vmin)
 {
 	QImage tmpimg = QImage(sz2, sz1, QImage::Format_RGB32);
 	int tr,tg,tb;
-	
+
 	V3DLONG curpos = (cpos>sz0) ? sz0-1 : cpos-1;
 	curpos = (curpos<0)?0:curpos;
-	
+
 	V3DLONG i,j;
 	double tmpr,tmpg,tmpb;
 	double tmpr_min, tmpg_min, tmpb_min;
-	
+
 	if (sz3>=3)
 	{
 		tmpb = p_vmax[2]-p_vmin[2]; tmpb = (tmpb==0)?1:tmpb;
 		tmpb_min = p_vmin[2];
 	}
-	
+
 	if (sz3>=2)
 	{
 		tmpg = p_vmax[1]-p_vmin[1]; tmpg = (tmpg==0)?1:tmpg;
 		tmpg_min = p_vmin[1];
 	}
-	
+
 	if (sz3>=1)
 	{
 		tmpr = p_vmax[0]-p_vmin[0]; tmpr = (tmpr==0)?1:tmpr;
 		tmpr_min = p_vmin[0];
 	}
-	
+
 	//the wrong Ctype options should be disabled in the interface instead of a complicated logic management here
 	switch (Ctype)
 	{
@@ -344,7 +344,7 @@ template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorGray: //070716
 			for (j=0;j<sz1;j++)
 			{
@@ -367,7 +367,7 @@ template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorRed2Gray:
 			if (bIntensityRescale==false)
 			{
@@ -392,7 +392,7 @@ template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorGreenOnly:
 			tb = tr = 0;
 			if (bIntensityRescale==false)
@@ -418,7 +418,7 @@ template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorGreen2Gray:
 			if (bIntensityRescale==false)
 			{
@@ -443,7 +443,7 @@ template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorBlueOnly:
 			tg = tr = 0;
 			if (bIntensityRescale==false)
@@ -469,7 +469,7 @@ template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorBlue2Gray:
 			if (bIntensityRescale==false)
 			{
@@ -494,7 +494,7 @@ template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorRGB:
 			if (bIntensityRescale==false)
 			{
@@ -523,7 +523,7 @@ template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorRG:
 			tb = 0;
 			if (bIntensityRescale==false)
@@ -551,58 +551,58 @@ template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorUnknown:
 		default:
-			
+
 			break;
 	}
-	
+
 	return QPixmap::fromImage(tmpimg);
 }
 
 
-template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T **** p4d, 
-												   V3DLONG sz0, 
-												   V3DLONG sz1, 
-												   V3DLONG sz2, 
-												   V3DLONG sz3, 
-												   ImageDisplayColorType Ctype, 
-												   V3DLONG cpos, 
-												   bool bIntensityRescale, 
-												   double *p_vmax, 
+template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T **** p4d,
+												   V3DLONG sz0,
+												   V3DLONG sz1,
+												   V3DLONG sz2,
+												   V3DLONG sz3,
+												   ImageDisplayColorType Ctype,
+												   V3DLONG cpos,
+												   bool bIntensityRescale,
+												   double *p_vmax,
 												   double *p_vmin)
 {
 	QImage tmpimg = QImage(sz0, sz2, QImage::Format_RGB32);
 	int tr,tg,tb;
-	
+
 	V3DLONG curpos = (cpos>sz1) ? sz1-1 : cpos-1;
 	curpos = (curpos<0)?0:curpos;
-	
+
 	V3DLONG i,j;
 	double tmpr,tmpg,tmpb;
 	double tmpr_min, tmpg_min, tmpb_min;
-	
+
 	if (sz3>=3)
 	{
 		tmpb = p_vmax[2]-p_vmin[2]; tmpb = (tmpb==0)?1:tmpb;
 		tmpb_min = p_vmin[2];
 	}
-	
+
 	if (sz3>=2)
 	{
 		tmpg = p_vmax[1]-p_vmin[1]; tmpg = (tmpg==0)?1:tmpg;
 		tmpg_min = p_vmin[1];
 	}
-	
+
 	if (sz3>=1)
 	{
 		tmpr = p_vmax[0]-p_vmin[0]; tmpr = (tmpr==0)?1:tmpr;
 		tmpr_min = p_vmin[0];
 	}
-	
+
 	//the wrong Ctype options should be disabled in the interface instead of a complicated logic management here
-	
+
 	switch (Ctype)
 	{
 		case colorRedOnly:
@@ -616,7 +616,7 @@ template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorGray: //070716
 			for (j=0;j<sz2;j++)
 			{
@@ -639,7 +639,7 @@ template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorRed2Gray:
 			for (j=0;j<sz2;j++)
 			{
@@ -650,7 +650,7 @@ template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorGreenOnly:
 			tb = tr = 0;
 			for (j=0;j<sz2;j++)
@@ -662,7 +662,7 @@ template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorGreen2Gray:
 			for (j=0;j<sz2;j++)
 			{
@@ -673,7 +673,7 @@ template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorBlueOnly:
 			tg = tr = 0;
 			for (j=0;j<sz2;j++)
@@ -685,7 +685,7 @@ template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorBlue2Gray:
 			for (j=0;j<sz2;j++)
 			{
@@ -696,7 +696,7 @@ template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorRGB:
 			for (j=0;j<sz2;j++)
 			{
@@ -709,7 +709,7 @@ template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorRG:
 			tb = 0;
 			for (j=0;j<sz2;j++)
@@ -722,63 +722,63 @@ template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorUnknown:
 		default:
 			break;
 	}
-	
+
 	return QPixmap::fromImage(tmpimg);
 }
 
-template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T **** p4d, 
-												   V3DLONG sz0, 
-												   V3DLONG sz1, 
-												   V3DLONG sz2, 
-												   V3DLONG sz3, 
-												   ImageDisplayColorType Ctype, 
-												   V3DLONG cpos, 
-												   bool bIntensityRescale, 
-												   double *p_vmax, 
+template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T **** p4d,
+												   V3DLONG sz0,
+												   V3DLONG sz1,
+												   V3DLONG sz2,
+												   V3DLONG sz3,
+												   ImageDisplayColorType Ctype,
+												   V3DLONG cpos,
+												   bool bIntensityRescale,
+												   double *p_vmax,
 												   double *p_vmin)
 {
 	QImage tmpimg = QImage(sz0, sz1, QImage::Format_RGB32);
 	int tr,tg,tb;
-	
+
 	V3DLONG curpos = (cpos>sz2)?sz2-1:cpos-1;
 	curpos = (curpos<0)?0:curpos;
-	
+
 	/*
 	 unsigned char **p2dRed, **p2dGreen, **p2dBlue;
 	 p2dBlue = (sz3<3) ? 0 : (unsigned char **)(p4d[2][curpos]);
 	 p2dGreen = (sz3<2) ? 0 : (unsigned char **)(p4d[1][curpos]);
 	 p2dRed = (sz3<1) ? 0 : (unsigned char **)(p4d[0][curpos]);
 	 */
-	
+
 	V3DLONG i,j;
 	double tmpr,tmpg,tmpb;
 	double tmpr_min, tmpg_min, tmpb_min;
-	
+
 	if (sz3>=3)
 	{
 		tmpb = p_vmax[2]-p_vmin[2]; tmpb = (tmpb==0)?1:tmpb;
 		tmpb_min = p_vmin[2];
 	}
-	
+
 	if (sz3>=2)
 	{
 		tmpg = p_vmax[1]-p_vmin[1]; tmpg = (tmpg==0)?1:tmpg;
 		tmpg_min = p_vmin[1];
 	}
-	
+
 	if (sz3>=1)
 	{
 		tmpr = p_vmax[0]-p_vmin[0]; tmpr = (tmpr==0)?1:tmpr;
 		tmpr_min = p_vmin[0];
 	}
-	
+
 	//the wrong Ctype options should be disabled in the interface instead of a complicated logic management here
-	
+
 	switch (Ctype)
 	{
 		case colorRedOnly:
@@ -792,7 +792,7 @@ template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorGray: //070716
 			for (j=0;j<sz1;j++)
 			{
@@ -815,7 +815,7 @@ template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorRed2Gray:
 			for (j=0;j<sz1;j++)
 			{
@@ -826,7 +826,7 @@ template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorGreenOnly:
 			tr = tb = 0;
 			for (j=0;j<sz1;j++)
@@ -838,7 +838,7 @@ template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorGreen2Gray:
 			for (j=0;j<sz1;j++)
 			{
@@ -849,7 +849,7 @@ template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorBlueOnly:
 			tr = tg = 0;
 			for (j=0;j<sz1;j++)
@@ -861,7 +861,7 @@ template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorBlue2Gray:
 			for (j=0;j<sz1;j++)
 			{
@@ -872,7 +872,7 @@ template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorRGB:
 			for (j=0;j<sz1;j++)
 			{
@@ -885,7 +885,7 @@ template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorRG:
 			tb = 0;
 			for (j=0;j<sz1;j++)
@@ -898,7 +898,7 @@ template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T **** p4d,
 				}
 			}
 			break;
-			
+
 		case colorUnknown:
 		default:
 			break;
@@ -926,15 +926,15 @@ template <class T> QPixmap copyRaw2QPixmap(const T **** p4d, V3DLONG sz0, V3DLON
 		case imgPlaneX:
 			return copyRaw2QPixmap_xPlanes(p4d, sz0, sz1, sz2, sz3, Ctype, cpos, bIntensityRescale, p_vmax, p_vmin);
 			break;
-			
+
 		case imgPlaneY:
 			return copyRaw2QPixmap_yPlanes(p4d, sz0, sz1, sz2, sz3, Ctype, cpos, bIntensityRescale, p_vmax, p_vmin);
 			break;
-			
+
 		case imgPlaneZ:
 			return copyRaw2QPixmap_zPlanes(p4d, sz0, sz1, sz2, sz3, Ctype, cpos, bIntensityRescale, p_vmax, p_vmin);
 			break;
-			
+
 		default:
 			printf("Undefined ImagePlaneDisplayType. Check your code.\n");
 			return QPixmap(0,0); //return an empty image for this prohibited case
@@ -955,15 +955,15 @@ QPixmap copyRaw2QPixmap_colormap(const void **** p4d, ImagePixelType dtype, V3DL
 		case imgPlaneX:
 			return copyRaw2QPixmap_xPlanes_colormap(p4d, dtype, sz0, sz1, sz2, sz3, cpos, pc);
 			break;
-			
+
 		case imgPlaneY:
 			return copyRaw2QPixmap_yPlanes_colormap(p4d, dtype, sz0, sz1, sz2, sz3, cpos, pc);
 			break;
-			
+
 		case imgPlaneZ:
 			return copyRaw2QPixmap_zPlanes_colormap(p4d, dtype, sz0, sz1, sz2, sz3, cpos, pc);
 			break;
-			
+
 		default:
 			printf("Undefined ImagePlaneDisplayType. Check your code.\n");
 			return QPixmap(0,0); //return an empty image for this prohibited case
@@ -978,32 +978,32 @@ QPixmap copyRaw2QPixmap_xPlanes_colormap(const void **** p4d, ImagePixelType dty
 		printf("The input parameters are invalid in copyRaw2QPixmap_xPlanes_colormap()!\n");
 		return QPixmap(sz2, sz1);
 	}
-	
+
 	if (sz3<1)
 	{
 		printf("The number of color channels cannot be smalled than 1. Note that as an indexed color, only the first (0-th) dim is used. \n");
 		return QPixmap(sz2, sz1);;
 	}
-	
+
 	QImage tmpimg = QImage(sz2, sz1, QImage::Format_RGB32);
 	int tr,tg,tb;
 	int clen = pc->len;
 	V3DLONG ind;
-	
+
 	V3DLONG curpos = (cpos>sz0) ? sz0-1 : cpos-1;
 	curpos = (curpos<0)?0:curpos;
-	
+
 	V3DLONG i,j;
-	
+
 	float ***p3d_float32=0;
 	USHORTINT16 ***p3d_uint16=0;
 	unsigned char ***p3d_uint8=0;
-	
+
 	switch(dtype)
 	{
 		case V3D_UINT8:
 			p3d_uint8 = (unsigned char ***)(p4d[0]);
-			
+
 			for (j=0;j<sz1;j++)
 			{
 				for (i=0;i<sz2;i++)
@@ -1016,13 +1016,13 @@ QPixmap copyRaw2QPixmap_xPlanes_colormap(const void **** p4d, ImagePixelType dty
 					tmpimg.setPixel(i, j, qRgb(tr, tg, tb));
 				}
 			}
-			
+
 			break;
-			
+
 		case V3D_UINT16:
 			p3d_uint16 = ((USHORTINT16 ****)p4d)[0];
 			//printf("p3d=[%ld] sz1=%d sz2=%d\n", V3DLONG(p3d_uint16), sz1, sz2);
-			
+
 			for (j=0;j<sz1;j++)
 			{
 				for (i=0;i<sz2;i++)
@@ -1036,12 +1036,12 @@ QPixmap copyRaw2QPixmap_xPlanes_colormap(const void **** p4d, ImagePixelType dty
 					tmpimg.setPixel(i, j, qRgb(tr, tg, tb));
 				}
 			}
-			
+
 			break;
-			
+
 		case V3D_FLOAT32:
 			p3d_float32 = ((float ****)p4d)[0]; //(float ***)(p4d[0]);
-			
+
 			for (j=0;j<sz1;j++)
 			{
 				for (i=0;i<sz2;i++)
@@ -1054,13 +1054,13 @@ QPixmap copyRaw2QPixmap_xPlanes_colormap(const void **** p4d, ImagePixelType dty
 					tmpimg.setPixel(i, j, qRgb(tr, tg, tb));
 				}
 			}
-			
+
 			break;
-			
+
 		default:
 			break;
 	}
-	
+
 	return QPixmap::fromImage(tmpimg);
 }
 
@@ -1071,38 +1071,38 @@ QPixmap copyRaw2QPixmap_yPlanes_colormap(const void **** p4d, ImagePixelType dty
 		printf("The input parameters are invalid in copyRaw2QPixmap_yPlanes_colormap()!\n");
 		return QPixmap(sz0, sz2);
 	}
-	
+
 	if (sz3<1)
 	{
 		printf("The number of color channels cannot be smalled than 1. Note that as an indexed color, only the first (0-th) dim is used. \n");
 		return QPixmap(sz0, sz2);
 	}
-	
+
 	QImage tmpimg = QImage(sz0, sz2, QImage::Format_RGB32);
 	int tr,tg,tb;
 	int clen = pc->len;
 	V3DLONG ind;
-	
+
 	V3DLONG curpos = (cpos>sz1) ? sz1-1 : cpos-1;
 	curpos = (curpos<0)?0:curpos;
-	
+
 	V3DLONG i,j;
-	
+
 	float ***p3d_float32;
 	USHORTINT16 ***p3d_uint16;
 	unsigned char ***p3d_uint8;
-	
+
 	switch (dtype)
 	{
 		case V3D_UINT8:
 			p3d_uint8 = (unsigned char ***)(p4d[0]);
-			
+
 			for (j=0;j<sz2;j++)
 			{
 				for (i=0;i<sz0;i++)
 				{
 					ind = V3DLONG(p3d_uint8[j][curpos][i]);
-					
+
 					if (ind>=clen) ind = ind % clen;
 					tr = pc->map2d[ind][0];
 					tg = pc->map2d[ind][1];
@@ -1111,16 +1111,16 @@ QPixmap copyRaw2QPixmap_yPlanes_colormap(const void **** p4d, ImagePixelType dty
 				}
 			}
 			break;
-			
+
 		case V3D_UINT16:
 			p3d_uint16 = (USHORTINT16 ***)(p4d[0]);
-			
+
 			for (j=0;j<sz2;j++)
 			{
 				for (i=0;i<sz0;i++)
 				{
 					ind = V3DLONG(p3d_uint16[j][curpos][i]);
-					
+
 					if (ind>=clen) ind = ind % clen;
 					tr = pc->map2d[ind][0];
 					tg = pc->map2d[ind][1];
@@ -1129,16 +1129,16 @@ QPixmap copyRaw2QPixmap_yPlanes_colormap(const void **** p4d, ImagePixelType dty
 				}
 			}
 			break;
-			
+
 		case V3D_FLOAT32:
 			p3d_float32 = (float ***)(p4d[0]);
-			
+
 			for (j=0;j<sz2;j++)
 			{
 				for (i=0;i<sz0;i++)
 				{
 					ind = V3DLONG(fabs(p3d_float32[j][curpos][i]));
-					
+
 					if (ind>=clen) ind = ind % clen;
 					tr = pc->map2d[ind][0];
 					tg = pc->map2d[ind][1];
@@ -1147,11 +1147,11 @@ QPixmap copyRaw2QPixmap_yPlanes_colormap(const void **** p4d, ImagePixelType dty
 				}
 			}
 			break;
-			
+
 		default:
 			break;
 	}
-	
+
 	return QPixmap::fromImage(tmpimg);
 }
 
@@ -1162,32 +1162,32 @@ QPixmap copyRaw2QPixmap_zPlanes_colormap(const void **** p4d, ImagePixelType dty
 		printf("The input parameters are invalid in copyRaw2QPixmap_zPlanes_colormap()!\n");
 		return QPixmap(sz0, sz1);
 	}
-	
+
 	if (sz3<1)
 	{
 		printf("The number of color channels cannot be smalled than 1. Note that as an indexed color, only the first (0-th) dim is used. \n");
 		return QPixmap(sz0, sz1);
 	}
-	
+
 	QImage tmpimg = QImage(sz0, sz1, QImage::Format_RGB32);
 	int tr,tg,tb;
 	int clen = pc->len;
 	V3DLONG ind;
-	
+
 	V3DLONG curpos = (cpos>sz2)?sz2-1:cpos-1;
 	curpos = (curpos<0)?0:curpos;
-	
+
 	V3DLONG i,j;
-	
+
 	float ***p3d_float32;
 	USHORTINT16 ***p3d_uint16;
 	unsigned char ***p3d_uint8;
-	
+
 	switch (dtype)
 	{
 		case V3D_UINT8:
 			p3d_uint8 = (unsigned char ***)(p4d[0]);
-			
+
 			for (j=0;j<sz1;j++)
 			{
 				for (i=0;i<sz0;i++)
@@ -1198,14 +1198,14 @@ QPixmap copyRaw2QPixmap_zPlanes_colormap(const void **** p4d, ImagePixelType dty
 					tg = pc->map2d[ind][1];
 					tb = pc->map2d[ind][2];
 					tmpimg.setPixel(i, j, qRgb(tr, tg, tb));
-					
+
 				}
 			}
 			break;
-			
+
 		case V3D_UINT16:
 			p3d_uint16 = (USHORTINT16 ***)(p4d[0]);
-			
+
 			for (j=0;j<sz1;j++)
 			{
 				for (i=0;i<sz0;i++)
@@ -1216,14 +1216,14 @@ QPixmap copyRaw2QPixmap_zPlanes_colormap(const void **** p4d, ImagePixelType dty
 					tg = pc->map2d[ind][1];
 					tb = pc->map2d[ind][2];
 					tmpimg.setPixel(i, j, qRgb(tr, tg, tb));
-					
+
 				}
 			}
 			break;
-			
+
 		case V3D_FLOAT32:
 			p3d_float32 = (float ***)(p4d[0]);
-			
+
 			for (j=0;j<sz1;j++)
 			{
 				for (i=0;i<sz0;i++)
@@ -1234,15 +1234,15 @@ QPixmap copyRaw2QPixmap_zPlanes_colormap(const void **** p4d, ImagePixelType dty
 					tg = pc->map2d[ind][1];
 					tb = pc->map2d[ind][2];
 					tmpimg.setPixel(i, j, qRgb(tr, tg, tb));
-					
+
 				}
 			}
 			break;
-			
+
 		default:
 			break;
 	}
-	
+
 	return QPixmap::fromImage(tmpimg);
 }
 
@@ -1251,31 +1251,31 @@ bool getFocusCrossLinePos(int & focusPosInWidth, int & focusPosInHeight, My4DIma
 {
 	if (imgData==NULL)
 		return false;
-	
+
 	if (imgData->isEmpty()==true)
 		return false;
-	
+
 	switch (Ptype)
 	{
 		case imgPlaneX:
 			focusPosInWidth = imgData->curFocusZ;
 			focusPosInHeight = imgData->curFocusY;
 			break;
-			
+
 		case imgPlaneY:
 			focusPosInWidth = imgData->curFocusX;
 			focusPosInHeight = imgData->curFocusZ;
 			break;
-			
+
 		case imgPlaneZ:
 			focusPosInWidth = imgData->curFocusX;
 			focusPosInHeight = imgData->curFocusY;
 			break;
-			
+
 		default:
 			return false;
 	}
-	
+
 	return (focusPosInWidth==-1 || focusPosInHeight==-1) ? false : true;
 }
 
@@ -1289,37 +1289,37 @@ XFormView::XFormView(QWidget *parent)
 : ArthurFrame(parent)
 {
     setAttribute(Qt::WA_MouseTracking);
-	
+
     Gtype = PixmapType;
     m_scale = 1.0;
 	//  m_shear = 0.0;
 	//  m_rotation = 0.0;
 	myCursor = QCursor(Qt::OpenHandCursor);
-	
+
     b_displayFocusCrossLine = true;
-	
+
     Ptype = imgPlaneUndefined; //set -1 as a invalid type
     cur_focus_pos = 1;
 	imgData = 0; //make a reference to the actual data
 	Ctype = colorRGB; //set how to display RGB color. This setting can be changed later by the setCType() function
-	
+
     // set a default map
-	
+
 	pixmap = QPixmap(256, 256);
 	pixmap.fill(Qt::red);
-	
+
     focusPosInWidth = pixmap.width()/2.0;
     focusPosInHeight = pixmap.height()/2.0;
-	
+
 	bMouseCurorIn = false;
-	
+
     //setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-	
+
 	curDisplayCenter = QPoint(pixmap.width()/2.0, pixmap.height()/2.0);
-	
+
 	ind_landmarkToBeChanged=-1; //reset it initially
 	b_moveCurrentLandmark = false; //reset it initially
-	
+
 	disp_scale = 1;
 	disp_width = disp_scale * pixmap.width();
 	disp_height = disp_scale * pixmap.height();
@@ -1329,22 +1329,22 @@ bool XFormView::internal_only_imgplane_op()
 {
 	if (!imgData) return false;
     ImagePixelType dtype;
-  	unsigned char **** p4d = (unsigned char ****)imgData->getData(dtype);	
+  	unsigned char **** p4d = (unsigned char ****)imgData->getData(dtype);
 	if (!p4d) return false;
-	
+
 	if (dtype==V3D_UINT8)
 	{
 		if (imgData->getCDim()==1 && (Ctype==colorPseudoMaskColor || Ctype==colorArnimFlyBrainColor || Ctype==colorHanchuanFlyBrainColor))
 		{
 			if (imgData->colorMap)
 			{
-				pixmap = copyRaw2QPixmap_colormap( 
-												  (const void ****) p4d, dtype, 
-												  imgData->getXDim(), 
-												  imgData->getYDim(), 
-												  imgData->getZDim(), 
-												  imgData->getCDim(), 
-												  cur_focus_pos, 
+				pixmap = copyRaw2QPixmap_colormap(
+												  (const void ****) p4d, dtype,
+												  imgData->getXDim(),
+												  imgData->getYDim(),
+												  imgData->getZDim(),
+												  imgData->getCDim(),
+												  cur_focus_pos,
 												  imgData->colorMap, Ptype);
 			}
 			else
@@ -1355,7 +1355,7 @@ bool XFormView::internal_only_imgplane_op()
 		}
 		else
 		{
-			pixmap = copyRaw2QPixmap( 
+			pixmap = copyRaw2QPixmap(
 									 (const unsigned char ****) p4d,
 									 imgData->getXDim(),
 									 imgData->getYDim(),
@@ -1386,7 +1386,7 @@ bool XFormView::internal_only_imgplane_op()
 			else
 			{
 				pixmap = copyRaw2QPixmap(
-										 (const unsigned short int ****) p4d, 
+										 (const unsigned short int ****) p4d,
 										 imgData->getXDim(),
 										 imgData->getYDim(),
 										 imgData->getZDim(),
@@ -1400,7 +1400,7 @@ bool XFormView::internal_only_imgplane_op()
 		else
 		{
 			pixmap = copyRaw2QPixmap(
-									 (const unsigned short int ****) p4d, 
+									 (const unsigned short int ****) p4d,
 									 imgData->getXDim(),
 									 imgData->getYDim(),
 									 imgData->getZDim(),
@@ -1460,7 +1460,7 @@ bool XFormView::internal_only_imgplane_op()
 		v3d_msg("Right now only support UINT8, UINT16, and FLOAT32.\n", 0);
 		return false; //do nothing
 	}
-	
+
 	return true;
 }
 
@@ -1470,7 +1470,7 @@ void XFormView::setImgData(ImagePlaneDisplayType ptype, My4DImage * pdata, Image
     cur_focus_pos = 1;
 	imgData = pdata; //make a reference to the actual data
 	Ctype = ctype; //set how to display RGB color. This setting can be changed later by the setCType() function
-	
+
     if (!imgData) //this is used to set the default pictures
 	{
 		switch (Ptype)
@@ -1489,10 +1489,10 @@ void XFormView::setImgData(ImagePlaneDisplayType ptype, My4DImage * pdata, Image
 				break;
 		}
 		v3d_msg(QString("The pixel map size is %1 %2 (for invalid imagedata)").arg(pixmap.width()).arg(pixmap.height()), 0);
-		
+
 		return;
 	}
-	
+
     ImagePixelType dtype;
   	unsigned char **** p4d = (unsigned char ****)imgData->getData(dtype);
   	if (!p4d)
@@ -1513,7 +1513,7 @@ void XFormView::setImgData(ImagePlaneDisplayType ptype, My4DImage * pdata, Image
 				pixmap = QPixmap(":/pic/bg1.jpg");
 				break;
 	    }
-		
+
    	    //printf("The pixel map size is %d %d\n", pixmap.width(), pixmap.height());
 	}
 	else
@@ -1537,34 +1537,34 @@ void XFormView::mouseDoubleClickEvent(QMouseEvent * e)
 {
     if (!imgData)
 		return;
-	
+
     QPoint cp = e->pos()/disp_scale;
 	int sx,sy,sz; //current selection location's x,y,z
-	
+
 	switch(Ptype)
 	{
 		case imgPlaneZ:
 		    sx = cp.x(); sy = cp.y(); sz = imgData->curFocusZ;
 		    break;
-			
+
 		case imgPlaneX:
 		    sz = cp.x(); sy = cp.y(); sx = imgData->curFocusX;
 		    break;
-			
+
 		case imgPlaneY:
 		    sx = cp.x(); sz = cp.y(); sy = imgData->curFocusY;
 		    break;
-			
+
 		default:
 		    return;
 			break;
 	}
-	
+
 	int rr = 10;
-	
+
 	double dmin;
 	V3DLONG ind_min;
-	
+
 	int tmpx,tmpy,tmpz;
 	LocationSimple tmpLocation(0,0,0);
 	double dx,dy,dz, dd;
@@ -1577,7 +1577,7 @@ void XFormView::mouseDoubleClickEvent(QMouseEvent * e)
 			continue;
 		if ((dd=dx*dx+dy*dy+dz*dz)>rr*rr)
 			continue;
-		
+
 		if (b_find==0)
 		{
 			b_find=1;
@@ -1593,7 +1593,7 @@ void XFormView::mouseDoubleClickEvent(QMouseEvent * e)
 			}
 		}
 	}
-	
+
 	if (b_find==1)
 	{
 		QString tmps("Change Landmark [");
@@ -1606,7 +1606,7 @@ void XFormView::mouseDoubleClickEvent(QMouseEvent * e)
 		tmps.append(v1);
 		tmps.append(v2);
 		tmps.append(v3);
-		
+
         QMessageBox mb(tmps, //tr("Landmark change: []"),
 					   "Change (delete) the selected marker?",
 					   QMessageBox::Question,
@@ -1614,12 +1614,12 @@ void XFormView::mouseDoubleClickEvent(QMouseEvent * e)
 					   QMessageBox::No,
 					   QMessageBox::Cancel | QMessageBox::Escape);
 		mb.addButton(QMessageBox::Open);
-		
+
         mb.setButtonText(QMessageBox::Yes, "Move");
         mb.setButtonText(QMessageBox::No, "Delete");
         mb.setButtonText(QMessageBox::Open, "Edit properties");
         mb.setButtonText(QMessageBox::Cancel, "Do nothing");
-		
+
         switch(mb.exec()) {
             case QMessageBox::Yes:
 				//move the location: 080101
@@ -1627,17 +1627,17 @@ void XFormView::mouseDoubleClickEvent(QMouseEvent * e)
 				b_moveCurrentLandmark=true;
 				ind_landmarkToBeChanged=ind_min;
 				printf("landmark to change=[%ld] start\n", ind_landmarkToBeChanged);
-				
+
 				//imgData->listLandmarks.removeAt(ind_min);
 				//imgData->setFocusFeatureViewText();
 				break;
-				
+
 			case QMessageBox::No:
 				//delete the current landmark
 				imgData->listLandmarks.removeAt(ind_min);
 				imgData->setFocusFeatureViewText();
 				break;
-				
+
 			case QMessageBox::Open:
 			{
 				LandmarkPropertyDialog *landmarkView = NULL;
@@ -1650,7 +1650,7 @@ void XFormView::mouseDoubleClickEvent(QMouseEvent * e)
 				landmarkView->fetchData(&(imgData->listLandmarks), ind_min);
 				qDebug("edit landmark [%ld]. data fetched [%s][%s][%d]", ind_min,
 					   imgData->listLandmarks.at(ind_min).name.c_str(), imgData->listLandmarks.at(ind_min).comments.c_str(),  int(imgData->listLandmarks.at(ind_min).shape));
-				
+
 				//inportant: set the shape of the landmark
 				LocationSimple * p_tmp_location = (LocationSimple *) & (imgData->listLandmarks.at(ind_min));
 				switch (p_tmp_location->shape)
@@ -1659,11 +1659,11 @@ void XFormView::mouseDoubleClickEvent(QMouseEvent * e)
 					case pxCube: p_tmp_location->inputProperty = pxLocaNotUseful; break;
 					default: p_tmp_location->inputProperty = pxLocaUnsure; break;
 				}
-				
+
 				if (landmarkView) {delete landmarkView; landmarkView = NULL;}
 			}
 				break;
-				
+
 			case QMessageBox::Cancel:
 				//do nothing
 				break;
@@ -1678,11 +1678,11 @@ void XFormView::mousePressEvent(QMouseEvent *e)
 		case Qt::LeftButton:
 			mouseLeftButtonPressEvent(e);
 			break;
-			
+
 		case Qt::RightButton:
 			mouseRightButtonPressEvent(e);
 			break;
-			
+
 		default:
 			break;
 	}
@@ -1707,19 +1707,19 @@ void XFormView::mouseRightButtonPressEvent(QMouseEvent *e)
 				emit focusZChanged(double((e->x()-curDisplayCenter.x()))/(disp_scale*m_scale)+pixmap.width()/2.0+0.5);
 				emit focusYChanged(double((e->y()-curDisplayCenter.y()))/(disp_scale*m_scale)+pixmap.height()/2.0+0.5);
 				break;
-				
+
 			case imgPlaneY:
 				emit focusXChanged(double((e->x()-curDisplayCenter.x()))/(disp_scale*m_scale)+pixmap.width()/2.0+0.5);
 				emit focusZChanged(double((e->y()-curDisplayCenter.y()))/(disp_scale*m_scale)+pixmap.height()/2.0+0.5);
 				break;
-				
+
 			case imgPlaneZ:
 				emit focusXChanged(double((e->x()-curDisplayCenter.x()))/(disp_scale*m_scale)+pixmap.width()/2.0+0.5);
 				emit focusYChanged(double((e->y()-curDisplayCenter.y()))/(disp_scale*m_scale)+pixmap.height()/2.0+0.5);
 				//qDebug()<<"x="<<e->x()<<"y="<<e->y()<<"disp_scale="<<disp_scale<<"m_scale="<<m_scale<<"curdispcenter.x="<<curDisplayCenter.x()<<"curdispcenter.y="<<curDisplayCenter.y();
-				
+
 				break;
-				
+
 			default: //do nothing
 				break;
 		}
@@ -1748,40 +1748,40 @@ void XFormView::mouseLeftButtonPressEvent(QMouseEvent *e) //080101
 	else if (b_moveCurrentLandmark==true && ind_landmarkToBeChanged>=0 && QApplication::keyboardModifiers()==Qt::ShiftModifier)
 	{
 		QPoint cp = e->pos(); ///(disp_scale*m_scale); //100909
-		
+
 		int sx,sy,sz; //current selection location's x,y,z
-		
+
 		switch(Ptype)
 		{
 			case imgPlaneZ:
 				sx = cp.x(); sy = cp.y(); sz = imgData->curFocusZ;
 				break;
-				
+
 			case imgPlaneX:
 				sz = cp.x(); sy = cp.y(); sx = imgData->curFocusX;
 				break;
-				
+
 			case imgPlaneY:
 				sx = cp.x(); sz = cp.y(); sy = imgData->curFocusY;
 				break;
-				
+
 			default:
 				return;
 				break;
 		}
-		
+
 		LocationSimple tmpLocation(sx,sy,sz);
 		tmpLocation.inputProperty = imgData->listLandmarks.at(ind_landmarkToBeChanged).inputProperty;
 		tmpLocation.radius = imgData->listLandmarks.at(ind_landmarkToBeChanged).radius;
 		imgData->listLandmarks.replace(ind_landmarkToBeChanged, tmpLocation);
 		imgData->setFocusFeatureViewText();
-		
+
 		imgData->b_proj_worm_mst_diameter_set = false; //080318: whenever a landmark's location has been changed, reset the flag of MST diameter existency
-		
+
 		printf("end moving point [%ld].\n", ind_landmarkToBeChanged);
 		ind_landmarkToBeChanged=-1; //reset it after the updating
 		b_moveCurrentLandmark = false; //reset it after the updating
-		
+
 		//update();
 	    imgData->updateViews();
 	}
@@ -1797,7 +1797,7 @@ void XFormView::mouseMoveEvent (QMouseEvent * e)
 {
 	//  curMousePos = e->pos() + QPoint(1,1);
 	curMousePos = e->pos()/disp_scale;
-	
+
     //090212. for panning
 	if (m_scale>1)
 	{
@@ -1805,15 +1805,15 @@ void XFormView::mouseMoveEvent (QMouseEvent * e)
 		{
 			{
 				setCursor(myCursor); //maybe repeated set? is this necessary?
-				
+
 				curDisplayCenter = curDisplayCenter0 + QPointF(curMousePos.x()*disp_scale-dragStartPosition.x(), curMousePos.y()*disp_scale-dragStartPosition.y());
 				//qDebug()<<curDisplayCenter.x()<<" "<<curDisplayCenter.y();
-				
+
 				if (curDisplayCenter.x() < (2-m_scale)*disp_width/2.0-1)
 					curDisplayCenter.setX((2-m_scale)*disp_width/2.0-1);
 				else if (curDisplayCenter.x() > m_scale*disp_width/2.0)
 					curDisplayCenter.setX(m_scale*disp_width/2.0);
-				
+
 				if (curDisplayCenter.y() < (2-m_scale)*disp_height/2.0-1)
 					curDisplayCenter.setY((2-m_scale)*disp_height/2.0-1);
 				else if (curDisplayCenter.y() > m_scale*disp_height/2.0)
@@ -1887,16 +1887,16 @@ void XFormView::changeFocusPlane(int c)
 {
     if (!imgData)
 		return;
-	
+
     ImagePixelType dtype;
     unsigned char ****p4d = (unsigned char ****)imgData->getData(dtype);
 	if (!p4d)
 		return;
-	
+
     cur_focus_pos = c;
 
 	internal_only_imgplane_op();
-	
+
 	switch (Ptype)
 	{
 		case imgPlaneX: imgData->setFocusX(cur_focus_pos); break;
@@ -1904,9 +1904,9 @@ void XFormView::changeFocusPlane(int c)
 		case imgPlaneZ: imgData->setFocusZ(cur_focus_pos); break;
 		default: break; //do nothing
 	}
-	
+
 	//update the focus cross lines in other two views
-	
+
 	if (imgData->getFlagLinkFocusViews()==true) //otherwise do not update the two other views
 	{
 		if (imgData->get_xy_view()!=this)
@@ -1916,10 +1916,10 @@ void XFormView::changeFocusPlane(int c)
 		if (imgData->get_zx_view()!=this)
 			imgData->get_zx_view()->update();
 	}
-	
-	
+
+
 	imgData->setFocusFeatureViewText();
-	
+
     //update the current view
     update();
 }
@@ -1927,19 +1927,19 @@ void XFormView::changeFocusPlane(int c)
 void XFormView::changeColorType(ImageDisplayColorType c)
 {
     Ctype = c;
-	
+
     if (!imgData)
 		return;
-	
+
     /* the following three sentences are used to assue the display is updated */
     ImagePixelType dtype;
     unsigned char ****p4d = (unsigned char ****)imgData->getData(dtype);
-	
+
 	if (!p4d)
 		return;
-	
+
 	internal_only_imgplane_op();
-	
+
 	update();
 }
 
@@ -1954,10 +1954,10 @@ void XFormView::wheelEvent(QWheelEvent * e) //add this on 2008-01-10
 {
     int numDegrees = -e->delta() / 8; //change to -e on 080121
     int numSteps = numDegrees / 15;
-	
+
 	if (!imgData) return;
 	if (imgData->isEmpty()) return;
-	
+
 	switch (Ptype)
 	{
 		case imgPlaneX:
@@ -1972,7 +1972,7 @@ void XFormView::wheelEvent(QWheelEvent * e) //add this on 2008-01-10
 		default: //do nothing
 			break;
 	}
-	
+
 	return;
 }
 
@@ -1980,25 +1980,25 @@ void XFormView::wheelEvent(QWheelEvent * e) //add this on 2008-01-10
 //{
 //}
 
-void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPressEvent() on 100816 so that avoid conflict with XFormWidget keyPressEvent(). 
+void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPressEvent() on 100816 so that avoid conflict with XFormWidget keyPressEvent().
 												//it seems no need to keep the left,right,up,down,B.,etc key events, as it is easy to do using mouse
 {
     //two temp variables for pop-up dialog
    	QStringList items;
     QString item;
-	
-	
+
+
     double stepx = 1, stepy = 1; //default size is 1 pixel by pixel
 	//qDebug()<<"init: "<<stepx<<" "<<stepy;
-	
+
 	//printf("[%d]\n",e->modifiers()); //don't know why this cause a crash!!
-	
+
     //if (e->modifiers()==Qt::ShiftModifier) //note that e->modifiers() does not work!!!
-	
-	
+
+
 	if (!imgData) return;
 	if (imgData->isEmpty()) return;
-	
+
 	switch (e->key())
 	{
 		case Qt::Key_S:
@@ -2007,7 +2007,7 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 				imgData->getXWidget()->saveData();
 			}
 			break;
-			
+
 		case Qt::Key_Left: //for unknown reason, QT just do not recognize the combination of keymodifier and arrow!. by PHC, 090211.
 			if (QApplication::keyboardModifiers()==Qt::ControlModifier) //then scroll page by page
 			{
@@ -2019,11 +2019,11 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 				curDisplayCenter -= QPointF(stepx, 0);
 				if (curDisplayCenter.x() < (2-m_scale)*pixmap.width()/2.0-1)
 					curDisplayCenter.setX((2-m_scale)*pixmap.width()/2.0-1);
-				
+
 				update();
 		    }
 	  		break;
-			
+
 		case Qt::Key_Right:
 			if (QApplication::keyboardModifiers()==Qt::ControlModifier) //then scroll page by page
 			{
@@ -2035,11 +2035,11 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 				curDisplayCenter += QPointF(stepx, 0);
 				if (curDisplayCenter.x() > m_scale*pixmap.width()/2.0)
 					curDisplayCenter.setX(m_scale*pixmap.width()/2.0);
-				
+
 				update();
 		    }
 			break;
-			
+
 		case Qt::Key_Up:
 			if (QApplication::keyboardModifiers()==Qt::ControlModifier) //then scroll page by page
 			{
@@ -2051,11 +2051,11 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 				curDisplayCenter -= QPointF(0, stepy);
 				if (curDisplayCenter.y() < (2-m_scale)*pixmap.height()/2.0-1)
 					curDisplayCenter.setY((2-m_scale)*pixmap.height()/2.0-1);
-				
+
 				update();
 		    }
 			break;
-			
+
 		case Qt::Key_Down:
 			//case Qt::Key_8: //a test to show normal key modifier works!
 			if (QApplication::keyboardModifiers()==Qt::ControlModifier) //then scroll page by page
@@ -2069,11 +2069,11 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 				curDisplayCenter += QPointF(0, stepy);
 				if (curDisplayCenter.y() > m_scale*pixmap.height()/2.0)
 					curDisplayCenter.setY(m_scale*pixmap.height()/2.0);
-				
+
 				update();
 		    }
 			break;
-			
+
 		case Qt::Key_N:
 		case Qt::Key_Period: //080403
 			switch (Ptype)
@@ -2091,7 +2091,7 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 				break;
 		}
 			break;
-			
+
 		case Qt::Key_B: //add 'b' on 080109
 		case Qt::Key_Comma: //080403
 			switch (Ptype)
@@ -2109,18 +2109,18 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 				break;
 		}
 			break;
-			
+
 		case Qt::Key_I:
 			imgData->getXWidget()->triview_zoomin();
 			break;
-			
+
 		case Qt::Key_O:
 		{
 			bool result = (
 						   imgData->getXWidget()->disp_zoom * imgData->getXDim() <= 1 ||
 						   imgData->getXWidget()->disp_zoom * imgData->getYDim() <= 1 ||
 						   imgData->getXWidget()->disp_zoom * imgData->getZDim() <= 1 );
-			
+
 			if ( result )
 			{
 				v3d_msg("Cannot zoom-out more, - one of the first 3 dims of the images has been displayed to <=1 pixel on the monitor.");
@@ -2129,22 +2129,22 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 			imgData->getXWidget()->triview_zoomout();
 			break;
 		}
-			
+
 		case Qt::Key_1:
 			imgData->getXWidget()->triview_zoom1();
 			break;
-			
+
 		case Qt::Key_2:
 			imgData->getXWidget()->triview_zoom2();
 			break;
-			
+
 			//the following is another way to activate the pop-up menu or point-definition dialog at the pixel location. by PHC, 060312
-			
+
 #if COMPILE_TARGET_LEVEL != 0
 /*		case Qt::Key_M:
 		{
 			//first search if a landmark has been defined at the same location. If yes, modify that one. Otherwise add a new one.
-			
+
 			QList <LocationSimple> * tmplist = (QList <LocationSimple> *) &(imgData->listLandmarks);
 			int tmprownum; bool b_landmark_exist=false;
 			int cx = imgData->curFocusX+1, cy = imgData->curFocusY+1, cz = imgData->curFocusZ+1;
@@ -2157,7 +2157,7 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 					break;
 				}
 			}
-			
+
 			LandmarkPropertyDialog *landmarkView = NULL;
 			if (!landmarkView)
 			{
@@ -2175,14 +2175,14 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 					landmarkView = new LandmarkPropertyDialog(&tmplist_1, 0, imgData);
 				}
 			}
-			
+
 			int res = landmarkView->exec(); //note that as I request the user must either accept or change the cell property, I set it as a Modal dialog by calling exec() instead of show.
 			if (res!=QDialog::Accepted)
 			{
 				if (landmarkView) {delete landmarkView; landmarkView = NULL;}
 				break; //only return true when the results are accepted, which will lead to an update operation below
 			}
-			
+
 			//update the current item
 			if (!b_landmark_exist)
 			{
@@ -2194,7 +2194,7 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 			landmarkView->fetchData(&(imgData->listLandmarks), tmprownum);
 			qDebug("data fetched [%s][%s] shape=[%d] radius=[%5.3f]",
 				   imgData->listLandmarks.at(tmprownum).name.c_str(), imgData->listLandmarks.at(tmprownum).comments.c_str(),  int(imgData->listLandmarks.at(tmprownum).shape),  float(imgData->listLandmarks.at(tmprownum).radius));
-			
+
 			//important: set the shape of the landmark
 			LocationSimple * p_tmp_location = (LocationSimple *) & (imgData->listLandmarks.at(tmprownum));
 			switch (p_tmp_location->shape)
@@ -2206,15 +2206,15 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 				default: p_tmp_location->inputProperty = pxLocaUnsure; //qDebug("%d pxunsure", int(p_tmp_location->shape));
 					break;
 			}
-			
+
 			if (landmarkView) {delete landmarkView; landmarkView = NULL;}
 		}
 			break;
-			
+
 		case Qt::Key_H:
 		    dispHistogram();//in the future I can add a parameter to indicate the current view-id, so that I can only display the histogram of the current view (slice) instead of the whole stack
 			break;
-			
+
 		case Qt::Key_C:
 		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 		    {
@@ -2228,7 +2228,7 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 				imgData->getXWidget()->switchMaskColormap();
 			}
 			break;
-*/			
+*/
 		case Qt::Key_R:
 		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 		    {
@@ -2239,10 +2239,10 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 				tmpopt.center_x = (imgData->getXDim()-1.0)/2;
 				tmpopt.center_y = (imgData->getYDim()-1.0)/2;
 				tmpopt.center_z = (imgData->getZDim()-1.0)/2;
-				
+
 				Dialog_Rotate tmpdlg;
 				tmpdlg.setContents(tmpopt);
-				
+
 				int dlg_res = tmpdlg.exec();
 				if (dlg_res)
 				{
@@ -2251,7 +2251,7 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 				}
 			}
 			break;
-			
+
 		case Qt::Key_D: //remove the last pos from roiVertexList
 		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 		    {
@@ -2264,8 +2264,8 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 			}
 			break;
 #endif
-			
-			
+
+
 #if COMPILE_TARGET_LEVEL == 2
 		case Qt::Key_P:
 		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
@@ -2274,7 +2274,7 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 			}
 			break;
 #endif
-			
+
 #if COMPILE_TARGET_LEVEL != 0
 		case Qt::Key_V:
 			if(imgData->getDatatype()!=V3D_UINT8) //only work for UINT8 data
@@ -2282,7 +2282,7 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 				v3d_msg("Your data type is not UINT8 yet, - you will need to convert to UINT8 to see the data in 3D. Go to main menu \"Image/Data\" -> \"Image type\" to convert.");
 				break;
 			}
-			
+
 		    if (QApplication::keyboardModifiers()==Qt::ControlModifier) //launch the full-image 3d view
 		    {
 				imgData->getXWidget()->doImage3DView(true); //use the maximum display 512x512x256
@@ -2305,25 +2305,25 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 			}
 			break;
 #endif
-			
+
 #if COMPILE_TARGET_LEVEL == 2
-			
+
 #ifdef _ALLOW_ATLAS_IMAGE_MENU_
 		case Qt::Key_A: //activate the atlas viewer
 		case Qt::Key_F: //activate the find/search function
 		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 		    {
-				
+
 				imgData->getXWidget()->launchAtlasViewer();
 			}
 			break;
 #endif
-			
+
 #ifdef _ALLOW_NEURONSEG_MENU_
 		case Qt::Key_T:
 			popupImageProcessingDialog(tr(" -- trace between two locations"));
  			break;
-			
+
 		case Qt::Key_Z: //undo the last tracing step if possible. by PHC, 090120
 		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 		    {
@@ -2332,12 +2332,12 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 			}
 			break;
 #endif
-			
+
 #ifdef _ALLOW_IMGREG_MENU_
 		case Qt::Key_W:
 			popupImageProcessingDialog(tr(" -- Match one single landmark in another image"));
  			break;
-			
+
 		case Qt::Key_E:
 		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 		    {
@@ -2356,7 +2356,7 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 					item = tr("MATCH_MULTIPLE_MI_INT_CORR");
 				else
 					item = tr("Undefined");
-				
+
 				if(QMessageBox::Yes == QMessageBox::question (0, "", tr("Your current landmark matching method is [ ") + item + tr("]<br> Do you change?"), QMessageBox::Yes, QMessageBox::No))
 				{
 					items << tr("MATCH_MI") << tr("MATCH_MULTIPLE_MI_INT_CORR") << tr("MATCH_INTENSITY") << tr("MATCH_CORRCOEF") << tr("MATCH_IMOMENT") << tr("MATCH_MEANOFCIRCLES");
@@ -2393,7 +2393,7 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 					item = tr("TPS-linear-interpolation");
 				else
 					item = tr("Undefined");
-				
+
 				if(QMessageBox::Yes == QMessageBox::question (0, "", tr("Your current displacement field computing method is [ ") + item + tr("]<br> Do you change?"), QMessageBox::Yes, QMessageBox::No))
 				{
 					items << tr("TPS-linear-interpolation") <<  tr("TPS-B-Spline-interpolation") << tr("TPS") << tr("Hier-B-Spline");
@@ -2415,13 +2415,13 @@ void XFormView::do_keyPressEvent(QKeyEvent * e)  //by PHC, rename to do_keyPress
 			}
 			break;
 #endif
-			
+
 #endif
-			
+
 		default:
 			break;
 	}
-	
+
 	return;
 }
 
@@ -2431,32 +2431,32 @@ void XFormView::drawPixmapType(QPainter *painter)
     int pwid = disp_width; //changed to disp_height/disp_width on 090212
 	int phei = disp_height;
     QPointF center(pwid/2.0, phei/2.0);
-	
+
 	if (m_scale>1)
 		painter->translate(curDisplayCenter - center);
 	else
 		curDisplayCenter = center;
-	
+
 	//for the un-zommed coordinate
     painter->translate(center);
     //    painter->rotate(m_rotation);
     painter->scale(m_scale, m_scale);
     //    painter->shear(m_shear, m_shear);
     painter->translate(-center);
-	
+
 	//now zoom. 081114
     painter->scale(disp_scale, disp_scale);
-	
+
 	//
     painter->drawPixmap(QPointF(0, 0), pixmap);
-	
+
     painter->setPen(QPen(QColor(255, 255, 255, alpha), 1, Qt::DotLine, Qt::FlatCap, Qt::BevelJoin));
     painter->setBrush(Qt::NoBrush);
     //painter->drawRect(QRectF(0, 0, pixmap.width(), pixmap.height()).adjusted(-2, -2, 2, 2));
-	
+
 	if(imgData!=NULL && imgData->isEmpty()==false)
 		b_displayFocusCrossLine = imgData->getFlagDisplayFocusCross();
-	
+
 	if (b_displayFocusCrossLine)
 	{
 		int focusPosInWidth, focusPosInHeight;
@@ -2465,18 +2465,18 @@ void XFormView::drawPixmapType(QPainter *painter)
 			focusPosInWidth = pwid/2.0;
 			focusPosInHeight = phei/2.0;
 		}
-		
+
 		painter->drawLine(0, focusPosInHeight, pixmap.width()-1, focusPosInHeight);
 		painter->drawLine(focusPosInWidth, 0, focusPosInWidth, pixmap.height()-1);
 	}
-	
+
 	if (imgData && !(imgData->isEmpty()))
 	{
 		if (imgData->getFlagLookingGlass())
 		{
 			setCursor(Qt::CrossCursor);
-			
-			
+
+
 			// draw the Looking glass if necessary and possible. Note that when Looking glass is enabled, the m_scale is assumed to be 1
 			drawLookingGlassMap(painter, 0); //draw the anchored zoom-in map
 			if (bMouseCurorIn)
@@ -2487,14 +2487,14 @@ void XFormView::drawPixmapType(QPainter *painter)
 			setCursor(Qt::ArrowCursor);
 		}
 	}
-	
+
 	// draw the defined interesting & non-interesting points
 	bool b_displaySelectedLocation=true;
 	if (imgData && b_displaySelectedLocation==true)
 	{
 		drawSelectedLocations(painter, &(imgData->listLandmarks), &(imgData->listLocationRelationship));
 	}
-	
+
 	// draw ROI
 	drawROI(painter);
 }
@@ -2509,15 +2509,15 @@ void XFormView::drawSelectedLocations(QPainter *painter, QList <LocationSimple> 
 		//qDebug("No landmark.");
 		return;
 	}
-	
+
 	int b_color = 1;
 	bool b_disp_polylines = true;
 	//bool b_disp_textlabel = true;
-	
+
 	QColor curColor;
 	PxLocationMarkerShape curShape;
 	QString curStrLabel;
-	
+
 	if (Ctype==colorGray || Ctype==colorRed2Gray || Ctype==colorGreen2Gray || Ctype==colorBlue2Gray)
 	{
 		b_color=1;
@@ -2526,24 +2526,24 @@ void XFormView::drawSelectedLocations(QPainter *painter, QList <LocationSimple> 
 	{
 		b_color = 0;
 	}
-	
+
     int cx = imgData->curFocusX,cy = imgData->curFocusY, cz = imgData->curFocusZ;
 	int rr = 5; //, rr_real;
-	
+
 	//int tmpx,tmpy,tmpz;
 	float tmpx,tmpy,tmpz;
 	float twidpos,theipos; //int
 	int b_draw = 0;
-	
+
 	LocationSimple tmpLocation(0,0,0);
     QPolygonF polygon;
-	
+
 	for (V3DLONG i=0;i<NLandmarks;i++)
 	{
 		tmpLocation = curList->at(i);
 		tmpLocation.getCoord(tmpx,tmpy,tmpz);
 		rr = ceil(tmpLocation.radius); //090109
-		
+
 		b_draw = 0;
 		if (tmpLocation.on==false) continue; //do not draw those have been disabled in the landmark manager. 081210
 		switch(Ptype)
@@ -2551,26 +2551,26 @@ void XFormView::drawSelectedLocations(QPainter *painter, QList <LocationSimple> 
 			case imgPlaneZ:
 				if (tmpz<=cz+rr && tmpz>=cz-rr) {twidpos = tmpx; theipos = tmpy; b_draw=1;}
 				break;
-				
+
 			case imgPlaneX:
 				if (tmpx<=cx+rr && tmpx>=cx-rr) {twidpos = tmpz; theipos = tmpy; b_draw=1;}
 				break;
-				
+
 			case imgPlaneY:
 				if (tmpy<=cy+rr && tmpy>=cy-rr) {twidpos = tmpx; theipos = tmpz; b_draw=1;}
 				break;
-				
+
 			default:
 				b_draw=0;
 				break;
 		}
-		
+
 		if (b_draw==0)
 		{
 			//qDebug("[%d] out of range not show", i);
 			continue;
 		}
-		
+
 		switch(tmpLocation.howUseful())
 		{
 			case pxLocaUseful:
@@ -2578,38 +2578,38 @@ void XFormView::drawSelectedLocations(QPainter *painter, QList <LocationSimple> 
 				curShape = pxSphere; //pxCircle;
 				b_draw=1;
 				break;
-				
+
 			case pxLocaNotUseful:
 				curColor = (b_color==1) ? QColor(0, 255, 0, alpha) : QColor(255, 255, 255, alpha);
 				curShape = pxCube; //pxRect;
 				b_draw=1;
 				break;
-				
+
 			case pxLocaUnsure:
 				curColor = (b_color==1) ? QColor(0, 0, 255, alpha) : QColor(255, 255, 255, alpha);
 				curShape = pxTriangle;
 				b_draw=1;
 				break;
-				
+
 			case pxTemp: //080405
 				curColor = (b_color==1) ? QColor(155, 155, 0, alpha) : QColor(255, 255, 255, alpha);
 				curShape = pxDot;
 				b_draw=1;
 				break;
-				
+
 			default:
 				b_draw=0;
 				break;
 		}
-		
+
 		if (b_draw==0)
 		{
 			//qDebug("[%d] unknown pxtype not show", i);
 			continue;
 		}
-		
+
         painter->setPen(QPen(curColor, 1, Qt::SolidLine, Qt::FlatCap, Qt::BevelJoin));
-		
+
 		//qDebug("rr_real=%d ",rr_real);
 		switch(curShape)
 		{
@@ -2618,41 +2618,41 @@ void XFormView::drawSelectedLocations(QPainter *painter, QList <LocationSimple> 
 				painter->drawEllipse(twidpos-rr-1,theipos-rr-1, rr+rr+1, rr+rr+1); //081210. correct a skewed draw bug
 				//painter->drawEllipse(twidpos-rr_real-1,theipos-rr_real-1, rr_real+rr_real+1, rr_real+rr_real+1); //090109. now use the real radius
 				break;
-				
+
 			case pxCube:
 				//painter->drawRect(twidpos-rr,theipos-rr, rr+rr+1, rr+rr+1);
 				painter->drawRect(twidpos-rr-1,theipos-rr-1, rr+rr+1, rr+rr+1); //081210.
 				break;
-				
+
 			case pxTriangle:
 				polygon.clear();
 				//polygon << QPointF(twidpos, theipos-rr) << QPointF(twidpos-rr, theipos+rr) << QPointF(twidpos+rr, theipos+rr);
 				polygon << QPointF(twidpos, theipos-rr-1) << QPointF(twidpos-rr-1, theipos+rr) << QPointF(twidpos+rr, theipos+rr); //081210
 				painter->drawPolygon(polygon);
 				break;
-				
+
 			case pxDot:	//080405
 				//painter->drawPoint(twidpos, theipos); //strange- why not work
 				//painter->drawLine(twidpos, theipos, twidpos, theipos); //strange- why not work
 				painter->drawEllipse(twidpos,theipos, 1, 1);
 				break;
-				
+
 			default:
 				break;
 		}
-		
+
 		if (curShape!=pxDot && imgData->getXWidget()->bDispMarkerLabel ) //update 080405: do not display text for the pxDot shaped locations
 		{
 			painter->drawText(twidpos+rr/2, theipos-rr/2, curStrLabel.setNum(i+1));
 		}
 	}
-	
+
 	// draw the polylines and also labels
-	
+
 	if (b_disp_polylines && Ptype==imgPlaneZ && curRelation && curRelation->count()>0)
 	{
         painter->setPen(QPen(QColor(255, 255, 0, alpha), 1, Qt::DotLine, Qt::FlatCap, Qt::RoundJoin));
-		
+
 		float tmpx1,tmpy1,tmpz1;
 		float tmpx2,tmpy2,tmpz2;
 		V3DLONG curNode, curNodeParent;
@@ -2660,22 +2660,22 @@ void XFormView::drawSelectedLocations(QPainter *painter, QList <LocationSimple> 
 		{
 			curNode = curRelation->at(jr).nodeInd;
 			curNodeParent = curRelation->at(jr).nodeParent;
-			
+
 			if (curNode>=NLandmarks || curNode<0 || curNodeParent>=NLandmarks || curNodeParent<0)
 			{
 				continue; //do not print this line
 			}
-			
+
 			tmpLocation = curList->at(curNode);
 			tmpLocation.getCoord(tmpx1,tmpy1,tmpz1);
-			
+
 			tmpLocation = curList->at(curNodeParent);
 			tmpLocation.getCoord(tmpx2,tmpy2,tmpz2);
-			
+
 			painter->drawLine(QPointF(tmpx1, tmpy1), QPointF(tmpx2, tmpy2));
 		}
 	}
-	
+
 	//	printf("done \n");
 }
 
@@ -2684,7 +2684,7 @@ void XFormView::drawROI(QPainter *painter)
 {
 	int b_color = 1;
 	QColor curColor;
-	
+
 	if (Ctype==colorGray || Ctype==colorRed2Gray || Ctype==colorGreen2Gray || Ctype==colorBlue2Gray)
 	{
 		b_color=1;
@@ -2693,7 +2693,7 @@ void XFormView::drawROI(QPainter *painter)
 	{
 		b_color = 0;
 	}
-	
+
     curColor = (b_color==1) ? QColor(255, 0, 0, alpha) : QColor(255, 255, 255, alpha);
     painter->setPen(QPen(curColor, 1, Qt::DashDotLine, Qt::FlatCap, Qt::BevelJoin));
 	painter->drawPolygon(roiPolygon);
@@ -2704,10 +2704,10 @@ void XFormView::drawLookingGlassMap(QPainter *painter, QPoint *curPt)
 	// draw the Looking glass. Note that when Looking glass is enabled, the m_scale is assumed to be 1
 	int glassRadius = imgData->getXWidget()->getMainControlWindow()->global_setting.default_lookglass_size; //5
     int glassZoom = 4; //4, 5,6,8
-	
+
 	if (m_scale!=1)
 		return;
-	
+
 	int focusPosInWidth, focusPosInHeight;
 	if (!curPt)
 	{
@@ -2719,14 +2719,14 @@ void XFormView::drawLookingGlassMap(QPainter *painter, QPoint *curPt)
 		focusPosInWidth = curPt->x();
 		focusPosInHeight = curPt->y();
 	}
-	
+
 	QPixmap myrgn = pixmap.copy(QRect(QPoint(qMin(qMax(focusPosInWidth-glassRadius,0), pixmap.width()-1),
 	                                         qMin(qMax(0,focusPosInHeight-glassRadius), pixmap.height()-1)),
 									  QPoint(qMax(qMin(focusPosInWidth+glassRadius,pixmap.width()-1), 0),
 									         qMax(qMin(focusPosInHeight+glassRadius, pixmap.height()-1), 0))
 									  )
 								);
-	
+
 	QPointF tmpcenter(focusPosInWidth, focusPosInHeight);
 	painter->translate(tmpcenter);
 	painter->scale(glassZoom, glassZoom); //looking glass zoom-in 4 times
@@ -2734,19 +2734,19 @@ void XFormView::drawLookingGlassMap(QPainter *painter, QPoint *curPt)
 	painter->drawPixmap(QPointF(qMax(focusPosInWidth-glassRadius-0.5, 0.0),
 	                            qMax(focusPosInHeight-glassRadius-0.5, 0.0)),
 						myrgn);
-	
+
 	painter->translate(tmpcenter);
 	painter->scale(1.0/glassZoom, 1.0/glassZoom); //looking glass zoom-in 4 times
 	painter->translate(-tmpcenter);
-	
+
     if (!curPt)
 		painter->setPen(QPen(QColor(255, 0, 255, alpha), 1, Qt::DashDotLine, Qt::RoundCap, Qt::RoundJoin));
 	else
 		painter->setPen(QPen(QColor(255, 255, 0, alpha), 1, Qt::DashDotLine, Qt::RoundCap, Qt::RoundJoin));
-	
+
     painter->setBrush(Qt::NoBrush);
     painter->drawRect(QRectF(focusPosInWidth+(-glassRadius-0.5+0.25)*glassZoom, focusPosInHeight+(-glassRadius-0.5+0.25)*glassZoom, (2*glassRadius+1)*glassZoom-1, (2*glassRadius+1)*glassZoom-1));
-	
+
 }
 
 void XFormView::dispHistogram()
@@ -2765,7 +2765,7 @@ XFormWidget::XFormWidget(QWidget *parent) : QWidget(parent)
 XFormWidget::XFormWidget(QWidget *parent, Qt::WidgetAttribute f) : QWidget(parent) //added on 080814: this function is for future use. Not really get called now
 {
 	setAttribute(f);
-	
+
 	initialize();
 	createGUI();
 	connectEventSignals();
@@ -2776,30 +2776,30 @@ void XFormWidget::initialize()
 {
     imgData = 0;
     openFileNameLabel = QString(""); //"/Users/hanchuanpeng/work/v3d/test1.raw"
-	
+
 	mypara_3Dview.b_use_512x512x256 = true;
 	mypara_3Dview.b_still_open = false;
 	mypara_3Dview.image4d = 0;
-	
+
 	Ctype = colorUnknown;
-	
+
 	atlasViewerDlg = 0; //081123
-	
+
 	/* GUI related pointers*/
     bExistGUI = false;
 	bLinkFocusViews = false;
 	bDisplayFocusCross = false;
 	bDispMarkerLabel = true;
-	
+
     xy_view = NULL;
     yz_view = NULL;
     zx_view = NULL;
-	
+
 	disp_zoom=1; //081114
 	b_use_dispzoom=false;
-	
+
 	focusPointFeatureWidget = NULL;
-	
+
     dataGroup = NULL;
   	viewGroup = NULL;
 	infoGroup = NULL;
@@ -2807,7 +2807,7 @@ void XFormWidget::initialize()
 	coordGroup = NULL;
 	scaleGroup = NULL;
 	typeGroup = NULL;
-	
+
 	xSlider = NULL;
 	ySlider = NULL;
 	zSlider = NULL;
@@ -2817,20 +2817,20 @@ void XFormWidget::initialize()
 	xSliderLabel = NULL;
 	ySliderLabel = NULL;
 	zSliderLabel = NULL;
-	
+
 	linkFocusCheckBox = NULL;
 	displayFocusCrossCheckBox = NULL;
-	
+
     xScaleSlider = NULL;
 	yScaleSlider = NULL;
 	zScaleSlider = NULL;
 	xScaleSliderLabel = NULL;
 	yScaleSliderLabel = NULL;
 	zScaleSliderLabel = NULL;
-	zoomWholeViewButton = NULL; 
-	
+	zoomWholeViewButton = NULL;
+
     lookingGlassCheckBox = NULL;
-	
+
     colorRedType = NULL;
 	colorGreenType = NULL;
 	colorBlueType = NULL;
@@ -2839,27 +2839,27 @@ void XFormWidget::initialize()
 	colorGreen2GrayType = NULL;
 	colorBlue2GrayType = NULL;
 	colorAll2GrayType = NULL;
-	
+
     imgValScaleDisplayCheckBox = NULL;
-	
+
 	cBox_bSendSignalToExternal = NULL;
 	cBox_bAcceptSignalFromExternal = NULL;
-	
+
     landmarkCopyButton = NULL;
 	landmarkPasteButton = NULL;
 	landmarkSaveButton = NULL;
 	landmarkLoadButton = NULL;
 	landmarkManagerButton = NULL;
-	
+
 	//landmarkLabelDispCheckBox = NULL;
-	
+
     resetButton = NULL;
 	openFileNameButton = NULL;
 	imgProcessButton = NULL;
 	imgV3DButton = NULL;
 	//imgV3DROIButton = NULL;
 	whatsThisButton = NULL;
-	
+
 	allLayout = NULL;
 	dataGroupLayout = NULL;
 	xyzViewLayout = NULL;
@@ -2869,9 +2869,9 @@ void XFormWidget::initialize()
 	typeGroupLayout = NULL;
 	LandmarkGroupLayout = NULL; //080107
 	mainGroupLayout = NULL;
-	
+
 	// communication to other windows
-	
+
 	p_mainWindow = NULL;
 	bSendSignalToExternal = false;
 	bAcceptSignalFromExternal = false;
@@ -2889,18 +2889,18 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 //    //two temp variables for pop-up dialog
 //   	QStringList items;
 //    QString item;
-//	
-	
+//
+
 //    double stepx = 1, stepy = 1; //default size is 1 pixel by pixel
 	//qDebug()<<"init: "<<stepx<<" "<<stepy;
-	
+
 	//printf("[%d]\n",e->modifiers()); //don't know why this cause a crash!!
-	
+
     //if (e->modifiers()==Qt::ShiftModifier) //note that e->modifiers() does not work!!!
-	
+
 	if (!imgData || !imgData->valid()) return;
 //	if (imgData->isEmpty()) return;
-	
+
 	switch (e->key())
 	{
 		case Qt::Key_S:
@@ -2909,7 +2909,7 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 				saveData();
 			}
 			break;
-			
+
 //		case Qt::Key_Left: //for unknown reason, QT just does not recognize the combination of keymodifier and arrow!. by PHC, 090211.
 //			if (QApplication::keyboardModifiers()==Qt::ControlModifier) //then scroll page by page
 //			{
@@ -2921,11 +2921,11 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 //				curDisplayCenter -= QPointF(stepx, 0);
 //				if (curDisplayCenter.x() < (2-m_scale)*pixmap.width()/2.0-1)
 //					curDisplayCenter.setX((2-m_scale)*pixmap.width()/2.0-1);
-//				
+//
 //				update();
 //		    }
 //	  		break;
-//			
+//
 //		case Qt::Key_Right:
 //			if (QApplication::keyboardModifiers()==Qt::ControlModifier) //then scroll page by page
 //			{
@@ -2937,11 +2937,11 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 //				curDisplayCenter += QPointF(stepx, 0);
 //				if (curDisplayCenter.x() > m_scale*pixmap.width()/2.0)
 //					curDisplayCenter.setX(m_scale*pixmap.width()/2.0);
-//				
+//
 //				update();
 //		    }
 //			break;
-//			
+//
 //		case Qt::Key_Up:
 //			if (QApplication::keyboardModifiers()==Qt::ControlModifier) //then scroll page by page
 //			{
@@ -2953,11 +2953,11 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 //				curDisplayCenter -= QPointF(0, stepy);
 //				if (curDisplayCenter.y() < (2-m_scale)*pixmap.height()/2.0-1)
 //					curDisplayCenter.setY((2-m_scale)*pixmap.height()/2.0-1);
-//				
+//
 //				update();
 //		    }
 //			break;
-//			
+//
 //		case Qt::Key_Down:
 //			//case Qt::Key_8: //a test to show normal key modifier works!
 //			if (QApplication::keyboardModifiers()==Qt::ControlModifier) //then scroll page by page
@@ -2971,11 +2971,11 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 //				curDisplayCenter += QPointF(0, stepy);
 //				if (curDisplayCenter.y() > m_scale*pixmap.height()/2.0)
 //					curDisplayCenter.setY(m_scale*pixmap.height()/2.0);
-//				
+//
 //				update();
 //		    }
 //			break;
-//			
+//
 //		case Qt::Key_N:
 //		case Qt::Key_Period: //080403
 //			switch (Ptype)
@@ -2993,7 +2993,7 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 //				break;
 //		}
 //			break;
-//			
+//
 //		case Qt::Key_B: //add 'b' on 080109
 //		case Qt::Key_Comma: //080403
 //			switch (Ptype)
@@ -3011,18 +3011,18 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 //				break;
 //		}
 //			break;
-//			
+//
 		case Qt::Key_I:
 			triview_zoomin();
 			break;
-			
+
 		case Qt::Key_O:
 		{
 			bool result = (
 						   disp_zoom * imgData->getXDim() <= 1 ||
 						   disp_zoom * imgData->getYDim() <= 1 ||
 						   disp_zoom * imgData->getZDim() <= 1 );
-			
+
 			if ( result )
 			{
 				v3d_msg("Cannot zoom-out more, - one of the first 3 dims of the images has been displayed to <=1 pixel on the monitor.");
@@ -3031,32 +3031,32 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 			triview_zoomout();
 			break;
 		}
-			
+
 		case Qt::Key_1:
 			triview_zoom1();
 			break;
-			
+
 		case Qt::Key_2:
 			triview_zoom2();
 			break;
-			
+
 		case Qt::Key_3:
 			triview_setzoom(3, false);
 			break;
-			
+
 		case Qt::Key_4:
 			triview_setzoom(4, false);
 			break;
-			
+
 			//the following is another way to activate the pop-up menu or point-definition dialog at the pixel location. by PHC, 060312
-			
+
 #if COMPILE_TARGET_LEVEL != 0
 		case Qt::Key_M:
 		{
 			v3d_msg("xformwidget marker processing... ",0);
-			
+
 			//first search if a landmark has been defined at the same location. If yes, modify that one. Otherwise add a new one.
-			
+
 			QList <LocationSimple> * tmplist = (QList <LocationSimple> *) &(imgData->listLandmarks);
 			int tmprownum; bool b_landmark_exist=false;
 			int cx = imgData->curFocusX+1, cy = imgData->curFocusY+1, cz = imgData->curFocusZ+1;
@@ -3069,7 +3069,7 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 					break;
 				}
 			}
-			
+
 			LandmarkPropertyDialog *landmarkView = NULL;
 			if (!landmarkView)
 			{
@@ -3087,14 +3087,14 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 					landmarkView = new LandmarkPropertyDialog(&tmplist_1, 0, imgData);
 				}
 			}
-			
+
 			int res = landmarkView->exec(); //note that as I request the user must either accept or change the cell property, I set it as a Modal dialog by calling exec() instead of show.
 			if (res!=QDialog::Accepted)
 			{
 				if (landmarkView) {delete landmarkView; landmarkView = NULL;}
 				break; //only return true when the results are accepted, which will lead to an update operation below
 			}
-			
+
 			//update the current item
 			if (!b_landmark_exist)
 			{
@@ -3106,7 +3106,7 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 			landmarkView->fetchData(&(imgData->listLandmarks), tmprownum);
 			qDebug("data fetched [%s][%s] shape=[%d] radius=[%5.3f]",
 				   imgData->listLandmarks.at(tmprownum).name.c_str(), imgData->listLandmarks.at(tmprownum).comments.c_str(),  int(imgData->listLandmarks.at(tmprownum).shape),  float(imgData->listLandmarks.at(tmprownum).radius));
-			
+
 			//important: set the shape of the landmark
 			LocationSimple * p_tmp_location = (LocationSimple *) & (imgData->listLandmarks.at(tmprownum));
 			switch (p_tmp_location->shape)
@@ -3118,15 +3118,15 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 				default: p_tmp_location->inputProperty = pxLocaUnsure; //qDebug("%d pxunsure", int(p_tmp_location->shape));
 					break;
 			}
-			
+
 			if (landmarkView) {delete landmarkView; landmarkView = NULL;}
 		}
 			break;
-			
+
 //		case Qt::Key_H:
 //		    dispHistogram();//in the future I can add a parameter to indicate the current view-id, so that I can only display the histogram of the current view (slice) instead of the whole stack
 //			break;
-			
+
 		case Qt::Key_C:
 		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 		    {
@@ -3135,12 +3135,12 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 			else if (QApplication::keyboardModifiers()==Qt::ShiftModifier)
 			{
 				if (imgData->getCDim()!=1) break; //only work for 1 channel data
-				if(imgData->getDatatype()!=V3D_UINT16 && imgData->getDatatype()!=V3D_UINT8 && imgData->getDatatype()!=V3D_FLOAT32) 
+				if(imgData->getDatatype()!=V3D_UINT16 && imgData->getDatatype()!=V3D_UINT8 && imgData->getDatatype()!=V3D_FLOAT32)
 					break;
 				switchMaskColormap();
 			}
 			break;
-			
+
 //		case Qt::Key_R:
 //		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 //		    {
@@ -3151,10 +3151,10 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 //				tmpopt.center_x = (imgData->getXDim()-1.0)/2;
 //				tmpopt.center_y = (imgData->getYDim()-1.0)/2;
 //				tmpopt.center_z = (imgData->getZDim()-1.0)/2;
-//				
+//
 //				Dialog_Rotate tmpdlg;
 //				tmpdlg.setContents(tmpopt);
-//				
+//
 //				int dlg_res = tmpdlg.exec();
 //				if (dlg_res)
 //				{
@@ -3163,7 +3163,7 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 //				}
 //			}
 //			break;
-//			
+//
 //		case Qt::Key_D: //remove the last pos from roiVertexList
 //		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 //		    {
@@ -3176,8 +3176,8 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 //			}
 //			break;
 #endif
-			
-			
+
+
 #if COMPILE_TARGET_LEVEL == 2
 		case Qt::Key_P:
 		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
@@ -3186,7 +3186,7 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 			}
 			break;
 #endif
-			
+
 #if COMPILE_TARGET_LEVEL != 0
 		case Qt::Key_V:
 			if(imgData->getDatatype()!=V3D_UINT8) //only work for UINT8 data
@@ -3194,7 +3194,7 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 				v3d_msg("Your data type is not UINT8 yet, - you will need to convert to UINT8 to see the data in 3D. Go to main menu \"Image/Data\" -> \"Image type\" to convert.");
 				break;
 			}
-			
+
 		    if (QApplication::keyboardModifiers()==Qt::ControlModifier) //launch the full-image 3d view
 		    {
 				doImage3DView(true); //use the maximum display 512x512x256
@@ -3217,25 +3217,25 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 			}
 			break;
 #endif
-			
+
 #if COMPILE_TARGET_LEVEL == 2
-			
+
 #ifdef _ALLOW_ATLAS_IMAGE_MENU_
 		case Qt::Key_A: //activate the atlas viewer
 		case Qt::Key_F: //activate the find/search function
 		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 		    {
-				
+
 				launchAtlasViewer();
 			}
 			break;
 #endif
-			
+
 #ifdef _ALLOW_NEURONSEG_MENU_
 		case Qt::Key_T:
 			popupImageProcessingDialog(tr(" -- trace between two locations"));
  			break;
-			
+
 		case Qt::Key_Z: //undo the last tracing step if possible. by PHC, 090120
 		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 		    {
@@ -3244,12 +3244,12 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 			}
 			break;
 #endif
-			
+
 //#ifdef _ALLOW_IMGREG_MENU_
 //		case Qt::Key_W:
 //			popupImageProcessingDialog(tr(" -- Match one single landmark in another image"));
 // 			break;
-//			
+//
 //		case Qt::Key_E:
 //		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 //		    {
@@ -3268,7 +3268,7 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 //					item = tr("MATCH_MULTIPLE_MI_INT_CORR");
 //				else
 //					item = tr("Undefined");
-//				
+//
 //				if(QMessageBox::Yes == QMessageBox::question (0, "", tr("Your current landmark matching method is [ ") + item + tr("]<br> Do you change?"), QMessageBox::Yes, QMessageBox::No))
 //				{
 //					items << tr("MATCH_MI") << tr("MATCH_MULTIPLE_MI_INT_CORR") << tr("MATCH_INTENSITY") << tr("MATCH_CORRCOEF") << tr("MATCH_IMOMENT") << tr("MATCH_MEANOFCIRCLES");
@@ -3305,7 +3305,7 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 //					item = tr("TPS-linear-interpolation");
 //				else
 //					item = tr("Undefined");
-//				
+//
 //				if(QMessageBox::Yes == QMessageBox::question (0, "", tr("Your current displacement field computing method is [ ") + item + tr("]<br> Do you change?"), QMessageBox::Yes, QMessageBox::No))
 //				{
 //					items << tr("TPS-linear-interpolation") <<  tr("TPS-B-Spline-interpolation") << tr("TPS") << tr("Hier-B-Spline");
@@ -3327,13 +3327,13 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 //			}
 //			break;
 //#endif
-			
+
 #endif
-			
+
 		default:
 			break;
 	}
-	
+
 	return;
 }
 
@@ -3343,11 +3343,11 @@ void XFormWidget::closeEvent(QCloseEvent *event) //080814: this function is spec
 //note the reason to overload this closeEvent function but not use the QWidget destructor is because seems Qt has a build-in bug in freeing ArthurFrame object in QString freeing
 {
 	qDebug("***v3d: XFormWidget::closeEvent");
-	
+
 	printf("Now going to free memory for this image or data of this window. .... ");
 	cleanData();
 	printf("Succeeded in freeing memory.\n");
-	
+
 	//if(!testAttribute(Qt::WA_DeleteOnClose)) deleteLater(); //090812 RZC
 }
 
@@ -3376,147 +3376,147 @@ void XFormWidget::createGUI()
 {
 	if (bExistGUI)
 		return;
-	
+
 	bLinkFocusViews = true;
 	bDisplayFocusCross = true;
-	
+
     /* Set up the data related GUI */
     dataGroup = new QGroupBox(this);
     dataGroup->setTitle("Image data");
-	
+
     viewGroup = new QGroupBox(dataGroup);
     viewGroup->setTitle("Views [XY: upper-left] [ZY: upper-right] [XZ: lower-left]");
     //viewGroup->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);
-	
+
     xy_view = new XFormView(viewGroup);
 	xy_view->setImgData(imgPlaneZ, 0, colorRGB); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
     xy_view->setFixedWidth(xy_view->get_disp_width());
     xy_view->setFixedHeight(xy_view->get_disp_height());
     xy_view->setFocusPolicy(Qt::ClickFocus);
-	
+
     yz_view = new XFormView(viewGroup);
 	yz_view->setImgData(imgPlaneX, 0, colorRGB); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
     yz_view->setFixedWidth(yz_view->get_disp_width());
     yz_view->setFixedHeight(yz_view->get_disp_height());
     yz_view->setFocusPolicy(Qt::ClickFocus);
-	
+
     zx_view = new XFormView(viewGroup);
 	zx_view->setImgData(imgPlaneY, 0, colorRGB); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
     zx_view->setFixedWidth(zx_view->get_disp_width());
     zx_view->setFixedHeight(zx_view->get_disp_height());
     zx_view->setFocusPolicy(Qt::ClickFocus);
-	
+
 	//    viewGroup->setFixedWidth(xy_view->frameGeometry().width()+yz_view->frameGeometry().width());
-	
+
     // information group
-	
+
     infoGroup = new QGroupBox(dataGroup);
     infoGroup->setTitle("Information of your selections");
-	
+
     focusPointFeatureWidget = new QTextBrowser(infoGroup);
 	//	focusPointFeatureWidget->setFixedWidth(qMax(200, xy_view->width()+yz_view->width()));
 	focusPointFeatureWidget->setFixedWidth(qMax(200, xy_view->get_disp_width()+yz_view->get_disp_width()));
 	//focusPointFeatureWidget->setFixedHeight(50);
 	//focusPointFeatureWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-	
+
     //viewGroup->setFixedWidth(xy_view->width()+yz_view->width()+10);
 	//    viewGroup->setMinimumSize(xy_view->width()+yz_view->width(), xy_view->height()+zx_view->height()+50);
 	//    viewGroup->setFixedWidth(xy_view->width()+yz_view->width()+10);
-	
+
 	//    dataGroup->setFixedWidth(xy_view->frameGeometry().width()+yz_view->frameGeometry().width()+10);
-	
-    // setup the control panel 
-	
+
+    // setup the control panel
+
     mainGroup = new QGroupBox(this);
     mainGroup->setFixedWidth(300);
     mainGroup->setTitle("Options");
-	
-    // focus planes group 
-	
+
+    // focus planes group
+
     coordGroup = new QGroupBox(mainGroup);
     coordGroup->setAttribute(Qt::WA_ContentsPropagated);
     coordGroup->setTitle("Focus Coordinates");
-	
+
     xSlider = new QScrollBar(Qt::Horizontal, coordGroup);
     xSlider->setRange(1, 1); //need redefine range
     xSlider->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 	xSliderLabel = new QLabel("X", coordGroup);
-	
+
 	xValueSpinBox = new QSpinBox;
     xValueSpinBox->setRange(1, 1);
     xValueSpinBox->setSingleStep(1);
     xValueSpinBox->setValue(yz_view->focusPlaneCoord());
-	
+
     ySlider = new QScrollBar(Qt::Horizontal, coordGroup);
     ySlider->setRange(1, 1); //need redefine range
     ySlider->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 	ySliderLabel = new QLabel("Y", coordGroup);
-	
+
 	yValueSpinBox = new QSpinBox;
     yValueSpinBox->setRange(1, 1);
     yValueSpinBox->setSingleStep(1);
     yValueSpinBox->setValue(zx_view->focusPlaneCoord());
-	
+
     zSlider = new QScrollBar(Qt::Horizontal, coordGroup);
     zSlider->setRange(1, 1); //need redefine range
     zSlider->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 	zSliderLabel = new QLabel("Z", coordGroup);
-	
+
 	zValueSpinBox = new QSpinBox;
     zValueSpinBox->setRange(1, 1);
     zValueSpinBox->setSingleStep(1);
     zValueSpinBox->setValue(xy_view->focusPlaneCoord());
-	
+
 	linkFocusCheckBox = new QCheckBox("Anchor 3 Focal Views");
 	linkFocusCheckBox->setCheckState((bLinkFocusViews) ? Qt::Checked : Qt::Unchecked);
-	
+
 	displayFocusCrossCheckBox = new QCheckBox("Display Focus Cross Lines");
 	displayFocusCrossCheckBox->setCheckState((bDisplayFocusCross) ? Qt::Checked : Qt::Unchecked);
-	
-    // scale factor group 
-	
+
+    // scale factor group
+
     scaleGroup = new QGroupBox(mainGroup);
     scaleGroup->setAttribute(Qt::WA_ContentsPropagated);
     scaleGroup->setTitle("Zoom (Regular x1/4~x8, Looking glass x4)");
-	
+
     xScaleSlider = new QScrollBar(Qt::Horizontal, scaleGroup);
     xScaleSlider->setRange(1, 32);
     xScaleSlider->setSingleStep(1);
     xScaleSlider->setValue(4);
     xScaleSlider->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 	xScaleSliderLabel = new QLabel("ZY-plane", scaleGroup);
-	
+
     yScaleSlider = new QScrollBar(Qt::Horizontal, scaleGroup);
     yScaleSlider->setRange(1, 32);
     yScaleSlider->setSingleStep(1);
     yScaleSlider->setValue(4);
     yScaleSlider->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 	yScaleSliderLabel = new QLabel("XZ-plane", scaleGroup);
-	
+
     zScaleSlider = new QScrollBar(Qt::Horizontal, scaleGroup);
     zScaleSlider->setRange(1, 32);
     zScaleSlider->setSingleStep(1);
     zScaleSlider->setValue(4);
     zScaleSlider->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 	zScaleSliderLabel = new QLabel("XY-plane", scaleGroup);
-	
+
 	lookingGlassCheckBox = new QCheckBox("Use looking glass");
 	lookingGlassCheckBox->setCheckState(Qt::Unchecked);
-	
+
 	resetButton = new QPushButton(scaleGroup);
     resetButton->setText("Reset");
-	
-	zoomWholeViewButton = new QPushButton(); 
-	zoomWholeViewButton->setText("TriView zoom=1. Click to set."); 
-	
+
+	zoomWholeViewButton = new QPushButton();
+	zoomWholeViewButton->setText("TriView zoom=1. Click to set.");
+
 	createMenuOfTriviewZoom();
-	
-    // color display group 
-	
+
+    // color display group
+
     QGroupBox *typeGroup = new QGroupBox(mainGroup);
     typeGroup->setAttribute(Qt::WA_ContentsPropagated);
     typeGroup->setTitle("Color Channels");
-	
+
     colorRedType = new QRadioButton(typeGroup);
     colorGreenType = new QRadioButton(typeGroup);
     colorBlueType = new QRadioButton(typeGroup);
@@ -3526,7 +3526,7 @@ void XFormWidget::createGUI()
     colorBlue2GrayType = new QRadioButton(typeGroup);
     colorAll2GrayType = new QRadioButton(typeGroup);
 	colorMapDispType = new QRadioButton(typeGroup);
-	
+
     colorRedType->setText("Red (Chan 1)");
     colorGreenType->setText("Green (Chan 2)");
     colorBlueType->setText("Blue (Chan 3)");
@@ -3536,107 +3536,107 @@ void XFormWidget::createGUI()
     colorBlue2GrayType->setText("Blue (gray)");
     colorAll2GrayType->setText("RGB (gray)");
 	colorMapDispType->setText("Colormap (for indexed image)");
-	
+
 	imgValScaleDisplayCheckBox = new QCheckBox("I(Voxel) rescale: m->0, M->255");
 	imgValScaleDisplayCheckBox->setCheckState(Qt::Unchecked);
-	
+
     //other control button
 	cBox_bSendSignalToExternal = new QCheckBox("Link out");
 	cBox_bSendSignalToExternal->setCheckState(Qt::Unchecked);
-	
+
 	cBox_bAcceptSignalFromExternal = new QCheckBox("Linked");
 	cBox_bAcceptSignalFromExternal->setCheckState(Qt::Unchecked);
-	
+
 	//the landmark ctrl box
-	
+
 	QGroupBox *landmarkGroup  = new QGroupBox(mainGroup);
 	landmarkGroup->setTitle("Landmark controls");
-	
+
 	landmarkCopyButton = new QPushButton(landmarkGroup);
 	landmarkCopyButton->setText("Copy");
-	
+
 	landmarkPasteButton = new QPushButton(landmarkGroup);
 	landmarkPasteButton->setText("Paste");
-	
+
 	landmarkSaveButton = new QPushButton(landmarkGroup);
 	landmarkSaveButton->setText("Save");
-	
+
 	landmarkLoadButton = new QPushButton(landmarkGroup);
 	landmarkLoadButton->setText("Load");
-	
+
 	landmarkManagerButton = new QPushButton(landmarkGroup);
 	landmarkManagerButton->setText("Landmark/Image-atlas Manager");
-	
+
     imgV3DButton = new QPushButton(mainGroup);
     imgV3DButton->setText("See in 3D");
-	
+
 	createMenuOf3DViewer();
-	
+
     whatsThisButton = new QPushButton(mainGroup);
     whatsThisButton->setText("Help ... ");
     //whatsThisButton->setCheckable(true);
-	
-    // All layouts 
-	
+
+    // All layouts
+
     allLayout = new QHBoxLayout(this);
     allLayout->addWidget(dataGroup);
     allLayout->addWidget(mainGroup);
-	
+
     xyzViewLayout = new QGridLayout(viewGroup);
     xyzViewLayout->addWidget(xy_view, 0, 0, 1, 1, Qt::AlignRight | Qt::AlignBottom);
     xyzViewLayout->addWidget(yz_view, 0, 1, 1, 1, Qt::AlignLeft | Qt::AlignBottom);
     xyzViewLayout->addWidget(zx_view, 1, 0, 1, 1, Qt::AlignRight | Qt::AlignTop);
 	xyzViewLayout->update();//061014
 	//xyzViewLayout->addWidget(focusPointFeatureWidget, 2, 0, 1, 2, Qt::AlignLeft | Qt::AlignBottom);
-	
+
     infoGroupLayout = new QVBoxLayout(infoGroup);
 	infoGroupLayout->addWidget(focusPointFeatureWidget);
-	
+
     dataGroupLayout = new QVBoxLayout(dataGroup);
     dataGroupLayout->addWidget(viewGroup);
     dataGroupLayout->addWidget(infoGroup);
     dataGroupLayout->addStretch(0);
-	
-    // layout for focus planes 
-	
+
+    // layout for focus planes
+
 	coordGroupLayout = new QGridLayout(coordGroup);
     coordGroupLayout->addWidget(zSliderLabel, 0, 0, 1, 1);
 	coordGroupLayout->addWidget(zSlider, 0, 1, 1, 12);
     coordGroupLayout->addWidget(zValueSpinBox, 0, 13, 1, 4);
-	
+
     coordGroupLayout->addWidget(xSliderLabel, 1, 0, 1, 1);
 	coordGroupLayout->addWidget(xSlider, 1, 1, 1, 12);
     coordGroupLayout->addWidget(xValueSpinBox, 1, 13, 1, 4);
-	
+
     coordGroupLayout->addWidget(ySliderLabel, 2, 0, 1, 1);
 	coordGroupLayout->addWidget(ySlider, 2, 1, 1, 12);
     coordGroupLayout->addWidget(yValueSpinBox, 2, 13, 1, 4);
-	
+
     coordGroupLayout->addWidget(linkFocusCheckBox, 3, 0, 1, 14);
 	coordGroupLayout->addWidget(displayFocusCrossCheckBox, 4, 0, 1, 14);
-	
+
 	coordGroupLayout->addWidget(cBox_bSendSignalToExternal, 5, 0, 1, 6);
 	coordGroupLayout->addWidget(cBox_bAcceptSignalFromExternal, 5, 7, 1, 7);
-	
-    // layout for scaling factors 
-	
+
+    // layout for scaling factors
+
     scaleGroupLayout = new QGridLayout(scaleGroup);
     scaleGroupLayout->addWidget(zScaleSlider, 0, 0, 1, 10);
     scaleGroupLayout->addWidget(zScaleSliderLabel, 0, 11, 1, 3);
-	
+
     scaleGroupLayout->addWidget(xScaleSlider, 1, 0, 1, 10);
     scaleGroupLayout->addWidget(xScaleSliderLabel, 1, 11, 1, 3);
-	
+
     scaleGroupLayout->addWidget(yScaleSlider, 2, 0, 1, 10);
     scaleGroupLayout->addWidget(yScaleSliderLabel, 2, 11, 1, 3);
-	
+
     scaleGroupLayout->addWidget(lookingGlassCheckBox, 3, 0, 1, 9);
     scaleGroupLayout->addWidget(resetButton, 3, 10, 1, 4);
-	
+
     scaleGroupLayout->addWidget(zoomWholeViewButton, 4, 0, 1, 14);
-	
-    // color display layout 
-	
+
+    // color display layout
+
     typeGroupLayout = new QGridLayout(typeGroup);
     typeGroupLayout->addWidget(colorAllType, 0, 0);
     typeGroupLayout->addWidget(colorRedType, 1, 0);
@@ -3647,21 +3647,21 @@ void XFormWidget::createGUI()
     typeGroupLayout->addWidget(colorGreen2GrayType, 2, 1);
     typeGroupLayout->addWidget(colorBlue2GrayType, 3, 1);
     typeGroupLayout->addWidget(colorMapDispType, 4, 0, 1, 2);
-	
+
     typeGroupLayout->addWidget(imgValScaleDisplayCheckBox, 5, 0, 1, 2);
-	
+
 	//landmark group
-	
+
 	LandmarkGroupLayout = new QGridLayout(landmarkGroup);
 	LandmarkGroupLayout->addWidget(landmarkCopyButton, 0, 0, 1, 4);
 	LandmarkGroupLayout->addWidget(landmarkPasteButton, 0, 5, 1, 4);
 	LandmarkGroupLayout->addWidget(landmarkLoadButton, 0, 10, 1, 4);
 	LandmarkGroupLayout->addWidget(landmarkSaveButton, 0, 15, 1, 4);
-	
+
 	//LandmarkGroupLayout->addWidget(landmarkLabelDispCheckBox, 1, 0, 1, 11);
-	
-    // main control panel layout 
-	
+
+    // main control panel layout
+
     mainGroupLayout = new QVBoxLayout(mainGroup);
     mainGroupLayout->addWidget(coordGroup);
     mainGroupLayout->addWidget(scaleGroup);
@@ -3671,13 +3671,13 @@ void XFormWidget::createGUI()
     mainGroupLayout->addWidget(imgV3DButton);
     mainGroupLayout->addStretch(0);
     mainGroupLayout->addWidget(whatsThisButton);
-	
+
 	// force layout set
 	QLayout *cur_layout=layout();
 	printf("cur layout=%ld\n", V3DLONG(cur_layout));
-	
+
 	setLayout(allLayout);
-	
+
 	// set the flag
 	bExistGUI = true;
 }
@@ -3713,7 +3713,7 @@ void XFormWidget::updateDataRelatedGUI()
 	if (imgData)
 	{
 		// the data of tri-view planes
-		
+
 		xy_view->setImgData(imgPlaneZ, imgData, Ctype);
 		if (b_use_dispzoom)
 		{
@@ -3730,7 +3730,7 @@ void XFormWidget::updateDataRelatedGUI()
 		xy_view->setFixedWidth(xy_view->get_disp_width());
 		xy_view->setFixedHeight(xy_view->get_disp_height());
 		imgData->set_xy_view(xy_view);
-		
+
 		//
 		yz_view->setImgData(imgPlaneX, imgData, Ctype);
 		if (b_use_dispzoom)
@@ -3748,7 +3748,7 @@ void XFormWidget::updateDataRelatedGUI()
 		yz_view->setFixedWidth(yz_view->get_disp_width());
 		yz_view->setFixedHeight(yz_view->get_disp_height());
 		imgData->set_yz_view(yz_view);
-		
+
 		//
 		zx_view->setImgData(imgPlaneY, imgData, Ctype);
 		if (b_use_dispzoom)
@@ -3766,7 +3766,7 @@ void XFormWidget::updateDataRelatedGUI()
 		zx_view->setFixedWidth(zx_view->get_disp_width());
 		zx_view->setFixedHeight(zx_view->get_disp_height());
 		imgData->set_zx_view(zx_view);
-		
+
 		if (b_use_dispzoom)
 		{
 			focusPointFeatureWidget->setFixedWidth(qMax(200, int(imgData->getXDim()*disp_zoom+imgData->getZDim()*disp_zoom)));
@@ -3777,50 +3777,50 @@ void XFormWidget::updateDataRelatedGUI()
 		}
 		focusPointFeatureWidget->setMinimumHeight(100);
 		imgData->setFocusFeatureView(focusPointFeatureWidget);
-		
+
 		imgData->setMainWidget((XFormWidget *)this);
-		
+
 		//viewGroup->setFixedWidth(imgData->getXDim() + imgData->getZDim() + 20);
-		
+
 		// range of scroll bars of focus planes
-		
+
 		xSlider->setRange(1, imgData->getXDim()); //need redefine range
 		xValueSpinBox->setRange(1, imgData->getXDim());
 		xSlider->setValue(1);
 		imgData->setFocusX(xSlider->value());
-		
+
 		ySlider->setRange(1, imgData->getYDim()); //need redefine range
 		yValueSpinBox->setRange(1, imgData->getYDim());
 		ySlider->setValue(1);
 		imgData->setFocusY(ySlider->value());
-		
+
 		zSlider->setRange(1, imgData->getZDim()); //need redefine range
 		zValueSpinBox->setRange(1, imgData->getZDim());
 		zSlider->setValue(1);
 		imgData->setFocusZ(zSlider->value());
-		
+
 		linkFocusCheckBox->setEnabled(true);
 		displayFocusCrossCheckBox->setEnabled(true);
-		
+
 		// external communication
-		
+
 		cBox_bSendSignalToExternal->setEnabled(true);
 		cBox_bAcceptSignalFromExternal->setEnabled(true);
-		
+
 		// position of scales
-		
+
 		xScaleSlider->setValue(4);
 		yScaleSlider->setValue(4);
 		zScaleSlider->setValue(4);
-		
+
 		lookingGlassCheckBox->setEnabled(true);
 		lookingGlassCheckBox->setChecked(false);
 		toggleLookingGlassCheckBox(); //this is used to set the correct enable for the zoom-in sliders
-		
+
 		zoomWholeViewButton->setText(QString("Tri-view zoom=%1. Click to set.").arg(disp_zoom));
-		
+
 		// color channel options
-		
+
 		colorRedType->setEnabled(true);
 		colorBlueType->setEnabled(true);
 		colorGreenType->setEnabled(true);
@@ -3830,38 +3830,38 @@ void XFormWidget::updateDataRelatedGUI()
 		colorBlue2GrayType->setEnabled(true);
 		colorAll2GrayType->setEnabled(true);
 		colorMapDispType->setEnabled(true);
-		
+
 		imgValScaleDisplayCheckBox->setEnabled(true);
 		if (imgData->getDatatype()==V3D_UINT16 || imgData->getDatatype()==V3D_FLOAT32)
 			imgValScaleDisplayCheckBox->setCheckState(Qt::Checked); //100814. PHC. set 16/32bit data default to rescale for triview display
 		//imgData->setFlagImgValScaleDisplay((imgValScaleDisplayCheckBox->checkState()==Qt::Checked) ? true : false); //100814: PHC. move to here to avoid potential error
-		
+
 		if (imgData->getCDim()>=3) //081124
 		{
 			setColorAllType();
 		}
-		
+
 		if (imgData->getCDim()<3)
 		{
 			colorBlueType->setEnabled(false);
 			colorBlue2GrayType->setEnabled(false);
 		}
-		
+
 		if (imgData->getCDim()<2)
 		{
 			colorGreenType->setEnabled(false);
 			colorGreen2GrayType->setEnabled(false);
 		}
-		
+
 		colorMapDispType->setEnabled(imgData->getCDim()==1);
-		
+
 		if (imgData->getCDim()<=1) //100815
 			colorRed2GrayType->setChecked(true);
 		else
 			colorAllType->setChecked(true);
-		
+
 		//landmarkLabelDispCheckBox->setEnabled(true);
-		
+
 		//imgProcessButton->setCheckable(true); //080402
 		imgV3DButton->setEnabled(true); //100816. always enable, but will display a warning when the user click it.
 //		if (imgData->getDatatype()==V3D_UINT8)
@@ -3875,43 +3875,43 @@ void XFormWidget::updateDataRelatedGUI()
 //			//imgV3DROIButton->setEnabled(false);
 //		}
 		//setLayout(viewLayout);
-		
+
 		//resize(minimumSize());
-		
+
 		// main window title
 		//setWindowTitle(openFileNameLabel.prepend("v3d: "));
 		setWindowTitle(openFileNameLabel); //061011
-		
+
 		//added 081124
 		imgData->updateViews();
 	}
 	else
 	{
 		// range of scroll bars of focus planes
-		
+
 		xSlider->setRange(1, 1); //need redefine range
 		xValueSpinBox->setRange(1, 1);
-		
+
 		ySlider->setRange(1, 1); //need redefine range
 		yValueSpinBox->setRange(1, 1);
-		
+
 		zSlider->setRange(1, 1); //need redefine range
 		zValueSpinBox->setRange(1, 1);
-		
+
 		linkFocusCheckBox->setEnabled(false);
 		displayFocusCrossCheckBox->setEnabled(false);
-		
+
 		// external communication
-		
+
 		cBox_bSendSignalToExternal->setEnabled(false);
 		cBox_bAcceptSignalFromExternal->setEnabled(false);
-		
+
 		lookingGlassCheckBox->setEnabled(false);
-		
+
 		zoomWholeViewButton->setText("Set tri-view zoom");
-		
+
 		// color channel options
-		
+
 		colorRedType->setEnabled(false);
 		colorBlueType->setEnabled(false);
 		colorGreenType->setEnabled(false);
@@ -3921,22 +3921,22 @@ void XFormWidget::updateDataRelatedGUI()
 		colorBlue2GrayType->setEnabled(false);
 		colorAll2GrayType->setEnabled(false);
 		colorMapDispType->setEnabled(false);
-		
+
 		imgValScaleDisplayCheckBox->setEnabled(false);
-		
+
 		colorAllType->setChecked(true);
 		//landmarkLabelDispCheckBox->setEnabled(true);
-		
+
 		//imgProcessButton->setCheckable(false); //080402
 		imgV3DButton->setEnabled(false);
 		//imgV3DROIButton->setEnabled(false);
-		
+
 		//setLayout(viewLayout);
-		
+
 		// set main window title
 		setWindowTitle("v3d: no data loaded yet - click the Load Stack Image button to load data.");
 	}
-	
+
 #if COMPILE_TARGET_LEVEL == 0 //disable the landmark control box if use the V3D lite
 	if (landmarkCopyButton) landmarkCopyButton->setEnabled(false);
 	if (landmarkPasteButton) landmarkPasteButton->setEnabled(false);
@@ -3944,9 +3944,9 @@ void XFormWidget::updateDataRelatedGUI()
 	if (landmarkSaveButton) landmarkSaveButton->setEnabled(false);
 	if (landmarkManagerButton) landmarkManagerButton->setEnabled(false);
 #endif
-	
+
 	allLayout->update();
-	
+
 	//set the default focus location
 	if (imgData)
 	{
@@ -3954,11 +3954,11 @@ void XFormWidget::updateDataRelatedGUI()
 		emit external_focusYChanged(imgData->getYDim()>>1);
 		emit external_focusZChanged(imgData->getZDim()>>1);
 	}
-	
+
 	updateGeometry();
 	adjustSize();
 	allLayout->update();
-	
+
 	update();
 }
 
@@ -3998,22 +3998,22 @@ bool XFormWidget::loadData()
 		v3d_msg(QString("You already used about %1 bytes of memory, which is more than %2 G bytes for your images. Please close some stacks to assure you have enough memory.\n").arg(nbytes).arg(th_use_memory));
 		return false;
 	}
-	
+
 	//the following are the original codes
-	
+
     if (imgData)
 	{
 		cleanData();
 	}
-	
+
   	imgData = new My4DImage;
 	if (!imgData)
 		return false;
-	else { 
+	else {
 		imgData->setMainWidget((XFormWidget *)this); //by PHC, added 100904 to ensure imgData can access global setting
 	}
 
-	
+
     printf("%s\n", openFileNameLabel.toAscii().data());
 	imgData->loadImage(openFileNameLabel.toAscii().data());  // imgData->loadImage("/Users/hanchuanpeng/work/v3d/test1.raw");
 	if (imgData->isEmpty())
@@ -4026,26 +4026,26 @@ bool XFormWidget::loadData()
 				"(3) Your image file is too big. Since on 32-bit machines, an image is at most 2G bytes, and opening tiff files need extra-space for temporary buffer, thus currently V3D has a limitaton on the size of images: TIFF and LSM files less than 900M Bytes, and Hanchuan's RAW file less than 1.5G bytes. You can contact Hanchuan Peng to get a special version of V3D to handle very big image files.<br>");
 		return false;
 	}
-	
+
 	v3d_msg(QString("img data size %1 %2 %3 %4\n").arg(imgData->getXDim()).arg(imgData->getYDim()).arg(imgData->getZDim()).arg(imgData->getCDim()), 0);
-	
+
     setCTypeBasedOnImageData();
-	
+
     imgData->setFlagLinkFocusViews(bLinkFocusViews);
     imgData->setFlagDisplayFocusCross(bDisplayFocusCross);
-	
+
 	//now set the disp_zoom. 081114
-	
+
 	if (imgData->getXDim()>512 || imgData->getYDim()>512 || imgData->getZDim()>512)
 	{
 		disp_zoom= double(512) / qMax(imgData->getXDim(), qMax(imgData->getYDim(), imgData->getZDim()));
 		b_use_dispzoom=true;
 	}
-	
+
     // update the interface
-	
+
     updateDataRelatedGUI();
-	
+
 	reset(); //090718. PHC. force to update once, since sometimes the 16bit image does not display correctly (why all black but once click reset button everything correct?)
 	return true;
 }
@@ -4057,15 +4057,15 @@ bool XFormWidget::setCTypeBasedOnImageData() //separate this out on 2010-08-01. 
 		v3d_msg("Invalid data in setCTypeBasedOnImageData()");
 		return false;
 	}
-	
+
     if (imgData->getCDim()<1)
 	{
 		printf("Error in data reading. The number of color channels cannot be smaller than 1!!\n");
 		if (imgData) {delete imgData; imgData = 0;}
 		return false;
 	}
-	
-	if (imgData->getDatatype()==V3D_UINT8 || 
+
+	if (imgData->getDatatype()==V3D_UINT8 ||
 		imgData->getDatatype()==V3D_UINT16 ||
 		imgData->getDatatype()==V3D_FLOAT32)
 	{
@@ -4085,7 +4085,7 @@ bool XFormWidget::setCTypeBasedOnImageData() //separate this out on 2010-08-01. 
 		v3d_msg("Seems you load an unknown data which is not supported for display at this moment. -- setCTypeBasedOnImageData()", 0);
 		Ctype = colorRed2Gray;
 	}
-	
+
 	return true;
 }
 
@@ -4104,13 +4104,13 @@ bool XFormWidget::setCurrentFileName(QString cfilename)
 bool XFormWidget::saveData()
 {
 	if (!imgData) {printf("Image data is empty!\n"); return false;}
-	
+
 	QString outputFile = QFileDialog::getSaveFileName(0,
 													  "Choose a filename to save under",
 													  //"./",
 													  QString(openFileNameLabel)+".tif",
 													  "Save file format (*.tif *.raw)");
-	
+
 	while (outputFile.isEmpty()) //note that I used isEmpty() instead of isNull, although seems the Cancel operation will return a null string. phc 060422
 	{
     	if(QMessageBox::Yes == QMessageBox::question (0, "", "Are you sure you do NOT want to save?", QMessageBox::Yes, QMessageBox::No))
@@ -4122,18 +4122,18 @@ bool XFormWidget::saveData()
 												  "./",
 												  "Save file format (*.tif *.raw)");
 	}
-	
+
 	saveFile(outputFile);
-	
+
 	return true;
 }
 bool XFormWidget::saveFile(QString filename)
 {
 	if (!imgData) {printf("Image data is empty!\n"); return false;}
 	if (filename.isEmpty()) {printf("The file name to save image is empty!\n"); return false;}
-	
+
 	imgData->saveImage(qPrintable(filename));
-	
+
 	printf("Current image is saved to the file %s\n", qPrintable(filename));
 	setCurrentFileName(filename);
 	return true;
@@ -4145,53 +4145,53 @@ bool XFormWidget::newProcessedImage(QString filename, unsigned char *ndata1d, V3
 {
 	if (filename.isEmpty()) return false;
 	openFileNameLabel = filename;
-	
+
 	return setImageData(ndata1d, nsz0, nsz1, nsz2, nsz3, ndatatype)
 	&& setCurrentFileName(filename);
 }
 
 bool XFormWidget::setImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG nsz1, V3DLONG nsz2, V3DLONG nsz3, ImagePixelType ndatatype) //090818 RZC
 {
-	
+
 	//	printf("he %p\n", ndata1d);
 	if (imgData) { cleanData();	}
 	imgData = new My4DImage;
 	if (!imgData)  return false;
-	
+
 	updateDataRelatedGUI(); //this should be important to set up all pointers
-	
+
 	printf("now in the function setImageData() line=%d.\n", __LINE__);
 	if (!imgData->setNewImageData(ndata1d, nsz0, nsz1, nsz2, nsz3, ndatatype))
 	{
 		printf("Sth wrong in the function setImageData() line=%d.\n", __LINE__);
 		return false;
 	}
-	
+
 	imgData->setFileName((char *)qPrintable(openFileNameLabel));
-	
+
     if (imgData->getCDim()>=3)
 	    Ctype = colorRGB;
     else if (imgData->getCDim()==2)
 	    Ctype = colorRG;
 	else //==1
 	    Ctype = colorRed2Gray;
-	
+
     imgData->setFlagLinkFocusViews(bLinkFocusViews);
     imgData->setFlagDisplayFocusCross(bDisplayFocusCross);
-	
+
     //imgData->setFlagImgValScaleDisplay((imgValScaleDisplayCheckBox->checkState()==Qt::Checked) ? true : false);
-	
-	
+
+
 	//now set the disp_zoom. 081114
-	
+
 	if (imgData->getXDim()>512 || imgData->getYDim()>512 || imgData->getZDim()>512)
 	{
 		disp_zoom= double(512) / qMax(imgData->getXDim(), qMax(imgData->getYDim(), imgData->getZDim()));
 		b_use_dispzoom=true;
 	}
-	
+
     updateDataRelatedGUI();
-	
+
 	v3d_msg("success in set up image data", 0);
 	return true;
 }
@@ -4219,10 +4219,10 @@ void XFormWidget::doImage3DLocalBBoxView()  //do not have arguments so that can 
 	doImage3DView(true, 3, bbx0, bbx1, bby0, bby1, bbz0, bbz1); //3 for bbox
 }
 
-void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG bbx0, V3DLONG bbx1, V3DLONG bby0, V3DLONG bby1, V3DLONG bbz0, V3DLONG bbz1) 
+void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG bbx0, V3DLONG bbx1, V3DLONG bby0, V3DLONG bby1, V3DLONG bbz0, V3DLONG bbz1)
 	//b_local==0, use entire image
-	//b_local==1, use marker; 
-	//b_local==2, use roi; 
+	//b_local==1, use marker;
+	//b_local==2, use roi;
 	//b_local==3, use lower and upper bounding box in bbx0, bby0, ....
 {
 	if (!b_local && mypara_3Dview.b_still_open)
@@ -4235,7 +4235,7 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
 	if (b_local && mypara_3Dlocalview.b_still_open)
 	{
 		//mypara_3Dlocalview.window->raise_and_activate();
-		
+
 		//090723: continue create a new view, wait 1 second for the last local 3D view closed
 		mypara_3Dlocalview.window3D->postClose();
 		if (b_local==1)
@@ -4246,10 +4246,10 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
 			QTimer::singleShot(1000, this, SLOT(doImage3DLocalBBoxView())); //do not have arguments so that can be used as the slot of a timer signal
 		else
 			v3d_msg("Invalid b_local parameter in doImage3DView();");
-		
+
 		return;
 	}
-	
+
 	if (imgData)
 	{
 		//	QString	tmpfile = QFileDialog::getOpenFileName(
@@ -4262,15 +4262,15 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
 		//	{
 		//	    return;
 		//	}
-		
-		
+
+
 		V3DLONG nbytes = estimateRoughAmountUsedMemory();
 		if (nbytes>(V3DLONG)((double(1024)*1024*1024*th_use_memory)))
 		{
 			v3d_msg(QString("You already used more than %1G bytes for your images. Please close some stacks to assure you have enough memory.").arg(th_use_memory));
 			return;
 		}
-		
+
 		if (! b_local) //0 for entire image
 		{
 			//iDrawExternalParameter mypara;
@@ -4279,13 +4279,13 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
 			mypara_3Dview.xwidget = this; //imgData->listLandmarks;
 			mypara_3Dview.V3Dmainwindow = p_mainWindow; //added on 090503
 			mypara_3Dview.p_list_3Dview_win = &(p_mainWindow->list_3Dview_win); //081003: always keep an record in the central controller
-			
+
 			mypara_3Dlocalview.b_local = b_local;
 		}
 		if (b_local==1 || b_local==2 || b_local==3)
 		{
 			V3DLONG x0, y0, z0, x1, y1, z1;
-			
+
 			switch (b_local)
 			{
 				case 1: //1 for marker
@@ -4297,7 +4297,7 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
 						mypt = imgData->listLandmarks.at(imgData->cur_hit_landmark);
 						mypt.x-=1; mypt.y-=1; mypt.z-=1;
 						pt = &mypt;
-						
+
 						x0 = qBound((V3DLONG)0L, (V3DLONG)((*pt).x-64) , (imgData->getXDim()-1));
 						y0 = qBound((V3DLONG)0L, (V3DLONG)((*pt).y-64) , (imgData->getYDim()-1));
 						z0 = qBound((V3DLONG)0L, (V3DLONG)((*pt).z-64) , imgData->getZDim()-1);
@@ -4308,7 +4308,7 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
 						//					c1 = sz3-1;
 					}
 					break;
-					
+
 				case 3:
 					x0 = qBound((V3DLONG)(bbx0), V3DLONG(0), imgData->getXDim()-1);
 					y0 = qBound((V3DLONG)(bby0), V3DLONG(0), imgData->getYDim()-1);
@@ -4316,15 +4316,15 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
 					x1 = qBound((V3DLONG)(bbx1), V3DLONG(0), imgData->getXDim()-1);
 					y1 = qBound((V3DLONG)(bby1), V3DLONG(0), imgData->getYDim()-1);
 					z1 = qBound((V3DLONG)(bbz1), V3DLONG(0), imgData->getZDim()-1);
-					
+
 					break;
-					
-				case 2: //2 for roi	
-				default:	
+
+				case 2: //2 for roi
+				default:
 					QRect b_xy = imgData->p_xy_view->getRoiBoundingRect();
 					QRect b_yz = imgData->p_yz_view->getRoiBoundingRect();
 					QRect b_zx = imgData->p_zx_view->getRoiBoundingRect();
-					
+
 					V3DLONG bpos_x = qBound((V3DLONG)(0), V3DLONG(qMax(b_xy.left(), b_zx.left())), imgData->getXDim()-1),
 					bpos_y = qBound((V3DLONG)(0), V3DLONG(qMax(b_xy.top(),  b_yz.top())), imgData->getYDim()-1),
 					bpos_z = qBound((V3DLONG)(0), V3DLONG(qMax(b_yz.left(), b_zx.top())), imgData->getZDim()-1),
@@ -4333,33 +4333,33 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
 					epos_y = qBound((V3DLONG)(0), V3DLONG(qMin(b_xy.bottom(), b_yz.bottom())), imgData->getYDim()-1),
 					epos_z = qBound((V3DLONG)(0), V3DLONG(qMin(b_yz.right(), b_zx.bottom())), imgData->getZDim()-1),
 					epos_c = imgData->getCDim()-1;
-					
+
 					if (bpos_x>epos_x || bpos_y>epos_y || bpos_z>epos_z)
 					{
 						v3d_msg("The roi polygons in three views are not intersecting! No crop is done!\n");
 						return;
 					}
-					
+
 					x0 = bpos_x;
 					y0 = bpos_y;
 					z0 = bpos_z;
 					x1 = epos_x;
 					y1 = epos_y;
 					z1 = epos_z;
-					
+
 					break;
 			}
-			
+
 			mypara_3Dlocalview.image4d = imgData;
 			mypara_3Dlocalview.b_use_512x512x256 = tmp_b_use_512x512x256;
 			mypara_3Dlocalview.xwidget = this; //imgData->listLandmarks;
 			mypara_3Dlocalview.V3Dmainwindow = p_mainWindow; //added on 090503
 			mypara_3Dlocalview.p_list_3Dview_win = &(p_mainWindow->list_3Dview_win); //081003: always keep an record in the central controller
-			
+
 			mypara_3Dlocalview.b_local = b_local;
 			mypara_3Dlocalview.local_size = LocationSimple(x1-x0+1, y1-y0+1, z1-z0+1);
 			mypara_3Dlocalview.local_start = LocationSimple(x0, y0, z0);
-			
+
 			//			if (mypara_3Dlocalview.localimage4d)
 			//				delete mypara_3Dlocalview.localimage4d;
 			//			mypara_3Dlocalview.localimage4d = 0;
@@ -4371,7 +4371,7 @@ void XFormWidget::doImage3DView(bool tmp_b_use_512x512x256, int b_local, V3DLONG
 			//						mypara_3Dlocalview.local_size.z,
 			//						imgData->getCDim(), imgData->getDatatype());
 		}
-		
+
 		V3dR_MainWindow *my3dwin = 0;
 		try
 		{
@@ -4425,93 +4425,93 @@ void XFormWidget::connectEventSignals()
     connect(ySlider, SIGNAL(valueChanged(int)), zx_view, SLOT(changeFocusPlane(int)));
     connect(zSlider, SIGNAL(valueChanged(int)), xy_view, SLOT(changeFocusPlane(int)));
 	//printf("connect status[%d]\n",a);
-	
+
     connect(xValueSpinBox, SIGNAL(valueChanged(int)), xSlider, SLOT(setValue(int)));
     connect(xSlider, SIGNAL(valueChanged(int)), xValueSpinBox, SLOT(setValue(int)));
-	
+
     connect(yValueSpinBox, SIGNAL(valueChanged(int)), ySlider, SLOT(setValue(int)));
     connect(ySlider, SIGNAL(valueChanged(int)), yValueSpinBox, SLOT(setValue(int)));
-	
+
     connect(zValueSpinBox, SIGNAL(valueChanged(int)), zSlider, SLOT(setValue(int)));
     connect(zSlider, SIGNAL(valueChanged(int)), zValueSpinBox, SLOT(setValue(int)));
-	
+
 	//set the navigation event connection
     connect(xy_view, SIGNAL(focusXChanged(int)), xSlider, SLOT(setValue(int)));
     connect(xy_view, SIGNAL(focusYChanged(int)), ySlider, SLOT(setValue(int)));
     connect(xy_view, SIGNAL(focusZChanged(int)), zSlider, SLOT(setValue(int)));
-	
+
     connect(yz_view, SIGNAL(focusXChanged(int)), xSlider, SLOT(setValue(int)));
     connect(yz_view, SIGNAL(focusYChanged(int)), ySlider, SLOT(setValue(int)));
     connect(yz_view, SIGNAL(focusZChanged(int)), zSlider, SLOT(setValue(int)));
-	
+
     connect(zx_view, SIGNAL(focusXChanged(int)), xSlider, SLOT(setValue(int)));
     connect(zx_view, SIGNAL(focusYChanged(int)), ySlider, SLOT(setValue(int)));
     connect(zx_view, SIGNAL(focusZChanged(int)), zSlider, SLOT(setValue(int)));
-	
+
     //set up link to respond to external change of focus
-	
+
     connect(this, SIGNAL(external_focusXChanged(int)), xValueSpinBox, SLOT(setValue(int)));
     connect(this, SIGNAL(external_focusYChanged(int)), yValueSpinBox, SLOT(setValue(int)));
     connect(this, SIGNAL(external_focusZChanged(int)), zValueSpinBox, SLOT(setValue(int)));
-	
+
 	//set up slot to accept signals passed to external
     connect(xValueSpinBox, SIGNAL(valueChanged(int)), this, SLOT(changeFocusXToExternal(int)));
     connect(yValueSpinBox, SIGNAL(valueChanged(int)), this, SLOT(changeFocusYToExternal(int)));
     connect(zValueSpinBox, SIGNAL(valueChanged(int)), this, SLOT(changeFocusZToExternal(int)));
 	//printf("out connect status[%d]\n",a);
-	
-	
+
+
     // set up focus link events
     connect(linkFocusCheckBox, SIGNAL(clicked()), this, SLOT(toggleLinkFocusCheckBox()));
     connect(displayFocusCrossCheckBox, SIGNAL(clicked()), this, SLOT(toggleDisplayFocusCrossCheckBox()));
-	
+
 	// external communication
-	
+
 	connect(cBox_bSendSignalToExternal, SIGNAL(clicked()), this, SLOT(toggleCheckBox_bSendSignalToExternal()));
 	connect(cBox_bAcceptSignalFromExternal, SIGNAL(clicked()), this, SLOT(toggleCheckBox_bAcceptSignalFromExternal()));
-	
+
     // set up zoom events
-	
+
     connect(xScaleSlider, SIGNAL(valueChanged(int)), yz_view, SLOT(changeScale(int)));
     connect(yScaleSlider, SIGNAL(valueChanged(int)), zx_view, SLOT(changeScale(int)));
     connect(zScaleSlider, SIGNAL(valueChanged(int)), xy_view, SLOT(changeScale(int)));
-	
+
     connect(xy_view, SIGNAL(scaleChanged(int)), zScaleSlider, SLOT(setValue(int)));
     connect(yz_view, SIGNAL(scaleChanged(int)), xScaleSlider, SLOT(setValue(int)));
     connect(zx_view, SIGNAL(scaleChanged(int)), yScaleSlider, SLOT(setValue(int)));
-	
+
     connect(lookingGlassCheckBox, SIGNAL(clicked()), this, SLOT(toggleLookingGlassCheckBox()));
-	
+
 	connect(zoomWholeViewButton, SIGNAL(clicked()), this, SLOT(doMenuOfTriviewZoom()));
-	
-	
+
+
     // set up color mapping events
-	
+
     connect(colorRedType, SIGNAL(clicked()), this, SLOT(setColorRedType()));
     connect(colorGreenType, SIGNAL(clicked()), this, SLOT(setColorGreenType()));
     connect(colorBlueType, SIGNAL(clicked()), this, SLOT(setColorBlueType()));
     connect(colorAllType, SIGNAL(clicked()), this, SLOT(setColorAllType()));
-	
+
     connect(colorRed2GrayType, SIGNAL(clicked()), this, SLOT(setColorRed2GrayType()));
     connect(colorGreen2GrayType, SIGNAL(clicked()), this, SLOT(setColorGreen2GrayType()));
     connect(colorBlue2GrayType, SIGNAL(clicked()), this, SLOT(setColorBlue2GrayType()));
     connect(colorAll2GrayType, SIGNAL(clicked()), this, SLOT(setColorAll2GrayType()));
-	
+
 	connect(colorMapDispType, SIGNAL(clicked()), this, SLOT(setColorMapDispType()));
-	
+
     connect(imgValScaleDisplayCheckBox, SIGNAL(clicked()), this, SLOT(toggleImgValScaleDisplay()));
-	
+
     connect(landmarkCopyButton, SIGNAL(clicked()), this, SLOT(copyLandmarkToPublicBuffer()));
     connect(landmarkPasteButton, SIGNAL(clicked()), this, SLOT(pasteLandmarkFromPublicBuffer()));
     connect(landmarkLoadButton, SIGNAL(clicked()), this, SLOT(loadLandmarkFromFile()));
     connect(landmarkSaveButton, SIGNAL(clicked()), this, SLOT(saveLandmarkToFile()));
     connect(landmarkManagerButton, SIGNAL(clicked()), this, SLOT(openLandmarkManager()));
-	
+
     connect(resetButton, SIGNAL(clicked()), this, SLOT(reset()));
 	//connect(openFileNameButton, SIGNAL(clicked()), this, SLOT(setOpenFileName())); //	remove this button on 080402
-	
+
     //connect(landmarkLabelDispCheckBox, SIGNAL(clicked()), this, SLOT(toggleLandmarkLabelDisp()));
-	
+
     //connect(whatsThisButton, SIGNAL(clicked(bool)), xy_view, SLOT(setDescriptionEnabled(bool)));
     //connect(imgProcessButton, SIGNAL(clicked()), this, SLOT(popupImageProcessingDialog()));
     //connect(imgV3DButton, SIGNAL(clicked()), this, SLOT(doImage3DView()));
@@ -4527,58 +4527,58 @@ void XFormWidget::disconnectEventSignals()
 	disconnect(xSlider, 0, yz_view, 0);
     disconnect(ySlider, 0, zx_view, 0);
     disconnect(zSlider, 0, xy_view, 0);
-	
+
     disconnect(xValueSpinBox, 0, xSlider, 0);
     disconnect(xSlider, 0, xValueSpinBox, 0);
-	
+
     disconnect(yValueSpinBox, 0, ySlider, 0);
     disconnect(ySlider, 0, yValueSpinBox, 0);
-	
+
     disconnect(zValueSpinBox, 0, zSlider, 0);
     disconnect(zSlider, 0, zValueSpinBox, 0);
-	
+
     disconnect(linkFocusCheckBox, 0, this, 0);
     disconnect(displayFocusCrossCheckBox, 0, this, 0);
-	
+
     disconnect(this, 0, xValueSpinBox, 0);
     disconnect(this, 0, yValueSpinBox, 0);
     disconnect(this, 0, zValueSpinBox, 0);
-	
+
     disconnect(xy_view, 0, zSlider, 0);
     disconnect(yz_view, 0, xSlider, 0);
     disconnect(zx_view, 0, ySlider, 0);
-	
+
     disconnect(xy_view, 0, zScaleSlider, 0);
     disconnect(yz_view, 0, xScaleSlider, 0);
     disconnect(zx_view, 0, yScaleSlider, 0);
-	
+
     disconnect(lookingGlassCheckBox, 0, this, 0);
-	
+
     disconnect(colorRedType, 0, this, 0);
     disconnect(colorGreenType, 0, this, 0);
     disconnect(colorBlueType, 0, this, 0);
     disconnect(colorAllType, 0, this, 0);
-	
+
     disconnect(colorRed2GrayType, 0, this, 0);
     disconnect(colorGreen2GrayType, 0, this, 0);
     disconnect(colorBlue2GrayType, 0, this, 0);
     disconnect(colorAll2GrayType, 0, this, 0);
-	
+
     disconnect(colorMapDispType, 0, this, 0);
-	
+
     disconnect(imgValScaleDisplayCheckBox, 0, this, 0);
-	
+
 	disconnect(landmarkCopyButton, 0, this, 0);
 	disconnect(landmarkPasteButton, 0, this, 0);
 	disconnect(landmarkLoadButton, 0, this, 0);
 	disconnect(landmarkSaveButton, 0, this, 0);
 	disconnect(landmarkManagerButton, 0, this, 0);
-	
+
     //disconnect(landmarkLabelDispCheckBox, 0, this, 0);
-	
+
     disconnect(resetButton, 0, this, 0);
 	//disconnect(openFileNameButton, 0, this, 0);
-	
+
     //disconnect(imgProcessButton, 0, this, 0);
     disconnect(imgV3DButton, 0, this, 0);
 	// disconnect(imgV3DROIButton, 0, this, 0);
@@ -4627,9 +4627,9 @@ void XFormWidget::toggleImgValScaleDisplay()
 			//printf("display cross %d\n", int(imgData->getFlagDisplayFocusCross()));
 		}
 	}
-	
+
     //use color change to force the update of 3 views
-	
+
 	xy_view->changeColorType(Ctype);
 	yz_view->changeColorType(Ctype);
 	zx_view->changeColorType(Ctype);
@@ -4647,10 +4647,10 @@ void XFormWidget::toggleLookingGlassCheckBox()
 			{
 				xScaleSlider->setValue(4);
 				xScaleSlider->setEnabled(false);
-				
+
 				yScaleSlider->setValue(4);
 				yScaleSlider->setEnabled(false);
-				
+
 				zScaleSlider->setValue(4);
 				zScaleSlider->setEnabled(false);
 			}
@@ -4660,9 +4660,9 @@ void XFormWidget::toggleLookingGlassCheckBox()
 				yScaleSlider->setEnabled(true);
 				zScaleSlider->setEnabled(true);
 			}
-			
+
 			imgData->setFlagLookingGlass((lookingGlassCheckBox->checkState()==Qt::Checked) ? true : false);
-			
+
 			//		xy_view->changeScale(4);
 			//		yz_view->changeScale(4);
 			//		zx_view->changeScale(4);
@@ -4675,11 +4675,11 @@ void XFormWidget::toggleLookingGlassCheckBox()
 void XFormWidget::toggleCheckBox_bSendSignalToExternal()
 {
 	bSendSignalToExternal = (cBox_bSendSignalToExternal->checkState()==Qt::Checked) ? true : false;
-	
+
 	//the follwoing simple logic prevent the dead-loop of messages passwd among the window. My approach to only allow one-directional signal channel
 	//is not the best, but probably is very easy to use and understand. Logically the best one should just detect and eleiminate any message-cycle
 	// in the windows, but it probably difficult to use in practise. Of course it may also cause unnecessary complexity in the program.
-	
+
 	if (bSendSignalToExternal==true)
 	{
 		bAcceptSignalFromExternal = false;
@@ -4690,11 +4690,11 @@ void XFormWidget::toggleCheckBox_bSendSignalToExternal()
 void XFormWidget::toggleCheckBox_bAcceptSignalFromExternal()
 {
 	bAcceptSignalFromExternal = (cBox_bAcceptSignalFromExternal->checkState()==Qt::Checked) ? true : false;
-	
+
 	//the follwoing simple logic prevent the dead-loop of messages passwd among the window. My approach to only allow one-directional signal channel
 	//is not the best, but probably is very easy to use and understand. Logically the best one should just detect and eliminate any message-cycle
 	// in the windows, but it probably difficult to use in practise. Of course it may also cause unnecessary complexity in the program.
-	
+
 	if (bAcceptSignalFromExternal==true)
 	{
 		bSendSignalToExternal = false;
@@ -4724,10 +4724,10 @@ void XFormWidget::setColorGreenType()
 {
     if (!imgData)
 		return;
-	
+
     if (imgData->getCDim()<2)
 		return;
-	
+
     Ctype = colorGreenOnly;
   	xy_view->changeColorType(Ctype);
 	yz_view->changeColorType(Ctype);
@@ -4739,10 +4739,10 @@ void XFormWidget::setColorGreen2GrayType()
 {
     if (!imgData)
 		return;
-	
+
     if (imgData->getCDim()<2)
 		return;
-	
+
     Ctype = colorGreen2Gray;
 	xy_view->changeColorType(Ctype);
 	yz_view->changeColorType(Ctype);
@@ -4754,10 +4754,10 @@ void XFormWidget::setColorBlueType()
 {
     if (!imgData)
 		return;
-	
+
     if (imgData->getCDim()<3)
 		return;
-	
+
     Ctype = colorBlueOnly;
 	xy_view->changeColorType(Ctype);
 	yz_view->changeColorType(Ctype);
@@ -4769,10 +4769,10 @@ void XFormWidget::setColorBlue2GrayType()
 {
     if (!imgData)
 		return;
-	
+
     if (imgData->getCDim()<3)
 		return;
-	
+
     Ctype = colorBlue2Gray;
 	xy_view->changeColorType(Ctype);
 	yz_view->changeColorType(Ctype);
@@ -4784,7 +4784,7 @@ void XFormWidget::setColorAllType()
 {
     if (!imgData)
 		return;
-	
+
     int cdim = imgData->getCDim();
     if (cdim>=3)
 		Ctype = colorRGB;
@@ -4792,7 +4792,7 @@ void XFormWidget::setColorAllType()
 		Ctype = colorRG;
 	else
 		Ctype = colorGray;
-	
+
 	xy_view->changeColorType(Ctype);
 	yz_view->changeColorType(Ctype);
 	zx_view->changeColorType(Ctype);
@@ -4821,26 +4821,26 @@ void XFormWidget::switchMaskColormap() //080824
 {
 	if (!imgData)
 		return;
-	
+
 	if (!colorMapDispType->isChecked()) //switch color will only be valid is the colorMapDispType is on
 		return;
-	
+
 	int clen;  ImageDisplayColorType cc;
-	
+
 	imgData->getColorMapInfo(clen, cc);
-	
+
 	if (cc==colorPseudoMaskColor) cc=colorHanchuanFlyBrainColor;
 	else if (cc==colorHanchuanFlyBrainColor) cc=colorArnimFlyBrainColor;
 	else if (cc==colorArnimFlyBrainColor) cc=colorPseudoMaskColor;
 	else cc=colorPseudoMaskColor;
-	
+
 	imgData->switchColorMap(clen, cc);
-	
+
 	//update
 	xy_view->changeColorType(cc);
 	yz_view->changeColorType(cc);
 	zx_view->changeColorType(cc);
-	
+
     update();
 	//updateDataRelatedGUI(); //just make sure the image will be displayed
 	return;
@@ -4863,7 +4863,7 @@ void XFormWidget::reset()
 			setColorAll2GrayType();
 		}
 	}
-	
+
 	if (xy_view) xy_view->reset();
 	if (yz_view) yz_view->reset();
 	if (zx_view) zx_view->reset();
@@ -4890,20 +4890,20 @@ void XFormWidget::changeFocusToExternal(int newx, int newy, int newz) // this is
 {
 	if (bSendSignalToExternal==false || !p_mainWindow)
 		return;
-	
+
 	int listlen;
 	XFormWidget **list = p_mainWindow->retrieveAllMdiChild(listlen);
 	//printf("Found %d children windows. \n", listlen);
-	
+
 	if (listlen>1 && list) //otherwise the only possible window is itself
 	{
 		//if there is invalid flag like -1, then replace it using valid focus info
 		if (newx<=0) newx = imgData->curFocusX+1; //correction on 03/31/2006 so that the focus planes of master/slave images are the same
 		if (newy<=0) newy = imgData->curFocusY+1;
 		if (newz<=0) newz = imgData->curFocusZ+1;
-		
+
 		//broadcast signal
-		
+
 		for (int i=0;i<listlen;i++)
 		{
 			if (list[i]==this) //of course no need to affect this view itself
@@ -4915,7 +4915,7 @@ void XFormWidget::changeFocusToExternal(int newx, int newy, int newz) // this is
 			}
 		}
 	}
-	
+
 	if (list) {delete []list; list=0;} //because list is a newly created pointer, should delete after used it
 	//probably a better logic is to store this list somewhere temporarily, -- but need to manage the case that
 	// some windows may be closed.
@@ -4928,10 +4928,10 @@ void XFormWidget::changeFocusFromExternal(int x, int y, int z) //this should be 
 	{
 		if (x>0) //as I used -1 as invalid signal, then here I only allow valid signal to be passed
 			emit external_focusXChanged(x);
-		
+
 		if (y>0)
 			emit external_focusYChanged(y);
-		
+
 		if (z>0)
 			emit external_focusZChanged(z);
 	}
@@ -4943,10 +4943,10 @@ void XFormWidget::forceToChangeFocus(int x, int y, int z) //this is called by ot
 	{
 		if (x>0) //as I used -1 as invalid signal, then here I only allow valid signal to be passed
 			emit external_focusXChanged(x);
-		
+
 		if (y>0)
 			emit external_focusYChanged(y);
-		
+
 		if (z>0)
 			emit external_focusZChanged(z);
 	}
@@ -4958,19 +4958,19 @@ My4DImage * XFormWidget::selectSubjectImage()
 {
 	if (!p_mainWindow)
 		return 0;
-	
+
 	int listlen;
 	XFormWidget **list = p_mainWindow->retrieveAllMdiChild(listlen);
 	if (listlen<=1)
 		return 0;
-	
+
 	int i,k; int * indTable = new int [listlen];
 	if (!indTable)
 	{
 		printf("Fail to allocate memory for index table in selectSubjectImage();\n");
 		return 0;
 	}
-	
+
 	QStringList items;
 	if (listlen>=2 && list) //otherwise the only possible window is itself
 	{
@@ -4987,12 +4987,12 @@ My4DImage * XFormWidget::selectSubjectImage()
 			}
 		}
 	}
-	
+
 	QString item;
 	bool ok;
 	item = QInputDialog::getItem(this, tr("Subject image list"),
 								 tr("Please select one image as the *subject* image"), items, 0, false, &ok);
-	
+
 	int iSelected=-1;
 	for (k=0;k<listlen;k++)
 	{
@@ -5002,9 +5002,9 @@ My4DImage * XFormWidget::selectSubjectImage()
 			break;
 		}
 	}
-	
+
 	if (iSelected<0) return 0;
-	
+
 	My4DImage * pSelected = list[iSelected]->getImageData();
 	if (indTable) {delete []indTable; indTable=0;}
 	if (list) {delete []list; list=0;}
@@ -5015,19 +5015,19 @@ My4DImage * XFormWidget::selectImage()
 {
 	if (!p_mainWindow)
 		return 0;
-	
+
 	int listlen;
 	XFormWidget **list = p_mainWindow->retrieveAllMdiChild(listlen);
 	if (listlen<=1)
 		return 0;
-	
+
 	int i,k; int * indTable = new int [listlen];
 	if (!indTable)
 	{
 		printf("Fail to allocate memory for index table in selectSubjectImage();\n");
 		return 0;
 	}
-	
+
 	QStringList items;
 	if (listlen>=1 && list) //otherwise the only possible window is itself
 	{
@@ -5037,12 +5037,12 @@ My4DImage * XFormWidget::selectImage()
 			indTable[k++] = i;
 		}
 	}
-	
+
 	QString item;
 	bool ok;
 	item = QInputDialog::getItem(this, tr("image list"),
 								 tr("Please select one image for processing"), items, 0, false, &ok);
-	
+
 	int iSelected=-1;
 	for (k=0;k<listlen;k++)
 	{
@@ -5052,9 +5052,9 @@ My4DImage * XFormWidget::selectImage()
 			break;
 		}
 	}
-	
+
 	if (iSelected<0) return 0;
-	
+
 	My4DImage * pSelected = list[iSelected]->getImageData();
 	if (indTable) {delete []indTable; indTable=0;}
 	if (list) {delete []list; list=0;}
@@ -5065,14 +5065,14 @@ V3DLONG XFormWidget::estimateRoughAmountUsedMemory()
 {
 	if (!p_mainWindow)
 		return 0;
-	
+
 	int listlen;
 	XFormWidget **list = p_mainWindow->retrieveAllMdiChild(listlen);
 	if (listlen<=1)
 		return 0;
-	
+
 	int i;
-	
+
 	V3DLONG nbytes=0;
 	if (listlen>=1 && list) //otherwise the only possible window is itself
 	{
@@ -5081,9 +5081,9 @@ V3DLONG XFormWidget::estimateRoughAmountUsedMemory()
 			nbytes += list[i]->getImageData()->getTotalBytes();
 		}
 	}
-	
+
 	printf("=== You have used [%ld] bytes. If you are using 32-bit system, you may only use maximum 2G bytes. === \n", nbytes);
-	
+
 	if (list) {delete []list; list=0;}
 	return nbytes;
 }
@@ -5094,29 +5094,29 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 	QList <BlendingImageInfo> bList;
 	BlendingImageInfo curInfo;
 	My4DImage * tmp_pimg;
-	
+
 	if (!p_mainWindow)
 		return bList;
-	
+
 	//get the image list
 	int listlen;
 	XFormWidget **list = p_mainWindow->retrieveAllMdiChild(listlen);
 	if (listlen<=0) return bList; //allow blending even there is only one image, because this blending func can be used to change its coloring scheme
-	
+
 	int i,k; int * indTable = new int [listlen];
 	if (!indTable)
 	{
 		printf("Fail to allocate memory for index table in selectBlendingImages();\n");
 		return bList;
 	}
-	
+
 	QStringList items;
 	for (i=0, k=0;i<listlen;i++)
 	{
 		items << tr(list[i]->getImageData()->getFileName());
 		indTable[k++] = i;
 	}
-	
+
 	int BLEND_MAXVAL=511;
 	int nBlend=0; V3DLONG sz0_first, sz1_first, sz2_first;
 	do
@@ -5125,7 +5125,7 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 		QString item;
 		bool ok;
 		item = QInputDialog::getItem(this, tr("image list"), tr("Please select one image to blend"), items, 0, false, &ok);
-		
+
 		int iSelected=-1;
 		for (k=0;k<listlen;k++)
 		{
@@ -5140,16 +5140,16 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 			printf("Should never see this in selectBlendingImages(). Check codes.\n");
 			break;
 		}
-		
+
 		tmp_pimg = list[iSelected]->getImageData();
 		if (nBlend==0)
 		{
 			sz0_first = tmp_pimg->getXDim(); sz1_first = tmp_pimg->getYDim(); sz2_first = tmp_pimg->getZDim();
 			curInfo.pimg = tmp_pimg;
-			
+
 			//then select the channel of this image
 			curInfo.channo = QInputDialog::getInteger(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
-			
+
 			//then select RGB info
 			int rgbVal;
 			rgbVal = QInputDialog::getInteger(this, tr("Red component"), tr("Red component"), 0, 0, BLEND_MAXVAL, 50, &ok); //set to 511 instead of 255 so that intensity can be increased as well
@@ -5158,10 +5158,10 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 			curInfo.gg = rgbVal/255.0;
 			rgbVal = QInputDialog::getInteger(this, tr("Blue component"), tr("Blue component"), 0, 0, BLEND_MAXVAL, 50, &ok);
 			curInfo.bb = rgbVal/255.0;
-			
+
 			//add the selected info to the bList
 			bList.append(curInfo);
-			
+
 			//check if want to select more images
 			if(QMessageBox::No == QMessageBox::question (0, "Continue?", "Continue select another image/channel for blending?", QMessageBox::Yes, QMessageBox::No))
 				break;
@@ -5171,10 +5171,10 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 			if (sz0_first == tmp_pimg->getXDim() && sz1_first == tmp_pimg->getYDim() && sz2_first == tmp_pimg->getZDim())
 			{
 				curInfo.pimg = tmp_pimg;
-				
+
 				//then select the channel of this image
 				curInfo.channo = QInputDialog::getInteger(this, tr("channel"), tr("Please select one channel of the last image to blend"), 2, 1, curInfo.pimg->getCDim(), 1, &ok) - 1;
-				
+
 				//then select RGB info
 				int rgbVal;
 				rgbVal = QInputDialog::getInteger(this, tr("Red component"), tr("Red component"), 0, 0, BLEND_MAXVAL, 50, &ok);
@@ -5183,10 +5183,10 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 				curInfo.gg = rgbVal/255.0;
 				rgbVal = QInputDialog::getInteger(this, tr("Blue component"), tr("Blue component"), 0, 0, BLEND_MAXVAL, 50, &ok);
 				curInfo.bb = rgbVal/255.0;
-				
+
 				//add the selected info to the bList
 				bList.append(curInfo);
-				
+
 				//check if want to select more images
 				if(QMessageBox::No == QMessageBox::question (0, "Continue?", "Continue select another image/channel for blending?", QMessageBox::Yes, QMessageBox::No))
 					break;
@@ -5197,13 +5197,13 @@ QList <BlendingImageInfo> XFormWidget::selectBlendingImages()
 					break;
 			}
 		}
-		
+
 		nBlend++;
 	} while (1);
-	
+
 	if (indTable) {delete []indTable; indTable=0;}
 	if (list) {delete []list; list=0;}
-	
+
 	return bList;
 }
 
@@ -5229,7 +5229,7 @@ void XFormWidget::pasteLandmarkFromPublicBuffer() //080107
 		{
 			imgData->listLandmarks.append(p_mainWindow->buffer_landmark_pts.at(i));
 		}
-		
+
 		//update the related views
 		imgData->updateViews();
 	}
@@ -5242,7 +5242,7 @@ void XFormWidget::saveLandmarkToFile() //080107, 080111
 		v3d_msg("You don't have any landmark defined yet. Do nothing.");
 		return;
 	}
-	
+
 	imgData->saveLandmarkToFile();
 }
 
@@ -5253,23 +5253,23 @@ void XFormWidget::loadLandmarkFromFile() //080107
 		v3d_msg("You don't have the image data ready, - thus unable to import landmark. Do nothing.");
 		return;
 	}
-	
+
 	imgData->loadLandmarkFromFile();
-	
+
 	//update the related views
 	imgData->updateViews();
 }
 
-void XFormWidget::openLandmarkManager() 
+void XFormWidget::openLandmarkManager()
 {
 	if (!imgData)
 	{
 		v3d_msg("You don't have the image data yet. Do nothing.");
 		return;
 	}
-	
+
 	launchAtlasViewer(1);
-	
+
 	//update the related views
 	imgData->updateViews();
 }
@@ -5293,23 +5293,23 @@ void XFormWidget::launchAtlasViewer(int curTab)
 void XFormWidget::createMenuOfTriviewZoom()
 {
     QAction* Act;
-	
+
     Act = new QAction(tr("Zoom &In"), this);
     connect(Act, SIGNAL(triggered()), this, SLOT(triview_zoomin()));
     menuTriviewZoom.addAction(Act);
-	
+
     Act = new QAction(tr("Zoom &Out"), this);
     connect(Act, SIGNAL(triggered()), this, SLOT(triview_zoomout()));
     menuTriviewZoom.addAction(Act);
-	
+
     Act = new QAction(tr("x&1"), this);
     connect(Act, SIGNAL(triggered()), this, SLOT(triview_zoom1()));
     menuTriviewZoom.addAction(Act);
-	
+
     Act = new QAction(tr("x&2"), this);
     connect(Act, SIGNAL(triggered()), this, SLOT(triview_zoom2()));
     menuTriviewZoom.addAction(Act);
-	
+
     Act = new QAction(tr("x&0.5"), this);
     connect(Act, SIGNAL(triggered()), this, SLOT(triview_zoomhalf()));
     menuTriviewZoom.addAction(Act);
@@ -5317,7 +5317,7 @@ void XFormWidget::createMenuOfTriviewZoom()
 
 void XFormWidget::doMenuOfTriviewZoom()
 {
-	try 
+	try
 	{
 		menuTriviewZoom.exec(QCursor::pos());
 	}
@@ -5352,9 +5352,9 @@ void XFormWidget::triview_setzoom(double z, bool b_multiply) //b_multiply determ
 {
 	if (b_multiply)
 		disp_zoom *= z;
-	else 
+	else
 		disp_zoom = z;
-	
+
 	b_use_dispzoom = (fabs(disp_zoom-1)>0.01) ? true : false;
 	updateDataRelatedGUI();
 	QTimer::singleShot(200, this, SLOT(cascadeWindows())); //this is very important to ensure the events propogate through. 2010-01-29
@@ -5362,17 +5362,17 @@ void XFormWidget::triview_setzoom(double z, bool b_multiply) //b_multiply determ
 
 void XFormWidget::cascadeWindows()
 {
-	getMainControlWindow()->cascadeWindows(); 
+	getMainControlWindow()->cascadeWindows();
 }
 
 void XFormWidget::createMenuOf3DViewer()
 {
     QAction* Act;
-	
+
     Act = new QAction(tr("Entire image"), this);
     connect(Act, SIGNAL(triggered()), this, SLOT(doImage3DView()));
     menu3DViewer.addAction(Act);
-	
+
     Act = new QAction(tr("Region of Interest"), this);
     connect(Act, SIGNAL(triggered()), this, SLOT(doImage3DLocalRoiView()));
     menu3DViewer.addAction(Act);
@@ -5385,14 +5385,14 @@ void XFormWidget::doMenuOf3DViewer()
 		v3d_msg("Invalid 3D image data in doMenuOf3DViewer().");
 		return;
 	}
-	
-	if (imgData->getDatatype() != V3D_UINT8)
-	{
-		v3d_msg("Your data type is not UINT8 yet, - you will need to convert to UINT8 to see the data in 3D. Go to main menu \"Image/Data\" -> \"Image type\" to convert.");
-		return;
-	}
-	
-	try 
+
+//	if (imgData->getDatatype() != V3D_UINT8)
+//	{
+//		v3d_msg("Your data type is not UINT8 yet, - you will need to convert to UINT8 to see the data in 3D. Go to main menu \"Image/Data\" -> \"Image type\" to convert.");
+//		return;
+//	}
+
+	try
 	{
 		menu3DViewer.exec(QCursor::pos());
 	}
@@ -5410,12 +5410,12 @@ QList <LocationSimple> My4DImage::autoMarkerFromImg(V3DLONG chno, BoundingBox bb
 		v3d_msg("Now only support UINT8 type of data. Your data is not this type, or your channel info is not correct. Do nothing.\n");
 		return ql;
 	}
-	
+
 	//prepare input and output data
-	
+
 	Vol3DSimple <unsigned char> * tmp_inimg = 0;
 	Vol3DSimple <USHORTINT16> * tmp_outimg = 0;
-	
+
 	V3DLONG xb,yb,zb,xe,ye,ze;
 	if (bbox.x0<bbox.x1) {xb=bbox.x0; xe=bbox.x1;} else {xb=bbox.x1; xe=bbox.x0;}
 	if (bbox.y0<bbox.y1) {yb=bbox.y0; ye=bbox.y1;} else {yb=bbox.y1; ye=bbox.y0;}
@@ -5427,7 +5427,7 @@ QList <LocationSimple> My4DImage::autoMarkerFromImg(V3DLONG chno, BoundingBox bb
 	zb = qMin(qMax(zb,V3DLONG(0)), getZDim()-1);
 	ze = qMin(qMax(ze,V3DLONG(0)), getZDim()-1);
 	V3DLONG vsz0=xe-xb+1, vsz1=ye-yb+1, vsz2=ze-zb+1;
-	
+
 	try
 	{
 		tmp_inimg = new Vol3DSimple <unsigned char> (vsz0, vsz1, vsz2);
@@ -5440,7 +5440,7 @@ QList <LocationSimple> My4DImage::autoMarkerFromImg(V3DLONG chno, BoundingBox bb
 		if (tmp_outimg) {delete tmp_outimg; tmp_outimg=0;}
 		return ql;
 	}
-	
+
 	//copy data
 	unsigned char *** tmp_inimg3d = tmp_inimg->getData3dHandle();
 	unsigned char *** pCur3d = ((unsigned char ****)getData())[chno /*segpara.channo*/]; //does not allow changing the channo #
@@ -5450,7 +5450,7 @@ QList <LocationSimple> My4DImage::autoMarkerFromImg(V3DLONG chno, BoundingBox bb
 				for (V3DLONG i=xb;i<=xe;i++)
 					tmp_inimg3d[k-zb][j-yb][i-xb] = pCur3d[k][j][i];
 	}
-	
+
 	//define the template matching parameters
 	para_template_matching_cellseg segpara;
 	segpara.channo = chno;
@@ -5464,18 +5464,18 @@ QList <LocationSimple> My4DImage::autoMarkerFromImg(V3DLONG chno, BoundingBox bb
 	segpara.t_rgnval=20;
 	segpara.t_corrcoef=0.30; //thresholds
 	segpara.merge_radius = 20;
-	
+
 	//now set the two thresholds adaptively
 	double mean_val=0, std_val=0;
 	data_array_mean_and_std(tmp_inimg->getData1dHandle(), tmp_inimg->getTotalElementNumber(), mean_val, std_val);
 	segpara.t_pixval=qMax(double(150.0), mean_val+3.0*std_val);
 	segpara.t_rgnval=qMax(double(20.0), mean_val+1.0*std_val);
-	
+
 	//use dialog to select seg parameters
 	para_template_matching_cellseg_dialog *p_mydlg=0;
 	if (!p_mydlg) p_mydlg = new para_template_matching_cellseg_dialog(getCDim(), &segpara);
 	p_mydlg->setEnabledChannelField(false); //does not allow to change the channel no any more
-	
+
 	int res = p_mydlg->exec();
 	if (res!=QDialog::Accepted)
 	{
@@ -5486,7 +5486,7 @@ QList <LocationSimple> My4DImage::autoMarkerFromImg(V3DLONG chno, BoundingBox bb
 	else
 		p_mydlg->fetchData(&segpara);
 	if (p_mydlg) {delete p_mydlg; p_mydlg=0;}
-	
+
 	//do computation
 	bool b_res = template_matching_seg(tmp_inimg, tmp_outimg, segpara);
 	if (!b_res)
@@ -5496,7 +5496,7 @@ QList <LocationSimple> My4DImage::autoMarkerFromImg(V3DLONG chno, BoundingBox bb
 	else
 	{
 		USHORTINT16 * tmpImg_d1d = (USHORTINT16 *)(tmp_outimg->getData1dHandle());
-		
+
 		//display new images
 		LocationSimple * p_ano = 0;
 		V3DLONG n_objects = 0;
@@ -5505,7 +5505,7 @@ QList <LocationSimple> My4DImage::autoMarkerFromImg(V3DLONG chno, BoundingBox bb
 			v3d_msg("Some errors happen during the computation of image objects' statistics. The annotation is not generated.");
 			return ql;
 		}
-		
+
 		for (V3DLONG i=1;i<n_objects;i++) //do not process 0 values, as it is background. Thus starts from 1
 		{
 			p_ano[i].x += xb;
@@ -5519,11 +5519,11 @@ QList <LocationSimple> My4DImage::autoMarkerFromImg(V3DLONG chno, BoundingBox bb
 		//finally save to image and mask and linker file
 		if (p_ano) {delete []p_ano; p_ano=0;}
 	}
-	
+
 	//free unneeded variables
 	if (tmp_inimg) {delete tmp_inimg; tmp_inimg=0;}
 	if (tmp_outimg) {delete tmp_outimg; tmp_outimg=0;}
-	
+
 	return ql;
 }
 
@@ -5555,85 +5555,85 @@ void LandmarkPropertyDialog::updateContent(const QList <LocationSimple> *p_anoTa
 		printf("anoTable is not valid in LandmarkPropertyDialog::fetchData().\n");
 		return;
 	}
-	
+
 	if (curRowNum>=p_anoTable->count())
 	{
 		printf("The index [=%d] is bigger than the size of the list [=%d].\n", curRow, anoTable->count());
 		return;
 	}
-	
-	
+
+
 	imgdata = p_imgdata;
 	anoTable = (QList <LocationSimple> *)p_anoTable;
 	curRow = curRowNum;
 	create();
-	
+
 	QString tmp;
-	
+
 	const LocationSimple *p_landmark = &(anoTable->at(curRow));
-	
+
 	//landmark name/comments/annoattions
-	
+
 	if (curRow==0 && anoTable->size()==1)
 		order->setText(tmp.setNum(curRow+1).prepend("No.") + " or new landmark"); //curRow
 	else
 		order->setText(tmp.setNum(curRow+1)); //curRow
-	
+
 	name->setText(p_landmark->name.c_str());
 	comment->setText(p_landmark->comments.c_str());
-	
+
 	//landmark geometry
-	
+
 	coord_z->setText(tmp.setNum(int(p_landmark->z)));
 	coord_x->setText(tmp.setNum(int(p_landmark->x)));
 	coord_y->setText(tmp.setNum(int(p_landmark->y)));
 	radius->setText(tmp.setNum(int(p_landmark->radius)));
-	
+
 	if (int(p_landmark->shape)>=landmark_shape->count())
 	{
 		qDebug("Warning: your landmark shape type is not compatible with the combobox list. Unset it.\n");
-		landmark_shape->setCurrentIndex(0); //the first one is call "unset" 
+		landmark_shape->setCurrentIndex(0); //the first one is call "unset"
 	}
 	else
-		landmark_shape->setCurrentIndex(int(p_landmark->shape)); 
-	
-	
+		landmark_shape->setCurrentIndex(int(p_landmark->shape));
+
+
 	//pixel intensity
-	
+
 	if (imgdata)
-	{	
+	{
 		int nc = imgdata->getCDim();
 		pix_val_red->setText(tmp.setNum(int(imgdata->at(int(p_landmark->x-1), int(p_landmark->y-1), int(p_landmark->z-1), 0))));
-		if (nc>=2) 
+		if (nc>=2)
 			pix_val_green->setText(tmp.setNum(int(imgdata->at(int(p_landmark->x-1), int(p_landmark->y-1), int(p_landmark->z-1), 1))));
 		else
 			pix_val_green->setText(tmp.setNum(0));
-		if (nc>=3) 
+		if (nc>=3)
 			pix_val_blue->setText(tmp.setNum(int(imgdata->at(int(p_landmark->x-1), int(p_landmark->y-1), int(p_landmark->z-1), 2))));
 		else
 			pix_val_blue->setText(tmp.setNum(0));
-		if (nc>=4) 
+		if (nc>=4)
 			pix_val_ch4->setText(tmp.setNum(int(imgdata->at(int(p_landmark->x-1), int(p_landmark->y-1), int(p_landmark->z-1), 3))));
 		else
 			pix_val_ch4->setText(tmp.setNum(0));
-		if (nc>=5) 
+		if (nc>=5)
 			pix_val_ch5->setText(tmp.setNum(int(imgdata->at(int(p_landmark->x-1), int(p_landmark->y-1), int(p_landmark->z-1), 4))));
 		else
 			pix_val_ch5->setText(tmp.setNum(0));
-		
+
 		//landmark surrounding area statistics
-		
+
 		statistics_channel->setRange(1, nc);
 		//compute the stat of surrounding rgn
-		
+
 		int tmp_vv =int(imgdata->at(int(p_landmark->x-1), int(p_landmark->y-1), int(p_landmark->z-1), 0));
-		
+
 		val_peak->setText(tmp.setNum(tmp_vv));
 		val_mean->setText(tmp.setNum(tmp_vv));
 		val_stddev->setText(tmp.setNum(0));
 		val_size->setText(tmp.setNum(1));
 		val_mass->setText(tmp.setNum(tmp_vv));
-		
+
 		//now do computation
 		compute_rgn_stat();
 	}
@@ -5644,9 +5644,9 @@ void LandmarkPropertyDialog::updateContent(const QList <LocationSimple> *p_anoTa
 		pix_val_blue->setText("Unset");
 		pix_val_ch4->setText("Unset");
 		pix_val_ch5->setText("Unset");
-		
+
 		//landmark surrounding area statistics
-		
+
 		statistics_channel->setRange(0, 0);
 		//compute the stat of surrounding rgn
 		val_peak->setText("Unset");
@@ -5655,9 +5655,9 @@ void LandmarkPropertyDialog::updateContent(const QList <LocationSimple> *p_anoTa
 		val_size->setText("Unset");
 		val_mass->setText("Unset");
 	}
-	
+
 	//set read/write property
-	
+
 	order->setReadOnly(true);
 	coord_z->setReadOnly(true);
 	coord_x->setReadOnly(true);
@@ -5681,23 +5681,23 @@ void LandmarkPropertyDialog::fetchData(QList <LocationSimple>  *anoTable, int cu
 		printf("anoTable is not valid in LandmarkPropertyDialog::fetchData().\n");
 		return;
 	}
-	
+
 	if (curRow>=anoTable->count())
 	{
 		printf("The index [=%d] is bigger than the size of the list [=%d].\n", curRow, anoTable->count());
 		return;
 	}
-	
+
 	LocationSimple *p_landmark = (LocationSimple *) &(anoTable->at(curRow));
-	
+
 	//landmark name/comments/annoattions
-	
+
 	//order->setText(tmp.setNum(curRow));
 	p_landmark->name = qPrintable(name->text());
 	p_landmark->comments = qPrintable(comment->text());
-	
+
 	//landmark geometry
-	
+
 	p_landmark->x = coord_x->text().toDouble();
 	p_landmark->y = coord_y->text().toDouble();
 	p_landmark->z = coord_z->text().toDouble();
@@ -5708,46 +5708,46 @@ void LandmarkPropertyDialog::fetchData(QList <LocationSimple>  *anoTable, int cu
 void LandmarkPropertyDialog::create()
 {
 	setupUi(this);
-	
+
 	connect(okButton, SIGNAL(clicked()), this, SLOT(accept()));
 	connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
-	
+
 	//	radius->setInputMask(tr("999")); //only allow three degits, each is 0~9
 	connect(radius, SIGNAL(editingFinished()), this, SLOT(compute_rgn_stat()));
 	connect(landmark_shape, SIGNAL(currentIndexChanged(int)), this, SLOT(compute_rgn_stat(int)));
-	
+
 	connect(statistics_channel, SIGNAL(valueChanged(int)), this, SLOT(compute_rgn_stat(int)));
 }
 
 void LandmarkPropertyDialog::compute_rgn_stat(int c) //overload for convenience
 {
-	compute_rgn_stat(); 
+	compute_rgn_stat();
 }
 
 void LandmarkPropertyDialog::compute_rgn_stat()
 {
 	if (!imgdata || !imgdata->valid()) return;
-	
+
 	LocationSimple pt;
-	
+
 	pt.x = coord_x->text().toInt()-1;
 	pt.y = coord_y->text().toInt()-1;
 	pt.z = coord_z->text().toInt()-1;
 	V3DLONG cc = statistics_channel->value()-1; if (cc<0) cc=0; if (cc>=imgdata->getCDim()) cc=imgdata->getCDim()-1;
 	pt.radius = (radius->text().toDouble()>=0)?radius->text().toDouble():0;
 	pt.shape = PxLocationMarkerShape(landmark_shape->currentIndex());
-	
+
 	//now do the computation
 	if (imgdata->compute_rgn_stat(pt, cc)==true)
 	{
-		//now update the value of the respective 
+		//now update the value of the respective
 		QString tmp;
 		val_peak->setText(tmp.setNum(pt.pixmax));
 		val_mean->setText(tmp.setNum(pt.ave));
 		val_stddev->setText(tmp.setNum(pt.sdev));
 		val_size->setText(tmp.setNum(pt.size));
-		val_mass->setText(tmp.setNum(pt.mass));	
-		
+		val_mass->setText(tmp.setNum(pt.mass));
+
 		if (pt.ev_pc1==VAL_INVALID && pt.ev_pc2==VAL_INVALID && pt.ev_pc3==VAL_INVALID)
 		{
 			val_pc1_d->setText("uncomputed");
@@ -5755,7 +5755,7 @@ void LandmarkPropertyDialog::compute_rgn_stat()
 			val_pc3_d->setText("uncomputed");
 		}
 		else
-		{	
+		{
 			val_pc1_d->setText(tmp.setNum(sqrt(pt.ev_pc1)));
 			val_pc2_d->setText(tmp.setNum(sqrt(pt.ev_pc2)));
 			val_pc3_d->setText(tmp.setNum(sqrt(pt.ev_pc3)));

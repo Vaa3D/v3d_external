@@ -329,6 +329,22 @@ void setRGB3dUINT8(unsigned char* data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3
 		V3DLONG x, V3DLONG y, V3DLONG z, RGB8 tmp);
 
 
+void data4dp_to_rgba3d(Image4DProxy<Image4DSimple>& img4dp, V3DLONG dim5,
+		V3DLONG start1, V3DLONG start2, V3DLONG start3, V3DLONG start4,
+		V3DLONG size1, V3DLONG size2, V3DLONG size3, V3DLONG size4,
+		RGBA8* rgbaBuf, V3DLONG bufSize[5]);
+float sampling3dUINT8(Image4DProxy<Image4DSimple>& img4dp,
+		V3DLONG c,
+		V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG dx, V3DLONG dy, V3DLONG dz);
+//float sampling3dUINT8at(Image4DProxy<Image4DSimple>& data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3,
+//		float x, float y, float z);
+//float sampling3dUINT8atBounding(Image4DProxy<Image4DSimple>& data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3,
+//		float x, float y, float z,
+//		const float box[6], //bounding box
+//		const double clip[4]=0 //clip plane, keep for dot(clip, pos)>=0
+//		);
+
+
 //////////////////////////////////////////////////////////////////////////////////////
 // GL operator
 

@@ -708,7 +708,7 @@ void Renderer::disableViewClipPlane()
 
 unsigned char* createSimulatedData(V3DLONG dim1, V3DLONG dim2, V3DLONG dim3, V3DLONG dim4, V3DLONG dim5)
 {
-	// data4d_uint8[c][t*z][y][x]
+	// TIME_PACK_Z:  [c][t*z][y][x]
 
 	V3DLONG dimx = dim1;
 	V3DLONG dimy = dim2;
@@ -759,6 +759,121 @@ void getLimitedSampleScaleBufSize(V3DLONG dim1, V3DLONG dim2, V3DLONG dim3, V3DL
 	bs[4] = dim5;
 }
 
+void rgba3d_r2gray(RGBA8* rgbaBuf, V3DLONG bufSize[5])
+{
+	if (rgbaBuf==0 || bufSize==0)
+		return;
+
+	// copy R to G,B
+	V3DLONG imageX, imageY, imageZ, imageC, imageT;
+	{
+		imageX = bufSize[0];
+		imageY = bufSize[1];
+		imageZ = bufSize[2];
+		imageC = 4;
+		imageT = bufSize[4];
+	}
+	if (imageX*imageY*imageZ==0)
+		return;
+
+	V3DLONG ot;
+	V3DLONG ox, oy, oz;
+	for (ot=0; ot<imageT; ot++)
+	for (oz = 0; oz < imageZ; oz++)
+	for (oy = 0; oy < imageY; oy++)
+	for (ox = 0; ox < imageX; ox++)
+		{
+			RGBA8 rgba;
+			V3DLONG p = ot*(imageZ*imageY*imageX) + oz*(imageY*imageX) + oy*(imageX) + ox;
+
+			rgba = rgbaBuf[p];
+			rgbaBuf[p].g = rgba.r;
+			rgbaBuf[p].b = rgba.r;
+		}
+}
+
+void data4dp_to_rgba3d(Image4DProxy<Image4DSimple>& img4dp, V3DLONG dim5,
+		V3DLONG start1, V3DLONG start2, V3DLONG start3, V3DLONG start4,
+		V3DLONG size1, V3DLONG size2, V3DLONG size3, V3DLONG size4,
+		RGBA8* rgbaBuf, V3DLONG bufSize[5])
+{
+	if (rgbaBuf==0 || bufSize==0)
+		return;
+
+	V3DLONG dim1=img4dp.sx; V3DLONG dim2=img4dp.sy; V3DLONG dim3=img4dp.sz;
+	V3DLONG dim4=img4dp.sc;
+	#define SAMPLE(it, ic, ix,iy,iz, dx,dy,dz) \
+				(unsigned char)sampling3dUINT8( img4dp, (it*dim4 + ic), \
+												ix, iy, iz, dx, dy, dz )
+
+	// only convert 1<=dim4<=4 ==> RGBA
+	V3DLONG imageX, imageY, imageZ, imageC, imageT;
+	{
+		imageX = bufSize[0];
+		imageY = bufSize[1];
+		imageZ = bufSize[2];
+		imageC = MIN(4, size4); // <=4
+		imageT = bufSize[4];
+	}
+	if (imageX*imageY*imageZ*imageC*imageT==0)
+		return;
+
+	float sx, sy, sz;
+	V3DLONG dx, dy, dz;
+	sx = float(size1) / imageX;
+	sy = float(size2) / imageY;
+	sz = float(size3) / imageZ;
+	dx = V3DLONG(sx);
+	dy = V3DLONG(sy);
+	dz = V3DLONG(sz);
+	MESSAGE_ASSERT(dx*dy*dz >=1); //down sampling
+
+	V3DLONG ot;
+	V3DLONG ox, oy, oz;
+	V3DLONG ix, iy, iz;
+	for (ot=0; ot<imageT; ot++)
+	for (oz = 0; oz < imageZ; oz++)
+	for (oy = 0; oy < imageY; oy++)
+	for (ox = 0; ox < imageX; ox++)
+		{
+			ix = start1+ CLAMP(0,dim1-1, IROUND(ox*sx));
+			iy = start2+ CLAMP(0,dim2-1, IROUND(oy*sy));
+			iz = start3+ CLAMP(0,dim3-1, IROUND(oz*sz));
+
+			RGBA8 rgba;
+
+			if (imageC >= 1) {
+				rgba.r = SAMPLE(ot, 0, ix,iy,iz, dx,dy,dz);
+			} else {
+				rgba.r = 0;
+			}
+
+			if (imageC >= 2) {
+				rgba.g = SAMPLE(ot, 1, ix,iy,iz, dx,dy,dz);
+			} else {
+				rgba.g = 0;
+			}
+
+			if (imageC >= 3) {
+				rgba.b = SAMPLE(ot, 2, ix,iy,iz, dx,dy,dz);
+			} else {
+				rgba.b = 0;
+			}
+
+			if (imageC >= 4) {
+				rgba.a = SAMPLE(ot, 3, ix,iy,iz, dx,dy,dz);
+			} else {
+				float t = //MAX(rgba.r, MAX(rgba.g, rgba.b));
+							((0.f + rgba.r + rgba.g + rgba.b) / imageC);
+				rgba.a = (unsigned char)t;
+							//(unsigned char)(t*t/255);
+							//(unsigned char)(sqrt(t/255)*255);
+			}
+
+			rgbaBuf[ot*(imageZ*imageY*imageX) + oz*(imageY*imageX) + oy*(imageX) + ox] = rgba;
+		}
+}
+
 void data4dp_to_rgba3d(unsigned char* data4dp, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3, V3DLONG dim4, V3DLONG dim5,
 		V3DLONG start1, V3DLONG start2, V3DLONG start3, V3DLONG start4,
 		V3DLONG size1, V3DLONG size2, V3DLONG size3, V3DLONG size4,
@@ -767,8 +882,9 @@ void data4dp_to_rgba3d(unsigned char* data4dp, V3DLONG dim1, V3DLONG dim2, V3DLO
 	if (data4dp==0 || rgbaBuf==0 || bufSize==0)
 		return;
 
-	V3DLONG in_block_size = dim3*dim2*dim1;
-	#define SAMPLE(it, ic, ix,iy,iz, dx,dy,dz) 	(unsigned char)sampling3dUINT8( data4dp+ (it*dim4 + ic)*in_block_size, \
+	//V3DLONG block_size = dim3*dim2*dim1;
+	#define SAMPLE(it, ic, ix,iy,iz, dx,dy,dz) \
+				(unsigned char)sampling3dUINT8( data4dp+ (it*dim4 + ic)*(dim3*dim2*dim1), \
 												dim1, dim2, dim3, ix, iy, iz, dx, dy, dz )
 
 	// only convert 1<=dim4<=4 ==> RGBA
@@ -797,111 +913,73 @@ void data4dp_to_rgba3d(unsigned char* data4dp, V3DLONG dim1, V3DLONG dim2, V3DLO
 	V3DLONG ox, oy, oz;
 	V3DLONG ix, iy, iz;
 	for (ot=0; ot<imageT; ot++)
-		for (oz = 0; oz < imageZ; oz++)
-		for (oy = 0; oy < imageY; oy++)
-		for (ox = 0; ox < imageX; ox++)
-			{
-				ix = start1+ CLAMP(0,dim1-1, IROUND(ox*sx));
-				iy = start2+ CLAMP(0,dim2-1, IROUND(oy*sy));
-				iz = start3+ CLAMP(0,dim3-1, IROUND(oz*sz));
-
-				RGBA8 rgba;
-
-				if (imageC >= 1) {
-					rgba.r = SAMPLE(ot, 0, ix,iy,iz, dx,dy,dz);
-				} else {
-					rgba.r = 0;
-				}
-
-				if (imageC >= 2) {
-					rgba.g = SAMPLE(ot, 1, ix,iy,iz, dx,dy,dz);
-				} else {
-					rgba.g = 0;
-				}
-
-				if (imageC >= 3) {
-					rgba.b = SAMPLE(ot, 2, ix,iy,iz, dx,dy,dz);
-				} else {
-					rgba.b = 0;
-				}
-
-				if (imageC >= 4) {
-					rgba.a = SAMPLE(ot, 3, ix,iy,iz, dx,dy,dz);
-				} else {
-					float t = //MAX(rgba.r, MAX(rgba.g, rgba.b));
-								((0.f + rgba.r + rgba.g + rgba.b) / imageC);
-					rgba.a = (unsigned char)t;
-								//(unsigned char)(t*t/255);
-								//(unsigned char)(sqrt(t/255)*255);
-				}
-
-				rgbaBuf[ot*(imageZ*imageY*imageX) + oz*(imageY*imageX) + oy*(imageX) + ox] = rgba;
-			}
-}
-
-void rgba3d_r2gray(RGBA8* rgbaBuf, V3DLONG bufSize[5])
-{
-	if (rgbaBuf==0 || bufSize==0)
-		return;
-
-	// copy R to G,B
-	V3DLONG imageX, imageY, imageZ, imageC, imageT;
-	{
-		imageX = bufSize[0];
-		imageY = bufSize[1];
-		imageZ = bufSize[2];
-		imageC = 4;
-		imageT = bufSize[4];
-	}
-	if (imageX*imageY*imageZ==0)
-		return;
-
-	V3DLONG ot;
-	V3DLONG ox, oy, oz;
-	for (ot=0; ot<imageT; ot++)
-		for (oz = 0; oz < imageZ; oz++)
-		for (oy = 0; oy < imageY; oy++)
-		for (ox = 0; ox < imageX; ox++)
-			{
-				RGBA8 rgba;
-				V3DLONG p = ot*(imageZ*imageY*imageX) + oz*(imageY*imageX) + oy*(imageX) + ox;
-
-				rgba = rgbaBuf[p];
-				rgbaBuf[p].g = rgba.r;
-				rgbaBuf[p].b = rgba.r;
-			}
-}
-
-
-
-// 090602 RZC: inline cannot be used in *.cpp but in *.h? or cannot with struct data parameters
-//inline
-RGB8 getRGB3dUINT8(unsigned char* data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3, V3DLONG dim4,
-		V3DLONG x, V3DLONG y, V3DLONG z)
-{
-	RGB8 tmp;
-	tmp.r=tmp.g=tmp.b= 0;
-	if (x>=0 && y>=0 && z>=0 && x<dim1 && y<dim2 && z<dim3)
-	{
-		for (V3DLONG ci=0; ci<3 && ci<dim4; ci++)
+	for (oz = 0; oz < imageZ; oz++)
+	for (oy = 0; oy < imageY; oy++)
+	for (ox = 0; ox < imageX; ox++)
 		{
-			tmp.c[ci] = (data + ci*(dim3*dim2*dim1)) [(z)*dim2*dim1 + (y)*dim1 + (x)];
+			ix = start1+ CLAMP(0,dim1-1, IROUND(ox*sx));
+			iy = start2+ CLAMP(0,dim2-1, IROUND(oy*sy));
+			iz = start3+ CLAMP(0,dim3-1, IROUND(oz*sz));
+
+			RGBA8 rgba;
+
+			if (imageC >= 1) {
+				rgba.r = SAMPLE(ot, 0, ix,iy,iz, dx,dy,dz);
+			} else {
+				rgba.r = 0;
+			}
+
+			if (imageC >= 2) {
+				rgba.g = SAMPLE(ot, 1, ix,iy,iz, dx,dy,dz);
+			} else {
+				rgba.g = 0;
+			}
+
+			if (imageC >= 3) {
+				rgba.b = SAMPLE(ot, 2, ix,iy,iz, dx,dy,dz);
+			} else {
+				rgba.b = 0;
+			}
+
+			if (imageC >= 4) {
+				rgba.a = SAMPLE(ot, 3, ix,iy,iz, dx,dy,dz);
+			} else {
+				float t = //MAX(rgba.r, MAX(rgba.g, rgba.b));
+							((0.f + rgba.r + rgba.g + rgba.b) / imageC);
+				rgba.a = (unsigned char)t;
+							//(unsigned char)(t*t/255);
+							//(unsigned char)(sqrt(t/255)*255);
+			}
+
+			rgbaBuf[ot*(imageZ*imageY*imageX) + oz*(imageY*imageX) + oy*(imageX) + ox] = rgba;
 		}
-	}
-	return tmp;
 }
 
-//inline
-void setRGB3dUINT8(unsigned char* data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3, V3DLONG dim4,
-		V3DLONG x, V3DLONG y, V3DLONG z, RGB8 tmp)
+// 090602 RZC: inline cannot be used in *.cpp but in *.h
+
+float sampling3dUINT8(Image4DProxy<Image4DSimple>& img4dp,
+		V3DLONG c,
+		V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG dx, V3DLONG dy, V3DLONG dz)
 {
-	if (x>=0 && y>=0 && z>=0 && x<dim1 && y<dim2 && z<dim3)
+	V3DLONG dim1=img4dp.sx; V3DLONG dim2=img4dp.sy; V3DLONG dim3=img4dp.sz;
+	float avg = 0;
+	float d = (dx*dy*dz);
+	if (d>0 && x>=0 && y>=0 && z>=0 && x+dx<=dim1 && y+dy<=dim2 && z+dz<=dim3)
 	{
-		for (V3DLONG ci=0; ci<3 && ci<dim4; ci++)
+		//float s = 0;
+		V3DLONG xi,yi,zi;
+		for (zi=0; zi<dz; zi++)
+		for (yi=0; yi<dy; yi++)
+		for (xi=0; xi<dx; xi++)
 		{
-			(data + ci*(dim3*dim2*dim1)) [(z)*dim2*dim1 + (y)*dim1 + (x)] = tmp.c[ci];
+			//float w = MAX( (2-ABS(xi-0.5*dx)*2.0/dx), MAX( (2-ABS(yi-0.5*dy)*2.0/dy), (2-ABS(zi-0.5*dz)*2.0/dz) )); //090712
+			//s += w;
+			avg += img4dp.value8bit_at(x,y,z,c);// *w;
 		}
+		//d = s;
+		avg /= d;
 	}
+	return avg;
 }
 
 //inline
@@ -915,13 +993,13 @@ float sampling3dUINT8(unsigned char* data, V3DLONG dim1, V3DLONG dim2, V3DLONG d
 		//float s = 0;
 		V3DLONG xi,yi,zi;
 		for (zi=0; zi<dz; zi++)
-			for (yi=0; yi<dy; yi++)
-				for (xi=0; xi<dx; xi++)
-				{
-					//float w = MAX( (2-ABS(xi-0.5*dx)*2.0/dx), MAX( (2-ABS(yi-0.5*dy)*2.0/dy), (2-ABS(zi-0.5*dz)*2.0/dz) )); //090712
-					//s += w;
-					avg += data[(z + zi)*dim2*dim1 + (y + yi)*dim1 + (x	+ xi)];// *w;
-				}
+		for (yi=0; yi<dy; yi++)
+		for (xi=0; xi<dx; xi++)
+		{
+			//float w = MAX( (2-ABS(xi-0.5*dx)*2.0/dx), MAX( (2-ABS(yi-0.5*dy)*2.0/dy), (2-ABS(zi-0.5*dz)*2.0/dz) )); //090712
+			//s += w;
+			avg += data[(z + zi)*dim2*dim1 + (y + yi)*dim1 + (x	+ xi)];// *w;
+		}
 		//d = s;
 		avg /= d;
 	}
@@ -939,15 +1017,15 @@ RGBA32f sampling3dRGBA8(/*RGBA32f& sample,*/ RGBA8* data, V3DLONG dim1, V3DLONG 
 	{
 		V3DLONG xi,yi,zi;
 		for (zi=0; zi<dz; zi++)
-			for (yi=0; yi<dy; yi++)
-				for (xi=0; xi<dx; xi++)
-				{
-					RGBA8 tmp = data[(z + zi)*dim2*dim1 + (y + yi)*dim1 + (x + xi)];
-					avg.r += tmp.r;
-					avg.g += tmp.g;
-					avg.b += tmp.b;
-					avg.a += tmp.a;
-				}
+		for (yi=0; yi<dy; yi++)
+		for (xi=0; xi<dx; xi++)
+		{
+			RGBA8 tmp = data[(z + zi)*dim2*dim1 + (y + yi)*dim1 + (x + xi)];
+			avg.r += tmp.r;
+			avg.g += tmp.g;
+			avg.b += tmp.b;
+			avg.a += tmp.a;
+		}
 		avg.r /= d;
 		avg.g /= d;
 		avg.b /= d;
@@ -1066,6 +1144,36 @@ RGBA32f sampling3dRGBA8at(RGBA8* data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3,
 	}
 	return (sum);
 }
+
+//inline
+RGB8 getRGB3dUINT8(unsigned char* data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3, V3DLONG dim4,
+		V3DLONG x, V3DLONG y, V3DLONG z)
+{
+	RGB8 tmp;
+	tmp.r=tmp.g=tmp.b= 0;
+	if (x>=0 && y>=0 && z>=0 && x<dim1 && y<dim2 && z<dim3)
+	{
+		for (V3DLONG ci=0; ci<3 && ci<dim4; ci++)
+		{
+			tmp.c[ci] = (data + ci*(dim3*dim2*dim1)) [(z)*dim2*dim1 + (y)*dim1 + (x)];
+		}
+	}
+	return tmp;
+}
+
+//inline
+void setRGB3dUINT8(unsigned char* data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3, V3DLONG dim4,
+		V3DLONG x, V3DLONG y, V3DLONG z, RGB8 tmp)
+{
+	if (x>=0 && y>=0 && z>=0 && x<dim1 && y<dim2 && z<dim3)
+	{
+		for (V3DLONG ci=0; ci<3 && ci<dim4; ci++)
+		{
+			(data + ci*(dim3*dim2*dim1)) [(z)*dim2*dim1 + (y)*dim1 + (x)] = tmp.c[ci];
+		}
+	}
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 #define __drawing_operators__

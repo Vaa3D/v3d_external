@@ -45,7 +45,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  * Last edit: 2010-Aug-1: add a function to determine if the data buffers of two images are exactly the same (but not their contents!)
  * Last edit: 2010-Aug-3: add the put_at() function for Image4DProxy class
  * Last edit: 2010-Aug-10: virtual destructor for other virtual functions in Image4DSimple
- * Last edit: 2010-Aug-31: PHC. move private members to protected to fix the hackers' bug!.  
+ * Last edit: 2010-Aug-31: PHC. move private members to protected to fix the hackers' bug!.
  * Last edit: 2010-Oct-06. PHC. add the original_x,y,z fields
  * Last edit: 2010-Oct-7. PHC. add a customary void pointer for a unknown struct for parameters passing of plugins
  *
@@ -55,12 +55,13 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef _BASIC_4DIMAGE_H_
 #define _BASIC_4DIMAGE_H_
 
+#include <vector>
 #include "v3d_basicdatatype.h"
 
 class Image4DSimple
 {
 public:
-	Image4DSimple() 
+	Image4DSimple()
 	{
 		data1d = 0;
 		sz0 = sz1 = sz2 = sz3 = 0;
@@ -70,11 +71,11 @@ public:
 		imgSrcFile[0] = '\0';
 		b_error = 0;
 		rez_x = rez_y = rez_z = 1;
-		
+
 		origin_x = origin_y = origin_z = 0;
 		p_customStruct = 0;
 	}
-	virtual ~Image4DSimple() 
+	virtual ~Image4DSimple()
 	{
 		cleanExistData();
 	}
@@ -89,7 +90,7 @@ public:
 		b_error = 0;
 		rez_x = rez_y = rez_z = 1;
 	}
-	
+
 	//main interface to the data
 	unsigned char * getRawData() {return data1d;}
 	V3DLONG getXDim() {return sz0;}
@@ -138,7 +139,7 @@ public:
 	double getOriginX() {return origin_x;}
 	double getOriginY() {return origin_y;}
 	double getOriginZ() {return origin_z;}
-	
+
 	void setXDim(V3DLONG v) {sz0=v;}
 	void setYDim(V3DLONG v) {sz1=v;}
 	void setZDim(V3DLONG v) {sz2=v;}
@@ -156,11 +157,11 @@ public:
 	void setOriginX(double a) { origin_x = a;}
 	void setOriginY(double a) { origin_y = a;}
 	void setOriginZ(double a) { origin_z = a;}
-	
+
 	void setCustomStructPointer(void *a) {p_customStruct = a;}
 	void * getCustomStructPointer() {return p_customStruct;}
 	bool isValidCustomStructPointer() {return (p_customStruct!=0)?true:false;}
-	
+
 	//this function is the main place to call if you want to set your own 1d pointer data to this data structure
 	bool setData(unsigned char *p, Image4DSimple * image )
 	{
@@ -181,7 +182,7 @@ public:
 			}
 		return false;
 	}
-	
+
 	bool setFileName(const char * myfile)
 	{
 		if (!myfile) return false;
@@ -203,7 +204,7 @@ public:
 		return true;
 	}
 	const char * getFileName() const { return imgSrcFile; }
-	
+
 	//to call the following 4 functions you must link your project with basic_4dimage.cpp
 	//Normally for the plugin interfaces you don't need to call the following functions
 	void loadImage(char filename[]);
@@ -211,7 +212,7 @@ public:
 	bool saveImage(const char filename[]);
 	bool createImage(V3DLONG mysz0, V3DLONG mysz1, V3DLONG mysz2, V3DLONG mysz3, ImagePixelType mytype);
 	void createBlankImage(V3DLONG imgsz0, V3DLONG imgsz1, V3DLONG imgsz2, V3DLONG imgsz3, int imgdatatype);
-	
+
 	//a function to check if the data buffer is the same as another image
 	bool isSameDataBuffer( Image4DSimple *p)
 	{
@@ -225,10 +226,10 @@ public:
 			else return true;
 		}
 	}
-	
+
 protected:
 	void setError( int v ) {b_error = v;}
-	
+
 	unsigned char * data1d;
 	V3DLONG sz0;
 	V3DLONG sz1;
@@ -241,9 +242,9 @@ protected:
 	int b_error;
 	double rez_x, rez_y, rez_z; //the resolution of a image pixel along the 3 axes
 	double origin_x, origin_y, origin_z; //the "true" orgin of an image, in term of the physical units (not pixels) using resolution information
-	
+
 	void * p_customStruct; //a convenient pointer to pass back and forth some useful parameter information for a plugin
-	
+
 private:
 };
 
@@ -253,6 +254,7 @@ bool convert_data_to_8bit(void * &img, V3DLONG * sz, int datatype);
 template<class T> class Image4DProxy
 {
 public:
+	std::vector<double> vmin, vmax;
 	T *img0;
 	uint8* data_p;
 	V3DLONG nbytes, su, sx, sy, sz, sc;
@@ -305,9 +307,9 @@ public:
 		double v;
 		switch (su)
 		{
-			case 1: v = (double)(*at(x,y,z,c)); break;
-			case 2: v = (double)(*(uint16 *)at(x,y,z,c)); break;
 			case 4: v = (double)(*(float32 *)at(x,y,z,c)); break;
+			case 2: v = (double)(*(uint16 *)at(x,y,z,c)); break;
+			case 1:
 			default: v = (double)(*at(x,y,z,c)); break;
 		}
 		return v;
@@ -316,19 +318,77 @@ public:
 	{
 		switch (su)
 		{
-			case 1: *at_uint8(x,y,z,c) = (uint8)v; break;
-			case 2: *at_uint16(x,y,z,c) = (uint16)v; break;
 			case 4: *at_float32(x,y,z,c) = (float32)v; break;
+			case 2: *at_uint16(x,y,z,c) = (uint16)v; break;
+			case 1:
 			default: *at_uint8(x,y,z,c) = (uint8)v; break;
+		}
+	}
+	inline bool has_minmax()
+	{
+		return vmin.size()==sc && vmax.size()==sc && su>1;
+	}
+	inline uint8 value8bit_at(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c)
+	{
+		//double v = value_at(x,y,z);
+		double v;
+		switch (su)
+		{
+			case 4: v = (double)(*(float32 *)at(x,y,z,c)); break;
+			case 2: v = (double)(*(uint16 *)at(x,y,z,c)); break;
+			case 1:
+			default: v = (double)(*at(x,y,z,c)); break;
+		}
+		if (has_minmax())
+		{
+			double r = 255./(vmax[c]-vmin[c]);
+			v = (v-vmin[c])*r;
+		}
+		return (uint8)v;
+	}
+	inline void put8bit_fit_at(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c, uint8 v)
+	{
+		switch (su)
+		{
+		case 4:
+			{
+				double vv = v;
+				if (has_minmax())
+				{
+					double r = (vmax[c]-vmin[c])/255.;
+					vv = vmin[c]+(vv*r);
+				}
+				else {
+					double r = 1/255.;
+					vv = vv*r;
+				}
+				*at_float32(x,y,z,c) = (float32)vv;
+			} break;
+		case 2:
+			{
+				double vv = v;
+				if (has_minmax())
+				{
+					double r = (vmax[c]-vmin[c])/255.;
+					vv = vmin[c]+(vv*r);
+				}
+				else {
+					double r = 0xffff/255.;
+					vv = vv*r;
+				}
+				*at_uint16(x,y,z,c) = (uint16)v;
+			} break;
+		case 1:
+		default: *at_uint8(x,y,z,c) = (uint8)v; break;
 		}
 	}
 };
 
 #define Image4DProxy_foreach(p, x,y,z,c) \
-for (V3DLONG c = 0; c < p.sc; c++) \
-for (V3DLONG z = 0; z < p.sz; z++) \
-for (V3DLONG y = 0; y < p.sy; y++) \
-for (V3DLONG x = 0; x < p.sx; x++)
+	for (V3DLONG c = 0; c < p.sc; c++) \
+	for (V3DLONG z = 0; z < p.sz; z++) \
+	for (V3DLONG y = 0; y < p.sy; y++) \
+	for (V3DLONG x = 0; x < p.sx; x++)
 
 
 //The following struct is provided for convenience for working with a channel of an Image4DSimple instance in some cases
@@ -338,7 +398,7 @@ struct V3D_Image3DBasic
 	V3DLONG sz0, sz1, sz2;
 	ImagePixelType datatype;
 	V3DLONG cid; //the color channel in the original 4D image
-	
+
 	V3D_Image3DBasic() {data1d=0; sz0=sz1=sz2=0; datatype=V3D_UNKNOWN; cid=-1;}
 	bool setData(Image4DSimple *p, V3DLONG myid)
 	{

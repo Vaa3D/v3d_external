@@ -125,18 +125,19 @@ void Renderer_tex2::setupData(void* idep)
 		qDebug("	Down-sampling to 512x512x256 ");
 	}
 
-	try {
-
+	try
+	{
 #ifndef test_main_cpp
-		My4DImage* image4d = v3dr_getImage4d(_idep);
 
+		My4DImage* image4d = v3dr_getImage4d(_idep);
 		if (image4d && image4d->getCDim()>0)
 		{
 			bLocal = ((iDrawExternalParameter*)_idep)->b_local;
 			//bLimited = ((iDrawExternalParameter*)_idep)->b_use_512x512x256; //091015: no need this, because always can use stream texture
 
+			data_unitbytes = image4d->getUnitBytes();
+			data4dp = image4d->getRawData();
 			data4d_uint8 = image4d->data4d_uint8;
-			data4dp = &(data4d_uint8[0][0][0][0]);
 
 			size1=dim1 = image4d->getXDim();
 			size2=dim2 = image4d->getYDim();
@@ -239,16 +240,44 @@ void Renderer_tex2::setupData(void* idep)
 
 	} CATCH_handler( "Renderer_tex2::setupData" );
 
+
 	QTime qtime;  qtime.start();
+	{
+#ifndef test_main_cpp
 
-	data4dp_to_rgba3d(data4dp,
-			dim1, dim2, dim3, dim4, dim5,
-			start1, start2, start3, start4,
-			size1, size2, size3, size4,
-			total_rgbaBuf, bufSize);
+		My4DImage* image4d = v3dr_getImage4d(_idep);
+		if (image4d)
+		{
+			Image4DProxy<Image4DSimple> img4dp( image4d );
+			img4dp.vmin.clear();
+			img4dp.vmax.clear();
+			//qDebug()<<"before vmin vmax";
+			switch(img4dp.su)
+			{
+			case 4:
+			case 2:
+				for (int i=0; i<img4dp.sc; i++)
+				{
+					img4dp.vmin.push_back( image4d->p_vmin[i] );
+					img4dp.vmax.push_back( image4d->p_vmax[i] );
+				}
+			}
+			//qDebug()<<"after vmin vmax";
+			data4dp_to_rgba3d(img4dp,  dim5,
+					start1, start2, start3, start4,
+					size1, size2, size3, size4,
+					total_rgbaBuf, bufSize);
+		}
+#else // then _idep==0
+		data4dp_to_rgba3d(data4dp,
+				dim1, dim2, dim3, dim4, dim5,
+				start1, start2, start3, start4,
+				size1, size2, size3, size4,
+				total_rgbaBuf, bufSize);
+#endif
 
-	if (dim4==1)   rgba3d_r2gray(total_rgbaBuf, bufSize); //081103
-
+		if (dim4==1)   rgba3d_r2gray(total_rgbaBuf, bufSize); //081103
+	}
 	qDebug("   data4dp_to_rgba3d .................. cost time = %g sec", qtime.elapsed()*0.001);
 
 }
