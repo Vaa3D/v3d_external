@@ -642,7 +642,7 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	
 	
 	//
-	system("date");
+	//system("date");
 	long offset_y, offset_z;
 	
 	offset_y=sx;
@@ -692,7 +692,7 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 			}
 		}
 	}
-	system("date");
+	//system("date");
 	
 	
 	Image4DSimple p4Dbw;
