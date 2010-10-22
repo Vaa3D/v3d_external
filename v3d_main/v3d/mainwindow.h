@@ -102,6 +102,7 @@ public slots:
     void open();
     void openWebUrl(); // By CMB 08-Oct-2010
     void finishedLoadingWebImage(QUrl url, QString fileName, bool b_cacheFile); // By CMB 08-Oct-2010
+    void checkForUpdates(bool b_informOnNoUpdate = true); // CMB Oct-22-2010
     void atlasView();
     void save();
     void saveAs();
@@ -301,6 +302,7 @@ private:
     QAction *nextAct;
     QAction *previousAct;
     QAction *separator_ImgWindows_Act;
+    QAction *checkForUpdatesAct; // CMB Oct-22-2010
     QAction *aboutAct;
 //    QAction *aboutQtAct;
 

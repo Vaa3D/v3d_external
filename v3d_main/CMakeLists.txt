@@ -34,6 +34,7 @@ find_program(QT_QMAKE_EXECUTABLE qmake
 
 find_package(Qt4 REQUIRED)
 set(QT_USE_NETWORK TRUE) # Oct-07-2010 CMB
+set(QT_USE_XML TRUE) # Oct-22-2010 CMB
 
 include( ${QT_USE_FILE} )
 include_directories( ${QT_INCLUDES} )

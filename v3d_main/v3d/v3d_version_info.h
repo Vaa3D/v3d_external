@@ -169,13 +169,14 @@ class V3DVersionChecker : public QObject
 
 public:
     V3DVersionChecker(QWidget *guiParent);
-    void checkForLatestVersion();
+    void checkForLatestVersion(bool b_informOnNoUpdate = false);
 
 private slots:
     void gotVersion(QNetworkReply* reply);
 
 private:
     QWidget *guiParent;
+    bool b_informOnNoUpdate;
 };
 
 } // namespace v3d

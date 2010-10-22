@@ -128,6 +128,7 @@ MainWindow::MainWindow()
     nextAct = 0;
     previousAct = 0;
     separator_ImgWindows_Act = 0;
+    checkForUpdatesAct = 0;
     aboutAct = 0;
 
 	procLandmarkManager = 0;
@@ -268,8 +269,7 @@ MainWindow::MainWindow()
 	pluginLoader = new V3d_PluginLoader(pluginProcMenu, this);
 
     qDebug("checking version...");
-    v3d::V3DVersionChecker *versionChecker = new v3d::V3DVersionChecker(this);
-    versionChecker->checkForLatestVersion();
+    checkForUpdates(false); // false means silent if no update needed
 }
 
 //void MainWindow::postClose() //090812 RZC
@@ -447,6 +447,12 @@ void MainWindow::finishedLoadingWebImage(QUrl url, QString fileName, bool b_cach
         // Put URL in recent file list
         setCurrentFile(url.toString());
     }
+}
+
+void MainWindow::checkForUpdates(bool b_informOnNoUpdate)
+{
+    v3d::V3DVersionChecker *versionChecker = new v3d::V3DVersionChecker(this);
+    versionChecker->checkForLatestVersion(b_informOnNoUpdate);
 }
 
 V3dR_MainWindow * MainWindow::find3DViewer(QString fileName)
@@ -1841,6 +1847,12 @@ void MainWindow::createActions()
     separator_ImgWindows_Act = new QAction(this);
     separator_ImgWindows_Act->setSeparator(true);
 
+    checkForUpdatesAct = new QAction(tr("Check for Updates"), this);
+    checkForUpdatesAct->setStatusTip(tr("Check whether a more recent version "
+        "of V3D is available."));
+    connect(checkForUpdatesAct, SIGNAL(triggered()),
+            this, SLOT(checkForUpdates()));
+
     aboutAct = new QAction(QIcon(":/pic/help.png"), tr("Help Info and &About"), this);
     aboutAct->setStatusTip(tr("Show help and version information"));
     connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
@@ -2124,6 +2136,7 @@ void MainWindow::createMenus()
 	//
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(aboutAct);
+    helpMenu->addAction(checkForUpdatesAct);
 	//    helpMenu->addAction(aboutQtAct);
 
 }

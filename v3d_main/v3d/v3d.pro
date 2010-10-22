@@ -291,6 +291,7 @@ RESOURCES += v3d.qrc
 RESOURCES += ../3drenderer/3drenderer.qrc
 QT += opengl
 QT += network
+QT += xml
 
 LIBS += -L../jba/c++  
 

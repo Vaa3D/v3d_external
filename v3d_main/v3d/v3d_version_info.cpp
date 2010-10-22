@@ -38,6 +38,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include <QtGui>
 #include <QNetworkReply>
+// #include <QXmlSchema> // Qt 4.6 or later only
+#include <QtXml>
 
 namespace v3d {
     // Set current version here.
@@ -241,8 +243,12 @@ V3DVersionChecker::V3DVersionChecker(QWidget *guiParent)
     : guiParent(guiParent)
 {}
 
-void V3DVersionChecker::checkForLatestVersion() {
-    QUrl versionUrl("http://brunsc-wm1.janelia.priv/~brunsc/v3d_version.txt");
+QString v3dVersionUrlBase("http://brunsc-wm1.janelia.priv/~brunsc/v3d_version/");
+
+void V3DVersionChecker::checkForLatestVersion(bool b_informOnNoUpdate)
+{
+    this->b_informOnNoUpdate = b_informOnNoUpdate;
+    QUrl versionUrl(v3dVersionUrlBase + "v3d_version.xml");
     QNetworkAccessManager *nam = new QNetworkAccessManager(this);
     QNetworkReply *reply = nam->get(QNetworkRequest(versionUrl));
     connect(nam, SIGNAL(finished(QNetworkReply*)),
@@ -252,9 +258,54 @@ void V3DVersionChecker::checkForLatestVersion() {
 void V3DVersionChecker::gotVersion(QNetworkReply* reply) {
     if (reply->error() != QNetworkReply::NoError) {
         qDebug("Problem downloading latest version information");
+        if (b_informOnNoUpdate) {
+            QMessageBox::information(guiParent,
+                    "Unable to connect to V3D server",
+                    "Could not get latest version information.\n"
+                    "Please try again later.");
+        }
         return; // error occurred, so don't bother
     }
-    QString latestVersionString(reply->readAll());
+    // CMB Oct-22-2010
+    // You might wonder why I would use an xml file for such a simple version file.
+    // The reason is that we might in the future want to have different versions
+    // for different
+    // platforms or for different versions of Qt.  This way we can maintain
+    // backwards compatibility.  We can add new elements and new attributes
+    // to the xml for this purpose, and older versions of v3d will just ignore
+    // them, looking only at the major and minor versions.
+
+    // Qt 4.6 or later is required for validation with xml schema
+    QDomDocument versionDoc("v3d_version");
+    versionDoc.setContent(reply->readAll());
+    QDomElement root = versionDoc.documentElement();
+    if (root.tagName() != "v3d_version") {
+        qDebug() << "Unrecognized root element " << root.tagName();
+        if (b_informOnNoUpdate) {
+            QMessageBox::information(guiParent,
+                    "Unable to parse version information",
+                    "Could not parse latest version information.\n"
+                    "Please try again later.");
+        }
+        return; // silently continue on version finding error
+    }
+    QDomNode node = root.firstChild();
+    QString latest_major_version = "0";
+    QString latest_minor_version = "000";
+    while (!node.isNull())
+    {
+        QDomElement elem = node.toElement();
+        if (!elem.isNull()) {
+            if (elem.tagName() == "latest_stable_version") {
+                latest_major_version = elem.attribute("major", "0");
+                latest_minor_version = elem.attribute("minor", "0");
+                break;
+            }
+        }
+    }
+
+    QString latestVersionString(latest_major_version + "." + latest_minor_version);
+    qDebug() << "latest version = " << latestVersionString;
     v3d::VersionInfo latestVersion(latestVersionString);
     if (latestVersion > v3d::thisVersionOfV3D) {
         qDebug("There is a newer V3D version");
@@ -281,6 +332,11 @@ void V3DVersionChecker::gotVersion(QNetworkReply* reply) {
         }
     }
     else {
+        if (b_informOnNoUpdate) {
+            QMessageBox::information(guiParent,
+                    "V3D is up to date",
+                    "You are using the latest version of V3D");
+        }
         qDebug("V3D version is up to date");
     }
 }

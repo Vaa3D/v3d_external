@@ -101,5 +101,8 @@ endif()
 if(QT_QTNETWORK_LIBRARY)
   target_link_libraries(v3d ${QT_QTNETWORK_LIBRARY})
 endif()
+if(QT_QTXML_LIBRARY)
+  target_link_libraries(v3d ${QT_QTXML_LIBRARY})
+endif()
 
 install(TARGETS v3d DESTINATION ".")
