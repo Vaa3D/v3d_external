@@ -1,8 +1,6 @@
-if (MSVC)
-  include_directories(${TIFF_INCLUDE_DIR})
-endif()
+include_directories(${TIFF_INCLUDE_DIR})
 
-SET(V3DInterface_SRCS
+set(V3DInterface_SRCS
   basic_4dimage.cpp
   basic_memory.cpp
   basic_surf_objs.cpp
@@ -14,10 +12,6 @@ SET(V3DInterface_SRCS
   vcdiff.cpp
   )
 
-ADD_LIBRARY(V3DInterface ${V3DInterface_SRCS})
+add_library(V3DInterface ${V3DInterface_SRCS})
 
-if (MSVC)
-  target_link_libraries(V3DInterface ${TIFF_LIBRARY})
-else()
-  target_link_libraries(V3DInterface mylib_tiff)
-endif()
+target_link_libraries(V3DInterface ${TIFF_LIBRARY})
