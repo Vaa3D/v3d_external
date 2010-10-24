@@ -636,11 +636,12 @@ void V3dR_MainWindow::dropEvent(QDropEvent *event)
     {
         qDebug() <<tr("  drop Text data: ")+(mimeData->text().trimmed());
         QString url = mimeData->text().trimmed();
+
 #ifdef Q_OS_LINUX
-        url.remove(0,7); // remove the first 'file://' of the name string, 09012581102
+        url.remove(0,7); // remove the first 'file://' of the name string, 090125
 #endif
         qDebug("the file to open=[%s]",qPrintable(url));
-        if (glWidget) glWidget->loadObjectsFromFile(url);
+        if (glWidget) glWidget->loadObjectFromFile(url);
     }
     else if (mimeData->hasUrls())
     {
@@ -653,7 +654,7 @@ void V3dR_MainWindow::dropEvent(QDropEvent *event)
 #ifdef WIN32
             url.remove(0,1); // remove the first '/' of "/C:/...", 081102
 #endif
-            if (glWidget) glWidget->loadObjectsFromFile(url);
+            if (glWidget) glWidget->loadObjectFromFile(url);
             //setDataTitle(url);
         }
         event->acceptProposedAction();

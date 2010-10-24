@@ -607,7 +607,7 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 		b_imaging = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
-	
+
 #define __create_marker__ // dummy, just for easy locating
 
 	// real operation in selectObj() waiting next click
@@ -659,7 +659,7 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 		b_imaging = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
-	
+
 #ifndef test_main_cpp
 
 	else if (act == actMarkerAutoSeed)
@@ -1553,7 +1553,7 @@ void Renderer_tex2::updateTracedNeuron()
 #ifndef test_main_cpp
 	qDebug("  Renderer_tex2::updateTracedNeuron");
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep); //by PHC, 090119
+	My4DImage* curImg =  v3dr_getImage4d(_idep); //by PHC, 090119
 	if (curImg)
 		curImg->update_3drenderer_neuron_view(w, this);
 #endif
@@ -1787,8 +1787,8 @@ QVector<int> Renderer_tex2::getLineProfile(XYZ P1, XYZ P2, int chno)
 
 #ifndef test_main_cpp
 
-	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-	My4DImage* curImg = 0; if (w) curImg = v3dr_getImage4d(w->getiDrawExternalParameter());//->image4d; //by PHC, 090119
+	//V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	My4DImage* curImg = v3dr_getImage4d(_idep);//->image4d; //by PHC, 090119
 
 	if (curImg && data4dp && chno>=0 &&  chno <dim4)
 	{
@@ -1799,18 +1799,21 @@ QVector<int> Renderer_tex2::getLineProfile(XYZ P1, XYZ P2, int chno)
 		double step = length/nstep;
 		normalize(D);
 
-		unsigned char* vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1);
+//		unsigned char* vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1);
+		Image4DProxy<Image4DSimple> img4dp( curImg );
+		img4dp.set_minmax(curImg->p_vmin, curImg->p_vmax);
 
 		for (int i=0; i<nstep; i++)
 		{
 			XYZ P = P1 + D*step*(i);
 //			XYZ P = P1 + (P2-P1)*(double(i)/(nstep-1));
+			int ix = int(P.x +0.5);
+			int iy = int(P.y +0.5);
+			int iz = int(P.z +0.5);
 
-				int ix = int(P.x +0.5);
-				int iy = int(P.y +0.5);
-				int iz = int(P.z +0.5);
-				float value = sampling3dUINT8( vp, dim1, dim2, dim3, ix, iy, iz, 1,1,1);
-//				float value = sampling3dUINT8at( vp, dim1, dim2, dim3, P.x, P.y, P.z);
+			float value = sampling3dUINT8( img4dp, (chno + volTimePoint*dim4), ix, iy, iz, 1,1,1);
+//			float value = sampling3dUINT8( vp, dim1, dim2, dim3, ix, iy, iz, 1,1,1);
+//			float value = sampling3dUINT8at( vp, dim1, dim2, dim3, P.x, P.y, P.z);
 
 			prof << int(value);
 		}
@@ -2044,10 +2047,10 @@ void Renderer_tex2::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 				v3d_msg("Fail to set up the curHiddenSelectedXWidget for the V3D mainwindow. Do nothing.");
 				return;
 			}
-			
+
 			//set up parameters
 			v3d_imaging_paras myimagingp;
-			myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call      
+			myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
 			myimagingp.xs = mx;
 			myimagingp.ys = my;
 			myimagingp.zs = mz; //starting coordinates (in pixel space)
@@ -2056,18 +2059,18 @@ void Renderer_tex2::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 			myimagingp.ze = Mz; //ending coordinates (in pixel space)
 			myimagingp.xrez = curImg->getRezX() / 2.0;
 			myimagingp.yrez = curImg->getRezY() / 2.0;
-			myimagingp.zrez = curImg->getRezZ() / 2.0; 
-			
+			myimagingp.zrez = curImg->getRezZ() / 2.0;
+
 			//do imaging
 			v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
 		}
 
-	
+
 		curXWidget->setLocal3DViewerBBox(mx, Mx, my, My, mz, Mz);
 		//QTimer::singleShot( 1000, curXWidget, SLOT(doImage3DLocalView()) );
-		
+
 		curXWidget->doImage3DLocalBBoxView(); //by PHC 101012. move from before if(b_imaging...)
-	
+
 	}
 }
 

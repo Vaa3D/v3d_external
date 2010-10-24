@@ -233,9 +233,8 @@ public slots:
 	virtual void createSurfCurrentR();
 	virtual void createSurfCurrentG();
 	virtual void createSurfCurrentB();
-	virtual void loadObjectsFromFile();
-	virtual void loadObjectsFromFile(QString url);
-	virtual void loadObjectsListFromFile();
+	virtual void loadObjectFromFile(QString url="");
+	virtual void loadObjectListFromFile();
 	virtual void saveSurfFile();
 
 	virtual void togglePolygonMode();

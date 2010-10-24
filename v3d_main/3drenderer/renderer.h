@@ -158,8 +158,8 @@ public:
 	virtual void updateLandmark()     {};
 	virtual void updateTracedNeuron() {};
 
-	virtual void loadObjectsListFromFile()              {};
-	virtual void loadObjectsFromFile(const char* url=0) {};
+	virtual void loadObjectListFromFile()              {};
+	virtual void loadObjectFromFile(const char* url=0) {};
 	virtual void createSurfCurrent(int ch=0)            {};
 	virtual void saveSurfFile()                         {};
 	virtual void editSurfaceObjAnnotation(int dataClass, int surfaceType, int index)    {};

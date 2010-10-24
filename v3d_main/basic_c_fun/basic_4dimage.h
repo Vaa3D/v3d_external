@@ -324,6 +324,16 @@ public:
 			default: *at_uint8(x,y,z,c) = (uint8)v; break;
 		}
 	}
+	void set_minmax(double* p_vmin, double* p_vmax)
+	{
+		vmin.clear();
+		vmax.clear();
+		for (int i=0; i<sc; i++)
+		{
+			vmin.push_back( p_vmin[i] );
+			vmax.push_back( p_vmax[i] );
+		}
+	}
 	inline bool has_minmax()
 	{
 		return vmin.size()==sc && vmax.size()==sc && su>1;

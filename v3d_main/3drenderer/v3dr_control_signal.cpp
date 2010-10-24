@@ -739,7 +739,6 @@ void V3dR_MainWindow::connectSignal()
 
 	if (loadSaveObjectsButton)
 	{
-		//connect(loadObjectsFromFile, SIGNAL(clicked()), glWidget, SLOT(loadObjectsFromFile()));
 		connect(loadSaveObjectsButton, SIGNAL(clicked()), this, SLOT(doMenuOfSurfFile()));
 	}
 
@@ -1256,7 +1255,7 @@ void V3dR_MainWindow::createMenuOfSurfFile()
 	}
 
     Act = new QAction(tr("&Load/Create Surface From File"), this);
-    connect(Act, SIGNAL(triggered()), glWidget, SLOT(loadObjectsFromFile()));
+    connect(Act, SIGNAL(triggered()), glWidget, SLOT(loadObjectFromFile()));
     menuSurfFile.addAction(Act);
 
     QAction* ActRGB[3];

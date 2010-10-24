@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -79,9 +79,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 ////////////////////////////////////////////////////////////////////
 
 
-void Renderer_tex2::loadObjectsFromFile(const char* url)
+void Renderer_tex2::loadObjectFromFile(const char* url)
 {
-	qDebug("   Renderer_tex2::loadObjectsFromFile (url)");
+	qDebug("   Renderer_tex2::loadObjectFromFile (url)");
 
 	QString filename;
 	if (url)
@@ -102,9 +102,9 @@ void Renderer_tex2::loadObjectsFromFile(const char* url)
 		loadObjectFilename(filename);
 }
 
-void Renderer_tex2::loadObjectsListFromFile()
+void Renderer_tex2::loadObjectListFromFile()
 {
-	qDebug("   Renderer_tex2::loadObjectsListFromFile");
+	qDebug("   Renderer_tex2::loadObjectListFromFile");
 
 	QStringList qsl;
 	qsl.clear();
@@ -124,11 +124,13 @@ void Renderer_tex2::loadObjectsListFromFile()
 	qsl << ep->labelfield_file;
 #endif
 
+	((QWidget*)widget)->hide(); //101024 to avoid busy updateGL
 	foreach (QString filename, qsl)
 	{
 	    if (filename.size()>0)
 	    	loadObjectFilename(filename);
 	}
+	((QWidget*)widget)->show();
 }
 
 void Renderer_tex2::loadObjectFilename(const QString& filename)
@@ -1009,6 +1011,7 @@ void Renderer_tex2::loadNeuronTree(const QString& filename)
 {
     bool contained = false;
     int idx = -1;
+
     for (int i=0; i<listNeuronTree.size(); i++)
 		if (filename == listNeuronTree[i].file) // same file
 		{
@@ -1016,15 +1019,14 @@ void Renderer_tex2::loadNeuronTree(const QString& filename)
 			idx = i;
 			break;
 		}
-
 	if (contained)
 	{
 		qDebug()<< "There is a same file in memory, do nothing.";
 		return; // do nothing
 	}
 
-	PROGRESS_DIALOG("Loading Neuron structure", widget);
-	PROGRESS_PERCENT(1); // 0 or 100 not be displayed. 081102
+	PROGRESS_DIALOG("Loading Neuron structure "+filename, widget);
+	PROGRESS_PERCENT(50); // 0 or 100 not be displayed. 081102
 
     NeuronTree SS;
 #ifndef test_main_cpp
@@ -1069,7 +1071,7 @@ void Renderer_tex2::addCurveSWC(vector<XYZ> &loc_list, int chno)
 #ifndef test_main_cpp
 
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+	My4DImage* curImg =  v3dr_getImage4d(_idep);
 	if (w && curImg)
 	{
 		curImg->proj_trace_add_curve_segment(loc_list, chno);
@@ -1456,7 +1458,7 @@ void Renderer_tex2::drawNeuronTree(int index)
 				glPopMatrix();
 
 			}
-			if (lineType==1)
+			else if (lineType==1)
 			{
 				if (length >0)  // branch line
 				{

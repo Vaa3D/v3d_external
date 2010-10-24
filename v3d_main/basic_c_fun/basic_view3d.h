@@ -142,9 +142,8 @@ public:
 	virtual void createSurfCurrentR() =0;
 	virtual void createSurfCurrentG() =0;
 	virtual void createSurfCurrentB() =0;
-	virtual void loadObjectsFromFile() =0;
-	virtual void loadObjectsFromFile(QString url) =0;
-	virtual void loadObjectsListFromFile() =0;
+	virtual void loadObjectFromFile(QString url="") =0;
+	virtual void loadObjectListFromFile() =0;
 	virtual void saveSurfFile() =0;
 
 	virtual void togglePolygonMode() =0;

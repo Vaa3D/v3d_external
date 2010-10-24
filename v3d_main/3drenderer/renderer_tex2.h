@@ -175,8 +175,8 @@ public:
 
 	virtual void createSurfCurrent(int ch=0);                 // updateBoundingBox
 	virtual void loadObjectFilename(const QString& filename); // updateBoundingBox // makeCurrent
-	virtual void loadObjectsListFromFile();             // call loadObjectFilename
-	virtual void loadObjectsFromFile(const char* url);  // call loadObjectFilename
+	virtual void loadObjectListFromFile();             // call loadObjectFilename
+	virtual void loadObjectFromFile(const char* url);  // call loadObjectFilename
 	virtual void saveSurfFile();
 
 	virtual void endSelectMode();

@@ -247,7 +247,6 @@ void V3dR_GLWidget::settingRenderer() // before renderer->setupData & init
 		renderer->lineType   = (_idep->V3Dmainwindow->global_setting.b_autoSWCLineMode)?1:0;
 	}
 #endif
-
 }
 
 void V3dR_GLWidget::preparingRenderer() // renderer->setupData & init, 100719 extracted to a function
@@ -322,6 +321,7 @@ void V3dR_GLWidget::initializeGL()
 
 	//choice renderer according to OpenGl version
 	choiceRenderer();
+
 	settingRenderer(); //091007, 100719 moved to position before renderer->setupData
 
 	preparingRenderer();
@@ -398,6 +398,35 @@ void V3dR_GLWidget::paintGL()
 /////////////////////////////////////////////////////////////
 #define __event_handler__
 
+void V3dR_GLWidget::customEvent(QEvent* e)
+{
+	qDebug("V3dR_GLWidget::customEvent( ? )");
+	switch(e->type())
+	{
+	case QEvent_OpenFiles:
+		qDebug("	( QEvent_OpenFiles )");
+		loadObjectListFromFile();
+		break;
+
+	case QEvent_DropFiles:  // not use this
+		qDebug("	( QEvent_DropFiles )");
+		if (renderer)  renderer->loadObjectFromFile( Q_CSTR(dropUrl) );
+		break;
+
+	case QEvent_InitControlValue:
+		qDebug("	( QEvent_InitControlValue )");
+		emit signalInitControlValue(); // V3dR_MainWindow->initControlValue
+		break;
+
+	case QEvent_Ready:
+		qDebug("	( QEvent_Ready )");
+		qDebug("-------------------------------------------------------------- Ready");
+		break;
+
+	}
+	POST_updateGL();
+}
+
 bool V3dR_GLWidget::event(QEvent* e) //090427 RZC
 {
 	setAttribute(Qt::WA_Hover); // this control the QEvent::ToolTip and QEvent::HoverMove
@@ -462,35 +491,6 @@ void V3dR_GLWidget::leaveEvent(QEvent*)
 {
 	//qDebug("V3dR_GLWidget::leaveEvent");
 	_mouse_in_view = false;
-}
-
-void V3dR_GLWidget::customEvent(QEvent* e)
-{
-	switch(e->type())
-	{
-	case QEvent_OpenFiles:
-		qDebug("V3dR_GLWidget::customEvent( QEvent_OpenFiles )");
-		loadObjectsListFromFile();
-		break;
-
-	case QEvent_DropFiles:  // not use this
-		qDebug("V3dR_GLWidget::customEvent( QEvent_DropFiles )");
-		if (renderer)  renderer->loadObjectsFromFile( Q_CSTR(dropUrl) );
-		break;
-
-	case QEvent_InitControlValue:
-		qDebug("V3dR_GLWidget::customEvent( QEvent_InitControlValue )");
-		emit signalInitControlValue(); // V3dR_MainWindow->initControlValue
-		break;
-
-	case QEvent_Ready:
-		qDebug("V3dR_GLWidget::customEvent( QEvent_Ready )");
-		qDebug("-------------------------------------------------------------- Ready");
-		break;
-
-	}
-
-	POST_updateGL();
 }
 
 void V3dR_GLWidget::mouseDoubleClickEvent ( QMouseEvent * )//event )
@@ -1963,29 +1963,32 @@ void V3dR_GLWidget::createSurfCurrentB()
 	}
 }
 
-void V3dR_GLWidget::loadObjectsFromFile()
+//void V3dR_GLWidget::loadObjectFromFile()
+//{
+//	if (renderer)
+//	{
+//		renderer->loadObjectFromFile();
+//		updateTool();
+//		POST_updateGL();
+//	}
+//}
+void V3dR_GLWidget::loadObjectFromFile(QString url)
 {
 	if (renderer)
 	{
-		renderer->loadObjectsFromFile();
+		if (url.size())
+			renderer->loadObjectFromFile(Q_CSTR(url));
+		else
+			renderer->loadObjectFromFile(0);
 		updateTool();
 		POST_updateGL();
 	}
 }
-void V3dR_GLWidget::loadObjectsFromFile(QString url)
+void V3dR_GLWidget::loadObjectListFromFile()
 {
 	if (renderer)
 	{
-		renderer->loadObjectsFromFile(Q_CSTR(url));
-		updateTool();
-		POST_updateGL();
-	}
-}
-void V3dR_GLWidget::loadObjectsListFromFile()
-{
-	if (renderer)
-	{
-		renderer->loadObjectsListFromFile();
+		renderer->loadObjectListFromFile();
 		updateTool();
 		POST_updateGL();
 	}

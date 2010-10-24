@@ -249,20 +249,8 @@ void Renderer_tex2::setupData(void* idep)
 		if (image4d)
 		{
 			Image4DProxy<Image4DSimple> img4dp( image4d );
-			img4dp.vmin.clear();
-			img4dp.vmax.clear();
-			//qDebug()<<"before vmin vmax";
-			switch(img4dp.su)
-			{
-			case 4:
-			case 2:
-				for (int i=0; i<img4dp.sc; i++)
-				{
-					img4dp.vmin.push_back( image4d->p_vmin[i] );
-					img4dp.vmax.push_back( image4d->p_vmax[i] );
-				}
-			}
-			//qDebug()<<"after vmin vmax";
+			img4dp.set_minmax(image4d->p_vmin, image4d->p_vmax);
+
 			data4dp_to_rgba3d(img4dp,  dim5,
 					start1, start2, start3, start4,
 					size1, size2, size3, size4,
