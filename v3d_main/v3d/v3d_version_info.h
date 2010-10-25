@@ -40,8 +40,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <QString>
 #include <QObject>
 #include <QDialog>
-#include <QDebug>
-#include <QSettings>
 #include "ui_dialog_update_v3d.h"
 
 class QNetworkReply;
@@ -189,48 +187,10 @@ class V3dUpdateDialog : public QDialog, public Ui::dialog_update_v3d
 {
     Q_OBJECT
 public:
-    V3dUpdateDialog(QWidget* guiParent) : QDialog(guiParent) {
-        setupUi(this);
-        // Sync with current update frequency
-        QSettings settings("HHMI", "V3D");
-        QVariant checkIntervalVariant = settings.value("updateCheckInterval");
-        if ( checkIntervalVariant.isValid() )
-        {
-            int checkInterval = checkIntervalVariant.toInt();
-            if (checkInterval < 0)
-                comboBox->setCurrentIndex(comboBox->findText(tr("never")));
-            else if (checkInterval == 0)
-                comboBox->setCurrentIndex(comboBox->findText(tr("every time")));
-            else if (checkInterval == 86400)
-                comboBox->setCurrentIndex(comboBox->findText(tr("once a day")));
-            else if (checkInterval == 604800)
-                comboBox->setCurrentIndex(comboBox->findText(tr("once a week")));
-            else if (checkInterval == 2592000)
-                comboBox->setCurrentIndex(comboBox->findText(tr("once a month")));
-            else
-                qDebug() << "Error: unrecognized interval";
-        }
-    }
+    V3dUpdateDialog(QWidget* guiParent);
 
 private slots:
-    void on_comboBox_currentIndexChanged(const QString& updateFrequency) 
-    {
-        // Store update interval in the persistent cache
-        qDebug() << "Changing update frequency to " << updateFrequency;
-        QSettings settings("HHMI", "V3D");
-        if (updateFrequency == tr("never"))
-            settings.setValue("updateCheckInterval", -1);
-        else if (updateFrequency == tr("every time"))
-            settings.setValue("updateCheckInterval", 0);
-        else if (updateFrequency == tr("once a day"))
-            settings.setValue("updateCheckInterval", 86400);
-        else if (updateFrequency == tr("once a week"))
-            settings.setValue("updateCheckInterval", 604800);
-        else if (updateFrequency == tr("once a month"))
-            settings.setValue("updateCheckInterval", 2592000);
-        else
-            qDebug() << "Error: unrecognized interval";
-    }
+    void on_comboBox_currentIndexChanged(const QString& updateFrequency);
 };
 
 } // namespace v3d
