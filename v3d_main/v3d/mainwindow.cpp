@@ -268,8 +268,12 @@ MainWindow::MainWindow()
 	//090811 RZC
 	pluginLoader = new V3d_PluginLoader(pluginProcMenu, this);
 
+    // This is the automatic check for latest version
     qDebug("checking version...");
-    checkForUpdates(false); // false means silent if no update needed
+    v3d::V3DVersionChecker *versionChecker = new v3d::V3DVersionChecker(this);
+    if (versionChecker->shouldCheckNow())
+        versionChecker->checkForLatestVersion(false);
+    // checkForUpdates(false); // false means silent if no update needed
 }
 
 //void MainWindow::postClose() //090812 RZC

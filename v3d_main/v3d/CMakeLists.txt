@@ -42,6 +42,7 @@ QT4_WRAP_UI(QT_UI_SRCS
   import_filelist_dialog.ui
   import_images_tool.ui
   dialog_url_entry.ui
+  dialog_update_v3d.ui
   )
 
 QT4_WRAP_CPP(QT_MOC_SRCS

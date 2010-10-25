@@ -77,6 +77,7 @@
 # 101008: add the imaging module
 # 101008: (CMB) add web url download
 # 101019: (CMB) add dialog_url_entry.ui
+# 101025: (CMB) add dialog_update_v3d.ui
 # ######################################################################
 
 TEMPLATE = app
@@ -284,6 +285,7 @@ FORMS += landmark_property.ui \
     dialog_maskroi.ui \
     dialog_keypoint_features.ui \
     dialog_url_entry.ui \
+    dialog_update_v3d.ui \
     FL_watershedSegPara.ui \
     FL_levelsetSegPara.ui 
 

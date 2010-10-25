@@ -40,6 +40,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <QNetworkReply>
 // #include <QXmlSchema> // Qt 4.6 or later only
 #include <QtXml>
+#include <QSettings>
 
 namespace v3d {
     // Set current version here.
@@ -255,6 +256,36 @@ void V3DVersionChecker::checkForLatestVersion(bool b_informOnNoUpdate)
         this, SLOT(gotVersion(QNetworkReply*)));
 }
 
+// Examines last time version updater was queried to decide whether it might
+// be time to check again now.
+bool V3DVersionChecker::shouldCheckNow() {
+    bool bCheckNow = true; // default is to check for updates
+    // Load relevant persistent variables from Qt cache
+	QSettings settings("HHMI", "V3D");
+    QVariant latestCheckVariant = settings.value("timeOfLatestUpdateCheck");
+    QVariant checkIntervalVariant = settings.value("updateCheckInterval");
+    // Use default behavior unless persistent variables are set
+    if ( latestCheckVariant.isValid() && checkIntervalVariant.isValid())
+    {
+        // we know how long it has been and how long it should be
+        int checkInterval = checkIntervalVariant.toInt();
+        if (checkInterval == 0) // zero means "always"
+            bCheckNow = true; // redundant, as true is the default
+        else if (checkInterval < 0) // negative means "never"
+            bCheckNow = false;
+        else {
+            // finite interval needs comparison
+            QDateTime latestCheck = latestCheckVariant.toDateTime();
+            int elapsedInterval = latestCheck.secsTo(QDateTime::currentDateTime());
+            if (elapsedInterval < checkInterval)
+                bCheckNow = false; // user does not wish to be bothered now
+            else
+                bCheckNow = true; // redundant, true is default
+        }
+    }
+    return bCheckNow;
+}
+
 void V3DVersionChecker::gotVersion(QNetworkReply* reply) {
     if (reply->error() != QNetworkReply::NoError) {
         qDebug("Problem downloading latest version information");
@@ -266,6 +297,14 @@ void V3DVersionChecker::gotVersion(QNetworkReply* reply) {
         }
         return; // error occurred, so don't bother
     }
+
+    // CMB Oct-22-2010
+    // If we get this far, consider the update "checked" for the purpose
+    // of update check timeout interval.  In particular, even if the update
+    // file is unparsable, don't necessarily check again immediately.
+	QSettings settings("HHMI", "V3D");
+    settings.setValue("timeOfLatestUpdateCheck", QDateTime::currentDateTime());
+
     // CMB Oct-22-2010
     // You might wonder why I would use an xml file for such a simple version file.
     // The reason is that we might in the future want to have different versions
@@ -309,18 +348,12 @@ void V3DVersionChecker::gotVersion(QNetworkReply* reply) {
     v3d::VersionInfo latestVersion(latestVersionString);
     if (latestVersion > v3d::thisVersionOfV3D) {
         qDebug("There is a newer V3D version");
-        QMessageBox::StandardButton selectedButton =
-            QMessageBox::question(
-                guiParent,
-                "New V3D version available",
-                "There is a newer version of V3D available\n"
-                "Would you like to get the latest version now?\n"
-                "(Your web browser will open the V3D download page)",
-                QMessageBox::Cancel | QMessageBox::Open,
-                QMessageBox::Open);
-        if (selectedButton == QMessageBox::Open) {
-            // Open the user's browser to the V3D download page
-            bool b_openurl_worked = QDesktopServices::openUrl(
+        V3dUpdateDialog v3dUpdateDialog(guiParent);
+        int returnValue = v3dUpdateDialog.exec();
+        if (returnValue == QDialog::Accepted) { // clicked "Open"
+            bool b_openurl_worked;
+            // Open user's browser to the V3D download page
+            b_openurl_worked = QDesktopServices::openUrl(
                 QUrl("http://penglab.janelia.org/proj/v3d/V3D/Download.html"));
             if (! b_openurl_worked)
                 QMessageBox::warning(guiParent,
