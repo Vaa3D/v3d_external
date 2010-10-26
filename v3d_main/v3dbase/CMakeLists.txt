@@ -9,6 +9,7 @@ QT4_WRAP_UI(QT_UI_SRCS
   ../v3d/landmark_property.ui
   ../v3d/surface_obj_annotation.ui
   ../v3d/surfaceobj_geometry_dialog.ui
+  ../v3d/dialog_update_v3d.ui
   )
 
 QT4_WRAP_CPP(QT_MOC_SRCS
