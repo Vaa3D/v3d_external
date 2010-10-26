@@ -43,6 +43,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <QSettings>
 #include <QDebug>
 
+// QString v3dVersionUrlBase("http://brunsc-wm1.janelia.priv/~brunsc/v3d_version/");
+QString v3dVersionUrlBase("http://penglab.janelia.org/proj/v3d/V3D/");
+
 namespace v3d {
     // Set current version here.
     VersionInfo thisVersionOfV3D(2.537);
@@ -244,8 +247,6 @@ namespace v3d {
 V3DVersionChecker::V3DVersionChecker(QWidget *guiParent)
     : guiParent(guiParent)
 {}
-
-QString v3dVersionUrlBase("http://brunsc-wm1.janelia.priv/~brunsc/v3d_version/");
 
 void V3DVersionChecker::checkForLatestVersion(bool b_informOnNoUpdate)
 {
