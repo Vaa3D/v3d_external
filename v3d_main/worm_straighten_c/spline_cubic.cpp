@@ -593,6 +593,7 @@ bool interpolate_cubic_spline(parameterCubicSpline ** cparaArray, int arrayLen,
 	if (lasti!=cutPlaneNum)
 	{
 		printf("Warning: Strange error happen [%ld!=%ld]. Check the program. \n",lasti,cutPlaneNum);
+		cutPlaneNum=lasti;	//add by Lei Qu @20101026
 	}
 		
 	//free temporary spaces
