@@ -92,8 +92,10 @@ protected:
 
 public:
     // Initialize from (2, 532, "a")
-    VersionInfo(int v3d_major_version, int v3d_minor_version, const char* specialLetter = "")
-        : v3d_major_version(v3d_major_version), v3d_minor_version(v3d_minor_version), specialLetter(specialLetter)
+    VersionInfo(int v3d_major_version_param, int v3d_minor_version_param, const char* specialLetter_param = "")
+        :       v3d_major_version(v3d_major_version_param),
+                v3d_minor_version(v3d_minor_version_param),
+                specialLetter(specialLetter_param)
     {
         osPlatform = BUILD_OS_INFO;
         buildTime = BUILD_TIME;

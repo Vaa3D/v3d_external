@@ -244,16 +244,16 @@ void v3d_Lite_info()
 
 namespace v3d {
 
-V3DVersionChecker::V3DVersionChecker(QWidget *guiParent)
-    : guiParent(guiParent)
+V3DVersionChecker::V3DVersionChecker(QWidget *guiParent_param)
+    : guiParent(guiParent_param)
 {}
 
-void V3DVersionChecker::checkForLatestVersion(bool b_informOnNoUpdate)
+void V3DVersionChecker::checkForLatestVersion(bool b_informOnNoUpdate_param)
 {
-    this->b_informOnNoUpdate = b_informOnNoUpdate;
+    this->b_informOnNoUpdate = b_informOnNoUpdate_param;
     QUrl versionUrl(v3dVersionUrlBase + "v3d_version.xml");
     QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    QNetworkReply *reply = nam->get(QNetworkRequest(versionUrl));
+    nam->get(QNetworkRequest(versionUrl));
     connect(nam, SIGNAL(finished(QNetworkReply*)),
         this, SLOT(gotVersion(QNetworkReply*)));
 }
