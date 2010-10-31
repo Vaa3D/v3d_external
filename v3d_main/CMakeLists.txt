@@ -46,6 +46,7 @@ option( V3D_USE_OWN_TIFF "Use the TIFF library source code distributed with v3d"
 if( V3D_USE_OWN_TIFF )
   mark_as_advanced(TIFF_LIBRARY)
   mark_as_advanced(TIFF_INCLUDE_DIR)
+  include_directories(BEFORE "${V3D_SOURCE_DIR}/common_lib/include")
 else()
   # CMake 2.8 FindTiff is very simple.  I need to give it some help on windows
   FIND_PATH(TIFF_INCLUDE_DIR tiff.h
