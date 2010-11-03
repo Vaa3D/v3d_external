@@ -23,6 +23,7 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
 set(CPACK_PACKAGE_VENDOR "Howard Hughes Medical Institute Janelia Farm Research Campus")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/LICENSE")
 set(CPACK_PACKAGE_VERSION "${V3D_VERSION}")
+set(CPACK_PACKAGE_CONTACT "brunsc at janelia.hhmi.org")
 
 # Mac installer is a .dmg disk image containing an application bundle,
 # a link to the /Applications folder, and a background image encouraging
@@ -66,9 +67,25 @@ if(APPLE)
 elseif(WIN32)
     set(CPACK_GENERATOR NSIS)
 # Linux installer is a self extracting shell archive
-# TODO - create deb file for ubuntu
-else() # Linux?
-    set(CPACK_GENERATOR STGZ)
+else() # Linux
+    # If we are on a debian system (e.g. Ubuntu), make a deb installer
+    find_program(DPKG dpkg)
+    mark_as_advanced(DPKG)
+    # Unfortunately cpack 2.8.2 creates archives that cannot be opened with 
+    # stock gnu tar 1.23 on Ubuntu.  So disable DEB for now... Nov-3-2010
+    # if(DPKG)
+    if(FALSE)
+      # Debian package.  Our eventual goal is "apt-get install v3d"
+      set(CPACK_GENERATOR DEB)
+      set(CPACK_PACKAGE_NAME v3d)
+      set(CPACK_PACKAGE_FILE_NAME v3d-${V3D_VERSION})
+      set(CPACK_DEBIAN_PACKAGE_DEPENDS
+        "libtiff4 (>= 3.9.4-2), libqt4-opengl (>= 4.7.0), libqt4-network (>= 4.7.0), libqt4-xml (>= 4.7.0)"
+      )
+    else()
+      # Self extracting shell archive if other installer options unavailable
+      set(CPACK_GENERATOR STGZ)
+    endif()
 endif()
 
 # include(CPack) must always be last!
