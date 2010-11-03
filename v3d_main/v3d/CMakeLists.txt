@@ -105,4 +105,5 @@ if(QT_QTXML_LIBRARY)
   target_link_libraries(v3d ${QT_QTXML_LIBRARY})
 endif()
 
-install(TARGETS v3d DESTINATION ".")
+set(V3D_INSTALL_DIR bin CACHE INTERNAL "Where V3D will be installed")
+install(TARGETS v3d DESTINATION ${V3D_INSTALL_DIR})

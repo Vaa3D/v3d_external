@@ -40,6 +40,17 @@ function(configure_v3d_plugin_common PLUGIN_NAME)
 
 add_library(${PLUGIN_NAME} SHARED ${QtITK_SRCS} ${QT_MOC_SRCS})
 target_link_libraries(${PLUGIN_NAME} ${QT_LIBRARIES} )
+# CMB Nov-03-2010
+# I apologize if I am doing this wrong...
+# Several plugins yield link errors for method v3d_message without this
+# link to the V3DInterface library
+if (TARGET V3DInterface)
+  target_link_libraries(${PLUGIN_NAME} V3DInterface)
+endif()
+# Install plugins below executable for cpack installer builds
+if(V3D_INSTALL_DIR)
+  install(TARGETS ${PLUGIN_NAME} DESTINATION ${V3D_INSTALL_DIR}/plugins)
+endif()
 
 if(NOT PLUGIN_DIRECTORY_NAME)
   set(PLUGIN_DIRECTORY_NAME ${PLUGIN_NAME})

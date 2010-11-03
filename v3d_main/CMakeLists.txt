@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
 project(V3D)
+set(V3D_VERSION "2.537" CACHE STRING "Current version number of V3D")
 
 if(NOT LIBRARY_OUTPUT_PATH)
   set (LIBRARY_OUTPUT_PATH ${V3D_BINARY_DIR}/bin CACHE INTERNAL "Single output directory for building all libraries.")
@@ -19,8 +20,6 @@ set(CMAKE_MODULE_PATH ${V3D_SOURCE_DIR}/CMake)
 
 
 include(CTest)
-
-include(CPack)
 
 # Help find proper version of Qt by finding qmake first
 # Qt version 4.5.2 is required for compatibility with published plugins

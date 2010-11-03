@@ -11,7 +11,7 @@ include( ${QT_USE_FILE} )
 
 include(CTest)
 
-include(CPack)
+# include(CPack) # save cpack for parent directory
 
 
 find_path(V3D_BINARY_DIR v3d)
