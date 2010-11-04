@@ -25,3 +25,4 @@ include_directories(${V3D_BINARY_DIR}/v3dbase)
 add_library(v3dbase1 ${QT_UI_SRCS} ${QT_MOC_SRCS} ${V3DBASE_SRCS})
 
 target_link_libraries( v3dbase1 neuron_editing )
+target_link_libraries( v3dbase1 ${QT_QTXML_LIBRARY} )

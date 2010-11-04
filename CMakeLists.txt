@@ -15,7 +15,7 @@ add_subdirectory(released_plugins)
 
 # TODO - Only Mac installer is well-configured here.
 
-set(CPACK_PACKAGE_NAME InstallV3d-${V3D_VERSION})
+set(CPACK_PACKAGE_NAME v3d)
 # name of dmg file
 set(CPACK_PACKAGE_FILE_NAME "InstallV3d-${V3D_VERSION}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
@@ -24,6 +24,8 @@ set(CPACK_PACKAGE_VENDOR "Howard Hughes Medical Institute Janelia Farm Research 
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/LICENSE")
 set(CPACK_PACKAGE_VERSION "${V3D_VERSION}")
 set(CPACK_PACKAGE_CONTACT "brunsc at janelia.hhmi.org")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY v3d)
+set(CPACK_PACKAGE_EXECUTABLES "v3d.exe" "v3d")
 
 # Mac installer is a .dmg disk image containing an application bundle,
 # a link to the /Applications folder, and a background image encouraging
@@ -63,9 +65,27 @@ if(APPLE)
     set(CPACK_BUNDLE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/v3d/v3d.icns")
     set(CPACK_BUNDLE_PLIST "${CMAKE_CURRENT_BINARY_DIR}/Info.plist")
     set(CPACK_GENERATOR Bundle)
-# Windows installer uses NSIS
+##################
+# Windows installer uses NSIS #
+##################
 elseif(WIN32)
     set(CPACK_GENERATOR NSIS)
+    # There is a bug in NSI that does not handle full unix paths properly. Make
+    # sure there is at least one set of four (4) backslashes.
+    
+    # Believe it or not, it seems all three of these icon settings are required to set the installer icon
+    set(CPACK_NSIS_MUI_ICON
+      "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/windows\\\\v3d.ico")
+    set(CPACK_NSIS_MUI_UNIICON
+       "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/windows\\\\v3d.ico")
+    set(CPACK_PACKAGE_ICON
+       "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/windows\\\\v3dInBox128.png")
+
+    set(CPACK_NSIS_MENU_LINKS "bin/v3d.exe" "V3D") # OK
+    SET(CPACK_NSIS_DISPLAY_NAME V3D)
+    SET(CPACK_NSIS_URL_INFO_ABOUT  
+        "http://penglab.janelia.org/proj/v3d/V3D/About_V3D.html")
+
 # Linux installer is a self extracting shell archive
 else() # Linux
     # If we are on a debian system (e.g. Ubuntu), make a deb installer
@@ -77,7 +97,6 @@ else() # Linux
     if(FALSE)
       # Debian package.  Our eventual goal is "apt-get install v3d"
       set(CPACK_GENERATOR DEB)
-      set(CPACK_PACKAGE_NAME v3d)
       set(CPACK_PACKAGE_FILE_NAME v3d-${V3D_VERSION})
       set(CPACK_DEBIAN_PACKAGE_DEPENDS
         "libtiff4 (>= 3.9.4-2), libqt4-opengl (>= 4.7.0), libqt4-network (>= 4.7.0), libqt4-xml (>= 4.7.0)"

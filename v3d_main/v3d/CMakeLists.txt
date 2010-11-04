@@ -75,7 +75,19 @@ add_library(v3dbase ${QT_UI_SRCS} ${QT_MOC_SRCS})
 
 target_link_libraries( v3dbase v3dbase1 jba newmat11 ${QT_LIBRARIES} )
 
-add_executable( v3d ${V3D_SRCS} ${V3D_RCC_SRCS} )
+if (MSYS) # Windows MSYS build
+  # All this MYS stuff is just to compile in a program icon for windows
+  message("MSYS")
+  set(CMAKE_RC_COMPILER_INIT windres)
+  enable_language(RC)
+  set(CMAKE_RC_COMPILE_OBJECT
+    "<CMAKE_RC_COMPILER> -O coff -i <SOURCE> -o <OBJECT>")
+  add_executable( v3d WIN32
+      ${V3D_SRCS} ${V3D_RCC_SRCS}
+      v3d_win.rc)
+else()
+  add_executable( v3d ${V3D_SRCS} ${V3D_RCC_SRCS} )
+endif()
 
 target_link_libraries( v3d
   v3dbase
@@ -98,12 +110,12 @@ endif()
 
 # CMB 11-Oct-2010
 # message("QtNetwork library = ${QT_QTNETWORK_LIBRARY}")
-if(QT_QTNETWORK_LIBRARY)
+# if(QT_QTNETWORK_LIBRARY)
   target_link_libraries(v3d ${QT_QTNETWORK_LIBRARY})
-endif()
-if(QT_QTXML_LIBRARY)
+# endif()
+# if(QT_QTXML_LIBRARY)
   target_link_libraries(v3d ${QT_QTXML_LIBRARY})
-endif()
+# endif()
 
 set(V3D_INSTALL_DIR bin CACHE INTERNAL "Where V3D will be installed")
 install(TARGETS v3d DESTINATION ${V3D_INSTALL_DIR})

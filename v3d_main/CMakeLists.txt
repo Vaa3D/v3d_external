@@ -138,13 +138,13 @@ add_subdirectory( testing )
 
 if(ZLIB_DLL)
     install(PROGRAMS ${ZLIB_DLL}
-        DESTINATION ".")
+        DESTINATION "${V3D_INSTALL_DIR}")
 endif()
 if(JPEG_DLL)
     install(PROGRAMS ${JPEG_DLL}
-        DESTINATION ".")
+        DESTINATION "${V3D_INSTALL_DIR}")
 endif()
 if(TIFF_DLL)
     install(PROGRAMS ${TIFF_DLL}
-        DESTINATION ".")
+        DESTINATION "${V3D_INSTALL_DIR}")
 endif()

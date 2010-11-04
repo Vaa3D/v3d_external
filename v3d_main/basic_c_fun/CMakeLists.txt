@@ -15,3 +15,4 @@ set(V3DInterface_SRCS
 add_library(V3DInterface ${V3DInterface_SRCS})
 
 target_link_libraries(V3DInterface ${TIFF_LIBRARY})
+target_link_libraries(V3DInterface ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
