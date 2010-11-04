@@ -195,7 +195,7 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 			*actLockSceneEditObjGeometry=0,
 
 			*actMarkerCreate1=0, *actMarkerCreate2=0, *actMarkerCreate3=0, *actMarkerRefineT=0, *actMarkerRefineC=0, *actMarkerRefineLocal=0, *actMarkerAutoSeed=0,
-			*actMarkerZoomin3D=0,
+			*actMarkerZoomin3D=0, *actMarkerMoveToMiddleZ=0, 
 			*actMarkerDelete=0, *actMarkerClearAll=0, *actMarkerCreateNearestNeuronNode=0,
 			*actMarkerTraceFromStartPos=0, *actMarkerTraceFromStartPos_selPara=0, *actMarkerLineProfileFromStartPos=0, *actMarkerLineProfileFromStartPos_drawline=0, *actMarkerLabelAsStartPos=0,
 			*actMarkerTraceFromOnePos=0, *actMarkerTraceFromOnePosToOtherMarkers=0,
@@ -311,6 +311,7 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 				listAct.append(actMarkerRefineT = new QAction("translate marker position by 1 right-click", w));
 				listAct.append(actMarkerDelete = new QAction("delete this marker", w));
 				listAct.append(actMarkerClearAll = new QAction("clear All markers", w));
+				listAct.append(actMarkerMoveToMiddleZ = new QAction("change all markers' Z locations to mid-Z-slice", w));
 
 				// marker to tracing -----------------------------------------------------------
 
@@ -721,6 +722,19 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 				curImg->last_hit_landmark = -1;
 				curImg->listLandmarks.clear();
 				listMarker.clear();
+			}
+		}
+	}
+	else if (act == actMarkerMoveToMiddleZ)
+	{
+		if (w && curImg)
+		{
+			V3DLONG newz = curImg->getZDim()/2;
+			for (V3DLONG i=0; i < curImg->listLandmarks.size(); i++)
+			{
+				ImageMarker & im = listMarker[i]; 
+				LocationSimple & ls = curImg->listLandmarks[i]; 
+				im.z = ls.z = newz;
 			}
 		}
 	}
