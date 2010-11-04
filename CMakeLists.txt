@@ -2,6 +2,9 @@
 project(V3DPackage)
 cmake_minimum_required(VERSION 2.8)
 
+# I want to use my local version of the STGZ header input
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake")
+
 # Build V3D
 add_subdirectory(v3d_main)
 
