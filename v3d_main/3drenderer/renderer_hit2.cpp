@@ -38,6 +38,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  * Last update: 20100404: Hanchuan Peng. add the new merge closeby method and disable the old merge one branch menu
  * Last update: 20100820: Hanchuan Peng. add a 3d curve and zoom function
  * Last update: 20101008: Hanchuan Peng. add support to v3d_imaging
+ * Last update: 20101105: Hanchuan Peng. add more surgical operations
  *
  *  Copyright Hanchuan Peng. All rights reserved.
  *
@@ -202,7 +203,10 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 
 			*actCurveCreate1=0, *actCurveCreate2=0, *actCurveCreate3=0, *actCurveCreate_pointclick=0,
 			*actCurveCreate_zoom=0, *actMarkerCreate_zoom=0,
+	
 			*actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
+	        *actMarkerAblateOne_imaging=0, *actMarkerAblateAll_imaging=0, 
+			//need to add more surgical operations here later, such as curve_ablating (without displaying the curve first), etc. by PHC, 20101105
 
 			*actNeuronToEditable=0, *actDecomposeNeuron=0, *actNeuronFinishEditing=0,
 			*actChangeNeuronSegType=0, *actChangeNeuronSegRadius=0, *actReverseNeuronSeg=0,
@@ -312,6 +316,10 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 				listAct.append(actMarkerDelete = new QAction("delete this marker", w));
 				listAct.append(actMarkerClearAll = new QAction("clear All markers", w));
 				listAct.append(actMarkerMoveToMiddleZ = new QAction("change all markers' Z locations to mid-Z-slice", w));
+
+				listAct.append(act = new QAction("", w)); act->setSeparator(true);
+				listAct.append(actMarkerAblateOne_imaging = new QAction("ablate this marker", w));
+				listAct.append(actMarkerAblateAll_imaging = new QAction("ablate All markers", w));
 
 				// marker to tracing -----------------------------------------------------------
 
@@ -601,13 +609,6 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 		b_addthiscurve = false;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
-	else if (act == actCurveCreate_zoom_imaging)
-	{
-		selectMode = smCurveCreate1;
-		b_addthiscurve = false;
-		b_imaging = true;
-		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
-	}
 
 #define __create_marker__ // dummy, just for easy locating
 
@@ -653,6 +654,15 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 		b_addthismarker = false;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
+
+#define __v3d_imaging_func__ // dummy, just for easy locating
+	else if (act == actCurveCreate_zoom_imaging)
+	{
+		selectMode = smCurveCreate1;
+		b_addthiscurve = false;
+		b_imaging = true;
+		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+	}
 	else if (act == actMarkerCreate_zoom_imaging)
 	{
 		selectMode = smMarkerCreate1;
@@ -660,7 +670,33 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 		b_imaging = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
-
+	else if (act == actMarkerAblateOne_imaging || act == actMarkerAblateAll_imaging)
+	{
+		if (w && curImg && curXWidget)
+		{
+			v3d_imaging_paras myimagingp;
+			myimagingp.OPS = "POINT_ABLATING";
+			myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+			
+			bool doit = (curImg->listLandmarks.size()>0) ? true : false;
+			
+			if (doit && act == actMarkerAblateAll_imaging)
+				myimagingp.list_landmarks = curImg->listLandmarks;
+			else // act == actMarkerAblateOne_imaging
+			{
+				int tmpind = names[2]-1;
+				if (tmpind>=0)
+					myimagingp.list_landmarks << curImg->listLandmarks.at(tmpind);
+				else
+					doit = false;
+			}
+				
+			//do imaging
+			if (doit)
+				v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);			
+		}
+	}
+	
 #ifndef test_main_cpp
 
 	else if (act == actMarkerAutoSeed)
@@ -2064,6 +2100,7 @@ void Renderer_tex2::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 
 			//set up parameters
 			v3d_imaging_paras myimagingp;
+			myimagingp.OPS = "ROI_IMAGING";
 			myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
 			myimagingp.xs = mx;
 			myimagingp.ys = my;

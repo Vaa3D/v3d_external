@@ -94,8 +94,10 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 		//mypluginloader.runPlugin(loader, QString("about this plugin"));
 
 		curw->getImageData()->setCustomStructPointer((void *)(&p)); //to pass parameters to the imaging plugin
-		mypluginloader.runPlugin(loader, "ROI_IMAGING");
-		//mypluginloader.runPlugin(loader, "about");
+		
+		mypluginloader.runPlugin(loader, p.OPS);
+			//mypluginloader.runPlugin(loader, "about");
+			
 	}
 	catch (...)
 	{
