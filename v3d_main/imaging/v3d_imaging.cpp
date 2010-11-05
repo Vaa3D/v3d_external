@@ -42,7 +42,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 {
-	v3d_msg("Now try to do imaging", 0);
+	v3d_msg(QString("Now try to do imaging [%1]").arg(p.OPS), 0);
 	
 	try 
 	{

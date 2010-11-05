@@ -693,7 +693,18 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 				
 			//do imaging
 			if (doit)
-				v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);			
+			{
+				//set the hiddenSelectWidget for the V3D mainwindow
+				if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+				{
+					v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);			
+				}
+				else
+				{
+					v3d_msg("Fail to set up the curHiddenSelectedXWidget for the V3D mainwindow. Do nothing.");
+				}
+
+			}
 		}
 	}
 	
