@@ -109,13 +109,27 @@ else()
 endif()
 
 # CMB 11-Oct-2010
-# message("QtNetwork library = ${QT_QTNETWORK_LIBRARY}")
-# if(QT_QTNETWORK_LIBRARY)
-  target_link_libraries(v3d ${QT_QTNETWORK_LIBRARY})
-# endif()
-# if(QT_QTXML_LIBRARY)
-  target_link_libraries(v3d ${QT_QTXML_LIBRARY})
-# endif()
+target_link_libraries(v3d ${QT_QTNETWORK_LIBRARY})
+target_link_libraries(v3d ${QT_QTXML_LIBRARY})
 
 set(V3D_INSTALL_DIR bin CACHE INTERNAL "Where V3D will be installed")
 install(TARGETS v3d DESTINATION ${V3D_INSTALL_DIR})
+
+# Also install shared libraries that might be needed by v3d
+foreach(LIB 
+    ${TIFF_LIBRARY} 
+    # ${QT_QTCORE_LIBRARY}
+    # ${QT_QTGUI_LIBRARY}
+    # ${QT_QTNETWORK_LIBRARY}
+    # ${QT_QTXML_LIBRARY}
+)
+  if(LIB)
+    # Install the library next to v3d executable.
+    # But be careful.  The library might be a symlink.
+    # We want the real file, not the symlink
+    get_filename_component(LIB_REALPATH ${LIB} REALPATH)
+    install(PROGRAMS ${LIB_REALPATH}
+        DESTINATION ${V3D_INSTALL_DIR})
+  endif()
+endforeach()
+
