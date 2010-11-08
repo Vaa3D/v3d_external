@@ -1,7 +1,15 @@
 cmake_minimum_required(VERSION 2.8)
 
 project(V3D)
-set(V3D_VERSION "2.537" CACHE STRING "Current version number of V3D")
+
+# Parse version number from source file
+file(STRINGS 
+    "${CMAKE_CURRENT_SOURCE_DIR}/v3d/v3d_version_info.cpp"
+    V3D_VERSION_TMP
+    REGEX "VersionInfo thisVersionOfV3D(.*)")
+string(REGEX MATCH "[0-9+]\\.[0-9.]+" V3D_VERSION_TMP ${V3D_VERSION_TMP})
+set(V3D_VERSION ${V3D_VERSION_TMP} CACHE INTERNAL "Current version of V3D" FORCE)
+# message("V3D version = " ${V3D_VERSION})
 
 if(NOT LIBRARY_OUTPUT_PATH)
   set (LIBRARY_OUTPUT_PATH ${V3D_BINARY_DIR}/bin CACHE INTERNAL "Single output directory for building all libraries.")
