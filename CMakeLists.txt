@@ -42,6 +42,7 @@ set(CPACK_COMPONENT_PLUGINS_DEPENDS v3d)
 set(CPACK_COMPONENT_PLUGINS_DESCRIPTION "Standard plugin extensions to V3D")
 set(CPACK_COMPONENT_RUNTIMELIBRARIES_DEPENDS v3d)
 set(CPACK_COMPONENT_RUNTIMELIBRARIES_DESCRIPTION "Qt, Tiff, and other dynamic libraries needed by V3D")
+set(CPACK_COMPONENTS_ALL_IN_ONE_PACKAGE TRUE) # Just one stgz installer, please
 
 # Mac installer is a .dmg disk image containing an application bundle,
 # a link to the /Applications folder, and a background image encouraging

@@ -117,30 +117,47 @@ install(TARGETS v3d
     COMPONENT v3d)
 
 # Also install shared libraries that are needed by v3d
-get_filename_component(CXX_BINDIR "${CMAKE_CXX_COMPILER}" PATH)
-set(LIB_PATHS 
-    "${TIFF_INCLUDE_DIR}/../bin" 
-    "${QT_LIBRARY_DIR}/../bin"
-    "${CXX_BINDIR}")
-set(LIB_SUFFIX "dll")
-foreach(SHLIB 
-        zlib1 jpeg62 libtiff3 
-        QtCore4 QtGui4 QtNetwork4 QtOpenGL4 QtXml
+if(WIN32) # well, MSYS, mostly
+    get_filename_component(CXX_BINDIR "${CMAKE_CXX_COMPILER}" PATH)
+    set(LIB_PATHS
+        "${TIFF_INCLUDE_DIR}/../bin"
+        "${QT_LIBRARY_DIR}/../bin"
+        "${CXX_BINDIR}")
+    set(LIB_SUFFIX ".dll") # Look for explicit file names, not just roots on Win32
+    set(SHLIBS zlib1 jpeg62 libtiff3
+        QtCore4 QtGui4 QtNetwork4 QtOpenGL4 QtXml4
         mingwm10 "libgcc_s_dw2-1" "libstdc++-6")
+endif()
+if(UNIX AND NOT APPLE) # Linux
+    set(LIB_PATHS "")
+    set(LIB_SUFFIX "") # Let ".so" be assumed...
+    set(SHLIBS libtiff.so.4 libz.so.1 libjpeg.so.62
+        libQtCore.so.4 libQtGui.so.4 libQtNetwork.so.4 libQtOpenGL.so.4 libQtXml.so.4)
+endif()
+foreach(SHLIB ${SHLIBS})
     set(lib_var_name "${SHLIB}_LIB_FILE")
-    find_program(${lib_var_name}
-        NAMES "${SHLIB}.${LIB_SUFFIX}"
+    find_file(${lib_var_name}
+        NAMES 
+            ${SHLIB}${LIB_SUFFIX}
         PATHS ${LIB_PATHS}
         NO_DEFAULT_PATH)
+    find_file(${lib_var_name}
+        NAMES "${SHLIB}${LIB_SUFFIX}"
+        PATHS /usr/lib /lib
+        # Yes default paths, if above find_library failed
+        )
     set(lib_name "${${lib_var_name}}")
-    if(lib_name)
-        set(ADDL_SHARED_LIBS ${ADDL_SHARED_LIBS} "${lib_name}")
+    # Follow symlinks to the real file
+    # So we don't just install symlinks
+    get_filename_component(real_lib ${lib_name} REALPATH)
+    get_filename_component(lib_name ${lib_name} NAME) # Strip path
+    if(real_lib)
+        install(PROGRAMS
+            ${real_lib}
+            DESTINATION ${V3D_INSTALL_DIR}
+            COMPONENT RuntimeLibraries
+            RENAME ${lib_name}
+    )
     endif()
     mark_as_advanced(${lib_var_name})
 endforeach()
-if (ADDL_SHARED_LIBS)
-    install(PROGRAMS
-        ${ADDL_SHARED_LIBS}
-        DESTINATION ${V3D_INSTALL_DIR}
-        COMPONENT RuntimeLibraries)
-endif()
