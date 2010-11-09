@@ -77,7 +77,6 @@ target_link_libraries( v3dbase v3dbase1 jba newmat11 ${QT_LIBRARIES} )
 
 if (MSYS) # Windows MSYS build
   # All this MYS stuff is just to compile in a program icon for windows
-  message("MSYS")
   set(CMAKE_RC_COMPILER_INIT windres)
   enable_language(RC)
   set(CMAKE_RC_COMPILE_OBJECT
@@ -113,23 +112,35 @@ target_link_libraries(v3d ${QT_QTNETWORK_LIBRARY})
 target_link_libraries(v3d ${QT_QTXML_LIBRARY})
 
 set(V3D_INSTALL_DIR bin CACHE INTERNAL "Where V3D will be installed")
-install(TARGETS v3d DESTINATION ${V3D_INSTALL_DIR})
+install(TARGETS v3d 
+    DESTINATION ${V3D_INSTALL_DIR}
+    COMPONENT v3d)
 
-# Also install shared libraries that might be needed by v3d
-foreach(LIB 
-    ${TIFF_LIBRARY} 
-    # ${QT_QTCORE_LIBRARY}
-    # ${QT_QTGUI_LIBRARY}
-    # ${QT_QTNETWORK_LIBRARY}
-    # ${QT_QTXML_LIBRARY}
-)
-  if(LIB)
-    # Install the library next to v3d executable.
-    # But be careful.  The library might be a symlink.
-    # We want the real file, not the symlink
-    get_filename_component(LIB_REALPATH ${LIB} REALPATH)
-    install(PROGRAMS ${LIB_REALPATH}
-        DESTINATION ${V3D_INSTALL_DIR})
-  endif()
+# Also install shared libraries that are needed by v3d
+get_filename_component(CXX_BINDIR "${CMAKE_CXX_COMPILER}" PATH)
+set(LIB_PATHS 
+    "${TIFF_INCLUDE_DIR}/../bin" 
+    "${QT_LIBRARY_DIR}/../bin"
+    "${CXX_BINDIR}")
+set(LIB_SUFFIX "dll")
+foreach(SHLIB 
+        zlib1 jpeg62 libtiff3 
+        QtCore4 QtGui4 QtNetwork4 QtOpenGL4 QtXml
+        mingwm10 "libgcc_s_dw2-1" "libstdc++-6")
+    set(lib_var_name "${SHLIB}_LIB_FILE")
+    find_program(${lib_var_name}
+        NAMES "${SHLIB}.${LIB_SUFFIX}"
+        PATHS ${LIB_PATHS}
+        NO_DEFAULT_PATH)
+    set(lib_name "${${lib_var_name}}")
+    if(lib_name)
+        set(ADDL_SHARED_LIBS ${ADDL_SHARED_LIBS} "${lib_name}")
+    endif()
+    mark_as_advanced(${lib_var_name})
 endforeach()
-
+if (ADDL_SHARED_LIBS)
+    install(PROGRAMS
+        ${ADDL_SHARED_LIBS}
+        DESTINATION ${V3D_INSTALL_DIR}
+        COMPONENT RuntimeLibraries)
+endif()

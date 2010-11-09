@@ -2,6 +2,13 @@
 project(V3DPackage)
 cmake_minimum_required(VERSION 2.8)
 
+# It is important on Windows for both v3d and plugins to use same build type.
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING 
+        "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." 
+        FORCE) # Default to Release
+endif()
+
 # I want to use my local version of the STGZ header input
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake")
 
@@ -16,8 +23,6 @@ add_subdirectory(released_plugins)
 # Packaging custom installers for each platform using cpack #
 #############################################################
 
-# TODO - Only Mac installer is well-configured here.
-
 set(CPACK_PACKAGE_NAME v3d)
 # name of dmg file
 set(CPACK_PACKAGE_FILE_NAME "InstallV3d-${V3D_VERSION}")
@@ -29,6 +34,14 @@ set(CPACK_PACKAGE_VERSION "${V3D_VERSION}")
 set(CPACK_PACKAGE_CONTACT "brunsc at janelia.hhmi.org")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY v3d)
 set(CPACK_PACKAGE_EXECUTABLES "v3d.exe" "v3d")
+
+# Component arrangement in NSIS installer (and possible mac package installer, if we make one)
+set(CPACK_COMPONENT_V3D_REQUIRED TRUE)
+set(CPACK_COMPONENT_V3D_DESCRIPTION "V3D application for bioimage visualization and analysis")
+set(CPACK_COMPONENT_PLUGINS_DEPENDS v3d)
+set(CPACK_COMPONENT_PLUGINS_DESCRIPTION "Standard plugin extensions to V3D")
+set(CPACK_COMPONENT_RUNTIMELIBRARIES_DEPENDS v3d)
+set(CPACK_COMPONENT_RUNTIMELIBRARIES_DESCRIPTION "Qt, Tiff, and other dynamic libraries needed by V3D")
 
 # Mac installer is a .dmg disk image containing an application bundle,
 # a link to the /Applications folder, and a background image encouraging

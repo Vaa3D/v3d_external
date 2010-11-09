@@ -68,19 +68,6 @@ else()
   include_directories(${TIFF_INCLUDE_DIR})
   mark_as_advanced(CLEAR TIFF_LIBRARY)
   mark_as_advanced(CLEAR TIFF_INCLUDE_DIR)
-  # When building with MSYS on Windows, need to copy libtiff dlls
-  # message("CMake generator = ${CMAKE_GENERATOR}")
-  if(${CMAKE_GENERATOR} MATCHES "MSYS")
-    find_file(ZLIB_DLL
-      NAMES zlib1.dll
-      PATHS ${TIFF_INCLUDE_DIR}/../bin)
-    find_file(JPEG_DLL
-      NAMES jpeg62.dll
-      PATHS ${TIFF_INCLUDE_DIR}/../bin)
-    find_file(TIFF_DLL
-      NAMES libtiff3.dll
-      PATHS ${TIFF_INCLUDE_DIR}/../bin)
-  endif()
 endif()
 
 # message("QTVERSION = ${QTVERSION}")
@@ -156,17 +143,3 @@ add_subdirectory( cellseg )
 add_subdirectory( v3d )
 
 add_subdirectory( testing )
-
-
-if(ZLIB_DLL)
-    install(PROGRAMS ${ZLIB_DLL}
-        DESTINATION "${V3D_INSTALL_DIR}")
-endif()
-if(JPEG_DLL)
-    install(PROGRAMS ${JPEG_DLL}
-        DESTINATION "${V3D_INSTALL_DIR}")
-endif()
-if(TIFF_DLL)
-    install(PROGRAMS ${TIFF_DLL}
-        DESTINATION "${V3D_INSTALL_DIR}")
-endif()
