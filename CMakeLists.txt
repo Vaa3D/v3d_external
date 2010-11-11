@@ -93,7 +93,7 @@ elseif(WIN32)
     set(CPACK_PACKAGE_ICON
        "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/windows\\\\v3dInBox128.png")
 
-    set(CPACK_NSIS_MENU_LINKS "v3d.exe" "V3D") # OK
+    set(CPACK_NSIS_MENU_LINKS "bin/v3d.exe" "V3D")
     SET(CPACK_NSIS_DISPLAY_NAME V3D)
     SET(CPACK_NSIS_URL_INFO_ABOUT  
         "http://penglab.janelia.org/proj/v3d/V3D/About_V3D.html")
@@ -105,6 +105,7 @@ else() # Linux
     mark_as_advanced(DPKG)
     # Unfortunately cpack 2.8.2 creates archives that cannot be opened with 
     # stock gnu tar 1.23 on Ubuntu.  So disable DEB for now... Nov-3-2010
+    # cpack 2.8.3 is better, but it turns out that cpack/deb is inadequate to make a world class deb distribution.
     # if(DPKG)
     if(FALSE)
       # Debian package.  Our eventual goal is "apt-get install v3d"
