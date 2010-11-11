@@ -190,13 +190,10 @@ void V3d_PluginLoader::loadPlugins()
     //  a - below the actual executable i.e. v3d.app/Contents/MacOS/plugins/
     //  b - parallel to v3d.app i.e. foo/v3d.app and foo/plugins/
     if (pluginsDir.dirName() == "MacOS") {
-        QDir testLowerPluginsDir = pluginsDir;
-        testLowerPluginsDir.cd("plugins");
         QDir testUpperPluginsDir = pluginsDir;
         testUpperPluginsDir.cdUp();
         testUpperPluginsDir.cdUp();
         testUpperPluginsDir.cdUp();
-        testUpperPluginsDir.cd("plugins");
         // Give priority to upper directory
         if (testUpperPluginsDir.cd("plugins")) {
             pluginsDir.cdUp();
