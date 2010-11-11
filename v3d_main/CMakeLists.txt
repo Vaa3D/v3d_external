@@ -33,7 +33,7 @@ include(CTest)
 set(QT_DESIRED_VERSION 4.5.2)
 find_program(QT_QMAKE_EXECUTABLE qmake
   PATHS
-    /usr/local/Trolltech/Qt-${QT_DESIRED_VERSION}/bin
+    # /usr/local/Trolltech/Qt-${QT_DESIRED_VERSION}/bin
   NO_DEFAULT_PATH
 )
 
@@ -75,22 +75,26 @@ find_path(QT4_DEMOS_INCLUDE_DIR
   arthurwidgets.h
   PATHS
         ${QT_LIBRARY_DIR}/..
+        /Developer/Examples/Qt
 	/usr/lib/qt4
 	/usr/local/Trolltech/Qt-${QTVERSION}
 	"C:/Qt/${QTVERSION}"
   PATH_SUFFIXES
 	demos/shared
+	Demos/shared
    )
 
 find_library(QT4_DEMOS_LIBRARY
   demo_shared
   HINTS 
         ${QT_LIBRARY_DIR}/..
+        /Developer/Examples/Qt
 	/usr/lib/qt4
 	/usr/local/Trolltech/Qt-${QTVERSION}
 	"C:/Qt/${QTVERSION}"
   PATH_SUFFIXES
 	demos/shared
+	Demos/shared
 	demos/shared/release # Windows
   )
 

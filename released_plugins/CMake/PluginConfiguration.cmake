@@ -39,6 +39,7 @@ endfunction(CONFIGURE_V3D_PLUGIN_SIMPLE)
 function(configure_v3d_plugin_common PLUGIN_NAME)
 
 add_library(${PLUGIN_NAME} SHARED ${QtITK_SRCS} ${QT_MOC_SRCS})
+add_dependencies(FinishedPlugins ${PLUGIN_NAME})
 target_link_libraries(${PLUGIN_NAME} ${QT_LIBRARIES} )
 # CMB Nov-03-2010
 # I apologize if I am doing this wrong...
@@ -60,14 +61,27 @@ else()
   file(MAKE_DIRECTORY ${PLUGIN_DESTINATION_DIR})
 endif()
 
-
-# CMB Nov 3 2010
-# MSYS on windows requires "RUNTIME" parameter too.
-install(TARGETS ${PLUGIN_NAME}
-  LIBRARY DESTINATION "${PLUGIN_DESTINATION_DIR}" 
-  RUNTIME DESTINATION "${PLUGIN_DESTINATION_DIR}" 
-  PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
-  COMPONENT Plugins
-  )
+# Don't install plugins separate from app bundle on apple
+if(BUNDLE_BUILD_DIR AND APPLE)
+    # Build plugins in place inside app bundle
+    set(dest_dir "${BUNDLE_BUILD_DIR}/Contents/MacOS/plugins/${PLUGIN_DIRECTORY_NAME}")
+    file(MAKE_DIRECTORY "${dest_dir}")
+    set_target_properties(${PLUGIN_NAME} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${dest_dir}"
+        LIBRARY_OUTPUT_DIRECTORY "${dest_dir}"
+        ARCHIVE_OUTPUT_DIRECTORY "${dest_dir}"
+    )
+else()
+    # Non-MacOSX bundle, so ordinary install
+    # CMB Nov 3 2010
+    # MSYS on windows requires "RUNTIME" parameter too.
+    install(TARGETS ${PLUGIN_NAME}
+      LIBRARY DESTINATION "${PLUGIN_DESTINATION_DIR}" 
+      RUNTIME DESTINATION "${PLUGIN_DESTINATION_DIR}" 
+      PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
+      COMPONENT Plugins
+    )
+endif()
 
 endfunction(configure_v3d_plugin_common)
+

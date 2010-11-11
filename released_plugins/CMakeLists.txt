@@ -36,6 +36,10 @@ set (EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin
 
 include_directories( ${V3D_BASIC_C_FUN_SOURCE_DIR} )
 
+# CMB Nov-11-2010 Need to wait until all plugins are built before running macdeployqt
+add_custom_target(FinishedPlugins
+    COMMENT "All plugins have been built")
+
 include(${PROJECT_SOURCE_DIR}/CMake/PluginConfiguration.cmake)
 
 add_subdirectory( v3d_plugins )

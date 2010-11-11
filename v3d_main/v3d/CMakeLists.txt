@@ -111,53 +111,93 @@ endif()
 target_link_libraries(v3d ${QT_QTNETWORK_LIBRARY})
 target_link_libraries(v3d ${QT_QTXML_LIBRARY})
 
-set(V3D_INSTALL_DIR bin CACHE INTERNAL "Where V3D will be installed")
-install(TARGETS v3d 
-    DESTINATION ${V3D_INSTALL_DIR}
-    COMPONENT v3d)
-
-# Also install shared libraries that are needed by v3d
-if(WIN32) # well, MSYS, mostly
-    get_filename_component(CXX_BINDIR "${CMAKE_CXX_COMPILER}" PATH)
-    set(LIB_PATHS
-        "${TIFF_INCLUDE_DIR}/../bin"
-        "${QT_LIBRARY_DIR}/../bin"
-        "${CXX_BINDIR}")
-    set(LIB_SUFFIX ".dll") # Look for explicit file names, not just roots on Win32
-    set(SHLIBS zlib1 jpeg62 libtiff3
-        QtCore4 QtGui4 QtNetwork4 QtOpenGL4 QtXml4
-        mingwm10 "libgcc_s_dw2-1" "libstdc++-6")
-endif()
-if(UNIX AND NOT APPLE) # Linux
-    set(LIB_PATHS "")
-    set(LIB_SUFFIX "") # Let ".so" be assumed...
-    set(SHLIBS libtiff.so.4 libz.so.1 libjpeg.so.62
-        libQtCore.so.4 libQtGui.so.4 libQtNetwork.so.4 libQtOpenGL.so.4 libQtXml.so.4)
-endif()
-foreach(SHLIB ${SHLIBS})
-    set(lib_var_name "${SHLIB}_LIB_FILE")
-    find_file(${lib_var_name}
-        NAMES 
-            ${SHLIB}${LIB_SUFFIX}
-        PATHS ${LIB_PATHS}
-        NO_DEFAULT_PATH)
-    find_file(${lib_var_name}
-        NAMES "${SHLIB}${LIB_SUFFIX}"
-        PATHS /usr/lib /lib
-        # Yes default paths, if above find_library failed
-        )
-    set(lib_name "${${lib_var_name}}")
-    # Follow symlinks to the real file
-    # So we don't just install symlinks
-    get_filename_component(real_lib ${lib_name} REALPATH)
-    get_filename_component(lib_name ${lib_name} NAME) # Strip path
-    if(real_lib)
-        install(PROGRAMS
-            ${real_lib}
-            DESTINATION ${V3D_INSTALL_DIR}
-            COMPONENT RuntimeLibraries
-            RENAME ${lib_name}
+if(APPLE)
+    # Build app bundle in place at build time
+    set(BUNDLE_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/v3d.app" CACHE PATH "Where to build Mac OS X application bundle")
+    file(REMOVE_RECURSE "${BUNDLE_BUILD_DIR}/Contents/Frameworks") # Dangerous...
+    file(REMOVE_RECURSE "${BUNDLE_BUILD_DIR}/Contents/Plugins") # Dangerous...
+    file(MAKE_DIRECTORY "${BUNDLE_BUILD_DIR}"
+                        "${BUNDLE_BUILD_DIR}/Contents"
+                        "${BUNDLE_BUILD_DIR}/Contents/MacOS"
+                        "${BUNDLE_BUILD_DIR}/Contents/Resources"
     )
+    # Build v3d directly into nascent app bundle
+    set_target_properties(v3d PROPERTIES 
+        RUNTIME_OUTPUT_DIRECTORY "${BUNDLE_BUILD_DIR}/Contents/MacOS")
+    # MACOSX_BUNDLE_WHATEVER parameters must be set before configure_file statement on Info.plist is called
+    # MACOSX_BUNDLE_EXECUTABLE_NAME should match CPACK_BUNDLE_NAME
+    set(MACOSX_BUNDLE_EXECUTABLE_NAME v3d)
+    set(MACOSX_BUNDLE_INFO_STRING "v3d")
+    set(MACOSX_BUNDLE_ICON_FILE "v3d.icns")
+    set(MACOSX_BUNDLE_GUI_IDENTIFIER "org.hhmi.janelia.v3d")
+    set(MACOSX_BUNDLE_LONG_VERSION_STRING ${V3D_VERSION})
+    set(MACOSX_BUNDLE_BUNDLE_NAME v3d)
+    set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${V3D_VERSION})
+    set(MACOSX_BUNDLE_BUNDLE_VERSION ${PACKAGE_VERSION})
+    set(MACOSX_BUNDLE_COPYRIGHT "(c) 2006-2010 Hanchuan Peng")
+    configure_file(
+      ${CMAKE_CURRENT_SOURCE_DIR}/../CMake/package/MacOSXBundleInfo.plist.in
+      ${BUNDLE_BUILD_DIR}/Contents/Info.plist
+      @ONLY
+    )
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/../v3d/v3d.icns"
+        "${BUNDLE_BUILD_DIR}/Contents/Resources/v3d.icns"
+        COPYONLY)
+    install(DIRECTORY ${BUNDLE_BUILD_DIR}
+        DESTINATION "."
+        USE_SOURCE_PERMISSIONS)
+
+else(APPLE)
+
+    # On non-apple platforms, install executable, libraries, and plugins individually
+    set(V3D_INSTALL_DIR "bin" CACHE INTERNAL "Relative path where V3D will be installed")
+    install(TARGETS v3d 
+        DESTINATION ${V3D_INSTALL_DIR}
+        COMPONENT v3d)
+    
+    # Also install shared libraries that are needed by v3d
+    if(WIN32) # well, MSYS, mostly
+        get_filename_component(CXX_BINDIR "${CMAKE_CXX_COMPILER}" PATH)
+        set(LIB_PATHS
+            "${TIFF_INCLUDE_DIR}/../bin"
+            "${QT_LIBRARY_DIR}/../bin"
+            "${CXX_BINDIR}")
+        set(SHLIBS zlib1 jpeg62 libtiff3
+            QtCore4.dll QtGui4.dll QtNetwork4.dll QtOpenGL4.dll QtXml4.dll
+            mingwm10.dll "libgcc_s_dw2-1.dll" "libstdc++-6.dll")
     endif()
-    mark_as_advanced(${lib_var_name})
-endforeach()
+    if(UNIX AND NOT APPLE) # Linux
+        set(LIB_PATHS "")
+        set(SHLIBS libtiff.so.4 libz.so.1 libjpeg.so.62
+            libQtCore.so.4 libQtGui.so.4 libQtNetwork.so.4 libQtOpenGL.so.4 libQtXml.so.4)
+    endif()
+    foreach(SHLIB ${SHLIBS})
+        set(lib_var_name "${SHLIB}_LIB_FILE")
+        find_file(${lib_var_name}
+            NAMES 
+                ${SHLIB}
+            PATHS ${LIB_PATHS}
+            NO_DEFAULT_PATH)
+        find_file(${lib_var_name}
+            NAMES ${SHLIB}
+            PATHS /usr/lib /lib
+            # Yes default paths, if above find_library failed
+            )
+        set(lib_name "${${lib_var_name}}")
+        # Follow symlinks to the real file
+        # So we don't just install symlinks
+        get_filename_component(real_lib ${lib_name} REALPATH)
+        get_filename_component(lib_name ${lib_name} NAME) # Strip path
+        if(real_lib)
+            install(PROGRAMS
+                ${real_lib}
+                DESTINATION ${V3D_INSTALL_DIR}
+                COMPONENT RuntimeLibraries
+                RENAME ${lib_name}
+        )
+        endif()
+        mark_as_advanced(${lib_var_name})
+    endforeach()
+    
+endif(APPLE)

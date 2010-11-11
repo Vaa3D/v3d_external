@@ -186,10 +186,23 @@ void V3d_PluginLoader::loadPlugins()
     if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
         pluginsDir.cdUp();
 #elif defined(Q_OS_MAC)
+    // In a Mac app bundle, plugins directory could be either
+    //  a - below the actual executable i.e. v3d.app/Contents/MacOS/plugins/
+    //  b - parallel to v3d.app i.e. foo/v3d.app and foo/plugins/
     if (pluginsDir.dirName() == "MacOS") {
-        pluginsDir.cdUp();
-        pluginsDir.cdUp();
-        pluginsDir.cdUp();
+        QDir testLowerPluginsDir = pluginsDir;
+        testLowerPluginsDir.cd("plugins");
+        QDir testUpperPluginsDir = pluginsDir;
+        testUpperPluginsDir.cdUp();
+        testUpperPluginsDir.cdUp();
+        testUpperPluginsDir.cdUp();
+        testUpperPluginsDir.cd("plugins");
+        // Give priority to upper directory
+        if (testUpperPluginsDir.cd("plugins")) {
+            pluginsDir.cdUp();
+            pluginsDir.cdUp();
+            pluginsDir.cdUp();
+        }
     }
 #endif
     if (pluginsDir.cd("plugins")==false)

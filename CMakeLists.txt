@@ -49,28 +49,22 @@ set(CPACK_COMPONENTS_ALL_IN_ONE_PACKAGE TRUE) # Just one stgz installer, please
 # the user to drag the app into /Applications.  A license dialog appears
 # when the user tries to open the dmg file.
 if(APPLE)
-    # MACOSX_BUNDLE_WHATEVER parameters must be set before configure_file statement on Info.plist is called
-    # MACOSX_BUNDLE_EXECUTABLE_NAME should match CPACK_BUNDLE_NAME
-    set(MACOSX_BUNDLE_EXECUTABLE_NAME v3d)
-    set(MACOSX_BUNDLE_INFO_STRING "v3d")
-    set(MACOSX_BUNDLE_ICON_FILE "v3d.icns")
-    set(MACOSX_BUNDLE_GUI_IDENTIFIER "org.hhmi.janelia.v3d")
-    set(MACOSX_BUNDLE_LONG_VERSION_STRING ${V3D_VERSION})
-    set(MACOSX_BUNDLE_BUNDLE_NAME v3d)
-    set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${V3D_VERSION})
-    set(MACOSX_BUNDLE_BUNDLE_VERSION ${PACKAGE_VERSION})
-    set(MACOSX_BUNDLE_COPYRIGHT "(c) 2006-2010 Hanchuan Peng")
-    configure_file(
-      ${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/MacOSXBundleInfo.plist.in
-      ${CMAKE_CURRENT_BINARY_DIR}/Info.plist
-      @ONLY
-    )
-    # Use a script to launch the v3d binary within the bundle
-    configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/v3d_mac.sh"
-        "${CMAKE_CURRENT_BINARY_DIR}/mac_script/v3d"
-        COPYONLY)
-    set(CPACK_BUNDLE_STARTUP_COMMAND "${CMAKE_CURRENT_BINARY_DIR}/mac_script/v3d")
+    # Install Qt libraries into bundle
+    find_program(MAC_DEPLOY_QT macdeployqt)
+    add_custom_target(DeployQtLibraries ALL
+        COMMAND "${MAC_DEPLOY_QT}" "${BUNDLE_BUILD_DIR}"
+        COMMENT "Inserting Qt libraries into v3d.app")
+    add_dependencies(DeployQtLibraries v3d)
+    add_dependencies(DeployQtLibraries FinishedPlugins)
+    # But macdeployqt does not fix up plugins properly
+    find_package(Perl)
+    add_custom_target(DeployPlugins ALL
+        COMMAND "${PERL_EXECUTABLE}" 
+            "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/mac/mac_deploy_cleanup.pl"
+            "${BUNDLE_BUILD_DIR}"
+        COMMENT "Adjusting link libraries for plugins")
+    add_dependencies(DeployPlugins DeployQtLibraries)
+
     # Hope for recent version of cpack to pretty up dmg...
     set(CPACK_DMG_VOLUME_NAME "v3d-${V3D_VERSION}")
     set(CPACK_DMG_DS_STORE "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/dmg_DS_STORE")
@@ -78,10 +72,11 @@ if(APPLE)
     #
     set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/V3D_Disk.icns")
     # name of Bundle in dmg file, and executable in bundle
-    set(CPACK_BUNDLE_NAME ${MACOSX_BUNDLE_EXECUTABLE_NAME})
+    set(CPACK_BUNDLE_NAME v3d)
     set(CPACK_BUNDLE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/v3d/v3d.icns")
     set(CPACK_BUNDLE_PLIST "${CMAKE_CURRENT_BINARY_DIR}/Info.plist")
-    set(CPACK_GENERATOR Bundle)
+
+    set(CPACK_GENERATOR DragNDrop)
 ##################
 # Windows installer uses NSIS #
 ##################
@@ -98,7 +93,7 @@ elseif(WIN32)
     set(CPACK_PACKAGE_ICON
        "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/windows\\\\v3dInBox128.png")
 
-    set(CPACK_NSIS_MENU_LINKS "bin/v3d.exe" "V3D") # OK
+    set(CPACK_NSIS_MENU_LINKS "v3d.exe" "V3D") # OK
     SET(CPACK_NSIS_DISPLAY_NAME V3D)
     SET(CPACK_NSIS_URL_INFO_ABOUT  
         "http://penglab.janelia.org/proj/v3d/V3D/About_V3D.html")
