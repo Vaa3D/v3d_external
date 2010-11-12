@@ -75,10 +75,10 @@ protected:
 	void clear();
 	void loadPlugins(); //load only once
 	void addToMenu(QMenu *menu, QObject *plugin, const QStringList &texts, const char *member);
-	void searchPluginDirs(QMenu* menu);
-	void searchPluginFiles(QMenu* menu);
+	void searchPluginDirs(QMenu* menu, const QDir& pluginsDir);
+	void searchPluginFiles(QMenu* menu, const QDir& pluginsDir);
 
-    QDir pluginsDir;
+    QList<QDir> pluginsDirList;
     QStringList pluginFilenameList;
     QList<QPluginLoader*> pluginList;
     QMenu plugin_menu;

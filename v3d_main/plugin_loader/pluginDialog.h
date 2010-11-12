@@ -46,7 +46,7 @@ class PluginDialog : public QDialog
 
 public:
     PluginDialog(const QString &appName,
-    		const QString &path, const QStringList &fileNames,
+    		const QList<QDir> &paths, const QStringList &fileNames,
                  QWidget *parent = 0);
 
 private:

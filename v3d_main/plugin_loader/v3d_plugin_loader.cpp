@@ -181,99 +181,101 @@ void V3d_PluginLoader::loadPlugins()
 		plugin_menu.addSeparator();
 	}
 
-	pluginsDir = QDir(qApp->applicationDirPath());
+    pluginsDirList.clear();
+	QDir testPluginsDir = QDir(qApp->applicationDirPath());
 #if defined(Q_OS_WIN)
-    if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
-        pluginsDir.cdUp();
+    if (testPluginsDir.dirName().toLower() == "debug" || testPluginsDir.dirName().toLower() == "release")
+        testPluginsDir.cdUp();
 #elif defined(Q_OS_MAC)
     // In a Mac app bundle, plugins directory could be either
     //  a - below the actual executable i.e. v3d.app/Contents/MacOS/plugins/
     //  b - parallel to v3d.app i.e. foo/v3d.app and foo/plugins/
-    if (pluginsDir.dirName() == "MacOS") {
-        QDir testUpperPluginsDir = pluginsDir;
+    if (testPluginsDir.dirName() == "MacOS") {
+        QDir testUpperPluginsDir = testPluginsDir;
         testUpperPluginsDir.cdUp();
         testUpperPluginsDir.cdUp();
-        testUpperPluginsDir.cdUp();
-        // Give priority to upper directory
-        if (testUpperPluginsDir.cd("plugins")) {
-            pluginsDir.cdUp();
-            pluginsDir.cdUp();
-            pluginsDir.cdUp();
-        }
+        testUpperPluginsDir.cdUp(); // like foo/plugins next to foo/v3d.app
+        if (testUpperPluginsDir.cd("plugins"))
+            pluginsDirList.append(testUpperPluginsDir);
     }
 #endif
-    if (pluginsDir.cd("plugins")==false)
+    if (testPluginsDir.cd("plugins"))
+        pluginsDirList.append(testPluginsDir);
+
+    if (pluginsDirList.size() == 0)
     {
     	qDebug("Cannot find ./plugins directory!");
     	return;;
     }
 
     qDebug("Searching in ./plugins ...... ");
-	searchPluginDirs(&plugin_menu);
-    searchPluginFiles(&plugin_menu);
-    qDebug("Searching ./plugins done.");
-}
-
-void V3d_PluginLoader::searchPluginDirs(QMenu* menu)
-{
-	if (! menu)  return;
-
-	QStringList dirList = pluginsDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-    foreach (QString dirName, dirList)
+    foreach (const QDir& pluginsDir, pluginsDirList)
     {
-		QMenu* submenu = new QMenu(dirName);
-		if (! submenu)  return;
-		menu->addMenu(submenu);
-
-    	pluginsDir.cd(dirName);
-
-    	searchPluginDirs(submenu);
-        searchPluginFiles(submenu);
-
-        pluginsDir.cdUp();
+    	searchPluginDirs(&plugin_menu, pluginsDir);
+        searchPluginFiles(&plugin_menu, pluginsDir);
+        qDebug("Searching ./plugins done.");
     }
 }
 
-void V3d_PluginLoader::searchPluginFiles(QMenu* menu)
+void V3d_PluginLoader::searchPluginDirs(QMenu* menu, const QDir& pluginsDir)
+{
+	if (! menu)  return;
+
+    QStringList dirList = pluginsDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+    foreach (QString dirName, dirList)
+    {
+        QMenu* submenu = new QMenu(dirName);
+        if (! submenu)  return;
+        menu->addMenu(submenu);
+
+        QDir subDir = pluginsDir;
+        subDir.cd(dirName);
+
+        searchPluginDirs(submenu, subDir);
+        searchPluginFiles(submenu, subDir);
+    }
+}
+
+void V3d_PluginLoader::searchPluginFiles(QMenu* menu, const QDir& pluginsDir)
 {
 	if (!menu)  return;
 
-	QStringList fileList = pluginsDir.entryList(QDir::Files);
+    QStringList fileList = pluginsDir.entryList(QDir::Files);
     foreach (QString fileName, fileList)
     {
-    	QString fullpath = pluginsDir.absoluteFilePath(fileName);
+        QString fullpath = pluginsDir.absoluteFilePath(fileName);
 
-    	QPluginLoader* loader = new QPluginLoader(fullpath);
+        QPluginLoader* loader = new QPluginLoader(fullpath);
         if (! loader)
         {
-        	qDebug("ERROR in V3d_PluginLoader::searchPluginFiles: new QPluginLoader(%s)", qPrintable(fullpath));
-        	return;
+            qDebug("ERROR in V3d_PluginLoader::searchPluginFiles: new QPluginLoader(%s)", qPrintable(fullpath));
+            return;
         }
 
         QObject *plugin = loader->instance(); //a new instance
         if (plugin)
         {
-        	//qDebug()<< "plugin: " << fullpath;
+            //qDebug()<< "plugin: " << fullpath;
             pluginFilenameList += fullpath;
 
             pluginList.append(loader); /////
 
             //--------------------------------------------------
-        	QString iname = v3d_getInterfaceName(plugin);
+            QString iname = v3d_getInterfaceName(plugin);
             if (iname.size())
             {
-            	//addToMenu(menu, plugin, v3d_getInterfaceFeatures(plugin), SLOT(runPlugin()));
-            	addToMenu(menu, loader, v3d_getInterfaceMenuList(plugin), SLOT(runPlugin()));
+                //addToMenu(menu, plugin, v3d_getInterfaceFeatures(plugin), SLOT(runPlugin()));
+                addToMenu(menu, loader, v3d_getInterfaceMenuList(plugin), SLOT(runPlugin()));
             }
             //----------------------------------------------------
         }
         else
         {
-        	qDebug() << "Fail instantiation: " <<fullpath;
+            qDebug() << "Fail instantiation: " <<fullpath;
         }
 
         //unload or left ? is a problem
-     	//loader->unload();     //qDebug() << "unload: " <<fileName;
+        //loader->unload();     //qDebug() << "unload: " <<fileName;
     }
 }
 
@@ -302,7 +304,7 @@ void V3d_PluginLoader::populateMenus()
 
 void V3d_PluginLoader::aboutPlugins()
 {
-    PluginDialog dialog("V3D", pluginsDir.path(), pluginFilenameList, v3d_mainwindow);
+    PluginDialog dialog("V3D", pluginsDirList, pluginFilenameList, v3d_mainwindow);
     dialog.exec();
 }
 
@@ -457,7 +459,15 @@ bool V3d_PluginLoader::runPluginInterface2(QObject* plugin, const QString& comma
 bool V3d_PluginLoader::callPluginFunc(const QString &plugin_name,
 		const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output)
 {
-	QString fullpath = pluginsDir.absoluteFilePath(plugin_name);
+    QString fullpath;
+    foreach (const QDir& pluginsDir, pluginsDirList)
+    {
+        // Find the first plugin directory with such a file
+        if (pluginsDir.exists(plugin_name)) {
+            fullpath = pluginsDir.absoluteFilePath(plugin_name);
+            break;
+        }
+    }
 	qDebug()<<"callPluginFunc fullpath: " <<fullpath;
 	int idx = pluginFilenameList.indexOf(fullpath);
 	//qDebug()<<"callPluginFunc idx: " <<idx;

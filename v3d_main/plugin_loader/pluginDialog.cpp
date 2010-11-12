@@ -76,7 +76,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 
 PluginDialog::PluginDialog(const QString &appname,
-		const QString &path, const QStringList &fileNames,
+		const QList<QDir> &paths, const QStringList &fileNames,
                            QWidget *parent) :
     QDialog(parent),
     label(new QLabel),
@@ -112,14 +112,20 @@ PluginDialog::PluginDialog(const QString &appname,
     menuIcon.addPixmap(style()->standardPixmap(QStyle::SP_FileIcon));
     funcIcon.addPixmap(style()->standardPixmap(QStyle::SP_MessageBoxInformation));
 
-    visitPlugins(path, fileNames);
+    QString labelText = appName; ///appNmae==V3D
+    labelText += tr(" found the following plug-ins\n");
+    foreach (const QDir& dir, paths) {
+        labelText += QString("(%1)\n").arg(QDir::toNativeSeparators(dir.path()));
+        visitPlugins(dir.path(), fileNames);
+    }
+    label->setText(labelText);
 }
 
 void PluginDialog::visitPlugins(const QString &path, const QStringList &fileNameList)
 {
-    label->setText(appName+ tr(" found the following plug-ins\n" ///appNmae==V3D
-                      "(looked in %1):")
-                   .arg(QDir::toNativeSeparators(path)));
+    // label->setText(appName+ tr(" found the following plug-ins\n" ///appNmae==V3D
+    //                  "(looked in %1):")
+    //               .arg(QDir::toNativeSeparators(path)));
 
     const QDir dir(path);
 
