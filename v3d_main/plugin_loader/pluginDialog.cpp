@@ -115,7 +115,7 @@ PluginDialog::PluginDialog(const QString &appname,
     QString labelText = appName; ///appNmae==V3D
     labelText += tr(" found the following plug-ins\n");
     foreach (const QDir& dir, paths) {
-        labelText += QString("(%1)\n").arg(QDir::toNativeSeparators(dir.path()));
+        labelText += QString("(%1):\n").arg(QDir::toNativeSeparators(dir.path()));
         visitPlugins(dir.path(), fileNames);
     }
     label->setText(labelText);
@@ -123,10 +123,6 @@ PluginDialog::PluginDialog(const QString &appname,
 
 void PluginDialog::visitPlugins(const QString &path, const QStringList &fileNameList)
 {
-    // label->setText(appName+ tr(" found the following plug-ins\n" ///appNmae==V3D
-    //                  "(looked in %1):")
-    //               .arg(QDir::toNativeSeparators(path)));
-
     const QDir dir(path);
 
     foreach (QString fileName, fileNameList)
