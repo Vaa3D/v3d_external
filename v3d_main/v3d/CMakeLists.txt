@@ -124,11 +124,10 @@ if(APPLE)
     # Build v3d directly into nascent app bundle
     # Call binary v3d_bin, so "v3d" can be the shell script that launches it.
     set_target_properties(v3d PROPERTIES 
-        RUNTIME_OUTPUT_DIRECTORY "${BUNDLE_BUILD_DIR}/Contents/MacOS"
-        OUTPUT_NAME v3d_bin)
+        RUNTIME_OUTPUT_DIRECTORY "${BUNDLE_BUILD_DIR}/Contents/MacOS")
     # MACOSX_BUNDLE_WHATEVER parameters must be set before configure_file statement on Info.plist is called
     # MACOSX_BUNDLE_EXECUTABLE_NAME should match CPACK_BUNDLE_NAME
-    set(MACOSX_BUNDLE_EXECUTABLE_NAME v3d)
+    set(MACOSX_BUNDLE_EXECUTABLE_NAME v3d_script)
     set(MACOSX_BUNDLE_INFO_STRING "v3d")
     set(MACOSX_BUNDLE_ICON_FILE "v3d.icns")
     set(MACOSX_BUNDLE_GUI_IDENTIFIER "org.hhmi.janelia.v3d")
@@ -144,7 +143,7 @@ if(APPLE)
     )
     configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/../CMake/package/v3d_mac.sh"
-        "${BUNDLE_BUILD_DIR}/Contents/MacOS/v3d"
+        "${BUNDLE_BUILD_DIR}/Contents/MacOS/${MACOSX_BUNDLE_EXECUTABLE_NAME}"
         COPYONLY)
     configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/../v3d/v3d.icns"
