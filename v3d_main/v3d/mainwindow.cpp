@@ -2615,3 +2615,19 @@ Label_exit:
 
 	return;
 }
+
+// CMB 12-Nov-2010
+// Intercept QFileOpenEvent on Mac - drag-onto-app
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::FileOpen)
+    {
+        QFileOpenEvent *openEvent = static_cast<QFileOpenEvent*>(event);
+        QString fileName = openEvent->file();
+        // v3d_msg("file open event: " + fileName);
+        loadV3DFile(fileName);
+        return true; // consume event
+    }
+    // Delegate to parent if we don't want to consume the event
+    return QMainWindow::eventFilter(obj, event);
+}

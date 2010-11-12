@@ -28,6 +28,38 @@
        <string>@MACOSX_BUNDLE_BUNDLE_VERSION@</string>
        <key>NSHumanReadableCopyright</key>
        <string>@MACOSX_BUNDLE_COPYRIGHT@</string>
+       <!-- CFBundleDocumentTypes is used to allow drag-and-drop onto program icon -->
+       <key>CFBundleDocumentTypes</key>
+       <array>
+           <dict>
+           <key>CFBundleTypeExtensions</key>
+           <array>
+               <string>tif</string>
+               <string>tiff</string>
+               <string>TIF</string>
+               <string>TIFF</string>
+               <string>lsm</string>
+           </array>
+           <key>CFBundleTypeMIMETypes</key>
+           <array>
+               <string>image/tiff</string>
+           </array>
+           <key>CFBundleTypeName</key>
+           <string>TIFF Image</string>
+           <key>CFBundleTypeOSTypes</key>
+           <array>
+               <string>TIFF</string>
+           </array>
+           <key>CFBundleTypeRole</key>
+           <string>Editor</string>
+           <key>LSItemContentTypes</key>
+           <array>
+               <string>public.tiff</string>
+           </array>
+           <key>LSTypeIsPackage</key>
+           <false/>
+          </dict>
+      </array>
 </dict>
 </plist>
 

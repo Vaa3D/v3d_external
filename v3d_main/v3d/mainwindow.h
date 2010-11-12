@@ -89,6 +89,10 @@ public:
     XFormWidget ** retrieveAllMdiChild(int & nchild);
 	QList <LocationSimple> buffer_landmark_pts; //080107
 
+    // CMB 12-Nov-2010
+    // Intercept QFileOpenEvent on Mac - drag-onto-app
+    bool eventFilter(QObject *obj, QEvent *event);
+
 protected:
     void closeEvent(QCloseEvent *event);
 

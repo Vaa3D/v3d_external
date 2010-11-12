@@ -144,6 +144,12 @@ int main(int argc, char **argv)
 
 		//090812 RZC: best solution for QMainWindow is using new, then deleteLater itself in its closeEvent.
 		MainWindow* mainWin = new MainWindow;
+
+        // On Mac, allow mainWin to get QFileOpen events, such as when a tif
+        // file is dragged onto the application icon.
+        // CMB Nov-12-2010
+        app.installEventFilter(mainWin);
+
 		mainWin->show();
 
 		//*************************
