@@ -1,6 +1,10 @@
 #!/bin/sh
 
-export MACOS_DIR=`dirname $0`
-export RESOURCES_DIR=${MACOS_DIR}/../Resources
-${RESOURCES_DIR}/v3d
+MACOS_DIR=`dirname $0`
+
+# Setting DYLD_FRAMEWORK_PATH allows us to avoid
+# running install_name_tool on plugins.
+export DYLD_FRAMEWORK_PATH=${MACOS_DIR}/../Frameworks
+
+${MACOS_DIR}/v3d_bin
 
