@@ -116,7 +116,7 @@ void printHelp_align()
 	printf("\t [-V]                               subject image: Z direction resolution in microns. \n");
 	printf("\t [-B]                               XY plane size of image mapping (default is 512, can be 1024, 2048, or 256, - note: if use 1024 and above, should use the cluster node with big memory). \n");
 	printf("\t [-e]                               multiplication factor for control points in an existing landmark file (e.g. if image size is 1024, and existing landmarks are defined using 512 image, then use -e 2. Default is 1.). \n");
-	printf("\t \n");
+	printf("\t \n");    
 	printf("\t [-T]                               only convert the file format of the -s file to the -o file (if they have the same suffixes, then just a save as). \n");
 	printf("\t \n");
 	printf("\t [-v]                               verbose printing enabled. \n");

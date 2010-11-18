@@ -1063,7 +1063,10 @@ void MainWindow::openRecentFile()
         QString fileOrUrl(action->data().toString());
         QUrl url(fileOrUrl);
         // Note that file names are interpreted as "valid" URLs
-        if (url.isValid())
+		if (QFile(fileOrUrl).exists()) {
+	        loadV3DFile(fileOrUrl, true, false); // loadV3DFile func changed to 3 args. YuY Nov. 18, 2010
+		}
+        else if (url.isValid())
         {
             // Only download ftp, http, https, etc.
             // not "file" nor empty "" URL scheme
@@ -1075,8 +1078,10 @@ void MainWindow::openRecentFile()
                 return;
             }
         }
+		else {
+			// error in file name
+		}
         // qDebug("Recent file chosen");
-        loadV3DFile(fileOrUrl, true, false); // loadV3DFile func changed to 3 args. YuY Nov. 18, 2010
     }
 }
 
