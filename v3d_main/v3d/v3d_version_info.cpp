@@ -48,7 +48,7 @@ QString v3dVersionUrlBase("http://penglab.janelia.org/proj/v3d/V3D/");
 
 namespace v3d {
     // Set current version here.
-    VersionInfo thisVersionOfV3D(2.539);
+    VersionInfo thisVersionOfV3D(2.540);
 }
 QString versionnumber = "V3D (" +
         v3d::thisVersionOfV3D.toQString() +
