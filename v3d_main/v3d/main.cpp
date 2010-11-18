@@ -42,11 +42,13 @@ Last update: 2010-04-12: add a global try-catch to catch all exceptions
  
 ****************************************************************************/
 
-//#define COMPILE_TO_COMMANDLINE 1
+#define COMPILE_TO_COMMANDLINE 1
 
 #include "v3d_compile_constraints.h"
 
 #include <QApplication>
+
+#include <iostream>
 
 #include "mainwindow.h"
 
@@ -192,48 +194,154 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-		string s1, s2;
-		s1 = argv[1];
-		if (s1=="-h" || s1=="-H")
+		//string s1, s2;
+		//s1 = argv[1];
+		//if (s1=="-h" || s1=="-H")
+		//{
+		//	if (argc<=2)
+		//	{
+		//		printHelp_v3d();
+		//		return 0;
+		//	}
+		//	else
+		//	{
+		//		s2 = argv[2];
+		//		if (s2=="ALIGN") {return 0;}
+		//		else if (s2=="BLEND") {return 0;}
+		//		else if (s2=="CROP") {return 0;}
+		//		else if (s2=="LANDMARK") {return 0;}
+		//		else if (s2=="MASK") {return 0;}
+		//		else if (s2=="RESAMPLE") {return 0;}
+		//		else if (s2=="ROT") {return 0;}
+		//		else if (s2=="SAVEAS") {return 0;}
+		//		else if (s2=="SEG") {return 0;}
+		//		else if (s2=="STITCH") {return 0;}
+		//		else if (s2=="STRAIGHT") {return 0;}
+		//		else if (s2=="TRACE") {return 0;}
+		//		else
+		//		{
+		//			printf("Your module code is illegal. Please follow the instruction of the help page below.\n\n");
+		//			printHelp_v3d();
+		//			return 1;
+		//		}
+		//	}
+		//}
+		//else if (s1=="-M") //must be capital
+		//{
+		//	return 0;
+		//}
+		//else
+		//{
+		//	printf("Your command line input is illegal. Please follow the instruction of the help page below.\n\n");
+		//	printHelp_v3d();
+		//	return 1;
+		//}
+
+		// -------------------------------------------------------
+		// predefine -f load image/object (swc, apo) file into V3D
+		// YuY: Nov. 18, 2010. 
+		
+		// command arguments parsing
+		char* filename;
+
+		if(argc<=2)
 		{
-			if (argc<=2)
+			if(string(argv[1]) == "-h" || string(argv[1]) == "-H")
 			{
 				printHelp_v3d();
 				return 0;
 			}
+			else if(string(argv[1]) == "-M") //must be capital
+			{
+				return 0;
+			}
 			else
 			{
-				s2 = argv[2];
-				if (s2=="ALIGN") {return 0;}
-				else if (s2=="BLEND") {return 0;}
-				else if (s2=="CROP") {return 0;}
-				else if (s2=="LANDMARK") {return 0;}
-				else if (s2=="MASK") {return 0;}
-				else if (s2=="RESAMPLE") {return 0;}
-				else if (s2=="ROT") {return 0;}
-				else if (s2=="SAVEAS") {return 0;}
-				else if (s2=="SEG") {return 0;}
-				else if (s2=="STITCH") {return 0;}
-				else if (s2=="STRAIGHT") {return 0;}
-				else if (s2=="TRACE") {return 0;}
-				else
-				{
-					printf("Your module code is illegal. Please follow the instruction of the help page below.\n\n");
-					printHelp_v3d();
-					return 1;
-				}
+				cout<<"Your module code is illegal. Please follow the instruction of the help page below."<<endl<<endl;
+				printHelp_v3d();
+				return 1;
 			}
-		}
-		else if (s1=="-M") //must be capital
-		{
-			return 0;
+					
 		}
 		else
 		{
-			printf("Your command line input is illegal. Please follow the instruction of the help page below.\n\n");
-			printHelp_v3d();
+			for(int i=1; i<argc; i++)
+			{
+				if(i+1 != argc) // check that we haven't finished parsing yet
+				{
+					if(string(argv[i]) == "-f")
+					{
+						filename = argv[i+1];
+						//cout<<filename<<endl;
+					}
+					else
+					{
+						cout<<"Your module code is illegal. Please follow the instruction of the help page below."<<endl<<endl;
+						printHelp_v3d();
+						return -1;
+					}
+				}
+			
+			}
+		
+		}
+		
+		
+
+		// image/object handling module
+		QString qFile(filename);
+
+		if(!QFile(qFile).exists())
+		{
+			cout<<"The file does not exist! Exit."<<endl;
+			return -1;
+		}
+
+		QString curSuffix = QFileInfo(qFile).suffix();
+
+		//Image4DSimple *p4DImage;
+		//V3DLONG *sz_subject = 0; 
+		//int datatype_subject = 0;
+		//unsigned char* subject1d = 0;
+		//V3DLONG sx, sy, sz, sc;
+		//
+		//if( !curSuffix.compare(".raw") || !curSuffix.compare(".tif") || !curSuffix.compare(".lsm"))
+		//{
+		//	cout<<"loading image now ..."<<endl;
+		//	/*if (loadImage(filename, subject1d, sz_subject, datatype_subject)!=true)
+		//	{
+		//		cout<<"Error happens in reading the subject file "<<filename<<". Exit."<<endl;
+		//		return -1;
+		//	}
+		//	sx=sz_subject[0], sy=sz_subject[1], sz=sz_subject[2], sc=sz_subject[3];*/
+
+		//	p4DImage->loadImage(filename);
+		//}
+
+		//// V3D GUI handling module
+		Q_INIT_RESOURCE(v3d);
+
+		QApplication app(argc, argv);
+
+		MainWindow* mainWin = new MainWindow;
+
+		mainWin->loadV3DFile(filename, true, false);
+
+        app.installEventFilter(mainWin);
+
+		mainWin->show();
+
+		try 
+		{
+			return app.exec();
+		}
+		catch (...) {
+			v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the V3D developers to figure out the problem.");
 			return 1;
 		}
+		// -------------------------------------------------------
+		
+
 	}
 #endif
 

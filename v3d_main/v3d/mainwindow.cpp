@@ -384,7 +384,7 @@ void MainWindow::dropEvent(QDropEvent *event)
 	if (!QFile::exists(fileName))
 		return;
 
-	loadV3DFile(fileName);
+	loadV3DFile(fileName, true, false); // loadV3DFile func changed to 3 args. YuY Nov. 18, 2010
 
 	setBackgroundRole(QPalette::Dark);
 	event->acceptProposedAction();
@@ -401,7 +401,7 @@ void MainWindow::newFile()
 void MainWindow::open()
 {
     QString fileName = QFileDialog::getOpenFileName(this);
-	loadV3DFile(fileName);
+	loadV3DFile(fileName, true, false); // loadV3DFile func changed to 3 args. YuY Nov. 18, 2010
 }
 
 // By CMB Oct-08-2010
@@ -441,7 +441,7 @@ void MainWindow::finishedLoadingWebImage(QUrl url, QString fileName, bool b_cach
     // Empty file name means something went wrong
     if (fileName.size() > 0) {
         // false means Don't add local file name to recent files list
-        loadV3DFile(fileName, false);
+        loadV3DFile(fileName, false, false); // loadV3DFile func changed to 3 args. YuY Nov. 18, 2010
         if (! b_cacheLocalFile)
             QFile::remove(fileName); // delete downloaded file
         // Set window title to URL
@@ -469,7 +469,7 @@ V3dR_MainWindow * MainWindow::find3DViewer(QString fileName)
 	return 0;
 }
 
-void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist)
+void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool b_forceopen3dviewer)
 {
     if (!fileName.isEmpty()) {
         XFormWidget *existing_imgwin = findMdiChild(fileName);
@@ -788,7 +788,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist)
 			//v3d_msg(QString(tmp_filename).prepend("[").append("]"));
 			if (QFile::exists(tmp_filename))
 			{
-				loadV3DFile(tmp_filename, false); //the 2nd parameter is false, so that the unzipped file will not be put into "Recent files"
+				loadV3DFile(tmp_filename, false, false); //the 2nd parameter is false, so that the unzipped file will not be put into "Recent files"
 				if (b_putinrecentfilelist)
 					setCurrentFile(fileName); //put the zipped file into "Recent files"
 				system(qPrintable(QString("rm -f %1").arg(tmp_filename)));
@@ -832,7 +832,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist)
 					if (b_putinrecentfilelist)
 						setCurrentFile(fileName);
 
-					if (global_setting.b_autoOpenImg3DViewer && child->getImageData()->getDatatype()==V3D_UINT8) //090501
+					if (b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer)) //101118 by PHC
 					{
 						child->doImage3DView();
 					}
@@ -1076,7 +1076,7 @@ void MainWindow::openRecentFile()
             }
         }
         // qDebug("Recent file chosen");
-        loadV3DFile(fileOrUrl);
+        loadV3DFile(fileOrUrl, true, false); // loadV3DFile func changed to 3 args. YuY Nov. 18, 2010
     }
 }
 
@@ -2625,7 +2625,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         QFileOpenEvent *openEvent = static_cast<QFileOpenEvent*>(event);
         QString fileName = openEvent->file();
         // v3d_msg("file open event: " + fileName);
-        loadV3DFile(fileName);
+        loadV3DFile(fileName, true, false); // loadV3DFile func changed to 3 args. YuY Nov. 18, 2010
         return true; // consume event
     }
     // Delegate to parent if we don't want to consume the event

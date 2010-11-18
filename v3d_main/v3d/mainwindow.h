@@ -127,7 +127,7 @@ public slots:
 	XFormWidget *activeMdiChild();
 	XFormWidget *findMdiChild(const QString &fileName);
 
-	void loadV3DFile(QString filename, bool b_putinrecentfilelist=true);
+	void loadV3DFile(QString filename, bool b_putinrecentfilelist, bool b_forceopen3dviewer);
         void loadV3DUrl(QUrl url, bool b_cacheLocalFile=true); // by CMB Oct-14-2010
 
 	//the following are public slot processing functions
