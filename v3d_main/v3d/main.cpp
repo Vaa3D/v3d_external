@@ -65,32 +65,43 @@ void printHelp_trace();
 
 void printHelp_v3d()
 {
-	printf("\nV3D: a 3D image visualization and processing tool developed by Hanchuan Peng and colleagues.\n");
-	printf("\nUsage: v3d -h -M moduleCode [all other options specific to different modules]\n");
-	printf("\t -h/H         help information. \n");
-	printf("\t -M module    a string indicate which module will be used for processing. \n");
-	printf("\t Available/future modules/codes (no difference for capital): \n");
-	printf("\t   ALIGN      3D image elastic registration for objects like brains.\n");
-	printf("\t   BLEND      3D image blending.\n");
-	printf("\t   CROP       3D image cropping.\n");
-	printf("\t   LANDMARK   operation on the landmark files.\n");
-	printf("\t   MASK       3D image masking.\n");
-	printf("\t   RESAMPLE   3D image resampling (reslicing).\n");
-	printf("\t   ROT        3D image rotation.\n");
-	printf("\t   SAVEAS     3D image file format conversion.\n");
-	printf("\t   SEG        3D image segmentation for spherical objects (e.g. cells, nuclei).\n");
-	printf("\t   STITCH     3D image stitching.\n");
-	printf("\t   STRAIGHT   3D image straightening (e.g. for C. elegans worm body).\n");
-	printf("\t   TRACE      3D image tracing (e.g. for neurons).\n");
+	//printf("\nV3D: a 3D image visualization and processing tool developed by Hanchuan Peng and colleagues.\n");
+	//printf("\nUsage: v3d -h -M moduleCode [all other options specific to different modules]\n");
+	//printf("\t -h/H         help information. \n");
+	//printf("\t -M module    a string indicate which module will be used for processing. \n");
+	//printf("\t Available/future modules/codes (no difference for capital): \n");
+	//printf("\t   ALIGN      3D image elastic registration for objects like brains.\n");
+	//printf("\t   BLEND      3D image blending.\n");
+	//printf("\t   CROP       3D image cropping.\n");
+	//printf("\t   LANDMARK   operation on the landmark files.\n");
+	//printf("\t   MASK       3D image masking.\n");
+	//printf("\t   RESAMPLE   3D image resampling (reslicing).\n");
+	//printf("\t   ROT        3D image rotation.\n");
+	//printf("\t   SAVEAS     3D image file format conversion.\n");
+	//printf("\t   SEG        3D image segmentation for spherical objects (e.g. cells, nuclei).\n");
+	//printf("\t   STITCH     3D image stitching.\n");
+	//printf("\t   STRAIGHT   3D image straightening (e.g. for C. elegans worm body).\n");
+	//printf("\t   TRACE      3D image tracing (e.g. for neurons).\n");
 
-	printf("\n");
-	printHelp_align();
+	//printf("\n");
+	//printHelp_align();
 
-	printf("\n");
-	printHelp_straight();
+	//printf("\n");
+	//printHelp_straight();
 
-	printf("\n");
-	printHelp_trace();
+	//printf("\n");
+	//printHelp_trace();
+
+	cout<<endl<<"V3D: a 3D image visualization and processing tool developed by Hanchuan Peng and colleagues."<<endl;
+	cout<<endl<<"Usage: v3d -h -M moduleCode [all other options specific to different modules]"<<endl;
+	
+	cout<<"    -h/H         help information."<<endl;
+	cout<<"    -M module    a string indicate which module will be used for processing."<<endl;
+
+	cout<<"    -f <file>    open an image (.raw, .tif, .lsm) / object (.ano, .apo, .swc, .marker) file"<<endl;
+	cout<<"    -v <0/1>     open 3d viewer when load image/object by setting 1, otherwise donot open 3d viewer"<<endl;
+
+	return;
 }
 
 void printHelp_align()
@@ -243,6 +254,7 @@ int main(int argc, char **argv)
 		
 		// command arguments parsing
 		char* filename;
+		bool open3Dviewer = false;
 
 		if(argc<=2)
 		{
@@ -272,7 +284,12 @@ int main(int argc, char **argv)
 					if(string(argv[i]) == "-f")
 					{
 						filename = argv[i+1];
-						//cout<<filename<<endl;
+						i++;
+					}
+					else if(string(argv[i]) == "-v")
+					{
+						open3Dviewer = bool(atoi(argv[i+1]));
+						i++;
 					}
 					else
 					{
@@ -285,8 +302,6 @@ int main(int argc, char **argv)
 			}
 		
 		}
-		
-		
 
 		// image/object handling module
 		QString qFile(filename);
@@ -348,7 +363,7 @@ int main(int argc, char **argv)
 
 			MainWindow* mainWin = new MainWindow;
 
-			mainWin->loadV3DFile(filename, true, false);
+			mainWin->loadV3DFile(filename, true, open3Dviewer);
 
 			app.installEventFilter(mainWin);
 
