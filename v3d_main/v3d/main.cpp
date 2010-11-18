@@ -291,54 +291,81 @@ int main(int argc, char **argv)
 		// image/object handling module
 		QString qFile(filename);
 
-		if(!QFile(qFile).exists())
+		if(!QFile(qFile).exists()) // supporting both local and web files. Nov. 18, 2010. YuY
 		{
-			cout<<"The file does not exist! Exit."<<endl;
-			return -1;
+			// judge whether the file exist in the web
+			// "://" like "smb://" "http://" "ftp://" 
+
+			if(qFile.contains("://"))
+			{
+				QUrl url(filename);
+
+				if(!url.isValid()) // valid or invalid url
+				{
+					cout<<"The file does not exist! Exit."<<endl;
+					return -1;	
+				}
+
+				// V3D GUI handling module
+				Q_INIT_RESOURCE(v3d);
+
+				QApplication app(argc, argv);
+
+				MainWindow* mainWin = new MainWindow;
+
+				mainWin->loadV3DUrl(QUrl(filename), true);
+
+				app.installEventFilter(mainWin);
+
+				mainWin->show();
+
+				try 
+				{
+					return app.exec();
+				}
+				catch (...) 
+				{
+					v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the V3D developers to figure out the problem.");
+					return 1;
+				}
+			
+			}
+			else // impossible be a url
+			{
+				cout<<"The file does not exist! Exit."<<endl;
+				return -1;	
+			}
+			
 		}
-
-		QString curSuffix = QFileInfo(qFile).suffix();
-
-		//Image4DSimple *p4DImage;
-		//V3DLONG *sz_subject = 0; 
-		//int datatype_subject = 0;
-		//unsigned char* subject1d = 0;
-		//V3DLONG sx, sy, sz, sc;
-		//
-		//if( !curSuffix.compare(".raw") || !curSuffix.compare(".tif") || !curSuffix.compare(".lsm"))
-		//{
-		//	cout<<"loading image now ..."<<endl;
-		//	/*if (loadImage(filename, subject1d, sz_subject, datatype_subject)!=true)
-		//	{
-		//		cout<<"Error happens in reading the subject file "<<filename<<". Exit."<<endl;
-		//		return -1;
-		//	}
-		//	sx=sz_subject[0], sy=sz_subject[1], sz=sz_subject[2], sc=sz_subject[3];*/
-
-		//	p4DImage->loadImage(filename);
-		//}
-
-		//// V3D GUI handling module
-		Q_INIT_RESOURCE(v3d);
-
-		QApplication app(argc, argv);
-
-		MainWindow* mainWin = new MainWindow;
-
-		mainWin->loadV3DFile(filename, true, false);
-
-        app.installEventFilter(mainWin);
-
-		mainWin->show();
-
-		try 
+		else
 		{
-			return app.exec();
+			//QString curSuffix = QFileInfo(qFile).suffix();
+
+			// V3D GUI handling module
+			Q_INIT_RESOURCE(v3d);
+
+			QApplication app(argc, argv);
+
+			MainWindow* mainWin = new MainWindow;
+
+			mainWin->loadV3DFile(filename, true, false);
+
+			app.installEventFilter(mainWin);
+
+			mainWin->show();
+
+			try 
+			{
+				return app.exec();
+			}
+			catch (...) 
+			{
+				v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the V3D developers to figure out the problem.");
+				return 1;
+			}
 		}
-		catch (...) {
-			v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the V3D developers to figure out the problem.");
-			return 1;
-		}
+
+
 		// -------------------------------------------------------
 		
 
