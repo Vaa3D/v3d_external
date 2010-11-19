@@ -78,12 +78,15 @@
 # 101008: (CMB) add web url download
 # 101019: (CMB) add dialog_url_entry.ui
 # 101025: (CMB) add dialog_update_v3d.ui
+# 101119: add bundle test for mac 
 # ######################################################################
 
 TEMPLATE = app
 TARGET += 
 DEPENDPATH += . v3d
 INCLUDEPATH += . 
+
+macx: CONFIG-=app_bundle #by PHC, 101119
 
 # cross-OS-platform, cross-Qt-version
 QT_DIR = $$dirname(QMAKE_QMAKE)/..  # cross-Qt-version
