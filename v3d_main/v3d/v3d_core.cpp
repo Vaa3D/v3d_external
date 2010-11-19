@@ -1733,7 +1733,12 @@ void XFormView::mouseLeftButtonPressEvent(QMouseEvent *e) //080101
 	//reserved for future editing of the the pop-up menu
 	if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 	{
-		QPoint cp = e->pos(); ///(disp_scale*m_scale) + pixmap.width()/2.0+0.5;  //100909
+		QPoint cp = e->pos();  
+
+		//add zoom-in support. by PHC 20101119
+		cp.setX(double((e->x()-curDisplayCenter.x()))/(disp_scale*m_scale)+pixmap.width()/2.0+0.5);
+		cp.setY(double((e->y()-curDisplayCenter.y()))/(disp_scale*m_scale)+pixmap.height()/2.0+0.5);
+
 		roiPolygon << cp;
 		update();
 	}
