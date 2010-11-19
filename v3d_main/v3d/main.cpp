@@ -39,6 +39,7 @@ July 21, 2006
 
 Last update: 2008-04-25: try to add command line based utilities
 Last update: 2010-04-12: add a global try-catch to catch all exceptions
+Last update: 2010-11-19: change some of the help info 
  
 ****************************************************************************/
 
@@ -92,14 +93,14 @@ void printHelp_v3d()
 	//printf("\n");
 	//printHelp_trace();
 
-	cout<<endl<<"V3D: a 3D image visualization and processing tool developed by Hanchuan Peng and colleagues."<<endl;
+	cout<<endl<<"V3D: a 3D image visualization and analysis platform developed by Hanchuan Peng and colleagues."<<endl;
 	cout<<endl<<"Usage: v3d -h -M moduleCode [all other options specific to different modules]"<<endl;
 	
 	cout<<"    -h/H         help information."<<endl;
-	cout<<"    -M module    a string indicate which module will be used for processing."<<endl;
+	cout<<"    -M module    a string indicates which module will be used for processing."<<endl;
 
-	cout<<"    -f <file>    open an image (.raw, .tif, .lsm) / object (.ano, .apo, .swc, .marker) file"<<endl;
-	cout<<"    -v <0/1>     open 3d viewer when load image/object by setting 1, otherwise donot open 3d viewer"<<endl;
+	cout<<"    -f <file>    open an image (.tif/.tiff, .lsm, .mrc, .raw/.v3draw) / object (.ano, .apo, .swc, .marker) file"<<endl;
+	cout<<"    -v <0/1>     force to open a 3d viewer when load an image, otherwise use the default v3d global setting (from \"Adjust Preference\")"<<endl;
 
 	return;
 }
@@ -273,7 +274,6 @@ int main(int argc, char **argv)
 				printHelp_v3d();
 				return 1;
 			}
-					
 		}
 		else
 		{
@@ -298,9 +298,7 @@ int main(int argc, char **argv)
 						return -1;
 					}
 				}
-			
 			}
-		
 		}
 
 		// image/object handling module
@@ -308,7 +306,7 @@ int main(int argc, char **argv)
 
 		if(!QFile(qFile).exists()) // supporting both local and web files. Nov. 18, 2010. YuY
 		{
-			// judge whether the file exist in the web
+			// judge whether the file exists on the web
 			// "://" like "smb://" "http://" "ftp://" 
 
 			if(qFile.contains("://"))
@@ -327,11 +325,8 @@ int main(int argc, char **argv)
 				QApplication app(argc, argv);
 
 				MainWindow* mainWin = new MainWindow;
-
 				mainWin->loadV3DUrl(QUrl(filename), true);
-
 				app.installEventFilter(mainWin);
-
 				mainWin->show();
 
 				try 
@@ -343,14 +338,12 @@ int main(int argc, char **argv)
 					v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the V3D developers to figure out the problem.");
 					return 1;
 				}
-			
 			}
 			else // impossible be a url
 			{
-				cout<<"The file does not exist! Exit."<<endl;
+				v3d_msg("The file does not exist! Do nothing.", 0);
 				return -1;	
 			}
-			
 		}
 		else
 		{
@@ -362,11 +355,8 @@ int main(int argc, char **argv)
 			QApplication app(argc, argv);
 
 			MainWindow* mainWin = new MainWindow;
-
 			mainWin->loadV3DFile(filename, true, open3Dviewer);
-
 			app.installEventFilter(mainWin);
-
 			mainWin->show();
 
 			try 
@@ -379,12 +369,6 @@ int main(int argc, char **argv)
 				return 1;
 			}
 		}
-
-
-		// -------------------------------------------------------
-		
-
 	}
 #endif
-
 }
