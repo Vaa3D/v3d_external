@@ -4416,6 +4416,11 @@ void XFormWidget::popupImageProcessingDialog(QString item)
 	if (imgData && xy_view)
 	{
 		xy_view->popupImageProcessingDialog(item);
+		if (item==tr(" -- clear the ROI"))
+		{
+			zx_view->popupImageProcessingDialog(item);
+			yz_view->popupImageProcessingDialog(item);
+		}
 	}
 }
 
