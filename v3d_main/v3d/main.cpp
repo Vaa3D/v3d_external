@@ -50,6 +50,7 @@ Last update: 2010-11-19: change some of the help info
 #include <QApplication>
 
 #include <iostream>
+#include <vector>
 
 #include "mainwindow.h"
 
@@ -99,7 +100,7 @@ void printHelp_v3d()
 	cout<<"    -h/H         help information."<<endl;
 	cout<<"    -M module    a string indicates which module will be used for processing."<<endl;
 
-	cout<<"    -f <file>    open an image (.tif/.tiff, .lsm, .mrc, .raw/.v3draw) / object (.ano, .apo, .swc, .marker) file"<<endl;
+	cout<<"    -f <file>    open single or multiple image (.tif/.tiff, .lsm, .mrc, .raw/.v3draw) / object (.ano, .apo, .swc, .marker) files"<<endl;
 	cout<<"    -v <0/1>     force to open a 3d viewer when load an image, otherwise use the default v3d global setting (from \"Adjust Preference\")"<<endl;
 
 	return;
@@ -142,6 +143,27 @@ void printHelp_straight()
 
 void printHelp_trace()
 {
+}
+
+// check the file valid
+bool check_filename(QString fn)
+{
+	QFileInfo curfile_info(fn);
+	if ( (curfile_info.suffix().toUpper()=="ANO") || 
+		 (curfile_info.suffix().toUpper()=="APO" || curfile_info.suffix().toUpper()=="SWC" || curfile_info.suffix().toUpper()=="OBJ" || curfile_info.suffix().toUpper()=="V3DS") ||
+		 (curfile_info.suffix().toUpper()=="ATLAS") ||
+		 (curfile_info.suffix().toUpper()=="ZIP") || 
+		 (curfile_info.suffix().toUpper()=="LSM") || (curfile_info.suffix().toUpper()=="TIF") || (curfile_info.suffix().toUpper()=="RAW") || 
+		 fn.contains("://") ) // url 
+	{
+		return true;
+	}
+	else
+	{
+		v3d_msg("Error: The file does not exist! Do nothing.", 0);
+		return false;
+	}
+
 }
 
 
@@ -251,12 +273,15 @@ int main(int argc, char **argv)
 
 		// -------------------------------------------------------
 		// predefine -f load image/object (swc, apo) file into V3D
-		// YuY: Nov. 18, 2010. 
+		// YuY: Nov. 18, 2010. Ensure V3D support running in command lines 
+		// YuY: Nov. 19, 2010. Update the commands parser to accept multiple files when predefined by users
 		
 		// command arguments parsing
 		char* filename;
+		vector<char *> fileList;
 		bool open3Dviewer = false;
-
+		
+		// ------ parsing aguements here ---------------------
 		if(argc<=2)
 		{
 			if(string(argv[1]) == "-h" || string(argv[1]) == "-H")
@@ -268,64 +293,19 @@ int main(int argc, char **argv)
 			{
 				return 0;
 			}
-			else
+			else if( check_filename(QString(argv[1])) )
 			{
-				cout<<"Your module code is illegal. Please follow the instruction of the help page below."<<endl<<endl;
-				printHelp_v3d();
-				return 1;
-			}
-		}
-		else
-		{
-			for(int i=1; i<argc; i++)
-			{
-				if(i+1 != argc) // check that we haven't finished parsing yet
-				{
-					if(string(argv[i]) == "-f")
-					{
-						filename = argv[i+1];
-						i++;
-					}
-					else if(string(argv[i]) == "-v")
-					{
-						open3Dviewer = bool(atoi(argv[i+1]));
-						i++;
-					}
-					else
-					{
-						cout<<"Your module code is illegal. Please follow the instruction of the help page below."<<endl<<endl;
-						printHelp_v3d();
-						return -1;
-					}
-				}
-			}
-		}
-
-		// image/object handling module
-		QString qFile(filename);
-
-		if(!QFile(qFile).exists()) // supporting both local and web files. Nov. 18, 2010. YuY
-		{
-			// judge whether the file exists on the web
-			// "://" like "smb://" "http://" "ftp://" 
-
-			if(qFile.contains("://"))
-			{
-				QUrl url(filename);
-
-				if(!url.isValid()) // valid or invalid url
-				{
-					cout<<"The file does not exist! Exit."<<endl;
-					return -1;	
-				}
-
-				// V3D GUI handling module
+				// load and visualize file in V3D
+				filename = argv[1];
+				
+				// open V3D
 				Q_INIT_RESOURCE(v3d);
 
 				QApplication app(argc, argv);
 
 				MainWindow* mainWin = new MainWindow;
-				mainWin->loadV3DUrl(QUrl(filename), true);
+				mainWin->loadV3DFile(filename, true, open3Dviewer);
+				
 				app.installEventFilter(mainWin);
 				mainWin->show();
 
@@ -338,37 +318,140 @@ int main(int argc, char **argv)
 					v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the V3D developers to figure out the problem.");
 					return 1;
 				}
+
 			}
-			else // impossible be a url
+			else
 			{
-				v3d_msg("The file does not exist! Do nothing.", 0);
-				return -1;	
+				v3d_msg("Your module code is illegal. Please follow the instruction of the help page below.", 0);
+				printHelp_v3d();
+				return -1;
 			}
 		}
 		else
 		{
-			//QString curSuffix = QFileInfo(qFile).suffix();
-
-			// V3D GUI handling module
-			Q_INIT_RESOURCE(v3d);
-
-			QApplication app(argc, argv);
-
-			MainWindow* mainWin = new MainWindow;
-			mainWin->loadV3DFile(filename, true, open3Dviewer);
-			app.installEventFilter(mainWin);
-			mainWin->show();
-
-			try 
+			// if there is -h/H, V3D only print help info and return
+			for(int i=1; i<argc; i++)
 			{
-				return app.exec();
+				if(string(argv[i]) == "-h" || string(argv[i]) == "-H")
+				{
+					printHelp_v3d();
+					return 0;
+				}
 			}
-			catch (...) 
+
+			// parsing arguments in other cases
+			for(int i=1; i<argc; i++)
 			{
-				v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the V3D developers to figure out the problem.");
-				return 1;
+				if(i+1 != argc) // check that we haven't finished parsing yet
+				{
+					if(string(argv[i]) == "-f")
+					{
+						while(i+1<argc && !QString(argv[i+1]).contains("-") ) 
+						{
+
+							filename = argv[i+1];
+							i++;
+							fileList.push_back(filename);
+
+							qDebug()<<QString(argv[i+1]).contains("-")<< (i<argc);
+						}
+
+					}
+					else if(string(argv[i]) == "-v")
+					{
+						open3Dviewer = bool(atoi(argv[i+1]));
+						i++;
+					}
+					else
+					{
+						v3d_msg("Your module code is illegal. Please follow the instruction of the help page below.", 0);
+						printHelp_v3d();
+						return -1;
+					}
+				}
+				else if(i<argc && QString(argv[i]).contains("-"))
+				{
+					v3d_msg("Your module code is illegal. Please follow the instruction of the help page below.", 0);
+					printHelp_v3d();
+					return -1;
+				}
+				else
+				{
+					v3d_msg("Your module code is illegal. Please follow the instruction of the help page below.", 0);
+					continue;
+				}
 			}
+			
+
 		}
+
+		//qDebug()<<"parser done"<<fileList.size();
+		
+		// ------ V3D GUI handling module ---------------------
+		Q_INIT_RESOURCE(v3d);
+
+		QApplication app(argc, argv);
+
+		MainWindow* mainWin = new MainWindow;
+		app.installEventFilter(mainWin);
+		mainWin->show();
+
+		// multiple image/object handling module
+		for(int i=0; i<fileList.size(); i++)
+		{
+			filename = fileList.at(i);
+
+			QString qFile(filename);
+
+			if(!QFile(qFile).exists()) // supporting both local and web files. Nov. 18, 2010. YuY
+			{
+				// judge whether the file exists on the web
+				// "://" like "http://" "https://" "ftp://" 
+
+				if(qFile.contains("://"))
+				{
+					QUrl url(filename);
+
+					if(!url.isValid()) // valid or invalid url
+					{
+						v3d_msg("The file does not exist! Do nothing.", 0);
+						return -1;	
+					}
+					else if(url.scheme().toUpper() == "HTTP" || url.scheme().toUpper() == "HTTPS" || url.scheme().toUpper() == "FTP")
+					{
+						// load image/object
+						mainWin->loadV3DUrl(QUrl(filename), true);
+					}
+
+				}
+				else // impossible be a url
+				{
+					v3d_msg("The file does not exist! Do nothing.", 0);
+					return -1;	
+				}
+			}
+			else
+			{
+
+				QString curSuffix = QFileInfo(qFile).suffix();
+
+				// load image/object
+				mainWin->loadV3DFile(filename, true, open3Dviewer);
+			}
+		
+		}
+
+		try 
+		{
+			return app.exec();
+		}
+		catch (...) 
+		{
+			v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the V3D developers to figure out the problem.");
+			return 1;
+		}
+		// -------------------------------------------------------
+
 	}
 #endif
 }

@@ -794,7 +794,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 				system(qPrintable(QString("rm -f %1").arg(tmp_filename)));
 			}
 		}
-		else
+		else if ( (curfile_info.suffix().toUpper()=="LSM") || (curfile_info.suffix().toUpper()=="TIF") || (curfile_info.suffix().toUpper()=="RAW") ) // specific ".tif" ".lsm" ".raw" file, changed by YuY Nov. 19, 2010
 		{
 			try
 			{
@@ -847,6 +847,11 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 				QMessageBox::warning(0, "warning: fail to create window", "You fail to open a new window for the specified image. The file may have certain problem, or is simply too big but you don't have enough memory.");
 				printf("Fail to create window for the file [%s]\n", qPrintable(fileName));
 			}
+		}
+		else // changed by YuY Nov. 19, 2010
+		{
+			v3d_msg("The file does not exist! Do nothing.", 1);
+			return;	
 		}
 
         //child->close();delete child; child=0; //this should be correspond to the error place! by phc, 080429
