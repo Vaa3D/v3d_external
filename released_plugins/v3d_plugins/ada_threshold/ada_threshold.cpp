@@ -54,15 +54,26 @@ const QString title = "adaptive threshold transform";
 QStringList ThPlugin::menulist() const
 {
     return QStringList() 
-	<< tr("3D");
+	<< tr("3D (w/o parameters)")
+	<< tr("3D (set parameters)")
+	<< tr("Help");
 }
 
 void ThPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
 {
-    if (menu_name == tr("3D"))
+	if (menu_name == tr("3D (w/o parameters)"))
     {
     	thimg(callback, parent, 1);
     }
+		else if (menu_name == tr("3D (set parameters)"))
+		{
+			thimg(callback, parent, 1);			
+		}
+			else if (menu_name == tr("help"))
+			 {
+				 v3d_msg("How to use ..........");
+			 }
+
 }
 
 void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
