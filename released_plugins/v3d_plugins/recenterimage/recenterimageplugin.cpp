@@ -1,5 +1,6 @@
 /* recenterimageplugin.cpp
  * 2009-08-14: created by Yang Yu
+ * 2010-11-23: supporting all kinds of datatypes, changed by Yang Yu
  */
 
 #include <QtGui>
@@ -13,6 +14,9 @@
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(recenterimage, ReCenterImagePlugin)
 
+template <class Tidx, class Tdata>
+void recentering(Tdata *&p, Tdata *data, Tidx nx, Tidx ny, Tidx nz, Tidx ox, Tidx oy, Tidx oz, Tidx ncolor);
+
 
 QStringList ReCenterImagePlugin::menulist() const
 {
@@ -24,18 +28,18 @@ void ReCenterImagePlugin::processImage(const QString &arg, Image4DSimple *p4DIma
 {
     if (! p4DImage) return;
 
-    unsigned char* data1d = p4DImage->getRawData();
-    //V3DLONG totalpxls = p4DImage->getTotalBytes();
+	Image4DProxy<Image4DSimple> p4DProxy(p4DImage);
+	
+    //void* data1d = p4DProxy.begin();
     V3DLONG pagesz = p4DImage->getTotalUnitNumberPerChannel();
 
     V3DLONG N = p4DImage->getXDim();
     V3DLONG M = p4DImage->getYDim();
     V3DLONG P = p4DImage->getZDim();
     V3DLONG sc = p4DImage->getCDim();
-
-    //define datatype here
-    //
-
+	
+	int datatype = p4DImage->getDatatype();
+	qDebug()<<"datatype is "<<datatype;
 
     if (arg == tr("ReCenterImage"))
     {
@@ -58,282 +62,35 @@ void ReCenterImagePlugin::processImage(const QString &arg, Image4DSimple *p4DIma
 
         if (ok)
         {
-			//declare temporary pointer
-			unsigned char *pImage = new unsigned char [ntotalpxls];
-			if (!pImage)
+			// For different datatype
+			if(datatype == 1)
 			{
-				printf("Fail to allocate memory.\n");
+				unsigned char *pImage = NULL;
+				recentering<V3DLONG, unsigned char>( pImage, (unsigned char*)p4DProxy.begin(), ndimx, ndimy, ndimz, N, M, P, sc);
+				
+				p4DImage->setData((unsigned char*)pImage, ndimx, ndimy, ndimz, sc, p4DImage->getDatatype()); // update data in current window
+					
+			}
+			else if(datatype == 2)
+			{
+				short int *pImage = NULL;
+				recentering<V3DLONG, short int>( pImage, (short int*)p4DProxy.begin(), ndimx, ndimy, ndimz, N, M, P, sc);
+				
+				p4DImage->setData((unsigned char*)pImage, ndimx, ndimy, ndimz, sc, p4DImage->getDatatype()); // update data in current window
+			}
+			else if(datatype == 3)
+			{
+				qDebug()<<"float32 ...";
+				
+				float *pImage = NULL;
+				recentering<V3DLONG, float>( pImage, (float*)p4DProxy.begin(), ndimx, ndimy, ndimz, N, M, P, sc);
+				
+				p4DImage->setData((unsigned char*)pImage, ndimx, ndimy, ndimz, sc, p4DImage->getDatatype()); // update data in current window
+			}
+			else 
+			{
 				return;
-			 }
-			 else
-			 {
-				 //Initial New image
-				 for(V3DLONG c=0; c<sc; c++)
-				 {
-					 V3DLONG offsetc = c*ndimx*ndimy*ndimz;
-					 for(V3DLONG k = 0; k<ndimz; k++)
-					 {
-						 V3DLONG offsetk = k*ndimx*ndimy;
-						 for(V3DLONG j = 0; j<ndimy; j++)
-						 {
-							 V3DLONG offsetj = j*ndimx;
-							 for(V3DLONG i=0; i<ndimx; i++)
-							 {
-								 pImage[offsetc + offsetk + offsetj + i] = 0;
-							 }
-						 }
-					 }
-				 }
-
-				 //recenter
-				 V3DLONG centerx = N/2;
-				 V3DLONG centery = M/2;
-				 V3DLONG centerz = P/2;
-
-				 V3DLONG ncenterx = ndimx/2;
-				 V3DLONG ncentery = ndimy/2;
-				 V3DLONG ncenterz = ndimz/2;
-
-				 //shift
-				 V3DLONG leftx = fabs(ncenterx-centerx);
-				 V3DLONG rightx = fabs(N + leftx);
-				 if(N>ndimx)
-				 {
-					 rightx = fabs(ndimx + leftx);
-				 }
-
-				 V3DLONG lefty = fabs(ncentery - centery);
-				 V3DLONG righty = fabs(M + lefty);
-				 if(M>ndimy)
-				 {
-					 righty = fabs(ndimy + lefty);
-				 }
-
-				 V3DLONG leftz = fabs(ncenterz - centerz);
-				 V3DLONG rightz = fabs(P + leftz);
-				 if(P>ndimz)
-				 {
-					 rightz = fabs(ndimz + leftz);
-				 }
-
-				 //stupid 8 cases
-				 if(ndimx<=N)
-				 {
-					 if(ndimy<=M)
-					 {
-						 if(ndimz<=P)
-						 {
-							 //case 1
-							 for(V3DLONG c=0; c<sc; c++)
-							 {
-								 V3DLONG offsetc = c*pagesz;
-								 V3DLONG offsetnc = c*ndimx*ndimy*ndimz;
-								 for(V3DLONG k=leftz; k<rightz; k++)
-								 {
-									 V3DLONG offsetk =  k*N*M;
-									 V3DLONG offsetnk = (k-leftz)*ndimx*ndimy;
-									 for(V3DLONG j=lefty; j<righty; j++)
-									 {
-										 V3DLONG offsetj = j*N;
-										 V3DLONG offsetnj = (j-lefty)*ndimx;
-										 for(V3DLONG i=leftx; i<rightx; i++)
-										 {
-											 pImage[offsetnc + offsetnk + offsetnj + (i-leftx)] = data1d[offsetc + offsetk + offsetj + i];
-										 }
-									 }
-								 }
-							 }
-						 }
-						 else
-						 {
-							 //case 2
-							 for(V3DLONG c=0; c<sc; c++)
-							 {
-								 V3DLONG offsetc = c*pagesz;
-								 V3DLONG offsetnc = c*ndimx*ndimy*ndimz;
-								 for(V3DLONG k=leftz; k<rightz; k++)
-								 {
-									 V3DLONG offsetk =  (k-leftz)*N*M;
-									 V3DLONG offsetnk = k*ndimx*ndimy;
-									 for(V3DLONG j=lefty; j<righty; j++)
-									 {
-										 V3DLONG offsetj = j*N;
-										 V3DLONG offsetnj = (j-lefty)*ndimx;
-										 for(V3DLONG i=leftx; i<rightx; i++)
-										 {
-											pImage[offsetnc + offsetnk + offsetnj + (i-leftx)] = data1d[offsetc + offsetk + offsetj + i];
-										 }
-									 }
-								 }
-							 }
-
-						 }
-					 }
-					 else
-					 {
-						 if(ndimz<=P)
-						 {
-							 //case 3
-							 for(V3DLONG c=0; c<sc; c++)
-							 {
-								 V3DLONG offsetc = c*pagesz;
-								 V3DLONG offsetnc = c*ndimx*ndimy*ndimz;
-								 for(V3DLONG k=leftz; k<rightz; k++)
-								 {
-									 V3DLONG offsetk =  k*N*M;
-									 V3DLONG offsetnk = (k-leftz)*ndimx*ndimy;
-									 for(V3DLONG j=lefty; j<righty; j++)
-									 {
-										 V3DLONG offsetj = (j-lefty)*N;
-										 V3DLONG offsetnj = j*ndimx;
-										 for(V3DLONG i=leftx; i<rightx; i++)
-										 {
-											 pImage[offsetnc + offsetnk + offsetnj + (i-leftx)] = data1d[offsetc + offsetk + offsetj + i];
-										 }
-									 }
-								 }
-							 }
-
-						 }
-						 else
-						 {
-							 //case 4
-							 for(V3DLONG c=0; c<sc; c++)
-							 {
-								 V3DLONG offsetc = c*pagesz;
-								 V3DLONG offsetnc = c*ndimx*ndimy*ndimz;
-								 for(V3DLONG k=leftz; k<rightz; k++)
-								 {
-									 V3DLONG offsetk =  (k-leftz)*N*M;
-									 V3DLONG offsetnk = k*ndimx*ndimy;
-									 for(V3DLONG j=lefty; j<righty; j++)
-									 {
-										 V3DLONG offsetj = (j-lefty)*N;
-										 V3DLONG offsetnj = j*ndimx;
-										 for(V3DLONG i=leftx; i<rightx; i++)
-										 {
-											  pImage[offsetnc + offsetnk + offsetnj + (i-leftx)] = data1d[offsetc + offsetk + offsetj + i];
-										 }
-									 }
-								 }
-							 }
-
-						 }
-					 }
-				 }
-				 else
-				 {
-					 if(ndimy<=M)
-					 {
-						 if(ndimz<=P)
-						 {
-							 //case 5
-							 for(V3DLONG c=0; c<sc; c++)
-							 {
-								 V3DLONG offsetc = c*pagesz;
-								 V3DLONG offsetnc = c*ndimx*ndimy*ndimz;
-								 for(V3DLONG k=leftz; k<rightz; k++)
-								 {
-									 V3DLONG offsetk =  k*N*M;
-									 V3DLONG offsetnk = (k-leftz)*ndimx*ndimy;
-									 for(V3DLONG j=lefty; j<righty; j++)
-									 {
-										 V3DLONG offsetj = j*N;
-										 V3DLONG offsetnj = (j-lefty)*ndimx;
-										 for(V3DLONG i=leftx; i<rightx; i++)
-										 {
-											  pImage[offsetnc + offsetnk + offsetnj + i] = data1d[offsetc + offsetk + offsetj + (i-leftx)];
-										 }
-									 }
-								 }
-							 }
-
-						 }
-						 else
-						 {
-							 //case 6
-							 for(V3DLONG c=0; c<sc; c++)
-							 {
-								 V3DLONG offsetc = c*pagesz;
-								 V3DLONG offsetnc = c*ndimx*ndimy*ndimz;
-								 for(V3DLONG k=leftz; k<rightz; k++)
-								 {
-									 V3DLONG offsetk = (k-leftz)*N*M;
-									 V3DLONG offsetnk = k*ndimx*ndimy;
-									 for(V3DLONG j=lefty; j<righty; j++)
-									 {
-										 V3DLONG offsetj = j*N;
-										 V3DLONG offsetnj = (j-lefty)*ndimx;
-										 for(V3DLONG i=leftx; i<rightx; i++)
-										 {
-											 pImage[offsetnc + offsetnk + offsetnj + i] = data1d[offsetc + offsetk + offsetj + (i-leftx)];
-										 }
-									 }
-								 }
-							 }
-
-						 }
-					 }
-					 else
-					 {
-						 if(ndimz<=P)
-						 {
-							 //case 7
-							 for(V3DLONG c=0; c<sc; c++)
-							 {
-								 V3DLONG offsetc = c*pagesz;
-								 V3DLONG offsetnc = c*ndimx*ndimy*ndimz;
-								 for(V3DLONG k=leftz; k<rightz; k++)
-								 {
-									 V3DLONG offsetk =  k*N*M;
-									 V3DLONG offsetnk = (k-leftz)*ndimx*ndimy;
-									 for(V3DLONG j=lefty; j<righty; j++)
-									 {
-										 V3DLONG offsetj = (j-lefty)*N;
-										 V3DLONG offsetnj = j*ndimx;
-										 for(V3DLONG i=leftx; i<rightx; i++)
-										 {
-											 pImage[offsetnc + offsetnk + offsetnj + i] = data1d[offsetc + offsetk + offsetj + (i-leftx)];
-										 }
-									 }
-								 }
-							 }
-
-						 }
-						 else
-						 {
-							 //case 8
-							 for(V3DLONG c=0; c<sc; c++)
-							 {
-								 V3DLONG offsetc = c*pagesz;
-								 V3DLONG offsetnc = c*ndimx*ndimy*ndimz;
-								 for(V3DLONG k=leftz; k<rightz; k++)
-								 {
-									 V3DLONG offsetk = (k-leftz)*N*M;
-									 V3DLONG offsetnk = k*ndimx*ndimy;
-									 for(V3DLONG j=lefty; j<righty; j++)
-									 {
-										 V3DLONG offsetj = (j-lefty)*N;
-										 V3DLONG offsetnj = j*ndimx;
-										 for(V3DLONG i=leftx; i<rightx; i++)
-										 {
-											pImage[offsetnc + offsetnk + offsetnj + i] = data1d[offsetc + offsetk + offsetj + (i-leftx)];
-										 }
-									 }
-								 }
-							 }
-
-						 }
-					 }
-				 }
-
-			 }
-
-			//rescaling image and save to new 4dimage
-			p4DImage->setData(pImage, ndimx, ndimy, ndimz, sc, p4DImage->getDatatype());
-
-			//de-alloc
-			//if(pImage) {delete []pImage; pImage=0;}
+			}
 
 		}
 	}
@@ -346,5 +103,292 @@ void ReCenterImagePlugin::processImage(const QString &arg, Image4DSimple *p4DIma
 
 }
 
+template <class Tidx, class Tdata>
+void recentering(Tdata *&p, Tdata *data, Tidx nx, Tidx ny, Tidx nz, Tidx ox, Tidx oy, Tidx oz, Tidx ncolor)
+{
+	
+	if(p) {delete []p; p=NULL;}
+	else
+	{
+		qDebug()<< "run recentering ...";
+		
+		Tidx nplxs = nx*ny*nz*ncolor;
+		Tidx pagesz = ox*oy*oz;
+		
+		//Initial New image
+		try
+		{
+			p = new Tdata [nplxs];
+			for(Tidx i=0; i<nplxs; i++)
+			{
+				p[i] = 0;
+			}
+		}
+		catch(...)
+		{
+			printf("Error allocating memory for new image!\n");
+			return;
+		}
+		
+		//recenter
+		Tidx centerx = ox/2;
+		Tidx centery = oy/2;
+		Tidx centerz = oz/2;
+		
+		Tidx ncenterx = nx/2;
+		Tidx ncentery = ny/2;
+		Tidx ncenterz = nz/2;
+		
+		//shift
+		Tidx leftx = fabs(ncenterx-centerx);
+		Tidx rightx = fabs(ox + leftx);
+		if(ox>nx)
+		{
+			rightx = fabs(nx + leftx);
+		}
+		
+		Tidx lefty = fabs(ncentery - centery);
+		Tidx righty = fabs(oy + lefty);
+		if(oy>ny)
+		{
+			righty = fabs(ny + lefty);
+		}
+		
+		Tidx leftz = fabs(ncenterz - centerz);
+		Tidx rightz = fabs(oz + leftz);
+		if(oz>nz)
+		{
+			rightz = fabs(nz + leftz);
+		}
+		
+		//simple 8 cases
+		if(nx<=ox)
+		{
+			if(ny<=oy)
+			{
+				if(nz<=oz)
+				{
+					//case 1
+					qDebug()<< "case 1 ...";
+					
+					for(Tidx c=0; c<ncolor; c++)
+					{
+						Tidx offsetc = c*pagesz;
+						Tidx offsetnc = c*nx*ny*nz;
+						for(Tidx k=leftz; k<rightz; k++)
+						{
+							Tidx offsetk =  offsetc + k*ox*oy;
+							Tidx offsetnk = offsetnc + (k-leftz)*nx*ny;
+							for(Tidx j=lefty; j<righty; j++)
+							{
+								Tidx offsetj = offsetk + j*ox;
+								Tidx offsetnj = offsetnk + (j-lefty)*nx;
+								for(Tidx i=leftx; i<rightx; i++)
+								{
+									p[offsetnj + (i-leftx)] = data[offsetj + i];
+								}
+							}
+						}
+					}
+				}
+				else
+				{
+					//case 2
+					qDebug()<< "case 2 ...";
+					
+					for(Tidx c=0; c<ncolor; c++)
+					{
+						Tidx offsetc = c*pagesz;
+						Tidx offsetnc = c*nx*ny*nz;
+						for(Tidx k=leftz; k<rightz; k++)
+						{
+							Tidx offsetk = offsetc + (k-leftz)*ox*oy;
+							Tidx offsetnk = offsetnc + k*nx*ny;
+							for(Tidx j=lefty; j<righty; j++)
+							{
+								Tidx offsetj = offsetk + j*ox;
+								Tidx offsetnj = offsetnk + (j-lefty)*nx;
+								for(Tidx i=leftx; i<rightx; i++)
+								{
+									p[offsetnj + (i-leftx)] = data[offsetj + i];
+								}
+							}
+						}
+					}
+					
+				}
+			}
+			else
+			{
+				if(nz<=oz)
+				{
+					//case 3
+					qDebug()<< "case 3 ...";
+					
+					for(Tidx c=0; c<ncolor; c++)
+					{
+						Tidx offsetc = c*pagesz;
+						Tidx offsetnc = c*nx*ny*nz;
+						for(Tidx k=leftz; k<rightz; k++)
+						{
+							Tidx offsetk = offsetc + k*ox*oy;
+							Tidx offsetnk = offsetnc + (k-leftz)*nx*ny;
+							for(Tidx j=lefty; j<righty; j++)
+							{
+								Tidx offsetj = offsetk + (j-lefty)*ox;
+								Tidx offsetnj = offsetnk + j*nx;
+								for(Tidx i=leftx; i<rightx; i++)
+								{
+									p[offsetnj + (i-leftx)] = data[offsetj + i];
+								}
+							}
+						}
+					}
+					
+				}
+				else
+				{
+					//case 4
+					qDebug()<< "case 4 ...";
+					
+					for(Tidx c=0; c<ncolor; c++)
+					{
+						Tidx offsetc = c*pagesz;
+						Tidx offsetnc = c*nx*ny*nz;
+						for(Tidx k=leftz; k<rightz; k++)
+						{
+							Tidx offsetk = offsetc + (k-leftz)*ox*oy;
+							Tidx offsetnk = offsetnc + k*nx*ny;
+							for(Tidx j=lefty; j<righty; j++)
+							{
+								Tidx offsetj = offsetk + (j-lefty)*ox;
+								Tidx offsetnj = offsetnk + j*nx;
+								for(Tidx i=leftx; i<rightx; i++)
+								{
+									p[offsetnj + (i-leftx)] = data[offsetj + i];
+								}
+							}
+						}
+					}
+					
+				}
+			}
+		}
+		else
+		{
+			if(ny<=oy)
+			{
+				if(nz<=oz)
+				{
+					//case 5
+					qDebug()<< "case 5 ...";
+					
+					for(Tidx c=0; c<ncolor; c++)
+					{
+						Tidx offsetc = c*pagesz;
+						Tidx offsetnc = c*nx*ny*nz;
+						for(Tidx k=leftz; k<rightz; k++)
+						{
+							Tidx offsetk = offsetc + k*ox*oy;
+							Tidx offsetnk = offsetnc + (k-leftz)*nx*ny;
+							for(Tidx j=lefty; j<righty; j++)
+							{
+								Tidx offsetj = offsetk + j*ox;
+								Tidx offsetnj = offsetnk + (j-lefty)*nx;
+								for(Tidx i=leftx; i<rightx; i++)
+								{
+									p[offsetnj + i] = data[offsetj + (i-leftx)];
+								}
+							}
+						}
+					}
+					
+				}
+				else
+				{
+					//case 6
+					qDebug()<< "case 6 ...";
+					
+					for(Tidx c=0; c<ncolor; c++)
+					{
+						Tidx offsetc = c*pagesz;
+						Tidx offsetnc = c*nx*ny*nz;
+						for(Tidx k=leftz; k<rightz; k++)
+						{
+							Tidx offsetk = offsetc + (k-leftz)*ox*oy;
+							Tidx offsetnk = offsetnc + k*nx*ny;
+							for(Tidx j=lefty; j<righty; j++)
+							{
+								Tidx offsetj = offsetk + j*ox;
+								Tidx offsetnj = offsetnk + (j-lefty)*nx;
+								for(Tidx i=leftx; i<rightx; i++)
+								{
+									p[offsetnj + i] = data[offsetj + (i-leftx)];
+								}
+							}
+						}
+					}
+					
+				}
+			}
+			else
+			{
+				if(nz<=oz)
+				{
+					//case 7
+					qDebug()<< "case 7 ...";
+					
+					for(Tidx c=0; c<ncolor; c++)
+					{
+						Tidx offsetc = c*pagesz;
+						Tidx offsetnc = c*nx*ny*nz;
+						for(Tidx k=leftz; k<rightz; k++)
+						{
+							Tidx offsetk = offsetc + k*ox*oy;
+							Tidx offsetnk = offsetnc + (k-leftz)*nx*ny;
+							for(Tidx j=lefty; j<righty; j++)
+							{
+								Tidx offsetj = offsetk + (j-lefty)*ox;
+								Tidx offsetnj = offsetnk + j*nx;
+								for(Tidx i=leftx; i<rightx; i++)
+								{
+									p[offsetnj + i] = data[offsetj + (i-leftx)];
+								}
+							}
+						}
+					}
+					
+				}
+				else
+				{
+					//case 8
+					qDebug()<< "case 8 ...";
+					
+					for(Tidx c=0; c<ncolor; c++)
+					{
+						Tidx offsetc = c*pagesz;
+						Tidx offsetnc = c*nx*ny*nz;
+						for(Tidx k=leftz; k<rightz; k++)
+						{
+							Tidx offsetk = offsetc + (k-leftz)*ox*oy;
+							Tidx offsetnk = offsetnc + k*nx*ny;
+							for(Tidx j=lefty; j<righty; j++)
+							{
+								Tidx offsetj = offsetk + (j-lefty)*ox;
+								Tidx offsetnj = offsetnk + j*nx;
+								for(Tidx i=leftx; i<rightx; i++)
+								{
+									p[offsetnj + i] = data[offsetj + (i-leftx)];
+								}
+							}
+						}
+					}
+					
+				}
+			}
+		}
+		
+	}
 
+}
 
