@@ -56,7 +56,7 @@ void pumpEvents(int loops=100)
 }
 
 //=======================================================
-// Qt Pulgin ONLY supports 1 interface in 1 plugin module
+// Qt Plugin ONLY supports 1 interface in 1 plugin module
 
 QString     v3d_getInterfaceName(QObject *plugin)
 {
@@ -70,6 +70,9 @@ QString     v3d_getInterfaceName(QObject *plugin)
 
     V3DPluginInterface2 *iface2 = qobject_cast<V3DPluginInterface2 *>(plugin);
     if (iface2 )  return (name = "V3DPluginInterface/2.0");
+
+    V3DPluginInterface2_1 *iface2_1 = qobject_cast<V3DPluginInterface2_1 *>(plugin);
+    if (iface2_1 )  return (name = "V3DPluginInterface/2.1");
 
     return name;
 }
@@ -87,6 +90,9 @@ QStringList v3d_getInterfaceMenuList(QObject *plugin)
     V3DPluginInterface2 *iface2 = qobject_cast<V3DPluginInterface2 *>(plugin);
     if (iface2 )  return (qslist = iface2->menulist());
 
+    V3DPluginInterface2_1 *iface2_1 = qobject_cast<V3DPluginInterface2_1 *>(plugin);
+    if (iface2_1 )  return (qslist = iface2_1->menulist());
+
     return qslist;
 }
 
@@ -99,6 +105,9 @@ QStringList v3d_getInterfaceFuncList(QObject *plugin)
 
     V3DPluginInterface2 *iface2 = qobject_cast<V3DPluginInterface2 *>(plugin);
     if (iface2 )  return (qslist = iface2->funclist());
+
+    V3DPluginInterface2_1 *iface2_1 = qobject_cast<V3DPluginInterface2_1 *>(plugin);
+    if (iface2_1 )  return (qslist = iface2_1->funclist());
 
     return qslist;
 }
@@ -328,6 +337,7 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
     if (!done)  { done = runSingleImageInterface(plugin, menuString); v3d_msg("done with runSingleImageInterface().",0); }
 	if (!done)  { done = runPluginInterface(plugin, menuString); v3d_msg("done with runPluginInterface().",0); }
 	if (!done)  { done = runPluginInterface2(plugin, menuString); v3d_msg("done with runPluginInterface2().",0); }
+	if (!done)  { done = runPluginInterface2_1(plugin, menuString); v3d_msg("done with runPluginInterface2_1().",0); }
 	
 	v3d_msg(QString("already run! done status=%1").arg(done), 0);
 	// 100804 RZC: MUST do not unload plug-ins that has model-less dialog
@@ -454,6 +464,25 @@ bool V3d_PluginLoader::runPluginInterface2(QObject* plugin, const QString& comma
 	return false;
 }
 
+bool V3d_PluginLoader::runPluginInterface2_1(QObject* plugin, const QString& command)
+{
+    V3DPluginInterface2_1 *iface = qobject_cast<V3DPluginInterface2_1 *>(plugin);
+	V3DPluginCallback2 *callback = dynamic_cast<V3DPluginCallback2 *>(this);
+	if (iface && callback)
+    {
+        try
+        {
+        	iface->domenu(command, *callback, (QWidget*)0); //do not pass the mainwindow widget
+        }
+        catch (...)
+        {
+        	v3d_msg(QString("The plugin fails to run [%1]. Check your plugin code please.").arg(command));
+        }
+        return true;
+    }
+	return false;
+}
+
 //====================================================================
 
 bool V3d_PluginLoader::callPluginFunc(const QString &plugin_name,
@@ -496,23 +525,37 @@ bool V3d_PluginLoader::callPluginFunc(const QString &plugin_name,
 //	}
 
 	V3DPluginInterface2 *iface = qobject_cast<V3DPluginInterface2 *>(plugin);
+	V3DPluginInterface2_1 *iface2_1 = qobject_cast<V3DPluginInterface2_1 *>(plugin);
 	V3DPluginCallback2 *callback = dynamic_cast<V3DPluginCallback2 *>(this);
-	if (! (iface && callback) )
+    if (iface && callback) {
+        try
+        {
+            return iface->dofunc(func_name, input, output, *callback, (QWidget*)0);
+        }
+        catch (...)
+        {
+            v3d_msg(QString("The plugin fails to call [%1]. Check your plugin code please.").arg(func_name));
+            return false;
+        }
+        return true;
+    }
+    else if (iface2_1 && callback) {
+         try
+        {
+            return iface->dofunc(func_name, input, output, *callback, (QWidget*)0);
+        }
+        catch (...)
+        {
+            v3d_msg(QString("The plugin fails to call [%1]. Check your plugin code please.").arg(func_name));
+            return false;
+        }
+        return true;
+    }
+    else // (! (iface && callback) )
 	{
-		qDebug()<<QString("ERROR: callPluginFunc cannot cast (V3DPluginInterface2) of plugin '%1'").arg(plugin_name);
+		qDebug()<<QString("ERROR: callPluginFunc cannot cast (V3DPluginInterface2_1) of plugin '%1'").arg(plugin_name);
 		return false;
 	}
-
-    try
-    {
-    	return iface->dofunc(func_name, input, output, *callback, (QWidget*)0);
-    }
-    catch (...)
-    {
-    	v3d_msg(QString("The plugin fails to call [%1]. Check your plugin code please.").arg(func_name));
-		return false;
-    }
-	return true;
 }
 
 //==================================================================

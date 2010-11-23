@@ -49,10 +49,12 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include <QtCore>
 
+class V3DPluginInterface2_1;
 class V3DPluginInterface2;
 class V3DPluginInterface;
 class V3DSingleImageInterface;
 QT_BEGIN_NAMESPACE
+	Q_DECLARE_INTERFACE(V3DPluginInterface2_1, "com.janelia.v3d.V3DPluginInterface/2.1");
 	Q_DECLARE_INTERFACE(V3DPluginInterface2, "com.janelia.v3d.V3DPluginInterface/2.0");
 	Q_DECLARE_INTERFACE(V3DPluginInterface, "com.janelia.v3d.V3DPluginInterface/1.1");
 	Q_DECLARE_INTERFACE(V3DSingleImageInterface, "com.janelia.v3d.V3DSingleImageInterface/1.0");
@@ -170,6 +172,28 @@ public:
 	virtual QStringList funclist() const = 0;
 	virtual bool dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output,
 												V3DPluginCallback2 & v3d, QWidget * parent) = 0;
+};
+
+//=============================================================================
+// CMB Nov 23, 2010
+// enhance plugin interface to support plugin version numbers
+// to help V3D automatically update itself.
+// V3DPluginInterface2_1 is just like V3DPluginInterface2, plus the getPluginVersion() method.
+
+class V3DPluginInterface2_1
+{
+public:
+	virtual ~V3DPluginInterface2_1() {}
+
+	virtual QStringList menulist() const = 0;
+	virtual void domenu(const QString & menu_name, V3DPluginCallback2 & v3d, QWidget * parent) = 0;
+
+	virtual QStringList funclist() const = 0;
+	virtual bool dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output,
+												V3DPluginCallback2 & v3d, QWidget * parent) = 0;
+        // As a particular plugin is improved,
+        // this version number should monotonically increase
+        virtual int getPluginVersion() const = 0;
 };
 
 //==========================================================================================

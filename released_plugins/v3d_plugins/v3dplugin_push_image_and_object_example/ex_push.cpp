@@ -11,6 +11,10 @@
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(ex_push, ExPushPlugin);
 
+int ExPushPlugin::getPluginVersion() const {
+    return 2;
+}
+
 void dopush(V3DPluginCallback2 &v3d, QWidget *parent, int method_code);
 
 class lookPanel : public QDialog
