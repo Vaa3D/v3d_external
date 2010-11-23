@@ -80,8 +80,6 @@ void ReCenterImagePlugin::processImage(const QString &arg, Image4DSimple *p4DIma
 			}
 			else if(datatype == 3)
 			{
-				qDebug()<<"float32 ...";
-				
 				float *pImage = NULL;
 				recentering<V3DLONG, float>( pImage, (float*)p4DProxy.begin(), ndimx, ndimy, ndimz, N, M, P, sc);
 				
@@ -110,8 +108,6 @@ void recentering(Tdata *&p, Tdata *data, Tidx nx, Tidx ny, Tidx nz, Tidx ox, Tid
 	if(p) {delete []p; p=NULL;}
 	else
 	{
-		qDebug()<< "run recentering ...";
-		
 		Tidx nplxs = nx*ny*nz*ncolor;
 		Tidx pagesz = ox*oy*oz;
 		
