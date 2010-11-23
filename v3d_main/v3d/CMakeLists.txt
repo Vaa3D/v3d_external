@@ -25,7 +25,7 @@ set(V3D_SRCS
   DownloadManager.cpp
   )
 
-set(V3D_RCCS v3d.qrc)
+set(V3D_RCCS v3d.qrc ../3drenderer/3drenderer.qrc)
 
 QT4_ADD_RESOURCES(V3D_RCC_SRCS ${V3D_RCCS})
 
@@ -122,11 +122,12 @@ if(APPLE)
                         "${BUNDLE_BUILD_DIR}/Contents/Resources"
     )
     # Build v3d directly into nascent app bundle
-    # Call binary v3d_bin, so "v3d" can be the shell script that launches it.
     set_target_properties(v3d PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY "${BUNDLE_BUILD_DIR}/Contents/MacOS")
     # MACOSX_BUNDLE_WHATEVER parameters must be set before configure_file statement on Info.plist is called
     # MACOSX_BUNDLE_EXECUTABLE_NAME should match CPACK_BUNDLE_NAME
+    # Launch script is called v3d_script (not just 'v3d'), because...
+    # ...actual binary must be called "v3d", so macdeployqt tool can find it.
     set(MACOSX_BUNDLE_EXECUTABLE_NAME v3d_script)
     set(MACOSX_BUNDLE_INFO_STRING "v3d")
     set(MACOSX_BUNDLE_ICON_FILE "v3d.icns")

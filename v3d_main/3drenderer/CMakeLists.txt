@@ -22,6 +22,8 @@ set(3DRenderer_SRCS
   v3dr_surfaceDialog.cpp
   )
 
+# QT4_ADD_RESOURCES(V3D_RENDERER_RCC_SRCS "3drenderer.qrc")
+
 QT4_WRAP_CPP(QT_MOC_SRCS
   gradients.h
   hoverpoints.h
@@ -34,7 +36,10 @@ QT4_WRAP_CPP(QT_MOC_SRCS
 
 include_directories( ${V3D_BINARY_DIR}/v3dbase )
 
-add_library( 3drenderer ${QT_MOC_SRCS} ${3DRenderer_SRCS} )
+add_library( 3drenderer 
+    ${QT_MOC_SRCS}
+    # ${V3D_RENDERER_RCC_SRCS} # no, this needs to be linked directly to v3d executable
+    ${3DRenderer_SRCS})
 
 target_link_libraries( 3drenderer ${QT_QTOPENGL_LIBRARY} ${OPENGL_LIBRARIES} )
 target_link_libraries( 3drenderer imaging )
