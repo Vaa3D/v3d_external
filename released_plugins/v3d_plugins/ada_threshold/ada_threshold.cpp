@@ -14,7 +14,7 @@
 Q_EXPORT_PLUGIN2(threshold, ThPlugin);
 
 template <class T> 
-void BinaryProcess(T *apsInput, T * aspOutput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer, V3DLONG h)
+void BinaryProcess(T *apsInput, T * aspOutput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer, V3DLONG h, V3DLONG d)
 {
 	V3DLONG i, j,k,n,count;
 	double t, temp;
@@ -31,7 +31,7 @@ void BinaryProcess(T *apsInput, T * aspOutput, V3DLONG iImageWidth, V3DLONG iIma
 				V3DLONG curpos2 = j* iImageWidth + k;
 				temp = 0;					
 				count = 0;
-				for(n =1 ; n <=3 ;n++)
+				for(n =1 ; n <= d  ;n++)
 				{
 					if (k>h*n) {temp += apsInput[curpos1 + k-(h*n)]; count++;}  
 					if (k+(h*n)< iImageWidth) { temp += apsInput[curpos1 + k+(h*n)]; count++;}
@@ -63,11 +63,11 @@ void ThPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWi
 {
 	if (menu_name == tr("3D (w/o parameters)"))
     {
-    	thimg(callback, parent, 1);
+    	thimg(callback, parent,1 );
     }
 		else if (menu_name == tr("3D (set parameters)"))
 		{
-			thimg(callback, parent, 1);			
+			thimg(callback, parent, 2 );			
 		}
 			else if (menu_name == tr("help"))
 			 {
@@ -79,16 +79,35 @@ void ThPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWi
 void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 {
 	v3dhandle curwin = callback.currentImageWindow();
+	V3DLONG h;
+	V3DLONG d ;
 	if (!curwin)
 	{
 		v3d_msg("You don't have any image open in the main window.");
 		return;
 	}
 	
-	if (method_code!=1)
+	if (method_code == 1)
 	{
-		v3d_msg("Invalid Th method code. You should never see this message. Report this bug to the developer");
-		return;
+		h = 5;
+		d  = 3;
+		//v3d_msg("Invalid Th method code. You should never see this message. Report this bug to the developer");
+		//return;
+	}else 
+	{
+		if( method_code == 2)
+		{
+			DtDialog dialog(callback, parent);
+			if (dialog.exec()!=QDialog::Accepted)
+			return;	
+			else 
+			{
+				h = dialog.Ddistance->text().toLong()-1;
+				d = dialog.Dnumber->text().toLong()-1;
+				printf("d% h,d% d \n ",h,d);
+			}
+			
+		}	
 	}
 	
 	int start_t = clock(); // record time point
@@ -114,8 +133,8 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 	void *pData=NULL;
 	
 	V3DLONG sz_data[4]; sz_data[0]=sz0; sz_data[1]=sz1; sz_data[2]=sz2; sz_data[3]=1;
-	if (method_code==1)
-	{
+	//if (method_code==1)
+	//{
 		switch (subject->getDatatype()) 
 		{
 			case V3D_UINT8:
@@ -135,7 +154,7 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 					unsigned char * pSubtmp_uint8 = pSub.begin();
 				
 					for (V3DLONG ich=0; ich<sz3; ich++)
-						BinaryProcess(pSubtmp_uint8+ich*channelsz, (unsigned char *)pData+ich*channelsz, sz0, sz1, sz2, 5);
+						BinaryProcess(pSubtmp_uint8+ich*channelsz, (unsigned char *)pData+ich*channelsz, sz0, sz1, sz2, h, d  );
 				}
 				
 				break;
@@ -157,7 +176,7 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 					short int * pSubtmp_uint16 = (short int *)pSub.begin();
 				
 					for (V3DLONG ich=0; ich<sz3; ich++)
-						BinaryProcess(pSubtmp_uint16+ich*channelsz, (short int *)pData+ich*channelsz, sz0, sz1, sz2, 5);
+						BinaryProcess(pSubtmp_uint16+ich*channelsz, (short int *)pData+ich*channelsz, sz0, sz1, sz2, h, d );
 				}
 				
 				break;
@@ -179,7 +198,7 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 					float * pSubtmp_float32 = (float *)pSub.begin();
 					
 					for (V3DLONG ich=0; ich<sz3; ich++)
-						BinaryProcess(pSubtmp_float32+ich*channelsz, (float *)pData+ich*channelsz, sz0, sz1, sz2, 5);
+						BinaryProcess(pSubtmp_float32+ich*channelsz, (float *)pData+ich*channelsz, sz0, sz1, sz2, h, d );
 				}
 				
 				break;
@@ -190,7 +209,8 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 		}
 		
 		
-	}
+	
+	//}
 	
 	//----------------------------------------------------------------------------------------------------------------------------------
 	
@@ -209,4 +229,16 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 	callback.setImage(newwin, &p4DImage);
 	callback.setImageName(newwin, QString("thresholded image"));
 	callback.updateImageWindow(newwin);
+}
+
+
+void DtDialog::update()
+{
+	//get current data
+	
+	Dn = Dnumber->text().toLong()-1;
+	Dh = Ddistance->text().toLong()-1;
+
+		//printf("channel %ld val %d x %ld y %ld z %ld ind %ld \n", c, data1d[ind], nx, ny, nz, ind);
+	
 }
