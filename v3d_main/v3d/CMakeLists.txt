@@ -169,7 +169,7 @@ else(APPLE)
             "${TIFF_INCLUDE_DIR}/../bin"
             "${QT_LIBRARY_DIR}/../bin"
             "${CXX_BINDIR}")
-        set(SHLIBS zlib1 jpeg62 libtiff3
+        set(SHLIBS zlib1.dll jpeg62.dll libtiff3.dll
             QtCore4.dll QtGui4.dll QtNetwork4.dll QtOpenGL4.dll QtXml4.dll
             mingwm10.dll "libgcc_s_dw2-1.dll" "libstdc++-6.dll")
     endif()
@@ -178,21 +178,29 @@ else(APPLE)
         set(SHLIBS libtiff.so.4 libz.so.1 libjpeg.so.62
             libQtCore.so.4 libQtGui.so.4 libQtNetwork.so.4 libQtOpenGL.so.4 libQtXml.so.4)
     endif()
+    # message("LIB_PATHS = ${LIB_PATHS}")
     foreach(SHLIB ${SHLIBS})
+        # message("Searching for ${SHLIB}")
         set(lib_var_name "${SHLIB}_LIB_FILE")
         find_file(${lib_var_name}
             NAMES 
                 ${SHLIB}
-            PATHS ${LIB_PATHS}
+            PATHS "${LIB_PATHS}" 
             NO_DEFAULT_PATH)
         find_file(${lib_var_name}
             NAMES ${SHLIB}
             PATHS /usr/lib /lib
-            # Yes default paths, if above find_library failed
+                "${TIFF_INCLUDE_DIR}/../bin" # ${LIB_PATHS} does not work if spaces are in name...
+           # Yes default paths, if above find_library failed
             )
         set(lib_name "${${lib_var_name}}")
         # Follow symlinks to the real file
         # So we don't just install symlinks
+        if(lib_name)
+            # message("Found ${lib_name}")
+        else()
+            # message("${SHLIB} (${lib_name}) not found")
+        endif()
         get_filename_component(real_lib ${lib_name} REALPATH)
         get_filename_component(lib_name ${lib_name} NAME) # Strip path
         if(real_lib)
