@@ -38,9 +38,9 @@ void parsePluginVersion(QObject *plugin, QString fileName)
         // Here is where we produce the program output
         cout << "    "; // indent
         cout << "<v3d_plugin";
-        cout << " platform=\"" << BUILD_OS_INFO << "\"";
         cout << " name=\"" << fileName.toStdString() << "\"";
         cout << " version=\"" << version << "\"";
+        cout << " platform=\"" << BUILD_OS_INFO << "\"";
         cout << "/>" << endl;
     }
 
