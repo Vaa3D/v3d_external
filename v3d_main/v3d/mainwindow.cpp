@@ -418,7 +418,7 @@ void MainWindow::openWebUrl()
     loadV3DUrl(imageUrl, b_cacheLocalFile);
 }
 
-void MainWindow::loadV3DUrl(QUrl url, bool b_cacheLocalFile)
+void MainWindow::loadV3DUrl(QUrl url, bool b_cacheLocalFile, bool b_forceopen3dviewer)
 {
     QString localFileName = QFileInfo(url.path()).fileName();
     QString localFilePath = QDir::tempPath();
@@ -426,7 +426,7 @@ void MainWindow::loadV3DUrl(QUrl url, bool b_cacheLocalFile)
 
     DownloadManager *downloadManager = new DownloadManager(this);
     connect(downloadManager, SIGNAL(downloadFinishedSignal(QUrl, QString, bool)),
-            this, SLOT(finishedLoadingWebImage(QUrl, QString, bool)));
+            this, SLOT(finishedLoadingWebImage(QUrl, QString, bool, bool)));
     downloadManager->b_cacheFile = b_cacheLocalFile;
     if (b_cacheLocalFile)
         downloadManager->startDownloadCheckCache(url, fileName);
@@ -436,12 +436,12 @@ void MainWindow::loadV3DUrl(QUrl url, bool b_cacheLocalFile)
 
 // This method is called once an asynchronous web download has completed.
 // By CMB Oct-08-2010
-void MainWindow::finishedLoadingWebImage(QUrl url, QString fileName, bool b_cacheLocalFile)
+void MainWindow::finishedLoadingWebImage(QUrl url, QString fileName, bool b_cacheLocalFile, bool b_forceopen3dviewer)
 {
     // Empty file name means something went wrong
     if (fileName.size() > 0) {
         // false means Don't add local file name to recent files list
-        loadV3DFile(fileName, false, false); // loadV3DFile func changed to 3 args. YuY Nov. 18, 2010
+        loadV3DFile(fileName, false, b_forceopen3dviewer); // loadV3DFile func changed to 3 args. YuY Nov. 18, 2010
         if (! b_cacheLocalFile)
             QFile::remove(fileName); // delete downloaded file
         // Set window title to URL

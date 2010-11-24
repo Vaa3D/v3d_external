@@ -60,6 +60,8 @@ using namespace std;
 #include "v3d_core.h"
 //#include "idrawmain.h"
 
+#include "v3d_cl.h"
+
 void printHelp_v3d();
 void printHelp_align();
 void printHelp_straight();
@@ -101,7 +103,7 @@ void printHelp_v3d()
 	cout<<"    -M module    a string indicates which module will be used for processing."<<endl;
 
 	cout<<"    -f <file>    open single or multiple image (.tif/.tiff, .lsm, .mrc, .raw/.v3draw) / object (.ano, .apo, .swc, .marker) files"<<endl;
-	cout<<"    -v <0/1>     force to open a 3d viewer when load an image, otherwise use the default v3d global setting (from \"Adjust Preference\")"<<endl;
+	cout<<"    -v		    force to open a 3d viewer when load an image, otherwise use the default v3d global setting (from \"Adjust Preference\")"<<endl;
 
 	return;
 }
@@ -145,313 +147,191 @@ void printHelp_trace()
 {
 }
 
-// check the file valid
-bool check_filename(QString fn)
-{
-	QFileInfo curfile_info(fn);
-	if ( (curfile_info.suffix().toUpper()=="ANO") || 
-		 (curfile_info.suffix().toUpper()=="APO" || curfile_info.suffix().toUpper()=="SWC" || curfile_info.suffix().toUpper()=="OBJ" || curfile_info.suffix().toUpper()=="V3DS") ||
-		 (curfile_info.suffix().toUpper()=="ATLAS") ||
-		 (curfile_info.suffix().toUpper()=="ZIP") || 
-		 (curfile_info.suffix().toUpper()=="LSM") || (curfile_info.suffix().toUpper()=="TIF") || (curfile_info.suffix().toUpper()=="RAW") || 
-		 fn.contains("://") ) // url 
-	{
-		return true;
-	}
-	else
-	{
-		v3d_msg("Error: The file does not exist! Do nothing.", 0);
-		return false;
-	}
-
-}
-
 
 int main(int argc, char **argv)
 {
 
 #ifdef COMPILE_TO_COMMANDLINE
-	if (argc<=1)
+	//string s1, s2;
+	//s1 = argv[1];
+	//if (s1=="-h" || s1=="-H")
+	//{
+	//	if (argc<=2)
+	//	{
+	//		printHelp_v3d();
+	//		return 0;
+	//	}
+	//	else
+	//	{
+	//		s2 = argv[2];
+	//		if (s2=="ALIGN") {return 0;}
+	//		else if (s2=="BLEND") {return 0;}
+	//		else if (s2=="CROP") {return 0;}
+	//		else if (s2=="LANDMARK") {return 0;}
+	//		else if (s2=="MASK") {return 0;}
+	//		else if (s2=="RESAMPLE") {return 0;}
+	//		else if (s2=="ROT") {return 0;}
+	//		else if (s2=="SAVEAS") {return 0;}
+	//		else if (s2=="SEG") {return 0;}
+	//		else if (s2=="STITCH") {return 0;}
+	//		else if (s2=="STRAIGHT") {return 0;}
+	//		else if (s2=="TRACE") {return 0;}
+	//		else
+	//		{
+	//			printf("Your module code is illegal. Please follow the instruction of the help page below.\n\n");
+	//			printHelp_v3d();
+	//			return 1;
+	//		}
+	//	}
+	//}
+	//else if (s1=="-M") //must be capital
+	//{
+	//	return 0;
+	//}
+	//else
+	//{
+	//	printf("Your command line input is illegal. Please follow the instruction of the help page below.\n\n");
+	//	printHelp_v3d();
+	//	return 1;
+	//}
+
+	CLP parser;
+	char* filename;
+
+	parser.parse(argc, argv, printHelp_v3d); // parse command lines to v3d_cl_interface Nov. 23, 2010 by YuY
+
+	if(parser.i_v3d.clp_done)
 	{
-#endif
-		Q_INIT_RESOURCE(v3d);
-
-		QApplication app(argc, argv);
-
-		//090812 RZC: best solution for QMainWindow is using new, then deleteLater itself in its closeEvent.
-		MainWindow* mainWin = new MainWindow;
-
-        // On Mac, allow mainWin to get QFileOpen events, such as when a tif
-        // file is dragged onto the application icon.
-        // CMB Nov-12-2010
-        app.installEventFilter(mainWin);
-
-		mainWin->show();
-
-		//*************************
-		// DO NOT USE THE FOLLOWING AS I CHANGED TO MDI APPLICATIONS
-		//*************************
-
-		//XFormWidget xformWidget(0);
-		//XFormWidget xformWidget;
-		//XFormWidget xformWidget1(0); //useful to display multiple stacks
-
-		/*
-		//set style
-
-		QStyle *arthurStyle = new ArthurStyle();
-		xformWidget.setStyle(arthurStyle);
-
-		QList<QWidget *> widgets = qFindChildren<QWidget *>(&xformWidget);
-		foreach (QWidget *w, widgets)
-			w->setStyle(arthurStyle);
-		*/
-
-		//display
-
-		//xformWidget.show();
-		//xformWidget1.show(); //useful to display multiple stacks
-
-		//iDrawMainWindow my3ddraw;
-		//my3ddraw.show();
-
-		try 
-		{
-			return app.exec();
-		}
-		catch (...) {
-			v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the V3D developers to figure out the problem.");
-			return 1;
-		}
-
-#ifdef COMPILE_TO_COMMANDLINE
+		return true;
 	}
 	else
 	{
-		//string s1, s2;
-		//s1 = argv[1];
-		//if (s1=="-h" || s1=="-H")
-		//{
-		//	if (argc<=2)
-		//	{
-		//		printHelp_v3d();
-		//		return 0;
-		//	}
-		//	else
-		//	{
-		//		s2 = argv[2];
-		//		if (s2=="ALIGN") {return 0;}
-		//		else if (s2=="BLEND") {return 0;}
-		//		else if (s2=="CROP") {return 0;}
-		//		else if (s2=="LANDMARK") {return 0;}
-		//		else if (s2=="MASK") {return 0;}
-		//		else if (s2=="RESAMPLE") {return 0;}
-		//		else if (s2=="ROT") {return 0;}
-		//		else if (s2=="SAVEAS") {return 0;}
-		//		else if (s2=="SEG") {return 0;}
-		//		else if (s2=="STITCH") {return 0;}
-		//		else if (s2=="STRAIGHT") {return 0;}
-		//		else if (s2=="TRACE") {return 0;}
-		//		else
-		//		{
-		//			printf("Your module code is illegal. Please follow the instruction of the help page below.\n\n");
-		//			printHelp_v3d();
-		//			return 1;
-		//		}
-		//	}
-		//}
-		//else if (s1=="-M") //must be capital
-		//{
-		//	return 0;
-		//}
-		//else
-		//{
-		//	printf("Your command line input is illegal. Please follow the instruction of the help page below.\n\n");
-		//	printHelp_v3d();
-		//	return 1;
-		//}
-
-		// -------------------------------------------------------
-		// predefine -f load image/object (swc, apo) file into V3D
-		// YuY: Nov. 18, 2010. Ensure V3D support running in command lines 
-		// YuY: Nov. 19, 2010. Update the commands parser to accept multiple files when predefined by users
-		
-		// command arguments parsing
-		char* filename;
-		vector<char *> fileList;
-		bool open3Dviewer = false;
-		
-		// ------ parsing aguements here ---------------------
-		if(argc<=2)
+		if(parser.i_v3d.openV3D)
 		{
-			if(string(argv[1]) == "-h" || string(argv[1]) == "-H")
-			{
-				printHelp_v3d();
-				return 0;
-			}
-			else if(string(argv[1]) == "-M") //must be capital
-			{
-				return 0;
-			}
-			else if( check_filename(QString(argv[1])) )
-			{
-				// load and visualize file in V3D
-				filename = argv[1];
-				
-				// open V3D
-				Q_INIT_RESOURCE(v3d);
+			// ------ V3D GUI handling module ---------------------
+			Q_INIT_RESOURCE(v3d);
 
-				QApplication app(argc, argv);
+			QApplication app(argc, argv);
 
-				MainWindow* mainWin = new MainWindow;
-				mainWin->loadV3DFile(filename, true, open3Dviewer);
-				
-				app.installEventFilter(mainWin);
-				mainWin->show();
+			MainWindow* mainWin = new MainWindow;
+			app.installEventFilter(mainWin);
+			mainWin->show();
 
-				try 
+			// multiple image/object handling module
+			for(int i=0; i<parser.i_v3d.fileList.size(); i++)
+			{
+				filename = parser.i_v3d.fileList.at(i);
+
+				QString qFile(filename);
+
+				if(!QFile(qFile).exists()) // supporting both local and web files. Nov. 18, 2010. YuY
 				{
-					return app.exec();
-				}
-				catch (...) 
-				{
-					v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the V3D developers to figure out the problem.");
-					return 1;
-				}
+					// judge whether the file exists on the web
+					// "://" like "http://" "https://" "ftp://" 
 
-			}
-			else
-			{
-				v3d_msg("Your module code is illegal. Please follow the instruction of the help page below.", 0);
-				printHelp_v3d();
-				return -1;
-			}
-		}
-		else
-		{
-			// if there is -h/H, V3D only print help info and return
-			for(int i=1; i<argc; i++)
-			{
-				if(string(argv[i]) == "-h" || string(argv[i]) == "-H")
-				{
-					printHelp_v3d();
-					return 0;
-				}
-			}
-
-			// parsing arguments in other cases
-			for(int i=1; i<argc; i++)
-			{
-				if(i+1 != argc) // check that we haven't finished parsing yet
-				{
-					if(string(argv[i]) == "-f")
+					if(qFile.contains("://"))
 					{
-						while(i+1<argc && !QString(argv[i+1]).contains("-") ) 
+						QUrl url(filename);
+
+						if(!url.isValid()) // valid or invalid url
 						{
-
-							filename = argv[i+1];
-							i++;
-							fileList.push_back(filename);
-
-							qDebug()<<QString(argv[i+1]).contains("-")<< (i<argc);
+							v3d_msg("The file does not exist! Do nothing.", 0);
+							return -1;	
+						}
+						else if(url.scheme().toUpper() == "HTTP" || url.scheme().toUpper() == "HTTPS" || url.scheme().toUpper() == "FTP")
+						{
+							// load image/object
+							mainWin->loadV3DUrl(QUrl(filename), true);
 						}
 
 					}
-					else if(string(argv[i]) == "-v")
-					{
-						open3Dviewer = bool(atoi(argv[i+1]));
-						i++;
-					}
-					else
-					{
-						v3d_msg("Your module code is illegal. Please follow the instruction of the help page below.", 0);
-						printHelp_v3d();
-						return -1;
-					}
-				}
-				else if(i<argc && QString(argv[i]).contains("-"))
-				{
-					v3d_msg("Your module code is illegal. Please follow the instruction of the help page below.", 0);
-					printHelp_v3d();
-					return -1;
-				}
-				else
-				{
-					v3d_msg("Your module code is illegal. Please follow the instruction of the help page below.", 0);
-					continue;
-				}
-			}
-			
-
-		}
-
-		//qDebug()<<"parser done"<<fileList.size();
-		
-		// ------ V3D GUI handling module ---------------------
-		Q_INIT_RESOURCE(v3d);
-
-		QApplication app(argc, argv);
-
-		MainWindow* mainWin = new MainWindow;
-		app.installEventFilter(mainWin);
-		mainWin->show();
-
-		// multiple image/object handling module
-		for(int i=0; i<fileList.size(); i++)
-		{
-			filename = fileList.at(i);
-
-			QString qFile(filename);
-
-			if(!QFile(qFile).exists()) // supporting both local and web files. Nov. 18, 2010. YuY
-			{
-				// judge whether the file exists on the web
-				// "://" like "http://" "https://" "ftp://" 
-
-				if(qFile.contains("://"))
-				{
-					QUrl url(filename);
-
-					if(!url.isValid()) // valid or invalid url
+					else // impossible be a url
 					{
 						v3d_msg("The file does not exist! Do nothing.", 0);
 						return -1;	
 					}
-					else if(url.scheme().toUpper() == "HTTP" || url.scheme().toUpper() == "HTTPS" || url.scheme().toUpper() == "FTP")
-					{
-						// load image/object
-						mainWin->loadV3DUrl(QUrl(filename), true);
-					}
-
 				}
-				else // impossible be a url
+				else
 				{
-					v3d_msg("The file does not exist! Do nothing.", 0);
-					return -1;	
+
+					QString curSuffix = QFileInfo(qFile).suffix();
+
+					// load image/object
+					mainWin->loadV3DFile(filename, true, parser.i_v3d.open3Dviewer);
 				}
+			
 			}
-			else
+
+			try 
 			{
-
-				QString curSuffix = QFileInfo(qFile).suffix();
-
-				// load image/object
-				mainWin->loadV3DFile(filename, true, open3Dviewer);
+				return app.exec();
 			}
+			catch (...) 
+			{
+				v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the V3D developers to figure out the problem.");
+				return 1;
+			}
+			// -------------------------------------------------------
 		
 		}
-
-		try 
+		else
 		{
-			return app.exec();
+			return true;
 		}
-		catch (...) 
-		{
-			v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the V3D developers to figure out the problem.");
-			return 1;
-		}
-		// -------------------------------------------------------
-
+		
 	}
+
+#else
+	Q_INIT_RESOURCE(v3d);
+
+	QApplication app(argc, argv);
+
+	//090812 RZC: best solution for QMainWindow is using new, then deleteLater itself in its closeEvent.
+	MainWindow* mainWin = new MainWindow;
+
+    // On Mac, allow mainWin to get QFileOpen events, such as when a tif
+    // file is dragged onto the application icon.
+    // CMB Nov-12-2010
+    app.installEventFilter(mainWin);
+
+	mainWin->show();
+
+	//*************************
+	// DO NOT USE THE FOLLOWING AS I CHANGED TO MDI APPLICATIONS
+	//*************************
+
+	//XFormWidget xformWidget(0);
+	//XFormWidget xformWidget;
+	//XFormWidget xformWidget1(0); //useful to display multiple stacks
+
+	/*
+	//set style
+
+	QStyle *arthurStyle = new ArthurStyle();
+	xformWidget.setStyle(arthurStyle);
+
+	QList<QWidget *> widgets = qFindChildren<QWidget *>(&xformWidget);
+	foreach (QWidget *w, widgets)
+		w->setStyle(arthurStyle);
+	*/
+
+	//display
+
+	//xformWidget.show();
+	//xformWidget1.show(); //useful to display multiple stacks
+
+	//iDrawMainWindow my3ddraw;
+	//my3ddraw.show();
+
+	try 
+	{
+		return app.exec();
+	}
+	catch (...) {
+		v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the V3D developers to figure out the problem.");
+		return 1;
+	}
+
 #endif
+
 }

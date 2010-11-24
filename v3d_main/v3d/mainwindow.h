@@ -105,7 +105,7 @@ public slots:
     void newFile();
     void open();
     void openWebUrl(); // By CMB 08-Oct-2010
-    void finishedLoadingWebImage(QUrl url, QString fileName, bool b_cacheFile); // By CMB 08-Oct-2010
+    void finishedLoadingWebImage(QUrl url, QString fileName, bool b_cacheFile, bool b_forceopen3dviewer); // By CMB 08-Oct-2010
     void checkForUpdates(bool b_informOnNoUpdate = true); // CMB Oct-22-2010
     void atlasView();
     void save();
@@ -128,7 +128,7 @@ public slots:
 	XFormWidget *findMdiChild(const QString &fileName);
 
 	void loadV3DFile(QString filename, bool b_putinrecentfilelist=true, bool b_forceopen3dviewer=false);
-        void loadV3DUrl(QUrl url, bool b_cacheLocalFile=true); // by CMB Oct-14-2010
+       void loadV3DUrl(QUrl url, bool b_cacheLocalFile=true, bool b_forceopen3dviewer=false); // by CMB Oct-14-2010
 
 	//the following are public slot processing functions
 	void func_procLandmarkManager();
