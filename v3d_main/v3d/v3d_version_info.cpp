@@ -42,6 +42,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <QtXml>
 #include <QSettings>
 #include <QDebug>
+#include <QMessageBox>
 
 // QString v3dVersionUrlBase("http://brunsc-wm1.janelia.priv/~brunsc/v3d_version/");
 QString v3dVersionUrlBase("http://penglab.janelia.org/proj/v3d/V3D/");
@@ -425,6 +426,49 @@ void V3dUpdateDialog::on_comboBox_currentIndexChanged(const QString& updateFrequ
         settings.setValue("updateCheckInterval", 2592000);
     else
         qDebug() << "Error: unrecognized interval";
+}
+
+UpdatesAvailableDialog::UpdatesAvailableDialog(QWidget *parent) : QMessageBox(parent)
+{
+    // Use V3D application icon
+    QIcon appIcon(":/pic/v3dIcon128.png");
+    QPixmap iconPixmap = appIcon.pixmap(75,75);
+    setIconPixmap(iconPixmap);
+    setText(tr("There are updates available."));
+    setInformativeText("Do you want to start the V3D updater now?");
+    setDetailedText("The V3D team periodically makes software improvements. "
+            "Click 'Yes' to install recent improvements now.");
+    setWindowTitle(tr("V3D software update check"));
+    setSizeGripEnabled(false);
+
+    QPushButton *noButton = addButton( tr("Remind me later"), QMessageBox::RejectRole);
+    connect(noButton, SIGNAL(clicked()), this, SLOT(remind_me_later()));
+
+    QPushButton *neverButton = addButton( tr("Never"), QMessageBox::DestructiveRole);
+    connect(neverButton, SIGNAL(clicked()), this, SLOT(never_update()));
+
+    QPushButton *yesButton = addButton( tr("Yes, update"), QMessageBox::AcceptRole);
+    connect(yesButton, SIGNAL(clicked()), this, SLOT(yes_update()));
+}
+
+void UpdatesAvailableDialog::yes_update()
+{
+    emit update();
+}
+
+void UpdatesAvailableDialog::never_update()
+{
+    QSettings settings("HHMI", "V3D");
+    settings.setValue("updateCheckInterval", -1); // never
+}
+
+void UpdatesAvailableDialog::remind_me_later()
+{
+    QSettings settings("HHMI", "V3D");
+    int interval = settings.value("updateCheckInterval").toInt();
+    if (interval < 0) // if set to never
+        // run again when user starts V3D, but not for at least 5 minutes.
+        settings.setValue("updateCheckInterval", 300);
 }
 
 } // namespace v3d
