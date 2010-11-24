@@ -62,17 +62,20 @@ QStringList ThPlugin::menulist() const
 void ThPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
 {
 	if (menu_name == tr("3D (w/o parameters)"))
-    {
+	{
     	thimg(callback, parent,1 );
     }
-		else if (menu_name == tr("3D (set parameters)"))
-		{
-			thimg(callback, parent, 2 );			
-		}
-			else if (menu_name == tr("help"))
-			 {
-				 v3d_msg("How to use ..........");
-			 }
+	else if (menu_name == tr("3D (set parameters)"))
+	{
+		thimg(callback, parent, 2 );
+	}
+	else if (menu_name == tr("Help"))
+	{
+		
+		QMessageBox::information(parent, "Version info", "adaptive threshold transform 1.0 (2010-11-23): this plugin is developed by Jinzhu Yang and Hanchuan Peng.The adaptive segmentation function, each pixel threshold is statistical, method is to calculated average each piont of three-dimensional  6 neighborhood");		
+		//QMessageBox::information(parent," The adaptive segmentation function, each pixel threshold is statistical, method is to calculated average each piont of three-dimensional  6 neighborhood ");
+		return;
+	}
 
 }
 
@@ -80,7 +83,7 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 {
 	v3dhandle curwin = callback.currentImageWindow();
 	V3DLONG h;
-	V3DLONG d ;
+	V3DLONG d;
 	if (!curwin)
 	{
 		v3d_msg("You don't have any image open in the main window.");
@@ -90,14 +93,15 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 	if (method_code == 1)
 	{
 		h = 5;
-		d  = 3;
+		d = 3;
 		//v3d_msg("Invalid Th method code. You should never see this message. Report this bug to the developer");
 		//return;
-	}else 
+	}
+	else 
 	{
 		if( method_code == 2)
 		{
-			DtDialog dialog(callback, parent);
+			AdaTDialog dialog(callback, parent);
 			if (dialog.exec()!=QDialog::Accepted)
 			return;	
 			else 
@@ -232,7 +236,7 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 }
 
 
-void DtDialog::update()
+void AdaTDialog::update()
 {
 	//get current data
 	

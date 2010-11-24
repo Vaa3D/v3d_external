@@ -35,7 +35,7 @@ public:
 };
 
 //define a simple dialog for choose DT parameters
-class DtDialog : public QDialog
+class AdaTDialog : public QDialog
 {
 	Q_OBJECT
 	
@@ -54,8 +54,9 @@ public:
 	
 	QLabel *labelx;
 	QLabel *labely;
-	
-	
+	QLabel *labelz;
+	QLabel *labelz1;
+	QLabel *labelz2;	
 	QSpinBox** nval;
 	QLabel** nlabel;
 	
@@ -73,7 +74,7 @@ public:
 	
 	///
 public:
-	DtDialog(V3DPluginCallback &cb, QWidget *parent)
+	AdaTDialog(V3DPluginCallback &cb, QWidget *parent)
 	{
 		Image4DSimple* image = cb.getImage(cb.currentImageWindow());
 		QString imageName = cb.getImageName(cb.currentImageWindow());		
@@ -92,15 +93,22 @@ public:
 		
 		gridLayout = new QGridLayout();
 		
-		labelx = new QLabel(QObject::tr("Ddistance: "));
-		labely = new QLabel(QObject::tr("Dnumber: "));
-
+		labelx = new QLabel(QObject::tr("Ddistance: represents sampling interval"));
+		labely = new QLabel(QObject::tr("Dnumber: represents number of sampling point"));
+       // labelz = new QLabel(QObject::tr("The adapitive threshold function."));	
+		//labelz1 = new QLabel(QObject::tr("Ddistance represents sampling interval"));			
+		//labelz2 = new QLabel(QObject::tr("Dnumber*Ddistance represents total of sampling point"));	
+		
 		
 		gridLayout->addWidget(labelx, 0,0); gridLayout->addWidget(Ddistance, 0,1);
 		gridLayout->addWidget(labely, 1,0); gridLayout->addWidget(Dnumber, 1,1);
 		
+		//gridLayout->addWidget(labelz, 2,0);
+		//gridLayout->addWidget(labelz1, 3,0);
+		//gridLayout->addWidget(labelz2, 4,0);
 		
-		gridLayout->addWidget(cancel, sc+3,0); gridLayout->addWidget(ok, sc+3,1);
+		
+		gridLayout->addWidget(cancel, 6,0); gridLayout->addWidget(ok, 6,1);
 		setLayout(gridLayout);
 		setWindowTitle(QString("Change parameters"));
 		
@@ -114,7 +122,7 @@ public:
 	}
 
 	
-	~DtDialog(){}
+	~AdaTDialog(){}
 	
 	public slots:
 	void update();
