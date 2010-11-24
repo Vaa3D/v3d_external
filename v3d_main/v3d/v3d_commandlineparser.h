@@ -189,6 +189,10 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 						}
 
 					}
+					else if(string(argv[i]) == "-v")
+					{
+						i_v3d.open3Dviewer = true;
+					}
 					else
 					{
 						i_v3d.clp_finished = true;
