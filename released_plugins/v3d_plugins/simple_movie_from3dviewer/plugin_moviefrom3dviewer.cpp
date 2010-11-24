@@ -12,17 +12,17 @@ Q_EXPORT_PLUGIN2(moviefrom3dviewer, MovieFrom3DviewerPlugin);
 void MovieFrom3Dviewer(V3DPluginCallback2 & v3d, QWidget * parent);
 
 //plugin funcs
-const QString title = "Movie From 3Dviewer";
+const QString title = "Movie From 3D Viewer";
 lookPanel* lookPanel::panel = 0;
 QStringList MovieFrom3DviewerPlugin::menulist() const
 {
     return QStringList()
-		<< tr("movie from 3Dviewer");
+		<< tr("movie from 3D viewer");
 }
 
 void MovieFrom3DviewerPlugin::domenu(const QString & menu_name, V3DPluginCallback2 & v3d, QWidget * parent)
 {
-    if (menu_name == tr("movie from 3Dviewer"))
+    if (menu_name == tr("movie from 3D viewer"))
     {
     	MovieFrom3Dviewer(v3d,parent);
     }
@@ -57,7 +57,7 @@ lookPanel::lookPanel(V3DPluginCallback2 &_v3d, QWidget *parent) : QDialog(parent
 
 	m_pLineEdit_fps=new QLineEdit(QObject::tr("4"));
 	m_pLineEdit_filepath=new QLineEdit();
-	QPushButton *ok     = new QPushButton(QObject::tr("Strat"));
+	QPushButton *ok     = new QPushButton(QObject::tr("Start"));
 	QPushButton *cancel = new QPushButton(QObject::tr("stop"));
 	QFormLayout *formLayout = new QFormLayout;
 	formLayout->addRow(QObject::tr("choose fps(ms): "), m_pLineEdit_fps);
