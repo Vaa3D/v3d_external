@@ -425,9 +425,10 @@ void MainWindow::loadV3DUrl(QUrl url, bool b_cacheLocalFile, bool b_forceopen3dv
     QString fileName = localFilePath + "/" + localFileName;
 
     DownloadManager *downloadManager = new DownloadManager(this);
-    connect(downloadManager, SIGNAL(downloadFinishedSignal(QUrl, QString, bool)),
+    connect(downloadManager, SIGNAL(downloadFinishedSignal(QUrl, QString, bool, bool)),
             this, SLOT(finishedLoadingWebImage(QUrl, QString, bool, bool)));
     downloadManager->b_cacheFile = b_cacheLocalFile;
+    downloadManager->b_forceopen3dviewer = b_forceopen3dviewer;
     if (b_cacheLocalFile)
         downloadManager->startDownloadCheckCache(url, fileName);
     else

@@ -159,6 +159,18 @@ void PluginDialog::addTreeItems(QTreeWidgetItem *pluginItem, QObject *plugin)
     if (interfaceName.size()<=0)
     	return;
 
+    // Add version number, if available
+    double version = -100.0;
+    V3DSingleImageInterface2_1 *sif21 = qobject_cast<V3DSingleImageInterface2_1 *>(plugin);
+    if (sif21) version = sif21->getPluginVersion();
+    V3DPluginInterface2_1 *pif21 = qobject_cast<V3DPluginInterface2_1 *>(plugin);
+    if (pif21) version = pif21->getPluginVersion();
+    if (version != -100.0) {
+        QTreeWidgetItem *versionItem = new QTreeWidgetItem(pluginItem);
+        versionItem->setText(0, QString("Plugin version %1").arg(version, 1, 'f', 1));
+        // TODO add a line about the version number
+    }
+
     QTreeWidgetItem *interfaceItem = new QTreeWidgetItem(pluginItem);
     interfaceItem->setText(0, interfaceName);
     interfaceItem->setIcon(0, interfaceIcon);

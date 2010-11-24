@@ -49,7 +49,10 @@ bool V3dUrlDialog::getKeepLocalCache() {
 }
 
 DownloadManager::DownloadManager(QWidget *parent)
-        : QObject(parent), guiParent(parent), b_cacheFile(true)
+        : QObject(parent),
+          guiParent(parent),
+          b_cacheFile(true),
+          b_forceopen3dviewer(false)
 {
     progressDialog = new QProgressDialog(parent);
     // We don't allocate the QNetworkReply
@@ -116,7 +119,7 @@ void DownloadManager::gotHeaderSlot(QNetworkReply* headerReply)
                         {
                             // In this one case we can use the cached file.
                             emit downloadFinishedSignal(headerReply->url(),
-                                    localFileName, b_cacheFile);
+                                    localFileName, b_cacheFile, b_forceopen3dviewer);
                             return;
                         }
                     }
@@ -200,14 +203,14 @@ void DownloadManager::finishedDownloadSlot(QNetworkReply* reply)
         localFile.open(QIODevice::WriteOnly);
         localFile.write(reply->readAll());
         localFile.close();
-        emit downloadFinishedSignal(reply->url(), localFileName, b_cacheFile);
+        emit downloadFinishedSignal(reply->url(), localFileName, b_cacheFile, b_forceopen3dviewer);
     }
     // Some http error received
     else
     {
         // TODO - how to report this...
         fprintf(stderr, "Http error\n");
-        emit downloadFinishedSignal(reply->url(), "", false);
+        emit downloadFinishedSignal(reply->url(), "", false, false);
     }
 
     // We receive ownership of the reply object

@@ -62,17 +62,22 @@ QString     v3d_getInterfaceName(QObject *plugin)
 {
    	QString name;
 
+    // Derived class must appear first, to be selected
+	V3DSingleImageInterface2_1 *iFilter2_1 = qobject_cast<V3DSingleImageInterface2_1 *>(plugin);
+    if (iFilter2_1 )  return (name = "V3DSingleImageInterface/2.1");
+
+    // Base class must appear later, so derived class has a chance
 	V3DSingleImageInterface *iFilter = qobject_cast<V3DSingleImageInterface *>(plugin);
     if (iFilter )  return (name = "V3DSingleImageInterface/1.0");
 
-    V3DPluginInterface *iface = qobject_cast<V3DPluginInterface *>(plugin);
-    if (iface )  return (name = "V3DPluginInterface/1.1");
+    V3DPluginInterface2_1 *iface2_1 = qobject_cast<V3DPluginInterface2_1 *>(plugin);
+    if (iface2_1 )  return (name = "V3DPluginInterface/2.1");
 
     V3DPluginInterface2 *iface2 = qobject_cast<V3DPluginInterface2 *>(plugin);
     if (iface2 )  return (name = "V3DPluginInterface/2.0");
 
-    V3DPluginInterface2_1 *iface2_1 = qobject_cast<V3DPluginInterface2_1 *>(plugin);
-    if (iface2_1 )  return (name = "V3DPluginInterface/2.1");
+    V3DPluginInterface *iface = qobject_cast<V3DPluginInterface *>(plugin);
+    if (iface )  return (name = "V3DPluginInterface/1.1");
 
     return name;
 }
@@ -80,6 +85,9 @@ QString     v3d_getInterfaceName(QObject *plugin)
 QStringList v3d_getInterfaceMenuList(QObject *plugin)
 {
 	QStringList qslist;
+
+	V3DSingleImageInterface2_1 *iFilter2_1 = qobject_cast<V3DSingleImageInterface2_1 *>(plugin);
+    if (iFilter2_1 )  return (qslist = iFilter2_1->menulist());
 
 	V3DSingleImageInterface *iFilter = qobject_cast<V3DSingleImageInterface *>(plugin);
     if (iFilter )  return (qslist = iFilter->menulist());
@@ -334,10 +342,11 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
     }
 	
     bool done = false;
-    if (!done)  { done = runSingleImageInterface(plugin, menuString); v3d_msg("done with runSingleImageInterface().",0); }
-	if (!done)  { done = runPluginInterface(plugin, menuString); v3d_msg("done with runPluginInterface().",0); }
-	if (!done)  { done = runPluginInterface2(plugin, menuString); v3d_msg("done with runPluginInterface2().",0); }
 	if (!done)  { done = runPluginInterface2_1(plugin, menuString); v3d_msg("done with runPluginInterface2_1().",0); }
+	if (!done)  { done = runPluginInterface2(plugin, menuString); v3d_msg("done with runPluginInterface2().",0); }
+	if (!done)  { done = runPluginInterface(plugin, menuString); v3d_msg("done with runPluginInterface().",0); }
+    // runSingleImageInterface works with both 1.0 and 2.1
+    if (!done)  { done = runSingleImageInterface(plugin, menuString); v3d_msg("done with runSingleImageInterface().",0); }
 	
 	v3d_msg(QString("already run! done status=%1").arg(done), 0);
 	// 100804 RZC: MUST do not unload plug-ins that has model-less dialog

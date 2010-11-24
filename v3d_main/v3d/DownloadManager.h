@@ -49,9 +49,10 @@ public:
     void startDownload(QUrl url, QString fileName);
     QUrl askUserForUrl();
     bool b_cacheFile; // whether to keep local copy of file
+    bool b_forceopen3dviewer; // whether to force 3d viewer
 
 signals:
-    void downloadFinishedSignal(QUrl url, QString fileName, bool b_cacheFile);
+    void downloadFinishedSignal(QUrl url, QString fileName, bool b_cacheFile, bool bforceopen3dviewer);
 
 public slots:
     void cancelDownloadSlot();
