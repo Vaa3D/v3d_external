@@ -60,7 +60,7 @@ using namespace std;
 #include "v3d_core.h"
 //#include "idrawmain.h"
 
-#include "v3d_cl.h"
+#include "v3d_commandlineparser.h"
 
 void printHelp_v3d();
 void printHelp_align();
@@ -199,7 +199,7 @@ int main(int argc, char **argv)
 
 	parser.parse(argc, argv, printHelp_v3d); // parse command lines to v3d_cl_interface Nov. 23, 2010 by YuY
 
-	if(parser.i_v3d.clp_done)
+	if(parser.i_v3d.clp_finished)
 	{
 		return false;
 	}
