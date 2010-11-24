@@ -58,7 +58,6 @@ public:
 	bool open3Dviewer; 
 	bool openV3D;
 	bool clp_done; // parsing finished
-
 };
 
 // command line parser class
@@ -104,7 +103,6 @@ bool CLP :: check_filename(QString fn)
 		v3d_msg("Error: The file does not exist! Do nothing.", 0);
 		return false;
 	}
-
 }
 
 // parsing parameters

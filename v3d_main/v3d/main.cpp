@@ -103,7 +103,7 @@ void printHelp_v3d()
 	cout<<"    -M module    a string indicates which module will be used for processing."<<endl;
 
 	cout<<"    -f <file>    open single or multiple image (.tif/.tiff, .lsm, .mrc, .raw/.v3draw) / object (.ano, .apo, .swc, .marker) files"<<endl;
-	cout<<"    -v		    force to open a 3d viewer when load an image, otherwise use the default v3d global setting (from \"Adjust Preference\")"<<endl;
+	cout<<"    -v		    force to open a 3d viewer when loading an image, otherwise use the default v3d global setting (from \"Adjust Preference\")"<<endl;
 
 	return;
 }
@@ -146,7 +146,6 @@ void printHelp_straight()
 void printHelp_trace()
 {
 }
-
 
 int main(int argc, char **argv)
 {
@@ -202,7 +201,7 @@ int main(int argc, char **argv)
 
 	if(parser.i_v3d.clp_done)
 	{
-		return true;
+		return false;
 	}
 	else
 	{
@@ -243,7 +242,7 @@ int main(int argc, char **argv)
 							// load image/object
 							mainWin->loadV3DUrl(QUrl(filename), true);
 						}
-
+						//how about smb:// etc?? //by PHC, 20101123 question
 					}
 					else // impossible be a url
 					{
@@ -253,13 +252,10 @@ int main(int argc, char **argv)
 				}
 				else
 				{
-
 					QString curSuffix = QFileInfo(qFile).suffix();
-
 					// load image/object
 					mainWin->loadV3DFile(filename, true, parser.i_v3d.open3Dviewer);
 				}
-			
 			}
 
 			try 
