@@ -62,7 +62,7 @@ else()
 endif()
 
 # Don't install plugins separate from app bundle on apple
-if(BUNDLE_BUILD_DIR AND APPLE)
+if(V3D_MAC_CREATE_BUNDLE AND BUNDLE_BUILD_DIR AND APPLE)
     # Build plugins in place inside app bundle
     set(dest_dir "${BUNDLE_BUILD_DIR}/Contents/MacOS/plugins/${PLUGIN_DIRECTORY_NAME}")
     file(MAKE_DIRECTORY "${dest_dir}")

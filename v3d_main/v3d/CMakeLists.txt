@@ -112,47 +112,63 @@ target_link_libraries(v3d ${QT_QTNETWORK_LIBRARY})
 target_link_libraries(v3d ${QT_QTXML_LIBRARY})
 
 if(APPLE)
-    # Build app bundle in place at build time
-    set(BUNDLE_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/v3d.app" CACHE PATH "Where to build Mac OS X application bundle")
-    file(REMOVE_RECURSE "${BUNDLE_BUILD_DIR}/Contents/Frameworks") # Dangerous...
-    file(REMOVE_RECURSE "${BUNDLE_BUILD_DIR}/Contents/Plugins") # Dangerous...
-    file(MAKE_DIRECTORY "${BUNDLE_BUILD_DIR}"
-                        "${BUNDLE_BUILD_DIR}/Contents"
-                        "${BUNDLE_BUILD_DIR}/Contents/MacOS"
-                        "${BUNDLE_BUILD_DIR}/Contents/Resources"
-    )
-    # Build v3d directly into nascent app bundle
-    set_target_properties(v3d PROPERTIES 
-        RUNTIME_OUTPUT_DIRECTORY "${BUNDLE_BUILD_DIR}/Contents/MacOS")
-    # MACOSX_BUNDLE_WHATEVER parameters must be set before configure_file statement on Info.plist is called
-    # MACOSX_BUNDLE_EXECUTABLE_NAME should match CPACK_BUNDLE_NAME
-    # Launch script is called v3d_script (not just 'v3d'), because...
-    # ...actual binary must be called "v3d", so macdeployqt tool can find it.
-    set(MACOSX_BUNDLE_EXECUTABLE_NAME v3d_script)
-    set(MACOSX_BUNDLE_INFO_STRING "v3d")
-    set(MACOSX_BUNDLE_ICON_FILE "v3d.icns")
-    set(MACOSX_BUNDLE_GUI_IDENTIFIER "org.hhmi.janelia.v3d")
-    set(MACOSX_BUNDLE_LONG_VERSION_STRING ${V3D_VERSION})
-    set(MACOSX_BUNDLE_BUNDLE_NAME v3d)
-    set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${V3D_VERSION})
-    set(MACOSX_BUNDLE_BUNDLE_VERSION ${PACKAGE_VERSION})
-    set(MACOSX_BUNDLE_COPYRIGHT "(c) 2006-2010 Hanchuan Peng")
-    configure_file(
-      ${CMAKE_CURRENT_SOURCE_DIR}/../CMake/package/MacOSXBundleInfo.plist.in
-      ${BUNDLE_BUILD_DIR}/Contents/Info.plist
-      @ONLY
-    )
-    configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/../CMake/package/v3d_mac.sh"
-        "${BUNDLE_BUILD_DIR}/Contents/MacOS/${MACOSX_BUNDLE_EXECUTABLE_NAME}"
-        COPYONLY)
-    configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/../v3d/v3d.icns"
-        "${BUNDLE_BUILD_DIR}/Contents/Resources/v3d.icns"
-        COPYONLY)
-    install(DIRECTORY ${BUNDLE_BUILD_DIR}
-        DESTINATION "."
-        USE_SOURCE_PERMISSIONS)
+    # There are two ways to build V3D on Mac.
+    # Either as an application bundle in directory "v3d.app",
+    # or as a command line tool in directory "v3d".
+    # Redefine V3D_MAC_CREATE_BUNDLE variable, in case this is not built
+    # from very top trunk directory.
+    set(V3D_MAC_CREATE_BUNDLE TRUE CACHE BOOL
+        "Create V3D.app application bundle, instead of v3d command line tool")
+    if (V3D_MAC_CREATE_BUNDLE)
+        # Build app bundle in place at build time
+        set(BUNDLE_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/v3d.app" CACHE PATH "Where to build Mac OS X application bundle")
+        file(REMOVE_RECURSE "${BUNDLE_BUILD_DIR}/Contents/Frameworks") # Dangerous...
+        file(REMOVE_RECURSE "${BUNDLE_BUILD_DIR}/Contents/Plugins") # Dangerous...
+        file(MAKE_DIRECTORY "${BUNDLE_BUILD_DIR}"
+                            "${BUNDLE_BUILD_DIR}/Contents"
+                            "${BUNDLE_BUILD_DIR}/Contents/MacOS"
+                            "${BUNDLE_BUILD_DIR}/Contents/Resources"
+        )
+        # Build v3d directly into nascent app bundle
+        set_target_properties(v3d PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY "${BUNDLE_BUILD_DIR}/Contents/MacOS")
+        # MACOSX_BUNDLE_WHATEVER parameters must be set before configure_file statement on Info.plist is called
+        # MACOSX_BUNDLE_EXECUTABLE_NAME should match CPACK_BUNDLE_NAME
+        # Launch script is called v3d_script (not just 'v3d'), because...
+        # ...actual binary must be called "v3d", so macdeployqt tool can find it.
+        set(MACOSX_BUNDLE_EXECUTABLE_NAME v3d_script)
+        set(MACOSX_BUNDLE_INFO_STRING "v3d")
+        set(MACOSX_BUNDLE_ICON_FILE "v3d.icns")
+        set(MACOSX_BUNDLE_GUI_IDENTIFIER "org.hhmi.janelia.v3d")
+        set(MACOSX_BUNDLE_LONG_VERSION_STRING ${V3D_VERSION})
+        set(MACOSX_BUNDLE_BUNDLE_NAME v3d)
+        set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${V3D_VERSION})
+        set(MACOSX_BUNDLE_BUNDLE_VERSION ${PACKAGE_VERSION})
+        set(MACOSX_BUNDLE_COPYRIGHT "(c) 2006-2010 Hanchuan Peng")
+        configure_file(
+          ${CMAKE_CURRENT_SOURCE_DIR}/../CMake/package/MacOSXBundleInfo.plist.in
+          ${BUNDLE_BUILD_DIR}/Contents/Info.plist
+          @ONLY
+        )
+        configure_file(
+            "${CMAKE_CURRENT_SOURCE_DIR}/../CMake/package/v3d_mac.sh"
+            "${BUNDLE_BUILD_DIR}/Contents/MacOS/${MACOSX_BUNDLE_EXECUTABLE_NAME}"
+            COPYONLY)
+        configure_file(
+            "${CMAKE_CURRENT_SOURCE_DIR}/../v3d/v3d.icns"
+            "${BUNDLE_BUILD_DIR}/Contents/Resources/v3d.icns"
+            COPYONLY)
+        install(DIRECTORY ${BUNDLE_BUILD_DIR}
+            DESTINATION "."
+            USE_SOURCE_PERMISSIONS)
+    else(V3D_MAC_CREATE_BUNDLE)
+        # Don't create a bundle, just a v3d folder containing v3d and plugins
+        # Place v3d in a folder called "v3d"
+        set(V3D_INSTALL_DIR "v3d" CACHE INTERNAL "Relative path where V3D will be installed")
+        install(TARGETS v3d
+            DESTINATION ${V3D_INSTALL_DIR}
+            COMPONENT v3d)
+    endif(V3D_MAC_CREATE_BUNDLE)
 
 else(APPLE)
 

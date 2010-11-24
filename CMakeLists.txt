@@ -49,33 +49,38 @@ set(CPACK_COMPONENTS_ALL_IN_ONE_PACKAGE TRUE) # Just one stgz installer, please
 # the user to drag the app into /Applications.  A license dialog appears
 # when the user tries to open the dmg file.
 if(APPLE)
-    # Install Qt libraries into bundle
-    find_program(MAC_DEPLOY_QT macdeployqt)
-    add_custom_target(DeployQtLibraries ALL
-        COMMAND "${MAC_DEPLOY_QT}" "${BUNDLE_BUILD_DIR}"
-        COMMENT "Inserting Qt libraries into v3d.app")
-    add_dependencies(DeployQtLibraries v3d)
-    add_dependencies(DeployQtLibraries FinishedPlugins)
-    # But macdeployqt does not fix up plugins properly
-    find_package(Perl)
-    add_custom_target(DeployPlugins ALL
-        COMMAND "${PERL_EXECUTABLE}" 
-            "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/mac/mac_deploy_cleanup.pl"
-            "${BUNDLE_BUILD_DIR}"
-        COMMENT "Adjusting link libraries for plugins")
-    add_dependencies(DeployPlugins DeployQtLibraries)
+    set(V3D_MAC_CREATE_BUNDLE TRUE CACHE BOOL
+        "Create V3D.app application bundle, instead of v3d command line tool")
+    if(V3D_MAC_CREATE_BUNDLE)
+        # Install Qt libraries into bundle
+        find_program(MAC_DEPLOY_QT macdeployqt)
+        add_custom_target(DeployQtLibraries ALL
+            COMMAND "${MAC_DEPLOY_QT}" "${BUNDLE_BUILD_DIR}"
+            COMMENT "Inserting Qt libraries into v3d.app")
+        add_dependencies(DeployQtLibraries v3d)
+        add_dependencies(DeployQtLibraries FinishedPlugins)
+        # But macdeployqt does not fix up plugins properly
+        find_package(Perl)
+        add_custom_target(DeployPlugins ALL
+            COMMAND "${PERL_EXECUTABLE}"
+                "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/mac/mac_deploy_cleanup.pl"
+                "${BUNDLE_BUILD_DIR}"
+            COMMENT "Adjusting link libraries for plugins")
+        add_dependencies(DeployPlugins DeployQtLibraries)
 
+        # name of Bundle in dmg file, and executable in bundle
+        set(CPACK_BUNDLE_NAME v3d)
+        set(CPACK_BUNDLE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/v3d/v3d.icns")
+        set(CPACK_BUNDLE_PLIST "${CMAKE_CURRENT_BINARY_DIR}/Info.plist")
+    endif(V3D_MAC_CREATE_BUNDLE)
+
+    # Whether or not we create a bundle, we create a dmg disk image.
     # Hope for recent version of cpack to pretty up dmg...
     set(CPACK_DMG_VOLUME_NAME "v3d-${V3D_VERSION}")
     set(CPACK_DMG_DS_STORE "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/dmg_DS_STORE")
     set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/v3d_dmg_bgd.png")
     #
     set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/V3D_Disk.icns")
-    # name of Bundle in dmg file, and executable in bundle
-    set(CPACK_BUNDLE_NAME v3d)
-    set(CPACK_BUNDLE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/v3d/v3d.icns")
-    set(CPACK_BUNDLE_PLIST "${CMAKE_CURRENT_BINARY_DIR}/Info.plist")
-
     set(CPACK_GENERATOR DragNDrop)
 ##################
 # Windows installer uses NSIS #
