@@ -240,7 +240,7 @@ int main(int argc, char **argv)
 						else if(url.scheme().toUpper() == "HTTP" || url.scheme().toUpper() == "HTTPS" || url.scheme().toUpper() == "FTP")
 						{
 							// load image/object
-							mainWin->loadV3DUrl(QUrl(filename), true);
+							mainWin->loadV3DUrl(QUrl(filename), true, parser.i_v3d.open3Dviewer);
 						}
 						//how about smb:// etc?? //by PHC, 20101123 question
 					}
