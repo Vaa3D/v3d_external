@@ -22,20 +22,20 @@ public:
 	void dofunc(const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output, QWidget *parent) {}
 };
 
-class lookPanel: public QDialog
+class controlPanel: public QDialog
 {
 	Q_OBJECT
 
 public:
-	lookPanel(V3DPluginCallback &v3d, QWidget *parent);
-	~lookPanel();
+	controlPanel(V3DPluginCallback &v3d, QWidget *parent);
+	~controlPanel();
 
 public:
 	long m_lframeind;
 	QLineEdit *m_pLineEdit_filepath;
 	QLineEdit *m_pLineEdit_fps;
 	V3DPluginCallback &m_v3d;
-	static lookPanel*m_pLookPanel;
+	static controlPanel*m_pLookPanel;
 	QTimer *m_pTimer;
 
 private slots:

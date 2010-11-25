@@ -16,7 +16,7 @@ void SnapShoot3Dviewer(V3DPluginCallback & v3d, QWidget * parent);
 
 //plugin funcs
 const QString title = "Movie From 3D Viewer";
-lookPanel* lookPanel::m_pLookPanel = 0;
+controlPanel* controlPanel::m_pLookPanel = 0;
 QStringList MovieFrom3DviewerPlugin::menulist() const
 {
 	return QStringList()
@@ -46,17 +46,17 @@ void MovieFrom3Dviewer(V3DPluginCallback & v3d, QWidget * parent)
 	}
 	v3d.open3DWindow(curwin);
 
-	if (lookPanel::m_pLookPanel)
+	if (controlPanel::m_pLookPanel)
 	{
-		lookPanel::m_pLookPanel->show();
+		controlPanel::m_pLookPanel->show();
 		return;
 	}
 
-	lookPanel* p = new lookPanel(v3d, parent);
+	controlPanel* p = new controlPanel(v3d, parent);
 	if (p)	p->show();
 }
 
-lookPanel::lookPanel(V3DPluginCallback &_v3d, QWidget *parent) :
+controlPanel::controlPanel(V3DPluginCallback &_v3d, QWidget *parent) :
 	QDialog(parent), m_v3d(_v3d)
 {
 	m_pLookPanel = this;
@@ -87,12 +87,12 @@ lookPanel::lookPanel(V3DPluginCallback &_v3d, QWidget *parent) :
 	m_pTimer = new QTimer(this);
 	connect(m_pTimer, SIGNAL(timeout()), this, SLOT(_slot_timerupdate()));
 }
-lookPanel::~lookPanel()
+controlPanel::~controlPanel()
 {
 	m_pLookPanel = 0;
 }
 
-void lookPanel::_slot_start()
+void controlPanel::_slot_start()
 {
 	if(m_pLineEdit_filepath->text().isEmpty() || !QDir(m_pLineEdit_filepath->text()).exists())
 	{
@@ -103,11 +103,11 @@ void lookPanel::_slot_start()
 	long interval = 1.0 / m_pLineEdit_fps->text().toLong() * 1000;
 	m_pTimer->start(interval);
 }
-void lookPanel::_slot_stop()
+void controlPanel::_slot_stop()
 {
 	m_pTimer->stop();
 }
-void lookPanel::_slots_openFileDlg_output()
+void controlPanel::_slots_openFileDlg_output()
 {
 	QFileDialog d(this);
 	d.setWindowTitle(tr("Choose output dir:"));
@@ -118,7 +118,7 @@ void lookPanel::_slots_openFileDlg_output()
 		m_pLineEdit_filepath->setText(selectedFile);
 	}
 }
-void lookPanel::_slot_timerupdate()
+void controlPanel::_slot_timerupdate()
 {
 	QString outputdir = m_pLineEdit_filepath->text();
 
