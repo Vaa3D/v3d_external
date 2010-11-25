@@ -16,12 +16,12 @@ Q_EXPORT_PLUGIN2(threshold, ThPlugin);
 void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code);
 
 //plugin funcs
-const QString title = "ROI edit";
+const QString title = "ROI editor";
 QStringList ThPlugin::menulist() const
 {
     return QStringList() 
-	<< tr("copy from")
-	<< tr("paste to")
+	<< tr("copy ROIs from another image")
+	<< tr("paste ROIs to another image")
 	<< tr("delete ROIs in all tri-view planes")
 	<< tr("delete xy-plane ROI")
 	<< tr("delete yz-plane ROI")
@@ -31,7 +31,7 @@ QStringList ThPlugin::menulist() const
 
 void ThPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
 {
-	if (menu_name == tr("paste to"))
+	if (menu_name == tr("paste ROIs to another image"))
 	{
     	thimg(callback, parent,1 );
     }
@@ -51,15 +51,13 @@ void ThPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWi
 	{
 		thimg(callback, parent,5);
 		
-	}else if(menu_name == tr("copy from"))
+	}else if(menu_name == tr("copy ROIs from another image"))
 	{
 		thimg(callback, parent,6);
 	}
 	else if (menu_name == tr("Help"))
 	{
-		QMessageBox::information(0, title, QObject::tr("Copy ROI from the current image to the specified image and Delete the specified image ROI, Version info Change Pixel Value 1.0 (2010-11-24): this plugin is developed by Jinzhu Yang"));	                                    		
-	   
-		//v3d_msg("Fail to allocate memory in Distance Transform./n ,fda ");		
+		v3d_msg("Edit Regions of Interest (ROIs) of the image of the current window: copy ROIs from another image or [paste] them to another image; or delete some of them.");		
 		return;
 	}
 	
