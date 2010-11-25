@@ -2,33 +2,61 @@
 //by Lei Qu
 //2010-11-08
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "plugin_moviefrom3dviewer.h"
-#include "v3d_message.h"
 
 //Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(moviefrom3dviewer, MovieFrom3DviewerPlugin)
 
-void MovieFrom3Dviewer(V3DPluginCallback2 & v3d, QWidget * parent);
+void SnapShoot3Dviewer(V3DPluginCallback & v3d, QWidget * parent);
+void MovieFrom3Dviewer(V3DPluginCallback & v3d, QWidget * parent);
 
 //plugin funcs
 const QString title = "Movie From 3D Viewer";
 lookPanel* lookPanel::m_pLookPanel = 0;
 QStringList MovieFrom3DviewerPlugin::menulist() const
 {
-	return QStringList() << tr("movie from 3D viewer");
+	return QStringList()
+			<< tr("take a snapshot from 3D viewer")
+			<< tr("make movie from 3D viewer");
 }
 
-void MovieFrom3DviewerPlugin::domenu(const QString & menu_name,
-		V3DPluginCallback2 & v3d, QWidget * parent)
+void MovieFrom3DviewerPlugin::domenu(const QString & menu_name,	V3DPluginCallback & v3d, QWidget * parent)
 {
-	if (menu_name == tr("movie from 3D viewer"))
+	if (menu_name == tr("take a snapshot from 3D viewer"))
+	{
+		SnapShoot3Dviewer(v3d, parent);
+	}
+	else if (menu_name == tr("make movie from 3D viewer"))
 	{
 		MovieFrom3Dviewer(v3d, parent);
 	}
 }
 
-void MovieFrom3Dviewer(V3DPluginCallback2 & v3d, QWidget * parent)
+void SnapShoot3Dviewer(V3DPluginCallback & v3d, QWidget * parent)
+{
+	v3dhandle curwin = v3d.currentImageWindow();
+	if (!curwin)
+	{
+		v3d_msg("You don't have any image opened in the main window.");
+		return;
+	}
+	v3d.open3DWindow(curwin);
+
+	QFileDialog d(parent);
+	d.setWindowTitle(QObject::tr("Choose output snapshoot filename"));
+	d.setAcceptMode(QFileDialog::AcceptSave);
+	if (!d.exec()) return;
+
+	QString BMPfilename = (d.selectedFiles())[0];
+	v3d.screenShot3DWindow(curwin, BMPfilename);
+	QMessageBox::information(0, title, QString("Snapshoot was saved to: %1.BMP\n").arg(BMPfilename));
+}
+
+void MovieFrom3Dviewer(V3DPluginCallback & v3d, QWidget * parent)
 {
 	v3dhandle curwin = v3d.currentImageWindow();
 	if (!curwin)
@@ -48,13 +76,13 @@ void MovieFrom3Dviewer(V3DPluginCallback2 & v3d, QWidget * parent)
 	if (p)	p->show();
 }
 
-lookPanel::lookPanel(V3DPluginCallback2 &_v3d, QWidget *parent) :
+lookPanel::lookPanel(V3DPluginCallback &_v3d, QWidget *parent) :
 	QDialog(parent), m_v3d(_v3d)
 {
 	m_pLookPanel = this;
 	m_lframeind = 0;
 
-	m_pLineEdit_fps = new QLineEdit(QObject::tr("4"));
+	m_pLineEdit_fps = new QLineEdit(QObject::tr("10"));
 	m_pLineEdit_filepath = new QLineEdit();
 	QPushButton *pPushButton_start = new QPushButton(QObject::tr("start"));
 	QPushButton *pPushButton_stop = new QPushButton(QObject::tr("stop"));

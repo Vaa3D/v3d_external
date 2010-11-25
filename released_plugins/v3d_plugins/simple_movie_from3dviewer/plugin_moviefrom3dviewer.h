@@ -7,47 +7,34 @@
 #define __PLUGIN_MOVIEWFROM3DVIEWER_H__
 
 #include <QtGui>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "v3d_interface.h"
 
-class MovieFrom3DviewerPlugin: public QObject, public V3DPluginInterface2
+class MovieFrom3DviewerPlugin: public QObject, public V3DPluginInterface
 {
-Q_OBJECT
-Q_INTERFACES(V3DPluginInterface2)
+	Q_OBJECT
+	Q_INTERFACES(V3DPluginInterface);
 
 public:
 	QStringList menulist() const;
-	void domenu(const QString & menu_name, V3DPluginCallback2 & v3d,
-			QWidget * parent);
+	void domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent);
 
-	QStringList funclist() const
-	{
-		return QStringList();
-	}
-	bool dofunc(const QString & func_name, const V3DPluginArgList & input,
-			V3DPluginArgList & output, V3DPluginCallback2 & v3d,
-			QWidget * parent)
-	{
-		return true;
-	}
-
+	QStringList funclist() const {return QStringList();}
+	void dofunc(const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output, QWidget *parent) {}
 };
 
 class lookPanel: public QDialog
 {
-Q_OBJECT
+	Q_OBJECT
 
 public:
-	lookPanel(V3DPluginCallback2 &v3d, QWidget *parent);
+	lookPanel(V3DPluginCallback &v3d, QWidget *parent);
 	~lookPanel();
 
 public:
 	long m_lframeind;
 	QLineEdit *m_pLineEdit_filepath;
 	QLineEdit *m_pLineEdit_fps;
-	V3DPluginCallback2 &m_v3d;
+	V3DPluginCallback &m_v3d;
 	static lookPanel*m_pLookPanel;
 	QTimer *m_pTimer;
 
