@@ -6,7 +6,7 @@
  *
  */
 
-#include "data_combination.h"
+#include "montage_image_sections.h"
 #include "v3d_message.h"
 
 //Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
