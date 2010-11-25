@@ -21,7 +21,7 @@ QStringList ThPlugin::menulist() const
 {
     return QStringList() 
 	<< tr("copy from")
-        << tr("paste to")
+	<< tr("paste to")
 	<< tr("delete ROIs in all tri-view planes")
 	<< tr("delete xy-plane ROI")
 	<< tr("delete yz-plane ROI")
@@ -31,26 +31,29 @@ QStringList ThPlugin::menulist() const
 
 void ThPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
 {
-	if (menu_name == tr("paste"))
+	if (menu_name == tr("paste to"))
 	{
     	thimg(callback, parent,1 );
     }
-	else if (menu_name == tr("delete all"))
+	else if (menu_name == tr("delete ROIs in all tri-view planes"))
 	{
 		thimg(callback, parent,2);
 	}
-	else if (menu_name == tr("delete xy"))
+	else if (menu_name == tr("delete xy-plane ROI"))
 	{
 		thimg(callback, parent,3);
 	}
-	else if (menu_name == tr("delete yz"))
+	else if (menu_name == tr("delete yz-plane ROI"))
 	{
 		thimg(callback, parent,4);
 	}
-	else if(menu_name == tr("delete zx"))
+	else if(menu_name == tr("delete zx-plane ROI"))
 	{
 		thimg(callback, parent,5);
 		
+	}else if(menu_name == tr("copy from"))
+	{
+		thimg(callback, parent,6);
 	}
 	else if (menu_name == tr("Help"))
 	{
@@ -222,10 +225,35 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 			//printf("&d\n",pRoiList[0].size());			
 		}				
 	}
+	else if (method_code == 6)
+	{
+		AdaTDialog dialog(callback, parent);
+		if (dialog.exec()!=QDialog::Accepted)
+			return;	
+		
+		long ind=dialog.combo_channel->currentIndex();
+		printf("ind=%d\n",ind);
+		
+		pRoiList=callback.getROI(win_list[ind]);
+		
+		printf("%d %d \n",pRoiList[0].size(),win_list.size());
+		
+		
+		if(callback.setROI(curwin,pRoiList))
+		{
+			callback.updateImageWindow(curwin);
+			
+			//QMessageBox::information(0, title, QObject::tr("paste1."));				
+			
+			//printf("&d\n",pRoiList[0].size());			
+		}		
+		
+	}
+
 	
-	int start_t = clock(); // record time point
-	int end_t = clock();
-	printf("time eclapse %d s for dist computing!\n", (end_t-start_t)/1000000);
+	//int start_t = clock(); // record time point
+	//int end_t = clock();
+	//printf("time eclapse %d s for dist computing!\n", (end_t-start_t)/1000000);
 }
 
 
