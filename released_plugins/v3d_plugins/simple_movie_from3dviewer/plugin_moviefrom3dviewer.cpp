@@ -146,8 +146,8 @@ void SnapShoot3Dviewer(V3DPluginCallback & v3d, QWidget * parent)
 	if (!d.exec()) return;
 
 	QString BMPfilename = (d.selectedFiles())[0];
-	if (BMPfilename.endwith(".BMP", Qt::CaseInsensitive))
-		BMPfilename = BMPfilename.resize(BMPfilename.length()-4); //by PHC
+	if (BMPfilename.endsWith(".BMP", Qt::CaseInsensitive))
+	   BMPfilename.resize(BMPfilename.length()-4); //by PHC
 	v3d.screenShot3DWindow(curwin, BMPfilename);
 	QMessageBox::information(0, title, QString("Snapshot was saved to: %1.BMP\n").arg(BMPfilename));
 }
