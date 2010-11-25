@@ -5,8 +5,8 @@
  *
  */
 
-#ifndef __DISTTRANFORM_H__
-#define __DISTTRANFORM_H__
+#ifndef __ADAPTIVE_THRESHOLDING__H__
+#define __ADAPTIVE_THRESHOLDING__H__
 
 #include <QtGui>
 #include <stdio.h>
@@ -37,12 +37,6 @@ class AdaTDialog : public QDialog
 	
 public:
 	QGridLayout *gridLayout;
-	QLabel* label_imagename;
-	QLabel* label_channel;
-	QComboBox* combo_channel;
-	QCheckBox* check_marker;
-	QCheckBox* check_rescale;
-
 	
 	QLabel *labelx;
 	QLabel *labely;
@@ -88,17 +82,13 @@ public:
 		//slot interface
 		connect(Ddistance, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(Dnumber,SIGNAL(valueChanged(int)), this, SLOT(update()));
-		
 	}
-
 	
 	~AdaTDialog(){}
 	
 	public slots:
 	void update();
 };
-
-
 
 #endif
 
