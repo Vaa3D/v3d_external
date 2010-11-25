@@ -21,7 +21,7 @@ QStringList MovieFrom3DviewerPlugin::menulist() const
 {
 	return QStringList()
 			<< tr("make movie from 3D viewer")
-			<< tr("take a snapshot from 3D viewer");
+			<< tr("take a snapshot of 3D viewer");
 }
 
 void MovieFrom3DviewerPlugin::domenu(const QString & menu_name,	V3DPluginCallback & v3d, QWidget * parent)
@@ -30,7 +30,7 @@ void MovieFrom3DviewerPlugin::domenu(const QString & menu_name,	V3DPluginCallbac
 	{
 		MovieFrom3Dviewer(v3d, parent);
 	}
-	else if (menu_name == tr("take a snapshot from 3D viewer"))
+	else if (menu_name == tr("take a snapshot of 3D viewer"))
 	{
 		SnapShoot3Dviewer(v3d, parent);
 	}
@@ -146,6 +146,8 @@ void SnapShoot3Dviewer(V3DPluginCallback & v3d, QWidget * parent)
 	if (!d.exec()) return;
 
 	QString BMPfilename = (d.selectedFiles())[0];
+	if (BMPfilename.endwith(".BMP", Qt::CaseInsensitive))
+		BMPfilename = BMPfilename.resize(BMPfilename.length()-4); //by PHC
 	v3d.screenShot3DWindow(curwin, BMPfilename);
 	QMessageBox::information(0, title, QString("Snapshot was saved to: %1.BMP\n").arg(BMPfilename));
 }
