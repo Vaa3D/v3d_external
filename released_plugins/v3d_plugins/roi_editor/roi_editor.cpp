@@ -11,13 +11,13 @@
 
 //Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
-Q_EXPORT_PLUGIN2(threshold, ThPlugin);
+Q_EXPORT_PLUGIN2(roi_editor, ROI_Editor_Plugin);
 
-void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code);
+void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_code);
 
 //plugin funcs
 const QString title = "ROI editor";
-QStringList ThPlugin::menulist() const
+QStringList ROI_Editor_Plugin::menulist() const
 {
     return QStringList() 
 	<< tr("copy ROIs from another image")
@@ -29,41 +29,40 @@ QStringList ThPlugin::menulist() const
 	<< tr("Help");
 }
 
-void ThPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
+void ROI_Editor_Plugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
 {
 	if (menu_name == tr("paste ROIs to another image"))
 	{
-    	thimg(callback, parent,1 );
+    	do_computation(callback, parent,1 );
     }
 	else if (menu_name == tr("delete ROIs in all tri-view planes"))
 	{
-		thimg(callback, parent,2);
+		do_computation(callback, parent,2);
 	}
 	else if (menu_name == tr("delete xy-plane ROI"))
 	{
-		thimg(callback, parent,3);
+		do_computation(callback, parent,3);
 	}
 	else if (menu_name == tr("delete yz-plane ROI"))
 	{
-		thimg(callback, parent,4);
+		do_computation(callback, parent,4);
 	}
 	else if(menu_name == tr("delete zx-plane ROI"))
 	{
-		thimg(callback, parent,5);
-		
-	}else if(menu_name == tr("copy ROIs from another image"))
+		do_computation(callback, parent,5);
+	}
+	else if(menu_name == tr("copy ROIs from another image"))
 	{
-		thimg(callback, parent,6);
+		do_computation(callback, parent,6);
 	}
 	else if (menu_name == tr("Help"))
 	{
 		v3d_msg("Edit Regions of Interest (ROIs) of the image of the current window: copy ROIs from another image or [paste] them to another image; or delete some of them.");		
 		return;
 	}
-	
 }
 
-void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
+void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_code)
 {
 	V3DLONG h;
 	V3DLONG d;
@@ -76,14 +75,11 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 		return;
 	}
 	
-	//printf("&d\n",win_list.size());
-	
 	v3dhandle curwin = callback.currentImageWindow();
 	
 	if (method_code == 1)
 	{
-		
-		AdaTDialog dialog(callback, parent);
+		ParameterDialog dialog(callback, parent);
 		if (dialog.exec()!=QDialog::Accepted)
 			return;	
 		
@@ -98,49 +94,38 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 		if(callback.setROI(win_list[ind],pRoiList))
 		{
 			callback.updateImageWindow(win_list[ind]);
-			
-			//QMessageBox::information(0, title, QObject::tr("paste1."));				
-			
-			//printf("&d\n",pRoiList[0].size());			
 		}		
 	}
 	else if(method_code == 2)
 	{
-			AdaTDialog dialog(callback, parent);
-			if (dialog.exec()!=QDialog::Accepted)
-				return;	
-			
-		    long ind=dialog.combo_channel->currentIndex();
-			
-			 printf("ind=%d\n",ind);
-			
-			pRoiList=callback.getROI(win_list[ind]);
-			
-			printf("%d %d \n",pRoiList[0].size(),win_list.size());
-		   
-			//pRoiList=callback.getROI(curwin);
-		  
-			//pRoiList.clear();
-			for(int i=0;i<3;i++)
-			{
-				pRoiList[i].clear();
-			}
-			
-			//QMessageBox::information(0, title, QObject::tr("delete1."));		
-			
-			if(callback.setROI(win_list[ind],pRoiList))
-			{
-				callback.updateImageWindow(win_list[ind]);
-				
-			//	QMessageBox::information(0, title, QObject::tr("delete2."));				
-				
-				//printf("&d\n",pRoiList[0].size());			
-			}
-			
+		ParameterDialog dialog(callback, parent);
+		if (dialog.exec()!=QDialog::Accepted)
+			return;	
+		
+		long ind=dialog.combo_channel->currentIndex();
+		
+		printf("ind=%d\n",ind);
+		
+		pRoiList=callback.getROI(win_list[ind]);
+		
+		printf("%d %d \n",pRoiList[0].size(),win_list.size());
+		
+		//pRoiList=callback.getROI(curwin);
+		
+		//pRoiList.clear();
+		for(int i=0;i<3;i++)
+		{
+			pRoiList[i].clear();
+		}
+		
+		if(callback.setROI(win_list[ind],pRoiList))
+		{
+			callback.updateImageWindow(win_list[ind]);
+		}
 	}
 	else if (method_code == 3)	
 	{
-		AdaTDialog dialog(callback, parent);
+		ParameterDialog dialog(callback, parent);
 		if (dialog.exec()!=QDialog::Accepted)
 			return;	
 		
@@ -154,22 +139,15 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 		
 		pRoiList[0].clear();
 		
-		
-		//QMessageBox::information(0, title, QObject::tr("delete1."));		
-		
 		if(callback.setROI(win_list[ind],pRoiList))
 		{
 			callback.updateImageWindow(win_list[ind]);
-			
-			//	QMessageBox::information(0, title, QObject::tr("delete2."));				
-			
-			//printf("&d\n",pRoiList[0].size());			
 		}
-					
+		
 	}
 	else if (method_code == 4)
 	{
-		AdaTDialog dialog(callback, parent);
+		ParameterDialog dialog(callback, parent);
 		if (dialog.exec()!=QDialog::Accepted)
 			return;	
 		
@@ -183,22 +161,15 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 		
 		pRoiList[1].clear();
 		
-		
-		//QMessageBox::information(0, title, QObject::tr("delete1."));		
-		
 		if(callback.setROI(win_list[ind],pRoiList))
 		{
 			callback.updateImageWindow(win_list[ind]);
-			
-			//	QMessageBox::information(0, title, QObject::tr("delete2."));				
-			
-			//printf("&d\n",pRoiList[0].size());			
 		}		
-			
+		
 	}
 	else if (method_code == 5)
 	{
-		AdaTDialog dialog(callback, parent);
+		ParameterDialog dialog(callback, parent);
 		if (dialog.exec()!=QDialog::Accepted)
 			return;	
 		
@@ -212,20 +183,14 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 		
 		pRoiList[2].clear();
 		
-		//QMessageBox::information(0, title, QObject::tr("delete1."));		
-		
 		if(callback.setROI(win_list[ind],pRoiList))
 		{
 			callback.updateImageWindow(win_list[ind]);
-			
-			//	QMessageBox::information(0, title, QObject::tr("delete2."));				
-			
-			//printf("&d\n",pRoiList[0].size());			
 		}				
 	}
 	else if (method_code == 6)
 	{
-		AdaTDialog dialog(callback, parent);
+		ParameterDialog dialog(callback, parent);
 		if (dialog.exec()!=QDialog::Accepted)
 			return;	
 		
@@ -240,28 +205,7 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 		if(callback.setROI(curwin,pRoiList))
 		{
 			callback.updateImageWindow(curwin);
-			
-			//QMessageBox::information(0, title, QObject::tr("paste1."));				
-			
-			//printf("&d\n",pRoiList[0].size());			
 		}		
-		
 	}
-
-	
-	//int start_t = clock(); // record time point
-	//int end_t = clock();
-	//printf("time eclapse %d s for dist computing!\n", (end_t-start_t)/1000000);
 }
 
-
-void AdaTDialog::update()
-{
-	//get current data
-	
-	//Dn = Dnumber->text().toLong()-1;
-	//Dh = Ddistance->text().toLong()-1;
-	
-	//printf("channel %ld val %d x %ld y %ld z %ld ind %ld \n", c, data1d[ind], nx, ny, nz, ind);
-	
-}

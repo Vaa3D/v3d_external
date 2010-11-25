@@ -1,9 +1,7 @@
 /*
  *  ada_threshold.h
- *  ada_threshold
  *
  *  Created by Yang, Jinzhu on 11/22/10.
- *  Copyright 2010 __MyCompanyName__. All rights reserved.
  *
  */
 
@@ -30,8 +28,6 @@ public:
 	
 	template <class T> 
 	void BinaryProcess(T *apsInput, T * aspOutput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer, V3DLONG h, V3DLONG d){}
-	//void BinaryProcess(float *apsInput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer, V3DLONG* label){}
-	//void BinaryProcess(unsigned char *apsInput, unsigned char * aspOutput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer, V3DLONG h){}
 };
 
 //define a simple dialog for choose DT parameters
@@ -40,10 +36,6 @@ class AdaTDialog : public QDialog
 	Q_OBJECT
 	
 public:
-	int ch;
-	bool b_use_1stmarker; //whether or not use the intensity value at the first marker location as the target value
-	bool b_rescale; //if rescale the value of the output
-	
 	QGridLayout *gridLayout;
 	QLabel* label_imagename;
 	QLabel* label_channel;
@@ -54,13 +46,7 @@ public:
 	
 	QLabel *labelx;
 	QLabel *labely;
-	QLabel *labelz;
-	QLabel *labelz1;
-	QLabel *labelz2;	
-	QSpinBox** nval;
-	QLabel** nlabel;
-	
-	QSpinBox* Ddistance;
+    QSpinBox* Ddistance; 
 	QSpinBox* Dnumber;
 	
 	QPushButton* ok;
@@ -69,43 +55,28 @@ public:
 	V3DLONG Dn;
 	V3DLONG Dh;
 	
-	V3DLONG pagesz;
-	V3DLONG sc;
-	
-	///
 public:
 	AdaTDialog(V3DPluginCallback &cb, QWidget *parent)
 	{
 		Image4DSimple* image = cb.getImage(cb.currentImageWindow());
 		QString imageName = cb.getImageName(cb.currentImageWindow());		
-		sc = image->getCDim();
 		//create a dialog
 		Ddistance= new QSpinBox();
 		Dnumber = new QSpinBox();
 	
 		
 		Dnumber->setMaximum(255); Dnumber->setMinimum(1); Dnumber->setValue(3);
-		Ddistance ->setMaximum(255); Ddistance ->setMinimum(1); Ddistance ->setValue(6);
-	
+		Ddistance->setMaximum(255); Ddistance->setMinimum(1); Ddistance->setValue(5);
 		
 		ok     = new QPushButton("OK");
 		cancel = new QPushButton("Cancel");
 		gridLayout = new QGridLayout();
 		
 		labelx = new QLabel(QObject::tr("sampling interval"));
-		labely = new QLabel(QObject::tr("number of sampling point"));
-       // labelz = new QLabel(QObject::tr("The adapitive threshold function."));	
-		//labelz1 = new QLabel(QObject::tr("Ddistance represents sampling interval"));			
-		//labelz2 = new QLabel(QObject::tr("Dnumber*Ddistance represents total of sampling point"));	
-		
+		labely = new QLabel(QObject::tr("number of sampling points"));
 		
 		gridLayout->addWidget(labelx, 0,0); gridLayout->addWidget(Ddistance, 0,1);
 		gridLayout->addWidget(labely, 1,0); gridLayout->addWidget(Dnumber, 1,1);
-		
-		//gridLayout->addWidget(labelz, 2,0);
-		//gridLayout->addWidget(labelz1, 3,0);
-		//gridLayout->addWidget(labelz2, 4,0);
-		
 		
 		gridLayout->addWidget(cancel, 6,1); gridLayout->addWidget(ok, 6,0);
 		setLayout(gridLayout);

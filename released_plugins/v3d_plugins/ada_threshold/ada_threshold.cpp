@@ -1,6 +1,5 @@
 /*
  *  ada_threshold.cpp
- *  ada_threshold
  *
  *  Created by Yang, Jinzhu and Hanchuan Peng, on 11/22/10.
  *
@@ -71,10 +70,7 @@ void ThPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWi
 	}
 	else if (menu_name == tr("Help"))
 	{
-		     
-		QMessageBox::information(parent, "Version info", "adaptive threshold 1.0 (2010-11-23): this plugin is developed by Jinzhu Yang and Hanchuan Peng                                      The adaptive segmentation function, each pixel threshold is statistical, method is to calculated average each piont of three-dimensional  6 neighborhood");		
-		//QMessageBox::information(parent," The adaptive segmentation function, each pixel threshold is statistical, method is to calculated average each piont of three-dimensional  6 neighborhood ");
-		//v3d_msg("Fail to allocate memory in Distance Transform./n ,fda ");		
+		v3d_msg("Simple adaptive thresholding: for each voxel, compute a threshold which is the average intensity of its neighboring voxels and then subtract the threshold from the current voxel's intensity value. If the result is <0, then set it as 0. The neighborhood is defined along 6 axial directions in 3D, with N samples of each direction (N -- the 'number of sampling points' in the parameter setting dialog), and M voxels between every nearest pair of samples (M -- the 'sampling interval' in the parameter setting dialog).");		
 		return;
 	}
 
@@ -95,8 +91,6 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 	{
 		h = 5;
 		d = 3;
-		//v3d_msg("Invalid Th method code. You should never see this message. Report this bug to the developer");
-		//return;
 	}
 	else 
 	{
@@ -111,7 +105,6 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 				d = dialog.Dnumber->text().toLong()-1;
 				printf("d% h,d% d \n ",h,d);
 			}
-			
 		}	
 	}
 	
@@ -138,12 +131,9 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 	void *pData=NULL;
 	
 	V3DLONG sz_data[4]; sz_data[0]=sz0; sz_data[1]=sz1; sz_data[2]=sz2; sz_data[3]=1;
-	//if (method_code==1)
-	//{
 		switch (subject->getDatatype()) 
 		{
 			case V3D_UINT8:
-				
 				try
 				{
 					pData = (void *)(new unsigned char [sz3*channelsz]); 
@@ -161,11 +151,9 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 					for (V3DLONG ich=0; ich<sz3; ich++)
 						BinaryProcess(pSubtmp_uint8+ich*channelsz, (unsigned char *)pData+ich*channelsz, sz0, sz1, sz2, h, d  );
 				}
-				
 				break;
 				
 			case V3D_UINT16:
-				
 				try
 				{
 					pData = (void *)(new short int [sz3*channelsz]); 
@@ -187,7 +175,6 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 				break;
 				
 			case V3D_FLOAT32:
-				
 				try
 				{
 					pData = (void *)(new float [sz3*channelsz]); 
@@ -208,14 +195,9 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 				
 				break;
 				
-				
 			default:
 				break;
 		}
-		
-		
-	
-	//}
 	
 	//----------------------------------------------------------------------------------------------------------------------------------
 	
@@ -236,14 +218,10 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 	callback.updateImageWindow(newwin);
 }
 
-
 void AdaTDialog::update()
 {
 	//get current data
-	
 	Dn = Dnumber->text().toLong()-1;
 	Dh = Ddistance->text().toLong()-1;
-
 		//printf("channel %ld val %d x %ld y %ld z %ld ind %ld \n", c, data1d[ind], nx, ny, nz, ind);
-	
 }
