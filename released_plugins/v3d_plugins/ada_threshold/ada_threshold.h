@@ -90,11 +90,10 @@ public:
 		
 		ok     = new QPushButton("OK");
 		cancel = new QPushButton("Cancel");
-		
 		gridLayout = new QGridLayout();
 		
-		labelx = new QLabel(QObject::tr("Ddistance: represents sampling interval"));
-		labely = new QLabel(QObject::tr("Dnumber: represents number of sampling point"));
+		labelx = new QLabel(QObject::tr("sampling interval"));
+		labely = new QLabel(QObject::tr("number of sampling point"));
        // labelz = new QLabel(QObject::tr("The adapitive threshold function."));	
 		//labelz1 = new QLabel(QObject::tr("Ddistance represents sampling interval"));			
 		//labelz2 = new QLabel(QObject::tr("Dnumber*Ddistance represents total of sampling point"));	
@@ -108,7 +107,7 @@ public:
 		//gridLayout->addWidget(labelz2, 4,0);
 		
 		
-		gridLayout->addWidget(cancel, 6,0); gridLayout->addWidget(ok, 6,1);
+		gridLayout->addWidget(cancel, 6,1); gridLayout->addWidget(ok, 6,0);
 		setLayout(gridLayout);
 		setWindowTitle(QString("Change parameters"));
 		

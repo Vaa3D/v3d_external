@@ -71,9 +71,10 @@ void ThPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWi
 	}
 	else if (menu_name == tr("Help"))
 	{
-		
-		QMessageBox::information(parent, "Version info", "adaptive threshold transform 1.0 (2010-11-23): this plugin is developed by Jinzhu Yang and Hanchuan Peng.The adaptive segmentation function, each pixel threshold is statistical, method is to calculated average each piont of three-dimensional  6 neighborhood");		
+		     
+		QMessageBox::information(parent, "Version info", "adaptive threshold 1.0 (2010-11-23): this plugin is developed by Jinzhu Yang and Hanchuan Peng                                      The adaptive segmentation function, each pixel threshold is statistical, method is to calculated average each piont of three-dimensional  6 neighborhood");		
 		//QMessageBox::information(parent," The adaptive segmentation function, each pixel threshold is statistical, method is to calculated average each piont of three-dimensional  6 neighborhood ");
+		//v3d_msg("Fail to allocate memory in Distance Transform./n ,fda ");		
 		return;
 	}
 
