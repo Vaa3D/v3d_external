@@ -19,7 +19,7 @@ class ExPushPlugin : public QObject, public V3DPluginInterface2_1
     Q_INTERFACES(V3DPluginInterface2_1);
 
 private:
-        static const float pluginVersion = 1.1;
+        // static const float pluginVersion = 1.1; // not in msvc
 
 public:
 //	QStringList menulist() const;
@@ -37,7 +37,7 @@ public:
 				 V3DPluginCallback2 & v3d,  QWidget * parent) {return true;}
 
         // plugin interface version 2.1 requires plugin version
-        float getPluginVersion() const {return pluginVersion;}
+        float getPluginVersion() const {return 1.1f;}
 };
 
 

@@ -57,11 +57,13 @@ else()
   FIND_PATH(TIFF_INCLUDE_DIR tiff.h
 	# PATHS "$ENV{PROGRAMFILES}/tiff-3.8.2"
 	PATHS "$ENV{PROGRAMFILES}/GnuWin32"
+		  "$ENV{PROGRAMFILES}/libtiff-3.9.4"
 	PATH_SUFFIXES include libtiff "")
   SET(TIFF_NAMES ${TIFF_NAMES} tiff libtiff libtiff3 libtiff_i)
   FIND_LIBRARY(TIFF_LIBRARY NAMES ${TIFF_NAMES}
 	# PATHS "$ENV{PROGRAMFILES}/tiff-3.8.2"
 	PATHS "$ENV{PROGRAMFILES}/GnuWin32"
+		  "$ENV{PROGRAMFILES}/libtiff-3.9.4"
 	PATH_SUFFIXES lib libtiff "")
   # The unadorned FindTiff below
   find_package(TIFF REQUIRED)
