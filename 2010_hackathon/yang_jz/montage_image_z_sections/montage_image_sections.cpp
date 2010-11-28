@@ -1,28 +1,24 @@
 /*
- *  data_combination.cpp
- *  data_combination
+ *  montage_image_sections .cpp
+ *  montage_image_sections 
  *
  *  Created by Yang, Jinzhu and Hanchuan Peng, on 11/22/10.
  *
  */
 
 #include "montage_image_sections.h"
-#include "v3d_message.h"
+#include "v3d_message.h" 
 
 //Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
-Q_EXPORT_PLUGIN2(threshold, ThPlugin);
+Q_EXPORT_PLUGIN2(Montage, MONTAGEPlugin);
 
 template <class T> 
-void DataCombination(T *apsInput, T * aspOutput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer, V3DLONG h, V3DLONG d)
+void montage_image_sections (T *apsInput, T * aspOutput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer, V3DLONG h, V3DLONG d)
 {
-	V3DLONG i, j,k,n,count;
-	double t, temp;
-	
+	V3DLONG i, j,k,n,count,m,row,column;
 	V3DLONG mCount = iImageHeight * iImageWidth;
 	V3DLONG mCount1 = iImageWidth*iImageLayer;
-	///////////////////////////data combination
-	//iImageLayer = 50;
 	if (iImageLayer<= iImageWidth)
 	{
 		for (i=0; i<iImageLayer; i++)
@@ -31,46 +27,49 @@ void DataCombination(T *apsInput, T * aspOutput, V3DLONG iImageWidth, V3DLONG iI
 			{
 				for (k=0; k<iImageWidth; k++)
 				{
-					aspOutput[j* mCount1 + k  + (i * iImageWidth) ]= apsInput[i * mCount + j*iImageWidth + k];
-										
+					aspOutput[j* mCount1 + k  + (i * iImageWidth) ]= apsInput[i * mCount + j*iImageWidth + k];					
+				//	if (i < 10) 
+				//	{
+				//		aspOutput[j* 10*iImageWidth + k  + (i * iImageWidth) ]= apsInput[i * mCount + j*iImageWidth + k];						
+				//	}else
+				//	{
+				//		aspOutput[((i/10)*iImageHeight)+ j * 10 * iImageWidth + k  + ((i%10) * iImageWidth) ]= apsInput[i * mCount + j*iImageWidth + k];	
+				//	}
 				}
 			}
 		}			
 		
 	}
-		//////////////						
+	
+	
 }
 
-void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code);
+void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_code);
 
 //plugin funcs
-const QString title = "data combination threshold transform";
-QStringList ThPlugin::menulist() const
+const QString title = "montage_image_sections";
+QStringList MONTAGEPlugin::menulist() const
 {
     return QStringList() 
-	<< tr("data_combination");
+	<< tr("montage_image_sections");
 	//<< tr("3D (set parameters)")
 	//<< tr("Help");
 }
 
-void ThPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
+void MONTAGEPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
 {
-	if (menu_name == tr("data_combination"))
+	if (menu_name == tr("montage_image_sections"))
 	{
-    	thimg(callback, parent,1 );
+    	do_computation(callback, parent,1 );
     }
 	else if (menu_name == tr("Help"))
 	{
-		     
-		//QMessageBox::information(parent, "Version info, data combinationa1.0 (2010-11-24): this plugin is developed by Jinzhu Yang");		
-		//QMessageBox::information(parent," The adaptive segmentation function, each pixel threshold is statistical, method is to calculated average each piont of three-dimensional  6 neighborhood ");
-		//v3d_msg("Fail to allocate memory in Distance Transform./n ,fda ");		
 		return;
 	}
 
 }
 
-void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
+void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_code)
 {
 	v3dhandle curwin = callback.currentImageWindow();
 	V3DLONG h;
@@ -122,7 +121,7 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 					unsigned char * pSubtmp_uint8 = pSub.begin();
 				
 					for (V3DLONG ich=0; ich<sz3; ich++)
-						DataCombination(pSubtmp_uint8+ich*channelsz, (unsigned char *)pData+ich*channelsz, sz0, sz1, sz2, h, d  );
+						montage_image_sections(pSubtmp_uint8+ich*channelsz, (unsigned char *)pData+ich*channelsz, sz0, sz1, sz2, h, d  );
 				}
 				
 				break;
@@ -144,7 +143,7 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 					short int * pSubtmp_uint16 = (short int *)pSub.begin();
 				
 					for (V3DLONG ich=0; ich<sz3; ich++)
-						DataCombination(pSubtmp_uint16+ich*channelsz, (short int *)pData+ich*channelsz, sz0, sz1, sz2, h, d );
+						montage_image_sections(pSubtmp_uint16+ich*channelsz, (short int *)pData+ich*channelsz, sz0, sz1, sz2, h, d );
 				}
 				
 				break;
@@ -165,7 +164,7 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 					float * pSubtmp_float32 = (float *)pSub.begin();
 					
 					for (V3DLONG ich=0; ich<sz3; ich++)
-						DataCombination(pSubtmp_float32+ich*channelsz, (float *)pData+ich*channelsz, sz0, sz1, sz2, h, d );
+						montage_image_sections(pSubtmp_float32+ich*channelsz, (float *)pData+ich*channelsz, sz0, sz1, sz2, h, d );
 				}
 				
 				break;
@@ -179,7 +178,13 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 	printf("time eclapse %d s for dist computing!\n", (end_t-start_t)/1000000);
 	
 	Image4DSimple p4DImage;
+	V3DLONG column;
+	// column = ((sz2/10)+1)*sz1 ;		
+	// sz1 = column;
+	//}
 	p4DImage.setData((unsigned char*)pData, sz0*sz2, sz1, 1, sz3, subject->getDatatype());
+//	p4DImage.setData((unsigned char*)pData, sz0*10, sz1, 1, sz3, subject->getDatatype());	
+//	printf("sz0= %d sz1=%d sz2=%d dd=%d vv=%d\n", sz0,sz1,sz2,dd,vv);
 	
 	v3dhandle newwin;
 	if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to use the existing window?"), QMessageBox::Yes, QMessageBox::No))
@@ -190,16 +195,4 @@ void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
 	callback.setImage(newwin, &p4DImage);
 	callback.setImageName(newwin, QString("data combination"));
 	callback.updateImageWindow(newwin);
-}
-
-
-void AdaTDialog::update()
-{
-	//get current data
-	
-	Dn = Dnumber->text().toLong()-1;
-	Dh = Ddistance->text().toLong()-1;
-
-		//printf("channel %ld val %d x %ld y %ld z %ld ind %ld \n", c, data1d[ind], nx, ny, nz, ind);
-	
 }
