@@ -19,29 +19,23 @@ void montage_image_sections (T *apsInput, T * aspOutput, V3DLONG iImageWidth, V3
 	V3DLONG i, j,k,n,count,m,row,column;
 	V3DLONG mCount = iImageHeight * iImageWidth;
 	V3DLONG mCount1 = iImageWidth*iImageLayer;
-	if (iImageLayer<= iImageWidth)
-	{
 		for (i=0; i<iImageLayer; i++)
 		{
 			for (j=0; j<iImageHeight; j++)
 			{
 				for (k=0; k<iImageWidth; k++)
 				{
-					aspOutput[j* mCount1 + k  + (i * iImageWidth) ]= apsInput[i * mCount + j*iImageWidth + k];					
-				//	if (i < 10) 
-				//	{
-				//		aspOutput[j* 10*iImageWidth + k  + (i * iImageWidth) ]= apsInput[i * mCount + j*iImageWidth + k];						
-				//	}else
-				//	{
-				//		aspOutput[((i/10)*iImageHeight)+ j * 10 * iImageWidth + k  + ((i%10) * iImageWidth) ]= apsInput[i * mCount + j*iImageWidth + k];	
-				//	}
+					//aspOutput[j* mCount1 + k  + (i * iImageWidth) ]= apsInput[i * mCount + j*iImageWidth + k];					
+					if (i < 10) 
+					{
+						aspOutput[j* 10*iImageWidth + k  + (i * iImageWidth) ]= apsInput[i * mCount + j*iImageWidth + k];						
+					}else
+					{
+						aspOutput[(((i/10)*iImageHeight)+ j )* 10 * iImageWidth + k + ((i%10) * iImageWidth)]= apsInput[i * mCount + j*iImageWidth + k];	
+					}
 				}
 			}
-		}			
-		
-	}
-	
-	
+		}
 }
 
 void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_code);
@@ -51,9 +45,8 @@ const QString title = "montage_image_sections";
 QStringList MONTAGEPlugin::menulist() const
 {
     return QStringList() 
-	<< tr("montage_image_sections");
-	//<< tr("3D (set parameters)")
-	//<< tr("Help");
+	<< tr("montage_image_sections")
+	<< tr("Help");
 }
 
 void MONTAGEPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
@@ -64,6 +57,7 @@ void MONTAGEPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback
     }
 	else if (menu_name == tr("Help"))
 	{
+		v3d_msg("xy_plane slice display");
 		return;
 	}
 
@@ -108,7 +102,7 @@ void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_cod
 				
 				try
 				{
-					pData = (void *)(new unsigned char [sz3*channelsz]); 
+					pData = (void *)(new unsigned char [sz3*channelsz]()); 
 				}
 					catch (...)
 				{
@@ -130,7 +124,7 @@ void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_cod
 				
 				try
 				{
-					pData = (void *)(new short int [sz3*channelsz]); 
+					pData = (void *)(new short int [sz3*channelsz]()); 
 				}
 					catch (...)
 				{
@@ -151,7 +145,7 @@ void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_cod
 				
 				try
 				{
-					pData = (void *)(new float [sz3*channelsz]); 
+					pData = (void *)(new float [sz3*channelsz]()); 
 				}
 					catch (...)
 				{
@@ -177,15 +171,14 @@ void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_cod
 	int end_t = clock();
 	printf("time eclapse %d s for dist computing!\n", (end_t-start_t)/1000000);
 	
-	Image4DSimple p4DImage;
+	sz0 = 10*sz0;
 	V3DLONG column;
-	// column = ((sz2/10)+1)*sz1 ;		
-	// sz1 = column;
-	//}
-	p4DImage.setData((unsigned char*)pData, sz0*sz2, sz1, 1, sz3, subject->getDatatype());
-//	p4DImage.setData((unsigned char*)pData, sz0*10, sz1, 1, sz3, subject->getDatatype());	
+	column = ((sz2/10)+1)*sz1 ;		
+	sz1 = column;
+	Image4DSimple p4DImage;
+   //p4DImage.setData((unsigned char*)pData, sz0*sz2, sz1, 1, sz3, subject->getDatatype());
+	p4DImage.setData((unsigned char*)pData, sz0, sz1, 1, sz3, subject->getDatatype());	
 //	printf("sz0= %d sz1=%d sz2=%d dd=%d vv=%d\n", sz0,sz1,sz2,dd,vv);
-	
 	v3dhandle newwin;
 	if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to use the existing window?"), QMessageBox::Yes, QMessageBox::No))
 		newwin = callback.currentImageWindow();
@@ -193,6 +186,6 @@ void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_cod
 		newwin = callback.newImageWindow();
 	
 	callback.setImage(newwin, &p4DImage);
-	callback.setImageName(newwin, QString("data combination"));
+	callback.setImageName(newwin, QString("thresholded image"));
 	callback.updateImageWindow(newwin);
 }
