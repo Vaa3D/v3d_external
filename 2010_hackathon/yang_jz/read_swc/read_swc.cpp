@@ -49,16 +49,71 @@ void Read_SWC(V3DPluginCallback &callback, QWidget *parent, int method_code)
 															";;Neuron structure	(*.swc)"
 															));
 	NeuronTree nt;
+	float x_down,x_top,y_down,y_top,z_down,z_top;
+	x_top = 0;
+	x_down = 0;
+	y_top = 0;
+	y_down = 0;
+	z_top = 0;
+	z_down = 0;
 	if (filename.size()>0)
 	{
 		nt = readSWC_file(filename);
+
+		NeuronSWC *p_tmp=0;
+		for (int ii=0; ii<nt.listNeuron.size(); ii++)
+		{
+			p_tmp = (NeuronSWC *)(&(nt.listNeuron.at(ii)));
+			
+			float xs = p_tmp->x;
+			float ys = p_tmp->y;
+			float zs = p_tmp->z;
+			float rs = p_tmp->r;
+			x_down = (xs<x_down)? xs:x_down;
+			x_top = (xs>x_top)? xs:x_top;
+			y_down = (ys<y_down)? ys:y_down;
+			y_top = (ys>y_top)? ys:y_top;
+			z_down = (zs<z_down)? zs: z_down;
+			z_top = (zs>z_top)? zs:z_top;			
+		}
+			
+		printf("%lf %lf %lf %lf %lf %lf\n", x_down, y_down, z_down, x_top, y_top, z_top);		
 		
-		V3DLONG N = 1000*1000;
-		unsigned char* newdata1d = new unsigned char[N]();
+		V3DLONG iImageW = abs(x_down - x_top);
+		V3DLONG iImageH = abs(y_down - y_top);
+		V3DLONG iimageL = abs(z_down - z_top);
+		
+		V3DLONG size = iImageH*iImageW*iimageL;
+
+		unsigned char* newdata1d = new unsigned char[size]();
+		
+		for (int ii=0; ii<nt.listNeuron.size(); ii++)
+		{
+			p_tmp = (NeuronSWC *)(&(nt.listNeuron.at(ii)));
+			int xs = p_tmp->x;
+			int ys = p_tmp->y;
+			int zs = p_tmp->z;
+			xs = xs + abs(x_down);
+			ys = ys + abs(y_down);
+			zs = zs + abs(z_down);
+			if(xs <0 || ys <0|| zs<0)
+			{
+				v3d_msg("error");
+			}
+			xs = (xs>iImageW)?iImageW:xs;
+			ys = (ys>iImageH)?iImageH:ys;
+			zs = (zs>iimageL)?iimageL:zs;
+			
+			if( xs >iImageW || ys > iImageH || zs>iimageL)
+			{
+				v3d_msg("error2");
+			}
+			newdata1d[zs * iImageW * iImageH + ys* iImageW + xs] = 255;
+		}			
 		
 		Image4DSimple tmp;
 		
-		tmp.setData(newdata1d, 1000,1000,1,1,V3D_UINT8);		
+		tmp.setData(newdata1d, iImageW,iImageH,iimageL,1,V3D_UINT8);		
 		
 		v3dhandle newwin = callback.newImageWindow();
 		
