@@ -79,6 +79,7 @@
 # 101019: (CMB) add dialog_url_entry.ui
 # 101025: (CMB) add dialog_update_v3d.ui
 # 101119: add bundle test for mac 
+# 101129: (CMB) add link to CoreServices framework on Snow Leopard
 # ######################################################################
 
 TEMPLATE = app
@@ -115,16 +116,11 @@ LIBS += -L$$SHARED_FOLDER \
 	-L$$SHARED_FOLDER/release # for Qt-win32 which only has release install(no debug)
 
 macx {
-    # Mac possible location of arthurwidgets.h with official Qt 4.7 install
-    SHARED_FOLDER = /Developer/Examples/Qt/Demos/shared
-    include($$SHARED_FOLDER/shared.pri)
-    INCLUDEPATH += $$SHARED_FOLDER
-    LIBS += -L$$SHARED_FOLDER
-    
-    # Build on snow leopard requires explict -m32 flag for 32 bit build
-    QMAKE_CFLAGS   += -m32
-    QMAKE_CXXFLAGS += -m32
-    QMAKE_LFLAGS   += -m32
+    # Mac possible location of arthurwidgets.h with official Qt 4.7 installer
+    QTINST_SHARED_FOLDER = /Developer/Examples/Qt/Demos/shared
+    include($$QTINST_SHARED_FOLDER/shared.pri)
+    INCLUDEPATH += $$QTINST_SHARED_FOLDER
+    LIBS += -L$$QTINST_SHARED_FOLDER
 }
 
 # the following trick was figured out by Ruan Zongcai

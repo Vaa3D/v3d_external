@@ -15,9 +15,9 @@ You will ***have to agree*** the following terms, *before* downloading/using/run
 
 2. You agree to appropriately cite this work in your related studies and publications.
 
-Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) “V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,” Nature Biotechnology, Vol. 28, No. 4, pp. 348-353, DOI: 10.1038/nbt.1612. ( http://penglab.janelia.org/papersall/docpdf/2010_NBT_V3D.pdf )
+Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) ‚ÄúV3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,‚Äù Nature Biotechnology, Vol. 28, No. 4, pp. 348-353, DOI: 10.1038/nbt.1612. ( http://penglab.janelia.org/papersall/docpdf/2010_NBT_V3D.pdf )
 
-Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstruction of 3D neuron structures using a graph-augmented deformable model,” Bioinformatics, Vol. 26, pp. i38-i46, 2010. ( http://penglab.janelia.org/papersall/docpdf/2010_Bioinfo_GD_ISMB2010.pdf )
+Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ‚ÄúAutomatic reconstruction of 3D neuron structures using a graph-augmented deformable model,‚Äù Bioinformatics, Vol. 26, pp. i38-i46, 2010. ( http://penglab.janelia.org/papersall/docpdf/2010_Bioinfo_GD_ISMB2010.pdf )
 
 3. This software is provided by the copyright holders (Hanchuan Peng), Howard Hughes Medical Institute, Janelia Farm Research Campus, and contributors "as is" and any express or implied warranties, including, but not limited to, any implied warranties of merchantability, non-infringement, or fitness for a particular purpose are disclaimed. In no event shall the copyright owner, Howard Hughes Medical Institute, Janelia Farm Research Campus, or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; reasonable royalties; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.
 
@@ -347,6 +347,7 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
 	if (!done)  { done = runPluginInterface(plugin, menuString); v3d_msg("done with runPluginInterface().",0); }
     // runSingleImageInterface works with both 1.0 and 2.1
     if (!done)  { done = runSingleImageInterface(plugin, menuString); v3d_msg("done with runSingleImageInterface().",0); }
+    if (!done)  {v3d_msg("No interface found.",0);}
 	
 	v3d_msg(QString("already run! done status=%1").arg(done), 0);
 	// 100804 RZC: MUST do not unload plug-ins that has model-less dialog
@@ -372,7 +373,17 @@ void V3d_PluginLoader::runPlugin()
 
 bool V3d_PluginLoader::runSingleImageInterface(QObject* plugin, const QString &command)
 {
-    V3DSingleImageInterface *iFilter = qobject_cast<V3DSingleImageInterface *>(plugin);
+    // if (plugin == NULL) {v3d_msg("plugin is null", 0);}
+    // V3DSingleImageInterface *iFilter = qobject_cast<V3DSingleImageInterface *>(plugin);
+    // if (iFilter == NULL) {v3d_msg("plugin cannot be cast to V3DSingleImageInterface*", 0);}
+    // V3DSingleImageInterface2_1 *iFilter2 = qobject_cast<V3DSingleImageInterface2_1 *>(plugin);
+    // if (iFilter2 == NULL) {v3d_msg("plugin cannot be cast to V3DSingleImageInterface2_1*", 0);}
+    // V3DSingleImageInterface *iFilter3 = dynamic_cast<V3DSingleImageInterface *>(plugin);
+    // if (iFilter2 == NULL) {v3d_msg("plugin cannot be dynamic_cast to V3DSingleImageInterface*", 0);}
+    
+    // For some reason dynamic_cast works, but qobject_cast fails, when plugin is V3DSingleImageInterface2_1
+    V3DSingleImageInterface *iFilter = dynamic_cast<V3DSingleImageInterface *>(plugin);
+
     bool done = (iFilter != 0);
     if (iFilter && v3d_mainwindow)
     {

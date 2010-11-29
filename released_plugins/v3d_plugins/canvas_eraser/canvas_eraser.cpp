@@ -21,6 +21,19 @@ QStringList CanvasEraserPlugin::menulist() const
 
 void CanvasEraserPlugin::processImage(const QString &arg, Image4DSimple *image, QWidget *parent)
 {
+    qDebug("processImage");
+    // CMB 29 Nov 2010
+    // Even if there is no image, we should show the "about" dialog.
+	if (arg == tr("about this plugin"))
+	{
+        qDebug("about");
+        QString msg = QString(
+                "Canvas Eraser version %1 (2009-Aug-14): this demo is developed by Hanchuan Peng to show V3D plugin capability.")
+                .arg(getPluginVersion(), 1, 'f', 1);
+		QMessageBox::information(parent, "Version info", msg);
+        return;
+	}
+
 	if (!image) return;
 
 	unsigned char* data1d = image->getRawData();
@@ -83,10 +96,6 @@ void CanvasEraserPlugin::processImage(const QString &arg, Image4DSimple *image, 
 			}
 		}
     }
-	else if (arg == tr("about this plugin"))
-	{
-		QMessageBox::information(parent, "Version info", "Canvas Eraser 1.0 (2009-Aug-14): this demo is developed by Hanchuan Peng to show V3D plugin capability.");
-	}
 	else
 		return;
 }

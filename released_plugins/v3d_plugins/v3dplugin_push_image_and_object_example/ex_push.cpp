@@ -118,9 +118,9 @@ void ExPushPlugin::domenu(const QString & menu_name, V3DPluginCallback2 & v3d, Q
 	}
 	else
 	{
-		QMessageBox::information(parent, "Version info", "Push Plugin 1.0/2.0"
-				"\ndeveloped by Hanchuan Peng & Zongcai Ruan. (Janelia Farm Research Campus, HHMI)");
-
+        QString msg = QString("Push Plugin version %1\ndeveloped by Hanchuan Peng & Zongcai Ruan. (Janelia Farm Research Campus, HHMI)")
+                .arg(getPluginVersion(), 1, 'f', 1);
+		QMessageBox::information(parent, "Version info", msg);
 	}
 }
 
