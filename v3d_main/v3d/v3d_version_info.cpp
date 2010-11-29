@@ -44,8 +44,11 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <QDebug>
 #include <QMessageBox>
 
-// QString v3dVersionUrlBase("http://brunsc-wm1.janelia.priv/~brunsc/v3d_version/");
-QString v3dVersionUrlBase("http://penglab.janelia.org/proj/v3d/V3D/");
+// For testing:
+QString v3dVersionUrlBase("http://brunsc-wm1.janelia.priv/~brunsc/v3d_version/");
+
+// For production:
+// QString v3dVersionUrlBase("http://penglab.janelia.org/proj/v3d/V3D/");
 
 namespace v3d {
     // Set current version here.
@@ -249,9 +252,9 @@ V3DVersionChecker::V3DVersionChecker(QWidget *guiParent_param)
     : guiParent(guiParent_param)
 {}
 
-void V3DVersionChecker::checkForLatestVersion(bool b_informOnNoUpdate_param)
+void V3DVersionChecker::checkForLatestVersion(bool b_verbose)
 {
-    this->b_informOnNoUpdate = b_informOnNoUpdate_param;
+    this->b_showAllMessages = b_verbose;
     QUrl versionUrl(v3dVersionUrlBase + "v3d_version.xml");
     QNetworkAccessManager *nam = new QNetworkAccessManager(this);
     nam->get(QNetworkRequest(versionUrl));
@@ -289,10 +292,11 @@ bool V3DVersionChecker::shouldCheckNow() {
     return bCheckNow;
 }
 
-void V3DVersionChecker::gotVersion(QNetworkReply* reply) {
+void V3DVersionChecker::gotVersion(QNetworkReply* reply)
+{
     if (reply->error() != QNetworkReply::NoError) {
         qDebug("Problem downloading latest version information");
-        if (b_informOnNoUpdate) {
+        if (b_showAllMessages) {
             QMessageBox::information(guiParent,
                     "Unable to connect to V3D server",
                     "Could not get latest version information.\n"
@@ -320,10 +324,15 @@ void V3DVersionChecker::gotVersion(QNetworkReply* reply) {
     // Qt 4.6 or later is required for validation with xml schema
     QDomDocument versionDoc("v3d_version");
     versionDoc.setContent(reply->readAll());
+    processVersionXmlFile(versionDoc);
+}
+
+void V3DVersionChecker::processVersionXmlFile(const QDomDocument& versionDoc)
+{
     QDomElement root = versionDoc.documentElement();
     if (root.tagName() != "v3d_version") {
         qDebug() << "Unrecognized root element " << root.tagName();
-        if (b_informOnNoUpdate) {
+        if (b_showAllMessages) {
             QMessageBox::information(guiParent,
                     "Unable to parse version information",
                     "Could not parse latest version information.\n"
@@ -368,7 +377,7 @@ void V3DVersionChecker::gotVersion(QNetworkReply* reply) {
         }
     }
     else if (latestVersion == v3d::thisVersionOfV3D) {
-        if (b_informOnNoUpdate) {
+        if (b_showAllMessages) {
             QMessageBox::information(guiParent,
                     "V3D is up to date",
                     "You are using the latest version of V3D");
@@ -376,7 +385,7 @@ void V3DVersionChecker::gotVersion(QNetworkReply* reply) {
         qDebug("V3D version is up to date");
     }
     else {
-        if (b_informOnNoUpdate) {
+        if (b_showAllMessages) {
             QMessageBox::information(guiParent,
                     "Special V3D version",
                     "You are using an unreleased development version of V3D");

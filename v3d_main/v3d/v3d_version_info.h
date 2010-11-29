@@ -44,6 +44,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "ui_dialog_update_v3d.h"
 
 class QNetworkReply;
+class QDomDocument;
 
 void v3d_aboutinfo();
 void v3d_Lite_info();
@@ -175,15 +176,18 @@ class V3DVersionChecker : public QObject
 
 public:
     V3DVersionChecker(QWidget *guiParent);
-    void checkForLatestVersion(bool b_informOnNoUpdate = false);
+    void checkForLatestVersion(bool b_verbose = false);
     bool shouldCheckNow();
 
 private slots:
     void gotVersion(QNetworkReply* reply);
 
+protected:
+    void processVersionXmlFile(const QDomDocument& versionDoc);
+
 private:
     QWidget *guiParent;
-    bool b_informOnNoUpdate;
+    bool b_showAllMessages;
 };
 
 class UpdatesAvailableDialog : public QMessageBox 

@@ -156,10 +156,10 @@ if [ $TIFFCOMPILE == "YES" -o ! -f common_lib/lib/libv3dtiff.a ]; then
   TIFFPATH=`pwd`
   cd build
   if [ $SYSTEMBITS == "64" ]; then
-    ../src_packages/tiff-3.8.2.1/configure -prefix=$TIFFPATH  CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64"
+    ../src_packages/tiff-3.8.2.1/configure -prefix=$TIFFPATH  CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64" --disable-jpeg --disable-zlib --disable-pixarlog
   fi
   if [ $SYSTEMBITS == "32" ]; then
-    ../src_packages/tiff-3.8.2.1/configure -prefix=$TIFFPATH  CFLAGS="-arch i386" CXXFLAGS="-arch i386"
+    ../src_packages/tiff-3.8.2.1/configure -prefix=$TIFFPATH  CFLAGS="-arch i386" CXXFLAGS="-arch i386" --disable-jpeg --disable-zlib --disable-pixarlog
   fi
   make clean
   make 

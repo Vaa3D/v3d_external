@@ -114,6 +114,18 @@ INCLUDEPATH += $$SHARED_FOLDER
 LIBS += -L$$SHARED_FOLDER \
 	-L$$SHARED_FOLDER/release # for Qt-win32 which only has release install(no debug)
 
+macx {
+    # Mac possible location of arthurwidgets.h with official Qt 4.7 install
+    SHARED_FOLDER = /Developer/Examples/Qt/Demos/shared
+    include($$SHARED_FOLDER/shared.pri)
+    INCLUDEPATH += $$SHARED_FOLDER
+    LIBS += -L$$SHARED_FOLDER
+    
+    # Build on snow leopard requires explict -m32 flag for 32 bit build
+    QMAKE_CFLAGS   += -m32
+    QMAKE_CXXFLAGS += -m32
+    QMAKE_LFLAGS   += -m32
+}
 
 # the following trick was figured out by Ruan Zongcai
 CONFIG += warn_off  # only work for complier
@@ -311,6 +323,8 @@ macx:LIBS += -lm -lv3dtiff \
     -lv3dnewmat 
 #    -framework GLUT
 macx:LIBS += -L../common_lib/src_packages/mylib_tiff -lmylib	
+# CMB Nov 29 2010 Snow leopard GLee_r.o requires CoreServices framework
+macx:LIBS += -framework CoreServices
 
 win32:LIBS += -lm -lv3dtiff \
     -lv3dnewmat 
