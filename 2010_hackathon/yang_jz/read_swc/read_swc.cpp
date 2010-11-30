@@ -59,26 +59,14 @@ void Read_SWC(V3DPluginCallback &callback, QWidget *parent, int method_code)
 	x_total = 0;
 	y_total = 0;
 	z_total = 0;
-	V3DLONG alpha,beta;
+	V3DLONG sx,sy,sz,alpha,beta;
 	alpha = 1;
-	beta =1;
+	beta =2;
 	NeuronSWC *p_t=0;
 	
 	if (filename.size()>0)
 	{
 		neurons = readSWC_file(filename);
-	    
-		for (int ii=0; ii<neurons.listNeuron.size(); ii++)
-		{
-			p_t = (NeuronSWC *)(&(neurons.listNeuron.at(ii)));
-			x_total += p_t->x;
-			y_total += p_t->y;
-			z_total += p_t->z;
-		}		
-		
-		x_min = x_max = x_total/(neurons.listNeuron.size());
-		y_min = y_max = y_total/(neurons.listNeuron.size());
-		z_min = z_max = z_total/(neurons.listNeuron.size());
 		
 		//printf("xmin=%lf xmax=%lf ymin=%lf ymax=%lf zmin=%lf zmax=%lf\n", x_min, x_max, y_min, y_max, z_min, z_max);
 		
@@ -98,17 +86,25 @@ void Read_SWC(V3DPluginCallback &callback, QWidget *parent, int method_code)
 			z_max = (zs>z_max)? ys:z_max;				 
 		}
 			
-	//	printf("xmin=%lf xmax=%lf ymin=%lf ymax=%lf zmin=%lf zmax=%lf\n", x_min, x_max, y_min, y_max, z_min, z_max);		
-		
-		V3DLONG sx = V3DLONG(x_max - x_min);
-		V3DLONG sy = V3DLONG(y_max - y_min);
-		V3DLONG sz = V3DLONG(z_max - z_min);
-		
-		printf("sx=%d sy=%d sz=%d\n", sx, sy, sz);
+		printf("xmin=%lf xmax=%lf ymin=%lf ymax=%lf zmin=%lf zmax=%lf\n", x_min, x_max, y_min, y_max, z_min, z_max);		
+	
+		if(x_min < 0 || y_min < 0 || z_min <0)
+		{	
+			 sx = V3DLONG(x_max - x_min);
+			 sy = V3DLONG(y_max - y_min);
+			 sz = V3DLONG(z_max - z_min);			
+		}else 
+		{
+			 sx = V3DLONG(x_max);
+			 sy = V3DLONG(y_max);
+			 sz = V3DLONG(z_max);
+		}
+	//	printf("sx=%d sy=%d sz=%d\n", sx, sy, sz);
 		
 		V3DLONG pagesz = sx*sy*sz;
 /*********************************************************************/// coupute coordinate region 
-		
+		float scalar = 1;
+		float scalar2 = scalar*scalar;		
 		unsigned char* pImMask = new unsigned char[pagesz];	
 	
 		if (!pImMask) 
@@ -177,7 +173,7 @@ void Read_SWC(V3DPluginCallback &callback, QWidget *parent, int method_code)
 			float y_top = (ys>ye)? ys: ye;
 			float z_down = (zs>ze)? ze: zs;
 			float z_top = (zs>ze)? zs: ze;
-			
+			printf("x_down1=%lf xs=%lf xe%lf y_down1=%lf z_down1=%lf x_top1=%lf y_top1=%lf z_top1=%lf rs=%lf\n", x_down, xs,xe, y_down, z_down, x_top, y_top, z_top,rs);
 			if(x_down == xs)
 			{
 				if(x_down-rs > 0)
@@ -267,7 +263,7 @@ void Read_SWC(V3DPluginCallback &callback, QWidget *parent, int method_code)
 				else
 					z_top = sz;
 			}
-		//printf("%lf %lf %lf %lf %lf %lf\n", x_down, y_down, z_down, x_top, y_top, z_top);
+		printf("x_down=%lf y_down=%lf z_down=%lf x_top=%lf y_top=%lf z_top=%lf rs=%lf\n", x_down, y_down, z_down, x_top, y_top, z_top,rs);
 			
 /*********************************************************************/// coupute cylinder and flag mask 
 			for(long k=long(z_down); k<long(z_top); k++)
@@ -278,10 +274,9 @@ void Read_SWC(V3DPluginCallback &callback, QWidget *parent, int method_code)
 					{
 						long indLoop = k*sx*sy + j*sx + i;
 						//norm(cross(x0-x1,x1-x2))/norm(x1-x2)
-						double norms10 = (xs-i)*(xs-i) + (ys-j)*(ys-j) + (zs-k)*(zs-k);
-						double norms21 = (xe-xs)*(xe-xs) + (ye-ys)*(ye-ys) + (ze-zs)*(ze-zs); 
-						double dots1021 = (xs-i)*(xe-xs) + (ys-j)*(ye-ys) + (zs-k)*(ze-zs); 
-						
+						double norms10 = (xs-i)*(xs-i) + (ys-j)*(ys-j) + (zs-k)*(zs-k)*scalar2;
+						double norms21 = (xe-xs)*(xe-xs) + (ye-ys)*(ye-ys) + (ze-zs)*(ze-zs)*scalar2; 
+						double dots1021 = (xs-i)*(xe-xs) + (ys-j)*(ye-ys) + (zs-k)*(ze-zs)*scalar2; 
 						double dist = sqrt( norms10 - (dots1021*dots1021)/(norms21) );
 						
 						double t = -dots1021/norms21;
@@ -289,11 +284,14 @@ void Read_SWC(V3DPluginCallback &callback, QWidget *parent, int method_code)
 						if(t<0)
 							dist = sqrt(norms10);
 						else if(t>1)
-							dist = sqrt((xe-i)*(xe-i) + (ye-j)*(ye-j) + (ze-k)*(ze-k));
-						if(dist<=rs)
+							dist = sqrt((xe-i)*(xe-i) + (ye-j)*(ye-j) + (ze-k)*(ze-k)*scalar2);
+						
+						printf("%lf %lf\n", dist, rs);
+						
+						if(dist <= rs)
 						{    
 							 pImMask[indLoop] =(p_tmp->type + 200);
-							//pImMask[indLoop] = 255 ;
+							// v3d_msg("'11");
 						}
 						
 					}
