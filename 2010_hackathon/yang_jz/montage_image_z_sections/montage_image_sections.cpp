@@ -14,28 +14,32 @@
 Q_EXPORT_PLUGIN2(Montage, MONTAGEPlugin);
 
 template <class T> 
-void montage_image_sections (T *apsInput, T * aspOutput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer, V3DLONG h, V3DLONG d)
+void montage_image_sections (T *apsInput, T * aspOutput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer)
 {
 	V3DLONG i, j,k,n,count,m,row,column;
 	V3DLONG mCount = iImageHeight * iImageWidth;
-	V3DLONG mCount1 = iImageWidth*iImageLayer;
-		for (i=0; i<iImageLayer; i++)
+	
+	column = (V3DLONG)sqrt(iImageLayer);
+	//v3d_msg("1");
+	//printf("column1=%d,",column);
+	
+	for (i=0; i<iImageLayer; i++)
+	{
+		for (j=0; j<iImageHeight; j++)
 		{
-			for (j=0; j<iImageHeight; j++)
+			for (k=0; k<iImageWidth; k++)
 			{
-				for (k=0; k<iImageWidth; k++)
+				if (i < column) 
 				{
-					//aspOutput[j* mCount1 + k  + (i * iImageWidth) ]= apsInput[i * mCount + j*iImageWidth + k];					
-					if (i < 10) 
-					{
-						aspOutput[j* 10*iImageWidth + k  + (i * iImageWidth) ]= apsInput[i * mCount + j*iImageWidth + k];						
-					}else
-					{
-						aspOutput[(((i/10)*iImageHeight)+ j )* 10 * iImageWidth + k + ((i%10) * iImageWidth)]= apsInput[i * mCount + j*iImageWidth + k];	
-					}
+					aspOutput[j* column *iImageWidth + k  + (i * iImageWidth) ]= apsInput[i * mCount + j*iImageWidth + k];						
+				}else
+				{
+					aspOutput[(((i/column)*iImageHeight)+ j )* column* iImageWidth + k + ((i%column) * iImageWidth)]= apsInput[i * mCount + j*iImageWidth + k];	
 				}
 			}
 		}
+	}
+	//v3d_msg("2");	
 }
 
 void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_code);
@@ -68,6 +72,9 @@ void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_cod
 	v3dhandle curwin = callback.currentImageWindow();
 	V3DLONG h;
 	V3DLONG d;
+	V3DLONG channelsz,channelsz1;
+	V3DLONG column,row;
+	channelsz =channelsz1=column = row = 0;
 	if (!curwin)
 	{
 		v3d_msg("You don't have any image open in the main window.");
@@ -92,9 +99,28 @@ void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_cod
 	V3DLONG pagesz_sub = sz0*sz1*sz2;
 	
 	//----------------------------------------------------------------------------------------------------------------------------------
-	V3DLONG channelsz = sz0*sz1*sz2;
-	void *pData=NULL;
+
+//	column = (V3DLONG)(sqrt(sz2)+ 0.5);
+//	V3DLONG remainder= sz2 - column*column;
+//	float num = sqrt(sz0*sz1*sz2);
+//    column = num/sz0;
+//	row = (sz2/column+0.5);
+//	channelsz1 = (V3DLONG)column*sz0*(V3DLONG)row*sz1;
+	//row = sz2/column;
 	
+	column = (V3DLONG)(sqrt(sz2)+ 0.5);
+	if (remainder == 0)
+	{
+		row = column;
+		channelsz1 = sz0*sz1*sz2;
+	}else 
+	{
+		row = column+1;
+		channelsz1 = sz0*sz1*column*(column+1);
+	}	
+	channelsz = sz0*sz1*sz2;
+    printf("column=%d,remainder=%d,row=%d sz3=%d\n",column,remainder,row,sz3);
+	void *pData=NULL;
 	V3DLONG sz_data[4]; sz_data[0]=sz0; sz_data[1]=sz1; sz_data[2]=sz2; sz_data[3]=1;
 		switch (subject->getDatatype()) 
 		{
@@ -102,7 +128,7 @@ void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_cod
 				
 				try
 				{
-					pData = (void *)(new unsigned char [sz3*channelsz]()); 
+					pData = (void *)(new unsigned char [sz3*channelsz1]()); 
 				}
 					catch (...)
 				{
@@ -115,16 +141,14 @@ void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_cod
 					unsigned char * pSubtmp_uint8 = pSub.begin();
 				
 					for (V3DLONG ich=0; ich<sz3; ich++)
-						montage_image_sections(pSubtmp_uint8+ich*channelsz, (unsigned char *)pData+ich*channelsz, sz0, sz1, sz2, h, d  );
+						montage_image_sections(pSubtmp_uint8+ich*channelsz, (unsigned char *)pData+ich*channelsz1, sz0, sz1, sz2);
 				}
-				
 				break;
 				
 			case V3D_UINT16:
-				
 				try
 				{
-					pData = (void *)(new short int [sz3*channelsz]()); 
+					pData = (void *)(new short int [sz3*channelsz1]()); 
 				}
 					catch (...)
 				{
@@ -137,15 +161,14 @@ void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_cod
 					short int * pSubtmp_uint16 = (short int *)pSub.begin();
 				
 					for (V3DLONG ich=0; ich<sz3; ich++)
-						montage_image_sections(pSubtmp_uint16+ich*channelsz, (short int *)pData+ich*channelsz, sz0, sz1, sz2, h, d );
+						montage_image_sections(pSubtmp_uint16+ich*channelsz, (short int *)pData+ich*channelsz1, sz0, sz1, sz2 );
 				}
-				
 				break;
 			case V3D_FLOAT32:
 				
 				try
 				{
-					pData = (void *)(new float [sz3*channelsz]()); 
+					pData = (void *)(new float [sz3*channelsz1]()); 
 				}
 					catch (...)
 				{
@@ -158,7 +181,7 @@ void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_cod
 					float * pSubtmp_float32 = (float *)pSub.begin();
 					
 					for (V3DLONG ich=0; ich<sz3; ich++)
-						montage_image_sections(pSubtmp_float32+ich*channelsz, (float *)pData+ich*channelsz, sz0, sz1, sz2, h, d );
+						montage_image_sections(pSubtmp_float32+ich*channelsz, (float *)pData+ich*channelsz, sz0, sz1, sz2 );
 				}
 				
 				break;
@@ -169,16 +192,12 @@ void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_cod
 	//----------------------------------------------------------------------------------------------------------------------------------
 	
 	int end_t = clock();
-	printf("time eclapse %d s for dist computing!\n", (end_t-start_t)/1000000);
-	
-	sz0 = 10*sz0;
-	V3DLONG column;
-	column = ((sz2/10)+1)*sz1 ;		
-	sz1 = column;
+	printf("time eclapse %d s for dist computing!\n", (end_t-start_t)/1000000);	
+	///v3d_msg("2");
+	printf("column=%d,remainder=%d,row=%d\n",column,remainder,row);
 	Image4DSimple p4DImage;
-   //p4DImage.setData((unsigned char*)pData, sz0*sz2, sz1, 1, sz3, subject->getDatatype());
-	p4DImage.setData((unsigned char*)pData, sz0, sz1, 1, sz3, subject->getDatatype());	
-//	printf("sz0= %d sz1=%d sz2=%d dd=%d vv=%d\n", sz0,sz1,sz2,dd,vv);
+	p4DImage.setData((unsigned char*)pData, (V3DLONG)column*sz0, (V3DLONG)row*sz1, 1, sz3, subject->getDatatype());	
+	//	printf("sz0= %d sz1=%d sz2=%d dd=%d vv=%d\n", sz0,sz1,sz2,dd,vv);
 	v3dhandle newwin;
 	if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to use the existing window?"), QMessageBox::Yes, QMessageBox::No))
 		newwin = callback.currentImageWindow();
