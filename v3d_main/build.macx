@@ -211,10 +211,10 @@ fi
 if [ $DOIT == "YES" ]; then
   cd v3d
   echo =========================================================
-  echo qmake $V3D_PRO_FILE \"$QMAKE_CONFIG\"
+  echo qmake -spec macx-g++ $V3D_PRO_FILE \"$QMAKE_CONFIG\"
   echo make $QARGS $QMAKE_CONFIG
   echo =========================================================
-  qmake $V3D_PRO_FILE $QMAKE_CONFIG
+  qmake -spec macx-g++ $V3D_PRO_FILE $QMAKE_CONFIG
   touch v3d_version_info.cpp
 
   if [ $SYSTEMBITS == "32" ]; then
