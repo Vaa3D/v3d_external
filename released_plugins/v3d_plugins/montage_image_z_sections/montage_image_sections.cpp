@@ -61,7 +61,7 @@ void MONTAGEPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback
     }
 	else if (menu_name == tr("Help"))
 	{
-		v3d_msg("xy_plane slice display");
+		v3d_msg("This plugin produces a montage view of all z slices.");
 		return;
 	}
 
