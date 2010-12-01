@@ -50,7 +50,7 @@ void CouputemaskImage(NeuronTree neurons,unsigned char* pImMask,V3DLONG sx,V3DLO
 	float scalar2 = scalar*scalar;	
 	float alpha,beta;
 	alpha = 1;
-	beta =0;
+	beta =1;
 	//compute mask
 	NeuronSWC *p_tmp=0;
 	float xs,ys,zs,xe,ye,ze;
@@ -212,9 +212,7 @@ void CouputemaskImage(NeuronTree neurons,unsigned char* pImMask,V3DLONG sx,V3DLO
 					double norms21 = (xe-xs)*(xe-xs) + (ye-ys)*(ye-ys) + (ze-zs)*(ze-zs)*scalar2; 
 					double dots1021 = (xs-i)*(xe-xs) + (ys-j)*(ye-ys) + (zs-k)*(ze-zs)*scalar2; 
 					double dist = sqrt( norms10 - (dots1021*dots1021)/(norms21) );
-					
 					double t = -dots1021/norms21;
-					
 					if(t<0)
 						dist = sqrt(norms10);
 					else if(t>1)
@@ -224,7 +222,14 @@ void CouputemaskImage(NeuronTree neurons,unsigned char* pImMask,V3DLONG sx,V3DLO
 					
 					if(dist <= rs)
 					{    
-						pImMask[indLoop] += (p_tmp->type + 1);
+						if(pImMask[indLoop] == 0)
+						{
+							pImMask[indLoop] += (p_tmp->type + 1);
+						}else 
+						{
+							pImMask[indLoop] = (p_tmp->type + 1);
+						}
+
 					}
 					
 				}
@@ -302,17 +307,17 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 				sz = V3DLONG(z_max);
 			}
 			V3DLONG pagesz = sx*sy*sz;
-			try
+			pImMask = new unsigned char[pagesz];
+			if (!pImMask) 
 			{
-				pImMask = (new unsigned char [pagesz]); 
+				printf("Fail to allocate memory.\n");
+				return ;
 			}
-			catch (...)
+			else
 			{
-				v3d_msg("Fail to allocate memory in maskimage.");
-				if (pImMask) {delete []pImMask; pImMask=0;}
-				return;
-			}		
-			
+				for(long i=0; i<pagesz; i++)
+					pImMask[i] = 0; 
+			}			
 			CouputemaskImage(neurons,pImMask,sx,sy,sz,x_min,y_min,z_min,filename);
 		}
 		else 
@@ -332,7 +337,7 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 			v3d_msg("You don't have any image open in the main window.");
 			return;
 		}
-		v3d_msg("1");
+	//	v3d_msg("1");
 		namesize = filenames.size();
 		NeuronSWC *p_t=0;
 		for (int i = 0; i < filenames.size();i++)
@@ -364,7 +369,7 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 				return;
 			}
 		}
-		v3d_msg("2");
+		//v3d_msg("2");
 		if(x_min < 0 || y_min < 0 || z_min <0)
 		{
 			sx = V3DLONG(x_max - x_min);
@@ -379,15 +384,16 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 		}
 		//printf("sx=%d sy=%d sz=%d\n", sx, sy, sz);
 		V3DLONG pagesz = sx*sy*sz;
-		try
+		pImMask = new unsigned char [pagesz];
+		if (!pImMask) 
 		{
-			pImMask = (new unsigned char [pagesz]); 
-		}
-		catch (...)
-		{
-			v3d_msg("Fail to allocate memory in maskimage.");
-			if (pImMask) {delete []pImMask; pImMask=0;}
+			printf("Fail to allocate memory.\n");
 			return;
+		}
+		else
+		{
+			for(long i=0; i<pagesz; i++)
+				pImMask[i] = 0; 
 		}		
 		for (int i = 0; i < filenames.size();i++)
 		{
@@ -406,11 +412,8 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 	}
 	/*********************************************************************/// coupute coordinate region 		
 	Image4DSimple tmp;
-		
 	tmp.setData(pImMask,sx,sy,sz,1,V3D_UINT8);		
-		
 	v3dhandle newwin = callback.newImageWindow();
-		
 	callback.setImage(newwin, &tmp);
 	callback.setImageName(newwin, QString("composition image"));
 	callback.updateImageWindow(newwin);
