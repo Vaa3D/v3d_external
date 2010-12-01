@@ -42,6 +42,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <QDialog>
 #include <QMessageBox>
 #include "ui_dialog_update_v3d.h"
+#include "ui_dialog_update_list.h"
 
 class QNetworkReply;
 class QDomDocument;
@@ -195,6 +196,7 @@ class UpdatesAvailableDialog : public QMessageBox
     Q_OBJECT
 public:
     UpdatesAvailableDialog(QWidget *parent);
+    QPushButton* yesButton;
 
 signals:
     void start_update();
@@ -206,14 +208,26 @@ private slots:
 };
 
 
-class V3dUpdateDialog : public QDialog, public Ui::dialog_update_v3d
+class CheckForUpdatesDialog : public QDialog, public Ui::dialog_update_v3d
 {
     Q_OBJECT
 public:
-    V3dUpdateDialog(QWidget* guiParent);
+    CheckForUpdatesDialog(QWidget* guiParent);
 
 private slots:
     void on_comboBox_currentIndexChanged(const QString& updateFrequency);
+    void check_now();
+    void open_download_page();
+};
+
+class UpdatesListDialog : public QDialog, public Ui::dialog_update_list
+{
+    Q_OBJECT
+public:
+    UpdatesListDialog(QWidget* guiParent);
+
+private slots:
+    void update_install();
 };
 
 } // namespace v3d

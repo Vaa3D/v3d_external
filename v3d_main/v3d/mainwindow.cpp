@@ -268,12 +268,6 @@ MainWindow::MainWindow()
 	//090811 RZC
 	pluginLoader = new V3d_PluginLoader(pluginProcMenu, this);
 
-    // This is the automatic check for latest version
-    qDebug("checking version...");
-    v3d::V3DVersionChecker *versionChecker = new v3d::V3DVersionChecker(this);
-    if (versionChecker->shouldCheckNow())
-        versionChecker->checkForLatestVersion(false);
-    // checkForUpdates(false); // false means silent if no update needed
 }
 
 //void MainWindow::postClose() //090812 RZC
@@ -454,10 +448,18 @@ void MainWindow::finishedLoadingWebImage(QUrl url, QString fileName, bool b_cach
     }
 }
 
-void MainWindow::checkForUpdates(bool b_informOnNoUpdate)
+void MainWindow::checkForUpdates(bool b_verbose)
 {
-    v3d::V3DVersionChecker *versionChecker = new v3d::V3DVersionChecker(this);
-    versionChecker->checkForLatestVersion(b_informOnNoUpdate);
+    // In interactive mode, bring up a pre-dialog where user can set update frequency
+    if (b_verbose) {
+        v3d::CheckForUpdatesDialog dialog(this);
+        dialog.exec();
+    }
+    // In automatic mode, just check for updates
+    else {
+        v3d::V3DVersionChecker *versionChecker = new v3d::V3DVersionChecker(this);
+        versionChecker->checkForLatestVersion(b_verbose);
+    }
 }
 
 V3dR_MainWindow * MainWindow::find3DViewer(QString fileName)
@@ -1862,7 +1864,7 @@ void MainWindow::createActions()
     separator_ImgWindows_Act = new QAction(this);
     separator_ImgWindows_Act->setSeparator(true);
 
-    checkForUpdatesAct = new QAction(tr("Check for Updates"), this);
+    checkForUpdatesAct = new QAction(tr("Check for Updates..."), this);
     checkForUpdatesAct->setStatusTip(tr("Check whether a more recent version "
         "of V3D is available."));
     connect(checkForUpdatesAct, SIGNAL(triggered()),

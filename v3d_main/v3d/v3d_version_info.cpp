@@ -45,7 +45,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <QMessageBox>
 
 // For testing:
-QString v3dVersionUrlBase("http://brunsc-wm1.janelia.priv/~brunsc/v3d_version/");
+QString v3dVersionUrlBase("http://brunsc-wm1.janelia.priv/~brunsc/v3d/stable_version/");
 
 // For production:
 // QString v3dVersionUrlBase("http://penglab.janelia.org/proj/v3d/V3D/");
@@ -264,7 +264,16 @@ void V3DVersionChecker::checkForLatestVersion(bool b_verbose)
 
 // Examines last time version updater was queried to decide whether it might
 // be time to check again now.
-bool V3DVersionChecker::shouldCheckNow() {
+bool V3DVersionChecker::shouldCheckNow()
+{
+    // TODO - use similar logic to Fiji updater
+    // http://pacific.mpi-cbg.de/wiki/index.php/Update_Fiji
+    // 1) Was V3D just started? Well, don't call this method otherwise. called from main.cpp
+    // 2) Was V3D started without parameters? - this logic needs to be in caller. see main.cpp
+    // 3) Can files be updated by current user? // TODO
+    // 4) Does network work? -- managed in gotVersion()
+
+
     bool bCheckNow = true; // default is to check for updates
     // Load relevant persistent variables from Qt cache
 	QSettings settings("HHMI", "V3D");
@@ -277,16 +286,21 @@ bool V3DVersionChecker::shouldCheckNow() {
         int checkInterval = checkIntervalVariant.toInt();
         if (checkInterval == 0) // zero means "always"
             bCheckNow = true; // redundant, as true is the default
-        else if (checkInterval < 0) // negative means "never"
+        else if (checkInterval < 0) { // negative means "never"
+            v3d_msg("V3D is set to NEVER check for updates.",0);
             bCheckNow = false;
+        }
         else {
             // finite interval needs comparison
             QDateTime latestCheck = latestCheckVariant.toDateTime();
             int elapsedInterval = latestCheck.secsTo(QDateTime::currentDateTime());
-            if (elapsedInterval < checkInterval)
+            if (elapsedInterval < checkInterval) {
+                v3d_msg("Timeout for next update check has not yet elapsed.",0);
                 bCheckNow = false; // user does not wish to be bothered now
-            else
+            }
+            else {
                 bCheckNow = true; // redundant, true is default
+            }
         }
     }
     return bCheckNow;
@@ -341,62 +355,69 @@ void V3DVersionChecker::processVersionXmlFile(const QDomDocument& versionDoc)
         return; // silently continue on version finding error
     }
     QDomNode node = root.firstChild();
+
     QString latest_major_version = "0";
     QString latest_minor_version = "000";
+    bool newUpdateFound = false;
+
+    // Keep track of newer, older, and current plugins
+    QList<QDomElement> currentItems; // we have the latest stable version
+    QList<QDomElement> updateableItems; // we have an older version
+    QList<QDomElement> futureItems; // we have an advanced version
+    QList<QDomElement> newItems; // we don't have this plugin
+
     while (!node.isNull())
     {
         QDomElement elem = node.toElement();
-        if (!elem.isNull()) {
-            if (elem.tagName() == "latest_stable_version") {
+        if (!elem.isNull()) 
+        {
+            // Check V3D program version
+            if (elem.tagName() == "latest_stable_version")
+            {
                 latest_major_version = elem.attribute("major", "0");
                 latest_minor_version = elem.attribute("minor", "0");
-                break;
+                QString latestVersionString(latest_major_version + "." + latest_minor_version);
+                v3d::VersionInfo latestVersion(latestVersionString);
+                if (latestVersion == v3d::thisVersionOfV3D) {
+                    currentItems.append(elem);
+                } else if (latestVersion > v3d::thisVersionOfV3D) {
+                    updateableItems.append(elem);
+                } else {
+                    futureItems.append(elem);
+                }
+           }
+
+            // Check plugin versions
+            else if (elem.tagName() == "v3d_plugin") {
+
             }
         }
+
+        node = node.nextSibling();
     }
 
-    QString latestVersionString(latest_major_version + "." + latest_minor_version);
-    qDebug() << "latest version = " << latestVersionString;
-    v3d::VersionInfo latestVersion(latestVersionString);
-    if (latestVersion > v3d::thisVersionOfV3D) {
-        qDebug("There is a newer V3D version");
-        V3dUpdateDialog v3dUpdateDialog(guiParent);
-        int returnValue = v3dUpdateDialog.exec();
-        if (returnValue == QDialog::Accepted) { // clicked "Open"
-            bool b_openurl_worked;
-            // Open user's browser to the V3D download page
-            b_openurl_worked = QDesktopServices::openUrl(
-                QUrl("http://penglab.janelia.org/proj/v3d/V3D/Download.html"));
-            if (! b_openurl_worked)
-                QMessageBox::warning(guiParent,
-                        "Error opening V3D download page", // title
-                        "Oops. V3D could not open your browser.\n"
-                        "Please browse to\n"
-                        "http://penglab.janelia.org/proj/v3d/V3D/Download.html\n"
-                        "to get the latest version");
-        }
+    if (  (updateableItems.size() > 0) // there are new updates
+       || (newItems.size() > 0) )
+    {
+        UpdatesAvailableDialog* availableDialog = new UpdatesAvailableDialog(guiParent);
+        availableDialog->exec();
     }
-    else if (latestVersion == v3d::thisVersionOfV3D) {
-        if (b_showAllMessages) {
+    else // there are no new updates
+    {
+        if (b_showAllMessages)
+        {
             QMessageBox::information(guiParent,
                     "V3D is up to date",
                     "You are using the latest version of V3D");
         }
         qDebug("V3D version is up to date");
     }
-    else {
-        if (b_showAllMessages) {
-            QMessageBox::information(guiParent,
-                    "Special V3D version",
-                    "You are using an unreleased development version of V3D");
-        }
-        qDebug("V3D version is more than up to date");
-    }
 }
 
-V3dUpdateDialog::V3dUpdateDialog(QWidget* guiParent) : QDialog(guiParent)
+CheckForUpdatesDialog::CheckForUpdatesDialog(QWidget* guiParent) : QDialog(guiParent)
 {
     setupUi(this);
+
     // Sync with current update frequency
     QSettings settings("HHMI", "V3D");
     QVariant checkIntervalVariant = settings.value("updateCheckInterval");
@@ -416,9 +437,22 @@ V3dUpdateDialog::V3dUpdateDialog(QWidget* guiParent) : QDialog(guiParent)
         else
             qDebug() << "Error: unrecognized interval";
     }
+
+    // Rename buttons
+    QPushButton* okButton = buttonBox->button(QDialogButtonBox::Ok);
+    if (okButton) {
+        okButton->setText("Check now");
+        connect(okButton, SIGNAL(clicked()), this, SLOT(check_now()));
+    }
+
+    QPushButton* openButton = buttonBox->button(QDialogButtonBox::Open);
+    if (openButton) {
+        openButton->setText("Open V3D download page");
+        connect(openButton, SIGNAL(clicked()), this, SLOT(open_download_page()));
+    }
 }
 
-void V3dUpdateDialog::on_comboBox_currentIndexChanged(const QString& updateFrequency)
+void CheckForUpdatesDialog::on_comboBox_currentIndexChanged(const QString& updateFrequency)
 {
     // Store update interval in the persistent cache
     qDebug() << "Changing update frequency to " << updateFrequency;
@@ -437,6 +471,29 @@ void V3dUpdateDialog::on_comboBox_currentIndexChanged(const QString& updateFrequ
         qDebug() << "Error: unrecognized interval";
 }
 
+void CheckForUpdatesDialog::check_now()
+{
+    v3d::V3DVersionChecker *versionChecker = new v3d::V3DVersionChecker(parentWidget());
+    versionChecker->checkForLatestVersion(true);
+}
+
+void CheckForUpdatesDialog::open_download_page()
+{
+    bool b_openurl_worked;
+    // Open user's browser to the V3D download page
+    b_openurl_worked = QDesktopServices::openUrl(
+        QUrl("http://penglab.janelia.org/proj/v3d/V3D/Download.html"));
+    if (! b_openurl_worked)
+        QMessageBox::warning(parentWidget(),
+                "Error opening V3D download page", // title
+                "Oops. V3D could not open your browser.\n"
+                "Please browse to\n"
+                "http://penglab.janelia.org/proj/v3d/V3D/Download.html\n"
+                "to get the latest version");
+}
+
+
+
 UpdatesAvailableDialog::UpdatesAvailableDialog(QWidget *parent) : QMessageBox(parent)
 {
     // Use V3D application icon
@@ -445,8 +502,8 @@ UpdatesAvailableDialog::UpdatesAvailableDialog(QWidget *parent) : QMessageBox(pa
     setIconPixmap(iconPixmap);
     setText(tr("There are updates available."));
     setInformativeText("Do you want to start the V3D updater now?");
-    setDetailedText("The V3D team periodically makes software improvements. "
-            "Click 'Yes' to install recent improvements now.");
+    // setDetailedText("The V3D team periodically makes software improvements. "
+    //         "Click 'Yes' to install recent improvements now.");
     setWindowTitle(tr("V3D software update check"));
     setSizeGripEnabled(false);
 
@@ -456,13 +513,14 @@ UpdatesAvailableDialog::UpdatesAvailableDialog(QWidget *parent) : QMessageBox(pa
     QPushButton *neverButton = addButton( tr("Never"), QMessageBox::DestructiveRole);
     connect(neverButton, SIGNAL(clicked()), this, SLOT(never_update()));
 
-    QPushButton *yesButton = addButton( tr("Yes, update"), QMessageBox::AcceptRole);
+    yesButton = addButton( tr("Yes, update"), QMessageBox::AcceptRole);
     connect(yesButton, SIGNAL(clicked()), this, SLOT(yes_update()));
 }
 
 void UpdatesAvailableDialog::yes_update()
 {
-    emit update();
+    UpdatesListDialog* listDialog = new UpdatesListDialog(parentWidget());
+    listDialog->exec();
 }
 
 void UpdatesAvailableDialog::never_update()
@@ -479,5 +537,27 @@ void UpdatesAvailableDialog::remind_me_later()
         // run again when user starts V3D, but not for at least 5 minutes.
         settings.setValue("updateCheckInterval", 300);
 }
+
+
+
+UpdatesListDialog::UpdatesListDialog(QWidget* guiParent) : QDialog(guiParent)
+{
+    setupUi(this);
+
+    // Rename buttons
+    QPushButton* okButton = buttonBox->button(QDialogButtonBox::Ok);
+    if (okButton) {
+        okButton->setText("Update/Install");
+        connect(okButton, SIGNAL(clicked()), this, SLOT(update_install()));
+    }
+}
+
+void UpdatesListDialog::update_install() {
+    // TODO
+    QMessageBox::information(parentWidget(),
+            "Oops. Not implemented yet",
+            "Sorry, we don't yet auto install...");
+}
+
 
 } // namespace v3d

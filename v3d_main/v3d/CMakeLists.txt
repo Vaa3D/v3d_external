@@ -42,6 +42,8 @@ QT4_WRAP_UI(QT_UI_SRCS
   import_filelist_dialog.ui
   import_images_tool.ui
   dialog_url_entry.ui
+  dialog_update_v3d.ui
+  dialog_update_list.ui
   )
 
 QT4_WRAP_CPP(QT_MOC_SRCS
@@ -64,6 +66,7 @@ QT4_WRAP_CPP(QT_MOC_SRCS
   xformwidget.h
   v3d_core.h
   v3d_global_preference_dialog.h
+  v3d_version_info.h
   )
 
 include_directories(

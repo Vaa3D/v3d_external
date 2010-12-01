@@ -59,6 +59,7 @@ public:
     V3d_PluginLoader(QMenu* menuPlugin, MainWindow* mainwindow);
     V3d_PluginLoader(MainWindow* mainwindow); //by PHC, 101008. a convenience function for access plugin interface w/o a menu
     virtual ~V3d_PluginLoader() {clear();}
+    static QList<QDir> getPluginsDirList();
 
 public slots:
 	void rescanPlugins();
@@ -79,7 +80,7 @@ protected:
 	void searchPluginDirs(QMenu* menu, const QDir& pluginsDir);
 	void searchPluginFiles(QMenu* menu, const QDir& pluginsDir);
 
-    QList<QDir> pluginsDirList;
+    // QList<QDir> pluginsDirList;
     QStringList pluginFilenameList;
     QList<QPluginLoader*> pluginList;
     QMenu plugin_menu;

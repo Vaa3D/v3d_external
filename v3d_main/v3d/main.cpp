@@ -48,6 +48,7 @@ Last update: 2010-11-19: change some of the help info
 #include "v3d_compile_constraints.h"
 
 #include <QApplication>
+#include <QFile>
 
 #include <iostream>
 #include <vector>
@@ -61,6 +62,8 @@ using namespace std;
 //#include "idrawmain.h"
 
 #include "v3d_commandlineparser.h"
+#include "v3d_version_info.h"
+#include "../plugin_loader/v3d_plugin_loader.h"
 
 void printHelp_v3d();
 void printHelp_align();
@@ -257,6 +260,47 @@ int main(int argc, char **argv)
 					mainWin->loadV3DFile(filename, true, parser.i_v3d.open3Dviewer);
 				}
 			}
+
+            // Check for software updates.
+            // But not if V3D has been invoked with a file to open immediately.
+            // Like the logic Fiji uses: http://pacific.mpi-cbg.de/wiki/index.php/Update_Fiji
+            // To help decide whether to check for V3D software updates at start up,
+            // determine whether any file has been opened.
+            // This works for files open on the command line, but not for dropped files on Mac
+            int nchild;
+            mainWin->retrieveAllMdiChild(nchild);
+            // TODO - don't check for updates if Mac OpenFileEvent is pending.
+            // Don't check for updates if the current user does not have write permission.
+            bool userCanUpdate = false;
+            QFile v3dProgramFile(argv[0]);
+            if (v3dProgramFile.exists() && (v3dProgramFile.permissions() & QFile::WriteUser))
+            {
+                v3d_msg("User can write to v3d executable",0);
+                userCanUpdate = true;
+            }
+            // Does the user have permission to write to any plugin folders?
+            QList<QDir> pluginsDirList = V3d_PluginLoader::getPluginsDirList();
+            foreach (const QDir& pluginsDir, pluginsDirList)
+            {
+                QStringList nameFilter;
+                nameFilter << ".";
+                QFileInfoList dirInfoList = pluginsDir.entryInfoList(nameFilter);
+                foreach (const QFileInfo& dirInfo, dirInfoList) {
+                    if (dirInfo.permissions() & QFile::WriteUser) {
+                        userCanUpdate = true;
+                        v3d_msg("User can write to plugin directory " + pluginsDir.absolutePath(), 0);
+                    }
+                }
+            }
+            if ( (nchild == 0) && userCanUpdate ) {
+                // This is the automatic check for latest version
+                v3d_msg("Starting V3D version checker...",0);
+                v3d::V3DVersionChecker *versionChecker = new v3d::V3DVersionChecker(mainWin);
+                if (versionChecker->shouldCheckNow()) {
+                    v3d_msg("It is time to check for software updates...",0);
+                    versionChecker->checkForLatestVersion(false);
+                }
+            }
 
 			try 
 			{

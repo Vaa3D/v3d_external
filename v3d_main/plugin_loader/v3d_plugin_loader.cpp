@@ -186,17 +186,10 @@ void V3d_PluginLoader::rescanPlugins()
 	populateMenus();
 }
 
-void V3d_PluginLoader::loadPlugins()
+// Return a list of directories that will be searched for plugins
+QList<QDir> V3d_PluginLoader::getPluginsDirList()
 {
-	QAction *plugin_manager = new QAction(tr("Plug-in manager"), this);
-	connect(plugin_manager, SIGNAL(triggered()), this, SLOT(aboutPlugins()));
-	QAction *plugin_rescan = new QAction(tr("Re-scan all plugins"), this);
-	connect(plugin_rescan, SIGNAL(triggered()), this, SLOT(rescanPlugins()));
-	{
-		plugin_menu.addAction(plugin_manager);
-		plugin_menu.addAction(plugin_rescan);
-		plugin_menu.addSeparator();
-	}
+    QList<QDir> pluginsDirList;
 
     pluginsDirList.clear();
 	QDir testPluginsDir = QDir(qApp->applicationDirPath());
@@ -218,6 +211,23 @@ void V3d_PluginLoader::loadPlugins()
 #endif
     if (testPluginsDir.cd("plugins"))
         pluginsDirList.append(testPluginsDir);
+
+    return pluginsDirList;
+}
+
+void V3d_PluginLoader::loadPlugins()
+{
+	QAction *plugin_manager = new QAction(tr("Plug-in manager"), this);
+	connect(plugin_manager, SIGNAL(triggered()), this, SLOT(aboutPlugins()));
+	QAction *plugin_rescan = new QAction(tr("Re-scan all plugins"), this);
+	connect(plugin_rescan, SIGNAL(triggered()), this, SLOT(rescanPlugins()));
+	{
+		plugin_menu.addAction(plugin_manager);
+		plugin_menu.addAction(plugin_rescan);
+		plugin_menu.addSeparator();
+	}
+
+    QList<QDir> pluginsDirList = getPluginsDirList();
 
     if (pluginsDirList.size() == 0)
     {
@@ -321,6 +331,7 @@ void V3d_PluginLoader::populateMenus()
 
 void V3d_PluginLoader::aboutPlugins()
 {
+    QList<QDir> pluginsDirList = getPluginsDirList();
     PluginDialog dialog("V3D", pluginsDirList, pluginFilenameList, v3d_mainwindow);
     dialog.exec();
 }
@@ -509,6 +520,7 @@ bool V3d_PluginLoader::callPluginFunc(const QString &plugin_name,
 		const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output)
 {
     QString fullpath;
+    QList<QDir> pluginsDirList = getPluginsDirList();
     foreach (const QDir& pluginsDir, pluginsDirList)
     {
         // Find the first plugin directory with such a file

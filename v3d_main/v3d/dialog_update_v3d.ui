@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>346</width>
-    <height>130</height>
+    <width>429</width>
+    <height>114</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Upgrade to newer V3D version</string>
+   <string>Check for new V3D software</string>
   </property>
   <property name="modal">
    <bool>false</bool>
@@ -20,8 +20,7 @@
    <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>A newer version of V3D is available.
-Do you want to open the V3D download web page?</string>
+      <string>How often do you want V3D to automatically check for updates?</string>
      </property>
     </widget>
    </item>
@@ -90,7 +89,7 @@ Do you want to open the V3D download web page?</string>
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Open</set>
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok|QDialogButtonBox::Open</set>
      </property>
     </widget>
    </item>
