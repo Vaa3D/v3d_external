@@ -23,7 +23,7 @@ echo ==========================================================
 #make $ARGS
 #cd ../
 
-
+TIFFCOMPILE="NO"
 for arg in $*; do
    if [ $arg == "clean" -o $arg == "all" ]; then
       ARGS+=" $arg"
@@ -92,15 +92,17 @@ if [ $DOIT == "YES" ]; then
   echo =========================================================
   echo "Now build v3d plugins"
   echo =========================================================
-  sh build_plugindemo.sh $QARGS $QMAKE_CONFIG
+  sh build_plugindemo.sh $ARGS
   cp -r v3d/plugins ../v3d/.     #copy to the executable folder
-  cd ../
+  cd ../v3d_main
 fi
 
 #now automatically execute v3d
 
 if [ $DOIT == "YES" ]; then
-  sh v3d/v3d &
+  cd ../v3d
+  export LD_LIBRARY_PATH=../v3d_main/common_lib/lib
+  ./v3d &
+  cd ../v3d_main
 fi
-
 

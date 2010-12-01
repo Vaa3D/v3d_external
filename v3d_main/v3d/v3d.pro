@@ -123,6 +123,14 @@ macx {
     LIBS += -L$$QTINST_SHARED_FOLDER
 }
 
+unix:!macx {
+    # Ubuntu linux possible location of arthurwidgets.h with official Qt install
+    QTINST_SHARED_FOLDER = /usr/lib/qt4/demos/shared
+    include($$QTINST_SHARED_FOLDER/shared.pri)
+    INCLUDEPATH += $$QTINST_SHARED_FOLDER
+    LIBS += -L$$QTINST_SHARED_FOLDER
+}
+
 # the following trick was figured out by Ruan Zongcai
 CONFIG += warn_off  # only work for complier
 #CONFIG += debug  # Fabrice and Luis tracking a bug. disable by PHC, 100819
