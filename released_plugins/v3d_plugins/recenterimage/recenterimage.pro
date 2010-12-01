@@ -3,7 +3,6 @@
 
 TEMPLATE      = lib
 CONFIG       += plugin warn_off
-CONFIG	     += x86_64
 INCLUDEPATH  += ../../../v3d_main/basic_c_fun 
 HEADERS       = recenterimageplugin.h
 HEADERS      += ../../../v3d_main/basic_c_fun/vcdiff.h
