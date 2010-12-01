@@ -60,11 +60,13 @@ struct CurveTracePara
 	bool b_postMergeClosebyBranches;
 
 	bool b_deformcurve; //use shortest path or deformable model
+	
+	bool b_3dcurve_width_from_xyonly; //added 2010 Nov 30. Note this has not been added to the tracing parameter dialog yet (only for command line GD tracing)
 
 	//shortest path parameters
 	int sp_num_end_nodes; //(0 for shortest path tree) (1 for shortest path) (>1 for n pair path)
 	int sp_graph_connect;    //(0 for 6-connect) (1 for include diagonal connects)
-	int sp_graph_background;
+	int sp_graph_background; //0 - full image, 1 - use mean value to threshold image and use foreground only
 	int sp_graph_resolution_step;
 	int sp_downsample_step;
 	int sp_smoothing_win_sz;
@@ -93,6 +95,8 @@ struct CurveTracePara
 		sp_graph_resolution_step=2;
 		sp_downsample_step=2;
 		sp_smoothing_win_sz=7;
+		
+		b_3dcurve_width_from_xyonly = false;
 	}
 };
 
