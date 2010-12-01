@@ -44,7 +44,7 @@ void SWC_TO_MASKIMAGElugin::domenu(const QString &menu_name, V3DPluginCallback &
 	}
 
 }
-void CouputemaskImage(NeuronTree neurons,unsigned char* pImMask,V3DLONG sx,V3DLONG sy,V3DLONG sz, V3DLONG x_min,V3DLONG y_min, V3DLONG z_min, QString Filename)
+void CouputemaskImage(NeuronTree neurons,unsigned char* pImMask,unsigned char* ImMark,V3DLONG sx,V3DLONG sy,V3DLONG sz, V3DLONG scale, V3DLONG x_min,V3DLONG y_min, V3DLONG z_min, QString Filename)
 {
 	float scalar = 1;
 	float scalar2 = scalar*scalar;	
@@ -60,9 +60,13 @@ void CouputemaskImage(NeuronTree neurons,unsigned char* pImMask,V3DLONG sx,V3DLO
 		p_tmp = (NeuronSWC *)(&(neurons.listNeuron.at(ii)));
 		if(x_min < 0 || y_min < 0 || z_min <0)
 		{	
-			xs = p_tmp->x + abs(x_min);
-			ys = p_tmp->y + abs(y_min);
-			zs = p_tmp->z + abs(z_min);				
+//			xs = p_tmp->x - scale;
+//			ys = p_tmp->y - scale;
+//			zs = p_tmp->z - scale;	
+			xs = p_tmp->x - x_min;
+			ys = p_tmp->y - y_min;
+			zs = p_tmp->z - z_min;	
+			
 		}else 
 		{
 			xs = p_tmp->x;
@@ -86,9 +90,14 @@ void CouputemaskImage(NeuronTree neurons,unsigned char* pImMask,V3DLONG sx,V3DLO
 		
 		if(x_min < 0 || y_min < 0 || z_min <0)
 		{	
-			xe = pp->x + abs(x_min);
-			ye = pp->y + abs(y_min);
-			ze = pp->z + abs(z_min);			
+//			xe = pp->x - scale;
+//			ye = pp->y - scale;
+//			ze = pp->z - scale;		
+			xe = pp->x - x_min;
+			ye = pp->y - y_min;
+			ze = pp->z - z_min;	
+			
+			
 		}else 
 		{
 			xe = pp->x;
@@ -96,9 +105,9 @@ void CouputemaskImage(NeuronTree neurons,unsigned char* pImMask,V3DLONG sx,V3DLO
 			ze = pp->z;
 		}
 		//float re = pp->r;
-		
-		rs = alpha*rs+beta;
-		
+
+		rs =alpha*rs+beta;		
+
 		//finding the envelope 
 		
 		float x_down = (xs>xe)? xe: xs;
@@ -222,9 +231,10 @@ void CouputemaskImage(NeuronTree neurons,unsigned char* pImMask,V3DLONG sx,V3DLO
 					
 					if(dist <= rs)
 					{    
-						if(pImMask[indLoop] == 0)
+						if(ImMark[indLoop] == 0)
 						{
 							pImMask[indLoop] += (p_tmp->type + 1);
+							ImMark[indLoop] = 1;
 						}else 
 						{
 							pImMask[indLoop] = (p_tmp->type + 1);
@@ -252,7 +262,7 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 	x_total = 0;
 	y_total = 0;
 	z_total = 0;
-	V3DLONG sx,sy,sz,alpha,beta,namesize;
+	V3DLONG sx,sy,sz,alpha,beta,namesize,temp;
 	alpha = 1;
 	beta =2;
 	namesize = 0;
@@ -293,13 +303,31 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 				z_min = (ys<z_min)? ys:z_min;
 				z_max = (zs>z_max)? ys:z_max;				 
 			}
+			temp = x_min;
+			temp = (temp > y_min)? y_min:temp;
+			temp = (temp > z_min)? z_min:temp;
+		//	if (temp > y_min)
+//			{
+//				temp = y_min;
+//			}else 
+//			{
+//				if (temp >z_min)
+//				{
+//					temp = z_min;
+//				}
+//			}
+
 			printf("xmin=%lf xmax=%lf ymin=%lf ymax=%lf zmin=%lf zmax=%lf\n", x_min, x_max, y_min, y_max, z_min, z_max);		
 			
 			if(x_min < 0 || y_min < 0 || z_min <0)
 			{	
+//				sx = V3DLONG(x_max - temp);
+//				sy = V3DLONG(y_max - temp);
+//				sz = V3DLONG(z_max - temp);	
 				sx = V3DLONG(x_max - x_min);
 				sy = V3DLONG(y_max - y_min);
-				sz = V3DLONG(z_max - z_min);			
+				sz = V3DLONG(z_max - z_min);	
+				
 			}else 
 			{
 				sx = V3DLONG(x_max);
@@ -317,8 +345,19 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 			{
 				for(long i=0; i<pagesz; i++)
 					pImMask[i] = 0; 
-			}			
-			CouputemaskImage(neurons,pImMask,sx,sy,sz,x_min,y_min,z_min,filename);
+			}
+			unsigned char* ImMark = new unsigned char [pagesz];
+			if (!ImMark) 
+			{
+				printf("Fail to allocate memory.\n");
+				return;
+			}
+			else
+			{
+				for(long i=0; i<pagesz; i++)
+					ImMark[i] = 0; 
+			}					
+			CouputemaskImage(neurons,pImMask,ImMark,sx,sy,sz,temp,x_min,y_min,z_min,filename);
 		}
 		else 
 		{
@@ -369,12 +408,15 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 				return;
 			}
 		}
+		temp = x_min;
+		temp = (temp > y_min)? y_min:temp;
+		temp = (temp > z_min)? z_min:temp;
 		//v3d_msg("2");
 		if(x_min < 0 || y_min < 0 || z_min <0)
 		{
-			sx = V3DLONG(x_max - x_min);
-			sy = V3DLONG(y_max - y_min);
-			sz = V3DLONG(z_max - z_min);
+			sx = V3DLONG(x_max - temp);
+			sy = V3DLONG(y_max - temp);
+			sz = V3DLONG(z_max - temp);
 		}
 		else
 		{
@@ -401,7 +443,19 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 			if (filename.size()>0)
 			{
 				neurons = readSWC_file(filename);
-				CouputemaskImage(neurons,pImMask,sx,sy,sz,x_min,y_min,z_min,filename);
+				unsigned char* ImMark = new unsigned char [pagesz];
+				if (!ImMark) 
+				{
+					printf("Fail to allocate memory.\n");
+					return;
+				}
+				else
+				{
+					for(long i=0; i<pagesz; i++)
+						ImMark[i] = 0; 
+				}		
+				
+				CouputemaskImage(neurons,pImMask,ImMark,sx,sy,sz,temp,x_min,y_min,z_min,filename);
 			}
 			else 
 			{
