@@ -7,4 +7,4 @@ SOURCES      +=../../../v3d_main/basic_c_fun/basic_surf_objs.cpp
 SOURCES      += swc_to_maskimage.cpp
 SOURCES      += ../../../v3d_main/basic_c_fun/v3d_message.cpp
 TARGET        = $$qtLibraryTarget(swc_to_maskimage)
-DESTDIR       = ../../v3d/plugins/swc_to_maskimage
+DESTDIR       = ../../../v3d/plugins/swc_to_maskimage
