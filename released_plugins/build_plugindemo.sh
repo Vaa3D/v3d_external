@@ -32,6 +32,16 @@ else
   ALLDIRS=$( ls -d */ )	
 fi
 
+# CMB 01 Dec, 2010
+# Need to define QMAKESPEC on Mac
+# because recent Qt installs default to creating xcode project files.
+# We want Makefiles for this script.
+if [[ `uname` == 'Darwin' ]]; then
+   QMAKE_ARGS='-spec macx-g++'
+else
+   QMAKE_ARGS=''
+fi
+
 for mydir in $ALLDIRS; do
   echo 
   echo $mydir
@@ -39,7 +49,7 @@ for mydir in $ALLDIRS; do
   cd $mydir
   #if [ -f *.pro ]; then
   for mypro in $( ls *.pro ); do
-  	qmake $mypro $QMAKE_CONFIG
+  	qmake $QMAKE_ARGS $mypro $QMAKE_CONFIG
   	make $MAKE_ARGS 
   done;
   #fi
