@@ -400,6 +400,8 @@ void V3DVersionChecker::processVersionXmlFile(const QDomDocument& versionDoc)
        || (newItems.size() > 0) )
     {
         UpdatesAvailableDialog* availableDialog = new UpdatesAvailableDialog(guiParent);
+        // Connect to version checker method
+        connect(availableDialog, SIGNAL(yes_update()), this, SLOT(start_update()));
         availableDialog->exec();
     }
     else // there are no new updates
@@ -413,6 +415,14 @@ void V3DVersionChecker::processVersionXmlFile(const QDomDocument& versionDoc)
         qDebug("V3D version is up to date");
     }
 }
+
+void V3DVersionChecker::start_update()
+{
+    UpdatesListDialog* listDialog = new UpdatesListDialog(guiParent);
+    listDialog->exec();
+}
+
+
 
 CheckForUpdatesDialog::CheckForUpdatesDialog(QWidget* guiParent) : QDialog(guiParent)
 {
@@ -514,13 +524,7 @@ UpdatesAvailableDialog::UpdatesAvailableDialog(QWidget *parent) : QMessageBox(pa
     connect(neverButton, SIGNAL(clicked()), this, SLOT(never_update()));
 
     yesButton = addButton( tr("Yes, update"), QMessageBox::AcceptRole);
-    connect(yesButton, SIGNAL(clicked()), this, SLOT(yes_update()));
-}
-
-void UpdatesAvailableDialog::yes_update()
-{
-    UpdatesListDialog* listDialog = new UpdatesListDialog(parentWidget());
-    listDialog->exec();
+    connect(yesButton, SIGNAL(clicked()), this, SIGNAL(yes_update()));
 }
 
 void UpdatesAvailableDialog::never_update()

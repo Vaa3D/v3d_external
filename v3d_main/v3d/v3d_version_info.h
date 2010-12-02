@@ -182,6 +182,7 @@ public:
 
 private slots:
     void gotVersion(QNetworkReply* reply);
+    void start_update();
 
 protected:
     void processVersionXmlFile(const QDomDocument& versionDoc);
@@ -199,10 +200,9 @@ public:
     QPushButton* yesButton;
 
 signals:
-    void start_update();
+    void yes_update();
 
 private slots:
-    void yes_update();
     void never_update();
     void remind_me_later();
 };
@@ -213,6 +213,9 @@ class CheckForUpdatesDialog : public QDialog, public Ui::dialog_update_v3d
     Q_OBJECT
 public:
     CheckForUpdatesDialog(QWidget* guiParent);
+
+signals:
+    void yes_update();
 
 private slots:
     void on_comboBox_currentIndexChanged(const QString& updateFrequency);
