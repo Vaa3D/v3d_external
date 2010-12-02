@@ -88,7 +88,8 @@ TARGET +=
 DEPENDPATH += . v3d
 INCLUDEPATH += . 
 
-macx: CONFIG-=app_bundle #by PHC, 101119
+# commented the -app_bundle as on Mac the not-automatically closed terminal is quite annoying!
+#macx: CONFIG-=app_bundle #by PHC, 101119
 
 # cross-OS-platform, cross-Qt-version
 QT_DIR = $$dirname(QMAKE_QMAKE)/..  # cross-Qt-version

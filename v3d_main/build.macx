@@ -13,6 +13,7 @@ shopt -s expand_aliases;
 # 100808 updated by PHC. fix a series of flag bugs
 # 100817 updated by PHC. add a new -T option
 # 101119 updated by PHC. remove the v3d bundle for Mac
+# 101202: re-enable the bundle again
 #
 # Arguments:
 #    -jx                        #compile using some 'x' number of processors 
@@ -242,16 +243,16 @@ fi
 
 if [ $DOIT == "YES" ]; then
   if [ $SYSTEMBITS == "32" ]; then
-#    rm -fr ../v3d/v3d.app
-#    cp -r ./v3d/v3d.app ../v3d/.   #copy to the executable folder
-    rm -fr ../v3d/v3d
-    cp -r ./v3d/v3d ../v3d/.   #copy to the executable folder
+    rm -fr ../v3d/v3d.app
+    cp -r ./v3d/v3d.app ../v3d/.   #copy to the executable folder
+#    rm -fr ../v3d/v3d
+#    cp -r ./v3d/v3d ../v3d/.   #copy to the executable folder
   fi
   if [ $SYSTEMBITS == "64" ]; then
-#    rm -fr ../v3d/v3d64.app
-#    cp -r ./v3d/v3d64.app ../v3d/. #copy to the executable folder
-    rm -fr ../v3d/v3d64
-    cp -r ./v3d/v3d64 ../v3d/. #copy to the executable folder
+    rm -fr ../v3d/v3d64.app
+    cp -r ./v3d/v3d64.app ../v3d/. #copy to the executable folder
+#    rm -fr ../v3d/v3d64
+#    cp -r ./v3d/v3d64 ../v3d/. #copy to the executable folder
   fi  
 fi
 
@@ -288,12 +289,12 @@ fi
 
 if [ $DOIT == "YES" ]; then
   if [ $SYSTEMBITS == "32" ]; then
-#    open v3d/v3d.app &
-     open v3d/v3d &
+    open v3d/v3d.app &
+#     open v3d/v3d &
   fi
   if [ $SYSTEMBITS == "64" ]; then
-#    open v3d/v3d64.app &
-     open v3d/v3d64 &
+    open v3d/v3d64.app &
+#     open v3d/v3d64 &
   fi
 fi
 
