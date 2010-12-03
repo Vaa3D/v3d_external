@@ -160,7 +160,7 @@ struct NeuronTree : public BasicSurfObj
 		if (p.listNeuron.size()!=listNeuron.size()) return;
 
 		NeuronSWC *p_tmp;
-		for (int i=0;i<listNeuron.size();i++)
+		for (V3DLONG i=0;i<listNeuron.size();i++)
 		{
 			p_tmp = (NeuronSWC *)(&(listNeuron.at(i)));
 			//qDebug()<<"before:"<<p_tmp->x<<p_tmp->y<<p_tmp->z<<p_tmp->r;
@@ -172,7 +172,21 @@ struct NeuronTree : public BasicSurfObj
 			//qDebug()<<"after:"<<p_tmp->x<<p_tmp->y<<p_tmp->z<<p_tmp->r;
 		}
 	}
-
+	bool projection(int axiscode=3) //axiscode, 1 -- x, 2 -- y, 3 -- z, 4 -- r
+	{
+		if (axiscode!=1 && axiscode!=2 && axiscode!=3 && axiscode!=4) return false;
+		NeuronSWC *p_tmp;
+		for (V3DLONG i=0;i<listNeuron.size();i++)
+		{
+			p_tmp = (NeuronSWC *)(&(listNeuron.at(i)));
+			//qDebug()<<"before:"<<p_tmp->x<<p_tmp->y<<p_tmp->z<<p_tmp->r;
+			if (axiscode==1) p_tmp->x = 0;
+			else if (axiscode==2) p_tmp->y = 0;
+			else if (axiscode==3) p_tmp->z = 0;
+			else if (axiscode==4) p_tmp->r = 0.5;
+		}
+		return true;
+	}
 };
 
 NeuronTree readSWC_file(const QString& filename);
