@@ -102,7 +102,7 @@ void ComputemaskImage(NeuronTree neurons,unsigned char* pImMask,unsigned char* I
 					double norms10 = (xs-i)*(xs-i) + (ys-j)*(ys-j) + (zs-k)*(zs-k);
 					double dt = sqrt(norms10);
 					V3DLONG indLoop = (k)*count1 + (j)*sx + i;
-					if(dt <= rs)
+					if(dt < rs)
 					{  
 		//				printf("dt=%lf xs=%lf ys=%lf zs=%lf rs=%lf\n",dt,xs,ys,zs,rs);
 						int n=rand()%256+1;
@@ -159,7 +159,8 @@ void ComputemaskImage(NeuronTree neurons,unsigned char* pImMask,unsigned char* I
 		double y_top = (ys>ye)? ys: ye;
 		double z_down = (zs>ze)? ze: zs;
 		double z_top = (zs>ze)? zs: ze;
-		x_top +=10;x_down-=10;z_top+=10;z_down-=10;z_top+=10;z_down-=10;
+		//x_top +=10;x_down-=10;z_top+=10;z_down-=10;z_top+=10;z_down-=10;
+		
 		//x_top +=2*rs;x_down-=2*rs;z_top+=2*rs;z_down-=2*rs;z_top+=2*rs;z_down-=2*rs;
 		x_down = (x_down<0)?0:x_down;
 		y_down = (y_down <0)?0:y_down;
@@ -220,11 +221,11 @@ void ComputemaskImage(NeuronTree neurons,unsigned char* pImMask,unsigned char* I
 					{ 
 						rr = re - (re-rs)/sqrt(norms21)*normsce;
 					}
-					//printf("rr=%lf",rr);
+					printf("rs=%lf rr=%lf dist=%lf re%lf \n",rs,rr,dist,re);
 					/////////////////////
-					if(dist <= rr)
+					if(dist < rr)
 					{   
-						printf("rs=%lf rr=%lf dist=%lf re%lf \n",rs,rr,dist,re);
+						//printf("rs=%lf rr=%lf dist=%lf re%lf \n",rs,rr,dist,re);
 						if(ImMark[indLoop] == 0)
 						{
 							//pImMask[indLoop] += (p_tmp->type + 1);
