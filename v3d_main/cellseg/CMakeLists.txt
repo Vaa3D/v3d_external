@@ -3,6 +3,7 @@ set(CellSeg_SRCS
   )
 
 QT4_WRAP_UI(QT_UI_SRCS
+  ../v3d/template_matching_cellseg.ui
   )
 
 QT4_WRAP_CPP(QT_MOC_SRCS

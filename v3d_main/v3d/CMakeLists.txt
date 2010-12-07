@@ -42,8 +42,8 @@ QT4_WRAP_UI(QT_UI_SRCS
   import_filelist_dialog.ui
   import_images_tool.ui
   dialog_url_entry.ui
-  dialog_update_v3d.ui
   dialog_update_list.ui
+  dialog_update_v3d.ui
   )
 
 QT4_WRAP_CPP(QT_MOC_SRCS
@@ -124,7 +124,8 @@ if(APPLE)
         "Create V3D.app application bundle, instead of v3d command line tool")
     if (V3D_MAC_CREATE_BUNDLE)
         # Build app bundle in place at build time
-        set(BUNDLE_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/v3d.app" CACHE PATH "Where to build Mac OS X application bundle")
+        file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/v3d")
+        set(BUNDLE_BUILD_DIR "${CMAKE_BINARY_DIR}/v3d/v3d.app" CACHE PATH "Where to build Mac OS X application bundle")
         file(REMOVE_RECURSE "${BUNDLE_BUILD_DIR}/Contents/Frameworks") # Dangerous...
         file(REMOVE_RECURSE "${BUNDLE_BUILD_DIR}/Contents/Plugins") # Dangerous...
         file(MAKE_DIRECTORY "${BUNDLE_BUILD_DIR}"
