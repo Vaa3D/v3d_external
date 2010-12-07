@@ -1,9 +1,8 @@
 /*
- * read_swc.h
- * read_swc
+ * swc_to_maskimg.h
  *
  *  Created by Yang, Jinzhu on 11/27/10.
- *  
+ *  Last change: by Hanchuan Peng, 2010-Dec-7. change some writing style of this plugin header
  *
  */
 
@@ -26,9 +25,7 @@ public:
 	
 	QStringList funclist() const {return QStringList();}
 	void dofunc(const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output, QWidget *parent) {}	
-	};
-
-//define a simple dialog for choose DT parameters
+};
 
 #endif
 

@@ -16,6 +16,15 @@
 Q_EXPORT_PLUGIN2(swc_to_maskimage, SWC_TO_MASKIMAGElugin);
 
 void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_code);
+void BoundNeuronCoordinates(NeuronTree & neuron, 
+							bool b_subtractMinFromAllNonnegatives,
+							double & output_xmin,
+							double & output_xmax,
+							double & output_ymin,
+							double & output_ymax,
+							double & output_zmin,
+							double & output_zmax,
+);
 
 //plugin funcs
 const QString title = "swc_to_maskimage";
@@ -39,150 +48,228 @@ void SWC_TO_MASKIMAGElugin::domenu(const QString &menu_name, V3DPluginCallback &
 	}
 	else if (menu_name == tr("Help"))
 	{
-		v3d_msg("Read SWC File to a mask image");
+		v3d_msg("(version 0.1) Convert a SWC file to a mask image, where the area of the swc tubes will have non-zero values, and other area will have 0s.");
 		return;
 	}
-
 }
-void ComputemaskImage(NeuronTree neurons,unsigned char* pImMask,unsigned char* ImMark,V3DLONG sx,V3DLONG sy,V3DLONG sz, V3DLONG scale, V3DLONG x_min,V3DLONG y_min, V3DLONG z_min, QString Filename)
+
+void BoundNeuronCoordinates(NeuronTree & neuron, 
+							bool b_subtractMinFromAllNonnegatives,
+							double & output_xmin,
+							double & output_xmax,
+							double & output_ymin,
+							double & output_ymax,
+							double & output_zmin,
+							double & output_zmax,
+)
 {
-	double scalar = 1;
-	double scalar2 = scalar*scalar;	
-	double alpha,beta;
-	alpha = 1;
-	beta =0;
-	//compute mask
-	NeuronSWC *p_tmp=0;
-	double xs,ys,zs,xe,ye,ze;
-	double ballxl,ballxr,ballyf,ballyb,ballzt,ballzd;
-	xs = ys = zs = xe = ye = ze = 0;
-	V3DLONG aa = 0;
-	V3DLONG count1 = sx*sy;
-	printf("xmin=%d ymin=%d zmin=%d \n",x_min, y_min,z_min);	
+	double xmin, ymin, zmin, xmax, ymax, zmax;
+	NeuronSWC *p_cur = 0;
 	
+	//initial search
 	for (V3DLONG ii=0; ii<neurons.listNeuron.size(); ii++)
 	{
-		p_tmp = (NeuronSWC *)(&(neurons.listNeuron.at(ii)));
-
-		if(x_min <= 0 )
-		{	
-			xs = abs((p_tmp->x ) - x_min);
-		}
-		if(y_min <= 0 )
-		{	
-			ys = abs((p_tmp->y ) - y_min);		
-		}
-		if(z_min <= 0 )
-		{	
-			zs = abs((p_tmp->z )-  z_min);	
-		}
-		double rs = p_tmp->r;
-		ballxl = xs - rs;
-		ballxr = xs + rs;
-		ballyf = ys + rs;
-		ballyb = ys - rs;
-		ballzt = zs + rs;
-		ballzd = zs - rs;
-		ballxl = (ballxl<0)?0:ballxl;
-		ballyb = (ballyb<0)?0:ballyb;
-		ballzd = (ballzd<0)?0:ballzd;		
-		ballxr = (ballxr>sx)?sx:ballxr;
-		ballyf = (ballyf>sy)?sy:ballyf;
-		ballzt = (ballzt >sz)?sz:ballzt;
+		p_cur = (NeuronSWC *)(&(neurons.listNeuron.at(ii)));
 		
-	
-		V3DLONG indLoop = (zs)*count1 + (ys)*sx + xs;
-
-	    for(V3DLONG k = ballzd; k < ballzt; k++ )
+		if (ii==0)
 		{
-			for(V3DLONG j = ballyb; j < ballyf; j++)
+			xmin = xmax = p_cur->x; 
+			ymin = ymax = p_cur->y;
+			zmin = zmax = p_cur->z;
+		}
+		else
+		{
+			xmin = (p_cur->x < xmin) ? p_cur->x : xmin;
+			ymin = (p_cur->y < ymin) ? p_cur->y : ymin;
+			zmin = (p_cur->z < zmin) ? p_cur->z : zmin;
+			
+			xmax = (p_cur->x > xmax) ? p_cur->x : xmax;
+			ymax = (p_cur->y > ymax) ? p_cur->y : ymax;
+			zmax = (p_cur->z > zmax) ? p_cur->z : zmax;
+		}
+	}
+	
+	//subtraction
+	for (V3DLONG ii=0; ii<neurons.listNeuron.size(); ii++)
+	{
+		p_cur = (NeuronSWC *)(&(neurons.listNeuron.at(ii)));
+		
+		if (xmin<0 || b_subtractMinFromAllNonnegatives) p_cur->x -= xmin;
+		if (ymin<0 || b_subtractMinFromAllNonnegatives) p_cur->y -= ymin;
+		if (zmin<0 || b_subtractMinFromAllNonnegatives) p_cur->z -= zmin;
+	}
+	
+	//re-search the bounding box
+	for (V3DLONG ii=0; ii<neurons.listNeuron.size(); ii++)
+	{
+		p_cur = (NeuronSWC *)(&(neurons.listNeuron.at(ii)));
+		
+		if (ii==0)
+		{
+			output_xmin = output_xmax = p_cur->x; 
+			output_ymin = output_ymax = p_cur->y;
+			output_zmin = output_zmax = p_cur->z;
+		}
+		else
+		{
+			output_xmin = (p_cur->x < output_xmin) ? p_cur->x : output_xmin;
+			output_ymin = (p_cur->y < output_ymin) ? p_cur->y : output_ymin;
+			output_zmin = (p_cur->z < output_zmin) ? p_cur->z : output_zmin;
+			
+			output_xmax = (p_cur->x > output_xmax) ? p_cur->x : output_xmax;
+			output_ymax = (p_cur->y > output_ymax) ? p_cur->y : output_ymax;
+			output_zmax = (p_cur->z > output_zmax) ? p_cur->z : output_zmax;
+		}
+	}
+	
+	return;
+}
+
+void ComputemaskImage(NeuronTree neurons, 
+					  unsigned char* pImMask, //output mask image
+					  unsigned char* ImMark,  //an indicator image to show whether or not a pixel has been visited/processed
+					  V3DLONG sx, 
+					  V3DLONG sy, 
+					  V3DLONG sz, 
+					  V3DLONG scale,  //not used now 
+					  QString Filename //input swc filename
+)
+{
+	NeuronSWC *p_cur = 0;
+	//double check the data to ensure it is correct!
+	for (V3DLONG ii=0; ii<neurons.listNeuron.size(); ii++)
+	{
+		p_cur = (NeuronSWC *)(&(neurons.listNeuron.at(ii)));
+		
+		xs = p_cur->x;
+		ys = p_cur->y;		
+		zs = p_cur->z;		
+		rs = p_cur->r;
+		if (xs<0 || ys<0 || zs<0 || rs<0)
+		{
+			v3d_msg("You have illeagal x,y,z coordinates or radius values. Check your data.");
+			return;
+		}
+	}
+	
+	//the real computation
+	double scalar = 1;
+	double scalar2 = scalar*scalar;	
+	
+	//compute mask
+	double xs = 0, ys = 0, zs = 0, xe = 0, ye = 0, ze = 0, rs = 0, re = 0;
+	
+	V3DLONG count1 = sx*sy;
+	for (V3DLONG ii=0; ii<neurons.listNeuron.size(); ii++)
+	{
+		V3DLONG i,j,k;
+		
+		p_cur = (NeuronSWC *)(&(neurons.listNeuron.at(ii)));
+		
+		xs = p_cur->x;
+		ys = p_cur->y;		
+		zs = p_cur->z;		
+		rs = p_cur->r;
+		
+		double ballx0, ballx1, bally0, bally1, ballz0, ballz1, tmpf;
+		
+		ballx0 = xs - rs; ballx0 = qBound(0, ballx0, sx-1);
+		ballx1 = xs + rs; ballx1 = qBound(0, ballx1, sx-1);
+		if (ballx0>ballx1) {tmpf = ballx0; ballx0 = ballx1; ballx1 = tmpf;}
+		
+		bally0 = ys - rs; bally0 = qBound(0, bally0, sy-1);
+		bally1 = ys + rs; bally1 = qBound(0, bally1, sy-1);
+		if (bally0>bally1) {tmpf = bally0; bally0 = bally1; bally1 = tmpf;}
+		
+		ballz0 = zs - rs; ballz0 = qBound(0, ballz0, sz-1);
+		ballz1 = zs + rs; ballz1 = qBound(0, ballz1, sz-1);
+		if (ballz0>ballz1) {tmpf = ballz0; ballz0 = ballz1; ballz1 = tmpf;}
+		
+		//marker all voxels close to the swc node(s)
+	    for (k = ballz0; k < ballz1; k++)
+		{
+			for (j = bally0; j < bally1; j++)
 			{
-				for(V3DLONG i = ballxl; i < ballxr; i++)
+				for (i = ballx0; i < ballx1; i++)
 				{
 					double norms10 = (xs-i)*(xs-i) + (ys-j)*(ys-j) + (zs-k)*(zs-k);
 					double dt = sqrt(norms10);
-					V3DLONG indLoop = (k)*count1 + (j)*sx + i;
+					
+					V3DLONG ind = (k)*count1 + (j)*sx + i;
+					
 					if(dt < rs)
 					{  
-		//				printf("dt=%lf xs=%lf ys=%lf zs=%lf rs=%lf\n",dt,xs,ys,zs,rs);
-						int n=rand()%256+1;
-						if(ImMark[indLoop] == 0)
+						int n = rand()%255 + 1;
+						if(ImMark[ind]) //0 - not visited yet, 1 - already processed
 						{
-							//pImMask[indLoop] += (p_tmp->type + 1);
-							pImMask[indLoop] += n;
-							ImMark[indLoop] = 1;
 						}
 						else
 						{
-							pImMask[indLoop] = n;
-							//pImMask[indLoop] = (p_tmp->type + 1);
+							pImMask[ind] = n; //consider only one image at this moment
+							//if there are more than 255 swc files, then this is not right! need fix data type, by PHC
+							ImMark[ind] = 1;
 						}
 					}
 				}
 			}
 		}
+		
 		//find previous node
+		if (p_cur->pn < 0) //then it is root node already
+		{
+			continue;
+		}
+		
 		NeuronSWC *pp=0;
-		for(V3DLONG j=0; j<neurons.listNeuron.size(); j++)
+		bool b_find = false;
+		for (V3DLONG j=0; j<neurons.listNeuron.size(); j++)
 		{
 			pp = (NeuronSWC *)(&(neurons.listNeuron.at(j)));
-			if(pp->n == p_tmp->pn)
-				break;
-		}
-		//no previous node
-		if(pp->n != p_tmp->pn)
-			continue; 
-	
-		if(x_min <= 0 )
-		{	
-			xe = abs((pp->x ) - x_min);
-		}
-		if(y_min <= 0 )
-		{	
-			ye = abs((pp->y ) - y_min);
-			
-		}
-		if(z_min <= 0 )
-		{	
-			ze = abs((pp->z )-  z_min);
-		}
-		double re = pp->r;
-		//if (rs < 1) 
-		//{
-			rs =alpha*rs+beta;
-		//}
-	//finding the envelope 
-	
-		double x_down = (xs>xe)? xe: xs;
-		double x_top = (xs>xe)? xs: xe;
-		double y_down = (ys>ye)? ye: ys;
-		double y_top = (ys>ye)? ys: ye;
-		double z_down = (zs>ze)? ze: zs;
-		double z_top = (zs>ze)? zs: ze;
-		//x_top +=10;x_down-=10;z_top+=10;z_down-=10;z_top+=10;z_down-=10;
-		
-		//x_top +=2*rs;x_down-=2*rs;z_top+=2*rs;z_down-=2*rs;z_top+=2*rs;z_down-=2*rs;
-		x_down = (x_down<0)?0:x_down;
-		y_down = (y_down <0)?0:y_down;
-		z_down = (z_down <0)?0:z_down;
-		z_top = (z_top >sz)?sz:z_top;	
-		x_top = (x_top>sx)?sx:x_top;
-		y_top = (y_top>sy)?sy:y_top;		
-//		/*********************************************************************/// compute cylinder and flag mask 
-		for(V3DLONG k=(z_down+0.5); k<(z_top+0.5); k++)
-		{
-			for(V3DLONG j=(y_down+0.5); j<(y_top+0.5); j++)
+			if(pp->n == p_cur->pn)
 			{
-				for(V3DLONG i=(x_down+0.5); i<(x_top+0.5); i++)
+				b_find = true;
+				break;
+			}
+		}
+		if (!b_find)
+		{
+			v3d_msg(QString("Cannot find the matching parent node [%1] for the current node [%2]\n").arg(p_cur->pn).arg(p_cur->n)), 0);
+			continue;
+		}
+		else
+		{
+			xe = pp->x;
+			ye = pp->y;
+			ze = pp->z;
+			re = pp->r;
+		}
+		
+		//judge if two points overlap, if yes, then do nothing as the sphere has already been drawn
+		if (xe==xs && ye==ys && ze==zs)
+		{
+			v3d_msg(QString("Detect overlapping coordinates of node [%1]\n").arg(p_cur->n)), 0);
+			continue;
+		}
+		
+		//finding the envelope of the current line segment
+		double rbox = (rs>re) ? rs : re;
+		double x_down = (xs < xe) ? xs : xe; x_down -= rbox; x_down = V3DLONG(x_down+0.5); qBound(0, x_down, sx-1);
+		double x_top  = (xs > xe) ? xs : xe; x_top  += rbox; x_top  = V3DLONG(x_top +0.5); qBound(0, x_top,  sx-1);
+		double y_down = (ys < ye) ? ys : ye; y_down -= rbox; y_down = V3DLONG(y_down+0.5); qBound(0, y_down, sy-1);
+		double y_top  = (ys > ye) ? ys : ye; y_top  += rbox; y_top  = V3DLONG(y_top +0.5); qBound(0, y_top,  sy-1);
+		double z_down = (zs < ze) ? zs : ze; z_down -= rbox; z_down = V3DLONG(z_down+0.5); qBound(0, z_down, sz-1);
+		double z_top  = (zs > ze) ? zs : ze; z_top  += rbox; z_top  = V3DLONG(z_top +0.5); qBound(0, z_top,  sz-1);
+		
+		//compute cylinder and flag mask 
+		
+		for (k=z_down; k<z_top; k++)
+		{
+			for (j=y_down; j<y_top; j++)
+			{
+				for (i=x_down; i<x_top; i++)
 				{
-					k = (k>=sz)?sz:k;
-					j = (j>=sy)?sy:j;
-					i = (i>=sx)?sx:i;
-					V3DLONG indLoop = (k)*sx*sy + (j)*sx + i;
-			    	if (indLoop > sz*sx*sy) 
-					{
-						indLoop = sz*sx*sy;
-					}
+					V3DLONG ind = (k)*sx*sy + (j)*sx + i;
+					
 					double countxsi = (xs-i);
 					double countysj = (ys-j);
 					double countzsk = (zs-k);
@@ -198,53 +285,37 @@ void ComputemaskImage(NeuronTree neurons,unsigned char* pImMask,unsigned char* I
                         dist = sqrt(norms10);
                     else if(t1>1)
                         dist = sqrt((xe-i)*(xe-i) + (ye-j)*(ye-j) + (ze-k)*(ze-k));
-				    int n=rand()%256+1;
-					///////////////// compute piont of intersection
+					
+				    int n=rand()%255+1;
+					
+					// compute point of intersection
 					double v1 = xe - xs;
 					double v2 = ye - ys;
 					double v3 = ze - zs;
 					double vpt = v1*v1 + v2*v2 +v3*v3;
-					double t = ((i-xs)*v1 +(j-ys)*v2 +(k-zs)*v3)/vpt;
+					double t = (double(i-xs)*v1 +double(j-ys)*v2 + double(k-zs)*v3)/vpt;
 					double temR,temr;
 					double xc = xs + v1*t;
 					double yc = ys + v2*t;
 					double zc = zs + v3*t;
 					double rr;
- 					//////////////////////compute rr
+ 					
+					//compute rr
 					double normssc = sqrt((xs-xc)*(xs-xc)+(ys-yc)*(ys-yc)+(zs-zc)*(zs-zc));
 					double normsce = sqrt((xe-xc)*(xe-xc)+(ye-yc)*(ye-yc)+(ze-zc)*(ze-zc));
-					if (rs > re)
-					{
-						rr = rs - (rs - re)/sqrt(norms21)*normssc;
-						
-					}else
-					{ 
-						rr = re - (re-rs)/sqrt(norms21)*normsce;
-					}
+					rr = (rs > re) ? (rs - (rs - re)/sqrt(norms21)*normssc) : (re - (re-rs)/sqrt(norms21)*normsce);
+					
 					printf("rs=%lf rr=%lf dist=%lf re%lf \n",rs,rr,dist,re);
-					/////////////////////
-					if(dist < rr)
-					{   
-						//printf("rs=%lf rr=%lf dist=%lf re%lf \n",rs,rr,dist,re);
-						if(ImMark[indLoop] == 0)
-						{
-							//pImMask[indLoop] += (p_tmp->type + 1);
-							pImMask[indLoop] += n;
-							ImMark[indLoop] = 1;
-						}else 
-						{
-							pImMask[indLoop] = n;
-							//pImMask[indLoop] = (p_tmp->type + 1);
-						}
-
-					}
+					
+					//
+					if (dist < rr)
+						pImMask[indLoop] = n;
 				}
 			}
 		}
-		
 	}
-	
 }
+
 void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_code)
 {
 	NeuronTree neurons;
@@ -272,19 +343,22 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 												QObject::tr("Supported file (*.swc)"
 															";;Neuron structure	(*.swc)"
 															));
-	   if(filename.isEmpty()) 
-	   {
-		   v3d_msg("You don't have any image open in the main window.");
-		   return;
-	   }
+		if(filename.isEmpty()) 
+		{
+			v3d_msg("You don't have any image open in the main window.");
+			return;
+		}
+		
 		NeuronSWC *p_t=0;
 		if (filename.size()>0)
 		{
 			neurons = readSWC_file(filename);
+			
+			
 			for (V3DLONG ii=0; ii< neurons.listNeuron.size(); ii++)
 			{
 				p_t = (NeuronSWC *)(&(neurons.listNeuron.at(ii)));
-
+				
 				double xs = p_t->x+p_t->r;
 				double ys = p_t->y+p_t->r;
 				double zs = p_t->z+p_t->r;
@@ -328,7 +402,7 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 			v3d_msg("You don't have any image open in the main window.");
 			return;
 		}
-
+		
 	}
 	else if (method_code ==2)
 	{
@@ -352,7 +426,7 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 				for (V3DLONG ii=0; ii<neurons.listNeuron.size(); ii++)
 				{
 					p_t = (NeuronSWC *)(&(neurons.listNeuron.at(ii)));
-
+					
 					double xs = p_t->x+p_t->r;
 					double ys = p_t->y+p_t->r;
 					double zs = p_t->z+p_t->r;
@@ -384,7 +458,7 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 			for(V3DLONG i=0; i<pagesz; i++)
 				pImMask[i] = 0; 
 		}	
-		 ImMark = new unsigned char [pagesz];
+		ImMark = new unsigned char [pagesz];
 		if (!ImMark) 
 		{
 			printf("Fail to allocate memory.\n");
@@ -401,7 +475,7 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 			if (filename.size()>0)
 			{
 				neurons = readSWC_file(filename);
-			
+				
 				ComputemaskImage(neurons,pImMask,ImMark,sx,sy,sz,temp,x_min,y_min,z_min,filename);
 			}
 			else 
@@ -417,5 +491,5 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 	callback.setImage(newwin, &tmp);
 	callback.setImageName(newwin, QString("composition image"));
 	callback.updateImageWindow(newwin);
-		
+	
 }
