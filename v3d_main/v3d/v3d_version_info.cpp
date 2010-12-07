@@ -52,7 +52,7 @@ QString v3dVersionUrlBase("http://brunsc-wm1.janelia.priv/~brunsc/v3d/stable_ver
 
 namespace v3d {
     // Set current version here.
-    VersionInfo thisVersionOfV3D(2.543);
+    VersionInfo thisVersionOfV3D(2.544);
 }
 QString versionnumber = "V3D (" +
         v3d::thisVersionOfV3D.toQString() +
