@@ -145,14 +145,18 @@ void ComputemaskImage(NeuronTree neurons,unsigned char* pImMask,unsigned char* I
 		{	
 			ze = abs((pp->z )-  z_min);
 		}
-		
+		double re = pp->r;
 		if (rs < 1) 
 		{
 			rs =alpha*rs+beta;
 		}
-        	
-			//finding the envelope 
 		
+//		if (re < 1) 
+//		{
+//			re =alpha*re+beta;
+//		}
+			//finding the envelope 
+	//	double re = pp->r;
 		double x_down = (xs>xe)? xe: xs;
 		double x_top = (xs>xe)? xs: xe;
 		double y_down = (ys>ye)? ye: ys;
@@ -160,27 +164,28 @@ void ComputemaskImage(NeuronTree neurons,unsigned char* pImMask,unsigned char* I
 		double z_down = (zs>ze)? ze: zs;
 		double z_top = (zs>ze)? zs: ze;
 		x_top +=rs;x_down-=rs;z_top+=rs;z_down-=rs;z_top+=rs;z_down-=rs;
+		//x_top +=2*rs;x_down-=2*rs;z_top+=2*rs;z_down-=2*rs;z_top+=2*rs;z_down-=2*rs;
 		x_down = (x_down<0)?0:x_down;
-		x_top = (x_top>sx)?sx:x_top;
-		y_top = (y_top>sy)?sy:y_top;
 		y_down = (y_down <0)?0:y_down;
 		z_down = (z_down <0)?0:z_down;
-		z_top = (z_top >sz)?sz:z_top;		
-		/*********************************************************************/// coupute cylinder and flag mask 
-		for(V3DLONG k=(z_down+0.5); k<(z_top+0.5); k++)
+		z_top = (z_top >sz)?sz:z_top;	
+		x_top = (x_top>sx)?sx:x_top;
+		y_top = (y_top>sy)?sy:y_top;		
+//		/*********************************************************************/// compute cylinder and flag mask 
+		for(V3DLONG k=V3DLONG(z_down); k<V3DLONG(z_top); k++)
 		{
-			for(V3DLONG j=(y_down+0.5); j<(y_top+0.5); j++)
+			for(V3DLONG j=V3DLONG(y_down); j<V3DLONG(y_top); j++)
 			{
-				for(V3DLONG i=(x_down+0.5); i<(x_top+0.5); i++)
+				for(V3DLONG i=V3DLONG(x_down); i<V3DLONG(x_top); i++)
 				{
 					k = (k>=sz)?sz:k;
 					j = (j>=sy)?sy:j;
 					i = (i>=sx)?sx:i;
 					V3DLONG indLoop = (k)*sx*sy + (j)*sx + i;
-					if (indLoop > sz*sx*sy) 
-					{
-						indLoop = sz*sx*sy;
-					}
+			//		if (indLoop > sz*sx*sy) 
+//					{
+//						indLoop = sz*sx*sy;
+//					}
 					double countxsi = (xs-i);
 					double countysj = (ys-j);
 					double countzsk = (zs-k);
@@ -191,9 +196,41 @@ void ComputemaskImage(NeuronTree neurons,unsigned char* pImMask,unsigned char* I
 					double norms21 = countxes * countxes + countyes * countyes + countzes * countzes;
 					double dots1021 = countxsi * countxes + countysj * countyes + countzsk * countzes; 
 					double dist = sqrt( norms10 - (dots1021*dots1021)/(norms21) );
+					double t1 = -dots1021/norms21;
+                    if(t1<0)
+                        dist = sqrt(norms10);
+                    else if(t1>1)
+                        dist = sqrt((xe-i)*(xe-i) + (ye-j)*(ye-j) + (ze-k)*(ze-k)*scalar2);
 				    int n=rand()%256+1;
-					if(dist <= rs)
-					{    
+					///////////////// compute piont of intersection
+					double v1 = xe - xs;
+					double v2 = ye - ys;
+					double v3 = ze - zs;
+					double vpt = v1*v1 + v2*v2 +v3*v3;
+					double t = ((i-xs)*v1 +(j-ys)*v2 +(k-zs)*v3)/vpt;
+					double temR,temr;
+					if (rs > re)
+					{
+						temR = rs;
+						temr = re;
+				
+					}else
+					{ 
+						temR = re;
+						temr = rs;
+					}
+					double xc = xs + v1*t;
+					double yc = ys + v2*t;
+					double zc = zs + v3*t;
+ 					//////////////////////compute rr
+					double normssc = sqrt((xs-xc)*(xs-xc)+(ys-yc)*(ys-yc)+(zs-zc)*(zs-zc));
+					double normsgc = sqrt(normssc*normssc-(rs-re)*(rs-re));
+				//	double rr = dist*normssc/normsgc;
+					double rr = temR - (temR - temr)/sqrt(norms21)*normssc;
+					/////////////////////
+					if(dist < rr)
+					{   
+						printf("rs=%lf rr=%lf dist=%lf re%lf \n",rs,rr,dist,re);
 						if(ImMark[indLoop] == 0)
 						{
 							//pImMask[indLoop] += (p_tmp->type + 1);
@@ -256,8 +293,6 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 				double xs = p_t->x ;
 				double ys = p_t->y ;
 				double zs = p_t->z ;
-				
-				
 				x_min = (xs<x_min)? xs:x_min;
 				x_max = (xs>x_max)? xs:x_max;
 				y_min = (ys<y_min)? ys:y_min;
