@@ -50,7 +50,7 @@ void ComputemaskImage(NeuronTree neurons,unsigned char* pImMask,unsigned char* I
 	double scalar2 = scalar*scalar;	
 	double alpha,beta;
 	alpha = 1;
-	beta =2;
+	beta =0;
 	//compute mask
 	NeuronSWC *p_tmp=0;
 	double xs,ys,zs,xe,ye,ze;
