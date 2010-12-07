@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -31,7 +31,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 // v3d_commandlineparser.h
 // 2010-11-23 by Yang Yu
 // command line parameters parser
-// YuY: Nov. 18, 2010. Ensure V3D support running in command lines 
+// YuY: Nov. 18, 2010. Ensure V3D support running in command lines
 // YuY: Nov. 19, 2010. Update the commands parser to accept multiple files when predefined by users
 
 #ifndef __V3D_COMMANDLINEPARSER_H__
@@ -43,10 +43,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 class V3D_CL_INTERFACE
 {
 public:
-	
+
 	V3D_CL_INTERFACE()
-	{	
-		open3Dviewer = false; 
+	{
+		open3Dviewer = false;
 		openV3D = false;
 		clp_finished = false;
 	}
@@ -55,7 +55,7 @@ public:
 
 public:
 	vector<char *> fileList;
-	bool open3Dviewer; 
+	bool open3Dviewer;
 	bool openV3D;
 	bool clp_finished; // parsing finished
 
@@ -73,7 +73,7 @@ public:
 
 	bool check_filename(QString fn);
 	int parse(int argc, char *argv[], void (*help)());
-	
+
 	int error( void (*help)() )
 	{
 		v3d_msg("Your module code is illegal. Please follow the instruction of the help page below.", 0);
@@ -90,12 +90,12 @@ public:
 bool CLP :: check_filename(QString fn)
 {
 	QFileInfo curfile_info(fn);
-	if ( (curfile_info.suffix().toUpper()=="ANO") || 
+	if ( (curfile_info.suffix().toUpper()=="ANO") ||
 		 (curfile_info.suffix().toUpper()=="APO" || curfile_info.suffix().toUpper()=="SWC" || curfile_info.suffix().toUpper()=="OBJ" || curfile_info.suffix().toUpper()=="V3DS") ||
 		 (curfile_info.suffix().toUpper()=="ATLAS") ||
-		 (curfile_info.suffix().toUpper()=="ZIP") || 
-		 (curfile_info.suffix().toUpper()=="LSM") || (curfile_info.suffix().toUpper()=="TIF") || (curfile_info.suffix().toUpper()=="RAW") || 
-		 fn.contains("://") ) // url 
+		 (curfile_info.suffix().toUpper()=="ZIP") ||
+		 (curfile_info.suffix().toUpper()=="LSM") || (curfile_info.suffix().toUpper()=="TIF") || (curfile_info.suffix().toUpper()=="RAW") ||
+		 fn.contains("://") ) // url
 	{
 		return true;
 	}
@@ -119,7 +119,7 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 	{
 		// command arguments parsing
 		char* filename;
-		
+
 		// ------ parsing aguements here ---------------------
 		if(argc<=2)
 		{
@@ -127,8 +127,17 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 			{
 				help();
 				i_v3d.clp_finished = true;
-				return true;
-			}
+                        }
+                        // CMB Dec 7, 2010
+                        // Mac app launcher adds a command line argument
+                        // like "-psn_0_7989150"
+                        // Ignore it.
+                        else if (string(argv[1]).find("-psn_") == 0) {
+                            v3d_msg("Apparently a mac bundle", 0);
+                            v3d_msg(argv[1], 0);
+                            i_v3d.openV3D = true;
+                            return true;
+                        }
 			else if(string(argv[1]) == "-M") //must be capital
 			{
 				i_v3d.clp_finished = true;
@@ -139,7 +148,7 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 				// load and visualize file in V3D
 				filename = argv[1];
 				i_v3d.fileList.push_back(filename);
-				
+
 				// open V3D
 				i_v3d.openV3D = true;
 
@@ -181,7 +190,7 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 						// open V3D
 						i_v3d.openV3D = true;
 
-						while(i+1<argc && !QString(argv[i+1]).contains("-") ) 
+						while(i+1<argc && !QString(argv[i+1]).contains("-") )
 						{
 							filename = argv[i+1];
 							i++;
@@ -210,11 +219,11 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 				//	continue;
 				//}
 			}
-			
+
 
 		}
 	}
-		
+
 }
 
 
