@@ -50,7 +50,7 @@ void ComputemaskImage(NeuronTree neurons,unsigned char* pImMask,unsigned char* I
 	double scalar2 = scalar*scalar;	
 	double alpha,beta;
 	alpha = 1;
-	beta =1;
+	beta =2;
 	//compute mask
 	NeuronSWC *p_tmp=0;
 	double xs,ys,zs,xe,ye,ze;
@@ -84,11 +84,12 @@ void ComputemaskImage(NeuronTree neurons,unsigned char* pImMask,unsigned char* I
 		ballzt = zs + rs;
 		ballzd = zs - rs;
 		ballxl = (ballxl<0)?0:ballxl;
-		ballxr = (ballxr>sx)? sx:ballxr;
+		ballyb = (ballyb<0)?0:ballyb;
+		ballzd = (ballzd<0)?0:ballzd;		
+		ballxr = (ballxr>sx)?sx:ballxr;
 		ballyf = (ballyf>sy)?sy:ballyf;
-		ballyb = (ballyb <0)?0:ballyb;
-		ballzd = (ballzd <0)?0:ballzd;
 		ballzt = (ballzt >sz)?sz:ballzt;
+		
 	
 		V3DLONG indLoop = (zs)*count1 + (ys)*sx + xs;
 
@@ -101,7 +102,7 @@ void ComputemaskImage(NeuronTree neurons,unsigned char* pImMask,unsigned char* I
 					double norms10 = (xs-i)*(xs-i) + (ys-j)*(ys-j) + (zs-k)*(zs-k);
 					double dt = sqrt(norms10);
 					V3DLONG indLoop = (k)*count1 + (j)*sx + i;
-					if(dt < rs)
+					if(dt <= rs)
 					{  
 		//				printf("dt=%lf xs=%lf ys=%lf zs=%lf rs=%lf\n",dt,xs,ys,zs,rs);
 						int n=rand()%256+1;
@@ -146,24 +147,19 @@ void ComputemaskImage(NeuronTree neurons,unsigned char* pImMask,unsigned char* I
 			ze = abs((pp->z )-  z_min);
 		}
 		double re = pp->r;
-		if (rs < 1) 
-		{
+		//if (rs < 1) 
+		//{
 			rs =alpha*rs+beta;
-		}
-		
-//		if (re < 1) 
-//		{
-//			re =alpha*re+beta;
-//		}
-			//finding the envelope 
-	//	double re = pp->r;
+		//}
+	//finding the envelope 
+	
 		double x_down = (xs>xe)? xe: xs;
 		double x_top = (xs>xe)? xs: xe;
 		double y_down = (ys>ye)? ye: ys;
 		double y_top = (ys>ye)? ys: ye;
 		double z_down = (zs>ze)? ze: zs;
 		double z_top = (zs>ze)? zs: ze;
-		x_top +=rs;x_down-=rs;z_top+=rs;z_down-=rs;z_top+=rs;z_down-=rs;
+		x_top +=10;x_down-=10;z_top+=10;z_down-=10;z_top+=10;z_down-=10;
 		//x_top +=2*rs;x_down-=2*rs;z_top+=2*rs;z_down-=2*rs;z_top+=2*rs;z_down-=2*rs;
 		x_down = (x_down<0)?0:x_down;
 		y_down = (y_down <0)?0:y_down;
@@ -172,20 +168,20 @@ void ComputemaskImage(NeuronTree neurons,unsigned char* pImMask,unsigned char* I
 		x_top = (x_top>sx)?sx:x_top;
 		y_top = (y_top>sy)?sy:y_top;		
 //		/*********************************************************************/// compute cylinder and flag mask 
-		for(V3DLONG k=V3DLONG(z_down); k<V3DLONG(z_top); k++)
+		for(V3DLONG k=(z_down+0.5); k<(z_top+0.5); k++)
 		{
-			for(V3DLONG j=V3DLONG(y_down); j<V3DLONG(y_top); j++)
+			for(V3DLONG j=(y_down+0.5); j<(y_top+0.5); j++)
 			{
-				for(V3DLONG i=V3DLONG(x_down); i<V3DLONG(x_top); i++)
+				for(V3DLONG i=(x_down+0.5); i<(x_top+0.5); i++)
 				{
 					k = (k>=sz)?sz:k;
 					j = (j>=sy)?sy:j;
 					i = (i>=sx)?sx:i;
 					V3DLONG indLoop = (k)*sx*sy + (j)*sx + i;
-			//		if (indLoop > sz*sx*sy) 
-//					{
-//						indLoop = sz*sx*sy;
-//					}
+			    	if (indLoop > sz*sx*sy) 
+					{
+						indLoop = sz*sx*sy;
+					}
 					double countxsi = (xs-i);
 					double countysj = (ys-j);
 					double countzsk = (zs-k);
@@ -200,7 +196,7 @@ void ComputemaskImage(NeuronTree neurons,unsigned char* pImMask,unsigned char* I
                     if(t1<0)
                         dist = sqrt(norms10);
                     else if(t1>1)
-                        dist = sqrt((xe-i)*(xe-i) + (ye-j)*(ye-j) + (ze-k)*(ze-k)*scalar2);
+                        dist = sqrt((xe-i)*(xe-i) + (ye-j)*(ye-j) + (ze-k)*(ze-k));
 				    int n=rand()%256+1;
 					///////////////// compute piont of intersection
 					double v1 = xe - xs;
@@ -209,26 +205,24 @@ void ComputemaskImage(NeuronTree neurons,unsigned char* pImMask,unsigned char* I
 					double vpt = v1*v1 + v2*v2 +v3*v3;
 					double t = ((i-xs)*v1 +(j-ys)*v2 +(k-zs)*v3)/vpt;
 					double temR,temr;
-					if (rs > re)
-					{
-						temR = rs;
-						temr = re;
-				
-					}else
-					{ 
-						temR = re;
-						temr = rs;
-					}
 					double xc = xs + v1*t;
 					double yc = ys + v2*t;
 					double zc = zs + v3*t;
+					double rr;
  					//////////////////////compute rr
 					double normssc = sqrt((xs-xc)*(xs-xc)+(ys-yc)*(ys-yc)+(zs-zc)*(zs-zc));
-					double normsgc = sqrt(normssc*normssc-(rs-re)*(rs-re));
-				//	double rr = dist*normssc/normsgc;
-					double rr = temR - (temR - temr)/sqrt(norms21)*normssc;
+					double normsce = sqrt((xe-xc)*(xe-xc)+(ye-yc)*(ye-yc)+(ze-zc)*(ze-zc));
+					if (rs > re)
+					{
+						rr = rs - (rs - re)/sqrt(norms21)*normssc;
+						
+					}else
+					{ 
+						rr = re - (re-rs)/sqrt(norms21)*normsce;
+					}
+					//printf("rr=%lf",rr);
 					/////////////////////
-					if(dist < rr)
+					if(dist <= rr)
 					{   
 						printf("rs=%lf rr=%lf dist=%lf re%lf \n",rs,rr,dist,re);
 						if(ImMark[indLoop] == 0)
@@ -290,9 +284,9 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 			{
 				p_t = (NeuronSWC *)(&(neurons.listNeuron.at(ii)));
 
-				double xs = p_t->x ;
-				double ys = p_t->y ;
-				double zs = p_t->z ;
+				double xs = p_t->x+p_t->r;
+				double ys = p_t->y+p_t->r;
+				double zs = p_t->z+p_t->r;
 				x_min = (xs<x_min)? xs:x_min;
 				x_max = (xs>x_max)? xs:x_max;
 				y_min = (ys<y_min)? ys:y_min;
@@ -358,9 +352,9 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 				{
 					p_t = (NeuronSWC *)(&(neurons.listNeuron.at(ii)));
 
-					double xs = p_t->x ;
-					double ys = p_t->y ;
-					double zs = p_t->z ;
+					double xs = p_t->x+p_t->r;
+					double ys = p_t->y+p_t->r;
+					double zs = p_t->z+p_t->r;
 					x_min = (xs<x_min)? xs:x_min;
 					x_max = (xs>x_max)? xs:x_max;
 					y_min = (ys<y_min)? ys:y_min;
