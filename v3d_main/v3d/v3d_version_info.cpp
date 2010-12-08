@@ -35,6 +35,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3d_version_info.h"
 #include "v3d_compile_constraints.h"
 #include "../basic_c_fun/v3d_message.h"
+#include "../plugin_loader/v3d_plugin_loader.h"
 
 #include <QtGui>
 #include <QNetworkReply>
@@ -248,6 +249,106 @@ void v3d_Lite_info()
 
 namespace v3d {
 
+////////////////////////
+// UpdateItem methods //
+////////////////////////
+
+// Whether to try installing this item.  Settable in Update List dialog.
+void UpdateItem::setInstall( int state )
+{
+    bDoInstall = (state == Qt::Checked);
+    qDebug() << "setInstall";// v3d_msg("setInstall",0);
+}
+
+// Slot to start updating this item from the remote server
+void UpdateItem::startUpdate(QProgressDialog* p)
+{
+    if (p->wasCanceled())
+        return;
+
+    progressDialog = p;
+    progressDialog->setWindowTitle(tr("Downloading ") + relativeName + "...");
+    QNetworkAccessManager *nam = new QNetworkAccessManager(this);
+    // When the download is complete, write the file to disk
+    connect(nam, SIGNAL(finished(QNetworkReply*)),
+            this, SLOT(finishedDownloadSlot(QNetworkReply*)));
+    nam->get(QNetworkRequest(remoteUrl));
+
+    // Each item gets to add a total of 2 to the progress dialog.
+    // One at the beginning:
+    progressDialog->setValue(progressDialog->value() + 1);
+}
+
+// Slot after download has completed, before local file is updated
+void UpdateItem::finishedDownloadSlot(QNetworkReply* reply)
+{
+    bool succeeded = false; // start pessimistic
+
+    if (! progressDialog->wasCanceled()) {
+
+        // no error received?
+        if (reply->error() == QNetworkReply::NoError)
+        {
+            // TODO - actually save plugin file
+            progressDialog->setWindowTitle(tr("Saving ") + relativeName + "...");
+
+            // Construct local file name.
+            // (note that localFile might not be populated, especially if this
+            //  is a new plugin).
+            QDir v3dDir(QCoreApplication::applicationDirPath());
+            QString fullpath = v3dDir.absoluteFilePath(relativeName);
+            QFile file(fullpath);
+
+            // Does reply have some content?
+            if (reply->header(QNetworkRequest::ContentLengthHeader).toLongLong() > 0)
+            {
+                // Back up old file in case something goes wrong...
+                QFileInfo fileInfo(file);
+                bool noOldFile = true;
+                if (fileInfo.exists()) {
+                    QDir dir = fileInfo.absoluteDir();
+                    QString oldName = dir.relativeFilePath(fullpath);
+                    QString newName = oldName + ".old";
+                    noOldFile = dir.rename(oldName, newName); // try to rename old file
+                }
+                if (noOldFile) {
+                    if (file.open(QIODevice::WriteOnly)) {
+                        file.write(reply->readAll());
+                        file.close();
+                        succeeded = true;
+                    }
+                    else {
+                        v3d_msg("Could not open file",0);
+                    }
+                }
+            }
+            else {
+                v3d_msg("Download was empty",0);
+            }
+        }
+        // Some http error received
+        else
+        {
+            // TODO - how to report this...
+            v3d_msg("Download failed: " + relativeName, 0);
+            QMessageBox::warning(NULL, tr("Download failed"),
+                    tr("There was a problem downloading ") + relativeName
+                    + "\nTry again later.");
+        }
+    }
+
+    // We receive ownership of the reply object
+    // and therefore need to handle deletion.
+    reply->disconnect();
+    reply->deleteLater();
+
+    emit updateComplete(progressDialog);
+}
+
+////////////////////////////
+// VersionChecker methods //
+////////////////////////////
+
 V3DVersionChecker::V3DVersionChecker(QWidget *guiParent_param)
     : guiParent(guiParent_param)
 {}
@@ -257,9 +358,15 @@ void V3DVersionChecker::checkForLatestVersion(bool b_verbose)
     this->b_showAllMessages = b_verbose;
     QUrl versionUrl(v3dVersionUrlBase + "v3d_version.xml");
     QNetworkAccessManager *nam = new QNetworkAccessManager(this);
-    nam->get(QNetworkRequest(versionUrl));
     connect(nam, SIGNAL(finished(QNetworkReply*)),
         this, SLOT(gotVersion(QNetworkReply*)));
+
+    // Prepare data structure for update items.
+    // TODO - should this be done earlier?
+    updateItems.clear();
+    populateLocalUpdateItems();
+
+    nam->get(QNetworkRequest(versionUrl));
 }
 
 // Examines last time version updater was queried to decide whether it might
@@ -354,72 +461,371 @@ void V3DVersionChecker::processVersionXmlFile(const QDomDocument& versionDoc)
         }
         return; // silently continue on version finding error
     }
+
+    // Parse update xml file
     QDomNode node = root.firstChild();
-
-    QString latest_major_version = "0";
-    QString latest_minor_version = "000";
-    bool newUpdateFound = false;
-
-    // Keep track of newer, older, and current plugins
-    QList<QDomElement> currentItems; // we have the latest stable version
-    QList<QDomElement> updateableItems; // we have an older version
-    QList<QDomElement> futureItems; // we have an advanced version
-    QList<QDomElement> newItems; // we don't have this plugin
-
     while (!node.isNull())
     {
         QDomElement elem = node.toElement();
-        if (!elem.isNull()) 
+        if (!elem.isNull())
         {
-            // Check V3D program version
-            if (elem.tagName() == "latest_stable_version")
-            {
-                latest_major_version = elem.attribute("major", "0");
-                latest_minor_version = elem.attribute("minor", "0");
-                QString latestVersionString(latest_major_version + "." + latest_minor_version);
-                v3d::VersionInfo latestVersion(latestVersionString);
-                if (latestVersion == v3d::thisVersionOfV3D) {
-                    currentItems.append(elem);
-                } else if (latestVersion > v3d::thisVersionOfV3D) {
-                    updateableItems.append(elem);
-                } else {
-                    futureItems.append(elem);
-                }
-           }
-
             // Check plugin versions
-            else if (elem.tagName() == "v3d_plugin") {
-
+            if (elem.tagName() == "v3d_component")
+            {
+                QString plugin_platform = elem.attribute("platform", "");
+                if (plugin_platform == BUILD_OS_INFO) { // must be same platform
+                    v3d_msg(QString("Found plugin platform ") + BUILD_OS_INFO, 0);
+                    QString pluginName = elem.attribute("name", "");
+                    QString pluginVersion = elem.attribute("version", "0");
+                    QString pluginUrl = elem.attribute("href", "");
+                    if (pluginName.length() > 0) { // name must not be empty
+                        // Populate updateItems structure
+                        // Create entry if not already present
+                        if (updateItems.find(pluginName) == updateItems.end())
+                            updateItems[pluginName] = new UpdateItem(this);
+                        UpdateItem& item = *(updateItems[pluginName]);
+                        item.relativeName = pluginName;
+                        bool converted;
+                        item.remoteVersion = pluginVersion.toFloat(&converted);
+                        if (! converted)
+                            // Use NaN to mean unknown
+                            item.remoteVersion = std::numeric_limits<float>::quiet_NaN();
+                        item.remoteUrl = QUrl(pluginUrl);
+                        v3d_msg("Found update information for " + item.relativeName,0);
+                    }
+                }
             }
         }
 
         node = node.nextSibling();
     }
 
-    if (  (updateableItems.size() > 0) // there are new updates
-       || (newItems.size() > 0) )
+    // Decide whether new updates are available
+    bool bHaveNewUpdates = false;
+    bool bHaveFutureVersions = false;
+    if (getUpdatableItems().size() > 0)
+        bHaveNewUpdates = true;
+    if (getFutureItems().size() > 0)
+        bHaveFutureVersions = true;
+
+    // Set the update flag on updateable items,
+    // so they will be set to update by default.
+    std::vector<UpdateItem*> v = getUpdatableItems();
+    std::vector<UpdateItem*>::iterator i;
+    for (i = v.begin(); i != v.end(); i++) {
+        UpdateItem& item = **i;
+        item.bDoInstall = true;
+    }
+
+    if ( bHaveNewUpdates )
     {
         UpdatesAvailableDialog* availableDialog = new UpdatesAvailableDialog(guiParent);
         // Connect to version checker method
-        connect(availableDialog, SIGNAL(yes_update()), this, SLOT(start_update()));
+        connect(availableDialog, SIGNAL(yes_update()), this, SLOT(show_update_list()));
         availableDialog->exec();
+    }
+    else if ( bHaveFutureVersions ) { // You have an advanced version
+        if (b_showAllMessages)
+        {
+            QMessageBox *upToDateBox = new QMessageBox(
+                    QMessageBox::Information,
+                    "V3D is more than up to date",
+                    "You are using a future version of V3D or plugins",
+                    QMessageBox::Ok,
+                    guiParent);
+            QPushButton* openButton = upToDateBox->addButton(tr("Open updater anyway..."), QMessageBox::ActionRole);
+            upToDateBox->exec();
+            if (upToDateBox->clickedButton() == openButton) {
+                // Open updater anyway
+                show_update_list();
+            }
+        }
+        qDebug("V3D or plugin version is higher than the stable version");
     }
     else // there are no new updates
     {
         if (b_showAllMessages)
         {
-            QMessageBox::information(guiParent,
+            QMessageBox *upToDateBox = new QMessageBox(
+                    QMessageBox::Information,
                     "V3D is up to date",
-                    "You are using the latest version of V3D");
+                    "You are using the latest version of V3D",
+                    QMessageBox::Ok,
+                    guiParent);
+            QPushButton* openButton = upToDateBox->addButton(tr("Open updater anyway..."), QMessageBox::ActionRole);
+            upToDateBox->exec();
+            if (upToDateBox->clickedButton() == openButton) {
+                // Open updater anyway
+                show_update_list();
+            }
         }
         qDebug("V3D version is up to date");
     }
 }
 
-void V3DVersionChecker::start_update()
+void V3DVersionChecker::show_update_list()
 {
-    UpdatesListDialog* listDialog = new UpdatesListDialog(guiParent);
+    UpdatesListDialog* listDialog = new UpdatesListDialog(guiParent, this);
     listDialog->exec();
+    connect(listDialog, SIGNAL(update_install()), this, SLOT(install_updates()));
+}
+
+void V3DVersionChecker::cancelDownloadSlot() {
+    bDownloadCanceled = true;
+    // TODO
+}
+
+void V3DVersionChecker::install_updates()
+{
+    // Connect chain of download signals
+    // So updates will occur in series
+    // TODO - keep track of errors that occur
+    UpdateItem *previousUpdateItem = NULL;
+    UpdateItem *firstUpdateItem = NULL;
+    int installCount = 0;
+    std::map<QString, UpdateItem*>::iterator itemIter;
+    for (itemIter = updateItems.begin(); itemIter != updateItems.end(); ++itemIter)
+    {
+        UpdateItem *item = itemIter->second;
+        if (item->bDoInstall) {
+            if (!firstUpdateItem)
+                firstUpdateItem = item;
+            // Link update items together in a chain
+            if (previousUpdateItem)
+                connect(previousUpdateItem, SIGNAL(updateComplete(QProgressDialog*)),
+                        item, SLOT(start_update(QProgressDialog*)));
+            installCount++;
+            previousUpdateItem = itemIter->second;
+        }
+    }
+
+    if ( (installCount == 0) || (! firstUpdateItem) ) {
+        QMessageBox::information(guiParent,
+                tr("No updates to install"),
+                tr("There were no updates to install"));
+        return;
+    }
+
+    connect(previousUpdateItem, SIGNAL(updateComplete(QProgressDialog*)),
+            this, SLOT(finishUpdates(QProgressDialog*)));
+
+    QProgressDialog *progressDialog = new QProgressDialog(guiParent);
+    // When the user clicks "Cancel", stop downloading.
+    progressDialog->setModal(true);
+    progressDialog->setAutoClose(true);
+    progressDialog->setMinimumDuration(500);
+    connect(progressDialog, SIGNAL(canceled()),
+            this, SLOT(cancelDownloadSlot()));
+    // Each item gets to increment progress value by 2
+    progressDialog->setMaximum(2 * installCount); // zero means "unknown"
+    progressDialog->setValue(0);
+    progressDialog->setWindowTitle(tr("Installing updates..."));
+
+    qDebug() << "installing V3D software updates...";
+
+    // Kick off the first update
+    firstUpdateItem->startUpdate(progressDialog);
+
+    // progressDialog->exec();
+    progressDialog->exec();
+}
+
+void V3DVersionChecker::finishUpdates(QProgressDialog* progressDialog) 
+{
+    progressDialog->setWindowTitle(tr("Finished updates"));
+    progressDialog->close();
+    QMessageBox::information(
+            guiParent,
+            tr("Updates were installed"),
+            tr("Updates were installed.\n")
+            + QString(tr("Please restart V3D!")) );
+}
+
+void V3DVersionChecker::populateLocalUpdateItems()
+{
+    // V3D executable itself
+    QString v3dPath = QCoreApplication::applicationFilePath();
+    QString relName = QFileInfo(v3dPath).fileName();
+    if (updateItems.find(relName) == updateItems.end())
+        updateItems[relName] = new UpdateItem(this);
+    UpdateItem& item = *(updateItems[relName]);
+    item.relativeName = relName;
+    item.localFile = QFileInfo(v3dPath);
+    item.localVersion = v3d::thisVersionOfV3D.toFloat();
+
+    // Scan all plugins
+    QList<QDir> pluginsDirList = V3d_PluginLoader::getPluginsDirList();
+    foreach (QDir dir, pluginsDirList) {
+        populateLocalPluginsFiles(dir);
+        populateLocalPluginsDirs(dir);
+    }
+}
+
+void V3DVersionChecker::populateLocalPluginsDirs(const QDir& pluginsDir)
+{
+        QStringList dirList = pluginsDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+        foreach (QString dirName, dirList)
+        {
+            QDir subDir = pluginsDir;
+            subDir.cd(dirName);
+            populateLocalPluginsFiles(subDir);
+            populateLocalPluginsDirs(subDir);
+        }
+}
+
+void V3DVersionChecker::populateLocalPluginsFiles(const QDir& pluginsDir)
+{
+        // Name should be relative to v3d executable
+        QDir v3dDir(QCoreApplication::applicationDirPath());
+
+        QStringList fileList = pluginsDir.entryList(QDir::Files);
+        foreach (QString fileName, fileList)
+        {
+            QString fullpath = pluginsDir.absoluteFilePath(fileName);
+            QString relativePath = v3dDir.relativeFilePath(fullpath);
+            // Can the plugin be loaded?
+            QPluginLoader* loader = new QPluginLoader(fullpath);
+            if (! loader) return;
+            QObject *plugin = loader->instance(); //a new instance
+            if (plugin)
+            {
+                float pluginVersion = std::numeric_limits<float>::quiet_NaN();
+                // Can we determine the plugin version?
+                V3DPluginInterface2_1 *if21 =
+                        dynamic_cast<V3DPluginInterface2_1 *>(plugin);
+                V3DSingleImageInterface2_1 *sif21 =
+                        dynamic_cast<V3DSingleImageInterface2_1 *>(plugin);
+                if (if21) pluginVersion = if21->getPluginVersion();
+                else if (sif21) pluginVersion = sif21->getPluginVersion();
+
+                // Create entry if it is not already there
+                if (updateItems.find(relativePath) == updateItems.end())
+                    updateItems[relativePath] = new UpdateItem(this);
+                UpdateItem& item = *(updateItems[relativePath]);
+                // Update local fields
+                item.relativeName = relativePath;
+                item.localFile = QFileInfo(fullpath);
+                item.localVersion = pluginVersion;
+            }
+            loader->unload();
+        }
+}
+
+std::vector<UpdateItem*> V3DVersionChecker::getUpdatableItems() {
+    std::vector<UpdateItem*> answer;
+    std::map<QString, UpdateItem*>::iterator itemIter;
+    for (itemIter = updateItems.begin(); itemIter != updateItems.end(); ++itemIter)
+    {
+        UpdateItem& item = *(itemIter->second);
+        if (item.remoteUrl.isEmpty()) continue;
+        if (! item.remoteUrl.isValid()) continue;
+        // At this point, there is a file available at the update site, presumably.
+        if (! item.localFile.exists()) {
+            answer.push_back(&item); // we don't have that file
+            continue;
+        }
+        if (item.remoteVersion == item.remoteVersion) { // not NaN, so we really know the version
+            if (item.localVersion == item.localVersion) {
+                if (item.remoteVersion > item.localVersion) { // remote is newer
+                    answer.push_back(&item);
+                    continue;
+                }
+            } else {
+                // known remote version, unknown local version
+                answer.push_back(&item);
+            }
+        }
+    }
+    return answer;
+}
+
+// Items with a more recent local version than the remote version
+std::vector<UpdateItem*> V3DVersionChecker::getFutureItems() {
+    std::vector<UpdateItem*> answer;
+    std::map<QString, UpdateItem*>::iterator itemIter;
+    for (itemIter = updateItems.begin(); itemIter != updateItems.end(); ++itemIter)
+    {
+        UpdateItem& item = *(itemIter->second);
+        if (item.remoteUrl.isEmpty()) continue;
+        if (! item.remoteUrl.isValid()) continue;
+        if (! item.localFile.exists()) continue;
+        if (item.localVersion == item.localVersion) { // finite local version
+            // if remote version is less, or is unknown, we have a future version
+            if (item.remoteVersion == item.remoteVersion) { // finite remote version
+                if (item.localVersion > item.remoteVersion)
+                    answer.push_back(&item);
+            }
+            else {
+                // local finite, remote unknown => local is newer...
+                answer.push_back(&item);
+            }
+        }
+        else { // unknown local version
+            continue;
+        }
+    }
+    return answer;
+}
+
+// Label cells of software update table
+class UpdateTableLabel : public QTableWidgetItem
+{
+public:
+    UpdateTableLabel(QString str)
+        : QTableWidgetItem(str)
+    {
+        setFlags( Qt::ItemIsSelectable | Qt::ItemIsEnabled );
+    }
+};
+
+// Action cell of software update table
+class UpdateTableAction : public QTableWidgetItem
+{
+public:
+    UpdateTableAction()
+        : QTableWidgetItem()
+    {
+        setFlags( Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable );
+    }
+};
+
+void V3DVersionChecker::populateQTableWidget(QTableWidget& tableWidget)
+{
+    tableWidget.setSortingEnabled(false);
+
+    std::vector<UpdateItem*> items = getUpdatableItems();
+    tableWidget.setRowCount(items.size());
+    std::vector<UpdateItem*>::const_iterator itemIter;
+    int row = 0;
+    for (itemIter = items.begin(); itemIter != items.end(); ++itemIter) {
+        const UpdateItem& item = **itemIter;
+
+        // First column is current local version
+        QString localVersion = QString("%1").arg(item.localVersion);
+        if (! (item.localVersion == item.localVersion)) // NaN => uninitialized
+            localVersion = QString("Unknown");
+        tableWidget.setItem(row, 0, new UpdateTableLabel(localVersion));
+
+        // Second column is new remote version
+        QString remoteVersion = QString("%1").arg(item.remoteVersion);
+        tableWidget.setItem(row, 1, new UpdateTableLabel(remoteVersion));
+
+        // Third column is action to be taken
+        QCheckBox *cb = new QCheckBox();
+        tableWidget.setCellWidget(row, 2, cb);
+        if (item.bDoInstall)
+            cb->setCheckState( Qt::Checked );
+        else
+            cb->setCheckState( Qt::Unchecked );
+        connect(cb, SIGNAL(stateChanged(int)), &item, SLOT(setInstall(int)));
+
+        // Fourth column is name of plugin/component
+        tableWidget.setItem(row, 3, new UpdateTableLabel(item.relativeName));
+
+        row++;
+    }
+
+    tableWidget.setSortingEnabled(true);
 }
 
 
@@ -504,7 +910,8 @@ void CheckForUpdatesDialog::open_download_page()
 
 
 
-UpdatesAvailableDialog::UpdatesAvailableDialog(QWidget *parent) : QMessageBox(parent)
+UpdatesAvailableDialog::UpdatesAvailableDialog(QWidget *parent)
+        : QMessageBox(parent)
 {
     // Use V3D application icon
     QIcon appIcon(":/pic/v3dIcon128.png");
@@ -544,7 +951,8 @@ void UpdatesAvailableDialog::remind_me_later()
 
 
 
-UpdatesListDialog::UpdatesListDialog(QWidget* guiParent) : QDialog(guiParent)
+UpdatesListDialog::UpdatesListDialog(QWidget* guiParent, V3DVersionChecker *checker)
+        : QDialog(guiParent), versionChecker(checker)
 {
     setupUi(this);
 
@@ -552,16 +960,10 @@ UpdatesListDialog::UpdatesListDialog(QWidget* guiParent) : QDialog(guiParent)
     QPushButton* okButton = buttonBox->button(QDialogButtonBox::Ok);
     if (okButton) {
         okButton->setText("Update/Install");
-        connect(okButton, SIGNAL(clicked()), this, SLOT(update_install()));
+        connect(okButton, SIGNAL(clicked()), checker, SLOT(install_updates()));
     }
-}
 
-void UpdatesListDialog::update_install() {
-    // TODO
-    QMessageBox::information(parentWidget(),
-            "Oops. Not implemented yet",
-            "Sorry, we don't yet auto install...");
+    checker->populateQTableWidget(*tableWidget);
 }
-
 
 } // namespace v3d

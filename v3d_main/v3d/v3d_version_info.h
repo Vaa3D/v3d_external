@@ -41,11 +41,15 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <QObject>
 #include <QDialog>
 #include <QMessageBox>
+#include <QFileInfo>
+#include <QUrl>
 #include "ui_dialog_update_v3d.h"
 #include "ui_dialog_update_list.h"
 
 class QNetworkReply;
 class QDomDocument;
+class QTableWidget;
+class QProgressDialog;
 
 void v3d_aboutinfo();
 void v3d_Lite_info();
@@ -125,6 +129,10 @@ public:
         return QString(oss.str().c_str());
     }
 
+    float toFloat() const {
+        return v3d_major_version + 0.001 * v3d_minor_version;
+    }
+
     bool operator!=(const VersionInfo& rhs) const {
         if (v3d_major_version != rhs.v3d_major_version) return true;
         if (v3d_minor_version != rhs.v3d_minor_version) return true;
@@ -171,6 +179,44 @@ public:
 
 extern VersionInfo thisVersionOfV3D;
 
+// UpdateItem class is for storage of potentially updatable software component
+// information within the V3DVersionChecker class.
+class UpdateItem : public QObject
+{
+    Q_OBJECT
+
+public:
+    UpdateItem(QObject* parent)
+            : QObject(parent),
+              localVersion(std::numeric_limits<float>::quiet_NaN()),
+              remoteVersion(std::numeric_limits<float>::quiet_NaN()),
+              bDoInstall(false)
+    {}
+
+    QString relativeName; // e.g. "plugins/5dstackconverter/lib5dstackconverter.dylib"
+    //
+    QFileInfo localFile; // e.g. /Applications/v3d.app/Contents/MacOS/plugins/5dstackconverter/lib5dstackconverter.dylib
+    float localVersion; // e.g. 1.1; or NaN, if undefined
+    //
+    QUrl remoteUrl; // e.g. http://penglab.janelia.org/proj/v3d/stable_version/mac/plugins/5dstackconverter/lib5dstackconverter.dylib
+    float remoteVersion; // e.g. 1.2; or NaN, if undefined
+
+    bool bDoInstall;
+
+signals:
+    void updateComplete(QProgressDialog*);
+
+public slots:
+    void setInstall( int state );
+    void startUpdate(QProgressDialog*);
+
+private slots:
+    void finishedDownloadSlot(QNetworkReply*);
+
+private:
+    QProgressDialog *progressDialog;
+};
+
 class V3DVersionChecker : public QObject
 {
     Q_OBJECT
@@ -179,17 +225,31 @@ public:
     V3DVersionChecker(QWidget *guiParent);
     void checkForLatestVersion(bool b_verbose = false);
     bool shouldCheckNow();
+    void populateQTableWidget(QTableWidget& tableWidget);
+
+public slots:
+    void cancelDownloadSlot();
 
 private slots:
     void gotVersion(QNetworkReply* reply);
-    void start_update();
+    void show_update_list();
+    void install_updates();
+    void finishUpdates(QProgressDialog* progressDialog);
 
 protected:
     void processVersionXmlFile(const QDomDocument& versionDoc);
+    // cache versions of local v3d and plugins, prior to checking update site.
+    void populateLocalUpdateItems();
+    void populateLocalPluginsDirs(const QDir& pluginsDir);
+    void populateLocalPluginsFiles(const QDir& pluginsDir);
+    std::vector<UpdateItem*> getUpdatableItems();
+    std::vector<UpdateItem*> getFutureItems();
 
 private:
     QWidget *guiParent;
     bool b_showAllMessages;
+    std::map<QString, UpdateItem*> updateItems;
+    bool bDownloadCanceled;
 };
 
 class UpdatesAvailableDialog : public QMessageBox 
@@ -227,10 +287,13 @@ class UpdatesListDialog : public QDialog, public Ui::dialog_update_list
 {
     Q_OBJECT
 public:
-    UpdatesListDialog(QWidget* guiParent);
+    UpdatesListDialog(QWidget* guiParent, V3DVersionChecker *checker);
 
-private slots:
+signals:
     void update_install();
+
+private:
+    V3DVersionChecker *versionChecker;
 };
 
 } // namespace v3d
