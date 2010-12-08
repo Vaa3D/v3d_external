@@ -152,6 +152,7 @@ public:
 
 //==========================================================================================
 
+class TriviewControl; //added by PHC, 2010-Dec-08
 class View3DControl;
 
 class V3DPluginCallback2 : public V3DPluginCallback
@@ -161,6 +162,7 @@ public:
 
 	virtual View3DControl * getView3DControl(v3dhandle image_window) = 0;
 	virtual View3DControl * getLocalView3DControl(v3dhandle image_window) = 0;
+	virtual TriviewControl * getTriviewControl(v3dhandle image_window) = 0;
 };
 
 class V3DPluginInterface2
