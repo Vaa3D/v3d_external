@@ -3,7 +3,7 @@
  *  swc_to_maskimage 
  *
  *  Created by Yang, Jinzhu, on 11/27/10.
- *
+ *  Last change: by Hanchuan peng, 2010-Dec-8
  */
 
 #include <QtGlobal>
@@ -41,21 +41,19 @@ void SWC_TO_MASKIMAGElugin::domenu(const QString &menu_name, V3DPluginCallback &
 	}
 	else if (menu_name == tr("Help"))
 	{
-		v3d_msg("(version 0.1) Convert a SWC file to a mask image, where the area of the swc tubes will have non-zero values, and other area will have 0s.");
+		v3d_msg("(version 0.11) Convert a SWC file to a mask image, where the area of the swc tubes will have non-zero values, and other area will have 0s.");
 		return;
 	}
 }
-QHash<int, int> NeuronNextPn(NeuronTree &neurons) 
+
+QHash<V3DLONG, V3DLONG> NeuronNextPn(const NeuronTree &neurons) 
 {
-	QHash<int, int> next;
-	NeuronSWC *tmp;
+	QHash<V3DLONG, V3DLONG> neuron_id_table;
 	for (V3DLONG i=0;i<neurons.listNeuron.size(); i++)
-	{
-		tmp = (NeuronSWC *)(&(neurons.listNeuron.at(i)));
-		next.insert(tmp->n, i); 
-	}
-	return next;
+		neuron_id_table.insert(V3DLONG(neurons.listNeuron.at(i).n), i); 
+	return neuron_id_table;
 }
+
 void BoundNeuronCoordinates(NeuronTree & neuron, 
 							bool b_subtractMinFromAllNonnegatives,
 							double & output_xmin,
@@ -70,39 +68,39 @@ void BoundNeuronCoordinates(NeuronTree & neuron,
 	NeuronSWC *p_cur = 0;
 	V3DLONG ii;
 
-	//tmp search
-	for (ii=0; ii<neuron.listNeuron.size(); ii++)
-	{
-		p_cur = (NeuronSWC *)(&(neuron.listNeuron.at(ii)));
-		
-		if (ii==0)
-		{
-			xmin = p_cur->x; 
-			ymin = p_cur->y;
-			zmin = p_cur->z;
-			xmax = p_cur->x; 
-			ymax = p_cur->y;
-			zmax = p_cur->z;
-		}
-		else
-		{
-			xmin = (p_cur->x < xmin) ? (p_cur->x) : xmin;
-			ymin = (p_cur->y < ymin) ? (p_cur->y) : ymin;
-			zmin = (p_cur->z < zmin) ? (p_cur->z) : zmin;
-			
-			xmax = (p_cur->x > xmax) ? (p_cur->x) : xmax;
-			ymax = (p_cur->y > ymax) ? (p_cur->y) : ymax;
-			zmax = (p_cur->z > zmax) ? (p_cur->z) : zmax;
-		}
-	}
-	output_xmin = xmin;
-	output_xmax = xmax;
-	output_ymin = ymin;
-	output_ymax = ymax;
-	output_zmin = zmin;
-	output_zmax = zmax;
-
-	return;
+//	//tmp search
+//	for (ii=0; ii<neuron.listNeuron.size(); ii++)
+//	{
+//		p_cur = (NeuronSWC *)(&(neuron.listNeuron.at(ii)));
+//		
+//		if (ii==0)
+//		{
+//			xmin = p_cur->x; 
+//			ymin = p_cur->y;
+//			zmin = p_cur->z;
+//			xmax = p_cur->x; 
+//			ymax = p_cur->y;
+//			zmax = p_cur->z;
+//		}
+//		else
+//		{
+//			xmin = (p_cur->x < xmin) ? (p_cur->x) : xmin;
+//			ymin = (p_cur->y < ymin) ? (p_cur->y) : ymin;
+//			zmin = (p_cur->z < zmin) ? (p_cur->z) : zmin;
+//			
+//			xmax = (p_cur->x > xmax) ? (p_cur->x) : xmax;
+//			ymax = (p_cur->y > ymax) ? (p_cur->y) : ymax;
+//			zmax = (p_cur->z > zmax) ? (p_cur->z) : zmax;
+//		}
+//	}
+//	output_xmin = xmin;
+//	output_xmax = xmax;
+//	output_ymin = ymin;
+//	output_ymax = ymax;
+//	output_zmin = zmin;
+//	output_zmax = zmax;
+//
+//	return;
 	
 	//initial search
 	for (ii=0; ii<neuron.listNeuron.size(); ii++)
@@ -191,12 +189,12 @@ void ComputemaskImage(NeuronTree neurons,
 			return;
 		}
 	}
-	
+
+	//create a LUT
+	QHash<V3DLONG, V3DLONG> neuron_id_table = NeuronNextPn(neurons); 
+
 	//compute mask
 	double xs = 0, ys = 0, zs = 0, xe = 0, ye = 0, ze = 0, rs = 0, re = 0;
-//	v3d_msg(QString("sx %1 sy %2 sz %3").arg(sx).arg(sy).arg(sz), 0);
-//	v3d_msg(QString("sx %1").arg(sx));
-	
 	V3DLONG pagesz = sx*sy;
 	for (V3DLONG ii=0; ii<neurons.listNeuron.size(); ii++)
 	{
@@ -224,6 +222,8 @@ void ComputemaskImage(NeuronTree neurons,
 		if (ballz0>ballz1) {tmpf = ballz0; ballz0 = ballz1; ballz1 = tmpf;}
 		
 		//marker all voxels close to the swc node(s)
+		if (0)
+		{
 	    for (k = ballz0; k <= ballz1; k++)
 		{
 			for (j = bally0; j <= bally1; j++)
@@ -251,44 +251,21 @@ void ComputemaskImage(NeuronTree neurons,
 				}
 			}
 		}
+		}
 		
 		//find previous node
 		if (p_cur->pn < 0) //then it is root node already
 		{
 			continue;
 		}
-		///////////
-		QHash<int, int> next = NeuronNextPn(neurons); 
-		NeuronSWC *pp = 0;	
-		pp = (NeuronSWC *)(&(neurons.listNeuron.at(next.value(p_cur->pn)))); 
-		xe = pp->x;
-		ye = pp->y;
-		ze = pp->z;
-		re = pp->r;
-		///////////
-	//	NeuronSWC *pp=0;
-//		bool b_find = false;
-//		for (V3DLONG j=0; j<neurons.listNeuron.size(); j++)
-//		{
-//			pp = (NeuronSWC *)(&(neurons.listNeuron.at(j)));
-//			if(pp->n == p_cur->pn)
-//			{
-//				b_find = true;
-//				break;
-//			}
-//		}
-//		if (!b_find)
-//		{
-//			v3d_msg(QString("Cannot find the matching parent node [%1] for the current node [%2]\n").arg(p_cur->pn).arg(p_cur->n), 0);
-//			continue;
-//		}
-//		else
-//		{
-//			xe = pp->x;
-//			ye = pp->y;
-//			ze = pp->z;
-//			re = pp->r;
-//		}
+
+		//get the parent info
+		
+		const NeuronSWC & pp  = neurons.listNeuron.at(neuron_id_table.value(p_cur->pn)); 
+		xe = pp.x;
+		ye = pp.y;
+		ze = pp.z;
+		re = pp.r;
 		
 		//judge if two points overlap, if yes, then do nothing as the sphere has already been drawn
 		if (xe==xs && ye==ys && ze==zs)
@@ -296,15 +273,20 @@ void ComputemaskImage(NeuronTree neurons,
 			v3d_msg(QString("Detect overlapping coordinates of node [%1]\n").arg(p_cur->n), 0);
 			continue;
 		}
+
+//		//only set the current point's value in the mask image
+//		pImMask[V3DLONG(zs)*sx*sy + V3DLONG(ys)*sx + V3DLONG(xs)] = random()%250 + 1; 
+//		continue;
 		
 		//finding the envelope of the current line segment
+		
 		double rbox = (rs>re) ? rs : re;
-		double x_down = (xs < xe) ? xs : xe; x_down -= rbox; x_down = V3DLONG(x_down-0.5); if (x_down<0) x_down=0; if (x_down>=sx-1) x_down = sx-1;
-		double x_top  = (xs > xe) ? xs : xe; x_top  += rbox; x_top  = V3DLONG(x_top +0.5); if (x_top<0)  x_top=0;  if (x_top>=sx-1)  x_top  = sx-1;
-		double y_down = (ys < ye) ? ys : ye; y_down -= rbox; y_down = V3DLONG(y_down-0.5); if (y_down<0) y_down=0; if (y_down>=sy-1) y_down = sy-1;
-		double y_top  = (ys > ye) ? ys : ye; y_top  += rbox; y_top  = V3DLONG(y_top +0.5); if (y_top<0)  y_top=0;  if (y_top>=sy-1)  y_top = sy-1;
-		double z_down = (zs < ze) ? zs : ze; z_down -= rbox; z_down = V3DLONG(z_down-0.5); if (z_down<0) z_down=0; if (z_down>=sz-1) z_down = sz-1;
-		double z_top  = (zs > ze) ? zs : ze; z_top  += rbox; z_top  = V3DLONG(z_top +0.5); if (z_top<0)  z_top=0;  if (z_top>=sz-1)  z_top = sz-1;
+		double x_down = (xs < xe) ? xs : xe; x_down -= rbox; x_down = V3DLONG(x_down); if (x_down<0) x_down=0; if (x_down>=sx-1) x_down = sx-1;
+		double x_top  = (xs > xe) ? xs : xe; x_top  += rbox; x_top  = V3DLONG(x_top ); if (x_top<0)  x_top=0;  if (x_top>=sx-1)  x_top  = sx-1;
+		double y_down = (ys < ye) ? ys : ye; y_down -= rbox; y_down = V3DLONG(y_down); if (y_down<0) y_down=0; if (y_down>=sy-1) y_down = sy-1;
+		double y_top  = (ys > ye) ? ys : ye; y_top  += rbox; y_top  = V3DLONG(y_top ); if (y_top<0)  y_top=0;  if (y_top>=sy-1)  y_top = sy-1;
+		double z_down = (zs < ze) ? zs : ze; z_down -= rbox; z_down = V3DLONG(z_down); if (z_down<0) z_down=0; if (z_down>=sz-1) z_down = sz-1;
+		double z_top  = (zs > ze) ? zs : ze; z_top  += rbox; z_top  = V3DLONG(z_top ); if (z_top<0)  z_top=0;  if (z_top>=sz-1)  z_top = sz-1;
 		
 		//compute cylinder and flag mask 
 		
@@ -350,11 +332,7 @@ void ComputemaskImage(NeuronTree neurons,
 					double Rs = rs/cosa;
 					double Re = re/cosa;					
 					rr = (Rs > Re) ? (Rs - (Rs - Re)/sqrt(norms21)*normssc) : (Re - (Re-Rs)/sqrt(norms21)*normsce);					
-					//rr = (rs > re) ? (rs - (rs - re)/sqrt(norms21)*normssc) : (re - (re-rs)/sqrt(norms21)*normsce);
 					
-					//printf("rs=%lf rr=%lf dist=%lf re%lf \n",rs,rr,dist,re);
-					
-					//
 					if (dist < rr)
 						pImMask[(k)*sx*sy + (j)*sx + i] = random()%250+1;
 				}

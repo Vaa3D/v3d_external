@@ -28,6 +28,7 @@ public:
 };
 
 void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_code);
+
 void BoundNeuronCoordinates(NeuronTree & neuron, 
 							bool b_subtractMinFromAllNonnegatives,
 							double & output_xmin,
@@ -37,6 +38,7 @@ void BoundNeuronCoordinates(NeuronTree & neuron,
 							double & output_zmin,
 							double & output_zmax
 );
+
 void ComputemaskImage(NeuronTree neurons, 
 					  unsigned char* pImMask, //output mask image
 					  unsigned char* ImMark,  //an indicator image to show whether or not a pixel has been visited/processed
@@ -44,6 +46,8 @@ void ComputemaskImage(NeuronTree neurons,
 					  V3DLONG sy, 
 					  V3DLONG sz 
 );
+
+QHash<V3DLONG, V3DLONG> NeuronNextPn(const NeuronTree &neurons);
 
 
 #endif
