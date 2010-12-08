@@ -344,7 +344,13 @@ void ComputemaskImage(NeuronTree neurons,
 					//compute rr
 					double normssc = sqrt((xs-xc)*(xs-xc)+(ys-yc)*(ys-yc)+(zs-zc)*(zs-zc));
 					double normsce = sqrt((xe-xc)*(xe-xc)+(ye-yc)*(ye-yc)+(ze-zc)*(ze-zc));
-					rr = (rs > re) ? (rs - (rs - re)/sqrt(norms21)*normssc) : (re - (re-rs)/sqrt(norms21)*normsce);
+					double a = sqrt(norms21-(rs-re)*(rs-re));
+					double b = sqrt(norms21);
+					double cosa = a/b;
+					double Rs = rs/cosa;
+					double Re = re/cosa;					
+					rr = (Rs > Re) ? (Rs - (Rs - Re)/sqrt(norms21)*normssc) : (Re - (Re-Rs)/sqrt(norms21)*normsce);					
+					//rr = (rs > re) ? (rs - (rs - re)/sqrt(norms21)*normssc) : (re - (re-rs)/sqrt(norms21)*normsce);
 					
 					//printf("rs=%lf rr=%lf dist=%lf re%lf \n",rs,rr,dist,re);
 					
