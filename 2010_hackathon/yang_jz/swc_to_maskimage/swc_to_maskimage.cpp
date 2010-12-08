@@ -45,7 +45,17 @@ void SWC_TO_MASKIMAGElugin::domenu(const QString &menu_name, V3DPluginCallback &
 		return;
 	}
 }
-
+QHash<int, int> NeuronNextPn(NeuronTree &neurons) 
+{
+	QHash<int, int> next;
+	NeuronSWC *tmp;
+	for (V3DLONG i=0;i<neurons.listNeuron.size(); i++)
+	{
+		tmp = (NeuronSWC *)(&(neurons.listNeuron.at(i)));
+		next.insert(tmp->n, i); 
+	}
+	return next;
+}
 void BoundNeuronCoordinates(NeuronTree & neuron, 
 							bool b_subtractMinFromAllNonnegatives,
 							double & output_xmin,
@@ -174,7 +184,7 @@ void ComputemaskImage(NeuronTree neurons,
 	for (V3DLONG ii=0; ii<neurons.listNeuron.size(); ii++)
 	{
 		p_cur = (NeuronSWC *)(&(neurons.listNeuron.at(ii)));
-		v3d_msg(QString("x %1 y %2 z %3 r %4\n").arg(p_cur->x).arg(p_cur->y).arg(p_cur->z).arg(p_cur->r));
+	//	v3d_msg(QString("x %1 y %2 z %3 r %4\n").arg(p_cur->x).arg(p_cur->y).arg(p_cur->z).arg(p_cur->r),0);
 		if (p_cur->x<0 || p_cur->y<0 || p_cur->z<0 || p_cur->r<0)
 		{
 			v3d_msg("You have illeagal x,y,z coordinates or radius values. Check your data.");
@@ -184,7 +194,8 @@ void ComputemaskImage(NeuronTree neurons,
 	
 	//compute mask
 	double xs = 0, ys = 0, zs = 0, xe = 0, ye = 0, ze = 0, rs = 0, re = 0;
-	v3d_msg(QString("sx %1 sy %2 sz %3").arg(sx).arg(sy).arg(sz), 0);
+//	v3d_msg(QString("sx %1 sy %2 sz %3").arg(sx).arg(sy).arg(sz), 0);
+//	v3d_msg(QString("sx %1").arg(sx));
 	
 	V3DLONG pagesz = sx*sy;
 	for (V3DLONG ii=0; ii<neurons.listNeuron.size(); ii++)
@@ -246,30 +257,38 @@ void ComputemaskImage(NeuronTree neurons,
 		{
 			continue;
 		}
-		
-		NeuronSWC *pp=0;
-		bool b_find = false;
-		for (V3DLONG j=0; j<neurons.listNeuron.size(); j++)
-		{
-			pp = (NeuronSWC *)(&(neurons.listNeuron.at(j)));
-			if(pp->n == p_cur->pn)
-			{
-				b_find = true;
-				break;
-			}
-		}
-		if (!b_find)
-		{
-			v3d_msg(QString("Cannot find the matching parent node [%1] for the current node [%2]\n").arg(p_cur->pn).arg(p_cur->n), 0);
-			continue;
-		}
-		else
-		{
-			xe = pp->x;
-			ye = pp->y;
-			ze = pp->z;
-			re = pp->r;
-		}
+		///////////
+		QHash<int, int> next = NeuronNextPn(neurons); 
+		NeuronSWC *pp = 0;	
+		pp = (NeuronSWC *)(&(neurons.listNeuron.at(next.value(p_cur->pn)))); 
+		xe = pp->x;
+		ye = pp->y;
+		ze = pp->z;
+		re = pp->r;
+		///////////
+	//	NeuronSWC *pp=0;
+//		bool b_find = false;
+//		for (V3DLONG j=0; j<neurons.listNeuron.size(); j++)
+//		{
+//			pp = (NeuronSWC *)(&(neurons.listNeuron.at(j)));
+//			if(pp->n == p_cur->pn)
+//			{
+//				b_find = true;
+//				break;
+//			}
+//		}
+//		if (!b_find)
+//		{
+//			v3d_msg(QString("Cannot find the matching parent node [%1] for the current node [%2]\n").arg(p_cur->pn).arg(p_cur->n), 0);
+//			continue;
+//		}
+//		else
+//		{
+//			xe = pp->x;
+//			ye = pp->y;
+//			ze = pp->z;
+//			re = pp->r;
+//		}
 		
 		//judge if two points overlap, if yes, then do nothing as the sphere has already been drawn
 		if (xe==xs && ye==ys && ze==zs)
@@ -376,7 +395,7 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 									y_min,
 									y_max,
 									z_min,
-								   z_max);
+								    z_max);
 						
 			sx = (b_subtractMinFromAllNonnegatives || x_min<0) ? V3DLONG(ceil(x_max - x_min + 1)) : V3DLONG(ceil(x_max + 1));
 			sy = (b_subtractMinFromAllNonnegatives || y_min<0) ? V3DLONG(ceil(y_max - y_min + 1)) : V3DLONG(ceil(y_max + 1));
