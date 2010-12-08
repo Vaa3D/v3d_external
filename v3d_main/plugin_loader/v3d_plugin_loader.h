@@ -137,6 +137,7 @@ public:
 public:
 	virtual View3DControl * getView3DControl(v3dhandle image_window);
 	virtual View3DControl * getLocalView3DControl(v3dhandle image_window);
+	virtual TriviewControl * getTriviewControl(v3dhandle image_window); //aded by PHC, 2010-12-08
 
 };
 
