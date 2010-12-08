@@ -27,6 +27,25 @@ public:
 	void dofunc(const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output, QWidget *parent) {}	
 };
 
+void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_code);
+void BoundNeuronCoordinates(NeuronTree & neuron, 
+							bool b_subtractMinFromAllNonnegatives,
+							double & output_xmin,
+							double & output_xmax,
+							double & output_ymin,
+							double & output_ymax,
+							double & output_zmin,
+							double & output_zmax
+);
+void ComputemaskImage(NeuronTree neurons, 
+					  unsigned char* pImMask, //output mask image
+					  unsigned char* ImMark,  //an indicator image to show whether or not a pixel has been visited/processed
+					  V3DLONG sx, 
+					  V3DLONG sy, 
+					  V3DLONG sz 
+);
+
+
 #endif
 
 
