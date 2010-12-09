@@ -68,6 +68,7 @@ QT_END_NAMESPACE
 #include "basic_surf_objs.h"
 #include "basic_landmark.h"
 #include "basic_view3d.h"
+#include "basic_triview.h"
 #include "v3d_global_preference.h"
 #include "v3d_message.h"
 
