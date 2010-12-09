@@ -44,7 +44,8 @@ void ComputemaskImage(NeuronTree neurons,
 					  unsigned char* ImMark,  //an indicator image to show whether or not a pixel has been visited/processed
 					  V3DLONG sx, 
 					  V3DLONG sy, 
-					  V3DLONG sz 
+					  V3DLONG sz,
+					  int method_code
 );
 
 QHash<V3DLONG, V3DLONG> NeuronNextPn(const NeuronTree &neurons);

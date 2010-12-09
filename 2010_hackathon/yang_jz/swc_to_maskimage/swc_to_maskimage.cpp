@@ -174,7 +174,8 @@ void ComputemaskImage(NeuronTree neurons,
 					  unsigned char* ImMark,  //an indicator image to show whether or not a pixel has been visited/processed
 					  V3DLONG sx, 
 					  V3DLONG sy, 
-					  V3DLONG sz 
+					  V3DLONG sz,
+					  int method_code
 )
 {
 	NeuronSWC *p_cur = 0;
@@ -190,7 +191,6 @@ void ComputemaskImage(NeuronTree neurons,
 			return;
 		}
 	}
-
 	//create a LUT
 	QHash<V3DLONG, V3DLONG> neuron_id_table = NeuronNextPn(neurons); 
 
@@ -237,14 +237,16 @@ void ComputemaskImage(NeuronTree neurons,
 					
 					if(dt < rs)
 					{
-						if (ImMark[ind] == 0)
+						if (method_code == 1)
 						{
-							pImMask[ind] = random()%240 + 1;
+							pImMask[ind] = 1;
+							
+						}else if (method_code ==2)
+						{
 							ImMark[ind] = 1;
-						}else
-						{
-							pImMask[ind]+=1;
+						
 						}
+					
 					}
 				}
 			}
@@ -325,21 +327,36 @@ void ComputemaskImage(NeuronTree neurons,
 					rr = (rs > re) ? (rs - (rs - re)/sqrt(norms21)*normssc) : (re - (re-rs)/sqrt(norms21)*normsce);
 					V3DLONG ind1 = (k)*sx*sy + (j)*sx + i;
 					if (dist < rr)
-					{	
-						if (ImMark[ind1] == 0)
+					{
+						if (method_code == 1)
 						{
-							pImMask[ind1] = random()%240 + 1;
-							ImMark[ind1] = 1;
+							pImMask[ind1] = 1;							
 						}
-						else
+						else if (method_code ==2)
 						{
-							pImMask[ind1]+=1;
+							ImMark[ind1] = 1;
 						}
 					}
 				}
 			}
 		}
 	}
+	if (method_code == 2)
+	{
+		for (V3DLONG k = 0; k < sz; k++) 
+		{
+			for(V3DLONG j = 0; j < sy; j++)
+			{
+				for(V3DLONG i = 0; i < sx; i ++)
+				{
+					pImMask[k*sx*sy + j*sx +i] += ImMark[k*sx*sy + j*sx +i];
+					
+				}
+			}
+		}
+	}
+		
+	
 }
 
 void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_code)
@@ -408,7 +425,7 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 			for (V3DLONG i=0; i<stacksz; i++)
 					pImMask[i] = ImMark[i] = 0; 
 
-			ComputemaskImage(neuron, pImMask, ImMark, sx, sy, sz);
+			ComputemaskImage(neuron, pImMask, ImMark, sx, sy, sz,1);
 		}
 		else 
 		{
@@ -453,6 +470,12 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 					
 				}
 			}
+			else 
+			{
+				v3d_msg("You don't have any image open in the main window.");
+				return;
+			}
+
 		}
 		sx = (x_min<0) ? V3DLONG(ceil(x_max - x_min + 1)) : V3DLONG(ceil(x_max + 1));
 		sy = (y_min<0) ? V3DLONG(ceil(y_max - y_min + 1)) : V3DLONG(ceil(y_max + 1));
@@ -463,7 +486,6 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 		try
 		{
 			pImMask = new unsigned char [stacksz];
-			ImMark = new unsigned char [stacksz];
 		}
 		catch (...) 
 		{
@@ -472,7 +494,7 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 		}
 		
 		for (V3DLONG i=0; i<stacksz; i++)
-			pImMask[i] = ImMark[i] = 0; 
+			pImMask[i] =  0; 
 		
 		for (V3DLONG i = 0; i < filenames.size();i++)
 		{
@@ -489,7 +511,22 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 					if (y_min<0 ) p_cur->y -= y_min;
 					if (z_min<0 ) p_cur->z -= z_min;
 				}
-				ComputemaskImage(neuron, pImMask, ImMark, sx, sy, sz);
+				try
+				{
+					ImMark = new unsigned char [stacksz];
+				}
+				catch (...) 
+				{
+					v3d_msg("Fail to allocate memory.\n");
+					return;
+				}
+				
+				for (V3DLONG i=0; i<stacksz; i++)
+					 ImMark[i] = 0; 				
+				
+				ComputemaskImage(neuron, pImMask, ImMark, sx, sy, sz,2);
+				
+				if (ImMark) {delete []ImMark; ImMark=0;}
 			}
 			else 
 			{
@@ -509,5 +546,5 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 	callback.updateImageWindow(newwin);
 	
 	//free space
-	if (ImMark) {delete []ImMark; ImMark=0;}
+	//if (ImMark) {delete []ImMark; ImMark=0;}
 }
