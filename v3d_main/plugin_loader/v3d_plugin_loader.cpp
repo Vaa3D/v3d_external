@@ -909,3 +909,13 @@ View3DControl * V3d_PluginLoader::getLocalView3DControl(v3dhandle image_window)
 	return vi;
 }
 
+TriviewControl * V3d_PluginLoader::getTriviewControl(v3dhandle image_window)
+{
+	TriviewControl * tvi = 0;
+	if_XFormWidget(w, image_window)
+	{
+		tvi = dynamic_cast<TriviewControl *>(w); // w->getTriview()
+	}
+	return tvi;
+}
+
