@@ -339,7 +339,12 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 
 
 	V3DLONG start_nodeind, *end_nodeind = 0;
-	end_nodeind = new V3DLONG [n_end_nodes]; //100520, PHC	
+	if (n_end_nodes>0) //101210 PHC
+		end_nodeind = new V3DLONG [n_end_nodes]; //100520, PHC	
+	else
+		printf("**************** n_end_nodes is 0, and thus do not need to allocate memory. *********************\n");
+		
+		
 	if (NODE_XYZ_OUT_OF_BOUND(x0,y0,z0))
 	{
 		printf(s_error="Error happens: start_node out of bound! \n");
@@ -472,7 +477,7 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 	printf("image average =%g, std =%g, max =%g.  select %ld out of %ld links \n", imgAve, imgStd, imgMax, n, m);
 	printf("total %ld nodes, total %ld edges \n", num_nodes, num_edges);
 	printf("start from #%ld to ", start_nodeind);
-	for(int i=0; i<n_end_nodes; i++) printf("#%ld ", end_nodeind[i]); printf("\n");
+	for(V3DLONG i=0; i<n_end_nodes; i++) printf("#%ld ", end_nodeind[i]); printf("\n");
 	printf("---------------------------------------------------------------\n");
 
 
