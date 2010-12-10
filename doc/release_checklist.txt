@@ -107,3 +107,16 @@ Run cmake
  Create version xml file:
  Click "Help"->"Check for updates..."->"Options..."->"Save new version xml file..."
 
+Create installer
+ % make package
+ [test InstallV3d-<version>.dmg]
+ [if the background image does not show, you may need to update the DSStore file:
+    % ../v3d_main/CMake/package/mac/update_dmg_view.sh InstallV3d-<version>.dmg 
+    % cp DS_Store_v3d_<version> ../v3d_main/CMake/package/dmg_DS_Store 
+    % cd ..
+    % svn commit v3d_main/CMake/package/dmg_DS_Store
+    % cd build_cmake
+    % make package
+
+ % cp InstallV3d-<version>.dmg <release area>
+
