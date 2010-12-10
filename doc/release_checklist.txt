@@ -120,3 +120,6 @@ Create installer
 
  % cp InstallV3d-<version>.dmg <release area>
 
+NOTE: After copying files to the web server, make sure all files have read/execute permission.
+ % chmod -R +rx stable_version/
+ 

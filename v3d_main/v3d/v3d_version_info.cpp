@@ -426,6 +426,8 @@ void V3DVersionChecker::createVersionXml(QString xmlFileName)
             const UpdateItem& item = *(i->second);
             if (item.relativeName.length() < 1) continue;
             QString relativeUrl = relativeUrlBase + "/" + item.relativeName;
+            if (relativeUrlBase.length() == 0)
+                relativeUrl = item.relativeName; // no slash please
             // Create a new v3d_component element for this plugin
             xmlOut << QString("<v3d_component\n");
             xmlOut << QString("    name=\"%1\"\n").arg(item.relativeName);
