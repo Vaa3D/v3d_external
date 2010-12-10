@@ -12,6 +12,7 @@ QT4_WRAP_UI(QT_UI_SRCS
   ../v3d/dialog_update_v3d.ui
   ../v3d/dialog_update_list.ui
   ../v3d/dialog_update_options.ui
+  ../v3d/v3d_global_preference.ui
   )
 
 QT4_WRAP_CPP(QT_MOC_SRCS
