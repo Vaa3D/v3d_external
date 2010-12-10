@@ -308,6 +308,7 @@ FORMS += landmark_property.ui \
     dialog_url_entry.ui \
     dialog_update_v3d.ui \
     dialog_update_list.ui \
+    dialog_update_options.ui \
     FL_watershedSegPara.ui \
     FL_levelsetSegPara.ui 
 

@@ -44,12 +44,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <QSettings>
 #include <QDebug>
 #include <QMessageBox>
-
-// For testing:
-QString v3dVersionUrlBase("http://brunsc-wm1.janelia.priv/~brunsc/v3d/stable_version/");
-
-// For production:
-// QString v3dVersionUrlBase("http://penglab.janelia.org/proj/v3d/");
+#include <QPalette>
 
 namespace v3d {
     // Set current version here.
@@ -272,6 +267,7 @@ void UpdateItem::startUpdate(QProgressDialog* p)
     // When the download is complete, write the file to disk
     connect(nam, SIGNAL(finished(QNetworkReply*)),
             this, SLOT(finishedDownloadSlot(QNetworkReply*)));
+    v3d_msg(remoteUrl.toString(),0);
     nam->get(QNetworkRequest(remoteUrl));
 
     // Each item gets to add a total of 2 to the progress dialog.
@@ -282,59 +278,62 @@ void UpdateItem::startUpdate(QProgressDialog* p)
 // Slot after download has completed, before local file is updated
 void UpdateItem::finishedDownloadSlot(QNetworkReply* reply)
 {
-    bool succeeded = false; // start pessimistic
+    // Construct local file name.
+    // (note that localFile might not be populated, especially if this
+    //  is a new plugin).
+    QDir v3dDir(QCoreApplication::applicationDirPath());
+    QString fullpath = v3dDir.absoluteFilePath(relativeName);
+    QFile file(fullpath);
+    QFileInfo fileInfo(file);
 
-    if (! progressDialog->wasCanceled()) {
+    bool succeeded = true; // start optimistic
 
-        // no error received?
-        if (reply->error() == QNetworkReply::NoError)
-        {
-            // TODO - actually save plugin file
+    if (progressDialog->wasCanceled()) // user said stop
+        succeeded = false;
+
+    if (succeeded && (reply->error() != QNetworkReply::NoError)) // http error
+        succeeded = false;
+
+    if (succeeded && reply->header(QNetworkRequest::ContentLengthHeader).toLongLong() <= 0)
+        // download has no content
+        succeeded = false;
+
+    if (succeeded) // try renaming old file
+    {
+        // Back up old file in case something goes wrong...
+        if (fileInfo.exists()) {
+            QDir dir = fileInfo.absoluteDir();
+            QString oldName = dir.relativeFilePath(fullpath);
+            QString newName = oldName + ".old";
+            v3d_msg("backing up old version of "+fileInfo.absoluteFilePath(),0);
+            if (! dir.rename(oldName, newName) )
+                succeeded = false; // try to rename old file
+        }
+    }
+        
+    if (succeeded) { // try to create directory
+        // Might need to create directory
+        QDir dir = fileInfo.absoluteDir();
+        if (! dir.mkpath(".") )
+            succeeded = false;
+    }
+
+    if (succeeded) { // try to write file
+        if (file.open(QIODevice::WriteOnly)) {
             progressDialog->setWindowTitle(tr("Saving ") + relativeName + "...");
-
-            // Construct local file name.
-            // (note that localFile might not be populated, especially if this
-            //  is a new plugin).
-            QDir v3dDir(QCoreApplication::applicationDirPath());
-            QString fullpath = v3dDir.absoluteFilePath(relativeName);
-            QFile file(fullpath);
-
-            // Does reply have some content?
-            if (reply->header(QNetworkRequest::ContentLengthHeader).toLongLong() > 0)
-            {
-                // Back up old file in case something goes wrong...
-                QFileInfo fileInfo(file);
-                bool noOldFile = true;
-                if (fileInfo.exists()) {
-                    QDir dir = fileInfo.absoluteDir();
-                    QString oldName = dir.relativeFilePath(fullpath);
-                    QString newName = oldName + ".old";
-                    noOldFile = dir.rename(oldName, newName); // try to rename old file
-                }
-                if (noOldFile) {
-                    if (file.open(QIODevice::WriteOnly)) {
-                        file.write(reply->readAll());
-                        file.close();
-                        succeeded = true;
-                    }
-                    else {
-                        v3d_msg("Could not open file",0);
-                    }
-                }
-            }
-            else {
-                v3d_msg("Download was empty",0);
-            }
+            file.write(reply->readAll());
+            file.close();
         }
-        // Some http error received
         else
-        {
-            // TODO - how to report this...
-            v3d_msg("Download failed: " + relativeName, 0);
-            QMessageBox::warning(NULL, tr("Download failed"),
-                    tr("There was a problem downloading ") + relativeName
-                    + "\nTry again later.");
-        }
+            succeeded = false;
+    }
+
+    if (! succeeded) {
+        // TODO - how to report this upstream...
+        v3d_msg("Download failed: " + relativeName, 0);
+        QMessageBox::warning(NULL, tr("Download failed"),
+                tr("There was a problem downloading ") + relativeName
+                + "\nTry again later.");
     }
 
     // We receive ownership of the reply object
@@ -342,42 +341,142 @@ void UpdateItem::finishedDownloadSlot(QNetworkReply* reply)
     reply->disconnect();
     reply->deleteLater();
 
-    emit updateComplete(progressDialog);
+    emit updateComplete(progressDialog, succeeded);
 }
 
 ////////////////////////////
 // VersionChecker methods //
 ////////////////////////////
 
+// static
+QString V3DVersionChecker::getPlatformString()
+{
+    return BUILD_OS_INFO;
+}
+
+// static
+QString V3DVersionChecker::getDefaultV3DVersionXmlFileName() {
+    // return "v3d_version_"+getPlatformString()+".xml";
+    return "v3d_version.xml";
+}
+
+// static
+QString V3DVersionChecker::getDefaultV3DVersionUrl()
+{
+    // return "http://brunsc-wm1.janelia.priv/~brunsc/v3d/stable_version/" // testing
+    return "http://penglab.janelia.org/proj/v3d/stable_version/"
+            + getPlatformString() + "/"
+            + getDefaultV3DVersionXmlFileName();
+}
+
 V3DVersionChecker::V3DVersionChecker(QWidget *guiParent_param)
     : guiParent(guiParent_param)
 {}
 
+// no argument version of createVersionXml pops a dialog to ask for file.
+void V3DVersionChecker::createVersionXml()
+{
+    // Default location is same as v3d.exe...
+    QDir defaultDir = QDir(QCoreApplication::applicationDirPath());
+    // ...except on Mac, where location is above v3d.app
+    if (defaultDir.dirName() == "MacOS") { // App bundle
+        defaultDir.cdUp(); // Contents
+        defaultDir.cdUp(); // v3d.app
+        defaultDir.cdUp(); // parent of v3d.app
+    }
+    // defaultDir.cdUp();
+    // defaultDir.cdUp();
+    QString defaultPath = defaultDir.filePath(getDefaultV3DVersionXmlFileName());
+
+    QString xmlFile = QFileDialog::getSaveFileName(guiParent,
+            tr("Save V3D version xml file"),
+            defaultPath,
+            tr("XML files (*.xml)"));
+
+    if (xmlFile.length() > 0)
+        createVersionXml(xmlFile);
+}
+
+// This method depends on v3d binary being run from it's correct (relative) location.
+// Should be run from a v3d installation like that found on a web server.
+void V3DVersionChecker::createVersionXml(QString xmlFileName)
+{
+    QFileInfo xmlFileInfo(xmlFileName);
+    xmlFileInfo.makeAbsolute();
+    QDir xmlDir = xmlFileInfo.dir();
+
+    // We want to create relative URLs, for ease of testing and deployment.
+    // To construct a relative URL, determine the relative path of the
+    // V3D executable, relative to the location of the xmlFile.
+    QDir v3dDir = QDir(QCoreApplication::applicationDirPath());
+    QString relativeUrlBase = xmlDir.relativeFilePath(v3dDir.absolutePath());
+
+    // Create a fresh view of local plugins/v3d
+    updateItems.clear();
+    populateLocalUpdateItems();
+
+    QFile xmlFile(xmlFileName);
+    if (xmlFile.open(QIODevice::WriteOnly)) 
+    {
+        QTextStream xmlOut(&xmlFile);
+        xmlOut << "<?xml version=\"1.0\"?>\n<v3d_version>\n";
+        UpdateItemsType::const_iterator i;
+        for (i = updateItems.begin(); i != updateItems.end(); ++i)
+        {
+            const UpdateItem& item = *(i->second);
+            if (item.relativeName.length() < 1) continue;
+            QString relativeUrl = relativeUrlBase + "/" + item.relativeName;
+            // Create a new v3d_component element for this plugin
+            xmlOut << QString("<v3d_component\n");
+            xmlOut << QString("    name=\"%1\"\n").arg(item.relativeName);
+            xmlOut << QString("    version=\"%1\"\n").arg(item.localVersion);
+            xmlOut << QString("    platform=\"%1\"\n").arg(getPlatformString());
+            xmlOut << QString("    href=\"%1\"\n").arg(relativeUrl);
+            xmlOut << QString("/>\n");
+        }
+        xmlOut << "</v3d_version>\n";
+        xmlFile.close();
+    }
+    else {
+        QMessageBox::warning(guiParent, "XML file creation failed.", "XML file creation failed");
+    }
+}
+
 void V3DVersionChecker::checkForLatestVersion(bool b_verbose)
 {
     this->b_showAllMessages = b_verbose;
-    QUrl versionUrl(v3dVersionUrlBase + "v3d_version.xml");
+
+    QUrl xmlFileUrl(getDefaultV3DVersionUrl()); // begin by assuming default
+    // Is there already a setting for the url?
+	QSettings settings("HHMI", "V3D");
+    QString versionUrl = settings.value("versionUrl").toString();
+    if (versionUrl.length() > 0) xmlFileUrl = versionUrl;
+
+    // Remember xml url, for use in constructing absolute urls from relative ones.
+    xmlPathUrl = xmlFileUrl.resolved(QUrl("."));
+    v3d_msg(xmlPathUrl.toString(),0);
+    v3d_msg(xmlFileUrl.toString(),0);
+
     QNetworkAccessManager *nam = new QNetworkAccessManager(this);
     connect(nam, SIGNAL(finished(QNetworkReply*)),
         this, SLOT(gotVersion(QNetworkReply*)));
 
     // Prepare data structure for update items.
-    // TODO - should this be done earlier?
     updateItems.clear();
     populateLocalUpdateItems();
 
-    nam->get(QNetworkRequest(versionUrl));
+    nam->get(QNetworkRequest(xmlFileUrl));
 }
 
 // Examines last time version updater was queried to decide whether it might
 // be time to check again now.
 bool V3DVersionChecker::shouldCheckNow()
 {
-    // TODO - use similar logic to Fiji updater
+    // Use similar logic to Fiji updater
     // http://pacific.mpi-cbg.de/wiki/index.php/Update_Fiji
     // 1) Was V3D just started? Well, don't call this method otherwise. called from main.cpp
     // 2) Was V3D started without parameters? - this logic needs to be in caller. see main.cpp
-    // 3) Can files be updated by current user? // TODO
+    // 3) Can files be updated by current user? also in main.cpp
     // 4) Does network work? -- managed in gotVersion()
 
 
@@ -421,7 +520,7 @@ void V3DVersionChecker::gotVersion(QNetworkReply* reply)
             QMessageBox::information(guiParent,
                     "Unable to connect to V3D server",
                     "Could not get latest version information.\n"
-                    "Please try again later.");
+                    "Please try again later;\nOr double check the version URL in the Updates->Options... menu.");
         }
         return; // error occurred, so don't bother
     }
@@ -473,8 +572,8 @@ void V3DVersionChecker::processVersionXmlFile(const QDomDocument& versionDoc)
             if (elem.tagName() == "v3d_component")
             {
                 QString plugin_platform = elem.attribute("platform", "");
-                if (plugin_platform == BUILD_OS_INFO) { // must be same platform
-                    v3d_msg(QString("Found plugin platform ") + BUILD_OS_INFO, 0);
+                if (plugin_platform == getPlatformString()) { // must be same platform
+                    // v3d_msg(QString("Found plugin platform ") + getPlatformString(), 0);
                     QString pluginName = elem.attribute("name", "");
                     QString pluginVersion = elem.attribute("version", "0");
                     QString pluginUrl = elem.attribute("href", "");
@@ -491,7 +590,9 @@ void V3DVersionChecker::processVersionXmlFile(const QDomDocument& versionDoc)
                             // Use NaN to mean unknown
                             item.remoteVersion = std::numeric_limits<float>::quiet_NaN();
                         item.remoteUrl = QUrl(pluginUrl);
-                        v3d_msg("Found update information for " + item.relativeName,0);
+                        // Resolve relative URLs using location of xml file
+                        item.remoteUrl = xmlPathUrl.resolved(item.remoteUrl);
+                        // v3d_msg("Found update information for " + item.relativeName,0);
                     }
                 }
             }
@@ -570,11 +671,6 @@ void V3DVersionChecker::show_update_list()
     connect(listDialog, SIGNAL(update_install()), this, SLOT(install_updates()));
 }
 
-void V3DVersionChecker::cancelDownloadSlot() {
-    bDownloadCanceled = true;
-    // TODO
-}
-
 void V3DVersionChecker::install_updates()
 {
     // Connect chain of download signals
@@ -592,8 +688,8 @@ void V3DVersionChecker::install_updates()
                 firstUpdateItem = item;
             // Link update items together in a chain
             if (previousUpdateItem)
-                connect(previousUpdateItem, SIGNAL(updateComplete(QProgressDialog*)),
-                        item, SLOT(start_update(QProgressDialog*)));
+                connect(previousUpdateItem, SIGNAL(updateComplete(QProgressDialog*,bool)),
+                        item, SLOT(startUpdate(QProgressDialog*)));
             installCount++;
             previousUpdateItem = itemIter->second;
         }
@@ -606,7 +702,7 @@ void V3DVersionChecker::install_updates()
         return;
     }
 
-    connect(previousUpdateItem, SIGNAL(updateComplete(QProgressDialog*)),
+    connect(previousUpdateItem, SIGNAL(updateComplete(QProgressDialog*,bool)),
             this, SLOT(finishUpdates(QProgressDialog*)));
 
     QProgressDialog *progressDialog = new QProgressDialog(guiParent);
@@ -614,8 +710,6 @@ void V3DVersionChecker::install_updates()
     progressDialog->setModal(true);
     progressDialog->setAutoClose(true);
     progressDialog->setMinimumDuration(500);
-    connect(progressDialog, SIGNAL(canceled()),
-            this, SLOT(cancelDownloadSlot()));
     // Each item gets to increment progress value by 2
     progressDialog->setMaximum(2 * installCount); // zero means "unknown"
     progressDialog->setValue(0);
@@ -802,12 +896,18 @@ void V3DVersionChecker::populateQTableWidget(QTableWidget& tableWidget)
 
         // First column is current local version
         QString localVersion = QString("%1").arg(item.localVersion);
-        if (! (item.localVersion == item.localVersion)) // NaN => uninitialized
+        if (! item.localFile.exists()) // no local file
+            localVersion = QString("None");
+        else if (! (item.localVersion == item.localVersion)) // NaN => uninitialized
             localVersion = QString("Unknown");
         tableWidget.setItem(row, 0, new UpdateTableLabel(localVersion));
 
         // Second column is new remote version
         QString remoteVersion = QString("%1").arg(item.remoteVersion);
+        if (item.remoteUrl.isEmpty())
+            remoteVersion = QString("None");
+        if (! (item.remoteVersion == item.remoteVersion)) // NaN => uninitialized
+            remoteVersion = QString("Unknown");
         tableWidget.setItem(row, 1, new UpdateTableLabel(remoteVersion));
 
         // Third column is action to be taken
@@ -834,57 +934,16 @@ CheckForUpdatesDialog::CheckForUpdatesDialog(QWidget* guiParent) : QDialog(guiPa
 {
     setupUi(this);
 
-    // Sync with current update frequency
-    QSettings settings("HHMI", "V3D");
-    QVariant checkIntervalVariant = settings.value("updateCheckInterval");
-    if ( checkIntervalVariant.isValid() )
-    {
-        int checkInterval = checkIntervalVariant.toInt();
-        if (checkInterval < 0)
-            comboBox->setCurrentIndex(comboBox->findText(tr("never")));
-        else if (checkInterval == 0)
-            comboBox->setCurrentIndex(comboBox->findText(tr("every time")));
-        else if (checkInterval == 86400)
-            comboBox->setCurrentIndex(comboBox->findText(tr("once a day")));
-        else if (checkInterval == 604800)
-            comboBox->setCurrentIndex(comboBox->findText(tr("once a week")));
-        else if (checkInterval == 2592000)
-            comboBox->setCurrentIndex(comboBox->findText(tr("once a month")));
-        else
-            qDebug() << "Error: unrecognized interval";
-    }
-
     // Rename buttons
     QPushButton* okButton = buttonBox->button(QDialogButtonBox::Ok);
     if (okButton) {
-        okButton->setText("Check now");
+        okButton->setText(tr("Check now"));
         connect(okButton, SIGNAL(clicked()), this, SLOT(check_now()));
     }
 
-    QPushButton* openButton = buttonBox->button(QDialogButtonBox::Open);
-    if (openButton) {
-        openButton->setText("Open V3D download page");
-        connect(openButton, SIGNAL(clicked()), this, SLOT(open_download_page()));
-    }
-}
-
-void CheckForUpdatesDialog::on_comboBox_currentIndexChanged(const QString& updateFrequency)
-{
-    // Store update interval in the persistent cache
-    qDebug() << "Changing update frequency to " << updateFrequency;
-    QSettings settings("HHMI", "V3D");
-    if (updateFrequency == tr("never"))
-        settings.setValue("updateCheckInterval", -1);
-    else if (updateFrequency == tr("every time"))
-        settings.setValue("updateCheckInterval", 0);
-    else if (updateFrequency == tr("once a day"))
-        settings.setValue("updateCheckInterval", 86400);
-    else if (updateFrequency == tr("once a week"))
-        settings.setValue("updateCheckInterval", 604800);
-    else if (updateFrequency == tr("once a month"))
-        settings.setValue("updateCheckInterval", 2592000);
-    else
-        qDebug() << "Error: unrecognized interval";
+    // Add options button
+    QPushButton* optionsButton = buttonBox->addButton(tr("Options..."), QDialogButtonBox::ActionRole);
+    connect(optionsButton, SIGNAL(clicked()), this, SLOT(show_options()));
 }
 
 void CheckForUpdatesDialog::check_now()
@@ -893,21 +952,9 @@ void CheckForUpdatesDialog::check_now()
     versionChecker->checkForLatestVersion(true);
 }
 
-void CheckForUpdatesDialog::open_download_page()
-{
-    bool b_openurl_worked;
-    // Open user's browser to the V3D download page
-    b_openurl_worked = QDesktopServices::openUrl(
-        QUrl("http://penglab.janelia.org/proj/v3d/V3D/Download.html"));
-    if (! b_openurl_worked)
-        QMessageBox::warning(parentWidget(),
-                "Error opening V3D download page", // title
-                "Oops. V3D could not open your browser.\n"
-                "Please browse to\n"
-                "http://penglab.janelia.org/proj/v3d/V3D/Download.html\n"
-                "to get the latest version");
+void CheckForUpdatesDialog::show_options() {
+    UpdateOptionsDialog(this).exec();
 }
-
 
 
 UpdatesAvailableDialog::UpdatesAvailableDialog(QWidget *parent)
@@ -964,6 +1011,135 @@ UpdatesListDialog::UpdatesListDialog(QWidget* guiParent, V3DVersionChecker *chec
     }
 
     checker->populateQTableWidget(*tableWidget);
+}
+
+UpdateOptionsDialog::UpdateOptionsDialog(QWidget* guiParent) 
+    : QDialog(guiParent)
+{
+    setupUi(this);
+
+    validator = new VersionUrlValidator(this);
+
+    // Want to color invalid URLs red.
+    blackPalette = new QPalette(lineEdit->palette());
+    redPalette = new QPalette(lineEdit->palette());
+    // redPalette->setColor(foregroundRole(), QColor(255, 0, 0));
+    redPalette->setColor(QPalette::Text, QColor(255, 0, 0)); // red text
+
+    // Sync with current update frequency
+    QSettings settings("HHMI", "V3D");
+    QVariant checkIntervalVariant = settings.value("updateCheckInterval");
+    if ( checkIntervalVariant.isValid() )
+    {
+        int checkInterval = checkIntervalVariant.toInt();
+        if (checkInterval < 0)
+            comboBox->setCurrentIndex(comboBox->findText(tr("never")));
+        else if (checkInterval == 0)
+            comboBox->setCurrentIndex(comboBox->findText(tr("every time")));
+        else if (checkInterval == 86400)
+            comboBox->setCurrentIndex(comboBox->findText(tr("once a day")));
+        else if (checkInterval == 604800)
+            comboBox->setCurrentIndex(comboBox->findText(tr("once a week")));
+        else if (checkInterval == 2592000)
+            comboBox->setCurrentIndex(comboBox->findText(tr("once a month")));
+        else
+            qDebug() << "Error: unrecognized interval";
+    }
+
+    QPushButton* openButton = buttonBox->button(QDialogButtonBox::Open);
+    if (openButton) {
+        openButton->setText(tr("Open V3D download page"));
+        connect(openButton, SIGNAL(clicked()), this, SLOT(open_download_page()));
+    }
+
+    QPushButton* saveButton = buttonBox->button(QDialogButtonBox::Save);
+    if (saveButton) {
+        saveButton->setText(tr("Save new version xml file"));
+        connect(saveButton, SIGNAL(clicked()), this, SLOT(save_xml_file()));
+    }
+
+    // Set default button to "Close"
+    QPushButton* closeButton = buttonBox->button(QDialogButtonBox::Close);
+    closeButton->setDefault(true);
+
+    // QRegExp urlRegExp("^https?://\\S+/.*\\.xml$");
+    // lineEdit->setValidator(new QRegExpValidator(urlRegExp, this));
+    lineEdit->setValidator(validator);
+
+    QString versionUrl = settings.value("versionUrl").toString();
+    if (versionUrl.length() == 0)
+        versionUrl = V3DVersionChecker::getDefaultV3DVersionUrl();
+
+    lineEdit->setText(versionUrl);
+
+    // Implement "use default version file" button
+    connect(useDefaultVersionButton, SIGNAL(clicked()),
+            this, SLOT(use_default_version_file()));
+}
+
+void UpdateOptionsDialog::use_default_version_file()
+{
+    QString defUrl = V3DVersionChecker::getDefaultV3DVersionUrl();
+    lineEdit->setText(defUrl);
+    // Use default setting in the future, as well.
+	QSettings settings("HHMI", "V3D");
+    settings.setValue("versionUrl", defUrl);
+}
+
+void UpdateOptionsDialog::open_download_page()
+{
+    bool b_openurl_worked;
+    // Open user's browser to the V3D download page
+    b_openurl_worked = QDesktopServices::openUrl(
+        QUrl("http://penglab.janelia.org/proj/v3d/V3D/Download.html"));
+    if (! b_openurl_worked)
+        QMessageBox::warning(parentWidget(),
+                "Error opening V3D download page", // title
+                "Oops. V3D could not open your browser.\n"
+                "Please browse to\n"
+                "http://penglab.janelia.org/proj/v3d/V3D/Download.html\n"
+                "to get the latest version");
+}
+
+void UpdateOptionsDialog::save_xml_file()
+{
+    v3d::V3DVersionChecker *versionChecker = new v3d::V3DVersionChecker(parentWidget());
+    versionChecker->createVersionXml();
+}
+
+void UpdateOptionsDialog::on_comboBox_currentIndexChanged(const QString& updateFrequency)
+{
+    // Store update interval in the persistent cache
+    qDebug() << "Changing update frequency to " << updateFrequency;
+    QSettings settings("HHMI", "V3D");
+    if (updateFrequency == tr("never"))
+        settings.setValue("updateCheckInterval", -1);
+    else if (updateFrequency == tr("every time"))
+        settings.setValue("updateCheckInterval", 0);
+    else if (updateFrequency == tr("once a day"))
+        settings.setValue("updateCheckInterval", 86400);
+    else if (updateFrequency == tr("once a week"))
+        settings.setValue("updateCheckInterval", 604800);
+    else if (updateFrequency == tr("once a month"))
+        settings.setValue("updateCheckInterval", 2592000);
+    else
+        qDebug() << "Error: unrecognized interval";
+}
+
+// User changed the url
+void UpdateOptionsDialog::on_lineEdit_editingFinished() {
+    // Save new url
+    v3d_msg("New version file = " + lineEdit->text(), 0);
+	QSettings settings("HHMI", "V3D");
+    settings.setValue("versionUrl", lineEdit->text());
+}
+
+void UpdateOptionsDialog::on_lineEdit_textChanged() // user changes version xml url
+{
+    if (validator->validate(lineEdit->text()) == QValidator::Acceptable)
+        lineEdit->setPalette(*blackPalette);
+    else
+        lineEdit->setPalette(*redPalette);
 }
 
 } // namespace v3d

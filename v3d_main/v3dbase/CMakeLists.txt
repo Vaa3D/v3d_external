@@ -11,6 +11,7 @@ QT4_WRAP_UI(QT_UI_SRCS
   ../v3d/surfaceobj_geometry_dialog.ui
   ../v3d/dialog_update_v3d.ui
   ../v3d/dialog_update_list.ui
+  ../v3d/dialog_update_options.ui
   )
 
 QT4_WRAP_CPP(QT_MOC_SRCS
@@ -20,8 +21,8 @@ QT4_WRAP_CPP(QT_MOC_SRCS
   ../v3d/v3d_version_info.h
   )
 
-include_directories(${V3D_BINARY_DIR}/v3d)
-include_directories(${V3D_BINARY_DIR}/v3dbase)
+include_directories(BEFORE ${V3D_BINARY_DIR}/v3d)
+include_directories(BEFORE ${V3D_BINARY_DIR}/v3dbase)
 
 add_library(v3dbase1 ${QT_UI_SRCS} ${QT_MOC_SRCS} ${V3DBASE_SRCS})
 

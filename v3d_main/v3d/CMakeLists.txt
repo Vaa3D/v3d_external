@@ -69,7 +69,7 @@ QT4_WRAP_CPP(QT_MOC_SRCS
   v3d_version_info.h
   )
 
-include_directories(
+include_directories( BEFORE
   ${V3D_BINARY_DIR}/v3dbase
   ${V3D_BINARY_DIR}/v3d
   )

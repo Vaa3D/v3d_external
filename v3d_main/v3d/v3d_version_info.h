@@ -43,8 +43,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <QMessageBox>
 #include <QFileInfo>
 #include <QUrl>
+#include <QValidator>
 #include "ui_dialog_update_v3d.h"
 #include "ui_dialog_update_list.h"
+#include "ui_dialog_update_options.h"
 #include <limits>
 
 class QNetworkReply;
@@ -205,7 +207,7 @@ public:
     bool bDoInstall;
 
 signals:
-    void updateComplete(QProgressDialog*);
+    void updateComplete(QProgressDialog*, bool succeeded);
 
 public slots:
     void setInstall( int state );
@@ -228,8 +230,12 @@ public:
     bool shouldCheckNow();
     void populateQTableWidget(QTableWidget& tableWidget);
 
+    static QString getPlatformString();
+    static QString getDefaultV3DVersionXmlFileName();
+    static QString getDefaultV3DVersionUrl();
+
 public slots:
-    void cancelDownloadSlot();
+    void createVersionXml();
 
 private slots:
     void gotVersion(QNetworkReply* reply);
@@ -238,6 +244,7 @@ private slots:
     void finishUpdates(QProgressDialog* progressDialog);
 
 protected:
+    void createVersionXml(QString xmlFile);
     void processVersionXmlFile(const QDomDocument& versionDoc);
     // cache versions of local v3d and plugins, prior to checking update site.
     void populateLocalUpdateItems();
@@ -249,8 +256,33 @@ protected:
 private:
     QWidget *guiParent;
     bool b_showAllMessages;
-    std::map<QString, UpdateItem*> updateItems;
+    typedef std::map<QString, UpdateItem*> UpdateItemsType;
+    UpdateItemsType updateItems;
     bool bDownloadCanceled;
+    QUrl xmlPathUrl; // location of update information xml file
+};
+
+class VersionUrlValidator : public QValidator
+{
+    Q_OBJECT
+
+public:
+    VersionUrlValidator(QObject* parent) : QValidator(parent) {}
+    
+    State validate(QString& input, int& pos) const
+    {
+        return validate(input);
+    }
+
+    State validate(const QString& input) const
+    {
+        if (input.isEmpty()) return QValidator::Intermediate;
+        QUrl url(input);
+        if (url.isEmpty()) return QValidator::Intermediate;
+        if (! url.isValid()) return QValidator::Intermediate;
+        if (url.isRelative()) return QValidator::Intermediate;
+        return QValidator::Acceptable;
+    }
 };
 
 class UpdatesAvailableDialog : public QMessageBox 
@@ -279,9 +311,8 @@ signals:
     void yes_update();
 
 private slots:
-    void on_comboBox_currentIndexChanged(const QString& updateFrequency);
     void check_now();
-    void open_download_page();
+    void show_options();
 };
 
 class UpdatesListDialog : public QDialog, public Ui::dialog_update_list
@@ -295,6 +326,27 @@ signals:
 
 private:
     V3DVersionChecker *versionChecker;
+};
+
+class UpdateOptionsDialog : public QDialog, public Ui::dialog_update_options
+{
+    Q_OBJECT
+
+public:
+    UpdateOptionsDialog(QWidget* guiParent);
+
+private slots:
+    void save_xml_file(); // create a local V3D version xml file
+    void on_comboBox_currentIndexChanged(const QString& updateFrequency); // change update check frequency
+    void open_download_page(); // browse to V3D download web site
+    void on_lineEdit_editingFinished(); // user completes version xml url
+    void on_lineEdit_textChanged(); // user changes version xml url
+    void use_default_version_file();
+
+private:
+    VersionUrlValidator* validator;
+    QPalette* redPalette;
+    QPalette* blackPalette;
 };
 
 } // namespace v3d
