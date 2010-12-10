@@ -45,6 +45,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <QUrl>
 #include "ui_dialog_update_v3d.h"
 #include "ui_dialog_update_list.h"
+#include <limits>
 
 class QNetworkReply;
 class QDomDocument;
