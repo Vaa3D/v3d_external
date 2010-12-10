@@ -25,7 +25,7 @@ QStringList SWC_TO_MASKIMAGElugin::menulist() const
     return QStringList() 
 	<< tr("swc_to_maskimage")
 	<<tr("multiple SWC_to_maskimage")
-	<<tr("mrskimage filter")
+	<<tr("maskimage filter")
 	<<tr("Help");
 }
 
@@ -38,7 +38,7 @@ void SWC_TO_MASKIMAGElugin::domenu(const QString &menu_name, V3DPluginCallback &
 	{
 		swc_to_maskimage(callback, parent,2);
 		
-	}else if (menu_name == tr("mrskimage filter")) 
+	}else if (menu_name == tr("maskimage filter")) 
 	{
 		mrskimage_originalimage(callback, parent,1);
 	}
