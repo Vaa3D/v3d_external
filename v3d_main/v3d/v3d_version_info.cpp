@@ -49,11 +49,11 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 QString v3dVersionUrlBase("http://brunsc-wm1.janelia.priv/~brunsc/v3d/stable_version/");
 
 // For production:
-// QString v3dVersionUrlBase("http://penglab.janelia.org/proj/v3d/V3D/");
+// QString v3dVersionUrlBase("http://penglab.janelia.org/proj/v3d/");
 
 namespace v3d {
     // Set current version here.
-    VersionInfo thisVersionOfV3D(2.544);
+    VersionInfo thisVersionOfV3D(2.545);
 }
 QString versionnumber = "V3D (" +
         v3d::thisVersionOfV3D.toQString() +
@@ -187,7 +187,7 @@ void v3d_aboutinfo()
 		"Jan 7 (v1.6), April 16 (v1.70), June 13 (v1.81), Aug, 20 (v1.90), Aug 22 (v1.91), Aug 29 (v1.924), Sept 4 (v1.93), Sept 10 (v1.94), Oct 8 (v1.95), "
 		"Oct 27 (v1.960), Nov 14 (v1.970), Dec 11 (v1.980), Dec 31 (v1.990), 2008. "
 		"Feb 20 (v2.000), May 4 (v2.032), May 16 (v2.100), May 20 (v2.110), June 10 (v2.121), July 5 (v2.140), July 13 (v2.200), Aug 1 (v2.300), Aug 14 (v2.310), Aug 20 (v2.320), Sept (v2.400), 2009. "
-		"Jan 31 (v2.449), Feb-Aug (v2.4-v2.5, a number of important updates), 2010. "
+		"Jan 31 (v2.449), Feb-Dec (v2.4-v2.5, a number of important updates), 2010. "
 		"All rights reserved.<br><br> "
 		"Version Note: if you see a version number followed by a letter (e.g. 1.80a), this is a customized build for a particular research lab. "
 		"V3D also have additional image analysis modules, for further information, contact Hanchuan Peng.<br><br>";

@@ -2655,7 +2655,23 @@ XYZ Renderer_tex2::getCenterOfLineProfile(XYZ P1, XYZ P2, double clip[4], int ch
 
 		XYZ D = P2-P1; normalize(D);
 
-		unsigned char* vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1);
+		unsigned char* vp = 0;
+		switch (curImg->getDatatype())
+		{
+			case V3D_UINT8:
+				vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1);
+				break;
+			case V3D_UINT16:
+				vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(short int);
+				break;
+			case V3D_FLOAT32:
+				vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(float);
+				break;
+			default:
+				v3d_msg("Unsupported data type found. You should never see this.", 0);
+				return loc;
+		}
+		
 
 		for (int i=0; i<200; i++) // iteration, (2-f)^200 is big enough
 		{
@@ -2671,18 +2687,22 @@ XYZ Renderer_tex2::getCenterOfLineProfile(XYZ P1, XYZ P2, double clip[4], int ch
 			for (int i=0; i<=nstep; i++)
 			{
 				XYZ P = P1 + D*step*(i);
-
-//				float R = 0.5;
-//				int ix = int(P.x-R +0.5);
-//				int iy = int(P.y-R +0.5);
-//				int iz = int(P.z-R +0.5);
-//				float value = sampling3dUINT8( vp, dim1, dim2, dim3,  ix, iy, iz, 2*R, 2*R, 2*R);
-				//float value = sampling3dUINT8at( vp, dim1, dim2, dim3, P.x, P.y, P.z);
-
-				//float value = sampling3dUINT8atBounding( vp, dim1, dim2, dim3,  dataBox.box, P.x, P.y, P.z); //change to the following 091113 PHC
-				//float value = sampling3dUINT8atBounding( vp, dim1, dim2, dim3,  dataViewProcBox.box, P.x, P.y, P.z);//change to the following 100730 RZC
-				float value = sampling3dUINT8atBounding( vp, dim1, dim2, dim3,  P.x, P.y, P.z,
-						dataViewProcBox.box, clipplane);
+				float value;
+				switch (curImg->getDatatype())
+				{
+					case V3D_UINT8:
+						value = sampling3dAllTypesatBounding( vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+						break;
+					case V3D_UINT16:
+						value = sampling3dAllTypesatBounding( (short int *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+						break;
+					case V3D_FLOAT32:
+						value = sampling3dAllTypesatBounding( (float *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+						break;
+					default:
+						v3d_msg("Unsupported data type found. You should never see this.", 0);
+						return loc;
+				}
 
 				sumloc = sumloc + P*(value);
 				sum = sum + value;

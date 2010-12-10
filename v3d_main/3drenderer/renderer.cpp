@@ -34,7 +34,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  *
  *  Created by Ruan Zongcai on 8/6/08.
  *  Copyright 2008-2009 Hanchuan Peng
- *
+ *  Last change: 2010-Dec-09. by Hanchuan Peng. remove a few functions and convert them as template functions and move to the header file
  */
 
 #include "renderer.h"
@@ -884,7 +884,7 @@ void data4dp_to_rgba3d(unsigned char* data4dp, V3DLONG dim1, V3DLONG dim2, V3DLO
 
 	//V3DLONG block_size = dim3*dim2*dim1;
 	#define SAMPLE(it, ic, ix,iy,iz, dx,dy,dz) \
-				(unsigned char)sampling3dUINT8( data4dp+ (it*dim4 + ic)*(dim3*dim2*dim1), \
+				(unsigned char)sampling3dAllTypes( data4dp+ (it*dim4 + ic)*(dim3*dim2*dim1), \
 												dim1, dim2, dim3, ix, iy, iz, dx, dy, dz )
 
 	// only convert 1<=dim4<=4 ==> RGBA
@@ -982,29 +982,6 @@ float sampling3dUINT8(Image4DProxy<Image4DSimple>& img4dp,
 	return avg;
 }
 
-//inline
-float sampling3dUINT8(unsigned char* data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3,
-		V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG dx, V3DLONG dy, V3DLONG dz)
-{
-	float avg = 0;
-	float d = (dx*dy*dz);
-	if (d>0 && x>=0 && y>=0 && z>=0 && x+dx<=dim1 && y+dy<=dim2 && z+dz<=dim3)
-	{
-		//float s = 0;
-		V3DLONG xi,yi,zi;
-		for (zi=0; zi<dz; zi++)
-		for (yi=0; yi<dy; yi++)
-		for (xi=0; xi<dx; xi++)
-		{
-			//float w = MAX( (2-ABS(xi-0.5*dx)*2.0/dx), MAX( (2-ABS(yi-0.5*dy)*2.0/dy), (2-ABS(zi-0.5*dz)*2.0/dz) )); //090712
-			//s += w;
-			avg += data[(z + zi)*dim2*dim1 + (y + yi)*dim1 + (x	+ xi)];// *w;
-		}
-		//d = s;
-		avg /= d;
-	}
-	return avg;
-}
 
 //inline
 RGBA32f sampling3dRGBA8(/*RGBA32f& sample,*/ RGBA8* data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3,
@@ -1035,71 +1012,6 @@ RGBA32f sampling3dRGBA8(/*RGBA32f& sample,*/ RGBA8* data, V3DLONG dim1, V3DLONG 
 	return avg;
 }
 
-//inline
-float sampling3dUINT8at(unsigned char* data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3,
-		float x, float y, float z)
-{
-	#define SAMPLE(ix,iy,iz)	sampling3dUINT8(data,dim1,dim2,dim3,  ix,iy,iz, 1,1,1)
-
-	V3DLONG x0,x1, y0,y1, z0,z1;
-	x0 = floor(x); 		x1 = ceil(x);
-	y0 = floor(y); 		y1 = ceil(y);
-	z0 = floor(z); 		z1 = ceil(z);
-	float xf, yf, zf;
-	xf = x-x0;
-	yf = y-y0;
-	zf = z-z0;
-	float is[2][2][2];
-	is[0][0][0] = SAMPLE(x0, y0, z0);
-	is[0][0][1] = SAMPLE(x0, y0, z1);
-	is[0][1][0] = SAMPLE(x0, y1, z0);
-	is[0][1][1] = SAMPLE(x0, y1, z1);
-	is[1][0][0] = SAMPLE(x1, y0, z0);
-	is[1][0][1] = SAMPLE(x1, y0, z1);
-	is[1][1][0] = SAMPLE(x1, y1, z0);
-	is[1][1][1] = SAMPLE(x1, y1, z1);
-	float sf[2][2][2];
-	sf[0][0][0] = (1-xf)*(1-yf)*(1-zf);
-	sf[0][0][1] = (1-xf)*(1-yf)*(  zf);
-	sf[0][1][0] = (1-xf)*(  yf)*(1-zf);
-	sf[0][1][1] = (1-xf)*(  yf)*(  zf);
-	sf[1][0][0] = (  xf)*(1-yf)*(1-zf);
-	sf[1][0][1] = (  xf)*(1-yf)*(  zf);
-	sf[1][1][0] = (  xf)*(  yf)*(1-zf);
-	sf[1][1][1] = (  xf)*(  yf)*(  zf);
-
-	float* ip = &is[0][0][0];
-	float* sp = &sf[0][0][0];
-	float sum = 0;
-	for (V3DLONG i=0; i<8; i++) // weight sum
-	{
-		sum = sum + (ip[i]) * sp[i];
-	}
-	return (sum);
-}
-
-//100721: small tag for pinpointing in getCenterOfLineProfile
-//        if sample in bound
-//              add a small tag 1e-6 to return
-//        else out of bound
-//              return 0
-float sampling3dUINT8atBounding(unsigned char* data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3,
-		float x, float y, float z,
-		const float box[6], //bounding box
-		const double clip[4] //clip plane, keep for dot(clip, pos)>=0
-		)
-{
-	const float d = 0.5;
-	if (BETWEENEQ(box[0]-d,box[3]+d, x) && BETWEENEQ(box[1]-d,box[4]+d, y) && BETWEENEQ(box[2]-d,box[5]+d, z))
-	{
-		if (clip && (clip[0]*x + clip[1]*y + clip[2]*z + clip[3] <0)) //clipped
-			return 0;
-		else
-			return sampling3dUINT8at(data, dim1, dim2, dim3,  x, y, z) + (1e-6); ///////
-	}
-	else
-		return 0;
-}
 
 //inline
 RGBA32f sampling3dRGBA8at(RGBA8* data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3,
