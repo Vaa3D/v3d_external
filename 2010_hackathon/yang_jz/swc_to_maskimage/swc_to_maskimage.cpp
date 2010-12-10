@@ -13,7 +13,6 @@
 #include "../../../v3d_main/basic_c_fun/basic_surf_objs.h"
 
 
-
 //Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(swc_to_maskimage, SWC_TO_MASKIMAGElugin);
@@ -26,6 +25,7 @@ QStringList SWC_TO_MASKIMAGElugin::menulist() const
     return QStringList() 
 	<< tr("swc_to_maskimage")
 	<<tr("multiple SWC_to_maskimage")
+	<<tr("mrskimage filter")
 	<<tr("Help");
 }
 
@@ -38,6 +38,9 @@ void SWC_TO_MASKIMAGElugin::domenu(const QString &menu_name, V3DPluginCallback &
 	{
 		swc_to_maskimage(callback, parent,2);
 		
+	}else if (menu_name == tr("mrskimage filter")) 
+	{
+		mrskimage_originalimage(callback, parent,1);
 	}
 	else if (menu_name == tr("Help"))
 	{
@@ -369,6 +372,9 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 	unsigned char* ImMark = 0;
 	QString filename;
 	QStringList filenames;
+	V3DLONG h;
+	V3DLONG d;
+	V3DLONG nx,ny,nz;
 	if (method_code == 1)
 	{
 		filename = QFileDialog::getOpenFileName(0, QObject::tr("Open File"),
@@ -538,13 +544,156 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 //////////////////////////////////////////////////////
 	
 	// compute coordinate region 		
-	Image4DSimple tmp;
-	tmp.setData(pImMask, sx, sy, sz, 1, V3D_UINT8);		
+	Image4DSimple tmp;	
+	if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to use the set image size?"), QMessageBox::Yes, QMessageBox::No))
+	{
+		SetsizeDialog dialog(callback, parent);
+		if (dialog.exec()!=QDialog::Accepted)
+			return;	
+		else 
+		{
+			nx = dialog.coord_x->text().toLong();
+			ny = dialog.coord_y->text().toLong();
+			nz = dialog.coord_z->text().toLong();
+			printf("nx=%d ny=%d nz=%d\n ",nx,ny,nz);
+		}
+		
+		unsigned char * pData = new unsigned char[nx*ny*nz];
+		
+		for (V3DLONG ii=0; ii<nx*ny*nz; ii++)
+			pData[ii] = 0;
+		
+		if(nx>=sx && ny>=sy && nz>=sz)
+		 {
+			 for (V3DLONG k1 = 0; k1 < sz; k1++) 
+			 {
+				 for(V3DLONG j1 = 0; j1 < sy; j1++)
+				 {
+					for(V3DLONG i1 = 0; i1 < sx; i1++)
+					{
+						pData[k1 * nx*ny + j1*nx + i1] = pImMask[k1*sx*sy + j1*sx +i1];
+						
+					}
+				}
+			}
+			 tmp.setData(pData, nx, ny, nz, 1, V3D_UINT8);		 
+		 }
+		 else 
+		 {
+			 tmp.setData(pImMask, sx, sy, sz, 1, V3D_UINT8);
+		 }
+	}
+	else
+	{
+		tmp.setData(pImMask, sx, sy, sz, 1, V3D_UINT8);
+	}
+	
 	v3dhandle newwin = callback.newImageWindow();
 	callback.setImage(newwin, &tmp);
 	callback.setImageName(newwin, QString("Neuron_Mask_%1.tif").arg(filename));
 	callback.updateImageWindow(newwin);
 	
 	//free space
-	//if (ImMark) {delete []ImMark; ImMark=0;}
+	
+}
+void mrskimage_originalimage(V3DPluginCallback &callback, QWidget *parent, int method_code)
+{
+	v3dhandleList win_list = callback.getImageWindowList();
+	if(win_list.size()!=2) 
+	{
+		QMessageBox::information(0, title, QObject::tr("need open 2 image "));
+		return;
+	}
+	Image4DSimple* image1 = callback.getImage(win_list[0]);
+	Image4DSimple* image2 = callback.getImage(win_list[1]);
+	V3DLONG min,max;
+	min = 0;max = 0;
+	if (!image1 && !image2)
+	{
+		QMessageBox::information(0, title, QObject::tr("No image is open."));
+		return;
+	}		
+
+	Image4DProxy<Image4DSimple> pSub(image1);
+	unsigned char * pData1  = pSub.begin();		
+	V3DLONG sx1 = image1->getXDim();
+    V3DLONG sy1 = image1->getYDim();
+    V3DLONG sz1 = image1->getZDim();
+	V3DLONG sc1= image1->getCDim();
+	V3DLONG pagesz_sub1 = sx1*sy1*sz1;
+	printf("sx=%d sy=%d sz=%d sc1=%d\n",sx1,sy1,sz1,sc1);
+	
+	Image4DProxy<Image4DSimple> pSub2(image2);
+	unsigned char * pData2  = pSub2.begin();	
+	V3DLONG sx2 = image2->getXDim();
+    V3DLONG sy2 = image2->getYDim();
+    V3DLONG sz2 = image2->getZDim();
+	V3DLONG sc2 = image2->getCDim();
+	V3DLONG pagesz_sub2 = sx2*sy2*sz2;
+	
+	unsigned char * pData = new unsigned char[sx1*sy1*sz1];
+	for (V3DLONG ii=0; ii<sx1*sy1*sz1; ii++)
+		pData[ii] = 0;	
+	//	printf("sx2=%d sy2=%d sz2=%d sc2=%d\n",sx2,sy2,sz2,sc2);	
+	
+	if (sx1!=sx2 || sy1!=sy2 || sz1!=sz2 )
+	{
+		v3d_msg("size of the image differ ");
+		return;
+	}
+	for (V3DLONG k = 0; k < sz1; k++) 
+	{
+		for(V3DLONG j = 0; j < sy1; j++)
+		{
+			for(V3DLONG i = 0; i < sx1; i++)
+			{
+				min =(min > pData1[k*sx1*sy1+j*sx1+i])? pData1[k*sx1*sy1 + j*sx1 +i] : min;		
+				max =(pData1[k*sx1*sy1+j*sx1+i] > max)? pData1[k*sx1*sy1 + j*sx1 +i] : max;	
+				
+			}
+		}
+	}
+	for (V3DLONG k = 0; k < sz1; k++) 
+	{
+		for(V3DLONG j = 0; j < sy1; j++)
+		{
+			for(V3DLONG i = 0; i < sx1; i++)
+			{
+				if (max == 5)
+				{
+					if (pData1[k*sx1*sy1 + j*sx1 +i] !=5) 
+					{
+						pData2[k*sx1*sy1 + j*sx1 +i] = 0;
+					}
+					pData[k*sx1*sy1 + j*sx1 +i]	= pData2[k*sx1*sy1 + j*sx1 +i];
+				}else
+				{
+					if (pData2[k*sx1*sy1 + j*sx1 +i] !=5) 
+					{
+						pData1[k*sx1*sy1 + j*sx1 +i] = 0;
+					}
+					pData[k*sx1*sy1 + j*sx1 +i]	= pData1[k*sx1*sy1 + j*sx1 +i];
+				}
+			}
+		}
+	}
+	
+	Image4DSimple tmp;
+	tmp.setData(pData, sx1, sy1, sz1, 1, V3D_UINT8);
+	
+	v3dhandle newwin = callback.newImageWindow();
+	callback.setImage(newwin, &tmp);
+	callback.setImageName(newwin, "Filter Image");
+	callback.updateImageWindow(newwin);	
+}
+void SetsizeDialog::update()
+{
+	//get current data
+	
+	NX = coord_x->text().toLong()-1;
+	NY = coord_y->text().toLong()-1;
+	NZ = coord_z->text().toLong()-1;
+
+	
+	
 }

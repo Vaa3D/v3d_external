@@ -25,9 +25,11 @@ public:
 	
 	QStringList funclist() const {return QStringList();}
 	void dofunc(const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output, QWidget *parent) {}	
+	
 };
 
 void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_code);
+void mrskimage_originalimage(V3DPluginCallback &callback, QWidget *parent, int method_code);
 
 void BoundNeuronCoordinates(NeuronTree & neuron, 
 							bool b_subtractMinFromAllNonnegatives,
@@ -51,6 +53,71 @@ void ComputemaskImage(NeuronTree neurons,
 QHash<V3DLONG, V3DLONG> NeuronNextPn(const NeuronTree &neurons);
 
 
+class SetsizeDialog : public QDialog
+{
+	Q_OBJECT
+	
+public:
+	QGridLayout *gridLayout;
+	
+	QLabel *labelx;
+	QLabel *labely;
+	QLabel *labelz;
+    QSpinBox* coord_x; 
+	QSpinBox* coord_y;
+	QSpinBox* coord_z;
+	
+	QPushButton* ok;
+	QPushButton* cancel;
+	
+	V3DLONG NX;
+	V3DLONG NY;
+	V3DLONG NZ;
+	
+public:
+	SetsizeDialog(V3DPluginCallback &cb, QWidget *parent)
+	{
+		Image4DSimple* image = cb.getImage(cb.currentImageWindow());
+		QString imageName = cb.getImageName(cb.currentImageWindow());		
+		//create a dialog
+		coord_x= new QSpinBox();
+		coord_y = new QSpinBox();
+		coord_z = new QSpinBox();
+		
+		coord_x->setMaximum(1500); coord_x->setMinimum(1); coord_x->setValue(1024);
+		coord_y->setMaximum(1500); coord_y->setMinimum(1); coord_y->setValue(1024);
+		coord_z->setMaximum(1500); coord_z->setMinimum(1); coord_z->setValue(56);
+		
+		ok     = new QPushButton("OK");
+		cancel = new QPushButton("Cancel");
+		gridLayout = new QGridLayout();
+		
+		labelx = new QLabel(QObject::tr("Image X"));
+		labely = new QLabel(QObject::tr("Image y"));
+		labelz = new QLabel(QObject::tr("Image Z"));
+		
+		gridLayout->addWidget(labelx, 0,0); gridLayout->addWidget(coord_x, 0,1);
+		gridLayout->addWidget(labely, 1,0); gridLayout->addWidget(coord_y, 1,1);
+		gridLayout->addWidget(labelz, 2,0); gridLayout->addWidget(coord_z, 2,1);
+		
+		gridLayout->addWidget(cancel, 6,1); gridLayout->addWidget(ok, 6,0);
+		setLayout(gridLayout);
+		setWindowTitle(QString("Change parameters"));
+		
+		connect(ok,     SIGNAL(clicked()), this, SLOT(accept()));
+		connect(cancel, SIGNAL(clicked()), this, SLOT(reject()));
+		
+		//slot interface
+		connect(coord_x, SIGNAL(valueChanged(int)), this, SLOT(update()));
+		connect(coord_y,SIGNAL(valueChanged(int)), this, SLOT(update()));
+		connect(coord_z,SIGNAL(valueChanged(int)), this, SLOT(update()));
+	}
+	
+	~SetsizeDialog(){}
+	
+	public slots:
+	void update();
+};
 #endif
 
 
