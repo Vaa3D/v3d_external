@@ -561,7 +561,7 @@ template <class T> float sampling3dAllTypesat(T* data, V3DLONG dim1, V3DLONG dim
 template <class T> float sampling3dAllTypesatBounding(T* data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3,
 												   float x, float y, float z,
 												   const float box[6], //bounding box
-												   const double clip[4]=0 //clip plane, keep for dot(clip, pos)>=0
+												   const double clip[4] //clip plane, keep for dot(clip, pos)>=0
 												   )
 {
 	const float d = 0.5;
