@@ -655,7 +655,7 @@ void mrskimage_originalimage(V3DPluginCallback &callback, QWidget *parent, int m
 		}
 	}
 	
-	Filter=(max1 > max)? max : max1;
+	filter=(max1 > max)? max : max1;
 	
 	for (V3DLONG k = 0; k < sz1; k++) 
 	{
@@ -663,7 +663,7 @@ void mrskimage_originalimage(V3DPluginCallback &callback, QWidget *parent, int m
 		{
 			for(V3DLONG i = 0; i < sx1; i++)
 			{
-				if (Filter == max)
+				if (filter == max)
 				{
 					if (pData1[k*sx1*sy1 + j*sx1 +i] !=max) 
 					{
