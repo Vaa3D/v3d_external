@@ -90,7 +90,9 @@ void UpdatePxlValPlugin::processImage(const QString &arg, Image4DSimple *p4DImag
 	}
 	else if (arg == tr("about this plugin"))
 	{
-		QMessageBox::information(parent, "Version info", "Change Pixel Value 1.0 (2009-Aug-21): this plugin is developed by Yang Yu.");
+		QMessageBox::information(parent, "Version info", 
+                QString("Change Pixel Value %1 (2009-Aug-21): this plugin is developed by Yang Yu.")
+                .arg(getPluginVersion()));
 	}
 	else
 		return;

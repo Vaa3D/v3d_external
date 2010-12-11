@@ -14,20 +14,23 @@
 
 #include "v3d_interface.h"
 
-class ThPlugin : public QObject, public V3DPluginInterface
+class ThPlugin : public QObject, public V3DPluginInterface2_1
 {
     Q_OBJECT
-    Q_INTERFACES(V3DPluginInterface);
+    Q_INTERFACES(V3DPluginInterface2_1);
 	
 public:
 	QStringList menulist() const;
-	void domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent);
+	void domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent);
 	
 	QStringList funclist() const {return QStringList();}
-	void dofunc(const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output, QWidget *parent) {}
+	bool dofunc(const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output, V3DPluginCallback2 &callback, QWidget *parent)
+        {return false;}
 	
 	template <class T> 
 	void BinaryProcess(T *apsInput, T * aspOutput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer, V3DLONG h, V3DLONG d){}
+
+        float getPluginVersion() const {return 1.1f;}
 };
 
 //define a simple dialog for choose DT parameters
@@ -50,7 +53,7 @@ public:
 	V3DLONG Dh;
 	
 public:
-	AdaTDialog(V3DPluginCallback &cb, QWidget *parent)
+	AdaTDialog(V3DPluginCallback2 &cb, QWidget *parent)
 	{
 		Image4DSimple* image = cb.getImage(cb.currentImageWindow());
 		QString imageName = cb.getImageName(cb.currentImageWindow());		

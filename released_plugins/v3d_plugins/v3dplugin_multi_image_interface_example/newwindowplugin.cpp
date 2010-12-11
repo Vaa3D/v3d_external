@@ -13,9 +13,9 @@
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(newwindow, NewWindowPlugin);
 
-void Invert(V3DPluginCallback &v3d, QWidget *parent);
-void Threshold(V3DPluginCallback &v3d, QWidget *parent);
-void Compute(char op, V3DPluginCallback &v3d, QWidget *parent);
+void Invert(V3DPluginCallback2 &v3d, QWidget *parent);
+void Threshold(V3DPluginCallback2 &v3d, QWidget *parent);
+void Compute(char op, V3DPluginCallback2 &v3d, QWidget *parent);
 
 const QString title = "V3DPluginInterface demo";
 QStringList NewWindowPlugin::menulist() const
@@ -29,7 +29,7 @@ QStringList NewWindowPlugin::menulist() const
     << tr("about");
 }
 
-void NewWindowPlugin::domenu(const QString &menu_name, V3DPluginCallback &v3d, QWidget *parent)
+void NewWindowPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &v3d, QWidget *parent)
 {
     if (menu_name == tr("Invert Color (in current window)"))
     {
@@ -62,7 +62,7 @@ void NewWindowPlugin::domenu(const QString &menu_name, V3DPluginCallback &v3d, Q
     }
 }
 
-void Invert(V3DPluginCallback &v3d, QWidget *parent)
+void Invert(V3DPluginCallback2 &v3d, QWidget *parent)
 {
 	v3dhandle oldwin = v3d.currentImageWindow();
 	Image4DSimple* image = v3d.getImage(oldwin);
@@ -96,7 +96,7 @@ void Invert(V3DPluginCallback &v3d, QWidget *parent)
 	v3d.updateImageWindow(oldwin);
 }
 
-void Threshold(V3DPluginCallback &v3d, QWidget *parent)
+void Threshold(V3DPluginCallback2 &v3d, QWidget *parent)
 {
 	v3dhandle oldwin = v3d.currentImageWindow();
 	Image4DSimple* image = v3d.getImage(oldwin);
@@ -147,7 +147,7 @@ void Threshold(V3DPluginCallback &v3d, QWidget *parent)
     v3d.updateImageWindow(newwin);
 }
 
-void Compute(char op, V3DPluginCallback &v3d, QWidget *parent)
+void Compute(char op, V3DPluginCallback2 &v3d, QWidget *parent)
 {
 	v3dhandleList win_list = v3d.getImageWindowList();
 	if (win_list.size()<1)

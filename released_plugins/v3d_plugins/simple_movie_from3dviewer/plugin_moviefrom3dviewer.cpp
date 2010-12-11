@@ -11,8 +11,8 @@
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(moviefrom3dviewer, MovieFrom3DviewerPlugin)
 
-void MovieFrom3Dviewer(V3DPluginCallback & v3d, QWidget * parent);
-void SnapShoot3Dviewer(V3DPluginCallback & v3d, QWidget * parent);
+void MovieFrom3Dviewer(V3DPluginCallback2 & v3d, QWidget * parent);
+void SnapShoot3Dviewer(V3DPluginCallback2 & v3d, QWidget * parent);
 
 //plugin funcs
 const QString title = "Movie From 3D Viewer";
@@ -24,7 +24,7 @@ QStringList MovieFrom3DviewerPlugin::menulist() const
 			<< tr("take a snapshot of 3D viewer");
 }
 
-void MovieFrom3DviewerPlugin::domenu(const QString & menu_name,	V3DPluginCallback & v3d, QWidget * parent)
+void MovieFrom3DviewerPlugin::domenu(const QString & menu_name,	V3DPluginCallback2 & v3d, QWidget * parent)
 {
 	if (menu_name == tr("make movie from 3D viewer"))
 	{
@@ -36,7 +36,7 @@ void MovieFrom3DviewerPlugin::domenu(const QString & menu_name,	V3DPluginCallbac
 	}
 }
 
-void MovieFrom3Dviewer(V3DPluginCallback & v3d, QWidget * parent)
+void MovieFrom3Dviewer(V3DPluginCallback2 & v3d, QWidget * parent)
 {
 	v3dhandle curwin = v3d.currentImageWindow();
 	if (!curwin)
@@ -56,7 +56,7 @@ void MovieFrom3Dviewer(V3DPluginCallback & v3d, QWidget * parent)
 	if (p)	p->show();
 }
 
-controlPanel::controlPanel(V3DPluginCallback &_v3d, QWidget *parent) :
+controlPanel::controlPanel(V3DPluginCallback2 &_v3d, QWidget *parent) :
 	QDialog(parent), m_v3d(_v3d)
 {
 	m_pLookPanel = this;
@@ -130,7 +130,7 @@ void controlPanel::_slot_timerupdate()
 	m_lframeind++;
 }
 
-void SnapShoot3Dviewer(V3DPluginCallback & v3d, QWidget * parent)
+void SnapShoot3Dviewer(V3DPluginCallback2 & v3d, QWidget * parent)
 {
 	v3dhandle curwin = v3d.currentImageWindow();
 	if (!curwin)

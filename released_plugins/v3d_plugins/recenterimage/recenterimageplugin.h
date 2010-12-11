@@ -22,14 +22,15 @@
 #else
 #endif
 
-class ReCenterImagePlugin : public QObject, public V3DSingleImageInterface
+class ReCenterImagePlugin : public QObject, public V3DSingleImageInterface2_1
 {
     Q_OBJECT
-    Q_INTERFACES(V3DSingleImageInterface)
+    Q_INTERFACES(V3DSingleImageInterface2_1)
 
 public:
     QStringList menulist() const;
     void processImage(const QString &arg, Image4DSimple *p4DImage, QWidget *parent);
+    float getPluginVersion() const {return 1.1f;}
 };
 
 #endif

@@ -12,7 +12,7 @@
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(dt, DtPlugin);
 
-void dtimg(V3DPluginCallback &callback, QWidget *parent, int method_code);
+void dtimg(V3DPluginCallback2 &callback, QWidget *parent, int method_code);
 
 //plugin funcs
 const QString title = "Distance transform";
@@ -23,7 +23,7 @@ QStringList DtPlugin::menulist() const
 		<< tr("2D (for all individual Z-sections)");
 }
 
-void DtPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
+void DtPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
     if (menu_name == tr("3D"))
     {
@@ -35,7 +35,7 @@ void DtPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWi
 	}
 }
 
-void dtimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
+void dtimg(V3DPluginCallback2 &callback, QWidget *parent, int method_code)
 {
 	v3dhandle curwin = callback.currentImageWindow();
 	if (!curwin)

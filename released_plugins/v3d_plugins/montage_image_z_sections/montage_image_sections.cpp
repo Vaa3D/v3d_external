@@ -42,7 +42,7 @@ void montage_image_sections (T *apsInput, T * aspOutput, V3DLONG iImageWidth, V3
 	//v3d_msg("2");	
 }
 
-void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_code);
+void do_computation(V3DPluginCallback2 &callback, QWidget *parent, int method_code);
 
 //plugin funcs
 const QString title = "montage_image_sections";
@@ -53,7 +53,7 @@ QStringList MONTAGEPlugin::menulist() const
 	<< tr("Help");
 }
 
-void MONTAGEPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
+void MONTAGEPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
 	if (menu_name == tr("montage_image_sections"))
 	{
@@ -67,7 +67,7 @@ void MONTAGEPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback
 
 }
 
-void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_code)
+void do_computation(V3DPluginCallback2 &callback, QWidget *parent, int method_code)
 {
 	v3dhandle curwin = callback.currentImageWindow();
 	V3DLONG h;

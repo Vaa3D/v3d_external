@@ -14,7 +14,7 @@
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(linker_file_generator, LinkerPlugin);
 
-void GeneratorAno4FilesInDir(V3DPluginCallback &callback, QWidget *parent, int method_code);
+void GeneratorAno4FilesInDir(V3DPluginCallback2 &callback, QWidget *parent, int method_code);
 
 QStringList LinkerPlugin::menulist() const
 {
@@ -29,7 +29,7 @@ QStringList LinkerPlugin::menulist() const
 }
 
 
-void LinkerPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
+void LinkerPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
 	if (menu_name == tr("for all SWC (e.g. neuron) files under a directory"))
 		GeneratorAno4FilesInDir(callback, parent, 1);
@@ -49,7 +49,7 @@ void LinkerPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback,
 		v3d_msg("Un-recognizable menu detected");
 }
 
-void GeneratorAno4FilesInDir(V3DPluginCallback &callback, QWidget *parent, int method_code)
+void GeneratorAno4FilesInDir(V3DPluginCallback2 &callback, QWidget *parent, int method_code)
 {
 	//choose a directory that contain swc files
 	QString qs_dir_swc;

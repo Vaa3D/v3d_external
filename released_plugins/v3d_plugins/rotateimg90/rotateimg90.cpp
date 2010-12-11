@@ -185,7 +185,9 @@ void RotateImg90Plugin::processImage(const QString &arg, Image4DSimple *image, Q
     }
 	else if (arg == tr("about this plugin"))
 	{
-		QMessageBox::information(parent, "Version info", "XY Plane Image 90-degree Rotation 1.0 (2009-Aug-14): this demo is developed by Hanchuan Peng to show V3D plugin capability.");
+		QMessageBox::information(parent, "Version info", 
+                QString("XY Plane Image 90-degree Rotation %1 (2009-Aug-14): this demo is developed by Hanchuan Peng to show V3D plugin capability.")
+                .arg(getPluginVersion()));
 	}
 	else
 		return;

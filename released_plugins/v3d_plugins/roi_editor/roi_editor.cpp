@@ -13,7 +13,7 @@
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(roi_editor, ROI_Editor_Plugin);
 
-void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_code);
+void do_computation(V3DPluginCallback2 &callback, QWidget *parent, int method_code);
 
 //plugin funcs
 const QString title = "ROI editor";
@@ -29,7 +29,7 @@ QStringList ROI_Editor_Plugin::menulist() const
 	<< tr("Help");
 }
 
-void ROI_Editor_Plugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
+void ROI_Editor_Plugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
 	if (menu_name == tr("paste ROIs to another image"))
 	{
@@ -62,7 +62,7 @@ void ROI_Editor_Plugin::domenu(const QString &menu_name, V3DPluginCallback &call
 	}
 }
 
-void do_computation(V3DPluginCallback &callback, QWidget *parent, int method_code)
+void do_computation(V3DPluginCallback2 &callback, QWidget *parent, int method_code)
 {
 	V3DLONG h;
 	V3DLONG d;

@@ -14,17 +14,20 @@
 
 #include "v3d_interface.h"
 
-class DtPlugin : public QObject, public V3DPluginInterface
+class DtPlugin : public QObject, public V3DPluginInterface2_1
 {
     Q_OBJECT
-    Q_INTERFACES(V3DPluginInterface);
+    Q_INTERFACES(V3DPluginInterface2_1);
 	
 public:
+        float getPluginVersion() const {return 1.1f;}
+
 	QStringList menulist() const;
-	void domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent);
+	void domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent);
 	
 	QStringList funclist() const {return QStringList();}
-	void dofunc(const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output, QWidget *parent) {}
+	bool dofunc(const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output, V3DPluginCallback2 &callback, QWidget *parent)
+        {return false;}
 };
 
 //define a simple dialog for choose DT parameters
@@ -47,7 +50,7 @@ public:
 	QPushButton* cancel;
 	
 public:
-	DtDialog(V3DPluginCallback &cb, QWidget *parent)
+	DtDialog(V3DPluginCallback2 &cb, QWidget *parent)
 	{
 		//create a dialog
 		gridLayout = new QGridLayout();

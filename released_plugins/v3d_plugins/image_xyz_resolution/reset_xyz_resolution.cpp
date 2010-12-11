@@ -25,7 +25,9 @@ void example_reset_xyz_resolutionPlugin::processImage(const QString &arg, Image4
 
 	if (arg == tr("about this plugin"))
 	{
-		QMessageBox::information(parent, "Version info", "Check and set image voxel xyz resolution 1.0 (2010-Jun-26): this demo is developed by Hanchuan Peng to show V3D plugin capability.");
+		QMessageBox::information(parent, "Version info", 
+                QString("Check and set image voxel xyz resolution %1 (2010-Jun-26): this demo is developed by Hanchuan Peng to show V3D plugin capability.")
+                .arg(getPluginVersion()));
 	}
     else if (arg == tr("check the xyz voxel size"))
     {

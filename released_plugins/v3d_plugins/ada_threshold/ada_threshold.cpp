@@ -46,7 +46,7 @@ void BinaryProcess(T *apsInput, T * aspOutput, V3DLONG iImageWidth, V3DLONG iIma
 	}						
 }
 
-void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code);
+void thimg(V3DPluginCallback2 &callback, QWidget *parent, int method_code);
 
 //plugin funcs
 const QString title = "adaptive threshold transform";
@@ -58,7 +58,7 @@ QStringList ThPlugin::menulist() const
 	<< tr("Help");
 }
 
-void ThPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
+void ThPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
 	if (menu_name == tr("3D (w/o parameters)"))
 	{
@@ -76,7 +76,7 @@ void ThPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWi
 
 }
 
-void thimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
+void thimg(V3DPluginCallback2 &callback, QWidget *parent, int method_code)
 {
 	v3dhandle curwin = callback.currentImageWindow();
 	V3DLONG h;

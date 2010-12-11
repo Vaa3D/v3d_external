@@ -418,7 +418,7 @@ void rgnfindsub(int rowi,int colj, int depk, int direction,int stackinc, RgnGrow
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(regiongrow, RegionGrowPlugin);
 
-void regiongrowing(V3DPluginCallback &callback, QWidget *parent);
+void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent);
 
 //plugin funcs
 const QString title = "Region Growing";
@@ -427,7 +427,7 @@ QStringList RegionGrowPlugin::menulist() const
     return QStringList() << tr("Region Growing");
 }
 
-void RegionGrowPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
+void RegionGrowPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
     if (menu_name == tr("Region Growing"))
     {
@@ -435,7 +435,7 @@ void RegionGrowPlugin::domenu(const QString &menu_name, V3DPluginCallback &callb
     }
 }
 
-void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
+void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 {
     v3dhandleList win_list = callback.getImageWindowList();
 	

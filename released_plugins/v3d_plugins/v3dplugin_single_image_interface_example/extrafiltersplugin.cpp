@@ -53,13 +53,15 @@ void ExtraFilters::processImage(const QString &arg, Image4DSimple *image, QWidge
     }
     else
     {
-    	QMessageBox::information(parent, title, "V3DSingleImageInterface Demo version 1.0"
-    			"\ndeveloped by Zongcai Ruan 2009. (Janelia Farm Research Campus, HHMI)");
+    	QMessageBox::information(parent, title, 
+                QString("V3DSingleImageInterface Demo version %1"
+    			"\ndeveloped by Zongcai Ruan 2009. (Janelia Farm Research Campus, HHMI)")
+                .arg(getPluginVersion()));
     }
 }
 
 //// can't define 2 interfaces in the same plugin lib
-//// redefinition of Ôconst char* qt_plugin_verification_dataÕ
+//// redefinition of ï¿½const char* qt_plugin_verification_dataï¿½
 //Q_EXPORT_PLUGIN2(extrafilters, ExtraFilters2);
 //
 //QStringList ExtraFilters2::menulist() const

@@ -30,7 +30,9 @@ void minMaxFilterPlugin::processImage(const QString &arg, Image4DSimple *p4DImag
 	
 	if(arg == tr("about this plugin"))
 	{
-		QMessageBox::information(parent, "Version info", "min/Max Filter Plugin Demo 1.0 (2009-Aug-09) developed by Yang Yu. (Peng Lab, Janelia Research Farm Campus, HHMI)");
+		QMessageBox::information(parent, "Version info", 
+                QString("min/Max Filter Plugin Demo %1 (2009-Aug-09) developed by Yang Yu. (Peng Lab, Janelia Research Farm Campus, HHMI)")
+                .arg(getPluginVersion()));
 		return;
 	}
 	

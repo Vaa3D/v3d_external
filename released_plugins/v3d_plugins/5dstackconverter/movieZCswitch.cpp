@@ -18,7 +18,7 @@
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(movieZCswitch, MovieZCswitchPlugin)
 
-int changeMS(V3DPluginCallback &callback, QWidget *parent);
+int changeMS(V3DPluginCallback2 &callback, QWidget *parent);
 
 
 const QString title = "5D Stack Converter";
@@ -28,7 +28,7 @@ QStringList MovieZCswitchPlugin::menulist() const
 						 << tr("about this plugin");
 }
 
-void MovieZCswitchPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
+void MovieZCswitchPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
 	if (menu_name == tr("5D Stack Converter"))
     {
@@ -36,12 +36,14 @@ void MovieZCswitchPlugin::domenu(const QString &menu_name, V3DPluginCallback &ca
     }
 	else if (menu_name == tr("about this plugin"))
 	{
-		QMessageBox::information(parent, "Version info", "5D Stack Converter Plugin Demo 1.0 (2009-Sep-22) developed by Yang Yu. (Hanchuan Peng Lab, Janelia Research Farm Campus, HHMI)");
+		QMessageBox::information(parent, "Version info", 
+            QString("5D Stack Converter Plugin Demo %1 (2009-Sep-22) developed by Yang Yu. (Hanchuan Peng Lab, Janelia Research Farm Campus, HHMI)"
+            ).arg(getPluginVersion()));
 	}
 	
 }
 
-int changeMS(V3DPluginCallback &callback, QWidget *parent)
+int changeMS(V3DPluginCallback2 &callback, QWidget *parent)
 {
 
 	v3dhandle oldwin = callback.currentImageWindow();

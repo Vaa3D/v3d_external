@@ -49,9 +49,11 @@ void ExCallPlugin::domenu(const QString & menu_name, V3DPluginCallback2 & v3d, Q
     }
 	else
 	{
-		QMessageBox::information(parent, "Version info", "Example Call Plugin 1.0"
+		QMessageBox::information(parent, "Version info", 
+                QString("Example Call Plugin %1"
 				"\nCall another plugin (ex_matrix) to do 3x3 matrix computation"
-				"\n\ndeveloped by Zongcai Ruan 2010. (Janelia Farm Research Campus, HHMI)");
+				"\n\ndeveloped by Zongcai Ruan 2010. (Janelia Farm Research Campus, HHMI)")
+                .arg(getPluginVersion()));
 
 	}
 }

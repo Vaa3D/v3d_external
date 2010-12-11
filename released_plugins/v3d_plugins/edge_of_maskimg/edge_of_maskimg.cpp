@@ -11,7 +11,7 @@
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(edge_of_maskimg, EdgeOfMaskImgPlugin);
 
-void findedgeimg(V3DPluginCallback &callback, QWidget *parent, int method_code);
+void findedgeimg(V3DPluginCallback2 &callback, QWidget *parent, int method_code);
 
 QStringList EdgeOfMaskImgPlugin::menulist() const
 {
@@ -22,7 +22,7 @@ QStringList EdgeOfMaskImgPlugin::menulist() const
 	;
 }
 
-void EdgeOfMaskImgPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
+void EdgeOfMaskImgPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
 	if (menu_name == tr("Label edge of a mask image using the original label values"))
 		findedgeimg(callback, parent, 0);
@@ -32,7 +32,7 @@ void EdgeOfMaskImgPlugin::domenu(const QString &menu_name, V3DPluginCallback &ca
 		v3d_msg("Label the edge of a mask image (label field image)'s edge using either the original label values or white (255). Developed by Hanchuan Peng, 2010.");
 }
 
-void findedgeimg(V3DPluginCallback &callback, QWidget *parent, int method_code)
+void findedgeimg(V3DPluginCallback2 &callback, QWidget *parent, int method_code)
 {
 	v3dhandle curwin = callback.currentImageWindow();
 	if (!curwin)
