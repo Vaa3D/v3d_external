@@ -1,7 +1,7 @@
 
 TEMPLATE      = lib
 CONFIG       += plugin warning_off
-CONFIG	     += X86_64 
+#CONFIG	     += X86_64 
 INCLUDEPATH  += ../../../v3d_main/basic_c_fun
 HEADERS       = newwindowplugin.h
 SOURCES       = newwindowplugin.cpp
