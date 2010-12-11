@@ -205,6 +205,18 @@ bool MainWindow::setGlobalSetting( V3D_GlobalSetting &gs )
 	return true;
 }
 
+//void MainWindow::setFocusLocation(void* window, V3DLONG cx, V3DLONG cy, V3DLONG cz)
+//{
+//	qDebug()<<"setFocusLocation ...";
+//	
+//	//	XFormWidget* w = this->p_mainWindow->validateImageWindow(window);
+//	//	if (w)
+//	//	{
+//	//		w->forceToChangeFocus((int)cx, (int)cy, (int)cz);
+//	//	}
+//	
+//	return;
+//}
 
 /////////////////////////////////////////////////////////////////////////////////
 #define __XFormWidget_interface__
@@ -369,6 +381,7 @@ V3dR_GLWidget * XFormWidget::getLocalView3D()
 			w = mypara_3Dlocalview.window3D->getGLWidget();
 	return w;
 }
+
 //View3DControl * XFormWidget::getView3DControl()
 //{
 //	V3dR_GLWidget* w = 0;
@@ -389,3 +402,4 @@ V3dR_GLWidget * XFormWidget::getLocalView3D()
 //	else
 //		return 0;
 //}
+

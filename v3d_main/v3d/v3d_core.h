@@ -213,9 +213,12 @@ public:
 	bool updateminmaxvalues();
 	void loadImage(V3DLONG imgsz0, V3DLONG imgsz1, V3DLONG imgsz2, V3DLONG imgsz3, int imgdatatype); //an overloaded function to create a blank image
 
-	void setFocusX(int x) {curFocusX = (x>=1 && x <= this->getXDim()) ? x-1 : -1;}
-	void setFocusY(int y) {curFocusY = (y>=1 && y <= this->getYDim()) ? y-1 : -1;}
-	void setFocusZ(int z) {curFocusZ = (z>=1 && z <= this->getZDim()) ? z-1 : -1;}
+	void setFocusX(V3DLONG x) {curFocusX = (x>=1 && x <= this->getXDim()) ? x-1 : -1;}
+	void setFocusY(V3DLONG y) {curFocusY = (y>=1 && y <= this->getYDim()) ? y-1 : -1;}
+	void setFocusZ(V3DLONG z) {curFocusZ = (z>=1 && z <= this->getZDim()) ? z-1 : -1;}
+	V3DLONG getFocusX() {return curFocusX;}
+	V3DLONG getFocusY() {return curFocusY;}
+	V3DLONG getFocusZ() {return curFocusZ;}
 
 	My4DImage();
 	~My4DImage();
@@ -247,7 +250,7 @@ public:
 	void switchColorMap(int len, ImageDisplayColorType c);
 	void getColorMapInfo(int &len, ImageDisplayColorType &c);
 
-	int curFocusX, curFocusY, curFocusZ;
+	V3DLONG curFocusX, curFocusY, curFocusZ;
 	XFormView *p_xy_view, *p_yz_view, *p_zx_view;
 
 	QTextBrowser *p_focusPointFeatureWidget;

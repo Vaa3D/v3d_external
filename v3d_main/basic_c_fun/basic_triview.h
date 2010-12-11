@@ -36,26 +36,23 @@
 #ifndef __BASIC_TRIVIEW_H__
 #define __BASIC_TRIVIEW_H__
 
+
 class TriviewControl
 {
 public:
-	
-	TriviewControl() {};
 	virtual ~TriviewControl() {};
 
 public:
 	
 // 2.2 functions. some function declaration defined by Hanchuan Peng for tri-view control. 2010-Dec-08
-	virtual void getFocusLocation(v3dhandle image_window, V3DLONG & cx, V3DLONG & cy, V3DLONG & cz) const = 0;
-	virtual void setFocusLocation(v3dhandle image_window, V3DLONG cx, V3DLONG cy, V3DLONG cz) const = 0;
+	virtual void getFocusLocation(V3DLONG & cx, V3DLONG & cy, V3DLONG & cz) const = 0;
+	virtual void setFocusLocation(V3DLONG cx, V3DLONG cy, V3DLONG cz)  = 0;
 	
-	virtual void getMinMax(v3dhandle image_window, double & minval, double & maxval) const = 0;
-	virtual void setMinMax(v3dhandle image_window, double minval, double maxval) const = 0;
+	virtual void getMinMax(double & minval, double & maxval) const = 0;
+	virtual void setMinMax(double minval, double maxval)  = 0;
  	
-	virtual void getTriViewColorDispType(v3dhandle image_window, int & mytype) const = 0;
-	virtual void setTriViewColorDispType(v3dhandle image_window, int mytype) const = 0;
-	
-	
+	virtual void getTriViewColorDispType(int & mytype) const = 0;
+	virtual void setTriViewColorDispType(int mytype)  = 0;
 };
 
 #endif /* __BASIC_TRIVIEW_H__ */

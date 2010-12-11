@@ -904,7 +904,7 @@ View3DControl * V3d_PluginLoader::getLocalView3DControl(v3dhandle image_window)
 	{
 		//vi = w->getLocalView3DControl();
 		vi = dynamic_cast<View3DControl *>(w->getLocalView3D());
-		qDebug() << "V3d_PluginLoader getLocalView3DControl= "<< vi <<" : " << w <<"/"<< image_window;
+		qDebug() << "V3d_PluginLoader getLocalView3DControl = "<< vi <<" : " << w <<"/"<< image_window;
 	}
 	return vi;
 }
@@ -915,6 +915,7 @@ TriviewControl * V3d_PluginLoader::getTriviewControl(v3dhandle image_window)
 	if_XFormWidget(w, image_window)
 	{
 		tvi = dynamic_cast<TriviewControl *>(w); // w->getTriview()
+		qDebug() << "V3d_PluginLoader getTriviewControl = "<< tvi <<" : " << w <<"/"<< image_window;
 	}
 	return tvi;
 }

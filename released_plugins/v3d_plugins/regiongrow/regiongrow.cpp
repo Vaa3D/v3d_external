@@ -28,14 +28,14 @@
 #define UBYTE unsigned char
 #define BYTE signed char
 
-long phcDebugPosNum = 0;
-long phcDebugRgnNum = 0;
+V3DLONG phcDebugPosNum = 0;
+V3DLONG phcDebugRgnNum = 0;
 
 class POS
 {
 public:
-	long pos;
-	long order;
+	V3DLONG pos;
+	V3DLONG order;
 	POS * next;
 	POS() 
 	{
@@ -52,10 +52,10 @@ public:
 class RGN
 {
 public:
-	long layer;
-	long no;
+	V3DLONG layer;
+	V3DLONG no;
 	POS *poslist;
-	long poslistlen;
+	V3DLONG poslistlen;
 	RGN * next;
 	RGN() 
 	{
@@ -77,9 +77,9 @@ class STCL
 {
 public:
 	
-	long count;
-	long no;
-	long *desposlist;
+	V3DLONG count;
+	V3DLONG no;
+	V3DLONG *desposlist;
 	STCL *next;
 	
 	STCL() 
@@ -131,21 +131,21 @@ template <class T> void deleteIntImage3dPairMatlabProtocal(T *** & img3d,T * & i
 class RgnGrow3dClass
 {
 public:
-	long ImgWid, ImgHei, ImgDep;
+	V3DLONG ImgWid, ImgHei, ImgDep;
 	UBYTE * quantImg1d,  *** quantImg3d;
 	BYTE *** PHCDONEIMG3d, * PHCDONEIMG1d;
 	
 	int STACKCNT;
 	int MAXSTACKSIZE;
 	int IFINCREASELABEL;
-	long PHCURLABEL;
+	V3DLONG PHCURLABEL;
 	int ***PHCLABELSTACK3d, * PHCLABELSTACK1d;
-	long PHCLABELSTACKPOS;
+	V3DLONG PHCLABELSTACKPOS;
 	
 	POS * PHCURGNPOS, * PHCURGNPOS_head;
 	RGN * PHCURGN, * PHCURGN_head;
 	
-	long TOTALPOSnum, TOTALRGNnum;
+	V3DLONG TOTALPOSnum, TOTALRGNnum;
 	
 	RgnGrow3dClass()
 	{
@@ -173,14 +173,14 @@ public:
 		PHCLABELSTACKPOS = 0;
 		
 		PHCURGN = PHCURGN_head;
-		for(long i=0;i<TOTALRGNnum;i++)
+		for(V3DLONG i=0;i<TOTALRGNnum;i++)
 		{
 			RGN * pnextRgn = 0;
 			if (PHCURGN)
 			{
 				pnextRgn = PHCURGN->next;
 				PHCURGNPOS = PHCURGN->poslist;
-				for(long j=0;j<PHCURGN->poslistlen;j++)
+				for(V3DLONG j=0;j<PHCURGN->poslistlen;j++)
 				{
 					POS *pnextPos = 0;
 					if (PHCURGNPOS) 
@@ -199,12 +199,12 @@ public:
 }; 
 
 //generating an int image for any input image type
-template <class T> void copyvecdata(T * srcdata, long len, UBYTE * desdata, int& nstate, UBYTE &minn, UBYTE &maxx);
+template <class T> void copyvecdata(T * srcdata, V3DLONG len, UBYTE * desdata, int& nstate, UBYTE &minn, UBYTE &maxx);
 
 void rgnfindsub(int rowi,int colj, int depk, int direction,int stackinc, RgnGrow3dClass * pRgnGrow);
 
 
-template <class T> void copyvecdata(T * srcdata, long len, UBYTE * desdata, int& nstate, UBYTE &minn, UBYTE &maxx)
+template <class T> void copyvecdata(T * srcdata, V3DLONG len, UBYTE * desdata, int& nstate, UBYTE &minn, UBYTE &maxx)
 {
 	if(!srcdata || !desdata)
 	{
@@ -212,7 +212,7 @@ template <class T> void copyvecdata(T * srcdata, long len, UBYTE * desdata, int&
 		return;
 	} 
 	
-	long i;
+	V3DLONG i;
 	
 	//note: originally I added 0.5 before rounding, however seems the negative numbers and 
 	//      positive numbers are all rounded towarded 0; hence int(-1+0.5)=0 and int(1+0.5)=1;
@@ -247,9 +247,9 @@ template <class T> void copyvecdata(T * srcdata, long len, UBYTE * desdata, int&
 //memory management
 template <class T> int newIntImage3dPairMatlabProtocal(T *** & img3d,T * & img1d, int imgdep, int imghei,int imgwid)
 {
-	long totalpxlnum = (long)imghei*imgwid*imgdep;
+	V3DLONG totalpxlnum = (V3DLONG)imghei*imgwid*imgdep;
 	img1d = new T [totalpxlnum];
-	img3d = new T ** [(long)imgdep];
+	img3d = new T ** [(V3DLONG)imgdep];
 	
 	if (!img1d || !img3d)
 	{
@@ -259,11 +259,11 @@ template <class T> int newIntImage3dPairMatlabProtocal(T *** & img3d,T * & img1d
 		return 0; //fail
 	}
 	
-	long i,j;
+	V3DLONG i,j;
 	
 	for (i=0;i<imgdep;i++) 
     {
-		img3d[i] = new T * [(long)imghei];
+		img3d[i] = new T * [(V3DLONG)imghei];
 		for(j=0; j<imghei; j++)
 			img3d[i][j] = img1d + i*imghei*imgwid + j*imgwid;
 	
@@ -310,7 +310,7 @@ void rgnfindsub(int rowi,int colj, int depk, int direction,int stackinc, RgnGrow
 		//set the current pos location and return the 
 		if (pRgnGrow->PHCURGNPOS)
 		{
-			pRgnGrow->PHCURGNPOS->pos = (long) depk*(pRgnGrow->ImgHei * pRgnGrow->ImgWid) + colj*(pRgnGrow->ImgWid) + rowi + 1; //add 1 for Matlab convention
+			pRgnGrow->PHCURGNPOS->pos = (V3DLONG) depk*(pRgnGrow->ImgHei * pRgnGrow->ImgWid) + colj*(pRgnGrow->ImgWid) + rowi + 1; //add 1 for Matlab convention
 			pRgnGrow->PHCURGNPOS->next = new POS;
 			if (pRgnGrow->PHCURGNPOS->next==0)
 			{printf("Fail to do: pRgnGrow->PHCURGNPOS->next = new POS; -->current phcDebugPosNum=%i.\n",phcDebugPosNum);}
@@ -469,12 +469,12 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	
     unsigned char* pSbject = subject->getRawData();
 	
-	long sz0 = subject->getXDim();
-    long sz1 = subject->getYDim();
-    long sz2 = subject->getZDim();
-	long sz3 = subject->getCDim();
+	V3DLONG sz0 = subject->getXDim();
+    V3DLONG sz1 = subject->getYDim();
+    V3DLONG sz2 = subject->getZDim();
+	V3DLONG sz3 = subject->getCDim();
 	
-	long pagesz_sub = sz0*sz1*sz2;
+	V3DLONG pagesz_sub = sz0*sz1*sz2;
 	
 	//---------------------------------------------------------------------------------------------------------------------------------------------------
 	//finding the bounding box of ROI
@@ -491,78 +491,78 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	if(b_zx.left()==-1 || b_zx.top()==-1 || b_zx.right()==-1 || b_zx.bottom()==-1)
 		vzx=false;
 		
-	long bpos_x, bpos_y, bpos_z, bpos_c, epos_x, epos_y, epos_z, epos_c;
+	V3DLONG bpos_x, bpos_y, bpos_z, bpos_c, epos_x, epos_y, epos_z, epos_c;
 	
 	// 8 cases
 	if(vxy && vyz && vzx) // all 3 2d-views
 	{
-		bpos_x = qBound(long(0), long(qMax(b_xy.left(), b_zx.left())), sz0-1);
-		bpos_y = qBound(long(0), long(qMax(b_xy.top(),  b_yz.top())), sz1-1);
-		bpos_z = qBound(long(0), long(qMax(b_yz.left(), b_zx.top())), sz2-1);
+		bpos_x = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.left(), b_zx.left())), sz0-1);
+		bpos_y = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.top(),  b_yz.top())), sz1-1);
+		bpos_z = qBound(V3DLONG(0), V3DLONG(qMax(b_yz.left(), b_zx.top())), sz2-1);
 		
-		epos_x = qBound(long(0), long(qMin(b_xy.right(), b_zx.right())), sz0-1);
-		epos_y = qBound(long(0), long(qMin(b_xy.bottom(), b_yz.bottom())), sz1-1);
-		epos_z = qBound(long(0), long(qMin(b_yz.right(), b_zx.bottom())), sz2-1);
+		epos_x = qBound(V3DLONG(0), V3DLONG(qMin(b_xy.right(), b_zx.right())), sz0-1);
+		epos_y = qBound(V3DLONG(0), V3DLONG(qMin(b_xy.bottom(), b_yz.bottom())), sz1-1);
+		epos_z = qBound(V3DLONG(0), V3DLONG(qMin(b_yz.right(), b_zx.bottom())), sz2-1);
 	}
 	else if(!vxy && vyz && vzx) // 2 of 3
 	{
-		bpos_x = qBound(long(0), long(qMax(0, b_zx.left())), sz0-1);
-		bpos_y = qBound(long(0), long(qMax(0,  b_yz.top())), sz1-1);
-		bpos_z = qBound(long(0), long(qMax(b_yz.left(), b_zx.top())), sz2-1);
+		bpos_x = qBound(V3DLONG(0), V3DLONG(qMax(0, b_zx.left())), sz0-1);
+		bpos_y = qBound(V3DLONG(0), V3DLONG(qMax(0,  b_yz.top())), sz1-1);
+		bpos_z = qBound(V3DLONG(0), V3DLONG(qMax(b_yz.left(), b_zx.top())), sz2-1);
 		
-		epos_x = qBound(long(0), long(qMin((V3DLONG)(sz0-1), (V3DLONG)b_zx.right())), sz0-1);
-		epos_y = qBound(long(0), long(qMin((V3DLONG)(sz1-1), (V3DLONG)b_yz.bottom())), sz1-1);
-		epos_z = qBound(long(0), long(qMin(b_yz.right(), b_zx.bottom())), sz2-1);
+		epos_x = qBound(V3DLONG(0), V3DLONG(qMin((V3DLONG)(sz0-1), (V3DLONG)b_zx.right())), sz0-1);
+		epos_y = qBound(V3DLONG(0), V3DLONG(qMin((V3DLONG)(sz1-1), (V3DLONG)b_yz.bottom())), sz1-1);
+		epos_z = qBound(V3DLONG(0), V3DLONG(qMin(b_yz.right(), b_zx.bottom())), sz2-1);
 	}
 	else if(vxy && !vyz && vzx)
 	{
-		bpos_x = qBound(long(0), long(qMax(b_xy.left(), b_zx.left())), sz0-1);
-		bpos_y = qBound(long(0), long(qMax(b_xy.top(),  0)), sz1-1);
-		bpos_z = qBound(long(0), long(qMax(0, b_zx.top())), sz2-1);
+		bpos_x = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.left(), b_zx.left())), sz0-1);
+		bpos_y = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.top(),  0)), sz1-1);
+		bpos_z = qBound(V3DLONG(0), V3DLONG(qMax(0, b_zx.top())), sz2-1);
 		
-		epos_x = qBound(long(0), long(qMin(b_xy.right(), b_zx.right())), sz0-1);
-		epos_y = qBound(long(0), long(qMin((V3DLONG)b_xy.bottom(), (V3DLONG)(sz1-1))), sz1-1);
-		epos_z = qBound(long(0), long(qMin((V3DLONG)(sz2-1), (V3DLONG)b_zx.bottom())), sz2-1);
+		epos_x = qBound(V3DLONG(0), V3DLONG(qMin(b_xy.right(), b_zx.right())), sz0-1);
+		epos_y = qBound(V3DLONG(0), V3DLONG(qMin((V3DLONG)b_xy.bottom(), (V3DLONG)(sz1-1))), sz1-1);
+		epos_z = qBound(V3DLONG(0), V3DLONG(qMin((V3DLONG)(sz2-1), (V3DLONG)b_zx.bottom())), sz2-1);
 	}
 	else if(vxy && vyz && !vzx)
 	{
-		bpos_x = qBound(long(0), long(qMax(b_xy.left(), 0)), sz0-1);
-		bpos_y = qBound(long(0), long(qMax(b_xy.top(),  b_yz.top())), sz1-1);
-		bpos_z = qBound(long(0), long(qMax(b_yz.left(), 0)), sz2-1);
+		bpos_x = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.left(), 0)), sz0-1);
+		bpos_y = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.top(),  b_yz.top())), sz1-1);
+		bpos_z = qBound(V3DLONG(0), V3DLONG(qMax(b_yz.left(), 0)), sz2-1);
 		
-		epos_x = qBound(long(0), long(qMin((V3DLONG)b_xy.right(), (V3DLONG)(sz0-1))), sz0-1);
-		epos_y = qBound(long(0), long(qMin(b_xy.bottom(), b_yz.bottom())), sz1-1);
-		epos_z = qBound(long(0), long(qMin((V3DLONG)b_yz.right(), (V3DLONG)(sz2-1))), sz2-1);
+		epos_x = qBound(V3DLONG(0), V3DLONG(qMin((V3DLONG)b_xy.right(), (V3DLONG)(sz0-1))), sz0-1);
+		epos_y = qBound(V3DLONG(0), V3DLONG(qMin(b_xy.bottom(), b_yz.bottom())), sz1-1);
+		epos_z = qBound(V3DLONG(0), V3DLONG(qMin((V3DLONG)b_yz.right(), (V3DLONG)(sz2-1))), sz2-1);
 	}
 	else if(vxy && !vyz && !vzx) // only 1 of 3
 	{
-		bpos_x = qBound(long(0), long(qMax(b_xy.left(), 0)), sz0-1);
-		bpos_y = qBound(long(0), long(qMax(b_xy.top(),  0)), sz1-1);
+		bpos_x = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.left(), 0)), sz0-1);
+		bpos_y = qBound(V3DLONG(0), V3DLONG(qMax(b_xy.top(),  0)), sz1-1);
 		bpos_z = 0;
 		
-		epos_x = qBound(long(0), long(qMin((V3DLONG)b_xy.right(), (V3DLONG)(sz0-1))), sz0-1);
-		epos_y = qBound(long(0), long(qMin((V3DLONG)b_xy.bottom(), (V3DLONG)(sz1-1))), sz1-1);
+		epos_x = qBound(V3DLONG(0), V3DLONG(qMin((V3DLONG)b_xy.right(), (V3DLONG)(sz0-1))), sz0-1);
+		epos_y = qBound(V3DLONG(0), V3DLONG(qMin((V3DLONG)b_xy.bottom(), (V3DLONG)(sz1-1))), sz1-1);
 		epos_z = sz2-1;
 	}
 	else if(!vxy && vyz && !vzx)
 	{
 		bpos_x = 0;
-		bpos_y = qBound(long(0), long(qMax(0,  b_yz.top())), sz1-1);
-		bpos_z = qBound(long(0), long(qMax(b_yz.left(), 0)), sz2-1);
+		bpos_y = qBound(V3DLONG(0), V3DLONG(qMax(0,  b_yz.top())), sz1-1);
+		bpos_z = qBound(V3DLONG(0), V3DLONG(qMax(b_yz.left(), 0)), sz2-1);
 		
 		epos_x = sz0-1;
-		epos_y = qBound(long(0), long(qMin((V3DLONG)(sz1-1), (V3DLONG)b_yz.bottom())), sz1-1);
-		epos_z = qBound(long(0), long(qMin((V3DLONG)b_yz.right(), (V3DLONG)(sz2-1))), sz2-1);
+		epos_y = qBound(V3DLONG(0), V3DLONG(qMin((V3DLONG)(sz1-1), (V3DLONG)b_yz.bottom())), sz1-1);
+		epos_z = qBound(V3DLONG(0), V3DLONG(qMin((V3DLONG)b_yz.right(), (V3DLONG)(sz2-1))), sz2-1);
 	}
 	else if(!vxy && !vyz && vzx)
 	{
-		bpos_x = qBound(long(0), long(qMax(0, b_zx.left())), sz0-1);
+		bpos_x = qBound(V3DLONG(0), V3DLONG(qMax(0, b_zx.left())), sz0-1);
 		bpos_y = 0;
-		bpos_z = qBound(long(0), long(qMax(0, b_zx.top())), sz2-1);
+		bpos_z = qBound(V3DLONG(0), V3DLONG(qMax(0, b_zx.top())), sz2-1);
 		
-		epos_x = qBound(long(0), long(qMin((V3DLONG)(sz0-1), (V3DLONG)b_zx.right())), sz0-1);
+		epos_x = qBound(V3DLONG(0), V3DLONG(qMin((V3DLONG)(sz0-1), (V3DLONG)b_zx.right())), sz0-1);
 		epos_y = sz1-1;
-		epos_z = qBound(long(0), long(qMin((V3DLONG)(sz2-1), (V3DLONG)b_zx.bottom())), sz2-1);
+		epos_z = qBound(V3DLONG(0), V3DLONG(qMin((V3DLONG)(sz2-1), (V3DLONG)b_zx.bottom())), sz2-1);
 	}
 	else // 0
 	{
@@ -578,17 +578,17 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	//qDebug("x %d y %d z %d x %d y %d z %d ",bpos_x,bpos_y,bpos_z,epos_x,epos_y,epos_z);
 
 	//ROI extraction
-	long sx = (epos_x-bpos_x)+1;
-    long sy = (epos_y-bpos_y)+1;
-    long sz = (epos_z-bpos_z)+1;
-	long sc = sz3; // 0,1,2
+	V3DLONG sx = (epos_x-bpos_x)+1;
+    V3DLONG sy = (epos_y-bpos_y)+1;
+    V3DLONG sz = (epos_z-bpos_z)+1;
+	V3DLONG sc = sz3; // 0,1,2
 	
 	//choose the channel stack
-	long pagesz = sx*sy*sz;
+	V3DLONG pagesz = sx*sy*sz;
 	
 	double meanv=0, stdv=0;
 	
-	long offset_sub = 0;
+	V3DLONG offset_sub = 0;
 	
 	//------------------------------------------------------------------------------------------------------------------------------------
 	
@@ -600,15 +600,15 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	}
 	else
 	{
-		for(long k=bpos_z; k<=epos_z; k++)
+		for(V3DLONG k=bpos_z; k<=epos_z; k++)
 		{
-			long offset_z = k*sz0*sz1;
-			long offset_crop_z = (k-bpos_z)*sx*sy;
-			for(long j=bpos_y; j<=epos_y; j++)
+			V3DLONG offset_z = k*sz0*sz1;
+			V3DLONG offset_crop_z = (k-bpos_z)*sx*sy;
+			for(V3DLONG j=bpos_y; j<=epos_y; j++)
 			{
-				long offset_y = j*sz0 + offset_z;
-				long offset_crop_y = (j-bpos_y)*sx + offset_crop_z;
-				for(long i=bpos_x; i<=epos_x; i++)
+				V3DLONG offset_y = j*sz0 + offset_z;
+				V3DLONG offset_crop_y = (j-bpos_y)*sx + offset_crop_z;
+				for(V3DLONG i=bpos_x; i<=epos_x; i++)
 				{
 					data1d[(i-bpos_x) + offset_crop_y] = pSbject[offset_sub + i+offset_y];
 					
@@ -619,7 +619,7 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	}
 	meanv /= pagesz;
 	
-	for(long i=0; i<pagesz; i++)
+	for(V3DLONG i=0; i<pagesz; i++)
 		stdv += (data1d[i] - meanv)*(data1d[i] - meanv);
 	
 	stdv /= (pagesz-1);
@@ -637,34 +637,33 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	
 	//meanv /= 2;
 	
-	for(long i=0; i<pagesz; i++)
+	for(V3DLONG i=0; i<pagesz; i++)
 		bw[i] = (data1d[i]>meanv)?1:0;
 	
 	
 	//
-	//system("date");
-	long offset_y, offset_z;
+	V3DLONG offset_y, offset_z;
 	
 	offset_y=sx;
 	offset_z=sx*sy;
 	
-	long neighborhood_26[26] = {-1, 1, -offset_y, offset_y, -offset_z, offset_z,
+	V3DLONG neighborhood_26[26] = {-1, 1, -offset_y, offset_y, -offset_z, offset_z,
 								-offset_y-1, -offset_y+1, -offset_y-offset_z, -offset_y+offset_z, 
 								offset_y-1, offset_y+1, offset_y-offset_z, offset_y+offset_z,
 								offset_z-1, offset_z+1, -offset_z-1, -offset_z+1,
 								-1-offset_y-offset_z, -1-offset_y+offset_z, -1+offset_y-offset_z, -1+offset_y+offset_z,
 								1-offset_y-offset_z, 1-offset_y+offset_z, 1+offset_y-offset_z, 1+offset_y+offset_z}; 
-	long neighbors = 26;
+	V3DLONG neighbors = 26;
 	
 	
-	for(long k = 0; k < sz; k++) 
+	for(V3DLONG k = 0; k < sz; k++) 
 	{				
-		long idxk = k*offset_z;
-		for(long j = 0;  j < sy; j++) 
+		V3DLONG idxk = k*offset_z;
+		for(V3DLONG j = 0;  j < sy; j++) 
 		{
-			long idxj = idxk + j*offset_y;
+			V3DLONG idxj = idxk + j*offset_y;
 			
-			for(long i = 0, idx = idxj; i < sx;  i++, idx++) 
+			for(V3DLONG i = 0, idx = idxj; i < sx;  i++, idx++) 
 			{
 				
 				if(i==0 || i==sx-1 || j==0 || j==sy-1 || k==0 || k==sz-1)
@@ -675,7 +674,7 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 					bool one_point = true;
 					for(int ineighbor=0; ineighbor<neighbors; ineighbor++)
 					{
-						long n_idx = idx + neighborhood_26[ineighbor];
+						V3DLONG n_idx = idx + neighborhood_26[ineighbor];
 						
 						if(bw[n_idx])
 						{
@@ -692,8 +691,6 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 			}
 		}
 	}
-	//system("date");
-	
 	
 	Image4DSimple p4Dbw;
 	p4Dbw.setData((unsigned char*)bw, sx, sy, sz, 1, V3D_UINT8);
@@ -710,7 +707,7 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 
 	
 	//declaration
-	long totalpxlnum=pagesz;
+	V3DLONG totalpxlnum=pagesz;
 	
 	RgnGrow3dClass * pRgnGrow = new RgnGrow3dClass;
 	if (!pRgnGrow)
@@ -761,7 +758,7 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 		BYTE * PHCDONEIMG1d = pRgnGrow->PHCDONEIMG1d;
 		UBYTE * quantImg1d = pRgnGrow->quantImg1d;
 		BYTE *** flagImg = pRgnGrow->PHCDONEIMG3d;
-		for (long tmpi=0; tmpi<totalpxlnum; tmpi++)
+		for (V3DLONG tmpi=0; tmpi<totalpxlnum; tmpi++)
 		{
 			PHCDONEIMG1d[tmpi] = (quantImg1d[tmpi]==(UBYTE)j)?1:0;
 		}
@@ -797,8 +794,8 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 						while(1)
 						{
 							pRgnGrow->IFINCREASELABEL = 1;
-							long posbeg = pRgnGrow->PHCLABELSTACKPOS;
-							long mypos = posbeg;
+							V3DLONG posbeg = pRgnGrow->PHCLABELSTACKPOS;
+							V3DLONG mypos = posbeg;
 							
 							while (mypos>=0)
 							{
@@ -816,7 +813,7 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 									rgnfindsub(currow,curcol,curdep,0,0,pRgnGrow);
 								}
 								
-								long posend = pRgnGrow->PHCLABELSTACKPOS;
+								V3DLONG posend = pRgnGrow->PHCLABELSTACKPOS;
 								
 								if (posend>posbeg) 
 								{mypos = pRgnGrow->PHCLABELSTACKPOS;}
@@ -857,13 +854,13 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	STCL *staRegion = new STCL;
 	STCL *staRegion_begin = staRegion;
 	RGN *curRgn = pRgnGrow->PHCURGN_head;
-	long nrgncopied = 0; //num of rgn output
+	V3DLONG nrgncopied = 0; //num of rgn output
 	
 	std::vector<STCL> stclList;
 	
 	while(curRgn && curRgn->next)
 	{
-		long i = nrgncopied;
+		V3DLONG i = nrgncopied;
 		
 		qDebug() << "num of rgn ..." << i << curRgn->no << curRgn->next->no;
 		
@@ -872,8 +869,8 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 		
 		POS * curPos = curRgn->poslist;
 		
-		long count = 0;
-		staRegion->desposlist = new long [curRgn->poslistlen-1];
+		V3DLONG count = 0;
+		staRegion->desposlist = new V3DLONG [curRgn->poslistlen-1];
 		while(curPos && curPos->next)
 		{
 			staRegion->desposlist[count++] = curPos->pos;
@@ -920,12 +917,12 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 	//staRegion = staRegion_begin;
 	
 	//
-	for(long i=0; i<pagesz; i++)
+	for(V3DLONG i=0; i<pagesz; i++)
 		data1d[i] = 0;
 	
-	long length;
+	V3DLONG length;
 	
-	long n_rgn = stclList.size(); // qMin(5, nrgncopied);
+	V3DLONG n_rgn = stclList.size(); // qMin(5, nrgncopied);
 	
 	qDebug() << "num of rgn ..." << n_rgn << nrgncopied;
 	
@@ -938,7 +935,7 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 		qDebug() << "region ..." << ii << length;
 		
 		// find idx
-		long *cutposlist = stclList.at(ii).desposlist;
+		V3DLONG *cutposlist = stclList.at(ii).desposlist;
 		
 		float scx=0,scy=0,scz=0,si=0;
 		
@@ -950,11 +947,11 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 			
 			float cv = pSbject[ cutposlist[i] ];
 			
-			long idx = cutposlist[i];
+			V3DLONG idx = cutposlist[i];
 			
-			long k1 = idx/(sx*sy);
-			long j1 = (idx - k1*sx*sy)/sx;
-			long i1 = idx - k1*sx*sy - j1*sx;
+			V3DLONG k1 = idx/(sx*sy);
+			V3DLONG j1 = (idx - k1*sx*sy)/sx;
+			V3DLONG i1 = idx - k1*sx*sy - j1*sx;
 			
 			scz += k1*cv;
 			scy += j1*cv;
@@ -964,9 +961,9 @@ void regiongrowing(V3DPluginCallback &callback, QWidget *parent)
 		
 		if (si>0)
 		{
-			long ncx = scx/si + 0.5 +1; 
-			long ncy = scy/si + 0.5 +1; 
-			long ncz = scz/si + 0.5 +1;
+			V3DLONG ncx = scx/si + 0.5 +1; 
+			V3DLONG ncy = scy/si + 0.5 +1; 
+			V3DLONG ncz = scz/si + 0.5 +1;
 		
 			LocationSimple pp(ncx, ncy, ncz);
 			cmList.push_back(pp);

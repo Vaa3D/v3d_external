@@ -37,6 +37,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define XFORMWIDGET_H_
 
 #include "v3d_core.h"
+#include "../basic_c_fun/basic_triview.h"
 
 class V3dR_MainWindow;
 class V3dR_GLWidget;
@@ -68,8 +69,7 @@ struct iDrawExternalParameter
 	~iDrawExternalParameter() {if (xwidget==0 && image4d) delete image4d;}
 };
 
-
-class XFormWidget : public QWidget //class XFormWidget : public QMainWindow
+class XFormWidget : public QWidget, public TriviewControl //class XFormWidget : public QMainWindow
 {
     Q_OBJECT;
 
@@ -308,6 +308,38 @@ public:    // in mainwindow_interface.cpp
 	V3dR_GLWidget * getView3D();
 	V3dR_GLWidget * getLocalView3D();
 
+	// a few interface functions for external plugin use. prototyped by PHC. 2010-Dec-10
+	
+	virtual void getFocusLocation(V3DLONG & cx, V3DLONG & cy, V3DLONG & cz) const 
+	{
+		if (imgData)
+		{
+			cx = imgData->getFocusX()+1;
+			cy = imgData->getFocusY()+1;
+			cz = imgData->getFocusZ()+1;
+		}
+	}
+	virtual void setFocusLocation(V3DLONG cx, V3DLONG cy, V3DLONG cz)   
+	{
+		if (imgData)
+		{
+			forceToChangeFocus(cx, cy, cz);
+		}
+	}
+	
+	virtual void getMinMax(double & minval, double & maxval)  const 
+	{
+	}
+	virtual void setMinMax(double minval, double maxval)   
+ 	{
+	}
+	
+	virtual void getTriViewColorDispType(int & mytype)  const 
+	{
+	}
+	virtual void setTriViewColorDispType(int mytype)  
+	{
+	}
 };
 
 
