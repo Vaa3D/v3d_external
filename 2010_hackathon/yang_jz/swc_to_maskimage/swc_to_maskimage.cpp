@@ -606,8 +606,8 @@ void mrskimage_originalimage(V3DPluginCallback &callback, QWidget *parent, int m
 	}
 	Image4DSimple* image1 = callback.getImage(win_list[0]);
 	Image4DSimple* image2 = callback.getImage(win_list[1]);
-	V3DLONG min,max;
-	min = 0;max = 0;
+	V3DLONG min,min1,max,max1,filter;
+	min=max=min1=max1=filter= 0;
 	if (!image1 && !image2)
 	{
 		QMessageBox::information(0, title, QObject::tr("No image is open."));
@@ -649,26 +649,30 @@ void mrskimage_originalimage(V3DPluginCallback &callback, QWidget *parent, int m
 			{
 				min =(min > pData1[k*sx1*sy1+j*sx1+i])? pData1[k*sx1*sy1 + j*sx1 +i] : min;		
 				max =(pData1[k*sx1*sy1+j*sx1+i] > max)? pData1[k*sx1*sy1 + j*sx1 +i] : max;	
-				
+				min1 =(min > pData2[k*sx1*sy1+j*sx1+i])? pData2[k*sx1*sy1 + j*sx1 +i] : min;		
+				max1 =(pData2[k*sx1*sy1+j*sx1+i] > max)? pData2[k*sx1*sy1 + j*sx1 +i] : max;
 			}
 		}
 	}
+	
+	Filter=(max1 > max)? max : max1;
+	
 	for (V3DLONG k = 0; k < sz1; k++) 
 	{
 		for(V3DLONG j = 0; j < sy1; j++)
 		{
 			for(V3DLONG i = 0; i < sx1; i++)
 			{
-				if (max == 5)
+				if (Filter == max)
 				{
-					if (pData1[k*sx1*sy1 + j*sx1 +i] !=5) 
+					if (pData1[k*sx1*sy1 + j*sx1 +i] !=max) 
 					{
 						pData2[k*sx1*sy1 + j*sx1 +i] = 0;
 					}
 					pData[k*sx1*sy1 + j*sx1 +i]	= pData2[k*sx1*sy1 + j*sx1 +i];
 				}else
 				{
-					if (pData2[k*sx1*sy1 + j*sx1 +i] !=5) 
+					if (pData2[k*sx1*sy1 + j*sx1 +i] !=max1) 
 					{
 						pData1[k*sx1*sy1 + j*sx1 +i] = 0;
 					}
@@ -678,6 +682,31 @@ void mrskimage_originalimage(V3DPluginCallback &callback, QWidget *parent, int m
 		}
 	}
 	
+	
+//	for (V3DLONG k = 0; k < sz1; k++) 
+//	{
+//		for(V3DLONG j = 0; j < sy1; j++)
+//		{
+//			for(V3DLONG i = 0; i < sx1; i++)
+//			{
+//				if (max == 5)
+//				{
+//					if (pData1[k*sx1*sy1 + j*sx1 +i] !=5) 
+//					{
+//						pData2[k*sx1*sy1 + j*sx1 +i] = 0;
+//					}
+//					pData[k*sx1*sy1 + j*sx1 +i]	= pData2[k*sx1*sy1 + j*sx1 +i];
+//				}else
+//				{
+//					if (pData2[k*sx1*sy1 + j*sx1 +i] !=5) 
+//					{
+//						pData1[k*sx1*sy1 + j*sx1 +i] = 0;
+//					}
+//					pData[k*sx1*sy1 + j*sx1 +i]	= pData1[k*sx1*sy1 + j*sx1 +i];
+//				}
+//			}
+//		}
+//	}
 	Image4DSimple tmp;
 	tmp.setData(pData, sx1, sy1, sz1, 1, V3D_UINT8);
 	
