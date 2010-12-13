@@ -32,6 +32,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //090516
 //090518: add ParaShortestPath struct
 //100327: add find_shortest_path_graphpointset
+//101212: add some block operation functions
 
 #ifndef __NEURON_TRACING_H__
 #define __NEURON_TRACING_H__
@@ -125,6 +126,22 @@ double fitRadiusPercent(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1, V3DL
 							float x, float y, float z, float zthickness, bool b_est_in_xyplaneonly);
 void fitPosition(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1, V3DLONG dim2, double imgTH, double ir,
 							float &x, float &y, float &z,  float* D=0, float zthickness=1.0);
+
+
+//some block operation functions
+
+double getBlockMaxValue(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1, V3DLONG dim2,
+						V3DLONG x0, V3DLONG y0, V3DLONG z0,
+						int xstep, int ystep, int zstep);
+double getBlockAveValue(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1, V3DLONG dim2,
+						V3DLONG x0, V3DLONG y0, V3DLONG z0,
+						int xstep, int ystep, int zstep);
+bool setBlockAveValue(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1, V3DLONG dim2,
+					  V3DLONG x0, V3DLONG y0, V3DLONG z0,
+					  int xstep, int ystep, int zstep, unsigned char target_val);
+double getBlockStdValue(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1, V3DLONG dim2,
+						V3DLONG x0, V3DLONG y0, V3DLONG z0,
+						int xstep, int ystep, int zstep);
 
 
 // template based functions /////////////////////////////////////////////////////////////////////

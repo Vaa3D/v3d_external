@@ -124,6 +124,34 @@ double getBlockAveValue(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1, V3DL
 	return (n==0)?0:v/n;
 }
 
+bool setBlockAveValue(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1, V3DLONG dim2,
+						V3DLONG x0, V3DLONG y0, V3DLONG z0,
+						int xstep, int ystep, int zstep, unsigned char target_val)
+{
+	if (!img3d || dim0<=0 || dim1<=0 || dim2<=0 ||
+		x0<0 || x0>=dim0 || y0<0 || y0>=dim1 || z0<0 || z0>=dim2)
+		return false;
+	
+	double xsteph=fabs(xstep)/2, ysteph=fabs(ystep)/2, zsteph=fabs(zstep)/2;
+	V3DLONG xs=x0-xsteph, xe=x0+xsteph,
+	ys=y0-ysteph, ye=y0+ysteph,
+	zs=z0-zsteph, ze=z0+zsteph;
+	
+	if (xs<0) xs=0; if (xe>=dim0) xe=dim0-1;
+	if (ys<0) ys=0; if (ye>=dim1) ye=dim1-1;
+	if (zs<0) zs=0; if (ze>=dim2) ze=dim2-1;
+	
+	V3DLONG i,j,k;
+	for (k=zs;k<=ze; k++)
+		for (j=ys;j<=ye; j++)
+			for (i=xs;i<=xe; i++)
+			{
+				img3d[k][j][i] = target_val;
+			}
+	return true;
+}
+
+
 double getBlockStdValue(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1, V3DLONG dim2,
 							V3DLONG x0, V3DLONG y0, V3DLONG z0,
 							int xstep, int ystep, int zstep)
@@ -312,7 +340,7 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 		 ny=((ymax-ymin)/min_step)+1, 	ystep=min_step,
 		 nz=((zmax-zmin)/min_step)+1, 	zstep=min_step;
 
-	int num_edge_table = (edge_select==0)? 3:13; // exclude/include diagonal-edge
+	V3DLONG num_edge_table = (edge_select==0)? 3:13; // exclude/include diagonal-edge
 
 	printf("valid bounding (%ld %ld %ld)--(%ld %ld %ld) ......  ", xmin,ymin,zmin, xmax,ymax,zmax);
 	printf("%ld x %ld x %ld nodes, step = %d, connect = %d \n", nx, ny, nz, min_step, num_edge_table*2);
@@ -358,7 +386,7 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 		return s_error;
 	}
 
-	int n_end_outbound = 0;
+	V3DLONG n_end_outbound = 0;
 	for (i=0; i<n_end_nodes; i++)
 	{
 		if (NODE_XYZ_OUT_OF_BOUND(x1[i],y1[i],z1[i]))
@@ -406,7 +434,7 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 	printf("setting weight of edges ......  ");
 
 	// z-thickness weighted edge
-	for (int it=0; it<num_edge_table; it++)
+	for (V3DLONG it=0; it<num_edge_table; it++)
 	{
 		double di = (edge_table[it].i0 - edge_table[it].i1);
 		double dj = (edge_table[it].j0 - edge_table[it].j1);
@@ -637,7 +665,7 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 	}
 
 	else
-	for (int npath=0; npath<n_end_nodes; npath++) // n path of back tracing end-->start
+	for (V3DLONG npath=0; npath<n_end_nodes; npath++) // n path of back tracing end-->start
 	{
 #define _output_shortest_path_N_
 		printf("the #%d path of back tracing end-->start \n", npath+1);
