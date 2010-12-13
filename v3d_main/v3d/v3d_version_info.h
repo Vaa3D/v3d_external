@@ -47,12 +47,16 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "ui_dialog_update_v3d.h"
 #include "ui_dialog_update_list.h"
 #include "ui_dialog_update_options.h"
+#include "ui_dialog_update_downloading.h"
+#include "ui_dialog_update_checking.h"
 #include <limits>
 
 class QNetworkReply;
 class QDomDocument;
 class QTableWidget;
-class QProgressDialog;
+namespace v3d {
+    class DownloadingUpdatesDialog;
+}
 
 void v3d_aboutinfo();
 void v3d_Lite_info();
@@ -207,18 +211,20 @@ public:
     bool bDoInstall;
 
 signals:
-    void updateComplete(QProgressDialog*, bool succeeded);
+    void updateComplete(v3d::DownloadingUpdatesDialog*, bool succeeded);
 
 public slots:
     void setInstall( int state );
-    void startUpdate(QProgressDialog*);
+    void startUpdate(v3d::DownloadingUpdatesDialog*);
 
 private slots:
     void finishedDownloadSlot(QNetworkReply*);
 
 private:
-    QProgressDialog *progressDialog;
+    v3d::DownloadingUpdatesDialog *progressDialog;
 };
+
+class CheckingForUpdatesDialog;
 
 class V3DVersionChecker : public QObject
 {
@@ -241,7 +247,7 @@ private slots:
     void gotVersion(QNetworkReply* reply);
     void show_update_list();
     void install_updates();
-    void finishUpdates(QProgressDialog* progressDialog);
+    void finishUpdates(v3d::DownloadingUpdatesDialog* progressDialog);
 
 protected:
     void createVersionXml(QString xmlFile);
@@ -260,6 +266,7 @@ private:
     UpdateItemsType updateItems;
     bool bDownloadCanceled;
     QUrl xmlPathUrl; // location of update information xml file
+    CheckingForUpdatesDialog *checkingDialog;
 };
 
 class VersionUrlValidator : public QValidator
@@ -283,21 +290,6 @@ public:
         if (url.isRelative()) return QValidator::Intermediate;
         return QValidator::Acceptable;
     }
-};
-
-class UpdatesAvailableDialog : public QMessageBox 
-{
-    Q_OBJECT
-public:
-    UpdatesAvailableDialog(QWidget *parent);
-    QPushButton* yesButton;
-
-signals:
-    void yes_update();
-
-private slots:
-    void never_update();
-    void remind_me_later();
 };
 
 
@@ -348,6 +340,53 @@ private:
     QPalette* redPalette;
     QPalette* blackPalette;
 };
+
+
+class CheckingForUpdatesDialog : public QDialog, public Ui::checking_for_updates_dialog
+{
+    Q_OBJECT
+public:
+    CheckingForUpdatesDialog(QWidget *parent);
+    bool& wasCanceled() {return bWasCanceled;}
+
+private slots:
+    void canceled() {bWasCanceled = true;}
+
+private:
+    bool bWasCanceled;
+};
+
+
+class UpdatesAvailableDialog : public QMessageBox
+{
+    Q_OBJECT
+public:
+    UpdatesAvailableDialog(QWidget *parent);
+    QPushButton* yesButton;
+
+signals:
+    void yes_update();
+
+private slots:
+    void never_update();
+    void remind_me_later();
+};
+
+
+class DownloadingUpdatesDialog : public QDialog, public Ui::downloading_updates_dialog
+{
+    Q_OBJECT
+public:
+    DownloadingUpdatesDialog(QWidget *parent);
+    bool wasCanceled() {return bWasCanceled;}
+
+private slots:
+    void canceled() {bWasCanceled = true;}
+
+private:
+    bool bWasCanceled;
+};
+
 
 } // namespace v3d
 

@@ -81,6 +81,7 @@
 # 101119: add bundle test for mac 
 # 101129: (CMB) add link to CoreServices framework on Snow Leopard
 # 101201: (CMB) add dialog_update_list.ui
+# 101213: (CMB) add more update dialogs
 # ######################################################################
 
 TEMPLATE = app
@@ -309,6 +310,8 @@ FORMS += landmark_property.ui \
     dialog_update_v3d.ui \
     dialog_update_list.ui \
     dialog_update_options.ui \
+    dialog_update_downloading.ui \
+    dialog_update_checking.ui \
     FL_watershedSegPara.ui \
     FL_levelsetSegPara.ui 
 

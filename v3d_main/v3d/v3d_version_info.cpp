@@ -256,23 +256,23 @@ void UpdateItem::setInstall( int state )
 }
 
 // Slot to start updating this item from the remote server
-void UpdateItem::startUpdate(QProgressDialog* p)
+void UpdateItem::startUpdate(DownloadingUpdatesDialog* p)
 {
     if (p->wasCanceled())
         return;
 
     progressDialog = p;
-    progressDialog->setWindowTitle(tr("Downloading ") + relativeName + "...");
+    progressDialog->informativeTextLabel->setText(tr("Downloading ") + relativeName + "...");
     QNetworkAccessManager *nam = new QNetworkAccessManager(this);
     // When the download is complete, write the file to disk
     connect(nam, SIGNAL(finished(QNetworkReply*)),
             this, SLOT(finishedDownloadSlot(QNetworkReply*)));
-    v3d_msg(remoteUrl.toString(),0);
+    // v3d_msg(remoteUrl.toString(),0);
     nam->get(QNetworkRequest(remoteUrl));
 
     // Each item gets to add a total of 2 to the progress dialog.
     // One at the beginning:
-    progressDialog->setValue(progressDialog->value() + 1);
+    progressDialog->progressBar->setValue(progressDialog->progressBar->value() + 1);
 }
 
 // Slot after download has completed, before local file is updated
@@ -288,15 +288,21 @@ void UpdateItem::finishedDownloadSlot(QNetworkReply* reply)
 
     bool succeeded = true; // start optimistic
 
-    if (progressDialog->wasCanceled()) // user said stop
+    if (progressDialog->wasCanceled()) { // user said stop
+        v3d_msg("Download was canceled",0);
         succeeded = false;
+    }
 
-    if (succeeded && (reply->error() != QNetworkReply::NoError)) // http error
+    if (succeeded && (reply->error() != QNetworkReply::NoError)) { // http error
+        v3d_msg("HTTP error",0);
         succeeded = false;
+    }
 
-    if (succeeded && reply->header(QNetworkRequest::ContentLengthHeader).toLongLong() <= 0)
+    if (succeeded && reply->header(QNetworkRequest::ContentLengthHeader).toLongLong() <= 0) {
         // download has no content
+        v3d_msg("Download has no content",0);
         succeeded = false;
+    }
 
     if (succeeded) // try renaming old file
     {
@@ -307,6 +313,7 @@ void UpdateItem::finishedDownloadSlot(QNetworkReply* reply)
             QString newName = oldName + ".old";
             v3d_msg("backing up old version of "+fileInfo.absoluteFilePath(),0);
             if (! dir.rename(oldName, newName) )
+                v3d_msg("Failed to backup old file",0);
                 succeeded = false; // try to rename old file
         }
     }
@@ -314,8 +321,10 @@ void UpdateItem::finishedDownloadSlot(QNetworkReply* reply)
     if (succeeded) { // try to create directory
         // Might need to create directory
         QDir dir = fileInfo.absoluteDir();
-        if (! dir.mkpath(".") )
+        if (! dir.mkpath(".") ) {
             succeeded = false;
+            v3d_msg("Failed to create directory",0);
+        }
     }
 
     if (succeeded) { // try to write file
@@ -323,9 +332,14 @@ void UpdateItem::finishedDownloadSlot(QNetworkReply* reply)
             progressDialog->setWindowTitle(tr("Saving ") + relativeName + "...");
             file.write(reply->readAll());
             file.close();
+            // Second increment of two on progress bar
+            progressDialog->progressBar->setValue(progressDialog->progressBar->value() + 1);
+            // v3d_msg("Wrote file",0);
         }
-        else
+        else {
             succeeded = false;
+            v3d_msg("Failed to write file.",0);
+        }
     }
 
     if (! succeeded) {
@@ -448,6 +462,13 @@ void V3DVersionChecker::checkForLatestVersion(bool b_verbose)
 {
     this->b_showAllMessages = b_verbose;
 
+    if (b_showAllMessages) {
+        if (! checkingDialog)
+            checkingDialog = new v3d::CheckingForUpdatesDialog(guiParent);
+        checkingDialog->wasCanceled() = false;
+        checkingDialog->show();
+    }
+
     QUrl xmlFileUrl(getDefaultV3DVersionUrl()); // begin by assuming default
     // Is there already a setting for the url?
 	QSettings settings("HHMI", "V3D");
@@ -456,8 +477,8 @@ void V3DVersionChecker::checkForLatestVersion(bool b_verbose)
 
     // Remember xml url, for use in constructing absolute urls from relative ones.
     xmlPathUrl = xmlFileUrl.resolved(QUrl("."));
-    v3d_msg(xmlPathUrl.toString(),0);
-    v3d_msg(xmlFileUrl.toString(),0);
+    // v3d_msg(xmlPathUrl.toString(),0);
+    // v3d_msg(xmlFileUrl.toString(),0);
 
     QNetworkAccessManager *nam = new QNetworkAccessManager(this);
     connect(nam, SIGNAL(finished(QNetworkReply*)),
@@ -516,9 +537,18 @@ bool V3DVersionChecker::shouldCheckNow()
 
 void V3DVersionChecker::gotVersion(QNetworkReply* reply)
 {
+    // User might have pressed "cancel"
+    if (b_showAllMessages) {
+        if (checkingDialog && checkingDialog->wasCanceled()) {
+            checkingDialog->close();
+            return;
+        }
+    }
+
     if (reply->error() != QNetworkReply::NoError) {
         qDebug("Problem downloading latest version information");
         if (b_showAllMessages) {
+            if (checkingDialog) checkingDialog->close();
             QMessageBox::information(guiParent,
                     "Unable to connect to V3D server",
                     "Could not get latest version information.\n"
@@ -546,6 +576,11 @@ void V3DVersionChecker::gotVersion(QNetworkReply* reply)
     // Qt 4.6 or later is required for validation with xml schema
     QDomDocument versionDoc("v3d_version");
     versionDoc.setContent(reply->readAll());
+
+    if (b_showAllMessages) {
+        if (checkingDialog) checkingDialog->close();
+    }
+    
     processVersionXmlFile(versionDoc);
 }
 
@@ -690,8 +725,8 @@ void V3DVersionChecker::install_updates()
                 firstUpdateItem = item;
             // Link update items together in a chain
             if (previousUpdateItem)
-                connect(previousUpdateItem, SIGNAL(updateComplete(QProgressDialog*,bool)),
-                        item, SLOT(startUpdate(QProgressDialog*)));
+                connect(previousUpdateItem, SIGNAL(updateComplete(v3d::DownloadingUpdatesDialog*,bool)),
+                        item, SLOT(startUpdate(v3d::DownloadingUpdatesDialog*)));
             installCount++;
             previousUpdateItem = itemIter->second;
         }
@@ -704,18 +739,17 @@ void V3DVersionChecker::install_updates()
         return;
     }
 
-    connect(previousUpdateItem, SIGNAL(updateComplete(QProgressDialog*,bool)),
-            this, SLOT(finishUpdates(QProgressDialog*)));
+    connect(previousUpdateItem, SIGNAL(updateComplete(v3d::DownloadingUpdatesDialog*,bool)),
+            this, SLOT(finishUpdates(v3d::DownloadingUpdatesDialog*)));
 
-    QProgressDialog *progressDialog = new QProgressDialog(guiParent);
+    DownloadingUpdatesDialog *progressDialog = new DownloadingUpdatesDialog(guiParent);
     // When the user clicks "Cancel", stop downloading.
     progressDialog->setModal(true);
-    progressDialog->setAutoClose(true);
-    progressDialog->setMinimumDuration(500);
+    // progressDialog->setAutoClose(true);
+    // progressDialog->setMinimumDuration(500);
     // Each item gets to increment progress value by 2
-    progressDialog->setMaximum(2 * installCount); // zero means "unknown"
-    progressDialog->setValue(0);
-    progressDialog->setWindowTitle(tr("Installing updates..."));
+    progressDialog->progressBar->setMaximum(2 * installCount); // zero means "unknown"
+    progressDialog->progressBar->setValue(0);
 
     qDebug() << "installing V3D software updates...";
 
@@ -726,9 +760,8 @@ void V3DVersionChecker::install_updates()
     progressDialog->exec();
 }
 
-void V3DVersionChecker::finishUpdates(QProgressDialog* progressDialog) 
+void V3DVersionChecker::finishUpdates(DownloadingUpdatesDialog* progressDialog)
 {
-    progressDialog->setWindowTitle(tr("Finished updates"));
     progressDialog->close();
     QMessageBox::information(
             guiParent,
@@ -959,47 +992,6 @@ void CheckForUpdatesDialog::show_options() {
 }
 
 
-UpdatesAvailableDialog::UpdatesAvailableDialog(QWidget *parent)
-        : QMessageBox(parent)
-{
-    // Use V3D application icon
-    QIcon appIcon(":/pic/v3dIcon128.png");
-    QPixmap iconPixmap = appIcon.pixmap(75,75);
-    setIconPixmap(iconPixmap);
-    setText(tr("There are updates available."));
-    setInformativeText("Do you want to start the V3D updater now?");
-    // setDetailedText("The V3D team periodically makes software improvements. "
-    //         "Click 'Yes' to install recent improvements now.");
-    setWindowTitle(tr("V3D software update check"));
-    setSizeGripEnabled(false);
-
-    QPushButton *noButton = addButton( tr("Remind me later"), QMessageBox::RejectRole);
-    connect(noButton, SIGNAL(clicked()), this, SLOT(remind_me_later()));
-
-    QPushButton *neverButton = addButton( tr("Never"), QMessageBox::DestructiveRole);
-    connect(neverButton, SIGNAL(clicked()), this, SLOT(never_update()));
-
-    yesButton = addButton( tr("Yes, update"), QMessageBox::AcceptRole);
-    connect(yesButton, SIGNAL(clicked()), this, SIGNAL(yes_update()));
-}
-
-void UpdatesAvailableDialog::never_update()
-{
-    QSettings settings("HHMI", "V3D");
-    settings.setValue("updateCheckInterval", -1); // never
-}
-
-void UpdatesAvailableDialog::remind_me_later()
-{
-    QSettings settings("HHMI", "V3D");
-    int interval = settings.value("updateCheckInterval").toInt();
-    if (interval < 0) // if set to never
-        // run again when user starts V3D, but not for at least 5 minutes.
-        settings.setValue("updateCheckInterval", 300);
-}
-
-
-
 UpdatesListDialog::UpdatesListDialog(QWidget* guiParent, V3DVersionChecker *checker)
         : QDialog(guiParent), versionChecker(checker)
 {
@@ -1131,7 +1123,7 @@ void UpdateOptionsDialog::on_comboBox_currentIndexChanged(const QString& updateF
 // User changed the url
 void UpdateOptionsDialog::on_lineEdit_editingFinished() {
     // Save new url
-    v3d_msg("New version file = " + lineEdit->text(), 0);
+    // v3d_msg("New version file = " + lineEdit->text(), 0);
 	QSettings settings("HHMI", "V3D");
     settings.setValue("versionUrl", lineEdit->text());
 }
@@ -1143,5 +1135,68 @@ void UpdateOptionsDialog::on_lineEdit_textChanged() // user changes version xml 
     else
         lineEdit->setPalette(*redPalette);
 }
+
+
+CheckingForUpdatesDialog::CheckingForUpdatesDialog(QWidget *parent)
+        : QDialog(parent), bWasCanceled(false)
+{
+    setupUi(this);
+    connect(this, SIGNAL(rejected()), this, SLOT(canceled()));
+}
+
+
+UpdatesAvailableDialog::UpdatesAvailableDialog(QWidget *parent)
+        : QMessageBox(parent)
+{
+    // Use V3D application icon
+    QIcon appIcon(":/pic/v3dIcon128.png");
+    QPixmap iconPixmap = appIcon.pixmap(75,75);
+    setIconPixmap(iconPixmap);
+    setText(tr("There are updates available."));
+    setInformativeText("Do you want to start the V3D updater now?");
+    // setDetailedText("The V3D team periodically makes software improvements. "
+    //         "Click 'Yes' to install recent improvements now.");
+    setWindowTitle(tr("V3D software update check"));
+    setSizeGripEnabled(false);
+
+    QPushButton *noButton = addButton( tr("Remind me later"), QMessageBox::RejectRole);
+    connect(noButton, SIGNAL(clicked()), this, SLOT(remind_me_later()));
+
+    QPushButton *neverButton = addButton( tr("Never"), QMessageBox::DestructiveRole);
+    connect(neverButton, SIGNAL(clicked()), this, SLOT(never_update()));
+
+    yesButton = addButton( tr("Yes, update"), QMessageBox::AcceptRole);
+    connect(yesButton, SIGNAL(clicked()), this, SIGNAL(yes_update()));
+}
+
+void UpdatesAvailableDialog::never_update()
+{
+    QSettings settings("HHMI", "V3D");
+    settings.setValue("updateCheckInterval", -1); // never
+}
+
+void UpdatesAvailableDialog::remind_me_later()
+{
+    QSettings settings("HHMI", "V3D");
+    int interval = settings.value("updateCheckInterval").toInt();
+    if (interval < 0) // if set to never
+        // run again when user starts V3D, but not for at least 5 minutes.
+        settings.setValue("updateCheckInterval", 300);
+}
+
+
+DownloadingUpdatesDialog::DownloadingUpdatesDialog(QWidget *parent)
+        : QDialog(parent), bWasCanceled(false)
+{
+    setupUi(this);
+    // Use V3D application icon
+    QIcon appIcon(":/pic/v3dIcon128.png");
+    QPixmap iconPixmap = appIcon.pixmap(75,75);
+    iconLabel->setPixmap(iconPixmap);
+    connect(this, SIGNAL(rejected()), this, SLOT(canceled()));
+
+    setModal(true);
+}
+
 
 } // namespace v3d
