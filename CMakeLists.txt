@@ -12,6 +12,9 @@ endif()
 # I want to use my local version of the STGZ header input
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake")
 
+# I want to have a runnable arrangement of V3D and plugins in the build area
+set(V3D_BUILD_BINARY_DIR "${CMAKE_BINARY_DIR}/v3d")
+
 # Build V3D
 add_subdirectory(v3d_main)
 
@@ -72,6 +75,7 @@ if(APPLE)
         set(CPACK_BUNDLE_NAME v3d)
         set(CPACK_BUNDLE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/v3d/v3d.icns")
         set(CPACK_BUNDLE_PLIST "${CMAKE_CURRENT_BINARY_DIR}/Info.plist")
+    else(V3D_MAC_CREATE_BUNDLE)
     endif(V3D_MAC_CREATE_BUNDLE)
 
     # Whether or not we create a bundle, we create a dmg disk image.

@@ -811,6 +811,9 @@ void V3DVersionChecker::populateLocalPluginsFiles(const QDir& pluginsDir)
         foreach (QString fileName, fileList)
         {
             QString fullpath = pluginsDir.absoluteFilePath(fileName);
+			// Skip plugins with ".old" suffix
+			if (fullpath.endsWith(".old")) continue;
+
             QString relativePath = v3dDir.relativeFilePath(fullpath);
             // Can the plugin be loaded?
             QPluginLoader* loader = new QPluginLoader(fullpath);

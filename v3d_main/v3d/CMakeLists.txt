@@ -126,6 +126,7 @@ if(APPLE)
         # Build app bundle in place at build time
         file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/v3d")
         set(BUNDLE_BUILD_DIR "${CMAKE_BINARY_DIR}/v3d/v3d.app" CACHE PATH "Where to build Mac OS X application bundle")
+        set(V3D_BUILD_BINARY_DIR "${BUNDLE_BUILD_DIR}/Contents/MacOS")
         file(REMOVE_RECURSE "${BUNDLE_BUILD_DIR}/Contents/Frameworks") # Dangerous...
         file(REMOVE_RECURSE "${BUNDLE_BUILD_DIR}/Contents/Plugins") # Dangerous...
         file(MAKE_DIRECTORY "${BUNDLE_BUILD_DIR}"
@@ -133,9 +134,6 @@ if(APPLE)
                             "${BUNDLE_BUILD_DIR}/Contents/MacOS"
                             "${BUNDLE_BUILD_DIR}/Contents/Resources"
         )
-        # Build v3d directly into nascent app bundle
-        set_target_properties(v3d PROPERTIES
-            RUNTIME_OUTPUT_DIRECTORY "${BUNDLE_BUILD_DIR}/Contents/MacOS")
         # MACOSX_BUNDLE_WHATEVER parameters must be set before configure_file statement on Info.plist is called
         # MACOSX_BUNDLE_EXECUTABLE_NAME should match CPACK_BUNDLE_NAME
         # Launch script is called v3d_script (not just 'v3d'), because...
@@ -235,3 +233,14 @@ else(APPLE)
     endforeach()
     
 endif(APPLE)
+
+# Enforce a particular location for v3d.exe at build time.  So it can be next to plugins, for testing  before install.
+if (V3D_BUILD_BINARY_DIR)
+    # Build v3d directly into nascent app bundle
+    set_target_properties(v3d PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${V3D_BUILD_BINARY_DIR}")
+    if (MSVC)
+        # hack to get around the "Debug" and "Release" directories cmake tries to add on Windows
+        set_target_properties (v3d PROPERTIES PREFIX "../")
+    endif()
+endif()

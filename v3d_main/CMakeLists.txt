@@ -54,18 +54,22 @@ if( V3D_USE_OWN_TIFF )
   include_directories(BEFORE "${V3D_SOURCE_DIR}/common_lib/include")
 else()
   # CMake 2.8 FindTiff is very simple.  I need to give it some help on windows
-  FIND_PATH(TIFF_INCLUDE_DIR tiff.h
-	# PATHS "$ENV{PROGRAMFILES}/tiff-3.8.2"
-	PATHS "$ENV{PROGRAMFILES}/GnuWin32"
-		  "$ENV{PROGRAMFILES}/libtiff-3.9.4"
-	PATH_SUFFIXES include libtiff "")
   SET(TIFF_NAMES ${TIFF_NAMES}  libv3dtiff.a v3dtiff libv3dtiff tiff libtiff libtiff3 libtiff_i)
   FIND_LIBRARY(TIFF_LIBRARY NAMES ${TIFF_NAMES}
 	# PATHS "$ENV{PROGRAMFILES}/tiff-3.8.2"
-	PATHS "$ENV{PROGRAMFILES}/GnuWin32"
-		  "$ENV{PROGRAMFILES}/libtiff-3.9.4"
-          /usr/local/lib
+	PATHS 
+        "$ENV{PROGRAMFILES}/V3DTiff"
+        "$ENV{PROGRAMFILES}/GnuWin32"
+        "$ENV{PROGRAMFILES}/libtiff-3.9.4"
+        /usr/local/lib
 	PATH_SUFFIXES lib libtiff "")
+  FIND_PATH(TIFF_INCLUDE_DIR tiff.h
+	# PATHS "$ENV{PROGRAMFILES}/tiff-3.8.2"
+	PATHS 
+        "$ENV{PROGRAMFILES}/V3DTiff"
+        "$ENV{PROGRAMFILES}/GnuWin32"
+        "$ENV{PROGRAMFILES}/libtiff-3.9.4"
+	PATH_SUFFIXES include libtiff "")
   # The unadorned FindTiff below
   find_package(TIFF REQUIRED)
   include_directories(${TIFF_INCLUDE_DIR})

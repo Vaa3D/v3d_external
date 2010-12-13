@@ -19,7 +19,7 @@ class QCheckBox;
 class QLabel;
 class QLineEdit;
 
-#include "ui_dialog_url_entry.h";
+#include "ui_dialog_url_entry.h"
 
 // Custom dialog asks user for URL to download
 class V3dUrlDialog : public QDialog, public Ui::V3dUrlDialog

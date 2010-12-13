@@ -272,6 +272,10 @@ void V3d_PluginLoader::searchPluginFiles(QMenu* menu, const QDir& pluginsDir)
     {
         QString fullpath = pluginsDir.absoluteFilePath(fileName);
 
+		// Skip older versions that have been backed up with ".old" suffix.
+		if (fullpath.endsWith(".old"))
+			continue;
+
         QPluginLoader* loader = new QPluginLoader(fullpath);
         if (! loader)
         {
