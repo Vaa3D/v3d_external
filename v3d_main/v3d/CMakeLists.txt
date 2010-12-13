@@ -78,7 +78,7 @@ add_library(v3dbase ${QT_UI_SRCS} ${QT_MOC_SRCS})
 
 target_link_libraries( v3dbase v3dbase1 jba newmat11 ${QT_LIBRARIES} )
 
-if (MSYS) # Windows MSYS build
+if (WIN32) # Windows MSYS build
   # All this MYS stuff is just to compile in a program icon for windows
   set(CMAKE_RC_COMPILER_INIT windres)
   enable_language(RC)
