@@ -608,14 +608,15 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 						min_cut_level, min_cut_level, min_cut_level);
 
 				//if (k<min_cut_level || va <= imgAve+imgStd*min_cut_level)
+			
 				if (k<5 /*min_cut_level*/ || va < imgAve+imgStd)
 				//if (k<5 || mUnit[i].nchild >=2) // preserve single brunch
 				{
-					mUnit[i].nchild--;
-
-					//label to remove
-					mUnit[j].nchild = -1;
-					//mUnit[j].parent = mUnit[j].n;
+//					mUnit[i].nchild--;
+//
+//					//label to remove
+//					mUnit[j].nchild = -1;
+//					//mUnit[j].parent = mUnit[j].n;
 				}
 				else //091108. update this node's coordinate using its CoM
 				{
