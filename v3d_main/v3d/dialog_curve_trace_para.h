@@ -58,6 +58,7 @@ struct CurveTracePara
 	bool b_adaptiveCtrlPoints;
 	bool b_estRadii;
 	bool b_postMergeClosebyBranches;
+	bool b_post_trimming;
 
 	bool b_deformcurve; //use shortest path or deformable model
 	
@@ -88,6 +89,8 @@ struct CurveTracePara
 		
 		b_estRadii = true;
 		b_postMergeClosebyBranches=true;
+		
+		b_post_trimming = false; //20101213. by Hanchuan Peng
 
 		sp_num_end_nodes = 1;
 		sp_graph_connect=0;
