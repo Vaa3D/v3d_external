@@ -79,7 +79,9 @@ void Renderer::drawString(float x, float y, float z, char* text, int shadow)
 			glColor3ub(50,50,50);
 			//glColor3ub(200,200,200);
 
-			QFont f;  f.setPointSize(f.pointSize()+1); f.setWeight(f.weight()+200);
+			// CMB MSVC debugger with Qt 4.7 triggers assert if font weight > 99
+			// QFont f;  f.setPointSize(f.pointSize()+1); f.setWeight(f.weight()+200);
+			QFont f;  f.setPointSize(f.pointSize()+1); f.setWeight(99);
 			((QGLWidget*)widget)->renderText(x,y,z, QString(text), f);
 		glPopAttrib();
 		glDepthFunc(GL_LEQUAL);

@@ -84,7 +84,7 @@ if (WIN32) # Windows MSYS build
   enable_language(RC)
   set(CMAKE_RC_COMPILE_OBJECT
     "<CMAKE_RC_COMPILER> -O coff -i <SOURCE> -o <OBJECT>")
-  add_executable( v3d WIN32
+  add_executable( v3d # *not* WIN32, which causes MSVC to call WinMain() instead of main()
       ${V3D_SRCS} ${V3D_RCC_SRCS}
       v3d_win.rc)
 else()
