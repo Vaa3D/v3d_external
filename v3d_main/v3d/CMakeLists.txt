@@ -70,8 +70,8 @@ QT4_WRAP_CPP(QT_MOC_SRCS
   )
 
 include_directories( BEFORE
-  ${V3D_BINARY_DIR}/v3dbase
-  ${V3D_BINARY_DIR}/v3d
+  "${CMAKE_CURRENT_BINARY_DIR}/../v3dbase"
+  "${CMAKE_CURRENT_BINARY_DIR}"
   )
 
 add_library(v3dbase ${QT_UI_SRCS} ${QT_MOC_SRCS})

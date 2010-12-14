@@ -13,10 +13,11 @@ SET(Boost_ADDITIONAL_VERSIONS "1.44" "1.44.0")
 # comment out line 12: // #include <boost/archive/basic_archive.hpp>  // link bug
 # to avoid auto link error to serialization library
 find_package(Boost COMPONENTS)
+mark_as_advanced(Boost_LIB_DIAGNOSTIC_DEFINITIONS)
+mark_as_advanced(CLEAR Boost_INCLUDE_DIR)
 if(Boost_FOUND)
-    include_directories(${Boost_INCLUDE_DIRS})
+    include_directories(${Boost_INCLUDE_DIR})
     link_directories(${Boost_LIBRARY_DIRS})
-    mark_as_advanced(Boost_LIB_DIAGNOSTIC_DEFINITIONS)
 endif()
 # message("Boost serialization library = ${Boost_SERIALIZATION_LIBRARY}")
 

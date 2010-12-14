@@ -244,6 +244,7 @@ void v3d_Lite_info()
 
 namespace v3d {
 
+
 ////////////////////////
 // UpdateItem methods //
 ////////////////////////
@@ -365,7 +366,12 @@ void UpdateItem::finishedDownloadSlot(QNetworkReply* reply)
 // static
 QString V3DVersionChecker::getPlatformString()
 {
-    return BUILD_OS_INFO;
+	// Might have been defined in cmake configuration...
+#ifdef V3D_PLATFORM_NAME
+	return QString(V3D_PLATFORM_NAME);
+#else
+    return QString(BUILD_OS_INFO) + "_" + BUILD_BITS;
+#endif
 }
 
 // static

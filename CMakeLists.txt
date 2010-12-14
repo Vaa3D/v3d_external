@@ -12,8 +12,39 @@ endif()
 # I want to use my local version of the STGZ header input
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake")
 
+# There are a lot of platform flavors we want to distribute.  Establish the name here.
+if(APPLE)
+    set(PLATFORM_FLAVOR "Mac")
+    # if you are using this CMake tree, architecture is fat 32+64
+    set(PLATFORM_FLAVOR ${PLATFORM_FLAVOR}_Fat)
+elseif(WIN32)
+    set(PLATFORM_FLAVOR "Windows")
+    if(MSVC)
+		set(PLATFORM_FLAVOR ${PLATFORM_FLAVOR}_MSVC)
+	else()
+		set(PLATFORM_FLAVOR ${PLATFORM_FLAVOR}_MSYS)
+	endif()
+	string(REGEX MATCH "Win64" BUILD_WIN64 "${CMAKE_GENERATOR}")
+	if(BUILD_WIN64)
+	    set(PLATFORM_FLAVOR ${PLATFORM_FLAVOR}_64)
+	else()
+	    set(PLATFORM_FLAVOR ${PLATFORM_FLAVOR}_32)
+	endif()
+else()
+	# Assume for the time being that not-windows and not-mac means Linux
+	set(PLATFORM_FLAVOR "Linux")
+	if(CMAKE_SIZEDOF_VOID_P EQUAL 8)
+	    set(PLATFORM_FLAVOR ${PLATFORM_FLAVOR}_64)
+	else()
+	    set(PLATFORM_FLAVOR ${PLATFORM_FLAVOR}_32)
+	endif()
+endif()
+
+set(V3D_PLATFORM_NAME "${PLATFORM_FLAVOR}" CACHE STRING "Platform name describing this particular V3D binary type.")
+add_definitions(-DV3D_PLATFORM_NAME=\"${V3D_PLATFORM_NAME}\") # so we can access platform name from running code.
+
 # I want to have a runnable arrangement of V3D and plugins in the build area
-set(V3D_BUILD_BINARY_DIR "${CMAKE_BINARY_DIR}/v3d")
+set(V3D_BUILD_BINARY_DIR "${CMAKE_BINARY_DIR}/v3d/${V3D_PLATFORM_NAME}" CACHE PATH "Build location for v3d and plugin binaries.")
 
 # Build V3D
 add_subdirectory(v3d_main)
