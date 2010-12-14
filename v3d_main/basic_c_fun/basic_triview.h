@@ -48,11 +48,14 @@ public:
 	virtual void getFocusLocation(V3DLONG & cx, V3DLONG & cy, V3DLONG & cz) const = 0;
 	virtual void setFocusLocation(V3DLONG cx, V3DLONG cy, V3DLONG cz)  = 0;
 	
-	virtual void getMinMax(double & minval, double & maxval) const = 0;
-	virtual void setMinMax(double minval, double maxval)  = 0;
+//	virtual void getMinMax(double & *minval, double & *maxval, V3DLONG nFrame) const = 0;
+//	virtual void setMinMax(double *minval, double *maxval)  = 0;
+	
+	virtual void updateMinMax(V3DLONG nFrame) = 0;
  	
 	virtual void getTriViewColorDispType(int & mytype) const = 0;
 	virtual void setTriViewColorDispType(int mytype)  = 0;
+
 };
 
 #endif /* __BASIC_TRIVIEW_H__ */

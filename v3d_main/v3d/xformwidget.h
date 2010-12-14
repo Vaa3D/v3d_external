@@ -38,6 +38,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "v3d_core.h"
 #include "../basic_c_fun/basic_triview.h"
+#include "../basic_c_fun/volimg_proc.h"
 
 class V3dR_MainWindow;
 class V3dR_GLWidget;
@@ -327,12 +328,91 @@ public:    // in mainwindow_interface.cpp
 		}
 	}
 	
-	virtual void getMinMax(double & minval, double & maxval)  const 
+	virtual void updateMinMax(V3DLONG nFrame) 
 	{
+		if (imgData)
+		{
+			//imgData->updateminmaxvalues();
+			
+			V3DLONG sx, sy, sz, sc;
+			
+			sx = imgData->getXDim();
+			sy = imgData->getYDim();
+			sz = imgData->getZDim();
+			sc = imgData->getCDim();
+			
+			V3DLONG offsets = nFrame*sx*sy;
+			V3DLONG pagesz = sx*sy;
+			
+			if(nFrame>=sz-1)
+				return;
+			
+			switch (imgData->getDatatype())
+			{
+				case V3D_UINT8:
+					for(V3DLONG i=0;i<sc;i++)
+					{
+						unsigned char minvv,maxvv;
+						V3DLONG tmppos_min, tmppos_max;
+						unsigned char *datahead = (unsigned char *)(imgData->getRawDataAtChannel(i));
+						
+						minMaxInVector(datahead+offsets, pagesz, tmppos_min, minvv, tmppos_max, maxvv);
+						
+						if(imgData->p_vmax[i]<maxvv)
+							imgData->p_vmax[i] = maxvv;
+						
+						if(imgData->p_vmin[i]>minvv)
+							imgData->p_vmin[i] = minvv;
+						
+						//v3d_msg(QString("channel %1 min=[%2] max=[%3]").arg(i).arg(imgData->p_vmin[i]).arg(imgData->p_vmax[i]),0);
+					}
+					break;
+					
+				case V3D_UINT16:
+					for(V3DLONG i=0;i<sc;i++)
+					{
+						USHORTINT16 minvv,maxvv;
+						V3DLONG tmppos_min, tmppos_max;
+						USHORTINT16 *datahead = (USHORTINT16 *)(imgData->getRawDataAtChannel(i));
+						
+						minMaxInVector(datahead+offsets, pagesz, tmppos_min, minvv, tmppos_max, maxvv);
+						
+						if(imgData->p_vmax[i]<maxvv)
+							imgData->p_vmax[i] = maxvv;
+						
+						if(imgData->p_vmin[i]>minvv)
+							imgData->p_vmin[i] = minvv;
+						
+						//v3d_msg(QString("channel %1 min=[%2] max=[%3]").arg(i).arg(imgData->p_vmin[i]).arg(imgData->p_vmax[i]),0);
+					}
+					break;
+					
+				case V3D_FLOAT32:
+					for(V3DLONG i=0;i<sc;i++)
+					{
+						float minvv,maxvv;
+						V3DLONG tmppos_min, tmppos_max;
+						float *datahead = (float *)(imgData->getRawDataAtChannel(i));
+						
+						minMaxInVector(datahead+offsets, pagesz, tmppos_min, minvv, tmppos_max, maxvv);
+						
+						if(imgData->p_vmax[i]<maxvv)
+							imgData->p_vmax[i] = maxvv;
+						
+						if(imgData->p_vmin[i]>minvv)
+							imgData->p_vmin[i] = minvv;
+						
+						//v3d_msg(QString("channel %1 min=[%2] max=[%3]").arg(i).arg(imgData->p_vmin[i]).arg(imgData->p_vmax[i]),0);
+					}
+					break;
+					
+				default:
+					v3d_msg("Invalid data type found in updateMinMax().");
+					return;
+			}
+		}
 	}
-	virtual void setMinMax(double minval, double maxval)   
- 	{
-	}
+
 	
 	virtual void getTriViewColorDispType(int & mytype)  const 
 	{
