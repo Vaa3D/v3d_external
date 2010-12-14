@@ -44,7 +44,8 @@ set(V3D_PLATFORM_NAME "${PLATFORM_FLAVOR}" CACHE STRING "Platform name describin
 add_definitions(-DV3D_PLATFORM_NAME=\"${V3D_PLATFORM_NAME}\") # so we can access platform name from running code.
 
 # I want to have a runnable arrangement of V3D and plugins in the build area
-set(V3D_BUILD_BINARY_DIR "${CMAKE_BINARY_DIR}/v3d/${V3D_PLATFORM_NAME}" CACHE PATH "Build location for v3d and plugin binaries.")
+set(V3D_STAGING_BASE_DIR "${CMAKE_BINARY_DIR}/v3d/${V3D_PLATFORM_NAME}" CACHE PATH "Build location for v3d and plugin binaries.")
+set(V3D_BUILD_BINARY_DIR ${V3D_STAGING_BASE_DIR})
 
 # Build V3D
 add_subdirectory(v3d_main)

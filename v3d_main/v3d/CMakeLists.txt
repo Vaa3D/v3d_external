@@ -125,7 +125,11 @@ if(APPLE)
     if (V3D_MAC_CREATE_BUNDLE)
         # Build app bundle in place at build time
         file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/v3d")
-        set(BUNDLE_BUILD_DIR "${CMAKE_BINARY_DIR}/v3d/v3d.app" CACHE PATH "Where to build Mac OS X application bundle")
+        if(V3D_STAGING_BASE_DIR)
+            set(BUNDLE_BUILD_DIR "${V3D_STAGING_BASE_DIR}/v3d.app" CACHE PATH "Where to build Mac OS X application bundle")
+        else()
+            set(BUNDLE_BUILD_DIR "${CMAKE_BINARY_DIR}/v3d/v3d.app" CACHE PATH "Where to build Mac OS X application bundle")
+        endif()
         set(V3D_BUILD_BINARY_DIR "${BUNDLE_BUILD_DIR}/Contents/MacOS")
         file(REMOVE_RECURSE "${BUNDLE_BUILD_DIR}/Contents/Frameworks") # Dangerous...
         file(REMOVE_RECURSE "${BUNDLE_BUILD_DIR}/Contents/Plugins") # Dangerous...
@@ -235,6 +239,7 @@ else(APPLE)
 endif(APPLE)
 
 # Enforce a particular location for v3d.exe at build time.  So it can be next to plugins, for testing  before install.
+# This must be defined after above check for BUNDLE_BUILD_DIR
 if (V3D_BUILD_BINARY_DIR)
     # Build v3d directly into nascent app bundle
     set_target_properties(v3d PROPERTIES
@@ -244,3 +249,4 @@ if (V3D_BUILD_BINARY_DIR)
         set_target_properties (v3d PROPERTIES PREFIX "../")
     endif()
 endif()
+
