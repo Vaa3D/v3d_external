@@ -19,7 +19,7 @@ void montage_image_sections (T *apsInput, T * aspOutput, V3DLONG iImageWidth, V3
 	V3DLONG i, j,k,n,count,m,row,column;
 	V3DLONG mCount = iImageHeight * iImageWidth;
 	
-	column = (V3DLONG)sqrt(iImageLayer);
+	column = (V3DLONG)sqrt((double)iImageLayer);
 	//v3d_msg("1");
 	//printf("column1=%d,",column);
 	
@@ -108,7 +108,8 @@ void do_computation(V3DPluginCallback2 &callback, QWidget *parent, int method_co
 //	channelsz1 = (V3DLONG)column*sz0*(V3DLONG)row*sz1;
 	//row = sz2/column;
 	
-	column = (V3DLONG)(sqrt(sz2)+ 0.5);
+	column = (V3DLONG)(sqrt((double)sz2)+ 0.5);
+	V3DLONG remainder= sz2 - column*column;
 	if (remainder == 0)
 	{
 		row = column;
@@ -119,7 +120,7 @@ void do_computation(V3DPluginCallback2 &callback, QWidget *parent, int method_co
 		channelsz1 = sz0*sz1*column*(column+1);
 	}	
 	channelsz = sz0*sz1*sz2;
-    printf("column=%d,remainder=%d,row=%d sz3=%d\n",column,remainder,row,sz3);
+  //  printf("column=%d,remainder=%d,row=%d sz3=%d\n",column,remainder,row,sz3);
 	void *pData=NULL;
 	V3DLONG sz_data[4]; sz_data[0]=sz0; sz_data[1]=sz1; sz_data[2]=sz2; sz_data[3]=1;
 		switch (subject->getDatatype()) 
@@ -192,9 +193,9 @@ void do_computation(V3DPluginCallback2 &callback, QWidget *parent, int method_co
 	//----------------------------------------------------------------------------------------------------------------------------------
 	
 	int end_t = clock();
-	printf("time eclapse %d s for dist computing!\n", (end_t-start_t)/1000000);	
+//	printf("time eclapse %d s for dist computing!\n", (end_t-start_t)/1000000);	
 	///v3d_msg("2");
-	printf("column=%d,remainder=%d,row=%d\n",column,remainder,row);
+	//printf("column=%d,remainder=%d,row=%d\n",column,remainder,row);
 	Image4DSimple p4DImage;
 	p4DImage.setData((unsigned char*)pData, (V3DLONG)column*sz0, (V3DLONG)row*sz1, 1, sz3, subject->getDatatype());	
 	//	printf("sz0= %d sz1=%d sz2=%d dd=%d vv=%d\n", sz0,sz1,sz2,dd,vv);
