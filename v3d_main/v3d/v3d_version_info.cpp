@@ -287,6 +287,14 @@ void UpdateItem::finishedDownloadSlot(QNetworkReply* reply)
     QFile file(fullpath);
     QFileInfo fileInfo(file);
 
+    QDir dir = fileInfo.absoluteDir();
+    QString currentName = dir.relativeFilePath(fullpath);
+    QString newName = currentName + ".new";
+    QString oldName = currentName + ".old";
+
+    QFile newFile(dir.filePath(newName));
+    QFile oldFile(dir.filePath(oldName));
+
     bool succeeded = true; // start optimistic
 
     if (progressDialog->wasCanceled()) { // user said stop
@@ -305,20 +313,6 @@ void UpdateItem::finishedDownloadSlot(QNetworkReply* reply)
         succeeded = false;
     }
 
-    if (succeeded) // try renaming old file
-    {
-        // Back up old file in case something goes wrong...
-        if (fileInfo.exists()) {
-            QDir dir = fileInfo.absoluteDir();
-            QString oldName = dir.relativeFilePath(fullpath);
-            QString newName = oldName + ".old";
-            v3d_msg("backing up old version of "+fileInfo.absoluteFilePath(),0);
-            if (! dir.rename(oldName, newName) )
-                v3d_msg("Failed to backup old file",0);
-                succeeded = false; // try to rename old file
-        }
-    }
-        
     if (succeeded) { // try to create directory
         // Might need to create directory
         QDir dir = fileInfo.absoluteDir();
@@ -328,21 +322,63 @@ void UpdateItem::finishedDownloadSlot(QNetworkReply* reply)
         }
     }
 
-    if (succeeded) { // try to write file
-        if (file.open(QIODevice::WriteOnly)) {
+    // Try saving web file as "foo.new"
+    if (succeeded && newFile.exists()) {
+        if (! newFile.remove()) {
+            v3d_msg("Unable to remove old .new file",0);
+            succeeded = false;
+        }
+    }
+
+    if (succeeded)
+    {
+        if (newFile.open(QIODevice::WriteOnly)) {
             progressDialog->setWindowTitle(tr("Saving ") + relativeName + "...");
-            file.write(reply->readAll());
-            file.close();
+            newFile.write(reply->readAll());
+            newFile.close();
             // Second increment of two on progress bar
             progressDialog->progressBar->setValue(progressDialog->progressBar->value() + 1);
             // v3d_msg("Wrote file",0);
         }
         else {
             succeeded = false;
-            v3d_msg("Failed to write file.",0);
+            v3d_msg("Failed to write .new file.",0);
         }
     }
 
+    // Especially for v3d.exe, permissions must include read and execute
+    if (succeeded) {
+        QFile::Permissions oldPermissions = file.permissions();
+        QFile::Permissions newPermissions = newFile.permissions();
+        if (oldPermissions != newPermissions) {
+            newFile.setPermissions(oldPermissions);
+        }
+    }
+
+    // Rename old file to "foo.old"
+    if (succeeded && oldFile.exists()) {
+        if (! oldFile.remove()) {
+            v3d_msg("Unable to remove old .old file",0);
+            succeeded = false;
+        }
+    }
+    if (succeeded) {
+        if (! dir.rename(currentName, oldName) ) {
+            v3d_msg("Unable to rename old file to .old",0);
+            succeeded = false;
+        }
+    }
+
+    if (succeeded) {
+        if (! dir.rename(newName, currentName)) {
+            v3d_msg("Unable to rename new file",0);
+            succeeded = false;
+        }
+    }
+
+    // TODO - might want to remove remaining foo.old file
+
+    // Summarize failure
     if (! succeeded) {
         // TODO - how to report this upstream...
         v3d_msg("Download failed: " + relativeName, 0);
@@ -468,13 +504,6 @@ void V3DVersionChecker::checkForLatestVersion(bool b_verbose)
 {
     this->b_showAllMessages = b_verbose;
 
-    if (b_showAllMessages) {
-        if (! checkingDialog)
-            checkingDialog = new v3d::CheckingForUpdatesDialog(guiParent);
-        checkingDialog->wasCanceled() = false;
-        checkingDialog->show();
-    }
-
     QUrl xmlFileUrl(getDefaultV3DVersionUrl()); // begin by assuming default
     // Is there already a setting for the url?
 	QSettings settings("HHMI", "V3D");
@@ -495,6 +524,16 @@ void V3DVersionChecker::checkForLatestVersion(bool b_verbose)
     populateLocalUpdateItems();
 
     nam->get(QNetworkRequest(xmlFileUrl));
+
+    if (b_showAllMessages) {
+        if (checkingDialog) {
+            checkingDialog->close();
+            checkingDialog->deleteLater();
+        }
+        checkingDialog = new v3d::CheckingForUpdatesDialog(guiParent);
+        checkingDialog->wasCanceled() = false;
+        checkingDialog->exec();
+    }
 }
 
 // Examines last time version updater was queried to decide whether it might
@@ -819,6 +858,7 @@ void V3DVersionChecker::populateLocalPluginsFiles(const QDir& pluginsDir)
             QString fullpath = pluginsDir.absoluteFilePath(fileName);
 			// Skip plugins with ".old" suffix
 			if (fullpath.endsWith(".old")) continue;
+			if (fullpath.endsWith(".new")) continue;
 
             QString relativePath = v3dDir.relativeFilePath(fullpath);
             // Can the plugin be loaded?
