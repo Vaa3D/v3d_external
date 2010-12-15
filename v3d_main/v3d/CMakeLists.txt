@@ -197,8 +197,11 @@ else(APPLE)
     endif()
     if(UNIX AND NOT APPLE) # Linux
         set(LIB_PATHS "")
-        set(SHLIBS libtiff.so.4 libz.so.1 libjpeg.so.62
-            libQtCore.so.4 libQtGui.so.4 libQtNetwork.so.4 libQtOpenGL.so.4 libQtXml.so.4)
+        set(SHLIBS "")
+        # On second thought, don't install any libraries with linux.
+        # We should document dependencies.
+        # set(SHLIBS libtiff.so.4 libz.so.1 libjpeg.so.62
+        #     libQtCore.so.4 libQtGui.so.4 libQtNetwork.so.4 libQtOpenGL.so.4 libQtXml.so.4)
     endif()
     # message("LIB_PATHS = ${LIB_PATHS}")
     foreach(SHLIB ${SHLIBS})
