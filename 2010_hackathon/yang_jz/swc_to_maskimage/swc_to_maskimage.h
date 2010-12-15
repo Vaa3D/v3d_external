@@ -84,17 +84,17 @@ public:
 		coord_y = new QSpinBox();
 		coord_z = new QSpinBox();
 		
-		coord_x->setMaximum(1500); coord_x->setMinimum(1); coord_x->setValue(1024);
-		coord_y->setMaximum(1500); coord_y->setMinimum(1); coord_y->setValue(1024);
-		coord_z->setMaximum(1500); coord_z->setMinimum(1); coord_z->setValue(56);
+		coord_x->setMaximum(1500); coord_x->setMinimum(1); coord_x->setValue(11);
+		coord_y->setMaximum(1500); coord_y->setMinimum(1); coord_y->setValue(11);
+		coord_z->setMaximum(1500); coord_z->setMinimum(1); coord_z->setValue(11);
 		
 		ok     = new QPushButton("OK");
 		cancel = new QPushButton("Cancel");
 		gridLayout = new QGridLayout();
 		
-		labelx = new QLabel(QObject::tr("Image X"));
-		labely = new QLabel(QObject::tr("Image y"));
-		labelz = new QLabel(QObject::tr("Image Z"));
+		labelx = new QLabel(QObject::tr("Image X dimension"));
+		labely = new QLabel(QObject::tr("Image Y dimension"));
+		labelz = new QLabel(QObject::tr("Image Z dimension"));
 		
 		gridLayout->addWidget(labelx, 0,0); gridLayout->addWidget(coord_x, 0,1);
 		gridLayout->addWidget(labely, 1,0); gridLayout->addWidget(coord_y, 1,1);

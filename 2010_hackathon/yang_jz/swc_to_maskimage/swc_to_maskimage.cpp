@@ -44,7 +44,7 @@ void SWC_TO_MASKIMAGElugin::domenu(const QString &menu_name, V3DPluginCallback &
 	}
 	else if (menu_name == tr("Help"))
 	{
-		v3d_msg("(version 0.11) Convert a SWC file to a mask image, where the area of the swc tubes will have non-zero values, and other area will have 0s.");
+		v3d_msg("(version 0.11) Convert a SWC file to a mask image, where the area of the swc tubes will have non-zero values, and other area will have 0s; Use mask imge to filter tif image, where the area of the swc non-zero will tif image values not change, and other area will have 0");
 		return;
 	}
 }
@@ -384,7 +384,7 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 															));
 		if(filename.isEmpty()) 
 		{
-			v3d_msg("You don't have any image open in the main window.");
+			v3d_msg("You don't have any SWC file open in the main window.");
 			return;
 		}
 		
@@ -435,7 +435,7 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 		}
 		else 
 		{
-			v3d_msg("You don't have any image open in the main window.");
+			v3d_msg("You don't have any SWC file open in the main window.");
 			return;
 		}
 		
@@ -447,7 +447,7 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 		filenames = QFileDialog::getOpenFileNames(0, 0,"","Supported file (*.swc)" ";;Neuron structure(*.swc)",0,0);
 		if(filenames.isEmpty()) 
 		{
-			v3d_msg("You don't have any image open in the main window.");
+			v3d_msg("You don't have any SWC file open in the main window.");
 			return;
 		}
 		NeuronSWC *p_cur=0;
@@ -478,7 +478,7 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 			}
 			else 
 			{
-				v3d_msg("You don't have any image open in the main window.");
+				v3d_msg("You don't have any SWC file open in the main window.");
 				return;
 			}
 
@@ -536,7 +536,7 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 			}
 			else 
 			{
-				v3d_msg("You don't have any image open in the main window.");
+				v3d_msg("You don't have any SWC file open in the main window.");
 				return;
 			}
 		}
@@ -545,9 +545,12 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 	
 	// compute coordinate region 		
 	Image4DSimple tmp;	
-	if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to use the set image size?"), QMessageBox::Yes, QMessageBox::No))
+	if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want set the image size?"), QMessageBox::Yes, QMessageBox::No))
 	{
 		SetsizeDialog dialog(callback, parent);
+		dialog.coord_x->setValue(sx);
+		dialog.coord_y->setValue(sy);
+		dialog.coord_z->setValue(sz);		
 		if (dialog.exec()!=QDialog::Accepted)
 			return;	
 		else 
@@ -555,7 +558,7 @@ void swc_to_maskimage(V3DPluginCallback &callback, QWidget *parent, int method_c
 			nx = dialog.coord_x->text().toLong();
 			ny = dialog.coord_y->text().toLong();
 			nz = dialog.coord_z->text().toLong();
-			printf("nx=%d ny=%d nz=%d\n ",nx,ny,nz);
+			//printf("nx=%d ny=%d nz=%d\n ",nx,ny,nz);
 		}
 		
 		unsigned char * pData = new unsigned char[nx*ny*nz];
@@ -601,7 +604,7 @@ void mrskimage_originalimage(V3DPluginCallback &callback, QWidget *parent, int m
 	v3dhandleList win_list = callback.getImageWindowList();
 	if(win_list.size()!=2) 
 	{
-		QMessageBox::information(0, title, QObject::tr("need open 2 image "));
+		QMessageBox::information(0, title, QObject::tr("need open one mask image and one tif file"));
 		return;
 	}
 	Image4DSimple* image1 = callback.getImage(win_list[0]);
@@ -610,7 +613,7 @@ void mrskimage_originalimage(V3DPluginCallback &callback, QWidget *parent, int m
 	min=max=min1=max1=filter= 0;
 	if (!image1 && !image2)
 	{
-		QMessageBox::information(0, title, QObject::tr("No image is open."));
+		QMessageBox::information(0, title, QObject::tr("No file is open."));
 		return;
 	}		
 
@@ -638,7 +641,7 @@ void mrskimage_originalimage(V3DPluginCallback &callback, QWidget *parent, int m
 	
 	if (sx1!=sx2 || sy1!=sy2 || sz1!=sz2 )
 	{
-		v3d_msg("size of the image differ ");
+		v3d_msg(" the image size differ ");
 		return;
 	}
 	for (V3DLONG k = 0; k < sz1; k++) 
