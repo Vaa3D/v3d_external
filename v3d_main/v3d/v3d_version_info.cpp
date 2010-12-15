@@ -347,7 +347,7 @@ void UpdateItem::finishedDownloadSlot(QNetworkReply* reply)
     }
 
     // Especially for v3d.exe, permissions must include read and execute
-    if (succeeded) {
+    if (succeeded && file.exists()) {
         QFile::Permissions oldPermissions = file.permissions();
         QFile::Permissions newPermissions = newFile.permissions();
         if (oldPermissions != newPermissions) {
@@ -362,7 +362,7 @@ void UpdateItem::finishedDownloadSlot(QNetworkReply* reply)
             succeeded = false;
         }
     }
-    if (succeeded) {
+    if (succeeded && file.exists()) {
         if (! dir.rename(currentName, oldName) ) {
             v3d_msg("Unable to rename old file to .old",0);
             succeeded = false;
@@ -527,7 +527,7 @@ void V3DVersionChecker::checkForLatestVersion(bool b_verbose)
 
     if (b_showAllMessages) {
         if (checkingDialog) {
-            checkingDialog->close();
+            // checkingDialog->close();
             checkingDialog->deleteLater();
         }
         checkingDialog = new v3d::CheckingForUpdatesDialog(guiParent);
