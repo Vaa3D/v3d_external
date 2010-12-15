@@ -130,7 +130,7 @@ if(APPLE)
         else()
             set(BUNDLE_BUILD_DIR "${CMAKE_BINARY_DIR}/v3d/v3d.app" CACHE PATH "Where to build Mac OS X application bundle")
         endif()
-        set(V3D_BUILD_BINARY_DIR "${BUNDLE_BUILD_DIR}/Contents/MacOS")
+        set(V3D_BUILD_BINARY_DIR "${BUNDLE_BUILD_DIR}/Contents/MacOS" CACHE INTERNAL "" FORCE)
         file(REMOVE_RECURSE "${BUNDLE_BUILD_DIR}/Contents/Frameworks") # Dangerous...
         file(REMOVE_RECURSE "${BUNDLE_BUILD_DIR}/Contents/Plugins") # Dangerous...
         file(MAKE_DIRECTORY "${BUNDLE_BUILD_DIR}"

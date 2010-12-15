@@ -64,7 +64,9 @@ endif()
 # Build plugins next to V3D executable, for testing from build area before install.
 if (V3D_BUILD_BINARY_DIR)
     set_target_properties(${PLUGIN_NAME} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${V3D_BUILD_BINARY_DIR}/plugins/${PLUGIN_DIRECTORY_NAME}")
+        RUNTIME_OUTPUT_DIRECTORY "${V3D_BUILD_BINARY_DIR}/plugins/${PLUGIN_DIRECTORY_NAME}"
+        LIBRARY_OUTPUT_DIRECTORY "${V3D_BUILD_BINARY_DIR}/plugins/${PLUGIN_DIRECTORY_NAME}"
+        ARCHIVE_OUTPUT_DIRECTORY "${V3D_BUILD_BINARY_DIR}/plugins/${PLUGIN_DIRECTORY_NAME}")
     if (MSVC)
         # hack to get around the "Debug" and "Release" directories cmake tries to add on Windows
         set_target_properties (${PLUGIN_NAME} PROPERTIES PREFIX "../")

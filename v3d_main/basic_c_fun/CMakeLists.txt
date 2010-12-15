@@ -16,3 +16,11 @@ add_library(V3DInterface ${V3DInterface_SRCS})
 
 target_link_libraries(V3DInterface ${TIFF_LIBRARY})
 target_link_libraries(V3DInterface ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
+
+# 64 bit AMD Linux requires -fPIC flag for linking static libraries --CMB
+if(UNIX AND NOT APPLE)
+  if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+    set_target_properties(V3DInterface PROPERTIES COMPILE_FLAGS -fPIC)
+  endif()
+endif()
+
