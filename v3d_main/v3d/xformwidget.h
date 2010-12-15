@@ -414,11 +414,13 @@ public:    // in mainwindow_interface.cpp
 	}
 
 	
-	virtual void getTriViewColorDispType(int & mytype)  const 
+	virtual void getTriViewColorDispType(int & mytype) 
 	{
+		mytype = (int) ( this->getColorType() );
 	}
 	virtual void setTriViewColorDispType(int mytype)  
 	{
+		this->setColorType((ImageDisplayColorType)mytype);
 	}
 };
 
