@@ -60,7 +60,7 @@ add_subdirectory(released_plugins)
 
 set(CPACK_PACKAGE_NAME v3d)
 # name of dmg file
-set(CPACK_PACKAGE_FILE_NAME "InstallV3d-${V3D_VERSION}")
+set(CPACK_PACKAGE_FILE_NAME "InstallV3d-${V3D_VERSION}-${V3D_PLATFORM_NAME}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
     "V3D is a bioimage volume visualization and analysis application.")
 set(CPACK_PACKAGE_VENDOR "Howard Hughes Medical Institute Janelia Farm Research Campus")
