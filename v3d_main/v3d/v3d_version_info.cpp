@@ -526,12 +526,7 @@ void V3DVersionChecker::checkForLatestVersion(bool b_verbose)
     nam->get(QNetworkRequest(xmlFileUrl));
 
     if (b_showAllMessages) {
-        if (checkingDialog) {
-            // checkingDialog->close();
-            checkingDialog->deleteLater();
-        }
         checkingDialog = new v3d::CheckingForUpdatesDialog(guiParent);
-        checkingDialog->wasCanceled() = false;
         checkingDialog->exec();
     }
 }
