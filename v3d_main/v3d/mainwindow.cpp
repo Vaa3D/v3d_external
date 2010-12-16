@@ -2293,6 +2293,22 @@ bool MainWindow::setCurHiddenSelectedWindow( XFormWidget* a) //by PHC, 101009
 	}
 }
 
+bool MainWindow::setCurHiddenSelectedWindow_withoutcheckwinlist( XFormWidget* a) // added by YuY, Dec 16, 2010.
+{
+	//
+	if(a)
+	{
+		curHiddenSelectedXWidget = a;
+		return true;
+	}
+	else
+	{
+		curHiddenSelectedXWidget = 0; 
+		return false;
+	}
+}
+
+
 
 //the following are public slot processing functions
 //		      << tr(" -- masking image using bounding boxes in 3D (derived from ROIs)") //missing? 080613

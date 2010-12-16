@@ -183,6 +183,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../3drenderer/hoverpoints.h \
     ../3drenderer/barFigureDialog.h \
 	../imaging/v3d_imaging.h \
+	../multithreadimageIO/v3d_multithreadimageIO.h \
     v3d_global_preference_dialog.h \
     v3d_compile_constraints.h \
     v3d_version_info.h \
@@ -262,6 +263,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../3drenderer/hoverpoints.cpp \
     ../3drenderer/barFigureDialog.cpp \
 	../imaging/v3d_imaging.cpp \
+	../multithreadimageIO/v3d_multithreadimageIO.cpp \
     v3d_version_info.cpp \
     main.cpp \
     mainwindow.cpp \

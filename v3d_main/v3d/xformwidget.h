@@ -154,11 +154,13 @@ protected:
     void keyPressEvent ( QKeyEvent * e); //100815, PHC
 	void closeEvent ( QCloseEvent * event );  //080814
 	//void focusInEvent ( QFocusEvent * event ); //080829
+	
+	void * p_customStruct; //a convenient pointer to pass back and forth some useful parameter information for an engine
 
 private:
 	// communication of different images windows
 	MainWindow * p_mainWindow;
-	bool bSendSignalToExternal, bAcceptSignalFromExternal;
+	bool bSendSignalToExternal, bAcceptSignalFromExternal, bUsingMultithreadedImageIO;
 
 	My4DImage *imgData;
     ImageDisplayColorType Ctype;
@@ -414,13 +416,23 @@ public:    // in mainwindow_interface.cpp
 	}
 
 	
-	virtual void getTriViewColorDispType(int & mytype) 
+	virtual void getTriViewColorDispType(int & mytype)
 	{
 		mytype = (int) ( this->getColorType() );
 	}
 	virtual void setTriViewColorDispType(int mytype)  
 	{
 		this->setColorType((ImageDisplayColorType)mytype);
+	}
+	
+	virtual void * getCustomStructPointer() const 
+	{
+		return (this->p_customStruct);
+	}
+	
+	virtual void setCustomStructPointer(void *a) 
+	{
+		this->p_customStruct = a;
 	}
 };
 

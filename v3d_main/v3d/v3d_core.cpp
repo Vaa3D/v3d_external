@@ -163,6 +163,8 @@ using namespace std;
 #include "../3drenderer/v3dr_glwidget.h" // by RZC 20090710
 #include "../3drenderer/renderer_tex2.h" //090117
 
+#include "../multithreadimageIO/v3d_multithreadimageIO.h"
+
 /////// a global variable to limit the amount of memory use
 
 #if defined (Q_OS_LINUX)
@@ -2880,6 +2882,9 @@ void XFormWidget::initialize()
 	p_mainWindow = NULL;
 	bSendSignalToExternal = false;
 	bAcceptSignalFromExternal = false;
+	
+	//
+	bUsingMultithreadedImageIO = true;
 }
 
 XFormWidget::~XFormWidget()
@@ -4004,22 +4009,44 @@ bool XFormWidget::loadData()
 		return false;
 	}
 
-	//the following are the original codes
+	// trying to load image using multithreaded method, by YuY, added 20101216 
+	if(bUsingMultithreadedImageIO)
+	{
+		//set up parameters
+		v3d_multithreadimageio_paras myimgiop;
+		myimgiop.qOperation = "MTIMGIO";
+		myimgiop.qFilename = openFileNameLabel;
+		
+		//v3d_msg(QString("Test Parameters %1 and %2.\n").arg(myimgiop.qOperation).arg(myimgiop.qFilename.toStdString().c_str()));
+		
+		//load image
+		bool bloadsuccess = v3d_multithreadimageIO(this, myimgiop);
+		
+		if(bloadsuccess)
+		{
+			v3d_msg("File is loaded successfully by multithreaded image loading engine!\n", 0);
+			return true;
+		}
+		
+		
+	}
 
-    if (imgData)
+	//the following are the original codes
+	
+	if (imgData)
 	{
 		cleanData();
 	}
-
-  	imgData = new My4DImage;
+	
+	imgData = new My4DImage;
 	if (!imgData)
 		return false;
 	else {
 		imgData->setMainWidget((XFormWidget *)this); //by PHC, added 100904 to ensure imgData can access global setting
 	}
-
-
-    printf("%s\n", openFileNameLabel.toAscii().data());
+	
+	
+	printf("%s\n", openFileNameLabel.toAscii().data());
 	imgData->loadImage(openFileNameLabel.toAscii().data());  // imgData->loadImage("/Users/hanchuanpeng/work/v3d/test1.raw");
 	if (imgData->isEmpty())
 	{
@@ -4031,28 +4058,29 @@ bool XFormWidget::loadData()
 				"(3) Your image file is too big. Since on 32-bit machines, an image is at most 2G bytes, and opening tiff files need extra-space for temporary buffer, thus currently V3D has a limitaton on the size of images: TIFF and LSM files less than 900M Bytes, and Hanchuan's RAW file less than 1.5G bytes. You can contact Hanchuan Peng to get a special version of V3D to handle very big image files.<br>");
 		return false;
 	}
-
+	
 	v3d_msg(QString("img data size %1 %2 %3 %4\n").arg(imgData->getXDim()).arg(imgData->getYDim()).arg(imgData->getZDim()).arg(imgData->getCDim()), 0);
-
-    setCTypeBasedOnImageData();
-
-    imgData->setFlagLinkFocusViews(bLinkFocusViews);
-    imgData->setFlagDisplayFocusCross(bDisplayFocusCross);
-
+	
+	setCTypeBasedOnImageData();
+	
+	imgData->setFlagLinkFocusViews(bLinkFocusViews);
+	imgData->setFlagDisplayFocusCross(bDisplayFocusCross);
+	
 	//now set the disp_zoom. 081114
-
+	
 	if (imgData->getXDim()>512 || imgData->getYDim()>512 || imgData->getZDim()>512)
 	{
 		disp_zoom= double(512) / qMax(imgData->getXDim(), qMax(imgData->getYDim(), imgData->getZDim()));
 		b_use_dispzoom=true;
 	}
-
-    // update the interface
-
-    updateDataRelatedGUI();
-
+	
+	// update the interface
+	
+	updateDataRelatedGUI();
+	
 	reset(); //090718. PHC. force to update once, since sometimes the 16bit image does not display correctly (why all black but once click reset button everything correct?)
 	return true;
+
 }
 
 bool XFormWidget::setCTypeBasedOnImageData() //separate this out on 2010-08-01. by PHC

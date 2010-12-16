@@ -55,6 +55,9 @@ public:
  	
 	virtual void getTriViewColorDispType(int & mytype) = 0;
 	virtual void setTriViewColorDispType(int mytype)  = 0;
+	
+	virtual void * getCustomStructPointer() const = 0; 
+	virtual void setCustomStructPointer(void *a) = 0;
 
 };
 

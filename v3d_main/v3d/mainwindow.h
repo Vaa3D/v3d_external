@@ -456,6 +456,7 @@ public:	//2009-2010: used by V3D_PluginLoader 	// in mainwindow_interface.cpp
 	
 	XFormWidget* curHiddenSelectedWindow() {return curHiddenSelectedXWidget;}
 	bool setCurHiddenSelectedWindow( XFormWidget* a);
+	bool setCurHiddenSelectedWindow_withoutcheckwinlist( XFormWidget* a); // added by YuY, Dec 16, 2010.
 	
 	QList<void*> allWindowList();
 	XFormWidget* validateImageWindow(void* window);
