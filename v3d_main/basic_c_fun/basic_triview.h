@@ -53,7 +53,7 @@ public:
 	
 	virtual void updateMinMax(V3DLONG nFrame) = 0;
  	
-	virtual void getTriViewColorDispType(int & mytype) const = 0;
+	virtual void getTriViewColorDispType(int & mytype) = 0;
 	virtual void setTriViewColorDispType(int mytype)  = 0;
 
 };
