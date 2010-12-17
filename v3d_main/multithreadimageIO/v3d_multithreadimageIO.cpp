@@ -38,7 +38,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 bool v3d_multithreadimageIO(XFormWidget *curw, const v3d_multithreadimageio_paras & p)
 {
-	v3d_msg(QString("Now try to load image [%1]").arg(p.qOperation), 0);
+	QString mt_load_folder = "plugins/multithreaded_imgloading";
+
+	v3d_msg(QString("Now try to load image using the engine [%1]").arg(p.qOperation), 0);
 	
 	try 
 	{
@@ -55,16 +57,16 @@ bool v3d_multithreadimageIO(XFormWidget *curw, const v3d_multithreadimageio_para
 		}
 #endif
 		//
-		if (pluginsDir.cd("engines/multithreaded_imgloading")==false) 
+		if (pluginsDir.cd(mt_load_folder)==false) 
 		{
-			v3d_msg("Cannot find ./engines/multithreaded_imgloading directory!");
+			v3d_msg(QString("Cannot find [%1] directory!").arg(mt_load_folder), 0);
 			return false;
 		}
 		
 		QStringList fileList = pluginsDir.entryList(QDir::Files);
 		if (fileList.size()<1)
 		{
-			v3d_msg("Cannot find any file in the ./engines/multithreaded_imgloading directory!");
+			v3d_msg(QString("Cannot find any file in the [%1] directory!").arg(mt_load_folder), 0);
 			return false;
 		}
 		
@@ -74,7 +76,7 @@ bool v3d_multithreadimageIO(XFormWidget *curw, const v3d_multithreadimageio_para
     	QPluginLoader* loader = new QPluginLoader(fullpath);
         if (!loader)
         {
-        	qDebug("ERROR in V3d_PluginLoader::searchPluginFiles the imaging module(%s)", qPrintable(fullpath));
+        	v3d_msg(QString("ERROR in V3d_PluginLoader::searchPluginFiles the imaging module(%1)").arg(fullpath), 0);
         	return false;
         }
 		

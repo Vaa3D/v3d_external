@@ -315,6 +315,9 @@ void V3d_PluginLoader::addToMenu(QMenu *menu,
 {
     foreach (QString text, texts)
     {
+		if (text.startsWith("HIDDEN"))
+			continue; //do not add some hidden menu items // by PHC, 2010-Dec-16
+			
         QAction *action = new QAction(text, plugin);
         connect(action, SIGNAL(triggered()), this, member);
         menu->addAction(action);

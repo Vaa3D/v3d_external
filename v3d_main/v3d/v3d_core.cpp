@@ -4027,8 +4027,6 @@ bool XFormWidget::loadData()
 			v3d_msg("File is loaded successfully by multithreaded image loading engine!\n", 0);
 			return true;
 		}
-		
-		
 	}
 
 	//the following are the original codes
