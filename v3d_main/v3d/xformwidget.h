@@ -327,6 +327,7 @@ public:    // in mainwindow_interface.cpp
 		if (imgData)
 		{
 			forceToChangeFocus(cx, cy, cz);
+			imgData->updateViews(); // update trivews
 		}
 	}
 	
