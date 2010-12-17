@@ -343,11 +343,11 @@ public:    // in mainwindow_interface.cpp
 			sz = imgData->getZDim();
 			sc = imgData->getCDim();
 			
+			if(nFrame<0 || nFrame>=sz-1)
+				return;
+			
 			V3DLONG offsets = nFrame*sx*sy;
 			V3DLONG pagesz = sx*sy;
-			
-			if(nFrame>=sz-1)
-				return;
 			
 			switch (imgData->getDatatype())
 			{
