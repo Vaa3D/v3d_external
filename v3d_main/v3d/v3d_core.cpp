@@ -4014,7 +4014,7 @@ bool XFormWidget::loadData()
 	{
 		//set up parameters
 		v3d_multithreadimageio_paras myimgiop;
-		myimgiop.qOperation = "MTIMGIO";
+		myimgiop.qOperation = "HIDDEN-MTIMGIO";
 		myimgiop.qFilename = openFileNameLabel;
 		
 		//v3d_msg(QString("Test Parameters %1 and %2.\n").arg(myimgiop.qOperation).arg(myimgiop.qFilename.toStdString().c_str()));
