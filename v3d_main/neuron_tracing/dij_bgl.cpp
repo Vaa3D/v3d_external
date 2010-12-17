@@ -319,13 +319,13 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 
 	//now set parameters
 	int min_step       = para.node_step; //should be >=1
-	int outsample_step = para.outsample_step;
+//	int outsample_step = para.outsample_step; //no need, by PHC 2010-Dec-17
 	int smooth_winsize = para.smooth_winsize;
 	int edge_select    = para.edge_select;  //0 -- only use length 1 edge(optimal for small step), 1 -- plus diagonal edge
 	int background_select = para.background_select;
 
 	if (min_step<1)       min_step =1;
-	if (outsample_step<1) outsample_step =1;
+//	if (outsample_step<1) outsample_step =1; //no need, by PHC 2010-Dec-17
 	if (smooth_winsize<1) smooth_winsize =1;
 
 
