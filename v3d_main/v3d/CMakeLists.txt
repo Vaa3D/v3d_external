@@ -76,7 +76,7 @@ include_directories( BEFORE
 
 add_library(v3dbase ${QT_UI_SRCS} ${QT_MOC_SRCS})
 
-target_link_libraries( v3dbase v3dbase1 jba newmat11 ${QT_LIBRARIES} )
+target_link_libraries( v3dbase v3dbase1 jba newmat11 multithreadimageIO ${QT_LIBRARIES} )
 
 if (WIN32) # Windows MSYS build
   # All this MYS stuff is just to compile in a program icon for windows

@@ -144,6 +144,7 @@ add_subdirectory( v3dbase )
 add_subdirectory( plugin_loader )
 
 add_subdirectory( imaging ) # CMB Oct-11-2010
+add_subdirectory( multithreadimageIO ) # CMB Dec-16-2010
 
 add_subdirectory( 3drenderer )
 
