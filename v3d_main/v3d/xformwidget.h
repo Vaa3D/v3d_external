@@ -224,7 +224,6 @@ private:
 public slots:
 //    void changeColorType(ImageDisplayColorType c);
 
-
     void setColorRedType();
     void setColorGreenType();
     void setColorBlueType();
@@ -363,11 +362,8 @@ public:    // in mainwindow_interface.cpp
 						
 						if(imgData->p_vmax[i]<maxvv)
 							imgData->p_vmax[i] = maxvv;
-						
 						if(imgData->p_vmin[i]>minvv)
 							imgData->p_vmin[i] = minvv;
-						
-						//v3d_msg(QString("channel %1 min=[%2] max=[%3]").arg(i).arg(imgData->p_vmin[i]).arg(imgData->p_vmax[i]),0);
 					}
 					break;
 					
@@ -382,11 +378,8 @@ public:    // in mainwindow_interface.cpp
 						
 						if(imgData->p_vmax[i]<maxvv)
 							imgData->p_vmax[i] = maxvv;
-						
 						if(imgData->p_vmin[i]>minvv)
 							imgData->p_vmin[i] = minvv;
-						
-						//v3d_msg(QString("channel %1 min=[%2] max=[%3]").arg(i).arg(imgData->p_vmin[i]).arg(imgData->p_vmax[i]),0);
 					}
 					break;
 					
@@ -401,11 +394,8 @@ public:    // in mainwindow_interface.cpp
 						
 						if(imgData->p_vmax[i]<maxvv)
 							imgData->p_vmax[i] = maxvv;
-						
 						if(imgData->p_vmin[i]>minvv)
 							imgData->p_vmin[i] = minvv;
-						
-						//v3d_msg(QString("channel %1 min=[%2] max=[%3]").arg(i).arg(imgData->p_vmin[i]).arg(imgData->p_vmax[i]),0);
 					}
 					break;
 					

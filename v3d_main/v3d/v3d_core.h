@@ -223,16 +223,15 @@ public:
 	My4DImage();
 	~My4DImage();
 
-	//private:   // FIXME: It should be private
 	float **** data4d_float32;
 	USHORTINT16 **** data4d_uint16;
 	unsigned char **** data4d_uint8;
 	void **** data4d_virtual;
 
-	void updateViews();	//090211
+	void updateViews();	
 
-	bool reshape(V3DLONG rsz0, V3DLONG rsz1, V3DLONG rsz2, V3DLONG rsz3);	//080930
-	bool permute(V3DLONG dimorder[4]); //081001
+	bool reshape(V3DLONG rsz0, V3DLONG rsz1, V3DLONG rsz2, V3DLONG rsz3);	
+	bool permute(V3DLONG dimorder[4]); 
 
 	double * p_vmax, * p_vmin; //whole volume max/min values. Use pointer to handle multiple channels separately
 	double getChannalMinIntensity(V3DLONG channo);
@@ -240,11 +239,9 @@ public:
 
 	bool bLinkFocusViews;
 	bool bDisplayFocusCross;
-	//bool bImgValScaleDisplay; //removed on 100814
 	bool bLookingGlass;
 
-	ColorMap *colorMap; //080824: copied from wano  // FIXME: It should be private.
-	
+	ColorMap *colorMap; 
 
 	void createColorMap(int len, ImageDisplayColorType c=colorPseudoMaskColor);
 	void switchColorMap(int len, ImageDisplayColorType c);
@@ -312,11 +309,11 @@ public:
 	void computePointNeighborMoment(int x, int y, int z, int c, double & curptval, double & ave, double & sdev, double & skew, double & curt);
 	void computePointNeighborMoment(LocationSimple & L, int c); //overload for convenience
 
-	bool saveVANO_data(); //081213
-	bool saveMovie(); //081213
-	bool saveFile(); //061009
-	bool saveFile(char filename[]); //061010, provided for convenience
-	void crop(int landmark_crop_opt); //061010
+	bool saveVANO_data(); 
+	bool saveMovie(); 
+	bool saveFile(); 
+	bool saveFile(char filename[]); 
+	void crop(int landmark_crop_opt); 
 	void crop(V3DLONG bpos_x, V3DLONG epos_x, V3DLONG bpos_y, V3DLONG epos_y, V3DLONG bpos_z, V3DLONG epos_z, V3DLONG bpos_c, V3DLONG epos_c, int landmark_crop_opt);
 	bool maskBW_roi_bbox(unsigned char tval, V3DLONG c_min, V3DLONG c_max, ImageMaskingCode my_maskcode, bool b_inside);
 	bool maskBW_roi(unsigned char tval, V3DLONG c_min, V3DLONG c_max, ImageMaskingCode my_maskcode, bool b_inside);
@@ -327,9 +324,8 @@ public:
 	bool thresholdintensity(int channo, double th); //anything < th will be 0, others unchanged
 	bool binarizeintensity(int channo, double th); //anything < th will be 0, others will be 1
 
-	//  void rotate(double a_xy, double a_yz, double a_zx); //061010
 	bool rotate(ImagePlaneDisplayType ptype, const Options_Rotate & r_opt);
-	bool flip(AxisCode my_axiscode); //080930
+	bool flip(AxisCode my_axiscode); 
 
 	//080314: add worm project specific codes
 
@@ -343,10 +339,10 @@ public:
 */
 
 
-	V_NeuronSWC_list tracedNeuron; //090117, 090207 changed from V_NeuronSWC
+	V_NeuronSWC_list tracedNeuron; 
 	V3DLONG last_hit_landmark, cur_hit_landmark;
-	BoundingBox trace_bounding_box; //090727 RZC: for trace from local view
-	float trace_z_thickness; //090727 RZC: weight for z-distance of graph
+	BoundingBox trace_bounding_box; 
+	float trace_z_thickness; 
 
 	bool proj_trace_deformablepath_one_point(V3DLONG startmark_id); // 090603 RZC: output a shortest path tree
 	bool proj_trace_deformablepath_one_point_to_allotherpoints(V3DLONG startmark_id); //090609: phc. one pt to all other points
@@ -361,8 +357,6 @@ public:
 	bool proj_trace_compute_radius_of_last_traced_neuron(CurveTracePara & trace_para, int seg_begin, int seg_end, float myzthickness);
 	bool proj_trace_add_curve_segment(vector<XYZ> &loc_list, int chno);
 
-//	int mergeback_mmunits_to_neuron_path(int n_end_nodes, vector< vector<V_NeuronSWC_unit> > & mmUnit, V_NeuronSWC_list & tNeuron);
-
 	bool proj_trace_deformNeuronSeg(V3DLONG node_id, NeuronTree *p_tree, bool b_select_para=true);
 	bool proj_trace_profileNeuronSeg(V3DLONG node_id, NeuronTree *p_tree, bool b_dispfig);
 
@@ -370,7 +364,7 @@ public:
 	bool proj_trace_mergeAllClosebyNeuronNodes(NeuronTree *p_tree);
 	bool proj_trace_mergeAllClosebyNeuronNodes();
 
-	QList <V_NeuronSWC_list> tracedNeuron_historylist;//090119, 090207 changed from V_NeuronSWC
+	QList <V_NeuronSWC_list> tracedNeuron_historylist;
 	static const int MAX_history = 20;
 	int cur_history;
 	void proj_trace_history_append(V_NeuronSWC_list & tNeuron);
@@ -393,7 +387,6 @@ public:
 	void update_3drenderer_neuron_view();
 	void update_3drenderer_neuron_view(V3dR_GLWidget* glwidget, Renderer_tex2* renderer);
 
-
 	bool proj_general_principal_axis(ImagePlaneDisplayType ptype);
 	bool proj_general_resampling(ImageResamplingCode mycode, double target_rez, double cur_rez, int interp_method);
 	bool proj_general_resampling_landmark_only(ImageResamplingCode mycode, double target_rez, double cur_rez);
@@ -401,7 +394,7 @@ public:
 	bool proj_general_projection(AxisCode myaxis, V3DLONG mincoord, V3DLONG maxcoord);
 	bool proj_general_blend_channel_real(My4DImage * pBlendDstImg, My4DImage * pBlendSrcImg, V3DLONG chnoBlendSrcImg, double rr, double gg, double bb, bool b_assignVal_NoComparison);
 	bool proj_general_blend_channels();
-	bool proj_general_blend_atlasfiles();	//081124
+	bool proj_general_blend_atlasfiles();
 	bool proj_general_split_channels(bool b_keepallchannels, int chno);
 	bool proj_general_stitchTwoImages(V3DLONG channo);
 	bool proj_general_hist_display();
@@ -416,7 +409,8 @@ public:
 
 	QList <LocationSimple> autoMarkerFromImg(V3DLONG chno);
 	QList <LocationSimple> autoMarkerFromImg(V3DLONG chno, BoundingBox bbox, float zthickness);
-/*
+
+	/*
 	bool proj_alignment_seed_grid(int kch);
 	bool proj_alignment_seed_gradient(int kch);
 	bool proj_alignment_seed_curvature(int kch);
@@ -443,7 +437,6 @@ public:
 	bool proj_cellseg_watershed();
 	bool proj_cellseg_levelset();
 	bool proj_cellseg_GaussianFit_pos(V3DLONG posx, V3DLONG posy, V3DLONG posz, V3DLONG posc, int nGauss, bool b_isotropic);
-
 */
 };
 
@@ -455,7 +448,6 @@ bool getFocusCrossLinePos(int & focusPosInWidth, int & focusPosInHeight, My4DIma
 class XFormView : public ArthurFrame //class XFormView : public QWidget
 {
     Q_OBJECT
-
 //    Q_PROPERTY(bool animation READ animation WRITE setAnimation)
 //    Q_PROPERTY(double shear READ shear WRITE changeShear)
 //    Q_PROPERTY(double rotation READ rotation WRITE changeRotation)
