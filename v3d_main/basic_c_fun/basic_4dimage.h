@@ -48,6 +48,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  * Last edit: 2010-Aug-31: PHC. move private members to protected to fix the hackers' bug!.
  * Last edit: 2010-Oct-06. PHC. add the original_x,y,z fields
  * Last edit: 2010-Oct-7. PHC. add a customary void pointer for a unknown struct for parameters passing of plugins
+ * Last edit: 2010-Dec-18. PHC. add a valid valid_zslicenum to indicate the reading status of the data
  *
  *******************************************************************************************
  */
@@ -74,6 +75,8 @@ public:
 
 		origin_x = origin_y = origin_z = 0;
 		p_customStruct = 0;
+		
+		valid_zslicenum = 0;
 	}
 	virtual ~Image4DSimple()
 	{
@@ -89,6 +92,7 @@ public:
 		imgSrcFile[0] = '\0';
 		b_error = 0;
 		rez_x = rez_y = rez_z = 1;
+		valid_zslicenum = 0;
 	}
 
 	//main interface to the data
@@ -98,6 +102,7 @@ public:
 	V3DLONG getZDim() {return sz2;}
 	V3DLONG getCDim() {return sz3;}
 	V3DLONG getTDim() {return sz_time;}
+	V3DLONG getValidZSliceNum() {return valid_zslicenum;}
 	int getError() {return b_error;}
 	ImagePixelType getDatatype() {return datatype;}
 	TimePackType getTimePackType() {return timepacktype;}
@@ -145,6 +150,15 @@ public:
 	void setZDim(V3DLONG v) {sz2=v;}
 	void setCDim(V3DLONG v) {sz3=v;}
 	void setTDim(V3DLONG v) {sz_time=v;}
+	bool setValidZSliceNum(V3DLONG v) 
+	{
+		if (v==0 && sz2==0) {valid_zslicenum=0; return true;}
+		if (v>=0 && v<sz2) //in this case sz2>0
+		{valid_zslicenum = v; return true;} 
+		else 
+			return false;
+	}
+
 	void setDatatype(ImagePixelType v) {datatype=v;}
 	void setTimePackType(TimePackType v) {timepacktype=v;}
 	bool setNewRawDataPointer(unsigned char *p) {if (!p) return false; if (data1d) delete []data1d; data1d = p; return true;}
@@ -157,6 +171,7 @@ public:
 	void setOriginX(double a) { origin_x = a;}
 	void setOriginY(double a) { origin_y = a;}
 	void setOriginZ(double a) { origin_z = a;}
+	
 
 	void setCustomStructPointer(void *a) {p_customStruct = a;}
 	void * getCustomStructPointer() {return p_customStruct;}
@@ -243,6 +258,7 @@ protected:
 	double rez_x, rez_y, rez_z; //the resolution of a image pixel along the 3 axes
 	double origin_x, origin_y, origin_z; //the "true" orgin of an image, in term of the physical units (not pixels) using resolution information
 
+	V3DLONG valid_zslicenum; //indicate how many zslices are usable. This can be used by a plugin program to stream read data 
 	void * p_customStruct; //a convenient pointer to pass back and forth some useful parameter information for a plugin
 
 private:
