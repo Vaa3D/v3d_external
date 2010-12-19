@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "ui_main_python_console.h"
 #include "PythonInterpreter.h"
+#include "PythonOutputRedirector.h"
 
 class QWidget;
 
@@ -15,8 +16,8 @@ class PythonConsoleWindow : public QMainWindow, Ui::main_python_console
 
 public:
 	PythonConsoleWindow(QWidget *parent=NULL);
-	void interpretString(const QString& cmd);
 	bool eventFilter ( QObject * watched, QEvent * event );
+	PythonInterpreter pythonInterpreter;
 
 signals:
 	void returnPressed();
@@ -27,9 +28,10 @@ private slots:
 private:
 	QString getCurrentCommand();
 
-	PythonInterpreter pythonInterpreter;
-	int promptLength;
 	QString prompt;
+	int promptLength;
+	PythonOutputRedirector stderrRedirector;
+	PythonOutputRedirector stdoutRedirector;
 };
 
 } // namespace v3d

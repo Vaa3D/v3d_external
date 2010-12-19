@@ -8,39 +8,48 @@
 #include "PythonConsoleWindow.h"
 #include <iostream>
 
+namespace bp = boost::python;
+
 namespace v3d {
 
 PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
-		: QMainWindow(parent), prompt("")
+		: QMainWindow(parent),
+		  prompt(""),
+		  promptLength(prompt.length())
 {
 	setupUi(this);
-
-	promptLength = prompt.length();
 
 	// Run python command after user presses return
 	plainTextEdit->installEventFilter(this);
 	connect(this, SIGNAL(returnPressed()), this, SLOT(onReturnPressed()));
+
+	// Connect python stdout/stderr to output to GUI
+	// Adapted from http://onegazhang.spaces.live.com/blog/cns!D5E642BC862BA286!727.entry
+	stdoutRedirector.setQPlainTextEdit(plainTextEdit);
+	stderrRedirector.setQPlainTextEdit(plainTextEdit);
+	pythonInterpreter.main_namespace["PythonStdIoRedirect"] =
+			bp::class_<PythonOutputRedirector>("V3DOutputRedirector", bp::init<>())
+				.def("write", &PythonOutputRedirector::write);
+	bp::import("sys").attr("stderr") = stderrRedirector;
+	bp::import("sys").attr("stdout") = stdoutRedirector;
 }
 
-void PythonConsoleWindow::interpretString(const QString& cmd) {
-	pythonInterpreter.interpretString(cmd.toStdString());
-}
-
-// When user presses RETURN key in text area, execute the python command
+// When user presses <Return> key in text area, execute the python command
 bool PythonConsoleWindow::eventFilter ( QObject * watched, QEvent * event )
 {
-	if (watched != plainTextEdit) // not the text area
+	if (watched != plainTextEdit) // we only care about the TextEdit widget
 		return QMainWindow::eventFilter(watched, event);
 
-	if (event->type() != QEvent::KeyPress) // not a keyboard event
+	if (event->type() != QEvent::KeyPress) // we only care about keyboard events
 		return QMainWindow::eventFilter(watched, event);
 
 	QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
-	switch(keyEvent->key()) {
-		case Qt::Key_Enter:
+	switch(keyEvent->key())
+	{
 		case Qt::Key_Return:
+		case Qt::Key_Enter:
 			emit returnPressed();
-			break;
+			return true; // We will take care of inserting the newline.
 	}
 
 	return QMainWindow::eventFilter(watched, event);
@@ -48,10 +57,17 @@ bool PythonConsoleWindow::eventFilter ( QObject * watched, QEvent * event )
 
 void PythonConsoleWindow::onReturnPressed()
 {
+	// TODO - scroll down after command, iff bottom is visible now.
+
 	QString command = getCurrentCommand();
-	std::cerr << "Return..." << std::endl;
-	std::cerr << "Command = '" << command.toStdString() << "'" << std::endl;
-	interpretString(command);
+	// Add carriage return, so output will appear on subsequent line.
+	// (It would be too late if we waited for plainTextEdit to process the <Return>)
+	plainTextEdit->appendPlainText("");
+	if (command.length() > 0) {
+		std::string result =
+				pythonInterpreter.interpretString(command.toStdString());
+		if (result.length() > 0) plainTextEdit->appendPlainText("");
+	}
 }
 
 QString PythonConsoleWindow::getCurrentCommand()

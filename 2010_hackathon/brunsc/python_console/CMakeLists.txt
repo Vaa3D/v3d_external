@@ -32,6 +32,13 @@ QT4_WRAP_CPP(QT_MOC_SRCS
 # Qt dynamically generates some headers here
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+set(V3D_PYTHON_CONSOLE_SRCS
+    PythonConsoleWindow.cpp
+    PythonInterpreter.cpp
+    PythonOutputRedirector.cpp
+    ${QT_UI_SRCS}
+    ${QT_MOC_SRCS}
+)
 
 ##################################################################
 # pythonConsoleTest is a test program for use during development #
@@ -39,10 +46,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_executable(pythonConsoleTest 
     pythonConsoleTest.cpp
-    PythonConsoleWindow.cpp
-    PythonInterpreter.cpp
-    ${QT_UI_SRCS}
-    ${QT_MOC_SRCS}
+    ${V3D_PYTHON_CONSOLE_SRCS}
 )
 
 target_link_libraries(pythonConsoleTest
@@ -57,10 +61,7 @@ target_link_libraries(pythonConsoleTest
 ################################################
 
 set(PLUGIN_SOURCES 
-    PythonConsoleWindow.cpp 
-    PythonInterpreter.cpp
-    ${QT_UI_SRCS}
-    ${QT_MOC_SRCS}
+    ${V3D_PYTHON_CONSOLE_SRCS}
 )
 set(PLUGIN_HEADERS 
     PythonConsoleWindow.h

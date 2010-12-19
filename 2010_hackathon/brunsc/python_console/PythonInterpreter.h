@@ -8,6 +8,7 @@
  *      Author: Christopher M. Bruns
  */
 
+#include <boost/python.hpp>
 #include <string>
 
 namespace v3d {
@@ -16,9 +17,10 @@ class PythonInterpreter {
 public:
 	PythonInterpreter();
 	virtual ~PythonInterpreter();
-	void interpretString(const std::string& cmd);
+	std::string interpretString(const std::string& cmd);
 
-private:
+	boost::python::object main_module;
+	boost::python::object main_namespace;
 };
 
 } // namespace v3d
