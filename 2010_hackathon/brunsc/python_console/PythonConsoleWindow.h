@@ -27,6 +27,7 @@ private slots:
 	
 private:
 	QString getCurrentCommand();
+	void placeNewPrompt(bool bMakeVisible=false);
 
 	QString prompt;
 	int promptLength;

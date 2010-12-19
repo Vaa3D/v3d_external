@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     PythonConsoleWindow* pythonConsole = new PythonConsoleWindow();
-    pythonConsole->pythonInterpreter.interpretString("print 'Hello, World'");
+    // pythonConsole->pythonInterpreter.interpretString("print 'Hello, World'");
 
     pythonConsole->show();
 
