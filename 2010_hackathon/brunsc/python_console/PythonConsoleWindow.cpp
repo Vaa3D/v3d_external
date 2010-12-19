@@ -10,6 +10,7 @@
 #include <QTextBlock>
 
 namespace bp = boost::python;
+using namespace std;
 
 namespace v3d {
 
@@ -23,6 +24,10 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 	// Run python command after user presses return
 	plainTextEdit->installEventFilter(this);
 	connect(this, SIGNAL(returnPressed()), this, SLOT(onReturnPressed()));
+
+	// Don't let cursor leave the editing region.
+	connect(plainTextEdit, SIGNAL(cursorPositionChanged ()),
+			this, SLOT(onCursorPositionChanged()));
 
 	// Connect python stdout/stderr to output to GUI
 	// Adapted from
@@ -46,7 +51,7 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 	plainTextEdit->appendPlainText(
 			"Type \"help\", \"copyright\", \"credits\" or "
 			"\"license()\" for more information.");
-	plainTextEdit->appendPlainText("V3D python console.");
+	plainTextEdit->appendPlainText("Welcome to the V3D python console!");
 
 	plainTextEdit->appendPlainText(""); // need new line for prompt
 	placeNewPrompt(true);
@@ -64,6 +69,11 @@ bool PythonConsoleWindow::eventFilter ( QObject * watched, QEvent * event )
 	QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
 	switch(keyEvent->key())
 	{
+		// Prevent backspace from deleting prompt string
+		case Qt::Key_Backspace:
+			if (plainTextEdit->textCursor().positionInBlock() <= promptLength)
+				return true; // discard event; do nothing.
+			break;
 		case Qt::Key_Return:
 		case Qt::Key_Enter:
 			emit returnPressed();
@@ -90,6 +100,26 @@ void PythonConsoleWindow::onReturnPressed()
 	placeNewPrompt(endIsVisible);
 }
 
+void PythonConsoleWindow::onCursorPositionChanged()
+{
+	cerr << "Cursor moved" << endl;
+	// TODO - don't let the cursor out of the editing area
+	QTextCursor currentCursor = plainTextEdit->textCursor();
+
+	// Want to be to the right of the prompt...
+	bool inPrompt = (currentCursor.positionInBlock() < promptLength);
+	// ... and in the final line.
+	bool outOfFinalBlock =
+			(currentCursor.blockNumber() != plainTextEdit->blockCount() - 1);
+	if (outOfFinalBlock || inPrompt) {
+		plainTextEdit->setTextCursor(latestGoodCursorPosition);
+	}
+	else {
+		// This is a good spot.  Within the editing area
+		latestGoodCursorPosition = currentCursor;
+	}
+}
+
 void PythonConsoleWindow::placeNewPrompt(bool bMakeVisible)
 {
 	plainTextEdit->moveCursor(QTextCursor::End);
@@ -97,6 +127,7 @@ void PythonConsoleWindow::placeNewPrompt(bool bMakeVisible)
 	if (bMakeVisible)
 		plainTextEdit->ensureCursorVisible();
 	plainTextEdit->moveCursor(QTextCursor::End);
+	latestGoodCursorPosition = plainTextEdit->textCursor();
 }
 
 QString PythonConsoleWindow::getCurrentCommand()

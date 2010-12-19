@@ -24,6 +24,7 @@ signals:
 
 private slots:
 	void onReturnPressed();
+	void onCursorPositionChanged();
 	
 private:
 	QString getCurrentCommand();
@@ -33,6 +34,7 @@ private:
 	int promptLength;
 	PythonOutputRedirector stderrRedirector;
 	PythonOutputRedirector stdoutRedirector;
+	QTextCursor latestGoodCursorPosition;
 };
 
 } // namespace v3d
