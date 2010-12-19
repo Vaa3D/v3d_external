@@ -33,6 +33,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //090518: add ParaShortestPath struct
 //100327: add find_shortest_path_graphpointset
 //101212: add some block operation functions
+//101219: update the deformable curve part
 
 #ifndef __NEURON_TRACING_H__
 #define __NEURON_TRACING_H__
@@ -368,14 +369,14 @@ bool point_bdb_minus_3d_localwinmass_prior(unsigned char*** img3d, V3DLONG dim0,
 	double TH = 1; //pixel/node, the threshold to judge convergence
 
 	double AR = 0;
-	for (int i=0; i<mCoord.size()-1; i++)
+	for (V3DLONG i=0; i<mCoord.size()-1; i++)
 	{
-		float x = mCoord[i].x;
-		float y = mCoord[i].y;
-		float z = mCoord[i].z;
-		float x1 = mCoord[i+1].x;
-		float y1 = mCoord[i+1].y;
-		float z1 = mCoord[i+1].z;
+		double x = mCoord[i].x;
+		double y = mCoord[i].y;
+		double z = mCoord[i].z;
+		double x1 = mCoord[i+1].x;
+		double y1 = mCoord[i+1].y;
+		double z1 = mCoord[i+1].z;
 		AR += sqrt((x-x1)*(x-x1) + (y-y1)*(y-y1) + (z-z1)*(z-z1));
 	}
 	AR /= mCoord.size()-1; // average distance between nodes
@@ -396,7 +397,7 @@ bool point_bdb_minus_3d_localwinmass_prior(unsigned char*** img3d, V3DLONG dim0,
 	double lastscore;
 
 
-	for (int nloop=0; nloop<max_loops; nloop++)
+	for (V3DLONG nloop=0; nloop<max_loops; nloop++)
 	{
 		// for each control point
 		for (j=0; j<M; j++)
@@ -418,15 +419,15 @@ bool point_bdb_minus_3d_localwinmass_prior(unsigned char*** img3d, V3DLONG dim0,
 				//090621 RZC: dynamic radius estimation
 				radius = 2* fitRadiusPercent(img3d, dim0, dim1, dim2, imgTH,  AR*2, xc, yc, zc, zthickness, b_est_in_xyplaneonly);
 
-				int x0 = xc - radius; x0 = (x0<0)?0:x0;
-				int x1 = xc + radius; x1 = (x1>dim0-1)?(dim0-1):x1;
-				int y0 = yc - radius; y0 = (y0<0)?0:y0;
-				int y1 = yc + radius; y1 = (y1>dim1-1)?(dim1-1):y1;
-				int z0 = zc - radius; z0 = (z0<0)?0:z0;
-				int z1 = zc + radius; z1 = (z1>dim2-1)?(dim2-1):z1;
+				V3DLONG x0 = xc - radius; x0 = (x0<0)?0:x0;
+				V3DLONG x1 = xc + radius; x1 = (x1>dim0-1)?(dim0-1):x1;
+				V3DLONG y0 = yc - radius; y0 = (y0<0)?0:y0;
+				V3DLONG y1 = yc + radius; y1 = (y1>dim1-1)?(dim1-1):y1;
+				V3DLONG z0 = zc - radius; z0 = (z0<0)?0:z0;
+				V3DLONG z1 = zc + radius; z1 = (z1>dim2-1)?(dim2-1):z1;
 
 				double sum_x=0, sum_y=0, sum_z=0, sum_px=0, sum_py=0, sum_pz=0;
-				int ix, iy, iz;
+				V3DLONG ix, iy, iz;
 				//use a sphere region, as this is easiest to compute the unbiased center of mass
 				double dx,dy,dz, r2=double(radius)*(radius);
 				for (iz=z0;iz<=z1;iz++)
@@ -483,24 +484,24 @@ bool point_bdb_minus_3d_localwinmass_prior(unsigned char*** img3d, V3DLONG dim0,
 				double yc = mCoord.at(j).y;
 				double zc = mCoord.at(j).z;
 
-				int ix = xc+.5;
-				int iy = yc+.5;
-				int iz = zc+.5;
+				V3DLONG ix = xc+.5;
+				V3DLONG iy = yc+.5;
+				V3DLONG iz = zc+.5;
 
 				double gx = 0;
-				for (int j=-1; j<=1; j++) for (int k=-1; k<=1; k++)
+				for (V3DLONG j=-1; j<=1; j++) for (int k=-1; k<=1; k++)
 				{
 					gx += I(ix+1, iy+j, iz+k);
 					gx -= I(ix-1, iy+j, iz+k);
 				}
 				double gy = 0;
-				for (int j=-1; j<=1; j++) for (int k=-1; k<=1; k++)
+				for (V3DLONG j=-1; j<=1; j++) for (int k=-1; k<=1; k++)
 				{
 					gy += I(ix+j, iy+1, iz+k);
 					gy -= I(ix+j, iy-1, iz+k);
 				}
 				double gz = 0;
-				for (int j=-1; j<=1; j++) for (int k=-1; k<=1; k++)
+				for (V3DLONG j=-1; j<=1; j++) for (int k=-1; k<=1; k++)
 				{
 					gz += I(ix+k, iy+j, iz+1);
 					gz -= I(ix+k, iy+j, iz-1);
@@ -527,7 +528,7 @@ bool point_bdb_minus_3d_localwinmass_prior(unsigned char*** img3d, V3DLONG dim0,
 				dz = mCoord.at(j).z - mCoord_prior.at(0).z;
 				double d0 = sqrt(dx*dx+dy*dy+dz*dz);
 
-				for (int ip=1; ip < mCoord_prior.size(); ip++)
+				for (V3DLONG ip=1; ip < mCoord_prior.size(); ip++)
 				{
 					dx = mCoord.at(j).x - mCoord_prior.at(ip).x;
 					dy = mCoord.at(j).y - mCoord_prior.at(ip).y;
