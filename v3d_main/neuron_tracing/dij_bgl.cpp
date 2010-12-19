@@ -319,19 +319,14 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 
 	//now set parameters
 	int min_step       = para.node_step; //should be >=1
-//	int outsample_step = para.outsample_step; //no need, by PHC 2010-Dec-17
 	int smooth_winsize = para.smooth_winsize;
 	int edge_select    = para.edge_select;  //0 -- only use length 1 edge(optimal for small step), 1 -- plus diagonal edge
 	int background_select = para.background_select;
 
 	if (min_step<1)       min_step =1;
-//	if (outsample_step<1) outsample_step =1; //no need, by PHC 2010-Dec-17
 	if (smooth_winsize<1) smooth_winsize =1;
 
-
-	// 090511 RZC: move typedef graph_t to bgl_shortest_path()
-
-	// 090727 RZC: bounding box volume
+	//bounding box volume
 	V3DLONG xmin = bx0, xmax = bx1,
 	     ymin = by0, ymax = by1,
 		 zmin = bz0, zmax = bz1;
@@ -364,7 +359,6 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 	//out of bound handler
 	#define NODE_XYZ_OUT_OF_BOUND(x0,y0,z0)		(x0<xmin-dd || x0>xmax+dd || y0<ymin-dd || y0>ymax+dd || z0<zmin-dd || z0>zmax+dd)
 	#define NODE_INDEX_OUT_OF_BOUND(ind) 		(ind<0 || ind>=num_nodes)
-
 
 	V3DLONG start_nodeind, *end_nodeind = 0;
 	if (n_end_nodes>0) //101210 PHC
