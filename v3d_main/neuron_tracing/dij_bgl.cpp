@@ -587,38 +587,42 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 			mUnit[i].nchild++;
 		}
 
-		printf("labeling to remove leaf child \n");
-		//remove leaf node (nchild==0)
-		for (k=0; k<100; k++)
-		for (j=0; j<mUnit.size(); j++)
+		if (0)
 		{
-			if (mUnit[j].nchild ==0)
-			{
-				double parent = mUnit[j].parent;
-				V3DLONG i = index_map[parent];
-
-				int min_cut_level = 10/min_step;	if (min_cut_level<1) min_cut_level=1;
-				double va = getBlockAveValue(img3d, dim0, dim1, dim2, mUnit.at(i).x,mUnit.at(i).y,mUnit.at(i).z,
-						min_cut_level, min_cut_level, min_cut_level);
-
-				//if (k<min_cut_level || va <= imgAve+imgStd*min_cut_level)
+			printf("labeling to remove leaf child \n");
+			//remove leaf node (nchild==0)
 			
-				if (k<5 /*min_cut_level*/ || va < imgAve+imgStd)
-				//if (k<5 || mUnit[i].nchild >=2) // preserve single brunch
+			for (k=0; k<100; k++)
+			for (j=0; j<mUnit.size(); j++)
+			{
+				if (mUnit[j].nchild ==0)
 				{
-//					mUnit[i].nchild--;
-//
-//					//label to remove
-//					mUnit[j].nchild = -1;
-//					//mUnit[j].parent = mUnit[j].n;
-				}
-				else //091108. update this node's coordinate using its CoM
-				{
-					if (0) //091120. temporary block the code for the demo
+					double parent = mUnit[j].parent;
+					V3DLONG i = index_map[parent];
+
+					int min_cut_level = 10/min_step;	if (min_cut_level<1) min_cut_level=1;
+					double va = getBlockAveValue(img3d, dim0, dim1, dim2, mUnit.at(i).x,mUnit.at(i).y,mUnit.at(i).z,
+							min_cut_level, min_cut_level, min_cut_level);
+
+					//if (k<min_cut_level || va <= imgAve+imgStd*min_cut_level)
+				
+					if (k<5 /*min_cut_level*/ || va < imgAve+imgStd)
+					//if (k<5 || mUnit[i].nchild >=2) // preserve single brunch
 					{
-						float curx= mUnit.at(i).x, cury = mUnit.at(i).y, curz = mUnit.at(i).z;
-						fitPosition(img3d, dim0, dim1, dim2, imgAve, 3*min_cut_level, curx, cury, curz);
-						mUnit.at(i).x = curx, mUnit.at(i).y = cury, mUnit.at(i).z = curz;
+	//					mUnit[i].nchild--;
+	//
+	//					//label to remove
+	//					mUnit[j].nchild = -1;
+	//					//mUnit[j].parent = mUnit[j].n;
+					}
+					else //091108. update this node's coordinate using its CoM
+					{
+						if (0) //091120. temporary block the code for the demo
+						{
+							float curx= mUnit.at(i).x, cury = mUnit.at(i).y, curz = mUnit.at(i).z;
+							fitPosition(img3d, dim0, dim1, dim2, imgAve, 3*min_cut_level, curx, cury, curz);
+							mUnit.at(i).x = curx, mUnit.at(i).y = cury, mUnit.at(i).z = curz;
+						}
 					}
 				}
 			}
