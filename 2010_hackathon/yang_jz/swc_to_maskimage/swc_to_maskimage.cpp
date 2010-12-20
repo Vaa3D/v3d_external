@@ -242,7 +242,7 @@ void ComputemaskImage(NeuronTree neurons,
 					{
 						if (method_code == 1)
 						{
-							pImMask[ind] = 1;
+							pImMask[ind] = 255;
 							
 						}else if (method_code ==2)
 						{
@@ -333,7 +333,7 @@ void ComputemaskImage(NeuronTree neurons,
 					{
 						if (method_code == 1)
 						{
-							pImMask[ind1] = 1;							
+							pImMask[ind1] = 255;							
 						}
 						else if (method_code ==2)
 						{
