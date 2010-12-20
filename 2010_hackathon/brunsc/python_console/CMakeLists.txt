@@ -61,10 +61,18 @@ target_link_libraries(pythonConsoleTest
 ################################################
 
 set(PLUGIN_SOURCES 
+    PythonConsolePlugin.cpp
     ${V3D_PYTHON_CONSOLE_SRCS}
 )
 set(PLUGIN_HEADERS 
-    PythonConsoleWindow.h
+    PythonConsolePlugin.h
+    # PythonConsoleWindow.h // already MOCed in this file above
 )
 
-# configure_v3d_plugin(pythonConsole)
+configure_v3d_plugin(PythonConsolePlugin)
+
+target_link_libraries(PythonConsolePlugin
+    ${PYTHON_LIBRARY}
+    ${Boost_PYTHON_LIBRARY}
+    ${QT_QTGUI_LIBRARY}
+)
