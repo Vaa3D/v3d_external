@@ -89,7 +89,9 @@ void TipPlugin::SetMinLength(V3DLONG minlength)
 
 void TipPlugin::Initialize1D()
 {
-
+//bug : should add margin for x and y directions as well
+	
+	
 	m_iImgSize = m_iImgWidth * m_iImgHeight;
 	
 	
