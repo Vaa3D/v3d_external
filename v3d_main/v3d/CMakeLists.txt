@@ -30,6 +30,16 @@ set(V3D_RCCS v3d.qrc ../3drenderer/3drenderer.qrc)
 QT4_ADD_RESOURCES(V3D_RCC_SRCS ${V3D_RCCS})
 
 QT4_WRAP_UI(QT_UI_SRCS
+  v3d_global_preference.ui
+  template_matching_cellseg.ui
+  landmark_property.ui
+  surface_obj_annotation.ui
+  surfaceobj_geometry_dialog.ui
+  dialog_update_v3d.ui
+  dialog_update_list.ui
+  dialog_update_options.ui
+  dialog_update_downloading.ui
+  dialog_update_checking.ui
   dialog_curve_trace.ui
   dialog_imagecrop_bbox.ui
   dialog_imageresample.ui
@@ -42,8 +52,6 @@ QT4_WRAP_UI(QT_UI_SRCS
   import_filelist_dialog.ui
   import_images_tool.ui
   dialog_url_entry.ui
-  dialog_update_list.ui
-  dialog_update_v3d.ui
   )
 
 QT4_WRAP_CPP(QT_MOC_SRCS
