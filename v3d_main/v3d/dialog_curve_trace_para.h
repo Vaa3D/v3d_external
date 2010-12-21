@@ -39,69 +39,12 @@ curve_trace_para_dialog.h
 #ifndef __CURVE_TRACE_PARA_DIALOG_H__
 #define __CURVE_TRACE_PARA_DIALOG_H__
 
-#include "../basic_c_fun/v3d_basicdatatype.h"
+#include "../basic_c_fun/v3d_curvetracepara.h"
 
 #include <QDialog>
 
 #include "ui_dialog_curve_trace.h"
 
-struct CurveTracePara
-{
-	double image_force_weight;
-	double grident_force_weight;
-	double internal_force_weight;
-	double internal_force2_weight;
-	double prior_force_weight;
-	V3DLONG nloops;
-	int channo; //which data channel the trace will be applied to
-	int n_points; //# of control points
-	bool b_adaptiveCtrlPoints;
-	bool b_estRadii;
-	bool b_postMergeClosebyBranches;
-	bool b_post_trimming;
-
-	bool b_deformcurve; //use shortest path or deformable model
-	
-	bool b_3dcurve_width_from_xyonly; //added 2010 Nov 30. Note this has not been added to the tracing parameter dialog yet (only for command line GD tracing)
-
-	//shortest path parameters
-	int sp_num_end_nodes; //(0 for shortest path tree) (1 for shortest path) (>1 for n pair path)
-	int sp_graph_connect;    //(0 for 6-connect) (1 for include diagonal connects)
-	int sp_graph_background; //0 - full image, 1 - use mean value to threshold image and use foreground only
-	int sp_graph_resolution_step;
-	int sp_downsample_step;
-	int sp_smoothing_win_sz;
-
-	V3DLONG landmark_id_start, landmark_id_end;
-
-	CurveTracePara()
-	{
-		channo=0; n_points=8; landmark_id_start=0; landmark_id_end=0;
-		nloops=1; //change from 100 to 1 for JHS data. 090824
-		image_force_weight=1;
-		grident_force_weight=1;
-		internal_force_weight=0.1;
-		internal_force2_weight=0.1;
-		prior_force_weight=0.2;
-
-		b_adaptiveCtrlPoints=true;
-		b_deformcurve=false;
-		
-		b_estRadii = true;
-		b_postMergeClosebyBranches=true;
-		
-		b_post_trimming = false; //20101213. by Hanchuan Peng
-
-		sp_num_end_nodes = 1;
-		sp_graph_connect=0;
-		sp_graph_background=1;
-		sp_graph_resolution_step=2;
-		sp_downsample_step=2;
-		sp_smoothing_win_sz=7;
-		
-		b_3dcurve_width_from_xyonly = false;
-	}
-};
 
 class CurveTraceParaDialog : public QDialog, private Ui_curve_trace_dialog
 {
