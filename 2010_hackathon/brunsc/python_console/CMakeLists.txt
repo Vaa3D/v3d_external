@@ -52,6 +52,7 @@ add_executable(pythonConsoleTest
 target_link_libraries(pythonConsoleTest
     ${PYTHON_LIBRARY}
     ${Boost_PYTHON_LIBRARY}
+    ${QT_QTCORE_LIBRARY}
     ${QT_QTGUI_LIBRARY}
 )
 

@@ -41,7 +41,8 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 	bp::import("sys").attr("stderr") = stderrRedirector;
 	bp::import("sys").attr("stdout") = stdoutRedirector;
 
-	// TODO - print intro text at top
+	// Print intro text at top of console.
+	plainTextEdit->appendPlainText("Welcome to the V3D python console!");
 	std::string pyVersion("Python ");
 	pyVersion += Py_GetVersion();
 	pyVersion += " on ";
@@ -51,7 +52,6 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 	plainTextEdit->appendPlainText(
 			"Type \"help\", \"copyright\", \"credits\" or "
 			"\"license()\" for more information.");
-	plainTextEdit->appendPlainText("Welcome to the V3D python console!");
 
 	plainTextEdit->appendPlainText(""); // need new line for prompt
 	placeNewPrompt(true);
@@ -85,6 +85,8 @@ bool PythonConsoleWindow::eventFilter ( QObject * watched, QEvent * event )
 
 void PythonConsoleWindow::onReturnPressed()
 {
+	 // Clear undo/redo buffer, we don't want prompts and output in there.
+	plainTextEdit->setUndoRedoEnabled(false);
 	// TODO - scroll down after command, iff bottom is visible now.
 	bool endIsVisible = plainTextEdit->document()->lastBlock().isVisible();
 
@@ -102,8 +104,8 @@ void PythonConsoleWindow::onReturnPressed()
 
 void PythonConsoleWindow::onCursorPositionChanged()
 {
-	cerr << "Cursor moved" << endl;
-	// TODO - don't let the cursor out of the editing area
+	// cerr << "Cursor moved" << endl;
+	// Don't let the cursor out of the editing area
 	QTextCursor currentCursor = plainTextEdit->textCursor();
 
 	// Want to be to the right of the prompt...
@@ -122,12 +124,15 @@ void PythonConsoleWindow::onCursorPositionChanged()
 
 void PythonConsoleWindow::placeNewPrompt(bool bMakeVisible)
 {
+	plainTextEdit->setUndoRedoEnabled(false); // clear undo/redo buffer
 	plainTextEdit->moveCursor(QTextCursor::End);
 	plainTextEdit->insertPlainText(prompt);
 	if (bMakeVisible)
 		plainTextEdit->ensureCursorVisible();
 	plainTextEdit->moveCursor(QTextCursor::End);
 	latestGoodCursorPosition = plainTextEdit->textCursor();
+	// Start undo/redo, just for user typing, not for computer output
+	plainTextEdit->setUndoRedoEnabled(true);
 }
 
 QString PythonConsoleWindow::getCurrentCommand()
