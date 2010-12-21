@@ -60,6 +60,10 @@ target_link_libraries(pythonConsoleTest
 # pythonConsole is a V3D plugin shared library #
 ################################################
 
+include_directories(
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../../v3d_main/basic_c_fun/"
+    )
+
 set(PLUGIN_SOURCES 
     PythonConsolePlugin.cpp
     ${V3D_PYTHON_CONSOLE_SRCS}

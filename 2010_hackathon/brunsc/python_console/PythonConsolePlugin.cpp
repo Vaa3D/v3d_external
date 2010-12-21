@@ -6,6 +6,8 @@
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(PythonConsole, PythonConsolePlugin);
 
+v3d::PythonConsoleWindow* PythonConsolePlugin::pythonConsoleWindow = 0;
+
 QStringList PythonConsolePlugin::menulist() const
 {
     return QStringList()
@@ -18,9 +20,11 @@ void PythonConsolePlugin::domenu(const QString & menu_name,
 {
     if (menu_name == tr("Open V3D python console..."))
     {
+    	if (! pythonConsoleWindow) {
+    		pythonConsoleWindow = new v3d::PythonConsoleWindow(parent);
+    	}
     	// TODO pass V3DPluginCallback2 as argument
-    	PythonConsoleWindow console(parent);
-    	console.show();
+    	pythonConsoleWindow->show();
     }
 	else
 	{ // User selected "About..."

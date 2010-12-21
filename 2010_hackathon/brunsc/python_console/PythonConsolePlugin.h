@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "v3d_interface.h"
+namespace v3d{class PythonConsoleWindow;}
 
 class PythonConsolePlugin : public QObject, public V3DPluginInterface2_1
 {
@@ -26,6 +27,8 @@ public:
 	}
 
     float getPluginVersion() const {return 1.0f;}
+
+    static v3d::PythonConsoleWindow* pythonConsoleWindow;
 };
 
 #endif // V3D_PYTHON_CONSOLE_PLUGIN_H
