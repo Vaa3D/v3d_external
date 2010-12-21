@@ -10,14 +10,18 @@
 
 #include <boost/python.hpp>
 #include <string>
+#include <exception>
 
 namespace v3d {
 
 class PythonInterpreter {
 public:
+	class IncompletePythonCommandException : public std::exception {};
+
 	PythonInterpreter();
 	virtual ~PythonInterpreter();
-	std::string interpretString(const std::string& cmd);
+	std::string interpretString(const std::string& cmd)
+		throw(IncompletePythonCommandException);
 
 	boost::python::object main_module;
 	boost::python::object main_namespace;

@@ -29,12 +29,14 @@ private slots:
 private:
 	QString getCurrentCommand();
 	void placeNewPrompt(bool bMakeVisible=false);
+	void setPrompt(const QString& newPrompt);
 
 	QString prompt;
 	int promptLength;
 	PythonOutputRedirector stderrRedirector;
 	PythonOutputRedirector stdoutRedirector;
 	QTextCursor latestGoodCursorPosition;
+	QString multilineCommand;
 };
 
 } // namespace v3d

@@ -17,7 +17,8 @@ namespace v3d {
 PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 		: QMainWindow(parent),
 		  prompt(">>> "),
-		  promptLength(prompt.length())
+		  promptLength(prompt.length()),
+		  multilineCommand("")
 {
 	setupUi(this);
 
@@ -77,27 +78,53 @@ bool PythonConsoleWindow::eventFilter ( QObject * watched, QEvent * event )
 		case Qt::Key_Return:
 		case Qt::Key_Enter:
 			emit returnPressed();
-			return true; // We will take care of inserting the newline.
+			return true; // Consume event.  We will take care of inserting the newline.
 	}
 
 	return QMainWindow::eventFilter(watched, event);
+}
+
+void PythonConsoleWindow::setPrompt(const QString& newPrompt)
+{
+	prompt = newPrompt;
+	promptLength = prompt.length();
 }
 
 void PythonConsoleWindow::onReturnPressed()
 {
 	 // Clear undo/redo buffer, we don't want prompts and output in there.
 	plainTextEdit->setUndoRedoEnabled(false);
-	// TODO - scroll down after command, iff bottom is visible now.
+	// TODO - scroll down after command, if and only if bottom is visible now.
 	bool endIsVisible = plainTextEdit->document()->lastBlock().isVisible();
 
 	QString command = getCurrentCommand();
+	if (multilineCommand.length() > 0) {
+		// multi-line command can only be ended with a blank line.
+		if (command.length() == 0)
+			command = multilineCommand; // execute it now
+		else {
+			multilineCommand = multilineCommand + command + "\n";
+			command = ""; // skip execution until next time
+		}
+	}
+
 	// Add carriage return, so output will appear on subsequent line.
 	// (It would be too late if we waited for plainTextEdit
 	//  to process the <Return>)
-	plainTextEdit->appendPlainText("");
+	plainTextEdit->appendPlainText("");  // We consumed the key event, so we have to add the newline.
+
 	if (command.length() > 0) {
-		std::string result =
-				pythonInterpreter.interpretString(command.toStdString());
+		try {
+			multilineCommand = "";
+			std::string result =
+					pythonInterpreter.interpretString(command.toStdString());
+			setPrompt(">>> ");
+		} catch (const PythonInterpreter::IncompletePythonCommandException& exc) {
+			// This is a multi-line command entry
+			multilineCommand = command + "\n";
+			std::cerr << "Multiline..." << std::endl;
+			setPrompt("... ");
+		}
 	}
 	placeNewPrompt(endIsVisible);
 }
