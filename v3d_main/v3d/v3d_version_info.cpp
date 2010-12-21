@@ -253,7 +253,7 @@ namespace v3d {
 void UpdateItem::setInstall( int state )
 {
     bDoInstall = (state == Qt::Checked);
-    qDebug() << "setInstall";// v3d_msg("setInstall",0);
+    // qDebug() << "setInstall";// v3d_msg("setInstall",0);
 }
 
 // Slot to start updating this item from the remote server
@@ -718,7 +718,7 @@ void V3DVersionChecker::processVersionXmlFile(const QDomDocument& versionDoc)
                 show_update_list();
             }
         }
-        qDebug("V3D or plugin version is higher than the stable version");
+        // qDebug("V3D or plugin version is higher than the stable version");
     }
     else // there are no new updates
     {

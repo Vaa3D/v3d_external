@@ -115,7 +115,7 @@ public:
         buildTime = BUILD_TIME;
     }
     // Initialize from (2.532, "a")
-    VersionInfo(float f, const char* specialLetter = "") {
+    VersionInfo(double f, const char* specialLetter = "") {
         v3d_major_version = int(f);
         v3d_minor_version = int((f - v3d_major_version)*1000.01); // shift 3 digits to the left
         this->specialLetter = specialLetter;

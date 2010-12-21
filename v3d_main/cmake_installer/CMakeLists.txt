@@ -1,8 +1,16 @@
 # Build an installer based on a preexisting install directory.
 # This only works for V3D right now, due to specific files
 
-project(ProgramInstaller)
+project(ProgramInstaller NONE)
 cmake_minimum_required(VERSION 2.8)
+
+# TODO make this into a cmake module
+# possible variables needed
+#     INSTALLER_TEMPLATE_DIR
+#     INSTALLER_PROGRAM_NAME
+#     INSTALLER_PROGRAM_VERSION
+# optional
+#      INSTALLER_PLATFORM_NAME
 
 # Specify the directory where the final install files are.
 # This directory must have been populated beforehand.
@@ -67,7 +75,7 @@ set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE")
 set(CPACK_PACKAGE_VERSION "${INSTALLER_PROGRAM_VERSION}")
 set(CPACK_PACKAGE_CONTACT "brunsc at janelia.hhmi.org")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY ${INSTALLER_PROGRAM_NAME})
-set(CPACK_PACKAGE_EXECUTABLES "v3d.exe" "v3d")
+set(CPACK_PACKAGE_EXECUTABLES "" "")
 
 # Component arrangement in NSIS installer (and possible mac package installer, if we make one)
 set(CPACK_COMPONENTS_ALL_IN_ONE_PACKAGE TRUE) # Just one stgz installer, please
@@ -103,7 +111,17 @@ elseif(WIN32)
     set(CPACK_PACKAGE_ICON
        "${CMAKE_CURRENT_SOURCE_DIR}/../CMake/package/windows\\\\v3dInBox128.png")
 
-    set(CPACK_NSIS_MENU_LINKS "bin/v3d.exe" "V3D")
+    # Start menu link to program
+    find_program(PROGRAM_BINARY
+        NAMES v3d
+        PATHS "${INSTALLER_TEMPLATE_DIR}/bin" "${INSTALLER_TEMPLATE_DIR}"
+        NO_DEFAULT_PATH
+        "The local location of the program executable that should be linked from the start menu"
+    )
+    if (PROGRAM_BINARY)
+        file(RELATIVE_PATH RELATIVE_BINARY "${INSTALLER_TEMPLATE_DIR}" ${PROGRAM_BINARY})
+        set(CPACK_NSIS_MENU_LINKS "${RELATIVE_BINARY}" "${INSTALLER_PROGRAM_NAME}")
+    endif()
     SET(CPACK_NSIS_DISPLAY_NAME ${INSTALLER_PROGRAM_NAME})
     SET(CPACK_NSIS_URL_INFO_ABOUT  
         "http://penglab.janelia.org/proj/v3d/V3D/About_V3D.html")
@@ -120,6 +138,7 @@ mark_as_advanced(CMAKE_OSX_ARCHITECTURES)
 mark_as_advanced(CMAKE_OSX_DEPLOYMENT_TARGET)
 mark_as_advanced(CMAKE_OSX_SYSROOT)
 mark_as_advanced(CMAKE_INSTALL_PREFIX)
+mark_as_advanced(CMAKE_CONFIGURATION_TYPES)
 
 # include(CPack) must always be last!
 include(CPack)
