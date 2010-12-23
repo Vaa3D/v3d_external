@@ -18,9 +18,10 @@ class NoV3DCallbackException : public std::exception
 {};
 
 // Store a permanent pointer to the callback the V3DConsolePlugin was launched with.
-static V3DPluginCallback2 *callbackPtr;
+V3DPluginCallback2 *v3d_callbackPtr;
+
 V3DPluginCallback2& getCallback() {
-    return *callbackPtr;
+    return *v3d_callbackPtr;
 }
 
 // Wrap v3dhandle, which is actually "void*", so python does not choke on it.
@@ -29,96 +30,96 @@ class ImageWindowWrapper
 public:
     // Get the current V3D image window
     static ImageWindowWrapper current() {
-        return ImageWindowWrapper(callbackPtr->currentImageWindow());
+        return ImageWindowWrapper(v3d_callbackPtr->currentImageWindow());
     }
     static ImageWindowWrapper currentHiddenSelected() {
-        return ImageWindowWrapper(callbackPtr->curHiddenSelectedWindow());
+        return ImageWindowWrapper(v3d_callbackPtr->curHiddenSelectedWindow());
     }
 
     ImageWindowWrapper(void* h) : handle(h) {}
     ImageWindowWrapper(const std::string& name) {
-        handle = callbackPtr->newImageWindow(QString(name.c_str()));
+        handle = v3d_callbackPtr->newImageWindow(QString(name.c_str()));
     }
     void update() {
-        callbackPtr->updateImageWindow(handle);
+        v3d_callbackPtr->updateImageWindow(handle);
     }
     std::string getName() const {
-        return callbackPtr->getImageName(handle).toStdString();
+        return v3d_callbackPtr->getImageName(handle).toStdString();
     }
     void setName(const std::string& name) {
-        callbackPtr->setImageName(handle, QString(name.c_str()));
+        v3d_callbackPtr->setImageName(handle, QString(name.c_str()));
     }
     Image4DSimple* getImage() {
-        return callbackPtr->getImage(handle);
+        return v3d_callbackPtr->getImage(handle);
     }
     bool setImage(Image4DSimple* image) {
-        return callbackPtr->setImage(handle, image);
+        return v3d_callbackPtr->setImage(handle, image);
     }
     LandmarkList getLandmark() {
-        return callbackPtr->getLandmark(handle);
+        return v3d_callbackPtr->getLandmark(handle);
     }
     bool setLandmark(LandmarkList & landmark_list) {
-        return callbackPtr->setLandmark(handle, landmark_list);
+        return v3d_callbackPtr->setLandmark(handle, landmark_list);
     }
     ROIList getROI() {
-        return callbackPtr->getROI(handle);
+        return v3d_callbackPtr->getROI(handle);
     }
     bool setROI(ROIList & roi_list) {
-        return callbackPtr->setROI(handle, roi_list);
+        return v3d_callbackPtr->setROI(handle, roi_list);
     }
     NeuronTree getSWC() {
-        return callbackPtr->getSWC(handle);
+        return v3d_callbackPtr->getSWC(handle);
     }
     bool setSWC(NeuronTree & nt) {
-        return callbackPtr->setSWC(handle, nt);
+        return v3d_callbackPtr->setSWC(handle, nt);
     }
     //virtual void open3DWindow(v3dhandle image_window) = 0;
     void open3DWindow() {
-        return callbackPtr->open3DWindow(handle);
+        return v3d_callbackPtr->open3DWindow(handle);
     }
     //virtual void close3DWindow(v3dhandle image_window) = 0;
     void close3DWindow() {
-        return callbackPtr->close3DWindow(handle);
+        return v3d_callbackPtr->close3DWindow(handle);
     }
     //virtual void openROI3DWindow(v3dhandle image_window) = 0;
     void openROI3DWindow() {
-        return callbackPtr->openROI3DWindow(handle);
+        return v3d_callbackPtr->openROI3DWindow(handle);
     }
     //virtual void closeROI3DWindow(v3dhandle image_window) = 0;
     void closeROI3DWindow() {
-        return callbackPtr->closeROI3DWindow(handle);
+        return v3d_callbackPtr->closeROI3DWindow(handle);
     }
     //virtual void pushObjectIn3DWindow(v3dhandle image_window) = 0;
     void pushObjectIn3DWindow() {
-        return callbackPtr->pushObjectIn3DWindow(handle);
+        return v3d_callbackPtr->pushObjectIn3DWindow(handle);
     }
     //virtual void pushImageIn3DWindow(v3dhandle image_window) = 0;
     void pushImageIn3DWindow() {
-        return callbackPtr->pushImageIn3DWindow(handle);
+        return v3d_callbackPtr->pushImageIn3DWindow(handle);
     }
     //virtual int pushTimepointIn3DWindow(v3dhandle image_window, int timepoint) = 0;
     int pushTimepointIn3DWindow(int timepoint) {
-        return callbackPtr->pushTimepointIn3DWindow(handle, timepoint);
+        return v3d_callbackPtr->pushTimepointIn3DWindow(handle, timepoint);
     }
     //virtual bool screenShot3DWindow(v3dhandle image_window, QString BMPfilename) = 0;
     bool screenShot3DWindow(const std::string& BMPfilename) {
-        return callbackPtr->screenShot3DWindow(handle, QString(BMPfilename.c_str()));
+        return v3d_callbackPtr->screenShot3DWindow(handle, QString(BMPfilename.c_str()));
     }
     //virtual bool screenShotROI3DWindow(v3dhandle image_window, QString BMPfilename) = 0;
     bool screenShotROI3DWindow(const std::string& BMPfilename) {
-        return callbackPtr->screenShotROI3DWindow(handle, QString(BMPfilename.c_str()));
+        return v3d_callbackPtr->screenShotROI3DWindow(handle, QString(BMPfilename.c_str()));
     }
     //virtual View3DControl * getView3DControl(v3dhandle image_window) = 0;
     View3DControl* getView3DControl() {
-        return callbackPtr->getView3DControl(handle);
+        return v3d_callbackPtr->getView3DControl(handle);
     }
     //virtual View3DControl * getLocalView3DControl(v3dhandle image_window) = 0;
     View3DControl* getLocalView3DControl() {
-        return callbackPtr->getLocalView3DControl(handle);
+        return v3d_callbackPtr->getLocalView3DControl(handle);
     }
     //virtual TriviewControl * getTriviewControl(v3dhandle image_window) = 0;
     TriviewControl* getTriviewControl() {
-        return callbackPtr->getTriviewControl(handle);
+        return v3d_callbackPtr->getTriviewControl(handle);
     }
 
     void* handle;
@@ -171,14 +172,14 @@ LandmarkList callback_getLandmark(
 }
 
 V3D_GlobalSetting wrap_getGlobalSetting() {
-    return callbackPtr->getGlobalSetting();
+    return v3d_callbackPtr->getGlobalSetting();
 }
 
 bool wrap_setGlobalSetting(V3D_GlobalSetting& gs) {
-    return callbackPtr->setGlobalSetting(gs);
+    return v3d_callbackPtr->setGlobalSetting(gs);
 }
 
-BOOST_PYTHON_MODULE(v3d)
+BOOST_PYTHON_MODULE(v3d2)
 {
     //virtual V3D_GlobalSetting getGlobalSetting() = 0;
     def("getGlobalSetting", wrap_getGlobalSetting);
@@ -290,12 +291,20 @@ BOOST_PYTHON_MODULE(v3d)
             "Get the V3D plugin API callback object.");
 }
 
+// extern void initv3d(); // should be defined by automatically generated wrappers
+
+#include "generated_code/v3d.main.cpp"
+
 namespace v3d {
 
 void initV3DPythonModule(V3DPluginCallback2 *callback)
 {
+    // automatically generated wrappers
     initv3d();
-    if (callback) callbackPtr = callback;
+
+    // initv3d2();
+    if (callback) v3d_callbackPtr = callback;
+
 }
 
 } // namespace v3d
