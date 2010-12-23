@@ -8,20 +8,17 @@
 #include "PythonInterpreter.h"
 #include "PythonConsoleWindow.h"
 #include <boost/python.hpp>
+#include "V3DPythonModule.h"
 
 using namespace v3d;
 namespace bp = boost::python;
 
 int main(int argc, char *argv[])
 {
-	// test_python();
-	// PythonInterpreter python;
-	// python.runString("print 'Hello, World'");
-
     QApplication app(argc, argv);
 
     PythonConsoleWindow* pythonConsole = new PythonConsoleWindow();
-    // pythonConsole->pythonInterpreter.interpretString("print 'Hello, World'");
+    initV3DPythonModule();
 
     pythonConsole->show();
 

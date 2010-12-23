@@ -9,8 +9,6 @@
 #include <QPlainTextEdit>
 #include <QString>
 
-namespace v3d {
-
 void PythonOutputRedirector::setQPlainTextEdit(QPlainTextEdit* p_textEdit)
 {
     textEdit = p_textEdit;
@@ -23,5 +21,3 @@ void PythonOutputRedirector::write( std::string const& str )
 	textEdit->moveCursor(QTextCursor::End);
 	textEdit->insertPlainText( str.c_str() );
 }
-
-} // namespace v3d

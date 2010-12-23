@@ -8,8 +8,6 @@
 
 class QWidget;
 
-namespace v3d {
-
 class PythonConsoleWindow : public QMainWindow, Ui::main_python_console
 {
 	Q_OBJECT
@@ -38,7 +36,5 @@ private:
 	QTextCursor latestGoodCursorPosition;
 	QString multilineCommand;
 };
-
-} // namespace v3d
 
 #endif // V3D_PYTHON_CONSOLE_WINDOW_H

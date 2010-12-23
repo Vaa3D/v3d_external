@@ -12,8 +12,6 @@
 namespace bp = boost::python;
 using namespace std;
 
-namespace v3d {
-
 PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 		: QMainWindow(parent),
 		  prompt(">>> "),
@@ -44,6 +42,7 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 
 	// Print intro text at top of console.
 	plainTextEdit->appendPlainText("Welcome to the V3D python console!");
+	// This header text is intended to look just like the standard python banner.
 	std::string pyVersion("Python ");
 	pyVersion += Py_GetVersion();
 	pyVersion += " on ";
@@ -75,6 +74,7 @@ bool PythonConsoleWindow::eventFilter ( QObject * watched, QEvent * event )
 			if (plainTextEdit->textCursor().positionInBlock() <= promptLength)
 				return true; // discard event; do nothing.
 			break;
+		// Trigger command execution with <Return>
 		case Qt::Key_Return:
 		case Qt::Key_Enter:
 			emit returnPressed();
@@ -94,7 +94,7 @@ void PythonConsoleWindow::onReturnPressed()
 {
 	 // Clear undo/redo buffer, we don't want prompts and output in there.
 	plainTextEdit->setUndoRedoEnabled(false);
-	// TODO - scroll down after command, if and only if bottom is visible now.
+	// Scroll down after command, if and only if bottom is visible now.
 	bool endIsVisible = plainTextEdit->document()->lastBlock().isVisible();
 
 	QString command = getCurrentCommand();
@@ -122,7 +122,7 @@ void PythonConsoleWindow::onReturnPressed()
 		} catch (const PythonInterpreter::IncompletePythonCommandException& exc) {
 			// This is a multi-line command entry
 			multilineCommand = command + "\n";
-			std::cerr << "Multiline..." << std::endl;
+			// std::cerr << "Multiline..." << std::endl;
 			setPrompt("... ");
 		}
 	}
@@ -176,5 +176,3 @@ QString PythonConsoleWindow::getCurrentCommand()
 	cursor.clearSelection();
 	return command;
 }
-
-} // namespace v3d

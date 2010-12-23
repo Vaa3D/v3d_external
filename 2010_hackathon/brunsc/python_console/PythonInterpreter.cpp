@@ -4,8 +4,6 @@
 namespace bp = boost::python;
 using namespace std;
 
-namespace v3d {
-
 PythonInterpreter::PythonInterpreter()
 {
 	try {
@@ -77,5 +75,3 @@ std::string PythonInterpreter::interpretString(const std::string& command)
 
 	return "";
 }
-
-} // namespace v3d

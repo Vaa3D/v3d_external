@@ -36,6 +36,7 @@ set(V3D_PYTHON_CONSOLE_SRCS
     PythonConsoleWindow.cpp
     PythonInterpreter.cpp
     PythonOutputRedirector.cpp
+    V3DPythonModule.cpp
     ${QT_UI_SRCS}
     ${QT_MOC_SRCS}
 )
@@ -80,4 +81,14 @@ target_link_libraries(PythonConsolePlugin
     ${PYTHON_LIBRARY}
     ${Boost_PYTHON_LIBRARY}
     ${QT_QTGUI_LIBRARY}
+)
+
+set(PYTHON_CONSOLE_PLUGIN_OUTPUT_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../../../build_v3d_cmake_eclipse/v3d/Linux_32/plugins/python_console"
+    CACHE PATH "Where to build python console plugin")
+
+set_target_properties(PythonConsolePlugin PROPERTIES 
+    ARCHIVE_OUTPUT_DIRECTORY "${PYTHON_CONSOLE_PLUGIN_OUTPUT_DIR}"
+    LIBRARY_OUTPUT_DIRECTORY "${PYTHON_CONSOLE_PLUGIN_OUTPUT_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY "${PYTHON_CONSOLE_PLUGIN_OUTPUT_DIR}"
 )

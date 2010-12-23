@@ -12,8 +12,6 @@
 #include <string>
 #include <exception>
 
-namespace v3d {
-
 class PythonInterpreter {
 public:
 	class IncompletePythonCommandException : public std::exception {};
@@ -26,7 +24,5 @@ public:
 	boost::python::object main_module;
 	boost::python::object main_namespace;
 };
-
-} // namespace v3d
 
 #endif // V3D_PYTHON_INTERPRETER_H

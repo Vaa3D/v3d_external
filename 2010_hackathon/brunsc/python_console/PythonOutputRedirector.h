@@ -11,8 +11,6 @@
 #include <string>
 class QPlainTextEdit;
 
-namespace v3d {
-
 // PythonOutputRedirector is intended to be wrapped with boost::python,
 // and to replace sys.stderr or sys.stdout, to send the output to the
 // V3D python console.
@@ -28,7 +26,5 @@ public:
 private:
     QPlainTextEdit* textEdit;
 };
-
-} // namespace v3d
 
 #endif /* V3D_PYTHONOUTPUTREDIRECTOR_H_ */
