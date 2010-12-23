@@ -36,45 +36,89 @@ public:
     }
 
     ImageWindowWrapper(void* h) : handle(h) {}
-    ImageWindowWrapper(const std::string& name)
-    {
+    ImageWindowWrapper(const std::string& name) {
         handle = callbackPtr->newImageWindow(QString(name.c_str()));
     }
-
     void update() {
         callbackPtr->updateImageWindow(handle);
     }
-
     std::string getName() const {
         return callbackPtr->getImageName(handle).toStdString();
     }
-
     void setName(const std::string& name) {
         callbackPtr->setImageName(handle, QString(name.c_str()));
     }
-
     Image4DSimple* getImage() {
         return callbackPtr->getImage(handle);
     }
-
     bool setImage(Image4DSimple* image) {
         return callbackPtr->setImage(handle, image);
     }
-
     LandmarkList getLandmark() {
         return callbackPtr->getLandmark(handle);
     }
-    //virtual bool setLandmark(v3dhandle image_window, LandmarkList & landmark_list) = 0;
     bool setLandmark(LandmarkList & landmark_list) {
         return callbackPtr->setLandmark(handle, landmark_list);
     }
-    //virtual ROIList getROI(v3dhandle image_window) = 0;
     ROIList getROI() {
         return callbackPtr->getROI(handle);
     }
-    //virtual bool setROI(v3dhandle image_window, ROIList & roi_list) = 0;
     bool setROI(ROIList & roi_list) {
         return callbackPtr->setROI(handle, roi_list);
+    }
+    NeuronTree getSWC() {
+        return callbackPtr->getSWC(handle);
+    }
+    bool setSWC(NeuronTree & nt) {
+        return callbackPtr->setSWC(handle, nt);
+    }
+    //virtual void open3DWindow(v3dhandle image_window) = 0;
+    void open3DWindow() {
+        return callbackPtr->open3DWindow(handle);
+    }
+    //virtual void close3DWindow(v3dhandle image_window) = 0;
+    void close3DWindow() {
+        return callbackPtr->close3DWindow(handle);
+    }
+    //virtual void openROI3DWindow(v3dhandle image_window) = 0;
+    void openROI3DWindow() {
+        return callbackPtr->openROI3DWindow(handle);
+    }
+    //virtual void closeROI3DWindow(v3dhandle image_window) = 0;
+    void closeROI3DWindow() {
+        return callbackPtr->closeROI3DWindow(handle);
+    }
+    //virtual void pushObjectIn3DWindow(v3dhandle image_window) = 0;
+    void pushObjectIn3DWindow() {
+        return callbackPtr->pushObjectIn3DWindow(handle);
+    }
+    //virtual void pushImageIn3DWindow(v3dhandle image_window) = 0;
+    void pushImageIn3DWindow() {
+        return callbackPtr->pushImageIn3DWindow(handle);
+    }
+    //virtual int pushTimepointIn3DWindow(v3dhandle image_window, int timepoint) = 0;
+    int pushTimepointIn3DWindow(int timepoint) {
+        return callbackPtr->pushTimepointIn3DWindow(handle, timepoint);
+    }
+    //virtual bool screenShot3DWindow(v3dhandle image_window, QString BMPfilename) = 0;
+    bool screenShot3DWindow(const std::string& BMPfilename) {
+        return callbackPtr->screenShot3DWindow(handle, QString(BMPfilename.c_str()));
+    }
+    //virtual bool screenShotROI3DWindow(v3dhandle image_window, QString BMPfilename) = 0;
+    bool screenShotROI3DWindow(const std::string& BMPfilename) {
+        return callbackPtr->screenShotROI3DWindow(handle, QString(BMPfilename.c_str()));
+    }
+    //virtual View3DControl * getView3DControl(v3dhandle image_window) = 0;
+    View3DControl* getView3DControl() {
+        return callbackPtr->getView3DControl(handle);
+    }
+    //virtual View3DControl * getLocalView3DControl(v3dhandle image_window) = 0;
+    View3DControl* getLocalView3DControl() {
+        return callbackPtr->getLocalView3DControl(handle);
+    }
+    //virtual TriviewControl * getTriviewControl(v3dhandle image_window) = 0;
+    TriviewControl* getTriviewControl() {
+        return callbackPtr->getTriviewControl(handle);
     }
 
     void* handle;
@@ -126,9 +170,22 @@ LandmarkList callback_getLandmark(
     return callback.getLandmark(image_window.handle);
 }
 
+V3D_GlobalSetting wrap_getGlobalSetting() {
+    return callbackPtr->getGlobalSetting();
+}
+
+bool wrap_setGlobalSetting(V3D_GlobalSetting& gs) {
+    return callbackPtr->setGlobalSetting(gs);
+}
 
 BOOST_PYTHON_MODULE(v3d)
 {
+    //virtual V3D_GlobalSetting getGlobalSetting() = 0;
+    def("getGlobalSetting", wrap_getGlobalSetting);
+    //virtual bool setGlobalSetting( V3D_GlobalSetting & gs ) = 0;
+    def("setGlobalSetting", wrap_setGlobalSetting);
+    // TODO is there no such thing as a module property?
+
     // ImageWindow is not actually in the plugin API, but is implicitly defined
     class_<ImageWindowWrapper>("ImageWindow", no_init)
             // expose static methods
@@ -162,12 +219,35 @@ BOOST_PYTHON_MODULE(v3d)
             .add_property("roi",
                     &ImageWindowWrapper::getROI,
                     &ImageWindowWrapper::setROI)
+            .def("getSWC", &ImageWindowWrapper::getSWC)
+            .def("setSWC", &ImageWindowWrapper::setSWC)
+            .add_property("swc",
+                    &ImageWindowWrapper::getSWC,
+                    &ImageWindowWrapper::setSWC)
+            .def("open3DWindow", &ImageWindowWrapper::open3DWindow)
+            .def("close3DWindow", &ImageWindowWrapper::close3DWindow)
+            .def("openROI3DWindow", &ImageWindowWrapper::openROI3DWindow)
+            .def("closeROI3DWindow", &ImageWindowWrapper::closeROI3DWindow)
+            .def("pushObjectIn3DWindow", &ImageWindowWrapper::pushObjectIn3DWindow)
+            .def("pushImageIn3DWindow", &ImageWindowWrapper::pushImageIn3DWindow)
+            .def("pushTimepointIn3DWindow", &ImageWindowWrapper::pushTimepointIn3DWindow)
+            .def("screenShot3DWindow", &ImageWindowWrapper::screenShot3DWindow)
+            .def("screenShotROI3DWindow", &ImageWindowWrapper::screenShotROI3DWindow)
+            .def("getView3DControl", &ImageWindowWrapper::getView3DControl,
+                    return_internal_reference<>()) //TODO check policy
+            .def("getLocalView3DControl", &ImageWindowWrapper::getLocalView3DControl,
+                    return_internal_reference<>()) //TODO check policy
+            .def("getTriviewControl", &ImageWindowWrapper::getTriviewControl,
+                    return_internal_reference<>()) //TODO check policy
             ;
 
     class_<v3dhandleList>("ImageWindowList");
     class_<Image4DSimple>("Image4DSimple");
     class_<LandmarkList>("LandmarkList");
     class_<ROIList>("ROIList");
+    class_<NeuronTree>("NeuronTree");
+    class_<View3DControl, boost::noncopyable>("View3DControl", no_init);
+    class_<TriviewControl, boost::noncopyable>("TriviewControl", no_init);
 
     // We probably don't want to use the V3DPluginCallback2 methods in the python
     // API, but it is the basis of the V3D plugin interface.
