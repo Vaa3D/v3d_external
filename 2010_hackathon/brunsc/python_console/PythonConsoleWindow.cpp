@@ -111,6 +111,7 @@ void PythonConsoleWindow::onReturnPressed()
 	// Add carriage return, so output will appear on subsequent line.
 	// (It would be too late if we waited for plainTextEdit
 	//  to process the <Return>)
+    plainTextEdit->moveCursor(QTextCursor::End);
 	plainTextEdit->appendPlainText("");  // We consumed the key event, so we have to add the newline.
 
 	if (command.length() > 0) {
