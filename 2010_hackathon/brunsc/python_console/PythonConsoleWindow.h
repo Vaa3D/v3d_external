@@ -19,12 +19,19 @@ public:
 
 signals:
 	void returnPressed();
+	void pasteAvailable(bool);
+	void cutAvailable(bool);
 
 private slots:
 	void onReturnPressed();
 	void onCursorPositionChanged();
+	void onClipboardDataChanged();
+	void onSelectionChanged();
+	void onCopyAvailable(bool);
+	void about();
 	
 private:
+	void setupMenus();
 	QString getCurrentCommand();
 	void placeNewPrompt(bool bMakeVisible=false);
 	void setPrompt(const QString& newPrompt);

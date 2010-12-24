@@ -8,9 +8,14 @@
 #include "PythonConsoleWindow.h"
 #include <iostream>
 #include <QTextBlock>
+#include <QtGui/QClipboard>
+#include <QTime>
+#include <QMessageBox>
 
 namespace bp = boost::python;
 using namespace std;
+
+static QTime performanceTimer;
 
 PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 		: QMainWindow(parent),
@@ -19,15 +24,25 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 		  multilineCommand("")
 {
 	setupUi(this);
+	setupMenus();
+
+#ifndef QT_NO_CLIPBOARD
+    connect( QApplication::clipboard(), SIGNAL(dataChanged()),
+            this, SLOT(onClipboardDataChanged()) );
+#endif
+    connect( plainTextEdit, SIGNAL(selectionChanged()),
+            this, SLOT(onSelectionChanged()) );
 
 	// Run python command after user presses return
 	plainTextEdit->installEventFilter(this);
 	plainTextEdit->viewport()->installEventFilter(this); // to get mousePressed
-	connect(this, SIGNAL(returnPressed()), this, SLOT(onReturnPressed()));
+	connect( this, SIGNAL(returnPressed()), this, SLOT(onReturnPressed()) );
 
 	// Don't let cursor leave the editing region.
-	connect(plainTextEdit, SIGNAL(cursorPositionChanged ()),
-			this, SLOT(onCursorPositionChanged()));
+	connect( plainTextEdit, SIGNAL(cursorPositionChanged ()),
+			this, SLOT(onCursorPositionChanged()) );
+
+	plainTextEdit->setWordWrapMode(QTextOption::WrapAnywhere);
 
 	// Connect python stdout/stderr to output to GUI
 	// Adapted from
@@ -58,6 +73,33 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 	placeNewPrompt(true);
 }
 
+void PythonConsoleWindow::onClipboardDataChanged()
+{
+    // cerr << "Data changed" << endl;
+    // emit pasteAvailable(plainTextEdit->canPaste()); // slow
+}
+
+void PythonConsoleWindow::setupMenus()
+{
+    // Create menu actions
+
+    actionUndo->setShortcuts(QKeySequence::Undo);
+    actionRedo->setShortcuts(QKeySequence::Redo);
+    actionCut->setShortcuts(QKeySequence::Cut);
+    // enable cut
+    connect( plainTextEdit, SIGNAL(copyAvailable(bool)),
+            this, SLOT(onCopyAvailable(bool)) );
+    connect( this, SIGNAL(cutAvailable(bool)),
+            actionCut, SLOT(setEnabled(bool)) );
+    actionCopy->setShortcuts(QKeySequence::Copy);
+    actionPaste->setShortcuts(QKeySequence::Paste);
+    connect( this, SIGNAL(pasteAvailable(bool)),
+            actionPaste, SLOT(setEnabled(bool)) );
+    actionSelect_All->setShortcuts(QKeySequence::SelectAll);
+    connect( actionAbout, SIGNAL(triggered()),
+            this, SLOT(about()) );
+}
+
 // When user presses <Return> key in text area, execute the python command
 bool PythonConsoleWindow::eventFilter ( QObject * watched, QEvent * event )
 {
@@ -74,6 +116,7 @@ bool PythonConsoleWindow::eventFilter ( QObject * watched, QEvent * event )
     }
     else if (event->type() == QEvent::KeyPress)
 	{
+        // performanceTimer.start();
         QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
         switch(keyEvent->key())
         {
@@ -88,9 +131,19 @@ bool PythonConsoleWindow::eventFilter ( QObject * watched, QEvent * event )
                 emit returnPressed();
                 return true; // Consume event.  We will take care of inserting the newline.
         }
+        // cerr << "key press elapsed time = " << performanceTimer.elapsed() << " ms" << endl;
 	}
 
 	return QMainWindow::eventFilter(watched, event);
+}
+
+void PythonConsoleWindow::about() {
+    QMessageBox::information( this,
+            tr("About V3D python console."),
+            tr("V3D python console\n"
+               "By Christopher and Cami Bruns\n"
+               "HHMI Janelia Farm Research Campus\n"
+               "December 2010") );
 }
 
 void PythonConsoleWindow::setPrompt(const QString& newPrompt)
@@ -104,6 +157,16 @@ void PythonConsoleWindow::executeCommand(const QString& command)
     plainTextEdit->moveCursor(QTextCursor::End);
     plainTextEdit->insertPlainText(command);
     onReturnPressed();
+}
+
+void PythonConsoleWindow::onCopyAvailable(bool bCopyAvailable)
+{
+    if (! bCopyAvailable)
+        emit cutAvailable(false);
+    else if (cursorIsInEditingRegion(plainTextEdit->textCursor()))
+        emit cutAvailable(true);
+    else
+        emit cutAvailable(false);
 }
 
 void PythonConsoleWindow::onReturnPressed()
@@ -166,27 +229,47 @@ bool PythonConsoleWindow::cursorIsInEditingRegion(const QTextCursor& cursor)
     return true;
 }
 
+void PythonConsoleWindow::onSelectionChanged()
+{
+    QTextCursor cursor = plainTextEdit->textCursor();
+    bool bReadOnly = ! cursorIsInEditingRegion(cursor);
+    if (bReadOnly != plainTextEdit->isReadOnly())
+        plainTextEdit->setReadOnly(bReadOnly);
+}
+
 void PythonConsoleWindow::onCursorPositionChanged()
 {
+    // performanceTimer.start();
 	// cerr << "Cursor moved" << endl;
     // Don't allow editing outside the editing area.
 	QTextCursor currentCursor = plainTextEdit->textCursor();
+	bool bReadOnly;
 
-    Qt::TextInteractionFlags flags = plainTextEdit->textInteractionFlags();
-    if (cursorIsInEditingRegion(currentCursor))
-    {
+    if (cursorIsInEditingRegion(currentCursor)) {
         // This is a good spot.  Within the editing area
         latestGoodCursorPosition = currentCursor;
-        flags = flags | Qt::TextEditable;
-        // cerr << "edit" << endl;
+        bReadOnly = false;
     }
-    else
-    {
-        flags = flags & ~Qt::TextEditable;
-        // cerr << "don't edit" << endl;
+    else {
+        bReadOnly = true;
     }
-    if (flags != plainTextEdit->textInteractionFlags())
-        plainTextEdit->setTextInteractionFlags(flags);
+    if (bReadOnly != plainTextEdit->isReadOnly())
+        plainTextEdit->setReadOnly(bReadOnly);
+
+    // cerr << "cursor position elapsed time1 = " << performanceTimer.elapsed() << " ms" << endl;
+    if(bReadOnly) {
+        emit pasteAvailable(false);
+        emit cutAvailable(false);
+    }
+    else {
+        // Performance problem with canPaste() method.
+        // plainTextEdit->canPaste(); // slow ~120 ms
+        // emit pasteAvailable(plainTextEdit->canPaste()); // slow
+        // emit pasteAvailable(!QApplication::clipboard()->text().isEmpty());
+        // QApplication::clipboard()->text().isEmpty(); // slow ~ 120 ms
+        emit pasteAvailable(true); // whatever...
+    }
+    // cerr << "cursor position elapsed time2 = " << performanceTimer.elapsed() << " ms" << endl;
 }
 
 void PythonConsoleWindow::placeNewPrompt(bool bMakeVisible)
