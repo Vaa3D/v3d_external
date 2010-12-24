@@ -24,6 +24,7 @@ void PythonConsolePlugin::domenu(const QString & menu_name,
     	if (! pythonConsoleWindow) {
     		pythonConsoleWindow = new PythonConsoleWindow(parent);
     		v3d::initV3DPythonModule(&v3d);
+    		pythonConsoleWindow->executeCommand("import v3d");
     	}
     	pythonConsoleWindow->show();
     }

@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
 
     PythonConsoleWindow* pythonConsole = new PythonConsoleWindow();
     initV3DPythonModule();
+    pythonConsole->executeCommand("import v3d");
 
     pythonConsole->show();
 

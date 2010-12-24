@@ -13,9 +13,9 @@ class PythonConsoleWindow : public QMainWindow, Ui::main_python_console
 	Q_OBJECT
 
 public:
-	PythonConsoleWindow(QWidget *parent=NULL);
-	bool eventFilter ( QObject * watched, QEvent * event );
-	PythonInterpreter pythonInterpreter;
+	PythonConsoleWindow(QWidget *parent = NULL);
+	void executeCommand(const QString& command);
+    bool eventFilter(QObject *watched, QEvent *event);
 
 signals:
 	void returnPressed();
@@ -28,6 +28,7 @@ private:
 	QString getCurrentCommand();
 	void placeNewPrompt(bool bMakeVisible=false);
 	void setPrompt(const QString& newPrompt);
+	bool cursorIsInEditingRegion(const QTextCursor& cursor);
 
 	QString prompt;
 	int promptLength;
@@ -35,6 +36,7 @@ private:
 	PythonOutputRedirector stdoutRedirector;
 	QTextCursor latestGoodCursorPosition;
 	QString multilineCommand;
+    PythonInterpreter pythonInterpreter;
 };
 
 #endif // V3D_PYTHON_CONSOLE_WINDOW_H

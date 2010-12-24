@@ -34,7 +34,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 file(GLOB PYPLUSPLUS_SRCS "generated_code/*.cpp")
 list(REMOVE_ITEM PYPLUSPLUS_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/generated_code/v3d.main.cpp")
-message(${PYPLUSPLUS_SRCS})
+# message(${PYPLUSPLUS_SRCS})
 
 set(V3D_PYTHON_CONSOLE_SRCS
     PythonConsoleWindow.cpp
