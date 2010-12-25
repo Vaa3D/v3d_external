@@ -258,9 +258,11 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 				listAct.append(actMarkerCreate_zoom = new QAction("Zoom-in view: 1-right-click ROI", w));
 //101008
 //#ifdef _WIN32 && _MSC_VER
+#ifdef _IMAGING_MENU_
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				listAct.append(actCurveCreate_zoom_imaging = new QAction("Zoom-in imaging: 1-right-stroke ROI", w));
 				listAct.append(actMarkerCreate_zoom_imaging = new QAction("Zoom-in imaging: 1-right-click ROI", w));
+#endif
 //#endif
 			}
 #endif
@@ -317,10 +319,11 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 				listAct.append(actMarkerClearAll = new QAction("clear All markers", w));
 				listAct.append(actMarkerMoveToMiddleZ = new QAction("change all markers' Z locations to mid-Z-slice", w));
 
+#ifdef _IMAGING_MENU_
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				listAct.append(actMarkerAblateOne_imaging = new QAction("ablate this marker", w));
 				listAct.append(actMarkerAblateAll_imaging = new QAction("ablate All markers", w));
-
+#endif
 				// marker to tracing -----------------------------------------------------------
 
 #ifdef _ALLOW_NEURONSEG_MENU_
