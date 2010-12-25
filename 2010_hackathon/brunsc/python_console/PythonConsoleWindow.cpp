@@ -21,7 +21,8 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 		: QMainWindow(parent),
 		  prompt(">>> "),
 		  promptLength(prompt.length()),
-		  multilineCommand("")
+		  multilineCommand(""),
+		  commandRing(4)
 {
 	setupUi(this);
 	setupMenus();
@@ -120,21 +121,49 @@ bool PythonConsoleWindow::eventFilter ( QObject * watched, QEvent * event )
         QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
         switch(keyEvent->key())
         {
-            // Prevent backspace from deleting prompt string
-            case Qt::Key_Backspace:
-                if (plainTextEdit->textCursor().positionInBlock() <= promptLength)
-                    return true; // discard event; do nothing.
-                break;
-            // Trigger command execution with <Return>
-            case Qt::Key_Return:
-            case Qt::Key_Enter:
-                emit returnPressed();
-                return true; // Consume event.  We will take care of inserting the newline.
+        // Use up and down arrows for history
+        case Qt::Key_P:
+            if (! (keyEvent->modifiers() & Qt::ControlModifier))
+                break; // Only care about Ctrl-P
+        case Qt::Key_Up:
+            showPreviousCommand();
+            return true;
+            break;
+        case Qt::Key_N:
+            if (! (keyEvent->modifiers() & Qt::ControlModifier))
+                break; // Only care about Ctrl-N
+        case Qt::Key_Down:
+            showNextCommand();
+            return true;
+            break;
+        // Prevent backspace from deleting prompt string
+        case Qt::Key_Backspace:
+            if (plainTextEdit->textCursor().positionInBlock() <= promptLength)
+                return true; // discard event; do nothing.
+            break;
+        // Trigger command execution with <Return>
+        case Qt::Key_Return:
+        case Qt::Key_Enter:
+            emit returnPressed();
+            return true; // Consume event.  We will take care of inserting the newline.
         }
         // cerr << "key press elapsed time = " << performanceTimer.elapsed() << " ms" << endl;
 	}
 
 	return QMainWindow::eventFilter(watched, event);
+}
+
+void PythonConsoleWindow::showPreviousCommand() {
+    QString previousCommand = commandRing.getPreviousCommand();
+    // cerr << "previous = " << previousCommand.toStdString() << endl;
+    if (previousCommand == "") return;
+    // TODO
+}
+void PythonConsoleWindow::showNextCommand() {
+    QString nextCommand = commandRing.getNextCommand();
+    // cerr << "next = " << nextCommand.toStdString() << endl;
+    if (nextCommand == "") return;
+    // TODO
 }
 
 void PythonConsoleWindow::about() {
@@ -155,18 +184,10 @@ void PythonConsoleWindow::setPrompt(const QString& newPrompt)
 void PythonConsoleWindow::executeCommand(const QString& command)
 {
     plainTextEdit->moveCursor(QTextCursor::End);
+    currentCommandStartPosition =
+            plainTextEdit->textCursor().position();
     plainTextEdit->insertPlainText(command);
     onReturnPressed();
-}
-
-void PythonConsoleWindow::onCopyAvailable(bool bCopyAvailable)
-{
-    if (! bCopyAvailable)
-        emit cutAvailable(false);
-    else if (cursorIsInEditingRegion(plainTextEdit->textCursor()))
-        emit cutAvailable(true);
-    else
-        emit cutAvailable(false);
 }
 
 void PythonConsoleWindow::onReturnPressed()
@@ -177,6 +198,7 @@ void PythonConsoleWindow::onReturnPressed()
     bool endIsVisible = plainTextEdit->document()->lastBlock().isVisible();
 
     QString command = getCurrentCommand();
+    commandRing.append(command);
     if (multilineCommand.length() > 0) {
        // multi-line command can only be ended with a blank line.
        if (command.length() == 0)
@@ -207,6 +229,16 @@ void PythonConsoleWindow::onReturnPressed()
        }
     }
     placeNewPrompt(endIsVisible);
+}
+
+void PythonConsoleWindow::onCopyAvailable(bool bCopyAvailable)
+{
+    if (! bCopyAvailable)
+        emit cutAvailable(false);
+    else if (cursorIsInEditingRegion(plainTextEdit->textCursor()))
+        emit cutAvailable(true);
+    else
+        emit cutAvailable(false);
 }
 
 bool PythonConsoleWindow::cursorIsInEditingRegion(const QTextCursor& cursor)
@@ -283,6 +315,7 @@ void PythonConsoleWindow::placeNewPrompt(bool bMakeVisible)
 	}
 	plainTextEdit->moveCursor(QTextCursor::End);
 	latestGoodCursorPosition = plainTextEdit->textCursor();
+	currentCommandStartPosition = latestGoodCursorPosition.position();
 	// Start undo/redo, just for user typing, not for computer output
 	plainTextEdit->setUndoRedoEnabled(true);
 }
@@ -290,13 +323,13 @@ void PythonConsoleWindow::placeNewPrompt(bool bMakeVisible)
 QString PythonConsoleWindow::getCurrentCommand()
 {
 	QTextCursor cursor = plainTextEdit->textCursor();
-	cursor.movePosition(QTextCursor::StartOfLine);
-	// Skip over the prompt, and begin the selection
-	cursor.movePosition(QTextCursor::Right,
-			QTextCursor::MoveAnchor, promptLength);
-	// End selection at end of line
-	cursor.movePosition(QTextCursor::EndOfLine, QTextCursor::KeepAnchor);
+	cursor.setPosition(currentCommandStartPosition,
+	        QTextCursor::MoveAnchor);
+	cursor.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
 	QString command = cursor.selectedText();
+	// cerr << "Command = '" << command.toStdString() << "'";
+	// cerr << currentCommandStartPosition << ", ";
+	// cerr << cursor.position() << endl;
 	cursor.clearSelection();
 	return command;
 }

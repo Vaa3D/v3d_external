@@ -5,6 +5,7 @@
 #include "ui_main_python_console.h"
 #include "PythonInterpreter.h"
 #include "PythonOutputRedirector.h"
+#include "CommandRing.h"
 
 class QWidget;
 
@@ -36,14 +37,18 @@ private:
 	void placeNewPrompt(bool bMakeVisible=false);
 	void setPrompt(const QString& newPrompt);
 	bool cursorIsInEditingRegion(const QTextCursor& cursor);
+	void showPreviousCommand();
+	void showNextCommand();
 
 	QString prompt;
 	int promptLength;
 	PythonOutputRedirector stderrRedirector;
 	PythonOutputRedirector stdoutRedirector;
 	QTextCursor latestGoodCursorPosition;
+	int currentCommandStartPosition;
 	QString multilineCommand;
     PythonInterpreter pythonInterpreter;
+    CommandRing commandRing;
 };
 
 #endif // V3D_PYTHON_CONSOLE_WINDOW_H
