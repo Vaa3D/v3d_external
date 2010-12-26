@@ -24,10 +24,26 @@ class V3DWrapper:
         self.mb.class_('NeuronTree').include()
         self.mb.class_('Image4DSimple').include()
         self.mb.class_('View3DControl').include()
-        # self.mb.class_('ImagePixelType').include() # TODO enum
+        self.mb.class_('NeuronSWC').include()
+        self.mb.class_('XYZ').include()
+        self.mb.enum('PxLocationMarkerShape').include()
+        self.mb.enum('PxLocationUsefulness').include()
+        # self.mb.class_('RGB16i').include()
+        # self.mb.class_('RGB32i').include()
+        # self.mb.class_('RGB32f').include()
         self.wrap_Image4DSimple()
         self.wrap_TriviewControl()
         self.wrap_ImageWindow()
+        self.wrap_LocationSimple()
+        
+    def wrap_LocationSimple(self):
+        cls = self.mb.class_('LocationSimple')
+        cls.include()
+        for fn in cls.member_functions('getCoord'):
+            fn.add_transformation( 
+                    FT.output('xx'), 
+                    FT.output('yy'), 
+                    FT.output('zz') )
         
     def wrap_Image4DSimple(self):
         cls = self.mb.class_("Image4DSimple")

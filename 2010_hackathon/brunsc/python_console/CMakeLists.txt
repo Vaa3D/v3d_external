@@ -48,6 +48,7 @@ set(V3D_PYTHON_CONSOLE_SRCS
     ${PYPLUSPLUS_SRCS}
     ${QT_RCC_SRCS}
     wrappable_v3d.cpp
+    convert_qstring.cpp
 )
 
 ##################################################################

@@ -16,6 +16,33 @@ void register_enumerations(){
         .export_values()
         ;
 
+    bp::enum_< PxLocationMarkerShape>("PxLocationMarkerShape")
+        .value("pxUnset", pxUnset)
+        .value("pxSphere", pxSphere)
+        .value("pxCube", pxCube)
+        .value("pxCircleX", pxCircleX)
+        .value("pxCircleY", pxCircleY)
+        .value("pxCircleZ", pxCircleZ)
+        .value("pxSquareX", pxSquareX)
+        .value("pxSquareY", pxSquareY)
+        .value("pxSquareZ", pxSquareZ)
+        .value("pxLineX", pxLineX)
+        .value("pxLineY", pxLineY)
+        .value("pxLineZ", pxLineZ)
+        .value("pxTriangle", pxTriangle)
+        .value("pxDot", pxDot)
+        .export_values()
+        ;
+
+    bp::enum_< PxLocationUsefulness>("PxLocationUsefulness")
+        .value("pxUnknown", pxUnknown)
+        .value("pxLocaNotUseful", pxLocaNotUseful)
+        .value("pxLocaUseful", pxLocaUseful)
+        .value("pxLocaUnsure", pxLocaUnsure)
+        .value("pxTemp", pxTemp)
+        .export_values()
+        ;
+
     bp::enum_< TimePackType>("TimePackType")
         .value("TIME_PACK_NONE", TIME_PACK_NONE)
         .value("TIME_PACK_Z", TIME_PACK_Z)
