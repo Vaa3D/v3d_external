@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/">
+    <file alias="icons/cut.png">icons/200px-Gnome-edit-cut.svg.png</file>
+    <file alias="icons/python.png">icons/python-logo-glassy2.png</file>
+  </qresource>
+</RCC>

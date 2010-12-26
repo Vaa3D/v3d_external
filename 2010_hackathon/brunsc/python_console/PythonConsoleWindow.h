@@ -30,6 +30,8 @@ private slots:
 	void onSelectionChanged();
 	void onCopyAvailable(bool);
 	void about();
+	void zoomIn();
+	void zoomOut();
 	
 private:
 	void setupMenus();

@@ -29,6 +29,8 @@ QT4_WRAP_CPP(QT_MOC_SRCS
   PythonConsoleWindow.h
 )
 
+QT4_ADD_RESOURCES(QT_RCC_SRCS python_console.qrc)
+
 # Qt dynamically generates some headers here
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
@@ -44,6 +46,7 @@ set(V3D_PYTHON_CONSOLE_SRCS
     ${QT_UI_SRCS}
     ${QT_MOC_SRCS}
     ${PYPLUSPLUS_SRCS}
+    ${QT_RCC_SRCS}
     wrappable_v3d.cpp
 )
 

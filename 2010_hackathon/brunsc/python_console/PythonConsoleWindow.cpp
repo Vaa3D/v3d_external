@@ -27,6 +27,8 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 	setupUi(this);
 	setupMenus();
 
+	setWindowIcon(QIcon(":/icons/python.png"));
+
 #ifndef QT_NO_CLIPBOARD
     connect( QApplication::clipboard(), SIGNAL(dataChanged()),
             this, SLOT(onClipboardDataChanged()) );
@@ -87,6 +89,8 @@ void PythonConsoleWindow::setupMenus()
     actionUndo->setShortcuts(QKeySequence::Undo);
     actionRedo->setShortcuts(QKeySequence::Redo);
     actionCut->setShortcuts(QKeySequence::Cut);
+    actionCut->setIcon(QIcon(":/icons/cut.png"));
+    // actionCut->setIconVisibleInMenu(true);
     // enable cut
     connect( plainTextEdit, SIGNAL(copyAvailable(bool)),
             this, SLOT(onCopyAvailable(bool)) );
@@ -99,6 +103,30 @@ void PythonConsoleWindow::setupMenus()
     actionSelect_All->setShortcuts(QKeySequence::SelectAll);
     connect( actionAbout, SIGNAL(triggered()),
             this, SLOT(about()) );
+    // TODO - undo/redo on Zoom In/Out
+    actionZoom_in->setShortcuts(QKeySequence::ZoomIn);
+    connect(actionZoom_in, SIGNAL(triggered()),
+            this, SLOT(zoomIn()) );
+    actionZoom_out->setShortcuts(QKeySequence::ZoomOut);
+    connect(actionZoom_out, SIGNAL(triggered()),
+            this, SLOT(zoomOut()) );
+}
+
+void PythonConsoleWindow::zoomIn() {
+    QFont newFont(plainTextEdit->font());
+    int oldSize = newFont.pointSize();
+    int newSize = int(1.05 * oldSize + 0.5) + 1;
+    newFont.setPointSize(newSize);
+    plainTextEdit->setFont(newFont);
+}
+
+void PythonConsoleWindow::zoomOut() {
+    QFont newFont(plainTextEdit->font());
+    int oldSize = newFont.pointSize();
+    int newSize = int(oldSize / 1.05 + 0.5) - 1;
+    if (newSize < 1) newSize = 1;
+    newFont.setPointSize(newSize);
+    plainTextEdit->setFont(newFont);
 }
 
 // When user presses <Return> key in text area, execute the python command
