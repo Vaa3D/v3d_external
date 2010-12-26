@@ -22,7 +22,7 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 		  prompt(">>> "),
 		  promptLength(prompt.length()),
 		  multilineCommand(""),
-		  commandRing(4)
+		  commandRing(50) // remember latest 50 commands
 {
 	setupUi(this);
 	setupMenus();
@@ -50,14 +50,18 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 	// Connect python stdout/stderr to output to GUI
 	// Adapted from
 	//   http://onegazhang.spaces.live.com/blog/cns!D5E642BC862BA286!727.entry
+    stdinRedirector.setQPlainTextEdit(plainTextEdit);
 	stdoutRedirector.setQPlainTextEdit(plainTextEdit);
 	stderrRedirector.setQPlainTextEdit(plainTextEdit);
 	pythonInterpreter.main_namespace["PythonStdIoRedirect"] =
 			bp::class_<PythonOutputRedirector>(
 					"V3DOutputRedirector",  bp::init<>())
-				.def("write", &PythonOutputRedirector::write);
+				.def("write", &PythonOutputRedirector::write)
+				.def("readline", &PythonOutputRedirector::readline)
+				;
+    bp::import("sys").attr("stdin") = stdinRedirector;
+    bp::import("sys").attr("stdout") = stdoutRedirector;
 	bp::import("sys").attr("stderr") = stderrRedirector;
-	bp::import("sys").attr("stdout") = stdoutRedirector;
 
 	// Print intro text at top of console.
 	plainTextEdit->appendPlainText("Welcome to the V3D python console!");
@@ -115,7 +119,7 @@ void PythonConsoleWindow::setupMenus()
 void PythonConsoleWindow::zoomIn() {
     QFont newFont(plainTextEdit->font());
     int oldSize = newFont.pointSize();
-    int newSize = int(1.05 * oldSize + 0.5) + 1;
+    int newSize = int(1.03 * oldSize + 0.5) + 1;
     newFont.setPointSize(newSize);
     plainTextEdit->setFont(newFont);
 }
@@ -123,7 +127,7 @@ void PythonConsoleWindow::zoomIn() {
 void PythonConsoleWindow::zoomOut() {
     QFont newFont(plainTextEdit->font());
     int oldSize = newFont.pointSize();
-    int newSize = int(oldSize / 1.05 + 0.5) - 1;
+    int newSize = int(oldSize / 1.03 + 0.5) - 1;
     if (newSize < 1) newSize = 1;
     newFont.setPointSize(newSize);
     plainTextEdit->setFont(newFont);
@@ -182,16 +186,18 @@ bool PythonConsoleWindow::eventFilter ( QObject * watched, QEvent * event )
 }
 
 void PythonConsoleWindow::showPreviousCommand() {
-    QString previousCommand = commandRing.getPreviousCommand();
-    // cerr << "previous = " << previousCommand.toStdString() << endl;
-    if (previousCommand == "") return;
-    // TODO
+    QString provisionalCommand = getCurrentCommand();
+    QString previousCommand =
+            commandRing.getPreviousCommand(provisionalCommand);
+    if (previousCommand != provisionalCommand)
+        replaceCurrentCommand(previousCommand);
 }
 void PythonConsoleWindow::showNextCommand() {
-    QString nextCommand = commandRing.getNextCommand();
-    // cerr << "next = " << nextCommand.toStdString() << endl;
-    if (nextCommand == "") return;
-    // TODO
+    QString provisionalCommand = getCurrentCommand();
+    QString nextCommand =
+            commandRing.getNextCommand(provisionalCommand);
+    if (nextCommand != provisionalCommand)
+        replaceCurrentCommand(nextCommand);
 }
 
 void PythonConsoleWindow::about() {
@@ -226,7 +232,7 @@ void PythonConsoleWindow::onReturnPressed()
     bool endIsVisible = plainTextEdit->document()->lastBlock().isVisible();
 
     QString command = getCurrentCommand();
-    commandRing.append(command);
+    commandRing.addHistory(command);
     if (multilineCommand.length() > 0) {
        // multi-line command can only be ended with a blank line.
        if (command.length() == 0)
@@ -355,9 +361,17 @@ QString PythonConsoleWindow::getCurrentCommand()
 	        QTextCursor::MoveAnchor);
 	cursor.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
 	QString command = cursor.selectedText();
-	// cerr << "Command = '" << command.toStdString() << "'";
-	// cerr << currentCommandStartPosition << ", ";
-	// cerr << cursor.position() << endl;
 	cursor.clearSelection();
 	return command;
+}
+
+//Replace current command with a new one
+void PythonConsoleWindow::replaceCurrentCommand(const QString& newCommand)
+{
+    QTextCursor cursor = plainTextEdit->textCursor();
+    cursor.setPosition(currentCommandStartPosition,
+            QTextCursor::MoveAnchor);
+    cursor.movePosition(QTextCursor::End,
+            QTextCursor::KeepAnchor);
+    cursor.insertText(newCommand);
 }

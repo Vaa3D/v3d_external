@@ -22,6 +22,7 @@ public:
 	PythonOutputRedirector() {}
 	void setQPlainTextEdit(QPlainTextEdit* textEdit);
     void write( std::string const& str );
+    std::string readline();
 
 private:
     QPlainTextEdit* textEdit;

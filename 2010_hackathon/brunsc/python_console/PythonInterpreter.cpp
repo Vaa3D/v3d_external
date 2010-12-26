@@ -24,14 +24,16 @@ PythonInterpreter::~PythonInterpreter() {
 	Py_Finalize();
 }
 
-std::string PythonInterpreter::interpretString(const std::string& command)
+std::string PythonInterpreter::interpretString(const std::string& command0)
 	throw(IncompletePythonCommandException)
 {
 	// Skip empty lines
-	if (command.length() == 0) return ""; // empty command
-	size_t firstNonSpacePos = command.find_first_not_of(" \t\r\n");
+	if (command0.length() == 0) return ""; // empty command
+	size_t firstNonSpacePos = command0.find_first_not_of(" \t\r\n");
 	if (firstNonSpacePos == std::string::npos) return ""; // all blanks command
-	if (command[firstNonSpacePos] == '#') return ""; // comment line
+	if (command0[firstNonSpacePos] == '#') return ""; // comment line
+	// Append newline for best parsing of nascent multiline commands.
+	std::string command = command0 + "\n";
 
 	try {
 		// First compile the expression without running it.

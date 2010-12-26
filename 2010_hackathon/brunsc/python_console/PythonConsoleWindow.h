@@ -41,11 +41,13 @@ private:
 	bool cursorIsInEditingRegion(const QTextCursor& cursor);
 	void showPreviousCommand();
 	void showNextCommand();
+    void replaceCurrentCommand(const QString& newCommand);
 
 	QString prompt;
 	int promptLength;
-	PythonOutputRedirector stderrRedirector;
+    PythonOutputRedirector stdinRedirector;
 	PythonOutputRedirector stdoutRedirector;
+    PythonOutputRedirector stderrRedirector;
 	QTextCursor latestGoodCursorPosition;
 	int currentCommandStartPosition;
 	QString multilineCommand;
