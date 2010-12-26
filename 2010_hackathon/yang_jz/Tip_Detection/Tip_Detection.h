@@ -72,7 +72,10 @@ public:
 
 	void SetEndPoints(vector<SpacePoint_t> points);
 	
-
+	void BinaryProcess(unsigned char*apsInput, unsigned char * aspOutput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer, V3DLONG h, V3DLONG d);
+	
+	void IterateSeg(unsigned char *apsInput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer, unsigned char *apsOutput);
+	
 	void SetMinLength(V3DLONG minlength = 30);
 	
 

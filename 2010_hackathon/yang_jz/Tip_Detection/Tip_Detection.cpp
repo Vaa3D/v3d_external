@@ -10,9 +10,10 @@
 #include <deque>
 #include <algorithm>
 #include <functional>
+#include<math.h>
 
-#define BACKGROUND -1 //背景
-#define DISOFENDS 1 //相邻两端点距离
+#define BACKGROUND -1 
+#define DISOFENDS 100 
 
 //Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
@@ -22,10 +23,11 @@ Q_EXPORT_PLUGIN2(TIP_DETECTION, TipPlugin);
 const QString title = "Tip Detection";
 QStringList TipPlugin::menulist() const
 {
-    return QStringList() 
+    return QStringList()
 	<< tr("Tip Detection")
 	<< tr("Dtectioon Surface")
 	<< tr("Distance From Source")
+	<< tr("Segmentation")
 	<< tr("Help");
 }
 
@@ -34,7 +36,6 @@ void TipPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QW
 	if (menu_name == tr("Tip Detection"))
 	{
     	Tipdetection(callback, parent,1);
-		
     }
 	else if (menu_name == tr("Dtectioon Surface"))
 	{
@@ -42,12 +43,14 @@ void TipPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QW
 	}else if (menu_name == tr("Distance From Source"))
 	{
 		Tipdetection(callback, parent,3);
+	}else if (menu_name == tr("Segmentation"))
+	{
+		Tipdetection(callback, parent,4);
 	}
 	else if (menu_name == tr("Help"))
 	{
 		//v3d_msg("Simple adaptive thresholding: for each voxel, compute a threshold which is the average intensity o");
 	}
-//
 }
 //
 void TipPlugin::SetImageInfo1D(V3DLONG* data, V3DLONG count, V3DLONG width, V3DLONG height)
@@ -60,7 +63,7 @@ void TipPlugin::SetImageInfo1D(V3DLONG* data, V3DLONG count, V3DLONG width, V3DL
 	
 	m_iImgHeight = height;
 	
-	printf("count=%d w=%d h=%d\n",m_iImgCount,m_iImgWidth,m_iImgHeight);
+	//printf("count=%d w=%d h=%d\n",m_iImgCount,m_iImgWidth,m_iImgHeight);
 }
 
 void TipPlugin::Set_DFS_Seed(SpacePoint_t seed)
@@ -102,8 +105,6 @@ void TipPlugin::Initialize1D()
 	m_psTemp = new V3DLONG[m_iImgSize];
 	memset(m_psTemp, BACKGROUND, m_iImgSize * sizeof(V3DLONG));
 	m_ppsImgData[0] = m_psTemp;
-	
-	
 	for(V3DLONG c = 0; c < m_iImgCount; ++c)
 	{
 		m_ppsImgData[c + 1] = &m_ppsOriData1D[c*m_iImgSize];
@@ -132,7 +133,6 @@ void TipPlugin::Initialize1D()
 //			}
 //		}
 //	}	
-	
 	m_ulVolumeSize = m_iImgCount * m_iImgSize;
 	
 }
@@ -140,8 +140,7 @@ void TipPlugin::SetDFB()
 {
 	static int nDx[] = {-1,0,1,-1,0,1,-1,0,1};
 	static int nDy[] = {-1,-1,-1,0,0,0,1,1,1};
-	static int nDz[] = {-1,0,1};
-	
+	static int nDz[] = {-1,0,1};	
 	V3DLONG x = 0;
 	V3DLONG y = 0;
 	V3DLONG z = 0;
@@ -266,7 +265,6 @@ void TipPlugin::SetDFB()
 		j = point.m_y;
 		k = point.m_x;
 		d = point.m_d;
-		
 		count = 0;
 		// ’“26
 		for(int m = 0; m < 3; ++m)
@@ -509,10 +507,8 @@ void TipPlugin::SetDFS()
 		return;
 	}
 	memset(m_piDFS, BACKGROUND, m_ulVolumeSize * sizeof(V3DLONG));
-	
 	// dis(S) = 0;
 	m_piDFS[m_iImgSize * point.m_z + m_iImgWidth * point.m_y + point.m_x] = 0;
-	
 	while(!dfs.empty())
 	{	
         point = dfs.front();
@@ -530,7 +526,6 @@ void TipPlugin::SetDFS()
 				y = j + nDy[n];
 				x = k + nDx[n];
 				++count;
-				
 				if(m_ppsImgData[z][m_iImgWidth * y + x] != BACKGROUND)
 				{
 					index_nei = m_iImgSize * z + m_iImgWidth * y + x;
@@ -654,9 +649,8 @@ void TipPlugin::SetDFS()
 	//				}
 	//			}
 	//		}
-	//	}
-	
-}//
+	//	}	
+}
 void TipPlugin::CheckDFS()
 {
 	V3DLONG i, j, k;
@@ -695,15 +689,12 @@ void TipPlugin::SearchEndPoints()
 	DFSPoint_t last;
 	V3DLONG count1;
 	V3DLONG count2;
-	vector<V3DLONG> len;// 
-	vector<DFSPoint_t> temp;// 
-	
+	vector<V3DLONG> len; 
+	vector<DFSPoint_t> temp; 
 	static int nDx[] = {-1,0,1,-1,0,1,-1,0,1};
 	static int nDy[] = {-1,-1,-1,0,0,0,1,1,1};
 	static int nDz[] = {-1,0,1};
-	
 	V3DLONG size = m_vdfbptSurface.size();
-	
 	//printf("size=%d\n",size);
 	for(V3DLONG num = 0; num < size; ++num)
 	{
@@ -711,14 +702,12 @@ void TipPlugin::SearchEndPoints()
 		i = point_d.m_z;
 		j = point_d.m_y;
 		k = point_d.m_x;
-		
 		index = m_iImgSize * i + m_iImgWidth * j + k;
 		l = m_piDFS[index];		
 		endp = true;
 		count1 = 0;
 		count2 = 0;
-		
-		// ’“26
+		//26
 		for(int m = 0; m < 3; ++m)
 			for(int n = 0; n < 9; ++n)
 			{
@@ -730,14 +719,11 @@ void TipPlugin::SearchEndPoints()
 					index_nei = m_iImgSize * z + m_iImgWidth * y + x;
 					if(index != index_nei)
 					{
-						// 
 						++count1;
-						//
 						if(l <=m_piDFS[index_nei])
 						{
 							endp = false;
 						}
-						// 
 						if(l >= m_piDFS[index_nei])
 						{
 							++count2;
@@ -745,7 +731,6 @@ void TipPlugin::SearchEndPoints()
 					}
 				}
 			}
-		// 
 		if(endp)
 		{
 			point_l.m_x = k;
@@ -755,7 +740,6 @@ void TipPlugin::SearchEndPoints()
 			m_vdfsptEndPoint.push_back(point_l);	
 			len.push_back(l);
 		}
-		//
 		else
 		{
 			if(count1 == count2)
@@ -771,7 +755,6 @@ void TipPlugin::SearchEndPoints()
 				}
 				else
 				{
-					// 
 					last = m_vdfsptEndPoint.at(m_vdfsptEndPoint.size() - 1);
 					if(sqrt(1.0*(last.m_x - k) * (last.m_x - k) + (last.m_y - j) * (last.m_y - j)
 							+ (last.m_z - i) * (last.m_z - i)) > DISOFENDS)
@@ -787,8 +770,6 @@ void TipPlugin::SearchEndPoints()
 			}
 		}
 	}
-	
-	
 	size = len.size();
 	stable_sort(len.begin(), len.end(), greater<V3DLONG>());
 	for(i = 0; i < size; ++i)
@@ -834,31 +815,135 @@ void TipPlugin::Clear()
 //	{
 //		delete []m_ppsImgData;
 //		m_ppsImgData = NULL;
-//	}
-	
-	m_psTemp = NULL;
-	
+//	}	
+	m_psTemp = NULL;	
 	//m_ppsOriData = NULL;
 	m_ppsOriData1D = NULL;
-	
 	m_iMinLength = 0;
-	
 	m_iImgWidth = 0;
-	
 	m_iImgHeight = 0;
-	
 	m_iImgSize = 0;
-	
 	m_iImgCount = 0;
-	
 	m_ulVolumeSize = 0;
-	
 	m_vdfsptEndPoint.clear();
-	
 	m_vdfbptSurface.clear();
 	
 }
+void TipPlugin::IterateSeg(unsigned char *apsInput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer, unsigned char *apsOutput)
+{
+	V3DLONG pMax, pMin;
+	V3DLONG i,j,k;
+	double T1 ;
+	double T2;
+	V3DLONG S0 , n0;
+	V3DLONG S1, n1 ;
+	double allow; 
+	double d ;	
+	V3DLONG mCount = iImageHeight * iImageWidth;
+	for(V3DLONG m=0; m<iImageLayer; m++)
+	{		
+		pMax = pMin =apsInput[m*mCount];		
+		for(i=0; i<mCount; i++)
+		{
+			for(k=0; k<mCount; k++)
+			{
+				pMax = (apsInput[m*mCount+k] > pMax)? apsInput[m*mCount+k]:pMax;
+				pMin = (apsInput[m*mCount+k] < pMin)? apsInput[m*mCount+k]:pMin;
+				
+			}
+			T1 = (pMax + pMin) / 2.0;
+			T2 = 0;
+			S0 = 0;
+			n0 = 0;
+			S1 = 0;
+			n1 = 0;
+			allow = 1.0; 
+			if ( T1 > T2) 
+			{
+				d = T1 - T2;
+			}else
+			{
+				d = T2 - T1;
+			}
 
+		//	d = abs(T - TT);			
+			while(d > allow) 
+			{	
+				for(j=0; j<mCount; j++)
+				{
+					if(apsInput[m*mCount+j] > T1) 
+					{
+						S0 += apsInput[m*mCount+j];
+						n0++;
+					}
+					else
+					{
+						S1 += apsInput[m*mCount+j];
+						n1++;
+					}
+				}				
+				if(n0 ==0 || n1 == 0)
+					return  ;
+				else
+				{   
+					T2 = (S0 / n0 + S1 / n1) / 2;
+				}
+				
+			//	d = abs (T - TT);
+				if ( T1 > T2) 
+				{
+					d = T1 -T2;
+				}else
+				{
+					d = T2-T1;
+				}
+				T1 = T2;
+			}
+			for(i=0; i<mCount; i++)
+			{
+				if(apsInput[m*mCount+i] > T1)
+				{
+					apsOutput[m*mCount+i] = 255;				
+				}
+				else
+				{
+					apsOutput[m*mCount+i] = 0;				
+				}
+			}				
+		}			
+	}
+}
+void TipPlugin::BinaryProcess(unsigned char*apsInput, unsigned char * aspOutput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer, V3DLONG h, V3DLONG d)
+{
+	V3DLONG i, j,k,n,count;
+	double t, temp;
+	V3DLONG mCount = iImageHeight * iImageWidth;
+	for (i=0; i<iImageLayer; i++)
+	{
+		for (j=0; j<iImageHeight; j++)
+		{
+			for (k=0; k<iImageWidth; k++)
+			{
+				V3DLONG curpos = i * mCount + j*iImageWidth + k;
+				V3DLONG curpos1 = i* mCount + j*iImageWidth;
+				V3DLONG curpos2 = j* iImageWidth + k;
+				temp = 0;					
+				count = 0;
+				for(n =1 ; n <= d  ;n++)
+				{
+					if (k>h*n) {temp += apsInput[curpos1 + k-(h*n)]; count++;}  
+					if (k+(h*n)< iImageWidth) { temp += apsInput[curpos1 + k+(h*n)]; count++;}
+                    if (j>h*n) {temp += apsInput[i* mCount + (j-(h*n))*iImageWidth + k]; count++;}//	
+					if (j+(h*n)<iImageHeight) {temp += apsInput[i* mCount + (j+(h*n))*iImageWidth + k]; count++;}//
+					if (i>(h*n)) {temp += apsInput[(i-(h*n))* mCount + curpos2]; count++;}//	
+					if (i+(h*n)< iImageLayer) {temp += apsInput[(i+(h*n))* mCount + j* iImageWidth + k ]; count++;}
+				}
+				t =  apsInput[curpos]-temp/(count);
+				aspOutput[curpos]= (t > 0)? t : 0;
+			}
+		}
+	}						
+}
 void TipPlugin::Tipdetection(V3DPluginCallback &callback, QWidget *parent, int method_code)
 {
 	v3dhandle curwin = callback.currentImageWindow();
@@ -882,7 +967,7 @@ void TipPlugin::Tipdetection(V3DPluginCallback &callback, QWidget *parent, int m
 	unsigned char * pData = pSub.begin();
 	
 	V3DLONG *apsInput = new V3DLONG[sx*sy*sz];
-	memset(apsInput, 0, sx*sy*sz * sizeof(V3DLONG));
+	memset(apsInput, 0, sx*sy*sz * sizeof(V3DLONG));	
 	
 	if(method_code == 1)
 	{
@@ -896,7 +981,7 @@ void TipPlugin::Tipdetection(V3DPluginCallback &callback, QWidget *parent, int m
 			{
 				for (V3DLONG i=0; i<sx; i++)
 				{
-					if (pData[k*sx*sy+j*sx+i] == 255)
+					if (pData[k*sx*sy+j*sx+i]!=0)
 					{
 						apsInput[k*sx*sy+j*sx+i] = 255;
 						orgPoint.m_x = i;
@@ -932,7 +1017,6 @@ void TipPlugin::Tipdetection(V3DPluginCallback &callback, QWidget *parent, int m
 		Image4DSimple p4DImage;
 		p4DImage.setData(pData, sx, sy, sz, 1, V3D_UINT8);
 		v3dhandle newwin;
-		
 		if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to use the existing window?"), QMessageBox::Yes, QMessageBox::No))
 			newwin = callback.currentImageWindow();
 		else
@@ -968,7 +1052,6 @@ void TipPlugin::Tipdetection(V3DPluginCallback &callback, QWidget *parent, int m
 				}
 			}
 		}
-		
 		SetImageInfo1D(apsInput,sz,sx,sy);	
 		Set_DFS_Seed(orgPoint);
 		Initialize1D();
@@ -979,11 +1062,9 @@ void TipPlugin::Tipdetection(V3DPluginCallback &callback, QWidget *parent, int m
 			SearchEndPoints();
 		}
 		V3DLONG nn = m_vdfbptSurface.size();
-		printf("size=%d\n",nn);
-		
+	//	printf("size=%d\n",nn);		
 		for (V3DLONG aa = 0; aa < m_vdfbptSurface.size(); aa++) 
 		{
-			
 			DFBPoint_t p;
 			p = m_vdfbptSurface.at(aa);
 			pData[p.m_z * sx*sy + p.m_y*sx + p.m_x] = 200;
@@ -1056,10 +1137,68 @@ void TipPlugin::Tipdetection(V3DPluginCallback &callback, QWidget *parent, int m
 			newwin = callback.currentImageWindow();
 		else
 			newwin = callback.newImageWindow();
-		
 		callback.setImage(newwin, &p4DImage);
 		callback.setImageName(newwin, QString(" Distance From Source"));
 		callback.updateImageWindow(newwin);
+	}else if (method_code == 4)
+	{
+		unsigned char *apsInput1 = new unsigned char[sx*sy*sz];
+		memset(apsInput1, 0, sx*sy*sz * sizeof(unsigned char));
+		unsigned char *apsInput2 = new unsigned char[sx*sy*sz];
+		memset(apsInput2, 0, sx*sy*sz * sizeof(unsigned char));
+		V3DLONG countall = 0;
+		V3DLONG nn =0;
+		BinaryProcess(pData, apsInput1, sx, sy, sz, 5, 3);
+		
+		//for (V3DLONG k=0; k<sz; k++)
+		//	{
+		//		for (V3DLONG j=0; j<sy; j++)
+		//		{
+		//			for (V3DLONG i=0; i<sx; i++)
+		//			{
+		//				if (apsInput1[k*sx*sy+j*sx+i] > 10) 
+		//				{
+		//					countall+= apsInput1[k*sx*sy+j*sx+i];
+		//					nn++;
+		//				}
+		//				
+		//			}
+		//		}
+		//	}
+		//	double temp  = countall/nn;
+		//	printf("temp=%lf countall=%d\n",temp,countall);
+		//	for (V3DLONG k=0; k<sz; k++)
+		//	{
+		//		for (V3DLONG j=0; j<sy; j++)
+		//		{
+		//			for (V3DLONG i=0; i<sx; i++)
+		//			{
+		//				if (pData[k*sx*sy+j*sx+i] > temp)
+		//				{
+		//					apsInput2[k*sx*sy+j*sx+i] = 255;
+		//			
+		//				}
+		//				else 
+		//				{
+		//					apsInput2[k*sx*sy+j*sx+i] = 0;
+		//				}
+		//			}
+		//		}
+		//	}
+		
+		IterateSeg(apsInput1,sx,sy,sz,apsInput2);
+		
+		Image4DSimple p4DImage;
+		p4DImage.setData((unsigned char*)apsInput2, sx, sy, sz, 1, V3D_UINT8);
+		v3dhandle newwin;
+		if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to use the existing window?"), QMessageBox::Yes, QMessageBox::No))
+			newwin = callback.currentImageWindow();
+		else
+			newwin = callback.newImageWindow();
+		callback.setImage(newwin, &p4DImage);
+		callback.setImageName(newwin, QString(" seg image"));
+		callback.updateImageWindow(newwin);	
+		
 	}
 	int end_t = clock();
 //	printf("time eclapse %d s for dist computing!\n", (end_t-start_t)/1000000);
