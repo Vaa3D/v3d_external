@@ -91,7 +91,9 @@ void PythonConsoleWindow::setupMenus()
     // Create menu actions
 
     actionUndo->setShortcuts(QKeySequence::Undo);
+    actionUndo->setIcon(QIcon(":/icons/undo.png"));
     actionRedo->setShortcuts(QKeySequence::Redo);
+    actionRedo->setIcon(QIcon(":/icons/redo.png"));
     actionCut->setShortcuts(QKeySequence::Cut);
     actionCut->setIcon(QIcon(":/icons/cut.png"));
     // actionCut->setIconVisibleInMenu(true);
@@ -101,19 +103,27 @@ void PythonConsoleWindow::setupMenus()
     connect( this, SIGNAL(cutAvailable(bool)),
             actionCut, SLOT(setEnabled(bool)) );
     actionCopy->setShortcuts(QKeySequence::Copy);
+    actionCopy->setIcon(QIcon(":/icons/copy.png"));
     actionPaste->setShortcuts(QKeySequence::Paste);
+    actionPaste->setIcon(QIcon(":/icons/paste.png"));
     connect( this, SIGNAL(pasteAvailable(bool)),
             actionPaste, SLOT(setEnabled(bool)) );
     actionSelect_All->setShortcuts(QKeySequence::SelectAll);
+    actionSelect_All->setIcon(QIcon(":/icons/select-all.png"));
     connect( actionAbout, SIGNAL(triggered()),
             this, SLOT(about()) );
     // TODO - undo/redo on Zoom In/Out
     actionZoom_in->setShortcuts(QKeySequence::ZoomIn);
+    actionZoom_in->setIcon(QIcon(":/icons/zoom-in.png"));
     connect(actionZoom_in, SIGNAL(triggered()),
             this, SLOT(zoomIn()) );
     actionZoom_out->setShortcuts(QKeySequence::ZoomOut);
+    actionZoom_out->setIcon(QIcon(":/icons/zoom-out.png"));
     connect(actionZoom_out, SIGNAL(triggered()),
             this, SLOT(zoomOut()) );
+
+	actionRun_recent->setIcon(QIcon(":/icons/open-recent.png"));
+	actionRun_script->setIcon(QIcon(":/icons/run-script.png"));
 }
 
 void PythonConsoleWindow::zoomIn() {

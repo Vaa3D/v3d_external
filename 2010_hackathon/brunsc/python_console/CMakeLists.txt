@@ -15,7 +15,7 @@ include_directories(${PYTHON_INCLUDE_PATH})
 
 # Boost::python is needed to expose our C++ classes in python
 find_package(Boost COMPONENTS python REQUIRED)
-include_directories(Boost_INCLUDE_DIR)
+include_directories(${Boost_INCLUDE_DIR})
 
 # Qt is needed for GUI window.
 find_package(Qt4 REQUIRED)
@@ -55,7 +55,7 @@ set(V3D_PYTHON_CONSOLE_SRCS
 # pythonConsoleTest is a test program for use during development #
 ##################################################################
 
-add_executable(pythonConsoleTest 
+add_executable(pythonConsoleTest
     pythonConsoleTest.cpp
     ${V3D_PYTHON_CONSOLE_SRCS}
 )
