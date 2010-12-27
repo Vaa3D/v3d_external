@@ -95,6 +95,13 @@ struct V_NeuronSWC_unit
 	void set(double x1, double y1, double z1) {x=x1; y1=y1;z=z1;}
 };
 
+inline double distL2square(const V_NeuronSWC_unit & a, const V_NeuronSWC_unit & b)
+{
+	return ((a.x-b.x)*(a.x-b.x) + 
+			(a.y-b.y)*(a.y-b.y) + 
+			(a.z-b.z)*(a.z-b.z) );
+}
+
 struct Node_Link  // for graph form of swc
 {
 	V3DLONG i;
