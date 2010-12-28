@@ -22,6 +22,7 @@ signals:
 	void returnPressed();
 	void pasteAvailable(bool);
 	void cutAvailable(bool);
+	void commandIssued(QString);
 
 private slots:
 	void onReturnPressed();
@@ -29,6 +30,9 @@ private slots:
 	void onClipboardDataChanged();
 	void onSelectionChanged();
 	void onCopyAvailable(bool);
+	void onCommandComplete();
+	void onIncompleteCommand(QString partialCmd);
+	void onOutput(QString msg);
 	void about();
 	void zoomIn();
 	void zoomOut();
@@ -45,13 +49,10 @@ private:
 
 	QString prompt;
 	int promptLength;
-    PythonOutputRedirector stdinRedirector;
-	PythonOutputRedirector stdoutRedirector;
-    PythonOutputRedirector stderrRedirector;
 	QTextCursor latestGoodCursorPosition;
 	int currentCommandStartPosition;
 	QString multilineCommand;
-    PythonInterpreter pythonInterpreter;
+    PythonInterpreter *pythonInterpreter;
     CommandRing commandRing;
 };
 

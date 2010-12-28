@@ -11,6 +11,7 @@
 #include <QtGui/QClipboard>
 #include <QTime>
 #include <QMessageBox>
+#include <QThread>
 
 namespace bp = boost::python;
 using namespace std;
@@ -47,22 +48,6 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 
 	plainTextEdit->setWordWrapMode(QTextOption::WrapAnywhere);
 
-	// Connect python stdout/stderr to output to GUI
-	// Adapted from
-	//   http://onegazhang.spaces.live.com/blog/cns!D5E642BC862BA286!727.entry
-    stdinRedirector.setQPlainTextEdit(plainTextEdit);
-	stdoutRedirector.setQPlainTextEdit(plainTextEdit);
-	stderrRedirector.setQPlainTextEdit(plainTextEdit);
-	pythonInterpreter.main_namespace["PythonStdIoRedirect"] =
-			bp::class_<PythonOutputRedirector>(
-					"V3DOutputRedirector",  bp::init<>())
-				.def("write", &PythonOutputRedirector::write)
-				.def("readline", &PythonOutputRedirector::readline)
-				;
-    bp::import("sys").attr("stdin") = stdinRedirector;
-    bp::import("sys").attr("stdout") = stdoutRedirector;
-	bp::import("sys").attr("stderr") = stderrRedirector;
-
 	// Print intro text at top of console.
 	plainTextEdit->appendPlainText("Welcome to the V3D python console!");
 	// This header text is intended to look just like the standard python banner.
@@ -78,6 +63,21 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 
 	plainTextEdit->appendPlainText(""); // need new line for prompt
 	placeNewPrompt(true);
+
+	pythonInterpreter = new PythonInterpreter();
+	connect(pythonInterpreter, SIGNAL(commandComplete()), this, SLOT(onCommandComplete()));
+	connect(pythonInterpreter, SIGNAL(incompleteCommand(QString)), this, SLOT(onIncompleteCommand(QString)));
+	connect(this, SIGNAL(commandIssued(QString)), pythonInterpreter, SLOT(interpretLine(QString)));
+	connect(pythonInterpreter, SIGNAL(stdOut(QString)), this, SLOT(onOutput(QString)));
+	connect(pythonInterpreter, SIGNAL(stdErr(QString)), this, SLOT(onOutput(QString)));
+	QThread* pythonThread = new QThread(this); // Create a separate thread for running python
+	pythonInterpreter->moveToThread(pythonThread);
+	pythonThread->start();
+}
+
+void PythonConsoleWindow::onOutput(QString msg) {
+	plainTextEdit->moveCursor(QTextCursor::End);
+	plainTextEdit->insertPlainText( msg );
 }
 
 void PythonConsoleWindow::onClipboardDataChanged()
@@ -258,21 +258,23 @@ void PythonConsoleWindow::onReturnPressed()
     //  to process the <Return>)
     plainTextEdit->moveCursor(QTextCursor::End);
     plainTextEdit->appendPlainText("");  // We consumed the key event, so we have to add the newline.
+    emit commandIssued(command);
+}
 
-    if (command.length() > 0) {
-       try {
-           multilineCommand = "";
-           std::string result =
-                   pythonInterpreter.interpretString(command.toStdString());
-           setPrompt(">>> ");
-       } catch (const PythonInterpreter::IncompletePythonCommandException& exc) {
-           // This is a multi-line command entry
-           multilineCommand = command + "\n";
-           // std::cerr << "Multiline..." << std::endl;
-           setPrompt("... ");
-       }
-    }
-    placeNewPrompt(endIsVisible);
+void PythonConsoleWindow::onCommandComplete()
+{
+	multilineCommand = "";
+    bool endIsVisible = plainTextEdit->document()->lastBlock().isVisible();
+	setPrompt(">>> ");
+	placeNewPrompt(endIsVisible);
+}
+
+void PythonConsoleWindow::onIncompleteCommand(QString partialCmd)
+{
+	multilineCommand = partialCmd + "\n";
+    bool endIsVisible = plainTextEdit->document()->lastBlock().isVisible();
+	setPrompt("... ");
+	placeNewPrompt(endIsVisible);
 }
 
 void PythonConsoleWindow::onCopyAvailable(bool bCopyAvailable)

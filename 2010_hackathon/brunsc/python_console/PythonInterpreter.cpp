@@ -4,13 +4,54 @@
 namespace bp = boost::python;
 using namespace std;
 
+void PythonOutputRedirector2::write( std::string const& str )
+{
+	emit output(QString(str.c_str()));
+	// Append to console
+	// textEdit->appendPlainText( str.c_str() ); // no good, adds newlines
+	// textEdit->moveCursor(QTextCursor::End);
+	// textEdit->insertPlainText( str.c_str() );
+}
+
+// TODO - this is a hack that does not actually get user input
+std::string PythonInputRedirector::readline()
+{
+    // cerr << "readline" << endl;
+    return "\n"; // TODO this is a hack to avoid hanging during input.
+}
+
 PythonInterpreter::PythonInterpreter()
+	: QObject(NULL),
+	  stdinRedirector(this),
+	  stdoutRedirector(this),
+	  stderrRedirector(this)
 {
 	try {
 		Py_Initialize();
 		main_module = bp::object((
 		  bp::handle<>(bp::borrowed(PyImport_AddModule("__main__")))));
 		main_namespace = main_module.attr("__dict__");
+
+		// Connect python stdout/stderr to output to GUI
+		// Adapted from
+		//   http://onegazhang.spaces.live.com/blog/cns!D5E642BC862BA286!727.entry
+		main_namespace["PythonOutputRedirector"] =
+			bp::class_<PythonOutputRedirector2>(
+					"PythonOutputRedirector2", bp::init<>())
+				.def("write", &PythonOutputRedirector2::write)
+				;
+		main_namespace["PythonInputRedirector"] =
+			bp::class_<PythonInputRedirector>(
+					"PythonInputRedirector", bp::init<>())
+				.def("readline", &PythonInputRedirector::readline)
+				;
+
+	    // bp::import("sys").attr("stdin") = stdinRedirector;
+	    bp::import("sys").attr("stdout") = stdoutRedirector;
+		bp::import("sys").attr("stderr") = stderrRedirector;
+
+		connect(&stdoutRedirector, SIGNAL(output(QString)), this, SIGNAL(stdOut(QString)));
+		connect(&stderrRedirector, SIGNAL(output(QString)), this, SIGNAL(stdErr(QString)));
 	}
 	catch( bp::error_already_set ) {
 		PyErr_Print();
@@ -24,14 +65,26 @@ PythonInterpreter::~PythonInterpreter() {
 	Py_Finalize();
 }
 
-std::string PythonInterpreter::interpretString(const std::string& command0)
-	throw(IncompletePythonCommandException)
+void PythonInterpreter::interpretLine(QString line)
+// std::string PythonInterpreter::interpretString(const std::string& command0)
+// 	throw(IncompletePythonCommandException)
 {
+	std::string command0 = line.toStdString();
+
 	// Skip empty lines
-	if (command0.length() == 0) return ""; // empty command
+	if (command0.length() == 0) {
+		emit commandComplete();
+		return; // empty command
+	}
 	size_t firstNonSpacePos = command0.find_first_not_of(" \t\r\n");
-	if (firstNonSpacePos == std::string::npos) return ""; // all blanks command
-	if (command0[firstNonSpacePos] == '#') return ""; // comment line
+	if (firstNonSpacePos == std::string::npos) {
+		emit commandComplete();
+		return; // all blanks command
+	}
+	if (command0[firstNonSpacePos] == '#') {
+		emit commandComplete();
+		return; // comment line
+	}
 	// Append newline for best parsing of nascent multiline commands.
 	std::string command = command0 + "\n";
 
@@ -41,17 +94,16 @@ std::string PythonInterpreter::interpretString(const std::string& command0)
 				command.c_str(),
 				"<stdin>",
 				Py_single_input)));
-		if (! compiledCode.ptr()) return "";
+		if (! compiledCode.ptr()) {
+			// command failed
+			emit commandComplete();
+			return;
+		}
 
 		bp::object result(bp::handle<>( PyEval_EvalCode(
 				(PyCodeObject*) compiledCode.ptr(),
 				main_namespace.ptr(),
 				main_namespace.ptr())));
-
-		const char* resultString = bp::extract<const char*>(result);
-
-		if (resultString)
-			return resultString;
 	}
 	catch( bp::error_already_set )
 	{
@@ -67,7 +119,8 @@ std::string PythonInterpreter::interpretString(const std::string& command0)
 				Py_XDECREF (exc);
 				Py_XDECREF (val);
 				Py_XDECREF (trb);
-				throw IncompletePythonCommandException();
+				emit incompleteCommand(line);
+				return;
 			}
 			PyErr_Restore (exc, val, trb);
 		}
@@ -75,5 +128,6 @@ std::string PythonInterpreter::interpretString(const std::string& command0)
 		PyErr_Print();
 	}
 
-	return "";
+	emit commandComplete();
+	return;
 }

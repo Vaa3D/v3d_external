@@ -27,6 +27,7 @@ QT4_WRAP_UI(QT_UI_SRCS
 
 QT4_WRAP_CPP(QT_MOC_SRCS
   PythonConsoleWindow.h
+  PythonInterpreter.h
 )
 
 QT4_ADD_RESOURCES(QT_RCC_SRCS python_console.qrc)
