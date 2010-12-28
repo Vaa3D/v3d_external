@@ -195,8 +195,41 @@ class Renderer_tex2;
 
 int mergeback_mmunits_to_neuron_path(int n_end_nodes, vector< vector<V_NeuronSWC_unit> > & mmUnit, V_NeuronSWC_list & tNeuron);
 
-class My4DImage : public Image4DSimple
+class MyTextBrowser : public QTextBrowser 
 {
+	Q_OBJECT;
+	
+public:
+	MyTextBrowser(QWidget * parent=0);
+	~MyTextBrowser(){}
+	
+public slots:
+	void setText2FocusPointFeatureWidget()
+	{
+		this->setText(focusFeatureViewTextContent);
+		this->update();
+	}
+	
+public:
+	void setFocusFeatureViewTextContent(QString text)
+	{
+		focusFeatureViewTextContent = text;
+	}
+	
+	QString getFocusFeatureViewTextContent()
+	{
+		return focusFeatureViewTextContent;
+	}
+	
+private:
+	QString focusFeatureViewTextContent;
+	
+};
+
+class My4DImage : public QObject, public Image4DSimple
+{
+	Q_OBJECT;
+	
 public:
 	double at(int x, int y, int z, int c=0); //return a double number because it can always be converted back to UINT8 and UINT16 without information loss
 	void **** getData(ImagePixelType & dtype);
@@ -250,7 +283,7 @@ public:
 	V3DLONG curFocusX, curFocusY, curFocusZ;
 	XFormView *p_xy_view, *p_yz_view, *p_zx_view;
 
-	QTextBrowser *p_focusPointFeatureWidget;
+	MyTextBrowser *p_focusPointFeatureWidget;
 
 	XFormWidget *p_mainWidget;
 
@@ -266,7 +299,7 @@ public:
 	XFormView * get_yz_view() {return p_yz_view;}
 	XFormView * get_zx_view() {return p_zx_view;}
 
-	void setFocusFeatureView(QTextBrowser *p) {p_focusPointFeatureWidget = p;}
+	void setFocusFeatureView(MyTextBrowser *p) {p_focusPointFeatureWidget = p;}
 	QTextBrowser *getFocusFeatureView() {return p_focusPointFeatureWidget;}
 	QString setFocusFeatureViewText();
 
@@ -438,6 +471,13 @@ public:
 	bool proj_cellseg_levelset();
 	bool proj_cellseg_GaussianFit_pos(V3DLONG posx, V3DLONG posy, V3DLONG posz, V3DLONG posc, int nGauss, bool b_isotropic);
 */
+	
+signals:
+	void focusFeatureViewTextUpdated();
+	
+public slots:
+	void setText2FocusPointFeatureWidget();
+
 };
 
 

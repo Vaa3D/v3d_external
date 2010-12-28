@@ -109,7 +109,7 @@ public:
 
 	//for communication of windows
 	void setMainControlWindow(MainWindow * p) {p_mainWindow = p;}
-	MainWindow * getMainControlWindow() {return p_mainWindow;}
+	virtual MainWindow * getMainControlWindow() {return p_mainWindow;}
 
 	void forceToChangeFocus(int x, int y, int z); //081210
 	void changeFocusFromExternal(int x, int y, int z); //this should be called from external. When no cross-image communication is needed, should not use this.
@@ -213,7 +213,7 @@ private:
     XFormView *yz_view; //change in X
     XFormView *zx_view; //change in Y
 
-	QTextBrowser *focusPointFeatureWidget;
+	MyTextBrowser *focusPointFeatureWidget;
 
     QMenu menuTriviewZoom;
 	void createMenuOfTriviewZoom();
@@ -281,13 +281,16 @@ public slots:
 
 	void cascadeWindows();
 	void updateViews(); //090615: a convenient function to call my4dimage updateViews()
+	
+	void updateTriview(); // call MainWindow updateTriview() Dec-21-2010 YuY
 
 
 signals:
     void external_focusXChanged(int c);
     void external_focusYChanged(int c);
     void external_focusZChanged(int c);
-
+	
+	void external_validZSliceChanged(long z);
 
 
 #define __used_by_v3d_interface__
@@ -326,6 +329,22 @@ public:    // in mainwindow_interface.cpp
 		if (imgData)
 		{
 			forceToChangeFocus(cx, cy, cz);
+			imgData->updateViews(); // update trivews
+		}
+	}
+	
+	virtual void setFocusLocation2Center()
+	{
+		if (imgData)
+		{
+			// reinit focus to center along x, y, z
+			V3DLONG sx, sy, sz;
+			
+			sx = imgData->getXDim();
+			sy = imgData->getYDim();
+			sz = imgData->getZDim();
+			
+			forceToChangeFocus(sx/2, sy/2, sz/2);
 			imgData->updateViews(); // update trivews
 		}
 	}
@@ -406,7 +425,6 @@ public:    // in mainwindow_interface.cpp
 		}
 	}
 
-	
 	virtual void getTriViewColorDispType(int & mytype)
 	{
 		mytype = (int) ( this->getColorType() );
@@ -425,6 +443,48 @@ public:    // in mainwindow_interface.cpp
 	{
 		this->p_customStruct = a;
 	}
+	
+	virtual V3DLONG getValidZslice() const
+	{
+		if (imgData)
+		{
+			return imgData->getValidZSliceNum();
+		}
+	}
+	
+	virtual void setValidZslice(V3DLONG curslice) 
+	{
+		if (imgData)
+		{
+			imgData->setValidZSliceNum(curslice);
+		}
+	}
+	
+	virtual V3DLONG getPreValidZslice() const
+	{
+		if (imgData)
+		{
+			return imgData->getPreValidZSliceNum();
+		}
+	}
+	
+	virtual void setPreValidZslice(V3DLONG preslice) 
+	{
+		if (imgData)
+		{
+			imgData->setPreValidZSliceNum(preslice);
+		}
+	}
+	
+	virtual void trigger(V3DLONG curslice)
+	{
+		if (imgData && curslice>0)
+		{
+			qDebug()<<"triggering here ..."<<curslice;
+			emit external_validZSliceChanged(curslice);
+		}
+	}
+	
 };
 
 

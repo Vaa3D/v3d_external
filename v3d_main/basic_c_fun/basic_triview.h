@@ -36,6 +36,7 @@
 #ifndef __BASIC_TRIVIEW_H__
 #define __BASIC_TRIVIEW_H__
 
+#include "v3d_basicdatatype.h"
 
 class TriviewControl
 {
@@ -48,8 +49,7 @@ public:
 	virtual void getFocusLocation(V3DLONG & cx, V3DLONG & cy, V3DLONG & cz) const = 0;
 	virtual void setFocusLocation(V3DLONG cx, V3DLONG cy, V3DLONG cz)  = 0;
 	
-//	virtual void getMinMax(double & *minval, double & *maxval, V3DLONG nFrame) const = 0;
-//	virtual void setMinMax(double *minval, double *maxval)  = 0;
+	virtual void setFocusLocation2Center() = 0;
 	
 	virtual void updateMinMax(V3DLONG nFrame) = 0;
  	
@@ -58,6 +58,14 @@ public:
 	
 	virtual void * getCustomStructPointer() const = 0; 
 	virtual void setCustomStructPointer(void *a) = 0;
+	
+	virtual V3DLONG getValidZslice() const = 0;
+	virtual void setValidZslice(V3DLONG curslice) = 0;
+	
+	virtual V3DLONG getPreValidZslice() const = 0;
+	virtual void setPreValidZslice(V3DLONG preslice) = 0;
+	
+	virtual void trigger(V3DLONG curslice) = 0;
 
 };
 

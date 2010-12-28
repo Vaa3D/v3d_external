@@ -267,7 +267,11 @@ MainWindow::MainWindow()
 
 	//090811 RZC
 	pluginLoader = new V3d_PluginLoader(pluginProcMenu, this);
-
+	
+	// Dec-20-2010 YuY
+	//connect(&sub_thread, SIGNAL(transactionStarted()), this, SLOT(transactionStart()), Qt::DirectConnection); //Qt::QueuedConnection
+    //connect(&sub_thread, SIGNAL(allTransactionsDone()), this, SLOT(allTransactionsDone()), Qt::DirectConnection);
+	connect(this, SIGNAL(triviewUpdateTriggered()), this, SLOT(updateTriview()), Qt::QueuedConnection); // Qt::AutoConnection
 }
 
 //void MainWindow::postClose() //090812 RZC
@@ -279,6 +283,62 @@ MainWindow::MainWindow()
 MainWindow::~MainWindow()
 {
 	qDebug("***v3d: ~MainWindow");
+}
+
+void MainWindow::transactionStart() // Dec-21-2010 YuY
+{
+    v3d_msg("Image is loading now ...", 0);
+}
+
+void MainWindow::allTransactionsDone() // Dec-20-2010 YuY
+{
+    v3d_msg("All transactions are done successfully.", 0);
+}
+
+
+void MainWindow::updateTriviewWindow() // Dec-20-2010 YuY
+{
+	emit triviewUpdateTriggered();
+}
+
+void MainWindow::updateTriview() // Dec-20-2010 YuY
+{
+	qDebug()<<"triggered in MainWindow ... ...";
+	
+//	TriviewControl *tvControl = (TriviewControl *)(this->curHiddenSelectedWindow());
+//	if(tvControl)
+//	{
+//		// updateMinMax then changeFocus
+//		V3DLONG currslice = tvControl->getValidZslice();
+//		V3DLONG preslice = tvControl->getPreValidZslice();
+//		
+//		qDebug()<<"the triview window exist ... ..."<<currslice<<preslice;
+//		
+//		if(currslice>preslice)
+//		{
+//			qDebug()<<"update triview window ... ...";
+//			
+//			tvControl->updateMinMax(currslice-1);
+//			
+//			V3DLONG x, y, z; 
+//			tvControl->getFocusLocation( x, y, z);
+//			tvControl->setFocusLocation( x, y, currslice);
+//			
+//			tvControl->setPreValidZslice(currslice);
+//		}
+//		
+//		QCoreApplication::processEvents();
+//		return;
+//	}
+//	else
+//	{
+//		printf("The pointer to triview window is NULL!\n");
+//		QCoreApplication::processEvents();
+//		return;
+//	}
+
+	sub_thread.setPriority(QThread::HighPriority);
+    sub_thread.addTransaction(new UpdateTVTransaction( (TriviewControl *)(this->curHiddenSelectedWindow()) ) );
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -801,9 +861,13 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 		{
 			try
 			{
+				size_t start_t = clock();
+				
 				XFormWidget *child = createMdiChild();
 				if (child->loadFile(fileName))
 				{
+					//if(!child) return;
+					
 					statusBar()->showMessage(tr("File loaded"), 2000);
 
 					if (global_setting.b_autoConvert2_8bit)
@@ -839,6 +903,9 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 					{
 						child->doImage3DView();
 					}
+					
+					size_t end_t = clock();
+					qDebug()<<"time consume ..."<<end_t-start_t;
 
 
 				} else {

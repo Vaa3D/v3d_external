@@ -103,6 +103,7 @@ public:
 	V3DLONG getCDim() {return sz3;}
 	V3DLONG getTDim() {return sz_time;}
 	V3DLONG getValidZSliceNum() {return valid_zslicenum;}
+	V3DLONG getPreValidZSliceNum() {return prevalid_zslicenum;}
 	int getError() {return b_error;}
 	ImagePixelType getDatatype() {return datatype;}
 	TimePackType getTimePackType() {return timepacktype;}
@@ -155,6 +156,15 @@ public:
 		if (v==0 && sz2==0) {valid_zslicenum=0; return true;}
 		if (v>=0 && v<sz2) //in this case sz2>0
 		{valid_zslicenum = v; return true;} 
+		else 
+			return false;
+	}
+	
+	bool setPreValidZSliceNum(V3DLONG v) 
+	{
+		if (v==0 && sz2==0) {prevalid_zslicenum=0; return true;}
+		if (v>=0 && v<sz2) //in this case sz2>0
+		{prevalid_zslicenum = v; return true;} 
 		else 
 			return false;
 	}
@@ -258,7 +268,8 @@ protected:
 	double rez_x, rez_y, rez_z; //the resolution of a image pixel along the 3 axes
 	double origin_x, origin_y, origin_z; //the "true" orgin of an image, in term of the physical units (not pixels) using resolution information
 
-	V3DLONG valid_zslicenum; //indicate how many zslices are usable. This can be used by a plugin program to stream read data 
+	V3DLONG valid_zslicenum; //indicate how many zslices are usable. This can be used by a plugin program to stream read data
+	V3DLONG prevalid_zslicenum; //indicate previous valid slices loaded before update GUI
 	void * p_customStruct; //a convenient pointer to pass back and forth some useful parameter information for a plugin
 
 private:

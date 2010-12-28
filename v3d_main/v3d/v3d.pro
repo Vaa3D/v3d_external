@@ -140,6 +140,7 @@ CONFIG += warn_off  # only work for complier
 #macx: QMAKE_LFLAGS += -fvisibility=hidden -fvisibility-inlines-hidden # turn off this type warnings
 #macx: QMAKE_CXXFLAGS += -gdwarf-2 # turn off visibility warnings
 # need Qt 4.5.0 above and reCreate Makefile, this will be automatic.
+CONFIG += thread
 
 # Input
 HEADERS += ../basic_c_fun/mg_utilities.h \
@@ -157,6 +158,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../basic_c_fun/v3d_interface.h \ 
     ../basic_c_fun/v3d_global_preference.h \
 	../basic_c_fun/customary_structs/v3d_imaging_para.h \
+	../basic_c_fun/basic_thread.h \
     ../plugin_loader/pluginDialog.h \
     ../plugin_loader/v3d_plugin_loader.h \
     ../graph/graph.h \

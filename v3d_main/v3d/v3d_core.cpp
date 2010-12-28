@@ -216,6 +216,10 @@ void load_merged_neuron(My4DImage* curImg, Renderer_tex2* curRen)
 }
 #define LOAD_traced_neuron   load_merged_neuron
 
+MyTextBrowser::MyTextBrowser(QWidget * parent) : QTextBrowser(parent)
+{
+}
+
 void My4DImage::update_3drenderer_neuron_view(V3dR_GLWidget* glwidget, Renderer_tex2* renderer)
 {
 	LOAD_traced_neuron(this, renderer);
@@ -3370,6 +3374,11 @@ void XFormWidget::closeEvent(QCloseEvent *event) //080814: this function is spec
 //	}
 //}
 
+void XFormWidget::updateTriview()
+{
+	qDebug()<<"triggered in XFormWidget ... ...";
+	if (p_mainWindow) p_mainWindow->updateTriviewWindow();
+}
 
 void XFormWidget::updateViews()
 {
@@ -3423,7 +3432,7 @@ void XFormWidget::createGUI()
     infoGroup = new QGroupBox(dataGroup);
     infoGroup->setTitle("Information of your selections");
 
-    focusPointFeatureWidget = new QTextBrowser(infoGroup);
+    focusPointFeatureWidget = new MyTextBrowser(infoGroup);
 	//	focusPointFeatureWidget->setFixedWidth(qMax(200, xy_view->width()+yz_view->width()));
 	focusPointFeatureWidget->setFixedWidth(qMax(200, xy_view->get_disp_width()+yz_view->get_disp_width()));
 	//focusPointFeatureWidget->setFixedHeight(50);
@@ -3786,7 +3795,7 @@ void XFormWidget::updateDataRelatedGUI()
 			focusPointFeatureWidget->setFixedWidth(qMax(200, int(imgData->getXDim()+imgData->getZDim())));
 		}
 		focusPointFeatureWidget->setMinimumHeight(100);
-		imgData->setFocusFeatureView(focusPointFeatureWidget);
+		imgData->setFocusFeatureView((MyTextBrowser*)focusPointFeatureWidget);
 
 		imgData->setMainWidget((XFormWidget *)this);
 
@@ -4556,6 +4565,8 @@ void XFormWidget::connectEventSignals()
     connect(whatsThisButton, SIGNAL(clicked()), this, SLOT(aboutInfo()));
 	//    connect(xy_view, SIGNAL(descriptionEnabledChanged(bool)), xy_view->hoverPoints(), SLOT(setDisabled(bool)));
 	//    connect(xy_view, SIGNAL(descriptionEnabledChanged(bool)), whatsThisButton, SLOT(setChecked(bool)));
+	
+	connect(this, SIGNAL(external_validZSliceChanged(long)), this, SLOT(updateTriview()), Qt::AutoConnection); //, Qt::DirectConnection);
 }
 
 void XFormWidget::disconnectEventSignals()

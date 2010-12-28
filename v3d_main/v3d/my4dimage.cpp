@@ -416,6 +416,8 @@ My4DImage::My4DImage()
 	trace_bounding_box=NULL_BoundingBox; //090727 RZC: for trace from local view
 	trace_z_thickness=1; //090727 RZC: weight for z-distance of graph
 	
+	connect(this, SIGNAL(focusFeatureViewTextUpdated()), this, SLOT(setText2FocusPointFeatureWidget()) );
+	
 }
 
 My4DImage::~My4DImage()
@@ -2538,6 +2540,11 @@ bool My4DImage::binarizeintensity(int channo, double th) //anything < th will be
 	return true;
 }
 
+void My4DImage::setText2FocusPointFeatureWidget()
+{	
+	p_focusPointFeatureWidget->setText2FocusPointFeatureWidget(); // added Dec 28, 2010 by YuY
+}
+
 QString My4DImage::setFocusFeatureViewText()
 {
 	if (p_focusPointFeatureWidget)
@@ -2656,11 +2663,14 @@ QString My4DImage::setFocusFeatureViewText()
 			//	  tmpc.setNum(tmpLocation.getCurt()); tmpc.append("]\n");
 			//      tmps.append(tmpc);
 		}
-		p_focusPointFeatureWidget->setText(tmps); //can also be setPlainText() or SetHtml()
+		//p_focusPointFeatureWidget->setText(tmps); //can also be setPlainText() or SetHtml()
+		p_focusPointFeatureWidget->setFocusFeatureViewTextContent(tmps);
+		//qDebug()<<"emit focusFeatureViewTextUpdated ... ..."<<p_focusPointFeatureWidget->getFocusFeatureViewTextContent();
+		emit focusFeatureViewTextUpdated();
 		//p_focusPointFeatureWidget->append(tmps);
 		
 		//update
-		p_focusPointFeatureWidget->update();
+		//p_focusPointFeatureWidget->update();
 		return tmps;
 	}
 	else
@@ -3684,7 +3694,7 @@ void My4DImage::updateViews()
 	}
 	if (p_yz_view) {p_yz_view->updateViewPlane(); }
 	if (p_zx_view)	{p_zx_view->updateViewPlane(); }
-	if (p_focusPointFeatureWidget) {setFocusFeatureViewText(); p_focusPointFeatureWidget->update();}
+	if (p_focusPointFeatureWidget) {setFocusFeatureViewText();} // p_focusPointFeatureWidget->update();}
 }
 
 #define WANT_STREAM       // include iostream and iomanipulators

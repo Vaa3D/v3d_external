@@ -61,6 +61,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "v3d_core.h"
 
+#include "../basic_c_fun/basic_thread.h" //YuY Dec-20-2010
+
 class V3d_PluginLoader;
 class Image4DSimple;
 class My4DImage;
@@ -237,7 +239,16 @@ public slots:
 	void func_procTracing_clear();
 	void func_procTracing_update3Dview();
 	void func_procTracing_save();
-
+	
+// Dec-20-2010 YuY	
+signals:
+	void triviewUpdateTriggered();
+	
+public slots:
+	void transactionStart();
+	void allTransactionsDone();
+	void updateTriview();
+	void updateTriviewWindow(); // trigger signal triviewUpdateTriggered
 
 private:
     void createActions();
@@ -250,6 +261,10 @@ private:
 	void setCurrentFile(const QString &fileName);
 	void updateRecentFileActions();
 	QString strippedName(const QString &fullFileName);
+	
+	void addTransaction(Transaction *transact); // Dec-20-2010 YuY	
+	
+	TransactionThread sub_thread; // Dec-20-2010 YuY	
 
 	QString curFile;
 	XFormWidget * curHiddenSelectedXWidget;
