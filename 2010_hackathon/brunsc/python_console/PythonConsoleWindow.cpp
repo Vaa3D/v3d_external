@@ -175,41 +175,56 @@ bool PythonConsoleWindow::eventFilter ( QObject * watched, QEvent * event )
     }
     else if (event->type() == QEvent::KeyPress)
 	{
-        // performanceTimer.start();
         QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
-        switch(keyEvent->key())
-        {
-        // Use up and down arrows for history
-        case Qt::Key_P:
-            if (! (keyEvent->modifiers() & Qt::ControlModifier))
-                break; // Only care about Ctrl-P
-        case Qt::Key_Up:
-            showPreviousCommand();
-            return true;
-            break;
-        case Qt::Key_N:
-            if (! (keyEvent->modifiers() & Qt::ControlModifier))
-                break; // Only care about Ctrl-N
-        case Qt::Key_Down:
-            showNextCommand();
-            return true;
-            break;
-        // Prevent left arrow from leaving editing area
-        case Qt::Key_Left:
-        case Qt::Key_Backspace:
-            if ( (plainTextEdit->textCursor().positionInBlock() == promptLength)
-            		&& cursorIsInEditingRegion(plainTextEdit->textCursor()) )
-            {
-            		return true; // no moving left into prompt with arrow key
-            }
-            break;
-        // Trigger command execution with <Return>
-        case Qt::Key_Return:
-        case Qt::Key_Enter:
-            emit returnPressed();
-            return true; // Consume event.  We will take care of inserting the newline.
-        }
-        // cerr << "key press elapsed time = " << performanceTimer.elapsed() << " ms" << endl;
+
+        // CONTROL-keystrokes
+    		if (keyEvent->modifiers() & Qt::ControlModifier)
+    		{
+    			switch(keyEvent->key()) {
+    			// Ctrl-p and Ctrl-n for command history
+    	        case Qt::Key_P:
+    	        		showPreviousCommand();
+    	        		return true;
+    	        case Qt::Key_N:
+    	        		showNextCommand();
+    	        		return true;
+    			}
+    		}
+    		else if (keyEvent->modifiers() & Qt::AltModifier) {}
+    		else if (keyEvent->modifiers() & Qt::MetaModifier) {}
+    		else
+    		{ // non-Ctrl keystrokes
+			switch(keyEvent->key())
+			{
+			// Use up and down arrows for history
+			case Qt::Key_Up:
+				showPreviousCommand();
+				return true;
+			case Qt::Key_Down:
+				showNextCommand();
+				return true;
+			// Prevent left arrow from leaving editing area
+			case Qt::Key_Left:
+			case Qt::Key_Backspace:
+				if ( (plainTextEdit->textCursor().positionInBlock() == promptLength)
+						&& cursorIsInEditingRegion(plainTextEdit->textCursor()) )
+				{
+						return true; // no moving left into prompt with arrow key
+				}
+				break;
+			// Trigger command execution with <Return>
+			case Qt::Key_Return:
+			case Qt::Key_Enter:
+				emit returnPressed();
+				return true; // Consume event.  We will take care of inserting the newline.
+			}
+			// If this is a printing character, make sure the editing console is activated
+			if (keyEvent->text().length() > 0)
+			{
+				if ( ! cursorIsInEditingRegion(plainTextEdit->textCursor()) )
+					plainTextEdit->setTextCursor(latestGoodCursorPosition);
+			}
+    		}
 	}
 
 	return QMainWindow::eventFilter(watched, event);
