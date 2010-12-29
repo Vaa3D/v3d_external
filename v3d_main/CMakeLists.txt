@@ -23,7 +23,7 @@ file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/plugins)
 
 mark_as_advanced(LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH)
 
-set(CMAKE_MODULE_PATH ${V3D_SOURCE_DIR}/CMake)
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
 
 include(CTest)
 
@@ -51,7 +51,7 @@ option( V3D_USE_OWN_TIFF "Use the TIFF library source code distributed with v3d"
 if( V3D_USE_OWN_TIFF )
   mark_as_advanced(TIFF_LIBRARY)
   mark_as_advanced(TIFF_INCLUDE_DIR)
-  include_directories(BEFORE "${V3D_SOURCE_DIR}/common_lib/include")
+  include_directories(BEFORE "${CMAKE_CURRENT_SOURCE_DIR}/common_lib/include")
 else()
   # CMake 2.8 FindTiff is very simple.  I need to give it some help on windows
   SET(TIFF_NAMES ${TIFF_NAMES}  libv3dtiff.a v3dtiff libv3dtiff libtiff.a tiff libtiff libtiff3 libtiff_i)
@@ -67,6 +67,7 @@ else()
   FIND_PATH(TIFF_INCLUDE_DIR tiff.h
 	# PATHS "$ENV{PROGRAMFILES}/tiff-3.8.2"
 	PATHS 
+        "${CMAKE_CURRENT_SOURCE_DIR}/common_lib/include"
         "$ENV{PROGRAMFILES}/V3DTiff"
         "$ENV{PROGRAMFILES}/GnuWin32"
         "$ENV{PROGRAMFILES}/libtiff-3.9.4"

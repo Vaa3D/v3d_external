@@ -275,7 +275,7 @@ int main(int argc, char **argv)
             QFile v3dProgramFile(argv[0]);
             if (v3dProgramFile.exists() && (v3dProgramFile.permissions() & QFile::WriteUser))
             {
-                v3d_msg("User can write to v3d executable",0);
+                // v3d_msg("User can write to v3d executable",0);
                 userCanUpdate = true;
             }
             // Does the user have permission to write to any plugin folders?
@@ -288,7 +288,7 @@ int main(int argc, char **argv)
                 foreach (const QFileInfo& dirInfo, dirInfoList) {
                     if (dirInfo.permissions() & QFile::WriteUser) {
                         userCanUpdate = true;
-                        v3d_msg("User can write to plugin directory " + pluginsDir.absolutePath(), 0);
+                        // v3d_msg("User can write to plugin directory " + pluginsDir.absolutePath(), 0);
                     }
                 }
             }

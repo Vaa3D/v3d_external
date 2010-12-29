@@ -4,6 +4,9 @@ set(NeuronTracing_SRCS
   )
 
 # Boost headers might be unpacked here...
+if(UNIX)
+  include_directories(/usr/local/include)
+endif()
 include_directories(${CMAKE_SOURCE_DIR}/common_lib/include)
 
 # Or use system boost install

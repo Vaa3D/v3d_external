@@ -342,7 +342,7 @@ void PythonConsoleWindow::onSelectionChanged()
 void PythonConsoleWindow::onCursorPositionChanged()
 {
     // performanceTimer.start();
-	cerr << "Cursor moved" << endl;
+	// cerr << "Cursor moved" << endl;
     // Don't allow editing outside the editing area.
 	QTextCursor currentCursor = plainTextEdit->textCursor();
 	bool bReadOnly;
