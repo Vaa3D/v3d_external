@@ -4,14 +4,18 @@
 namespace bp = boost::python;
 using namespace std;
 
+PythonOutputRedirector2::PythonOutputRedirector2(PythonInterpreter *p_interpreter)
+    : interpreter(p_interpreter)
+{}
+
 void PythonOutputRedirector2::write( std::string const& str )
 {
-	emit output(QString(str.c_str()));
-	// Append to console
-	// textEdit->appendPlainText( str.c_str() ); // no good, adds newlines
-	// textEdit->moveCursor(QTextCursor::End);
-	// textEdit->insertPlainText( str.c_str() );
+    interpreter->onOutput(QString(str.c_str()));
 }
+
+PythonInputRedirector::PythonInputRedirector(PythonInterpreter *p_interpreter)
+    : interpreter(p_interpreter)
+{}
 
 // TODO - this is a hack that does not actually get user input
 std::string PythonInputRedirector::readline()
@@ -46,12 +50,9 @@ PythonInterpreter::PythonInterpreter()
 				.def("readline", &PythonInputRedirector::readline)
 				;
 
-	    // bp::import("sys").attr("stdin") = stdinRedirector;
+	    bp::import("sys").attr("stdin") = stdinRedirector;
 	    bp::import("sys").attr("stdout") = stdoutRedirector;
 		bp::import("sys").attr("stderr") = stderrRedirector;
-
-		connect(&stdoutRedirector, SIGNAL(output(QString)), this, SIGNAL(stdOut(QString)));
-		connect(&stderrRedirector, SIGNAL(output(QString)), this, SIGNAL(stdErr(QString)));
 	}
 	catch( bp::error_already_set ) {
 		PyErr_Print();
@@ -63,6 +64,10 @@ PythonInterpreter::~PythonInterpreter() {
 	// http://www.boost.org/libs/python/todo.html#pyfinalize-safety
 	// http://lists.boost.org/Archives/boost/2006/07/107149.php
 	Py_Finalize();
+}
+
+void PythonInterpreter::onOutput(QString msg) {
+    emit outputSent(msg);
 }
 
 void PythonInterpreter::interpretLine(QString line)

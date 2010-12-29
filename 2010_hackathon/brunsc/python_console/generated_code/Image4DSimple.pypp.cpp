@@ -84,6 +84,9 @@ void register_Image4DSimple_class(){
             "getOriginZ"
             , (double ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getOriginZ ) )    
         .def( 
+            "getPreValidZSliceNum"
+            , (long int ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getPreValidZSliceNum ) )    
+        .def( 
             "getRezX"
             , (double ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getRezX ) )    
         .def( 
@@ -175,6 +178,10 @@ void register_Image4DSimple_class(){
             "setOriginZ"
             , (void ( ::Image4DSimple::* )( double ) )( &::Image4DSimple::setOriginZ )
             , ( bp::arg("a") ) )    
+        .def( 
+            "setPreValidZSliceNum"
+            , (bool ( ::Image4DSimple::* )( long int ) )( &::Image4DSimple::setPreValidZSliceNum )
+            , ( bp::arg("v") ) )    
         .def( 
             "setRawDataPointer"
             , (void ( ::Image4DSimple::* )( unsigned char * ) )( &::Image4DSimple::setRawDataPointer )

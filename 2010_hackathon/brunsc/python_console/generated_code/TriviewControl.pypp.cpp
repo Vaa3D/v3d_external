@@ -50,6 +50,11 @@ struct TriviewControl_wrapper : TriviewControl, bp::wrapper< TriviewControl > {
         return bp::make_tuple( cx2, cy2, cz2 );
     }
 
+    virtual long int getPreValidZslice(  ) const {
+        bp::override func_getPreValidZslice = this->get_override( "getPreValidZslice" );
+        return func_getPreValidZslice(  );
+    }
+
     virtual void getTriViewColorDispType( int & mytype ) {
         namespace bpl = boost::python;
         if( bpl::override func_getTriViewColorDispType = this->get_override( "getTriViewColorDispType" ) ){
@@ -74,6 +79,11 @@ struct TriviewControl_wrapper : TriviewControl, bp::wrapper< TriviewControl > {
         return bp::object( mytype2 );
     }
 
+    virtual long int getValidZslice(  ) const {
+        bp::override func_getValidZslice = this->get_override( "getValidZslice" );
+        return func_getValidZslice(  );
+    }
+
     virtual void setCustomStructPointer( void * a ){
         bp::override func_setCustomStructPointer = this->get_override( "setCustomStructPointer" );
         func_setCustomStructPointer( a );
@@ -84,9 +94,29 @@ struct TriviewControl_wrapper : TriviewControl, bp::wrapper< TriviewControl > {
         func_setFocusLocation( cx, cy, cz );
     }
 
+    virtual void setFocusLocation2Center(  ){
+        bp::override func_setFocusLocation2Center = this->get_override( "setFocusLocation2Center" );
+        func_setFocusLocation2Center(  );
+    }
+
+    virtual void setPreValidZslice( long int preslice ){
+        bp::override func_setPreValidZslice = this->get_override( "setPreValidZslice" );
+        func_setPreValidZslice( preslice );
+    }
+
     virtual void setTriViewColorDispType( int mytype ){
         bp::override func_setTriViewColorDispType = this->get_override( "setTriViewColorDispType" );
         func_setTriViewColorDispType( mytype );
+    }
+
+    virtual void setValidZslice( long int curslice ){
+        bp::override func_setValidZslice = this->get_override( "setValidZslice" );
+        func_setValidZslice( curslice );
+    }
+
+    virtual void trigger( long int curslice ){
+        bp::override func_trigger = this->get_override( "trigger" );
+        func_trigger( curslice );
     }
 
     virtual void updateMinMax( long int nFrame ){
@@ -108,9 +138,15 @@ void register_TriviewControl_class(){
             , (boost::python::tuple (*)( ::TriviewControl const & ))( &TriviewControl_wrapper::default_getFocusLocation )
             , ( bp::arg("inst") ) )    
         .def( 
+            "getPreValidZslice"
+            , bp::pure_virtual( (long int ( ::TriviewControl::* )(  ) const)(&::TriviewControl::getPreValidZslice) ) )    
+        .def( 
             "getTriViewColorDispType"
             , (boost::python::object (*)( ::TriviewControl & ))( &TriviewControl_wrapper::default_getTriViewColorDispType )
             , ( bp::arg("inst") ) )    
+        .def( 
+            "getValidZslice"
+            , bp::pure_virtual( (long int ( ::TriviewControl::* )(  ) const)(&::TriviewControl::getValidZslice) ) )    
         .def( 
             "setCustomStructPointer"
             , bp::pure_virtual( (void ( ::TriviewControl::* )( void * ) )(&::TriviewControl::setCustomStructPointer) )
@@ -120,9 +156,24 @@ void register_TriviewControl_class(){
             , bp::pure_virtual( (void ( ::TriviewControl::* )( long int,long int,long int ) )(&::TriviewControl::setFocusLocation) )
             , ( bp::arg("cx"), bp::arg("cy"), bp::arg("cz") ) )    
         .def( 
+            "setFocusLocation2Center"
+            , bp::pure_virtual( (void ( ::TriviewControl::* )(  ) )(&::TriviewControl::setFocusLocation2Center) ) )    
+        .def( 
+            "setPreValidZslice"
+            , bp::pure_virtual( (void ( ::TriviewControl::* )( long int ) )(&::TriviewControl::setPreValidZslice) )
+            , ( bp::arg("preslice") ) )    
+        .def( 
             "setTriViewColorDispType"
             , bp::pure_virtual( (void ( ::TriviewControl::* )( int ) )(&::TriviewControl::setTriViewColorDispType) )
             , ( bp::arg("mytype") ) )    
+        .def( 
+            "setValidZslice"
+            , bp::pure_virtual( (void ( ::TriviewControl::* )( long int ) )(&::TriviewControl::setValidZslice) )
+            , ( bp::arg("curslice") ) )    
+        .def( 
+            "trigger"
+            , bp::pure_virtual( (void ( ::TriviewControl::* )( long int ) )(&::TriviewControl::trigger) )
+            , ( bp::arg("curslice") ) )    
         .def( 
             "updateMinMax"
             , bp::pure_virtual( (void ( ::TriviewControl::* )( long int ) )(&::TriviewControl::updateMinMax) )

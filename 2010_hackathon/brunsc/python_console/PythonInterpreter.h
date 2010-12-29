@@ -13,25 +13,26 @@
 #include <exception>
 #include <QObject>
 
-class PythonOutputRedirector2 : public QObject
-{
-	Q_OBJECT
+class PythonInterpreter;
 
+class PythonOutputRedirector2
+{
 public:
-	PythonOutputRedirector2(QObject* parent = NULL) : QObject(parent) {}
+	PythonOutputRedirector2(PythonInterpreter *interpreter = NULL);
     void write( std::string const& str );
 
-signals:
-	void output(QString msg);
+private:
+	PythonInterpreter *interpreter;
 };
 
-class PythonInputRedirector : public QObject
+class PythonInputRedirector
 {
-	Q_OBJECT
-
 public:
-	PythonInputRedirector(QObject* parent = NULL) : QObject(parent) {}
+	PythonInputRedirector(PythonInterpreter *interpreter = NULL);
     std::string readline( );
+
+private:
+    PythonInterpreter *interpreter;
 };
 
 class PythonInterpreter : public QObject
@@ -47,14 +48,14 @@ public:
 	// 	throw(IncompletePythonCommandException);
 
 signals:
-	void stdErr(QString msg);
-	void stdOut(QString msg);
+	void outputSent(QString msg);
 	void readLine();
 	void commandComplete();
 	void incompleteCommand(QString partialCmd);
 
 public slots:
 	void interpretLine(QString line);
+	void onOutput(QString msg);
 
 private:
 	boost::python::object main_module;

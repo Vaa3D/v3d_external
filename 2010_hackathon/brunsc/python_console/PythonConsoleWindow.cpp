@@ -68,8 +68,7 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 	connect(pythonInterpreter, SIGNAL(commandComplete()), this, SLOT(onCommandComplete()));
 	connect(pythonInterpreter, SIGNAL(incompleteCommand(QString)), this, SLOT(onIncompleteCommand(QString)));
 	connect(this, SIGNAL(commandIssued(QString)), pythonInterpreter, SLOT(interpretLine(QString)));
-	connect(pythonInterpreter, SIGNAL(stdOut(QString)), this, SLOT(onOutput(QString)));
-	connect(pythonInterpreter, SIGNAL(stdErr(QString)), this, SLOT(onOutput(QString)));
+	connect(pythonInterpreter, SIGNAL(outputSent(QString)), this, SLOT(onOutput(QString)));
 	QThread* pythonThread = new QThread(this); // Create a separate thread for running python
 	pythonInterpreter->moveToThread(pythonThread);
 	pythonThread->start();
@@ -258,7 +257,11 @@ void PythonConsoleWindow::onReturnPressed()
     //  to process the <Return>)
     plainTextEdit->moveCursor(QTextCursor::End);
     plainTextEdit->appendPlainText("");  // We consumed the key event, so we have to add the newline.
-    emit commandIssued(command);
+
+    if (command.length() > 0)
+        emit commandIssued(command);
+    else
+        placeNewPrompt(endIsVisible);
 }
 
 void PythonConsoleWindow::onCommandComplete()

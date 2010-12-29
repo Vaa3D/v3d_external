@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 from pyplusplus import module_builder
 from pyplusplus import function_transformers as FT
 from pyplusplus.module_builder import call_policies
