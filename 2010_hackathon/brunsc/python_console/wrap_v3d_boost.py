@@ -4,19 +4,30 @@ from pyplusplus import module_builder
 from pyplusplus import function_transformers as FT
 from pyplusplus.module_builder import call_policies
 from pygccxml.declarations.matchers import access_type_matcher_t
+import commands
+import os
 
 class V3DWrapper:
     def __init__(self):
         "Container for pyplusplus module builder for wrapping V3D"
+        includes = []
+        for path in ['.',
+                       '/home/cmbruns/svn/v3d_cmake/v3d_main/basic_c_fun',
+                       '/Users/brunsc/svn/v3d_cmake/v3d_main/basic_c_fun',
+                       '/usr/include/qt4',
+                       '/usr/include/qt4/QtCore',
+                       '/usr/include/qt4/QtGui',
+                       '/Library/Frameworks/QtCore.framework/Headers',
+                       '/Library/Frameworks/QtGui.framework/Headers',
+                     ]:
+            if os.path.exists(path):
+                includes.append(path)
+        gccxml_executable = commands.getstatusoutput("which gccxml")[1]
         self.mb = module_builder.module_builder_t(
             files = ['wrappable_v3d.h',],
-            gccxml_path='/usr/bin/gccxml',
-            include_paths=['.',
-                           '/home/cmbruns/svn/v3d_cmake/v3d_main/basic_c_fun',
-                           '/usr/include/qt4',
-                           '/usr/include/qt4/QtCore',
-                           '/usr/include/qt4/QtGui',
-                           ]
+            gccxml_path=gccxml_executable,
+            cflags=' --gccxml-cxxflags "-m32"',
+            include_paths=includes
             )
         
     def wrap(self):
