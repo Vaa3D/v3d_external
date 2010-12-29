@@ -69,9 +69,9 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 	connect(pythonInterpreter, SIGNAL(incompleteCommand(QString)), this, SLOT(onIncompleteCommand(QString)));
 	connect(this, SIGNAL(commandIssued(QString)), pythonInterpreter, SLOT(interpretLine(QString)));
 	connect(pythonInterpreter, SIGNAL(outputSent(QString)), this, SLOT(onOutput(QString)));
-	QThread* pythonThread = new QThread(this); // Create a separate thread for running python
-	pythonInterpreter->moveToThread(pythonThread);
-	pythonThread->start();
+	// QThread* pythonThread = new QThread(this); // Create a separate thread for running python
+	// pythonInterpreter->moveToThread(pythonThread);
+	// pythonThread->start();
 }
 
 void PythonConsoleWindow::onOutput(QString msg) {

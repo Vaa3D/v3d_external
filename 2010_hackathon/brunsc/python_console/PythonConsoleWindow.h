@@ -4,7 +4,6 @@
 #include <QMainWindow>
 #include "ui_main_python_console.h"
 #include "PythonInterpreter.h"
-#include "PythonOutputRedirector.h"
 #include "CommandRing.h"
 
 class QWidget;

@@ -42,7 +42,6 @@ list(REMOVE_ITEM PYPLUSPLUS_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/generated_code/v3d
 set(V3D_PYTHON_CONSOLE_SRCS
     PythonConsoleWindow.cpp
     PythonInterpreter.cpp
-    PythonOutputRedirector.cpp
     V3DPythonModule.cpp
     ${QT_UI_SRCS}
     ${QT_MOC_SRCS}

@@ -1,6 +1,11 @@
 include_directories(${TIFF_INCLUDE_DIR})
 
+QT4_WRAP_CPP(QT_INTERFACE_MOC_SRCS
+  basic_thread.h
+)
+
 set(V3DInterface_SRCS
+  ${QT_INTERFACE_MOC_SRCS}
   basic_4dimage.cpp
   basic_memory.cpp
   basic_surf_objs.cpp
