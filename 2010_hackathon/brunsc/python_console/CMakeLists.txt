@@ -93,8 +93,21 @@ target_link_libraries(PythonConsolePlugin
     ${QT_QTGUI_LIBRARY}
 )
 
+find_path(PLUGINS_PARENT_PATH plugins
+    PATHS
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../../../build_v3d_cmake_eclipse/v3d/Mac_Fat/v3d.app/Contents/MacOS"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../../../build_v3d_cmake_eclipse/v3d/Linux_32"
+    NO_DEFAULT_PATH
+    )
+    
+if(PLUGINS_PARENT_PATH)
+    set(PLUGINS_PATH "${PLUGINS_PARENT_PATH}/plugins")
+else()
+    set(PLUGINS_PATH "${CMAKE_CURRENT_BINARY_DIR}/plugins")
+endif()
+
 set(PYTHON_CONSOLE_PLUGIN_OUTPUT_DIR
-    "${CMAKE_CURRENT_SOURCE_DIR}/../../../../build_v3d_cmake_eclipse/v3d/Linux_32/plugins/python_console"
+    "${PLUGINS_PATH}/python_console"
     CACHE PATH "Where to build python console plugin")
 
 set_target_properties(PythonConsolePlugin PROPERTIES 

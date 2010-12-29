@@ -64,6 +64,13 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 	plainTextEdit->appendPlainText(""); // need new line for prompt
 	placeNewPrompt(true);
 
+	// Make cursor about the size of a letter
+	int cursorSize = QFontMetrics(plainTextEdit->font()).width("m");
+    if (cursorSize > 0)
+    		plainTextEdit->setCursorWidth(cursorSize);
+    else
+    		plainTextEdit->setCursorWidth(1);
+
 	pythonInterpreter = new PythonInterpreter();
 	connect(pythonInterpreter, SIGNAL(commandComplete()), this, SLOT(onCommandComplete()));
 	connect(pythonInterpreter, SIGNAL(incompleteCommand(QString)), this, SLOT(onIncompleteCommand(QString)));
@@ -131,6 +138,11 @@ void PythonConsoleWindow::zoomIn() {
     int newSize = int(1.03 * oldSize + 0.5) + 1;
     newFont.setPointSize(newSize);
     plainTextEdit->setFont(newFont);
+	int cursorSize = QFontMetrics(plainTextEdit->font()).width("m");
+    if (cursorSize > 0)
+    		plainTextEdit->setCursorWidth(cursorSize);
+    else
+    		plainTextEdit->setCursorWidth(1);
 }
 
 void PythonConsoleWindow::zoomOut() {
@@ -140,6 +152,11 @@ void PythonConsoleWindow::zoomOut() {
     if (newSize < 1) newSize = 1;
     newFont.setPointSize(newSize);
     plainTextEdit->setFont(newFont);
+	int cursorSize = QFontMetrics(plainTextEdit->font()).width("m");
+    if (cursorSize > 0)
+    		plainTextEdit->setCursorWidth(cursorSize);
+    else
+    		plainTextEdit->setCursorWidth(1);
 }
 
 // When user presses <Return> key in text area, execute the python command
@@ -177,10 +194,14 @@ bool PythonConsoleWindow::eventFilter ( QObject * watched, QEvent * event )
             showNextCommand();
             return true;
             break;
-        // Prevent backspace from deleting prompt string
+        // Prevent left arrow from leaving editing area
+        case Qt::Key_Left:
         case Qt::Key_Backspace:
-            if (plainTextEdit->textCursor().positionInBlock() <= promptLength)
-                return true; // discard event; do nothing.
+            if ( (plainTextEdit->textCursor().positionInBlock() == promptLength)
+            		&& cursorIsInEditingRegion(plainTextEdit->textCursor()) )
+            {
+            		return true; // no moving left into prompt with arrow key
+            }
             break;
         // Trigger command execution with <Return>
         case Qt::Key_Return:
@@ -321,7 +342,7 @@ void PythonConsoleWindow::onSelectionChanged()
 void PythonConsoleWindow::onCursorPositionChanged()
 {
     // performanceTimer.start();
-	// cerr << "Cursor moved" << endl;
+	cerr << "Cursor moved" << endl;
     // Don't allow editing outside the editing area.
 	QTextCursor currentCursor = plainTextEdit->textCursor();
 	bool bReadOnly;
