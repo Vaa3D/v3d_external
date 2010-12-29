@@ -338,7 +338,15 @@ void MainWindow::updateTriview() // Dec-20-2010 YuY
 //	}
 
 	sub_thread.setPriority(QThread::HighPriority);
-    sub_thread.addTransaction(new UpdateTVTransaction( (TriviewControl *)(this->curHiddenSelectedWindow()) ) );
+	
+	if(this->curHiddenSelectedWindow())
+	{
+		sub_thread.addTransaction(new UpdateTVTransaction( (TriviewControl *)(this->curHiddenSelectedWindow()) ) );
+	}
+	else if(this->currentImageWindow())
+	{
+		sub_thread.addTransaction(new UpdateTVTransaction( (TriviewControl *)(this->currentImageWindow()) ) );
+	}
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
