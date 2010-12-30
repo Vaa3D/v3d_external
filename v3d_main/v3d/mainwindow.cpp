@@ -874,7 +874,9 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 				XFormWidget *child = createMdiChild();
 				if (child->loadFile(fileName))
 				{
-					//if(!child) return;
+					if(!child) return; 
+					if(!child->getImageData()) return;
+					if(child->getValidZslice()<child->getImageData()->getZDim()-1) return; // avoid crash when the child is closed by user, Dec 29, 2010 by YuY
 					
 					statusBar()->showMessage(tr("File loaded"), 2000);
 
