@@ -35,6 +35,8 @@ private slots:
 	void about();
 	void zoomIn();
 	void zoomOut();
+	void runScript();
+	void openRecentFile();
 	
 private:
 	void setupMenus();
@@ -45,6 +47,8 @@ private:
 	void showPreviousCommand();
 	void showNextCommand();
     void replaceCurrentCommand(const QString& newCommand);
+    void addRecent(const QString& fileName);
+    void updateRecent();
 
 	QString prompt;
 	int promptLength;
@@ -53,6 +57,8 @@ private:
 	QString multilineCommand;
     PythonInterpreter *pythonInterpreter;
     CommandRing commandRing;
+    static const int maxRecentScripts = 10;
+    QAction* recentScripts[maxRecentScripts];
 };
 
 #endif // V3D_PYTHON_CONSOLE_WINDOW_H

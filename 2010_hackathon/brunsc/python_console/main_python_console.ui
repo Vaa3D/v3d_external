@@ -40,7 +40,7 @@
      <x>0</x>
      <y>0</y>
      <width>522</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuEdit">
@@ -67,8 +67,13 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuRun_recent">
+     <property name="title">
+      <string>Run recent</string>
+     </property>
+    </widget>
     <addaction name="actionRun_script"/>
-    <addaction name="actionRun_recent"/>
+    <addaction name="menuRun_recent"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -155,14 +160,6 @@
     <string>Run script...</string>
    </property>
   </action>
-  <action name="actionRun_recent">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>Run recent</string>
-   </property>
-  </action>
   <action name="actionBrowse_API_documentation">
    <property name="enabled">
     <bool>false</bool>
@@ -179,6 +176,11 @@
   <action name="actionZoom_out">
    <property name="text">
     <string>Zoom out</string>
+   </property>
+  </action>
+  <action name="actionSubAction">
+   <property name="text">
+    <string>SubAction</string>
    </property>
   </action>
  </widget>

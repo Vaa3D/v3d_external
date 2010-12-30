@@ -10,7 +10,6 @@
 
 #include <boost/python.hpp>
 #include <string>
-#include <exception>
 #include <QObject>
 
 class PythonInterpreter;
@@ -40,12 +39,8 @@ class PythonInterpreter : public QObject
 	Q_OBJECT
 
 public:
-	// class IncompletePythonCommandException : public std::exception {};
-
 	PythonInterpreter();
 	virtual ~PythonInterpreter();
-	// std::string interpretString(const std::string& cmd)
-	// 	throw(IncompletePythonCommandException);
 
 signals:
 	void outputSent(QString msg);
@@ -56,6 +51,7 @@ signals:
 public slots:
 	void interpretLine(QString line);
 	void onOutput(QString msg);
+	void runScriptFile(QString fileName);
 
 private:
 	boost::python::object main_module;

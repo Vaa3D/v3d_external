@@ -10,10 +10,8 @@ void register_ImageWindow_class(){
 
     { //::ImageWindow
         typedef bp::class_< ImageWindow > ImageWindow_exposer_t;
-        ImageWindow_exposer_t ImageWindow_exposer = ImageWindow_exposer_t( "ImageWindow", bp::init< void * >(( bp::arg("h") )) );
+        ImageWindow_exposer_t ImageWindow_exposer = ImageWindow_exposer_t( "ImageWindow", bp::init< std::string const & >(( bp::arg("name") )) );
         bp::scope ImageWindow_scope( ImageWindow_exposer );
-        bp::implicitly_convertible< void *, ImageWindow >();
-        ImageWindow_exposer.def( bp::init< std::string const & >(( bp::arg("name") )) );
         bp::implicitly_convertible< std::string const &, ImageWindow >();
         { //::ImageWindow::close3DWindow
         

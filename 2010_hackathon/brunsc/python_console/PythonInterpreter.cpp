@@ -1,5 +1,6 @@
 #include "PythonInterpreter.h"
 #include <iostream>
+#include <cstdio>
 
 namespace bp = boost::python;
 using namespace std;
@@ -68,6 +69,15 @@ PythonInterpreter::~PythonInterpreter() {
 
 void PythonInterpreter::onOutput(QString msg) {
     emit outputSent(msg);
+}
+
+void PythonInterpreter::runScriptFile(QString fileName)
+{
+	FILE *fp = fopen(fileName.toLocal8Bit(), "r");
+	if (fp) {
+		PyRun_SimpleFileEx(fp, fileName.toLocal8Bit(), 1); // 1 means close it for me
+	}
+	emit commandComplete();
 }
 
 void PythonInterpreter::interpretLine(QString line)

@@ -20,6 +20,8 @@
 
 #include "generated_code/NeuronTree.pypp.hpp"
 
+#include "generated_code/RGB8.pypp.hpp"
+
 #include "generated_code/TriviewControl.pypp.hpp"
 
 #include "generated_code/V3D_GlobalSetting.pypp.hpp"
@@ -34,8 +36,12 @@
 
 namespace bp = boost::python;
 
+#include "convert_qstring.h"
+
 BOOST_PYTHON_MODULE(v3d){
     register_enumerations();
+
+    register_qstring_conversion();
 
     register_Image4DSimple_class();
 
@@ -48,6 +54,8 @@ BOOST_PYTHON_MODULE(v3d){
     bp::implicitly_convertible< NeuronSWC, XYZ >();
 
     register_NeuronTree_class();
+
+    register_RGB8_class();
 
     register_TriviewControl_class();
 

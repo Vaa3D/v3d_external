@@ -12,11 +12,17 @@
 #include <QTime>
 #include <QMessageBox>
 #include <QThread>
+#include <QFileDialog>
+#include <QSettings>
 
 namespace bp = boost::python;
 using namespace std;
 
 static QTime performanceTimer;
+
+QThread *qtGuiThread = NULL;
+
+/* static */ const int PythonConsoleWindow::maxRecentScripts;
 
 PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 		: QMainWindow(parent),
@@ -76,9 +82,17 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 	connect(pythonInterpreter, SIGNAL(incompleteCommand(QString)), this, SLOT(onIncompleteCommand(QString)));
 	connect(this, SIGNAL(commandIssued(QString)), pythonInterpreter, SLOT(interpretLine(QString)));
 	connect(pythonInterpreter, SIGNAL(outputSent(QString)), this, SLOT(onOutput(QString)));
-	// QThread* pythonThread = new QThread(this); // Create a separate thread for running python
-	// pythonInterpreter->moveToThread(pythonThread);
-	// pythonThread->start();
+
+	// Run interpreter in its own thread.
+	bool bRunPythonInSeparateThread = false;
+	if (bRunPythonInSeparateThread) {
+		qtGuiThread = QThread::currentThread();
+		QThread* pythonThread = new QThread(this); // Create a separate thread for running python
+		pythonInterpreter->moveToThread(pythonThread);
+		pythonThread->start();
+	}
+
+	actionRun_script->setEnabled(true);
 }
 
 void PythonConsoleWindow::onOutput(QString msg) {
@@ -127,9 +141,86 @@ void PythonConsoleWindow::setupMenus()
     actionZoom_out->setIcon(QIcon(":/icons/zoom-out.png"));
     connect(actionZoom_out, SIGNAL(triggered()),
             this, SLOT(zoomOut()) );
-
-	actionRun_recent->setIcon(QIcon(":/icons/open-recent.png"));
 	actionRun_script->setIcon(QIcon(":/icons/run-script.png"));
+	connect( actionRun_script, SIGNAL(triggered()),
+			this, SLOT(runScript()) );
+
+	menuRun_recent->setIcon(QIcon(":/icons/open-recent.png"));
+	for (int i = 0; i < maxRecentScripts; ++i) {
+		recentScripts[i] = new QAction(this);
+		recentScripts[i]->setVisible(false);
+		connect(recentScripts[i], SIGNAL(triggered()),
+				this, SLOT(openRecentFile()));
+		menuRun_recent->addAction(recentScripts[i]);
+	}
+	updateRecent();
+}
+
+void PythonConsoleWindow::runScript() {
+	QString fileName =  QFileDialog::getOpenFileName( this,
+				tr("Choose python script file to run"),
+				QDir::currentPath(),
+				tr("Python scripts (*.py);;AllFiles (*.*)"));
+	if ( ! fileName.isNull() ) {
+		// Move past prompt
+		plainTextEdit->appendPlainText("");
+		pythonInterpreter->runScriptFile(fileName);
+		addRecent(fileName);
+	}
+}
+
+void PythonConsoleWindow::addRecent(const QString& fileName)
+{
+	QSettings settings("HHMI", "V3D");
+	QStringList files = settings.value("recentScriptList").toStringList();
+	// Perhaps this is already the most recent script
+	if ( (files.size() > 0) && (files[0] == fileName) )
+		return;
+	files.removeAll(fileName);
+	files.prepend(fileName);
+	while (files.size() > maxRecentScripts)
+		files.removeLast();
+	settings.setValue("recentScriptList", files);
+
+	int numRecentFiles = qMin(files.size(), maxRecentScripts);
+
+	for (int i = 0; i < numRecentFiles; ++i) {
+		recentScripts[i]->setText(files[i]);
+		recentScripts[i]->setData(files[i]);
+		recentScripts[i]->setVisible(true);
+	}
+	for (int j = numRecentFiles; j < maxRecentScripts; ++j)
+		recentScripts[j]->setVisible(false);
+
+	menuRun_recent->setVisible(numRecentFiles > 0);
+}
+
+void PythonConsoleWindow::updateRecent()
+{
+	QSettings settings("HHMI", "V3D");
+	QStringList files = settings.value("recentScriptList").toStringList();
+	int numRecentFiles = qMin(files.size(), maxRecentScripts);
+
+	for (int i = 0; i < numRecentFiles; ++i) {
+		recentScripts[i]->setText(files[i]);
+		recentScripts[i]->setData(files[i]);
+		recentScripts[i]->setVisible(true);
+	}
+	for (int j = numRecentFiles; j < maxRecentScripts; ++j)
+		recentScripts[j]->setVisible(false);
+
+	menuRun_recent->setEnabled(numRecentFiles > 0);
+}
+
+void PythonConsoleWindow::openRecentFile()
+{
+	QAction *action = qobject_cast<QAction *>(sender());
+	if (! action) return;
+    QString fileName(action->data().toString());
+    if (fileName.isNull()) return;
+	// Move past prompt
+	plainTextEdit->appendPlainText("");
+    pythonInterpreter->runScriptFile(fileName);
 }
 
 void PythonConsoleWindow::zoomIn() {

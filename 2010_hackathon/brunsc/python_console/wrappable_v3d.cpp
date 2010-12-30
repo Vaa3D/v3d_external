@@ -1,8 +1,13 @@
 #include "wrappable_v3d.h"
 #include <stdexcept>
 
+// Test QString wrapping
+QString hello() {return QString("Hello");}
+std::string hello2(const QString& s) {return s.toStdString();}
+
 // defined in V3DPythonModule.cpp
 extern V3DPluginCallback2 *v3d_callbackPtr;
+extern QThread *qtGuiThread;
 
 class NullV3DCallbackException : public std::runtime_error
 {
@@ -17,6 +22,12 @@ V3DPluginCallback2* getCallback()
         throw NullV3DCallbackException("V3D callback is NULL");
     return v3d_callbackPtr;
 }
+
+
+void ImageWindowReceiver::open3DWindow() {
+    getCallback()->open3DWindow(handle);
+}
+
 
 V3D_GlobalSetting getGlobalSetting() {
     return getCallback()->getGlobalSetting();
@@ -34,10 +45,32 @@ bool setGlobalSetting(V3D_GlobalSetting& gs) {
     return ImageWindow(getCallback()->curHiddenSelectedWindow());
 }
 
-ImageWindow::ImageWindow(void* h) : handle(h) {}
-ImageWindow::ImageWindow(const std::string& name) {
-    handle = getCallback()->newImageWindow(QString(name.c_str()));
+ImageWindow::ImageWindow(void* h) : handle(h)
+{
+	// TODO - must get that receiver into the GUI thread
+	receiver = new ImageWindowReceiver();
+	receiver->handle = handle;
+	if (qtGuiThread) {
+		receiver->moveToThread(qtGuiThread);
+	}
+	dispatcher = new ImageWindowDispatcher();
+	QObject::connect(dispatcher, SIGNAL(open3DWindow()),
+			receiver, SLOT(open3DWindow()));
 }
+
+ImageWindow::ImageWindow(const std::string& name)
+{
+    handle = getCallback()->newImageWindow(QString(name.c_str()));
+	receiver = new ImageWindowReceiver();
+	receiver->handle = handle;
+	if (qtGuiThread) {
+		receiver->moveToThread(qtGuiThread);
+	}
+	dispatcher = new ImageWindowDispatcher();
+	QObject::connect(dispatcher, SIGNAL(open3DWindow()),
+			receiver, SLOT(open3DWindow()));
+}
+
 void ImageWindow::update() {
     getCallback()->updateImageWindow(handle);
 }
@@ -73,7 +106,8 @@ bool ImageWindow::setSWC(NeuronTree & nt) {
 }
 //virtual void open3DWindow(v3dhandle image_window) = 0;
 void ImageWindow::open3DWindow() {
-    return getCallback()->open3DWindow(handle);
+    // return getCallback()->open3DWindow(handle);
+	dispatcher->emitOpen3DWindow();
 }
 //virtual void close3DWindow(v3dhandle image_window) = 0;
 void ImageWindow::close3DWindow() {

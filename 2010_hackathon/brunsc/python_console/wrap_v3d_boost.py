@@ -4,6 +4,7 @@ from pyplusplus import module_builder
 from pyplusplus import function_transformers as FT
 from pyplusplus.module_builder import call_policies
 from pygccxml.declarations.matchers import access_type_matcher_t
+from pygccxml import declarations
 import commands
 import os
 from doxygen_doc_extractor import doxygen_doc_extractor
@@ -40,6 +41,7 @@ class V3DWrapper:
         self.mb.class_('View3DControl').include()
         self.mb.class_('NeuronSWC').include()
         self.mb.class_('XYZ').include()
+        self.mb.class_('RGB8').include()
         self.mb.enum('PxLocationMarkerShape').include()
         self.mb.enum('PxLocationUsefulness').include()
         # self.mb.class_('RGB16i').include()
@@ -49,6 +51,13 @@ class V3DWrapper:
         self.wrap_TriviewControl()
         self.wrap_ImageWindow()
         self.wrap_LocationSimple()
+        self.wrap_QString()
+        
+    def wrap_QString(self):
+        # Warning - this could interfere with use of PySide or PyQt
+        self.mb.add_declaration_code('#include "convert_qstring.h"', tail=False)
+        self.mb.add_registration_code('register_qstring_conversion();', tail=False)
+        self.mb.class_('QString').already_exposed = True;
         
     def wrap_LocationSimple(self):
         cls = self.mb.class_('LocationSimple')
@@ -75,6 +84,8 @@ class V3DWrapper:
         cls.member_function('createBlankImage').exclude()        
     
     def wrap_ImageWindow(self):
+        self.mb.class_('ImageWindowReceiver').exclude()
+        self.mb.class_('ImageWindowDispatcher').exclude()
         cls = self.mb.class_('ImageWindow')
         cls.variables('handle').exclude()
         # get/set image
@@ -99,6 +110,11 @@ class V3DWrapper:
         fn = cls.member_function("getTriviewControl")
         fn.call_policies = call_policies.return_internal_reference()
         cls.add_property('triViewControl', fn)
+        # exclude constructor that takes void* argument
+        for ctor in cls.constructors(arg_types = [None]):
+            arg_t = ctor.argument_types[0]
+            if (declarations.is_pointer(arg_t)):
+                ctor.exclude()
         
     def wrap_TriviewControl(self):
         tvc = self.mb.class_('TriviewControl')
