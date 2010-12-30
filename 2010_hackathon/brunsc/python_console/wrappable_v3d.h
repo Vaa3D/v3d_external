@@ -11,7 +11,8 @@ bool setGlobalSetting(V3D_GlobalSetting& gs);
 class ImageWindow
 {
 public:
-    // Get the current V3D image window
+    /*! \brief Returns the currently displayed V3D image window.
+     */
     static ImageWindow current();
     static ImageWindow currentHiddenSelected();
     ImageWindow(void* h);
@@ -40,8 +41,8 @@ public:
     View3DControl* getLocalView3DControl();
     TriviewControl* getTriviewControl();
 
+private:
     void* handle;
 };
 
-
-#endif
+#endif /* WRAPPABLE_V3D_H_ */

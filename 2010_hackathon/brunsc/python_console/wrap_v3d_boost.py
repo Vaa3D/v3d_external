@@ -6,6 +6,7 @@ from pyplusplus.module_builder import call_policies
 from pygccxml.declarations.matchers import access_type_matcher_t
 import commands
 import os
+from doxygen_doc_extractor import doxygen_doc_extractor
 
 class V3DWrapper:
     def __init__(self):
@@ -112,7 +113,8 @@ class V3DWrapper:
         fn.add_transformation(FT.output('mytype'))
         
     def write_out(self, outputDir):
-        self.mb.build_code_creator(module_name='v3d')
+        extractor = doxygen_doc_extractor()
+        self.mb.build_code_creator(module_name='v3d', doc_extractor=extractor)
         self.mb.split_module(outputDir)
 
 if __name__ == "__main__":

@@ -39,7 +39,8 @@ void register_ImageWindow_class(){
             
             ImageWindow_exposer.def( 
                 "current"
-                , current_function_type( &::ImageWindow::current ) );
+                , current_function_type( &::ImageWindow::current )
+                , "\n Returns the currently displayed V3D image window.\n" );
         
         }
         { //::ImageWindow::currentHiddenSelected
