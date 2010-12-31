@@ -153,3 +153,21 @@ View3DControl* ImageWindow::getLocalView3DControl() {
 TriviewControl* ImageWindow::getTriviewControl() {
     return getCallback()->getTriviewControl(handle);
 }
+
+unsigned int qHash(const LocationSimple& loc)
+{
+    return qHash(QString("%1,%2,%3").arg(loc.x).arg(loc.y).arg(loc.z));
+}
+
+bool operator!=(const LocationSimple& lhs, const LocationSimple& rhs)
+{
+    if (lhs.x != rhs.x) return true;
+    if (lhs.y != rhs.y) return true;
+    if (lhs.z != rhs.z) return true;
+    return false;
+}
+
+bool operator==(const LocationSimple& lhs, const LocationSimple& rhs)
+{
+    return ! (lhs != rhs);
+}

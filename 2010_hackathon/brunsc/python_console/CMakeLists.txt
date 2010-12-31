@@ -38,6 +38,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 file(GLOB PYPLUSPLUS_SRCS "generated_code/*.cpp")
 list(REMOVE_ITEM PYPLUSPLUS_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/generated_code/v3d.main.cpp")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/generated_code")
 # message(${PYPLUSPLUS_SRCS})
 
 set(V3D_PYTHON_CONSOLE_SRCS
@@ -116,3 +117,39 @@ set_target_properties(PythonConsolePlugin PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${PYTHON_CONSOLE_PLUGIN_OUTPUT_DIR}"
     RUNTIME_OUTPUT_DIRECTORY "${PYTHON_CONSOLE_PLUGIN_OUTPUT_DIR}"
 )
+
+#####################################
+# Generate bindings with pyplusplus #
+#####################################
+
+set(PYCONSOLE_GENERATE_WRAP_CODE FALSE CACHE BOOL 
+    "Whether to run pyplusplus to generate boost python wrappers")
+if(PYCONSOLE_GENERATE_WRAP_CODE)
+    find_package(PythonInterp REQUIRED)
+    file(GLOB V3D_PLUGIN_HEADERS
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../../v3d_main/basic_c_fun/*.h")
+    set(WRAP_DEPEND_SRCS
+        ${V3D_PLUGIN_HEADERS}
+        convert_qstring.h
+        wrappable_v3d.h
+        qlist_py_indexing.h
+        doxygen_doc_extractor.py
+        wrap_v3d_boost.py)
+    message(${WRAP_DEPEND_SRCS})
+    set(V3DGEN_STAMP "${CMAKE_CURRENT_SOURCE_DIR}/generated_code/generate_v3d.stamp")
+    add_custom_command(
+        COMMAND "${PYTHON_EXECUTABLE}" wrap_v3d_boost.py
+            > "${CMAKE_CURRENT_BINARY_DIR}/wrap_v3d_boost.log"
+            2> "${CMAKE_CURRENT_BINARY_DIR}/wrap_v3d_boost.err"
+        OUTPUT "${V3DGEN_STAMP}"
+        DEPENDS ${WRAP_DEPEND_SRCS}
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        COMMENT "Creating V3D wrapper source files.  Examine wrap_v3d_boost.err file for details"
+    )
+    add_custom_target(GenerateV3DWrapperSources
+        DEPENDS "${V3DGEN_STAMP}"
+        SOURCES ${WRAP_DEPEND_SRCS}
+    )
+    
+    add_dependencies(PythonConsolePlugin GenerateV3DWrapperSources)
+endif()

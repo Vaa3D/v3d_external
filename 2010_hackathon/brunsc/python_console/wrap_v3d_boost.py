@@ -29,8 +29,8 @@ class V3DWrapper:
             files = ['wrappable_v3d.h',],
             gccxml_path=gccxml_executable,
             cflags=' --gccxml-cxxflags "-m32"',
-            include_paths=includes
-            )
+            include_paths=includes,
+            indexing_suite_version=2)
         
     def wrap(self):
         self.mb.enum('ImagePixelType').include()
@@ -52,21 +52,83 @@ class V3DWrapper:
         self.wrap_ImageWindow()
         self.wrap_LocationSimple()
         self.wrap_QString()
+        self.wrap_QList()
+        self.wrap_QBool()
+        # and finally
+        self.mb.member_operators('operator*').exclude()
+        self.mb.member_operators('operator->').exclude()
+        self.mb.member_operators('operator++').exclude()
+        self.mb.member_operators('operator--').exclude()
+        self.mb.member_operators('operator>>').exclude()
+        self.mb.member_operators('operator<<').exclude()
+        
+    def wrap_QBool(self):
+        cls = self.mb.class_('QBool')
+        cls.include()
+        
+    def wrap_QList(self):
+        for cls_name in ['QList<LocationSimple>',]:
+            cls = self.mb.class_(cls_name)
+            self.wrap_one_QList(cls)
+        cls = self.mb.class_('QList<LocationSimple>')
+        cls.include_files.append("_LocationSimple__value_traits.pypp.hpp")
+        
+    def wrap_one_QList(self, cls):
+        cls.include()
+        cls.variables().exclude()
+        # Avoid constructor that takes Node* argument
+        for ctor in cls.constructors(arg_types=[None]):
+            arg_t = ctor.argument_types[0]
+            if (declarations.is_pointer(arg_t)):
+                ctor.exclude()
+        for fn_name in ['detach_helper_grow', 
+                        'node_construct', 
+                        'node_destruct',
+                        'node_copy',
+                        'fromVector',
+                        'toVector',
+                        'toSet',
+                        'fromSet']:
+            cls.member_functions(fn_name).exclude()
+        for fn_name in ['back', 'first', 'front', 'last']:
+            cls.member_functions(fn_name).call_policies = \
+                call_policies.return_internal_reference()
+        # TODO - add python sequence operators
+        cls.include_files.append("qlist_py_indexing.h")
+        cls.add_registration_code("""
+            def(bp::indexing::container_suite<
+                    %s, 
+                    bp::indexing::all_methods, 
+                    list_algorithms<qlist_container_traits<%s > > >())
+            """ % (cls.demangled, cls.demangled) )
+
         
     def wrap_QString(self):
         # Warning - this could interfere with use of PySide or PyQt
+        cls = self.mb.class_('QString')
+        # cls.include_files.append("convert_qstring.h")
         self.mb.add_declaration_code('#include "convert_qstring.h"', tail=False)
         self.mb.add_registration_code('register_qstring_conversion();', tail=False)
-        self.mb.class_('QString').already_exposed = True;
+        cls.already_exposed = True;
         
     def wrap_LocationSimple(self):
         cls = self.mb.class_('LocationSimple')
         cls.include()
+        # TODO - use only the float version of getCoord, 
+        # ...and push arguments to return value.
         for fn in cls.member_functions('getCoord'):
+            arg_t = fn.argument_types[0]
+            if (arg_t.decl_string == "int &"):
+                # fn.exclude() # don't want the int one
+                fn_alias = 'getCoordInt'
+            else:
+                # want the float one
+                fn_alias = 'getCoord'
             fn.add_transformation( 
-                    FT.output('xx'), 
-                    FT.output('yy'), 
-                    FT.output('zz') )
+                                  FT.output('xx'), 
+                                  FT.output('yy'), 
+                                  FT.output('zz'),
+                                  alias = fn_alias )
         
     def wrap_Image4DSimple(self):
         cls = self.mb.class_("Image4DSimple")
@@ -132,6 +194,9 @@ class V3DWrapper:
         extractor = doxygen_doc_extractor()
         self.mb.build_code_creator(module_name='v3d', doc_extractor=extractor)
         self.mb.split_module(outputDir)
+        # Record success for makefile dependencies: "touch" in python is long...
+        open(os.path.join(os.path.abspath('.'), 'generated_code', 'generate_v3d.stamp'), "w").close()
+
 
 if __name__ == "__main__":
     v3dWrapper = V3DWrapper()

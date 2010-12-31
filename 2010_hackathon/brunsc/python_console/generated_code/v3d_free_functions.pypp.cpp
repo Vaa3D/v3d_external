@@ -39,6 +39,17 @@ void register_free_functions(){
     
     }
 
+    { //::qHash
+    
+        typedef unsigned int ( *qHash_function_type )( ::LocationSimple const & );
+        
+        bp::def( 
+            "qHash"
+            , qHash_function_type( &::qHash )
+            , ( bp::arg("loc") ) );
+    
+    }
+
     { //::setGlobalSetting
     
         typedef bool ( *setGlobalSetting_function_type )( ::V3D_GlobalSetting & );

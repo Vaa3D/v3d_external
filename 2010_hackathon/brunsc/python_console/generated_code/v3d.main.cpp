@@ -6,6 +6,12 @@
 
 #include "__call_policies.pypp.hpp"
 
+#include "indexing_suite/value_traits.hpp"
+
+#include "indexing_suite/container_suite.hpp"
+
+#include "indexing_suite/list.hpp"
+
 #include "__ctypes_integration.pypp.hpp"
 
 #include "wrappable_v3d.h"
@@ -20,7 +26,9 @@
 
 #include "generated_code/NeuronTree.pypp.hpp"
 
-#include "generated_code/RGB8.pypp.hpp"
+#include "generated_code/QBool.pypp.hpp"
+
+#include "generated_code/QList_LocationSimple.pypp.hpp"
 
 #include "generated_code/TriviewControl.pypp.hpp"
 
@@ -29,6 +37,8 @@
 #include "generated_code/View3DControl.pypp.hpp"
 
 #include "generated_code/XYZ.pypp.hpp"
+
+#include "generated_code/std_list_LocationSimple.pypp.hpp"
 
 #include "generated_code/v3d_enumerations.pypp.hpp"
 
@@ -43,6 +53,8 @@ BOOST_PYTHON_MODULE(v3d){
 
     register_qstring_conversion();
 
+    register_std_list_LocationSimple_class();
+
     register_Image4DSimple_class();
 
     register_ImageWindow_class();
@@ -55,7 +67,11 @@ BOOST_PYTHON_MODULE(v3d){
 
     register_NeuronTree_class();
 
-    register_RGB8_class();
+    register_QBool_class();
+
+    bp::implicitly_convertible< QBool, void const * >();
+
+    register_QList_LocationSimple_class();
 
     register_TriviewControl_class();
 

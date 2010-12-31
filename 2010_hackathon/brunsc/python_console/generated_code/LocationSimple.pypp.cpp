@@ -33,11 +33,11 @@ void register_LocationSimple_class(){
             "getAve"
             , (double ( ::LocationSimple::* )(  ) )( &::LocationSimple::getAve ) )    
         .def( 
-            "getCoord_cc399825571d9d2fb0b87d70fc79ba3e"
+            "getCoordInt"
             , (boost::python::tuple (*)( ::LocationSimple & ))( &getCoord_cc399825571d9d2fb0b87d70fc79ba3e )
             , ( bp::arg("inst") ) )    
         .def( 
-            "getCoord_ee590485e8897f0837017b9b7e8b3b5f"
+            "getCoord"
             , (boost::python::tuple (*)( ::LocationSimple & ))( &getCoord_ee590485e8897f0837017b9b7e8b3b5f )
             , ( bp::arg("inst") ) )    
         .def( 
@@ -79,6 +79,8 @@ void register_LocationSimple_class(){
         .def_readwrite( "skew", &LocationSimple::skew )    
         .def_readwrite( "x", &LocationSimple::x )    
         .def_readwrite( "y", &LocationSimple::y )    
-        .def_readwrite( "z", &LocationSimple::z );
+        .def_readwrite( "z", &LocationSimple::z )    
+        .def( bp::self != bp::self )    
+        .def( bp::self == bp::self );
 
 }

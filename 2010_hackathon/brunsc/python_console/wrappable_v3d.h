@@ -78,4 +78,18 @@ private:
 QString hello();
 std::string hello2(const QString& s);
 
+// gccxml chokes.  perhaps if LocationSimple had a operator==()...
+// gccxml is OK after adding operator== and global qHash(LocationSimple)
+// functions.
+template class QList<LocationSimple>;
+unsigned int qHash(const LocationSimple& loc);
+
+bool operator!=(const LocationSimple& lhs, const LocationSimple& rhs);
+bool operator==(const LocationSimple& lhs, const LocationSimple& rhs);
+
+namespace pyplusplus { namespace aliases {
+    typedef QList<LocationSimple> QList_LocationSimple;
+    typedef std::list<LocationSimple> std_list_LocationSimple;
+}}
+
 #endif /* WRAPPABLE_V3D_H_ */
