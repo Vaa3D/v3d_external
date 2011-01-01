@@ -41,8 +41,8 @@ class V3DWrapper:
             "V3D biomedical volume visualization program "
             "from the python programming language.  The v3d "
             "module exposes the V3D plug-in API; thus most "
-            "things that can be done from a V3D plug-in can be "
-            "also done interactively from the V3D python console."
+            "things that can be done from a V3D plug-in can also be "
+            "done interactively from the V3D python console."
             ;
         """)
         self.mb.enum('ImagePixelType').include()
