@@ -532,8 +532,6 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 		return s_error;
 	}
 	//=========================================================================================================
-	//for (i=0;i<num_nodes;i++)	std::cout<<"p("<<i<<")="<<plist[i]<<";   ";  std::cout<<std::endl;
-
 
 	// output node coordinates of the shortest path
 	mmUnit.clear();
@@ -542,7 +540,7 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 	V_NeuronSWC_unit cc;
 	vector<V_NeuronSWC_unit> mUnit;
 
-	if (n_end_nodes==0) // trace from start-->each possible node
+	if (n_end_nodes==0) // trace from start-->each possible node //this part has been updated completely in the new separate v3dneuron project. no need to understand or use this any more here. by PHC, 2010-Dec-31 11:31pm.
 	{
 #define _output_shortest_path_TREE_
 		printf("trace from start-->each possible node \n");
@@ -561,6 +559,7 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 				cc.parent = -1;
 				cc.nchild = 1; // root isn't leaf
 				mUnit.push_back(cc);
+				index_map[cc.n] = mUnit.size()-1; //fix this bug so that the nchild file of the root will be correct, PHC, 20101231 
 				printf("[start: x y z] %ld: %g %g %g \n", j, cc.x, cc.y, cc.z);
 			}
 			else if ( (k=plist[j]) != j ) // has parent
