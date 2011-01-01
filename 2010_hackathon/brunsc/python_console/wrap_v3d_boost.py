@@ -33,6 +33,18 @@ class V3DWrapper:
             indexing_suite_version=2)
         
     def wrap(self):
+        self.mb.add_registration_code("""
+        boost::python::scope().attr("__doc__") = 
+            "Python module for interacting with the V3D visualization program."
+            "\\n\\n"
+            "The v3d python module enables control of the "
+            "V3D biomedical volume visualization program "
+            "from the python programming language.  The v3d "
+            "module exposes the V3D plug-in API; thus most "
+            "things that can be done from a V3D plug-in can be "
+            "also done interactively from the V3D python console."
+            ;
+        """)
         self.mb.enum('ImagePixelType').include()
         self.mb.enum('TimePackType').include()
         self.mb.class_('V3D_GlobalSetting').include()
@@ -61,10 +73,19 @@ class V3DWrapper:
         self.mb.member_operators('operator--').exclude()
         self.mb.member_operators('operator>>').exclude()
         self.mb.member_operators('operator<<').exclude()
+        self.mb.free_functions('hello').exclude()
+        self.mb.free_functions('hello2').exclude()
+        self.mb.free_functions('qHash').exclude()
         
     def wrap_QBool(self):
         cls = self.mb.class_('QBool')
         cls.include()
+        cls.documentation = """
+        Boolean true/false type in the Qt C++ API.
+        
+        Don't use QBool().  It is wrapped in V3D python because one of the
+        methods in the QList<> API returns a QBool.
+        """
         
     def wrap_QList(self):
         for cls_name in ['QList<LocationSimple>',]:

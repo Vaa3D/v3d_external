@@ -81,6 +81,17 @@ BOOST_PYTHON_MODULE(v3d){
 
     register_XYZ_class();
 
+    boost::python::scope().attr("__doc__") = 
+                "Python module for interacting with the V3D visualization program."
+                "\n\n"
+                "The v3d python module enables control of the "
+                "V3D biomedical volume visualization program "
+                "from the python programming language.  The v3d "
+                "module exposes the V3D plug-in API; thus most "
+                "things that can be done from a V3D plug-in can be "
+                "also done interactively from the V3D python console."
+                ;
+
     register_free_functions();
 }
 

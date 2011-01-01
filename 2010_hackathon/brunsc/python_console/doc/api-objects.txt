@@ -2,7 +2,6 @@ v3d	v3d-module.html
 v3d.TIME_PACK_C	v3d-module.html#TIME_PACK_C
 v3d.V3D_UNKNOWN	v3d-module.html#V3D_UNKNOWN
 v3d.V3D_FLOAT32	v3d-module.html#V3D_FLOAT32
-v3d.qHash	v3d-module.html#qHash
 v3d.pxSquareY	v3d-module.html#pxSquareY
 v3d.pxCircleY	v3d-module.html#pxCircleY
 v3d.TIME_PACK_Z	v3d-module.html#TIME_PACK_Z
@@ -23,14 +22,12 @@ v3d.pxSquareZ	v3d-module.html#pxSquareZ
 v3d.V3D_UINT16	v3d-module.html#V3D_UINT16
 v3d.pxSquareX	v3d-module.html#pxSquareX
 v3d.pxLocaNotUseful	v3d-module.html#pxLocaNotUseful
-v3d.hello2	v3d-module.html#hello2
-v3d.V3D_UINT8	v3d-module.html#V3D_UINT8
 v3d.pxTemp	v3d-module.html#pxTemp
+v3d.V3D_UINT8	v3d-module.html#V3D_UINT8
 v3d.pxLineX	v3d-module.html#pxLineX
 v3d.pxLocaUseful	v3d-module.html#pxLocaUseful
 v3d.TIME_PACK_NONE	v3d-module.html#TIME_PACK_NONE
 v3d.pxUnset	v3d-module.html#pxUnset
-v3d.hello	v3d-module.html#hello
 v3d.Image4DSimple	v3d.Image4DSimple-class.html
 v3d.Image4DSimple.setCDim	v3d.Image4DSimple-class.html#setCDim
 v3d.Image4DSimple.getTotalUnitNumberPerPlane	v3d.Image4DSimple-class.html#getTotalUnitNumberPerPlane
