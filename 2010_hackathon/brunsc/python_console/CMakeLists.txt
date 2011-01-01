@@ -73,6 +73,8 @@ target_link_libraries(pythonConsoleTest
 ################################################
 # pythonConsole is a V3D plugin shared library #
 ################################################
+# ...which also doubles as a python module
+# TODO - create separate libraries for python module and plugin-only code
 
 include_directories(
     "${CMAKE_CURRENT_SOURCE_DIR}/../../../v3d_main/basic_c_fun/"
@@ -97,8 +99,12 @@ target_link_libraries(PythonConsolePlugin
 
 find_path(PLUGINS_PARENT_PATH plugins
     PATHS
-        "${CMAKE_CURRENT_SOURCE_DIR}/../../../../build_v3d_cmake_eclipse/v3d/Mac_Fat/v3d.app/Contents/MacOS"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../../../../build_v3d_cmake_eclipse/v3d/Linux_32"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../../../build_v3d_cmake_eclipse/v3d"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../../build_cmake/v3d"
+    PATH_SUFFIXES
+        "Mac_Fat/v3d.app/Contents/MacOS"
+        "Linux_32"
+        "Linux_64"
     NO_DEFAULT_PATH
     )
     
@@ -108,23 +114,33 @@ else()
     set(PLUGINS_PATH "${CMAKE_CURRENT_BINARY_DIR}/plugins")
 endif()
 
-set(PYTHON_CONSOLE_PLUGIN_OUTPUT_DIR
+set(V3D_PYTHON_CONSOLE_PLUGIN_OUTPUT_DIR
     "${PLUGINS_PATH}/python_console"
     CACHE PATH "Where to build python console plugin")
 
 set_target_properties(PythonConsolePlugin PROPERTIES 
-    ARCHIVE_OUTPUT_DIRECTORY "${PYTHON_CONSOLE_PLUGIN_OUTPUT_DIR}"
-    LIBRARY_OUTPUT_DIRECTORY "${PYTHON_CONSOLE_PLUGIN_OUTPUT_DIR}"
-    RUNTIME_OUTPUT_DIRECTORY "${PYTHON_CONSOLE_PLUGIN_OUTPUT_DIR}"
+    ARCHIVE_OUTPUT_DIRECTORY "${V3D_PYTHON_CONSOLE_PLUGIN_OUTPUT_DIR}"
+    LIBRARY_OUTPUT_DIRECTORY "${V3D_PYTHON_CONSOLE_PLUGIN_OUTPUT_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY "${V3D_PYTHON_CONSOLE_PLUGIN_OUTPUT_DIR}"
 )
+
+# Set output name of plugin to v3d.so or whatever, so it can be loaded as a module in python,
+# ... so we can use epydoc to generate documentation.
+set_target_properties(PythonConsolePlugin PROPERTIES
+    OUTPUT_NAME v3d
+    PREFIX ""
+)
+if(WIN32)
+    set_target_properties(PythonConsolePlugin PROPERTIES SUFFIX "pyd")
+endif()
 
 #####################################
 # Generate bindings with pyplusplus #
 #####################################
 
-set(PYCONSOLE_GENERATE_WRAP_CODE FALSE CACHE BOOL 
+set(V3D_PYTHON_CONSOLE_GENERATE_WRAP_CODE FALSE CACHE BOOL 
     "Whether to run pyplusplus to generate boost python wrappers")
-if(PYCONSOLE_GENERATE_WRAP_CODE)
+if(V3D_PYTHON_CONSOLE_GENERATE_WRAP_CODE)
     find_package(PythonInterp REQUIRED)
     file(GLOB V3D_PLUGIN_HEADERS
         "${CMAKE_CURRENT_SOURCE_DIR}/../../../v3d_main/basic_c_fun/*.h")
@@ -135,12 +151,13 @@ if(PYCONSOLE_GENERATE_WRAP_CODE)
         qlist_py_indexing.h
         doxygen_doc_extractor.py
         wrap_v3d_boost.py)
-    message(${WRAP_DEPEND_SRCS})
+    # message(${WRAP_DEPEND_SRCS})
     set(V3DGEN_STAMP "${CMAKE_CURRENT_SOURCE_DIR}/generated_code/generate_v3d.stamp")
     add_custom_command(
         COMMAND "${PYTHON_EXECUTABLE}" wrap_v3d_boost.py
             > "${CMAKE_CURRENT_BINARY_DIR}/wrap_v3d_boost.log"
             2> "${CMAKE_CURRENT_BINARY_DIR}/wrap_v3d_boost.err"
+        COMMAND $(CMAKE_COMMAND) -E touch "${V3DGEN_STAMP}"
         OUTPUT "${V3DGEN_STAMP}"
         DEPENDS ${WRAP_DEPEND_SRCS}
         WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -153,3 +170,29 @@ if(PYCONSOLE_GENERATE_WRAP_CODE)
     
     add_dependencies(PythonConsolePlugin GenerateV3DWrapperSources)
 endif()
+
+#######################################
+# Generate documentation using epydoc #
+#######################################
+
+set(V3D_PYTHON_CONSOLE_GENERATE_API_DOCS FALSE CACHE BOOL
+    "Whether to (re)generate documentation for the V3D python programming API")
+if(V3D_PYTHON_CONSOLE_GENERATE_API_DOCS)
+    find_package(PythonInterp REQUIRED)
+    find_program(EPYDOC_EXECUTABLE NAMES epydoc epydoc.py)
+    if(EPYDOC_EXECUTABLE)
+        find_program(DOT_EXECUTABLE dot)
+        if(DOT_EXECUTABLE)
+            set(EPYDOC_OPTIONS ${EPYDOC_OPTIONS} --graph all --dotpath ${DOT_EXECUTABLE})
+        endif()
+        set(DOC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/doc")
+        file(MAKE_DIRECTORY "${DOC_DIR}")
+        configure_file(run_epydoc.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/run_epydoc.cmake @ONLY)
+        add_custom_command(
+            TARGET PythonConsolePlugin POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/run_epydoc.cmake"
+            COMMENT "Creating V3D python API documentation using epydoc..."
+        )
+    endif()
+endif()
+
