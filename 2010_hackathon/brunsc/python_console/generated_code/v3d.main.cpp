@@ -12,8 +12,6 @@
 
 #include "indexing_suite/list.hpp"
 
-#include "__ctypes_integration.pypp.hpp"
-
 #include "wrappable_v3d.h"
 
 #include "generated_code/Image4DSimple.pypp.hpp"
@@ -29,6 +27,14 @@
 #include "generated_code/QBool.pypp.hpp"
 
 #include "generated_code/QList_LocationSimple.pypp.hpp"
+
+#include "generated_code/RGB16i.pypp.hpp"
+
+#include "generated_code/RGB32f.pypp.hpp"
+
+#include "generated_code/RGB32i.pypp.hpp"
+
+#include "generated_code/RGB8.pypp.hpp"
 
 #include "generated_code/TriviewControl.pypp.hpp"
 
@@ -72,6 +78,14 @@ BOOST_PYTHON_MODULE(v3d){
     bp::implicitly_convertible< QBool, void const * >();
 
     register_QList_LocationSimple_class();
+
+    register_RGB16i_class();
+
+    register_RGB32f_class();
+
+    register_RGB32i_class();
+
+    register_RGB8_class();
 
     register_TriviewControl_class();
 

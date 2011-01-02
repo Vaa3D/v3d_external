@@ -5,11 +5,11 @@
 namespace bp = boost::python;
 using namespace std;
 
-PythonOutputRedirector2::PythonOutputRedirector2(PythonInterpreter *p_interpreter)
+PythonOutputRedirector::PythonOutputRedirector(PythonInterpreter *p_interpreter)
     : interpreter(p_interpreter)
 {}
 
-void PythonOutputRedirector2::write( std::string const& str )
+void PythonOutputRedirector::write( std::string const& str )
 {
     interpreter->onOutput(QString(str.c_str()));
 }
@@ -21,8 +21,16 @@ PythonInputRedirector::PythonInputRedirector(PythonInterpreter *p_interpreter)
 // TODO - this is a hack that does not actually get user input
 std::string PythonInputRedirector::readline()
 {
+    return interpreter->readline();
     // cerr << "readline" << endl;
-    return "\n"; // TODO this is a hack to avoid hanging during input.
+    // return "\n"; // TODO this is a hack to avoid hanging during input.
+}
+
+std::string PythonInterpreter::readline()
+{
+    emit startReadline();
+    readlineLoop.exec(); // block until readline
+    return readlineString.toStdString();
 }
 
 PythonInterpreter::PythonInterpreter()
@@ -41,9 +49,9 @@ PythonInterpreter::PythonInterpreter()
 		// Adapted from
 		//   http://onegazhang.spaces.live.com/blog/cns!D5E642BC862BA286!727.entry
 		main_namespace["PythonOutputRedirector"] =
-			bp::class_<PythonOutputRedirector2>(
-					"PythonOutputRedirector2", bp::init<>())
-				.def("write", &PythonOutputRedirector2::write)
+			bp::class_<PythonOutputRedirector>(
+					"PythonOutputRedirector", bp::init<>())
+				.def("write", &PythonOutputRedirector::write)
 				;
 		main_namespace["PythonInputRedirector"] =
 			bp::class_<PythonInputRedirector>(
@@ -78,6 +86,14 @@ void PythonInterpreter::runScriptFile(QString fileName)
 		PyRun_SimpleFileEx(fp, fileName.toLocal8Bit(), 1); // 1 means close it for me
 	}
 	emit commandComplete();
+}
+
+void PythonInterpreter::finishReadline(QString line)
+{
+    // Don't run command if python stdin is waiting for readline input
+    readlineString = line;
+    readlineLoop.exit();
+    return;
 }
 
 void PythonInterpreter::interpretLine(QString line)

@@ -82,54 +82,54 @@ inline int power_of_two_floor(int x) { int y; for (y = 1; y <= x; y = y*2);	retu
 
 ////////////////////////////////////////////////////////
 
-union RGB8 {
+struct RGB8 { union {
 	struct { unsigned char r,g,b; };
 	unsigned char c[3];
-};
-union RGBA8 {
+};};
+struct RGBA8 { union {
 	struct { unsigned char r,g,b,a; };
 	unsigned char c[4];
 	unsigned int i;
-};
-union BGR8 { // Windows-DIB
+};};
+struct BGR8 { union { // Windows-DIB
 	struct { unsigned char b,g,r; };
 	unsigned char c[3];
-};
-union BGRA8 { // Windows-DIB
+};};
+struct BGRA8 { union { // Windows-DIB
 	struct { unsigned char b,g,r,a; };
 	unsigned char c[4];
 	unsigned int i;
-};
-union ABGR8 { // little endian
+};};
+struct ABGR8 { union { // little endian
 	struct { unsigned char a,b,g,r; };
 	unsigned char c[4];
 	unsigned int i;
-};
+};};
 
-union RGB16i {
+struct RGB16i { union {
 	struct { short r,g,b; };
 	short c[3];
-};
-union RGBA16i {
+};};
+struct RGBA16i { union {
 	struct { short r,g,b,a; };
 	short c[4];
-};
-union RGB32i {
+};};
+struct RGB32i { union {
 	struct { int r,g,b; };
 	int c[3];
-};
-union RGBA32i {
+};};
+struct RGBA32i { union {
 	struct { int r,g,b,a; };
 	int c[4];
-};
-union RGB32f {
+};};
+struct RGB32f { union {
 	struct { float r,g,b; };
 	float c[3];
-};
-union RGBA32f {
+};};
+struct RGBA32f { union {
 	struct { float r,g,b,a; };
 	float c[4];
-};
+};};
 
 RGB8 random_rgb8(); // use normalize(XYZ)
 RGBA8 random_rgba8();

@@ -22,6 +22,7 @@ signals:
 	void pasteAvailable(bool);
 	void cutAvailable(bool);
 	void commandIssued(QString);
+	void pythonReadlineEntered(QString);
 
 private slots:
 	void onReturnPressed();
@@ -31,6 +32,7 @@ private slots:
 	void onCopyAvailable(bool);
 	void onCommandComplete();
 	void onIncompleteCommand(QString partialCmd);
+	void onPythonReadline();
 	void onOutput(QString msg);
 	void about();
 	void zoomIn();
@@ -50,6 +52,7 @@ private:
     void addRecent(const QString& fileName);
     void updateRecent();
 
+    bool bPythonReadline;
 	QString prompt;
 	int promptLength;
 	QTextCursor latestGoodCursorPosition;

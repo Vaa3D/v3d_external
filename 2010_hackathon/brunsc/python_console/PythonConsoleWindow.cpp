@@ -29,7 +29,8 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 		  prompt(">>> "),
 		  promptLength(prompt.length()),
 		  multilineCommand(""),
-		  commandRing(50) // remember latest 50 commands
+		  commandRing(50), // remember latest 50 commands
+		  bPythonReadline(false)
 {
 	setupUi(this);
 	setupMenus();
@@ -65,7 +66,7 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 
 	plainTextEdit->appendPlainText(
 			"Type \"help\", \"copyright\", \"credits\" or "
-			"\"license()\" for more information.");
+			"\"license()\" for more information(about python).");
 
 	plainTextEdit->appendPlainText(""); // need new line for prompt
 	placeNewPrompt(true);
@@ -80,7 +81,12 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 	pythonInterpreter = new PythonInterpreter();
 	connect(pythonInterpreter, SIGNAL(commandComplete()), this, SLOT(onCommandComplete()));
 	connect(pythonInterpreter, SIGNAL(incompleteCommand(QString)), this, SLOT(onIncompleteCommand(QString)));
-	connect(this, SIGNAL(commandIssued(QString)), pythonInterpreter, SLOT(interpretLine(QString)));
+	connect( this, SIGNAL(commandIssued(QString)),
+	        pythonInterpreter, SLOT(interpretLine(QString)) );
+	connect( pythonInterpreter, SIGNAL(startReadline()),
+	        this, SLOT(onPythonReadline()) );
+	connect( this, SIGNAL(pythonReadlineEntered(QString)),
+	        pythonInterpreter, SLOT(finishReadline(QString)) );
 	connect(pythonInterpreter, SIGNAL(outputSent(QString)), this, SLOT(onOutput(QString)));
 
 	// Run interpreter in its own thread.
@@ -368,15 +374,21 @@ void PythonConsoleWindow::onReturnPressed()
     bool endIsVisible = plainTextEdit->document()->lastBlock().isVisible();
 
     QString command = getCurrentCommand();
-    commandRing.addHistory(command);
-    if (multilineCommand.length() > 0) {
-       // multi-line command can only be ended with a blank line.
-       if (command.length() == 0)
-           command = multilineCommand; // execute it now
-       else {
-           multilineCommand = multilineCommand + command + "\n";
-           command = ""; // skip execution until next time
-       }
+
+    // No command line history for readline.  I guess.
+    // (this could be changed)
+    if (!bPythonReadline)
+    {
+        commandRing.addHistory(command);
+        if (multilineCommand.length() > 0) {
+           // multi-line command can only be ended with a blank line.
+           if (command.length() == 0)
+               command = multilineCommand; // execute it now
+           else {
+               multilineCommand = multilineCommand + command + "\n";
+               command = ""; // skip execution until next time
+           }
+        }
     }
 
     // Add carriage return, so output will appear on subsequent line.
@@ -385,10 +397,18 @@ void PythonConsoleWindow::onReturnPressed()
     plainTextEdit->moveCursor(QTextCursor::End);
     plainTextEdit->appendPlainText("");  // We consumed the key event, so we have to add the newline.
 
-    if (command.length() > 0)
-        emit commandIssued(command);
-    else
-        placeNewPrompt(endIsVisible);
+    if (bPythonReadline) // fetching user input to python script
+    {
+        bPythonReadline = false;
+        setPrompt(">>> "); // restore normal prompt
+        emit pythonReadlineEntered(command + "\n");
+    }
+    else { // regular python command entry
+        if (command.length() > 0)
+            emit commandIssued(command);
+        else
+            placeNewPrompt(endIsVisible);
+    }
 }
 
 void PythonConsoleWindow::onCommandComplete()
@@ -405,6 +425,16 @@ void PythonConsoleWindow::onIncompleteCommand(QString partialCmd)
     bool endIsVisible = plainTextEdit->document()->lastBlock().isVisible();
 	setPrompt("... ");
 	placeNewPrompt(endIsVisible);
+}
+
+void PythonConsoleWindow::onPythonReadline()
+{
+    bPythonReadline = true;
+    multilineCommand = "";
+    setPrompt("");
+    placeNewPrompt(true);
+    // zero-length prompt requires explicit shift to read-write mode
+    plainTextEdit->setReadOnly(false);
 }
 
 void PythonConsoleWindow::onCopyAvailable(bool bCopyAvailable)
@@ -485,11 +515,11 @@ void PythonConsoleWindow::placeNewPrompt(bool bMakeVisible)
 	plainTextEdit->setUndoRedoEnabled(false); // clear undo/redo buffer
 	plainTextEdit->moveCursor(QTextCursor::End);
 	plainTextEdit->insertPlainText(prompt);
+    plainTextEdit->moveCursor(QTextCursor::End);
 	if (bMakeVisible) {
 		plainTextEdit->ensureCursorVisible();
 		// cerr << "make visible" << endl;
 	}
-	plainTextEdit->moveCursor(QTextCursor::End);
 	latestGoodCursorPosition = plainTextEdit->textCursor();
 	currentCommandStartPosition = latestGoodCursorPosition.position();
 	// Start undo/redo, just for user typing, not for computer output

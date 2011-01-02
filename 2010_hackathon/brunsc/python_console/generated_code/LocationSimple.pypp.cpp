@@ -3,7 +3,6 @@
 #include "boost/python.hpp"
 #include "__convenience.pypp.hpp"
 #include "__call_policies.pypp.hpp"
-#include "__ctypes_integration.pypp.hpp"
 #include "wrappable_v3d.h"
 #include "LocationSimple.pypp.hpp"
 
@@ -60,7 +59,7 @@ void register_LocationSimple_class(){
             , (void ( ::LocationSimple::* )(  ) )( &::LocationSimple::init ) )    
         .def_readwrite( "ave", &LocationSimple::ave )    
         .def_readwrite( "category", &LocationSimple::category )    
-        .add_property( "color", pyplus_conv::make_addressof_getter(&LocationSimple::color) )    
+        .def_readwrite( "color", &LocationSimple::color )    
         .def_readwrite( "comments", &LocationSimple::comments )    
         .def_readwrite( "curt", &LocationSimple::curt )    
         .def_readwrite( "ev_pc1", &LocationSimple::ev_pc1 )    
