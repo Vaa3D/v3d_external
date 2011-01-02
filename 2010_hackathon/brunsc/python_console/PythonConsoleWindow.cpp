@@ -66,7 +66,7 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 
 	plainTextEdit->appendPlainText(
 			"Type \"help\", \"copyright\", \"credits\" or "
-			"\"license()\" for more information(about python).");
+			"\"license()\" for more information about python.");
 
 	plainTextEdit->appendPlainText(""); // need new line for prompt
 	placeNewPrompt(true);

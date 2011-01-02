@@ -4,7 +4,15 @@
 #include "v3d_interface.h"
 
 // TODO can globalSetting be a property of the module?
+
+/*! \brief Returns general parameters of the V3D program.
+ *
+ */
 V3D_GlobalSetting getGlobalSetting();
+
+/*! \brief Sets general parameters of the V3D program.
+ *
+ */
 bool setGlobalSetting(V3D_GlobalSetting& gs);
 
 // Sends signals from non-GUI thread
@@ -34,14 +42,24 @@ private:
 };
 
 // Wrap v3dhandle, which is actually "void*", so python does not choke on it.
+
+/*! \brief A primary "TriView" window in the V3D interface.
+ *
+ */
 class ImageWindow
 {
 public:
-    /*! \brief Returns the currently displayed V3D image window.
+
+    /*! Returns the currently displayed V3D image window.
      */
     static ImageWindow current();
     static ImageWindow currentHiddenSelected();
     ImageWindow(void* h);
+
+    /*! Creates a new V3D Image window.
+     *
+     * @param name the name that appears in the title bar of the new window.
+     */
     ImageWindow(const std::string& name);
 
     void update();
@@ -55,6 +73,10 @@ public:
     bool setROI(ROIList & roi_list);
     NeuronTree getSWC();
     bool setSWC(NeuronTree & nt);
+
+    /*! Creates or opens a 3D volume visualization window showing the
+     * same image as this ImageWindow.
+     */
     void open3DWindow();
     void close3DWindow();
     void openROI3DWindow();
@@ -64,6 +86,10 @@ public:
     int pushTimepointIn3DWindow(int timepoint);
     bool screenShot3DWindow(const std::string& BMPfilename);
     bool screenShotROI3DWindow(const std::string& BMPfilename);
+
+    /*! Returns a View3DControl object, used to manipulate the 3D
+     * volume window.
+     */
     View3DControl* getView3DControl();
     View3DControl* getLocalView3DControl();
     TriviewControl* getTriviewControl();

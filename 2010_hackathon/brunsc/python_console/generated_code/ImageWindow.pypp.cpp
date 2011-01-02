@@ -10,7 +10,7 @@ void register_ImageWindow_class(){
 
     { //::ImageWindow
         typedef bp::class_< ImageWindow > ImageWindow_exposer_t;
-        ImageWindow_exposer_t ImageWindow_exposer = ImageWindow_exposer_t( "ImageWindow", bp::init< std::string const & >(( bp::arg("name") )) );
+        ImageWindow_exposer_t ImageWindow_exposer = ImageWindow_exposer_t( "ImageWindow", "\n A primary TriView window in the V3D interface.\n", bp::init< std::string const & >(( bp::arg("name") ), "\n Creates a new V3D Image window.\n\n @param name: the name that appears in the title bar of the new window.\n") );
         bp::scope ImageWindow_scope( ImageWindow_exposer );
         bp::implicitly_convertible< std::string const &, ImageWindow >();
         { //::ImageWindow::close3DWindow
@@ -123,7 +123,8 @@ void register_ImageWindow_class(){
             ImageWindow_exposer.def( 
                 "getView3DControl"
                 , getView3DControl_function_type( &::ImageWindow::getView3DControl )
-                , bp::return_internal_reference< >() );
+                , bp::return_internal_reference< >()
+                , "\n Returns a View3DControl object, used to manipulate the 3D\n volume window.\n" );
         
         }
         { //::ImageWindow::open3DWindow
@@ -132,7 +133,8 @@ void register_ImageWindow_class(){
             
             ImageWindow_exposer.def( 
                 "open3DWindow"
-                , open3DWindow_function_type( &::ImageWindow::open3DWindow ) );
+                , open3DWindow_function_type( &::ImageWindow::open3DWindow )
+                , "\n Creates or opens a 3D volume visualization window showing the\n same image as this ImageWindow.\n" );
         
         }
         { //::ImageWindow::openROI3DWindow

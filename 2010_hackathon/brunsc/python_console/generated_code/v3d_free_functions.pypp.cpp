@@ -14,7 +14,8 @@ void register_free_functions(){
         
         bp::def( 
             "getGlobalSetting"
-            , getGlobalSetting_function_type( &::getGlobalSetting ) );
+            , getGlobalSetting_function_type( &::getGlobalSetting )
+            , " Returns general parameters of the V3D program." );
     
     }
 
@@ -25,7 +26,8 @@ void register_free_functions(){
         bp::def( 
             "setGlobalSetting"
             , setGlobalSetting_function_type( &::setGlobalSetting )
-            , ( bp::arg("gs") ) );
+            , ( bp::arg("gs") )
+            , " Sets general parameters of the V3D program." );
     
     }
 

@@ -37,6 +37,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef __V3D_GLOBAL_PREFERENCE_H__
 #define __V3D_GLOBAL_PREFERENCE_H__
 
+/*!
+ * General settings for the V3D program.
+ */
 struct V3D_GlobalSetting
 {
 	//triview tab
