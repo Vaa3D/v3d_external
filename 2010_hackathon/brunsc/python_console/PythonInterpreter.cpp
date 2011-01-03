@@ -97,8 +97,6 @@ void PythonInterpreter::finishReadline(QString line)
 }
 
 void PythonInterpreter::interpretLine(QString line)
-// std::string PythonInterpreter::interpretString(const std::string& command0)
-// 	throw(IncompletePythonCommandException)
 {
 	std::string command0 = line.toStdString();
 

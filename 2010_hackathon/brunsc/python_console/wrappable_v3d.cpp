@@ -1,6 +1,8 @@
 #include "wrappable_v3d.h"
 #include <stdexcept>
 
+template class QList<LocationSimple>;
+
 // Test QString wrapping
 QString hello() {return QString("Hello");}
 std::string hello2(const QString& s) {return s.toStdString();}

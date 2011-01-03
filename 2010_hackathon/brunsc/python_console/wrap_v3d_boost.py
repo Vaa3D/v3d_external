@@ -24,13 +24,22 @@ class V3DWrapper:
                      ]:
             if os.path.exists(path):
                 includes.append(path)
-        gccxml_executable = commands.getstatusoutput("which gccxml")[1]
+        gccxml_executable = self.find_gccxml()
         self.mb = module_builder.module_builder_t(
             files = ['wrappable_v3d.h',],
             gccxml_path=gccxml_executable,
             cflags=' --gccxml-cxxflags "-m32"',
             include_paths=includes,
             indexing_suite_version=2)
+        
+    def find_gccxml(self):
+        g = commands.getstatusoutput("which gccxml")[1]
+        if (len(g) > 0) and (os.path.exists(g)):
+            return g
+        for g in ['/usr/local/bin/gccxml']:
+            if os.path.exists(g):
+                return g
+        error("Could not find gccxml program")
         
     def wrap(self):
         self.mb.add_registration_code("""

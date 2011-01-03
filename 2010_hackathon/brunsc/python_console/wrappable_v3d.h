@@ -3,7 +3,8 @@
 
 #include "v3d_interface.h"
 
-// TODO can globalSetting be a property of the module?
+// "extern" to avoid multiply defined symbol error on Mac
+extern template class QList<LocationSimple>;
 
 /*! \brief Returns general parameters of the V3D program.
  *
@@ -107,7 +108,6 @@ std::string hello2(const QString& s);
 // gccxml chokes.  perhaps if LocationSimple had a operator==()...
 // gccxml is OK after adding operator== and global qHash(LocationSimple)
 // functions.
-template class QList<LocationSimple>;
 unsigned int qHash(const LocationSimple& loc);
 
 bool operator!=(const LocationSimple& lhs, const LocationSimple& rhs);
