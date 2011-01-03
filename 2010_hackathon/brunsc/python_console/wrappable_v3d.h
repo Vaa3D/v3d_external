@@ -5,6 +5,7 @@
 
 // "extern" to avoid multiply defined symbol error on Mac
 extern template class QList<LocationSimple>;
+extern template class QList<int>;
 
 /*! \brief Returns general parameters of the V3D program.
  *
@@ -102,8 +103,15 @@ private:
 };
 
 // Test QString wrapping - it works.
-QString hello();
-std::string hello2(const QString& s);
+// QString hello();
+// std::string hello2(const QString& s);
+
+// QBool test_qbool1();
+// QBool test_qbool2();
+// bool test_qbool3(const QBool& b);
+
+// QList<int> test_qlist1();
+// int test_qlist2(const QList<int>& l);
 
 // gccxml chokes.  perhaps if LocationSimple had a operator==()...
 // gccxml is OK after adding operator== and global qHash(LocationSimple)

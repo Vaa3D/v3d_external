@@ -24,8 +24,6 @@
 
 #include "generated_code/NeuronTree.pypp.hpp"
 
-#include "generated_code/QBool.pypp.hpp"
-
 #include "generated_code/QList_LocationSimple.pypp.hpp"
 
 #include "generated_code/RGB16i.pypp.hpp"
@@ -54,8 +52,12 @@ namespace bp = boost::python;
 
 #include "convert_qstring.h"
 
+#include "convert_qbool.h"
+
 BOOST_PYTHON_MODULE(v3d){
     register_enumerations();
+
+    register_qbool_conversion();
 
     register_qstring_conversion();
 
@@ -72,10 +74,6 @@ BOOST_PYTHON_MODULE(v3d){
     bp::implicitly_convertible< NeuronSWC, XYZ >();
 
     register_NeuronTree_class();
-
-    register_QBool_class();
-
-    bp::implicitly_convertible< QBool, void const * >();
 
     register_QList_LocationSimple_class();
 

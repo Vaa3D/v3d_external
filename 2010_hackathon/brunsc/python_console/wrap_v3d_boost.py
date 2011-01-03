@@ -75,6 +75,7 @@ class V3DWrapper:
         self.wrap_QString()
         self.wrap_QList()
         self.wrap_QBool()
+        # self.wrap_QList_int()
         # and finally
         self.mb.member_operators('operator*').exclude()
         self.mb.member_operators('operator->').exclude()
@@ -82,20 +83,22 @@ class V3DWrapper:
         self.mb.member_operators('operator--').exclude()
         self.mb.member_operators('operator>>').exclude()
         self.mb.member_operators('operator<<').exclude()
-        self.mb.free_functions('hello').exclude()
-        self.mb.free_functions('hello2').exclude()
         self.mb.free_functions('qHash').exclude()
         
     def wrap_QBool(self):
+        # Warning - this could interfere with use of PySide or PyQt
         cls = self.mb.class_('QBool')
-        cls.include()
-        cls.documentation = """
-        Boolean true/false type in the Qt C++ API.
-        
-        Don't use QBool().  It is wrapped in V3D python because one of the
-        methods in the QList<> API returns a QBool.
-        """
-        
+        # cls.include_files.append("convert_qstring.h")
+        self.mb.add_declaration_code('#include "convert_qbool.h"', tail=False)
+        self.mb.add_registration_code('register_qbool_conversion();', tail=False)
+        cls.already_exposed = True;
+
+    def wrap_QList_int(self):
+        cls = self.mb.class_('QList<int>')
+        self.mb.add_declaration_code('#include "convert_qlist.h"', tail=False)
+        self.mb.add_registration_code('register_qlist_conversion<int>();', tail=False)
+        cls.already_exposed = True;
+                
     def wrap_QList(self):
         for cls_name in ['QList<LocationSimple>',]:
             cls = self.mb.class_(cls_name)

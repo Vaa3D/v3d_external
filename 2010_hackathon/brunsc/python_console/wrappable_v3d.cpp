@@ -2,10 +2,31 @@
 #include <stdexcept>
 
 template class QList<LocationSimple>;
+template class QList<int>;
 
 // Test QString wrapping
 QString hello() {return QString("Hello");}
 std::string hello2(const QString& s) {return s.toStdString();}
+
+QList<int> test_qlist1() {
+    QList<int> answer;
+    answer.append(1);
+    answer.append(2);
+    return answer;
+}
+int test_qlist2(const QList<int>& l) {
+    return l.size();
+}
+
+QBool test_qbool1() {
+    return QBool(true);
+}
+QBool test_qbool2() {
+    return QBool(false);
+}
+bool test_qbool3(const QBool& b) {
+    return b;
+}
 
 // defined in V3DPythonModule.cpp
 extern V3DPluginCallback2 *v3d_callbackPtr;

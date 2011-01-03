@@ -51,6 +51,7 @@ set(V3D_PYTHON_CONSOLE_SRCS
     ${QT_RCC_SRCS}
     wrappable_v3d.cpp
     convert_qstring.cpp
+    convert_qbool.cpp
 )
 
 ##################################################################
@@ -146,9 +147,7 @@ if(V3D_PYTHON_CONSOLE_GENERATE_WRAP_CODE)
         "${CMAKE_CURRENT_SOURCE_DIR}/../../../v3d_main/basic_c_fun/*.h")
     set(WRAP_DEPEND_SRCS
         ${V3D_PLUGIN_HEADERS}
-        convert_qstring.h
         wrappable_v3d.h
-        qlist_py_indexing.h
         doxygen_doc_extractor.py
         wrap_v3d_boost.py)
     # message(${WRAP_DEPEND_SRCS})
