@@ -5,7 +5,8 @@
 
 // "extern" to avoid multiply defined symbol error on Mac
 extern template class QList<LocationSimple>;
-extern template class QList<int>;
+extern template class QVector<QPoint>;
+extern template class QList<QPolygon>;
 
 /*! \brief Returns general parameters of the V3D program.
  *
@@ -102,28 +103,10 @@ private:
     ImageWindowReceiver *receiver;
 };
 
-// Test QString wrapping - it works.
-// QString hello();
-// std::string hello2(const QString& s);
-
-// QBool test_qbool1();
-// QBool test_qbool2();
-// bool test_qbool3(const QBool& b);
-
-// QList<int> test_qlist1();
-// int test_qlist2(const QList<int>& l);
-
-// gccxml chokes.  perhaps if LocationSimple had a operator==()...
-// gccxml is OK after adding operator== and global qHash(LocationSimple)
-// functions.
-unsigned int qHash(const LocationSimple& loc);
-
-bool operator!=(const LocationSimple& lhs, const LocationSimple& rhs);
-bool operator==(const LocationSimple& lhs, const LocationSimple& rhs);
-
-namespace pyplusplus { namespace aliases {
-    typedef QList<LocationSimple> QList_LocationSimple;
-    typedef std::list<LocationSimple> std_list_LocationSimple;
+namespace pyplusplus { namespace alias {
+    // Need to wrap QVector<QPoint> to avoid runtime error at startup on Mac
+    // This wrapper is hollow.
+    typedef QVector<QPoint> QVector_QPoint;
 }}
 
 #endif /* WRAPPABLE_V3D_H_ */

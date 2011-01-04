@@ -18,17 +18,18 @@
 #include <boost/python/def.hpp>
 #include <boost/python/to_python_converter.hpp>
 #include <QList>
+#include <QVector>
 
 namespace sandbox { namespace {
 
-template<class ELT>
+template<class ListType>
 struct qlist_to_python_list
 {
-    static PyObject* convert(QList<ELT> const& list)
+    typedef typename ListType::value_type ELT;
+
+    static PyObject* convert(ListType const& list)
     {
         boost::python::list pyList;
-        // we need to wrap the pointers into PyObjects
-        typename boost::python::reference_existing_object::apply<ELT>::type converter;
         for (int i = 0; i < list.size(); ++i)
         {
             pyList.append( boost::python::object(list[i]) );
@@ -37,15 +38,17 @@ struct qlist_to_python_list
     }
 };
 
-template<class ELT>
+template<class ListType>
 struct qlist_from_python_list
 {
+    typedef typename ListType::value_type ELT;
+
     qlist_from_python_list()
     {
         boost::python::converter::registry::push_back(
                 &convertible,
                 &construct,
-                boost::python::type_id<QList<ELT> >());
+                boost::python::type_id<ListType>());
     }
 
     static void* convertible(PyObject* obj_ptr)
@@ -77,11 +80,11 @@ struct qlist_from_python_list
         boost::python::object pyList(boost::python::handle<>(boost::python::borrowed(obj_ptr)));
 
         void* storage = (
-                (boost::python::converter::rvalue_from_python_storage<QList<ELT> >*)
+                (boost::python::converter::rvalue_from_python_storage<ListType >*)
                 data)->storage.bytes;
-        new (storage) QList<ELT>();
+        new (storage) ListType();
 
-        QList<ELT> *container = static_cast<QList<ELT>* >(storage);
+        ListType *container = static_cast<ListType* >(storage);
         int n = PySequence_Size(obj_ptr);
         for (int i = 0; i < n; ++i)
             container->append( boost::python::extract<ELT>(pyList[i]) );
@@ -92,14 +95,14 @@ struct qlist_from_python_list
 
 }} // namespace sandbox::<anonymous>
 
-template<class ELT>
+template<class ListType>
 void register_qlist_conversion()
 {
     boost::python::to_python_converter<
-            QList<ELT>,
-            sandbox::qlist_to_python_list<ELT> >();
+            ListType,
+            sandbox::qlist_to_python_list<ListType> >();
 
-    sandbox::qlist_from_python_list<ELT>();
+    sandbox::qlist_from_python_list<ListType>();
 }
 
 #endif // V3D_PYTHON_CONVERT_QLIST_H_

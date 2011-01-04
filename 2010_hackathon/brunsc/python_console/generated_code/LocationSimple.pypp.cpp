@@ -78,8 +78,6 @@ void register_LocationSimple_class(){
         .def_readwrite( "skew", &LocationSimple::skew )    
         .def_readwrite( "x", &LocationSimple::x )    
         .def_readwrite( "y", &LocationSimple::y )    
-        .def_readwrite( "z", &LocationSimple::z )    
-        .def( bp::self != bp::self )    
-        .def( bp::self == bp::self );
+        .def_readwrite( "z", &LocationSimple::z );
 
 }

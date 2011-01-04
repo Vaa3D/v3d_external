@@ -1,32 +1,17 @@
 #include "wrappable_v3d.h"
 #include <stdexcept>
 
+unsigned int qHash(const LocationSimple& loc){
+    return qHash(QString("%1,%2,%3").arg(loc.x).arg(loc.y).arg(loc.z));
+}
 template class QList<LocationSimple>;
-template class QList<int>;
 
-// Test QString wrapping
-QString hello() {return QString("Hello");}
-std::string hello2(const QString& s) {return s.toStdString();}
+template class QVector<QPoint>;
 
-QList<int> test_qlist1() {
-    QList<int> answer;
-    answer.append(1);
-    answer.append(2);
-    return answer;
+unsigned int qHash(const QPolygon&) {
+    return 1; // TODO
 }
-int test_qlist2(const QList<int>& l) {
-    return l.size();
-}
-
-QBool test_qbool1() {
-    return QBool(true);
-}
-QBool test_qbool2() {
-    return QBool(false);
-}
-bool test_qbool3(const QBool& b) {
-    return b;
-}
+template class QList<QPolygon>;
 
 // defined in V3DPythonModule.cpp
 extern V3DPluginCallback2 *v3d_callbackPtr;
@@ -175,11 +160,6 @@ View3DControl* ImageWindow::getLocalView3DControl() {
 //virtual TriviewControl * getTriviewControl(v3dhandle image_window) = 0;
 TriviewControl* ImageWindow::getTriviewControl() {
     return getCallback()->getTriviewControl(handle);
-}
-
-unsigned int qHash(const LocationSimple& loc)
-{
-    return qHash(QString("%1,%2,%3").arg(loc.x).arg(loc.y).arg(loc.z));
 }
 
 bool operator!=(const LocationSimple& lhs, const LocationSimple& rhs)

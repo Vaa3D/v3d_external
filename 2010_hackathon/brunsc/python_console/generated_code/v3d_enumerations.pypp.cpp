@@ -8,6 +8,19 @@ namespace bp = boost::python;
 
 void register_enumerations(){
 
+    bp::enum_< Qt::AspectRatioMode>("AspectRatioMode")
+        .value("IgnoreAspectRatio", Qt::IgnoreAspectRatio)
+        .value("KeepAspectRatio", Qt::KeepAspectRatio)
+        .value("KeepAspectRatioByExpanding", Qt::KeepAspectRatioByExpanding)
+        .export_values()
+        ;
+
+    bp::enum_< Qt::FillRule>("FillRule")
+        .value("OddEvenFill", Qt::OddEvenFill)
+        .value("WindingFill", Qt::WindingFill)
+        .export_values()
+        ;
+
     bp::enum_< ImagePixelType>("ImagePixelType")
         .value("V3D_UNKNOWN", V3D_UNKNOWN)
         .value("V3D_UINT8", V3D_UINT8)

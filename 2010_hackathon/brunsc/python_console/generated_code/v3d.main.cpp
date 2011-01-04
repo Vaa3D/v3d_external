@@ -6,12 +6,6 @@
 
 #include "__call_policies.pypp.hpp"
 
-#include "indexing_suite/value_traits.hpp"
-
-#include "indexing_suite/container_suite.hpp"
-
-#include "indexing_suite/list.hpp"
-
 #include "wrappable_v3d.h"
 
 #include "generated_code/Image4DSimple.pypp.hpp"
@@ -24,7 +18,15 @@
 
 #include "generated_code/NeuronTree.pypp.hpp"
 
-#include "generated_code/QList_LocationSimple.pypp.hpp"
+#include "generated_code/QPoint.pypp.hpp"
+
+#include "generated_code/QPolygon.pypp.hpp"
+
+#include "generated_code/QRect.pypp.hpp"
+
+#include "generated_code/QSize.pypp.hpp"
+
+#include "generated_code/QVector_QPoint.pypp.hpp"
 
 #include "generated_code/RGB16i.pypp.hpp"
 
@@ -34,6 +36,8 @@
 
 #include "generated_code/RGB8.pypp.hpp"
 
+#include "generated_code/RGBA8.pypp.hpp"
+
 #include "generated_code/TriviewControl.pypp.hpp"
 
 #include "generated_code/V3D_GlobalSetting.pypp.hpp"
@@ -42,13 +46,13 @@
 
 #include "generated_code/XYZ.pypp.hpp"
 
-#include "generated_code/std_list_LocationSimple.pypp.hpp"
-
 #include "generated_code/v3d_enumerations.pypp.hpp"
 
 #include "generated_code/v3d_free_functions.pypp.hpp"
 
 namespace bp = boost::python;
+
+#include "convert_qlist.h"
 
 #include "convert_qstring.h"
 
@@ -61,7 +65,13 @@ BOOST_PYTHON_MODULE(v3d){
 
     register_qstring_conversion();
 
-    register_std_list_LocationSimple_class();
+    register_qlist_conversion<QList<QPolygon> >();
+
+    register_qlist_conversion<QList<NeuronSWC> >();
+
+    register_qlist_conversion<QList<LocationSimple> >();
+
+    register_qlist_conversion<QVector<QPoint> >();
 
     register_Image4DSimple_class();
 
@@ -75,7 +85,15 @@ BOOST_PYTHON_MODULE(v3d){
 
     register_NeuronTree_class();
 
-    register_QList_LocationSimple_class();
+    register_QPoint_class();
+
+    register_QVector_QPoint_class();
+
+    register_QPolygon_class();
+
+    register_QRect_class();
+
+    register_QSize_class();
 
     register_RGB16i_class();
 
@@ -84,6 +102,8 @@ BOOST_PYTHON_MODULE(v3d){
     register_RGB32i_class();
 
     register_RGB8_class();
+
+    register_RGBA8_class();
 
     register_TriviewControl_class();
 

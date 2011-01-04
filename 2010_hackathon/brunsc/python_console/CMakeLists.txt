@@ -64,8 +64,8 @@ add_executable(pythonConsoleTest
 )
 
 target_link_libraries(pythonConsoleTest
-    ${PYTHON_LIBRARY}
     ${Boost_PYTHON_LIBRARY}
+    ${PYTHON_LIBRARY}
     ${QT_QTCORE_LIBRARY}
     ${QT_QTGUI_LIBRARY}
 )
@@ -93,8 +93,8 @@ set(PLUGIN_HEADERS
 configure_v3d_plugin(PythonConsolePlugin)
 
 target_link_libraries(PythonConsolePlugin
-    ${PYTHON_LIBRARY}
     ${Boost_PYTHON_LIBRARY}
+    ${PYTHON_LIBRARY}
     ${QT_QTGUI_LIBRARY}
 )
 

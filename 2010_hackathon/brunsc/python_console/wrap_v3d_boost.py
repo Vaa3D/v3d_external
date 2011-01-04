@@ -3,6 +3,7 @@
 from pyplusplus import module_builder
 from pyplusplus import function_transformers as FT
 from pyplusplus.module_builder import call_policies
+from pyplusplus.module_builder.call_policies import *
 from pygccxml.declarations.matchers import access_type_matcher_t
 from pygccxml import declarations
 import commands
@@ -54,6 +55,10 @@ class V3DWrapper:
             "done interactively from the V3D python console."
             ;
         """)
+        self.wrap_QList()
+        self.wrap_QString()
+        self.wrap_QPolygon()
+        self.wrap_QBool()
         self.mb.enum('ImagePixelType').include()
         self.mb.enum('TimePackType').include()
         self.mb.class_('V3D_GlobalSetting').include()
@@ -63,19 +68,11 @@ class V3DWrapper:
         self.mb.class_('NeuronSWC').include()
         self.mb.enum('PxLocationMarkerShape').include()
         self.mb.enum('PxLocationUsefulness').include()
-        self.mb.class_('XYZ').include()
-        self.mb.class_('RGB8').include()
-        self.mb.class_('RGB16i').include()
-        self.mb.class_('RGB32i').include()
-        self.mb.class_('RGB32f').include()
+        self.wrap_color_vectors()
         self.wrap_Image4DSimple()
         self.wrap_TriviewControl()
         self.wrap_ImageWindow()
         self.wrap_LocationSimple()
-        self.wrap_QString()
-        self.wrap_QList()
-        self.wrap_QBool()
-        # self.wrap_QList_int()
         # and finally
         self.mb.member_operators('operator*').exclude()
         self.mb.member_operators('operator->').exclude()
@@ -83,7 +80,44 @@ class V3DWrapper:
         self.mb.member_operators('operator--').exclude()
         self.mb.member_operators('operator>>').exclude()
         self.mb.member_operators('operator<<').exclude()
+        self.mb.variables('').exclude() # avoid anonymous variable warnings
         self.mb.free_functions('qHash').exclude()
+        
+    def wrap_QPolygon(self):
+        cls = self.mb.class_('QPoint')
+        cls.include()
+        for fn_name in ['rx', 'ry']:
+            cls.member_function(fn_name).call_policies = \
+                    return_value_policy(copy_non_const_reference)
+        cls = self.mb.class_('QSize')
+        cls.include()
+        for fn_name in ['rwidth', 'rheight']:
+            cls.member_function(fn_name).call_policies = \
+                    return_value_policy(copy_non_const_reference)
+        self.mb.enum('AspectRatioMode').include()
+        self.mb.enum('FillRule').include()
+        cls = self.mb.class_('QRect')
+        cls.include()
+        cls = self.mb.class_('QPolygon')
+        cls.include()
+        cls.member_functions('setPoints').exclude() # variable arg list
+        cls.member_functions('putPoints').exclude() # variable arg list
+        cls.member_function('putPoints', arg_types=[None, None, None, None]).include()
+        for op in cls.casting_operators():
+            if op.name.find("QVariant") >= 0:
+                op.exclude()
+        
+    def wrap_color_vectors(self):
+        self.mb.class_('RGB8').include()
+        self.mb.class_('RGB16i').include()
+        self.mb.class_('RGB32i').include()
+        self.mb.class_('RGB32f').include()
+        self.mb.class_('RGBA8').include()
+        self.mb.class_('XYZ').include()
+        # Avoid warnings about casting operators
+        for op in self.mb.class_('XYZ').casting_operators():
+            if op.name.find("RGB") >= 0:
+                op.exclude()
         
     def wrap_QBool(self):
         # Warning - this could interfere with use of PySide or PyQt
@@ -93,18 +127,27 @@ class V3DWrapper:
         self.mb.add_registration_code('register_qbool_conversion();', tail=False)
         cls.already_exposed = True;
 
-    def wrap_QList_int(self):
-        cls = self.mb.class_('QList<int>')
-        self.mb.add_declaration_code('#include "convert_qlist.h"', tail=False)
-        self.mb.add_registration_code('register_qlist_conversion<int>();', tail=False)
-        cls.already_exposed = True;
-                
     def wrap_QList(self):
-        for cls_name in ['QList<LocationSimple>',]:
+        self.mb.add_declaration_code('#include "convert_qlist.h"', tail=False)
+        for cls_name in ['QVector<QPoint>',
+                         'QList<LocationSimple>', 
+                         'QList<NeuronSWC>', 
+                         'QList<QPolygon>', 
+                         ]:
             cls = self.mb.class_(cls_name)
-            self.wrap_one_QList(cls)
-        cls = self.mb.class_('QList<LocationSimple>')
-        cls.include_files.append("_LocationSimple__value_traits.pypp.hpp")
+            self.mb.add_registration_code(
+                  'register_qlist_conversion<%s >();' % cls.demangled, 
+                  tail=False)
+            cls.already_exposed = True
+        # RuntimeError: extension class wrapper for base class QVector<QPoint> has not been created yet
+        cls = self.mb.class_('QVector<QPoint>')
+        cls.include()
+        cls.no_init = True;
+        cls.noncopyable = True;
+        cls.member_functions().exclude()
+        cls.member_operators().exclude()
+        cls.variables().exclude()
+        cls.already_exposed = False
         
     def wrap_one_QList(self, cls):
         cls.include()
