@@ -12,6 +12,7 @@ unsigned int qHash(const QPolygon&) {
     return 1; // TODO
 }
 template class QList<QPolygon>;
+template class QHash<int, int>;
 
 // defined in V3DPythonModule.cpp
 extern V3DPluginCallback2 *v3d_callbackPtr;

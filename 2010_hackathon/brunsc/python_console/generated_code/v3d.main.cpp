@@ -58,8 +58,12 @@ namespace bp = boost::python;
 
 #include "convert_qbool.h"
 
+#include "convert_qhash.h"
+
 BOOST_PYTHON_MODULE(v3d){
     register_enumerations();
+
+    register_qhash_conversion<QHash<int, int> >();
 
     register_qbool_conversion();
 

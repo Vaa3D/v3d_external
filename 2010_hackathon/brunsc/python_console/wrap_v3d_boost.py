@@ -59,6 +59,7 @@ class V3DWrapper:
         self.wrap_QString()
         self.wrap_QPolygon()
         self.wrap_QBool()
+        self.wrap_QHash()
         self.mb.enum('ImagePixelType').include()
         self.mb.enum('TimePackType').include()
         self.mb.class_('V3D_GlobalSetting').include()
@@ -82,6 +83,14 @@ class V3DWrapper:
         self.mb.member_operators('operator<<').exclude()
         self.mb.variables('').exclude() # avoid anonymous variable warnings
         self.mb.free_functions('qHash').exclude()
+        
+    def wrap_QHash(self):
+        self.mb.add_declaration_code('#include "convert_qhash.h"', tail=False)
+        cls = self.mb.class_('QHash<int,int>')
+        self.mb.add_registration_code(
+                'register_qhash_conversion<%s >();' % cls.demangled, 
+                tail=False)
+        cls.already_exposed = True
         
     def wrap_QPolygon(self):
         cls = self.mb.class_('QPoint')

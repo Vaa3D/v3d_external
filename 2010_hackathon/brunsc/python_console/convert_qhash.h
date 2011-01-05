@@ -59,9 +59,10 @@ struct qhash_from_python_dict
         if (!PyDict_Check(obj_ptr))
             return 0;
 
+        boost::python::object py_obj(
+                boost::python::handle<>( boost::python::borrowed( obj_ptr ) ));
         boost::python::dict py_dict =
-                boost::python::extract<boost::python::dict>
-                (boost::python::handle<>( bp::borrowed( obj_ptr ) ) );
+                boost::python::extract<boost::python::dict>(py_obj);
 
         boost::python::list iterkeys =
                 (boost::python::list)py_dict.iterkeys();
@@ -80,9 +81,10 @@ struct qhash_from_python_dict
             PyObject* obj_ptr,
             boost::python::converter::rvalue_from_python_stage1_data* data)
     {
+        boost::python::object py_obj(
+                boost::python::handle<>( boost::python::borrowed( obj_ptr ) ));
         boost::python::dict py_dict =
-                boost::python::extract<boost::python::dict>
-                (boost::python::handle<>(boost::python::borrowed(obj_ptr)));
+                boost::python::extract<boost::python::dict>(py_obj);
 
         void* storage = (
                 (boost::python::converter::rvalue_from_python_storage<HashType >*)

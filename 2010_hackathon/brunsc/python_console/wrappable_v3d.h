@@ -7,6 +7,7 @@
 extern template class QList<LocationSimple>;
 extern template class QVector<QPoint>;
 extern template class QList<QPolygon>;
+extern template class QHash<int, int>;
 
 /*! \brief Returns general parameters of the V3D program.
  *
