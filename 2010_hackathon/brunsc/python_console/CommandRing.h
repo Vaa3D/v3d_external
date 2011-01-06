@@ -31,8 +31,10 @@ public:
             return true;
         }
         QString previousCommand = commands[newestCommandIndex];
-        if (previousCommand == command)
+        if (previousCommand == command) {
+            currentCommandIndex = -1;
             return false; // Don't store repeated commands
+	}
 
         increment(newestCommandIndex);
         if (oldestCommandIndex == newestCommandIndex)
