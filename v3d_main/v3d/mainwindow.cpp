@@ -1479,30 +1479,10 @@ void MainWindow::updateMenus()
 		procAtlasViewer->setEnabled(hasMdiChild);
 #endif
 
-	if (hasMdiChild)
-	{
-		if (activeMdiChild()->getImageData()->getDatatype()==V3D_UINT8)
-		{
-			proc3DViewer->setEnabled(true);
-			proc3DViewer->setText("3D viewer for the entire image");
-			proc3DLocalRoiViewer->setEnabled(true);
-			proc3DLocalRoiViewer->setText("3D viewer for Region of Interest (ROI)");
-		}
-		else
-		{
-			proc3DViewer->setEnabled(false);
-			proc3DViewer->setText("3D viewer for the entire image (only for 8-bit image)");
-			proc3DLocalRoiViewer->setEnabled(false); //need to ensure the availability of roi later
-			proc3DLocalRoiViewer->setText("3D viewer for Region of Interest (ROI) (only for 8-bit image)");
-		}
-	}
-	else
-	{
-		proc3DViewer->setEnabled(hasMdiChild);
-		proc3DViewer->setText("3D viewer for the entire image (only for 8-bit image)");
-		proc3DLocalRoiViewer->setEnabled(hasMdiChild); //need to ensure the availability of roi later
-		proc3DLocalRoiViewer->setText("3D viewer for Region of Interest (ROI) (only for 8-bit image)");
-	}
+	proc3DViewer->setText("3D viewer for the entire image");
+	proc3DLocalRoiViewer->setText("3D viewer for Region of Interest (ROI)");
+	proc3DViewer->setEnabled(hasMdiChild);
+	proc3DLocalRoiViewer->setEnabled(hasMdiChild); //need to ensure the availability of roi later
 }
 
 void MainWindow::updateWindowMenu()
