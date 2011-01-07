@@ -39,7 +39,9 @@ endfunction(CONFIGURE_V3D_PLUGIN_SIMPLE)
 function(configure_v3d_plugin_common PLUGIN_NAME)
 
 add_library(${PLUGIN_NAME} SHARED ${QtITK_SRCS} ${QT_MOC_SRCS})
-add_dependencies(FinishedPlugins ${PLUGIN_NAME})
+if(TARGET FinishedPlugins)
+    add_dependencies(FinishedPlugins ${PLUGIN_NAME})
+endif()
 target_link_libraries(${PLUGIN_NAME} ${QT_LIBRARIES} )
 # CMB Nov-03-2010
 # I apologize if I am doing this wrong...

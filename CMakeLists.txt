@@ -50,6 +50,23 @@ set(V3D_BUILD_BINARY_DIR ${V3D_STAGING_BASE_DIR} CACHE INTERNAL "Location of v3d
 # Build V3D
 add_subdirectory(v3d_main)
 
+# Some plugins might be binary only
+# Place them in the BUILD directory under binary_plugins
+set(BINARY_PLUGIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/binary_plugins/")
+if(EXISTS "${BINARY_PLUGIN_DIR}")
+    set(PLUGIN_DESTINATION_DIR "./bin/plugins")
+    # Don't install plugins separate from app bundle on apple
+    if(V3D_MAC_CREATE_BUNDLE AND BUNDLE_BUILD_DIR AND APPLE)
+        set(PLUGIN_DESTINATION_DIR "./v3d.app/Contents/MacOS/plugins")
+    endif()
+    install(DIRECTORY "${BINARY_PLUGIN_DIR}"
+        DESTINATION "${PLUGIN_DESTINATION_DIR}"
+        USE_SOURCE_PERMISSIONS
+        COMPONENT Plugins
+        PATTERN ".svn" EXCLUDE
+    )
+endif()
+
 # Build plugins
 set(V3D_BASIC_C_FUN_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/basic_c_fun)
 add_subdirectory(released_plugins)

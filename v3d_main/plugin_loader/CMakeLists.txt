@@ -14,6 +14,7 @@ QT4_WRAP_CPP(QT_MOC_SRCS
 include_directories( ${V3D_BINARY_DIR}/v3dbase )
 
 add_library(v3d_plugin_loader ${QT_UI_SRCS} ${QT_MOC_SRCS} ${PluginLoader_SRCS})
+add_dependencies(v3d_plugin_loader v3dbase1)
 
 # Command line tool for parsing out plugin version information
 add_executable(get_plugin_versions 

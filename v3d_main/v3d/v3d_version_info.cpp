@@ -531,6 +531,38 @@ void V3DVersionChecker::checkForLatestVersion(bool b_verbose)
     }
 }
 
+// If the user is running a version of V3D that is newer than the
+// one she was using when she clicked "Never (automatically update)",
+// we want to give the user another chance to verify the "Never".
+bool V3DVersionChecker::userSelectedNeverUpdateInAnOlderVersionOfV3D()
+{
+    QSettings settings("HHMI", "V3D");
+    QVariant checkIntervalVariant =
+            settings.value("updateCheckInterval");
+    if (! checkIntervalVariant.isValid())
+        return false; // update frequency is not even set
+    int checkInterval = checkIntervalVariant.toInt();
+    if (checkInterval >= 0)
+        return false; // update frequency is not "Never"
+    QVariant latestNeverUpdateVersionVariant =
+            settings.value("latestNeverUpdateVersion");
+    if (! latestNeverUpdateVersionVariant.isValid())
+        return true; // older version did not even set latestNeverUpdateVersion
+    float latestNeverUpdateVersion =
+            latestNeverUpdateVersionVariant.toFloat();
+    if ((latestNeverUpdateVersion + 0.0001) < v3d::thisVersionOfV3D.toFloat())
+        return true; // user selected never in an older version
+    return false;
+}
+
+/* static */ void V3DVersionChecker::never_update()
+{
+    QSettings settings("HHMI", "V3D");
+    settings.setValue("updateCheckInterval", -1); // never
+    settings.setValue("latestNeverUpdateVersion",
+            v3d::thisVersionOfV3D.toFloat());
+}
+
 // Examines last time version updater was queried to decide whether it might
 // be time to check again now.
 bool V3DVersionChecker::shouldCheckNow()
@@ -1151,7 +1183,7 @@ void UpdateOptionsDialog::on_comboBox_currentIndexChanged(const QString& updateF
     qDebug() << "Changing update frequency to " << updateFrequency;
     QSettings settings("HHMI", "V3D");
     if (updateFrequency == tr("never"))
-        settings.setValue("updateCheckInterval", -1);
+        V3DVersionChecker::never_update();
     else if (updateFrequency == tr("every time"))
         settings.setValue("updateCheckInterval", 0);
     else if (updateFrequency == tr("once a day"))
@@ -1215,8 +1247,7 @@ UpdatesAvailableDialog::UpdatesAvailableDialog(QWidget *parent)
 
 void UpdatesAvailableDialog::never_update()
 {
-    QSettings settings("HHMI", "V3D");
-    settings.setValue("updateCheckInterval", -1); // never
+    V3DVersionChecker::never_update();
 }
 
 void UpdatesAvailableDialog::remind_me_later()

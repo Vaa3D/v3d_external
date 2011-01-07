@@ -239,6 +239,7 @@ public:
     static QString getPlatformString();
     static QString getDefaultV3DVersionXmlFileName();
     static QString getDefaultV3DVersionUrl();
+    static void never_update();
 
 public slots:
     void createVersionXml();
@@ -250,6 +251,7 @@ private slots:
     void finishUpdates(v3d::DownloadingUpdatesDialog* progressDialog);
 
 protected:
+    bool userSelectedNeverUpdateInAnOlderVersionOfV3D();
     void createVersionXml(QString xmlFile);
     void processVersionXmlFile(const QDomDocument& versionDoc);
     // cache versions of local v3d and plugins, prior to checking update site.
