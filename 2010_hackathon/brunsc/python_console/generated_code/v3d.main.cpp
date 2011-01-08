@@ -46,6 +46,16 @@
 
 #include "generated_code/XYZ.pypp.hpp"
 
+#include "generated_code/c_array_float_3.pypp.hpp"
+
+#include "generated_code/c_array_int_3.pypp.hpp"
+
+#include "generated_code/c_array_short_3.pypp.hpp"
+
+#include "generated_code/c_array_uint_3.pypp.hpp"
+
+#include "generated_code/c_array_uint_4.pypp.hpp"
+
 #include "generated_code/v3d_enumerations.pypp.hpp"
 
 #include "generated_code/v3d_free_functions.pypp.hpp"
@@ -60,10 +70,22 @@ namespace bp = boost::python;
 
 #include "convert_qhash.h"
 
+#include "convert_c_array_struct.h"
+
 BOOST_PYTHON_MODULE(v3d){
     register_enumerations();
 
-    register_qhash_conversion<QHash<int, int> >();
+    register_c_array_struct_conversion< c_array<short, 3> >();
+
+    register_c_array_struct_conversion< c_array<float, 3> >();
+
+    register_c_array_struct_conversion< c_array<unsigned char, 4> >();
+
+    register_c_array_struct_conversion< c_array<int, 3> >();
+
+    register_c_array_struct_conversion< c_array<unsigned char, 3> >();
+
+    register_qhash_conversion< QHash<int, int> >();
 
     register_qbool_conversion();
 
@@ -116,6 +138,16 @@ BOOST_PYTHON_MODULE(v3d){
     register_View3DControl_class();
 
     register_XYZ_class();
+
+    register_c_array_float_3_class();
+
+    register_c_array_int_3_class();
+
+    register_c_array_short_3_class();
+
+    register_c_array_uint_3_class();
+
+    register_c_array_uint_4_class();
 
     boost::python::scope().attr("__doc__") = 
                 "Python module for interacting with the V3D visualization program."

@@ -11,6 +11,7 @@ void register_RGB16i_class(){
     bp::class_< RGB16i >( "RGB16i" )    
         .def_readwrite( "b", &RGB16i::b )    
         .def_readwrite( "g", &RGB16i::g )    
-        .def_readwrite( "r", &RGB16i::r );
+        .def_readwrite( "r", &RGB16i::r )    
+        .def_readwrite( "c", &RGB16i::c );
 
 }

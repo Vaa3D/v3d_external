@@ -41,6 +41,12 @@ list(REMOVE_ITEM PYPLUSPLUS_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/generated_code/v3d
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/generated_code")
 # message(${PYPLUSPLUS_SRCS})
 
+set(V3D_PYTHON_CONVERSION_HEADERS
+    convert_qlist.h
+    convert_qhash.h
+    convert_c_array_struct.h
+)
+
 set(V3D_PYTHON_CONSOLE_SRCS
     PythonConsoleWindow.cpp
     PythonInterpreter.cpp
@@ -147,6 +153,7 @@ if(V3D_PYTHON_CONSOLE_GENERATE_WRAP_CODE)
         "${CMAKE_CURRENT_SOURCE_DIR}/../../../v3d_main/basic_c_fun/*.h")
     set(WRAP_DEPEND_SRCS
         ${V3D_PLUGIN_HEADERS}
+        ${V3D_PYTHON_CONVERSION_HEADERS}
         wrappable_v3d.h
         doxygen_doc_extractor.py
         wrap_v3d_boost.py)

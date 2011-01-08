@@ -113,7 +113,7 @@ char* aGLSLStrings[] = {
 //-----------------------------------------------------------------------------
 
 // GL ERROR CHECK
-inline int CheckGLError(char *file, int line)
+inline int CheckGLError(const char *file, int line)
 {
 	GLenum glErr;
 	while ((glErr = glGetError()) != GL_NO_ERROR)

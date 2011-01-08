@@ -11,6 +11,7 @@ void register_RGB8_class(){
     bp::class_< RGB8 >( "RGB8", "\n" )    
         .def_readwrite( "b", &RGB8::b, "\n" )    
         .def_readwrite( "g", &RGB8::g, "\n" )    
-        .def_readwrite( "r", &RGB8::r, "\n" );
+        .def_readwrite( "r", &RGB8::r, "\n" )    
+        .def_readwrite( "c", &RGB8::c );
 
 }

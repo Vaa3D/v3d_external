@@ -74,6 +74,7 @@ class V3DWrapper:
         self.wrap_TriviewControl()
         self.wrap_ImageWindow()
         self.wrap_LocationSimple()
+        self.wrap_c_array_struct()
         # and finally
         self.mb.member_operators('operator*').exclude()
         self.mb.member_operators('operator->').exclude()
@@ -84,11 +85,36 @@ class V3DWrapper:
         self.mb.variables('').exclude() # avoid anonymous variable warnings
         self.mb.free_functions('qHash').exclude()
         
+    def wrap_c_array_struct(self):
+        self.mb.add_declaration_code('#include "convert_c_array_struct.h"', tail=False)
+        for cls_name in ['c_array<unsigned char, 3>',
+                         'c_array<int, 3>',
+                         'c_array<unsigned char, 4>',
+                         'c_array<float, 3>',
+                         'c_array<short, 3>',
+                         ]:
+            cls = self.mb.class_(cls_name)
+            self.mb.add_registration_code(
+                'register_c_array_struct_conversion< %s >();' % cls.demangled,
+                tail = False)
+            # cls.already_exposed = True
+            cls.include()
+            cls.member_functions('begin').exclude();
+            cls.member_functions('end').exclude();
+            t = cls.demangled
+            cls.include_files.append("convert_c_array_struct.h")
+            cls.add_registration_code("""
+                def(bp::indexing::container_suite<
+                    %s, bp::indexing::all_methods,
+                    list_algorithms<c_array_struct_container_traits< %s > > >())
+                """ % (t,t) )
+
+    
     def wrap_QHash(self):
         self.mb.add_declaration_code('#include "convert_qhash.h"', tail=False)
         cls = self.mb.class_('QHash<int,int>')
         self.mb.add_registration_code(
-                'register_qhash_conversion<%s >();' % cls.demangled, 
+                'register_qhash_conversion< %s >();' % cls.demangled, 
                 tail=False)
         cls.already_exposed = True
         

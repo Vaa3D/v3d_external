@@ -15,6 +15,7 @@ void register_XYZ_class(){
         XYZ_exposer.def_readwrite( "x", &XYZ::x );
         XYZ_exposer.def_readwrite( "y", &XYZ::y );
         XYZ_exposer.def_readwrite( "z", &XYZ::z );
+        XYZ_exposer.def_readwrite( "v", &XYZ::v );
         XYZ_exposer.def( bp::init< bp::optional< float > >(( bp::arg("a")=0 )) );
         bp::implicitly_convertible< float, XYZ >();
         XYZ_exposer.def( bp::init< RGB8 >(( bp::arg("c") )) );

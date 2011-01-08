@@ -454,7 +454,7 @@ try { \
 	throw str; \
 }
 #define CHECK_GLError_print() CheckGLError_print(__FILE__, __LINE__)
-inline int CheckGLError_print(char *file, int line)
+inline int CheckGLError_print(const char *file, int line)
 {
 	GLenum glErr;
 	while ((glErr = glGetError()) != GL_NO_ERROR)

@@ -13,6 +13,7 @@ void register_RGBA8_class(){
         .def_readwrite( "b", &RGBA8::b )    
         .def_readwrite( "g", &RGBA8::g )    
         .def_readwrite( "r", &RGBA8::r )    
+        .def_readwrite( "c", &RGBA8::c )    
         .def_readwrite( "i", &RGBA8::i );
 
 }

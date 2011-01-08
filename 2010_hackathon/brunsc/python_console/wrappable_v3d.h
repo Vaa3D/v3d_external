@@ -108,6 +108,11 @@ namespace pyplusplus { namespace alias {
     // Need to wrap QVector<QPoint> to avoid runtime error at startup on Mac
     // This wrapper is hollow.
     typedef QVector<QPoint> QVector_QPoint;
+    typedef c_array<unsigned char, 3> c_array_uint_3;
+    typedef c_array<int, 3> c_array_int_3;
+    typedef c_array<unsigned char, 4> c_array_uint_4;
+    typedef c_array<float, 3> c_array_float_3;
+    typedef c_array<short, 3> c_array_short_3;
 }}
 
 #endif /* WRAPPABLE_V3D_H_ */

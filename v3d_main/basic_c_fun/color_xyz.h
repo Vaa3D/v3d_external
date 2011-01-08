@@ -44,6 +44,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include <math.h> // for sqrt(), rand()...
 #include <stdlib.h>
+#include "c_array_struct.hpp" // CMB 2011 Jan 08
 
 #define BIG_FLOAT 1e+38
 
@@ -84,51 +85,52 @@ inline int power_of_two_floor(int x) { int y; for (y = 1; y <= x; y = y*2);	retu
 
 struct RGB8 { union {
 	struct { unsigned char r,g,b; };
-	unsigned char c[3];
+    c_array<unsigned char, 3> c;
+	// unsigned char c[3];
 };};
 struct RGBA8 { union {
 	struct { unsigned char r,g,b,a; };
-	unsigned char c[4];
+	c_array<unsigned char, 4> c;
 	unsigned int i;
 };};
 struct BGR8 { union { // Windows-DIB
 	struct { unsigned char b,g,r; };
-	unsigned char c[3];
+	c_array<unsigned char, 3> c;
 };};
 struct BGRA8 { union { // Windows-DIB
 	struct { unsigned char b,g,r,a; };
-	unsigned char c[4];
+	c_array<unsigned char, 4> c;
 	unsigned int i;
 };};
 struct ABGR8 { union { // little endian
 	struct { unsigned char a,b,g,r; };
-	unsigned char c[4];
+	c_array<unsigned char, 4> c;
 	unsigned int i;
 };};
 
 struct RGB16i { union {
 	struct { short r,g,b; };
-	short c[3];
+	c_array<short, 3> c;
 };};
 struct RGBA16i { union {
 	struct { short r,g,b,a; };
-	short c[4];
+	c_array<short, 4> c;
 };};
 struct RGB32i { union {
 	struct { int r,g,b; };
-	int c[3];
+	c_array<int, 3> c;
 };};
 struct RGBA32i { union {
 	struct { int r,g,b,a; };
-	int c[4];
+	c_array<int, 4> c;
 };};
 struct RGB32f { union {
 	struct { float r,g,b; };
-	float c[3];
+	c_array<float, 3> c;
 };};
 struct RGBA32f { union {
 	struct { float r,g,b,a; };
-	float c[4];
+	c_array<float, 4> c;
 };};
 
 RGB8 random_rgb8(); // use normalize(XYZ)
@@ -157,7 +159,7 @@ inline BGRA8 bgra8_from(RGBA8 c) {
 struct XYZ {
 	union {
 	struct {float x, y, z;};
-	float v[3];
+	c_array<float, 3> v;
 	};
 
 	XYZ(float x, float y, float z)	{this->x=x; this->y=y; this->z=z;}
