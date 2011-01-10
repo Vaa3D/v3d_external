@@ -548,8 +548,8 @@ bool V3DVersionChecker::userSelectedNeverUpdateInAnOlderVersionOfV3D()
             settings.value("latestNeverUpdateVersion");
     if (! latestNeverUpdateVersionVariant.isValid())
         return true; // older version did not even set latestNeverUpdateVersion
-    float latestNeverUpdateVersion =
-            latestNeverUpdateVersionVariant.toFloat();
+    double latestNeverUpdateVersion =
+            latestNeverUpdateVersionVariant.toDouble();
     if ((latestNeverUpdateVersion + 0.0001) < v3d::thisVersionOfV3D.toFloat())
         return true; // user selected never in an older version
     return false;
@@ -559,8 +559,8 @@ bool V3DVersionChecker::userSelectedNeverUpdateInAnOlderVersionOfV3D()
 {
     QSettings settings("HHMI", "V3D");
     settings.setValue("updateCheckInterval", -1); // never
-    settings.setValue("latestNeverUpdateVersion",
-            v3d::thisVersionOfV3D.toFloat());
+    settings.setValue( "latestNeverUpdateVersion",
+            (double)(v3d::thisVersionOfV3D.toFloat()) );
 }
 
 // Examines last time version updater was queried to decide whether it might
