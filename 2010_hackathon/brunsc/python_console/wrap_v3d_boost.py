@@ -14,9 +14,10 @@ class V3DWrapper:
     def __init__(self):
         "Container for pyplusplus module builder for wrapping V3D"
         includes = []
+        homedir = os.path.expanduser('~')
         for path in ['.',
-                       '/home/cmbruns/svn/v3d_cmake/v3d_main/basic_c_fun',
-                       '/Users/brunsc/svn/v3d_cmake/v3d_main/basic_c_fun',
+                       os.path.join(homedir, 'svn/v3d_cmake/v3d_main/basic_c_fun'),
+                       os.path.join(homedir, 'Documents/svn/v3d_cmake/v3d_main/basic_c_fun'),
                        '/usr/include/qt4',
                        '/usr/include/qt4/QtCore',
                        '/usr/include/qt4/QtGui',
@@ -101,6 +102,7 @@ class V3DWrapper:
             cls.include()
             cls.member_functions('begin').exclude();
             cls.member_functions('end').exclude();
+            cls.casting_operators().exclude(); # no casting operators, to avoid warnings
             t = cls.demangled
             cls.include_files.append("convert_c_array_struct.h")
             cls.add_registration_code("""
