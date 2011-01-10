@@ -25,10 +25,12 @@ public:
     typedef ELT const * const_iterator;
 
     // indexing operators are the most important thing to retain
-    const ELT& operator[](index_type i) const {return data[i];}
-    ELT& operator[](index_type i) {return data[i];}
+    // Problem - gcc on Mac makes operator[] ambiguous when cast operator is included
+    // const ELT& operator[](index_type i) const {return data[i];}
+    // ELT& operator[](index_type i) {return data[i];}
 
     // allow implicit conversion to pointer
+    // Hopefully this resolves index operator too.
     operator ELT*() {return data;}
     operator const ELT*() const {return data;}
 
