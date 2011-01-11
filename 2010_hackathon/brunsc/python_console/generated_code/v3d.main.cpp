@@ -28,6 +28,8 @@
 
 #include "generated_code/QVector_QPoint.pypp.hpp"
 
+#include "generated_code/QWidget.pypp.hpp"
+
 #include "generated_code/RGB16i.pypp.hpp"
 
 #include "generated_code/RGB32f.pypp.hpp"
@@ -120,6 +122,8 @@ BOOST_PYTHON_MODULE(v3d){
     register_QRect_class();
 
     register_QSize_class();
+
+    register_QWidget_class();
 
     register_RGB16i_class();
 

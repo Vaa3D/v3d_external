@@ -9,8 +9,7 @@
 #define V3D_PYTHON_MODULE_H_
 
 #include <cstddef> // NULL
-
-class V3DPluginCallback2;
+#include "v3d_qt_environment.h"
 
 namespace v3d {
 

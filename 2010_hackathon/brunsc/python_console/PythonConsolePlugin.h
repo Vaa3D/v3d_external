@@ -26,7 +26,7 @@ public:
 		return true;
 	}
 
-    float getPluginVersion() const {return 1.0f;}
+    float getPluginVersion() const {return 0.50f;}
 
     static PythonConsoleWindow* pythonConsoleWindow;
 };

@@ -6,6 +6,7 @@
  */
 
 #include "PythonConsoleWindow.h"
+#include "v3d_qt_environment.h"
 #include <iostream>
 #include <QTextBlock>
 #include <QtGui/QClipboard>
@@ -20,7 +21,19 @@ using namespace std;
 
 static QTime performanceTimer;
 
-QThread *qtGuiThread = NULL;
+namespace v3d {
+
+    QThread *qtGuiThread = NULL;
+    QWidget *qtParentWidget = NULL;
+
+    QThread* get_qt_gui_thread() {
+        return qtGuiThread;
+    }
+
+    QWidget* get_qt_gui_parent() {
+        return qtParentWidget;
+    }
+}
 
 /* static */ const int PythonConsoleWindow::maxRecentScripts;
 
@@ -92,11 +105,17 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 	// Run interpreter in its own thread.
 	bool bRunPythonInSeparateThread = false;
 	if (bRunPythonInSeparateThread) {
-		qtGuiThread = QThread::currentThread();
+		v3d::qtGuiThread = QThread::currentThread();
 		QThread* pythonThread = new QThread(this); // Create a separate thread for running python
 		pythonInterpreter->moveToThread(pythonThread);
 		pythonThread->start();
 	}
+
+	// Remember GUI parent object
+	if (parent)
+	    v3d::qtParentWidget = parent;
+	else
+	    v3d::qtParentWidget = this;
 
 	actionRun_script->setEnabled(true);
 }

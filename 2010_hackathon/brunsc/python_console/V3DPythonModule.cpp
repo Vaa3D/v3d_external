@@ -18,6 +18,10 @@ V3DPluginCallback2 *v3d_callbackPtr;
 
 namespace v3d {
 
+V3DPluginCallback2* get_plugin_callback() {
+    return v3d_callbackPtr;
+}
+
 void initV3DPythonModule(V3DPluginCallback2 *callback)
 {
     // load module of automatically generated wrappers

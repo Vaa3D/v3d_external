@@ -19,6 +19,17 @@ void register_free_functions(){
     
     }
 
+    { //::v3d::get_qt_gui_parent
+    
+        typedef ::QWidget * ( *get_qt_gui_parent_function_type )(  );
+        
+        bp::def( 
+            "get_qt_gui_parent"
+            , get_qt_gui_parent_function_type( &::v3d::get_qt_gui_parent )
+            , bp::return_value_policy< bp::reference_existing_object >() );
+    
+    }
+
     { //::setGlobalSetting
     
         typedef bool ( *setGlobalSetting_function_type )( ::V3D_GlobalSetting & );

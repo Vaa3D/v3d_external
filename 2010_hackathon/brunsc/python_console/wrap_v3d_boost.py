@@ -76,6 +76,7 @@ class V3DWrapper:
         self.wrap_ImageWindow()
         self.wrap_LocationSimple()
         self.wrap_c_array_struct()
+        self.wrap_v3d_qt_environment()
         # and finally
         self.mb.member_operators('operator*').exclude()
         self.mb.member_operators('operator->').exclude()
@@ -85,7 +86,21 @@ class V3DWrapper:
         self.mb.member_operators('operator<<').exclude()
         self.mb.variables('').exclude() # avoid anonymous variable warnings
         self.mb.free_functions('qHash').exclude()
-        
+
+    def wrap_v3d_qt_environment(self):
+        # Too bad.  this does not seem to work with pyside.
+        fn = self.mb.namespace('v3d').free_function('get_qt_gui_parent')
+        fn.include()
+        fn.call_policies = return_value_policy(reference_existing_object)
+        # Don't warn me about QWidget.  User must use PySide or PyQt4 to get QWidget.
+        cls = self.mb.class_('QWidget')
+        cls.include()
+        cls.variables().exclude()
+        cls.constructors().exclude()
+        cls.member_functions().exclude()
+        cls.member_operators().exclude()
+        # cls.already_exposed = True
+                
     def wrap_c_array_struct(self):
         self.mb.add_declaration_code('#include "convert_c_array_struct.h"', tail=False)
         for cls_name in ['c_array<unsigned char, 3>',

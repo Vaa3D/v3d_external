@@ -2,6 +2,7 @@
 #define WRAPPABLE_V3D_H_
 
 #include "v3d_interface.h"
+#include "v3d_qt_environment.h"
 
 // "extern" to avoid multiply defined symbol error on Mac
 extern template class QList<LocationSimple>;
