@@ -2,6 +2,7 @@
 #define V3D_PYTHON_CONSOLE_WINDOW_H
 
 #include <QMainWindow>
+#include "c_array_struct.hpp"
 #include "ui_main_python_console.h"
 #include "PythonInterpreter.h"
 #include "CommandRing.h"
@@ -60,8 +61,10 @@ private:
 	QString multilineCommand;
     PythonInterpreter *pythonInterpreter;
     CommandRing commandRing;
-    static const int maxRecentScripts = 10;
-    QAction* recentScripts[maxRecentScripts];
+
+    // static const int maxRecentScripts = 10;
+    // QAction* recentScripts[maxRecentScripts];
+	c_array<QAction*, 10> recentScripts;
 };
 
 #endif // V3D_PYTHON_CONSOLE_WINDOW_H

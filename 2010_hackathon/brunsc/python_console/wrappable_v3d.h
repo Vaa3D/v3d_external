@@ -5,10 +5,20 @@
 #include "v3d_qt_environment.h"
 
 // "extern" to avoid multiply defined symbol error on Mac
+#ifdef _MSC_VER
+unsigned int qHash(const LocationSimple& loc);
+unsigned int qHash(const QPolygon&);
+bool operator==(const LocationSimple&, const LocationSimple&);
+template class QList<LocationSimple>;
+template class QVector<QPoint>;
+template class QList<QPolygon>;
+template class QHash<int, int>;
+#else
 extern template class QList<LocationSimple>;
 extern template class QVector<QPoint>;
 extern template class QList<QPolygon>;
 extern template class QHash<int, int>;
+#endif
 
 /*! \brief Returns general parameters of the V3D program.
  *

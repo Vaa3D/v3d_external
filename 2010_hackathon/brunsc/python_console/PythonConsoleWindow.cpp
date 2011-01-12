@@ -35,7 +35,7 @@ namespace v3d {
     }
 }
 
-/* static */ const int PythonConsoleWindow::maxRecentScripts;
+// /* static */ const int PythonConsoleWindow::maxRecentScripts;
 
 PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 		: QMainWindow(parent),
@@ -173,7 +173,7 @@ void PythonConsoleWindow::setupMenus()
 			this, SLOT(runScript()) );
 
 	menuRun_recent->setIcon(QIcon(":/icons/open-recent.png"));
-	for (int i = 0; i < maxRecentScripts; ++i) {
+	for (int i = 0; i < recentScripts.size(); ++i) {
 		recentScripts[i] = new QAction(this);
 		recentScripts[i]->setVisible(false);
 		connect(recentScripts[i], SIGNAL(triggered()),
@@ -205,18 +205,18 @@ void PythonConsoleWindow::addRecent(const QString& fileName)
 		return;
 	files.removeAll(fileName);
 	files.prepend(fileName);
-	while (files.size() > maxRecentScripts)
+	while (files.size() > recentScripts.size())
 		files.removeLast();
 	settings.setValue("recentScriptList", files);
 
-	int numRecentFiles = qMin(files.size(), maxRecentScripts);
+	int numRecentFiles = qMin(files.size(), recentScripts.size());
 
 	for (int i = 0; i < numRecentFiles; ++i) {
 		recentScripts[i]->setText(files[i]);
 		recentScripts[i]->setData(files[i]);
 		recentScripts[i]->setVisible(true);
 	}
-	for (int j = numRecentFiles; j < maxRecentScripts; ++j)
+	for (int j = numRecentFiles; j < recentScripts.size(); ++j)
 		recentScripts[j]->setVisible(false);
 
 	menuRun_recent->setVisible(numRecentFiles > 0);
@@ -226,14 +226,14 @@ void PythonConsoleWindow::updateRecent()
 {
 	QSettings settings("HHMI", "V3D");
 	QStringList files = settings.value("recentScriptList").toStringList();
-	int numRecentFiles = qMin(files.size(), maxRecentScripts);
+	int numRecentFiles = qMin(files.size(), recentScripts.size());
 
 	for (int i = 0; i < numRecentFiles; ++i) {
 		recentScripts[i]->setText(files[i]);
 		recentScripts[i]->setData(files[i]);
 		recentScripts[i]->setVisible(true);
 	}
-	for (int j = numRecentFiles; j < maxRecentScripts; ++j)
+	for (int j = numRecentFiles; j < recentScripts.size(); ++j)
 		recentScripts[j]->setVisible(false);
 
 	menuRun_recent->setEnabled(numRecentFiles > 0);

@@ -4,13 +4,13 @@
 unsigned int qHash(const LocationSimple& loc){
     return qHash(QString("%1,%2,%3").arg(loc.x).arg(loc.y).arg(loc.z));
 }
-template class QList<LocationSimple>;
-
-template class QVector<QPoint>;
 
 unsigned int qHash(const QPolygon&) {
     return 1; // TODO
 }
+
+template class QList<LocationSimple>;
+template class QVector<QPoint>;
 template class QList<QPolygon>;
 template class QHash<int, int>;
 

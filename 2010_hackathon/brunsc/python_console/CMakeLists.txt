@@ -14,6 +14,7 @@ FIND_PACKAGE( PythonLibs REQUIRED )
 include_directories(${PYTHON_INCLUDE_PATH})
 
 # Boost::python is needed to expose our C++ classes in python
+SET(Boost_ADDITIONAL_VERSIONS "1.44.0" "1.44" "1.45.0" "1.45")
 find_package(Boost COMPONENTS python REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
 
