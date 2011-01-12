@@ -120,9 +120,11 @@ PythonConsoleWindow::PythonConsoleWindow(QWidget *parent)
 	actionRun_script->setEnabled(true);
 }
 
-void PythonConsoleWindow::onOutput(QString msg) {
+void PythonConsoleWindow::onOutput(QString msg)
+{
 	plainTextEdit->moveCursor(QTextCursor::End);
 	plainTextEdit->insertPlainText( msg );
+	QCoreApplication::processEvents(); // flush text
 }
 
 void PythonConsoleWindow::onClipboardDataChanged()
