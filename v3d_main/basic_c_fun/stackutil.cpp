@@ -2301,6 +2301,8 @@ int read_lsm_slice_tile(TIFF *in, unsigned char * pointer_first_page, V3DLONG pa
 
 int loadLsm2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype)
 {
+	printf("enter V3D's loadLsm2Stack(0 function...\n");
+	
 	int berror=0;
 
 	TIFF  *tif=0;
@@ -2328,6 +2330,7 @@ int loadLsm2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 	TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
 	TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &colorchannels);
 	TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bits);
+	printf("# bits=%d\n", int(bits));
 
 	if (bits<=8 && bits>0) datatype=1;
 	else if (bits<=16 && bits>0) datatype=2;

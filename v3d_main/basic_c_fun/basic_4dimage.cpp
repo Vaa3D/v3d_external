@@ -65,7 +65,7 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 	{
 #if defined _WIN32 		
 		{
-			v3d_msg("Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
+			v3d_msg("(Win32) Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
 			if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0)
 			{
 				if (loadTif2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
