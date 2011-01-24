@@ -802,10 +802,17 @@ void data4dp_to_rgba3d(Image4DProxy<Image4DSimple>& img4dp, V3DLONG dim5,
 	if (rgbaBuf==0 || bufSize==0)
 		return;
 
+	//there may be a memory issue? by PHC 20110122
+	//	if (img4dp.su!=1)
+//	{
+//		v3d_msg("Your data is not 8bit. Now this data4dp_to_rgba3d(0 function supports only 8bit data.");
+//		return;
+//	}
+
 	V3DLONG dim1=img4dp.sx; V3DLONG dim2=img4dp.sy; V3DLONG dim3=img4dp.sz;
 	V3DLONG dim4=img4dp.sc;
 	#define SAMPLE(it, ic, ix,iy,iz, dx,dy,dz) \
-				(unsigned char)sampling3dUINT8( img4dp, (it*dim4 + ic), \
+				(unsigned char)sampling3dUINT8( img4dp, (it*dim4/imageT + ic), \
 												ix, iy, iz, dx, dy, dz )
 
 	// only convert 1<=dim4<=4 ==> RGBA
