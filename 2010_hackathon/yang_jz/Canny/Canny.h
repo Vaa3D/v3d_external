@@ -32,11 +32,9 @@ public:
 	
 	void BinaryProcess(unsigned char*apsInput, unsigned char * aspOutput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer, V3DLONG h, V3DLONG d);
 	
-	void IterateSeg(unsigned char *apsInput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer, unsigned char *apsOutput);
+	void IterateSeg(unsigned char *apsInput, V3DLONG z, V3DLONG &ThrHigh, unsigned char *apsOutput);
 	
 	void Doublelinear_inserting (unsigned char*apsInput,V3DLONG &polValue,float x0,float y0,V3DLONG z0,V3DLONG currX,V3DLONG currY);
-	
-	void Thinning(unsigned char *apsInput,unsigned char *apsOutput,V3DLONG m_iWid, V3DLONG m_iHei, V3DLONG m_iCount);
 
 	void GaussFilter2D(unsigned char *apsImgInput, unsigned char *apfImgOutput,V3DLONG m_iWid, V3DLONG m_iHei, V3DLONG m_iCount, float *apfTemplate,int iTmpLen);
 	
@@ -51,7 +49,7 @@ public:
 	void DetectCannyEdges(V3DLONG m_iWid, V3DLONG m_iHei, V3DLONG m_iCount, unsigned char*apsInput,V3DLONG *pGradX, V3DLONG *pGradY, unsigned char *Gradient,unsigned char *NonMax);
 	
 	void TraceEdge(V3DLONG k, V3DLONG y, V3DLONG x, V3DLONG nThrLow,unsigned char*apsInput,unsigned char*Gradient,V3DLONG m_iWid, V3DLONG m_iHei, V3DLONG m_iCount);
-	
+	void ComputeThreshold(V3DLONG z, unsigned char *Gradient, V3DLONG &pThrHigh, V3DLONG &pThrLow, unsigned char* NonMax, double factorHigh, double factorLow);//0.9 0.76
 
 public:
 	

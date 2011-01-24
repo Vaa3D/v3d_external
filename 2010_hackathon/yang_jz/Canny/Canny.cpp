@@ -12,9 +12,6 @@
 #include <functional>
 #include<math.h>
 
-#define BACKGROUND -1 
-#define DISOFENDS 5 
-
 
 //Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
@@ -42,7 +39,7 @@ void CannyPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, 
 }
 //
 
-void CannyPlugin::IterateSeg(unsigned char *apsInput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer, unsigned char *apsOutput)
+void CannyPlugin::IterateSeg(unsigned char *apsInput, V3DLONG z, V3DLONG &ThrHigh, unsigned char *apsOutput)
 {
 	V3DLONG pMax, pMin;
 	V3DLONG i,j,k;
@@ -52,164 +49,85 @@ void CannyPlugin::IterateSeg(unsigned char *apsInput, V3DLONG iImageWidth, V3DLO
 	V3DLONG S1, n1 ;
 	double allow; 
 	double d ;	
-	V3DLONG mCount = iImageHeight * iImageWidth;
-	pMax = pMin = 0;
-	for(V3DLONG k=0; k<iImageLayer; k++)
-	{		
-				
-		for(j = 0; j<iImageHeight; j++)
+	V3DLONG mCount = m_iImgWidth * m_iImgHeight;
+    V3DLONG m = z;
+	pMax = pMin =apsInput[m*mCount];		
+	for(i=0; i<mCount; i++)
+	{
+		for(k=0; k<mCount; k++)
 		{
-			for(i=0; i<iImageWidth; i++)
-			{
-				pMax = (apsInput[k*mCount+j *iImageWidth + i] > pMax)? apsInput[k*mCount+j *iImageWidth + i]:pMax;
-				pMin = (apsInput[k*mCount+j *iImageWidth + i] < pMin)? apsInput[k*mCount+j *iImageWidth + i]:pMin;
-			}
-		}
-	}
-	for(V3DLONG m=0; m<iImageLayer; m++)
-	{		
-		pMax = pMin =apsInput[m*mCount];		
-		for(i=0; i<mCount; i++)
-		{
-			for(k=0; k<mCount; k++)
-			{
-				pMax = (apsInput[m*mCount+k] > pMax)? apsInput[m*mCount+k]:pMax;
-				pMin = (apsInput[m*mCount+k] < pMin)? apsInput[m*mCount+k]:pMin;
-				
-			}
-			T1 = (pMax + pMin) / 2.0;
-			T2 = 0;
-			S0 = 0;
-			n0 = 0;
-			S1 = 0;
-			n1 = 0;
-			allow = 1.0; 
-			if ( T1 > T2) 
-			{
-				d = T1 - T2;
-			}else
-			{
-				d = T2 - T1;
-			}
+			pMax = (apsInput[m*mCount+k] > pMax)? apsInput[m*mCount+k]:pMax;
+			pMin = (apsInput[m*mCount+k] < pMin)? apsInput[m*mCount+k]:pMin;
 			
-			//	d = abs(T - TT);			
-			while(d > allow) 
-			{	
-				for(j=0; j<mCount; j++)
-				{
-					if(apsInput[m*mCount+j] > T1) 
-					{
-						S0 += apsInput[m*mCount+j];
-						n0++;
-					}
-					else
-					{
-						S1 += apsInput[m*mCount+j];
-						n1++;
-					}
-				}				
-				if(n0 ==0 || n1 == 0)
-					return  ;
-				else
-				{   
-					T2 = (S0 / n0 + S1 / n1) / 2;
-				}
-				
-				//	d = abs (T - TT);
-				if ( T1 > T2) 
-				{
-					d = T1 -T2;
-				}else
-				{
-					d = T2-T1;
-				}
-				T1 = T2;
-			}
-			for(i=0; i<mCount; i++)
+		}
+		T1 = (pMax + pMin) / 2.0;
+		T2 = 0;
+		S0 = 0;
+		n0 = 0;
+		S1 = 0;
+		n1 = 0;
+		allow = 1.0; 
+		if ( T1 > T2) 
+		{
+			d = T1 - T2;
+		}else
+		{
+			d = T2 - T1;
+		}
+		
+		//	d = abs(T - TT);			
+		while(d > allow) 
+		{	
+			for(j=0; j<mCount; j++)
 			{
-				if(apsInput[m*mCount+i] > T1)
+				if(apsInput[m*mCount+j] > T1) 
 				{
-					apsOutput[m*mCount+i] = 255;				
+					S0 += apsInput[m*mCount+j];
+					n0++;
 				}
 				else
 				{
-					apsOutput[m*mCount+i] = 0;				
+					S1 += apsInput[m*mCount+j];
+					n1++;
 				}
 			}				
-		}			
-	}
-//	for(V3DLONG m=0; m<iImageLayer; m++)
-//	{		
-//		pMax = pMin =apsInput[m*mCount];		
-//		for(i=0; i<mCount; i++)
-//		{
-//			for(k=0; k<mCount; k++)
-//			{
-//				pMax = (apsInput[m*mCount+k] > pMax)? apsInput[m*mCount+k]:pMax;
-//				pMin = (apsInput[m*mCount+k] < pMin)? apsInput[m*mCount+k]:pMin;
-//				
-//			}
-//			T1 = (pMax + pMin) / 2.0;
-//			T2 = 0;
-//			S0 = 0;
-//			n0 = 0;
-//			S1 = 0;
-//			n1 = 0;
-//			allow = 1.0; 
-//			if ( T1 > T2) 
-//			{
-//				d = T1 - T2;
-//			}else
-//			{
-//				d = T2 - T1;
-//			}
-//
-//		//	d = abs(T - TT);			
-//			while(d > allow) 
-//			{	
-//				for(j=0; j<mCount; j++)
-//				{
-//					if(apsInput[m*mCount+j] > T1) 
-//					{
-//						S0 += apsInput[m*mCount+j];
-//						n0++;
-//					}
-//					else
-//					{
-//						S1 += apsInput[m*mCount+j];
-//						n1++;
-//					}
-//				}				
-//				if(n0 ==0 || n1 == 0)
-//					return  ;
-//				else
-//				{   
-//					T2 = (S0 / n0 + S1 / n1) / 2;
-//				}
-//				
-//			//	d = abs (T - TT);
-//				if ( T1 > T2) 
-//				{
-//					d = T1 -T2;
-//				}else
-//				{
-//					d = T2-T1;
-//				}
-//				T1 = T2;
-//			}
-//			for(i=0; i<mCount; i++)
-//			{
-//				if(apsInput[m*mCount+i] > T1)
-//				{
-//					apsOutput[m*mCount+i] = 255;				
-//				}
-//				else
-//				{
-//					apsOutput[m*mCount+i] = 0;				
-//				}
-//			}				
-//		}			
-//	}
+			if(n0 ==0 || n1 == 0)
+				return  ;
+			else
+			{   
+				T2 = (S0 / n0 + S1 / n1) / 2;
+			}
+			
+			//	d = abs (T - TT);
+			if ( T1 > T2) 
+			{
+				d = T1 -T2;
+			}else
+			{
+				d = T2-T1;
+			}
+			T1 = T2;
+		}
+		
+		ThrHigh= T1;
+		if (ThrHigh < 10) 
+		{
+			ThrHigh = 10;
+		}
+		
+		for(i=0; i<mCount; i++)
+		{
+			if(apsInput[m*mCount+i] > T1)
+			{
+				apsOutput[m*mCount+i] = 255;				
+			}
+			else
+			{
+				apsOutput[m*mCount+i] = 0;				
+			}
+		}				
+	}			 
+
 }
 void CannyPlugin::BinaryProcess(unsigned char*apsInput, unsigned char * aspOutput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer, V3DLONG h, V3DLONG d)
 {
@@ -288,6 +206,11 @@ void CannyPlugin::Canny(V3DPluginCallback &callback, QWidget *parent, int method
 	V3DLONG sy = subject->getYDim();
 	V3DLONG sz = subject->getZDim();
 	V3DLONG pagesz_sub = sx*sy*sz;
+	
+	m_iImgWidth = sx;
+	m_iImgHeight = sy;
+	m_iImgCount = sz;
+	
 	unsigned char * pData = pSub.begin();
 	
 	unsigned char *apsInput = new unsigned char[sx*sy*sz];
@@ -376,20 +299,12 @@ void CannyPlugin::Getgrad(V3DLONG m_iWid, V3DLONG m_iHei, V3DLONG m_iCount, unsi
 		{
 			for(i=1;i<m_iWid-1;i++)
 			{
-				V3DLONG cur = k*m_iWid*m_iHei+j*m_iWid+i;
-			//	V3DLONG px = apsInput[cur+1]-apsInput[cur-1];
-			//	V3DLONG py = apsInput[k*m_iWid*m_iHei+(j+1)*m_iWid +i] - apsInput[k*m_iWid*m_iHei+(j-1)*m_iWid +i];
-				//V3DLONG p45 = apsInput[k*m_iWid*m_iHei+(j+1)*m_iWid +i-1] - apsInput[k*m_iWid*m_iHei+(j-1)*m_iWid +i+1];
-				//V3DLONG p135 = apsInput[k*m_iWid*m_iHei+(j+1)*m_iWid +i+1] - apsInput[k*m_iWid*m_iHei+(j-1)*m_iWid +i-1];
-				//pGradX[cur] = px+(p45+p135)/2;
-				//pGradY[cur] = py+(p45-p135)/2;
-				
+				V3DLONG cur = k*m_iWid*m_iHei+j*m_iWid+i;				
 				pGradX[cur] = apsInput[cur+1]-apsInput[cur-1];
 				pGradY[cur] = apsInput[k*m_iWid*m_iHei+(j+1)*m_iWid +i] - apsInput[k*m_iWid*m_iHei+(j-1)*m_iWid +i];
 				dSqt1 = pGradX[cur]*pGradX[cur];
 				dSqt2 = pGradY[cur]*pGradY[cur];
 				Gradient[cur] = (sqrt(dSqt1+dSqt2)+0.5);
-				//NonMax[cur]=Gradient[cur];
 			}
 		}		
 		
@@ -415,8 +330,8 @@ void CannyPlugin::DetectCannyEdges(V3DLONG m_iWid, V3DLONG m_iHei, V3DLONG m_iCo
 	
 	double Tmp,Tmp1,Tmp2;
 	
-	nThrLow = 15;
-	nThrHigh = 25;
+	//nThrLow = 15;
+	//nThrHigh = 25;
 	bool type = false;
 	if(type) 
 	{
@@ -561,14 +476,24 @@ void CannyPlugin::DetectCannyEdges(V3DLONG m_iWid, V3DLONG m_iHei, V3DLONG m_iCo
 		}
 	}
 
+	unsigned char *apsOutput = new unsigned char[m_iWid*m_iHei*m_iCount];
+	
+	memset(apsOutput, 0, m_iWid*m_iHei*m_iCount*sizeof(unsigned char));	
+	
 	for(k = 0; k<m_iCount; k++)
 	{
+		
+		IterateSeg(Gradient,k, nThrHigh, apsOutput);
+		
+		nThrLow = nThrHigh*0.5;
+		
+		printf("thhigh=%ld thlow=%d\n",nThrHigh,nThrLow);
+		
 		for(j=1;j<m_iHei-1;j++)
 		{
 			for(i=1;i<m_iWid-1;i++)
 			{
 				cur = k*m_iWid*m_iHei+j*m_iWid+i;
-				
 				if((NonMax[cur]==128) && (Gradient[cur] >= nThrHigh))
 				{
 					apsInput[cur] = 255;
@@ -591,18 +516,67 @@ void CannyPlugin::DetectCannyEdges(V3DLONG m_iWid, V3DLONG m_iHei, V3DLONG m_iCo
 				}
 			}
 		}
-	}
 	
+	}
+}
+
+void CannyPlugin::ComputeThreshold(V3DLONG z, unsigned char *Gradient, V3DLONG &pThrHigh, V3DLONG &pThrLow, unsigned char* NonMax, double factorHigh, double factorLow)//0.9 0.76
+{
+	V3DLONG i,j,k;
+	V3DLONG Hist[1024];
+	V3DLONG ENum;
+	V3DLONG nMaxMag;
+	V3DLONG nHighCount;
+	nMaxMag = 0;
+	for(k=0;k<1024;k++)
+	{
+		Hist[k] = 0;
+	}
+	V3DLONG n = z*m_iImgWidth*m_iImgHeight;
+	for(j=0;j<m_iImgHeight;j++)
+	{
+		for(i=0;i<m_iImgWidth;i ++)
+		{
+			if(NonMax[n+j*m_iImgWidth+i]==128)
+			{
+				Hist[Gradient[n+j*m_iImgWidth+i]]++;
+			}
+		}
+	}
+	ENum = Hist[0];
+	nMaxMag = 0;
+	
+	for(k=1;k<1024;k++)
+	{
+		if(Hist[k] != 0)
+		{
+			nMaxMag = k;
+		}
+
+		ENum += Hist[k];
+	}
+    printf("nmaxmag=%ld\n",nMaxMag);
+	
+	nHighCount = (int)(factorHigh * ENum + 0.5);
+	
+	k=1;
+	ENum = Hist[1];	
+	while((k<(nMaxMag-1)) && (ENum < nHighCount))
+	{
+		k++;
+		ENum += Hist[k];
+	}
+	 
+	pThrHigh = k;
+	pThrLow = (int)((pThrHigh) * factorLow + 0.5);
+	printf("thhigh=%ld thlow=%d\n",pThrHigh,pThrLow);
 }
 
 void CannyPlugin::TraceEdge(V3DLONG k, V3DLONG y, V3DLONG x, V3DLONG nThrLow,unsigned char*apsInput,unsigned char*Gradient,V3DLONG m_iWid, V3DLONG m_iHei, V3DLONG m_iCount)
 {
-	
     static int nDx[] = {1,1,0,-1,-1,-1,0,1};
 	static int nDy[] = {0,1,1,1,0,-1,-1,-1};
-	
-	V3DLONG yy,xx;
-	
+	V3DLONG yy,xx;	
 	for(k=0;k<8;k++)
 	{
 		yy = y+nDy[k];
@@ -610,178 +584,11 @@ void CannyPlugin::TraceEdge(V3DLONG k, V3DLONG y, V3DLONG x, V3DLONG nThrLow,uns
 		if(apsInput[k*m_iWid*m_iHei+yy*m_iWid+xx]==128 && Gradient[k*m_iWid*m_iHei+yy*m_iWid+xx]>=nThrLow )
 		{
 			apsInput[k*m_iWid*m_iHei+yy*m_iWid+xx] = 255;
-			
 			TraceEdge(k,yy,xx,nThrLow,apsInput,Gradient,m_iWid,m_iHei,m_iCount);			
 		}
 	}
 }
-void CannyPlugin::Thinning(unsigned char *apsInput,unsigned char *apsOutput,V3DLONG m_iWid, V3DLONG m_iHei, V3DLONG m_iCount)
-{
-	bool bCondition1;
-	bool bCondition2;
-	bool bCondition3;
-	bool bCondition4;
-	int neighbour[5][5];
-    int nCount;
-	int m;
-	V3DLONG curPos;
-	V3DLONG i,j ;
-	V3DLONG* pTmpMark  = new V3DLONG[m_iWid * m_iHei];
-	V3DLONG* pTmpMark1 = new V3DLONG[m_iWid * m_iHei];
-	bool bModify;
-	bModify = true;
-	for(i =0; i< m_iHei; i++)
-	{
-		for(j = 0; j < m_iWid;j++)
-		{
-			pTmpMark1[i*m_iWid+j] = apsInput[i*m_iWid+j];
-			printf("tmp=%d\n",pTmpMark1[i*m_iWid+j]);
-		}
-	}
-	//memcpy(pTmpMark1, apsInput, m_iWid * m_iHei);
-	while (bModify) 
-	{
-		bModify = false;
-		
-		memset(pTmpMark, 0, m_iWid * m_iHei * sizeof(V3DLONG));
-		
-		for(int i = 2 ; i< m_iHei - 2 ; i++ )
-		{
-			for(int j = 2; j<m_iWid - 2; j++)
-			{
-				bCondition1 = false;
-				bCondition2 = false;
-				
-				bCondition3 = false;
-				bCondition4 = false;
-				curPos = i*m_iWid+j;
-				if( pTmpMark1[curPos] == 255)
-				{
-					for (int a = 0; a < 5;a++ )
-					{
-						for (int n = 0; n < 5;n++)
-						{
-							neighbour[a][n] = pTmpMark1[curPos + (2 - a)*m_iWid +( n - 2)]/ 255;
-						}
-					}
-//					for(int ii=-1;ii<2;ii++)
-//						for(int jj=-1;jj<2;jj++)
-//						{
-//							V3DLONG y = j+ii;
-//							V3DLONG x = i+jj;
-//							neighbour[ii+2][jj+2] = (pTmpMark1[m_iWid * y + x]/255);
-//						}
-					
-					//逐个判断条件。
-					//判断2<=NZ(P1)<=6
-					nCount =  neighbour[1][1] + neighbour[1][2] + neighbour[1][3] 
-					+ neighbour[2][1] + neighbour[2][3] + 
-					+ neighbour[3][1] + neighbour[3][2] + neighbour[3][3];
-					if ( nCount >= 2 && nCount <=6)
-						bCondition1 = true;
-					//判断Z0(P1)=1
-					nCount = 0;
-					if (neighbour[1][2] == 0 && neighbour[1][1] == 1)
-						nCount++;
-					if (neighbour[1][1] == 0 && neighbour[2][1] == 1)
-						nCount++;
-					if (neighbour[2][1] == 0 && neighbour[3][1] == 1)
-						nCount++;
-					if (neighbour[3][1] == 0 && neighbour[3][2] == 1)
-						nCount++;
-					if (neighbour[3][2] == 0 && neighbour[3][3] == 1)
-						nCount++;
-					if (neighbour[3][3] == 0 && neighbour[2][3] == 1)
-						nCount++;
-					if (neighbour[2][3] == 0 && neighbour[1][3] == 1)
-						nCount++;
-					if (neighbour[1][3] == 0 && neighbour[1][2] == 1)
-						nCount++;
-					if (nCount == 1)
-						bCondition2 = true;
-					//判断P2*P4*P8=0 or Z0(p2)!=1
-					if (neighbour[1][2]*neighbour[2][1]*neighbour[2][3] == 0)
-						bCondition3 = true;
-					else
-					{
-						nCount = 0;
-						if (neighbour[0][2] == 0 && neighbour[0][1] == 1)
-							nCount++;
-						if (neighbour[0][1] == 0 && neighbour[1][1] == 1)
-							nCount++;
-						if (neighbour[1][1] == 0 && neighbour[2][1] == 1)
-							nCount++;
-						if (neighbour[2][1] == 0 && neighbour[2][2] == 1)
-							nCount++;
-						if (neighbour[2][2] == 0 && neighbour[2][3] == 1)
-							nCount++;
-						if (neighbour[2][3] == 0 && neighbour[1][3] == 1)
-							nCount++;
-						if (neighbour[1][3] == 0 && neighbour[0][3] == 1)
-							nCount++;
-						if (neighbour[0][3] == 0 && neighbour[0][2] == 1)
-							nCount++;
-						if (nCount != 1)
-							bCondition3 = true;
-					}
-					//判断P2*P4*P6=0 or Z0(p4)!=1
-					if (neighbour[1][2]*neighbour[2][1]*neighbour[3][2] == 0)
-						bCondition4 = true;
-					else
-					{
-						nCount = 0;
-						if (neighbour[1][1] == 0 && neighbour[1][0] == 1)
-							nCount++;
-						if (neighbour[1][0] == 0 && neighbour[2][0] == 1)
-							nCount++;
-						if (neighbour[2][0] == 0 && neighbour[3][0] == 1)
-							nCount++;
-						if (neighbour[3][0] == 0 && neighbour[3][1] == 1)
-							nCount++;
-						if (neighbour[3][1] == 0 && neighbour[3][2] == 1)
-							nCount++;
-						if (neighbour[3][2] == 0 && neighbour[2][2] == 1)
-							nCount++;
-						if (neighbour[2][2] == 0 && neighbour[1][2] == 1)
-							nCount++;
-						if (neighbour[1][2] == 0 && neighbour[1][1] == 1)
-							nCount++;
-						if (nCount != 1)
-							bCondition4 = true;
-					}
-					if(bCondition1 && bCondition2 && bCondition3 && bCondition4)
-					{
-						pTmpMark[curPos] = 0;
-						bModify = true;
-					}
-					else
-					{
-						pTmpMark[curPos] = 255;
-					}
-				} 
-			}
-		}
-		for(i =0; i< m_iHei; i++)
-		{
-			for(j = 0; j < m_iWid;j++)
-			{
-				pTmpMark1[i*m_iWid+j] = pTmpMark[i*m_iWid+j];
-			}
-		}		
-		//memcpy(pTmpMark1, pTmpMark, m_iWid*m_iHei);
-	} 
 
-	for(int i = 1 ; i< m_iHei  ; i++ )
-	{
-		for(int j = 1; j<m_iWid ; j++)
-		{
-			curPos = i*m_iWid+j;
-			apsOutput[curPos] |= pTmpMark1[curPos];
-		}
-	}
-    delete []pTmpMark;
-	delete []pTmpMark1;
-}
 
 void CannyPlugin::CreateGaussFilterTemplet2D(float *apfTemplet, int iSize, float fLamb)
 {
