@@ -686,7 +686,10 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 			if (b_putinrecentfilelist)
 				setCurrentFile(fileName);
 		}
-		else if (curfile_info.suffix().toUpper()=="APO" || curfile_info.suffix().toUpper()=="SWC" || curfile_info.suffix().toUpper()=="OBJ" || curfile_info.suffix().toUpper()=="V3DS")
+		else if (curfile_info.suffix().toUpper()=="APO" || 
+				 curfile_info.suffix().toUpper()=="SWC" || 
+				 curfile_info.suffix().toUpper()=="OBJ" || 
+				 curfile_info.suffix().toUpper()=="V3DS")
 		{
 			//directly open the 3D viewer
 			iDrawExternalParameter * mypara_3Dview = new iDrawExternalParameter;
@@ -865,7 +868,13 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 				system(qPrintable(QString("rm -f %1").arg(tmp_filename)));
 			}
 		}
-		else if ( (curfile_info.suffix().toUpper()=="LSM") || (curfile_info.suffix().toUpper()=="TIF") || (curfile_info.suffix().toUpper()=="RAW") ) // specific ".tif" ".lsm" ".raw" file, changed by YuY Nov. 19, 2010
+		else if ( (curfile_info.suffix().toUpper()=="LSM") || 
+				 (curfile_info.suffix().toUpper()=="TIF") || 
+				 (curfile_info.suffix().toUpper()=="RAW") ||
+				 (curfile_info.suffix().toUpper()=="V3DRAW") ||
+				 (curfile_info.suffix().toUpper()=="RAW5") ||
+				 (curfile_info.suffix().toUpper()=="V3DRAW5") || 
+				 (curfile_info.suffix().toUpper()=="MRC") ) // specific ".tif" ".lsm" ".raw" file, changed by YuY Nov. 19, 2010
 		{
 			try
 			{
