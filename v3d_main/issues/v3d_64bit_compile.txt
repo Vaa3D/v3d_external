@@ -24,7 +24,7 @@ sudo make install
 
 3)	libfftw
 
-./configure --enable-float --enable-shared CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64"
+./configure --enable-float --enable-threads --enable-shared CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64"
 
 make
 
