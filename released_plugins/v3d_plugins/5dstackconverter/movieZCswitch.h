@@ -28,7 +28,7 @@ public:
             {return false;}
 
         // plugin interface version 2.1 requires plugin version
-        float getPluginVersion() const {return 1.1f;}
+        float getPluginVersion() const {return 1.15f;}
 };
 
 #endif
