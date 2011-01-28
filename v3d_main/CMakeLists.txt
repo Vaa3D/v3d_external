@@ -54,7 +54,7 @@ if( V3D_USE_OWN_TIFF )
   include_directories(BEFORE "${CMAKE_CURRENT_SOURCE_DIR}/common_lib/include")
 else()
   # CMake 2.8 FindTiff is very simple.  I need to give it some help on windows
-  SET(TIFF_NAMES ${TIFF_NAMES}  libv3dtiff.a v3dtiff libv3dtiff libtiff.a tiff libtiff libtiff3 libtiff_i)
+  SET(TIFF_NAMES ${TIFF_NAMES}  libv3dtiff.a libtiff_v3d.a v3dtiff libv3dtiff libtiff.a tiff libtiff libtiff3 libtiff_i)
   FIND_LIBRARY(TIFF_LIBRARY NAMES ${TIFF_NAMES}
 	# PATHS "$ENV{PROGRAMFILES}/tiff-3.8.2"
 	PATHS 

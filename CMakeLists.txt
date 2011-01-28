@@ -40,6 +40,13 @@ else()
 	endif()
 endif()
 
+# Default to building fat binaries, even on Leopard
+if(APPLE)
+    if(NOT CMAKE_OSX_ARCHITECTURES)
+         set(CMAKE_OSX_ARCHITECTURES i386 x86_64)
+    endif()
+endif()
+
 set(V3D_PLATFORM_NAME "${PLATFORM_FLAVOR}" CACHE STRING "Platform name describing this particular V3D binary type.")
 add_definitions(-DV3D_PLATFORM_NAME=\"${V3D_PLATFORM_NAME}\") # so we can access platform name from running code.
 

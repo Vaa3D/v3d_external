@@ -9,6 +9,13 @@ if(NOT INSTALLATION_DIRECTORY)
 endif()
 include(../../../released_plugins/CMake/PluginConfiguration.cmake)
 
+# Default to building fat binaries, even on Leopard
+if(APPLE)
+    if(NOT CMAKE_OSX_ARCHITECTURES)
+         set(CMAKE_OSX_ARCHITECTURES i386 x86_64)
+    endif()
+endif()
+
 # Python libraries are needed to create a python interpreter
 FIND_PACKAGE( PythonLibs REQUIRED )
 include_directories(${PYTHON_INCLUDE_PATH})
