@@ -57,7 +57,6 @@ class V3DWrapper:
             ;
         """)
         self.wrap_QList()
-        self.wrap_QString()
         self.wrap_QPolygon()
         self.wrap_QBool()
         self.wrap_QHash()
@@ -75,8 +74,11 @@ class V3DWrapper:
         self.wrap_TriviewControl()
         self.wrap_ImageWindow()
         self.wrap_LocationSimple()
+        self.wrap_V3DPluginArgItem()
+        self.wrap_callPluginFunc()
         self.wrap_c_array_struct()
         self.wrap_v3d_qt_environment()
+        self.wrap_QString()
         # and finally
         self.mb.member_operators('operator*').exclude()
         self.mb.member_operators('operator->').exclude()
@@ -87,6 +89,31 @@ class V3DWrapper:
         self.mb.variables('').exclude() # avoid anonymous variable warnings
         self.mb.free_functions('qHash').exclude()
 
+    def wrap_callPluginFunc(self):
+        fn = self.mb.free_function("callPluginFunc")
+        # fn.add_transformation(FT.output('output')) # No, we need to pass that object
+        
+    def wrap_V3DPluginArgItem(self):
+        cls = self.mb.class_('V3DPluginArgItem')
+        cls.include()
+        cls.variable('p').exclude()
+        cls.variable('type').exclude() # QString is converted, not exposed
+        getter = self.mb.free_function("get_argitem_type")
+        setter = self.mb.free_function("set_argitem_type")
+        cls.add_property( 'type', getter, setter )
+        getter.exclude()
+        setter.exclude()
+        # Harder problem than type string is the pointer to the argument object
+        getter = self.mb.free_function("get_argitem_pointer")
+        # getter.call_policies = return_internal_reference()
+        setter = self.mb.free_function("set_argitem_pointer")
+        setter.call_policies = with_custodian_and_ward(1, 2)
+        cls.add_property( 'p', getter, setter )
+        # cls.add_property( 'p', None, setter )
+        # TODO
+        getter.exclude()
+        setter.exclude()
+    
     def wrap_v3d_qt_environment(self):
         # Too bad.  this does not seem to work with pyside.
         fn = self.mb.namespace('v3d').free_function('get_qt_gui_parent')
@@ -108,6 +135,8 @@ class V3DWrapper:
                          'c_array<unsigned char, 4>',
                          'c_array<float, 3>',
                          'c_array<short, 3>',
+                         'c_array<double, 3>',
+                         'c_array< c_array<double, 3>, 3 >',
                          ]:
             cls = self.mb.class_(cls_name)
             self.mb.add_registration_code(
@@ -185,6 +214,7 @@ class V3DWrapper:
                          'QList<LocationSimple>', 
                          'QList<NeuronSWC>', 
                          'QList<QPolygon>', 
+                         'QList<V3DPluginArgItem>'
                          ]:
             cls = self.mb.class_(cls_name)
             self.mb.add_registration_code(
@@ -238,6 +268,11 @@ class V3DWrapper:
         self.mb.add_declaration_code('#include "convert_qstring.h"', tail=False)
         self.mb.add_registration_code('register_qstring_conversion();', tail=False)
         cls.already_exposed = True;
+        # cls.include()
+        # cls.member_functions().exclude()
+        # cls.constructors().exclude()
+        # cls.member_operators().exclude()
+        # cls.variables().exclude()
         
     def wrap_LocationSimple(self):
         cls = self.mb.class_('LocationSimple')

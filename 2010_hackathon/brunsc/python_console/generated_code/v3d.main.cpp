@@ -42,6 +42,10 @@
 
 #include "generated_code/TriviewControl.pypp.hpp"
 
+#include "generated_code/V3DPluginArgItem.pypp.hpp"
+
+#include "generated_code/V3DPluginArg_double3x3.pypp.hpp"
+
 #include "generated_code/V3D_GlobalSetting.pypp.hpp"
 
 #include "generated_code/View3DControl.pypp.hpp"
@@ -52,11 +56,15 @@
 
 #include "generated_code/c_array_int_3.pypp.hpp"
 
+#include "generated_code/c_array_less__double_comma__3__greater_.pypp.hpp"
+
 #include "generated_code/c_array_short_3.pypp.hpp"
 
 #include "generated_code/c_array_uint_3.pypp.hpp"
 
 #include "generated_code/c_array_uint_4.pypp.hpp"
+
+#include "generated_code/double3x3.pypp.hpp"
 
 #include "generated_code/v3d_enumerations.pypp.hpp"
 
@@ -66,16 +74,22 @@ namespace bp = boost::python;
 
 #include "convert_qlist.h"
 
-#include "convert_qstring.h"
-
 #include "convert_qbool.h"
 
 #include "convert_qhash.h"
 
 #include "convert_c_array_struct.h"
 
+#include "convert_qstring.h"
+
 BOOST_PYTHON_MODULE(v3d){
     register_enumerations();
+
+    register_qstring_conversion();
+
+    register_c_array_struct_conversion< c_array<c_array<double, 3>, 3> >();
+
+    register_c_array_struct_conversion< c_array<double, 3> >();
 
     register_c_array_struct_conversion< c_array<short, 3> >();
 
@@ -91,7 +105,7 @@ BOOST_PYTHON_MODULE(v3d){
 
     register_qbool_conversion();
 
-    register_qstring_conversion();
+    register_qlist_conversion<QList<V3DPluginArgItem> >();
 
     register_qlist_conversion<QList<QPolygon> >();
 
@@ -137,11 +151,19 @@ BOOST_PYTHON_MODULE(v3d){
 
     register_TriviewControl_class();
 
+    register_V3DPluginArgItem_class();
+
+    register_V3DPluginArg_double3x3_class();
+
     register_V3D_GlobalSetting_class();
 
     register_View3DControl_class();
 
     register_XYZ_class();
+
+    register_double3x3_class();
+
+    register_c_array_less__double_comma__3__greater__class();
 
     register_c_array_float_3_class();
 

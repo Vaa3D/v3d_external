@@ -1,6 +1,20 @@
 #include "wrappable_v3d.h"
 #include <stdexcept>
 
+std::string get_argitem_type(const V3DPluginArgItem& item) {
+    return item.type.toStdString();
+}
+void set_argitem_type(V3DPluginArgItem& item, const std::string& s) {
+    item.type = QString::fromStdString(s);
+}
+std::string get_argitem_pointer(const V3DPluginArgItem& item) {
+    return "Sorry, you cannot see a void* type from python.";
+    // return item.p;
+}
+void set_argitem_pointer(V3DPluginArgItem& item, void* ptr) {
+    item.p = ptr;
+}
+
 unsigned int qHash(const LocationSimple& loc){
     return qHash(QString("%1,%2,%3").arg(loc.x).arg(loc.y).arg(loc.z));
 }
@@ -9,10 +23,18 @@ unsigned int qHash(const QPolygon&) {
     return 1; // TODO
 }
 
+unsigned int qHash(const V3DPluginArgItem& lhs) {
+    return qHash(lhs.p);
+}
+
 template class QList<LocationSimple>;
 template class QVector<QPoint>;
 template class QList<QPolygon>;
 template class QHash<int, int>;
+template class QList<V3DPluginArgItem>;
+template class c_array< double, 3 >;
+template class c_array< c_array< double, 3 >, 3 >;
+template class V3DPluginArg< c_array< c_array< double, 3 >, 3 > >;
 
 class NullV3DCallbackException : public std::runtime_error
 {
@@ -20,6 +42,12 @@ public:
     NullV3DCallbackException(const char* msg) : std::runtime_error(msg)
     {}
 };
+
+bool callPluginFunc(const QString & plugin_name, const QString & func_name,
+        const V3DPluginArgList & input, V3DPluginArgList & output)
+{
+    return v3d::get_plugin_callback()->callPluginFunc(plugin_name, func_name, input, output);
+}
 
 void ImageWindowReceiver::open3DWindow() {
     v3d::get_plugin_callback()->open3DWindow(handle);
@@ -162,4 +190,8 @@ bool operator!=(const LocationSimple& lhs, const LocationSimple& rhs)
 bool operator==(const LocationSimple& lhs, const LocationSimple& rhs)
 {
     return ! (lhs != rhs);
+}
+
+bool operator==(const V3DPluginArgItem& lhs, const V3DPluginArgItem& rhs) {
+    return lhs.p == rhs.p;
 }

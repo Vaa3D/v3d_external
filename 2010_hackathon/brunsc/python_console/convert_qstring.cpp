@@ -59,9 +59,10 @@ namespace sandbox { namespace {
 
 void register_qstring_conversion()
 {
+    // If there is a QString member variable, conversion is not enough.
     bp::to_python_converter<
-            QString,
-            sandbox::qstring_to_python_str>();
+           QString,
+           sandbox::qstring_to_python_str>();
 
     sandbox::qstring_from_python_str();
 }

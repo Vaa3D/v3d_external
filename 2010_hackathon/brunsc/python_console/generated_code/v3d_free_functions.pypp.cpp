@@ -8,6 +8,18 @@ namespace bp = boost::python;
 
 void register_free_functions(){
 
+    { //::callPluginFunc
+    
+        typedef bool ( *callPluginFunc_function_type )( ::QString const &,::QString const &,::V3DPluginArgList const &,::V3DPluginArgList & );
+        
+        bp::def( 
+            "callPluginFunc"
+            , callPluginFunc_function_type( &::callPluginFunc )
+            , ( bp::arg("plugin_name"), bp::arg("func_name"), bp::arg("input"), bp::arg("output") )
+            , " Calls a function in a dynamically loaded V3D plugin module." );
+    
+    }
+
     { //::getGlobalSetting
     
         typedef ::V3D_GlobalSetting ( *getGlobalSetting_function_type )(  );
