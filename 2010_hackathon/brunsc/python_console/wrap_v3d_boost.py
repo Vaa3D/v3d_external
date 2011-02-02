@@ -104,15 +104,26 @@ class V3DWrapper:
         getter.exclude()
         setter.exclude()
         # Harder problem than type string is the pointer to the argument object
-        getter = self.mb.free_function("get_argitem_pointer")
-        # getter.call_policies = return_internal_reference()
-        setter = self.mb.free_function("set_argitem_pointer")
-        setter.call_policies = with_custodian_and_ward(1, 2)
-        cls.add_property( 'p', getter, setter )
-        # cls.add_property( 'p', None, setter )
-        # TODO
-        getter.exclude()
-        setter.exclude()
+        cls.add_declaration_code("""
+            void set_pluginargitem_pointer(
+                    V3DPluginArgItem& arg, 
+                    bp::object& bpo) 
+            {
+                arg.p = &bpo;
+            }
+            bp::object* get_pluginargitem_pointer(
+                    V3DPluginArgItem& arg) 
+            {
+                return static_cast<bp::object*>(arg.p);
+            }
+        """)
+        cls.add_registration_code("""
+            add_property("p",
+            bp::make_function(&get_pluginargitem_pointer,
+                bp::return_internal_reference<>()),
+            bp::make_function(&set_pluginargitem_pointer,
+                bp::with_custodian_and_ward<1,2>() ))
+        """)
     
     def wrap_v3d_qt_environment(self):
         # Too bad.  this does not seem to work with pyside.

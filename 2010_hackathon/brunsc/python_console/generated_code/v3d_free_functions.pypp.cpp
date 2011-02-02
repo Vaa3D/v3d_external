@@ -31,6 +31,17 @@ void register_free_functions(){
     
     }
 
+    { //::get_argitem_pointer
+    
+        typedef ::std::string ( *get_argitem_pointer_function_type )( ::V3DPluginArgItem const & );
+        
+        bp::def( 
+            "get_argitem_pointer"
+            , get_argitem_pointer_function_type( &::get_argitem_pointer )
+            , ( bp::arg("item") ) );
+    
+    }
+
     { //::v3d::get_qt_gui_parent
     
         typedef ::QWidget * ( *get_qt_gui_parent_function_type )(  );
@@ -51,6 +62,17 @@ void register_free_functions(){
             , setGlobalSetting_function_type( &::setGlobalSetting )
             , ( bp::arg("gs") )
             , " Sets general parameters of the V3D program." );
+    
+    }
+
+    { //::set_argitem_pointer
+    
+        typedef void ( *set_argitem_pointer_function_type )( ::V3DPluginArgItem &,void * );
+        
+        bp::def( 
+            "set_argitem_pointer"
+            , set_argitem_pointer_function_type( &::set_argitem_pointer )
+            , ( bp::arg("item"), bp::arg("ptr") ) );
     
     }
 
