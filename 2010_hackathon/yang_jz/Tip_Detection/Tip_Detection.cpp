@@ -1179,7 +1179,7 @@ void TipPlugin::SearchEndPoints()
 		count1 = 0;
 		count2 = 0;
 		//26
-		for(int kk=-1;kk<2;kk++)
+		for(int kk=-3;kk<4;kk++)
 			for(int m=-3;m<4;m++)
 				for(int n=-3; n<4; ++n)
 			//for(int n = 0; n < 9; ++n)
@@ -1542,13 +1542,52 @@ void TipPlugin::Tipdetection(V3DPluginCallback &callback, QWidget *parent, int m
 		orgPoint.m_x = -1;
 		orgPoint.m_y = -1;
 		orgPoint.m_z = -1;
+		
+		unsigned char *apsInput1 = new unsigned char[sx*sy*sz];
+		memset(apsInput1, 0, sx*sy*sz * sizeof(unsigned char));
+		unsigned char *apsInput2 = new unsigned char[sx*sy*sz];
+		memset(apsInput2, 0, sx*sy*sz * sizeof(unsigned char));
+		
+		int iSize = 5;		
+		
+		float *apfGaussTemplate3D = new float[iSize*iSize*iSize];
+		memset(apfGaussTemplate3D, 0, iSize*iSize*iSize* sizeof(float));
+	    
+		CreateGaussFilterTemplet3D(apfGaussTemplate3D,iSize,0.8);
+		
+		GaussFilter3D(pData, apsInput1,sx,sy,sz,apfGaussTemplate3D,iSize);
+		
+		IterateSeg(apsInput1,sx,sy,sz,apsInput2);
+		
+//		for (V3DLONG k=0; k<sz; k++)
+//		{
+//			for (V3DLONG j=0; j<sy; j++)
+//			{
+//				for (V3DLONG i=0; i<sx; i++)
+//				{
+//					if (pData[k*sx*sy+j*sx+i]!=0)
+//					{
+//						apsInput[k*sx*sy+j*sx+i] = 255;
+//						orgPoint.m_x = i;
+//						orgPoint.m_y = j;
+//						orgPoint.m_z = k;
+//					}
+//					else 
+//					{
+//						apsInput[k*sx*sy+j*sx+i] = BACKGROUND;
+//					}
+//				}
+//			}
+//		}
+		
+		
 		for (V3DLONG k=0; k<sz; k++)
 		{
 			for (V3DLONG j=0; j<sy; j++)
 			{
 				for (V3DLONG i=0; i<sx; i++)
 				{
-					if (pData[k*sx*sy+j*sx+i]!=0)
+					if (apsInput2[k*sx*sy+j*sx+i] != 0)
 					{
 						apsInput[k*sx*sy+j*sx+i] = 255;
 						orgPoint.m_x = i;
@@ -1562,6 +1601,7 @@ void TipPlugin::Tipdetection(V3DPluginCallback &callback, QWidget *parent, int m
 				}
 			}
 		}
+		//
 		SetImageInfo1D(apsInput,sz,sx,sy);	
 		Set_DFS_Seed(orgPoint);
 		Initialize1D();
@@ -1575,14 +1615,14 @@ void TipPlugin::Tipdetection(V3DPluginCallback &callback, QWidget *parent, int m
 		{
 			DFSPoint_t p;
 			p = m_vdfsptEndPoint.at(aa);
-			pData[p.m_z * sx*sy + p.m_y*sx + p.m_x] = 200;
-			pData[p.m_z *sx*sy + (p.m_y-1)*sx + p.m_x] = 200;
-			pData[p.m_z *sx*sy + (p.m_y)*sx + p.m_x+1] = 200;
-			pData[p.m_z * sx*sy + (p.m_y)*sx + p.m_x-1] = 200;
-			pData[p.m_z * sx*sy + (p.m_y+1)*sx + p.m_x] = 200;
+			apsInput2[p.m_z * sx*sy + p.m_y*sx + p.m_x] = 200;
+			apsInput2[p.m_z *sx*sy + (p.m_y-1)*sx + p.m_x] = 200;
+			apsInput2[p.m_z *sx*sy + (p.m_y)*sx + p.m_x+1] = 200;
+			apsInput2[p.m_z * sx*sy + (p.m_y)*sx + p.m_x-1] = 200;
+			apsInput2[p.m_z * sx*sy + (p.m_y+1)*sx + p.m_x] = 200;
 		}		
 		Image4DSimple p4DImage;
-		p4DImage.setData(pData, sx, sy, sz, 1, V3D_UINT8);
+		p4DImage.setData(apsInput2, sx, sy, sz, 1, V3D_UINT8);
 		v3dhandle newwin;
 		if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to use the existing window?"), QMessageBox::Yes, QMessageBox::No))
 			newwin = callback.currentImageWindow();
@@ -1930,7 +1970,7 @@ void TipPlugin::Tipdetection(V3DPluginCallback &callback, QWidget *parent, int m
 			{
 				for ( i=0; i<sx; i++)
 				{
-					if(pData[k*sx*sy+j*sx+i]> 100) //temp + D)//30.ok
+					if(pData[k*sx*sy+j*sx+i]> 35) //temp + D)//30.ok
 					{
 						apsInput1[k*sx*sy+j*sx+i] = 255;//pData[k*sx*sy+j*sx+i];
 					}else
@@ -1988,7 +2028,7 @@ void TipPlugin::Tipdetection(V3DPluginCallback &callback, QWidget *parent, int m
 		{
 			for ( i=0; i<sx; i++)
 			{
-				if(apsOutput[j*sx+i]>= 100) //temp + D)
+				if(apsOutput[j*sx+i]>= 35) //temp + D)
 				{
 					apsInput1[j*sx+i] = 255;//pData[k*sx*sy+j*sx+i];
 				}else
@@ -2312,7 +2352,7 @@ void TipPlugin::Tipdetection(V3DPluginCallback &callback, QWidget *parent, int m
 		int Sstep = 1;
 		int Sangle = 15;
 		V3DLONG index = 0;
-		int num = 2;
+		int num = 3;
 		V3DLONG i,j,size;
 		SpacePoint_t point;
 		vector<SpacePoint_t> temp;
@@ -2380,7 +2420,7 @@ void TipPlugin::Tipdetection(V3DPluginCallback &callback, QWidget *parent, int m
 				V3DLONG area1 = m_TipP1[ii].area;
 				V3DLONG weight1 = m_TipP1[ii].weight;
 				V3DLONG len1 = m_TipP1[ii].cycle;
-				if (weight1==1  && area1< 6 && area1>0)//4 for xoy,6
+				if (weight1==1  && area1< 6 && area1>0 && var < 2000)//4 for xoy,6
 				{
 					pp.x = xx;
 					pp.y = yy;
@@ -2493,7 +2533,7 @@ void TipPlugin::Tipdetection(V3DPluginCallback &callback, QWidget *parent, int m
 		int Sstep = 1;
 		int Sangle = 15;
 		V3DLONG index = 0;
-		int num = 1;
+		int num = 3;
 		int iSize = 5;
 		for (V3DLONG aa = 0; aa < m_vdfsptEndPoint.size(); aa++) 
 		{
@@ -3520,7 +3560,8 @@ void TipPlugin::CreateGaussFilterTemplet(float *apfTemplet, int iSize, float fLa
 	float fTemp;
 	for (i = 0; i < iSize; i++)
 	{
-		x = i - iHalfSize;
+		//x = i - iHalfSize;
+		x = 3*(i - iHalfSize)/iHalfSize;
 		fTemp = (x * x)/(2 * fLamb * fLamb);
 		apfTemplet[i] = exp(-fTemp);
 		printf("guss=%lf\n",apfTemplet[i]);
