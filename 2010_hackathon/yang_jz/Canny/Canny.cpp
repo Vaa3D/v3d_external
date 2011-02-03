@@ -163,9 +163,7 @@ void CannyPlugin::BinaryProcess(unsigned char*apsInput, unsigned char * aspOutpu
 
 void CannyPlugin::Doublelinear_inserting (unsigned char*apsInput,V3DLONG &polValue,float x0, float y0, V3DLONG z0, V3DLONG currX, V3DLONG currY)
 {
-	//V3DLONG mCount = m_OiImgWidth * m_OiImgHeight;
-  //  printf("m_OiImgWidth=%d m_OiImgHeight=%d x0=%lf y0=%lf z0=%d\n",m_OiImgWidth,m_OiImgHeight,x0,y0,z0);
-	//printf("x00=%d currx=%d curry=%d\n",apsInput[currY * m_OiImgWidth + currX],currX,currY);	
+	
 	float deltaX, deltaY;
 	deltaX = x0 - currX;
 	deltaY = y0 - currY;
@@ -243,9 +241,30 @@ void CannyPlugin::Canny(V3DPluginCallback &callback, QWidget *parent, int method
 	unsigned char *NonMax = new unsigned char[sx*sy*sz];
 	memset(NonMax, 0, sx*sy*sz*sizeof(unsigned char));
 	
-	Getgrad(sx,sy,sz,apsInput,pGradX,pGradY,Gradient,NonMax);		
-
-	DetectCannyEdges(sx,sy,sz,apsInput1,pGradX,pGradY,Gradient,NonMax);    	
+	//Getgrad(sx,sy,sz,apsInput,pGradX,pGradY,Gradient,NonMax);	
+	
+	
+	V3DLONG j,i,k;
+	double dSqt1;
+	double dSqt2;
+	for(k = 0; k<sz; k++)
+	{
+		for(j=1;j<sy-1;j++)
+		{
+			for(i=1;i<sx-1;i++)
+			{
+				V3DLONG cur = k*m_iWid*m_iHei+j*m_iWid+i;				
+				V3DLONG pGradX = (apsInput[cur+1]-apsInput[cur-1])/2;
+				V3DLONG pGradY = (apsInput[k*m_iWid*m_iHei+(j+1)*m_iWid +i] - apsInput[k*m_iWid*m_iHei+(j-1)*m_iWid +i])/2;
+				dSqt1 = pGradX[cur]*pGradX[cur];
+				dSqt2 = pGradY[cur]*pGradY[cur];
+				Gradient[cur] = (sqrt(dSqt1+dSqt2)+0.5);
+			}
+		}		
+		
+	}
+	
+//	DetectCannyEdges(sx,sy,sz,apsInput1,pGradX,pGradY,Gradient,NonMax);    	
 
 		
 	Image4DSimple p4DImage;
@@ -300,8 +319,8 @@ void CannyPlugin::Getgrad(V3DLONG m_iWid, V3DLONG m_iHei, V3DLONG m_iCount, unsi
 			for(i=1;i<m_iWid-1;i++)
 			{
 				V3DLONG cur = k*m_iWid*m_iHei+j*m_iWid+i;				
-				pGradX[cur] = apsInput[cur+1]-apsInput[cur-1];
-				pGradY[cur] = apsInput[k*m_iWid*m_iHei+(j+1)*m_iWid +i] - apsInput[k*m_iWid*m_iHei+(j-1)*m_iWid +i];
+				pGradX[cur] = (apsInput[cur+1]-apsInput[cur-1])/2;
+				pGradY[cur] = (apsInput[k*m_iWid*m_iHei+(j+1)*m_iWid +i] - apsInput[k*m_iWid*m_iHei+(j-1)*m_iWid +i])/2;
 				dSqt1 = pGradX[cur]*pGradX[cur];
 				dSqt2 = pGradY[cur]*pGradY[cur];
 				Gradient[cur] = (sqrt(dSqt1+dSqt2)+0.5);
@@ -475,7 +494,6 @@ void CannyPlugin::DetectCannyEdges(V3DLONG m_iWid, V3DLONG m_iHei, V3DLONG m_iCo
 			
 		}
 	}
-
 	unsigned char *apsOutput = new unsigned char[m_iWid*m_iHei*m_iCount];
 	
 	memset(apsOutput, 0, m_iWid*m_iHei*m_iCount*sizeof(unsigned char));	
@@ -519,7 +537,6 @@ void CannyPlugin::DetectCannyEdges(V3DLONG m_iWid, V3DLONG m_iHei, V3DLONG m_iCo
 	
 	}
 }
-
 void CannyPlugin::ComputeThreshold(V3DLONG z, unsigned char *Gradient, V3DLONG &pThrHigh, V3DLONG &pThrLow, unsigned char* NonMax, double factorHigh, double factorLow)//0.9 0.76
 {
 	V3DLONG i,j,k;
