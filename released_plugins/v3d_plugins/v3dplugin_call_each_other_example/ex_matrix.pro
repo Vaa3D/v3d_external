@@ -7,5 +7,5 @@ HEADERS       = ex_matrix.h
 SOURCES       = ex_matrix.cpp
 SOURCES      += ../../../v3d_main/basic_c_fun/v3d_message.cpp
 TARGET        = $$qtLibraryTarget(ex_matrix)
-DESTDIR       = ../../v3d/plugins/V3D_Plugin_Example_call_each_other
+DESTDIR       = ../../v3d/plugins/V3D_Plugin_Demos/call_each_other
 

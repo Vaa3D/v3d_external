@@ -9,5 +9,5 @@ HEADERS      += ../../../v3d_main/basic_c_fun/vcdiff.h
 SOURCES       = recenterimageplugin.cpp
 SOURCES      += ../../../v3d_main/basic_c_fun/vcdiff.cpp
 TARGET        = $$qtLibraryTarget(recenterimage)
-DESTDIR       = ../../v3d/plugins/ReCenter_Image
+DESTDIR       = ../../v3d/plugins/geometry/ReCenter_Image
 
