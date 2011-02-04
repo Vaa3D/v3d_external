@@ -7,5 +7,5 @@ INCLUDEPATH  += ../../../v3d_main/basic_c_fun
 HEADERS       = rotateimg90.h
 SOURCES       = rotateimg90.cpp
 TARGET        = $$qtLibraryTarget(rotateimg90)   #this should be the project name, i.e. the name of the .pro file
-DESTDIR       = ../../v3d/plugins/geometry/Rotate_Image #better set a subdirectory here so that the plugin will be arranged nicely 
+DESTDIR       = ../../v3d/plugins/image_geometry/Rotate_Image #better set a subdirectory here so that the plugin will be arranged nicely 
 

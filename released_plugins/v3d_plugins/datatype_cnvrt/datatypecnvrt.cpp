@@ -27,13 +27,13 @@ int convering(void *subject1d, ImagePixelType v3d_dt, ImagePixelType dt);
 const QString title = "Datatype Converting";
 QStringList DTCPlugin::menulist() const
 {
-    return QStringList() << tr("DatatypeConvert")
-						 << tr("About");
+    return QStringList() << tr("Data type converter")
+			<< tr("About");
 }
 
 void DTCPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
-    if (menu_name == tr("DatatypeConvert"))
+    if (menu_name == tr("Data type converter"))
     {
     	datatype_converting(callback, parent);
     }

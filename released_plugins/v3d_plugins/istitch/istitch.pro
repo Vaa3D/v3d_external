@@ -26,5 +26,5 @@ LIBS	     += -lv3dfftw3f -lv3dfftw3f_threads
 #LIBS	     += -L/usr/local/lib/libfftw3f.a -L/usr/local/lib/libfftw3f_threads.a
 
 TARGET        = $$qtLibraryTarget(imageStitch)
-DESTDIR       = ../../v3d/plugins/stitch_images/istitch
+DESTDIR       = ../../v3d/plugins/image_stitching/istitch
 
