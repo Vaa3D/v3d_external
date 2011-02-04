@@ -63,8 +63,12 @@ bool setGlobalSetting(V3D_GlobalSetting& gs) {
 }
 
 // Get the current V3D image window
-/* static */ ImageWindow ImageWindow::current() {
-    return ImageWindow(v3d::get_plugin_callback()->currentImageWindow());
+/* static */ ImageWindow ImageWindow::current()
+{
+    V3DPluginCallback2* callback = v3d::get_plugin_callback();
+    if (! callback)
+        throw std::runtime_error("No V3D callback handler");
+    return ImageWindow(callback->currentImageWindow());
 }
 /* static */ ImageWindow ImageWindow::currentHiddenSelected() {
     return ImageWindow(v3d::get_plugin_callback()->curHiddenSelectedWindow());
