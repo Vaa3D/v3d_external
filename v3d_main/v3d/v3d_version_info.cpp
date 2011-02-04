@@ -178,11 +178,8 @@ void v3d_aboutinfo()
 		"<tr><td>Some Windows machines cannot display the 3D viewer</td>     <td>Some video card drivers report that it supports OpenGL 2.0, but actually it cannot support. Try to press Ctrl-Shift-G to disable OpenGL 2.0 functions used.  </td></tr>"
 		"<tr><td>Neuron editing: the 'merge to nearby segments' function may produce extra root-nodes</td>     <td>The neuron editing function can become quite complicated as we'd like to support any graph. if you see unwanted roots, you may choose 'reverse' nearby segments to correct; but this may make other segments' directions change.  Suggest use 'break' combined by 'tracing' instead of direct 'merge'.</td></tr>"
 		"</table><br>"
-		"<H2>Key releases:</H2><br> Feb 2006, Aug 16 (v1.1), Sept 24 (v1.2), Oct 11 (v1.3), 2006. July 16 (v1.4), Aug 6 (v1.5) 2007. "
-		"Jan 7 (v1.6), April 16 (v1.70), June 13 (v1.81), Aug, 20 (v1.90), Aug 22 (v1.91), Aug 29 (v1.924), Sept 4 (v1.93), Sept 10 (v1.94), Oct 8 (v1.95), "
-		"Oct 27 (v1.960), Nov 14 (v1.970), Dec 11 (v1.980), Dec 31 (v1.990), 2008. "
-		"Feb 20 (v2.000), May 4 (v2.032), May 16 (v2.100), May 20 (v2.110), June 10 (v2.121), July 5 (v2.140), July 13 (v2.200), Aug 1 (v2.300), Aug 14 (v2.310), Aug 20 (v2.320), Sept (v2.400), 2009. "
-		"Jan 31 (v2.449), Feb-Dec (v2.4-v2.5, a number of important updates), 2010. "
+		"<H2>Key releases:</H2><br> Feb 2006, Aug 16 (v1.1), Sept (v2.400), 2009. "
+		"Jan 31 (v2.449), Feb-Dec (v2.4-v2.5), 2010; Jan - Feb (v2.6), 2011. "
 		"All rights reserved.<br><br> "
 		"Version Note: if you see a version number followed by a letter (e.g. 1.80a), this is a customized build for a particular research lab. "
 		"V3D also have additional image analysis modules, for further information, contact Hanchuan Peng.<br><br>";

@@ -2,6 +2,7 @@
  * an example program to test plugin-call-plugin function
  * 2010-08-22: by Ruan ZC
  * 2010-08-23: revised by Hanchuan Peng
+ * 2011-02-04: by Hanchuan Peng. update the __i386__ flag as it seems the __MAC_x86_64__ does not work
  */
 
 
@@ -14,21 +15,25 @@ Q_EXPORT_PLUGIN2(ex_push, ExCallPlugin);
 
 const QString title = "Example for plugin calling each other";
 
-#if defined(__APPLE__) //for Mac
-
-#if defined(__MAC_x86_64__)
-QString plugin_name = "64bit/V3D_Plugin_Example_call_each_other/libex_matrix_debug.dylib";
-#else
-QString plugin_name = "32bit/V3D_Plugin_Example_call_each_other/libex_matrix_debug.dylib";
+//#if defined(__APPLE__) //for Mac
+#if defined(Q_WS_MAC)
+//#if defined(__MAC_x86_64__)
+//#if defined(__i386__) //this works but may not be the best way
+#if QT_POINTER_SIZE==4
+QString plugin_name = "plugins/32bit/V3D_PluginInterface_Demos/call_each_other/libex_matrix_debug.dylib";
+//#else
+#elif QT_POINTER_SIZE==8
+QString plugin_name = "plugins/64bit/V3D_PluginInterface_Demos/call_each_other/libex_matrix_debug.dylib";
+//#elif QT_POINTER_SIZE==16
 #endif
 
 #elif defined (_WIN32) || defined (_WIN64)
 
-QString plugin_name = "V3D_Plugin_Example_call_each_other/libex_matrix_debug.dll";  //for Windows
+QString plugin_name = "plugins/V3D_PluginInterface_Demos/call_each_other/libex_matrix_debug.dll";  //for Windows
 
 #else
 
-QString plugin_name = "V3D_Plugin_Example_call_each_other/libex_matrix_debug.so";  //for Linux
+QString plugin_name = "plugins/V3D_PluginInterface_Demos/call_each_other/libex_matrix_debug.so";  //for Linux
 
 #endif
 
@@ -175,8 +180,9 @@ void matrixPanel::add()
 	arg.type = "double3x3"; arg.p = B;  input << arg;
 	arg.type = "double3x3"; arg.p = C;  output << arg;
 
+	QString full_plugin_name = QDir::currentPath() + "/" + plugin_name;
 	QString func_name = "add_3x3";
-	if (! v3d.callPluginFunc(plugin_name, func_name, input, output) )
+	if (! v3d.callPluginFunc(full_plugin_name, func_name, input, output) )
 		return;
 
 	end();
@@ -193,8 +199,9 @@ void matrixPanel::mul()
 	arg.type = "double3x3"; arg.p = B;  input << arg;
 	arg.type = "double3x3"; arg.p = C;  output << arg;
 
+	QString full_plugin_name = QDir::currentPath() + "/" + plugin_name;
 	QString func_name = "multiply_3x3";
-	if (! v3d.callPluginFunc(plugin_name, func_name, input, output) )
+	if (! v3d.callPluginFunc(full_plugin_name, func_name, input, output) )
 		return;
 
 	end();
@@ -210,8 +217,9 @@ void matrixPanel::at()
 	arg.type = "double3x3"; arg.p = A;  input << arg;
 	arg.type = "double3x3"; arg.p = C;  output << arg;
 
+	QString full_plugin_name = QDir::currentPath() + "/" + plugin_name;
 	QString func_name = "transpose_3x3";
-	if (! v3d.callPluginFunc(plugin_name, func_name, input, output) )
+	if (! v3d.callPluginFunc(full_plugin_name, func_name, input, output) )
 		return;
 
 	end();
@@ -227,8 +235,9 @@ void matrixPanel::bt()
 	arg.type = "double3x3"; arg.p = B;  input << arg;
 	arg.type = "double3x3"; arg.p = C;  output << arg;
 
+	QString full_plugin_name = QDir::currentPath() + "/" + plugin_name;
 	QString func_name = "transpose_3x3";
-	if (! v3d.callPluginFunc(plugin_name, func_name, input, output) )
+	if (! v3d.callPluginFunc(full_plugin_name, func_name, input, output) )
 		return;
 
 	end();
