@@ -419,22 +419,26 @@ Q_EXPORT_PLUGIN2(regiongrow, RegionGrowPlugin);
 void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent);
 
 //plugin funcs
-const QString title = "Region Growing";
+const QString title = "Label Image Objects based on Region Growing";
 QStringList RegionGrowPlugin::menulist() const
 {
-    return QStringList() << tr("Region Growing")
+    return QStringList() << tr("Label Image Objects")
 						 << tr("About");
 }
 
 void RegionGrowPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
-    if (menu_name == tr("Region Growing"))
+    if (menu_name == tr("Label Image Objects"))
     {
     	regiongrowing(callback, parent);
     }
 	else if (menu_name == tr("About"))
 	{
-		QMessageBox::information(parent, "Version info", QString("Region Growing Plugin 1.1 (April 02, 2010) developed by Yang Yu. (Peng Lab, Janelia Research Farm Campus, HHMI)"));
+		QString versionnum; versionnum.setNum(getPluginVersion());
+		QMessageBox::information(parent, "Version info", 
+								 QString("Label Image Objects Plugin ")+
+								 versionnum + 
+								 " (2010-2011) developed by Yang Yu and Hanchuan Peng. (Peng Lab, Janelia Research Farm Campus, HHMI)");
 		return;
 	}
 }
@@ -852,7 +856,7 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 	//
 	int end_t = clock();
 	
-	qDebug() << "region growing time elapse ..." << end_t-start_t;
+	qDebug() << "label objects via region growing time elapse ..." << end_t-start_t;
 	
 	
 	//find the second big area in labeling

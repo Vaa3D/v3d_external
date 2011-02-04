@@ -27,7 +27,7 @@ public:
 	QStringList funclist() const {return QStringList();}
 	bool dofunc(const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output, V3DPluginCallback2 &callback, QWidget *parent)
         {return false;}
-        float getPluginVersion() const {return 1.1f;}
+        float getPluginVersion() const {return 1.2f;}
 };
 
 
@@ -46,7 +46,7 @@ public:
 		
 		if(win_list.size()<1) 
 		{
-			QMessageBox::information(0, "Region Growing", QObject::tr("No image is open."));
+			QMessageBox::information(0, "Label Objects", QObject::tr("No image is open."));
 			return;
 		}
 		
@@ -95,7 +95,7 @@ public:
 		gridLayout->addWidget(ok,     6,2);
 		
 		setLayout(gridLayout);
-		setWindowTitle(QString("Region Growing"));
+		setWindowTitle(QString("Label Objects"));
 		
 		//slot interface
 		connect(ok,     SIGNAL(clicked()), this, SLOT(accept()));
