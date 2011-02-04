@@ -38,7 +38,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 bool v3d_multithreadimageIO(XFormWidget *curw, const v3d_multithreadimageio_paras & p)
 {
-	QString mt_load_folder = "plugins/multithreaded_imgloading";
+	QString mt_load_folder = "plugins/data_IO/multithreaded_image_loading";
 
 	v3d_msg(QString("Now try to load image using the engine [%1]").arg(p.qOperation), 0);
 	

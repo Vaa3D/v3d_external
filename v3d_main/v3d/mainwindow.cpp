@@ -285,23 +285,23 @@ MainWindow::~MainWindow()
 	qDebug("***v3d: ~MainWindow");
 }
 
-void MainWindow::transactionStart() // Dec-21-2010 YuY
+void MainWindow::transactionStart() 
 {
     v3d_msg("Image is loading now ...", 0);
 }
 
-void MainWindow::allTransactionsDone() // Dec-20-2010 YuY
+void MainWindow::allTransactionsDone() 
 {
     v3d_msg("All transactions are done successfully.", 0);
 }
 
 
-void MainWindow::updateTriviewWindow() // Dec-20-2010 YuY
+void MainWindow::updateTriviewWindow() 
 {
 	emit triviewUpdateTriggered();
 }
 
-void MainWindow::updateTriview() // Dec-20-2010 YuY
+void MainWindow::updateTriview() 
 {
 	qDebug()<<"triggered in MainWindow ... ...";
 	
@@ -2185,18 +2185,18 @@ void MainWindow::createMenus()
     connect(basicProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateProcessingMenu()));
     connect(basicProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus()));
 
-	//image processing
-
-	advancedProcMenu = menuBar()->addMenu(tr("Process"));
-    connect(advancedProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateProcessingMenu()));
-    connect(advancedProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus()));
-
 	//Visualize menu
 
 	visualizeProcMenu = menuBar()->addMenu(tr("Visualize"));
     connect(visualizeProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateProcessingMenu()));
     connect(visualizeProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus()));
 
+	//image processing
+	
+	advancedProcMenu = menuBar()->addMenu(tr("Advanced"));
+    connect(advancedProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateProcessingMenu()));
+    connect(advancedProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus()));
+	
 	//pipeline menu
 
 	//pipelineProcMenu = menuBar()->addMenu(tr("Pipeline"));
