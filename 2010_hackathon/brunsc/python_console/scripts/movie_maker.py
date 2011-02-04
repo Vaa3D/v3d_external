@@ -13,6 +13,10 @@ class Interpolator:
 # TODO - create spline interpolator
 # and quaternion interpolator for rotations
 class LinearInterpolator(Interpolator):
+    """
+    Simple linear interpolator, so I can get things working quickly.
+    Later we will use spline interpolation.
+    """
     def get_interpolated_value(self, param, param_value_list, index_hint = None):
         # Make sure our lookup table is up to the challenge
         if len(param_value_list) < 1:
@@ -71,7 +75,6 @@ class V3dMovie:
     def __init__(self, view_control = None, frame_interval=1.0/24.0):
         self.frame_interval = frame_interval # seconds per frame, default 24 fps
         self.key_frames = []
-        self.interpolator = LinearInterpolator()
         if view_control:
             self.view_control = view_control
         try:
@@ -105,24 +108,24 @@ class V3dMovie:
             if real_time_deficit > 0:
                 time.sleep(real_time_deficit)
             
-    def interpolate_frame(self, elapsed_time, frame_index_hint):
+    def interpolate_frame(self, elapsed_time, frame_index_hint, interpolator):
         """
         Returns an in-between frame.
         frame_index_hint is the index of a nearby key frame
         """
-        x_shift = self.interpolator.get_interpolated_value(
+        x_shift = interpolator.get_interpolated_value(
                 elapsed_time,
                 self.x_shift_list, 
                 frame_index_hint)
-        y_shift = self.interpolator.get_interpolated_value(
+        y_shift = interpolator.get_interpolated_value(
                 elapsed_time,
                 self.y_shift_list, 
                 frame_index_hint)
-        z_shift = self.interpolator.get_interpolated_value(
+        z_shift = interpolator.get_interpolated_value(
                 elapsed_time,
                 self.z_shift_list, 
                 frame_index_hint)
-        zoom = self.interpolator.get_interpolated_value(
+        zoom = interpolator.get_interpolated_value(
                 elapsed_time,
                 self.zoom_list, 
                 frame_index_hint)
@@ -143,7 +146,7 @@ class V3dMovie:
             # First emit in-between frames
             while frame_time < key_frame.interval:
                 # TODO interpolate
-                yield self.interpolate_frame(total_time, frame_index)
+                yield self.interpolate_frame(total_time, frame_index, key_frame.interpolator)
                 # yield V3dMovieFrame() # TODO interpolate
                 frame_time += self.frame_interval
                 total_time += self.frame_interval
@@ -160,7 +163,7 @@ class V3dMovie:
             self.view_control.setXShift(int(camera_position.x_shift))
             self.view_control.setYShift(int(camera_position.y_shift))
             self.view_control.setZShift(int(camera_position.z_shift))
-            self.view_control.setZoom(int(camera_position.zoom))              
+            self.view_control.setZoom(int(camera_position.zoom))
         
     def get_current_v3d_camera(self):
         if not self.view_control:
