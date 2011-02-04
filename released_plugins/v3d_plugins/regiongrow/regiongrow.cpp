@@ -28,8 +28,8 @@
 #define UBYTE unsigned char
 #define BYTE signed char
 
-V3DLONG phcDebugPosNum = 0;
-V3DLONG phcDebugRgnNum = 0;
+volatile V3DLONG phcDebugPosNum = 0;
+volatile V3DLONG phcDebugRgnNum = 0;
 
 class POS
 {
@@ -124,29 +124,49 @@ void quickSort(T a[], int l, int r)
 	quickSort(a, j+1, r);
 }
 
-//new and delete function declare
-template <class T> int newIntImage3dPairMatlabProtocal(T *** & img3d,T * & img1d, int imgdep,int imghei,int imgwid);
-template <class T> void deleteIntImage3dPairMatlabProtocal(T *** & img3d,T * & img1d);
+//memory management
+template <class T> int newIntImage3dPairMatlabProtocal(T *** & img3d,T * & img1d, V3DLONG imgdep, V3DLONG imghei,V3DLONG imgwid)
+{
+	V3DLONG totalpxlnum = imghei*imgwid*imgdep;
+	
+	try
+	{
+		img1d = new T [totalpxlnum];
+		img3d = new T ** [imgdep];
+		
+		V3DLONG i,j;
+		
+		for (i=0;i<imgdep;i++) 
+		{
+			img3d[i] = new T * [imghei];
+			for(j=0; j<imghei; j++)
+				img3d[i][j] = img1d + i*imghei*imgwid + j*imgwid;
+			
+		}
+		
+		memset(img1d, 0, sizeof(T)*totalpxlnum);
+	}
+	catch(...)
+	{
+		if (img1d) {delete img1d;img1d=0;}
+		if (img3d) {delete img3d;img3d=0;}
+		printf("Fail to allocate mem in newIntImage2dPairMatlabProtocal()!");
+		return 0; //fail
+	}
+	
+	return 1; //succeed
+}
 
+template <class T> void deleteIntImage3dPairMatlabProtocal(T *** & img3d,T * & img1d)
+{
+	if (img1d) {delete img1d;img1d=0;}
+	if (img3d) {delete img3d;img3d=0;}
+}
+
+// region growing class
 class RgnGrow3dClass
 {
 public:
-	V3DLONG ImgWid, ImgHei, ImgDep;
-	UBYTE * quantImg1d,  *** quantImg3d;
-	BYTE *** PHCDONEIMG3d, * PHCDONEIMG1d;
-	
-	int STACKCNT;
-	int MAXSTACKSIZE;
-	int IFINCREASELABEL;
-	V3DLONG PHCURLABEL;
-	int ***PHCLABELSTACK3d, * PHCLABELSTACK1d;
-	V3DLONG PHCLABELSTACKPOS;
-	
-	POS * PHCURGNPOS, * PHCURGNPOS_head;
-	RGN * PHCURGN, * PHCURGN_head;
-	
-	V3DLONG TOTALPOSnum, TOTALRGNnum;
-	
 	RgnGrow3dClass()
 	{
 		ImgWid = 0, ImgHei = 0, ImgDep = 0;
@@ -161,6 +181,7 @@ public:
 		PHCURGN = 0, PHCURGN_head = 0;
 		TOTALPOSnum = 0, TOTALRGNnum = 0;
 	}
+	
 	~RgnGrow3dClass()
 	{
 		deleteIntImage3dPairMatlabProtocal(quantImg3d,quantImg1d);
@@ -196,14 +217,26 @@ public:
 		}
 		TOTALPOSnum = 0, TOTALRGNnum = 0;
 	}
+	
+public:
+	V3DLONG ImgWid, ImgHei, ImgDep;
+	UBYTE * quantImg1d,  *** quantImg3d;
+	BYTE *** PHCDONEIMG3d, * PHCDONEIMG1d;
+	
+	int STACKCNT;
+	int MAXSTACKSIZE;
+	int IFINCREASELABEL;
+	V3DLONG PHCURLABEL;
+	int ***PHCLABELSTACK3d, * PHCLABELSTACK1d;
+	V3DLONG PHCLABELSTACKPOS;
+	
+	POS * PHCURGNPOS, * PHCURGNPOS_head;
+	RGN * PHCURGN, * PHCURGN_head;
+	
+	V3DLONG TOTALPOSnum, TOTALRGNnum;
 }; 
 
 //generating an int image for any input image type
-template <class T> void copyvecdata(T * srcdata, V3DLONG len, UBYTE * desdata, int& nstate, UBYTE &minn, UBYTE &maxx);
-
-void rgnfindsub(int rowi,int colj, int depk, int direction,int stackinc, RgnGrow3dClass * pRgnGrow);
-
-
 template <class T> void copyvecdata(T * srcdata, V3DLONG len, UBYTE * desdata, int& nstate, UBYTE &minn, UBYTE &maxx)
 {
 	if(!srcdata || !desdata)
@@ -244,42 +277,7 @@ template <class T> void copyvecdata(T * srcdata, V3DLONG len, UBYTE * desdata, i
 	return;
 }
 
-//memory management
-template <class T> int newIntImage3dPairMatlabProtocal(T *** & img3d,T * & img1d, int imgdep, int imghei,int imgwid)
-{
-	V3DLONG totalpxlnum = (V3DLONG)imghei*imgwid*imgdep;
-	img1d = new T [totalpxlnum];
-	img3d = new T ** [(V3DLONG)imgdep];
-	
-	if (!img1d || !img3d)
-	{
-		if (img1d) {delete img1d;img1d=0;}
-		if (img3d) {delete img3d;img3d=0;}
-		printf("Fail to allocate mem in newIntImage2dPairMatlabProtocal()!");
-		return 0; //fail
-	}
-	
-	V3DLONG i,j;
-	
-	for (i=0;i<imgdep;i++) 
-    {
-		img3d[i] = new T * [(V3DLONG)imghei];
-		for(j=0; j<imghei; j++)
-			img3d[i][j] = img1d + i*imghei*imgwid + j*imgwid;
-	
-	}
-	
-	for (i=0;i<totalpxlnum;i++) 
-    {img1d[i] = (T)0;}
-	
-	return 1; //succeed
-}
-template <class T> void deleteIntImage3dPairMatlabProtocal(T *** & img3d,T * & img1d)
-{
-	if (img1d) {delete img1d;img1d=0;}
-	if (img3d) {delete img3d;img3d=0;}
-}
-
+//
 void rgnfindsub(int rowi,int colj, int depk, int direction,int stackinc, RgnGrow3dClass * pRgnGrow)
 {
 	if (pRgnGrow->STACKCNT >= pRgnGrow->MAXSTACKSIZE)
@@ -310,7 +308,7 @@ void rgnfindsub(int rowi,int colj, int depk, int direction,int stackinc, RgnGrow
 		//set the current pos location and return the 
 		if (pRgnGrow->PHCURGNPOS)
 		{
-			pRgnGrow->PHCURGNPOS->pos = (V3DLONG) depk*(pRgnGrow->ImgHei * pRgnGrow->ImgWid) + colj*(pRgnGrow->ImgWid) + rowi + 1; //add 1 for Matlab convention
+			pRgnGrow->PHCURGNPOS->pos = (V3DLONG) depk*(pRgnGrow->ImgHei * pRgnGrow->ImgWid) + colj*(pRgnGrow->ImgWid) + rowi; //
 			pRgnGrow->PHCURGNPOS->next = new POS;
 			if (pRgnGrow->PHCURGNPOS->next==0)
 			{printf("Fail to do: pRgnGrow->PHCURGNPOS->next = new POS; -->current phcDebugPosNum=%i.\n",phcDebugPosNum);}
@@ -424,7 +422,8 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent);
 const QString title = "Region Growing";
 QStringList RegionGrowPlugin::menulist() const
 {
-    return QStringList() << tr("Region Growing");
+    return QStringList() << tr("Region Growing")
+						 << tr("About");
 }
 
 void RegionGrowPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
@@ -433,6 +432,11 @@ void RegionGrowPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &call
     {
     	regiongrowing(callback, parent);
     }
+	else if (menu_name == tr("About"))
+	{
+		QMessageBox::information(parent, "Version info", QString("Region Growing Plugin 1.1 (April 02, 2010) developed by Yang Yu. (Peng Lab, Janelia Research Farm Campus, HHMI)"));
+		return;
+	}
 }
 
 void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
@@ -635,10 +639,10 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 	// bw
 	unsigned char *bw = new unsigned char [pagesz];
 	
-	//meanv /= 2;
+	unsigned char threshold = meanv + stdv;
 	
 	for(V3DLONG i=0; i<pagesz; i++)
-		bw[i] = (data1d[i]>meanv)?1:0;
+		bw[i] = (data1d[i]>threshold)?1:0;
 	
 	
 	//
@@ -655,7 +659,7 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 								1-offset_y-offset_z, 1-offset_y+offset_z, 1+offset_y-offset_z, 1+offset_y+offset_z}; 
 	V3DLONG neighbors = 26;
 	
-	
+	// eliminate volume with only one single voxel
 	for(V3DLONG k = 0; k < sz; k++) 
 	{				
 		V3DLONG idxk = k*offset_z;
@@ -692,6 +696,7 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 		}
 	}
 	
+	// display BW image
 	Image4DSimple p4Dbw;
 	p4Dbw.setData((unsigned char*)bw, sx, sy, sz, 1, V3D_UINT8);
 	
@@ -699,13 +704,10 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 	callback.setImage(newwinbw, &p4Dbw);
 	callback.setImageName(newwinbw, "bw");
 	callback.updateImageWindow(newwinbw);
-	
-	
-	
+
 	// 3D region growing
 	//----------------------------------------------------------------------------------------------------------------------------------
 
-	
 	//declaration
 	V3DLONG totalpxlnum=pagesz;
 	
@@ -732,7 +734,6 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 		minlevel = maxlevel; //at least do one level
 	
 	//begin computation
-	
 	phcDebugPosNum = 0;
 	phcDebugRgnNum = 0;
 	
@@ -752,7 +753,6 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 	
 	for(int j=minlevel;j<=maxlevel;j++)
 	{
-		
 		int depk, colj, rowi;
 		
 		BYTE * PHCDONEIMG1d = pRgnGrow->PHCDONEIMG1d;
@@ -782,7 +782,6 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 						pRgnGrow->PHCLABELSTACK3d[0][2][pRgnGrow->PHCLABELSTACKPOS] = rowi;
 						
 						//create pos memory
-						
 						pRgnGrow->PHCURGNPOS = new POS;
 						if (pRgnGrow->PHCURGNPOS==0)
 						{
@@ -850,7 +849,6 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 	
 	
 	//find the second big area in labeling
-	
 	STCL *staRegion = new STCL;
 	STCL *staRegion_begin = staRegion;
 	RGN *curRgn = pRgnGrow->PHCURGN_head;
@@ -892,7 +890,7 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 					stclList.insert(stclList.begin() + it, 1, *staRegion);
 					
 					if(stclList.size()>5) // pick 5 points
-						stclList.erase(stclList.end());
+						stclList.erase(stclList.end()-1);
 					
 					break;
 				}
@@ -902,8 +900,11 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 			}
 			
 			//
-			if(staRegion->count>stclList.at(0).count && stclList.size()<5) // pick 5 points
+			if(staRegion->count>stclList.at(0).count) // pick 5 points
 				stclList.insert(stclList.begin(), *staRegion);
+			
+			if(stclList.size()>5) // pick 5 points
+				stclList.erase(stclList.end()-1);
 		}
 		
 		//
@@ -916,15 +917,14 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 	}	
 	//staRegion = staRegion_begin;
 	
-	//
-	for(V3DLONG i=0; i<pagesz; i++)
-		data1d[i] = 0;
+	// result pointer
+	memset(data1d, 0, pagesz);
 	
 	V3DLONG length;
 	
 	V3DLONG n_rgn = stclList.size(); // qMin(5, nrgncopied);
 	
-	qDebug() << "num of rgn ..." << n_rgn << nrgncopied;
+	qDebug() << "display "<< n_rgn<<" rgns from "<< nrgncopied;
 	
 	LandmarkList cmList;
 	
@@ -976,7 +976,7 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 	
 	qDebug() << "time elapse ..." << end_t_t - end_t;
 	
-	
+	// display the biggest five regions
 	Image4DSimple p4DImage;
 	p4DImage.setData((unsigned char*)data1d, sx, sy, sz, 1, V3D_UINT8); // data1d
 	
