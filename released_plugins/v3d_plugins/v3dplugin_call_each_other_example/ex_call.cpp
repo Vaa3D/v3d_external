@@ -17,7 +17,7 @@ const QString title = "Example for plugin calling each other";
 
 //#if defined(__APPLE__) //for Mac
 #if defined(Q_WS_MAC)
-//#if defined(__MAC_x86_64__)
+//#if defined(__MAC_x86_64__) //seems not working!! (by PHC, 2011-02-04)
 //#if defined(__i386__) //this works but may not be the best way
 #if QT_POINTER_SIZE==4
 QString plugin_name = "plugins/32bit/V3D_PluginInterface_Demos/call_each_other/libex_matrix_debug.dylib";
