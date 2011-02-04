@@ -216,7 +216,6 @@ typedef Image Stack_Plane;
 
 Stack_Plane *Select_Plane(Stack *a_stack, int plane);
 
-Stack_Plane *Select_Plane1(Stack *a_stack, Stack *a_stacke, int plane);
   /*   File Stack Routines;
 
          Parse_Stack_Name parses a file name assuming it is of the form "<prefix><first_num>.tif"

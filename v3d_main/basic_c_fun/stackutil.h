@@ -100,8 +100,7 @@ int saveStack2Tif(const char * filename, const unsigned char * img, const V3DLON
 int loadLsm2Stack_obsolete(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype); //070806
 int loadLsm2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype); //070806
 int loadLsm2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype, int chan_id_to_load);   //overload for convenience to read only 1 channel
-int loadTif2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, V3DLONG startx, V3DLONG starty, V3DLONG startz, 
-				  V3DLONG endx,V3DLONG endy, V3DLONG endz, int & datatype);
+
 //the following three functions are the low-level routines to load LSM file
 int read_lsm_slice(TIFF *in, unsigned char * pointer_first_page, V3DLONG pagepixelnumber, V3DLONG channelpixelnumber, int datatype); 
 int read_lsm_slice_strip(TIFF *in, unsigned char * pointer_first_page, V3DLONG pagepixelnumber, V3DLONG channelpixelnumber, int datatype);
@@ -126,16 +125,13 @@ int loadRawSlice(char * filename, unsigned char * & img, V3DLONG * & sz, int & d
 int loadRawSlice_2byte(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype, V3DLONG sliceno, bool b_thumbnail);
 
 //
+
 char * getSurfix(char *filename); //note that no need to delete the returned pointer as it is actually a location to the "filename"
 
 bool ensure_file_exists_and_size_not_too_big(char *filename, V3DLONG sz_thres);
 
 bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & datatype); //070215
 bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & datatype, int chan_id_to_load); //081204
-bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz,V3DLONG startx,V3DLONG starty,V3DLONG startz,V3DLONG endx,V3DLONG endy,V3DLONG endz,int & datatype); //
-
-
-
 bool saveImage(const char filename[], const unsigned char * data1d, const V3DLONG * sz, const int datatype); //070214
 
 
