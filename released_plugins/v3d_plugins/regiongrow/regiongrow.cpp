@@ -441,37 +441,32 @@ void RegionGrowPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &call
 
 void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 {
-    v3dhandleList win_list = callback.getImageWindowList();
-	
-	if(win_list.size()<1) 
-	{
-		QMessageBox::information(0, title, QObject::tr("No image is open."));
+	// input threshold computationg method
+	RegiongrowDialog dialog(callback, parent);
+	if (dialog.exec()!=QDialog::Accepted)
 		return;
-	}
 	
+	dialog.update();
+	
+	Image4DSimple* subject = dialog.image;
+	ROIList pRoiList = dialog.pRoiList;
+	
+	V3DLONG ch_rgb = dialog.ch;
+	V3DLONG th_idx = dialog.th_idx;
+	double threshold = dialog.thresh;
+
+	//
 	int start_t = clock(); // record time point
 	
-	int i1=0;
+	ImagePixelType datatype_subject = subject->getDatatype();
 	
-	Image4DSimple* subject = callback.getImage(win_list[i1]);
-	ROIList pRoiList=callback.getROI(win_list[i1]);
-	
-	QString m_InputFileName = callback.getImageName(win_list[i1]);
-	
-	qDebug() << "name of image ..." << m_InputFileName;
-	
-	if (!subject)
+	if(datatype_subject != V3D_UINT8)
 	{
-		QMessageBox::information(0, title, QObject::tr("No image is open."));
-		return;
-	}
-	if (subject->getDatatype()!=V3D_UINT8)
-	{
-		QMessageBox::information(0, title, QObject::tr("This demo program only supports 8-bit data. Your current image data type is not supported."));
+		QMessageBox::information(parent, "Version info", QString("Currently this program only support 8-bit data."));
 		return;
 	}
 	
-    unsigned char* pSbject = subject->getRawData();
+    unsigned char* pSub = subject->getRawData();
 	
 	V3DLONG sz0 = subject->getXDim();
     V3DLONG sz1 = subject->getYDim();
@@ -479,6 +474,7 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 	V3DLONG sz3 = subject->getCDim();
 	
 	V3DLONG pagesz_sub = sz0*sz1*sz2;
+	V3DLONG offset_sub = ch_rgb*pagesz_sub;
 	
 	//---------------------------------------------------------------------------------------------------------------------------------------------------
 	//finding the bounding box of ROI
@@ -592,18 +588,16 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 	
 	double meanv=0, stdv=0;
 	
-	V3DLONG offset_sub = 0;
-	
 	//------------------------------------------------------------------------------------------------------------------------------------
 	
-	unsigned char *data1d = new unsigned char [pagesz];
-	if (!data1d) 
+	unsigned char *data1d = NULL;
+	
+	try
 	{
-		printf("Fail to allocate memory.\n");
-		return;
-	}
-	else
-	{
+		data1d = new unsigned char [pagesz];
+		
+		unsigned char *pSubject = (unsigned char *)pSub + offset_sub;
+		
 		for(V3DLONG k=bpos_z; k<=epos_z; k++)
 		{
 			V3DLONG offset_z = k*sz0*sz1;
@@ -614,17 +608,24 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 				V3DLONG offset_crop_y = (j-bpos_y)*sx + offset_crop_z;
 				for(V3DLONG i=bpos_x; i<=epos_x; i++)
 				{
-					data1d[(i-bpos_x) + offset_crop_y] = pSbject[offset_sub + i+offset_y];
+					data1d[(i-bpos_x) + offset_crop_y] = pSubject[i+offset_y];
 					
 					meanv += data1d[(i-bpos_x) + offset_crop_y];
 				}
 			}
 		}
+		
 	}
+	catch(...)
+	{
+		printf("Fail to allocate memory.\n");
+		return;
+	}
+	
 	meanv /= pagesz;
 	
 	for(V3DLONG i=0; i<pagesz; i++)
-		stdv += (data1d[i] - meanv)*(data1d[i] - meanv);
+		stdv += ((double)data1d[i] - meanv)*((double)data1d[i] - meanv);
 	
 	stdv /= (pagesz-1);
 	stdv = sqrt(stdv);
@@ -632,17 +633,21 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 	qDebug() << "meanv ..." << meanv << "stdv ..." << stdv;
 	
 	//----------------------------------------------------------------------------------------------------------------------------------
-	
-	// de-alloc
-	//if (pSbject) {delete []pSbject; pSbject=0;} // image visualized in v3d now
-	
 	// bw
 	unsigned char *bw = new unsigned char [pagesz];
 	
-	unsigned char threshold = meanv + stdv;
+	if(th_idx == 0)
+	{
+		threshold = meanv;
+	}
+	else if(th_idx == 1)
+	{
+		threshold = meanv + stdv;
+	}
+	
 	
 	for(V3DLONG i=0; i<pagesz; i++)
-		bw[i] = (data1d[i]>threshold)?1:0;
+		bw[i] = ((double)data1d[i]>threshold)?1:0;
 	
 	
 	//
@@ -841,6 +846,8 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 					}
 				} 
 	}
+	//de-alloc
+	if(data1d) {delete []data1d; data1d = NULL;}
 	
 	//
 	int end_t = clock();
@@ -879,33 +886,7 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 		qDebug() << "pixels ..." << count;
 		
 		//
-		if(stclList.size()<1)
-			stclList.push_back(*staRegion);
-		else
-		{
-			for(unsigned int it=stclList.size(); it!=0; it--)
-			{
-				if(staRegion->count<=stclList.at(it-1).count)
-				{
-					stclList.insert(stclList.begin() + it, 1, *staRegion);
-					
-					if(stclList.size()>5) // pick 5 points
-						stclList.erase(stclList.end()-1);
-					
-					break;
-				}
-				else
-					continue;
-				
-			}
-			
-			//
-			if(staRegion->count>stclList.at(0).count) // pick 5 points
-				stclList.insert(stclList.begin(), *staRegion);
-			
-			if(stclList.size()>5) // pick 5 points
-				stclList.erase(stclList.end()-1);
-		}
+		stclList.push_back(*staRegion);
 		
 		//
 		curRgn = curRgn->next;
@@ -914,11 +895,21 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 		
 		nrgncopied++; 
 		
-	}	
-	//staRegion = staRegion_begin;
+	}
 	
 	// result pointer
-	memset(data1d, 0, pagesz);
+	float *pRGCL = NULL;
+	try
+	{
+		pRGCL = new float [pagesz];
+		
+		memset(pRGCL, 0, sizeof(float)*pagesz);
+	}
+	catch (...) 
+	{
+		printf("Fail to allocate memory.\n");
+		return;
+	}
 	
 	V3DLONG length;
 	
@@ -943,9 +934,9 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 		{
 			//qDebug() << "idx ..." << i << cutposlist[i] << pagesz;
 			
-			data1d[ cutposlist[i] ] = 255;
+			pRGCL[ cutposlist[i] ] = (float)ii;
 			
-			float cv = pSbject[ cutposlist[i] ];
+			float cv = pSub[ cutposlist[i] ];
 			
 			V3DLONG idx = cutposlist[i];
 			
@@ -978,12 +969,12 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 	
 	// display the biggest five regions
 	Image4DSimple p4DImage;
-	p4DImage.setData((unsigned char*)data1d, sx, sy, sz, 1, V3D_UINT8); // data1d
+	p4DImage.setData((unsigned char*)pRGCL, sx, sy, sz, 1, V3D_FLOAT32);
 	
 	v3dhandle newwin = callback.newImageWindow();
 	callback.setImage(newwin, &p4DImage);
 	callback.setImageName(newwin, "region_growing");
-	callback.setLandmark(newwin, cmList); // center of mass
+	//callback.setLandmark(newwin, cmList); // center of mass
 	callback.updateImageWindow(newwin);
 	
 }
