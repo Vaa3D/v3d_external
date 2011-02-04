@@ -201,7 +201,7 @@ fi
 
 #prepare the fftw library
 
-if [ $FFTWCOMPILE == "YES" -o ! -f common_lib/lib/libv3dfftw.a ]; then
+if [ $FFTWCOMPILE == "YES" -o ! -f common_lib/lib/libv3dfftw3f.a ]; then
   cd common_lib/src_packages
   tar zxvf fftw-3.1.2.tar.gz
   cd ../
