@@ -63,8 +63,8 @@ class ParameterDialog : public QDialog
 			QStringList chList;
 			for (int i = 0; i < win_list.size() ;i++ )
 			{
-				if (cb.getImageName(win_list[i]) == curImageName)
-                    continue;
+				//if (cb.getImageName(win_list[i]) == curImageName)
+                  //  continue;
 				chList  << cb.getImageName(win_list[i]);
 			}
 			
