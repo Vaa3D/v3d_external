@@ -221,7 +221,7 @@ void ImageSetWidget::update_v3dviews(V3DPluginCallback *callback, long start_x, 
 	{
 		pVImg[i] = 0;
 	}
-
+	
 	long x_s = start_x + vim.min_vim[0];
 	long y_s = start_y + vim.min_vim[1];
 	long z_s = start_z + vim.min_vim[2];
@@ -257,7 +257,8 @@ void ImageSetWidget::update_v3dviews(V3DPluginCallback *callback, long start_x, 
 	int datatype_relative = 0;
 	unsigned char* relative1d = 0;
 	
-	loadImage(imgSrcFile, relative1d, sz_relative, datatype_relative); //
+//	loadImage(imgSrcFile, relative1d, sz_relative, datatype_relative); //
+   loadImage(imgSrcFile,pVImg,sz_relative,start_x,start_y,start_z,end_x,end_y,end_z,datatype_relative);	
 	
 	long rx=sz_relative[0], ry=sz_relative[1], rz=sz_relative[2], rc=sz_relative[3];
 	
@@ -265,32 +266,37 @@ void ImageSetWidget::update_v3dviews(V3DPluginCallback *callback, long start_x, 
 		datatype = V3D_UINT8;
 	
 	size_t e1_t = clock();
-	
 	cout<<"time elapse for read tmpstack ... "<<e1_t-s1_t<<endl;
-	for(long c=0; c<rc; c++)
+	
+	int stt =2;
+	if (stt == 1) 
 	{
-		long o_c = c*vx*vy*vz;
-		long o_r_c = c*rx*ry*rz;
-		for(long k=z_s; k<z_e; k++)
+		for(long c=0; c<rc; c++)
 		{
-			long o_k = o_c + (k-z_s)*vx*vy;
-			long o_r_k = o_r_c + (k)*rx*ry;
-			
-			for(long j=y_s; j<y_e; j++)
+			long o_c = c*vx*vy*vz;
+			long o_r_c = c*rx*ry*rz;
+			for(long k=z_s; k<z_e; k++)
 			{
-				long o_j = o_k + (j-y_s)*vx;
-				long o_r_j = o_r_k + (j)*rx;
-				for(long i=x_s; i<x_e; i++)
+				long o_k = o_c + (k-z_s)*vx*vy;
+				long o_r_k = o_r_c + (k)*rx*ry;
+				
+				for(long j=y_s; j<y_e; j++)
 				{
-					long idx = o_j + i-x_s;
-					long idx_r = o_r_j + (i);
-					pVImg[idx] = relative1d[idx_r];
+					long o_j = o_k + (j-y_s)*vx;
+					long o_r_j = o_r_k + (j)*rx;
+					for(long i=x_s; i<x_e; i++)
+					{
+						long idx = o_j + i-x_s;
+						long idx_r = o_r_j + (i);
+						pVImg[idx] = relative1d[idx_r];
+					}
 				}
 			}
 		}
+		if(relative1d) {delete []relative1d; relative1d=0;}
+		
 	}
 	
-	if(relative1d) {delete []relative1d; relative1d=0;}
 	
 	size_t end1_t = clock();
 	
@@ -299,8 +305,8 @@ void ImageSetWidget::update_v3dviews(V3DPluginCallback *callback, long start_x, 
 	//display
 	Image4DSimple p4DImage;
 	
-	p4DImage.setData((unsigned char*)pVImg, vx, vy, vz, vc, datatype);
-	
+	 p4DImage.setData((unsigned char*)pVImg, vx, vy, vz, vc, datatype);
+	//p4DImage.setData((unsigned char*)relative1d, vx, vy, vz, vc, datatype);
 	v3dhandle curwin;
 	
 	if(!callback->currentImageWindow())
@@ -318,6 +324,11 @@ void ImageSetWidget::update_v3dviews(V3DPluginCallback *callback, long start_x, 
 	size_t end_t = clock();
 	
 	cout<<"time elapse after loading configuration info ... "<<end_t-start_t<<endl;
+	
+	//loadImage(imgSrcFile, relative1d, sz_relative, datatype_relative); //
+//	loadImage(imgSrcFile,relative1d,sz_relative,start_x,start_y,start_z,end_x,end_y,end_z,datatype_relative);	
+	
+	
 }
 XMapView::XMapView(QWidget *parent)
 :QWidget(parent)

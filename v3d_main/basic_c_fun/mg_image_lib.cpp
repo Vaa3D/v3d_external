@@ -54,7 +54,8 @@ static int error(char *msg, char *arg)
 /*********** STACK PLANE SELECTION ****************************/
 
 Stack_Plane *Select_Plane(Stack *a_stack, int plane)  // Build an image for a plane of a stack
-{ static Stack_Plane My_Image;
+{ 
+	static Stack_Plane My_Image;
 
   if (plane < 0 || plane >= a_stack->depth)
     return (NULL);
@@ -64,7 +65,6 @@ Stack_Plane *Select_Plane(Stack *a_stack, int plane)  // Build an image for a pl
   My_Image.array  = a_stack->array + plane*a_stack->width*a_stack->height*a_stack->kind;
   return (&My_Image);
 }
-
 /*********** SPACE MANAGEMENT ****************************/
 
 // Raster working buffer
@@ -395,6 +395,115 @@ static void read_directory(TIFF *tif, Image *image, char *routine)   //  Used by
     }
 }
 
+static void read_directory2(TIFF *tif, Image *image, char *routine)   //  yangjinzhu
+{ 
+	
+	uint32 *raster;
+	
+	uint8  *row;
+	
+	int     width, height;
+	
+	width  = image->width;
+	height = image->height;
+	raster = get_raster(width*height,routine);
+	
+	row = image->array;
+	
+	if (image->kind != GREY16)		
+    { 
+		int i, j;
+		
+		uint32 *in;
+		
+		uint8  *out;
+		
+		if (TIFFReadRGBAImage(tif,width,height,raster,0) == 0)
+			error("read of tif failed in read_directory()", NULL);
+		
+		in = raster;
+		if (image->kind == GREY)
+        { 
+			for (j = height-1; j >= 0; j--)
+			{ 
+				out = row;
+				for (i = 0; i < width; i++)
+				{ 
+					uint32 pixel = *in++;
+					*out++ = TIFFGetR(pixel);
+				}
+				row += width;
+			}
+        }
+		else
+        { 
+			for (j = height-1; j >= 0; j--)
+			{ 
+				out = row;
+				for (i = 0; i < width; i++)
+				{ 
+					uint32 pixel = *in++;
+					*out++ = TIFFGetR(pixel);
+					*out++ = TIFFGetG(pixel);
+					*out++ = TIFFGetB(pixel);
+				}
+				row += width*3;
+			}
+        }
+    }
+	
+	else
+		
+    { int tile_width, tile_height;
+		
+		if (TIFFGetField(tif, TIFFTAG_TILEWIDTH, &tile_width))    // File is tiled  
+        { 
+			int x, y;
+			int i, j;
+			int m, n;
+			uint16 *buffer = (uint16 *) raster;
+			uint16 *out, *in, *rous;
+			
+			TIFFGetField(tif, TIFFTAG_TILELENGTH, &tile_height);
+			
+			for (y = 0; y < height; y += tile_height)
+            { 
+				if (y + tile_height > height)
+                n = height - y;
+			else
+                n = tile_height;
+				for (x = 0; x < width; x += tile_width)
+                { 
+					TIFFReadTile(tif, buffer, x, y, 0, 0);
+					if (x + tile_width > width)
+						m = width - x;
+					else
+						m = tile_width;
+					for (j = 0; j < n; j++)
+                    {
+						out = (uint16 *) (row + 2*(j*width + x));
+						in  = buffer + j*tile_width;
+						for (i = 0; i < m; i++)
+							*out++ = *in++; 
+                    }
+                }
+				row += n*width*2;
+            }
+        }
+		else    // File is striped
+			
+        { 
+			int y;
+			
+			for (y = 0; y < height; y++)
+            {
+				TIFFReadScanline(tif, row, y, 0);
+				row += width*2;
+            }
+        }
+    }
+}
+
 Image *Read_Tiff(TIFF *tif, int *lastone)
 { Image *image;
 
@@ -547,7 +656,122 @@ Stack *Read_Stack(char *file_name)
 
   return (stack);
 }
+Stack *Read_location_Stack(char *file_name,start_depth,end_depth,int *s,int*e)
+{ 
+	int *sp = new int[3];
+	int *ep = new int[3];
+	sp[0] = s[0];//start x
+	sp[1] = s[2];//start y
+	sp[2] = s[2];//start z
+	ep[0] = e[0];//end x
+	ep[1] = e[1];//end y
+	ep[2] = e[2];//end z
+	
+	Stack *stack;
+	stack *stack1;
+	
+	TIFF  *tif;
+	int  depth, width, height,depth1, width1, height1, kind;
+	
+	tif = Open_Tiff(file_name,"r");
+	depth = 1;
+	while (TIFFReadDirectory(tif))
+		depth += 1;
+	TIFFClose(tif);
+	
+	tif = Open_Tiff(file_name,"r");
+	TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
+	TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
+	
+	kind  = determine_kind(tif);
 
+	stack = new_stack(depth*height*width*kind,"Read_Stack");
+	stack->width  = width;
+	stack->height = height;
+	stack->depth  = depth;
+	stack->kind   = kind;
+	
+	width1  = ep[0]-sp[0];
+	height1 = ep[1]-sp[1];
+	depth1  = ep[2]-sp[2];
+	
+	stack1 = new_stack(depth1*height1*width1*kind,"Read_Stack");
+	stack1->width  = width1;
+	stack1->height = height1;
+	stack1->depth  = depth1;
+	stack1->kind   = kind;
+
+	
+	for(int d = sp[2]; d < ep[2]; d++)
+	{
+		
+		read_directory(tif,Select_Plane(stack,d),Select_Plane(stack1,d)"Read_Stack");
+				
+		d += 1;
+		if (!TIFFReadDirectory(tif)) break;
+		
+		TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
+		TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
+		if (width != stack->width || height != stack->height)
+			error("Images of stack are not of the same dimensions!",NULL);
+		
+		kind = determine_kind(tif);
+		if (kind != stack->kind)
+			error("Images of stack are not of the same type (GREY, GREY16, or COLOR)!",NULL);
+	}
+	
+	
+	{ int d;
+		
+		d = 0;
+		while (1)
+		{ 
+			read_directory(tif,Select_Plane(stack,d),"Read_Stack");
+			
+			d += 1;
+			if (!TIFFReadDirectory(tif)) break;
+			
+			TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
+			TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
+			if (width != stack->width || height != stack->height)
+				error("Images of stack are not of the same dimensions!",NULL);
+			
+			kind = determine_kind(tif);
+			if (kind != stack->kind)
+				error("Images of stack are not of the same type (GREY, GREY16, or COLOR)!",NULL);
+		}
+	}
+//	stack = new_stack(depth*height*width*kind,"Read_Stack");
+//	
+//	stack->width  = width;
+//	stack->height = height;
+//	stack->depth  = depth;
+//	stack->kind   = kind;
+//	
+//	{ int d;
+//		
+//		d = 0;
+//		while (1)
+//		{ read_directory(tif,Select_Plane(stack,d),"Read_Stack");
+//			
+//			d += 1;
+//			if (!TIFFReadDirectory(tif)) break;
+//			
+//			TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
+//			TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
+//			if (width != stack->width || height != stack->height)
+//				error("Images of stack are not of the same dimensions!",NULL);
+//			
+//			kind = determine_kind(tif);
+//			if (kind != stack->kind)
+//				error("Images of stack are not of the same type (GREY, GREY16, or COLOR)!",NULL);
+//		}
+//	}
+	
+	TIFFClose(tif);
+	
+	return (stack);
+}
 Stack *Read_LSM_Stack(char *file_name)
 {
   Stack *stack;

@@ -10,6 +10,8 @@ INCLUDEPATH  += ../../../v3d_main/common_lib/include
 INCLUDEPATH  += /usr/local/Trolltech/Qt-4.5.2/demos/shared/
 #HEADERS      +=/usr/local/Trolltech/Qt-4.5.2/demos/shared/arthurwidgets.h
 HEADERS      +=colormap.h
+
+
 HEADERS      += mapviewer.h \
 		../../../v3d_main/basic_c_fun/stackutil.h \
 		../../../v3d_main/basic_c_fun/mg_utilities.h \

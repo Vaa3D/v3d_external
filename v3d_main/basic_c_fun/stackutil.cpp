@@ -1885,6 +1885,8 @@ int loadTif2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 	//the following are the interface codes
 
 	Stack *tmpstack = Read_Stack(filename);
+	
+	
 	if (!tmpstack)
 	{
 		b_error=1;
@@ -2000,6 +2002,143 @@ int loadTif2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 	return b_error;
 
 }
+int loadTif2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, V3DLONG startx, V3DLONG starty, V3DLONG startz, 
+				  V3DLONG endx,V3DLONG endy,V3DLONG endz,int & datatype)
+{
+	int b_error=0;
+	
+	//fprintf(stderr, "Verify file existence.\n");
+	FILE *tmp = fopen(filename, "r");
+	if (!tmp) {fprintf(stderr, "The file [%s] does not exist.\n", filename); b_error=1; return b_error;}
+	else {fclose(tmp);}
+	
+	//the following are the interface codes
+	
+	Stack *tmpstack = Read_Stack(filename);
+	
+	if (!tmpstack)
+	{
+		b_error=1;
+		return b_error;
+	}
+	
+	//convert to hanchuan's format
+	if (sz) {delete sz; sz=0;}
+	if (img) {delete img; img=0;}
+	
+	sz=new V3DLONG [4];
+	if (sz)
+	{
+		sz[0] = tmpstack->width;
+		sz[1] = tmpstack->height;
+		sz[2] = tmpstack->depth;
+		switch (tmpstack->kind)
+		{
+			case GREY:
+				sz[3] = 1;
+				datatype = 1;
+				break;
+				
+			case GREY16:
+				sz[3] = 1;
+				datatype = 2;
+				break;
+				
+			case COLOR:
+				sz[3] = 3;
+				datatype = 1;
+				break;
+				
+			default:
+				printf("The type of tif file is not supported in this version.\n");
+				if (sz) {delete sz; sz=0;}
+				Kill_Stack(tmpstack); tmpstack=0;
+				break;
+		}
+	}
+	else
+	{
+		printf("Unable to allocate memory for the size varable! Return.\n");
+		if (tmpstack)
+		{
+			Kill_Stack(tmpstack);
+			tmpstack=0;
+		}
+		b_error=1;
+		return b_error;
+	}
+	
+	V3DLONG vx = endx - startx;
+	V3DLONG vy = endy - starty;
+	V3DLONG vz = endz - startz;
+	//img = new unsigned char [sz[0]*sz[1]*sz[2]*sz[3]*datatype];
+	
+	img = new unsigned char [vx*vy*vz*sz[3]*datatype];
+	
+	if (!img)
+	{
+		printf("Unable to allocate memory for the image varable! Return.\n");
+		if (tmpstack)	  {	Kill_Stack(tmpstack);	tmpstack=0;}
+		if (sz) {delete sz; sz=0;}
+		b_error=1;
+		return b_error;
+	}
+	else
+	{
+		V3DLONG i,j,k,c;
+		//V3DLONG pgsz1=sz[2]*sz[1]*sz[0], pgsz2=sz[1]*sz[0], pgsz3=sz[0];
+		V3DLONG pgsz1=vx*vy*vz, pgsz2=vy*vx, pgsz3=vx;
+		
+		switch (tmpstack->kind)
+		{
+			case GREY:
+			case COLOR:
+				for (c=0;c<sz[3];c++)
+					for (k=0;k<vz; k++)
+						for (j=0;j<vy; j++)
+							for (i=0;i<vx; i++)
+								//img[c*pgsz1 + k*pgsz2 + j*pgsz3 + i] = STACK_PIXEL_8(tmpstack,i,j,k,c);
+								img[c*pgsz1 + k*pgsz2 + j*pgsz3 + i] = Get_Stack_Pixel(tmpstack,(i+startx),(j+starty),(k+startz),c);
+				
+				break;
+				
+			case GREY16:
+			{
+				unsigned short int *img16 = (unsigned short int *)img;
+				for (c=0;c<sz[3];c++)
+					for (k=0;k<vz; k++)
+						for (j=0;j<vy; j++)
+							for (i=0;i<vx; i++)
+								//img[c*pgsz1 + k*pgsz2 + j*pgsz3 + i] = STACK_PIXEL_16(tmpstack,i,j,k,c)>>4; //assume it is 12-bit
+								//img[c*pgsz1 + k*pgsz2 + j*pgsz3 + i] = Get_Stack_Pixel(tmpstack,i,j,k,c)>>4; //assume it is 12-bit
+								img16[c*pgsz1 + k*pgsz2 + j*pgsz3 + i] = Get_Stack_Pixel(tmpstack,(i+startx),(j+starty),(k+startz),c); //do not assume anything. 080930
+			}
+				
+				break;
+				
+			default:
+				printf("The type of tif file is not supported in this version.\n");
+				if (sz) {delete sz; sz=0;}
+				if (img) {delete img; img=0;}
+				Kill_Stack(tmpstack); tmpstack=0;
+				b_error=1;
+				return b_error;
+				break;
+		}
+	}
+	
+	
+	// kill stack
+	if (tmpstack)
+	{
+		Kill_Stack(tmpstack);
+		tmpstack=0;
+	}
+	
+	return b_error;
+	
+}
+
 
 int saveStack2Tif(const char * filename, const unsigned char * img, const V3DLONG * sz, int datatype)
 {
@@ -3139,7 +3278,6 @@ int read_tif_slice(TIFF *tif, unsigned char * pointer_first_page, V3DLONG width,
 	enum PImagePixelType {PTIF_GREY, PTIF_GREY16, PTIF_COLOR};
 	PImagePixelType pixelType;
 
-
 	short bits, channels, photo;
 
 	TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bits);
@@ -3431,7 +3569,6 @@ int loadMRC2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 		berror = 1;
 		return berror;
 	}
-
 	if (img) {delete []img; img=0;}
 	img = new unsigned char [totalUnit*unitSize];
 	if (!img)
@@ -3787,7 +3924,89 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 
 	return true;
 }
-
+bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, V3DLONG startx,V3DLONG starty,V3DLONG startz, 
+			   V3DLONG endx,V3DLONG endy,V3DLONG endz,int & datatype) //yangjinzhu
+{
+	if (data1d)
+	{
+		printf("Warning: The pointer for 1d data storage is not empty. This pointer will be freed first and the  reallocated. \n");
+		delete []data1d; data1d=0;
+	}
+	if (sz)
+	{
+		printf("Warning: The pointer for size is not empty. This pointer will be freed first and the  reallocated. \n");
+		delete []sz; sz=0;
+	}
+	else
+	{
+		sz = new V3DLONG [4];
+		if (!sz)
+		{
+			printf("Fail to alocate memory for the size variable.\n");
+			return false;
+		}
+	}
+	
+	unsigned char *tmp_data1d =0;
+	V3DLONG * tmp_sz = 0; /* note that this variable must be initialized as NULL. */
+	int tmp_datatype = 0;
+	bool b_5d=false;
+	
+	char * curFileSuffix = getSurfix(imgSrcFile);
+	if (b_VERBOSE_PRINT)
+		printf("The current input file has the surfix [%s]\n", curFileSuffix);
+	if (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0) //read tiff stacks
+	{
+		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*900)) //tif file at most should be 900M bytes
+		{
+			printf("The tif file may not exist or may be too big to load.\n");
+			return false;
+		}
+		if (loadTif2Stack(imgSrcFile, tmp_data1d, tmp_sz, startx,starty,startz,endx,endy,endz,tmp_datatype))
+		{
+			printf("Error happens in TIF file reading. Stop. \n");
+			return false;
+		}
+	}
+	//copy output data
+	
+	switch (tmp_datatype)
+	{
+		case 1:
+			datatype = 1;
+			break;
+			
+		case 2:
+			datatype = 2;
+			break;
+			
+		case 4:
+			datatype = 4;
+			break;
+			
+		default:
+			printf("Something wrong with the program, -- should NOT display this message at all. Check your program. \n");
+			if (data1d) {delete []data1d; data1d=0;}
+			if (tmp_sz) {delete []tmp_sz; tmp_sz=0;}
+			if (sz) {delete []sz; sz=0;}
+			return false;
+	}
+	
+	sz = new V3DLONG [5];
+	sz[0] = tmp_sz[0];
+	sz[1] = tmp_sz[1];
+	sz[2] = tmp_sz[2];
+	sz[3] = tmp_sz[3]; //no longer merge the 3rd and 4th dimensions
+	sz[4] = (b_5d) ? tmp_sz[4] : 1; //090802
+	
+	data1d = tmp_data1d;
+	
+	/* clean all workspace variables */
+	
+	if (tmp_sz) {delete []tmp_sz; tmp_sz=0;}
+	
+	return true;
+}
 
 
 bool saveImage(const char filename[], const unsigned char * data1d, const V3DLONG * sz, const int datatype)
