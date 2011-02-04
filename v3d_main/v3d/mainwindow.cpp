@@ -446,7 +446,7 @@ void MainWindow::dropEvent(QDropEvent *event)
 	if (!QFile::exists(fileName))
 		return;
 
-	loadV3DFile(fileName, true, false); // loadV3DFile func changed to 3 args. YuY Nov. 18, 2010
+	loadV3DFile(fileName, true, global_setting.b_autoOpenImg3DViewer); // loadV3DFile func changed to 3 args. YuY Nov. 18, 2010
 
 	setBackgroundRole(QPalette::Dark);
 	event->acceptProposedAction();
@@ -683,8 +683,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 				}
 			}
 
-			if (b_putinrecentfilelist)
-				setCurrentFile(fileName);
+//			if (b_putinrecentfilelist)
+//				setCurrentFile(fileName);
 		}
 		else if (curfile_info.suffix().toUpper()=="APO" || 
 				 curfile_info.suffix().toUpper()=="SWC" || 
@@ -718,8 +718,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 				my3dwin->show();
 				mypara_3Dview->window3D = my3dwin;
 
-				if (b_putinrecentfilelist)
-					setCurrentFile(fileName);
+//				if (b_putinrecentfilelist)
+//					setCurrentFile(fileName);
 			}
 			catch (...)
 			{
@@ -759,8 +759,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 					child->show();
 					workspace->cascade();
 
-					if (b_putinrecentfilelist)
-						setCurrentFile(fileName);
+//					if (b_putinrecentfilelist)
+//						setCurrentFile(fileName);
 
 					//update the image data listAtlasFiles member
 					cur_atlas_list[kk].on = true; //since this one has been opened
@@ -863,8 +863,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 			if (QFile::exists(tmp_filename))
 			{
 				loadV3DFile(tmp_filename, false, false); //the 2nd parameter is false, so that the unzipped file will not be put into "Recent files"
-				if (b_putinrecentfilelist)
-					setCurrentFile(fileName); //put the zipped file into "Recent files"
+//				if (b_putinrecentfilelist)
+//					setCurrentFile(fileName); //put the zipped file into "Recent files"
 				system(qPrintable(QString("rm -f %1").arg(tmp_filename)));
 			}
 		}
@@ -887,7 +887,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 					if(!child->getImageData()) return;
 					if(child->getValidZslice()<child->getImageData()->getZDim()-1) return; // avoid crash when the child is closed by user, Dec 29, 2010 by YuY
 					
-					statusBar()->showMessage(tr("File loaded"), 2000);
+					statusBar()->showMessage(QString("File [%1] loaded").arg(fileName), 2000);
 
 					if (global_setting.b_autoConvert2_8bit)
 					{
@@ -915,8 +915,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 					child->show();
 					workspace->cascade(); //080821
 
-					if (b_putinrecentfilelist)
-						setCurrentFile(fileName);
+//					if (b_putinrecentfilelist)
+//						setCurrentFile(fileName);
 
 					if (b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer)) //101118 by PHC
 					{
@@ -939,12 +939,17 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 		}
 		else // changed by YuY Nov. 19, 2010
 		{
-			v3d_msg("The file does not exist! Do nothing.", 1);
+			v3d_msg(QString("The file [%1] does not exist! Do nothing.").arg(fileName), 1);
 			return;	
 		}
 
         //child->close();delete child; child=0; //this should be correspond to the error place! by phc, 080429
     }
+	
+	
+	//if success then out in recent file list
+	if (b_putinrecentfilelist)
+		setCurrentFile(fileName);
 }
 
 void MainWindow::setup_global_imgproc_parameter_default()
