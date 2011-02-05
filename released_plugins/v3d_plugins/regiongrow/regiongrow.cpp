@@ -458,7 +458,9 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 	V3DLONG ch_rgb = dialog.ch;
 	V3DLONG th_idx = dialog.th_idx;
 	double threshold = dialog.thresh;
-
+	
+	V3DLONG volsz = dialog.volsz;
+	
 	//
 	int start_t = clock(); // record time point
 	
@@ -661,11 +663,11 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 	offset_z=sx*sy;
 	
 	V3DLONG neighborhood_26[26] = {-1, 1, -offset_y, offset_y, -offset_z, offset_z,
-								-offset_y-1, -offset_y+1, -offset_y-offset_z, -offset_y+offset_z, 
-								offset_y-1, offset_y+1, offset_y-offset_z, offset_y+offset_z,
-								offset_z-1, offset_z+1, -offset_z-1, -offset_z+1,
-								-1-offset_y-offset_z, -1-offset_y+offset_z, -1+offset_y-offset_z, -1+offset_y+offset_z,
-								1-offset_y-offset_z, 1-offset_y+offset_z, 1+offset_y-offset_z, 1+offset_y+offset_z}; 
+		-offset_y-1, -offset_y+1, -offset_y-offset_z, -offset_y+offset_z, 
+		offset_y-1, offset_y+1, offset_y-offset_z, offset_y+offset_z,
+		offset_z-1, offset_z+1, -offset_z-1, -offset_z+1,
+		-1-offset_y-offset_z, -1-offset_y+offset_z, -1+offset_y-offset_z, -1+offset_y+offset_z,
+	1-offset_y-offset_z, 1-offset_y+offset_z, 1+offset_y-offset_z, 1+offset_y+offset_z}; 
 	V3DLONG neighbors = 26;
 	
 	// eliminate volume with only one single voxel
@@ -700,7 +702,7 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 					if(one_point==true)
 						bw[idx] = 0;
 				}
-					
+				
 			}
 		}
 	}
@@ -713,10 +715,10 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 	callback.setImage(newwinbw, &p4Dbw);
 	callback.setImageName(newwinbw, "bw");
 	callback.updateImageWindow(newwinbw);
-
+	
 	// 3D region growing
 	//----------------------------------------------------------------------------------------------------------------------------------
-
+	
 	//declaration
 	V3DLONG totalpxlnum=pagesz;
 	
@@ -869,9 +871,7 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 	
 	while(curRgn && curRgn->next)
 	{
-		V3DLONG i = nrgncopied;
-		
-		qDebug() << "num of rgn ..." << i << curRgn->no << curRgn->next->no;
+		qDebug() << "num of rgn ..." << nrgncopied << curRgn->no << curRgn->next->no;
 		
 		staRegion->no = curRgn->no;
 		staRegion->count = 0;
@@ -889,6 +889,8 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 		
 		qDebug() << "pixels ..." << count;
 		
+		if(count<volsz) { nrgncopied++; curRgn = curRgn->next; continue; } // filter out the small components
+		
 		//
 		stclList.push_back(*staRegion);
 		
@@ -902,83 +904,232 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 	}
 	
 	// result pointer
-	float *pRGCL = NULL;
-	try
-	{
-		pRGCL = new float [pagesz];
-		
-		memset(pRGCL, 0, sizeof(float)*pagesz);
-	}
-	catch (...) 
-	{
-		printf("Fail to allocate memory.\n");
-		return;
-	}
-	
 	V3DLONG length;
 	
 	V3DLONG n_rgn = stclList.size(); // qMin(5, nrgncopied);
 	
 	qDebug() << "display "<< n_rgn<<" rgns from "<< nrgncopied;
 	
-	LandmarkList cmList;
-	
-	for(int ii=0; ii<n_rgn; ii++)
+	if(n_rgn>65535)
 	{
-		length = stclList.at(ii).count; //a[ii];
-		
-		qDebug() << "region ..." << ii << length;
-		
-		// find idx
-		V3DLONG *cutposlist = stclList.at(ii).desposlist;
-		
-		float scx=0,scy=0,scz=0,si=0;
-		
-		for(int i=0; i<length; i++)
+		float *pRGCL = NULL;
+		try
 		{
-			//qDebug() << "idx ..." << i << cutposlist[i] << pagesz;
+			pRGCL = new float [pagesz];
 			
-			pRGCL[ cutposlist[i] ] = (float)ii;
-			
-			float cv = pSub[ cutposlist[i] ];
-			
-			V3DLONG idx = cutposlist[i];
-			
-			V3DLONG k1 = idx/(sx*sy);
-			V3DLONG j1 = (idx - k1*sx*sy)/sx;
-			V3DLONG i1 = idx - k1*sx*sy - j1*sx;
-			
-			scz += k1*cv;
-			scy += j1*cv;
-			scx += i1*cv;
-			si += cv;
+			memset(pRGCL, 0, sizeof(float)*pagesz);
+		}
+		catch (...) 
+		{
+			printf("Fail to allocate memory.\n");
+			return;
 		}
 		
-		if (si>0)
-		{
-			V3DLONG ncx = scx/si + 0.5 +1; 
-			V3DLONG ncy = scy/si + 0.5 +1; 
-			V3DLONG ncz = scz/si + 0.5 +1;
+		LandmarkList cmList;
 		
-			LocationSimple pp(ncx, ncy, ncz);
-			cmList.push_back(pp);
-
+		for(int ii=0; ii<n_rgn; ii++)
+		{
+			length = stclList.at(ii).count; //a[ii];
+			
+			qDebug() << "region ..." << ii << length;
+			
+			// find idx
+			V3DLONG *cutposlist = stclList.at(ii).desposlist;
+			
+			float scx=0,scy=0,scz=0,si=0;
+			
+			for(int i=0; i<length; i++)
+			{
+				//qDebug() << "idx ..." << i << cutposlist[i] << pagesz;
+				
+				pRGCL[ cutposlist[i] ] = (float)ii;
+				
+				float cv = pSub[ cutposlist[i] ];
+				
+				V3DLONG idx = cutposlist[i];
+				
+				V3DLONG k1 = idx/(sx*sy);
+				V3DLONG j1 = (idx - k1*sx*sy)/sx;
+				V3DLONG i1 = idx - k1*sx*sy - j1*sx;
+				
+				scz += k1*cv;
+				scy += j1*cv;
+				scx += i1*cv;
+				si += cv;
+			}
+			
+			if (si>0)
+			{
+				V3DLONG ncx = scx/si + 0.5 +1; 
+				V3DLONG ncy = scy/si + 0.5 +1; 
+				V3DLONG ncz = scz/si + 0.5 +1;
+				
+				LocationSimple pp(ncx, ncy, ncz);
+				cmList.push_back(pp);
+				
+			}
+			
 		}
+		
+		// display
+		Image4DSimple p4DImage;
+		p4DImage.setData((unsigned char*)pRGCL, sx, sy, sz, 1, V3D_FLOAT32);
+		
+		v3dhandle newwin = callback.newImageWindow();
+		callback.setImage(newwin, &p4DImage);
+		callback.setImageName(newwin, "region_growing");
+		//callback.setLandmark(newwin, cmList); // center of mass
+		callback.updateImageWindow(newwin);
 		
 	}
+	else if(n_rgn>255)
+	{
+		unsigned short *pRGCL = NULL;
+		try
+		{
+			pRGCL = new unsigned short [pagesz];
+			
+			memset(pRGCL, 0, sizeof(unsigned short)*pagesz);
+		}
+		catch (...) 
+		{
+			printf("Fail to allocate memory.\n");
+			return;
+		}
+		
+		LandmarkList cmList;
+		
+		for(int ii=0; ii<n_rgn; ii++)
+		{
+			length = stclList.at(ii).count; //a[ii];
+			
+			qDebug() << "region ..." << ii << length;
+			
+			// find idx
+			V3DLONG *cutposlist = stclList.at(ii).desposlist;
+			
+			float scx=0,scy=0,scz=0,si=0;
+			
+			for(int i=0; i<length; i++)
+			{
+				//qDebug() << "idx ..." << i << cutposlist[i] << pagesz;
+				
+				pRGCL[ cutposlist[i] ] = (unsigned short)ii;
+				
+				float cv = pSub[ cutposlist[i] ];
+				
+				V3DLONG idx = cutposlist[i];
+				
+				V3DLONG k1 = idx/(sx*sy);
+				V3DLONG j1 = (idx - k1*sx*sy)/sx;
+				V3DLONG i1 = idx - k1*sx*sy - j1*sx;
+				
+				scz += k1*cv;
+				scy += j1*cv;
+				scx += i1*cv;
+				si += cv;
+			}
+			
+			if (si>0)
+			{
+				V3DLONG ncx = scx/si + 0.5 +1; 
+				V3DLONG ncy = scy/si + 0.5 +1; 
+				V3DLONG ncz = scz/si + 0.5 +1;
+				
+				LocationSimple pp(ncx, ncy, ncz);
+				cmList.push_back(pp);
+				
+			}
+			
+		}
+		
+		// display
+		Image4DSimple p4DImage;
+		p4DImage.setData((unsigned char*)pRGCL, sx, sy, sz, 1, V3D_UINT16);
+		
+		v3dhandle newwin = callback.newImageWindow();
+		callback.setImage(newwin, &p4DImage);
+		callback.setImageName(newwin, "region_growing");
+		//callback.setLandmark(newwin, cmList); // center of mass
+		callback.updateImageWindow(newwin);
+	}
+	else
+	{
+		unsigned char *pRGCL = NULL;
+		try
+		{
+			pRGCL = new unsigned char [pagesz];
+			
+			memset(pRGCL, 0, pagesz);
+		}
+		catch (...) 
+		{
+			printf("Fail to allocate memory.\n");
+			return;
+		}
+		
+		LandmarkList cmList;
+		
+		for(int ii=0; ii<n_rgn; ii++)
+		{
+			length = stclList.at(ii).count; //a[ii];
+			
+			qDebug() << "region ..." << ii << length;
+			
+			// find idx
+			V3DLONG *cutposlist = stclList.at(ii).desposlist;
+			
+			float scx=0,scy=0,scz=0,si=0;
+			
+			for(int i=0; i<length; i++)
+			{
+				//qDebug() << "idx ..." << i << cutposlist[i] << pagesz;
+				
+				pRGCL[ cutposlist[i] ] = (unsigned char)ii;
+				
+				float cv = pSub[ cutposlist[i] ];
+				
+				V3DLONG idx = cutposlist[i];
+				
+				V3DLONG k1 = idx/(sx*sy);
+				V3DLONG j1 = (idx - k1*sx*sy)/sx;
+				V3DLONG i1 = idx - k1*sx*sy - j1*sx;
+				
+				scz += k1*cv;
+				scy += j1*cv;
+				scx += i1*cv;
+				si += cv;
+			}
+			
+			if (si>0)
+			{
+				V3DLONG ncx = scx/si + 0.5 +1; 
+				V3DLONG ncy = scy/si + 0.5 +1; 
+				V3DLONG ncz = scz/si + 0.5 +1;
+				
+				LocationSimple pp(ncx, ncy, ncz);
+				cmList.push_back(pp);
+				
+			}
+			
+		}
+		
+		// display
+		Image4DSimple p4DImage;
+		p4DImage.setData((unsigned char*)pRGCL, sx, sy, sz, 1, V3D_UINT8);
+		
+		v3dhandle newwin = callback.newImageWindow();
+		callback.setImage(newwin, &p4DImage);
+		callback.setImageName(newwin, "region_growing");
+		//callback.setLandmark(newwin, cmList); // center of mass
+		callback.updateImageWindow(newwin);
+	}
 	
+	//
 	int end_t_t = clock();
 	
 	qDebug() << "time elapse ..." << end_t_t - end_t;
 	
-	// display the biggest five regions
-	Image4DSimple p4DImage;
-	p4DImage.setData((unsigned char*)pRGCL, sx, sy, sz, 1, V3D_FLOAT32);
-	
-	v3dhandle newwin = callback.newImageWindow();
-	callback.setImage(newwin, &p4DImage);
-	callback.setImageName(newwin, "region_growing");
-	//callback.setLandmark(newwin, cmList); // center of mass
-	callback.updateImageWindow(newwin);
+	return;	
 	
 }

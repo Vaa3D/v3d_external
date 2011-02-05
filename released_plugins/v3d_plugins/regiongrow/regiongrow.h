@@ -53,7 +53,7 @@ public:
 		image = cb.getImage(cb.currentImageWindow());
 		pRoiList=cb.getROI(cb.currentImageWindow());
 		QString imageName = cb.getImageName(cb.currentImageWindow());
-		label_imagename = new QLabel(imageName.prepend("Your have selected the image [").append("]"));
+		label_imagename = new QLabel(imageName.prepend("You have selected the image [").append("]"));
 		gridLayout->addWidget(label_imagename, 1,0,1,3); 
 		
 		int c = image->getCDim();
@@ -89,6 +89,25 @@ public:
 		spin_th->setMaximum(65535); spin_th->setMinimum(-65535); 
 		
 		//
+		spin_th = new QDoubleSpinBox();
+		gridLayout->addWidget(spin_th, 4,2);
+		
+		spin_th->setEnabled(false);
+		spin_th->setMaximum(65535); spin_th->setMinimum(-65535); 
+		
+		//
+		check_filter = new QCheckBox();
+		check_filter->setText(QObject::tr("Filtering out small-components (voxels): "));
+		check_filter->setChecked(false);
+		gridLayout->addWidget(check_filter, 5,0); 
+		
+		spin_vol = new QSpinBox();
+		gridLayout->addWidget(spin_vol, 5,1);
+		
+		spin_vol->setEnabled(false);
+		spin_vol->setMaximum(1.0737e+09); spin_vol->setMinimum(0); spin_vol->setValue(200); 
+		
+		//
 		ok     = new QPushButton("OK");
 		cancel = new QPushButton("Cancel");
 		gridLayout->addWidget(cancel, 6,1); 
@@ -105,11 +124,14 @@ public:
 		connect(combo_th, SIGNAL(currentIndexChanged(int)), this, SLOT(update()));
 	
 		connect(spin_th, SIGNAL(valueChanged(double)), this, SLOT(update()));
+		
+		connect(check_filter, SIGNAL(stateChanged(int)), this, SLOT(update()));
+		connect(spin_vol, SIGNAL(valueChanged(int)), this, SLOT(update()));
 	}
 	
 	~RegiongrowDialog(){}
 	
-public slots:
+	public slots:
 	void update()
 	{
 		ch = combo_channel->currentIndex();
@@ -126,11 +148,22 @@ public slots:
 		}
 		
 		thresh = spin_th->text().toDouble();
+		
+		if(check_filter->isChecked())
+		{
+			spin_vol->setEnabled(true);
+		}
+		else
+		{
+			spin_vol->setEnabled(false);
+		}
+		
+		volsz = spin_vol->text().toInt();
 	}
 	
 public:
-	int ch;
-	int th_idx;
+	int ch, th_idx;
+	int volsz;
 	double thresh;
 	Image4DSimple* image;
 	ROIList pRoiList;
@@ -143,8 +176,11 @@ public:
 	
 	QLabel* label_th;
 	QComboBox* combo_th;
-
+	
 	QDoubleSpinBox* spin_th;
+	
+	QCheckBox* check_filter;
+	QSpinBox* spin_vol;
 	
 	QPushButton* ok;
 	QPushButton* cancel;
