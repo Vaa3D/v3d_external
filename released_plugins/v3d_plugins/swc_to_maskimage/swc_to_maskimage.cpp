@@ -210,7 +210,12 @@ void ComputemaskImage(NeuronTree neurons,
 		ys = p_cur->y;		
 		zs = p_cur->z;		
 		rs = p_cur->r;
-		
+		if (rs<1) 
+		{
+		//	printf("rsss=%lf\n",rs);
+			rs+=1;
+		//	printf("rsssh=%lf\n",rs);
+		}
 		double ballx0, ballx1, bally0, bally1, ballz0, ballz1, tmpf;
 		
 		ballx0 = xs - rs; ballx0 = qBound(double(0), ballx0, double(sx-1));
@@ -238,7 +243,7 @@ void ComputemaskImage(NeuronTree neurons,
 					
 					V3DLONG ind = (k)*pagesz + (j)*sx + i;
 					
-					if(dt < rs)
+					if(dt <=rs || dt<=1)
 					{
 						if (method_code == 1)
 						{
@@ -268,7 +273,12 @@ void ComputemaskImage(NeuronTree neurons,
 		ye = pp.y;
 		ze = pp.z;
 		re = pp.r;
-		
+		if (re<1)
+		{
+			//printf("ress=%lf\n",re);
+			re+=1;
+			//printf("ressh=%lf\n",re);
+		}
 		//judge if two points overlap, if yes, then do nothing as the sphere has already been drawn
 		if (xe==xs && ye==ys && ze==zs)
 		{
@@ -298,6 +308,7 @@ void ComputemaskImage(NeuronTree neurons,
 			{
 				for (i=x_down; i<=x_top; i++)
 				{
+					double rr = 0;
 					double countxsi = (xs-i);
 					double countysj = (ys-j);
 					double countzsk = (zs-k);
@@ -309,27 +320,34 @@ void ComputemaskImage(NeuronTree neurons,
 					double dots1021 = countxsi * countxes + countysj * countyes + countzsk * countzes; 
 					double dist = sqrt( norms10 - (dots1021*dots1021)/(norms21) );
 					double t1 = -dots1021/norms21;
-                    if(t1<0)
+				//	printf("t1=%lf\n",t1);
+					if(t1<0)
                         dist = sqrt(norms10);
                     else if(t1>1)
                         dist = sqrt((xe-i)*(xe-i) + (ye-j)*(ye-j) + (ze-k)*(ze-k));
-					
-					// compute point of intersection
-					double v1 = xe - xs;
-					double v2 = ye - ys;
-					double v3 = ze - zs;
-					double vpt = v1*v1 + v2*v2 +v3*v3;
-					double t = (double(i-xs)*v1 +double(j-ys)*v2 + double(k-zs)*v3)/vpt;
-					double xc = xs + v1*t;
-					double yc = ys + v2*t;
-					double zc = zs + v3*t;
-					double rr;
 					//compute rr
-					double normssc = sqrt((xs-xc)*(xs-xc)+(ys-yc)*(ys-yc)+(zs-zc)*(zs-zc));
-					double normsce = sqrt((xe-xc)*(xe-xc)+(ye-yc)*(ye-yc)+(ze-zc)*(ze-zc));	
-					rr = (rs > re) ? (rs - (rs - re)/sqrt(norms21)*normssc) : (re - (re-rs)/sqrt(norms21)*normsce);
+					if (rs==re)
+					{
+						rr =rs;
+						
+					}else
+					{
+						// compute point of intersection
+						double v1 = xe - xs;
+						double v2 = ye - ys;
+						double v3 = ze - zs;
+						double vpt = v1*v1 + v2*v2 +v3*v3;
+						double t = (double(i-xs)*v1 +double(j-ys)*v2 + double(k-zs)*v3)/vpt;
+						double xc = xs + v1*t;
+						double yc = ys + v2*t;
+						double zc = zs + v3*t;
+						double normssc = sqrt((xs-xc)*(xs-xc)+(ys-yc)*(ys-yc)+(zs-zc)*(zs-zc));
+						double normsce = sqrt((xe-xc)*(xe-xc)+(ye-yc)*(ye-yc)+(ze-zc)*(ze-zc));	
+						rr = (rs >= re) ? (rs - ((rs - re)/sqrt(norms21))*normssc) : (re - ((re-rs)/sqrt(norms21))*normsce);
+					}
 					V3DLONG ind1 = (k)*sx*sy + (j)*sx + i;
-					if (dist < rr)
+					//printf("rr=%lf dist=%lf \n",rr,dist);					
+					if (dist <= rr || dist<1)
 					{
 						if (method_code == 1)
 						{
