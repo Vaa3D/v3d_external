@@ -212,9 +212,7 @@ void ComputemaskImage(NeuronTree neurons,
 		rs = p_cur->r;
 		if (rs<1) 
 		{
-		//	printf("rsss=%lf\n",rs);
-			rs+=1;
-		//	printf("rsssh=%lf\n",rs);
+			rs=2-rs;
 		}
 		double ballx0, ballx1, bally0, bally1, ballz0, ballz1, tmpf;
 		
@@ -275,9 +273,7 @@ void ComputemaskImage(NeuronTree neurons,
 		re = pp.r;
 		if (re<1)
 		{
-			//printf("ress=%lf\n",re);
-			re+=1;
-			//printf("ressh=%lf\n",re);
+			re=2-re;
 		}
 		//judge if two points overlap, if yes, then do nothing as the sphere has already been drawn
 		if (xe==xs && ye==ys && ze==zs)
@@ -290,6 +286,33 @@ void ComputemaskImage(NeuronTree neurons,
 //		pImMask[V3DLONG(zs)*sx*sy + V3DLONG(ys)*sx + V3DLONG(xs)] = random()%250 + 1; 
 //		continue;
 		
+		double l =sqrt((xe-xs)*(xe-xs)+(ye-ys)*(ye-ys)+(ze-zs)*(ze-zs));
+		
+		//printf("l=%lf\n",l);
+		
+		V3DLONG xn,yn,zn;
+		
+		for(double kk = 0; kk <= l ; kk++)
+		{
+			xn = xs + (xe-xs)*(kk/l);
+			yn = ys + (ye-ys)*(kk/l);
+			zn = zs + (ze-zs)*(kk/l);
+			
+		    xn = ( xn > sx )? sx : xn;
+			yn = ( yn > sy )? sy : yn;
+			zn = ( zn > sz )? sz : zn;
+			
+			V3DLONG idex=(zn)*sx*sy + (yn)*sx + xn;
+			if (method_code == 1)
+			{
+				pImMask[idex] = 255;
+			}
+			else if (method_code ==2)
+			{
+				ImMark[idex] = 1;
+			}
+		}
+	
 		//finding the envelope of the current line segment
 		
 		double rbox = (rs>re) ? rs : re;
@@ -347,7 +370,7 @@ void ComputemaskImage(NeuronTree neurons,
 					}
 					V3DLONG ind1 = (k)*sx*sy + (j)*sx + i;
 					//printf("rr=%lf dist=%lf \n",rr,dist);					
-					if (dist <= rr || dist<1)
+					if (dist <= rr || dist<=1)
 					{
 						if (method_code == 1)
 						{
