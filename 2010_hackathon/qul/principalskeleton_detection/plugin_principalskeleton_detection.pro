@@ -8,7 +8,7 @@ INCLUDEPATH  += $$V3DMAINDIR/basic_c_fun
 INCLUDEPATH  += $$V3DMAINDIR/jba/newmat11
 INCLUDEPATH  += $$V3DMAINDIR/common_lib/include
 
-LIBS += -L$$V3DMAINDIR/jba/c++ -lnewmat
+LIBS += -L$$V3DMAINDIR/jba/c++ -lv3dnewmat
 
 HEADERS      += $$V3DMAINDIR/basic_c_fun/v3d_message.h
 HEADERS      += $$V3DMAINDIR/basic_c_fun/basic_surf_objs.h

@@ -59,11 +59,11 @@ void PrincipalSkeletonDetection(V3DPluginCallback &callback, QWidget *parent)
 	else
 	{
 		p_img4dsimple=callback.getImage(callback.currentImageWindow());
-		p_img_input=p_img4dsimple->data1d;
-		sz_img_input[0]=p_img4dsimple->sz0;
-		sz_img_input[1]=p_img4dsimple->sz1;
-		sz_img_input[2]=p_img4dsimple->sz2;
-		sz_img_input[3]=p_img4dsimple->sz3;
+		p_img_input=p_img4dsimple->getRawData();
+		sz_img_input[0]=p_img4dsimple->getXDim();
+		sz_img_input[1]=p_img4dsimple->getYDim();
+		sz_img_input[2]=p_img4dsimple->getZDim();
+		sz_img_input[3]=p_img4dsimple->getCDim();
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------------------
@@ -93,7 +93,7 @@ void PrincipalSkeletonDetection(V3DPluginCallback &callback, QWidget *parent)
     	return;
     }
     for(long i=0;i<ql_cptpos_input.size();i++)
-    	printf("\t\tcpt[%d]=[%.2f,%.2f,%.2f]\n",i,ql_cptpos_input[i].x,ql_cptpos_input[i].y,ql_cptpos_input[i].z);
+    	printf("\t\tcpt[%ld]=[%.2f,%.2f,%.2f]\n",i,ql_cptpos_input[i].x,ql_cptpos_input[i].y,ql_cptpos_input[i].z);
 
     //read domain file (include domain definition and corresponding weight definition)
     vector< vector<long> > vecvec_domain_length_ind,vecvec_domain_smooth_ind;	//the index of control point of each domain is refer to the corresponding marker file
@@ -108,19 +108,19 @@ void PrincipalSkeletonDetection(V3DPluginCallback &callback, QWidget *parent)
     }
     printf("\t>>read domain file [%s] complete.\n",qPrintable(qs_filename_domain));
     printf("\t\tdomain - length constraint:\n");
-    for(long i=0;i<vecvec_domain_length_ind.size();i++)
+    for(unsigned long i=0;i<vecvec_domain_length_ind.size();i++)
     {
     	printf("\t\tweight=%.2f;\tcontol points index=[",vec_domain_length_weight[i]);
-    	for(long j=0;j<vecvec_domain_length_ind[i].size();j++)
-    		printf("%d,",vecvec_domain_length_ind[i][j]);
+    	for(unsigned long j=0;j<vecvec_domain_length_ind[i].size();j++)
+    		printf("%ld,",vecvec_domain_length_ind[i][j]);
     	printf("]\n");
     }
     printf("\t\tdomain - smooth constraint:\n");
-    for(long i=0;i<vecvec_domain_smooth_ind.size();i++)
+    for(unsigned long i=0;i<vecvec_domain_smooth_ind.size();i++)
     {
     	printf("\t\tweight=%.2f;\tcontol points index=[",vec_domain_smooth_weight[i]);
-    	for(long j=0;j<vecvec_domain_smooth_ind[i].size();j++)
-    		printf("%d,",vecvec_domain_smooth_ind[i][j]);
+    	for(unsigned long j=0;j<vecvec_domain_smooth_ind[i].size();j++)
+    		printf("%ld,",vecvec_domain_smooth_ind[i][j]);
     	printf("]\n");
     }
 
@@ -264,7 +264,7 @@ void PrincipalSkeletonDetection(V3DPluginCallback &callback, QWidget *parent)
     //------------------------------------------------------------------------------------------------------------------------------------
     //data structure convert
 	QList<ImageMarker> ql_cptpos_output(ql_cptpos_input);
-	for(long i=0;i<vec_cptpos_output.size();i++)
+	for(unsigned long i=0;i<vec_cptpos_output.size();i++)
 	{
 		ql_cptpos_output[i].x=vec_cptpos_output[i].x*d_ratio_sample;
 		ql_cptpos_output[i].y=vec_cptpos_output[i].y*d_ratio_sample;
@@ -453,7 +453,7 @@ bool readDomain_file(const QString &qs_filename,
 			int qsl_count=qsl.size();
 			if(qsl_count<=3)
 			{
-				printf("WARNING: invalid format found in line %d.\n",k);
+				printf("WARNING: invalid format found in line %ld.\n",k);
 				continue;
 			}
 
@@ -476,7 +476,7 @@ bool readDomain_file(const QString &qs_filename,
 				vecvec_domain_smooth_ind.push_back(vec_domain_smooth_ind);
 			}
 			else
-				printf("WARNING: unknown constraint type found in line %d.\n",k);
+				printf("WARNING: unknown constraint type found in line %ld.\n",k);
 		}
     }
 
@@ -505,11 +505,11 @@ bool q_saveSkeleton2swcFile_cubicspline(const QList<ImageMarker> &ql_cptpos,cons
 
 	//reorgnize the skeleton into branches according to the domain defintion
 	vector< QList<ImageMarker> > vec_ql_brances;
-	for(long i=0;i<vecvec_domain_cptind.size();i++)
+	for(unsigned long i=0;i<vecvec_domain_cptind.size();i++)
 	{
 		QList<ImageMarker> ql_brances;
 		ImageMarker im;
-		for(long j=0;j<vecvec_domain_cptind[i].size();j++)
+		for(unsigned long j=0;j<vecvec_domain_cptind[i].size();j++)
 		{
 			long index=vecvec_domain_cptind[i][j];
 			im.x=ql_cptpos[index].x;
@@ -523,7 +523,7 @@ bool q_saveSkeleton2swcFile_cubicspline(const QList<ImageMarker> &ql_cptpos,cons
 
 	//cubic spline interpolate every branch respectively
 	vector< QList<ImageMarker> > vec_ql_brances_cpline;
-	for(long i=0;i<vec_ql_brances.size();i++)
+	for(unsigned long i=0;i<vec_ql_brances.size();i++)
 	{
 		QList<ImageMarker> ql_brances_cpline;
 		if(vec_ql_brances[i].size()==2)
@@ -546,7 +546,7 @@ bool q_saveSkeleton2swcFile_cubicspline(const QList<ImageMarker> &ql_cptpos,cons
 	NeuronTree nt_skeleton;
 	NeuronSWC ns_marker;
 	long index=0;
-	for(long i=0;i<vec_ql_brances_cpline.size();i++)
+	for(unsigned long i=0;i<vec_ql_brances_cpline.size();i++)
 	{
 		for(long j=0;j<vec_ql_brances_cpline[i].size();j++)
 		{
