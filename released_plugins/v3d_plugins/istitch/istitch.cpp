@@ -59,16 +59,15 @@ typedef std::vector<PL> PLLIST;
 enum StitchDataType {ISUINT8=1, ISUINT16=2, ISREAL=4};
 
 // Open a series of inputs
-QStringList importSeriesFileList_addnumbersort(const QString & individualFileName)
+QStringList importSeriesFileList_addnumbersort(const QString & curFilePath)
 {
 	QStringList myList;
 	myList.clear();
 	
 	// get the image files namelist in the directory
-	
-	QFileInfo fileInfo(individualFileName);
-	QString curFilePath = fileInfo.path();
-	QString curSuffix = fileInfo.suffix();
+	QStringList imgSuffix;
+	imgSuffix<<"*.tif"<<"*.raw"<<"*.lsm"
+			<<"*.TIF"<<"*.RAW"<<"*.LSM";
 	
 	QDir dir(curFilePath);
 	if (!dir.exists())
@@ -77,9 +76,7 @@ QStringList importSeriesFileList_addnumbersort(const QString & individualFileNam
 		return myList;
 	}
 	
-	QStringList imgfilters;
-	imgfilters.append("*." + curSuffix);
-	foreach (QString file, dir.entryList(imgfilters, QDir::Files, QDir::Name))
+	foreach (QString file, dir.entryList(imgSuffix, QDir::Files, QDir::Name))
 	{
 		myList += QFileInfo(dir, file).absoluteFilePath();
 	}
@@ -1910,7 +1907,7 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent);
 int roi_navigating(V3DPluginCallback2 &callback, QWidget *parent);
 
 // pairwise image blending function
-template <class SDATATYPE> int pwi_fusing(SDATATYPE *p_mask, SDATATYPE *data1d, SDATATYPE *subject1d, V3DLONG *sz_subject, SDATATYPE *target1d, V3DLONG *sz_target, V3DLONG *offset, bool axes_show, QString m_InputFileName, V3DLONG new_sz0, V3DLONG new_sz1, V3DLONG new_sz2, V3DLONG pagesz_overlap);
+template <class SDATATYPE> int pwi_fusing(SDATATYPE *p_mask, SDATATYPE *data1d, SDATATYPE *subject1d, V3DLONG *sz_subject, SDATATYPE *target1d, V3DLONG *sz_target, V3DLONG *offset, bool axes_show, QString m_InputFileName, V3DLONG new_sz0, V3DLONG new_sz1, V3DLONG new_sz2, V3DLONG pagesz_overlap, V3DLONG sub_c, V3DLONG tar_c);
 
 // pairwise image blending function
 template <class SDATATYPE> int groupi_fusing(SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, V3DLONG vx, V3DLONG vy, V3DLONG vz, V3DLONG vc, bool axes_show);
@@ -3260,7 +3257,7 @@ int stitching_bb_thickplanes(SDATATYPE *subject1d, V3DLONG *sz_subject1d, SDATAT
 
 // pairwise image blending function
 template <class SDATATYPE> 
-int pwi_fusing(SDATATYPE *p_mask, SDATATYPE *data1d, SDATATYPE *subject1d, V3DLONG *sz_subject, SDATATYPE *target1d, V3DLONG *sz_target, V3DLONG *offset, bool axes_show, QString m_InputFileName, V3DLONG new_sz0, V3DLONG new_sz1, V3DLONG new_sz2, V3DLONG pagesz_overlap)
+int pwi_fusing(SDATATYPE *p_mask, SDATATYPE *data1d, SDATATYPE *subject1d, V3DLONG *sz_subject, SDATATYPE *target1d, V3DLONG *sz_target, V3DLONG *offset, bool axes_show, QString m_InputFileName, V3DLONG new_sz0, V3DLONG new_sz1, V3DLONG new_sz2, V3DLONG pagesz_overlap, V3DLONG sub_c, V3DLONG tar_c)
 {
 	//
 	V3DLONG sx = sz_subject[0], sy = sz_subject[1], sz = sz_subject[2], sc = sz_subject[3];
@@ -3334,8 +3331,8 @@ int pwi_fusing(SDATATYPE *p_mask, SDATATYPE *data1d, SDATATYPE *subject1d, V3DLO
 					//						}
 					//					}
 					
-					if(c==0)
-						p_mask[idx]=subject1d[offsets_j + i - i_start] + 1; //255; //mask
+					if(c==sub_c)
+						p_mask[idx - c*offset_data]=subject1d[offsets_j + i - i_start] + 1; //255; //mask
 				}
 			}
 		}
@@ -3390,8 +3387,8 @@ int pwi_fusing(SDATATYPE *p_mask, SDATATYPE *data1d, SDATATYPE *subject1d, V3DLO
 					//						}
 					//					}
 					
-					if(c==0)
-						p_mask[pagesz_overlap + idx]= target1d[offsets_j + i - tx_start]; //255; //mask
+					if(c==tar_c)
+						p_mask[pagesz_overlap + idx - c*offset_data] = target1d[offsets_j + i - tx_start]; //255; //mask
 				}
 			}
 		}
@@ -3659,8 +3656,8 @@ int pairwise_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 	int i1 = dialog.combo_subject->currentIndex();
 	int i2 = dialog.combo_target->currentIndex();
 	
-	int sub_c = dialog.sub_c-1;
-	int tar_c = dialog.tar_c-1;
+	V3DLONG sub_c = dialog.sub_c-1;
+	V3DLONG tar_c = dialog.tar_c-1;
 	
 	REAL overlap_percent = dialog.overlap;
 	
@@ -3829,7 +3826,7 @@ int pairwise_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 		}
 		
 		//
-		success = pwi_fusing<unsigned char>((unsigned char *)p_mask, (unsigned char *)data1d, (unsigned char *)subject1d, szSub, (unsigned char *)target1d, szTar, offset, axes_show, m_InputFileName, new_sz0, new_sz1, new_sz2, pagesz_overlap);
+		success = pwi_fusing<unsigned char>((unsigned char *)p_mask, (unsigned char *)data1d, (unsigned char *)subject1d, szSub, (unsigned char *)target1d, szTar, offset, axes_show, m_InputFileName, new_sz0, new_sz1, new_sz2, pagesz_overlap, sub_c, tar_c);
 		
 		//display
 		Image4DSimple p4DImage;
@@ -3880,7 +3877,7 @@ int pairwise_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 		}
 		
 		//
-		success = pwi_fusing<unsigned short>((unsigned short *)p_mask, (unsigned short *)data1d, (unsigned short *)subject1d, szSub, (unsigned short *)target1d, szTar, offset, axes_show, m_InputFileName, new_sz0, new_sz1, new_sz2, pagesz_overlap);
+		success = pwi_fusing<unsigned short>((unsigned short *)p_mask, (unsigned short *)data1d, (unsigned short *)subject1d, szSub, (unsigned short *)target1d, szTar, offset, axes_show, m_InputFileName, new_sz0, new_sz1, new_sz2, pagesz_overlap, sub_c, tar_c);
 		
 		//display
 		Image4DSimple p4DImage;
@@ -3931,7 +3928,7 @@ int pairwise_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 		}
 		
 		//
-		success = pwi_fusing<REAL>((REAL *)p_mask, (REAL *)data1d, (REAL *)subject1d, szSub, (REAL *)target1d, szTar, offset, axes_show, m_InputFileName, new_sz0, new_sz1, new_sz2, pagesz_overlap);
+		success = pwi_fusing<REAL>((REAL *)p_mask, (REAL *)data1d, (REAL *)subject1d, szSub, (REAL *)target1d, szTar, offset, axes_show, m_InputFileName, new_sz0, new_sz1, new_sz2, pagesz_overlap, sub_c, tar_c);
 		
 		//display
 		Image4DSimple p4DImage;

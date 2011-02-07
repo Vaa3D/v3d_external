@@ -214,7 +214,7 @@ public:
 	{
 		
 		// create a dialog
-		label_subject = new QLabel(QObject::tr("Choose A Tile From Image Directory: ")); 
+		label_subject = new QLabel(QObject::tr("Choose A Directory for image stitching: ")); 
 		
 		edit_img = new QLineEdit(QDir::currentPath());
 		pb_browse_img = new QPushButton("Browse...");
@@ -342,9 +342,9 @@ public slots:
 	
 	void get_img_name()
 	{
-		fn_img = QFileDialog::getOpenFileName(0, QObject::tr("Choose A Tiled Image "),
+		fn_img = QFileDialog::getExistingDirectory(0, QObject::tr("Choose the directory including all tiled images "),
 											  QDir::currentPath(),
-											  QObject::tr("Images (*.tif *.lsm *.raw);;All(*)"));
+											  QFileDialog::ShowDirsOnly);
 		
 		
 		edit_img->setText(fn_img);
