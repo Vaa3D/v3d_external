@@ -68,6 +68,34 @@ void montage_image_sections (T *apsInput, T * aspOutput, V3DLONG iImageWidth, V3
 	
 	//v3d_msg("2");	
 }
+template <class T> 
+void montage_image_stack(T *apsInput, T * aspOutput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer,V3DLONG column,V3DLONG row, V3DLONG slice,V3DLONG n)
+{
+	V3DLONG i, j,k;	
+	V3DLONG mCount = iImageHeight * iImageWidth;
+	V3DLONG mCount1 = column * row;	
+	for (i=0; i<slice; i++)
+	{
+		for (j=0; j<row; j++)
+		{
+			for (k=0; k<column; k++)
+			{
+				aspOutput[i * mCount1 + j*column + k] = 0;
+					
+			}
+		}
+	}
+	//V3DLONG w = 7;
+	for (j=0; j<iImageHeight; j++)
+	{
+		for (k=0; k<iImageWidth; k++)
+		{
+			 aspOutput[((j/row)*(n)+(k/column))*mCount1 + (j%row)*column + (k%column)] = apsInput[j*iImageWidth+k];
+			
+		}
+	}
+}
+
 
 void do_computation(V3DPluginCallback2 &callback, QWidget *parent, int method_code);
 
@@ -77,6 +105,7 @@ QStringList MONTAGEPlugin::menulist() const
 {
     return QStringList() 
 	<< tr("montage_image_sections")
+	<< tr ("revert a montage image to a stack")
 	<< tr("Help");
 }
 
@@ -85,7 +114,11 @@ void MONTAGEPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callbac
 	if (menu_name == tr("montage_image_sections"))
 	{
     	do_computation(callback, parent,1 );
-    }
+    }else if (menu_name == tr("revert a montage image to a stack")) 
+	{
+		do_computation(callback, parent,2);
+		
+	}
 	else if (menu_name == tr("Help"))
 	{
 		v3d_msg("This plugin produces a montage view of all z slices.");
@@ -93,7 +126,6 @@ void MONTAGEPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callbac
 	}
 
 }
-
 void do_computation(V3DPluginCallback2 &callback, QWidget *parent, int method_code)
 {
 	v3dhandle curwin = callback.currentImageWindow();
@@ -127,117 +159,228 @@ void do_computation(V3DPluginCallback2 &callback, QWidget *parent, int method_co
 	
 	//----------------------------------------------------------------------------------------------------------------------------------
 
-//	column = (V3DLONG)(sqrt(sz2)+ 0.5);
-//	V3DLONG remainder= sz2 - column*column;
-//	float num = sqrt(sz0*sz1*sz2);
-//    column = num/sz0;
-//	row = (sz2/column+0.5);
-//	channelsz1 = (V3DLONG)column*sz0*(V3DLONG)row*sz1;
-	//row = sz2/column;
-	
-	column = (V3DLONG)(sqrt((double)sz2)+ 0.5);
-	V3DLONG remainder= sz2 - column*column;
-	if (remainder == 0)
-	{
-		row = column;
-		channelsz1 = (sz0)*(sz1)*sz2;
-	}else 
-	{
-		row = column+1;
-		channelsz1 = (sz0)*(sz1)*column*row;
-	}	
-	channelsz = sz0*sz1*sz2;
-  //  printf("column=%d,remainder=%d,row=%d sz3=%d\n",column,remainder,row,sz3);
-	void *pData=NULL;
-	V3DLONG sz_data[4]; sz_data[0]=sz0; sz_data[1]=sz1; sz_data[2]=sz2; sz_data[3]=1;
-	switch (subject->getDatatype()) 
-	{
-		case V3D_UINT8:
-			
-			try
-			{
-				pData = (void *)(new unsigned char [sz3*channelsz1]()); 
-			}
-				catch (...)
-			{
-				v3d_msg("Fail to allocate memory in data combination.");
-				if (pData) {delete []pData; pData=0;}
-				return;
-			}
-			
-			{
-				unsigned char * pSubtmp_uint8 = pSub.begin();
-			
-				for (V3DLONG ich=0; ich<sz3; ich++)
-					montage_image_sections(pSubtmp_uint8+ich*channelsz, (unsigned char *)pData+ich*channelsz1, sz0, sz1, sz2);
-			}
-			break;
-			
-		case V3D_UINT16:
-			try
-			{
-				pData = (void *)(new short int [sz3*channelsz1]()); 
-			}
-				catch (...)
-			{
-				v3d_msg("Fail to allocate memory in data combination.");
-				if (pData) {delete []pData; pData=0;}
-				return;
-			}
-			
-			{
-				short int * pSubtmp_uint16 = (short int *)pSub.begin();
-			
-				for (V3DLONG ich=0; ich<sz3; ich++)
-					montage_image_sections(pSubtmp_uint16+ich*channelsz, (short int *)pData+ich*channelsz1, sz0, sz1, sz2 );
-			}
-			break;
-		case V3D_FLOAT32:
-			
-			try
-			{
-				pData = (void *)(new float [sz3*channelsz1]()); 
-			}
-				catch (...)
-			{
-				v3d_msg("Fail to allocate memory in data combination.");
-				if (pData) {delete []pData; pData=0;}
-				return;
-			}
-			
-			{
-				float * pSubtmp_float32 = (float *)pSub.begin();
-				
-				for (V3DLONG ich=0; ich<sz3; ich++)
-					montage_image_sections(pSubtmp_float32+ich*channelsz, (float *)pData+ich*channelsz, sz0, sz1, sz2 );
-			}
-			
-			break;
-		default:
-			break;
-	}
-	
+  if(method_code == 1)
+  {
+	  column = (V3DLONG)(sqrt((double)sz2)+ 0.5);
+	  V3DLONG remainder= sz2 - column*column;
+	  if (remainder == 0)
+	  {
+		  row = column;
+		  channelsz1 = (sz0)*(sz1)*sz2;
+	  }else 
+	  {
+		  row = column+1;
+		  channelsz1 = (sz0)*(sz1)*column*row;
+	  }	
+	  channelsz = sz0*sz1*sz2;
+	  //  printf("column=%d,remainder=%d,row=%d sz3=%d\n",column,remainder,row,sz3);
+	  void *pData=NULL;
+	  V3DLONG sz_data[4]; sz_data[0]=sz0; sz_data[1]=sz1; sz_data[2]=sz2; sz_data[3]=1;
+	  switch (subject->getDatatype()) 
+	  {
+		  case V3D_UINT8:
+			  
+			  try
+		  {
+			  pData = (void *)(new unsigned char [sz3*channelsz1]()); 
+		  }
+			  catch (...)
+		  {
+			  v3d_msg("Fail to allocate memory in data combination.");
+			  if (pData) {delete []pData; pData=0;}
+			  return;
+		  }
+			  
+		  {
+			  unsigned char * pSubtmp_uint8 = pSub.begin();
+			  
+			  for (V3DLONG ich=0; ich<sz3; ich++)
+				  montage_image_sections(pSubtmp_uint8+ich*channelsz, (unsigned char *)pData+ich*channelsz1, sz0, sz1, sz2);
+		  }
+			  break;
+			  
+		  case V3D_UINT16:
+			  try
+		  {
+			  pData = (void *)(new short int [sz3*channelsz1]()); 
+		  }
+			  catch (...)
+		  {
+			  v3d_msg("Fail to allocate memory in data combination.");
+			  if (pData) {delete []pData; pData=0;}
+			  return;
+		  }
+			  
+		  {
+			  short int * pSubtmp_uint16 = (short int *)pSub.begin();
+			  
+			  for (V3DLONG ich=0; ich<sz3; ich++)
+				  montage_image_sections(pSubtmp_uint16+ich*channelsz, (short int *)pData+ich*channelsz1, sz0, sz1, sz2 );
+		  }
+			  break;
+		  case V3D_FLOAT32:
+			  
+			  try
+		  {
+			  pData = (void *)(new float [sz3*channelsz1]()); 
+		  }
+			  catch (...)
+		  {
+			  v3d_msg("Fail to allocate memory in data combination.");
+			  if (pData) {delete []pData; pData=0;}
+			  return;
+		  }
+			  
+		  {
+			  float * pSubtmp_float32 = (float *)pSub.begin();
+			  
+			  for (V3DLONG ich=0; ich<sz3; ich++)
+				  montage_image_sections(pSubtmp_float32+ich*channelsz, (float *)pData+ich*channelsz, sz0, sz1, sz2 );
+		  }
+			  
+			  break;
+		  default:
+			  break;
+	  }
+	  int end_t = clock();
+	  //	printf("time eclapse %d s for dist computing!\n", (end_t-start_t)/1000000);	
+	  ///v3d_msg("2");
+	  //printf("column=%d,remainder=%d,row=%d\n",column,remainder,row);
+	  Image4DSimple p4DImage;
+	  
+	  p4DImage.setData((unsigned char*)pData, (V3DLONG)column*sz0, (V3DLONG)row*sz1, 1, sz3, subject->getDatatype());	
+	  //p4DImage.setData((unsigned char*)pData, (V3DLONG)column*(sz0), (V3DLONG)row*(sz1), 1, sz3, subject->getDatatype());
+	  //	printf("sz0= %d sz1=%d sz2=%d dd=%d vv=%d\n", sz0,sz1,sz2,dd,vv);
+	  v3dhandle newwin;
+	  if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to use the existing window?"), QMessageBox::Yes, QMessageBox::No))
+		  newwin = callback.currentImageWindow();
+	  else
+		  newwin = callback.newImageWindow();
+	  
+	  callback.setImage(newwin, &p4DImage);
+	  callback.setImageName(newwin, QString("montage_image_sections"));
+	  callback.updateImageWindow(newwin);
+  }else if (method_code ==2)
+  {
+	  if (sz2 >1)
+	  {
+		  QMessageBox::information(0, title, QObject::tr("The image must be a one slice."));
+		  return;
+	  }
+	  V3DLONG n;
+	  SetsizeDialog dialog(callback, parent);		
+	  if (dialog.exec()!=QDialog::Accepted)
+		  return;	
+	  else 
+	  {
+		n = dialog.coord_z->text().toLong();
+	  }
+	  column = floor(sz0/n);
+	  row = column;
+	  V3DLONG scount = n*(n+1);
+	  channelsz = sz0*sz1*sz2;
+	  channelsz1 = scount*column*row;
+	  //  printf("column=%d,remainder=%d,row=%d sz3=%d\n",column,remainder,row,sz3);
+	  void *pData=NULL;
+	  V3DLONG sz_data[4]; sz_data[0]=sz0; sz_data[1]=sz1; sz_data[2]=sz2; sz_data[3]=1;
+	  switch (subject->getDatatype()) 
+	  {
+		  case V3D_UINT8:
+			  try
+		  {
+			  pData = (void *)(new unsigned char [sz3*channelsz1]()); 
+		  }
+			  catch (...)
+		  {
+			  v3d_msg("Fail to allocate memory in data combination.");
+			  if (pData) {delete []pData; pData=0;}
+			  return;
+		  }
+			  
+		  {
+			  unsigned char * pSubtmp_uint8 = pSub.begin();
+			  
+			  for (V3DLONG ich=0; ich<sz3; ich++)
+				  montage_image_stack(pSubtmp_uint8+ich*channelsz, (unsigned char *)pData+ich*channelsz1, sz0, sz1, sz2,column,row,scount,n);
+		  }
+			  break;
+			  
+		  case V3D_UINT16:
+			  try
+		  {
+			  pData = (void *)(new short int [sz3*channelsz1]()); 
+		  }
+			  catch (...)
+		  {
+			  v3d_msg("Fail to allocate memory in data combination.");
+			  if (pData) {delete []pData; pData=0;}
+			  return;
+		  }
+			  
+		  {
+			  short int * pSubtmp_uint16 = (short int *)pSub.begin();
+			  
+			  for (V3DLONG ich=0; ich<sz3; ich++)
+				  montage_image_stack(pSubtmp_uint16+ich*channelsz, (short int *)pData+ich*channelsz1,  sz0, sz1, sz2,column,row,scount,n);
+		  }
+			  break;
+		  case V3D_FLOAT32:
+			  
+			  try
+		  {
+			  pData = (void *)(new float [sz3*channelsz1]()); 
+		  }
+			  catch (...)
+		  {
+			  v3d_msg("Fail to allocate memory in data combination.");
+			  if (pData) {delete []pData; pData=0;}
+			  return;
+		  }
+			  
+		  {
+			  float * pSubtmp_float32 = (float *)pSub.begin();
+			  
+			  for (V3DLONG ich=0; ich<sz3; ich++)
+				  montage_image_stack(pSubtmp_float32+ich*channelsz, (float *)pData+ich*channelsz, sz0, sz1, sz2,column,row,scount,n);
+		  }
+			  
+			  break;
+		  default:
+			  break;
+	  }
+	  int end_t = clock();
+	  //	printf("time eclapse %d s for dist computing!\n", (end_t-start_t)/1000000);	
+	  ///v3d_msg("2");
+	  //printf("column=%d,remainder=%d,row=%d\n",column,remainder,row);
+	  Image4DSimple p4DImage;
+	  
+	  p4DImage.setData((unsigned char*)pData, (V3DLONG)column, (V3DLONG)row, scount, sz3, subject->getDatatype());	
+	  //p4DImage.setData((unsigned char*)pData, (V3DLONG)column*(sz0), (V3DLONG)row*(sz1), 1, sz3, subject->getDatatype());
+	  //	printf("sz0= %d sz1=%d sz2=%d dd=%d vv=%d\n", sz0,sz1,sz2,dd,vv);
+	  v3dhandle newwin;
+	  if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to use the existing window?"), QMessageBox::Yes, QMessageBox::No))
+		  newwin = callback.currentImageWindow();
+	  else
+		  newwin = callback.newImageWindow();
+	  
+	  callback.setImage(newwin, &p4DImage);
+	  callback.setImageName(newwin, QString("revert a montage image to a stack"));
+	  callback.updateImageWindow(newwin); 
+	  
+  }
 	//V3DLONG width= column*sz0;
 	//V3DLONG Height = row*sz1;
 
 	//----------------------------------------------------------------------------------------------------------------------------------
 	
-	int end_t = clock();
-//	printf("time eclapse %d s for dist computing!\n", (end_t-start_t)/1000000);	
-	///v3d_msg("2");
-	//printf("column=%d,remainder=%d,row=%d\n",column,remainder,row);
-	Image4DSimple p4DImage;
+}
+void SetsizeDialog::update()
+{
+	//get current data
 	
-	p4DImage.setData((unsigned char*)pData, (V3DLONG)column*sz0, (V3DLONG)row*sz1, 1, sz3, subject->getDatatype());	
-	//p4DImage.setData((unsigned char*)pData, (V3DLONG)column*(sz0), (V3DLONG)row*(sz1), 1, sz3, subject->getDatatype());
-	//	printf("sz0= %d sz1=%d sz2=%d dd=%d vv=%d\n", sz0,sz1,sz2,dd,vv);
-	v3dhandle newwin;
-	if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to use the existing window?"), QMessageBox::Yes, QMessageBox::No))
-		newwin = callback.currentImageWindow();
-	else
-		newwin = callback.newImageWindow();
+//	NX = coord_x->text().toLong()-1;
+//	NY = coord_y->text().toLong()-1;
+	NZ = coord_z->text().toLong()-1;
 	
-	callback.setImage(newwin, &p4DImage);
-	callback.setImageName(newwin, QString("montage_image_sections"));
-	callback.updateImageWindow(newwin);
+	
 }
