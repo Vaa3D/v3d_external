@@ -317,8 +317,8 @@ bool q_principalskeleton_detection(
 		}
 
 		//zoom out the skeleton (if the skeleton is too big, some marker will not find valid voronoi region)
-		float f_zoomfactor_skeleton=1;//larva:0.1, vnc:1
-		f_zoomfactor_skeleton=paras_input.d_inizoomfactor_skeleton;
+		float f_zoomfactor_skeleton=0.1;//larva:0.1, vnc:1
+//		f_zoomfactor_skeleton=paras_input.d_inizoomfactor_skeleton;
 		for(unsigned long i=0;i<vec_cptpos_ini.size();i++)
 		{
 			vec_cptpos_ini[i].x=(vec_cptpos_ini[i].x-foregroundcentroid_x)*f_zoomfactor_skeleton+foregroundcentroid_x;
