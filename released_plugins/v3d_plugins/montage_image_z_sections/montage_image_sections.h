@@ -65,19 +65,37 @@ public:
 		Image4DSimple* image = cb.getImage(cb.currentImageWindow());
 		QString imageName = cb.getImageName(cb.currentImageWindow());		
 		//create a dialog
-		coord_z = new QSpinBox();
-		coord_z->setMaximum(1500); coord_z->setMinimum(2); coord_z->setValue(7);
-		ok     = new QPushButton("OK");
+		
+		coord_y = new QSpinBox();
+		coord_y->setMaximum(1500); coord_y->setMinimum(2); coord_y->setValue(7);
+		
+		coord_x = new QSpinBox();
+		coord_x->setMaximum(1500); coord_x->setMinimum(2); coord_x->setValue(7);
+		
+		ok = new QPushButton("OK");
+		
 		cancel = new QPushButton("Cancel");
+		
 		gridLayout = new QGridLayout();
-		labelz = new QLabel(QObject::tr("Compartment number"));
-		gridLayout->addWidget(labelz, 0,0); gridLayout->addWidget(coord_z, 0,1);
+		
+		labelx = new QLabel(QObject::tr("number of column blooks"));
+		
+		labely = new QLabel(QObject::tr("number of row blooks"));
+		
+		gridLayout->addWidget(labely, 0,0); gridLayout->addWidget(coord_y, 0,1);
+		
+		gridLayout->addWidget(labelx, 1,0); gridLayout->addWidget(coord_x, 1,1);
+		
 		gridLayout->addWidget(cancel, 6,1); gridLayout->addWidget(ok, 6,0);
+		
 		setLayout(gridLayout);
+		
 		setWindowTitle(QString("Change parameters"));
 		connect(ok,     SIGNAL(clicked()), this, SLOT(accept()));
 		connect(cancel, SIGNAL(clicked()), this, SLOT(reject()));
-		connect(coord_z,SIGNAL(valueChanged(int)), this, SLOT(update()));
+		
+		connect(coord_x,SIGNAL(valueChanged(int)), this, SLOT(update()));
+		connect(coord_y,SIGNAL(valueChanged(int)), this, SLOT(update()));
 	}
 	
 	~SetsizeDialog(){}

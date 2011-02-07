@@ -267,19 +267,25 @@ void do_computation(V3DPluginCallback2 &callback, QWidget *parent, int method_co
 		  QMessageBox::information(0, title, QObject::tr("The image must be a one slice."));
 		  return;
 	  }
-	  V3DLONG n;
+	  V3DLONG c,r;
 	  SetsizeDialog dialog(callback, parent);		
 	  if (dialog.exec()!=QDialog::Accepted)
 		  return;	
 	  else 
 	  {
-		n = dialog.coord_z->text().toLong();
+		c = dialog.coord_y->text().toLong();
+		r = dialog.coord_x->text().toLong(); 
 	  }
-	  column = floor(sz0/n);
-	  row = column;
-	  V3DLONG scount = n*(n+1);
+//	  column = floor(sz0/n);
+//	  row = column;
+	  column = floor(sz0/c);
+	  row = floor(sz1/r);
+	  
+	 //  V3DLONG scount = n*(n+1);
+	  V3DLONG scount = r*c;
 	  channelsz = sz0*sz1*sz2;
-	  channelsz1 = scount*column*row;
+	  channelsz1 = c*r*column*row;
+	 // channelsz1 = scount*column*row;
 	  //  printf("column=%d,remainder=%d,row=%d sz3=%d\n",column,remainder,row,sz3);
 	  void *pData=NULL;
 	  V3DLONG sz_data[4]; sz_data[0]=sz0; sz_data[1]=sz1; sz_data[2]=sz2; sz_data[3]=1;
@@ -301,7 +307,7 @@ void do_computation(V3DPluginCallback2 &callback, QWidget *parent, int method_co
 			  unsigned char * pSubtmp_uint8 = pSub.begin();
 			  
 			  for (V3DLONG ich=0; ich<sz3; ich++)
-				  montage_image_stack(pSubtmp_uint8+ich*channelsz, (unsigned char *)pData+ich*channelsz1, sz0, sz1, sz2,column,row,scount,n);
+				  montage_image_stack(pSubtmp_uint8+ich*channelsz, (unsigned char *)pData+ich*channelsz1, sz0, sz1, sz2,column,row,scount,c);
 		  }
 			  break;
 			  
@@ -321,7 +327,7 @@ void do_computation(V3DPluginCallback2 &callback, QWidget *parent, int method_co
 			  short int * pSubtmp_uint16 = (short int *)pSub.begin();
 			  
 			  for (V3DLONG ich=0; ich<sz3; ich++)
-				  montage_image_stack(pSubtmp_uint16+ich*channelsz, (short int *)pData+ich*channelsz1,  sz0, sz1, sz2,column,row,scount,n);
+				  montage_image_stack(pSubtmp_uint16+ich*channelsz, (short int *)pData+ich*channelsz1,  sz0, sz1, sz2,column,row,scount,c);
 		  }
 			  break;
 		  case V3D_FLOAT32:
@@ -341,7 +347,7 @@ void do_computation(V3DPluginCallback2 &callback, QWidget *parent, int method_co
 			  float * pSubtmp_float32 = (float *)pSub.begin();
 			  
 			  for (V3DLONG ich=0; ich<sz3; ich++)
-				  montage_image_stack(pSubtmp_float32+ich*channelsz, (float *)pData+ich*channelsz, sz0, sz1, sz2,column,row,scount,n);
+				  montage_image_stack(pSubtmp_float32+ich*channelsz, (float *)pData+ich*channelsz, sz0, sz1, sz2,column,row,scount,c);
 		  }
 			  
 			  break;
@@ -378,9 +384,9 @@ void SetsizeDialog::update()
 {
 	//get current data
 	
-//	NX = coord_x->text().toLong()-1;
-//	NY = coord_y->text().toLong()-1;
-	NZ = coord_z->text().toLong()-1;
+	NX = coord_x->text().toLong()-1;
+	NY = coord_y->text().toLong()-1;
+	//NZ = coord_z->text().toLong()-1;
 	
 	
 }
