@@ -581,7 +581,7 @@ bool V3d_PluginLoader::callPluginFunc(const QString &plugin_name,
     else if (iface2_1 && callback) {
          try
         {
-            return iface->dofunc(func_name, input, output, *callback, (QWidget*)0);
+            return iface2_1->dofunc(func_name, input, output, *callback, (QWidget*)0);
         }
         catch (...)
         {
