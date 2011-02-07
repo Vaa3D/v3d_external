@@ -1,5 +1,5 @@
 
-set(PLUGIN_DIRECTORY_NAME V3D_Plugin_Example_call_each_other )
+set(PLUGIN_DIRECTORY_NAME V3D_PluginInterface_Demos/call_each_other )
 
 set(PLUGIN_SOURCES ex_matrix.cpp )
 set(PLUGIN_HEADERS ex_matrix.h )
