@@ -212,7 +212,7 @@ void ComputemaskImage(NeuronTree neurons,
 		rs = p_cur->r;
 		if (rs<1) 
 		{
-			rs=2-rs;
+			//rs=2-rs;
 		}
 		double ballx0, ballx1, bally0, bally1, ballz0, ballz1, tmpf;
 		
@@ -273,7 +273,7 @@ void ComputemaskImage(NeuronTree neurons,
 		re = pp.r;
 		if (re<1)
 		{
-			re=2-re;
+			//re=2-re;
 		}
 		//judge if two points overlap, if yes, then do nothing as the sphere has already been drawn
 		if (xe==xs && ye==ys && ze==zs)
@@ -292,17 +292,83 @@ void ComputemaskImage(NeuronTree neurons,
 		
 		V3DLONG xn,yn,zn;
 		
-		for(double kk = 0; kk <= l ; kk++)
+//		for(double kk = 0; kk <= l ; kk++)
+//		{
+//			xn = xs + (xe-xs)*(kk/(l*1.5));
+//			yn = ys + (ye-ys)*(kk/(l*1.5));
+//			zn = zs + (ze-zs)*(kk/(l*1.5));
+//			
+//		    xn = ( xn > sx )? sx : xn;
+//			yn = ( yn > sy )? sy : yn;
+//			zn = ( zn > sz )? sz : zn;
+//			
+//			V3DLONG idex=(zn)*sx*sy + (yn)*sx + xn;
+//			if (method_code == 1)
+//			{
+//				pImMask[idex] = 255;
+//			}
+//			else if (method_code ==2)
+//			{
+//				ImMark[idex] = 1;
+//			}
+//		}
+	
+		double dx = (xe - xs);
+		double dy = (ye - ys);
+		double dz = (ze - zs);
+//		if (dx==0|| dz==0 || dy==0) 
+//		{
+//			//printf("xs=%lf xe=%lf ys=%lf ye=%lf zs=%lf ze=%lf \n",xs,xe,ys,ye,zs,ze);
+//			//printf("dx=%lf dy=%lf dz=%lf\n",dx,dy,dz);
+//		}
+		
+		double x = xs;
+		double y = ys;
+		double z = zs;
+		
+		int steps = lroundf(l);
+		
+		steps = (steps < abs(dx))? abs(dx):steps;
+		steps = (steps < abs(dy))? abs(dy):steps;
+		steps = (steps < abs(dz))? abs(dz):steps;
+		if (steps<1)
 		{
-			xn = xs + (xe-xs)*(kk/l);
-			yn = ys + (ye-ys)*(kk/l);
-			zn = zs + (ze-zs)*(kk/l);
+			steps =1;
+		}
+	//	printf("steps=%ld\n",steps);
+		
+		double xIncrement = double(dx) / (steps*2);
+		double yIncrement = double(dy) / (steps*2);
+		double zIncrement = double(dz) / (steps*2);
+//		if (xIncrement == 0 || yIncrement==0|| zIncrement==0) 
+//		{
+//			printf("xIncrement=%lf yIncrement=%lf zIncrement=%lf\n",xIncrement,yIncrement,zIncrement);
+//			//printf("dx=%lf dy=%lf dz=%lf\n",dx,dy,dz);
+//		}
+		//printf("xIncrement=%lf yIncrement=%lf zIncrement=%lf\n",xIncrement,yIncrement,zIncrement);
+		
+		V3DLONG idex1=lroundf(z)*sx*sy + lroundf(y)*sx + lroundf(x);
+//		
+		if (method_code == 1)
+		{
+			pImMask[idex1] = 255;
+		}
+		else if (method_code ==2)
+		{
+			ImMark[idex1] = 1;
+		}
+		for (int i = 0; i <= steps; i++)
+		{
+			x += xIncrement;
+			y += yIncrement;
+			z += zIncrement;
 			
-		    xn = ( xn > sx )? sx : xn;
-			yn = ( yn > sy )? sy : yn;
-			zn = ( zn > sz )? sz : zn;
+		    x = ( x > sx )? sx : x;
+			y = ( y > sy )? sy : y;
+			z = ( z > sz )? sz : z;
 			
-			V3DLONG idex=(zn)*sx*sy + (yn)*sx + xn;
+			V3DLONG idex=lroundf(z)*sx*sy + lroundf(y)*sx + lroundf(x);
+			
 			if (method_code == 1)
 			{
 				pImMask[idex] = 255;
@@ -311,8 +377,9 @@ void ComputemaskImage(NeuronTree neurons,
 			{
 				ImMark[idex] = 1;
 			}
+			
 		}
-	
+		
 		//finding the envelope of the current line segment
 		
 		double rbox = (rs>re) ? rs : re;
