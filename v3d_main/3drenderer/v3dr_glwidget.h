@@ -191,6 +191,16 @@ public slots:
 	virtual void setZShift(int s);
 	virtual void resetZoomShift();
 
+	// Float methods for smoother animation 2011 Feb 07 CMB
+    virtual void setXShift(float s);
+    virtual void setYShift(float s);
+    virtual void setZShift(float s);
+    virtual void setZoom(float r);
+    virtual void doAbsoluteRot(float xRot, float yRot, float zRot);
+    virtual void setXRotation(float angle);
+    virtual void setYRotation(float angle);
+    virtual void setZRotation(float angle);
+
 	virtual void enableFrontSlice(bool);
 	virtual void enableXSlice(bool);
 	virtual void enableYSlice(bool);
@@ -338,8 +348,9 @@ private:
 	static const int flip_X= +1, flip_Y= -1, flip_Z= -1; // make y-axis downward conformed with image coordinate
 	QPoint lastPos;
 
-	int _xRot, _yRot, _zRot, dxRot, dyRot, dzRot;
-	int _zoom, _xShift, _yShift, _zShift, dxShift, dyShift, dzShift;
+	float _xRot, _yRot, _zRot, dxRot, dyRot, dzRot;
+	// int _zoom, _xShift, _yShift, _zShift, dxShift, dyShift, dzShift;
+    float _zoom, _xShift, _yShift, _zShift, dxShift, dyShift, dzShift; // CMB 2011 Feb 07
 	int _xCut0, _xCut1, _yCut0, _yCut1, _zCut0, _zCut1, _fCut;
 	int dxCut, dyCut, dzCut;
 	int _xCS, _yCS, _zCS;

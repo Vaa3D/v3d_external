@@ -104,6 +104,16 @@ public:
 	virtual void setZShift(int s) =0;
 	virtual void resetZoomShift() =0;
 
+	// Float methods for smoother animation 2011 Feb 07 CMB
+	virtual void setXShift(float s) =0;
+    virtual void setYShift(float s) =0;
+    virtual void setZShift(float s) =0;
+    virtual void setZoom(float r) =0;
+    virtual void doAbsoluteRot(float xRot, float yRot, float zRot) =0;
+    virtual void setXRotation(float angle) =0;
+    virtual void setYRotation(float angle) =0;
+    virtual void setZRotation(float angle) =0;
+
 	virtual void enableFrontSlice(bool) =0;
 	virtual void enableXSlice(bool) =0;
 	virtual void enableYSlice(bool) =0;

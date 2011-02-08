@@ -104,6 +104,8 @@ set(PLUGIN_HEADERS
     # PythonConsoleWindow.h // already MOCed in this file above
 )
 
+set(PLUGIN_DIRECTORY_NAME python_scripting/python_console)
+
 configure_v3d_plugin(PythonConsolePlugin)
 
 target_link_libraries(PythonConsolePlugin
@@ -130,7 +132,7 @@ else()
 endif()
 
 set(V3D_PYTHON_CONSOLE_PLUGIN_OUTPUT_DIR
-    "${PLUGINS_PATH}/python_console"
+    "${PLUGINS_PATH}/${PLUGIN_DIRECTORY_NAME}"
     CACHE PATH "Where to build python console plugin")
 
 set_target_properties(PythonConsolePlugin PROPERTIES 

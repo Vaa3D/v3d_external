@@ -1320,6 +1320,20 @@ void V3dR_GLWidget::setXRotation(int angle)
     }
 }
 
+void V3dR_GLWidget::setXRotation(float angle)
+{
+    NORMALIZE_angle( angle );
+    if (angle != _xRot) {
+        _absRot = false;
+        dxRot = angle-_xRot;        //qDebug("dxRot=%d",dxRot);
+        NORMALIZE_angleStep(dxRot);  //qDebug("dxRot=%d",dxRot);
+        _xRot = angle;
+
+        emit xRotationChanged(angle);
+        POST_updateGL(); // post update to prevent shaking, by RZC 080910
+    }
+}
+
 void V3dR_GLWidget::setYRotation(int angle)
 {
 	NORMALIZE_angle( angle );
@@ -1334,6 +1348,20 @@ void V3dR_GLWidget::setYRotation(int angle)
     }
 }
 
+void V3dR_GLWidget::setYRotation(float angle)
+{
+    NORMALIZE_angle( angle );
+    if (angle != _yRot) {
+        _absRot = false;
+        dyRot = angle-_yRot;       //qDebug("dyRot=%d",dyRot);
+        NORMALIZE_angleStep(dyRot); //qDebug("dyRot=%d",dyRot);
+        _yRot = angle;
+
+        emit yRotationChanged(angle);
+        POST_updateGL(); // post update to prevent shaking, by RZC 080910
+    }
+}
+
 void V3dR_GLWidget::setZRotation(int angle)
 {
 	NORMALIZE_angle( angle );
@@ -1344,6 +1372,20 @@ void V3dR_GLWidget::setZRotation(int angle)
 		_zRot = angle;
 
 		emit zRotationChanged(angle);
+        POST_updateGL(); // post update to prevent shaking, by RZC 080910
+    }
+}
+
+void V3dR_GLWidget::setZRotation(float angle)
+{
+    NORMALIZE_angle( angle );
+    if (angle != _zRot) {
+        _absRot = false;
+        dzRot = angle-_zRot;       //qDebug("dzRot=%d",dzRot);
+        NORMALIZE_angleStep(dzRot); //qDebug("dzRot=%d",dzRot);
+        _zRot = angle;
+
+        emit zRotationChanged(angle);
         POST_updateGL(); // post update to prevent shaking, by RZC 080910
     }
 }
@@ -1457,6 +1499,36 @@ void V3dR_GLWidget::doAbsoluteRot(int xRot, int yRot, int zRot) //100723 RZC
 	POST_updateGL();
 }
 
+void V3dR_GLWidget::doAbsoluteRot(float xRot, float yRot, float zRot) // 2011 Feb 08 CMB
+{
+    NORMALIZE_angle(xRot);
+    NORMALIZE_angle(yRot);
+    NORMALIZE_angle(zRot);
+
+    emit xRotationChanged(xRot);
+    emit yRotationChanged(yRot);
+    emit zRotationChanged(zRot);
+
+    _xRot = xRot;
+    _yRot = yRot;
+    _zRot = zRot;
+
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+        // rotation order X--Y--Z
+        glRotated( _xRot,  1,0,0);
+        glRotated( _yRot,  0,1,0);
+        glRotated( _zRot,  0,0,1);
+    glGetDoublev(GL_MODELVIEW_MATRIX, mRot);
+    glPopMatrix();
+
+    dxRot=dyRot=dzRot= 0;
+    _absRot = true;
+
+    POST_updateGL();
+}
+
 void V3dR_GLWidget::lookAlong(float xLook, float yLook, float zLook) //100812 RZC
 {
 	if (!renderer)  return;
@@ -1504,11 +1576,35 @@ void V3dR_GLWidget::setZoom(int zr)
 	}
 }
 
+void V3dR_GLWidget::setZoom(float zr)
+{
+    //qDebug("V3dR_GLWidget::setZoom = %i",zr);
+    zr = CLAMP(-ZOOM_RANGE, ZOOM_RANGE, zr);
+    if (_zoom != zr) {
+        _zoom = zr;
+        if (renderer) renderer->setZoom( +float(zr)/100.f * ZOOM_RANGE_RATE); //sign can switch zoom orientation
+        emit zoomChanged(zr);
+        POST_updateGL();
+    }
+}
+
 void V3dR_GLWidget::setXShift(int s)
 {
 	s = CLAMP(-SHIFT_RANGE, SHIFT_RANGE, s);
 	if (_xShift != s) {
 		dxShift = s-_xShift;
+
+        _xShift = s;
+        emit xShiftChanged(s);
+        POST_updateGL();
+    }
+}
+
+void V3dR_GLWidget::setXShift(float s)
+{
+    s = CLAMP(-SHIFT_RANGE, SHIFT_RANGE, s);
+    if (_xShift != s) {
+        dxShift = s-_xShift;
 
         _xShift = s;
         emit xShiftChanged(s);
@@ -1528,12 +1624,35 @@ void V3dR_GLWidget::setYShift(int s)
     }
 }
 
+void V3dR_GLWidget::setYShift(float s)
+{
+    s = CLAMP(-SHIFT_RANGE, SHIFT_RANGE, s);
+    if (_yShift != s) {
+        dyShift = s-_yShift;
+
+        _yShift = s;
+        emit yShiftChanged(s);
+        POST_updateGL();
+    }
+}
+
 void V3dR_GLWidget::setZShift(int s)
 {
     if (_zShift != s) {
 		dzShift = s-_zShift;
 
     	_zShift = s;
+        emit zShiftChanged(s);
+        POST_updateGL();
+    }
+}
+
+void V3dR_GLWidget::setZShift(float s)
+{
+    if (_zShift != s) {
+        dzShift = s-_zShift;
+
+        _zShift = s;
         emit zShiftChanged(s);
         POST_updateGL();
     }

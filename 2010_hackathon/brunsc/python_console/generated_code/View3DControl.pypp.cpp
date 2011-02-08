@@ -90,6 +90,11 @@ struct View3DControl_wrapper : View3DControl, bp::wrapper< View3DControl > {
         func_doAbsoluteRot( xRot, yRot, zRot );
     }
 
+    virtual void doAbsoluteRot( float xRot, float yRot, float zRot ){
+        bp::override func_doAbsoluteRot = this->get_override( "doAbsoluteRot" );
+        func_doAbsoluteRot( xRot, yRot, zRot );
+    }
+
     virtual void enableFrontSlice( bool arg0 ){
         bp::override func_enableFrontSlice = this->get_override( "enableFrontSlice" );
         func_enableFrontSlice( arg0 );
@@ -325,7 +330,17 @@ struct View3DControl_wrapper : View3DControl, bp::wrapper< View3DControl > {
         func_setXRotation( angle );
     }
 
+    virtual void setXRotation( float angle ){
+        bp::override func_setXRotation = this->get_override( "setXRotation" );
+        func_setXRotation( angle );
+    }
+
     virtual void setXShift( int s ){
+        bp::override func_setXShift = this->get_override( "setXShift" );
+        func_setXShift( s );
+    }
+
+    virtual void setXShift( float s ){
         bp::override func_setXShift = this->get_override( "setXShift" );
         func_setXShift( s );
     }
@@ -360,7 +375,17 @@ struct View3DControl_wrapper : View3DControl, bp::wrapper< View3DControl > {
         func_setYRotation( angle );
     }
 
+    virtual void setYRotation( float angle ){
+        bp::override func_setYRotation = this->get_override( "setYRotation" );
+        func_setYRotation( angle );
+    }
+
     virtual void setYShift( int s ){
+        bp::override func_setYShift = this->get_override( "setYShift" );
+        func_setYShift( s );
+    }
+
+    virtual void setYShift( float s ){
         bp::override func_setYShift = this->get_override( "setYShift" );
         func_setYShift( s );
     }
@@ -395,12 +420,27 @@ struct View3DControl_wrapper : View3DControl, bp::wrapper< View3DControl > {
         func_setZRotation( angle );
     }
 
+    virtual void setZRotation( float angle ){
+        bp::override func_setZRotation = this->get_override( "setZRotation" );
+        func_setZRotation( angle );
+    }
+
     virtual void setZShift( int s ){
         bp::override func_setZShift = this->get_override( "setZShift" );
         func_setZShift( s );
     }
 
+    virtual void setZShift( float s ){
+        bp::override func_setZShift = this->get_override( "setZShift" );
+        func_setZShift( s );
+    }
+
     virtual void setZoom( int r ){
+        bp::override func_setZoom = this->get_override( "setZoom" );
+        func_setZoom( r );
+    }
+
+    virtual void setZoom( float r ){
         bp::override func_setZoom = this->get_override( "setZoom" );
         func_setZoom( r );
     }
@@ -593,6 +633,10 @@ void register_View3DControl_class(){
             , bp::pure_virtual( (void ( ::View3DControl::* )( int,int,int ) )(&::View3DControl::doAbsoluteRot) )
             , ( bp::arg("xRot"), bp::arg("yRot"), bp::arg("zRot") ) )    
         .def( 
+            "doAbsoluteRot"
+            , bp::pure_virtual( (void ( ::View3DControl::* )( float,float,float ) )(&::View3DControl::doAbsoluteRot) )
+            , ( bp::arg("xRot"), bp::arg("yRot"), bp::arg("zRot") ) )    
+        .def( 
             "enableFrontSlice"
             , bp::pure_virtual( (void ( ::View3DControl::* )( bool ) )(&::View3DControl::enableFrontSlice) )
             , ( bp::arg("arg0") ) )    
@@ -769,8 +813,16 @@ void register_View3DControl_class(){
             , bp::pure_virtual( (void ( ::View3DControl::* )( int ) )(&::View3DControl::setXRotation) )
             , ( bp::arg("angle") ) )    
         .def( 
+            "setXRotation"
+            , bp::pure_virtual( (void ( ::View3DControl::* )( float ) )(&::View3DControl::setXRotation) )
+            , ( bp::arg("angle") ) )    
+        .def( 
             "setXShift"
             , bp::pure_virtual( (void ( ::View3DControl::* )( int ) )(&::View3DControl::setXShift) )
+            , ( bp::arg("s") ) )    
+        .def( 
+            "setXShift"
+            , bp::pure_virtual( (void ( ::View3DControl::* )( float ) )(&::View3DControl::setXShift) )
             , ( bp::arg("s") ) )    
         .def( 
             "setYCS"
@@ -797,8 +849,16 @@ void register_View3DControl_class(){
             , bp::pure_virtual( (void ( ::View3DControl::* )( int ) )(&::View3DControl::setYRotation) )
             , ( bp::arg("angle") ) )    
         .def( 
+            "setYRotation"
+            , bp::pure_virtual( (void ( ::View3DControl::* )( float ) )(&::View3DControl::setYRotation) )
+            , ( bp::arg("angle") ) )    
+        .def( 
             "setYShift"
             , bp::pure_virtual( (void ( ::View3DControl::* )( int ) )(&::View3DControl::setYShift) )
+            , ( bp::arg("s") ) )    
+        .def( 
+            "setYShift"
+            , bp::pure_virtual( (void ( ::View3DControl::* )( float ) )(&::View3DControl::setYShift) )
             , ( bp::arg("s") ) )    
         .def( 
             "setZCS"
@@ -825,12 +885,24 @@ void register_View3DControl_class(){
             , bp::pure_virtual( (void ( ::View3DControl::* )( int ) )(&::View3DControl::setZRotation) )
             , ( bp::arg("angle") ) )    
         .def( 
+            "setZRotation"
+            , bp::pure_virtual( (void ( ::View3DControl::* )( float ) )(&::View3DControl::setZRotation) )
+            , ( bp::arg("angle") ) )    
+        .def( 
             "setZShift"
             , bp::pure_virtual( (void ( ::View3DControl::* )( int ) )(&::View3DControl::setZShift) )
             , ( bp::arg("s") ) )    
         .def( 
+            "setZShift"
+            , bp::pure_virtual( (void ( ::View3DControl::* )( float ) )(&::View3DControl::setZShift) )
+            , ( bp::arg("s") ) )    
+        .def( 
             "setZoom"
             , bp::pure_virtual( (void ( ::View3DControl::* )( int ) )(&::View3DControl::setZoom) )
+            , ( bp::arg("r") ) )    
+        .def( 
+            "setZoom"
+            , bp::pure_virtual( (void ( ::View3DControl::* )( float ) )(&::View3DControl::setZoom) )
             , ( bp::arg("r") ) )    
         .def( 
             "showGLinfo"
