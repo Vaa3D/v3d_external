@@ -202,6 +202,18 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 					{
 						i_v3d.open3Dviewer = true;
 					}
+					else if(string(argv[i]) == "-p")
+					{
+						// launch V3D
+						i_v3d.openV3D = true;
+						
+						// plugin command
+						
+					}
+					else if(string(argv[i]) == "-m")
+					{
+						
+					}
 					else
 					{
 						i_v3d.clp_finished = true;

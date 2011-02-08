@@ -301,7 +301,11 @@ int main(int argc, char **argv)
                     versionChecker->checkForLatestVersion(false);
                 }
             }
+			
+			// call plugin func
+			
 
+			// launch v3d
 			try 
 			{
 				return app.exec();
