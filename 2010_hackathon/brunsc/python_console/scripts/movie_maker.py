@@ -64,7 +64,8 @@ class CameraPosition:
     def __init__(self, 
                  x_shift = 0, y_shift = 0, z_shift = 0,
                  x_rotation = 0, y_rotation = 0, z_rotation = 0,
-                 zoom = 0):
+                 zoom = 0,
+                 x_cut = [None, None], y_cut = [None, None], z_cut = [None, None]):
         # for testing, camera position is just x_shift for now
         self.x_shift = x_shift
         self.y_shift = y_shift
@@ -73,6 +74,9 @@ class CameraPosition:
         self.y_rotation = y_rotation
         self.z_rotation = z_rotation
         self.zoom = zoom
+        self.x_cut = x_cut
+        self.y_cut = y_cut
+        self.z_cut = z_cut
         
 
 class V3dMovieFrame:
@@ -93,14 +97,17 @@ class V3dKeyFrame(V3dMovieFrame):
 
 
 class V3dMovie:
-    def __init__(self, view_control = None, seconds_per_frame=1.0/24.0):
+    def __init__(self, seconds_per_frame=1.0/24.0):
         self.seconds_per_frame = seconds_per_frame # seconds per frame, default 24 fps
         self.key_frames = []
-        if view_control:
-            self.view_control = view_control
+        self.image_window = None
+        self.view_control = None
         try:
-            image = v3d.ImageWindow.current()
-            self.view_control = image.getView3DControl()
+            self.image_window = v3d.ImageWindow.current()
+        except:
+            self.image_window = None
+        try:
+            self.view_control = self.image_window.getView3DControl()
         except:
             self.view_control = None
 
@@ -124,17 +131,30 @@ class V3dMovie:
             self.z_rotation_list.append([elapsed_time, key_frame.camera_position.z_rotation],)
             self.zoom_list.append([elapsed_time, key_frame.camera_position.zoom],)        
         
-    def create_movie(self):
-        self._setup_interpolation_lists()
+    def play(self):
+        self.image_window.open3DWindow()
+        frame_number = 0
         for frame in self.generate_frames():
+            frame_number += 1
             start_clocktime = time.clock()
-            print start_clocktime
+            # TODO -for some reason printing is required for the 3D viewer to update
+            print "frame %d at %f seconds" % (frame_number, start_clocktime)
             self.set_current_v3d_camera(frame.camera_position)
             # Are we playing too fast?
             real_time_deficit = self.seconds_per_frame - (time.clock() - start_clocktime)
             if real_time_deficit > 0:
                 time.sleep(real_time_deficit)
-            
+                
+    def write_frames(self):
+        frame_number = 0
+        for frame in self.generate_frames():
+            frame_number += 1
+            self.set_current_v3d_camera(frame.camera_position)
+            file_name = "v3d_frame_%04d.bmp" % frame_number
+            print file_name
+            if self.image_window:
+                self.image_window.screenShot3DWindow(file_name)
+                
     def interpolate_frame(self, elapsed_time, frame_index_hint, interpolator):
         """
         Returns an in-between frame.
@@ -183,6 +203,7 @@ class V3dMovie:
         
     def generate_frames(self):
         "Generator to produce each frame object of the movie, one by one"
+        self._setup_interpolation_lists()
         total_time = 0.0
         frame_index = 0
         for key_frame in self.key_frames:
@@ -205,29 +226,32 @@ class V3dMovie:
             raise ValueError("No V3D window is attached")
         if self.view_control:
             # print "Setting view control..."
-            self.view_control.setXShift(camera_position.x_shift)
-            self.view_control.setYShift(camera_position.y_shift)
-            self.view_control.setZShift(camera_position.z_shift)
             # For some reason set[XYZ]Rotation() does an incremental change
             self.view_control.doAbsoluteRot(
                         camera_position.x_rotation,
                         camera_position.y_rotation,
                         camera_position.z_rotation)
+            self.view_control.setXShift(camera_position.x_shift)
+            self.view_control.setYShift(camera_position.y_shift)
+            self.view_control.setZShift(camera_position.z_shift)            
             self.view_control.setZoom(camera_position.zoom)
         
     def get_current_v3d_camera(self):
         if not self.view_control:
             raise ValueError("No V3D window is attached")
         # TODO absoluteRotPose() changes the view.  I don't think it should...
-        self.view_control.absoluteRotPose()
+        vc = self.view_control
+        vc.absoluteRotPose()
+        
         return CameraPosition(
-                    x_shift = self.view_control.xShift(),
-                    y_shift = self.view_control.yShift(),
-                    z_shift = self.view_control.zShift(),
-                    x_rotation = self.view_control.xRot(),
-                    y_rotation = self.view_control.yRot(),
-                    z_rotation = self.view_control.zRot(),
-                    zoom = self.view_control.zoom(),
+                    x_shift = vc.xShift(),
+                    y_shift = vc.yShift(),
+                    z_shift = vc.zShift(),
+                    x_rotation = vc.xRot(),
+                    y_rotation = vc.yRot(),
+                    z_rotation = vc.zRot(),
+                    zoom = vc.zoom(),
+                    # TODO - cut parameters
                     )
         
     def append_current_view(self, interval = 2.0):
@@ -236,16 +260,6 @@ class V3dMovie:
             interval = 0.0
         self.key_frames.append(V3dKeyFrame(camera_position = camera, 
                                            interval = interval))
-
-
-def test_movie():
-    movie = V3dMovie()
-    movie.key_frames.append(V3dKeyFrame(
-            camera_position = CameraPosition(x_shift = 0.0)))
-    movie.key_frames.append(V3dKeyFrame(
-            interval=1.0,
-            camera_position = CameraPosition(x_shift = 50.0)))
-    movie.create_movie()
 
 
 # Standard python technique for optionally running this file as
