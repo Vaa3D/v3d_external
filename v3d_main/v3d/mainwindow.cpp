@@ -534,7 +534,7 @@ void MainWindow::checkForUpdates(bool b_verbose)
 void MainWindow::openV3dWebPage()
 {
     QDesktopServices::openUrl(
-        QUrl("http://penglab.janelia.org/proj/v3d/V3D/About_V3D.html"));
+        QUrl("http://penglab.janelia.org/proj/v3d/"));
 }
 
 V3dR_MainWindow * MainWindow::find3DViewer(QString fileName)
