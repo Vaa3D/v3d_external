@@ -362,7 +362,7 @@ public:    // in mainwindow_interface.cpp
 			sz = imgData->getZDim();
 			sc = imgData->getCDim();
 			
-			if(nFrame<0 || nFrame>sz-1) // changed by YuY Feb 8, 2011
+			if(nFrame<0 || nFrame>=sz) // changed by YuY Feb 8, 2011
 				return;
 			
 			V3DLONG offsets = nFrame*sx*sy;
