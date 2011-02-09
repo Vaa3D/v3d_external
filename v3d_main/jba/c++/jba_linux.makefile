@@ -37,7 +37,7 @@ endif
 
 CC = g++
 CC_FLAGS += -w   # -w for no compiling warning
-CC_FLAGS += -g   # assign -g for gdb debugging
+CC_FLAGS += -g -fPIC  # assign -g for gdb debugging; -fPIC is a a special one recommended by Lei Qu, 2011-02-08
 
 
 all: libnewmat
