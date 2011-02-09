@@ -1158,13 +1158,13 @@ void UpdateOptionsDialog::open_download_page()
     bool b_openurl_worked;
     // Open user's browser to the V3D download page
     b_openurl_worked = QDesktopServices::openUrl(
-        QUrl("http://penglab.janelia.org/proj/v3d/V3D/About_V3D.html"));
+        QUrl("http://penglab.janelia.org/proj/v3d/"));
     if (! b_openurl_worked)
         QMessageBox::warning(parentWidget(),
                 "Error opening V3D download page", // title
                 "Oops. V3D could not open your browser.\n"
                 "Please browse to\n"
-                "http://penglab.janelia.org/proj/v3d/V3D/About_V3D.html\n"
+                "http://penglab.janelia.org/proj/v3d/\n"
                 "to get the latest version");
 }
 
