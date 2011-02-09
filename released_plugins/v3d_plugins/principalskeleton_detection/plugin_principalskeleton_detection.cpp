@@ -50,7 +50,7 @@ void PrincipalSkeletonDetectionPlugin::domenu(const QString &menu_name, V3DPlugi
 	else if(menu_name==tr("about this plugin"))
 	{
         qDebug("about");
-        QString msg = QString("version %1 (2009-Aug-14): this demo is developed by Lei Qu.").arg(getPluginVersion(), 1, 'f', 1);
+        QString msg = QString("version %1 Detecting the pricipal skeleton of an image object (2009-Aug-14): this tool is developed by Lei Qu.").arg(getPluginVersion(), 1, 'f', 1);
 		QMessageBox::information(parent, "Version info", msg);	
 	}
 }
