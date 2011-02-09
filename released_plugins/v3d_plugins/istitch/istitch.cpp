@@ -1970,12 +1970,12 @@ void IStitchPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callbac
 void OpenDownloadPape(QWidget *parent)
 {
     bool b_openurl_worked;
-    b_openurl_worked=QDesktopServices::openUrl(QUrl("http://penglab.janelia.org/proj/stitching"));
+    b_openurl_worked=QDesktopServices::openUrl(QUrl("http://penglab.janelia.org/proj/stitching/supp/supp_index.htm"));
     if (! b_openurl_worked)
         QMessageBox::warning(parent,
 							 "Error opening download page", // title
 							 "Please browse to\n"
-							 "http://penglab.janelia.org/proj/stitching\n"
+							 "http://penglab.janelia.org/proj/stitching/supp/supp_index.htm\n"
 							 "to download the test data for this plugin");
 	
 }
