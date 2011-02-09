@@ -215,6 +215,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     dialog_watershed_para.h \
     FL_levelsetSegPara_dialog.h \
     DownloadManager.h \
+    v3d_actions.h \
     ../worm_straighten_c/bdb_minus.h \
     ../worm_straighten_c/mst_prim_c.h \
     ../worm_straighten_c/bfs.h \
@@ -287,6 +288,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     atlas_viewer.cpp \
     dialog_watershed_para.cpp \
     DownloadManager.cpp \
+    v3d_actions.cpp \
     ../worm_straighten_c/bdb_minus.cpp \
     ../worm_straighten_c/mst_prim_c.cpp \
     ../worm_straighten_c/bfs_1root.cpp \

@@ -23,6 +23,7 @@ set(V3D_SRCS
   dialog_keypoint_features.cpp
   landmark_property_dialog.cpp
   DownloadManager.cpp
+  v3d_actions.cpp
   )
 
 set(V3D_RCCS v3d.qrc ../3drenderer/3drenderer.qrc)
@@ -75,6 +76,7 @@ QT4_WRAP_CPP(QT_MOC_SRCS
   v3d_core.h
   v3d_global_preference_dialog.h
   v3d_version_info.h
+  v3d_actions.h
   )
 
 include_directories( BEFORE

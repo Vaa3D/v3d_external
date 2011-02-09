@@ -51,6 +51,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <QMainWindow>
 #include <QWorkspace>
 
+#include "v3d_actions.h"
 #include "v3d_compile_constraints.h"
 
 #include "../worm_straighten_c/bdb_minus.h"
@@ -109,14 +110,13 @@ public slots:
     void openWebUrl(); // By CMB 08-Oct-2010
     void finishedLoadingWebImage(QUrl url, QString fileName, bool b_cacheFile, bool b_forceopen3dviewer); // By CMB 08-Oct-2010
     void checkForUpdates(bool b_informOnNoUpdate = true); // CMB Oct-22-2010
-    void openV3dWebPage(); // CMB Feb 2011
     void atlasView();
     void save();
     void saveAs();
     void cut();
     void copy();
     void paste();
-    void about();
+    // void about();
 	void openRecentFile();
     void updateMenus();
     void updateWindowMenu();
@@ -323,8 +323,7 @@ private:
     QAction *previousAct;
     QAction *separator_ImgWindows_Act;
     QAction *checkForUpdatesAct; // CMB Oct-22-2010
-    QAction *openV3dWebPageAct;
-    QAction *aboutAct;
+    v3d::ShowV3dAboutDialogAction *aboutAct;
 //    QAction *aboutQtAct;
 
 	//all the image processing menu items are listed below

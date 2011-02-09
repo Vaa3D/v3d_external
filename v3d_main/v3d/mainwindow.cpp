@@ -129,7 +129,6 @@ MainWindow::MainWindow()
     previousAct = 0;
     separator_ImgWindows_Act = 0;
     checkForUpdatesAct = 0;
-    openV3dWebPageAct = 0;
     aboutAct = 0;
 
 	procLandmarkManager = 0;
@@ -529,12 +528,6 @@ void MainWindow::checkForUpdates(bool b_verbose)
         v3d::V3DVersionChecker *versionChecker = new v3d::V3DVersionChecker(this);
         versionChecker->checkForLatestVersion(b_verbose);
     }
-}
-
-void MainWindow::openV3dWebPage()
-{
-    QDesktopServices::openUrl(
-        QUrl("http://penglab.janelia.org/proj/v3d/"));
 }
 
 V3dR_MainWindow * MainWindow::find3DViewer(QString fileName)
@@ -1308,10 +1301,10 @@ void MainWindow::paste()
 }
 
 
-void MainWindow::about()
-{
-	v3d_aboutinfo();
-}
+//void MainWindow::about()
+//{
+//	v3d_aboutinfo();
+//}
 
 
 void MainWindow::updateMenus()
@@ -1948,13 +1941,7 @@ void MainWindow::createActions()
     connect(checkForUpdatesAct, SIGNAL(triggered()),
             this, SLOT(checkForUpdates()));
 
-    openV3dWebPageAct = new QAction(tr("Go to V3D web site..."), this);
-    connect(openV3dWebPageAct, SIGNAL(triggered()),
-            this, SLOT(openV3dWebPage()));
-
-    aboutAct = new QAction(QIcon(":/pic/help.png"), tr("Help Info and &About"), this);
-    aboutAct->setStatusTip(tr("Show help and version information"));
-    connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
+    aboutAct = new v3d::ShowV3dAboutDialogAction(this);
 
 //    aboutQtAct = new QAction(tr("About &Qt"), this);
 //    aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
@@ -2234,9 +2221,9 @@ void MainWindow::createMenus()
 
 	//
     helpMenu = menuBar()->addMenu(tr("&Help"));
-    helpMenu->addAction(aboutAct);
+    helpMenu->addAction( aboutAct );
     helpMenu->addAction(checkForUpdatesAct);
-    helpMenu->addAction(openV3dWebPageAct);
+    helpMenu->addAction( new v3d::OpenV3dWebPageAction(this) );
 	//    helpMenu->addAction(aboutQtAct);
 
 }

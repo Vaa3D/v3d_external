@@ -58,6 +58,13 @@ namespace v3d {
     class DownloadingUpdatesDialog;
 }
 
+namespace v3d {
+    class VersionInfo;
+    // Set current version in file v3d_version_info.cpp
+    extern VersionInfo thisVersionOfV3D;
+    extern QString versionnumber;
+}
+
 void v3d_aboutinfo();
 void v3d_Lite_info();
 
@@ -332,7 +339,6 @@ public:
 private slots:
     void save_xml_file(); // create a local V3D version xml file
     void on_comboBox_currentIndexChanged(const QString& updateFrequency); // change update check frequency
-    void open_download_page(); // browse to V3D download web site
     void on_lineEdit_editingFinished(); // user completes version xml url
     void on_lineEdit_textChanged(); // user changes version xml url
     void use_default_version_file();
