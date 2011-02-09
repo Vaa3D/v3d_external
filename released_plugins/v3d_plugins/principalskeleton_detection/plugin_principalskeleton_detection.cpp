@@ -32,7 +32,7 @@ QStringList PrincipalSkeletonDetectionPlugin::menulist() const
 {
     return QStringList()
 	<< tr("detect prinipcal skeleton...")
-	<< tr("open test data download pape")
+	<< tr("open test data download page")
 	<< tr("about this plugin")
 	;
 }
