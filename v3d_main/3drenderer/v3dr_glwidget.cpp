@@ -1683,7 +1683,8 @@ void V3dR_GLWidget::setXCut0(int s)
 		emit changeXCut0(s);
 		POST_updateGL();
 	}
-	else emit changeXCut1(_xCut0+dxCut);
+    // finite value of dxCut means cuts are locked
+	else if (dxCut) emit changeXCut1(_xCut0+dxCut);
 }
 
 void V3dR_GLWidget::setXCut1(int s)
@@ -1699,7 +1700,8 @@ void V3dR_GLWidget::setXCut1(int s)
 		emit changeXCut1(s);
 		POST_updateGL();
 	}
-	else emit changeXCut0(_xCut1-dxCut);
+    // finite value of dxCut means cuts are locked
+	else if (dxCut) emit changeXCut0(_xCut1-dxCut);
 }
 
 void V3dR_GLWidget::setYCut0(int s)
@@ -1716,7 +1718,8 @@ void V3dR_GLWidget::setYCut0(int s)
 		emit changeYCut0(s);
 		POST_updateGL();
 	}
-	else emit changeYCut1(_yCut0+dyCut);
+    // finite value of dyCut means cuts are locked
+	else if (dyCut) emit changeYCut1(_yCut0+dyCut);
 }
 
 void V3dR_GLWidget::setYCut1(int s)
@@ -1732,7 +1735,8 @@ void V3dR_GLWidget::setYCut1(int s)
 		emit changeYCut1(s);
 		POST_updateGL();
 	}
-	else emit changeYCut0(_yCut1-dyCut);
+    // finite value of dyCut means cuts are locked
+	else if (dyCut) emit changeYCut0(_yCut1-dyCut);
 }
 
 void V3dR_GLWidget::setZCut0(int s)
@@ -1749,7 +1753,8 @@ void V3dR_GLWidget::setZCut0(int s)
 		emit changeZCut0(_zCut0);
 		POST_updateGL();
 	}
-	else emit changeZCut1(_zCut0+dzCut);
+    // finite value of dzCut means cuts are locked
+	else if (dzCut) emit changeZCut1(_zCut0+dzCut);
 }
 
 void V3dR_GLWidget::setZCut1(int s)
@@ -1765,7 +1770,8 @@ void V3dR_GLWidget::setZCut1(int s)
 		emit changeZCut1(_zCut1);
 		POST_updateGL();
 	}
-	else emit changeZCut0(_zCut1-dzCut);
+	// finite value of dzCut means cuts are locked
+	else if (dzCut)	emit changeZCut0(_zCut1-dzCut);
 }
 
 void V3dR_GLWidget::setXCutLock(bool b)

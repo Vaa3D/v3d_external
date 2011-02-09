@@ -57,6 +57,15 @@ public:
 	virtual int zShift() const =0;
 	virtual bool isAbsoluteRot() const =0;
 
+    // Expose cut getters, 2011 Feb 09 CMB
+    virtual int xCut0() const =0;
+    virtual int xCut1() const =0;
+    virtual int yCut0() const =0;
+    virtual int yCut1() const =0;
+    virtual int zCut0() const =0;
+    virtual int zCut1() const =0;
+    virtual int frontCut() const =0;
+
 	virtual bool isVolCompress() const =0;
 	virtual bool isShowBoundingBox() const =0;
 	virtual bool isShowAxes() const =0;

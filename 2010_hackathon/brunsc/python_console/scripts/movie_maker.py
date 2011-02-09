@@ -61,22 +61,9 @@ class LinearInterpolator(Interpolator):
 #      - And maybe eventually list of displayed objects
 #        perhaps that list should be in a different object
 class CameraPosition:
-    def __init__(self, 
-                 x_shift = 0, y_shift = 0, z_shift = 0,
-                 x_rotation = 0, y_rotation = 0, z_rotation = 0,
-                 zoom = 0,
-                 x_cut = [None, None], y_cut = [None, None], z_cut = [None, None]):
-        # for testing, camera position is just x_shift for now
-        self.x_shift = x_shift
-        self.y_shift = y_shift
-        self.z_shift = z_shift
-        self.x_rotation = x_rotation
-        self.y_rotation = y_rotation
-        self.z_rotation = z_rotation
-        self.zoom = zoom
-        self.x_cut = x_cut
-        self.y_cut = y_cut
-        self.z_cut = z_cut
+    def __init__(self, **kw_params):
+        for param_name in kw_params:
+            setattr(self, param_name, kw_params[param_name])
         
 
 class V3dMovieFrame:
@@ -85,14 +72,14 @@ class V3dMovieFrame:
     
     Includes both key frames and in-between frames
     """
-    def __init__(self, camera_position = CameraPosition()):
+    def __init__(self, camera_position):
         self.camera_position = camera_position
 
 
 class V3dKeyFrame(V3dMovieFrame):
-    def __init__(self, interval = 0, camera_position = CameraPosition()):
+    def __init__(self, camera_position, interval = 0):
+        V3dMovieFrame.__init__(self, camera_position)
         self.interval = interval # in seconds from previous frame
-        self.camera_position = camera_position
         self.interpolator = LinearInterpolator()
 
 
@@ -110,26 +97,33 @@ class V3dMovie:
             self.view_control = self.image_window.getView3DControl()
         except:
             self.view_control = None
+        # interpolation_param_names are names of View3DControl getter/getter methods
+        self.view_control_param_names = {
+                                        'xShift' : 'setXShift', 
+                                        'yShift' : 'setYShift', 
+                                        'zShift' : 'setZShift',
+                                        'xRot' : 'setXRotation', 
+                                        'yRot' : 'setYRotation', 
+                                        'zRot' : 'setZRotation',
+                                        'zoom' : 'setZoom',
+                                        'xCut0' : 'setXCut0', 
+                                        'xCut1' : 'setXCut1',
+                                        'yCut0' : 'setYCut0', 
+                                        'yCut1' : 'setYCut1',
+                                        'zCut0' : 'setZCut0', 
+                                        'zCut1' : 'setZCut1'}
 
     def _setup_interpolation_lists(self):
         # Create list of key frame x shifts
+        self.interpolation_list = {}
         elapsed_time = 0.0
-        self.x_shift_list = []
-        self.y_shift_list = []
-        self.z_shift_list = []
-        self.x_rotation_list = []
-        self.y_rotation_list = []
-        self.z_rotation_list = []
-        self.zoom_list = []
+        for param_name in self.view_control_param_names:
+            self.interpolation_list[param_name] = []
         for key_frame in self.key_frames:
             elapsed_time += key_frame.interval
-            self.x_shift_list.append([elapsed_time, key_frame.camera_position.x_shift],)
-            self.y_shift_list.append([elapsed_time, key_frame.camera_position.y_shift],)
-            self.z_shift_list.append([elapsed_time, key_frame.camera_position.z_shift],)
-            self.x_rotation_list.append([elapsed_time, key_frame.camera_position.x_rotation],)
-            self.y_rotation_list.append([elapsed_time, key_frame.camera_position.y_rotation],)
-            self.z_rotation_list.append([elapsed_time, key_frame.camera_position.z_rotation],)
-            self.zoom_list.append([elapsed_time, key_frame.camera_position.zoom],)        
+            for param_name in self.view_control_param_names:
+                self.interpolation_list[param_name].append([elapsed_time, 
+                            getattr(key_frame.camera_position, param_name)],)
         
     def play(self):
         self.image_window.open3DWindow()
@@ -160,45 +154,18 @@ class V3dMovie:
         Returns an in-between frame.
         frame_index_hint is the index of a nearby key frame
         """
-        x_shift = interpolator.get_interpolated_value(
+        camera_position = CameraPosition()
+        for param_name in self.view_control_param_names:
+            wrap = None
+            # Rotation angles need to be interpolated in a Z system
+            if 'Rot' in param_name:
+                wrap = 360
+            interp_val = interpolator.get_interpolated_value(
                 elapsed_time,
-                self.x_shift_list, 
-                frame_index_hint)
-        y_shift = interpolator.get_interpolated_value(
-                elapsed_time,
-                self.y_shift_list, 
-                frame_index_hint)
-        z_shift = interpolator.get_interpolated_value(
-                elapsed_time,
-                self.z_shift_list, 
-                frame_index_hint)
-        x_rotation = interpolator.get_interpolated_value(
-                elapsed_time,
-                self.x_rotation_list, 
+                self.interpolation_list[param_name],
                 frame_index_hint,
-                wrap = 360)
-        y_rotation = interpolator.get_interpolated_value(
-                elapsed_time,
-                self.y_rotation_list, 
-                frame_index_hint,
-                wrap = 360)
-        z_rotation = interpolator.get_interpolated_value(
-                elapsed_time,
-                self.z_rotation_list, 
-                frame_index_hint,
-                wrap = 360)
-        zoom = interpolator.get_interpolated_value(
-                elapsed_time,
-                self.zoom_list, 
-                frame_index_hint)
-        camera_position = CameraPosition(x_shift = x_shift,
-                                         y_shift = y_shift,
-                                         z_shift = z_shift,
-                                         x_rotation = x_rotation,
-                                         y_rotation = y_rotation,
-                                         z_rotation = z_rotation,
-                                         zoom = zoom,
-                                         ) # TODO
+                wrap = wrap)
+            setattr(camera_position, param_name, interp_val)
         return V3dMovieFrame(camera_position)
         
     def generate_frames(self):
@@ -222,37 +189,38 @@ class V3dMovie:
             frame_index += 1
             
     def set_current_v3d_camera(self, camera_position):
-        if not self.view_control:
+        vc = self.view_control
+        if not vc:
             raise ValueError("No V3D window is attached")
-        if self.view_control:
-            # print "Setting view control..."
-            # For some reason set[XYZ]Rotation() does an incremental change
-            self.view_control.doAbsoluteRot(
-                        camera_position.x_rotation,
-                        camera_position.y_rotation,
-                        camera_position.z_rotation)
-            self.view_control.setXShift(camera_position.x_shift)
-            self.view_control.setYShift(camera_position.y_shift)
-            self.view_control.setZShift(camera_position.z_shift)            
-            self.view_control.setZoom(camera_position.zoom)
+        # print "Setting view control..."
+        for getter_name in self.view_control_param_names:
+            setter_name = self.view_control_param_names[getter_name]
+            if 'Rot' in getter_name:
+                continue # rotation is handled specially, below
+            val = getattr(camera_position, getter_name)
+            if 'Cut' in getter_name:
+                val = int(val) # Cut methods take integer arguments
+            fn = getattr(vc, setter_name)
+            fn(val) # set parameter in V3D view_control
+            print "Setting parameter %s to %s" % (getter_name, val)
+        # For some reason set[XYZ]Rotation() does an incremental change        
+        self.view_control.doAbsoluteRot(
+                    camera_position.xRot,
+                    camera_position.yRot,
+                    camera_position.zRot)
         
     def get_current_v3d_camera(self):
         if not self.view_control:
             raise ValueError("No V3D window is attached")
-        # TODO absoluteRotPose() changes the view.  I don't think it should...
+        # TODO absoluteRotPose() changes the view slightly.  I don't think it should...
         vc = self.view_control
         vc.absoluteRotPose()
-        
-        return CameraPosition(
-                    x_shift = vc.xShift(),
-                    y_shift = vc.yShift(),
-                    z_shift = vc.zShift(),
-                    x_rotation = vc.xRot(),
-                    y_rotation = vc.yRot(),
-                    z_rotation = vc.zRot(),
-                    zoom = vc.zoom(),
-                    # TODO - cut parameters
-                    )
+        camera = CameraPosition()
+        for param_name in self.view_control_param_names:
+            val = getattr(self.view_control, param_name)()
+            setattr(camera, param_name, val)
+            print "Parameter %s = %s" % (param_name, val)
+        return camera
         
     def append_current_view(self, interval = 2.0):
         camera = self.get_current_v3d_camera()
@@ -264,6 +232,6 @@ class V3dMovie:
 
 # Standard python technique for optionally running this file as
 # a program instead of as a library.
-if __name__ == 'main':
-    print "There is no main"
-    assert(False)
+# print "__name__ = %s" % __name__
+if __name__ == '__main__':
+    pass

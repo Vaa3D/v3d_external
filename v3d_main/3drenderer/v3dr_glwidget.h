@@ -140,6 +140,15 @@ public:
 	virtual int zShift() const { return _zShift; }
 	virtual bool isAbsoluteRot()	const { return _absRot; }
 
+	// Expose cut getters, 2011 Feb 09 CMB
+    virtual int xCut0() const { return _xCut0; }
+    virtual int xCut1() const { return _xCut1; }
+    virtual int yCut0() const { return _yCut0; }
+    virtual int yCut1() const { return _yCut1; }
+    virtual int zCut0() const { return _zCut0; }
+    virtual int zCut1() const { return _zCut1; }
+    virtual int frontCut() const { return _fCut; }
+
 	virtual bool isVolCompress() const { return (renderer)? renderer->tryTexCompress :false; }
 	virtual bool isShowBoundingBox() const { return (renderer)? renderer->bShowBoundingBox :false; }
 	virtual bool isShowAxes() 		const { return (renderer)? renderer->bShowAxes :false; }

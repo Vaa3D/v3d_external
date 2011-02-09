@@ -140,6 +140,11 @@ struct View3DControl_wrapper : View3DControl, bp::wrapper< View3DControl > {
         func_enableZSlice( arg0 );
     }
 
+    virtual int frontCut(  ) const {
+        bp::override func_frontCut = this->get_override( "frontCut" );
+        return func_frontCut(  );
+    }
+
     virtual void hideTool(  ){
         bp::override func_hideTool = this->get_override( "hideTool" );
         func_hideTool(  );
@@ -545,6 +550,16 @@ struct View3DControl_wrapper : View3DControl, bp::wrapper< View3DControl > {
         func_volumeColormapDialog(  );
     }
 
+    virtual int xCut0(  ) const {
+        bp::override func_xCut0 = this->get_override( "xCut0" );
+        return func_xCut0(  );
+    }
+
+    virtual int xCut1(  ) const {
+        bp::override func_xCut1 = this->get_override( "xCut1" );
+        return func_xCut1(  );
+    }
+
     virtual int xRot(  ) const {
         bp::override func_xRot = this->get_override( "xRot" );
         return func_xRot(  );
@@ -555,6 +570,16 @@ struct View3DControl_wrapper : View3DControl, bp::wrapper< View3DControl > {
         return func_xShift(  );
     }
 
+    virtual int yCut0(  ) const {
+        bp::override func_yCut0 = this->get_override( "yCut0" );
+        return func_yCut0(  );
+    }
+
+    virtual int yCut1(  ) const {
+        bp::override func_yCut1 = this->get_override( "yCut1" );
+        return func_yCut1(  );
+    }
+
     virtual int yRot(  ) const {
         bp::override func_yRot = this->get_override( "yRot" );
         return func_yRot(  );
@@ -563,6 +588,16 @@ struct View3DControl_wrapper : View3DControl, bp::wrapper< View3DControl > {
     virtual int yShift(  ) const {
         bp::override func_yShift = this->get_override( "yShift" );
         return func_yShift(  );
+    }
+
+    virtual int zCut0(  ) const {
+        bp::override func_zCut0 = this->get_override( "zCut0" );
+        return func_zCut0(  );
+    }
+
+    virtual int zCut1(  ) const {
+        bp::override func_zCut1 = this->get_override( "zCut1" );
+        return func_zCut1(  );
     }
 
     virtual int zRot(  ) const {
@@ -672,6 +707,9 @@ void register_View3DControl_class(){
             "enableZSlice"
             , bp::pure_virtual( (void ( ::View3DControl::* )( bool ) )(&::View3DControl::enableZSlice) )
             , ( bp::arg("arg0") ) )    
+        .def( 
+            "frontCut"
+            , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::frontCut) ) )    
         .def( 
             "hideTool"
             , bp::pure_virtual( (void ( ::View3DControl::* )(  ) )(&::View3DControl::hideTool) ) )    
@@ -968,17 +1006,35 @@ void register_View3DControl_class(){
             "volumeColormapDialog"
             , bp::pure_virtual( (void ( ::View3DControl::* )(  ) )(&::View3DControl::volumeColormapDialog) ) )    
         .def( 
+            "xCut0"
+            , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::xCut0) ) )    
+        .def( 
+            "xCut1"
+            , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::xCut1) ) )    
+        .def( 
             "xRot"
             , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::xRot) ) )    
         .def( 
             "xShift"
             , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::xShift) ) )    
         .def( 
+            "yCut0"
+            , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::yCut0) ) )    
+        .def( 
+            "yCut1"
+            , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::yCut1) ) )    
+        .def( 
             "yRot"
             , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::yRot) ) )    
         .def( 
             "yShift"
             , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::yShift) ) )    
+        .def( 
+            "zCut0"
+            , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::zCut0) ) )    
+        .def( 
+            "zCut1"
+            , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::zCut1) ) )    
         .def( 
             "zRot"
             , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::zRot) ) )    
