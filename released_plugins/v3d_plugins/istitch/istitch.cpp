@@ -1912,6 +1912,9 @@ template <class SDATATYPE> int pwi_fusing(SDATATYPE *p_mask, SDATATYPE *data1d, 
 // pairwise image blending function
 template <class SDATATYPE> int groupi_fusing(SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, V3DLONG vx, V3DLONG vy, V3DLONG vz, V3DLONG vc, bool axes_show);
 
+// open tutorial and download test data
+void OpenDownloadPape(QWidget *parent);
+
 //plugin funcs
 const QString title = "Image Stitching";
 QStringList IStitchPlugin::menulist() const
@@ -1921,6 +1924,7 @@ QStringList IStitchPlugin::menulist() const
 	<< tr("Group Images Stitching with configuration prior")
 	<< tr("Point Navigating")
 	<< tr("Region Navigating")
+	<< tr("open test data download page")
 	<< tr("HIDDEN_3DROI_Navigation")
 	<< tr("About");
 }
@@ -1947,6 +1951,10 @@ void IStitchPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callbac
 	{
 		region_navigating(callback, parent);
 	}
+	else if(menu_name==tr("open test data download pape"))
+	{
+		OpenDownloadPape(parent);
+	}
 	else if (menu_name == tr("HIDDEN_3DROI_Navigation"))
 	{
 		roi_navigating(callback, parent);
@@ -1956,6 +1964,20 @@ void IStitchPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callbac
 		QMessageBox::information(parent, "Version info", QString("ImageStitching Plugin %1 (March 1, 2010) developed by Yang Yu. (Peng Lab, Janelia Research Farm Campus, HHMI)").arg(getPluginVersion()));
 		return;
 	}
+}
+
+// open tutorial and download test data
+void OpenDownloadPape(QWidget *parent)
+{
+    bool b_openurl_worked;
+    b_openurl_worked=QDesktopServices::openUrl(QUrl("http://penglab.janelia.org/proj/stitching"));
+    if (! b_openurl_worked)
+        QMessageBox::warning(parent,
+							 "Error opening download page", // title
+							 "Please browse to\n"
+							 "http://penglab.janelia.org/proj/stitching\n"
+							 "to download the test data for this plugin");
+	
 }
 
 // Multiscale pairwise images stitching with thick planes (e.g. 10 pixels width) in boundary bounding box
@@ -4954,7 +4976,7 @@ int point_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 	// get filename
 	QString m_FileName = QFileDialog::getOpenFileName(parent, QObject::tr("Open A Virtual Image"),
 													  QDir::currentPath(),
-													  QObject::tr("Image Configuration (*)"));
+													  QObject::tr("Image Configuration (*.tc)"));
 	
 	if(m_FileName.isEmpty())
 		return -1;
@@ -5055,7 +5077,7 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 	// get filename
 	QString m_FileName = QFileDialog::getOpenFileName(parent, QObject::tr("Open A Virtual Image"),
 													  QDir::currentPath(),
-													  QObject::tr("Image Configuration (*)"));
+													  QObject::tr("Image Configuration (*.tc)"));
 	if(m_FileName.isEmpty())
 		return -1;
 	
