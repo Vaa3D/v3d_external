@@ -357,7 +357,7 @@ void V3D_atlas_viewerDialog::create()
 	i= tabOptions->addTab(table[3], "Color channels");
 	tabOptions->setTabToolTip(1-1, "Blending image together");
 	tabOptions->setTabToolTip(2-1, "Managing landmarks");
-	tabOptions->setTabToolTip(3-1, "Managing data channel color mapping");
+	tabOptions->setTabToolTip(3-1, "Data channel color mapping");
 
 	QGroupBox* tabGroup = new QGroupBox();
     QHBoxLayout *centralLayout = new QHBoxLayout(tabGroup);
