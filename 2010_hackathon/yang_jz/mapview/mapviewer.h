@@ -496,7 +496,9 @@ public:
 	
 	void setImgData(ImagePlaneDisplayType ptype, V3DLONG *sz_compressed,V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,unsigned char *pdata, ImageDisplayColorType ctype);
 		
-	//void Setidget(V3DPluginCallback &callback, QString m_FileName, QString curFilePathInput, float scaleFactorInput);
+	void Setwidget(V3DPluginCallback &callback, QString m_FileName, QString curFilePathInput, float scaleFactorInput);
+	
+	void update_v3dviews(V3DPluginCallback *callback, long start_x, long start_y, long start_z, long end_x, long end_y, long end_z);
 	
 	int disp_width, disp_height;
 	int disp_scale;
@@ -512,6 +514,8 @@ public:
 	long plane_n;
 	long start_x,start_y,start_z;
 	long end_x,end_y,end_z;
+	
+	V3DPluginCallback *callback1;
 	
 	QString curFilePath;
 	
@@ -588,7 +592,7 @@ private:
 private:
 };
 // MAPViewer interface
-class ImageSetWidget : public QWidget
+class ImageSetWidget : public QWidget//,public QDialog 
 {
 	Q_OBJECT
 	
