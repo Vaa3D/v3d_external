@@ -1970,7 +1970,7 @@ void IStitchPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callbac
 void OpenDownloadPage(QWidget *parent)
 {
     bool b_openurl_worked;
-    b_openurl_worked=QDesktopServices::openUrl(QUrl("http://penglab.janelia.org/proj/stitching/supp/supp_index.htm"));
+    b_openurl_worked=QDesktopServices::openUrl(QUrl("http://penglab.janelia.org/proj/stitching/supp/supp_index.htm", QUrl::TolerantMode));
     if (! b_openurl_worked)
         QMessageBox::warning(parent,
 							 "Error opening download page", // title
@@ -4022,6 +4022,7 @@ int group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 	// load tiles and stitch
 	//----------------------------------------------------------------------------------------------------------------------------------------------------
 	QStringList imgList = importSeriesFileList_addnumbersort(m_InputFileName);
+	m_InputFileName = imgList.at(0);
 	
 	Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim;
 	
