@@ -1913,7 +1913,7 @@ template <class SDATATYPE> int pwi_fusing(SDATATYPE *p_mask, SDATATYPE *data1d, 
 template <class SDATATYPE> int groupi_fusing(SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, V3DLONG vx, V3DLONG vy, V3DLONG vz, V3DLONG vc, bool axes_show);
 
 // open tutorial and download test data
-void OpenDownloadPape(QWidget *parent);
+void OpenDownloadPage(QWidget *parent);
 
 //plugin funcs
 const QString title = "Image Stitching";
@@ -1924,7 +1924,7 @@ QStringList IStitchPlugin::menulist() const
 	<< tr("Group Images Stitching with configuration prior")
 	<< tr("Point Navigating")
 	<< tr("Region Navigating")
-	<< tr("open test data download page")
+	<< tr("open test data web page")
 	<< tr("HIDDEN_3DROI_Navigation")
 	<< tr("About");
 }
@@ -1951,9 +1951,9 @@ void IStitchPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callbac
 	{
 		region_navigating(callback, parent);
 	}
-	else if(menu_name==tr("open test data download pape"))
+	else if(menu_name==tr("open test data web page"))
 	{
-		OpenDownloadPape(parent);
+		OpenDownloadPage(parent);
 	}
 	else if (menu_name == tr("HIDDEN_3DROI_Navigation"))
 	{
@@ -1967,7 +1967,7 @@ void IStitchPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callbac
 }
 
 // open tutorial and download test data
-void OpenDownloadPape(QWidget *parent)
+void OpenDownloadPage(QWidget *parent)
 {
     bool b_openurl_worked;
     b_openurl_worked=QDesktopServices::openUrl(QUrl("http://penglab.janelia.org/proj/stitching/supp/supp_index.htm"));

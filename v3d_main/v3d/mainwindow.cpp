@@ -259,7 +259,7 @@ MainWindow::MainWindow()
 
     readSettings();
 
-    setWindowTitle(tr("v3d"));
+    setWindowTitle(tr("V3D"));
 
 #if COMPILE_TARGET_LEVEL == 0
 	v3d_Lite_info();
@@ -1852,8 +1852,10 @@ void MainWindow::createActions()
 	connect(procAtlasViewer, SIGNAL(triggered()), this, SLOT(func_procAtlasViewer()));
 
 	proc3DViewer = new QAction(tr("3D viewer for entire image"), this);
+    proc3DViewer->setShortcut(tr("Ctrl/Cmd+V"));
 	connect(proc3DViewer, SIGNAL(triggered()), this, SLOT(func_proc3DViewer()));
 	proc3DLocalRoiViewer = new QAction(tr("3D viewer for Region of Interest (ROI)"), this);
+    proc3DLocalRoiViewer->setShortcut(tr("Shift+V"));
 	connect(proc3DLocalRoiViewer, SIGNAL(triggered()), this, SLOT(func_proc3DLocalRoiViewer()));
 
     separator_RecentFiles_Act = new QAction(this);

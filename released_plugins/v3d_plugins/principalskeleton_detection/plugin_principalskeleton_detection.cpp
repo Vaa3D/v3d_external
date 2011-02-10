@@ -19,7 +19,7 @@ using namespace std;
 Q_EXPORT_PLUGIN2(principalskeleton_detection, PrincipalSkeletonDetectionPlugin)
 
 void PrincipalSkeletonDetection(V3DPluginCallback2 &callback, QWidget *parent);
-void OpenDownloadPape(QWidget *parent);
+void OpenDownloadPage(QWidget *parent);
 bool readDomain_file(const QString &qs_filename,
 					 vector< vector<long> > &vecvec_domain_length_ind,vector<double> &vec_domain_length_weight,
 					 vector< vector<long> > &vecvec_domain_smooth_ind,vector<double> &vec_domain_smooth_weight);
@@ -32,7 +32,7 @@ QStringList PrincipalSkeletonDetectionPlugin::menulist() const
 {
     return QStringList()
 	<< tr("detect prinipcal skeleton...")
-	<< tr("open test data download page")
+	<< tr("open test data and demo web page")
 	<< tr("about this plugin")
 	;
 }
@@ -43,9 +43,9 @@ void PrincipalSkeletonDetectionPlugin::domenu(const QString &menu_name, V3DPlugi
 	{
 		PrincipalSkeletonDetection(callback, parent);
 	}
-	else if(menu_name==tr("open test data download pape"))
+	else if(menu_name==tr("open test data and demo web page"))
 	{
-		OpenDownloadPape(parent);
+		OpenDownloadPage(parent);
 	}
 	else if(menu_name==tr("about this plugin"))
 	{
@@ -668,7 +668,7 @@ bool q_cubicSplineMarker(const QList<ImageMarker> &ql_marker,QList<ImageMarker> 
 	return true;
 }
 
-void OpenDownloadPape(QWidget *parent)
+void OpenDownloadPage(QWidget *parent)
 {
     bool b_openurl_worked;
     b_openurl_worked=QDesktopServices::openUrl(QUrl("http://penglab.janelia.org/proj/principal_skeleton/supp/supp_index.htm"));
