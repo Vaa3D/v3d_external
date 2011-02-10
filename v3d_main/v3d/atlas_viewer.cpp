@@ -191,8 +191,11 @@ void V3D_atlas_viewerDialog::reCreateTables(XFormWidget* w)
 	tabOptions->clear();
 
 	if (table[1])	disconnect(table[1], SIGNAL(cellChanged(int,int)), this, SLOT(pickAtlasRow(int,int)));
-	if (table[2])	disconnect(table[2], SIGNAL(cellChanged(int,int)), this, SLOT(pickLandmark(int,int)));
-	if (table[2])	disconnect(table[2], SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(highlightLandmark(int,int,int,int))); //
+	if (table[2])
+	{
+		disconnect(table[2], SIGNAL(cellChanged(int,int)), this, SLOT(pickLandmark(int,int)));
+		disconnect(table[2], SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(highlightLandmark(int,int,int,int))); //
+	}
 	if (table[3])	disconnect(table[3], SIGNAL(cellChanged(int,int)), this, SLOT(pickColorChannel(int,int)));
 	for (int i=0; i<=3; i++)
 		if (table[i])
@@ -263,8 +266,11 @@ void V3D_atlas_viewerDialog::createTables()
 	}
 
 	if (table[1])	connect(table[1], SIGNAL(cellChanged(int,int)), this, SLOT(pickAtlasRow(int,int)));
-	if (table[2])	connect(table[2], SIGNAL(cellChanged(int,int)), this, SLOT(pickLandmark(int,int)));
-	if (table[2])	connect(table[2], SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(highlightLandmark(int,int,int,int)));
+	if (table[2])
+	{
+		connect(table[2], SIGNAL(cellChanged(int,int)), this, SLOT(pickLandmark(int,int)));
+		connect(table[2], SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(highlightLandmark(int,int,int,int)));
+	}
 	if (table[3])	connect(table[3], SIGNAL(cellChanged(int,int)), this, SLOT(pickColorChannel(int,int)));
 }
 
