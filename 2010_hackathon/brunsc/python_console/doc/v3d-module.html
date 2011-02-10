@@ -254,6 +254,20 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
+        <a href="v3d.V3DPluginArgItem-class.html" class="summary-name">V3DPluginArgItem</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="v3d.V3DPluginArg_double3x3-class.html" class="summary-name">V3DPluginArg_double3x3</a>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
         <a href="v3d.V3D_GlobalSetting-class.html" class="summary-name">V3D_GlobalSetting</a><br />
       General settings for the V3D program.
     </td>
@@ -294,6 +308,15 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
+        <a href="v3d.c_array_less__double_comma__3__greater_-class.html" class="summary-name">c_array_less__double_comma__3__greater_</a><br />
+      Light wrapper for C-arrays, to make them easier to expose in 
+        python.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
         <a href="v3d.c_array_short_3-class.html" class="summary-name">c_array_short_3</a><br />
       Light wrapper for C-arrays, to make them easier to expose in 
         python.
@@ -313,6 +336,15 @@
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
         <a href="v3d.c_array_uint_4-class.html" class="summary-name">c_array_uint_4</a><br />
+      Light wrapper for C-arrays, to make them easier to expose in 
+        python.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="v3d.double3x3-class.html" class="summary-name">double3x3</a><br />
       Light wrapper for C-arrays, to make them easier to expose in 
         python.
     </td>
@@ -337,12 +369,47 @@
 </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="v3d-module.html#callPluginFunc" class="summary-sig-name">callPluginFunc</a>(<span class="summary-sig-arg">...</span>)</span><br />
+      callPluginFunc( (object)plugin_name, (object)func_name, (object)input, (object)output) -&gt; bool :
+     Calls a function in a dynamically loaded V3D plugin module.</td>
+          <td align="right" valign="top">
+            
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">V3D_GlobalSetting :</span>
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a href="v3d-module.html#getGlobalSetting" class="summary-sig-name">getGlobalSetting</a>()</span><br />
       Returns general parameters of the V3D program.</td>
+          <td align="right" valign="top">
+            
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="v3d-module.html#get_argitem_pointer" class="summary-sig-name">get_argitem_pointer</a>(<span class="summary-sig-arg">...</span>)</span><br />
+      get_argitem_pointer( (V3DPluginArgItem)item) -&gt; str :</td>
           <td align="right" valign="top">
             
             
@@ -378,6 +445,23 @@
           <td><span class="summary-sig"><a href="v3d-module.html#setGlobalSetting" class="summary-sig-name">setGlobalSetting</a>(<span class="summary-sig-arg">...</span>)</span><br />
       setGlobalSetting( (V3D_GlobalSetting)gs) -&gt; bool :
      Sets general parameters of the V3D program.</td>
+          <td align="right" valign="top">
+            
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="v3d-module.html#set_argitem_pointer" class="summary-sig-name">set_argitem_pointer</a>(<span class="summary-sig-arg">...</span>)</span><br />
+      set_argitem_pointer( (V3DPluginArgItem)item, (void*)ptr) -&gt; None :</td>
           <td align="right" valign="top">
             
             
@@ -648,6 +732,33 @@
   </td>
 </tr>
 </table>
+<a name="callPluginFunc"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">callPluginFunc</span>(<span class="sig-arg">...</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    >&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+callPluginFunc( (object)plugin_name, (object)func_name, (object)input, (object)output) -&gt; bool :
+     Calls a function in a dynamically loaded V3D plugin module.
+
+    C++ signature :
+        bool callPluginFunc(QString,QString,QList&lt;V3DPluginArgItem&gt;,QList&lt;V3DPluginArgItem&gt; {lvalue})
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
 <a name="getGlobalSetting"></a>
 <div>
 <table class="details" border="1" cellpadding="3"
@@ -671,6 +782,32 @@
 </pre>
   <dl class="fields">
     <dt>Returns: V3D_GlobalSetting :</dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="get_argitem_pointer"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">get_argitem_pointer</span>(<span class="sig-arg">...</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    >&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+get_argitem_pointer( (V3DPluginArgItem)item) -&gt; str :
+
+    C++ signature :
+        std::string get_argitem_pointer(V3DPluginArgItem)
+
+</pre>
+  <dl class="fields">
   </dl>
 </td></tr></table>
 </div>
@@ -719,6 +856,32 @@ setGlobalSetting( (V3D_GlobalSetting)gs) -&gt; bool :
 
     C++ signature :
         bool setGlobalSetting(V3D_GlobalSetting {lvalue})
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="set_argitem_pointer"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">set_argitem_pointer</span>(<span class="sig-arg">...</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    >&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+set_argitem_pointer( (V3DPluginArgItem)item, (void*)ptr) -&gt; None :
+
+    C++ signature :
+        void set_argitem_pointer(V3DPluginArgItem {lvalue},void*)
 
 </pre>
   <dl class="fields">
@@ -794,7 +957,7 @@ v3d.AspectRatioMode.KeepAspectRatioByExpanding
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Tue Jan 11 20:25:27 2011
+    Generated by Epydoc 3.0.1 on Thu Feb 10 11:40:28 2011
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

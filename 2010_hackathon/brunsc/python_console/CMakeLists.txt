@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 2.6)
 
+# Embedded python on Linux might need some special linking to get all the python symbols
+# http://docs.python.org/py3k/extending/embedding.html
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    # message("Linux")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Xlinker -export-dynamic")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Xlinker -export-dynamic")
+    find_library(DL_LIBRARY "dl")
+endif()
+
 # To support local test building, conditionally set certain variables
 if(NOT FinishedPlugins)
     add_custom_target(FinishedPlugins)
@@ -83,6 +92,9 @@ target_link_libraries(pythonConsoleTest
     ${QT_QTCORE_LIBRARY}
     ${QT_QTGUI_LIBRARY}
 )
+if (DL_LIBRARY)
+    target_link_libraries(pythonConsoleTest ${DL_LIBRARY})
+endif()
 
 
 ################################################
@@ -113,6 +125,9 @@ target_link_libraries(PythonConsolePlugin
     ${PYTHON_LIBRARY}
     ${QT_QTGUI_LIBRARY}
 )
+if (DL_LIBRARY)
+    target_link_libraries(pythonConsoleTest ${DL_LIBRARY})
+endif()
 
 find_path(PLUGINS_PARENT_PATH plugins
     PATHS

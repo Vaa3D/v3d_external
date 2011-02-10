@@ -17,7 +17,11 @@ class V3DWrapper:
         homedir = os.path.expanduser('~')
         for path in ['.',
                        os.path.join(homedir, 'svn/v3d_cmake/v3d_main/basic_c_fun'),
+                       os.path.join(homedir, 'svn/v3d/v3d_main/basic_c_fun'),
                        os.path.join(homedir, 'Documents/svn/v3d_cmake/v3d_main/basic_c_fun'),
+                       '/usr/include/Qt',
+                       '/usr/include/QtCore',
+                       '/usr/include/QtGui',
                        '/usr/include/qt4',
                        '/usr/include/qt4/QtCore',
                        '/usr/include/qt4/QtGui',

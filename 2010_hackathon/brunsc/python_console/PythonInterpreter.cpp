@@ -1,9 +1,43 @@
 #include "PythonInterpreter.h"
 #include <iostream>
 #include <cstdio>
+#include <string>
 
 namespace bp = boost::python;
 using namespace std;
+
+
+// On Linux, there can be some problems loading modules, into an embedded python interpreter,
+// that is itself in a shared library dynamically loaded by an application.  That is exactly the
+// situation we have here with V3D.
+#ifdef __linux__
+#include <dlfcn.h> // dlopen()
+void *v3d_ref_to_python_library = NULL;
+void apply_embedded_dynamic_python_hack()
+{
+	string pyversion_full = std::string(Py_GetVersion()); // e.g. "2.7 (#67, Dec 31 1997, 22:34:28) [GCC 2.7.2.2]"
+	string::size_type pos = pyversion_full.find_first_of(" "); // e.g. 3
+	string pyversion = pyversion_full.substr(0, pos); // e.g. "2.7"
+	string pylibname = std::string("libpython") + pyversion + ".so"; // e.g. "libpython2.7.so"
+	v3d_ref_to_python_library = dlopen(pylibname.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+	if (! v3d_ref_to_python_library) {
+		cerr << "Problem with explicit loading of python library (" << pylibname << "): " << dlerror() << endl;
+	}
+	/*
+	if (pylib)
+		cerr << "Python library load succeeded!" << endl;
+	else
+		cerr << "Python library load failed!" << endl;
+	 */
+}
+void clean_up_embedded_dynamic_python_hack() {
+	if (v3d_ref_to_python_library)
+		dlclose(v3d_ref_to_python_library);
+}
+#else
+void apply_embedded_dynamic_python_hack() {}
+void clean_up_embedded_dynamic_python_hack() {}
+#endif
 
 PythonOutputRedirector::PythonOutputRedirector(PythonInterpreter *p_interpreter)
     : interpreter(p_interpreter)
@@ -39,6 +73,7 @@ PythonInterpreter::PythonInterpreter()
 	  stdoutRedirector(this),
 	  stderrRedirector(this)
 {
+	apply_embedded_dynamic_python_hack();
 	try {
 		Py_Initialize();
 		main_module = bp::object((
@@ -73,6 +108,7 @@ PythonInterpreter::~PythonInterpreter() {
 	// http://www.boost.org/libs/python/todo.html#pyfinalize-safety
 	// http://lists.boost.org/Archives/boost/2006/07/107149.php
 	Py_Finalize();
+	clean_up_embedded_dynamic_python_hack();
 }
 
 void PythonInterpreter::onOutput(QString msg) {
