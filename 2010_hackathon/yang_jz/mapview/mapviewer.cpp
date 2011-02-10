@@ -237,9 +237,9 @@ void ImageSetWidget::update_v3dviews(V3DPluginCallback *callback, long start_x, 
 	cout << "satisfied image: "<< vim.lut[0].fn_img << endl;
 	
 	//
-	char * curFileSuffix = getSurfix(const_cast<char *>(vim.lut[0].fn_img.c_str()));
+	//char * curFileSuffix = getSurfix(const_cast<char *>(vim.lut[0].fn_img.c_str()));
 	
-	cout << "suffix ... " << curFileSuffix << endl; // tif lsm
+	//cout << "suffix ... " << curFileSuffix << endl; // tif lsm
 	
 	QString curPath = curFilePath;
 	
@@ -254,20 +254,28 @@ void ImageSetWidget::update_v3dviews(V3DPluginCallback *callback, long start_x, 
 	
 	// loading relative imagg files
 	V3DLONG *sz_relative = 0; 
+	V3DLONG *szo = 0; 
 	int datatype_relative = 0;
 	unsigned char* relative1d = 0;
 	
-//	loadImage(imgSrcFile, relative1d, sz_relative, datatype_relative); //
-   loadImage(imgSrcFile,pVImg,sz_relative,start_x,start_y,start_z,end_x,end_y,end_z,datatype_relative);	
+    //loadImage(imgSrcFile, relative1d, sz_relative, datatype_relative); //
+  
+	loadImage(imgSrcFile,relative1d,sz_relative,szo,start_x,start_y,start_z,end_x,end_y,end_z,datatype_relative);	
 	
 	long rx=sz_relative[0], ry=sz_relative[1], rz=sz_relative[2], rc=sz_relative[3];
+	
+	long sxx=szo[0], syy=szo[1], szz=szo[2], scc=szo[3];
 	
 	if(datatype_relative==1)
 		datatype = V3D_UINT8;
 	
-	size_t e1_t = clock();
-	cout<<"time elapse for read tmpstack ... "<<e1_t-s1_t<<endl;
+	qDebug()<<"infomation..."<<rx<<ry<<rz;
 	
+	//qDebug()<<"infomationoooori..."<<sxx<<syy<<szz<<scc;
+	
+	size_t e1_t = clock();
+	
+	cout<<"time elapse for read tmpstack ... "<<e1_t-s1_t<<endl;
 	int stt =2;
 	if (stt == 1) 
 	{
@@ -297,7 +305,6 @@ void ImageSetWidget::update_v3dviews(V3DPluginCallback *callback, long start_x, 
 		
 	}
 	
-	
 	size_t end1_t = clock();
 	
 	cout<<"time elapse ... "<<end1_t-start_t<<endl;
@@ -305,8 +312,9 @@ void ImageSetWidget::update_v3dviews(V3DPluginCallback *callback, long start_x, 
 	//display
 	Image4DSimple p4DImage;
 	
-	 p4DImage.setData((unsigned char*)pVImg, vx, vy, vz, vc, datatype);
-	//p4DImage.setData((unsigned char*)relative1d, vx, vy, vz, vc, datatype);
+	// p4DImage.setData((unsigned char*)relative1d, rx, ry, rz, rc, V3D_UINT16);
+	 p4DImage.setData((unsigned char*)relative1d, szo[0], szo[1], szo[2], szo[3], V3D_UINT16);
+	
 	v3dhandle curwin;
 	
 	if(!callback->currentImageWindow())
