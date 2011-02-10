@@ -880,7 +880,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 					
 					
 					//if(child->getValidZslice()<child->getImageData()->getZDim()-1) return; // avoid crash when the child is closed by user, Dec 29, 2010 by YuY
-					//bug!!! by PHC. This is a very bad bug. 2011-02-09. this makes all subsequent operation unable to finish. should be disabled!!.  
+					//bug!!! by PHC. This is a very bad bug. 2011-02-09. this makes all subsequent operations unable to finish. should be disabled!!.  
 					
 					
 					statusBar()->showMessage(QString("File [%1] loaded").arg(fileName), 2000);
