@@ -463,7 +463,7 @@ void MainWindow::newFile()
 void MainWindow::open()
 {
     QString fileName = QFileDialog::getOpenFileName(this);
-	loadV3DFile(fileName, true, false); // loadV3DFile func changed to 3 args. YuY Nov. 18, 2010
+	loadV3DFile(fileName, true, global_setting.b_autoOpenImg3DViewer); // loadV3DFile func changed to 3 args. YuY Nov. 18, 2010. change false to global_setting.b_autoOpenImg3DViewer. 2011-02-09, PHC
 }
 
 // By CMB Oct-08-2010
@@ -542,15 +542,18 @@ V3dR_MainWindow * MainWindow::find3DViewer(QString fileName)
 
 void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool b_forceopen3dviewer)
 {
-    if (!fileName.isEmpty()) {
+    if (!fileName.isEmpty()) 
+	{
         XFormWidget *existing_imgwin = findMdiChild(fileName);
-        if (existing_imgwin) {
+        if (existing_imgwin) 
+		{
             workspace->setActiveWindow(existing_imgwin);
             return;
         }
 
         V3dR_MainWindow *existing_3dviewer = find3DViewer(fileName);
-        if (existing_3dviewer) {
+        if (existing_3dviewer) 
+		{
             existing_3dviewer->activateWindow();
             return;
         }
@@ -682,9 +685,6 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 					return;
 				}
 			}
-
-//			if (b_putinrecentfilelist)
-//				setCurrentFile(fileName);
 		}
 		else if (curfile_info.suffix().toUpper()=="APO" || 
 				 curfile_info.suffix().toUpper()=="SWC" || 
@@ -717,9 +717,6 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 				my3dwin->setDataTitle(fileName);
 				my3dwin->show();
 				mypara_3Dview->window3D = my3dwin;
-
-//				if (b_putinrecentfilelist)
-//					setCurrentFile(fileName);
 			}
 			catch (...)
 			{
@@ -758,9 +755,6 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 					statusBar()->showMessage(tr("File loaded"), 2000);
 					child->show();
 					workspace->cascade();
-
-//					if (b_putinrecentfilelist)
-//						setCurrentFile(fileName);
 
 					//update the image data listAtlasFiles member
 					cur_atlas_list[kk].on = true; //since this one has been opened
@@ -862,9 +856,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 			//v3d_msg(QString(tmp_filename).prepend("[").append("]"));
 			if (QFile::exists(tmp_filename))
 			{
-				loadV3DFile(tmp_filename, false, false); //the 2nd parameter is false, so that the unzipped file will not be put into "Recent files"
-//				if (b_putinrecentfilelist)
-//					setCurrentFile(fileName); //put the zipped file into "Recent files"
+				loadV3DFile(tmp_filename, false, global_setting.b_autoOpenImg3DViewer); //the 2nd parameter is false, so that the unzipped file will not be put into "Recent files" change the 3rd para to global_setting.b_autoOpenImg3DViewer, 2011-02-09, PHC
 				system(qPrintable(QString("rm -f %1").arg(tmp_filename)));
 			}
 		}
@@ -885,7 +877,11 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 				{
 					if(!child) return; 
 					if(!child->getImageData()) return;
-					if(child->getValidZslice()<child->getImageData()->getZDim()-1) return; // avoid crash when the child is closed by user, Dec 29, 2010 by YuY
+					
+					
+					//if(child->getValidZslice()<child->getImageData()->getZDim()-1) return; // avoid crash when the child is closed by user, Dec 29, 2010 by YuY
+					//bug!!! by PHC. This is a very bad bug. 2011-02-09. this makes all subsequent operation unable to finish. should be disabled!!.  
+					
 					
 					statusBar()->showMessage(QString("File [%1] loaded").arg(fileName), 2000);
 
@@ -915,10 +911,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 					child->show();
 					workspace->cascade(); //080821
 
-//					if (b_putinrecentfilelist)
-//						setCurrentFile(fileName);
-
-					if (b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer)) //101118 by PHC
+					if (b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer)) 
 					{
 						child->doImage3DView();
 					}
@@ -927,14 +920,16 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 					qDebug()<<"time consume ..."<<end_t-start_t;
 
 
-				} else {
+				} 
+				else 
+				{
 					child->close();
 				}
 			}
 			catch(...)
 			{
 				QMessageBox::warning(0, "warning: fail to create window", "You fail to open a new window for the specified image. The file may have certain problem, or is simply too big but you don't have enough memory.");
-				printf("Fail to create window for the file [%s]\n", qPrintable(fileName));
+				v3d_msg(QString("Fail to create window for the file [%1]\n").arg(fileName));
 			}
 		}
 		else // changed by YuY Nov. 19, 2010
