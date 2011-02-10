@@ -1920,9 +1920,9 @@ const QString title = "Image Stitching";
 QStringList IStitchPlugin::menulist() const
 {
     return QStringList() << tr("Pairwise Image Stitching")
-	<< tr("Group Images Stitching without configuration prior")
-	<< tr("Group Images Stitching with configuration prior")
-	<< tr("Point Navigating")
+	<< tr("Group Image Stitching")
+	<< tr("HIDDEN_Group Images Stitching with configuration prior")
+	<< tr("Check voxel intensity at a XYZ location")
 	<< tr("Region Navigating")
 	<< tr("open test data web page")
 	<< tr("HIDDEN_3DROI_Navigation")
@@ -1935,15 +1935,15 @@ void IStitchPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callbac
     {
     	pairwise_stitching(callback, parent);
     }
-	else if (menu_name == tr("Group Images Stitching without configuration prior"))
+	else if (menu_name == tr("Group Image Stitching"))
 	{
 		group_stitching(callback, parent);
 	}
-	else if (menu_name == tr("Group Images Stitching with configuration prior"))
+	else if (menu_name == tr("HIDDEN_Group Images Stitching with configuration prior"))
 	{
 		group_stitching_wc(callback, parent);
 	}
-	else if (menu_name == tr("Point Navigating"))
+	else if (menu_name == tr("Check voxel intensity at a XYZ location"))
 	{
 		point_navigating(callback, parent);
 	}
@@ -5006,7 +5006,7 @@ int point_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 	POINT p,q;
 	p.x = point[0]; p.y = point[1]; p.z = point[2];
 	
-	q.intensity = 0; q.fn = "None"; q.x=p.x; q.y=p.y; q.z=p.z;
+	q.intensity = 0; q.fn = "[No contained in any tile]"; q.x=p.x; q.y=p.y; q.z=p.z;
 	
 	//
 	V3DLONG x_s = point[0] + vim.min_vim[0];
@@ -5059,9 +5059,10 @@ int point_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 	
 	//showing corresponding tile image point
 	QString qstr(q.fn.c_str());
-	QTextEdit *pText=new QTextEdit(QString("<br>The corresponding tile is ") + qstr + QString(".<br> Corresponding position in the tile: ( %1 %2 %3 ).<br> Intensity Value: %4. <br>").arg(q.x).arg(q.y).arg(q.z).arg(q.intensity));
+	QTextEdit *pText=new QTextEdit(QString("You have entered the location ( %1 %2 %3 ).<br> The intensity value of this location is : %4. <br>").arg(q.x+1).arg(q.y+1).arg(q.z+1).arg(q.intensity) + 
+								   QString("<br>The corresponding tile is ") + qstr);
 	pText->setDocumentTitle("Point Navigation");
-	pText->resize(800, 200); 
+	pText->resize(400, 100); 
 	pText->setReadOnly(true);
 	pText->setFontPointSize(12);
 	pText->show();

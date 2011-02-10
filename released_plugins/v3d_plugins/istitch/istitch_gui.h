@@ -214,7 +214,7 @@ public:
 	{
 		
 		// create a dialog
-		label_subject = new QLabel(QObject::tr("Choose A Directory for image stitching: ")); 
+		label_subject = new QLabel(QObject::tr("Choose the folder of images: ")); 
 		
 		edit_img = new QLineEdit(QDir::currentPath());
 		pb_browse_img = new QPushButton("Browse...");
@@ -240,7 +240,7 @@ public:
 		v_scale_y->setMaximum(1); v_scale_y->setMinimum(0); v_scale_y->setValue(0.2); v_scale_y->setSingleStep(0.01);
 		v_scale_z->setMaximum(1); v_scale_z->setMinimum(0); v_scale_z->setValue(0.2); v_scale_z->setSingleStep(0.01);
 		
-		label_scale = new  QLabel(QObject::tr("Downsampling scale: "));
+		label_scale = new  QLabel(QObject::tr("Downsampling factors: "));
 		label_scale_x = new QLabel(QObject::tr(" x "));
 		label_scale_y = new QLabel(QObject::tr(" y "));
 		label_scale_z = new QLabel(QObject::tr(" z "));
@@ -256,12 +256,12 @@ public:
 		
 		//display tile boundary
 		check_axes_show = new QCheckBox();
-		check_axes_show->setText(QObject::tr("Showing tile boundary"));
+		check_axes_show->setText(QObject::tr("Save tiles' relative configutation to a file (.swc format)"));
 		check_axes_show->setChecked(Qt::Unchecked);
 		
 		//display tile boundary
 		check_img_show = new QCheckBox();
-		check_img_show->setText(QObject::tr("Showing stitching result"));
+		check_img_show->setText(QObject::tr("Display the stitching result in V3D immediately"));
 		check_img_show->setChecked(Qt::Checked);
 		
 		//
@@ -405,7 +405,7 @@ public:
 		v_y->setMaximum(sz[1]); v_y->setMinimum(1); v_y->setValue(1); v_y->setSingleStep(1);
 		v_z->setMaximum(sz[2]); v_z->setMinimum(1); v_z->setValue(1); v_z->setSingleStep(1);
 		
-		label_x = new QLabel(QObject::tr("Choose A Point x: "));
+		label_x = new QLabel(QObject::tr("Enter the spatial coordinates  x: "));
 		label_y = new QLabel(QObject::tr(" y: "));
 		label_z = new QLabel(QObject::tr(" z: "));
 		
@@ -424,7 +424,7 @@ public:
 		gridLayout->addWidget(cancel, 3,4,1,1); gridLayout->addWidget(ok, 3,5,1,1);
 		
 		setLayout(gridLayout);
-		setWindowTitle(QString("Point Navigation"));
+		setWindowTitle(QString("Check voxel intensity"));
 		
 		// signal and slot
 		connect(ok,     SIGNAL(clicked()), this, SLOT(accept()));
