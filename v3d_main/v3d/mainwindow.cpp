@@ -1852,7 +1852,7 @@ void MainWindow::createActions()
 	connect(procAtlasViewer, SIGNAL(triggered()), this, SLOT(func_procAtlasViewer()));
 
 	proc3DViewer = new QAction(tr("3D viewer for entire image"), this);
-    proc3DViewer->setShortcut(tr("Ctrl/Cmd+V"));
+    proc3DViewer->setShortcut(tr("Ctrl+V"));
 	connect(proc3DViewer, SIGNAL(triggered()), this, SLOT(func_proc3DViewer()));
 	proc3DLocalRoiViewer = new QAction(tr("3D viewer for Region of Interest (ROI)"), this);
     proc3DLocalRoiViewer->setShortcut(tr("Shift+V"));
