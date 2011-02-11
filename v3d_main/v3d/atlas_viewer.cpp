@@ -868,6 +868,11 @@ void V3D_atlas_viewerDialog::findPrev()
 
 void V3D_atlas_viewerDialog::setItemEditor()
 {
+	static bool registered =false;
+	if (registered) return;
+	else registered = true;
+	
+	
 	QItemEditorFactory *factory = new QItemEditorFactory(*QItemEditorFactory::defaultFactory());
 
 	//	QItemEditorCreatorBase *spinCreator = new QStandardItemEditorCreator<QSpinBox>();
