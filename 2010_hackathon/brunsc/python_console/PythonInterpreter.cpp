@@ -76,6 +76,11 @@ PythonInterpreter::PythonInterpreter()
 	apply_embedded_dynamic_python_hack();
 	try {
 		Py_Initialize();
+
+		// Using python Tkinter GUI requires that sys.argv be populated
+		const char *argv[1] = {"python"};
+		PySys_SetArgv(1, const_cast<char**>(argv));
+
 		main_module = bp::object((
 		  bp::handle<>(bp::borrowed(PyImport_AddModule("__main__")))));
 		main_namespace = main_module.attr("__dict__");
@@ -117,9 +122,18 @@ void PythonInterpreter::onOutput(QString msg) {
 
 void PythonInterpreter::runScriptFile(QString fileName)
 {
-	FILE *fp = fopen(fileName.toLocal8Bit(), "r");
+    QByteArray fname = fileName.toLocal8Bit();
+	FILE *fp = fopen((const char*)fname, "r");
 	if (fp) {
-		PyRun_SimpleFileEx(fp, fileName.toLocal8Bit(), 1); // 1 means close it for me
+	    // Set argv to add file directory to os.path, just like regular python does
+	    char *argv[1];
+	    argv[0] = const_cast<char*>((const char*)(fname));
+	    PySys_SetArgv(1, argv); // python < 2.6.6 does not have PySys_SetArgvEx()
+
+		PyRun_SimpleFileEx(fp, (const char*)fname, 1); // 1 means close it for me
+
+		// Revert path to what it was before PySys_SetArgv
+		PyRun_SimpleString("import sys; sys.path.pop(0)\n");
 	}
 	emit commandComplete();
 }

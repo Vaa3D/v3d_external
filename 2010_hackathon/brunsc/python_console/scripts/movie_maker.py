@@ -1,5 +1,5 @@
-import v3d
 import time
+import os
 
 class Interpolator:
     def get_interpolated_value(self, param, param_value_list, index_hint = None, wrap = None):
@@ -85,6 +85,7 @@ class V3dKeyFrame(V3dMovieFrame):
 
 class V3dMovie:
     def __init__(self, seconds_per_frame=1.0/24.0):
+        import v3d
         self.seconds_per_frame = seconds_per_frame # seconds per frame, default 24 fps
         self.key_frames = []
         self.image_window = None
@@ -138,21 +139,55 @@ class V3dMovie:
             real_time_deficit = self.seconds_per_frame - (time.clock() - start_clocktime)
             if real_time_deficit > 0:
                 time.sleep(real_time_deficit)
-                
-    def write_frames(self):
+
+    def _frame_name(self, dir, root, num):
+        fname = "%s_frame_%05d.BMP" % (root, num)
+        return os.path.join(dir, fname)
+
+    def write_frames(self, directory, file_root=None):
+        """
+        Writes movie to disk, with one BMP file per movie frame.
+        
+        Parameters:
+          directory -- directory path where frames will be saved
+        
+          file_root -- base name for frame files.  For example, a file_root
+            of "foo" would result in frame files like "foo_frame_00001.BMP",
+            "foo_frame_00002.BMP", etc.  If file_root is not specified,
+            the file name is based on the name of the V3D image.
+        """
+        # Make sure the file_root name is OK
+        if file_root == None:
+            file_root = self.image_window.name
+            file_root = os.path.split(file_root)[-1] # remove directory name
+            file_root = os.path.splitext(file_root)[0] # remove file extension
+        if len(file_root) < 1:
+            file_root = "v3d"
+        # Modify file name if such frames already exist
+        file_root0 = file_root
+        file_root_ver = 2
+        while os.path.exists(self._frame_name(directory, file_root, 1)):
+            file_root = "%s_%d" % (file_root0, file_root_ver)
+            file_root_ver += 1
+        # Actually write the frames
         frame_number = 0
         for frame in self.generate_frames():
             frame_number += 1
             self.set_current_v3d_camera(frame.camera_position)
-            file_name = "v3d_frame_%04d.bmp" % frame_number
-            print file_name
+            file_name = self._frame_name(directory, file_root, frame_number)
+            # print "Writing frame image file %s" % file_name
             if self.image_window:
-                self.image_window.screenShot3DWindow(file_name)
+                self.image_window.screenShot3DWindow(file_name[0:-4]) # strip off ".BMP"
                 
     def interpolate_frame(self, elapsed_time, frame_index_hint, interpolator):
         """
         Returns an in-between frame.
+        
+        elapsed_time -- the amount of time between the start of the movie and the desired frame
+        
         frame_index_hint is the index of a nearby key frame
+        
+        interpolator -- Interpolator object that can compute the frame parameters
         """
         camera_position = CameraPosition()
         for param_name in self.view_control_param_names:
@@ -202,7 +237,7 @@ class V3dMovie:
                 val = int(val) # Cut methods take integer arguments
             fn = getattr(vc, setter_name)
             fn(val) # set parameter in V3D view_control
-            print "Setting parameter %s to %s" % (getter_name, val)
+            # print "Setting parameter %s to %s" % (getter_name, val)
         # For some reason set[XYZ]Rotation() does an incremental change        
         self.view_control.doAbsoluteRot(
                     camera_position.xRot,
@@ -219,7 +254,7 @@ class V3dMovie:
         for param_name in self.view_control_param_names:
             val = getattr(self.view_control, param_name)()
             setattr(camera, param_name, val)
-            print "Parameter %s = %s" % (param_name, val)
+            # print "Parameter %s = %s" % (param_name, val)
         return camera
         
     def append_current_view(self, interval = 2.0):
@@ -234,5 +269,4 @@ class V3dMovie:
 # a program instead of as a library.
 # print "__name__ = %s" % __name__
 if __name__ == '__main__':
-    pass
-
+    import PyQt4
