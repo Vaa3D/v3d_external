@@ -36,6 +36,13 @@
         </property>
         <item row="0" column="0">
          <widget class="QTextEdit" name="textEdit">
+          <property name="font">
+           <font>
+            <family>Consolas</family>
+            <pointsize>16</pointsize>
+            <kerning>false</kerning>
+           </font>
+          </property>
           <property name="cursor" stdset="0">
            <cursorShape>IBeamCursor</cursorShape>
           </property>
