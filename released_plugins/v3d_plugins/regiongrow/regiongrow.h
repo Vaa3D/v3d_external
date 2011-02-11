@@ -149,15 +149,8 @@ public:
 		
 		thresh = spin_th->text().toDouble();
 		
-		if(check_filter->isChecked())
-		{
-			spin_vol->setEnabled(true);
-		}
-		else
-		{
-			spin_vol->setEnabled(false);
-		}
-		
+		b_filtersmallobjs = (check_filter->isChecked()) ? true : false;
+		spin_vol->setEnabled(b_filtersmallobjs);
 		volsz = spin_vol->text().toInt();
 	}
 	
@@ -167,6 +160,7 @@ public:
 	double thresh;
 	Image4DSimple* image;
 	ROIList pRoiList;
+	bool b_filtersmallobjs;
 	
 	QGridLayout *gridLayout;
 	
