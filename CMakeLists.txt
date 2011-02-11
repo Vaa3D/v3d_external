@@ -1,6 +1,6 @@
 # Top level cmake to build v3d, standard v3d plugins, and platform-specific installers
 project(V3DPackage)
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.6)
 
 # It is important on Windows for both v3d and plugins to use same build type.
 if(NOT CMAKE_BUILD_TYPE)

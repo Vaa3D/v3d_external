@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.6)
 
 project(V3D)
 
@@ -86,6 +86,7 @@ find_path(QT4_DEMOS_INCLUDE_DIR
   PATHS
         ${QT_LIBRARY_DIR}/..
         /Developer/Examples/Qt
+	/usr/lib64/qt4
 	/usr/lib/qt4
 	/usr/local/Trolltech/Qt-${QTVERSION}
 	"C:/Qt/${QTVERSION}"

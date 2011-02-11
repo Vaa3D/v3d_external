@@ -16,8 +16,8 @@ void *v3d_ref_to_python_library = NULL;
 void apply_embedded_dynamic_python_hack()
 {
 	string pyversion_full = std::string(Py_GetVersion()); // e.g. "2.7 (#67, Dec 31 1997, 22:34:28) [GCC 2.7.2.2]"
-	string::size_type pos = pyversion_full.find_first_of(" "); // e.g. 3
-	string pyversion = pyversion_full.substr(0, pos); // e.g. "2.7"
+	// Even if a sub-version of python is shown (e.g. "2.6.3"), we just want the "2.6".
+	string pyversion = pyversion_full.substr(0, 3); // e.g. "2.7"
 	string pylibname = std::string("libpython") + pyversion + ".so"; // e.g. "libpython2.7.so"
 	v3d_ref_to_python_library = dlopen(pylibname.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 	if (! v3d_ref_to_python_library) {

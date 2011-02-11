@@ -21,6 +21,11 @@ using namespace std;
 
 static QTime performanceTimer;
 
+// Qt 4.6 lacks QTextCursor.positionInBlock()
+int positionInBlock(const QTextCursor& cursor) {
+    return cursor.position() - cursor.block().position();
+}
+
 namespace v3d {
 
     QThread *qtGuiThread = NULL;
@@ -284,7 +289,8 @@ bool PythonConsoleWindow::eventFilter ( QObject * watched, QEvent * event )
         // On unix, we want to update cursor position on middle
         // button press, before deciding whether editing is possible.
         QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-        if (mouseEvent->buttons() == Qt::MiddleButton) {
+        // Qt 4.6 has only "MidButton", not "MiddleButton"
+        if (mouseEvent->buttons() == Qt::MidButton) {
             // cerr << "middle button" << endl;
             QTextCursor newCursor = plainTextEdit->
                     cursorForPosition(mouseEvent->pos());
@@ -324,7 +330,8 @@ bool PythonConsoleWindow::eventFilter ( QObject * watched, QEvent * event )
 			// Prevent left arrow from leaving editing area
 			case Qt::Key_Left:
 			case Qt::Key_Backspace:
-				if ( (plainTextEdit->textCursor().positionInBlock() == promptLength)
+                                // Qt 4.6 lacks QTextCursor.positionInBlock
+				if ( (positionInBlock(plainTextEdit->textCursor()) == promptLength)
 						&& cursorIsInEditingRegion(plainTextEdit->textCursor()) )
 				{
 						return true; // no moving left into prompt with arrow key
@@ -471,7 +478,7 @@ void PythonConsoleWindow::onCopyAvailable(bool bCopyAvailable)
 bool PythonConsoleWindow::cursorIsInEditingRegion(const QTextCursor& cursor)
 {
     // Want to be to the right of the prompt...
-    if (cursor.positionInBlock() < promptLength)
+    if (positionInBlock(cursor) < promptLength)
         return false;
     // ... and in the final line.
     if (cursor.blockNumber() != plainTextEdit->blockCount() - 1)
@@ -480,7 +487,7 @@ bool PythonConsoleWindow::cursorIsInEditingRegion(const QTextCursor& cursor)
         // Anchor might be outside of editing region
         QTextCursor anchorCursor(cursor);
         anchorCursor.setPosition(cursor.anchor());
-        if (anchorCursor.positionInBlock() < promptLength)
+        if (positionInBlock(anchorCursor) < promptLength)
             return false;
         if (anchorCursor.blockNumber() != plainTextEdit->blockCount() - 1)
             return false;
