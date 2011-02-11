@@ -3239,8 +3239,7 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 		case Qt::Key_F: //activate the find/search function
 		    if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 		    {
-
-				launchAtlasViewer();
+				(e->key()==Qt::Key_F) ? launchAtlasViewer(1) : launchAtlasViewer();
 			}
 			break;
 #endif
