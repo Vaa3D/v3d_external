@@ -13,6 +13,7 @@ HEADERS      +=colormap.h
 
 HEADERS      += mg_image_lib11.h
 HEADERS      += stackutil-11.h
+HEADERS      += y_imglib.h
 HEADERS      += mapviewer.h \
 #		../../../v3d_main/basic_c_fun/stackutil.h \
 		../../../v3d_main/basic_c_fun/mg_utilities.h \
