@@ -62,12 +62,14 @@ public:
 		
 		// channel info
 		QStringList chList;
-		if(c>=3)
-			chList << "red" << "green" << "blue";
+		if (c==1)
+			chList << "red (ch 1)";
 		else if(c==2)
-			chList << "red" << "green";
-		else if(c==1)
-			chList << "red";
+			chList << "red (ch 1)" << "green (ch 2)";
+		else if(c>=3)
+			chList << "red (ch 1)" << "green (ch 2)" << "blue (ch 3)";
+		for (int i=3;i<c;i++)
+			chList << QString("ch ").setNum(i+1);
 		combo_channel = new QComboBox(); combo_channel->addItems(chList);
 		gridLayout->addWidget(combo_channel, 2,1);
 		
@@ -127,6 +129,8 @@ public:
 		
 		connect(check_filter, SIGNAL(stateChanged(int)), this, SLOT(update()));
 		connect(spin_vol, SIGNAL(valueChanged(int)), this, SLOT(update()));
+		
+		update(); //update at least once so to initialize the variables. by Hanchuan Peng, 2011-02-11
 	}
 	
 	~RegiongrowDialog(){}
