@@ -46,7 +46,7 @@ void DTCPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, Q
 
 // func convering kernel
 template <class Tpre, class Tpost>
-int convering(void *pre1d, Tpost *pPost, V3DLONG imsz, ImagePixelType v3d_dt)
+void convering(void *pre1d, Tpost *pPost, V3DLONG imsz, ImagePixelType v3d_dt)
 {
 
 	Tpre *pPre = (Tpre *)pre1d;

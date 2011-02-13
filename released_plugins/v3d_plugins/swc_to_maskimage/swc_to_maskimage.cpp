@@ -12,6 +12,10 @@
 #include "v3d_message.h" 
 #include "../../../v3d_main/basic_c_fun/basic_surf_objs.h"
 
+// lroundf() is gcc-specific --CMB
+#ifdef _MSC_VER
+inline long lroundf(float num) { return static_cast<long>(num > 0 ? num + 0.5f : ceilf(num - 0.5f)); }
+#endif
 
 //Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.

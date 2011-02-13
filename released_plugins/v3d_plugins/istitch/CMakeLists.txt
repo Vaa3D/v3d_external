@@ -17,7 +17,8 @@ if(NOT CMAKE_THREAD_LIBS_INIT)
 endif()
 
 find_library(FFTW_LIBRARY 
-    NAMES libfftw3f.a v3dfftw3f libfftw3f.a fftw3f )
+    NAMES libfftw3f.a v3dfftw3f libfftw3f.a fftw3f libfftw3f-3
+    PATHS "$ENV{PROGRAMFILES}/fftw")
 find_library(FFTW_THREADS_LIBRARY 
     NAMES libfftw3f_threads.a v3dfftw3f_threads libfftw3f_threads.a fftw3f_threads )
 if(NOT FFTW_LIBRARY)

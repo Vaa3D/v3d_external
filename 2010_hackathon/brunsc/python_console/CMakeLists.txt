@@ -137,6 +137,9 @@ find_path(PLUGINS_PARENT_PATH plugins
         "Mac_Fat/v3d.app/Contents/MacOS"
         "Linux_32"
         "Linux_64"
+	"Windows_MSVC_32"
+	"Windows_MSVC_64"
+	"Windows_MSYS"
     NO_DEFAULT_PATH
     )
     
@@ -163,7 +166,9 @@ set_target_properties(PythonConsolePlugin PROPERTIES
     PREFIX ""
 )
 if(WIN32)
-    set_target_properties(PythonConsolePlugin PROPERTIES SUFFIX "pyd")
+    set_target_properties(PythonConsolePlugin PROPERTIES 
+	SUFFIX ".pyd"
+	PREFIX "../") # move out of Release/Debug
 endif()
 
 #####################################
