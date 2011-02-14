@@ -1891,6 +1891,9 @@ template <class SDATATYPE> int stitching_bb_thickplanes(SDATATYPE *subject1d, V3
 // pairwise stitching function
 int pairwise_stitching(V3DPluginCallback2 &callback, QWidget *parent);
 
+// group image stitching wrapper
+int group_stitching_wrap(V3DPluginCallback2 &callback, QWidget *parent);
+
 // global stitching function without configuration
 int group_stitching(V3DPluginCallback2 &callback, QWidget *parent);
 
@@ -1920,13 +1923,12 @@ const QString title = "Image Stitching";
 QStringList IStitchPlugin::menulist() const
 {
     return QStringList() << tr("Pairwise Image Stitching")
-	<< tr("Group Image Stitching")
-	<< tr("HIDDEN_Group Images Stitching with configuration prior")
-	<< tr("Check voxel intensity at a XYZ location")
-	<< tr("Region Navigating")
-	<< tr("open test data web page")
-	<< tr("HIDDEN_3DROI_Navigation")
-	<< tr("About");
+						<< tr("Group Image Stitching")
+						<< tr("Check voxel intensity at a XYZ location")
+						<< tr("Region Navigating")
+						<< tr("open test data web page")
+						<< tr("HIDDEN_3DROI_Navigation")
+						<< tr("About");
 }
 
 void IStitchPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
@@ -1937,11 +1939,7 @@ void IStitchPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callbac
     }
 	else if (menu_name == tr("Group Image Stitching"))
 	{
-		group_stitching(callback, parent);
-	}
-	else if (menu_name == tr("HIDDEN_Group Images Stitching with configuration prior"))
-	{
-		group_stitching_wc(callback, parent);
+		group_stitching_wrap(callback, parent);
 	}
 	else if (menu_name == tr("Check voxel intensity at a XYZ location"))
 	{
@@ -3979,6 +3977,22 @@ int pairwise_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 	if(success!=true) return false;
 	
 	return true;
+	
+}
+
+// stitching a group images and saving as a virtual image
+// without configuration
+int group_stitching_wrap(V3DPluginCallback2 &callback, QWidget *parent)
+{
+	// whether the user with configuration prior knowledge
+	if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you have the order information file of tiled images?"), QMessageBox::Yes, QMessageBox::No))
+	{
+		group_stitching_wc(callback, parent);
+	}
+	else
+	{
+		group_stitching(callback, parent);
+	}
 	
 }
 
