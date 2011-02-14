@@ -112,7 +112,8 @@ class V3dMovie:
                                         'yCut0' : 'setYCut0', 
                                         'yCut1' : 'setYCut1',
                                         'zCut0' : 'setZCut0', 
-                                        'zCut1' : 'setZCut1'}
+                                        'zCut1' : 'setZCut1',
+                                        'frontCut' : 'setFrontCut'}
 
     def _setup_interpolation_lists(self):
         # Create list of key frame x shifts
@@ -127,18 +128,16 @@ class V3dMovie:
                             getattr(key_frame.camera_position, param_name)],)
         
     def play(self):
-        self.image_window.open3DWindow()
-        frame_number = 0
-        for frame in self.generate_frames():
-            frame_number += 1
-            start_clocktime = time.clock()
-            # TODO -for some reason printing is required for the 3D viewer to update
-            print "frame %d at %f seconds" % (frame_number, start_clocktime)
-            self.set_current_v3d_camera(frame.camera_position)
+        """
+        Play back movie frames at a rate no faster than real-time.
+        """
+        start_clocktime = time.clock()
+        for frame in self.generate_frame_views():
             # Are we playing too fast?
             real_time_deficit = self.seconds_per_frame - (time.clock() - start_clocktime)
             if real_time_deficit > 0:
                 time.sleep(real_time_deficit)
+            start_clocktime = time.clock()
 
     def _frame_name(self, dir, root, num):
         fname = "%s_frame_%05d.BMP" % (root, num)
@@ -155,6 +154,10 @@ class V3dMovie:
             of "foo" would result in frame files like "foo_frame_00001.BMP",
             "foo_frame_00002.BMP", etc.  If file_root is not specified,
             the file name is based on the name of the V3D image.
+            
+        Unlike V3dMovie.play(), V3dMovie.write_frames() might play back
+        the movie faster than real time, depending on rendering and I/O
+        speed.
         """
         # Make sure the file_root name is OK
         if file_root == None:
@@ -171,9 +174,8 @@ class V3dMovie:
             file_root_ver += 1
         # Actually write the frames
         frame_number = 0
-        for frame in self.generate_frames():
+        for frame in self.generate_frame_views():
             frame_number += 1
-            self.set_current_v3d_camera(frame.camera_position)
             file_name = self._frame_name(directory, file_root, frame_number)
             # print "Writing frame image file %s" % file_name
             if self.image_window:
@@ -203,7 +205,18 @@ class V3dMovie:
             setattr(camera_position, param_name, interp_val)
         return V3dMovieFrame(camera_position)
         
-    def generate_frames(self):
+    def generate_frame_views(self):
+        """
+        Unlike generate_frame_info(), generate_frame_views() actually
+        adjusts the current view in the V3D 3D viewer.
+        """
+        self.image_window.open3DWindow()
+        for frame in self.generate_frame_info():
+            self.set_current_v3d_camera(frame.camera_position)
+            self.image_window.update() # The obviates need to print to get window update
+            yield frame
+            
+    def generate_frame_info(self):
         "Generator to produce each frame object of the movie, one by one"
         self._setup_interpolation_lists()
         total_time = 0.0

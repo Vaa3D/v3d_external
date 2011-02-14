@@ -239,8 +239,6 @@ endif()
 # ...by piggybacking on V3D binary_plugins mechanism
 # Place files in v3d binary_plugins area, so they will be installed.
 file(GLOB PY_SCRIPT_FILES "${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.py")
-# Hack copying of boost python library too
-set(PY_SCRIPT_FILES ${PY_SCRIPT_FILES} ${Boost_PYTHON_LIBRARY})
 find_path(V3D_BUILD_PATH v3d
     PATHS
         "${CMAKE_CURRENT_SOURCE_DIR}/../../../../build_v3d_cmake_eclipse"
@@ -261,12 +259,34 @@ if(V3D_BUILD_PATH) # ${CMAKE_BINARY_DIR} for V3D project
     # Copy v3d python module too
     # This copy must occur at build time
     get_target_property(PLUGIN_FILE PythonConsolePlugin LOCATION)
-    get_filename_component(FNAME "${PLUGIN_FILE}" NAME)
+    get_filename_component(PLG_NAME "${PLUGIN_FILE}" NAME)
     # message("${PLUGIN_FILE}")
-    # message("${BINARY_PLUGINS_PATH}/${FNAME}")
+    # message("${BINARY_PLUGINS_PATH}/${PLG_NAME}")
     add_custom_command(TARGET PythonConsolePlugin
         POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E copy "${PLUGIN_FILE}" "${BINARY_PLUGINS_PATH}/${FNAME}"
+        COMMAND "${CMAKE_COMMAND}" -E copy "${PLUGIN_FILE}" "${BINARY_PLUGINS_PATH}/${PLG_NAME}"
         COMMENT "Copying python console plugin to V3D binary_plugins directory"
     )
+    # Install boost python library
+    get_filename_component(BPNAME "${Boost_PYTHON_LIBRARY}" NAME)
+    if(APPLE)
+        # Put boost python library in v3d.app/Contents/Frameworks
+        set(FRAMEWORK_DIR "${V3D_BUILD_PATH}/v3d/Mac_Fat/v3d.app/Contents/Frameworks")
+        file(MAKE_DIRECTORY "${FRAMEWORK_DIR}")
+        # message("${FRAMEWORK_DIR}/${BPNAME}")
+        configure_file("${Boost_PYTHON_LIBRARY}" "${FRAMEWORK_DIR}/${BPNAME}" COPYONLY)
+        # TODO install_name_tool
+        # message("${BPNAME}")
+        # message("@executable_path/../Frameworks/${BPNAME}")
+        # message("${BINARY_PLUGINS_PATH}/${PLG_NAME}")
+        add_custom_command(TARGET PythonConsolePlugin
+            POST_BUILD
+            COMMAND install_name_tool -change "${BPNAME}" "@executable_path/../Frameworks/${BPNAME}" "${BINARY_PLUGINS_PATH}/${PLG_NAME}"
+            COMMAND install_name_tool -change "${BPNAME}" "@executable_path/../Frameworks/${BPNAME}" "${PLUGIN_FILE}"
+            COMMENT "Changing install name of boost python library."
+        )
+    else()
+        # Put boost python library next to v3d python console plugin library
+        configure_file("${Boost_PYTHON_LIBRARY}" "${BINARY_PLUGINS_PATH}/${BPNAME}" COPYONLY)
+    endif()
 endif()
