@@ -1056,9 +1056,9 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 			long z_start = (start_z > tile2vi_zs) ? start_z : tile2vi_zs;
 			long z_end = (end_z < tile2vi_ze) ? end_z : tile2vi_ze;
 			
-			x_end++;
-			y_end++;
-			z_end++;
+			//x_end++;
+			//y_end++;
+			//z_end++;
 			
 			// loading relative imagg files
 			V3DLONG *sz_relative = 0; 
@@ -1066,19 +1066,26 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 			unsigned char* relative1d = 0;
 			V3DLONG *szo=0;
 			
-		//	qDebug()<<"tile2vi_x_yZ="<<tile2vi_xs<<tile2vi_ys<<tile2vi_zs<<tile2vi_xe<<tile2vi_ye<<tile2vi_ze;
-						
-		  //  qDebug()<<"start_end_x_y_z=:"<<start_x<<start_y<<start_z<<end_x<<end_y<<end_z;				
+			qDebug()<<"tile2vi_x_yZ="<<tile2vi_xs<<tile2vi_ys<<tile2vi_zs<<tile2vi_xe<<tile2vi_ye<<tile2vi_ze;
 			
-		//	qDebug()<<"x_y_z_start_end="<<x_start<<y_start<<z_start<<x_end<<y_end<<z_end;
+			qDebug()<<"vim.min_vim="<<vim.min_vim[0]<<vim.min_vim[1]<<vim.min_vim[2];
+						
+		    qDebug()<<"start_end_x_y_z=:"<<start_x<<start_y<<start_z<<end_x<<end_y<<end_z;				
+			
+			
+			qDebug()<<"x_y_z_start_end="<<x_start<<y_start<<z_start<<x_end<<y_end<<z_end;
 			
 			if (x_end > x_start && y_end > y_start && z_end > z_start) 
 			{
 				//loadImage(imgSrcFile,relative1d,sz_relative,szo,0,0,0,x_end-x_start,y_end-y_start,z_end-z_start,datatype_relative);
-				loadImage(imgSrcFile,relative1d,sz_relative,szo,x_start,y_start,z_start,x_end,y_end,z_end,datatype_relative);
-			//	rx=sz_relative[0]; ry=sz_relative[1];rz=sz_relative[2];rc=sz_relative[3];
+				//loadImage(imgSrcFile,relative1d,sz_relative,szo,(x_start-tile2vi_xs),(y_start-tile2vi_ys),(z_start-tile2vi_zs),(x_end-tile2vi_xs),(y_end-tile2vi_ys),(z_end-tile2vi_zs),datatype_relative);
+				loadImage(imgSrcFile,relative1d,sz_relative,szo,(x_start-tile2vi_xs),(y_start-tile2vi_ys),(z_start-tile2vi_zs),(x_end-tile2vi_xs),(y_end-tile2vi_ys),(z_end-tile2vi_zs),datatype_relative);
+
+				//	rx=sz_relative[0]; ry=sz_relative[1];rz=sz_relative[2];rc=sz_relative[3];
 				
 				rx=szo[0], ry=szo[1], rz=szo[2], rc=szo[3];
+				
+				qDebug()<<"x_y_z="<<rx<<ry<<rz;
 				
 				if(datatype_relative==1)
 				{
@@ -1111,11 +1118,11 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 								long idx = oj + i-start_x;
 								long idxr = orj + (i-x_start);
 								
-								if(pVImg[idx]>0)
+								//if(pVImg[idx]>0)
 								{
-									pVImg[idx] = (pVImg[idx]>relative1d[idxr])?pVImg[idx]:relative1d[idxr];
+								//	pVImg[idx] = (pVImg[idx]>relative1d[idxr])?pVImg[idx]:relative1d[idxr];
 								}
-								else
+								//else
 								{
 									pVImg[idx] = relative1d[idxr];
 								}
