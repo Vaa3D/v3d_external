@@ -71,7 +71,10 @@ template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T * pada, V3DLONG sz0, 
 template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T * pada, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,double *p_vmax, double *p_vmin);
 template <class T> QPixmap copyRaw2QPixmap(const T * pada, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,ImagePlaneDisplayType disType, double *p_vmax, double *p_vmin);
 
+//
+using namespace std;
 
+// define indexed data structures
 // Define a lookup table
 //template <class T>
 //class LUT
@@ -290,7 +293,6 @@ template <class T> QPixmap copyRaw2QPixmap(const T * pada, V3DLONG sz0, V3DLONG 
 //			
 //			// lut
 //			lut = new LUT [number_tiles];
-//			
 //			T2 count=0;
 //			
 //			while( !pFileLUT.eof() )
@@ -300,7 +302,9 @@ template <class T> QPixmap copyRaw2QPixmap(const T * pada, V3DLONG sz0, V3DLONG 
 //					istringstream iss(str);
 //					
 //					iss >> buf;
+//					
 //					fn_str = buf;
+//					
 //					//
 //					iss >> buf; iss >> start[0];
 //					iss >> buf; iss >> start[1];
@@ -484,6 +488,9 @@ template <class T> QPixmap copyRaw2QPixmap(const T * pada, V3DLONG sz0, V3DLONG 
 //	T2 number_tiles;
 //	
 //};
+
+
+
 
 //
 class XMapView : public QWidget//, public V3DPluginInterface

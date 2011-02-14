@@ -38,7 +38,7 @@ void MAPiewerPlugin::iViewer(V3DPluginCallback &callback, QWidget *parent)
 	QString curFilePath = QFileInfo(m_FileName).path();
 	curFilePath.append("/");
 	
-	ImageSetWidget *inw = new ImageSetWidget(callback, parent,m_FileName, curFilePath, 2);
+	ImageSetWidget *inw = new ImageSetWidget(callback, parent,m_FileName, curFilePath, 5);//5
 	
 	if (inw)
 	{
@@ -190,8 +190,8 @@ void XMapView::paintEvent(QPaintEvent *event)
 		{
 			QRect r ( dragStartPosition, curMousePos );
 			painter.drawRect(r);
-			qDebug()<<"ee-xyz...."<<end_x<<end_y<<cz;
-			qDebug()<<"ss-xyz...."<<start_x<<start_y<<cur_z;
+			//qDebug()<<"ee-xyz...."<<end_x<<end_y<<cz;
+			//qDebug()<<"ss-xyz...."<<start_x<<start_y<<cur_z;
 		}
 	}
 }
@@ -577,9 +577,10 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 	callback1 = &callback;
 	
 	curFilePath = curFilePathInput;
+	
 	string filename = m_FileName.toStdString();
 	
-	qDebug()<<"filename ..."<<filename.c_str();
+	//qDebug()<<"filename ..."<<filename.c_str();
 
 	vim.y_load(filename);
 	
@@ -587,7 +588,7 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 	
 	long sx=vim.sz[0], sy=vim.sz[1], sz=vim.sz[2];
 	
-	qDebug()<<"sxyx ..."<<sx<<sy<<sz;
+	//qDebug()<<"sxyx ..."<<sx<<sy<<sz;
 	//****************************************************************
 	// suppose compressed image saved as .tif
 	QString m_FileName_compressed = m_FileName;
@@ -603,8 +604,12 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 	cx=sz_compressed[0], cy=sz_compressed[1], cz=sz_compressed[2], cc=sz_compressed[3];
 	channel_compressed_sz = cx*cy*cz;
 	init_x = cx/2, init_y = cy/2, init_z = cz/2; 
-	qDebug()<<"compressedsxyx ..."<<cx<<cy<<cz;			
+	//qDebug()<<"compressedsxyx ..."<<cx<<cy<<cz;			
 	createGUI();
+	scaleFactorInput = int(sx/cx);
+	
+	//qDebug()<<"scaleFactorInput ..."<<scaleFactorInput;	
+	
 	xy_view->Setwidget(callback, m_FileName, curFilePath, scaleFactorInput);
 	
 }
@@ -688,7 +693,7 @@ void XMapView::mouseReleaseEvent(QMouseEvent * e)
 		}
 		update_v3dviews(callback1, start_x*scaleFactor, start_y*scaleFactor, start_z*scaleFactor,end_x*scaleFactor, end_y*scaleFactor, end_z*scaleFactor);
 		
-		qDebug()<<"rrrexyz...."<<end_x<<end_y<<end_z;
+	//	qDebug()<<"rrrexyz...."<<end_x<<end_y<<end_z;
 		//update_v3dviews(mapCallback, dragStartPosition.x(),dragStartPosition.y(),cur_z, dragEndPosition.x(), dragEndPosition.y(),cz);
 		
 	}	
@@ -726,7 +731,7 @@ void XMapView::mouseRightButtonPressEvent(QMouseEvent *e)
 		}
 		update_v3dviews(callback1, start_x*scaleFactor, start_y*scaleFactor, start_z*scaleFactor,end_x*scaleFactor, end_y*scaleFactor, end_z*scaleFactor);
 		
-		qDebug()<<"rrrexyz...."<<end_x<<end_y<<end_z;
+		//qDebug()<<"rrrexyz...."<<end_x<<end_y<<end_z;
 		//update_v3dviews(mapCallback, dragStartPosition.x(),dragStartPosition.y(),cur_z, dragEndPosition.x(), dragEndPosition.y(),cz);
 		
 	}
@@ -746,7 +751,7 @@ void XMapView::mouseLeftButtonPressEvent(QMouseEvent *e) //080101
 		//setCursor(myCursor);		
 		update();
 		
-		qDebug()<<"LLLLsxyz...."<<start_x<<start_y<<start_z;
+		//qDebug()<<"LLLLsxyz...."<<start_x<<start_y<<start_z;
 	}
 }
 
@@ -946,13 +951,10 @@ void XMapView::drawROI(QPainter *painter)
 void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long start_y, long start_z, long end_x, long end_y, long end_z)
 {
 	
-	qDebug()<<"start_xyzc ..."<<start_x<<start_y<<start_z<<end_x<<end_y<<end_z;
-	
 	size_t start_t = clock();
-	
 	long vx, vy, vz, vc;
-	
-	vx = end_x - start_x + 1; 
+	long rx, ry, rz, rc;
+	vx = end_x - start_x + 1; // suppose the size same of all tiles
 	vy = end_y - start_y + 1;
 	vz = end_z - start_z + 1;
 	vc = vim.sz[3];
@@ -960,11 +962,6 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 	long pagesz_vim = vx*vy*vz*vc;
 	
 	unsigned char *pVImg = 0;
-	unsigned char* relative1d = 0;
-	V3DLONG *sz_relative = 0; 
-	V3DLONG * szo = 0;
-	int datatype_relative = 0;
-	ImagePixelType datatype;
 	
 	try
 	{
@@ -975,15 +972,16 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 		printf("Fail to allocate memory.\n");
 		return;
 	}
+	
 	// init
+	
 	for(long i=0; i<pagesz_vim; i++)
 	{
 		pVImg[i] = 0;
 	}
 	
 	bitset<3> lut_ss, lut_se, lut_es, lut_ee;
-		
-	// 
+	
 	long x_s = start_x + vim.min_vim[0];
 	long y_s = start_y + vim.min_vim[1];
 	long z_s = start_z + vim.min_vim[2];
@@ -992,13 +990,21 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 	long y_e = end_y + vim.min_vim[1];
 	long z_e = end_z + vim.min_vim[2];
 	
+	//
+	ImagePixelType datatype;
+	
+	// look up lut
+	//if (vim.number_tiles == 2) {
+//		vim.number_tiles=1;
+//	}
 	for(long ii=0; ii<vim.number_tiles; ii++)
 	{	
+		// init
 		lut_ss.reset();
 		lut_se.reset();
 		lut_es.reset();
 		lut_ee.reset();
-		
+		//
 		if(x_s < vim.lut[ii].start_pos[0]) lut_ss[1] = 1; // r  0 l
 		if(y_s < vim.lut[ii].start_pos[1]) lut_ss[0] = 1; // d  0 u
 		if(z_s < vim.lut[ii].start_pos[2]) lut_ss[2] = 1; // b  0 f
@@ -1015,56 +1021,27 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 		if(y_e < vim.lut[ii].end_pos[1]) lut_ee[0] = 1; // d  0 u
 		if(z_e < vim.lut[ii].end_pos[2]) lut_ee[2] = 1; // b  0 f
 		
-		// read data
+		// copy data
 		if( (!lut_ss.any() && lut_ee.any()) || (lut_es.any() && !lut_ee.any()) || (lut_ss.any() && !lut_se.any()) )
 		{
+			// 
 			cout << "satisfied image: "<< vim.lut[ii].fn_img << endl;
 			
 			char * curFileSuffix = getSurfix(const_cast<char *>(vim.lut[ii].fn_img.c_str()));
 			
-			cout << "suffix ... " << curFileSuffix << endl; //
+			cout << "suffix ... " << curFileSuffix << endl; // 
 			
 			QString curPath = curFilePath;
 			
 			string fn = curPath.append( QString(vim.lut[ii].fn_img.c_str()) ).toStdString();
 			
-			qDebug()<<"testing..."<<curFilePath<< fn.c_str();
+			//qDebug()<<"testing..."<<curFilePath<< fn.c_str();
 			
+			//
 			char * imgSrcFile = const_cast<char *>(fn.c_str());
 			
 			size_t s1_t = clock();
 			
-//			long tile2vi_xs = vim.lut[ii].start_pos[0]-vim.min_vim[0]; 
-//			long tile2vi_xe = vim.lut[ii].end_pos[0]-vim.min_vim[0]; 
-//			long tile2vi_ys = vim.lut[ii].start_pos[1]-vim.min_vim[1]; 
-//			long tile2vi_ye = vim.lut[ii].end_pos[1]-vim.min_vim[1]; 
-//			long tile2vi_zs = vim.lut[ii].start_pos[2]-vim.min_vim[2]; 
-//			long tile2vi_ze = vim.lut[ii].end_pos[2]-vim.min_vim[2]; 
-//			
-//			long x_start = (start_x > tile2vi_xs) ? start_x : tile2vi_xs; 
-//			long x_end = (end_x < tile2vi_xe) ? end_x : tile2vi_xe;
-//			long y_start = (start_y > tile2vi_ys) ? start_y : tile2vi_ys;
-//			long y_end = (end_y < tile2vi_ye) ? end_y : tile2vi_ye;
-//			long z_start = (start_z > tile2vi_zs) ? start_z : tile2vi_zs;
-//			long z_end = (end_z < tile2vi_ze) ? end_z : tile2vi_ze;
-			
-			V3DLONG *sz_relative = 0; 
-			int datatype_relative = 0;
-			unsigned char* relative1d = 0;
-			
-			loadImage(imgSrcFile, relative1d, sz_relative, datatype_relative); //
-			
-			long rx=sz_relative[0], ry=sz_relative[1], rz=sz_relative[2], rc=sz_relative[3];
-			
-			if(datatype_relative==1)
-				datatype = V3D_UINT8;
-			
-			size_t e1_t = clock();
-			cout<<"time elapse for read tmpstack ... "<<e1_t-s1_t<<endl;
-			
-			
-			
-			//
 			long tile2vi_xs = vim.lut[ii].start_pos[0]-vim.min_vim[0]; 
 			long tile2vi_xe = vim.lut[ii].end_pos[0]-vim.min_vim[0]; 
 			long tile2vi_ys = vim.lut[ii].start_pos[1]-vim.min_vim[1]; 
@@ -1083,115 +1060,71 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 			y_end++;
 			z_end++;
 			
-			//
-			//cout << x_start << " " << x_end << " " << y_start << " " << y_end << " " << z_start << " " << z_end << endl;
+			// loading relative imagg files
+			V3DLONG *sz_relative = 0; 
+			int datatype_relative = 0;
+			unsigned char* relative1d = 0;
+			V3DLONG *szo=0;
 			
-			//
-			for(long c=0; c<rc; c++)
+		//	qDebug()<<"tile2vi_x_yZ="<<tile2vi_xs<<tile2vi_ys<<tile2vi_zs<<tile2vi_xe<<tile2vi_ye<<tile2vi_ze;
+						
+		  //  qDebug()<<"start_end_x_y_z=:"<<start_x<<start_y<<start_z<<end_x<<end_y<<end_z;				
+			
+		//	qDebug()<<"x_y_z_start_end="<<x_start<<y_start<<z_start<<x_end<<y_end<<z_end;
+			
+			if (x_end > x_start && y_end > y_start && z_end > z_start) 
 			{
-				long o_c = c*vx*vy*vz;
-				long o_r_c = c*rx*ry*rz;
-				for(long k=z_start; k<z_end; k++)
+				loadImage(imgSrcFile,relative1d,sz_relative,szo,0,0,0,x_end-x_start,y_end-y_start,z_end-z_start,datatype_relative);
+			//	loadImage(imgSrcFile,relative1d,sz_relative,szo,x_start,y_start,z_start,x_end,y_end,z_end,datatype_relative);
+			//	rx=sz_relative[0]; ry=sz_relative[1];rz=sz_relative[2];rc=sz_relative[3];
+				
+				rx=szo[0], ry=szo[1], rz=szo[2], rc=szo[3];
+				
+				if(datatype_relative==1)
 				{
-					long o_k = o_c + (k-start_z)*vx*vy;
-					long o_r_k = o_r_c + (k-z_start)*rx*ry;
-					
-					for(long j=y_start; j<y_end; j++)
+					datatype = V3D_UINT8;
+				}else if(datatype_relative==2)
+				{
+					datatype = V3D_UINT16;
+				
+				}
+				size_t e1_t = clock();
+				cout<<"time elapse for read tmpstack ... "<<e1_t-s1_t<<endl;
+				//
+				//cout << x_start << " " << x_end << " " << y_start << " " << y_end << " " << z_start << " " << z_end << endl;
+
+				for(long c=0; c<rc; c++)
+				{
+					long oc = c*vx*vy*vz;
+					long orc = c*rx*ry*rz;
+					for(long k=z_start; k<z_end; k++)
 					{
-						long o_j = o_k + (j-start_y)*vx;
-						long o_r_j = o_r_k + (j-y_start)*rx;
-						for(long i=x_start; i<x_end; i++)
+						long omk = oc + (k-start_z)*vx*vy;
+						long ork = orc + (k-z_start)*rx*ry;
+						
+						for(long j=y_start; j<y_end; j++)
 						{
-							long idx = o_j + i-start_x;
-							long idx_r = o_r_j + (i-x_start);
-							
-							if(pVImg[idx]>0)
+							long oj = omk + (j-start_y)*vx;
+							long orj = ork + (j-y_start)*rx;
+							for(long i=x_start; i<x_end; i++)
 							{
-								pVImg[idx] = (pVImg[idx]>relative1d[idx_r])?pVImg[idx]:relative1d[idx_r];
-							}
-							else
-							{
-								pVImg[idx] = relative1d[idx_r];
+								long idx = oj + i-start_x;
+								long idxr = orj + (i-x_start);
+								
+								if(pVImg[idx]>0)
+								{
+									pVImg[idx] = (pVImg[idx]>relative1d[idxr])?pVImg[idx]:relative1d[idxr];
+								}
+								else
+								{
+									pVImg[idx] = relative1d[idxr];
+								}
 							}
 						}
 					}
 				}
+				
 			}
-			
-			
-			
-//			qDebug()<<"x_y_z_start_end==:"<<x_start<<y_start<<z_start<<x_end<<y_end<<z_end;
-//			
-//			qDebug()<<"start_end_x_y_z==:"<<start_x<<start_y<<start_z<<end_x<<end_y<<end_z;	
-//			
-//			loadImage(imgSrcFile,relative1d,sz_relative,szo,x_start,y_start,z_start,x_end,y_end,z_end,datatype_relative);
-			
-			//long rx=sz_relative[0], ry=sz_relative[1], rz=sz_relative[2], rc=sz_relative[3];
-			
-			//////////////////////////
-//			x_end++;
-//			y_end++;
-//			z_end++;
-//			Image4DSimple p4DImage;
-//			
-//			// p4DImage.setData((unsigned char*)relative1d, rx, ry, rz, rc, V3D_UINT16);
-//			p4DImage.setData((unsigned char*)relative1d, szo[0], szo[1], szo[2], szo[3], V3D_UINT16);
-//			
-//			v3dhandle newwin;
-//			if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to use the existing window?"), QMessageBox::Yes, QMessageBox::No))
-//				newwin = callback->currentImageWindow();
-//			else
-//				newwin = callback->newImageWindow();
-//			callback->setImage(newwin, &p4DImage);
-//			callback->setImageName(newwin, QString("Tip Detection"));
-//			callback->updateImageWindow(newwin);
-			
-			/////////////////////////////////////
-			
-			
-//			long rx=szo[0], ry=szo[1], rz=szo[2], rc=szo[3];
-//			
-//			if(datatype_relative==1)
-//			{
-//				datatype = V3D_UINT8;
-//				
-//			}else if (datatype_relative==2) 
-//			{
-//				datatype = V3D_UINT16;
-//				
-//			}
-//			size_t e1_t = clock();
-//			
-//			cout<<"time elapse for read tmpstack ... "<<e1_t-s1_t<<endl;
-//			
-//			qDebug()<<"r_x_y_z_c=="<<rx<<ry<<rz<<rc;
-//		
-//			for(long c=0; c<rc; c++)
-//			{
-//				for(long k=z_start; k<z_end; k++)
-//				{
-//					for(long j=y_start; j<y_end; j++)
-//					{
-//						for(long i=x_start; i<x_end; i++)
-//						{
-//							long idx = c*vx*vy*vz + (k-start_z)*vx*vy + (j-start_y)*vx + (i-start_x);
-//							long idxr = c*rx*ry*rz + (k-z_start)*rx*ry + (j- y_start)*rx + (i-x_start);
-//							if(pVImg[idx]>0)
-//							{
-//								pVImg[idx] = (pVImg[idx]>relative1d[idxr])?pVImg[idx]:relative1d[idxr];
-//							}
-//							else
-//							{
-//								pVImg[idx] = relative1d[idxr];
-//							}
-//						}
-//					}
-//				}
-//			}
-			//x_end++;
-			//y_end++;
-			//z_end++;
-
 			if(sz_relative) {delete []sz_relative; sz_relative=0;}
 			if(relative1d) {delete []relative1d; relative1d=0;}
 		}
@@ -1201,11 +1134,15 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 	
 	cout<<"time elapse ... "<<end1_t-start_t<<endl;
 	
+//	qDebug()<<"x_y_z_vx="<<vx<<vy<<vz<<vc;
+//	qDebug()<<"rxyz="<<rx<<ry<<rz<<rc;
 	//display
 	
 	Image4DSimple p4DImage;
-	p4DImage.setData((unsigned char*)pVImg, vx, vy, vz, vc, V3D_UINT16);
-	//p4DImage.setData((unsigned char*)relative1d, szo[0], szo[1], szo[2], szo[3], datatype);
+	
+	//p4DImage.setData((unsigned char*)relative1d, rx, ry, rz, rc, V3D_UINT8);
+	
+	p4DImage.setData(pVImg, vx, vy, vz, vc, V3D_UINT8);
 	
 	v3dhandle curwin;
 	
@@ -1215,7 +1152,7 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 		curwin = callback->currentImageWindow();
 	
 	callback->setImage(curwin, &p4DImage);
-	callback->setImageName(curwin, "ROI of A Virtual Image");
+	callback->setImageName(curwin, "MAP Image");
 	callback->updateImageWindow(curwin);
 	
 	callback->pushImageIn3DWindow(curwin);
@@ -1223,9 +1160,20 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 	// time consumption
 	size_t end_t = clock();
 	
+	////			// p4DImage.setData((unsigned char*)relative1d, rx, ry, rz, rc, V3D_UINT16);
+	////			p4DImage.setData((unsigned char*)relative1d, szo[0], szo[1], szo[2], szo[3], V3D_UINT16);
+	////			
+	////			v3dhandle newwin;
+	////			if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to use the existing window?"), QMessageBox::Yes, QMessageBox::No))
+	////				newwin = callback->currentImageWindow();
+	////			else
+	////				newwin = callback->newImageWindow();
+	////			callback->setImage(newwin, &p4DImage);
+	////			callback->setImageName(newwin, QString("Tip Detection"));
+	////			callback->updateImageWindow(newwin);
+	
 	cout<<"time elapse after loading configuration info ... "<<end_t-start_t<<endl;
 }
-
 void XMapView::Setwidget(V3DPluginCallback &callback, QString m_FileName, QString curFilePathInput, float scaleFactorInput)
 {
 	callback1 = &callback;
