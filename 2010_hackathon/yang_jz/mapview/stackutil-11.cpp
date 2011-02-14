@@ -950,7 +950,6 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, V3DLON
 		berror = 1;
 		return berror;
 	}
-	printf("shu ju zhi zhen  huo de ");
 	
 	fseek (fid, 0, SEEK_END);
 	V3DLONG fileSize = ftell(fid);
@@ -1123,7 +1122,7 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, V3DLON
 	V3DLONG tmpw = endx - startx;
 	V3DLONG tmph = endy - starty;
 	V3DLONG tmpz = endz - startz;
-	printf("to=%ld yt=%ld zto=%ld\n",tmpw,tmph,tmpz);	
+	//printf("to=%ld yt=%ld zto=%ld\n",tmpw,tmph,tmpz);	
 	if(img){delete []img;img=0;}
 	img = new unsigned char [tmpw*tmph*tmpz*sz[3]*unitSize];
 	if(!img)
@@ -1140,8 +1139,8 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, V3DLON
 	V3DLONG cn = tmpw*tmph*tmpz;
 	V3DLONG kn = tmpw*tmph;
 	V3DLONG total = tmpw*tmph*tmpz*sz[3];
-	printf("sx=%ld sy=%ld sz=%ld\n",startx,starty,startz);
-	printf("ex=%ld ey=%ld ez=%ld\n",endx,endy,endz);
+	//printf("sx=%ld sy=%ld sz=%ld\n",startx,starty,startz);
+	//printf("ex=%ld ey=%ld ez=%ld\n",endx,endy,endz);
 	V3DLONG count=0;
 	V3DLONG c,j,k;
 	for (c = 0; c < sz[3]; c++)

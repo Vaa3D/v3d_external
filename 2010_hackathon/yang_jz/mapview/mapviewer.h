@@ -25,7 +25,7 @@
 #include "volimg_proc.h"
 #include "img_definition.h"
 #include "basic_landmark.h"
-
+#include "basic_triview.h"
 #include "mg_utilities.h"
 #include "mg_image_lib11.h"
 
@@ -501,6 +501,7 @@ class XMapView : public QWidget//, public V3DPluginInterface
    // Q_PROPERTY(double scale READ scale WRITE changeScale)	
 public:
 	XMapView(QWidget *parent);
+	~XMapView();
 	
 	void setImgData(ImagePlaneDisplayType ptype, V3DLONG *sz_compressed,V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,unsigned char *pdata, ImageDisplayColorType ctype);
 		
@@ -522,12 +523,19 @@ public:
 	long plane_n;
 	long start_x,start_y,start_z;
 	long end_x,end_y,end_z;
+	long in_startx ;
+	long in_starty ;
+	
+	long in_endx ;
+	long in_endy ;
 	
 	V3DPluginCallback *callback1;
 	
 	QString curFilePath;
 	
 	float scaleFactor;
+	
+	static XMapView* m_show;
 	
 	int get_disp_width() {return disp_width;}
 	
@@ -584,6 +592,8 @@ private:
 	
 	bool b_displayFocusCrossLine;
 	bool b_mouseend;
+	
+	bool b_mousmove;
 	int focusPosInWidth, focusPosInHeight;
 	
 	bool b_moveCurrentLandmark;

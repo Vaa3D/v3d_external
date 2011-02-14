@@ -10,6 +10,7 @@ Q_EXPORT_PLUGIN2(mapviewer, MAPiewerPlugin);
 
 //plugin funcs
 const QString title = "Map Viewer";
+XMapView* XMapView::m_show = 0;
 QStringList MAPiewerPlugin::menulist() const
 {
     return QStringList() << tr("load Image")
@@ -38,20 +39,27 @@ void MAPiewerPlugin::iViewer(V3DPluginCallback &callback, QWidget *parent)
 	QString curFilePath = QFileInfo(m_FileName).path();
 	curFilePath.append("/");
 	
+	if (XMapView::m_show)
+	{
+		XMapView::m_show->show();
+		return;
+	}
+	
 	ImageSetWidget *inw = new ImageSetWidget(callback, parent,m_FileName, curFilePath, 5);//5
 	
 	if (inw)
 	{
 		//inw->showFullScreen();arthurStyle
-		inw->setWindowModality(Qt::ApplicationModal);
+		//inw->setWindowModality(Qt::ApplicationModal);
 		// inw->setWindowModality(Qt::WindowStaysOnTopHint);
 		//inw->setWindowModality(Qt::WindowStaysOnTopHint);
-		//inw->setStyle(false);
-		inw->setWindowModality(Qt::NonModal); 
+		//inw->setStyle();
+		//inw->setWindowModality(Qt::NonModal); 
+		//inw->setParent(0);
 	//	inw->setWindowOpacity(0.9);
 		inw->show();
+		//return inw->exec();
 		//inw->showNormal(); 
-		
 	}
 	
 	
@@ -186,13 +194,14 @@ void XMapView::paintEvent(QPaintEvent *event)
 	painter.setBrush(Qt::NoBrush);
 	//if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 	{
-		if (bMouseCurorIn )
+		if (bMouseCurorIn && b_mousmove && b_mouseend)
 		{
 			QRect r ( dragStartPosition, curMousePos );
 			painter.drawRect(r);
 			//qDebug()<<"ee-xyz...."<<end_x<<end_y<<cz;
 			//qDebug()<<"ss-xyz...."<<start_x<<start_y<<cur_z;
 		}
+
 	}
 }
 
@@ -355,6 +364,8 @@ XMapView::XMapView(QWidget *parent)
 	m_scale = 1.0;
 	//  m_shear = 0.0;
 	//  m_rotation = 0.0;
+	
+	m_show = this;
 	myCursor = QCursor(Qt::OpenHandCursor);
 	
 	b_displayFocusCrossLine = true;
@@ -372,7 +383,8 @@ XMapView::XMapView(QWidget *parent)
 	focusPosInHeight = pixmap.height()/2.0;
 	
 	bMouseCurorIn = false;
-	b_mouseend = true;
+	b_mouseend = false;
+	b_mousmove = false;
 	
 	curDisplayCenter = QPoint(pixmap.width()/2.0, pixmap.height()/2.0);
 	
@@ -381,8 +393,18 @@ XMapView::XMapView(QWidget *parent)
 	disp_scale = 1;
 	disp_width = disp_scale * pixmap.width();
 	disp_height = disp_scale * pixmap.height();
+	
+	start_x = start_y = start_z = end_x = end_y = end_z = 0;	
+	in_startx = in_starty = in_endx = in_endy = 0;
+	
 		
 }
+XMapView::~XMapView()
+{
+	m_show = 0;
+}
+
+
 void ImageSetWidget::drawdata()
 {
 	 Bcopy = true;
@@ -670,32 +692,25 @@ void XMapView::mouseReleaseEvent(QMouseEvent * e)
 	//flag_syn = false;
 	
 //	if (QApplication::keyboardModifiers()==Qt::ControlModifier)
+	if (bMouseCurorIn && b_mousmove)
 	{
 		dragEndPosition = e->pos();
 		b_mouseend = false;
-		setCursor(Qt::ArrowCursor);
+		b_mousmove = false;
 		flag_syn = true;
+		setCursor(Qt::ArrowCursor);
 		end_x = dragEndPosition.x();
 		end_y = dragEndPosition.y();
 		end_z = cz ;
-		long tem;
-		if (start_x > end_x)
-		{
-			tem =end_x;
-			end_x = start_x;
-			end_x = tem ;
-		}
-		if (start_y > end_y)
-		{
-			tem =end_y;
-			end_y = start_y;
-			start_y = tem;
-		}
-		update_v3dviews(callback1, start_x*scaleFactor, start_y*scaleFactor, start_z*scaleFactor,end_x*scaleFactor, end_y*scaleFactor, end_z*scaleFactor);
+		long in_startx = (start_x < end_x)? start_x:end_x;
+		long in_starty = (start_y < end_y)? start_y:end_y;
 		
-	//	qDebug()<<"rrrexyz...."<<end_x<<end_y<<end_z;
-		//update_v3dviews(mapCallback, dragStartPosition.x(),dragStartPosition.y(),cur_z, dragEndPosition.x(), dragEndPosition.y(),cz);
-		
+		long in_endx = (end_x > start_x)? end_x:start_x;
+		long in_endy = (end_y > start_y)? end_y:start_y;
+
+	//qDebug()<<"mouserelease x y z ...."<<start_x<<start_y<<start_z<<end_x<<end_y<<end_z;		
+	//	update_v3dviews(callback1, start_x*scaleFactor, start_y*scaleFactor, start_z*scaleFactor,end_x*scaleFactor, end_y*scaleFactor, end_z*scaleFactor);
+		update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);
 	}	
 //	 if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 //	 {
@@ -729,6 +744,7 @@ void XMapView::mouseRightButtonPressEvent(QMouseEvent *e)
 			end_y = start_y;
 			start_y = tem;
 		}
+		
 		update_v3dviews(callback1, start_x*scaleFactor, start_y*scaleFactor, start_z*scaleFactor,end_x*scaleFactor, end_y*scaleFactor, end_z*scaleFactor);
 		
 		//qDebug()<<"rrrexyz...."<<end_x<<end_y<<end_z;
@@ -739,6 +755,7 @@ void XMapView::mouseRightButtonPressEvent(QMouseEvent *e)
 void XMapView::mouseLeftButtonPressEvent(QMouseEvent *e) //080101
 {
 	//flag_syn = false;
+	
 	if (bMouseCurorIn )//&& QApplication::keyboardModifiers()==Qt::ControlModifier)
 	{
 		b_mouseend = true;
@@ -759,8 +776,17 @@ void XMapView::mouseMoveEvent (QMouseEvent * e)
 {
 	//curMousePos = e->pos()/disp_scale;
 	
-	//if (QApplication::keyboardModifiers()==Qt::ControlModifier) 
+//	if (bMouseCurorIn && QApplication::keyboardModifiers()==Qt::ControlModifier && b_mousmove) 
+//	{
+//		curMousePos = e->pos();
+//		start_x = curMousePos.x() - (in_endx - in_startx)/2;
+//		end_x = curMousePos.x() + (in_endx - in_startx)/2;
+//		start_y = curMousePos.y() - (in_endy - in_starty)/2;
+//		end_y = curMousePos.y() + (in_endy - in_starty)/2;
+//		
+//	}else if (bMouseCurorIn)
 	{
+		b_mousmove = true;
 		curMousePos = e->pos();
 		//dragEndPosition= e->pos();
 		end_x = curMousePos.x();
@@ -795,158 +821,6 @@ void XMapView::drawROI(QPainter *painter)
 	}
 
 }
-//void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long start_y, long start_z, long end_x, long end_y, long end_z)
-//{
-//	// visualize in v3d tri-view
-//	
-//	size_t start_t = clock();
-//	
-//	//virtual image
-//	long vx, vy, vz, vc;
-//	
-//	vx = end_x - start_x + 1; // suppose the size same of all tiles
-//	vy = end_y - start_y + 1;
-//	vz = end_z - start_z + 1;
-//	vc = vim.sz[3];
-//	
-//	qDebug()<<"3dxyzc ..."<<start_x<<start_y<<start_z<<end_x<<end_y<<end_z;
-//	
-//	long pagesz_vim = vx*vy*vz*vc;
-//	
-//	unsigned char *pVImg = 0;
-//	
-//	try
-//	{
-//		pVImg = new unsigned char [pagesz_vim];
-//	}
-//	catch (...) 
-//	{
-//		printf("Fail to allocate memory.\n");
-//		return;
-//	}
-//	
-//	// init
-//	for(long i=0; i<pagesz_vim; i++)
-//	{
-//		pVImg[i] = 0;
-//	}
-//	
-//	long x_s = start_x + vim.min_vim[0];
-//	long y_s = start_y + vim.min_vim[1];
-//	long z_s = start_z + vim.min_vim[2];
-//	
-//	long x_e = end_x + vim.min_vim[0];
-//	long y_e = end_y + vim.min_vim[1];
-//	long z_e = end_z + vim.min_vim[2];
-//	
-//	qDebug()<<"min ..."<<vim.min_vim[0]<<vim.min_vim[1]<<vim.min_vim[2];
-//	
-//	ImagePixelType datatype;
-//	
-//	cout << "satisfied image: "<< vim.lut[0].fn_img << endl;
-//	
-//	//
-//	//char * curFileSuffix = getSurfix(const_cast<char *>(vim.lut[0].fn_img.c_str()));
-//	
-//	//cout << "suffix ... " << curFileSuffix << endl; // tif lsm
-//	
-//	QString curPath = curFilePath;
-//	
-//	string fn = curPath.append( QString(vim.lut[0].fn_img.c_str()) ).toStdString();
-//	
-//	
-//	qDebug()<<"testing..."<<curFilePath<< fn.c_str();
-//	//
-//	char * imgSrcFile = const_cast<char *>(fn.c_str());
-//	
-//	size_t s1_t = clock();
-//	
-//	// loading relative imagg files
-//	V3DLONG *sz_relative = 0; 
-//	V3DLONG *szo = 0; 
-//	int datatype_relative = 0;
-//	unsigned char* relative1d = 0;
-//	
-//    //loadImage(imgSrcFile, relative1d, sz_relative, datatype_relative); //
-//	
-//	loadImage(imgSrcFile,relative1d,sz_relative,szo,start_x,start_y,start_z,end_x,end_y,end_z,datatype_relative);	
-//	
-//	long rx=sz_relative[0], ry=sz_relative[1], rz=sz_relative[2], rc=sz_relative[3];
-//	
-//	long sxx=szo[0], syy=szo[1], szz=szo[2], scc=szo[3];
-//	
-//	if(datatype_relative==1)
-//		datatype = V3D_UINT8;
-//	
-//	qDebug()<<"infomation..."<<rx<<ry<<rz;
-//	
-//	//qDebug()<<"infomationoooori..."<<sxx<<syy<<szz<<scc;
-//	
-//	size_t e1_t = clock();
-//	
-//	cout<<"time elapse for read tmpstack ... "<<e1_t-s1_t<<endl;
-//	int stt =2;
-//	if (stt == 1) 
-//	{
-//		for(long c=0; c<rc; c++)
-//		{
-//			long o_c = c*vx*vy*vz;
-//			long o_r_c = c*rx*ry*rz;
-//			for(long k=z_s; k<z_e; k++)
-//			{
-//				long o_k = o_c + (k-z_s)*vx*vy;
-//				long o_r_k = o_r_c + (k)*rx*ry;
-//				
-//				for(long j=y_s; j<y_e; j++)
-//				{
-//					long o_j = o_k + (j-y_s)*vx;
-//					long o_r_j = o_r_k + (j)*rx;
-//					for(long i=x_s; i<x_e; i++)
-//					{
-//						long idx = o_j + i-x_s;
-//						long idx_r = o_r_j + (i);
-//						pVImg[idx] = relative1d[idx_r];
-//					}
-//				}
-//			}
-//		}
-//		if(relative1d) {delete []relative1d; relative1d=0;}
-//		
-//	}
-//	
-//	size_t end1_t = clock();
-//	
-//	cout<<"time elapse ... "<<end1_t-start_t<<endl;
-//	
-//	//display
-//	Image4DSimple p4DImage;
-//	
-//	// p4DImage.setData((unsigned char*)relative1d, rx, ry, rz, rc, V3D_UINT16);
-//	p4DImage.setData((unsigned char*)relative1d, szo[0], szo[1], szo[2], szo[3], V3D_UINT16);
-//	
-//	v3dhandle curwin;
-//	
-//	if(!callback->currentImageWindow())
-//		curwin = callback->newImageWindow();
-//	else
-//		curwin = callback->currentImageWindow();
-//	
-//	callback->setImage(curwin, &p4DImage);
-//	callback->setImageName(curwin, "Image");
-//	callback->updateImageWindow(curwin);
-//	
-//	callback->pushImageIn3DWindow(curwin);
-//	
-//	// time consumption
-//	size_t end_t = clock();
-//	
-//	cout<<"time elapse after loading configuration info ... "<<end_t-start_t<<endl;
-//	
-//	//loadImage(imgSrcFile, relative1d, sz_relative, datatype_relative); //
-//	//	loadImage(imgSrcFile,relative1d,sz_relative,start_x,start_y,start_z,end_x,end_y,end_z,datatype_relative);	
-//	
-//	
-//}
 
 void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long start_y, long start_z, long end_x, long end_y, long end_z)
 {
@@ -954,6 +828,23 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 	size_t start_t = clock();
 	long vx, vy, vz, vc;
 	long rx, ry, rz, rc;
+	
+    long tz = start_z;
+	
+	start_z = tz - 10;
+	
+	end_z = tz + 10;
+	
+	if (start_z < 0)
+	{
+		start_z = 0;
+	}
+	if (end_z > vim.sz[2]) 
+	{
+		end_z=vim.sz[2];
+		
+	}
+	
 	vx = end_x - start_x + 1; // suppose the size same of all tiles
 	vy = end_y - start_y + 1;
 	vz = end_z - start_z + 1;
@@ -1035,7 +926,7 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 			
 			string fn = curPath.append( QString(vim.lut[ii].fn_img.c_str()) ).toStdString();
 			
-			//qDebug()<<"testing..."<<curFilePath<< fn.c_str();
+			qDebug()<<"testing..."<<curFilePath<< fn.c_str();
 			
 			//
 			char * imgSrcFile = const_cast<char *>(fn.c_str());
@@ -1057,7 +948,7 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 			long z_end = (end_z < tile2vi_ze) ? end_z : tile2vi_ze;
 			
 			//x_end++;
-			//y_end++;
+		//	y_end++;
 			//z_end++;
 			
 			// loading relative imagg files
@@ -1066,26 +957,28 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 			unsigned char* relative1d = 0;
 			V3DLONG *szo=0;
 			
-			qDebug()<<"tile2vi_x_yZ="<<tile2vi_xs<<tile2vi_ys<<tile2vi_zs<<tile2vi_xe<<tile2vi_ye<<tile2vi_ze;
+			if(x_end < x_start)
+			{
+				qDebug()<<"start_end_x_y_z=:"<<start_x<<start_y<<start_z<<end_x<<end_y<<end_z;
+				
+			}
+			//qDebug()<<"tile2vi_x_yZ="<<tile2vi_xs<<tile2vi_ys<<tile2vi_zs<<tile2vi_xe<<tile2vi_ye<<tile2vi_ze;
 			
-			qDebug()<<"vim.min_vim="<<vim.min_vim[0]<<vim.min_vim[1]<<vim.min_vim[2];
+			//qDebug()<<"vim.min_vim="<<vim.min_vim[0]<<vim.min_vim[1]<<vim.min_vim[2];
 						
-		    qDebug()<<"start_end_x_y_z=:"<<start_x<<start_y<<start_z<<end_x<<end_y<<end_z;				
+		  //  qDebug()<<"start_end_x_y_z=:"<<start_x<<start_y<<start_z<<end_x<<end_y<<end_z;				
 			
-			
-			qDebug()<<"x_y_z_start_end="<<x_start<<y_start<<z_start<<x_end<<y_end<<z_end;
+			//qDebug()<<"x_y_z_start_end="<<x_start<<y_start<<z_start<<x_end<<y_end<<z_end;
 			
 			if (x_end > x_start && y_end > y_start && z_end > z_start) 
 			{
-				//loadImage(imgSrcFile,relative1d,sz_relative,szo,0,0,0,x_end-x_start,y_end-y_start,z_end-z_start,datatype_relative);
-				//loadImage(imgSrcFile,relative1d,sz_relative,szo,(x_start-tile2vi_xs),(y_start-tile2vi_ys),(z_start-tile2vi_zs),(x_end-tile2vi_xs),(y_end-tile2vi_ys),(z_end-tile2vi_zs),datatype_relative);
 				loadImage(imgSrcFile,relative1d,sz_relative,szo,(x_start-tile2vi_xs),(y_start-tile2vi_ys),(z_start-tile2vi_zs),(x_end-tile2vi_xs),(y_end-tile2vi_ys),(z_end-tile2vi_zs),datatype_relative);
 
 				//	rx=sz_relative[0]; ry=sz_relative[1];rz=sz_relative[2];rc=sz_relative[3];
 				
 				rx=szo[0], ry=szo[1], rz=szo[2], rc=szo[3];
 				
-				qDebug()<<"x_y_z="<<rx<<ry<<rz;
+			//	qDebug()<<"x_y_z="<<rx<<ry<<rz;
 				
 				if(datatype_relative==1)
 				{
@@ -1098,17 +991,17 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 				size_t e1_t = clock();
 				cout<<"time elapse for read tmpstack ... "<<e1_t-s1_t<<endl;
 				//
-				//cout << x_start << " " << x_end << " " << y_start << " " << y_end << " " << z_start << " " << z_end << endl;
+				V3DLONG tempc = vx*vy*vz, tempcz = vx*vy;
+				V3DLONG temprc = rx*ry*rz, temprcz = rx*ry;
 
 				for(long c=0; c<rc; c++)
 				{
-					long oc = c*vx*vy*vz;
-					long orc = c*rx*ry*rz;
+					long oc = c*tempc;
+					long orc = c*temprc;
 					for(long k=z_start; k<z_end; k++)
 					{
-						long omk = oc + (k-start_z)*vx*vy;
-						long ork = orc + (k-z_start)*rx*ry;
-						
+						long omk = oc + (k-start_z)*tempcz;
+						long ork = orc + (k-z_start)*temprcz;
 						for(long j=y_start; j<y_end; j++)
 						{
 							long oj = omk + (j-start_y)*vx;
@@ -1153,16 +1046,21 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 	
 	v3dhandle curwin;
 	
-	if(!callback->currentImageWindow())
-		curwin = callback->newImageWindow();
-	else
-		curwin = callback->currentImageWindow();
+	curwin = callback->newImageWindow();
 	
 	callback->setImage(curwin, &p4DImage);
+	
 	callback->setImageName(curwin, "MAP Image");
 	callback->updateImageWindow(curwin);
-	
 	callback->pushImageIn3DWindow(curwin);
+	
+//	
+//	TriviewControl *tvControl = callback->getTriviewControl(curwin);
+//	
+//	V3DLONG x,y,z;
+//	tvControl->getFocusLocation( x, y, z);
+//	
+//	printf("sx=%ld sy=%ld sz=%ld\n",x,y,z);
 	
 	// time consumption
 	size_t end_t = clock();
