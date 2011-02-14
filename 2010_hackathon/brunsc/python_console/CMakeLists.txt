@@ -117,7 +117,6 @@ set(PLUGIN_HEADERS
 )
 
 set(PLUGIN_DIRECTORY_NAME python_scripting/python_console)
-
 configure_v3d_plugin(PythonConsolePlugin)
 
 target_link_libraries(PythonConsolePlugin
@@ -152,6 +151,8 @@ endif()
 set(V3D_PYTHON_CONSOLE_PLUGIN_OUTPUT_DIR
     "${PLUGINS_PATH}/${PLUGIN_DIRECTORY_NAME}"
     CACHE PATH "Where to build python console plugin")
+
+file(MAKE_DIRECTORY "${V3D_PYTHON_CONSOLE_PLUGIN_OUTPUT_DIR}")
 
 set_target_properties(PythonConsolePlugin PROPERTIES 
     ARCHIVE_OUTPUT_DIRECTORY "${V3D_PYTHON_CONSOLE_PLUGIN_OUTPUT_DIR}"
@@ -232,3 +233,40 @@ if(V3D_PYTHON_CONSOLE_GENERATE_API_DOCS)
     endif()
 endif()
 
+########################################
+# Install python scripts and libraries #
+########################################
+# ...by piggybacking on V3D binary_plugins mechanism
+# Place files in v3d binary_plugins area, so they will be installed.
+file(GLOB PY_SCRIPT_FILES "${CMAKE_CURRENT_SOURCE_DIR}/scripts/*.py")
+# Hack copying of boost python library too
+set(PY_SCRIPT_FILES ${PY_SCRIPT_FILES} ${Boost_PYTHON_LIBRARY})
+find_path(V3D_BUILD_PATH v3d
+    PATHS
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../../../build_v3d_cmake_eclipse"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../../build_cmake"
+    PATH_SUFFIXES
+    NO_DEFAULT_PATH
+    )
+if(V3D_BUILD_PATH) # ${CMAKE_BINARY_DIR} for V3D project
+    # place python console plugin in binary_plugins, so it will be installed with v3d
+    # This copy occurs at configuration time
+    set(BINARY_PLUGINS_PATH "${V3D_BUILD_PATH}/binary_plugins/${PLUGIN_DIRECTORY_NAME}")
+    file(MAKE_DIRECTORY ${BINARY_PLUGINS_PATH})
+    # message("${BINARY_PLUGINS_PATH}")
+    foreach(SCRIPT_FILE ${PY_SCRIPT_FILES})
+        get_filename_component(FNAME "${SCRIPT_FILE}" NAME)
+        configure_file("${SCRIPT_FILE}" "${BINARY_PLUGINS_PATH}/${FNAME}" COPYONLY)
+    endforeach()
+    # Copy v3d python module too
+    # This copy must occur at build time
+    get_target_property(PLUGIN_FILE PythonConsolePlugin LOCATION)
+    get_filename_component(FNAME "${PLUGIN_FILE}" NAME)
+    # message("${PLUGIN_FILE}")
+    # message("${BINARY_PLUGINS_PATH}/${FNAME}")
+    add_custom_command(TARGET PythonConsolePlugin
+        POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E copy "${PLUGIN_FILE}" "${BINARY_PLUGINS_PATH}/${FNAME}"
+        COMMENT "Copying python console plugin to V3D binary_plugins directory"
+    )
+endif()
