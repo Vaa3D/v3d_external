@@ -1074,8 +1074,8 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 			
 			if (x_end > x_start && y_end > y_start && z_end > z_start) 
 			{
-				loadImage(imgSrcFile,relative1d,sz_relative,szo,0,0,0,x_end-x_start,y_end-y_start,z_end-z_start,datatype_relative);
-			//	loadImage(imgSrcFile,relative1d,sz_relative,szo,x_start,y_start,z_start,x_end,y_end,z_end,datatype_relative);
+				//loadImage(imgSrcFile,relative1d,sz_relative,szo,0,0,0,x_end-x_start,y_end-y_start,z_end-z_start,datatype_relative);
+				loadImage(imgSrcFile,relative1d,sz_relative,szo,x_start,y_start,z_start,x_end,y_end,z_end,datatype_relative);
 			//	rx=sz_relative[0]; ry=sz_relative[1];rz=sz_relative[2];rc=sz_relative[3];
 				
 				rx=szo[0], ry=szo[1], rz=szo[2], rc=szo[3];
