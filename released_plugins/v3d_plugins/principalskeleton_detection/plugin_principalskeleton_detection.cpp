@@ -11,14 +11,18 @@ using namespace std;
 
 #include "plugin_principalskeleton_detection.h"
 #include "q_principalskeleton_detection.h"
+#include "../../basic_c_fun/stackutil.h"
 #include "../../basic_c_fun/basic_surf_objs.h"
 #include "../../worm_straighten_c/spline_cubic.h"
+#include "q_neurontree_segmentation.h"
+#include "q_skeletonbased_warp_sub2tar.h"
 
 //Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(principalskeleton_detection, PrincipalSkeletonDetectionPlugin)
 
 void PrincipalSkeletonDetection(V3DPluginCallback2 &callback, QWidget *parent);
+void SkeletonBasedImgWarp(V3DPluginCallback2 &callback, QWidget *parent);
 void OpenDownloadPage(QWidget *parent);
 bool readDomain_file(const QString &qs_filename,
 					 vector< vector<long> > &vecvec_domain_length_ind,vector<double> &vec_domain_length_weight,
@@ -32,6 +36,7 @@ QStringList PrincipalSkeletonDetectionPlugin::menulist() const
 {
     return QStringList()
 	<< tr("detect prinipcal skeleton...")
+	<< tr("warp subject image to target by aligning their skeletons...")
 	<< tr("open test data and demo web page")
 	<< tr("about this plugin")
 	;
@@ -43,6 +48,10 @@ void PrincipalSkeletonDetectionPlugin::domenu(const QString &menu_name, V3DPlugi
 	{
 		PrincipalSkeletonDetection(callback, parent);
 	}
+	else if(menu_name==tr("warp subject image to target by aligning their skeletons..."))
+	{
+		SkeletonBasedImgWarp(callback, parent);
+	}
 	else if(menu_name==tr("open test data and demo web page"))
 	{
 		OpenDownloadPage(parent);
@@ -53,6 +62,20 @@ void PrincipalSkeletonDetectionPlugin::domenu(const QString &menu_name, V3DPlugi
         QString msg = QString("version %1 Detecting the pricipal skeleton of an image object (2009-Aug-14): this tool is developed by Lei Qu.").arg(getPluginVersion(), 1, 'f', 1);
 		QMessageBox::information(parent, "Version info", msg);	
 	}
+}
+
+
+void OpenDownloadPage(QWidget *parent)
+{
+    bool b_openurl_worked;
+    b_openurl_worked=QDesktopServices::openUrl(QUrl("http://penglab.janelia.org/proj/principal_skeleton/supp/supp_index.htm"));
+    if (! b_openurl_worked)
+        QMessageBox::warning(parent,
+							 "Error opening download page", // title
+							 "Please browse to\n"
+							 "http://penglab.janelia.org/proj/principal_skeleton/supp/supp_index.htm\n"
+							 "to download the test data for this plugin");
+
 }
 
 void PrincipalSkeletonDetection(V3DPluginCallback2 &callback, QWidget *parent)
@@ -84,11 +107,11 @@ void PrincipalSkeletonDetection(V3DPluginCallback2 &callback, QWidget *parent)
 	QString qs_filename_marker_ini,qs_filename_domain;
 	int n_index_channel=2;
 	double d_stopthresh=0.01;
-	Choose2FileDialog_marker d(parent);
+	ParaDialog_PSDetection d(parent);
 	if(d.exec()==QDialog::Accepted)
 	{
-		qs_filename_marker_ini=d.getFilename_1();
-		qs_filename_domain=d.getFilename_2();
+		qs_filename_marker_ini=d.getFilename_mak_ini();
+		qs_filename_domain=d.getFilename_domain();
 		n_index_channel=d.refChannelLineEdit->text().toInt();
 		d_stopthresh=d.refChannelLineEdit->text().toDouble();
 	}
@@ -351,13 +374,13 @@ void PrincipalSkeletonDetection(V3DPluginCallback2 &callback, QWidget *parent)
 }
 
 //************************************************************************************************************************************
-// Choose2FileDialog_marker
-Choose2FileDialog_marker::Choose2FileDialog_marker(QWidget *parent):QDialog(parent)
+//paradialog for principal skeleton detection
+ParaDialog_PSDetection::ParaDialog_PSDetection(QWidget *parent):QDialog(parent)
 {
-	filePathLineEdit_1=new QLineEdit(QObject::tr("choose initial skeleton file here (*.marker)"));
-	filePathLineEdit_2=new QLineEdit(QObject::tr("choose domain definition file here (*.domain)"));
-	filePathLineEdit_1->setFixedWidth(300);
-	filePathLineEdit_2->setFixedWidth(300);
+	filePathLineEdit_mak_ini=new QLineEdit(QObject::tr("choose initial skeleton file here (*.marker)"));
+	filePathLineEdit_domain=new QLineEdit(QObject::tr("choose domain definition file here (*.domain)"));
+	filePathLineEdit_mak_ini->setFixedWidth(300);
+	filePathLineEdit_domain->setFixedWidth(300);
 	
 	refChannelLabel=new QLabel(QObject::tr("reference channel:"));
 	stopThreshLabel=new QLabel(QObject::tr("stop threshold:"));
@@ -371,8 +394,8 @@ Choose2FileDialog_marker::Choose2FileDialog_marker(QWidget *parent):QDialog(pare
 	QPushButton *ok=new QPushButton("OK");	ok->setDefault(true);
 	QPushButton *cancel=new QPushButton("Cancel");
 	
-	connect(button1,SIGNAL(clicked()),this,SLOT(openFileDialog_1()));
-	connect(button2,SIGNAL(clicked()),this,SLOT(openFileDialog_2()));
+	connect(button1,SIGNAL(clicked()),this,SLOT(openFileDialog_mak_ini()));
+	connect(button2,SIGNAL(clicked()),this,SLOT(openFileDialog_domain()));
 	connect(ok,	    SIGNAL(clicked()),this,SLOT(accept()));
 	connect(cancel, SIGNAL(clicked()),this,SLOT(reject()));
 	
@@ -382,9 +405,9 @@ Choose2FileDialog_marker::Choose2FileDialog_marker(QWidget *parent):QDialog(pare
 	paraGroup->setTitle(QObject::tr("Parameters:"));
 	
 	QGridLayout *fileChooseLayout=new QGridLayout(fileChooseGroup);
-	fileChooseLayout->addWidget(filePathLineEdit_1,0,0);
+	fileChooseLayout->addWidget(filePathLineEdit_mak_ini,0,0);
 	fileChooseLayout->addWidget(button1,0,1);
-	fileChooseLayout->addWidget(filePathLineEdit_2,1,0);
+	fileChooseLayout->addWidget(filePathLineEdit_domain,1,0);
 	fileChooseLayout->addWidget(button2,1,1);
 	
 	QGridLayout *paraLayout=new QGridLayout(paraGroup);
@@ -406,7 +429,7 @@ Choose2FileDialog_marker::Choose2FileDialog_marker(QWidget *parent):QDialog(pare
 	setWindowTitle(QObject::tr("Choose initial skeleton and domain definition files"));
 	setLayout(mainLayout);
 }
-void Choose2FileDialog_marker::openFileDialog_1()
+void ParaDialog_PSDetection::openFileDialog_mak_ini()
 {
 	QFileDialog d(this);
 	d.setWindowTitle(tr("Open initial skeleton file (*.marker)"));
@@ -414,10 +437,10 @@ void Choose2FileDialog_marker::openFileDialog_1()
 	if(d.exec())
 	{
 		QString selectedFile=(d.selectedFiles())[0];
-		filePathLineEdit_1->setText(selectedFile);
+		filePathLineEdit_mak_ini->setText(selectedFile);
 	}
 }
-void Choose2FileDialog_marker::openFileDialog_2()
+void ParaDialog_PSDetection::openFileDialog_domain()
 {
 	QFileDialog d(this);
 	d.setWindowTitle(tr("Open domain definition file (*.domain)"));
@@ -425,16 +448,16 @@ void Choose2FileDialog_marker::openFileDialog_2()
 	if(d.exec())
 	{
 		QString selectedFile=(d.selectedFiles())[0];
-		filePathLineEdit_2->setText(selectedFile);
+		filePathLineEdit_domain->setText(selectedFile);
 	}
 }
-QString Choose2FileDialog_marker::getFilename_1()
+QString ParaDialog_PSDetection::getFilename_mak_ini()
 {
-	return filePathLineEdit_1->text();
+	return filePathLineEdit_mak_ini->text();
 }
-QString Choose2FileDialog_marker::getFilename_2()
+QString ParaDialog_PSDetection::getFilename_domain()
 {
-	return filePathLineEdit_2->text();
+	return filePathLineEdit_domain->text();
 }
 
 //************************************************************************************************************************************
@@ -668,15 +691,302 @@ bool q_cubicSplineMarker(const QList<ImageMarker> &ql_marker,QList<ImageMarker> 
 	return true;
 }
 
-void OpenDownloadPage(QWidget *parent)
+
+//************************************************************************************************************************************
+//paradialog for principal skeleton detection
+ParaDialog_PSWarping::ParaDialog_PSWarping(QWidget *parent):QDialog(parent)
 {
-    bool b_openurl_worked;
-    b_openurl_worked=QDesktopServices::openUrl(QUrl("http://penglab.janelia.org/proj/principal_skeleton/supp/supp_index.htm"));
-    if (! b_openurl_worked)
-        QMessageBox::warning(parent,
-							 "Error opening download page", // title
-							 "Please browse to\n"
-							 "http://penglab.janelia.org/proj/principal_skeleton/supp/supp_index.htm\n"
-							 "to download the test data for this plugin");
-	
+	filePathLineEdit_img_sub=new QLineEdit(QObject::tr("choose subject image file here (*.lsm,*.raw,*.tif)"));
+	filePathLineEdit_mak_sub=new QLineEdit(QObject::tr("choose subject skeleton file here (*.marker)"));
+	filePathLineEdit_img_tar=new QLineEdit(QObject::tr("choose target image file here (*.lsm,*.raw,*.tif)"));
+	filePathLineEdit_mak_tar=new QLineEdit(QObject::tr("choose target skeleton file here (*.marker)"));
+	filePathLineEdit_domain=new QLineEdit(QObject::tr("choose domain definition file here (*.domain)"));
+	filePathLineEdit_domain->setFixedWidth(400);
+
+	QPushButton *button1=new QPushButton(QObject::tr("..."));
+	QPushButton *button2=new QPushButton(QObject::tr("..."));
+	QPushButton *button3=new QPushButton(QObject::tr("..."));
+	QPushButton *button4=new QPushButton(QObject::tr("..."));
+	QPushButton *button5=new QPushButton(QObject::tr("..."));
+	QPushButton *ok=new QPushButton("OK");	ok->setDefault(true);
+	QPushButton *cancel=new QPushButton("Cancel");
+
+	connect(button1,SIGNAL(clicked()),this,SLOT(openFileDialog_img_sub()));
+	connect(button2,SIGNAL(clicked()),this,SLOT(openFileDialog_mak_sub()));
+	connect(button3,SIGNAL(clicked()),this,SLOT(openFileDialog_img_tar()));
+	connect(button4,SIGNAL(clicked()),this,SLOT(openFileDialog_mak_tar()));
+	connect(button5,SIGNAL(clicked()),this,SLOT(openFileDialog_domain()));
+	connect(ok,	    SIGNAL(clicked()),this,SLOT(accept()));
+	connect(cancel, SIGNAL(clicked()),this,SLOT(reject()));
+
+	QGroupBox *fileChooseGroup=new QGroupBox(parent);
+
+	QGridLayout *fileChooseLayout=new QGridLayout(fileChooseGroup);
+	fileChooseLayout->addWidget(filePathLineEdit_img_sub,0,0);
+	fileChooseLayout->addWidget(button1,0,1);
+	fileChooseLayout->addWidget(filePathLineEdit_mak_sub,1,0);
+	fileChooseLayout->addWidget(button2,1,1);
+	fileChooseLayout->addWidget(filePathLineEdit_img_tar,2,0);
+	fileChooseLayout->addWidget(button3,2,1);
+	fileChooseLayout->addWidget(filePathLineEdit_mak_tar,3,0);
+	fileChooseLayout->addWidget(button4,3,1);
+	fileChooseLayout->addWidget(filePathLineEdit_domain,4,0);
+	fileChooseLayout->addWidget(button5,4,1);
+
+	QHBoxLayout *okcancelLayout=new QHBoxLayout;
+	okcancelLayout->addWidget(ok);
+	okcancelLayout->addWidget(cancel);
+
+	QVBoxLayout *mainLayout=new QVBoxLayout;
+	mainLayout->addWidget(fileChooseGroup);
+	mainLayout->addLayout(okcancelLayout);
+	mainLayout->setSizeConstraint(QLayout::SetFixedSize);
+
+	setWindowTitle(QObject::tr("Choose files for principal skeleton based warping"));
+	setLayout(mainLayout);
+}
+void ParaDialog_PSWarping::openFileDialog_img_sub()
+{
+	QFileDialog d(this);
+	d.setWindowTitle(tr("Select subject image file (*.lsm,*.raw,*.tif)"));
+	d.setNameFilter("image file (*.lsm *.raw *.tif)");
+	if(d.exec())
+	{
+		QString selectedFile=(d.selectedFiles())[0];
+		filePathLineEdit_img_sub->setText(selectedFile);
+	}
+}
+void ParaDialog_PSWarping::openFileDialog_mak_sub()
+{
+	QFileDialog d(this);
+	d.setWindowTitle(tr("Select subject skeleton file (*.marker)"));
+	d.setNameFilter("Marker file (*.marker)");
+	if(d.exec())
+	{
+		QString selectedFile=(d.selectedFiles())[0];
+		filePathLineEdit_mak_sub->setText(selectedFile);
+	}
+}
+void ParaDialog_PSWarping::openFileDialog_img_tar()
+{
+	QFileDialog d(this);
+	d.setWindowTitle(tr("Select target image file (*.lsm,*.raw,*.tif)"));
+	d.setNameFilter("image file (*.lsm *.raw *.tif)");
+	if(d.exec())
+	{
+		QString selectedFile=(d.selectedFiles())[0];
+		filePathLineEdit_img_tar->setText(selectedFile);
+	}
+}
+void ParaDialog_PSWarping::openFileDialog_mak_tar()
+{
+	QFileDialog d(this);
+	d.setWindowTitle(tr("Select target skeleton file (*.marker)"));
+	d.setNameFilter("Marker file (*.marker)");
+	if(d.exec())
+	{
+		QString selectedFile=(d.selectedFiles())[0];
+		filePathLineEdit_mak_tar->setText(selectedFile);
+	}
+}
+void ParaDialog_PSWarping::openFileDialog_domain()
+{
+	QFileDialog d(this);
+	d.setWindowTitle(tr("Open domain definition file (*.domain)"));
+	d.setNameFilter("Domain file (*.domain)");
+	if(d.exec())
+	{
+		QString selectedFile=(d.selectedFiles())[0];
+		filePathLineEdit_domain->setText(selectedFile);
+	}
+}
+
+
+void SkeletonBasedImgWarp(V3DPluginCallback2 &callback, QWidget *parent)
+{
+	QString qs_filename_img_sub,qs_filename_mak_sub;
+	QString qs_filename_img_tar,qs_filename_mak_tar;
+	QString qs_filename_domain;
+	double d_ctlpt2node_ratio_alongbranch=2.0;
+	long l_nctrlpt_cuttingplane=5;
+	long l_cuttingplane_width=300;
+
+	ParaDialog_PSWarping d(parent);
+	if(d.exec()==QDialog::Accepted)
+	{
+		qs_filename_img_sub=d.filePathLineEdit_img_sub->text();
+		qs_filename_mak_sub=d.filePathLineEdit_mak_sub->text();
+		qs_filename_img_tar=d.filePathLineEdit_img_tar->text();
+		qs_filename_mak_tar=d.filePathLineEdit_mak_tar->text();
+		qs_filename_domain=d.filePathLineEdit_domain->text();
+	}
+	else
+		return;
+
+	if(qs_filename_img_sub.isEmpty()) {v3d_msg("ERROR: Invalid subject image file name!\n"); return;}
+	if(qs_filename_mak_sub.isEmpty()) {v3d_msg("ERROR: Invalid subject skeleton file name!\n"); return;}
+	if(qs_filename_img_tar.isEmpty()) {v3d_msg("ERROR: Invalid target image file name!\n"); return;}
+	if(qs_filename_mak_tar.isEmpty()) {v3d_msg("ERROR: Invalid target skeleton file name!\n"); return;}
+	if(qs_filename_domain.isEmpty()) {v3d_msg("ERROR: Invalid domain file name!\n"); return;}
+
+	//------------------------------------------------------------------------------------------------------------------------------------
+	//read target image and prinicpal skeleton marker file
+	printf(">>read target image and prinicpal skeleton swc file ...\n");
+	//read target image
+	unsigned char *p_img_tar=0;
+	long *sz_img_tar=0;
+	int datatype_tar=0;
+	if(!loadImage((char *)qPrintable(qs_filename_img_tar),p_img_tar,sz_img_tar,datatype_tar))
+	{
+		v3d_msg("ERROR: loadImage() return false in loading [%s].\n", qPrintable(qs_filename_img_tar));
+		if(p_img_tar) 		{delete []p_img_tar;		p_img_tar=0;}
+		if(sz_img_tar)		{delete []sz_img_tar;		sz_img_tar=0;}
+		return;
+	}
+	printf("\t>>read image [%s] complete.\n",qPrintable(qs_filename_img_tar));
+
+	//read target prinicpal skeleton position marker file
+	QList<ImageMarker> ql_cptpos_tar;
+	ql_cptpos_tar=readMarker_file(qs_filename_mak_tar);
+	printf("\t>>read marker file [%s] complete.\n",qPrintable(qs_filename_mak_tar));
+    if(ql_cptpos_tar.isEmpty())
+    {
+    	v3d_msg("ERROR: read nothing from input skeleotn control points definition file.\n");
+    	return;
+    }
+    for(long i=0;i<ql_cptpos_tar.size();i++)
+    	printf("\t\tcpt[%ld]=[%.2f,%.2f,%.2f]\n",i,ql_cptpos_tar[i].x,ql_cptpos_tar[i].y,ql_cptpos_tar[i].z);
+
+	//------------------------------------------------------------------------------------------------------------------------------------
+	//read subject image and principal skeleton marker file
+	printf(">>read subject image and prinicpal skeleton swc file ...\n");
+	//read subject image
+	unsigned char *p_img_sub=0;
+	long *sz_img_sub=0;
+	int datatype_sub=0;
+	if(!loadImage((char *)qPrintable(qs_filename_img_sub),p_img_sub,sz_img_sub,datatype_sub))
+	{
+		v3d_msg("ERROR: loadImage() return false in loading [%s].\n", qPrintable(qs_filename_img_tar));
+		if(p_img_tar) 		{delete []p_img_tar;		p_img_tar=0;}
+		if(p_img_sub) 		{delete []p_img_sub;		p_img_sub=0;}
+		if(sz_img_sub)		{delete []sz_img_sub;		sz_img_sub=0;}
+		if(sz_img_tar)		{delete []sz_img_tar;		sz_img_tar=0;}
+		return;
+	}
+	printf("\t>>read image [%s] complete.\n",qPrintable(qs_filename_img_tar));
+
+	//read subject prinicpal skeleton position marker file
+	QList<ImageMarker> ql_cptpos_sub;
+	ql_cptpos_sub=readMarker_file(qs_filename_mak_sub);
+	printf("\t>>read marker file [%s] complete.\n",qPrintable(qs_filename_img_sub));
+    if(ql_cptpos_sub.isEmpty())
+    {
+    	v3d_msg("ERROR: read nothing from input skeleotn control points definition file.\n");
+    	return;
+    }
+    for(long i=0;i<ql_cptpos_sub.size();i++)
+    	printf("\t\tcpt[%ld]=[%.2f,%.2f,%.2f]\n",i,ql_cptpos_sub[i].x,ql_cptpos_sub[i].y,ql_cptpos_sub[i].z);
+
+    //------------------------------------------------------------------------------------------------------------------------------------
+    //read domain file (include domain definition and corresponding weight definition)
+    vector< vector<long> > vecvec_domain_length_ind,vecvec_domain_smooth_ind;	//the index of control point of each domain is refer to the corresponding marker file
+    vector<double> vec_domain_length_weight,vec_domain_smooth_weight;
+    if(!readDomain_file(qs_filename_domain,
+    		vecvec_domain_length_ind,vec_domain_length_weight,
+    		vecvec_domain_smooth_ind,vec_domain_smooth_weight))
+    {
+    	v3d_msg("ERROR: readDomain_file() return false!\n");
+    	return;
+    }
+    printf("\t>>read domain file [%s] complete.\n",qPrintable(qs_filename_domain));
+    printf("\t\tdomain - length constraint:\n");
+    for(unsigned long i=0;i<vecvec_domain_length_ind.size();i++)
+    {
+    	printf("\t\tweight=%.2f;\tcontol points index=[",vec_domain_length_weight[i]);
+    	for(unsigned long j=0;j<vecvec_domain_length_ind[i].size();j++)
+    		printf("%ld,",vecvec_domain_length_ind[i][j]);
+    	printf("]\n");
+    }
+    printf("\t\tdomain - smooth constraint:\n");
+    for(unsigned long i=0;i<vecvec_domain_smooth_ind.size();i++)
+    {
+    	printf("\t\tweight=%.2f;\tcontol points index=[",vec_domain_smooth_weight[i]);
+    	for(unsigned long j=0;j<vecvec_domain_smooth_ind[i].size();j++)
+    		printf("%ld,",vecvec_domain_smooth_ind[i][j]);
+    	printf("]\n");
+    }
+
+	//------------------------------------------------------------------------------------------------------------------------------------
+	//reorganize the nodes for the standardization (according to the definition of smooth constraint domain)
+	vector< QList<ImageMarker> > vec_ql_branchcpt_tar,vec_ql_branchcpt_sub;
+	for(unsigned long i=0;i<vecvec_domain_smooth_ind.size();i++)
+	{
+		QList<ImageMarker> ql_branchcpt_tar,ql_branchcpt_sub;
+		for(unsigned long j=0;j<vecvec_domain_smooth_ind[i].size();j++)
+		{
+			ImageMarker im_marker;
+			long l_cptind=vecvec_domain_smooth_ind[i][j];
+
+			im_marker.x=ql_cptpos_tar[l_cptind].x;
+			im_marker.y=ql_cptpos_tar[l_cptind].y;
+			im_marker.z=ql_cptpos_tar[l_cptind].z;
+			ql_branchcpt_tar.push_back(im_marker);
+
+			im_marker.x=ql_cptpos_sub[l_cptind].x;
+			im_marker.y=ql_cptpos_sub[l_cptind].y;
+			im_marker.z=ql_cptpos_sub[l_cptind].z;
+			ql_branchcpt_sub.push_back(im_marker);
+		}
+		vec_ql_branchcpt_tar.push_back(ql_branchcpt_tar);
+		vec_ql_branchcpt_sub.push_back(ql_branchcpt_sub);
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------------------
+	//warp subject image to target image
+	printf(">>warp subject image to target image based on given principal skeleton ...\n");
+	unsigned char *p_img_sub2tar=0;
+	vector<Coord2D64F_SL> vec_controlpoint_tar,vec_controlpoint_sub;
+
+	if(!q_skeletonbased_sub2tar(
+			p_img_tar,sz_img_tar,
+			p_img_sub,sz_img_sub,
+			vec_ql_branchcpt_tar,vec_ql_branchcpt_sub,
+			d_ctlpt2node_ratio_alongbranch,l_nctrlpt_cuttingplane,l_cuttingplane_width,
+			p_img_sub2tar,
+			vec_controlpoint_tar,vec_controlpoint_sub))
+    {
+    	v3d_msg("ERROR: q_skeletonbased_sub2tar() return false.\n");
+    	if(p_img_tar) 		{delete []p_img_tar;		p_img_tar=0;}
+    	if(p_img_sub) 		{delete []p_img_sub;		p_img_sub=0;}
+    	if(p_img_sub2tar) 	{delete []p_img_sub2tar;	p_img_sub2tar=0;}
+    	if(sz_img_sub)		{delete []sz_img_sub;		sz_img_sub=0;}
+    	if(sz_img_tar)		{delete []sz_img_tar;		sz_img_tar=0;}
+    	return;
+	}
+
+	//------------------------------------------------------------------------------------------------------------------------------------
+	//push warped image to v3d
+	unsigned long l_npixel_s=sz_img_tar[0]*sz_img_tar[1]*sz_img_tar[2]*sz_img_tar[3];
+	v3dhandle newwin=callback.newImageWindow();
+	unsigned char* newdata1d=new unsigned char[l_npixel_s]();
+	memcpy(newdata1d,p_img_sub2tar,l_npixel_s);
+	Image4DSimple tmp;
+	tmp.setData(newdata1d,sz_img_tar[0],sz_img_tar[1],sz_img_tar[2],sz_img_tar[3],V3D_UINT8);
+	callback.setImage(newwin,&tmp);
+	callback.updateImageWindow(newwin);
+
+//	printf(">>save subject to target warped image ...\n");
+//	saveImage(p_filename_img_sub2tar,(unsigned char *)p_img_sub2tar,sz_img_tar,1);
+
+	//------------------------------------------------------------------------------------------------------------------------------------
+	//free memory
+	printf(">>free memory ...\n");
+	if(p_img_tar) 		{delete []p_img_tar;		p_img_tar=0;}
+	if(p_img_sub) 		{delete []p_img_sub;		p_img_sub=0;}
+	if(p_img_sub2tar) 	{delete []p_img_sub2tar;	p_img_sub2tar=0;}
+	if(sz_img_tar)		{delete []sz_img_tar;		sz_img_tar=0;}
+	if(sz_img_sub)		{delete []sz_img_sub;		sz_img_sub=0;}
+
+	printf("Program exit successful!\n");
+
 }

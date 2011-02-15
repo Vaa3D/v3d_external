@@ -30,22 +30,23 @@ public:
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------
-class Choose2FileDialog_marker : public QDialog
+//paradialog for principal skeleton detection
+class ParaDialog_PSDetection : public QDialog
 {
 	Q_OBJECT
 
 public:
-	Choose2FileDialog_marker(QWidget *parent);
-	QString getFilename_1();
-	QString getFilename_2();
+	ParaDialog_PSDetection(QWidget *parent);
+	QString getFilename_mak_ini();
+	QString getFilename_domain();
 
 private slots:
-	void openFileDialog_1();
-	void openFileDialog_2();
+	void openFileDialog_mak_ini();
+	void openFileDialog_domain();
 
 public:
-	QLineEdit *filePathLineEdit_1;
-	QLineEdit *filePathLineEdit_2;
+	QLineEdit *filePathLineEdit_mak_ini;
+	QLineEdit *filePathLineEdit_domain;
 
 	QLabel *refChannelLabel;
 	QLabel *stopThreshLabel;
@@ -53,6 +54,30 @@ public:
 	QLineEdit *refChannelLineEdit;
 	QLineEdit *stopThreshLineEdit;
 	QLineEdit *foregroundRatioLineEdit;
+};
+
+//------------------------------------------------------------------------------------------------------------------------------------
+//paradialog for principal skeleton based image warping
+class ParaDialog_PSWarping : public QDialog
+{
+	Q_OBJECT
+
+public:
+	ParaDialog_PSWarping(QWidget *parent);
+
+private slots:
+	void openFileDialog_img_sub();
+	void openFileDialog_img_tar();
+	void openFileDialog_mak_sub();
+	void openFileDialog_mak_tar();
+	void openFileDialog_domain();
+
+public:
+	QLineEdit *filePathLineEdit_img_sub;
+	QLineEdit *filePathLineEdit_img_tar;
+	QLineEdit *filePathLineEdit_mak_sub;
+	QLineEdit *filePathLineEdit_mak_tar;
+	QLineEdit *filePathLineEdit_domain;
 };
 
 #endif
