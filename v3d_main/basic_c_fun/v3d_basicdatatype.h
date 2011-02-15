@@ -31,22 +31,23 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 /*
 v3d_basicdatatype.h: by Hanchuan Peng
 2010-05-19
+2011-02-15: add v3d_ in front of some basic data types 
 */
 
 #ifndef __V3D_BASICDATATYPE_H__
 #define __V3D_BASICDATATYPE_H__
 
 // be compatible with LP64(unix64) and LLP64(win64)
-typedef unsigned char        uint8;
-typedef unsigned short       uint16;
-typedef unsigned int         uint32;
-typedef unsigned long long   uint64;
-typedef          char        sint8;
-typedef          short       sint16;
-typedef          int         sint32;
-typedef          long long   sint64;
-typedef          float       float32;
-typedef          double      float64;
+typedef unsigned char        v3d_uint8;
+typedef unsigned short       v3d_uint16;
+typedef unsigned int         v3d_uint32;
+typedef unsigned long long   v3d_uint64;
+typedef          char        v3d_sint8;
+typedef          short       v3d_sint16;
+typedef          int         v3d_sint32;
+typedef          long long   v3d_sint64;
+typedef          float       v3d_float32;
+typedef          double      v3d_float64;
 
 typedef void* v3dhandle;
 

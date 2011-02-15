@@ -286,7 +286,7 @@ template<class T> class Image4DProxy
 public:
 	std::vector<double> vmin, vmax;
 	T *img0;
-	uint8* data_p;
+	v3d_uint8* data_p;
 	V3DLONG nbytes, su, sx, sy, sz, sc;
 	V3DLONG stride_x, stride_y, stride_z, stride_c;
 	Image4DProxy(T *img)
@@ -304,15 +304,15 @@ public:
 		stride_z = su*sx*sy;
 		stride_c = su*sx*sy*sz;
 	}
-	inline uint8* at(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c)
+	inline v3d_uint8* at(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c)
 	{
 		return (data_p + stride_x*x + stride_y*y + stride_z*z + stride_c*c);
 	}
-	inline uint8* begin()
+	inline v3d_uint8* begin()
 	{
 		return data_p;
 	}
-	inline uint8* end()
+	inline v3d_uint8* end()
 	{
 		return (data_p + nbytes-1);
 	}
@@ -320,25 +320,25 @@ public:
 	{
 		return !(x<0 || x>=sx || y<0 || y>=sy || z<0 || z>=sz || c<0 || c>=sc);
 	}
-	inline uint8* at_uint8(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c)
+	inline v3d_uint8* at_uint8(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c)
 	{
-		return (uint8*)at(x,y,z,c);
+		return (v3d_uint8*)at(x,y,z,c);
 	}
-	inline uint16* at_uint16(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c)
+	inline v3d_uint16* at_uint16(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c)
 	{
-		return (uint16*)at(x,y,z,c);
+		return (v3d_uint16*)at(x,y,z,c);
 	}
-	inline float32* at_float32(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c)
+	inline v3d_float32* at_float32(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c)
 	{
-		return (float32*)at(x,y,z,c);
+		return (v3d_float32*)at(x,y,z,c);
 	}
 	inline double value_at(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c)
 	{
 		double v;
 		switch (su)
 		{
-			case 4: v = (double)(*(float32 *)at(x,y,z,c)); break;
-			case 2: v = (double)(*(uint16 *)at(x,y,z,c)); break;
+			case 4: v = (double)(*(v3d_float32 *)at(x,y,z,c)); break;
+			case 2: v = (double)(*(v3d_uint16 *)at(x,y,z,c)); break;
 			case 1:
 			default: v = (double)(*at(x,y,z,c)); break;
 		}
@@ -348,10 +348,10 @@ public:
 	{
 		switch (su)
 		{
-			case 4: *at_float32(x,y,z,c) = (float32)v; break;
-			case 2: *at_uint16(x,y,z,c) = (uint16)v; break;
+			case 4: *at_float32(x,y,z,c) = (v3d_float32)v; break;
+			case 2: *at_uint16(x,y,z,c) = (v3d_uint16)v; break;
 			case 1:
-			default: *at_uint8(x,y,z,c) = (uint8)v; break;
+			default: *at_uint8(x,y,z,c) = (v3d_uint8)v; break;
 		}
 	}
 	void set_minmax(double* p_vmin, double* p_vmax)
@@ -368,14 +368,14 @@ public:
 	{
 		return vmin.size()==sc && vmax.size()==sc && su>1;
 	}
-	inline uint8 value8bit_at(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c)
+	inline v3d_uint8 value8bit_at(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c)
 	{
 		//double v = value_at(x,y,z);
 		double v;
 		switch (su)
 		{
-			case 4: v = (double)(*(float32 *)at(x,y,z,c)); break;
-			case 2: v = (double)(*(uint16 *)at(x,y,z,c)); break;
+			case 4: v = (double)(*(v3d_float32 *)at(x,y,z,c)); break;
+			case 2: v = (double)(*(v3d_uint16 *)at(x,y,z,c)); break;
 			case 1:
 			default: v = (double)(*at(x,y,z,c)); break;
 		}
@@ -384,9 +384,9 @@ public:
 			double r = 255./(vmax[c]-vmin[c]);
 			v = (v-vmin[c])*r;
 		}
-		return (uint8)v;
+		return (v3d_uint8)v;
 	}
-	inline void put8bit_fit_at(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c, uint8 v)
+	inline void put8bit_fit_at(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c, v3d_uint8 v)
 	{
 		switch (su)
 		{
@@ -402,7 +402,7 @@ public:
 					double r = 1/255.;
 					vv = vv*r;
 				}
-				*at_float32(x,y,z,c) = (float32)vv;
+				*at_float32(x,y,z,c) = (v3d_float32)vv;
 			} break;
 		case 2:
 			{
@@ -416,10 +416,10 @@ public:
 					double r = 0xffff/255.;
 					vv = vv*r;
 				}
-				*at_uint16(x,y,z,c) = (uint16)v;
+				*at_uint16(x,y,z,c) = (v3d_uint16)v;
 			} break;
 		case 1:
-		default: *at_uint8(x,y,z,c) = (uint8)v; break;
+		default: *at_uint8(x,y,z,c) = (v3d_uint8)v; break;
 		}
 	}
 };
