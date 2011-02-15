@@ -155,18 +155,18 @@ fi
 
 if [ $TIFFCOMPILE == "YES" -o ! -f common_lib/lib/libv3dtiff.a ]; then
   cd common_lib/src_packages
-  tar zxvf tiff-3.8.2.1.tar.gz
-#  tar zxvf tiff-4.0.0beta6.tar.gz
+#  tar zxvf tiff-3.8.2.1.tar.gz
+  tar zxvf tiff-4.0.0beta6.tar.gz
   cd ../
   TIFFPATH=`pwd`
   cd build
   if [ $SYSTEMBITS == "64" ]; then
-    ../src_packages/tiff-3.8.2.1/configure -prefix=$TIFFPATH  CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64" --disable-jpeg --disable-zlib --disable-pixarlog
-#    ../src_packages/tiff-4.0.0beta6/configure -prefix=$TIFFPATH  CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64" --disable-jpeg --disable-zlib --disable-pixarlog
+#    ../src_packages/tiff-3.8.2.1/configure -prefix=$TIFFPATH  CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64" --disable-jpeg --disable-zlib --disable-pixarlog
+    ../src_packages/tiff-4.0.0beta6/configure -prefix=$TIFFPATH  CFLAGS="-arch x86_64" CXXFLAGS="-arch x86_64" --disable-jpeg --disable-zlib --disable-pixarlog
   fi
   if [ $SYSTEMBITS == "32" ]; then
-    ../src_packages/tiff-3.8.2.1/configure -prefix=$TIFFPATH  CFLAGS="-arch i386" CXXFLAGS="-arch i386" --disable-jpeg --disable-zlib --disable-pixarlog
-#    ../src_packages/tiff-4.0.0beta6/configure -prefix=$TIFFPATH  CFLAGS="-arch i386" CXXFLAGS="-arch i386" --disable-jpeg --disable-zlib --disable-pixarlog
+#    ../src_packages/tiff-3.8.2.1/configure -prefix=$TIFFPATH  CFLAGS="-arch i386" CXXFLAGS="-arch i386" --disable-jpeg --disable-zlib --disable-pixarlog
+    ../src_packages/tiff-4.0.0beta6/configure -prefix=$TIFFPATH  CFLAGS="-arch i386" CXXFLAGS="-arch i386" --disable-jpeg --disable-zlib --disable-pixarlog
   fi
   make clean
   make 
