@@ -48,6 +48,14 @@ void PythonOutputRedirector::write( std::string const& str )
     interpreter->onOutput(QString(str.c_str()));
 }
 
+void PythonOutputRedirector::write_wide( std::wstring const& ws )
+{
+    std::string temp;
+    std::copy(ws.begin(), ws.end(), std::back_inserter(temp));
+    QString s(temp.c_str());
+    interpreter->onOutput(s);
+}
+
 PythonInputRedirector::PythonInputRedirector(PythonInterpreter *p_interpreter)
     : interpreter(p_interpreter)
 {}
@@ -92,6 +100,7 @@ PythonInterpreter::PythonInterpreter()
 			bp::class_<PythonOutputRedirector>(
 					"PythonOutputRedirector", bp::init<>())
 				.def("write", &PythonOutputRedirector::write)
+                .def("write", &PythonOutputRedirector::write_wide)
 				;
 		main_namespace["PythonInputRedirector"] =
 			bp::class_<PythonInputRedirector>(

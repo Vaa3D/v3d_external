@@ -10,16 +10,8 @@ class Interpolator:
         angles in degrees.
         """
         raise NotImplementedError("Use a concrete derived class of Interpolator")
-
-
-# TODO - create spline interpolator
-# and quaternion interpolator for rotations
-class LinearInterpolator(Interpolator):
-    """
-    Simple linear interpolator, so I can get things working quickly.
-    Later we will use spline interpolation.
-    """
-    def get_interpolated_value(self, param, param_value_list, index_hint = None, wrap = None):
+    
+    def check_values(self, param, param_value_list):
         # Make sure our lookup table is up to the challenge
         if len(param_value_list) < 1:
             raise LookupError("No key values to interpolate from")
@@ -28,6 +20,8 @@ class LinearInterpolator(Interpolator):
         if param > param_value_list[-1][0]:
             print param, param_value_list[-1][0]
             raise ValueError
+        
+    def get_lower_bound_key(self, param, param_value_list, index_hint):
         # Search for bounding keys
         if index_hint != None:
             below_index = index_hint
@@ -38,11 +32,22 @@ class LinearInterpolator(Interpolator):
             below_index += 1
         while param_value_list[below_index][0] > param:
             below_index -= 1
+        return below_index
+
+# TODO - create spline interpolator
+# and quaternion interpolator for rotations
+class LinearInterpolator(Interpolator):
+    """
+    Simple linear interpolator, so I can get things working quickly.
+    Later we will use spline interpolation.
+    """
+    def get_interpolated_value(self, param, param_value_list, index_hint = None, wrap = None):
+        self.check_values(param, param_value_list)
+        below_index = self.get_lower_bound_key(param, param_value_list, index_hint)
         p1 = param_value_list[below_index][0]
         if param == p1:
             return param_value_list[below_index][1] # exact key frame
         p2 = param_value_list[below_index + 1][0]
-        
         alpha = (param - p1) / (p2 - p1)
         val1 = param_value_list[below_index][1]
         val2 = param_value_list[below_index + 1][1]
@@ -55,6 +60,72 @@ class LinearInterpolator(Interpolator):
         val = val1 + alpha * dv
         # print param, p1, p2, val1, val2, alpha
         return val
+
+
+class SplineInterpolator(Interpolator):
+    "Interpolate using Catmull Rom splines"
+    def get_interpolated_value(self, param, param_value_list, index_hint = None, wrap = None):
+        # There are three ways to handle boundary conditions:
+        # 1) Linear - start and end at full speed
+        # 2) Hold - Accelerate from zero at start, decelerate at end (covers swing case too)
+        # 3) Loop - First point is treated as adjacent to final point (perhaps first and last must be same)
+        self.check_values(param, param_value_list)
+        below_index = self.get_lower_bound_key(param, param_value_list, index_hint)
+        
+        t1 = param_value_list[below_index][0]
+        t2 = param_value_list[below_index + 1][0]
+        v1 = param_value_list[below_index + 0][1]
+        v2 = param_value_list[below_index + 1][1]
+        if param == t1:
+            return v1 # exact key frame
+        if below_index > 0: # general case
+            t0 = param_value_list[below_index - 1][0]
+            v0 = param_value_list[below_index - 1][1]
+            # Scale to simulate uniform interval
+            v0 = v1 + (v0 - v1) * (t2 - t1) / (t1 - t0)
+        else: # lower boundary condition
+            # just do Hold for now
+            t0 = t1 + t1 - t2
+            v0 = v2
+        if below_index < (len(param_value_list) - 2):
+            t3 = param_value_list[below_index + 2][0]
+            v3 = param_value_list[below_index + 1][1]
+            # Scale to simulate uniform interval
+            v3 = v2 + (v3 - v2) * (t2 - t1) / (t3 - t2)
+        else:
+            # Just do hold for now
+            # TODO - support loop, linear
+            t3 = t2 + t2 - t1
+            v3 = v2
+        # Wrap systems like angles
+        vals = [v0, v1, v2, v3]
+        for ix in [1,2,3]:
+            dv = vals[ix] - vals[ix - 1]
+            if wrap != None:
+                while dv > wrap / 2.0:
+                    dv -= wrap
+                while dv < -wrap / 2.0:
+                    dv += wrap
+            vals[ix] = vals[ix - 1] + dv
+        alpha = (param - t1) / (t2 - t1)
+        val = self.spline_4points( alpha, vals )
+        return val
+    
+    def spline_4points( self, t, points ):
+        """ Catmull-Rom
+            (Ps can be numpy vectors or arrays too: colors, curves ...)
+            Assumes that the data points are on a uniform interval, so
+            scale them beforehand if this is not the case.
+        """
+            # wikipedia Catmull-Rom -> Cubic_Hermite_spline
+            # 0 -> p0,  1 -> p1,  1/2 -> (- p_1 + 9 p0 + 9 p1 - p2) / 16
+        assert 0 <= t <= 1
+        assert len(points) == 4
+        return (
+              t*((2.0-t)*t - 1.0)   * points[0]
+            + (t*t*(3.0*t - 5.0) + 2.0) * points[1]
+            + t*((4.0 - 3.0*t)*t + 1.0) * points[2]
+            + (t-1.0)*t*t         * points[3] ) / 2.0
 
 
 # TODO - include rotation and clipping
@@ -80,7 +151,7 @@ class V3dKeyFrame(V3dMovieFrame):
     def __init__(self, camera_position, interval = 0):
         V3dMovieFrame.__init__(self, camera_position)
         self.interval = interval # in seconds from previous frame
-        self.interpolator = LinearInterpolator()
+        self.interpolator = SplineInterpolator()
 
 
 class V3dMovie:
@@ -225,6 +296,7 @@ class V3dMovie:
             # also avoid too many frames from roundoff error
             frame_time = self.seconds_per_frame * 1.01
             # First emit in-between frames
+            # print key_frame.interval
             while frame_time < key_frame.interval:
                 # TODO interpolate
                 yield self.interpolate_frame(total_time, frame_index, key_frame.interpolator)
@@ -270,7 +342,7 @@ class V3dMovie:
             # print "Parameter %s = %s" % (param_name, val)
         return camera
         
-    def append_current_view(self, interval = 2.0):
+    def append_current_view(self, interval=2.0):
         camera = self.get_current_v3d_camera()
         if len(self.key_frames) == 0:
             interval = 0.0

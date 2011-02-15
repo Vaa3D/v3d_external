@@ -1,15 +1,15 @@
 import movie_maker
 import os
-from ui_movie_maker_dialog import Ui_movie_dialog
 
 # User needs to install either PyQt4 or PySide to get GUI
 try:
-    from PyQt4 import QtGui, QtCore
-    # from PySide import QtGui, QtCore
+    from PySide import QtGui, QtCore
+    from ui_movie_maker_dialog_pyside import Ui_movie_dialog
     # import PySide as PyQt4
 except ImportError:
     try:
-        from PySide import QtGui, QtCore
+        from PyQt4 import QtGui, QtCore
+        from ui_movie_maker_dialog_pyqt4 import Ui_movie_dialog
     except ImportError:
         print """
 To use V3D Movie GUI, you must install either PySide or PyQt4.
@@ -32,21 +32,32 @@ class MovieGui2(QtGui.QDialog):
         self.connect(self.playButton, QtCore.SIGNAL('clicked()'),
                self.play)
         self.saveButton = self.ui.buttonBox.button(QtGui.QDialogButtonBox.Save)
-        self.saveButton.setText("Save...")
+        self.saveButton.setText("Save Frames...")
         self.connect(self.saveButton, QtCore.SIGNAL('clicked()'),
                self.save)
         self.connect(self.ui.deleteAllButton, QtCore.SIGNAL('clicked()'),
                self.delete_all)
         self.previous_save_dir = ""
         self.updateKeyFrameLabel()
+        # Frame interval
+        interval_validator = QtGui.QDoubleValidator(0.00, 10000.0, 2, 
+                self.ui.frameIntervalLineEdit)
+        self.ui.frameIntervalLineEdit.setValidator(interval_validator)
+        self.connect(self.ui.frameIntervalLineEdit, QtCore.SIGNAL('textChanged(QString)'),
+                     self.update_frame_interval)
+        self.frame_interval = 2.5
+        self.ui.frameIntervalLineEdit.setText(str(self.frame_interval))
 
+    def update_frame_interval(self, value_text):
+        self.frame_interval = float(value_text)
+        
     def append_view(self):
         # Perhaps there was no 3D viewer when the MovieGui was launched
         try:
-            self.movie.append_current_view()
+            self.movie.append_current_view(interval=self.frame_interval)
         except ValueError:
             self.movie = movie_maker.V3dMovie()
-            self.movie.append_current_view()
+            self.movie.append_current_view(interval=self.frame_interval)
         self.updateKeyFrameLabel()
 
     def play(self):
@@ -80,16 +91,19 @@ class MovieGui2(QtGui.QDialog):
             self.playButton.setEnabled(False)
             self.saveButton.setEnabled(False)
             self.ui.deleteAllButton.setEnabled(False)
+            self.ui.frameIntervalLineEdit.setEnabled(False)
         elif nframes == 1:
             self.ui.keyFrameLabel.setText("One key frame added")
             self.playButton.setEnabled(False)
             self.saveButton.setEnabled(False)
             self.ui.deleteAllButton.setEnabled(True)
+            self.ui.frameIntervalLineEdit.setEnabled(True)
         else:
             self.ui.keyFrameLabel.setText("%d key frames added" % nframes)
             self.playButton.setEnabled(True)
             self.saveButton.setEnabled(True)
             self.ui.deleteAllButton.setEnabled(True)
+            self.ui.frameIntervalLineEdit.setEnabled(True)
 
 class MovieGui(QtGui.QWidget):
     def __init__(self, parent=None):

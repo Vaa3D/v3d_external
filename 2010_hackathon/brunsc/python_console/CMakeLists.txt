@@ -281,7 +281,7 @@ if(V3D_BUILD_PATH) # ${CMAKE_BINARY_DIR} for V3D project
         # message("${BINARY_PLUGINS_PATH}/${PLG_NAME}")
         add_custom_command(TARGET PythonConsolePlugin
             POST_BUILD
-            COMMAND install_name_tool -change "${BPNAME}" "@executable_path/../Frameworks/${BPNAME}" "${BINARY_PLUGINS_PATH}/${PLG_NAME}"
+            # COMMAND install_name_tool -change "${BPNAME}" "@executable_path/../Frameworks/${BPNAME}" "${BINARY_PLUGINS_PATH}/${PLG_NAME}"
             COMMAND install_name_tool -change "${BPNAME}" "@executable_path/../Frameworks/${BPNAME}" "${PLUGIN_FILE}"
             COMMENT "Changing install name of boost python library."
         )

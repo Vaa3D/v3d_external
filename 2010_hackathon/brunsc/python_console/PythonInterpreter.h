@@ -21,6 +21,7 @@ class PythonOutputRedirector
 public:
 	PythonOutputRedirector(PythonInterpreter *interpreter = NULL);
     void write( std::string const& str );
+    void write_wide(std::wstring const& str);
 
 private:
 	PythonInterpreter *interpreter;
