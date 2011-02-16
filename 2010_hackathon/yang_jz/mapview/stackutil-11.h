@@ -85,6 +85,10 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, V3DLON
 
 
 int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype, int chan_id_to_load); //overload for convenience to read only 1 channel
+
+int loadRaw2Stack_resamping(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype, int resampling_size); //resampling image
+
+
 int saveStack2Raw(const char * filename, const unsigned char * img, const V3DLONG * sz, int datatype); //4-byte raw writing
 
 int loadRaw2Stack_2byte(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype);
@@ -107,6 +111,9 @@ int loadLsm2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 int loadLsm2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype, int chan_id_to_load);   //overload for convenience to read only 1 channel
 int loadTif2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, V3DLONG startx, V3DLONG starty, V3DLONG startz, 
 				  V3DLONG endx,V3DLONG endy, V3DLONG endz, int & datatype);
+
+
+
 //the following three functions are the low-level routines to load LSM file
 int read_lsm_slice(TIFF *in, unsigned char * pointer_first_page, V3DLONG pagepixelnumber, V3DLONG channelpixelnumber, int datatype); 
 int read_lsm_slice_strip(TIFF *in, unsigned char * pointer_first_page, V3DLONG pagepixelnumber, V3DLONG channelpixelnumber, int datatype);
@@ -140,6 +147,7 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, V3DLONG *&szo, V3DLONG startx,V3DLONG starty,V3DLONG startz, 
 			   V3DLONG endx,V3DLONG endy,V3DLONG endz,int & datatype); //
 
+bool loadImage_resampling(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, V3DLONG *&szo, int & datatype,int resampling_size); //
 
 
 bool saveImage(const char filename[], const unsigned char * data1d, const V3DLONG * sz, const int datatype); //070214

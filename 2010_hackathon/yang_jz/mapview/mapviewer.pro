@@ -2,7 +2,7 @@
 TEMPLATE      = lib
 CONFIG       += qt plugin warn_off
 #CONFIG       += x86_64
-CONFIG       +=release
+#CONFIG       +=release
 
 #include(/usr/local/Trolltech/Qt-4.5.2/demos/shared/shared.pri)
 

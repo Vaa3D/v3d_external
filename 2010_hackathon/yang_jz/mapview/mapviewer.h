@@ -607,6 +607,9 @@ private:
 	unsigned char *compressed1d;
 	unsigned char *imgData;
 	
+	int mousenumber;
+	
+	
 private:
 };
 // MAPViewer interface
@@ -620,6 +623,7 @@ public:
 	void update_v3dviews(V3DPluginCallback *callback, long start_x, long start_y, long start_z, long end_x, long end_y, long end_z);
 	
 	void createGUI();
+	
 	void update_triview();
 	
 public slots:
@@ -696,6 +700,9 @@ public:
 	QStringList funclist() const {return QStringList();}
 	void dofunc(const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output, QWidget *parent) {}	
 	void iViewer(V3DPluginCallback &callback, QWidget *parent);
+	
+	void resampling(V3DPluginCallback &callback, QWidget *paren);
+	Y_VIM<float, long, indexed_t<long, float>, LUT<long> > vim;
 public:
 	
 };
