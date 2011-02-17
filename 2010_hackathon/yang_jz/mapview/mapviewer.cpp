@@ -15,7 +15,7 @@ XMapView* XMapView::m_show = 0;
 QStringList MAPiewerPlugin::menulist() const
 {
     return QStringList() << tr("load Image")
-						<< tr("image resampling")
+						 << tr("generate thumbnail map")
 						 << tr("help");
 }
 
@@ -24,14 +24,13 @@ void MAPiewerPlugin::domenu(const QString &menu_name, V3DPluginCallback &callbac
     if (menu_name == tr("load Image"))
     {
     	iViewer(callback, parent);
-    }else if(menu_name == tr("image resampling")) 
+    }
+	else if(menu_name == tr("generate thumbnail map")) 
 	{
 		resampling(callback, parent);
 	}
-
 	else if (menu_name == tr("help"))
 	{
-		
 	}
 }
 void MAPiewerPlugin::resampling(V3DPluginCallback &callback, QWidget *parent)
