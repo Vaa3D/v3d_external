@@ -705,6 +705,7 @@ public:
 	void resampling_rawdata(V3DPluginCallback &callback, QWidget *parent);
 	
 	Y_VIM<float, long, indexed_t<long, float>, LUT<long> > vim;
+	
 public:
 	
 };

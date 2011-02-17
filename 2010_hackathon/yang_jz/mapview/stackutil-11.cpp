@@ -1367,33 +1367,57 @@ int loadRaw2Stack_raw_resamping(char * filename, unsigned char * & img, V3DLONG 
 		return berror;
 	}
 	
-	long temsize = (sz[0] > sz[1])? sz[0]:sz[1]; 
+	V3DLONG temsize = (sz[0] > sz[1])? sz[0]:sz[1]; 
+	
+	//resampling_size = int(temsize / 500);
 	
 	if (temsize <= 1000) 
 	{
 		resampling_size = 2;
-	}else if(1000 < temsize <=2000)
+		
+	}else if(1000 < temsize  && temsize<=2000)
 	{
 		resampling_size = 4;
 		
-	}else if(2000 < temsize <=3000)
+	}else if(2000 < temsize && temsize <=3000)
 	{
 		resampling_size = 6;
 		
-	}else if(3000 < temsize <=4000)
+	}else if(3000 < temsize && temsize <=4000)
 	{
 		resampling_size = 8;
 		
-	}else 
+	}else if(4000 < temsize && temsize <=5000)
 	{
 		resampling_size = 10;
 		
 	}
+	else if(5000 < temsize && temsize <=7000)
+	{
+		resampling_size = 12;
+		
+	}
+	else if(5000 < temsize && temsize <=7000)
+	{
+		resampling_size = 14;
+		
+	}
+	else if(7000 < temsize && temsize <=9000)
+	{
+		resampling_size = 16;
+		
+	}
+	else if(9000 < temsize && temsize <=10000)
+	{
+		resampling_size = 18;
+		
+	}
+	
 	V3DLONG tmpw = sz[0];
 	
-	V3DLONG tmph = ceil(sz[1]/resampling_size);
+	V3DLONG tmph = (sz[1]/resampling_size);
 	
-	V3DLONG tmpz = ceil(sz[2]/resampling_size);
+	V3DLONG tmpz = (sz[2]/resampling_size);
 	
 	szo[0]=  tmpw;
 	szo[1] = tmph;
@@ -1425,24 +1449,53 @@ int loadRaw2Stack_raw_resamping(char * filename, unsigned char * & img, V3DLONG 
 	//printf("ex=%ld ey=%ld ez=%ld\n",endx,endy,endz);
 	V3DLONG count=0;
 	V3DLONG c,j,k;
+//	for (c = 0; c < sz[3]; c++)
+//	{
+//		for (k = 1; k < sz[2]-1; k = k+resampling_size) 
+//		{
+//			for (j = 1; j< sz[1]-1; j= j+resampling_size)
+//			{
+//				//	printf("c = %ld k=%ld j=%ld\n",c,k,j);
+//				rewind(fid);
+//				fseek(fid, head+(c*pgsz1 + k*pgsz2 + j*pgsz3)*unitSize, SEEK_SET);
+//				ftell(fid);	
+//				V3DLONG kk = ceil(k/resampling_size);
+//				V3DLONG jj = ceil(j/resampling_size);
+//				fread(img + (c*cn + kk*kn + jj*tmpw)*unitSize,unitSize,tmpw,fid);
+//				//printf("kk=%ld jj=%ld\n",kk,jj);
+//				
+//			}
+//		}
+//	}
 	for (c = 0; c < sz[3]; c++)
 	{
-		for (k = 1; k < sz[2]-1; k = k+resampling_size) 
+		for (k = 0; k < sz[2]; k = k+resampling_size) 
 		{
-			for (j = 1; j< sz[1]-1; j= j+resampling_size)
+			for (j = 0; j< sz[1]; j = j+resampling_size)
 			{
-				//	printf("c = %ld k=%ld j=%ld\n",c,k,j);
+				
+				if(k >=sz[2]){k = sz[2];}
+				if(j >=sz[1]){j = sz[1];}
+				
+				V3DLONG kk = (k/resampling_size);
+				V3DLONG jj = (j/resampling_size);
+				if(kk >= tmpz){kk = tmpz-1;}
+				if(jj >= tmph){jj = tmph-1;}
+				
+				//printf(" c=%ld k=%ld j=%ld kk=%ld jj=%ld\n",c,k,j,kk,jj);
+				
 				rewind(fid);
 				fseek(fid, head+(c*pgsz1 + k*pgsz2 + j*pgsz3)*unitSize, SEEK_SET);
 				ftell(fid);	
-				V3DLONG kk = ceil(k/resampling_size);
-				V3DLONG jj = ceil(j/resampling_size);
 				fread(img + (c*cn + kk*kn + jj*tmpw)*unitSize,unitSize,tmpw,fid);
-				//printf("kk=%ld jj=%ld\n",kk,jj);
-				
+				//printf(" c=%ld k=%ld j=%ld kk=%ld jj=%ld\n",c,k,j,kk,jj);
 			}
 		}
 	}
+	
+	
+	
+	
 	/* swap the data bytes if necessary */
 	
 	if (b_swap==1)
@@ -1600,7 +1653,6 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, V3DLON
 	}
 	
 	//printf("33333333333333333333333333333333333333333333333 ");
-	
 	
 	V3DLONG unitSize = datatype; /* temporarily I use the same number, which indicates the number of bytes for each data point (pixel). This can be extended in the future. */
 	
@@ -5145,21 +5197,21 @@ bool loadImage_raw_resampling(char imgSrcFile[], unsigned char *& data1d, V3DLON
 		if ( strcasecmp(curFileSuffix, "raw")==0 ) //then assume it is Hanchuan's RAW format
 		{
 			if (b_VERBOSE_PRINT)
-				printf("The data is not with a TIF/LSM surfix, -- now this program assumes it is RAW format defined by Hanchuan Peng. \n");
-				if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*ZZBIG)) //RAW file at most should be 1.5G bytes
-				{
-					printf("The RAW file may not exist or may be too big to load.\n");
-					return false;
-				}
+//				printf("The data is not with a TIF/LSM surfix, -- now this program assumes it is RAW format defined by Hanchuan Peng. \n");
+//				if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*ZZBIG)) //RAW file at most should be 1.5G bytes
+//				{
+//					printf("The RAW file may not exist or may be too big to load.\n");
+//					return false;
+//				}
 			if (loadRaw2Stack_raw_resamping(imgSrcFile, tmp_data1d, tmp_szo, tmp_sz, tmp_datatype,temp_res))
 			{
 				if (b_VERBOSE_PRINT)
 					printf("The data doesn't look like a correct 4-byte-size RAW file. Try 2-byte-raw. \n");
-					if (loadRaw2Stack_2byte(imgSrcFile, tmp_data1d, tmp_sz, tmp_datatype))
-					{
-						printf("Error happens in reading 2-byte-size RAW file. Stop. \n");
-						return false;
-					}
+//					if (loadRaw2Stack_2byte(imgSrcFile, tmp_data1d, tmp_sz, tmp_datatype))
+//					{
+//						printf("Error happens in reading 2-byte-size RAW file. Stop. \n");
+//						return false;
+//					}
 			}
 		}else
 		{

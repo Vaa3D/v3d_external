@@ -18,7 +18,8 @@ HEADERS      +=colormap.h
 
 HEADERS      += mg_image_lib11.h
 HEADERS      += stackutil-11.h
-HEADERS      += y_imglib.h
+HEADERS      += ../../../released_plugins/v3d_plugins/istitch/y_imglib.h
+
 HEADERS      += mapviewer.h \
 #		$$V3DMAINDIR/basic_c_fun/stackutil.h \
 		$$V3DMAINDIR/basic_c_fun/mg_utilities.h \

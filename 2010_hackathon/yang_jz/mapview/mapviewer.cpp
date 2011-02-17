@@ -266,6 +266,7 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 	QString m_FileName = QFileDialog::getOpenFileName(parent, QObject::tr("Open profile"), "", QObject::tr("Supported file (*.raw)"));
 	if(m_FileName.isEmpty())	
 		return;
+	
 	QString curFilePath = QFileInfo(m_FileName).path();
 	
 	QString curPath = curFilePath;
@@ -374,7 +375,7 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 	
 	// time consumption
 	size_t end_t = clock();
-	
+
 	cout<<"resampling time = "<<end_t-start_t<<endl;
 	
 	Image4DSimple p4DImage;
@@ -395,8 +396,56 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 	callback.pushImageIn3DWindow(curwin);
 	
 	V3DLONG sz_tmp[4];
+	//////////////////////save tc.file
 	
-	QString tmp_filename = curFilePath + "/" + "resampling.raw";
+	REAL *scale = new REAL [6];
+	
+	scale[0] = 1;
+	scale[1] = 1;
+	scale[2] = 1;
+	scale[3] = 1;
+	scale[4] = 1;
+	scale[5] = 1;
+	
+	Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim1;
+	
+	V3DLONG count=0;
+	
+	V3DLONG offset[3];
+	
+	offset[0]=0; offset[1]=0; offset[2]=0;
+	
+	indexed_t<V3DLONG, REAL> idx_t(offset);
+	
+	idx_t.n = count;
+	idx_t.ref_n = 0; // init with default values
+	idx_t.fn_image = m_FileName.toStdString();
+	idx_t.score = 0;
+	vim1.tilesList.push_back(idx_t);
+	
+	int a  = vim1.tilesList.size();
+	
+	(&vim1.tilesList.at(0))->sz_image = new V3DLONG [4];
+	
+	(&vim1.tilesList.at(0))->sz_image[0] = sz_relative[0];
+	(&vim1.tilesList.at(0))->sz_image[1] = sz_relative[1];
+	(&vim1.tilesList.at(0))->sz_image[2] = sz_relative[2];
+	(&vim1.tilesList.at(0))->sz_image[3] = sz_relative[3];
+	
+	// construct lookup table
+	vim1.y_clut(vim1.tilesList.size());
+	
+	//------------------------------------------------------------------------------------------------------------------------------------------
+	// save lut
+	QString tmp_filename;
+	
+	tmp_filename = curFilePath + "/" + "stitched_image.tc"; //.tc tile configuration
+	
+	vim1.y_save(tmp_filename.toStdString());
+	
+	/////////////////////////////////////
+	
+	tmp_filename = curFilePath + "/" + "stitched_image.raw";
 	
 	sz_tmp[0] = vx; sz_tmp[1] = vy; sz_tmp[2] = vz; sz_tmp[3] = vc; 
 	
@@ -988,7 +1037,7 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 	QString m_FileName_compressed = m_FileName;
 	
 	m_FileName_compressed.chop(3); // ".tc"
-	m_FileName_compressed.append(".tif");
+	m_FileName_compressed.append(".raw");
 	
 	//m_FileName_compressed.append(".raw");
 	// loading compressed image files
