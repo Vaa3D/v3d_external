@@ -45,7 +45,7 @@ QT4_WRAP_UI(QT_UI_SRCS
 QT4_WRAP_CPP(QT_MOC_SRCS
   PythonConsoleWindow.h
   PythonInterpreter.h
-  wrappable_v3d.h
+  ImageWindow.h
 )
 
 QT4_ADD_RESOURCES(QT_RCC_SRCS python_console.qrc)
@@ -62,6 +62,7 @@ set(V3D_PYTHON_CONVERSION_HEADERS
     convert_qlist.h
     convert_qhash.h
     convert_c_array_struct.h
+    convert_simtk_vec3.h
 )
 
 set(V3D_PYTHON_CONSOLE_SRCS
@@ -75,7 +76,11 @@ set(V3D_PYTHON_CONSOLE_SRCS
     wrappable_v3d.cpp
     convert_qstring.cpp
     convert_qbool.cpp
+    convert_simtk_vec3.cpp
 )
+
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+add_subdirectory(simtk/src)
 
 ##################################################################
 # pythonConsoleTest is a test program for use during development #
@@ -91,6 +96,7 @@ target_link_libraries(pythonConsoleTest
     ${PYTHON_LIBRARY}
     ${QT_QTCORE_LIBRARY}
     ${QT_QTGUI_LIBRARY}
+    SimTKcommon
 )
 if (DL_LIBRARY)
     target_link_libraries(pythonConsoleTest ${DL_LIBRARY})
@@ -123,6 +129,7 @@ target_link_libraries(PythonConsolePlugin
     ${Boost_PYTHON_LIBRARY}
     ${PYTHON_LIBRARY}
     ${QT_QTGUI_LIBRARY}
+    SimTKcommon
 )
 if (DL_LIBRARY)
     target_link_libraries(pythonConsoleTest ${DL_LIBRARY})

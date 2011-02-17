@@ -8,6 +8,8 @@
 
 #include "wrappable_v3d.h"
 
+#include "generated_code/CoordinateAxis.pypp.hpp"
+
 #include "generated_code/Image4DSimple.pypp.hpp"
 
 #include "generated_code/ImageWindow.pypp.hpp"
@@ -40,6 +42,8 @@
 
 #include "generated_code/RGBA8.pypp.hpp"
 
+#include "generated_code/Rotation.pypp.hpp"
+
 #include "generated_code/TriviewControl.pypp.hpp"
 
 #include "generated_code/V3DPluginArgItem.pypp.hpp"
@@ -47,6 +51,8 @@
 #include "generated_code/V3DPluginArg_double3x3.pypp.hpp"
 
 #include "generated_code/V3D_GlobalSetting.pypp.hpp"
+
+#include "generated_code/Vec3.pypp.hpp"
 
 #include "generated_code/View3DControl.pypp.hpp"
 
@@ -70,6 +76,8 @@
 
 #include "generated_code/v3d_free_functions.pypp.hpp"
 
+#include "generated_code/v3d_global_variables.pypp.hpp"
+
 namespace bp = boost::python;
 
 #include "convert_qlist.h"
@@ -82,8 +90,12 @@ namespace bp = boost::python;
 
 #include "convert_qstring.h"
 
+#include "convert_simtk_vec3.hpp"
+
 BOOST_PYTHON_MODULE(v3d){
     register_enumerations();
+
+    register_simtk_vec3_conversion();
 
     register_qstring_conversion();
 
@@ -149,6 +161,14 @@ BOOST_PYTHON_MODULE(v3d){
 
     register_RGBA8_class();
 
+    register_CoordinateAxis_class();
+
+    bp::implicitly_convertible< SimTK::CoordinateAxis, int >();
+
+    register_Rotation_class();
+
+    register_Vec3_class();
+
     register_TriviewControl_class();
 
     register_V3DPluginArgItem_class();
@@ -185,6 +205,8 @@ BOOST_PYTHON_MODULE(v3d){
                 "things that can be done from a V3D plug-in can also be "
                 "done interactively from the V3D python console."
                 ;
+
+    register_global_variables();
 
     register_free_functions();
 }

@@ -15,6 +15,12 @@ void register_enumerations(){
         .export_values()
         ;
 
+    bp::enum_< SimTK::BodyOrSpaceType>("BodyOrSpaceType")
+        .value("BodyRotationSequence", SimTK::BodyRotationSequence)
+        .value("SpaceRotationSequence", SimTK::SpaceRotationSequence)
+        .export_values()
+        ;
+
     bp::enum_< Qt::FillRule>("FillRule")
         .value("OddEvenFill", Qt::OddEvenFill)
         .value("WindingFill", Qt::WindingFill)

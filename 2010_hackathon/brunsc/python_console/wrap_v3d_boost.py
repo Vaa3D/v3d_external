@@ -83,6 +83,8 @@ class V3DWrapper:
         self.wrap_c_array_struct()
         self.wrap_v3d_qt_environment()
         self.wrap_QString()
+        self.wrap_Vec3()
+        self.wrap_Rotation()
         # and finally
         self.mb.member_operators('operator*').exclude()
         self.mb.member_operators('operator->').exclude()
@@ -93,6 +95,50 @@ class V3DWrapper:
         self.mb.variables('').exclude() # avoid anonymous variable warnings
         self.mb.free_functions('qHash').exclude()
 
+    def wrap_Vec3(self):
+        simtk = self.mb.namespace('SimTK')
+        vec3 = simtk.class_('Vec<3, double, 1>')
+        vec3.alias = 'Vec3'
+        vec3.include()
+        vec3.member_functions().exclude()
+        vec3.member_operators().exclude()
+        vec3.constructors().exclude()
+        # Automatically convert python sequences to SimTK::Vec3
+        self.mb.add_declaration_code('#include "convert_simtk_vec3.hpp"', tail=False)
+        self.mb.add_registration_code("register_simtk_vec3_conversion();", tail=False)
+        # use indexing suite to allow slicing etc.
+        t = vec3.demangled
+        vec3.include_files.append("vec3_container_traits.hpp")
+        vec3.add_registration_code("""
+            def(bp::indexing::container_suite<
+                    %s,
+                    bp::indexing::all_methods,
+                    list_algorithms< vec3_container_traits > >())
+            """ % t )
+
+        
+    def wrap_Rotation(self):
+        simtk = self.mb.namespace('SimTK')
+        rot = simtk.class_('Rotation_<double>')
+        rot.alias = "Rotation"
+        rot.include()
+        rot.member_functions().exclude()
+        rot.constructors().exclude()
+        rot.member_operators().exclude()
+        # Expose only methods needed for movie maker for now
+        fn = rot.member_function('setRotationFromThreeAnglesThreeAxes')
+        fn.include()
+        fn.call_policies = call_policies.return_internal_reference()
+        simtk.enum('BodyOrSpaceType').include()
+        simtk.class_('CoordinateAxis').include()
+        simtk.class_('CoordinateAxis').constructors(arg_types=[None]).exclude()
+        simtk.class_('CoordinateAxis').member_function('crossProduct').exclude()
+        simtk.variable('XAxis').include()
+        simtk.variable('YAxis').include()
+        simtk.variable('ZAxis').include()
+        fn = rot.member_function('convertThreeAxesRotationToThreeAngles')
+        fn.include()
+        
     def wrap_callPluginFunc(self):
         fn = self.mb.free_function("callPluginFunc")
         # fn.add_transformation(FT.output('output')) # No, we need to pass that object
@@ -327,6 +373,7 @@ class V3DWrapper:
         self.mb.class_('ImageWindowReceiver').exclude()
         self.mb.class_('ImageWindowDispatcher').exclude()
         cls = self.mb.class_('ImageWindow')
+        cls.include()
         cls.variables('handle').exclude()
         # get/set image
         fn1 = cls.member_function("getImage")

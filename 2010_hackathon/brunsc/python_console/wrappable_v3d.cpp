@@ -35,6 +35,8 @@ template class QList<V3DPluginArgItem>;
 template class c_array< double, 3 >;
 template class c_array< c_array< double, 3 >, 3 >;
 template class V3DPluginArg< c_array< c_array< double, 3 >, 3 > >;
+// template class SimTK::Rotation_<double>;
+template class SimTK::Vec<3, double, 1>;
 
 class NullV3DCallbackException : public std::runtime_error
 {
