@@ -32,7 +32,7 @@ void register_Vec3_class(){
         Vec3_exposer.def(bp::indexing::container_suite<
                             SimTK::Vec<3, double, 1>,
                             bp::indexing::all_methods,
-                            list_algorithms< vec3_container_traits > >());
+                            list_algorithms< vec_container_traits< SimTK::Vec<3, double, 1> > > >());
     }
 
 }

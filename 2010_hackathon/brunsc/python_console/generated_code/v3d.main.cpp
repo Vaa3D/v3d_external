@@ -32,6 +32,8 @@
 
 #include "generated_code/QWidget.pypp.hpp"
 
+#include "generated_code/Quaternion.pypp.hpp"
+
 #include "generated_code/RGB16i.pypp.hpp"
 
 #include "generated_code/RGB32f.pypp.hpp"
@@ -164,6 +166,8 @@ BOOST_PYTHON_MODULE(v3d){
     register_CoordinateAxis_class();
 
     bp::implicitly_convertible< SimTK::CoordinateAxis, int >();
+
+    register_Quaternion_class();
 
     register_Rotation_class();
 

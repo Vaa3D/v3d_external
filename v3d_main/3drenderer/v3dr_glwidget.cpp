@@ -1568,7 +1568,7 @@ void V3dR_GLWidget::setZoom(int zr)
 {
 	//qDebug("V3dR_GLWidget::setZoom = %i",zr);
 	zr = CLAMP(-ZOOM_RANGE, ZOOM_RANGE, zr);
-	if (_zoom != zr) {
+	if (int(_zoom) != zr) {
 		_zoom = zr;
 		if (renderer) renderer->setZoom( +float(zr)/100.f * ZOOM_RANGE_RATE); //sign can switch zoom orientation
 		emit zoomChanged(zr);
@@ -1583,7 +1583,7 @@ void V3dR_GLWidget::setZoom(float zr)
     if (_zoom != zr) {
         _zoom = zr;
         if (renderer) renderer->setZoom( +float(zr)/100.f * ZOOM_RANGE_RATE); //sign can switch zoom orientation
-        emit zoomChanged(zr);
+        emit zoomChanged(int(zr));
         POST_updateGL();
     }
 }
@@ -1591,7 +1591,7 @@ void V3dR_GLWidget::setZoom(float zr)
 void V3dR_GLWidget::setXShift(int s)
 {
 	s = CLAMP(-SHIFT_RANGE, SHIFT_RANGE, s);
-	if (_xShift != s) {
+	if (int(_xShift) != s) {
 		dxShift = s-_xShift;
 
         _xShift = s;
@@ -1607,7 +1607,7 @@ void V3dR_GLWidget::setXShift(float s)
         dxShift = s-_xShift;
 
         _xShift = s;
-        emit xShiftChanged(s);
+        emit xShiftChanged(int(s));
         POST_updateGL();
     }
 }
@@ -1615,7 +1615,7 @@ void V3dR_GLWidget::setXShift(float s)
 void V3dR_GLWidget::setYShift(int s)
 {
 	s = CLAMP(-SHIFT_RANGE, SHIFT_RANGE, s);
-    if (_yShift != s) {
+    if (int(_yShift) != s) {
 		dyShift = s-_yShift;
 
 		_yShift = s;
@@ -1631,17 +1631,17 @@ void V3dR_GLWidget::setYShift(float s)
         dyShift = s-_yShift;
 
         _yShift = s;
-        emit yShiftChanged(s);
+        emit yShiftChanged(int(s));
         POST_updateGL();
     }
 }
 
 void V3dR_GLWidget::setZShift(int s)
 {
-    if (_zShift != s) {
+    if (int(_zShift) != s) {
 		dzShift = s-_zShift;
 
-    	_zShift = s;
+        _zShift = s;
         emit zShiftChanged(s);
         POST_updateGL();
     }
@@ -1653,7 +1653,7 @@ void V3dR_GLWidget::setZShift(float s)
         dzShift = s-_zShift;
 
         _zShift = s;
-        emit zShiftChanged(s);
+        emit zShiftChanged(int(s));
         POST_updateGL();
     }
 }

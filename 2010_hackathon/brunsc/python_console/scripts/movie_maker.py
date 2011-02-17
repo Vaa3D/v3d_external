@@ -1,5 +1,7 @@
 import time
 import os
+import math
+import v3d
 
 class Interpolator:
     def get_interpolated_value(self, param, param_value_list, index_hint = None, wrap = None):
@@ -127,6 +129,96 @@ class SplineInterpolator(Interpolator):
             + t*((4.0 - 3.0*t)*t + 1.0) * points[2]
             + (t-1.0)*t*t         * points[3] ) / 2.0
 
+class QuaternionInterpolator(Interpolator):
+    def get_interpolated_value(self, param, param_value_list, index_hint = None, wrap = None, linear = False):
+        # There are three ways to handle boundary conditions:
+        # 1) Linear - start and end at full speed
+        # 2) Hold - Accelerate from zero at start, decelerate at end (covers swing case too)
+        # 3) Loop - First point is treated as adjacent to final point (perhaps first and last must be same)
+        self.check_values(param, param_value_list)
+        below_index = self.get_lower_bound_key(param, param_value_list, index_hint)
+        
+        t1 = param_value_list[below_index][0]
+        t2 = param_value_list[below_index + 1][0]
+        alpha = (param - t1) / (t2 - t1)
+        v1 = param_value_list[below_index + 0][1]
+        v2 = param_value_list[below_index + 1][1]
+        if linear: # linear only
+            return self.slerp(v1, v2, alpha)
+        # Catmull Rom interpolation
+        if param == t1:
+            return v1 # exact key frame
+        if below_index > 0: # general case
+            t0 = param_value_list[below_index - 1][0]
+            v0 = param_value_list[below_index - 1][1]
+            # Ignore non-uniformity of interval... Sorry.
+        else: # lower boundary condition
+            # just do Hold-ish for now
+            t0 = t1 + t1 - t2
+            v0 = v1
+        if below_index < (len(param_value_list) - 2): # general case
+            t3 = param_value_list[below_index + 2][0]
+            v3 = param_value_list[below_index + 1][1]
+            # Ignore non-uniformity of interval... Sorry.
+        else:
+            # Just do hold-ish for now
+            # TODO - support loop, linear
+            t3 = t2 + t2 - t1
+            v3 = v2
+        return self.catmull_quat(v0, v1, v2, v3, alpha)
+    
+    def quat_dot(self, q1, q2):
+        result = 0.0
+        for ix in range(4):
+            result += q1[ix] * q2[ix]
+        return result
+    
+    def slerp(self, q1, q2, alpha, spin=0):
+        """
+        Spherical linear interpolation of quaternions.
+        param alpha is between 0.0 and 1.0, but is allow outside that range
+        Returns an interpolated quaternion.
+        Adapted from appendix E of Visualizing Quaternions by AJ Hanson
+        """
+        # assert 0 <= alpha <= 1.0
+        # cosine theta = dot product of a and b
+        cos_t = self.quat_dot(q1,q2)
+        # if B is on opposite hemisphere from A, use -B instead
+        bFlip = False
+        if cos_t < 0.0:
+            bFlip = True
+            cos_t = -cos_t
+        # If B is (within precision limits) the same as A,
+        # just linear interpolate between A and B.
+        # Can't do spins, since we don't know what direction to spin.
+        if (1.0 - cos_t) < 1e-7:
+            beta = 1.0 - alpha
+        else: # normal case
+            theta = math.acos(cos_t)
+            phi = theta + spin * math.pi
+            sin_t = math.sin(theta)
+            beta = math.sin(theta - alpha*phi) / sin_t
+            alpha = math.sin(alpha*phi) / sin_t
+        if bFlip:
+            alpha = -alpha
+        result = v3d.Quaternion()
+        for i in range(4):
+            result[i] = beta * q1[i] + alpha * q2[i]
+        result.normalizeThis()
+        return result
+
+    def catmull_quat(self, q00, q01, q02, q03, t):
+        """
+        Interpolate orientations using Catmull-Rom splines in quaternion space.
+        Adapted from appendix E of Visualizing Quaternions by AJ Hanson
+        """
+        q10 = self.slerp(q00, q01, t+1.0)
+        q11 = self.slerp(q01, q02, t)
+        q12 = self.slerp(q02, q03, t-1.0)
+        q20 = self.slerp(q10, q11, (t+1.0)/2.0)
+        q21 = self.slerp(q11, q12, t/2.0)
+        return self.slerp(q20, q21, t)
+
 
 # TODO - include rotation and clipping
 #      - And maybe eventually list of displayed objects
@@ -152,6 +244,7 @@ class V3dKeyFrame(V3dMovieFrame):
         V3dMovieFrame.__init__(self, camera_position)
         self.interval = interval # in seconds from previous frame
         self.interpolator = SplineInterpolator()
+        self.quat_interpolator = QuaternionInterpolator()
 
 
 class V3dMovie:
@@ -187,16 +280,23 @@ class V3dMovie:
                                         'frontCut' : 'setFrontCut'}
 
     def _setup_interpolation_lists(self):
-        # Create list of key frame x shifts
+        # Create dictionary for lists of parameters
         self.interpolation_list = {}
         elapsed_time = 0.0
+        # Create empty list for each parameter
         for param_name in self.view_control_param_names:
             self.interpolation_list[param_name] = []
+        self.interpolation_list['quaternion'] = []
+        # Populate parameter lists with one entry per key-frame
+        # Each entry in a parameter lists holds a [time, value] pair
         for key_frame in self.key_frames:
             elapsed_time += key_frame.interval
             for param_name in self.view_control_param_names:
                 self.interpolation_list[param_name].append([elapsed_time, 
                             getattr(key_frame.camera_position, param_name)],)
+            # Handle quaternion rotation explicitly
+            self.interpolation_list['quaternion'].append(
+                    [elapsed_time, key_frame.camera_position.quaternion])
         
     def play(self):
         """
@@ -252,7 +352,7 @@ class V3dMovie:
             if self.image_window:
                 self.image_window.screenShot3DWindow(file_name[0:-4]) # strip off ".BMP"
                 
-    def interpolate_frame(self, elapsed_time, frame_index_hint, interpolator):
+    def interpolate_frame(self, elapsed_time, frame_index_hint, interpolator, quat_interpolator):
         """
         Returns an in-between frame.
         
@@ -274,6 +374,10 @@ class V3dMovie:
                 frame_index_hint,
                 wrap = wrap)
             setattr(camera_position, param_name, interp_val)
+        camera_position.quaternion = quat_interpolator.get_interpolated_value(
+                    elapsed_time,
+                    self.interpolation_list['quaternion'],
+                    frame_index_hint)
         return V3dMovieFrame(camera_position)
         
     def generate_frame_views(self):
@@ -299,7 +403,10 @@ class V3dMovie:
             # print key_frame.interval
             while frame_time < key_frame.interval:
                 # TODO interpolate
-                yield self.interpolate_frame(total_time, frame_index, key_frame.interpolator)
+                yield self.interpolate_frame(
+                            total_time, frame_index, 
+                            key_frame.interpolator,
+                            key_frame.quat_interpolator)
                 # yield V3dMovieFrame() # TODO interpolate
                 frame_time += self.seconds_per_frame
                 total_time += self.seconds_per_frame
@@ -323,12 +430,20 @@ class V3dMovie:
             fn = getattr(vc, setter_name)
             fn(val) # set parameter in V3D view_control
             # print "Setting parameter %s to %s" % (getter_name, val)
-        # For some reason set[XYZ]Rotation() does an incremental change        
+        # For some reason set[XYZ]Rotation() does an incremental change
+        R = v3d.Rotation()
+        R.setRotationFromQuaternion(camera_position.quaternion)
+        angles = R.convertThreeAxesRotationToThreeAngles(
+                    v3d.BodyRotationSequence,
+                    v3d.XAxis,
+                    v3d.YAxis,
+                    v3d.ZAxis)
+        RadToDeg = 180.0 / math.pi
         self.view_control.doAbsoluteRot(
-                    camera_position.xRot,
-                    camera_position.yRot,
-                    camera_position.zRot)
-        
+                    angles[0] * RadToDeg,
+                    angles[1] * RadToDeg,
+                    angles[2] * RadToDeg)
+
     def get_current_v3d_camera(self):
         if not self.view_control:
             raise ValueError("No V3D window is attached")
@@ -340,6 +455,20 @@ class V3dMovie:
             val = getattr(self.view_control, param_name)()
             setattr(camera, param_name, val)
             # print "Parameter %s = %s" % (param_name, val)
+        # But rotation we handle explicitly
+        # convert to radians
+        DegToRad = math.pi / 180.0
+        xRot = camera.xRot * DegToRad
+        yRot = camera.yRot * DegToRad
+        zRot = camera.zRot * DegToRad
+        # construct rotation matrix
+        R = v3d.Rotation()
+        R.setRotationFromThreeAnglesThreeAxes(
+                v3d.BodyRotationSequence, 
+                xRot, v3d.XAxis, 
+                yRot, v3d.YAxis, 
+                zRot, v3d.ZAxis)
+        camera.quaternion = v3d.Quaternion(R)
         return camera
         
     def append_current_view(self, interval=2.0):
@@ -354,4 +483,4 @@ class V3dMovie:
 # a program instead of as a library.
 # print "__name__ = %s" % __name__
 if __name__ == '__main__':
-    import PyQt4
+    pass

@@ -85,6 +85,7 @@ class V3DWrapper:
         self.wrap_QString()
         self.wrap_Vec3()
         self.wrap_Rotation()
+        self.wrap_Quaternion()
         # and finally
         self.mb.member_operators('operator*').exclude()
         self.mb.member_operators('operator->').exclude()
@@ -95,6 +96,22 @@ class V3DWrapper:
         self.mb.variables('').exclude() # avoid anonymous variable warnings
         self.mb.free_functions('qHash').exclude()
 
+    def wrap_Quaternion(self):
+        simtk = self.mb.namespace('SimTK')
+        cls = simtk.class_('Quaternion_<double>')
+        cls.alias = 'Quaternion'
+        cls.include()
+        t = cls.demangled
+        cls.include_files.append("vec3_container_traits.hpp")
+        cls.add_registration_code("""
+            def(bp::indexing::container_suite<
+                    %s,
+                    bp::indexing::all_methods,
+                    list_algorithms< vec_container_traits< %s > > >())
+            """ % (t, t) )
+        cls.member_function('normalizeThis').call_policies = \
+                call_policies.return_internal_reference()        
+        
     def wrap_Vec3(self):
         simtk = self.mb.namespace('SimTK')
         vec3 = simtk.class_('Vec<3, double, 1>')
@@ -113,9 +130,8 @@ class V3DWrapper:
             def(bp::indexing::container_suite<
                     %s,
                     bp::indexing::all_methods,
-                    list_algorithms< vec3_container_traits > >())
-            """ % t )
-
+                    list_algorithms< vec_container_traits< %s > > >())
+            """ % (t, t) )
         
     def wrap_Rotation(self):
         simtk = self.mb.namespace('SimTK')
@@ -138,6 +154,9 @@ class V3DWrapper:
         simtk.variable('ZAxis').include()
         fn = rot.member_function('convertThreeAxesRotationToThreeAngles')
         fn.include()
+        fn = rot.member_function('setRotationFromQuaternion')
+        fn.include()
+        fn.call_policies = call_policies.return_internal_reference()
         
     def wrap_callPluginFunc(self):
         fn = self.mb.free_function("callPluginFunc")

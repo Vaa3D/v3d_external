@@ -24,6 +24,19 @@ void register_Rotation_class(){
                 , " Converts rotation matrix to three orientation angles.\n Note:  The result is most meaningful if the Rotation_ matrix is one that can be produced by such a sequence." );
         
         }
+        { //::SimTK::Rotation_< double >::setRotationFromQuaternion
+        
+            typedef SimTK::Rotation_< double > exported_class_t;
+            typedef ::SimTK::Rotation_< double > & ( exported_class_t::*setRotationFromQuaternion_function_type )( ::SimTK::Quaternion_< double > const & ) ;
+            
+            Rotation_exposer.def( 
+                "setRotationFromQuaternion"
+                , setRotationFromQuaternion_function_type( &::SimTK::Rotation_< double >::setRotationFromQuaternion )
+                , ( bp::arg("q") )
+                , bp::return_internal_reference< >()
+                , " Method for creating a rotation matrix from a quaternion." );
+        
+        }
         { //::SimTK::Rotation_< double >::setRotationFromThreeAnglesThreeAxes
         
             typedef SimTK::Rotation_< double > exported_class_t;

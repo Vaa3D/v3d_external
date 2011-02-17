@@ -19,11 +19,17 @@ struct value_traits< SimTK::Vec3 > {
     template<typename PythonClass, typename Policy>
     static void visit_container_class(PythonClass &, Policy const &){}
 };
+template<>
+struct value_traits< SimTK::Quaternion > {
+    static bool const equality_comparable = false;
+    static bool const less_than_comparable = false;
+    template<typename PythonClass, typename Policy>
+    static void visit_container_class(PythonClass &, Policy const &){}
+};
 
-struct vec3_container_traits {
-  // Traits information for std::map<std::string, int>
-
-  typedef SimTK::Vec3                container;
+template<class VEC>
+struct vec_container_traits {
+  typedef VEC                        container;
   typedef int                        size_type;
   typedef SimTK::Real                value_type;
   typedef value_type*                iterator;

@@ -4,6 +4,7 @@
 #include "ImageWindow.h"
 #include "v3d_qt_environment.h"
 #include "SimTKcommon/internal/Rotation.h"
+#include "SimTKcommon/internal/Quaternion.h"
 #include "ImageWindow.h"
 
 std::string get_argitem_type(const V3DPluginArgItem& item);
@@ -55,6 +56,7 @@ PYV3D_HEADER_TEMPLATE class c_array< c_array< double, 3 >, 3 >;
 PYV3D_HEADER_TEMPLATE class V3DPluginArg< c_array< c_array< double, 3 >, 3 > >;
 PYV3D_HEADER_TEMPLATE class SimTK::Rotation_<double>;
 PYV3D_HEADER_TEMPLATE class SimTK::Vec<3, double, 1>;
+PYV3D_HEADER_TEMPLATE class SimTK::Quaternion_<double>;
 
 /*! \brief Returns general parameters of the V3D program.
  *
