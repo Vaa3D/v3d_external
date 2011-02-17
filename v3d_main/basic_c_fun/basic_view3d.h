@@ -65,6 +65,12 @@ public:
     virtual int zCut0() const =0;
     virtual int zCut1() const =0;
     virtual int frontCut() const =0;
+    virtual int xCS() const =0;
+    virtual int yCS() const =0;
+    virtual int zCS() const =0;
+    virtual bool channelR() =0;
+    virtual bool channelG() =0;
+    virtual bool channelB() =0;
 
 	virtual bool isVolCompress() const =0;
 	virtual bool isShowBoundingBox() const =0;

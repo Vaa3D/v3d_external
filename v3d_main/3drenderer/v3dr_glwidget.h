@@ -148,6 +148,12 @@ public:
     virtual int zCut0() const { return _zCut0; }
     virtual int zCut1() const { return _zCut1; }
     virtual int frontCut() const { return _fCut; }
+    virtual int xCS() const {return _xCS;}
+    virtual int yCS() const {return _yCS;}
+    virtual int zCS() const {return _zCS;}
+    virtual bool channelR() {return renderer->color_proxy.r != 0;}
+    virtual bool channelG() {return renderer->color_proxy.g != 0;}
+    virtual bool channelB() {return renderer->color_proxy.b != 0;}
 
 	virtual bool isVolCompress() const { return (renderer)? renderer->tryTexCompress :false; }
 	virtual bool isShowBoundingBox() const { return (renderer)? renderer->bShowBoundingBox :false; }

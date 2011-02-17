@@ -248,20 +248,28 @@ class V3dKeyFrame(V3dMovieFrame):
 
 
 class V3dMovie:
-    def __init__(self, seconds_per_frame=1.0/24.0):
-        import v3d
-        self.seconds_per_frame = seconds_per_frame # seconds per frame, default 24 fps
-        self.key_frames = []
-        self.image_window = None
-        self.view_control = None
+    def _find_image_window(self):
         try:
             self.image_window = v3d.ImageWindow.current()
         except:
             self.image_window = None
-        try:
-            self.view_control = self.image_window.getView3DControl()
-        except:
-            self.view_control = None
+            
+    def _find_view_control(self):
+        if self.image_window == None:
+            self._find_image_window()
+        if self.image_window == None:
+            return
+        self.view_control = self.image_window.getView3DControl()
+        # Perhaps the user is using a local 3D window instead
+        if self.view_control == None:
+            self.view_control = self.image_window.getLocalView3DControl()
+        
+    def __init__(self, seconds_per_frame=1.0/24.0):
+        import v3d
+        self.seconds_per_frame = seconds_per_frame # seconds per frame, default 24 fps
+        self.key_frames = []
+        self._find_image_window()
+        self._find_view_control()
         # interpolation_param_names are names of View3DControl getter/getter methods
         self.view_control_param_names = {
                                         'xShift' : 'setXShift', 
@@ -277,6 +285,12 @@ class V3dMovie:
                                         'yCut1' : 'setYCut1',
                                         'zCut0' : 'setZCut0', 
                                         'zCut1' : 'setZCut1',
+                                        'xCS' : 'setXCS',
+                                        'yCS' : 'setYCS',
+                                        'zCS' : 'setZCS',
+                                        'channelR' : 'setChannelR',
+                                        'channelG' : 'setChannelG',
+                                        'channelB' : 'setChannelB',
                                         'frontCut' : 'setFrontCut'}
 
     def _setup_interpolation_lists(self):
@@ -385,7 +399,7 @@ class V3dMovie:
         Unlike generate_frame_info(), generate_frame_views() actually
         adjusts the current view in the V3D 3D viewer.
         """
-        self.image_window.open3DWindow()
+        # self.image_window.open3DWindow()
         for frame in self.generate_frame_info():
             self.set_current_v3d_camera(frame.camera_position)
             self.image_window.update() # The obviates need to print to get window update
@@ -416,8 +430,9 @@ class V3dMovie:
             frame_index += 1
             
     def set_current_v3d_camera(self, camera_position):
-        vc = self.view_control
-        if not vc:
+        if not self.view_control:
+            self._find_view_control()
+        if not self.view_control:
             raise ValueError("No V3D window is attached")
         # print "Setting view control..."
         for getter_name in self.view_control_param_names:
@@ -427,7 +442,12 @@ class V3dMovie:
             val = getattr(camera_position, getter_name)
             if 'Cut' in getter_name:
                 val = int(val) # Cut methods take integer arguments
-            fn = getattr(vc, setter_name)
+            if 'CS' in getter_name:
+                val = int(val)
+            if 'hannel' in getter_name:
+                # needs to be boolean
+                val = (val > 0.5)
+            fn = getattr(self.view_control, setter_name)
             fn(val) # set parameter in V3D view_control
             # print "Setting parameter %s to %s" % (getter_name, val)
         # For some reason set[XYZ]Rotation() does an incremental change
@@ -446,10 +466,11 @@ class V3dMovie:
 
     def get_current_v3d_camera(self):
         if not self.view_control:
+            self._find_view_control()
+        if not self.view_control:
             raise ValueError("No V3D window is attached")
         # TODO absoluteRotPose() changes the view slightly.  I don't think it should...
-        vc = self.view_control
-        vc.absoluteRotPose()
+        self.view_control.absoluteRotPose()
         camera = CameraPosition()
         for param_name in self.view_control_param_names:
             val = getattr(self.view_control, param_name)()

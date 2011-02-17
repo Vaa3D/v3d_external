@@ -113,7 +113,7 @@ class MovieGui(QtGui.QWidget):
         self.setWindowTitle('V3D Keyframe Movie Maker')
         self.add_buttons()
         self.previous_save_dir = ""
-        
+
     def add_buttons(self):
         intro = QtGui.QLabel("""
             Adjust the V3D '3D View' to the orientation you want to see

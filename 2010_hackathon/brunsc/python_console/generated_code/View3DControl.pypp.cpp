@@ -45,6 +45,21 @@ struct View3DControl_wrapper : View3DControl, bp::wrapper< View3DControl > {
         func_changeVolShadingOption(  );
     }
 
+    virtual bool channelB(  ){
+        bp::override func_channelB = this->get_override( "channelB" );
+        return func_channelB(  );
+    }
+
+    virtual bool channelG(  ){
+        bp::override func_channelG = this->get_override( "channelG" );
+        return func_channelG(  );
+    }
+
+    virtual bool channelR(  ){
+        bp::override func_channelR = this->get_override( "channelR" );
+        return func_channelR(  );
+    }
+
     virtual void createSurfCurrentB(  ){
         bp::override func_createSurfCurrentB = this->get_override( "createSurfCurrentB" );
         func_createSurfCurrentB(  );
@@ -550,6 +565,11 @@ struct View3DControl_wrapper : View3DControl, bp::wrapper< View3DControl > {
         func_volumeColormapDialog(  );
     }
 
+    virtual int xCS(  ) const {
+        bp::override func_xCS = this->get_override( "xCS" );
+        return func_xCS(  );
+    }
+
     virtual int xCut0(  ) const {
         bp::override func_xCut0 = this->get_override( "xCut0" );
         return func_xCut0(  );
@@ -570,6 +590,11 @@ struct View3DControl_wrapper : View3DControl, bp::wrapper< View3DControl > {
         return func_xShift(  );
     }
 
+    virtual int yCS(  ) const {
+        bp::override func_yCS = this->get_override( "yCS" );
+        return func_yCS(  );
+    }
+
     virtual int yCut0(  ) const {
         bp::override func_yCut0 = this->get_override( "yCut0" );
         return func_yCut0(  );
@@ -588,6 +613,11 @@ struct View3DControl_wrapper : View3DControl, bp::wrapper< View3DControl > {
     virtual int yShift(  ) const {
         bp::override func_yShift = this->get_override( "yShift" );
         return func_yShift(  );
+    }
+
+    virtual int zCS(  ) const {
+        bp::override func_zCS = this->get_override( "zCS" );
+        return func_zCS(  );
     }
 
     virtual int zCut0(  ) const {
@@ -639,6 +669,15 @@ void register_View3DControl_class(){
         .def( 
             "changeVolShadingOption"
             , bp::pure_virtual( (void ( ::View3DControl::* )(  ) )(&::View3DControl::changeVolShadingOption) ) )    
+        .def( 
+            "channelB"
+            , bp::pure_virtual( (bool ( ::View3DControl::* )(  ) )(&::View3DControl::channelB) ) )    
+        .def( 
+            "channelG"
+            , bp::pure_virtual( (bool ( ::View3DControl::* )(  ) )(&::View3DControl::channelG) ) )    
+        .def( 
+            "channelR"
+            , bp::pure_virtual( (bool ( ::View3DControl::* )(  ) )(&::View3DControl::channelR) ) )    
         .def( 
             "createSurfCurrentB"
             , bp::pure_virtual( (void ( ::View3DControl::* )(  ) )(&::View3DControl::createSurfCurrentB) ) )    
@@ -1006,6 +1045,9 @@ void register_View3DControl_class(){
             "volumeColormapDialog"
             , bp::pure_virtual( (void ( ::View3DControl::* )(  ) )(&::View3DControl::volumeColormapDialog) ) )    
         .def( 
+            "xCS"
+            , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::xCS) ) )    
+        .def( 
             "xCut0"
             , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::xCut0) ) )    
         .def( 
@@ -1018,6 +1060,9 @@ void register_View3DControl_class(){
             "xShift"
             , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::xShift) ) )    
         .def( 
+            "yCS"
+            , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::yCS) ) )    
+        .def( 
             "yCut0"
             , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::yCut0) ) )    
         .def( 
@@ -1029,6 +1074,9 @@ void register_View3DControl_class(){
         .def( 
             "yShift"
             , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::yShift) ) )    
+        .def( 
+            "zCS"
+            , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::zCS) ) )    
         .def( 
             "zCut0"
             , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::zCut0) ) )    
