@@ -7,12 +7,14 @@ CONFIG       += qt plugin warn_off
 #include(/usr/local/Trolltech/Qt-4.5.2/demos/shared/shared.pri)
 
 V3DMAINDIR = ../../../v3d_main
+QT_DIR = $$dirname(QMAKE_QMAKE)/..
 
 INCLUDEPATH  += $$V3DMAINDIR/basic_c_fun
 INCLUDEPATH  += $$V3DMAINDIR/common_lib/include
-INCLUDEPATH  += $$QTDIR/demos/shared/
+INCLUDEPATH  += $$QT_DIR/demos/shared/
 #HEADERS      +=/usr/local/Trolltech/Qt-4.5.2/demos/shared/arthurwidgets.h
 HEADERS      +=colormap.h
+
 
 HEADERS      += mg_image_lib11.h
 HEADERS      += stackutil-11.h

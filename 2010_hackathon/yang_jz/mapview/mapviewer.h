@@ -31,7 +31,7 @@
 
 #include "basic_landmark.h"
 #include "basic_4dimage.h"
-#include "/usr/local/Trolltech/Qt-4.5.2/demos/shared/arthurwidgets.h"
+#include "arthurwidgets.h"
 // multithreads
 #include <pthread.h>
 // interface v3d
