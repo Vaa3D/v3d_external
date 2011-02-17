@@ -15,7 +15,8 @@ XMapView* XMapView::m_show = 0;
 QStringList MAPiewerPlugin::menulist() const
 {
     return QStringList() << tr("load Image")
-						 << tr("generate thumbnail map")
+						 << tr("generate thumbnail map from tc file")
+	                     << tr("generate thumbnail map from raw data")
 						 << tr("help");
 }
 
@@ -25,9 +26,13 @@ void MAPiewerPlugin::domenu(const QString &menu_name, V3DPluginCallback &callbac
     {
     	iViewer(callback, parent);
     }
-	else if(menu_name == tr("generate thumbnail map")) 
+	else if(menu_name == tr("generate thumbnail map from tc file")) 
 	{
 		resampling(callback, parent);
+	}
+	else if(menu_name == tr("generate thumbnail map from raw data")) 
+	{
+		resampling_rawdata(callback, parent);
 	}
 	else if (menu_name == tr("help"))
 	{
@@ -246,6 +251,152 @@ void MAPiewerPlugin::resampling(V3DPluginCallback &callback, QWidget *parent)
 	V3DLONG sz_tmp[4];
 	
 	QString tmp_filename = curFilePath + "/" + "stitched_image.tif";
+	
+	sz_tmp[0] = vx; sz_tmp[1] = vy; sz_tmp[2] = vz; sz_tmp[3] = vc; 
+	
+	if (saveImage(tmp_filename.toStdString().c_str(), (const unsigned char *)pVImg, sz_tmp, 1)!=true)
+	{
+		fprintf(stderr, "Error happens in file writing. Exit. \n");
+		return ;
+	}	
+	
+}
+void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *parent)
+{
+	QString m_FileName = QFileDialog::getOpenFileName(parent, QObject::tr("Open profile"), "", QObject::tr("Supported file (*.raw)"));
+	if(m_FileName.isEmpty())	
+		return;
+	QString curFilePath = QFileInfo(m_FileName).path();
+	
+	QString curPath = curFilePath;
+	
+	string fn = m_FileName.toStdString();
+	
+	char * imgSrcFile = const_cast<char *>(fn.c_str());
+	
+	V3DLONG *sz_relative = 0; 
+	
+	int datatype_relative = 0;
+	
+	unsigned char* resampling = 0;
+	
+	int target_pixel_size;
+	
+	V3DLONG *szo=0;
+	
+	V3DLONG *sz=0;
+	
+	size_t start_t = clock();
+	
+	loadImage_raw_resampling(imgSrcFile,resampling,szo,sz_relative,datatype_relative,target_pixel_size);
+	
+	long vx, vy, vz, vc;
+	long rx, ry, rz, rc;
+	
+	vx = szo[0]/target_pixel_size ; // suppose the size same of all tiles
+	
+	vy = szo[1];
+	
+	vz = szo[2];
+	
+	vc = szo[3];
+	
+	rx = szo[0] ; // suppose the size same of all tiles
+	
+	ry = szo[1];
+	
+	rz = szo[2];
+	
+	rc = szo[3];
+	
+	long pagesz_vim = vx*vy*vz*vc;
+	
+	unsigned char *pVImg = 0;
+	try
+	{
+		pVImg = new unsigned char [pagesz_vim];
+	}
+	catch (...) 
+	{
+		printf("Fail to allocate memory.\n");
+		return;
+	}
+	// init
+	for(long i=0; i<pagesz_vim; i++)
+	{
+		pVImg[i] = 0;
+	}
+	
+	ImagePixelType datatype;
+	
+	V3DLONG tempc = vx*vy*vz, tempcz = vx*vy;
+	
+	V3DLONG temprc = rx*ry*rz, temprcz = rx*ry;
+	
+	V3DLONG t = target_pixel_size;
+	
+	for(long c=0; c<rc; c++)
+	{
+		long oc = c*tempc;
+		long orc = c*temprc;
+		
+		for(long k= 0; k<rz; k++)
+		{
+			long omk = oc + (k)*tempcz;
+			
+			long ork = orc + (k)*temprcz;
+			
+			for(long j=0; j<ry; j++)
+			{
+				long oj = omk + (j)*vx;
+				
+				long orj = ork + (j)*rx;
+				
+				for(long i=0; i<rx; i = i+target_pixel_size)
+				{
+					long idx = oj + i/t;
+					long idxr = orj + i;
+					{
+						pVImg[idx] = resampling[idxr];
+					}
+				}
+			}
+		}
+	}
+	
+	if(datatype_relative==1)
+	{
+		datatype = V3D_UINT8;
+	}else if(datatype_relative==2)
+	{
+		datatype = V3D_UINT16;
+	}
+	
+	// time consumption
+	size_t end_t = clock();
+	
+	cout<<"resampling time = "<<end_t-start_t<<endl;
+	
+	Image4DSimple p4DImage;
+	//	
+	p4DImage.setData(pVImg, vx, vy, vz, vc, V3D_UINT8);
+	
+	v3dhandle curwin;
+	
+	if(!callback.currentImageWindow())
+		curwin = callback.newImageWindow();
+	else
+		curwin = callback.currentImageWindow();
+	
+	callback.setImage(curwin, &p4DImage);
+	callback.setImageName(curwin, "Resampling Image");
+	callback.updateImageWindow(curwin);
+	
+	callback.pushImageIn3DWindow(curwin);
+	
+	V3DLONG sz_tmp[4];
+	
+	QString tmp_filename = curFilePath + "/" + "resampling.raw";
 	
 	sz_tmp[0] = vx; sz_tmp[1] = vy; sz_tmp[2] = vz; sz_tmp[3] = vc; 
 	

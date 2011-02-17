@@ -702,6 +702,8 @@ public:
 	void iViewer(V3DPluginCallback &callback, QWidget *parent);
 	
 	void resampling(V3DPluginCallback &callback, QWidget *paren);
+	void resampling_rawdata(V3DPluginCallback &callback, QWidget *parent);
+	
 	Y_VIM<float, long, indexed_t<long, float>, LUT<long> > vim;
 public:
 	

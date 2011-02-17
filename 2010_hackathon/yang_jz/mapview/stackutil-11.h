@@ -86,8 +86,8 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, V3DLON
 
 int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype, int chan_id_to_load); //overload for convenience to read only 1 channel
 
-int loadRaw2Stack_resamping(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype, int resampling_size); //resampling image
-
+int loadRaw2Stack_resamping(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype, int resampling_size); //resampling image from tc file;
+int loadRaw2Stack_raw_resamping(char * filename, unsigned char * & img, V3DLONG * & szo, V3DLONG *& sz, int & datatype, int &resampling_size);//resampling image from rawdata;
 
 int saveStack2Raw(const char * filename, const unsigned char * img, const V3DLONG * sz, int datatype); //4-byte raw writing
 
@@ -149,6 +149,7 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, V3DLON
 
 bool loadImage_resampling(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, V3DLONG *&szo, int & datatype,int resampling_size); //
 
+bool loadImage_raw_resampling(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, V3DLONG *&szo, int & datatype,int &resampling_size); //
 
 bool saveImage(const char filename[], const unsigned char * data1d, const V3DLONG * sz, const int datatype); //070214
 
