@@ -316,19 +316,41 @@ class V3dMovie:
         """
         Play back movie frames at a rate no faster than real-time.
         """
-        start_clocktime = time.clock()
+        # Use a generator, to provide an opportunity to update GUI between frames
+        for frame_number in self.generate_play_frames():
+            pass
+            
+    def generate_play_frames(self):
+        """
+        Play back movie frames at a rate no faster than real-time.
+        One frame at a time, as a python generator.
+        Returns elapsed time.
+        """
+        #
+        movie_start_clocktime = time.clock()
+        frame_start_clocktime = movie_start_clocktime
+        frame_number = 0
         for frame in self.generate_frame_views():
             # Are we playing too fast?
-            real_time_deficit = self.seconds_per_frame - (time.clock() - start_clocktime)
+            now = time.clock()
+            elapsed_frame_time = now - frame_start_clocktime
+            frame_start_clocktime = now
+            real_time_deficit = self.seconds_per_frame - elapsed_frame_time
             if real_time_deficit > 0:
                 time.sleep(real_time_deficit)
-            start_clocktime = time.clock()
+            frame_start_clocktime = now
+            frame_number += 1
+            yield frame_number
 
     def _frame_name(self, dir, root, num):
         fname = "%s_frame_%05d.BMP" % (root, num)
         return os.path.join(dir, fname)
 
     def write_frames(self, directory, file_root=None):
+        for frame_number in self.generate_write_frames(directory, file_root):
+            pass
+        
+    def generate_write_frames(self, directory, file_root=None):        
         """
         Writes movie to disk, with one BMP file per movie frame.
         
@@ -365,6 +387,7 @@ class V3dMovie:
             # print "Writing frame image file %s" % file_name
             if self.image_window:
                 self.image_window.screenShot3DWindow(file_name[0:-4]) # strip off ".BMP"
+            yield frame_number
                 
     def interpolate_frame(self, elapsed_time, frame_index_hint, interpolator, quat_interpolator):
         """
@@ -400,6 +423,10 @@ class V3dMovie:
         adjusts the current view in the V3D 3D viewer.
         """
         # self.image_window.open3DWindow()
+        # Turn off cut plane locks
+        self.view_control.setXCutLock(False)
+        self.view_control.setYCutLock(False)
+        self.view_control.setZCutLock(False)
         for frame in self.generate_frame_info():
             self.set_current_v3d_camera(frame.camera_position)
             self.image_window.update() # The obviates need to print to get window update

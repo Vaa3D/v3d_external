@@ -71,6 +71,10 @@ public:
     virtual bool channelR() =0;
     virtual bool channelG() =0;
     virtual bool channelB() =0;
+    // ...and lock setters.  Movie maker needs to turn off locks.
+    virtual void setXCutLock(bool) =0;
+    virtual void setYCutLock(bool) =0;
+    virtual void setZCutLock(bool) =0;
 
 	virtual bool isVolCompress() const =0;
 	virtual bool isShowBoundingBox() const =0;

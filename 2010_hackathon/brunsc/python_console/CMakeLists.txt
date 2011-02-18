@@ -263,6 +263,12 @@ if(V3D_BUILD_PATH) # ${CMAKE_BINARY_DIR} for V3D project
         get_filename_component(FNAME "${SCRIPT_FILE}" NAME)
         configure_file("${SCRIPT_FILE}" "${BINARY_PLUGINS_PATH}/${FNAME}" COPYONLY)
     endforeach()
+    file(MAKE_DIRECTORY "${BINARY_PLUGINS_PATH}/icons")
+    file(GLOB ICON_FILES "${CMAKE_CURRENT_SOURCE_DIR}/scripts/icons/*.png")
+    foreach(ICON_FILE ${ICON_FILES})
+        get_filename_component(FNAME "${ICON_FILE}" NAME)
+        configure_file("${ICON_FILE}" "${BINARY_PLUGINS_PATH}/icons/${FNAME}" COPYONLY)
+    endforeach()
     # Copy v3d python module too
     # This copy must occur at build time
     get_target_property(PLUGIN_FILE PythonConsolePlugin LOCATION)

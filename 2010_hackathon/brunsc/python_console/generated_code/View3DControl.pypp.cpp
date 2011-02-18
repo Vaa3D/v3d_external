@@ -345,6 +345,11 @@ struct View3DControl_wrapper : View3DControl, bp::wrapper< View3DControl > {
         func_setXCut1( s );
     }
 
+    virtual void setXCutLock( bool arg0 ){
+        bp::override func_setXCutLock = this->get_override( "setXCutLock" );
+        func_setXCutLock( arg0 );
+    }
+
     virtual void setXRotation( int angle ){
         bp::override func_setXRotation = this->get_override( "setXRotation" );
         func_setXRotation( angle );
@@ -390,6 +395,11 @@ struct View3DControl_wrapper : View3DControl, bp::wrapper< View3DControl > {
         func_setYCut1( s );
     }
 
+    virtual void setYCutLock( bool arg0 ){
+        bp::override func_setYCutLock = this->get_override( "setYCutLock" );
+        func_setYCutLock( arg0 );
+    }
+
     virtual void setYRotation( int angle ){
         bp::override func_setYRotation = this->get_override( "setYRotation" );
         func_setYRotation( angle );
@@ -433,6 +443,11 @@ struct View3DControl_wrapper : View3DControl, bp::wrapper< View3DControl > {
     virtual void setZCut1( int s ){
         bp::override func_setZCut1 = this->get_override( "setZCut1" );
         func_setZCut1( s );
+    }
+
+    virtual void setZCutLock( bool arg0 ){
+        bp::override func_setZCutLock = this->get_override( "setZCutLock" );
+        func_setZCutLock( arg0 );
     }
 
     virtual void setZRotation( int angle ){
@@ -886,6 +901,10 @@ void register_View3DControl_class(){
             , bp::pure_virtual( (void ( ::View3DControl::* )( int ) )(&::View3DControl::setXCut1) )
             , ( bp::arg("s") ) )    
         .def( 
+            "setXCutLock"
+            , bp::pure_virtual( (void ( ::View3DControl::* )( bool ) )(&::View3DControl::setXCutLock) )
+            , ( bp::arg("arg0") ) )    
+        .def( 
             "setXRotation"
             , bp::pure_virtual( (void ( ::View3DControl::* )( int ) )(&::View3DControl::setXRotation) )
             , ( bp::arg("angle") ) )    
@@ -922,6 +941,10 @@ void register_View3DControl_class(){
             , bp::pure_virtual( (void ( ::View3DControl::* )( int ) )(&::View3DControl::setYCut1) )
             , ( bp::arg("s") ) )    
         .def( 
+            "setYCutLock"
+            , bp::pure_virtual( (void ( ::View3DControl::* )( bool ) )(&::View3DControl::setYCutLock) )
+            , ( bp::arg("arg0") ) )    
+        .def( 
             "setYRotation"
             , bp::pure_virtual( (void ( ::View3DControl::* )( int ) )(&::View3DControl::setYRotation) )
             , ( bp::arg("angle") ) )    
@@ -957,6 +980,10 @@ void register_View3DControl_class(){
             "setZCut1"
             , bp::pure_virtual( (void ( ::View3DControl::* )( int ) )(&::View3DControl::setZCut1) )
             , ( bp::arg("s") ) )    
+        .def( 
+            "setZCutLock"
+            , bp::pure_virtual( (void ( ::View3DControl::* )( bool ) )(&::View3DControl::setZCutLock) )
+            , ( bp::arg("arg0") ) )    
         .def( 
             "setZRotation"
             , bp::pure_virtual( (void ( ::View3DControl::* )( int ) )(&::View3DControl::setZRotation) )

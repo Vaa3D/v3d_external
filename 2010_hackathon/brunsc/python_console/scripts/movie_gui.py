@@ -19,7 +19,7 @@ To use V3D Movie GUI, you must install either PySide or PyQt4.
             """
         raise
 
-class MovieGui2(QtGui.QDialog):
+class MovieGui(QtGui.QDialog):
     def __init__(self, parent=None):
         QtGui.QDialog.__init__(self, parent)
         self.ui = Ui_movie_dialog()
@@ -29,8 +29,21 @@ class MovieGui2(QtGui.QDialog):
                self.append_view)
         self.playButton = self.ui.buttonBox.button(QtGui.QDialogButtonBox.Apply)
         self.playButton.setText("Play")
+        iconPath = os.path.join(os.path.dirname(movie_maker.__file__), 'icons')
+        self.playIcon = QtGui.QIcon(os.path.join(iconPath, "play.png"))
+        self.recordIcon = QtGui.QIcon(os.path.join(iconPath, "record.png"))
+        self.pauseIcon = QtGui.QIcon(os.path.join(iconPath, "pause.png"))
+        self.reelIcon = QtGui.QIcon(os.path.join(iconPath, "film_reel.png"))
+        self.skipBackIcon = QtGui.QIcon(os.path.join(iconPath, "skip_backward.png"))
+        self.setWindowIcon(self.reelIcon)
+        self.playButton.setIcon(self.playIcon)
         self.connect(self.playButton, QtCore.SIGNAL('clicked()'),
-               self.play)
+               self.on_play_pause_pressed)
+        self.resetButton = self.ui.buttonBox.addButton('Reset', QtGui.QDialogButtonBox.ActionRole)
+        self.resetButton.setIcon(self.skipBackIcon)
+        self.resetButton.setEnabled(False)
+        self.connect(self.resetButton, QtCore.SIGNAL('clicked()'),
+                     self.on_reset_pressed)
         self.saveButton = self.ui.buttonBox.button(QtGui.QDialogButtonBox.Save)
         self.saveButton.setText("Save Frames...")
         self.connect(self.saveButton, QtCore.SIGNAL('clicked()'),
@@ -47,6 +60,8 @@ class MovieGui2(QtGui.QDialog):
                      self.update_frame_interval)
         self.frame_interval = 2.5
         self.ui.frameIntervalLineEdit.setText(str(self.frame_interval))
+        #
+        self._enter_state('ready')
 
     def update_frame_interval(self, value_text):
         self.frame_interval = float(value_text)
@@ -59,10 +74,54 @@ class MovieGui2(QtGui.QDialog):
             self.movie = movie_maker.V3dMovie()
             self.movie.append_current_view(interval=self.frame_interval)
         self.updateKeyFrameLabel()
+        self._enter_state('ready') # stop current animation
 
-    def play(self):
-        self.movie.play()
+    # There are three states - ready, playing, and paused
+    def _enter_state(self, state):
+        # Ready to play from start
+        self.play_state = state
+        if 'ready' == state:
+            self.play_generator = None
+            self.playButton.setText('Play')
+            self.playButton.setIcon(self.playIcon)
+            self.resetButton.setEnabled(False)
+            self.updateKeyFrameLabel() # enable play button?
+        elif 'playing' == state:
+            if None == self.play_generator:
+                self.play_generator = self.movie.generate_play_frames()
+            self.playButton.setText('Pause')
+            self.playButton.setIcon(self.pauseIcon)
+            self.resetButton.setEnabled(True)
+        elif 'paused' == state:
+            assert None != self.play_generator
+            self.playButton.setText('Play')
+            self.playButton.setIcon(self.playIcon)
+            self.resetButton.setEnabled(True)
+        else:
+            assert(False)
+        
+    def on_play_pause_pressed(self):
+        if ('ready' == self.play_state) or ('paused' == self.play_state): # play
+            self._enter_state('playing')
+            for n in self.play_generator:
+                QtGui.QApplication.processEvents()
+                if 'playing' != self.play_state:
+                    return
+            self._enter_state('ready')
+        elif 'playing' == self.play_state:
+            self._enter_state('paused')
+        else: # stop
+            assert(False)
 
+    def on_reset_pressed(self):
+        if 'ready' == self.play_state:
+            pass # should not happen, but whatever...
+        elif ('playing' == self.play_state) or ('paused' == self.play_state):
+            self.movie.generate_play_frames().next()
+            self._enter_state('ready')
+        else:
+            assert(False)
+        
     def save(self):
         dir = QtGui.QFileDialog.getExistingDirectory(
                     self,
@@ -70,7 +129,8 @@ class MovieGui2(QtGui.QDialog):
                     self.previous_save_dir)
         if os.path.exists(dir):
             self.previous_save_dir = dir
-            self.movie.write_frames(directory=str(dir))
+            for n in self.movie.generate_write_frames(directory=str(dir)):
+                QtGui.QApplication.processEvents()
             answer = QtGui.QMessageBox.information(self, "Frames saved", 
                  "Finished writing movie frames")
         self.show() # why does window get hidden in this method?
@@ -83,6 +143,7 @@ class MovieGui2(QtGui.QDialog):
         if answer == QtGui.QMessageBox.Yes:
             self.movie.key_frames = []
             self.updateKeyFrameLabel()
+            self._enter_state('ready')
 
     def updateKeyFrameLabel(self):
         nframes = len(self.movie.key_frames)
@@ -105,66 +166,6 @@ class MovieGui2(QtGui.QDialog):
             self.ui.deleteAllButton.setEnabled(True)
             self.ui.frameIntervalLineEdit.setEnabled(True)
 
-class MovieGui(QtGui.QWidget):
-    def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
-        self.movie = movie_maker.V3dMovie()
-        self.setGeometry(300, 300, 250, 150)
-        self.setWindowTitle('V3D Keyframe Movie Maker')
-        self.add_buttons()
-        self.previous_save_dir = ""
-
-    def add_buttons(self):
-        intro = QtGui.QLabel("""
-            Adjust the V3D '3D View' to the orientation you want to see
-            in your movie.  Then press 'Add current view'.  Keep changing
-            the view and pressing 'Add current view' until you have 
-            included all of the key frames of your movie.  Press 'Play'
-            to preview your movie.  After you are satisfied with your 
-            movie, press 'Save' to write your movie frames to disk.  
-            Converting frames to a movie file is an exercise left to 
-            the user...
-            """)
-        append = QtGui.QPushButton('1) Add current view')
-        append.setToolTip("Press to add the current V3D 3D view to this movie")
-        self.connect(append, QtCore.SIGNAL('clicked()'), 
-                     self.append_view)
-        play = QtGui.QPushButton('2) Play movie')
-        play.setToolTip("Press to animate your movie without saving")
-        self.connect(play, QtCore.SIGNAL('clicked()'),
-                     self.play)
-        save = QtGui.QPushButton('3) Save frames to disk...')
-        save.setToolTip("Press to save your movie frames to disk")
-        self.connect(save, QtCore.SIGNAL('clicked()'),
-                     self.save)
-        vbox = QtGui.QVBoxLayout()
-        vbox.addStretch(1)
-        vbox.addWidget(intro)
-        vbox.addWidget(append)
-        vbox.addWidget(play)
-        vbox.addWidget(save)
-        self.setLayout(vbox)
-        
-    def append_view(self):
-        # Perhaps there was no 3D viewer when the MovieGui was launched
-        try:
-            self.movie.append_current_view()
-        except ValueError:
-            self.movie = movie_maker.V3dMovie()
-            self.movie.append_current_view()
-
-    def play(self):
-        self.movie.play()
-        
-    def save(self):
-        dir = QtGui.QFileDialog.getExistingDirectory(
-                    self,
-                    "Choose directory to save frame files in",
-                    self.previous_save_dir)
-        if os.path.exists(dir):
-            self.previous_save_dir = dir
-            self.movie.write_frames(directory=str(dir))
-
 if __name__ == '__main__':
-    movie_gui = MovieGui2()
+    movie_gui = MovieGui()
     movie_gui.show()
