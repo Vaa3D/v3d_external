@@ -967,65 +967,6 @@ void V3D_atlas_viewerDialog::pickAtlasRow(int i, int j)
 	undoButton->setEnabled(bCanUndo && bMod);
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
-
-//bool V3D_atlas_viewerDialog::updateTableItem_Landmark(QTableWidget *t, int row, int column, LocationSimple *p_landmark)
-//{
-//	if (!t || row<0 || row>=t->rowCount() || !p_landmark) {qDebug("Invalid input parameters in updateTableItem_Landmark().\n"); return false;}
-//	if (column<0 || column>=t->columnCount() || t->columnCount()<11) {qDebug("Incorrect table column number in updateTableItem_Landmark().\n"); return false;}
-//	if (!imgdata) {qDebug("The image data is invalid in updateTableItem_Landmark().\n"); return false;}
-//
-////	QTableWidgetItem *newItem;
-//	QString s;
-//
-//	//s = tr("%1").arg("on");
-//	switch (column)
-//	{
-//		case 0:
-//			t->item(row,column)->setCheckState((p_landmark->on)?Qt::Checked:Qt::UnChecked);
-//			break;
-//
-//		case 1:
-//			newItem = new QTableWidgetItem();	t->setItem(row, j++, newItem);
-//			newItem->setData(Qt::DecorationRole, VCOLOR(p_landmark->color));
-//			newItem->setData(Qt::DisplayRole, VCOLOR(p_landmark->color));
-//
-//	s = tr("%1").arg(p_landmark->x);
-//	newItem = new QTableWidgetItem(s);	t->setItem(row, j++, newItem);
-//	s = tr("%1").arg(p_landmark->y);
-//	newItem = new QTableWidgetItem(s);	t->setItem(row, j++, newItem);
-//	s = tr("%1").arg(p_landmark->z);
-//	newItem = new QTableWidgetItem(s);	t->setItem(row, j++, newItem);
-//
-//	//the following three will be later replaced by the real RGB pixel values. Left here temporarily
-//	s = tr("%1").arg(int(imgdata->at(p_landmark->x, p_landmark->y, p_landmark->z, 0)));
-//	newItem = new QTableWidgetItem(s);	t->setItem(row, j++, newItem);
-//
-//	if (imgdata->getCDim()>=2)
-//		s = tr("%1").arg(int(imgdata->at(p_landmark->x, p_landmark->y, p_landmark->z, 1)));
-//	else
-//		s = tr("%1").arg(0);
-//	newItem = new QTableWidgetItem(s);	t->setItem(row, j++, newItem);
-//
-//	if (imgdata->getCDim()>=3)
-//		s = tr("%1").arg(int(imgdata->at(p_landmark->x, p_landmark->y, p_landmark->z, 2)));
-//	else
-//		s = tr("%1").arg(0);
-//	newItem = new QTableWidgetItem(s);	t->setItem(row, j++, newItem);
-//
-//	//name of the landmark
-//	s = tr("%1").arg(p_landmark->name.c_str());
-//	newItem = new QTableWidgetItem(s);	t->setItem(row, j++, newItem);
-//	s = tr("%1").arg(p_landmark->comments.c_str());
-//	newItem = new QTableWidgetItem(s);	t->setItem(row, j++, newItem);
-//	s = tr("%1").arg(p_landmark->category);
-//	newItem = new QTableWidgetItem(s);	t->setItem(row, j++, newItem);
-//
-//	Q_ASSERT(j==t->columnCount());
-//	return true;
-//}
-
 bool V3D_atlas_viewerDialog::updateTableItem_Landmark(QTableWidget *t, int row, LocationSimple *p_landmark, bool b_createNewItems)
 {
 	if (!t || row<0 || row>=t->rowCount() || !p_landmark) {qDebug("Invalid input parameters in updateTableItem_Landmark().\n"); return false;}
