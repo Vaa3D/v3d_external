@@ -5,6 +5,7 @@
 #include "mapviewer.h"
 #include "stackutil-11.h"
 #include <QPainter>
+
 //Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(mapviewer, MAPiewerPlugin);
@@ -1463,84 +1464,124 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 	
 	v3dhandle curwin;
 	
-	//curwin = callback->newImageWindow();
-
-	//if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to use the existing window?"), QMessageBox::Yes, QMessageBox::No))
-//		curwin = callback->currentImageWindow();
-//	else
-//		curwin = callback->newImageWindow();
-//
-//	callback->setImage(curwin, &p4DImage);
-//	
-//	callback->setImageName(curwin, "MAP Image");
-//	callback->updateImageWindow(curwin);
-//	callback->pushImageIn3DWindow(curwin);
-
 	QString curImageName;
 	
-	curImageName = "Map Image 1";
+	QString file ;
 	
-	v3dhandleList win_list = callback->getImageWindowList();
-
-	if (win_list.size() == 0)
+	if (mousenumber ==1)
 	{
+		curImageName = curFilePath + "Map Image 1"; 
 		curwin = callback->newImageWindow();
 		callback->setImage(curwin, &p4DImage);
 		callback->setImageName(curwin, curImageName);
 		callback->updateImageWindow(curwin);
-		callback->pushImageIn3DWindow(curwin);	
+		callback->pushImageIn3DWindow(curwin);
 		
-	}else  if(win_list.size() == 1)
-	{
-		if (QString::compare(callback->getImageName(win_list[0]), "Map Image 1" )==0 )
+	}else 
+	{		
+		if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to use the existing window?"), QMessageBox::Yes, QMessageBox::No))
 		{
-			curImageName = QString("Map Image 2");
-		}else if(QString::compare(callback->getImageName(win_list[0]), "Map Image 2" )==0 )
-		{
-			curImageName = QString("Map Image 3");
-			
-		}else if(QString::compare(callback->getImageName(win_list[0]), "Map Image 3" )==0)
-		{
-			curImageName = QString("Map Image 1");
+			curwin = callback->currentImageWindow();
+			callback->setImage(curwin, &p4DImage);
+            QString curImageName2 = callback->getImageName(curwin);
+			callback->setImageName(curwin, curImageName2);
+			callback->updateImageWindow(curwin);
+			callback->pushImageIn3DWindow(curwin);
+			mousenumber--;
+			if (mousenumber < 0) 
+			{
+				mousenumber = 1;
+			}
 		}
-		curwin = callback->newImageWindow();
-		callback->setImage(curwin, &p4DImage);
-		callback->setImageName(curwin, curImageName);
-		callback->updateImageWindow(curwin);
-		callback->pushImageIn3DWindow(curwin);	
-	}else if(win_list.size() == 2)
-	{
-		
-		if (QString::compare(callback->getImageName(win_list[0]), "Map Image 1" )==0 && QString::compare(callback->getImageName(win_list[1]), "Map Image 2" )==0 )
+		else
 		{
-			curImageName = QString("Map Image 3");
-			
-		}else if(QString::compare(callback->getImageName(win_list[0]), "Map Image 3" )==0 && QString::compare(callback->getImageName(win_list[1]), "Map Image 1" )==0)
-		{
-			curImageName = QString("Map Image 2");
-			
-		}else if(QString::compare(callback->getImageName(win_list[0]), "Map Image 3" )==0 &&  QString::compare(callback->getImageName(win_list[1]), "Map Image 2" )==0)
-		{
-			curImageName = QString("Map Image 1");
+			file.sprintf("%d",mousenumber);
+			QString curImageName1 = curFilePath + "Map Image" + file;
+			curwin = callback->newImageWindow();
+			callback->setImage(curwin, &p4DImage);
+			callback->setImageName(curwin, curImageName1);
+			callback->updateImageWindow(curwin);
+			callback->pushImageIn3DWindow(curwin);
 		}
-		curwin = callback->newImageWindow();
-		callback->setImage(curwin, &p4DImage);
-		callback->setImageName(curwin, curImageName);
-		callback->updateImageWindow(curwin);
-		callback->pushImageIn3DWindow(curwin);	
-	}else if(win_list.size() == 3 )
-	{
-		int n = (mousenumber)%3;
-		if (n == 0) {n = 3;}
-		//qDebug()<<"mousenumber"<<mousenumber<<""<<n;
-		curwin = win_list[n-1];
-		curImageName = callback->getImageName(curwin);
-		callback->setImage(curwin, &p4DImage);
-		callback->setImageName(curwin,curImageName);
-		callback->updateImageWindow(curwin);
-		callback->pushImageIn3DWindow(curwin);	
 		
 	}
+
+//	QString curImageName;
+//	
+//	curImageName = "Map Image 1";
+//	
+//	v3dhandleList win_list = callback->getImageWindowList();
+//
+//	if (win_list.size() == 0)
+//	{
+//		curwin = callback->newImageWindow();
+//		callback->setImage(curwin, &p4DImage);
+//		callback->setImageName(curwin, curImageName);
+//		callback->updateImageWindow(curwin);
+//		callback->pushImageIn3DWindow(curwin);	
+//		
+//	}else  if(win_list.size() == 1)
+//	{
+//		if (QString::compare(callback->getImageName(win_list[0]), "Map Image 1" )==0 )
+//		{
+//			curImageName = QString("Map Image 2");
+//		}else if(QString::compare(callback->getImageName(win_list[0]), "Map Image 2" )==0 )
+//		{
+//			curImageName = QString("Map Image 3");
+//			
+//		}else if(QString::compare(callback->getImageName(win_list[0]), "Map Image 3" )==0)
+//		{
+//			curImageName = QString("Map Image 1");
+//		}
+//		curwin = callback->newImageWindow();
+//		callback->setImage(curwin, &p4DImage);
+//		callback->setImageName(curwin, curImageName);
+//		callback->updateImageWindow(curwin);
+//		callback->pushImageIn3DWindow(curwin);	
+//	}else if(win_list.size() == 2)
+//	{
+//		
+//		if (QString::compare(callback->getImageName(win_list[0]), "Map Image 1" )==0 && QString::compare(callback->getImageName(win_list[1]), "Map Image 2" )==0 )
+//		{
+//			curImageName = QString("Map Image 3");
+//			
+//		}else if(QString::compare(callback->getImageName(win_list[0]), "Map Image 1" )==0 && QString::compare(callback->getImageName(win_list[1]), "Map Image 3" )==0)
+//		{
+//			curImageName = QString("Map Image 2");
+//			
+//		}else if(QString::compare(callback->getImageName(win_list[0]), "Map Image 2" )==0 &&  QString::compare(callback->getImageName(win_list[1]), "Map Image 1" )==0)
+//		{
+//			curImageName = QString("Map Image 3");
+//		}if (QString::compare(callback->getImageName(win_list[0]), "Map Image 2" )==0 && QString::compare(callback->getImageName(win_list[1]), "Map Image 3" )==0 )
+//		{
+//			curImageName = QString("Map Image 1");
+//			
+//		}else if(QString::compare(callback->getImageName(win_list[0]), "Map Image 3" )==0 && QString::compare(callback->getImageName(win_list[1]), "Map Image 1" )==0)
+//		{
+//			curImageName = QString("Map Image 2");
+//			
+//		}else if(QString::compare(callback->getImageName(win_list[0]), "Map Image 3" )==0 &&  QString::compare(callback->getImageName(win_list[1]), "Map Image 2" )==0)
+//		{
+//			curImageName = QString("Map Image 1");
+//		}
+//		curwin = callback->newImageWindow();
+//		callback->setImage(curwin, &p4DImage);
+//		callback->setImageName(curwin, curImageName);
+//		callback->updateImageWindow(curwin);
+//		callback->pushImageIn3DWindow(curwin);	
+//	}else if(win_list.size() == 3 )
+//	{
+//		int n = (mousenumber)%3;
+//		if (n == 0) {n = 3;}
+//		//qDebug()<<"mousenumber"<<mousenumber<<""<<n;
+//		curwin = win_list[n-1];
+//		curImageName = callback->getImageName(curwin);
+//		callback->setImage(curwin, &p4DImage);
+//		callback->setImageName(curwin,curImageName);
+//		callback->updateImageWindow(curwin);
+//		callback->pushImageIn3DWindow(curwin);	
+//		
+//	}
 	size_t end_t = clock();
 	
 	cout<<"time elapse after loading configuration info ... "<<end_t-start_t<<endl;

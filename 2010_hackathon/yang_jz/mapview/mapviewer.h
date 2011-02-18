@@ -49,6 +49,7 @@
 //#include <QMainWindow>
 #include <qgroupbox.h>
 
+
 //class HoverPoints;
 //class QLineEdit;
 //class QLabel;
