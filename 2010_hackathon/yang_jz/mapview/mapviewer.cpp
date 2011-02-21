@@ -10,6 +10,388 @@
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(mapviewer, MAPiewerPlugin);
 
+template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T * pdata,
+												   V3DLONG sz0,
+												   V3DLONG sz1,
+												   V3DLONG sz2,
+												   V3DLONG sz3,
+												   V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,
+												   double *p_vmax,
+												   double *p_vmin)
+{
+	QImage tmpimg = QImage(sz2, sz1, QImage::Format_RGB32);//zy
+	
+	int tr,tg,tb;
+	
+	V3DLONG i,j;
+	
+	double tmpr,tmpg,tmpb;
+	
+	double tmpr_min, tmpg_min, tmpb_min;
+	
+	if (sz3>=3)
+	{
+		tmpb = p_vmax[2]-p_vmin[2]; tmpb = (tmpb==0)?1:tmpb;
+		tmpb_min = p_vmin[2];
+	}
+	
+	if (sz3>=2)
+	{
+		tmpg = p_vmax[1]-p_vmin[1]; tmpg = (tmpg==0)?1:tmpg;
+		tmpg_min = p_vmin[1];
+	}
+	
+	if (sz3>=1)
+	{
+		tmpr = p_vmax[0]-p_vmin[0]; tmpr = (tmpr==0)?1:tmpr;
+		tmpr_min = p_vmin[0];
+	}
+	
+	int channel_compressed_sz = sz0*sz1*sz2;
+	
+	for (long j = 0; j < sz1; j ++) 
+	{
+		long offset = j*sz0 + cz0;
+		for (long k =0; k < sz2; k++) 
+		{
+			long idx = offset + k*sz0*sz1;
+			
+			tr = floor((pdata[idx]-tmpr_min)/tmpr*255.0);
+			
+			tg = floor((pdata[idx+channel_compressed_sz]-tmpg_min)/tmpg*255.0);
+			
+			tb = floor((pdata[idx+2*channel_compressed_sz]-tmpb_min)/tmpb*255.0);
+			
+			tmpimg.setPixel(k, j, qRgb(tr, tg, tb));
+		}
+
+	}
+	
+	//painter.setCompositionMode(QPainter::CompositionMode_Source);
+	//painter.drawImage(0,0, xy_image);
+	
+	return QPixmap::fromImage(tmpimg);	
+	
+}
+
+
+template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T * pdata,
+												   V3DLONG sz0,
+												   V3DLONG sz1,
+												   V3DLONG sz2,
+												   V3DLONG sz3,
+												   V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,
+												   double *p_vmax,
+												   double *p_vmin)//xz
+{
+	
+	QImage tmpimg = QImage(sz0, sz2, QImage::Format_RGB32);
+	
+	int tr,tg,tb;
+	
+	V3DLONG i,j;
+	
+	double tmpr,tmpg,tmpb;
+	
+	double tmpr_min, tmpg_min, tmpb_min;
+	
+	if (sz3>=3)
+	{
+		tmpb = p_vmax[2]-p_vmin[2]; tmpb = (tmpb==0)?1:tmpb;
+		tmpb_min = p_vmin[2];
+	}
+	
+	if (sz3>=2)
+	{
+		tmpg = p_vmax[1]-p_vmin[1]; tmpg = (tmpg==0)?1:tmpg;
+		tmpg_min = p_vmin[1];
+	}
+	
+	if (sz3>=1)
+	{
+		tmpr = p_vmax[0]-p_vmin[0]; tmpr = (tmpr==0)?1:tmpr;
+		tmpr_min = p_vmin[0];
+	}
+
+	int channel_compressed_sz = sz0*sz1*sz2;
+	
+//	for (long k = 0; k < sz2; k ++) 
+//	{
+//		long offset = k*sz0*sz1 + cz1*sz0;
+//		for (long i =0; i < sz0; i++) 
+//		{
+//			long idx = offset + i;
+//			
+//			tmpimg.setPixel(i,k,qRgb(pdata[idx], pdata[idx+channel_compressed_sz], pdata[idx+2*channel_compressed_sz]));
+//		}
+//	}
+	
+	for (long k = 0; k < sz2; k ++) 
+	{
+		long offset = k*sz0*sz1 + cz1*sz0;
+		
+		for (long i =0; i < sz0; i++) 
+		{
+			long idx = offset + i;
+			
+			tr = floor((pdata[idx]-tmpr_min)/tmpr*255.0);
+			tg = floor((pdata[idx+channel_compressed_sz]-tmpg_min)/tmpg*255.0);
+			tb = floor((pdata[idx+2*channel_compressed_sz]-tmpb_min)/tmpb*255.0);
+			tmpimg.setPixel(i, k, qRgb(tr, tg, tb));
+			
+		}
+	}
+	
+	
+	return QPixmap::fromImage(tmpimg);
+}
+
+template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T * pdata,
+												   V3DLONG sz0,
+												   V3DLONG sz1,
+												   V3DLONG sz2,
+												   V3DLONG sz3,
+												   V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,
+												   double *p_vmax,
+												   double *p_vmin)//xy
+{
+	QImage tmpimg = QImage(sz0, sz1, QImage::Format_RGB32);
+	
+	int tr,tg,tb;
+	
+	V3DLONG i,j;
+	double tmpr,tmpg,tmpb;
+	double tmpr_min, tmpg_min, tmpb_min;
+	
+	if (sz3>=3)
+	{
+		tmpb = p_vmax[2]-p_vmin[2]; tmpb = (tmpb==0)?1:tmpb;
+		tmpb_min = p_vmin[2];
+	}
+	
+	if (sz3>=2)
+	{
+		tmpg = p_vmax[1]-p_vmin[1]; tmpg = (tmpg==0)?1:tmpg;
+		tmpg_min = p_vmin[1];
+	}
+	
+	if (sz3>=1)
+	{
+		tmpr = p_vmax[0]-p_vmin[0]; tmpr = (tmpr==0)?1:tmpr;
+		tmpr_min = p_vmin[0];
+	}
+	
+	
+	int channel_compressed_sz = sz0*sz1*sz2;
+	for (long j = 0; j < sz1; j ++) 
+	{
+		long offset = cz2*sz0*sz1 + j*sz0;
+		for (long i=0; i<sz0; i++) 
+		{
+			long idx = offset + i;
+			
+			tr = floor((pdata[idx]-tmpr_min)/tmpr*255.0);
+			tg = floor((pdata[idx+channel_compressed_sz]-tmpg_min)/tmpg*255.0);
+			tb = floor((pdata[idx+2*channel_compressed_sz]-tmpb_min)/tmpb*255.0);
+			tmpimg.setPixel(i, j, qRgb(tr, tg, tb));
+		}
+	}
+	return QPixmap::fromImage(tmpimg);
+	
+}
+
+template <class T1, class T2> 
+int CopyData_resamp_raw(T1 *apsInput, T2 *aspOutput,V3DLONG channel_size, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer, V3DLONG resampling_size)
+{
+	
+	long vx, vy, vz, vc;
+	long rx, ry, rz, rc;
+	
+	vx = iImageWidth/resampling_size ; 
+	
+	ry = vy = iImageHeight;
+	
+	rz = vz = iImageLayer;
+	
+	rc = vc = channel_size;
+	
+	rx = iImageWidth ; 
+	
+	V3DLONG tempc = vx*vy*vz, tempcz = vx*vy;
+	
+	V3DLONG temprc = rx*ry*rz, temprcz = rx*ry;
+	
+	V3DLONG t = resampling_size;
+	
+	for(long c=0; c<rc; c++)
+	{
+		long oc = c*tempc;
+		long orc = c*temprc;
+		
+		for(long k= 0; k<rz; k++)
+		{
+			long omk = oc + (k)*tempcz;
+			
+			long ork = orc + (k)*temprcz;
+			
+			for(long j=0; j<ry; j++)
+			{
+				long oj = omk + (j)*vx;
+				
+				long orj = ork + (j)*rx;
+				
+				for(long i=0; i<rx; i = i+resampling_size)
+				{
+					long idx = oj + i/t;
+					long idxr = orj + i;
+					{
+						aspOutput[idx] = apsInput[idxr];
+					}
+				}
+			}
+		}
+	}
+	
+}
+template <class T1, class T2> 
+int CopyData_resamp_tc(T1 *apsInput, T2 *aspOutput,V3DLONG * sz,V3DLONG * szo,
+					   V3DLONG start_x, V3DLONG start_y, V3DLONG start_z,
+				       V3DLONG x_start,V3DLONG y_start,V3DLONG z_start, V3DLONG x_end,V3DLONG y_end,V3DLONG z_end, 
+					   V3DLONG tile2vi_xs, V3DLONG tile2vi_ys,V3DLONG tile2vi_zs,V3DLONG resampling_size)
+{
+	
+	
+	
+	long vx, vy, vz, vc;
+	long rx, ry, rz, rc;
+	
+	vx = (sz[0]+1)/resampling_size; // suppose the size same of all tiles
+	
+	vy = (sz[1]+1)/resampling_size;
+	
+	vz = (sz[2]+1)/resampling_size;
+	
+	vc = sz[3];
+	
+	rx=szo[0]; ry=szo[1]; rz=szo[2];rc=szo[3];	
+	
+	V3DLONG tempc = vx*vy*vz, tempcz = vx*vy;
+	
+	V3DLONG temprc = rx*ry*rz, temprcz = rx*ry;
+	
+	V3DLONG t = resampling_size;
+	
+	for(long c=0; c<rc; c++)
+	{
+		long oc = c*tempc;
+		long orc = c*temprc;
+		
+		for(long k=(z_start/t); k<(z_end/t); k++)
+		{
+			long omk = oc + (k-start_z/t)*tempcz;
+			
+			long ork = orc + (k-tile2vi_zs/t)*temprcz;
+			
+			for(long j=(y_start/t); j<(y_end/t); j++)
+			{
+				long oj = omk + (j-start_y/t)*vx;
+				
+				long orj = ork + (j-tile2vi_ys/t)*rx;
+				
+				for(long i=x_start; i<x_end; i = i+resampling_size)
+				{
+					long idx = oj + i/t - start_x;
+					long idxr = orj + (i - tile2vi_xs);
+					//long idx = oj + i - start_x;
+					//long idxr = orj + (i - tile2vi_xs);
+					{
+						aspOutput[idx] = apsInput[idxr];
+					}
+				}
+			}
+		}
+	}
+	
+}
+
+template <class T> 
+int CopyData(T *apsInput, T *aspOutput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer,V3DLONG channel_size)
+{
+		
+	V3DLONG tempc = iImageWidth*iImageHeight*iImageLayer, tempz = iImageWidth*iImageHeight;
+	
+	for(long c=0; c<channel_size; c++)
+	{
+		//long orc = c*temprc;
+		
+		for(long k= 0; k<iImageLayer; k++)
+		{
+			//long ork = orc + (k)*temprcz;
+			
+			for(long j=0; j<iImageHeight; j++)
+			{
+				//long orj = ork + (j)*rx;
+				
+				for(long i=0; i<iImageWidth; i++)
+				{
+					//long idx = orj + i;
+					
+					aspOutput[c*tempc+k*tempz+j*iImageWidth+i] = apsInput[c*tempc+k*tempz+j*iImageWidth+i];
+				}
+			}
+		}
+	}
+	
+}
+
+//template <class T> int new3dpointer_v3d(T *p, TV3DLONG sz0, V3DLONG sz1, V3DLONG sz2, unsigned char * p1d)
+//{
+//	if (p!=0) {return 0;} //if the "p" is not empty initially, then do nothing and return un-successful
+//	
+//	p = new T ** [sz2];
+//	if (!p) {return 0;}
+//	
+//	for (V3DLONG i=0;i<sz2; i++)
+//	{
+//		p[i] = new T * [sz1];
+//		if (!p[i])
+//		{
+//			for (V3DLONG j=0;j<i;j++) {delete [] (p[i]);}
+//			delete []p;
+//			p=0;
+//			return 0;
+//		}
+//		else
+//		{
+//			for (V3DLONG j=0;j<sz1; j++)
+//				p[i][j] = (T *)(p1d + i*sz1*sz0*sizeof(T) + j*sz0*sizeof(T));
+//		}
+//	}
+//	
+//	return 1;
+//}
+//template <class T> int new4dpointer_v3d(T **** & p, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, unsigned char * p1d)
+//{
+//	if (p!=0) {return 0;} //if the "p" is not empty initially, then do nothing and return un-successful
+//	
+//	p = new T *** [sz3];
+//	if (!p) {return 0;}
+//	
+//	for (V3DLONG i=0;i<sz3; i++)
+//	{
+//		p[i] = 0; //this sentence is very important to assure the function below knows this pointer is initialized as empty!!
+//		if (!new3dpointer_v3d(p[i], sz0, sz1, sz2, p1d+i*sz2*sz1*sz0*sizeof(T)))
+//		{
+//			v3d_msg("Problem happened in creating 3D pointers for channel-%ld.\n", i);
+//			for (V3DLONG j=0;j<i;j++) {delete [] (p[i]);}
+//			delete []p;
+//			p=0;
+//			return 0;
+//		}
+//	}
+//	
+//	return 1;
+//}
 //plugin funcs
 const QString title = "Map Viewer";
 XMapView* XMapView::m_show = 0;
@@ -39,6 +421,8 @@ void MAPiewerPlugin::domenu(const QString &menu_name, V3DPluginCallback &callbac
 	{
 	}
 }
+
+
 void MAPiewerPlugin::resampling(V3DPluginCallback &callback, QWidget *parent)
 {
 	QString m_FileName = QFileDialog::getOpenFileName(parent, QObject::tr("Open profile"), "", QObject::tr("Supported file (*.tc)"));
@@ -53,8 +437,17 @@ void MAPiewerPlugin::resampling(V3DPluginCallback &callback, QWidget *parent)
 	
 	vim.y_load(filename);
 	
+	V3DLONG *sz1;
+	
+	sz1 = new V3DLONG [4];
+	
 	long sx=vim.sz[0], sy=vim.sz[1], sz=vim.sz[2];
 	
+	sz1[0]=sx;
+	sz1[1]=sy;
+	sz1[2]=sz;
+	sz1[3] =vim.sz[3];
+
 	long temsize = (sx > sy)? sx:sy; 
 	
 	int target_pixel_size;
@@ -101,25 +494,11 @@ void MAPiewerPlugin::resampling(V3DPluginCallback &callback, QWidget *parent)
 	//qDebug()<<"vx vy vz target_size"<<vx<<vy<<vz<<target_pixel_size;
 	
 	long pagesz_vim = vx*vy*vz*vc;
-	
-	unsigned char *pVImg = 0;
-	
-	try
-	{
-		pVImg = new unsigned char [pagesz_vim];
-	}
-	catch (...) 
-	{
-		printf("Fail to allocate memory.\n");
-		return;
-	}
-	// init
-	for(long i=0; i<pagesz_vim; i++)
-	{
-		pVImg[i] = 0;
-	}
+	void *pData = NULL;
+
 	ImagePixelType datatype;
 	
+	//for(long ii=0; ii<1; ii++)
 	for(long ii=0; ii<vim.number_tiles; ii++)
 	{	
 		//cout << "satisfied image: "<< vim.lut[ii].fn_img << endl;
@@ -137,8 +516,6 @@ void MAPiewerPlugin::resampling(V3DPluginCallback &callback, QWidget *parent)
 		//
 		char * imgSrcFile = const_cast<char *>(fn.c_str());
 
-        
-		
 		V3DLONG *sz_relative = 0; 
 		
 		int datatype_relative = 0;
@@ -146,7 +523,6 @@ void MAPiewerPlugin::resampling(V3DPluginCallback &callback, QWidget *parent)
 		unsigned char* resampling = 0;
 		
 		V3DLONG *szo=0;
-		long rx;
 		
 		loadImage_resampling(imgSrcFile,resampling,sz_relative,szo,datatype_relative,target_pixel_size);
 
@@ -166,75 +542,84 @@ void MAPiewerPlugin::resampling(V3DPluginCallback &callback, QWidget *parent)
         
 		// loading relative imagg files
 		
-		rx=szo[0]; ry=szo[1]; rz=szo[2];rc=szo[3];
-		
-		//	qDebug()<<"x_y_z="<<rx<<ry<<rz;
-		
-		if(datatype_relative==1)
+		if(datatype_relative ==1 )
 		{
-			datatype = V3D_UINT8;
-		}else if(datatype_relative==2)
-		{
-			datatype = V3D_UINT16;
-			
-		}
-		size_t e1_t = clock();
-		
-		//cout<<"time elapse for read tmpstack ... "<<e1_t-start_t<<endl;
-			
-		V3DLONG tempc = vx*vy*vz, tempcz = vx*vy;
-		
-		V3DLONG temprc = rx*ry*rz, temprcz = rx*ry;
-		
-		V3DLONG tstart_z = start_z/target_pixel_size;
-		V3DLONG tstart_y = start_y/target_pixel_size;
-		V3DLONG tstart_x = start_x/target_pixel_size;
-	
-		V3DLONG t = target_pixel_size;
-		
-		for(long c=0; c<rc; c++)
-		{
-			long oc = c*tempc;
-			long orc = c*temprc;
-			
-			for(long k=(z_start/t); k<(z_end/t); k++)
+			try
 			{
-				long omk = oc + (k-start_z/t)*tempcz;
+				pData  = new unsigned char [pagesz_vim];
 				
-				long ork = orc + (k-tile2vi_zs/t)*temprcz;
-				
-				for(long j=(y_start/t); j<(y_end/t); j++)
-				{
-					long oj = omk + (j-start_y/t)*vx;
-					
-					long orj = ork + (j-tile2vi_ys/t)*rx;
-					
-					for(long i=x_start; i<x_end; i = i+target_pixel_size)
-					{
-						long idx = oj + i/t - start_x;
-						long idxr = orj + (i - tile2vi_xs);
-						//long idx = oj + i - start_x;
-						//long idxr = orj + (i - tile2vi_xs);
-						{
-						 pVImg[idx] = resampling[idxr];
-						}
-					}
-				}
+				memset(pData, 0, sizeof(unsigned char)*pagesz_vim);
 			}
+			catch (...) 
+			{
+				printf("Fail to allocate memory.\n");
+				return ;
+			}
+			
+			datatype = V3D_UINT8;
+			
+			CopyData_resamp_tc((unsigned char*)resampling,(unsigned char*)pData,sz1,szo,
+							   start_x,start_y,start_z,
+							   x_start,y_start,z_start,x_end,y_end,z_end,
+							   tile2vi_xs,tile2vi_ys,tile2vi_zs,target_pixel_size);
+			
+		}
+		else if(datatype_relative == 2)
+		{
+			try
+			{
+				pData = new unsigned short [pagesz_vim]; 
+				memset(pData, 0, sizeof(unsigned short)*pagesz_vim);
+			}
+			catch (...)
+			{
+				printf("Fail to allocate memory in data combination.");
+				if (pData) {delete []pData; pData=0;}
+				return;
+			}
+			
+			datatype = V3D_UINT16;
+			CopyData_resamp_tc((unsigned short*)resampling,(unsigned short*)pData,sz1,szo,
+								start_x,start_y,start_z,
+								x_start,y_start,z_start,x_end,y_end,z_end,
+								tile2vi_xs,tile2vi_ys,tile2vi_zs,target_pixel_size);
+			
+		}
+		else if(datatype_relative==4)
+		{
+			//float*	pData = NULL;
+			try
+			{
+				pData = new float [pagesz_vim];
+				memset(pData, 0, sizeof(float)*pagesz_vim);
+			}
+			catch (...)
+			{
+				printf("Fail to allocate memory in data combination.");
+				if (pData) {delete []pData; pData=0;}
+				return;
+			}
+			
+			datatype = V3D_FLOAT32;
+			CopyData_resamp_tc((float*)resampling,(float*)pData,sz1,szo,
+								start_x,start_y,start_z,
+								x_start,y_start,z_start,x_end,y_end,z_end,
+								tile2vi_xs,tile2vi_ys,tile2vi_zs,target_pixel_size);
 		}
 		
+	
 		if(sz_relative) {delete []sz_relative; sz_relative=0;}
 		if(resampling) {delete []resampling; resampling=0;}
+		if(szo) {delete []szo; szo=0;}
 	}
-
 	// time consumption
 	size_t end_t = clock();
 	
 	cout<<"resampling time = "<<end_t-start_t<<endl;
 	
 	Image4DSimple p4DImage;
-//	
-	p4DImage.setData(pVImg, vx, vy, vz, vc, V3D_UINT8);
+	//	
+	p4DImage.setData((unsigned char *)pData, vx, vy, vz, vc, datatype);
 	
 	v3dhandle curwin;
 	
@@ -250,17 +635,17 @@ void MAPiewerPlugin::resampling(V3DPluginCallback &callback, QWidget *parent)
 	callback.pushImageIn3DWindow(curwin);
 	
 	V3DLONG sz_tmp[4];
-	
-	QString tmp_filename = curFilePath + "/" + "stitched_image.tif";
+
+	QString tmp_filename = curFilePath + "/" + "stitched_image.raw";
 	
 	sz_tmp[0] = vx; sz_tmp[1] = vy; sz_tmp[2] = vz; sz_tmp[3] = vc; 
 	
-	if (saveImage(tmp_filename.toStdString().c_str(), (const unsigned char *)pVImg, sz_tmp, 1)!=true)
+	if (saveImage(tmp_filename.toStdString().c_str(), (const unsigned char *)pData, sz_tmp, datatype)!=true)
 	{
 		fprintf(stderr, "Error happens in file writing. Exit. \n");
 		return ;
-	}	
-	
+	}
+	if (sz1) {delete []sz1; sz1=0;}
 }
 void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *parent)
 {
@@ -280,22 +665,21 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 	
 	int datatype_relative = 0;
 	
+	ImagePixelType datatype;
+	
 	unsigned char* resampling = 0;
 	
 	int target_pixel_size;
 	
 	V3DLONG *szo=0;
 	
-	V3DLONG *sz=0;
-	
 	size_t start_t = clock();
 	
 	loadImage_raw_resampling(imgSrcFile,resampling,szo,sz_relative,datatype_relative,target_pixel_size);
 	
 	long vx, vy, vz, vc;
-	long rx, ry, rz, rc;
-	
-	vx = szo[0]/target_pixel_size ; // suppose the size same of all tiles
+		
+	vx = szo[0]/target_pixel_size ; 
 	
 	vy = szo[1];
 	
@@ -303,77 +687,150 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 	
 	vc = szo[3];
 	
-	rx = szo[0] ; // suppose the size same of all tiles
+	//----------------------------------------------------------------------------------------------------------------------------------
+	V3DLONG channelsz = szo[0]*szo[1]*szo[2];
 	
-	ry = szo[1];
+	V3DLONG pagesz_vim = szo[3]*channelsz;
 	
-	rz = szo[2];
+	void *pData = NULL;
 	
-	rc = szo[3];
-	
-	long pagesz_vim = vx*vy*vz*vc;
-	
-	unsigned char *pVImg = 0;
-	try
+	if(datatype_relative ==1 )
 	{
-		pVImg = new unsigned char [pagesz_vim];
-	}
-	catch (...) 
-	{
-		printf("Fail to allocate memory.\n");
-		return;
-	}
-	// init
-	for(long i=0; i<pagesz_vim; i++)
-	{
-		pVImg[i] = 0;
-	}
-	
-	ImagePixelType datatype;
-	
-	V3DLONG tempc = vx*vy*vz, tempcz = vx*vy;
-	
-	V3DLONG temprc = rx*ry*rz, temprcz = rx*ry;
-	
-	V3DLONG t = target_pixel_size;
-	
-	for(long c=0; c<rc; c++)
-	{
-		long oc = c*tempc;
-		long orc = c*temprc;
-		
-		for(long k= 0; k<rz; k++)
+		try
 		{
-			long omk = oc + (k)*tempcz;
+	    	pData  = new unsigned char [pagesz_vim];
 			
-			long ork = orc + (k)*temprcz;
-			
-			for(long j=0; j<ry; j++)
-			{
-				long oj = omk + (j)*vx;
-				
-				long orj = ork + (j)*rx;
-				
-				for(long i=0; i<rx; i = i+target_pixel_size)
-				{
-					long idx = oj + i/t;
-					long idxr = orj + i;
-					{
-						pVImg[idx] = resampling[idxr];
-					}
-				}
-			}
+			memset(pData, 0, sizeof(unsigned char)*pagesz_vim);
 		}
+		catch (...) 
+		{
+			printf("Fail to allocate memory.\n");
+			return ;
+		}
+
+			datatype = V3D_UINT8;
+		
+			CopyData_resamp_raw((unsigned char*)resampling,(unsigned char*)pData,szo[3], szo[0], szo[1], szo[2],target_pixel_size);
+		
 	}
-	
-	if(datatype_relative==1)
+	else if(datatype_relative == 2)
 	{
-		datatype = V3D_UINT8;
-	}else if(datatype_relative==2)
-	{
-		datatype = V3D_UINT16;
+		try
+		{
+			pData = new unsigned short [pagesz_vim]; 
+			memset(pData, 0, sizeof(unsigned short)*pagesz_vim);
+		}
+		catch (...)
+		{
+			printf("Fail to allocate memory in data combination.");
+			if (pData) {delete []pData; pData=0;}
+			return;
+		}
+		
+			datatype = V3D_UINT16;
+			CopyData_resamp_raw((unsigned short*)resampling,(unsigned short*)pData,szo[3], szo[0], szo[1], szo[2],target_pixel_size);
+		
 	}
-	
+	else if(datatype_relative==4)
+	{
+		//float*	pData = NULL;
+		try
+		{
+			pData = new float [pagesz_vim];
+			memset(pData, 0, sizeof(float)*pagesz_vim);
+		}
+			catch (...)
+		{
+			printf("Fail to allocate memory in data combination.");
+			if (pData) {delete []pData; pData=0;}
+			return;
+		}
+
+			datatype = V3D_FLOAT32;
+			CopyData_resamp_raw((float*)resampling,(float*)pData,szo[3], szo[0], szo[1], szo[2],target_pixel_size);
+	}
+//	long vx, vy, vz, vc;
+//	long rx, ry, rz, rc;
+//	
+//	vx = szo[0]/target_pixel_size ; // suppose the size same of all tiles
+//	
+//	vy = szo[1];
+//	
+//	vz = szo[2];
+//	
+//	vc = szo[3];
+//	
+//	rx = szo[0] ; // suppose the size same of all tiles
+//	
+//	ry = szo[1];
+//	
+//	rz = szo[2];
+//	
+//	rc = szo[3];
+//	
+//	long pagesz_vim = vx*vy*vz*vc;
+//	
+//	unsigned char *pVImg = 0;
+//	try
+//	{
+//		pVImg = new unsigned char [pagesz_vim];
+//	}
+//	catch (...) 
+//	{
+//		printf("Fail to allocate memory.\n");
+//		return;
+//	}
+//	// init
+//	for(long i=0; i<pagesz_vim; i++)
+//	{
+//		pVImg[i] = 0;
+//	}
+//	
+//	ImagePixelType datatype;
+//	
+//	V3DLONG tempc = vx*vy*vz, tempcz = vx*vy;
+//	
+//	V3DLONG temprc = rx*ry*rz, temprcz = rx*ry;
+//	
+//	V3DLONG t = target_pixel_size;
+//	
+//	for(long c=0; c<rc; c++)
+//	{
+//		long oc = c*tempc;
+//		long orc = c*temprc;
+//		
+//		for(long k= 0; k<rz; k++)
+//		{
+//			long omk = oc + (k)*tempcz;
+//			
+//			long ork = orc + (k)*temprcz;
+//			
+//			for(long j=0; j<ry; j++)
+//			{
+//				long oj = omk + (j)*vx;
+//				
+//				long orj = ork + (j)*rx;
+//				
+//				for(long i=0; i<rx; i = i+target_pixel_size)
+//				{
+//					long idx = oj + i/t;
+//					long idxr = orj + i;
+//					{
+//						pVImg[idx] = resampling[idxr];
+//					}
+//				}
+//			}
+//		}
+//	}
+//	
+//	if(datatype_relative==1)
+//	{
+//		datatype = V3D_UINT8;
+//	}else if(datatype_relative==2)
+//	{
+//		datatype = V3D_UINT16;
+//	}
+//	
 	// time consumption
 	size_t end_t = clock();
 
@@ -381,7 +838,7 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 	
 	Image4DSimple p4DImage;
 	//	
-	p4DImage.setData(pVImg, vx, vy, vz, vc, V3D_UINT8);
+	p4DImage.setData((unsigned char *)pData, vx, vy, vz, vc, datatype);
 	
 	v3dhandle curwin;
 	
@@ -450,7 +907,7 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 	
 	sz_tmp[0] = vx; sz_tmp[1] = vy; sz_tmp[2] = vz; sz_tmp[3] = vc; 
 	
-	if (saveImage(tmp_filename.toStdString().c_str(), (const unsigned char *)pVImg, sz_tmp, 1)!=true)
+	if (saveImage(tmp_filename.toStdString().c_str(), (const unsigned char *)pData, sz_tmp, datatype)!=true)
 	{
 		fprintf(stderr, "Error happens in file writing. Exit. \n");
 		return ;
@@ -484,106 +941,95 @@ void MAPiewerPlugin::iViewer(V3DPluginCallback &callback, QWidget *parent)
 	
 	
 }
-void XMapView::setImgData(ImagePlaneDisplayType ptype,V3DLONG *sz_compressed,V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,unsigned char *pdata, ImageDisplayColorType ctype)
+void XMapView::setImgData(ImagePlaneDisplayType ptype,ImagePixelType dtype,V3DLONG *sz_compressed,V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,unsigned char *pdata,double * p_vmax, double* p_vmin)
 {
-	//Ptype = ptype; //
-    cur_focus_pos = 1;
-	imgData = pdata; //
-	Ctype = ctype; //
+	cur_focus_pos = 1;
+	
+//	Ctype = ctype; //
 	
 	cx=sz_compressed[0], cy=sz_compressed[1], cz=sz_compressed[2], cc=sz_compressed[3];
 	
 	channel_compressed_sz = cx*cy*cz;
 	
-	Ptype = ptype;
+	Ptype = ptype;//plane type
+	
+	//V3DLONG pagesz_vim = cc * channel_compressed_sz;
 	
 	start_x = cur_x = cz0;
+	
 	cur_y = cz1;
+	
 	cur_z = cz2;
 	
+	if(dtype==V3D_UINT8 )
+	{
+		//unsigned char *planne_Data = NULL;
+//		try
+//		{
+//	    	planne_Data  = new unsigned char [pagesz_vim];
+//			memset(planne_Data, 0, sizeof(unsigned char)*pagesz_vim);
+//		}
+//		catch (...) 
+//		{
+//			printf("Fail to allocate memory.\n");
+//			return ;
+//		}
+//		
+//		CopyData((unsigned char*)pdata,(unsigned char*)planne_Data,cx,cy,cz,cc);
+		
+		pixmap = copyRaw2QPixmap((const unsigned char *)pdata,cx,cy,cz,cc,cur_x,cur_y,cur_z,Ptype,p_vmax,p_vmin);
+		
+	}
+	else if(dtype==V3D_UINT16)
+	{
+		//unsigned short *planne_Data = NULL;
+//		try
+//		{
+//			planne_Data = new unsigned short [pagesz_vim]; 
+//			memset(planne_Data, 0, sizeof(unsigned short)*pagesz_vim);
+//		}
+//		catch (...)
+//		{
+//			printf("Fail to allocate memory in data combination.");
+//			if (planne_Data) {delete []planne_Data; planne_Data=0;}
+//			return;
+//		}
+//		
+//		CopyData((unsigned short*)pdata,(unsigned short*)planne_Data,cx,cy,cz,cc);
+		
+		pixmap = copyRaw2QPixmap((const unsigned short int *)pdata,cx,cy,cz,cc,cur_x,cur_y,cur_z,Ptype,p_vmax,p_vmin);
+		
+		
+	}
+	else if(dtype==V3D_FLOAT32)
+	{
+		//float*	planne_Data = NULL;
+//		try
+//		{
+//			planne_Data = new float [pagesz_vim];
+//			memset(planne_Data, 0, sizeof(float)*pagesz_vim);
+//		}
+//		catch (...)
+//		{
+//			printf("Fail to allocate memory in data combination.");
+//			if (planne_Data) {delete []planne_Data; planne_Data=0;}
+//			return;
+//		}
+//		
+//		CopyData((float*)pdata,(float*)planne_Data,cx,cy,cz,cc);
+		
+		pixmap = copyRaw2QPixmap((const float *)pdata,cx,cy,cz,cc,cur_x,cur_y,cur_z,Ptype,p_vmax,p_vmin);
+
+	}
+	else
+	{
+		printf("Right now only support UINT8, UINT16, and FLOAT32.\n", 0);
+		return; 
+	}
 	//qDebug()<<"setimagedata ..."<<cur_x<<cur_y<<cur_z;
-	pixmap = copyRaw2QPixmap((const unsigned char *)imgData,cx,cy,cz,cc,cur_x,cur_y,cur_z,Ptype,0,0);
-	
-}
-template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T * pada,
-												   V3DLONG sz0,
-												   V3DLONG sz1,
-												   V3DLONG sz2,
-												   V3DLONG sz3,
-												   V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,
-												   double *p_vmax,
-												   double *p_vmin)
-{
-	QImage tmpimg = QImage(sz2, sz1, QImage::Format_RGB32);//zy
-	int channel_compressed_sz = sz0*sz1*sz2;
-	for (long j = 0; j < sz1; j ++) 
-	{
-		long offset = j*sz0 + cz0;
-		for (long k =0; k < sz2; k++) 
-		{
-			long idx = offset + k*sz0*sz1;
-			
-			tmpimg.setPixel(k,j,qRgb(pada[idx], pada[idx+channel_compressed_sz], pada[idx+2*channel_compressed_sz]));
-		}
-	}
-	
-	//painter.setCompositionMode(QPainter::CompositionMode_Source);
-	//painter.drawImage(0,0, xy_image);
-	
-	return QPixmap::fromImage(tmpimg);	
 	
 }
 
-
-template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T * pada,
-												   V3DLONG sz0,
-												   V3DLONG sz1,
-												   V3DLONG sz2,
-												   V3DLONG sz3,
-												    V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,
-												   double *p_vmax,
-												   double *p_vmin)//xz
-{
-	
-	QImage tmpimg = QImage(sz0, sz2, QImage::Format_RGB32);
-	int channel_compressed_sz = sz0*sz1*sz2;
-	for (long k = 0; k < sz2; k ++) 
-	{
-		long offset = k*sz0*sz1 + cz1*sz0;
-		for (long i =0; i < sz0; i++) 
-		{
-			long idx = offset + i;
-			
-			tmpimg.setPixel(i,k,qRgb(pada[idx], pada[idx+channel_compressed_sz], pada[idx+2*channel_compressed_sz]));
-		}
-	}
-	return QPixmap::fromImage(tmpimg);
-}
-
-template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T * pdata,
-												   V3DLONG sz0,
-												   V3DLONG sz1,
-												   V3DLONG sz2,
-												   V3DLONG sz3,
-												    V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,
-												   double *p_vmax,
-												   double *p_vmin)//xy
-{
-	QImage tmpimg = QImage(sz0, sz1, QImage::Format_RGB32);
-	int channel_compressed_sz = sz0*sz1*sz2;
-	for (long j = 0; j < sz1; j ++) 
-	{
-		long offset = cz2*sz0*sz1 + j*sz0;
-		for (long i=0; i<sz0; i++) 
-		{
-			long idx = offset + i;
-			
-			tmpimg.setPixel(i,j,qRgb(pdata[idx], pdata[idx+channel_compressed_sz], pdata[idx+2*channel_compressed_sz]));
-		}
-	}
-	return QPixmap::fromImage(tmpimg);
-	
-}
 void XMapView::paintEvent(QPaintEvent *event)
 {
 	QPainter painter(this);
@@ -793,8 +1239,7 @@ XMapView::XMapView(QWidget *parent)
 	Ptype = imgPlaneUndefined; 
 	cur_focus_pos = 1;
 	compressed = 0; 
-	Ctype = colorRGB; 
-	
+		
 	// set a default map
 	pixmap = QPixmap(256, 256);
 	pixmap.fill(Qt::red);
@@ -807,8 +1252,6 @@ XMapView::XMapView(QWidget *parent)
 	b_mousmove = false;
 	
 	curDisplayCenter = QPoint(pixmap.width()/2.0, pixmap.height()/2.0);
-	
-	b_moveCurrentLandmark = false; //reset it initially
 	
 	disp_scale = 1;
 	disp_width = disp_scale * pixmap.width();
@@ -879,6 +1322,84 @@ void ImageSetWidget::updateGUI()
 	
 	
 }
+bool ImageSetWidget::updateminmaxvalues()
+{
+	//always delete the two pointers and recreate because if the image is altered in a plugin, the # of color channels may change	
+	try
+	{
+		p_vmax = new double [cc];
+		p_vmin = new double [cc];
+	}
+	catch (...)
+	{
+		printf("Error happened in allocating memory in updateminmaxvalues().\n");
+
+		if (p_vmax) {delete []p_vmax; p_vmax=0;}
+		if (p_vmin) {delete []p_vmin; p_vmin=0;}
+		return false;
+	}
+	
+	V3DLONG i, tmppos;
+	
+	V3DLONG channelPageSize = cx*cy*cz;
+	
+	if(p4DImage.setNewRawDataPointer(compressed1d))
+	{
+		p4DImage.setXDim(cx);
+		p4DImage.setYDim(cy);
+		p4DImage.setZDim(cz);
+		p4DImage.setCDim(cc);
+		
+		p4DImage.setDatatype(dtype);
+		
+		switch (dtype)
+		{
+			case V3D_UINT8:
+				for(i=0;i<cc;i++)
+				{
+					unsigned char minvv,maxvv;
+					V3DLONG tmppos_min, tmppos_max;
+					unsigned char *datahead = (unsigned char *)p4DImage.getRawDataAtChannel(i);
+					minMaxInVector(datahead, channelPageSize, tmppos_min, minvv, tmppos_max, maxvv);
+					p_vmax[i] = maxvv; p_vmin[i] = minvv;
+					printf("channel= %ld min=%lf max=%lf\n",i,p_vmin[i],p_vmax[i]);
+				}
+				break;
+				
+			case V3D_UINT16:
+				for(i=0;i<cc;i++)
+				{
+					unsigned short minvv,maxvv;
+					V3DLONG tmppos_min, tmppos_max;
+					unsigned short *datahead = (unsigned short *)p4DImage.getRawDataAtChannel(i);
+					minMaxInVector(datahead, channelPageSize, tmppos_min, minvv, tmppos_max, maxvv);
+					p_vmax[i] = maxvv; p_vmin[i] = minvv;
+					printf("channel= %ld min=%lf max=%lf\n",i,p_vmin[i],p_vmax[i]);
+				}
+				break;
+				
+			case V3D_FLOAT32:
+				for(i=0;i<cc;i++)
+				{
+					float minvv,maxvv;
+					V3DLONG tmppos_min, tmppos_max;
+					float *datahead = (float *)p4DImage.getRawDataAtChannel(i);
+					minMaxInVector(datahead, channelPageSize, tmppos_min, minvv, tmppos_max, maxvv);
+					p_vmax[i] = maxvv; p_vmin[i] = minvv;
+					printf("channel= %ld min=%lf max=%lf\n",i,p_vmin[i],p_vmax[i]);
+				}
+				break;
+				
+			default:
+				printf("Invalid data type found in updateminmaxvalues(). Should never happen, - check with V3D developers.");
+				return false;
+		}
+	}
+	
+
+	return true;
+}
+
 void ImageSetWidget::createGUI()
 {
 	/* Set up the data related GUI */
@@ -895,7 +1416,7 @@ void ImageSetWidget::createGUI()
  	
 	//qDebug()<<"xyviewcurx ..."<<x/2<<y/2<<z/2;	
 	
-	xy_view->setImgData(imgPlaneZ,sz_compressed,x,y,z,compressed1d,colorRGB); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
+	xy_view->setImgData(imgPlaneZ,dtype,sz_compressed,x,y,z,compressed1d,p_vmax,p_vmin); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
 	
 	xy_view->set_disp_width(cx);
 	xy_view->set_disp_height(cy);
@@ -906,7 +1427,7 @@ void ImageSetWidget::createGUI()
 	
 	yz_view = new XMapView(viewGroup);
 
-	yz_view->setImgData(imgPlaneX, sz_compressed,x,y,z,compressed1d,  colorRGB); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
+	yz_view->setImgData(imgPlaneX,dtype,sz_compressed,x,y,z,compressed1d,p_vmax,p_vmin); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
 	
 	yz_view->set_disp_width(cz);
 	yz_view->set_disp_height(cy);
@@ -916,7 +1437,7 @@ void ImageSetWidget::createGUI()
 	yz_view->setFocusPolicy(Qt::ClickFocus);
 	
 	zx_view = new XMapView(viewGroup);
-	zx_view->setImgData(imgPlaneY, sz_compressed,x,y,z,compressed1d,  colorRGB); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
+	zx_view->setImgData(imgPlaneY,dtype,sz_compressed,x,y,z,compressed1d,p_vmax,p_vmin); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
 	
 	zx_view->set_disp_width(cx);
 	zx_view->set_disp_height(cz);
@@ -1043,14 +1564,38 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 	//m_FileName_compressed.append(".raw");
 	// loading compressed image files
 	sz_compressed = 0; 
+	
 	int datatype_compressed = 0;
+	
 	compressed1d = 0;
+	
+	//imgData->loadImage(openFileNameLabel.toAscii().data());
+	
 	loadImage(const_cast<char *>(m_FileName_compressed.toStdString().c_str()), compressed1d, sz_compressed, datatype_compressed); //careful
+	
 	cx=sz_compressed[0], cy=sz_compressed[1], cz=sz_compressed[2], cc=sz_compressed[3];
 	
 	channel_compressed_sz = cx*cy*cz;
+	
 	init_x = cx/2, init_y = cy/2, init_z = cz/2; 
-	//qDebug()<<"compressedsxyx ..."<<cx<<cy<<cz;			
+	
+	if(datatype_compressed ==1 )
+	{
+		dtype = V3D_UINT8;
+	}
+	else if(datatype_compressed == 2)
+	{
+		dtype = V3D_UINT16;
+	}
+	else if(datatype_compressed==4)
+	{
+		dtype = V3D_FLOAT32;
+	}
+	
+	qDebug()<<"compressedsxyx ..."<<cx<<cy<<cz;			
+	
+	updateminmaxvalues();
+	
 	createGUI();
 	
 	scaleFactorInput = int(sy/cy);
@@ -1066,30 +1611,33 @@ void ImageSetWidget::update_triview()
 	cur_y = yValueSpinBox->text().toInt(); // / scaleFactor;
 	cur_z = zValueSpinBox->text().toInt(); // / scaleFactor;
 	
-	xy_view->setImgData(imgPlaneZ, sz_compressed,cur_x,cur_y,cur_z, compressed1d, colorRGB);
+	xy_view->setImgData(imgPlaneZ,dtype,sz_compressed,cur_x,cur_y,cur_z, compressed1d,p_vmax,p_vmin);
 	
-	yz_view->setImgData(imgPlaneX, sz_compressed,cur_x,cur_y,cur_z,compressed1d, colorRGB);
+	yz_view->setImgData(imgPlaneX,dtype,sz_compressed,cur_x,cur_y,cur_z,compressed1d,p_vmax,p_vmin);
 	
-	zx_view->setImgData(imgPlaneY, sz_compressed,cur_x,cur_y,cur_z,compressed1d, colorRGB);
+	zx_view->setImgData(imgPlaneY,dtype,sz_compressed,cur_x,cur_y,cur_z,compressed1d,p_vmax,p_vmin);
 		
 }
 
-template <class T> QPixmap copyRaw2QPixmap(const T * pada, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, 
+
+
+
+template <class T> QPixmap copyRaw2QPixmap(const T * pdata, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, 
 										   V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,ImagePlaneDisplayType disType, 
 										   double *p_vmax, double *p_vmin)
 {
 	switch (disType)
 	{
 		case imgPlaneX:
-			return copyRaw2QPixmap_xPlanes(pada, sz0, sz1, sz2, sz3, cz0,cz1,cz2,p_vmax, p_vmin);
+			return copyRaw2QPixmap_xPlanes(pdata, sz0, sz1, sz2, sz3, cz0,cz1,cz2,p_vmax, p_vmin);
 			break;
 			
 		case imgPlaneY:
-			return copyRaw2QPixmap_yPlanes(pada, sz0, sz1, sz2, sz3,cz0,cz1,cz2, p_vmax, p_vmin);
+			return copyRaw2QPixmap_yPlanes(pdata, sz0, sz1, sz2, sz3,cz0,cz1,cz2, p_vmax, p_vmin);
 			break;
 			
 		case imgPlaneZ:
-			return copyRaw2QPixmap_zPlanes(pada, sz0, sz1, sz2, sz3,cz0,cz1,cz2, p_vmax, p_vmin);
+			return copyRaw2QPixmap_zPlanes(pdata, sz0, sz1, sz2, sz3,cz0,cz1,cz2, p_vmax, p_vmin);
 			break;
 			
 		default:

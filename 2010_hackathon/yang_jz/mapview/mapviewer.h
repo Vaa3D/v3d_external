@@ -30,7 +30,9 @@
 #include "mg_image_lib11.h"
 
 #include "basic_landmark.h"
+
 #include "basic_4dimage.h"
+
 #include "arthurwidgets.h"
 // multithreads
 #include <pthread.h>
@@ -49,6 +51,7 @@
 //#include <QMainWindow>
 #include <qgroupbox.h>
 
+#include "volimg_proc.h"
 
 //class HoverPoints;
 //class QLineEdit;
@@ -67,431 +70,27 @@
 using namespace std;
 enum ImagePlaneDisplayType {imgPlaneUndefined, imgPlaneX, imgPlaneY, imgPlaneZ};// define indexed data structures
 
-template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T * pada, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,double *p_vmax, double *p_vmin);
-template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T * pada, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,double *p_vmax, double *p_vmin);
-template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T * pada, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,double *p_vmax, double *p_vmin);
-template <class T> QPixmap copyRaw2QPixmap(const T * pada, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,ImagePlaneDisplayType disType, double *p_vmax, double *p_vmin);
+template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T * pdata, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,double *p_vmax, double *p_vmin);
+template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T * pdata, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,double *p_vmax, double *p_vmin);
+template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T * pdata, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,double *p_vmax, double *p_vmin);
+template <class T> QPixmap copyRaw2QPixmap(const T * pdata, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,ImagePlaneDisplayType disType, double *p_vmax, double *p_vmin);
 
-//
+template <class T1, class T2> 
+int CopyData_resamp_raw(T1 *apsInput, T2 *aspOutput,V3DLONG channel_size, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer, V3DLONG resampling_size);
+
+template <class T1, class T2> 
+int CopyData_resamp_tc(T1 *apsInput, T2 *aspOutput,V3DLONG * sz,V3DLONG * szo,
+					   V3DLONG start_x, V3DLONG start_y, V3DLONG start_z,
+				       V3DLONG x_start,V3DLONG y_start,V3DLONG z_start, V3DLONG x_end,V3DLONG y_end,V3DLONG z_end, 
+					   V3DLONG tile2vi_xs, V3DLONG tile2vi_ys,V3DLONG tile2vi_zs,V3DLONG resampling_size);
+
+template <class T> 
+int CopyData(T *apsInput, T *aspOutput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer,V3DLONG channel_size);
+
+template <class T> bool minMaxInVector(T * p, V3DLONG len, V3DLONG &pos_min, T &minv, V3DLONG &pos_max, T &maxv);
+
+
 using namespace std;
-
-// define indexed data structures
-// Define a lookup table
-//template <class T>
-//class LUT
-//{
-//public:
-//	
-//	LUT(){}
-//	
-//	LUT(T *a, T *b, bool offset_region)
-//	{
-//		T len = 3; //start.size();
-//		
-//		if(offset_region)
-//		{
-//			init_by_offset(a,b,len);
-//		}
-//		else
-//		{
-//			init_by_region(a,b,len);
-//		}
-//	}
-//	
-//	~LUT(){}
-//	
-//public:
-//	void init_by_offset(T *offsets, T *dims, T len)
-//	{
-//		try
-//		{
-//			start_pos = new T [len];
-//		}
-//		catch (...) 
-//		{
-//			printf("Fail to allocate memory.\n");
-//			return;
-//		}
-//		
-//		for(T i=0; i<len; i++)
-//			start_pos[i] = offsets[i];
-//		
-//		try
-//		{
-//			end_pos = new T [len];
-//		}
-//		catch (...) 
-//		{
-//			printf("Fail to allocate memory.\n");
-//			return;
-//		}
-//		
-//		for(T i=0; i<len; i++)
-//			end_pos[i] = start_pos[i] + dims[i] - 1;
-//	}
-//	
-//	void init_by_region(T *start, T *end, T len)
-//	{
-//		try
-//		{
-//			start_pos = new T [len];
-//		}
-//		catch (...) 
-//		{
-//			printf("Fail to allocate memory.\n");
-//			return;
-//		}
-//		
-//		for(T i=0; i<len; i++)
-//			start_pos[i] = start[i];
-//		
-//		try
-//		{
-//			end_pos = new T [len];
-//		}
-//		catch (...) 
-//		{
-//			printf("Fail to allocate memory.\n");
-//			return;
-//		}
-//		
-//		for(T i=0; i<len; i++)
-//			end_pos[i] = end[i];
-//	}
-//	
-//	void clear()
-//	{
-//		if(start_pos) {delete []start_pos; start_pos=0;}
-//		if(end_pos) {delete []end_pos; end_pos=0;}
-//	}
-//	
-//	
-//public:
-//	
-//	T *start_pos;
-//	T *end_pos;
-//	
-//	string fn_img;
-//	
-//};
-//
-// Define a indexed data structure
-//template <class T1, class T2>
-//class indexed_t
-//{
-//public:
-//	indexed_t(T1 *in_offsets)
-//	{
-//		T1 len = 3; //in_offsets.size();
-//		
-//		try
-//		{
-//			offsets = new T1 [len];
-//			sz_image = new T1 [len+1]; // X Y Z C
-//		}
-//		catch (...) 
-//		{
-//			printf("Fail to allocate memory.\n");
-//			return;
-//		}
-//		
-//		// init
-//		for(T1 i=0; i<len; i++)
-//		{
-//			offsets[i] = in_offsets[i];
-//			sz_image[i] = 1;
-//		}
-//		sz_image[3] = 1;
-//		
-//	}
-//	~indexed_t(){}
-//	
-//public:
-//	T1 *offsets; // ref
-//	T1 ref_n; // reference image number
-//	T1 n;
-//	
-//	T2 score;
-//	
-//	string fn_image; // absolute path + file name
-//	T1 *sz_image;
-//	
-//	T1 predecessor; // adjacent prior image number | root's predecessor is -1
-//	bool visited; // init by false
-//	
-//	std::vector<indexed_t> record;
-//	
-//};
-//
-//
-// Virtual Image Class
-//template <class T1, class T2, class indexed_t, class LUT>
-//class Y_VIM 
-//{
-//	
-//public:
-//	
-//	//init
-//	// creating a hash table
-//	Y_VIM(list<string> imgList, T2 dims)
-//	{
-//		// finding best global alignment
-//		
-//		
-//	}	
-//	
-//	Y_VIM(){}
-//	
-//	// destructor
-//	~Y_VIM(){}
-//	
-//public:
-//	
-//	//load a virtual image
-//	void y_load(string fn)
-//	{
-//		ifstream pFileLUT(fn.c_str());
-//		string str;
-//		
-//		char letter;
-//		
-//		T2 start[3], end[3];
-//		
-//		sz = new T2 [3];
-//		
-//		char buf[2000];
-//		string fn_str;
-//		
-//		if(pFileLUT.is_open())
-//		{
-//			//
-//			pFileLUT >> letter;
-//			
-//			if(letter=='#')
-//				getline(pFileLUT, str);
-//			
-//			// tiles
-//			pFileLUT >> number_tiles;
-//			
-//			do
-//			{
-//				pFileLUT >> letter;
-//			}
-//			while(letter!='#');
-//			
-//			getline(pFileLUT, str);
-//			
-//			// dimensions
-//			pFileLUT >> sz[0] >> sz[1] >> sz[2] >> sz[3];
-//			
-//			do
-//			{
-//				pFileLUT >> letter;
-//			}
-//			while(letter!='#');
-//			
-//			getline(pFileLUT, str);
-//			
-//			// lut
-//			lut = new LUT [number_tiles];
-//			T2 count=0;
-//			
-//			while( !pFileLUT.eof() )
-//			{
-//				while( getline(pFileLUT, str) )
-//				{
-//					istringstream iss(str);
-//					
-//					iss >> buf;
-//					
-//					fn_str = buf;
-//					
-//					//
-//					iss >> buf; iss >> start[0];
-//					iss >> buf; iss >> start[1];
-//					iss >> buf; iss >> start[2];
-//					
-//					iss >> buf;
-//					
-//					iss >> buf; iss >> end[0];
-//					iss >> buf; iss >> end[1];
-//					iss >> buf; iss >> end[2];
-//					
-//					lut[count] = LUT(start, end, false);
-//					lut[count].fn_img = fn_str;
-//					
-//					count++;
-//					
-//					//iss >> letter;
-//				}
-//				
-//			}
-//			
-//		}
-//		else
-//		{
-//			cout << "Unable to open the file"<<endl;
-//			return;
-//		}
-//		
-//		pFileLUT.close();
-//		
-//		
-//		// adjusting
-//		T2 len = 3;
-//		
-//		try
-//		{
-//			min_vim = new T2 [len];
-//			max_vim = new T2 [len];
-//		}
-//		catch (...) 
-//		{
-//			printf("Fail to allocate memory.\n");
-//			return;
-//		}
-//		
-//		for(T2 i=0; i<len; i++)
-//		{
-//			min_vim[i] = 0; max_vim[i] = 0;
-//		}
-//		
-//		for(T2 i=0; i<number_tiles; i++)
-//		{
-//			for(T2 j=0; j<len; j++)
-//			{
-//				if(lut[i].start_pos[j] < min_vim[j])
-//					min_vim[j] = lut[i].start_pos[j];
-//				
-//				if(lut[i].start_pos[j] > max_vim[j])
-//					max_vim[j] = lut[i].start_pos[j];
-//			}
-//			
-//		}
-//	}
-//	
-//	//save as a virtual image
-//	void y_save(string fn)
-//	{
-//		FILE *pFileLUT=0;
-//		
-//		pFileLUT = fopen(fn.c_str(),"wt");
-//		
-//		fprintf(pFileLUT, "# tiles \n");
-//		fprintf(pFileLUT, "%d \n\n", tilesList.size());
-//		
-//		fprintf(pFileLUT, "# dimensions (XYZC) \n");
-//		fprintf(pFileLUT, "%ld %ld %ld %ld \n\n", max_vim[0]-min_vim[0]+1, max_vim[1]-min_vim[1]+1, max_vim[2]-min_vim[2]+1, tilesList.at(0).sz_image[3]);
-//		
-//		fprintf(pFileLUT, "# image coordinates look up table \n");
-//		for(int j=0; j<tilesList.size(); j++)
-//		{
-//			
-//			string fn = QString(lut[j].fn_img.c_str()).remove(0, QFileInfo(QString(lut[j].fn_img.c_str())).path().length()+1).toStdString();
-//			
-//			fprintf(pFileLUT, "%s  ( %ld, %ld, %ld ) ( %ld, %ld, %ld ) \n", fn.c_str(), lut[j].start_pos[0], lut[j].start_pos[1], lut[j].start_pos[2], lut[j].end_pos[0], lut[j].end_pos[1], lut[j].end_pos[2]);
-//		}
-//		
-//		fclose(pFileLUT);
-//	}
-//	
-//	// when add a new one into tileList, need to update the whole tileList
-//	void y_update()
-//	{
-//		
-//	}
-//	
-//	// make a visual image real and be loaded into memory
-//	void y_visualize(T2 *start, T2 *end)
-//	{
-//		
-//	}
-//	
-//	// make a visual image real and be loaded into memory
-//	void y_visualize()
-//	{
-//		
-//	}
-//	
-//	// show a header info
-//	void y_info()
-//	{
-//		
-//	}
-//	
-//	// construct lookup table given adjusted tilesList
-//	void y_clut(T2 n)
-//	{
-//		lut = new LUT [n];
-//		
-//		for(T2 i=0; i<n; i++)
-//		{
-//			lut[i] = LUT(tilesList.at(i).offsets, tilesList.at(i).sz_image, true);
-//			
-//			lut[i].fn_img = tilesList.at(i).fn_image;
-//		}
-//		
-//		// suppose image dimension is unsigned
-//		T2 len = 3;
-//		
-//		try
-//		{
-//			min_vim = new T2 [len];
-//			max_vim = new T2 [len];
-//		}
-//		catch (...) 
-//		{
-//			printf("Fail to allocate memory.\n");
-//			return;
-//		}
-//		
-//		for(T2 i=0; i<len; i++)
-//		{
-//			min_vim[i] = 0; max_vim[i] = 0;
-//		}
-//		
-//		for(T2 i=0; i<n; i++)
-//		{
-//			for(T2 j=0; j<len; j++)
-//			{
-//				if(lut[i].start_pos[j] < min_vim[j])
-//					min_vim[j] = lut[i].start_pos[j];
-//				
-//				if(lut[i].end_pos[j] > max_vim[j])
-//					max_vim[j] = lut[i].end_pos[j];
-//			}
-//			
-//		}
-//		
-//	}
-//	
-//	void y_clear()
-//	{
-//		if(pVim) {delete []pVim; pVim=0;}
-//		if(sz) {delete []sz; sz=0;}
-//		
-//		if(min_vim) {delete []min_vim; min_vim=0;}
-//		if(max_vim) {delete []max_vim; max_vim=0;}
-//		if(lut) {delete []lut; lut=0;}
-//	}
-//	
-//public:
-//	
-//	T1 *pVim;
-//	T2 *sz;
-//	
-//	vector<indexed_t> tilesList;
-//	bitset<3> relative_dir; // 000 'f', 'u', 'l' ; 111 'b', 'd', 'r'; relative[2] relative[1] relative[0] 
-//	
-//	LUT *lut;
-//	T2 *min_vim, *max_vim;
-//	
-//	T2 number_tiles;
-//	
-//};
-
-
-
 
 //
 class XMapView : public QWidget//, public V3DPluginInterface
@@ -504,8 +103,10 @@ public:
 	XMapView(QWidget *parent);
 	~XMapView();
 	
-	void setImgData(ImagePlaneDisplayType ptype, V3DLONG *sz_compressed,V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,unsigned char *pdata, ImageDisplayColorType ctype);
-		
+	//void setImgData(ImagePlaneDisplayType ptype,ImagePixelType dtype,V3DLONG *sz_compressed,V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,unsigned char *pdata);
+	
+	void setImgData(ImagePlaneDisplayType ptype,ImagePixelType dtype,V3DLONG *sz_compressed,V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,unsigned char *pdata,double * p_vmax, double* p_vmin);
+
 	void Setwidget(V3DPluginCallback &callback, QString m_FileName, QString curFilePathInput, float scaleFactorInput);
 	
 	void update_v3dviews(V3DPluginCallback *callback, long start_x, long start_y, long start_z, long end_x, long end_y, long end_z);
@@ -581,23 +182,22 @@ private:
 	
 	unsigned char *imagData;
 	
+	
 	QCursor myCursor;	
 	
 	XFormType Gtype;	
 
-	ImageDisplayColorType Ctype;
-    ImagePlaneDisplayType Ptype;
+	ImagePlaneDisplayType Ptype;
 	
     QPixmap pixmap; //xy plane
-    int cur_focus_pos;
+    
+	int cur_focus_pos;
 	
 	bool b_displayFocusCrossLine;
 	bool b_mouseend;
 	
 	bool b_mousmove;
 	int focusPosInWidth, focusPosInHeight;
-	
-	bool b_moveCurrentLandmark;
 	
 	unsigned char *compressed;
 	
@@ -606,10 +206,8 @@ private:
 	long channel_compressed_sz;
 	
 	unsigned char *compressed1d;
-	unsigned char *imgData;
 	
 	int mousenumber;
-	
 	
 private:
 };
@@ -626,6 +224,8 @@ public:
 	void createGUI();
 	
 	void update_triview();
+	
+	bool updateminmaxvalues();
 	
 public slots:
 	void updateGUI();
@@ -666,8 +266,11 @@ public:
 public:
 	long cx, cy, cz, cc; // compressed data
 	long cur_x, cur_y, cur_z;
+	
 	long channel_compressed_sz;
+	
 	long init_x, init_y, init_z; // control window
+	
 	long wx, wy, wz;
 	
 	long roi_start_x, roi_start_y, roi_start_z;
@@ -676,10 +279,16 @@ public:
 	
 	unsigned char *compressed1d;
 	
+	double * p_vmax, * p_vmin; //whole volume max/min values. Use pointer to handle multiple channels separately
+	
 	V3DLONG *sz_compressed;
 	
+	Image4DSimple p4DImage;
+	
+	ImagePixelType dtype;
+   
 	QString curFilePath;
-
+	
 	float scaleFactor;
 	// virtual image
 	Y_VIM<float, long, indexed_t<long, float>, LUT<long> > vim;
@@ -703,10 +312,12 @@ public:
 	void iViewer(V3DPluginCallback &callback, QWidget *parent);
 	
 	void resampling(V3DPluginCallback &callback, QWidget *paren);
+
 	void resampling_rawdata(V3DPluginCallback &callback, QWidget *parent);
 	
 	Y_VIM<float, long, indexed_t<long, float>, LUT<long> > vim;
 	
+		
 public:
 	
 };
