@@ -185,5 +185,7 @@ else() # Linux
     endif()
 endif()
 
+add_subdirectory(doc/api)
+
 # include(CPack) must always be last!
 include(CPack)
