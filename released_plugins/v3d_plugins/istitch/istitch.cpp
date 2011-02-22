@@ -3656,6 +3656,63 @@ int groupi_fusing(SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL
 	return true;
 }
 
+// group images blending function
+template <class SDATATYPE> 
+int region_groupfusing(SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, unsigned char *relative1d,
+					   V3DLONG vx, V3DLONG vy, V3DLONG vz, V3DLONG vc, V3DLONG rx, V3DLONG ry, V3DLONG rz, V3DLONG rc,
+					   V3DLONG tile2vi_zs, V3DLONG tile2vi_ys, V3DLONG tile2vi_xs,
+					   V3DLONG z_start, V3DLONG z_end, V3DLONG y_start, V3DLONG y_end, V3DLONG x_start, V3DLONG x_end, V3DLONG *start)
+{
+
+	//
+	SDATATYPE *prelative = (SDATATYPE *)relative1d;
+	
+	if(x_end<x_start || y_end<y_start || z_end<z_start)
+		return false;
+	
+	// update virtual image pVImg
+	V3DLONG offset_volume_v = vx*vy*vz; 
+	V3DLONG offset_volume_r = rx*ry*rz; 
+	
+	V3DLONG offset_pagesz_v = vx*vy; 
+	V3DLONG offset_pagesz_r = rx*ry; 
+	
+	for(V3DLONG c=0; c<rc; c++)
+	{
+		V3DLONG o_c = c*offset_volume_v;
+		V3DLONG o_r_c = c*offset_volume_r;
+		for(V3DLONG k=z_start; k<z_end; k++)
+		{
+			V3DLONG o_k = o_c + (k-start[2])*offset_pagesz_v;
+			V3DLONG o_r_k = o_r_c + (k-z_start)*offset_pagesz_r;
+			
+			for(V3DLONG j=y_start; j<y_end; j++)
+			{
+				V3DLONG o_j = o_k + (j-start[1])*vx;
+				V3DLONG o_r_j = o_r_k + (j-y_start)*rx;
+				
+				for(V3DLONG i=x_start; i<x_end; i++)
+				{
+					V3DLONG idx = o_j + i-start[0];
+					V3DLONG idx_r = o_r_j + (i-x_start);
+					
+					if(pVImg[idx])
+					{
+						pVImg[idx] = 0.5*(pVImg[idx] + prelative[idx_r]); // Avg. Intensity
+					}
+					else
+					{
+						pVImg[idx] = prelative[idx_r];
+					}
+				}
+			}
+		}
+	}
+	
+	return true;
+}
+
+
 // stitching 2 images and display in V3D
 int pairwise_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 {
@@ -5055,21 +5112,48 @@ int point_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 			
 			V3DLONG idx_r = z_r*rx*ry + y_r*rx + x_r;
 			
-			unsigned char tmp = relative1d[idx_r];
-			
-			if(tmp>q.intensity)
+			if(datatype_relative == V3D_UINT8)
 			{
-				q.intensity = tmp;
-				q.fn = vim.lut[ii].fn_img;
-				q.x = x_r; q.y = y_r; q.z = z_r;
+				unsigned char tmp = relative1d[idx_r];
+				
+				if(tmp>q.intensity)
+				{
+					q.intensity = (float)tmp;
+					q.fn = vim.lut[ii].fn_img;
+					q.x = x_r; q.y = y_r; q.z = z_r;
+				}
+			}
+			else if(datatype_relative == V3D_UINT16)
+			{
+				unsigned short tmp = (unsigned short)relative1d[idx_r];
+				
+				if(tmp>q.intensity)
+				{
+					q.intensity = (float)tmp;
+					q.fn = vim.lut[ii].fn_img;
+					q.x = x_r; q.y = y_r; q.z = z_r;
+				}
+			}
+			else if(datatype_relative == V3D_FLOAT32)
+			{
+				float tmp = (float)relative1d[idx_r];
+				
+				if(tmp>q.intensity)
+				{
+					q.intensity = (float)tmp;
+					q.fn = vim.lut[ii].fn_img;
+					q.x = x_r; q.y = y_r; q.z = z_r;
+				}
+			}
+			else 
+			{
+				printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
+				return -1;
 			}
 			
 			//de-alloc
 			if(relative1d) {delete []relative1d; relative1d=0;}
 		}
-		
-		
-		
 	}
 	
 	//showing corresponding tile image point
@@ -5088,9 +5172,6 @@ int point_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 // region navigation
 int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 {
-	// two ways to load images : absolute way and relative way
-	
-	
 	// get filename
 	QString m_FileName = QFileDialog::getOpenFileName(parent, QObject::tr("Open A Virtual Image"),
 													  QDir::currentPath(),
@@ -5138,24 +5219,6 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 	
 	V3DLONG pagesz_vim = vx*vy*vz*vc;
 	
-	unsigned char *pVImg = 0;
-	
-	try
-	{
-		pVImg = new unsigned char [pagesz_vim];
-	}
-	catch (...) 
-	{
-		printf("Fail to allocate memory.\n");
-		return -1;
-	}
-	
-	// init
-	for(V3DLONG i=0; i<pagesz_vim; i++)
-	{
-		pVImg[i] = 0;
-	}
-	
 	// flu bird algorithm
 	// 000 'f', 'l', 'u' ; 111 'b', 'r', 'd'; relative[2] relative[1] relative[0] 
 	bitset<3> lut_ss, lut_se, lut_es, lut_ee;
@@ -5171,6 +5234,11 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 	
 	//
 	ImagePixelType datatype;
+	bool flag_init = true;
+	
+	unsigned char *pVImg_UINT8 = NULL;
+	unsigned short *pVImg_UINT16 = NULL;
+	float *pVImg_FLOAT32 = NULL;
 	
 	// look up lut
 	for(V3DLONG ii=0; ii<vim.number_tiles; ii++)
@@ -5222,8 +5290,72 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 			}
 			V3DLONG rx=sz_relative[0], ry=sz_relative[1], rz=sz_relative[2], rc=sz_relative[3];
 			
-			if(datatype_relative==1)
-				datatype = V3D_UINT8;
+			if(flag_init)
+			{
+				if(datatype_relative == V3D_UINT8)
+				{
+					datatype = V3D_UINT8;
+					
+					try
+					{
+						pVImg_UINT8 = new unsigned char [pagesz_vim];
+					}
+					catch (...) 
+					{
+						printf("Fail to allocate memory.\n");
+						return -1;
+					}
+					
+					// init
+					memset(pVImg_UINT8, 0, pagesz_vim*sizeof(unsigned char));
+					
+					flag_init = false;
+					
+				}
+				else if(datatype_relative == V3D_UINT16)
+				{
+					datatype = V3D_UINT8;
+
+					try
+					{
+						pVImg_UINT16 = new unsigned short [pagesz_vim];
+					}
+					catch (...) 
+					{
+						printf("Fail to allocate memory.\n");
+						return -1;
+					}
+					
+					// init
+					memset(pVImg_UINT16, 0, pagesz_vim*sizeof(unsigned short));
+					
+					flag_init = false;
+				}
+				else if(datatype_relative == V3D_FLOAT32)
+				{
+					datatype = V3D_UINT8;
+					
+					try
+					{
+						pVImg_FLOAT32 = new float [pagesz_vim];
+					}
+					catch (...) 
+					{
+						printf("Fail to allocate memory.\n");
+						return -1;
+					}
+					
+					// init
+					memset(pVImg_FLOAT32, 0, pagesz_vim*sizeof(float));
+					
+					flag_init = false;
+				}
+				else 
+				{
+					printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
+					return -1;
+				}
+			}
 			
 			//
 			V3DLONG tile2vi_xs = vim.lut[ii].start_pos[0]-vim.min_vim[0]; 
@@ -5247,38 +5379,32 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 			//
 			cout << x_start << " " << x_end << " " << y_start << " " << y_end << " " << z_start << " " << z_end << endl;
 			
-			//
-			V3DLONG sz_ch_o = vx*vy*vz;
-			V3DLONG sz_ch_r = rx*ry*rz;
-			V3DLONG sz_page_o = vx*vy;
-			V3DLONG sz_page_r = rx*ry;
-			
-			for(V3DLONG c=0; c<rc; c++)
+			if(datatype == V3D_UINT8)
 			{
-				V3DLONG o_c = c*sz_ch_o;
-				V3DLONG o_r_c = c*sz_ch_r;
-				for(V3DLONG k=z_start; k<z_end; k++)
-				{
-					V3DLONG o_k = o_c + (k-start[2])*sz_page_o;
-					V3DLONG o_r_k = o_r_c + (k-z_start)*sz_page_r;
-					
-					for(V3DLONG j=y_start; j<y_end; j++)
-					{
-						V3DLONG o_j = o_k + (j-start[1])*vx;
-						V3DLONG o_r_j = o_r_k + (j-y_start)*rx;
-						
-						for(V3DLONG i=x_start; i<x_end; i++)
-						{
-							V3DLONG idx = o_j + i-start[0];
-							V3DLONG idx_r = o_r_j + (i-x_start);
-							
-							if(pVImg[idx]>0)
-								pVImg[idx] = (pVImg[idx]>relative1d[idx_r])?pVImg[idx]:relative1d[idx_r];
-							else
-								pVImg[idx] = relative1d[idx_r];
-						}
-					}
-				}
+				region_groupfusing<unsigned char>(pVImg_UINT8, vim, relative1d,
+								   vx, vy, vz, vc, rx, ry, rz, rc,
+								   tile2vi_zs, tile2vi_ys, tile2vi_xs,
+								   z_start, z_end, y_start, y_end, x_start, x_end, start);
+				
+			}
+			else if(datatype == V3D_UINT16)
+			{
+				region_groupfusing<unsigned short>(pVImg_UINT16, vim, relative1d,
+												  vx, vy, vz, vc, rx, ry, rz, rc,
+												  tile2vi_zs, tile2vi_ys, tile2vi_xs,
+												  z_start, z_end, y_start, y_end, x_start, x_end, start);
+			}
+			else if(datatype == V3D_FLOAT32)
+			{
+				region_groupfusing<float>(pVImg_FLOAT32, vim, relative1d,
+												  vx, vy, vz, vc, rx, ry, rz, rc,
+												  tile2vi_zs, tile2vi_ys, tile2vi_xs,
+												  z_start, z_end, y_start, y_end, x_start, x_end, start);
+			}
+			else 
+			{
+				printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
+				return -1;
 			}
 			
 			//de-alloc
@@ -5290,13 +5416,31 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 	
 	//display
 	Image4DSimple p4DImage;
-	p4DImage.setData(pVImg, vx, vy, vz, vc, datatype);
+	
+	if(datatype == V3D_UINT8)
+	{
+		p4DImage.setData((unsigned char*)pVImg_UINT8, vx, vy, vz, vc, datatype);		
+	}
+	else if(datatype == V3D_UINT16)
+	{
+		p4DImage.setData((unsigned char*)pVImg_UINT16, vx, vy, vz, vc, datatype);
+	}
+	else if(datatype == V3D_FLOAT32)
+	{
+		p4DImage.setData((unsigned char*)pVImg_FLOAT32, vx, vy, vz, vc, datatype);
+	}
+	else 
+	{
+		printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
+		return -1;
+	}
 	
 	v3dhandle newwin = callback.newImageWindow();
 	callback.setImage(newwin, &p4DImage);
 	callback.setImageName(newwin, "ROI of A Virtual Image");
 	callback.updateImageWindow(newwin);
 	
+	return 0;
 }
 
 // 3d roi navigating function

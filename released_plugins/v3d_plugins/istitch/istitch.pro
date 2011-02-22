@@ -28,3 +28,5 @@ LIBS	     += -lv3dfftw3f -lv3dfftw3f_threads
 TARGET        = $$qtLibraryTarget(imageStitch)
 DESTDIR       = ../../v3d/plugins/image_stitching/istitch
 
+RESOURCE     += readme
+

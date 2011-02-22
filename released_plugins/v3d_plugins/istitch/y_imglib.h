@@ -279,7 +279,7 @@ public:
 };
 
 // define a point type
-typedef _POINT<V3DLONG, UINT8> POINT;
+typedef _POINT<V3DLONG, float> POINT;
 
 // Virtual Image Class
 template <class T1, class T2, class indexed_t, class LUT>
