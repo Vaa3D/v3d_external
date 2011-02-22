@@ -555,7 +555,11 @@ void MAPiewerPlugin::resampling(V3DPluginCallback &callback, QWidget *parent)
 	
 	string filename = m_FileName.toStdString();
 	
-	vim.y_load(filename);
+	if(vim.y_load(filename)!= true)
+	{
+		QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
+		return ;
+	}
 	
 	V3DLONG *sz1;
 	
@@ -1680,7 +1684,11 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 	
 	//qDebug()<<"filename ..."<<filename.c_str();
 
-	vim.y_load(filename);
+	if(vim.y_load(filename)!= true)
+	{
+		QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
+		return ;
+	}
 	
 	scaleFactor = scaleFactorInput;
 	
@@ -2258,7 +2266,11 @@ void XMapView::Setwidget(V3DPluginCallback &callback, QString m_FileName, QStrin
 	
 	//qDebug()<<"filename ..."<<filename.c_str();
 	
-	vim.y_load(filename);
+	if(vim.y_load(filename)!= true)
+	{
+		QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
+		return ;
+	}
 	
 	scaleFactor = scaleFactorInput;
 	
