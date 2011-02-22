@@ -297,7 +297,10 @@ public:
 		
 	}	
 	
-	Y_VIM(){}
+	Y_VIM()
+	{
+		b_thumbnailcreated = false;
+	}
 	
 	// destructor
 	~Y_VIM(){}
@@ -527,8 +530,9 @@ public:
 		
 		pFileLUT = fopen(fn.c_str(),"wt");
 		
-		// temporary
-		strcpy(fn_thumbnail, y_createthumbnail());
+		// thumbnail image not existing
+		if(!b_thumbnailcreated)
+			strcpy(fn_thumbnail, y_createthumbnail()); // create a thumbnail image
 		
 		fprintf(pFileLUT, "# thumbnail file \n"); // TC_COMMENT1
 		fprintf(pFileLUT, "%s \n\n", fn_thumbnail);
@@ -552,7 +556,6 @@ public:
 		fprintf(pFileLUT, "# image coordinates look up table \n"); // TC_COMMENT6
 		for(int j=0; j<tilesList.size(); j++)
 		{
-			
 			string fn = QString(lut[j].fn_img.c_str()).remove(0, QFileInfo(QString(lut[j].fn_img.c_str())).path().length()+1).toStdString();
 			
 			fprintf(pFileLUT, "%s  ( %ld, %ld, %ld ) ( %ld, %ld, %ld ) \n", fn.c_str(), lut[j].start_pos[0], lut[j].start_pos[1], lut[j].start_pos[2], lut[j].end_pos[0], lut[j].end_pos[1], lut[j].end_pos[2]);
@@ -675,7 +678,8 @@ public:
 	double rez_x, rez_y, rez_z; // (1, 1, 1)
 	
 	// thumbnail file
-	char fn_thumbnail[2048];
+	char *fn_thumbnail;
+	bool b_thumbnailcreated;
 	
 };
 
