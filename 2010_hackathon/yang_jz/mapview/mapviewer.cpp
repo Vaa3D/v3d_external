@@ -650,7 +650,7 @@ void MAPiewerPlugin::resampling(V3DPluginCallback &callback, QWidget *parent)
 		
 		if(loadImage_resampling(imgSrcFile,resampling,sz_relative,szo,datatype_relative,target_pixel_size)!=true)
 		{
-			printf("load Image false");
+			QMessageBox::information(0, "Load Image", QObject::tr("Your .Image file is load false."));
 			return;
 		
 		}
@@ -806,7 +806,7 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 	
 	if(loadImage_raw_resampling(imgSrcFile,resampling,szo,sz_relative,datatype_relative,target_pixel_size)!= true)
 	{
-		printf("load Image false");
+		QMessageBox::information(0, "Load Image", QObject::tr("Your .Image file is load false."));
 		return;
 	}
 	
@@ -1243,7 +1243,7 @@ void ImageSetWidget::update_v3dviews(V3DPluginCallback *callback, long start_x, 
   
 	if(loadImage(imgSrcFile,relative1d,sz_relative,szo,start_x,start_y,start_z,end_x,end_y,end_z,datatype_relative)!=true)
 	{
-		printf("load Image false");
+		QMessageBox::information(0, "Load Image", QObject::tr("Your .Image file is load false."));
 		return;
 	}
 	
@@ -1686,7 +1686,7 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 
 	if(vim.y_load(filename)!= true)
 	{
-		QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
+		//QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
 		return ;
 	}
 	
@@ -1714,7 +1714,7 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 	
 	if(loadImage(const_cast<char *>(m_FileName_compressed.toStdString().c_str()), compressed1d, sz_compressed, datatype_compressed)!= true)
 	{
-		printf("load Image false");
+		QMessageBox::information(0, "Load Image", QObject::tr("Your .Image file is load false."));
 		return;
 	}//careful
 	
@@ -2047,7 +2047,7 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 		
 		if(loadImage(imgSrcFile,relative1d,sz_relative,szo,start_x,start_y,start_z,end_x,end_y,end_z,datatype_relative) != true)
 		{
-			printf("load Image false");
+			QMessageBox::information(0, "Load Image", QObject::tr("Your .Image file is load false."));
 			
 			return;
 			
@@ -2164,7 +2164,7 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 				{
 					if(loadImage(imgSrcFile,relative1d,sz_relative,szo,(x_start-tile2vi_xs),(y_start-tile2vi_ys),(z_start-tile2vi_zs),(x_end-tile2vi_xs),(y_end-tile2vi_ys),(z_end-tile2vi_zs),datatype_relative)!=true)
 					{
-						printf("load Image false");
+						QMessageBox::information(0, "Load Image", QObject::tr("Your .Image file is load false."));
 						return;
 					}
 					
@@ -2268,7 +2268,7 @@ void XMapView::Setwidget(V3DPluginCallback &callback, QString m_FileName, QStrin
 	
 	if(vim.y_load(filename)!= true)
 	{
-		QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
+	//	QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
 		return ;
 	}
 	
