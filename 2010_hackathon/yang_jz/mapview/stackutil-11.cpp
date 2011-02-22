@@ -1482,7 +1482,7 @@ int loadRaw2Stack_raw_resamping(char * filename, unsigned char * & img, V3DLONG 
 				if(kk >= tmpz){kk = tmpz-1;}
 				if(jj >= tmph){jj = tmph-1;}
 				
-				//printf(" c=%ld k=%ld j=%ld kk=%ld jj=%ld\n",c,k,j,kk,jj);
+				printf(" c=%ld k=%ld j=%ld kk=%ld jj=%ld\n",c,k,j,kk,jj);
 				
 				rewind(fid);
 				fseek(fid, head+(c*pgsz1 + k*pgsz2 + j*pgsz3)*unitSize, SEEK_SET);
@@ -4777,11 +4777,11 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, V3DLON
 		printf("The current input file has the surfix [%s]\n", curFileSuffix);
 	if (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0) //read tiff stacks
 	{
-		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*900)) //tif file at most should be 900M bytes
-		{
-			printf("The tif file may not exist or may be too big to load.\n");
-			return false;
-		}
+//		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*900)) //tif file at most should be 900M bytes
+//		{
+//			printf("The tif file may not exist or may be too big to load.\n");
+//			return false;
+//		}
 		if (loadTif2Stack(imgSrcFile, tmp_data1d, tmp_sz, startx,starty,startz,endx,endy,endz,tmp_datatype))
 		{
 			printf("Error happens in TIF file reading. Stop. \n");
@@ -4789,42 +4789,15 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, V3DLON
 		}
 			
 	}
-	else if ( strcasecmp(curFileSuffix, "lsm")==0 ) //read lsm stacks
-	{
-		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*900)) //lsm file at most should be 900M bytes
-		{
-			printf("The lsm file may not exist or may be too big to load.\n");
-			return false;
-		}
-		if (loadLsm2Stack(imgSrcFile, tmp_data1d, tmp_sz, tmp_datatype))
-		{
-			printf("Error happens in LSM file reading. Stop. \n");
-			return false;
-		}
-	}
-	else if ( strcasecmp(curFileSuffix, "raw5")==0 ) //read lsm stacks
-	{
-		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*ZZBIG)) //
-		{
-			printf("The lsm file may not exist or may be too big to load.\n");
-			return false;
-		}
-		if (loadRaw5d2Stack(imgSrcFile, tmp_data1d, tmp_sz, tmp_datatype))
-		{
-			printf("Error happens in V3D .raw5 (5D) file reading. Stop. \n");
-			return false;
-		}
-		b_5d = true;
-	}
 	else //then assume it is Hanchuan's RAW format
 	{
 		if (b_VERBOSE_PRINT)
 			printf("The data is not with a TIF/LSM surfix, -- now this program assumes it is RAW format defined by Hanchuan Peng. \n");
-		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*ZZBIG)) //RAW file at most should be 1.5G bytes
-		{
-			printf("The RAW file may not exist or may be too big to load.\n");
-			return false;
-		}
+//		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*ZZBIG)) //RAW file at most should be 1.5G bytes
+//		{
+//			printf("The RAW file may not exist or may be too big to load.\n");
+//			return false;
+//		}
 		
 		if (loadRaw2Stack(imgSrcFile, tmp_data1d, tmp_sz, startx,starty,startz,endx,endy,endz,tmp_datatype))
 		{
@@ -4864,7 +4837,6 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, V3DLON
 			return false;
 	}
 	
-	
 	szo = new V3DLONG [5];
 	szo[0] = endx-startx;
 	szo[1] = endy-starty;
@@ -4879,9 +4851,9 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, V3DLON
 	sz[3] = tmp_sz[3]; //no longer merge the 3rd and 4th dimensions
 	sz[4] = (b_5d) ? tmp_sz[4] : 1; 
 	
-	//printf("x=%ld y=%ld z=%ld\n",sz[0],sz[1],sz[2]);
+	printf("x=%ld y=%ld z=%ld\n",sz[0],sz[1],sz[2]);
 	
-	//printf("xo=%ld yo=%ld zo=%ld\n",szo[0],szo[1],szo[2]);
+    printf("xo=%ld yo=%ld zo=%ld\n",szo[0],szo[1],szo[2]);
 	/* clean all workspace variables */
 	data1d = tmp_data1d;
 	if (tmp_sz) {delete []tmp_sz; tmp_sz=0;}

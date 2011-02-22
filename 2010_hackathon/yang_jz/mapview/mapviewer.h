@@ -44,7 +44,10 @@
 #include <math.h>
 #include <v3d_interface.h>
 #include "colormap.h"
-#include "y_imglib.h"
+
+#include"../../../released_plugins/v3d_plugins/istitch/y_imglib.h"
+
+//#include "y_imglib.h"
 //
 #include <QBasicTimer>
 #include <QPolygonF>
@@ -70,10 +73,10 @@
 using namespace std;
 enum ImagePlaneDisplayType {imgPlaneUndefined, imgPlaneX, imgPlaneY, imgPlaneZ};// define indexed data structures
 
-template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T * pdata, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,double *p_vmax, double *p_vmin);
-template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T * pdata, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,double *p_vmax, double *p_vmin);
-template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T * pdata, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,double *p_vmax, double *p_vmin);
-template <class T> QPixmap copyRaw2QPixmap(const T * pdata, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,ImagePlaneDisplayType disType, double *p_vmax, double *p_vmin);
+template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T * pdata, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, ImageDisplayColorType Ctype,V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,double *p_vmax, double *p_vmin);
+template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T * pdata, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3,ImageDisplayColorType Ctype, V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,double *p_vmax, double *p_vmin);
+template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T * pdata, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3,ImageDisplayColorType Ctype, V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,double *p_vmax, double *p_vmin);
+template <class T> QPixmap copyRaw2QPixmap(const T * pdata, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, ImageDisplayColorType Ctype,V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,ImagePlaneDisplayType disType, double *p_vmax, double *p_vmin);
 
 template <class T1, class T2> 
 int CopyData_resamp_raw(T1 *apsInput, T2 *aspOutput,V3DLONG channel_size, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer, V3DLONG resampling_size);
@@ -87,7 +90,14 @@ int CopyData_resamp_tc(T1 *apsInput, T2 *aspOutput,V3DLONG * sz,V3DLONG * szo,
 template <class T> 
 int CopyData(T *apsInput, T *aspOutput, V3DLONG iImageWidth, V3DLONG iImageHeight, V3DLONG iImageLayer,V3DLONG channel_size);
 
-template <class T> bool minMaxInVector(T * p, V3DLONG len, V3DLONG &pos_min, T &minv, V3DLONG &pos_max, T &maxv);
+template <class T>
+int CopyData_tc(T *apsInput, T *aspOutput,V3DLONG * szo,
+				V3DLONG start_x, V3DLONG start_y, V3DLONG start_z,
+				V3DLONG x_start,V3DLONG y_start,V3DLONG z_start, V3DLONG x_end,V3DLONG y_end,V3DLONG z_end, 
+				V3DLONG vx,V3DLONG vy,V3DLONG vz);
+
+
+//template <class T> bool minMaxInVector(T * p, V3DLONG len, V3DLONG &pos_min, T &minv, V3DLONG &pos_max, T &maxv);
 
 
 using namespace std;
@@ -105,7 +115,7 @@ public:
 	
 	//void setImgData(ImagePlaneDisplayType ptype,ImagePixelType dtype,V3DLONG *sz_compressed,V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,unsigned char *pdata);
 	
-	void setImgData(ImagePlaneDisplayType ptype,ImagePixelType dtype,V3DLONG *sz_compressed,V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,unsigned char *pdata,double * p_vmax, double* p_vmin);
+	void setImgData(ImagePlaneDisplayType ptype,ImagePixelType dtype,ImageDisplayColorType Ctype, V3DLONG *sz_compressed,V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,unsigned char *pdata,double * p_vmax, double* p_vmin);
 
 	void Setwidget(V3DPluginCallback &callback, QString m_FileName, QString curFilePathInput, float scaleFactorInput);
 	
@@ -182,12 +192,13 @@ private:
 	
 	unsigned char *imagData;
 	
-	
 	QCursor myCursor;	
 	
 	XFormType Gtype;	
 
 	ImagePlaneDisplayType Ptype;
+	
+	ImagePixelType Datatype;
 	
     QPixmap pixmap; //xy plane
     
@@ -226,6 +237,7 @@ public:
 	void update_triview();
 	
 	bool updateminmaxvalues();
+	bool setCTypeBasedOnImageData();
 	
 public slots:
 	void updateGUI();
@@ -286,6 +298,8 @@ public:
 	Image4DSimple p4DImage;
 	
 	ImagePixelType dtype;
+	
+	ImageDisplayColorType Ctype;
    
 	QString curFilePath;
 	

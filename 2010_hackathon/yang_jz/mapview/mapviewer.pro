@@ -15,7 +15,6 @@ INCLUDEPATH  += $$QT_DIR/demos/shared/
 #HEADERS      +=/usr/local/Trolltech/Qt-4.5.2/demos/shared/arthurwidgets.h
 HEADERS      +=colormap.h
 
-
 HEADERS      += mg_image_lib11.h
 HEADERS      += stackutil-11.h
 HEADERS      += ../../../released_plugins/v3d_plugins/istitch/y_imglib.h
