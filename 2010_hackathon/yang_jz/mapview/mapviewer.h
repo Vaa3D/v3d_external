@@ -56,6 +56,7 @@
 #include <qgroupbox.h>
 
 #include "volimg_proc.h"
+#include <iostream>
 
 //class HoverPoints;
 //class QLineEdit;

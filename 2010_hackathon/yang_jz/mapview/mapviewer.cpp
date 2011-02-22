@@ -882,88 +882,6 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 			datatype = V3D_FLOAT32;
 			CopyData_resamp_raw((float*)resampling,(float*)pData,szo[3], szo[0], szo[1], szo[2],target_pixel_size);
 	}
-//	long vx, vy, vz, vc;
-//	long rx, ry, rz, rc;
-//	
-//	vx = szo[0]/target_pixel_size ; // suppose the size same of all tiles
-//	
-//	vy = szo[1];
-//	
-//	vz = szo[2];
-//	
-//	vc = szo[3];
-//	
-//	rx = szo[0] ; // suppose the size same of all tiles
-//	
-//	ry = szo[1];
-//	
-//	rz = szo[2];
-//	
-//	rc = szo[3];
-//	
-//	long pagesz_vim = vx*vy*vz*vc;
-//	
-//	unsigned char *pVImg = 0;
-//	try
-//	{
-//		pVImg = new unsigned char [pagesz_vim];
-//	}
-//	catch (...) 
-//	{
-//		printf("Fail to allocate memory.\n");
-//		return;
-//	}
-//	// init
-//	for(long i=0; i<pagesz_vim; i++)
-//	{
-//		pVImg[i] = 0;
-//	}
-//	
-//	ImagePixelType datatype;
-//	
-//	V3DLONG tempc = vx*vy*vz, tempcz = vx*vy;
-//	
-//	V3DLONG temprc = rx*ry*rz, temprcz = rx*ry;
-//	
-//	V3DLONG t = target_pixel_size;
-//	
-//	for(long c=0; c<rc; c++)
-//	{
-//		long oc = c*tempc;
-//		long orc = c*temprc;
-//		
-//		for(long k= 0; k<rz; k++)
-//		{
-//			long omk = oc + (k)*tempcz;
-//			
-//			long ork = orc + (k)*temprcz;
-//			
-//			for(long j=0; j<ry; j++)
-//			{
-//				long oj = omk + (j)*vx;
-//				
-//				long orj = ork + (j)*rx;
-//				
-//				for(long i=0; i<rx; i = i+target_pixel_size)
-//				{
-//					long idx = oj + i/t;
-//					long idxr = orj + i;
-//					{
-//						pVImg[idx] = resampling[idxr];
-//					}
-//				}
-//			}
-//		}
-//	}
-//	
-//	if(datatype_relative==1)
-//	{
-//		datatype = V3D_UINT8;
-//	}else if(datatype_relative==2)
-//	{
-//		datatype = V3D_UINT16;
-//	}
-//	
 	// time consumption
 	size_t end_t = clock();
 
@@ -1033,17 +951,15 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 	// construct lookup table
 	vim1.y_clut(vim1.tilesList.size());
 	
-	//QString ff = "stitched_image.raw";
-	//char * thumnalilFile = const_cast<char *>(ff.toStdString().c_str());
+	QString ff = "stitched_image.raw";
 	
-	//vim1.y_createthumbnail(thumnalilFile);
+	char * thumnalilFile = const_cast<char *>(ff.toStdString().c_str());
 	
-	//------------------------------------------------------------------------------------------------------------------------------------------
-	// save lut
+	vim1.fn_thumbnail = thumnalilFile ;
+	
+	vim1.b_thumbnailcreated = true;
 	
 	vim1.y_save(tmp_filename.toStdString());
-	
-	/////////////////////////////////////
 	
 	sz_tmp[0] = vx; sz_tmp[1] = vy; sz_tmp[2] = vz; sz_tmp[3] = vc; 
 	

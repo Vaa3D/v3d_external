@@ -1481,14 +1481,11 @@ int loadRaw2Stack_raw_resamping(char * filename, unsigned char * & img, V3DLONG 
 				V3DLONG jj = (j/resampling_size);
 				if(kk >= tmpz){kk = tmpz-1;}
 				if(jj >= tmph){jj = tmph-1;}
-				
-				printf(" c=%ld k=%ld j=%ld kk=%ld jj=%ld\n",c,k,j,kk,jj);
-				
+				//printf(" c=%ld k=%ld j=%ld kk=%ld jj=%ld\n",c,k,j,kk,jj);
 				rewind(fid);
 				fseek(fid, head+(c*pgsz1 + k*pgsz2 + j*pgsz3)*unitSize, SEEK_SET);
 				ftell(fid);	
 				fread(img + (c*cn + kk*kn + jj*tmpw)*unitSize,unitSize,tmpw,fid);
-				//printf(" c=%ld k=%ld j=%ld kk=%ld jj=%ld\n",c,k,j,kk,jj);
 			}
 		}
 	}
