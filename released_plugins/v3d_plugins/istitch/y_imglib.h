@@ -54,6 +54,12 @@ typedef unsigned char UINT8;
 //typedef double REAL; // -lfftw3 -lfftw3_threads // fftw_
 typedef float REAL; // -lfftw3f -lfftw3f_threads // fftwf_
 
+#define TC_COMMENT1 (" thumbnail file ")
+#define TC_COMMENT2 (" tiles ")
+#define TC_COMMENT3 (" dimensions (XYZC) ")
+#define TC_COMMENT4 (" origin (XYZ) ")
+#define TC_COMMENT5 (" resolution (XYZ) ")
+#define TC_COMMENT6 (" image coordinates look up table ")
 
 //statistics of count of labeling
 class STCL
@@ -299,7 +305,7 @@ public:
 public:
 	
 	//load a virtual image
-	void y_load(string fn)
+	bool y_load(string fn)
 	{
 		ifstream pFileLUT(fn.c_str());
 		string str;
@@ -310,7 +316,7 @@ public:
 		
 		sz = new T2 [3];
 		
-		char buf[2000];
+		char buf[2048];
 		string fn_str;
 		
 		if(pFileLUT.is_open())
@@ -321,8 +327,17 @@ public:
 			if(letter=='#')
 				getline(pFileLUT, str); // read comments line
 			
-			// tiles
-			pFileLUT >> number_tiles;
+			if(strcmp(str.c_str(), TC_COMMENT1))
+			{
+				QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
+				pFileLUT.close();
+				return false;
+			}
+			else
+			{
+				// thumbnail file name
+				pFileLUT >> fn_thumbnail;
+			}
 			
 			do
 			{
@@ -332,8 +347,17 @@ public:
 			
 			getline(pFileLUT, str); // read comments line
 			
-			// dimensions
-			pFileLUT >> sz[0] >> sz[1] >> sz[2] >> sz[3];
+			if(strcmp(str.c_str(), TC_COMMENT2))
+			{
+				QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
+				pFileLUT.close();
+				return false;
+			}
+			else
+			{
+				// tiles
+				pFileLUT >> number_tiles;
+			}
 			
 			do
 			{
@@ -343,8 +367,17 @@ public:
 			
 			getline(pFileLUT, str); // read comments line
 			
-			// origins
-			pFileLUT >> origin_x >> origin_y >> origin_z;
+			if(strcmp(str.c_str(), TC_COMMENT3))
+			{
+				QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
+				pFileLUT.close();
+				return false;
+			}
+			else
+			{
+				// dimensions
+				pFileLUT >> sz[0] >> sz[1] >> sz[2] >> sz[3];
+			}
 			
 			do
 			{
@@ -354,9 +387,18 @@ public:
 			
 			getline(pFileLUT, str); // read comments line
 			
-			// resolutions
-			pFileLUT >> rez_x >> rez_y >> rez_z;
-			
+			if(strcmp(str.c_str(), TC_COMMENT4))
+			{
+				QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
+				pFileLUT.close();
+				return false;
+			}
+			else
+			{
+				// origins
+				pFileLUT >> origin_x >> origin_y >> origin_z;
+			}
+
 			do
 			{
 				pFileLUT >> letter;
@@ -365,46 +407,79 @@ public:
 			
 			getline(pFileLUT, str); // read comments line
 			
-			// lut
-			lut = new LUT [number_tiles];
-			T2 count=0;
-			
-			while( !pFileLUT.eof() )
+			if(strcmp(str.c_str(), TC_COMMENT5))
 			{
-				while( getline(pFileLUT, str) )
+				QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
+				pFileLUT.close();
+				return false;
+			}
+			else
+			{
+				// resolutions
+				pFileLUT >> rez_x >> rez_y >> rez_z;
+			}
+
+			do
+			{
+				pFileLUT >> letter;
+			}
+			while(letter!='#');
+			
+			getline(pFileLUT, str); // read comments line
+			
+			if(strcmp(str.c_str(), TC_COMMENT6))
+			{
+				QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
+				pFileLUT.close();
+				return false;
+			}
+			else
+			{
+				// lut
+				lut = new LUT [number_tiles];
+				T2 count=0;
+				
+				while( !pFileLUT.eof() )
 				{
-					istringstream iss(str);
+					while( getline(pFileLUT, str) )
+					{
+						istringstream iss(str);
+						
+						iss >> buf;
+						
+						fn_str = buf;
+						
+						//
+						iss >> buf; iss >> start[0];
+						iss >> buf; iss >> start[1];
+						iss >> buf; iss >> start[2];
+						
+						iss >> buf;
+						
+						iss >> buf; iss >> end[0];
+						iss >> buf; iss >> end[1];
+						iss >> buf; iss >> end[2];
+						
+						lut[count] = LUT(start, end, false);
+						lut[count].fn_img = fn_str;
+						
+						count++;
+						
+						if(count>=number_tiles)
+							break;
+						
+						//iss >> letter;
+					}
 					
-					iss >> buf;
-					
-					fn_str = buf;
-					
-					//
-					iss >> buf; iss >> start[0];
-					iss >> buf; iss >> start[1];
-					iss >> buf; iss >> start[2];
-					
-					iss >> buf;
-					
-					iss >> buf; iss >> end[0];
-					iss >> buf; iss >> end[1];
-					iss >> buf; iss >> end[2];
-					
-					lut[count] = LUT(start, end, false);
-					lut[count].fn_img = fn_str;
-									
-					count++;
-
-					//iss >> letter;
 				}
-
 			}
 			
 		}
 		else
 		{
 			cout << "Unable to open the file";
-			return;
+			pFileLUT.close();
+			return false;
 		}
 		
 		pFileLUT.close();
@@ -421,7 +496,7 @@ public:
 		catch (...) 
 		{
 			printf("Fail to allocate memory.\n");
-			return;
+			return false;
 		}
 		
 		for(T2 i=0; i<len; i++)
@@ -441,6 +516,8 @@ public:
 			}
 			
 		}
+		
+		return true;
 	}
 	
 	//save as a virtual image
@@ -450,23 +527,29 @@ public:
 		
 		pFileLUT = fopen(fn.c_str(),"wt");
 		
-		fprintf(pFileLUT, "# tiles \n");
+		// temporary
+		strcpy(fn_thumbnail, y_createthumbnail());
+		
+		fprintf(pFileLUT, "# thumbnail file \n"); // TC_COMMENT1
+		fprintf(pFileLUT, "%s \n\n", fn_thumbnail);
+		
+		fprintf(pFileLUT, "# tiles \n"); // TC_COMMENT2
 		fprintf(pFileLUT, "%d \n\n", tilesList.size());
 		
-		fprintf(pFileLUT, "# dimensions (XYZC) \n");
+		fprintf(pFileLUT, "# dimensions (XYZC) \n"); // TC_COMMENT3
 		fprintf(pFileLUT, "%ld %ld %ld %ld \n\n", max_vim[0]-min_vim[0]+1, max_vim[1]-min_vim[1]+1, max_vim[2]-min_vim[2]+1, tilesList.at(0).sz_image[3]);
 		
 		// init
 		origin_x = min_vim[0]; origin_y = min_vim[1]; origin_z = min_vim[2];
 		rez_x = 1; rez_y= 1; rez_z = 1;
 		
-		fprintf(pFileLUT, "# origin (XYZ) \n");
+		fprintf(pFileLUT, "# origin (XYZ) \n"); // TC_COMMENT4
 		fprintf(pFileLUT, "%lf %lf %lf \n\n", origin_x, origin_y, origin_z);
 		
-		fprintf(pFileLUT, "# resolution (XYZ) \n");
+		fprintf(pFileLUT, "# resolution (XYZ) \n"); // TC_COMMENT5
 		fprintf(pFileLUT, "%lf %lf %lf \n\n", rez_x, rez_y, rez_z);
 		
-		fprintf(pFileLUT, "# image coordinates look up table \n");
+		fprintf(pFileLUT, "# image coordinates look up table \n"); // TC_COMMENT6
 		for(int j=0; j<tilesList.size(); j++)
 		{
 			
@@ -506,6 +589,16 @@ public:
 	POINT y_navigate(POINT p)
 	{
 		
+	}
+	
+	// create thumbnail file
+	char *y_createthumbnail()
+	{
+		char fn[2048] = "NULL";
+		
+		// to do
+		
+		return fn;
 	}
 	
 	// construct lookup table given adjusted tilesList
@@ -580,6 +673,10 @@ public:
 	// record in .tc file
 	double origin_x, origin_y, origin_z; // (0, 0, 0)  
 	double rez_x, rez_y, rez_z; // (1, 1, 1)
+	
+	// thumbnail file
+	char fn_thumbnail[2048];
+	
 };
 
 // configuration prior

@@ -5001,7 +5001,8 @@ int point_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 	// virtual image
 	Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim;
 	
-	vim.y_load(filename);
+	if( !vim.y_load(filename) )
+		return -1;
 	
 	// point navigating
 	PointNavigateDialog dialog(parent, vim.sz);
@@ -5105,7 +5106,9 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 	// virtual image
 	Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim;
 	
-	vim.y_load(filename);
+	if( !vim.y_load(filename) )
+		return -1;
+	
 	
 	// point navigating
 	RegionNavigateDialog dialog(parent, vim.sz);
@@ -5117,13 +5120,13 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 	// input virtual image point position
 	V3DLONG start[3], end[3];
 	
-	start[0] = dialog.xs;
-	start[1] = dialog.ys;
-	start[2] = dialog.zs;
+	start[0] = dialog.xs-1; // dialog is 1-based coordinates
+	start[1] = dialog.ys-1;
+	start[2] = dialog.zs-1;
 	
-	end[0] = dialog.xe;
-	end[1] = dialog.ye;
-	end[2] = dialog.ze;
+	end[0] = dialog.xe-1;
+	end[1] = dialog.ye-1;
+	end[2] = dialog.ze-1;
 	
 	//virtual image
 	V3DLONG vx, vy, vz, vc;
@@ -5201,7 +5204,7 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 			// 
 			cout << "satisfied image: "<< vim.lut[ii].fn_img << endl;
 			
-			// loading relative imagg files
+			// loading relative image files
 			V3DLONG *sz_relative = 0; 
 			int datatype_relative = 0;
 			unsigned char* relative1d = 0;
@@ -5245,19 +5248,25 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 			cout << x_start << " " << x_end << " " << y_start << " " << y_end << " " << z_start << " " << z_end << endl;
 			
 			//
+			V3DLONG sz_ch_o = vx*vy*vz;
+			V3DLONG sz_ch_r = rx*ry*rz;
+			V3DLONG sz_page_o = vx*vy;
+			V3DLONG sz_page_r = rx*ry;
+			
 			for(V3DLONG c=0; c<rc; c++)
 			{
-				V3DLONG o_c = c*vx*vy*vz;
-				V3DLONG o_r_c = c*rx*ry*rz;
+				V3DLONG o_c = c*sz_ch_o;
+				V3DLONG o_r_c = c*sz_ch_r;
 				for(V3DLONG k=z_start; k<z_end; k++)
 				{
-					V3DLONG o_k = o_c + (k-start[2])*vx*vy;
-					V3DLONG o_r_k = o_r_c + (k-z_start)*rx*ry;
+					V3DLONG o_k = o_c + (k-start[2])*sz_page_o;
+					V3DLONG o_r_k = o_r_c + (k-z_start)*sz_page_r;
 					
 					for(V3DLONG j=y_start; j<y_end; j++)
 					{
 						V3DLONG o_j = o_k + (j-start[1])*vx;
 						V3DLONG o_r_j = o_r_k + (j-y_start)*rx;
+						
 						for(V3DLONG i=x_start; i<x_end; i++)
 						{
 							V3DLONG idx = o_j + i-start[0];
@@ -5331,7 +5340,8 @@ int roi_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 	// virtual image
 	Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim;
 	
-	vim.y_load(filename);
+	if( !vim.y_load(filename) )
+		return -1;
 	
 	
 	// print info message
