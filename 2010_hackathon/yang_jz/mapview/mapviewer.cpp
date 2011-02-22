@@ -1952,9 +1952,9 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 		end_z=vim.sz[2];
 		
 	}
-	vx = end_x - start_x ;//+ 1; // suppose the size same of all tiles
-	vy = end_y - start_y;// + 1;
-	vz = end_z - start_z ;//+ 1;
+	vx = end_x - start_x + 1; // suppose the size same of all tiles
+	vy = end_y - start_y + 1;
+	vz = end_z - start_z + 1;
 	vc = vim.sz[3];
 	
 	printf("vx=%ld vy=%ld vz=%ld vc=%ld\n",vx,vy,vz,vc);
