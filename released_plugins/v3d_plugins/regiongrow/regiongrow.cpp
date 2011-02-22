@@ -24,7 +24,7 @@
 #define INF 1E9
 #define PI 3.14159265
 
-// extension to 3D from Hanchuan 2D region growing codes
+// extension to 3D from Hanchuan's 2D region growing codes
 #define UBYTE unsigned char
 #define BYTE signed char
 
@@ -241,7 +241,7 @@ template <class T> void copyvecdata(T * srcdata, V3DLONG len, UBYTE * desdata, i
 {
 	if(!srcdata || !desdata)
 	{
-		printf("NULL points in copyvecdata()!\n");
+		printf("NULL pointers in copyvecdata()!\n");
 		return;
 	} 
 	
@@ -447,12 +447,17 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 {
 	// input threshold computationg method
 	RegiongrowDialog dialog(callback, parent);
+	if (!dialog.image)
+		return;
+	
 	if (dialog.exec()!=QDialog::Accepted)
 		return;
 	
 	dialog.update();
 	
 	Image4DSimple* subject = dialog.image;
+	if (!subject)
+		return;
 	ROIList pRoiList = dialog.pRoiList;
 	
 	V3DLONG ch_rgb = dialog.ch;
@@ -468,7 +473,7 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 	
 	if(datatype_subject != V3D_UINT8)
 	{
-		QMessageBox::information(parent, "Version info", QString("Currently this program only support 8-bit data."));
+		QMessageBox::information(parent, "Information", QString("Currently this program only support 8-bit data."));
 		return;
 	}
 	
@@ -627,6 +632,7 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 		printf("Fail to allocate memory.\n");
 		return;
 	}
+	
 	
 	meanv /= pagesz;
 	

@@ -39,8 +39,11 @@ class RegiongrowDialog : public QDialog
 public:
 	RegiongrowDialog(V3DPluginCallback2 &cb, QWidget *parent)
 	{
-		//create a dialog
-		gridLayout = new QGridLayout();
+		//initialization of variables
+		image = 0;
+		gridLayout = 0;
+
+		//
 		
 		v3dhandleList win_list = cb.getImageWindowList();
 		
@@ -49,6 +52,9 @@ public:
 			QMessageBox::information(0, "Label Objects", QObject::tr("No image is open."));
 			return;
 		}
+		
+		//create a dialog
+		gridLayout = new QGridLayout();
 		
 		image = cb.getImage(cb.currentImageWindow());
 		pRoiList=cb.getROI(cb.currentImageWindow());
