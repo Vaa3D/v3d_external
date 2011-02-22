@@ -477,7 +477,8 @@ int CopyData_tc(T *apsInput, T *aspOutput,V3DLONG * szo,
 	
 	V3DLONG tempc = vx*vy*vz, tempcz = vx*vy;
 	V3DLONG temprc = rx*ry*rz, temprcz = rx*ry;
-	
+	V3DLONG total = tempc * rc;
+	V3DLONG totalr = temprc * rc;
 	for(long c=0; c<rc; c++)
 	{
 		long oc = c*tempc;
@@ -492,9 +493,10 @@ int CopyData_tc(T *apsInput, T *aspOutput,V3DLONG * szo,
 				long orj = ork + (j-y_start)*rx;
 				for(long i=x_start; i<x_end; i++)
 				{
-					long idx = oj + i-start_x;
+					long idx = oj + (i-start_x);
 					long idxr = orj + (i-x_start);
-					
+					if(idx > total ){idx = total;}
+					if(idxr > totalr ){idxr = totalr;}
 					//if(pVImg[idx]>0)
 					{
 						//	pVImg[idx] = (pVImg[idx]>relative1d[idxr])?pVImg[idx]:relative1d[idxr];
@@ -1952,9 +1954,9 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 		end_z=vim.sz[2];
 		
 	}
-	vx = end_x - start_x + 1; // suppose the size same of all tiles
-	vy = end_y - start_y + 1;
-	vz = end_z - start_z + 1;
+	vx = end_x - start_x ;//+ 1; // suppose the size same of all tiles
+	vy = end_y - start_y ;//+ 1;
+	vz = end_z - start_z ;//+ 1;
 	vc = vim.sz[3];
 	
 	printf("vx=%ld vy=%ld vz=%ld vc=%ld\n",vx,vy,vz,vc);
@@ -2012,16 +2014,7 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 			break;
 	}
 	
-	bitset<3> lut_ss, lut_se, lut_es, lut_ee;
-	
-	long x_s = start_x + vim.min_vim[0];
-	long y_s = start_y + vim.min_vim[1];
-	long z_s = start_z + vim.min_vim[2];
-	
-	long x_e = end_x + vim.min_vim[0];
-	long y_e = end_y + vim.min_vim[1];
-	long z_e = end_z + vim.min_vim[2];
-	
+		
 	if(vim.number_tiles == 1)
 	{
 		cout << "satisfied image: "<< vim.lut[0].fn_img << endl;
@@ -2080,6 +2073,16 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 		}
 	}else
 	{
+		bitset<3> lut_ss, lut_se, lut_es, lut_ee;
+		
+		long x_s = start_x + vim.min_vim[0];
+		long y_s = start_y + vim.min_vim[1];
+		long z_s = start_z + vim.min_vim[2];
+		
+		long x_e = end_x + vim.min_vim[0];
+		long y_e = end_y + vim.min_vim[1];
+		long z_e = end_z + vim.min_vim[2];
+		
 		for(long ii=0; ii<vim.number_tiles; ii++)
 		{	
 			// init
