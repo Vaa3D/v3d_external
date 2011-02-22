@@ -515,15 +515,15 @@ const QString title = "Map Viewer";
 XMapView* XMapView::m_show = 0;
 QStringList MAPiewerPlugin::menulist() const
 {
-    return QStringList() << tr("load Image")
+    return QStringList() << tr("load image using a tc (Tile Configuration) file")
 						 << tr("generate thumbnail map from tc file")
 	                     << tr("generate thumbnail map from raw data")
-						 << tr("help");
+						 << tr("About");
 }
 
 void MAPiewerPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
 {
-    if (menu_name == tr("load Image"))
+    if (menu_name == tr("load image using a tc (Tile Configuration) file"))
     {
     	iViewer(callback, parent);
     }
@@ -535,8 +535,9 @@ void MAPiewerPlugin::domenu(const QString &menu_name, V3DPluginCallback &callbac
 	{
 		resampling_rawdata(callback, parent);
 	}
-	else if (menu_name == tr("help"))
+	else if (menu_name == tr("About"))
 	{
+		v3d_msg("A 3D map browser of VERY large 3D image data set. All rights reserved.");
 	}
 }
 
