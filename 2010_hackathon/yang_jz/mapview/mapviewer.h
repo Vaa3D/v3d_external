@@ -46,6 +46,7 @@
 #include "colormap.h"
 
 #include"../../../released_plugins/v3d_plugins/istitch/y_imglib.h"
+#include "v3d_message.h" 
 
 //#include "y_imglib.h"
 //

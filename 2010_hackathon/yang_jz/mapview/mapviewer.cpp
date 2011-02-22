@@ -515,15 +515,15 @@ const QString title = "Map Viewer";
 XMapView* XMapView::m_show = 0;
 QStringList MAPiewerPlugin::menulist() const
 {
-    return QStringList() << tr("load image using a tc (Tile Configuration) file")
+    return QStringList() << tr("load Image")
 						 << tr("generate thumbnail map from tc file")
 	                     << tr("generate thumbnail map from raw data")
-						 << tr("About");
+						 << tr("help");
 }
 
 void MAPiewerPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
 {
-    if (menu_name == tr("load image using a tc (Tile Configuration) file"))
+    if (menu_name == tr("load Image"))
     {
     	iViewer(callback, parent);
     }
@@ -535,9 +535,8 @@ void MAPiewerPlugin::domenu(const QString &menu_name, V3DPluginCallback &callbac
 	{
 		resampling_rawdata(callback, parent);
 	}
-	else if (menu_name == tr("About"))
+	else if (menu_name == tr("help"))
 	{
-		v3d_msg("A 3D map browser of VERY large 3D image data set. All rights reserved.");
 	}
 }
 
@@ -643,7 +642,12 @@ void MAPiewerPlugin::resampling(V3DPluginCallback &callback, QWidget *parent)
 		
 		V3DLONG *szo=0;
 		
-		loadImage_resampling(imgSrcFile,resampling,sz_relative,szo,datatype_relative,target_pixel_size);
+		if(loadImage_resampling(imgSrcFile,resampling,sz_relative,szo,datatype_relative,target_pixel_size)!=true)
+		{
+			printf("load Image false");
+			return;
+		
+		}
 
 		long tile2vi_xs = vim.lut[ii].start_pos[0]-vim.min_vim[0]; 
 		long tile2vi_xe = vim.lut[ii].end_pos[0]-vim.min_vim[0]; 
@@ -794,7 +798,11 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 	
 	size_t start_t = clock();
 	
-	loadImage_raw_resampling(imgSrcFile,resampling,szo,sz_relative,datatype_relative,target_pixel_size);
+	if(loadImage_raw_resampling(imgSrcFile,resampling,szo,sz_relative,datatype_relative,target_pixel_size)!= true)
+	{
+		printf("load Image false");
+		return;
+	}
 	
 	long vx, vy, vz, vc;
 		
@@ -1009,24 +1017,31 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 	(&vim1.tilesList.at(0))->sz_image[2] = sz_relative[2];
 	(&vim1.tilesList.at(0))->sz_image[3] = sz_relative[3];
 	
+	QString tmp_filename;
+	QString tmp_filename1;
+	
+	tmp_filename = curFilePath + "/" + "stitched_image.tc"; //.tc tile configuration
+	
+	tmp_filename1 = curFilePath + "/" + "stitched_image.raw";
+	
 	// construct lookup table
 	vim1.y_clut(vim1.tilesList.size());
 	
+	//QString ff = "stitched_image.raw";
+	//char * thumnalilFile = const_cast<char *>(ff.toStdString().c_str());
+	
+	//vim1.y_createthumbnail(thumnalilFile);
+	
 	//------------------------------------------------------------------------------------------------------------------------------------------
 	// save lut
-	QString tmp_filename;
-	
-	tmp_filename = curFilePath + "/" + "stitched_image.tc"; //.tc tile configuration
 	
 	vim1.y_save(tmp_filename.toStdString());
 	
 	/////////////////////////////////////
 	
-	tmp_filename = curFilePath + "/" + "stitched_image.raw";
-	
 	sz_tmp[0] = vx; sz_tmp[1] = vy; sz_tmp[2] = vz; sz_tmp[3] = vc; 
 	
-	if (saveImage(tmp_filename.toStdString().c_str(), (const unsigned char *)pData, sz_tmp, datatype)!=true)
+	if (saveImage(tmp_filename1.toStdString().c_str(), (const unsigned char *)pData, sz_tmp, datatype)!=true)
 	{
 		fprintf(stderr, "Error happens in file writing. Exit. \n");
 		return ;
@@ -1220,7 +1235,11 @@ void ImageSetWidget::update_v3dviews(V3DPluginCallback *callback, long start_x, 
 	
     //loadImage(imgSrcFile, relative1d, sz_relative, datatype_relative); //
   
-	loadImage(imgSrcFile,relative1d,sz_relative,szo,start_x,start_y,start_z,end_x,end_y,end_z,datatype_relative);	
+	if(loadImage(imgSrcFile,relative1d,sz_relative,szo,start_x,start_y,start_z,end_x,end_y,end_z,datatype_relative)!=true)
+	{
+		printf("load Image false");
+		return;
+	}
 	
 	long rx=sz_relative[0], ry=sz_relative[1], rz=sz_relative[2], rc=sz_relative[3];
 	
@@ -1668,8 +1687,8 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 	//qDebug()<<"sxyx ..."<<sx<<sy<<sz;
 	//****************************************************************
 	// suppose compressed image saved as .tif
-	QString m_FileName_compressed = m_FileName;
 	
+	QString m_FileName_compressed = m_FileName;
 	m_FileName_compressed.chop(3); // ".tc"
 	m_FileName_compressed.append(".raw");
 	
@@ -1683,7 +1702,11 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 	
 	//imgData->loadImage(openFileNameLabel.toAscii().data());
 	
-	loadImage(const_cast<char *>(m_FileName_compressed.toStdString().c_str()), compressed1d, sz_compressed, datatype_compressed); //careful
+	if(loadImage(const_cast<char *>(m_FileName_compressed.toStdString().c_str()), compressed1d, sz_compressed, datatype_compressed)!= true)
+	{
+		printf("load Image false");
+		return;
+	}//careful
 	
 	cx=sz_compressed[0], cy=sz_compressed[1], cz=sz_compressed[2], cc=sz_compressed[3];
 	
@@ -2021,7 +2044,13 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 		int datatype_relative = 0;
 		unsigned char* relative1d = 0;
 		
-		loadImage(imgSrcFile,relative1d,sz_relative,szo,start_x,start_y,start_z,end_x,end_y,end_z,datatype_relative);	
+		if(loadImage(imgSrcFile,relative1d,sz_relative,szo,start_x,start_y,start_z,end_x,end_y,end_z,datatype_relative) != true)
+		{
+			printf("load Image false");
+			
+			return;
+			
+		}
 		
 		//loadImage(imgSrcFile,relative1d,sz_relative,szo,(x_start-tile2vi_xs),(y_start-tile2vi_ys),(z_start-tile2vi_zs),(x_end-tile2vi_xs),(y_end-tile2vi_ys),(z_end-tile2vi_zs),datatype_relative);
 
@@ -2122,7 +2151,11 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 				
 				if (x_end > x_start && y_end > y_start && z_end > z_start) 
 				{
-					loadImage(imgSrcFile,relative1d,sz_relative,szo,(x_start-tile2vi_xs),(y_start-tile2vi_ys),(z_start-tile2vi_zs),(x_end-tile2vi_xs),(y_end-tile2vi_ys),(z_end-tile2vi_zs),datatype_relative);
+					if(loadImage(imgSrcFile,relative1d,sz_relative,szo,(x_start-tile2vi_xs),(y_start-tile2vi_ys),(z_start-tile2vi_zs),(x_end-tile2vi_xs),(y_end-tile2vi_ys),(z_end-tile2vi_zs),datatype_relative)!=true)
+					{
+						printf("load Image false");
+						return;
+					}
 					
 					switch (Datatype)
 					{
