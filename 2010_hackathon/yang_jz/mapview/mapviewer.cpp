@@ -557,7 +557,7 @@ void MAPiewerPlugin::resampling_tc(V3DPluginCallback &callback, QWidget *parent)
 	
 	if(vim.y_load(filename)!= true)
 	{
-		QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
+		QMessageBox::information(0, "TC file reading", QObject::tr("tc file is illegal"));
 		return ;
 	}
 	
@@ -651,7 +651,7 @@ void MAPiewerPlugin::resampling_tc(V3DPluginCallback &callback, QWidget *parent)
 		
 		if(loadImage_resampling(imgSrcFile,resampling,sz_relative,szo,datatype_relative,target_pixel_size)!=true)
 		{
-			QMessageBox::information(0, "Load Image", QObject::tr("Image File read failure."));
+			QMessageBox::information(0, "Load Image", QObject::tr("File load failure"));
 			return;
 		
 		}
@@ -817,7 +817,7 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 	
 	if(loadImage_raw_resampling(imgSrcFile,resampling,szo,sz_relative,datatype_relative,target_pixel_size)!= true)
 	{
-		QMessageBox::information(0, "Load Image", QObject::tr("Your .Image file is load false."));
+		QMessageBox::information(0, "Load Image", QObject::tr("File load failure"));
 		return;
 	}
 	
@@ -1172,7 +1172,7 @@ void ImageSetWidget::update_v3dviews(V3DPluginCallback *callback, long start_x, 
   
 	if(loadImage(imgSrcFile,relative1d,sz_relative,szo,start_x,start_y,start_z,end_x,end_y,end_z,datatype_relative)!=true)
 	{
-		QMessageBox::information(0, "Load Image", QObject::tr("Your .Image file is load false."));
+		QMessageBox::information(0, "Load Image", QObject::tr("File load failure"));
 		return;
 	}
 	
@@ -1279,6 +1279,7 @@ XMapView::XMapView(QWidget *parent)
 	bMouseCurorIn = false;
 	b_mouseend = false;
 	b_mousmove = false;
+	b_creadWindow = false;
 	
 	curDisplayCenter = QPoint(pixmap.width()/2.0, pixmap.height()/2.0);
 	
@@ -1338,7 +1339,11 @@ void ImageSetWidget::updateGUI()
 	cur_y = yValueSpinBox->text().toInt(); // / scaleFactor;
 	cur_z = zValueSpinBox->text().toInt(); // / scaleFactor;
 	
+	CreadViewCheckBox->setEnabled(false);
+	
 	update_triview();
+	
+	xy_view->b_creadWindow = bcreadViews;
 	
 	xy_view->update();
 	xy_view->repaint();
@@ -1431,6 +1436,7 @@ bool ImageSetWidget::updateminmaxvalues()
 
 void ImageSetWidget::createGUI()
 {
+	bcreadViews = false;
 	/* Set up the data related GUI */
 	dataGroup = new QGroupBox(this);
 	dataGroup->setTitle("Compressed data");
@@ -1478,7 +1484,7 @@ void ImageSetWidget::createGUI()
 	//qDebug()<<"disp_x_y ..."<<xy_view->get_disp_width()<<xy_view->get_disp_height();		// setup the control panel
 	
 	mainGroup = new QGroupBox(this);
-	mainGroup->setFixedWidth(300);
+	mainGroup->setFixedWidth(200);
 	mainGroup->setTitle("Options");
 	
 	//qDebug()<<"options ...";
@@ -1507,14 +1513,21 @@ void ImageSetWidget::createGUI()
 	
 	zValueSpinBox->setMaximum(cz-1); zValueSpinBox->setMinimum(0); zValueSpinBox->setValue(cz/2); zValueSpinBox->setSingleStep(int(scaleFactor));
 
-	
+	//CreadViewCheckBox = new QCheckBox("cread window");
+//	
+//	CreadViewCheckBox->setCheckState((bcreadViews) ? Qt::Checked : Qt::Unchecked);
+
 	// focus draw group
 	
 	QGroupBox * landmarkGroup = new QGroupBox(mainGroup);
 	landmarkGroup->setTitle("draw data");
 	
 	dataCopyButton = new QPushButton(landmarkGroup);
-	dataCopyButton->setText("draw");
+	dataCopyButton->setText("setting");
+	
+	CreadViewCheckBox = new QCheckBox("cread window");
+	
+	CreadViewCheckBox->setCheckState((bcreadViews) ? Qt::Checked : Qt::Unchecked);
 	
 	//qDebug()<<"Coordinates ...";
 	
@@ -1536,16 +1549,21 @@ void ImageSetWidget::createGUI()
 	// layout for focus planes
 	coordGroupLayout = new QGridLayout(coordGroup);
 	coordGroupLayout->addWidget(zSliderLabel, 0, 0, 1, 1);
-	coordGroupLayout->addWidget(zValueSpinBox, 0, 13, 1, 4);
+	coordGroupLayout->addWidget(zValueSpinBox, 0, 2, 1, 4);
 	
 	coordGroupLayout->addWidget(xSliderLabel, 1, 0, 1, 1);
-	coordGroupLayout->addWidget(xValueSpinBox, 1, 13, 1, 4);
+	coordGroupLayout->addWidget(xValueSpinBox, 1, 2, 1, 4);
 	
 	coordGroupLayout->addWidget(ySliderLabel, 2, 0, 1, 1);
-	coordGroupLayout->addWidget(yValueSpinBox, 2, 13, 1, 4);
-	
+	coordGroupLayout->addWidget(yValueSpinBox, 2, 2, 1, 4);
+
+	//coordGroupLayout->addWidget(CreadViewCheckBox, 3, 0, 1, 1);
+
+	// layout for draw data
 	datacopyGroupLayout = new QGridLayout(landmarkGroup);
-	datacopyGroupLayout->addWidget(dataCopyButton, 0, 0, 1, 4);
+	//datacopyGroupLayout->addWidget(dataCopyButton, 0, 0, 1, 4);
+	datacopyGroupLayout->addWidget(CreadViewCheckBox, 0, 0, 1, 1);
+ 	
 	
 	// main control panel layout
 	mainGroupLayout = new QVBoxLayout(mainGroup);
@@ -1566,8 +1584,17 @@ void ImageSetWidget::createGUI()
 	connect(yValueSpinBox, SIGNAL(valueChanged(int)), this, SLOT(updateGUI()));
 	connect(zValueSpinBox, SIGNAL(valueChanged(int)), this, SLOT(updateGUI()));	
 	connect(dataCopyButton, SIGNAL(clicked()), this, SLOT(drawdata()));
+	connect(CreadViewCheckBox, SIGNAL(clicked()), this, SLOT(toggCreadViewCheckBox()));
 	
 }	//
+void ImageSetWidget::toggCreadViewCheckBox()
+{
+    bcreadViews = (CreadViewCheckBox->checkState()==Qt::Checked) ? true : false;
+    
+	xy_view->b_creadWindow = bcreadViews;
+    
+	update();
+}
 
 bool ImageSetWidget::setCTypeBasedOnImageData()
 {
@@ -1617,7 +1644,7 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 
 	if(vim.y_load(filename)!= true)
 	{
-		QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
+		QMessageBox::information(0, "TC file reading", QObject::tr("tc file is illegal"));
 		return ;
 	}
 	
@@ -1645,7 +1672,7 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 	
 	if(loadImage(const_cast<char *>(m_FileName_compressed.toStdString().c_str()), compressed1d, sz_compressed, datatype_compressed)!= true)
 	{
-		QMessageBox::information(0, "Load Image", QObject::tr("Your .Image file is load false."));
+		QMessageBox::information(0, "Load Image", QObject::tr("File load failure"));
 		return;
 	}//careful
 	
@@ -1687,6 +1714,8 @@ void ImageSetWidget::update_triview()
 	cur_x = xValueSpinBox->text().toInt(); // / scaleFactor;
 	cur_y = yValueSpinBox->text().toInt(); // / scaleFactor;
 	cur_z = zValueSpinBox->text().toInt(); // / scaleFactor;
+	
+	xy_view->b_creadWindow = bcreadViews;
 	
 	xy_view->setImgData(imgPlaneZ,dtype,Ctype,sz_compressed,cur_x,cur_y,cur_z, compressed1d,p_vmax,p_vmin);
 	
@@ -2001,7 +2030,7 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 		
 		if(loadImage(imgSrcFile,relative1d,sz_relative,szo,start_x,start_y,start_z,end_x,end_y,end_z,datatype_relative) != true)
 		{
-			QMessageBox::information(0, "Load Image", QObject::tr("Your .Image file is load false."));
+			QMessageBox::information(0, "Load Image", QObject::tr("File load failure"));
 			
 			return;
 			
@@ -2118,8 +2147,8 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 				{
 					if(loadImage(imgSrcFile,relative1d,sz_relative,szo,(x_start-tile2vi_xs),(y_start-tile2vi_ys),(z_start-tile2vi_zs),(x_end-tile2vi_xs),(y_end-tile2vi_ys),(z_end-tile2vi_zs),datatype_relative)!=true)
 					{
-						//QMessageBox::information(0, "Load Image", QObject::tr("Your .Image file is load false."));
-						//return;
+						QMessageBox::information(0, "Load Image", QObject::tr("File load failure"));
+						return;
 					}
 					
 					switch (Datatype)
@@ -2177,22 +2206,22 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 		callback->pushImageIn3DWindow(curwin);
 		
 	}else 
-	{		
-		//if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to use the existing window?"), QMessageBox::Yes, QMessageBox::No))
-//		{
-//			curwin = callback->currentImageWindow();
-//			callback->setImage(curwin, &p4DImage);
-//            QString curImageName2 = callback->getImageName(curwin);
-//			callback->setImageName(curwin, curImageName2);
-//			callback->updateImageWindow(curwin);
-//			callback->pushImageIn3DWindow(curwin);
-//			mousenumber--;
-//			if (mousenumber < 0) 
-//			{
-//				mousenumber = 1;
-//			}
-//		}
-//		else
+	{	
+		if(!b_creadWindow)
+		{
+			curwin = callback->currentImageWindow();
+			callback->setImage(curwin, &p4DImage);
+            QString curImageName2 = callback->getImageName(curwin);
+			callback->setImageName(curwin, curImageName2);
+			callback->updateImageWindow(curwin);
+			callback->pushImageIn3DWindow(curwin);
+			mousenumber--;
+			if (mousenumber < 0) 
+			{
+				mousenumber = 1;
+			}
+		}
+		else
 		{
 			file.sprintf("%d",mousenumber);
 			QString curImageName1 = curFilePath + "Map Image" + file;
@@ -2222,7 +2251,7 @@ void XMapView::Setwidget(V3DPluginCallback &callback, QString m_FileName, QStrin
 	
 	if(vim.y_load(filename)!= true)
 	{
-	//	QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
+		QMessageBox::information(0, "TC file reading", QObject::tr("tc file is illegal"));
 		return ;
 	}
 	

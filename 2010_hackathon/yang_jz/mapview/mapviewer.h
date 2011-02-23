@@ -142,6 +142,8 @@ public:
 	long in_endx ;
 	long in_endy ;
 	
+	bool b_creadWindow;
+	
 	V3DPluginCallback *callback1;
 	
 	QString curFilePath;
@@ -240,9 +242,13 @@ public:
 	bool updateminmaxvalues();
 	bool setCTypeBasedOnImageData();
 	
+	bool bcreadViews;
+	
 public slots:
 	void updateGUI();
 	void drawdata();
+	
+	void toggCreadViewCheckBox();
 public:
 //*********************************************************
 	QGroupBox *dataGroup, *viewGroup, *infoGroup;
@@ -255,6 +261,7 @@ public:
 	
 	QPushButton* dataCopyButton;
 	
+	QCheckBox *CreadViewCheckBox;
 	
 	QHBoxLayout *allLayout;
 	
