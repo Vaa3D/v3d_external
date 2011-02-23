@@ -785,6 +785,55 @@ void MAPiewerPlugin::resampling_tc(V3DPluginCallback &callback, QWidget *parent)
 		fprintf(stderr, "Error happens in file writing. Exit. \n");
 		return ;
 	}
+	////////////////////////////////////////// save tc file
+//	Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim1;
+//	
+//	V3DLONG count=0;
+//	
+//	V3DLONG offset[3];
+//	
+//	offset[0]=0; offset[1]=0; offset[2]=0;
+//	
+//	indexed_t<V3DLONG, REAL> idx_t(offset);
+//	
+//	idx_t.n = count;
+//	idx_t.ref_n = 0; // init with default values
+//	idx_t.fn_image = m_FileName.toStdString();
+//	idx_t.score = 0;
+//	vim1.tilesList.push_back(idx_t);
+//	
+//	int a  = vim1.tilesList.size();
+//	
+//	(&vim1.tilesList.at(0))->sz_image = new V3DLONG [4];
+//	
+//	(&vim1.tilesList.at(0))->sz_image[0] = sz_relative[0];
+//	(&vim1.tilesList.at(0))->sz_image[1] = sz_relative[1];
+//	(&vim1.tilesList.at(0))->sz_image[2] = sz_relative[2];
+//	(&vim1.tilesList.at(0))->sz_image[3] = sz_relative[3];
+//	
+//	QString tmp_filename;
+//	QString tmp_filename1;
+//	
+//	tmp_filename = curFilePath + "/" + "stitched_image.tc"; //.tc tile configuration
+//	
+//	tmp_filename1 = curFilePath + "/" + "stitched_image.raw";
+//	
+//	// construct lookup table
+//	vim1.y_clut(vim1.tilesList.size());
+//	
+//	QString ff = "stitched_image.raw";
+//	
+//	char * thumnalilFile = const_cast<char *>(ff.toStdString().c_str());
+//	
+//	strcpy(vim1.fn_thumbnail, thumnalilFile);
+//	
+//	//vim1.fn_thumbnail = "stitched_image.raw";
+//	
+//	vim1.b_thumbnailcreated = true;
+//	
+//	vim1.y_save(tmp_filename.toStdString());
+	////////////////////////////////////////////end tc file
+	
 	if (sz1) {delete []sz1; sz1=0;}
 }
 void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *parent)
@@ -999,7 +1048,6 @@ void MAPiewerPlugin::iViewer(V3DPluginCallback &callback, QWidget *parent)
 		XMapView::m_show->show();
 		return;
 	}
-	
 	ImageSetWidget *inw = new ImageSetWidget(callback, parent,m_FileName, curFilePath, 5);//5
 	
 	if (inw)
@@ -1007,8 +1055,6 @@ void MAPiewerPlugin::iViewer(V3DPluginCallback &callback, QWidget *parent)
 		inw->show();
  
 	}
-	
-	
 }
 void XMapView::setImgData(ImagePlaneDisplayType ptype,ImagePixelType dtype,ImageDisplayColorType Ctype,V3DLONG *sz_compressed,V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,unsigned char *pdata,double * p_vmax, double* p_vmin)
 {
@@ -1339,12 +1385,16 @@ void ImageSetWidget::updateGUI()
 	cur_y = yValueSpinBox->text().toInt(); // / scaleFactor;
 	cur_z = zValueSpinBox->text().toInt(); // / scaleFactor;
 	
-	CreadViewCheckBox->setEnabled(false);
+	CreadViewCheckBox->setEnabled(true);
 	
 	update_triview();
 	
 	xy_view->b_creadWindow = bcreadViews;
 	
+	yz_view->b_creadWindow = bcreadViews;
+	
+	zx_view->b_creadWindow = bcreadViews;
+
 	xy_view->update();
 	xy_view->repaint();
 	
@@ -1590,9 +1640,9 @@ void ImageSetWidget::createGUI()
 void ImageSetWidget::toggCreadViewCheckBox()
 {
     bcreadViews = (CreadViewCheckBox->checkState()==Qt::Checked) ? true : false;
-    
 	xy_view->b_creadWindow = bcreadViews;
-    
+	yz_view->b_creadWindow = bcreadViews;
+	zx_view->b_creadWindow = bcreadViews;
 	update();
 }
 
@@ -1642,72 +1692,72 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 	
 	qDebug()<<"filename ..."<<filename.c_str();
 
-	if(vim.y_load(filename)!= true)
+	if(vim.y_load(filename) == true)
 	{
-		QMessageBox::information(0, "TC file reading", QObject::tr("tc file is illegal"));
-		return ;
+		scaleFactor = scaleFactorInput;
+		
+		long sx=vim.sz[0], sy=vim.sz[1], sz=vim.sz[2];
+		
+		qDebug()<<"sxyx ..."<<sx<<sy<<sz;
+		
+		//****************************************************************
+		// suppose compressed image saved as .tif
+		
+		QString m_FileName_compressed = m_FileName;
+		m_FileName_compressed.chop(3); // ".tc"
+		m_FileName_compressed.append(".raw");
+		
+		//m_FileName_compressed.append(".raw");
+		// loading compressed image files
+		sz_compressed = 0; 
+		
+		int datatype_compressed = 0;
+		
+		compressed1d = 0;
+		
+		//imgData->loadImage(openFileNameLabel.toAscii().data());
+		
+		if(loadImage(const_cast<char *>(m_FileName_compressed.toStdString().c_str()), compressed1d, sz_compressed, datatype_compressed)!= true)
+		{
+			QMessageBox::information(0, "Load Image", QObject::tr("File load failure"));
+			return;
+		}//careful
+		
+		cx=sz_compressed[0], cy=sz_compressed[1], cz=sz_compressed[2], cc=sz_compressed[3];
+		
+		channel_compressed_sz = cx*cy*cz;
+		
+		init_x = cx/2, init_y = cy/2, init_z = cz/2; 
+		
+		if(datatype_compressed ==1 )
+		{
+			dtype = V3D_UINT8;
+		}
+		else if(datatype_compressed == 2)
+		{
+			dtype = V3D_UINT16;
+		}
+		else if(datatype_compressed==4)
+		{
+			dtype = V3D_FLOAT32;
+		}
+		
+		qDebug()<<"compressedsxyx ..."<<cx<<cy<<cz;			
+		
+		setCTypeBasedOnImageData();
+		
+		updateminmaxvalues();
+		
+		createGUI();
+		
+		scaleFactorInput = int(sy/cy);
+		
+		qDebug()<<"scaleFactorInput ..."<<scaleFactorInput;	
+		
+		xy_view->Setwidget(callback, m_FileName, curFilePath, scaleFactorInput);
+		yz_view->Setwidget(callback, m_FileName, curFilePath, scaleFactorInput);
+		zx_view->Setwidget(callback, m_FileName, curFilePath, scaleFactorInput);
 	}
-	
-	scaleFactor = scaleFactorInput;
-	
-	long sx=vim.sz[0], sy=vim.sz[1], sz=vim.sz[2];
-	
-	qDebug()<<"sxyx ..."<<sx<<sy<<sz;
-	//****************************************************************
-	// suppose compressed image saved as .tif
-	
-	QString m_FileName_compressed = m_FileName;
-	m_FileName_compressed.chop(3); // ".tc"
-	m_FileName_compressed.append(".raw");
-	
-	//m_FileName_compressed.append(".raw");
-	// loading compressed image files
-	sz_compressed = 0; 
-	
-	int datatype_compressed = 0;
-	
-	compressed1d = 0;
-	
-	//imgData->loadImage(openFileNameLabel.toAscii().data());
-	
-	if(loadImage(const_cast<char *>(m_FileName_compressed.toStdString().c_str()), compressed1d, sz_compressed, datatype_compressed)!= true)
-	{
-		QMessageBox::information(0, "Load Image", QObject::tr("File load failure"));
-		return;
-	}//careful
-	
-	cx=sz_compressed[0], cy=sz_compressed[1], cz=sz_compressed[2], cc=sz_compressed[3];
-	
-	channel_compressed_sz = cx*cy*cz;
-	
-	init_x = cx/2, init_y = cy/2, init_z = cz/2; 
-	
-	if(datatype_compressed ==1 )
-	{
-		dtype = V3D_UINT8;
-	}
-	else if(datatype_compressed == 2)
-	{
-		dtype = V3D_UINT16;
-	}
-	else if(datatype_compressed==4)
-	{
-		dtype = V3D_FLOAT32;
-	}
-	
-	qDebug()<<"compressedsxyx ..."<<cx<<cy<<cz;			
-	
-	setCTypeBasedOnImageData();
-	updateminmaxvalues();
-	
-	createGUI();
-	
-	scaleFactorInput = int(sy/cy);
-	
-	qDebug()<<"scaleFactorInput ..."<<scaleFactorInput;	
-	
-	xy_view->Setwidget(callback, m_FileName, curFilePath, scaleFactorInput);
-	
 }
 void ImageSetWidget::update_triview()
 {
@@ -1716,6 +1766,10 @@ void ImageSetWidget::update_triview()
 	cur_z = zValueSpinBox->text().toInt(); // / scaleFactor;
 	
 	xy_view->b_creadWindow = bcreadViews;
+	
+	yz_view->b_creadWindow = bcreadViews;
+	
+	zx_view->b_creadWindow = bcreadViews;
 	
 	xy_view->setImgData(imgPlaneZ,dtype,Ctype,sz_compressed,cur_x,cur_y,cur_z, compressed1d,p_vmax,p_vmin);
 	
@@ -1784,35 +1838,53 @@ void XMapView::mouseReleaseEvent(QMouseEvent * e)
 		long in_endx = (end_x > start_x)? end_x:start_x;
 		long in_endy = (end_y > start_y)? end_y:start_y;
 		
-		mousenumber++;
-//		switch(Ptype)
-//		{
-//			case imgPlaneZ:
-//				
-//				QMessageBox::information(0, "Load Image", QObject::tr("Your .Image file is load false."));
-//				
-//				printf("planez.");
-//				//update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);				
-//				break;
-//				
-//			case imgPlaneX:
-//				
-//				printf("planex.");
-//				
-//				//update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);				
-//				break;
-//				
-//			case imgPlaneY:
-//				
-//				printf("planey.");
-//				//update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);				break;
-//				
-//			default:
-//				return;
-//				break;
-//		}
 		
-		update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);
+		mousenumber++;
+		switch(Ptype)
+		{
+			case imgPlaneZ://xoy
+				
+				//QMessageBox::information(0, "Load Image", QObject::tr("zzzz"));
+				
+				update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);				
+				
+				//qDebug()<<"x y z "<< in_startx << in_starty << cur_x << in_endx << in_endy << cx << scaleFactor;
+				
+				//printf("x=%ld y=%ld z=%ld\n",in_startx*scaleFactor,in_starty*scaleFactor , cur_x*scaleFactor);
+				
+				break;
+				
+			case imgPlaneX://zoy
+				
+				//QMessageBox::information(0, "Load Image", QObject::tr("xxxxx"));
+//					
+//				qDebug()<<"x y z "<< in_startx << in_starty << cur_x << in_endx << in_endy << cx << scaleFactor;
+//				
+//				printf("x=%ld y=%ld z=%ld\n",in_startx*scaleFactor,in_starty*scaleFactor , cur_x*scaleFactor);
+//				qDebug()<<"x y z "<< in_startx*scaleFactor << in_starty*scaleFactor << cur_x*scaleFactor << in_endx*scaleFactor << in_endy*scaleFactor << cx*scaleFactor << scaleFactor;
+//				
+				//update_v3dviews(callback1, cur_x*scaleFactor, in_startx*scaleFactor, in_starty*scaleFactor,cx*scaleFactor, in_endx*scaleFactor, in_endy*scaleFactor);	
+			
+				update_v3dviews(callback1, cur_x*scaleFactor, in_starty*scaleFactor,in_startx*scaleFactor,cx*scaleFactor, in_endy*scaleFactor,in_endx*scaleFactor);
+				break;
+				
+			case imgPlaneY://xoz
+				
+				//QMessageBox::information(0, "Load Image", QObject::tr("yyyyy"));
+				
+				//qDebug()<<"x y z "<< in_startx << in_starty << cur_x << in_endx << in_endy << cx << scaleFactor;
+				
+				//printf("x=%ld y=%ld z=%ld\n",in_startx*scaleFactor,in_starty*scaleFactor , cur_x*scaleFactor);
+				//qDebug()<<"x y z "<< in_startx*scaleFactor << in_starty*scaleFactor << cur_x*scaleFactor << in_endx*scaleFactor << in_endy*scaleFactor << cx*scaleFactor << scaleFactor;
+				
+				update_v3dviews(callback1, in_startx*scaleFactor, cur_y*scaleFactor, in_starty*scaleFactor,in_endx*scaleFactor, cy*scaleFactor, in_endy*scaleFactor);		
+				
+				break;
+				
+			default:
+				return;
+				break;
+		}
 	}	
 //	 if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 //	 {
@@ -1925,26 +1997,84 @@ void XMapView::drawROI(QPainter *painter)
 }
 void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long start_y, long start_z, long end_x, long end_y, long end_z)
 {
+	long vx, vy, vz, vc;
+	
+	long tx = 0;
+	long ty = 0;
+	long tz = 0;
+    
+	qDebug()<<"start end x y z "<< start_x << start_y << start_z << end_x << end_y << end_z;
+   
+	qDebug()<<"vim x y z "<< vim.sz[0] <<vim.sz[1] << vim.sz[2] ;
+	
+	switch(Ptype)
+	{
+		case imgPlaneZ://xoy
+			
+			tz = start_z;
+			
+			start_z = tz - 10;
+			
+			end_z = tz + 10;
+			
+			if (start_z < 0)
+			{
+				start_z = 0;
+			}
+			if (end_z > vim.sz[2]) 
+			{
+				end_z=vim.sz[2];
+				
+			}
+			break;
+			
+		case imgPlaneX://zoy
+			
+			tx = start_x;
+			
+			start_x = tx - 10;
+			
+			end_x = tx + 10;
+			
+			if (start_x < 0)
+			{
+				start_x = 0;
+			}
+			if (end_x > vim.sz[0]) 
+			{
+				end_x = vim.sz[0];
+				
+			}
+			break;
+			
+		case imgPlaneY://xoz
+			
+			ty = start_y;
+			
+			start_y = ty - 10;
+			
+			end_y = ty + 10;
+			
+			if (start_y < 0)
+			{
+				start_y = 0;
+			}
+			if (end_y > vim.sz[1]) 
+			{
+				end_y = vim.sz[1];
+				
+			}			
+			break;
+			
+		default:
+			return;
+			break;
+	}
+	
 	
 	size_t start_t = clock();
-	long vx, vy, vz, vc;
-	long rx, ry, rz, rc;
+
 	
-    long tz = start_z;
-	
-	start_z = tz - 10;
-	
-	end_z = tz + 10;
-	
-	if (start_z < 0)
-	{
-		start_z = 0;
-	}
-	if (end_z > vim.sz[2]) 
-	{
-		end_z=vim.sz[2];
-		
-	}
 	vx = end_x - start_x ;//+ 1; // suppose the size same of all tiles
 	vy = end_y - start_y ;//+ 1;
 	vz = end_z - start_z ;//+ 1;
@@ -2035,7 +2165,6 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 			return;
 			
 		}
-		
 		//loadImage(imgSrcFile,relative1d,sz_relative,szo,(x_start-tile2vi_xs),(y_start-tile2vi_ys),(z_start-tile2vi_zs),(x_end-tile2vi_xs),(y_end-tile2vi_ys),(z_end-tile2vi_zs),datatype_relative);
 
 		vx = szo[0];
@@ -2255,7 +2384,7 @@ void XMapView::Setwidget(V3DPluginCallback &callback, QString m_FileName, QStrin
 		return ;
 	}
 	
-	scaleFactor = scaleFactorInput;
+	scaleFactor = (int)scaleFactorInput;
 	
 }
 

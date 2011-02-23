@@ -148,7 +148,7 @@ public:
 	
 	QString curFilePath;
 	
-	float scaleFactor;
+	int scaleFactor;
 	
 	static XMapView* m_show;
 	
