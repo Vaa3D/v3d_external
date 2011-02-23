@@ -1838,44 +1838,21 @@ void XMapView::mouseReleaseEvent(QMouseEvent * e)
 		long in_endx = (end_x > start_x)? end_x:start_x;
 		long in_endy = (end_y > start_y)? end_y:start_y;
 		
-		
 		mousenumber++;
 		switch(Ptype)
 		{
 			case imgPlaneZ://xoy
 				
-				//QMessageBox::information(0, "Load Image", QObject::tr("zzzz"));
-				
 				update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);				
-				
-				//qDebug()<<"x y z "<< in_startx << in_starty << cur_x << in_endx << in_endy << cx << scaleFactor;
-				
-				//printf("x=%ld y=%ld z=%ld\n",in_startx*scaleFactor,in_starty*scaleFactor , cur_x*scaleFactor);
-				
+								
 				break;
 				
 			case imgPlaneX://zoy
 				
-				//QMessageBox::information(0, "Load Image", QObject::tr("xxxxx"));
-//					
-//				qDebug()<<"x y z "<< in_startx << in_starty << cur_x << in_endx << in_endy << cx << scaleFactor;
-//				
-//				printf("x=%ld y=%ld z=%ld\n",in_startx*scaleFactor,in_starty*scaleFactor , cur_x*scaleFactor);
-//				qDebug()<<"x y z "<< in_startx*scaleFactor << in_starty*scaleFactor << cur_x*scaleFactor << in_endx*scaleFactor << in_endy*scaleFactor << cx*scaleFactor << scaleFactor;
-//				
-				//update_v3dviews(callback1, cur_x*scaleFactor, in_startx*scaleFactor, in_starty*scaleFactor,cx*scaleFactor, in_endx*scaleFactor, in_endy*scaleFactor);	
-			
 				update_v3dviews(callback1, cur_x*scaleFactor, in_starty*scaleFactor,in_startx*scaleFactor,cx*scaleFactor, in_endy*scaleFactor,in_endx*scaleFactor);
 				break;
 				
 			case imgPlaneY://xoz
-				
-				//QMessageBox::information(0, "Load Image", QObject::tr("yyyyy"));
-				
-				//qDebug()<<"x y z "<< in_startx << in_starty << cur_x << in_endx << in_endy << cx << scaleFactor;
-				
-				//printf("x=%ld y=%ld z=%ld\n",in_startx*scaleFactor,in_starty*scaleFactor , cur_x*scaleFactor);
-				//qDebug()<<"x y z "<< in_startx*scaleFactor << in_starty*scaleFactor << cur_x*scaleFactor << in_endx*scaleFactor << in_endy*scaleFactor << cx*scaleFactor << scaleFactor;
 				
 				update_v3dviews(callback1, in_startx*scaleFactor, cur_y*scaleFactor, in_starty*scaleFactor,in_endx*scaleFactor, cy*scaleFactor, in_endy*scaleFactor);		
 				
@@ -1896,35 +1873,35 @@ void XMapView::mouseReleaseEvent(QMouseEvent * e)
 void XMapView::mouseRightButtonPressEvent(QMouseEvent *e)
 {
 	//flag_syn = true;
-	if (QApplication::keyboardModifiers()==Qt::ControlModifier)
-	{
-		dragEndPosition = e->pos();
-		b_mouseend = false;
-		setCursor(Qt::ArrowCursor);
-		flag_syn = true;
-		end_x = dragEndPosition.x();
-		end_y = dragEndPosition.y();
-		end_z = cz ;
-		long tem;
-		if (start_x > end_x)
-		{
-			tem =end_x;
-			end_x = start_x;
-			end_x = tem ;
-		}
-		if (start_y > end_y)
-		{
-			tem =end_y;
-			end_y = start_y;
-			start_y = tem;
-		}
-		
-		update_v3dviews(callback1, start_x*scaleFactor, start_y*scaleFactor, start_z*scaleFactor,end_x*scaleFactor, end_y*scaleFactor, end_z*scaleFactor);
-		
+//	if (QApplication::keyboardModifiers()==Qt::ControlModifier)
+//	{
+//		dragEndPosition = e->pos();
+//		b_mouseend = false;
+//		setCursor(Qt::ArrowCursor);
+//		flag_syn = true;
+//		end_x = dragEndPosition.x();
+//		end_y = dragEndPosition.y();
+//		end_z = cz ;
+//		long tem;
+//		if (start_x > end_x)
+//		{
+//			tem =end_x;
+//			end_x = start_x;
+//			end_x = tem ;
+//		}
+//		if (start_y > end_y)
+//		{
+//			tem =end_y;
+//			end_y = start_y;
+//			start_y = tem;
+//		}
+//		
+//		update_v3dviews(callback1, start_x*scaleFactor, start_y*scaleFactor, start_z*scaleFactor,end_x*scaleFactor, end_y*scaleFactor, end_z*scaleFactor);
+//		
 		//qDebug()<<"rrrexyz...."<<end_x<<end_y<<end_z;
 		//update_v3dviews(mapCallback, dragStartPosition.x(),dragStartPosition.y(),cur_z, dragEndPosition.x(), dragEndPosition.y(),cz);
 		
-	}
+	//}
 }
 void XMapView::mouseLeftButtonPressEvent(QMouseEvent *e) //080101
 {
