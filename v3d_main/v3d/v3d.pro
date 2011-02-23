@@ -212,8 +212,6 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     v3d_core.h \
     xformwidget.h \
     mainwindow.h \
-    dialog_watershed_para.h \
-    FL_levelsetSegPara_dialog.h \
     DownloadManager.h \
     v3d_actions.h \
     ../worm_straighten_c/bdb_minus.h \
@@ -228,6 +226,8 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../jba/c++/convert_type2uint8.h \
     ../jba/c++/jba_affine_xform.h \
     ../jba/c++/remove_nonaffine_points.h 
+#    dialog_watershed_para.h 
+#    FL_levelsetSegPara_dialog.h 
 unix:HEADERS += ../basic_c_fun/imageio_mylib.h 
 #macx:HEADERS += ../basic_c_fun/imageio_mylib.h 
 
@@ -286,7 +286,6 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     import_tiffseries.cpp \
     vano_linker_loader_dialog.cpp \
     atlas_viewer.cpp \
-    dialog_watershed_para.cpp \
     DownloadManager.cpp \
     v3d_actions.cpp \
     ../worm_straighten_c/bdb_minus.cpp \
@@ -294,6 +293,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../worm_straighten_c/bfs_1root.cpp \
     ../worm_straighten_c/spline_cubic.cpp \
     ../jba/c++/histeq.cpp
+#    dialog_watershed_para.cpp 
 unix:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 #macx:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 

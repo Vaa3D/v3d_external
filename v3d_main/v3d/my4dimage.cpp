@@ -69,8 +69,8 @@ using namespace std;
 
 #include "rotate_image.h"
 #include "dialog_rotate.h"
-#include "dialog_watershed_para.h"
-#include "FL_levelsetSegPara_dialog.h"
+//#include "dialog_watershed_para.h"
+//#include "FL_levelsetSegPara_dialog.h"
 
 #include "histogramsimple.h"
 
