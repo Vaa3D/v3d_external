@@ -326,7 +326,7 @@ public:
 	void dofunc(const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output, QWidget *parent) {}	
 	void iViewer(V3DPluginCallback &callback, QWidget *parent);
 	
-	void resampling(V3DPluginCallback &callback, QWidget *paren);
+	void resampling_tc(V3DPluginCallback &callback, QWidget *paren);
 
 	void resampling_rawdata(V3DPluginCallback &callback, QWidget *parent);
 	

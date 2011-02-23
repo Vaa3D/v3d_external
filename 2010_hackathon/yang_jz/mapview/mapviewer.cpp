@@ -386,11 +386,11 @@ int CopyData_resamp_tc(T1 *apsInput, T2 *aspOutput,V3DLONG * sz,V3DLONG * szo,
 	long vx, vy, vz, vc;
 	long rx, ry, rz, rc;
 	
-	vx = (sz[0]+1)/resampling_size; // suppose the size same of all tiles
+	vx = (sz[0])/resampling_size; // suppose the size same of all tiles
 	
-	vy = (sz[1]+1)/resampling_size;
+	vy = (sz[1])/resampling_size;
 	
-	vz = (sz[2]+1)/resampling_size;
+	vz = (sz[2])/resampling_size;
 	
 	vc = sz[3];
 	
@@ -532,7 +532,7 @@ void MAPiewerPlugin::domenu(const QString &menu_name, V3DPluginCallback &callbac
     }
 	else if(menu_name == tr("generate thumbnail map from tc file")) 
 	{
-		resampling(callback, parent);
+		resampling_tc(callback, parent);
 	}
 	else if(menu_name == tr("generate thumbnail map from raw data")) 
 	{
@@ -543,7 +543,7 @@ void MAPiewerPlugin::domenu(const QString &menu_name, V3DPluginCallback &callbac
 	}
 }
 
-void MAPiewerPlugin::resampling(V3DPluginCallback &callback, QWidget *parent)
+void MAPiewerPlugin::resampling_tc(V3DPluginCallback &callback, QWidget *parent)
 {
 	QString m_FileName = QFileDialog::getOpenFileName(parent, QObject::tr("Open profile"), "", QObject::tr("Supported file (*.tc)"));
 	if(m_FileName.isEmpty())	
@@ -607,37 +607,38 @@ void MAPiewerPlugin::resampling(V3DPluginCallback &callback, QWidget *parent)
 	long end_y = sy;
 	long end_z = sz;
 	
-	vx = (sx+1)/target_pixel_size; // suppose the size same of all tiles
+	vx = (sx)/target_pixel_size; // suppose the size same of all tiles
 	
-	vy = (sy+1)/target_pixel_size;
+	vy = (sy)/target_pixel_size;
 	
-	vz = (sz+1)/target_pixel_size;
+	vz = (sz)/target_pixel_size;
 	
 	vc = vim.sz[3];
 	
-	//qDebug()<<"vx vy vz target_size"<<vx<<vy<<vz<<target_pixel_size;
+	qDebug()<<"vx vy vz target_size"<<vx<<vy<<vz<<target_pixel_size;
 	
 	long pagesz_vim = vx*vy*vz*vc;
+	
 	void *pData = NULL;
 
 	ImagePixelType datatype;
+	bool rdaa = true;
 	
 	//for(long ii=0; ii<1; ii++)
 	for(long ii=0; ii<vim.number_tiles; ii++)
 	{	
-		//cout << "satisfied image: "<< vim.lut[ii].fn_img << endl;
+		cout << "satisfied image: "<< vim.lut[ii].fn_img << endl;
 
 		char * curFileSuffix = getSurfix(const_cast<char *>(vim.lut[ii].fn_img.c_str()));
 
-		//cout << "suffix ... " << curFileSuffix << endl; // 
+		cout << "suffix ... " << curFileSuffix << endl; // 
 
 		QString curPath = curFilePath;
 
 		string fn = curPath.append( QString(vim.lut[ii].fn_img.c_str()) ).toStdString();
 
-		//qDebug()<<"testing..."<<curFilePath<< fn.c_str();
+		qDebug()<<"testing..."<<curFilePath<< fn.c_str();
 
-		//
 		char * imgSrcFile = const_cast<char *>(fn.c_str());
 
 		V3DLONG *sz_relative = 0; 
@@ -650,11 +651,10 @@ void MAPiewerPlugin::resampling(V3DPluginCallback &callback, QWidget *parent)
 		
 		if(loadImage_resampling(imgSrcFile,resampling,sz_relative,szo,datatype_relative,target_pixel_size)!=true)
 		{
-			QMessageBox::information(0, "Load Image", QObject::tr("Your .Image file is load false."));
+			QMessageBox::information(0, "Load Image", QObject::tr("Image File read failure."));
 			return;
 		
 		}
-
 		long tile2vi_xs = vim.lut[ii].start_pos[0]-vim.min_vim[0]; 
 		long tile2vi_xe = vim.lut[ii].end_pos[0]-vim.min_vim[0]; 
 		long tile2vi_ys = vim.lut[ii].start_pos[1]-vim.min_vim[1]; 
@@ -671,18 +671,22 @@ void MAPiewerPlugin::resampling(V3DPluginCallback &callback, QWidget *parent)
         
 		// loading relative imagg files
 		
-		if(datatype_relative ==1 )
+		if(datatype_relative ==1)
 		{
-			try
+			if(rdaa)
 			{
-				pData  = new unsigned char [pagesz_vim];
-				
-				memset(pData, 0, sizeof(unsigned char)*pagesz_vim);
-			}
-			catch (...) 
-			{
-				printf("Fail to allocate memory.\n");
-				return ;
+					try
+				{
+					pData  = new unsigned char [pagesz_vim];
+					
+					memset(pData, 0, sizeof(unsigned char)*pagesz_vim);
+				}
+				catch (...) 
+				{
+					printf("Fail to allocate memory.\n");
+					return ;
+				}
+				rdaa = false;
 			}
 			
 			datatype = V3D_UINT8;
@@ -695,7 +699,9 @@ void MAPiewerPlugin::resampling(V3DPluginCallback &callback, QWidget *parent)
 		}
 		else if(datatype_relative == 2)
 		{
-			try
+			if(rdaa)
+			{
+				try
 			{
 				pData = new unsigned short [pagesz_vim]; 
 				memset(pData, 0, sizeof(unsigned short)*pagesz_vim);
@@ -706,6 +712,8 @@ void MAPiewerPlugin::resampling(V3DPluginCallback &callback, QWidget *parent)
 				if (pData) {delete []pData; pData=0;}
 				return;
 			}
+				rdaa = false;
+		}
 			
 			datatype = V3D_UINT16;
 			CopyData_resamp_tc((unsigned short*)resampling,(unsigned short*)pData,sz1,szo,
@@ -717,6 +725,8 @@ void MAPiewerPlugin::resampling(V3DPluginCallback &callback, QWidget *parent)
 		else if(datatype_relative==4)
 		{
 			//float*	pData = NULL;
+			if(rdaa)
+			{
 			try
 			{
 				pData = new float [pagesz_vim];
@@ -728,7 +738,8 @@ void MAPiewerPlugin::resampling(V3DPluginCallback &callback, QWidget *parent)
 				if (pData) {delete []pData; pData=0;}
 				return;
 			}
-			
+				rdaa = false;
+			}
 			datatype = V3D_FLOAT32;
 			CopyData_resamp_tc((float*)resampling,(float*)pData,sz1,szo,
 								start_x,start_y,start_z,
@@ -1491,10 +1502,12 @@ void ImageSetWidget::createGUI()
 	yValueSpinBox->setMaximum(cy-1); yValueSpinBox->setMinimum(0); yValueSpinBox->setValue(cy/2); yValueSpinBox->setSingleStep(int(scaleFactor));
 	
 	zSliderLabel = new QLabel("Z", coordGroup);
+	
 	zValueSpinBox = new QSpinBox;
 	
 	zValueSpinBox->setMaximum(cz-1); zValueSpinBox->setMinimum(0); zValueSpinBox->setValue(cz/2); zValueSpinBox->setSingleStep(int(scaleFactor));
 
+	
 	// focus draw group
 	
 	QGroupBox * landmarkGroup = new QGroupBox(mainGroup);
@@ -1746,6 +1759,8 @@ void XMapView::mouseReleaseEvent(QMouseEvent * e)
 //		switch(Ptype)
 //		{
 //			case imgPlaneZ:
+//				
+//				QMessageBox::information(0, "Load Image", QObject::tr("Your .Image file is load false."));
 //				
 //				printf("planez.");
 //				//update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);				
@@ -2103,8 +2118,8 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 				{
 					if(loadImage(imgSrcFile,relative1d,sz_relative,szo,(x_start-tile2vi_xs),(y_start-tile2vi_ys),(z_start-tile2vi_zs),(x_end-tile2vi_xs),(y_end-tile2vi_ys),(z_end-tile2vi_zs),datatype_relative)!=true)
 					{
-						QMessageBox::information(0, "Load Image", QObject::tr("Your .Image file is load false."));
-						return;
+						//QMessageBox::information(0, "Load Image", QObject::tr("Your .Image file is load false."));
+						//return;
 					}
 					
 					switch (Datatype)
@@ -2163,21 +2178,21 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 		
 	}else 
 	{		
-		if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to use the existing window?"), QMessageBox::Yes, QMessageBox::No))
-		{
-			curwin = callback->currentImageWindow();
-			callback->setImage(curwin, &p4DImage);
-            QString curImageName2 = callback->getImageName(curwin);
-			callback->setImageName(curwin, curImageName2);
-			callback->updateImageWindow(curwin);
-			callback->pushImageIn3DWindow(curwin);
-			mousenumber--;
-			if (mousenumber < 0) 
-			{
-				mousenumber = 1;
-			}
-		}
-		else
+		//if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to use the existing window?"), QMessageBox::Yes, QMessageBox::No))
+//		{
+//			curwin = callback->currentImageWindow();
+//			callback->setImage(curwin, &p4DImage);
+//            QString curImageName2 = callback->getImageName(curwin);
+//			callback->setImageName(curwin, curImageName2);
+//			callback->updateImageWindow(curwin);
+//			callback->pushImageIn3DWindow(curwin);
+//			mousenumber--;
+//			if (mousenumber < 0) 
+//			{
+//				mousenumber = 1;
+//			}
+//		}
+//		else
 		{
 			file.sprintf("%d",mousenumber);
 			QString curImageName1 = curFilePath + "Map Image" + file;
