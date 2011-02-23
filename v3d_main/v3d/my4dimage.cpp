@@ -93,9 +93,9 @@ using namespace std;
 
 //#include "../lobeseg/lobeseg.h"
 
-#include "../cellseg/FL_cellSegmentation3D.h"
-#include "../cellseg/FL_main_brainseg.h"
-#include "../cellseg/template_matching_seg.h"
+//#include "../cellseg/FL_cellSegmentation3D.h"
+//#include "../cellseg/FL_main_brainseg.h"
+//#include "../cellseg/template_matching_seg.h"
 #include "template_matching_cellseg_dialog.h"
 
 #include "../gmm/fit_gmm.h"
