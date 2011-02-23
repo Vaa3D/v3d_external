@@ -5377,7 +5377,7 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 				}
 				else if(datatype_relative == V3D_UINT16)
 				{
-					datatype = V3D_UINT8;
+					datatype = V3D_UINT16;
 
 					try
 					{
@@ -5396,7 +5396,7 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 				}
 				else if(datatype_relative == V3D_FLOAT32)
 				{
-					datatype = V3D_UINT8;
+					datatype = V3D_FLOAT32;
 					
 					try
 					{
