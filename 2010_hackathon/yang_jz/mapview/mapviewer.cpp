@@ -4,6 +4,7 @@
 
 #include "mapviewer.h"
 #include "stackutil-11.h"
+#include "v3d_message.h" 
 #include <QPainter>
 
 //Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
@@ -954,7 +955,9 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 	
 	char * thumnalilFile = const_cast<char *>(ff.toStdString().c_str());
 	
-	vim1.fn_thumbnail = thumnalilFile ;
+	strcpy(vim1.fn_thumbnail, thumnalilFile);
+		
+	//vim1.fn_thumbnail = "stitched_image.raw";
 	
 	vim1.b_thumbnailcreated = true;
 	
@@ -1597,11 +1600,11 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 	
 	string filename = m_FileName.toStdString();
 	
-	//qDebug()<<"filename ..."<<filename.c_str();
+	qDebug()<<"filename ..."<<filename.c_str();
 
 	if(vim.y_load(filename)!= true)
 	{
-		//QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
+		QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
 		return ;
 	}
 	
@@ -1609,7 +1612,7 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 	
 	long sx=vim.sz[0], sy=vim.sz[1], sz=vim.sz[2];
 	
-	//qDebug()<<"sxyx ..."<<sx<<sy<<sz;
+	qDebug()<<"sxyx ..."<<sx<<sy<<sz;
 	//****************************************************************
 	// suppose compressed image saved as .tif
 	
@@ -1680,9 +1683,6 @@ void ImageSetWidget::update_triview()
 		
 }
 
-
-
-
 template <class T> QPixmap copyRaw2QPixmap(const T * pdata, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3,ImageDisplayColorType Ctype, 
 										   V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,ImagePlaneDisplayType disType, 
 										   double *p_vmax, double *p_vmin)
@@ -1743,29 +1743,30 @@ void XMapView::mouseReleaseEvent(QMouseEvent * e)
 		long in_endy = (end_y > start_y)? end_y:start_y;
 		
 		mousenumber++;
-		switch(Ptype)
-		{
-			case imgPlaneZ:
-				
-				//v3d_msg("planez.");
-				//update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);				
-				break;
-				
-			case imgPlaneX:
-				//v3d_msg("planex.");
-				
-				//update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);				
-				break;
-				
-			case imgPlaneY:
-				
-				//v3d_msg("planey.");
-				//update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);				break;
-				
-			default:
-				return;
-				break;
-		}
+//		switch(Ptype)
+//		{
+//			case imgPlaneZ:
+//				
+//				printf("planez.");
+//				//update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);				
+//				break;
+//				
+//			case imgPlaneX:
+//				
+//				printf("planex.");
+//				
+//				//update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);				
+//				break;
+//				
+//			case imgPlaneY:
+//				
+//				printf("planey.");
+//				//update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);				break;
+//				
+//			default:
+//				return;
+//				break;
+//		}
 		
 		update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);
 	}	
