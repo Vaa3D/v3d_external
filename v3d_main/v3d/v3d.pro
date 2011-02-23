@@ -317,9 +317,9 @@ FORMS += landmark_property.ui \
     dialog_update_list.ui \
     dialog_update_options.ui \
     dialog_update_downloading.ui \
-    dialog_update_checking.ui \
-    FL_watershedSegPara.ui \
-    FL_levelsetSegPara.ui 
+    dialog_update_checking.ui 
+#    FL_watershedSegPara.ui \
+#    FL_levelsetSegPara.ui 
 
 RESOURCES += v3d.qrc
 RESOURCES += ../3drenderer/3drenderer.qrc
