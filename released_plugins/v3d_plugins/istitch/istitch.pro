@@ -1,7 +1,7 @@
 
 TEMPLATE      = lib
 CONFIG       += qt plugin warn_off
-#CONFIG       += x86_64
+#CONFIG       += release x86_64
 
 V3DMAINDIR = ../../../v3d_main
 
@@ -28,5 +28,5 @@ LIBS	     += -lv3dfftw3f -lv3dfftw3f_threads
 TARGET        = $$qtLibraryTarget(imageStitch)
 DESTDIR       = ../../v3d/plugins/image_stitching/istitch
 
-RESOURCE     += readme
+RESOURCE     += istitch.qrc
 

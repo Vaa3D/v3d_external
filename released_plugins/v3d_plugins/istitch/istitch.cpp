@@ -1959,7 +1959,20 @@ void IStitchPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callbac
 	}
 	else if (menu_name == tr("About"))
 	{
-		QMessageBox::information(parent, "Version info", QString("ImageStitching Plugin %1 (March 1, 2010) developed by Yang Yu. (Peng Lab, Janelia Research Farm Campus, HHMI)").arg(getPluginVersion()));
+		QMessageBox::information(parent, "Version info", QString("ImageStitching Plugin %1 (March 1, 2010) developed by Yang Yu. (Peng Lab, Janelia Research Farm Campus, HHMI)").arg(getPluginVersion()).append("\n"
+																"\n Tiles Configuration File Format (.tc)"
+																"\n # thumbnail file "
+																"\n [name of thumbnail file]"
+																"\n # tiles "
+																"\n [how many tiles]"
+																"\n # dimensions (XYZC) "
+																"\n [dimX dimY dimZ dimC]"
+																"\n # origin (XYZ) "
+																"\n [physics_start_position_x physics_start_position_y physics_start_position_z]"
+																"\n # resolution (XYZ) "
+																"\n [X Y Z]"
+																"\n # image coordinates look up table "
+																"\n [tile_path_name (offset2ref_s_x, offset2ref_s_y, offset2ref_s_z) (offset2ref_e_x, offset2ref_e_y, offset2ref_e_z)]"));
 		return;
 	}
 }
