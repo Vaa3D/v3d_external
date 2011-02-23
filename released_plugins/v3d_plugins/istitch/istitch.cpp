@@ -3752,7 +3752,34 @@ int pairwise_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 	Image4DSimple* subject = callback.getImage(win_list[i1]);
 	Image4DSimple* target = callback.getImage(win_list[i2]);
 	
-	QString m_InputFileName = callback.getImageName(win_list[i1]);
+	QString m_InputFileName[2];
+	m_InputFileName[0] = callback.getImageName(win_list[i1]);
+	m_InputFileName[1] = callback.getImageName(win_list[i2]);
+	
+	QString fn1 = m_InputFileName[0]; /// .tc configuration file
+	QString fn2 = m_InputFileName[1];
+	fn1.chop(4);
+	fn2.chop(4);
+	QString tmp_filename = fn1.append("_").append(fn2.remove(0, QFileInfo(fn2).path().length()+1)).append(".tc");
+	
+	qDebug()<<tmp_filename;
+	
+	Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim;
+	
+	for(V3DLONG i=0; i<2; i++)
+	{
+		V3DLONG offset[3];
+		offset[0]=0; offset[1]=0; offset[2]=0;
+		
+		indexed_t<V3DLONG, REAL> idx_t(offset);
+		
+		idx_t.n = i;
+		idx_t.ref_n = 0; // init with default values
+		idx_t.fn_image = m_InputFileName[i].toStdString();
+		idx_t.score = 0;
+		
+		vim.tilesList.push_back(idx_t);
+	}
 	
 	if (!subject || !target)
 	{
@@ -3774,6 +3801,13 @@ int pairwise_stitching(V3DPluginCallback2 &callback, QWidget *parent)
     V3DLONG sz = subject->getZDim(); 
 	V3DLONG sc = subject->getCDim();
 	
+	(&vim.tilesList.at(0))->sz_image = new V3DLONG [4];
+	
+	(&vim.tilesList.at(0))->sz_image[0] = sx;
+	(&vim.tilesList.at(0))->sz_image[1] = sy;
+	(&vim.tilesList.at(0))->sz_image[2] = sz;
+	(&vim.tilesList.at(0))->sz_image[3] = sc;
+	
 	V3DLONG pagesz_sub = sx*sy*sz;
 	
 	unsigned char* target1d = target->getRawData();
@@ -3782,6 +3816,13 @@ int pairwise_stitching(V3DPluginCallback2 &callback, QWidget *parent)
     V3DLONG ty = target->getYDim();
     V3DLONG tz = target->getZDim(); 
 	V3DLONG tc = target->getCDim();
+	
+	(&vim.tilesList.at(1))->sz_image = new V3DLONG [4];
+	
+	(&vim.tilesList.at(1))->sz_image[0] = tx;
+	(&vim.tilesList.at(1))->sz_image[1] = ty;
+	(&vim.tilesList.at(1))->sz_image[2] = tz;
+	(&vim.tilesList.at(1))->sz_image[3] = tc;
 	
 	V3DLONG pagesz_tar = tx*ty*tz;
 	
@@ -3854,6 +3895,15 @@ int pairwise_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 	offset[1] = pos_y - sy +1;
 	offset[2] = pos_z - sz +1;
 	
+	(&vim.tilesList.at(1))->offsets[0] = -offset[0];
+	(&vim.tilesList.at(1))->offsets[1] = -offset[1];
+	(&vim.tilesList.at(1))->offsets[2] = -offset[2];
+	
+	// construct lookup table
+	vim.y_clut(vim.tilesList.size());
+	// save lut
+	vim.y_save(tmp_filename.toStdString());
+	
 	qDebug("offset[0] %ld offset[1] %ld offset[2] %ld pos_x %ld pos_y %ld pos_z %ld", offset[0], offset[1], offset[2], pos_x, pos_y, pos_z);
 	
 	V3DLONG new_sz0, new_sz1, new_sz2, pagesz_overlap;
@@ -3903,7 +3953,7 @@ int pairwise_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 		}
 		
 		//
-		success = pwi_fusing<unsigned char>((unsigned char *)p_mask, (unsigned char *)data1d, (unsigned char *)subject1d, szSub, (unsigned char *)target1d, szTar, offset, axes_show, m_InputFileName, new_sz0, new_sz1, new_sz2, pagesz_overlap, sub_c, tar_c);
+		success = pwi_fusing<unsigned char>((unsigned char *)p_mask, (unsigned char *)data1d, (unsigned char *)subject1d, szSub, (unsigned char *)target1d, szTar, offset, axes_show, m_InputFileName[0], new_sz0, new_sz1, new_sz2, pagesz_overlap, sub_c, tar_c);
 		
 		//display
 		Image4DSimple p4DImage;
@@ -3954,7 +4004,7 @@ int pairwise_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 		}
 		
 		//
-		success = pwi_fusing<unsigned short>((unsigned short *)p_mask, (unsigned short *)data1d, (unsigned short *)subject1d, szSub, (unsigned short *)target1d, szTar, offset, axes_show, m_InputFileName, new_sz0, new_sz1, new_sz2, pagesz_overlap, sub_c, tar_c);
+		success = pwi_fusing<unsigned short>((unsigned short *)p_mask, (unsigned short *)data1d, (unsigned short *)subject1d, szSub, (unsigned short *)target1d, szTar, offset, axes_show, m_InputFileName[0], new_sz0, new_sz1, new_sz2, pagesz_overlap, sub_c, tar_c);
 		
 		//display
 		Image4DSimple p4DImage;
@@ -4005,7 +4055,7 @@ int pairwise_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 		}
 		
 		//
-		success = pwi_fusing<REAL>((REAL *)p_mask, (REAL *)data1d, (REAL *)subject1d, szSub, (REAL *)target1d, szTar, offset, axes_show, m_InputFileName, new_sz0, new_sz1, new_sz2, pagesz_overlap, sub_c, tar_c);
+		success = pwi_fusing<REAL>((REAL *)p_mask, (REAL *)data1d, (REAL *)subject1d, szSub, (REAL *)target1d, szTar, offset, axes_show, m_InputFileName[0], new_sz0, new_sz1, new_sz2, pagesz_overlap, sub_c, tar_c);
 		
 		//display
 		Image4DSimple p4DImage;
@@ -4031,7 +4081,7 @@ int pairwise_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 		return -1;
 	}
 	
-	if(success!=true) return false;
+	if(!success) return false;
 	
 	return true;
 	

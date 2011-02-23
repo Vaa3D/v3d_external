@@ -678,7 +678,7 @@ public:
 	double rez_x, rez_y, rez_z; // (1, 1, 1)
 	
 	// thumbnail file
-	char *fn_thumbnail;
+	char fn_thumbnail[2048];
 	bool b_thumbnailcreated;
 	
 };
