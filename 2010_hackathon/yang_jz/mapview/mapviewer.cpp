@@ -1746,20 +1746,20 @@ void XMapView::mouseReleaseEvent(QMouseEvent * e)
 		switch(Ptype)
 		{
 			case imgPlaneZ:
-				//sx = cp.x(); sy = cp.y(); sz = imgData->curFocusZ;
-				v3d_msg("planez.");
+				
+				//v3d_msg("planez.");
 				//update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);				
 				break;
 				
 			case imgPlaneX:
-				v3d_msg("planex.");
-				//sz = cp.x(); sy = cp.y(); sx = imgData->curFocusX;
+				//v3d_msg("planex.");
+				
 				//update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);				
 				break;
 				
 			case imgPlaneY:
-				//sx = cp.x(); sz = cp.y(); sy = imgData->curFocusY;
-				v3d_msg("planey.");
+				
+				//v3d_msg("planey.");
 				//update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);				break;
 				
 			default:
@@ -1767,7 +1767,7 @@ void XMapView::mouseReleaseEvent(QMouseEvent * e)
 				break;
 		}
 		
-		//update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);
+		update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);
 	}	
 //	 if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 //	 {
