@@ -542,7 +542,6 @@ void MAPiewerPlugin::domenu(const QString &menu_name, V3DPluginCallback &callbac
 	}
 }
 
-
 void MAPiewerPlugin::resampling(V3DPluginCallback &callback, QWidget *parent)
 {
 	QString m_FileName = QFileDialog::getOpenFileName(parent, QObject::tr("Open profile"), "", QObject::tr("Supported file (*.tc)"));
@@ -1743,9 +1742,32 @@ void XMapView::mouseReleaseEvent(QMouseEvent * e)
 		long in_endx = (end_x > start_x)? end_x:start_x;
 		long in_endy = (end_y > start_y)? end_y:start_y;
 		
-	//	update_v3dviews(callback1, start_x*scaleFactor, start_y*scaleFactor, start_z*scaleFactor,end_x*scaleFactor, end_y*scaleFactor, end_z*scaleFactor);
 		mousenumber++;
-		update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);
+		switch(Ptype)
+		{
+			case imgPlaneZ:
+				//sx = cp.x(); sy = cp.y(); sz = imgData->curFocusZ;
+				v3d_msg("planez.");
+				//update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);				
+				break;
+				
+			case imgPlaneX:
+				v3d_msg("planex.");
+				//sz = cp.x(); sy = cp.y(); sx = imgData->curFocusX;
+				//update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);				
+				break;
+				
+			case imgPlaneY:
+				//sx = cp.x(); sz = cp.y(); sy = imgData->curFocusY;
+				v3d_msg("planey.");
+				//update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);				break;
+				
+			default:
+				return;
+				break;
+		}
+		
+		//update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);
 	}	
 //	 if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 //	 {
