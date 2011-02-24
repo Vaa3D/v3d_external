@@ -291,7 +291,13 @@ class V3dMovie:
                                         'channelR' : 'setChannelR',
                                         'channelG' : 'setChannelG',
                                         'channelB' : 'setChannelB',
-                                        'frontCut' : 'setFrontCut'}
+                                        'frontCut' : 'setFrontCut',
+                                        # need special logic to set renderMode
+                                        # ; these getters do not exist
+                                        'getRenderMode_Cs3d' : 'setRenderMode_Cs3d',
+                                        'getRenderMode_Mip' : 'setRenderMode_Mip',
+                                        'getRenderMode_Alpha' : 'setRenderMode_Alpha',
+                                        }
 
     def _setup_interpolation_lists(self):
         # Create dictionary for lists of parameters
@@ -417,6 +423,11 @@ class V3dMovie:
                     frame_index_hint)
         return V3dMovieFrame(camera_position)
         
+    def generate_final_frame_view(self):
+        frame = self.key_frames[-1]
+        self.set_current_v3d_camera(frame.camera_position)
+        self.image_window.update()
+        
     def generate_frame_views(self):
         """
         Unlike generate_frame_info(), generate_frame_views() actually
@@ -474,6 +485,8 @@ class V3dMovie:
             if 'hannel' in getter_name:
                 # needs to be boolean
                 val = (val > 0.5)
+            if 'RenderMode' in getter_name:
+                val = (val > 0.5) # boolean
             fn = getattr(self.view_control, setter_name)
             fn(val) # set parameter in V3D view_control
             # print "Setting parameter %s to %s" % (getter_name, val)
@@ -500,10 +513,21 @@ class V3dMovie:
         self.view_control.absoluteRotPose()
         camera = CameraPosition()
         for param_name in self.view_control_param_names:
+            if 'RenderMode' in param_name:
+                continue
             val = getattr(self.view_control, param_name)()
             setattr(camera, param_name, val)
             # print "Parameter %s = %s" % (param_name, val)
-        # But rotation we handle explicitly
+        # Handle render mode explicitly
+        # enum RenderMode {rmCrossSection=0, rmAlphaBlending, rmMaxIntensityProjection };
+        # virtual void setRenderMode_Mip(bool b);
+        # virtual void setRenderMode_Alpha(bool b);
+        # virtual void setRenderMode_Cs3d(bool b);
+        rm = self.view_control.renderMode()
+        camera.getRenderMode_Cs3d = (rm == 0)
+        camera.getRenderMode_Alpha = (rm == 1)
+        camera.getRenderMode_Mip = (rm == 2) # boolean        
+        # Rotation we handle explicitly
         # convert to radians
         DegToRad = math.pi / 180.0
         xRot = camera.xRot * DegToRad

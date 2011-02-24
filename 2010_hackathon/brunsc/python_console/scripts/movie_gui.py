@@ -27,25 +27,34 @@ class MovieGui(QtGui.QDialog):
         self.movie = movie_maker.V3dMovie()
         self.connect(self.ui.addCurrentViewButton, QtCore.SIGNAL('clicked()'), 
                self.append_view)
-        self.playButton = self.ui.buttonBox.button(QtGui.QDialogButtonBox.Apply)
-        self.playButton.setText("Play")
         iconPath = os.path.join(os.path.dirname(movie_maker.__file__), 'icons')
         self.playIcon = QtGui.QIcon(os.path.join(iconPath, "play.png"))
         self.recordIcon = QtGui.QIcon(os.path.join(iconPath, "record.png"))
         self.pauseIcon = QtGui.QIcon(os.path.join(iconPath, "pause.png"))
         self.reelIcon = QtGui.QIcon(os.path.join(iconPath, "film_reel.png"))
         self.skipBackIcon = QtGui.QIcon(os.path.join(iconPath, "skip_backward.png"))
+        self.skipAheadIcon = QtGui.QIcon(os.path.join(iconPath, "skip_ahead.png"))
         self.setWindowIcon(self.reelIcon)
+        self.beginningButton = self.ui.buttonBox.addButton('Beginning', QtGui.QDialogButtonBox.ActionRole)
+        self.beginningButton.setIcon(self.skipBackIcon)
+        self.beginningButton.setEnabled(False)
+        self.connect(self.beginningButton, QtCore.SIGNAL('clicked()'),
+                     self.on_beginning_pressed)
+        # self.playButton = self.ui.buttonBox.button(QtGui.QDialogButtonBox.Apply)
+        # self.ui.buttonBox.button(QtGui.QDialogButtonBox.Apply).hide()
+        self.ui.frameCartoonLabel.hide()
+        self.playButton = self.ui.buttonBox.addButton('Play', QtGui.QDialogButtonBox.ActionRole)
+        self.playButton.setText("Play")
         self.playButton.setIcon(self.playIcon)
         self.connect(self.playButton, QtCore.SIGNAL('clicked()'),
                self.on_play_pause_pressed)
-        self.resetButton = self.ui.buttonBox.addButton('Reset', QtGui.QDialogButtonBox.ActionRole)
-        self.resetButton.setIcon(self.skipBackIcon)
-        self.resetButton.setEnabled(False)
-        self.connect(self.resetButton, QtCore.SIGNAL('clicked()'),
-                     self.on_reset_pressed)
+        self.endButton = self.ui.buttonBox.addButton('End', QtGui.QDialogButtonBox.ActionRole)
+        self.endButton.setIcon(self.skipAheadIcon)
+        self.endButton.setEnabled(False)
+        self.connect(self.endButton, QtCore.SIGNAL('clicked()'),
+                     self.on_end_pressed)
         self.saveButton = self.ui.buttonBox.button(QtGui.QDialogButtonBox.Save)
-        self.saveButton.setText("Save Frames...")
+        self.saveButton.setText("Save images...")
         self.connect(self.saveButton, QtCore.SIGNAL('clicked()'),
                self.save)
         self.connect(self.ui.deleteAllButton, QtCore.SIGNAL('clicked()'),
@@ -84,19 +93,20 @@ class MovieGui(QtGui.QDialog):
             self.play_generator = None
             self.playButton.setText('Play')
             self.playButton.setIcon(self.playIcon)
-            self.resetButton.setEnabled(False)
             self.updateKeyFrameLabel() # enable play button?
         elif 'playing' == state:
             if None == self.play_generator:
                 self.play_generator = self.movie.generate_play_frames()
             self.playButton.setText('Pause')
             self.playButton.setIcon(self.pauseIcon)
-            self.resetButton.setEnabled(True)
+            self.endButton.setEnabled(True)
+            self.beginningButton.setEnabled(True)
         elif 'paused' == state:
             assert None != self.play_generator
             self.playButton.setText('Play')
             self.playButton.setIcon(self.playIcon)
-            self.resetButton.setEnabled(True)
+            self.endButton.setEnabled(True)
+            self.beginningButton.setEnabled(True)
         else:
             assert(False)
         
@@ -113,15 +123,14 @@ class MovieGui(QtGui.QDialog):
         else: # stop
             assert(False)
 
-    def on_reset_pressed(self):
-        if 'ready' == self.play_state:
-            pass # should not happen, but whatever...
-        elif ('playing' == self.play_state) or ('paused' == self.play_state):
-            self.movie.generate_play_frames().next()
-            self._enter_state('ready')
-        else:
-            assert(False)
+    def on_beginning_pressed(self):
+        self.movie.generate_play_frames().next()
+        self._enter_state('ready')
         
+    def on_end_pressed(self):
+        self.movie.generate_final_frame_view()
+        self._enter_state('ready')
+
     def save(self):
         dir = QtGui.QFileDialog.getExistingDirectory(
                     self,
@@ -150,18 +159,24 @@ class MovieGui(QtGui.QDialog):
         if nframes == 0:
             self.ui.keyFrameLabel.setText("No key frames added")
             self.playButton.setEnabled(False)
+            self.beginningButton.setEnabled(False)
+            self.endButton.setEnabled(False)
             self.saveButton.setEnabled(False)
             self.ui.deleteAllButton.setEnabled(False)
             self.ui.frameIntervalLineEdit.setEnabled(False)
         elif nframes == 1:
             self.ui.keyFrameLabel.setText("One key frame added")
             self.playButton.setEnabled(False)
+            self.beginningButton.setEnabled(True)
+            self.endButton.setEnabled(True)
             self.saveButton.setEnabled(False)
             self.ui.deleteAllButton.setEnabled(True)
             self.ui.frameIntervalLineEdit.setEnabled(True)
         else:
             self.ui.keyFrameLabel.setText("%d key frames added" % nframes)
             self.playButton.setEnabled(True)
+            self.beginningButton.setEnabled(True)
+            self.endButton.setEnabled(True)
             self.saveButton.setEnabled(True)
             self.ui.deleteAllButton.setEnabled(True)
             self.ui.frameIntervalLineEdit.setEnabled(True)

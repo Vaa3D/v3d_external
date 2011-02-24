@@ -1,7 +1,7 @@
 set(V3D_SRCS
   main.cpp
   dialog_rotate.cpp
-  dialog_watershed_para.cpp
+  # dialog_watershed_para.cpp
   idrawmain.cpp
   import_filelistname.cpp
   import_tiffseries.cpp
@@ -48,8 +48,8 @@ QT4_WRAP_UI(QT_UI_SRCS
   dialog_maskroi.ui
   # dialog_pointcloudatlas_linkerloader.ui
   # dialog_vano_linkerloader.ui
-  FL_levelsetSegPara.ui
-  FL_watershedSegPara.ui
+  # FL_levelsetSegPara.ui
+  # FL_watershedSegPara.ui
   import_filelist_dialog.ui
   import_images_tool.ui
   dialog_url_entry.ui
@@ -58,7 +58,7 @@ QT4_WRAP_UI(QT_UI_SRCS
 QT4_WRAP_CPP(QT_MOC_SRCS
   atlas_viewer.h
   dialog_rotate.h
-  dialog_watershed_para.h
+  # dialog_watershed_para.h
   dialog_imagecrop_bbox.h
   dialog_maskroi.h
   dialog_imageresample.h

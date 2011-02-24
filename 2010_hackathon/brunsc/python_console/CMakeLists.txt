@@ -242,6 +242,45 @@ if(V3D_PYTHON_CONSOLE_GENERATE_API_DOCS)
     endif()
 endif()
 
+# Update movie maker ui files
+# on mac /System/Library/Frameworks/Python.framework/Versions/2.6/bin/pyuic4
+find_program(PYUIC4_EXE pyuic4
+    PATHS 
+        /System/Library/Frameworks/Python.framework/Versions/Current/bin
+)
+if(PYUIC4_EXE)
+    set(ui_input "${CMAKE_CURRENT_SOURCE_DIR}/scripts/movie_maker_dialog.ui")
+    set(ui_output "${CMAKE_CURRENT_SOURCE_DIR}/scripts/ui_movie_maker_dialog_pyqt4.py")
+    get_filename_component(ui_input_l "${ui_input}" NAME)
+    get_filename_component(ui_output_l "${ui_output}" NAME)
+    add_custom_command(
+        OUTPUT "${ui_output}"
+        COMMAND "${PYUIC4_EXE}" -o ${ui_output_l} ${ui_input_l}
+        DEPENDS "${ui_input}"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/scripts"
+        COMMENT "Updating movie maker PyQt4 user interface"
+    )
+    add_custom_target(MovieMakerPyQt4Ui DEPENDS "${ui_output}")
+    add_dependencies(PythonConsolePlugin MovieMakerPyQt4Ui)
+endif()
+find_program(PYSIDEUIC_EXE pyside-uic)
+if(PYSIDEUIC_EXE)
+    set(ui_input "${CMAKE_CURRENT_SOURCE_DIR}/scripts/movie_maker_dialog.ui")
+    set(ui_output "${CMAKE_CURRENT_SOURCE_DIR}/scripts/ui_movie_maker_dialog_pyside.py")
+    get_filename_component(ui_input_l "${ui_input}" NAME)
+    get_filename_component(ui_output_l "${ui_output}" NAME)
+    add_custom_command(
+        OUTPUT "${ui_output}"
+        COMMAND "${PYSIDEUIC_EXE}" -o ${ui_output_l} ${ui_input_l}
+        DEPENDS "${ui_input}"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/scripts"
+        COMMENT "Updating movie maker PySide user interface"
+    )
+    add_custom_target(MovieMakerPySideUi DEPENDS "${ui_output}")
+    add_dependencies(PythonConsolePlugin MovieMakerPySideUi)
+endif()
+    
+
 ########################################
 # Install python scripts and libraries #
 ########################################
