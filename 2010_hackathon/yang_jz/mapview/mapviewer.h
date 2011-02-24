@@ -231,7 +231,7 @@ class ImageSetWidget : public QWidget//,public QDialog
 	Q_OBJECT
 	
 public:
-	 ImageSetWidget(V3DPluginCallback &callback, QWidget *parent,QString m_FileName, QString curFilePathInput, float scaleFactorInput);
+	 ImageSetWidget(V3DPluginCallback &callback, QWidget *parent,QString m_FileName, QString curFilePathInput, float scaleFactorInput,bool &b_shouw);
 	
 	void update_v3dviews(V3DPluginCallback *callback, long start_x, long start_y, long start_z, long end_x, long end_y, long end_z);
 	

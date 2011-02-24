@@ -49,7 +49,9 @@ template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T * pdata,
 		tmpr_min = p_vmin[0];
 	}
 	
-	int channel_compressed_sz = sz0*sz1*sz2;
+	long channel_sz = sz0*sz1*sz2;
+	
+	long offset_k = sz0*sz1;
 	
 	switch (Ctype) 
 	{
@@ -59,7 +61,7 @@ template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T * pdata,
 				long offset = j*sz0 + cz0;
 				for (long k =0; k < sz2; k++) 
 				{
-					long idx = offset + k*sz0*sz1;
+					long idx = offset + k*offset_k;
 					
 					tb = tg = tr = floor((pdata[idx]-tmpr_min)/tmpr*255.0);
 					
@@ -73,13 +75,13 @@ template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T * pdata,
 				long offset = j*sz0 + cz0;
 				for (long k =0; k < sz2; k++) 
 				{
-					long idx = offset + k*sz0*sz1;
+					long idx = offset + k*offset_k;
 					
 					tr = floor((pdata[idx]-tmpr_min)/tmpr*255.0);
 					
-					tg = floor((pdata[idx+channel_compressed_sz]-tmpg_min)/tmpg*255.0);
+					tg = floor((pdata[idx+channel_sz]-tmpg_min)/tmpg*255.0);
 					
-					tb = floor((pdata[idx+2*channel_compressed_sz]-tmpb_min)/tmpb*255.0);
+					tb = floor((pdata[idx+2*channel_sz]-tmpb_min)/tmpb*255.0);
 					
 					tmpimg.setPixel(k, j, qRgb(tr, tg, tb));
 				}
@@ -94,11 +96,11 @@ template <class T> QPixmap copyRaw2QPixmap_xPlanes(const T * pdata,
 					long offset = j*sz0 + cz0;
 					for (long k =0; k < sz2; k++) 
 					{
-						long idx = offset + k*sz0*sz1;
+						long idx = offset + k*offset_k;
 						
 						tr = floor((pdata[idx]-tmpr_min)/tmpr*255.0);
 						
-						tg = floor((pdata[idx+channel_compressed_sz]-tmpg_min)/tmpg*255.0);
+						tg = floor((pdata[idx+channel_sz]-tmpg_min)/tmpg*255.0);
 						tmpimg.setPixel(k, j, qRgb(tr, tg, tb));
 					}
 				}
@@ -156,25 +158,16 @@ template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T * pdata,
 		tmpr_min = p_vmin[0];
 	}
 
-	int channel_compressed_sz = sz0*sz1*sz2;
-	
-//	for (long k = 0; k < sz2; k ++) 
-//	{
-//		long offset = k*sz0*sz1 + cz1*sz0;
-//		for (long i =0; i < sz0; i++) 
-//		{
-//			long idx = offset + i;
-//			
-//			tmpimg.setPixel(i,k,qRgb(pdata[idx], pdata[idx+channel_compressed_sz], pdata[idx+2*channel_compressed_sz]));
-//		}
-//	}
+	long channel_sz = sz0*sz1*sz2;
+	long offset_k = sz0*sz1;
+	long offset_ck = cz1*sz0;
 	
 	switch (Ctype) 
 	{
 		case colorRed2Gray:
 			for (long k = 0; k < sz2; k ++) 
 			{
-				long offset = k*sz0*sz1 + cz1*sz0;
+				long offset = k*offset_k + offset_ck;
 				
 				for (long i =0; i < sz0; i++) 
 				{
@@ -191,15 +184,15 @@ template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T * pdata,
 		case colorRGB:
 			for (long k = 0; k < sz2; k ++) 
 			{
-				long offset = k*sz0*sz1 + cz1*sz0;
+				long offset = k*offset_k + offset_ck;
 				
 				for (long i =0; i < sz0; i++) 
 				{
 					long idx = offset + i;
 					
 					tr = floor((pdata[idx]-tmpr_min)/tmpr*255.0);
-					tg = floor((pdata[idx+channel_compressed_sz]-tmpg_min)/tmpg*255.0);
-					tb = floor((pdata[idx+2*channel_compressed_sz]-tmpb_min)/tmpb*255.0);
+					tg = floor((pdata[idx+channel_sz]-tmpg_min)/tmpg*255.0);
+					tb = floor((pdata[idx+2*channel_sz]-tmpb_min)/tmpb*255.0);
 					tmpimg.setPixel(i, k, qRgb(tr, tg, tb));
 					
 				}
@@ -211,14 +204,14 @@ template <class T> QPixmap copyRaw2QPixmap_yPlanes(const T * pdata,
 			tb = 0;
 			for (long k = 0; k < sz2; k ++) 
 			{
-				long offset = k*sz0*sz1 + cz1*sz0;
+				long offset = k*offset_k + offset_ck;
 				
 				for (long i =0; i < sz0; i++) 
 				{
 					long idx = offset + i;
 					
 					tr = floor((pdata[idx]-tmpr_min)/tmpr*255.0);
-					tg = floor((pdata[idx+channel_compressed_sz]-tmpg_min)/tmpg*255.0);
+					tg = floor((pdata[idx+channel_sz]-tmpg_min)/tmpg*255.0);
 					tmpimg.setPixel(i, k, qRgb(tr, tg, tb));
 					
 				}
@@ -267,14 +260,14 @@ template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T * pdata,
 		tmpr = p_vmax[0]-p_vmin[0]; tmpr = (tmpr==0)?1:tmpr;
 		tmpr_min = p_vmin[0];
 	}
-	int channel_compressed_sz = sz0*sz1*sz2;
-	
+	int channel_sz = sz0*sz1*sz2;
+	long offset_k = sz0*sz1;
 	switch (Ctype) 
 	{
 		case colorRed2Gray:
 			for (long j = 0; j < sz1; j ++) 
 			{
-				long offset = cz2*sz0*sz1 + j*sz0;
+				long offset = cz2*offset_k + j*sz0;
 				for (long i=0; i<sz0; i++) 
 				{
 					long idx = offset + i;
@@ -287,14 +280,14 @@ template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T * pdata,
 		case colorRGB:
 			for (long j = 0; j < sz1; j ++) 
 			{
-				long offset = cz2*sz0*sz1 + j*sz0;
+				long offset = cz2*offset_k + j*sz0;
 				for (long i=0; i<sz0; i++) 
 				{
 					long idx = offset + i;
 					
 					tr = floor((pdata[idx]-tmpr_min)/tmpr*255.0);
-					tg = floor((pdata[idx+channel_compressed_sz]-tmpg_min)/tmpg*255.0);
-					tb = floor((pdata[idx+2*channel_compressed_sz]-tmpb_min)/tmpb*255.0);
+					tg = floor((pdata[idx+channel_sz]-tmpg_min)/tmpg*255.0);
+					tb = floor((pdata[idx+2*channel_sz]-tmpb_min)/tmpb*255.0);
 					tmpimg.setPixel(i, j, qRgb(tr, tg, tb));
 				}
 			}
@@ -303,12 +296,12 @@ template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T * pdata,
 			tb = 0;
 			for (long j = 0; j < sz1; j ++) 
 			{
-				long offset = cz2*sz0*sz1 + j*sz0;
+				long offset = cz2*offset_k + j*sz0;
 				for (long i=0; i<sz0; i++) 
 				{
 					long idx = offset + i;
 					tr = floor((pdata[idx]-tmpr_min)/tmpr*255.0);
-					tg = floor((pdata[idx+channel_compressed_sz]-tmpg_min)/tmpg*255.0);
+					tg = floor((pdata[idx+channel_sz]-tmpg_min)/tmpg*255.0);
 					tmpimg.setPixel(i, j, qRgb(tr, tg, tb));
 				}
 			}
@@ -579,24 +572,46 @@ void MAPiewerPlugin::resampling_tc(V3DPluginCallback &callback, QWidget *parent)
 	if (temsize <= 1000) 
 	{
 		target_pixel_size = 2;
-	}else if(1000 < temsize <=2000)
+		
+	}else if(1000 < temsize  && temsize<=2000)
 	{
 		target_pixel_size = 4;
 		
-	}else if(2000 < temsize <=3000)
+	}else if(2000 < temsize && temsize <=3000)
 	{
 		target_pixel_size = 6;
 		
-	}else if(3000 < temsize <=4000)
+	}else if(3000 < temsize && temsize <=4000)
 	{
 		target_pixel_size = 8;
 		
-	}else 
+	}else if(4000 < temsize && temsize <=5000)
 	{
 		target_pixel_size = 10;
+	}
+	else if(5000 < temsize && temsize <=7000)
+	{
+		target_pixel_size = 12;
 		
 	}
-
+	else if(5000 < temsize && temsize <=7000)
+	{
+		target_pixel_size = 14;
+		
+	}
+	else if(7000 < temsize && temsize <=9000)
+	{
+		target_pixel_size = 16;
+	}
+	else if(9000 < temsize && temsize <=10000)
+	{
+		target_pixel_size = 18;
+		
+	}else 
+	{
+		target_pixel_size = 20;
+		
+	}
 	size_t start_t = clock();
 	
 	long vx, vy, vz, vc;
@@ -615,13 +630,14 @@ void MAPiewerPlugin::resampling_tc(V3DPluginCallback &callback, QWidget *parent)
 	
 	vc = vim.sz[3];
 	
-	qDebug()<<"vx vy vz target_size"<<vx<<vy<<vz<<target_pixel_size;
+//	qDebug()<<"vx vy vz target_size"<<vx<<vy<<vz<<target_pixel_size;
 	
 	long pagesz_vim = vx*vy*vz*vc;
 	
 	void *pData = NULL;
 
 	ImagePixelType datatype;
+	
 	bool rdaa = true;
 	
 	//for(long ii=0; ii<1; ii++)
@@ -991,6 +1007,7 @@ void MAPiewerPlugin::iViewer(V3DPluginCallback &callback, QWidget *parent)
 		return;
 	// tiled images path
 	QString curFilePath = QFileInfo(m_FileName).path();
+	
 	curFilePath.append("/");
 	
 	if (XMapView::m_show)
@@ -998,12 +1015,12 @@ void MAPiewerPlugin::iViewer(V3DPluginCallback &callback, QWidget *parent)
 		XMapView::m_show->show();
 		return;
 	}
-	ImageSetWidget *inw = new ImageSetWidget(callback, parent,m_FileName, curFilePath, 5);//5
+	bool b_show = false;
+	ImageSetWidget *inw = new ImageSetWidget(callback, parent,m_FileName,curFilePath,5,b_show);
 	
-	if (inw)
+	if (inw && b_show)
 	{
 		inw->show();
- 
 	}
 }
 void XMapView::setImgData(ImagePlaneDisplayType ptype,ImagePixelType dtype,ImageDisplayColorType Ctype,V3DLONG *sz_compressed,V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,unsigned char *pdata,double * p_vmax, double* p_vmin)
@@ -1017,8 +1034,6 @@ void XMapView::setImgData(ImagePlaneDisplayType ptype,ImagePixelType dtype,Image
 	channel_compressed_sz = cx*cy*cz;
 	
 	Ptype = ptype;//plane type
-	
-	//V3DLONG pagesz_vim = cc * channel_compressed_sz;
 	
 	start_x = cur_x = cz0;
 	
@@ -1106,7 +1121,7 @@ void ImageSetWidget::update_v3dviews(V3DPluginCallback *callback, long start_x, 
 	vz = end_z - start_z + 1;
 	vc = vim.sz[3];
 	
-	qDebug()<<"3dxyzc ..."<<start_x<<start_y<<start_z<<end_x<<end_y<<end_z;
+	//qDebug()<<"3dxyzc ..."<<start_x<<start_y<<start_z<<end_x<<end_y<<end_z;
 	
 	long pagesz_vim = vx*vy*vz*vc;
 	
@@ -1136,11 +1151,11 @@ void ImageSetWidget::update_v3dviews(V3DPluginCallback *callback, long start_x, 
 	long y_e = end_y + vim.min_vim[1];
 	long z_e = end_z + vim.min_vim[2];
 	
-	qDebug()<<"min ..."<<vim.min_vim[0]<<vim.min_vim[1]<<vim.min_vim[2];
+	//qDebug()<<"min ..."<<vim.min_vim[0]<<vim.min_vim[1]<<vim.min_vim[2];
 	
 	ImagePixelType datatype;
 	
-	cout << "satisfied image: "<< vim.lut[0].fn_img << endl;
+	//cout << "satisfied image: "<< vim.lut[0].fn_img << endl;
 	
 	//
 	//char * curFileSuffix = getSurfix(const_cast<char *>(vim.lut[0].fn_img.c_str()));
@@ -1179,13 +1194,13 @@ void ImageSetWidget::update_v3dviews(V3DPluginCallback *callback, long start_x, 
 	if(datatype_relative==1)
 		datatype = V3D_UINT8;
 	
-	qDebug()<<"infomation..."<<rx<<ry<<rz;
+	//qDebug()<<"infomation..."<<rx<<ry<<rz;
 	
 	//qDebug()<<"infomationoooori..."<<sxx<<syy<<szz<<scc;
 	
 	size_t e1_t = clock();
 	
-	cout<<"time elapse for read tmpstack ... "<<e1_t-s1_t<<endl;
+	//cout<<"time elapse for read tmpstack ... "<<e1_t-s1_t<<endl;
 	int stt =2;
 	if (stt == 1) 
 	{
@@ -1241,7 +1256,7 @@ void ImageSetWidget::update_v3dviews(V3DPluginCallback *callback, long start_x, 
 	// time consumption
 	size_t end_t = clock();
 	
-	cout<<"time elapse after loading configuration info ... "<<end_t-start_t<<endl;
+	//cout<<"time elapse after loading configuration info ... "<<end_t-start_t<<endl;
 	
 	//loadImage(imgSrcFile, relative1d, sz_relative, datatype_relative); //
 //	loadImage(imgSrcFile,relative1d,sz_relative,start_x,start_y,start_z,end_x,end_y,end_z,datatype_relative);	
@@ -1445,6 +1460,7 @@ void ImageSetWidget::createGUI()
 	viewGroup->setTitle("Map Views ");
 	
 	xy_view = new XMapView(viewGroup);
+	
 	long x = cx/2;
 	long y = cy/2;
 	long z = cz/2;
@@ -1551,7 +1567,8 @@ void ImageSetWidget::createGUI()
 	
 	coordGroupLayout->addWidget(ySliderLabel, 2, 0, 1, 1);
 	coordGroupLayout->addWidget(yValueSpinBox, 2, 2, 1, 4);
-   // layout for Setting
+   
+	// layout for Setting
 	settingGroupLayout = new QGridLayout(settingGroup);
 	settingGroupLayout->addWidget(CreateViewCheckBox, 0, 0, 1, 1);
 	
@@ -1619,7 +1636,7 @@ bool ImageSetWidget::setCTypeBasedOnImageData()
 }
 
 
-ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QString m_FileName, QString curFilePathInput, float scaleFactorInput)
+ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QString m_FileName, QString curFilePathInput, float scaleFactorInput,bool &b_shouw)
 {
 	callback1 = &callback;
 	
@@ -1631,11 +1648,13 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 
 	if(vim.y_load(filename) == true)
 	{
+		b_shouw = true;
+		
 		scaleFactor = scaleFactorInput;
 		
 		long sx=vim.sz[0], sy=vim.sz[1], sz=vim.sz[2];
 		
-		qDebug()<<"sxyx ..."<<sx<<sy<<sz;
+	//	qDebug()<<"sxyx ..."<<sx<<sy<<sz;
 		
 		//****************************************************************
 		// suppose compressed image saved as .tif
@@ -1679,7 +1698,7 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 			dtype = V3D_FLOAT32;
 		}
 		
-		qDebug()<<"compressedsxyx ..."<<cx<<cy<<cz;			
+		//qDebug()<<"compressedsxyx ..."<<cx<<cy<<cz;			
 		
 		setCTypeBasedOnImageData();
 		
@@ -1689,7 +1708,7 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 		
 		scaleFactorInput = int(sy/cy);
 		
-		qDebug()<<"scaleFactorInput ..."<<scaleFactorInput;	
+		//qDebug()<<"scaleFactorInput ..."<<scaleFactorInput;	
 		
 		xy_view->Setwidget(callback, m_FileName, curFilePath, scaleFactorInput);
 		yz_view->Setwidget(callback, m_FileName, curFilePath, scaleFactorInput);
@@ -1776,29 +1795,51 @@ void XMapView::mouseReleaseEvent(QMouseEvent * e)
 		long in_endx = (end_x > start_x)? end_x:start_x;
 		long in_endy = (end_y > start_y)? end_y:start_y;
 		
-		in_startx = (in_startx < 0)? 0:in_startx;
-		in_starty = (in_starty < 0)? 0:in_starty;
-		
-		in_endx = (in_endx > cx)? cx:in_endx;
-		
-		in_endy = (in_endx > cy)? cy:in_endy;
-		
+		//in_startx = (in_startx < 0)? 0:in_startx;
+//		in_starty = (in_starty < 0)? 0:in_starty;
+//		
+//		in_endx = (in_endx > cx)? cx:in_endx;
+//		
+//		in_endy = (in_endx > cy)? cy:in_endy;
 		
 		mousenumber++;
+		
 		switch(Ptype)
 		{
 			case imgPlaneZ://xoy
+				
+				in_startx = (in_startx < 0)? 0:in_startx;
+				in_starty = (in_starty < 0)? 0:in_starty;
+				
+				in_endx = (in_endx > cx)? cx:in_endx;
+				
+				in_endy = (in_endx > cy)? cy:in_endy;
 				
 				update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);				
 								
 				break;
 				
-			case imgPlaneX://zoy
+			case imgPlaneX://yoz
+				
+				in_startx = (in_startx < 0)? 0:in_startx;
+				in_starty = (in_starty < 0)? 0:in_starty;
+				
+				in_endx = (in_endx > cz)? cz:in_endx;
+				
+				in_endy = (in_endx > cy)? cy:in_endy;
+				
 				
 				update_v3dviews(callback1, cur_x*scaleFactor, in_starty*scaleFactor,in_startx*scaleFactor,cx*scaleFactor, in_endy*scaleFactor,in_endx*scaleFactor);
 				break;
 				
 			case imgPlaneY://xoz
+				
+				in_startx = (in_startx < 0)? 0:in_startx;
+				in_starty = (in_starty < 0)? 0:in_starty;
+				
+				in_endx = (in_endx > cx)? cx:in_endx;
+				
+				in_endy = (in_endx > cz)? cz:in_endy;
 				
 				update_v3dviews(callback1, in_startx*scaleFactor, cur_y*scaleFactor, in_starty*scaleFactor,in_endx*scaleFactor, cy*scaleFactor, in_endy*scaleFactor);		
 				
@@ -1881,7 +1922,7 @@ void XMapView::mouseMoveEvent (QMouseEvent * e)
 //		start_y = curMousePos.y() - (in_endy - in_starty)/2;
 //		end_y = curMousePos.y() + (in_endy - in_starty)/2;
 //		
-//	}else if (bMouseCurorIn)
+    if (bMouseCurorIn)
 	{
 		b_mousmove = true;
 		curMousePos = e->pos();
@@ -1926,9 +1967,9 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 	long ty = 0;
 	long tz = 0;
     
-	qDebug()<<"start end x y z "<< start_x << start_y << start_z << end_x << end_y << end_z;
+	//qDebug()<<"start end x y z "<< start_x << start_y << start_z << end_x << end_y << end_z;
    
-	qDebug()<<"vim x y z "<< vim.sz[0] <<vim.sz[1] << vim.sz[2] ;
+	//qDebug()<<"vim x y z "<< vim.sz[0] <<vim.sz[1] << vim.sz[2] ;
 	
 	switch(Ptype)
 	{
@@ -1940,15 +1981,10 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 			
 			end_z = tz + 10;
 			
-			if (start_z < 0)
-			{
-				start_z = 0;
-			}
-			if (end_z > vim.sz[2]) 
-			{
-				end_z=vim.sz[2];
-				
-			}
+			start_z = (start_z < 0)? 0: start_z;
+			
+			end_z = (end_z > vim.sz[2])? vim.sz[2]:end_z;
+			
 			break;
 			
 		case imgPlaneX://zoy
@@ -1959,15 +1995,10 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 			
 			end_x = tx + 10;
 			
-			if (start_x < 0)
-			{
-				start_x = 0;
-			}
-			if (end_x > vim.sz[0]) 
-			{
-				end_x = vim.sz[0];
-				
-			}
+			start_x = (start_x < 0)? 0: start_x;
+			
+			end_x = (end_x > vim.sz[0])? vim.sz[0]:end_x;
+			
 			break;
 			
 		case imgPlaneY://xoz
@@ -1978,15 +2009,10 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 			
 			end_y = ty + 10;
 			
-			if (start_y < 0)
-			{
-				start_y = 0;
-			}
-			if (end_y > vim.sz[1]) 
-			{
-				end_y = vim.sz[1];
-				
-			}			
+			start_y = (start_y < 0)? 0: start_y;
+			
+			end_y = (end_y > vim.sz[1])? vim.sz[1]:end_y;
+			
 			break;
 			
 		default:
@@ -2003,7 +2029,7 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 	vz = end_z - start_z ;//+ 1;
 	vc = vim.sz[3];
 	
-	printf("vx=%ld vy=%ld vz=%ld vc=%ld\n",vx,vy,vz,vc);
+	//printf("vx=%ld vy=%ld vz=%ld vc=%ld\n",vx,vy,vz,vc);
 	
 	long pagesz_vim = vx*vy*vz*vc;
     

@@ -1390,7 +1390,6 @@ int loadRaw2Stack_raw_resamping(char * filename, unsigned char * & img, V3DLONG 
 	}else if(4000 < temsize && temsize <=5000)
 	{
 		resampling_size = 10;
-		
 	}
 	else if(5000 < temsize && temsize <=7000)
 	{
@@ -1405,13 +1404,17 @@ int loadRaw2Stack_raw_resamping(char * filename, unsigned char * & img, V3DLONG 
 	else if(7000 < temsize && temsize <=9000)
 	{
 		resampling_size = 16;
-		
 	}
 	else if(9000 < temsize && temsize <=10000)
 	{
 		resampling_size = 18;
 		
+	}else 
+	{
+		resampling_size = 20;
+
 	}
+
 	
 	V3DLONG tmpw = sz[0];
 	
