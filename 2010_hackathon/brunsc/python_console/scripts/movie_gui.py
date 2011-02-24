@@ -9,6 +9,12 @@ try:
 except ImportError:
     try:
         from PyQt4 import QtGui, QtCore
+        # Hack to get around defect in pyuic4
+        _ql = QtGui.QLineEdit
+        if not hasattr(_ql, 'setPlaceholderText'):
+            def foo(x,y):
+                pass
+            _ql.setPlaceholderText = foo
         from ui_movie_maker_dialog_pyqt4 import Ui_movie_dialog
     except ImportError:
         print """
