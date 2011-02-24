@@ -1810,9 +1810,7 @@ void XMapView::mouseReleaseEvent(QMouseEvent * e)
 				
 				in_startx = (in_startx < 0)? 0:in_startx;
 				in_starty = (in_starty < 0)? 0:in_starty;
-				
 				in_endx = (in_endx > cx)? cx:in_endx;
-				
 				in_endy = (in_endx > cy)? cy:in_endy;
 				
 				update_v3dviews(callback1, in_startx*scaleFactor, in_starty*scaleFactor, start_z*scaleFactor,in_endx*scaleFactor, in_endy*scaleFactor, end_z*scaleFactor);				
@@ -1823,11 +1821,8 @@ void XMapView::mouseReleaseEvent(QMouseEvent * e)
 				
 				in_startx = (in_startx < 0)? 0:in_startx;
 				in_starty = (in_starty < 0)? 0:in_starty;
-				
 				in_endx = (in_endx > cz)? cz:in_endx;
-				
 				in_endy = (in_endx > cy)? cy:in_endy;
-				
 				
 				update_v3dviews(callback1, cur_x*scaleFactor, in_starty*scaleFactor,in_startx*scaleFactor,cx*scaleFactor, in_endy*scaleFactor,in_endx*scaleFactor);
 				break;
@@ -1836,11 +1831,8 @@ void XMapView::mouseReleaseEvent(QMouseEvent * e)
 				
 				in_startx = (in_startx < 0)? 0:in_startx;
 				in_starty = (in_starty < 0)? 0:in_starty;
-				
 				in_endx = (in_endx > cx)? cx:in_endx;
-				
 				in_endy = (in_endx > cz)? cz:in_endy;
-				
 				update_v3dviews(callback1, in_startx*scaleFactor, cur_y*scaleFactor, in_starty*scaleFactor,in_endx*scaleFactor, cy*scaleFactor, in_endy*scaleFactor);		
 				
 				break;
