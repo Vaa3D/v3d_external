@@ -252,7 +252,9 @@ public slots:
 public:
 //*********************************************************
 	QGroupBox *dataGroup, *viewGroup, *infoGroup;
-	QGroupBox *mainGroup, *coordGroup, *scaleGroup, *typeGroup;
+	
+	QGroupBox *mainGroup, *coordGroup;
+	QGroupBox *settingGroup;
 	
 	QScrollBar *xSlider, *ySlider, *zSlider;
 	QSpinBox *xValueSpinBox, *yValueSpinBox, *zValueSpinBox;
@@ -261,7 +263,7 @@ public:
 	
 	QPushButton* dataCopyButton;
 	
-	QCheckBox *CreadViewCheckBox;
+	QCheckBox *CreateViewCheckBox;
 	
 	QHBoxLayout *allLayout;
 	
@@ -272,6 +274,8 @@ public:
 	QVBoxLayout *mainGroupLayout;
 	
 	QGridLayout *coordGroupLayout;
+	
+	QGridLayout *settingGroupLayout;
 	
 	QGridLayout *datacopyGroupLayout;
    

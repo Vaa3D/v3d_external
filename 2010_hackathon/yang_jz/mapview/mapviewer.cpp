@@ -785,55 +785,6 @@ void MAPiewerPlugin::resampling_tc(V3DPluginCallback &callback, QWidget *parent)
 		fprintf(stderr, "Error happens in file writing. Exit. \n");
 		return ;
 	}
-	////////////////////////////////////////// save tc file
-//	Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim1;
-//	
-//	V3DLONG count=0;
-//	
-//	V3DLONG offset[3];
-//	
-//	offset[0]=0; offset[1]=0; offset[2]=0;
-//	
-//	indexed_t<V3DLONG, REAL> idx_t(offset);
-//	
-//	idx_t.n = count;
-//	idx_t.ref_n = 0; // init with default values
-//	idx_t.fn_image = m_FileName.toStdString();
-//	idx_t.score = 0;
-//	vim1.tilesList.push_back(idx_t);
-//	
-//	int a  = vim1.tilesList.size();
-//	
-//	(&vim1.tilesList.at(0))->sz_image = new V3DLONG [4];
-//	
-//	(&vim1.tilesList.at(0))->sz_image[0] = sz_relative[0];
-//	(&vim1.tilesList.at(0))->sz_image[1] = sz_relative[1];
-//	(&vim1.tilesList.at(0))->sz_image[2] = sz_relative[2];
-//	(&vim1.tilesList.at(0))->sz_image[3] = sz_relative[3];
-//	
-//	QString tmp_filename;
-//	QString tmp_filename1;
-//	
-//	tmp_filename = curFilePath + "/" + "stitched_image.tc"; //.tc tile configuration
-//	
-//	tmp_filename1 = curFilePath + "/" + "stitched_image.raw";
-//	
-//	// construct lookup table
-//	vim1.y_clut(vim1.tilesList.size());
-//	
-//	QString ff = "stitched_image.raw";
-//	
-//	char * thumnalilFile = const_cast<char *>(ff.toStdString().c_str());
-//	
-//	strcpy(vim1.fn_thumbnail, thumnalilFile);
-//	
-//	//vim1.fn_thumbnail = "stitched_image.raw";
-//	
-//	vim1.b_thumbnailcreated = true;
-//	
-//	vim1.y_save(tmp_filename.toStdString());
-	////////////////////////////////////////////end tc file
-	
 	if (sz1) {delete []sz1; sz1=0;}
 }
 void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *parent)
@@ -1385,7 +1336,7 @@ void ImageSetWidget::updateGUI()
 	cur_y = yValueSpinBox->text().toInt(); // / scaleFactor;
 	cur_z = zValueSpinBox->text().toInt(); // / scaleFactor;
 	
-	CreadViewCheckBox->setEnabled(true);
+	CreateViewCheckBox->setEnabled(true);
 	
 	update_triview();
 	
@@ -1563,21 +1514,16 @@ void ImageSetWidget::createGUI()
 	
 	zValueSpinBox->setMaximum(cz-1); zValueSpinBox->setMinimum(0); zValueSpinBox->setValue(cz/2); zValueSpinBox->setSingleStep(int(scaleFactor));
 
-	//CreadViewCheckBox = new QCheckBox("cread window");
-//	
-//	CreadViewCheckBox->setCheckState((bcreadViews) ? Qt::Checked : Qt::Unchecked);
 
-	// focus draw group
+	// Setting group
 	
-	QGroupBox * landmarkGroup = new QGroupBox(mainGroup);
-	landmarkGroup->setTitle("draw data");
+	settingGroup = new QGroupBox(mainGroup);
+	settingGroup->setAttribute(Qt::WA_ContentsPropagated);
+	settingGroup->setTitle("Setting");
 	
-	dataCopyButton = new QPushButton(landmarkGroup);
-	dataCopyButton->setText("setting");
+	CreateViewCheckBox = new QCheckBox("Create  window");
 	
-	CreadViewCheckBox = new QCheckBox("cread window");
-	
-	CreadViewCheckBox->setCheckState((bcreadViews) ? Qt::Checked : Qt::Unchecked);
+	CreateViewCheckBox->setCheckState((bcreadViews) ? Qt::Checked : Qt::Unchecked);
 	
 	//qDebug()<<"Coordinates ...";
 	
@@ -1606,19 +1552,14 @@ void ImageSetWidget::createGUI()
 	
 	coordGroupLayout->addWidget(ySliderLabel, 2, 0, 1, 1);
 	coordGroupLayout->addWidget(yValueSpinBox, 2, 2, 1, 4);
-
-	//coordGroupLayout->addWidget(CreadViewCheckBox, 3, 0, 1, 1);
-
-	// layout for draw data
-	datacopyGroupLayout = new QGridLayout(landmarkGroup);
-	//datacopyGroupLayout->addWidget(dataCopyButton, 0, 0, 1, 4);
-	datacopyGroupLayout->addWidget(CreadViewCheckBox, 0, 0, 1, 1);
- 	
+   // layout for Setting
+	settingGroupLayout = new QGridLayout(settingGroup);
+	settingGroupLayout->addWidget(CreateViewCheckBox, 0, 0, 1, 1);
 	
 	// main control panel layout
 	mainGroupLayout = new QVBoxLayout(mainGroup);
-	mainGroupLayout->addWidget(coordGroup);
-	mainGroupLayout->addWidget(landmarkGroup); 
+	mainGroupLayout->addWidget(coordGroup); 
+	mainGroupLayout->addWidget(settingGroup);
 
 	setLayout(allLayout);
 	updateGeometry();
@@ -1628,18 +1569,15 @@ void ImageSetWidget::createGUI()
 	
 	update_triview();
 	
-	//update_v3dviews(callback, start_x, start_y, start_z,end_x,end_y,end_z);
-	
 	connect(xValueSpinBox, SIGNAL(valueChanged(int)), this, SLOT(updateGUI()));
 	connect(yValueSpinBox, SIGNAL(valueChanged(int)), this, SLOT(updateGUI()));
 	connect(zValueSpinBox, SIGNAL(valueChanged(int)), this, SLOT(updateGUI()));	
-	connect(dataCopyButton, SIGNAL(clicked()), this, SLOT(drawdata()));
-	connect(CreadViewCheckBox, SIGNAL(clicked()), this, SLOT(toggCreadViewCheckBox()));
+	connect(CreateViewCheckBox, SIGNAL(clicked()), this, SLOT(toggCreadViewCheckBox()));
 	
 }	//
 void ImageSetWidget::toggCreadViewCheckBox()
 {
-    bcreadViews = (CreadViewCheckBox->checkState()==Qt::Checked) ? true : false;
+    bcreadViews = (CreateViewCheckBox->checkState()==Qt::Checked) ? true : false;
 	xy_view->b_creadWindow = bcreadViews;
 	yz_view->b_creadWindow = bcreadViews;
 	zx_view->b_creadWindow = bcreadViews;
