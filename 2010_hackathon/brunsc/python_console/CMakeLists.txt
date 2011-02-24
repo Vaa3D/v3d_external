@@ -81,6 +81,7 @@ set(V3D_PYTHON_CONSOLE_SRCS
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 add_subdirectory(simtk/src)
+add_definitions(-DSimTK_USE_STATIC_LIBRARIES)
 
 ##################################################################
 # pythonConsoleTest is a test program for use during development #
@@ -139,6 +140,7 @@ find_path(PLUGINS_PARENT_PATH plugins
     PATHS
         "${CMAKE_CURRENT_SOURCE_DIR}/../../../../build_v3d_cmake_eclipse/v3d"
         "${CMAKE_CURRENT_SOURCE_DIR}/../../../build_cmake/v3d"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../../../build_vstudio/v3d"
     PATH_SUFFIXES
         "Mac_Fat/v3d.app/Contents/MacOS"
         "Linux_32"

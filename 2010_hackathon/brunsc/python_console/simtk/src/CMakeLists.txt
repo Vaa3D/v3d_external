@@ -1,4 +1,5 @@
 # message("simtk common")
+add_definitions(-DSimTK_SimTKCOMMON_BUILDING_STATIC_LIBRARY)
 file(GLOB SimTKcommon_SRCS "*.cpp")
 add_library(SimTKcommon STATIC ${SimTKcommon_SRCS})
 
