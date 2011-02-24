@@ -1043,6 +1043,8 @@ void XMapView::setImgData(ImagePlaneDisplayType ptype,ImagePixelType dtype,Image
 	
 	Datatype = dtype;
 	
+	imagData = pdata;
+	
 	if(dtype==V3D_UINT8 )
 	{		
 		pixmap = copyRaw2QPixmap((const unsigned char *)pdata,cx,cy,cz,cc,Ctype,cur_x,cur_y,cur_z,Ptype,p_vmax,p_vmin);
@@ -1302,6 +1304,7 @@ XMapView::XMapView(QWidget *parent)
 	in_startx = in_starty = in_endx = in_endy = 0;
 	mousenumber = 0;
 	
+	imagData = 0;
 		
 }
 XMapView::~XMapView()
@@ -1343,11 +1346,65 @@ void ImageSetWidget::drawdata()
 	Bcopy = true;
 
 }
+
+void ImageSetWidget::initialize()
+{	
+	// GUI related 
+   
+    xy_view = NULL;
+    yz_view = NULL;
+    zx_view = NULL;
+	
+	dataGroup = NULL;
+  	viewGroup = NULL;
+	mainGroup = NULL;
+	coordGroup = NULL;
+	settingGroup = NULL;
+	
+	xValueSpinBox = NULL;
+	yValueSpinBox = NULL;
+	zValueSpinBox = NULL;
+	
+	xSliderLabel = NULL;
+	ySliderLabel = NULL;
+	zSliderLabel = NULL;
+	
+	
+	allLayout = NULL;
+	
+	dataGroupLayout = NULL;
+	
+    xyzViewLayout= NULL;
+	
+    mainGroupLayout= NULL;
+	
+	coordGroupLayout = NULL;
+	
+	settingGroupLayout = NULL;
+	
+	
+	CreateViewCheckBox = NULL;
+
+	bcreadViews = false;
+	
+	// compressed data
+	
+	channel_compressed_sz = 0;
+	compressed1d = 0;
+	cx = cy = cz = cc = 0; 
+	cur_x = cur_y = cur_z = 0;
+	init_x = init_y = init_z = 0; 
+	
+	
+}
+
 void ImageSetWidget::updateGUI()
 {
 	
     cur_x = xValueSpinBox->text().toInt(); // / scaleFactor;
+	
 	cur_y = yValueSpinBox->text().toInt(); // / scaleFactor;
+	
 	cur_z = zValueSpinBox->text().toInt(); // / scaleFactor;
 	
 	CreateViewCheckBox->setEnabled(true);
@@ -1368,6 +1425,9 @@ void ImageSetWidget::updateGUI()
 	
 	zx_view->update();
 	zx_view->repaint();
+	
+	
+	
 	
 	
 }
@@ -1451,6 +1511,7 @@ bool ImageSetWidget::updateminmaxvalues()
 
 void ImageSetWidget::createGUI()
 {
+	
 	bcreadViews = false;
 	/* Set up the data related GUI */
 	dataGroup = new QGroupBox(this);
@@ -1577,20 +1638,29 @@ void ImageSetWidget::createGUI()
 	mainGroupLayout->addWidget(coordGroup); 
 	mainGroupLayout->addWidget(settingGroup);
 
-	setLayout(allLayout);
-	updateGeometry();
-	allLayout->update();
+	connect(xValueSpinBox, SIGNAL(valueChanged(int)), this, SLOT(updateGUI()));
+	connect(yValueSpinBox, SIGNAL(valueChanged(int)), this, SLOT(updateGUI()));
+	connect(zValueSpinBox, SIGNAL(valueChanged(int)), this, SLOT(updateGUI()));	
 	
+	connect(CreateViewCheckBox, SIGNAL(clicked()), this, SLOT(toggCreadViewCheckBox()));
+	
+	//set the navigation event connection
+	
+	connect(xy_view, SIGNAL(focusZChanged(int)), zValueSpinBox, SLOT(setValue(int)));
+	
+    connect(yz_view, SIGNAL(focusXChanged(int)), xValueSpinBox, SLOT(setValue(int)));
+	
+    connect(zx_view, SIGNAL(focusYChanged(int)), yValueSpinBox, SLOT(setValue(int)));
+    
 	Bcopy = false;
 	
 	update_triview();
 	
-	connect(xValueSpinBox, SIGNAL(valueChanged(int)), this, SLOT(updateGUI()));
-	connect(yValueSpinBox, SIGNAL(valueChanged(int)), this, SLOT(updateGUI()));
-	connect(zValueSpinBox, SIGNAL(valueChanged(int)), this, SLOT(updateGUI()));	
-	connect(CreateViewCheckBox, SIGNAL(clicked()), this, SLOT(toggCreadViewCheckBox()));
+	//setLayout(allLayout);
+	//updateGeometry();
+	//allLayout->update();
 	
-}	//
+}
 void ImageSetWidget::toggCreadViewCheckBox()
 {
     bcreadViews = (CreateViewCheckBox->checkState()==Qt::Checked) ? true : false;
@@ -1638,6 +1708,8 @@ bool ImageSetWidget::setCTypeBasedOnImageData()
 
 ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QString m_FileName, QString curFilePathInput, float scaleFactorInput,bool &b_shouw)
 {
+	initialize();
+	
 	callback1 = &callback;
 	
 	curFilePath = curFilePathInput;
@@ -1669,8 +1741,6 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 		
 		int datatype_compressed = 0;
 		
-		compressed1d = 0;
-		
 		//imgData->loadImage(openFileNameLabel.toAscii().data());
 		
 		if(loadImage(const_cast<char *>(m_FileName_compressed.toStdString().c_str()), compressed1d, sz_compressed, datatype_compressed)!= true)
@@ -1700,6 +1770,7 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 		
 		//qDebug()<<"compressedsxyx ..."<<cx<<cy<<cz;			
 		
+		
 		setCTypeBasedOnImageData();
 		
 		updateminmaxvalues();
@@ -1717,9 +1788,9 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 }
 void ImageSetWidget::update_triview()
 {
-	cur_x = xValueSpinBox->text().toInt(); // / scaleFactor;
-	cur_y = yValueSpinBox->text().toInt(); // / scaleFactor;
-	cur_z = zValueSpinBox->text().toInt(); // / scaleFactor;
+	cur_x = xValueSpinBox->text().toInt(); 
+	cur_y = yValueSpinBox->text().toInt(); 
+	cur_z = zValueSpinBox->text().toInt(); 
 	
 	xy_view->b_creadWindow = bcreadViews;
 	
@@ -1732,8 +1803,15 @@ void ImageSetWidget::update_triview()
 	yz_view->setImgData(imgPlaneX,dtype,Ctype,sz_compressed,cur_x,cur_y,cur_z,compressed1d,p_vmax,p_vmin);
 	
 	zx_view->setImgData(imgPlaneY,dtype,Ctype,sz_compressed,cur_x,cur_y,cur_z,compressed1d,p_vmax,p_vmin);
+	
+	updateGeometry();
+	adjustSize();
+	allLayout->update();
+	update();
 		
 }
+
+
 
 template <class T> QPixmap copyRaw2QPixmap(const T * pdata, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3,ImageDisplayColorType Ctype, 
 										   V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,ImagePlaneDisplayType disType, 
@@ -1901,7 +1979,27 @@ void XMapView::mouseLeftButtonPressEvent(QMouseEvent *e) //080101
 		//qDebug()<<"LLLLsxyz...."<<start_x<<start_y<<start_z;
 	}
 }
-
+void XMapView::wheelEvent(QWheelEvent * e) 
+{
+	int numDegrees = e->delta()/8;
+	int numTicks = numDegrees/15;
+	if (!imagData) return;
+	switch (Ptype)
+	{
+		case imgPlaneX:
+			emit focusXChanged(cur_x+numTicks);
+			break;
+		case imgPlaneY:
+			emit focusYChanged(cur_y+numTicks);
+			break;
+		case imgPlaneZ:
+			emit focusZChanged(cur_z+numTicks);
+			break;
+		default: //do nothing
+			break;
+	}
+	return;
+}
 void XMapView::mouseMoveEvent (QMouseEvent * e)
 {
 	//curMousePos = e->pos()/disp_scale;
@@ -2266,44 +2364,131 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 	
 	QString file ;
 	
-	if (mousenumber ==1)
-	{
-		curImageName = curFilePath + "Map Image 1"; 
-		curwin = callback->newImageWindow();
-		callback->setImage(curwin, &p4DImage);
-		callback->setImageName(curwin, curImageName);
-		callback->updateImageWindow(curwin);
-		callback->pushImageIn3DWindow(curwin);
-		
-	}else 
-	{	
-		if(!b_creadWindow)
-		{
-			curwin = callback->currentImageWindow();
-			callback->setImage(curwin, &p4DImage);
-            QString curImageName2 = callback->getImageName(curwin);
-			callback->setImageName(curwin, curImageName2);
-			callback->updateImageWindow(curwin);
-			callback->pushImageIn3DWindow(curwin);
-			mousenumber--;
-			if (mousenumber < 0) 
-			{
-				mousenumber = 1;
-			}
-		}
-		else
-		{
-			file.sprintf("%d",mousenumber);
-			QString curImageName1 = curFilePath + "Map Image" + file;
-			curwin = callback->newImageWindow();
-			callback->setImage(curwin, &p4DImage);
-			callback->setImageName(curwin, curImageName1);
-			callback->updateImageWindow(curwin);
-			callback->pushImageIn3DWindow(curwin);
-		}
-		
-	}
+	//if(!b_creadWindow)
+//	{
+//		if(!callback->currentImageWindow())
+//			curwin = callback->newImageWindow();
+//		else
+//			curwin = callback->currentImageWindow();
+//		
+//		callback->setImage(curwin, &p4DImage);
+//		callback->setImageName(curwin, "Image");
+//		callback->updateImageWindow(curwin);
+//		
+//		callback->pushImageIn3DWindow(curwin);
+//		mousenumber--;
+//		if (mousenumber < 0) 
+//		{
+//			mousenumber = 1;
+//		}
+//	}
+//	else
+//	{
+//		file.sprintf("%d",mousenumber);
+//		QString curImageName1 = curFilePath + "Map Image" + file + " ZOY plane";
+//		curwin = callback->newImageWindow();
+//		callback->setImage(curwin, &p4DImage);
+//		callback->setImageName(curwin, curImageName1);
+//		callback->updateImageWindow(curwin);
+//		callback->pushImageIn3DWindow(curwin);
+//	}
 	
+	switch (Ptype)
+	{
+		case imgPlaneX:
+			if(!b_creadWindow)
+			{
+				if(!callback->currentImageWindow())
+					curwin = callback->newImageWindow();
+				else
+					curwin = callback->currentImageWindow();
+				
+				callback->setImage(curwin, &p4DImage);
+				callback->setImageName(curwin, "Map Image->ZOY");
+				callback->updateImageWindow(curwin);
+				
+				callback->pushImageIn3DWindow(curwin);
+				mousenumber--;
+				if (mousenumber < 0) 
+				{
+					mousenumber = 1;
+				}
+			}
+			else
+			{
+				file.sprintf("%d",mousenumber);
+				QString curImageName1 = curFilePath + "Map Image " + file + "->ZOY plane";
+				curwin = callback->newImageWindow();
+				callback->setImage(curwin, &p4DImage);
+				callback->setImageName(curwin, curImageName1);
+				callback->updateImageWindow(curwin);
+				callback->pushImageIn3DWindow(curwin);
+			}
+			
+			break;
+		case imgPlaneY:
+			if(!b_creadWindow)
+			{
+				if(!callback->currentImageWindow())
+					curwin = callback->newImageWindow();
+				else
+					curwin = callback->currentImageWindow();
+				
+				callback->setImage(curwin, &p4DImage);
+				callback->setImageName(curwin, "Map Image->XOZ");
+				callback->updateImageWindow(curwin);
+				
+				callback->pushImageIn3DWindow(curwin);
+				mousenumber--;
+				if (mousenumber < 0) 
+				{
+					mousenumber = 1;
+				}
+			}
+			else
+			{
+				file.sprintf("%d",mousenumber);
+				QString curImageName1 = curFilePath + "Map Image " + file + " ->XOZ plane";
+				curwin = callback->newImageWindow();
+				callback->setImage(curwin, &p4DImage);
+				callback->setImageName(curwin, curImageName1);
+				callback->updateImageWindow(curwin);
+				callback->pushImageIn3DWindow(curwin);
+			}
+			break;
+		case imgPlaneZ:
+			if(!b_creadWindow)
+			{
+				if(!callback->currentImageWindow())
+					curwin = callback->newImageWindow();
+				else
+					curwin = callback->currentImageWindow();
+				
+				callback->setImage(curwin, &p4DImage);
+				callback->setImageName(curwin, "Map Image->XOY");
+				callback->updateImageWindow(curwin);
+				
+				callback->pushImageIn3DWindow(curwin);
+				mousenumber--;
+				if (mousenumber < 0) 
+				{
+					mousenumber = 1;
+				}
+			}
+			else
+			{
+				file.sprintf("%d",mousenumber);
+				QString curImageName1 = curFilePath + "Map Image " + file + " ->XOY plane";
+				curwin = callback->newImageWindow();
+				callback->setImage(curwin, &p4DImage);
+				callback->setImageName(curwin, curImageName1);
+				callback->updateImageWindow(curwin);
+				callback->pushImageIn3DWindow(curwin);
+			}
+			break;
+		default: 
+			break;
+	}
 	size_t end_t = clock();
 	
 	cout<<"time elapse after loading configuration info ... "<<end_t-start_t<<endl;

@@ -173,6 +173,7 @@ public:
     void mouseLeftButtonPressEvent(QMouseEvent *e);
     void mouseRightButtonPressEvent(QMouseEvent *e);
 	void mouseMoveEvent (QMouseEvent * e);
+	void wheelEvent(QWheelEvent * e);
     void enterEvent (QEvent * e);
     void leaveEvent (QEvent * e);
 	 
@@ -181,8 +182,10 @@ public:
 	Y_VIM<float, long, indexed_t<long, float>, LUT<long> > vim;
 	
 public slots:
-   
-	
+signals:
+	void focusXChanged(int x_new);
+    void focusYChanged(int y_new);
+    void focusZChanged(int z_new);	
 private:
 	enum XFormType { VectorType, PixmapType, TextType};   
 	double m_scale;
@@ -233,6 +236,8 @@ class ImageSetWidget : public QWidget//,public QDialog
 public:
 	 ImageSetWidget(V3DPluginCallback &callback, QWidget *parent,QString m_FileName, QString curFilePathInput, float scaleFactorInput,bool &b_shouw);
 	
+	void initialize();
+	
 	void update_v3dviews(V3DPluginCallback *callback, long start_x, long start_y, long start_z, long end_x, long end_y, long end_z);
 	
 	void createGUI();
@@ -249,14 +254,19 @@ public slots:
 	void drawdata();
 	
 	void toggCreadViewCheckBox();
+	
+
+	
 public:
 //*********************************************************
 	QGroupBox *dataGroup, *viewGroup, *infoGroup;
 	
 	QGroupBox *mainGroup, *coordGroup;
+	
 	QGroupBox *settingGroup;
 	
 	QScrollBar *xSlider, *ySlider, *zSlider;
+	
 	QSpinBox *xValueSpinBox, *yValueSpinBox, *zValueSpinBox;
 	
 	QLabel *xSliderLabel, *ySliderLabel, *zSliderLabel;
