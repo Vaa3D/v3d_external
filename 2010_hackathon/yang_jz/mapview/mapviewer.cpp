@@ -792,7 +792,6 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 	QString m_FileName = QFileDialog::getOpenFileName(parent, QObject::tr("Open profile"), "", QObject::tr("Supported file (*.raw)"));
 	if(m_FileName.isEmpty())	
 		return;
-	
 	QString curFilePath = QFileInfo(m_FileName).path();
 	
 	QString curPath = curFilePath;
@@ -1770,11 +1769,20 @@ void XMapView::mouseReleaseEvent(QMouseEvent * e)
 		end_x = dragEndPosition.x();
 		end_y = dragEndPosition.y();
 		end_z = cz ;
+		
 		long in_startx = (start_x < end_x)? start_x:end_x;
 		long in_starty = (start_y < end_y)? start_y:end_y;
 		
 		long in_endx = (end_x > start_x)? end_x:start_x;
 		long in_endy = (end_y > start_y)? end_y:start_y;
+		
+		in_startx = (in_startx < 0)? 0:in_startx;
+		in_starty = (in_starty < 0)? 0:in_starty;
+		
+		in_endx = (in_endx > cx)? cx:in_endx;
+		
+		in_endy = (in_endx > cy)? cy:in_endy;
+		
 		
 		mousenumber++;
 		switch(Ptype)
