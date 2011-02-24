@@ -4199,9 +4199,21 @@ int group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 			return -1;
 		}
 		V3DLONG tx=sz_target[0], ty=sz_target[1], tz=sz_target[2], tc=sz_target[3]; 
-		imgdatatype = (ImagePixelType)datatype_target; cdim = tc; // init
+		cdim = tc; // init
 		
-		if(datatype_target==4) imgdatatype = V3D_FLOAT32;
+		if(i==0)
+		{
+			imgdatatype = (ImagePixelType)datatype_target;
+			if(datatype_target==4) imgdatatype = V3D_FLOAT32;
+		}
+		else
+		{
+			if(datatype_target != imgdatatype)
+			{
+				printf("The program only support all tiled images with the same datatype.\n");
+				return -1;
+			}
+		}
 		
 		(&vim.tilesList.at(i))->sz_image = new V3DLONG [4];
 		
@@ -4804,9 +4816,21 @@ int group_stitching_wc(V3DPluginCallback2 &callback, QWidget *parent)
 			return -1;
 		}
 		V3DLONG tx=sz_target[0], ty=sz_target[1], tz=sz_target[2], tc=sz_target[3];
-		imgdatatype = (ImagePixelType)datatype_target; cdim = tc; // init
+		cdim = tc; // init
 		
-		if(datatype_target==4) imgdatatype = V3D_FLOAT32;
+		if(i==0)
+		{
+			imgdatatype = (ImagePixelType)datatype_target;
+			if(datatype_target==4) imgdatatype = V3D_FLOAT32;
+		}
+		else
+		{
+			if(datatype_target != imgdatatype)
+			{
+				printf("The program only support all tiled images with the same datatype.\n");
+				return -1;
+			}
+		}
 		
 		(&vim.tilesList.at(i))->sz_image = new V3DLONG [4];
 		
@@ -5418,6 +5442,12 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 					printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
 					return -1;
 				}
+			}
+			
+			if(datatype_relative != datatype)
+			{
+				printf("The program only support all tiled images with the same datatype.\n");
+				return -1;
 			}
 			
 			//
