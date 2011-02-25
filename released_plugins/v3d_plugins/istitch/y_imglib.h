@@ -576,7 +576,15 @@ public:
 		fprintf(pFileLUT, "# image coordinates look up table \n"); // TC_COMMENT6
 		for(int j=0; j<number_tiles; j++)
 		{
-			string fn = QString(lut[j].fn_img.c_str()).remove(0, QFileInfo(QString(lut[j].fn_img.c_str())).path().length()+1).toStdString();
+			string fn;
+			string fn_img_tile = lut[j].fn_img;
+			
+			int len_abpath = QFileInfo(QString(fn_img_tile.c_str())).path().length();
+			
+			if(len_abpath>1)
+				fn = QString(fn_img_tile.c_str()).remove(0, len_abpath+1).toStdString();
+			else
+				fn = fn_img_tile;
 			
 			fprintf(pFileLUT, "%s  ( %ld, %ld, %ld ) ( %ld, %ld, %ld ) \n", fn.c_str(), lut[j].start_pos[0], lut[j].start_pos[1], lut[j].start_pos[2], lut[j].end_pos[0], lut[j].end_pos[1], lut[j].end_pos[2]);
 		}
