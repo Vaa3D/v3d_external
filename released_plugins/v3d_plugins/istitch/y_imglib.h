@@ -458,9 +458,12 @@ public:
 				
 				while( !pFileLUT.eof() )
 				{
-					while( getline(pFileLUT, str) )
+					while( getline(pFileLUT, str) && count<number_tiles)
 					{
 						istringstream iss(str);
+						
+						if(iss.fail() || iss.eof())
+							continue;
 						
 						iss >> buf;
 						
@@ -481,9 +484,6 @@ public:
 						lut[count].fn_img = fn_str;
 						
 						count++;
-						
-						if(count>=number_tiles)
-							break;
 						
 						//iss >> letter;
 					}
