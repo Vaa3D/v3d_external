@@ -5,6 +5,9 @@ import v3d
 from xml.dom.minidom import getDOMImplementation
 import xml.dom.minidom
 
+def _round_to_int(x):
+    return int(math.floor(x + 0.5))
+
 class Interpolator:
     def get_interpolated_value(self, param, param_value_list, index_hint = None, wrap = None):
         """
@@ -498,9 +501,11 @@ class V3dMovie:
                 continue # rotation is handled specially, below
             val = getattr(camera_position, getter_name)
             if 'Cut' in getter_name:
-                val = int(val) # Cut methods take integer arguments
+                val = _round_to_int(val) # Cut methods take integer arguments
+            # if 'yCut1' == getter_name: # debugging
+            #     print getter_name, val
             if 'CS' in getter_name:
-                val = int(val)
+                val = _round_to_int(val)
             if 'hannel' in getter_name:
                 # needs to be boolean
                 val = (val > 0.5)
@@ -535,6 +540,8 @@ class V3dMovie:
             if 'renderMode' in param_name:
                 continue
             val = getattr(self.view_control, param_name)()
+            # if 'yCut1' == param_name: # debugging
+            #     print param_name, val
             setattr(camera, param_name, val)
             # print "Parameter %s = %s" % (param_name, val)
         # Handle render mode explicitly

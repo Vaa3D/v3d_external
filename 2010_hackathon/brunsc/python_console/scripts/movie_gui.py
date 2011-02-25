@@ -31,8 +31,6 @@ class MovieGui(QtGui.QDialog):
         self.ui = Ui_movie_dialog()
         self.ui.setupUi(self)
         self.movie = movie_maker.V3dMovie()
-        self.connect(self.ui.addCurrentViewButton, QtCore.SIGNAL('clicked()'), 
-               self.append_view)
         iconPath = os.path.join(os.path.dirname(movie_maker.__file__), 'icons')
         self.playIcon = QtGui.QIcon(os.path.join(iconPath, "play.png"))
         self.recordIcon = QtGui.QIcon(os.path.join(iconPath, "record.png"))
@@ -42,6 +40,22 @@ class MovieGui(QtGui.QDialog):
         self.skipAheadIcon = QtGui.QIcon(os.path.join(iconPath, "skip_ahead.png"))
         self.setWindowIcon(self.reelIcon)
         self.ui.frameCartoonLabel.hide() # its' just a placeholder
+        self.configure_buttons()
+        self.previous_save_dir = ""
+        self._updateFrameCount()
+        # Frame interval
+        interval_validator = QtGui.QDoubleValidator(0.00, 10000.0, 2, 
+                self.ui.frameIntervalLineEdit)
+        self.ui.frameIntervalLineEdit.setValidator(interval_validator)
+        self.connect(self.ui.frameIntervalLineEdit, QtCore.SIGNAL('textChanged(QString)'),
+                     self.update_frame_interval)
+        self.frame_interval = 2.5
+        self.ui.frameIntervalLineEdit.setText(str(self.frame_interval))
+        self._enter_state('ready')
+        
+    def configure_buttons(self):
+        self.connect(self.ui.addCurrentViewButton, QtCore.SIGNAL('clicked()'), 
+               self.append_view)
         self.beginningButton = self.ui.playButtonBox.button(QtGui.QDialogButtonBox.Reset)
         self.beginningButton.setText('Beginning')
         # self.beginningButton = self.ui.buttonBox.addButton('Beginning', QtGui.QDialogButtonBox.ActionRole)
@@ -65,7 +79,9 @@ class MovieGui(QtGui.QDialog):
         self.saveImagesButton.setText("Save images...")
         self.connect(self.saveImagesButton, QtCore.SIGNAL('clicked()'),
                self.save_images)
-        self.saveParametersButton = self.ui.buttonBox.addButton('Save', QtGui.QDialogButtonBox.ApplyRole)
+        # self.saveParametersButton = self.ui.buttonBox.addButton('Save', QtGui.QDialogButtonBox.ApplyRole)
+        self.saveParametersButton = self.ui.buttonBox.button(QtGui.QDialogButtonBox.SaveAll)
+        self.saveParametersButton.setText("Save parameters...")
         self.connect(self.saveParametersButton, QtCore.SIGNAL('clicked()'),
                self.save_parameters)
         # deleteAllButton used to be a generic button
@@ -73,22 +89,26 @@ class MovieGui(QtGui.QDialog):
         self.ui.deleteAllButton.setText('Delete all frames')
         self.connect(self.ui.deleteAllButton, QtCore.SIGNAL('clicked()'),
                self.delete_all)
-        self.previous_save_dir = ""
-        self._updateFrameCount()
-        # Frame interval
-        interval_validator = QtGui.QDoubleValidator(0.00, 10000.0, 2, 
-                self.ui.frameIntervalLineEdit)
-        self.ui.frameIntervalLineEdit.setValidator(interval_validator)
-        self.connect(self.ui.frameIntervalLineEdit, QtCore.SIGNAL('textChanged(QString)'),
-                     self.update_frame_interval)
-        self.frame_interval = 2.5
-        self.ui.frameIntervalLineEdit.setText(str(self.frame_interval))
         self.loadButton = self.ui.buttonBox.button(QtGui.QDialogButtonBox.Open)
+        self.loadButton.setText("Load parameters...")
         self.connect(self.loadButton, QtCore.SIGNAL('clicked()'),
                      self.load_parameters)
-        # 
-        self._enter_state('ready')
+        self.helpButton = self.ui.playButtonBox.button(QtGui.QDialogButtonBox.Help)
+        self.connect(self.helpButton, QtCore.SIGNAL('clicked()'),
+                     self.help)
 
+    def help(self):
+        QtGui.QMessageBox.information(self, 
+                "About V3D movie maker", 
+                """
+First adjust the V3D 3D window to the view you want to begin your movie with.  Next press "Add current view".  
+Continue alternately changing the view and pressing "Add current view".
+
+Press "Play" to preview your movie.
+
+Press "Save images..." to save the movie frames to disk.
+                """)
+        
     def update_frame_interval(self, value_text):
         self.frame_interval = float(value_text)
         
@@ -187,7 +207,7 @@ class MovieGui(QtGui.QDialog):
                         self.previous_save_dir,
                         "V3D movie files (*.vmv)")[0]
         if None == fname: return
-        if len(fname[0]) < 1: return
+        if len(fname) < 1: return
         if not os.path.exists(fname): 
             QtGui.QMessageBox.information(this, "No such file", "No such file")
             return
