@@ -305,6 +305,16 @@ public:
 		lut=NULL;
 		min_vim=NULL; max_vim=NULL;
 		
+		try
+		{
+			sz = new T2 [4];
+		}
+		catch (...) 
+		{
+			printf("Fail to allocate memory for sz.\n");
+			return;
+		}
+		
 		b_thumbnailcreated = false;
 	}
 	
@@ -322,16 +332,6 @@ public:
 		char letter;
 		
 		T2 start[3], end[3];
-		
-		try
-		{
-			sz = new T2 [3];
-		}
-		catch (...) 
-		{
-			printf("Fail to allocate memory for sz.\n");
-			return false;
-		}
 		
 		char buf[2048];
 		string fn_str;
