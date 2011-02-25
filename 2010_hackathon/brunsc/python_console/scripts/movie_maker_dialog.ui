@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>529</width>
-    <height>361</height>
+    <width>393</width>
+    <height>303</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,39 +17,26 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Adjust the V3D '3D View' to the orientation you want to see in your movie.  Then press 'Add current view'.  Keep changing the view and pressing 'Add current view' until you have included all of the key frames of your movie.  
-Press 'Play' to preview your movie.  
-After you are satisfied with your movie, press 'Save' to write your movie frames to disk. 
-Converting frames to a movie file is an exercise left to the user...</string>
-       </property>
-       <property name="wordWrap">
-        <bool>true</bool>
-       </property>
-       <property name="textInteractionFlags">
-        <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QGroupBox" name="groupBox">
        <property name="title">
         <string>Key Frames</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
-        <item>
-         <widget class="QPushButton" name="addCurrentViewButton">
-          <property name="text">
-           <string>Add current view</string>
-          </property>
-          <property name="default">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
+        <property name="margin">
+         <number>0</number>
+        </property>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QPushButton" name="addCurrentViewButton">
+            <property name="text">
+             <string>Add current view</string>
+            </property>
+            <property name="default">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QLabel" name="label">
             <property name="text">
@@ -89,26 +76,83 @@ Converting frames to a movie file is an exercise left to the user...</string>
             </property>
            </widget>
           </item>
+          <item>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
          </layout>
         </item>
         <item>
-         <widget class="QLabel" name="keyFrameLabel">
-          <property name="text">
-           <string>No key frames added</string>
+         <widget class="QFrame" name="frame">
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="deleteAllButton">
-          <property name="text">
-           <string>Delete all frames</string>
+          <property name="frameShadow">
+           <enum>QFrame::Plain</enum>
           </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <property name="margin">
+            <number>0</number>
+           </property>
+           <item>
+            <spacer name="horizontalSpacer_5">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QLabel" name="keyFrameLabel">
+             <property name="text">
+              <string>No key frames added</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
          </widget>
         </item>
        </layout>
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="playButtonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Reset</set>
+     </property>
+     <property name="centerButtons">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QScrollArea" name="scrollArea">
@@ -132,7 +176,7 @@ Converting frames to a movie file is an exercise left to the user...</string>
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>503</width>
+        <width>367</width>
         <height>61</height>
        </rect>
       </property>
@@ -213,7 +257,7 @@ Converting frames to a movie file is an exercise left to the user...</string>
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Save</set>
+      <set>QDialogButtonBox::Close|QDialogButtonBox::Open|QDialogButtonBox::Reset|QDialogButtonBox::Save</set>
      </property>
     </widget>
    </item>

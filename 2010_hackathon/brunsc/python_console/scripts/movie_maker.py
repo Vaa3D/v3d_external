@@ -2,6 +2,8 @@ import time
 import os
 import math
 import v3d
+from xml.dom.minidom import getDOMImplementation
+import xml.dom.minidom
 
 class Interpolator:
     def get_interpolated_value(self, param, param_value_list, index_hint = None, wrap = None):
@@ -227,6 +229,21 @@ class CameraPosition:
     def __init__(self, **kw_params):
         for param_name in kw_params:
             setattr(self, param_name, kw_params[param_name])
+
+    def populate_quaterion(self):
+        # convert to radians
+        DegToRad = math.pi / 180.0
+        xRot = self.xRot * DegToRad
+        yRot = self.yRot * DegToRad
+        zRot = self.zRot * DegToRad
+        # construct rotation matrix
+        R = v3d.Rotation()
+        R.setRotationFromThreeAnglesThreeAxes(
+                v3d.BodyRotationSequence, 
+                xRot, v3d.XAxis, 
+                yRot, v3d.YAxis, 
+                zRot, v3d.ZAxis)
+        self.quaternion = v3d.Quaternion(R)
         
 
 class V3dMovieFrame:
@@ -294,9 +311,9 @@ class V3dMovie:
                                         'frontCut' : 'setFrontCut',
                                         # need special logic to set renderMode
                                         # ; these getters do not exist
-                                        'getRenderMode_Cs3d' : 'setRenderMode_Cs3d',
-                                        'getRenderMode_Mip' : 'setRenderMode_Mip',
-                                        'getRenderMode_Alpha' : 'setRenderMode_Alpha',
+                                        'renderMode_Cs3d' : 'setRenderMode_Cs3d',
+                                        'renderMode_Mip' : 'setRenderMode_Mip',
+                                        'renderMode_Alpha' : 'setRenderMode_Alpha',
                                         }
 
     def _setup_interpolation_lists(self):
@@ -435,6 +452,8 @@ class V3dMovie:
         """
         # self.image_window.open3DWindow()
         # Turn off cut plane locks
+        if None == self.view_control: 
+            return
         self.view_control.setXCutLock(False)
         self.view_control.setYCutLock(False)
         self.view_control.setZCutLock(False)
@@ -485,7 +504,7 @@ class V3dMovie:
             if 'hannel' in getter_name:
                 # needs to be boolean
                 val = (val > 0.5)
-            if 'RenderMode' in getter_name:
+            if 'renderMode' in getter_name:
                 val = (val > 0.5) # boolean
             fn = getattr(self.view_control, setter_name)
             fn(val) # set parameter in V3D view_control
@@ -513,7 +532,7 @@ class V3dMovie:
         self.view_control.absoluteRotPose()
         camera = CameraPosition()
         for param_name in self.view_control_param_names:
-            if 'RenderMode' in param_name:
+            if 'renderMode' in param_name:
                 continue
             val = getattr(self.view_control, param_name)()
             setattr(camera, param_name, val)
@@ -524,23 +543,11 @@ class V3dMovie:
         # virtual void setRenderMode_Alpha(bool b);
         # virtual void setRenderMode_Cs3d(bool b);
         rm = self.view_control.renderMode()
-        camera.getRenderMode_Cs3d = (rm == 0)
-        camera.getRenderMode_Alpha = (rm == 1)
-        camera.getRenderMode_Mip = (rm == 2) # boolean        
+        camera.renderMode_Cs3d = (rm == 0)
+        camera.renderMode_Alpha = (rm == 1)
+        camera.renderMode_Mip = (rm == 2) # boolean        
         # Rotation we handle explicitly
-        # convert to radians
-        DegToRad = math.pi / 180.0
-        xRot = camera.xRot * DegToRad
-        yRot = camera.yRot * DegToRad
-        zRot = camera.zRot * DegToRad
-        # construct rotation matrix
-        R = v3d.Rotation()
-        R.setRotationFromThreeAnglesThreeAxes(
-                v3d.BodyRotationSequence, 
-                xRot, v3d.XAxis, 
-                yRot, v3d.YAxis, 
-                zRot, v3d.ZAxis)
-        camera.quaternion = v3d.Quaternion(R)
+        camera.populate_quaterion()
         return camera
         
     def append_current_view(self, interval=2.0):
@@ -549,6 +556,48 @@ class V3dMovie:
             interval = 0.0
         self.key_frames.append(V3dKeyFrame(camera_position = camera, 
                                            interval = interval))
+        
+    def save_parameter_file(self, file_object):
+        """
+        Writes an xml file containing the movie parameters.
+        file_object parameter must have a write() method.
+        """
+        paramDocument = getDOMImplementation().createDocument(None, "v3d_movie", None)
+        root_element = paramDocument.documentElement
+        root_element.setAttribute("frames_per_second", "%.6f" % (1.0/self.seconds_per_frame) )
+        for key_frame in self.key_frames:
+            frame_element = paramDocument.createElement("key_frame")
+            frame_element.setAttribute("interval", "%.2f" % key_frame.interval)
+            camera = key_frame.camera_position
+            for getter_name in self.view_control_param_names:
+                frame_element.setAttribute(getter_name, str(getattr(camera, getter_name)))
+            root_element.appendChild(frame_element)
+        paramDocument.writexml(file_object, addindent="  ", newl="\n")
+        
+    def load_parameter_file(self, file_object):
+        """
+        Reads an xml file containing the movie parameters.
+        """
+        paramDocument = xml.dom.minidom.parse(file_object)
+        root_element = paramDocument.documentElement
+        self.seconds_per_frame = 1.0 / float(root_element.getAttribute("frames_per_second"))
+        self.key_frames = []
+        for frame_element in root_element.getElementsByTagName("key_frame"):
+            interval = float(frame_element.getAttribute("interval"))
+            camera = CameraPosition()
+            for getter_name in self.view_control_param_names:
+                val = frame_element.getAttribute(getter_name)
+                if "False" == val: 
+                    val = False
+                elif "True" == val: 
+                    val = True
+                else: 
+                    val = int(val)
+                setattr(camera, getter_name, val)
+                # print getter_name, val
+            camera.populate_quaterion()
+            self.key_frames.append(V3dKeyFrame(camera_position = camera, 
+                                   interval = interval))
 
 
 # Standard python technique for optionally running this file as
