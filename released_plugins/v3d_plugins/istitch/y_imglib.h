@@ -299,6 +299,12 @@ public:
 	
 	Y_VIM()
 	{
+		pVim=NULL;
+		sz=NULL;
+		
+		lut=NULL;
+		min_vim=NULL; max_vim=NULL;
+		
 		b_thumbnailcreated = false;
 	}
 	
@@ -317,7 +323,15 @@ public:
 		
 		T2 start[3], end[3];
 		
-		sz = new T2 [3];
+		try
+		{
+			sz = new T2 [3];
+		}
+		catch (...) 
+		{
+			printf("Fail to allocate memory for sz.\n");
+			return false;
+		}
 		
 		char buf[2048];
 		string fn_str;
@@ -489,7 +503,7 @@ public:
 		
 		
 		// adjusting
-		T2 len = 3;
+		T2 len = 3; // x y z
 		
 		try
 		{
@@ -514,8 +528,8 @@ public:
 				if(lut[i].start_pos[j] < min_vim[j])
 					min_vim[j] = lut[i].start_pos[j];
 				
-				if(lut[i].start_pos[j] > max_vim[j])
-					max_vim[j] = lut[i].start_pos[j];
+				if(lut[i].end_pos[j] > max_vim[j])
+					max_vim[j] = lut[i].end_pos[j];
 			}
 			
 		}
@@ -538,10 +552,16 @@ public:
 		fprintf(pFileLUT, "%s \n\n", fn_thumbnail);
 		
 		fprintf(pFileLUT, "# tiles \n"); // TC_COMMENT2
-		fprintf(pFileLUT, "%d \n\n", tilesList.size());
+		fprintf(pFileLUT, "%d \n\n", number_tiles);
+		
+		if(!max_vim || !min_vim)
+		{
+			QMessageBox::information(0, "TC file writing", QObject::tr("Your .tc data structure is illegal."));
+			return;
+		}
 		
 		fprintf(pFileLUT, "# dimensions (XYZC) \n"); // TC_COMMENT3
-		fprintf(pFileLUT, "%ld %ld %ld %ld \n\n", max_vim[0]-min_vim[0]+1, max_vim[1]-min_vim[1]+1, max_vim[2]-min_vim[2]+1, tilesList.at(0).sz_image[3]);
+		fprintf(pFileLUT, "%ld %ld %ld %ld \n\n", max_vim[0]-min_vim[0]+1, max_vim[1]-min_vim[1]+1, max_vim[2]-min_vim[2]+1, sz[3]);
 		
 		// init
 		origin_x = min_vim[0]; origin_y = min_vim[1]; origin_z = min_vim[2];
@@ -554,7 +574,7 @@ public:
 		fprintf(pFileLUT, "%lf %lf %lf \n\n", rez_x, rez_y, rez_z);
 		
 		fprintf(pFileLUT, "# image coordinates look up table \n"); // TC_COMMENT6
-		for(int j=0; j<tilesList.size(); j++)
+		for(int j=0; j<number_tiles; j++)
 		{
 			string fn = QString(lut[j].fn_img.c_str()).remove(0, QFileInfo(QString(lut[j].fn_img.c_str())).path().length()+1).toStdString();
 			
@@ -607,6 +627,9 @@ public:
 	// construct lookup table given adjusted tilesList
 	void y_clut(T2 n)
 	{
+		number_tiles = n; // init
+		sz[3] = tilesList.at(0).sz_image[3];
+		
 		lut = new LUT [n];
 		
 		for(T2 i=0; i<n; i++)

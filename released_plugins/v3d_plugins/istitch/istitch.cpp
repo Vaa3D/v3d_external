@@ -5277,6 +5277,7 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 	if( !vim.y_load(filename) )
 		return -1;
 	
+	//vim.y_save(QString(filename.c_str()).append(".tc").toStdString()); ///< Test y_load and y_save funcs
 	
 	// point navigating
 	RegionNavigateDialog dialog(parent, vim.sz);
