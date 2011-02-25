@@ -341,15 +341,20 @@ class MAPiewerPlugin : public QObject, public V3DPluginInterface
 // v3d interface	
 public:
 	QStringList menulist() const;
+	
 	void domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent);
 	
 	QStringList funclist() const {return QStringList();}
+	
 	void dofunc(const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output, QWidget *parent) {}	
+	
 	void iViewer(V3DPluginCallback &callback, QWidget *parent);
 	
 	void resampling_tc(V3DPluginCallback &callback, QWidget *paren);
 
 	void resampling_rawdata(V3DPluginCallback &callback, QWidget *parent);
+	
+	void tifdata_rawdata(V3DPluginCallback &callback, QWidget *parent);
 	
 	Y_VIM<float, long, indexed_t<long, float>, LUT<long> > vim;
 	

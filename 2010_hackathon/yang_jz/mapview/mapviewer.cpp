@@ -514,6 +514,7 @@ QStringList MAPiewerPlugin::menulist() const
     return QStringList() << tr("load Image")
 						 << tr("generate thumbnail map from tc file")
 	                     << tr("generate thumbnail map from raw data")
+	                     << tr("tif data convert to raw data")
 						 << tr("help");
 }
 
@@ -530,6 +531,10 @@ void MAPiewerPlugin::domenu(const QString &menu_name, V3DPluginCallback &callbac
 	else if(menu_name == tr("generate thumbnail map from raw data")) 
 	{
 		resampling_rawdata(callback, parent);
+	}
+	else if(menu_name == tr("tif data convert to raw data")) 
+	{
+		tifdata_rawdata(callback, parent);
 	}
 	else if (menu_name == tr("help"))
 	{
@@ -931,6 +936,7 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 	callback.pushImageIn3DWindow(curwin);
 	
 	V3DLONG sz_tmp[4];
+	
 	//////////////////////save tc.file
 	
 	REAL *scale = new REAL [6];
@@ -1021,6 +1027,192 @@ void MAPiewerPlugin::iViewer(V3DPluginCallback &callback, QWidget *parent)
 	if (inw && b_show)
 	{
 		inw->show();
+	}
+}
+
+void MAPiewerPlugin::tifdata_rawdata(V3DPluginCallback &callback, QWidget *parent)
+{
+	QString m_FileName = QFileDialog::getOpenFileName(parent, QObject::tr("Open profile"), "", QObject::tr("Supported file (*.tc)"));
+	if(m_FileName.isEmpty())	
+		return;
+	// tiled images path
+	QString curFilePath = QFileInfo(m_FileName).path();
+	
+	curFilePath.append("/");
+	
+	string filename = m_FileName.toStdString();
+	
+	if(vim.y_load(filename)!= true)
+	{
+		QMessageBox::information(0, "TC file reading", QObject::tr("tc file is illegal"));
+		return ;
+	}
+	long vx, vy, vz, vc;	
+	
+	void *pData = NULL;
+	
+	ImagePixelType datatype;
+	
+	string fn_sub;
+	
+	for(long ii=0; ii<vim.number_tiles; ii++)
+	{	
+		cout << "satisfied image: "<< vim.lut[ii].fn_img << endl;
+		
+		char * curFileSuffix = getSurfix(const_cast<char *>(vim.lut[ii].fn_img.c_str()));
+		
+		//QString tt = GetSuffix(vim.lut[ii].fn_img);
+		
+		//int pos=(vim.lut[ii].fn_img).Find(".");
+		//GetSuffix
+		//CString::MakeUpper();全部转化为大写;
+		//CString::MakeLower();全部转化为小写
+		cout << "suffix ... " << curFileSuffix << endl; // 
+		
+		if (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0)
+		{
+			QString curPath = curFilePath;
+			
+			string fn = curPath.append( QString(vim.lut[ii].fn_img.c_str()) ).toStdString();
+			
+			string ff = QString(vim.lut[ii].fn_img.c_str()).toStdString();
+			
+			qDebug()<<"testing..."<<curFilePath<< fn.c_str();
+			
+			int i = ff.find(".", 0 ); 
+			
+			string fn_sub(ff.substr(0,i));
+			
+			char * imgSrcFile = const_cast<char *>(fn.c_str());
+			
+			printf("i=%ld\n",i);
+			
+			V3DLONG *sz = 0; 
+			
+			int datatype_relative = 0;
+			
+			unsigned char* tmpData = 0;
+			
+			if(loadImage(imgSrcFile,tmpData,sz,datatype_relative)!=true)
+			{
+				QMessageBox::information(0, "Load Image", QObject::tr("File load failure"));
+				return;
+				
+			}
+			printf("2222222222222");
+			
+			if(datatype_relative ==1)
+			{
+				datatype = V3D_UINT8;
+			}
+			else if(datatype_relative == 2)
+			{
+				datatype = V3D_UINT16;
+			}
+			else if(datatype_relative==4)
+			{
+				datatype = V3D_FLOAT32;
+			}
+			
+			vx = sz[0];
+			vy = sz[1];
+			vz = sz[2];
+			vc = sz[3];
+			
+			long pagesz_vim = vx*vy*vz*vc;
+						
+			void * pData = NULL;
+			
+			switch (datatype)
+			{
+				case V3D_UINT8:
+					try
+				{
+					pData  = new unsigned char [pagesz_vim];
+					
+					memset(pData, 0, sizeof(unsigned char)*pagesz_vim);
+				}
+					catch (...) 
+				{
+					printf("Fail to allocate memory.\n");
+					return ;
+				}
+					
+					
+					break;
+					
+				case V3D_UINT16:
+					try
+				{
+					pData = new unsigned short [pagesz_vim]; 
+					memset(pData, 0, sizeof(unsigned short)*pagesz_vim);
+				}
+					catch (...)
+				{
+					printf("Fail to allocate memory in data combination.");
+					if (pData) {delete []pData; pData=0;}
+					return;
+				}
+					break;
+					
+				case V3D_FLOAT32:
+					try
+				{
+					pData = new float [pagesz_vim];
+					memset(pData, 0, sizeof(float)*pagesz_vim);
+				}
+					catch (...)
+				{
+					printf("Fail to allocate memory in data combination.");
+					if (pData) {delete []pData; pData=0;}
+					return;
+				}
+					break;
+					
+				default:
+					printf("Right now only support UINT8, UINT16, and FLOAT32.\n", 0);
+					break;
+			}
+		
+			switch (datatype)
+			{
+				case V3D_UINT8:
+				
+					(unsigned char*)pData = (unsigned char*)tmpData;
+					
+					break;
+					
+				case V3D_UINT16:
+			
+					(unsigned short*)pData = (unsigned short*)tmpData;
+					break;
+					
+				case V3D_FLOAT32:
+		
+					(float*)pData = (float*)tmpData;
+					break;
+					
+				default:
+					printf("Right now only support UINT8, UINT16, and FLOAT32.\n", 0);
+					break;
+			}
+			
+			V3DLONG sz_tmp[4];
+			
+			QString tmp_filename = curFilePath + "/" ;
+			
+			tmp_filename.append(QString(fn_sub.c_str()));
+			
+			tmp_filename += ".raw";			
+			
+			sz_tmp[0] = vx; sz_tmp[1] = vy; sz_tmp[2] = vz; sz_tmp[3] = vc; 
+			
+			if (saveImage(tmp_filename.toStdString().c_str(), (const unsigned char *)pData, sz_tmp, datatype)!=true)
+			{
+				fprintf(stderr, "Error happens in file writing. Exit. \n");
+				return ;
+			}
+		}
 	}
 }
 void XMapView::setImgData(ImagePlaneDisplayType ptype,ImagePixelType dtype,ImageDisplayColorType Ctype,V3DLONG *sz_compressed,V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,unsigned char *pdata,double * p_vmax, double* p_vmin)
