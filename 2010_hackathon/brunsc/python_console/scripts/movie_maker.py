@@ -23,6 +23,8 @@ class Interpolator:
         if len(param_value_list) < 1:
             raise LookupError("No key values to interpolate from")
         if param < param_value_list[0][0]:
+            print "param = %f" % param
+            print "first param = %f" % param_value_list[0][0]
             raise ValueError("interpolator parameter value too small")
         if param > param_value_list[-1][0]:
             print param, param_value_list[-1][0]
@@ -329,8 +331,12 @@ class V3dMovie:
         self.interpolation_list['quaternion'] = []
         # Populate parameter lists with one entry per key-frame
         # Each entry in a parameter lists holds a [time, value] pair
+        frame_count = 0
         for key_frame in self.key_frames:
-            elapsed_time += key_frame.interval
+            frame_count += 1
+            # Don't advance time before first frame
+            if frame_count > 1:
+                elapsed_time += key_frame.interval
             for param_name in self.view_control_param_names:
                 self.interpolation_list[param_name].append([elapsed_time, 
                             getattr(key_frame.camera_position, param_name)],)
@@ -475,15 +481,17 @@ class V3dMovie:
             frame_time = self.seconds_per_frame * 1.01
             # First emit in-between frames
             # print key_frame.interval
-            while frame_time < key_frame.interval:
-                # TODO interpolate
-                yield self.interpolate_frame(
-                            total_time, frame_index, 
-                            key_frame.interpolator,
-                            key_frame.quat_interpolator)
-                # yield V3dMovieFrame() # TODO interpolate
-                frame_time += self.seconds_per_frame
-                total_time += self.seconds_per_frame
+            # But not before first frame
+            if frame_index > 0:
+                while frame_time < key_frame.interval:
+                    # TODO interpolate
+                    yield self.interpolate_frame(
+                                total_time, frame_index, 
+                                key_frame.interpolator,
+                                key_frame.quat_interpolator)
+                    # yield V3dMovieFrame() # TODO interpolate
+                    frame_time += self.seconds_per_frame
+                    total_time += self.seconds_per_frame
             # Then emit the key frame
             yield key_frame
             total_time += self.seconds_per_frame
