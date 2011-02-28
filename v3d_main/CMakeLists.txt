@@ -8,7 +8,9 @@ file(STRINGS
     V3D_VERSION_TMP
     REGEX "VersionInfo thisVersionOfV3D(.*)")
 string(REGEX MATCH "[0-9+]\\.[0-9.]+" V3D_VERSION_TMP ${V3D_VERSION_TMP})
-set(V3D_VERSION ${V3D_VERSION_TMP} CACHE INTERNAL "Current version of V3D" FORCE)
+set(V3D_PATCH_VERSION "" CACHE STRING "Additional patch version string on main V3D version")
+set(V3D_VERSION "${V3D_VERSION_TMP}${V3D_PATCH_VERSION}" CACHE STRING "Current version of V3D" FORCE)
+mark_as_advanced(V3D_VERSION)
 # message("V3D version = " ${V3D_VERSION})
 
 if(NOT LIBRARY_OUTPUT_PATH)
