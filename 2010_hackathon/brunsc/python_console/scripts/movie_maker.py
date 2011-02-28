@@ -172,7 +172,7 @@ class QuaternionInterpolator(Interpolator):
             # TODO - support loop, linear
             t3 = t2 + t2 - t1
             v3 = v2
-        return self.catmull_quat(v0, v1, v2, v3, alpha)
+        return self.catmull_quat([v0, v1, v2, v3], alpha)
     
     def quat_dot(self, q1, q2):
         result = 0.0
@@ -180,25 +180,31 @@ class QuaternionInterpolator(Interpolator):
             result += q1[ix] * q2[ix]
         return result
     
-    def slerp(self, q1, q2, alpha, spin=0):
+    def slerp(self, q1, q2, alpha, spin=0, debug=False, bFlip=None):
         """
         Spherical linear interpolation of quaternions.
         param alpha is between 0.0 and 1.0, but is allow outside that range
         Returns an interpolated quaternion.
         Adapted from appendix E of Visualizing Quaternions by AJ Hanson
         """
+        if debug: debug = "  slerp debug"
         # assert 0 <= alpha <= 1.0
         # cosine theta = dot product of a and b
         cos_t = self.quat_dot(q1,q2)
+        if debug: debug += " %f" % cos_t
         # if B is on opposite hemisphere from A, use -B instead
-        bFlip = False
-        if cos_t < 0.0:
-            bFlip = True
+        # ...unless we have been told the bFlip value
+        if None == bFlip:
+            bFlip = False
+            if cos_t < 0.0:
+                bFlip = True
+        if bFlip:
             cos_t = -cos_t
         # If B is (within precision limits) the same as A,
         # just linear interpolate between A and B.
         # Can't do spins, since we don't know what direction to spin.
-        if (1.0 - cos_t) < 1e-7:
+        if (1.0 - abs(cos_t)) < 1e-7:
+            if debug: debug += " linear"
             beta = 1.0 - alpha
         else: # normal case
             theta = math.acos(cos_t)
@@ -208,22 +214,54 @@ class QuaternionInterpolator(Interpolator):
             alpha = math.sin(alpha*phi) / sin_t
         if bFlip:
             alpha = -alpha
+            if debug: debug += " bFlip"
         result = v3d.Quaternion()
         for i in range(4):
             result[i] = beta * q1[i] + alpha * q2[i]
+        if debug: debug += str(result[:])
         result.normalizeThis()
+        if debug: debug += str(result[:])
+        if debug: debug += " %f, %f" % (beta, alpha)
+        if debug: print debug
         return result
 
-    def catmull_quat(self, q00, q01, q02, q03, t):
+    def _bFlip(self, qA, qB):
+        """
+        Whether quaternions are in the same hemisphere
+        """
+        return (self.quat_dot(qA,qB) < 0.0)
+        
+        
+    def catmull_quat(self, quats, t):
         """
         Interpolate orientations using Catmull-Rom splines in quaternion space.
         Adapted from appendix E of Visualizing Quaternions by AJ Hanson
         """
-        q10 = self.slerp(q00, q01, t+1.0)
-        q11 = self.slerp(q01, q02, t)
-        q12 = self.slerp(q02, q03, t-1.0)
-        q20 = self.slerp(q10, q11, (t+1.0)/2.0)
-        q21 = self.slerp(q11, q12, t/2.0)
+        # Put all control points in the same hemisphere as q01.
+        # ...then hardcode slerps to never bFlip, to avoid unwanted
+        # discontinuities during interpolation.
+        q0 = quats[:]
+        if self._bFlip(q0[0], q0[1]):
+            q = v3d.Quaternion(q0[0]) # copy
+            q[:] = map(lambda x: -x, q) # negate
+            q0[0] = q
+        if self._bFlip(q0[1], q0[2]):
+            q = v3d.Quaternion(q0[2]) # copy
+            q[:] = map(lambda x: -x, q) # negate
+            q0[2] = q
+        # ...well, actually put q03 in same hemisphere as q02
+        if self._bFlip(q0[2], q0[3]):
+            q = v3d.Quaternion(q0[3]) # copy
+            q[:] = map(lambda x: -x, q) # negate
+            q0[3] = q
+        q10 = self.slerp(q0[0], q0[1], t+1.0, bFlip=False)
+        q11 = self.slerp(q0[1], q0[2], t, bFlip=False)
+        q12 = self.slerp(q0[2], q0[3], t-1.0, bFlip=False)
+        q20 = self.slerp(q10, q11, (t+1.0)/2.0, bFlip=False)
+        q21 = self.slerp(q11, q12, t/2.0, bFlip=False)
+        # debug
+        # print "  ", q10[:], q11[:], q12[:], q20[:], q21[:], t
+        # print "  q20 = ", q20[:], t
         return self.slerp(q20, q21, t)
 
 
@@ -535,6 +573,9 @@ class V3dMovie:
                     angles[0] * RadToDeg,
                     angles[1] * RadToDeg,
                     angles[2] * RadToDeg)
+        # debugging
+        # q = camera_position.quaternion
+        # print "Quaternion: ", q[:], "Euler angles: ", angles[:]
 
     def get_current_v3d_camera(self):
         if not self.view_control:
