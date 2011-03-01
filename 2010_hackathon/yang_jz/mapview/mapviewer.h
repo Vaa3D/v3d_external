@@ -28,7 +28,6 @@
 #include "basic_triview.h"
 #include "mg_utilities.h"
 #include "mg_image_lib11.h"
-
 #include "basic_landmark.h"
 
 #include "basic_4dimage.h"
@@ -56,6 +55,10 @@
 
 #include "volimg_proc.h"
 #include <iostream>
+
+#include <QMutex>
+#include <QQueue>
+#include <QThread>
 
 //class HoverPoints;
 //class QLineEdit;
@@ -116,7 +119,7 @@ public:
 	
 	//void setImgData(ImagePlaneDisplayType ptype,ImagePixelType dtype,V3DLONG *sz_compressed,V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,unsigned char *pdata);
 	
-	void setImgData(ImagePlaneDisplayType ptype,ImagePixelType dtype,ImageDisplayColorType Ctype, V3DLONG *sz_compressed,V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,unsigned char *pdata,double * p_vmax, double* p_vmin);
+	void setImgData(ImagePlaneDisplayType ptype,ImagePixelType dtype,ImageDisplayColorType Ctype,V3DLONG *sz_compressed,V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,V3DLONG xslicesize,V3DLONG yslicesize, V3DLONG zslicesize, unsigned char *pdata,double * p_vmax, double* p_vmin);
 
 	void Setwidget(V3DPluginCallback &callback, QString m_FileName, QString curFilePathInput, float scaleFactorInput);
 	
@@ -126,7 +129,9 @@ public:
 	int disp_scale;
 	
 	bool flag_syn;
-	
+	bool b_xyview;
+	bool b_yzview;
+	bool b_zxview;
 	QPoint dragStartPosition;
 	
 	QPoint dragEndPosition;
@@ -141,6 +146,10 @@ public:
 	
 	long in_endx ;
 	long in_endy ;
+	
+	long in_xslicesize;
+	long in_yslicesize;
+	long in_zslicesize;
 	
 	bool b_creadWindow;
 	
@@ -194,7 +203,6 @@ private:
 	QPointF curDisplayCenter0;
 	
 	QPoint curMousePos;
-	bool bMouseCurorIn;
 	
 	unsigned char *imagData;
 	
@@ -212,8 +220,10 @@ private:
 	
 	bool b_displayFocusCrossLine;
 	bool b_mouseend;
-	
+	bool b_Lmouse;
 	bool b_mousmove;
+	bool bMouseCurorIn;
+	
 	int focusPosInWidth, focusPosInHeight;
 	
 	unsigned char *compressed;
@@ -271,6 +281,10 @@ public:
 	
 	QLabel *xSliderLabel, *ySliderLabel, *zSliderLabel;
 	
+	QSpinBox *xSizeSpinBox, *ySizeSpinBox, *zSizeSpinBox;
+	
+	QLabel *xSizeLabel, *ySizeLabel, *zSizeLabel;
+	
 	QPushButton* dataCopyButton;
 	
 	QCheckBox *CreateViewCheckBox;
@@ -300,7 +314,7 @@ public:
 public:
 	long cx, cy, cz, cc; // compressed data
 	long cur_x, cur_y, cur_z;
-	
+	long sx,sy,sz;
 	long channel_compressed_sz;
 	
 	long init_x, init_y, init_z; // control window
@@ -310,6 +324,8 @@ public:
 	long roi_start_x, roi_start_y, roi_start_z;
 	
 	long roi_end_x, roi_end_y, roi_end_z;
+	
+	long xslicesize,yslicesize,zslicesize;
 	
 	unsigned char *compressed1d;
 	
@@ -356,17 +372,28 @@ public:
 	
 	void tifdata_rawdata(V3DPluginCallback &callback, QWidget *parent);
 	
+	void loadtc_save(V3DPluginCallback &callback, QWidget *parent);
+	
 	Y_VIM<float, long, indexed_t<long, float>, LUT<long> > vim;
 	
 		
 public:
 	
 };
-
-
+class Mutthread_tiftoraw : public QThread
+{
+	//QT_THREAD_SUPPORT
+	Q_OBJECT
+public:
+	Mutthread_tiftoraw(const QString filename, int n);
+	void run();
+	Y_VIM<float, long, indexed_t<long, float>, LUT<long> > vim;
+	QString m_FileName;
+};
 // indexed data structure
 class IndexedData
 {
+	Y_VIM<float, long, indexed_t<long, float>, LUT<long> > vim;
 	
 };
 
