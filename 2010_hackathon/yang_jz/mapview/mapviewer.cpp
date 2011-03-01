@@ -1406,7 +1406,7 @@ XMapView::XMapView(QWidget *parent)
 	in_startx = in_starty = in_endx = in_endy = 0;
 	mousenumber = 0;
 	
-	in_xslicesize = in_yslicesize = in_zslicesize = 0;
+	in_xslicesize = in_yslicesize = in_zslicesize = 20;
 	
 	imagData = 0;
 		
@@ -1417,8 +1417,6 @@ XMapView::~XMapView()
 	mousenumber = 0;
 	
 }
-
-
 void ImageSetWidget::drawdata()
 {
 	 Bcopy = true;
@@ -1451,7 +1449,6 @@ void ImageSetWidget::drawdata()
 	Bcopy = true;
 
 }
-
 void ImageSetWidget::initialize()
 {	
 	// GUI related 
@@ -1504,7 +1501,7 @@ void ImageSetWidget::initialize()
 	
 	init_x = init_y = init_z = 0;
 	
-	xslicesize = yslicesize = zslicesize = 0;
+	xslicesize = yslicesize = zslicesize = 20;
 	sx = sy = sz = 0;
 	
 	
@@ -2054,7 +2051,7 @@ void XMapView::mouseReleaseEvent(QMouseEvent * e)
 				
 				end_x = dragEndPosition.x();
 				end_y = dragEndPosition.y();
-				
+				//end_z = cz ;
 				in_startx = (start_x < end_x)? start_x:end_x;
 				in_starty = (start_y < end_y)? start_y:end_y;
 				
@@ -2298,8 +2295,8 @@ void XMapView::enterEvent (QEvent * e)
 void XMapView::leaveEvent (QEvent * e)
 {
 
-	bMouseCurorIn = false;
-	update();
+	//bMouseCurorIn = false;
+	//update();
 }
 
 void XMapView::drawROI(QPainter *painter)
@@ -2323,7 +2320,7 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 	long ty = 0;
 	long tz = 0;
     
-	//qDebug()<<"start end x y z "<< start_x << start_y << start_z << end_x << end_y << end_z;
+	qDebug()<<"start end x y z "<< start_x << start_y << start_z << end_x << end_y << end_z;
    
 	//qDebug()<<"vim x y z "<< vim.sz[0] <<vim.sz[1] << vim.sz[2] ;
 		
@@ -2340,6 +2337,8 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 			start_z = (start_z < 0)? 0: start_z;
 			
 			end_z = (end_z > vim.sz[2])? vim.sz[2]:end_z;
+			
+			qDebug()<<"imgPlaneZ "<< start_z << end_z << in_zslicesize<<tz;
 			
 			break;
 			
@@ -2382,7 +2381,7 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 	vz = end_z - start_z ;//+ 1;
 	vc = vim.sz[3];
 	
-	//printf("vx=%ld vy=%ld vz=%ld vc=%ld\n",vx,vy,vz,vc);
+	printf("vx=%ld vy=%ld vz=%ld vc=%ld\n",vx,vy,vz,vc);
 	
 	long pagesz_vim = vx*vy*vz*vc;
     
@@ -2443,9 +2442,9 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 	{
 		cout << "satisfied image: "<< vim.lut[0].fn_img << endl;
 		
-		//char * curFileSuffix = getSurfix(const_cast<char *>(vim.lut[0].fn_img.c_str()));
+		char * curFileSuffix = getSurfix(const_cast<char *>(vim.lut[0].fn_img.c_str()));
 		
-		//cout << "suffix ... " << curFileSuffix << endl; // 
+		cout << "suffix ... " << curFileSuffix << endl; // 
 		
 		QString curPath = curFilePath;
 		
@@ -2724,6 +2723,7 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 		default: 
 			break;
 	}
+
 	size_t end_t = clock();
 	
 	cout<<"time elapse after loading configuration info ... "<<end_t-start_t<<endl;
