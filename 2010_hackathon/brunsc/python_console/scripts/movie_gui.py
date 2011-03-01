@@ -30,6 +30,8 @@ class SingleKeyFrameLabel(QtGui.QLabel):
     """
     Cartoon representation of a single frame, for use in movie GUI.
     """
+    go_to_frame = QtCore.Signal(object)
+    
     def __init__(self, parent=None, frame=None):
         QtGui.QLabel.__init__(self, parent)
         self.frame = frame
@@ -38,8 +40,28 @@ class SingleKeyFrameLabel(QtGui.QLabel):
         self.frameIcon = QtGui.QIcon(os.path.join(iconPath, "film_frame.png"))
         self.setPixmap(self.frameIcon.pixmap(50,50))
         self.setFixedSize(QtCore.QSize(50, 50))
-        self.setStyleSheet("border: 4px solid grey")
+        self.setToolTip("movie key frame")
+        
+    def mouseMoveEvent(self, e):
+        if e.buttons() != QtCore.Qt.RightButton:
+            return
+        mimeData = QtCore.QMimeData()
+        drag = QtGui.QDrag(self)
+        drag.setMimeData(mimeData)
+        drag.setHotSpot(e.pos() - self.rect().topLeft())
+        dropAction = drag.start(QtCore.Qt.MoveAction)
 
+    def mousePressEvent(self, e):
+        QtGui.QLabel.mousePressEvent(self, e)
+        if e.button() == QtCore.Qt.LeftButton:
+            pass
+            # print 'press'
+ 
+    def mouseDoubleClickEvent(self, event):
+        "After double click, set V3D 3D viewer to this key frame"
+        # print "double click sent"
+        self.go_to_frame.emit(self.frame)
+        
 
 class FrameTransitionLabel(QtGui.QLabel):
     """
@@ -53,6 +75,7 @@ class FrameTransitionLabel(QtGui.QLabel):
         self.arrowIcon = QtGui.QIcon(os.path.join(iconPath, "arrow_right.png"))
         self.setPixmap(self.arrowIcon.pixmap(50,30))
         self.setFixedSize(QtCore.QSize(50, 50))
+        self.setToolTip("Transition takes %.2f seconds" % frame.interval)
         
         
 class MovieGui(QtGui.QDialog):
@@ -60,6 +83,7 @@ class MovieGui(QtGui.QDialog):
         QtGui.QDialog.__init__(self, parent)
         self.ui = Ui_movie_dialog()
         self.ui.setupUi(self)
+        self.setAcceptDrops(True)
         self.movie = movie_maker.V3dMovie()
         iconPath = os.path.join(os.path.dirname(movie_maker.__file__), 'icons')
         self.playIcon = QtGui.QIcon(os.path.join(iconPath, "play.png"))
@@ -142,7 +166,12 @@ Press "Save images..." to save the movie frames to disk.
     def update_frame_interval(self, value_text):
         self.frame_interval = float(value_text)
         
+    def show_frame(self, frame):
+        self.movie.set_current_v3d_camera(frame.camera_position)
+        self.movie.image_window.update() # The obviates need to print to get window update
+
     def append_view(self):
+        "Add a new key frame based on the current view in the V3D 3D viewer"
         # Perhaps there was no 3D viewer when the MovieGui was launched
         try:
             self.movie.append_current_view(interval=self.frame_interval)
@@ -155,16 +184,19 @@ Press "Save images..." to save the movie frames to disk.
         self._enter_state('ready') # stop current animation
 
     def append_cartoon_frame(self, frame):
+        "Add one frame cartoon to the cartoon panel"
         layout = self.ui.keyLabelFrame.layout()
         if 1 < layout.count():
             # arrow
-            layout.addWidget(FrameTransitionLabel(self, frame))
-            layout.activate()
-        layout.addWidget(SingleKeyFrameLabel(self, frame))        
-        layout.activate()
+            arrow = FrameTransitionLabel(self, frame)
+            layout.addWidget(arrow)
+        frame_cartoon = SingleKeyFrameLabel(self, frame)
+        frame_cartoon.go_to_frame.connect(self.show_frame)
+        layout.addWidget(frame_cartoon)
         
     # There are three states - ready, playing, and paused
     def _enter_state(self, state):
+        "Transition movie maker GUI to a new state, such as 'ready', 'playing', etc."
         # Ready to play from start
         self.play_state = state
         if 'ready' == state:
