@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>545</width>
-    <height>255</height>
+    <width>554</width>
+    <height>263</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,6 +29,9 @@
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
            <widget class="QPushButton" name="addCurrentViewButton">
+            <property name="toolTip">
+             <string>Add new key frame from current V3D 3D viewer state to your movie</string>
+            </property>
             <property name="text">
              <string>Add current view</string>
             </property>
@@ -42,37 +45,63 @@
             <property name="text">
              <string>after</string>
             </property>
-            <property name="buddy">
-             <cstring>frameIntervalLineEdit</cstring>
-            </property>
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="frameIntervalLineEdit">
+           <widget class="QComboBox" name="frameIntervalSelector">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="maximumSize">
              <size>
-              <width>50</width>
+              <width>65</width>
               <height>16777215</height>
              </size>
             </property>
-            <property name="text">
-             <string notr="true">2.0</string>
+            <property name="toolTip">
+             <string>Amount of time to transition from the previous key frame to the new view</string>
             </property>
-            <property name="maxLength">
-             <number>6</number>
+            <property name="editable">
+             <bool>true</bool>
             </property>
-            <property name="placeholderText">
-             <string/>
+            <property name="currentIndex">
+             <number>2</number>
             </property>
+            <property name="iconSize">
+             <size>
+              <width>16</width>
+              <height>16</height>
+             </size>
+            </property>
+            <item>
+             <property name="text">
+              <string>0.10</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1.00</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>2.50</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>10.00</string>
+             </property>
+            </item>
            </widget>
           </item>
           <item>
            <widget class="QLabel" name="label_3">
             <property name="text">
              <string>seconds.  </string>
-            </property>
-            <property name="buddy">
-             <cstring>frameIntervalLineEdit</cstring>
             </property>
            </widget>
           </item>
@@ -104,13 +133,44 @@
     </layout>
    </item>
    <item>
-    <widget class="QDialogButtonBox" name="playButtonBox">
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Help|QDialogButtonBox::Reset</set>
+    <widget class="QFrame" name="frame">
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
      </property>
-     <property name="centerButtons">
-      <bool>true</bool>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
      </property>
+     <property name="lineWidth">
+      <number>0</number>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_5">
+      <property name="margin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QDialogButtonBox" name="playButtonBox">
+        <property name="standardButtons">
+         <set>QDialogButtonBox::Help|QDialogButtonBox::Reset</set>
+        </property>
+        <property name="centerButtons">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="playbackLabel">
+        <property name="minimumSize">
+         <size>
+          <width>80</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>(idle)</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item>
@@ -135,9 +195,12 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>519</width>
+        <width>528</width>
         <height>61</height>
        </rect>
+      </property>
+      <property name="toolTip">
+       <string>Storyboard of successive key frames in your movie</string>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <property name="leftMargin">
@@ -230,6 +293,9 @@
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="toolTip">
+      <string/>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>

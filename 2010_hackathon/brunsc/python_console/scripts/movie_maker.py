@@ -387,7 +387,7 @@ class V3dMovie:
         Play back movie frames at a rate no faster than real-time.
         """
         # Use a generator, to provide an opportunity to update GUI between frames
-        for frame_number in self.generate_play_frames():
+        for elapsed_time in self.generate_play_frames():
             pass
             
     def generate_play_frames(self):
@@ -399,6 +399,7 @@ class V3dMovie:
         #
         movie_start_clocktime = time.clock()
         frame_start_clocktime = movie_start_clocktime
+        movie_elapsed_time = 0.0
         frame_number = 0
         for frame in self.generate_frame_views():
             # Are we playing too fast?
@@ -410,7 +411,8 @@ class V3dMovie:
                 time.sleep(real_time_deficit)
             frame_start_clocktime = now
             frame_number += 1
-            yield frame_number
+            yield movie_elapsed_time
+            movie_elapsed_time += self.seconds_per_frame
 
     def _frame_name(self, dir, root, num):
         fname = "%s_frame_%05d.BMP" % (root, num)

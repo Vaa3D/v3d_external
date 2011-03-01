@@ -99,19 +99,21 @@ class MovieGui(QtGui.QDialog):
         self._updateFrameCount()
         # Frame interval
         interval_validator = QtGui.QDoubleValidator(0.00, 10000.0, 2, 
-                self.ui.frameIntervalLineEdit)
-        self.ui.frameIntervalLineEdit.setValidator(interval_validator)
-        self.connect(self.ui.frameIntervalLineEdit, QtCore.SIGNAL('textChanged(QString)'),
+                self.ui.frameIntervalSelector)
+        self.ui.frameIntervalSelector.setValidator(interval_validator)
+        self.connect(self.ui.frameIntervalSelector, QtCore.SIGNAL('textChanged(QString)'),
                      self.update_frame_interval)
         self.frame_interval = 2.5
-        self.ui.frameIntervalLineEdit.setText(str(self.frame_interval))
+        ix = self.ui.frameIntervalSelector.findText("2.50")
+        self.ui.frameIntervalSelector.setCurrentIndex(ix)
         self._enter_state('ready')
         
     def configure_buttons(self):
         self.connect(self.ui.addCurrentViewButton, QtCore.SIGNAL('clicked()'), 
                self.append_view)
         self.beginningButton = self.ui.playButtonBox.button(QtGui.QDialogButtonBox.Reset)
-        self.beginningButton.setText('Beginning')
+        self.beginningButton.setText('First')
+        self.beginningButton.setToolTip("Go to the first key frame of your movie")
         # self.beginningButton = self.ui.buttonBox.addButton('Beginning', QtGui.QDialogButtonBox.ActionRole)
         self.beginningButton.setIcon(self.skipBackIcon)
         self.beginningButton.setEnabled(False)
@@ -121,10 +123,13 @@ class MovieGui(QtGui.QDialog):
         # self.ui.buttonBox.button(QtGui.QDialogButtonBox.Apply).hide()
         self.playButton = self.ui.playButtonBox.addButton('Play', QtGui.QDialogButtonBox.ActionRole)
         self.playButton.setText("Play")
+        self.playButton.setToolTip("Preview your movie")
         self.playButton.setIcon(self.playIcon)
+        self.playButton.setMinimumWidth(100)
         self.connect(self.playButton, QtCore.SIGNAL('clicked()'),
                self.on_play_pause_pressed)
-        self.endButton = self.ui.playButtonBox.addButton('End', QtGui.QDialogButtonBox.ActionRole)
+        self.endButton = self.ui.playButtonBox.addButton('Last', QtGui.QDialogButtonBox.ActionRole)
+        self.endButton.setToolTip("Go to the final frame of your movie")
         self.endButton.setIcon(self.skipAheadIcon)
         self.endButton.setEnabled(False)
         self.connect(self.endButton, QtCore.SIGNAL('clicked()'),
@@ -135,21 +140,27 @@ class MovieGui(QtGui.QDialog):
                self.save_images)
         # self.saveParametersButton = self.ui.buttonBox.addButton('Save', QtGui.QDialogButtonBox.ApplyRole)
         self.saveParametersButton = self.ui.buttonBox.button(QtGui.QDialogButtonBox.SaveAll)
-        self.saveParametersButton.setText("Save parameters...")
+        self.saveParametersButton.setText("Save...")
+        self.saveParametersButton.setToolTip("Save your movie key frame parameters to a text file (.vmv format)")
         self.connect(self.saveParametersButton, QtCore.SIGNAL('clicked()'),
                self.save_parameters)
         # deleteAllButton used to be a generic button
         self.ui.deleteAllButton = self.ui.buttonBox.button(QtGui.QDialogButtonBox.Reset)
-        self.ui.deleteAllButton.setText('Delete all frames')
+        self.ui.deleteAllButton.setText('Clear')
+        self.ui.deleteAllButton.setToolTip("Delete all frames to start an empty movie")
         self.connect(self.ui.deleteAllButton, QtCore.SIGNAL('clicked()'),
                self.delete_all)
         self.loadButton = self.ui.buttonBox.button(QtGui.QDialogButtonBox.Open)
-        self.loadButton.setText("Load parameters...")
+        self.loadButton.setToolTip("Load movie key frame parameters from a .vmv file")
         self.connect(self.loadButton, QtCore.SIGNAL('clicked()'),
                      self.load_parameters)
         self.helpButton = self.ui.playButtonBox.button(QtGui.QDialogButtonBox.Help)
         self.connect(self.helpButton, QtCore.SIGNAL('clicked()'),
                      self.help)
+        self.ui.buttonBox.button(QtGui.QDialogButtonBox.Close).setToolTip(
+                    "Close the movie maker window")
+        self.ui.buttonBox.button(QtGui.QDialogButtonBox.Save).setToolTip(
+                    "Write movie frame images to disk, so you can make a video file from them")
 
     def help(self):
         QtGui.QMessageBox.information(self, 
@@ -204,6 +215,7 @@ Press "Save images..." to save the movie frames to disk.
             self.playButton.setText('Play')
             self.playButton.setIcon(self.playIcon)
             self._updateFrameCount() # enable play button?
+            self.ui.playbackLabel.setText('  (idle)  ')
         elif 'playing' == state:
             if None == self.play_generator:
                 self.play_generator = self.movie.generate_play_frames()
@@ -223,7 +235,8 @@ Press "Save images..." to save the movie frames to disk.
     def on_play_pause_pressed(self):
         if ('ready' == self.play_state) or ('paused' == self.play_state): # play
             self._enter_state('playing')
-            for n in self.play_generator:
+            for elapsed_time in self.play_generator:
+                self.update_play_time(elapsed_time)
                 QtGui.QApplication.processEvents()
                 if 'playing' != self.play_state:
                     return
@@ -233,6 +246,13 @@ Press "Save images..." to save the movie frames to disk.
         else: # stop
             assert(False)
 
+    def update_play_time(self, elapsed_time):
+        minutes = int(elapsed_time / 60.0)
+        seconds = int(elapsed_time - minutes * 60)
+        hundredths = int((elapsed_time - seconds - minutes * 60) * 100)
+        time_string = "%02dm:%02d.%02ds" % (minutes, seconds, hundredths)
+        self.ui.playbackLabel.setText(time_string)
+        
     def on_beginning_pressed(self):
         self.movie.generate_play_frames().next()
         self._enter_state('ready')
@@ -319,7 +339,7 @@ Press "Save images..." to save the movie frames to disk.
             self.saveImagesButton.setEnabled(False)
             self.saveParametersButton.setEnabled(False)
             self.ui.deleteAllButton.setEnabled(False)
-            self.ui.frameIntervalLineEdit.setEnabled(False)
+            self.ui.frameIntervalSelector.setEnabled(False)
         elif nframes == 1:
             self.ui.keyFrameLabel.setText("One key frame added")
             self.playButton.setEnabled(False)
@@ -328,7 +348,7 @@ Press "Save images..." to save the movie frames to disk.
             self.saveImagesButton.setEnabled(False)
             self.saveParametersButton.setEnabled(True)
             self.ui.deleteAllButton.setEnabled(True)
-            self.ui.frameIntervalLineEdit.setEnabled(True)
+            self.ui.frameIntervalSelector.setEnabled(True)
         else:
             self.ui.keyFrameLabel.setText("%d key frames added" % nframes)
             self.playButton.setEnabled(True)
@@ -337,7 +357,7 @@ Press "Save images..." to save the movie frames to disk.
             self.saveImagesButton.setEnabled(True)
             self.saveParametersButton.setEnabled(True)
             self.ui.deleteAllButton.setEnabled(True)
-            self.ui.frameIntervalLineEdit.setEnabled(True)
+            self.ui.frameIntervalSelector.setEnabled(True)
 
 if __name__ == '__main__':
     movie_gui = MovieGui()
