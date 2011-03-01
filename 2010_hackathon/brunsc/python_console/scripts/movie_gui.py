@@ -25,6 +25,36 @@ To use V3D Movie GUI, you must install either PySide or PyQt4.
             """
         raise
 
+
+class SingleKeyFrameLabel(QtGui.QLabel):
+    """
+    Cartoon representation of a single frame, for use in movie GUI.
+    """
+    def __init__(self, parent=None, frame=None):
+        QtGui.QLabel.__init__(self, parent)
+        self.frame = frame
+        self.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        iconPath = os.path.join(os.path.dirname(movie_maker.__file__), 'icons')
+        self.frameIcon = QtGui.QIcon(os.path.join(iconPath, "film_frame.png"))
+        self.setPixmap(self.frameIcon.pixmap(50,50))
+        self.setFixedSize(QtCore.QSize(50, 50))
+        self.setStyleSheet("border: 4px solid grey")
+
+
+class FrameTransitionLabel(QtGui.QLabel):
+    """
+    Cartoon representation transition between two frames, for use in movie GUI.
+    """
+    def __init__(self, parent=None, frame=None):
+        QtGui.QLabel.__init__(self, parent)
+        self.frame = frame
+        self.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
+        iconPath = os.path.join(os.path.dirname(movie_maker.__file__), 'icons')
+        self.arrowIcon = QtGui.QIcon(os.path.join(iconPath, "arrow_right.png"))
+        self.setPixmap(self.arrowIcon.pixmap(50,30))
+        self.setFixedSize(QtCore.QSize(50, 50))
+        
+        
 class MovieGui(QtGui.QDialog):
     def __init__(self, parent=None):
         QtGui.QDialog.__init__(self, parent)
@@ -119,9 +149,20 @@ Press "Save images..." to save the movie frames to disk.
         except ValueError:
             self.movie = movie_maker.V3dMovie()
             self.movie.append_current_view(interval=self.frame_interval)
+        frame = self.movie.key_frames[-1]
+        self.append_cartoon_frame(frame)
         self._updateFrameCount()
         self._enter_state('ready') # stop current animation
 
+    def append_cartoon_frame(self, frame):
+        layout = self.ui.keyLabelFrame.layout()
+        if 1 < layout.count():
+            # arrow
+            layout.addWidget(FrameTransitionLabel(self, frame))
+            layout.activate()
+        layout.addWidget(SingleKeyFrameLabel(self, frame))        
+        layout.activate()
+        
     # There are three states - ready, playing, and paused
     def _enter_state(self, state):
         # Ready to play from start
@@ -213,8 +254,17 @@ Press "Save images..." to save the movie frames to disk.
             return
         file_object = open(fname, 'r')
         self.movie.load_parameter_file(file_object)
+        self.clear_cartoon_panel()
+        for frame in self.movie.key_frames:
+            self.append_cartoon_frame(frame)
         self._updateFrameCount()
         self.show() # why does window get hidden in this method?
+        
+    def clear_cartoon_panel(self):
+        # Remove the cartoons
+        cartoon = self.ui.keyLabelFrame.layout().takeAt(0)
+        while None != cartoon:
+            cartoon = self.ui.keyLabelFrame.layout().takeAt(0)
         
     def delete_all(self):
         answer = QtGui.QMessageBox.question(self, "Confirm clear movie", 
@@ -223,6 +273,7 @@ Press "Save images..." to save the movie frames to disk.
                  QtGui.QMessageBox.No)
         if answer == QtGui.QMessageBox.Yes:
             self.movie.key_frames = []
+            self.clear_cartoon_panel()
             self._updateFrameCount()
             self._enter_state('ready')
 

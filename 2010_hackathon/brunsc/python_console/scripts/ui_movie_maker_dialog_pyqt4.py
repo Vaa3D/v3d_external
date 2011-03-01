@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'movie_maker_dialog.ui'
 #
-# Created: Fri Feb 25 14:59:33 2011
+# Created: Tue Mar  1 08:51:32 2011
 #      by: PyQt4 UI code generator 4.8.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -77,14 +77,23 @@ class Ui_movie_dialog(object):
         self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
         spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_3.addItem(spacerItem1)
-        self.frameCartoonLabel = QtGui.QLabel(self.scrollAreaWidgetContents)
+        self.keyLabelFrame = QtGui.QFrame(self.scrollAreaWidgetContents)
+        self.keyLabelFrame.setFrameShape(QtGui.QFrame.NoFrame)
+        self.keyLabelFrame.setFrameShadow(QtGui.QFrame.Plain)
+        self.keyLabelFrame.setLineWidth(0)
+        self.keyLabelFrame.setObjectName(_fromUtf8("keyLabelFrame"))
+        self.horizontalLayout_4 = QtGui.QHBoxLayout(self.keyLabelFrame)
+        self.horizontalLayout_4.setMargin(0)
+        self.horizontalLayout_4.setObjectName(_fromUtf8("horizontalLayout_4"))
+        self.frameCartoonLabel = QtGui.QLabel(self.keyLabelFrame)
         self.frameCartoonLabel.setMinimumSize(QtCore.QSize(50, 50))
         self.frameCartoonLabel.setMaximumSize(QtCore.QSize(50, 50))
         self.frameCartoonLabel.setFrameShape(QtGui.QFrame.Box)
         self.frameCartoonLabel.setFrameShadow(QtGui.QFrame.Plain)
         self.frameCartoonLabel.setLineWidth(2)
         self.frameCartoonLabel.setObjectName(_fromUtf8("frameCartoonLabel"))
-        self.horizontalLayout_3.addWidget(self.frameCartoonLabel)
+        self.horizontalLayout_4.addWidget(self.frameCartoonLabel)
+        self.horizontalLayout_3.addWidget(self.keyLabelFrame)
         spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_3.addItem(spacerItem2)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
