@@ -15,6 +15,10 @@ except ImportError:
             def foo(x,y):
                 pass
             _ql.setPlaceholderText = foo
+        # Use same syntax for pythonic signals/slots
+        if not hasattr(QtCore, "Signal"):
+            QtCore.Signal = QtCore.pyqtSignal
+            QtCore.Slot = QtCore.pyqtSlot
         from ui_movie_maker_dialog_pyqt4 import Ui_movie_dialog
     except ImportError:
         print """
@@ -188,7 +192,13 @@ Press "Save images..." to save the movie frames to disk.
             self.movie.append_current_view(interval=self.frame_interval)
         except ValueError:
             self.movie = movie_maker.V3dMovie()
-            self.movie.append_current_view(interval=self.frame_interval)
+            try:
+                self.movie.append_current_view(interval=self.frame_interval)
+            except:
+                QtGui.QMessageBox.information(self,
+                        "Movie maker cannot find a V3D 3D window.",
+                        "Movie maker cannot find a V3D 3D window.  Perhaps you need to open one")
+                return
         frame = self.movie.key_frames[-1]
         self.append_cartoon_frame(frame)
         self._updateFrameCount()
@@ -294,11 +304,15 @@ Press "Save images..." to save the movie frames to disk.
         self.show() # why does window get hidden in this method?
 
     def load_parameters(self):
-        fname = QtGui.QFileDialog.getOpenFileName(
+        result = QtGui.QFileDialog.getOpenFileName(
                         self,
                         "Open V3D movie parameters file",
                         self.previous_save_dir,
-                        "V3D movie files (*.vmv)")[0]
+                        "V3D movie files (*.vmv)")
+        self.show() # why does window get hidden in this method?
+        if None == result: return
+        if 2 > len(result): return
+        fname = result[0]
         if None == fname: return
         if len(fname) < 1: return
         if not os.path.exists(fname): 
