@@ -41,4 +41,6 @@ cd ../
 
 copy v3d\release\v3d.exe %QTDIR%\bin\ /y
 copy v3d\release\v3d.exe .\v3d\ /y
+copy v3d\release\v3d.exe ..\v3d\ /y
 
+cd ../
