@@ -6,7 +6,7 @@
 
 cd v3d_main
 
-build.win
+build.bat
 
 cd ..\
 
