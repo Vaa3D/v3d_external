@@ -14,8 +14,8 @@
 
 if [ ! -d common_lib/include/boost ]; then
   cd common_lib/src_packages
-  tar zvxf boost_1_38_0.tar.gz
-  mv boost_1_38_0/boost ../include/.
+  tar zvxf boost_1_46_0.tar.gz
+  mv boost_1_46_0/boost ../include/.
   cd ../../
 fi
 
