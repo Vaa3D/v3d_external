@@ -77,7 +77,6 @@ void convertImg2Atlas(V3DPluginCallback2 &callback, QWidget *parent)
 	
 
 	unsigned char simple_cmap[14*3]  = {0,   0,   0,
-		255, 255, 255, 
 		255, 0,   0,
 		0,   255, 0,
 		0,   0,   255,
@@ -89,7 +88,8 @@ void convertImg2Atlas(V3DPluginCallback2 &callback, QWidget *parent)
 		0,   128, 255,
 		255, 255, 128,
 		128, 255, 255,
-		255, 128, 255
+		255, 128, 255,
+		255, 255, 255
 	};
 	
 	QString fileName = folderName + "/c.atlas";
