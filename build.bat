@@ -8,6 +8,10 @@ cd v3d_main
 
 build.bat
 
+cd ..\released_plugins
+
+build_plugindemo.bat
+
 cd ..\
 
 
