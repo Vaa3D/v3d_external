@@ -2868,9 +2868,10 @@ void My4DImage::computePointNeighborMoment(LocationSimple & L, int c) //overload
 bool My4DImage::proj_general_blend_atlasfiles() //081124
 {
 	if (listAtlasFiles.size()<=0) return false;
-	if ( this->getDatatype() !=V3D_UINT8 && this->getDatatype() !=V3D_UINT16 && this->getDatatype() !=V3D_FLOAT32)
+	if ( this->getDatatype() !=V3D_UINT8 /*&& this->getDatatype() !=V3D_UINT16 && this->getDatatype() !=V3D_FLOAT32*/)
 	{ 
-		v3d_msg("Now only support UINT8, UINT16, and FLOAT32.\n");
+//		v3d_msg("Now only support UINT8, UINT16, and FLOAT32.\n");
+		v3d_msg("Now only support UINT8.\n");
 		return false;
 	}
 	
