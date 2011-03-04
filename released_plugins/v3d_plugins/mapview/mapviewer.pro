@@ -21,16 +21,13 @@ HEADERS      += stackutil-11.h
 HEADERS      += ../istitch/y_imglib.h
 
 HEADERS      += mapviewer.h \
-#		$$V3DMAINDIR/basic_c_fun/stackutil.h \
-		$$V3DMAINDIR/basic_c_fun/mg_utilities.h \
-#		$$V3DMAINDIR/basic_c_fun/mg_image_lib.h 
+		$$V3DMAINDIR/basic_c_fun/mg_utilities.h 
 
 SOURCES       += mg_image_lib11.cpp 
 SOURCES       += stackutil-11.cpp
 SOURCES       += mapviewer.cpp \
-#		$$V3DMAINDIR/basic_c_fun/stackutil.cpp \
-		$$V3DMAINDIR/basic_c_fun/mg_utilities.cpp \
-#		$$V3DMAINDIR/basic_c_fun/mg_image_lib.cpp
+		$$V3DMAINDIR/basic_c_fun/mg_utilities.cpp 
+SOURCES      += ../../../v3d_main/basic_c_fun/v3d_message.cpp
 
 LIBS     += -lm -lpthread
 LIBS	    += -L$$V3DMAINDIR/common_lib/lib -lv3dtiff

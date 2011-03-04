@@ -511,17 +511,17 @@ const QString title = "Map Viewer";
 XMapView* XMapView::m_show = 0;
 QStringList MAPiewerPlugin::menulist() const
 {
-    return QStringList() << tr("load Image")
+    return QStringList() << tr("load image: using istitch's tiled configuration (.tc) file")
 						 << tr("generate thumbnail map from tc file")
 	                     << tr("generate thumbnail map from raw data")
 	                     << tr("tif data convert to raw data")
-	                     << tr("load tc")
-						 << tr("help");
+//	                     << tr("load tc")
+						 << tr("About");
 }
 
 void MAPiewerPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
 {
-    if (menu_name == tr("load Image"))
+    if (menu_name == tr("load image: using istitch's tiled configuration (.tc) file"))
     {
     	iViewer(callback, parent);
     }
@@ -541,8 +541,9 @@ void MAPiewerPlugin::domenu(const QString &menu_name, V3DPluginCallback &callbac
 	{
 		loadtc_save(callback, parent);
 	}
-	else if (menu_name == tr("help"))
+	else if (menu_name == tr("About"))
 	{
+		v3d_msg("MapView version 0.1. developed by Hanchuan Peng lab, JFRC, HHMI.");
 	}
 }
 void MAPiewerPlugin::loadtc_save(V3DPluginCallback &callback, QWidget *parent)
