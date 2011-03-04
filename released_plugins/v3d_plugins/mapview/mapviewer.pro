@@ -17,7 +17,7 @@ HEADERS      +=colormap.h
 
 HEADERS      += mg_image_lib11.h
 HEADERS      += stackutil-11.h
-HEADERS      += ../../../released_plugins/v3d_plugins/istitch/y_imglib.h
+HEADERS      += ../istitch/y_imglib.h
 
 HEADERS      += mapviewer.h \
 #		$$V3DMAINDIR/basic_c_fun/stackutil.h \
@@ -36,4 +36,5 @@ LIBS	    += -L$$V3DMAINDIR/common_lib/lib -lv3dtiff
         += -L$$QTDIR/demos/shared/
 #LIBS += -framework CoreServices
 TARGET        = $$qtLibraryTarget(mapviewer)
-DESTDIR       = $$V3DMAINDIR/../v3d/plugins/mapviewer
+DESTDIR       = ../../v3d/plugins/image_stitching/Map_View
+
