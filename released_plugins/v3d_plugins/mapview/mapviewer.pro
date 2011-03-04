@@ -11,6 +11,7 @@ QT_DIR = $$dirname(QMAKE_QMAKE)/..
 
 INCLUDEPATH  += $$V3DMAINDIR/basic_c_fun
 INCLUDEPATH  += $$V3DMAINDIR/common_lib/include
+INCLUDEPATH  += ../istitch
 INCLUDEPATH  += $$QT_DIR/demos/shared/
 #HEADERS      +=/usr/local/Trolltech/Qt-4.5.2/demos/shared/arthurwidgets.h
 HEADERS      +=colormap.h

@@ -44,7 +44,7 @@
 #include <v3d_interface.h>
 #include "colormap.h"
 
-#include"../../../released_plugins/v3d_plugins/istitch/y_imglib.h"
+#include "y_imglib.h"
 
 //#include "y_imglib.h"
 //
