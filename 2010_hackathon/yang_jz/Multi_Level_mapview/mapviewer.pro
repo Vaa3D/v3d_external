@@ -4,8 +4,6 @@ CONFIG       += qt plugin warn_off
 #CONFIG       += x86_64
 #CONFIG       +=release
 
-#include(/usr/local/Trolltech/Qt-4.5.2/demos/shared/shared.pri)
-
 V3DMAINDIR = ../../../v3d_main
 QT_DIR = $$dirname(QMAKE_QMAKE)/..
 
@@ -35,5 +33,6 @@ LIBS     += -lm -lpthread
 LIBS	    += -L$$V3DMAINDIR/common_lib/lib -lv3dtiff
         += -L$$QTDIR/demos/shared/
 #LIBS += -framework CoreServices
-TARGET        = $$qtLibraryTarget(mapviewer)
-DESTDIR       = $$V3DMAINDIR/../v3d/plugins/mapviewer
+TARGET        = $$qtLibraryTarget(Multi_Level_mapview)
+#DESTDIR       = $$V3DMAINDIR/../v3d/plugins/Multi_Level_mapview
+DESTDIR       = ../../../v3d/plugins/Multi_Level_mapview

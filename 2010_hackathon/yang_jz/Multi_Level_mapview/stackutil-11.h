@@ -88,6 +88,8 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 
 int loadRaw2Stack_resamping(char * filename, unsigned char * & img, V3DLONG * & sz, int & datatype, int resampling_size); //resampling image from tc file;
 int loadRaw2Stack_raw_resamping(char * filename, unsigned char * & img, V3DLONG * & szo, V3DLONG *& sz, int & datatype, int &resampling_size);//resampling image from rawdata;
+int Create_multi_levelraw(char * filename, unsigned char * & img, V3DLONG * & szo, V3DLONG *& sz, int & datatype, int resampling_size);
+
 
 int saveStack2Raw(const char * filename, const unsigned char * img, const V3DLONG * sz, int datatype); //4-byte raw writing
 
@@ -150,6 +152,8 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, V3DLON
 bool loadImage_resampling(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, V3DLONG *&szo, int & datatype,int resampling_size); //
 
 bool loadImage_raw_resampling(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, V3DLONG *&szo, int & datatype,int &resampling_size); //
+
+bool loadImage_mutil_levelraw(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &szo, V3DLONG *&sz, int & datatype,int resampling_size);
 
 bool saveImage(const char filename[], const unsigned char * data1d, const V3DLONG * sz, const int datatype); //070214
 

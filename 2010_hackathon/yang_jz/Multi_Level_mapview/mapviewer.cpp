@@ -1082,6 +1082,7 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 	}
 	
 	QThread* thread_resampraw = new Mutthread_resampraw(m_FileName, imgSrcFile, sz_relative, target_pixel_size);
+	
 	thread_resampraw->start();
 	
 }
@@ -2988,20 +2989,24 @@ Mutthread_resampraw::Mutthread_resampraw(const QString filename, char * imgFile,
 	sz = original_sz;
 	
     target_size = target_level;
+  
+	printf("target_size=%ld\n",target_level);
 	
 }
 void Mutthread_resampraw::run()
 {	
-	V3DLONG n = target_size;
+	V3DLONG n = target_size/2;
 	
-	V3DLONG x = sz[0]/target_size;//2
-	int temp = x;
-	while( temp > sz[0])
-	{
-		temp = temp + x; 
-		
-		n++;
-	}
+	//int temp = x;
+	
+	//while( temp > sz[0])
+//	{
+//		temp = temp + x; 
+//		
+//		n++;
+//	}
+//	
+	printf("n=%ld\n",n);
 	
 	QString curFilePath = QFileInfo(m_FileName).path();
 	
@@ -3019,10 +3024,10 @@ void Mutthread_resampraw::run()
 	
 	V3DLONG *szo=0;
 	
-	for(int k = target_size + 1 ; k < n; k = k++)
+	for(int k = 10; k < target_size; k = k+2)
 	{
 		
-		if(loadImage_resampling(imgSrcFile,resampling,sz_relative,szo,datatype_relative,k)!=true)
+		if(loadImage_mutil_levelraw(imgSrcFile,resampling,sz_relative,szo,datatype_relative,k)!=true)
 		{
 			QMessageBox::information(0, "Load Image", QObject::tr("File load failure"));
 			return;
@@ -3061,7 +3066,7 @@ void Mutthread_resampraw::run()
 			
 			datatype = V3D_UINT8;
 			
-			CopyData_resamp_raw((unsigned char*)resampling,(unsigned char*)pData,szo[3], szo[0], szo[1], szo[2],target_pixel_size);
+			CopyData_resamp_raw((unsigned char*)resampling,(unsigned char*)pData,szo[3], szo[0], szo[1], szo[2],k);
 			
 		}
 		else if(datatype_relative == 2)
@@ -3079,7 +3084,7 @@ void Mutthread_resampraw::run()
 			}
 			
 			datatype = V3D_UINT16;
-			CopyData_resamp_raw((unsigned short*)resampling,(unsigned short*)pData,szo[3], szo[0], szo[1], szo[2],target_pixel_size);
+			CopyData_resamp_raw((unsigned short*)resampling,(unsigned short*)pData,szo[3], szo[0], szo[1], szo[2],k);
 			
 		}
 		else if(datatype_relative==4)
@@ -3098,7 +3103,7 @@ void Mutthread_resampraw::run()
 			}
 			
 			datatype = V3D_FLOAT32;
-			CopyData_resamp_raw((float*)resampling,(float*)pData,szo[3], szo[0], szo[1], szo[2],target_pixel_size);
+			CopyData_resamp_raw((float*)resampling,(float*)pData,szo[3], szo[0], szo[1], szo[2],k);
 		}
 		// time consumption
 		size_t end_t = clock();
