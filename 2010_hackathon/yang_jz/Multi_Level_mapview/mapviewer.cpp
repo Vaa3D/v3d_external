@@ -1105,8 +1105,11 @@ void MAPiewerPlugin::iViewer(V3DPluginCallback &callback, QWidget *parent)
 	}
 	bool b_show = false;
 	ImageSetWidget *inw = new ImageSetWidget(callback, parent,m_FileName,curFilePath,5,b_show);
+	
 	QString Thumbnailname = curFilePath;
+	
 	Thumbnailname += "stitched_image.raw";
+	
 	if (inw && b_show)
 	{
 		inw->setWindowTitle(Thumbnailname);
@@ -1856,6 +1859,10 @@ void ImageSetWidget::setupLevel()
 {
     qreal scale = qPow(qreal(2), (zoomSlider->value() - 250) / qreal(50));
 	
+	bool b_shouw;
+
+	Update_ImageSetWidget(NULL, curFilePath, 5,b_shouw);
+	
     QMatrix matrix;
     matrix.scale(scale, scale);
     matrix.rotate(zoomSlider->value());
@@ -1905,6 +1912,7 @@ bool ImageSetWidget::setCTypeBasedOnImageData()
 
 
 ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QString m_FileName, QString curFilePathInput, float scaleFactorInput,bool &b_shouw)
+:callbackLevel(callback)
 {
 	initialize();
 	
@@ -1918,7 +1926,6 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 	QString curFilePath1 = QFileInfo(m_FileName).path();
 	
 	curFilePath1.append("/");
-	
 	
 	qDebug()<<"filename ..."<<filename.c_str();
 
@@ -2017,7 +2024,111 @@ void ImageSetWidget::update_triview()
 	update();
 		
 }
-
+void ImageSetWidget::Update_ImageSetWidget(QString m_FileName, QString curFilePathInput, float scaleFactorInput,bool &b_shouw)
+{
+	initialize();
+	
+	//callback1 = &callback;
+	
+	curFilePath = curFilePathInput;
+	
+	//string filename = m_FileName.toStdString();
+	
+	//QString curFilePath1 = QFileInfo(m_FileName).path();
+	
+	//curFilePath1.append("/");
+	
+	QString tempfile;
+	
+	tempfile.sprintf("%d",10);
+	
+	QString m_FileName_compressed = curFilePath +"stitched_image10.raw";
+	
+	//QString m_FileName_compressed = curFilePath1 +"stitched_image"+ tempfile + ".raw"; 
+	
+	
+	qDebug()<<"filename ..."<<m_FileName_compressed;
+//	
+//	
+//	string ff = QString(vim.lut[ii].fn_img.c_str()).toStdString();
+//	
+//	//	qDebug()<<"testing..."<<curFilePath<< fn.c_str();
+//	
+//	int i = ff.find(".", 0 ); 
+//	
+//	string fn_sub(ff.substr(0,i));
+//	
+//	QString tilefilename;
+//	
+//	string ff = QString(vim.lut[ii].fn_img.c_str()).toStdString();
+//	
+//	int i = ff.find(".", 0 ); 
+//	
+//	//printf("i=%ld\n",i);
+//	
+//	string fn_sub(ff.substr(0,i));
+//	
+//	tilefilename.append(QString(fn_sub.c_str())) + ".raw";
+//	
+//	tilefilename += ".raw";	
+	
+	
+	scaleFactor = scaleFactorInput;
+	
+	//	qDebug()<<"sxyx ..."<<sx<<sy<<sz;
+	
+	
+	// loading compressed image files
+	
+	sz_compressed = 0; 
+	
+	int datatype_compressed = 0;
+	
+	//qDebug()<<"filename11111 ..."<<m_FileName_compressed;
+	
+	if(loadImage(const_cast<char *>(m_FileName_compressed.toStdString().c_str()), compressed1d, sz_compressed, datatype_compressed)!= true)
+	{
+		b_shouw = false;
+		QMessageBox::information(0, "Load Image", QObject::tr("File load failure"));
+		return;
+	}//careful
+	
+	cx=sz_compressed[0], cy=sz_compressed[1], cz=sz_compressed[2], cc=sz_compressed[3];
+	
+	channel_compressed_sz = cx*cy*cz;
+	
+	init_x = cx/2, init_y = cy/2, init_z = cz/2; 
+	
+	if(datatype_compressed ==1 )
+	{
+		dtype = V3D_UINT8;
+	}
+	else if(datatype_compressed == 2)
+	{
+		dtype = V3D_UINT16;
+	}
+	else if(datatype_compressed==4)
+	{
+		dtype = V3D_FLOAT32;
+	}
+	
+	//qDebug()<<"compressedsxyx ..."<<cx<<cy<<cz;			
+	
+	setCTypeBasedOnImageData();
+	
+	updateminmaxvalues();
+	
+	createGUI();
+	
+	scaleFactorInput = int(sy/cy);
+	
+	//qDebug()<<"scaleFactorInput ..."<<scaleFactorInput;	
+	
+	xy_view->Setwidget(callbackLevel, m_FileName, curFilePath, scaleFactorInput);
+	yz_view->Setwidget(callbackLevel, m_FileName, curFilePath, scaleFactorInput);
+	zx_view->Setwidget(callbackLevel, m_FileName, curFilePath, scaleFactorInput);
+	//}
+}
 
 
 template <class T> QPixmap copyRaw2QPixmap(const T * pdata, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3,ImageDisplayColorType Ctype, 
@@ -2802,6 +2913,7 @@ void Mutthread_tiftoraw::run()
 		if (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0)
 		{
 			b_save = true;
+			
 			QString curPath = curFilePath;
 			
 			string fn = curPath.append( QString(vim.lut[ii].fn_img.c_str()) ).toStdString();

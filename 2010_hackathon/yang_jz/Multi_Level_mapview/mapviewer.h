@@ -254,6 +254,8 @@ public:
 	
 	void update_triview();
 	
+	void Update_ImageSetWidget(QString m_FileName, QString curFilePathInput, float scaleFactorInput,bool &b_shouw);
+	
 	bool updateminmaxvalues();
 	bool setCTypeBasedOnImageData();
 	
@@ -309,6 +311,8 @@ public:
 	
    
 	V3DPluginCallback *callback1;
+	
+	V3DPluginCallback &callbackLevel;
 	 
 	XMapView *xy_view; //change in Z
     XMapView *yz_view; //change in X
@@ -319,7 +323,7 @@ public:
 public:
 	long cx, cy, cz, cc; // compressed data
 	long cur_x, cur_y, cur_z;
-	long sx,sy,sz;
+	long sx,sy,sz;//original data information;
 	long channel_compressed_sz;
 	
 	long init_x, init_y, init_z; // control window
