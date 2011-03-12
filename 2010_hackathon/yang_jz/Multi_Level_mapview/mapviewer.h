@@ -121,7 +121,7 @@ public:
 	
 	void setImgData(ImagePlaneDisplayType ptype,ImagePixelType dtype,ImageDisplayColorType Ctype,V3DLONG *sz_compressed,V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,V3DLONG xslicesize,V3DLONG yslicesize, V3DLONG zslicesize, unsigned char *pdata,double * p_vmax, double* p_vmin);
 
-	void Setwidget(V3DPluginCallback &callback, QString m_FileName, QString curFilePathInput, float scaleFactorInput);
+	void Setwidget(V3DPluginCallback &callback,QString m_FileName, QString curFilePathInput, float scaleFactorInput);
 	
 	void update_v3dviews(V3DPluginCallback *callback, long start_x, long start_y, long start_z, long end_x, long end_y, long end_z);
 	
@@ -136,8 +136,9 @@ public:
 	
 	QPoint dragEndPosition;
 	
-	long cx, cy, cz,cc;
+	long cx,cy,cz,cc;
 	long cur_x, cur_y, cur_z;
+	V3DLONG sz[4];
 	long plane_n;
 	long start_x,start_y,start_z;
 	long end_x,end_y,end_z;
@@ -254,9 +255,14 @@ public:
 	
 	void update_triview();
 	
+	void UpGUI();
+	
 	void Update_ImageSetWidget(QString m_FileName, QString curFilePathInput, float scaleFactorInput,bool &b_shouw);
 	
+	void GetLevelGetLevel(V3DLONG x, V3DLONG y, V3DLONG z);
+	
 	bool updateminmaxvalues();
+	
 	bool setCTypeBasedOnImageData();
 	
 	bool bcreadViews;
@@ -323,7 +329,7 @@ public:
 public:
 	long cx, cy, cz, cc; // compressed data
 	long cur_x, cur_y, cur_z;
-	long sx,sy,sz;//original data information;
+	long sx,sy,sz,sc;//original data information;
 	long channel_compressed_sz;
 	
 	long init_x, init_y, init_z; // control window
@@ -342,13 +348,15 @@ public:
 	
 	V3DLONG *sz_compressed;
 	
-	Image4DSimple p4DImage;
+	Image4DSimple p4DImage1;
 	
 	ImagePixelType dtype;
 	
 	ImageDisplayColorType Ctype;
    
 	QString curFilePath;
+	
+	QString tcfilename;
 	
 	float scaleFactor;
 	// virtual image

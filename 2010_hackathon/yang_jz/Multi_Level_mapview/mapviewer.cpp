@@ -358,14 +358,26 @@ int CopyData_resamp_raw(T1 *apsInput, T2 *aspOutput,V3DLONG channel_size, V3DLON
 				{
 					long idx = oj + i/t;
 					long idxr = orj + i;
+					if (idx >=tempc) 
+					{
+					    idx = tempc-1;
+						
+					}
+					if(idxr >=temprc )
+					{
+						idxr = temprc-1;
+					}
 					{
 						aspOutput[idx] = apsInput[idxr];
+						printf("idx=ld% idxr=ld% k=%ld j=%ld i=%ld\n",idx,idxr,k,j,i);
+						return -1;
+						
 					}
 				}
 			}
 		}
 	}
-	
+	return 1 ;
 }
 template <class T1, class T2> 
 int CopyData_resamp_tc(T1 *apsInput, T2 *aspOutput,V3DLONG * sz,V3DLONG * szo,
@@ -930,7 +942,8 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 	vc = szo[3];
 	
 	//----------------------------------------------------------------------------------------------------------------------------------
-	V3DLONG channelsz = szo[0]*szo[1]*szo[2];
+	//V3DLONG channelsz = szo[0]*szo[1]*szo[2];
+	V3DLONG channelsz = vx*vy*vz;
 	
 	V3DLONG pagesz_vim = szo[3]*channelsz;
 	
@@ -952,7 +965,11 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 
 			datatype = V3D_UINT8;
 		
-			CopyData_resamp_raw((unsigned char*)resampling,(unsigned char*)pData,szo[3], szo[0], szo[1], szo[2],target_pixel_size);
+			int tt = CopyData_resamp_raw((unsigned char*)resampling,(unsigned char*)pData,szo[3], szo[0], szo[1], szo[2],target_pixel_size);
+		if(tt = -1)
+		{
+			return;
+		}
 		
 	}
 	else if(datatype_relative == 2)
@@ -1080,10 +1097,160 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 		fprintf(stderr, "Error happens in file writing. Exit. \n");
 		return ;
 	}
+////////////////////////////////////////////////////////////////////////////////
+	//QThread* thread_resampraw = new Mutthread_resampraw(m_FileName, imgSrcFile, sz_relative, target_pixel_size);
 	
-	QThread* thread_resampraw = new Mutthread_resampraw(m_FileName, imgSrcFile, sz_relative, target_pixel_size);
+	//qDebug()<<"thread_imgSrcFile"<<imgSrcFile;
 	
-	thread_resampraw->start();
+	//thread_resampraw->start();
+///////////////////////////////////////////
+	
+	{
+		int	k=3;
+		
+		V3DLONG *sz_relative = 0; 
+		
+		int datatype_relative = 0;
+		
+		ImagePixelType datatype;
+		
+		unsigned char* resampling = 0;
+		
+		int target_pixel_size;
+		
+		V3DLONG *szo=0;
+		
+		QString curPath = curFilePath;
+		
+		qDebug()<<"imgSrcFile"<<imgSrcFile;
+		
+		if(loadImage_mutil_levelraw(imgSrcFile,resampling,sz_relative,szo,datatype_relative,k)!=true)
+		{
+			QMessageBox::information(0, "Load Image", QObject::tr("File load failure"));
+			return;
+		}
+		
+		long vx, vy, vz, vc;
+		
+		vx = szo[0]/k ; 
+		
+		vy = szo[1];
+		
+		vz = szo[2];
+		
+		vc = szo[3];
+		
+		//----------------------------------------------------------------------------------------------------------------------------------
+		V3DLONG channelsz = szo[0]*szo[1]*szo[2];
+		
+		V3DLONG pagesz_vim = szo[3]*channelsz;
+		
+		void *pData = NULL;
+		
+		if(datatype_relative ==1 )
+		{
+			try
+			{
+				pData  = new unsigned char [pagesz_vim];
+				
+				memset(pData, 0, sizeof(unsigned char)*pagesz_vim);
+			}
+			catch (...) 
+			{
+				printf("Fail to allocate memory.\n");
+				return ;
+			}
+			
+			datatype = V3D_UINT8;
+			
+			CopyData_resamp_raw((unsigned char*)resampling,(unsigned char*)pData,szo[3], szo[0], szo[1], szo[2],k);
+			
+		}
+		else if(datatype_relative == 2)
+		{
+			try
+			{
+				pData = new unsigned short [pagesz_vim]; 
+				memset(pData, 0, sizeof(unsigned short)*pagesz_vim);
+			}
+			catch (...)
+			{
+				printf("Fail to allocate memory in data combination.");
+				if (pData) {delete []pData; pData=0;}
+				return;
+			}
+			
+			datatype = V3D_UINT16;
+			CopyData_resamp_raw((unsigned short*)resampling,(unsigned short*)pData,szo[3], szo[0], szo[1], szo[2],k);
+			
+		}
+		else if(datatype_relative==4)
+		{
+			//float*	pData = NULL;
+			try
+			{
+				pData = new float [pagesz_vim];
+				memset(pData, 0, sizeof(float)*pagesz_vim);
+			}
+			catch (...)
+			{
+				printf("Fail to allocate memory in data combination.");
+				if (pData) {delete []pData; pData=0;}
+				return;
+			}
+			
+			datatype = V3D_FLOAT32;
+			CopyData_resamp_raw((float*)resampling,(float*)pData,szo[3], szo[0], szo[1], szo[2],k);
+		}
+		// time consumption
+		size_t end_t = clock();
+		
+		//cout<<"resampling time = "<<end_t-start_t<<endl;
+		
+		//Image4DSimple p4DImage;
+		//		//	
+		//		p4DImage.setData((unsigned char *)pData, vx, vy, vz, vc, datatype);
+		//		
+		//		v3dhandle curwin;
+		//		
+		//		if(!callback.currentImageWindow())
+		//			curwin = callback.newImageWindow();
+		//		else
+		//			curwin = callback.currentImageWindow();
+		//		
+		//		callback.setImage(curwin, &p4DImage);
+		//		callback.setImageName(curwin, "Resampling Image");
+		//		callback.updateImageWindow(curwin);
+		//		
+		//		callback.pushImageIn3DWindow(curwin);
+		
+		V3DLONG sz_tmp[4];
+		
+		//////////////////////save different resolution raw data 
+        QString file ;
+		
+		QString tmp_filename;
+		
+		file.sprintf("%d",k);
+		
+		tmp_filename= curFilePath + "/" + "stitched_image" + file + ".raw";
+		
+		qDebug()<<"filename"<<tmp_filename;
+		
+		sz_tmp[0] = vx; sz_tmp[1] = vy; sz_tmp[2] = vz; sz_tmp[3] = vc; 
+		
+		if (saveImage(tmp_filename.toStdString().c_str(), (const unsigned char *)pData, sz_tmp, datatype)!=true)
+		{
+			fprintf(stderr, "Error happens in file writing. Exit. \n");
+			return ;
+		}
+		if (pData) {delete []pData; pData=0;}
+		if (resampling) {delete []resampling; resampling=0;}
+		QMessageBox::information(0, "corvent data", QObject::tr("raw data save success"));
+	}
+	
+	
+	
 	
 }
 void MAPiewerPlugin::iViewer(V3DPluginCallback &callback, QWidget *parent)
@@ -1578,62 +1745,69 @@ bool ImageSetWidget::updateminmaxvalues()
 	V3DLONG i, tmppos;
 	
 	V3DLONG channelPageSize = cx*cy*cz;
-	
-	if(p4DImage.setNewRawDataPointer(compressed1d))
+	if (compressed1d)
 	{
-		p4DImage.setXDim(cx);
-		p4DImage.setYDim(cy);
-		p4DImage.setZDim(cz);
-		p4DImage.setCDim(cc);
-		
-		p4DImage.setDatatype(dtype);
-		
-		switch (dtype)
+		p4DImage1.setRawDataPointerToNull();
+		if(p4DImage1.setNewRawDataPointer(compressed1d))
 		{
-			case V3D_UINT8:
-				for(i=0;i<cc;i++)
-				{
-					unsigned char minvv,maxvv;
-					V3DLONG tmppos_min, tmppos_max;
-					unsigned char *datahead = (unsigned char *)p4DImage.getRawDataAtChannel(i);
-					minMaxInVector(datahead, channelPageSize, tmppos_min, minvv, tmppos_max, maxvv);
-					p_vmax[i] = maxvv; p_vmin[i] = minvv;
-					printf("channel= %ld min=%lf max=%lf\n",i,p_vmin[i],p_vmax[i]);
-				}
-				break;
-				
-			case V3D_UINT16:
-				for(i=0;i<cc;i++)
-				{
-					unsigned short minvv,maxvv;
-					V3DLONG tmppos_min, tmppos_max;
-					unsigned short *datahead = (unsigned short *)p4DImage.getRawDataAtChannel(i);
-					minMaxInVector(datahead, channelPageSize, tmppos_min, minvv, tmppos_max, maxvv);
-					p_vmax[i] = maxvv; p_vmin[i] = minvv;
-					printf("channel= %ld min=%lf max=%lf\n",i,p_vmin[i],p_vmax[i]);
-				}
-				break;
-				
-			case V3D_FLOAT32:
-				for(i=0;i<cc;i++)
-				{
-					float minvv,maxvv;
-					V3DLONG tmppos_min, tmppos_max;
-					float *datahead = (float *)p4DImage.getRawDataAtChannel(i);
-					minMaxInVector(datahead, channelPageSize, tmppos_min, minvv, tmppos_max, maxvv);
-					p_vmax[i] = maxvv; p_vmin[i] = minvv;
-					printf("channel= %ld min=%lf max=%lf\n",i,p_vmin[i],p_vmax[i]);
-				}
-				break;
-				
-			default:
-				printf("Invalid data type found in updateminmaxvalues(). Should never happen, - check with V3D developers.");
-				return false;
+			p4DImage1.setXDim(cx);
+			p4DImage1.setYDim(cy);
+			p4DImage1.setZDim(cz);
+			p4DImage1.setCDim(cc);
+			
+			p4DImage1.setDatatype(dtype);
+			
+			switch (dtype)
+			{
+				case V3D_UINT8:
+					for(i=0;i<cc;i++)
+					{
+						unsigned char minvv,maxvv;
+						V3DLONG tmppos_min, tmppos_max;
+						unsigned char *datahead = (unsigned char *)p4DImage1.getRawDataAtChannel(i);
+						minMaxInVector(datahead, channelPageSize, tmppos_min, minvv, tmppos_max, maxvv);
+						p_vmax[i] = maxvv; p_vmin[i] = minvv;
+						printf("channel= %ld min=%lf max=%lf\n",i,p_vmin[i],p_vmax[i]);
+					}
+					break;
+					
+				case V3D_UINT16:
+					for(i=0;i<cc;i++)
+					{
+						unsigned short minvv,maxvv;
+						V3DLONG tmppos_min, tmppos_max;
+						unsigned short *datahead = (unsigned short *)p4DImage1.getRawDataAtChannel(i);
+						minMaxInVector(datahead, channelPageSize, tmppos_min, minvv, tmppos_max, maxvv);
+						p_vmax[i] = maxvv; p_vmin[i] = minvv;
+						printf("channel= %ld min=%lf max=%lf\n",i,p_vmin[i],p_vmax[i]);
+					}
+					break;
+					
+				case V3D_FLOAT32:
+					for(i=0;i<cc;i++)
+					{
+						float minvv,maxvv;
+						V3DLONG tmppos_min, tmppos_max;
+						float *datahead = (float *)p4DImage1.getRawDataAtChannel(i);
+						minMaxInVector(datahead, channelPageSize, tmppos_min, minvv, tmppos_max, maxvv);
+						p_vmax[i] = maxvv; p_vmin[i] = minvv;
+						printf("channel= %ld min=%lf max=%lf\n",i,p_vmin[i],p_vmax[i]);
+					}
+					break;
+					
+				default:
+					printf("Invalid data type found in updateminmaxvalues(). Should never happen, - check with V3D developers.");
+					return false;
+			}
 		}
+		return true;
+	}else
+	{
+		return false;
+		
 	}
-	
 
-	return true;
+	
 }
 
 void ImageSetWidget::createGUI()
@@ -1650,7 +1824,7 @@ void ImageSetWidget::createGUI()
 	long y = cy/2;
 	long z = cz/2;
  	
-	//qDebug()<<"xyviewcurx ..."<<x/2<<y/2<<z/2;	
+	qDebug()<<"xyviewcurx ..."<<x<<y<<z;	
 	
 	xy_view->setImgData(imgPlaneZ,dtype,Ctype, sz_compressed,x,y,z,xslicesize,yslicesize,zslicesize,compressed1d,p_vmax,p_vmin); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
 	xy_view->set_disp_width(cx);
@@ -1757,9 +1931,9 @@ void ImageSetWidget::createGUI()
 	zoomLabel = new QLabel("zoom Level",settingGroup);
 	zoomSlider = new QSlider;
 	zoomSlider->setOrientation(Qt::Horizontal);
-    zoomSlider->setMinimum(0);
-    zoomSlider->setMaximum(10);
-    zoomSlider->setValue(0);
+    zoomSlider->setMinimum(1);
+    zoomSlider->setMaximum(5);
+    zoomSlider->setValue(2);
   //  zoomSlider->setTickPosition(QSlider::TicksRight);
 	zoomSlider->setTickPosition(QSlider::TicksBelow);
 	//qDebug()<<"Coordinates ...";
@@ -1847,6 +2021,71 @@ void ImageSetWidget::createGUI()
 	//allLayout->update();
 	
 }
+void ImageSetWidget::UpGUI()
+{
+	
+	bcreadViews = false;
+	/* Set up the data related GUI */
+	
+	long x = cx/2;
+	long y = cy/2;
+	long z = cz/2;
+ 	
+	qDebug()<<"xyviewcurx ..."<<x<<y<<z;	
+	
+	xy_view->setImgData(imgPlaneZ,dtype,Ctype, sz_compressed,x,y,z,xslicesize,yslicesize,zslicesize,compressed1d,p_vmax,p_vmin); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
+	xy_view->set_disp_width(cx);
+	xy_view->set_disp_height(cy);
+	xy_view->set_disp_scale(1);
+	xy_view->setFixedWidth(xy_view->get_disp_width());
+	xy_view->setFixedHeight(xy_view->get_disp_height());
+	xy_view->setFocusPolicy(Qt::ClickFocus);
+	
+	yz_view->setImgData(imgPlaneX,dtype,Ctype,sz_compressed,x,y,z,xslicesize,yslicesize,zslicesize,compressed1d,p_vmax,p_vmin); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
+	
+	yz_view->set_disp_width(cz);
+	yz_view->set_disp_height(cy);
+	yz_view->set_disp_scale(1);
+	yz_view->setFixedWidth(yz_view->get_disp_width());
+	yz_view->setFixedHeight(yz_view->get_disp_height());
+	yz_view->setFocusPolicy(Qt::ClickFocus);
+	
+	zx_view->setImgData(imgPlaneY,dtype,Ctype,sz_compressed,x,y,z,xslicesize,yslicesize,zslicesize,compressed1d,p_vmax,p_vmin); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
+	
+	zx_view->set_disp_width(cx);
+	zx_view->set_disp_height(cz);
+	zx_view->set_disp_scale(1);
+	zx_view->setFixedWidth(zx_view->get_disp_width());
+	zx_view->setFixedHeight(zx_view->get_disp_height());
+	zx_view->setFocusPolicy(Qt::ClickFocus);
+	
+	
+	xValueSpinBox->setMaximum(cx-1); xValueSpinBox->setMinimum(0); xValueSpinBox->setValue(cx/2); 
+	xValueSpinBox->setSingleStep(int(scaleFactor));
+	
+	yValueSpinBox->setMaximum(cy-1); yValueSpinBox->setMinimum(0); yValueSpinBox->setValue(cy/2); 	
+	yValueSpinBox->setSingleStep(int(scaleFactor));
+
+	zValueSpinBox->setMaximum(cz-1); zValueSpinBox->setMinimum(0); zValueSpinBox->setValue(cz/2); 
+	zValueSpinBox->setSingleStep(int(scaleFactor));
+		
+	zValueSpinBox->setEnabled(true);	
+    yValueSpinBox->setEnabled(true);
+	xValueSpinBox->setEnabled(true);
+	zSizeSpinBox->setEnabled(true);
+	ySizeSpinBox->setEnabled(true);
+	xSizeSpinBox->setEnabled(true);
+	
+	
+	Bcopy = false;
+	
+	update_triview();
+	
+	//setLayout(allLayout);
+	//updateGeometry();
+	//allLayout->update();
+	
+}
 void ImageSetWidget::toggCreadViewCheckBox()
 {
     bcreadViews = (CreateViewCheckBox->checkState()==Qt::Checked) ? true : false;
@@ -1860,12 +2099,22 @@ void ImageSetWidget::setupLevel()
     qreal scale = qPow(qreal(2), (zoomSlider->value() - 250) / qreal(50));
 	
 	bool b_shouw;
-
-	Update_ImageSetWidget(NULL, curFilePath, 5,b_shouw);
 	
-    QMatrix matrix;
-    matrix.scale(scale, scale);
-    matrix.rotate(zoomSlider->value());
+	QString file = NULL;
+	
+	QString filename;
+	
+	int n = zoomSlider->value();
+	
+	file.sprintf("%d",n);	
+	
+	filename = "stitched_image" +file + ".raw";
+	
+	Update_ImageSetWidget(filename, curFilePath, 5,b_shouw);
+	
+  //  QMatrix matrix;
+    //matrix.scale(scale, scale);
+    //matrix.rotate(zoomSlider->value());
 	
 	//zValueSpinBox->setEnabled(false);	
 //    yValueSpinBox->setEnabled(false);
@@ -1916,6 +2165,8 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 {
 	initialize();
 	
+	tcfilename  = m_FileName;
+	
 	callback1 = &callback;
 	
 	curFilePath = curFilePathInput;
@@ -1934,9 +2185,9 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 		b_shouw = true;
 		scaleFactor = scaleFactorInput;
 		
-		sx=vim.sz[0], sy=vim.sz[1], sz=vim.sz[2];
+		sx=vim.sz[0], sy=vim.sz[1], sz=vim.sz[2], sc=vim.sz[3];
 		
-	//	qDebug()<<"sxyx ..."<<sx<<sy<<sz;
+		//qDebug()<<"sxyx ..."<<sx<<sy<<sz;
       
 		if (strcasecmp(vim.fn_thumbnail, "NULL")==0) 
 		{
@@ -1984,20 +2235,21 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 		
 		//qDebug()<<"compressedsxyx ..."<<cx<<cy<<cz;			
 		
-		
 		setCTypeBasedOnImageData();
 		
 		updateminmaxvalues();
+		
+	//	GetLevel(sx,sy,sz);
 		
 		createGUI();
 		
 		scaleFactorInput = int(sy/cy);
 		
 		//qDebug()<<"scaleFactorInput ..."<<scaleFactorInput;	
-		
-		xy_view->Setwidget(callback, m_FileName, curFilePath, scaleFactorInput);
-		yz_view->Setwidget(callback, m_FileName, curFilePath, scaleFactorInput);
-		zx_view->Setwidget(callback, m_FileName, curFilePath, scaleFactorInput);
+         
+		xy_view->Setwidget(callback,  m_FileName, curFilePath, scaleFactorInput);
+		yz_view->Setwidget(callback,  m_FileName, curFilePath, scaleFactorInput);
+		zx_view->Setwidget(callback,  m_FileName, curFilePath, scaleFactorInput);
 	}
 }
 void ImageSetWidget::update_triview()
@@ -2012,7 +2264,7 @@ void ImageSetWidget::update_triview()
 	
 	zx_view->b_creadWindow = bcreadViews;
 	
-	xy_view->setImgData(imgPlaneZ,dtype,Ctype,sz_compressed,cur_x,cur_y,cur_z,xslicesize,yslicesize,zslicesize, compressed1d,p_vmax,p_vmin);
+	xy_view->setImgData(imgPlaneZ,dtype,Ctype,sz_compressed,cur_x,cur_y,cur_z,xslicesize,yslicesize,zslicesize,compressed1d,p_vmax,p_vmin);
 	
 	yz_view->setImgData(imgPlaneX,dtype,Ctype,sz_compressed,cur_x,cur_y,cur_z,xslicesize,yslicesize,zslicesize,compressed1d,p_vmax,p_vmin);
 	
@@ -2026,7 +2278,7 @@ void ImageSetWidget::update_triview()
 }
 void ImageSetWidget::Update_ImageSetWidget(QString m_FileName, QString curFilePathInput, float scaleFactorInput,bool &b_shouw)
 {
-	initialize();
+	//initialize();
 	
 	//callback1 = &callback;
 	
@@ -2042,10 +2294,9 @@ void ImageSetWidget::Update_ImageSetWidget(QString m_FileName, QString curFilePa
 	
 	tempfile.sprintf("%d",10);
 	
-	QString m_FileName_compressed = curFilePath +"stitched_image10.raw";
+	//QString m_FileName_compressed = curFilePath +"stitched_image10.raw";
 	
-	//QString m_FileName_compressed = curFilePath1 +"stitched_image"+ tempfile + ".raw"; 
-	
+	QString m_FileName_compressed = curFilePath + m_FileName; 
 	
 	qDebug()<<"filename ..."<<m_FileName_compressed;
 //	
@@ -2075,7 +2326,7 @@ void ImageSetWidget::Update_ImageSetWidget(QString m_FileName, QString curFilePa
 	
 	scaleFactor = scaleFactorInput;
 	
-	//	qDebug()<<"sxyx ..."<<sx<<sy<<sz;
+	qDebug()<<"Level sxyx ..."<<sx<<sy<<sz;
 	
 	
 	// loading compressed image files
@@ -2085,6 +2336,7 @@ void ImageSetWidget::Update_ImageSetWidget(QString m_FileName, QString curFilePa
 	int datatype_compressed = 0;
 	
 	//qDebug()<<"filename11111 ..."<<m_FileName_compressed;
+	if (compressed1d) {delete []compressed1d; compressed1d=0;}
 	
 	if(loadImage(const_cast<char *>(m_FileName_compressed.toStdString().c_str()), compressed1d, sz_compressed, datatype_compressed)!= true)
 	{
@@ -2112,24 +2364,32 @@ void ImageSetWidget::Update_ImageSetWidget(QString m_FileName, QString curFilePa
 		dtype = V3D_FLOAT32;
 	}
 	
-	//qDebug()<<"compressedsxyx ..."<<cx<<cy<<cz;			
+	qDebug()<<"Level compressedsxyx ..."<<cx<<cy<<cz;			
 	
 	setCTypeBasedOnImageData();
 	
 	updateminmaxvalues();
 	
-	createGUI();
-	
+	UpGUI();
+
 	scaleFactorInput = int(sy/cy);
 	
-	//qDebug()<<"scaleFactorInput ..."<<scaleFactorInput;	
+	qDebug()<<"Level scaleFactorInput ..."<<scaleFactorInput;	
+	if(&callbackLevel)
+	{
+		qDebug()<<"falsefffffffffffffffffffffffff";
+	}
+	xy_view->Setwidget(callbackLevel, tcfilename, curFilePath, scaleFactorInput);
+	yz_view->Setwidget(callbackLevel, tcfilename, curFilePath, scaleFactorInput);
+	zx_view->Setwidget(callbackLevel, tcfilename, curFilePath, scaleFactorInput);
 	
-	xy_view->Setwidget(callbackLevel, m_FileName, curFilePath, scaleFactorInput);
-	yz_view->Setwidget(callbackLevel, m_FileName, curFilePath, scaleFactorInput);
-	zx_view->Setwidget(callbackLevel, m_FileName, curFilePath, scaleFactorInput);
 	//}
 }
-
+//void ImageSetWidget::GetLevel(V3DLONG x, V3DLONG y, V3DLONG z)
+//{
+//	
+//	
+//}
 
 template <class T> QPixmap copyRaw2QPixmap(const T * pdata, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3,ImageDisplayColorType Ctype, 
 										   V3DLONG cz0, V3DLONG cz1, V3DLONG cz2,ImagePlaneDisplayType disType, 
@@ -2864,7 +3124,7 @@ void XMapView::Setwidget(V3DPluginCallback &callback, QString m_FileName, QStrin
 	
 	string filename = m_FileName.toStdString();
 	
-	//qDebug()<<"filename ..."<<filename.c_str();
+	qDebug()<<"filename ..."<<filename.c_str();
 	
 	if(vim.y_load(filename)!= true)
 	{
@@ -3122,22 +3382,27 @@ void Mutthread_resampraw::run()
 	
 	QString curFilePath = QFileInfo(m_FileName).path();
 	
-	QString curPath = curFilePath;
 	
-	V3DLONG *sz_relative = 0; 
-	
-	int datatype_relative = 0;
-	
-	ImagePixelType datatype;
-	
-	unsigned char* resampling = 0;
-	
-	int target_pixel_size;
-	
-	V3DLONG *szo=0;
-	
-	for(int k = 10; k < target_size; k = k+2)
+	//for(int k = target_size-1; k < target_size; k = k+2)
+	//for(int k = 1; k < 6; k ++)	
 	{
+	int	k=3;
+		
+		V3DLONG *sz_relative = 0; 
+		
+		int datatype_relative = 0;
+		
+		ImagePixelType datatype;
+		
+		unsigned char* resampling = 0;
+		
+		int target_pixel_size;
+		
+		V3DLONG *szo=0;
+		
+		QString curPath = curFilePath;
+		
+		qDebug()<<"imgSrcFile"<<imgSrcFile;
 		
 		if(loadImage_mutil_levelraw(imgSrcFile,resampling,sz_relative,szo,datatype_relative,k)!=true)
 		{
@@ -3250,15 +3515,19 @@ void Mutthread_resampraw::run()
 		
 		tmp_filename= curFilePath + "/" + "stitched_image" + file + ".raw";
 		
+		qDebug()<<"filename"<<tmp_filename;
+		
 		sz_tmp[0] = vx; sz_tmp[1] = vy; sz_tmp[2] = vz; sz_tmp[3] = vc; 
 		
 		if (saveImage(tmp_filename.toStdString().c_str(), (const unsigned char *)pData, sz_tmp, datatype)!=true)
 		{
 			fprintf(stderr, "Error happens in file writing. Exit. \n");
 			return ;
-		}	
-		
+		}
+		if (pData) {delete []pData; pData=0;}
+		if (resampling) {delete []resampling; resampling=0;}
+		QMessageBox::information(0, "corvent data", QObject::tr("raw data save success"));
 	}
 	
-		
+
 }
