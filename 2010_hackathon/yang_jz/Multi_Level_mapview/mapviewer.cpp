@@ -358,26 +358,23 @@ int CopyData_resamp_raw(T1 *apsInput, T2 *aspOutput,V3DLONG channel_size, V3DLON
 				{
 					long idx = oj + i/t;
 					long idxr = orj + i;
-					if (idx >=tempc) 
-					{
-					    idx = tempc-1;
-						
-					}
-					if(idxr >=temprc )
-					{
-						idxr = temprc-1;
-					}
+					//if (idx >=tempc) 
+//					{
+//					    idx = tempc-1;
+//					}
+//					if(idxr >=temprc )
+//					{
+//						idxr = temprc-1;
+//					}
 					{
 						aspOutput[idx] = apsInput[idxr];
-						printf("idx=ld% idxr=ld% k=%ld j=%ld i=%ld\n",idx,idxr,k,j,i);
-						return -1;
-						
+						//printf("idx=%d idxr=%d k=%d j=%d i=%d\n",idx,idxr,k,j,i);
 					}
 				}
 			}
 		}
 	}
-	return 1 ;
+	//return ;
 }
 template <class T1, class T2> 
 int CopyData_resamp_tc(T1 *apsInput, T2 *aspOutput,V3DLONG * sz,V3DLONG * szo,
@@ -965,11 +962,7 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 
 			datatype = V3D_UINT8;
 		
-			int tt = CopyData_resamp_raw((unsigned char*)resampling,(unsigned char*)pData,szo[3], szo[0], szo[1], szo[2],target_pixel_size);
-		if(tt = -1)
-		{
-			return;
-		}
+			CopyData_resamp_raw((unsigned char*)resampling,(unsigned char*)pData,szo[3], szo[0], szo[1], szo[2],target_pixel_size);
 		
 	}
 	else if(datatype_relative == 2)
@@ -1104,10 +1097,10 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 	
 	//thread_resampraw->start();
 ///////////////////////////////////////////
-	
+	for(int k = 1; k <=target_pixel_size; k++)
 	{
-		int	k=3;
-		
+		//int	k=3;
+		printf("k====================================%ld\n",k);
 		V3DLONG *sz_relative = 0; 
 		
 		int datatype_relative = 0;
@@ -1124,7 +1117,7 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 		
 		qDebug()<<"imgSrcFile"<<imgSrcFile;
 		
-		if(loadImage_mutil_levelraw(imgSrcFile,resampling,sz_relative,szo,datatype_relative,k)!=true)
+		if(loadImage_mutil_levelraw(imgSrcFile,resampling,szo,sz_relative,datatype_relative,k)!=true)
 		{
 			QMessageBox::information(0, "Load Image", QObject::tr("File load failure"));
 			return;
@@ -1140,8 +1133,10 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 		
 		vc = szo[3];
 		
+		printf("vx=%d vy=%d vz=%d\n",vx,vy,vz);
 		//----------------------------------------------------------------------------------------------------------------------------------
-		V3DLONG channelsz = szo[0]*szo[1]*szo[2];
+		//V3DLONG channelsz = szo[0]*szo[1]*szo[2];
+		V3DLONG channelsz = vx*vy*vy;
 		
 		V3DLONG pagesz_vim = szo[3]*channelsz;
 		
@@ -1246,9 +1241,9 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 		}
 		if (pData) {delete []pData; pData=0;}
 		if (resampling) {delete []resampling; resampling=0;}
-		QMessageBox::information(0, "corvent data", QObject::tr("raw data save success"));
+		//QMessageBox::information(0, "corvent data", QObject::tr("raw data save success"));
 	}
-	
+	QMessageBox::information(0, "corvent data", QObject::tr("raw data save success"));
 	
 	
 	
@@ -1932,8 +1927,8 @@ void ImageSetWidget::createGUI()
 	zoomSlider = new QSlider;
 	zoomSlider->setOrientation(Qt::Horizontal);
     zoomSlider->setMinimum(1);
-    zoomSlider->setMaximum(5);
-    zoomSlider->setValue(2);
+    zoomSlider->setMaximum(4);
+    zoomSlider->setValue(1);
   //  zoomSlider->setTickPosition(QSlider::TicksRight);
 	zoomSlider->setTickPosition(QSlider::TicksBelow);
 	//qDebug()<<"Coordinates ...";
@@ -2105,8 +2100,24 @@ void ImageSetWidget::setupLevel()
 	QString filename;
 	
 	int n = zoomSlider->value();
+	int level;
 	
-	file.sprintf("%d",n);	
+	if (n == 1) 
+	{
+		level = 6;
+		
+	}else
+	if (n == 4) {
+		level = 1;
+	}else
+		if (n == 2) {
+			level = 4;
+		}else
+		if(n == 3){
+			level = 2;
+		}
+
+	file.sprintf("%d",level);	
 	
 	filename = "stitched_image" +file + ".raw";
 	
@@ -2173,6 +2184,7 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 	
 	string filename = m_FileName.toStdString();
 	
+	scaleFactor = scaleFactorInput;
 	
 	QString curFilePath1 = QFileInfo(m_FileName).path();
 	
@@ -2243,13 +2255,15 @@ ImageSetWidget::ImageSetWidget(V3DPluginCallback &callback, QWidget *parent, QSt
 		
 		createGUI();
 		
-		scaleFactorInput = int(sy/cy);
+		//scaleFactorInput = int(sy/cy);
+		
+		scaleFactor = int(sy/cy);
 		
 		//qDebug()<<"scaleFactorInput ..."<<scaleFactorInput;	
          
-		xy_view->Setwidget(callback,  m_FileName, curFilePath, scaleFactorInput);
-		yz_view->Setwidget(callback,  m_FileName, curFilePath, scaleFactorInput);
-		zx_view->Setwidget(callback,  m_FileName, curFilePath, scaleFactorInput);
+		xy_view->Setwidget(callback,  m_FileName, curFilePath, scaleFactor);
+		yz_view->Setwidget(callback,  m_FileName, curFilePath, scaleFactor);
+		zx_view->Setwidget(callback,  m_FileName, curFilePath, scaleFactor);
 	}
 }
 void ImageSetWidget::update_triview()
@@ -3133,6 +3147,7 @@ void XMapView::Setwidget(V3DPluginCallback &callback, QString m_FileName, QStrin
 	}
 	
 	scaleFactor = (int)scaleFactorInput;
+	//disp_scale = (int)scaleFactorInput;
 	
 }
 
@@ -3378,15 +3393,12 @@ void Mutthread_resampraw::run()
 //		n++;
 //	}
 //	
-	printf("n=%ld\n",n);
-	
-	QString curFilePath = QFileInfo(m_FileName).path();
-	
-	
 	//for(int k = target_size-1; k < target_size; k = k+2)
-	//for(int k = 1; k < 6; k ++)	
+	for(int k = 1; k <3; k++)	
 	{
-	int	k=3;
+		printf("k====================================%ld\n",k);
+		//int	k=3;
+		QString curFilePath = QFileInfo(m_FileName).path();
 		
 		V3DLONG *sz_relative = 0; 
 		
@@ -3404,7 +3416,7 @@ void Mutthread_resampraw::run()
 		
 		qDebug()<<"imgSrcFile"<<imgSrcFile;
 		
-		if(loadImage_mutil_levelraw(imgSrcFile,resampling,sz_relative,szo,datatype_relative,k)!=true)
+		if(loadImage_mutil_levelraw(imgSrcFile,resampling,szo,sz_relative,datatype_relative,k)!=true)
 		{
 			QMessageBox::information(0, "Load Image", QObject::tr("File load failure"));
 			return;
@@ -3420,8 +3432,10 @@ void Mutthread_resampraw::run()
 		
 		vc = szo[3];
 		
+		printf("vx=%d vy=%d vz=%d\n",vx,vy,vz);
 		//----------------------------------------------------------------------------------------------------------------------------------
-		V3DLONG channelsz = szo[0]*szo[1]*szo[2];
+		//V3DLONG channelsz = szo[0]*szo[1]*szo[2];
+		V3DLONG channelsz = vx*vy*vy;
 		
 		V3DLONG pagesz_vim = szo[3]*channelsz;
 		
@@ -3488,21 +3502,21 @@ void Mutthread_resampraw::run()
 		//cout<<"resampling time = "<<end_t-start_t<<endl;
 		
 		//Image4DSimple p4DImage;
-//		//	
-//		p4DImage.setData((unsigned char *)pData, vx, vy, vz, vc, datatype);
-//		
-//		v3dhandle curwin;
-//		
-//		if(!callback.currentImageWindow())
-//			curwin = callback.newImageWindow();
-//		else
-//			curwin = callback.currentImageWindow();
-//		
-//		callback.setImage(curwin, &p4DImage);
-//		callback.setImageName(curwin, "Resampling Image");
-//		callback.updateImageWindow(curwin);
-//		
-//		callback.pushImageIn3DWindow(curwin);
+		//		//	
+		//		p4DImage.setData((unsigned char *)pData, vx, vy, vz, vc, datatype);
+		//		
+		//		v3dhandle curwin;
+		//		
+		//		if(!callback.currentImageWindow())
+		//			curwin = callback.newImageWindow();
+		//		else
+		//			curwin = callback.currentImageWindow();
+		//		
+		//		callback.setImage(curwin, &p4DImage);
+		//		callback.setImageName(curwin, "Resampling Image");
+		//		callback.updateImageWindow(curwin);
+		//		
+		//		callback.pushImageIn3DWindow(curwin);
 		
 		V3DLONG sz_tmp[4];
 		
