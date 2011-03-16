@@ -63,7 +63,11 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3d_core.h"
 
 #include "../basic_c_fun/basic_thread.h" //YuY Dec-20-2010
-#include "../webservice/v3dwebservice.hpp" // YuY March-09-2011
+
+#ifdef __v3dwebservice__
+#include "../webservice/v3dwebservice.hpp" // YuY March-16-2011
+#endif
+
 
 class V3d_PluginLoader;
 class Image4DSimple;
