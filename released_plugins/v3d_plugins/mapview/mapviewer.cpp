@@ -2321,10 +2321,10 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 	long ty = 0;
 	long tz = 0;
     
-	qDebug()<<"start end x y z "<< start_x << start_y << start_z << end_x << end_y << end_z;
-   
+	//qDebug()<<"start end x y z "<< start_x << start_y << start_z << end_x << end_y << end_z;
+	
 	//qDebug()<<"vim x y z "<< vim.sz[0] <<vim.sz[1] << vim.sz[2] ;
-		
+	
 	switch(Ptype)
 	{
 		case imgPlaneZ://xoy
@@ -2339,7 +2339,7 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 			
 			end_z = (end_z > vim.sz[2])? vim.sz[2]:end_z;
 			
-			qDebug()<<"imgPlaneZ "<< start_z << end_z << in_zslicesize<<tz;
+			//	qDebug()<<"imgPlaneZ "<< start_z << end_z << in_zslicesize<<tz;
 			
 			break;
 			
@@ -2382,7 +2382,7 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 	vz = end_z - start_z ;//+ 1;
 	vc = vim.sz[3];
 	
-	printf("vx=%ld vy=%ld vz=%ld vc=%ld\n",vx,vy,vz,vc);
+	//printf("vx=%ld vy=%ld vz=%ld vc=%ld\n",vx,vy,vz,vc);
 	
 	long pagesz_vim = vx*vy*vz*vc;
     
@@ -2438,7 +2438,21 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 			break;
 	}
 	
-		
+	
+	QVBoxLayout* layout = new QVBoxLayout;
+	
+	QWidget*  win = new QWidget; 
+	
+	QProgressDialog* progress = new QProgressDialog("load data", 0, 0, 100);
+	
+	progress->setWindowModality(Qt::WindowModal);
+	
+	layout->addWidget(progress,Qt::AlignCenter);
+	
+	win->setLayout(layout); 
+	
+	progress->setValue(1);
+	
 	if(vim.number_tiles == 1)
 	{
 		cout << "satisfied image: "<< vim.lut[0].fn_img << endl;
@@ -2455,6 +2469,8 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 		
 		char * imgSrcFile = const_cast<char *>(fn.c_str());
 		
+		progress->setValue(10); 
+		win->show();  
 		// loading relative imagg files
 		V3DLONG *sz_relative = 0; 
 		V3DLONG *szo = 0; 
@@ -2468,8 +2484,10 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 			return;
 			
 		}
+		progress->setValue(90); 
+		win->show(); 
 		//loadImage(imgSrcFile,relative1d,sz_relative,szo,(x_start-tile2vi_xs),(y_start-tile2vi_ys),(z_start-tile2vi_zs),(x_end-tile2vi_xs),(y_end-tile2vi_ys),(z_end-tile2vi_zs),datatype_relative);
-
+		
 		vx = szo[0];
 		vy = szo[1];
 		vz = szo[2];
@@ -2480,23 +2498,30 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 				//(unsigned char*)pData = (unsigned char*)relative1d;
 				memcpy((unsigned char*)pData, (unsigned char*)relative1d,sizeof(unsigned char)* pagesz_vim);
 				//CopyData((unsigned char*)relative1d, (unsigned char*)pData, vx,vy,vz,vc);
+				//	memcpy((unsigned char*)pData, (unsigned char*)relative1d, pagesz_vim);
 				break;
 				
 			case V3D_UINT16:
 				//(unsigned short*)pData = (unsigned short*)relative1d;
 				memcpy((unsigned short*)pData, (unsigned short*)relative1d, sizeof(unsigned short)*pagesz_vim);
+				
+				//	memcpy((unsigned short*)pData, (unsigned short*)relative1d, pagesz_vim);
+				
 				//CopyData((unsigned short*)relative1d, (unsigned short*)pData, vx,vy,vz,vc);
-				 break;
+				break;
 				
 			case V3D_FLOAT32:
 				//(float*)pData = (float*)relative1d;
 				memcpy((float*)pData, (float*)relative1d, sizeof(float)*pagesz_vim);
+				//memcpy((float*)pData, (float*)relative1d, pagesz_vim);
 				//CopyData((float*)relative1d, (float*)pData, vx,vy,vz,vc);
 				break;
 			default:
 				printf("Right now only support UINT8, UINT16, and FLOAT32.\n", 0);
 				break;
 		}
+		progress->setValue(90); 
+		win->show(); 
 	}else
 	{
 		bitset<3> lut_ss, lut_se, lut_es, lut_ee;
@@ -2509,6 +2534,8 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 		long y_e = end_y + vim.min_vim[1];
 		long z_e = end_z + vim.min_vim[2];
 		
+		progress->setValue(10); 
+		win->show(); 
 		for(long ii=0; ii<vim.number_tiles; ii++)
 		{	
 			// init
@@ -2541,13 +2568,13 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 				
 				char * curFileSuffix = getSurfix(const_cast<char *>(vim.lut[ii].fn_img.c_str()));
 				
-				cout << "suffix ... " << curFileSuffix << endl; // 
+				//cout << "suffix ... " << curFileSuffix << endl; // 
 				
 				QString curPath = curFilePath;
 				
 				string fn = curPath.append( QString(vim.lut[ii].fn_img.c_str()) ).toStdString();
 				
-				qDebug()<<"testing..."<<curFilePath<< fn.c_str();
+				//	qDebug()<<"testing..."<<curFilePath<< fn.c_str();
 				
 				//
 				char * imgSrcFile = const_cast<char *>(fn.c_str());
@@ -2589,9 +2616,9 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 					switch (Datatype)
 					{
 						case V3D_UINT8:
-								
+							
 							CopyData_tc((unsigned char*)relative1d,(unsigned char*)pData,szo,start_x,start_y,start_z,
-										  x_start,y_start,z_start,x_end,y_end,z_end,vx,vy,vz);	
+										x_start,y_start,z_start,x_end,y_end,z_end,vx,vy,vz);	
 							break;
 							
 						case V3D_UINT16:
@@ -2613,7 +2640,12 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 				if(sz_relative) {delete []sz_relative; sz_relative=0;}
 				if(relative1d) {delete []relative1d; relative1d=0;}
 			}
+			
 		}
+		
+		progress->setValue(90); 
+		win->show(); 
+		
 	}
 	size_t end1_t = clock();
 	
@@ -2624,6 +2656,11 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 	//p4DImage.setData((unsigned char*)relative1d, rx, ry, rz, rc, V3D_UINT8);
 	
 	p4DImage.setData((unsigned char*)pData,vx,vy,vz,vc,Datatype);
+	
+	
+	progress->setValue(100); 
+	win->show(); 
+	win->close();
 	
 	v3dhandle curwin;
 	
@@ -2727,7 +2764,7 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 		default: 
 			break;
 	}
-
+	
 	size_t end_t = clock();
 	
 	cout<<"time elapse after loading configuration info ... "<<end_t-start_t<<endl;
