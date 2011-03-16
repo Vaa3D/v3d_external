@@ -2477,17 +2477,20 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 		switch (Datatype)
 		{
 			case V3D_UINT8:
-				(unsigned char*)pData = (unsigned char*)relative1d;
+				//(unsigned char*)pData = (unsigned char*)relative1d;
+				memcpy((unsigned char*)pData, (unsigned char*)relative1d,sizeof(unsigned char)* pagesz_vim);
 				//CopyData((unsigned char*)relative1d, (unsigned char*)pData, vx,vy,vz,vc);
 				break;
 				
 			case V3D_UINT16:
-				(unsigned short*)pData = (unsigned short*)relative1d;
+				//(unsigned short*)pData = (unsigned short*)relative1d;
+				memcpy((unsigned short*)pData, (unsigned short*)relative1d, sizeof(unsigned short)*pagesz_vim);
 				//CopyData((unsigned short*)relative1d, (unsigned short*)pData, vx,vy,vz,vc);
 				 break;
 				
 			case V3D_FLOAT32:
-				(float*)pData = (float*)relative1d;
+				//(float*)pData = (float*)relative1d;
+				memcpy((float*)pData, (float*)relative1d, sizeof(float)*pagesz_vim);
 				//CopyData((float*)relative1d, (float*)pData, vx,vy,vz,vc);
 				break;
 			default:
@@ -2889,18 +2892,20 @@ void Mutthread_tiftoraw::run()
 			{
 				case V3D_UINT8:
 					
-					(unsigned char*)pData = (unsigned char*)tmpData;
-					
+					//(unsigned char*)pData = (unsigned char*)tmpData;
+					memcpy((unsigned char*)pData, (unsigned char*)tmpData, sizeof(unsigned char)*pagesz_vim);
 					break;
 					
 				case V3D_UINT16:
 					
-					(unsigned short*)pData = (unsigned short*)tmpData;
+				//	(unsigned short*)pData = (unsigned short*)tmpData;
+			     	memcpy((unsigned short*)pData, (unsigned short*)tmpData, sizeof(unsigned short)*pagesz_vim);
 					break;
 					
 				case V3D_FLOAT32:
 					
-					(float*)pData = (float*)tmpData;
+					//(float*)pData = (float*)tmpData;
+					memcpy((float*)pData, (float*)tmpData, sizeof(float)*pagesz_vim);
 					break;
 					
 				default:
