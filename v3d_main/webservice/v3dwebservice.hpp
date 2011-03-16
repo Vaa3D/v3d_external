@@ -85,7 +85,7 @@ public: // interface SOAP/XML handling
 	
 	MainWindow *getMainWin();
 	
-	soapv3dwsService *soapv3dwsService::copy();
+	soapv3dwsService* copy();
 	
 signals:
 	void wsRequests();
