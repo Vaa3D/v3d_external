@@ -1091,16 +1091,17 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 		return ;
 	}
 ////////////////////////////////////////////////////////////////////////////////
-	//QThread* thread_resampraw = new Mutthread_resampraw(m_FileName, imgSrcFile, sz_relative, target_pixel_size);
+//	QThread* thread_resampraw = new Mutthread_resampraw(m_FileName, imgSrcFile, sz_relative, target_pixel_size);
 	
 	//qDebug()<<"thread_imgSrcFile"<<imgSrcFile;
 	
-	//thread_resampraw->start();
+//	thread_resampraw->start();
 ///////////////////////////////////////////
-	for(int k = 1; k <=target_pixel_size; k++)
+	for(int k = 1; k <=target_pixel_size; k = k+4)
+//	for(int k = target_pixel_size; k <=1; k=k-4)
 	{
-		//int	k=3;
-		printf("k====================================%ld\n",k);
+		printf("k====%ld\n",k);
+		
 		V3DLONG *sz_relative = 0; 
 		
 		int datatype_relative = 0;
@@ -1117,7 +1118,7 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 		
 		qDebug()<<"imgSrcFile"<<imgSrcFile;
 		
-		if(loadImage_mutil_levelraw(imgSrcFile,resampling,szo,sz_relative,datatype_relative,k)!=true)
+		if(loadImage_mutil_levelraw(imgSrcFile,resampling,sz_relative,szo,datatype_relative,k)!=true)
 		{
 			QMessageBox::information(0, "Load Image", QObject::tr("File load failure"));
 			return;
@@ -1125,20 +1126,20 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 		
 		long vx, vy, vz, vc;
 		
-		vx = szo[0]/k ; 
+		vx = sz_relative[0]/k ; 
 		
-		vy = szo[1];
+		vy = sz_relative[1];
 		
-		vz = szo[2];
+		vz = sz_relative[2];
 		
-		vc = szo[3];
+		vc = sz_relative[3];
 		
 		printf("vx=%d vy=%d vz=%d\n",vx,vy,vz);
 		//----------------------------------------------------------------------------------------------------------------------------------
 		//V3DLONG channelsz = szo[0]*szo[1]*szo[2];
 		V3DLONG channelsz = vx*vy*vy;
 		
-		V3DLONG pagesz_vim = szo[3]*channelsz;
+		V3DLONG pagesz_vim = sz_relative[3]*channelsz;
 		
 		void *pData = NULL;
 		
@@ -1158,7 +1159,7 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 			
 			datatype = V3D_UINT8;
 			
-			CopyData_resamp_raw((unsigned char*)resampling,(unsigned char*)pData,szo[3], szo[0], szo[1], szo[2],k);
+			CopyData_resamp_raw((unsigned char*)resampling,(unsigned char*)pData,sz_relative[3], sz_relative[0], sz_relative[1], sz_relative[2],k);
 			
 		}
 		else if(datatype_relative == 2)
@@ -1176,7 +1177,7 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 			}
 			
 			datatype = V3D_UINT16;
-			CopyData_resamp_raw((unsigned short*)resampling,(unsigned short*)pData,szo[3], szo[0], szo[1], szo[2],k);
+			CopyData_resamp_raw((unsigned short*)resampling,(unsigned short*)pData,sz_relative[3], sz_relative[0], sz_relative[1], sz_relative[2],k);
 			
 		}
 		else if(datatype_relative==4)
@@ -1195,7 +1196,7 @@ void MAPiewerPlugin::resampling_rawdata(V3DPluginCallback &callback, QWidget *pa
 			}
 			
 			datatype = V3D_FLOAT32;
-			CopyData_resamp_raw((float*)resampling,(float*)pData,szo[3], szo[0], szo[1], szo[2],k);
+			CopyData_resamp_raw((float*)resampling,(float*)pData,sz_relative[3], sz_relative[0], sz_relative[1], sz_relative[2],k);
 		}
 		// time consumption
 		size_t end_t = clock();
@@ -2877,17 +2878,25 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 		switch (Datatype)
 		{
 			case V3D_UINT8:
-				(unsigned char*)pData = (unsigned char*)relative1d;
+				//(unsigned char*)pData = (unsigned char*)relative1d;
+				memcpy((unsigned char*)pData, (unsigned char*)relative1d,sizeof(unsigned char)* pagesz_vim);
 				//CopyData((unsigned char*)relative1d, (unsigned char*)pData, vx,vy,vz,vc);
+			//	memcpy((unsigned char*)pData, (unsigned char*)relative1d, pagesz_vim);
 				break;
 				
 			case V3D_UINT16:
-				(unsigned short*)pData = (unsigned short*)relative1d;
+				//(unsigned short*)pData = (unsigned short*)relative1d;
+				memcpy((unsigned short*)pData, (unsigned short*)relative1d, sizeof(unsigned short)*pagesz_vim);
+				
+			//	memcpy((unsigned short*)pData, (unsigned short*)relative1d, pagesz_vim);
+
 				//CopyData((unsigned short*)relative1d, (unsigned short*)pData, vx,vy,vz,vc);
-				 break;
+				break;
 				
 			case V3D_FLOAT32:
-				(float*)pData = (float*)relative1d;
+				//(float*)pData = (float*)relative1d;
+				memcpy((float*)pData, (float*)relative1d, sizeof(float)*pagesz_vim);
+				//memcpy((float*)pData, (float*)relative1d, pagesz_vim);
 				//CopyData((float*)relative1d, (float*)pData, vx,vy,vz,vc);
 				break;
 			default:
@@ -3145,7 +3154,6 @@ void XMapView::Setwidget(V3DPluginCallback &callback, QString m_FileName, QStrin
 		QMessageBox::information(0, "TC file reading", QObject::tr("tc file is illegal"));
 		return ;
 	}
-	
 	scaleFactor = (int)scaleFactorInput;
 	//disp_scale = (int)scaleFactorInput;
 	
@@ -3291,18 +3299,20 @@ void Mutthread_tiftoraw::run()
 			{
 				case V3D_UINT8:
 					
-					(unsigned char*)pData = (unsigned char*)tmpData;
-					
+					//(unsigned char*)pData = (unsigned char*)tmpData;
+					memcpy((unsigned char*)pData, (unsigned char*)tmpData, sizeof(unsigned char)*pagesz_vim);
 					break;
 					
 				case V3D_UINT16:
 					
-					(unsigned short*)pData = (unsigned short*)tmpData;
+					//	(unsigned short*)pData = (unsigned short*)tmpData;
+			     	memcpy((unsigned short*)pData, (unsigned short*)tmpData, sizeof(unsigned short)*pagesz_vim);
 					break;
 					
 				case V3D_FLOAT32:
 					
-					(float*)pData = (float*)tmpData;
+					//(float*)pData = (float*)tmpData;
+					memcpy((float*)pData, (float*)tmpData, sizeof(float)*pagesz_vim);
 					break;
 					
 				default:
@@ -3415,6 +3425,7 @@ void Mutthread_resampraw::run()
 		QString curPath = curFilePath;
 		
 		qDebug()<<"imgSrcFile"<<imgSrcFile;
+		
 		
 		if(loadImage_mutil_levelraw(imgSrcFile,resampling,szo,sz_relative,datatype_relative,k)!=true)
 		{
