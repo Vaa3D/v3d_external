@@ -63,6 +63,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3d_core.h"
 
 #include "../basic_c_fun/basic_thread.h" //YuY Dec-20-2010
+#include "../webservice/v3dwebservice.hpp" // YuY March-09-2011
 
 class V3d_PluginLoader;
 class Image4DSimple;
@@ -80,6 +81,9 @@ class V3dR_MainWindow;
 
 //struct LocationSimple; //080107
 //class QList <LocationSimple>; //080107
+
+class V3DWebService; //110315 YuY
+class soappara; //110315 YuY
 
 class MainWindow : public QMainWindow
 {
@@ -105,6 +109,8 @@ protected:
 	void dropEvent(QDropEvent *event);
 
 public slots:
+	void initWebService(V3DWebService *pws);
+	void quitWebService(V3DWebService *pws);
     void newFile();
     void open();
     void openWebUrl(); // By CMB 08-Oct-2010
@@ -244,12 +250,15 @@ public slots:
 // Dec-20-2010 YuY	
 signals:
 	void triviewUpdateTriggered();
+	void webserviceRequest();
 	
 public slots:
 	void transactionStart();
 	void allTransactionsDone();
 	void updateTriview();
-	void updateTriviewWindow(); // trigger signal triviewUpdateTriggered
+	void updateTriviewWindow(); // trigger a signal triviewUpdateTriggered
+	void webserviceResponse();
+	void updateWebService(soappara *pSoapParaInput); // trigger a signal webserviceRequest
 
 private:
     void createActions();
@@ -429,6 +438,10 @@ private:
     QAction * procCellSeg_Gaussian_fit_1_spot_N_Gauss;
 	QAction * procCellSeg_Gaussian_partition;
 	QAction * procCellSeg_manualCorrect;
+	
+private:
+	soappara *pSoapPara;
+	
 
 public: //for image processing, some of the parameters should be globally set
 	//080822
