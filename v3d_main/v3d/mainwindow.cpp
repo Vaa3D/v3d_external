@@ -279,7 +279,11 @@ MainWindow::MainWindow()
 	//connect(&sub_thread, SIGNAL(transactionStarted()), this, SLOT(transactionStart()), Qt::DirectConnection); //Qt::QueuedConnection
     //connect(&sub_thread, SIGNAL(allTransactionsDone()), this, SLOT(allTransactionsDone()), Qt::DirectConnection);
 	connect(this, SIGNAL(triviewUpdateTriggered()), this, SLOT(updateTriview()), Qt::QueuedConnection); // Qt::AutoConnection
+	
+#ifdef __v3dwebservice__
 	connect(this, SIGNAL(webserviceRequest()), this, SLOT(webserviceResponse()), Qt::QueuedConnection); // Qt::AutoConnection
+#endif
+
 }
 
 //void MainWindow::postClose() //090812 RZC
@@ -357,6 +361,8 @@ void MainWindow::updateTriview()
 	}
 }
 
+#ifdef __v3dwebservice__
+
 // slot function for init web service thread
 void MainWindow::initWebService(V3DWebService *pws)
 {
@@ -398,6 +404,8 @@ void MainWindow::webserviceResponse()
 	}
 	
 }
+
+#endif //__v3dwebservice__
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {

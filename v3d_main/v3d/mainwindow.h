@@ -68,6 +68,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #ifdef __v3dwebservice__
 #include "../webservice/v3dwebservice.hpp" // YuY March-16-2011
+class V3DWebService; //110315 YuY
+class soappara; //110315 YuY
 #endif
 
 
@@ -88,8 +90,6 @@ class V3dR_MainWindow;
 //struct LocationSimple; //080107
 //class QList <LocationSimple>; //080107
 
-class V3DWebService; //110315 YuY
-class soappara; //110315 YuY
 
 class MainWindow : public QMainWindow
 {
@@ -263,8 +263,6 @@ public slots:
 	void allTransactionsDone();
 	void updateTriview();
 	void updateTriviewWindow(); // trigger a signal triviewUpdateTriggered
-	void webserviceResponse();
-	void updateWebService(soappara *pSoapParaInput); // trigger a signal webserviceRequest
 
 private:
     void createActions();
@@ -444,10 +442,15 @@ private:
     QAction * procCellSeg_Gaussian_fit_1_spot_N_Gauss;
 	QAction * procCellSeg_Gaussian_partition;
 	QAction * procCellSeg_manualCorrect;
-	
+
+#ifdef __v3dwebservice__
 private:
 	soappara *pSoapPara;
 	
+public slots:
+	void updateWebService(soappara *pSoapParaInput); // trigger a signal webserviceRequest
+	void webserviceResponse();
+#endif
 
 public: //for image processing, some of the parameters should be globally set
 	//080822
