@@ -115,8 +115,6 @@ protected:
 	void dropEvent(QDropEvent *event);
 
 public slots:
-	void initWebService(V3DWebService *pws);
-	void quitWebService(V3DWebService *pws);
     void newFile();
     void open();
     void openWebUrl(); // By CMB 08-Oct-2010
@@ -450,6 +448,8 @@ private:
 public slots:
 	void updateWebService(soappara *pSoapParaInput); // trigger a signal webserviceRequest
 	void webserviceResponse();
+	void initWebService(V3DWebService *pws);
+	void quitWebService(V3DWebService *pws);
 #endif
 
 public: //for image processing, some of the parameters should be globally set
