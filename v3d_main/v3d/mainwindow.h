@@ -64,6 +64,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "../basic_c_fun/basic_thread.h" //YuY Dec-20-2010
 
+#include "../webservice/v3dwebservice_conf.h"
+
 #ifdef __v3dwebservice__
 #include "../webservice/v3dwebservice.hpp" // YuY March-16-2011
 #endif

@@ -22,10 +22,6 @@ extern "C" {
 
 #include "../v3d/mainwindow.h"
 
-#ifndef __v3dwebservice__
-//#define __v3dwebservice__
-#endif
-
 #define BACKLOG (100)
 #define TIMEOUT (24*60*60) // timeout after 24hrs of inactivity
 
