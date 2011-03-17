@@ -73,11 +73,7 @@ public: // interface SOAP/XML handling
 	
 	MainWindow *getMainWin();
 	
-<<<<<<< .mine
 	soapv3dwsService *copy();
-=======
-	soapv3dwsService* copy();
->>>>>>> .r892
 	
 	void run();
 	
