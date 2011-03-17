@@ -13,10 +13,6 @@
 
 #include <string.h>
 #include <QString>
-
-extern "C" {
-#include "threads.h"
-}
 #include <QThread>
 #include <QMutex>
 
@@ -50,19 +46,11 @@ public:
 };
 
 /**
- *
- *	thread handling
- *
- */
-
-void *process_request(void *soapService);
-
-/**
  * child class of soapv3dwebserviceService
  *
  */
 
-class soapv3dwsService :  public QObject, public v3dwebserverService
+class soapv3dwsService :  public QThread, public v3dwebserverService
 {
 	Q_OBJECT
 	
@@ -85,7 +73,13 @@ public: // interface SOAP/XML handling
 	
 	MainWindow *getMainWin();
 	
+<<<<<<< .mine
+	soapv3dwsService *copy();
+=======
 	soapv3dwsService* copy();
+>>>>>>> .r892
+	
+	void run();
 	
 signals:
 	void wsRequests();

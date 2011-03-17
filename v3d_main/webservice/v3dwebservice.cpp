@@ -6,24 +6,6 @@
 #include "v3dwebserver.nsmap" //ws namespace
 #include "v3dwebservice.hpp"
 
-/**
- *
- *	thread handling
- *
- */
-
-void *process_request(void *soapService)
-{
-	pthread_detach(pthread_self());
-	
-	soapv3dwsService *p = (soapv3dwsService *)soapService;
-	
-	p->serve();
-	delete p;
-	
-	return NULL;
-} 
-
 /// Web service operation 'helloworld' (returns error code or SOAP_OK)
 int v3dwebserverService::helloworld(char *name, char **response)
 {
@@ -74,7 +56,7 @@ soapv3dwsService::soapv3dwsService(MainWindow *pMW)
 	
 	v3dwebserverService_init(SOAP_IO_DEFAULT, SOAP_IO_DEFAULT);
 	
-	connect(this, SIGNAL(wsRequests()), pMainWin, SLOT(updateWebService()), Qt::QueuedConnection);
+	connect(this, SIGNAL(wsRequests()), pMainWin, SLOT(updateWebService(soappara*)), Qt::QueuedConnection);
 }
 
 soapv3dwsService::~soapv3dwsService()
@@ -191,6 +173,11 @@ soapv3dwsService* soapv3dwsService::soapv3dwsService::copy()
 	return dup;
 }
 
+void soapv3dwsService::run()
+{	
+	this->serve();
+}
+
 /**
  *
  *	Main Web Service Class
@@ -281,7 +268,8 @@ void V3DWebService::run()
 			
 			if (!t_webserver)
 				break;
-			pthread_create(&tid, NULL, (void*(*)(void*))process_request, (void*)t_webserver);
+			connect(t_webserver, SIGNAL(finished()), t_webserver, SLOT(deleteLater()));
+			t_webserver->start();
 		}
 		
 		mutex.unlock();	
