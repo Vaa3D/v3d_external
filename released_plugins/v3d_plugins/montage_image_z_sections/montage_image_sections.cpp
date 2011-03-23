@@ -50,22 +50,25 @@ void montage_image_sections (T *apsInput, T * aspOutput, V3DLONG iImageWidth, V3
 			}
 		}
 	}
-	
-	for (j=0; j<row*iImageHeight; j=j+iImageHeight)
+	if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to draw line?"), QMessageBox::Yes, QMessageBox::No))
 	{
-		for( k=0; k<column*iImageWidth; k++)
+		for (j=0; j<row*iImageHeight; j=j+iImageHeight)
 		{
-			aspOutput[j*column*iImageWidth+k] = 255;
+			for( k=0; k<column*iImageWidth; k++)
+			{
+				aspOutput[j*column*iImageWidth+k] = 255;
+			}
+		}
+		for (j=0; j<row*iImageHeight; j++)
+		{
+			for(k=0; k<column*iImageWidth; k= k+iImageWidth)
+			{
+				aspOutput[j*column*iImageWidth+k] = 255;
+			}
 		}
 	}
-	for (j=0; j<row*iImageHeight; j++)
-	{
-		for(k=0; k<column*iImageWidth; k= k+iImageWidth)
-		{
-			aspOutput[j*column*iImageWidth+k] = 255;
-		}
-	}
-	
+	else
+		return;
 	//v3d_msg("2");	
 }
 template <class T> 
