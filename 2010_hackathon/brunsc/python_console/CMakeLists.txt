@@ -322,7 +322,7 @@ if(V3D_BUILD_PATH) # ${CMAKE_BINARY_DIR} for V3D project
         COMMENT "Copying python console plugin to V3D binary_plugins directory"
     )
     # Install boost python library
-    get_filename_component(BPNAME "${Boost_PYTHON_LIBRARY}" NAME)
+    get_filename_component(BPNAME "${Boost_PYTHON_LIBRARY_RELEASE}" NAME)
     if(APPLE)
         # Put boost python library in v3d.app/Contents/Frameworks
         set(FRAMEWORK_DIR "${V3D_BUILD_PATH}/v3d/Mac_Fat/v3d.app/Contents/Frameworks")
@@ -341,6 +341,6 @@ if(V3D_BUILD_PATH) # ${CMAKE_BINARY_DIR} for V3D project
         )
     else()
         # Put boost python library next to v3d python console plugin library
-        configure_file("${Boost_PYTHON_LIBRARY}" "${BINARY_PLUGINS_PATH}/${BPNAME}" COPYONLY)
+        configure_file("${Boost_PYTHON_LIBRARY_RELEASE}" "${BINARY_PLUGINS_PATH}/${BPNAME}" COPYONLY)
     endif()
 endif()

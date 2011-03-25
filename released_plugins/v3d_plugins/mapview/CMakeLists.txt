@@ -12,8 +12,10 @@ set(PLUGIN_DIRECTORY_NAME image_stitching/Map_View)
 include_directories(../istitch)
 include_directories(${TIFF_INCLUDE_DIR})
 include_directories(${QT4_DEMOS_INCLUDE_DIR})
-configure_v3d_plugin(mapview)
-target_link_libraries(mapview ${TIFF_LIBRARY})
+if(NOT MSVC)
+  configure_v3d_plugin(mapview)
+  target_link_libraries(mapview ${TIFF_LIBRARY})
+endif()
 
 # TEMPLATE      = lib
 # CONFIG       += qt plugin warn_off

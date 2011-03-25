@@ -291,8 +291,8 @@ void do_computation(V3DPluginCallback2 &callback, QWidget *parent, int method_co
 		}
 		//	  column = floor(sz0/n);
 		//	  row = column;
-		column = floor(sz0/c);
-		row = floor(sz1/r);
+		column = floor((double)(sz0/c));
+		row = floor((double)(sz1/r));
 		
 		//  V3DLONG scount = n*(n+1);
 		V3DLONG scount = r*c;
