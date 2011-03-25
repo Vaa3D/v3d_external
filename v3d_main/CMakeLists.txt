@@ -143,6 +143,7 @@ add_subdirectory( neuron_editing )
 
 add_subdirectory( neuron_tracing )
 
+include_directories(v3d)
 add_subdirectory( v3dbase )
 
 add_subdirectory( plugin_loader )
