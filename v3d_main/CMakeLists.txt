@@ -29,16 +29,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
 
 include(CTest)
 
-# Help find proper version of Qt by finding qmake first
-# Qt version 4.5.2 is required for compatibility with published plugins
-# October 2010 --cmb
-set(QT_DESIRED_VERSION 4.5.2)
-find_program(QT_QMAKE_EXECUTABLE qmake
-  PATHS
-    # /usr/local/Trolltech/Qt-${QT_DESIRED_VERSION}/bin
-  NO_DEFAULT_PATH
-)
-
 find_package(Qt4 REQUIRED)
 set(QT_USE_NETWORK TRUE) # Oct-07-2010 CMB
 set(QT_USE_XML TRUE) # Oct-22-2010 CMB
@@ -57,9 +47,12 @@ if( V3D_USE_OWN_TIFF )
 else()
   # CMake 2.8 FindTiff is very simple.  I need to give it some help on windows
   SET(TIFF_NAMES ${TIFF_NAMES}  libv3dtiff.a libtiff_v3d.a v3dtiff libv3dtiff libtiff.a tiff libtiff libtiff3 libtiff_i)
+  # message("PROGRAMFILES = $ENV{PROGRAMFILES}")
   FIND_LIBRARY(TIFF_LIBRARY NAMES ${TIFF_NAMES}
 	# PATHS "$ENV{PROGRAMFILES}/tiff-3.8.2"
 	PATHS 
+        "$ENV{ProgramW6432}/libtiff64"
+        # "C:/Program Files/libtiff64"
         "$ENV{PROGRAMFILES}/V3DTiff"
         "$ENV{PROGRAMFILES}/GnuWin32"
         "$ENV{PROGRAMFILES}/libtiff-3.9.4"
@@ -69,6 +62,7 @@ else()
   FIND_PATH(TIFF_INCLUDE_DIR tiff.h
 	# PATHS "$ENV{PROGRAMFILES}/tiff-3.8.2"
 	PATHS 
+        "$ENV{ProgramW6432}/libtiff64"
         "${CMAKE_CURRENT_SOURCE_DIR}/common_lib/include"
         "$ENV{PROGRAMFILES}/V3DTiff"
         "$ENV{PROGRAMFILES}/GnuWin32"

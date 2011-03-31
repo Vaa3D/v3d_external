@@ -9,16 +9,24 @@ from pygccxml import declarations
 import commands
 import os
 from doxygen_doc_extractor import doxygen_doc_extractor
+from optparse import OptionParser
+import sys
+import re
 
 class V3DWrapper:
     def __init__(self):
         "Container for pyplusplus module builder for wrapping V3D"
+        # Look for "--win64" command line argument
+        parser = OptionParser()
+        parser.add_option("--win64", action="store_true", dest="win64", default=False, help="Whether we are building Windows 64-bit")
+        (options, args) = parser.parse_args()
         includes = []
         homedir = os.path.expanduser('~')
         for path in ['.',
                        os.path.join(homedir, 'svn/v3d_cmake/v3d_main/basic_c_fun'),
                        os.path.join(homedir, 'svn/v3d/v3d_main/basic_c_fun'),
                        os.path.join(homedir, 'Documents/svn/v3d_cmake/v3d_main/basic_c_fun'),
+                       os.path.abspath('../../../v3d_main/basic_c_fun'),
                        '/usr/include/Qt',
                        '/usr/include/QtCore',
                        '/usr/include/QtGui',
@@ -27,25 +35,47 @@ class V3DWrapper:
                        '/usr/include/qt4/QtGui',
                        '/Library/Frameworks/QtCore.framework/Headers',
                        '/Library/Frameworks/QtGui.framework/Headers',
+                       'C:/Qt/qt-64bit-4.7.2/include/QtCore/',
+                       'C:/Qt/qt-64bit-4.7.2/include/QtGui/',
+                       'C:/Qt/qt-64bit-4.7.2/include/Qt/',
+                       'C:/Qt/qt-64bit-4.7.2/include/',
                      ]:
             if os.path.exists(path):
-                includes.append(path)
+                # keep command line short
+                abs_path = os.path.abspath(path)
+                rel_path = os.path.relpath(path)
+                # print abs_path
+                # print rel_path
+                if len(abs_path) > len(rel_path):
+                    includes.append(rel_path)
+                else:
+                    includes.append(abs_path)
         gccxml_executable = self.find_gccxml()
+        # gccxml_cflags = ' --gccxml-cxxflags "-m32"'
+        gccxml_cflags = ''
+        define_symbols=[]
+        if sys.platform == 'win32':
+            define_symbols.append("_HAS_TR1=0")
+        if options.win64:
+            define_symbols.append("_WIN64")
         self.mb = module_builder.module_builder_t(
             files = ['wrappable_v3d.h',],
             gccxml_path=gccxml_executable,
-            cflags=' --gccxml-cxxflags "-m32"',
+            cflags=gccxml_cflags,
             include_paths=includes,
-            indexing_suite_version=2)
+            indexing_suite_version=2,
+            # ignore_gccxml_output=True,
+            define_symbols=define_symbols,)
         
     def find_gccxml(self):
         g = commands.getstatusoutput("which gccxml")[1]
         if (len(g) > 0) and (os.path.exists(g)):
             return g
-        for g in ['/usr/local/bin/gccxml']:
+        for g in ['/usr/local/bin/gccxml', 
+                      'C:/gccxml/bin/gccxml.exe']:
             if os.path.exists(g):
                 return g
-        error("Could not find gccxml program")
+        raise Exception("Could not find gccxml program")
         
     def wrap(self):
         self.mb.add_registration_code("""

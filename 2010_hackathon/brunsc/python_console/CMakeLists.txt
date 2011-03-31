@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 2.6)
 
+# If we are building 64-bit binaries on Windows, look for libraries in 
+# "C:\Program Files\", not in "C:\Program Files (x86)\"
+if("${CMAKE_GENERATOR}" MATCHES "Win64")
+   # message("Win64")
+   set(ENV{PROGRAMFILES} $ENV{ProgramW6432})
+endif()
+
 # Embedded python on Linux might need some special linking to get all the python symbols
 # http://docs.python.org/py3k/extending/embedding.html
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
@@ -30,7 +37,7 @@ FIND_PACKAGE( PythonLibs REQUIRED )
 include_directories(${PYTHON_INCLUDE_PATH})
 
 # Boost::python is needed to expose our C++ classes in python
-SET(Boost_ADDITIONAL_VERSIONS "1.44.0" "1.44" "1.45.0" "1.45")
+SET(Boost_ADDITIONAL_VERSIONS "1.46.1" "1.44.0" "1.44" "1.45.0" "1.45")
 find_package(Boost COMPONENTS python REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
 
@@ -62,7 +69,7 @@ set(V3D_PYTHON_CONVERSION_HEADERS
     convert_qlist.h
     convert_qhash.h
     convert_c_array_struct.h
-    convert_simtk_vec3.h
+    convert_simtk_vec3.hpp
 )
 
 set(V3D_PYTHON_CONSOLE_SRCS
@@ -199,11 +206,17 @@ if(V3D_PYTHON_CONSOLE_GENERATE_WRAP_CODE)
         wrap_v3d_boost.py)
     # message(${WRAP_DEPEND_SRCS})
     set(V3DGEN_STAMP "${CMAKE_CURRENT_SOURCE_DIR}/generated_code/generate_v3d.stamp")
+	# Create a command line option to signal Windows 64 bit build
+	set(WRAP_ARG "")
+	if("${CMAKE_GENERATOR}" MATCHES "Win64")
+		set(WRAP_ARG "--win64")
+	endif()
     add_custom_command(
         COMMAND "${PYTHON_EXECUTABLE}" wrap_v3d_boost.py
+            ${WRAP_ARG}
             > "${CMAKE_CURRENT_BINARY_DIR}/wrap_v3d_boost.log"
             2> "${CMAKE_CURRENT_BINARY_DIR}/wrap_v3d_boost.err"
-        COMMAND $(CMAKE_COMMAND) -E touch "${V3DGEN_STAMP}"
+        COMMAND ${CMAKE_COMMAND} -E touch "${V3DGEN_STAMP}"
         OUTPUT "${V3DGEN_STAMP}"
         DEPENDS ${WRAP_DEPEND_SRCS}
         WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
