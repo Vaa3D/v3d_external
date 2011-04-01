@@ -560,7 +560,7 @@ bool q_bcurve_straighten2rect(
 	int ptspace=1; // default value
 	double base0=0;
 	long Krad=0;
-	if(floor(l_width/2)*2==l_width)
+	if(floor(double(l_width)/2)*2==l_width)
 	{
 		Krad=(l_width-1)/2;
 		base0=0;
