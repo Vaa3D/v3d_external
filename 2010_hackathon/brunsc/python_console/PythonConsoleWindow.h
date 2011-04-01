@@ -25,6 +25,9 @@ signals:
 	void commandIssued(QString);
 	void pythonReadlineEntered(QString);
 
+public slots:
+    void runScript();
+
 private slots:
 	void onReturnPressed();
 	void onCursorPositionChanged();
@@ -38,7 +41,6 @@ private slots:
 	void about();
 	void zoomIn();
 	void zoomOut();
-	void runScript();
 	void openRecentFile();
 	
 private:
@@ -59,12 +61,14 @@ private:
 	QTextCursor latestGoodCursorPosition;
 	int currentCommandStartPosition;
 	QString multilineCommand;
-    PythonInterpreter *pythonInterpreter;
     CommandRing commandRing;
 
     // static const int maxRecentScripts = 10;
     // QAction* recentScripts[maxRecentScripts];
-	c_array<QAction*, 10> recentScripts;
+    c_array<QAction*, 10> recentScripts;
+
+public:
+    PythonInterpreter *pythonInterpreter;
 };
 
 #endif // V3D_PYTHON_CONSOLE_WINDOW_H
