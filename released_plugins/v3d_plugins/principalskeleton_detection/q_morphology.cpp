@@ -59,7 +59,7 @@ bool q_create_kernel(const int rows,const int cols,const int anchor_x,const int 
 		for(int x=0;x<cols;x++)
 			for(int y=0;y<rows;y++)
 			{
-				float dis=sqrt((x-anchor_x)*(x-anchor_x)+(y-anchor_y)*(y-anchor_y));
+				float dis=sqrt(double((x-anchor_x)*(x-anchor_x)+(y-anchor_y)*(y-anchor_y)));
 				if(dis<=radius)
 					kernel.kernel[y][x]=1;
 			}
