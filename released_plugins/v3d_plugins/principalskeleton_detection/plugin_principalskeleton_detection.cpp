@@ -963,7 +963,76 @@ void SkeletonBasedImgWarp(V3DPluginCallback2 &callback, QWidget *parent)
     	if(sz_img_tar)		{delete []sz_img_tar;		sz_img_tar=0;}
     	return;
 	}
-
+	
+	//------------------------------------------------------------------------------------------------------------------------------------
+	//align mess center in z dir
+	long l_refchannel=0;
+	unsigned char *p_img_shift=new unsigned char[sz_img_tar[0]*sz_img_tar[1]*sz_img_tar[2]*sz_img_tar[3]]();
+	if(!p_img_shift)
+	{
+		printf("ERROR: Fail to allocate memory for sub2tar warpped image.\n");
+    	if(p_img_tar) 		{delete []p_img_tar;		p_img_tar=0;}
+    	if(p_img_sub) 		{delete []p_img_sub;		p_img_sub=0;}
+    	if(p_img_sub2tar) 	{delete []p_img_sub2tar;	p_img_sub2tar=0;}
+    	if(sz_img_sub)		{delete []sz_img_sub;		sz_img_sub=0;}
+    	if(sz_img_tar)		{delete []sz_img_tar;		sz_img_tar=0;}
+		return;
+	}	
+	
+	//find the masscenter of target and sub2tar warped image
+	double d_masscenter_z_tar=0,d_masscenter_z_sub2tar=0,d_intensitysum_tar=0,d_intensitysum_sub2tar=0;
+	unsigned char ****p_img_tar_4d=0,****p_img_shift_4d=0,****p_img_sub2tar_4d=0;
+	if(!new4dpointer(p_img_tar_4d,sz_img_tar[0],sz_img_tar[1],sz_img_tar[2],sz_img_tar[3],p_img_tar) ||
+	   !new4dpointer(p_img_shift_4d,sz_img_tar[0],sz_img_tar[1],sz_img_tar[2],sz_img_tar[3],p_img_shift) ||
+	   !new4dpointer(p_img_sub2tar_4d,sz_img_tar[0],sz_img_tar[1],sz_img_tar[2],sz_img_tar[3],p_img_sub2tar))
+	{
+		printf("ERROR: Fail to allocate memory for the 4d pointer of image.\n");
+    	if(p_img_tar) 		{delete []p_img_tar;		p_img_tar=0;}
+    	if(p_img_sub) 		{delete []p_img_sub;		p_img_sub=0;}
+    	if(p_img_sub2tar) 	{delete []p_img_sub2tar;	p_img_sub2tar=0;}
+		if(p_img_shift) 	{delete []p_img_shift;	p_img_shift=0;}
+    	if(sz_img_sub)		{delete []sz_img_sub;		sz_img_sub=0;}
+    	if(sz_img_tar)		{delete []sz_img_tar;		sz_img_tar=0;}
+		if(p_img_tar_4d) 		{delete4dpointer(p_img_tar_4d,sz_img_tar[0],sz_img_tar[1],sz_img_tar[2],sz_img_tar[3]);}
+		if(p_img_shift_4d) 		{delete4dpointer(p_img_shift_4d,sz_img_tar[0],sz_img_tar[1],sz_img_tar[2],sz_img_tar[3]);}
+		if(p_img_sub2tar_4d) 	{delete4dpointer(p_img_sub2tar_4d,sz_img_tar[0],sz_img_tar[1],sz_img_tar[2],sz_img_tar[3]);}
+		return;
+	}
+	for(long z=0;z<sz_img_tar[2];z++)
+		for(long y=0;y<sz_img_tar[1];y++)
+			for(long x=0;x<sz_img_tar[0];x++)
+			{
+				d_intensitysum_tar+=p_img_tar_4d[l_refchannel][z][y][x];
+				d_masscenter_z_tar+=z*p_img_tar_4d[l_refchannel][z][y][x];
+				
+				d_intensitysum_sub2tar+=p_img_sub2tar_4d[l_refchannel][z][y][x];
+				d_masscenter_z_sub2tar+=z*p_img_sub2tar_4d[l_refchannel][z][y][x];
+			}
+	d_masscenter_z_tar/=d_intensitysum_tar;
+	d_masscenter_z_sub2tar/=d_intensitysum_sub2tar;
+	
+	//align the mass center of sub2tar image to that of target image
+	long l_offset_z=d_masscenter_z_tar-d_masscenter_z_sub2tar+0.5;
+	for(long z=0;z<sz_img_tar[2];z++)
+	{
+		long z_sub2tar=z-l_offset_z;
+		if(z_sub2tar>=sz_img_tar[2])	z_sub2tar=sz_img_tar[2]-1;
+		if(z_sub2tar<0)					z_sub2tar=0;
+		
+		for(long y=0;y<sz_img_tar[1];y++)
+			for(long x=0;x<sz_img_tar[0];x++)
+				for(long c=0;c<sz_img_tar[3];c++)
+					p_img_shift_4d[c][z][y][x]=p_img_sub2tar_4d[c][z_sub2tar][y][x];
+	}
+	
+	//swap pointer
+	if(p_img_sub2tar) 	{delete []p_img_sub2tar;	p_img_sub2tar=0;}
+	p_img_sub2tar=p_img_shift;	p_img_shift=0;
+	
+	if(p_img_tar_4d) 		{delete4dpointer(p_img_tar_4d,sz_img_tar[0],sz_img_tar[1],sz_img_tar[2],sz_img_tar[3]);}
+	if(p_img_shift_4d) 		{delete4dpointer(p_img_shift_4d,sz_img_tar[0],sz_img_tar[1],sz_img_tar[2],sz_img_tar[3]);}
+	if(p_img_sub2tar_4d) 	{delete4dpointer(p_img_sub2tar_4d,sz_img_tar[0],sz_img_tar[1],sz_img_tar[2],sz_img_tar[3]);}
+	
 	//------------------------------------------------------------------------------------------------------------------------------------
 	//push warped image to v3d
 	unsigned long l_npixel_s=sz_img_tar[0]*sz_img_tar[1]*sz_img_tar[2]*sz_img_tar[3];
