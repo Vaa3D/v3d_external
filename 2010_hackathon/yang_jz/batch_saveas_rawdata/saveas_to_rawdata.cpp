@@ -21,11 +21,6 @@
 
 #include <set>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-
 #include <cmath>
 
 #include <ctime>
@@ -59,7 +54,6 @@
 #include <qgroupbox.h>
 
 #include "volimg_proc.h"
-#include <iostream>
 
 #include <QMutex>
 #include <QQueue>
