@@ -11,9 +11,9 @@
 #include "saveas_to_rawdata.h"
 #include "v3d_message.h" 
 
-#include <fstream>
-#include <sstream>
-#include <iostream>
+//#include <fstream>
+//#include <sstream>
+//#include <iostream>
 
 #include <vector>
 #include <list>
@@ -101,8 +101,8 @@ void saveas_to_rawdata(V3DPluginCallback &callback, QWidget *parent, int method_
 	
 	QStringList imgSuffix;	
 	
-	imgSuffix<<"*.tif"<<"*.raw"<<"*.lsm"
-	<<"*.TIF"<<"*.RAW"<<"*.LSM";
+	imgSuffix<<"*.tif"<<"*.lsm"
+	<<"*.TIF"<<"*.LSM";
 	
 	for(int i=0; i<list.size();i++)
 	{
@@ -114,13 +114,12 @@ void saveas_to_rawdata(V3DPluginCallback &callback, QWidget *parent, int method_
 		
 		foreach (QString file, dir.entryList(imgSuffix, QDir::Files, QDir::Name))
 		{
-			filelist += QFileInfo(dir1, file).absoluteFilePath();
+			filelist += QFileInfo(dir, file).absoluteFilePath();
 		}
 		
 		qDebug()<<"filelist== "<<filelist;
 		
 		for(int j=0; j<filelist.size();j++)
-			
 		{	
 			QString curFilePath = QFileInfo(filelist.at(j)).path();
 			
@@ -160,8 +159,8 @@ void saveas_to_rawdata(V3DPluginCallback &callback, QWidget *parent, int method_
 			
 			int pixelnbits=1; //100817		
 			
-			//if(loadTif2StackMylib(imgSrcFile,tmpData,sz,datatype_relative,pixelnbits)!=true)
-			if(loadImage(imgSrcFile,tmpData,sz,datatype_relative)!=true)
+			if(loadTif2StackMylib(imgSrcFile,tmpData,sz,datatype_relative,pixelnbits))
+			//if(loadImage(imgSrcFile,tmpData,sz,datatype_relative)!=true)
 			{
 				QMessageBox::information(0, "Load Image", QObject::tr("File load failure"));
 				return;
@@ -199,18 +198,25 @@ void saveas_to_rawdata(V3DPluginCallback &callback, QWidget *parent, int method_
 	}
 	
 	QStringList rootlist;
-
+    
 	foreach (QString subDir,dir.entryList(QDir::Dirs|QDir::NoDotAndDotDot))
 	{
 		rootlist += QFileInfo(dir, subDir).absoluteFilePath();
 	}
-    
+	
 	for(int i=0; i<rootlist.size();i++)
 	{
-		
-		QString str = QFileInfo(rootlist.at(i)).fileName(); 
-		str+=".raw";
-		dir.mkdir(str);
+		int childCount =0;
+		QString tmpdir = rootlist.at(i);
+		QDir thisDir(tmpdir);
+		childCount = thisDir.entryInfoList().count();
+		QFileInfoList newFileList = thisDir.entryInfoList();
+		if(childCount>2)
+		{
+			QString str = QFileInfo(rootlist.at(i)).fileName(); 
+			str+=".raw";
+			dir.mkdir(str);
+		}
 	}
 	
 	for(int i=0; i<rootlist.size();i++)
@@ -220,18 +226,7 @@ void saveas_to_rawdata(V3DPluginCallback &callback, QWidget *parent, int method_
 		
 		myList.clear();
 	
-		// get the image files namelist in the directory
-		//QStringList imgSuffix;
-//		imgSuffix<<"*.tif"<<"*.raw"<<"*.lsm"
-//		<<"*.TIF"<<"*.RAW"<<"*.LSM";
-		
 		QDir dir1(rootlist.at(i));
-		
-	//	QString dirname = dir1.dirName();  
-//		
-//		dirname+="1";
-//		
-//		dir1.mkdir(dirname);
 		
 		if (!dir1.exists())
 		{
@@ -279,10 +274,6 @@ void saveas_to_rawdata(V3DPluginCallback &callback, QWidget *parent, int method_
 			qDebug() << "curPath ===== " << curPath ; // 
 			
 			string fn = myList.at(j).toStdString();
-//			
-//			string ff = myList.at(j).toStdString();
-			
-	//		string fn = name.toStdString();
 			
 			string ff = name.toStdString();
 			
@@ -306,7 +297,7 @@ void saveas_to_rawdata(V3DPluginCallback &callback, QWidget *parent, int method_
 			
 			int pixelnbits=1; //100817		
 			
-			if(loadTif2StackMylib(imgSrcFile,tmpData,sz,datatype_relative,pixelnbits)!=true)
+			if(loadTif2StackMylib(imgSrcFile,tmpData,sz,datatype_relative,pixelnbits))
 			//if(loadImage(imgSrcFile,tmpData,sz,datatype_relative)!=true)
 			{
 				QMessageBox::information(0, "Load Image", QObject::tr("File load failure"));
@@ -332,8 +323,6 @@ void saveas_to_rawdata(V3DPluginCallback &callback, QWidget *parent, int method_
 			tmp_filename += ".raw";	
 			
 			qDebug()<<"tmp_filename=="<<tmp_filename;
-			
-		//	sz_tmp[0] = vx; sz_tmp[1] = vy; sz_tmp[2] = vz; sz_tmp[3] = vc; 
 			
 			if (saveImage(tmp_filename.toStdString().c_str(), (const unsigned char *)tmpData, sz, datatype)!=true)
 			{
