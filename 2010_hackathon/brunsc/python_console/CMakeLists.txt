@@ -352,6 +352,17 @@ if(V3D_BUILD_PATH) # ${CMAKE_BINARY_DIR} for V3D project
             COMMAND install_name_tool -change "${BPNAME}" "@executable_path/../Frameworks/${BPNAME}" "${PLUGIN_FILE}"
             COMMENT "Changing install name of boost python library."
         )
+    elseif(MSVC)
+        # We might link to the .lib file; we want the corresponding .dll file in the install
+        # Replace ".lib" with ".dll"
+        string(REGEX REPLACE "\\.lib$" ".dll" BP_DLL ${Boost_PYTHON_LIBRARY_RELEASE})
+        # Replace "libboost_python" with "boost_python"; This might be unnecessary.
+        string(REPLACE "libboost_python" "boost_python" BP_DLL ${BP_DLL})
+        if(EXISTS ${BP_DLL})
+            # message(${BP_DLL})
+            get_filename_component(BPNAME "${BP_DLL}" NAME)
+            configure_file("${BP_DLL}" "${BINARY_PLUGINS_PATH}/${BPNAME}" COPYONLY)
+        endif()
     else()
         # Put boost python library next to v3d python console plugin library
         configure_file("${Boost_PYTHON_LIBRARY_RELEASE}" "${BINARY_PLUGINS_PATH}/${BPNAME}" COPYONLY)
