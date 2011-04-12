@@ -298,7 +298,7 @@ int main(int argc, char **argv)
                 v3d::V3DVersionChecker *versionChecker = new v3d::V3DVersionChecker(mainWin);
                 if (versionChecker->shouldCheckNow()) {
                     // v3d_msg("It is time to check for software updates...",0);
-                    versionChecker->checkForLatestVersion(false);
+                    // versionChecker->checkForLatestVersion(false);
                 }
             }
 			
