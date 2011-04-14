@@ -40,6 +40,10 @@
 
 #include "imageio_mylib.h" 
 
+#include "mg_image_lib11.h"
+
+#include "stackutil-11.h"
+
 // interface v3d
 #include <QtGui>
 #include <stdio.h>
@@ -80,7 +84,7 @@ void SAVEAS_TO_RAWDATAlugin::domenu(const QString &menu_name, V3DPluginCallback 
     }
 	else if (menu_name == tr("Help"))
 	{
-		v3d_msg("(version 0.11) Convert a SWC file to a mask image, where the area of the swc tubes will have non-zero values, and other area will have 0s; Use mask imge to filter tif image, where the area of the swc non-zero will tif image values not change, and other area will have 0");
+		v3d_msg("Neuronseg Plugin 1.0 developed by Jinzhu Yang. (Peng Lab, Janelia Research Farm Campus, HHMI), save data files to raw format ");
 		return;
 	}
 }
@@ -93,10 +97,6 @@ void saveas_to_rawdata(V3DPluginCallback &callback, QWidget *parent, int method_
 											   QFileDialog::ShowDirsOnly);
 	QDir dir(fn_img);
 
-	//QString dirname = dir.dirName();
-	
-	//dir.mkdir(dirname);
-	
 	QStringList list = dir.entryList();
 	
 	QStringList imgSuffix;	
@@ -104,98 +104,98 @@ void saveas_to_rawdata(V3DPluginCallback &callback, QWidget *parent, int method_
 	imgSuffix<<"*.tif"<<"*.lsm"
 	<<"*.TIF"<<"*.LSM";
 	
-	for(int i=0; i<list.size();i++)
-	{
-		QStringList filelist;
-		
-		filelist.clear();
-		
-		// get the image files namelist in the directory
-		
-		foreach (QString file, dir.entryList(imgSuffix, QDir::Files, QDir::Name))
-		{
-			filelist += QFileInfo(dir, file).absoluteFilePath();
-		}
-		
-		qDebug()<<"filelist== "<<filelist;
-		
-		for(int j=0; j<filelist.size();j++)
-		{	
-			QString curFilePath = QFileInfo(filelist.at(j)).path();
-			
-			QString name = QFileInfo(filelist.at(j)).fileName(); 
-
-			void *pData = NULL;
-			
-			ImagePixelType datatype;
-			
-			string fn_sub;
-			
-			QString curPath = curFilePath+"/";
-			
-			qDebug() << "image filel: name: "<< filelist.at(j)<<name;
-			
-			qDebug() << "curPath ===== " << curPath ; // 
-			
-			string fn = filelist.at(j).toStdString();
-
-			string ff = name.toStdString();
-			
-			qDebug()<<"fn="<<fn.c_str();
-			
-			int i = ff.find(".", 0 ); 
-			
-			fn_sub=ff.substr(0,i);
-			
-			char * imgSrcFile = const_cast<char *>(fn.c_str());
-			
-			qDebug()<<"fn_sub="<<fn_sub.c_str();
-			
-			V3DLONG *sz = 0; 
-			
-			int datatype_relative = 0;
-			
-			unsigned char* tmpData = 0;
-			
-			int pixelnbits=1; //100817		
-			
-			if(loadTif2StackMylib(imgSrcFile,tmpData,sz,datatype_relative,pixelnbits))
-			//if(loadImage(imgSrcFile,tmpData,sz,datatype_relative)!=true)
-			{
-				QMessageBox::information(0, "Load Image", QObject::tr("File load failure"));
-				return;
-			}
-			if(datatype_relative ==1)
-			{
-				datatype = V3D_UINT8;
-			}
-			else if(datatype_relative == 2)
-			{
-				datatype = V3D_UINT16;
-			}
-			else if(datatype_relative==4)
-			{
-				datatype = V3D_FLOAT32;
-			}
-			
-			QString tmp_filename = curPath;
-			
-			tmp_filename.append(QString(fn_sub.c_str()));
-			
-			tmp_filename += ".raw";	
-			
-			qDebug()<<"tmp_filename=="<<tmp_filename;
-			
-			//	sz_tmp[0] = vx; sz_tmp[1] = vy; sz_tmp[2] = vz; sz_tmp[3] = vc; 
-			
-			if (saveImage(tmp_filename.toStdString().c_str(), (const unsigned char *)tmpData, sz, datatype)!=true)
-			{
-				fprintf(stderr, "Error happens in file writing. Exit. \n");
-				return ;
-			}
-		}
-		
-	}
+//	for(int i=0; i<list.size();i++)
+//	{
+//		QStringList filelist;
+//		
+//		filelist.clear();
+//		
+//		// get the image files namelist in the directory
+//		
+//		foreach (QString file, dir.entryList(imgSuffix, QDir::Files, QDir::Name))
+//		{
+//			filelist += QFileInfo(dir, file).absoluteFilePath();
+//		}
+//		
+//		qDebug()<<"filelist== "<<filelist;
+//		
+//		for(int j=0; j<filelist.size();j++)
+//		{	
+//			QString curFilePath = QFileInfo(filelist.at(j)).path();
+//			
+//			QString name = QFileInfo(filelist.at(j)).fileName(); 
+//
+//			void *pData = NULL;
+//			
+//			ImagePixelType datatype;
+//			
+//			string fn_sub;
+//			
+//			QString curPath = curFilePath+"/";
+//			
+//			qDebug() << "image filel: name: "<< filelist.at(j)<<name;
+//			
+//			qDebug() << "curPath ===== " << curPath ; // 
+//			
+//			string fn = filelist.at(j).toStdString();
+//
+//			string ff = name.toStdString();
+//			
+//			qDebug()<<"fn="<<fn.c_str();
+//			
+//			int i = ff.find(".", 0 ); 
+//			
+//			fn_sub=ff.substr(0,i);
+//			
+//			char * imgSrcFile = const_cast<char *>(fn.c_str());
+//			
+//			qDebug()<<"fn_sub="<<fn_sub.c_str();
+//			
+//			V3DLONG *sz = 0; 
+//			
+//			int datatype_relative = 0;
+//			
+//			unsigned char* tmpData = 0;
+//			
+//			int pixelnbits=1; //100817		
+//			
+//			if(loadTif2StackMylib(imgSrcFile,tmpData,sz,datatype_relative,pixelnbits))
+//			//if(loadImage(imgSrcFile,tmpData,sz,datatype_relative)!=true)
+//			{
+//				QMessageBox::information(0, "Load Image", QObject::tr("File load failure"));
+//				return;
+//			}
+//			if(datatype_relative ==1)
+//			{
+//				datatype = V3D_UINT8;
+//			}
+//			else if(datatype_relative == 2)
+//			{
+//				datatype = V3D_UINT16;
+//			}
+//			else if(datatype_relative==4)
+//			{
+//				datatype = V3D_FLOAT32;
+//			}
+//			
+//			QString tmp_filename = curPath;
+//			
+//			tmp_filename.append(QString(fn_sub.c_str()));
+//			
+//			tmp_filename += ".raw";	
+//			
+//			qDebug()<<"tmp_filename=="<<tmp_filename;
+//			
+//			//	sz_tmp[0] = vx; sz_tmp[1] = vy; sz_tmp[2] = vz; sz_tmp[3] = vc; 
+//			
+//			if (saveImage(tmp_filename.toStdString().c_str(), (const unsigned char *)tmpData, sz, datatype)!=true)
+//			{
+//				fprintf(stderr, "Error happens in file writing. Exit. \n");
+//				return ;
+//			}
+//		}
+//		
+//	}
 	
 	QStringList rootlist;
     
@@ -295,7 +295,7 @@ void saveas_to_rawdata(V3DPluginCallback &callback, QWidget *parent, int method_
 			
 			unsigned char* tmpData = 0;
 			
-			int pixelnbits=1; //100817		
+			int pixelnbits=1; 		
 			
 			if(loadTif2StackMylib(imgSrcFile,tmpData,sz,datatype_relative,pixelnbits))
 			//if(loadImage(imgSrcFile,tmpData,sz,datatype_relative)!=true)
@@ -329,6 +329,7 @@ void saveas_to_rawdata(V3DPluginCallback &callback, QWidget *parent, int method_
 				fprintf(stderr, "Error happens in file writing. Exit. \n");
 				return ;
 			}
+			if(tmpData) {delete []tmpData; tmpData=0;}
 		}
 	}
 	
