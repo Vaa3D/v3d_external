@@ -4700,15 +4700,15 @@ int batch_group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 	
 	QString m_InputFileName;
 	
-	int channel1 = dialog.channel1-1;
+	//int channel1 = dialog.channel1-1;
 	
 	REAL overlap_percent = dialog.overlap;
 	
 	bool axes_show = dialog.axes_show; // 20100615
 	bool img_show = dialog.img_show; // 20110126
 	
-	
-	
+//	REAL *scale = new REAL [6];
+//	
 //	scale[0] = dialog.scale_x;
 //	scale[1] = dialog.scale_y;
 //	scale[2] = dialog.scale_z;
@@ -4742,15 +4742,16 @@ int batch_group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 	
 	for(int i =0; i<rootlist.size();i++)
 	{
+		int channel1 = dialog.channel1-1;
+
 		REAL *scale = new REAL [6];
-		channel1=0;
-		scale[0] = 0.2;
-		scale[1] = 0.2;
-		scale[2] = 0.2;
+		
+		scale[0] = dialog.scale_x;
+		scale[1] = dialog.scale_y;
+		scale[2] = dialog.scale_z;
 		scale[3] = 1;
 		scale[4] = 1;
 		scale[5] = 1;
-		overlap_percent=0.01;
 		
 		m_InputFileName=rootlist.at(i);
 		
