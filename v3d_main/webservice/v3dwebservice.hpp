@@ -16,7 +16,7 @@
 #include <QThread>
 #include <QMutex>
 
-#include "../v3d/mainwindow.h"
+#include "../basic_c_fun/v3d_interface.h" // plugin interface
 
 #define BACKLOG (100)
 #define TIMEOUT (24*60*60) // timeout after 24hrs of inactivity
@@ -43,10 +43,12 @@ public:
 public:
 	char *str_func;
 	char *str_message; // e.g. fn
+	
+	float rot_x, rot_y, rot_z;
 };
 
 /**
- * child class of soapv3dwebserviceService
+ * web service class using soap
  *
  */
 
@@ -55,7 +57,7 @@ class soapv3dwsService :  public QThread, public v3dwebserverService
 	Q_OBJECT
 	
 public:
-	soapv3dwsService(MainWindow *pMW);
+	soapv3dwsService();
 	
 	soapv3dwsService(const struct soap &_soap) : v3dwebserverService(_soap){}
 	
@@ -69,19 +71,18 @@ public: // interface SOAP/XML handling
 	
 	virtual int v3dopenfile(char *fn, char **v3dfn); // open a file in V3D
 	
-	void setMainWin(MainWindow *pMW);
-	
-	MainWindow *getMainWin();
-	
 	soapv3dwsService *copy();
 	
 	void run();
+	soappara *getSoapPara();
+	void setSoapPara(soappara *pSoapParaInput);
 	
 signals:
 	void wsRequests();
 	
 private:
-	MainWindow *pMainWin;
+	QMutex mutex;
+	soappara *pSoapPara;
 };
 
 /**
@@ -92,9 +93,10 @@ private:
 
 class V3DWebService : public QThread
 {
+	Q_OBJECT
 
 public:
-	V3DWebService(MainWindow *pMW, int nPort); // preferred class init
+	V3DWebService(int nPort); // preferred class init
 	
 	V3DWebService();
 	
@@ -102,23 +104,29 @@ public:
 	
 public:
 	void init();
+	soappara *getSoapPara();
+	void setSoapPara(soappara *pSoapParaInput);
+	
+signals:
+	void webserviceRequest();
+	
+public slots:
+	void webserviceResponse();
 	
 protected:
 	void run();
 	
 public:
-	MainWindow *pMainWin;
 	
 	SOAP_SOCKET master, slave;
-	void *webserver; // soapv3dwsService class pointer
+	soapv3dwsService *webserver; // soapv3dwsService class pointer
 	int port;
-	
-	pthread_t tid;
 	
 	volatile bool stopped; // if true then abort. false by default 
 	
 private:
 	QMutex mutex;
+	soappara *pSoapPara;
 
 };
 

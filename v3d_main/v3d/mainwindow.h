@@ -254,7 +254,6 @@ public slots:
 // Dec-20-2010 YuY	
 signals:
 	void triviewUpdateTriggered();
-	void webserviceRequest();
 	
 public slots:
 	void transactionStart();
@@ -444,12 +443,13 @@ private:
 #ifdef __v3dwebservice__
 private:
 	soappara *pSoapPara;
+	V3DWebService *v3dws;
 	
 public slots:
-	void updateWebService(soappara *pSoapParaInput); // trigger a signal webserviceRequest
 	void webserviceResponse();
 	void initWebService(V3DWebService *pws);
 	void quitWebService(V3DWebService *pws);
+	void setSoapPara(soappara *pSoapParaInput);
 #endif
 
 public: //for image processing, some of the parameters should be globally set

@@ -260,6 +260,23 @@ int main(int argc, char **argv)
 					mainWin->loadV3DFile(filename, true, parser.i_v3d.open3Dviewer);
 				}
 			}
+			
+			// plugin module
+			if(QFile::exists(parser.i_v3d.pluginname))
+			{
+				QPluginLoader* loader = new QPluginLoader(parser.i_v3d.pluginname);
+				if (!loader)
+				{
+					v3d_msg(QString("ERROR in V3d_PluginLoader::searchPluginFiles the imaging module(%1)").arg(parser.i_v3d.pluginname), 0);
+					return false;
+				}
+				
+				// run method
+				V3d_PluginLoader mypluginloader(mainWin);
+				
+				mypluginloader.runPlugin(loader, parser.i_v3d.pluginmethod);
+			}
+			
 
             // Check for software updates.
             // But not if V3D has been invoked with a file to open immediately.

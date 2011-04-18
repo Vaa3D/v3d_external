@@ -50,17 +50,33 @@ int ns__v3dopenfileResponse_(struct soap *soap, char *fn)
  *
  */
 
-soapv3dwsService::soapv3dwsService(MainWindow *pMW)
+soapv3dwsService::soapv3dwsService()
 {
-	pMainWin = pMW;
-	
 	v3dwebserverService_init(SOAP_IO_DEFAULT, SOAP_IO_DEFAULT);
 	
-	connect(this, SIGNAL(wsRequests()), pMainWin, SLOT(updateWebService(soappara*)), Qt::QueuedConnection);
+	try
+	{
+		pSoapPara = new soappara;
+	}
+	catch (...)
+	{
+		printf("Fail to init soap message pointer.\n");
+		return;
+	}
 }
 
 soapv3dwsService::~soapv3dwsService()
 {
+}
+
+soappara* soapv3dwsService::getSoapPara()
+{
+	return pSoapPara;
+}
+
+void soapv3dwsService::setSoapPara(soappara *pSoapParaInput)
+{
+	pSoapPara = pSoapParaInput;
 }
 
 int soapv3dwsService::helloworld(char *name, char **response) // hello world
@@ -69,25 +85,12 @@ int soapv3dwsService::helloworld(char *name, char **response) // hello world
 	
 	*response = (char *)qres.toStdString().c_str();
 	
-	//QMessageBox::information((QWidget *)0, QString("title: hello"), QString(*response));
+	pSoapPara->str_func = "helloworld";
+	pSoapPara->str_message = (char *)malloc(strlen(*response) + 1);
+	strcpy(pSoapPara->str_message, *response);
 	
-	if(this->getMainWin())
-	{
-		soappara *pSoapParaInput = new soappara;
-		
-		pSoapParaInput->str_func = "helloworld";
-		pSoapParaInput->str_message = (char *)malloc(strlen(*response) + 1);
-		strcpy(pSoapParaInput->str_message, *response);
-		
-		printf("trigger a signal here ...\n");
-		//emit wsRequests();
-		this->getMainWin()->updateWebService( pSoapParaInput );
-	}
-	else
-	{
-		printf("The pointer pMainWin does not passed correctly.\n");
-		return -1;
-	}
+	printf("trigger a signal here in soapv3dwsService ...\n");
+	emit wsRequests();
 	
 	fprintf(stderr, "%s\n", *response);
 	
@@ -128,54 +131,37 @@ int soapv3dwsService::msghandler(ns__LOAD_MSG *lm, ns__LOAD_RES *lr) // message 
 
 int soapv3dwsService::v3dopenfile(char *fn, char **v3dfn) // open a file in V3D
 {
+	printf("v3d open file ...\n");
+	
 	QString qres = QString(fn);
 	
 	*v3dfn = (char *)qres.toStdString().c_str();
 	
-	if(this->getMainWin())
-	{
-		soappara *pSoapParaInput = new soappara;
-		
-		pSoapParaInput->str_func = "v3dopenfile";
-		pSoapParaInput->str_message = (char *)malloc(strlen(*v3dfn) + 1);
-		strcpy(pSoapParaInput->str_message, *v3dfn);
-		
-		printf("trigger a signal here ...\n");
-		//emit wsRequests();
-		this->getMainWin()->updateWebService( pSoapParaInput );
-	}
-	else
-	{
-		printf("The pointer pMainWin does not passed correctly.\n");
-		return -1;
-	}
+	pSoapPara->str_func = "v3dopenfile";
+	pSoapPara->str_message = (char *)malloc(strlen(*v3dfn) + 1);
+	strcpy(pSoapPara->str_message, *v3dfn);
+	
+	printf("trigger a signal here in soapv3dwsService ...\n");
+	emit wsRequests();
 	
 	return SOAP_OK;
 	
-}
-
-void soapv3dwsService::setMainWin(MainWindow *pMW)
-{
-	pMainWin = pMW;
-}
-
-MainWindow* soapv3dwsService::getMainWin()
-{
-	return pMainWin;
 }
 
 soapv3dwsService* soapv3dwsService::soapv3dwsService::copy()
 {	
 	soapv3dwsService *dup = SOAP_NEW_COPY(soapv3dwsService(*(struct soap*)this));
 	
-	dup->setMainWin( this->getMainWin() );
+	dup->setSoapPara(this->getSoapPara());
 	
 	return dup;
 }
 
 void soapv3dwsService::run()
 {	
+	mutex.lock();
 	this->serve();
+	mutex.unlock();
 }
 
 /**
@@ -184,10 +170,8 @@ void soapv3dwsService::run()
  *
  */
 
-
-V3DWebService::V3DWebService(MainWindow *pMW, int nPort) // preferred class init
+V3DWebService::V3DWebService(int nPort) // preferred class init
 {
-	pMainWin = pMW;
 	port = nPort;
 	
 	stopped = false;
@@ -198,8 +182,6 @@ V3DWebService::V3DWebService(MainWindow *pMW, int nPort) // preferred class init
 
 V3DWebService::V3DWebService()
 {
-	pMainWin = NULL;
-	
 	if (!port)
 		port = 9125; // define port here
 	
@@ -214,32 +196,44 @@ V3DWebService::~V3DWebService()
 
 void V3DWebService::init()
 {
-	// init a tmp instance
-	soapv3dwsService tmp(pMainWin);
-	
-	webserver = (void *)(tmp.copy());
-	
 	// init
-	((soapv3dwsService *)webserver)->send_timeout = 60; // 60 seconds
-	((soapv3dwsService *)webserver)->recv_timeout = 60; // 60 seconds
-	((soapv3dwsService *)webserver)->accept_timeout = TIMEOUT; // server stops after TIMEOUT of inactivity
-	((soapv3dwsService *)webserver)->max_keep_alive = 100; // max keep-alive sequence
+	webserver = new soapv3dwsService();
 	
-	//
-	master = ((soapv3dwsService *)webserver)->bind(NULL, port, BACKLOG);
+	webserver->send_timeout = 60; // 60 seconds
+	webserver->recv_timeout = 60; // 60 seconds
+	webserver->accept_timeout = TIMEOUT; // server stops after TIMEOUT of inactivity
+	webserver->max_keep_alive = 100; // max keep-alive sequence
+	
+	// bind a port
+	master = webserver->bind(NULL, port, BACKLOG);
 	if (!soap_valid_socket(master))
 	{
-		((soapv3dwsService *)webserver)->soap_stream_fault(std::cerr);
+		webserver->soap_stream_fault(std::cerr);
 		exit(1);
 	}
 	printf("Socket connection successful %d\n", master);
+	
+	//connect(webserver, SIGNAL(wsRequests()), this, SLOT(webserviceResponse()) );
+}
+
+void V3DWebService::webserviceResponse()
+{
+	printf("trigger a signal here in V3DWebService ...\n");
+	emit webserviceRequest();
+}
+
+soappara* V3DWebService::getSoapPara()
+{
+	return pSoapPara;
+}
+
+void V3DWebService::setSoapPara(soappara *pSoapParaInput)
+{
+	pSoapPara = pSoapParaInput;
 }
 
 void V3DWebService::run()
 {
-	//
-	soapv3dwsService *t_webserver = new soapv3dwsService(pMainWin);
-	
 	//
 	mutex.lock();
 	
@@ -252,24 +246,37 @@ void V3DWebService::run()
 	{
 		while(!stopped)
 		{
-			slave = ((soapv3dwsService *)webserver)->accept(); 
+			if(!webserver) break;
+			
+			slave = webserver->accept(); 
 			if (!soap_valid_socket(slave))
 			{
-				if (((soapv3dwsService *)webserver)->error)
+				if (webserver->error)
 				{
-					((soapv3dwsService *)webserver)->soap_stream_fault(std::cerr);
+					webserver->soap_stream_fault(std::cerr);
 					exit(1);
 				}
 				fprintf(stderr, "server timed out\n");
 				break;
 			}
-			printf("Socket %d connection from IP %d.%d.%d.%d\n", slave, (((soapv3dwsService *)webserver)->ip >> 24)&0xFF, (((soapv3dwsService *)webserver)->ip >> 16)&0xFF, (((soapv3dwsService *)webserver)->ip >> 8)&0xFF, ((soapv3dwsService *)webserver)->ip&0xFF);
-			t_webserver = ((soapv3dwsService *)webserver)->copy(); // make a safe copy
+			printf("Socket %d connection from IP %d.%d.%d.%d\n", slave, (webserver->ip >> 24)&0xFF, (webserver->ip >> 16)&0xFF, (webserver->ip >> 8)&0xFF, webserver->ip&0xFF);
 			
-			if (!t_webserver)
-				break;
+			//this->setSoapPara( webserver->getSoapPara() );
+			
+//			connect(webserver, SIGNAL(finished()), webserver, SLOT(deleteLater()));
+//			webserver->start();
+//			connect(webserver, SIGNAL(wsRequests()), this, SLOT(webserviceResponse()) );
+			
+			printf("start web server thread ...\n");
+		
+			soapv3dwsService *t_webserver = new soapv3dwsService;
+			t_webserver = webserver->copy();
+			
 			connect(t_webserver, SIGNAL(finished()), t_webserver, SLOT(deleteLater()));
 			t_webserver->start();
+			
+			this->setSoapPara( t_webserver->getSoapPara() );
+			connect(t_webserver, SIGNAL(wsRequests()), this, SLOT(webserviceResponse()));
 		}
 		
 		mutex.unlock();	

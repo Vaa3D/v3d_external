@@ -18,10 +18,8 @@ macx {
 LIBS -= -L../common_lib/lib_mac32 -L./common_lib/lib_mac32
 LIBS += -L../common_lib/lib_mac64 -L./common_lib/lib_mac64
 
-HEADERS += ../webservice/v3dwebservice.hpp ../webservice/v3dwebserver.h ../webservice/gsoap2/stdsoap2.h ../webservice/gsoap2/threads.h soapH.h soapStub.h soapv3dwebserverService.h
-SOURCES += ../webservice/v3dwebservice.cpp ../webservice/gsoap2/stdsoap2.cpp ../webservice/gsoap2/threads.c soapC.cpp soapv3dwebserverService.cpp
-
-LIBS += -lpthread
+HEADERS += ../webservice/v3dwebservice.hpp ../webservice/v3dwebserver.h ../webservice/gsoap2/stdsoap2.h soapH.h soapStub.h soapv3dwebserverService.h
+SOURCES += ../webservice/v3dwebservice.cpp ../webservice/gsoap2/stdsoap2.cpp soapC.cpp soapv3dwebserverService.cpp
 
 INCLUDEPATH += ../webservice/gsoap2
 

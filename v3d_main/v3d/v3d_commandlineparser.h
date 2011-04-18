@@ -58,6 +58,9 @@ public:
 	bool open3Dviewer;
 	bool openV3D;
 	bool clp_finished; // parsing finished
+	
+	char* pluginname;
+	char* pluginmethod;
 
 };
 
@@ -208,11 +211,18 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 						i_v3d.openV3D = true;
 						
 						// plugin command
+						i_v3d.pluginname = argv[i+1];
+						i++;
 						
+						qDebug()<<i_v3d.pluginname;
 					}
 					else if(string(argv[i]) == "-m")
 					{
+						// plugin method
+						i_v3d.pluginmethod = argv[i+1];
+						i++;
 						
+						qDebug()<<i_v3d.pluginmethod;
 					}
 					else
 					{
