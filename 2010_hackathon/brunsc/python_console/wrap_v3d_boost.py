@@ -51,8 +51,8 @@ class V3DWrapper:
                 else:
                     includes.append(abs_path)
         gccxml_executable = self.find_gccxml()
-        # gccxml_cflags = ' --gccxml-cxxflags "-m32"'
-        gccxml_cflags = ''
+        gccxml_cflags = ' --gccxml-cxxflags "-m32"'
+        # gccxml_cflags = ''
         define_symbols=[]
         if sys.platform == 'win32':
             define_symbols.append("_HAS_TR1=0")

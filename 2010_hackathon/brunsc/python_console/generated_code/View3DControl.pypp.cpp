@@ -580,6 +580,11 @@ struct View3DControl_wrapper : View3DControl, bp::wrapper< View3DControl > {
         func_volumeColormapDialog(  );
     }
 
+    virtual int volumeTimePoint(  ) const {
+        bp::override func_volumeTimePoint = this->get_override( "volumeTimePoint" );
+        return func_volumeTimePoint(  );
+    }
+
     virtual int xCS(  ) const {
         bp::override func_xCS = this->get_override( "xCS" );
         return func_xCS(  );
@@ -1071,6 +1076,9 @@ void register_View3DControl_class(){
         .def( 
             "volumeColormapDialog"
             , bp::pure_virtual( (void ( ::View3DControl::* )(  ) )(&::View3DControl::volumeColormapDialog) ) )    
+        .def( 
+            "volumeTimePoint"
+            , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::volumeTimePoint) ) )    
         .def( 
             "xCS"
             , bp::pure_virtual( (int ( ::View3DControl::* )(  ) const)(&::View3DControl::xCS) ) )    

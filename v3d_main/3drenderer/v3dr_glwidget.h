@@ -154,6 +154,7 @@ public:
     virtual bool channelR() {return renderer->color_proxy.r != 0;}
     virtual bool channelG() {return renderer->color_proxy.g != 0;}
     virtual bool channelB() {return renderer->color_proxy.b != 0;}
+    virtual int volumeTimePoint() const {return _volumeTimePoint;}
 
 	virtual bool isVolCompress() const { return (renderer)? renderer->tryTexCompress :false; }
 	virtual bool isShowBoundingBox() const { return (renderer)? renderer->bShowBoundingBox :false; }

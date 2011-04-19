@@ -352,6 +352,7 @@ class V3dMovie:
                                         'channelG' : 'setChannelG',
                                         'channelB' : 'setChannelB',
                                         'frontCut' : 'setFrontCut',
+                                        'volumeTimePoint' : 'setVolumeTimePoint',
                                         # need special logic to set renderMode
                                         # ; these getters do not exist
                                         'renderMode_Cs3d' : 'setRenderMode_Cs3d',
@@ -553,6 +554,8 @@ class V3dMovie:
             # if 'yCut1' == getter_name: # debugging
             #     print getter_name, val
             if 'CS' in getter_name:
+                val = _round_to_int(val)
+            if 'olumeTimePoint' in getter_name:
                 val = _round_to_int(val)
             if 'hannel' in getter_name:
                 # needs to be boolean
