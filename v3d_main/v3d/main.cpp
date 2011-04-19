@@ -40,6 +40,7 @@ July 21, 2006
 Last update: 2008-04-25: try to add command line based utilities
 Last update: 2010-04-12: add a global try-catch to catch all exceptions
 Last update: 2010-11-19: change some of the help info 
+Last update: 2011-04-19: fix some potential problem of null mainWin pointer 
  
 ****************************************************************************/
 
@@ -103,9 +104,11 @@ void printHelp_v3d()
 	cout<<endl<<"Usage: v3d -h -M moduleCode [all other options specific to different modules]"<<endl;
 	
 	cout<<"    -h/H         help information."<<endl;
-	cout<<"    -M module    a string indicates which module will be used for processing."<<endl;
 
-	cout<<"    -f <file>    open single or multiple image (.tif/.tiff, .lsm, .mrc, .raw/.v3draw) / object (.ano, .apo, .swc, .marker) files"<<endl;
+	cout<<"    -f <file>                  open single or multiple image (.tif/.tiff, .lsm, .mrc, .raw/.v3draw) / object (.ano, .apo, .swc, .marker) files"<<endl;
+	cout<<"    -p plugin_dll_full_path    a string indicates the full path of a dll (for a plugin) to be launched."<<endl;
+	cout<<"    -m menu_name               a string indicates which menu of a plugin will be called."<<endl;
+	
 	cout<<"    -v		    force to open a 3d viewer when loading an image, otherwise use the default v3d global setting (from \"Adjust Preference\")"<<endl;
 
 	return;
@@ -198,7 +201,6 @@ int main(int argc, char **argv)
 	//}
 
 	CLP parser;
-	char* filename;
 
 	parser.parse(argc, argv, printHelp_v3d); // parse command lines to v3d_cl_interface Nov. 23, 2010 by YuY
 
@@ -216,13 +218,20 @@ int main(int argc, char **argv)
 			QApplication app(argc, argv);
 
 			MainWindow* mainWin = new MainWindow;
+			if (!mainWin)
+			{
+				v3d_msg("Unable to open the V3D main window. Quit.");
+				return false;
+			}
+			
 			app.installEventFilter(mainWin);
-			mainWin->show();
+			if (mainWin) 
+				mainWin->show();
 
 			// multiple image/object handling module
 			for(int i=0; i<parser.i_v3d.fileList.size(); i++)
 			{
-				filename = parser.i_v3d.fileList.at(i);
+				char *filename = parser.i_v3d.fileList.at(i);
 
 				QString qFile(filename);
 
@@ -272,9 +281,11 @@ int main(int argc, char **argv)
 				}
 				
 				// run method
-				V3d_PluginLoader mypluginloader(mainWin);
-				
-				mypluginloader.runPlugin(loader, parser.i_v3d.pluginmethod);
+				if (mainWin)
+				{
+					V3d_PluginLoader mypluginloader(mainWin);
+					mypluginloader.runPlugin(loader, parser.i_v3d.pluginmethod);
+				}
 			}
 			
 
