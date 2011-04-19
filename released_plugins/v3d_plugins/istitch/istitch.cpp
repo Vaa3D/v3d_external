@@ -2,6 +2,8 @@
  * 2010-02-08: the program is created by Yang Yu
  * updated 2010-07-15 by Yang Yu
  * added command line by Yang Yu updated 2010-11-29
+ * added batch_group_stitching function by Jinzhu Yang 2011-4-15
+ * added batch_generate_rawdata from tc file function by Jinzhu Yang 2011-4-19
  */
 
 // 
@@ -1909,6 +1911,9 @@ int point_navigating(V3DPluginCallback2 &callback, QWidget *parent);
 // region navigating function
 int region_navigating(V3DPluginCallback2 &callback, QWidget *parent);
 
+//batch region navigating
+int batch_region_navigating(V3DPluginCallback2 &callback, QWidget *parent);
+
 // 3d roi navigating function
 int roi_navigating(V3DPluginCallback2 &callback, QWidget *parent);
 
@@ -1928,6 +1933,7 @@ QStringList IStitchPlugin::menulist() const
     return QStringList() << tr("Pairwise Image Stitching")
 						<< tr("Group Image Stitching")
 						<< tr("batch Group Image Stitching")
+	                    << tr("batch generate rawdata from tc file")
 						<< tr("Check voxel intensity at a XYZ location")
 						<< tr("Region Navigating")
 						<< tr("open test data web page")
@@ -1948,6 +1954,10 @@ void IStitchPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callbac
     else if(menu_name == tr("batch Group Image Stitching"))
 	{
 		batch_group_stitching(callback, parent);
+	}
+	else if(menu_name == tr("batch generate rawdata from tc file"))
+	{
+		batch_region_navigating(callback, parent);
 	}
 	else if (menu_name == tr("Check voxel intensity at a XYZ location"))
 	{
@@ -3732,7 +3742,6 @@ int region_groupfusing(SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG,
 	
 	return true;
 }
-
 
 // stitching 2 images and display in V3D
 int pairwise_stitching(V3DPluginCallback2 &callback, QWidget *parent)
@@ -6086,7 +6095,367 @@ int region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 	
 	return 0;
 }
-
+int batch_region_navigating(V3DPluginCallback2 &callback, QWidget *parent)
+{
+	
+	QString fn_img = QFileDialog::getExistingDirectory(0, QObject::tr("Choose the directory including all tiled images "),
+													   QDir::currentPath(),
+													   QFileDialog::ShowDirsOnly);
+	QDir dir(fn_img);
+	
+	QString m_FileName;
+	
+	QStringList list = dir.entryList();
+	
+	QStringList imgSuffix;	
+	
+	imgSuffix<<"*.tc";	
+	
+	QStringList rootlist;
+    
+	foreach (QString subDir,dir.entryList(QDir::Dirs|QDir::NoDotAndDotDot))
+	{
+		rootlist += QFileInfo(dir, subDir).absoluteFilePath();
+	}
+	qDebug()<<"rootlist== "<<rootlist.size();
+	for(int i=0; i<rootlist.size();i++)
+	{
+		QStringList myList;
+		
+		myList.clear();
+		
+		QDir dir1(rootlist.at(i));
+		
+		if (!dir1.exists())
+		{
+			qWarning("Cannot find the directory");
+			return -1;
+		}
+		
+		foreach (QString file, dir1.entryList(imgSuffix, QDir::Files, QDir::Name))
+		{
+			myList += QFileInfo(dir1, file).absoluteFilePath();
+		}
+		
+		qDebug()<<"lisitsize== "<<myList.size();
+		
+		//qDebug()<<"dirname= "<<rootlist.at(i);
+		
+		QString str = QFileInfo(rootlist.at(i)).fileName(); 
+		
+		qDebug()<<"str=============== "<<str;
+		
+		foreach (QString qs, myList) qDebug() << qs;
+		
+		 for(int j=0; j<myList.size();j++)
+		 {
+			 m_FileName = myList.at(j);
+			 
+			 QString curFilePath = QFileInfo(m_FileName).path();
+			 
+			 curFilePath.append("/");
+			 
+			 string filename =m_FileName.toStdString();
+			 
+			 // virtual image
+			 Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim;
+			 
+			 if( !vim.y_load(filename) )
+				 return -1;
+			 			 
+			 // input virtual image point position
+			 V3DLONG start[3], end[3];
+			 
+			 start[0] = 0; // dialog is 1-based coordinates
+			 start[1] = 0;
+			 start[2] = 0;
+			 
+			 end[0] = vim.sz[0]-1;
+			 end[1] = vim.sz[1]-1;
+			 end[2] = vim.sz[2]-1;
+			 
+			 //virtual image
+			 V3DLONG vx, vy, vz, vc;
+			 
+			 vx = end[0] - start[0] + 1; // suppose the size same of all tiles
+			 vy = end[1] - start[1] + 1;
+			 vz = end[2] - start[2] + 1;
+			 vc = vim.sz[3];
+			 
+			 V3DLONG pagesz_vim = vx*vy*vz*vc;
+			 
+			 // flu bird algorithm
+			 // 000 'f', 'l', 'u' ; 111 'b', 'r', 'd'; relative[2] relative[1] relative[0] 
+			 bitset<3> lut_ss, lut_se, lut_es, lut_ee;
+			 
+			 // 
+			 V3DLONG x_s = start[0] + vim.min_vim[0];
+			 V3DLONG y_s = start[1] + vim.min_vim[1];
+			 V3DLONG z_s = start[2] + vim.min_vim[2];
+			 
+			 V3DLONG x_e = end[0] + vim.min_vim[0];
+			 V3DLONG y_e = end[1] + vim.min_vim[1];
+			 V3DLONG z_e = end[2] + vim.min_vim[2];
+			 
+			 //
+			 ImagePixelType datatype;
+			 bool flag_init = true;
+			 
+			 unsigned char *pVImg_UINT8 = NULL;
+			 unsigned short *pVImg_UINT16 = NULL;
+			 float *pVImg_FLOAT32 = NULL;
+			 
+			 // look up lut
+			 for(V3DLONG ii=0; ii<vim.number_tiles; ii++)
+			 {	
+				 // init
+				 lut_ss.reset();
+				 lut_se.reset();
+				 lut_es.reset();
+				 lut_ee.reset();
+				 
+				 //
+				 if(x_s < vim.lut[ii].start_pos[0]) lut_ss[1] = 1; // r  0 l
+				 if(y_s < vim.lut[ii].start_pos[1]) lut_ss[0] = 1; // d  0 u
+				 if(z_s < vim.lut[ii].start_pos[2]) lut_ss[2] = 1; // b  0 f
+				 
+				 if(x_e < vim.lut[ii].start_pos[0]) lut_se[1] = 1; // r  0 l
+				 if(y_e < vim.lut[ii].start_pos[1]) lut_se[0] = 1; // d  0 u
+				 if(z_e < vim.lut[ii].start_pos[2]) lut_se[2] = 1; // b  0 f
+				 
+				 if(x_s < vim.lut[ii].end_pos[0]) lut_es[1] = 1; // r  0 l
+				 if(y_s < vim.lut[ii].end_pos[1]) lut_es[0] = 1; // d  0 u
+				 if(z_s < vim.lut[ii].end_pos[2]) lut_es[2] = 1; // b  0 f
+				 
+				 if(x_e < vim.lut[ii].end_pos[0]) lut_ee[1] = 1; // r  0 l
+				 if(y_e < vim.lut[ii].end_pos[1]) lut_ee[0] = 1; // d  0 u
+				 if(z_e < vim.lut[ii].end_pos[2]) lut_ee[2] = 1; // b  0 f
+				 
+				 // copy data
+				 if( (!lut_ss.any() && lut_ee.any()) || (lut_es.any() && !lut_ee.any()) || (lut_ss.any() && !lut_se.any()) )
+				 {
+					 // 
+					 cout << "satisfied image: "<< vim.lut[ii].fn_img << endl;
+					 
+					 // loading relative image files
+					 V3DLONG *sz_relative = 0; 
+					 int datatype_relative = 0;
+					 unsigned char* relative1d = 0;
+					 
+					 QString curPath = curFilePath;
+					 
+					 string fn = curPath.append( QString(vim.lut[ii].fn_img.c_str()) ).toStdString();
+					 
+					 qDebug()<<"testing..."<<curFilePath<< fn.c_str();
+					 
+					 if (loadImage(const_cast<char *>(fn.c_str()), relative1d, sz_relative, datatype_relative)!=true)
+					 {
+						 fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(ii).fn_image.c_str());
+						 return -1;
+					 }
+					 V3DLONG rx=sz_relative[0], ry=sz_relative[1], rz=sz_relative[2], rc=sz_relative[3];
+					 
+					 if(flag_init)
+					 {
+						 if(datatype_relative == V3D_UINT8)
+						 {
+							 datatype = V3D_UINT8;
+							 
+							 try
+							 {
+								 pVImg_UINT8 = new unsigned char [pagesz_vim];
+							 }
+							 catch (...) 
+							 {
+								 printf("Fail to allocate memory.\n");
+								 return -1;
+							 }
+							 
+							 // init
+							 memset(pVImg_UINT8, 0, pagesz_vim*sizeof(unsigned char));
+							 
+							 flag_init = false;
+							 
+						 }
+						 else if(datatype_relative == V3D_UINT16)
+						 {
+							 datatype = V3D_UINT16;
+							 
+							 try
+							 {
+								 pVImg_UINT16 = new unsigned short [pagesz_vim];
+							 }
+							 catch (...) 
+							 {
+								 printf("Fail to allocate memory.\n");
+								 return -1;
+							 }
+							 
+							 // init
+							 memset(pVImg_UINT16, 0, pagesz_vim*sizeof(unsigned short));
+							 
+							 flag_init = false;
+						 }
+						 else if(datatype_relative == V3D_FLOAT32)
+						 {
+							 datatype = V3D_FLOAT32;
+							 
+							 try
+							 {
+								 pVImg_FLOAT32 = new float [pagesz_vim];
+							 }
+							 catch (...) 
+							 {
+								 printf("Fail to allocate memory.\n");
+								 return -1;
+							 }
+							 
+							 // init
+							 memset(pVImg_FLOAT32, 0, pagesz_vim*sizeof(float));
+							 
+							 flag_init = false;
+						 }
+						 else 
+						 {
+							 printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
+							 return -1;
+						 }
+					 }
+					 
+					 if(datatype_relative != datatype)
+					 {
+						 printf("The program only support all tiled images with the same datatype.\n");
+						 return -1;
+					 }
+					 
+					 //
+					 V3DLONG tile2vi_xs = vim.lut[ii].start_pos[0]-vim.min_vim[0]; 
+					 V3DLONG tile2vi_xe = vim.lut[ii].end_pos[0]-vim.min_vim[0]; 
+					 V3DLONG tile2vi_ys = vim.lut[ii].start_pos[1]-vim.min_vim[1]; 
+					 V3DLONG tile2vi_ye = vim.lut[ii].end_pos[1]-vim.min_vim[1]; 
+					 V3DLONG tile2vi_zs = vim.lut[ii].start_pos[2]-vim.min_vim[2]; 
+					 V3DLONG tile2vi_ze = vim.lut[ii].end_pos[2]-vim.min_vim[2]; 
+					 
+					 V3DLONG x_start = (start[0] > tile2vi_xs) ? start[0] : tile2vi_xs; 
+					 V3DLONG x_end = (end[0] < tile2vi_xe) ? end[0] : tile2vi_xe;
+					 V3DLONG y_start = (start[1] > tile2vi_ys) ? start[1] : tile2vi_ys;
+					 V3DLONG y_end = (end[1] < tile2vi_ye) ? end[1] : tile2vi_ye;
+					 V3DLONG z_start = (start[2] > tile2vi_zs) ? start[2] : tile2vi_zs;
+					 V3DLONG z_end = (end[2] < tile2vi_ze) ? end[2] : tile2vi_ze;
+					 
+					 x_end++;
+					 y_end++;
+					 z_end++;
+					 
+					 //
+					 cout << x_start << " " << x_end << " " << y_start << " " << y_end << " " << z_start << " " << z_end << endl;
+					 
+					 if(datatype == V3D_UINT8)
+					 {
+						 region_groupfusing<unsigned char>(pVImg_UINT8, vim, relative1d,
+														   vx, vy, vz, vc, rx, ry, rz, rc,
+														   tile2vi_zs, tile2vi_ys, tile2vi_xs,
+														   z_start, z_end, y_start, y_end, x_start, x_end, start);
+						 
+					 }
+					 else if(datatype == V3D_UINT16)
+					 {
+						 region_groupfusing<unsigned short>(pVImg_UINT16, vim, relative1d,
+															vx, vy, vz, vc, rx, ry, rz, rc,
+															tile2vi_zs, tile2vi_ys, tile2vi_xs,
+															z_start, z_end, y_start, y_end, x_start, x_end, start);
+					 }
+					 else if(datatype == V3D_FLOAT32)
+					 {
+						 region_groupfusing<float>(pVImg_FLOAT32, vim, relative1d,
+												   vx, vy, vz, vc, rx, ry, rz, rc,
+												   tile2vi_zs, tile2vi_ys, tile2vi_xs,
+												   z_start, z_end, y_start, y_end, x_start, x_end, start);
+					 }
+					 else 
+					 {
+						 printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
+						 return -1;
+					 }
+					 
+					 //de-alloc
+					 if(relative1d) {delete []relative1d; relative1d=0;}
+					 if(sz_relative) {delete []sz_relative; sz_relative=0;}
+				 }
+				 
+			 }
+			 
+			 //save data
+			 
+			 if(datatype == V3D_UINT8)
+			 {
+				
+				 V3DLONG sz[4];
+				 
+				 sz[0] = vx; sz[1] = vy; sz[2] = vz; sz[3] = vc; 
+				 
+				 QString tmp_filename = curFilePath;
+				 
+				 tmp_filename += str + "_" + "stitched.raw";	
+				 
+				 qDebug()<<"tmp_filename=="<<tmp_filename;
+				 
+				 if (saveImage(tmp_filename.toStdString().c_str(), (const unsigned char *)pVImg_UINT8, sz, datatype)!=true)
+				 {
+					 fprintf(stderr, "Error happens in file writing. Exit. \n");
+					 return -1;
+				 }
+				 if(pVImg_UINT8) {delete []pVImg_UINT8; pVImg_UINT8=0;}
+			 }
+			 else if(datatype == V3D_UINT16)
+			 {
+				 V3DLONG sz[4];
+				 
+				 sz[0] = vx; sz[1] = vy; sz[2] = vz; sz[3] = vc; 
+				 
+				 QString tmp_filename = curFilePath;
+				 
+				 tmp_filename += str + "_" + "stitched.raw";	
+				 
+				 qDebug()<<"tmp_filename=="<<tmp_filename;
+				 
+				 if (saveImage(tmp_filename.toStdString().c_str(), (const unsigned char *)pVImg_UINT16, sz, datatype)!=true)
+				 {
+					 fprintf(stderr, "Error happens in file writing. Exit. \n");
+					 return -1 ;
+				 }
+				 if(pVImg_UINT16) {delete []pVImg_UINT16; pVImg_UINT16=0;}
+	
+			 }
+			 else if(datatype == V3D_FLOAT32)
+			 {
+				 V3DLONG sz[4];
+				 
+				 sz[0] = vx; sz[1] = vy; sz[2] = vz; sz[3] = vc; 
+				 
+				 QString tmp_filename = curFilePath;
+				 
+				  tmp_filename += str + "_" + "stitched.raw";	
+				 
+				 qDebug()<<"tmp_filename=="<<tmp_filename;
+				 
+				 if (saveImage(tmp_filename.toStdString().c_str(), (const unsigned char *)pVImg_FLOAT32, sz, datatype)!=true)
+				 {
+					 fprintf(stderr, "Error happens in file writing. Exit. \n");
+					 return -1;
+				 }
+				 if(pVImg_FLOAT32) {delete []pVImg_FLOAT32; pVImg_FLOAT32=0;}
+			 }
+			 else 
+			 {
+				 printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
+				 return -1;
+			 }
+			 
+		 }
+	}
+	QMessageBox::information(0, "Batch stitch", QObject::tr("batch end"));
+}
 // 3d roi navigating function
 int roi_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 {
