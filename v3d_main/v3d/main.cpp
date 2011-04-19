@@ -276,7 +276,7 @@ int main(int argc, char **argv)
 				QPluginLoader* loader = new QPluginLoader(parser.i_v3d.pluginname);
 				if (!loader)
 				{
-					v3d_msg(QString("ERROR in V3d_PluginLoader::searchPluginFiles the imaging module(%1)").arg(parser.i_v3d.pluginname), 0);
+					v3d_msg(QString("ERROR open the specified V3D plugin (%1)").arg(parser.i_v3d.pluginname), 0);
 					return false;
 				}
 				
