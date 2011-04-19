@@ -360,7 +360,12 @@ int main(int argc, char **argv)
 
 	//090812 RZC: best solution for QMainWindow is using new, then deleteLater itself in its closeEvent.
 	MainWindow* mainWin = new MainWindow;
-
+	if (!mainWin)
+	{
+		v3d_msg("Unable to open the V3D main window. Quit.");
+		return false;
+	}
+	
     // On Mac, allow mainWin to get QFileOpen events, such as when a tif
     // file is dragged onto the application icon.
     // CMB Nov-12-2010
