@@ -1,5 +1,6 @@
 /* ITKGeodesicActiveContour.cxx
  * 2010-06-03: create this program by Yang Yu
+ * 2011-20-04: Added dialog to pass parameters (Aurelien Lucchi)
  */
 
 #include <QtGui>
@@ -25,7 +26,6 @@
 #include "itkFastMarchingImageFilter.h"
 #include "itkGeodesicActiveContourLevelSetImageFilter.h"
 
-//Al
 #include "itkImageFileWriter.h"
 #include "V3DITKGenericDialog.h"
 
@@ -64,7 +64,6 @@ public:
   void Execute(V3DPluginCallback &callback, QWidget *parent)
   {
     //
-    //ITKGeodesicActiveContourDialog d(callback, parent);
     V3DITKGenericDialog dialog("GeodesicActiveContou");
     dialog.AddDialogElement("propagationScaling",1.0, -100.0, 100.0);
     dialog.AddDialogElement("advectionScaling",1.0, -100.0, 100.0);
@@ -80,25 +79,12 @@ public:
     else
       {
         propagationScaling = dialog.GetValue("propagationScaling");
-        printf("propagationScaling=%f\n", propagationScaling);
         advectionScaling = dialog.GetValue("advectionScaling");
-        printf("advectionScaling=%f\n", advectionScaling);
         curvatureScaling = dialog.GetValue("curvatureScaling");
-        printf("curvatureScaling=%f\n", curvatureScaling);
         initialDistance = dialog.GetValue("initialDistance");
-        printf("initialDistance=%f\n", initialDistance);
         saveInputImages = dialog.GetValue("saveInputImages")!=0;
-        printf("saveInputImages=%d\n", (int)saveInputImages);
 
-        V3D_GlobalSetting globalSetting = callback.getGlobalSetting();
-	
-        /*
-        //passing \pars
-        d.update();			
-        int i1 = d.i1;
-        v3dhandleList win_list = callback.getImageWindowList();
-        Image4DSimple *p4DImage = callback.getImage(win_list[i1]);
-        */		
+        V3D_GlobalSetting globalSetting = callback.getGlobalSetting();       		
 	
         //ori image
         Image4DSimple *p4DImage = callback.getImage(callback.currentImageWindow());
@@ -335,7 +321,6 @@ public:
                     return;
                   }
 
-                //Al
                 if(saveInputImages)
                   {
                     {
@@ -381,7 +366,6 @@ public:
               }
 				
 
-            //Al
             if(saveInputImages)
               {
                 {
