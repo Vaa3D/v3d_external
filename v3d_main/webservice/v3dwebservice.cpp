@@ -24,6 +24,12 @@ int v3dwebserverService::v3dopenfile(char *fn, char **v3dfn)
 	return SOAP_OK;
 }
 
+/// Web service operation 'v3dopenfile3d' (returns error code or SOAP_OK)
+int v3dwebserverService::v3dopenfile3d(ns__V3DMSG *input, ns__V3DMSG *output)
+{
+	return SOAP_OK;
+}
+
 /**
  *
  *	Server dummy methods to avoid link errors
@@ -43,6 +49,11 @@ int ns__msghandlerResponse_(struct soap *soap, ns__LOAD_MSG *lm, ns__LOAD_RES *l
 int ns__v3dopenfileResponse_(struct soap *soap, char *fn)
 {
   return SOAP_NO_METHOD;
+}
+
+int ns__v3dopenfile3dResponse_(struct soap *soap, ns__V3DMSG *input, ns__V3DMSG *output)
+{
+	return SOAP_NO_METHOD;
 }
 
 /**
@@ -146,6 +157,13 @@ int soapv3dwsService::v3dopenfile(char *fn, char **v3dfn) // open a file in V3D
 	
 	return SOAP_OK;
 	
+}
+
+int soapv3dwsService::v3dopenfile3d(ns__V3DMSG *input, ns__V3DMSG *output) // open a file in V3D with 3d viewer position
+{
+	printf("v3d open file ...\n");
+	
+	return SOAP_OK;	
 }
 
 soapv3dwsService* soapv3dwsService::soapv3dwsService::copy()

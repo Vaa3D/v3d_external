@@ -40,6 +40,19 @@ public:
 	struct soap *soap;	///< soap handle
 };
 
+class ns__V3DMSG 
+{
+public:
+	std::string imageName	1;	///< Required element.
+	
+	int xrot	0;
+	int yrot	0;
+	int zrot	0;
+	
+	struct soap *soap;	///< soap handle
+	
+};
+
 /* func hello world */
 int ns__helloworld(
 				   char *name,		///< Request parameter
@@ -55,4 +68,6 @@ int ns__msghandler(
 /* func open a file in V3D */
 int ns__v3dopenfile(char *fn, char **v3dfn);	/// open a file using V3D
 
+/* func open a file in V3D and set 3dview position */
+int ns__v3dopenfile3d(ns__V3DMSG *input, ns__V3DMSG *output);
 

@@ -44,7 +44,7 @@ public:
 	char *str_func;
 	char *str_message; // e.g. fn
 	
-	float rot_x, rot_y, rot_z;
+	ns__V3DMSG *v3dmessage;
 };
 
 /**
@@ -70,6 +70,8 @@ public: // interface SOAP/XML handling
 	virtual int msghandler(ns__LOAD_MSG *lm, ns__LOAD_RES *lr); // message resquest and response
 	
 	virtual int v3dopenfile(char *fn, char **v3dfn); // open a file in V3D
+	
+	virtual int v3dopenfile3d(ns__V3DMSG *input, ns__V3DMSG *output); // open a file in V3D and set 3dview position
 	
 	soapv3dwsService *copy();
 	

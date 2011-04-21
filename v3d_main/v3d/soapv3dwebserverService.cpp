@@ -172,6 +172,7 @@ int v3dwebserverService::serve()
 static int serve_ns__helloworld(v3dwebserverService*);
 static int serve_ns__msghandler(v3dwebserverService*);
 static int serve_ns__v3dopenfile(v3dwebserverService*);
+static int serve_ns__v3dopenfile3d(v3dwebserverService*);
 
 int v3dwebserverService::dispatch()
 {	soap_peek_element(this);
@@ -181,6 +182,8 @@ int v3dwebserverService::dispatch()
 		return serve_ns__msghandler(this);
 	if (!soap_match_tag(this, this->tag, "ns:v3dopenfile"))
 		return serve_ns__v3dopenfile(this);
+	if (!soap_match_tag(this, this->tag, "ns:v3dopenfile3d"))
+		return serve_ns__v3dopenfile3d(this);
 	return this->error = SOAP_NO_METHOD;
 }
 
@@ -306,6 +309,47 @@ static int serve_ns__v3dopenfile(v3dwebserverService *soap)
 	 || soap_putheader(soap)
 	 || soap_body_begin_out(soap)
 	 || soap_put_ns__v3dopenfileResponse(soap, &soap_tmp_ns__v3dopenfileResponse, "ns:v3dopenfileResponse", NULL)
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap->error;
+	return soap_closesock(soap);
+}
+
+static int serve_ns__v3dopenfile3d(v3dwebserverService *soap)
+{	struct ns__v3dopenfile3d soap_tmp_ns__v3dopenfile3d;
+	ns__V3DMSG output;
+	output.soap_default(soap);
+	soap_default_ns__v3dopenfile3d(soap, &soap_tmp_ns__v3dopenfile3d);
+	soap->encodingStyle = "";
+	if (!soap_get_ns__v3dopenfile3d(soap, &soap_tmp_ns__v3dopenfile3d, "ns:v3dopenfile3d", NULL))
+		return soap->error;
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap->error;
+	soap->error = soap->v3dopenfile3d(soap_tmp_ns__v3dopenfile3d.input, &output);
+	if (soap->error)
+		return soap->error;
+	soap_serializeheader(soap);
+	output.soap_serialize(soap);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || output.soap_put(soap, "ns:V3DMSG", "")
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	};
+	if (soap_end_count(soap)
+	 || soap_response(soap, SOAP_OK)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || output.soap_put(soap, "ns:V3DMSG", "")
 	 || soap_body_end_out(soap)
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))

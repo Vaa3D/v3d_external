@@ -88,8 +88,32 @@ public:
 };
 #endif
 
+#ifndef SOAP_TYPE_ns__V3DMSG
+#define SOAP_TYPE_ns__V3DMSG (13)
+/* ns:V3DMSG */
+class SOAP_CMAC ns__V3DMSG
+{
+public:
+	std::string imageName;	/* SOAP 1.2 RPC return element (when namespace qualified) */	/* required element of type xsd:string */
+	int xrot;	/* optional element of type xsd:int */
+	int yrot;	/* optional element of type xsd:int */
+	int zrot;	/* optional element of type xsd:int */
+	struct soap *soap;	/* transient */
+public:
+	virtual int soap_type() const { return 13; } /* = unique id SOAP_TYPE_ns__V3DMSG */
+	virtual void soap_default(struct soap*);
+	virtual void soap_serialize(struct soap*) const;
+	virtual int soap_put(struct soap*, const char*, const char*) const;
+	virtual int soap_out(struct soap*, const char*, int, const char*) const;
+	virtual void *soap_get(struct soap*, const char*, const char*);
+	virtual void *soap_in(struct soap*, const char*, const char*);
+	         ns__V3DMSG(): soap(NULL) { ns__V3DMSG::soap_default(NULL); }
+	virtual ~ns__V3DMSG() { }
+};
+#endif
+
 #ifndef SOAP_TYPE_ns__helloworldResponse
-#define SOAP_TYPE_ns__helloworldResponse (15)
+#define SOAP_TYPE_ns__helloworldResponse (16)
 /* ns:helloworldResponse */
 struct ns__helloworldResponse
 {
@@ -99,7 +123,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_ns__helloworld
-#define SOAP_TYPE_ns__helloworld (16)
+#define SOAP_TYPE_ns__helloworld (17)
 /* ns:helloworld */
 struct ns__helloworld
 {
@@ -109,7 +133,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_ns__msghandler
-#define SOAP_TYPE_ns__msghandler (20)
+#define SOAP_TYPE_ns__msghandler (21)
 /* ns:msghandler */
 struct ns__msghandler
 {
@@ -119,7 +143,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_ns__v3dopenfileResponse
-#define SOAP_TYPE_ns__v3dopenfileResponse (22)
+#define SOAP_TYPE_ns__v3dopenfileResponse (23)
 /* ns:v3dopenfileResponse */
 struct ns__v3dopenfileResponse
 {
@@ -129,7 +153,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_ns__v3dopenfile
-#define SOAP_TYPE_ns__v3dopenfile (23)
+#define SOAP_TYPE_ns__v3dopenfile (24)
 /* ns:v3dopenfile */
 struct ns__v3dopenfile
 {
@@ -138,10 +162,20 @@ public:
 };
 #endif
 
+#ifndef SOAP_TYPE_ns__v3dopenfile3d
+#define SOAP_TYPE_ns__v3dopenfile3d (27)
+/* ns:v3dopenfile3d */
+struct ns__v3dopenfile3d
+{
+public:
+	ns__V3DMSG *input;	/* optional element of type ns:V3DMSG */
+};
+#endif
+
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_SOAP_ENV__Header
-#define SOAP_TYPE_SOAP_ENV__Header (24)
+#define SOAP_TYPE_SOAP_ENV__Header (28)
 /* SOAP Header: */
 struct SOAP_ENV__Header
 {
@@ -157,7 +191,7 @@ private:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_SOAP_ENV__Code
-#define SOAP_TYPE_SOAP_ENV__Code (25)
+#define SOAP_TYPE_SOAP_ENV__Code (29)
 /* SOAP Fault Code: */
 struct SOAP_ENV__Code
 {
@@ -172,7 +206,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_SOAP_ENV__Detail
-#define SOAP_TYPE_SOAP_ENV__Detail (27)
+#define SOAP_TYPE_SOAP_ENV__Detail (31)
 /* SOAP-ENV:Detail */
 struct SOAP_ENV__Detail
 {
@@ -188,7 +222,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_SOAP_ENV__Reason
-#define SOAP_TYPE_SOAP_ENV__Reason (30)
+#define SOAP_TYPE_SOAP_ENV__Reason (34)
 /* SOAP-ENV:Reason */
 struct SOAP_ENV__Reason
 {
@@ -202,7 +236,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_SOAP_ENV__Fault
-#define SOAP_TYPE_SOAP_ENV__Fault (31)
+#define SOAP_TYPE_SOAP_ENV__Fault (35)
 /* SOAP Fault: */
 struct SOAP_ENV__Fault
 {

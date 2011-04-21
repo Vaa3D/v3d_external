@@ -69,5 +69,8 @@ class SOAP_CMAC v3dwebserverService : public soap
 
 	/// Web service operation 'v3dopenfile' (returns error code or SOAP_OK)
 	virtual	int v3dopenfile(char *fn, char **v3dfn);
+
+	/// Web service operation 'v3dopenfile3d' (returns error code or SOAP_OK)
+	virtual	int v3dopenfile3d(ns__V3DMSG *input, ns__V3DMSG *output);
 };
 #endif

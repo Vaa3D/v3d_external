@@ -66,6 +66,17 @@
  <part name="v3dfn" type="xsd:string"/>
 </message>
 
+<message name="v3dopenfile3d">
+ <part name="input" type="ns:V3DMSG"/>
+</message>
+
+<message name="V3DMSG">
+ <part name="imageName" type="xsd:string"/>
+ <part name="xrot" type="xsd:int"/>
+ <part name="yrot" type="xsd:int"/>
+ <part name="zrot" type="xsd:int"/>
+</message>
+
 <portType name="v3dwebserverPortType">
  <operation name="helloworld">
   <documentation>Service definition of function ns__helloworld</documentation>
@@ -81,6 +92,11 @@
   <documentation>Service definition of function ns__v3dopenfile</documentation>
   <input message="tns:v3dopenfileRequest"/>
   <output message="tns:v3dopenfileResponse"/>
+ </operation>
+ <operation name="v3dopenfile3d">
+  <documentation>Service definition of function ns__v3dopenfile3d</documentation>
+  <input message="tns:v3dopenfile3d"/>
+  <output message="tns:V3DMSG"/>
  </operation>
 </portType>
 
@@ -105,6 +121,15 @@
   </output>
  </operation>
  <operation name="v3dopenfile">
+  <SOAP:operation style="rpc"/>
+  <input>
+     <SOAP:body use="encoded" namespace="urn:v3dwebserver" encodingStyle="http://www.w3.org/2003/05/soap-encoding"/>
+  </input>
+  <output>
+     <SOAP:body use="encoded" namespace="urn:v3dwebserver" encodingStyle="http://www.w3.org/2003/05/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="v3dopenfile3d">
   <SOAP:operation style="rpc"/>
   <input>
      <SOAP:body use="encoded" namespace="urn:v3dwebserver" encodingStyle="http://www.w3.org/2003/05/soap-encoding"/>

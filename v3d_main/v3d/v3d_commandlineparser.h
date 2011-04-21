@@ -38,6 +38,11 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define __V3D_COMMANDLINEPARSER_H__
 
 //#include <boost/program_options.hpp>
+#ifdef WIN32
+#define OPTION_CHAR '/'
+#else
+#define OPTION_CHAR '-'
+#endif
 
 // command line interface class
 class V3D_CL_INTERFACE
@@ -79,7 +84,7 @@ public:
 
 	int error( void (*help)() )
 	{
-		v3d_msg("Your module code is illegal. Please follow the instruction of the help page below.", 0);
+		v3d_msg("Your input is illegal. Please follow the instruction of the help page below.", 0);
 		help();
 		return false;
 	}
@@ -92,6 +97,8 @@ public:
 // check the file valid
 bool CLP :: check_filename(QString fn)
 {
+	qDebug()<<"file name ..."<<fn;
+	
 	QFileInfo curfile_info(fn);
 	if ( (curfile_info.suffix().toUpper()=="ANO") ||
 		 (curfile_info.suffix().toUpper()=="APO" || curfile_info.suffix().toUpper()=="SWC" || curfile_info.suffix().toUpper()=="OBJ" || curfile_info.suffix().toUpper()=="V3DS") ||
@@ -121,35 +128,43 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 	else
 	{
 		// command arguments parsing
-		char* filename;
+		char* key;
 
 		// ------ parsing aguements here ---------------------
 		if(argc<=2)
 		{
-			if(string(argv[1]) == "-h" || string(argv[1]) == "-H")
-			{
-				help();
-				i_v3d.clp_finished = true;
-                        }
-                        // CMB Dec 7, 2010
-                        // Mac app launcher adds a command line argument
-                        // like "-psn_0_7989150"
-                        // Ignore it.
-                        else if (string(argv[1]).find("-psn_") == 0) {
-                            v3d_msg("Apparently a mac bundle", 0);
-                            v3d_msg(argv[1], 0);
-                            i_v3d.openV3D = true;
-                            return true;
-                        }
-			else if(string(argv[1]) == "-M") //must be capital
-			{
-				i_v3d.clp_finished = true;
-				return true;
+			key = argv[1];
+			if (*key == OPTION_CHAR)
+			{ 
+				while(*++key)
+				{
+					if (*key == '?' || !strcmp(key, "h") || !strcmp(key, "H"))
+					{
+						help();
+						i_v3d.clp_finished = true;
+					}
+					// CMB Dec 7, 2010
+					// Mac app launcher adds a command line argument
+					// like "-psn_0_7989150"
+					// Ignore it.
+					else if (string(argv[1]).find("-psn_") == 0) {
+						v3d_msg("Apparently a mac bundle", 0);
+						v3d_msg(argv[1], 0);
+						i_v3d.openV3D = true;
+						return true;
+					}
+					else if(!strcmp(key, "M")) //must be capital
+					{
+						i_v3d.clp_finished = true;
+						return true;
+					}					
+				}
+				
 			}
-			else if( check_filename(QString(argv[1])) )
+			else if( check_filename(QString(key)) )
 			{
 				// load and visualize file in V3D
-				filename = argv[1];
+				char *filename = argv[1];
 				i_v3d.fileList.push_back(filename);
 
 				// open V3D
@@ -167,19 +182,43 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 			// if there is -h/H, V3D only print help info and return
 			for(int i=1; i<argc; i++)
 			{
-				if(string(argv[i]) == "-h" || string(argv[i]) == "-H")
-				{
-					help();
-					i_v3d.clp_finished = true;
-					return true;
+				key = argv[1];
+				if (*key == OPTION_CHAR)
+				{ 
+					while(*++key)
+					{
+						if (*key == '?' || !strcmp(key, "h") || !strcmp(key, "H"))
+						{
+							help();
+							i_v3d.clp_finished = true;
+							return true;
+						}
+						// CMB Dec 7, 2010
+						// Mac app launcher adds a command line argument
+						// like "-psn_0_7989150"
+						// Ignore it.
+						else if (string(argv[1]).find("-psn_") == 0) {
+							v3d_msg("Apparently a mac bundle", 0);
+							v3d_msg(argv[1], 0);
+							i_v3d.openV3D = true;
+							return true;
+						}
+					}
 				}
 			}
 
 			for(int i=1; i<argc; i++)
 			{
-				if(string(argv[i]) == "-v")
-				{
-					i_v3d.open3Dviewer = true;
+				key = argv[i];
+				if (*key == OPTION_CHAR)
+				{ 
+					while(*++key)
+					{
+						if (!strcmp(key, "v"))
+						{
+							i_v3d.open3Dviewer = true;
+						}
+					}
 				}
 			}
 
@@ -188,58 +227,57 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 			{
 				if(i+1 != argc) // check that we haven't finished parsing yet
 				{
-					if(string(argv[i]) == "-f")
-					{
-						// open V3D
-						i_v3d.openV3D = true;
-
-						while(i+1<argc && !QString(argv[i+1]).contains("-") )
+					
+					key = argv[i];
+					if (*key == OPTION_CHAR)
+					{ 
+						while(*++key)
 						{
-							filename = argv[i+1];
-							i++;
-							i_v3d.fileList.push_back(filename);
+							if (!strcmp(key, "f"))
+							{
+								// open V3D
+								i_v3d.openV3D = true;
+								
+								while(i+1<argc && !QString(argv[i+1]).contains(OPTION_CHAR) )
+								{
+									char *filename = argv[i+1];
+									i++;
+									i_v3d.fileList.push_back(filename);
+								}
+							}
+							else if (!strcmp(key, "v"))
+							{
+								i_v3d.open3Dviewer = true;
+							}
+							else if (!strcmp(key, "p"))
+							{
+								// launch V3D
+								i_v3d.openV3D = true;
+								
+								// plugin command
+								i_v3d.pluginname = argv[i+1];
+								i++;
+								
+								qDebug()<<i_v3d.pluginname;
+							}
+							else if (!strcmp(key, "m"))
+							{
+								// plugin method
+								i_v3d.pluginmethod = argv[i+1];
+								i++;
+								
+								qDebug()<<i_v3d.pluginmethod;
+							}
+							else
+							{
+								i_v3d.clp_finished = true;
+								return error(help);
+							}
+							
 						}
-
 					}
-					else if(string(argv[i]) == "-v")
-					{
-						i_v3d.open3Dviewer = true;
-					}
-					else if(string(argv[i]) == "-p")
-					{
-						// launch V3D
-						i_v3d.openV3D = true;
-						
-						// plugin command
-						i_v3d.pluginname = argv[i+1];
-						i++;
-						
-						qDebug()<<i_v3d.pluginname;
-					}
-					else if(string(argv[i]) == "-m")
-					{
-						// plugin method
-						i_v3d.pluginmethod = argv[i+1];
-						i++;
-						
-						qDebug()<<i_v3d.pluginmethod;
-					}
-					else
-					{
-						i_v3d.clp_finished = true;
-						return error(help);
-					}
+					
 				}
-				//else if(i<argc && QString(argv[i]).contains("-"))
-				//{
-				//	i_v3d.clp_finished = true;
-				//	return error(help);
-				//}
-				//else
-				//{
-				//	v3d_msg("Your module code is illegal. Please follow the instruction of the help page below.", 0);
-				//	continue;
-				//}
 			}
 
 
