@@ -35,6 +35,8 @@ class SingleKeyFrameLabel(QtGui.QLabel):
     Cartoon representation of a single frame, for use in movie GUI.
     """
     go_to_frame = QtCore.Signal(object)
+    delete_frame = QtCore.Signal(object)
+    replace_frame = QtCore.Signal(object)
     
     def __init__(self, parent=None, frame=None):
         QtGui.QLabel.__init__(self, parent)
@@ -45,6 +47,18 @@ class SingleKeyFrameLabel(QtGui.QLabel):
         self.setPixmap(self.frameIcon.pixmap(50,50))
         self.setFixedSize(QtCore.QSize(50, 50))
         self.setToolTip("movie key frame")
+        # Context menu for deleting frame
+        self.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        # Delete
+        deleteAction = QtGui.QAction("Delete this frame", self)
+        self.addAction(deleteAction)
+        self.connect(deleteAction, QtCore.SIGNAL("triggered()"), 
+                     self.onDelete)
+        # Replace with current
+        replaceAction = QtGui.QAction("Replace frame with current view", self)
+        self.addAction(replaceAction)
+        self.connect(replaceAction, QtCore.SIGNAL("triggered()"),
+                     self.onReplaceView)
         
     def mouseMoveEvent(self, e):
         if e.buttons() != QtCore.Qt.RightButton:
@@ -65,6 +79,13 @@ class SingleKeyFrameLabel(QtGui.QLabel):
         "After double click, set V3D 3D viewer to this key frame"
         # print "double click sent"
         self.go_to_frame.emit(self.frame)
+        
+    def onDelete(self):
+        self.delete_frame.emit(self)
+        
+    def onReplaceView(self):
+        # print "replacing"
+        self.replace_frame.emit(self)
         
 
 class FrameTransitionLabel(QtGui.QLabel):
@@ -185,6 +206,28 @@ Press "Save images..." to save the movie frames to disk.
         self.movie.set_current_v3d_camera(frame.camera_position)
         self.movie.image_window.update() # The obviates need to print to get window update
 
+    def delete_frame_cartoon(self, frame_cartoon):
+        self.movie.key_frames.remove(frame_cartoon.frame)
+        # TODO - remove label
+        layout = self.ui.keyLabelFrame.layout()
+        # Always remove any arrow label to the left of the frame label
+        if frame_cartoon.arrow_label:
+            layout.removeWidget(frame_cartoon.arrow_label)
+        # TODO - if it's the first label, we should remove next one's arrow
+        if layout.indexOf(frame_cartoon) == 1:
+            if layout.count() >= 4:
+                next_frame = layout.itemAt(3)
+                next_frame.arrow_label = None
+                print "deleting second frame arrow"
+                layout.removeItem(layout.itemAt(2))
+        layout.removeWidget(frame_cartoon)
+        self._updateFrameCount()
+        self._enter_state('ready')
+        
+    def replace_frame_cartoon(self, frame_cartoon):
+        # print "replaced"
+        frame_cartoon.frame.camera_position = self.movie.get_current_v3d_camera()
+        
     def append_view(self):
         "Add a new key frame based on the current view in the V3D 3D viewer"
         # Perhaps there was no 3D viewer when the MovieGui was launched
@@ -207,12 +250,16 @@ Press "Save images..." to save the movie frames to disk.
     def append_cartoon_frame(self, frame):
         "Add one frame cartoon to the cartoon panel"
         layout = self.ui.keyLabelFrame.layout()
+        frame_cartoon = SingleKeyFrameLabel(self, frame)
+        frame_cartoon.arrow_label = None
         if 1 < layout.count():
             # arrow
             arrow = FrameTransitionLabel(self, frame)
             layout.addWidget(arrow)
-        frame_cartoon = SingleKeyFrameLabel(self, frame)
+            frame_cartoon.arrow_label = arrow # so we can delete it at the same time
         frame_cartoon.go_to_frame.connect(self.show_frame)
+        frame_cartoon.delete_frame.connect(self.delete_frame_cartoon)
+        frame_cartoon.replace_frame.connect(self.replace_frame_cartoon)
         layout.addWidget(frame_cartoon)
         
     # There are three states - ready, playing, and paused

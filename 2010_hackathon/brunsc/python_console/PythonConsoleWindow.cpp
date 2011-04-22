@@ -15,6 +15,7 @@
 #include <QThread>
 #include <QFileDialog>
 #include <QSettings>
+#include <QDebug>
 
 namespace bp = boost::python;
 using namespace std;
@@ -203,6 +204,7 @@ void PythonConsoleWindow::runScript() {
 
 void PythonConsoleWindow::addRecent(const QString& fileName)
 {
+    // qDebug() << "addRecent() " << fileName;
 	QSettings settings("HHMI", "V3D");
 	QStringList files = settings.value("recentScriptList").toStringList();
 	// Perhaps this is already the most recent script
@@ -253,6 +255,7 @@ void PythonConsoleWindow::openRecentFile()
 	// Move past prompt
 	plainTextEdit->appendPlainText("");
     pythonInterpreter->runScriptFile(fileName);
+    addRecent(fileName);
 }
 
 void PythonConsoleWindow::zoomIn() {
