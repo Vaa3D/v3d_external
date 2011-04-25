@@ -646,7 +646,7 @@ bool q_cubicSplineMarker(const QList<ImageMarker> &ql_marker,QList<ImageMarker> 
 	
 	//cubic spline interpolate the head and butt markers(find all the interpolated locations on the backbone (1-pixel spacing))
 	double *cp_x=0,*cp_y=0,*cp_z=0,*cp_alpha=0;
-	long cutPlaneNum=0;
+	V3DLONG cutPlaneNum=0;
 	if(!interpolate_cubic_spline(cpara,2,cp_x,cp_y,cp_z,cp_alpha,cutPlaneNum))
 	{
 		printf("ERROR: q_cubicSplieMarker: interpolate_cubic_spline() return false! \n");
@@ -834,7 +834,7 @@ void SkeletonBasedImgWarp(V3DPluginCallback2 &callback, QWidget *parent)
 	printf(">>read target image and prinicpal skeleton swc file ...\n");
 	//read target image
 	unsigned char *p_img_tar=0;
-	long *sz_img_tar=0;
+	V3DLONG *sz_img_tar=0;
 	int datatype_tar=0;
 	if(!loadImage((char *)qPrintable(qs_filename_img_tar),p_img_tar,sz_img_tar,datatype_tar))
 	{
@@ -862,7 +862,7 @@ void SkeletonBasedImgWarp(V3DPluginCallback2 &callback, QWidget *parent)
 	printf(">>read subject image and prinicpal skeleton swc file ...\n");
 	//read subject image
 	unsigned char *p_img_sub=0;
-	long *sz_img_sub=0;
+	V3DLONG *sz_img_sub=0;
 	int datatype_sub=0;
 	if(!loadImage((char *)qPrintable(qs_filename_img_sub),p_img_sub,sz_img_sub,datatype_sub))
 	{

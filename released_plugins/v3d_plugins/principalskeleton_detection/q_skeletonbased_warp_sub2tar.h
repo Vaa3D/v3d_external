@@ -77,8 +77,8 @@ public:
 //vec_cpt_tar/sub				output target and subject control points for TPS interpolation
 //
 bool q_skeletonbased_sub2tar(
-		const unsigned char *p_img_tar,const long *sz_img_tar,
-		const unsigned char *p_img_sub,const long *sz_img_sub,
+		const unsigned char *p_img_tar,const V3DLONG *sz_img_tar,
+		const unsigned char *p_img_sub,const V3DLONG *sz_img_sub,
 		const vector< QList<ImageMarker> > &vec_ql_branchcpt_tar,const vector< QList<ImageMarker> > &vec_ql_branchcpt_sub,
 		const long l_anchor2cpt_ratio_alongbranch,const long l_anchor_perslice,const long l_slice_width,
 		unsigned char *&p_img_sub2tar,
@@ -89,21 +89,21 @@ bool q_skeletonbased_sub2tar(
 //for XY plane, we use nearest interpolation
 //for Z plane, we simply crop or replicate the last several slices
 bool q_resize_image(
-		const unsigned char *p_img_input,const long sz_img_input[4],
-		const long sz_img_output[4],
+		const unsigned char *p_img_input,const V3DLONG sz_img_input[4],
+		const V3DLONG sz_img_output[4],
 		unsigned char *&p_img_output);
 
 //cubic_spline interpolate the given curve, and then straighten the smooth curve with its neighbor to a rectangular
 //the horizental central line of rectangular corresponding to the cubic_spline interpolated curve (same length)
 bool q_curve_smoothstraighten(
-		const unsigned char *p_inputimg,const long *sz_inputimg,
+		const unsigned char *p_inputimg,const V3DLONG *sz_inputimg,
 		const QList<ImageMarker> &ql_marker,const long l_width,
 		unsigned char *&p_strimg,long *&sz_strimg,
 		vector<Coord2D64F_SL> &vec_centralcurve,
 		vector< vector<Coord2D64F_SL> > &vec_index_str2ori,vector< vector<Coord2D64F_SL> > &vec_index_ori2str);
 //straight the neighbor region along the given cubic-spline interpolated curve to rectangular and return the dual directional mapping index
 bool q_bcurve_straighten2rect(
-		const unsigned char *p_inputimg,const long *sz_inputimg,
+		const unsigned char *p_inputimg,const V3DLONG *sz_inputimg,
 		const double *pos_curve_x,const double *pos_curve_y,const double *alpha_curve,const long length_curve,
 		const long l_width,
 		unsigned char *&p_strimg, long *&sz_strimg,
@@ -167,7 +167,7 @@ bool q_compute_ptwarped_from_tpspara_2d(
 
 //warp subject image to target image based on 2d tar2sub displace field
 bool q_warp_sub2tar_baseon_df_tar2sub(
-		const unsigned char *p_img_sub,const long *sz_img_sub,
+		const unsigned char *p_img_sub,const V3DLONG *sz_img_sub,
 		const Vol3DSimple<DisplaceFieldF3D> *df_tar2sub,
 		unsigned char *&p_img_sub2tar);
 
@@ -180,7 +180,7 @@ bool q_points_save2markerfile(
 
 //save the input larval image with head and butt straighten area mask overlaid
 bool q_saveimg_strmask_overlaid(
-		const unsigned char *p_inputimg,const long sz_inputimg[4],
+		const unsigned char *p_inputimg,const V3DLONG sz_inputimg[4],
 		const vector< vector< vector<Coord2D64F_SL> > > vecvecvec_index_ori2str_branches,
 		const char *filename_outputimg);
 

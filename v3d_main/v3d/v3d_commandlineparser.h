@@ -54,6 +54,8 @@ public:
 		open3Dviewer = false;
 		openV3D = false;
 		clp_finished = false;
+        pluginname = NULL;
+        pluginmethod = NULL;
 	}
 
 	~V3D_CL_INTERFACE(){}
