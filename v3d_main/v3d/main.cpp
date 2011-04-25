@@ -227,11 +227,21 @@ int main(int argc, char **argv)
 			app.installEventFilter(mainWin);
 			if (mainWin) 
 				mainWin->show();
-
+			
+			// plugin module
+			if(QFile::exists(parser.i_v3d.pluginname))
+			{
+				mainWin->setBooleanCLplugin(true);
+				mainWin->setPluginName(parser.i_v3d.pluginname);
+				mainWin->setPluginMethod(parser.i_v3d.pluginmethod);
+			}
+			
 			// multiple image/object handling module
 			for(int i=0; i<parser.i_v3d.fileList.size(); i++)
 			{
 				char *filename = parser.i_v3d.fileList.at(i);
+				
+				qDebug()<<"now try open files ...";
 
 				QString qFile(filename);
 
@@ -268,26 +278,7 @@ int main(int argc, char **argv)
 					// load image/object
 					mainWin->loadV3DFile(filename, true, parser.i_v3d.open3Dviewer);
 				}
-			}
-			
-			// plugin module
-			if(QFile::exists(parser.i_v3d.pluginname))
-			{
-				QPluginLoader* loader = new QPluginLoader(parser.i_v3d.pluginname);
-				if (!loader)
-				{
-					v3d_msg(QString("ERROR open the specified V3D plugin (%1)").arg(parser.i_v3d.pluginname), 0);
-					return false;
-				}
-				
-				// run method
-				if (mainWin)
-				{
-					V3d_PluginLoader mypluginloader(mainWin);
-					mypluginloader.runPlugin(loader, parser.i_v3d.pluginmethod);
-				}
-			}
-			
+			}			
 
             // Check for software updates.
             // But not if V3D has been invoked with a file to open immediately.

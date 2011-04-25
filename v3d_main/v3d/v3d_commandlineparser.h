@@ -28,6 +28,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 
 
+
 // v3d_commandlineparser.h
 // 2010-11-23 by Yang Yu
 // command line parameters parser
@@ -46,55 +47,53 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 // command line interface class
 class V3D_CL_INTERFACE
-{
-public:
-
-	V3D_CL_INTERFACE()
 	{
-		open3Dviewer = false;
-		openV3D = false;
-		clp_finished = false;
-        pluginname = NULL;
-        pluginmethod = NULL;
-	}
-
-	~V3D_CL_INTERFACE(){}
-
-public:
-	vector<char *> fileList;
-	bool open3Dviewer;
-	bool openV3D;
-	bool clp_finished; // parsing finished
-	
-	char* pluginname;
-	char* pluginmethod;
-
-};
+	public:
+		
+		V3D_CL_INTERFACE()
+		{
+			open3Dviewer = false;
+			openV3D = false;
+			clp_finished = false;
+		}
+		
+		~V3D_CL_INTERFACE(){}
+		
+	public:
+		vector<char *> fileList;
+		bool open3Dviewer;
+		bool openV3D;
+		bool clp_finished; // parsing finished
+		
+		char* pluginname;
+		char* pluginmethod;
+		
+	};
 
 // command line parser class
 class CLP
-{
-public:
-
-	CLP(){}
-	~CLP(){}
-
-public:
-
-	bool check_filename(QString fn);
-	int parse(int argc, char *argv[], void (*help)());
-
-	int error( void (*help)() )
 	{
-		v3d_msg("Your input is illegal. Please follow the instruction of the help page below.", 0);
-		help();
-		return false;
-	}
-
-public:
-	V3D_CL_INTERFACE i_v3d;
-
-};
+	public:
+		
+		CLP(){}
+		~CLP(){}
+		
+	public:
+		
+		bool check_filename(QString fn);
+		int parse(int argc, char *argv[], void (*help)());
+		
+		int error( void (*help)() )
+		{
+			v3d_msg("Your input is illegal. Please follow the instruction of the help page below.", 0);
+			help();
+			return false;
+		}
+		
+	public:
+		V3D_CL_INTERFACE i_v3d;
+		
+	};
 
 // check the file valid
 bool CLP :: check_filename(QString fn)
@@ -103,11 +102,11 @@ bool CLP :: check_filename(QString fn)
 	
 	QFileInfo curfile_info(fn);
 	if ( (curfile_info.suffix().toUpper()=="ANO") ||
-		 (curfile_info.suffix().toUpper()=="APO" || curfile_info.suffix().toUpper()=="SWC" || curfile_info.suffix().toUpper()=="OBJ" || curfile_info.suffix().toUpper()=="V3DS") ||
-		 (curfile_info.suffix().toUpper()=="ATLAS") ||
-		 (curfile_info.suffix().toUpper()=="ZIP") ||
-		 (curfile_info.suffix().toUpper()=="LSM") || (curfile_info.suffix().toUpper()=="TIF") || (curfile_info.suffix().toUpper()=="RAW") ||
-		 fn.contains("://") ) // url
+		(curfile_info.suffix().toUpper()=="APO" || curfile_info.suffix().toUpper()=="SWC" || curfile_info.suffix().toUpper()=="OBJ" || curfile_info.suffix().toUpper()=="V3DS") ||
+		(curfile_info.suffix().toUpper()=="ATLAS") ||
+		(curfile_info.suffix().toUpper()=="ZIP") ||
+		(curfile_info.suffix().toUpper()=="LSM") || (curfile_info.suffix().toUpper()=="TIF") || (curfile_info.suffix().toUpper()=="RAW") ||
+		fn.contains("://") ) // url
 	{
 		return true;
 	}
@@ -116,7 +115,7 @@ bool CLP :: check_filename(QString fn)
 		v3d_msg("Error: The file does not exist! Do nothing.", 0);
 		return false;
 	}
-
+	
 }
 
 // parsing parameters
@@ -131,7 +130,7 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 	{
 		// command arguments parsing
 		char* key;
-
+		
 		// ------ parsing aguements here ---------------------
 		if(argc<=2)
 		{
@@ -168,10 +167,10 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 				// load and visualize file in V3D
 				char *filename = argv[1];
 				i_v3d.fileList.push_back(filename);
-
+				
 				// open V3D
 				i_v3d.openV3D = true;
-
+				
 			}
 			else
 			{
@@ -189,7 +188,7 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 				{ 
 					while(*++key)
 					{
-						if (*key == '?' || !strcmp(key, "h") || !strcmp(key, "H"))
+						if (*key == '?' || !strcmp(key, "h") || !strcmp(key, "H") || !strcmp(key, "help"))
 						{
 							help();
 							i_v3d.clp_finished = true;
@@ -208,7 +207,7 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 					}
 				}
 			}
-
+			
 			for(int i=1; i<argc; i++)
 			{
 				key = argv[i];
@@ -223,7 +222,7 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 					}
 				}
 			}
-
+			
 			// parsing arguments in other cases
 			for(int i=1; i<argc; i++)
 			{
@@ -231,6 +230,9 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 				{
 					
 					key = argv[i];
+					
+					qDebug()<<">>key ..."<<key;
+					
 					if (*key == OPTION_CHAR)
 					{ 
 						while(*++key)
@@ -243,8 +245,12 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 								while(i+1<argc && !QString(argv[i+1]).contains(OPTION_CHAR) )
 								{
 									char *filename = argv[i+1];
-									i++;
-									i_v3d.fileList.push_back(filename);
+									
+									if( check_filename(QString(filename)) )
+									{
+										i_v3d.fileList.push_back(filename);
+										i++;										
+									}
 								}
 							}
 							else if (!strcmp(key, "v"))
@@ -260,7 +266,7 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 								i_v3d.pluginname = argv[i+1];
 								i++;
 								
-								qDebug()<<i_v3d.pluginname;
+								qDebug()<<"call plugin ..."<<i_v3d.pluginname;
 							}
 							else if (!strcmp(key, "m"))
 							{
@@ -268,10 +274,12 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 								i_v3d.pluginmethod = argv[i+1];
 								i++;
 								
-								qDebug()<<i_v3d.pluginmethod;
+								qDebug()<<"call plugin method ..."<<i_v3d.pluginmethod;
 							}
 							else
 							{
+								qDebug()<<"parsing ..."<<key<<i;
+								
 								i_v3d.clp_finished = true;
 								return error(help);
 							}
@@ -281,13 +289,12 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 					
 				}
 			}
-
-
+			
+			
 		}
 	}
-
+	
 }
 
 
 #endif
-

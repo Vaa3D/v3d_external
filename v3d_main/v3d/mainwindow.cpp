@@ -283,6 +283,9 @@ MainWindow::MainWindow()
 	//connect(&sub_thread, SIGNAL(transactionStarted()), this, SLOT(transactionStart()), Qt::DirectConnection); //Qt::QueuedConnection
     //connect(&sub_thread, SIGNAL(allTransactionsDone()), this, SLOT(allTransactionsDone()), Qt::DirectConnection);
 	connect(this, SIGNAL(triviewUpdateTriggered()), this, SLOT(updateTriview()), Qt::QueuedConnection); // Qt::AutoConnection
+	
+	cl_plugin = false; // init
+	connect(this, SIGNAL(imageLoaded2Plugin()), this, SLOT(updateRunPlugin())); // command line call plugin 20110426 YuY
 
 }
 
@@ -408,6 +411,48 @@ void MainWindow::webserviceResponse()
 }
 
 #endif //__v3dwebservice__
+
+void MainWindow::updateRunPlugin() //20110426 YuY
+{
+	if(cl_plugin)
+	{
+		QPluginLoader* loader = new QPluginLoader(pluginname);
+		if (!loader)
+		{
+			v3d_msg(QString("ERROR open the specified V3D plugin (%1)").arg(pluginname), 0);
+			return;
+		}
+		
+		// run method
+		V3d_PluginLoader mypluginloader(this);
+		mypluginloader.runPlugin(loader, pluginmethod);
+	}
+}
+
+void MainWindow::setBooleanCLplugin(bool cl_plugininput)
+{
+	cl_plugin = cl_plugininput;
+}
+
+void MainWindow::setPluginName(char *pluginnameinput)
+{
+	pluginname = pluginnameinput;
+}
+
+void MainWindow::setPluginMethod(char *pluginmethodinput)
+{
+	pluginmethod = pluginmethodinput;
+}
+
+char *MainWindow::getPluginName()
+{
+	return pluginname;
+}
+
+char *MainWindow::getPluginMethod()
+{
+	return pluginmethod;
+}
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
@@ -545,12 +590,13 @@ void MainWindow::loadV3DUrl(QUrl url, bool b_cacheLocalFile, bool b_forceopen3dv
     QString localFileName = QFileInfo(url.path()).fileName();
     QString localFilePath = QDir::tempPath();
     QString fileName = localFilePath + "/" + localFileName;
-
+	
     DownloadManager *downloadManager = new DownloadManager(this);
     connect(downloadManager, SIGNAL(downloadFinishedSignal(QUrl, QString, bool, bool)),
             this, SLOT(finishedLoadingWebImage(QUrl, QString, bool, bool)));
     downloadManager->b_cacheFile = b_cacheLocalFile;
     downloadManager->b_forceopen3dviewer = b_forceopen3dviewer;
+
     if (b_cacheLocalFile)
         downloadManager->startDownloadCheckCache(url, fileName);
     else
@@ -573,6 +619,8 @@ void MainWindow::finishedLoadingWebImage(QUrl url, QString fileName, bool b_cach
             image_window->setWindowTitle(url.toString());
         // Put URL in recent file list
         setCurrentFile(url.toString());
+		
+		emit imageLoaded2Plugin(); //20110426 YuY
     }
 }
 
@@ -1004,7 +1052,11 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 	
 	//if success then out in recent file list
 	if (b_putinrecentfilelist)
+	{
 		setCurrentFile(fileName);
+		
+		emit imageLoaded2Plugin(); //20110426 YuY
+	}
 }
 
 void MainWindow::setup_global_imgproc_parameter_default()

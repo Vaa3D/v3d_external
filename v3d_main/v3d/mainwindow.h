@@ -254,12 +254,22 @@ public slots:
 // Dec-20-2010 YuY	
 signals:
 	void triviewUpdateTriggered();
+	void imageLoaded2Plugin();
 	
 public slots:
 	void transactionStart();
 	void allTransactionsDone();
 	void updateTriview();
 	void updateTriviewWindow(); // trigger a signal triviewUpdateTriggered
+	void updateRunPlugin();
+	
+// April-26-2011 YuY
+public: 
+	void setBooleanCLplugin(bool cl_plugininput);
+	void setPluginName(char *pluginnameinput);
+	void setPluginMethod(char *pluginmethodinput);
+	char *getPluginName();
+	char *getPluginMethod();
 
 private:
     void createActions();
@@ -276,6 +286,11 @@ private:
 	void addTransaction(Transaction *transact); // Dec-20-2010 YuY	
 	
 	TransactionThread sub_thread; // Dec-20-2010 YuY	
+	
+	bool cl_plugin; // command line call a plugin
+	
+	char *pluginname;
+	char *pluginmethod;
 
 	QString curFile;
 	XFormWidget * curHiddenSelectedXWidget;
