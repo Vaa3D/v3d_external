@@ -829,6 +829,7 @@ void Renderer_tex2::drawMarkerList()
 	}
 
 	// toggle marker name. by Lei Qu, 110425
+	// revised again by Hanchuan Peng, 110426
 	if (b_showMarkerName)
 	{
 		glPushAttrib(GL_ENABLE_BIT);

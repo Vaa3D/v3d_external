@@ -2031,6 +2031,7 @@ void V3dR_GLWidget::enableMarkerLabel(bool s)
 	if (renderer)
 	{
 		renderer->b_showMarkerLabel = s;
+		renderer->b_showMarkerName = s; //added by PHC, 110426
 		POST_updateGL();
 	}
 }
