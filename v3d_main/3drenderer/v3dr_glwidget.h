@@ -255,6 +255,7 @@ public slots:
 	virtual void setMarkerSize(int s);
 	virtual void enableSurfStretch(bool);
 	virtual void toggleCellName();
+	virtual void toggleMarkerName();// by Lei Qu, 110425
 
 	virtual void createSurfCurrentR();
 	virtual void createSurfCurrentG();

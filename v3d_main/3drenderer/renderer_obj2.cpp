@@ -827,6 +827,40 @@ void Renderer_tex2::drawMarkerList()
 
 		glPopAttrib();
 	}
+
+	// toggle marker name. by Lei Qu, 110425
+	if (b_showMarkerName)
+	{
+		glPushAttrib(GL_ENABLE_BIT);
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_STENCIL_TEST);
+		glDisable(GL_BLEND); // no effect to glBlendEquationEXT(GL_MAX_EXT)
+		glDisable(GL_LIGHTING);
+		disableClipBoundingBox(); //090726
+
+		RGBA32f c = XYZW(1) - color_background;
+					//color_line;
+		glColor4f(c.r, c.g, c.b, 1);
+
+		for (int i=0; i<listMarker.size(); i++)
+		{
+			const ImageMarker& S = listMarker[i];
+			if (! S.on)	continue;
+
+			int offset=S.name.size()/2.0+0.5;
+
+			glPushMatrix();
+			glTranslated(S.x-1, S.y-1, S.z-1);
+//			glTranslated(S.x-1-offset, S.y-1, S.z-1);
+
+			((QGLWidget*)widget)->renderText(0., 0., 0., (S.name));
+
+			glPopMatrix();
+		}
+
+		glPopAttrib();
+	}
+
 }
 
 #define __cell_apo__

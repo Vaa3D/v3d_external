@@ -906,6 +906,10 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    {
 		    	toggleCellName();
 			}
+		    else if (KM==Qt::ShiftModifier) // toggle marker name display. by Lei Qu, 110425
+		    {
+		    	toggleMarkerName();
+		    }
 	  		break;
 
 	  		///// neuron operation //////////////////////////////////////////////////////
@@ -2055,6 +2059,15 @@ void V3dR_GLWidget::toggleCellName()
 	if (renderer)
 	{
 		renderer->b_showCellName = !(renderer->b_showCellName);
+		POST_updateGL();
+	}
+}
+void V3dR_GLWidget::toggleMarkerName() // toggle marker name display. by Lei Qu, 110425
+{
+    if (renderer)
+	{
+		renderer->b_showMarkerName = !(renderer->b_showMarkerName);
+		renderer->b_showMarkerLabel = !(renderer->b_showMarkerName);
 		POST_updateGL();
 	}
 }

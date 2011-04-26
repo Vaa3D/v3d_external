@@ -189,7 +189,7 @@ public:
 	RGBA32f color_background, color_background2, color_line, color_proxy;
 
 	int sShowMarkers, sShowSurfObjects, markerSize;
-	bool b_showMarkerLabel, b_showCellName, b_surfStretch;
+	bool b_showMarkerLabel, b_showMarkerName, b_showCellName, b_surfStretch;
 
 	int lineType, lineWidth, nodeSize, rootSize;
 	int polygonMode, tryObjShader;
@@ -247,6 +247,7 @@ private:
 		sShowSurfObjects = 2;
 		markerSize = 10;
 		b_showMarkerLabel = true;
+		b_showMarkerName = false; // by Lei Qu, 110425
 		b_surfStretch = true;
 		b_showCellName    = false;
 
