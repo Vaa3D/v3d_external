@@ -798,7 +798,7 @@ void Renderer_tex2::drawMarkerList()
 	// marker label
 	// qDebug("b_showMarkerLabel = %i", (b_showMarkerLabel));
 	// qDebug("widget = 0x%p", widget);
-	if (b_showMarkerLabel)
+	if (b_showMarkerLabel && !b_showMarkerName)
 	{
 		glPushAttrib(GL_ENABLE_BIT);
 		glDisable(GL_DEPTH_TEST);
@@ -853,7 +853,13 @@ void Renderer_tex2::drawMarkerList()
 
 			QFont font;
 			font.setPointSize(10);
-			((QGLWidget*)widget)->renderText(0., 0., 0., (S.name),font);
+
+			QString mystr = S.name;
+			if (b_showMarkerLabel)
+				mystr = QString("%1").arg(i+1) + " : " + mystr;
+			
+			((QGLWidget*)widget)->renderText(0., 0., 0., (mystr)); //do not use font for now. by PHC, 110426
+			//((QGLWidget*)widget)->renderText(0., 0., 0., (mystr), font); 
 
 			glPopMatrix();
 		}
