@@ -100,7 +100,7 @@ struct LocationSimple
 		radius = 5;
 		shape = pxSphere;
 		inputProperty = pxLocaUseful;
-		name = "unknown";
+		name = "";
 		comments = "";
 		category = 0;
 		//color.r = color.g = color.b = color.a = 255;

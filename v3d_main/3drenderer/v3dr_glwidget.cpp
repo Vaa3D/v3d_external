@@ -2031,7 +2031,7 @@ void V3dR_GLWidget::enableMarkerLabel(bool s)
 	if (renderer)
 	{
 		renderer->b_showMarkerLabel = s;
-		renderer->b_showMarkerName = s; //added by PHC, 110426
+		//renderer->b_showMarkerName = s; //added by PHC, 110426
 		POST_updateGL();
 	}
 }
@@ -2068,7 +2068,7 @@ void V3dR_GLWidget::toggleMarkerName() // toggle marker name display. by Lei Qu,
     if (renderer)
 	{
 		renderer->b_showMarkerName = !(renderer->b_showMarkerName);
-		renderer->b_showMarkerLabel = !(renderer->b_showMarkerName);
+		//renderer->b_showMarkerLabel = !(renderer->b_showMarkerName);
 		POST_updateGL();
 	}
 }

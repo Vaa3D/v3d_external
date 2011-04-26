@@ -49,7 +49,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 namespace v3d {
     // Set current version here.
-    VersionInfo thisVersionOfV3D(2.616);
+    VersionInfo thisVersionOfV3D(2.617);
 
     QString versionnumber = "V3D (" +
         thisVersionOfV3D.toQString() +
@@ -143,6 +143,7 @@ void v3d_aboutinfo()
         "<tr><td>Ctrl-Z (Windows, Linux) or Cmd-Z (Mac) </td><td>Undo last tracing/editing operation of SWC objects (e.g. a neuron).</td></tr>"
         "<tr><td>Ctrl-X (Windows, Linux) or Cmd-X (Mac) </td><td>Redo last tracing/editing operation of SWC objects (e.g. a neuron).</td></tr>"
         "<tr><td>Ctrl-N (Windows, Linux) or Cmd-N (Mac) </td><td>toggle Name of APO object (e.g. point cloud).</td></tr>"
+        "<tr><td>Shift-N </td><td>toggle Names of markers objects (not their labels!).</td></tr>"
         "<tr><td>Ctrl-V (Windows, Linux) or Cmd-V (Mac) </td><td>update Volume image from tri-view.</td></tr>"
         "<tr><td>Alt-V                                  </td><td>change Volume rendering advance options.</td></tr>"
         "<tr><td>Ctrl-F (Windows, Linux) or Cmd-F (Mac) </td><td>toggle volume texture Filter.</td></tr>"

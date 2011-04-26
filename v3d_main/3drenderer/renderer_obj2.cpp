@@ -854,9 +854,15 @@ void Renderer_tex2::drawMarkerList()
 			QFont font;
 			font.setPointSize(10);
 
-			QString mystr = S.name;
+			QString mystr = S.name.trimmed();
 			if (b_showMarkerLabel)
-				mystr = QString("%1").arg(i+1) + " : " + mystr;
+			{
+				if (S.name.size()>0)
+					mystr = QString("%1").arg(i+1) + " : " + mystr;
+				else {
+					mystr = QString("%1").arg(i+1);
+				}
+			}
 			
 			((QGLWidget*)widget)->renderText(0., 0., 0., (mystr)); //do not use font for now. by PHC, 110426
 			//((QGLWidget*)widget)->renderText(0., 0., 0., (mystr), font); 
