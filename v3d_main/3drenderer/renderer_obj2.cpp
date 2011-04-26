@@ -847,13 +847,12 @@ void Renderer_tex2::drawMarkerList()
 			const ImageMarker& S = listMarker[i];
 			if (! S.on)	continue;
 
-			int offset=S.name.size()/2.0+0.5;
-
 			glPushMatrix();
 			glTranslated(S.x-1, S.y-1, S.z-1);
-//			glTranslated(S.x-1-offset, S.y-1, S.z-1);
 
-			((QGLWidget*)widget)->renderText(0., 0., 0., (S.name));
+			QFont font;
+			font.setPointSize(10);
+			((QGLWidget*)widget)->renderText(0., 0., 0., (S.name),font);
 
 			glPopMatrix();
 		}
