@@ -6,9 +6,9 @@
 #ifndef __V3DWEBSERVICE_HPP__
 #define __V3DWEBSERVICE_HPP__
 
-#include "soapH.h"
+#include "soapdep/soapH.h"
 
-#include "soapv3dwebserverService.h" // server
+#include "soapdep/soapv3dwebserverService.h" // server
 //#include "soapv3dwebserverProxy.h" // client
 
 #include <string.h>
