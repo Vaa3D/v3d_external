@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope
+ xmlns:SOAP-ENV="http://www.w3.org/2003/05/soap-envelope"
+ xmlns:SOAP-ENC="http://www.w3.org/2003/05/soap-encoding"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+ xmlns:ns="urn:v3dwebserver">
+ <SOAP-ENV:Body SOAP-ENV:encodingStyle="http://www.w3.org/2003/05/soap-encoding">
+  <ns:msghandler>
+   <lm>
+    <image-path></image-path>
+    <x>0</x>
+    <y>0</y>
+    <z>0</z>
+    <c>0</c>
+    <t>0</t>
+    <intensity>0.0</intensity>
+    <dt>0</dt>
+   </lm>
+  </ns:msghandler>
+ </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

@@ -43,11 +43,11 @@ public:
 class ns__V3DMSG 
 {
 public:
-	std::string imageName	1;	///< Required element.
+	char*	imageName	1;	///< Required element.
 	
-	int xrot	0;
-	int yrot	0;
-	int zrot	0;
+	int xrot	1;
+	int yrot	1;
+	int zrot	1;
 	
 	struct soap *soap;	///< soap handle
 	

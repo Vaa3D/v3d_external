@@ -3,7 +3,7 @@
  *	developed by Yang Yu, March 13, 2011
  */
 
-#include "v3dwebserver.nsmap" //ws namespace
+#include "soapdep/v3dwebserver.nsmap" //ws namespace
 #include "v3dwebservice.hpp"
 
 /// Web service operation 'helloworld' (returns error code or SOAP_OK)
@@ -163,6 +163,19 @@ int soapv3dwsService::v3dopenfile3d(ns__V3DMSG *input, ns__V3DMSG *output) // op
 {
 	printf("v3d open file ...\n");
 	
+	output->imageName = input->imageName;
+	
+	pSoapPara->v3dmessage->xrot = output->xrot = input->xrot;
+	pSoapPara->v3dmessage->yrot = output->yrot = input->yrot;
+	pSoapPara->v3dmessage->zrot = output->zrot = input->zrot;
+	
+	pSoapPara->str_func = "v3dopenfile3d";
+	pSoapPara->str_message = (char *)malloc(strlen(output->imageName) + 1);
+	strcpy(pSoapPara->str_message, output->imageName);
+	
+	printf("trigger a signal here in soapv3dwsService ...\n");
+	emit wsRequests();
+	
 	return SOAP_OK;	
 }
 
@@ -277,7 +290,7 @@ void V3DWebService::run()
 				fprintf(stderr, "server timed out\n");
 				break;
 			}
-			printf("Socket %d connection from IP %d.%d.%d.%d\n", slave, (webserver->ip >> 24)&0xFF, (webserver->ip >> 16)&0xFF, (webserver->ip >> 8)&0xFF, webserver->ip&0xFF);
+			printf("Socket %d connection from IP %d.%d.%d.%d:%d\n", slave, (webserver->ip >> 24)&0xFF, (webserver->ip >> 16)&0xFF, (webserver->ip >> 8)&0xFF, webserver->ip&0xFF, port);
 			
 			//this->setSoapPara( webserver->getSoapPara() );
 			
@@ -290,11 +303,11 @@ void V3DWebService::run()
 			soapv3dwsService *t_webserver = new soapv3dwsService;
 			t_webserver = webserver->copy();
 			
-			connect(t_webserver, SIGNAL(finished()), t_webserver, SLOT(deleteLater()));
-			t_webserver->start();
-			
 			this->setSoapPara( t_webserver->getSoapPara() );
 			connect(t_webserver, SIGNAL(wsRequests()), this, SLOT(webserviceResponse()));
+			
+			connect(t_webserver, SIGNAL(finished()), t_webserver, SLOT(deleteLater()));
+			t_webserver->start();
 		}
 		
 		mutex.unlock();	
