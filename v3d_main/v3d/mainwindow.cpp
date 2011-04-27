@@ -75,6 +75,8 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 
 #include "DownloadManager.h" // CMB 08-Oct-2010
 
+#include "../3drenderer/v3dr_glwidget.h"
+
 //#include "dialog_pointcloudatlas_linkerloader.h"
 
 //#include "atlas_window.h"
@@ -401,6 +403,43 @@ void MainWindow::webserviceResponse()
 		else if(string(pSoapPara->str_func) == "v3dopenfile")
 		{
 			this->loadV3DFile(pSoapPara->str_message, true, false);
+		}
+		else if(string(pSoapPara->str_func) == "v3dopenfile3d")
+		{			
+			QString fn(pSoapPara->str_message);
+			
+			XFormWidget *pTriView = findMdiChild(fn);
+			
+			if(pTriView)
+			{
+				V3dR_MainWindow *pRMW = find3DViewer(fn);
+				
+				if(!pRMW)
+				{
+					pTriView->doImage3DView();
+					pRMW = find3DViewer(fn);
+				}
+
+				V3dR_GLWidget *pRGLW = pRMW->getGLWidget();
+				
+				pRGLW->doAbsoluteRot(pSoapPara->v3dmessage->xrot, pSoapPara->v3dmessage->yrot, pSoapPara->v3dmessage->zrot);
+
+			}
+			else
+			{
+				this->loadV3DFile(pSoapPara->str_message, true, true);
+				
+				V3dR_MainWindow *pRMW = find3DViewer(fn);
+				
+				if(!pRMW)
+				{
+					pTriView->doImage3DView();
+				}
+				
+				V3dR_GLWidget *pRGLW = pRMW->getGLWidget();
+				
+				pRGLW->doAbsoluteRot(pSoapPara->v3dmessage->xrot, pSoapPara->v3dmessage->yrot, pSoapPara->v3dmessage->zrot);
+			}
 		}
 		else
 		{
