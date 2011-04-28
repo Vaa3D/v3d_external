@@ -1,11 +1,7 @@
 # #####################################################################
-# Release: 2011-04-27 v3dwebservice v1.0 by Yang Yu 
-# Created: 2011-3-7 v3dwebservice v0.1 by Yang Yu
+# Release: 2011-04-27 v3dwebservice v0.02 by Yang Yu 
+# Created: 2011-3-7 v3dwebservice v0.01 by Yang Yu
 # ######################################################################
-
-soapdep.target = soapdep
-soapdep.commands = soapcpp2 -2 -S -i -L ../webservice/v3dwebserver.h
-QMAKE_EXTRA_TARGETS += soapdep
 
 message(CONFIG=$$unique(CONFIG))
 macx {

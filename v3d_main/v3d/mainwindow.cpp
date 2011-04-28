@@ -404,41 +404,185 @@ void MainWindow::webserviceResponse()
 		{
 			this->loadV3DFile(pSoapPara->str_message, true, false);
 		}
-		else if(string(pSoapPara->str_func) == "v3dopenfile3d")
+		else if(string(pSoapPara->str_func) == "v3dopenfile3dwrot")
 		{			
-			QString fn(pSoapPara->str_message);
+			QString fileName(pSoapPara->str_message);
 			
-			XFormWidget *pTriView = findMdiChild(fn);
-			
-			if(pTriView)
+			if (!fileName.isEmpty()) 
 			{
-				V3dR_MainWindow *pRMW = find3DViewer(fn);
+				// find triview window
+				XFormWidget *existing_imgwin = findMdiChild(fileName);	
 				
-				if(!pRMW)
+				// find 3d main window
+				V3dR_MainWindow *existing_3dviewer = find3DViewer(fileName);
+				
+				// handling
+				if(existing_imgwin)
 				{
-					pTriView->doImage3DView();
-					pRMW = find3DViewer(fn);
+					if(!existing_3dviewer)
+					{
+						existing_imgwin->doImage3DView();
+						existing_3dviewer = find3DViewer(fileName);
+					}
+					
+					existing_3dviewer->getGLWidget()->doAbsoluteRot(pSoapPara->v3dmsgrot->xrot, pSoapPara->v3dmsgrot->yrot, pSoapPara->v3dmsgrot->zrot);
 				}
-
-				V3dR_GLWidget *pRGLW = pRMW->getGLWidget();
+				else
+				{
+					this->loadV3DFile(pSoapPara->str_message, true, true);
+					
+					existing_imgwin = findMdiChild(fileName);
+					if(!existing_imgwin) 
+					{
+						// try open image file in currrent dir
+						QString tryFileName = QDir::currentPath() + "/" + fileName;
+						v3d_msg(QString("Try to open the file [%1].").arg(tryFileName), 1);
+						
+						this->loadV3DFile(tryFileName, true, true);
+						
+						if(!existing_imgwin) 
+						{
+							v3d_msg(QString("The file [%1] does not exist! Do nothing.").arg(fileName), 1);
+							return;	
+						}
+					}
+					
+					if(!existing_3dviewer)
+					{
+						existing_imgwin->doImage3DView();
+						existing_3dviewer = find3DViewer(fileName);
+					}
+					
+					existing_3dviewer->getGLWidget()->doAbsoluteRot(pSoapPara->v3dmsgrot->xrot, pSoapPara->v3dmsgrot->yrot, pSoapPara->v3dmsgrot->zrot);
+				}
 				
-				pRGLW->doAbsoluteRot(pSoapPara->v3dmessage->xrot, pSoapPara->v3dmessage->yrot, pSoapPara->v3dmessage->zrot);
-
 			}
 			else
 			{
-				this->loadV3DFile(pSoapPara->str_message, true, true);
+				v3d_msg(QString("The file [%1] does not exist! Do nothing.").arg(fileName), 1);
+				return;	
+			}
+		}
+		else if(string(pSoapPara->str_func) == "v3dopenfile3dwzoom")
+		{			
+			QString fileName(pSoapPara->str_message);
+			
+			if (!fileName.isEmpty()) 
+			{
+				// find triview window
+				XFormWidget *existing_imgwin = findMdiChild(fileName);	
 				
-				V3dR_MainWindow *pRMW = find3DViewer(fn);
+				// find 3d main window
+				V3dR_MainWindow *existing_3dviewer = find3DViewer(fileName);
 				
-				if(!pRMW)
+				// handling
+				if(existing_imgwin)
 				{
-					pTriView->doImage3DView();
+					if(!existing_3dviewer)
+					{
+						existing_imgwin->doImage3DView();
+						existing_3dviewer = find3DViewer(fileName);
+					}
+					
+					existing_3dviewer->getGLWidget()->setZoom(pSoapPara->v3dmsgzoom->zoom);
+				}
+				else
+				{
+					this->loadV3DFile(pSoapPara->str_message, true, true);
+					
+					existing_imgwin = findMdiChild(fileName);
+					if(!existing_imgwin) 
+					{
+						// try open image file in currrent dir						
+						QString tryFileName = QDir::currentPath() + "/" + fileName;
+						v3d_msg(QString("Try to open the file [%1].").arg(tryFileName), 1);
+						
+						this->loadV3DFile(tryFileName, true, true);
+						
+						if(!existing_imgwin) 
+						{
+							v3d_msg(QString("The file [%1] does not exist! Do nothing.").arg(fileName), 1);
+							return;	
+						}
+					}
+					
+					if(!existing_3dviewer)
+					{
+						existing_imgwin->doImage3DView();
+						existing_3dviewer = find3DViewer(fileName);
+					}
+					
+					existing_3dviewer->getGLWidget()->setZoom(pSoapPara->v3dmsgzoom->zoom);
 				}
 				
-				V3dR_GLWidget *pRGLW = pRMW->getGLWidget();
+			}
+			else
+			{
+				v3d_msg(QString("The file [%1] does not exist! Do nothing.").arg(fileName), 1);
+				return;	
+			}
+		}
+		else if(string(pSoapPara->str_func) == "v3dopenfile3dwshift")
+		{			
+			QString fileName(pSoapPara->str_message);
+			
+			if (!fileName.isEmpty()) 
+			{
+				// find triview window
+				XFormWidget *existing_imgwin = findMdiChild(fileName);	
 				
-				pRGLW->doAbsoluteRot(pSoapPara->v3dmessage->xrot, pSoapPara->v3dmessage->yrot, pSoapPara->v3dmessage->zrot);
+				// find 3d main window
+				V3dR_MainWindow *existing_3dviewer = find3DViewer(fileName);
+				
+				// handling
+				if(existing_imgwin)
+				{
+					if(!existing_3dviewer)
+					{
+						existing_imgwin->doImage3DView();
+						existing_3dviewer = find3DViewer(fileName);
+					}
+					
+					existing_3dviewer->getGLWidget()->setXShift(pSoapPara->v3dmsgshift->xshift);
+					existing_3dviewer->getGLWidget()->setYShift(pSoapPara->v3dmsgshift->yshift);
+					existing_3dviewer->getGLWidget()->setZShift(pSoapPara->v3dmsgshift->zshift);
+				}
+				else
+				{
+					this->loadV3DFile(pSoapPara->str_message, true, true);
+					
+					existing_imgwin = findMdiChild(fileName);
+					if(!existing_imgwin) 
+					{
+						// try open image file in currrent dir
+						QString tryFileName = QDir::currentPath() + "/" + fileName;
+						v3d_msg(QString("Try to open the file [%1].").arg(tryFileName), 1);
+						
+						this->loadV3DFile(tryFileName, true, true);
+						
+						if(!existing_imgwin) 
+						{
+							v3d_msg(QString("The file [%1] does not exist! Do nothing.").arg(fileName), 1);
+							return;	
+						}
+					}
+					
+					if(!existing_3dviewer)
+					{
+						existing_imgwin->doImage3DView();
+						existing_3dviewer = find3DViewer(fileName);
+					}
+					
+					existing_3dviewer->getGLWidget()->setXShift(pSoapPara->v3dmsgshift->xshift);
+					existing_3dviewer->getGLWidget()->setYShift(pSoapPara->v3dmsgshift->yshift);
+					existing_3dviewer->getGLWidget()->setZShift(pSoapPara->v3dmsgshift->zshift);
+				}
+				
+			}
+			else
+			{
+				v3d_msg(QString("The file [%1] does not exist! Do nothing.").arg(fileName), 1);
+				return;	
 			}
 		}
 		else
@@ -679,12 +823,49 @@ void MainWindow::checkForUpdates(bool b_verbose)
 
 V3dR_MainWindow * MainWindow::find3DViewer(QString fileName)
 {
+	int numfind = 0; //20110427 YuY
+	
+	V3dR_MainWindow * v3dRMWFind;
+	
+	// support image with relative path
+	QString canonicalFilePath = QFileInfo(fileName).canonicalFilePath(); //20110427 YuY
+    if (canonicalFilePath.size()==0) canonicalFilePath = fileName; //20110427 YuY 
+	
 	for (int i=0; i<list_3Dview_win.size(); i++)
 	{
-		if (list_3Dview_win.at(i)->getDataTitle()==fileName)
-			return list_3Dview_win.at(i);
+		if (list_3Dview_win.at(i)->getDataTitle()==canonicalFilePath || QFileInfo(list_3Dview_win.at(i)->getDataTitle()).fileName() == canonicalFilePath) //20110427 YuY
+		{
+			v3dRMWFind = list_3Dview_win.at(i);
+			numfind++;
+		}
 	}
-	return 0;
+	
+	if(!numfind) //20110427 YuY
+	{
+		// try find image name contains the input string from the end
+		for (int i=0; i<list_3Dview_win.size(); i++)
+		{
+			if ( list_3Dview_win.at(i)->getDataTitle().endsWith(canonicalFilePath) || QFileInfo(list_3Dview_win.at(i)->getDataTitle()).fileName().endsWith(canonicalFilePath) ) //20110427 YuY
+			{
+				v3dRMWFind = list_3Dview_win.at(i);
+				numfind++;
+			}
+		}
+	}
+	
+	if(numfind > 1)	//20110427 YuY
+	{
+		v3d_msg(QString("Too many choices. Please specify your image with whole name including absolute path and try again."), 1);
+		return 0;
+	}
+	else if(numfind == 1)
+	{
+		return v3dRMWFind;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool b_forceopen3dviewer)
@@ -2458,17 +2639,54 @@ XFormWidget *MainWindow::activeMdiChild()
 
 XFormWidget *MainWindow::findMdiChild(const QString &fileName)
 {
+	int numfind = 0; //20110427 YuY
+	
     QString canonicalFilePath = QFileInfo(fileName).canonicalFilePath();
-    //if (canonicalFilePath.size()==0) canonicalFilePath = fileName; //090818 RZC
+    if (canonicalFilePath.size()==0) canonicalFilePath = fileName; //090818 RZC 20110427 YuY
 
+	XFormWidget *mdiChildFind;
     foreach (QWidget *window, workspace->windowList()) {
         XFormWidget *mdiChild = qobject_cast<XFormWidget *>(window);
         QString mdiChildPath = // CMB Oct-14-2010
                 QFileInfo(mdiChild->userFriendlyCurrentFile()).canonicalFilePath();
-        if (mdiChildPath == canonicalFilePath)
-            return mdiChild;
+		
+        if (mdiChildPath == canonicalFilePath || QFileInfo(mdiChildPath).fileName() == canonicalFilePath) //20110427 YuY
+		{
+			mdiChildFind = mdiChild;
+            numfind++;
+		}
     }
-    return 0;
+	
+	if(!numfind) //20110427 YuY
+	{
+		// try find image name contains the input string from the end
+		foreach (QWidget *window, workspace->windowList()) {
+			XFormWidget *mdiChild = qobject_cast<XFormWidget *>(window);
+			QString mdiChildPath = // CMB Oct-14-2010
+			QFileInfo(mdiChild->userFriendlyCurrentFile()).canonicalFilePath();
+			
+			if ( mdiChildPath.endsWith(canonicalFilePath) || QFileInfo(mdiChildPath).fileName().endsWith(canonicalFilePath) ) //20110427 YuY
+			{
+				mdiChildFind = mdiChild;
+				numfind++;
+			}
+		}
+	}
+	
+	if(numfind > 1)	//20110427 YuY
+	{
+		v3d_msg(QString("Too many choices. Please specify your image with whole name including absolute path and try again."), 1);
+		return 0;
+	}
+	else if(numfind == 1)
+	{
+		return mdiChildFind;
+	}
+	else
+	{
+		return 0;
+	}
+
 }
 
 XFormWidget ** MainWindow::retrieveAllMdiChild(int & nchild)
