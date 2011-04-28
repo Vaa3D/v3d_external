@@ -77,6 +77,37 @@
  <part name="zrot" type="xsd:int"/>
 </message>
 
+<message name="v3dopenfile3dwrot">
+ <part name="input" type="ns:V3DMSG-ROTATION"/>
+</message>
+
+<message name="V3DMSG-ROTATION">
+ <part name="imageName" type="xsd:string"/>
+ <part name="xrot" type="xsd:int"/>
+ <part name="yrot" type="xsd:int"/>
+ <part name="zrot" type="xsd:int"/>
+</message>
+
+<message name="v3dopenfile3dwzoom">
+ <part name="input" type="ns:V3DMSG-ZOOM"/>
+</message>
+
+<message name="V3DMSG-ZOOM">
+ <part name="imageName" type="xsd:string"/>
+ <part name="zoom" type="xsd:float"/>
+</message>
+
+<message name="v3dopenfile3dwshift">
+ <part name="input" type="ns:V3DMSG-SHIFT"/>
+</message>
+
+<message name="V3DMSG-SHIFT">
+ <part name="imageName" type="xsd:string"/>
+ <part name="xshift" type="xsd:float"/>
+ <part name="yshift" type="xsd:float"/>
+ <part name="zshift" type="xsd:float"/>
+</message>
+
 <portType name="v3dwebserverPortType">
  <operation name="helloworld">
   <documentation>Service definition of function ns__helloworld</documentation>
@@ -97,6 +128,21 @@
   <documentation>Service definition of function ns__v3dopenfile3d</documentation>
   <input message="tns:v3dopenfile3d"/>
   <output message="tns:V3DMSG"/>
+ </operation>
+ <operation name="v3dopenfile3dwrot">
+  <documentation>Service definition of function ns__v3dopenfile3dwrot</documentation>
+  <input message="tns:v3dopenfile3dwrot"/>
+  <output message="tns:V3DMSG-ROTATION"/>
+ </operation>
+ <operation name="v3dopenfile3dwzoom">
+  <documentation>Service definition of function ns__v3dopenfile3dwzoom</documentation>
+  <input message="tns:v3dopenfile3dwzoom"/>
+  <output message="tns:V3DMSG-ZOOM"/>
+ </operation>
+ <operation name="v3dopenfile3dwshift">
+  <documentation>Service definition of function ns__v3dopenfile3dwshift</documentation>
+  <input message="tns:v3dopenfile3dwshift"/>
+  <output message="tns:V3DMSG-SHIFT"/>
  </operation>
 </portType>
 
@@ -130,6 +176,33 @@
   </output>
  </operation>
  <operation name="v3dopenfile3d">
+  <SOAP:operation style="rpc"/>
+  <input>
+     <SOAP:body use="encoded" namespace="urn:v3dwebserver" encodingStyle="http://www.w3.org/2003/05/soap-encoding"/>
+  </input>
+  <output>
+     <SOAP:body use="encoded" namespace="urn:v3dwebserver" encodingStyle="http://www.w3.org/2003/05/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="v3dopenfile3dwrot">
+  <SOAP:operation style="rpc"/>
+  <input>
+     <SOAP:body use="encoded" namespace="urn:v3dwebserver" encodingStyle="http://www.w3.org/2003/05/soap-encoding"/>
+  </input>
+  <output>
+     <SOAP:body use="encoded" namespace="urn:v3dwebserver" encodingStyle="http://www.w3.org/2003/05/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="v3dopenfile3dwzoom">
+  <SOAP:operation style="rpc"/>
+  <input>
+     <SOAP:body use="encoded" namespace="urn:v3dwebserver" encodingStyle="http://www.w3.org/2003/05/soap-encoding"/>
+  </input>
+  <output>
+     <SOAP:body use="encoded" namespace="urn:v3dwebserver" encodingStyle="http://www.w3.org/2003/05/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="v3dopenfile3dwshift">
   <SOAP:operation style="rpc"/>
   <input>
      <SOAP:body use="encoded" namespace="urn:v3dwebserver" encodingStyle="http://www.w3.org/2003/05/soap-encoding"/>

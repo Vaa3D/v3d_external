@@ -45,6 +45,10 @@ public:
 	char *str_message; // e.g. fn
 	
 	ns__V3DMSG *v3dmessage;
+	
+	ns__V3DMSG_ROTATION *v3dmsgrot;
+	ns__V3DMSG_ZOOM *v3dmsgzoom;
+	ns__V3DMSG_SHIFT *v3dmsgshift;
 };
 
 /**
@@ -72,6 +76,12 @@ public: // interface SOAP/XML handling
 	virtual int v3dopenfile(char *fn, char **v3dfn); // open a file in V3D
 	
 	virtual int v3dopenfile3d(ns__V3DMSG *input, ns__V3DMSG *output); // open a file in V3D and set 3dview position
+	
+	virtual int v3dopenfile3dwrot(ns__V3DMSG_ROTATION *input, ns__V3DMSG_ROTATION *output); // open a file in V3D and set 3dview rotation
+	
+	virtual int v3dopenfile3dwzoom(ns__V3DMSG_ZOOM *input, ns__V3DMSG_ZOOM *output); // open a file in V3D and set 3dview zoom
+	
+	virtual int v3dopenfile3dwshift(ns__V3DMSG_SHIFT *input, ns__V3DMSG_SHIFT *output); // open a file in V3D and set 3dview shift
 	
 	soapv3dwsService *copy();
 	

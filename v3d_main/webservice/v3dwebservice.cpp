@@ -30,6 +30,24 @@ int v3dwebserverService::v3dopenfile3d(ns__V3DMSG *input, ns__V3DMSG *output)
 	return SOAP_OK;
 }
 
+/// Web service operation 'v3dopenfile3dwrot' (returns error code or SOAP_OK)
+int v3dwebserverService::v3dopenfile3dwrot(ns__V3DMSG_ROTATION *input, ns__V3DMSG_ROTATION *output)
+{
+	return SOAP_OK;
+}
+
+/// Web service operation 'v3dopenfile3dwzoom' (returns error code or SOAP_OK)
+int v3dwebserverService::v3dopenfile3dwzoom(ns__V3DMSG_ZOOM *input, ns__V3DMSG_ZOOM *output)
+{
+	return SOAP_OK;
+}
+
+/// Web service operation 'v3dopenfile3dwshift' (returns error code or SOAP_OK)
+int v3dwebserverService::v3dopenfile3dwshift(ns__V3DMSG_SHIFT *input, ns__V3DMSG_SHIFT *output)
+{
+	return SOAP_OK;
+}
+
 /**
  *
  *	Server dummy methods to avoid link errors
@@ -56,6 +74,21 @@ int ns__v3dopenfile3dResponse_(struct soap *soap, ns__V3DMSG *input, ns__V3DMSG 
 	return SOAP_NO_METHOD;
 }
 
+int ns__v3dopenfile3dwrotResponse_(struct soap *soap, ns__V3DMSG_ROTATION *input, ns__V3DMSG_ROTATION *output)
+{
+	return SOAP_NO_METHOD;
+}
+
+int ns__v3dopenfile3dwzoomResponse_(struct soap *soap, ns__V3DMSG_ZOOM *input, ns__V3DMSG_ZOOM *output)
+{
+	return SOAP_NO_METHOD;
+}
+
+int ns__v3dopenfile3dwshiftResponse_(struct soap *soap, ns__V3DMSG_SHIFT *input, ns__V3DMSG_SHIFT *output)
+{
+	return SOAP_NO_METHOD;
+}
+
 /**
  * child class of soapv3dwebserviceService
  *
@@ -68,6 +101,13 @@ soapv3dwsService::soapv3dwsService()
 	try
 	{
 		pSoapPara = new soappara;
+		
+		pSoapPara->v3dmessage = new ns__V3DMSG;
+		
+		pSoapPara->v3dmsgrot = new ns__V3DMSG_ROTATION;
+		pSoapPara->v3dmsgzoom = new ns__V3DMSG_ZOOM;
+		pSoapPara->v3dmsgshift = new ns__V3DMSG_SHIFT;
+
 	}
 	catch (...)
 	{
@@ -159,7 +199,7 @@ int soapv3dwsService::v3dopenfile(char *fn, char **v3dfn) // open a file in V3D
 	
 }
 
-int soapv3dwsService::v3dopenfile3d(ns__V3DMSG *input, ns__V3DMSG *output) // open a file in V3D with 3d viewer position
+int soapv3dwsService::v3dopenfile3d(ns__V3DMSG *input, ns__V3DMSG *output) // open a file in V3D with 3d viewer example func
 {
 	printf("v3d open file ...\n");
 	
@@ -170,6 +210,58 @@ int soapv3dwsService::v3dopenfile3d(ns__V3DMSG *input, ns__V3DMSG *output) // op
 	pSoapPara->v3dmessage->zrot = output->zrot = input->zrot;
 	
 	pSoapPara->str_func = "v3dopenfile3d";
+	pSoapPara->str_message = (char *)malloc(strlen(output->imageName) + 1);
+	strcpy(pSoapPara->str_message, output->imageName);
+	
+	printf("trigger a signal here in soapv3dwsService ...\n");
+	emit wsRequests();
+	
+	return SOAP_OK;	
+}
+
+int soapv3dwsService::v3dopenfile3dwrot(ns__V3DMSG_ROTATION *input, ns__V3DMSG_ROTATION *output) // open a file in V3D with 3d viewer rotation position
+{
+	output->imageName = input->imageName;
+	
+	pSoapPara->v3dmsgrot->xrot = output->xrot = input->xrot;
+	pSoapPara->v3dmsgrot->yrot = output->yrot = input->yrot;
+	pSoapPara->v3dmsgrot->zrot = output->zrot = input->zrot;
+	
+	pSoapPara->str_func = "v3dopenfile3dwrot";
+	pSoapPara->str_message = (char *)malloc(strlen(output->imageName) + 1);
+	strcpy(pSoapPara->str_message, output->imageName);
+	
+	printf("trigger a signal here in soapv3dwsService ...\n");
+	emit wsRequests();
+	
+	return SOAP_OK;	
+}
+
+int soapv3dwsService::v3dopenfile3dwzoom(ns__V3DMSG_ZOOM *input, ns__V3DMSG_ZOOM *output) // open a file in V3D with 3d viewer zoom
+{
+	output->imageName = input->imageName;
+	
+	pSoapPara->v3dmsgzoom->zoom = output->zoom = input->zoom;
+	
+	pSoapPara->str_func = "v3dopenfile3dwzoom";
+	pSoapPara->str_message = (char *)malloc(strlen(output->imageName) + 1);
+	strcpy(pSoapPara->str_message, output->imageName);
+	
+	printf("trigger a signal here in soapv3dwsService ...\n");
+	emit wsRequests();
+	
+	return SOAP_OK;	
+}
+
+int soapv3dwsService::v3dopenfile3dwshift(ns__V3DMSG_SHIFT *input, ns__V3DMSG_SHIFT *output) // open a file in V3D with 3d viewer shift position
+{
+	output->imageName = input->imageName;
+	
+	pSoapPara->v3dmsgshift->xshift = output->xshift = input->xshift;
+	pSoapPara->v3dmsgshift->yshift = output->yshift = input->yshift;
+	pSoapPara->v3dmsgshift->zshift = output->zshift = input->zshift;
+	
+	pSoapPara->str_func = "v3dopenfile3dwshift";
 	pSoapPara->str_message = (char *)malloc(strlen(output->imageName) + 1);
 	strcpy(pSoapPara->str_message, output->imageName);
 	

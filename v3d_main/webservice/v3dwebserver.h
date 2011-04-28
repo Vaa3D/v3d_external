@@ -53,6 +53,43 @@ public:
 	
 };
 
+class ns__V3DMSG_ROTATION 
+{
+public:
+	char*	imageName	1;	///< Required element.
+	
+	int xrot	1;
+	int yrot	1;
+	int zrot	1;
+	
+	struct soap *soap;	///< soap handle
+	
+};
+
+class ns__V3DMSG_ZOOM 
+{
+public:
+	char*	imageName	1;	///< Required element.
+	
+	float zoom	1;
+	
+	struct soap *soap;	///< soap handle
+	
+};
+
+class ns__V3DMSG_SHIFT 
+{
+public:
+	char*	imageName	1;	///< Required element.
+	
+	float xshift	1;
+	float yshift	1;
+	float zshift	1;
+	
+	struct soap *soap;	///< soap handle
+	
+};
+
 /* func hello world */
 int ns__helloworld(
 				   char *name,		///< Request parameter
@@ -66,8 +103,17 @@ int ns__msghandler(
 );
 
 /* func open a file in V3D */
-int ns__v3dopenfile(char *fn, char **v3dfn);	/// open a file using V3D
+int ns__v3dopenfile(char *fn, char **v3dfn);
 
-/* func open a file in V3D and set 3dview position */
+/* func open a file in V3D with 3d viewer operations example func */
 int ns__v3dopenfile3d(ns__V3DMSG *input, ns__V3DMSG *output);
+
+/* func open a file in V3D and set 3dview rotation position */
+int ns__v3dopenfile3dwrot(ns__V3DMSG_ROTATION *input, ns__V3DMSG_ROTATION *output);
+
+/* func open a file in V3D and set 3dview zoom */
+int ns__v3dopenfile3dwzoom(ns__V3DMSG_ZOOM *input, ns__V3DMSG_ZOOM *output);
+
+/* func open a file in V3D and set 3dview shift position */
+int ns__v3dopenfile3dwshift(ns__V3DMSG_SHIFT *input, ns__V3DMSG_SHIFT *output);
 
