@@ -87,6 +87,9 @@ protected:
 
     QMenu* v3d_menuPlugin;
     MainWindow* v3d_mainwindow;
+	
+public:
+	QStringList getPluginNameList(); //by YuY 20110429
 
 //V3DPluginCallback
 public:
@@ -132,6 +135,7 @@ public:
 
 	virtual bool screenShot3DWindow(v3dhandle image_window, QString filename);
 	virtual bool screenShotROI3DWindow(v3dhandle image_window, QString filename);
+	
 
 //V3DPluginCallback2
 public:

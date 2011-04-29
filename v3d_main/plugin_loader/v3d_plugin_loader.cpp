@@ -793,6 +793,11 @@ bool V3d_PluginLoader::setGlobalSetting( V3D_GlobalSetting & gs )
 	return false;
 }
 
+QStringList V3d_PluginLoader::getPluginNameList()
+{
+	return pluginFilenameList;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////
 //100810 RZC: add this macro
