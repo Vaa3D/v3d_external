@@ -6,6 +6,8 @@
 #include "soapdep/v3dwebserver.nsmap" //ws namespace
 #include "v3dwebservice.hpp"
 
+#define NAMELEN 1000
+
 /// Web service operation 'helloworld' (returns error code or SOAP_OK)
 int v3dwebserverService::helloworld(char *name, char **response)
 {
@@ -44,6 +46,12 @@ int v3dwebserverService::v3dopenfile3dwzoom(ns__V3DMSG_ZOOM *input, ns__V3DMSG_Z
 
 /// Web service operation 'v3dopenfile3dwshift' (returns error code or SOAP_OK)
 int v3dwebserverService::v3dopenfile3dwshift(ns__V3DMSG_SHIFT *input, ns__V3DMSG_SHIFT *output)
+{
+	return SOAP_OK;
+}
+
+/// Web service operation 'v3dwscallpluginmethod' (returns error code or SOAP_OK)
+int v3dwebserverService::v3dwscallpluginmethod(ns__V3DMSG_PLUGINM *input, ns__V3DMSG_PLUGINM *output)
 {
 	return SOAP_OK;
 }
@@ -89,6 +97,11 @@ int ns__v3dopenfile3dwshiftResponse_(struct soap *soap, ns__V3DMSG_SHIFT *input,
 	return SOAP_NO_METHOD;
 }
 
+int ns__v3dwscallpluginmethodResponse_(struct soap *soap, ns__V3DMSG_PLUGINM *input, ns__V3DMSG_PLUGINM *output)
+{
+	return SOAP_NO_METHOD;
+}
+
 /**
  * child class of soapv3dwebserviceService
  *
@@ -107,6 +120,14 @@ soapv3dwsService::soapv3dwsService()
 		pSoapPara->v3dmsgrot = new ns__V3DMSG_ROTATION;
 		pSoapPara->v3dmsgzoom = new ns__V3DMSG_ZOOM;
 		pSoapPara->v3dmsgshift = new ns__V3DMSG_SHIFT;
+		
+		pSoapPara->v3dpluginm = new ns__V3DMSG_PLUGINM;
+		
+		if(pSoapPara->v3dpluginm)
+		{
+			pSoapPara->v3dpluginm->pluginName = new char [NAMELEN];
+			pSoapPara->v3dpluginm->pluginMethod = new char [NAMELEN];
+		}
 
 	}
 	catch (...)
@@ -228,7 +249,7 @@ int soapv3dwsService::v3dopenfile3dwrot(ns__V3DMSG_ROTATION *input, ns__V3DMSG_R
 	pSoapPara->v3dmsgrot->zrot = output->zrot = input->zrot;
 	
 	pSoapPara->str_func = "v3dopenfile3dwrot";
-	pSoapPara->str_message = (char *)malloc(strlen(output->imageName) + 1);
+	pSoapPara->str_message = (char *)malloc(strlen(input->imageName) + 1);
 	strcpy(pSoapPara->str_message, output->imageName);
 	
 	printf("trigger a signal here in soapv3dwsService ...\n");
@@ -244,7 +265,7 @@ int soapv3dwsService::v3dopenfile3dwzoom(ns__V3DMSG_ZOOM *input, ns__V3DMSG_ZOOM
 	pSoapPara->v3dmsgzoom->zoom = output->zoom = input->zoom;
 	
 	pSoapPara->str_func = "v3dopenfile3dwzoom";
-	pSoapPara->str_message = (char *)malloc(strlen(output->imageName) + 1);
+	pSoapPara->str_message = (char *)malloc(strlen(input->imageName) + 1);
 	strcpy(pSoapPara->str_message, output->imageName);
 	
 	printf("trigger a signal here in soapv3dwsService ...\n");
@@ -262,8 +283,31 @@ int soapv3dwsService::v3dopenfile3dwshift(ns__V3DMSG_SHIFT *input, ns__V3DMSG_SH
 	pSoapPara->v3dmsgshift->zshift = output->zshift = input->zshift;
 	
 	pSoapPara->str_func = "v3dopenfile3dwshift";
-	pSoapPara->str_message = (char *)malloc(strlen(output->imageName) + 1);
+	pSoapPara->str_message = (char *)malloc(strlen(input->imageName) + 1);
 	strcpy(pSoapPara->str_message, output->imageName);
+	
+	printf("trigger a signal here in soapv3dwsService ...\n");
+	emit wsRequests();
+	
+	return SOAP_OK;	
+}
+
+int soapv3dwsService::v3dwscallpluginmethod(ns__V3DMSG_PLUGINM *input, ns__V3DMSG_PLUGINM *output) // call plugin method
+{
+	output->imageName = input->imageName;
+	
+	output->pluginName = input->pluginName;
+	output->pluginMethod = input->pluginMethod;
+	
+	pSoapPara->str_func = "v3dwscallpluginmethod";
+	pSoapPara->str_message = (char *)malloc(strlen(input->imageName) + 1);
+	strcpy(pSoapPara->str_message, output->imageName);
+	
+	pSoapPara->v3dpluginm->pluginName = (char *)malloc(strlen(input->pluginName) + 1);
+	strcpy(pSoapPara->v3dpluginm->pluginName, input->pluginName);
+	
+	pSoapPara->v3dpluginm->pluginMethod = (char *)malloc(strlen(input->pluginMethod) + 1);
+	strcpy(pSoapPara->v3dpluginm->pluginMethod, input->pluginMethod);
 	
 	printf("trigger a signal here in soapv3dwsService ...\n");
 	emit wsRequests();

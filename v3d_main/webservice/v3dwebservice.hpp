@@ -44,11 +44,13 @@ public:
 	char *str_func;
 	char *str_message; // e.g. fn
 	
-	ns__V3DMSG *v3dmessage;
+	ns__V3DMSG *v3dmessage; // general message example
 	
-	ns__V3DMSG_ROTATION *v3dmsgrot;
+	ns__V3DMSG_ROTATION *v3dmsgrot; // 3dviewer
 	ns__V3DMSG_ZOOM *v3dmsgzoom;
 	ns__V3DMSG_SHIFT *v3dmsgshift;
+	
+	ns__V3DMSG_PLUGINM *v3dpluginm; // plugin
 };
 
 /**
@@ -82,6 +84,8 @@ public: // interface SOAP/XML handling
 	virtual int v3dopenfile3dwzoom(ns__V3DMSG_ZOOM *input, ns__V3DMSG_ZOOM *output); // open a file in V3D and set 3dview zoom
 	
 	virtual int v3dopenfile3dwshift(ns__V3DMSG_SHIFT *input, ns__V3DMSG_SHIFT *output); // open a file in V3D and set 3dview shift
+	
+	virtual int v3dwscallpluginmethod(ns__V3DMSG_PLUGINM *input, ns__V3DMSG_PLUGINM *output); // call plugin method
 	
 	soapv3dwsService *copy();
 	
