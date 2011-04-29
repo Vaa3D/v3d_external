@@ -27,7 +27,7 @@
   <import namespace="http://www.w3.org/2003/05/soap-encoding" schemaLocation="http://www.w3.org/2003/05/soap-encoding"/>
   <complexType name="LOAD-MSG">
    <sequence>
-     <element name="image-path" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+     <element name="image-path" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
      <element name="x" type="xsd:int" minOccurs="1" maxOccurs="1"/>
      <element name="y" type="xsd:int" minOccurs="1" maxOccurs="1"/>
      <element name="z" type="xsd:int" minOccurs="1" maxOccurs="1"/>
@@ -108,6 +108,16 @@
  <part name="zshift" type="xsd:float"/>
 </message>
 
+<message name="v3dwscallpluginmethod">
+ <part name="input" type="ns:V3DMSG-PLUGINM"/>
+</message>
+
+<message name="V3DMSG-PLUGINM">
+ <part name="pluginName" type="xsd:string"/>
+ <part name="pluginMethod" type="xsd:string"/>
+ <part name="imageName" type="xsd:string"/>
+</message>
+
 <portType name="v3dwebserverPortType">
  <operation name="helloworld">
   <documentation>Service definition of function ns__helloworld</documentation>
@@ -143,6 +153,11 @@
   <documentation>Service definition of function ns__v3dopenfile3dwshift</documentation>
   <input message="tns:v3dopenfile3dwshift"/>
   <output message="tns:V3DMSG-SHIFT"/>
+ </operation>
+ <operation name="v3dwscallpluginmethod">
+  <documentation>Service definition of function ns__v3dwscallpluginmethod</documentation>
+  <input message="tns:v3dwscallpluginmethod"/>
+  <output message="tns:V3DMSG-PLUGINM"/>
  </operation>
 </portType>
 
@@ -203,6 +218,15 @@
   </output>
  </operation>
  <operation name="v3dopenfile3dwshift">
+  <SOAP:operation style="rpc"/>
+  <input>
+     <SOAP:body use="encoded" namespace="urn:v3dwebserver" encodingStyle="http://www.w3.org/2003/05/soap-encoding"/>
+  </input>
+  <output>
+     <SOAP:body use="encoded" namespace="urn:v3dwebserver" encodingStyle="http://www.w3.org/2003/05/soap-encoding"/>
+  </output>
+ </operation>
+ <operation name="v3dwscallpluginmethod">
   <SOAP:operation style="rpc"/>
   <input>
      <SOAP:body use="encoded" namespace="urn:v3dwebserver" encodingStyle="http://www.w3.org/2003/05/soap-encoding"/>

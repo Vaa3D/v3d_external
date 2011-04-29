@@ -11,7 +11,7 @@
   <import namespace="http://www.w3.org/2003/05/soap-encoding" schemaLocation="http://www.w3.org/2003/05/soap-encoding"/>
   <complexType name="LOAD-MSG">
    <sequence>
-     <element name="image-path" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+     <element name="image-path" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
      <element name="x" type="xsd:int" minOccurs="1" maxOccurs="1"/>
      <element name="y" type="xsd:int" minOccurs="1" maxOccurs="1"/>
      <element name="z" type="xsd:int" minOccurs="1" maxOccurs="1"/>

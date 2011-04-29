@@ -81,5 +81,8 @@ class SOAP_CMAC v3dwebserverService : public soap
 
 	/// Web service operation 'v3dopenfile3dwshift' (returns error code or SOAP_OK)
 	virtual	int v3dopenfile3dwshift(ns__V3DMSG_SHIFT *input, ns__V3DMSG_SHIFT *output);
+
+	/// Web service operation 'v3dwscallpluginmethod' (returns error code or SOAP_OK)
+	virtual	int v3dwscallpluginmethod(ns__V3DMSG_PLUGINM *input, ns__V3DMSG_PLUGINM *output);
 };
 #endif

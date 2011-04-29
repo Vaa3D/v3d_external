@@ -34,17 +34,13 @@
 
 #endif
 
-#if 0 /* volatile type: do not declare here, declared elsewhere */
-
-#endif
-
 #ifndef SOAP_TYPE_ns__LOAD_MSG
-#define SOAP_TYPE_ns__LOAD_MSG (7)
+#define SOAP_TYPE_ns__LOAD_MSG (8)
 /* ns:LOAD-MSG */
 class SOAP_CMAC ns__LOAD_MSG
 {
 public:
-	std::string image_path;	/* required element of type xsd:string */
+	char *image_path;	/* required element of type xsd:string */
 	int x;	/* required element of type xsd:int */
 	int y;	/* required element of type xsd:int */
 	int z;	/* required element of type xsd:int */
@@ -54,14 +50,14 @@ public:
 	int dt;	/* required element of type xsd:int */
 	struct soap *soap;	/* transient */
 public:
-	virtual int soap_type() const { return 7; } /* = unique id SOAP_TYPE_ns__LOAD_MSG */
+	virtual int soap_type() const { return 8; } /* = unique id SOAP_TYPE_ns__LOAD_MSG */
 	virtual void soap_default(struct soap*);
 	virtual void soap_serialize(struct soap*) const;
 	virtual int soap_put(struct soap*, const char*, const char*) const;
 	virtual int soap_out(struct soap*, const char*, int, const char*) const;
 	virtual void *soap_get(struct soap*, const char*, const char*);
 	virtual void *soap_in(struct soap*, const char*, const char*);
-	         ns__LOAD_MSG(): soap(NULL) { ns__LOAD_MSG::soap_default(NULL); }
+	         ns__LOAD_MSG(): image_path(NULL), soap(NULL) { ns__LOAD_MSG::soap_default(NULL); }
 	virtual ~ns__LOAD_MSG() { }
 };
 #endif
@@ -182,8 +178,31 @@ public:
 };
 #endif
 
+#ifndef SOAP_TYPE_ns__V3DMSG_PLUGINM
+#define SOAP_TYPE_ns__V3DMSG_PLUGINM (17)
+/* ns:V3DMSG-PLUGINM */
+class SOAP_CMAC ns__V3DMSG_PLUGINM
+{
+public:
+	char *pluginName;	/* SOAP 1.2 RPC return element (when namespace qualified) */	/* optional element of type xsd:string */
+	char *pluginMethod;	/* optional element of type xsd:string */
+	char *imageName;	/* optional element of type xsd:string */
+	struct soap *soap;	/* transient */
+public:
+	virtual int soap_type() const { return 17; } /* = unique id SOAP_TYPE_ns__V3DMSG_PLUGINM */
+	virtual void soap_default(struct soap*);
+	virtual void soap_serialize(struct soap*) const;
+	virtual int soap_put(struct soap*, const char*, const char*) const;
+	virtual int soap_out(struct soap*, const char*, int, const char*) const;
+	virtual void *soap_get(struct soap*, const char*, const char*);
+	virtual void *soap_in(struct soap*, const char*, const char*);
+	         ns__V3DMSG_PLUGINM(): pluginName(NULL), pluginMethod(NULL), imageName(NULL), soap(NULL) { ns__V3DMSG_PLUGINM::soap_default(NULL); }
+	virtual ~ns__V3DMSG_PLUGINM() { }
+};
+#endif
+
 #ifndef SOAP_TYPE_ns__helloworldResponse
-#define SOAP_TYPE_ns__helloworldResponse (19)
+#define SOAP_TYPE_ns__helloworldResponse (20)
 /* ns:helloworldResponse */
 struct ns__helloworldResponse
 {
@@ -193,7 +212,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_ns__helloworld
-#define SOAP_TYPE_ns__helloworld (20)
+#define SOAP_TYPE_ns__helloworld (21)
 /* ns:helloworld */
 struct ns__helloworld
 {
@@ -203,7 +222,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_ns__msghandler
-#define SOAP_TYPE_ns__msghandler (24)
+#define SOAP_TYPE_ns__msghandler (25)
 /* ns:msghandler */
 struct ns__msghandler
 {
@@ -213,7 +232,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_ns__v3dopenfileResponse
-#define SOAP_TYPE_ns__v3dopenfileResponse (26)
+#define SOAP_TYPE_ns__v3dopenfileResponse (27)
 /* ns:v3dopenfileResponse */
 struct ns__v3dopenfileResponse
 {
@@ -223,7 +242,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_ns__v3dopenfile
-#define SOAP_TYPE_ns__v3dopenfile (27)
+#define SOAP_TYPE_ns__v3dopenfile (28)
 /* ns:v3dopenfile */
 struct ns__v3dopenfile
 {
@@ -233,7 +252,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_ns__v3dopenfile3d
-#define SOAP_TYPE_ns__v3dopenfile3d (30)
+#define SOAP_TYPE_ns__v3dopenfile3d (31)
 /* ns:v3dopenfile3d */
 struct ns__v3dopenfile3d
 {
@@ -243,7 +262,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_ns__v3dopenfile3dwrot
-#define SOAP_TYPE_ns__v3dopenfile3dwrot (33)
+#define SOAP_TYPE_ns__v3dopenfile3dwrot (34)
 /* ns:v3dopenfile3dwrot */
 struct ns__v3dopenfile3dwrot
 {
@@ -253,7 +272,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_ns__v3dopenfile3dwzoom
-#define SOAP_TYPE_ns__v3dopenfile3dwzoom (36)
+#define SOAP_TYPE_ns__v3dopenfile3dwzoom (37)
 /* ns:v3dopenfile3dwzoom */
 struct ns__v3dopenfile3dwzoom
 {
@@ -263,7 +282,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_ns__v3dopenfile3dwshift
-#define SOAP_TYPE_ns__v3dopenfile3dwshift (39)
+#define SOAP_TYPE_ns__v3dopenfile3dwshift (40)
 /* ns:v3dopenfile3dwshift */
 struct ns__v3dopenfile3dwshift
 {
@@ -272,10 +291,20 @@ public:
 };
 #endif
 
+#ifndef SOAP_TYPE_ns__v3dwscallpluginmethod
+#define SOAP_TYPE_ns__v3dwscallpluginmethod (43)
+/* ns:v3dwscallpluginmethod */
+struct ns__v3dwscallpluginmethod
+{
+public:
+	ns__V3DMSG_PLUGINM *input;	/* optional element of type ns:V3DMSG-PLUGINM */
+};
+#endif
+
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_SOAP_ENV__Header
-#define SOAP_TYPE_SOAP_ENV__Header (40)
+#define SOAP_TYPE_SOAP_ENV__Header (44)
 /* SOAP Header: */
 struct SOAP_ENV__Header
 {
@@ -291,7 +320,7 @@ private:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_SOAP_ENV__Code
-#define SOAP_TYPE_SOAP_ENV__Code (41)
+#define SOAP_TYPE_SOAP_ENV__Code (45)
 /* SOAP Fault Code: */
 struct SOAP_ENV__Code
 {
@@ -306,7 +335,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_SOAP_ENV__Detail
-#define SOAP_TYPE_SOAP_ENV__Detail (43)
+#define SOAP_TYPE_SOAP_ENV__Detail (47)
 /* SOAP-ENV:Detail */
 struct SOAP_ENV__Detail
 {
@@ -322,7 +351,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_SOAP_ENV__Reason
-#define SOAP_TYPE_SOAP_ENV__Reason (46)
+#define SOAP_TYPE_SOAP_ENV__Reason (50)
 /* SOAP-ENV:Reason */
 struct SOAP_ENV__Reason
 {
@@ -336,7 +365,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_SOAP_ENV__Fault
-#define SOAP_TYPE_SOAP_ENV__Fault (47)
+#define SOAP_TYPE_SOAP_ENV__Fault (51)
 /* SOAP Fault: */
 struct SOAP_ENV__Fault
 {
@@ -369,6 +398,11 @@ typedef char *_QName;
 #ifndef SOAP_TYPE__XML
 #define SOAP_TYPE__XML (6)
 typedef char *_XML;
+#endif
+
+#ifndef SOAP_TYPE_xsd__string
+#define SOAP_TYPE_xsd__string (7)
+typedef char *xsd__string;
 #endif
 
 

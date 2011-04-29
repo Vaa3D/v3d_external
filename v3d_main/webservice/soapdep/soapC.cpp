@@ -12,7 +12,7 @@
 
 #include "soapH.h"
 
-SOAP_SOURCE_STAMP("@(#) soapC.cpp ver 2.8.1 2011-04-28 02:08:22 GMT")
+SOAP_SOURCE_STAMP("@(#) soapC.cpp ver 2.8.1 2011-04-29 18:13:34 GMT")
 
 
 #ifndef WITH_NOGLOBAL
@@ -173,6 +173,8 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		return soap_in_long(soap, NULL, NULL, "xsd:long");
 	case SOAP_TYPE_float:
 		return soap_in_float(soap, NULL, NULL, "xsd:float");
+	case SOAP_TYPE_ns__V3DMSG_PLUGINM:
+		return soap_in_ns__V3DMSG_PLUGINM(soap, NULL, NULL, "ns:V3DMSG-PLUGINM");
 	case SOAP_TYPE_ns__V3DMSG_SHIFT:
 		return soap_in_ns__V3DMSG_SHIFT(soap, NULL, NULL, "ns:V3DMSG-SHIFT");
 	case SOAP_TYPE_ns__V3DMSG_ZOOM:
@@ -183,10 +185,10 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		return soap_in_ns__V3DMSG(soap, NULL, NULL, "ns:V3DMSG");
 	case SOAP_TYPE_ns__LOAD_RES:
 		return soap_in_ns__LOAD_RES(soap, NULL, NULL, "ns:LOAD-RES");
-	case SOAP_TYPE_std__string:
-		return soap_in_std__string(soap, NULL, NULL, "xsd:string");
 	case SOAP_TYPE_ns__LOAD_MSG:
 		return soap_in_ns__LOAD_MSG(soap, NULL, NULL, "ns:LOAD-MSG");
+	case SOAP_TYPE_ns__v3dwscallpluginmethod:
+		return soap_in_ns__v3dwscallpluginmethod(soap, NULL, NULL, "ns:v3dwscallpluginmethod");
 	case SOAP_TYPE_ns__v3dopenfile3dwshift:
 		return soap_in_ns__v3dopenfile3dwshift(soap, NULL, NULL, "ns:v3dopenfile3dwshift");
 	case SOAP_TYPE_ns__v3dopenfile3dwzoom:
@@ -205,6 +207,8 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		return soap_in_ns__helloworld(soap, NULL, NULL, "ns:helloworld");
 	case SOAP_TYPE_ns__helloworldResponse:
 		return soap_in_ns__helloworldResponse(soap, NULL, NULL, "ns:helloworldResponse");
+	case SOAP_TYPE_PointerTons__V3DMSG_PLUGINM:
+		return soap_in_PointerTons__V3DMSG_PLUGINM(soap, NULL, NULL, "ns:V3DMSG-PLUGINM");
 	case SOAP_TYPE_PointerTons__V3DMSG_SHIFT:
 		return soap_in_PointerTons__V3DMSG_SHIFT(soap, NULL, NULL, "ns:V3DMSG-SHIFT");
 	case SOAP_TYPE_PointerTons__V3DMSG_ZOOM:
@@ -219,6 +223,11 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		return soap_in_PointerTons__LOAD_MSG(soap, NULL, NULL, "ns:LOAD-MSG");
 	case SOAP_TYPE_PointerTostring:
 		return soap_in_PointerTostring(soap, NULL, NULL, "xsd:string");
+	case SOAP_TYPE_xsd__string:
+	{	char **s;
+		s = soap_in_xsd__string(soap, NULL, NULL, "xsd:string");
+		return s ? *s : NULL;
+	}
 	case SOAP_TYPE__QName:
 	{	char **s;
 		s = soap_in__QName(soap, NULL, NULL, "xsd:QName");
@@ -233,6 +242,10 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 	{	const char *t = soap->type;
 		if (!*t)
 			t = soap->tag;
+		if (!soap_match_tag(soap, t, "ns:V3DMSG-PLUGINM"))
+		{	*type = SOAP_TYPE_ns__V3DMSG_PLUGINM;
+			return soap_in_ns__V3DMSG_PLUGINM(soap, NULL, NULL, NULL);
+		}
 		if (!soap_match_tag(soap, t, "ns:V3DMSG-SHIFT"))
 		{	*type = SOAP_TYPE_ns__V3DMSG_SHIFT;
 			return soap_in_ns__V3DMSG_SHIFT(soap, NULL, NULL, NULL);
@@ -253,10 +266,6 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		{	*type = SOAP_TYPE_ns__LOAD_RES;
 			return soap_in_ns__LOAD_RES(soap, NULL, NULL, NULL);
 		}
-		if (!soap_match_tag(soap, t, "xsd:string"))
-		{	*type = SOAP_TYPE_std__string;
-			return soap_in_std__string(soap, NULL, NULL, NULL);
-		}
 		if (!soap_match_tag(soap, t, "ns:LOAD-MSG"))
 		{	*type = SOAP_TYPE_ns__LOAD_MSG;
 			return soap_in_ns__LOAD_MSG(soap, NULL, NULL, NULL);
@@ -276,6 +285,10 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		if (!soap_match_tag(soap, t, "xsd:float"))
 		{	*type = SOAP_TYPE_float;
 			return soap_in_float(soap, NULL, NULL, NULL);
+		}
+		if (!soap_match_tag(soap, t, "ns:v3dwscallpluginmethod"))
+		{	*type = SOAP_TYPE_ns__v3dwscallpluginmethod;
+			return soap_in_ns__v3dwscallpluginmethod(soap, NULL, NULL, NULL);
 		}
 		if (!soap_match_tag(soap, t, "ns:v3dopenfile3dwshift"))
 		{	*type = SOAP_TYPE_ns__v3dopenfile3dwshift;
@@ -312,6 +325,12 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		if (!soap_match_tag(soap, t, "ns:helloworldResponse"))
 		{	*type = SOAP_TYPE_ns__helloworldResponse;
 			return soap_in_ns__helloworldResponse(soap, NULL, NULL, NULL);
+		}
+		if (!soap_match_tag(soap, t, "xsd:string"))
+		{	char **s;
+			*type = SOAP_TYPE_xsd__string;
+			s = soap_in_xsd__string(soap, NULL, NULL, NULL);
+			return s ? *s : NULL;
 		}
 		if (!soap_match_tag(soap, t, "xsd:QName"))
 		{	char **s;
@@ -399,6 +418,8 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_putelement(struct soap *soap, const void *ptr, co
 		return soap_out_long(soap, tag, id, (const long *)ptr, "xsd:long");
 	case SOAP_TYPE_float:
 		return soap_out_float(soap, tag, id, (const float *)ptr, "xsd:float");
+	case SOAP_TYPE_ns__V3DMSG_PLUGINM:
+		return ((ns__V3DMSG_PLUGINM *)ptr)->soap_out(soap, tag, id, "ns:V3DMSG-PLUGINM");
 	case SOAP_TYPE_ns__V3DMSG_SHIFT:
 		return ((ns__V3DMSG_SHIFT *)ptr)->soap_out(soap, tag, id, "ns:V3DMSG-SHIFT");
 	case SOAP_TYPE_ns__V3DMSG_ZOOM:
@@ -409,10 +430,10 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_putelement(struct soap *soap, const void *ptr, co
 		return ((ns__V3DMSG *)ptr)->soap_out(soap, tag, id, "ns:V3DMSG");
 	case SOAP_TYPE_ns__LOAD_RES:
 		return ((ns__LOAD_RES *)ptr)->soap_out(soap, tag, id, "ns:LOAD-RES");
-	case SOAP_TYPE_std__string:
-		return soap_out_std__string(soap, tag, id, (const std::string *)ptr, "xsd:string");
 	case SOAP_TYPE_ns__LOAD_MSG:
 		return ((ns__LOAD_MSG *)ptr)->soap_out(soap, tag, id, "ns:LOAD-MSG");
+	case SOAP_TYPE_ns__v3dwscallpluginmethod:
+		return soap_out_ns__v3dwscallpluginmethod(soap, tag, id, (const struct ns__v3dwscallpluginmethod *)ptr, "ns:v3dwscallpluginmethod");
 	case SOAP_TYPE_ns__v3dopenfile3dwshift:
 		return soap_out_ns__v3dopenfile3dwshift(soap, tag, id, (const struct ns__v3dopenfile3dwshift *)ptr, "ns:v3dopenfile3dwshift");
 	case SOAP_TYPE_ns__v3dopenfile3dwzoom:
@@ -431,6 +452,8 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_putelement(struct soap *soap, const void *ptr, co
 		return soap_out_ns__helloworld(soap, tag, id, (const struct ns__helloworld *)ptr, "ns:helloworld");
 	case SOAP_TYPE_ns__helloworldResponse:
 		return soap_out_ns__helloworldResponse(soap, tag, id, (const struct ns__helloworldResponse *)ptr, "ns:helloworldResponse");
+	case SOAP_TYPE_PointerTons__V3DMSG_PLUGINM:
+		return soap_out_PointerTons__V3DMSG_PLUGINM(soap, tag, id, (ns__V3DMSG_PLUGINM *const*)ptr, "ns:V3DMSG-PLUGINM");
 	case SOAP_TYPE_PointerTons__V3DMSG_SHIFT:
 		return soap_out_PointerTons__V3DMSG_SHIFT(soap, tag, id, (ns__V3DMSG_SHIFT *const*)ptr, "ns:V3DMSG-SHIFT");
 	case SOAP_TYPE_PointerTons__V3DMSG_ZOOM:
@@ -445,6 +468,8 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_putelement(struct soap *soap, const void *ptr, co
 		return soap_out_PointerTons__LOAD_MSG(soap, tag, id, (ns__LOAD_MSG *const*)ptr, "ns:LOAD-MSG");
 	case SOAP_TYPE_PointerTostring:
 		return soap_out_PointerTostring(soap, tag, id, (char **const*)ptr, "xsd:string");
+	case SOAP_TYPE_xsd__string:
+		return soap_out_string(soap, tag, id, (char*const*)&ptr, "xsd:string");
 	case SOAP_TYPE__QName:
 		return soap_out_string(soap, tag, id, (char*const*)&ptr, "xsd:QName");
 	case SOAP_TYPE_string:
@@ -468,6 +493,9 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_markelement(struct soap *soap, const void *ptr, 
 	(void)soap; (void)ptr; (void)type; /* appease -Wall -Werror */
 	switch (type)
 	{
+	case SOAP_TYPE_ns__V3DMSG_PLUGINM:
+		((ns__V3DMSG_PLUGINM *)ptr)->soap_serialize(soap);
+		break;
 	case SOAP_TYPE_ns__V3DMSG_SHIFT:
 		((ns__V3DMSG_SHIFT *)ptr)->soap_serialize(soap);
 		break;
@@ -483,11 +511,11 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_markelement(struct soap *soap, const void *ptr, 
 	case SOAP_TYPE_ns__LOAD_RES:
 		((ns__LOAD_RES *)ptr)->soap_serialize(soap);
 		break;
-	case SOAP_TYPE_std__string:
-		soap_serialize_std__string(soap, (const std::string *)ptr);
-		break;
 	case SOAP_TYPE_ns__LOAD_MSG:
 		((ns__LOAD_MSG *)ptr)->soap_serialize(soap);
+		break;
+	case SOAP_TYPE_ns__v3dwscallpluginmethod:
+		soap_serialize_ns__v3dwscallpluginmethod(soap, (const struct ns__v3dwscallpluginmethod *)ptr);
 		break;
 	case SOAP_TYPE_ns__v3dopenfile3dwshift:
 		soap_serialize_ns__v3dopenfile3dwshift(soap, (const struct ns__v3dopenfile3dwshift *)ptr);
@@ -516,6 +544,9 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_markelement(struct soap *soap, const void *ptr, 
 	case SOAP_TYPE_ns__helloworldResponse:
 		soap_serialize_ns__helloworldResponse(soap, (const struct ns__helloworldResponse *)ptr);
 		break;
+	case SOAP_TYPE_PointerTons__V3DMSG_PLUGINM:
+		soap_serialize_PointerTons__V3DMSG_PLUGINM(soap, (ns__V3DMSG_PLUGINM *const*)ptr);
+		break;
 	case SOAP_TYPE_PointerTons__V3DMSG_SHIFT:
 		soap_serialize_PointerTons__V3DMSG_SHIFT(soap, (ns__V3DMSG_SHIFT *const*)ptr);
 		break;
@@ -537,6 +568,9 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_markelement(struct soap *soap, const void *ptr, 
 	case SOAP_TYPE_PointerTostring:
 		soap_serialize_PointerTostring(soap, (char **const*)ptr);
 		break;
+	case SOAP_TYPE_xsd__string:
+		soap_serialize_string(soap, (char*const*)&ptr);
+		break;
 	case SOAP_TYPE__QName:
 		soap_serialize_string(soap, (char*const*)&ptr);
 		break;
@@ -555,8 +589,6 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_instantiate(struct soap *soap, int t, const ch
 {
 	switch (t)
 	{
-	case SOAP_TYPE_std__string:
-		return (void*)soap_instantiate_std__string(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_ns__LOAD_MSG:
 		return (void*)soap_instantiate_ns__LOAD_MSG(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_ns__LOAD_RES:
@@ -569,6 +601,8 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_instantiate(struct soap *soap, int t, const ch
 		return (void*)soap_instantiate_ns__V3DMSG_ZOOM(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_ns__V3DMSG_SHIFT:
 		return (void*)soap_instantiate_ns__V3DMSG_SHIFT(soap, -1, type, arrayType, n);
+	case SOAP_TYPE_ns__V3DMSG_PLUGINM:
+		return (void*)soap_instantiate_ns__V3DMSG_PLUGINM(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_ns__helloworldResponse:
 		return (void*)soap_instantiate_ns__helloworldResponse(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_ns__helloworld:
@@ -587,6 +621,8 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_instantiate(struct soap *soap, int t, const ch
 		return (void*)soap_instantiate_ns__v3dopenfile3dwzoom(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_ns__v3dopenfile3dwshift:
 		return (void*)soap_instantiate_ns__v3dopenfile3dwshift(soap, -1, type, arrayType, n);
+	case SOAP_TYPE_ns__v3dwscallpluginmethod:
+		return (void*)soap_instantiate_ns__v3dwscallpluginmethod(soap, -1, type, arrayType, n);
 #ifndef WITH_NOGLOBAL
 	case SOAP_TYPE_SOAP_ENV__Header:
 		return (void*)soap_instantiate_SOAP_ENV__Header(soap, -1, type, arrayType, n);
@@ -614,12 +650,6 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_instantiate(struct soap *soap, int t, const ch
 SOAP_FMAC3 int SOAP_FMAC4 soap_fdelete(struct soap_clist *p)
 {	switch (p->type)
 	{
-	case SOAP_TYPE_std__string:
-		if (p->size < 0)
-			SOAP_DELETE((std::string*)p->ptr);
-		else
-			SOAP_DELETE_ARRAY((std::string*)p->ptr);
-		break;
 	case SOAP_TYPE_ns__LOAD_MSG:
 		if (p->size < 0)
 			SOAP_DELETE((ns__LOAD_MSG*)p->ptr);
@@ -655,6 +685,12 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_fdelete(struct soap_clist *p)
 			SOAP_DELETE((ns__V3DMSG_SHIFT*)p->ptr);
 		else
 			SOAP_DELETE_ARRAY((ns__V3DMSG_SHIFT*)p->ptr);
+		break;
+	case SOAP_TYPE_ns__V3DMSG_PLUGINM:
+		if (p->size < 0)
+			SOAP_DELETE((ns__V3DMSG_PLUGINM*)p->ptr);
+		else
+			SOAP_DELETE_ARRAY((ns__V3DMSG_PLUGINM*)p->ptr);
 		break;
 	case SOAP_TYPE_ns__helloworldResponse:
 		if (p->size < 0)
@@ -709,6 +745,12 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_fdelete(struct soap_clist *p)
 			SOAP_DELETE((struct ns__v3dopenfile3dwshift*)p->ptr);
 		else
 			SOAP_DELETE_ARRAY((struct ns__v3dopenfile3dwshift*)p->ptr);
+		break;
+	case SOAP_TYPE_ns__v3dwscallpluginmethod:
+		if (p->size < 0)
+			SOAP_DELETE((struct ns__v3dwscallpluginmethod*)p->ptr);
+		else
+			SOAP_DELETE_ARRAY((struct ns__v3dwscallpluginmethod*)p->ptr);
 		break;
 #ifndef WITH_NOGLOBAL
 	case SOAP_TYPE_SOAP_ENV__Header:
@@ -907,10 +949,164 @@ SOAP_FMAC3 float * SOAP_FMAC4 soap_get_float(struct soap *soap, float *p, const 
 	return p;
 }
 
+void ns__V3DMSG_PLUGINM::soap_default(struct soap *soap)
+{
+	this->soap = soap;
+	soap_default_xsd__string(soap, &this->ns__V3DMSG_PLUGINM::pluginName);
+	soap_default_xsd__string(soap, &this->ns__V3DMSG_PLUGINM::pluginMethod);
+	soap_default_xsd__string(soap, &this->ns__V3DMSG_PLUGINM::imageName);
+	/* transient soap skipped */
+}
+
+void ns__V3DMSG_PLUGINM::soap_serialize(struct soap *soap) const
+{
+	(void)soap; /* appease -Wall -Werror */
+	soap_serialize_xsd__string(soap, &this->ns__V3DMSG_PLUGINM::pluginName);
+	soap_serialize_xsd__string(soap, &this->ns__V3DMSG_PLUGINM::pluginMethod);
+	soap_serialize_xsd__string(soap, &this->ns__V3DMSG_PLUGINM::imageName);
+	/* transient soap skipped */
+}
+
+int ns__V3DMSG_PLUGINM::soap_out(struct soap *soap, const char *tag, int id, const char *type) const
+{
+	return soap_out_ns__V3DMSG_PLUGINM(soap, tag, id, this, type);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_ns__V3DMSG_PLUGINM(struct soap *soap, const char *tag, int id, const ns__V3DMSG_PLUGINM *a, const char *type)
+{
+	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_ns__V3DMSG_PLUGINM), type))
+		return soap->error;
+	if (soap_out_xsd__string(soap, "pluginName", -1, &(a->ns__V3DMSG_PLUGINM::pluginName), ""))
+		return soap->error;
+	if (soap_out_xsd__string(soap, "pluginMethod", -1, &(a->ns__V3DMSG_PLUGINM::pluginMethod), ""))
+		return soap->error;
+	if (soap_out_xsd__string(soap, "imageName", -1, &(a->ns__V3DMSG_PLUGINM::imageName), ""))
+		return soap->error;
+	/* transient soap skipped */
+	return soap_element_end_out(soap, tag);
+}
+
+void *ns__V3DMSG_PLUGINM::soap_in(struct soap *soap, const char *tag, const char *type)
+{	return soap_in_ns__V3DMSG_PLUGINM(soap, tag, this, type);
+}
+
+SOAP_FMAC3 ns__V3DMSG_PLUGINM * SOAP_FMAC4 soap_in_ns__V3DMSG_PLUGINM(struct soap *soap, const char *tag, ns__V3DMSG_PLUGINM *a, const char *type)
+{
+	(void)type; /* appease -Wall -Werror */
+	if (soap_element_begin_in(soap, tag, 0, NULL))
+		return NULL;
+	a = (ns__V3DMSG_PLUGINM *)soap_class_id_enter(soap, soap->id, a, SOAP_TYPE_ns__V3DMSG_PLUGINM, sizeof(ns__V3DMSG_PLUGINM), soap->type, soap->arrayType);
+	if (!a)
+		return NULL;
+	if (soap->alloced)
+	{	a->soap_default(soap);
+		if (soap->clist->type != SOAP_TYPE_ns__V3DMSG_PLUGINM)
+		{	soap_revert(soap);
+			*soap->id = '\0';
+			return (ns__V3DMSG_PLUGINM *)a->soap_in(soap, tag, type);
+		}
+	}
+	size_t soap_flag_pluginName1 = 1;
+	size_t soap_flag_pluginMethod1 = 1;
+	size_t soap_flag_imageName1 = 1;
+	if (soap->body && !*soap->href)
+	{
+		for (;;)
+		{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap_flag_pluginName1 && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
+				if (soap_in_xsd__string(soap, "pluginName", &(a->ns__V3DMSG_PLUGINM::pluginName), "xsd:string"))
+				{	soap_flag_pluginName1--;
+					continue;
+				}
+			if (soap_flag_pluginMethod1 && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
+				if (soap_in_xsd__string(soap, "pluginMethod", &(a->ns__V3DMSG_PLUGINM::pluginMethod), "xsd:string"))
+				{	soap_flag_pluginMethod1--;
+					continue;
+				}
+			if (soap_flag_imageName1 && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
+				if (soap_in_xsd__string(soap, "imageName", &(a->ns__V3DMSG_PLUGINM::imageName), "xsd:string"))
+				{	soap_flag_imageName1--;
+					continue;
+				}
+			/* transient soap skipped */
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+				return NULL;
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else
+	{	a = (ns__V3DMSG_PLUGINM *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_ns__V3DMSG_PLUGINM, 0, sizeof(ns__V3DMSG_PLUGINM), 0, soap_copy_ns__V3DMSG_PLUGINM);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+int ns__V3DMSG_PLUGINM::soap_put(struct soap *soap, const char *tag, const  char *type) const
+{
+	register int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_ns__V3DMSG_PLUGINM);
+	if (this->soap_out(soap, tag?tag:"ns:V3DMSG-PLUGINM", id, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+void *ns__V3DMSG_PLUGINM::soap_get(struct soap *soap, const char *tag, const char *type)
+{
+	return soap_get_ns__V3DMSG_PLUGINM(soap, this, tag, type);
+}
+
+SOAP_FMAC3 ns__V3DMSG_PLUGINM * SOAP_FMAC4 soap_get_ns__V3DMSG_PLUGINM(struct soap *soap, ns__V3DMSG_PLUGINM *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_ns__V3DMSG_PLUGINM(soap, tag, p, type)))
+		if (soap_getindependent(soap))
+			return NULL;
+	return p;
+}
+
+SOAP_FMAC1 ns__V3DMSG_PLUGINM * SOAP_FMAC2 soap_instantiate_ns__V3DMSG_PLUGINM(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
+{
+	(void)type; (void)arrayType; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_ns__V3DMSG_PLUGINM(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
+	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_ns__V3DMSG_PLUGINM, n, soap_fdelete);
+	if (!cp)
+		return NULL;
+	if (n < 0)
+	{	cp->ptr = (void*)SOAP_NEW(ns__V3DMSG_PLUGINM);
+		if (size)
+			*size = sizeof(ns__V3DMSG_PLUGINM);
+		((ns__V3DMSG_PLUGINM*)cp->ptr)->soap = soap;
+	}
+	else
+	{	cp->ptr = (void*)SOAP_NEW(ns__V3DMSG_PLUGINM[n]);
+		if (!cp->ptr)
+		{	soap->error = SOAP_EOM;
+			return NULL;
+		}
+		if (size)
+			*size = n * sizeof(ns__V3DMSG_PLUGINM);
+		for (int i = 0; i < n; i++)
+			((ns__V3DMSG_PLUGINM*)cp->ptr)[i].soap = soap;
+	}
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
+	return (ns__V3DMSG_PLUGINM*)cp->ptr;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_ns__V3DMSG_PLUGINM(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
+{
+	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying ns__V3DMSG_PLUGINM %p -> %p\n", q, p));
+	*(ns__V3DMSG_PLUGINM*)p = *(ns__V3DMSG_PLUGINM*)q;
+}
+
 void ns__V3DMSG_SHIFT::soap_default(struct soap *soap)
 {
 	this->soap = soap;
-	soap_default_string(soap, &this->ns__V3DMSG_SHIFT::imageName);
+	soap_default_xsd__string(soap, &this->ns__V3DMSG_SHIFT::imageName);
 	soap_default_float(soap, &this->ns__V3DMSG_SHIFT::xshift);
 	soap_default_float(soap, &this->ns__V3DMSG_SHIFT::yshift);
 	soap_default_float(soap, &this->ns__V3DMSG_SHIFT::zshift);
@@ -920,7 +1116,7 @@ void ns__V3DMSG_SHIFT::soap_default(struct soap *soap)
 void ns__V3DMSG_SHIFT::soap_serialize(struct soap *soap) const
 {
 	(void)soap; /* appease -Wall -Werror */
-	soap_serialize_string(soap, &this->ns__V3DMSG_SHIFT::imageName);
+	soap_serialize_xsd__string(soap, &this->ns__V3DMSG_SHIFT::imageName);
 	/* transient soap skipped */
 }
 
@@ -934,7 +1130,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_out_ns__V3DMSG_SHIFT(struct soap *soap, const cha
 	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_ns__V3DMSG_SHIFT), type))
 		return soap->error;
 	if (a->ns__V3DMSG_SHIFT::imageName)
-	{	if (soap_out_string(soap, "imageName", -1, &a->ns__V3DMSG_SHIFT::imageName, ""))
+	{	if (soap_out_xsd__string(soap, "imageName", -1, &a->ns__V3DMSG_SHIFT::imageName, ""))
 			return soap->error;
 	}
 	else if (soap_element_nil(soap, "imageName"))
@@ -978,7 +1174,7 @@ SOAP_FMAC3 ns__V3DMSG_SHIFT * SOAP_FMAC4 soap_in_ns__V3DMSG_SHIFT(struct soap *s
 		for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
 			if (soap_flag_imageName1 && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
-				if (soap_in_string(soap, "imageName", &(a->ns__V3DMSG_SHIFT::imageName), "xsd:string"))
+				if (soap_in_xsd__string(soap, "imageName", &(a->ns__V3DMSG_SHIFT::imageName), "xsd:string"))
 				{	soap_flag_imageName1--;
 					continue;
 				}
@@ -1079,7 +1275,7 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_ns__V3DMSG_SHIFT(struct soap *soap, int st,
 void ns__V3DMSG_ZOOM::soap_default(struct soap *soap)
 {
 	this->soap = soap;
-	soap_default_string(soap, &this->ns__V3DMSG_ZOOM::imageName);
+	soap_default_xsd__string(soap, &this->ns__V3DMSG_ZOOM::imageName);
 	soap_default_float(soap, &this->ns__V3DMSG_ZOOM::zoom);
 	/* transient soap skipped */
 }
@@ -1087,7 +1283,7 @@ void ns__V3DMSG_ZOOM::soap_default(struct soap *soap)
 void ns__V3DMSG_ZOOM::soap_serialize(struct soap *soap) const
 {
 	(void)soap; /* appease -Wall -Werror */
-	soap_serialize_string(soap, &this->ns__V3DMSG_ZOOM::imageName);
+	soap_serialize_xsd__string(soap, &this->ns__V3DMSG_ZOOM::imageName);
 	/* transient soap skipped */
 }
 
@@ -1101,7 +1297,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_out_ns__V3DMSG_ZOOM(struct soap *soap, const char
 	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_ns__V3DMSG_ZOOM), type))
 		return soap->error;
 	if (a->ns__V3DMSG_ZOOM::imageName)
-	{	if (soap_out_string(soap, "imageName", -1, &a->ns__V3DMSG_ZOOM::imageName, ""))
+	{	if (soap_out_xsd__string(soap, "imageName", -1, &a->ns__V3DMSG_ZOOM::imageName, ""))
 			return soap->error;
 	}
 	else if (soap_element_nil(soap, "imageName"))
@@ -1139,7 +1335,7 @@ SOAP_FMAC3 ns__V3DMSG_ZOOM * SOAP_FMAC4 soap_in_ns__V3DMSG_ZOOM(struct soap *soa
 		for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
 			if (soap_flag_imageName1 && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
-				if (soap_in_string(soap, "imageName", &(a->ns__V3DMSG_ZOOM::imageName), "xsd:string"))
+				if (soap_in_xsd__string(soap, "imageName", &(a->ns__V3DMSG_ZOOM::imageName), "xsd:string"))
 				{	soap_flag_imageName1--;
 					continue;
 				}
@@ -1230,7 +1426,7 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_ns__V3DMSG_ZOOM(struct soap *soap, int st, 
 void ns__V3DMSG_ROTATION::soap_default(struct soap *soap)
 {
 	this->soap = soap;
-	soap_default_string(soap, &this->ns__V3DMSG_ROTATION::imageName);
+	soap_default_xsd__string(soap, &this->ns__V3DMSG_ROTATION::imageName);
 	soap_default_int(soap, &this->ns__V3DMSG_ROTATION::xrot);
 	soap_default_int(soap, &this->ns__V3DMSG_ROTATION::yrot);
 	soap_default_int(soap, &this->ns__V3DMSG_ROTATION::zrot);
@@ -1240,7 +1436,7 @@ void ns__V3DMSG_ROTATION::soap_default(struct soap *soap)
 void ns__V3DMSG_ROTATION::soap_serialize(struct soap *soap) const
 {
 	(void)soap; /* appease -Wall -Werror */
-	soap_serialize_string(soap, &this->ns__V3DMSG_ROTATION::imageName);
+	soap_serialize_xsd__string(soap, &this->ns__V3DMSG_ROTATION::imageName);
 	/* transient soap skipped */
 }
 
@@ -1254,7 +1450,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_out_ns__V3DMSG_ROTATION(struct soap *soap, const 
 	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_ns__V3DMSG_ROTATION), type))
 		return soap->error;
 	if (a->ns__V3DMSG_ROTATION::imageName)
-	{	if (soap_out_string(soap, "imageName", -1, &a->ns__V3DMSG_ROTATION::imageName, ""))
+	{	if (soap_out_xsd__string(soap, "imageName", -1, &a->ns__V3DMSG_ROTATION::imageName, ""))
 			return soap->error;
 	}
 	else if (soap_element_nil(soap, "imageName"))
@@ -1298,7 +1494,7 @@ SOAP_FMAC3 ns__V3DMSG_ROTATION * SOAP_FMAC4 soap_in_ns__V3DMSG_ROTATION(struct s
 		for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
 			if (soap_flag_imageName1 && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
-				if (soap_in_string(soap, "imageName", &(a->ns__V3DMSG_ROTATION::imageName), "xsd:string"))
+				if (soap_in_xsd__string(soap, "imageName", &(a->ns__V3DMSG_ROTATION::imageName), "xsd:string"))
 				{	soap_flag_imageName1--;
 					continue;
 				}
@@ -1399,7 +1595,7 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_ns__V3DMSG_ROTATION(struct soap *soap, int 
 void ns__V3DMSG::soap_default(struct soap *soap)
 {
 	this->soap = soap;
-	soap_default_string(soap, &this->ns__V3DMSG::imageName);
+	soap_default_xsd__string(soap, &this->ns__V3DMSG::imageName);
 	soap_default_int(soap, &this->ns__V3DMSG::xrot);
 	soap_default_int(soap, &this->ns__V3DMSG::yrot);
 	soap_default_int(soap, &this->ns__V3DMSG::zrot);
@@ -1409,7 +1605,7 @@ void ns__V3DMSG::soap_default(struct soap *soap)
 void ns__V3DMSG::soap_serialize(struct soap *soap) const
 {
 	(void)soap; /* appease -Wall -Werror */
-	soap_serialize_string(soap, &this->ns__V3DMSG::imageName);
+	soap_serialize_xsd__string(soap, &this->ns__V3DMSG::imageName);
 	/* transient soap skipped */
 }
 
@@ -1423,7 +1619,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_out_ns__V3DMSG(struct soap *soap, const char *tag
 	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_ns__V3DMSG), type))
 		return soap->error;
 	if (a->ns__V3DMSG::imageName)
-	{	if (soap_out_string(soap, "imageName", -1, &a->ns__V3DMSG::imageName, ""))
+	{	if (soap_out_xsd__string(soap, "imageName", -1, &a->ns__V3DMSG::imageName, ""))
 			return soap->error;
 	}
 	else if (soap_element_nil(soap, "imageName"))
@@ -1467,7 +1663,7 @@ SOAP_FMAC3 ns__V3DMSG * SOAP_FMAC4 soap_in_ns__V3DMSG(struct soap *soap, const c
 		for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
 			if (soap_flag_imageName1 && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
-				if (soap_in_string(soap, "imageName", &(a->ns__V3DMSG::imageName), "xsd:string"))
+				if (soap_in_xsd__string(soap, "imageName", &(a->ns__V3DMSG::imageName), "xsd:string"))
 				{	soap_flag_imageName1--;
 					continue;
 				}
@@ -1707,103 +1903,10 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_ns__LOAD_RES(struct soap *soap, int st, int
 	*(ns__LOAD_RES*)p = *(ns__LOAD_RES*)q;
 }
 
-SOAP_FMAC3 void SOAP_FMAC4 soap_default_std__string(struct soap *soap, std::string *p)
-{
-	(void)soap; /* appease -Wall -Werror */
-	p->erase();
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_std__string(struct soap *soap, const std::string *p)
-{	(void)soap; (void)p; /* appease -Wall -Werror */
-}
-SOAP_FMAC3 int SOAP_FMAC4 soap_out_std__string(struct soap *soap, const char *tag, int id, const std::string *s, const char *type)
-{
-	if ((soap->mode & SOAP_C_NILSTRING) && s->empty())
-		return soap_element_null(soap, tag, id, type);
-	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, s, SOAP_TYPE_std__string), type) || soap_string_out(soap, s->c_str(), 0) || soap_element_end_out(soap, tag))
-		return soap->error;
-	return SOAP_OK;
-}
-
-SOAP_FMAC3 std::string * SOAP_FMAC4 soap_in_std__string(struct soap *soap, const char *tag, std::string *s, const char *type)
-{
-	(void)type; /* appease -Wall -Werror */
-	if (soap_element_begin_in(soap, tag, 1, NULL))
-		return NULL;
-	if (!s)
-		s = soap_new_std__string(soap, -1);
-	if (soap->null)
-		if (s)
-			s->erase();
-	if (soap->body && !*soap->href)
-	{	char *t;
-		s = (std::string*)soap_class_id_enter(soap, soap->id, s, SOAP_TYPE_std__string, sizeof(std::string), soap->type, soap->arrayType);
-		if (s)
-		{	if ((t = soap_string_in(soap, 1, -1, -1)))
-				s->assign(t);
-			else
-				return NULL;
-		}
-	}
-	else
-		s = (std::string*)soap_id_forward(soap, soap->href, soap_class_id_enter(soap, soap->id, s, SOAP_TYPE_std__string, sizeof(std::string), soap->type, soap->arrayType), 0, SOAP_TYPE_std__string, 0, sizeof(std::string), 0, soap_copy_std__string);
-	if (soap->body && soap_element_end_in(soap, tag))
-		return NULL;
-	return s;
-}
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_put_std__string(struct soap *soap, const std::string *a, const char *tag, const char *type)
-{
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_std__string);
-	if (soap_out_std__string(soap, tag?tag:"string", id, a, type))
-		return soap->error;
-	return soap_putindependent(soap);
-}
-
-SOAP_FMAC3 std::string * SOAP_FMAC4 soap_get_std__string(struct soap *soap, std::string *p, const char *tag, const char *type)
-{
-	if ((p = soap_in_std__string(soap, tag, p, type)))
-		if (soap_getindependent(soap))
-			return NULL;
-	return p;
-}
-
-SOAP_FMAC1 std::string * SOAP_FMAC2 soap_instantiate_std__string(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
-{
-	(void)type; (void)arrayType; /* appease -Wall -Werror */
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_std__string(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
-	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_std__string, n, soap_fdelete);
-	if (!cp)
-		return NULL;
-	if (n < 0)
-	{	cp->ptr = (void*)SOAP_NEW(std::string);
-		if (size)
-			*size = sizeof(std::string);
-	}
-	else
-	{	cp->ptr = (void*)SOAP_NEW(std::string[n]);
-		if (!cp->ptr)
-		{	soap->error = SOAP_EOM;
-			return NULL;
-		}
-		if (size)
-			*size = n * sizeof(std::string);
-	}
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
-	return (std::string*)cp->ptr;
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_copy_std__string(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
-{
-	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying std::string %p -> %p\n", q, p));
-	*(std::string*)p = *(std::string*)q;
-}
-
 void ns__LOAD_MSG::soap_default(struct soap *soap)
 {
 	this->soap = soap;
-	soap_default_std__string(soap, &this->ns__LOAD_MSG::image_path);
+	soap_default_xsd__string(soap, &this->ns__LOAD_MSG::image_path);
 	soap_default_int(soap, &this->ns__LOAD_MSG::x);
 	soap_default_int(soap, &this->ns__LOAD_MSG::y);
 	soap_default_int(soap, &this->ns__LOAD_MSG::z);
@@ -1817,7 +1920,7 @@ void ns__LOAD_MSG::soap_default(struct soap *soap)
 void ns__LOAD_MSG::soap_serialize(struct soap *soap) const
 {
 	(void)soap; /* appease -Wall -Werror */
-	soap_serialize_std__string(soap, &this->ns__LOAD_MSG::image_path);
+	soap_serialize_xsd__string(soap, &this->ns__LOAD_MSG::image_path);
 	/* transient soap skipped */
 }
 
@@ -1830,7 +1933,11 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_out_ns__LOAD_MSG(struct soap *soap, const char *t
 {
 	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_ns__LOAD_MSG), type))
 		return soap->error;
-	if (soap_out_std__string(soap, "image-path", -1, &(a->ns__LOAD_MSG::image_path), ""))
+	if (a->ns__LOAD_MSG::image_path)
+	{	if (soap_out_xsd__string(soap, "image-path", -1, &a->ns__LOAD_MSG::image_path, ""))
+			return soap->error;
+	}
+	else if (soap_element_nil(soap, "image-path"))
 		return soap->error;
 	if (soap_out_int(soap, "x", -1, &(a->ns__LOAD_MSG::x), ""))
 		return soap->error;
@@ -1883,7 +1990,7 @@ SOAP_FMAC3 ns__LOAD_MSG * SOAP_FMAC4 soap_in_ns__LOAD_MSG(struct soap *soap, con
 		for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
 			if (soap_flag_image_path1 && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
-				if (soap_in_std__string(soap, "image-path", &(a->ns__LOAD_MSG::image_path), "xsd:string"))
+				if (soap_in_xsd__string(soap, "image-path", &(a->ns__LOAD_MSG::image_path), "xsd:string"))
 				{	soap_flag_image_path1--;
 					continue;
 				}
@@ -2638,6 +2745,111 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_SOAP_ENV__Header(struct soap *soap, int st,
 }
 
 #endif
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_ns__v3dwscallpluginmethod(struct soap *soap, struct ns__v3dwscallpluginmethod *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+	a->input = NULL;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_ns__v3dwscallpluginmethod(struct soap *soap, const struct ns__v3dwscallpluginmethod *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+	soap_serialize_PointerTons__V3DMSG_PLUGINM(soap, &a->input);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_ns__v3dwscallpluginmethod(struct soap *soap, const char *tag, int id, const struct ns__v3dwscallpluginmethod *a, const char *type)
+{
+	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_ns__v3dwscallpluginmethod), type))
+		return soap->error;
+	if (soap_out_PointerTons__V3DMSG_PLUGINM(soap, "input", -1, &a->input, ""))
+		return soap->error;
+	return soap_element_end_out(soap, tag);
+}
+
+SOAP_FMAC3 struct ns__v3dwscallpluginmethod * SOAP_FMAC4 soap_in_ns__v3dwscallpluginmethod(struct soap *soap, const char *tag, struct ns__v3dwscallpluginmethod *a, const char *type)
+{
+	size_t soap_flag_input = 1;
+	if (soap_element_begin_in(soap, tag, 0, type))
+		return NULL;
+	a = (struct ns__v3dwscallpluginmethod *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_ns__v3dwscallpluginmethod, sizeof(struct ns__v3dwscallpluginmethod), 0, NULL, NULL, NULL);
+	if (!a)
+		return NULL;
+	soap_default_ns__v3dwscallpluginmethod(soap, a);
+	if (soap->body && !*soap->href)
+	{
+		for (;;)
+		{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap_flag_input && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_PointerTons__V3DMSG_PLUGINM(soap, "input", &a->input, "ns:V3DMSG-PLUGINM"))
+				{	soap_flag_input--;
+					continue;
+				}
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+				return NULL;
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else
+	{	a = (struct ns__v3dwscallpluginmethod *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_ns__v3dwscallpluginmethod, 0, sizeof(struct ns__v3dwscallpluginmethod), 0, NULL);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_ns__v3dwscallpluginmethod(struct soap *soap, const struct ns__v3dwscallpluginmethod *a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_ns__v3dwscallpluginmethod);
+	if (soap_out_ns__v3dwscallpluginmethod(soap, tag?tag:"ns:v3dwscallpluginmethod", id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 struct ns__v3dwscallpluginmethod * SOAP_FMAC4 soap_get_ns__v3dwscallpluginmethod(struct soap *soap, struct ns__v3dwscallpluginmethod *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_ns__v3dwscallpluginmethod(soap, tag, p, type)))
+		if (soap_getindependent(soap))
+			return NULL;
+	return p;
+}
+
+SOAP_FMAC1 struct ns__v3dwscallpluginmethod * SOAP_FMAC2 soap_instantiate_ns__v3dwscallpluginmethod(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
+{
+	(void)type; (void)arrayType; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_ns__v3dwscallpluginmethod(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
+	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_ns__v3dwscallpluginmethod, n, soap_fdelete);
+	if (!cp)
+		return NULL;
+	if (n < 0)
+	{	cp->ptr = (void*)SOAP_NEW(struct ns__v3dwscallpluginmethod);
+		if (size)
+			*size = sizeof(struct ns__v3dwscallpluginmethod);
+	}
+	else
+	{	cp->ptr = (void*)SOAP_NEW(struct ns__v3dwscallpluginmethod[n]);
+		if (!cp->ptr)
+		{	soap->error = SOAP_EOM;
+			return NULL;
+		}
+		if (size)
+			*size = n * sizeof(struct ns__v3dwscallpluginmethod);
+	}
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
+	return (struct ns__v3dwscallpluginmethod*)cp->ptr;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_ns__v3dwscallpluginmethod(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
+{
+	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct ns__v3dwscallpluginmethod %p -> %p\n", q, p));
+	*(struct ns__v3dwscallpluginmethod*)p = *(struct ns__v3dwscallpluginmethod*)q;
+}
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_ns__v3dopenfile3dwshift(struct soap *soap, struct ns__v3dopenfile3dwshift *a)
 {
@@ -3749,6 +3961,61 @@ SOAP_FMAC3 struct SOAP_ENV__Code ** SOAP_FMAC4 soap_get_PointerToSOAP_ENV__Code(
 
 #endif
 
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTons__V3DMSG_PLUGINM(struct soap *soap, ns__V3DMSG_PLUGINM *const*a)
+{
+	if (!soap_reference(soap, *a, SOAP_TYPE_ns__V3DMSG_PLUGINM))
+		(*a)->soap_serialize(soap);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTons__V3DMSG_PLUGINM(struct soap *soap, const char *tag, int id, ns__V3DMSG_PLUGINM *const*a, const char *type)
+{
+	id = soap_element_id(soap, tag, id, *a, NULL, 0, type, SOAP_TYPE_ns__V3DMSG_PLUGINM);
+	if (id < 0)
+		return soap->error;
+	return (*a)->soap_out(soap, tag, id, type);
+}
+
+SOAP_FMAC3 ns__V3DMSG_PLUGINM ** SOAP_FMAC4 soap_in_PointerTons__V3DMSG_PLUGINM(struct soap *soap, const char *tag, ns__V3DMSG_PLUGINM **a, const char *type)
+{
+	if (soap_element_begin_in(soap, tag, 1, NULL))
+		return NULL;
+	if (!a)
+		if (!(a = (ns__V3DMSG_PLUGINM **)soap_malloc(soap, sizeof(ns__V3DMSG_PLUGINM *))))
+			return NULL;
+	*a = NULL;
+	if (!soap->null && *soap->href != '#')
+	{	soap_revert(soap);
+		if (!(*a = (ns__V3DMSG_PLUGINM *)soap_instantiate_ns__V3DMSG_PLUGINM(soap, -1, soap->type, soap->arrayType, NULL)))
+			return NULL;
+		(*a)->soap_default(soap);
+		if (!(*a)->soap_in(soap, tag, NULL))
+			return NULL;
+	}
+	else
+	{	ns__V3DMSG_PLUGINM ** p = (ns__V3DMSG_PLUGINM **)soap_id_lookup(soap, soap->href, (void**)a, SOAP_TYPE_ns__V3DMSG_PLUGINM, sizeof(ns__V3DMSG_PLUGINM), 0);
+		a = p;
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTons__V3DMSG_PLUGINM(struct soap *soap, ns__V3DMSG_PLUGINM *const*a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_PointerTons__V3DMSG_PLUGINM);
+	if (soap_out_PointerTons__V3DMSG_PLUGINM(soap, tag?tag:"ns:V3DMSG-PLUGINM", id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 ns__V3DMSG_PLUGINM ** SOAP_FMAC4 soap_get_PointerTons__V3DMSG_PLUGINM(struct soap *soap, ns__V3DMSG_PLUGINM **p, const char *tag, const char *type)
+{
+	if ((p = soap_in_PointerTons__V3DMSG_PLUGINM(soap, tag, p, type)))
+		if (soap_getindependent(soap))
+			return NULL;
+	return p;
+}
+
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTons__V3DMSG_SHIFT(struct soap *soap, ns__V3DMSG_SHIFT *const*a)
 {
 	if (!soap_reference(soap, *a, SOAP_TYPE_ns__V3DMSG_SHIFT))
@@ -4125,6 +4392,33 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTostring(struct soap *soap, char **con
 SOAP_FMAC3 char *** SOAP_FMAC4 soap_get_PointerTostring(struct soap *soap, char ***p, const char *tag, const char *type)
 {
 	if ((p = soap_in_PointerTostring(soap, tag, p, type)))
+		if (soap_getindependent(soap))
+			return NULL;
+	return p;
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_xsd__string(struct soap *soap, const char *tag, int id, char *const*a, const char *type)
+{
+	return soap_outstring(soap, tag, id, a, type, SOAP_TYPE_xsd__string);
+}
+
+SOAP_FMAC3 char * * SOAP_FMAC4 soap_in_xsd__string(struct soap *soap, const char *tag, char **a, const char *type)
+{	char **p;
+	p = soap_instring(soap, tag, a, type, SOAP_TYPE_xsd__string, 1, -1, -1);
+	return p;
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_xsd__string(struct soap *soap, char *const*a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_xsd__string);
+	if (soap_out_xsd__string(soap, tag?tag:"byte", id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 char ** SOAP_FMAC4 soap_get_xsd__string(struct soap *soap, char **p, const char *tag, const char *type)
+{
+	if ((p = soap_in_xsd__string(soap, tag, p, type)))
 		if (soap_getindependent(soap))
 			return NULL;
 	return p;
