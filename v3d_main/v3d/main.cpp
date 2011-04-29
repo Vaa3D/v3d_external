@@ -322,7 +322,6 @@ int main(int argc, char **argv)
             }
 			
 			// call plugin func
-			
 
 			// launch v3d
 			try 

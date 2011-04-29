@@ -585,6 +585,54 @@ void MainWindow::webserviceResponse()
 				return;	
 			}
 		}
+		else if(string(pSoapPara->str_func) == "v3dwscallpluginmethod")
+		{			
+			QString fileName(pSoapPara->str_message);
+			
+			// setting plugin name and method call
+			setBooleanCLplugin(true);
+			setPluginName(pSoapPara->v3dpluginm->pluginName);
+			setPluginMethod(pSoapPara->v3dpluginm->pluginMethod);
+			
+			// load image
+			if (!fileName.isEmpty()) 
+			{
+				// find triview window
+				XFormWidget *existing_imgwin = findMdiChild(fileName);	
+				
+				// handling
+				if(existing_imgwin)
+				{
+					emit imageLoaded2Plugin();
+				}
+				else
+				{
+					this->loadV3DFile(pSoapPara->str_message, true, false); // 3d viewer is not opened by default
+					
+					existing_imgwin = findMdiChild(fileName);
+					if(!existing_imgwin) 
+					{
+						// try open image file in currrent dir
+						QString tryFileName = QDir::currentPath() + "/" + fileName;
+						v3d_msg(QString("Try to open the file [%1].").arg(tryFileName), 1);
+						
+						this->loadV3DFile(tryFileName, true, false);
+						
+						if(!existing_imgwin) 
+						{
+							v3d_msg(QString("The file [%1] does not exist! Try run plugin directly.").arg(fileName), 1);
+							emit imageLoaded2Plugin();
+							return;	
+						}
+					}
+				}
+			}
+			else
+			{
+				v3d_msg(QString("The file [%1] does not exist! Do nothing.").arg(fileName), 1);
+				return;	
+			}
+		}
 		else
 		{
 			QMessageBox::information((QWidget *)0, QString("title: v3d web service"), QString("Wrong function to invoke!"));
@@ -597,19 +645,64 @@ void MainWindow::webserviceResponse()
 
 void MainWindow::updateRunPlugin() //20110426 YuY
 {
+	
 	if(cl_plugin)
 	{
-		QPluginLoader* loader = new QPluginLoader(pluginname);
-		if (!loader)
+		// match plugin name
+		int numfind = 0; //20110429 YuY
+		
+		QString v3dpluginFind;
+		
+		QString canonicalFilePath = QFileInfo(pluginname).canonicalFilePath();
+		if (canonicalFilePath.size()==0) canonicalFilePath = pluginname;
+		
+		foreach(QString qstr, pluginLoader->getPluginNameList())
 		{
-			v3d_msg(QString("ERROR open the specified V3D plugin (%1)").arg(pluginname), 0);
-			return;
+			if (qstr==canonicalFilePath || QFileInfo(qstr).fileName() == canonicalFilePath) //20110429 YuY
+			{
+				v3dpluginFind = qstr;
+				numfind++;
+			}
 		}
 		
-		// run method
-		V3d_PluginLoader mypluginloader(this);
-		mypluginloader.runPlugin(loader, pluginmethod);
+		if(!numfind) //20110427 YuY
+		{
+			// try find image name contains the input string from the end
+			foreach(QString qstr, pluginLoader->getPluginNameList())
+			{
+				if ( qstr.endsWith(canonicalFilePath) || QFileInfo(qstr).fileName().endsWith(canonicalFilePath) ) //20110429 YuY
+				{
+					v3dpluginFind = qstr;
+					numfind++;
+				}
+			}
+		}
+		
+		if(numfind > 1)	//20110429 YuY
+		{
+			v3d_msg(QString("Too many choices. Please specify your plugin with whole name including absolute path and try again."), 1);
+			return;
+		}
+		else if(numfind == 1)
+		{
+			QPluginLoader* loader = new QPluginLoader(v3dpluginFind);
+			if (!loader)
+			{
+				v3d_msg(QString("ERROR open the specified V3D plugin [%1]").arg(v3dpluginFind), 1);
+				return;
+			}
+			
+			// run method
+			V3d_PluginLoader mypluginloader(this);
+			mypluginloader.runPlugin(loader, pluginmethod);
+		}
+		else
+		{
+			v3d_msg(QString("The plugin [%1] does not exist! Do nothing.").arg(pSoapPara->v3dpluginm->pluginName), 1);
+			return;
+		}
 	}
+	
 }
 
 void MainWindow::setBooleanCLplugin(bool cl_plugininput)
