@@ -1,4 +1,5 @@
 # #####################################################################
+# Last change: 2011-04-30, by Hanchuan Peng
 # Release: 2011-04-29 v3dwebservice v0.03 by Yang Yu
 # Release: 2011-04-27 v3dwebservice v0.02 by Yang Yu 
 # Created: 2011-3-7 v3dwebservice v0.01 by Yang Yu
@@ -20,9 +21,20 @@ macx {
 LIBS -= -L../common_lib/lib_mac32 -L./common_lib/lib_mac32
 LIBS += -L../common_lib/lib_mac64 -L./common_lib/lib_mac64
 
-HEADERS += ../webservice/v3dwebservice.hpp ../webservice/v3dwebserver.h ../webservice/gsoap2/stdsoap2.h ../webservice/soapdep/soapH.h ../webservice/soapdep/soapStub.h ../webservice/soapdep/soapv3dwebserverService.h
-SOURCES += ../webservice/v3dwebservice.cpp ../webservice/gsoap2/stdsoap2.cpp ../webservice/soapdep/soapC.cpp ../webservice/soapdep/soapv3dwebserverService.cpp
+WEBSERVICESRCFOLDER = ../webservice/src
 
-INCLUDEPATH += ../webservice/gsoap2
+HEADERS += $$WEBSERVICESRCFOLDER/v3dwebservice.hpp \
+	$$WEBSERVICESRCFOLDER/v3dwebserver.h \
+	$$WEBSERVICESRCFOLDER/gsoap2/stdsoap2.h \ 
+	$$WEBSERVICESRCFOLDER/soapdep/soapH.h \
+	$$WEBSERVICESRCFOLDER/soapdep/soapStub.h \ 
+	$$WEBSERVICESRCFOLDER/soapdep/soapv3dwebserverService.h
+
+SOURCES += $$WEBSERVICESRCFOLDER/v3dwebservice.cpp \ 
+	$$WEBSERVICESRCFOLDER/gsoap2/stdsoap2.cpp \ 
+	$$WEBSERVICESRCFOLDER/soapdep/soapC.cpp \
+	$$WEBSERVICESRCFOLDER/soapdep/soapv3dwebserverService.cpp
+
+INCLUDEPATH += $$WEBSERVICESRCFOLDER/gsoap2
 
 }

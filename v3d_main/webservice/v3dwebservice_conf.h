@@ -4,5 +4,5 @@
  */
 
 #ifndef __v3dwebservice__
-//#define __v3dwebservice__
+#define __v3dwebservice__
 #endif
