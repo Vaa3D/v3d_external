@@ -67,7 +67,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../webservice/v3dwebservice_conf.h"
 
 #ifdef __v3dwebservice__
-#include "../webservice/v3dwebservice.hpp" // YuY March-16-2011
+#include "../webservice/src/v3dwebservice.hpp" // YuY March-16-2011
 class V3DWebService; //110315 YuY
 class soappara; //110315 YuY
 #endif
