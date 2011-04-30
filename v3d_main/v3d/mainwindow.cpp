@@ -585,7 +585,7 @@ void MainWindow::webserviceResponse()
 				return;	
 			}
 		}
-		else if(string(pSoapPara->str_func) == "v3dwscallpluginmethod")
+		else if(string(pSoapPara->str_func) == "v3dwscallpluginmethod") // plugin method call
 		{			
 			QString fileName(pSoapPara->str_message);
 			
@@ -698,7 +698,7 @@ void MainWindow::updateRunPlugin() //20110426 YuY
 		}
 		else
 		{
-			v3d_msg(QString("The plugin [%1] does not exist! Do nothing.").arg(pSoapPara->v3dpluginm->pluginName), 1);
+			v3d_msg(QString("The plugin [%1] does not exist! Do nothing.").arg(pluginname), 1);
 			return;
 		}
 	}
