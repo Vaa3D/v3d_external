@@ -1,0 +1,6 @@
+
+SET(PLUGIN_GROUP_NAME "PlugTest")
+
+CONFIGURE_V3D_PLUGIN(CallTest)
+CONFIGURE_V3D_PLUGIN(RegistrationIntegrated)
+
