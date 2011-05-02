@@ -648,6 +648,8 @@ void MainWindow::updateRunPlugin() //20110426 YuY
 	
 	if(cl_plugin)
 	{
+		cl_plugin = false; // make sure plugin run only once 20110502 YuY
+		
 		// match plugin name
 		int numfind = 0; //20110429 YuY
 		
