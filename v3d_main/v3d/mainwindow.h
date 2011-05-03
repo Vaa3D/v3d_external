@@ -465,6 +465,8 @@ public slots:
 	void initWebService(V3DWebService *pws);
 	void quitWebService(V3DWebService *pws);
 	void setSoapPara(soappara *pSoapParaInput);
+	
+	void do3dfunc();
 #endif
 
 public: //for image processing, some of the parameters should be globally set
