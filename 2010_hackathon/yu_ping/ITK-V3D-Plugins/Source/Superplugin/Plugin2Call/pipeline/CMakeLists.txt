@@ -1,0 +1,5 @@
+SET(PLUGIN_GROUP_NAME "Superplugin/Plugin2Call")
+CONFIGURE_V3D_PLUGIN(CurvatureFlow)
+CONFIGURE_V3D_PLUGIN(ITKConfidenceConnected)
+CONFIGURE_V3D_PLUGIN(ITKConnectedThreshold)
+CONFIGURE_V3D_PLUGIN(ITKIsolatedConnected)
