@@ -1,4 +1,5 @@
 # #####################################################################
+# Release: 2011-05-04 v3dwebservice v0.05 by Yang Yu
 # Release: 2011-05-03 v3dwebservice v0.04 by Yang Yu
 # Last change: 2011-04-30, by Hanchuan Peng
 # Release: 2011-04-29 v3dwebservice v0.03 by Yang Yu
@@ -6,6 +7,7 @@
 # Created: 2011-3-7 v3dwebservice v0.01 by Yang Yu
 # ######################################################################
 
+# release 0.05 rewrite all soap related functions in mainwindow_wsi.cpp, now modular architecture is concise and easy read
 # release 0.04 add support to call all control 3d viewer functions
 # release 0.03 add support to call plugin with specified method. Meanwhile, the inputs support incomplete name either plugin name or file name.
 # release 0.02 add support to control 3d viewer functions, for example, set rotation positions, zoom, and shift.

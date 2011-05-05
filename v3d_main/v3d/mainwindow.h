@@ -467,6 +467,7 @@ public slots:
 	void setSoapPara(soappara *pSoapParaInput);
 	
 	void do3dfunc();
+	void switch3dviewercontrol(V3dR_MainWindow *existing_3dviewer);
 #endif
 
 public: //for image processing, some of the parameters should be globally set
