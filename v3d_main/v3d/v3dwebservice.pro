@@ -1,4 +1,5 @@
 # #####################################################################
+# Release: 2011-05-06 v3dwebservice v0.06 by Yang Yu
 # Release: 2011-05-04 v3dwebservice v0.05 by Yang Yu
 # Release: 2011-05-03 v3dwebservice v0.04 by Yang Yu
 # Last change: 2011-04-30, by Hanchuan Peng
@@ -7,6 +8,7 @@
 # Created: 2011-3-7 v3dwebservice v0.01 by Yang Yu
 # ######################################################################
 
+# release 0.06 adjust conditional compile for v3d webservice application
 # release 0.05 rewrite all soap related functions in mainwindow_wsi.cpp, now modular architecture is concise and easy read
 # release 0.04 add support to call all control 3d viewer functions
 # release 0.03 add support to call plugin with specified method. Meanwhile, the inputs support incomplete name either plugin name or file name.
@@ -26,6 +28,9 @@ LIBS -= -L../common_lib/lib_mac32 -L./common_lib/lib_mac32
 LIBS += -L../common_lib/lib_mac64 -L./common_lib/lib_mac64
 
 WEBSERVICESRCFOLDER = ../webservice/src
+
+message(configure for v3d webservice)
+DEFINES += __v3dwebservice__
 
 HEADERS += $$WEBSERVICESRCFOLDER/v3dwebservice.hpp \
 	$$WEBSERVICESRCFOLDER/v3dwebserver.h \
