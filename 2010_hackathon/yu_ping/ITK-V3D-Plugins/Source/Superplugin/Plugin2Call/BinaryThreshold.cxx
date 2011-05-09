@@ -112,7 +112,14 @@ void ComputeOneRegion(const V3DPluginArgList & input, V3DPluginArgList & output)
 	this->m_Filter->Update();
 	V3DPluginArgItem arg;
 	arg.p=m_Filter->GetOutput();
-	arg.type="outputImage";
+   	if( input.at(0).type=="UINT8Image" )
+    	{
+    	arg.type="UINT8Image";
+    	}
+	else
+	{
+	arg.type="floatImage";
+	}
 	output.replace(0,arg);
 	}
     }
@@ -142,12 +149,17 @@ bool BinaryThresholdPlugin::dofunc(const QString & func_name, const V3DPluginArg
     QMessageBox::information(parent, "Version info", "New Pugin for Other(developed by Yu Ping");
     return false ;
     }
+ if(input.at(0).type=="UINT8Image")
+	{
 	PluginSpecialized<unsigned char> *runner=new PluginSpecialized<unsigned char>(&v3d);
-	//printf("Size of the Class is %d\n",sizeof(*runner));
-	//PluginSpecialized<unsigned char> runner(&v3d);
 	runner->ComputeOneRegion(input, output); 
-	//runner.ComputeOneRegion(input,output);
 	return true;
+	}
+ else{
+	PluginSpecialized<float> *runner=new PluginSpecialized<float>(&v3d);
+	runner->ComputeOneRegion(input, output); 
+	return true;
+	}
 }
 
 

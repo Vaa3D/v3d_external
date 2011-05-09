@@ -53,7 +53,7 @@ public:
     V3DITKGenericDialog dialog("Sigmoid");
 
     dialog.AddDialogElement("Alpha",1.0, -5.0, 5.0);
-    dialog.AddDialogElement("Beta",128.0, 0.0, 255.0);
+    dialog.AddDialogElement("Beta",10.0, 0.0, 255.0);
     dialog.AddDialogElement("Minimum",0.0, 0.0, 255.0);
     dialog.AddDialogElement("Maximum",255.0, 0.0, 255.0);
 
@@ -87,7 +87,7 @@ void ComputeOneRegion(const V3DPluginArgList & input, V3DPluginArgList & output)
     	V3DITKGenericDialog dialog("Sigmoid");
 
     	dialog.AddDialogElement("Alpha",1.0, -5.0, 5.0);
-    	dialog.AddDialogElement("Beta",128.0, 0.0, 255.0);
+    	dialog.AddDialogElement("Beta",10.0, 0.0, 255.0);
     	dialog.AddDialogElement("Minimum",0.0, 0.0, 255.0);
     	dialog.AddDialogElement("Maximum",255.0, 0.0, 255.0);
 
@@ -108,14 +108,21 @@ void ComputeOneRegion(const V3DPluginArgList & input, V3DPluginArgList & output)
 
 	void * p=NULL;
 	p=(void*)input.at(0).p;
-	if(!p)perror("errro");
+	if(!p)perror("erro");
 	
 	this->m_Filter->SetInput((ImageType*) p );
 
 	this->m_Filter->Update();
 	V3DPluginArgItem arg;
 	arg.p=m_Filter->GetOutput();
-	arg.type="outputImage";
+  	if( input.at(0).type=="UINT8Image" )
+    	{
+    	arg.type="UINT8Image";
+    	}
+	else
+	{
+	arg.type="floatImage";
+	}
 	output.replace(0,arg);
 	}
     }
@@ -146,10 +153,18 @@ bool SigmoidPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
     QMessageBox::information(parent, "Version info", "New Pugin for Other(developed by Yu Ping");
     return false ;
     }
+ if(input.at(0).type=="UINT8Image")
+	{
 	PluginSpecialized<unsigned char> *runner=new PluginSpecialized<unsigned char>(&v3d);
 	runner->ComputeOneRegion(input, output); 
- 
 	return true;
+	}
+ else{
+	printf("use float\n");
+	PluginSpecialized<float> *runner=new PluginSpecialized<float>(&v3d);
+	runner->ComputeOneRegion(input, output); 
+	return true;
+	}
 }
 
 

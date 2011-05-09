@@ -58,6 +58,7 @@ public:
 	typedef typename Superclass ::Input3DImageType InputImageType;
 	typedef typename Superclass ::Output3DImageType OutputImageType;
 	typedef itk::CastImageFilter< InputImageType, OutputImageType> CastImageFilterType;
+	typedef itk::CastImageFilter< OutputImageType,InputImageType>  CastOutputType;
 
 	typedef itk::CurvatureFlowImageFilter< OutputImageType, OutputImageType > CurvatureFlowImageFilterType;
 
@@ -68,6 +69,7 @@ ITKConnectedThresholdSpecializaed(V3DPluginCallback*callback):Superclass(callbac
 	castImageFilter = CastImageFilterType::New();
 	smoothing = CurvatureFlowImageFilterType::New();
 	connectedThreshold = ConnectedFilterType::New();
+	castOutputFilter=CastOutputType::New();
 	this->RegisterInternalFilter(this->connectedThreshold,0.7);
 	this->RegisterInternalFilter(this->smoothing,0.2);
 	this->RegisterInternalFilter(this->castImageFilter,0.1);
@@ -190,13 +192,14 @@ void ComputeOneRegion(const V3DPluginArgList & input, V3DPluginArgList & output)
 			void * p=NULL;
 			p=(void*)input.at(0).p;
 			if(!p)perror("errro");
-	
-			this->connectedThreshold->SetInput((OutputImageType*) p );
+			this->castImageFilter->SetInput((InputImageType*) p );
+			this->connectedThreshold->SetInput(this->castImageFilter->GetOutput());
+			this->castOutputFilter->SetInput(this->connectedThreshold->GetOutput());
 
-			this->connectedThreshold->Update();
+			this->castOutputFilter->Update();
 			V3DPluginArgItem arg;
-			arg.p=connectedThreshold->GetOutput();
-			arg.type="floatImage";
+			arg.p=castOutputFilter->GetOutput();
+			arg.type="UINT8Image";
 			output.replace(0,arg);
 		}
 	}
@@ -206,6 +209,7 @@ private:
 	typename CastImageFilterType::Pointer castImageFilter;
 	typename CurvatureFlowImageFilterType::Pointer smoothing;
 	typename ConnectedFilterType::Pointer connectedThreshold;
+	typename CastOutputType::Pointer	castOutputFilter;
 	
 };
 

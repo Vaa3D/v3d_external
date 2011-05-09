@@ -80,13 +80,20 @@ void ComputeOneRegion(const V3DPluginArgList & input, V3DPluginArgList & output)
 	void * p=NULL;
 	p=(void*)input.at(0).p;
 	if(!p)perror("errro");
-	
+	std::cout<<"erro?\n"<<std::endl;
 	this->m_Filter->SetInput((InputImageType*) p );
-
+	std::cout<<"No erro\n"<<std::endl;
+	try{
 	this->m_Filter->Update();
+	}catch(itk::ExceptionObject &excp)
+	{
+		std::cerr<<"erro"<<std::endl;
+		std::cerr<<excp<<std::endl;
+	}
+	std::cout<<"No erro\n"<<std::endl;
 	V3DPluginArgItem arg;
 	arg.p=m_Filter->GetOutput();
-	arg.type="floatImage";
+	arg.type="UINT8Image";
 	output.replace(0,arg);
 	
     }
@@ -129,8 +136,9 @@ bool CastPlugin::dofunc(const QString & func_name, const V3DPluginArgList & inpu
     return false ;
     }
 	PluginSpecialized<float,unsigned char> *runner=new PluginSpecialized<float,unsigned char>(&v3d);
+	std::cout<<"get the input1\n"<<std::endl;
 	runner->ComputeOneRegion(input, output); 
- 
+ 	std::cout<<"get the input\n"<<std::endl;
 	return true;
 }
 

@@ -19,6 +19,7 @@ AutoPipePage::AutoPipePage(QWidget *parent):QWidget(parent)
     pipelineExp->addItem(tr("Example Pipeline3"));
     pipelineExp->addItem(tr("Example Pipeline4"));
     pipelineExp->addItem(tr("Example Pipeline5"));
+    pipelineExp->addItem(tr("Example Pipeline6"));
 
     QHBoxLayout *serverLayout = new QHBoxLayout;
     serverLayout->addWidget(pipelineName);
@@ -55,7 +56,7 @@ AutoPipePage::AutoPipePage(QWidget *parent):QWidget(parent)
 }
 void AutoPipePage::CallPipeline()
 {
-	QString end=".so";
+/*	QString end=".so";
 	QString mid="/";
 	PluginSpecialized<unsigned char> runner(callback);
     for(int i=0;i<PaintFilter->count();i++)
@@ -72,7 +73,24 @@ void AutoPipePage::CallPipeline()
 	//runner.Execute(menu_name,0);
     }
 	runner.SetUsePipeline(true);
-	runner.Execute(menu_name,0);	
+	runner.Execute(menu_name,0);
+*/
+	QString end=".so";
+	QString mid="/";
+    for(int i=0;i<PaintFilter->count();i++)
+    {
+	QString name="ITK/Superplugin/Plugin2Call/";
+        QString plugin_name=PaintFilter->item(i)->text();
+	PluginSpecialized<unsigned char> runner(callback);
+        name+=plugin_name;
+	name+=mid;
+	name+=plugin_name;
+	name+=end;
+	runner.SetPluginName(name);
+	runner.Execute(menu_name,0);
+	
+    }	
+	
 }
 void AutoPipePage::CreateIcon()
 {
@@ -80,66 +98,121 @@ void AutoPipePage::CreateIcon()
     int i=pipelineExp->currentIndex();
     if(i==0){QListWidgetItem * item=new QListWidgetItem;
         item->setIcon(QIcon(picName));
-        item->setText(tr("Cast2Float"));
+        item->setText(tr("CurvatureFlow"));
         item->setTextAlignment(Qt::AlignLeft);
         PaintFilter->addItem(item);
         QListWidgetItem * item1=new QListWidgetItem;
         item1->setIcon(QIcon(picName));
-        item1->setText(tr("CurvatureFlow"));
+        item1->setText(tr("ITKConfidenceConnected"));
+        item1->setTextAlignment(Qt::AlignLeft);
+        PaintFilter->addItem(item1);
+
+        }
+    else if(i==1){
+        QListWidgetItem * item=new QListWidgetItem;
+        item->setIcon(QIcon(picName));
+        item->setText(tr("CurvatureFlow"));
+        item->setTextAlignment(Qt::AlignLeft);
+        PaintFilter->addItem(item);
+        QListWidgetItem * item1=new QListWidgetItem;
+        item1->setIcon(QIcon(picName));
+        item1->setText(tr("ITKConnectedThreshold"));
+        item1->setTextAlignment(Qt::AlignLeft);
+        PaintFilter->addItem(item1);
+    }
+    else if(i==2){
+        QListWidgetItem * item=new QListWidgetItem;
+        item->setIcon(QIcon(picName));
+        item->setText(tr("CurvatureFlow"));
+        item->setTextAlignment(Qt::AlignLeft);
+        PaintFilter->addItem(item);
+        QListWidgetItem * item1=new QListWidgetItem;
+        item1->setIcon(QIcon(picName));
+        item1->setText(tr("ITKIsolatedConnected"));
+        item1->setTextAlignment(Qt::AlignLeft);
+        PaintFilter->addItem(item1);
+
+    }
+    else if(i==3){
+        QListWidgetItem * item1=new QListWidgetItem;
+        item1->setIcon(QIcon(picName));
+        item1->setText(tr("CurvatureAnisotropicDiffusion"));
         item1->setTextAlignment(Qt::AlignLeft);
         PaintFilter->addItem(item1);
         QListWidgetItem * item2=new QListWidgetItem;
         item2->setIcon(QIcon(picName));
-        item2->setText(tr("ITKConfidenceConnected"));
+        item2->setText(tr("GradientMagnitudeRecursiveGaussian"));
         item2->setTextAlignment(Qt::AlignLeft);
         PaintFilter->addItem(item2);
-        }
-    else if(i==1){
-        QListWidgetItem * item=new QListWidgetItem;
-                item->setIcon(QIcon(picName));
-                item->setText(tr("Cast2Float"));
-                item->setTextAlignment(Qt::AlignLeft);
-                PaintFilter->addItem(item);
-                QListWidgetItem * item1=new QListWidgetItem;
-                item1->setIcon(QIcon(picName));
-                item1->setText(tr("CurvatureFlow"));
-                item1->setTextAlignment(Qt::AlignLeft);
-                PaintFilter->addItem(item1);
-                QListWidgetItem * item2=new QListWidgetItem;
-                item2->setIcon(QIcon(picName));
-                item2->setText(tr("ITKConnectedThreshold"));
-                item2->setTextAlignment(Qt::AlignLeft);
-                PaintFilter->addItem(item2);
+        QListWidgetItem * item3=new QListWidgetItem;
+        item3->setIcon(QIcon(picName));
+        item3->setText(tr("Sigmoid"));
+        item3->setTextAlignment(Qt::AlignLeft);
+        PaintFilter->addItem(item3);
+        QListWidgetItem * item4=new QListWidgetItem;
+        item4->setIcon(QIcon(picName));
+        item4->setText(tr("ITKFastMarching"));
+        item4->setTextAlignment(Qt::AlignLeft);
+        PaintFilter->addItem(item4);
+        QListWidgetItem * item5=new QListWidgetItem;
+        item5->setIcon(QIcon(picName));
+        item5->setText(tr("BinaryThreshold"));
+        item5->setTextAlignment(Qt::AlignLeft);
+        PaintFilter->addItem(item5);
     }
-    else if(i==2){
-        QListWidgetItem * item=new QListWidgetItem;
-                item->setIcon(QIcon(picName));
-                item->setText(tr("Cast2Float"));
-                item->setTextAlignment(Qt::AlignLeft);
-                PaintFilter->addItem(item);
-                QListWidgetItem * item1=new QListWidgetItem;
-                item1->setIcon(QIcon(picName));
-                item1->setText(tr("CurvatureFlow"));
-                item1->setTextAlignment(Qt::AlignLeft);
-                PaintFilter->addItem(item1);
-                QListWidgetItem * item2=new QListWidgetItem;
-                item2->setIcon(QIcon(picName));
-                item2->setText(tr("ITKIsolatedConnected"));
-                item2->setTextAlignment(Qt::AlignLeft);
-                PaintFilter->addItem(item2);
-
+    else if(i==4){
+        QListWidgetItem * item1=new QListWidgetItem;
+        item1->setIcon(QIcon(picName));
+        item1->setText(tr("CurvatureAnisotropicDiffusion"));
+        item1->setTextAlignment(Qt::AlignLeft);
+        PaintFilter->addItem(item1);
+        QListWidgetItem * item2=new QListWidgetItem;
+        item2->setIcon(QIcon(picName));
+        item2->setText(tr("GradientMagnitudeRecursiveGaussian"));
+        item2->setTextAlignment(Qt::AlignLeft);
+        PaintFilter->addItem(item2);
+        QListWidgetItem * item3=new QListWidgetItem;
+        item3->setIcon(QIcon(picName));
+        item3->setText(tr("Sigmoid"));
+        item3->setTextAlignment(Qt::AlignLeft);
+        PaintFilter->addItem(item3);
+        QListWidgetItem * item4=new QListWidgetItem;
+        item4->setIcon(QIcon(picName));
+        item4->setText(tr("ITKShapeDectection"));
+        item4->setTextAlignment(Qt::AlignLeft);
+        PaintFilter->addItem(item4);
+        QListWidgetItem * item5=new QListWidgetItem;
+        item5->setIcon(QIcon(picName));
+        item5->setText(tr("BinaryThreshold"));
+        item5->setTextAlignment(Qt::AlignLeft);
+        PaintFilter->addItem(item5);
     }
-    else {
-        QListWidgetItem * item=new QListWidgetItem;
-                item->setIcon(QIcon(picName));
-                item->setText(tr("Filter"));
-                item->setTextAlignment(Qt::AlignLeft);
-                PaintFilter->addItem(item);
-                QListWidgetItem * item1=new QListWidgetItem;
-                item1->setIcon(QIcon(picName));
-                item1->setText(tr("Filter"));
-                item1->setTextAlignment(Qt::AlignLeft);
-                PaintFilter->addItem(item1);
+    else if(i==5){
+        QListWidgetItem * item1=new QListWidgetItem;
+        item1->setIcon(QIcon(picName));
+        item1->setText(tr("CurvatureAnisotropicDiffusion"));
+        item1->setTextAlignment(Qt::AlignLeft);
+        PaintFilter->addItem(item1);
+        QListWidgetItem * item2=new QListWidgetItem;
+        item2->setIcon(QIcon(picName));
+        item2->setText(tr("GradientMagnitudeRecursiveGaussian"));
+        item2->setTextAlignment(Qt::AlignLeft);
+        PaintFilter->addItem(item2);
+        QListWidgetItem * item3=new QListWidgetItem;
+        item3->setIcon(QIcon(picName));
+        item3->setText(tr("Sigmoid"));
+        item3->setTextAlignment(Qt::AlignLeft);
+        PaintFilter->addItem(item3);
+        QListWidgetItem * item4=new QListWidgetItem;
+        item4->setIcon(QIcon(picName));
+        item4->setText(tr("ITKGeodesicActiveContour"));
+        item4->setTextAlignment(Qt::AlignLeft);
+        PaintFilter->addItem(item4);
+        QListWidgetItem * item5=new QListWidgetItem;
+        item5->setIcon(QIcon(picName));
+        item5->setText(tr("BinaryThreshold"));
+        item5->setTextAlignment(Qt::AlignLeft);
+        PaintFilter->addItem(item5);
     }
 }
 void AutoPipePage::SetCallback( V3DPluginCallback &callback)
@@ -165,11 +238,11 @@ UserPipePage::UserPipePage(QWidget *parent):QWidget(parent)
     ClearItem=new QPushButton(tr("Clear All"));
 
     SourceFilter=new QListWidget;
-    SourceFilter->setMaximumWidth(170);
+    //SourceFilter->setMaximumWidth(170);
     QListWidgetItem *Filter1=new QListWidgetItem(SourceFilter);
     Filter1->setText(tr("BinaryThreshold"));
     QListWidgetItem *Filter2=new QListWidgetItem(SourceFilter);
-    Filter2->setText(tr("Cast"));
+    Filter2->setText(tr("CurvatureFlow"));
     QListWidgetItem *Filter3=new QListWidgetItem(SourceFilter);
     Filter3->setText(tr("DiscreteGaussianFilter"));
     QListWidgetItem *Filter4=new QListWidgetItem(SourceFilter);
@@ -185,10 +258,28 @@ UserPipePage::UserPipePage(QWidget *parent):QWidget(parent)
     Filter8->setText(tr("RescaleIntensity"));
     QListWidgetItem *Filter9=new QListWidgetItem(SourceFilter);
     Filter9->setText(tr("Sigmoid"));
+    QListWidgetItem *Filter10=new QListWidgetItem(SourceFilter);
+    Filter10->setText(tr("Cast2UINT8"));
+    QListWidgetItem *Filter11=new QListWidgetItem(SourceFilter);
+    Filter11->setText(tr("ITKFastMarching"));
+    QListWidgetItem *Filter12=new QListWidgetItem(SourceFilter);
+    Filter12->setText(tr("CurvatureAnisotropicDiffusion"));
+    QListWidgetItem *Filter13=new QListWidgetItem(SourceFilter);
+    Filter13->setText(tr("ITKConfidenceConnected"));
+    QListWidgetItem *Filter14=new QListWidgetItem(SourceFilter);
+    Filter14->setText(tr("ITKIsolatedConnected"));
+    QListWidgetItem *Filter15=new QListWidgetItem(SourceFilter);
+    Filter15->setText(tr("ITKConnectedThreshold"));
+    QListWidgetItem *Filter16=new QListWidgetItem(SourceFilter);
+    Filter16->setText(tr("ITKShapeDectection"));
+    QListWidgetItem *Filter17=new QListWidgetItem(SourceFilter);
+    Filter17->setText(tr("ITKGeodesicActiveContour"));
+    QListWidgetItem *Filter18=new QListWidgetItem(SourceFilter);
+    Filter18->setText(tr("CurvatureAnisotropicDiffusion"));
 
 
     UsedFilter=new QListWidget;
-    UsedFilter->setMaximumWidth(170);
+    //UsedFilter->setMaximumWidth(170);
 
     QHBoxLayout *listLayout=new QHBoxLayout;
     listLayout->addWidget(SourceFilter);
@@ -236,6 +327,26 @@ void UserPipePage::CallPipeline()
 	runner.Execute(menu_name,0);
 	
     }	
+/*
+	QString end=".so";
+	QString mid="/";
+	PluginSpecialized<unsigned char> *runner=new PluginSpecialized<unsigned char >(callback);
+    for(int i=0;i<UsedFilter->count();i++)
+    {
+	QString name="ITK/Superplugin/Plugin2Call/";
+        QString plugin_name=PaintFilter->item(i)->text();
+	//PluginSpecialized<unsigned char> runner(callback);
+        name+=plugin_name;
+	name+=mid;
+	name+=plugin_name;
+	name+=end;
+	runner->AddPluginName(name);
+	//runner.SetPluginName(name);
+	//runner.Execute(menu_name,0);
+    }
+	runner->SetUsePipeline(true);
+	runner->Execute(menu_name,0);
+	delete runner;	*/
 }
 void UserPipePage::ADDItem()
 {
@@ -269,7 +380,7 @@ UserFilterPage::UserFilterPage(QWidget *parent):QWidget(parent)
     FilterItem->addItem(tr("Cast2Float"));
     FilterItem->addItem(tr("DiscreteGaussianFilter"));
     FilterItem->addItem(tr("Erode"));
-    FilterItem->addItem(tr("GradientMagnitudeRecursiveGaussian"));
+    FilterItem->addItem(tr("CurvatureAnisotropicDiffusion"));
     FilterItem->addItem(tr("Kmeans"));
     FilterItem->addItem(tr("MeanFilter"));
     FilterItem->addItem(tr("MedianFilter"));
@@ -277,7 +388,16 @@ UserFilterPage::UserFilterPage(QWidget *parent):QWidget(parent)
     FilterItem->addItem(tr("Sigmoid"));
     FilterItem->addItem(tr("ITKCannySegmentation"));
     FilterItem->addItem(tr("And"));
-    FilterItem->addItem(tr("ITKThresholdSegmentation"));    				
+    FilterItem->addItem(tr("ITKThresholdSegmentation"));
+    FilterItem->addItem(tr("GradientMagnitudeRecursiveGaussian"));
+    FilterItem->addItem(tr("ITKFastMarching"));
+    FilterItem->addItem(tr("CurvatureFlow"));
+    FilterItem->addItem(tr("ITKConfidenceConnected"));
+    FilterItem->addItem(tr("ITKIsolatedConnected"));				
+    FilterItem->addItem(tr("ITKConnectedThreshold"));				
+    FilterItem->addItem(tr("ITKShapeDetection"));				
+    FilterItem->addItem(tr("ITKGeodesicActiveContour"));				
+				
 
     StartButton=new QPushButton(tr("Start Call Other Filter"));
     QHBoxLayout *FilterLayout=new QHBoxLayout;

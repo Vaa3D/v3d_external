@@ -19,6 +19,7 @@
 
 #include "itkFastMarchingImageFilter.h"
 #include "itkThresholdSegmentationLevelSetImageFilter.h"
+#include "itkImageFileWriter.h"
 
 // Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
 // The value of PluginName should correspond to the TARGET specified in the
@@ -137,7 +138,7 @@ ITKThresholdSegmentationSpecializaed( V3DPluginCallback * callback ): Superclass
 		thresholdSegmentation->SetCurvatureScaling( curvatureScaling );
 				
 		thresholdSegmentation->SetMaximumRMSError( 0.02 );
-		thresholdSegmentation->SetNumberOfIterations( 50 ); //stoppingTime
+		thresholdSegmentation->SetNumberOfIterations( 800 ); //stoppingTime
 				
 		thresholdSegmentation->SetUpperThreshold( 255 );
 		thresholdSegmentation->SetLowerThreshold( 200 );
@@ -150,7 +151,8 @@ virtual void ComputeOneRegion()
 {
 	fastMarching->SetOutputSize(this->GetInput3DImage()->GetBufferedRegion().GetSize() );
 	this->castImageFilter->SetInput(this->GetInput3DImage());
-	fastMarching->SetInput(castImageFilter->GetOutput() );									
+	//fastMarching->SetInput(castImageFilter->GetOutput() );
+	fastMarching->Update();									
 	thresholdSegmentation->SetInput( fastMarching->GetOutput() );
 	thresholdSegmentation->SetFeatureImage( castImageFilter->GetOutput() );
 	
@@ -212,15 +214,14 @@ void ComputeOneRegion(const V3DPluginArgList & input, V3DPluginArgList & output)
 		
 	const double curvatureScaling   = 1.0; // Level Set 
 	const double propagationScaling = 1.0;
-	fastMarching->SetTrialPoints(  seeds  );
-			
+	fastMarching->SetTrialPoints(  seeds  );		
 	fastMarching->SetSpeedConstant( 1.0 );
-				
+	
 	thresholdSegmentation->SetPropagationScaling( propagationScaling );
 	thresholdSegmentation->SetCurvatureScaling( curvatureScaling );
 				
 	thresholdSegmentation->SetMaximumRMSError( 0.02 );
-	thresholdSegmentation->SetNumberOfIterations( 50 ); //stoppingTime
+	thresholdSegmentation->SetNumberOfIterations( 800 ); //stoppingTime
 				
 	thresholdSegmentation->SetUpperThreshold( 255 );
 	thresholdSegmentation->SetLowerThreshold( 200 );
@@ -231,8 +232,11 @@ void ComputeOneRegion(const V3DPluginArgList & input, V3DPluginArgList & output)
 	if(!p)perror("errro");
 		
 	this->castImageFilter->SetInput((InputImageType*) p);
-	fastMarching->SetOutputSize(castImageFilter->GetOutput()->GetBufferedRegion().GetSize() );				
-	fastMarching->SetInput(castImageFilter->GetOutput() );
+	this->castImageFilter->Update();
+	fastMarching->SetOutputSize(castImageFilter->GetOutput()->GetBufferedRegion().GetSize() );
+	fastMarching->Update();
+	//printf("FastMarching is Ok\n");				
+	//fastMarching->SetInput(castImageFilter->GetOutput() );
 	thresholdSegmentation->SetInput( fastMarching->GetOutput() );
 	thresholdSegmentation->SetFeatureImage( castImageFilter->GetOutput() );
 	
@@ -241,7 +245,7 @@ void ComputeOneRegion(const V3DPluginArgList & input, V3DPluginArgList & output)
 
 	V3DPluginArgItem arg;
 	arg.p=castOutFilter->GetOutput();
-	arg.type="outputImage";
+	arg.type="UINT8Image";
 	output.replace(0,arg);
     }
 

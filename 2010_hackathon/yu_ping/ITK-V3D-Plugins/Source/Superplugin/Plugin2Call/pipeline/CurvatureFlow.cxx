@@ -115,13 +115,14 @@ void ComputeOneRegion(const V3DPluginArgList & input, V3DPluginArgList & output)
 	void * p=NULL;
 	p=(void*)input.at(0).p;
 	if(!p)perror("errro");
-	
-	this->m_Filter->SetInput((FloatImageType*) p );
+	this->m_InputCast->SetInput((ImageType*) p);
+	this->m_Filter->SetInput(m_InputCast->GetOutput());
+	this->m_OutputCast->SetInput(this->m_Filter->GetOutput());
 
-	this->m_Filter->Update();
+	this->m_OutputCast->Update();
 	V3DPluginArgItem arg;
-	arg.p=m_Filter->GetOutput();
-	arg.type="floatImage";
+	arg.p=m_OutputCast->GetOutput();
+	arg.type="UINT8Image";
 	output.replace(0,arg);
 	}
     }

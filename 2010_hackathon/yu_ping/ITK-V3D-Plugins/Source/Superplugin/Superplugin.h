@@ -69,7 +69,7 @@ public:
   	const V3DLONG z2 = this->m_NumberOfPixelsAlongZ;
 
   	QList< V3D_Image3DBasic > inputImageList =
-    	getChannelDataForProcessingFromGlobalSetting( this->m_4DImage, *(this->m_V3DPluginCallback) );
+    	getChannelDataForProcessingFromGlobalSetting( this-> m_4DImage, *(this->m_V3DPluginCallback) );
 
   	QList< V3D_Image3DBasic > outputImageList;
   	const unsigned int numberOfChannelsToProcess = inputImageList.size();
@@ -99,6 +99,7 @@ public:
 		V3DPluginArgList input;
 		V3DPluginArgList output;
 		arg.p=(void*)this->GetInput3DImage();
+		arg.type="UINT8Image";
 		input<<arg;
 		output<<arg;
 		this->m_V3DPluginCallback->callPluginFunc(plugin_name,function_name,input,output);
@@ -132,6 +133,7 @@ public:
 		V3DPluginArgList input;
 		V3DPluginArgList output;
 		arg.p=(void*)this->GetInput3DImage();
+		arg.type="UINT8Image";
 		input<<arg;
 		output<<arg;
 		for(int i=0;i<plugin_name_list.size();i++)
