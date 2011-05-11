@@ -551,6 +551,15 @@ void MainWindow::webserviceResponse()
 			// load image
 			if (!fileName.isEmpty()) 
 			{
+				// replace the existing file ?
+				if (QFile::exists(pSoapPara->v3dmsgsave->saveName))
+				{
+					if(QMessageBox::No == QMessageBox::question (0, "", QString("Do you want to replace the existing file [%1]?").arg(pSoapPara->v3dmsgsave->saveName), QMessageBox::Yes, QMessageBox::No))
+					{
+						return;
+					}
+				}
+				
 				// find triview window
 				XFormWidget *existing_imgwin = findMdiChild(fileName);	
 				
