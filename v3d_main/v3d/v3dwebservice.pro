@@ -1,4 +1,5 @@
 # #####################################################################
+# Release: 2011-05-11 v3dwebservice v0.07 by Yang Yu
 # Release: 2011-05-06 v3dwebservice v0.06 by Yang Yu
 # Release: 2011-05-04 v3dwebservice v0.05 by Yang Yu
 # Release: 2011-05-03 v3dwebservice v0.04 by Yang Yu
@@ -8,6 +9,7 @@
 # Created: 2011-3-7 v3dwebservice v0.01 by Yang Yu
 # ######################################################################
 
+# release 0.07 add save file function
 # release 0.06 adjust conditional compile for v3d webservice application
 # release 0.05 rewrite all soap related functions in mainwindow_wsi.cpp, now modular architecture is concise and easy read
 # release 0.04 add support to call all control 3d viewer functions

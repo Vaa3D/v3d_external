@@ -536,6 +536,59 @@ void MainWindow::webserviceResponse()
 		{			
 			do3dfunc();
 		}
+		else if(string(pSoapPara->str_func) == "v3dsavefile") // plugin method call
+		{
+			// is the same file name, ignore cases
+			if(QString(pSoapPara->v3dmsgsave->saveName).toUpper() == QString(pSoapPara->str_message).toUpper())
+			{
+				v3d_msg(QString("The saving file [%1] is the same to the original file [%2].").arg(pSoapPara->v3dmsgsave->saveName).arg(pSoapPara->str_message), 1);
+				return;
+			}
+			
+			//
+			QString fileName(pSoapPara->str_message);
+			
+			// load image
+			if (!fileName.isEmpty()) 
+			{
+				// find triview window
+				XFormWidget *existing_imgwin = findMdiChild(fileName);	
+				
+				// handling
+				if(!existing_imgwin)
+				{
+					this->loadV3DFile(pSoapPara->str_message, true, false); // 3d viewer is not opened by default
+					
+					existing_imgwin = findMdiChild(fileName);
+					if(!existing_imgwin) 
+					{
+						// try open image file in currrent dir
+						QString tryFileName = QDir::currentPath() + "/" + fileName;
+						v3d_msg(QString("Try to open the file [%1].").arg(tryFileName), 1);
+						
+						this->loadV3DFile(tryFileName, true, false);
+						
+						if(!existing_imgwin) 
+						{
+							v3d_msg(QString("The file [%1] does not exist!.").arg(fileName), 1);
+							return;	
+						}
+					}					
+				}
+				
+				//save
+				if (activeMdiChild()->saveFile(pSoapPara->v3dmsgsave->saveName))
+				{
+					setCurrentFile(pSoapPara->v3dmsgsave->saveName);
+					statusBar()->showMessage(tr("File saved"), 2000);
+				}
+			}
+			else
+			{
+				v3d_msg(QString("The file [%1] does not exist! Do nothing.").arg(fileName), 1);
+				return;	
+			}
+		}		
 		else if(string(pSoapPara->str_func) == "v3dwscallpluginmethod") // plugin method call
 		{			
 			QString fileName(pSoapPara->str_message);
@@ -552,11 +605,7 @@ void MainWindow::webserviceResponse()
 				XFormWidget *existing_imgwin = findMdiChild(fileName);	
 				
 				// handling
-				if(existing_imgwin)
-				{
-					emit imageLoaded2Plugin();
-				}
-				else
+				if(!existing_imgwin)
 				{
 					this->loadV3DFile(pSoapPara->str_message, true, false); // 3d viewer is not opened by default
 					
@@ -577,6 +626,9 @@ void MainWindow::webserviceResponse()
 						}
 					}
 				}
+				
+				// call plugin
+				emit imageLoaded2Plugin();
 			}
 			else
 			{
