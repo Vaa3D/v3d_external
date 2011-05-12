@@ -32,6 +32,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //2009, Jan
 //last update: 090206
 //last update 091127. write a new joining program
+//last update: 2011-05-12 fix a small potential bug
 
 #ifndef _V_NEURON_SWC_H_
 #define _V_NEURON_SWC_H_
@@ -89,10 +90,10 @@ struct V_NeuronSWC_unit
 	V_NeuronSWC_unit() {for (V3DLONG i=0;i<sizeof(data)/sizeof(double);i++) data[i]=0; r=0.5;}
 	operator V_NeuronSWC_coord() {V_NeuronSWC_coord c; c.x=x; c.y=y; c.z=z; return c;}
 	V_NeuronSWC_coord get_coord() {V_NeuronSWC_coord c; c.x=x; c.y=y; c.z=z; return c;}
-	void set(double x1, double y1, double z1, double r1, double p1, double t1) {x=x1; y1=y1;z=z1;r=r1;parent=p1;type=t1;}
-	void set(double x1, double y1, double z1, double r1, double p1) {x=x1; y1=y1;z=z1;r=r1;parent=p1;}
-	void set(double x1, double y1, double z1, double r1) {x=x1; y1=y1;z=z1;r=r1;}
-	void set(double x1, double y1, double z1) {x=x1; y1=y1;z=z1;}
+	void set(double x1, double y1, double z1, double r1, double p1, double t1) {x=x1; y=y1; z=z1; r=r1;parent=p1;type=t1;}
+	void set(double x1, double y1, double z1, double r1, double p1) {x=x1; y=y1;z=z1;r=r1;parent=p1;}
+	void set(double x1, double y1, double z1, double r1) {x=x1; y=y1;z=z1;r=r1;}
+	void set(double x1, double y1, double z1) {x=x1; y=y1;z=z1;}
 };
 
 inline double distL2square(const V_NeuronSWC_unit & a, const V_NeuronSWC_unit & b)
