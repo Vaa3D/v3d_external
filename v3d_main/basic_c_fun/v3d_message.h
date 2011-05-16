@@ -39,6 +39,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 void v3d_msg(const char *msg, bool b_disp_QTDialog=true);
 void v3d_msg(const QString & msg, bool b_disp_QTDialog=true);
+QString current_time_stamp();
 
 #endif
 

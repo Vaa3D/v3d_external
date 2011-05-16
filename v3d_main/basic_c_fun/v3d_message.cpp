@@ -29,7 +29,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 
 //by Hanchuan Peng
-//090516
+//2009-2011
 
 #include "v3d_message.h"
 
@@ -48,6 +48,11 @@ void v3d_msg(const char *msg, bool b_disp_QTDialog)
 void v3d_msg(const QString & msg, bool b_disp_QTDialog) //note that if I don't force (char *) conversion then there is a crash. noted by Hanchuan, 090516
 {
 	v3d_msg((char *)(qPrintable(msg)), b_disp_QTDialog);
+}
+
+QString current_time_stamp()
+{
+	return QString(__TIME__" "__DATE__);
 }
 
 

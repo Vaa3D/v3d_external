@@ -51,6 +51,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "ui_dialog_update_checking.h"
 #include <limits>
 
+#include "../basic_c_fun/v3d_message.h"
+
 class QNetworkReply;
 class QDomDocument;
 class QTableWidget;
@@ -70,7 +72,7 @@ void v3d_Lite_info();
 
 
 //090908 RZC: build-time info
-#define BUILD_TIME		__TIME__" "__DATE__
+#define BUILD_TIME		current_time_stamp()
 #include <QtGlobal>
 #if defined(Q_WS_MAC)
 	#define BUILD_OS_INFO	"Mac"
