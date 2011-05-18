@@ -236,9 +236,25 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 			}
 #ifdef _ALLOW_ADVANCE_PROCESSING_MENU_
 			listAct.append(act = new QAction("", w)); act->setSeparator(true);
+
 			listAct.append(actMarkerCreate1 = new QAction("1-right-click to define a marker (Esc to finish)", w));
+			
+			actMarkerCreate1->setIcon(QIcon(":/icons/click1.svg"));
+			actMarkerCreate1->setVisible(true);
+			actMarkerCreate1->setIconVisibleInMenu(true);
+			
 			listAct.append(actMarkerCreate2 = new QAction("2-right-clicks to define a marker", w));
+			
+			actMarkerCreate2->setIcon(QIcon(":/icons/click2.svg"));
+			actMarkerCreate2->setVisible(true);
+			actMarkerCreate2->setIconVisibleInMenu(true);
+			
 			listAct.append(actMarkerCreate3 = new QAction("3-right-clicks to define a marker", w));
+			
+			actMarkerCreate3->setIcon(QIcon(":/icons/click3.svg"));
+			actMarkerCreate3->setVisible(true);
+			actMarkerCreate3->setIconVisibleInMenu(true);
+			
 			//listAct.append(act = new QAction("", w)); act->setSeparator(true);
 #ifdef _ALLOW_AUTOMARKER_MENU_
 			listAct.append(actMarkerAutoSeed = new QAction("AutoMarker", w));
@@ -247,9 +263,28 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 #ifdef _ALLOW_3D_CURVE_
 			listAct.append(act = new QAction("", w)); act->setSeparator(true);
 			listAct.append(actCurveCreate1 = new QAction("1-right-stroke to define a 3D curve", w));
+			
+			actCurveCreate1->setIcon(QIcon(":/icons/stroke1.svg"));
+			actCurveCreate1->setVisible(true);
+			actCurveCreate1->setIconVisibleInMenu(true);
+			
 			listAct.append(actCurveCreate2 = new QAction("2-right-strokes to define a 3D curve", w));
+			
+			actCurveCreate2->setIcon(QIcon(":/icons/stroke2.svg"));
+			actCurveCreate2->setVisible(true);
+			actCurveCreate2->setIconVisibleInMenu(true);
+			
 			listAct.append(actCurveCreate3 = new QAction("3-right-strokes to define a 3D curve", w));
+			
+			actCurveCreate3->setIcon(QIcon(":/icons/stroke3.svg"));
+			actCurveCreate3->setVisible(true);
+			actCurveCreate3->setIconVisibleInMenu(true);
+			
 			listAct.append(actCurveCreate_pointclick = new QAction("Series of right-clicks to define a 3D polyline (Esc to finish)", w));
+			
+			actCurveCreate_pointclick->setIcon(QIcon(":/icons/strokeN.svg"));
+			actCurveCreate_pointclick->setVisible(true);
+			actCurveCreate_pointclick->setIconVisibleInMenu(true);
 
 			//if (!(((iDrawExternalParameter*)_idep)->b_local)) //only enable the menu for global 3d viewer. as it seems there is a bug in the local 3d viewer. by PHC, 100821
 			{
@@ -338,11 +373,19 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 				if (listMarker.size()>=2)
 				{
 					listAct.append(actMarkerTraceFromOnePosToOtherMarkers = new QAction("trace from 1 start pos to all other markers", w));
+					
+					actMarkerTraceFromOnePosToOtherMarkers->setIcon(QIcon(":/icons/trace.svg"));
+					actMarkerTraceFromOnePosToOtherMarkers->setVisible(true);
+					actMarkerTraceFromOnePosToOtherMarkers->setIconVisibleInMenu(true);
 				}
 #endif
 
 #ifdef _ALLOW_NEURONTREE_ONE2ENTIREIMG_MENU_
 				listAct.append(actMarkerTraceFromOnePos = new QAction("trace from 1 start pos through entire image", w));
+				
+				actMarkerTraceFromOnePos->setIcon(QIcon(":/icons/trace.svg"));
+				actMarkerTraceFromOnePos->setVisible(true);
+				actMarkerTraceFromOnePos->setIconVisibleInMenu(true);
 #endif
 
 #endif //_ALLOW_NEURONSEG_MENU_
@@ -364,6 +407,11 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 #ifdef _ALLOW_NEURONSEG_MENU_
 					listAct.append(act = new QAction("", w)); act->setSeparator(true);
 					listAct.append(actMarkerLabelAsStartPos = new QAction("label as starting pos for tracing/measuring", w)); //by PHC, 090119
+					
+					actMarkerLabelAsStartPos->setIcon(QIcon(":/icons/start.svg"));
+					actMarkerLabelAsStartPos->setVisible(true);
+					actMarkerLabelAsStartPos->setIconVisibleInMenu(true);					
+					
 					if (curImg->last_hit_landmark >= 0 && curImg->last_hit_landmark!=currentMarkerName-1)
 					{
 						listAct.append(actMarkerTraceFromStartPos = new QAction("trace from the starting pos (and use the *1st* data channel)", w));
@@ -2674,7 +2722,6 @@ XYZ Renderer_tex2::getCenterOfLineProfile(XYZ P1, XYZ P2, double clip[4], int ch
 				v3d_msg("Unsupported data type found. You should never see this.", 0);
 				return loc;
 		}
-		
 
 		for (int i=0; i<200; i++) // iteration, (2-f)^200 is big enough
 		{

@@ -231,7 +231,7 @@ class My4DImage : public QObject, public Image4DSimple
 	Q_OBJECT;
 	
 public:
-	double at(int x, int y, int z, int c=0); //return a double number because it can always be converted back to UINT8 and UINT16 without information loss
+        double at(int x, int y, int z, int c=0) const; //return a double number because it can always be converted back to UINT8 and UINT16 without information loss
 	void **** getData(ImagePixelType & dtype);
 	void **** getData() {return data4d_virtual;}
 	bool isEmpty() {return (!data4d_virtual) ?  true : false; }

@@ -815,13 +815,16 @@ void data4dp_to_rgba3d(Image4DProxy<Image4DSimple>& img4dp, V3DLONG dim5,
 				(unsigned char)sampling3dUINT8( img4dp, (it*dim4/imageT + ic), \
 												ix, iy, iz, dx, dy, dz )
 
+        #define SAMPLE2(si, ix,iy,iz, dx,dy,dz, dxyz) \
+                        (unsigned char)sampling3dUINT8_2( img4dp, si, ix, iy, iz, dx, dy, dz, dxyz)
+
 	// only convert 1<=dim4<=4 ==> RGBA
 	V3DLONG imageX, imageY, imageZ, imageC, imageT;
 	{
 		imageX = bufSize[0];
 		imageY = bufSize[1];
 		imageZ = bufSize[2];
-		imageC = MIN(4, size4); // <=4
+                imageC = MIN(4, size4); // <=4
 		imageT = bufSize[4];
 	}
 	if (imageX*imageY*imageZ*imageC*imageT==0)
@@ -835,52 +838,85 @@ void data4dp_to_rgba3d(Image4DProxy<Image4DSimple>& img4dp, V3DLONG dim5,
 	dx = V3DLONG(sx);
 	dy = V3DLONG(sy);
 	dz = V3DLONG(sz);
+        V3DLONG dxyz = dx*dy*dz;
 	MESSAGE_ASSERT(dx*dy*dz >=1); //down sampling
 
 	V3DLONG ot;
 	V3DLONG ox, oy, oz;
 	V3DLONG ix, iy, iz;
-	for (ot=0; ot<imageT; ot++)
-	for (oz = 0; oz < imageZ; oz++)
-	for (oy = 0; oy < imageY; oy++)
-	for (ox = 0; ox < imageX; ox++)
-		{
-			ix = start1+ CLAMP(0,dim1-1, IROUND(ox*sx));
-			iy = start2+ CLAMP(0,dim2-1, IROUND(oy*sy));
-			iz = start3+ CLAMP(0,dim3-1, IROUND(oz*sz));
 
-			RGBA8 rgba;
+        V3DLONG otOffset, ozOffset, oyOffset, oxOffset;
 
-			if (imageC >= 1) {
-				rgba.r = SAMPLE(ot, 0, ix,iy,iz, dx,dy,dz);
-			} else {
-				rgba.r = 0;
-			}
+        V3DLONG SAM0, SAM1, SAM2, SAM3;
 
-			if (imageC >= 2) {
-				rgba.g = SAMPLE(ot, 1, ix,iy,iz, dx,dy,dz);
-			} else {
-				rgba.g = 0;
-			}
 
-			if (imageC >= 3) {
-				rgba.b = SAMPLE(ot, 2, ix,iy,iz, dx,dy,dz);
-			} else {
-				rgba.b = 0;
-			}
+        for (ot=0; ot<imageT; ot++) {
+            SAM0 = ot*dim4/imageT + 0;
+            SAM1 = SAM0+1;
+            SAM2 = SAM0+2;
+            SAM3 = SAM0+3;
+            otOffset=ot*(imageZ*imageY*imageX);
+            for (oz = 0; oz < imageZ; oz++) {
+                ozOffset=oz*(imageY*imageX);
+                iz = start3+ CLAMP(0,dim3-1, IROUND(oz*sz));
+                for (oy = 0; oy < imageY; oy++) {
+                    oyOffset=oy*imageX;
+                    oxOffset=otOffset+ozOffset+oyOffset;
+                    iy = start2+ CLAMP(0,dim2-1, IROUND(oy*sy));
 
-			if (imageC >= 4) {
-				rgba.a = SAMPLE(ot, 3, ix,iy,iz, dx,dy,dz);
-			} else {
-				float t = //MAX(rgba.r, MAX(rgba.g, rgba.b));
-							((0.f + rgba.r + rgba.g + rgba.b) / imageC);
-				rgba.a = (unsigned char)t;
-							//(unsigned char)(t*t/255);
-							//(unsigned char)(sqrt(t/255)*255);
-			}
+                    if (imageC==1) {
+                        for (ox=0;ox<imageX;ox++) {
+                            ix = start1+ CLAMP(0,dim1-1, IROUND(ox*sx));
+                            RGBA8 rgba;
+                            rgba.r = SAMPLE2(SAM0, ix,iy,iz, dx,dy,dz, dxyz);
+                            rgba.g = 0;
+                            rgba.b = 0;
+                            float t = (0.f + rgba.r + rgba.g + rgba.b);
+                            rgba.a = (unsigned char)t;
+                            rgbaBuf[oxOffset++] = rgba;
+                        }
+                    }
 
-			rgbaBuf[ot*(imageZ*imageY*imageX) + oz*(imageY*imageX) + oy*(imageX) + ox] = rgba;
-		}
+                    if (imageC==2) {
+                        for (ox=0;ox<imageX;ox++) {
+                            ix = start1+ CLAMP(0,dim1-1, IROUND(ox*sx));
+                            RGBA8 rgba;
+                            rgba.r = SAMPLE2(SAM0, ix,iy,iz, dx,dy,dz, dxyz);
+                            rgba.g = SAMPLE2(SAM1, ix,iy,iz, dx,dy,dz, dxyz);;
+                            rgba.b = 0;
+                            float t = (0.f + rgba.r + rgba.g + rgba.b)/2.0;
+                            rgba.a = (unsigned char)t;
+                            rgbaBuf[oxOffset++] = rgba;
+                        }
+                    }
+
+                    if (imageC==3) {
+                        for (ox=0;ox<imageX;ox++) {
+                            ix = start1+ CLAMP(0,dim1-1, IROUND(ox*sx));
+                            RGBA8 rgba;
+                            rgba.r = SAMPLE2(SAM0, ix,iy,iz, dx,dy,dz, dxyz);
+                            rgba.g = SAMPLE2(SAM1, ix,iy,iz, dx,dy,dz, dxyz);
+                            rgba.b = SAMPLE2(SAM2, ix,iy,iz, dx,dy,dz, dxyz);
+                            float t = (0.f + rgba.r + rgba.g + rgba.b)/3.0;
+                            rgba.a = (unsigned char)t;
+                            rgbaBuf[oxOffset++] = rgba;
+                        }
+                    }
+
+                    if (imageC>=4) {
+                        for (ox=0;ox<imageX;ox++) {
+                            ix = start1+ CLAMP(0,dim1-1, IROUND(ox*sx));
+                            RGBA8 rgba;
+                            rgba.r = SAMPLE2(SAM0, ix,iy,iz, dx,dy,dz, dxyz);
+                            rgba.g = SAMPLE2(SAM1, ix,iy,iz, dx,dy,dz, dxyz);
+                            rgba.b = SAMPLE2(SAM2, ix,iy,iz, dx,dy,dz, dxyz);
+                            rgba.a = SAMPLE2(SAM3, ix,iy,iz, dx,dy,dz, dxyz);
+                            rgbaBuf[oxOffset++] = rgba;
+                        }
+                    }
+                }
+            }
+        }
 }
 
 void data4dp_to_rgba3d(unsigned char* data4dp, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3, V3DLONG dim4, V3DLONG dim5,
@@ -966,6 +1002,7 @@ void data4dp_to_rgba3d(unsigned char* data4dp, V3DLONG dim1, V3DLONG dim2, V3DLO
 
 // 090602 RZC: inline cannot be used in *.cpp but in *.h
 
+// Please see the below comment for 'sampling3dUNIT8_2' in relation to this function.
 float sampling3dUINT8(Image4DProxy<Image4DSimple>& img4dp,
 		V3DLONG c,
 		V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG dx, V3DLONG dy, V3DLONG dz)
@@ -989,6 +1026,23 @@ float sampling3dUINT8(Image4DProxy<Image4DSimple>& img4dp,
 		avg /= d;
 	}
 	return avg;
+}
+
+// There is a mystery as to why the above function, sampling3dUNIT8, uses a hard-coded 'img4dp.value8bit_at(x,y,z,c)' rather than
+// sampling using the zi,yi,xi indices. Since it does not appear to use the indices, it is equivalent to the below implementation,
+// which speeds-up the parent function quite a bit. Until we can resolve what is going on, we are temporarily using this
+// fast version.
+float sampling3dUINT8_2(Image4DProxy<Image4DSimple>& img4dp,
+                V3DLONG c,
+                V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG dx, V3DLONG dy, V3DLONG dz, V3DLONG dxyz)
+{
+        V3DLONG dim1=img4dp.sx; V3DLONG dim2=img4dp.sy; V3DLONG dim3=img4dp.sz;
+        float avg = 0;
+        if (dxyz>0 && x>=0 && y>=0 && z>=0 && x+dx<=dim1 && y+dy<=dim2 && z+dz<=dim3)
+        {
+                avg = img4dp.value8bit_at(x,y,z,c);
+        }
+        return avg;
 }
 
 

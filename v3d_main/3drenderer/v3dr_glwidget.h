@@ -59,8 +59,8 @@ public:
     V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow=0, QString title="");
     ~V3dR_GLWidget();
     //void makeCurrent() {if (!_in_destructor) QGLWidget::makeCurrent();} //090605 RZC: to override invalid access in qgl_x11.cpp
-    void deleteRenderer();  //090710 RZC: to delete renderer before ~V3dR_GLWidget()
-    void createRenderer();  //090710 RZC: to create renderer at any time
+    virtual void deleteRenderer();  //090710 RZC: to delete renderer before ~V3dR_GLWidget()
+    virtual void createRenderer();  //090710 RZC: to create renderer at any time
 
 	void handleKeyPressEvent(QKeyEvent * event); //for hook to MainWindow
 	void handleKeyReleaseEvent(QKeyEvent * event); //for hook to MainWindow
@@ -69,6 +69,7 @@ public:
     iDrawExternalParameter* getiDrawExternalParameter() {return _idep;}
     QWidget * getMainWindow() {return mainwindow;}
 	Renderer* getRenderer() {return renderer;}
+        const Renderer* getRenderer() const {return renderer;} // const version CMB
 	QString getDataTitle() {return data_title;}
 	int getNumKeyHolding() {for(int i=1;i<=9; i++) if(_holding_num[i]) return i; return -1;}
 	bool getStill() 		{return _still;} //used by Renderer::beStil()
@@ -112,6 +113,7 @@ protected:
     static V3dr_colormapDialog* colormapDlg;
     static V3dr_surfaceDialog*  surfaceDlg;
 	//static SurfaceObjGeometryDialog *surfaceObjGeoDlg;
+    bool _isSoftwareGL; //for choiceRenderer
 
 protected slots:
    	virtual void stillPaint();
@@ -345,13 +347,14 @@ signals:
 
 	void changeOrthoView(bool b);
 
-private:
+protected:
 	bool _still, _stillpaint_disable, _stillpaint_pending, _mouse_in_view;
     QTimer still_timer;
     static const int still_timer_interval = 1000;
+	
+	int t_mouseclick;
 
     bool _in_destructor; //for makeCurrent when valid context
-	bool _isSoftwareGL; //for choiceRenderer
 
 	int _renderMode;
 	//unsigned char * data;

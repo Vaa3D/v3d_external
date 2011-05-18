@@ -659,6 +659,12 @@ void  Renderer_gl2::setupTexStreamBuffer()
 	BIND_UNPACK_PBO(0);
 }
 
+void Renderer_gl2::setupStackTexture(bool bfirst) {
+    qDebug() << "Renderer_gl2::setupStackTexture() start";
+    Renderer_tex2::setupStackTexture(bfirst);
+}
+
+
 void Renderer_gl2::_streamTex(int stack_i, int slice_i, int step, int slice0, int slice1)
 {
 	GLuint pbo = 0, tex = 0;

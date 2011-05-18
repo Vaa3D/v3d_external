@@ -70,7 +70,6 @@ class V3DWebService; //110315 YuY
 class soappara; //110315 YuY
 #endif
 
-
 class V3d_PluginLoader;
 class Image4DSimple;
 class My4DImage;
@@ -103,6 +102,9 @@ public:
     // CMB 12-Nov-2010
     // Intercept QFileOpenEvent on Mac - drag-onto-app
     bool eventFilter(QObject *obj, QEvent *event);
+    void setV3DDefaultModeCheck(bool checkState);
+    void setNeuronAnnotatorModeCheck(bool checkState);
+    void handleCoordinatedCloseEvent(QCloseEvent *event);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -127,6 +129,7 @@ public slots:
     // void about();
 	void openRecentFile();
     void updateMenus();
+    void updateModeMenu();
     void updateWindowMenu();
 
 	void updateProcessingMenu();
@@ -248,6 +251,10 @@ public slots:
 	void func_procTracing_clear();
 	void func_procTracing_update3Dview();
 	void func_procTracing_save();
+
+        // Mode
+        void func_procModeDefault();
+        void func_procModeNeuronAnnotator();
 	
 // Dec-20-2010 YuY	
 signals:
@@ -299,6 +306,7 @@ private:
     QMenu *fileMenu;
     QMenu *editMenu;
     QMenu *windowMenu;
+    QMenu *modeMenu;
     QMenu *helpMenu;
 
 	QMenu *basicProcMenu, *advancedProcMenu, *pipelineProcMenu, *visualizeProcMenu;
@@ -451,7 +459,7 @@ private:
     QAction * procCellSeg_Gaussian_fit_1_spot_1_Gauss;
     QAction * procCellSeg_Gaussian_fit_1_spot_N_Gauss;
 	QAction * procCellSeg_Gaussian_partition;
-	QAction * procCellSeg_manualCorrect;
+        QAction * procCellSeg_manualCorrect;
 
 #ifdef __v3dwebservice__
 private:
@@ -468,6 +476,10 @@ public slots:
 	void switch3dviewercontrol(V3dR_MainWindow *existing_3dviewer);
 #endif
 
+        // Mode
+        QAction * procModeDefault;
+        QAction * procModeNeuronAnnotator;
+	
 public: //for image processing, some of the parameters should be globally set
 	//080822
 	BDB_Minus_ConfigParameter flybrain_lobeseg_para;

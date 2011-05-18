@@ -60,6 +60,7 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 #include <QtGui>
 
 #include "mainwindow.h"
+#include "v3d_application.h"
 #include "v3d_version_info.h"
 
 #include "../basic_c_fun/basic_surf_objs.h"
@@ -88,6 +89,7 @@ MainWindow::MainWindow()
     fileMenu = 0;
     editMenu = 0;
     windowMenu = 0;
+    modeMenu = 0;
     helpMenu = 0;
 
 	proc_export_menu = 0;
@@ -234,6 +236,10 @@ MainWindow::MainWindow()
 	procCellSeg_Gaussian_fit_1_spot_N_Gauss = 0;
 	procCellSeg_Gaussian_partition = 0;
 	procCellSeg_manualCorrect = 0;
+
+        // Mode
+        procModeDefault = 0;
+        procModeNeuronAnnotator = 0;
 
 	setup_global_imgproc_parameter_default(); //set up the default parameter for some of the global parameters of image processing or viewing
 
@@ -453,15 +459,62 @@ char *MainWindow::getPluginMethod()
 	return pluginmethod;
 }
 
-void MainWindow::closeEvent(QCloseEvent *event)
+#ifdef __v3dwebservice__
+
+// slot function for init web service thread
+void MainWindow::initWebService(V3DWebService *pws)
 {
-	qDebug("***v3d: MainWindow::closeEvent");
+	connect(pws, SIGNAL(finished()), pws, SLOT(deleteLater()));
+	pws->start();
+}
 
-	writeSettings(); //added on 090501 to save setting (default preferences)
+// slot function for quit web service thread
+void MainWindow::quitWebService(V3DWebService *pws)
+{	
+	pws->exit();
+}
 
-	foreach (V3dR_MainWindow* p3DView, list_3Dview_win) p3DView->close(); //090812 RZC
+// slot function for passing soap parameters
+void MainWindow::setSoapPara(soappara *pSoapParaInput)
+{
+	pSoapPara = pSoapParaInput;
+}
 
-	//exit(1); //this is one bruteforce way to disable the strange seg fault. 080430. A simple to enhance this is to set a b_changedContent flag indicates if there is any unsaved edit of an image,
+// slot function for response web service
+void MainWindow::webserviceResponse()
+{	
+	qDebug()<<"web service response here ...";
+	
+	this->setSoapPara(v3dws->getSoapPara());
+	
+	if(pSoapPara)
+	{
+		if(string(pSoapPara->str_func) == "helloworld")
+		{
+			QMessageBox::information((QWidget *)0, QString("title: v3d web service"), QString(pSoapPara->str_message));
+		}
+		else if(string(pSoapPara->str_func) == "v3dopenfile")
+		{
+			this->loadV3DFile(pSoapPara->str_message, true, false);
+		}
+		else
+		{
+			QMessageBox::information((QWidget *)0, QString("title: v3d web service"), QString("Wrong function to invoke!"));
+		}
+	}
+	
+}
+
+#endif //__v3dwebservice__
+
+void MainWindow::handleCoordinatedCloseEvent(QCloseEvent *event) {
+    qDebug("***v3d: MainWindow::closeEvent");
+
+    writeSettings(); //added on 090501 to save setting (default preferences)
+
+    foreach (V3dR_MainWindow* p3DView, list_3Dview_win) p3DView->close(); //090812 RZC
+
+    //exit(1); //this is one bruteforce way to disable the strange seg fault. 080430. A simple to enhance this is to set a b_changedContent flag indicates if there is any unsaved edit of an image,
 
     workspace->closeAllWindows();
     if (activeMdiChild())
@@ -474,13 +527,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
         //writeSettings();
         event->accept();
     }
+}
 
-    //090812 still unsolved: QBasicAtomicInt::deref (this=0x0) at qatomic_i386.h:132
-    //if(!testAttribute(Qt::WA_DeleteOnClose)) deleteLater();//090811 RZC replace the exit(1)
-
-	//qApp->quit(); //this equal exit(0)
-	QCoreApplication::postEvent(qApp, new QEvent(QEvent::Quit)); // this more OK
-
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    V3dApplication::handleCloseEvent(event);
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event)
@@ -1642,6 +1693,13 @@ void MainWindow::updateMenus()
 	proc3DLocalRoiViewer->setEnabled(hasMdiChild); //need to ensure the availability of roi later
 }
 
+void MainWindow::updateModeMenu()
+{
+    modeMenu->clear();
+    modeMenu->addAction(procModeDefault);
+    modeMenu->addAction(procModeNeuronAnnotator);
+}
+
 void MainWindow::updateWindowMenu()
 {
     windowMenu->clear();
@@ -2277,6 +2335,17 @@ void MainWindow::createActions()
     procPC_Atlas_view_atlas_computeVanoObjStat->setStatusTip(tr("re-compute image objects statistics for .ano files under a directory"));
     connect(procPC_Atlas_view_atlas_computeVanoObjStat, SIGNAL(triggered()), this, SLOT(func_procPC_Atlas_view_atlas_computeVanoObjStat()));
 
+    // Mode
+    procModeDefault = new QAction(tr("V3D Default"), this);
+    procModeDefault->setCheckable(true);
+    procModeDefault->setChecked(true);
+    connect(procModeDefault, SIGNAL(triggered()), this, SLOT(func_procModeDefault()));
+
+    procModeNeuronAnnotator = new QAction(tr("Neuron Annotator"), this);
+    procModeNeuronAnnotator->setCheckable(true);
+    procModeNeuronAnnotator->setChecked(false);
+    connect(procModeNeuronAnnotator, SIGNAL(triggered()), this, SLOT(func_procModeNeuronAnnotator()));
+
 }
 
 void MainWindow::createMenus()
@@ -2363,6 +2432,10 @@ void MainWindow::createMenus()
     connect(windowMenu, SIGNAL(aboutToShow()), this, SLOT(updateWindowMenu()));
 
     menuBar()->addSeparator();
+
+    // Mode
+    modeMenu = menuBar()->addMenu(tr("Mode"));
+    connect(modeMenu, SIGNAL(aboutToShow()), this, SLOT(updateModeMenu()));
 
 	//
     helpMenu = menuBar()->addMenu(tr("&Help"));
@@ -2665,6 +2738,28 @@ void MainWindow::func_procCellSeg_Gaussian_fit_1_spot_1_Gauss(){if (activeMdiChi
 void MainWindow::func_procCellSeg_Gaussian_fit_1_spot_N_Gauss(){if (activeMdiChild()) activeMdiChild()->popupImageProcessingDialog(tr(" -- N-Gaussian fit of current focus pos"));}
 void MainWindow::func_procCellSeg_Gaussian_partition(){if (activeMdiChild()) activeMdiChild()->popupImageProcessingDialog(tr(" -- (available soon) Gaussian partition"));}
 void MainWindow::func_procCellSeg_manualCorrect(){if (activeMdiChild()) activeMdiChild()->popupImageProcessingDialog(tr(" -- (available soon) manual correction/identification of spherical structures"));}
+
+
+// Mode
+void MainWindow::func_procModeDefault()
+{
+    V3dApplication::deactivateNaMainWindow();
+    V3dApplication::activateMainWindow();
+}
+
+void MainWindow::func_procModeNeuronAnnotator()
+{
+    V3dApplication::deactivateMainWindow();
+    V3dApplication::activateNaMainWindow();
+}
+
+void MainWindow::setV3DDefaultModeCheck(bool checkState) {
+    procModeDefault->setChecked(checkState);
+}
+
+void MainWindow::setNeuronAnnotatorModeCheck(bool checkState) {
+    procModeNeuronAnnotator->setChecked(checkState);
+}
 
 //class V3D_PlugIn_Interface
 //{

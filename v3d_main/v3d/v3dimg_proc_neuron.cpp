@@ -37,6 +37,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3d_core.h"
 #include "dialog_curve_trace_para.h"
 #include "mainwindow.h"
+#include "v3d_application.h"
 
 #include "../neuron_tracing/neuron_tracing.h"
 #include "../3drenderer/barFigureDialog.h"
@@ -811,7 +812,7 @@ bool My4DImage::proj_trace_compute_radius_of_last_traced_neuron(CurveTracePara &
 						mUnit,
 						false,       // 090619: do not move points because the deformable model has done it
 						myzthickness, // 100404: add the zthickness
-						getXWidget()->getMainControlWindow()->global_setting.b_3dcurve_width_from_xyonly); //100415
+                                                V3dApplication::getMainWindow()->global_setting.b_3dcurve_width_from_xyonly); //100415
 
 			smooth_radius(mUnit, smoothing_win_sz, false); // 090602, 090620
 
@@ -854,15 +855,15 @@ bool My4DImage::proj_trace_add_curve_segment(vector<XYZ> &mCoord, int chno)
 	V3DLONG cur_segid = tracedNeuron.nsegs()-1;
 
 	if (chno >=0) //100115, 100130: for solveCurveViews. 
-	{
-		if (getXWidget()->getMainControlWindow()->global_setting.b_3dcurve_autodeform)
+	{		
+                if (V3dApplication::getMainWindow()->global_setting.b_3dcurve_autodeform)
 			proj_trace_smooth_downsample_last_traced_neuron(trace_para, cur_segid, cur_segid);
 
 		bool b_use_shortestpath_rgnaroundcurve=true; //100130
 		if (b_use_shortestpath_rgnaroundcurve)
 			proj_trace_shortestpath_rgnaroundcurve(trace_para, cur_segid, cur_segid);
 		
-		if (getXWidget()->getMainControlWindow()->global_setting.b_3dcurve_autowidth)
+                if (V3dApplication::getMainWindow()->global_setting.b_3dcurve_autowidth)
 			proj_trace_compute_radius_of_last_traced_neuron(trace_para, cur_segid, cur_segid, trace_z_thickness);
 	}
 	//

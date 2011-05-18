@@ -213,6 +213,7 @@ public:
 	void showLineProfile(int marker1, int marker2);
 	QVector<int> getLineProfile(XYZ p1, XYZ p2, int chno=0);
 
+	XYZ selectPosition(int x, int y); 	// neuron selector
 
 // define Marker/Curve  ///////////////////////////////////////////////
 protected:
@@ -225,6 +226,7 @@ protected:
 		double P[16];		// 4x4 projection matrix
 		double MV[16];		// 4x4 model-view matrix
 	};
+	
 	QCursor oldCursor;
 	int lastSliceType;
 	int currentMarkerName;
@@ -389,7 +391,79 @@ protected:
 	void saveWavefrontOBJ(const QString& filename);
 	void loadV3DSurface(const QString& filename);
 	void saveV3DSurface(const QString& filename);
+
+        // texture rendering
+        static RGBA8* _safe3DBuf;
+
+        static void _safeRelease3DBuf()
+        {
+                if (_safe3DBuf) delete[] _safe3DBuf;  _safe3DBuf = 0;
+        }
+
+        static RGBA8* _safeReference3DBuf(RGBA8* rgbaBuf, int bufX, int bufY, int bufZ,
+                         int &safeX, int &safeY, int &safeZ)
+        {
+                _safeRelease3DBuf();
+        //	V3DLONG limitX = MAX_3DTEX_SIZE;
+        //	V3DLONG limitY = MAX_3DTEX_SIZE;
+        //	V3DLONG limitZ = MAX_3DTEX_SIZE;
+                V3DLONG limitX = LIMIT_VOLX;
+                V3DLONG limitY = LIMIT_VOLY;
+                V3DLONG limitZ = LIMIT_VOLZ;
+                V3DLONG fillX = power_of_two_ceil(bufX);
+                V3DLONG fillY = power_of_two_ceil(bufY);
+                V3DLONG fillZ = power_of_two_ceil(bufZ);
+                if (fillX<=limitX && fillY<=limitY && fillZ<=limitZ)
+                {
+                        safeX = bufX;
+                        safeY = bufY;
+                        safeZ = bufZ;
+                        return rgbaBuf;
+                }
+
+                float sx, sy, sz;
+                V3DLONG dx, dy, dz;
+                sx = float(bufX)/MIN(limitX, bufX);
+                sy = float(bufY)/MIN(limitY, bufY);
+                sz = float(bufZ)/MIN(limitZ, bufZ);
+                dx = V3DLONG(sx);
+                dy = V3DLONG(sy);
+                dz = V3DLONG(sz);
+                MESSAGE_ASSERT(dx*dy*dz >=1); // down sampling
+                limitX = V3DLONG(bufX/sx);
+                limitY = V3DLONG(bufY/sy);
+                limitZ = V3DLONG(bufZ/sz);
+                safeX = limitX;
+                safeY = limitY;
+                safeZ = limitZ;
+                //qDebug("	safe = %dx%dx%d", limitX, limitY, limitZ);
+
+                _safe3DBuf = new RGBA8[safeX*safeY*safeZ];
+                //memset(_safe3DBuf, 0, sizeof(RGBA8)*safeX*safeY*safeZ);
+                V3DLONG ox, oy, oz;
+                V3DLONG ix, iy, iz;
+                for (oz = 0; oz < safeZ; oz++)
+                        for (oy = 0; oy < safeY; oy++)
+                                for (ox = 0; ox < safeX; ox++)
+                                {
+                                        ix = CLAMP(0,bufX-1, IROUND(ox*sx));
+                                        iy = CLAMP(0,bufY-1, IROUND(oy*sy));
+                                        iz = CLAMP(0,bufZ-1, IROUND(oz*sz));
+
+                                        RGBA32f rgbaf;
+                                        RGBA8 rgba8;
+                                        rgbaf = sampling3dRGBA8( rgbaBuf, bufX, bufY, bufZ, ix, iy, iz, dx, dy, dz);
+                                        rgba8.r = (unsigned char)rgbaf.r;
+                                        rgba8.g = (unsigned char)rgbaf.g;
+                                        rgba8.b = (unsigned char)rgbaf.b;
+                                        rgba8.a = (unsigned char)rgbaf.a;
+
+                                        _safe3DBuf[ oz*(safeY*safeX) + oy*(safeX) + ox] = rgba8;
+                                }
+                return _safe3DBuf;
+        }
 };
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -435,6 +509,5 @@ inline RGBA8 RGBA8FromQColor(QColor qcolor)
 	c.r=(unsigned char)ic.r; c.g=(unsigned char)ic.g; c.b=(unsigned char)ic.b; c.a=(unsigned char)ic.a;
 	return c;
 }
-
 
 #endif

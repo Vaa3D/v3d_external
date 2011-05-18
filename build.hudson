@@ -1,0 +1,25 @@
+#!/bin/bash
+# 2010-08-07 by Hanchuan Peng
+# a convenience script for building teh system on Linux (Redhat and Ubuntu)
+#
+# examples: 
+#    sh build.linux
+#    sh build.linux -B -j4   #rebuild the entire system using 4 processors
+
+cd v3d_main
+
+sh ./build.redhat $*
+
+cd ../
+
+# Check for the executable file
+if [ -e "./v3d/v3d" ]
+then
+    echo "Found executable"
+    exit 0;
+else
+    echo "ERROR: did not find executable"
+    exit 1;
+fi
+
+

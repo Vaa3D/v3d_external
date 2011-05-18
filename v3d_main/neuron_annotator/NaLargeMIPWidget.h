@@ -1,0 +1,151 @@
+#ifndef NA_LARGE_MIP_WIDGET_H
+#define NA_LARGE_MIP_WIDGET_H
+
+#include <QObject>
+#include <QWidget>
+#include <QImage>
+#include <QPixmap>
+#include <QPainter>
+#include "NaViewer.h"
+
+class MipDisplayImage;
+
+// MipData is a generic container for float representation of original MIP data.
+// MipDisplayImage can contain a binary tree of MipDisplayImages,
+// for efficient update when toggling different components (e.g. neurons).
+class MipPixel : public std::vector<float>
+{
+public:
+    MipPixel(size_t nChannels = 1)
+        : std::vector<float>(nChannels, 0.0f)
+        , z(-1) // , intensity(0.0f)
+    {}
+
+    int z;
+    // float intensity;
+};
+typedef std::vector<MipPixel> MipColumn;
+class MipData : public QObject
+{
+    Q_OBJECT
+
+public:
+    explicit MipData(QObject * parent = NULL) : QObject(parent) {}
+    // Initialize from either a 3D data set...
+    explicit MipData(const My4DImage* img, const My4DImage* maskImg = NULL, QObject * parent = NULL);
+    // ...or a pair of intermediate images in a binary tree
+    // explicit MipData(const MipData* child1, const MipData* child2, QObject * parent = NULL);
+
+    const MipColumn& operator[](int index) const {
+        return data[index];
+    }
+    MipColumn& operator[](int index) {
+        return data[index];
+    }
+
+    bool loadMy4DImage(const My4DImage* img, const My4DImage* maskImg = NULL);
+
+    int nColumns() const;
+    int nRows() const;
+    int nChannels() const;
+
+    float dataMin; // actual minimum value
+    float dataMax; // actual maximum value
+
+signals:
+    void dataChanged();
+    void processedXColumn(int);
+
+public slots:
+    void updateData() {}
+
+private:
+    std::vector<MipColumn> data; // Image pixels
+    bool bToggledOn; // Whether this MIP image is on or off (within binary tree, say)
+};
+
+// MipDisplayImage is a derived class of QImage, intended
+// to encapsulate gamma/HDR correctability.
+class MipDisplayImage : public QObject
+{
+    Q_OBJECT
+
+public:
+    explicit MipDisplayImage();
+    void setGamma(float gamma);
+
+    MipData originalData;
+
+    // contain rather than inherit...
+    QImage image;
+
+signals:
+    void initialImageDataLoaded(); // primary MIP image ready for display
+    void maskDataLoaded(); // ready for neuron mask toggling
+    void processedXColumn(int);
+
+public slots:
+    void loadImageData(const My4DImage* img, const My4DImage* maskImg);
+    void processedXColumnSlot(int);
+
+protected:
+    unsigned char getCorrectedIntensity(float i_in) const;
+    unsigned char getCorrectedIntensity(int x, int y, int c) const;
+    void updateCorrectedIntensities();
+    void load4DImage(const My4DImage* img, const My4DImage* maskImg = NULL);
+
+
+    float displayMin; // min display value for HDR
+    float displayMax; // max display value for HDR
+    float displayGamma; // gamma correction between displayMin and displayMax
+    float gammaTable[256]; // lookup table for gamma correction
+    float dGammaTable[256]; // to help interpolation, especially for high dynamic range data.
+};
+
+// Large maximum intensity projection viewer for Neuron Annotator
+// mode of V3D
+class NaLargeMIPWidget : public QWidget, public NaViewer
+{
+    Q_OBJECT
+
+public:
+    NaLargeMIPWidget(QWidget* parent);
+    virtual ~NaLargeMIPWidget();
+    // virtual bool loadMy4DImage(const My4DImage* my4DImage);
+    virtual bool loadMy4DImage(const My4DImage* my4DImage, const My4DImage* maskImg = NULL);
+    virtual void paintEvent(QPaintEvent *event);
+    // Drag with mouse to translate
+    virtual void mouseMoveEvent(QMouseEvent * event);
+    virtual void mousePressEvent(QMouseEvent * event);
+    virtual void mouseReleaseEvent(QMouseEvent * event);
+    // double click to center
+    virtual void mouseDoubleClickEvent(QMouseEvent * event);
+    virtual void wheelEvent(QWheelEvent * e); // zoom with scroll wheel
+    virtual void resizeEvent(QResizeEvent * event);
+    void translateImage(int dx, int dy);
+
+signals:
+    // message intended for main window status area
+    void statusMessage(const QString&);
+    void volumeDataUpdated(const My4DImage*, const My4DImage*);
+
+public slots:
+    void annotationModelUpdate(QString updateType);
+    void showCrosshair(bool b) {NaViewer::showCrosshair(b); update();}
+    void initializePixmap(); // when a new image has loaded
+
+protected:
+    void updateDefaultScale();
+    void resetView();
+    void paintIntensityNumerals(QPainter& painter);
+
+    MipDisplayImage * mipImage;
+    QPixmap pixmap;
+    QPainter painter;
+    QTransform X_img_view;
+    QTransform X_view_img;
+    QThread imageUpdateThread;
+    QProgressBar * progressBar;
+};
+
+#endif // NA_LARGE_MIP_WIDGET_H

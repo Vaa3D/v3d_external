@@ -210,17 +210,17 @@ struct BoundingBox {
 	BoundingBox(float x0, float y0, float z0, float x1, float y1, float z1)
 									{this->x0=x0; this->y0=y0; this->z0=z0;  this->x1=x1; this->y1=y1; this->z1=z1;}
 	BoundingBox(XYZ V0, XYZ V1)		{x0=V0.x; y0=V0.y; z0=V0.z;  x1=V1.x; y1=V1.y; z1=V1.z;}
-	float Dx() 		{return (x1-x0); }
-	float Dy() 		{return (y1-y0); }
-	float Dz() 		{return (z1-z0); }
-	float Dmin() 	{return MIN(MIN(Dx(),Dy()),Dz());}
-	float Dmax() 	{return MAX(MAX(Dx(),Dy()),Dz());}
-	XYZ V0() 	 	{return XYZ(x0,y0,z0);}
-	XYZ V1() 	 	{return XYZ(x1,y1,z1);}
-	XYZ Vabsmin() 	{return XYZ(ABSMIN(x0,x1), ABSMIN(y0,y1), ABSMIN(z0,z1));}
-	XYZ Vabsmax() 	{return XYZ(ABSMAX(x0,x1), ABSMAX(y0,y1), ABSMAX(z0,z1));}
-	bool isNegtive()	 	{return (Dx()<0 || Dy()<0 || Dz()<0);}
-	bool isInner(XYZ V, float d=0) 	{
+        float Dx() const		{return (x1-x0); }
+        float Dy() const		{return (y1-y0); }
+        float Dz() const		{return (z1-z0); }
+        float Dmin() const	{return MIN(MIN(Dx(),Dy()),Dz());}
+        float Dmax() const	{return MAX(MAX(Dx(),Dy()),Dz());}
+        XYZ V0() const	 	{return XYZ(x0,y0,z0);}
+        XYZ V1() const	 	{return XYZ(x1,y1,z1);}
+        XYZ Vabsmin() const	{return XYZ(ABSMIN(x0,x1), ABSMIN(y0,y1), ABSMIN(z0,z1));}
+        XYZ Vabsmax() const	{return XYZ(ABSMAX(x0,x1), ABSMAX(y0,y1), ABSMAX(z0,z1));}
+        bool isNegtive()	const 	{return (Dx()<0 || Dy()<0 || Dz()<0);}
+        bool isInner(XYZ V, float d=0) const	{
 		return BETWEENEQ(x0-d,x1+d, V.x) && BETWEENEQ(y0-d,y1+d, V.y) && BETWEENEQ(z0-d,z1+d, V.z);
 	}
 	void clamp(XYZ & V) {

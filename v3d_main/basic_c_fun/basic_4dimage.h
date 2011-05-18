@@ -100,20 +100,21 @@ public:
 
 	//main interface to the data
 	unsigned char * getRawData() {return data1d;}
-	V3DLONG getXDim() {return sz0;}
-	V3DLONG getYDim() {return sz1;}
-	V3DLONG getZDim() {return sz2;}
-	V3DLONG getCDim() {return sz3;}
-	V3DLONG getTDim() {return sz_time;}
-	V3DLONG getValidZSliceNum() {return valid_zslicenum;}
-	V3DLONG getPreValidZSliceNum() {return prevalid_zslicenum;}
-	int getError() {return b_error;}
-	ImagePixelType getDatatype() {return datatype;}
-	TimePackType getTimePackType() {return timepacktype;}
-	V3DLONG getTotalUnitNumber() {return sz0*sz1*sz2*sz3;}
-	V3DLONG getTotalUnitNumberPerPlane() {return sz0*sz1;}
-	V3DLONG getTotalUnitNumberPerChannel() {return sz0*sz1*sz2;}
-	V3DLONG getUnitBytes()
+        const unsigned char * getRawData() const {return data1d;} // const version 25-Apr 2011 CMB
+        V3DLONG getXDim() const {return sz0;}
+        V3DLONG getYDim() const {return sz1;}
+        V3DLONG getZDim() const {return sz2;}
+        V3DLONG getCDim() const {return sz3;}
+        V3DLONG getTDim() const {return sz_time;}
+        V3DLONG getValidZSliceNum() const {return valid_zslicenum;}
+        V3DLONG getPreValidZSliceNum() const {return prevalid_zslicenum;}
+        int getError() const {return b_error;}
+        ImagePixelType getDatatype() const {return datatype;}
+        TimePackType getTimePackType() const {return timepacktype;}
+        V3DLONG getTotalUnitNumber() const {return sz0*sz1*sz2*sz3;}
+        V3DLONG getTotalUnitNumberPerPlane() const {return sz0*sz1;}
+        V3DLONG getTotalUnitNumberPerChannel() const {return sz0*sz1*sz2;}
+        V3DLONG getUnitBytes() const
 	{
 		switch (datatype)
 		{
@@ -123,7 +124,7 @@ public:
 			default: return 1;
 		}
 	}
-	V3DLONG getTotalBytes() {return getUnitBytes()*sz0*sz1*sz2*sz3;}
+        V3DLONG getTotalBytes() const {return getUnitBytes()*sz0*sz1*sz2*sz3;}
 	unsigned char * getRawDataAtChannel(V3DLONG cid)
 	{
 		V3DLONG myid = cid; if (myid<0) myid=0; else if (myid>=sz3) myid = sz3-1;
@@ -142,12 +143,12 @@ public:
 				 datatype!=V3D_UINT16 &&
 				 datatype!=V3D_FLOAT32)) ?  false : true;
 	}
-	double getRezX() {return rez_x;}
-	double getRezY() {return rez_y;}
-	double getRezZ() {return rez_z;}
-	double getOriginX() {return origin_x;}
-	double getOriginY() {return origin_y;}
-	double getOriginZ() {return origin_z;}
+        double getRezX() const {return rez_x;}
+        double getRezY() const {return rez_y;}
+        double getRezZ() const {return rez_z;}
+        double getOriginX() const {return origin_x;}
+        double getOriginY() const {return origin_y;}
+        double getOriginZ() const {return origin_z;}
 
 	void setXDim(V3DLONG v) {sz0=v;}
 	void setYDim(V3DLONG v) {sz1=v;}

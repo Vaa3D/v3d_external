@@ -125,7 +125,9 @@ protected:
 
 // public View control interface
 public:
-	virtual float getViewDistance() {return viewDistance;}
+        virtual float getViewDistance() const {return viewDistance;}
+        virtual float getViewAngle() const {return viewAngle;}
+        virtual float getZoomRatio() const {return zoomRatio;}
 	virtual void setZoom(float ratio);
 
 	virtual int setVolumeTimePoint(int t) {volTimeOffset = t-volTimePoint; volTimePoint = t; return volTimePoint;}
@@ -345,6 +347,11 @@ void data4dp_to_rgba3d(Image4DProxy<Image4DSimple>& img4dp, V3DLONG dim5,
 float sampling3dUINT8(Image4DProxy<Image4DSimple>& img4dp,
 		V3DLONG c,
 		V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG dx, V3DLONG dy, V3DLONG dz);
+
+float sampling3dUINT8_2(Image4DProxy<Image4DSimple>& img4dp,
+                V3DLONG c,
+                V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG dx, V3DLONG dy, V3DLONG dz, V3DLONG dxyz);
+
 //float sampling3dUINT8at(Image4DProxy<Image4DSimple>& data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3,
 //		float x, float y, float z);
 //float sampling3dUINT8atBounding(Image4DProxy<Image4DSimple>& data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3,
@@ -498,6 +505,9 @@ template <class T> float sampling3dAllTypes(T* data, V3DLONG dim1, V3DLONG dim2,
 {
 	float avg = 0;
 	float d = (dx*dy*dz);
+	
+	V3DLONG pagesz = dim1*dim2*dim3;
+	
 	if (d>0 && x>=0 && y>=0 && z>=0 && x+dx<=dim1 && y+dy<=dim2 && z+dz<=dim3)
 	{
 		//float s = 0;
@@ -508,7 +518,13 @@ template <class T> float sampling3dAllTypes(T* data, V3DLONG dim1, V3DLONG dim2,
 				{
 					//float w = MAX( (2-ABS(xi-0.5*dx)*2.0/dx), MAX( (2-ABS(yi-0.5*dy)*2.0/dy), (2-ABS(zi-0.5*dz)*2.0/dz) )); //090712
 					//s += w;
-					avg += data[(z + zi)*dim2*dim1 + (y + yi)*dim1 + (x	+ xi)];// *w;
+					
+					V3DLONG idx = (z + zi)*dim2*dim1 + (y + yi)*dim1 + (x	+ xi);
+					
+					if(idx<pagesz)
+						avg += data[idx];// *w;
+					else
+						continue;
 				}
 		//d = s;
 		avg /= d;

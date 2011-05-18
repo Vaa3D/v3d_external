@@ -84,7 +84,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 		\
 	}
 
-
+RGBA8* Renderer_tex2::_safe3DBuf=0;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -415,7 +415,7 @@ void Renderer_tex2::paint()
 			disableViewClipPlane();
 
 		glPopMatrix(); //============================================================== }
-	}
+            }
 
 	if (sShowMarkers>0 || sShowSurfObjects>0)
 	{
@@ -846,23 +846,23 @@ void Renderer_tex2::loadVol()
 	bool ok;
 	if ( !(ok = supported_TexNPT()) )
 		tryTexNPT = 0;
-	//qDebug()<< QString("	ARB_texture_non_power_of_two          %1 supported ").arg(ok?"":"NOT");
+        qDebug()<< QString("	ARB_texture_non_power_of_two          %1 supported ").arg(ok?"":"NOT");
 
 	if ( !(ok = supported_TexCompression()) )
 		tryTexCompress = 0;
-	//qDebug()<< QString("	ARB_texture_compression               %1 supported ").arg(ok?"":"NOT");
+        qDebug()<< QString("	ARB_texture_compression               %1 supported ").arg(ok?"":"NOT");
 
 	if ( !(ok = supported_Tex3D()) )
 		tryTex3D = 0;
-	//qDebug()<< QString("	EXT_texture3D (or OpenGL 2.0)         %1 supported ").arg(ok?"":"NOT");
+        qDebug()<< QString("	EXT_texture3D (or OpenGL 2.0)         %1 supported ").arg(ok?"":"NOT");
 
 	if ( !(ok = supported_TexStream()) )
 		if (tryTexStream != -1)
 			tryTexStream = 0;
-	//qDebug()<< QString("	texture stream (need PBO and GLSL)    %1 supported ").arg(ok?"":"NOT");
+        qDebug()<< QString("	texture stream (need PBO and GLSL)    %1 supported ").arg(ok?"":"NOT");
 
 	ok = supported_GL2();
-	//qDebug()<< QString("	GLSL (and OpenGL 2.0)                 %1 supported ").arg(ok?"":"NOT");
+        qDebug()<< QString("	GLSL (and OpenGL 2.0)                 %1 supported ").arg(ok?"":"NOT");
 
 
 	if (imageT>1) //090802: TexSubImage conflicts against compressed texture2D, but is good for compressed texture3D
@@ -904,11 +904,14 @@ void Renderer_tex2::loadVol()
 
 	if (tryTex3D && supported_Tex3D())
 	{
+            qDebug() << "Renderer_tex2::loadVol() - creating 3D texture ID\n";
 		glGenTextures(1, &tex3D);		//qDebug("	tex3D = %u", tex3D);
 	}
 	if (!tex3D || tryTexStream !=0) //stream = -1/1/2
 	{
 		//tryTex3D = 0; //091015: no need, because tex3D & tex_stream_buffer is not related now.
+
+            qDebug() << "Renderer_tex2::loadVol() - creating data structures for managing 2D texture slice set\n";
 
 		Ztex_list = new GLuint[imageZ+1]; //+1 for pbo tex
 		Ytex_list = new GLuint[imageY+1];
@@ -977,6 +980,8 @@ void Renderer_tex2::subloadTex(V3DLONG timepoint, bool bfirst)
 	{
 		timepoint = CLAMP(0, imageT-1, timepoint);
 		rgbaBuf = total_rgbaBuf + timepoint*(imageZ*imageY*imageX);
+
+                qDebug() << "Calling setupStackTexture() from Renderer_tex2::subloadTex()";
 
 		//if (tryTexStream<=0) 			// 091014: mix down-sampled & streamed method
 			setupStackTexture(bfirst);  // use a temporary buffer, so first
@@ -1069,74 +1074,6 @@ void _copyYzxFromZyx(RGBA8* rgbaYzx, RGBA8* rgbaZyx, int bufX, int bufY, int buf
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-static RGBA8* _safe3DBuf = 0;  /// (256^3)*4==64M  (512x512x256)*4==256M
-static void _safeRelease3DBuf()
-{
-	if (_safe3DBuf) delete[] _safe3DBuf;  _safe3DBuf = 0;
-}
-static RGBA8* _safeReference3DBuf(RGBA8* rgbaBuf, int bufX, int bufY, int bufZ,
-		 int &safeX, int &safeY, int &safeZ)
-{
-	_safeRelease3DBuf();
-//	V3DLONG limitX = MAX_3DTEX_SIZE;
-//	V3DLONG limitY = MAX_3DTEX_SIZE;
-//	V3DLONG limitZ = MAX_3DTEX_SIZE;
-	V3DLONG limitX = LIMIT_VOLX;
-	V3DLONG limitY = LIMIT_VOLY;
-	V3DLONG limitZ = LIMIT_VOLZ;
-	V3DLONG fillX = power_of_two_ceil(bufX);
-	V3DLONG fillY = power_of_two_ceil(bufY);
-	V3DLONG fillZ = power_of_two_ceil(bufZ);
-	if (fillX<=limitX && fillY<=limitY && fillZ<=limitZ)
-	{
-		safeX = bufX;
-		safeY = bufY;
-		safeZ = bufZ;
-		return rgbaBuf;
-	}
-
-	float sx, sy, sz;
-	V3DLONG dx, dy, dz;
-	sx = float(bufX)/MIN(limitX, bufX);
-	sy = float(bufY)/MIN(limitY, bufY);
-	sz = float(bufZ)/MIN(limitZ, bufZ);
-	dx = V3DLONG(sx);
-	dy = V3DLONG(sy);
-	dz = V3DLONG(sz);
-	MESSAGE_ASSERT(dx*dy*dz >=1); // down sampling
-	limitX = V3DLONG(bufX/sx);
-	limitY = V3DLONG(bufY/sy);
-	limitZ = V3DLONG(bufZ/sz);
-	safeX = limitX;
-	safeY = limitY;
-	safeZ = limitZ;
-	//qDebug("	safe = %dx%dx%d", limitX, limitY, limitZ);
-
-	_safe3DBuf = new RGBA8[safeX*safeY*safeZ];
-	//memset(_safe3DBuf, 0, sizeof(RGBA8)*safeX*safeY*safeZ);
-	V3DLONG ox, oy, oz;
-	V3DLONG ix, iy, iz;
-	for (oz = 0; oz < safeZ; oz++)
-		for (oy = 0; oy < safeY; oy++)
-			for (ox = 0; ox < safeX; ox++)
-			{
-				ix = CLAMP(0,bufX-1, IROUND(ox*sx));
-				iy = CLAMP(0,bufY-1, IROUND(oy*sy));
-				iz = CLAMP(0,bufZ-1, IROUND(oz*sz));
-
-				RGBA32f rgbaf;
-				RGBA8 rgba8;
-				rgbaf = sampling3dRGBA8( rgbaBuf, bufX, bufY, bufZ, ix, iy, iz, dx, dy, dz);
-				rgba8.r = (unsigned char)rgbaf.r;
-				rgba8.g = (unsigned char)rgbaf.g;
-				rgba8.b = (unsigned char)rgbaf.b;
-				rgba8.a = (unsigned char)rgbaf.a;
-
-				_safe3DBuf[ oz*(safeY*safeX) + oy*(safeX) + ox] = rgba8;
-			}
-	return _safe3DBuf;
-}
-//////////////////////////////////////////////////////////////
 
 //#define TEXTURE_CLAMP GL_CLAMP
 #define TEXTURE_CLAMP GL_CLAMP_TO_EDGE
@@ -1183,6 +1120,9 @@ else \
 
 void Renderer_tex2::setupStackTexture(bool bfirst)
 {
+
+        qDebug() << "Renderer_tex2::setupStackTexture() start";
+
 	// In OpenGL 1.0, storing texture maps in display lists was the preferred method for optimizing performance.
 	// However, a better solution, texture objects, introduced in OpenGL 1.1, are preferred.
 	//glistTexs1 = glGenLists(imageZ);
@@ -1291,6 +1231,7 @@ void Renderer_tex2::setupStackTexture(bool bfirst)
 //		if (sh>h) sh = h;
 
 		for (int i = 0; i < n_slice; i++)
+
 		{
 			glBindTexture(GL_TEXTURE_2D, p_tex[i+1]); //[0] reserved for pbo tex
 			RGBA8* p_first = NULL;
@@ -1561,12 +1502,14 @@ void Renderer_tex2::drawUnitVolume()
 	if (b_stream   //091014: for streamed method
 		|| tryTexStream == -1) //091016
 	{
+            //qDebug() << "Renderer_tex2::drawUnitVolume() - setting realX,Y,Z to imageX,Y,Z   b_stream=" << b_stream << " tryTexStream=" << tryTexStream;
 		realX = imageX;
 		realY = imageY;
 		realZ = imageZ;
 	}
 	else
 	{
+            //qDebug() << "Renderer_tex2::drawUnitVolume() - settting realX,Y,Z to safeX,Y,Z";
 		realX = safeX;
 		realY = safeY;
 		realZ = safeZ;

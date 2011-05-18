@@ -55,6 +55,8 @@ Last update: 2011-04-19: fix some potential problem of null mainWin pointer
 #include <vector>
 
 #include "mainwindow.h"
+#include "../neuron_annotator/NaMainWindow.h"
+#include "v3d_application.h"
 
 #include <string>
 using namespace std;
@@ -70,6 +72,8 @@ void printHelp_v3d();
 void printHelp_align();
 void printHelp_straight();
 void printHelp_trace();
+
+V3dApplication* V3dApplication::theApp;
 
 void printHelp_v3d()
 {
@@ -215,16 +219,17 @@ int main(int argc, char **argv)
 			// ------ V3D GUI handling module ---------------------
 			Q_INIT_RESOURCE(v3d);
 
-			QApplication app(argc, argv);
+                        V3dApplication* app = V3dApplication::getInstance(argc, argv);
+                        app->activateMainWindow();
+                        MainWindow* mainWin=app->getMainWindow();
 
-			MainWindow* mainWin = new MainWindow;
 			if (!mainWin)
 			{
 				v3d_msg("Unable to open the V3D main window. Quit.");
 				return false;
 			}
 			
-			app.installEventFilter(mainWin);
+                        app->installEventFilter(mainWin);
 			if (mainWin) 
 				mainWin->show();
 			
@@ -326,7 +331,7 @@ int main(int argc, char **argv)
 			// launch v3d
 			try 
 			{
-				return app.exec();
+                                return app->exec();
 			}
 			catch (...) 
 			{

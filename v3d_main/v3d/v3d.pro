@@ -189,6 +189,33 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     v3d_global_preference_dialog.h \
     v3d_compile_constraints.h \
     v3d_version_info.h \
+    v3d_application.h \
+    ../neuron_annotator/NaViewer.h \
+    ../neuron_annotator/NaMainWindow.h \
+    ../neuron_annotator/Na3DWidget.h \
+    ../neuron_annotator/NaZStackWidget.h \
+    ../neuron_annotator/NaLargeMIPWidget.h \
+    ../neuron_annotator/ColorSeparatorConsolidator.h \
+    ../neuron_annotator/FileTreeSearcher.h \
+    ../neuron_annotator/AnnotationSession.h \
+    ../neuron_annotator/NeuronMaskEntry.h \
+    ../neuron_annotator/MultiColorImageStackNode.h \
+    ../neuron_annotator/NeuronAnnotatorResultNode.h \
+    ../neuron_annotator/TimebasedIdentifierGenerator.h \
+    ../neuron_annotator/RendererNeuronAnnotator.h \
+    ../neuron_annotator/GalleryButton.h \
+    ../neuron_annotator/CellCounter3D.h \
+    ../neuron_annotator/Vector3D.h \
+    ../neuron_annotator/Rotation3D.h \
+    ../neuron_annotator/CameraModel.h \
+    ../neuron_annotator/GammaWidget.h \
+	../neuron_annotator/NeuronSelector.h \
+	../webservice/v3dwebservice.hpp \
+	../webservice/v3dwebserver.h \
+	../webservice/gsoap2/stdsoap2.h \
+	../webservice/soapdep/soapH.h \
+	../webservice/soapdep/soapStub.h \
+	../webservice/soapdep/soapv3dwebserverService.h \
     colormap.h \
     rotate_image.h \
     dialog_rotate.h \
@@ -214,6 +241,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     mainwindow.h \
     DownloadManager.h \
     v3d_actions.h \
+    CommandManager.h \
     ../worm_straighten_c/bdb_minus.h \
     ../worm_straighten_c/mst_prim_c.h \
     ../worm_straighten_c/bfs.h \
@@ -268,6 +296,31 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
 	../imaging/v3d_imaging.cpp \
 	../multithreadimageIO/v3d_multithreadimageIO.cpp \
     v3d_version_info.cpp \
+    v3d_application.cpp \
+    ../neuron_annotator/NaViewer.cpp \
+    ../neuron_annotator/NaMainWindow.cpp \
+    ../neuron_annotator/Na3DWidget.cpp \
+    ../neuron_annotator/NaZStackWidget.cpp \
+    ../neuron_annotator/NaLargeMIPWidget.cpp \
+    ../neuron_annotator/ColorSeparatorConsolidator.cpp \
+    ../neuron_annotator/FileTreeSearcher.cpp \
+    ../neuron_annotator/AnnotationSession.cpp \
+    ../neuron_annotator/NeuronMaskEntry.cpp \
+    ../neuron_annotator/MultiColorImageStackNode.cpp \
+    ../neuron_annotator/NeuronAnnotatorResultNode.cpp \
+    ../neuron_annotator/TimebasedIdentifierGenerator.cpp \
+    ../neuron_annotator/RendererNeuronAnnotator.cpp \
+    ../neuron_annotator/GalleryButton.cpp \
+    ../neuron_annotator/CellCounter3D.cpp \
+    ../neuron_annotator/Vector3D.cpp \
+    ../neuron_annotator/Rotation3D.cpp \
+    ../neuron_annotator/CameraModel.cpp \
+    ../neuron_annotator/GammaWidget.cpp \
+	../neuron_annotator/NeuronSelector.cpp \
+	../webservice/v3dwebservice.cpp \
+	../webservice/gsoap2/stdsoap2.cpp \
+	../webservice/soapdep/soapC.cpp \
+	../webservice/soapdep/soapv3dwebserverService.cpp \
     main.cpp \
     mainwindow.cpp \
     mainwindow_interface.cpp \
@@ -288,6 +341,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     atlas_viewer.cpp \
     DownloadManager.cpp \
     v3d_actions.cpp \
+    CommandManager.cpp \
     ../worm_straighten_c/bdb_minus.cpp \
     ../worm_straighten_c/mst_prim_c.cpp \
     ../worm_straighten_c/bfs_1root.cpp \
@@ -317,7 +371,9 @@ FORMS += landmark_property.ui \
     dialog_update_list.ui \
     dialog_update_options.ui \
     dialog_update_downloading.ui \
-    dialog_update_checking.ui 
+    dialog_update_checking.ui \
+    ../neuron_annotator/NaMainWindow.ui \
+    ../neuron_annotator/GammaWidget.ui
 #    FL_watershedSegPara.ui \
 #    FL_levelsetSegPara.ui 
 
@@ -325,7 +381,7 @@ RESOURCES += v3d.qrc
 RESOURCES += ../3drenderer/3drenderer.qrc
 QT += opengl
 QT += network
-QT += xml
+QT += xml svg
 
 LIBS += -L../jba/c++  
 

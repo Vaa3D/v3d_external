@@ -1,5 +1,5 @@
 set(V3D_SRCS
-  main.cpp
+  # main.cpp
   dialog_rotate.cpp
   # dialog_watershed_para.cpp
   idrawmain.cpp
@@ -23,8 +23,9 @@ set(V3D_SRCS
   dialog_keypoint_features.cpp
   landmark_property_dialog.cpp
   DownloadManager.cpp
-  v3d_actions.cpp
-  )
+  CommandManager.cpp
+  v3d_application.cpp
+  v3d_actions.cpp)
 
 set(V3D_RCCS v3d.qrc ../3drenderer/3drenderer.qrc)
 
@@ -77,16 +78,22 @@ QT4_WRAP_CPP(QT_MOC_SRCS
   v3d_global_preference_dialog.h
   v3d_version_info.h
   v3d_actions.h
+  v3d_application.h
   )
 
 include_directories( BEFORE
   "${CMAKE_CURRENT_BINARY_DIR}/../v3dbase"
   "${CMAKE_CURRENT_BINARY_DIR}"
+  "${CMAKE_CURRENT_BINARY_DIR}/../neuron_annotator"
+  ../neuron_annotator
+  "${CMAKE_CURRENT_SOURCE_DIR}"
   )
 
 add_library(v3dbase ${QT_UI_SRCS} ${QT_MOC_SRCS})
 
 target_link_libraries( v3dbase v3dbase1 jba newmat11 multithreadimageIO ${QT_LIBRARIES} )
+
+add_library(v3dbase2 ${V3D_SRCS})
 
 if (WIN32) # Windows MSYS build
   # All this MYS stuff is just to compile in a program icon for windows
@@ -95,13 +102,17 @@ if (WIN32) # Windows MSYS build
   set(CMAKE_RC_COMPILE_OBJECT
     "<CMAKE_RC_COMPILER> -O coff -i <SOURCE> -o <OBJECT>")
   add_executable( v3d # *not* WIN32, which causes MSVC to call WinMain() instead of main()
-      ${V3D_SRCS} ${V3D_RCC_SRCS}
+      main.cpp
+      ${V3D_RCC_SRCS}
       v3d_win.rc)
 else()
-  add_executable( v3d ${V3D_SRCS} ${V3D_RCC_SRCS} )
+  add_executable( v3d 
+      main.cpp
+      ${V3D_RCC_SRCS} )
 endif()
 
 target_link_libraries( v3d
+  v3dbase2
   v3dbase
   V3DInterface
   v3d_plugin_loader
@@ -262,4 +273,6 @@ if (V3D_BUILD_BINARY_DIR)
         set_target_properties (v3d PROPERTIES PREFIX "../")
     endif()
 endif()
+
+target_link_libraries(v3d NeuronAnnotatorLib)
 

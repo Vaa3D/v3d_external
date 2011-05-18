@@ -1,0 +1,12 @@
+
+Usage of Cell Counter Plugin:
+
+1) Open a image.
+
+2) Click Plugin Menu to choose CellCounterUsingTemplateMatching->Cell Counter
+
+3) Choose Parameters: image name, searching channel, Gaussian filter, Template size, etc.
+
+4) results will be automated saved as .marker file.
+
+

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="640" height="480" xmlns="http://www.w3.org/2000/svg">
+ <!-- Created with SVG-edit - http://svg-edit.googlecode.com/ -->
+ <defs>
+  <filter id="svg_115_blur">
+   <feGaussianBlur stdDeviation="0.3" in="SourceGraphic"/>
+  </filter>
+ </defs>
+ <g>
+  <title>Layer 1</title>
+  <ellipse rx="1" id="svg_35" cy="0" cx="38" stroke-width="5" stroke="#ccc31e" fill="#7fff00"/>
+  <ellipse rx="1" id="svg_91" cy="48" cx="485" stroke-linecap="round" stroke-width="28" stroke="#003f7f" fill="#ffff56"/>
+  <text font-style="normal" filter="url(#svg_115_blur)" font-weight="bold" transform="matrix(21.9943, 0, 0, 12.36, -5903.65, -1238.24)" xml:space="preserve" text-anchor="middle" font-family="Cursive" font-size="47" id="svg_115" y="134.796096" x="281.98814" stroke-linecap="round" stroke-width="0" stroke="#37efef" fill="#043838">S</text>
+ </g>
+</svg>

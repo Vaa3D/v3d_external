@@ -6,5 +6,14 @@
      <file>shader/color_fragment.txt</file>
      <file>shader/obj_fragment.txt</file>
      <file>shader/tex_fragment.txt</file>
+	 <file>icons/click1.svg</file>
+	 <file>icons/click2.svg</file>
+	 <file>icons/click3.svg</file>
+	 <file>icons/stroke1.svg</file>
+	 <file>icons/stroke2.svg</file>
+	 <file>icons/stroke3.svg</file>
+	 <file>icons/strokeN.svg</file>
+	 <file>icons/start.svg</file>
+	 <file>icons/trace.svg</file>
  </qresource>
  </RCC>

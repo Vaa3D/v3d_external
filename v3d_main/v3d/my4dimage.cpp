@@ -103,6 +103,7 @@ using namespace std;
 #include "compute_win_pca.h"
 
 #include "../3drenderer/barFigureDialog.h"
+#include "../v3d/v3d_application.h"
 
 //#include "thread_regist.h"
 
@@ -469,7 +470,7 @@ void **** My4DImage::getData(ImagePixelType & dtype)
 		return NULL; //temnporarily allow only UINT8, UINT16, and FLOAT32 data
 }
 
-double My4DImage::at(int x, int y, int z, int c) //return a double number because it can always be converted back to UINT8 and UINT16 without information loss
+double My4DImage::at(int x, int y, int z, int c) const //return a double number because it can always be converted back to UINT8 and UINT16 without information loss
 { //return -1 in case error such as x,y,z,c are illegal values
 	bool result =  (!data4d_virtual || x<0 || y<0 || z<0 || c<0 || 
 					x >= this->getXDim() || y >= this->getYDim() || z>=this->getZDim() || c>=this->getCDim() );
@@ -506,14 +507,28 @@ void My4DImage::loadImage(char filename[])
 #if defined _WIN32 		
 	b_useMylib = false;
 #else
-	if (getXWidget())
-		b_useMylib = getXWidget()->getMainControlWindow()->global_setting.b_UseMylibTiff;
-	else
-	{
-		v3d_msg("The global setting cannot be accessed at this moment. Then use libTIFF for TIF/LSM reading in My4DImage::loadImage().");
-		b_useMylib = false;
-	}
+
+        bool lsmFlag = false;
+        bool tiffFlag = false;
+        QString qFilename = QString(filename);
+
+        if (qFilename.endsWith("lsm") || qFilename.endsWith("LSM")) {
+            lsmFlag = true;
+        } else if (qFilename.endsWith("tif") || qFilename.endsWith("TIF") || qFilename.endsWith("tiff") || qFilename.endsWith("TIFF")) {
+            tiffFlag = true;
+        }
+
+        if (lsmFlag) {
+            b_useMylib = true;
+        } else if (tiffFlag) {
+            b_useMylib = false;
+        } else if (V3dApplication::getMainWindow()) {
+            b_useMylib = V3dApplication::getMainWindow()->global_setting.b_UseMylibTiff;
+            qDebug() << "My4DImage::loadImage() set b_useMylib to value=" << b_useMylib << " based on global settings from MainWindow";
+        }
 #endif
+
+        qDebug() << "My4DImage::loadImage() calling Image4DSimple::loadImage() with b_useMylib=" << b_useMylib;
 	
 	Image4DSimple::loadImage(filename, b_useMylib);
 	

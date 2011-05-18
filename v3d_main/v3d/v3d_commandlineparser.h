@@ -38,6 +38,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef __V3D_COMMANDLINEPARSER_H__
 #define __V3D_COMMANDLINEPARSER_H__
 
+#include "CommandManager.h"
+
 //#include <boost/program_options.hpp>
 #ifdef WIN32
 #define OPTION_CHAR '/'
@@ -58,17 +60,15 @@ class V3D_CL_INTERFACE
 		}
 		
 		~V3D_CL_INTERFACE(){}
-		
-	public:
-		vector<char *> fileList;
-		bool open3Dviewer;
-		bool openV3D;
-		bool clp_finished; // parsing finished
-		
-		char* pluginname;
-		char* pluginmethod;
-		
-	};
+
+	vector<char *> fileList;
+        vector<char *> cmdArgList;
+	bool open3Dviewer;
+	bool openV3D;
+	bool clp_finished; // parsing finished
+        char* pluginname;
+        char* pluginmethod;
+};
 
 // command line parser class
 class CLP
@@ -180,7 +180,15 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 		}
 		else
 		{
+                    bool cmdFlag=false;
+                    for (int i=1;i<argc;i++) {
+                        if (string(argv[i])=="-cmd") {
+                            cmdFlag=true;
+                        }
+                    }
+
 			// if there is -h/H, V3D only print help info and return
+                    if (!cmdFlag) {
 			for(int i=1; i<argc; i++)
 			{
 				key = argv[1];
@@ -222,7 +230,7 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 					}
 				}
 			}
-			
+
 			// parsing arguments in other cases
 			for(int i=1; i<argc; i++)
 			{
@@ -286,15 +294,48 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 							
 						}
 					}
-					
+
+					else if(string(argv[i]) == "-v")
+					{
+						i_v3d.open3Dviewer = true;
+					}
+					else if(string(argv[i]) == "-p")
+					{
+						// launch V3D
+						i_v3d.openV3D = true;
+						
+						// plugin command
+						
+					}
+					else if(string(argv[i]) == "-m")
+					{
+						
+					}
+                                       else if(string(argv[i]) == "-cmd") {
+                                            i_v3d.openV3D = false;
+                                            while (i+1<argc) {
+                                                i_v3d.cmdArgList.push_back(argv[++i]);
+                                            }
+                                            CommandManager commandManager(&(i_v3d.cmdArgList));
+                                            if (!commandManager.execute()) {
+                                                return error(help);
+                                            }
+                                            i_v3d.clp_finished=true;
+                                            return true;
+                                       }
+					else
+					{
+						i_v3d.clp_finished = true;
+						return error(help);
+					}
 				}
 			}
 			
 			
 		}
-	}
-	
-}
+                }
+            }
+    }
 
 
 #endif

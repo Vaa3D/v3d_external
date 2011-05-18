@@ -63,6 +63,8 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 	if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0 ||
 		strcasecmp(curFileSurfix, "lsm")==0 ) //read tiff/lsm stacks
 	{
+            printf("Image4DSimple::loadImage loading filename=%s\n", filename);
+
 #if defined _WIN32 		
 		{
 			v3d_msg("(Win32) Now try to use LIBTIFF (slightly revised by PHC) to read the TIFF/LSM...\n",0);
@@ -117,6 +119,8 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 				}
 			}
 		}
+                printf("Image4DSimple::loadImage finished\n");
+
 #endif
 		
 	}

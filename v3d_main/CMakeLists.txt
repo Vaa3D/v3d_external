@@ -153,6 +153,8 @@ add_subdirectory( jba )
 
 add_subdirectory( cellseg )
 
+add_subdirectory( neuron_annotator )
+
 add_subdirectory( v3d )
 
 add_subdirectory( testing )

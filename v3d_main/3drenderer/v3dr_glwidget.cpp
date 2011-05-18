@@ -51,7 +51,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "renderer_tex2.h"
 #include "Renderer_gl2.h"
 
-
 //PROGRESS_DIALOG("", 0)
 V3dr_colormapDialog *V3dR_GLWidget::colormapDlg = 0;
 V3dr_surfaceDialog *V3dR_GLWidget::surfaceDlg = 0;
@@ -348,8 +347,9 @@ void V3dR_GLWidget::paintGL()
 		double s = 1.4/(float)SHIFT_RANGE; // *pow(1.4, -_zoom/100.0);
 		double tx = _xShift*s;
 		double ty = _yShift*s;
-		double tz = 0;
-		glTranslated( tx, ty, tz );
+                 double tz = _zShift*s;
+                 // double tz = 0;
+                glTranslated( tx, ty, tz );
 		dxShift=dyShift=dzShift=0;  // clear shift step
 	}
 
@@ -548,7 +548,10 @@ void V3dR_GLWidget::mousePressEvent(QMouseEvent *event)
     //qDebug("V3dR_GLWidget::mousePressEvent  button = %d", event->button());
 
 	if (event->button()==Qt::LeftButton)
+	{
 		lastPos = event->pos();
+		t_mouseclick = clock();
+	}
 
 	if (event->button()==Qt::RightButton && renderer)
 	{
@@ -565,7 +568,7 @@ void V3dR_GLWidget::mouseReleaseEvent(QMouseEvent *event)
 {
 	//091025: use 'QMouseEvent::button()==' instead of 'buttons()&'
     //qDebug("V3dR_GLWidget::mouseReleaseEvent  button = %d", event->button());
-
+	
 	if (event->button()==Qt::RightButton && renderer) //right-drag
     {
 		(renderer->movePen(event->x(), event->y(), false));

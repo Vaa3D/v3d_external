@@ -1119,7 +1119,7 @@ void Renderer_tex2::addCurveSWC(vector<XYZ> &loc_list, int chno)
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg =  v3dr_getImage4d(_idep);
 	if (w && curImg)
-	{
+	{		
 		curImg->proj_trace_add_curve_segment(loc_list, chno);
 		curImg->update_3drenderer_neuron_view(w, this);
 	}

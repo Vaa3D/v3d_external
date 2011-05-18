@@ -89,10 +89,13 @@ protected:
 	virtual bool supported_TexStream(); // called by loadVol()
 	virtual void setupTexStreamBuffer(); // called by subloadTex()
 	virtual void cleanTexStreamBuffer(); // called by ~Renderer_gl2 	// makeCurrent
+        virtual void setupStackTexture(bool bfirst);
 	virtual bool _streamingTex();
 	virtual void _streamTex(int stack_i, int slice_i, int step, int slice0, int slice1);
 	virtual void _streamTex_end();
 
+public:
+    RGBA8 colormap[FILL_CHANNEL][256];      // [n-channel][256-intensity]
 
 ////////////////////////////////////
 protected:
@@ -100,7 +103,7 @@ protected:
 	cwc::glShader *shader, *shaderTex2D, *shaderTex3D, *shaderObj;
 
 	GLuint texColormap; // nearest filter, [x-coord for intensity][y-coord for channel]
-	RGBA8 colormap[FILL_CHANNEL][256];      // [n-channel][256-intensity]
+	// RGBA8 colormap[FILL_CHANNEL][256];      // [n-channel][256-intensity]
 	QPolygonF colormap_curve[N_CHANNEL][4]; // [n-channel][RGBA]
 
 	GLuint pboZ, pboY, pboX;
