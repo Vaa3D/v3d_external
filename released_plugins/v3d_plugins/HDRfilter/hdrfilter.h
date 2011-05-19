@@ -130,7 +130,9 @@ public:
 		viewGroup = new QGroupBox;
 		
 		pNaZW = new NaZStackWidget(parent);
-		pNaZW->loadImage4D(p4DImage);
+		//pNaZW->loadMy4DImage(const_cast<My4DImage*>(p4DImage));
+		V3DLONG imageSize[4] = {sx, sy, sz, sc};
+		pNaZW->initHDRViewer(imageSize, p4DImage.getRawData(), p4DImage.getDatatype());
 		
 		pNaZW->setFocusPolicy(Qt::ClickFocus);
 		
