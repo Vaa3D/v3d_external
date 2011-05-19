@@ -6,6 +6,9 @@ QT += opengl
 
 V3DMAINDIR = ../../../v3d_main
 
+# cross-OS-platform, cross-Qt-version
+QT_DIR = $$dirname(QMAKE_QMAKE)/..  # cross-Qt-version
+
 SHARED_FOLDER = $$QT_DIR/demos/shared # for arthurwidgets
 
 INCLUDEPATH  += $$SHARED_FOLDER	
