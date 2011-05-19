@@ -60,6 +60,7 @@ class V3D_CL_INTERFACE
 			
 			pluginname=NULL;
 			pluginmethod=NULL;
+			pluginfunc=NULL;
 		}
 		
 		~V3D_CL_INTERFACE(){}
@@ -71,6 +72,7 @@ class V3D_CL_INTERFACE
 	bool clp_finished; // parsing finished
 	char* pluginname;
 	char* pluginmethod;
+	char* pluginfunc;
 };
 
 // command line parser class
@@ -292,6 +294,14 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 
                                 qDebug()<<"call plugin method ..."<<i_v3d.pluginmethod;
                             }
+							else if (!strcmp(key, "func"))
+                            {
+                                // plugin method
+                                i_v3d.pluginfunc = argv[i+1];
+                                i++;
+								
+                                qDebug()<<"call plugin function ..."<<i_v3d.pluginfunc;
+                            }
                             else
                             {
                                 qDebug()<<"parsing ..."<<key<<i;
@@ -302,33 +312,18 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 
                         }
                     }
+					else
+					{
+						return error(help);
+					}
 
-                    else if(string(argv[i]) == "-v")
-                    {
-                        i_v3d.open3Dviewer = true;
-                    }
-                    else if(string(argv[i]) == "-p")
-                    {
-                        // launch V3D
-                        i_v3d.openV3D = true;
-
-                        // plugin command
-
-                    }
-                    else if(string(argv[i]) == "-m")
-                    {
-
-                    }
-                    else
-                    {
-                        i_v3d.clp_finished = true;
-                        return error(help);
-                    }
                 }
 
             }
         }
     }
+	
+	return true;
 }
 
 
