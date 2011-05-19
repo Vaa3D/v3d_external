@@ -65,6 +65,12 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../basic_c_fun/basic_thread.h" //YuY Dec-20-2010
 
 #ifdef __v3dwebservice__
+#include "../webservice/v3dwebservice.hpp" // YuY March-16-2011
+class V3DWebService; //110315 YuY
+class soappara; //110315 YuY
+#endif
+
+#ifdef __V3DWSDEVELOP__
 #include "../webservice/src/v3dwebservice.hpp" // YuY March-16-2011
 class V3DWebService; //110315 YuY
 class soappara; //110315 YuY
@@ -460,8 +466,12 @@ private:
     QAction * procCellSeg_Gaussian_fit_1_spot_N_Gauss;
 	QAction * procCellSeg_Gaussian_partition;
         QAction * procCellSeg_manualCorrect;
+	
+	// Mode
+	QAction * procModeDefault;
+	QAction * procModeNeuronAnnotator;
 
-#ifdef __v3dwebservice__
+#if defined(__v3dwebservice__) || defined(__V3DWSDEVELOP__)
 private:
 	soappara *pSoapPara;
 	V3DWebService *v3dws;
@@ -475,10 +485,6 @@ public slots:
 	void do3dfunc();
 	void switch3dviewercontrol(V3dR_MainWindow *existing_3dviewer);
 #endif
-
-        // Mode
-        QAction * procModeDefault;
-        QAction * procModeNeuronAnnotator;
 	
 public: //for image processing, some of the parameters should be globally set
 	//080822

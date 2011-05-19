@@ -267,7 +267,7 @@ MainWindow::MainWindow()
 
     setWindowTitle(tr("V3D"));
 	
-#ifdef __v3dwebservice__
+#if defined(__v3dwebservice__) || defined(__V3DWSDEVELOP__)
 	
 	qDebug()<<"web service starting ...";
 	

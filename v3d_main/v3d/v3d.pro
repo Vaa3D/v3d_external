@@ -210,6 +210,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/CameraModel.h \
     ../neuron_annotator/GammaWidget.h \
 	../neuron_annotator/NeuronSelector.h \
+	../webservice/v3dwebservice_conf.h \
 	../webservice/v3dwebservice.hpp \
 	../webservice/v3dwebserver.h \
 	../webservice/gsoap2/stdsoap2.h \

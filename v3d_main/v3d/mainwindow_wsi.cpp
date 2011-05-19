@@ -45,7 +45,7 @@
 
 #include "../3drenderer/v3dr_glwidget.h"
 
-#ifdef __v3dwebservice__
+#ifdef __V3DWSDEVELOP__
 
 bool is3DviewerFunc(char *funcname)
 {
