@@ -78,6 +78,8 @@ public:
         // float vy = (iy) * scale_y + 1;
         return QPointF(vx, vy);
     }
+	
+	void initHDRViewer(const V3DLONG *imgsz, const unsigned char *data1d, ImagePixelType datatype);
 
 public slots:
     void do_HDRfilter();
@@ -101,7 +103,6 @@ public:
     V3DLONG sx, sy, sz, sc;
 
 protected:
-    void initHDRViewer(const V3DLONG *imgsz, const unsigned char *data1d, ImagePixelType datatype);
     void setColorChannel(NaZStackWidget::Color col);
 
     V3DLONG roi_top, roi_left, roi_bottom, roi_right; // ROI boundary of the search box
