@@ -1,7 +1,6 @@
 
 TEMPLATE      = lib
 CONFIG       += qt plugin warn_off
-CONFIG       += x86_64
 
 QT += opengl
 
@@ -11,6 +10,7 @@ SHARED_FOLDER = $$QT_DIR/demos/shared # for arthurwidgets
 
 INCLUDEPATH  += $$SHARED_FOLDER	
 INCLUDEPATH  += $$V3DMAINDIR/basic_c_fun
+INCLUDEPATH  += $$V3DMAINDIR/common_lib/include
 INCLUDEPATH  += $$QT_DIR
 INCLUDEPATH  += $$V3DMAINDIR/v3d
 
