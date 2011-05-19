@@ -64,6 +64,17 @@ NaMainWindow::NaMainWindow()
             ui.naLargeMIPWidget, SLOT(showCrosshair(bool)));
     connect(ui.actionShow_Crosshair, SIGNAL(toggled(bool)),
             ui.v3dr_glwidget, SLOT(showCrosshair(bool)));
+
+    // Undo menu
+    // TODO - figure out which of these variables to expose once we have a QUndoCommand to work with.
+    QUndoGroup * undoGroup = new QUndoGroup(this);
+    QUndoView * undoView = new QUndoView(this);
+    undoView->setGroup(undoGroup);
+    QAction * undoAction = undoGroup->createUndoAction(this);
+    QAction * redoAction = undoGroup->createRedoAction(this);
+    ui.menuEdit->insertAction(ui.menuEdit->actions().at(0), redoAction);
+    ui.menuEdit->insertAction(redoAction, undoAction);
+
 }
 
 void NaMainWindow::setNutate(bool bDoNutate)
