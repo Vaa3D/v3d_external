@@ -235,7 +235,7 @@ int main(int argc, char **argv)
 				mainWin->show();
 			
 			// plugin module
-			if(QFile::exists(parser.i_v3d.pluginname))
+			if(parser.i_v3d.pluginname)
 			{
 				mainWin->setBooleanCLplugin(true);
 				mainWin->setPluginName(parser.i_v3d.pluginname);

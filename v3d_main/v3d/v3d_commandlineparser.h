@@ -57,6 +57,9 @@ class V3D_CL_INTERFACE
 			open3Dviewer = false;
 			openV3D = false;
 			clp_finished = false;
+			
+			pluginname=NULL;
+			pluginmethod=NULL;
 		}
 		
 		~V3D_CL_INTERFACE(){}
@@ -66,34 +69,34 @@ class V3D_CL_INTERFACE
 	bool open3Dviewer;
 	bool openV3D;
 	bool clp_finished; // parsing finished
-        char* pluginname;
-        char* pluginmethod;
+	char* pluginname;
+	char* pluginmethod;
 };
 
 // command line parser class
 class CLP
+{
+public:
+	
+	CLP(){}
+	~CLP(){}
+	
+public:
+	
+	bool check_filename(QString fn);
+	int parse(int argc, char *argv[], void (*help)());
+	
+	int error( void (*help)() )
 	{
-	public:
-		
-		CLP(){}
-		~CLP(){}
-		
-	public:
-		
-		bool check_filename(QString fn);
-		int parse(int argc, char *argv[], void (*help)());
-		
-		int error( void (*help)() )
-		{
-			v3d_msg("Your input is illegal. Please follow the instruction of the help page below.", 0);
-			help();
-			return false;
-		}
-		
-	public:
-		V3D_CL_INTERFACE i_v3d;
-		
-	};
+		v3d_msg("Your input is illegal. Please follow the instruction of the help page below.", 0);
+		help();
+		return false;
+	}
+	
+public:
+	V3D_CL_INTERFACE i_v3d;
+	
+};
 
 // check the file valid
 bool CLP :: check_filename(QString fn)
