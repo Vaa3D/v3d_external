@@ -28,6 +28,7 @@ public:
 
     static string getHelp() {
         string help;
+        help.append("\n");
         help.append("CellCounter3D by Sean Murphy for HHMI JFRC\n");
         help.append("\n");
         help.append("Help Page\n");
