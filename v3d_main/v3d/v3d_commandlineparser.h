@@ -121,221 +121,212 @@ bool CLP :: check_filename(QString fn)
 // parsing parameters
 int CLP :: parse(int argc, char *argv[], void (*help)())
 {
-	//
-	if (argc<=1)
-	{
-		i_v3d.openV3D = true;
-	}
-	else
-	{
-		// command arguments parsing
-		char* key;
-		
-		// ------ parsing aguements here ---------------------
-		if(argc<=2)
-		{
-			key = argv[1];
-			if (*key == OPTION_CHAR)
-			{ 
-				while(*++key)
-				{
-					if (*key == '?' || !strcmp(key, "h") || !strcmp(key, "H"))
-					{
-						help();
-						i_v3d.clp_finished = true;
-					}
-					// CMB Dec 7, 2010
-					// Mac app launcher adds a command line argument
-					// like "-psn_0_7989150"
-					// Ignore it.
-					else if (string(argv[1]).find("-psn_") == 0) {
-						v3d_msg("Apparently a mac bundle", 0);
-						v3d_msg(argv[1], 0);
-						i_v3d.openV3D = true;
-						return true;
-					}
-					else if(!strcmp(key, "M")) //must be capital
-					{
-						i_v3d.clp_finished = true;
-						return true;
-					}					
-				}
-				
-			}
-			else if( check_filename(QString(key)) )
-			{
-				// load and visualize file in V3D
-				char *filename = argv[1];
-				i_v3d.fileList.push_back(filename);
-				
-				// open V3D
-				i_v3d.openV3D = true;
-				
-			}
-			else
-			{
-				i_v3d.clp_finished = true;
-				return error(help);
-			}
-		}
-		else
-		{
-                    bool cmdFlag=false;
-                    for (int i=1;i<argc;i++) {
-                        if (string(argv[i])=="-cmd") {
-                            cmdFlag=true;
+    //
+    if (argc<=1)
+    {
+        i_v3d.openV3D = true;
+    }
+    else
+    {
+        // command arguments parsing
+        char* key;
+
+        // ------ parsing aguements here ---------------------
+        if(argc<=2)
+        {
+            key = argv[1];
+            if (*key == OPTION_CHAR)
+            {
+                while(*++key)
+                {
+                    if (*key == '?' || !strcmp(key, "h") || !strcmp(key, "H"))
+                    {
+                        help();
+                        i_v3d.clp_finished = true;
+                    }
+                    // CMB Dec 7, 2010
+                    // Mac app launcher adds a command line argument
+                    // like "-psn_0_7989150"
+                    // Ignore it.
+                    else if (string(argv[1]).find("-psn_") == 0) {
+                        v3d_msg("Apparently a mac bundle", 0);
+                        v3d_msg(argv[1], 0);
+                        i_v3d.openV3D = true;
+                        return true;
+                    }
+                    else if(!strcmp(key, "M")) //must be capital
+                    {
+                        i_v3d.clp_finished = true;
+                        return true;
+                    }
+                }
+
+            }
+            else if( check_filename(QString(key)) )
+            {
+                // load and visualize file in V3D
+                char *filename = argv[1];
+                i_v3d.fileList.push_back(filename);
+
+                // open V3D
+                i_v3d.openV3D = true;
+
+            }
+            else
+            {
+                i_v3d.clp_finished = true;
+                return error(help);
+            }
+        }
+        else
+        {
+            for (int i=1;i<argc;i++) {
+                if (string(argv[i])=="-cmd") {
+                    i_v3d.openV3D = false;
+                    while (i+1<argc) {
+                        i_v3d.cmdArgList.push_back(argv[++i]);
+                    }
+                    CommandManager commandManager(&(i_v3d.cmdArgList));
+                    commandManager.execute();
+                    i_v3d.clp_finished=true;
+                    return true;
+                }
+            }
+
+            // if there is -h/H, V3D only print help info and return
+            for(int i=1; i<argc; i++)
+            {
+                key = argv[1];
+                if (*key == OPTION_CHAR)
+                {
+                    while(*++key)
+                    {
+                        if (*key == '?' || !strcmp(key, "h") || !strcmp(key, "H") || !strcmp(key, "help"))
+                        {
+                            help();
+                            i_v3d.clp_finished = true;
+                            return true;
+                        }
+                        // CMB Dec 7, 2010
+                        // Mac app launcher adds a command line argument
+                        // like "-psn_0_7989150"
+                        // Ignore it.
+                        else if (string(argv[1]).find("-psn_") == 0) {
+                            v3d_msg("Apparently a mac bundle", 0);
+                            v3d_msg(argv[1], 0);
+                            i_v3d.openV3D = true;
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            for(int i=1; i<argc; i++)
+            {
+                key = argv[i];
+                if (*key == OPTION_CHAR)
+                {
+                    while(*++key)
+                    {
+                        if (!strcmp(key, "v"))
+                        {
+                            i_v3d.open3Dviewer = true;
+                        }
+                    }
+                }
+            }
+
+            // parsing arguments in other cases
+            for(int i=1; i<argc; i++)
+            {
+                if(i+1 != argc) // check that we haven't finished parsing yet
+                {
+
+                    key = argv[i];
+
+                    qDebug()<<">>key ..."<<key;
+
+                    if (*key == OPTION_CHAR)
+                    {
+                        while(*++key)
+                        {
+                            if (!strcmp(key, "f"))
+                            {
+                                // open V3D
+                                i_v3d.openV3D = true;
+
+                                while(i+1<argc && !QString(argv[i+1]).contains(OPTION_CHAR) )
+                                {
+                                    char *filename = argv[i+1];
+
+                                    if( check_filename(QString(filename)) )
+                                    {
+                                        i_v3d.fileList.push_back(filename);
+                                        i++;
+                                    }
+                                }
+                            }
+                            else if (!strcmp(key, "v"))
+                            {
+                                i_v3d.open3Dviewer = true;
+                            }
+                            else if (!strcmp(key, "p"))
+                            {
+                                // launch V3D
+                                i_v3d.openV3D = true;
+
+                                // plugin command
+                                i_v3d.pluginname = argv[i+1];
+                                i++;
+
+                                qDebug()<<"call plugin ..."<<i_v3d.pluginname;
+                            }
+                            else if (!strcmp(key, "m"))
+                            {
+                                // plugin method
+                                i_v3d.pluginmethod = argv[i+1];
+                                i++;
+
+                                qDebug()<<"call plugin method ..."<<i_v3d.pluginmethod;
+                            }
+                            else
+                            {
+                                qDebug()<<"parsing ..."<<key<<i;
+
+                                i_v3d.clp_finished = true;
+                                return error(help);
+                            }
+
                         }
                     }
 
-			// if there is -h/H, V3D only print help info and return
-                    if (!cmdFlag) {
-			for(int i=1; i<argc; i++)
-			{
-				key = argv[1];
-				if (*key == OPTION_CHAR)
-				{ 
-					while(*++key)
-					{
-						if (*key == '?' || !strcmp(key, "h") || !strcmp(key, "H") || !strcmp(key, "help"))
-						{
-							help();
-							i_v3d.clp_finished = true;
-							return true;
-						}
-						// CMB Dec 7, 2010
-						// Mac app launcher adds a command line argument
-						// like "-psn_0_7989150"
-						// Ignore it.
-						else if (string(argv[1]).find("-psn_") == 0) {
-							v3d_msg("Apparently a mac bundle", 0);
-							v3d_msg(argv[1], 0);
-							i_v3d.openV3D = true;
-							return true;
-						}
-					}
-				}
-			}
-			
-			for(int i=1; i<argc; i++)
-			{
-				key = argv[i];
-				if (*key == OPTION_CHAR)
-				{ 
-					while(*++key)
-					{
-						if (!strcmp(key, "v"))
-						{
-							i_v3d.open3Dviewer = true;
-						}
-					}
-				}
-			}
+                    else if(string(argv[i]) == "-v")
+                    {
+                        i_v3d.open3Dviewer = true;
+                    }
+                    else if(string(argv[i]) == "-p")
+                    {
+                        // launch V3D
+                        i_v3d.openV3D = true;
 
-			// parsing arguments in other cases
-			for(int i=1; i<argc; i++)
-			{
-				if(i+1 != argc) // check that we haven't finished parsing yet
-				{
-					
-					key = argv[i];
-					
-					qDebug()<<">>key ..."<<key;
-					
-					if (*key == OPTION_CHAR)
-					{ 
-						while(*++key)
-						{
-							if (!strcmp(key, "f"))
-							{
-								// open V3D
-								i_v3d.openV3D = true;
-								
-								while(i+1<argc && !QString(argv[i+1]).contains(OPTION_CHAR) )
-								{
-									char *filename = argv[i+1];
-									
-									if( check_filename(QString(filename)) )
-									{
-										i_v3d.fileList.push_back(filename);
-										i++;										
-									}
-								}
-							}
-							else if (!strcmp(key, "v"))
-							{
-								i_v3d.open3Dviewer = true;
-							}
-							else if (!strcmp(key, "p"))
-							{
-								// launch V3D
-								i_v3d.openV3D = true;
-								
-								// plugin command
-								i_v3d.pluginname = argv[i+1];
-								i++;
-								
-								qDebug()<<"call plugin ..."<<i_v3d.pluginname;
-							}
-							else if (!strcmp(key, "m"))
-							{
-								// plugin method
-								i_v3d.pluginmethod = argv[i+1];
-								i++;
-								
-								qDebug()<<"call plugin method ..."<<i_v3d.pluginmethod;
-							}
-							else
-							{
-								qDebug()<<"parsing ..."<<key<<i;
-								
-								i_v3d.clp_finished = true;
-								return error(help);
-							}
-							
-						}
-					}
+                        // plugin command
 
-					else if(string(argv[i]) == "-v")
-					{
-						i_v3d.open3Dviewer = true;
-					}
-					else if(string(argv[i]) == "-p")
-					{
-						// launch V3D
-						i_v3d.openV3D = true;
-						
-						// plugin command
-						
-					}
-					else if(string(argv[i]) == "-m")
-					{
-						
-					}
-                                       else if(string(argv[i]) == "-cmd") {
-                                            i_v3d.openV3D = false;
-                                            while (i+1<argc) {
-                                                i_v3d.cmdArgList.push_back(argv[++i]);
-                                            }
-                                            CommandManager commandManager(&(i_v3d.cmdArgList));
-                                            if (!commandManager.execute()) {
-                                                return error(help);
-                                            }
-                                            i_v3d.clp_finished=true;
-                                            return true;
-                                       }
-					else
-					{
-						i_v3d.clp_finished = true;
-						return error(help);
-					}
-				}
-			}
-			
-			
-		}
+                    }
+                    else if(string(argv[i]) == "-m")
+                    {
+
+                    }
+                    else
+                    {
+                        i_v3d.clp_finished = true;
+                        return error(help);
+                    }
                 }
+
             }
+        }
     }
+}
 
 
 #endif

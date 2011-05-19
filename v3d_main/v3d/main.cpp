@@ -114,6 +114,7 @@ void printHelp_v3d()
 	cout<<"    -m menu_name               a string indicates which menu of a plugin will be called."<<endl;
 	
 	cout<<"    -v		    force to open a 3d viewer when loading an image, otherwise use the default v3d global setting (from \"Adjust Preference\")"<<endl;
+        cout<<"    -cmd  [headless command-line arguments, intended for compute grid use. Try \'-cmd -h\' for more information on this option]"<<endl;
 
 	return;
 }
