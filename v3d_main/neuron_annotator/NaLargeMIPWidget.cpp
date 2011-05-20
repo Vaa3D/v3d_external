@@ -199,6 +199,13 @@ NaLargeMIPWidget::NaLargeMIPWidget(QWidget * parent)
     setMouseTracking(true); // respond to mouse hover events
     imageUpdateThread.start();
 
+    // Fill with black background
+    // QPalette * newPalette = new QPalette(palette());
+    // newPalette->setColor(QPalette::Window, Qt::black);
+    // setPalette(*newPalette);
+    // setBackgroundRole(QPalette::Window);
+    // setAutoFillBackground(true);
+
     // Progress bar for when image is being processed
     progressBar = new QProgressBar(this);
     progressBar->setValue(24);
@@ -356,8 +363,10 @@ void NaLargeMIPWidget::paintEvent(QPaintEvent *event)
     painter.begin(this);
     painter.setRenderHint(QPainter::Antialiasing);
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
+
     // first fill background with black
-    painter.fillRect(0, 0, width(), height(), Qt::black);
+    // painter.fillRect(0, 0, width(), height(), Qt::black);
+
     // adjust painter coordinate system to place image correctly
     float scale = defaultScale * cameraModel.scale();
     qreal tx = pixmap.width()/2.0 + flip_X * (cameraModel.focus().x() - pixmap.width()/2.0);

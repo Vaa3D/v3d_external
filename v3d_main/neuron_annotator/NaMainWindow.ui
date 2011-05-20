@@ -59,6 +59,70 @@
           </property>
           <item>
            <widget class="QStackedWidget" name="viewerStackedWidget">
+            <property name="palette">
+             <palette>
+              <active>
+               <colorrole role="Base">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="Window">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>0</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </brush>
+               </colorrole>
+              </active>
+              <inactive>
+               <colorrole role="Base">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="Window">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>0</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </brush>
+               </colorrole>
+              </inactive>
+              <disabled>
+               <colorrole role="Base">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>0</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="Window">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>0</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </brush>
+               </colorrole>
+              </disabled>
+             </palette>
+            </property>
             <property name="frameShape">
              <enum>QFrame::NoFrame</enum>
             </property>
@@ -77,7 +141,11 @@
                <number>0</number>
               </property>
               <item>
-               <widget class="NaLargeMIPWidget" name="naLargeMIPWidget" native="true"/>
+               <widget class="NaLargeMIPWidget" name="naLargeMIPWidget" native="true">
+                <property name="autoFillBackground">
+                 <bool>true</bool>
+                </property>
+               </widget>
               </item>
              </layout>
             </widget>
@@ -106,8 +174,8 @@
                  </property>
                  <item>
                   <widget class="NaZStackWidget" name="naZStackWidget" native="true">
-                   <property name="styleSheet">
-                    <string notr="true">background-color: rgb(255, 156, 166);</string>
+                   <property name="autoFillBackground">
+                    <bool>true</bool>
                    </property>
                   </widget>
                  </item>
@@ -144,9 +212,6 @@
                   <width>640</width>
                   <height>480</height>
                  </size>
-                </property>
-                <property name="styleSheet">
-                 <string notr="true">background-color: rgb(22, 16, 45);</string>
                 </property>
                </widget>
               </item>
@@ -189,7 +254,7 @@
                <property name="currentIndex">
                 <number>2</number>
                </property>
-               <widget class="QWidget" name="viewerControlTabWidgetPage1">
+               <widget class="QWidget" name="largeMipViewerControlPage">
                 <attribute name="title">
                  <string>MIP</string>
                 </attribute>
@@ -225,7 +290,7 @@
                  </item>
                 </layout>
                </widget>
-               <widget class="QWidget" name="viewerControlTabWidgetPage2">
+               <widget class="QWidget" name="zSliceViewerControlPage">
                 <attribute name="title">
                  <string>Z stack</string>
                 </attribute>
@@ -483,7 +548,7 @@
                  </item>
                 </layout>
                </widget>
-               <widget class="QWidget" name="viewerControlTabWidgetPage3">
+               <widget class="QWidget" name="viewer3DControlPage">
                 <attribute name="title">
                  <string>3D</string>
                 </attribute>
@@ -888,7 +953,7 @@
                      </widget>
                     </item>
                     <item>
-                     <widget class="QPushButton" name="nutateButton">
+                     <widget class="QCheckBox" name="nutateButton">
                       <property name="text">
                        <string>Nutate</string>
                       </property>

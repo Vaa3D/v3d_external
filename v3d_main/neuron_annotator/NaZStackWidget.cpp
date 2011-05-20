@@ -117,7 +117,7 @@ NaZStackWidget::NaZStackWidget(QWidget * parent)
     pDispData1d = NULL;
 
     pixmap = QPixmap(256, 256);
-    pixmap.fill(Qt::red);
+    pixmap.fill(Qt::black);
 
     scale_x = 1.0; scale_y = 1.0;
     // dispscale = 0.9;
