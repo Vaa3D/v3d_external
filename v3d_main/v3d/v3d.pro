@@ -128,7 +128,8 @@ macx {
 
 unix:!macx {
     # Ubuntu linux possible location of arthurwidgets.h with official Qt install
-    QTINST_SHARED_FOLDER = /usr/lib/qt4/demos/shared
+    # QTINST_SHARED_FOLDER = /usr/lib/qt4/demos/shared
+    QTINST_SHARED_FOLDER = /usr/lib64/qt4/demos/shared
     include($$QTINST_SHARED_FOLDER/shared.pri)
     INCLUDEPATH += $$QTINST_SHARED_FOLDER
     LIBS += -L$$QTINST_SHARED_FOLDER
