@@ -6,6 +6,11 @@
 #include "NaViewer.h"
 #include "Rotation3D.h"
 
+#if defined (_MSC_VER)
+#include "../basic_c_fun/vcdiff.h"
+#else
+#endif
+
 // Derived class of V3dR_GLWidget so we can use a simpler constructor
 // for the convenience of Qt Designer,
 // and to customize features for NeuronAnnotator.

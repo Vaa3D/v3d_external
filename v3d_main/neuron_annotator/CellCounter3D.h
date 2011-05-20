@@ -4,6 +4,11 @@
 #include <vector>
 #include "../v3d/v3d_core.h"
 
+#if defined (_MSC_VER)
+#include "../basic_c_fun/vcdiff.h"
+#else
+#endif
+
 class CellCounter3D
 {
 public:
