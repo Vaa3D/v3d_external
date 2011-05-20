@@ -2,7 +2,6 @@
 // I wish it wasn't included at all...
 #include "../3drenderer/GLee_r.h"
 
-#include <QtGui>
 #include <QDir>
 #include <QFileInfo>
 #include <iostream>
