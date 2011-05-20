@@ -30,7 +30,12 @@ NaMainWindow::NaMainWindow()
     //QMetaObject::connectSlotsByName(this); This is apparently already called by setupUi, so calling it again creates repeat trigger events
     annotationSession=0;
 
-    // Wire up Z-stack HDR tool
+    // Wire up MIP viewer
+    // Status bar message
+    connect(ui.naLargeMIPWidget, SIGNAL(statusMessage(const QString&)),
+            statusBar(), SLOT(showMessage(const QString&)));
+
+    // Wire up Z-stack / HDR viewer
     connect(ui.HDRRed_pushButton, SIGNAL(clicked()),
             ui.naZStackWidget, SLOT(setRedChannel()));
     connect(ui.HDRGreen_pushButton, SIGNAL(clicked()),
@@ -45,40 +50,35 @@ NaMainWindow::NaMainWindow()
             ui.naZStackWidget, SLOT(updateROIsize(int)));
     connect(ui.naZStackWidget, SIGNAL(boxSizeChanged(int)),
             ui.BoxSize_spinBox, SLOT(setValue(int)));
+
+    // 3D viewer
+    connect(ui.rotationResetButton, SIGNAL(clicked()),
+            ui.v3dr_glwidget, SLOT(resetView()));
+    connect(ui.nutateButton, SIGNAL(toggled(bool)),
+            this, SLOT(setNutate(bool)));
     // Wire up gamma correction
     connect(ui.gammaWidget_3D, SIGNAL(gammaBrightnessChanged(double)),
             ui.v3dr_glwidget, SLOT(setGammaBrightness(double)));
     connect(ui.gammaWidget_3D, SIGNAL(gammaBrightnessChanged(double)),
             this, SLOT(updateThumbnailGamma(double)));
-    // Status bar message
-    connect(ui.naLargeMIPWidget, SIGNAL(statusMessage(const QString&)),
-            statusBar(), SLOT(showMessage(const QString&)));
-    // 3D viewer reset view
-    connect(ui.rotationResetButton, SIGNAL(clicked()),
-            ui.v3dr_glwidget, SLOT(resetView()));
+
     // Whether to use common zoom and focus in MIP, ZStack and 3D viewers
     connect(ui.actionLink_viewers, SIGNAL(toggled(bool)),
             this, SLOT(unifyCameras(bool)));
     unifyCameras(true); // Start with cameras linked
-    connect(ui.nutateButton, SIGNAL(toggled(bool)),
-            this, SLOT(setNutate(bool)));
     // Crosshair
     connect(ui.actionShow_Crosshair, SIGNAL(toggled(bool)),
             ui.naLargeMIPWidget, SLOT(showCrosshair(bool)));
     connect(ui.actionShow_Crosshair, SIGNAL(toggled(bool)),
             ui.v3dr_glwidget, SLOT(showCrosshair(bool)));
 
-    // Undo menu
+    // Create "Undo" menu options
     // TODO - figure out which of these variables to expose once we have a QUndoCommand to work with.
     QUndoGroup * undoGroup = new QUndoGroup(this);
-    // QUndoView * undoView = new QUndoView(this);
-    // undoView->setGroup(undoGroup);
-    // undoView->hide();
     QAction * undoAction = undoGroup->createUndoAction(this);
     QAction * redoAction = undoGroup->createRedoAction(this);
     ui.menuEdit->insertAction(ui.menuEdit->actions().at(0), redoAction);
     ui.menuEdit->insertAction(redoAction, undoAction);
-
 }
 
 void NaMainWindow::setNutate(bool bDoNutate)
@@ -302,9 +302,9 @@ void NaMainWindow::on_actionLoad_Tiff_triggered()
 {
     static QString tiffDirectory;
     QString tiffFileName = QFileDialog::getOpenFileName(this,
-            "Select 3D TIFF file",
+            "Select 3D Image/Stack file",
             tiffDirectory,
-            tr("TIFF files (*.tif)"));
+            tr("TIFF/LSM/V3DRAW files (*.tif *.lsm *.raw)"));
     if (tiffFileName.isEmpty()) return;
     QFile tiffFile(tiffFileName);
     if (! tiffFile.exists()) return;
