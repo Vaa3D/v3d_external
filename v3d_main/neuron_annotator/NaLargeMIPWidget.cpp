@@ -199,13 +199,6 @@ NaLargeMIPWidget::NaLargeMIPWidget(QWidget * parent)
     setMouseTracking(true); // respond to mouse hover events
     imageUpdateThread.start();
 
-    // Fill with black background
-    // QPalette * newPalette = new QPalette(palette());
-    // newPalette->setColor(QPalette::Window, Qt::black);
-    // setPalette(*newPalette);
-    // setBackgroundRole(QPalette::Window);
-    // setAutoFillBackground(true);
-
     // Progress bar for when image is being processed
     progressBar = new QProgressBar(this);
     progressBar->setValue(24);

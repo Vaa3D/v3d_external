@@ -72,8 +72,9 @@ NaMainWindow::NaMainWindow()
     // Undo menu
     // TODO - figure out which of these variables to expose once we have a QUndoCommand to work with.
     QUndoGroup * undoGroup = new QUndoGroup(this);
-    QUndoView * undoView = new QUndoView(this);
-    undoView->setGroup(undoGroup);
+    // QUndoView * undoView = new QUndoView(this);
+    // undoView->setGroup(undoGroup);
+    // undoView->hide();
     QAction * undoAction = undoGroup->createUndoAction(this);
     QAction * redoAction = undoGroup->createRedoAction(this);
     ui.menuEdit->insertAction(ui.menuEdit->actions().at(0), redoAction);
