@@ -1,6 +1,6 @@
 // Fix windows compile problem with windows.h being included too late.
 // I wish it wasn't included at all...
-#include "GLee_r.h"
+#include "../3drenderer/GLee_r.h"
 
 #include <QtGui>
 #include <QDir>
