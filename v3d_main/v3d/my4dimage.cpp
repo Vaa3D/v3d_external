@@ -45,6 +45,11 @@
  2009-11-14: separate the neuron tracing code to v3dimg_proj_neuron.cpp
  */
 
+// avoid compile error from late load of windows.h
+#ifdef _MSC_VER
+#define NOMINMAX //added by PHC, 2010-05-20 to overcome VC min max macro
+#include <windows.h>
+#endif
 
 #include <stdio.h>
 //#include <strings.h>

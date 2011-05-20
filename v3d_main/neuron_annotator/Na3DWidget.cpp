@@ -127,7 +127,7 @@ void Na3DWidget::mouseMoveEvent(QMouseEvent * event)
             // std::cout << "old rotation = " << oldRotation << std::endl;
             // dragging across the entire viewport should be roughly 180 degrees rotation
             qreal rotAnglePerPixel = 3.14159 / ((width() + height()) / 2);
-            qreal dragDistance = std::sqrt(dx*dx + dy*dy);
+            qreal dragDistance = std::sqrt((double)(dx*dx + dy*dy));
             qreal rotAngle = dragDistance * rotAnglePerPixel;
             // std::cout << "Angle = " << rotAngle << std::endl;
             // rotation axis is perpendicular to the direction of the drag

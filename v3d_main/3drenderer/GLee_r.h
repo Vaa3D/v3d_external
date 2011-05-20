@@ -87,7 +87,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 	#error glxext.h included before glee.h
 #endif
 
-#ifdef _WIN32 || _WIN64  //yuy added _WIN6, 2010-05-19
+//yuy added _WIN6, 2010-05-19
+// #ifdef _WIN32 || _WIN64
+// I think you meant this 2011-05-20 CMB
+#if defined(_WIN32) || defined(_WIN64)
 	#define WIN32_LEAN_AND_MEAN
 	#define NOMINMAX //added by PHC, 2010-05-20 to overcome VC min max macro
 	#include <windows.h>

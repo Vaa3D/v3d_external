@@ -43,6 +43,14 @@ protected:
         m_x /= s;
         m_y /= s;
         m_z /= s;
+        return *this;
+    }
+
+    BaseVector3D& operator*=(qreal s) {
+        m_x *= s;
+        m_y *= s;
+        m_z *= s;
+        return *this;
     }
 
     // Writeable access is OK for Vector3D, but not for UnitVector3D

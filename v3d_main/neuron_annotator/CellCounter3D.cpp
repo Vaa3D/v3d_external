@@ -288,7 +288,7 @@ void CellCounter3D::markImage() {
                     } else if (ex>=xDim) {
                         sx=xDim-1;
                     }
-                    double distance = std::sqrt((sz-z)*(sz-z)+(sy-y)*(sy-y)+(sx-x)*(sx-x));
+                    double distance = std::sqrt((double)((sz-z)*(sz-z)+(sy-y)*(sy-y)+(sx-x)*(sx-x)));
                     if (distance<=MARK_RADIUS) {
                         unsigned char signal=data[0][sz][sy][sx];
                         int r=(MARK_COLOR[0]*signal)/255;

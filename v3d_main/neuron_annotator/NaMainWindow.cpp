@@ -1,3 +1,7 @@
+// Fix windows compile problem with windows.h being included too late.
+// I wish it wasn't included at all...
+#include "GLee_r.h"
+
 #include <QtGui>
 #include <QDir>
 #include <QFileInfo>
@@ -358,6 +362,7 @@ bool NaMainWindow::loadMy4DImage(const My4DImage * img, const My4DImage * neuron
 static volatile double buttonGamma = 1.00;
 static GalleryButton* setButtonGamma(GalleryButton* & button) {
     button->setGamma(buttonGamma);
+    return button;
 }
 
 void NaMainWindow::updateThumbnailGamma(double gamma)
