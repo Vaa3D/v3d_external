@@ -23,6 +23,12 @@ private:
     static void deactivateMainWindowHelper(QMainWindow* qMainWindow) {
         if (qMainWindow!=0) {
             theApp->removeEventFilter(qMainWindow);
+            // Remember the window size and position before deactivating
+            QPoint windowPosition = qMainWindow->pos();
+            QSize windowSize = qMainWindow->size();
+            QSettings settings("HHMI", "V3D");
+            settings.setValue("pos", windowPosition);
+            settings.setValue("size", windowSize);
             qMainWindow->hide();
         }
     }
@@ -30,6 +36,11 @@ private:
     static void activateMainWindowHelper(QMainWindow* qMainWindow) {
         if (qMainWindow!=0) {
             theApp->installEventFilter(qMainWindow);
+            QSettings settings("HHMI", "V3D");
+            QPoint windowPosition = settings.value("pos", QPoint(10, 10)).toPoint();
+            QSize windowSize = settings.value("size", QSize(1000, 700)).toSize();
+            qMainWindow->move(windowPosition);
+            qMainWindow->resize(windowSize);
             qMainWindow->show();
         }
     }
