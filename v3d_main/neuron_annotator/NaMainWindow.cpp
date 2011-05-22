@@ -1,6 +1,9 @@
 // Fix windows compile problem with windows.h being included too late.
 // I wish it wasn't included at all...
-#include "../3drenderer/GLee_r.h"
+#ifdef _MSC_VER
+#define NOMINMAX //added by PHC, 2010-05-20 to overcome VC min max macro
+#include <windows.h>
+#endif
 
 #include <QDir>
 #include <QFileInfo>
