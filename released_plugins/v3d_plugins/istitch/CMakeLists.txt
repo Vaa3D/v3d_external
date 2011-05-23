@@ -16,15 +16,6 @@ if(NOT CMAKE_THREAD_LIBS_INIT)
     message("istitch plugin will not be built unless pthreads library is found")
 endif()
 
-find_library(FFTW_LIBRARY 
-    NAMES libfftw3f.a v3dfftw3f libfftw3f.a fftw3f libfftw3f-3
-    PATHS "$ENV{PROGRAMFILES}/fftw")
-find_library(FFTW_THREADS_LIBRARY 
-    NAMES libfftw3f_threads.a v3dfftw3f_threads libfftw3f_threads.a fftw3f_threads )
-if(NOT FFTW_LIBRARY)
-    message("istitch plugin will not be built unless fftw library is found")
-endif()
-
 if(TIFF_LIBRARY AND CMAKE_THREAD_LIBS_INIT AND FFTW_LIBRARY)
 
     set(V3DMAINDIR ../../../v3d_main)
@@ -51,13 +42,5 @@ if(TIFF_LIBRARY AND CMAKE_THREAD_LIBS_INIT AND FFTW_LIBRARY)
     # Link to fftw
     target_link_libraries(imageStitch ${FFTW_LIBRARY})
     target_link_libraries(imageStitch ${FFTW_THREADS_LIBRARY})
-    find_path(FFTW_INCLUDE_DIR 
-        NAME "fftw3.h"
-        PATHS 
-            "${V3DMAINDIR}/common_lib/include"
-            /usr/local/include
-    )
-    include_directories("${FFTW_INCLUDE_DIR}")
-    
 endif()
 

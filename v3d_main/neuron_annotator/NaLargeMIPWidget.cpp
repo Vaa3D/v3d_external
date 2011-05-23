@@ -196,7 +196,9 @@ NaLargeMIPWidget::NaLargeMIPWidget(QWidget * parent)
     pixmap.fill(Qt::black);
     updateDefaultScale();
     resetView();
+
     setMouseTracking(true); // respond to mouse hover events
+    setCursor(Qt::OpenHandCursor);
     imageUpdateThread.start();
 
     // Progress bar for when image is being processed
@@ -416,7 +418,7 @@ void NaLargeMIPWidget::wheelEvent(QWheelEvent * e) // mouse wheel
     bool doSmartZoom = false;
     // Smart zoom only when zooming *in*, not when zooming *out*,
     // to minimize loss of painstakingly adjusted foucs.
-    if (e->delta() < 0) doSmartZoom = true; // adjust focus when zooming in
+    // if (e->delta() < 0) doSmartZoom = true; // adjust focus when zooming in
     if (doSmartZoom) {
         double scale = cameraModel.scale() * defaultScale;
         double dx = e->pos().x() - width()/2.0;
@@ -435,6 +437,7 @@ void NaLargeMIPWidget::mousePressEvent(QMouseEvent * event)
         bMouseIsDragging = true;
         oldDragX = event->pos().x();
         oldDragY = event->pos().y();
+        setCursor(Qt::ClosedHandCursor);
     }
     else {
         bMouseIsDragging = false;
@@ -445,6 +448,7 @@ void NaLargeMIPWidget::mouseReleaseEvent(QMouseEvent * event)
 {
     // End any drag event
     bMouseIsDragging = false;
+    setCursor(Qt::OpenHandCursor);
 }
 
 // Drag in widget to translate the MIP image in x,y

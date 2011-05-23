@@ -2342,3 +2342,12 @@ v3d_main/neuron_annotator/GammaWidget.h
 v3d_main/neuron_annotator/GammaWidget.cpp
 v3d_main/neuron_annotator/NeuronSelector.cpp
 v3d_main/neuron_annotator/NeuronSelector.h
+released_plugins/v3d_plugins/mapview/mapviewer.pro
+released_plugins/v3d_plugins/mapview/CMakeLists.txt
+released_plugins/v3d_plugins/mapview/stackutil-11.h
+released_plugins/v3d_plugins/mapview/mg_image_lib11.h
+released_plugins/v3d_plugins/mapview/mapviewer.h
+released_plugins/v3d_plugins/mapview/colormap.h
+released_plugins/v3d_plugins/mapview/stackutil-11.cpp
+released_plugins/v3d_plugins/mapview/mg_image_lib11.cpp
+released_plugins/v3d_plugins/mapview/mapviewer.cpp
