@@ -26,8 +26,14 @@ QT4_WRAP_CPP(QT_MOC_SRCS
 
 include_directories(BEFORE ${V3D_BINARY_DIR}/v3d)
 include_directories(BEFORE ${V3D_BINARY_DIR}/v3dbase)
+include_directories(${TIFF_INCLUDE_DIR})
 
 add_library(v3dbase1 ${QT_UI_SRCS} ${QT_MOC_SRCS} ${V3DBASE_SRCS})
 
 target_link_libraries( v3dbase1 neuron_editing )
 target_link_libraries( v3dbase1 ${QT_QTXML_LIBRARY} )
+
+if(V3D_USE_OWN_TIFF)
+    add_dependencies(v3dbase1 CustomTiffLibrary)
+endif(V3D_USE_OWN_TIFF)
+

@@ -94,6 +94,7 @@ add_library(v3dbase ${QT_UI_SRCS} ${QT_MOC_SRCS})
 target_link_libraries( v3dbase v3dbase1 jba newmat11 multithreadimageIO ${QT_LIBRARIES} )
 
 add_library(v3dbase2 ${V3D_SRCS})
+add_dependencies(v3dbase2 v3dbase)
 
 if (WIN32) # Windows MSYS build
   # All this MYS stuff is just to compile in a program icon for windows

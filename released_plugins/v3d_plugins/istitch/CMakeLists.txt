@@ -29,6 +29,7 @@ if(TIFF_LIBRARY AND CMAKE_THREAD_LIBS_INIT AND FFTW_LIBRARY)
 
     set(V3DMAINDIR ../../../v3d_main)
     include_directories( "${V3DMAINDIR}/basic_c_fun" )
+    include_directories( "${TIFF_INCLUDE_DIR}" )
     include_directories( "${V3DMAINDIR}/common_lib/include" )
     
     set(PLUGIN_HEADERS istitch.h istitch_gui.h )

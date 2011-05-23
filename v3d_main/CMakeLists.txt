@@ -40,10 +40,12 @@ find_package(OpenGL REQUIRED)
 
 option( V3D_USE_OWN_TIFF "Use the TIFF library source code distributed with v3d" OFF)
 
+add_subdirectory( common_lib )
+
 if( V3D_USE_OWN_TIFF )
-  mark_as_advanced(TIFF_LIBRARY)
-  mark_as_advanced(TIFF_INCLUDE_DIR)
-  include_directories(BEFORE "${CMAKE_CURRENT_SOURCE_DIR}/common_lib/include")
+  # mark_as_advanced(TIFF_LIBRARY)
+  # mark_as_advanced(TIFF_INCLUDE_DIR)
+  # include_directories(BEFORE "${CMAKE_CURRENT_SOURCE_DIR}/common_lib/include")
 else()
   # CMake 2.8 FindTiff is very simple.  I need to give it some help on windows
   SET(TIFF_NAMES ${TIFF_NAMES}  libv3dtiff.a libtiff_v3d.a v3dtiff libv3dtiff libtiff.a tiff libtiff libtiff3 libtiff_i)
@@ -71,10 +73,12 @@ else()
 	PATH_SUFFIXES include libtiff "")
   # The unadorned FindTiff below
   find_package(TIFF REQUIRED)
-  include_directories(${TIFF_INCLUDE_DIR})
+  # include_directories(${TIFF_INCLUDE_DIR})
   mark_as_advanced(CLEAR TIFF_LIBRARY)
   mark_as_advanced(CLEAR TIFF_INCLUDE_DIR)
 endif()
+
+include_directories(${TIFF_INCLUDE_DIR})
 
 # message("QTVERSION = ${QTVERSION}")
 find_path(QT4_DEMOS_INCLUDE_DIR
@@ -126,8 +130,6 @@ if(APPLE AND TMP_OSX_SYSROOT)
         set(V3D_INITIALIZED_MAX_OSX_TO_DEFAULT TRUE CACHE INTERNAL "Whether default v3d values of Mac compatibility has been set.")
     endif()
 endif()
-
-add_subdirectory( common_lib )
 
 add_subdirectory( graph )
 

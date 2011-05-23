@@ -1,6 +1,7 @@
 # Link neuron annotator functionality into V3D
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../v3d)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/../v3dbase)
 include_directories(../v3d)
 include_directories(../3drenderer)
 

@@ -26,3 +26,10 @@ set(NEWMAT11_SRCS
 
 add_library(newmat11 ${NEWMAT11_SRCS})
 
+# 64 bit AMD Linux requires -fPIC flag for linking static libraries --CMB
+if(UNIX AND NOT APPLE)
+  if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+    set_target_properties(newmat11 PROPERTIES COMPILE_FLAGS "-fPIC -O3")
+  endif()
+endif()
+
