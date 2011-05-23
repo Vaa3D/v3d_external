@@ -41,6 +41,7 @@ public slots:
     void resetView();
     void translateImage(int dx, int dy);
     void showCrosshair(bool b) {NaViewer::showCrosshair(b); update();}
+	void updateHighlightNeurons(bool b);
 
 protected slots:
     // focus setting should be done via cameraModel, not with these methods.

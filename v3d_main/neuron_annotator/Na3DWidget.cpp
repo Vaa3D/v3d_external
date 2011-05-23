@@ -322,6 +322,13 @@ void Na3DWidget::updateRotation(const Rotation3D & newRotation)
     updateFocus(f);
 }
 
+void Na3DWidget::updateHighlightNeurons(bool b)
+{
+	enableMarkerLabel(b); // show markers' label
+	
+	updateWithTriView(); // update list markers and 3d viewer
+}
+
 void Na3DWidget::setGammaBrightness(double gamma)
 {
     // I sort of hope this will address everyone's manual brightness needs.

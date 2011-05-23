@@ -146,21 +146,6 @@ XYZ Renderer_tex2::selectPosition(int x, int y)
 // NeuronSelector init func
 void NeuronSelector::init()
 {
-	// init
-	int numNeuron = annotationSession->getMaskStatusList().size();
-	
-//	annotationSession->getNeuronSelectList().clear();
-	
-//	bool neuronSelected = false;
-	
-//	for(int i=0; i<numNeuron; i++)
-//	{
-//            (&annotationSession->getNeuronSelectList())->append(neuronSelected);
-//            qDebug()<<"append size ..."<<annotationSession->getNeuronSelectList().size()<<i;
-//	}
-	
-        qDebug()<<"init size ..."<<annotationSession->getNeuronSelectList().size()<<numNeuron;
-	
 	//
 	index = -1;
 }
@@ -182,9 +167,9 @@ void NeuronSelector::switchSelectedNeuron(int index)
 int NeuronSelector::getIndexSetectedNeuron()
 {
 	// find in mask stack
-	V3DLONG sx = annotationSession->getNeuronMaskAsMy4DImage()->getXDim();
-	V3DLONG sy = annotationSession->getNeuronMaskAsMy4DImage()->getYDim();
-	V3DLONG sz = annotationSession->getNeuronMaskAsMy4DImage()->getZDim();
+	sx = annotationSession->getNeuronMaskAsMy4DImage()->getXDim();
+	sy = annotationSession->getNeuronMaskAsMy4DImage()->getYDim();
+	sz = annotationSession->getNeuronMaskAsMy4DImage()->getZDim();
 		
 	// sum of pixels of each neuron mask in the cube 
 	int *sum = NULL;
@@ -196,7 +181,13 @@ int NeuronSelector::getIndexSetectedNeuron()
 	try
 	{
 		sum = new int [numNeuron];		
-		memset(sum, 0, numNeuron); // init 0
+		
+		// init 0 
+		//memset(sum, 0, numNeuron); 
+		for(V3DLONG i=1; i<numNeuron; i++)
+		{
+			sum[i] = 0;
+		}
 	}
 	catch (...) 
 	{
@@ -224,7 +215,7 @@ int NeuronSelector::getIndexSetectedNeuron()
 				
 				int cur_idx = annotationSession->getNeuronMaskAsMy4DImage()->getRawData()[idx]; // value of mask stack
 				
-				if(cur_idx>0 && annotationSession->getMaskStatusList().at(cur_idx))
+				if(cur_idx>0 && annotationSession->getMaskStatusList().at(cur_idx)) // active masks
 				{
 					sum[cur_idx]++;
 				}
@@ -236,6 +227,8 @@ int NeuronSelector::getIndexSetectedNeuron()
 	index = 0;
 	for(V3DLONG i=1; i<numNeuron; i++)
 	{
+		//qDebug()<<"sum ["<<i<<"] ..."<<sum[i];
+		
 		if(sum[i]>0 && sum[i]>sum[index])
 		{
 			index = i;
@@ -248,9 +241,131 @@ int NeuronSelector::getIndexSetectedNeuron()
 	//
 	qDebug()<<"index ..."<<index;
 	
-	switchSelectedNeuron(index);
+	if(index>0) 
+	{
+		switchSelectedNeuron(index);
+	}
+	else
+	{
+		index = -1; // 0 is background
+	}
 	
 	return index;
+}
+
+//
+void NeuronSelector::getCurNeuronBoundary()
+{
+	index = getIndexSetectedNeuron();
+	
+	if(index<=0) return;
+	
+	//
+	curNeuronBDxb = sx-1;
+	curNeuronBDxe = 0;
+	
+	curNeuronBDyb = sy-1;
+	curNeuronBDye = 0;
+	
+	curNeuronBDzb = sz-1;
+	curNeuronBDze = 0;
+	
+	//
+	for(V3DLONG k=0; k<sz; k++)
+	{
+		V3DLONG offset_k = k*sx*sy;
+		for(V3DLONG j=0; j<sy; j++)
+		{
+			V3DLONG offset_j = offset_k + j*sx;
+			for(V3DLONG i=0; i<sx; i++)
+			{
+				V3DLONG idx = offset_j + i;
+				
+				if(annotationSession->getNeuronMaskAsMy4DImage()->getRawData()[idx] == index)
+				{
+					if(i<curNeuronBDxb) curNeuronBDxb = i;
+					if(i>curNeuronBDxe) curNeuronBDxe = i;
+					
+					if(j<curNeuronBDyb) curNeuronBDyb = j;
+					if(j>curNeuronBDye) curNeuronBDye = j;
+					
+                                        if(k<curNeuronBDzb) curNeuronBDzb = k;
+                                        if(k>curNeuronBDze) curNeuronBDze = k;
+				}
+				
+			}
+		}
+	}
+	
+	// x
+	if( curNeuronBDxb-NB > 0 )
+	{
+		curNeuronBDxb -= NB;
+	}
+	else
+	{
+		curNeuronBDxb = 0;
+	}
+	
+	if(curNeuronBDxe+NB < sx)
+	{
+		curNeuronBDxe += NB;
+	}
+	else
+	{
+		curNeuronBDxe = sx - 1;
+	}
+	
+	// y
+	if( curNeuronBDyb-NB > 0 )
+	{
+		curNeuronBDyb -= NB;
+	}
+	else
+	{
+		curNeuronBDyb = 0;
+	}
+	
+	if(curNeuronBDye+NB < sy)
+	{
+		curNeuronBDye += NB;
+	}
+	else
+	{
+		curNeuronBDye = sy - 1;
+	}
+	
+	// z
+	if( curNeuronBDzb-NB > 0 )
+	{
+		curNeuronBDzb -= NB;
+	}
+	else
+	{
+		curNeuronBDzb = 0;
+	}
+	
+	if(curNeuronBDze+NB < sz)
+	{
+		curNeuronBDze += NB;
+	}
+	else
+	{
+		curNeuronBDze = sz - 1;
+	}
+}
+
+//
+bool NeuronSelector::inNeuronMask(V3DLONG x, V3DLONG y, V3DLONG z)
+{
+	if(x<=curNeuronBDxe && x>=curNeuronBDxb && y<=curNeuronBDye && y>=curNeuronBDyb && z<=curNeuronBDze && z>=curNeuronBDzb)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 //
@@ -273,6 +388,88 @@ void NeuronSelector::updateSelectedPosition(double x, double y, double z) {
 // highlight selected neuron
 void NeuronSelector::highlightSelectedNeuron()
 {
-	qDebug()<<" ... "<<getIndexSetectedNeuron();
+    getCurNeuronBoundary();
+	
+	if(index<=0) return;
+	if(curNeuronBDxb>curNeuronBDxe || curNeuronBDyb>curNeuronBDye || curNeuronBDzb>curNeuronBDze) return;
+
+	//
+	// index neuron selected status is true
+	
+	// list of markers
+	QList<LocationSimple> listLandmarks;
+	
+    // mesh grids
+	for(V3DLONG k=0; k<sz; k+=STEP)
+	{
+		//V3DLONG offset_k = k*sx*sy;
+		for(V3DLONG j=0; j<sy; j+=STEP)
+		{
+			//V3DLONG offset_j = offset_k + j*sx;
+			for(V3DLONG i=0; i<sx; i+=STEP)
+			{
+				//V3DLONG idx = offset_j + i; // lattice point
+				
+				if(inNeuronMask(i,j,k))
+				{
+					// find avg position in cube around lattice point
+					float sumx, sumy, sumz;
+					V3DLONG count;
+					sumx = 0.0;
+					sumy = 0.0;
+					sumz = 0.0;
+					count = 0;
+					
+					//
+					V3DLONG xb = i-NB; if(xb<0) xb = 0;
+					V3DLONG xe = i+NB; if(xe>sx) xe = sx-1;
+					V3DLONG yb = j-NB; if(yb<0) yb = 0;
+					V3DLONG ye = j+NB; if(ye>sy) ye = sy-1;
+					V3DLONG zb = k-NB; if(zb<0) zb = 0;
+					V3DLONG ze = k+NB; if(ze>sz) ze = sz-1;
+					
+					for(V3DLONG kk=zb; kk<=ze; kk++)
+					{
+						V3DLONG offset_kk = kk*sx*sy;
+						for(V3DLONG jj=yb; jj<=ye; jj++)
+						{
+							V3DLONG offset_jj = offset_kk + jj*sx;
+							for(V3DLONG ii=xb; ii<=xe; ii++)
+							{
+								V3DLONG idx = offset_jj + ii;
+								
+								if(annotationSession->getNeuronMaskAsMy4DImage()->getRawData()[idx] == index)
+								{
+									count++;
+									sumx += ii;
+									sumy += jj;
+									sumz += kk;
+								}
+							}
+						}
+					}
+
+					// append a marker
+					if(count>0)
+					{
+						LocationSimple p((V3DLONG)(sumx/(float)count+1.5), (V3DLONG)(sumy/(float)count+1.5), (V3DLONG)(sumz/(float)count+1.5)); // 1-based
+						RGBA8 c;
+						c.r = 0; c.g = 255; c.b = 255; c.a = 128;// cyan
+						p.color = c; // instead of random_rgba8(255);
+						listLandmarks.append(p);
+					}
+				}
+			}
+		}
+	}
+	
+	// highlight result
+	annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks = listLandmarks;
+	
+	qDebug()<<"highlight selected neuron ..."<<listLandmarks.size();
+	
+	// syncronize markers shown in 3d viewer
+	emit neuronHighlighted(false);
+
 }
 
