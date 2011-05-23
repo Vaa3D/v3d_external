@@ -22,6 +22,10 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* widget) : Renderer_gl2(wi
     bShowAxes = false;
     bShowBoundingBox = false;
     bShowBoundingBox2 = false;
+
+    // Using compressed textures makes the transitions between texture sets much worse looking.
+    // especially at high zoom levels.  So turn off compression.
+    tryTexCompress = 0;
 }
 
 RendererNeuronAnnotator::~RendererNeuronAnnotator() {

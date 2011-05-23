@@ -13,6 +13,7 @@ Na3DWidget::Na3DWidget(QWidget* parent)
 {
     _idep = new iDrawExternalParameter();
     _idep->image4d = NULL;
+    _volCompress = false;
     resetView();
     // setVolCompress(false); // might look nicer?
 
