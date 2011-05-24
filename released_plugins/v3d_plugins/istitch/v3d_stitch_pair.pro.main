@@ -4,6 +4,8 @@ CONFIG       += qt plugin warn_off
 macx: CONFIG       -= app_bundle 
 #CONFIG       += x86_64
 
+DEFINES += COMPILE_TO_COMMANDLINE
+
 V3DMAINDIR = ../../../v3d_main
 
 INCLUDEPATH  += $$V3DMAINDIR/basic_c_fun
