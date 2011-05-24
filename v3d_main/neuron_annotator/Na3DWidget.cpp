@@ -420,17 +420,24 @@ void Na3DWidget::choiceRenderer() {
 // Draw a little 3D cross for testing
 // In GL coordinates, where volume is contained within [-1,1]^3
 void Na3DWidget::paintFiducial(const Vector3D& v) {
-    qreal dd = 10.0 * glUnitsPerImageVoxel() / getZoomScale(); // 10 pixel crosshair
+    qreal dd1 = 4.0 * glUnitsPerImageVoxel() / getZoomScale();
+    qreal dd2 = 10.0 * glUnitsPerImageVoxel() / getZoomScale(); // 10 pixel crosshair
     qreal x = v.x();
     qreal y = v.y();
     qreal z = v.z();
     glBegin(GL_LINES);
-      glVertex3f(x-dd,y,z);
-      glVertex3f(x+dd,y,z);
-      glVertex3f(x,y-dd,z);
-      glVertex3f(x,y+dd,z);
-      glVertex3f(x,y,z-dd);
-      glVertex3f(x,y,z+dd);
+      glVertex3f(x-dd1,y,z);
+      glVertex3f(x-dd2,y,z);
+      glVertex3f(x+dd1,y,z);
+      glVertex3f(x+dd2,y,z);
+      glVertex3f(x,y-dd1,z);
+      glVertex3f(x,y-dd2,z);
+      glVertex3f(x,y+dd1,z);
+      glVertex3f(x,y+dd2,z);
+      glVertex3f(x,y,z-dd1);
+      glVertex3f(x,y,z-dd2);
+      glVertex3f(x,y,z+dd1);
+      glVertex3f(x,y,z+dd2);
     glEnd();
 }
 
@@ -454,7 +461,12 @@ void Na3DWidget::paintGL()
         // glClear(GL_DEPTH_BUFFER_BIT); // Destroys depth buffer; probably too harsh
         glPushAttrib(GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT); // save color and depth test
         glDisable(GL_DEPTH_TEST);
-        glColor3f(0,1,1); // cyan marker color
+        glEnable(GL_LINE_SMOOTH);
+        glColor3f(0,0,0); // black marker color
+        glLineWidth(3.0);
+        paintFiducial(focus);
+        glColor3f(1.0,1.0,0.7); // pale yellow marker color
+        glLineWidth(1.5);
         paintFiducial(focus);
         glPopAttrib();
     }

@@ -28,7 +28,9 @@ bool MipData::loadMy4DImage(const My4DImage* img, const My4DImage* maskImg)
     My4DImage * mutable_img = const_cast<My4DImage*>(img);
     Image4DProxy<My4DImage> imgProxy(mutable_img);
 
-    // First loop quickly updates intensity, without updating neuron masks
+    int maxNeuronIndex = -1;
+
+    // First loop "quickly" updates intensity, without updating neuron masks
     for (int x = 0; x < nColumns(); ++x) {
         for (int y = 0; y < nRows(); ++y) {
             for (int z = 0; z < img->getZDim(); ++z) {
@@ -42,6 +44,12 @@ bool MipData::loadMy4DImage(const My4DImage* img, const My4DImage* maskImg)
                     intensity += val;
                 }
                 assert(intensity >= 0.0);
+                int neuronIndex = -1;
+                if (maskImg) {
+                    neuronIndex = maskImg->at(x, y, z);
+                    if (neuronIndex > maxNeuronIndex)
+                        maxNeuronIndex = neuronIndex;
+                }
                 // Maximum intensity projection - regardless of neuron masks
                 if (intensity > data[x][y].intensity) {
                     for (int c = 0; c < nChannels(); ++c)
@@ -54,29 +62,34 @@ bool MipData::loadMy4DImage(const My4DImage* img, const My4DImage* maskImg)
                 }
             }
         }
-        emit processedXColumn(x + 1);
+        if (! (x % 10))
+            emit processedXColumn(x + 1);
         // qDebug() << "processed column " << x + 1;
     }
 
     emit intensitiesUpdated();
 
-    for (int x = 0; x < nColumns(); ++x) {
-        for (int y = 0; y < nRows(); ++y) {
-            for (int z = 0; z < img->getZDim(); ++z) {
-                if (false) {
-//                 if (maskImg) {
-                    int neuronMaskId = maskImg->at(x,y,z);
-                    if (neuronImages.find(neuronMaskId) == neuronImages.end()) {
-                        // TODO create another neuron mask
-                        qDebug() << "creating neuron image #" << neuronMaskId;
-                        neuronImages[neuronMaskId] = new MipData(NULL, NULL, this); // TODO - use img
+    if (maskImg && (maxNeuronIndex >= 0))
+    {
+        qDebug() << "processing MIP masks";
+        for (int x = 0; x < nColumns(); ++x) {
+            for (int y = 0; y < nRows(); ++y) {
+                for (int z = 0; z < img->getZDim(); ++z) {
+                    if (false) {
+                        int neuronMaskId = maskImg->at(x,y,z);
+                        if (neuronImages.find(neuronMaskId) == neuronImages.end()) {
+                            // TODO create another neuron mask
+                            qDebug() << "creating neuron image #" << neuronMaskId;
+                            neuronImages[neuronMaskId] = new MipData(NULL, NULL, this); // TODO - use img
+                        }
+                        MipData * neuronImage = neuronImages[neuronMaskId];
+                        // TODO - react to neuron information
                     }
-                    MipData * neuronImage = neuronImages[neuronMaskId];
-                    // TODO - react to neuron information
                 }
             }
         }
     }
+    qDebug() << "finished processing MIP masks";
     return true;
 }
 

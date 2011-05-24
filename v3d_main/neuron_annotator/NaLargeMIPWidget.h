@@ -83,12 +83,13 @@ public slots:
     void showCrosshair(bool b) {NaViewer::showCrosshair(b); update();}
     void initializePixmap(); // when a new image has loaded
     // Want to distinguish between double click and single click events
-    void onMouseSingleClick(QMouseEvent* event)
+    void onMouseSingleClick(QPoint pos)
     {
-        int neuronIx = neuronAt(event->pos());
-        if (neuronIx > 0)
+        int neuronIx = neuronAt(pos);
+        if (neuronIx > 0) {
             emit neuronClicked(neuronIx);
-        qDebug() << "clicked Neuron " << neuronAt(event->pos());
+            // qDebug() << "clicked Neuron " << neuronAt(pos);
+        }
     }
 
 protected:

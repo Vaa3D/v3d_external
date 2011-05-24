@@ -13,7 +13,6 @@ class MouseClickManager : public QObject
     Q_OBJECT
 public:
     explicit MouseClickManager(QObject *parent = 0);
-    virtual ~MouseClickManager();
     // Call these methods when your widget gets the corresponding event
     void mousePressEvent(QMouseEvent * event);
     void mouseReleaseEvent(QMouseEvent * event);
@@ -21,7 +20,7 @@ public:
 
 signals:
     // Connect to this signal to get clean single click events
-    void singleClick(QMouseEvent * event);
+    void singleClick(QPoint);
 
 public slots:
 
@@ -29,7 +28,7 @@ protected slots:
     void onClickTimerTimedOut();
 
 protected:
-    QMouseEvent * pressEvent;
+    QPoint mousePressPosition;
     QTimer singleClickTimer;
     QTime mousePressTime;
     int mousePressInterval; // time between presses in milliseconds

@@ -135,8 +135,8 @@ NaLargeMIPWidget::NaLargeMIPWidget(QWidget * parent)
     progressBar->hide();
     connect(progressBar, SIGNAL(valueChanged(int)),
             this, SLOT(update()));
-    connect(&mouseClickManager, SIGNAL(singleClick(QMouseEvent*)),
-            this, SLOT(onMouseSingleClick(QMouseEvent*)));
+    connect(&mouseClickManager, SIGNAL(singleClick(QPoint)),
+            this, SLOT(onMouseSingleClick(QPoint)));
 }
 
 NaLargeMIPWidget::~NaLargeMIPWidget()
@@ -185,7 +185,7 @@ void NaLargeMIPWidget::initializePixmap()
     updateDefaultScale();
     resetView();
     update();
-    qDebug() << "Finished MIP data load";
+    // qDebug() << "Finished MIP data load";
 }
 
 void NaLargeMIPWidget::updateDefaultScale()
@@ -307,17 +307,30 @@ void NaLargeMIPWidget::paintEvent(QPaintEvent *event)
     painter.drawPixmap(0, 0, pixmap); // magic!
 
     if (bPaintCrosshair) {
+        QBrush brush1(Qt::black);
+        QBrush brush2(QColor(255, 255, 180));
+        QPen pen1(brush1, 2.0/scale);
+        QPen pen2(brush2, 1.0/scale);
         // qDebug() << "paint crosshair";
         // Q: Why all this complicated math instead of just [width()/2, height()/2]?
         // A: This helps debug/document placement of image focus
         qreal cx = pixmap.width()/2.0 + flip_X * (cameraModel.focus().x() - pixmap.width()/2.0);
         qreal cy = pixmap.height()/2.0 + flip_Y * (cameraModel.focus().y() - pixmap.height()/2.0);
         QPointF f(cx, cy);
-        QPointF dx(10.0 / scale, 0); // crosshair size is ten pixels
-        QPointF dy(0, 10.0 / scale);
-        painter.setPen(Qt::cyan);
-        painter.drawLine(f - dx, f + dx);
-        painter.drawLine(f - dy, f + dy);
+        QPointF dx1(4.0 / scale, 0);
+        QPointF dy1(0, 4.0 / scale);
+        QPointF dx2(10.0 / scale, 0); // crosshair size is ten pixels
+        QPointF dy2(0, 10.0 / scale);
+        painter.setPen(pen1);
+        painter.drawLine(f + dx1, f + dx2);
+        painter.drawLine(f - dx1, f - dx2);
+        painter.drawLine(f + dy1, f + dy2);
+        painter.drawLine(f - dy1, f - dy2);
+        painter.setPen(pen2);
+        painter.drawLine(f + dx1, f + dx2);
+        painter.drawLine(f - dx1, f - dx2);
+        painter.drawLine(f + dy1, f + dy2);
+        painter.drawLine(f - dy1, f - dy2);
     }
 
     // At large zoom levels, write the intensity values at each pixel

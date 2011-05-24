@@ -5,17 +5,11 @@
 MouseClickManager::MouseClickManager(QObject *parent)
     : QObject(parent)
     , mousePressInterval(5000)
-    , pressEvent(NULL)
 {
     singleClickTimer.setSingleShot(true);
     connect(&singleClickTimer, SIGNAL(timeout()),
             this, SLOT(onClickTimerTimedOut()));
     mousePressTime.start();
-}
-
-MouseClickManager::~MouseClickManager()
-{
-    if (pressEvent) {delete pressEvent; pressEvent = NULL;}
 }
 
 void MouseClickManager::mousePressEvent(QMouseEvent * event)
@@ -26,8 +20,7 @@ void MouseClickManager::mousePressEvent(QMouseEvent * event)
     mousePressInterval = mousePressTime.elapsed(); // remember time to *previous* click
     mousePressTime.restart();
     // qDebug() << event->pos();
-    if (pressEvent) delete pressEvent;
-    pressEvent = new QMouseEvent(event->type(), event->pos(), event->button(), event->buttons(), event->modifiers());
+    mousePressPosition = event->pos();
 }
 
 void MouseClickManager::mouseReleaseEvent(QMouseEvent * event)
@@ -43,8 +36,8 @@ void MouseClickManager::mouseReleaseEvent(QMouseEvent * event)
     // qDebug() << "clickInterval = " << clickInterval;
     if (clickInterval < 5) return; // nobody clicks that fast
     if (clickInterval > 1000) return; // too slow, that's not a click
-    QPoint dv = event->pos() - pressEvent->pos();
-    // qDebug() << event->pos() << ", " << pressEvent->pos();
+    QPoint dv = event->pos() - mousePressPosition;
+    // qDebug() << event->pos() << ", " << mousePressPosition;
     // qDebug() << "drag distance = " << dv.manhattanLength();
     if (dv.manhattanLength() > 2) return; // That's a drag, not a click
     // Got this far?  This might be a clean single click!
@@ -64,5 +57,5 @@ void MouseClickManager::mouseDoubleClickEvent(QMouseEvent * event)
 void MouseClickManager::onClickTimerTimedOut()
 {
     // qDebug() << "signal single click";
-    emit singleClick(pressEvent);
+    emit singleClick(mousePressPosition);
 }
