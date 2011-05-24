@@ -16,6 +16,8 @@ MipDisplayImage::MipDisplayImage()
 {
     connect(&originalData, SIGNAL(processedXColumn(int)),
             this, SLOT(processedXColumnSlot(int)));
+    connect(&originalData, SIGNAL(intensitiesUpdated()),
+            this, SLOT(onDataIntensitiesUpdated()));
 }
 
 void MipDisplayImage::processedXColumnSlot(int c) {
@@ -31,6 +33,9 @@ void MipDisplayImage::load4DImage(const My4DImage* img, const My4DImage* maskImg
 {
     image = QImage(QSize(img->getXDim(), img->getYDim()), QImage::Format_RGB32);
     originalData.loadMy4DImage(img, maskImg);
+}
+
+void MipDisplayImage::onDataIntensitiesUpdated() {
     // Default display exactly entire intensity range
     displayMin = originalData.dataMin;
     // displayMin = 0.0; // example ct image has a very large minimum
@@ -130,6 +135,8 @@ NaLargeMIPWidget::NaLargeMIPWidget(QWidget * parent)
     progressBar->hide();
     connect(progressBar, SIGNAL(valueChanged(int)),
             this, SLOT(update()));
+    connect(&mouseClickManager, SIGNAL(singleClick(QMouseEvent*)),
+            this, SLOT(onMouseSingleClick(QMouseEvent*)));
 }
 
 NaLargeMIPWidget::~NaLargeMIPWidget()
@@ -353,6 +360,7 @@ void NaLargeMIPWidget::wheelEvent(QWheelEvent * e) // mouse wheel
 
 void NaLargeMIPWidget::mousePressEvent(QMouseEvent * event)
 {
+    mouseClickManager.mousePressEvent(event);
     // Consider starting a translation drag operation
     if (event->buttons() & Qt::LeftButton) {
         bMouseIsDragging = true;
@@ -370,6 +378,22 @@ void NaLargeMIPWidget::mouseReleaseEvent(QMouseEvent * event)
     // End any drag event
     bMouseIsDragging = false;
     setCursor(Qt::OpenHandCursor);
+    mouseClickManager.mouseReleaseEvent(event);
+}
+
+int NaLargeMIPWidget::neuronAt(const QPoint& p)
+{
+    int answer = -1;
+    if (!mipImage) return answer;
+    QPointF v_img = X_img_view * QPointF(p);
+    int x = v_img.x();
+    int y = v_img.y();
+    if (x < 0) return answer;
+    if (y < 0) return answer;
+    if (x >= mipImage->originalData.nColumns()) return answer;
+    if (y >= mipImage->originalData.nRows()) return answer;
+    answer = mipImage->originalData[x][y].neuronIndex;
+    return answer;
 }
 
 // Drag in widget to translate the MIP image in x,y
@@ -450,6 +474,7 @@ void NaLargeMIPWidget::mouseMoveEvent(QMouseEvent * event)
 // Move focus on double click
 void NaLargeMIPWidget::mouseDoubleClickEvent(QMouseEvent * event)
 {
+    mouseClickManager.mouseDoubleClickEvent(event);
     if (event->button() != Qt::LeftButton)
         return;
     double dx = event->pos().x() - width()/2.0;

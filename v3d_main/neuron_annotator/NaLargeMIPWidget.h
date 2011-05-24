@@ -7,6 +7,7 @@
 #include <QPixmap>
 #include <QPainter>
 #include "NaViewer.h"
+#include "MouseClickManager.h"
 
 // MipDisplayImage is a derived class of QImage, intended
 // to encapsulate gamma/HDR correctability.
@@ -31,6 +32,7 @@ signals:
 public slots:
     void loadImageData(const My4DImage* img, const My4DImage* maskImg);
     void processedXColumnSlot(int);
+    void onDataIntensitiesUpdated();
 
 protected:
     unsigned char getCorrectedIntensity(float i_in) const;
@@ -67,17 +69,27 @@ public:
     virtual void wheelEvent(QWheelEvent * e); // zoom with scroll wheel
     virtual void resizeEvent(QResizeEvent * event);
     void translateImage(int dx, int dy);
+    int neuronAt(const QPoint& p);
 
 signals:
     // message intended for main window status area
     void statusMessage(const QString&);
     void volumeDataUpdated(const My4DImage*, const My4DImage*);
     void hoverNeuronChanged(int);
+    void neuronClicked(int);
 
 public slots:
     void annotationModelUpdate(QString updateType);
     void showCrosshair(bool b) {NaViewer::showCrosshair(b); update();}
     void initializePixmap(); // when a new image has loaded
+    // Want to distinguish between double click and single click events
+    void onMouseSingleClick(QMouseEvent* event)
+    {
+        int neuronIx = neuronAt(event->pos());
+        if (neuronIx > 0)
+            emit neuronClicked(neuronIx);
+        qDebug() << "clicked Neuron " << neuronAt(event->pos());
+    }
 
 protected:
     void updateDefaultScale();
@@ -91,6 +103,8 @@ protected:
     QTransform X_view_img;
     QThread imageUpdateThread;
     QProgressBar * progressBar;
+    // Help distinguish between single clicks and double clicks
+    MouseClickManager mouseClickManager;
 };
 
 #endif // NA_LARGE_MIP_WIDGET_H

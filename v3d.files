@@ -2353,3 +2353,5 @@ released_plugins/v3d_plugins/mapview/mg_image_lib11.cpp
 released_plugins/v3d_plugins/mapview/mapviewer.cpp
 v3d_main/neuron_annotator/MipData.h
 v3d_main/neuron_annotator/MipData.cpp
+v3d_main/neuron_annotator/MouseClickManager.h
+v3d_main/neuron_annotator/MouseClickManager.cpp
