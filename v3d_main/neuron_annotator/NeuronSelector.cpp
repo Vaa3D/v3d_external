@@ -456,6 +456,8 @@ void NeuronSelector::highlightSelectedNeuron()
 						RGBA8 c;
 						c.r = 0; c.g = 255; c.b = 255; c.a = 128;// cyan
 						p.color = c; // instead of random_rgba8(255);
+						p.radius = 1; // instead of 5
+						
 						listLandmarks.append(p);
 					}
 				}
@@ -468,7 +470,7 @@ void NeuronSelector::highlightSelectedNeuron()
 	
 	qDebug()<<"highlight selected neuron ..."<<listLandmarks.size();
 	
-	// syncronize markers shown in 3d viewer
+	// synchronize markers shown in 3d viewer
 	emit neuronHighlighted(false);
 
 }
