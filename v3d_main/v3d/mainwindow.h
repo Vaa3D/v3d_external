@@ -279,8 +279,12 @@ public:
 	void setBooleanCLplugin(bool cl_plugininput);
 	void setPluginName(char *pluginnameinput);
 	void setPluginMethod(char *pluginmethodinput);
+	void setPluginFunc(char *pluginfuncinput);
 	char *getPluginName();
 	char *getPluginMethod();
+	char *getPluginFunc();
+	
+	void triggerRunPlugin();
 
 private:
     void createActions();
@@ -302,6 +306,7 @@ private:
 	
 	char *pluginname;
 	char *pluginmethod;
+	char *pluginfunc;
 
 	QString curFile;
 	XFormWidget * curHiddenSelectedXWidget;

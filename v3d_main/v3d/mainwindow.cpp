@@ -267,6 +267,10 @@ MainWindow::MainWindow()
 
     setWindowTitle(tr("V3D"));
 	
+#ifdef __v3dwebservice__
+	qDebug()<<"__v3dwebservice__ defined ... ... "
+#endif
+	
 #if defined(__v3dwebservice__) || defined(__V3DWSDEVELOP__)
 	
 	qDebug()<<"web service starting ...";
@@ -423,7 +427,19 @@ void MainWindow::updateRunPlugin() //20110426 YuY
 			
 			// run method
 			V3d_PluginLoader mypluginloader(this);
-			mypluginloader.runPlugin(loader, pluginmethod);
+			
+			if(pluginmethod)
+			{
+				mypluginloader.runPlugin(loader, pluginmethod);
+			}
+			if(pluginfunc)
+			{
+				V3DPluginArgItem arg;
+				V3DPluginArgList pluginfunc_input;
+				V3DPluginArgList pluginfunc_output;
+				
+				mypluginloader.callPluginFunc(v3dpluginFind, pluginfunc, pluginfunc_input, pluginfunc_output);
+			}
 		}
 		else
 		{
@@ -449,6 +465,11 @@ void MainWindow::setPluginMethod(char *pluginmethodinput)
 	pluginmethod = pluginmethodinput;
 }
 
+void MainWindow::setPluginFunc(char *pluginfuncinput)
+{
+	pluginfunc = pluginfuncinput;
+}
+
 char *MainWindow::getPluginName()
 {
 	return pluginname;
@@ -457,6 +478,16 @@ char *MainWindow::getPluginName()
 char *MainWindow::getPluginMethod()
 {
 	return pluginmethod;
+}
+
+char *MainWindow::getPluginFunc()
+{
+	return pluginfunc;
+}
+
+void MainWindow::triggerRunPlugin()
+{
+	emit imageLoaded2Plugin();
 }
 
 #ifdef __v3dwebservice__

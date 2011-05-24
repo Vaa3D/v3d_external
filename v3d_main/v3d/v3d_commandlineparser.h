@@ -294,7 +294,7 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 
                                 qDebug()<<"call plugin method ..."<<i_v3d.pluginmethod;
                             }
-							else if (!strcmp(key, "func"))
+							else if (!strcmp(key, "n"))
                             {
                                 // plugin method
                                 i_v3d.pluginfunc = argv[i+1];

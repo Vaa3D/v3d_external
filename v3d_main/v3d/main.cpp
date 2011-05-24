@@ -240,51 +240,64 @@ int main(int argc, char **argv)
 				mainWin->setBooleanCLplugin(true);
 				mainWin->setPluginName(parser.i_v3d.pluginname);
 				mainWin->setPluginMethod(parser.i_v3d.pluginmethod);
+				mainWin->setPluginFunc(parser.i_v3d.pluginfunc);
 			}
 			
 			// multiple image/object handling module
-			for(int i=0; i<parser.i_v3d.fileList.size(); i++)
+			if(parser.i_v3d.fileList.size()==0)
 			{
-				char *filename = parser.i_v3d.fileList.at(i);
-				
-				qDebug()<<"now try open files ...";
-
-				QString qFile(filename);
-
-				if(!QFile(qFile).exists()) // supporting both local and web files. Nov. 18, 2010. YuY
+				if(parser.i_v3d.pluginname)
 				{
-					// judge whether the file exists on the web
-					// "://" like "http://" "https://" "ftp://" 
-
-					if(qFile.contains("://"))
+					mainWin->triggerRunPlugin();
+				}
+			}
+			else
+			{
+				for(int i=0; i<parser.i_v3d.fileList.size(); i++)
+				{
+					char *filename = parser.i_v3d.fileList.at(i);
+					
+					qDebug()<<"now try open files ...";
+					
+					QString qFile(filename);
+					
+					if(!QFile(qFile).exists()) // supporting both local and web files. Nov. 18, 2010. YuY
 					{
-						QUrl url(filename);
-
-						if(!url.isValid()) // valid or invalid url
+						// judge whether the file exists on the web
+						// "://" like "http://" "https://" "ftp://" 
+						
+						if(qFile.contains("://"))
+						{
+							QUrl url(filename);
+							
+							if(!url.isValid()) // valid or invalid url
+							{
+								v3d_msg("The file does not exist! Do nothing.", 0);
+								return -1;	
+							}
+							else if(url.scheme().toUpper() == "HTTP" || url.scheme().toUpper() == "HTTPS" || url.scheme().toUpper() == "FTP")
+							{
+								// load image/object
+								mainWin->loadV3DUrl(QUrl(filename), true, parser.i_v3d.open3Dviewer);
+							}
+							//how about smb:// etc?? //by PHC, 20101123 question
+						}
+						else // impossible be a url
 						{
 							v3d_msg("The file does not exist! Do nothing.", 0);
 							return -1;	
 						}
-						else if(url.scheme().toUpper() == "HTTP" || url.scheme().toUpper() == "HTTPS" || url.scheme().toUpper() == "FTP")
-						{
-							// load image/object
-							mainWin->loadV3DUrl(QUrl(filename), true, parser.i_v3d.open3Dviewer);
-						}
-						//how about smb:// etc?? //by PHC, 20101123 question
 					}
-					else // impossible be a url
+					else
 					{
-						v3d_msg("The file does not exist! Do nothing.", 0);
-						return -1;	
+						QString curSuffix = QFileInfo(qFile).suffix();
+						// load image/object
+						mainWin->loadV3DFile(filename, true, parser.i_v3d.open3Dviewer);
 					}
 				}
-				else
-				{
-					QString curSuffix = QFileInfo(qFile).suffix();
-					// load image/object
-					mainWin->loadV3DFile(filename, true, parser.i_v3d.open3Dviewer);
-				}
-			}			
+			}
+			
+						
 
             // Check for software updates.
             // But not if V3D has been invoked with a file to open immediately.
