@@ -380,34 +380,47 @@ void NaLargeMIPWidget::mouseMoveEvent(QMouseEvent * event)
     // Notice statement "setMouseTracking(true)" in constructor.
     if (Qt::NoButton == event->buttons())
     {
+        static int currentNeuronIndex = -1;
+
         // Hover to show (x, y, value) in status bar
         if (!mipImage) return;
         QPointF v_img = X_img_view * QPointF(event->pos());
         int x = v_img.x();
         int y = v_img.y();
         int z = 0;
+        int neuronIx = -1;
         QString value("<None>"); // default value
         if ( (x >= 0) && (x < mipImage->originalData.nColumns())
             && (y >= 0) && (y < mipImage->originalData.nRows()) )
         {
-            z = mipImage->originalData[x][y].z;
+            const MipPixel& pixel = mipImage->originalData[x][y];
+            z = pixel.z;
             value = "";
             int nC = mipImage->originalData.nChannels();
             if (nC > 1) value += "[";
             for (int c = 0; c < nC; ++c) {
                 if (c > 0) value += ", ";
-                float val = mipImage->originalData[x][y][c];
-                value += QString("%1").arg(val);
+                float val = pixel[c];
+                value += QString("%1").arg(val, 4);
             }
             if (nC > 1) value += "]";
+            neuronIx = pixel.neuronIndex;
         }
 
-        emit statusMessage(QString("x = %1, y = %2, z = %3, value = %4")
-                           .arg(x)
-                           .arg(y)
-                           .arg(z)
-                           .arg(value)
-                           );
+        QString msg;
+        msg = QString("x =%1, y =%2, z =%3, value =%4")
+                      .arg(x, 3)
+                      .arg(y, 3)
+                      .arg(z, 3)
+                      .arg(value);
+        if (neuronIx > 0) { // Zero means background
+            msg = QString("Neuron %1; ").arg(neuronIx, 2) + msg;
+            if (neuronIx != currentNeuronIndex) {
+                currentNeuronIndex = neuronIx;
+                emit(hoverNeuronChanged(neuronIx));
+            }
+        }
+        emit statusMessage(msg);
         bMouseIsDragging = false;
         return;
     }

@@ -5,23 +5,24 @@
 #include <vector>
 #include "../v3d/v3d_core.h"
 
-class MipDisplayImage;
-
-// MipData is a generic container for float representation of original MIP data.
-// MipDisplayImage can contain a binary tree of MipDisplayImages,
-// for efficient update when toggling different components (e.g. neurons).
 class MipPixel : public std::vector<float>
 {
 public:
     MipPixel(size_t nChannels = 1)
         : std::vector<float>(nChannels, 0.0f)
-        , z(-1) // , intensity(0.0f)
+        , z(-1), intensity(0.0f), neuronIndex(-1)
     {}
 
     int z;
-    // float intensity;
+    float intensity;
+    int neuronIndex;
 };
+
 typedef std::vector<MipPixel> MipColumn;
+
+// MipData is a generic container for float representation of original MIP data.
+// MipDisplayImage can contain a binary tree of MipDisplayImages,
+// for efficient update when toggling different components (e.g. neurons).
 class MipData : public QObject
 {
     Q_OBJECT
@@ -50,8 +51,9 @@ public:
     float dataMax; // actual maximum value
 
 signals:
-    void dataChanged();
     void processedXColumn(int);
+    void intensitiesUpdated();
+    void neuronMasksUpdated();
 
 public slots:
     void updateData() {}

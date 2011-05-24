@@ -72,6 +72,7 @@ signals:
     // message intended for main window status area
     void statusMessage(const QString&);
     void volumeDataUpdated(const My4DImage*, const My4DImage*);
+    void hoverNeuronChanged(int);
 
 public slots:
     void annotationModelUpdate(QString updateType);

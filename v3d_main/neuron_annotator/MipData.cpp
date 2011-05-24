@@ -28,9 +28,9 @@ bool MipData::loadMy4DImage(const My4DImage* img, const My4DImage* maskImg)
     My4DImage * mutable_img = const_cast<My4DImage*>(img);
     Image4DProxy<My4DImage> imgProxy(mutable_img);
 
+    // First loop quickly updates intensity, without updating neuron masks
     for (int x = 0; x < nColumns(); ++x) {
         for (int y = 0; y < nRows(); ++y) {
-            float maxIntensity = -1.0;
             for (int z = 0; z < img->getZDim(); ++z) {
                 float intensity = 0.0;
                 for (int c = 0; c < nChannels(); ++c) {
@@ -43,13 +43,26 @@ bool MipData::loadMy4DImage(const My4DImage* img, const My4DImage* maskImg)
                 }
                 assert(intensity >= 0.0);
                 // Maximum intensity projection - regardless of neuron masks
-                if (intensity > maxIntensity) {
-                    maxIntensity = intensity;
+                if (intensity > data[x][y].intensity) {
                     for (int c = 0; c < nChannels(); ++c)
                         data[x][y][c] = (float)imgProxy.value_at(x,y,z,c);
                     data[x][y].z = z; // remember z-value of max intensity pixel
-                    // data[x][y].intensity = intensity;
+                    data[x][y].intensity = intensity;
+                    if (maskImg) {
+                        data[x][y].neuronIndex = (int) maskImg->at(x, y, z);
+                    }
                 }
+            }
+        }
+        emit processedXColumn(x + 1);
+        // qDebug() << "processed column " << x + 1;
+    }
+
+    emit intensitiesUpdated();
+
+    for (int x = 0; x < nColumns(); ++x) {
+        for (int y = 0; y < nRows(); ++y) {
+            for (int z = 0; z < img->getZDim(); ++z) {
                 if (false) {
 //                 if (maskImg) {
                     int neuronMaskId = maskImg->at(x,y,z);
@@ -63,8 +76,6 @@ bool MipData::loadMy4DImage(const My4DImage* img, const My4DImage* maskImg)
                 }
             }
         }
-        emit processedXColumn(x + 1);
-        // qDebug() << "processed column " << x + 1;
     }
     return true;
 }
