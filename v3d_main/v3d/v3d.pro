@@ -143,6 +143,8 @@ CONFIG += warn_off  # only work for complier
 # need Qt 4.5.0 above and reCreate Makefile, this will be automatic.
 CONFIG += thread
 
+DEFINES += __v3dwebservice__
+
 # Input
 HEADERS += ../basic_c_fun/mg_utilities.h \
     ../basic_c_fun/mg_image_lib.h \
@@ -212,7 +214,6 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/CameraModel.h \
     ../neuron_annotator/GammaWidget.h \
 	../neuron_annotator/NeuronSelector.h \
-	../webservice/v3dwebservice_conf.h \
 	../webservice/v3dwebservice.hpp \
 	../webservice/v3dwebserver.h \
 	../webservice/gsoap2/stdsoap2.h \

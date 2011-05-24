@@ -486,7 +486,9 @@ public slots:
 	void initWebService(V3DWebService *pws);
 	void quitWebService(V3DWebService *pws);
 	void setSoapPara(soappara *pSoapParaInput);
-	
+#endif
+
+#if defined(__V3DWSDEVELOP__)
 	void do3dfunc();
 	void switch3dviewercontrol(V3dR_MainWindow *existing_3dviewer);
 #endif
