@@ -184,7 +184,7 @@ int NeuronSelector::getIndexSetectedNeuron()
 		
 		// init 0 
 		//memset(sum, 0, numNeuron); 
-		for(V3DLONG i=1; i<numNeuron; i++)
+		for(V3DLONG i=0; i<numNeuron; i++)
 		{
 			sum[i] = 0;
 		}
