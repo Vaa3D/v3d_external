@@ -37,6 +37,8 @@ NaMainWindow::NaMainWindow()
     // Status bar message
     connect(ui.naLargeMIPWidget, SIGNAL(statusMessage(const QString&)),
             statusBar(), SLOT(showMessage(const QString&)));
+    connect(ui.gammaWidget_MIP, SIGNAL(gammaBrightnessChanged(double)),
+            ui.naLargeMIPWidget, SLOT(setGammaBrightness(double)));
 
     // Wire up Z-stack / HDR viewer
     connect(ui.HDRRed_pushButton, SIGNAL(clicked()),
@@ -363,22 +365,23 @@ bool NaMainWindow::loadMy4DImage(const My4DImage * img, const My4DImage * neuron
 }
 
 // local setButtonGamma() method used to support multithreaded version of updateThumbnailGamma()
-static volatile double buttonGamma = 1.00;
+static BrightnessCalibrator<int> buttonCalibrator;
 static GalleryButton* setButtonGamma(GalleryButton* & button) {
-    button->setGamma(buttonGamma);
+    button->setBrightness(buttonCalibrator);
     return button;
 }
 
 void NaMainWindow::updateThumbnailGamma(double gamma)
 {
+    buttonCalibrator.setHdrRange(0, 255);
+    buttonCalibrator.setGamma(gamma);
     bool bUseConcurrent = true;
     if (bUseConcurrent) { // asynchronous update
-        buttonGamma = gamma;
         QtConcurrent::map(mipGalleryButtonList, setButtonGamma);
     }
     else { // serial update
         foreach(GalleryButton* button, mipGalleryButtonList) {
-            button->setGamma(gamma);
+            button->setBrightness(buttonCalibrator);
         }
     }
 }

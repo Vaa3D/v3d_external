@@ -50,7 +50,7 @@ void GalleryButton::buttonPress(bool checked) {
     emit declareChange(index, checked);
 }
 
-void GalleryButton::setGamma(double gamma)
+void GalleryButton::setBrightness(const BrightnessCalibrator<int>& calibrator)
 {
     if (! scaledThumbnail) return;
     buttonMutex.lock(); // Avoid possible race condition
@@ -61,21 +61,15 @@ void GalleryButton::setGamma(double gamma)
     // possible race condition right here...
     bImageUpdating = true;
     buttonMutex.unlock(); // The race is over.  We won!
-    // Cache the gamma conversion to avoid computing too
-    // many pow()s.  Yes, yes, premature optimization,
-    // whatever...
-    unsigned char gammaLookup[256];
-    for (int i = 0; i < 256; i++) {
-        gammaLookup[i] = (unsigned char)(std::pow(i/255.0, gamma) * 255.0 + 0.499);
-    }
+
     if (! correctedScaledThumbnail)
         correctedScaledThumbnail = new QImage(*scaledThumbnail);
     for (int x = 0; x < scaledThumbnail->width(); ++x) {
         for (int y = 0; y < scaledThumbnail->height(); ++y) {
             QColor c(scaledThumbnail->pixel(x, y));
-            c.setRed(gammaLookup[c.red()]);
-            c.setGreen(gammaLookup[c.green()]);
-            c.setBlue(gammaLookup[c.blue()]);
+            c.setRed(calibrator.getCorrectedByte(c.red()));
+            c.setGreen(calibrator.getCorrectedByte(c.green()));
+            c.setBlue(calibrator.getCorrectedByte(c.blue()));
             correctedScaledThumbnail->setPixel(x, y, c.rgb());
         }
     }

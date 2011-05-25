@@ -2355,3 +2355,9 @@ v3d_main/neuron_annotator/MipData.h
 v3d_main/neuron_annotator/MipData.cpp
 v3d_main/neuron_annotator/MouseClickManager.h
 v3d_main/neuron_annotator/MouseClickManager.cpp
+v3d_main/neuron_annotator/NeuronMipManager.h
+v3d_main/neuron_annotator/NeuronNipManager.cpp
+v3d_main/neuron_annotator/ImageColorizer.h
+v3d_main/neuron_annotator/ImageColorizer.cpp
+v3d_main/neuron_annotator/BrightnessCalibrator.h
+v3d_main/neuron_annotator/BrightnessCalibrator.cpp

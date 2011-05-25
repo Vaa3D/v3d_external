@@ -35,12 +35,12 @@ void MipDisplayImage::load4DImage(const My4DImage* img, const My4DImage* maskImg
     originalData.loadMy4DImage(img, maskImg);
 }
 
-void MipDisplayImage::onDataIntensitiesUpdated() {
+void MipDisplayImage::onDataIntensitiesUpdated()
+{
     // Default display exactly entire intensity range
-    displayMin = originalData.dataMin;
     // displayMin = 0.0; // example ct image has a very large minimum
-    displayMax = originalData.dataMax;
-    setGamma(1.0);
+    brightnessCalibrator.setHdrRange(originalData.dataMin, originalData.dataMax);
+    brightnessCalibrator.setGamma(1.0);
     updateCorrectedIntensities();
     emit initialImageDataLoaded();
 }
@@ -64,45 +64,18 @@ void MipDisplayImage::updateCorrectedIntensities()
 
 void MipDisplayImage::setGamma(float gamma)
 {
-    assert(gamma > 0.0);
-    displayGamma = gamma;
-    float previous_i_out = 0.0; // for slope interpolation
-    for (int i = 0; i < 256; ++i) { // gamma table entries
-        float i_in = i/255.0; // range 0.0-1.0
-        float i_out = std::pow(i_in, gamma);
-        if (i_out > 1.0) i_out = 1.0;
-        if (i_out < 0.0) i_out = 0.0;
-        i_out *= 255.0; // scale to 8-bit for RGB use
-        gammaTable[i] = i_out;
-        if (i > 0) {
-            // first derivative of gamma table for interpolation
-            // linear interpolation
-            dGammaTable[i - 1] = i_out - previous_i_out;
-        }
-        previous_i_out = i_out;
-    }
-    dGammaTable[255] = 0.0; // final unused entry for neatness
+    if (gamma == brightnessCalibrator.getGamma()) return;
+    brightnessCalibrator.setGamma(gamma);
+    updateCorrectedIntensities();
 }
 
 // i_in as original float value
 // Output in range 0-255
 unsigned char MipDisplayImage::getCorrectedIntensity(float i_in) const
 {
-    if (i_in <= displayMin) return 0;
-    if (i_in >= displayMax) return 255;
-    // HDR correction
-    float i_out = (i_in - displayMin) / (displayMax - displayMin);
-    // gamma correction
-    i_out *= 255.0; // scale to use 256 entry gamma lookup table
-    int ix = int(i_out);
-    int d_ix = i_out - ix; // fractional part for interpolation
-    assert(d_ix >= 0.0);
-    assert(d_ix <= 1.0);
-    i_out = gammaTable[ix] + d_ix * dGammaTable[ix];
-    int answer = int(i_out + 0.4999);
-    if (answer <= 0) return 0;
-    if (answer >= 255) return 255;
-    return (unsigned char)answer;
+    unsigned char answer =  (unsigned char)
+                            ((brightnessCalibrator.getCorrectedIntensity(i_in) * 255.0f) + 0.4999);
+    return answer;
 }
 
 unsigned char MipDisplayImage::getCorrectedIntensity(int x, int y, int c) const
@@ -177,12 +150,17 @@ bool NaLargeMIPWidget::loadMy4DImage(const My4DImage* img, const My4DImage* mask
     return true;
 }
 
+void NaLargeMIPWidget::updatePixmap()
+{
+    pixmap = QPixmap::fromImage(mipImage->image);
+    updateDefaultScale();
+}
+
 void NaLargeMIPWidget::initializePixmap()
 {
     // Image processing is done, finish up in the GUI thread.
     progressBar->hide();
-    pixmap = QPixmap::fromImage(mipImage->image);
-    updateDefaultScale();
+    updatePixmap();
     resetView();
     update();
     // qDebug() << "Finished MIP data load";

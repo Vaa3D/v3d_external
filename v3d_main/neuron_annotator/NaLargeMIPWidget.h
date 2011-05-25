@@ -8,6 +8,7 @@
 #include <QPainter>
 #include "NaViewer.h"
 #include "MouseClickManager.h"
+#include "BrightnessCalibrator.h"
 
 // MipDisplayImage is a derived class of QImage, intended
 // to encapsulate gamma/HDR correctability.
@@ -40,12 +41,7 @@ protected:
     void updateCorrectedIntensities();
     void load4DImage(const My4DImage* img, const My4DImage* maskImg = NULL);
 
-
-    float displayMin; // min display value for HDR
-    float displayMax; // max display value for HDR
-    float displayGamma; // gamma correction between displayMin and displayMax
-    float gammaTable[256]; // lookup table for gamma correction
-    float dGammaTable[256]; // to help interpolation, especially for high dynamic range data.
+    BrightnessCalibrator<float> brightnessCalibrator;
 };
 
 // Large maximum intensity projection viewer for Neuron Annotator
@@ -91,11 +87,20 @@ public slots:
             // qDebug() << "clicked Neuron " << neuronAt(pos);
         }
     }
+    void setGammaBrightness(double gamma)
+    {
+        if (! mipImage) return;
+        mipImage->setGamma((float)gamma);
+        // qDebug() << "set gamma";
+        updatePixmap();
+        update();
+    }
 
 protected:
     void updateDefaultScale();
     void resetView();
     void paintIntensityNumerals(QPainter& painter);
+    void updatePixmap();
 
     MipDisplayImage * mipImage;
     QPixmap pixmap;

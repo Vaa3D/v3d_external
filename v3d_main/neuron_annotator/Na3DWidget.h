@@ -5,6 +5,7 @@
 #include "../v3d/xformwidget.h"
 #include "NaViewer.h"
 #include "Rotation3D.h"
+#include "BrightnessCalibrator.h"
 
 #if defined (_MSC_VER)
 #include "../basic_c_fun/vcdiff.h"
@@ -60,6 +61,7 @@ protected:
     virtual void choiceRenderer();
     float glUnitsPerImageVoxel() const;
     void updateDefaultScale();
+    BrightnessCalibrator<unsigned char> brightnessCalibrator;
 };
 
 #endif // NA3DWIDGET_H

@@ -335,14 +335,15 @@ void Na3DWidget::setGammaBrightness(double gamma)
     // I sort of hope this will address everyone's manual brightness needs.
     Renderer_gl2* renderer = (Renderer_gl2*)getRenderer();
     if (! renderer) return;
+    brightnessCalibrator.setGamma(gamma);
     // cout << "gamma = " << gamma << endl;
     // Map input intensities to output intensities
     // using the renderer's "colormap" texture.
-    for (int i_in = 0; i_in < 256; ++i_in) {
-        // gamma correction and type conversion in one line
-        unsigned char i_out = (unsigned char)(std::pow(i_in / 255.0, gamma) * 255.0 + 0.50);
-        // cout << "  " << i_in << "\t" << (int)i_out << endl;
-        for (int channel = 0; channel < FILL_CHANNEL; ++channel) {
+    for (int i_in = 0; i_in < 256; ++i_in)
+    {
+        unsigned char i_out = brightnessCalibrator.getCorrectedByte(i_in);
+        for (int channel = 0; channel < FILL_CHANNEL; ++channel)
+        {
             // Intensities are set in the alpha channel only
             // (i.e. not R, G, or B)
             renderer->colormap[channel][i_in].a = i_out;

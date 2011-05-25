@@ -214,6 +214,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/CameraModel.h \
     ../neuron_annotator/GammaWidget.h \
     ../neuron_annotator/MouseClickManager.h \
+    ../neuron_annotator/BrightnessCalibrator.h \
 	../neuron_annotator/NeuronSelector.h \
 	../webservice/v3dwebservice.hpp \
 	../webservice/v3dwebserver.h \
@@ -323,6 +324,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/CameraModel.cpp \
     ../neuron_annotator/GammaWidget.cpp \
     ../neuron_annotator/MouseClickManager.cpp \
+    ../neuron_annotator/BrightnessCalibrator.cpp \
 	../neuron_annotator/NeuronSelector.cpp \
 	../webservice/v3dwebservice.cpp \
 	../webservice/gsoap2/stdsoap2.cpp \

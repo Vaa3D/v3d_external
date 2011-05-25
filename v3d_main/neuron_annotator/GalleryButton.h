@@ -2,6 +2,7 @@
 #define GALLERYBUTTON_H
 
 #include <QtGui>
+#include "BrightnessCalibrator.h"
 
 class GalleryButton : public QWidget
 {
@@ -23,7 +24,7 @@ signals:
 
 public slots:
     void buttonPress(bool checked);
-    void setGamma(double gamma);
+    void setBrightness(const BrightnessCalibrator<int>& calibrator);
 
 protected slots:
     // updateThumbnailIcon() updates the GUI pixmap for this button to reflect the
