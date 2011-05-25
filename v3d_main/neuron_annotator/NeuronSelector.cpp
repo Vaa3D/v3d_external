@@ -150,19 +150,6 @@ void NeuronSelector::init()
 	index = -1;
 }
 
-// swith status of selected neuron
-void NeuronSelector::switchSelectedNeuron(int index)
-{	
-        if(annotationSession->getNeuronSelectList().at(index) == true)
-        {
-                annotationSession->getNeuronSelectList().replace(index, false);
-        }
-        else
-        {
-                annotationSession->getNeuronSelectList().replace(index, true);
-        }
-}
-
 // get the index of selected neuron
 int NeuronSelector::getIndexSetectedNeuron()
 {
@@ -243,7 +230,7 @@ int NeuronSelector::getIndexSetectedNeuron()
 	
 	if(index>0) 
 	{
-		switchSelectedNeuron(index);
+                annotationSession->switchSelectedNeuron(index);
 	}
 	else
 	{
@@ -393,8 +380,17 @@ void NeuronSelector::highlightSelectedNeuron()
 	if(index<=0) return;
 	if(curNeuronBDxb>curNeuronBDxe || curNeuronBDyb>curNeuronBDye || curNeuronBDzb>curNeuronBDze) return;
 
-	//
-	// index neuron selected status is true
+        // index neuron selected status is true
+        if(annotationSession->getNeuronSelectList().at(index)==false)
+        {
+            // highlight result
+            annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks.clear();
+
+            // synchronize markers shown in 3d viewer
+            emit neuronHighlighted(false);
+
+            return;
+        }
 	
 	// list of markers
 	QList<LocationSimple> listLandmarks;

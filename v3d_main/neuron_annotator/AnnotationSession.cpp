@@ -191,3 +191,16 @@ void AnnotationSession::setNeuronMaskStatus(int index, bool status) {
     maskStatusList.replace(index, status);
 }
 
+// swith status of selected neuron
+void AnnotationSession::switchSelectedNeuron(int index)
+{
+    if(neuronSelectList.at(index) == true)
+    {
+        neuronSelectList.replace(index, false);
+    }
+    else
+    {
+        neuronSelectList.replace(index, true);
+    }
+}
+

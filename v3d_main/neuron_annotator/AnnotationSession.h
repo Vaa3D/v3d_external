@@ -45,6 +45,8 @@ public:
 	QList<bool> getMaskStatusList(){return maskStatusList;}
 	QList<bool> getNeuronSelectList(){return neuronSelectList;}
 
+        void switchSelectedNeuron(int index);
+
 signals:
     void modelUpdated(QString updateType);
 

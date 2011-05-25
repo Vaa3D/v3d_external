@@ -19,7 +19,7 @@ public:
 	~NeuronSelector(){}
 	
 public:
-	void switchSelectedNeuron(int index);
+
 	int getIndexSetectedNeuron(); // find nearest neuron
 	
 	void setAnnotationSession(AnnotationSession* annotationSession);
