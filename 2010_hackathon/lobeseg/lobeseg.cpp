@@ -12,16 +12,16 @@
 
 //the folowing conditional compilation is added by PHC, 2010-05-20
 #if defined (_MSC_VER) && (_WIN64)
-#include "../basic_c_fun/vcdiff.h"
+#include "../../v3d_main/basic_c_fun/vcdiff.h"
 #else
 #endif
 
-#include "../basic_c_fun/stackutil.h"
-#include "../basic_c_fun/volimg_proc.h"
+#include "../../v3d_main/basic_c_fun/stackutil.h"
+#include "../../v3d_main/basic_c_fun/volimg_proc.h"
 
 #include "lobeseg.h"
 
-#include "../worm_straighten_c/bdb_minus.h"
+#include "../../v3d_main/worm_straighten_c/bdb_minus.h"
 
 bool do_lobeseg_bdbminus(unsigned char *inimg1d, const V3DLONG sz[4], unsigned char *outimg1d, int in_channel_no, int out_channel_no, const BDB_Minus_ConfigParameter & mypara)
 //note: assume the inimg1d and outimg1d have the same size, and normally out_channel_no should always be 2 (i.e. the third channel)

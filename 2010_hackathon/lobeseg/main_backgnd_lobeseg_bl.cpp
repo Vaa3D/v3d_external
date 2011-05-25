@@ -14,10 +14,10 @@
 #include <fstream>
 #include <vector>
 
-#include "../basic_c_fun/basic_memory.h"
-#include "../basic_c_fun/stackutil.h"
-#include "../basic_c_fun/volimg_proc.h"
-#include "../worm_straighten_c/bdb_minus.h"
+#include "../../v3d_main/basic_c_fun/basic_memory.h"
+#include "../../v3d_main/basic_c_fun/stackutil.h"
+#include "../../v3d_main/basic_c_fun/volimg_proc.h"
+#include "../../v3d_main/worm_straighten_c/bdb_minus.h"
 
 #include "lobeseg.h"
 
