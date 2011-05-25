@@ -8,12 +8,12 @@
 CC_FLAGS += $(subst x, x,$(ARCH_x86_64))    
 LDFLAGS += $(subst x, x,$(ARCH_x86_64))
 # additional search path
-CC_FLAGS += $(patsubst %,-I%,$(subst ;, ,$(VPATH))) $(patsubst %,-L%,$(subst ;, ,$(VPATH)))
+CC_FLAGS += $(patsubst %,-I%,$(subst ;, ,$(VPATH))) $(patsubst %,-L%,$(subst ;, ,$(VPATH))) -I../../v3d_main/common_lib/include
 ifneq ($(strip $(ARCH_x86_64)),)
 #LIBS = $(patsubst -ltiff,-L$(L_PATH) -ltiff64,$(LIBS))
-LIBS += -L. -L$(L_PATH) -ltiff64 -lz
+LIBS += -L. -L$(L_PATH) -ltiff64 -lz -L../../v3d_main/common_lib/lib
 else
-LIBS += -L. -ltiff
+LIBS += -L. -ltiff -L../../v3d_main/common_lib/lib
 endif
 CC = g++
 CC_FLAGS += -w   # -w for no compiling warning
