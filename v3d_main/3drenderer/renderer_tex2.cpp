@@ -356,6 +356,10 @@ void Renderer_tex2::reinitializeVol(int version)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void Renderer_tex2::setRenderTextureLast(bool renderTextureLast) {
+    b_renderTextureLast=renderTextureLast;
+}
+
 void Renderer_tex2::paint()
 {
 	//qDebug(" Renderer_tex2::paint(renderMode=%i)", renderMode);
@@ -387,35 +391,11 @@ void Renderer_tex2::paint()
 	bShowCSline = bShowAxes;
 	bShowFSline = bShowBoundingBox;
 
-	if (has_image())
-	{
-		glPushMatrix(); //===================================================== Volume {
+        prepareVol();
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-		if (renderMode==rmAlphaBlending || renderMode==rmMaxIntensityProjection) // not for rmCrossSection
-			enableViewClipPlane(); //front-cut-plane
-
-		// unit image space ==>fit in [-1,+1]^3
-		setUnitVolumeSpace();
-		glPushName(dcVolume);
-			drawVol();
-		glPopName();
-
-		if (! b_selecting) if (bShowCSline && renderMode==rmCrossSection)
-		{
-			drawCrossLine(2);
-		}
-		if (! b_selecting) if (bShowFSline && bFSlice) //renderMode==rmCrossSection)
-		{
-			drawUnitFrontSlice(1); // just draw bound Line of F-Slice
-		}
-
-		if (renderMode==rmAlphaBlending || renderMode==rmMaxIntensityProjection)
-			disableViewClipPlane();
-
-		glPopMatrix(); //============================================================== }
-            }
+        if (!b_renderTextureLast) {
+            renderVol();
+        }
 
 	if (sShowMarkers>0 || sShowSurfObjects>0)
 	{
@@ -487,6 +467,10 @@ void Renderer_tex2::paint()
 	    }
 	}
 
+        if (b_renderTextureLast) {
+            renderVol();
+        }
+
 	// must be at last
 	if (! b_selecting && sShowTrack)
 	{
@@ -494,6 +478,61 @@ void Renderer_tex2::paint()
 	}
 
 	return;
+}
+
+void Renderer_tex2::prepareVol()
+{
+    if (has_image() && b_renderTextureLast) // then we need to clear the volume before we draw the markers, not after
+    {
+        glPushMatrix(); //===================================================== Volume {
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        if (renderMode==rmAlphaBlending || renderMode==rmMaxIntensityProjection) // not for rmCrossSection
+            enableViewClipPlane(); //front-cut-plane
+
+        // unit image space ==>fit in [-1,+1]^3
+        setUnitVolumeSpace();
+
+        glColor3f(0, 0, 0);
+        drawBackFillVolCube(); // clear the project region to zero for MIP
+
+        glPopMatrix(); //============================================================== }
+    }
+}
+
+void Renderer_tex2::renderVol()
+{
+    if (has_image())
+    {
+            glPushMatrix(); //===================================================== Volume {
+
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+            if (renderMode==rmAlphaBlending || renderMode==rmMaxIntensityProjection) // not for rmCrossSection
+                    enableViewClipPlane(); //front-cut-plane
+
+            // unit image space ==>fit in [-1,+1]^3
+            setUnitVolumeSpace();
+            glPushName(dcVolume);
+                    drawVol();
+            glPopName();
+
+            if (! b_selecting) if (bShowCSline && renderMode==rmCrossSection)
+            {
+                    drawCrossLine(2);
+            }
+            if (! b_selecting) if (bShowFSline && bFSlice) //renderMode==rmCrossSection)
+            {
+                    drawUnitFrontSlice(1); // just draw bound Line of F-Slice
+            }
+
+            if (renderMode==rmAlphaBlending || renderMode==rmMaxIntensityProjection)
+                    disableViewClipPlane();
+
+            glPopMatrix(); //============================================================== }
+        }
+
 }
 
 
@@ -625,7 +664,7 @@ void Renderer_tex2::drawVol()
 		break;
 
 	case rmMaxIntensityProjection:
-		if (has_image())
+                if (has_image() && !b_renderTextureLast) // if rendering texture first, we can clear - otherwise this is done in prepareVol()
 		{
 			glColor3f(0, 0, 0);
 			drawBackFillVolCube(); // clear the project region to zero for MIP

@@ -96,6 +96,7 @@ public:
 	virtual int movePen(int x, int y, bool b_move); //return 0 means not processed
 	virtual void _appendMarkerPos(int x, int y);
 	virtual void blendTrack();       // called by paint()
+        virtual void setRenderTextureLast(bool renderTextureLast);
 
 // link to Rendering function
 protected:
@@ -108,6 +109,8 @@ protected:
 	virtual void loadVol();  	// called by initialize()  	// makeCurrent
 	virtual void cleanVol();	// called by ~Renderer_tex2	// makeCurrent
 	virtual void drawVol(); 	// called by paint()
+        virtual void prepareVol();
+        virtual void renderVol();
 
 	virtual void subloadTex(V3DLONG timepoint, bool bfisrt=false);	// called by loadVol, drawVol
 	virtual void equAlphaBlending();			// for blending equation
@@ -297,6 +300,7 @@ protected:
 	float VOL_X1, VOL_X0, VOL_Y1, VOL_Y0, VOL_Z1, VOL_Z0;
 	int VOLUME_FILTER;
 	RGBA32f SLICE_COLOR; // proxy geometry color+alpha
+        bool b_renderTextureLast;
 
 private:
 	void init_members()
@@ -332,6 +336,7 @@ private:
 		SLICE_COLOR = XYZW(1,1,1,1);
 
 		b_imaging = false; //101008
+                b_renderTextureLast = false;
 	}
 
 
