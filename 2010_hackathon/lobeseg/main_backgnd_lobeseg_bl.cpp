@@ -26,7 +26,7 @@ bool convert_type2uint8_3dimg_1dpt(void * &img, V3DLONG * sz, int datatype);
 void printHelp ();
 void printHelp()
 {
-	printf("\nUsage: <main prog name> -i <input_image_file> -p <prior control pt file> -o <output_image_file> -c <channalNo_reference> -A <alpha: image force> -B <beta: length force> -G <gamma: smoothness force> -n <nloop> -w <local win radius>\n");
+	printf("\nUsage: <main prog name> -i <input_image_file> -p <prior control pt file> -o <output_image_file> -c <channalNo_reference> -A <alpha: image force> -B <beta: length force> -G <gamma: smoothness force> -n <nloop> -w <local win radius> [-s -p <position> -k <direction> -N <num_of_controls>]\n");
 	printf("\t -i <input_image_file>              input 3D image (tif, or Hanchuan's RAW or LSM). \n");
 	//printf("\t -p <prior control pt file>         input prior location of control points (note: the order will matter!). If unspecified, then randomly initialized. \n");
 	printf("\t -o <output_image_file>             output image where the third channel is a mask indicating the regions. \n");
@@ -39,6 +39,13 @@ void printHelp()
 	printf("\t \n");
 	printf("\t [-v]                               verbose printing enabled. \n");
 	printf("\t [-h]                               print this message.\n");
+	printf("\t [-s]                               lobe segmentation on one side, -p -k -N parameters is needed.\n");
+	printf("\t [-p]                               set the initial position , format NNxNN+NNxNN, e.g. 50x0+0x33.\n");
+	printf("\t [-k]                               specifiy which direction will be kept, left, right, upward or downward.\n");
+	printf("\t [-N]                               the number of control points.\n");
+	printf("\t [-S]                               output the seperating surface.\n");
+	printf("\n");
+	printf("Demo :\t lobe_seger -i input.tif -o output.tif -s -N 20 -p 30x0+100x30 -k left -S\n");
 	return;
 }
 
@@ -75,9 +82,19 @@ int main (int argc, char *argv[])
 	int out_channel_no = 2; //save the seg mask to the third channel 
 
 	bool both_sides = true;
+
+	int ini_x1 = 33; 
+	int ini_y1 = 0;
+	int ini_x2 = 100;
+	int ini_y2 = 33;
+
+	int keep_which = 0;  // 0 for left, 1 for right, 2 for up, 3 for down
+
+	int num_ctrls = 20;
 	
+	bool output_surface = false;
 	int c;
-	static char optstring[] = "hvsi:o:c:A:B:G:n:";
+	static char optstring[] = "hvsSi:o:c:A:B:G:n:p:k:N:";
 	opterr = 0;
 	while ((c = getopt (argc, argv, optstring)) != -1)
 	{
@@ -94,6 +111,82 @@ int main (int argc, char *argv[])
 
 		case 's':
 			both_sides = false;
+			break;
+
+		case 'S':
+			output_surface = true;
+			break;
+
+		case 'p':
+			if (strcmp (optarg, "(null)") == 0 || optarg[0] == '-')
+			{
+				fprintf (stderr, "Found illegal or NULL parameter for the option -p.\n");
+				b_error=1; return b_error;
+			}
+			else
+			{
+				string pos(optarg);
+				if(pos.find('+') == string::npos || pos.find_first_of('+') != pos.find_last_of('+') || pos.find('x') == string::npos || pos.find_first_of('x') == pos.find_last_of('x'))
+				{
+					fprintf(stderr, "Found illegal or NULL parameter for the option -p.\n");
+					b_error=1; return b_error;
+				}
+				else
+				{
+					string str_x1 = pos.substr(0, pos.find_first_of('x'));
+					string str_y1 = pos.substr(pos.find_first_of('x') + 1, pos.find_first_of('+') - pos.find_first_of('x') -1);
+					string str_x2 = pos.substr(pos.find_first_of('+') + 1, pos.find_last_of('x') - pos.find_first_of('+') - 1);
+					string str_y2 = pos.substr(pos.find_last_of('x') + 1, pos.length() - pos.find_last_of('x') -1);
+					//cout<<"x1 = "<<str_x1.c_str()<<" y1 = "<<str_y1.c_str()<<" x2 = "<<str_x2.c_str()<<" y2 = "<<str_y2.c_str()<<endl;
+					ini_x1 = atoi(str_x1.c_str());
+					ini_y1 = atoi(str_y1.c_str());
+					ini_x2 = atoi(str_x2.c_str());
+					ini_y2 = atoi(str_y2.c_str());
+					if(ini_x1 < 0 || ini_x1 > 100 || ini_y1 < 0 || ini_y1 > 100 || ini_x2 < 0 || ini_x2 > 100 || ini_y2 < 0 || ini_y2 > 100)
+					{
+						//cout<<"x1 = "<<ini_x1<<" y1 = "<<ini_y1<<" x2 = "<<ini_x2<<" y2 = "<<ini_y2<<endl;
+						fprintf(stderr,"Parameter -p , illegal position.\n");
+						b_error=1; return b_error;
+					}
+				}
+			}
+			break;
+		
+		case 'k':
+			if (strcmp (optarg, "(null)") == 0 || optarg[0] == '-')
+			{
+				fprintf (stderr, "Found illegal or NULL parameter for the option -k.\n");
+				b_error=1; return b_error;
+			}
+			else
+			{
+				if(strcmp(optarg,"left") == 0 || strcmp(optarg, "Left") == 0) keep_which = 0;
+				else if(strcmp(optarg,"right") == 0 || strcmp(optarg, "Right") == 0) keep_which = 1;
+				else if(strcmp(optarg,"upward") == 0 || strcmp(optarg, "Upward") == 0) keep_which = 2;
+				else if(strcmp(optarg,"downward") == 0 || strcmp(optarg, "Downward") == 0) keep_which = 3;
+				else {
+					fprintf(stderr, "Found illegal or NULL parameter for the option -k.\n");
+					b_error=1; return b_error;
+				};
+			}
+			break;
+
+		case 'N':
+			if (strcmp (optarg, "(null)") == 0 || optarg[0] == '-')
+			{
+				fprintf (stderr, "Found illegal or NULL parameter for the option -N.\n");
+				b_error=1; return b_error;
+			}
+			else
+			{
+				//cout<<" number of control points : "<<optarg<<endl;
+				num_ctrls = atoi(optarg);
+				if(num_ctrls==0)
+				{
+					fprintf(stderr, "Found illegal parameter for the option -N.\n");
+					b_error=1; return b_error;
+				}
+			}
 			break;
 
 		case 'i':
@@ -324,9 +417,9 @@ int main (int argc, char *argv[])
 	else
 	{
 		cout<<"do_lobeseg_bdbminus_onesideonly ... "<<endl;
-		if (!do_lobeseg_bdbminus_onesideonly(img_input, sz_input, img_output, in_channel_no, out_channel_no, mypara))
+		if (!do_lobeseg_bdbminus_onesideonly(img_input, sz_input, img_output, in_channel_no, out_channel_no, mypara, ini_x1, ini_y1, ini_x2, ini_y2, keep_which,num_ctrls, output_surface))
 		{
-			printf("Fail to do the lobe seg correctly.\n");
+			printf("Fail to do one side lobe seg correctly.\n");
 			b_error = 1;
 			goto Label_exit;
 		}
