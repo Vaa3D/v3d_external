@@ -315,7 +315,7 @@ bool do_lobeseg_bdbminus_onesideonly(unsigned char *inimg1d, const V3DLONG sz[4]
 
 	//initialize control points
 
-	int KK = 50; ///ceil(double(sz[1])/10.0);
+	int KK = 20; ///ceil(double(sz[1])/10.0);
 
 	///float a_bottom_left[2];
 	float a_bottom_right[2];
@@ -327,7 +327,7 @@ bool do_lobeseg_bdbminus_onesideonly(unsigned char *inimg1d, const V3DLONG sz[4]
 	///a_bottom_left[1] = sz[1] - 1;			//y
 
 	a_bottom_right[0] = sz[0] -1;///(sz[0] - 1)*3/5;
-	a_bottom_right[1] = (sz[1] -1)*1/2;///sz[1] - 1;
+	a_bottom_right[1] = (sz[1] -1)*1/3;///sz[1] - 1;
 
 	a_top_left[0] = (sz[0] - 1)*1/3;///(sz[0] - 1)/10;
 	a_top_left[1] = 0 ;///0;
@@ -462,8 +462,11 @@ bool do_lobeseg_bdbminus_onesideonly(unsigned char *inimg1d, const V3DLONG sz[4]
 ///		e_right.push_back(pt);
 
 		e_0 = v_0[z+1];
-		pt.x = v_0[z+1][0].x;
-		pt.y = sz[1]-1;
+		pt.x = sz[0] -1;///v_0[z+1][0].x;
+		pt.y = v_0[z+1][0].y;///sz[1]-1;
+		e_0.insert(e_0.begin(), pt);
+		pt.x = sz[0] - 1;
+		pt.y = sz[1] - 1;
 		e_0.insert(e_0.begin(), pt);
 		//e_0.insert(e_0.end(), v_0[z+1].begin(), v_0[z+1].end());
 		pt.x = v_0[z+1].end()->x;
@@ -567,15 +570,17 @@ bool do_lobeseg_bdbminus_onesideonly(unsigned char *inimg1d, const V3DLONG sz[4]
 			{
 				for (i=0; i<sz[0]; i++)
 				{
+					img_output_4d[in_channel_no][z][j][the_bound[z][j]] = 255;
 
 					if (i<the_bound[z][j])
 					{
-						img_output_4d[in_channel_no][z][j][i] = 0; //added by PHC,090609
+						//img_output_4d[in_channel_no][z][j][i] = 0; //added by PHC,090609
 						//img_output_4d[out_channel_no][z][j][i] = 254;
 					}
 					else
 					{
 						//img_output_4d[out_channel_no][z][j][i] = 0;
+						img_output_4d[in_channel_no][z][j][i] = 0;
 					}
 				}
 			}
