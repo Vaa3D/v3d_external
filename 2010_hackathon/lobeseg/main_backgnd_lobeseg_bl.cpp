@@ -73,9 +73,11 @@ int main (int argc, char *argv[])
 	
 	int in_channel_no = 0; //assume the reference channel is 0 
 	int out_channel_no = 2; //save the seg mask to the third channel 
+
+	bool both_sides = true;
 	
 	int c;
-	static char optstring[] = "hvi:o:c:A:B:G:n:";
+	static char optstring[] = "hvsi:o:c:A:B:G:n:";
 	opterr = 0;
 	while ((c = getopt (argc, argv, optstring)) != -1)
 	{
@@ -88,6 +90,10 @@ int main (int argc, char *argv[])
 
 		case 'v':
 			b_verbose_print = 1;
+			break;
+
+		case 's':
+			both_sides = false;
 			break;
 
 		case 'i':
@@ -306,11 +312,24 @@ int main (int argc, char *argv[])
 	
 	//now call the computation program
 	out_channel_no = 2;
-	if (!do_lobeseg_bdbminus(img_input, sz_input, img_output, in_channel_no, out_channel_no, mypara))
+	if(both_sides)
 	{
-		printf("Fail to do the lobe seg correctly.\n");
-		b_error = 1;
-		goto Label_exit;
+		if (!do_lobeseg_bdbminus(img_input, sz_input, img_output, in_channel_no, out_channel_no, mypara))
+		{
+			printf("Fail to do the lobe seg correctly.\n");
+			b_error = 1;
+			goto Label_exit;
+		}
+	}
+	else
+	{
+		cout<<"do_lobeseg_bdbminus_onesideonly ... "<<endl;
+		if (!do_lobeseg_bdbminus_onesideonly(img_input, sz_input, img_output, in_channel_no, out_channel_no, mypara))
+		{
+			printf("Fail to do the lobe seg correctly.\n");
+			b_error = 1;
+			goto Label_exit;
+		}
 	}
 
 	// save to output file
