@@ -482,7 +482,7 @@ void Renderer_tex2::paint()
 
 void Renderer_tex2::prepareVol()
 {
-    if (has_image() && b_renderTextureLast) // then we need to clear the volume before we draw the markers, not after
+    if (has_image()) // we need to clear the volume before we draw the markers, not after
     {
         glPushMatrix(); //===================================================== Volume {
 
