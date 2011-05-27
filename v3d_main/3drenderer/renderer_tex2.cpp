@@ -482,7 +482,10 @@ void Renderer_tex2::paint()
 
 void Renderer_tex2::prepareVol()
 {
-    if (has_image()) // we need to clear the volume before we draw the markers, not after
+    // In the b_renderTextureLast case we need to clear the volume before we draw the markers, not after.
+    // Note that in the case where the textures are rendered first, drawVol() will
+    // clear the volume if MIP is the mode, so we don't have to do it here.
+    if (has_image() && b_renderTextureLast)
     {
         glPushMatrix(); //===================================================== Volume {
 
@@ -494,8 +497,10 @@ void Renderer_tex2::prepareVol()
         // unit image space ==>fit in [-1,+1]^3
         setUnitVolumeSpace();
 
-        glColor3f(0, 0, 0);
-        drawBackFillVolCube(); // clear the project region to zero for MIP
+        if (renderMode==rmMaxIntensityProjection) {
+            glColor3f(0, 0, 0);
+            drawBackFillVolCube(); // clear the project region to zero for MIP
+        }
 
         glPopMatrix(); //============================================================== }
     }
