@@ -61,8 +61,8 @@ XYZ Renderer_tex2::selectPosition(int x, int y)
 	{
 		curImg = v3dr_getImage4d(_idep);
 		
-		chno = w->getNumKeyHolding()-1; // #channel info got from keyboard
-		if (chno<0 || chno>dim4) chno = curChannel; // default channel set by user
+//		chno = w->getNumKeyHolding()-1; // #channel info got from keyboard
+//		if (chno<0 || chno>dim4) chno = curChannel; // default channel set by user
 	}
 	
 	double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
@@ -70,8 +70,19 @@ XYZ Renderer_tex2::selectPosition(int x, int y)
 	clipplane[3] = viewClip;
 	ViewPlaneToModel(markerViewMatrix, clipplane);
 	
-	if (curImg && data4dp && chno>=0 && chno<dim4)
-	{
+        float selectval = 0;
+        int selectchno = 0;
+        XYZ selectloc;
+
+        XYZ P2ori = P2;
+        XYZ P1ori = P1;
+        for(chno=0; chno<dim4; chno++)
+        {
+           P2 = P2ori;
+           P1 = P1ori;
+
+            if (curImg && data4dp)
+            {
 		double f = 0.8; // must be LESS 1 to converge, close to 1 is better
 		
 		XYZ D = P2-P1; normalize(D);
@@ -92,7 +103,10 @@ XYZ Renderer_tex2::selectPosition(int x, int y)
 				v3d_msg("Unsupported data type found. You should never see this.", 0);
 				return loc;
 		}
+
+                qDebug()<<"iter ..."<<chno<<"vp ..."<<vp;
 		
+                float sum = 0;
 		for (int i=0; i<200; i++) // iteration, (2-f)^200 is big enough
 		{
 			double length = norm(P2-P1);
@@ -103,7 +117,7 @@ XYZ Renderer_tex2::selectPosition(int x, int y)
 			double step = length/nstep;
 			
 			XYZ sumloc(0,0,0);
-			float sum = 0;
+                        sum = 0;
 			for (int i=0; i<=nstep; i++)
 			{
 				XYZ P = P1 + D*step*(i);
@@ -127,20 +141,57 @@ XYZ Renderer_tex2::selectPosition(int x, int y)
 				sumloc = sumloc + P*(value);
 				sum = sum + value;
 			}
-			
-			if (sum)
-				loc = sumloc / sum;
+
+                        if (sum)
+                        {
+                            loc = sumloc / sum;
+                        }
 			else
 				break; //////////////////////////////////
 			
 			P1 = loc - D*(length*f/2);
 			P2 = loc + D*(length*f/2);
 		}
-	}
+
+                float curval;
+                V3DLONG x = loc.x + 0.5;
+                V3DLONG y = loc.y + 0.5;
+                V3DLONG z = loc.z + 0.5;
+                V3DLONG offsets = z*dim2*dim1 + y*dim1 + x;
+
+                switch (curImg->getDatatype())
+                {
+                        case V3D_UINT8:
+                                curval = *(vp + offsets);
+                                break;
+                        case V3D_UINT16:
+                                curval = *((short int *)vp + offsets);
+                                break;
+                        case V3D_FLOAT32:
+                                curval = *((float *)vp + offsets);
+                                break;
+                        default:
+                                v3d_msg("Unsupported data type found. You should never see this.", 0);
+                                return loc;
+                }
+
+                if(curval>selectval)
+                {
+                    selectval = curval;
+                    selectchno = chno;
+                    selectloc = loc;
+
+                    qDebug()<<"select channel no ..."<<selectchno;
+                }
+
+            }
+
+            qDebug()<<"chno ..."<<chno<<"dim4 ..."<<dim4;
 	
-	qDebug()<<"0-based pos ... "<<loc.x<<loc.y<<loc.z;
+        }
+        qDebug()<<"0-based pos ... "<<selectloc.x<<selectloc.y<<selectloc.z;
 	
-	return loc;
+        return selectloc;
 }
 
 // NeuronSelector init func
