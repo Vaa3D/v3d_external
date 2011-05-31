@@ -356,7 +356,7 @@ bool do_lobeseg_bdbminus_onesideonly(unsigned char *inimg1d, const V3DLONG sz[4]
 		}
 		else
 		{
-			if(ini_coords[0].y < ini_coords[1].y)
+			if(ini_coords[0].y > ini_coords[1].y)
 			{
 				ini_x1 = (int)ini_coords[0].x;
 				ini_y1 = (int)ini_coords[0].y;
@@ -491,7 +491,7 @@ bool do_lobeseg_bdbminus_onesideonly(unsigned char *inimg1d, const V3DLONG sz[4]
 			
 			if (j1>j2)
 			{
-				for (j=j1; j>j2-1; j--)
+				for (j=j1+1; j>j2-1; j--)
 				{
 					double w1 = j-j1;
 					double w2 = j2-j;
