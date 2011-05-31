@@ -60,9 +60,9 @@ XYZ Renderer_tex2::selectPosition(int x, int y)
 	if (w)
 	{
 		curImg = v3dr_getImage4d(_idep);
-		//when chno<0, then need to recheck the current chno
-		if (chno<0 || chno>dim4) chno = w->getNumKeyHolding()-1;
-		if (chno<0 || chno>dim4) chno = curChannel; //100802 RZC: default channel set by user
+		
+		chno = w->getNumKeyHolding()-1; // #channel info got from keyboard
+		if (chno<0 || chno>dim4) chno = curChannel; // default channel set by user
 	}
 	
 	double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
