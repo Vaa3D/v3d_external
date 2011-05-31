@@ -41,7 +41,7 @@ void printHelp()
 	printf("\t [-h]                               print this message.\n");
 	printf("\t [-s]                               lobe segmentation on one side, -p -k -N parameters is needed.\n");
 	printf("\t [-p]                               set the initial position , format NNxNN+NNxNN, e.g. 50x0+0x33.\n");
-	printf("\t [-k]                               specifiy which direction will be kept, left, right, upward or downward.\n");
+	printf("\t [-k]                               specifiy which direction will be kept, left or right.\n");
 	printf("\t [-N]                               the number of control points.\n");
 	printf("\t [-S]                               output the seperating surface.\n");
 	printf("\n");
