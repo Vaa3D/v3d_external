@@ -10,8 +10,8 @@ ADD_SUBDIRECTORY(
   )
 
 ADD_SUBDIRECTORY(Common)
-ADD_SUBDIRECTORY(Superplugindlg)
-ADD_SUBDIRECTORY(Superplugin)
+#ADD_SUBDIRECTORY(Superplugindlg)
+#ADD_SUBDIRECTORY(Superplugin)
 ADD_SUBDIRECTORY(Arithmetic)
 ADD_SUBDIRECTORY(BinaryLogic)
 ADD_SUBDIRECTORY(IntensityTransformation)
