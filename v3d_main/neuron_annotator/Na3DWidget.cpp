@@ -219,7 +219,7 @@ void Na3DWidget::highlightNeuronAtPosition(QPoint pos)
     // select neuron: set x, y, z and emit signal
     qDebug()<<"emit a signal ...";
     emit neuronSelected(loc.x, loc.y, loc.z);
-    update();
+    update(); // TODO - this update() should be postponed until the response to whatever happens after neuronSelected(...) completes.
 }
 
 // Zoom using mouse wheel

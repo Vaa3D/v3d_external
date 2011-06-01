@@ -1,12 +1,12 @@
-#ifndef ANGLE_WIDGET_PLUGIN_H
-#define ANGLE_WIDGET_PLUGIN_H
+#ifndef GAMMA_WIDGET_PLUGIN_H
+#define GAMMA_WIDGET_PLUGIN_H
 
 #include <QObject>
 #include <QtDesigner/QDesignerCustomWidgetInterface>
 #include <QtPlugin>
-#include "../../AngleWidget.h"
+#include "../../GammaWidget.h"
 
-class AngleWidgetPlugin
+class GammaWidgetPlugin
     : public QObject
     , public QDesignerCustomWidgetInterface
 {
@@ -14,7 +14,7 @@ class AngleWidgetPlugin
     Q_INTERFACES(QDesignerCustomWidgetInterface)
 
 public:
-    AngleWidgetPlugin(QObject *parent = 0) 
+    GammaWidgetPlugin(QObject *parent = 0)
         : QObject(parent)
         , m_initialized(false)
     {}
@@ -24,21 +24,21 @@ public:
     QIcon icon() const {return QIcon();} // TODO
     QString domXml() const {
         return "<ui language=\"c++\">"
-                "  <widget class=\"AngleWidget\" "
+                "  <widget class=\"GammaWidget\" "
                 "  name=\"angleWidget\" />"
                 "</ui>";
     }
     QString group() const {return tr("Input Widgets");}
-    QString includeFile() const {return "../neuron_annotator/AngleWidget.h";}
-    QString name() const {return "AngleWidget";}
-    QString toolTip() const {return tr("Widget used to control angles in degrees");}
-    QString whatsThis() const {return tr("This is a widget for setting rotation angles in the NeuronAnnotator");}
-    QWidget *createWidget(QWidget *parent) {return new AngleWidget(parent, "RotX");}
+    QString includeFile() const {return "../neuron_annotator/GammaWidget.h";}
+    QString name() const {return "GammaWidget";}
+    QString toolTip() const {return tr("Widget used to adjust image brightness");}
+    QString whatsThis() const {return tr("This is a widget for adjusting viewer brightness in the NeuronAnnotator");}
+    QWidget *createWidget(QWidget *parent) {return new GammaWidget(parent);}
     void initialize(QDesignerFormEditorInterface *) {m_initialized = true;}
 
 private:
     bool m_initialized;
 };
 
-#endif /* ANGLE_WIDGET_PLUGIN_H */
+#endif /* GAMMA_WIDGET_PLUGIN_H */
 

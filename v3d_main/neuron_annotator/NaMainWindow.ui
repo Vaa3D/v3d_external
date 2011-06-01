@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1042</width>
-    <height>816</height>
+    <height>725</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -266,7 +266,7 @@
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="GammaWidget" name="gammaWidget_MIP" native="true">
+                  <widget class="GammaWidget" name="gammaWidget_MIP">
                    <property name="minimumSize">
                     <size>
                      <width>0</width>
@@ -669,11 +669,11 @@
                         </widget>
                        </item>
                        <item>
-                        <widget class="GammaWidget" name="gammaWidget_3D" native="true">
+                        <widget class="GammaWidget" name="gammaWidget_3D">
                          <property name="minimumSize">
                           <size>
                            <width>0</width>
-                           <height>25</height>
+                           <height>0</height>
                           </size>
                          </property>
                         </widget>
@@ -1186,6 +1186,12 @@
    <container>1</container>
   </customwidget>
   <customwidget>
+   <class>GammaWidget</class>
+   <extends>QWidget</extends>
+   <header>../neuron_annotator/GammaWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>Na3DWidget</class>
    <extends>QWidget</extends>
    <header location="global">../neuron_annotator/Na3DWidget.h</header>
@@ -1201,12 +1207,6 @@
    <class>NaLargeMIPWidget</class>
    <extends>QWidget</extends>
    <header>../neuron_annotator/NaLargeMIPWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>GammaWidget</class>
-   <extends>QWidget</extends>
-   <header>../neuron_annotator/GammaWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
