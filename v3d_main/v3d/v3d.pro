@@ -209,9 +209,9 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/RendererNeuronAnnotator.h \
     ../neuron_annotator/GalleryButton.h \
     ../neuron_annotator/CellCounter3D.h \
-    ../neuron_annotator/Vector3D.h \
-    ../neuron_annotator/Rotation3D.h \
-    ../neuron_annotator/CameraModel.h \
+    ../neuron_annotator/geometry/Vector3D.h \
+    ../neuron_annotator/geometry/Rotation3D.h \
+    ../neuron_annotator/geometry/CameraModel.h \
     ../neuron_annotator/GammaWidget.h \
     ../neuron_annotator/AngleWidget.h \
     ../neuron_annotator/MouseClickManager.h \
@@ -320,9 +320,9 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/RendererNeuronAnnotator.cpp \
     ../neuron_annotator/GalleryButton.cpp \
     ../neuron_annotator/CellCounter3D.cpp \
-    ../neuron_annotator/Vector3D.cpp \
-    ../neuron_annotator/Rotation3D.cpp \
-    ../neuron_annotator/CameraModel.cpp \
+    ../neuron_annotator/geometry/Vector3D.cpp \
+    ../neuron_annotator/geometry/Rotation3D.cpp \
+    ../neuron_annotator/geometry/CameraModel.cpp \
     ../neuron_annotator/GammaWidget.cpp \
     ../neuron_annotator/MouseClickManager.cpp \
     ../neuron_annotator/BrightnessCalibrator.cpp \

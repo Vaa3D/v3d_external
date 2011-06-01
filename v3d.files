@@ -2332,12 +2332,12 @@ v3d_main/neuron_annotator/NaViewer.h
 v3d_main/neuron_annotator/NaViewer.cpp
 v3d_main/neuron_annotator/CellCounter3D.h
 v3d_main/neuron_annotator/CellCounter3D.cpp
-v3d_main/neuron_annotator/Rotation3D.h
-v3d_main/neuron_annotator/Rotation3D.cpp
-v3d_main/neuron_annotator/Vector3D.h
-v3d_main/neuron_annotator/Vector3D.cpp
-v3d_main/neuron_annotator/CameraModel.h
-v3d_main/neuron_annotator/CameraModel.cpp
+v3d_main/neuron_annotator/geometry/Rotation3D.h
+v3d_main/neuron_annotator/geometry/Rotation3D.cpp
+v3d_main/neuron_annotator/geometry/Vector3D.h
+v3d_main/neuron_annotator/geometry/Vector3D.cpp
+v3d_main/neuron_annotator/geometry/CameraModel.h
+v3d_main/neuron_annotator/geometry/CameraModel.cpp
 v3d_main/neuron_annotator/GammaWidget.h
 v3d_main/neuron_annotator/GammaWidget.cpp
 v3d_main/neuron_annotator/NeuronSelector.cpp
@@ -2366,3 +2366,4 @@ v3d_main/neuron_annotator/AngleWidget.cpp
 v3d_main/neuron_annotator/custom_widgets/AngleWidget.pro
 v3d_main/neuron_annotator/custom_widgets/AngleWidgetPlugin.h
 v3d_main/neuron_annotator/custom_widgets/AngleWidgetPlugin.cpp
+v3d_main/neuron_annotator/CMakeLists.txt

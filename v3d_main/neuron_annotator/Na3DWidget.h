@@ -4,7 +4,7 @@
 #include "../3drenderer/v3dr_glwidget.h"
 #include "../v3d/xformwidget.h"
 #include "NaViewer.h"
-#include "Rotation3D.h"
+#include "geometry/Rotation3D.h"
 #include "BrightnessCalibrator.h"
 #include <cmath>
 

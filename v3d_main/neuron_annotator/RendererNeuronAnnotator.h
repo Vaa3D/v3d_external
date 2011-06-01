@@ -2,7 +2,7 @@
 #define RENDERERNEURONANNOTATOR_H
 
 #include "../3drenderer/Renderer_gl2.h"
-#include "Vector3D.h"
+#include "geometry/Vector3D.h"
 
 class RendererNeuronAnnotator : public Renderer_gl2
 {

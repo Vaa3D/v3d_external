@@ -11,7 +11,7 @@ QT4_WRAP_UI(NA_UI_SRCS
 )
 QT4_WRAP_CPP(NA_MOC_SRCS
     AnnotationSession.h
-    CameraModel.h
+    geometry/CameraModel.h
     GalleryButton.h
     GammaWidget.h
     Na3DWidget.h

@@ -2,7 +2,7 @@
 #define NAVIEWER_H
 
 #include "../v3d/v3d_core.h"
-#include "CameraModel.h"
+#include "geometry/CameraModel.h"
 #include <cmath>
 #include "AnnotationSession.h"
 
