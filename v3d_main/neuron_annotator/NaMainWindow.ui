@@ -785,7 +785,6 @@
                          <property name="textLabel">
                           <string>RotY</string>
                          </property>
-                         <zorder>rotXWidget</zorder>
                         </widget>
                        </item>
                        <item>
@@ -811,31 +810,6 @@
                          <property name="textLabel">
                           <string>RotZ</string>
                          </property>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="QFrame" name="frame_15">
-                         <property name="frameShape">
-                          <enum>QFrame::NoFrame</enum>
-                         </property>
-                         <property name="frameShadow">
-                          <enum>QFrame::Raised</enum>
-                         </property>
-                         <layout class="QGridLayout" name="gridLayout_3">
-                          <property name="margin">
-                           <number>0</number>
-                          </property>
-                          <item row="0" column="0">
-                           <widget class="QWidget" name="custom3DWidget" native="true">
-                            <property name="minimumSize">
-                             <size>
-                              <width>100</width>
-                              <height>100</height>
-                             </size>
-                            </property>
-                           </widget>
-                          </item>
-                         </layout>
                         </widget>
                        </item>
                       </layout>

@@ -2465,7 +2465,8 @@ void MainWindow::createMenus()
     menuBar()->addSeparator();
 
     // Mode
-    modeMenu = menuBar()->addMenu(tr("Mode"));
+    viewMenu = menuBar()->addMenu(tr("View"));
+    modeMenu = viewMenu->addMenu(tr("Mode"));
     connect(modeMenu, SIGNAL(aboutToShow()), this, SLOT(updateModeMenu()));
 
 	//

@@ -317,6 +317,7 @@ private:
     QMenu *fileMenu;
     QMenu *editMenu;
     QMenu *windowMenu;
+    QMenu *viewMenu;
     QMenu *modeMenu;
     QMenu *helpMenu;
 
