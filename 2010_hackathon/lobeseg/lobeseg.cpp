@@ -471,12 +471,12 @@ bool do_lobeseg_bdbminus_onesideonly(unsigned char *inimg1d, const V3DLONG sz[4]
 
 		e_0 = v_0[z+1];
 
-		//pt.x = v_0[z+1][0].x;
-		//pt.y = sz[1] - 1;
-		//e_0.insert(e_0.begin(), pt);
-		//pt.x = v_0[z+1].end()->x;
-		//pt.y = 0;
-		//e_0.push_back(pt);
+		pt.x = v_0[z+1][0].x;
+		pt.y = sz[1] - 1;
+		e_0.insert(e_0.begin(), pt);
+		pt.x = v_0[z+1].end()->x;
+		pt.y = 0;
+		e_0.push_back(pt);
 		
 
 

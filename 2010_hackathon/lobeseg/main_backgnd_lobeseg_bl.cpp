@@ -40,7 +40,7 @@ void printHelp()
 	printf("\t [-v]                               verbose printing enabled. \n");
 	printf("\t [-h]                               print this message.\n");
 	printf("\t [-s]                               lobe segmentation on one side, -p -k -N parameters is needed.\n");
-	printf("\t [-p]                               set the initial position , format NNxNN+NNxNN, e.g. 50x0+0x33.\n");
+	printf("\t [-p]                               set the relative initial position, format X1xY1+X2xY2, e.g. 30x0+100x50, top left is the origin.\n");
 	printf("\t [-k]                               specifiy which direction will be kept, left or right.\n");
 	printf("\t [-N]                               the number of control points.\n");
 	printf("\t [-S]                               output the seperating surface.\n");
