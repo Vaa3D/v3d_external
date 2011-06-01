@@ -25,7 +25,8 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* widget) : Renderer_gl2(wi
 
     // Using compressed textures makes the transitions between texture sets much worse looking.
     // especially at high zoom levels.  So turn off compression.
-    tryTexCompress = 0;
+    // On the other hand, uncompressed textures seem to cause some kind of swapping, so compress...
+    // tryTexCompress = 0;
 
     setRenderTextureLast(true);
 }

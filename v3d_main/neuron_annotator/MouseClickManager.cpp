@@ -48,6 +48,7 @@ void MouseClickManager::mouseReleaseEvent(QMouseEvent * event)
 
 void MouseClickManager::mouseDoubleClickEvent(QMouseEvent * event)
 {
+    // qDebug() << "double click";
     // Seems like we miss one mouse press event when double click occurs
     singleClickTimer.stop();
     mousePressInterval = mousePressTime.elapsed();

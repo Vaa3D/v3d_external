@@ -6,6 +6,7 @@
 #include "NaViewer.h"
 #include "geometry/Rotation3D.h"
 #include "BrightnessCalibrator.h"
+#include "MouseClickManager.h"
 #include <cmath>
 
 #if defined (_MSC_VER)
@@ -48,6 +49,9 @@ public slots:
     void translateImage(int dx, int dy);
     void showCrosshair(bool b) {NaViewer::showCrosshair(b); update();}
     void updateHighlightNeurons(bool b);
+    void onMouseSingleClick(QPoint pos);
+
+public:
 
     // Don't update if the current rotation is within 0.5 of the specified integer angle
     void setXYZBodyRotationInt(int rotX, int rotY, int rotZ)
@@ -90,6 +94,7 @@ public slots:
     }
 
 protected:
+    void highlightNeuronAtPosition(QPoint pos);
     // Rotation helper methods
     static int round(double d) {return floor(d + 0.5);}
     static bool anglesAreEqual(int a1, int a2) // in degrees
@@ -120,6 +125,7 @@ protected:
     float glUnitsPerImageVoxel() const;
     void updateDefaultScale();
     BrightnessCalibrator<unsigned char> brightnessCalibrator;
+    MouseClickManager mouseClickManager;
 };
 
 #endif // NA3DWIDGET_H

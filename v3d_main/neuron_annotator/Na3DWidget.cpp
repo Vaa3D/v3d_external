@@ -29,6 +29,8 @@ Na3DWidget::Na3DWidget(QWidget* parent)
             this, SLOT(updateRendererZoomRatio(qreal)));
     connect(&cameraModel, SIGNAL(rotationChanged(const Rotation3D&)),
             this, SLOT(updateRotation(const Rotation3D&)));
+    connect(&mouseClickManager, SIGNAL(singleClick(QPoint)),
+            this, SLOT(onMouseSingleClick(QPoint)));
 }
 
 Na3DWidget::~Na3DWidget()
@@ -147,7 +149,9 @@ void Na3DWidget::mouseMoveEvent(QMouseEvent * event)
     }
 }
 
-void Na3DWidget::mousePressEvent(QMouseEvent * event) {
+void Na3DWidget::mousePressEvent(QMouseEvent * event)
+{
+    mouseClickManager.mousePressEvent(event);
     // Remember this mouse position so we can keep track of the move vector
     oldDragX = event->pos().x();
     oldDragY = event->pos().y();
@@ -171,7 +175,9 @@ void Na3DWidget::mousePressEvent(QMouseEvent * event) {
 	}
 }
 
-void Na3DWidget::mouseReleaseEvent(QMouseEvent * event) {
+void Na3DWidget::mouseReleaseEvent(QMouseEvent * event)
+{
+    mouseClickManager.mouseReleaseEvent(event);
     bMouseIsDragging = false;
    
 	// V3dR_GLWidget::mouseReleaseEvent(event);
@@ -187,22 +193,33 @@ void Na3DWidget::mouseReleaseEvent(QMouseEvent * event) {
     {
 		(renderer->movePen(event->x(), event->y(), false));
 		updateTool();
+                _stillpaint_disable = false;  _still=false;
+                    V3dR_GLWidget::update();
     }
 	
 	if (event->button()==Qt::LeftButton && renderer && left_quickclick) // left click
     {
-		qDebug()<<"left click ... ...";
-		
-		XYZ loc = ((Renderer_tex2*)getRenderer())->selectPosition( event->x(),  event->y() );
-		
-		// select neuron: set x, y, z and emit signal
-		qDebug()<<"emit a signal ...";
-		emit neuronSelected(loc.x, loc.y, loc.z);
+            // Moved single click response to MouseClickManager
+            // highlightNeuronAtPosition(event->pos());
+            // return;
     }
 	
-    _stillpaint_disable = false;  _still=false;
-	V3dR_GLWidget::update();
-	
+}
+
+void Na3DWidget::onMouseSingleClick(QPoint pos)
+{
+    qDebug() << "single left click!";
+    highlightNeuronAtPosition(pos);
+}
+
+void Na3DWidget::highlightNeuronAtPosition(QPoint pos)
+{
+    qDebug()<<"left click ... ...";
+    XYZ loc = ((Renderer_tex2*)getRenderer())->selectPosition( pos.x(),  pos.y() );
+    // select neuron: set x, y, z and emit signal
+    qDebug()<<"emit a signal ...";
+    emit neuronSelected(loc.x, loc.y, loc.z);
+    update();
 }
 
 // Zoom using mouse wheel
@@ -235,6 +252,7 @@ void Na3DWidget::wheelEvent(QWheelEvent * e)
 // Move focus on double click
 void Na3DWidget::mouseDoubleClickEvent(QMouseEvent * event)
 {
+    mouseClickManager.mouseDoubleClickEvent(event);
     if (event->button() != Qt::LeftButton) {
         V3dR_GLWidget::mouseDoubleClickEvent(event);
         return;
