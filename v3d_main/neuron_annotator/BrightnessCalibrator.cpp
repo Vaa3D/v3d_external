@@ -52,35 +52,6 @@ void BrightnessCalibrator<ValueType>::setHdrRange(ValueType min, ValueType max) 
     if (max != displayMax) displayMax = max;
 }
 
-// Return a corrected value between zero and 1.0
-template<class ValueType>
-float BrightnessCalibrator<ValueType>::getCorrectedIntensity(ValueType value) const
-{
-    // 1 - apply HDR clamp
-    if (value <= displayMin) return 0.0;
-    if (value >= displayMax) return 1.0;
-    // 2 - apply HDR ramp
-    float i_out = (value - displayMin) / float(displayMax - displayMin);
-    // 3 - apply gamma correction using lookup table
-    if (displayGamma != 1.0) {
-        float indexF = 255.0 * i_out;
-        int ix = int(indexF);
-        float d_ix = indexF - ix;
-        assert(d_ix >= 0.0);
-        assert(d_ix <= 1.0);
-        i_out = gammaTable[ix] + d_ix * dGammaTable[ix];
-    }
-    assert(i_out >= 0.0f);
-    assert(i_out <= 1.0f);
-    return i_out;
-}
-
-template<class ValueType>
-unsigned char BrightnessCalibrator<ValueType>::getCorrectedByte(ValueType value) const
-{
-    return (unsigned char)((getCorrectedIntensity(value) * 255.0) + 0.4999);
-}
-
 template class BrightnessCalibrator<float>;
 template class BrightnessCalibrator<unsigned short>;
 template class BrightnessCalibrator<int>;

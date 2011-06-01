@@ -213,6 +213,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/Rotation3D.h \
     ../neuron_annotator/CameraModel.h \
     ../neuron_annotator/GammaWidget.h \
+    ../neuron_annotator/AngleWidget.h \
     ../neuron_annotator/MouseClickManager.h \
     ../neuron_annotator/BrightnessCalibrator.h \
 	../neuron_annotator/NeuronSelector.h \
@@ -325,6 +326,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/GammaWidget.cpp \
     ../neuron_annotator/MouseClickManager.cpp \
     ../neuron_annotator/BrightnessCalibrator.cpp \
+    ../neuron_annotator/AngleWidget.cpp \
 	../neuron_annotator/NeuronSelector.cpp \
 	../webservice/v3dwebservice.cpp \
 	../webservice/gsoap2/stdsoap2.cpp \
@@ -382,7 +384,8 @@ FORMS += landmark_property.ui \
     dialog_update_downloading.ui \
     dialog_update_checking.ui \
     ../neuron_annotator/NaMainWindow.ui \
-    ../neuron_annotator/GammaWidget.ui
+    ../neuron_annotator/GammaWidget.ui \
+    ../neuron_annotator/AngleWidget.ui
 #    FL_watershedSegPara.ui \
 #    FL_levelsetSegPara.ui 
 

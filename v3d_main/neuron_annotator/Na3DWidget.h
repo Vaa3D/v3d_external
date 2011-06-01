@@ -6,6 +6,7 @@
 #include "NaViewer.h"
 #include "Rotation3D.h"
 #include "BrightnessCalibrator.h"
+#include <cmath>
 
 #if defined (_MSC_VER)
 #include "../basic_c_fun/vcdiff.h"
@@ -40,9 +41,66 @@ public slots:
     void setGammaBrightness(double gamma);
     virtual void annotationModelUpdate(QString updateType);
     void resetView();
+    void resetRotation() {
+        cameraModel.setRotation(Rotation3D());
+        update();
+    }
     void translateImage(int dx, int dy);
     void showCrosshair(bool b) {NaViewer::showCrosshair(b); update();}
-	void updateHighlightNeurons(bool b);
+    void updateHighlightNeurons(bool b);
+
+    // Don't update if the current rotation is within 0.5 of the specified integer angle
+    void setXYZBodyRotationInt(int rotX, int rotY, int rotZ)
+    {
+        Vector3D rotXYZInDegrees = cameraModel.rotation().convertBodyFixedXYZRotationToThreeAngles() * 180.0 / 3.14159;
+        int oldRotX = round(rotXYZInDegrees.x());
+        int oldRotY = round(rotXYZInDegrees.y());
+        int oldRotZ = round(rotXYZInDegrees.z());
+        if (eulerAnglesAreEquivalent(rotX, rotY, rotZ, oldRotX, oldRotY, oldRotZ))
+            return; // no significant change
+        Vector3D newRot = Vector3D(rotX, rotY, rotZ) * 3.14159 / 180.0;
+        cameraModel.setRotation(Rotation3D().setRotationFromBodyFixedXYZAngles(newRot.x(), newRot.y(), newRot.z()));
+        update();
+    }
+
+    static int radToDeg(double angleInRadians) {
+        return round(angleInRadians * 180.0 / 3.14159);
+    }
+    static bool eulerAnglesAreEquivalent(int x1, int y1, int z1, int x2, int y2, int z2) // in degrees
+    {
+        if (   anglesAreEqual(x1, x2)
+            && anglesAreEqual(y1, y2)
+            && anglesAreEqual(z1, z2) )
+        {
+            return true;
+        }
+        // Euler angles are equivalent if y' = -y + 180, x' = x + 180, z' = z + 180
+        int x3 = x2 + 180;
+        // int x3 = x2;
+        int y3 = -y2 + 180;
+        int z3 = z2 + 180;
+        if (   anglesAreEqual(x1, x3)
+            && anglesAreEqual(y1, y3)
+            && anglesAreEqual(z1, z3) )
+        {
+            return true;
+        }
+        // qDebug() << x1 << ", " << y1 << ", " << z1 << ", " << x2 << ", " << y2 << ", " << z2;
+        return false;
+    }
+
+protected:
+    // Rotation helper methods
+    static int round(double d) {return floor(d + 0.5);}
+    static bool anglesAreEqual(int a1, int a2) // in degrees
+    {
+        if (a1 == a2)
+            return true; // trivially equal
+        else if (((a1 - a2) % 360) == 0)
+            return true;
+        else
+            return false;
+    }
 
 protected slots:
     // focus setting should be done via cameraModel, not with these methods.

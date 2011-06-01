@@ -58,14 +58,23 @@ NaMainWindow::NaMainWindow()
 
     // 3D viewer
     connect(ui.rotationResetButton, SIGNAL(clicked()),
-            ui.v3dr_glwidget, SLOT(resetView()));
+            ui.v3dr_glwidget, SLOT(resetRotation()));
     connect(ui.nutateButton, SIGNAL(toggled(bool)),
             this, SLOT(setNutate(bool)));
-    // Wire up gamma correction
+    // 3D rotation
+    connect(&(ui.v3dr_glwidget->cameraModel), SIGNAL(rotationChanged(const Rotation3D&)),
+            this, SLOT(on3DViewerRotationChanged(const Rotation3D&)));
+    connect(ui.rotXWidget, SIGNAL(angleChanged(int)),
+            this, SLOT(update3DViewerXYZBodyRotation()));
+    connect(ui.rotYWidget, SIGNAL(angleChanged(int)),
+            this, SLOT(update3DViewerXYZBodyRotation()));
+    connect(ui.rotZWidget, SIGNAL(angleChanged(int)),
+            this, SLOT(update3DViewerXYZBodyRotation()));    // 3D gamma correction
     connect(ui.gammaWidget_3D, SIGNAL(gammaBrightnessChanged(double)),
             ui.v3dr_glwidget, SLOT(setGammaBrightness(double)));
     connect(ui.gammaWidget_3D, SIGNAL(gammaBrightnessChanged(double)),
             this, SLOT(updateThumbnailGamma(double)));
+
 
     // Whether to use common zoom and focus in MIP, ZStack and 3D viewers
     connect(ui.actionLink_viewers, SIGNAL(toggled(bool)),

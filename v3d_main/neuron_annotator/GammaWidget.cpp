@@ -50,6 +50,10 @@ void GammaWidget::setGammaBrightness(double gamma)
     gamma_slider->setValue(gammaInt);
 }
 
+void GammaWidget::reset() {
+    setGammaBrightness(1.0);
+}
+
 // Final arbiter of whether gamma value has changed is integer
 // -100 * log2(gamma)
 int GammaWidget::gammaIntFromDouble(double gamma)

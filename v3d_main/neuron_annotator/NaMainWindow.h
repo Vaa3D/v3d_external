@@ -40,6 +40,38 @@ public slots:
 
 protected slots:
     void updateThumbnailGamma(double gamma);
+    void on3DViewerRotationChanged(const Rotation3D& rot)
+    {
+        Vector3D angles = rot.convertBodyFixedXYZRotationToThreeAngles();
+        int rotX = Na3DWidget::radToDeg(angles.x());
+        int rotY = Na3DWidget::radToDeg(angles.y());
+        int rotZ = Na3DWidget::radToDeg(angles.z());
+        int oldRotX = ui.rotXWidget->spinBox->value();
+        int oldRotY = ui.rotYWidget->spinBox->value();
+        int oldRotZ = ui.rotZWidget->spinBox->value();
+        if (Na3DWidget::eulerAnglesAreEquivalent(rotX, rotY, rotZ, oldRotX, oldRotY, oldRotZ))
+            return;
+        // Block signals from individual rot widgets until we update them all
+        ui.rotXWidget->blockSignals(true);
+        ui.rotYWidget->blockSignals(true);
+        ui.rotZWidget->blockSignals(true);
+
+        ui.rotXWidget->setAngle(rotX);
+        ui.rotYWidget->setAngle(rotY);
+        ui.rotZWidget->setAngle(rotZ);
+
+        ui.rotXWidget->blockSignals(false);
+        ui.rotYWidget->blockSignals(false);
+        ui.rotZWidget->blockSignals(false);
+    }
+    void update3DViewerXYZBodyRotation()
+    {
+        int rotX = ui.rotXWidget->spinBox->value();
+        int rotY = ui.rotYWidget->spinBox->value();
+        int rotZ = ui.rotZWidget->spinBox->value();
+        // qDebug() << rotX << ", " << rotY << ", " << rotZ;
+        ui.v3dr_glwidget->setXYZBodyRotationInt(rotX, rotY, rotZ);
+    }
 
 protected:
     void closeEvent(QCloseEvent *event);
