@@ -44,6 +44,7 @@ void MouseClickManager::mouseReleaseEvent(QMouseEvent * event)
     // (as long as no more clicks come too quickly)
     // qDebug() << "might be click";
     singleClickTimer.start(400); // You must survive 400 milliseconds more to be annointed a true click.
+    emit possibleSingleClickAlert(); // for instant feedback, if needed
 }
 
 void MouseClickManager::mouseDoubleClickEvent(QMouseEvent * event)
