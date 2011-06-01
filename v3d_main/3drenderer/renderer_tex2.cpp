@@ -1911,3 +1911,189 @@ void Renderer_tex2::blendTrack()
 	//glFlush();
 }
 
+// mouse left click to select neuron
+XYZ Renderer_tex2::selectPosition(int x, int y)
+{
+        // _appendMarkerPos
+        MarkerPos pos;
+        pos.x = x;
+        pos.y = y;
+        for (int i=0; i<4; i++)
+                pos.view[i] = viewport[i];
+        for (int i=0; i<16; i++)
+        {
+                pos.P[i]  = projectionMatrix[i];
+                pos.MV[i] = markerViewMatrix[i];
+        }
+
+        // getCenterOfMarkerPos
+        XYZ P1, P2;
+
+        //_MarkerPos_to_NearFarPoint
+        Matrix P(4,4);		P << pos.P;   P = P.t();    // OpenGL is row-inner / C is column-inner
+        Matrix M(4,4);		M << pos.MV;  M = M.t();
+        Matrix PM = P * M;
+
+        double xd = (pos.x             - pos.view[0])*2.0/pos.view[2] -1;
+        double yd = (pos.view[3]-pos.y - pos.view[1])*2.0/pos.view[3] -1; // OpenGL is bottom to top
+        //double z = 0,1;                              // the clip space depth from 0 to 1
+
+        ColumnVector pZ0(4); 	pZ0 << xd << yd << 0 << 1;
+        ColumnVector pZ1(4); 	pZ1 << xd << yd << 1 << 1;
+        if (bOrthoView)
+        {
+                pZ0(3) = -1;  //100913
+        }
+        ColumnVector Z0 = PM.i() * pZ0;       //cout << "Z0 \n" << Z0 << endl;
+        ColumnVector Z1 = PM.i() * pZ1;       //cout << "Z1 \n" << Z1 << endl;
+        Z0 = Z0 / Z0(4);
+        Z1 = Z1 / Z1(4);
+
+        P1 = XYZ(Z0(1), Z0(2), Z0(3));
+        P2 = XYZ(Z1(1), Z1(2), Z1(3));
+
+        // getCenterOfLineProfile
+        XYZ loc = (P1+P2)*.5;
+
+        //
+        int chno;
+
+        V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+        My4DImage* curImg = 0;
+
+        if (w)
+        {
+                curImg = v3dr_getImage4d(_idep);
+
+//		chno = w->getNumKeyHolding()-1; // #channel info got from keyboard
+//		if (chno<0 || chno>dim4) chno = curChannel; // default channel set by user
+        }
+
+        double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+        // [0, 1] ==> [+1, -1]*(s)
+        clipplane[3] = viewClip;
+        ViewPlaneToModel(markerViewMatrix, clipplane);
+
+        float selectval = 0;
+        int selectchno = 0;
+        XYZ selectloc;
+
+        XYZ P2ori = P2;
+        XYZ P1ori = P1;
+        for(chno=0; chno<dim4; chno++)
+        {
+           P2 = P2ori;
+           P1 = P1ori;
+
+            if (curImg && data4dp)
+            {
+                double f = 0.8; // must be LESS 1 to converge, close to 1 is better
+
+                XYZ D = P2-P1; normalize(D);
+
+                unsigned char* vp = 0;
+                switch (curImg->getDatatype())
+                {
+                        case V3D_UINT8:
+                                vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1);
+                                break;
+                        case V3D_UINT16:
+                                vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(short int);
+                                break;
+                        case V3D_FLOAT32:
+                                vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(float);
+                                break;
+                        default:
+                                v3d_msg("Unsupported data type found. You should never see this.", 0);
+                                return loc;
+                }
+
+                qDebug()<<"iter ..."<<chno<<"vp ..."<<vp;
+
+                float sum = 0;
+                for (int i=0; i<200; i++) // iteration, (2-f)^200 is big enough
+                {
+                        double length = norm(P2-P1);
+                        if (length < 0.5) // pixel
+                                break; //////////////////////////////////
+
+                        int nstep = int(length + 0.5);
+                        double step = length/nstep;
+
+                        XYZ sumloc(0,0,0);
+                        sum = 0;
+                        for (int i=0; i<=nstep; i++)
+                        {
+                                XYZ P = P1 + D*step*(i);
+                                float value;
+                                switch (curImg->getDatatype())
+                                {
+                                        case V3D_UINT8:
+                                                value = sampling3dAllTypesatBounding( vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                                                break;
+                                        case V3D_UINT16:
+                                                value = sampling3dAllTypesatBounding( (short int *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                                                break;
+                                        case V3D_FLOAT32:
+                                                value = sampling3dAllTypesatBounding( (float *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                                                break;
+                                        default:
+                                                v3d_msg("Unsupported data type found. You should never see this.", 0);
+                                                return loc;
+                                }
+
+                                sumloc = sumloc + P*(value);
+                                sum = sum + value;
+                        }
+
+                        if (sum)
+                        {
+                            loc = sumloc / sum;
+                        }
+                        else
+                                break; //////////////////////////////////
+
+                        P1 = loc - D*(length*f/2);
+                        P2 = loc + D*(length*f/2);
+                }
+
+                float curval;
+                V3DLONG x = loc.x + 0.5;
+                V3DLONG y = loc.y + 0.5;
+                V3DLONG z = loc.z + 0.5;
+                V3DLONG offsets = z*dim2*dim1 + y*dim1 + x;
+
+                switch (curImg->getDatatype())
+                {
+                        case V3D_UINT8:
+                                curval = *(vp + offsets);
+                                break;
+                        case V3D_UINT16:
+                                curval = *((short int *)vp + offsets);
+                                break;
+                        case V3D_FLOAT32:
+                                curval = *((float *)vp + offsets);
+                                break;
+                        default:
+                                v3d_msg("Unsupported data type found. You should never see this.", 0);
+                                return loc;
+                }
+
+                if(curval>selectval)
+                {
+                    selectval = curval;
+                    selectchno = chno;
+                    selectloc = loc;
+
+                    qDebug()<<"select channel no ..."<<selectchno;
+                }
+
+            }
+
+            qDebug()<<"chno ..."<<chno<<"dim4 ..."<<dim4;
+
+        }
+        qDebug()<<"0-based pos ... "<<selectloc.x<<selectloc.y<<selectloc.z;
+
+        return selectloc;
+}

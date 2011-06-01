@@ -216,7 +216,7 @@ public:
 	void showLineProfile(int marker1, int marker2);
 	QVector<int> getLineProfile(XYZ p1, XYZ p2, int chno=0);
 
-	XYZ selectPosition(int x, int y); 	// neuron selector
+        XYZ selectPosition(int x, int y); 	// neuron selector
 
 // define Marker/Curve  ///////////////////////////////////////////////
 protected:
