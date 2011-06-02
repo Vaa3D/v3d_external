@@ -69,11 +69,14 @@ NaMainWindow::NaMainWindow()
     connect(ui.rotYWidget, SIGNAL(angleChanged(int)),
             this, SLOT(update3DViewerXYZBodyRotation()));
     connect(ui.rotZWidget, SIGNAL(angleChanged(int)),
-            this, SLOT(update3DViewerXYZBodyRotation()));    // 3D gamma correction
+            this, SLOT(update3DViewerXYZBodyRotation()));
+    // 3D gamma correction
     connect(ui.gammaWidget_3D, SIGNAL(gammaBrightnessChanged(double)),
             ui.v3dr_glwidget, SLOT(setGammaBrightness(double)));
     connect(ui.gammaWidget_3D, SIGNAL(gammaBrightnessChanged(double)),
             this, SLOT(updateThumbnailGamma(double)));
+    connect(ui.colorResetButton, SIGNAL(clicked()),
+            ui.gammaWidget_3D, SLOT(reset()));
 
 
     // Whether to use common zoom and focus in MIP, ZStack and 3D viewers
