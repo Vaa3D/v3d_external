@@ -18,12 +18,15 @@ class MipDisplayImage : public QObject
 
 public:
     explicit MipDisplayImage();
+    virtual ~MipDisplayImage();
     void setGamma(float gamma);
 
     MipData originalData;
 
     // contain rather than inherit...
     QImage image;
+    typedef std::vector<QImage*> neuronHighlightImages_t;
+    neuronHighlightImages_t neuronHighlightImages;
 
 signals:
     void initialImageDataLoaded(); // primary MIP image ready for display
@@ -40,7 +43,6 @@ protected:
     unsigned char getCorrectedIntensity(int x, int y, int c) const;
     void updateCorrectedIntensities();
     void load4DImage(const My4DImage* img, const My4DImage* maskImg = NULL);
-
     BrightnessCalibrator<float> brightnessCalibrator;
 };
 
@@ -79,22 +81,11 @@ public slots:
     void showCrosshair(bool b) {NaViewer::showCrosshair(b); update();}
     void initializePixmap(); // when a new image has loaded
     // Want to distinguish between double click and single click events
-    void onMouseSingleClick(QPoint pos)
-    {
-        int neuronIx = neuronAt(pos);
-        if (neuronIx > 0) {
-            emit neuronClicked(neuronIx);
-            // qDebug() << "clicked Neuron " << neuronAt(pos);
-        }
-    }
-    void setGammaBrightness(double gamma)
-    {
-        if (! mipImage) return;
-        mipImage->setGamma((float)gamma);
-        // qDebug() << "set gamma";
-        updatePixmap();
-        update();
-    }
+    void onMouseSingleClick(QPoint pos);
+    void setGammaBrightness(double gamma);
+
+protected slots:
+    void onHighlightedNeuronChanged(int neuronIndex);
 
 protected:
     void updateDefaultScale();
@@ -104,6 +95,11 @@ protected:
 
     MipDisplayImage * mipImage;
     QPixmap pixmap;
+
+    // QImage * highlightedNeuronMaskImage;
+    QPixmap highlightedNeuronMaskPixmap;
+    int highlightedNeuronIndex;
+
     QPainter painter;
     QTransform X_img_view;
     QTransform X_view_img;

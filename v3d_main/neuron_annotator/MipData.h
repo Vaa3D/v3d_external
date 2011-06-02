@@ -49,6 +49,7 @@ public:
 
     float dataMin; // actual minimum value
     float dataMax; // actual maximum value
+    int numNeurons;
 
 signals:
     void processedXColumn(int);

@@ -20,6 +20,15 @@ MipDisplayImage::MipDisplayImage()
             this, SLOT(onDataIntensitiesUpdated()));
 }
 
+MipDisplayImage::~MipDisplayImage()
+{
+    neuronHighlightImages_t::iterator i_n;
+    for (i_n = neuronHighlightImages.begin(); i_n != neuronHighlightImages.end(); ++i_n) {
+        delete *i_n;
+        *i_n = NULL;
+    }
+}
+
 void MipDisplayImage::processedXColumnSlot(int c) {
     // qDebug() << "foo " << c;
     emit processedXColumn(c);
@@ -31,8 +40,47 @@ void MipDisplayImage::loadImageData(const My4DImage* img, const My4DImage* maskI
 
 void MipDisplayImage::load4DImage(const My4DImage* img, const My4DImage* maskImg)
 {
-    image = QImage(QSize(img->getXDim(), img->getYDim()), QImage::Format_RGB32);
+    QSize imageSize(img->getXDim(), img->getYDim());
+    image = QImage(imageSize, QImage::Format_RGB32);
     originalData.loadMy4DImage(img, maskImg);
+
+    // Populate neuron highlight images
+    if (maskImg)
+    {
+        // First delete any stale highlight images
+        neuronHighlightImages_t::iterator i_n;
+        for (i_n = neuronHighlightImages.begin(); i_n != neuronHighlightImages.end(); ++i_n) {
+            delete *i_n;
+            *i_n = NULL;
+        }
+        // then create a new batch of highlight images
+        neuronHighlightImages.resize(originalData.numNeurons, NULL);
+        for (i_n = neuronHighlightImages.begin(); i_n != neuronHighlightImages.end(); ++i_n) {
+            *i_n = new QImage(imageSize, QImage::Format_ARGB32);
+            QImage& img = **i_n;
+            img.fill(Qt::transparent);
+        }
+        // Fill in the masks
+        QColor color;
+        for (int y = 0; y < imageSize.height(); ++y) {
+            for (int x = 0; x < imageSize.width(); ++x) {
+                for (int z = 0; z < maskImg->getZDim(); ++z) {
+                    int neuronIndex = maskImg->at(x, y, z);
+                    if (neuronIndex < 0) continue;
+                    assert(neuronIndex >= 0);
+                    assert(neuronIndex < neuronHighlightImages.size());
+                    QImage& img = *neuronHighlightImages[neuronIndex];
+                    assert(img.width() == imageSize.width());
+                    assert(img.height() == imageSize.height());
+                    QRgb * scanline = (QRgb*) img.scanLine(y);
+                    QRgb& pixel = scanline[x];
+                    color = Qt::yellow; // TODO use neuron color
+                    color.setAlpha(120);
+                    pixel = color.rgba();
+                }
+            }
+        }
+    }
 }
 
 void MipDisplayImage::onDataIntensitiesUpdated()
@@ -88,11 +136,16 @@ unsigned char MipDisplayImage::getCorrectedIntensity(int x, int y, int c) const
 //////////////////////////////
 
 NaLargeMIPWidget::NaLargeMIPWidget(QWidget * parent)
-    : QWidget(parent), mipImage(NULL), imageUpdateThread(this)
+    : QWidget(parent)
+    , mipImage(NULL)
+    , imageUpdateThread(this)
+    , pixmap(200, 200)
+    , highlightedNeuronMaskPixmap(200, 200)
+    , highlightedNeuronIndex(-1)
 {
     // Test image
-    pixmap = QPixmap(200, 200);
     pixmap.fill(Qt::black);
+    highlightedNeuronMaskPixmap.fill(Qt::transparent);
     updateDefaultScale();
     resetView();
 
@@ -110,6 +163,8 @@ NaLargeMIPWidget::NaLargeMIPWidget(QWidget * parent)
             this, SLOT(update()));
     connect(&mouseClickManager, SIGNAL(singleClick(QPoint)),
             this, SLOT(onMouseSingleClick(QPoint)));
+    connect(this, SIGNAL(hoverNeuronChanged(int)),
+            this, SLOT(onHighlightedNeuronChanged(int)));
 }
 
 NaLargeMIPWidget::~NaLargeMIPWidget()
@@ -158,12 +213,29 @@ void NaLargeMIPWidget::updatePixmap()
 
 void NaLargeMIPWidget::initializePixmap()
 {
-    // Image processing is done, finish up in the GUI thread.
     progressBar->hide();
     updatePixmap();
     resetView();
     update();
     // qDebug() << "Finished MIP data load";
+}
+
+// Want to distinguish between double click and single click events
+void NaLargeMIPWidget::onMouseSingleClick(QPoint pos)
+{
+    int neuronIx = neuronAt(pos);
+    if (neuronIx > 0) {
+        emit neuronClicked(neuronIx);
+        // qDebug() << "clicked Neuron " << neuronAt(pos);
+    }
+}
+void NaLargeMIPWidget::setGammaBrightness(double gamma)
+{
+    if (! mipImage) return;
+    mipImage->setGamma((float)gamma);
+    // qDebug() << "set gamma";
+    updatePixmap();
+    update();
 }
 
 void NaLargeMIPWidget::updateDefaultScale()
@@ -283,6 +355,14 @@ void NaLargeMIPWidget::paintEvent(QPaintEvent *event)
     X_img_view = painter.transform().inverted();
 
     painter.drawPixmap(0, 0, pixmap); // magic!
+    if (highlightedNeuronIndex > 0) { // zero means background
+        if (highlightedNeuronMaskPixmap.size() != pixmap.size()) {
+            qDebug() << "pixmap size = " << pixmap.size();
+            qDebug() << "highlight size = " << highlightedNeuronMaskPixmap.size();
+        }
+        qDebug() << "Painting highlight for neuron " << highlightedNeuronIndex;
+        painter.drawPixmap(0, 0, highlightedNeuronMaskPixmap);
+    }
 
     if (bPaintCrosshair) {
         QBrush brush1(Qt::black);
@@ -387,6 +467,18 @@ int NaLargeMIPWidget::neuronAt(const QPoint& p)
     return answer;
 }
 
+void NaLargeMIPWidget::onHighlightedNeuronChanged(int neuronIx)
+{
+    if (neuronIx <= 0) return;
+    if (! mipImage) return;
+    if (mipImage->neuronHighlightImages.size() <= neuronIx) return;
+    QImage * highlightImage = mipImage->neuronHighlightImages[neuronIx];
+    if (! highlightImage) return;
+    qDebug() << "Switching to neuron " << neuronIx;
+    highlightedNeuronMaskPixmap = QPixmap::fromImage(*highlightImage);
+    update();
+}
+
 // Drag in widget to translate the MIP image in x,y
 void NaLargeMIPWidget::mouseMoveEvent(QMouseEvent * event)
 {
@@ -395,8 +487,6 @@ void NaLargeMIPWidget::mouseMoveEvent(QMouseEvent * event)
     // Notice statement "setMouseTracking(true)" in constructor.
     if (Qt::NoButton == event->buttons())
     {
-        static int currentNeuronIndex = -1;
-
         // Hover to show (x, y, value) in status bar
         if (!mipImage) return;
         QPointF v_img = X_img_view * QPointF(event->pos());
@@ -428,13 +518,16 @@ void NaLargeMIPWidget::mouseMoveEvent(QMouseEvent * event)
                       .arg(y, 3)
                       .arg(z, 3)
                       .arg(value);
+
+
         if (neuronIx > 0) { // Zero means background
             msg = QString("Neuron %1; ").arg(neuronIx, 2) + msg;
-            if (neuronIx != currentNeuronIndex) {
-                currentNeuronIndex = neuronIx;
+            if (neuronIx != highlightedNeuronIndex) {
+                highlightedNeuronIndex = neuronIx;
                 emit(hoverNeuronChanged(neuronIx));
             }
         }
+
         emit statusMessage(msg);
         bMouseIsDragging = false;
         return;

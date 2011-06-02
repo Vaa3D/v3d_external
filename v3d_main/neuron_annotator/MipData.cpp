@@ -7,9 +7,13 @@
 
 MipData::MipData(const My4DImage* img, const My4DImage* maskImg, QObject * parent)
     : QObject(parent)
+    , numNeurons(0)
 {
     loadMy4DImage(img, maskImg);
 }
+
+typedef std::vector<double> NeuronChannelIntegrator;
+typedef std::vector<NeuronChannelIntegrator> NeuronChannelIntegratorList;
 
 bool MipData::loadMy4DImage(const My4DImage* img, const My4DImage* maskImg)
 {
@@ -28,12 +32,22 @@ bool MipData::loadMy4DImage(const My4DImage* img, const My4DImage* maskImg)
     My4DImage * mutable_img = const_cast<My4DImage*>(img);
     Image4DProxy<My4DImage> imgProxy(mutable_img);
 
-    int maxNeuronIndex = -1;
+    numNeurons = 0;
 
+    NeuronChannelIntegratorList neuronColors;
     // First loop "quickly" updates intensity, without updating neuron masks
     for (int x = 0; x < nColumns(); ++x) {
         for (int y = 0; y < nRows(); ++y) {
-            for (int z = 0; z < img->getZDim(); ++z) {
+            for (int z = 0; z < img->getZDim(); ++z)
+            {
+                int neuronIndex = -1;
+                if (maskImg) {
+                    neuronIndex = maskImg->at(x, y, z);
+                    if (neuronIndex >= numNeurons) {
+                        numNeurons = neuronIndex + 1;
+                        neuronColors.resize(numNeurons, NeuronChannelIntegrator(nChannels(), 0.0));
+                    }
+                }
                 float intensity = 0.0;
                 for (int c = 0; c < nChannels(); ++c) {
                     float val = (float)imgProxy.value_at(x,y,z,c);
@@ -42,14 +56,10 @@ bool MipData::loadMy4DImage(const My4DImage* img, const My4DImage* maskImg)
                     if (val < dataMin) dataMin = val;
                     // Update current voxel intensity
                     intensity += val;
+                    if (neuronIndex >= 0)
+                        neuronColors[neuronIndex][c] += val;
                 }
                 assert(intensity >= 0.0);
-                int neuronIndex = -1;
-                if (maskImg) {
-                    neuronIndex = maskImg->at(x, y, z);
-                    if (neuronIndex > maxNeuronIndex)
-                        maxNeuronIndex = neuronIndex;
-                }
                 // Maximum intensity projection - regardless of neuron masks
                 if (intensity > data[x][y].intensity) {
                     for (int c = 0; c < nChannels(); ++c)
@@ -66,10 +76,26 @@ bool MipData::loadMy4DImage(const My4DImage* img, const My4DImage* maskImg)
             emit processedXColumn(x + 1);
         // qDebug() << "processed column " << x + 1;
     }
+    for (int n = 0; n < neuronColors.size(); ++n)
+    {
+        NeuronChannelIntegrator& neuronColor = neuronColors[n];
+        // find maximum
+        double maxCount = -1e9;
+        for (int c = 0; c < neuronColor.size(); ++c) {
+            double channelCount = neuronColor[c];
+            if (channelCount > maxCount)
+                maxCount = channelCount;
+        }
+        // scale by maximum
+        for (int c = 0; c < neuronColor.size(); ++c) {
+            neuronColor[c] /= maxCount;
+        }
+    }
+    // TODO - actually use the color information
 
     emit intensitiesUpdated();
 
-    if (maskImg && (maxNeuronIndex >= 0))
+    if (maskImg && (numNeurons > 0))
     {
         qDebug() << "processing MIP masks";
         for (int x = 0; x < nColumns(); ++x) {
