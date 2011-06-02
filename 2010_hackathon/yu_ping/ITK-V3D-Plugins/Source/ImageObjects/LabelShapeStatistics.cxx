@@ -11,7 +11,7 @@
 #include "itkLabelObject.h"
 #include "itkLabelMap.h"
 #include "itkLabelImageToShapeLabelMapFilter.h"
-#include "itkShapeLabelObject2.h"
+#include "itkShapeLabelObject.h"
 
 // Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
 // The value of PluginName should correspond to the TARGET specified in the
