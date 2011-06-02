@@ -2101,17 +2101,11 @@ XYZ Renderer_tex2::selectPosition(int x, int y)
 // neuron annotator mouse right click pop menu
 int Renderer_tex2::hitMenu(int x, int y)
 {
-    qDebug()<<"pop menu ...";
+    makeCurrent(); // make sure in correct OpenGL context
 
-    makeCurrent(); //090715 make sure in correct OpenGL context
-
-    //qDebug(" Renderer::selectObj");
     if (b_selecting)  return 0;  // prevent re-enter
-
     //if (selectMode >smObject && pTip) return 0; //prevent tool-tip when definition
 
-
-    ////////////////////////////////////////////
     b_selecting = true;
 
     GLint viewport[4];
@@ -2135,7 +2129,7 @@ int Renderer_tex2::hitMenu(int x, int y)
             setProjection();
             glMatrixMode(GL_MODELVIEW);
 
-            paint(); //##########
+            paint(); //
 
             glMatrixMode(GL_PROJECTION);
             glPopMatrix();
@@ -2151,8 +2145,7 @@ int Renderer_tex2::hitMenu(int x, int y)
             return 0;
     }
 
-
-    ////////////////////////////////////////////
+    //
     GLuint *rec, *recNames, nameLength;
     int *hitNames = new int[PICK_BUFFER_SIZE];
     GLuint minZ, minDZ;
@@ -2197,7 +2190,7 @@ int Renderer_tex2::hitMenu(int x, int y)
     }
     //printf("\n");
 
-    //int ret = processHit((int)nameLength, hitNames, x, y, b_menu, pTip); //////////////////////
+    //int ret = processHit((int)nameLength, hitNames, x, y, b_menu, pTip); //
 
     // object name string
     QString qsName;
@@ -2270,7 +2263,7 @@ int Renderer_tex2::hitMenu(int x, int y)
 
             }
     }
-    qDebug() <<"\t Hit " << (qsName);
+    //qDebug() <<"\t Hit " << (qsName);
 
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
@@ -2297,6 +2290,23 @@ int Renderer_tex2::hitMenu(int x, int y)
             foreach (QAction* a, listAct) {  menu.addAction(a); }
             //menu.setWindowOpacity(POPMENU_OPACITY); // no effect on MAC? on Windows cause blink
             act = menu.exec(QCursor::pos());
+    }
+
+    // processing menu actions
+    if (act==0) 	return 0; // 081215: fix pop dialog when no choice of menu
+    else if (act == actViewNeuronWBG)
+    {
+        if(w)
+        {
+            emit w->triggerNeuronShown(true);
+        }
+    }
+    else if (act == actViewNeuronWOBG)
+    {
+        if(w)
+        {
+            emit w->triggerNeuronShown(false);
+        }
     }
 
     //

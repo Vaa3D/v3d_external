@@ -529,3 +529,29 @@ void Na3DWidget::annotationModelUpdate(QString updateType) {
     }
 }
 
+// update all neuron masks at once
+void Na3DWidget::updateAnnotationModels() {
+
+        RendererNeuronAnnotator* ra = (RendererNeuronAnnotator*)renderer;
+        QProgressDialog progressDialog( QString("Updating textures"), 0, 0, 100, this, Qt::Tool | Qt::WindowStaysOnTopHint);
+        progressDialog.setAutoClose(true);
+
+        QList<int> tempList;
+        for (int i=1;i<annotationSession->getMaskStatusList().size();i++) {
+            if (annotationSession->neuronMaskIsChecked(i)) {
+                tempList.append(i);
+            }
+        }
+
+        // Background toggle
+        if (annotationSession->getMaskStatusList().at(0)) {
+            ra->setBackgroundBaseTexture( tempList, progressDialog );
+        } else {
+            ra->setBlankBaseTexture( tempList, progressDialog );
+        }
+
+        ra->paint();
+        update();
+
+}
+

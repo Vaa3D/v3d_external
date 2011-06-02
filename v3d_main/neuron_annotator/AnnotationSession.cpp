@@ -1,4 +1,5 @@
 #include "AnnotationSession.h"
+#include "RendererNeuronAnnotator.h"
 #include <QtAlgorithms>
 #include <iostream>
 
@@ -203,4 +204,58 @@ void AnnotationSession::switchSelectedNeuron(int index)
         neuronSelectList.replace(index, true);
     }
 }
+
+// show selected neuron
+void AnnotationSession::showSelectedNeuron(bool background)
+{
+    if(background)
+    {
+        qDebug()<<"with bg ...";
+
+        // on background
+        setNeuronMaskStatus(0, true);
+        //neuronMaskUpdate(0, true);
+    }
+    else
+    {
+        qDebug()<<"without bg ...";
+
+        // off background
+        setNeuronMaskStatus(0, false);
+        //neuronMaskUpdate(0, false);
+    }
+
+    // show neuron
+    int index = -1;
+
+    for(int i=0; i<neuronSelectList.size(); i++)
+    {
+        if(neuronSelectList.at(i))
+        {
+            index = i;
+            break; // only one neuron selected at once
+        }
+    }
+
+    if(index<0)
+    {
+        qDebug()<<"no neuron selected ...";
+        return;
+    }
+
+    for(int i=1; i<maskStatusList.size(); i++)
+    {
+        if(i==index) {
+            setNeuronMaskStatus(i, true);
+            //neuronMaskUpdate(i, true);
+        }
+        else {
+            setNeuronMaskStatus(i, false);
+            //neuronMaskUpdate(i, false);
+        }
+    }
+
+    emit neuronMaskStatusSet();
+}
+
 

@@ -403,6 +403,9 @@ bool V3d_PluginLoader::runSingleImageInterface(QObject* plugin, const QString &c
     V3DSingleImageInterface *iFilter = dynamic_cast<V3DSingleImageInterface *>(plugin);
 
     bool done = (iFilter != 0);
+
+    qDebug()<<"V3DSingleImageInterface ..."<<iFilter;
+
     if (iFilter && v3d_mainwindow)
     {
         My4DImage* image = v3d_mainwindow->currentImage();
@@ -468,6 +471,9 @@ bool V3d_PluginLoader::runPluginInterface(QObject* plugin, const QString& comman
 {
     V3DPluginInterface *iface = qobject_cast<V3DPluginInterface *>(plugin);
 	V3DPluginCallback *callback = dynamic_cast<V3DPluginCallback *>(this);
+
+        qDebug()<<"runPluginInterface ..."<<iface;
+
 	if (iface && callback)
     {
         try
@@ -487,6 +493,9 @@ bool V3d_PluginLoader::runPluginInterface2(QObject* plugin, const QString& comma
 {
     V3DPluginInterface2 *iface = qobject_cast<V3DPluginInterface2 *>(plugin);
 	V3DPluginCallback2 *callback = dynamic_cast<V3DPluginCallback2 *>(this);
+
+        qDebug()<<"runPluginInterface2 ..."<<iface;
+
 	if (iface && callback)
     {
         try
@@ -506,6 +515,9 @@ bool V3d_PluginLoader::runPluginInterface2_1(QObject* plugin, const QString& com
 {
     V3DPluginInterface2_1 *iface = qobject_cast<V3DPluginInterface2_1 *>(plugin);
 	V3DPluginCallback2 *callback = dynamic_cast<V3DPluginCallback2 *>(this);
+
+        qDebug()<<"runPluginInterface2_1 ..."<<iface;
+
 	if (iface && callback)
     {
         try

@@ -77,6 +77,7 @@ public:
     void clearColormapDialog() {colormapDlg = 0;}
     void clearSurfaceDialog()  {surfaceDlg = 0;}
     bool screenShot(QString filename);
+    void triggerNeuronShown(bool bg) {emit neuronShown(bg);}
 
 protected:
 	virtual void choiceRenderer();
@@ -346,6 +347,7 @@ signals:
 	void changeZClip1(int s);
 
 	void changeOrthoView(bool b);
+        void neuronShown(bool bg); // view neuron in Neuron Annotator
 
 protected:
 	bool _still, _stillpaint_disable, _stillpaint_pending, _mouse_in_view;

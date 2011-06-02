@@ -535,7 +535,7 @@ void RendererNeuronAnnotator::updateCurrentTextureMask(int maskIndex, int state,
                                                 0, // level
                                                 w,h,  // offset
                                                 TILE_DIMENSION, // sub width
-                                                TILE_DIMENSION, // sub height
+                                                TILE_DIMENSION, // sub heighttexture3DCurrent
                                                 image_format, // image format
                                                 image_type, // image type
                                                 tileBuffer);

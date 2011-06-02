@@ -49,9 +49,11 @@ public:
 
 signals:
     void modelUpdated(QString updateType);
+    void neuronMaskStatusSet();
 
 public slots:
     void neuronMaskUpdate(int index, bool status);
+    void showSelectedNeuron(bool background);
 
 private:
     long objectId;
