@@ -166,12 +166,14 @@ void Na3DWidget::mousePressEvent(QMouseEvent * event)
 	
 	if (event->button()==Qt::RightButton && renderer)
 	{
-		if (renderer->hitPoint(event->x(), event->y()))  //pop-up menu or marker definition
-		{
-			updateTool();
-		}
+                //if (renderer->hitPoint(event->x(), event->y()))  //pop-up menu or marker definition
+
+            if(renderer->hitMenu(event->x(), event->y()))
+            {
+                updateTool();
+            }
 		
-		V3dR_GLWidget::update();
+            V3dR_GLWidget::update();
 	}
 }
 
@@ -182,22 +184,22 @@ void Na3DWidget::mouseReleaseEvent(QMouseEvent * event)
    
 	// V3dR_GLWidget::mouseReleaseEvent(event);
 	int clicktime = fabs(clock() - t_mouseclick);
-	bool left_quickclick = false;
+        bool left_quickclick = false;
 	
 	if(clicktime<1000)
-		left_quickclick = true;
+                left_quickclick = true;
 	
 	//qDebug()<<"release ..."<<left_quickclick<<"time elapse ..."<<clicktime<<t_mouseclick;
 	
 	if (event->button()==Qt::RightButton && renderer) //right-drag
     {
-		(renderer->movePen(event->x(), event->y(), false));
+                (renderer->movePen(event->x(), event->y(), false));
 		updateTool();
                 _stillpaint_disable = false;  _still=false;
                     V3dR_GLWidget::update();
     }
 	
-	if (event->button()==Qt::LeftButton && renderer && left_quickclick) // left click
+        if (event->button()==Qt::LeftButton && renderer && left_quickclick) // left click
     {
             // Moved single click response to MouseClickManager
             // highlightNeuronAtPosition(event->pos());
