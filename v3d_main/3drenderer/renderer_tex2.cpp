@@ -2097,3 +2097,211 @@ XYZ Renderer_tex2::selectPosition(int x, int y)
 
         return selectloc;
 }
+
+// neuron annotator mouse right click pop menu
+int Renderer_tex2::hitMenu(int x, int y)
+{
+    qDebug()<<"pop menu ...";
+
+    makeCurrent(); //090715 make sure in correct OpenGL context
+
+    //qDebug(" Renderer::selectObj");
+    if (b_selecting)  return 0;  // prevent re-enter
+
+    //if (selectMode >smObject && pTip) return 0; //prevent tool-tip when definition
+
+
+    ////////////////////////////////////////////
+    b_selecting = true;
+
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    GLuint zDepth;
+    glReadPixels(x,viewport[3]-y,1,1, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, &zDepth);
+
+#define PICK_BUFFER_SIZE 10240  //// CAUTION: pick buffer overflow may cause crash
+#define PICK_TOLERANCE 5
+
+    GLuint *selectBuf = new GLuint[PICK_BUFFER_SIZE]; //
+    glSelectBuffer(PICK_BUFFER_SIZE, selectBuf);
+    glRenderMode(GL_SELECT);
+
+    glInitNames();
+    {
+            glMatrixMode(GL_PROJECTION);
+            glPushMatrix();
+            glLoadIdentity();
+            gluPickMatrix(x, viewport[3]-y,	PICK_TOLERANCE,PICK_TOLERANCE, viewport);
+            setProjection();
+            glMatrixMode(GL_MODELVIEW);
+
+            paint(); //##########
+
+            glMatrixMode(GL_PROJECTION);
+            glPopMatrix();
+            glMatrixMode(GL_MODELVIEW);
+            glFlush();
+    }
+
+    b_selecting = false;
+    int hits = glRenderMode(GL_RENDER);
+    if (hits==0)
+    {
+            delete[] selectBuf;
+            return 0;
+    }
+
+
+    ////////////////////////////////////////////
+    GLuint *rec, *recNames, nameLength;
+    int *hitNames = new int[PICK_BUFFER_SIZE];
+    GLuint minZ, minDZ;
+
+    //qDebug(" Renderer::selectObj hits = %d", hits);
+    rec = (GLuint *) selectBuf;
+    nameLength  = 0;
+    minDZ    = GLuint(-1);
+    recNames = (rec + 3);
+    for (int i = 0; i < hits; i++)
+    {
+            //qDebug("   Z(%u) minDZ(%u) Hit[%i](%u [%u %u] %u %u %u)", zDepth,minDZ, i,rec[0],rec[1],rec[2], rec[3],rec[4],rec[5]);
+
+            if (ABS((zDepth) - rec[1]) <= minDZ || i==0)// (closer) OR (yet no name)
+                    //************************************************************************
+                    if (rec[0] != 2) //090724: Ignore when nameLength==2 for Intel GL ICD bug
+                    //************************************************************************
+            {
+                    nameLength  = rec[0];
+                    minZ        = rec[1];
+                    minDZ    = ABS((zDepth) - rec[1]); //081224
+                    recNames = (rec + 3);
+                    //qDebug("      --nameLength(%u) minDZ(%u) %u %u %u", nameLength, minDZ, recNames[0],recNames[1],recNames[2]);
+            }
+
+            rec += (3 + rec[0]); ///////////////////////////////////////// 081222
+
+            if (((rec + 3) -selectBuf > PICK_BUFFER_SIZE)
+            || (recNames + (nameLength) - selectBuf > PICK_BUFFER_SIZE))
+            {
+                    qDebug("*** ERROR: pick buffer overflow !!!\n");
+                    return 0; //////////////////////////////////////////////// 081222
+            }
+    }
+    //qDebug("      nameLength(%u) minDZ(%u) %u %u %u", nameLength, minDZ, recNames[0],recNames[1],recNames[2]);
+
+    //printf("    The closest hitNames[%i]: ", nameLength);
+    for (int j = 0; j < nameLength; j++)
+    {
+            //printf("%i ", recNames[j]);
+            hitNames[j] = (int)recNames[j];
+    }
+    //printf("\n");
+
+    //int ret = processHit((int)nameLength, hitNames, x, y, b_menu, pTip); //////////////////////
+
+    // object name string
+    QString qsName;
+    QString qsInfo;
+
+#define IS_VOLUME() 	(nameLength>=3 && hitNames[0]==dcVolume)
+#define IS_SURFACE() 	(nameLength>=3 && hitNames[0]==dcSurface)
+#define LIST_SELECTED(list, i, s) \
+{ \
+        if (i>=0 && i<list.size()) \
+                list[i].selected = s; \
+}
+#define LIST_ON(list, i, s) \
+{ \
+        if (i>=0 && i<list.size()) \
+                list[i].on = s; \
+}
+#define LIST_COLOR(list, i, w) \
+{ \
+        if (i>=0 && i<list.size()) \
+        { \
+                QColor qc = QColorFromRGBA8(list[i].color); \
+                if (v3dr_getColorDialog( &qc, w))  list[i].color = RGBA8FromQColor( qc ); \
+        } \
+}
+
+    lastSliceType = vsSliceNone;
+    if (IS_VOLUME()) // volume
+    {
+        QString bound_info = QString("(%1 %2 %3 -- %4 %5 %6)").arg(start1+1).arg(start2+1).arg(start3+1).arg(start1+size1).arg(start2+size2).arg(start3+size3);
+        QString data_title = "";	//if (w) data_title = QFileInfo(w->getDataTitle()).fileName();
+        (qsName = QString("volume %1 ... ").arg(bound_info) +(data_title));
+        //qsName += QString("%1").arg(names[2]);
+        lastSliceType = hitNames[2]; //100731
+        //qDebug()<<"sliceType:"<<currentSliceType;
+    }
+    if (IS_SURFACE()) // surface object
+    {
+            switch (hitNames[1])
+            {
+            case stImageMarker: {//marker
+                    (qsName = QString("marker #%1 ... ").arg(hitNames[2]) + listMarker.at(hitNames[2]-1).name);
+                    LIST_SELECTED(listMarker, hitNames[2]-1, true);
+
+                    qsInfo = info_Marker(hitNames[2]-1);
+            }break;
+
+            case stLabelSurface: {//label surface
+                    (qsName = QString("label surface #%1 ... ").arg(hitNames[2]) + listLabelSurf.at(hitNames[2]-1).name);
+                    LIST_SELECTED(listLabelSurf, hitNames[2]-1, true);
+
+                    int vertex_i=0;
+                    Triangle * T = findNearestSurfTriangle_WinXY(x, y, vertex_i, (Triangle*)list_listTriangle.at(hitNames[2]-1));
+                    qsInfo = info_SurfVertex(vertex_i, T, listLabelSurf.at(hitNames[2]-1).label);
+            }break;
+
+            case stNeuronStructure: {//swc
+                    (qsName = QString("neuron/line #%1 ... ").arg(hitNames[2]) + listNeuronTree.at(hitNames[2]-1).name);
+                    LIST_SELECTED(listNeuronTree, hitNames[2]-1, true);
+
+                    if (listNeuronTree.at(hitNames[2]-1).editable) qsName += " (editing)";
+                    NeuronTree *p_tree = (NeuronTree *)&(listNeuronTree.at(hitNames[2]-1));
+                    qsInfo = info_NeuronNode(findNearestNeuronNode_WinXY(x, y, p_tree), p_tree);
+            }break;
+
+            case stPointCloud: {//apo
+                    (qsName = QString("point cloud #%1 ... ").arg(hitNames[2]) + listCell.at(hitNames[2]-1).name);
+                    LIST_SELECTED(listCell, hitNames[2]-1, true);
+            }break;
+
+            }
+    }
+    qDebug() <<"\t Hit " << (qsName);
+
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
+    My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+    XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
+
+    // right click popup menu
+    QList<QAction*> listAct;
+    QAction *act=0, *actViewNeuronWBG=0, *actViewNeuronWOBG=0;
+
+    if (qsName.size()>0)
+    {
+            if (IS_VOLUME())
+            {
+
+                    listAct.append(actViewNeuronWBG = new QAction("view only this neuron with background", w));
+
+                    listAct.append(actViewNeuronWOBG = new QAction("view only this neuron without background", w));
+            }
+
+            if (w) w->updateGL(); //for highlight object
+
+            QMenu menu;
+            foreach (QAction* a, listAct) {  menu.addAction(a); }
+            //menu.setWindowOpacity(POPMENU_OPACITY); // no effect on MAC? on Windows cause blink
+            act = menu.exec(QCursor::pos());
+    }
+
+    //
+    delete[] selectBuf;
+    delete[] hitNames;
+
+    return 0;
+}

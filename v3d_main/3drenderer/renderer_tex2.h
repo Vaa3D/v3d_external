@@ -217,6 +217,7 @@ public:
 	QVector<int> getLineProfile(XYZ p1, XYZ p2, int chno=0);
 
         XYZ selectPosition(int x, int y); 	// neuron selector
+        int hitMenu(int x, int y); // neuron annotator right click popup menu
 
 // define Marker/Curve  ///////////////////////////////////////////////
 protected:
