@@ -83,7 +83,7 @@ public:
     this->m_Filter->SetBackgroundValue( 0 );
     this->m_Filter->SetNumberOfObjects( 10 ); //only output 10 objects
     this->m_Filter->SetReverseOrdering( false );
-    this->m_Filter->SetAttribute( FilterType::LabelObjectType::Size );
+    this->m_Filter->SetAttribute( FilterType::LabelObjectType::SIZE );
 
     //the following are from itkShapeLabelObject.h
 
