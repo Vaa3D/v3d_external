@@ -2370,3 +2370,5 @@ v3d_main/neuron_annotator/gui/angle_widget_designer_plugin/AngleWidgetPlugin.cpp
 v3d_main/neuron_annotator/gui/gamma_widget_designer_plugin/GammaWidgetPlugin.pro
 v3d_main/neuron_annotator/gui/gamma_widget_designer_plugin/GammaWidgetPlugin.h
 v3d_main/neuron_annotator/gui/gamma_widget_designer_plugin/GammaWidgetPlugin.cpp
+v3d_main/neuron_annotator/MipLayer.h
+v3d_main/neuron_annotator/MipLayer.cpp

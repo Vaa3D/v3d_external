@@ -197,6 +197,8 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/NaMainWindow.h \
     ../neuron_annotator/Na3DWidget.h \
     ../neuron_annotator/NaZStackWidget.h \
+    ../neuron_annotator/NaZStackWidget.h \
+    ../neuron_annotator/MipLayer.h \
     ../neuron_annotator/MipData.h \
     ../neuron_annotator/NaLargeMIPWidget.h \
     ../neuron_annotator/ColorSeparatorConsolidator.h \
@@ -308,6 +310,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/NaMainWindow.cpp \
     ../neuron_annotator/Na3DWidget.cpp \
     ../neuron_annotator/NaZStackWidget.cpp \
+    ../neuron_annotator/MipLayer.cpp \
     ../neuron_annotator/MipData.cpp \
     ../neuron_annotator/NaLargeMIPWidget.cpp \
     ../neuron_annotator/ColorSeparatorConsolidator.cpp \

@@ -37,6 +37,8 @@ public slots:
     void loadImageData(const My4DImage* img, const My4DImage* maskImg);
     void processedXColumnSlot(int);
     void onDataIntensitiesUpdated();
+    // when a neuron has been toggled on or off
+    void toggleNeuronDisplay(int neuronIndex, bool checked);
 
 protected:
     unsigned char getCorrectedIntensity(float i_in) const;
@@ -75,6 +77,7 @@ signals:
     void volumeDataUpdated(const My4DImage*, const My4DImage*);
     void hoverNeuronChanged(int);
     void neuronClicked(int);
+    void neuronDisplayToggled(int neuronIndex, bool checked);
 
 public slots:
     void annotationModelUpdate(QString updateType);

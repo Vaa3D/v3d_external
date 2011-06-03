@@ -12,7 +12,7 @@ static const qreal flip_Z = -1;
 // MipDisplayImage methods //
 /////////////////////////////
 
-MipDisplayImage::MipDisplayImage()
+MipDisplayImage::MipDisplayImage() : originalData(this)
 {
     connect(&originalData, SIGNAL(processedXColumn(int)),
             this, SLOT(processedXColumnSlot(int)));
@@ -95,8 +95,9 @@ void MipDisplayImage::onDataIntensitiesUpdated()
 
 void MipDisplayImage::updateCorrectedIntensities()
 {
-    for (int x = 0; x < originalData.nColumns(); ++x) {
-        for (int y = 0; y < originalData.nRows(); ++y) {
+    for (int y = 0; y < originalData.nRows(); ++y) {
+        QRgb* scanLine = (QRgb*) image.scanLine(y); // faster than setPixel() for 32 bit rgb...
+        for (int x = 0; x < originalData.nColumns(); ++x) {
             unsigned char red, green, blue;
             if (originalData.nChannels() == 1)
                 red = green = blue = getCorrectedIntensity(x, y, 0);
@@ -105,7 +106,7 @@ void MipDisplayImage::updateCorrectedIntensities()
                 green = getCorrectedIntensity(x, y, 1);
                 blue = getCorrectedIntensity(x, y, 2);
             }
-            image.setPixel(x, y, qRgb(red, green, blue));
+            scanLine[x] = qRgb(red, green, blue);
         }
     }
 }
@@ -129,6 +130,12 @@ unsigned char MipDisplayImage::getCorrectedIntensity(float i_in) const
 unsigned char MipDisplayImage::getCorrectedIntensity(int x, int y, int c) const
 {
     return getCorrectedIntensity(originalData[x][y][c]);
+}
+
+void MipDisplayImage::toggleNeuronDisplay(int neuronIx, bool checked)
+{
+    qDebug() << "MipDisplayImage toggleNeuronDisplay";
+    originalData.toggleNeuronDisplay(neuronIx, checked);
 }
 
 //////////////////////////////
@@ -193,10 +200,14 @@ bool NaLargeMIPWidget::loadMy4DImage(const My4DImage* img, const My4DImage* mask
     qDebug() << "Starting MIP data load";
     mipImage = new MipDisplayImage();
     mipImage->moveToThread(&imageUpdateThread);
+    // qDebug() << "GUI thread = " << QThread::currentThread();
+    // qDebug() << "MIP thread = " << &imageUpdateThread;
     connect(this, SIGNAL(volumeDataUpdated(const My4DImage*, const My4DImage*)),
             mipImage, SLOT(loadImageData(const My4DImage*, const My4DImage*)));
     connect(mipImage, SIGNAL(initialImageDataLoaded()),
             this, SLOT(initializePixmap()));
+    connect(this, SIGNAL(neuronDisplayToggled(int, bool)),
+            mipImage, SLOT(toggleNeuronDisplay(int,bool)));
     progressBar->setMaximum(img->getXDim());
     connect(mipImage, SIGNAL(processedXColumn(int)),
             progressBar, SLOT(setValue(int)));
@@ -357,11 +368,13 @@ void NaLargeMIPWidget::paintEvent(QPaintEvent *event)
     painter.drawPixmap(0, 0, pixmap); // magic!
     if (highlightedNeuronIndex > 0) { // zero means background
         if (highlightedNeuronMaskPixmap.size() != pixmap.size()) {
-            qDebug() << "pixmap size = " << pixmap.size();
-            qDebug() << "highlight size = " << highlightedNeuronMaskPixmap.size();
+            // qDebug() << "pixmap size = " << pixmap.size();
+            // qDebug() << "but highlight size = " << highlightedNeuronMaskPixmap.size();
         }
-        qDebug() << "Painting highlight for neuron " << highlightedNeuronIndex;
-        painter.drawPixmap(0, 0, highlightedNeuronMaskPixmap);
+        else {
+            // qDebug() << "Painting highlight for neuron " << highlightedNeuronIndex;
+            painter.drawPixmap(0, 0, highlightedNeuronMaskPixmap);
+        }
     }
 
     if (bPaintCrosshair) {
@@ -474,7 +487,7 @@ void NaLargeMIPWidget::onHighlightedNeuronChanged(int neuronIx)
     if (mipImage->neuronHighlightImages.size() <= neuronIx) return;
     QImage * highlightImage = mipImage->neuronHighlightImages[neuronIx];
     if (! highlightImage) return;
-    qDebug() << "Switching to neuron " << neuronIx;
+    // qDebug() << "Switching to neuron " << neuronIx;
     highlightedNeuronMaskPixmap = QPixmap::fromImage(*highlightImage);
     update();
 }
@@ -498,7 +511,7 @@ void NaLargeMIPWidget::mouseMoveEvent(QMouseEvent * event)
         if ( (x >= 0) && (x < mipImage->originalData.nColumns())
             && (y >= 0) && (y < mipImage->originalData.nRows()) )
         {
-            const MipPixel& pixel = mipImage->originalData[x][y];
+            const MipData::Pixel& pixel = mipImage->originalData[x][y];
             z = pixel.z;
             value = "";
             int nC = mipImage->originalData.nChannels();
@@ -566,6 +579,20 @@ void NaLargeMIPWidget::mouseDoubleClickEvent(QMouseEvent * event)
     translateImage(-dx, -dy);
 }
 
-void NaLargeMIPWidget::annotationModelUpdate(QString updateType) {
-    // Stub
+void NaLargeMIPWidget::annotationModelUpdate(QString updateType)
+{
+    if (! mipImage) return;
+    if (updateType.startsWith("NEURONMASK")) {
+        QList<QString> list=updateType.split(QRegExp("\\s+"));
+        QString indexString=list.at(1);
+        QString checkedString=list.at(2);
+        int index=indexString.toInt();
+        bool checked=(checkedString.toInt()==1);
+        // Use signal, so image update can occur in non-gui thread
+        // qDebug() << "neuronDisplayToggled";
+        emit neuronDisplayToggled(index, checked);
+    }
 }
+
+
+
