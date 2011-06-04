@@ -996,83 +996,6 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 				return;
 			}
 		}
-//		else if (curfile_info.suffix().toUpper()=="PC_ATLAS")
-//		{
-//			try
-//			{
-//				//first read the atlas file list
-//				apoAtlasLinkerInfoAll apo_atlas_info;
-//				if (!loadPointCloudAtlasInfoListFromFile(qPrintable(fileName.trimmed()), apo_atlas_info))
-//				{
-//					v3d_msg("Fail to load the specified point cloud atlas file.");
-//					return;
-//				}
-//
-//				if (QMessageBox::question (0, "", "Do you want to align point cloud file and build the atlas?", QMessageBox::Cancel | QMessageBox::Ok)==QMessageBox::Ok)
-//				{
-//					alignPointCloudAtlas(apo_atlas_info);
-//					return;
-//				}
-//
-//				//directly open the point clud atlas in 3D viewer
-//				iDrawExternalParameter * mypara_3Dview = new iDrawExternalParameter;
-//
-//				mypara_3Dview->p_list_3Dview_win = &list_3Dview_win; //always keep an record
-//
-//				mypara_3Dview->image4d = 0;
-//				mypara_3Dview->b_use_512x512x256 = true;
-//				mypara_3Dview->xwidget = 0;
-//				mypara_3Dview->V3Dmainwindow = this;
-//
-//				//set up data
-//				QFileInfo curinfo;
-//				curinfo.setFile(apo_atlas_info.regTargetFileName);
-//				if (curinfo.exists() && curinfo.isFile())
-//					mypara_3Dview->pointcloud_file_list.append(apo_atlas_info.regTargetFileName);
-//
-//				int kk;
-//				for (kk=0;kk<apo_atlas_info.items.size();kk++)
-//				{
-//					curinfo.setFile(apo_atlas_info.items[kk].registeredFile);
-//					if (curinfo.exists() && curinfo.isFile())
-//						mypara_3Dview->pointcloud_file_list.append(apo_atlas_info.items[kk].registeredFile);
-//				}
-//
-//				if (mypara_3Dview->pointcloud_file_list.size()<=0)
-//				{
-//					v3d_msg("None of the point cloud file specified in your Point Cloud Atlas has a valid path. Do nothing. Check your data and ensure all these point cloud files have correct paths.");
-//					if (mypara_3Dview) {delete mypara_3Dview; mypara_3Dview=0;}
-//					return;
-//				}
-//
-//				//now display
-//				V3dR_MainWindow *my3dwin = 0;
-//				try
-//				{
-//					my3dwin = new V3dR_MainWindow(mypara_3Dview);
-//					my3dwin->setParent(0);
-//					my3dwin->setDataTitle(fileName);
-//					my3dwin->show();
-//					mypara_3Dview->window3D = my3dwin;
-//
-//					if (b_putinrecentfilelist)
-//						setCurrentFile(fileName);
-//				}
-//				catch (...)
-//				{
-//					v3d_msg("You fail to open a 3D view window for the point cliud atlas. Check your data.");
-//					return;
-//				}
-//
-//				//list_3Dview_win.append(my3dwin); //081003: no longer need to do this here. I changed the V3dR_MainWindow so that when it create, it will add it into the list; and close the window, then it will delete itself from the list
-//				//func_procIO_import_atlas_apofolder(apo_atlas_info);//continue to edit
-//			}
-//			catch(...)
-//			{
-//				v3d_msg("Error happened in loading the specified point cloud atlas file.");
-//				return;
-//			}
-//		}
 		else if (curfile_info.suffix().toUpper()=="ZIP")
 		{
 			QString cmd_unzip = QString("unzip -o %1 -d %2").arg(fileName, curfile_info.canonicalPath());
@@ -1088,6 +1011,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 		}
 		else if ( (curfile_info.suffix().toUpper()=="LSM") || 
 				 (curfile_info.suffix().toUpper()=="TIF") || 
+				 (curfile_info.suffix().toUpper()=="TIFF") || 
 				 (curfile_info.suffix().toUpper()=="RAW") ||
 				 (curfile_info.suffix().toUpper()=="V3DRAW") ||
 				 (curfile_info.suffix().toUpper()=="RAW5") ||
@@ -1158,9 +1082,9 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 				v3d_msg(QString("Fail to create window for the file [%1]\n").arg(fileName));
 			}
 		}
-		else // changed by YuY Nov. 19, 2010
+		else // changed by YuY Nov. 19, 2010. Msg corrected by PHC, 2011-06-04
 		{
-			v3d_msg(QString("The file [%1] does not exist! Do nothing.").arg(fileName), 1);
+			v3d_msg(QString("The file [%1] cannot be opened properly! Check the data type or file extension; or use the special V3D file IO plugin (e.g. BioFormat plugin, etc); or convert the file format to something V3D can read (e.g. a standard TIF file).").arg(fileName), 1);
 			return;	
 		}
 
