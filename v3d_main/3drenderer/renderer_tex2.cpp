@@ -2272,16 +2272,17 @@ int Renderer_tex2::hitMenu(int x, int y)
 
     // right click popup menu
     QList<QAction*> listAct;
-    QAction *act=0, *actViewNeuronWBG=0, *actViewNeuronWOBG=0;
+    QAction *act=0, *actViewNeuronWBG=0, *actViewNeuronWOBG=0, *actViewAllNeurons=0;
 
     if (qsName.size()>0)
     {
             if (IS_VOLUME())
             {
+                listAct.append(actViewAllNeurons = new QAction("view all neurons", w));
 
-                    listAct.append(actViewNeuronWBG = new QAction("view only this neuron with background", w));
+                listAct.append(actViewNeuronWBG = new QAction("view only this neuron with background", w));
 
-                    listAct.append(actViewNeuronWOBG = new QAction("view only this neuron without background", w));
+                listAct.append(actViewNeuronWOBG = new QAction("view only this neuron without background", w));
             }
 
             if (w) w->updateGL(); //for highlight object
@@ -2306,6 +2307,13 @@ int Renderer_tex2::hitMenu(int x, int y)
         if(w)
         {
             emit w->triggerNeuronShown(false);
+        }
+    }
+    else if (act == actViewAllNeurons)
+    {
+        if(w)
+        {
+            emit w->triggerNeuronShownAll(false);
         }
     }
 

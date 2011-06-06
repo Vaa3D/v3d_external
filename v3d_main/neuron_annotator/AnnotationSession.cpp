@@ -258,4 +258,30 @@ void AnnotationSession::showSelectedNeuron(bool background)
     emit neuronMaskStatusSet();
 }
 
+// show all neurons
+void AnnotationSession::showAllNeurons(bool background)
+{
+    if(background)
+    {
+        qDebug()<<"with bg ...";
+
+        // on background
+        setNeuronMaskStatus(0, true);
+    }
+    else
+    {
+        qDebug()<<"without bg ...";
+
+        // off background
+        setNeuronMaskStatus(0, false);
+    }
+
+    // show neurons
+    for(int i=1; i<maskStatusList.size(); i++)
+    {
+        setNeuronMaskStatus(i, true);
+    }
+
+    emit neuronMaskStatusSet();
+}
 

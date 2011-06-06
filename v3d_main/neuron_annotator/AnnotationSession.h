@@ -54,6 +54,7 @@ signals:
 public slots:
     void neuronMaskUpdate(int index, bool status);
     void showSelectedNeuron(bool background);
+    void showAllNeurons(bool background);
 
 private:
     long objectId;

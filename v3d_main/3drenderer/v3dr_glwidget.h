@@ -78,6 +78,7 @@ public:
     void clearSurfaceDialog()  {surfaceDlg = 0;}
     bool screenShot(QString filename);
     void triggerNeuronShown(bool bg) {emit neuronShown(bg);}
+    void triggerNeuronShownAll(bool bg) {emit neuronShownAll(bg);}
 
 protected:
 	virtual void choiceRenderer();
@@ -348,6 +349,7 @@ signals:
 
 	void changeOrthoView(bool b);
         void neuronShown(bool bg); // view neuron in Neuron Annotator
+        void neuronShownAll(bool bg);
 
 protected:
 	bool _still, _stillpaint_disable, _stillpaint_pending, _mouse_in_view;

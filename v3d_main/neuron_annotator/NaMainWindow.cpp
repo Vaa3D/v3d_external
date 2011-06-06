@@ -308,7 +308,9 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
 
         // show selected neuron
         connect(ui.v3dr_glwidget, SIGNAL(neuronShown(bool)), annotationSession, SLOT(showSelectedNeuron(bool)));
+        connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(bool)), annotationSession, SLOT(showAllNeurons(bool)));
         connect(annotationSession, SIGNAL(neuronMaskStatusSet()), ui.v3dr_glwidget, SLOT(updateAnnotationModels()));
+        connect(annotationSession, SIGNAL(neuronMaskStatusSet()), this, SLOT(updateAnnotationModels()));
 	
     return true;
 }
@@ -435,7 +437,25 @@ void NaMainWindow::createMaskGallery() {
     qDebug() << "createMaskGallery() end size=" << maskMipList->size();
 }
 
+// update neuron selected status
+void NaMainWindow::updateAnnotationModels() {
+        for (int i=1;i<annotationSession->getMaskStatusList().size();i++) {
+            if (annotationSession->neuronMaskIsChecked(i)) {
+                mipGalleryButtonList.at(i)->setChecked(true);
+            }
+            else{
+                mipGalleryButtonList.at(i)->setChecked(false);
+            }
+        }
 
+        // Background toggle
+        if (annotationSession->getMaskStatusList().at(0)) {
+            mipGalleryButtonList.at(0)->setChecked(true);
+        } else {
+            mipGalleryButtonList.at(0)->setChecked(false);
+        }
+
+}
 
 
 

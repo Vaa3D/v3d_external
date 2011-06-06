@@ -38,6 +38,8 @@ public slots:
     void setNutate(bool bDoNutate);
     void nutate(const Rotation3D&);
 
+    void updateAnnotationModels();
+
 protected slots:
     void updateThumbnailGamma(double gamma);
     void on3DViewerRotationChanged(const Rotation3D& rot)
@@ -80,7 +82,8 @@ private:
     AnnotationSession* annotationSession;
     Ui::NaMainWindow ui;
     void createMaskGallery();
-    QList<GalleryButton*> mipGalleryButtonList;
+    QList<GalleryButton*>
+    mipGalleryButtonList;
     My4DImage currentStackImage;
     CameraModel sharedCameraModel; // optional camera sharing
     NutateThread * nutateThread;
