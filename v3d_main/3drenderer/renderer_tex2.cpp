@@ -2281,8 +2281,16 @@ int Renderer_tex2::hitMenu(int x, int y)
                 listAct.append(actViewAllNeurons = new QAction("view all neurons", w));
 
                 listAct.append(actViewNeuronWBG = new QAction("view only this neuron with background", w));
+                
+                actViewNeuronWBG->setIcon(QIcon(":/icons/neuronwbg.svg"));
+                actViewNeuronWBG->setVisible(true);
+                actViewNeuronWBG->setIconVisibleInMenu(true);
 
                 listAct.append(actViewNeuronWOBG = new QAction("view only this neuron without background", w));
+                
+                actViewNeuronWOBG->setIcon(QIcon(":/icons/neuronwobg.svg"));
+                actViewNeuronWOBG->setVisible(true);
+                actViewNeuronWOBG->setIconVisibleInMenu(true);
             }
 
             if (w) w->updateGL(); //for highlight object

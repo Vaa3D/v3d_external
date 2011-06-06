@@ -15,5 +15,7 @@
 	 <file>icons/strokeN.svg</file>
 	 <file>icons/start.svg</file>
 	 <file>icons/trace.svg</file>
+     <file>icons/neuronwbg.svg</file>
+     <file>icons/neuronwobg.svg</file>
  </qresource>
  </RCC>
