@@ -336,11 +336,11 @@ fi
 if [ $DOIT == "YES" ]; then
   if [ $SYSTEMBITS == "32" ]; then
     open v3d/v3d.app &
-    open v3d/v3d &
+#    open v3d/v3d &
   fi
   if [ $SYSTEMBITS == "64" ]; then
     open v3d/v3d64.app &
-    open v3d/v3d64 &
+#    open v3d/v3d64 &
   fi
 fi
 
