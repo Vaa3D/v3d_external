@@ -79,7 +79,7 @@ public:
         return QPointF(vx, vy);
     }
 	
-	void initHDRViewer(const V3DLONG *imgsz, const unsigned char *data1d, ImagePixelType datatype);
+        void initHDRViewer(const V3DLONG *imgsz, const unsigned char *data1d, ImagePixelType imgdatatype);
 
 public slots:
     void do_HDRfilter();
@@ -92,6 +92,7 @@ public slots:
     void setCurrentZSlice(int sliceNum);
     void updateROIsize(int boxSize);
     void annotationModelUpdate(QString updateType);
+    void setHDRCheckState(int state);
 
 signals:
     void roiChanged();
@@ -129,6 +130,7 @@ protected:
 
     V3DLONG cx, cy, cz, cc, cr;
     V3DLONG cur_x, cur_y, cur_z, cur_c;
+    ImagePixelType datatype;
 
     float *pDispData1d; // display
     float *pData1d; // ori
@@ -148,6 +150,9 @@ protected:
     float scale_x, scale_y; // assume scale_x = scale_y, i.e. keep the ratio x to y
     // image coordinates of image point in center of viewport
     float image_focus_x, image_focus_y;
+
+    // on/off HDR filter
+    bool runHDRFILTER;
 };
 
 #endif // NA_ZSTACK_WIDGET_H

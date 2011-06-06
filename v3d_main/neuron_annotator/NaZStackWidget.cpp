@@ -189,6 +189,7 @@ void NaZStackWidget::paintEvent(QPaintEvent *event)
 
     painter.drawPixmap(0, 0, pixmap);
 
+    if(!runHDRFILTER) return; //
     // ROI
     drawROI(&painter);
 }
@@ -334,8 +335,14 @@ void NaZStackWidget::setCurrentZSlice(int slice) {
     if (slice > sz) return; // value too big
     if (cur_z == slice - 1) return; // no change; ignore
     cur_z = slice - 1;
-    do_HDRfilter();
-    do_HDRfilter_zslice();
+
+    if(runHDRFILTER){
+        do_HDRfilter();
+        do_HDRfilter_zslice();
+    }
+    else{
+        updatePixmap();
+    }
     update();
     // qDebug("Z slice updated");
     emit curZsliceChanged(slice);
@@ -598,6 +605,7 @@ void NaZStackWidget::do_HDRfilter()
     if (cur_c < 1) return;
     if (cur_c > 3) return;
     if (!pData1d) return;
+    if(!runHDRFILTER) return;
 
     start_x = startMousePos.x()-1;
     end_x = endMousePos.x()-1;
@@ -728,7 +736,12 @@ void NaZStackWidget::copydata2disp()
 // update pixelmap
 void NaZStackWidget::updatePixmap()
 {
-    pixmap = getXYPlane((float *)pDispData1d, sx, sy, sz, sc, cur_z, max_roi, min_roi);
+    if(runHDRFILTER){
+        pixmap = getXYPlane((float *)pDispData1d, sx, sy, sz, sc, cur_z, max_roi, min_roi);
+    }
+    else{
+        pixmap = getXYPlane((float *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img);
+    }
     update();
 }
 
@@ -742,12 +755,14 @@ bool NaZStackWidget::loadMy4DImage(const My4DImage* img, const My4DImage* neuron
     return true;
 }
 
-void NaZStackWidget::initHDRViewer(const V3DLONG *imgsz, const unsigned char *data1d, ImagePixelType datatype)
+void NaZStackWidget::initHDRViewer(const V3DLONG *imgsz, const unsigned char *data1d, ImagePixelType imgdatatype)
 {
     sx = imgsz[0];
     sy = imgsz[1];
     sz = imgsz[2];
     sc = imgsz[3];
+
+    datatype = imgdatatype;
 
     ratio_x2y = (float)sx/(float)sy;
 
@@ -887,3 +902,14 @@ void NaZStackWidget::updateROIsize(int boxSize)
 void NaZStackWidget::annotationModelUpdate(QString updateType) {
     // Stub
 }
+
+void NaZStackWidget::setHDRCheckState(int state) {
+    if(state){
+        runHDRFILTER = true;
+    }
+    else{
+        runHDRFILTER = false;
+    }
+}
+
+

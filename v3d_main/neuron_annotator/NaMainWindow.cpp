@@ -41,6 +41,9 @@ NaMainWindow::NaMainWindow()
             ui.naLargeMIPWidget, SLOT(setGammaBrightness(double)));
 
     // Wire up Z-stack / HDR viewer
+    ui.HDR_checkBox->setChecked(true);
+    connect(ui.HDR_checkBox, SIGNAL(stateChanged(int)),
+            ui.naZStackWidget, SLOT(setHDRCheckState(int)));
     connect(ui.HDRRed_pushButton, SIGNAL(clicked()),
             ui.naZStackWidget, SLOT(setRedChannel()));
     connect(ui.HDRGreen_pushButton, SIGNAL(clicked()),
