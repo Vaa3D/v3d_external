@@ -43,7 +43,9 @@ CellCounter3D::CellCounter3D()
     CS_CENTER_VALUE=1.0;
     CS_SURROUND_RADIUS=2.0;
     CS_SURROUND_VALUE=-2.0;
-    CS_THRESHOLD=100;
+    CS_THRESHOLD_START=70;
+    CS_THRESHOLD_INCREMENT=5;
+    CS_THRESHOLD_MAX=180;
     MARK_SIZE=2;
     MARK_RADIUS=10;
     MARK_COLOR[0]=1000;
@@ -206,22 +208,31 @@ bool CellCounter3D::findCells() {
     centerSurroundFilter(workingData[w1][CELL], workingData[w2][CELL], CS_CENTER_RADIUS, CS_CENTER_VALUE, CS_SURROUND_RADIUS, CS_SURROUND_VALUE);
     w1 = (w1==0 ? 1 : 0);
     w2 = (w2==0 ? 1 : 0);
-    applyBinaryThreshold(workingData[w1][CELL], workingData[w2][CELL], CS_THRESHOLD);
-    w1 = (w1==0 ? 1 : 0);
-    w2 = (w2==0 ? 1 : 0);
 
-    // Debug
-    //copyToImage(CELL, workingData[w1], data, false /* non-zero only */, false /* markAllChannels */);
-    //return;
-
-    if (!findConnectedRegions(workingData[w1][CELL])) {
+    // Center-Surround Search Loop
+    bool csSuccess=false;
+    int csThreshold=CS_THRESHOLD_START;
+    while(!csSuccess && (csThreshold <= CS_THRESHOLD_MAX)) {
+        qDebug() << "Center-Surround search, threshold=" << csThreshold << " of max=" << CS_THRESHOLD_MAX;
+        applyBinaryThreshold(workingData[w1][CELL], workingData[w2][CELL], csThreshold);
+        if (findConnectedRegions(workingData[w2][CELL])) {
+            qDebug() << "Center-Surround search successful";
+            csSuccess=true;
+            w1 = (w1==0 ? 1 : 0);
+            w2 = (w2==0 ? 1 : 0);
+            lastTargetIndex=w1;
+        } else {
+            csThreshold+=CS_THRESHOLD_INCREMENT;
+        }
+    }
+    if (!csSuccess) {
+        qDebug() << "Center-Surround search failed";
         qDebug() << "CellCounter3D::findCells() : Error - findConnectedRegions() failed";
         if (!errorStatus) {
             errorStatus=1;
         }
         return false;
     }
-    lastTargetIndex=w1;
 
     // Debug
     //copyToImage(CELL, workingData[w1], data, false /* non-zero only */, false /* markAllChannels */);
@@ -810,6 +821,7 @@ bool CellCounter3D::findConnectedRegions(unsigned char*** d) {
                     findNeighbors(x,y,z,d,mask,groupList);
                     if (errorStatus) {
                         qDebug() << "CellCounter3D::findConnectedRegions() : Error status indicated after call to findNeighbors";
+                        regionCoordinates.clear();
                         return false;
                     }
                     int zTotal=0;
@@ -883,8 +895,11 @@ void CellCounter3D::findNeighbors(int x, int y, int z, unsigned char*** d, unsig
                             mask[pz][py][px]=1;
                             findNeighbors(px,py,pz,d,mask, neighborList);
                             if (neighborList.size()>MAX_REGION_VOXELS) {
-                                qDebug() << "CellCounter3D::findNeighbors() ERROR : exceeded MAX_REGION_VOXELS=" << MAX_REGION_VOXELS;
+                                if (errorStatus!=1) {
+                                    qDebug() << "CellCounter3D::findNeighbors() ERROR : exceeded MAX_REGION_VOXELS=" << MAX_REGION_VOXELS;
+                                }
                                 errorStatus=1;
+                                neighborList.clear();
                                 return;
                             }
                         }
@@ -1012,8 +1027,18 @@ int CellCounter3D::processArgs(vector<char*> *argList) {
         }
         else if (arg=="-cst") {
             i++;
-            QString csThreshold=(*argList)[i];
-            CS_THRESHOLD=csThreshold.toInt();
+            QString csThresholdStart=(*argList)[i];
+            CS_THRESHOLD_START=csThresholdStart.toInt();
+        }
+        else if (arg=="-csi") {
+            i++;
+            QString csThresholdIncrement=(*argList)[i];
+            CS_THRESHOLD_INCREMENT=csThresholdIncrement.toInt();
+        }
+        else if (arg=="-csm") {
+            i++;
+            QString csThresholdMax=(*argList)[i];
+            CS_THRESHOLD_MAX=csThresholdMax.toInt();
         }
         else if (arg=="-ms") {
             i++;

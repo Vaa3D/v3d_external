@@ -98,8 +98,12 @@ public:
         help.append("\n");
         help.append("(7) After center-surround filter is applied, the initial output is auto-scaled with min=0 and max=255. The next step is\n");
         help.append("    to threshold this scaled output. The following parameter provides the threshold - NOTE this parameter is critical in\n");
-        help.append("    the fine-tuning required to capture all cells\n");
-        help.append("           -cst <center-surround threshold>\n");
+        help.append("    the fine-tuning required to capture all cells. The center-surround filter is implemented as a search beginning at a\n");
+        help.append("    threshold which may fail. An increment is provided, such that the search progresses until it either finds a value which\n");
+        help.append("    succeeds, or it finally produces an error - implying the threshold search should be increased in value range\n");
+        help.append("           -cst <center-surround threshold search start>\n");
+        help.append("           -csi <center-surround search increment>\n");
+        help.append("           -csm <center-surround max value before error>\n");
         help.append("\n");
         help.append("(8) We now expect that each cell is represented by an isolated compact region, enabling a simple connected-neighbors\n");
         help.append("    approach for identifying the individual cells. We conduct a connected-neighbors search governed by these parameters:\n");
@@ -137,7 +141,9 @@ public:
         usage.append(" [ -cv  <center-surround center value    double  any    default=1.0>     ]\n");
         usage.append(" [ -sr  <center-surround surround radius double  >0.0   default=2.0>     ]\n");
         usage.append(" [ -sv  <center-surround surround value  double  any    default=-2.0>    ]\n");
-        usage.append(" [ -cst <center-surround threshold       int     0-255  default=100>     ]\n");
+        usage.append(" [ -cst <center-surround threshold start int     0-255  default=70>      ]\n");
+        usage.append(" [ -csi <center-surround increment       int     >0     default=5>       ]\n");
+        usage.append(" [ -csm <center surround threshold max   int     >0     default=180>     ]\n");
         usage.append(" [ -ms  <mark-size                       int     >0     default=2>       ]\n");
         usage.append(" [ -mr  <mark-radius                     int     >0     default=10>      ]\n");
         usage.append(" [ -mc  <mark color                  int int int >0     default= 1000 0 1000> ]\n");
@@ -205,7 +211,9 @@ protected:
     double CS_CENTER_VALUE;
     double CS_SURROUND_RADIUS;
     double CS_SURROUND_VALUE;
-    int CS_THRESHOLD;
+    int CS_THRESHOLD_START;
+    int CS_THRESHOLD_INCREMENT;
+    int CS_THRESHOLD_MAX;
     int MARK_SIZE;
     int MARK_RADIUS;
     int MARK_COLOR[3];
