@@ -215,13 +215,14 @@ bool CellCounter3D::findCells() {
     while(!csSuccess && (csThreshold <= CS_THRESHOLD_MAX)) {
         qDebug() << "Center-Surround search, threshold=" << csThreshold << " of max=" << CS_THRESHOLD_MAX;
         applyBinaryThreshold(workingData[w1][CELL], workingData[w2][CELL], csThreshold);
-        if (findConnectedRegions(workingData[w2][CELL])) {
+        if (findConnectedRegions(workingData[w2][CELL]) && errorStatus==0) {
             qDebug() << "Center-Surround search successful";
             csSuccess=true;
             w1 = (w1==0 ? 1 : 0);
             w2 = (w2==0 ? 1 : 0);
             lastTargetIndex=w1;
         } else {
+            errorStatus=0;
             csThreshold+=CS_THRESHOLD_INCREMENT;
         }
     }
