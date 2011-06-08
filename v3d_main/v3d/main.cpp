@@ -214,7 +214,7 @@ int main(int argc, char **argv)
 		return false;
 	}
 	else
-	{
+	{        
 		if(parser.i_v3d.openV3D)
 		{
 			// ------ V3D GUI handling module ---------------------
@@ -231,8 +231,12 @@ int main(int argc, char **argv)
 			}
 			
                         app->installEventFilter(mainWin);
-			if (mainWin) 
+			
+            if (mainWin) 
+            {
+                mainWin->v3dclp.copy(parser.i_v3d);
 				mainWin->show();
+            }
 			
 			// plugin module
 			if(parser.i_v3d.pluginname)
@@ -339,8 +343,6 @@ int main(int argc, char **argv)
                     // versionChecker->checkForLatestVersion(false);
                 }
             }
-			
-			// call plugin func
 
 			// launch v3d
 			try 

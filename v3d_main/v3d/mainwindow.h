@@ -63,6 +63,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3d_core.h"
 
 #include "../basic_c_fun/basic_thread.h" //YuY Dec-20-2010
+#include "v3d_commandlineparser.h"
+#include "pluginfunchandler.h"
 
 #ifdef __v3dwebservice__
 #include "../webservice/v3dwebservice.hpp" // YuY March-16-2011
@@ -285,6 +287,8 @@ public:
 	char *getPluginFunc();
 	
 	void triggerRunPlugin();
+    
+    V3D_CL_INTERFACE v3dclp;
 
 private:
     void createActions();

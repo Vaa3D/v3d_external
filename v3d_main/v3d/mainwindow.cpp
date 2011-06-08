@@ -434,11 +434,15 @@ void MainWindow::updateRunPlugin() //20110426 YuY
 			}
 			if(pluginfunc)
 			{
-				V3DPluginArgItem arg;
-				V3DPluginArgList pluginfunc_input;
-				V3DPluginArgList pluginfunc_output;
-				
-				mypluginloader.callPluginFunc(v3dpluginFind, pluginfunc, pluginfunc_input, pluginfunc_output);
+//				V3DPluginArgItem arg;
+//				V3DPluginArgList pluginfunc_input;
+//				V3DPluginArgList pluginfunc_output;
+//				
+//				mypluginloader.callPluginFunc(v3dpluginFind, pluginfunc, pluginfunc_input, pluginfunc_output);
+                
+                PLUGINFH pluginFuncHandler;
+                
+                pluginFuncHandler.doPluginFunc(v3dclp, mypluginloader, v3dpluginFind);
 			}
 		}
 		else

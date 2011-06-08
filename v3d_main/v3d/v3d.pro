@@ -251,6 +251,8 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     DownloadManager.h \
     v3d_actions.h \
     CommandManager.h \
+    v3d_commandlineparser.h \
+    pluginfunchandler.h \
     ../worm_straighten_c/bdb_minus.h \
     ../worm_straighten_c/mst_prim_c.h \
     ../worm_straighten_c/bfs.h \
@@ -356,6 +358,8 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     DownloadManager.cpp \
     v3d_actions.cpp \
     CommandManager.cpp \
+    v3d_commandlineparser.cpp \
+    pluginfunchandler.cpp \
     ../worm_straighten_c/bdb_minus.cpp \
     ../worm_straighten_c/mst_prim_c.cpp \
     ../worm_straighten_c/bfs_1root.cpp \
