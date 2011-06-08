@@ -15,6 +15,7 @@ class QRectF;
 #include "../basic_c_fun/basic_4dimage.h"
 #include "../v3d/v3d_core.h"
 #include "NaViewer.h"
+#include "BrightnessCalibrator.h"
 
 // NaZStackWidget is a viewer for successive slices of a 3D volume.
 // NaZStackWidget is based on HDRViewer class created by Yang Yu,
@@ -94,11 +95,14 @@ public slots:
     void annotationModelUpdate(QString updateType);
     void setHDRCheckState(int state);
 
+    void setGammaBrightness(double gamma);
+
 signals:
     void roiChanged();
     void curZsliceChanged(int);
     void curColorChannelChanged(NaZStackWidget::Color);
     void boxSizeChanged(int boxSize);
+    void changedHDRCheckState(bool state);
 
 public:
     V3DLONG sx, sy, sz, sc;
@@ -121,6 +125,9 @@ protected:
     int translateMouse_x, translateMouse_y;
     float translateMouse_scale;
 
+    QPoint recStartMousePos[5], recEndMousePos[5]; //
+    bool recMousePos[5];
+
     QPointF m_square_pos;
     QPointF m_offset;
 
@@ -129,7 +136,7 @@ protected:
     // float dispscale;
 
     V3DLONG cx, cy, cz, cc, cr;
-    V3DLONG cur_x, cur_y, cur_z, cur_c;
+    V3DLONG cur_x, cur_y, cur_z, cur_c, pre_c;
     ImagePixelType datatype;
 
     float *pDispData1d; // display
@@ -153,6 +160,8 @@ protected:
 
     // on/off HDR filter
     bool runHDRFILTER;
+
+    BrightnessCalibrator<float> brightnessCalibrator; // gamma correction
 };
 
 #endif // NA_ZSTACK_WIDGET_H

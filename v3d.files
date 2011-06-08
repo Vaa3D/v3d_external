@@ -2238,6 +2238,9 @@ v3d_main/v3d/v3d64.pro
 v3d_main/v3d/v3d_actions.cpp
 v3d_main/v3d/v3d_actions.h
 v3d_main/v3d/v3d_commandlineparser.h
+v3d_main/v3d/v3d_commandlineparser.cpp
+v3d_main/v3d/pluginfunchandler.h
+v3d_main/v3d/pluginfunchandler.cpp
 v3d_main/v3d/v3d_compile_constraints.h
 v3d_main/v3d/v3d_compile_full.h
 v3d_main/v3d/v3d_compile_lite.h

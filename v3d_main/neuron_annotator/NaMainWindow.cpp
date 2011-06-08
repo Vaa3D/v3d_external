@@ -42,8 +42,13 @@ NaMainWindow::NaMainWindow()
 
     // Wire up Z-stack / HDR viewer
     ui.HDR_checkBox->setChecked(true);
+    ui.gammaWidget_Zstack->hide();
     connect(ui.HDR_checkBox, SIGNAL(stateChanged(int)),
             ui.naZStackWidget, SLOT(setHDRCheckState(int)));
+    connect(ui.naZStackWidget, SIGNAL(changedHDRCheckState(bool)),
+            ui.gammaWidget_Zstack, SLOT(setVisible(bool)));
+    connect(ui.gammaWidget_Zstack, SIGNAL(gammaBrightnessChanged(double)),
+            ui.naZStackWidget, SLOT(setGammaBrightness(double)));
     connect(ui.HDRRed_pushButton, SIGNAL(clicked()),
             ui.naZStackWidget, SLOT(setRedChannel()));
     connect(ui.HDRGreen_pushButton, SIGNAL(clicked()),
@@ -314,7 +319,8 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
         connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(bool)), annotationSession, SLOT(showAllNeurons(bool)));
         connect(annotationSession, SIGNAL(neuronMaskStatusSet()), ui.v3dr_glwidget, SLOT(updateAnnotationModels()));
         connect(annotationSession, SIGNAL(neuronMaskStatusSet()), this, SLOT(updateAnnotationModels()));
-	
+        connect(annotationSession, SIGNAL(scrollBarFocus(int)), ui.scrollArea->horizontalScrollBar(), SLOT(setValue(int)));
+
     return true;
 }
 

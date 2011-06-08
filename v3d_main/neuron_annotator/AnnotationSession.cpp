@@ -256,6 +256,7 @@ void AnnotationSession::showSelectedNeuron(bool background)
     }
 
     emit neuronMaskStatusSet();
+    emit scrollBarFocus(index);
 }
 
 // show all neurons
@@ -283,5 +284,6 @@ void AnnotationSession::showAllNeurons(bool background)
     }
 
     emit neuronMaskStatusSet();
+    emit scrollBarFocus(1);
 }
 

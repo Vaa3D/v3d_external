@@ -18,8 +18,6 @@ template <class T> QPixmap getXYPlane(const T * pdata, V3DLONG sx, V3DLONG sy, V
 {
     QImage tmpimg = QImage(sx, sy, QImage::Format_RGB32);
 
-    // qDebug()<<curz;
-
     int tr,tg,tb;
 
     V3DLONG i,j;
@@ -131,12 +129,15 @@ NaZStackWidget::NaZStackWidget(QWidget * parent)
     bMouseCurorIn = false;
     bMouseDone = false;
 
+    for(int i=0; i<5; i++)
+        recMousePos[i] = false;
+
     m_square_pos.setX(sx/2);
     m_square_pos.setY(sy/2);
     cr = 25;
 
-    // initHDRViewer(imgsz, data1d, datatype);
     cur_c = COLOR_RED;
+    pre_c = cur_c;
     setFocusPolicy(Qt::ClickFocus);
 
     connect(this, SIGNAL(curColorChannelChanged(NaZStackWidget::Color)), this, SLOT(do_HDRfilter()));
@@ -147,13 +148,10 @@ NaZStackWidget::~NaZStackWidget() {}
 
 void NaZStackWidget::paintEvent(QPaintEvent *event)
 {
-    // qDebug()<<"painting ...";
-
     QPainter painter(this);
     //painter.save()
 
     // Color background black
-
     painter.fillRect(0, 0, width(), height(), Qt::black);
 
     painter.setRenderHint(QPainter::Antialiasing);
@@ -172,24 +170,13 @@ void NaZStackWidget::paintEvent(QPaintEvent *event)
     image_focus_x = sx/2;
     image_focus_y = sy/2;
 
-//      float cx = 0.45*(float)dispwidth/dispscale;
-//      float cy = 0.45*(float)dispheight/dispscale;
-//
-//      QPointF center(cx, cy);
-    // QPointF center(width()/2, height()/2);
-
     painter.translate(width()/2 - scale_x*image_focus_x, height()/2 - scale_y*image_focus_y);
-    // painter.translate(center);
     painter.scale(scale_x, scale_y);
-    //painter.translate(-center);
-    // painter.translate(width()/2 - scale_x * image_focus_x, height()/2 - scale_y * image_focus_y);
-
-//      float translate_px = cx-(float)dispwidth/2.0;
-//      float translate_py = cy-(float)dispheight/2.0;
 
     painter.drawPixmap(0, 0, pixmap);
 
-    if(!runHDRFILTER) return; //
+    if(!runHDRFILTER) return; // Z Stack
+
     // ROI
     drawROI(&painter);
 }
@@ -232,8 +219,6 @@ void NaZStackWidget::drawROI(QPainter *painter)
     }
     else
     {
-        // qDebug()<<"initial a square roi ...";
-
         // init a square
         cx = sx/2;
         cy = sy/2;
@@ -312,10 +297,6 @@ void NaZStackWidget::mouseRightButtonPressEvent(QMouseEvent *e) // mouse right b
         startMousePosR = e->pos(); //
 
         startMousePosR = viewportXYToImageXY(startMousePosR);
-        // startMousePosR.setX( startMousePosR.x()/scale_x );
-        // startMousePosR.setY( startMousePosR.y()/scale_y );
-
-        // qDebug()<<"right press ..."<< startMousePosR.x() << startMousePosR.y();
 
         setCursor(Qt::CrossCursor);
         update();
@@ -344,7 +325,7 @@ void NaZStackWidget::setCurrentZSlice(int slice) {
         updatePixmap();
     }
     update();
-    // qDebug("Z slice updated");
+
     emit curZsliceChanged(slice);
 }
 
@@ -358,7 +339,6 @@ void NaZStackWidget::wheelEvent(QWheelEvent * e) // mouse wheel
     // Some mouse wheels have a finer scroll increment; at least move a bit.
     if ((e->delta() != 0) && (numTicks == 0))
         numTicks = e->delta() > 0 ? 1 : -1;
-    // qDebug() << "number of ticks = " << numTicks;
 
     setCurrentZSlice(getCurrentZSlice() + numTicks);
 }
@@ -393,11 +373,6 @@ void NaZStackWidget::mouseMoveEvent (QMouseEvent * e) // mouse move
             {
                 curMousePosR.setY(sy);
             }
-
-            // curMousePosR.setX( curMousePosR.x()/scale_x );
-            // curMousePosR.setY( curMousePosR.y()/scale_y );
-
-            // qDebug()<<"right press move ..."<< curMousePosR.x() << curMousePosR.y();
         }
 
         if(b_mouseleft)
@@ -424,9 +399,6 @@ void NaZStackWidget::mouseMoveEvent (QMouseEvent * e) // mouse move
             {
                 curMousePosL.setY(sy);
             }
-
-            // curMousePosL.setX( curMousePosL.x()/scale_x );
-            // curMousePosL.setY( curMousePosL.y()/scale_y );
 
             setSquarePos(curMousePosL + m_offset);
         }
@@ -479,11 +451,6 @@ void NaZStackWidget::mouseReleaseEvent(QMouseEvent * e) // mouse button release
                 endMousePosR.setY(sy);
             }
 
-            // endMousePosR.setX( endMousePosR.x()/scale_x );
-            // endMousePosR.setY( endMousePosR.y()/scale_y );
-
-            // qDebug()<<"right release ..."<< endMousePosR.x() << endMousePosR.y();
-
             // adjust pos
             float top_x, top_y, bottom_x, bottom_y;
 
@@ -507,8 +474,6 @@ void NaZStackWidget::mouseReleaseEvent(QMouseEvent * e) // mouse button release
 
             bMouseDone = true;
 
-            // qDebug()<<"x, y ..."<<startMousePos.x()<<startMousePos.y()<<endMousePos.x()<<endMousePos.y();
-
             //
             b_mouseright = false;
             if (old_cr != cr) emit boxSizeChanged(cr);
@@ -531,7 +496,6 @@ void NaZStackWidget::mouseReleaseEvent(QMouseEvent * e) // mouse button release
 
 void NaZStackWidget::setSquarePos(const QPointF &pos)
 {
-    // qDebug() << "square pos = " << pos.x() << ", " << pos.y();
     const QRect oldRect = rectangle_around(m_square_pos).toAlignedRect();
     m_square_pos = pos;
 
@@ -607,6 +571,24 @@ void NaZStackWidget::do_HDRfilter()
     if (!pData1d) return;
     if(!runHDRFILTER) return;
 
+    // record previous color channel ROI
+    recMousePos[pre_c-1] = true;
+    recStartMousePos[pre_c-1].setX( startMousePos.x() );
+    recStartMousePos[pre_c-1].setY( startMousePos.y() );
+
+    recEndMousePos[pre_c-1].setX( endMousePos.x() );
+    recEndMousePos[pre_c-1].setY( endMousePos.y() );
+
+    if(recMousePos[cur_c-1])
+    {
+        startMousePos.setX(recStartMousePos[cur_c-1].x());
+        startMousePos.setY(recStartMousePos[cur_c-1].y());
+
+        endMousePos.setX(recEndMousePos[cur_c-1].x());
+        endMousePos.setY(recEndMousePos[cur_c-1].y());
+    }
+
+    //
     start_x = startMousePos.x()-1;
     end_x = endMousePos.x()-1;
 
@@ -741,6 +723,25 @@ void NaZStackWidget::updatePixmap()
     }
     else{
         pixmap = getXYPlane((float *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img);
+
+        QImage tmpimg = pixmap.toImage();
+
+        for(int j=0; j<pixmap.height(); j++)
+        {
+            for(int i=0; i<pixmap.width(); i++)
+            {
+                QRgb qrgb = tmpimg.pixel(i, j);
+
+                int tr = (int)((brightnessCalibrator.getCorrectedIntensity((float)(qRed(qrgb))) * 255.0f) + 0.4999);
+                int tg = (int)((brightnessCalibrator.getCorrectedIntensity((float)(qGreen(qrgb))) * 255.0f) + 0.4999);
+                int tb = (int)((brightnessCalibrator.getCorrectedIntensity((float)(qBlue(qrgb))) * 255.0f) + 0.4999);
+
+                tmpimg.setPixel(i, j, qRgb(tr, tg, tb));
+
+            }
+        }
+
+        pixmap = QPixmap::fromImage(tmpimg);
     }
     update();
 }
@@ -872,6 +873,7 @@ void NaZStackWidget::setColorChannel(NaZStackWidget::Color col)
     // Ensure there are enough channels to support this color
     if ( (int)col > sc )
         return; // outside of range of available color channels
+    pre_c = cur_c;
     cur_c = col;
     copydata2disp();
     emit curColorChannelChanged(col);
@@ -906,10 +908,23 @@ void NaZStackWidget::annotationModelUpdate(QString updateType) {
 void NaZStackWidget::setHDRCheckState(int state) {
     if(state){
         runHDRFILTER = true;
+        emit changedHDRCheckState(false); // hide gamma widget
     }
     else{
         runHDRFILTER = false;
+        emit changedHDRCheckState(true); // show gamma widget
     }
+
+    updatePixmap();
+}
+
+void NaZStackWidget::setGammaBrightness(double gamma)
+{
+    if (gamma == brightnessCalibrator.getGamma()) return;
+    brightnessCalibrator.setGamma(gamma);
+
+    updatePixmap();
+
 }
 
 

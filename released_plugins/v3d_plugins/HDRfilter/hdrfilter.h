@@ -224,7 +224,7 @@ signals:
 	
 public slots:
 	void update()
-	{
+        {
 		cur_z = pNaZW->getCurrentZSlice();	
 		
 		viewGroup->setTitle(QString("z %1/%2 x %3 y %4").arg(cur_z+1).arg(sz).arg(sx).arg(sy));
@@ -239,8 +239,8 @@ public slots:
 	{
 		cur_z = sb_z->value()-1;
 		pNaZW->setCurrentZSlice(cur_z);
-		
-		pNaZW->do_HDRfilter_zslice();
+
+                pNaZW->do_HDRfilter_zslice();
 		
 		update();
 	}
