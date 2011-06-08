@@ -4,8 +4,11 @@ CONFIG       += plugin warning_off
 #CONFIG	     += X86_64 
 INCLUDEPATH  += ../../../v3d_main/basic_c_fun
 HEADERS       = partial_align_plugin.h
+HEADERS      += myfeature.h
+HEADERS      += partial_align_gui.h
 SOURCES       = partial_align_plugin.cpp
-SOURCES      += ../../../v3d_main/basic_c_fun/v3d_message.h
+SOURCES      += myfeature.cpp
+SOURCES      += ../../../v3d_main/basic_c_fun/v3d_message.cpp
 TARGET        = $$qtLibraryTarget(partial_align)
 DESTDIR       = ~/Applications/v3d/plugins/partial_align/
 

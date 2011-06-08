@@ -3,7 +3,7 @@
 #define EXTRAFILTERSPLUGIN_H
 
 
-#include <v3d_interface.h>
+#include "v3d_interface.h"
 
 class PartialAlignPlugin : public QObject, public V3DPluginInterface2_1
 {
