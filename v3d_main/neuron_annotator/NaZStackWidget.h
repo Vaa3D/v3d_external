@@ -143,7 +143,7 @@ protected:
     V3DLONG cur_x, cur_y, cur_z, cur_c, pre_c;
     ImagePixelType datatype;
 
-    float *pDispData1d; // display
+    void *pDispData1d; // display
     void *pData1d; // ori
 
     QPixmap pixmap;
