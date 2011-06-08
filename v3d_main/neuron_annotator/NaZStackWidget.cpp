@@ -692,15 +692,13 @@ void NaZStackWidget::copydata2disp()
 
         V3DLONG offset_c = ic*pagesz;
 
-        for(V3DLONG i=0; i<pagesz; i++)
-        {
-            V3DLONG idx = offset_c + i;
-            pDispData1d[idx] = pData1d[idx];
-        }
-
         if(recCopy==0)
         {
-            recCopy++;
+            for(V3DLONG i=0; i<pagesz; i++)
+            {
+                V3DLONG idx = offset_c + i;
+                pDispData1d[idx] = pData1d[idx];
+            }
 
             min_roi[ic] = min_img[ic];
             max_roi[ic] = max_img[ic];
@@ -708,6 +706,7 @@ void NaZStackWidget::copydata2disp()
         }
 
     }
+    recCopy++;
 }
 
 // update pixelmap
@@ -864,7 +863,7 @@ void NaZStackWidget::setColorChannel(NaZStackWidget::Color col)
         return; // outside of range of available color channels
     pre_c = cur_c;
     cur_c = col;
-    copydata2disp();
+    //copydata2disp();
     emit curColorChannelChanged(col);
     update();
 }

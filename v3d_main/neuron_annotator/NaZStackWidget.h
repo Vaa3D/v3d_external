@@ -86,7 +86,7 @@ public:
 public slots:
     void do_HDRfilter();
     void do_HDRfilter_zslice();
-    void copydata2disp();
+    void copydata2disp(); // legacy func
     void updatePixmap();
     void setRedChannel();
     void setGreenChannel();
