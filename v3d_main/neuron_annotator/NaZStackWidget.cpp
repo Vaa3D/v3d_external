@@ -618,7 +618,18 @@ void NaZStackWidget::do_HDRfilter()
         {
             V3DLONG idx = offset_j + i;
 
-            float curval = pData1d[idx];
+            float curval;
+
+            if(datatype = V3D_UINT8)
+                curval = (float)( ((unsigned char*)pData1d)[idx] );
+            else if(datatype = V3D_UINT16)
+                curval = (float)( ((short int*)pData1d)[idx] );
+            else if(datatype = V3D_FLOAT32)
+                curval = (float)( ((float*)pData1d)[idx] );
+            else {
+                printf("Datatype is not supported.\n");
+                return;
+            }
 
             if(min_roi[c]>curval) min_roi[c] = curval;
             if(max_roi[c]<curval) max_roi[c] = curval;
@@ -661,7 +672,18 @@ void NaZStackWidget::do_HDRfilter_zslice()
     {
         V3DLONG idx = offset_c + offset_z + i;
 
-        float curval = pData1d[idx];
+        float curval;
+
+        if(datatype = V3D_UINT8)
+            curval = (float)( ((unsigned char*)pData1d)[idx] );
+        else if(datatype = V3D_UINT16)
+            curval = (float)( ((short int*)pData1d)[idx] );
+        else if(datatype = V3D_FLOAT32)
+            curval = (float)( ((float*)pData1d)[idx] );
+        else {
+            printf("Datatype is not supported.\n");
+            return;
+        }
 
         if(curval<min_roi[c])
         {
@@ -697,7 +719,17 @@ void NaZStackWidget::copydata2disp()
             for(V3DLONG i=0; i<pagesz; i++)
             {
                 V3DLONG idx = offset_c + i;
-                pDispData1d[idx] = pData1d[idx];
+
+                if(datatype = V3D_UINT8)
+                    pDispData1d[idx] = (float)( ((unsigned char*)pData1d)[idx] );
+                else if(datatype = V3D_UINT16)
+                    pDispData1d[idx] = (float)( ((short int*)pData1d)[idx] );
+                else if(datatype = V3D_FLOAT32)
+                    pDispData1d[idx] = (float)( ((float*)pData1d)[idx] );
+                else {
+                    printf("Datatype is not supported.\n");
+                    return;
+                }
             }
 
             min_roi[ic] = min_img[ic];
@@ -716,7 +748,17 @@ void NaZStackWidget::updatePixmap()
         pixmap = getXYPlane((float *)pDispData1d, sx, sy, sz, sc, cur_z, max_roi, min_roi);
     }
     else{
-        pixmap = getXYPlane((float *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img);
+
+        if(datatype = V3D_UINT8)
+            pixmap = getXYPlane((unsigned char *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img);
+        else if(datatype = V3D_UINT16)
+            pixmap = getXYPlane((short int *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img);
+        else if(datatype = V3D_FLOAT32)
+            pixmap = getXYPlane((float *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img);
+        else {
+            printf("Datatype is not supported.\n");
+            return;
+        }
 
         QImage tmpimg = pixmap.toImage();
 
@@ -768,18 +810,13 @@ void NaZStackWidget::initHDRViewer(const V3DLONG *imgsz, const unsigned char *da
 
     try
     {
-        float *pFloatData = new float [imagesz];
         pDispData1d = new float [imagesz];
 
         if(datatype == V3D_UINT8)
         {
-            converting<unsigned char, float>((unsigned char *)data1d, pFloatData, imagesz);
+            pData1d = (void *)data1d;
 
-            // if(data1d) {delete []data1d; data1d = NULL;}
-
-            pData1d = pFloatData; // keep original data in float datatype
-
-            converting<float, float>(pData1d, pDispData1d, imagesz); // copy data
+            converting<unsigned char, float>((unsigned char *)pData1d, pDispData1d, imagesz); // copy data
 
             // min_max
             for (V3DLONG c=0; c<sc; c++)
@@ -790,8 +827,10 @@ void NaZStackWidget::initHDRViewer(const V3DLONG *imgsz, const unsigned char *da
                 V3DLONG offset_c = c*pagesz;
                 for(V3DLONG i=0; i<pagesz; i++)
                 {
-                    if(min_img[c]>pFloatData[i+offset_c]) min_img[c] = pFloatData[i+offset_c];
-                    if(max_img[c]<pFloatData[i+offset_c]) max_img[c] = pFloatData[i+offset_c];
+                    float val = (float)( data1d[i+offset_c] );
+
+                    if(min_img[c]>val) min_img[c] = val;
+                    if(max_img[c]<val) max_img[c] = val;
                 }
                 scale_img[c] = max_img[c] - min_img[c];
 
@@ -800,7 +839,7 @@ void NaZStackWidget::initHDRViewer(const V3DLONG *imgsz, const unsigned char *da
                 scale_roi[c] = scale_img[c];
             }
 
-            pixmap = getXYPlane((float *)pFloatData, sx, sy, sz, sc, cur_z, max_img, min_img); // initial focus plane
+            pixmap = getXYPlane((unsigned char *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img); // initial focus plane
 
             update();
             // repaint();
@@ -808,13 +847,9 @@ void NaZStackWidget::initHDRViewer(const V3DLONG *imgsz, const unsigned char *da
         }
         else if(datatype == V3D_UINT16)
         {
-            converting<unsigned short, float>((unsigned short *)data1d, pFloatData, imagesz);
+            pData1d = (void *)data1d;
 
-            // if(data1d) {delete []data1d; data1d = NULL;}
-
-            pData1d = pFloatData; // keep original data in float datatype
-
-            converting<float, float>(pData1d, pDispData1d, imagesz); // copy data
+            converting<short int, float>((short int *)pData1d, pDispData1d, imagesz); // copy data
 
             // min_max
             for (V3DLONG c=0; c<sc; c++)
@@ -825,8 +860,10 @@ void NaZStackWidget::initHDRViewer(const V3DLONG *imgsz, const unsigned char *da
                 V3DLONG offset_c = c*pagesz;
                 for(V3DLONG i=0; i<pagesz; i++)
                 {
-                    if(min_img[c]>pFloatData[i+offset_c]) min_img[c] = pFloatData[i+offset_c];
-                    if(max_img[c]<pFloatData[i+offset_c]) max_img[c] = pFloatData[i+offset_c];
+                    float val = (float)( data1d[i+offset_c] );
+
+                    if(min_img[c]>val) min_img[c] = val;
+                    if(max_img[c]<val) max_img[c] = val;
                 }
                 scale_img[c] = max_img[c] - min_img[c];
 
@@ -836,7 +873,7 @@ void NaZStackWidget::initHDRViewer(const V3DLONG *imgsz, const unsigned char *da
 
             }
 
-            pixmap = getXYPlane((float *)pFloatData, sx, sy, sz, sc, cur_z, max_img, min_img); // initial focus plane
+            pixmap = getXYPlane((short int *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img); // initial focus plane
 
             update();
             // repaint();
@@ -844,9 +881,35 @@ void NaZStackWidget::initHDRViewer(const V3DLONG *imgsz, const unsigned char *da
         }
         else if(datatype == V3D_FLOAT32)
         {
-            converting<float, float>((float *)data1d, pFloatData, imagesz);
+            pData1d = (void *)data1d;
 
-            // if(data1d) {delete []data1d; data1d = NULL;}
+            converting<float, float>((float *)pData1d, pDispData1d, imagesz); // copy data
+
+            // min_max
+            for (V3DLONG c=0; c<sc; c++)
+            {
+                min_img[c] = INF;
+                max_img[c] = -INF;
+
+                V3DLONG offset_c = c*pagesz;
+                for(V3DLONG i=0; i<pagesz; i++)
+                {
+                    float val = (float)( data1d[i+offset_c] );
+
+                    if(min_img[c]>val) min_img[c] = val;
+                    if(max_img[c]<val) max_img[c] = val;
+                }
+                scale_img[c] = max_img[c] - min_img[c];
+
+                min_roi[c] = min_img[c];
+                max_roi[c] = max_img[c];
+                scale_roi[c] = scale_img[c];
+
+            }
+
+            pixmap = getXYPlane((float *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img); // initial focus plane
+
+            update();
         }
 
     }

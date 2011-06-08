@@ -144,7 +144,7 @@ protected:
     ImagePixelType datatype;
 
     float *pDispData1d; // display
-    float *pData1d; // ori
+    void *pData1d; // ori
 
     QPixmap pixmap;
 
