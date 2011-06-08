@@ -130,17 +130,23 @@ NaZStackWidget::NaZStackWidget(QWidget * parent)
     bMouseDone = false;
 
     for(int i=0; i<5; i++)
+    {
         recMousePos[i] = false;
+        recZ[i] = 0;
+    }
 
     m_square_pos.setX(sx/2);
     m_square_pos.setY(sy/2);
     cr = 25;
 
+    recNum = 0;
+    recCopy = 0;
+
     cur_c = COLOR_RED;
     pre_c = cur_c;
     setFocusPolicy(Qt::ClickFocus);
 
-    connect(this, SIGNAL(curColorChannelChanged(NaZStackWidget::Color)), this, SLOT(do_HDRfilter()));
+    connect(this, SIGNAL(curColorChannelChanged(NaZStackWidget::Color)), this, SLOT(updateHDRView()));
     connect(this, SIGNAL(roiChanged()), this, SLOT(updatePixmap()));
 }
 
@@ -183,7 +189,7 @@ void NaZStackWidget::paintEvent(QPaintEvent *event)
 
 void NaZStackWidget::drawROI(QPainter *painter)
 {
-    if (bMouseCurorIn)
+    if (bMouseCurorIn || recNum)
     {
         painter->setPen(Qt::yellow );
         painter->setBrush(Qt::NoBrush);
@@ -277,8 +283,6 @@ void NaZStackWidget::mouseLeftButtonPressEvent(QMouseEvent *e) // mouse left but
                 m_offset = square.center() - startMousePosL;
             }
 
-            // qDebug()<<"left press ..."<< startMousePosL.x() << startMousePosL.y();
-
             setCursor(Qt::CrossCursor);
             update();
         }
@@ -317,13 +321,14 @@ void NaZStackWidget::setCurrentZSlice(int slice) {
     if (cur_z == slice - 1) return; // no change; ignore
     cur_z = slice - 1;
 
-    if(runHDRFILTER){
-        do_HDRfilter();
-        do_HDRfilter_zslice();
-    }
-    else{
-        updatePixmap();
-    }
+//    if(runHDRFILTER){
+//        do_HDRfilter();
+//        do_HDRfilter_zslice();
+//    }
+//    else{
+//        updatePixmap();
+//    }
+    updatePixmap();
     update();
 
     emit curZsliceChanged(slice);
@@ -534,6 +539,8 @@ bool NaZStackWidget::checkROIchanged()
 {
     bool flag = false;
 
+    recordColorChannelROIPos();
+
     if(start_x != startMousePos.x()-1)
     {
         start_x = startMousePos.x()-1;
@@ -570,23 +577,6 @@ void NaZStackWidget::do_HDRfilter()
     if (cur_c > 3) return;
     if (!pData1d) return;
     if(!runHDRFILTER) return;
-
-    // record previous color channel ROI
-    recMousePos[pre_c-1] = true;
-    recStartMousePos[pre_c-1].setX( startMousePos.x() );
-    recStartMousePos[pre_c-1].setY( startMousePos.y() );
-
-    recEndMousePos[pre_c-1].setX( endMousePos.x() );
-    recEndMousePos[pre_c-1].setY( endMousePos.y() );
-
-    if(recMousePos[cur_c-1])
-    {
-        startMousePos.setX(recStartMousePos[cur_c-1].x());
-        startMousePos.setY(recStartMousePos[cur_c-1].y());
-
-        endMousePos.setX(recEndMousePos[cur_c-1].x());
-        endMousePos.setY(recEndMousePos[cur_c-1].y());
-    }
 
     //
     start_x = startMousePos.x()-1;
@@ -641,14 +631,14 @@ void NaZStackWidget::do_HDRfilter()
     do_HDRfilter_zslice();
 
     // restore roi min max
-    for(V3DLONG ic=0; ic<sc; ic++)
-    {
-        if(ic==c) continue;
+//    for(V3DLONG ic=0; ic<sc; ic++)
+//    {
+//        if(ic==c) continue;
 
-        min_roi[ic] = min_img[ic];
-        max_roi[ic] = max_img[ic];
-        scale_roi[ic] = scale_img[ic];
-    }
+//        min_roi[ic] = min_img[ic];
+//        max_roi[ic] = max_img[ic];
+//        scale_roi[ic] = scale_img[ic];
+//    }
 
     //
     emit roiChanged();
@@ -708,9 +698,14 @@ void NaZStackWidget::copydata2disp()
             pDispData1d[idx] = pData1d[idx];
         }
 
-        min_roi[ic] = min_img[ic];
-        max_roi[ic] = max_img[ic];
-        scale_roi[ic] = scale_img[ic];
+        if(recCopy==0)
+        {
+            recCopy++;
+
+            min_roi[ic] = min_img[ic];
+            max_roi[ic] = max_img[ic];
+            scale_roi[ic] = scale_img[ic];
+        }
 
     }
 }
@@ -777,9 +772,6 @@ void NaZStackWidget::initHDRViewer(const V3DLONG *imgsz, const unsigned char *da
         float *pFloatData = new float [imagesz];
         pDispData1d = new float [imagesz];
 
-        //
-        // qDebug()<<"run HDR filtering ...";
-
         if(datatype == V3D_UINT8)
         {
             converting<unsigned char, float>((unsigned char *)data1d, pFloatData, imagesz);
@@ -807,8 +799,6 @@ void NaZStackWidget::initHDRViewer(const V3DLONG *imgsz, const unsigned char *da
                 min_roi[c] = min_img[c];
                 max_roi[c] = max_img[c];
                 scale_roi[c] = scale_img[c];
-
-                // qDebug()<<"max min ..."<<max_img[c] << min_img[c];
             }
 
             pixmap = getXYPlane((float *)pFloatData, sx, sy, sz, sc, cur_z, max_img, min_img); // initial focus plane
@@ -845,7 +835,6 @@ void NaZStackWidget::initHDRViewer(const V3DLONG *imgsz, const unsigned char *da
                 max_roi[c] = max_img[c];
                 scale_roi[c] = scale_img[c];
 
-                // qDebug()<<"max min ..."<<max_img[c] << min_img[c];
             }
 
             pixmap = getXYPlane((float *)pFloatData, sx, sy, sz, sc, cur_z, max_img, min_img); // initial focus plane
@@ -881,14 +870,17 @@ void NaZStackWidget::setColorChannel(NaZStackWidget::Color col)
 }
 
 void NaZStackWidget::setRedChannel() {
+    recNum = 0;
     setColorChannel(COLOR_RED);
 }
 
 void NaZStackWidget::setGreenChannel() {
+    recNum = 0;
     setColorChannel(COLOR_GREEN);
 }
 
 void NaZStackWidget::setBlueChannel() {
+    recNum = 0;
     setColorChannel(COLOR_BLUE);
 }
 
@@ -918,13 +910,69 @@ void NaZStackWidget::setHDRCheckState(int state) {
     updatePixmap();
 }
 
-void NaZStackWidget::setGammaBrightness(double gamma)
-{
+void NaZStackWidget::setGammaBrightness(double gamma){
     if (gamma == brightnessCalibrator.getGamma()) return;
     brightnessCalibrator.setGamma(gamma);
 
     updatePixmap();
+}
+
+// record previous color channel ROI
+void NaZStackWidget::recordColorChannelROIPos(){
+
+    if(recNum<1){
+        recNum++;
+
+        if(pre_c!=cur_c)
+        {
+            recMousePos[pre_c-1] = true;
+
+            recStartMousePos[pre_c-1].setX( startMousePos.x() );
+            recStartMousePos[pre_c-1].setY( startMousePos.y() );
+
+            recEndMousePos[pre_c-1].setX( endMousePos.x() );
+            recEndMousePos[pre_c-1].setY( endMousePos.y() );
+
+            recCr[pre_c-1] = cr;
+            recZ[pre_c-1] = cur_z;
+        }
+
+        if(recMousePos[cur_c-1])
+        {
+            cr = recCr[cur_c-1];
+            cur_z = recZ[cur_c-1];
+
+            startMousePos.setX(recStartMousePos[cur_c-1].x());
+            startMousePos.setY(recStartMousePos[cur_c-1].y());
+
+            endMousePos.setX(recEndMousePos[cur_c-1].x());
+            endMousePos.setY(recEndMousePos[cur_c-1].y());
+        }
+
+        start_x = startMousePos.x()-1;
+        end_x = endMousePos.x()-1;
+
+        start_y = startMousePos.y()-1;
+        end_y = endMousePos.y()-1;
+
+        m_square_pos.setX( startMousePos.x() + (endMousePos.x() - startMousePos.x())/2 );
+        m_square_pos.setY( startMousePos.y() + (endMousePos.y() - startMousePos.y())/2 );
+
+        int old_cr = cr;
+        cr = qMax((endMousePos.x() - startMousePos.x())/2, (endMousePos.y() - startMousePos.y())/2);
+    }
 
 }
 
+void NaZStackWidget::updateHDRView(){
 
+    if( checkROIchanged() )
+    {
+        do_HDRfilter();
+    }
+    else
+    {
+        do_HDRfilter_zslice();
+        updatePixmap();
+    }
+}

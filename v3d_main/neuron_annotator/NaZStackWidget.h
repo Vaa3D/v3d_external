@@ -80,7 +80,8 @@ public:
         return QPointF(vx, vy);
     }
 	
-        void initHDRViewer(const V3DLONG *imgsz, const unsigned char *data1d, ImagePixelType imgdatatype);
+    void initHDRViewer(const V3DLONG *imgsz, const unsigned char *data1d, ImagePixelType imgdatatype);
+    void recordColorChannelROIPos();
 
 public slots:
     void do_HDRfilter();
@@ -96,6 +97,7 @@ public slots:
     void setHDRCheckState(int state);
 
     void setGammaBrightness(double gamma);
+    void updateHDRView();
 
 signals:
     void roiChanged();
@@ -126,7 +128,9 @@ protected:
     float translateMouse_scale;
 
     QPoint recStartMousePos[5], recEndMousePos[5]; //
-    bool recMousePos[5];
+    bool recMousePos[5], recCr[5];
+    int recNum, recCopy;
+    V3DLONG recZ[5];
 
     QPointF m_square_pos;
     QPointF m_offset;
