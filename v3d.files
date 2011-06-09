@@ -2306,7 +2306,6 @@ v3d_main/neuron_annotator/NaZStackWidget.cpp
 v3d_main/neuron_annotator/NaZStackWidget.h
 v3d_main/neuron_annotator/NaLargeMIPWidget.cpp
 v3d_main/neuron_annotator/NaLargeMIPWidget.h
-v3d_main/webservice
 v3d_main/webservice/v3dwebservice.hpp
 v3d_main/webservice/v3dwebservice_conf.h
 v3d_main/webservice/v3dwebserver.h
