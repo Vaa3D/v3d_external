@@ -42,6 +42,7 @@ NaMainWindow::NaMainWindow()
 
     // Wire up Z-stack / HDR viewer
     ui.HDR_checkBox->setChecked(true);
+    ui.naZStackWidget->setHDRCheckState(true);
     ui.gammaWidget_Zstack->hide();
     connect(ui.HDR_checkBox, SIGNAL(stateChanged(int)),
             ui.naZStackWidget, SLOT(setHDRCheckState(int)));
