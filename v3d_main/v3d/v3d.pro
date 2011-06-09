@@ -210,7 +210,6 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/TimebasedIdentifierGenerator.h \
     ../neuron_annotator/RendererNeuronAnnotator.h \
     ../neuron_annotator/GalleryButton.h \
-    ../neuron_annotator/CellCounter3D.h \
     ../neuron_annotator/geometry/Vector3D.h \
     ../neuron_annotator/geometry/Rotation3D.h \
     ../neuron_annotator/geometry/CameraModel.h \
@@ -225,6 +224,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
 	../webservice/soapdep/soapH.h \
 	../webservice/soapdep/soapStub.h \
 	../webservice/soapdep/soapv3dwebserverService.h \
+    ../cell_counter/CellCounter3D.h \
     colormap.h \
     rotate_image.h \
     dialog_rotate.h \
@@ -324,7 +324,6 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/TimebasedIdentifierGenerator.cpp \
     ../neuron_annotator/RendererNeuronAnnotator.cpp \
     ../neuron_annotator/GalleryButton.cpp \
-    ../neuron_annotator/CellCounter3D.cpp \
     ../neuron_annotator/geometry/Vector3D.cpp \
     ../neuron_annotator/geometry/Rotation3D.cpp \
     ../neuron_annotator/geometry/CameraModel.cpp \
@@ -337,6 +336,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
 	../webservice/gsoap2/stdsoap2.cpp \
 	../webservice/soapdep/soapC.cpp \
 	../webservice/soapdep/soapv3dwebserverService.cpp \
+    ../cell_counter/CellCounter3D.cpp \
     main.cpp \
     mainwindow.cpp \
     mainwindow_interface.cpp \

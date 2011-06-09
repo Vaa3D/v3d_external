@@ -2333,8 +2333,6 @@ released_plugins/v3d_plugins/HDRfilter/hdrfilter_gui.h
 released_plugins/v3d_plugins/HDRfilter/hdrfilter.cpp
 v3d_main/neuron_annotator/NaViewer.h
 v3d_main/neuron_annotator/NaViewer.cpp
-v3d_main/neuron_annotator/CellCounter3D.h
-v3d_main/neuron_annotator/CellCounter3D.cpp
 v3d_main/neuron_annotator/geometry/Rotation3D.h
 v3d_main/neuron_annotator/geometry/Rotation3D.cpp
 v3d_main/neuron_annotator/geometry/Vector3D.h
@@ -2375,3 +2373,6 @@ v3d_main/neuron_annotator/gui/gamma_widget_designer_plugin/GammaWidgetPlugin.h
 v3d_main/neuron_annotator/gui/gamma_widget_designer_plugin/GammaWidgetPlugin.cpp
 v3d_main/neuron_annotator/MipLayer.h
 v3d_main/neuron_annotator/MipLayer.cpp
+v3d_main/cell_counter/CellCounter3D.cpp
+v3d_main/cell_counter/CellCounter3D.h
+
