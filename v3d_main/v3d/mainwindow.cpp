@@ -237,9 +237,9 @@ MainWindow::MainWindow()
 	procCellSeg_Gaussian_partition = 0;
 	procCellSeg_manualCorrect = 0;
 
-        // Mode
-        procModeDefault = 0;
-        procModeNeuronAnnotator = 0;
+	// Mode
+	procModeDefault = 0;
+	procModeNeuronAnnotator = 0;
 
 	setup_global_imgproc_parameter_default(); //set up the default parameter for some of the global parameters of image processing or viewing
 
@@ -757,7 +757,7 @@ V3dR_MainWindow * MainWindow::find3DViewer(QString fileName)
 	
 	if(numfind > 1)	//20110427 YuY
 	{
-		v3d_msg(QString("Too many choices. Please specify your image with whole name including absolute path and try again."), 1);
+		v3d_msg(QString("Too many windows sharing the same [partial] name. Please specify your image with whole name including absolute path and try again."), 1);
 		return 0;
 	}
 	else if(numfind == 1)
@@ -1241,71 +1241,6 @@ void MainWindow::func_procIO_import_atlas_imgfolder()
 	v3d_msg(qPrintable(fileName.prepend("The atlas linker file [").append("] has been created.")));
 }
 
-//void MainWindow::func_procIO_import_atlas_apofolder() //overload for convenience
-//{
-//	apoAtlasLinkerInfoAll apoinfo;
-//	func_procIO_import_atlas_apofolder(apoinfo);
-//}
-
-//void MainWindow::func_procIO_import_atlas_apofolder(apoAtlasLinkerInfoAll & apoinfo)
-//{
-////	QMessageBox::information(0, "Information about import pointcloud APO files to an .atlas linker file",
-////							 "To import a series of images to an .atlas linker file, these files should be put into the same folder and have the same size (X,Y,Z dimensions and number of color channels). <br><br>"
-////							 "You will be first asked to specify one of these files, and you can define a string filter of their file names.<br><br>"
-////							 "Normally these files should be aligned/registered images; but this function can also be used to produce a linker file just for screening a series of image stacks.<br><br>"
-////							 "Note that these files must be valid .tif files (or another image file format supported in V3D).<br><br>"
-////							 "You will be then asked to specify a file name of the output .atlas linker file.<br><br>"
-////							 );
-//
-//	//first load a series of annotation files and build the record
-//
-//	while (1)
-//	{
-//		PointCloudAtlas_LinkerLoadDialog d(apoinfo); //everytime create a new dialog instance, so that apoinfo becomes longer and longer
-//		int rescode = d.exec();
-//
-//		if (rescode==QDialog::Accepted)
-//		{
-//			d.fetchData(apoinfo);
-//			printf("Now apoinfo has the %d classes\n", apoinfo.items.size());
-//			break;
-//		}
-//		else if (rescode==QDialog::Rejected)
-//		{
-//			v3d_msg("The point cloud atlas linker file editing is canceled.");
-//			return; //break;
-//		}
-//		else if (rescode==2) //"2" is a special code I define in dialog_pointcloudatlas_linkerload.cpp for "add another"
-//		{
-//			d.fetchData(apoinfo);
-//			printf("Now apoinfo has the %d classes\n", apoinfo.items.size());
-//		}
-//		else
-//		{
-//			v3d_msg("invalid rescode returned in PointCloudAtlas_LinkerLoadDialog(). Check your program.");
-//			break;
-//		}
-//	}
-//
-//	//now determine the output .atlas file
-//	QString fileName = QFileDialog::getSaveFileName(this, tr("Save Atlas File"),
-//											"import.pc_atlas",
-//											tr("point cloud atlas linker file (*.pc_atlas)"));
-//    if (fileName.isEmpty())
-//	{
-//		v3d_msg("No output file is selected. Do nothing.");
-//		return;
-//	}
-//
-//	//now save the record to a pointcloud atlas file
-//
-//	if (savePointCloudAtlasInfoListToFile(qPrintable(fileName), apoinfo))
-//		v3d_msg(qPrintable(fileName.prepend("The point cloud atlas linker file [").append("] has been created.")));
-//	else
-//		v3d_msg("Fail to save the point cloud atlas file.");
-//
-//}
-//
 
 void MainWindow::openRecentFile()
 {
@@ -1654,13 +1589,19 @@ void MainWindow::updateMenus()
 
 void MainWindow::updateModeMenu()
 {
-    modeMenu->clear();
-    modeMenu->addAction(procModeDefault);
-    modeMenu->addAction(procModeNeuronAnnotator);
+	if (modeMenu)
+	{
+		modeMenu->clear();
+		modeMenu->addAction(procModeDefault);
+		modeMenu->addAction(procModeNeuronAnnotator);
+	}
 }
 
 void MainWindow::updateWindowMenu()
 {
+	if (!windowMenu)
+		return;
+		
     windowMenu->clear();
     windowMenu->addAction(closeAct);
     windowMenu->addAction(closeAllAct);
@@ -1720,6 +1661,9 @@ void MainWindow::updateWindowMenu()
 
 void MainWindow::updateProcessingMenu()
 {
+	if (!basicProcMenu || !advancedProcMenu || !visualizeProcMenu || !pluginProcMenu)
+		return;
+	
 	//for image / data basic operations
 	basicProcMenu->clear();
 	advancedProcMenu->clear();
@@ -2392,9 +2336,8 @@ void MainWindow::createMenus()
 
     menuBar()->addSeparator();
 
-    // Mode
-    viewMenu = menuBar()->addMenu(tr("View"));
-    modeMenu = viewMenu->addMenu(tr("Mode"));
+    // Work-Mode
+    modeMenu = menuBar()->addMenu(tr("Work-Mode"));
     connect(modeMenu, SIGNAL(aboutToShow()), this, SLOT(updateModeMenu()));
 
 	//

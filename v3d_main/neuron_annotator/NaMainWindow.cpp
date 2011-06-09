@@ -21,7 +21,7 @@
 #include "TimebasedIdentifierGenerator.h"
 #include "RendererNeuronAnnotator.h"
 #include "GalleryButton.h"
-#include "CellCounter3D.h"
+#include "../cell_counter/CellCounter3D.h"
 #include "NeuronSelector.h"
 
 using namespace std;
