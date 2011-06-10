@@ -12,18 +12,25 @@ public:
 	PartialAlignDialog(V3DPluginCallback &callback, QWidget *parent)
 	{
 		v3dhandleList win_list = callback.getImageWindowList();
+		int curindex = 0;
+		for(curindex = 0; curindex < win_list.size(); curindex++)
+		{
+			if(win_list[curindex] == callback.currentImageWindow()) break;
+		}
 
 		QStringList items;
 		for(int i=0; i < win_list.size(); i++) items << callback.getImageName(win_list[i]);
 
 		// create a dialog
 		combo_subject = new QComboBox(); combo_subject->addItems(items);
-		
+		combo_subject->setCurrentIndex(curindex);
+
 		label_subject = new QLabel(QObject::tr("Image 1: "));
 
 		i1 = combo_subject->currentIndex();
 
 		combo_target =  new QComboBox(); combo_target->addItems(items);
+		combo_target->setCurrentIndex(curindex);
 
 		label_target = new QLabel(QObject::tr("Image 2: "));
 
@@ -74,15 +81,15 @@ public:
 	}
 
 	~PartialAlignDialog(){}
-public slots:
-	void update()
-	{
-		i1 = combo_subject->currentIndex();
-		i2 = combo_target->currentIndex();
+	public slots:
+		void update()
+		{
+			i1 = combo_subject->currentIndex();
+			i2 = combo_target->currentIndex();
 
-		sub_c = channel_sub->text().toInt();
-		tar_c = channel_tar->text().toInt();
-	}
+			sub_c = channel_sub->text().toInt();
+			tar_c = channel_tar->text().toInt();
+		}
 
 public:
 

@@ -18,6 +18,7 @@ using namespace std;
 int calc_feature(V3DPluginCallback2 &callback, QWidget *parent, MyFeatureType type);
 int compute_gaussian(V3DPluginCallback2 &callback, QWidget *parent);
 int compute_edge_map(V3DPluginCallback2 &callback, QWidget *parent);
+int compute_edge_grid(V3DPluginCallback2 &callback, QWidget *parent);
 
 template <class T> Vol3DSimple<T> * create_vol3dsimple(T* &inimg1d, V3DLONG sz[3]);
 
@@ -34,6 +35,7 @@ QStringList PartialAlignPlugin::menulist() const
 		<< tr("calc SIFT feature")
 		<< tr("compute gaussian filtering")
 		<< tr("compute edge map")
+		<< tr("compute edge grid")
 		<< tr("about");
 }
 
@@ -62,6 +64,10 @@ void PartialAlignPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &ca
 	else if(menu_name == tr("compute edge map"))
 	{
 		compute_edge_map(callback,parent);
+	}
+	else if(menu_name == tr("compute edge grid"))
+	{
+		compute_edge_grid(callback,parent);
 	}
 	else
 	{
@@ -205,17 +211,6 @@ int compute_edge_map(V3DPluginCallback2 &callback, QWidget *parent)
 	V3DLONG sub_c = dialog.sub_c - 1;
 	V3DLONG tar_c = dialog.tar_c - 1;
 	
-	bool ok;
-	double sigma;
-	int r;
-	sigma =  QInputDialog::getDouble(parent, QObject::tr("Gaussian Filter"),
-			QObject::tr("sigma :"),
-			1.0, 0.01, 100.0, 1, &ok);
-	if(ok)
-	{
-		r = QInputDialog::getInt(parent, QObject::tr("Gaussian Filter"), QObject::tr("radius :"), 3, 3, 7, 1, &ok);
-	}
-
 	Image4DSimple *image = callback.getImage(win_list[i2]);
 
 	if(image->getCDim() < dialog.tar_c) {QMessageBox::information(0, title, QObject::tr("The channel isn't existed.")); return -1;}
@@ -229,9 +224,8 @@ int compute_edge_map(V3DPluginCallback2 &callback, QWidget *parent)
 
 	unsigned char * outimg1d = 0;
 
-	computeGaussian(outimg1d, inimg1d, sz, sigma, r);
-	inimg1d = outimg1d;
-
+	//computeGaussian(outimg1d, inimg1d, sz, sigma, r);
+	//inimg1d = outimg1d;
 	computeGradience(outimg1d, inimg1d, sz);
 
 	Image4DSimple* p4DImage = new Image4DSimple();
@@ -245,8 +239,63 @@ int compute_edge_map(V3DPluginCallback2 &callback, QWidget *parent)
 		newwin = callback.newImageWindow();
 
 	callback.setImage(newwin, p4DImage);
-	callback.setImageName(newwin, QObject::tr("Gradience Image sigma = %1, radius = %2").arg(sigma).arg(r));
+	callback.setImageName(newwin, QObject::tr("Image Gradient"));
 	callback.updateImageWindow(newwin);
+
+	return true;
+
+}
+
+int compute_edge_grid(V3DPluginCallback2 &callback, QWidget *parent)
+{
+	v3dhandleList win_list = callback.getImageWindowList();
+
+	if(win_list.size()<1)
+	{
+		QMessageBox::information(0, title, QObject::tr("No image is open."));
+		return -1;
+	}
+
+	PartialAlignDialog dialog(callback, parent);
+	dialog.combo_subject->setDisabled(true);
+	dialog.channel_sub->setDisabled(true);
+
+	if (dialog.exec()!=QDialog::Accepted) return -1;
+
+	dialog.update();
+	int i1 = dialog.combo_subject->currentIndex();
+	int i2 = dialog.combo_target->currentIndex();
+
+	V3DLONG sub_c = dialog.sub_c - 1;
+	V3DLONG tar_c = dialog.tar_c - 1;
+	
+	Image4DSimple *image = callback.getImage(win_list[i2]);
+
+	if(image->getCDim() < dialog.tar_c) {QMessageBox::information(0, title, QObject::tr("The channel isn't existed.")); return -1;}
+
+	V3DLONG sz[3];
+	sz[0] = image->getXDim();
+	sz[1] = image->getYDim();
+	sz[2] = image->getZDim();
+
+	V3DLONG gsz[3];
+	gsz[0] = 10;
+	gsz[1] = 10;
+	gsz[2] = 10;
+
+	unsigned char *inimg1d = image->getRawDataAtChannel(tar_c);
+
+	V3DLONG * grids[3];
+	computeEdgeGrid(grids, inimg1d, sz, gsz);
+
+	V3DLONG gridsnum = gsz[0] * gsz[1] * gsz[2];
+	LandmarkList newmarks;
+	for(V3DLONG i = 0; i < gridsnum; i++)
+		newmarks.push_back(LocationSimple(grids[0][i], grids[1][i], grids[2][i]));
+
+	v3dhandle curwin = callback.currentImageWindow();
+	callback.setLandmark(curwin, newmarks);
+	callback.updateImageWindow(curwin);
 
 	return true;
 
