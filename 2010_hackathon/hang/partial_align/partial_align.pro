@@ -8,11 +8,10 @@ HEADERS       = partial_align_plugin.h
 HEADERS      += myfeature.h
 HEADERS      += partial_align_gui.h
 HEADERS      += compute_moments.h
+HEADERS      += edge_detection.h
 HEADERS      += ../../../v3d_main/basic_c_fun/v3d_interface.h
 HEADERS      += ../../../v3d_main/basic_c_fun/img_definition.h
 HEADERS      += ../../../v3d_main/basic_c_fun/v3d_basicdatatype.h
-HEADERS      += ../../../v3d_main/jba/c++/jba_mainfunc.h
-HEADERS      += ../../../v3d_main/jba/c++/wkernel.h
 
 SOURCES       = partial_align_plugin.cpp
 SOURCES      += ../../../v3d_main/basic_c_fun/v3d_message.cpp

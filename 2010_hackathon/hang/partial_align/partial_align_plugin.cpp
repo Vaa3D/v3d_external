@@ -12,9 +12,12 @@
 #include "partial_align_gui.h"
 
 #include "myfeature.h"
+#include "edge_detection.h"
 using namespace std;
 
 int calc_feature(V3DPluginCallback2 &callback, QWidget *parent, MyFeatureType type);
+int compute_gaussian(V3DPluginCallback2 &callback, QWidget *parent);
+int compute_edge_map(V3DPluginCallback2 &callback, QWidget *parent);
 
 template <class T> Vol3DSimple<T> * create_vol3dsimple(T* &inimg1d, V3DLONG sz[3]);
 
@@ -29,6 +32,8 @@ QStringList PartialAlignPlugin::menulist() const
 		<< tr("calc standard variance feature")
 		<< tr("calc invariant methods feature")
 		<< tr("calc SIFT feature")
+		<< tr("compute gaussian filtering")
+		<< tr("compute edge map")
 		<< tr("about");
 }
 
@@ -49,6 +54,14 @@ void PartialAlignPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &ca
 	else if(menu_name == tr("calc SIFT feature"))
 	{
 		calc_feature(callback,parent,SIFT_FEATURE);
+	}
+	else if(menu_name == tr("compute gaussian filtering"))
+	{
+		compute_gaussian(callback, parent);
+	}
+	else if(menu_name == tr("compute edge map"))
+	{
+		compute_edge_map(callback,parent);
 	}
 	else
 	{
@@ -103,11 +116,158 @@ int calc_feature(V3DPluginCallback2 &callback, QWidget *parent, MyFeatureType ty
 	delete img3d;
 }
 
+int compute_gaussian(V3DPluginCallback2 &callback, QWidget *parent)
+{
+	v3dhandleList win_list = callback.getImageWindowList();
+
+	if(win_list.size()<1)
+	{
+		QMessageBox::information(0, title, QObject::tr("No image is open."));
+		return -1;
+	}
+
+	PartialAlignDialog dialog(callback, parent);
+	dialog.combo_subject->setDisabled(true);
+	dialog.channel_sub->setDisabled(true);
+
+	if (dialog.exec()!=QDialog::Accepted) return -1;
+
+	dialog.update();
+	int i1 = dialog.combo_subject->currentIndex();
+	int i2 = dialog.combo_target->currentIndex();
+
+	V3DLONG sub_c = dialog.sub_c - 1;
+	V3DLONG tar_c = dialog.tar_c - 1;
+	
+	bool ok;
+	double sigma;
+	int r;
+	sigma =  QInputDialog::getDouble(parent, QObject::tr("Gaussian Filter"),
+			QObject::tr("sigma :"),
+			1.0, 0.01, 100.0, 1, &ok);
+	if(ok)
+	{
+		r = QInputDialog::getInt(parent, QObject::tr("Gaussian Filter"), QObject::tr("radius :"), 3, 3, 7, 1, &ok);
+	}
+
+	Image4DSimple *image = callback.getImage(win_list[i2]);
+
+	if(image->getCDim() < dialog.tar_c) {QMessageBox::information(0, title, QObject::tr("The channel isn't existed.")); return -1;}
+
+	V3DLONG sz[3];
+	sz[0] = image->getXDim();
+	sz[1] = image->getYDim();
+	sz[2] = image->getZDim();
+
+	unsigned char *inimg1d = image->getRawDataAtChannel(tar_c);
+
+	unsigned char * outimg1d = 0;
+
+	computeGaussian(outimg1d, inimg1d, sz, sigma, r);
+
+	Image4DSimple* p4DImage = new Image4DSimple();
+
+	p4DImage->setData((unsigned char*)outimg1d, sz[0], sz[1], sz[2], 1, image->getDatatype());
+
+	v3dhandle newwin;
+	if(QMessageBox::Yes == QMessageBox::question(0, "", QString("Do you want to use the existing windows?"), QMessageBox::Yes, QMessageBox::No))
+		newwin = callback.currentImageWindow();
+	else
+		newwin = callback.newImageWindow();
+
+	callback.setImage(newwin, p4DImage);
+	callback.setImageName(newwin, QObject::tr("Gaussian Image sigma = %1, radius = %2").arg(sigma).arg(r));
+	callback.updateImageWindow(newwin);
+
+	return true;
+}
+
+int compute_edge_map(V3DPluginCallback2 &callback, QWidget *parent)
+{
+	v3dhandleList win_list = callback.getImageWindowList();
+
+	if(win_list.size()<1)
+	{
+		QMessageBox::information(0, title, QObject::tr("No image is open."));
+		return -1;
+	}
+
+	PartialAlignDialog dialog(callback, parent);
+	dialog.combo_subject->setDisabled(true);
+	dialog.channel_sub->setDisabled(true);
+
+	if (dialog.exec()!=QDialog::Accepted) return -1;
+
+	dialog.update();
+	int i1 = dialog.combo_subject->currentIndex();
+	int i2 = dialog.combo_target->currentIndex();
+
+	V3DLONG sub_c = dialog.sub_c - 1;
+	V3DLONG tar_c = dialog.tar_c - 1;
+	
+	bool ok;
+	double sigma;
+	int r;
+	sigma =  QInputDialog::getDouble(parent, QObject::tr("Gaussian Filter"),
+			QObject::tr("sigma :"),
+			1.0, 0.01, 100.0, 1, &ok);
+	if(ok)
+	{
+		r = QInputDialog::getInt(parent, QObject::tr("Gaussian Filter"), QObject::tr("radius :"), 3, 3, 7, 1, &ok);
+	}
+
+	Image4DSimple *image = callback.getImage(win_list[i2]);
+
+	if(image->getCDim() < dialog.tar_c) {QMessageBox::information(0, title, QObject::tr("The channel isn't existed.")); return -1;}
+
+	V3DLONG sz[3];
+	sz[0] = image->getXDim();
+	sz[1] = image->getYDim();
+	sz[2] = image->getZDim();
+
+	unsigned char *inimg1d = image->getRawDataAtChannel(tar_c);
+
+	unsigned char * outimg1d = 0;
+
+	computeGaussian(outimg1d, inimg1d, sz, sigma, r);
+	inimg1d = outimg1d;
+
+	computeGradience(outimg1d, inimg1d, sz);
+
+	Image4DSimple* p4DImage = new Image4DSimple();
+
+	p4DImage->setData((unsigned char*)outimg1d, sz[0], sz[1], sz[2], 1, image->getDatatype());
+
+	v3dhandle newwin;
+	if(QMessageBox::Yes == QMessageBox::question(0, "", QString("Do you want to use the existing windows?"), QMessageBox::Yes, QMessageBox::No))
+		newwin = callback.currentImageWindow();
+	else
+		newwin = callback.newImageWindow();
+
+	callback.setImage(newwin, p4DImage);
+	callback.setImageName(newwin, QObject::tr("Gradience Image sigma = %1, radius = %2").arg(sigma).arg(r));
+	callback.updateImageWindow(newwin);
+
+	return true;
+
+}
+
 template <class T> Vol3DSimple<T>* create_vol3dsimple(T* &inimg1d, V3DLONG sz[3])
 {
 	Vol3DSimple<T> * vol3d = new Vol3DSimple<T>(sz[0], sz[1], sz[2]);
 	T*** data3d = vol3d->getData3dHandle();
-	T*** inimg3d = 0; new3dpointer(inimg3d, sz[0], sz[1], sz[2], inimg1d);
+	T*** inimg3d = 0; 
+	try
+	{
+		new3dpointer(inimg3d, sz[0], sz[1], sz[2], inimg1d);
+	}
+	catch(...)
+	{
+		cerr<<"Not enough memory!"<<endl;
+		if(inimg3d) delete3dpointer(inimg3d, sz[0], sz[1], sz[2]);
+
+		return 0;
+	}
 
 	int i,j,k;
 	for(k = 0; k < sz[2]; k++)

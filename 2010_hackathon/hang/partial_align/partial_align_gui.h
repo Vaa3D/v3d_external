@@ -36,8 +36,8 @@ public:
 		channel_sub = new QSpinBox();
 		channel_tar = new QSpinBox();
 
-		Image4DSimple* subject = callback.getImage(win_list[i1]);
-		Image4DSimple* target  = callback.getImage(win_list[i2]);
+		//Image4DSimple* subject = callback.getImage(win_list[i1]);
+		//Image4DSimple* target  = callback.getImage(win_list[i2]);
 
 		channel_sub->setMaximum(4); channel_sub->setMinimum(1); channel_sub->setValue(1);
 		channel_tar->setMaximum(4); channel_tar->setMinimum(1); channel_tar->setValue(1);
@@ -68,6 +68,9 @@ public:
 
 		connect(channel_sub, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(channel_tar, SIGNAL(valueChanged(int)), this, SLOT(update()));
+
+		// stupid method to avoid warning
+		parent = parent; 
 	}
 
 	~PartialAlignDialog(){}

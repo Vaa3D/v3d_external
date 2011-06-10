@@ -36,8 +36,9 @@ class MyFeature
 			}
 		}
 
-		template <class T> void setFeatures(LandmarkList & landmarks, Vol3DSimple<T> *vol3d, MyFeatureType type)
+		template <class T> bool setFeatures(LandmarkList & landmarks, Vol3DSimple<T> *vol3d, MyFeatureType type)
 		{
+			if(! vol3d || !vol3d->valid()) return false;
 			T *** data3d = vol3d->getData3dHandle();
 
 			if(type == AVERAGE_FEATURE)
@@ -151,7 +152,7 @@ class MyFeature
 
 				Vector1DSimple<double> momentVec;
 				int r = 5;
-				KernelSet* ks = new KernelSet(4, r, KT_CUBE_ALL1);
+				//KernelSet* ks = new KernelSet(4, r, KT_CUBE_ALL1);
 				for(int i = 0; i < m_size; i++)
 				{
 					V3DLONG x0 = landmarks[i].x;
@@ -171,8 +172,9 @@ class MyFeature
 			else 
 			{
 				m_featureType = NONE_FEATURE;
-				return;
+				return false;
 			}
+			return true;
 		}
 
 		MyFeatureType  featureType() {return m_featureType;}
