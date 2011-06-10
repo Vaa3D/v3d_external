@@ -7,6 +7,7 @@
 #include <vector>
 
 #include <QtGui>
+
 #include "partial_align_plugin.h"
 #include "partial_align_gui.h"
 
@@ -14,6 +15,8 @@
 using namespace std;
 
 int calc_feature(V3DPluginCallback2 &callback, QWidget *parent, MyFeatureType type);
+
+template <class T> Vol3DSimple<T> * create_vol3dsimple(T* &inimg1d, V3DLONG sz[3]);
 
 Q_EXPORT_PLUGIN2(partial_align, PartialAlignPlugin);
 
@@ -41,11 +44,11 @@ void PartialAlignPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &ca
 	}
 	else if(menu_name == tr("calc invariant methods feature"))
 	{
-		calc_feature(callback,parent,SIFT_FEATURE);
+		calc_feature(callback,parent,INVARIANT_MOMENT_FEATURE);
 	}
 	else if(menu_name == tr("calc SIFT feature"))
 	{
-		calc_feature(callback,parent,INVARIANT_METHODS_FEATURE);
+		calc_feature(callback,parent,SIFT_FEATURE);
 	}
 	else
 	{
@@ -82,30 +85,42 @@ int calc_feature(V3DPluginCallback2 &callback, QWidget *parent, MyFeatureType ty
 	
 	if(image->getCDim() < dialog.tar_c) {QMessageBox::information(0, title, QObject::tr("The channel isn't existed.")); return -1;}
 
-	unsigned char *inimg1d = image->getRawDataAtChannel(tar_c);
-
 	V3DLONG sz[3];
 	sz[0] = image->getXDim();
 	sz[1] = image->getYDim();
 	sz[2] = image->getZDim();
 
-	LandmarkList landmark_list = callback.getLandmark(win_list[i2]);
-	if(landmark_list.empty()) {v3d_msg("No mark loaded"); return -1;}
+	unsigned char *data1d = image->getRawDataAtChannel(tar_c);
+	Vol3DSimple<unsigned char> * img3d = create_vol3dsimple(data1d,sz);
 
-	vector<vector<int> > mylandmarks;
-	LandmarkList::iterator it = landmark_list.begin();
-
-	while(it != landmark_list.end())
-	{
-		vector<int> position;
-		position.push_back((*it).x);
-		position.push_back((*it).y);
-		position.push_back((*it).z);
-		mylandmarks.push_back(position);
-		it++;
-	}
+	LandmarkList landmarks = callback.getLandmark(win_list[i2]);
+	if(landmarks.empty()) {v3d_msg("No mark loaded"); return -1;}
 
 	MyFeature myfeature;
-	myfeature.setFeatures(mylandmarks, inimg1d, sz, type);
+	myfeature.setFeatures(landmarks, img3d, type);
 	myfeature.printFeatures();
+
+	delete img3d;
+}
+
+template <class T> Vol3DSimple<T>* create_vol3dsimple(T* &inimg1d, V3DLONG sz[3])
+{
+	Vol3DSimple<T> * vol3d = new Vol3DSimple<T>(sz[0], sz[1], sz[2]);
+	T*** data3d = vol3d->getData3dHandle();
+	T*** inimg3d = 0; new3dpointer(inimg3d, sz[0], sz[1], sz[2], inimg1d);
+
+	int i,j,k;
+	for(k = 0; k < sz[2]; k++)
+	{
+		for(j = 0; j < sz[1]; j++)
+		{
+			for(i = 0; i < sz[0]; i++)
+			{
+				data3d[k][j][i] = inimg3d[k][j][i];
+			}
+		}
+	}
+	if(inimg3d) delete3dpointer(inimg3d, sz[0],sz[1],sz[2]);
+
+	return vol3d;
 }
