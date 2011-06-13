@@ -201,10 +201,10 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/MipLayer.h \
     ../neuron_annotator/MipData.h \
     ../neuron_annotator/NaLargeMIPWidget.h \
-    ../neuron_annotator/ColorSeparatorConsolidator.h \
-    ../neuron_annotator/FileTreeSearcher.h \
+    ../neuron_annotator/utility/ColorSeparatorConsolidator.h \
+    ../neuron_annotator/utility/FileTreeSearcher.h \
     ../neuron_annotator/AnnotationSession.h \
-    ../neuron_annotator/NeuronMaskEntry.h \
+    ../neuron_annotator/utility/NeuronMaskEntry.h \
     ../neuron_annotator/MultiColorImageStackNode.h \
     ../neuron_annotator/NeuronAnnotatorResultNode.h \
     ../neuron_annotator/TimebasedIdentifierGenerator.h \
@@ -315,10 +315,10 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/MipLayer.cpp \
     ../neuron_annotator/MipData.cpp \
     ../neuron_annotator/NaLargeMIPWidget.cpp \
-    ../neuron_annotator/ColorSeparatorConsolidator.cpp \
-    ../neuron_annotator/FileTreeSearcher.cpp \
+    ../neuron_annotator/utility/ColorSeparatorConsolidator.cpp \
+    ../neuron_annotator/utility/FileTreeSearcher.cpp \
     ../neuron_annotator/AnnotationSession.cpp \
-    ../neuron_annotator/NeuronMaskEntry.cpp \
+    ../neuron_annotator/utility/NeuronMaskEntry.cpp \
     ../neuron_annotator/MultiColorImageStackNode.cpp \
     ../neuron_annotator/NeuronAnnotatorResultNode.cpp \
     ../neuron_annotator/TimebasedIdentifierGenerator.cpp \

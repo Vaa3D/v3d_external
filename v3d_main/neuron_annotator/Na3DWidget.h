@@ -120,6 +120,7 @@ signals:
 protected:
     virtual void paintGL();
     void paintFiducial(const Vector3D& v);
+    void paintGrid();
     Vector3D getDefaultFocus() const;
     void prepareImageData();
     virtual void choiceRenderer();

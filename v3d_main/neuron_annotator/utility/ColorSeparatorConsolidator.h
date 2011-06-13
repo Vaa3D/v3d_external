@@ -5,7 +5,7 @@
 #include <QtCore>
 #include <QDir>
 #include <QRegExp>
-#include "../v3d/v3d_core.h"
+#include "../../v3d/v3d_core.h"
 
 using namespace std;
 

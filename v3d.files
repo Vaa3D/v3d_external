@@ -2285,14 +2285,12 @@ v3d_main/neuron_annotator/NaMainWindow.ui
 v3d_main/neuron_annotator/Na3DWidget.h
 v3d_main/v3d/CommandManager.h
 v3d_main/v3d/CommandManager.cpp
-v3d_main/neuron_annotator/ColorSeparatorConsolidator.h
-v3d_main/neuron_annotator/ColorSeparatorConsolidator.cpp
-v3d_main/neuron_annotator/FileTreeSearcher.h
-v3d_main/neuron_annotator/FileTreeSearcher.cpp
+v3d_main/neuron_annotator/utility/FileTreeSearcher.h
+v3d_main/neuron_annotator/utility/FileTreeSearcher.cpp
 v3d_main/neuron_annotator/AnnotationSession.h
 v3d_main/neuron_annotator/AnnotationSession.cpp
-v3d_main/neuron_annotator/NeuronMaskEntry.h
-v3d_main/neuron_annotator/NeuronMaskEntry.cpp
+v3d_main/neuron_annotator/utility/NeuronMaskEntry.h
+v3d_main/neuron_annotator/utility/NeuronMaskEntry.cpp
 v3d_main/neuron_annotator/MultiColorImageStackNode.h
 v3d_main/neuron_annotator/MultiColorImageStackNode.cpp
 v3d_main/neuron_annotator/NeuronAnnotatorResultNode.h
@@ -2372,6 +2370,9 @@ v3d_main/neuron_annotator/gui/gamma_widget_designer_plugin/GammaWidgetPlugin.h
 v3d_main/neuron_annotator/gui/gamma_widget_designer_plugin/GammaWidgetPlugin.cpp
 v3d_main/neuron_annotator/MipLayer.h
 v3d_main/neuron_annotator/MipLayer.cpp
+v3d_main/neuron_annotator/utility/ColorSeparatorConsolidator.h
+v3d_main/neuron_annotator/utility/ColorSeparatorConsolidator.cpp
 v3d_main/cell_counter/CellCounter3D.cpp
 v3d_main/cell_counter/CellCounter3D.h
+
 

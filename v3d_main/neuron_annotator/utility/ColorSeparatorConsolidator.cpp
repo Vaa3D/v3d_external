@@ -8,10 +8,10 @@
 #include <QTextStream>
 #include <QtAlgorithms>
 #include "ColorSeparatorConsolidator.h"
-#include "MultiColorImageStackNode.h"
+#include "../MultiColorImageStackNode.h"
 #include "NeuronMaskEntry.h"
 #include "FileTreeSearcher.h"
-#include "../v3d/v3d_core.h"
+#include "../../v3d/v3d_core.h"
 #include <limits>
 #include <fstream>
 

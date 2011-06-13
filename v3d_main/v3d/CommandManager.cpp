@@ -3,7 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include "CommandManager.h"
-#include "../neuron_annotator/ColorSeparatorConsolidator.h"
+#include "../neuron_annotator/utility/ColorSeparatorConsolidator.h"
 #include "../cell_counter/CellCounter3D.h"
 
 using namespace std;
