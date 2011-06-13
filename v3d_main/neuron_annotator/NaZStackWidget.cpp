@@ -132,7 +132,7 @@ NaZStackWidget::NaZStackWidget(QWidget * parent)
 
     m_square_pos.setX(sx/2);
     m_square_pos.setY(sy/2);
-    cr = 25;
+    cr = 12;
 
     recNum = 0;
     roiDrawed = false;
@@ -226,7 +226,7 @@ void NaZStackWidget::drawROI(QPainter *painter)
         // init a square
         cx = sx/2;
         cy = sy/2;
-        cr = 25;
+        cr = 12;
 
         start_x = cx - cr;
         end_x = cx + cr;
