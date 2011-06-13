@@ -2,7 +2,7 @@
 #define ANNOTATIONSESSION_H
 
 #include <QtCore>
-#include "NeuronMaskEntry.h"
+#include "utility/NeuronMaskEntry.h"
 #include "v3d_core.h"
 #include "MultiColorImageStackNode.h"
 #include "NeuronAnnotatorResultNode.h"
