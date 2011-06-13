@@ -22,6 +22,9 @@ class QRectF;
 // refactored to be a standalone class for use in Neuron Annotator.
 // NOTE - It does not work yet, as of April 25, 2011 - CMB
 
+#define MINSZBOX 2
+#define NCLRCHNNL 5
+
 class NaZStackWidget : public QWidget, public NaViewer
 {
     Q_OBJECT
@@ -112,8 +115,11 @@ public:
 protected:
     void setColorChannel(NaZStackWidget::Color col);
 
+    void setSearchBoxSize();
+
     V3DLONG roi_top, roi_left, roi_bottom, roi_right; // ROI boundary of the search box
     float roi_min, roi_max; // local min and max in the search box
+    bool roiDrawed;
 
     // mouse events handler
     bool b_mouseleft, b_mouseright;
@@ -127,10 +133,10 @@ protected:
     int translateMouse_x, translateMouse_y;
     float translateMouse_scale;
 
-    QPoint recStartMousePos[5], recEndMousePos[5]; //
-    bool recMousePos[5], recCr[5];
+    QPoint recStartMousePos[NCLRCHNNL], recEndMousePos[NCLRCHNNL]; //
+    bool recMousePos[NCLRCHNNL], recCr[NCLRCHNNL];
     int recNum, recCopy;
-    V3DLONG recZ[5];
+    V3DLONG recZ[NCLRCHNNL];
 
     QPointF m_square_pos;
     QPointF m_offset;
@@ -148,10 +154,10 @@ protected:
 
     QPixmap pixmap;
 
-    float min_img[5], max_img[5], scale_img[5]; // assume max color channel is 3
+    float min_img[NCLRCHNNL], max_img[NCLRCHNNL], scale_img[NCLRCHNNL]; // assume max color channel is 3
 
     // roi
-    float min_roi[5], max_roi[5], scale_roi[5]; //
+    float min_roi[NCLRCHNNL], max_roi[NCLRCHNNL], scale_roi[NCLRCHNNL]; //
     V3DLONG start_x, end_x, start_y, end_y;
 
     // gui
@@ -164,6 +170,7 @@ protected:
 
     // on/off HDR filter
     bool runHDRFILTER;
+    bool hdrfiltered[NCLRCHNNL];
 
     BrightnessCalibrator<float> brightnessCalibrator; // gamma correction
 };

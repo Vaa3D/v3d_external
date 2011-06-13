@@ -44,6 +44,8 @@ NaMainWindow::NaMainWindow()
     ui.HDR_checkBox->setChecked(true);
     ui.naZStackWidget->setHDRCheckState(true);
     ui.gammaWidget_Zstack->hide();
+    ui.BoxSize_spinBox->setMinimum(MINSZBOX);
+    
     connect(ui.HDR_checkBox, SIGNAL(stateChanged(int)),
             ui.naZStackWidget, SLOT(setHDRCheckState(int)));
     connect(ui.naZStackWidget, SIGNAL(changedHDRCheckState(bool)),

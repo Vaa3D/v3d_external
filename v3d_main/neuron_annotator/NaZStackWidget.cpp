@@ -48,8 +48,6 @@ template <class T> QPixmap getXYPlane(const T * pdata, V3DLONG sx, V3DLONG sy, V
     {
         case 1:
 
-            // qDebug()<<"r ...";
-
             for (long j = 0; j < sy; j ++)
             {
                 long offset = curz*offset_k + j*sx;
@@ -64,8 +62,6 @@ template <class T> QPixmap getXYPlane(const T * pdata, V3DLONG sx, V3DLONG sy, V
             break;
 
         case 2:
-
-            // qDebug()<<"rg ...";
 
             tb = 0;
             for (long j = 0; j < sy; j ++)
@@ -83,8 +79,6 @@ template <class T> QPixmap getXYPlane(const T * pdata, V3DLONG sx, V3DLONG sy, V
 
         case 3:
         case 4:
-
-            // qDebug()<<"rgb ..."<<tmpr<<tmpg<<tmpb;
 
             for (long j = 0; j < sy; j ++)
             {
@@ -129,10 +123,11 @@ NaZStackWidget::NaZStackWidget(QWidget * parent)
     bMouseCurorIn = false;
     bMouseDone = false;
 
-    for(int i=0; i<5; i++)
+    for(int i=0; i<NCLRCHNNL; i++)
     {
         recMousePos[i] = false;
         recZ[i] = 0;
+        hdrfiltered[i] = false;
     }
 
     m_square_pos.setX(sx/2);
@@ -140,6 +135,7 @@ NaZStackWidget::NaZStackWidget(QWidget * parent)
     cr = 25;
 
     recNum = 0;
+    roiDrawed = false;
     recCopy = 0;
 
     cur_c = COLOR_RED;
@@ -189,7 +185,7 @@ void NaZStackWidget::paintEvent(QPaintEvent *event)
 
 void NaZStackWidget::drawROI(QPainter *painter)
 {
-    if (bMouseCurorIn || recNum)
+    if (bMouseCurorIn || recNum || roiDrawed)
     {
         painter->setPen(Qt::yellow );
         painter->setBrush(Qt::NoBrush);
@@ -205,7 +201,7 @@ void NaZStackWidget::drawROI(QPainter *painter)
             {
                 if(bMouseDone)
                 {
-                    QSizeF sz(2*cr, 2*cr);
+                    QSizeF sz(2*cr+1, 2*cr+1);
                     QRectF square = rectangle_around(m_square_pos, sz);
                     painter->drawRect(square);
                 }
@@ -213,18 +209,20 @@ void NaZStackWidget::drawROI(QPainter *painter)
         }
         else if(bMouseDone)
         {
-            QSizeF sz(2*cr, 2*cr);
+            QSizeF sz(2*cr+1, 2*cr+1);
             QRectF square = rectangle_around(m_square_pos,sz);
             painter->drawRect(square);
         }
 
         if( checkROIchanged() )
         {
-            do_HDRfilter();
+            do_HDRfilter(); // HDR filtering
         }
     }
     else
     {
+        roiDrawed = true;
+
         // init a square
         cx = sx/2;
         cy = sy/2;
@@ -248,9 +246,14 @@ void NaZStackWidget::drawROI(QPainter *painter)
         endMousePos.setX(end_x);
         endMousePos.setY(end_y);
 
-        QSizeF sz(cr, cr);
+        m_square_pos.setX( startMousePos.x() + (endMousePos.x() - startMousePos.x())/2 );
+        m_square_pos.setY( startMousePos.y() + (endMousePos.y() - startMousePos.y())/2 );
+
+        QSizeF sz(2*cr+1, 2*cr+1);
         QRectF square = rectangle_around(m_square_pos,sz);
         painter->drawRect(square);
+
+        //do_HDRfilter(); // HDR filtering
     }
 
 }
@@ -309,7 +312,7 @@ int NaZStackWidget::getCurrentZSlice() {
 }
 
 int NaZStackWidget::getCurrentBoxSize() {
-    return cr; //
+    return cr; // radius
 }
 
 void NaZStackWidget::setCurrentZSlice(int slice) {
@@ -318,14 +321,13 @@ void NaZStackWidget::setCurrentZSlice(int slice) {
     if (cur_z == slice - 1) return; // no change; ignore
     cur_z = slice - 1;
 
-    updatePixmap();
+    updateHDRView();
 
     emit curZsliceChanged(slice);
 }
 
 void NaZStackWidget::wheelEvent(QWheelEvent * e) // mouse wheel
 {
-    // qDebug("wheel");
     b_mousemove = false;
 
     int numDegrees = e->delta()/8;
@@ -466,13 +468,17 @@ void NaZStackWidget::mouseReleaseEvent(QMouseEvent * e) // mouse button release
             int old_cr = cr;
             cr = qMax((endMousePos.x() - startMousePos.x())/2, (endMousePos.y() - startMousePos.y())/2);
 
+            setSearchBoxSize();
+
             bMouseDone = true;
 
             //
             b_mouseright = false;
-            if (old_cr != cr) emit boxSizeChanged(cr);
+            if (old_cr != cr) {
+                old_cr = cr;
+                emit boxSizeChanged(2*cr+1);
+            }
         }
-
 
         if(b_mouseleft)
         {
@@ -588,6 +594,8 @@ void NaZStackWidget::do_HDRfilter()
     if(end_x>sx) end_x = sx-1;
     if(end_y>sy) end_y = sy-1;
 
+    if(end_x<=start_x || end_y<=start_y) return;
+
     V3DLONG pagesz = sx*sy*sz;
 
     // min_max
@@ -642,74 +650,80 @@ void NaZStackWidget::do_HDRfilter_zslice()
 
     V3DLONG pagesz = sx*sy;
     V3DLONG channelsz = pagesz*sz;
-    V3DLONG c = cur_c-1;
-    V3DLONG offset_c = c*channelsz;
+    //V3DLONG c = cur_c-1;
     V3DLONG offset_z = cur_z * pagesz;
 
-    for(V3DLONG i=0; i<pagesz; i++)
+    for(V3DLONG c=0; c<sc; c++)
     {
-        V3DLONG idx = offset_c + offset_z + i;
+        if(!hdrfiltered[c]) continue;
 
-        float curval;
+        V3DLONG offset_c = c*channelsz;
 
-        if(datatype = V3D_UINT8){
-            curval = (float)( ((unsigned char*)pData1d)[idx] );
+        for(V3DLONG i=0; i<pagesz; i++)
+        {
+            V3DLONG idx = offset_c + offset_z + i;
 
-            if(curval<min_roi[c])
-            {
-                ((unsigned char*)pDispData1d)[idx] = (unsigned char)min_roi[c];
-            }
-            else if(curval>max_roi[c])
-            {
-                ((unsigned char*)pDispData1d)[idx] = (unsigned char)max_roi[c];
-            }
-            else
-            {
-                ((unsigned char*)pDispData1d)[idx] = (unsigned char)curval;
-            }
-        }
-        else if(datatype = V3D_UINT16){
-            curval = (float)( ((short int*)pData1d)[idx] );
+            float curval;
 
-            if(curval<min_roi[c])
-            {
-                ((short int*)pDispData1d)[idx] = (short int)min_roi[c];
-            }
-            else if(curval>max_roi[c])
-            {
-                ((short int*)pDispData1d)[idx] = (short int)max_roi[c];
-            }
-            else
-            {
-                ((short int*)pDispData1d)[idx] = (short int)curval;
-            }
-        }
-        else if(datatype = V3D_FLOAT32){
-            curval = (float)( ((float*)pData1d)[idx] );
+            if(datatype = V3D_UINT8){
+                curval = (float)( ((unsigned char*)pData1d)[idx] );
 
-            if(curval<min_roi[c])
-            {
-                ((float*)pDispData1d)[idx] = min_roi[c];
+                if(curval<min_roi[c])
+                {
+                    ((unsigned char*)pDispData1d)[idx] = (unsigned char)min_roi[c];
+                }
+                else if(curval>max_roi[c])
+                {
+                    ((unsigned char*)pDispData1d)[idx] = (unsigned char)max_roi[c];
+                }
+                else
+                {
+                    ((unsigned char*)pDispData1d)[idx] = (unsigned char)curval;
+                }
             }
-            else if(curval>max_roi[c])
-            {
-                ((float*)pDispData1d)[idx] = max_roi[c];
+            else if(datatype = V3D_UINT16){
+                curval = (float)( ((short int*)pData1d)[idx] );
+
+                if(curval<min_roi[c])
+                {
+                    ((short int*)pDispData1d)[idx] = (short int)min_roi[c];
+                }
+                else if(curval>max_roi[c])
+                {
+                    ((short int*)pDispData1d)[idx] = (short int)max_roi[c];
+                }
+                else
+                {
+                    ((short int*)pDispData1d)[idx] = (short int)curval;
+                }
             }
-            else
-            {
-                ((float*)pDispData1d)[idx] = curval;
+            else if(datatype = V3D_FLOAT32){
+                curval = (float)( ((float*)pData1d)[idx] );
+
+                if(curval<min_roi[c])
+                {
+                    ((float*)pDispData1d)[idx] = min_roi[c];
+                }
+                else if(curval>max_roi[c])
+                {
+                    ((float*)pDispData1d)[idx] = max_roi[c];
+                }
+                else
+                {
+                    ((float*)pDispData1d)[idx] = curval;
+                }
             }
-        }
-        else {
-            printf("Datatype is not supported.\n");
-            return;
+            else {
+                printf("Datatype is not supported.\n");
+                return;
+            }
         }
     }
 
 }
 
 // copy data
-void NaZStackWidget::copydata2disp()
+void NaZStackWidget::copydata2disp() // legacy function
 {
     V3DLONG c = cur_c - 1;
 
@@ -863,7 +877,7 @@ void NaZStackWidget::initHDRViewer(const V3DLONG *imgsz, const unsigned char *da
             pixmap = getXYPlane((unsigned char *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img); // initial focus plane
 
             update();
-            repaint();
+            //repaint();
 
         }
         else if(datatype == V3D_UINT16)
@@ -898,7 +912,7 @@ void NaZStackWidget::initHDRViewer(const V3DLONG *imgsz, const unsigned char *da
             pixmap = getXYPlane((short int *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img); // initial focus plane
 
             update();
-            repaint();
+            //repaint();
 
         }
         else if(datatype == V3D_FLOAT32)
@@ -949,32 +963,35 @@ void NaZStackWidget::setColorChannel(NaZStackWidget::Color col)
         return; // outside of range of available color channels
     pre_c = cur_c;
     cur_c = col;
-    //copydata2disp();
+
     emit curColorChannelChanged(col);
-    update();
 }
 
 void NaZStackWidget::setRedChannel() {
     recNum = 0;
+    hdrfiltered[0] = true;
     setColorChannel(COLOR_RED);
 }
 
 void NaZStackWidget::setGreenChannel() {
     recNum = 0;
+    hdrfiltered[1] = true;
     setColorChannel(COLOR_GREEN);
 }
 
 void NaZStackWidget::setBlueChannel() {
     recNum = 0;
+    hdrfiltered[2] = true;
     setColorChannel(COLOR_BLUE);
 }
 
 void NaZStackWidget::updateROIsize(int boxSize)
 {
     if (cr == boxSize) return; // no change => ignore
-    cr = boxSize;
-    update();
-    // repaint();
+    cr = (boxSize-1)/2;
+
+    updateHDRView();
+
     emit boxSizeChanged(boxSize);
 }
 
@@ -1005,7 +1022,7 @@ void NaZStackWidget::setGammaBrightness(double gamma){
 // record previous color channel ROI
 void NaZStackWidget::recordColorChannelROIPos(){
 
-    if(recNum<1){
+    if(recNum<1 && pre_c!=cur_c){
         recNum++;
 
         if(pre_c!=cur_c)
@@ -1032,6 +1049,7 @@ void NaZStackWidget::recordColorChannelROIPos(){
 
             endMousePos.setX(recEndMousePos[cur_c-1].x());
             endMousePos.setY(recEndMousePos[cur_c-1].y());
+
         }
 
         start_x = startMousePos.x()-1;
@@ -1045,6 +1063,8 @@ void NaZStackWidget::recordColorChannelROIPos(){
 
         int old_cr = cr;
         cr = qMax((endMousePos.x() - startMousePos.x())/2, (endMousePos.y() - startMousePos.y())/2);
+
+        setSearchBoxSize();
     }
 
 }
@@ -1059,7 +1079,23 @@ void NaZStackWidget::updateHDRView(){
     {
         do_HDRfilter_zslice();
 
-        cur_z = recZ[pre_c-1];
         updatePixmap();
     }
+}
+
+void NaZStackWidget::setSearchBoxSize(){
+
+    if(cr<MINSZBOX)
+    {
+        cr = MINSZBOX;
+
+        int boxsz = 2*cr+1;
+
+        endMousePos.setX(startMousePos.x() + boxsz);
+        endMousePos.setY(startMousePos.y() + boxsz);
+
+        updateHDRView();
+        qDebug()<<"test ..."<<min_roi[0]<<max_roi[0];
+    }
+
 }
