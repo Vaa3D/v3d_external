@@ -252,8 +252,6 @@ void NaZStackWidget::drawROI(QPainter *painter)
         QSizeF sz(2*cr+1, 2*cr+1);
         QRectF square = rectangle_around(m_square_pos,sz);
         painter->drawRect(square);
-
-        //do_HDRfilter(); // HDR filtering
     }
 
 }
@@ -1095,7 +1093,6 @@ void NaZStackWidget::setSearchBoxSize(){
         endMousePos.setY(startMousePos.y() + boxsz);
 
         updateHDRView();
-        qDebug()<<"test ..."<<min_roi[0]<<max_roi[0];
     }
 
 }
