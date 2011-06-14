@@ -54,6 +54,7 @@ public slots:
 
 public:
 
+    Vector3D getDefaultFocus() const;
     // Don't update if the current rotation is within 0.5 of the specified integer angle
     void setXYZBodyRotationInt(int rotX, int rotY, int rotZ)
     {
@@ -121,7 +122,6 @@ protected:
     virtual void paintGL();
     void paintFiducial(const Vector3D& v);
     void paintGrid();
-    Vector3D getDefaultFocus() const;
     void prepareImageData();
     virtual void choiceRenderer();
     float glUnitsPerImageVoxel() const;

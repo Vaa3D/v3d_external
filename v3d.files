@@ -2376,3 +2376,14 @@ v3d_main/cell_counter/CellCounter3D.cpp
 v3d_main/cell_counter/CellCounter3D.h
 
 
+v3d_main/neuron_annotator/gui/ZoomWidget.h
+v3d_main/neuron_annotator/gui/ZoomWidget.cpp
+v3d_main/neuron_annotator/gui/ZoomSpinBox.h
+v3d_main/neuron_annotator/gui/ZoomSpinBox.cpp
+v3d_main/neuron_annotator/gui/zoom_spinbox_designer_plugin/ZoomSpinBoxPlugin.pro
+v3d_main/neuron_annotator/gui/zoom_spinbox_designer_plugin/ZoomSpinBoxPlugin.h
+v3d_main/neuron_annotator/gui/zoom_spinbox_designer_plugin/ZoomSpinBoxPlugin.cpp
+v3d_main/neuron_annotator/gui/zoom_widget_designer_plugin/ZoomWidgetPlugin.pro
+v3d_main/neuron_annotator/gui/zoom_widget_designer_plugin/ZoomWidgetPlugin.h
+v3d_main/neuron_annotator/gui/zoom_widget_designer_plugin/ZoomWidgetPlugin.cpp
+v3d_main/neuron_annotator/AngleWidget.ui

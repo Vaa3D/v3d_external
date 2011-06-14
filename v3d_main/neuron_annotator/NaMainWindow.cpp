@@ -86,7 +86,7 @@ NaMainWindow::NaMainWindow()
             ui.v3dr_glwidget, SLOT(setGammaBrightness(double)));
     connect(ui.gammaWidget_3D, SIGNAL(gammaBrightnessChanged(double)),
             this, SLOT(updateThumbnailGamma(double)));
-    connect(ui.colorResetButton, SIGNAL(clicked()),
+    connect(ui.resetColorsButton, SIGNAL(clicked()),
             ui.gammaWidget_3D, SLOT(reset()));
 
 
@@ -94,6 +94,13 @@ NaMainWindow::NaMainWindow()
     connect(ui.actionLink_viewers, SIGNAL(toggled(bool)),
             this, SLOT(unifyCameras(bool)));
     unifyCameras(true); // Start with cameras linked
+    connect(ui.resetViewButton, SIGNAL(clicked()),
+            this, SLOT(resetView()));
+    connect(ui.zoomWidget, SIGNAL(zoomValueChanged(qreal)),
+            &sharedCameraModel, SLOT(setScale(qreal)));
+    connect(&sharedCameraModel, SIGNAL(scaleChanged(qreal)),
+            this, SLOT(updateViewers()));
+
     // Crosshair
     connect(ui.actionShow_Crosshair, SIGNAL(toggled(bool)),
             ui.naLargeMIPWidget, SLOT(showCrosshair(bool)));
@@ -141,6 +148,21 @@ void NaMainWindow::nutate(const Rotation3D& R) {
         cam.setRotation(R * cam.rotation());
         ui.v3dr_glwidget->update();
     }
+}
+
+void NaMainWindow::resetView()
+{
+    // TODO - might not work if cameras are not linked
+    sharedCameraModel.setFocus(ui.v3dr_glwidget->getDefaultFocus()); // center view
+    sharedCameraModel.setRotation(Rotation3D()); // identity rotation
+    sharedCameraModel.setScale(1.0); // fit to window
+}
+
+void NaMainWindow::updateViewers()
+{
+    ui.naLargeMIPWidget->update();
+    ui.naZStackWidget->update();
+    ui.v3dr_glwidget->update();
 }
 
 void NaMainWindow::unifyCameras(bool bDoUnify)

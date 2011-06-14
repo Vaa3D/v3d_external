@@ -8,6 +8,8 @@ include_directories(../3drenderer)
 QT4_WRAP_UI(NA_UI_SRCS 
     NaMainWindow.ui
     GammaWidget.ui
+    AngleWidget.ui
+    ZoomWidget.ui
 )
 QT4_WRAP_CPP(NA_MOC_SRCS
     AnnotationSession.h

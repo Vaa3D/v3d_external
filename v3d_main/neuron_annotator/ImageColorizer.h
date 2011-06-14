@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QColor>
 #include <QImage>
+#include <cassert>
 
 template<class ValueType>
 class SimpleArray {

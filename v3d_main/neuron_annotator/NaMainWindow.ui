@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1042</width>
-    <height>728</height>
+    <width>1008</width>
+    <height>931</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -209,10 +209,11 @@
                <widget class="Na3DWidget" name="v3dr_glwidget" native="true">
                 <property name="minimumSize">
                  <size>
-                  <width>640</width>
-                  <height>480</height>
+                  <width>320</width>
+                  <height>240</height>
                  </size>
                 </property>
+                <zorder>viewerSelectorAndControlFrame</zorder>
                </widget>
               </item>
              </layout>
@@ -243,10 +244,10 @@
              <enum>QFrame::StyledPanel</enum>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_7">
-             <property name="spacing">
+             <property name="leftMargin">
               <number>0</number>
              </property>
-             <property name="margin">
+             <property name="rightMargin">
               <number>0</number>
              </property>
              <item>
@@ -266,7 +267,7 @@
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="GammaWidget" name="gammaWidget_MIP" native="true">
+                  <widget class="GammaWidget" name="gammaWidget_MIP">
                    <property name="minimumSize">
                     <size>
                      <width>0</width>
@@ -311,7 +312,7 @@
                    </property>
                    <layout class="QGridLayout" name="gridLayout">
                     <item row="0" column="0">
-                     <widget class="GammaWidget" name="gammaWidget_Zstack" native="true">
+                     <widget class="GammaWidget" name="gammaWidget_Zstack">
                       <property name="minimumSize">
                        <size>
                         <width>0</width>
@@ -635,83 +636,7 @@ p, li { white-space: pre-wrap; }
                         <number>0</number>
                        </property>
                        <item>
-                        <widget class="QFrame" name="frame_13">
-                         <property name="frameShape">
-                          <enum>QFrame::NoFrame</enum>
-                         </property>
-                         <property name="frameShadow">
-                          <enum>QFrame::Raised</enum>
-                         </property>
-                         <layout class="QHBoxLayout" name="horizontalLayout_6">
-                          <property name="leftMargin">
-                           <number>0</number>
-                          </property>
-                          <property name="topMargin">
-                           <number>0</number>
-                          </property>
-                          <property name="rightMargin">
-                           <number>0</number>
-                          </property>
-                          <property name="bottomMargin">
-                           <number>12</number>
-                          </property>
-                          <item>
-                           <widget class="QPushButton" name="pushButton_3">
-                            <property name="text">
-                             <string>r</string>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                            <property name="checked">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
-                          <item>
-                           <widget class="QPushButton" name="pushButton_2">
-                            <property name="text">
-                             <string>g</string>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                            <property name="checked">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
-                          <item>
-                           <widget class="QPushButton" name="pushButton_4">
-                            <property name="text">
-                             <string>b</string>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                            <property name="checked">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
-                          <item>
-                           <widget class="QPushButton" name="pushButton_5">
-                            <property name="text">
-                             <string>R</string>
-                            </property>
-                            <property name="checkable">
-                             <bool>true</bool>
-                            </property>
-                            <property name="checked">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
-                         </layout>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="GammaWidget" name="gammaWidget_3D" native="true">
+                        <widget class="GammaWidget" name="gammaWidget_3D">
                          <property name="minimumSize">
                           <size>
                            <width>0</width>
@@ -739,16 +664,6 @@ p, li { white-space: pre-wrap; }
                               <string>Filters</string>
                              </property>
                             </item>
-                           </widget>
-                          </item>
-                          <item>
-                           <widget class="QPushButton" name="colorResetButton">
-                            <property name="toolTip">
-                             <string>Restore default color intensities.</string>
-                            </property>
-                            <property name="text">
-                             <string>Reset</string>
-                            </property>
                            </widget>
                           </item>
                          </layout>
@@ -788,49 +703,33 @@ p, li { white-space: pre-wrap; }
                         <number>0</number>
                        </property>
                        <item>
-                        <widget class="QPushButton" name="rotationResetButton">
-                         <property name="sizePolicy">
-                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                           <horstretch>0</horstretch>
-                           <verstretch>0</verstretch>
-                          </sizepolicy>
-                         </property>
-                         <property name="autoFillBackground">
-                          <bool>false</bool>
-                         </property>
-                         <property name="text">
-                          <string>Reset Rotation</string>
-                         </property>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="AngleWidget" name="rotXWidget" native="true">
+                        <widget class="AngleWidget" name="rotXWidget">
                          <property name="sizePolicy">
                           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                            <horstretch>0</horstretch>
                            <verstretch>0</verstretch>
                           </sizepolicy>
                          </property>
-                         <property name="textLabel" stdset="0">
+                         <property name="textLabel">
                           <string>RotX</string>
                          </property>
                         </widget>
                        </item>
                        <item>
-                        <widget class="AngleWidget" name="rotYWidget" native="true">
+                        <widget class="AngleWidget" name="rotYWidget">
                          <property name="sizePolicy">
                           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                            <horstretch>0</horstretch>
                            <verstretch>0</verstretch>
                           </sizepolicy>
                          </property>
-                         <property name="textLabel" stdset="0">
+                         <property name="textLabel">
                           <string>RotY</string>
                          </property>
                         </widget>
                        </item>
                        <item>
-                        <widget class="AngleWidget" name="rotZWidget" native="true">
+                        <widget class="AngleWidget" name="rotZWidget">
                          <property name="sizePolicy">
                           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                            <horstretch>0</horstretch>
@@ -849,8 +748,24 @@ p, li { white-space: pre-wrap; }
                            <height>0</height>
                           </size>
                          </property>
-                         <property name="textLabel" stdset="0">
+                         <property name="textLabel">
                           <string>RotZ</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="rotationResetButton">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
+                         </property>
+                         <property name="text">
+                          <string>Reset Rotation</string>
                          </property>
                         </widget>
                        </item>
@@ -885,6 +800,135 @@ p, li { white-space: pre-wrap; }
                  </item>
                 </layout>
                </widget>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="groupBox_3">
+               <property name="title">
+                <string>View</string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_9">
+                <item>
+                 <widget class="ZoomWidget" name="zoomWidget"/>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="resetViewButton">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Reset View</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="groupBox_2">
+               <property name="title">
+                <string>Color and Shading</string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_6">
+                <item>
+                 <widget class="GammaWidget" name="angleWidget"/>
+                </item>
+                <item>
+                 <widget class="QFrame" name="frame_13">
+                  <property name="frameShape">
+                   <enum>QFrame::NoFrame</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QHBoxLayout" name="horizontalLayout_6">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>12</number>
+                   </property>
+                   <item>
+                    <widget class="QPushButton" name="pushButton_3">
+                     <property name="text">
+                      <string>r</string>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="pushButton_2">
+                     <property name="text">
+                      <string>g</string>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="pushButton_4">
+                     <property name="text">
+                      <string>b</string>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="pushButton_5">
+                     <property name="text">
+                      <string>R</string>
+                     </property>
+                     <property name="checkable">
+                      <bool>true</bool>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="resetColorsButton">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="toolTip">
+                   <string>Restore default color intensities.</string>
+                  </property>
+                  <property name="text">
+                   <string>Reset Colors</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </widget>
              </item>
             </layout>
@@ -985,7 +1029,7 @@ p, li { white-space: pre-wrap; }
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>540</width>
+                  <width>506</width>
                   <height>198</height>
                  </rect>
                 </property>
@@ -1054,8 +1098,8 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1042</width>
-     <height>24</height>
+     <width>1008</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1234,6 +1278,11 @@ p, li { white-space: pre-wrap; }
    <container>1</container>
   </customwidget>
   <customwidget>
+   <class>ZoomWidget</class>
+   <extends>QWidget</extends>
+   <header>../neuron_annotator/gui/ZoomWidget.h</header>
+  </customwidget>
+  <customwidget>
    <class>Na3DWidget</class>
    <extends>QWidget</extends>
    <header location="global">../neuron_annotator/Na3DWidget.h</header>
@@ -1261,12 +1310,12 @@ p, li { white-space: pre-wrap; }
    <slot>setCurrentIndex(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>653</x>
-     <y>30</y>
+     <x>805</x>
+     <y>333</y>
     </hint>
     <hint type="destinationlabel">
-     <x>615</x>
-     <y>25</y>
+     <x>606</x>
+     <y>48</y>
     </hint>
    </hints>
   </connection>
@@ -1281,8 +1330,8 @@ p, li { white-space: pre-wrap; }
      <y>52</y>
     </hint>
     <hint type="destinationlabel">
-     <x>668</x>
-     <y>587</y>
+     <x>710</x>
+     <y>356</y>
     </hint>
    </hints>
   </connection>
@@ -1293,12 +1342,44 @@ p, li { white-space: pre-wrap; }
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>680</x>
-     <y>576</y>
+     <x>710</x>
+     <y>356</y>
     </hint>
     <hint type="destinationlabel">
      <x>100</x>
      <y>52</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>resetColorsButton</sender>
+   <signal>clicked()</signal>
+   <receiver>angleWidget</receiver>
+   <slot>reset()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>679</x>
+     <y>156</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>681</x>
+     <y>75</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>resetViewButton</sender>
+   <signal>clicked()</signal>
+   <receiver>zoomWidget</receiver>
+   <slot>reset()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>673</x>
+     <y>261</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>674</x>
+     <y>238</y>
     </hint>
    </hints>
   </connection>

@@ -197,7 +197,6 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/NaMainWindow.h \
     ../neuron_annotator/Na3DWidget.h \
     ../neuron_annotator/NaZStackWidget.h \
-    ../neuron_annotator/NaZStackWidget.h \
     ../neuron_annotator/MipLayer.h \
     ../neuron_annotator/MipData.h \
     ../neuron_annotator/NaLargeMIPWidget.h \
@@ -217,6 +216,8 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/AngleWidget.h \
     ../neuron_annotator/MouseClickManager.h \
     ../neuron_annotator/BrightnessCalibrator.h \
+    ../neuron_annotator/gui/ZoomSpinBox.h \
+    ../neuron_annotator/gui/ZoomWidget.h \
 	../neuron_annotator/NeuronSelector.h \
 	../webservice/v3dwebservice.hpp \
 	../webservice/v3dwebserver.h \
@@ -331,6 +332,8 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/MouseClickManager.cpp \
     ../neuron_annotator/BrightnessCalibrator.cpp \
     ../neuron_annotator/AngleWidget.cpp \
+    ../neuron_annotator/gui/ZoomSpinBox.cpp \
+    ../neuron_annotator/gui/ZoomWidget.cpp \
 	../neuron_annotator/NeuronSelector.cpp \
 	../webservice/v3dwebservice.cpp \
 	../webservice/gsoap2/stdsoap2.cpp \
@@ -392,7 +395,8 @@ FORMS += landmark_property.ui \
     dialog_update_checking.ui \
     ../neuron_annotator/NaMainWindow.ui \
     ../neuron_annotator/GammaWidget.ui \
-    ../neuron_annotator/AngleWidget.ui
+    ../neuron_annotator/AngleWidget.ui \
+    ../neuron_annotator/gui/ZoomWidget.ui
 #    FL_watershedSegPara.ui \
 #    FL_levelsetSegPara.ui 
 

@@ -37,6 +37,8 @@ public slots:
     void unifyCameras(bool bDoUnify); // keep all zoom, focus, rotate the same
     void setNutate(bool bDoNutate);
     void nutate(const Rotation3D&);
+    void resetView();
+    void updateViewers();
 
     void updateAnnotationModels();
 

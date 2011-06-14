@@ -24,8 +24,8 @@ protected:
     My4DImage * volume4DImage;
     My4DImage * mask4DImage;
     unsigned int numNeurons;
-    ImageColorizer colorizer;
-    BrightnessCalibrator brightnessCalibrator;
+    ImageColorizer<float> colorizer;
+    BrightnessCalibrator<float> brightnessCalibrator;
     QImage * combinedMipImage;
 };
 

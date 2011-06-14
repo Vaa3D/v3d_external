@@ -415,11 +415,11 @@ float Na3DWidget::getZoomScale() const
 }
 
 bool Na3DWidget::populateNeuronMask(const My4DImage* neuronMaskImage) {
-    RendererNeuronAnnotator* renderer = (RendererNeuronAnnotator*)getRenderer();
-    if (!renderer->populateNeuronMask(neuronMaskImage)) {
+    RendererNeuronAnnotator* rend = (RendererNeuronAnnotator*)getRenderer();
+    if (!rend->populateNeuronMask(neuronMaskImage)) {
         return false;
     }
-    if (!renderer->initializeTextureMasks()) {
+    if (!rend->initializeTextureMasks()) {
         return false;
     }
     return true;
@@ -443,22 +443,22 @@ void Na3DWidget::choiceRenderer() {
 void Na3DWidget::paintFiducial(const Vector3D& v) {
     qreal dd1 = 4.0 * glUnitsPerImageVoxel() / getZoomScale();
     qreal dd2 = 10.0 * glUnitsPerImageVoxel() / getZoomScale(); // 10 pixel crosshair
-    qreal x = v.x();
-    qreal y = v.y();
-    qreal z = v.z();
+    qreal x0 = v.x();
+    qreal y0 = v.y();
+    qreal z0 = v.z();
     glBegin(GL_LINES);
-      glVertex3f(x-dd1,y,z);
-      glVertex3f(x-dd2,y,z);
-      glVertex3f(x+dd1,y,z);
-      glVertex3f(x+dd2,y,z);
-      glVertex3f(x,y-dd1,z);
-      glVertex3f(x,y-dd2,z);
-      glVertex3f(x,y+dd1,z);
-      glVertex3f(x,y+dd2,z);
-      glVertex3f(x,y,z-dd1);
-      glVertex3f(x,y,z-dd2);
-      glVertex3f(x,y,z+dd1);
-      glVertex3f(x,y,z+dd2);
+      glVertex3f(x0-dd1,y0,z0);
+      glVertex3f(x0-dd2,y0,z0);
+      glVertex3f(x0+dd1,y0,z0);
+      glVertex3f(x0+dd2,y0,z0);
+      glVertex3f(x0,y0-dd1,z0);
+      glVertex3f(x0,y0-dd2,z0);
+      glVertex3f(x0,y0+dd1,z0);
+      glVertex3f(x0,y0+dd2,z0);
+      glVertex3f(x0,y0,z0-dd1);
+      glVertex3f(x0,y0,z0-dd2);
+      glVertex3f(x0,y0,z0+dd1);
+      glVertex3f(x0,y0,z0+dd2);
     glEnd();
 }
 
@@ -470,14 +470,14 @@ void Na3DWidget::paintGL()
     // for debugging
     if (bPaintCrosshair)
     {
-        Vector3D focus = cameraModel.focus();
+        Vector3D focus0 = cameraModel.focus();
         // Convert from object coordinates to gl coordinates
-        focus -= getDefaultFocus(); // reverse glTranslate(.5,.5,.5)
-        focus *= glUnitsPerImageVoxel(); // scale to [-1,1]^3
+        focus0 -= getDefaultFocus(); // reverse glTranslate(.5,.5,.5)
+        focus0 *= glUnitsPerImageVoxel(); // scale to [-1,1]^3
         // Flip axes corresponding to v3dr_glwidget flip_X, flip_Y, flip_Z
-        focus.x() *= flip_X;
-        focus.y() *= flip_Y;
-        focus.z() *= flip_Z;
+        focus0.x() *= flip_X;
+        focus0.y() *= flip_Y;
+        focus0.z() *= flip_Z;
         // Don't allow other geometry to obscure the marker
         // glClear(GL_DEPTH_BUFFER_BIT); // Destroys depth buffer; probably too harsh
         glPushAttrib(GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT); // save color and depth test
@@ -485,10 +485,10 @@ void Na3DWidget::paintGL()
         glEnable(GL_LINE_SMOOTH);
         glColor3f(0,0,0); // black marker color
         glLineWidth(3.0);
-        paintFiducial(focus);
+        paintFiducial(focus0);
         glColor3f(1.0,1.0,0.7); // pale yellow marker color
         glLineWidth(1.5);
-        paintFiducial(focus);
+        paintFiducial(focus0);
         glPopAttrib();
     }
 }
