@@ -21,13 +21,12 @@ bool CommandManager::execute() {
     }
     string firstArg=(*argList)[0];
     if (firstArg==ColorSeparatorConsolidator::getCommandLineDescription()) {
-        if ((*argList).size()<3) {
+        ColorSeparatorConsolidator csc;
+        int status=csc.processArgs(argList);
+        if (status!=0) {
             cout << getUsageString();
             return false;
         }
-        QString separatorDirectory=(*argList)[1];
-        QString outputFile=(*argList)[2];
-        ColorSeparatorConsolidator csc(separatorDirectory, outputFile);
         return csc.execute();
     } else if (firstArg==CellCounter3D::getCommandLineDescription()) {
         CellCounter3D cellCounter;
@@ -59,7 +58,8 @@ string CommandManager::getUsageString() {
     usage.append("-cmd\n");
     usage.append("\n");
     usage.append(ColorSeparatorConsolidator::getCommandLineDescription());
-    usage.append("  <separator output directory>  <output mask file>\n");
+    usage.append("\n");
+    usage.append(ColorSeparatorConsolidator::getUsage());
     usage.append("\n");
     usage.append(CellCounter3D::getCommandLineDescription());
     usage.append("\n");

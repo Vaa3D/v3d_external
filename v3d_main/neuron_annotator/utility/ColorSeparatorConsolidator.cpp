@@ -19,10 +19,10 @@ using namespace std;
 
 QString ColorSeparatorConsolidator::maskFileRegExpString("(\\S+)\\.seg\\_(\\d+)\\.n(\\d+)\\.tif");
 
-ColorSeparatorConsolidator::ColorSeparatorConsolidator(QString separatorDirectory, QString outputFile)
+ColorSeparatorConsolidator::ColorSeparatorConsolidator()
 {
-    this->separatorDirectory=separatorDirectory;
-    this->outputFile=outputFile;
+    this->separatorDirectory="";
+    this->outputFile="";
     maskFileRegExp.setPattern(ColorSeparatorConsolidator::maskFileRegExpString);
 }
 
@@ -203,3 +203,21 @@ bool ColorSeparatorConsolidator::writeMask() {
     }
     return true;
 }
+
+int ColorSeparatorConsolidator::processArgs(vector<char*> *argList) {
+    for (int i=0;i<argList->size();i++) {
+        QString arg=(*argList)[i];
+        if (arg=="-i") {
+            i++;
+            separatorDirectory = (*argList)[i];
+        } else if (arg=="-o") {
+            i++;
+            outputFile = (*argList)[i];
+        }
+    }
+    if (separatorDirectory=="" || outputFile=="") {
+        return 1;
+    }
+    return 0;
+}
+

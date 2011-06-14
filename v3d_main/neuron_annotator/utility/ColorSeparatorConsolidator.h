@@ -12,14 +12,28 @@ using namespace std;
 class ColorSeparatorConsolidator
 {
 public:
-    ColorSeparatorConsolidator(QString separatorDirectory, QString outputFile);
+    ColorSeparatorConsolidator();
     bool execute();
+    int processArgs(vector<char*> *argList);
 
     static string getCommandLineDescription() {
         return "consolidate-color-separator-output";
     }
 
     static QString maskFileRegExpString;
+
+    static string getUsage() {
+        string usage;
+        usage.append("  ColorSeparatorConsolidator                                              \n");
+        usage.append("                                                                          \n");
+        usage.append("    This tool takes the output of the NeuronSeparator pipeline and creates\n");
+        usage.append("    a consolidated mask file which is used as input for the NeuronAnnotator.\n");
+        usage.append("                                                                          \n");
+        usage.append("   -i  <separator results directory>                                      \n");
+        usage.append("   -o  <output mask file>                                                 \n");
+        usage.append("\n");
+        return usage;
+    }
 
 private:
     QString separatorDirectory;
