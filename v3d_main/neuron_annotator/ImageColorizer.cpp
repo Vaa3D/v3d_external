@@ -1,6 +1,4 @@
 #include "ImageColorizer.h"
 
-ImageColorizer::ImageColorizer(QObject *parent) :
-    QObject(parent)
-{
-}
+template class ImageColorizer<float>;
+

@@ -65,7 +65,7 @@ void MipLayer::enableWithSignal(bool isEnabled) {
 bool MipLayer::isEnabled() const {return m_isEnabled;}
 
 void MipLayer::updateData() { // reexamine data from child images
-    qDebug() << "updateData " << this;
+    // qDebug() << "updateData " << this;
     // Use an early "return()" statement if you don't want to emit layerChanged()
     // I don't know how to update without some child images
     if (! child1) return;

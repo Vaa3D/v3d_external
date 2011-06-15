@@ -156,7 +156,7 @@ bool MipData::loadMy4DImage(const My4DImage* img, const My4DImage* maskImg)
                 nextLevel.push_back(new MipLayer(node1, node2, this));
             }
             layers = nextLevel;
-            qDebug() << "layers size = " << layers.size();
+            // qDebug() << "layers size = " << layers.size();
         }
         assert(layers.size() == 1);
         combinedMipLayer = layers.back();

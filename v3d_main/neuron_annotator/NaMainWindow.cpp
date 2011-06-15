@@ -99,6 +99,8 @@ NaMainWindow::NaMainWindow()
     connect(ui.zoomWidget, SIGNAL(zoomValueChanged(qreal)),
             &sharedCameraModel, SLOT(setScale(qreal)));
     connect(&sharedCameraModel, SIGNAL(scaleChanged(qreal)),
+            ui.zoomWidget, SLOT(setZoomValue(qreal)));
+    connect(&sharedCameraModel, SIGNAL(scaleChanged(qreal)),
             this, SLOT(updateViewers()));
 
     // Crosshair

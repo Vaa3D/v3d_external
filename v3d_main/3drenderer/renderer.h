@@ -75,7 +75,7 @@ public:
 
 	bool hasError() {return b_error;}
 	void makeCurrent(); //ensure right-GL-context when resize-view, animate, mouse-drop, delete-object, select-object etc. across multiple views, 081105
-	void drawString(float x, float y, float z, char* text, int shadow=0);
+        void drawString(float x, float y, float z, const char* text, int shadow=0);
 	bool beStill();
 
 public:

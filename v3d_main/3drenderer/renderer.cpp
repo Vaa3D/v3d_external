@@ -68,7 +68,7 @@ void Renderer::makeCurrent()
 		w->makeCurrent();
 }
 
-void Renderer::drawString(float x, float y, float z, char* text, int shadow)
+void Renderer::drawString(float x, float y, float z, const char* text, int shadow)
 {
     if (! widget)  return;
 
@@ -1630,7 +1630,7 @@ int err_printf(char* format, ...)
 
 #define BS_PRINTF_BUFSIZE 1024*4
 static char bs_printf_buffer[BS_PRINTF_BUFSIZE];
-char* bs_printf(char* format, ...)
+char* bs_printf(const char* format, ...)
 {
 	va_list args;
 	va_start (args, format);

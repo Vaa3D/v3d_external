@@ -45,18 +45,26 @@ template<class ValueType>
 class MipDataColumn : public SimpleArray<MipDataPixel<ValueType> > {};
 
 template<class ValueType>
-class MipDataImage : public SimpleArray<MipDataColumn<ValueType> > {};
+class MipDataImage : public SimpleArray<MipDataColumn<ValueType> >
+{
+public:
+    int numChannels() const;
+};
 
 
 template<class ValueType>
 class ImageColorizer : public QObject
 {
 public:
-    explicit ImageColorizer(unsigned int numChannels, QObject *parent = 0)
-        : channelColor(numChannels)
+    explicit ImageColorizer(QObject *parent = 0)
+    {
+    }
+
+    void setNumberOfChannels(int numChannels)
     {
         // Default color tables
         assert(numChannels > 0);
+        channelColor.resize(numChannels);
         // If there is just one color, make it white
         if (numChannels == 1) {
             channelColor[0] = Qt::white;
@@ -80,6 +88,7 @@ public:
 
     QRgb getCorrectedColor(ValueType value, unsigned int channelIndex) const;
     QRgb getCorrectedColor(ValueType* pixel) const;
+    static ValueType getCorrectedIntensity(ValueType value);
 
     // TODO - inline conversion of <some 16-bit image type> to QImage
     void updateColors2D(const MipDataImage<ValueType>& input, QImage& output) const

@@ -25,6 +25,9 @@ set(V3D_SRCS
   DownloadManager.cpp
   CommandManager.cpp
   v3d_application.cpp
+  ../cell_counter/CellCounter3D.cpp
+  v3d_commandlineparser.cpp
+  pluginfunchandler.cpp
   v3d_actions.cpp)
 
 set(V3D_RCCS v3d.qrc ../3drenderer/3drenderer.qrc)

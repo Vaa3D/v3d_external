@@ -1,6 +1,6 @@
 #include "NeuronMipManager.h"
 
-NeuronMipManager::NeuronMipManager(QObject *parent) :
-    QObject(parent)
+NeuronMipManager::NeuronMipManager(QObject *parent)
+    : QObject(parent)
 {
 }

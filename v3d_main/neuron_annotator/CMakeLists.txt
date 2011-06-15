@@ -9,21 +9,29 @@ QT4_WRAP_UI(NA_UI_SRCS
     NaMainWindow.ui
     GammaWidget.ui
     AngleWidget.ui
-    ZoomWidget.ui
+    gui/ZoomWidget.ui
 )
+
 QT4_WRAP_CPP(NA_MOC_SRCS
+    AngleWidget.h
     AnnotationSession.h
     geometry/CameraModel.h
     GalleryButton.h
     GammaWidget.h
+    gui/ZoomSpinBox.h
+    gui/ZoomWidget.h
+    MipData.h
+    MipLayer.h
+    MouseClickManager.h
     Na3DWidget.h
     NaLargeMIPWidget.h
     NaMainWindow.h
     NaZStackWidget.h
+    NeuronMipManager.h
     NeuronSelector.h
 )
 
-file(GLOB NA_SRCS "*.cpp")
+file(GLOB NA_SRCS "*.cpp" "gui/*.cpp" "geometry/*.cpp" "utility/*.cpp")
 
 add_library(NeuronAnnotatorLib STATIC 
     ${NA_SRCS} ${NA_UI_SRCS} ${NA_MOC_SRCS})
