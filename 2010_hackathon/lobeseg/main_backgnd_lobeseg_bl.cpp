@@ -4,6 +4,7 @@
 //2008-07-12
 //2008-08-22: a major revision by Hanchuan Peng
 //2010-09-30: fix a segmentation fault bug for single channel image by Lei Qu
+//2011-06-15: always add an additional channel to the output to hold the mask
 
 
 #include <stdio.h>
@@ -46,6 +47,7 @@ void printHelp()
 	printf("\t [-S]                               output the seperating surface.\n");
 	printf("\n");
 	printf("Demo :\t lobe_seger -i input.tif -o output.tif -s -N 20 -p 30x0+100x30 -k left -S\n");
+	printf("Version: 0.91 (Copyright: Hanchuan Peng)\n");
 	return;
 }
 
@@ -375,36 +377,42 @@ int main (int argc, char *argv[])
 	}
 	
 	//prepare the data space for output
+	V3DLONG sz_output[4];
+	sz_output[0] = sz_input[0];
+	sz_output[1] = sz_input[1];
+	sz_output[2] = sz_input[2];
+	sz_output[3] = sz_input[3]+1;
+	
 	{
 		img_output=0;
 		//img_output = new unsigned char [(V3DLONG)sz_input[0]*sz_input[1]*sz_input[2]*3];
-		img_output = new unsigned char [(V3DLONG)sz_input[0]*sz_input[1]*sz_input[2]*3]();//modified by Lei Qu @20100930
+		img_output = new unsigned char [(V3DLONG)sz_output[0]*sz_output[1]*sz_output[2]*sz_output[3]]();//110611
 		
 		unsigned char **** img_input_4d=0;
 		unsigned char **** img_output_4d=0;
 		
 		new4dpointer(img_input_4d, sz_input[0], sz_input[1], sz_input[2], sz_input[3], img_input);
-		new4dpointer(img_output_4d, sz_input[0], sz_input[1], sz_input[2], sz_input[3], img_output);
+		new4dpointer(img_output_4d, sz_output[0], sz_output[1], sz_output[2], sz_output[3], img_output); //change to sz_output by Hanchuan, 110615. prepare store the output in the last (additional channel)
 		
-		for (V3DLONG z=0; z<sz_input[2]; z++)
+		for (V3DLONG z=0; z<sz_output[2]; z++) 
 		{
-			for (V3DLONG j=0; j<sz_input[1]; j++)
+			for (V3DLONG j=0; j<sz_output[1]; j++)
 			{
-				for (V3DLONG i=0; i<sz_input[0]; i++)
+				for (V3DLONG i=0; i<sz_output[0]; i++)
 				{
 					//for (V3DLONG cc=0;cc<2; cc++)
-					for (V3DLONG cc=0;cc<sz_input[3]; cc++)//modified by Lei Qu @20100930
+					for (V3DLONG cc=0;cc<sz_input[3]; cc++)//modified by Lei Qu @20100930 //note here no need to +1 as the output data should have been initialized to 0 anyway
 						img_output_4d[cc][z][j][i] = img_input_4d[cc][z][j][i];
 				}
 			}
 		}
 		
 		if (img_input_4d) {delete4dpointer(img_input_4d, sz_input[0], sz_input[1], sz_input[2], sz_input[3]); img_input_4d=0;}
-		if (img_output_4d) {delete4dpointer(img_output_4d, sz_input[0], sz_input[1], sz_input[2], sz_input[3]); img_output_4d=0;}
+		if (img_output_4d) {delete4dpointer(img_output_4d, sz_output[0], sz_output[1], sz_output[2], sz_output[3]); img_output_4d=0;} 
 	}
 	
 	//now call the computation program
-	out_channel_no = 2;
+	out_channel_no = sz_output[3]-1; //changed by Hanchuan, 110615
 	if(both_sides)
 	{
 		if (!do_lobeseg_bdbminus(img_input, sz_input, img_output, in_channel_no, out_channel_no, mypara))
@@ -429,7 +437,7 @@ int main (int argc, char *argv[])
 
 	if (img_output && sz_input)
 	{
-		if (saveImage(dfile_output, (const unsigned char *)img_output, sz_input, sizeof(unsigned char))!=true)
+		if (saveImage(dfile_output, (const unsigned char *)img_output, sz_output, sizeof(unsigned char))!=true)
 		{
 			fprintf(stderr, "Error happens in file writing. Exit. \n");
 		}

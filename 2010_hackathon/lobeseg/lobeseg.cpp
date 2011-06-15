@@ -3,6 +3,7 @@
 //last update: by Hanchuan Peng 090609. set the outputimage's in-chann's lobe rgn to be 0 after the segmentation
 //May 16, 2011 : by Hang, cp do_lobeseg_bdbminus -> do_lobeseg_bdbminus_onesideonly
 //May 30, 2011 : by Hang, 1. complex boundary detection,  2. any position (x1,y1) (x2,y2)
+//June 15, 2011. changed by Hanchuan Peng to allow saving the mask to the last channel
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -233,7 +234,7 @@ bool do_lobeseg_bdbminus(unsigned char *inimg1d, const V3DLONG sz[4], unsigned c
 
 	{
 		unsigned char **** img_output_4d=0;
-		new4dpointer(img_output_4d, sz[0], sz[1], sz[2], sz[3], outimg1d);
+		new4dpointer(img_output_4d, sz[0], sz[1], sz[2], sz[3]+1, outimg1d); //add +1 to hold the output mask data
 
 		for (z=0; z<sz[2]; z++)
 		{
@@ -259,7 +260,7 @@ bool do_lobeseg_bdbminus(unsigned char *inimg1d, const V3DLONG sz[4], unsigned c
 				}
 			}
 
-			if (sz[3]-1>=out_channel_no) //set up the mask if possible. 090730
+			if (sz[3]>=out_channel_no) //set up the mask if possible. 090730 //change from sz[3]-1 to sz[3]. to allow save the mask in the last (additional) channel
 			{
 				for (j=0; j<sz[1]; j++)
 				{
@@ -518,7 +519,7 @@ bool do_lobeseg_bdbminus_onesideonly(unsigned char *inimg1d, const V3DLONG sz[4]
 
 	{
 		unsigned char **** img_output_4d=0;
-		new4dpointer(img_output_4d, sz[0], sz[1], sz[2], sz[3], outimg1d);
+		new4dpointer(img_output_4d, sz[0], sz[1], sz[2], sz[3]+1, outimg1d);  //add +1 by Hanchuan, 110615
 
 		for (z=0; z<sz[2]; z++)
 		{
