@@ -26,7 +26,7 @@ OBJS = bdb_minus.o \
        stackutil.o \
        mst_prim_c.o \
        bfs_1root.o 
-#       point_array.o
+
 SHARED_FUNC_DIR = ../../v3d_main/basic_c_fun/
 SHARED_BDB_DIR = ../../v3d_main/worm_straighten_c/
  
@@ -49,8 +49,6 @@ mg_utilities.o : ${SHARED_FUNC_DIR}mg_utilities.cpp ${SHARED_FUNC_DIR}mg_utiliti
 	${CC} ${CC_FLAGS} -c ${SHARED_FUNC_DIR}mg_utilities.cpp
 mg_image_lib.o : ${SHARED_FUNC_DIR}mg_image_lib.cpp ${SHARED_FUNC_DIR}mg_image_lib.h
 	${CC} ${CC_FLAGS} -c ${SHARED_FUNC_DIR}mg_image_lib.cpp
-#point_array.o: point_array.cpp point_array.h
-#	${CC} ${CC_FLAGS} -c $<
 clean :
 	rm *.o
 	rm lobe_seger
