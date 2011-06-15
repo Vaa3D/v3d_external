@@ -213,7 +213,6 @@
                   <height>240</height>
                  </size>
                 </property>
-                <zorder>viewerSelectorAndControlFrame</zorder>
                </widget>
               </item>
              </layout>
@@ -267,7 +266,7 @@
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="GammaWidget" name="gammaWidget_MIP">
+                  <widget class="GammaWidget" name="gammaWidget_MIP" native="true">
                    <property name="minimumSize">
                     <size>
                      <width>0</width>
@@ -312,7 +311,7 @@
                    </property>
                    <layout class="QGridLayout" name="gridLayout">
                     <item row="0" column="0">
-                     <widget class="GammaWidget" name="gammaWidget_Zstack">
+                     <widget class="GammaWidget" name="gammaWidget_Zstack" native="true">
                       <property name="minimumSize">
                        <size>
                         <width>0</width>
@@ -461,6 +460,10 @@
                           </item>
                           <item>
                            <widget class="QSpinBox" name="BoxSize_spinBox">
+                            <property name="toolTip">
+                             <string>To explore High Dynamic Range Images, HDR tool adjusts the display range to local intensity range in the search box.
+You can also resize the search box by Ctrl + left mouse click.</string>
+                            </property>
                             <property name="maximum">
                              <number>1000</number>
                             </property>
@@ -483,31 +486,6 @@
                            </spacer>
                           </item>
                          </layout>
-                        </widget>
-                       </item>
-                       <item>
-                        <widget class="QLabel" name="label">
-                         <property name="font">
-                          <font>
-                           <family>Arial Narrow</family>
-                           <pointsize>12</pointsize>
-                          </font>
-                         </property>
-                         <property name="text">
-                          <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Arial Narrow'; font-size:12pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Lucida Grande'; font-size:10pt;&quot;&gt;To explore High Dynamic &lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Lucida Grande'; font-size:10pt;&quot;&gt;Range Images, HDR tool &lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Lucida Grande'; font-size:10pt;&quot;&gt;adjusts the display range&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Lucida Grande'; font-size:10pt;&quot;&gt;to local intensity range &lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Lucida Grande'; font-size:10pt;&quot;&gt;in the search box.&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Lucida Grande'; font-size:10pt;&quot;&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Lucida Grande'; font-size:10pt;&quot;&gt;You can also resize &lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Lucida Grande'; font-size:10pt;&quot;&gt;the search box by&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Lucida Grande'; font-size:10pt;&quot;&gt;Ctrl + left mouse click.&lt;/span&gt;&lt;span style=&quot; font-family:'Lucida Grande'; font-size:11pt;&quot;&gt; &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                         </property>
                         </widget>
                        </item>
                       </layout>
@@ -636,7 +614,7 @@ p, li { white-space: pre-wrap; }
                         <number>0</number>
                        </property>
                        <item>
-                        <widget class="GammaWidget" name="gammaWidget_3D">
+                        <widget class="GammaWidget" name="gammaWidget_3D" native="true">
                          <property name="minimumSize">
                           <size>
                            <width>0</width>
@@ -703,33 +681,33 @@ p, li { white-space: pre-wrap; }
                         <number>0</number>
                        </property>
                        <item>
-                        <widget class="AngleWidget" name="rotXWidget">
+                        <widget class="AngleWidget" name="rotXWidget" native="true">
                          <property name="sizePolicy">
                           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                            <horstretch>0</horstretch>
                            <verstretch>0</verstretch>
                           </sizepolicy>
                          </property>
-                         <property name="textLabel">
+                         <property name="textLabel" stdset="0">
                           <string>RotX</string>
                          </property>
                         </widget>
                        </item>
                        <item>
-                        <widget class="AngleWidget" name="rotYWidget">
+                        <widget class="AngleWidget" name="rotYWidget" native="true">
                          <property name="sizePolicy">
                           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                            <horstretch>0</horstretch>
                            <verstretch>0</verstretch>
                           </sizepolicy>
                          </property>
-                         <property name="textLabel">
+                         <property name="textLabel" stdset="0">
                           <string>RotY</string>
                          </property>
                         </widget>
                        </item>
                        <item>
-                        <widget class="AngleWidget" name="rotZWidget">
+                        <widget class="AngleWidget" name="rotZWidget" native="true">
                          <property name="sizePolicy">
                           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                            <horstretch>0</horstretch>
@@ -748,7 +726,7 @@ p, li { white-space: pre-wrap; }
                            <height>0</height>
                           </size>
                          </property>
-                         <property name="textLabel">
+                         <property name="textLabel" stdset="0">
                           <string>RotZ</string>
                          </property>
                         </widget>
@@ -783,14 +761,17 @@ p, li { white-space: pre-wrap; }
                      </widget>
                     </item>
                     <item>
+                     <widget class="QWidget" name="compartmentmapwidget" native="true"/>
+                    </item>
+                    <item>
                      <spacer name="verticalSpacer">
                       <property name="orientation">
                        <enum>Qt::Vertical</enum>
                       </property>
                       <property name="sizeHint" stdset="0">
                        <size>
-                        <width>158</width>
-                        <height>83</height>
+                        <width>155</width>
+                        <height>221</height>
                        </size>
                       </property>
                      </spacer>
@@ -809,7 +790,7 @@ p, li { white-space: pre-wrap; }
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_9">
                 <item>
-                 <widget class="ZoomWidget" name="zoomWidget"/>
+                 <widget class="ZoomWidget" name="zoomWidget" native="true"/>
                 </item>
                 <item>
                  <widget class="QPushButton" name="resetViewButton">
@@ -834,7 +815,7 @@ p, li { white-space: pre-wrap; }
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_6">
                 <item>
-                 <widget class="GammaWidget" name="angleWidget"/>
+                 <widget class="GammaWidget" name="angleWidget" native="true"/>
                 </item>
                 <item>
                  <widget class="QFrame" name="frame_13">
@@ -1099,7 +1080,7 @@ p, li { white-space: pre-wrap; }
      <x>0</x>
      <y>0</y>
      <width>1008</width>
-     <height>22</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
