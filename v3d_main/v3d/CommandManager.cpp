@@ -5,6 +5,7 @@
 #include "CommandManager.h"
 #include "../neuron_annotator/utility/ColorSeparatorConsolidator.h"
 #include "../cell_counter/CellCounter3D.h"
+#include "../neuron_annotator/utility/SingleNeuronLsmSetReader.h"
 
 using namespace std;
 
@@ -45,6 +46,14 @@ bool CommandManager::execute() {
             cellCounter.writeOutputReportFile();
             return true;
         }
+    } else if (firstArg==SingleNeuronLsmSetReader::getCommandLineDescription()) {
+        SingleNeuronLsmSetReader lsmSetReader;
+        int status=lsmSetReader.processArgs(argList);
+        if (status!=0) {
+            cout << getUsageString();
+            return false;
+        }
+        return lsmSetReader.execute();
     } else {
         cout << getUsageString();
         return false;
@@ -65,5 +74,8 @@ string CommandManager::getUsageString() {
     usage.append("\n");
     usage.append(CellCounter3D::getUsage());
     usage.append("\n");
+    usage.append(SingleNeuronLsmSetReader::getCommandLineDescription());
+    usage.append("\n");
+    usage.append(SingleNeuronLsmSetReader::getUsage());
     return usage;
 }
