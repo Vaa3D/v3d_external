@@ -2,79 +2,89 @@
 #define MYFEATURE_H_H
 #include <iostream>
 #include <vector>
+#include <map>
 #include "v3d_interface.h"
 #include "v3d_basicdatatype.h"
+#include "v3d_message.h"
 #include "img_definition.h"
 
 #include "compute_moments.h"
 
 using namespace std;
 
-typedef float REAL;
+typedef double REAL;
+
 enum MyFeatureType{NONE_FEATURE, AVERAGE_FEATURE, STD_VAR_FEATURE, SIFT_FEATURE, INVARIANT_MOMENT_FEATURE};
 
-class MyFeature
+
+template<class T> class MyFeature : public Image2DSimple<T>
 {
-	public:
-		MyFeature()
-		{
-			m_ndims = 1;
-			m_size = 0;
-			m_featureType = NONE_FEATURE;
-		}
+	public :
+		MyFeature(){m_featureType = NONE_FEATURE;}
 		~MyFeature(){};
 
-		void printFeatures()
+		V3DLONG size()
 		{
-			for(int i = 0; i < m_size; i++)
-			{
-				for(int j = 0; j < m_ndims; j++)
-				{
-					cout<<m_features[i][j]<<" ";
-				}
-				cout<<endl;
-			}
+			return (V3DLONG)sz1();
+		}
+		V3DLONG dims()
+		{
+			return (V3DLONG)sz0();
+		}
+		MyFeatureType getFeatureType() const
+		{
+			return m_featureType;
 		}
 
-		template <class T> bool setFeatures(LandmarkList & landmarks, Vol3DSimple<T> *vol3d, MyFeatureType type)
+		template <class TT> int setFeatures(LandmarkList & landmarks, TT *inimg1d, V3DLONG sz[3], MyFeatureType type)
 		{
-			if(! vol3d || !vol3d->valid()) return false;
-			T *** data3d = vol3d->getData3dHandle();
+			if(! inimg1d || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0) return -1;
+			TT *** data3d = 0;
+			try
+			{
+				new3dpointer(data3d, sz[0], sz[1], sz[2], inimg1d);
+			}
+			catch(...)
+			{
+				if(data3d) delete3dpointer(data3d, sz[0], sz[1], sz[2]);
+				return -1;
+			}
 
 			if(type == AVERAGE_FEATURE)
 			{
 				cout<<"set average intensity feature"<<endl;
 				m_featureType = type;
-				m_ndims = 1;
-				m_size = landmarks.size();
-				m_features.resize(m_size);
-				float radius = 5.0;
-				for(int i = 0; i < m_size; i++)
+				V3DLONG sz0 = 1;
+				V3DLONG sz1 = landmarks.size();
+				allocateMemory(sz0, sz1);
+				T ** features = getData2dHandle();
+				double radius = 5.0;
+				for(V3DLONG i = 0; i < sz1; i++)
 				{
-					int posx = landmarks[i].x;
-					int posy = landmarks[i].y;
-					int posz = landmarks[i].z;
+					V3DLONG posx = landmarks[i].x;
+					V3DLONG posy = landmarks[i].y;
+					V3DLONG posz = landmarks[i].z;
 
-					int minx = posx - radius >= 0 ? posx - radius : 0;
-					int maxx = posx + radius < vol3d->sz0() ? posx + radius : vol3d->sz0();
+					V3DLONG minx = posx - radius >= 0 ? posx - radius : 0;
+					V3DLONG maxx = posx + radius < sz[0] ? posx + radius : sz[0];
 
-					int miny = posy - radius >= 0 ? posy - radius : 0;
-					int maxy = posy + radius < vol3d->sz1() ? posy + radius : vol3d->sz1();
+					V3DLONG miny = posy - radius >= 0 ? posy - radius : 0;
+					V3DLONG maxy = posy + radius < sz[1] ? posy + radius : sz[1];
 
-					int minz = posz - radius >= 0 ? posz - radius : 0;
-					int maxz = posz + radius < vol3d->sz2() ? posz + radius : vol3d->sz2();
+					V3DLONG minz = posz - radius >= 0 ? posz - radius : 0;
+					V3DLONG maxz = posz + radius < sz[2] ? posz + radius : sz[2];
 
-					int count = 0;
-					float sum = 0;
-					for(int x = minx; x <= maxx; x++)
+					V3DLONG count = 0;
+					double sum = 0;
+					for(V3DLONG x = minx; x <= maxx; x++)
 					{
-						int dx = x - posx;
-						for(int y = miny; y <= maxy; y++)
+						V3DLONG dx = x - posx;
+						for(V3DLONG y = miny; y <= maxy; y++)
 						{
-							int dy = y - posy;
-							for(int z = minz; z < maxz; z++)
+							V3DLONG dy = y - posy;
+							for(V3DLONG z = minz; z < maxz; z++)
 							{
-								int dz = z - posz;
+								V3DLONG dz = z - posz;
 								if(dx*dx + dy*dy + dz*dz <= radius*radius)
 								{
 									sum += data3d[z][y][x]; 
@@ -83,47 +93,48 @@ class MyFeature
 							}
 						}
 					}
-					m_features[i].push_back(sum/count);		
+					features[i][0] = (T)(sum/count);		
 				}
 			}
 			else if(type == STD_VAR_FEATURE)
 			{
 				cout<<"set stand variance feature"<<endl;
 				m_featureType = type;
-				m_ndims = 2;
-				m_size = landmarks.size();
-				m_features.resize(m_size);
-				float radius = 5.0;
-				for(int i = 0; i < m_size; i++)
+				V3DLONG sz0 = 2;
+				V3DLONG sz1 = landmarks.size();
+				allocateMemory(sz0, sz1);
+				T ** features = getData2dHandle();
+				double radius = 5.0;
+				for(V3DLONG i = 0; i < sz1; i++)
 				{
-					int posx = landmarks[i].x;
-					int posy = landmarks[i].y;
-					int posz = landmarks[i].z;
+					V3DLONG posx = landmarks[i].x;
+					V3DLONG posy = landmarks[i].y;
+					V3DLONG posz = landmarks[i].z;
 
-					int minx = posx - radius >= 0 ? posx - radius : 0;
-					int maxx = posx + radius < vol3d->sz0() ? posx + radius : vol3d->sz0();
+					V3DLONG minx = posx - radius >= 0 ? posx - radius : 0;
+					V3DLONG maxx = posx + radius < sz[0] ? posx + radius : sz[0];
 
-					int miny = posy - radius >= 0 ? posy - radius : 0;
-					int maxy = posy + radius < vol3d->sz1() ? posy + radius : vol3d->sz1();
+					V3DLONG miny = posy - radius >= 0 ? posy - radius : 0;
+					V3DLONG maxy = posy + radius < sz[1] ? posy + radius : sz[1];
 
-					int minz = posz - radius >= 0 ? posz - radius : 0;
-					int maxz = posz + radius < vol3d->sz2() ? posz + radius : vol3d->sz2();
+					V3DLONG minz = posz - radius >= 0 ? posz - radius : 0;
+					V3DLONG maxz = posz + radius < sz[2] ? posz + radius : sz[2];
 
-					int count = 0;
-					float sum_square = 0.0;
-					float sum = 0.0;
-					for(int x = minx; x <= maxx; x++)
+					V3DLONG count = 0;
+					double sum_square = 0.0;
+					double sum = 0.0;
+					for(V3DLONG x = minx; x <= maxx; x++)
 					{
-						int dx = x - posx;
-						for(int y = miny; y <= maxy; y++)
+						V3DLONG dx = x - posx;
+						for(V3DLONG y = miny; y <= maxy; y++)
 						{
-							int dy = y - posy;
-							for(int z = minz; z < maxz; z++)
+							V3DLONG dy = y - posy;
+							for(V3DLONG z = minz; z < maxz; z++)
 							{
-								int dz = z - posz;
+								V3DLONG dz = z - posz;
 								if(dx*dx + dy*dy + dz*dz <= radius*radius)
 								{
-									int intensity = data3d[z][y][x];
+									V3DLONG intensity = data3d[z][y][x];
 									sum += intensity;
 									sum_square += intensity*intensity;
 									count++;
@@ -131,10 +142,10 @@ class MyFeature
 							}
 						}
 					}
-					float avg = sum / count;
-					float std_var = sqrt((sum_square - count * avg * avg)/(count - 1));
-					m_features[i].push_back(avg);
-					m_features[i].push_back(std_var);
+					double avg = sum / count;
+					double std_var = sqrt((sum_square - count * avg * avg)/(count - 1));
+					features[i][0] = (T)avg;
+					features[i][1] = (T)std_var;
 				}
 			}
 			else if(type == SIFT_FEATURE)
@@ -146,44 +157,140 @@ class MyFeature
 			{
 				cout<<"set invariant methods feature"<<endl;
 				m_featureType = type;
-				m_ndims = 0;
-				m_size = landmarks.size();
-				m_features.resize(m_size);
+				V3DLONG sz0 = 5;
+				V3DLONG sz1 = landmarks.size();
+				allocateMemory(sz0, sz1);
+				T ** features = getData2dHandle();
 
 				Vector1DSimple<double> momentVec;
-				int r = 5;
-				//KernelSet* ks = new KernelSet(4, r, KT_CUBE_ALL1);
-				for(int i = 0; i < m_size; i++)
+				momentVec.resize(sz0);
+				V3DLONG r = 5;
+
+				for(V3DLONG i = 0; i < sz1; i++)
 				{
 					V3DLONG x0 = landmarks[i].x;
 					V3DLONG y0 = landmarks[i].y;
 					V3DLONG z0 = landmarks[i].z;
 
-					computeGMI(momentVec, vol3d, x0, y0, z0, r);
-					m_ndims = momentVec.sz0();
-					cout<<"momentVec.sz0() = "<<m_ndims<<endl;
+					computeGMI(momentVec, inimg1d, sz, x0, y0, z0, r);
 
 					double* data1d = momentVec.getData1dHandle();
-					for(int j = 0; j < m_ndims; j++) m_features[i].push_back(data1d[j]);
+					for(V3DLONG ii = 0; ii < sz0; ii++) features[i][ii] = (T)data1d[ii];
 				}
-
-				//if(ks) delete ks;
 			}
 			else 
 			{
 				m_featureType = NONE_FEATURE;
-				return false;
+				return -1;
 			}
-			return true;
+			return 1;
+		}
+		void printFeatures()
+		{
+			QString output;
+			T ** features = getData2dHandle();
+			for(V3DLONG j = 0; j < sz1(); j++)
+			{
+				for(V3DLONG i = 0; i < sz0(); i++)
+				{
+					//cout<<m_features[i][j]<<" ";
+					output.append(QObject::tr("%1 ").arg(features[j][i]));
+				}
+				//cout<<endl;
+				output.append("\n");
+			}
+			v3d_msg(output);
 		}
 
-		MyFeatureType  featureType() {return m_featureType;}
-
-	private:
-		int m_ndims;
-		int m_size;
-		vector<vector<REAL> > m_features;
+	private :
 		MyFeatureType m_featureType;
 };
 
+template <class T> int get_matched_feature_list(V3DLONG* &match_list, V3DLONG &match_sz, MyFeature<T>& sub_feat, MyFeature<T>& tar_feat)
+{
+	if(sub_feat.getFeatureType() != tar_feat.getFeatureType() || match_list != 0 || match_sz <= 0 || match_sz > tar_feat.size())
+	{
+		cerr<<"compare two features with different type or match_list != 0"<<endl;
+		return -1;
+	}
+	V3DLONG feat_dims = sub_feat.dims();
+	V3DLONG sub_sz = sub_feat.size();
+	V3DLONG tar_sz = tar_feat.size();
+	
+	try
+	{
+		match_list = new V3DLONG[tar_sz];
+	}
+	catch(...)
+	{
+		if(match_list) {delete[] match_list; match_list = 0;}
+		cerr<<"error when alloc memory for match_list"<<endl;
+		return -1;
+	}
+
+	if(match_sz == tar_sz)
+	{
+		V3DLONG i,j,d;
+		V3DLONG count = 0;
+		
+		T ** sub_data2d = sub_feat.getData2dHandle();
+		T ** tar_data2d = tar_feat.getData2dHandle();
+
+		for(i = 0; i < tar_sz; i++)
+		{
+			double min_dist = 0.0;
+			V3DLONG min_id = -1;
+			for(j = 0; j < sub_sz; j++)
+			{
+				double dist = 0.0;
+				for(d = 0; d < feat_dims; d++) dist += (tar_data2d[i][d] - sub_data2d[j][d]) * (tar_data2d[i][d] - sub_data2d[j][d]);
+				if( min_id == -1){ min_id = j; min_dist = dist;}
+				else
+				{
+					if(dist < min_dist)
+					{
+						min_id = j;
+						min_dist = dist;
+					}
+				}
+			}
+			match_list[count++] = min_id;
+		}
+	}
+	else
+	{
+		V3DLONG i,j,d;
+		map<double, V3DLONG> dist_map;
+
+		T ** sub_data2d = sub_feat.getData2dHandle();
+		T ** tar_data2d = tar_feat.getData2dHandle();
+
+		for(i = 0; i < tar_sz; i++)
+		{
+			double min_dist = 0.0;
+			V3DLONG min_id = -1;
+			for(j = 0; j < sub_sz; j++)
+			{
+				double dist = 0.0;
+				for(d = 0; d < feat_dims; d++) dist += (tar_data2d[i][d] - sub_data2d[j][d]) * (tar_data2d[i][d] - sub_data2d[j][d]);
+				if( min_id == -1){ min_id = j; min_dist = dist;}
+				else
+				{
+					if(dist < min_dist)
+					{
+						min_id = j;
+						min_dist = dist;
+					}
+				}
+			}
+			dist_map[min_dist] = min_id;
+		}
+		V3DLONG count = 0;
+		for(map<double, V3DLONG>::iterator it = dist_map.begin(); it != dist_map.end(); it++)
+		{
+			match_list[count++] = it->second;
+		}
+	}
+	return 1;
+}
 #endif

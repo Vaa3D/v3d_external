@@ -3,6 +3,7 @@ TEMPLATE      = lib
 CONFIG       += plugin warning_off
 #CONFIG	     += X86_64 
 INCLUDEPATH  += ../../../v3d_main/basic_c_fun
+QMAKE_CXXFLAGS += -fpermissive 
 
 HEADERS       = partial_align_plugin.h
 HEADERS      += myfeature.h

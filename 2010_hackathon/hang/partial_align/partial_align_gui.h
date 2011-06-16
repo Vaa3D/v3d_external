@@ -25,14 +25,14 @@ public:
 		combo_subject = new QComboBox(); combo_subject->addItems(items);
 		combo_subject->setCurrentIndex(curindex);
 
-		label_subject = new QLabel(QObject::tr("Image 1: "));
+		label_subject = new QLabel(QObject::tr("Subject Image : "));
 
 		i1 = combo_subject->currentIndex();
 
 		combo_target =  new QComboBox(); combo_target->addItems(items);
 		combo_target->setCurrentIndex(curindex);
 
-		label_target = new QLabel(QObject::tr("Image 2: "));
+		label_target = new QLabel(QObject::tr("Target Image : "));
 
 		i2 = combo_target->currentIndex();
 

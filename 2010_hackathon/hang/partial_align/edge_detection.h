@@ -8,12 +8,35 @@
 //#include "utils.h"
 using namespace std;
 
-template <class T> int computeEdgeGrid(V3DLONG * (&grids)[3], T * eimg1d, V3DLONG sz[3], V3DLONG gsz[3])
+template <class T> int computeEdgeGrid(V3DLONG * (&grids)[3], V3DLONG &gridnum, V3DLONG gsz[3], T * inimg1d, V3DLONG sz[3], double sigma, int r, double theta);
+template <class T> int computeEdgeGrid(V3DLONG * (&grids)[3], V3DLONG &gridnum, V3DLONG gsz[3], T * eimg1d, V3DLONG sz[3]);
+template <class T1, class T2> bool computeGaussian(T2 * &outimg1d, T1 * inimg1d,V3DLONG sz[3], double sigma, int r);
+template <class T1, class T2> bool computeThreshold(T2 * &outimg1d, T1 * inimg1d,V3DLONG sz[3], double theta);
+template <class T> bool computeThreshold(T * &inimg1d,V3DLONG sz[3], double theta);
+template <class T1, class T2> bool computeGradience(T2 * &outimg1d, T1 * inimg1d, V3DLONG sz[3]);
+
+template <class T> int computeEdgeGrid(V3DLONG * (&grids)[3], V3DLONG &gridnum, V3DLONG gsz[3], T * inimg1d, V3DLONG sz[3], double sigma, int r, double theta)
+{
+	if(!inimg1d || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0 || gsz[0] <= 0 || gsz[1] <= 0 || gsz[2] <= 0 || sigma <= 0.0 || r % 2 != 1 || theta <= 0.0) return -1;
+
+	double * outimg1d = 0;
+	double * eimg1d = 0;
+	if(computeGaussian(outimg1d, inimg1d, sz, sigma, r) == -1) return -1;
+	if(computeThreshold(outimg1d, sz, theta) == -1) return -1;
+	if(computeGradience(eimg1d, outimg1d, sz) == -1) return -1;
+	if(computeEdgeGrid(grids, gridnum, gsz, eimg1d, sz) == -1) return -1;
+	
+	if(outimg1d) {delete outimg1d; outimg1d = 0;}
+	if(eimg1d) {delete eimg1d; eimg1d = 0;}
+	return 1;
+}
+
+template <class T> int computeEdgeGrid(V3DLONG * (&grids)[3], V3DLONG &gridsnum, V3DLONG gsz[3], T * eimg1d, V3DLONG sz[3])
 {
 	if(!eimg1d || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0 || gsz[0] <= 0 || gsz[1] <= 0 || gsz[2] <= 0) return -1;
 
-	V3DLONG gridsnum = gsz[0] * gsz[1] * gsz[2];
-	
+	gridsnum = gsz[0] * gsz[1] * gsz[2];
+
 	T *** eimg3d = 0;
 	try
 	{
@@ -77,13 +100,20 @@ template <class T> int computeEdgeGrid(V3DLONG * (&grids)[3], T * eimg1d, V3DLON
 						}
 					}
 				}
-				count++;
-				grids[2][count] = mz;// (bz + ez) /2; // mz;
-				grids[1][count] = my;//(by + ey) /2; // my;
-				grids[0][count] = mx;//(bx + ex) /2; // mx;
+				if(eimg3d[mz][my][mx] != 0)
+				{
+					count++;
+					grids[2][count] = mz;// (bz + ez) /2; // mz;
+					grids[1][count] = my;//(by + ey) /2; // my;
+					grids[0][count] = mx;//(bx + ex) /2; // mx;
+				}
 			}
 		}
 	}
+	gridsnum = count;
+
+	if(eimg3d) delete3dpointer(eimg3d, sz[0], sz[1], sz[2]);
+
 	return 1;
 }
 
@@ -143,6 +173,31 @@ template <class T1, class T2> bool computeGradience(T2 * &outimg1d, T1 * inimg1d
 	if(outimg3d) delete3dpointer(outimg3d, sz[0], sz[1], sz[2]);
 	if(inimg3d)  delete3dpointer(inimg3d, sz[0], sz[1], sz[2]);
 	return true;
+}
+
+template <class T1, class T2> bool computeThreshold(T2 * &outimg1d, T1 * inimg1d,V3DLONG sz[3], double theta)
+{
+	if(outimg1d != 0 || inimg1d == 0 || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0) return false;
+	V3DLONG size = sz[0]*sz[1]*sz[2];
+	try
+	{
+		outimg1d = new T2[size];
+	}
+	catch(...)
+	{
+		if(outimg1d) {delete outimg1d; outimg1d = 0;}
+		return false;
+	}
+	V3DLONG i;
+	for(i = 0; i < size; i++) outimg1d[i] = (inimg1d[i] < theta) ? 0 : inimg1d[i];
+}
+
+template <class T> bool computeThreshold(T * &inimg1d,V3DLONG sz[3], double theta)
+{
+	if(inimg1d == 0 || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0) return false;
+	V3DLONG size = sz[0]*sz[1]*sz[2];
+	V3DLONG i;
+	for(i = 0; i < size; i++) inimg1d[i] = (inimg1d[i] < theta) ? 0 : inimg1d[i];
 }
 
 template <class T1, class T2> bool computeGaussian(T2 * &outimg1d, T1 * inimg1d,V3DLONG sz[3], double sigma, int r)
@@ -254,11 +309,6 @@ template <class T1, class T2> bool computeGaussian(T2 * &outimg1d, T1 * inimg1d,
 	if(indata3d) delete3dpointer(indata3d, sz[0],sz[1],sz[2]);
 	if(outdata3d) delete3dpointer(outdata3d, sz[0],sz[1],sz[2]);
 	if(gauss3d) delete3dpointer(gauss3d, r, r, r);
-	return true;
-}
-
-template <class T> bool computeEdgeMask(Vol3DSimple<bool> * mask, Vol3DSimple<T> * eimg, double thresh)
-{
 	return true;
 }
 
