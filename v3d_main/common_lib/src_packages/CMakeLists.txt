@@ -28,7 +28,7 @@ macro(install_custom_tiff_library TIFF_TARFILE CFLAGS SUFFIX)
         ARGS
             CFLAGS=${CFLAGS}
             CXXFLAGS=${CFLAGS}
-            --disable-jpeg --disable-zlib --disable-pixarlog --enable-static --enable-cxx
+            --disable-jpeg --disable-zlib --disable-pixarlog --enable-static --disable-cxx --disable-shared
             --prefix=${TIFF_INSTALL_DIR}
         DEPENDS "${TIFF_BUILD_DIR}/VERSION"
         WORKING_DIRECTORY "${TIFF_BUILD_DIR}"
@@ -38,6 +38,7 @@ macro(install_custom_tiff_library TIFF_TARFILE CFLAGS SUFFIX)
     ### Make tiff library ###
     add_custom_command(
         OUTPUT "${TIFF_BUILD_DIR}/libtiff/.libs/libtiff.a"
+        COMMAND make clean
         COMMAND make
         DEPENDS "${TIFF_BUILD_DIR}/config.log"
         WORKING_DIRECTORY "${TIFF_BUILD_DIR}"
@@ -47,7 +48,7 @@ macro(install_custom_tiff_library TIFF_TARFILE CFLAGS SUFFIX)
     add_custom_command(
         OUTPUT
             "${TIFF_INSTALL_DIR}/lib/libtiff.a"
-            "${TIFF_INSTALL_DIR}/include/tiff.h"
+            # "${TIFF_INSTALL_DIR}/include/tiff.h"
         COMMAND make ARGS install
         DEPENDS "${TIFF_BUILD_DIR}/libtiff/.libs/libtiff.a"
         WORKING_DIRECTORY "${TIFF_BUILD_DIR}"
@@ -77,6 +78,8 @@ if(UNIX)
         # but create a new CUSTOM_TIFF_LIBRARY using lipo.
         set(TIFF_BUILD_DIR_PARENT ${CMAKE_CURRENT_BINARY_DIR}/build_tiff)
         set(TIFF_INSTALL_DIR "${TIFF_BUILD_DIR_PARENT}/install")
+        file(MAKE_DIRECTORY "${TIFF_INSTALL_DIR}")
+        file(MAKE_DIRECTORY "${TIFF_INSTALL_DIR}/lib")
         set(CUSTOM_TIFF_LIBRARY "${TIFF_INSTALL_DIR}/lib/libtiff.a")
         add_custom_command(
             OUTPUT "${CUSTOM_TIFF_LIBRARY}"
@@ -96,7 +99,7 @@ if(UNIX)
     add_custom_target(CustomTiffLibrary
         DEPENDS
             "${CUSTOM_TIFF_LIBRARY}"
-            "${CUSTOM_TIFF_INCLUDE_DIR}/tiff.h"
+            # "${CUSTOM_TIFF_INCLUDE_DIR}/tiff.h"
         COMMENT "Using custom tiff library"
     )
     if(V3D_USE_OWN_TIFF)
