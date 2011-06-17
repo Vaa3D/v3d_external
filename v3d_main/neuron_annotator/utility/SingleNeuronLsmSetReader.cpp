@@ -179,7 +179,7 @@ int SingleNeuronLsmSetReader::findReferenceChannel(My4DImage* image) {
         intensityCount.append(count);
     }
     int maxIndex=0;
-    int maxValue=0;
+    long maxValue=0;
     for (int c=0;c<intensityCount.size();c++) {
         long intensityTotal=intensityCount.at(c);
         qDebug() << "channel " << c << " intensityCount=" << intensityTotal;
