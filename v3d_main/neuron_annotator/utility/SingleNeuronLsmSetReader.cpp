@@ -165,7 +165,7 @@ bool SingleNeuronLsmSetReader::execute() {
 // This function simply picks the channel with the highest aggregate
 // intensity as the reference channel.
 int SingleNeuronLsmSetReader::findReferenceChannel(My4DImage* image) {
-    QList<int> intensityCount;
+    QList<long> intensityCount;
     Image4DProxy<My4DImage> imageProxy(image);
     for (int c=0;c<image->getCDim();c++) {
         int count=0;
@@ -181,7 +181,7 @@ int SingleNeuronLsmSetReader::findReferenceChannel(My4DImage* image) {
     int maxIndex=0;
     int maxValue=0;
     for (int c=0;c<intensityCount.size();c++) {
-        int intensityTotal=intensityCount.at(c);
+        long intensityTotal=intensityCount.at(c);
         qDebug() << "channel " << c << " intensityCount=" << intensityTotal;
         if (intensityTotal>maxValue) {
             maxIndex=c;
