@@ -42,7 +42,12 @@ int SingleNeuronLsmSetReader::processArgs(vector<char*> *argList) {
 }
 
 bool SingleNeuronLsmSetReader::execute() {
-
+    qDebug() << "Input lsm files:";
+    for (int i=0;i<inputLsmFileList.size();i++) {
+        QString filepath=inputLsmFileList.at(i);
+        qDebug() << "Filepath=" << filepath;
+    }
+    return true;
 }
 
 
