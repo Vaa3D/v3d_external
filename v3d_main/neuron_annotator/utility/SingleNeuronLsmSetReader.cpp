@@ -181,11 +181,14 @@ int SingleNeuronLsmSetReader::findReferenceChannel(My4DImage* image) {
     int maxIndex=0;
     int maxValue=0;
     for (int c=0;c<intensityCount.size();c++) {
-        if (intensityCount.at(c)>maxValue) {
+        int intensityTotal=intensityCount.at(c);
+        qDebug() << "channel " << c << " intensityCount=" << intensityTotal;
+        if (intensityTotal>maxValue) {
             maxIndex=c;
-            maxValue=intensityCount.at(c);
+            maxValue=intensityTotal;
         }
     }
+    qDebug() << " returning reference channel = " << maxIndex;
     return maxIndex;
 }
 
