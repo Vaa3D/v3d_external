@@ -163,9 +163,14 @@ bool SingleNeuronLsmSetReader::execute() {
     for (int z=0;z<twoChannelLsm->getZDim();z++) {
         for (int y=0;y<twoChannelLsm->getYDim();y++) {
             for (int x=0;x<twoChannelLsm->getXDim();x++) {
-                int r=(255.0*((*threeChannelProxy.at_uint16( x, y, z, threeChannelSignal1)) - l3_min.at(threeChannelSignal1)))/(l3_max.at(threeChannelSignal1) - l3_min.at(threeChannelSignal1));
-                int g=(255.0*((*threeChannelProxy.at_uint16( x, y, z, threeChannelSignal2)) - l3_min.at(threeChannelSignal2)))/(l3_max.at(threeChannelSignal2) - l3_min.at(threeChannelSignal2));
-                int b=(255.0*((*twoChannelProxy.at_uint16(   x, y, z, twoChannelSignal1))   - l2_min.at(twoChannelSignal1)))  /(l2_max.at(twoChannelSignal1)   - l2_min.at(twoChannelSignal1));
+                int r=(4.0*255.0*((*threeChannelProxy.at_uint16( x, y, z, threeChannelSignal1)) - l3_min.at(threeChannelSignal1)))/(l3_max.at(threeChannelSignal1) - l3_min.at(threeChannelSignal1));
+                int g=(4.0*255.0*((*threeChannelProxy.at_uint16( x, y, z, threeChannelSignal2)) - l3_min.at(threeChannelSignal2)))/(l3_max.at(threeChannelSignal2) - l3_min.at(threeChannelSignal2));
+                int b=(4.0*255.0*((*twoChannelProxy.at_uint16(   x, y, z, twoChannelSignal1))   - l2_min.at(twoChannelSignal1)))  /(l2_max.at(twoChannelSignal1)   - l2_min.at(twoChannelSignal1));
+
+                if (r>255) r=255;
+                if (g>255) g=255;
+                if (b>255) b=255;
+
                 signalProxy.put8bit_fit_at(x,y,z,0, r);
                 signalProxy.put8bit_fit_at(x,y,z,1, g);
                 signalProxy.put8bit_fit_at(x,y,z,2, b);
