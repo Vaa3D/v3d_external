@@ -29,7 +29,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
 
 include(CTest)
 
-find_package(Qt4 REQUIRED)
+find_package(Qt4 4.7.0 REQUIRED)
 set(QT_USE_NETWORK TRUE) # Oct-07-2010 CMB
 set(QT_USE_XML TRUE) # Oct-22-2010 CMB
 
