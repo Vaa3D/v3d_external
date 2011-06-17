@@ -72,6 +72,12 @@ NaMainWindow::NaMainWindow()
             ui.v3dr_glwidget, SLOT(resetRotation()));
     connect(ui.nutateButton, SIGNAL(toggled(bool)),
             this, SLOT(setNutate(bool)));
+    connect(ui.redToggleButton, SIGNAL(toggled(bool)),
+            ui.v3dr_glwidget, SLOT(setChannelR(bool)));
+    connect(ui.greenToggleButton, SIGNAL(toggled(bool)),
+            ui.v3dr_glwidget, SLOT(setChannelG(bool)));
+    connect(ui.blueToggleButton, SIGNAL(toggled(bool)),
+            ui.v3dr_glwidget, SLOT(setChannelB(bool)));
     // 3D rotation
     connect(&(ui.v3dr_glwidget->cameraModel), SIGNAL(rotationChanged(const Rotation3D&)),
             this, SLOT(on3DViewerRotationChanged(const Rotation3D&)));
@@ -100,6 +106,9 @@ NaMainWindow::NaMainWindow()
             ui.zoomWidget, SLOT(setZoomValue(qreal)));
     connect(&sharedCameraModel, SIGNAL(scaleChanged(qreal)),
             this, SLOT(updateViewers()));
+    // Colors
+    connect(ui.resetColorsButton, SIGNAL(clicked()),
+            this, SLOT(resetColors()));
 
     // Crosshair
     connect(ui.actionShow_Crosshair, SIGNAL(toggled(bool)),
@@ -114,6 +123,14 @@ NaMainWindow::NaMainWindow()
     QAction * redoAction = undoGroup->createRedoAction(this);
     ui.menuEdit->insertAction(ui.menuEdit->actions().at(0), redoAction);
     ui.menuEdit->insertAction(redoAction, undoAction);
+}
+
+void NaMainWindow::resetColors() {
+    ui.redToggleButton->setChecked(true);
+    ui.greenToggleButton->setChecked(true);
+    ui.blueToggleButton->setChecked(true);
+    ui.refToggleButton->setChecked(true);
+    ui.sharedGammaWidget->reset();
 }
 
 void NaMainWindow::setNutate(bool bDoNutate)

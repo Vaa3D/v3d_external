@@ -761,7 +761,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                  <widget class="GammaWidget" name="sharedGammaWidget"/>
                 </item>
                 <item>
-                 <widget class="QFrame" name="frame_13">
+                 <widget class="QFrame" name="sharedColorFrame">
                   <property name="frameShape">
                    <enum>QFrame::NoFrame</enum>
                   </property>
@@ -782,7 +782,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                     <number>12</number>
                    </property>
                    <item>
-                    <widget class="QPushButton" name="pushButton_3">
+                    <widget class="QPushButton" name="redToggleButton">
                      <property name="text">
                       <string>r</string>
                      </property>
@@ -795,7 +795,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QPushButton" name="pushButton_2">
+                    <widget class="QPushButton" name="greenToggleButton">
                      <property name="text">
                       <string>g</string>
                      </property>
@@ -808,7 +808,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QPushButton" name="pushButton_4">
+                    <widget class="QPushButton" name="blueToggleButton">
                      <property name="text">
                       <string>b</string>
                      </property>
@@ -821,7 +821,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QPushButton" name="pushButton_5">
+                    <widget class="QPushButton" name="refToggleButton">
                      <property name="text">
                       <string>R</string>
                      </property>
@@ -1234,11 +1234,11 @@ You can also resize the box by Ctrl + left mouse click.</string>
    <slot>setCurrentIndex(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>805</x>
-     <y>333</y>
+     <x>793</x>
+     <y>56</y>
     </hint>
     <hint type="destinationlabel">
-     <x>606</x>
+     <x>594</x>
      <y>48</y>
     </hint>
    </hints>
@@ -1254,8 +1254,8 @@ You can also resize the box by Ctrl + left mouse click.</string>
      <y>52</y>
     </hint>
     <hint type="destinationlabel">
-     <x>710</x>
-     <y>356</y>
+     <x>658</x>
+     <y>203</y>
     </hint>
    </hints>
   </connection>
@@ -1266,28 +1266,12 @@ You can also resize the box by Ctrl + left mouse click.</string>
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>710</x>
-     <y>356</y>
+     <x>658</x>
+     <y>203</y>
     </hint>
     <hint type="destinationlabel">
      <x>100</x>
      <y>52</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>resetColorsButton</sender>
-   <signal>clicked()</signal>
-   <receiver>sharedGammaWidget</receiver>
-   <slot>reset()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>679</x>
-     <y>156</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>681</x>
-     <y>75</y>
     </hint>
    </hints>
   </connection>
@@ -1298,12 +1282,12 @@ You can also resize the box by Ctrl + left mouse click.</string>
    <slot>reset()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>673</x>
-     <y>261</y>
+     <x>661</x>
+     <y>436</y>
     </hint>
     <hint type="destinationlabel">
-     <x>674</x>
-     <y>238</y>
+     <x>662</x>
+     <y>418</y>
     </hint>
    </hints>
   </connection>

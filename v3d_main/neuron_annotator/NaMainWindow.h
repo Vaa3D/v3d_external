@@ -38,6 +38,7 @@ public slots:
     void setNutate(bool bDoNutate);
     void nutate(const Rotation3D&);
     void resetView();
+    void resetColors();
     void updateViewers();
 
     void updateAnnotationModels();
