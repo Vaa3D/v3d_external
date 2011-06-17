@@ -85,7 +85,7 @@ public slots:
     void initializePixmap(); // when a new image has loaded
     // Want to distinguish between double click and single click events
     void onMouseSingleClick(QPoint pos);
-    void setGammaBrightness(double gamma);
+    void setGammaBrightness(qreal gamma);
 
 protected slots:
     void onHighlightedNeuronChanged(int neuronIndex);

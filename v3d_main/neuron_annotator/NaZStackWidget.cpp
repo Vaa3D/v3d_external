@@ -767,7 +767,8 @@ void NaZStackWidget::copydata2disp() // legacy function
 void NaZStackWidget::updatePixmap()
 {
     if(runHDRFILTER){
-
+        // race condition?
+        if (!pDispData1d) return;
         if(datatype = V3D_UINT8)
             pixmap = getXYPlane((unsigned char *)pDispData1d, sx, sy, sz, sc, cur_z, max_roi, min_roi);
         else if(datatype = V3D_UINT16)
@@ -780,7 +781,7 @@ void NaZStackWidget::updatePixmap()
         }
     }
     else{
-
+        if (!pData1d) return;
         if(datatype = V3D_UINT8)
             pixmap = getXYPlane((unsigned char *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img);
         else if(datatype = V3D_UINT16)
@@ -1010,7 +1011,7 @@ void NaZStackWidget::setHDRCheckState(int state) {
     updatePixmap();
 }
 
-void NaZStackWidget::setGammaBrightness(double gamma){
+void NaZStackWidget::setGammaBrightness(qreal gamma){
     if (gamma == brightnessCalibrator.getGamma()) return;
     brightnessCalibrator.setGamma(gamma);
 

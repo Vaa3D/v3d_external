@@ -49,6 +49,8 @@ class MipDataImage : public SimpleArray<MipDataColumn<ValueType> >
 {
 public:
     int numChannels() const;
+    int numColumns() const;
+    int numRows() const;
 };
 
 

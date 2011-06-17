@@ -240,7 +240,7 @@ void NaLargeMIPWidget::onMouseSingleClick(QPoint pos)
         // qDebug() << "clicked Neuron " << neuronAt(pos);
     }
 }
-void NaLargeMIPWidget::setGammaBrightness(double gamma)
+void NaLargeMIPWidget::setGammaBrightness(qreal gamma)
 {
     if (! mipImage) return;
     mipImage->setGamma((float)gamma);

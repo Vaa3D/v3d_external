@@ -13,16 +13,16 @@ public:
     GammaWidget(QWidget * parent = NULL);
 
 signals:
-    void gammaBrightnessChanged(double gamma);
+    void gammaBrightnessChanged(qreal gamma);
 
 public slots:
-    void setGammaBrightness(double gamma);
+    void setGammaBrightness(qreal gamma);
     void on_gamma_lineEdit_textChanged(const QString & value);
     void on_gamma_slider_valueChanged(int gammaInt);
     void reset();
 
 protected slots:
-    void updateGammaLineEdit(double gamma);
+    void updateGammaLineEdit(qreal gamma);
 
 protected:
     static int gammaIntFromDouble(double gamma);

@@ -37,21 +37,21 @@ NaMainWindow::NaMainWindow()
     // Status bar message
     connect(ui.naLargeMIPWidget, SIGNAL(statusMessage(const QString&)),
             statusBar(), SLOT(showMessage(const QString&)));
-    connect(ui.gammaWidget_MIP, SIGNAL(gammaBrightnessChanged(double)),
-            ui.naLargeMIPWidget, SLOT(setGammaBrightness(double)));
+    connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
+            ui.naLargeMIPWidget, SLOT(setGammaBrightness(qreal)));
 
     // Wire up Z-stack / HDR viewer
     ui.HDR_checkBox->setChecked(true);
     ui.naZStackWidget->setHDRCheckState(true);
-    ui.gammaWidget_Zstack->hide();
+    // ui.gammaWidget_Zstack->hide();
     ui.BoxSize_spinBox->setMinimum(MINSZBOX);
     
     connect(ui.HDR_checkBox, SIGNAL(stateChanged(int)),
             ui.naZStackWidget, SLOT(setHDRCheckState(int)));
-    connect(ui.naZStackWidget, SIGNAL(changedHDRCheckState(bool)),
-            ui.gammaWidget_Zstack, SLOT(setVisible(bool)));
-    connect(ui.gammaWidget_Zstack, SIGNAL(gammaBrightnessChanged(double)),
-            ui.naZStackWidget, SLOT(setGammaBrightness(double)));
+    // connect(ui.naZStackWidget, SIGNAL(changedHDRCheckState(bool)),
+    //         ui.gammaWidget_Zstack, SLOT(setVisible(bool)));
+    connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
+            ui.naZStackWidget, SLOT(setGammaBrightness(qreal)));
     connect(ui.HDRRed_pushButton, SIGNAL(clicked()),
             ui.naZStackWidget, SLOT(setRedChannel()));
     connect(ui.HDRGreen_pushButton, SIGNAL(clicked()),
@@ -82,12 +82,10 @@ NaMainWindow::NaMainWindow()
     connect(ui.rotZWidget, SIGNAL(angleChanged(int)),
             this, SLOT(update3DViewerXYZBodyRotation()));
     // 3D gamma correction
-    connect(ui.gammaWidget_3D, SIGNAL(gammaBrightnessChanged(double)),
-            ui.v3dr_glwidget, SLOT(setGammaBrightness(double)));
-    connect(ui.gammaWidget_3D, SIGNAL(gammaBrightnessChanged(double)),
-            this, SLOT(updateThumbnailGamma(double)));
-    connect(ui.resetColorsButton, SIGNAL(clicked()),
-            ui.gammaWidget_3D, SLOT(reset()));
+    connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
+            ui.v3dr_glwidget, SLOT(setGammaBrightness(qreal)));
+    connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
+            this, SLOT(updateThumbnailGamma(qreal)));
 
 
     // Whether to use common zoom and focus in MIP, ZStack and 3D viewers
@@ -426,7 +424,7 @@ static GalleryButton* setButtonGamma(GalleryButton* & button) {
     return button;
 }
 
-void NaMainWindow::updateThumbnailGamma(double gamma)
+void NaMainWindow::updateThumbnailGamma(qreal gamma)
 {
     buttonCalibrator.setHdrRange(0, 255);
     buttonCalibrator.setGamma(gamma);

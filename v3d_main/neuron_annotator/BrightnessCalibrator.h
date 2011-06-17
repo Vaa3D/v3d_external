@@ -2,6 +2,7 @@
 #define BRIGHTNESSCALIBRATOR_H
 
 #include <cassert>
+#include <QtGlobal>
 
 // BrightnessCalibrator class helps convert 2D 16-bit multichannel data into
 // 2D 8-bit RGB data.  Gamma correction and HDR data range parameters
@@ -42,10 +43,10 @@ public:
 protected:
     ValueType displayMin; // min display value for HDR
     ValueType displayMax; // max display value for HDR
-    float displayGamma; // gamma correction between displayMin and displayMax
+    qreal displayGamma; // gamma correction between displayMin and displayMax
     // Gamma lookup is kept in a small table, as a compromise between speed and memory use.
-    float gammaTable[256]; // lookup table for gamma correction
-    float dGammaTable[256]; // to help interpolation, especially for high dynamic range data.
+    qreal gammaTable[256]; // lookup table for gamma correction
+    qreal dGammaTable[256]; // to help interpolation, especially for high dynamic range data.
 };
 
 #endif // BRIGHTNESSCALIBRATOR_H

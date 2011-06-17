@@ -1,15 +1,16 @@
 #include "GammaWidget.h"
 #include <cmath>
+#include <cassert>
 
 GammaWidget::GammaWidget(QWidget * parent) : QWidget(parent)
 {
     // TODO - avoid Qt warning message about multiple layouts
     setupUi(this);
-    connect(this, SIGNAL(gammaBrightnessChanged(double)),
-            this, SLOT(updateGammaLineEdit(double)));
+    connect(this, SIGNAL(gammaBrightnessChanged(qreal)),
+            this, SLOT(updateGammaLineEdit(qreal)));
 }
 
-void GammaWidget::updateGammaLineEdit(double gamma)
+void GammaWidget::updateGammaLineEdit(qreal gamma)
 {
     double d = gamma_lineEdit->text().toDouble();
     if (d == gamma)
@@ -59,7 +60,7 @@ void GammaWidget::reset() {
 int GammaWidget::gammaIntFromDouble(double gamma)
 {
     double log2Gamma = std::log(gamma)/std::log(2.0);
-    int result = int(log2Gamma * 100.0 + 0.5);
+    int result = int(floor(log2Gamma * 100.0 + 0.5));
     return result;
 }
 
@@ -67,6 +68,7 @@ double GammaWidget::gammaDoubleFromInt(int value)
 {
     double log2Gamma = value / 100.0;
     double gamma = std::pow(2.0, log2Gamma);
+    assert(gammaIntFromDouble(gamma) == value);
     return gamma;
 }
 

@@ -43,7 +43,7 @@ public slots:
     void updateAnnotationModels();
 
 protected slots:
-    void updateThumbnailGamma(double gamma);
+    void updateThumbnailGamma(qreal gamma);
     void on3DViewerRotationChanged(const Rotation3D& rot)
     {
         Vector3D angles = rot.convertBodyFixedXYZRotationToThreeAngles();

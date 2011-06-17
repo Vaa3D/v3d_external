@@ -39,7 +39,7 @@ public:
     virtual void resizeEvent(QResizeEvent * event);
 
 public slots:
-    void setGammaBrightness(double gamma);
+    void setGammaBrightness(qreal gamma);
     virtual void annotationModelUpdate(QString updateType);
     void resetView();
     void resetRotation() {

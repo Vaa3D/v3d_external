@@ -99,7 +99,7 @@ public slots:
     void annotationModelUpdate(QString updateType);
     void setHDRCheckState(int state);
 
-    void setGammaBrightness(double gamma);
+    void setGammaBrightness(qreal gamma);
     void updateHDRView();
 
 signals:

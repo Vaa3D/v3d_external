@@ -350,7 +350,7 @@ void Na3DWidget::updateHighlightNeurons(bool b)
 	updateWithTriView(); // update list markers and 3d viewer
 }
 
-void Na3DWidget::setGammaBrightness(double gamma)
+void Na3DWidget::setGammaBrightness(qreal gamma)
 {
     // I sort of hope this will address everyone's manual brightness needs.
     Renderer_gl2* renderer = (Renderer_gl2*)getRenderer();
@@ -428,6 +428,7 @@ bool Na3DWidget::populateNeuronMask(const My4DImage* neuronMaskImage) {
 void Na3DWidget::prepareImageData() {
     // V3D crashes unless updateminmaxvalues is called
     _idep->image4d->updateminmaxvalues();
+    if (!renderer) choiceRenderer();
     updateImageData();
 }
 
