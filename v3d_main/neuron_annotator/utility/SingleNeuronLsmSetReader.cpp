@@ -145,13 +145,30 @@ bool SingleNeuronLsmSetReader::execute() {
     Image4DProxy<My4DImage> twoChannelProxy(twoChannelLsm);
     Image4DProxy<My4DImage> threeChannelProxy(threeChannelLsm);
 
+    QList<double> l3_min;
+    QList<double> l3_max;
+    for (int c=0;c<3;c++) {
+        l3_min.append(threeChannelLsm->getChannalMinIntensity(c));
+        l3_max.append(threeChannelLsm->getChannalMaxIntensity(c));
+    }
+
+    QList<double> l2_min;
+    QList<double> l2_max;
+    for (int c=0;c<2;c++) {
+        l2_min.append(twoChannelLsm->getChannalMinIntensity(c));
+        l2_max.append(twoChannelLsm->getChannalMaxIntensity(c));
+    }
+
     qDebug() << "Populating new image with signal data";
     for (int z=0;z<twoChannelLsm->getZDim();z++) {
         for (int y=0;y<twoChannelLsm->getYDim();y++) {
             for (int x=0;x<twoChannelLsm->getXDim();x++) {
-                signalProxy.put8bit_fit_at(x,y,z,0,threeChannelProxy.value8bit_at( x, y, z, threeChannelSignal1));
-                signalProxy.put8bit_fit_at(x,y,z,1,threeChannelProxy.value8bit_at( x, y, z, threeChannelSignal2));
-                signalProxy.put8bit_fit_at(x,y,z,2,twoChannelProxy.value8bit_at(   x, y, z, twoChannelSignal1));
+                int r=(255.0*((*threeChannelProxy.at_uint16( x, y, z, threeChannelSignal1)) - l3_min.at(threeChannelSignal1)))/(l3_max.at(threeChannelSignal1) - l3_min.at(threeChannelSignal1));
+                int g=(255.0*((*threeChannelProxy.at_uint16( x, y, z, threeChannelSignal2)) - l3_min.at(threeChannelSignal2)))/(l3_max.at(threeChannelSignal2) - l3_min.at(threeChannelSignal2));
+                int b=(255.0*((*twoChannelProxy.at_uint16(   x, y, z, twoChannelSignal1))   - l2_min.at(twoChannelSignal1)))  /(l2_max.at(twoChannelSignal1)   - l2_min.at(twoChannelSignal1));
+                signalProxy.put8bit_fit_at(x,y,z,0, r);
+                signalProxy.put8bit_fit_at(x,y,z,1, g);
+                signalProxy.put8bit_fit_at(x,y,z,2, b);
             }
         }
     }
@@ -168,7 +185,8 @@ bool SingleNeuronLsmSetReader::execute() {
     for (int z=0;z<threeChannelLsm->getZDim();z++) {
         for (int y=0;y<threeChannelLsm->getYDim();y++) {
             for (int x=0;x<threeChannelLsm->getXDim();x++) {
-                referenceProxy.put8bit_fit_at(x,y,z,0,threeChannelProxy.value8bit_at( x, y, z, threeChannelReferenceIndex));
+                int i=(255.0*((*threeChannelProxy.at_uint16( x, y, z, threeChannelReferenceIndex)) - l3_min.at(threeChannelReferenceIndex)))/(l3_max.at(threeChannelReferenceIndex) - l3_min.at(threeChannelReferenceIndex));
+                referenceProxy.put8bit_fit_at(x,y,z,0,i);
             }
         }
     }
