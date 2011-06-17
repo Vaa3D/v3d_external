@@ -345,7 +345,8 @@ public:
 	bool saveVANO_data(); 
 	bool saveMovie(); 
 	bool saveFile(); 
-	bool saveFile(char filename[]); 
+        bool saveFile(char filename[]);
+        bool saveFile(QString outputFile);
 	void crop(int landmark_crop_opt); 
 	void crop(V3DLONG bpos_x, V3DLONG epos_x, V3DLONG bpos_y, V3DLONG epos_y, V3DLONG bpos_z, V3DLONG epos_z, V3DLONG bpos_c, V3DLONG epos_c, int landmark_crop_opt);
 	bool maskBW_roi_bbox(unsigned char tval, V3DLONG c_min, V3DLONG c_max, ImageMaskingCode my_maskcode, bool b_inside);

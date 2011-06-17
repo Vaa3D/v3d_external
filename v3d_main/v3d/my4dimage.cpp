@@ -1230,9 +1230,13 @@ bool My4DImage::saveFile()
 	return true;
 }
 
-bool My4DImage::saveFile(char filename[])
+bool My4DImage::saveFile(char filename[]) {
+    QString outputFile(filename);
+    return saveFile(outputFile);
+}
+
+bool My4DImage::saveFile(QString outputFile)
 {
-	QString outputFile(filename);
 	while (outputFile.isEmpty())
 	{
     	if(QMessageBox::Yes == QMessageBox::question (0, "", "Are you sure you do NOT want to save?", QMessageBox::Yes, QMessageBox::No))

@@ -79,8 +79,114 @@ bool SingleNeuronLsmSetReader::execute() {
     }
     qDebug() << "Lsm file 2 dimensions: x=" << lsmImage2.getXDim() << " y=" << lsmImage2.getYDim() << " z=" << lsmImage2.getZDim() << " c=" << lsmImage2.getCDim();
 
+    bool twoChannelCheck=false;
+    bool threeChannelCheck=false;
+
+    if (lsmImage1.getCDim()==2 || lsmImage2.getCDim()==2) {
+        twoChannelCheck=true;
+    }
+
+    if (lsmImage1.getCDim()==3 || lsmImage2.getCDim()==3) {
+        threeChannelCheck=true;
+    }
+
+    if (!(twoChannelCheck && threeChannelCheck)) {
+        qDebug() << "One lsm file must have 2 channels and the other 3 channels";
+        return false;
+    }
+
+    My4DImage* twoChannelLsm;
+    My4DImage* threeChannelLsm;
+
+    if (lsmImage1.getCDim()==2) {
+        twoChannelLsm=&lsmImage1;
+        threeChannelLsm=&lsmImage2;
+    } else {
+        twoChannelLsm=&lsmImage2;
+        threeChannelLsm=&lsmImage1;
+    }
+
+    // Check dimensions
+    if (!(twoChannelLsm->getXDim()==threeChannelLsm->getXDim() &&
+          twoChannelLsm->getYDim()==threeChannelLsm->getYDim() &&
+          twoChannelLsm->getZDim()==threeChannelLsm->getZDim())) {
+        qDebug() << "X, Y, and Z dimensions of the lsm files must match";
+        return false;
+    }
+
+    int twoChannelReferenceIndex=findReferenceChannel(twoChannelLsm);
+    int threeChannelReferenceIndex=findReferenceChannel(threeChannelLsm);
+
+    int twoChannelSignal1=0;
+    int threeChannelSignal1=0;
+    int threeChannelSignal2=0;
+
+    if (twoChannelReferenceIndex==0) {
+        twoChannelSignal1=1;
+    } else {
+        twoChannelSignal1=0;
+    }
+
+    if (threeChannelReferenceIndex==0) {
+        threeChannelSignal1=1;
+        threeChannelSignal2=2;
+    } else if (threeChannelReferenceIndex==1) {
+        threeChannelSignal1=0;
+        threeChannelSignal2=2;
+    } else if (threeChannelReferenceIndex==2) {
+        threeChannelSignal1=0;
+        threeChannelSignal2=1;
+    }
+
+    // We need to reconstruct a new file with the signal information
+    My4DImage signalImage;
+    signalImage.loadImage(twoChannelLsm->getXDim(), twoChannelLsm->getYDim(), twoChannelLsm->getZDim(), 3 /* number of channels */, 1 /* bytes per channel */);
+    Image4DProxy<My4DImage> signalProxy(&signalImage);
+    Image4DProxy<My4DImage> twoChannelProxy(twoChannelLsm);
+    Image4DProxy<My4DImage> threeChannelProxy(threeChannelLsm);
+
+    qDebug() << "Populating new image with signal data";
+    for (int z=0;z<twoChannelLsm->getZDim();z++) {
+        for (int y=0;y<twoChannelLsm->getYDim();y++) {
+            for (int x=0;x<twoChannelLsm->getXDim();x++) {
+                signalProxy.put8bit_fit_at(x,y,z,0,threeChannelProxy.value8bit_at( x, y, z, threeChannelSignal1));
+                signalProxy.put8bit_fit_at(x,y,z,1,threeChannelProxy.value8bit_at( x, y, z, threeChannelSignal2));
+                signalProxy.put8bit_fit_at(x,y,z,2,twoChannelProxy.value8bit_at(   x, y, z, twoChannelSignal1));
+            }
+        }
+    }
+
+    qDebug() << "Saving to file=" << outputSignalTifFilepath;
+    signalImage.saveFile(outputSignalTifFilepath);
 
     return true;
+}
+
+// This function simply picks the channel with the highest aggregate
+// intensity as the reference channel.
+int SingleNeuronLsmSetReader::findReferenceChannel(My4DImage* image) {
+    QList<int> intensityCount;
+    Image4DProxy<My4DImage> imageProxy(image);
+    for (int c=0;c<image->getCDim();c++) {
+        int count=0;
+        for (int z=0;z<image->getZDim();z++) {
+            for (int y=0;y<image->getYDim();y++) {
+                for (int x=0;x<image->getXDim();x++) {
+                    count+=imageProxy.value8bit_at(x,y,z,c);
+                }
+            }
+        }
+        intensityCount.append(count);
+    }
+    int maxIndex=0;
+    int maxValue=0;
+    for (int c=0;c<intensityCount.size();c++) {
+        if (intensityCount.at(c)>maxValue) {
+            maxIndex=c;
+            maxValue=intensityCount.at(c);
+        }
+    }
+    return maxIndex;
 }
 
 

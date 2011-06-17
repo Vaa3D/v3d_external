@@ -36,6 +36,7 @@ private:
     QList<QString> inputLsmFileList;
     QString outputSignalTifFilepath;
     QString outputReferenceTifFilepath;
+    int findReferenceChannel(My4DImage* image);
 
 };
 
