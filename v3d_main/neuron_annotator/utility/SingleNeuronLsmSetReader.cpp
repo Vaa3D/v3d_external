@@ -156,8 +156,29 @@ bool SingleNeuronLsmSetReader::execute() {
         }
     }
 
-    qDebug() << "Saving to file=" << outputSignalTifFilepath;
+    qDebug() << "Saving signal image to file=" << outputSignalTifFilepath;
     signalImage.saveFile(outputSignalTifFilepath);
+    signalImage.cleanExistData();
+
+    My4DImage referenceImage;
+    referenceImage.loadImage(threeChannelLsm->getXDim(), threeChannelLsm->getYDim(), threeChannelLsm->getZDim(), 1 /* number of channels */, 1 /* bytes per channel */);
+    Image4DProxy<My4DImage> referenceProxy(&referenceImage);
+
+    qDebug() << "Populating new image with reference data";
+    for (int z=0;z<threeChannelLsm->getZDim();z++) {
+        for (int y=0;y<threeChannelLsm->getYDim();y++) {
+            for (int x=0;x<threeChannelLsm->getXDim();x++) {
+                referenceProxy.put8bit_fit_at(x,y,z,0,threeChannelProxy.value8bit_at( x, y, z, threeChannelReferenceIndex));
+            }
+        }
+    }
+
+    qDebug() << "Saving reference image to file=" << outputReferenceTifFilepath;
+    referenceImage.saveFile(outputReferenceTifFilepath);
+    referenceImage.cleanExistData();
+
+    twoChannelLsm->cleanExistData();
+    threeChannelLsm->cleanExistData();
 
     return true;
 }
