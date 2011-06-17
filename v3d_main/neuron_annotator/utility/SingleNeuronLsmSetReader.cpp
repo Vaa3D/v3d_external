@@ -46,6 +46,12 @@ bool SingleNeuronLsmSetReader::execute() {
     for (int i=0;i<inputLsmFileList.size();i++) {
         QString filepath=inputLsmFileList.at(i);
         qDebug() << "Filepath=" << filepath;
+        QFileInfo fileInfo(filepath);
+        if (fileInfo.exists()) {
+            qDebug() << " verified this file exists with size=" << fileInfo.size();
+        } else {
+            qDebug() << " file does not exist";
+        }
     }
     return true;
 }
