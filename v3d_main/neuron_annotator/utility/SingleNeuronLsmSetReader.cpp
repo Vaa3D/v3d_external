@@ -168,7 +168,7 @@ int SingleNeuronLsmSetReader::findReferenceChannel(My4DImage* image) {
     QList<long> intensityCount;
     Image4DProxy<My4DImage> imageProxy(image);
     for (int c=0;c<image->getCDim();c++) {
-        int count=0;
+        long count=0;
         for (int z=0;z<image->getZDim();z++) {
             for (int y=0;y<image->getYDim();y++) {
                 for (int x=0;x<image->getXDim();x++) {
