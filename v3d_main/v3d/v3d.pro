@@ -124,6 +124,8 @@ macx {
     include($$QTINST_SHARED_FOLDER/shared.pri)
     INCLUDEPATH += $$QTINST_SHARED_FOLDER
     LIBS += -L$$QTINST_SHARED_FOLDER
+    QMAKE_CXXFLAGS+=-O3
+    CXXFLAGS+=-O3
 }
 
 unix:!macx {
