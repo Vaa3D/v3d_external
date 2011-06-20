@@ -43,6 +43,10 @@ void MipDisplayImage::load4DImage(const My4DImage* img, const My4DImage* maskImg
     QSize imageSize(img->getXDim(), img->getYDim());
     image = QImage(imageSize, QImage::Format_RGB32);
     originalData.loadMy4DImage(img, maskImg);
+    brightnessCalibrator.setHdrRange(originalData.dataMin, originalData.dataMax);
+    // brightnessCalibrator.setGamma(1.0);
+    updateCorrectedIntensities();
+    emit initialImageDataLoaded();
 
     // Populate neuron highlight images
     if (maskImg)
@@ -282,6 +286,7 @@ void NaLargeMIPWidget::resizeEvent(QResizeEvent * event) {
 
 void NaLargeMIPWidget::paintIntensityNumerals(QPainter& painter)
 {
+    if (!mipImage) return;
     // qDebug() << "numerals";
     QPointF v_img_upleft = X_img_view * painter.viewport().topLeft();
     QPointF v_img_downright = X_img_view * painter.viewport().bottomRight();
