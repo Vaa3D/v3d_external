@@ -66,19 +66,24 @@ public slots:
     void updateData() {}
     void toggleNeuronDisplay(int neuronIndex, bool checked)
     {
-        qDebug() << "MipData toggleNeuronDisplay";
+        // qDebug() << "MipData toggleNeuronDisplay";
+        // qDebug() << "MipData neuron " << neuronIndex << " toggled to " << checked;
         if (! neuronLayers) return;
+        // qDebug() << "neuronLayers exists";
         if (neuronIndex < 0) return;
+        // qDebug() << "neuronIndex >= 0";
         if (! neuronLayers[neuronIndex]) return;
+        // qDebug() << "neuronLayers[" << neuronIndex << "] exists";
         MipLayer& neuronMip = *(neuronLayers[neuronIndex]);
         if (neuronMip.isEnabled() == checked) return;
+        // qDebug() << "neuronMip state has changed";
         neuronMip.enableWithSignal(checked);
-        qDebug() << "MipData toggleNeuronDisplay2";
+        // qDebug() << "MipData toggleNeuronDisplay2";
     }
 
     void onCombinedMipLayerUpdated()
     {
-        qDebug() << "combined MIP layer updated";
+        // qDebug() << "combined MIP layer updated";
         if (! combinedMipLayer) return;
         if (! volume4DImage) return;
         const int dimY = combinedMipLayer->size().height();

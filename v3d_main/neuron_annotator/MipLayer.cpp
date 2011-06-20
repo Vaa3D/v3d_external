@@ -56,9 +56,12 @@ void MipLayer::enable(bool isEnabled) {
     // emit layerChanged();
 }
 
-void MipLayer::enableWithSignal(bool isEnabled) {
+void MipLayer::enableWithSignal(bool isEnabled)
+{
+    // qDebug() << "MipLayer enableWithSignal";
     if (isEnabled == m_isEnabled) return;
     m_isEnabled = isEnabled;
+    // qDebug() << "MipLayer enableWithSignal changed";
     emit layerChanged();
 }
 
@@ -77,6 +80,7 @@ void MipLayer::updateData() { // reexamine data from child images
         }
         else {
             memcpy(m_pixelData, child1->m_pixelData, size().width() * size().height() * sizeof(MipLayer::Pixel) );
+            enable(true);
         }
         emit layerChanged();
         return;

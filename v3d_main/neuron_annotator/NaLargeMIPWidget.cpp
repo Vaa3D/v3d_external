@@ -87,8 +87,8 @@ void MipDisplayImage::onDataIntensitiesUpdated()
 {
     // Default display exactly entire intensity range
     // displayMin = 0.0; // example ct image has a very large minimum
-    brightnessCalibrator.setHdrRange(originalData.dataMin, originalData.dataMax);
-    brightnessCalibrator.setGamma(1.0);
+    // brightnessCalibrator.setHdrRange(originalData.dataMin, originalData.dataMax);
+    // brightnessCalibrator.setGamma(1.0);
     updateCorrectedIntensities();
     emit initialImageDataLoaded();
 }
@@ -134,7 +134,7 @@ unsigned char MipDisplayImage::getCorrectedIntensity(int x, int y, int c) const
 
 void MipDisplayImage::toggleNeuronDisplay(int neuronIx, bool checked)
 {
-    qDebug() << "MipDisplayImage toggleNeuronDisplay";
+    // qDebug() << "MipDisplayImage toggleNeuronDisplay";
     originalData.toggleNeuronDisplay(neuronIx, checked);
 }
 
@@ -226,7 +226,7 @@ void NaLargeMIPWidget::initializePixmap()
 {
     progressBar->hide();
     updatePixmap();
-    resetView();
+    // resetView();
     update();
     // qDebug() << "Finished MIP data load";
 }
@@ -373,7 +373,7 @@ void NaLargeMIPWidget::paintEvent(QPaintEvent *event)
         }
         else {
             // qDebug() << "Painting highlight for neuron " << highlightedNeuronIndex;
-            painter.drawPixmap(0, 0, highlightedNeuronMaskPixmap);
+            // painter.drawPixmap(0, 0, highlightedNeuronMaskPixmap); // disable for now...
         }
     }
 

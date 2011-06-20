@@ -113,8 +113,10 @@ bool MipData::loadMy4DImage(const My4DImage* img, const My4DImage* maskImg)
     {
         if (neuronLayers) delete [] neuronLayers;
         neuronLayers = new MipLayer*[numNeurons];
-        for (int i = 0; i < numNeurons; ++i)
+        for (int i = 0; i < numNeurons; ++i) {
             neuronLayers[i] = new MipLayer(QSize(nColumns(), nRows()), this);
+            neuronLayers[i]->enable(true);
+        }
 
         qDebug() << "processing MIP masks";
         for (int x = 0; x < nColumns(); ++x) {
@@ -154,6 +156,7 @@ bool MipData::loadMy4DImage(const My4DImage* img, const My4DImage* maskImg)
                     layers.pop_back();
                 }
                 nextLevel.push_back(new MipLayer(node1, node2, this));
+                nextLevel.back()->enable( node1->isEnabled() || (node2 && node2->isEnabled()) );
             }
             layers = nextLevel;
             // qDebug() << "layers size = " << layers.size();

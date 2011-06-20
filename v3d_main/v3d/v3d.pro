@@ -124,6 +124,7 @@ macx {
     include($$QTINST_SHARED_FOLDER/shared.pri)
     INCLUDEPATH += $$QTINST_SHARED_FOLDER
     LIBS += -L$$QTINST_SHARED_FOLDER
+    # For faster neuron toggling. CMB 20 June 2011
     QMAKE_CXXFLAGS+=-O3
     CXXFLAGS+=-O3
 }
