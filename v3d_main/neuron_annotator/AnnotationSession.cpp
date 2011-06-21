@@ -1,5 +1,5 @@
 #include "AnnotationSession.h"
-#include "RendererNeuronAnnotator.h"
+#include "gui/RendererNeuronAnnotator.h"
 #include <QtAlgorithms>
 #include <iostream>
 
