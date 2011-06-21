@@ -72,16 +72,16 @@ int lobeseg_two_sides(V3DPluginCallback2 &callback, QWidget *parent)
 		v3d_msg("lobeseg two sides error!");
 		return -1;
 	}
-	//outimg1d = (unsigned char*)output.at(0).p; 
+	outimg1d = (unsigned char*)output.at(0).p; 
 
 	Image4DSimple * p4DImage = new Image4DSimple();
 	p4DImage->setData((unsigned char*)outimg1d, sz[0], sz[1], sz[2], sz[3] + 1, image->getDatatype());
 	
 	v3dhandle newwin;
-	if(QMessageBox::Yes == QMessageBox::question(0, "", QString("Do you want to use the existing windows?"), QMessageBox::Yes, QMessageBox::No))
-	newwin = callback.currentImageWindow();
-	else
+	if(dialog.is_newwin)
 		newwin = callback.newImageWindow();
+	else
+		newwin = callback.currentImageWindow();
 
 	callback.setImage(newwin, p4DImage);
 	callback.setImageName(newwin, QObject::tr("lobeseg_two_sides"));
@@ -98,7 +98,14 @@ bool lobeseg_two_sides(const V3DPluginArgList & input, V3DPluginArgList & output
 	int in_channel_no = * ((int *)input.at(3).p);
 	int out_channel_no = * ((int *)input.at(4).p);
 	BDB_Minus_ConfigParameter* mypara = (BDB_Minus_ConfigParameter *)input.at(5).p;
-	return do_lobeseg_bdbminus(inimg1d, sz, outimg1d, in_channel_no, out_channel_no, *mypara);
+	V3DPluginArgItem arg;
+	if(do_lobeseg_bdbminus(inimg1d, sz, outimg1d, in_channel_no, out_channel_no, *mypara))
+	{
+		arg.type="image1d"; arg.p = outimg1d; output<<arg;
+		return true;
+	}
+	else return false;
+
 }
 
 int lobeseg_one_side_only(V3DPluginCallback2 &callback, QWidget *parent)
@@ -174,16 +181,16 @@ int lobeseg_one_side_only(V3DPluginCallback2 &callback, QWidget *parent)
 		v3d_msg("lobeseg two sides error!");
 		return -1;
 	}
-	//outimg1d = (unsigned char*)output.at(0).p; 
+	outimg1d = (unsigned char*)output.at(0).p; 
 
 	Image4DSimple * p4DImage = new Image4DSimple();
 	p4DImage->setData((unsigned char*)outimg1d, sz[0], sz[1], sz[2], sz[3] + 1, image->getDatatype());
 	
 	v3dhandle newwin;
-	if(QMessageBox::Yes == QMessageBox::question(0, "", QString("Do you want to use the existing windows?"), QMessageBox::Yes, QMessageBox::No))
-		newwin = callback.currentImageWindow();
-	else
+	if(dialog.is_newwin)
 		newwin = callback.newImageWindow();
+	else
+		newwin = callback.currentImageWindow();
 
 	callback.setImage(newwin, p4DImage);
 	callback.setImageName(newwin, QObject::tr("lobeseg_one_side_only"));
@@ -219,6 +226,14 @@ bool lobeseg_one_side_only(const V3DPluginArgList & input, V3DPluginArgList & ou
 			.arg(mypara.radius).arg(mypara.radius_x).arg(mypara.radius_y)
 			.arg(mypara.TH).arg(x0).arg(y0).arg(x1).arg(y1)
 			.arg(keep_which).arg(nctrls).arg(is_surf));*/
-	return do_lobeseg_bdbminus_onesideonly(inimg1d, sz, outimg1d, in_channel_no, out_channel_no, mypara, x0, y0, x1, y1, keep_which, nctrls, is_surf);
+
+	V3DPluginArgItem arg;
+	if(do_lobeseg_bdbminus_onesideonly(inimg1d, sz, outimg1d, in_channel_no, out_channel_no, mypara, x0, y0, x1, y1, keep_which, nctrls, is_surf))
+	{
+		arg.type="image1d"; arg.p = outimg1d; output<<arg;
+		return true;
+	}
+	else return false;
+
 }
 

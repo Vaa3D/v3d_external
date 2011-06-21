@@ -44,6 +44,10 @@ public:
 		spin_radius->setMaximum(100);
 		spin_radius->setValue(20);
 
+		label_newwin = new QLabel(tr("new window :"));
+		check_newwin = new QCheckBox();
+		check_newwin->setCheckState(Qt::Checked);
+
 		ok = new QPushButton(tr("ok"));
 		cancel = new QPushButton(tr("cancel"));
 
@@ -63,8 +67,10 @@ public:
 		gridLayout->addWidget(spin_nloops, 3, 1, 1, 1);
 		gridLayout->addWidget(label_radius, 3, 3);
 		gridLayout->addWidget(spin_radius, 3, 4, 1, 1);
-		gridLayout->addWidget(cancel, 4, 3, Qt::AlignRight);
-		gridLayout->addWidget(ok, 4, 4, Qt::AlignRight);
+		gridLayout->addWidget(label_newwin, 4, 0);
+		gridLayout->addWidget(check_newwin, 4, 1);
+		gridLayout->addWidget(cancel, 6, 3, Qt::AlignRight);
+		gridLayout->addWidget(ok, 6, 4, Qt::AlignRight);
 
 		setLayout(gridLayout);
 		connect(ok, SIGNAL(clicked()), this, SLOT(accept()));
@@ -95,6 +101,7 @@ public slots:
 		gamma =  editor_gamma->text().toDouble();
 		nloops =  spin_nloops->text().toInt();
 		radius =  spin_radius->text().toInt();
+		is_newwin =  (check_newwin->checkState() == Qt::Checked);
 
 	}
 
@@ -106,6 +113,7 @@ public:
 	double gamma;
 	int nloops;
 	int radius;
+	bool is_newwin;
 	QLabel * label_image;
 	QComboBox * combo_image;
 
@@ -126,6 +134,9 @@ public:
 
 	QLabel * label_radius;
 	QSpinBox * spin_radius;
+
+	QLabel * label_newwin;
+	QCheckBox * check_newwin;
 
 	QPushButton * ok;
 	QPushButton * cancel;
@@ -205,9 +216,13 @@ public:
 		spin_nctrls->setMaximum(100);
 		spin_nctrls->setValue(20);
 
-		label_surface = new QLabel(tr("output seprating surface :"));
+		label_surface = new QLabel(tr("seprating surface :"));
 		check_surface = new QCheckBox();
 		check_surface->setCheckState(Qt::Checked);
+
+		label_newwin = new QLabel(tr("new window :"));
+		check_newwin = new QCheckBox();
+		check_newwin->setCheckState(Qt::Checked);
 
 		ok = new QPushButton(tr("ok"));
 		cancel = new QPushButton(tr("cancel"));
@@ -242,8 +257,10 @@ public:
 		gridLayout->addWidget(spin_nctrls, 6, 4);
 		gridLayout->addWidget(label_surface, 7, 0);
 		gridLayout->addWidget(check_surface, 7, 1);
-		gridLayout->addWidget(cancel, 9, 3, Qt::AlignRight);
-		gridLayout->addWidget(ok, 9, 4, Qt::AlignRight);
+		gridLayout->addWidget(label_newwin, 7, 3);
+		gridLayout->addWidget(check_newwin, 7, 4);
+		gridLayout->addWidget(cancel, 10, 3, Qt::AlignRight);
+		gridLayout->addWidget(ok, 10, 4, Qt::AlignRight);
 
 		setLayout(gridLayout);
 		connect(ok, SIGNAL(clicked()), this, SLOT(accept()));
@@ -285,6 +302,7 @@ public slots:
 		keep_which =  combo_keep->currentIndex();
 		nctrls =  spin_nctrls->text().toInt();
 		is_surf =  (check_surface->checkState() == Qt::Checked);
+		is_newwin =  (check_newwin->checkState() == Qt::Checked);
 
 	}
 
@@ -303,6 +321,7 @@ public:
 	int keep_which;
 	int nctrls;
 	bool is_surf;
+	bool is_newwin;
 	QLabel * label_image;
 	QComboBox * combo_image;
 
@@ -344,6 +363,9 @@ public:
 
 	QLabel * label_surface;
 	QCheckBox * check_surface;
+
+	QLabel * label_newwin;
+	QCheckBox * check_newwin;
 
 	QPushButton * ok;
 	QPushButton * cancel;
