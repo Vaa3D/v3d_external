@@ -2,6 +2,8 @@
 project(V3DPackage)
 cmake_minimum_required(VERSION 2.6)
 
+include(CTest)
+
 # It is important on Windows for both v3d and plugins to use same build type.
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING 
@@ -189,3 +191,4 @@ add_subdirectory(doc/api)
 
 # include(CPack) must always be last!
 include(CPack)
+
