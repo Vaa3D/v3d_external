@@ -4,8 +4,8 @@
 #include <QObject>
 #include <QImage>
 #include "../v3d/v3d_core.h" /* My4DImage */
-#include "ImageColorizer.h"
-#include "BrightnessCalibrator.h"
+#include "gui/ImageColorizer.h"
+#include "gui/BrightnessCalibrator.h"
 
 class NeuronMipManager : public QObject
 {
