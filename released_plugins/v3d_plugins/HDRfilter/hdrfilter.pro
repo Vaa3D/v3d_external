@@ -26,24 +26,24 @@ macx {
 }
 
 HEADERS      += hdrfilter.h
-HEADERS      += $$V3DMAINDIR/neuron_annotator/NaZStackWidget.h
+HEADERS      += $$V3DMAINDIR/neuron_annotator/gui/NaZStackWidget.h
 HEADERS      += $$V3DMAINDIR/basic_c_fun/stackutil.h
 HEADERS      += $$V3DMAINDIR/basic_c_fun/mg_utilities.h
 HEADERS      += $$V3DMAINDIR/basic_c_fun/mg_image_lib.h
 
-HEADERS      += $$V3DMAINDIR/neuron_annotator/BrightnessCalibrator.h
-HEADERS      += $$V3DMAINDIR/neuron_annotator/NaViewer.h
+HEADERS      += $$V3DMAINDIR/neuron_annotator/gui/BrightnessCalibrator.h
+HEADERS      += $$V3DMAINDIR/neuron_annotator/gui/NaViewer.h
 HEADERS      += $$V3DMAINDIR/neuron_annotator/geometry/CameraModel.h
 HEADERS      += $$V3DMAINDIR/neuron_annotator/geometry/Rotation3D.h
 
 SOURCES      += hdrfilter.cpp
-SOURCES      += $$V3DMAINDIR/neuron_annotator/NaZStackWidget.cpp
+SOURCES      += $$V3DMAINDIR/neuron_annotator/gui/NaZStackWidget.cpp
 SOURCES      += $$V3DMAINDIR/basic_c_fun/stackutil.cpp
 SOURCES      += $$V3DMAINDIR/basic_c_fun/mg_utilities.cpp
 SOURCES      += $$V3DMAINDIR/basic_c_fun/mg_image_lib.cpp
 
-SOURCES      += $$V3DMAINDIR/neuron_annotator/BrightnessCalibrator.cpp
-SOURCES      += $$V3DMAINDIR/neuron_annotator/NaViewer.cpp
+SOURCES      += $$V3DMAINDIR/neuron_annotator/gui/BrightnessCalibrator.cpp
+SOURCES      += $$V3DMAINDIR/neuron_annotator/gui/NaViewer.cpp
 SOURCES      += $$V3DMAINDIR/neuron_annotator/geometry/CameraModel.cpp
 SOURCES      += $$V3DMAINDIR/neuron_annotator/geometry/Rotation3D.cpp
 

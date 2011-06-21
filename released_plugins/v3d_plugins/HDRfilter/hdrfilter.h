@@ -14,7 +14,7 @@
 #include <math.h>
 #include <v3d_interface.h>
 
-#include "../../../v3d_main/neuron_annotator/NaZStackWidget.h"
+#include "../../../v3d_main/neuron_annotator/gui/NaZStackWidget.h"
 
 class HDRFilterPlugin : public QObject, public V3DPluginInterface2_1
 {
