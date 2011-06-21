@@ -475,7 +475,7 @@ bool do_lobeseg_bdbminus_onesideonly(unsigned char *inimg1d, const V3DLONG sz[4]
 		pt.x = v_0[z+1][0].x;
 		pt.y = sz[1] - 1;
 		e_0.insert(e_0.begin(), pt);
-		pt.x = v_0[z+1].end()->x;
+		pt.x = v_0[z+1].rbegin()->x;
 		pt.y = 0;
 		e_0.push_back(pt);
 		
@@ -492,7 +492,7 @@ bool do_lobeseg_bdbminus_onesideonly(unsigned char *inimg1d, const V3DLONG sz[4]
 			
 			if (j1>j2)
 			{
-				for (j=j1+1; j>j2-1; j--)
+				for (j=j1; j>=j2; j--)
 				{
 					double w1 = j-j1;
 					double w2 = j2-j;
@@ -501,9 +501,9 @@ bool do_lobeseg_bdbminus_onesideonly(unsigned char *inimg1d, const V3DLONG sz[4]
 					the_bounds[z][j].insert(tmpi);
 				}				
 			}
-			else
+			else if(j1<j2)
 			{
-				for (j=j1; j<j2+1; j++)
+				for (j=j1; j<=j2; j++)
 				{
 					double w1 = j-j1;
 					double w2 = j2-j;
@@ -511,6 +511,11 @@ bool do_lobeseg_bdbminus_onesideonly(unsigned char *inimg1d, const V3DLONG sz[4]
 					///the_bound[z][j] = tmpi;
 					the_bounds[z][j].insert(tmpi);
 				}
+			}
+			else 
+			{
+				j = j1;
+				for(V3DLONG tmpi = i1; tmpi <= i2; tmpi++) the_bounds[z][j].insert(tmpi);
 			}
 		}
 		//printf("%d ", z);
@@ -537,9 +542,9 @@ bool do_lobeseg_bdbminus_onesideonly(unsigned char *inimg1d, const V3DLONG sz[4]
 						int prev_i = *it;
 						while(it != the_bounds[z][j].end()) 
 						{
-							if(output_surface) img_output_4d[in_channel_no][z][j][prev_i] = 255;
+							if(output_surface) img_output_4d[sz[3]][z][j][prev_i] = 255;
 							it++;
-							if(*it - prev_i == 1)
+							if(*it - prev_i == 1) // skip interval 1
 							{
 								prev_i = *it;
 								continue;
