@@ -41,7 +41,10 @@ int lobeseg_two_sides(V3DPluginCallback2 &callback, QWidget *parent)
 	sz[1] = image->getYDim();
 	sz[2] = image->getZDim();
 	sz[3] = image->getCDim();
-	unsigned char * outimg1d = new unsigned char[sz[0] * sz[1] * sz[2] * sz[3]];
+	unsigned char * outimg1d = new unsigned char[sz[0] * sz[1] * sz[2] * (sz[3] + 1)];
+	for(V3DLONG i = 0 ; i < sz[0] * sz[1] * sz[2] * sz[3]; i++) outimg1d[i] = inimg1d[i];
+	for(V3DLONG i =  sz[0] * sz[1] * sz[2] * sz[3] ; i < sz[0] * sz[1] * sz[2] * (sz[3] + 1); i++) outimg1d[i] = 0;
+
 	int out_channel_no = 2;
 
 	BDB_Minus_ConfigParameter mypara;
@@ -72,11 +75,7 @@ int lobeseg_two_sides(V3DPluginCallback2 &callback, QWidget *parent)
 	//outimg1d = (unsigned char*)output.at(0).p; 
 
 	Image4DSimple * p4DImage = new Image4DSimple();
-	p4DImage->setXDim(sz[0]);
-	p4DImage->setYDim(sz[1]);
-	p4DImage->setZDim(sz[2]);
-	p4DImage->setCDim(sz[3]);
-	p4DImage->setRawDataPointer(outimg1d);
+	p4DImage->setData((unsigned char*)outimg1d, sz[0], sz[1], sz[2], sz[3] + 1, image->getDatatype());
 	
 	v3dhandle newwin;
 	if(QMessageBox::Yes == QMessageBox::question(0, "", QString("Do you want to use the existing windows?"), QMessageBox::Yes, QMessageBox::No))
@@ -138,8 +137,10 @@ int lobeseg_one_side_only(V3DPluginCallback2 &callback, QWidget *parent)
 	sz[1] = image->getYDim();
 	sz[2] = image->getZDim();
 	sz[3] = image->getCDim();
-	unsigned char * outimg1d = new unsigned char[sz[0] * sz[1] * sz[2] * sz[3]];
-	int out_channel_no = 2;
+	unsigned char * outimg1d = new unsigned char[sz[0] * sz[1] * sz[2] * (sz[3] + 1)];
+	for(V3DLONG i = 0 ; i < sz[0] * sz[1] * sz[2] * sz[3]; i++) outimg1d[i] = inimg1d[i];
+	for(V3DLONG i =  sz[0] * sz[1] * sz[2] * sz[3] ; i < sz[0] * sz[1] * sz[2] * (sz[3] + 1); i++) outimg1d[i] = 0;
+	int out_channel_no = 1;
 
 	BDB_Minus_ConfigParameter mypara;
 	mypara.f_image = alpha;
@@ -176,15 +177,11 @@ int lobeseg_one_side_only(V3DPluginCallback2 &callback, QWidget *parent)
 	//outimg1d = (unsigned char*)output.at(0).p; 
 
 	Image4DSimple * p4DImage = new Image4DSimple();
-	p4DImage->setXDim(sz[0]);
-	p4DImage->setYDim(sz[1]);
-	p4DImage->setZDim(sz[2]);
-	p4DImage->setCDim(sz[3]);
-	p4DImage->setRawDataPointer(outimg1d);
+	p4DImage->setData((unsigned char*)outimg1d, sz[0], sz[1], sz[2], sz[3] + 1, image->getDatatype());
 	
 	v3dhandle newwin;
 	if(QMessageBox::Yes == QMessageBox::question(0, "", QString("Do you want to use the existing windows?"), QMessageBox::Yes, QMessageBox::No))
-	newwin = callback.currentImageWindow();
+		newwin = callback.currentImageWindow();
 	else
 		newwin = callback.newImageWindow();
 
@@ -210,7 +207,7 @@ bool lobeseg_one_side_only(const V3DPluginArgList & input, V3DPluginArgList & ou
 	int keep_which = *((int*) input.at(10).p);
 	int nctrls = *((int *) input.at(11).p);
 	bool is_surf = *((bool *) input.at(12).p);
-	QMessageBox::information(0, "", QObject::tr("sz[0] = %1, sz[1] = %2, sz[2] = %3, sz[3] = %4\n"
+	/*QMessageBox::information(0, "", QObject::tr("sz[0] = %1, sz[1] = %2, sz[2] = %3, sz[3] = %4\n"
 				"in_channel = %5, out_channel = %6\n"
 				"mypara.f_image = %7, mypara.f_length = %8, mypara.f_smooth = %9\n"
 				"mypara.radius = %10, mypara.radius_x = %11, mypara.radius_y = %12\n"
@@ -221,7 +218,7 @@ bool lobeseg_one_side_only(const V3DPluginArgList & input, V3DPluginArgList & ou
 			.arg(mypara.f_image).arg(mypara.f_length).arg(mypara.f_smooth)
 			.arg(mypara.radius).arg(mypara.radius_x).arg(mypara.radius_y)
 			.arg(mypara.TH).arg(x0).arg(y0).arg(x1).arg(y1)
-			.arg(keep_which).arg(nctrls).arg(is_surf));
+			.arg(keep_which).arg(nctrls).arg(is_surf));*/
 	return do_lobeseg_bdbminus_onesideonly(inimg1d, sz, outimg1d, in_channel_no, out_channel_no, mypara, x0, y0, x1, y1, keep_which, nctrls, is_surf);
 }
 

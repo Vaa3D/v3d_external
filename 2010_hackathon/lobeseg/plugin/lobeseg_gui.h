@@ -178,18 +178,22 @@ public:
 		label_x0 = new QLabel(tr("x0 :"));
 		spin_x0 = new QSpinBox();
 		spin_x0->setMaximum(100);
+		spin_x0->setValue(30);
 
 		label_y0 = new QLabel(tr("y0 :"));
 		spin_y0 = new QSpinBox();
 		spin_y0->setMaximum(100);
+		spin_y0->setValue(0);
 
 		label_x1 = new QLabel(tr("x1 :"));
 		spin_x1 = new QSpinBox();
 		spin_x1->setMaximum(100);
+		spin_x1->setValue(100);
 
 		label_y1 = new QLabel(tr("y1 :"));
 		spin_y1 = new QSpinBox();
 		spin_y1->setMaximum(100);
+		spin_y1->setValue(50);
 
 		label_keep = new QLabel(tr("keep which :"));
 		combo_keep = new QComboBox();
@@ -203,7 +207,7 @@ public:
 
 		label_surface = new QLabel(tr("output seprating surface :"));
 		check_surface = new QCheckBox();
-		check_surface->setCheckState(Qt::Unchecked);
+		check_surface->setCheckState(Qt::Checked);
 
 		ok = new QPushButton(tr("ok"));
 		cancel = new QPushButton(tr("cancel"));
@@ -248,9 +252,9 @@ public:
 		connect(combo_image, SIGNAL(currentIndexChanged(int)), this, SLOT(update()));
 		connect(spin_channel, SIGNAL(valueChanged(int)), this, SLOT(update()));
 
-		connect(editor_alpha, SIGNAL(textChanged(const QString &)), this, SLOT(update()));
-		connect(editor_beta, SIGNAL(textChanged(const QString &)), this, SLOT(update()));
-		connect(editor_gamma, SIGNAL(textChanged(const QString &)), this, SLOT(update()));
+		connect(editor_alpha, SIGNAL(textChanged()), this, SLOT(update()));
+		connect(editor_beta, SIGNAL(textChanged()), this, SLOT(update()));
+		connect(editor_gamma, SIGNAL(textChanged()), this, SLOT(update()));
 
 		connect(spin_nloops, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(spin_radius, SIGNAL(valueChanged(int)), this, SLOT(update()));
