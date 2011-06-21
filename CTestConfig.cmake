@@ -6,6 +6,9 @@
 ##   INCLUDE(CTest)
 set(CTEST_PROJECT_NAME "V3D")
 set(CTEST_NIGHTLY_START_TIME "01:00:00 UTC")
+# specify how long to run the continuous in minutes
+SET (CTEST_CONTINUOUS_DURATION 650)
+SET (CTEST_CONTINUOUS_MINIMUM_INTERVAL 15)
 
 set(CTEST_DROP_METHOD "http")
 set(CTEST_DROP_SITE "my.cdash.org")
