@@ -32,7 +32,7 @@ QStringList PartialAlignPlugin::menulist() const
 	return QStringList() 
 		<< tr("calc average feature")
 		<< tr("calc standard variance feature")
-		<< tr("calc invariant methods feature")
+		<< tr("calc invariant moments feature")
 		<< tr("calc SIFT feature")
 		<< tr("compute gaussian filtering")
 		<< tr("compute threshold")
