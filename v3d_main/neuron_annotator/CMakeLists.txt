@@ -6,9 +6,9 @@ include_directories(../v3d)
 include_directories(../3drenderer)
 
 QT4_WRAP_UI(NA_UI_SRCS 
-    NaMainWindow.ui
-    GammaWidget.ui
-    AngleWidget.ui
+    gui/NaMainWindow.ui
+    gui/GammaWidget.ui
+    gui/AngleWidget.ui
     gui/ZoomWidget.ui
 )
 
