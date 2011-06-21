@@ -23,6 +23,7 @@ QT4_WRAP_CPP(NA_MOC_SRCS
     MipData.h
     MipLayer.h
     gui/MouseClickManager.h
+    gui/Na2DViewer.h
     gui/Na3DWidget.h
     gui/NaLargeMIPWidget.h
     gui/NaMainWindow.h

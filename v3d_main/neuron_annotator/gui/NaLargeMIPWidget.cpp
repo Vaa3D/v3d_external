@@ -147,14 +147,14 @@ void MipDisplayImage::toggleNeuronDisplay(int neuronIx, bool checked)
 //////////////////////////////
 
 NaLargeMIPWidget::NaLargeMIPWidget(QWidget * parent)
-    : QWidget(parent)
+    : Na2DViewer(parent)
     , mipImage(NULL)
     , imageUpdateThread(this)
-    , pixmap(200, 200)
     , highlightedNeuronMaskPixmap(200, 200)
     , highlightedNeuronIndex(-1)
 {
     // Test image
+    pixmap = QPixmap(200, 200);
     pixmap.fill(Qt::black);
     highlightedNeuronMaskPixmap.fill(Qt::transparent);
     updateDefaultScale();

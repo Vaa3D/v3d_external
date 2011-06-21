@@ -14,7 +14,7 @@ class QRectF;
 #include "../../basic_c_fun/v3d_basicdatatype.h"
 #include "../../basic_c_fun/basic_4dimage.h"
 #include "../../v3d/v3d_core.h"
-#include "NaViewer.h"
+#include "Na2DViewer.h"
 #include "BrightnessCalibrator.h"
 
 // NaZStackWidget is a viewer for successive slices of a 3D volume.
@@ -25,7 +25,7 @@ class QRectF;
 #define MINSZBOX 2
 #define NCLRCHNNL 5
 
-class NaZStackWidget : public QWidget, public NaViewer
+class NaZStackWidget : public Na2DViewer
 {
     Q_OBJECT
 
@@ -151,8 +151,6 @@ protected:
 
     void *pDispData1d; // display
     void *pData1d; // ori
-
-    QPixmap pixmap;
 
     float min_img[NCLRCHNNL], max_img[NCLRCHNNL], scale_img[NCLRCHNNL]; // assume max color channel is 3
 

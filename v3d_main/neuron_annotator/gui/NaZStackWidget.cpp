@@ -103,7 +103,7 @@ template <class T> QPixmap getXYPlane(const T * pdata, V3DLONG sx, V3DLONG sy, V
 }
 
 NaZStackWidget::NaZStackWidget(QWidget * parent)
-    : QWidget(parent)
+    : Na2DViewer(parent)
 {
     pData1d = NULL;
     pDispData1d = NULL;
@@ -152,8 +152,7 @@ NaZStackWidget::~NaZStackWidget() {}
 
 void NaZStackWidget::paintEvent(QPaintEvent *event)
 {
-    QPainter painter(this);
-    //painter.save()
+    painter.begin(this);
 
     // Color background black
     painter.fillRect(0, 0, width(), height(), Qt::black);
@@ -179,10 +178,12 @@ void NaZStackWidget::paintEvent(QPaintEvent *event)
 
     painter.drawPixmap(0, 0, pixmap);
 
-    if(!runHDRFILTER) return; // Z Stack
+    if(runHDRFILTER) { // Z Stack
+        // ROI
+        drawROI(&painter);
+    }
 
-    // ROI
-    drawROI(&painter);
+    painter.end();
 }
 
 void NaZStackWidget::drawROI(QPainter *painter)

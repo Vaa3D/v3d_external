@@ -6,7 +6,7 @@
 #include <QImage>
 #include <QPixmap>
 #include <QPainter>
-#include "NaViewer.h"
+#include "Na2DViewer.h"
 #include "MouseClickManager.h"
 #include "BrightnessCalibrator.h"
 
@@ -50,7 +50,7 @@ protected:
 
 // Large maximum intensity projection viewer for Neuron Annotator
 // mode of V3D
-class NaLargeMIPWidget : public QWidget, public NaViewer
+class NaLargeMIPWidget : public Na2DViewer
 {
     Q_OBJECT
 
@@ -97,15 +97,11 @@ protected:
     void updatePixmap();
 
     MipDisplayImage * mipImage;
-    QPixmap pixmap;
 
     // QImage * highlightedNeuronMaskImage;
     QPixmap highlightedNeuronMaskPixmap;
     int highlightedNeuronIndex;
 
-    QPainter painter;
-    QTransform X_img_view;
-    QTransform X_view_img;
     QThread imageUpdateThread;
     QProgressBar * progressBar;
     // Help distinguish between single clicks and double clicks
