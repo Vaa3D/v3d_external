@@ -8,11 +8,11 @@ target.path = $$[QT_INSTALL_PLUGINS]/designer
 INSTALLS += target
 DEFINES += _DESIGNER_EXPORT
 
-HEADERS += ../../AngleWidget.h \
+HEADERS += ../AngleWidget.h \
           AngleWidgetPlugin.h
 
-SOURCES += ../../AngleWidget.cpp \
+SOURCES += ../AngleWidget.cpp \
           AngleWidgetPlugin.cpp
 
-FORMS +=  ../../AngleWidget.ui
+FORMS +=  ../AngleWidget.ui
 

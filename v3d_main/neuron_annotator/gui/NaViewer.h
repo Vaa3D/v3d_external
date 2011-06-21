@@ -1,10 +1,10 @@
 #ifndef NAVIEWER_H
 #define NAVIEWER_H
 
-#include "../v3d/v3d_core.h"
-#include "geometry/CameraModel.h"
+#include "../../v3d/v3d_core.h"
+#include "../geometry/CameraModel.h"
 #include <cmath>
-#include "AnnotationSession.h"
+#include "../AnnotationSession.h"
 
 // Base class for 3DViewer, ZStack viewer, and MIP viewer.
 // Do not attempt to derive this class from QObject; such folly will create a troublesome diamond pattern in the 3D viewer.

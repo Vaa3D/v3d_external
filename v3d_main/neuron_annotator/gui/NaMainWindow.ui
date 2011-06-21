@@ -573,7 +573,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                    <property name="lineWidth">
                     <number>0</number>
                    </property>
-                   <widget class="QWidget" name="">
+                   <widget class="QWidget" name="layoutWidget">
                     <property name="geometry">
                      <rect>
                       <x>0</x>
@@ -614,33 +614,33 @@ You can also resize the box by Ctrl + left mouse click.</string>
                          <number>0</number>
                         </property>
                         <item>
-                         <widget class="AngleWidget" name="rotXWidget" native="true">
+                         <widget class="AngleWidget" name="rotXWidget">
                           <property name="sizePolicy">
                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                             <horstretch>0</horstretch>
                             <verstretch>0</verstretch>
                            </sizepolicy>
                           </property>
-                          <property name="textLabel" stdset="0">
+                          <property name="textLabel">
                            <string>RotX</string>
                           </property>
                          </widget>
                         </item>
                         <item>
-                         <widget class="AngleWidget" name="rotYWidget" native="true">
+                         <widget class="AngleWidget" name="rotYWidget">
                           <property name="sizePolicy">
                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                             <horstretch>0</horstretch>
                             <verstretch>0</verstretch>
                            </sizepolicy>
                           </property>
-                          <property name="textLabel" stdset="0">
+                          <property name="textLabel">
                            <string>RotY</string>
                           </property>
                          </widget>
                         </item>
                         <item>
-                         <widget class="AngleWidget" name="rotZWidget" native="true">
+                         <widget class="AngleWidget" name="rotZWidget">
                           <property name="sizePolicy">
                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                             <horstretch>0</horstretch>
@@ -659,7 +659,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                             <height>0</height>
                            </size>
                           </property>
-                          <property name="textLabel" stdset="0">
+                          <property name="textLabel">
                            <string>RotZ</string>
                           </property>
                          </widget>
@@ -749,7 +749,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="ZoomWidget" name="zoomWidget" native="true"/>
+                 <widget class="ZoomWidget" name="zoomWidget"/>
                 </item>
                 <item>
                  <widget class="QPushButton" name="resetViewButton">
@@ -783,7 +783,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="GammaWidget" name="sharedGammaWidget" native="true"/>
+                 <widget class="GammaWidget" name="sharedGammaWidget"/>
                 </item>
                 <item>
                  <widget class="QFrame" name="sharedColorFrame">
@@ -1217,13 +1217,13 @@ You can also resize the box by Ctrl + left mouse click.</string>
   <customwidget>
    <class>AngleWidget</class>
    <extends>QWidget</extends>
-   <header>../neuron_annotator/AngleWidget.h</header>
+   <header>../neuron_annotator/gui/AngleWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>GammaWidget</class>
    <extends>QWidget</extends>
-   <header>../neuron_annotator/GammaWidget.h</header>
+   <header>../neuron_annotator/gui/GammaWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
@@ -1234,19 +1234,19 @@ You can also resize the box by Ctrl + left mouse click.</string>
   <customwidget>
    <class>Na3DWidget</class>
    <extends>QWidget</extends>
-   <header location="global">../neuron_annotator/Na3DWidget.h</header>
+   <header location="global">../neuron_annotator/gui/Na3DWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>NaZStackWidget</class>
    <extends>QWidget</extends>
-   <header>../neuron_annotator/NaZStackWidget.h</header>
+   <header>../neuron_annotator/gui/NaZStackWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>NaLargeMIPWidget</class>
    <extends>QWidget</extends>
-   <header>../neuron_annotator/NaLargeMIPWidget.h</header>
+   <header>../neuron_annotator/gui/NaLargeMIPWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

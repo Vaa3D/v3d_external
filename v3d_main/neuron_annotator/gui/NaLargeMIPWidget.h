@@ -1,7 +1,7 @@
 #ifndef NA_LARGE_MIP_WIDGET_H
 #define NA_LARGE_MIP_WIDGET_H
 
-#include "MipData.h"
+#include "../MipData.h"
 #include <QWidget>
 #include <QImage>
 #include <QPixmap>

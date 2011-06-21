@@ -1,10 +1,10 @@
 #ifndef NA3DWIDGET_H
 #define NA3DWIDGET_H
 
-#include "../3drenderer/v3dr_glwidget.h"
-#include "../v3d/xformwidget.h"
+#include "../../3drenderer/v3dr_glwidget.h"
+#include "../../v3d/xformwidget.h"
 #include "NaViewer.h"
-#include "geometry/Rotation3D.h"
+#include "../geometry/Rotation3D.h"
 #include "BrightnessCalibrator.h"
 #include "MouseClickManager.h"
 #include <cmath>

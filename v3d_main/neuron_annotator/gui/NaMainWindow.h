@@ -6,7 +6,7 @@
 #include <QAction>
 #include <QMainWindow>
 #include "ui_NaMainWindow.h"
-#include "AnnotationSession.h"
+#include "../AnnotationSession.h"
 #include "GalleryButton.h"
 
 class NutateThread;

@@ -1,8 +1,8 @@
 #ifndef RENDERERNEURONANNOTATOR_H
 #define RENDERERNEURONANNOTATOR_H
 
-#include "../3drenderer/Renderer_gl2.h"
-#include "geometry/Vector3D.h"
+#include "../../3drenderer/Renderer_gl2.h"
+#include "../geometry/Vector3D.h"
 
 class RendererNeuronAnnotator : public Renderer_gl2
 {

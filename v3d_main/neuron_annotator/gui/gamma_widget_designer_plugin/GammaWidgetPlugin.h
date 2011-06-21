@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QtDesigner/QDesignerCustomWidgetInterface>
 #include <QtPlugin>
-#include "../../GammaWidget.h"
+#include "../GammaWidget.h"
 
 class GammaWidgetPlugin
     : public QObject
@@ -29,7 +29,7 @@ public:
                 "</ui>";
     }
     QString group() const {return tr("Input Widgets");}
-    QString includeFile() const {return "../neuron_annotator/GammaWidget.h";}
+    QString includeFile() const {return "../neuron_annotator/gui/GammaWidget.h";}
     QString name() const {return "GammaWidget";}
     QString toolTip() const {return tr("Widget used to adjust image brightness");}
     QString whatsThis() const {return tr("This is a widget for adjusting viewer brightness in the NeuronAnnotator");}

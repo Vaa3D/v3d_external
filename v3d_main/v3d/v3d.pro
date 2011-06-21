@@ -196,13 +196,13 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     v3d_compile_constraints.h \
     v3d_version_info.h \
     v3d_application.h \
-    ../neuron_annotator/NaViewer.h \
-    ../neuron_annotator/NaMainWindow.h \
-    ../neuron_annotator/Na3DWidget.h \
-    ../neuron_annotator/NaZStackWidget.h \
+    ../neuron_annotator/gui/NaViewer.h \
+    ../neuron_annotator/gui/NaMainWindow.h \
+    ../neuron_annotator/gui/Na3DWidget.h \
+    ../neuron_annotator/gui/NaZStackWidget.h \
     ../neuron_annotator/MipLayer.h \
     ../neuron_annotator/MipData.h \
-    ../neuron_annotator/NaLargeMIPWidget.h \
+    ../neuron_annotator/gui/NaLargeMIPWidget.h \
     ../neuron_annotator/utility/ColorSeparatorConsolidator.h \
     ../neuron_annotator/utility/FileTreeSearcher.h \
     ../neuron_annotator/utility/SingleNeuronLsmSetReader.h \
@@ -211,15 +211,15 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/MultiColorImageStackNode.h \
     ../neuron_annotator/NeuronAnnotatorResultNode.h \
     ../neuron_annotator/TimebasedIdentifierGenerator.h \
-    ../neuron_annotator/RendererNeuronAnnotator.h \
-    ../neuron_annotator/GalleryButton.h \
+    ../neuron_annotator/gui/RendererNeuronAnnotator.h \
+    ../neuron_annotator/gui/GalleryButton.h \
     ../neuron_annotator/geometry/Vector3D.h \
     ../neuron_annotator/geometry/Rotation3D.h \
     ../neuron_annotator/geometry/CameraModel.h \
-    ../neuron_annotator/GammaWidget.h \
-    ../neuron_annotator/AngleWidget.h \
-    ../neuron_annotator/MouseClickManager.h \
-    ../neuron_annotator/BrightnessCalibrator.h \
+    ../neuron_annotator/gui/GammaWidget.h \
+    ../neuron_annotator/gui/AngleWidget.h \
+    ../neuron_annotator/gui/MouseClickManager.h \
+    ../neuron_annotator/gui/BrightnessCalibrator.h \
     ../neuron_annotator/gui/ZoomSpinBox.h \
     ../neuron_annotator/gui/ZoomWidget.h \
 	../neuron_annotator/NeuronSelector.h \
@@ -313,13 +313,13 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
 	../multithreadimageIO/v3d_multithreadimageIO.cpp \
     v3d_version_info.cpp \
     v3d_application.cpp \
-    ../neuron_annotator/NaViewer.cpp \
-    ../neuron_annotator/NaMainWindow.cpp \
-    ../neuron_annotator/Na3DWidget.cpp \
-    ../neuron_annotator/NaZStackWidget.cpp \
+    ../neuron_annotator/gui/NaViewer.cpp \
+    ../neuron_annotator/gui/NaMainWindow.cpp \
+    ../neuron_annotator/gui/Na3DWidget.cpp \
+    ../neuron_annotator/gui/NaZStackWidget.cpp \
     ../neuron_annotator/MipLayer.cpp \
     ../neuron_annotator/MipData.cpp \
-    ../neuron_annotator/NaLargeMIPWidget.cpp \
+    ../neuron_annotator/gui/NaLargeMIPWidget.cpp \
     ../neuron_annotator/utility/ColorSeparatorConsolidator.cpp \
     ../neuron_annotator/utility/FileTreeSearcher.cpp \
     ../neuron_annotator/utility/SingleNeuronLsmSetReader.cpp \
@@ -328,15 +328,15 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/MultiColorImageStackNode.cpp \
     ../neuron_annotator/NeuronAnnotatorResultNode.cpp \
     ../neuron_annotator/TimebasedIdentifierGenerator.cpp \
-    ../neuron_annotator/RendererNeuronAnnotator.cpp \
-    ../neuron_annotator/GalleryButton.cpp \
+    ../neuron_annotator/gui/RendererNeuronAnnotator.cpp \
+    ../neuron_annotator/gui/GalleryButton.cpp \
     ../neuron_annotator/geometry/Vector3D.cpp \
     ../neuron_annotator/geometry/Rotation3D.cpp \
     ../neuron_annotator/geometry/CameraModel.cpp \
-    ../neuron_annotator/GammaWidget.cpp \
-    ../neuron_annotator/MouseClickManager.cpp \
-    ../neuron_annotator/BrightnessCalibrator.cpp \
-    ../neuron_annotator/AngleWidget.cpp \
+    ../neuron_annotator/gui/GammaWidget.cpp \
+    ../neuron_annotator/gui/MouseClickManager.cpp \
+    ../neuron_annotator/gui/BrightnessCalibrator.cpp \
+    ../neuron_annotator/gui/AngleWidget.cpp \
     ../neuron_annotator/gui/ZoomSpinBox.cpp \
     ../neuron_annotator/gui/ZoomWidget.cpp \
 	../neuron_annotator/NeuronSelector.cpp \
@@ -398,9 +398,9 @@ FORMS += landmark_property.ui \
     dialog_update_options.ui \
     dialog_update_downloading.ui \
     dialog_update_checking.ui \
-    ../neuron_annotator/NaMainWindow.ui \
-    ../neuron_annotator/GammaWidget.ui \
-    ../neuron_annotator/AngleWidget.ui \
+    ../neuron_annotator/gui/NaMainWindow.ui \
+    ../neuron_annotator/gui/GammaWidget.ui \
+    ../neuron_annotator/gui/AngleWidget.ui \
     ../neuron_annotator/gui/ZoomWidget.ui
 #    FL_watershedSegPara.ui \
 #    FL_levelsetSegPara.ui 

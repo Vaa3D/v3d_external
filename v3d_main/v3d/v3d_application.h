@@ -4,7 +4,7 @@
 #include <QApplication>
 #include <QMainWindow>
 #include "mainwindow.h"
-#include "../neuron_annotator/NaMainWindow.h"
+#include "../neuron_annotator/gui/NaMainWindow.h"
 
 class V3dApplication : public QApplication
 {

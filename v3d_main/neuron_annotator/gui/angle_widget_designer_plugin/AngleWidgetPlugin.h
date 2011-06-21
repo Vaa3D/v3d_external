@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QtDesigner/QDesignerCustomWidgetInterface>
 #include <QtPlugin>
-#include "../../AngleWidget.h"
+#include "../AngleWidget.h"
 
 class AngleWidgetPlugin
     : public QObject
@@ -29,7 +29,7 @@ public:
                 "</ui>";
     }
     QString group() const {return tr("Input Widgets");}
-    QString includeFile() const {return "../neuron_annotator/AngleWidget.h";}
+    QString includeFile() const {return "../neuron_annotator/gui/AngleWidget.h";}
     QString name() const {return "AngleWidget";}
     QString toolTip() const {return tr("Widget used to control angles in degrees");}
     QString whatsThis() const {return tr("This is a widget for setting rotation angles in the NeuronAnnotator");}

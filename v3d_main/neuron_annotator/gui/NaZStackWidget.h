@@ -11,9 +11,9 @@ class QPointF;
 class QSizeF;
 class QRectF;
 
-#include "../basic_c_fun/v3d_basicdatatype.h"
-#include "../basic_c_fun/basic_4dimage.h"
-#include "../v3d/v3d_core.h"
+#include "../../basic_c_fun/v3d_basicdatatype.h"
+#include "../../basic_c_fun/basic_4dimage.h"
+#include "../../v3d/v3d_core.h"
 #include "NaViewer.h"
 #include "BrightnessCalibrator.h"
 

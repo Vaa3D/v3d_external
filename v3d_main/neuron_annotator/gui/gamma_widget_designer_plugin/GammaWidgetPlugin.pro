@@ -8,11 +8,11 @@ target.path = $$[QT_INSTALL_PLUGINS]/designer
 INSTALLS += target
 DEFINES += _DESIGNER_EXPORT
 
-HEADERS += ../../GammaWidget.h \
+HEADERS += ../GammaWidget.h \
           GammaWidgetPlugin.h
 
-SOURCES += ../../GammaWidget.cpp \
+SOURCES += ../GammaWidget.cpp \
           GammaWidgetPlugin.cpp
 
-FORMS +=  ../../GammaWidget.ui
+FORMS +=  ../GammaWidget.ui
 
