@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "v3d_interface.h"
+#include "../../../v3d_main/basic_c_fun/basic_surf_objs.h"
 
 class SORT_SWCPlugin: public QObject, public V3DPluginInterface
 {
@@ -27,11 +28,12 @@ public:
 	
 };
 
+QHash<V3DLONG, V3DLONG> NeuronNextPn(const NeuronTree &neurons);
+void DFS(bool** matrix, V3DLONG* neworder, V3DLONG node, V3DLONG* id, V3DLONG siz, bool* numbered);
+QHash<V3DLONG, V3DLONG> ChildParent(const NeuronTree &neurons, QList<V3DLONG> & idlist);
+void SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & listNeuron, V3DLONG newrootid);
 void sort_swc(V3DPluginCallback &callback, QWidget *parent, int method_code);
 
-QHash<V3DLONG, V3DLONG> NeuronNextPn(const NeuronTree &neurons);
-QList<V3DLONG> findroot(QHash<V3DLONG, V3DLONG> hashneuron);
-void SortSWC(NeuronTree neurons, NeuronTree neurons_new, V3DLONG newrootid);
 
 #endif
 
