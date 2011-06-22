@@ -16,7 +16,7 @@ MYDIR=
 for arg in $*; do
   #echo $arg		
   if [ $arg == "-m" ]; then
-  	QMAKE_CONFIG="CONFIG+=x86_64 CONFIG+=release"
+  	QMAKE_CONFIG="CONFIG+=x86_64"
   elif [ $arg == "-n" ]; then
   	QMAKE_CONFIG="CONFIG+=x86"
   elif [ ${arg:0:2} == "-d" ]; then
