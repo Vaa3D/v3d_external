@@ -315,7 +315,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     v3d_version_info.cpp \
     v3d_application.cpp \
     ../neuron_annotator/gui/NaViewer.cpp \
-    ../neuron_annotator/gui/Na2DViewer.h \
+    ../neuron_annotator/gui/Na2DViewer.cpp \
     ../neuron_annotator/gui/NaMainWindow.cpp \
     ../neuron_annotator/gui/Na3DWidget.cpp \
     ../neuron_annotator/gui/NaZStackWidget.cpp \
