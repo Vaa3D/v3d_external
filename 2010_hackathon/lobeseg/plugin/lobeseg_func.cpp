@@ -16,9 +16,41 @@
 extern char *optarg;
 extern int optind, opterr;
 
-int split(char *original, char ** &splits);
-
 const QString title = QObject::tr("Lobeseg Plugin");
+
+int split(const char *paras, char ** &args)
+{
+    int argc = 0;
+    int len = strlen(paras);
+    int posb[200];
+    char * myparas = new char[len];
+    strcpy(myparas, paras);
+    for(int i = 0; i < len; i++)
+    {
+        if(i==0 && myparas[i] != ' ' && myparas[i] != '\t')
+        {
+            posb[argc++]=i;
+        }
+        else if((myparas[i-1] == ' ' || myparas[i-1] == '\t') &&
+                (myparas[i] != ' ' && myparas[i] != '\t'))
+        {
+            posb[argc++] = i;
+        }
+    }
+
+    args = new char*[argc];
+    for(int i = 0; i < argc; i++)
+    {
+        args[i] = myparas + posb[i];
+    }
+
+    for(int i = 0; i < len; i++)
+    {
+        if(myparas[i]==' ' || myparas[i]=='\t')myparas[i]='\0';
+    }
+    return argc;
+}
+
 int lobeseg_two_sides(V3DPluginCallback2 &callback, QWidget *parent)
 {
 	v3dhandleList win_list = callback.getImageWindowList();
@@ -394,36 +426,4 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 	return true;
 }
 
-int split(char *original, char ** &splits)
-{
-	int i = 0;
-	int j = 0;
-	char* str = new char[strlen(original)];
-	while (original[i] != '\0')
-	{
-		if(original[i] == ' ' || original[i] == '\t')
-		{
-			while (original[i] == ' ' || original[i] == '\t')
-			{
-
-				str[i] = '\0';
-				i++;
-
-			}
-			if(original[i] != '\0')
-			{
-				str[i] = original[i];
-				splits[j++] = &(str[i]);
-			}
-		}
-		else
-		{
-			if(i == 0) splits[j++] = &(str[0]);
-			str[i] = original[i];
-		}
-		i++;
-	}
-	str[i] = '\0';
-	return j;
-}
 
