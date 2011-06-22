@@ -1,6 +1,6 @@
 
 TEMPLATE      = lib
-CONFIG       += plugin warn_off
+CONFIG       += plugin warn_off release
 INCLUDEPATH  += ../../../v3d_main/basic_c_fun
 HEADERS       = movieZCswitch.h
 SOURCES       = movieZCswitch.cpp

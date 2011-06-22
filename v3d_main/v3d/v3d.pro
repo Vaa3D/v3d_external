@@ -223,6 +223,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/gui/BrightnessCalibrator.h \
     ../neuron_annotator/gui/ZoomSpinBox.h \
     ../neuron_annotator/gui/ZoomWidget.h \
+    ../neuron_annotator/gui/CompartmentMapWidget.h \
 	../neuron_annotator/NeuronSelector.h \
 	../webservice/v3dwebservice.hpp \
 	../webservice/v3dwebserver.h \
@@ -341,6 +342,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/gui/AngleWidget.cpp \
     ../neuron_annotator/gui/ZoomSpinBox.cpp \
     ../neuron_annotator/gui/ZoomWidget.cpp \
+    ../neuron_annotator/gui/CompartmentMapWidget.cpp \
 	../neuron_annotator/NeuronSelector.cpp \
 	../webservice/v3dwebservice.cpp \
 	../webservice/gsoap2/stdsoap2.cpp \

@@ -49,6 +49,10 @@ void V3D_CL_INTERFACE::copy(const V3D_CL_INTERFACE& input)
     {
         fileList.push_back(input.fileList.at(i));
     }
+    for(int i=0; i<input.cmdArgList.size(); i++)
+    {
+        cmdArgList.push_back(input.cmdArgList.at(i));
+    }
 }
     
 
@@ -256,11 +260,18 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
                             }
 							else if (!strcmp(key, "n"))
                             {
-                                // plugin method
+                                // plugin function
                                 i_v3d.pluginfunc = argv[i+1];
                                 i++;
 								
                                 qDebug()<<"call plugin function ..."<<i_v3d.pluginfunc;
+                            }
+                            else if(!strcmp(key, "par"))
+                            {
+                                while (i+1<argc) {
+                                    i_v3d.cmdArgList.push_back(argv[++i]);
+                                }
+                                i_v3d.openV3D = false;
                             }
                             else
                             {

@@ -538,7 +538,10 @@ bool V3d_PluginLoader::runPluginInterface2_1(QObject* plugin, const QString& com
 bool V3d_PluginLoader::callPluginFunc(const QString &plugin_name,
 		const QString &func_name, const V3DPluginArgList &input, V3DPluginArgList &output)
 {
-    QString fullpath;
+    
+	loadPlugins(); // ensure pluginFilenameList unempty 20110520 YuY
+	
+	QString fullpath;
     QList<QDir> pluginsDirList = getPluginsDirList();
     foreach (const QDir& pluginsDir, pluginsDirList)
     {

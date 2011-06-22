@@ -127,9 +127,12 @@ void PLUGINFH::doPluginFunc(V3D_CL_INTERFACE i_v3d, V3d_PluginLoader& mypluginlo
         arg.type = ""; arg.p = pOutImg4D; pluginfunc_output << arg;
  
     }
+    else
+    {
+        // other plugins
+        arg.type = "cmd"; arg.p = (void *)(&(i_v3d.cmdArgList)); pluginfunc_input << arg;
+    }
     
-    // other plugins
-    //
     
     // run
     bool success = mypluginloader.callPluginFunc(v3dpluginFind, i_v3d.pluginfunc, pluginfunc_input, pluginfunc_output);
