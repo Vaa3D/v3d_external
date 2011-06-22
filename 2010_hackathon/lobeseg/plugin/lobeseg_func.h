@@ -9,9 +9,8 @@
 #include <v3d_interface.h>
 
 int lobeseg_two_sides(V3DPluginCallback2 &callback, QWidget *parent);
-bool lobeseg_two_sides(const V3DPluginArgList & input, V3DPluginArgList & output);
 int lobeseg_one_side_only(V3DPluginCallback2 &callback, QWidget *parent);
-bool lobeseg_one_side_only(const V3DPluginArgList & input, V3DPluginArgList & output);
+bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output);
 
 #endif
 

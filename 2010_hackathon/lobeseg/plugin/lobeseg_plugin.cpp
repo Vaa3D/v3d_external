@@ -44,13 +44,9 @@ void LobesegPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callbac
 
 bool LobesegPlugin::dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output, V3DPluginCallback2 & callback,  QWidget * parent)
 {
-	if (func_name == tr("lobeseg_two_sides"))
+	if (func_name == tr("lobeseg"))
 	{
-		return lobeseg_two_sides(input, output);
-	}
-	else if (func_name == tr("lobeseg_one_side_only"))
-	{
-		return lobeseg_one_side_only(input,output);
+		return lobeseg(input, output);
 	}
 }
 
