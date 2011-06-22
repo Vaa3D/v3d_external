@@ -6,8 +6,6 @@
 #ifndef __ISTITCH_H__
 #define __ISTITCH_H__
 
-#define COMPILE_TO_COMMANDLINE 1
-
 //
 #include <QtGui>
 #include <stdio.h>
