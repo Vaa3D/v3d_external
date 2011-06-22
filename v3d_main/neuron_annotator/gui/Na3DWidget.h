@@ -127,7 +127,6 @@ protected:
     float glUnitsPerImageVoxel() const;
     void updateDefaultScale();
     BrightnessCalibrator<unsigned char> brightnessCalibrator;
-    MouseClickManager mouseClickManager;
 };
 
 #endif // NA3DWIDGET_H

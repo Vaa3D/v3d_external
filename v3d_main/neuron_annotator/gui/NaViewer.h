@@ -5,6 +5,7 @@
 #include "../geometry/CameraModel.h"
 #include <cmath>
 #include "../AnnotationSession.h"
+#include "MouseClickManager.h"
 
 // Base class for 3DViewer, ZStack viewer, and MIP viewer.
 // Do not attempt to derive this class from QObject; such folly will create a troublesome diamond pattern in the 3D viewer.
@@ -34,12 +35,14 @@ protected:
     // Zoom using mouse wheel
     virtual void wheelZoom(double delta);
 
+    float defaultScale; // view-pixels per image-voxel to exactly fill window
     bool bMouseIsDragging;
     int oldDragX;
     int oldDragY;
-    float defaultScale; // view-pixels per image-voxel to exactly fill window
     AnnotationSession* annotationSession;
     bool bPaintCrosshair;
+    // Help distinguish between single clicks and double clicks
+    MouseClickManager mouseClickManager;
 };
 
 #endif // NAVIEWER_H

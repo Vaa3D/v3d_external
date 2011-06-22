@@ -110,8 +110,9 @@ NaZStackWidget::NaZStackWidget(QWidget * parent)
 
     pixmap = QPixmap(256, 256);
     pixmap.fill(Qt::black);
+    // updateDefaultScale();
 
-    scale_x = 1.0; scale_y = 1.0;
+    // scale_x = 1.0; scale_y = 1.0;
     // dispscale = 0.9;
 
     translateMouse_scale = 1;
@@ -146,12 +147,17 @@ NaZStackWidget::NaZStackWidget(QWidget * parent)
 
     connect(this, SIGNAL(curColorChannelChanged(NaZStackWidget::Color)), this, SLOT(updateHDRView()));
     connect(this, SIGNAL(roiChanged()), this, SLOT(updatePixmap()));
+    connect(&cameraModel, SIGNAL(focusChanged(Vector3D)),
+            this, SLOT(onCameraFocusChanged(Vector3D)));
+    connect(this, SIGNAL(mouseLeftDragEvent(int, int, QPoint)),
+            this, SLOT(onMouseLeftDragEvent(int, int, QPoint)));
 }
 
 NaZStackWidget::~NaZStackWidget() {}
 
 void NaZStackWidget::paintEvent(QPaintEvent *event)
 {
+    updateDefaultScale();
     painter.begin(this);
 
     // Color background black
@@ -160,6 +166,9 @@ void NaZStackWidget::paintEvent(QPaintEvent *event)
     painter.setRenderHint(QPainter::Antialiasing);
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
+    transformPainterToCurrentCamera(painter);
+
+    /*
     // TODO - these values do not need to be recalculated every paint.
     // ...but after either widget resize or image load.
     // scale image to to viewport
@@ -175,8 +184,11 @@ void NaZStackWidget::paintEvent(QPaintEvent *event)
 
     painter.translate(width()/2 - scale_x*image_focus_x, height()/2 - scale_y*image_focus_y);
     painter.scale(scale_x, scale_y);
+    */
 
     painter.drawPixmap(0, 0, pixmap);
+
+    if (bPaintCrosshair) paintCrosshair(painter);
 
     if(runHDRFILTER) { // Z Stack
         // ROI
@@ -184,6 +196,22 @@ void NaZStackWidget::paintEvent(QPaintEvent *event)
     }
 
     painter.end();
+}
+
+void NaZStackWidget::onCameraFocusChanged(const Vector3D& focus)
+{
+    if (sz <= 0) return;
+    // Drive to the corresponding z slice
+    // qDebug() << "focus.z() = " << focus.z();
+    int z = int(floor(focus.z() + 0.5));
+    // qDebug() << "z0 = " << z;
+    float midZ = sz / 2.0f;
+    z = int(midZ + flip_Z * (z - midZ));
+    // qDebug() << "z1 = " << z;
+    // qDebug() << "midZ = " << midZ;
+    // qDebug() << "flip_Z = " << flip_Z;
+    // qDebug() << "camera focus set to " << QString("%1, %2, %3").arg(focus.x()).arg(focus.y()).arg(focus.z());
+    setCurrentZSlice(z + 1);
 }
 
 void NaZStackWidget::drawROI(QPainter *painter)
@@ -316,13 +344,23 @@ int NaZStackWidget::getCurrentBoxSize() {
     return cr; // radius
 }
 
-void NaZStackWidget::setCurrentZSlice(int slice) {
+void NaZStackWidget::setCurrentZSlice(int slice)
+{
     if (slice < 1) return; // value too small
     if (slice > sz) return; // value too big
     if (cur_z == slice - 1) return; // no change; ignore
     cur_z = slice - 1;
+    // qDebug() << "setting z slice to " << slice;
 
     updateHDRView();
+
+    // Consider updating camera focus to match latest z-slice
+    const Vector3D& f = cameraModel.focus();
+    int camZ = int(floor(f.z() + 0.5));
+    float midZ = sz / 2.0f;
+    int flip_cur_z = int(midZ + flip_Z * (cur_z - midZ));
+    if (flip_cur_z != camZ)
+        cameraModel.setFocus(Vector3D(f.x(), f.y(), flip_cur_z));
 
     emit curZsliceChanged(slice);
 }
@@ -337,11 +375,23 @@ void NaZStackWidget::wheelEvent(QWheelEvent * e) // mouse wheel
     if ((e->delta() != 0) && (numTicks == 0))
         numTicks = e->delta() > 0 ? 1 : -1;
 
+    // qDebug() << "wheel";
     setCurrentZSlice(getCurrentZSlice() + numTicks);
+}
+
+void NaZStackWidget::onMouseLeftDragEvent(int dx, int dy, QPoint pos) {
+    // translate image when not in HDR mode
+    if (runHDRFILTER) return;
+    translateImage(dx, dy);
 }
 
 void NaZStackWidget::mouseMoveEvent (QMouseEvent * e) // mouse move
 {
+    super::mouseMoveEvent(e);
+    if (Qt::NoButton == e->buttons()) {
+        // hover, not drag
+        return;
+    }
     if (bMouseCurorIn)
     {
         b_mousemove = true;
@@ -406,6 +456,7 @@ void NaZStackWidget::mouseMoveEvent (QMouseEvent * e) // mouse move
 
 void NaZStackWidget::mousePressEvent(QMouseEvent *e) // mouse button press
 {
+    super::mousePressEvent(e);
     switch (e->button())
     {
         case Qt::LeftButton:
@@ -420,6 +471,7 @@ void NaZStackWidget::mousePressEvent(QMouseEvent *e) // mouse button press
 
 void NaZStackWidget::mouseReleaseEvent(QMouseEvent * e) // mouse button release
 {
+    super::mouseReleaseEvent(e);
     b_mousemove = false;
 
     if (bMouseCurorIn)
@@ -815,6 +867,7 @@ void NaZStackWidget::updatePixmap()
 
         pixmap = QPixmap::fromImage(tmpimg);
     }
+    // updateDefaultScale();
     update();
 }
 
@@ -823,8 +876,6 @@ bool NaZStackWidget::loadMy4DImage(const My4DImage* img, const My4DImage* neuron
 {
     V3DLONG imageSize[4] = {img->getXDim(), img->getYDim(), img->getZDim(), img->getCDim()};
     initHDRViewer(imageSize, img->getRawData(), img->getDatatype());
-    // dispheight = sx;
-    // dispwidth = sy;
     return true;
 }
 
@@ -876,6 +927,7 @@ void NaZStackWidget::initHDRViewer(const V3DLONG *imgsz, const unsigned char *da
             }
 
             pixmap = getXYPlane((unsigned char *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img); // initial focus plane
+            // updateDefaultScale();
 
             update();
             //repaint();
@@ -910,6 +962,7 @@ void NaZStackWidget::initHDRViewer(const V3DLONG *imgsz, const unsigned char *da
             }
 
             pixmap = getXYPlane((unsigned short int*)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img); // initial focus plane
+            // updateDefaultScale();
 
             update();
         }
@@ -943,6 +996,7 @@ void NaZStackWidget::initHDRViewer(const V3DLONG *imgsz, const unsigned char *da
             }
 
             pixmap = getXYPlane((float *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img); // initial focus plane
+            // updateDefaultScale();
 
             update();
         }

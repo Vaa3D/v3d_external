@@ -16,6 +16,10 @@ signals:
 public slots:
     void setZoomValue(qreal doubleValue);
     void reset();
+
+protected slots:
+    void onDialValueChanged(int);
+    void onSpinBoxValueChanged(qreal);
 };
 
 #endif // ZOOMWIDGET_H

@@ -64,23 +64,30 @@ public:
     //  * shift by one pixel so image[0,0] maps to viewport[1,1]
     QPointF viewportXYToImageXY(float vx, float vy)
     {
+        /*
         float ix = (vx - width()/2.0 - 1) / scale_x + image_focus_x;
         float iy = (vy - height()/2.0 - 1) / scale_y + image_focus_y;
         // float ix = (vx - 1) / scale_x;
         // float iy = (vy - 1) / scale_y;
         return QPointF(ix, iy);
+        */
+        return X_img_view * QPointF(vx, vy);
     }
     QPoint viewportXYToImageXY(const QPoint& vp)
     {
         QPointF ipf = viewportXYToImageXY(vp.x(), vp.y());
         return QPoint(int(ipf.x()), int(ipf.y()));
     }
-    QPointF imageXYToViewportXY(float ix, float iy) {
+    QPointF imageXYToViewportXY(float ix, float iy)
+    {
+        /*
         float vx = (ix - image_focus_x) * scale_x + width()/2.0 + 1;
         float vy = (iy - image_focus_y) * scale_y + height()/2.0 + 1;
         // float vx = (ix) * scale_x + 1;
         // float vy = (iy) * scale_y + 1;
         return QPointF(vx, vy);
+        */
+        return X_view_img * QPointF(ix, iy);
     }
 	
     void initHDRViewer(const V3DLONG *imgsz, const unsigned char *data1d, ImagePixelType imgdatatype);
@@ -111,6 +118,10 @@ signals:
 
 public:
     V3DLONG sx, sy, sz, sc;
+
+protected slots:
+    void onCameraFocusChanged(const Vector3D&);
+    void onMouseLeftDragEvent(int dx, int dy, QPoint pos);
 
 protected:
     void setColorChannel(NaZStackWidget::Color col);
@@ -162,15 +173,18 @@ protected:
     float ratio_x2y; // x/y
     // parameters for mapping screen coordinates to image coordinates
     // scale is viewport pixels per image voxel
-    float scale_x, scale_y; // assume scale_x = scale_y, i.e. keep the ratio x to y
+    // float scale_x, scale_y; // assume scale_x = scale_y, i.e. keep the ratio x to y
     // image coordinates of image point in center of viewport
-    float image_focus_x, image_focus_y;
+    // float image_focus_x, image_focus_y;
 
     // on/off HDR filter
     bool runHDRFILTER;
     bool hdrfiltered[NCLRCHNNL];
 
     BrightnessCalibrator<float> brightnessCalibrator; // gamma correction
+
+private:
+    typedef Na2DViewer super;
 };
 
 #endif // NA_ZSTACK_WIDGET_H

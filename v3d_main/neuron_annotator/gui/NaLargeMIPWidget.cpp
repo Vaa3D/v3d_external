@@ -3,11 +3,6 @@
 #include <vector>
 #include <map>
 
-// Screen Y-axis is flipped with respect to data Y-axis in V3D 3D viewer
-static const qreal flip_X =  1;
-static const qreal flip_Y = -1;
-static const qreal flip_Z = -1;
-
 /////////////////////////////
 // MipDisplayImage methods //
 /////////////////////////////
@@ -160,7 +155,6 @@ NaLargeMIPWidget::NaLargeMIPWidget(QWidget * parent)
     updateDefaultScale();
     resetView();
 
-    setMouseTracking(true); // respond to mouse hover events
     setCursor(Qt::OpenHandCursor);
     imageUpdateThread.start();
 
@@ -176,6 +170,8 @@ NaLargeMIPWidget::NaLargeMIPWidget(QWidget * parent)
             this, SLOT(onMouseSingleClick(QPoint)));
     connect(this, SIGNAL(hoverNeuronChanged(int)),
             this, SLOT(onHighlightedNeuronChanged(int)));
+    connect(this, SIGNAL(mouseLeftDragEvent(int, int, QPoint)),
+            this, SLOT(translateImage(int,int)));
 }
 
 NaLargeMIPWidget::~NaLargeMIPWidget()
@@ -251,23 +247,6 @@ void NaLargeMIPWidget::setGammaBrightness(qreal gamma)
     // qDebug() << "set gamma";
     updatePixmap();
     update();
-}
-
-void NaLargeMIPWidget::updateDefaultScale()
-{
-    float screenWidth = width();
-    float screenHeight = height();
-    float objectWidth = pixmap.size().width();
-    float objectHeight = pixmap.size().height();
-
-    if (screenWidth < 1) return;
-    if (screenHeight < 1) return;
-    if (objectWidth < 1) return;
-    if (objectHeight < 1) return;
-    float scaleX = screenWidth / objectWidth;
-    float scaleY = screenHeight / objectHeight;
-    // fit whole pixmap in window, with bars if necessary
-    defaultScale = scaleX > scaleY ? scaleY : scaleX;
 }
 
 void NaLargeMIPWidget::resetView()
@@ -357,18 +336,7 @@ void NaLargeMIPWidget::paintEvent(QPaintEvent *event)
     // painter.fillRect(0, 0, width(), height(), Qt::black);
 
     // adjust painter coordinate system to place image correctly
-    float scale = defaultScale * cameraModel.scale();
-    qreal tx = pixmap.width()/2.0 + flip_X * (cameraModel.focus().x() - pixmap.width()/2.0);
-    qreal ty = pixmap.height()/2.0 + flip_Y * (cameraModel.focus().y() - pixmap.height()/2.0);
-    painter.translate(width()/2.0 - tx * scale, height()/2.0 - ty * scale);
-    painter.scale(scale, scale);
-
-    // I want to convert screen coordinates to image coordinates;
-    // The QPainter object knows this transformation.
-    // This nomenclature for the transforms, e.g. X_view_img , comes from the
-    // advanced dynamics community at Stanford, specifically the disciples of Thomas Kane.
-    X_view_img = painter.transform();
-    X_img_view = painter.transform().inverted();
+    transformPainterToCurrentCamera(painter);
 
     painter.drawPixmap(0, 0, pixmap); // magic!
     if (highlightedNeuronIndex > 0) { // zero means background
@@ -382,46 +350,14 @@ void NaLargeMIPWidget::paintEvent(QPaintEvent *event)
         }
     }
 
-    if (bPaintCrosshair) {
-        QBrush brush1(Qt::black);
-        QBrush brush2(QColor(255, 255, 180));
-        QPen pen1(brush1, 2.0/scale);
-        QPen pen2(brush2, 1.0/scale);
-        // qDebug() << "paint crosshair";
-        // Q: Why all this complicated math instead of just [width()/2, height()/2]?
-        // A: This helps debug/document placement of image focus
-        qreal cx = pixmap.width()/2.0 + flip_X * (cameraModel.focus().x() - pixmap.width()/2.0);
-        qreal cy = pixmap.height()/2.0 + flip_Y * (cameraModel.focus().y() - pixmap.height()/2.0);
-        QPointF f(cx, cy);
-        QPointF dx1(4.0 / scale, 0);
-        QPointF dy1(0, 4.0 / scale);
-        QPointF dx2(10.0 / scale, 0); // crosshair size is ten pixels
-        QPointF dy2(0, 10.0 / scale);
-        painter.setPen(pen1);
-        painter.drawLine(f + dx1, f + dx2);
-        painter.drawLine(f - dx1, f - dx2);
-        painter.drawLine(f + dy1, f + dy2);
-        painter.drawLine(f - dy1, f - dy2);
-        painter.setPen(pen2);
-        painter.drawLine(f + dx1, f + dx2);
-        painter.drawLine(f - dx1, f - dx2);
-        painter.drawLine(f + dy1, f + dy2);
-        painter.drawLine(f - dy1, f - dy2);
-    }
+    if (bPaintCrosshair) paintCrosshair(painter);
 
     // At large zoom levels, write the intensity values at each pixel
+    float scale = defaultScale * cameraModel.scale();
     if (scale > 40) { // 40 display pixels per image pixel
         paintIntensityNumerals(painter);
     }
     painter.end();
-}
-
-void NaLargeMIPWidget::translateImage(int dx, int dy)
-{
-    if (!dx && !dy) return;
-    float scale = defaultScale * cameraModel.scale();
-    cameraModel.setFocus(cameraModel.focus() - Vector3D(flip_X * dx/scale, flip_Y * dy/scale, 0));
-    update();
 }
 
 // Zoom using mouse wheel
@@ -447,27 +383,20 @@ void NaLargeMIPWidget::wheelEvent(QWheelEvent * e) // mouse wheel
     update();
 }
 
+/* virtual */
 void NaLargeMIPWidget::mousePressEvent(QMouseEvent * event)
 {
-    mouseClickManager.mousePressEvent(event);
-    // Consider starting a translation drag operation
-    if (event->buttons() & Qt::LeftButton) {
-        bMouseIsDragging = true;
-        oldDragX = event->pos().x();
-        oldDragY = event->pos().y();
+    super::mousePressEvent(event);
+    // Feedback for starting a translation drag operation
+    if (event->buttons() & Qt::LeftButton)
         setCursor(Qt::ClosedHandCursor);
-    }
-    else {
-        bMouseIsDragging = false;
-    }
 }
 
+/* virtual */
 void NaLargeMIPWidget::mouseReleaseEvent(QMouseEvent * event)
 {
-    // End any drag event
-    bMouseIsDragging = false;
+    super::mouseReleaseEvent(event);
     setCursor(Qt::OpenHandCursor);
-    mouseClickManager.mouseReleaseEvent(event);
 }
 
 int NaLargeMIPWidget::neuronAt(const QPoint& p)
@@ -500,6 +429,8 @@ void NaLargeMIPWidget::onHighlightedNeuronChanged(int neuronIx)
 // Drag in widget to translate the MIP image in x,y
 void NaLargeMIPWidget::mouseMoveEvent(QMouseEvent * event)
 {
+    super::mouseMoveEvent(event);
+
     // Hover action: status message
     // Write status message when hovering with mouse.
     // Notice statement "setMouseTracking(true)" in constructor.
@@ -547,41 +478,8 @@ void NaLargeMIPWidget::mouseMoveEvent(QMouseEvent * event)
         }
 
         emit statusMessage(msg);
-        bMouseIsDragging = false;
         return;
     }
-
-    if (! (event->buttons() & Qt::LeftButton) ) {
-        // qDebug() << "Not left button...";
-        bMouseIsDragging = false;
-        return;
-    }
-
-    int dx = event->pos().x() - oldDragX;
-    int dy = event->pos().y() - oldDragY;
-    oldDragX = event->pos().x();
-    oldDragY = event->pos().y();
-
-    // Do nothing until the second drag point is reached
-    if (!bMouseIsDragging) {
-        bMouseIsDragging = true;
-        return;
-    }
-
-    // Left drag action: translate
-    // Mouse drag to translate image
-    translateImage(dx, dy);
-}
-
-// Move focus on double click
-void NaLargeMIPWidget::mouseDoubleClickEvent(QMouseEvent * event)
-{
-    mouseClickManager.mouseDoubleClickEvent(event);
-    if (event->button() != Qt::LeftButton)
-        return;
-    double dx = event->pos().x() - width()/2.0;
-    double dy = event->pos().y() - height()/2.0;
-    translateImage(-dx, -dy);
 }
 
 void NaLargeMIPWidget::annotationModelUpdate(QString updateType)

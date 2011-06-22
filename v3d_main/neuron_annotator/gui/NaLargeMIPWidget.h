@@ -64,11 +64,8 @@ public:
     virtual void mouseMoveEvent(QMouseEvent * event);
     virtual void mousePressEvent(QMouseEvent * event);
     virtual void mouseReleaseEvent(QMouseEvent * event);
-    // double click to center
-    virtual void mouseDoubleClickEvent(QMouseEvent * event);
     virtual void wheelEvent(QWheelEvent * e); // zoom with scroll wheel
     virtual void resizeEvent(QResizeEvent * event);
-    void translateImage(int dx, int dy);
     int neuronAt(const QPoint& p);
 
 signals:
@@ -91,7 +88,6 @@ protected slots:
     void onHighlightedNeuronChanged(int neuronIndex);
 
 protected:
-    void updateDefaultScale();
     void resetView();
     void paintIntensityNumerals(QPainter& painter);
     void updatePixmap();
@@ -104,8 +100,9 @@ protected:
 
     QThread imageUpdateThread;
     QProgressBar * progressBar;
-    // Help distinguish between single clicks and double clicks
-    MouseClickManager mouseClickManager;
+
+private:
+    typedef Na2DViewer super;
 };
 
 #endif // NA_LARGE_MIP_WIDGET_H

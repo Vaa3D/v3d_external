@@ -210,16 +210,16 @@ void Na3DWidget::mouseReleaseEvent(QMouseEvent * event)
 
 void Na3DWidget::onMouseSingleClick(QPoint pos)
 {
-    qDebug() << "single left click!";
+    // qDebug() << "single left click!";
     highlightNeuronAtPosition(pos);
 }
 
 void Na3DWidget::highlightNeuronAtPosition(QPoint pos)
 {
-    qDebug()<<"left click ... ...";
+    // qDebug()<<"left click ... ...";
     XYZ loc = ((Renderer_tex2*)getRenderer())->selectPosition( pos.x(),  pos.y() );
     // select neuron: set x, y, z and emit signal
-    qDebug()<<"emit a signal ...";
+    // qDebug()<<"emit a signal ...";
     emit neuronSelected(loc.x, loc.y, loc.z);
     update(); // TODO - this update() should be postponed until the response to whatever happens after neuronSelected(...) completes.
 }
@@ -433,7 +433,7 @@ void Na3DWidget::prepareImageData() {
 }
 
 void Na3DWidget::choiceRenderer() {
-        qDebug("Na3DWidget::choiceRenderer");
+        // qDebug("Na3DWidget::choiceRenderer");
         _isSoftwareGL = false;
         GLeeInit();
         renderer = new RendererNeuronAnnotator(this);

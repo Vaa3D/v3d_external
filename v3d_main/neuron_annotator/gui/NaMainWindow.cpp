@@ -42,7 +42,8 @@ NaMainWindow::NaMainWindow()
 
     // Wire up Z-stack / HDR viewer
     ui.HDR_checkBox->setChecked(true);
-    ui.naZStackWidget->setHDRCheckState(true);
+    ui.naZStackWidget->setHDRCheckState(false);
+    ui.HDR_checkBox->setChecked(false);
     // ui.gammaWidget_Zstack->hide();
     ui.BoxSize_spinBox->setMinimum(MINSZBOX);
     
@@ -173,6 +174,7 @@ void NaMainWindow::resetView()
     sharedCameraModel.setFocus(ui.v3dr_glwidget->getDefaultFocus()); // center view
     sharedCameraModel.setRotation(Rotation3D()); // identity rotation
     sharedCameraModel.setScale(1.0); // fit to window
+    ui.viewerStackedWidget->update(); // whichever viewer is shown
 }
 
 void NaMainWindow::updateViewers()
