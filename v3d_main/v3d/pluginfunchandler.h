@@ -49,5 +49,5 @@ public:
     ~PLUGINFH(){}
     
 public:
-    void doPluginFunc(V3D_CL_INTERFACE i_v3d, V3d_PluginLoader& mypluginloader, QString v3dpluginFind);
+    void doPluginFunc(V3D_CL_INTERFACE i_v3d, V3d_PluginLoader& mypluginloader, QString v3dpluginFind, void *mainwin);
 };

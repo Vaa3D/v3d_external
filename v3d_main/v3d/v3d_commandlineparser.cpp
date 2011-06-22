@@ -44,6 +44,11 @@ void V3D_CL_INTERFACE::copy(const V3D_CL_INTERFACE& input)
     pluginname = input.pluginname;
     pluginmethod = input.pluginmethod;
     pluginfunc = input.pluginfunc;
+    
+    for(int i=0; i<input.fileList.size(); i++)
+    {
+        fileList.push_back(input.fileList.at(i));
+    }
 }
     
 

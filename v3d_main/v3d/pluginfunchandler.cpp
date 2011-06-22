@@ -34,21 +34,151 @@
  ****************************************************************************/
 
 
-#include "pluginfunchandler.h"
+//#include "pluginfunchandler.h"
+#include "mainwindow.h"
 
-void PLUGINFH::doPluginFunc(V3D_CL_INTERFACE i_v3d, V3d_PluginLoader& mypluginloader, QString v3dpluginFind)
+void PLUGINFH::doPluginFunc(V3D_CL_INTERFACE i_v3d, V3d_PluginLoader& mypluginloader, QString v3dpluginFind, void *mainwin)
 {
-
+    // prepare 
     V3DPluginArgItem arg;
     V3DPluginArgList pluginfunc_input;
     V3DPluginArgList pluginfunc_output;
     
+    QList<Image4DSimple *> imgList;
+    
+    if(i_v3d.openV3D)
+    {
+        MainWindow *pMainWin = (MainWindow *)(mainwin);
+        
+        for(int i=0; i<i_v3d.fileList.size(); i++)
+        {
+            char *filenameinput = i_v3d.fileList.at(i);
+            
+            QString fileName(filenameinput);
+            
+            // load image
+            if (!fileName.isEmpty()) 
+            {
+                // find triview window
+                XFormWidget *existing_imgwin = pMainWin->findMdiChild(fileName);	
+                
+                // handling
+                if(!existing_imgwin)
+                {
+                    pMainWin->loadV3DFile(filenameinput, true, false); // 3d viewer is not opened by default
+                    
+                    existing_imgwin = pMainWin->findMdiChild(fileName);
+                    if(!existing_imgwin) 
+                    {
+                        // try open image file in currrent dir
+                        QString tryFileName = QDir::currentPath() + "/" + fileName;
+                        v3d_msg(QString("Try to open the file [%1].").arg(tryFileName), 1);
+                        
+                        pMainWin->loadV3DFile(tryFileName, true, false);
+                        
+                        if(!existing_imgwin) 
+                        {
+                            v3d_msg(QString("The file [%1] does not exist! Try run plugin directly.").arg(fileName), 1);
+                            return;	
+                        }
+                    }
+                }
+                
+                // 
+                imgList.push_back( (Image4DSimple*)(pMainWin->getImage(existing_imgwin)) );
+                
+            }
+            else
+            {
+                v3d_msg(QString("The file [%1] does not exist! Do nothing.").arg(fileName), 1);
+                return;	
+            }
+            
+        }
+    }
+    
+    // imageProcess plugin
+    if(string(i_v3d.pluginfunc)=="imAdd" || string(i_v3d.pluginfunc)=="imSub" || string(i_v3d.pluginfunc)=="imMul" || string(i_v3d.pluginfunc)=="imDiv")
+    {
+        if(imgList.size()<2)
+        {
+            v3d_msg(QString("At least two images needed."), 0);
+            return;
+        }
+        
+        arg.type = ""; arg.p = imgList.at(0); pluginfunc_input << arg;
+        arg.type = ""; arg.p = imgList.at(1); pluginfunc_input << arg;
+        
+        
+        V3DLONG totalplxs = imgList.at(0)->getTotalBytes();
+        unsigned char *p = NULL;
+        
+        try{
+            p = new unsigned char [totalplxs];
+        }
+        catch(...){
+            v3d_msg(QString("Fail to allocate memory."), 0);
+            return;
+        }
+        
+        Image4DSimple *pOutImg4D = new Image4DSimple;        
+        pOutImg4D->setData(p, imgList.at(0));
+        
+        arg.type = ""; arg.p = pOutImg4D; pluginfunc_output << arg;
+ 
+    }
+    
+    // other plugins
+    //
+    
+    // run
     bool success = mypluginloader.callPluginFunc(v3dpluginFind, i_v3d.pluginfunc, pluginfunc_input, pluginfunc_output);
     
     if(!success)
     {
         v3d_msg(QString("Fail to call plugin function."), 0);
         return;
+    }
+    
+    qDebug()<<"image processed ...";
+    
+    // show result
+    if(i_v3d.openV3D)
+    {
+        MainWindow *pMainWin = (MainWindow *)(mainwin);
+
+        if(string(i_v3d.pluginfunc)=="imAdd")
+        {
+            char *saveFile = "addImage.raw";
+            ((Image4DSimple *)(pluginfunc_output.at(0).p))->saveImage(saveFile);
+            
+            pMainWin->loadV3DFile(saveFile, true, false);
+            
+        }
+        else if(string(i_v3d.pluginfunc)=="imSub")
+        {
+            char *saveFile = "subImage.raw";
+            ((Image4DSimple *)(pluginfunc_output.at(0).p))->saveImage(saveFile);
+            
+            pMainWin->loadV3DFile(saveFile, true, false);
+        
+        }
+        else if(string(i_v3d.pluginfunc)=="imMul")
+        {
+            char *saveFile = "mulImage.raw";
+            ((Image4DSimple *)(pluginfunc_output.at(0).p))->saveImage(saveFile);
+            
+            pMainWin->loadV3DFile(saveFile, true, false);
+        
+        }
+        else if(string(i_v3d.pluginfunc)=="imDiv")
+        {
+            char *saveFile = "divImage.raw";
+            ((Image4DSimple *)(pluginfunc_output.at(0).p))->saveImage(saveFile);
+            
+            pMainWin->loadV3DFile(saveFile, true, false);
+        
+        }
     }
     
 }

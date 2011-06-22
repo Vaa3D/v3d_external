@@ -442,7 +442,7 @@ void MainWindow::updateRunPlugin() //20110426 YuY
                 
                 PLUGINFH pluginFuncHandler;
                 
-                pluginFuncHandler.doPluginFunc(v3dclp, mypluginloader, v3dpluginFind);
+                pluginFuncHandler.doPluginFunc(v3dclp, mypluginloader, v3dpluginFind, (void *)this);
 			}
 		}
 		else
