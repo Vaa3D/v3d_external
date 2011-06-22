@@ -42,7 +42,8 @@ QHash<V3DLONG, V3DLONG> ChildParent(const NeuronTree &neurons, QList<V3DLONG> & 
 {
 	QHash<V3DLONG, V3DLONG> cp;
 	for (V3DLONG i=0;i<neurons.listNeuron.size(); i++)
-		cp.insert(idlist.indexOf(neurons.listNeuron.at(i).n), idlist.indexOf(neurons.listNeuron.at(i).pn)); 
+		if (neurons.listNeuron.at(i).pn==-1) cp.insert(idlist.indexOf(neurons.listNeuron.at(i).n), -1);
+		else cp.insert(idlist.indexOf(neurons.listNeuron.at(i).n), idlist.indexOf(neurons.listNeuron.at(i).pn)); 
 	return cp;
 }
 
@@ -79,9 +80,11 @@ void SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & lN, V3DLONG newrooti
 	
 	
 	V3DLONG siz = idlist.size();
+
 	ofstream myfile;
 	myfile.open("result.swc");
-
+	//for (int i=0;i<siz;i++)
+	//	myfile<< i <<": "<< idlist.at(i)<<"parent:"<<idlist.at(cp.value(i))<<"\n";
 	bool** matrix = new bool*[siz];
 	for (V3DLONG i = 0;i<siz;i++)
 	{
@@ -103,20 +106,25 @@ void SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & lN, V3DLONG newrooti
 		}
 	}
 	
+	
 	//do a DFS for the the matrix and re-allocate ids for all the nodes
 	V3DLONG root= idlist.indexOf(newrootid);
 	
 	V3DLONG* neworder = new V3DLONG[siz];
 	bool* numbered = new bool[siz];
-	
+	for (V3DLONG i=0;i<siz;i++) numbered[i] = false;
 	
 	V3DLONG id[] = {0};
 
 	DFS(matrix,neworder,root,id,siz,numbered);
 	
-	
-	if ((*id)==siz)
-	{
+	if ((*id)<siz) {
+		v3d_msg("The root you have chosen cannot reach all the nodes in neuron tree. Show the connected component only.");
+		siz = (*id);
+		}
+	else if ((*id)==siz)
+		v3d_msg("The neuronTree is connected. Show re-sorted result.");
+
 		//DFS suceeded, change the swc with hashfunc
 		v3d_msg("A new SWC file (result.swc) is generated under your v3d directory");
 		NeuronSWC S;
@@ -152,11 +160,6 @@ void SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & lN, V3DLONG newrooti
 		
 		for (V3DLONG i=0;i<lN.size();i++)
 			myfile <<lN.at(i).n <<" " << lN.at(i).type << " " << lN.at(i).x <<" "<<lN.at(i).y << " "<< lN.at(i).z << " "<< lN.at(i).r << " " <<lN.at(i).pn << "\n";
-	}
-	else if ((*id)<siz){
-		//failed, cannot reach all the neurons in graph
-		v3d_msg("The root you have chosen cannot reach all the nodes in neuron tree.");
-	}
 	
 	myfile.close();
 }
@@ -185,6 +188,11 @@ void sort_swc(V3DPluginCallback &callback, QWidget *parent, int method_code)
 			neuron = readSWC_file(filename);
 			NeuronTree neurons_new;
 			QList<NeuronSWC> listNeuron;
+			ofstream tmp;
+			//tmp.open("tmp.txt");
+			//for (int i=0;i<neuron.listNeuron.size();i++)
+			//tmp<< neuron.listNeuron.at(i).n<<"\n";
+			//tmp.close();
 
 			int rootid;
 			bool ok;
