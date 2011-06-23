@@ -26,6 +26,43 @@
 
 using namespace std;
 
+
+//////////////////
+// NutateThread //
+//////////////////
+
+NutateThread::NutateThread(qreal cyclesPerSecond, QObject * parent /* = NULL */)
+    : QThread(parent)
+    , speed(cyclesPerSecond)
+    , interval(0.200) // update every 200 milliseconds
+    , currentAngle(0.0)
+{
+    deltaAngle = 2.0 * 3.14159 * cyclesPerSecond * interval;
+}
+
+void NutateThread::run()
+{
+    while(true) {
+        if (paused) {
+            sleep(0.5);
+            continue;
+        }
+        // qDebug() << "nutation angle = " << currentAngle;
+        rot = deltaNutation(currentAngle, deltaAngle);
+        emit nutate(rot);
+        currentAngle += deltaAngle;
+        while (currentAngle > 2.0 * 3.14159) currentAngle -= 2.0 * 3.14159;
+        msleep( (1000.0 * deltaAngle) / (2.0 * 3.14159 * speed) );
+    }
+}
+void NutateThread::pause() {paused = true;}
+void NutateThread::unpause() {paused = false;}
+
+
+//////////////////
+// NaMainWindow //
+//////////////////
+
 NaMainWindow::NaMainWindow()
     : nutateThread(NULL)
 {
@@ -116,6 +153,12 @@ NaMainWindow::NaMainWindow()
             ui.naLargeMIPWidget, SLOT(showCrosshair(bool)));
     connect(ui.actionShow_Crosshair, SIGNAL(toggled(bool)),
             ui.v3dr_glwidget, SLOT(showCrosshair(bool)));
+    connect(ui.actionShow_Crosshair, SIGNAL(toggled(bool)),
+            ui.naZStackWidget, SLOT(showCrosshair(bool)));
+
+    // Clear status message when viewer changes
+    connect(ui.viewerStackedWidget, SIGNAL(currentChanged(int)),
+            this, SLOT(onViewerChanged(int)));
 
     // Create "Undo" menu options
     // TODO - figure out which of these variables to expose once we have a QUndoCommand to work with.
@@ -124,6 +167,24 @@ NaMainWindow::NaMainWindow()
     QAction * redoAction = undoGroup->createRedoAction(this);
     ui.menuEdit->insertAction(ui.menuEdit->actions().at(0), redoAction);
     ui.menuEdit->insertAction(redoAction, undoAction);
+}
+
+void NaMainWindow::onViewerChanged(int viewerIndex) {
+    QString msg(" viewer selected.");
+    switch(viewerIndex) {
+    case VIEWER_MIP:
+        msg = "Maximum intensity projection" + msg;
+        break;
+    case VIEWER_ZSTACK:
+        msg = "Z-stack" + msg;
+        break;
+    case VIEWER_3D:
+        msg = "3D" + msg;
+        break;
+    default:
+        break;
+    }
+    ui.statusbar->showMessage(msg);
 }
 
 void NaMainWindow::resetColors() {
@@ -490,6 +551,40 @@ void NaMainWindow::createMaskGallery() {
     qDebug() << "createMaskGallery() end size=" << maskMipList->size();
 }
 
+void NaMainWindow::on3DViewerRotationChanged(const Rotation3D& rot)
+{
+    Vector3D angles = rot.convertBodyFixedXYZRotationToThreeAngles();
+    int rotX = Na3DWidget::radToDeg(angles.x());
+    int rotY = Na3DWidget::radToDeg(angles.y());
+    int rotZ = Na3DWidget::radToDeg(angles.z());
+    int oldRotX = ui.rotXWidget->spinBox->value();
+    int oldRotY = ui.rotYWidget->spinBox->value();
+    int oldRotZ = ui.rotZWidget->spinBox->value();
+    if (Na3DWidget::eulerAnglesAreEquivalent(rotX, rotY, rotZ, oldRotX, oldRotY, oldRotZ))
+        return;
+    // Block signals from individual rot widgets until we update them all
+    ui.rotXWidget->blockSignals(true);
+    ui.rotYWidget->blockSignals(true);
+    ui.rotZWidget->blockSignals(true);
+
+    ui.rotXWidget->setAngle(rotX);
+    ui.rotYWidget->setAngle(rotY);
+    ui.rotZWidget->setAngle(rotZ);
+
+    ui.rotXWidget->blockSignals(false);
+    ui.rotYWidget->blockSignals(false);
+    ui.rotZWidget->blockSignals(false);
+}
+
+void NaMainWindow::update3DViewerXYZBodyRotation()
+{
+    int rotX = ui.rotXWidget->spinBox->value();
+    int rotY = ui.rotYWidget->spinBox->value();
+    int rotZ = ui.rotZWidget->spinBox->value();
+    // qDebug() << rotX << ", " << rotY << ", " << rotZ;
+    ui.v3dr_glwidget->setXYZBodyRotationInt(rotX, rotY, rotZ);
+}
+
 // update neuron selected status
 void NaMainWindow::updateAnnotationModels() {
         for (int i=1;i<annotationSession->getMaskStatusList().size();i++) {
@@ -509,6 +604,9 @@ void NaMainWindow::updateAnnotationModels() {
         }
 
 }
+
+
+// NutateThread
 
 
 

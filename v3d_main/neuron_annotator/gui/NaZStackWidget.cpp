@@ -14,9 +14,9 @@ void converting(Tpre *pre1d, Tpost *pPost, V3DLONG imsz) {
         pPost[i] = (Tpost) pre1d[i];
 }
 
-template <class T> QPixmap getXYPlane(const T * pdata, V3DLONG sx, V3DLONG sy, V3DLONG sz, V3DLONG sc, V3DLONG curz, float *p_vmax, float *p_vmin)
+template <class T> QImage& getXYPlane(QImage& displayImage, const T * pdata, V3DLONG sx, V3DLONG sy, V3DLONG sz, V3DLONG sc, V3DLONG curz, float *p_vmax, float *p_vmin)
 {
-    QImage tmpimg = QImage(sx, sy, QImage::Format_RGB32);
+    displayImage = QImage(sx, sy, QImage::Format_RGB32);
 
     int tr,tg,tb;
 
@@ -56,7 +56,7 @@ template <class T> QPixmap getXYPlane(const T * pdata, V3DLONG sx, V3DLONG sy, V
                     long idx = offset + i;
 
                     tb = tg = tr = floor((pdata[idx]-tmpr_min)/tmpr*255.0);
-                    tmpimg.setPixel(i, j, qRgb(tr, tg, tb));
+                    displayImage.setPixel(i, j, qRgb(tr, tg, tb));
                 }
             }
             break;
@@ -72,7 +72,7 @@ template <class T> QPixmap getXYPlane(const T * pdata, V3DLONG sx, V3DLONG sy, V
                     long idx = offset + i;
                     tr = floor((pdata[idx]-tmpr_min)/tmpr*255.0);
                     tg = floor((pdata[idx+pagesz]-tmpg_min)/tmpg*255.0);
-                    tmpimg.setPixel(i, j, qRgb(tr, tg, tb));
+                    displayImage.setPixel(i, j, qRgb(tr, tg, tb));
                 }
             }
             break;
@@ -90,7 +90,7 @@ template <class T> QPixmap getXYPlane(const T * pdata, V3DLONG sx, V3DLONG sy, V
                     tr = floor((pdata[idx]-tmpr_min)/tmpr*255.0);
                     tg = floor((pdata[idx+pagesz]-tmpg_min)/tmpg*255.0);
                     tb = floor((pdata[idx+2*pagesz]-tmpb_min)/tmpb*255.0);
-                    tmpimg.setPixel(i, j, qRgb(tr, tg, tb));
+                    displayImage.setPixel(i, j, qRgb(tr, tg, tb));
                 }
             }
             break;
@@ -98,18 +98,20 @@ template <class T> QPixmap getXYPlane(const T * pdata, V3DLONG sx, V3DLONG sy, V
         default:
             break;
     }
-    return QPixmap::fromImage(tmpimg);
+    return displayImage;
 
 }
 
 NaZStackWidget::NaZStackWidget(QWidget * parent)
     : Na2DViewer(parent)
+    , originalImage(NULL)
 {
     pData1d = NULL;
     pDispData1d = NULL;
 
-    pixmap = QPixmap(256, 256);
-    pixmap.fill(Qt::black);
+    displayImage = QImage(256, 256, QImage::Format_RGB32);
+    displayImage.fill(Qt::black);
+    pixmap = QPixmap::fromImage(displayImage);
     // updateDefaultScale();
 
     // scale_x = 1.0; scale_y = 1.0;
@@ -190,12 +192,83 @@ void NaZStackWidget::paintEvent(QPaintEvent *event)
 
     if (bPaintCrosshair) paintCrosshair(painter);
 
+    float scale = defaultScale * cameraModel.scale();
+    if (scale > 40) { // 40 display pixels per image pixel
+        paintIntensityNumerals(painter);
+    }
+
     if(runHDRFILTER) { // Z Stack
         // ROI
         drawROI(&painter);
     }
 
     painter.end();
+}
+
+void NaZStackWidget::paintIntensityNumerals(QPainter& painter)
+{
+    if (! originalImage ) return;
+    const Image4DProxy<My4DImage> imgProxy(const_cast<My4DImage*>(originalImage));
+
+    // qDebug() << "numerals";
+    QPointF v_img_upleft = X_img_view * painter.viewport().topLeft();
+    QPointF v_img_downright = X_img_view * painter.viewport().bottomRight();
+    // qDebug() << v_img_upleft;
+    // qDebug() << v_img_downright;
+
+    // clear transform for text rendering, otherwise font size is harder to manage
+    painter.resetTransform();
+
+    QFont font = painter.font();
+    float scale = defaultScale * cameraModel.scale();
+    font.setPixelSize(scale/4.0);
+    font.setStyleStrategy(QFont::NoAntialias); // text rendering can be slow
+    painter.setFont(font);
+
+    // qDebug() << "nColumns = " << mipImage->originalData.nColumns();
+    // qDebug() << "nRows = " << mipImage->originalData.nRows();
+
+    // Iterate over only the image pixels that are visible
+    int nC = originalImage->getCDim();
+    float lineHeight = scale / (nC + 1.0);
+    for (int x = int(v_img_upleft.x() - 0.5); x <= int(v_img_downright.x() + 0.5); ++x) {
+        // qDebug() << "x = " << x;
+        if (x < 0)
+            continue;
+        if (x >= displayImage.size().width())
+            continue;
+        for (int y = int(v_img_upleft.y() - 0.5); y <= int(v_img_downright.y() + 0.5); ++y) {
+            // qDebug() << "y = " << y;
+            if (y < 0)
+                continue;
+            if (y >= displayImage.size().height())
+                continue;
+            // Transform image pixel coordinates back to viewport coordinates
+            QPointF v = X_view_img * QPointF(x, y);
+            // qDebug() << x << ", " << y << "; " << v.x() << ", " << v.y();
+            // Print original data intensity, not displayed intensity
+            // But choose font color based on displayed intensity.
+            unsigned int red = qRed(displayImage.pixel(x, y));
+            unsigned int green = qGreen(displayImage.pixel(x, y));
+            unsigned int blue = qBlue(displayImage.pixel(x, y));
+            // human color perception is important here
+            float displayIntensity = 0.30 * red + 0.58 * green + 0.12 * blue;
+            if (displayIntensity < 128)
+                painter.setPen(Qt::white);
+            else
+                painter.setPen(Qt::black);
+
+            // Write a neat little column of numbers inside each pixel
+            for (int c = 0; c < nC; ++c) {
+                double val = imgProxy.value_at(x, y, cur_z, c);
+                painter.drawText(QRectF(v.x(), v.y() + (c + 0.5) * lineHeight, scale, lineHeight),
+                                 Qt::AlignHCenter | Qt::AlignVCenter,
+                                 QString("%1").arg(val));
+            }
+        }
+    }
+    // restore coordinate system
+    transformPainterToCurrentCamera(painter);
 }
 
 void NaZStackWidget::onCameraFocusChanged(const Vector3D& focus)
@@ -825,47 +898,47 @@ void NaZStackWidget::updatePixmap()
         // race condition?
         if (!pDispData1d) return;
         if(datatype == V3D_UINT8)
-            pixmap = getXYPlane((unsigned char *)pDispData1d, sx, sy, sz, sc, cur_z, max_roi, min_roi);
+            getXYPlane(displayImage, (unsigned char *)pDispData1d, sx, sy, sz, sc, cur_z, max_roi, min_roi);
         else if(datatype == V3D_UINT16)
-            pixmap = getXYPlane((unsigned short int *)pDispData1d, sx, sy, sz, sc, cur_z, max_roi, min_roi);
+            getXYPlane(displayImage, (unsigned short int *)pDispData1d, sx, sy, sz, sc, cur_z, max_roi, min_roi);
         else if(datatype == V3D_FLOAT32)
-            pixmap = getXYPlane((float *)pDispData1d, sx, sy, sz, sc, cur_z, max_roi, min_roi);
+            getXYPlane(displayImage, (float *)pDispData1d, sx, sy, sz, sc, cur_z, max_roi, min_roi);
         else {
             printf("Datatype is not supported.\n");
             return;
         }
+        pixmap = QPixmap::fromImage(displayImage);
     }
     else{
         if (!pData1d) return;
         if(datatype == V3D_UINT8)
-            pixmap = getXYPlane((unsigned char *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img);
+            getXYPlane(displayImage, (unsigned char *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img);
         else if(datatype == V3D_UINT16)
-            pixmap = getXYPlane((unsigned short int *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img);
+            getXYPlane(displayImage, (unsigned short int *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img);
         else if(datatype == V3D_FLOAT32)
-            pixmap = getXYPlane((float *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img);
+            getXYPlane(displayImage, (float *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img);
         else {
             printf("Datatype is not supported.\n");
             return;
         }
-
-        QImage tmpimg = pixmap.toImage();
+        pixmap = QPixmap::fromImage(displayImage);
 
         for(int j=0; j<pixmap.height(); j++)
         {
             for(int i=0; i<pixmap.width(); i++)
             {
-                QRgb qrgb = tmpimg.pixel(i, j);
+                QRgb qrgb = displayImage.pixel(i, j);
 
                 int tr = (int)((brightnessCalibrator.getCorrectedIntensity((float)(qRed(qrgb))) * 255.0f) + 0.4999);
                 int tg = (int)((brightnessCalibrator.getCorrectedIntensity((float)(qGreen(qrgb))) * 255.0f) + 0.4999);
                 int tb = (int)((brightnessCalibrator.getCorrectedIntensity((float)(qBlue(qrgb))) * 255.0f) + 0.4999);
 
-                tmpimg.setPixel(i, j, qRgb(tr, tg, tb));
+                displayImage.setPixel(i, j, qRgb(tr, tg, tb));
 
             }
         }
 
-        pixmap = QPixmap::fromImage(tmpimg);
+        pixmap = QPixmap::fromImage(displayImage);
     }
     // updateDefaultScale();
     update();
@@ -876,6 +949,7 @@ bool NaZStackWidget::loadMy4DImage(const My4DImage* img, const My4DImage* neuron
 {
     V3DLONG imageSize[4] = {img->getXDim(), img->getYDim(), img->getZDim(), img->getCDim()};
     initHDRViewer(imageSize, img->getRawData(), img->getDatatype());
+    originalImage = img;
     return true;
 }
 
@@ -926,7 +1000,8 @@ void NaZStackWidget::initHDRViewer(const V3DLONG *imgsz, const unsigned char *da
                 scale_roi[c] = scale_img[c];
             }
 
-            pixmap = getXYPlane((unsigned char *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img); // initial focus plane
+            getXYPlane(displayImage, (unsigned char *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img); // initial focus plane
+            pixmap = QPixmap::fromImage(displayImage);
             // updateDefaultScale();
 
             update();
@@ -961,7 +1036,8 @@ void NaZStackWidget::initHDRViewer(const V3DLONG *imgsz, const unsigned char *da
                 scale_roi[c] = scale_img[c];
             }
 
-            pixmap = getXYPlane((unsigned short int*)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img); // initial focus plane
+            getXYPlane(displayImage, (unsigned short int*)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img); // initial focus plane
+            pixmap = QPixmap::fromImage(displayImage);
             // updateDefaultScale();
 
             update();
@@ -995,7 +1071,8 @@ void NaZStackWidget::initHDRViewer(const V3DLONG *imgsz, const unsigned char *da
 
             }
 
-            pixmap = getXYPlane((float *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img); // initial focus plane
+            getXYPlane(displayImage, (float *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img); // initial focus plane
+            pixmap = QPixmap::fromImage(displayImage);
             // updateDefaultScale();
 
             update();

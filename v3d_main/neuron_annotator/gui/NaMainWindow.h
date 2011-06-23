@@ -9,12 +9,39 @@
 #include "../AnnotationSession.h"
 #include "GalleryButton.h"
 
-class NutateThread;
 class NeuronSelector;
+
+class NutateThread : public QThread
+{
+    Q_OBJECT
+public:
+    NutateThread(qreal cyclesPerSecond, QObject * parent = NULL);
+    void run();
+    void pause();
+    void unpause();
+
+signals:
+    void nutate(const Rotation3D&);
+
+protected:
+    bool paused;
+    qreal speed;
+    qreal currentAngle;
+    qreal interval;
+    qreal deltaAngle;
+    Rotation3D rot;
+};
 
 class NaMainWindow : public QMainWindow
 {
     Q_OBJECT
+
+    enum ViewerIndex {
+        // indices correspond to children of ui.viewerStackedWidget
+        VIEWER_MIP = 0,
+        VIEWER_ZSTACK = 1,
+        VIEWER_3D = 2
+    };
 
 public:
     NaMainWindow();
@@ -45,38 +72,9 @@ public slots:
 
 protected slots:
     void updateThumbnailGamma(qreal gamma);
-    void on3DViewerRotationChanged(const Rotation3D& rot)
-    {
-        Vector3D angles = rot.convertBodyFixedXYZRotationToThreeAngles();
-        int rotX = Na3DWidget::radToDeg(angles.x());
-        int rotY = Na3DWidget::radToDeg(angles.y());
-        int rotZ = Na3DWidget::radToDeg(angles.z());
-        int oldRotX = ui.rotXWidget->spinBox->value();
-        int oldRotY = ui.rotYWidget->spinBox->value();
-        int oldRotZ = ui.rotZWidget->spinBox->value();
-        if (Na3DWidget::eulerAnglesAreEquivalent(rotX, rotY, rotZ, oldRotX, oldRotY, oldRotZ))
-            return;
-        // Block signals from individual rot widgets until we update them all
-        ui.rotXWidget->blockSignals(true);
-        ui.rotYWidget->blockSignals(true);
-        ui.rotZWidget->blockSignals(true);
-
-        ui.rotXWidget->setAngle(rotX);
-        ui.rotYWidget->setAngle(rotY);
-        ui.rotZWidget->setAngle(rotZ);
-
-        ui.rotXWidget->blockSignals(false);
-        ui.rotYWidget->blockSignals(false);
-        ui.rotZWidget->blockSignals(false);
-    }
-    void update3DViewerXYZBodyRotation()
-    {
-        int rotX = ui.rotXWidget->spinBox->value();
-        int rotY = ui.rotYWidget->spinBox->value();
-        int rotZ = ui.rotZWidget->spinBox->value();
-        // qDebug() << rotX << ", " << rotY << ", " << rotZ;
-        ui.v3dr_glwidget->setXYZBodyRotationInt(rotX, rotY, rotZ);
-    }
+    void on3DViewerRotationChanged(const Rotation3D& rot);
+    void update3DViewerXYZBodyRotation();
+    void onViewerChanged(int viewerIndex);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -90,52 +88,7 @@ private:
     My4DImage currentStackImage;
     CameraModel sharedCameraModel; // optional camera sharing
     NutateThread * nutateThread;
-	
-	NeuronSelector* neuronSelector;
-};
-
-class NutateThread : public QThread
-{
-    Q_OBJECT
-
-public:
-    NutateThread(qreal cyclesPerSecond, QObject * parent = NULL)
-        : QThread(parent)
-        , speed(cyclesPerSecond)
-        , interval(0.200) // update every 200 milliseconds
-        , currentAngle(0.0)
-    {
-        deltaAngle = 2.0 * 3.14159 * cyclesPerSecond * interval;
-    }
-
-    void run()
-    {
-        while(true) {
-            if (paused) {
-                sleep(0.5);
-                continue;
-            }
-            // qDebug() << "nutation angle = " << currentAngle;
-            rot = deltaNutation(currentAngle, deltaAngle);
-            emit nutate(rot);
-            currentAngle += deltaAngle;
-            while (currentAngle > 2.0 * 3.14159) currentAngle -= 2.0 * 3.14159;
-            msleep( (1000.0 * deltaAngle) / (2.0 * 3.14159 * speed) );
-        }
-    }
-    void pause() {paused = true;}
-    void unpause() {paused = false;}
-
-signals:
-    void nutate(const Rotation3D&);
-
-protected:
-    bool paused;
-    qreal speed;
-    qreal currentAngle;
-    qreal interval;
-    qreal deltaAngle;
-    Rotation3D rot;
+    NeuronSelector* neuronSelector;
 };
 
 #endif // NAMAINWINDOW_H

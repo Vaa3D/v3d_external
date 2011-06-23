@@ -309,7 +309,11 @@ public:
 	{
 		return (data_p + stride_x*x + stride_y*y + stride_z*z + stride_c*c);
 	}
-	inline v3d_uint8* begin()
+        inline const v3d_uint8* at(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c) const
+        {
+                return (data_p + stride_x*x + stride_y*y + stride_z*z + stride_c*c);
+        }
+        inline v3d_uint8* begin()
 	{
 		return data_p;
 	}
@@ -333,7 +337,7 @@ public:
 	{
 		return (v3d_float32*)at(x,y,z,c);
 	}
-	inline double value_at(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c)
+        inline double value_at(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c) const
 	{
 		double v;
 		switch (su)

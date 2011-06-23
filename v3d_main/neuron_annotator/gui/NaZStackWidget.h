@@ -125,7 +125,7 @@ protected slots:
 
 protected:
     void setColorChannel(NaZStackWidget::Color col);
-
+    void paintIntensityNumerals(QPainter& painter);
     void setSearchBoxSize();
 
     V3DLONG roi_top, roi_left, roi_bottom, roi_right; // ROI boundary of the search box
@@ -182,6 +182,8 @@ protected:
     bool hdrfiltered[NCLRCHNNL];
 
     BrightnessCalibrator<float> brightnessCalibrator; // gamma correction
+    QImage displayImage;
+    const My4DImage* originalImage;
 
 private:
     typedef Na2DViewer super;

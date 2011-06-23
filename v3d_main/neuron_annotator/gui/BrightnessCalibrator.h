@@ -43,6 +43,7 @@ public:
 protected:
     ValueType displayMin; // min display value for HDR
     ValueType displayMax; // max display value for HDR
+
     qreal displayGamma; // gamma correction between displayMin and displayMax
     // Gamma lookup is kept in a small table, as a compromise between speed and memory use.
     qreal gammaTable[256]; // lookup table for gamma correction

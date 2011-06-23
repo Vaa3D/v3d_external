@@ -35,5 +35,5 @@ QT4_WRAP_CPP(NA_MOC_SRCS
 file(GLOB NA_SRCS "*.cpp" "gui/*.cpp" "geometry/*.cpp" "utility/*.cpp")
 
 add_library(NeuronAnnotatorLib STATIC 
-    ${NA_SRCS} ${NA_UI_SRCS} ${NA_MOC_SRCS})
+    ${NA_UI_SRCS} ${NA_MOC_SRCS} ${NA_SRCS})
 
