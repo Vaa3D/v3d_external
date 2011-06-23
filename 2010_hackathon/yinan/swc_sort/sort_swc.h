@@ -30,7 +30,8 @@ public:
 
 QHash<V3DLONG, V3DLONG> NeuronNextPn(const NeuronTree &neurons);
 void DFS(bool** matrix, V3DLONG* neworder, V3DLONG node, V3DLONG* id, V3DLONG siz, bool* numbered);
-QHash<V3DLONG, V3DLONG> ChildParent(const NeuronTree &neurons, QList<V3DLONG> & idlist);
+QHash<V3DLONG, V3DLONG> ChildParent(const NeuronTree &neurons, const QList<V3DLONG> & idlist, const QHash<V3DLONG,V3DLONG> & LUT);
+QHash<V3DLONG, V3DLONG> getUniqueLUT(const NeuronTree &neurons);
 void SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & listNeuron, V3DLONG newrootid);
 void sort_swc(V3DPluginCallback &callback, QWidget *parent, int method_code);
 

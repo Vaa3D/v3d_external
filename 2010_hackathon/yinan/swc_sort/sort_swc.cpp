@@ -3,7 +3,7 @@
  *  sort_swc 
  *
  *  Created by Wan, Yinan, on 06/20/11.
- *  Last change: Wan, Yinan, on 06/21/11.
+ *  Last change: Wan, Yinan, on 06/22/11.
  */
 
 #include <QtGlobal>
@@ -12,6 +12,7 @@
 #include "v3d_message.h" 
 #include "../../../v3d_main/basic_c_fun/basic_surf_objs.h"
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 using namespace std;
 
@@ -30,22 +31,31 @@ QStringList SORT_SWCPlugin::menulist() const
 	<<tr("Help");
 }
 
-QHash<V3DLONG, V3DLONG> NeuronNextPn(const NeuronTree &neurons) 
-{
-	QHash<V3DLONG, V3DLONG> neuron_id_table;
-	for (V3DLONG i=0;i<neurons.listNeuron.size(); i++)
-		neuron_id_table.insert(V3DLONG(neurons.listNeuron.at(i).n), i); 
-	return neuron_id_table;
-}
-
-QHash<V3DLONG, V3DLONG> ChildParent(const NeuronTree &neurons, QList<V3DLONG> & idlist) 
+QHash<V3DLONG, V3DLONG> ChildParent(const NeuronTree &neurons, const QList<V3DLONG> & idlist, const QHash<V3DLONG,V3DLONG> & LUT) 
 {
 	QHash<V3DLONG, V3DLONG> cp;
 	for (V3DLONG i=0;i<neurons.listNeuron.size(); i++)
-		if (neurons.listNeuron.at(i).pn==-1) cp.insert(idlist.indexOf(neurons.listNeuron.at(i).n), -1);
-		else cp.insert(idlist.indexOf(neurons.listNeuron.at(i).n), idlist.indexOf(neurons.listNeuron.at(i).pn)); 
+		if (neurons.listNeuron.at(i).pn==-1) cp.insertMulti(idlist.indexOf(LUT.value(neurons.listNeuron.at(i).n)), -1);
+		else cp.insertMulti(idlist.indexOf(LUT.value(neurons.listNeuron.at(i).n)), idlist.indexOf(LUT.value(neurons.listNeuron.at(i).pn))); 
 	return cp;
 }
+
+QHash<V3DLONG, V3DLONG> getUniqueLUT(const NeuronTree &neurons)
+{
+	QHash<V3DLONG,V3DLONG> LUT;
+	for (V3DLONG i=0;i<neurons.listNeuron.size();i++)
+	{
+		V3DLONG j;
+		for (j=0;j<i;j++)
+		{
+			if (neurons.listNeuron.at(i).x==neurons.listNeuron.at(j).x && neurons.listNeuron.at(i).y==neurons.listNeuron.at(j).y && neurons.listNeuron.at(i).y==neurons.listNeuron.at(j).y && neurons.listNeuron.at(i).r==neurons.listNeuron.at(j).r)		break;
+		}
+		
+		LUT.insertMulti(neurons.listNeuron.at(i).n,j);
+	}
+	return (LUT);
+}
+
 
 void DFS(bool** matrix, V3DLONG* neworder, V3DLONG node, V3DLONG* id, V3DLONG siz, bool* numbered)
 {
@@ -73,18 +83,19 @@ void SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & lN, V3DLONG newrooti
 	//		return;
 	//	}
 	//}
-	//create a LUT
-	QHash<V3DLONG, V3DLONG> neuron_id_table = NeuronNextPn(neurons);
-	QList<V3DLONG> idlist = neuron_id_table.uniqueKeys();
-	QHash<V3DLONG, V3DLONG> cp = ChildParent(neurons,idlist);
+	//create a LUT, from the original id to the position in the listNeuron, different neurons with the same x,y,z & r are merged into one position
+	QHash<V3DLONG, V3DLONG> LUT = getUniqueLUT(neurons);
+
+	//create a new id list to give every different neuron a new id		
+	QList<V3DLONG> idlist = ((QSet<V3DLONG>)LUT.values().toSet()).toList();
+
+	//create a child-parent table, both child and parent id refers to the index of idlist
+	QHash<V3DLONG, V3DLONG> cp = ChildParent(neurons,idlist,LUT);
 	
 	
 	V3DLONG siz = idlist.size();
 
-	ofstream myfile;
-	myfile.open("result.swc");
-	//for (int i=0;i<siz;i++)
-	//	myfile<< i <<": "<< idlist.at(i)<<"parent:"<<idlist.at(cp.value(i))<<"\n";
+	
 	bool** matrix = new bool*[siz];
 	for (V3DLONG i = 0;i<siz;i++)
 	{
@@ -96,10 +107,10 @@ void SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & lN, V3DLONG newrooti
 	//generate the adjacent matrix for undirected matrix
 	for (V3DLONG i = 0;i<siz;i++)
 	{
-		QList<V3DLONG> tmpVSet = cp.values(i); //id of the ith node's parents
-		for (V3DLONG j=0;j<tmpVSet.size();j++)
+		QList<V3DLONG> parentSet = cp.values(i); //id of the ith node's parents
+		for (V3DLONG j=0;j<parentSet.size();j++)
 		{
-			V3DLONG v2 = (V3DLONG) (tmpVSet.at(j));
+			V3DLONG v2 = (V3DLONG) (parentSet.at(j));
 			if (v2==-1) continue;
 			matrix[i][v2] = true;
 			matrix[v2][i] = true;
@@ -108,7 +119,13 @@ void SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & lN, V3DLONG newrooti
 	
 	
 	//do a DFS for the the matrix and re-allocate ids for all the nodes
-	V3DLONG root= idlist.indexOf(newrootid);
+	V3DLONG root= idlist.indexOf(LUT.value(newrootid));
+	
+	if (root==-1)
+	{
+		v3d_msg("The new root id you have chosen does not exist in the SWC file.");
+		return;
+	}
 	
 	V3DLONG* neworder = new V3DLONG[siz];
 	bool* numbered = new bool[siz];
@@ -125,18 +142,18 @@ void SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & lN, V3DLONG newrooti
 	else if ((*id)==siz)
 		v3d_msg("The neuronTree is connected. Show re-sorted result.");
 
-		//DFS suceeded, change the swc with hashfunc
-		v3d_msg("A new SWC file (result.swc) is generated under your v3d directory");
+			
 		NeuronSWC S;
 		S.n = 1;
 		S.pn = -1;
-		V3DLONG oripos = neuron_id_table.value(newrootid);
+		V3DLONG oripos = LUT.value(newrootid);
 		S.x = neurons.listNeuron.at(oripos).x;
 		S.y = neurons.listNeuron.at(oripos).y;
 		S.z = neurons.listNeuron.at(oripos).z;
 		S.r = neurons.listNeuron.at(oripos).r;
 		S.type = neurons.listNeuron.at(oripos).type;
 		lN.append(S);
+		
 		for (V3DLONG ii = 1;ii<siz;ii++)
 		{
 			for (V3DLONG jj=0;jj<ii;jj++) //after DFS the id of parent must be less than child's
@@ -146,7 +163,7 @@ void SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & lN, V3DLONG newrooti
 					NeuronSWC S;
 					S.n = ii+1;
 					S.pn = jj+1;
-					V3DLONG oripos = neuron_id_table.value(idlist.at(neworder[ii]));
+					V3DLONG oripos = idlist.at(neworder[ii]);
 					S.x = neurons.listNeuron.at(oripos).x;
 					S.y = neurons.listNeuron.at(oripos).y;
 					S.z = neurons.listNeuron.at(oripos).z;
@@ -157,11 +174,14 @@ void SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & lN, V3DLONG newrooti
 			}
 		}
 		//write new SWC to file
-		
+		v3d_msg("A new SWC file (result.swc) is generated under your v3d directory");
+		ofstream myfile;
+		myfile.open("result.swc");
 		for (V3DLONG i=0;i<lN.size();i++)
-			myfile <<lN.at(i).n <<" " << lN.at(i).type << " " << lN.at(i).x <<" "<<lN.at(i).y << " "<< lN.at(i).z << " "<< lN.at(i).r << " " <<lN.at(i).pn << "\n";
+			myfile <<setiosflags(ios::fixed)<< lN.at(i).n <<" " << lN.at(i).type << " " <<setprecision(3) << lN.at(i).x <<" "<<lN.at(i).y << " "<< lN.at(i).z << " "<< lN.at(i).r << " " <<setprecision(0) <<lN.at(i).pn << "\n";
+		
 	
-	myfile.close();
+		myfile.close();
 }
 
 void sort_swc(V3DPluginCallback &callback, QWidget *parent, int method_code)
@@ -221,7 +241,7 @@ void SORT_SWCPlugin::domenu(const QString &menu_name, V3DPluginCallback &callbac
     	}
 	else if (menu_name == tr("Help"))
 	{
-		v3d_msg("(version 0.11) Set a new root and sort the SWC file into a new order, where the newly set root has the id of 1, and the parent's id is less than its child's");
+		v3d_msg("(version 0.11) Set a new root and sort the SWC file into a new order, where the newly set root has the id of 1, and the parent's id is less than its child's. If the original SWC has more than one connected components, return the sorted result of the brench with newly set root.");
 		return;
 	}
 }
