@@ -272,8 +272,6 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../jba/c++/convert_type2uint8.h \
     ../jba/c++/jba_affine_xform.h \
     ../jba/c++/remove_nonaffine_points.h 
-#    dialog_watershed_para.h 
-#    FL_levelsetSegPara_dialog.h 
 unix:HEADERS += ../basic_c_fun/imageio_mylib.h 
 #macx:HEADERS += ../basic_c_fun/imageio_mylib.h 
 
@@ -377,7 +375,6 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../worm_straighten_c/bfs_1root.cpp \
     ../worm_straighten_c/spline_cubic.cpp \
     ../jba/c++/histeq.cpp
-#    dialog_watershed_para.cpp 
 unix:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 #macx:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 
@@ -406,8 +403,6 @@ FORMS += landmark_property.ui \
     ../neuron_annotator/gui/GammaWidget.ui \
     ../neuron_annotator/gui/AngleWidget.ui \
     ../neuron_annotator/gui/ZoomWidget.ui
-#    FL_watershedSegPara.ui \
-#    FL_levelsetSegPara.ui 
 
 RESOURCES += v3d.qrc
 RESOURCES += ../3drenderer/3drenderer.qrc

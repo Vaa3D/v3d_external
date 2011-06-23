@@ -13,7 +13,7 @@ ifneq ($(strip $(ARCH_x86_64)),)
 #LIBS = $(patsubst -ltiff,-L$(L_PATH) -ltiff64,$(LIBS))
 LIBS += -L. -L$(L_PATH) -ltiff64 -lz -L../../v3d_main/common_lib/lib
 else
-LIBS += -L. -ltiff -L../../v3d_main/common_lib/lib
+LIBS += -L. -L../../v3d_main/common_lib/lib -ltiff 
 endif
 CC = g++
 CC_FLAGS += -w   # -w for no compiling warning
