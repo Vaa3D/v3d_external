@@ -99,6 +99,7 @@ void XFormView::popupImageProcessingDialog(QString item)
 		  << tr(" -- histogram equalization")
 		  << tr(" -- convert indexed image to RGB")
 		  << tr(" -- linear scaling to [0,255] and convert to 8 bit")
+		  << tr(" -- linear scaling to [0,255], convert to 8 bit using 1-percent saturation")
 		  << tr(" -- convert 16bit image to 8 bit")
 		  << tr(" -- convert 32bit (single-precision float) image to 8 bit")
 		  << tr(" -- intensity scaling")
@@ -650,6 +651,10 @@ void XFormView::popupImageProcessingDialog(QString item)
 			else if (item==tr(" -- linear scaling to [0,255] and convert to 8 bit"))
 			{
 				imgData->proj_general_scaleandconvert28bit(0, 255);
+			}
+			else if (item==tr(" -- linear scaling to [0,255], convert to 8 bit using 1-percent saturation"))
+			{
+				imgData->proj_general_scaleandconvert28bit_1percentage(0.01);
 			}
 			else if (item== tr(" -- convert 16bit image to 8 bit"))
 			{

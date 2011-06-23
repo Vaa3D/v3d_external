@@ -5150,7 +5150,7 @@ bool My4DImage::proj_general_scaleandconvert28bit(int lb, int ub) //lb, ub: lowe
 {
 	if (!valid()) 
 	{
-		v3d_msg("Your data is invalid.\n");
+		v3d_msg("Your data is invalid in proj_general_scaleandconvert28bit().\n");
 		return false;
 	}
 	
@@ -5204,6 +5204,148 @@ bool My4DImage::proj_general_scaleandconvert28bit(int lb, int ub) //lb, ub: lowe
 	getXWidget()->reset(); //to force reset the color etc
 	return true;
 }
+
+bool My4DImage::proj_general_scaleandconvert28bit_1percentage(double apercent) //apercent is the percentage of signal that should be upper/lower saturation
+{
+	if (!valid()) 
+	{
+		v3d_msg("Your data is invalid in proj_general_scaleandconvert28bit_1percentage().\n");
+		return false;
+	}
+	
+	if (apercent<0 || apercent>=0.5)
+	{
+		v3d_msg(QString("Your percentage parameter [%1] is wrong. Must be bwteen 0 and 0.5.\n").arg(apercent));
+		return false;
+	}
+	
+	if ( this->getDatatype() ==V3D_FLOAT32) //for float data , first rescale it to [0, 4095]
+	{
+		for (V3DLONG k=0;k<getCDim();k++)
+		{
+			scaleintensity(k, p_vmin[k], p_vmax[k], double(0), double(4095)); 	
+		}
+	}
+	
+	V3DLONG k;
+	for (k=0;k<getCDim();k++)
+	{
+		V3DLONG maxvv = ceil(p_vmax[k]); //this should be safe now as the potential FLOAT32 data has been rescaled
+		V3DLONG i;
+		
+		double *hist = 0;
+		try
+		{
+			hist = new double [maxvv];
+		}
+		catch (...)
+		{
+			v3d_msg("Fail to allocate memory in proj_general_scaleandconvert28bit_1percentage().\n");
+			return false;
+		}
+		
+		for (i=1;i<maxvv;i++)
+		{
+			hist[i] = 0;
+		}
+		
+		V3DLONG channelsz = getXDim()*getYDim()*getZDim();
+		
+		//find the histogram
+		if ( this->getDatatype() ==V3D_UINT8)
+		{
+			unsigned char * cur_data1d = (unsigned char *)this->getRawData() + k*channelsz;
+			for (i=0;i<channelsz;i++)
+				hist[cur_data1d[i]] += 1;
+		}
+		else if ( this->getDatatype() ==V3D_UINT16)
+		{
+			unsigned short int * cur_data1d = (unsigned short int *)this->getRawData() + k*channelsz;
+			for (i=0;i<channelsz;i++)
+				hist[cur_data1d[i]] += 1;
+		}
+		else if ( this->getDatatype() ==V3D_FLOAT32)
+		{
+			float * cur_data1d = (float *)this->getRawData() + k*channelsz;
+			for (i=0;i<channelsz;i++)
+				hist[V3DLONG(cur_data1d[i])] += 1;
+		}
+		
+		//compute the CDF
+		for (i=1;i<maxvv;i++)
+		{
+			hist[i] += hist[i-1];
+		}
+		
+		for (i=0;i<maxvv;i++)
+		{
+			hist[i] /= hist[maxvv-1];
+		}
+		
+		//now search for the intensity thresholds
+		double lowerth, upperth; lowerth = upperth = 0;
+		for (i=0;i<maxvv-1;i++) //not the most efficient method, but the code should be readable
+		{
+			if (hist[i]<apercent && hist[i+1]>apercent) 
+				lowerth = i;
+			if (hist[i]<1-apercent && hist[i+1]>1-apercent) 
+				upperth = i;
+		}
+		
+		//real rescale of intensity
+		scaleintensity(k, lowerth, upperth, double(0), double(255)); 	
+		
+		//free space
+		if (hist) {delete []hist; hist=0;}
+	}
+	
+	V3DLONG tsz0 = getXDim(), tsz1 = getYDim(), tsz2 = getZDim(), tsz3 = getCDim();
+	V3DLONG tunits =tsz0*tsz1*tsz2*tsz3;
+	V3DLONG tbytes = tunits;
+	unsigned char * outvol1d = 0;
+	try
+	{
+		outvol1d = new unsigned char [tbytes];
+	}
+	catch (...)
+	{
+		v3d_msg("Fail to allocate memory in proj_general_scaleandconvert28bit().\n");
+		return false;
+	}
+	
+	//now cpy data
+	V3DLONG i;
+	if ( this->getDatatype() ==V3D_UINT8)
+	{
+		unsigned char * cur_data1d = (unsigned char *)this->getRawData();
+		for (i=0;i<tunits;i++)
+			outvol1d[i] = cur_data1d[i];
+	}
+	else if ( this->getDatatype() ==V3D_UINT16)
+	{
+		unsigned short int * cur_data1d = (unsigned short int *)this->getRawData();
+		for (i=0;i<tunits;i++)
+			outvol1d[i] = (unsigned char)(cur_data1d[i]);
+	}
+	else if ( this->getDatatype() ==V3D_FLOAT32)
+	{
+		float * cur_data1d = (float *)this->getRawData();
+		for (i=0;i<tunits;i++)
+			outvol1d[i] = (unsigned char)(cur_data1d[i]);
+	}
+	else
+	{
+		v3d_msg("should not get here in proj_general_scaleandconvert28bit(). Check your code/data.");
+		if (outvol1d) {delete []outvol1d;outvol1d=0;}
+		return false;
+	}
+	
+	setNewImageData(outvol1d, tsz0, tsz1, tsz2, tsz3, V3D_UINT8);
+	
+	getXWidget()->reset(); //to force reset the color etc
+	return true;
+}
+
 
 bool My4DImage::proj_general_convert16bit_to_8bit(int shiftnbits)
 //shiftnbits will be 4 is the original data is 12-bit, or 8 if the original data uses all 16 bits. Should be 0 is just discard the upper 8-bits

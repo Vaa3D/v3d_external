@@ -436,6 +436,7 @@ public:
 	bool proj_general_hist_equalization(unsigned char lowerbound, unsigned char higherbound);
 	bool proj_general_convertIndexedImg2RGB();
 	bool proj_general_scaleandconvert28bit(int lb, int ub); //lb, ub: lower bound, upper bound
+	bool proj_general_scaleandconvert28bit_1percentage(double apercent); //apercent: percentage of saturation, typiecally 0.01
 	bool proj_general_convert16bit_to_8bit(int shiftnbits);
 	bool proj_general_convert32bit_to_8bit(int shiftnbits);
 	bool proj_general_maskBlue2Zero();

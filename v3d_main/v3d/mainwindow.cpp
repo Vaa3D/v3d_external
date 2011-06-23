@@ -191,6 +191,7 @@ MainWindow::MainWindow()
 	procGeneral_16bit_to_8bit = 0;
 	procGeneral_32bit_to_8bit = 0;
 	procGeneral_scaleandconvert28bit = 0;
+	procGeneral_scaleandconvert28bit_1percent = 0;
 	procGeneral_indexedimg2rgb = 0;
 //	procGeneral_open_image_in_windows = 0;
 	procGeneral_save_image = 0;
@@ -1511,6 +1512,7 @@ void MainWindow::updateMenus()
 		procGeneral_color_invert->setEnabled(hasMdiChild);
 	}
 	procGeneral_scaleandconvert28bit->setEnabled(hasMdiChild);
+	procGeneral_scaleandconvert28bit_1percent->setEnabled(hasMdiChild);
 	//procGeneral_open_image_in_windows->setEnabled(hasMdiChild);  //080930 disabled
 	procGeneral_save_image->setEnabled(hasMdiChild);
 
@@ -1680,6 +1682,7 @@ void MainWindow::updateProcessingMenu()
 
 	proc_datatype_menu->addAction(procGeneral_indexedimg2rgb);
 	proc_datatype_menu->addAction(procGeneral_scaleandconvert28bit);
+	proc_datatype_menu->addAction(procGeneral_scaleandconvert28bit_1percent);
 	proc_datatype_menu->addAction(procGeneral_16bit_to_8bit);
 	proc_datatype_menu->addAction(procGeneral_32bit_to_8bit);
 
@@ -2130,6 +2133,8 @@ void MainWindow::createActions()
 
 	procGeneral_scaleandconvert28bit = new QAction(tr("linear rescale to [0~255] and convert to 8bit image"), this);
 	connect(procGeneral_scaleandconvert28bit, SIGNAL(triggered()), this, SLOT(func_procGeneral_scaleandconvert28bit()));
+	procGeneral_scaleandconvert28bit_1percent = new QAction(tr("saturate top/bottom 1% voxels and linear-rescale to [0~255]/8bit"), this);
+	connect(procGeneral_scaleandconvert28bit_1percent, SIGNAL(triggered()), this, SLOT(func_procGeneral_scaleandconvert28bit_1percent()));
 	procGeneral_16bit_to_8bit = new QAction(tr("convert 16bit image to 8bit via bit-shift"), this);
 	connect(procGeneral_16bit_to_8bit, SIGNAL(triggered()), this, SLOT(func_procGeneral_16bit_to_8bit()));
 	procGeneral_32bit_to_8bit = new QAction(tr("convert 32bit image to 8bit via bit-shift"), this);
@@ -2594,6 +2599,7 @@ void MainWindow::func_procGeneral_intensity_binarize(){if (activeMdiChild()) act
 void MainWindow::func_procGeneral_intensity_updateminmax(){if (activeMdiChild()) activeMdiChild()->popupImageProcessingDialog(tr(" -- intensity minmaxvalue recomputing"));}
 void MainWindow::func_procGeneral_color_invert(){if (activeMdiChild()) activeMdiChild()->popupImageProcessingDialog(tr(" -- invert image color"));}
 void MainWindow::func_procGeneral_scaleandconvert28bit(){if (activeMdiChild()) activeMdiChild()->popupImageProcessingDialog(tr(" -- linear scaling to [0,255] and convert to 8 bit"));}
+void MainWindow::func_procGeneral_scaleandconvert28bit_1percent(){if (activeMdiChild()) activeMdiChild()->popupImageProcessingDialog(tr(" -- linear scaling to [0,255], convert to 8 bit using 1-percent saturation"));}
 void MainWindow::func_procGeneral_16bit_to_8bit(){if (activeMdiChild()) activeMdiChild()->popupImageProcessingDialog(tr(" -- convert 16bit image to 8 bit"));}
 void MainWindow::func_procGeneral_32bit_to_8bit(){if (activeMdiChild()) activeMdiChild()->popupImageProcessingDialog(tr(" -- convert 32bit (single-precision float) image to 8 bit"));}
 void MainWindow::func_procGeneral_indexedimg2rgb(){if (activeMdiChild()) activeMdiChild()->popupImageProcessingDialog(tr(" -- convert indexed image to RGB"));}

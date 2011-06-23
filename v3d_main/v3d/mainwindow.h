@@ -212,6 +212,7 @@ public slots:
 	void func_procGeneral_16bit_to_8bit();
 	void func_procGeneral_32bit_to_8bit();
 	void func_procGeneral_scaleandconvert28bit();
+	void func_procGeneral_scaleandconvert28bit_1percent();
 	void func_procGeneral_indexedimg2rgb();
 	//void func_procGeneral_open_image_in_windows();
 	void func_procGeneral_save_image();
@@ -431,6 +432,7 @@ private:
 	QAction * procGeneral_16bit_to_8bit;
 	QAction * procGeneral_32bit_to_8bit;
 	QAction * procGeneral_scaleandconvert28bit;
+	QAction * procGeneral_scaleandconvert28bit_1percent;
 	QAction * procGeneral_indexedimg2rgb;
 	//QAction * procGeneral_open_image_in_windows;
 	QAction * procGeneral_save_image;
