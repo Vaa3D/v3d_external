@@ -49,7 +49,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 namespace v3d {
     // Set current version here.
-    VersionInfo thisVersionOfV3D(2.653);
+    VersionInfo thisVersionOfV3D(2.654);
 
     QString versionnumber = "V3D (" +
         thisVersionOfV3D.toQString() +
