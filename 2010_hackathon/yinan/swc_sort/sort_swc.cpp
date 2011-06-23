@@ -3,7 +3,7 @@
  *  sort_swc 
  *
  *  Created by Wan, Yinan, on 06/20/11.
- *  Last change: Wan, Yinan, on 06/22/11.
+ *  Last change: Wan, Yinan, on 06/23/11.
  */
 
 #include <QtGlobal>
@@ -48,7 +48,7 @@ QHash<V3DLONG, V3DLONG> getUniqueLUT(const NeuronTree &neurons)
 		V3DLONG j;
 		for (j=0;j<i;j++)
 		{
-			if (neurons.listNeuron.at(i).x==neurons.listNeuron.at(j).x && neurons.listNeuron.at(i).y==neurons.listNeuron.at(j).y && neurons.listNeuron.at(i).y==neurons.listNeuron.at(j).y && neurons.listNeuron.at(i).r==neurons.listNeuron.at(j).r)		break;
+			if (neurons.listNeuron.at(i).x==neurons.listNeuron.at(j).x && neurons.listNeuron.at(i).y==neurons.listNeuron.at(j).y && neurons.listNeuron.at(i).z==neurons.listNeuron.at(j).z)		break;
 		}
 		
 		LUT.insertMulti(neurons.listNeuron.at(i).n,j);
@@ -241,7 +241,7 @@ void SORT_SWCPlugin::domenu(const QString &menu_name, V3DPluginCallback &callbac
     	}
 	else if (menu_name == tr("Help"))
 	{
-		v3d_msg("(version 0.11) Set a new root and sort the SWC file into a new order, where the newly set root has the id of 1, and the parent's id is less than its child's. If the original SWC has more than one connected components, return the sorted result of the brench with newly set root.");
+		v3d_msg("(version 0.14) Set a new root and sort the SWC file into a new order, where the newly set root has the id of 1, and the parent's id is less than its child's. If the original SWC has more than one connected components, return the sorted result of the brench with newly set root. It also includes a merging process of neuron segments, where neurons with the same x,y,z cooridinates are combined as one.");
 		return;
 	}
 }
