@@ -139,7 +139,8 @@ public slots:
     void updateMenus();
     void updateModeMenu();
     void updateWindowMenu();
-
+    void exit();
+    
 	void updateProcessingMenu();
 //    MdiChild *createMdiChild();
 

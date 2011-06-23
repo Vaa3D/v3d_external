@@ -1123,4 +1123,135 @@ void Renderer_tex2::loadV3DSurface(const QString& filename)
 	lf_busy=false;
 }
 
+// revise from loadV3DSurface to truncate all interactive operations
+void Renderer_tex2::loadV3DSFile(const QString& filename)
+{
+    QFile qf(filename);
+    if (! qf.open(QIODevice::ReadOnly) )
+    {
+        throw  (const char*)(QObject::tr("open file [%1] failed!").arg(filename).toStdString().c_str());
+        return;
+    }
+
+    //if (_idep==0) return;
+    //iDrawExternalParameter* ep = (iDrawExternalParameter*) _idep;
+
+    QDataStream qds(&qf);
+#define QF_READ( x ) {if (qds.readRawData( (char*)&(x), sizeof(x)) != sizeof(x)) throw "QF_READ";}
+
+    int f_num = 0;
+    int v_num = 0;
+
+    int i,j;
+
+    cleanLabelfieldSurf();
+
+    int mesh_type;
+    int g_num;	//group/label number
+    QF_READ( g_num );
+    if (g_num==1)
+        mesh_type = 1; // range surface
+    else
+        mesh_type = 0; // label field
+
+    qDebug()<<"g_num"<<g_num<<"mesh_type"<<mesh_type;
+
+    try
+    {
+        for (i=0; i<g_num; i++)		// each group/label
+        {
+            LabelSurf S;
+
+            int g_label0;
+            int g_label1;
+            QF_READ( g_label0 );
+            QF_READ( g_label1 );
+
+            S.n = i+1;
+            S.label = g_label0;
+            S.label2 = g_label1;
+
+            //read the default display option on 090223
+            char b_disp=0;
+            QF_READ( b_disp );
+            //qDebug()<<"i="<<i<<"b_disp="<<b_disp;
+            S.on = (b_disp=='1')? true : false;
+
+            //added name and comment on 090220
+            char * p_tmpstr=0;
+            int len_name;
+            QF_READ( len_name );
+            if (len_name<0 || len_name>5000) {throw (const char*)"V3DS1: the surface object name length is invalid (<0 or >5000 letters)";	return;}
+            p_tmpstr = new char [len_name+1];
+            for (j=0;j<len_name;j++) QF_READ( p_tmpstr[j] );
+            p_tmpstr[len_name] = '\0';
+            S.name = p_tmpstr;
+            if (p_tmpstr) {delete []p_tmpstr; p_tmpstr=0;}
+
+            int len_comment;
+            QF_READ( len_comment );
+            if (len_comment<0 || len_comment>10000) {throw (const char*)"V3DS1: the surface object comment length is invalid (<0 or >10000 letters)";	return;}
+            p_tmpstr = new char [len_comment+1];
+            for (j=0;j<len_comment;j++) QF_READ( p_tmpstr[j] );
+            p_tmpstr[len_comment] = '\0';
+            S.comment = p_tmpstr;
+            if (p_tmpstr) {delete []p_tmpstr; p_tmpstr=0;}
+
+            //S.color;
+            listLabelSurf.append(S);
+
+            //now read the triangles
+            Triangle *pT0, *pT1;
+            pT0 = pT1 = 0;
+            int t_num;
+            QF_READ( t_num );
+
+            for (int iFace=0; iFace<t_num; iFace++)		// each face/triangle
+            {
+                Triangle* pT = new Triangle;
+                for (int iConner=0; iConner<3; iConner++)
+                {
+                    XYZ v, vn;
+                    QF_READ(v.x); QF_READ(v.y); QF_READ(v.z);
+                    QF_READ(vn.x); QF_READ(vn.y); QF_READ(vn.z);
+
+                    pT->vertex[iConner][0] = v.x;
+                    pT->vertex[iConner][1] = v.y;
+                    pT->vertex[iConner][2] = v.z;
+                    pT->normal[iConner][0] = vn.x;
+                    pT->normal[iConner][1] = vn.y;
+                    pT->normal[iConner][2] = vn.z;
+                    pT->next = NULL;
+                }
+                v_num += 3;
+
+                if (iFace == 0)
+                {
+                    pT0 = pT1 = pT;
+                }
+                else
+                {
+                    pT1->next = pT;
+                    pT1 = pT;
+                }
+            }// each face
+            f_num += t_num;
+
+            MESSAGE_ASSERT(t_num==numTriangles(pT0));
+            list_listTriangle.append(pT0);				// one group triangles
+        }// each group
+
+    }
+    catch(...)
+    {
+        QMessageBox::critical(0, "loadV3DSFile", QObject::tr("loadV3DSFile: OUT OF MEMEORY."));
+    }
+
+    // create compiled list
+    compileLabelfieldSurf();
+
+    //
+    updateBoundingBox(); // all of loaded bounding-box are updated here
+
+}
 

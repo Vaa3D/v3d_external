@@ -63,6 +63,7 @@ public:
         open3Dviewer = false;
         openV3D = false;
         clp_finished = false;
+        hideV3D = false;
         
         pluginname=NULL;
         pluginmethod=NULL;
@@ -77,13 +78,16 @@ public:
 public:
 	vector<char *> fileList;
     vector<char *> cmdArgList;
+    vector<char *> outputList;
 	
+    bool hideV3D;
     bool open3Dviewer;
 	bool openV3D;
 	bool clp_finished; // parsing finished
 	char* pluginname;
 	char* pluginmethod;
 	char* pluginfunc;
+
 };
 
 // command line parser class

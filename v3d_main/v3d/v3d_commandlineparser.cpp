@@ -44,6 +44,7 @@ void V3D_CL_INTERFACE::copy(const V3D_CL_INTERFACE& input)
     pluginname = input.pluginname;
     pluginmethod = input.pluginmethod;
     pluginfunc = input.pluginfunc;
+    hideV3D = input.hideV3D;
     
     for(int i=0; i<input.fileList.size(); i++)
     {
@@ -52,6 +53,10 @@ void V3D_CL_INTERFACE::copy(const V3D_CL_INTERFACE& input)
     for(int i=0; i<input.cmdArgList.size(); i++)
     {
         cmdArgList.push_back(input.cmdArgList.at(i));
+    }
+    for(int i=0; i<input.outputList.size(); i++)
+    {
+        outputList.push_back(input.outputList.at(i));
     }
 }
     
@@ -170,7 +175,7 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
                 {
                     while(*++key)
                     {
-                        if (*key == '?' || !strcmp(key, "h") || !strcmp(key, "H") || !strcmp(key, "help"))
+                        if (*key == '?' || !strcmp(key, "h") || !strcmp(key, "H"))
                         {
                             help();
                             i_v3d.clp_finished = true;
@@ -218,8 +223,8 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
                     if (*key == OPTION_CHAR)
                     {
                         while(*++key)
-                        {
-                            if (!strcmp(key, "f"))
+                        {                            
+                            if (!strcmp(key, "i"))
                             {
                                 // open V3D
                                 i_v3d.openV3D = true;
@@ -231,6 +236,19 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
                                     if( check_filename(QString(filename)) )
                                     {
                                         i_v3d.fileList.push_back(filename);
+                                        i++;
+                                    }
+                                }
+                            }
+                            if (!strcmp(key, "o"))
+                            {                                
+                                while(i+1<argc && !QString(argv[i+1]).contains(OPTION_CHAR) )
+                                {
+                                    char *filename = argv[i+1];
+                                    
+                                    if( check_filename(QString(filename)) )
+                                    {
+                                        i_v3d.outputList.push_back(filename);
                                         i++;
                                     }
                                 }
@@ -268,10 +286,18 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
                             }
                             else if(!strcmp(key, "par"))
                             {
-                                while (i+1<argc) {
-                                    i_v3d.cmdArgList.push_back(argv[++i]);
+                                key += 2; // skip "par"
+                                
+                                // plugin function parameters
+                                while(i+1<argc && !QString(argv[i+1]).contains(OPTION_CHAR) )
+                                {
+                                    char *strparameters = argv[i+1];
+                                    
+                                    i_v3d.cmdArgList.push_back(strparameters);
+                                    i++;
                                 }
-                                i_v3d.openV3D = false;
+                                i_v3d.hideV3D = true;
+                                
                             }
                             else
                             {

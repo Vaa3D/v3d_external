@@ -109,12 +109,15 @@ void printHelp_v3d()
 	
 	cout<<"    -h/H         help information."<<endl;
 
-	cout<<"    -f <file>                  open single or multiple image (.tif/.tiff, .lsm, .mrc, .raw/.v3draw) / object (.ano, .apo, .swc, .marker) files"<<endl;
-	cout<<"    -p plugin_dll_full_path    a string indicates the full path of a dll (for a plugin) to be launched."<<endl;
-	cout<<"    -m menu_name               a string indicates which menu of a plugin will be called."<<endl;
+	cout<<"    -i <file>                  open single or multiple image (.tif/.tiff, .lsm, .mrc, .raw/.v3draw) / object (.ano, .apo, .swc, .marker) files"<<endl;
+    cout<<"    -o <file>                    indicates single or multiple outputs"<<endl;
+	cout<<"    -p <plugin_dll_full_path>    a string indicates the full path of a dll (for a plugin) to be launched."<<endl;
+	cout<<"    -m <menu_name>               a string indicates which menu of a plugin will be called."<<endl;
+    cout<<"    -n <function_name>           a string indicates which function of a plugin will be called."<<endl;
+    cout<<"    -par <parameters>            a stromg indicates parameters that plugin function use"<<endl;
 	
 	cout<<"    -v		    force to open a 3d viewer when loading an image, otherwise use the default v3d global setting (from \"Adjust Preference\")"<<endl;
-        cout<<"    -cmd  [headless command-line arguments, intended for compute grid use. Try \'-cmd -h\' for more information on this option]"<<endl;
+    cout<<"    -cmd  [headless command-line arguments, intended for compute grid use. Try \'-cmd -h\' for more information on this option]"<<endl;
 
 	return;
 }
@@ -235,7 +238,9 @@ int main(int argc, char **argv)
             if (mainWin) 
             {
                 mainWin->v3dclp.copy(parser.i_v3d);
-				mainWin->show();
+                
+                if(!parser.i_v3d.hideV3D)
+                    mainWin->show();
             }
 			
 			// plugin module
@@ -347,7 +352,10 @@ int main(int argc, char **argv)
 			// launch v3d
 			try 
 			{
-                                return app->exec();
+                if(!parser.i_v3d.hideV3D)
+                    return app->exec();
+                else 
+                    return 0;
 			}
 			catch (...) 
 			{

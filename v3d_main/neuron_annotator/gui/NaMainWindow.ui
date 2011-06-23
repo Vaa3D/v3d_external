@@ -579,7 +579,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                       <x>0</x>
                       <y>0</y>
                       <width>191</width>
-                      <height>361</height>
+                      <height>411</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_14">
@@ -614,33 +614,33 @@ You can also resize the box by Ctrl + left mouse click.</string>
                          <number>0</number>
                         </property>
                         <item>
-                         <widget class="AngleWidget" name="rotXWidget">
+                         <widget class="AngleWidget" name="rotXWidget" native="true">
                           <property name="sizePolicy">
                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                             <horstretch>0</horstretch>
                             <verstretch>0</verstretch>
                            </sizepolicy>
                           </property>
-                          <property name="textLabel">
+                          <property name="textLabel" stdset="0">
                            <string>RotX</string>
                           </property>
                          </widget>
                         </item>
                         <item>
-                         <widget class="AngleWidget" name="rotYWidget">
+                         <widget class="AngleWidget" name="rotYWidget" native="true">
                           <property name="sizePolicy">
                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                             <horstretch>0</horstretch>
                             <verstretch>0</verstretch>
                            </sizepolicy>
                           </property>
-                          <property name="textLabel">
+                          <property name="textLabel" stdset="0">
                            <string>RotY</string>
                           </property>
                          </widget>
                         </item>
                         <item>
-                         <widget class="AngleWidget" name="rotZWidget">
+                         <widget class="AngleWidget" name="rotZWidget" native="true">
                           <property name="sizePolicy">
                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                             <horstretch>0</horstretch>
@@ -659,7 +659,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                             <height>0</height>
                            </size>
                           </property>
-                          <property name="textLabel">
+                          <property name="textLabel" stdset="0">
                            <string>RotZ</string>
                           </property>
                          </widget>
@@ -695,16 +695,29 @@ You can also resize the box by Ctrl + left mouse click.</string>
                      </item>
                      <item>
                       <widget class="QGroupBox" name="compartmentSelectGroupBox">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>0</height>
+                        </size>
+                       </property>
                        <property name="title">
                         <string>Compartment Map</string>
                        </property>
-                       <layout class="QVBoxLayout" name="verticalLayout_13">
+                       <layout class="QVBoxLayout" name="verticalLayout_8">
                         <item>
-                         <layout class="QVBoxLayout" name="verticalLayout_8">
-                          <item>
-                           <widget class="QWidget" name="compartmentMapWidget" native="true"/>
+                         <layout class="QGridLayout" name="gridLayout">
+                          <item row="0" column="0">
+                           <widget class="CompartmentMapWidget" name="compartmentMapWidget" native="true">
+                            <property name="minimumSize">
+                             <size>
+                              <width>128</width>
+                              <height>128</height>
+                             </size>
+                            </property>
+                           </widget>
                           </item>
-                          <item>
+                          <item row="1" column="0">
                            <widget class="QComboBox" name="compartmentMapComboBox"/>
                           </item>
                          </layout>
@@ -749,7 +762,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="ZoomWidget" name="zoomWidget"/>
+                 <widget class="ZoomWidget" name="zoomWidget" native="true"/>
                 </item>
                 <item>
                  <widget class="QPushButton" name="resetViewButton">
@@ -783,7 +796,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="GammaWidget" name="sharedGammaWidget"/>
+                 <widget class="GammaWidget" name="sharedGammaWidget" native="true"/>
                 </item>
                 <item>
                  <widget class="QFrame" name="sharedColorFrame">
@@ -1234,7 +1247,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
   <customwidget>
    <class>Na3DWidget</class>
    <extends>QWidget</extends>
-   <header location="global">../neuron_annotator/gui/Na3DWidget.h</header>
+   <header>../neuron_annotator/gui/Na3DWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
@@ -1247,6 +1260,12 @@ You can also resize the box by Ctrl + left mouse click.</string>
    <class>NaLargeMIPWidget</class>
    <extends>QWidget</extends>
    <header>../neuron_annotator/gui/NaLargeMIPWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CompartmentMapWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">../neuron_annotator/gui/CompartmentMapWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

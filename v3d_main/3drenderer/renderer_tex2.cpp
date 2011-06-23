@@ -2331,3 +2331,4 @@ int Renderer_tex2::hitMenu(int x, int y)
 
     return 0;
 }
+

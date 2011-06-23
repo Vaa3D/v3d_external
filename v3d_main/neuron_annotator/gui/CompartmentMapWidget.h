@@ -20,18 +20,12 @@ class CompartmentMapWidget : public V3dR_GLWidget
 public:
     CompartmentMapWidget(QWidget* parent);
     virtual ~CompartmentMapWidget();
+
+public:
+    void init();
     
 public:
-    void loadV3DSFile(const QString& filename);
-    
-public:
-    // labelfield surf
-	QList <LabelSurf> listLabelSurf;
-	QList <Triangle*> list_listTriangle;
-	QList <GLuint> list_glistLabel;
-	BoundingBox labelBB;
-    
-    int update;
+    Renderer_tex2* renderer;
 };
 
 #endif // COMPARTMENTMAPWIDGET_H

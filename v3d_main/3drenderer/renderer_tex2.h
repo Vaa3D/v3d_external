@@ -181,6 +181,7 @@ public:
 	virtual void loadObjectListFromFile();             // call loadObjectFilename
 	virtual void loadObjectFromFile(const char* url);  // call loadObjectFilename
 	virtual void saveSurfFile();
+        void loadV3DSFile(const QString& filename);
 
 	virtual void endSelectMode();
 	virtual void updateLandmark();

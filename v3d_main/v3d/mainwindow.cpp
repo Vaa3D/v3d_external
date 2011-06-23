@@ -321,6 +321,12 @@ void MainWindow::allTransactionsDone()
     v3d_msg("All transactions are done successfully.", 0);
 }
 
+void MainWindow::exit()
+{
+    emit closeAct->activate(QAction::Trigger);
+    emit closeAllAct->activate(QAction::Trigger);
+    emit exitAct->activate(QAction::Trigger);
+}
 
 void MainWindow::updateTriviewWindow() 
 {

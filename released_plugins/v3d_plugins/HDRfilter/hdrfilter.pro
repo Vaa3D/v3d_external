@@ -33,6 +33,8 @@ HEADERS      += $$V3DMAINDIR/basic_c_fun/mg_image_lib.h
 
 HEADERS      += $$V3DMAINDIR/neuron_annotator/gui/BrightnessCalibrator.h
 HEADERS      += $$V3DMAINDIR/neuron_annotator/gui/NaViewer.h
+HEADERS      += $$V3DMAINDIR/neuron_annotator/gui/Na2DViewer.h
+HEADERS      += $$V3DMAINDIR/neuron_annotator/gui/MouseClickManager.h
 HEADERS      += $$V3DMAINDIR/neuron_annotator/geometry/CameraModel.h
 HEADERS      += $$V3DMAINDIR/neuron_annotator/geometry/Rotation3D.h
 
@@ -44,6 +46,8 @@ SOURCES      += $$V3DMAINDIR/basic_c_fun/mg_image_lib.cpp
 
 SOURCES      += $$V3DMAINDIR/neuron_annotator/gui/BrightnessCalibrator.cpp
 SOURCES      += $$V3DMAINDIR/neuron_annotator/gui/NaViewer.cpp
+SOURCES      += $$V3DMAINDIR/neuron_annotator/gui/Na2DViewer.cpp
+SOURCES      += $$V3DMAINDIR/neuron_annotator/gui/MouseClickManager.cpp
 SOURCES      += $$V3DMAINDIR/neuron_annotator/geometry/CameraModel.cpp
 SOURCES      += $$V3DMAINDIR/neuron_annotator/geometry/Rotation3D.cpp
 

@@ -70,6 +70,9 @@ NaMainWindow::NaMainWindow()
     //QMetaObject::connectSlotsByName(this); This is apparently already called by setupUi, so calling it again creates repeat trigger events
     annotationSession=0;
 
+    // visualize compartment map
+    ui.compartmentMapWidget->init();
+    
     // Wire up MIP viewer
     // Status bar message
     connect(ui.naLargeMIPWidget, SIGNAL(statusMessage(const QString&)),

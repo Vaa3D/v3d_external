@@ -130,12 +130,18 @@ void PLUGINFH::doPluginFunc(V3D_CL_INTERFACE i_v3d, V3d_PluginLoader& mypluginlo
     else
     {
         // other plugins
+        arg.type = ""; arg.p = (void *)(&imgList); pluginfunc_input << arg;
         arg.type = "cmd"; arg.p = (void *)(&(i_v3d.cmdArgList)); pluginfunc_input << arg;
-    }
-    
+        
+        arg.type =""; arg.p = (void *)(&(i_v3d.outputList)); pluginfunc_output << arg;
+        
+        //for(int i=0; i<i_v3d.cmdArgList.size(); i++)            qDebug()<<i_v3d.cmdArgList.at(i);
+    }    
     
     // run
     bool success = mypluginloader.callPluginFunc(v3dpluginFind, i_v3d.pluginfunc, pluginfunc_input, pluginfunc_output);
+    
+    //if(i_v3d.hideV3D) ((MainWindow *)(mainwin))->exit();
     
     if(!success)
     {
@@ -143,10 +149,8 @@ void PLUGINFH::doPluginFunc(V3D_CL_INTERFACE i_v3d, V3d_PluginLoader& mypluginlo
         return;
     }
     
-    qDebug()<<"image processed ...";
-    
     // show result
-    if(i_v3d.openV3D)
+    if(i_v3d.openV3D && !i_v3d.hideV3D)
     {
         MainWindow *pMainWin = (MainWindow *)(mainwin);
 
