@@ -21,8 +21,7 @@ QStringList LobesegPlugin::menulist() const
 QStringList LobesegPlugin::funclist() const
 {
 	return QStringList()
-		<<tr("lobeseg_two_sides")
-		<<tr("lobeseg_one_side_only");
+		<<tr("lobeseg");
 }
 
 void LobesegPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
