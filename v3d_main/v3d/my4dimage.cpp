@@ -5227,11 +5227,15 @@ bool My4DImage::proj_general_scaleandconvert28bit_1percentage(double apercent) /
 		}
 	}
 	
+	qDebug()<< "enter 1...";
+
 	V3DLONG k;
 	for (k=0;k<getCDim();k++)
 	{
-		V3DLONG maxvv = ceil(p_vmax[k]); //this should be safe now as the potential FLOAT32 data has been rescaled
+		V3DLONG maxvv = ceil(p_vmax[k]+1); //this should be safe now as the potential FLOAT32 data has been rescaled
 		V3DLONG i;
+		
+		qDebug() << "ch k=" << k << " maxvv=" << maxvv;
 		
 		double *hist = 0;
 		try
@@ -5240,11 +5244,12 @@ bool My4DImage::proj_general_scaleandconvert28bit_1percentage(double apercent) /
 		}
 		catch (...)
 		{
+			qDebug() << "fail to allocate"; return false;
 			v3d_msg("Fail to allocate memory in proj_general_scaleandconvert28bit_1percentage().\n");
 			return false;
 		}
 		
-		for (i=1;i<maxvv;i++)
+		for (i=0;i<maxvv;i++)
 		{
 			hist[i] = 0;
 		}
@@ -5256,7 +5261,7 @@ bool My4DImage::proj_general_scaleandconvert28bit_1percentage(double apercent) /
 		{
 			unsigned char * cur_data1d = (unsigned char *)this->getRawData() + k*channelsz;
 			for (i=0;i<channelsz;i++)
-				hist[cur_data1d[i]] += 1;
+				hist[V3DLONG(cur_data1d[i])] += 1;
 		}
 		else if ( this->getDatatype() ==V3D_UINT16)
 		{
@@ -5270,6 +5275,8 @@ bool My4DImage::proj_general_scaleandconvert28bit_1percentage(double apercent) /
 			for (i=0;i<channelsz;i++)
 				hist[V3DLONG(cur_data1d[i])] += 1;
 		}
+		
+		qDebug() << "Histogram computed.";
 		
 		//compute the CDF
 		for (i=1;i<maxvv;i++)
@@ -5291,6 +5298,8 @@ bool My4DImage::proj_general_scaleandconvert28bit_1percentage(double apercent) /
 			if (hist[i]<1-apercent && hist[i+1]>1-apercent) 
 				upperth = i;
 		}
+		
+		v3d_msg(QString("channel=%1 lower th=%2 upper th=%3").arg(k).arg(lowerth).arg(upperth), 0);
 		
 		//real rescale of intensity
 		scaleintensity(k, lowerth, upperth, double(0), double(255)); 	
