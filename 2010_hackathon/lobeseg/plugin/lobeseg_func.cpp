@@ -13,6 +13,8 @@
 #include "../../../v3d_main/worm_straighten_c/bdb_minus.h"
 
 #include <unistd.h>
+#include <iostream>
+using namespace std;
 extern char *optarg;
 extern int optind, opterr;
 
@@ -198,8 +200,8 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 	char * err_str = new char[500];
 	strcpy(err_str, "");
 
-	char infile[500];
-	char outfile[500];
+	char infile[500] = "";
+	char outfile[500] = "";
 	int in_channel_no = 0;
 	int out_channel_no = 1;
 	double alpha = 1.0;
@@ -217,13 +219,24 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 
 	bool single_side = false;
 
+	vector<char*> & infile_list = *((vector<char*> *) input.at(0).p);
+	vector<char*> & paras = *((vector<char*> *) input.at(1).p);
+	vector<char*> & outfile_list = *((vector<char*> *) input.at(2).p);
+
+	strcpy(infile, infile_list[0]);
+	strcpy(outfile, outfile_list[0]);
+	cout<<"infile : "<<infile<<endl;
+	cout<<"outfile : "<<outfile<<endl;
+	cout<<"paras : " <<paras[0]<<endl;
+
 	V3DPluginArgItem item;
 	item.type = "error string";
 	item.p = err_str;
 	output<<item;
 
 	char ** argv;
-	int argc = split((char *) input.at(0).p , argv);
+	//int argc = split((char *) input.at(0).p , argv);
+	int argc = split(paras[0] , argv);
 	
 	char optstring[] = "sSi:o:c:A:B:G:n:p:k:N:";
 	int c;
