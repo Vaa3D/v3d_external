@@ -240,7 +240,7 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
                                     }
                                 }
                             }
-                            if (!strcmp(key, "o"))
+                            else if (!strcmp(key, "o"))
                             {                                
                                 while(i+1<argc && !QString(argv[i+1]).contains(OPTION_CHAR) )
                                 {
