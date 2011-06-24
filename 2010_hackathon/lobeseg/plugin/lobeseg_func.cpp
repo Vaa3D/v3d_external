@@ -197,11 +197,22 @@ int lobeseg_one_side_only(V3DPluginCallback2 &callback, QWidget *parent)
 
 bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 {
+	cout<<"============== Welcome to lobeseg function ================="<<endl;
+	//char infile[500] = "";
+	//char outfile[500] = "";
+	cout<<"input.size() = "<<input.size()<<endl;
+	cout<<"output.size() = "<<output.size()<<endl;
+	char * infile = (*(vector<char*> *)(input.at(0).p)).at(0);
+	char * paras = (*(vector<char*> *)(input.at(1).p)).at(0);
+	char * outfile = (*(vector<char*> *)(output.at(0).p)).at(0);
+
+	cout<<"infile : "<<infile<<endl;
+	cout<<"outfile : "<<outfile<<endl;
+	cout<<"paras : " <<paras<<endl;
+
 	char * err_str = new char[500];
 	strcpy(err_str, "");
 
-	char infile[500] = "";
-	char outfile[500] = "";
 	int in_channel_no = 0;
 	int out_channel_no = 1;
 	double alpha = 1.0;
@@ -219,16 +230,6 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 
 	bool single_side = false;
 
-	vector<char*> & infile_list = *((vector<char*> *) input.at(0).p);
-	vector<char*> & paras = *((vector<char*> *) input.at(1).p);
-	vector<char*> & outfile_list = *((vector<char*> *) input.at(2).p);
-
-	strcpy(infile, infile_list[0]);
-	strcpy(outfile, outfile_list[0]);
-	cout<<"infile : "<<infile<<endl;
-	cout<<"outfile : "<<outfile<<endl;
-	cout<<"paras : " <<paras[0]<<endl;
-
 	V3DPluginArgItem item;
 	item.type = "error string";
 	item.p = err_str;
@@ -236,20 +237,27 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 
 	char ** argv;
 	//int argc = split((char *) input.at(0).p , argv);
-	int argc = split(paras[0] , argv);
+	for(int i = 0; i < strlen(paras); i++)
+	{
+		if(paras[i] == '#') paras[i] = '-';
+	}
+	cout<<"paras = \""<<paras<<"\""<<endl;
+	int argc = split(paras, argv);
 	
 	char optstring[] = "sSi:o:c:A:B:G:n:p:k:N:";
 	int c;
+	optind = 0;
 	while((c = getopt(argc, argv, optstring)) != -1)
 	{
 		switch(c)
 		{
-			case 's' : single_side = true; break;
+			case 's' : single_side = true; cout<<"single_side = true"<<endl; break;
 			case 'S' : is_surf = true; break;
 			case 'p' : 
 					   if (strcmp (optarg, "(null)") == 0 || optarg[0] == '-')
 					   {
 						   strcpy(err_str, "Found illegal or NULL parameter for the option -p");
+						   printf( "Found illegal or NULL parameter for the option -p");
 						   return false;
 					   }
 					   else
@@ -258,6 +266,7 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 						   if(pos.find('+') == string::npos || pos.find_first_of('+') != pos.find_last_of('+') || pos.find('x') == string::npos || pos.find_first_of('x') == pos.find_last_of('x'))
 						   {
 							   strcpy(err_str, "Found illegal or NULL parameter for the option -p");
+							   printf( "Found illegal or NULL parameter for the option -p");
 							   return false;
 						   }
 						   else
@@ -273,6 +282,7 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 							   if(x0 < 0 || x0 > 100 || y0 < 0 || y0 > 100 || x1 < 0 || x1 > 100 || y1 < 0 || y1 > 100)
 							   {
 								   strcpy(err_str, "Found illegal or NULL parameter for the option -p");
+								   printf( "Found illegal or NULL parameter for the option -p");
 								   return false;
 							   }
 						   }
@@ -282,6 +292,7 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 					   if (strcmp (optarg, "(null)") == 0 || optarg[0] == '-')
 					   {
 						   strcpy(err_str, "Found illegal or NULL parameter for the option -k");
+						   printf( "Found illegal or NULL parameter for the option -k");
 						   return false;
 					   }
 					   else
@@ -290,6 +301,7 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 						   else if(strcmp(optarg,"right") == 0 || strcmp(optarg, "Right") == 0) keep_which = 1;
 						   else {
 							   strcpy(err_str, "Found illegal or NULL parameter for the option -k");
+							   printf( "Found illegal or NULL parameter for the option -k");
 							   return false;
 						   };
 					   }
@@ -298,6 +310,7 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 					   if (strcmp (optarg, "(null)") == 0 || optarg[0] == '-')
 					   {
 						   strcpy(err_str, "Found illegal or NULL parameter for the option -N");
+						   printf( "Found illegal or NULL parameter for the option -N");
 						   return false;
 					   }
 					   else
@@ -307,6 +320,7 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 						   if(nctrls<=0)
 						   {
 							   strcpy(err_str, "Found illegal or NULL parameter for the option -N");
+							   printf( "Found illegal or NULL parameter for the option -N");
 							   return false;
 						   }
 					   }
@@ -315,6 +329,7 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 					   if (strcmp (optarg, "(null)") == 0 || optarg[0] == '-')
 					   {
 						   strcpy(err_str, "Found illegal or NULL parameter for the option -i");
+						   printf( "Found illegal or NULL parameter for the option -i");
 						   return false;
 					   }
 					   strcpy(infile , optarg);
@@ -323,6 +338,7 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 					   if (strcmp (optarg, "(null)") == 0 || optarg[0] == '-')
 					   {
 						   strcpy(err_str, "Found illegal or NULL parameter for the option -o");
+						   printf( "Found illegal or NULL parameter for the option -o");
 						   return false;
 					   }
 					   strcpy(outfile, optarg);
@@ -331,12 +347,14 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 					   if (strcmp (optarg, "(null)") == 0 || optarg[0] == '-')
 					   {
 						   strcpy(err_str, "Found illegal or NULL parameter for the option -c");
+						   printf( "Found illegal or NULL parameter for the option -c");
 						   return false;
 					   }
 					   in_channel_no = atoi (optarg);
 					   if (in_channel_no < 0)
 					   {
 						   strcpy(err_str, "Illegal channel. Not found! It must be >=0.");
+						   printf( "Illegal channel. Not found! It must be >=0.");
 						   return false;
 					   }
 					   break;
@@ -344,12 +362,14 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 					   if (strcmp (optarg, "(null)") == 0 || optarg[0] == '-')
 					   {
 						   strcpy(err_str, "Found illegal or NULL parameter for the option -A");
+						   printf( "Found illegal or NULL parameter for the option -A");
 						   return false;
 					   }
 					   alpha = atof (optarg);
 					   if (alpha<0)
 					   {
 						   strcpy(err_str,"alpha must not be less than than 0.");
+						   printf("alpha must not be less than than 0.");
 						   return false;
 					   }
 					   break;
@@ -357,12 +377,14 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 					   if (strcmp (optarg, "(null)") == 0 || optarg[0] == '-')
 					   {
 						   strcpy(err_str, "Found illegal or NULL parameter for the option -B");
+						   printf( "Found illegal or NULL parameter for the option -B");
 						   return false;
 					   }
 					   beta = atof (optarg);
 					   if (beta<0)
 					   {
 						   strcpy(err_str,"beta must not be less than than 0.");
+						   printf("beta must not be less than than 0.");
 						   return false;
 					   }
 					   break;
@@ -370,12 +392,14 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 					   if (strcmp (optarg, "(null)") == 0 || optarg[0] == '-')
 					   {
 						   strcpy(err_str, "Found illegal or NULL parameter for the option -G");
+						   printf( "Found illegal or NULL parameter for the option -G");
 						   return false;
 					   }
 					   gamma = atof (optarg);
 					   if (gamma<0)
 					   {
 						   strcpy(err_str,"gamma must not be less than than 0.");
+						   printf("gamma must not be less than than 0.");
 						   return false;
 					   }
 					   break;
@@ -383,12 +407,14 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 					   if (strcmp (optarg, "(null)") == 0 || optarg[0] == '-')
 					   {
 						   strcpy(err_str, "Found illegal or NULL parameter for the option -n");
+						   printf( "Found illegal or NULL parameter for the option -n");
 						   return false;
 					   }
 					   nloops = atoi (optarg);
 					   if (nloops < 1)
 					   {
 						   strcpy(err_str, "The number of loop must be >= 1.");
+						   printf( "The number of loop must be >= 1.");
 						   return false;
 					   }
 					   break;
@@ -397,7 +423,7 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 						return false;
 		}
 	}
-
+	cout<<"parameter analysis over!"<<endl;
 	BDB_Minus_ConfigParameter mypara;
 	mypara.f_image = alpha;
 	mypara.f_smooth = beta;
@@ -407,6 +433,17 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 	mypara.radius_x = radius;
 	mypara.radius_y = radius;
 	mypara.TH = 0.1;
+	cout<<"alpha = "<<alpha<<endl;
+	cout<<"beta = "<<beta<<endl;
+	cout<<"gamma = "<<gamma<<endl;
+	cout<<"nloops = "<<nloops<<endl;
+	cout<<"single_side = "<<single_side<<endl;
+	cout<<"is_surf = "<<is_surf<<endl;
+	cout<<"x0 = "<<x0<<endl;
+	cout<<"y0 = "<<y0<<endl;
+	cout<<"x1 = "<<x1<<endl;
+	cout<<"y1 = "<<y1<<endl;
+
 
 	unsigned char * inimg1d = 0;
 	V3DLONG *sz=0;
@@ -419,23 +456,26 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 
 	if(!single_side)
 	{
+		cout<<"do two sides lobeseg"<<endl;
 		if (!do_lobeseg_bdbminus(inimg1d, sz, outimg1d, in_channel_no, out_channel_no, mypara))
 		{
 			strcpy(err_str, "Fail to do two sides lobe segmentation.");
+			printf( "Fail to do two sides lobe segmentation.");
 			return false;
 		}
 	}
 	else
 	{
+		cout<<"do one side lobeseg"<<endl;
 		if (!do_lobeseg_bdbminus_onesideonly(inimg1d, sz, outimg1d, in_channel_no, out_channel_no, mypara, x0, y0, x1, y1, keep_which,nctrls, is_surf))
 		{
 			strcpy(err_str, "Fail to do one side lobe segmentation.");
+			printf( "Fail to do one side lobe segmentation.");
 			return false;
 		}
 	}
-
+	sz[3]=sz[3]+1;
 	saveImage(outfile, outimg1d,sz, datatype);
-
 	return true;
 }
 
