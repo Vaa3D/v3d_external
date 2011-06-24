@@ -23,6 +23,10 @@ Na3DWidget::Na3DWidget(QWidget* parent)
     glFormat.setDoubleBuffer(true); // attempt to reduce tearing on Mac
     setFormat(glFormat);
 
+    rotateCursor = new QCursor(QPixmap(":/pic/rotate_icon.png"));
+    // setMouseTracking(true); // for hover action in mouseMoveEvent()
+    updateCursor();
+
     connect(&cameraModel, SIGNAL(focusChanged(const Vector3D&)),
              this, SLOT(updateFocus(const Vector3D&)));
     connect(&cameraModel, SIGNAL(scaleChanged(qreal)),
@@ -36,6 +40,7 @@ Na3DWidget::Na3DWidget(QWidget* parent)
 Na3DWidget::~Na3DWidget()
 {
     delete _idep; _idep = NULL;
+    if (rotateCursor) delete rotateCursor; rotateCursor = NULL;
 }
 
 void Na3DWidget::resetView()
@@ -74,11 +79,46 @@ void Na3DWidget::translateImage(int dx, int dy)
     update();
 }
 
+void Na3DWidget::updateCursor()
+{
+    if (QApplication::keyboardModifiers() & Qt::ShiftModifier)
+    { // shift-drag to translate
+        if (QApplication::mouseButtons() & Qt::LeftButton)
+            setCursor(Qt::ClosedHandCursor); // dragging
+        else
+            setCursor(Qt::OpenHandCursor); // hovering
+    }
+    else
+    { // drag to rotate
+        if (rotateCursor)
+            setCursor(*rotateCursor);
+        else
+            setCursor(Qt::ArrowCursor); // whatever...
+    }
+}
+
+/* virtual */
+void Na3DWidget::keyPressEvent(QKeyEvent *e)
+{
+    updateCursor();
+    V3dR_GLWidget::keyPressEvent(e);
+}
+
+/* virtual */
+void Na3DWidget::keyReleaseEvent(QKeyEvent *e)
+{
+    updateCursor();
+    V3dR_GLWidget::keyReleaseEvent(e);
+}
+
 // Drag mouse to rotate; shift-drag to translate.
 void Na3DWidget::mouseMoveEvent(QMouseEvent * event)
 {
+    // updateCursor();
+
     // Maybe write status message when hovering with mouse.
     // (Before doing this, we would need to enable buttonless mouseMoveEvent propagation.)
+    // Notice statement "setMouseTracking(true)" in constructor.
     if (Qt::NoButton == event->buttons())
     {
         // TODO hover
@@ -143,6 +183,7 @@ void Na3DWidget::mouseMoveEvent(QMouseEvent * event)
             Rotation3D newRotation = dragRotation * oldRotation;  // TODO check order, inversion
             // std::cout << "new rotation = " << newRotation << std::endl;
             cameraModel.setRotation(newRotation);
+
             update(); // since this mouseMoveEvent() method is interactive.
             return;
         }
@@ -152,6 +193,7 @@ void Na3DWidget::mouseMoveEvent(QMouseEvent * event)
 void Na3DWidget::mousePressEvent(QMouseEvent * event)
 {
     mouseClickManager.mousePressEvent(event);
+    updateCursor();
     // Remember this mouse position so we can keep track of the move vector
     oldDragX = event->pos().x();
     oldDragY = event->pos().y();
@@ -180,6 +222,7 @@ void Na3DWidget::mousePressEvent(QMouseEvent * event)
 void Na3DWidget::mouseReleaseEvent(QMouseEvent * event)
 {
     mouseClickManager.mouseReleaseEvent(event);
+    updateCursor();
     bMouseIsDragging = false;
    
 	// V3dR_GLWidget::mouseReleaseEvent(event);
@@ -390,6 +433,7 @@ bool Na3DWidget::loadMy4DImage(const My4DImage* my4DImage, const My4DImage* neur
     // }
 
     resetView();
+    updateCursor();
     update();
     return true;
 }

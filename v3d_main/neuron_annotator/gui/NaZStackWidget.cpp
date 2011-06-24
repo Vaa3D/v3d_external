@@ -146,6 +146,7 @@ NaZStackWidget::NaZStackWidget(QWidget * parent)
     cur_c = COLOR_RED;
     pre_c = cur_c;
     setFocusPolicy(Qt::ClickFocus);
+    updateCursor();
 
     connect(this, SIGNAL(curColorChannelChanged(NaZStackWidget::Color)), this, SLOT(updateHDRView()));
     connect(this, SIGNAL(roiChanged()), this, SLOT(updatePixmap()));
@@ -386,7 +387,7 @@ void NaZStackWidget::mouseLeftButtonPressEvent(QMouseEvent *e) // mouse left but
             m_offset = square.center() - startMousePosL;
         }
 
-        setCursor(Qt::CrossCursor);
+        // setCursor(Qt::CrossCursor);
         update();
     }
 }
@@ -404,7 +405,7 @@ void NaZStackWidget::mouseRightButtonPressEvent(QMouseEvent *e) // mouse right b
 
         startMousePosR = viewportXYToImageXY(startMousePosR);
 
-        setCursor(Qt::CrossCursor);
+        // setCursor(Qt::CrossCursor);
         update();
     }
 }
@@ -458,6 +459,7 @@ void NaZStackWidget::onMouseLeftDragEvent(int dx, int dy, QPoint pos) {
     translateImage(dx, dy);
 }
 
+static bool downRightDragR = true;
 void NaZStackWidget::mouseMoveEvent (QMouseEvent * e) // mouse move
 {
     super::mouseMoveEvent(e);
@@ -493,6 +495,8 @@ void NaZStackWidget::mouseMoveEvent (QMouseEvent * e) // mouse move
             {
                 curMousePosR.setY(sy);
             }
+            downRightDragR = ((curMousePosR.x() - startMousePosR.x()) * (curMousePosR.y() - startMousePosR.y()) >= 0);
+            updateCursor();
         }
 
         if(b_mouseleft)
@@ -530,6 +534,7 @@ void NaZStackWidget::mouseMoveEvent (QMouseEvent * e) // mouse move
 void NaZStackWidget::mousePressEvent(QMouseEvent *e) // mouse button press
 {
     super::mousePressEvent(e);
+    updateCursor();
     switch (e->button())
     {
         case Qt::LeftButton:
@@ -542,9 +547,33 @@ void NaZStackWidget::mousePressEvent(QMouseEvent *e) // mouse button press
     }
 }
 
+void NaZStackWidget::updateCursor()
+{
+    if (runHDRFILTER) {
+        // right drag to resize HDR box
+        if (QApplication::mouseButtons() & Qt::RightButton) {
+            // Resize arrow direction depends on where the user is dragging the box
+            if (downRightDragR)
+                setCursor(Qt::SizeFDiagCursor);
+            else
+                setCursor(Qt::SizeBDiagCursor);
+        }
+        else // left drag to move HDR box
+            setCursor(Qt::CrossCursor);
+    }
+    else // drag to translate
+    {
+        if (QApplication::mouseButtons() & Qt::LeftButton)
+            setCursor(Qt::ClosedHandCursor); // dragging
+        else
+            setCursor(Qt::OpenHandCursor); // hovering
+    }
+}
+
 void NaZStackWidget::mouseReleaseEvent(QMouseEvent * e) // mouse button release
 {
     super::mouseReleaseEvent(e);
+    updateCursor();
     b_mousemove = false;
 
     if (bMouseCurorIn)
@@ -553,7 +582,7 @@ void NaZStackWidget::mouseReleaseEvent(QMouseEvent * e) // mouse button release
         {
             endMousePosR = e->pos();
             endMousePosR = viewportXYToImageXY(endMousePosR);
-            setCursor(Qt::ArrowCursor);
+            // setCursor(Qt::ArrowCursor);
 
             if (endMousePosR.x() < 0)
             {
@@ -608,7 +637,7 @@ void NaZStackWidget::mouseReleaseEvent(QMouseEvent * e) // mouse button release
 
         if(b_mouseleft)
         {
-            setCursor(Qt::ArrowCursor);
+            // setCursor(Qt::ArrowCursor);
 
             //
             b_mouseleft = false;
@@ -1137,7 +1166,7 @@ void NaZStackWidget::setHDRCheckState(int state) {
         runHDRFILTER = false;
         emit changedHDRCheckState(true); // show gamma widget
     }
-
+    updateCursor();
     updatePixmap();
 }
 

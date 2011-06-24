@@ -787,7 +787,7 @@ Pixel_Range *Stack_Range(Stack *stack, int channel)
 
 static void scale_values(uint8 *array, int kind, int length, int channel,
                          double factor, double offset)
-{ static Pixel_Range My_Range;
+{ /* static Pixel_Range My_Range; */
   uint16 *array16;
   int     i, x;
 

@@ -2400,7 +2400,7 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 			catch (...) 
 		{
 			printf("Fail to allocate memory.\n");
-			if (pData) {delete []pData; pData=0;}
+                        if (pData) {delete [](unsigned char *)pData; pData=0;}
 			return ;
 		}
 			break;
@@ -2414,7 +2414,7 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 			catch (...)
 		{
 			printf("Fail to allocate memory in data combination.");
-			if (pData) {delete []pData; pData=0;}
+                        if (pData) {delete [](unsigned short *)pData; pData=0;}
 			return;
 		}
 			break;
@@ -2428,7 +2428,7 @@ void XMapView::update_v3dviews(V3DPluginCallback *callback, long start_x, long s
 			catch (...)
 		{
 			printf("Fail to allocate memory in data combination.");
-			if (pData) {delete []pData; pData=0;}
+                        if (pData) {delete [](float *)pData; pData=0;}
 			return;
 		}
 			break;

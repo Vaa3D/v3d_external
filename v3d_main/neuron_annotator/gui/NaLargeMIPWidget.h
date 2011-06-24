@@ -78,7 +78,6 @@ signals:
 
 public slots:
     void annotationModelUpdate(QString updateType);
-    void showCrosshair(bool b) {NaViewer::showCrosshair(b); update();}
     void initializePixmap(); // when a new image has loaded
     // Want to distinguish between double click and single click events
     void onMouseSingleClick(QPoint pos);

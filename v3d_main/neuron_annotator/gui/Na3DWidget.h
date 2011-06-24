@@ -35,6 +35,8 @@ public:
     virtual void mouseReleaseEvent(QMouseEvent * event);
     virtual void wheelEvent(QWheelEvent * e); // zoom with scroll wheel
     virtual void mouseDoubleClickEvent(QMouseEvent * event); // double click to center
+    virtual void keyPressEvent(QKeyEvent *e);
+    virtual void keyReleaseEvent(QKeyEvent *e);
 
     virtual void resizeEvent(QResizeEvent * event);
 
@@ -96,6 +98,7 @@ public:
     }
 
 protected:
+    void updateCursor();
     void highlightNeuronAtPosition(QPoint pos);
     // Rotation helper methods
     static int round(double d) {return floor(d + 0.5);}
@@ -127,6 +130,7 @@ protected:
     float glUnitsPerImageVoxel() const;
     void updateDefaultScale();
     BrightnessCalibrator<unsigned char> brightnessCalibrator;
+    QCursor * rotateCursor;
 };
 
 #endif // NA3DWIDGET_H

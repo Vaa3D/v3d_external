@@ -21,7 +21,7 @@ class ImageStitchingDialog : public QDialog
 	Q_OBJECT
 	
 public:
-	ImageStitchingDialog(V3DPluginCallback &callback, QWidget *parent)
+        ImageStitchingDialog(V3DPluginCallback &callback, QWidget *parentWidget)
 	{
 		v3dhandleList win_list = callback.getImageWindowList();
 		
@@ -210,7 +210,7 @@ class GroupImageStitchingDialog : public QDialog
 	Q_OBJECT
 	
 public:
-	GroupImageStitchingDialog(V3DPluginCallback &callback, QWidget *parent, QString filename)
+        GroupImageStitchingDialog(V3DPluginCallback &callback, QWidget *parentWidget, QString filename)
 	{
 		
 		// create a dialog
@@ -394,7 +394,7 @@ class PointNavigateDialog : public QDialog
 	Q_OBJECT
 	
 public:
-	PointNavigateDialog(QWidget *parent, long *sz)
+        PointNavigateDialog(QWidget *parentWidget, long *sz)
 	{		
 		// create a dialog
 		v_x = new QSpinBox(); 
@@ -468,7 +468,7 @@ class RegionNavigateDialog : public QDialog
 	Q_OBJECT
 	
 public:
-	RegionNavigateDialog(QWidget *parent, long *sz)
+        RegionNavigateDialog(QWidget *parentWidget, long *sz)
 	{		
 		// create a dialog
 		label_rgn = new QLabel(QObject::tr("Choose A Region "));

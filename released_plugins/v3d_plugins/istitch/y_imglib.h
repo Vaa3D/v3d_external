@@ -576,17 +576,17 @@ public:
 		fprintf(pFileLUT, "# image coordinates look up table \n"); // TC_COMMENT6
 		for(int j=0; j<number_tiles; j++)
 		{
-			string fn;
+                        string fns;
 			string fn_img_tile = lut[j].fn_img;
 			
 			int len_abpath = QFileInfo(QString(fn_img_tile.c_str())).path().length();
 			
 			if(len_abpath>1)
-				fn = QString(fn_img_tile.c_str()).remove(0, len_abpath+1).toStdString();
+                                fns = QString(fn_img_tile.c_str()).remove(0, len_abpath+1).toStdString();
 			else
-				fn = fn_img_tile;
+                                fns = fn_img_tile;
 			
-			fprintf(pFileLUT, "%s  ( %ld, %ld, %ld ) ( %ld, %ld, %ld ) \n", fn.c_str(), lut[j].start_pos[0], lut[j].start_pos[1], lut[j].start_pos[2], lut[j].end_pos[0], lut[j].end_pos[1], lut[j].end_pos[2]);
+                        fprintf(pFileLUT, "%s  ( %ld, %ld, %ld ) ( %ld, %ld, %ld ) \n", fns.c_str(), lut[j].start_pos[0], lut[j].start_pos[1], lut[j].start_pos[2], lut[j].end_pos[0], lut[j].end_pos[1], lut[j].end_pos[2]);
 		}
 		
 		fclose(pFileLUT);
@@ -619,7 +619,7 @@ public:
 	// point navigation
 	POINT y_navigate(POINT p)
 	{
-		
+                return p;
 	}
 	
 	// create thumbnail file
@@ -1052,7 +1052,7 @@ int mstPrim(vector<indexed_t<T1, T2> > &tilesList)
 		while(ks(tilesList)) 
 		{
 			
-			T1 ni, n1, n2;
+                        T1 ni, /* n1, */ n2;
 			T2 max_score = 0;
 			T1 mse_node; // corresponding maxmum score edge
 			T1 parent;
@@ -3761,7 +3761,7 @@ template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IM
 				// overlap
 				T2 len_t = (t_bz - t_fz + 1)*(t_dy - t_uy + 1)*(t_rx - t_lx + 1), len_s = (s_bz - s_fz + 1)*(s_dy - s_uy + 1)*(s_rx - s_lx + 1);
 				
-				T1 t1,t2;
+                                T1 t1,t2;
 				
 				t1=0; t2=0;
 				for(T2 k=t_fz; k<=t_bz; k++)
@@ -3772,9 +3772,9 @@ template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IM
 						T2 offset_j = offset_k + j*sx_pad_ori;
 						for(T2 i=t_lx; i<=t_rx; i++)
 						{
-							T2 idx = offset_j + i;
+                                                        T2 idx2 = offset_j + i;
 							
-							T1 tmp = pIn.pImg[idx];
+                                                        T1 tmp = pIn.pImg[idx2];
 							
 							t1 += tmp;
 							
@@ -3797,9 +3797,9 @@ template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IM
 						T2 offset_j = offset_k + j*sx_pad_ori;
 						for(T2 i=s_lx; i<=s_rx; i++)
 						{
-							T2 idx = offset_j + i;
+                                                        T2 idx2 = offset_j + i;
 							
-							T1 tmp = pOut.pImg[idx];
+                                                        T1 tmp = pOut.pImg[idx2];
 							
 							s1 += tmp;
 							

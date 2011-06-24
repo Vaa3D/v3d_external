@@ -124,6 +124,7 @@ protected slots:
     void onMouseLeftDragEvent(int dx, int dy, QPoint pos);
 
 protected:
+    void updateCursor();
     void setColorChannel(NaZStackWidget::Color col);
     void paintIntensityNumerals(QPainter& painter);
     void setSearchBoxSize();

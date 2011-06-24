@@ -438,7 +438,7 @@ int loadRaw2Stack_2byte(char * filename, unsigned char * & img, V3DLONG * & sz, 
 	//081204
 	if (chan_id_to_load<0 || chan_id_to_load>=mysz[3])
 	{
-		printf("The specified chan_id_to_load [=%d] is out of the valid of the image data [=] \n", chan_id_to_load, mysz[3]);
+                printf("The specified chan_id_to_load [=%d] is out of the valid of the image data [=%d] \n", chan_id_to_load, mysz[3]);
 		return (berror=1);
 	}
 
@@ -1049,7 +1049,7 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 	//081204
 	if (chan_id_to_load<0 || chan_id_to_load>=mysz[3])
 	{
-		printf("The specified chan_id_to_load [=%d] is out of the valid of the image data [=] \n", chan_id_to_load, mysz[3]);
+                printf("The specified chan_id_to_load [=%d] is out of the valid of the image data [=%d] \n", chan_id_to_load, mysz[3]);
 		return (berror=1);
 	}
 
@@ -1607,7 +1607,7 @@ int loadRaw5d2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int 
 
 	if (stack_id_to_load<0 || stack_id_to_load>=mysz[4])
 	{
-		printf("The specified stack_id_to_load [=%d] is out of the valid of the image data [=] \n", stack_id_to_load, mysz[4]);
+                printf("The specified stack_id_to_load [=%d] is out of the valid of the image data [=%d] \n", stack_id_to_load, mysz[4]);
 		return (berror=1);
 	}
 

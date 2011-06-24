@@ -178,7 +178,7 @@ static void print_arg_table(int values)
   static const char *Print_Type[] = { "INT", "DBL", "STR" };
 
   int   i;
-  char *s;
+  /* char *s; */
 
   printf("\n");
   for (i = 0; i < Arg_Len; i++)
@@ -350,7 +350,7 @@ void Process_Arguments(int argc, char *argv[], Arg_Spec *spec)
           s--;
       }
 
-      { char c, *t;                      // Parse type of the argument
+      { /* char c, *t; */                      // Parse type of the argument
         int  j;
 
         Parse[i].synonym = -1;
@@ -392,7 +392,7 @@ void Process_Arguments(int argc, char *argv[], Arg_Spec *spec)
 
       Parse[i].has_default = 0;             //  Parse default value (options only)
       if (Parse[i].kind <= OPT_ARG)
-        { char *bptr, *eptr;
+        { char *bptr /*, *eptr */;
 
           bptr = spec[i].defval;
           if (bptr == NULL)

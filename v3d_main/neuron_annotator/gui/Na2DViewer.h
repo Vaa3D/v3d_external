@@ -23,6 +23,9 @@ public:
 signals:
     void mouseLeftDragEvent(int dx, int dy, QPoint pos);
 
+public slots:
+    void showCrosshair(bool b) {NaViewer::showCrosshair(b); update();}
+
 protected slots:
     void translateImage(int dx, int dy);
 
