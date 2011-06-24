@@ -124,10 +124,10 @@ public:
         buildTime = BUILD_TIME;
     }
     // Initialize from (2.532, "a")
-    VersionInfo(double f, const char* specialLetter = "") {
+    VersionInfo(double f, const char* letter = "") {
         v3d_major_version = int(f);
         v3d_minor_version = int((f - v3d_major_version)*1000.01); // shift 3 digits to the left
-        this->specialLetter = specialLetter;
+        this->specialLetter = letter;
         osPlatform = BUILD_OS_INFO;
         buildTime = BUILD_TIME;
     }
@@ -202,8 +202,8 @@ class UpdateItem : public QObject
     Q_OBJECT
 
 public:
-    UpdateItem(QObject* parent)
-            : QObject(parent),
+    UpdateItem(QObject* parentObject)
+            : QObject(parentObject),
               localVersion(std::numeric_limits<float>::quiet_NaN()),
               remoteVersion(std::numeric_limits<float>::quiet_NaN()),
               bDoInstall(false)
@@ -285,7 +285,7 @@ class VersionUrlValidator : public QValidator
     Q_OBJECT
 
 public:
-    VersionUrlValidator(QObject* parent) : QValidator(parent) {}
+    VersionUrlValidator(QObject* parentObject) : QValidator(parentObject) {}
     
     State validate(QString& input, int& pos) const
     {

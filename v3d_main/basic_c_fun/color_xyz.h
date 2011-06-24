@@ -162,7 +162,7 @@ struct XYZ {
 	c_array<float, 3> v;
 	};
 
-	XYZ(float x, float y, float z)	{this->x=x; this->y=y; this->z=z;}
+        XYZ(float px, float py, float pz)	{this->x=px; this->y=py; this->z=pz;}
 	XYZ(float a=0)	{x=a; y=a; z=a;}
 	XYZ(RGB8 c)	    {x=c.r; y=c.g; z=c.b;}
 	XYZ(RGB16i c)	{x=c.r; y=c.g; z=c.b;}
@@ -180,7 +180,7 @@ struct XYZW {
 	float v[4];
 	};
 
-	XYZW(float x, float y, float z, float w)	{this->x=x, this->y=y; this->z=z; this->w=w;}
+        XYZW(float px, float py, float pz, float pw)	{this->x=px, this->y=py; this->z=pz; this->w=pw;}
 	XYZW(float a=0)	{x=a; y=a; z=a; w=a;}
 	XYZW(RGBA8 c)	{x=c.r; y=c.g; z=c.b; w=c.a;}
 	XYZW(RGBA16i c)	{x=c.r; y=c.g; z=c.b; w=c.a;}
@@ -190,8 +190,8 @@ struct XYZW {
 	operator RGBA16i() {RGBA16i c; c.r=(short)x; c.g=(short)y; c.b=(short)z; c.a=(short)w; return c;}
 	operator RGBA32i() {RGBA32i c; c.r=(int)x; c.g=(int)y; c.b=(int)z; c.a=(int)w; return c;}
 	operator RGBA32f() {RGBA32f c; c.r=x; c.g=y; c.b=z; c.a=w; return c;}
-	XYZW(XYZ v, float w=1) {x=v.x; y=v.y; z=v.z; this->w=w;}
-	operator XYZ()   {XYZ v; v.x=x; v.y=y; v.z=z; return v;}
+        XYZW(XYZ pv, float pw=1) {x=pv.x; y=pv.y; z=pv.z; this->w=pw;}
+        operator XYZ()   {XYZ pv; pv.x=x; pv.y=y; pv.z=z; return pv;}
 };
 
 /////////////////////////////////////////////////////////////
@@ -207,9 +207,9 @@ struct BoundingBox {
 
 	BoundingBox() 					{ *this = NULL_BoundingBox; }
 	BoundingBox(float a) 			{x0=y0=z0=x1=y1=z1 = a;}
-	BoundingBox(float x0, float y0, float z0, float x1, float y1, float z1)
-									{this->x0=x0; this->y0=y0; this->z0=z0;  this->x1=x1; this->y1=y1; this->z1=z1;}
-	BoundingBox(XYZ V0, XYZ V1)		{x0=V0.x; y0=V0.y; z0=V0.z;  x1=V1.x; y1=V1.y; z1=V1.z;}
+        BoundingBox(float px0, float py0, float pz0, float px1, float py1, float pz1)
+                                                                        {this->x0=px0; this->y0=py0; this->z0=pz0;  this->x1=px1; this->y1=py1; this->z1=pz1;}
+        BoundingBox(XYZ pV0, XYZ pV1)		{x0=pV0.x; y0=pV0.y; z0=pV0.z;  x1=pV1.x; y1=pV1.y; z1=pV1.z;}
         float Dx() const		{return (x1-x0); }
         float Dy() const		{return (y1-y0); }
         float Dz() const		{return (z1-z0); }

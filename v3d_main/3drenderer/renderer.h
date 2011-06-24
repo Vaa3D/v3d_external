@@ -89,7 +89,7 @@ public:
 // link to OpenGL window
 	virtual void setupView(int width, int height);		//link to QGLWidget::resizeGL
 	virtual void initialize(int version=0);				//link to QGLWidget::initializeGL
-	virtual void reinitializeVol(int version=0) {};							//MUST makeCurrent for concurrent contexts
+        virtual void reinitializeVol(int version=0) {}							//MUST makeCurrent for concurrent contexts
 	virtual void paint();								//link to QGLWidget::paintGL
 	virtual int hitPoint(int x, int y)					//called by mouse press event
 		{
@@ -103,7 +103,7 @@ public:
 	virtual int movePen(int x, int y, bool b_move)		//called by mouse move event
 				{return 0;} //add return 0 on 2010-05-10 to fix the "must return a value" bug. by PHC.
 
-        virtual int hitMenu(int x, int y){}  //overwrite pop-up menu by mouse right click of neuron annotator
+        virtual int hitMenu(int x, int y){return 0;}  //overwrite pop-up menu by mouse right click of neuron annotator
 
 // link to Rendering function
 protected:

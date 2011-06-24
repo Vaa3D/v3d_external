@@ -315,7 +315,7 @@ void UpdateItem::finishedDownloadSlot(QNetworkReply* reply)
 
     if (succeeded) { // try to create directory
         // Might need to create directory
-        QDir dir = fileInfo.absoluteDir();
+        dir = fileInfo.absoluteDir();
         if (! dir.mkpath(".") ) {
             succeeded = false;
             v3d_msg("Failed to create directory",0);
@@ -1200,8 +1200,8 @@ void UpdateOptionsDialog::on_lineEdit_textChanged() // user changes version xml 
 }
 
 
-CheckingForUpdatesDialog::CheckingForUpdatesDialog(QWidget *parent)
-        : QDialog(parent), bWasCanceled(false)
+CheckingForUpdatesDialog::CheckingForUpdatesDialog(QWidget *parentObject)
+        : QDialog(parentObject), bWasCanceled(false)
 {
     setupUi(this);
     connect(this, SIGNAL(rejected()), this, SLOT(canceled()));
@@ -1213,8 +1213,8 @@ UpdatesAvailableDialog::UpdatesAvailableDialog(QWidget *parent)
 {
     // Use V3D application icon
     QIcon appIcon(":/pic/v3dIcon128.png");
-    QPixmap iconPixmap = appIcon.pixmap(75,75);
-    setIconPixmap(iconPixmap);
+    QPixmap pIconPixmap = appIcon.pixmap(75,75);
+    setIconPixmap(pIconPixmap);
     setText(tr("There are updates available."));
     setInformativeText("Do you want to start the V3D updater now?");
     // setDetailedText("The V3D team periodically makes software improvements. "
@@ -1247,14 +1247,14 @@ void UpdatesAvailableDialog::remind_me_later()
 }
 
 
-DownloadingUpdatesDialog::DownloadingUpdatesDialog(QWidget *parent)
-        : QDialog(parent), bWasCanceled(false)
+DownloadingUpdatesDialog::DownloadingUpdatesDialog(QWidget *parentObject)
+        : QDialog(parentObject), bWasCanceled(false)
 {
     setupUi(this);
     // Use V3D application icon
     QIcon appIcon(":/pic/v3dIcon128.png");
-    QPixmap iconPixmap = appIcon.pixmap(75,75);
-    iconLabel->setPixmap(iconPixmap);
+    QPixmap pIconPixmap = appIcon.pixmap(75,75);
+    iconLabel->setPixmap(pIconPixmap);
     connect(this, SIGNAL(rejected()), this, SLOT(canceled()));
 
     setModal(true);

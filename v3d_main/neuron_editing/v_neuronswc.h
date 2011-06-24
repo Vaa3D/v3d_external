@@ -87,7 +87,7 @@ struct V_NeuronSWC_unit
 			seg_id, nodeinseg_id;
 		};
 	};
-	V_NeuronSWC_unit() {for (V3DLONG i=0;i<sizeof(data)/sizeof(double);i++) data[i]=0; r=0.5;}
+        V_NeuronSWC_unit() {for (V3DLONG i=0;i<V3DLONG(sizeof(data)/sizeof(double));i++) data[i]=0; r=0.5;}
 	operator V_NeuronSWC_coord() {V_NeuronSWC_coord c; c.x=x; c.y=y; c.z=z; return c;}
 	V_NeuronSWC_coord get_coord() {V_NeuronSWC_coord c; c.x=x; c.y=y; c.z=z; return c;}
 	void set(double x1, double y1, double z1, double r1, double p1, double t1) {x=x1; y=y1; z=z1; r=r1;parent=p1;type=t1;}
@@ -150,24 +150,24 @@ struct V_NeuronSWC
 
 	V3DLONG maxnoden() //091029 change maxnoden from >=-1 to >=0 for base_n in set_simple_path...
 	{
-		V3DLONG maxn=0;	for (V3DLONG i=0;i<row.size();i++) if (row.at(i).n > maxn) maxn = row.at(i).n;		return maxn;
+                V3DLONG maxn=0;	for (V3DLONG i=0;i<(V3DLONG)row.size();i++) if (row.at(i).n > maxn) maxn = row.at(i).n;		return maxn;
 	}
 	V3DLONG getIndexofParent(V3DLONG j)
 	{
 		V3DLONG res=-1; V3DLONG parent = row.at(j).parent;
-		for (V3DLONG i=0;i<row.size();i++) if (row.at(i).n==parent)	{res=i; break;}
+                for (V3DLONG i=0;i<(V3DLONG)row.size();i++) if (row.at(i).n==parent)	{res=i; break;}
 		return res;
 	}
 	vector<V3DLONG> getIndexofParent_nodeid(V3DLONG nid) //return the array of of node "nid"'s parents' nid
 	{
 		vector<V3DLONG> res;
-		for (V3DLONG i=0;i<row.size();i++)
+                for (V3DLONG i=0;i<(V3DLONG)row.size();i++)
 		{
 			if (row.at(i).n==nid)
 			{
 				V3DLONG curparent = row.at(i).parent;
 				bool b_exist=false;
-				for (V3DLONG j=0;j<res.size();j++)
+                                for (V3DLONG j=0;j<(V3DLONG)res.size();j++)
 					if (res.at(j)==curparent) {	b_exist=true; break;}
 				if (!b_exist)
 					res.push_back(curparent);
@@ -186,7 +186,7 @@ struct V_NeuronSWC
 	V3DLONG getFirstIndexof3DPos(double x,double y,double z) //return -1 is no included, othwise return the first detected index
 	{
 		V3DLONG res=-1;
-		for (V3DLONG i=0;i<row.size();i++) if (row.at(i).data[2]==x && row.at(i).data[3]==y && row.at(i).data[4]==z)	{res=i; break;}
+                for (V3DLONG i=0;i<(V3DLONG)row.size();i++) if (row.at(i).data[2]==x && row.at(i).data[3]==y && row.at(i).data[4]==z)	{res=i; break;}
 		return res;
 	}
 	V3DLONG getFirstIndexof3DPos(const V_NeuronSWC_unit & subject_node) {return getFirstIndexof3DPos(subject_node.data[2], subject_node.data[3], subject_node.data[4]);}
@@ -195,7 +195,7 @@ struct V_NeuronSWC
 	vector<V3DLONG> getAllIndexof3DPos(double x,double y,double z, V3DLONG noninclude_ind) //return all indexes except the one indicated as noninclude_ind
 	{
 		vector<V3DLONG> res;
-		for (V3DLONG i=0;i<row.size();i++) if (row.at(i).data[2]==x && row.at(i).data[3]==y && row.at(i).data[4]==z)	{ if (i!=noninclude_ind) res.push_back(i); }
+                for (V3DLONG i=0;i<(V3DLONG)row.size();i++) if (row.at(i).data[2]==x && row.at(i).data[3]==y && row.at(i).data[4]==z)	{ if (i!=noninclude_ind) res.push_back(i); }
 		return res;
 	}
 	vector <V3DLONG> getAllIndexof3DPos(const V_NeuronSWC_unit & subject_node, V3DLONG noninclude_ind) {return getAllIndexof3DPos(subject_node.data[2], subject_node.data[3], subject_node.data[4], noninclude_ind);}
@@ -215,15 +215,15 @@ struct V_NeuronSWC_list
 	V_NeuronSWC_list() {last_seg_num=-1; *(int*)color_uc=0; b_traced=true;}
 
 	V3DLONG nsegs() {return seg.size();}
-	V3DLONG nrows() {V3DLONG n=0; for (V3DLONG i=0;i<seg.size();i++) n+=seg.at(i).nrows(); return n;}
+        V3DLONG nrows() {V3DLONG n=0; for (V3DLONG i=0;i<(V3DLONG)seg.size();i++) n+=seg.at(i).nrows(); return n;}
 	V3DLONG maxnoden()
 	{
-		V3DLONG maxn=0;	for (V3DLONG i=0;i<seg.size();i++) if (seg.at(i).maxnoden() > maxn) maxn = seg.at(i).maxnoden();	return maxn;
+                V3DLONG maxn=0;	for (V3DLONG i=0;i<(V3DLONG)seg.size();i++) if (seg.at(i).maxnoden() > maxn) maxn = seg.at(i).maxnoden();	return maxn;
 	}
 	bool isJointed() {return nsegs()==1 && seg.at(0).b_jointed;}
 
 	void append(V_NeuronSWC & new_seg) {seg.push_back(new_seg); last_seg_num=seg.size();}
-	void append(vector <V_NeuronSWC> & new_segs) {for (int k=0; k<new_segs.size(); k++) seg.push_back(new_segs.at(k)); last_seg_num=seg.size();}
+        void append(vector <V_NeuronSWC> & new_segs) {for (int k=0; k<(int)new_segs.size(); k++) seg.push_back(new_segs.at(k)); last_seg_num=seg.size();}
 	void clear() {last_seg_num=seg.size(); seg.clear();}
 	void merge();
 	void decompose();

@@ -13,21 +13,22 @@ QT4_WRAP_UI(NA_UI_SRCS
 )
 
 QT4_WRAP_CPP(NA_MOC_SRCS
-    gui/AngleWidget.h
-    AnnotationSession.h
     geometry/CameraModel.h
+    gui/AngleWidget.h
+    gui/CompartmentMapWidget.h
     gui/GalleryButton.h
     gui/GammaWidget.h
     gui/ZoomSpinBox.h
     gui/ZoomWidget.h
-    MipData.h
-    MipLayer.h
     gui/MouseClickManager.h
     gui/Na2DViewer.h
     gui/Na3DWidget.h
     gui/NaLargeMIPWidget.h
     gui/NaMainWindow.h
     gui/NaZStackWidget.h
+    AnnotationSession.h
+    MipData.h
+    MipLayer.h
     NeuronMipManager.h
     NeuronSelector.h
 )

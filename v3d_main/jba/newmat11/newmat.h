@@ -141,8 +141,8 @@ public:
                                                // this represents a destination
 public:
    MatrixType () : DataLossOK(false) {}
-   MatrixType (int i) : attribute(i), DataLossOK(false) {}
-   MatrixType (int i, bool dlok) : attribute(i), DataLossOK(dlok) {}
+   MatrixType (int pi) : attribute(pi), DataLossOK(false) {}
+   MatrixType (int pi, bool dlok) : attribute(pi), DataLossOK(dlok) {}
    MatrixType (const MatrixType& mt)
       : attribute(mt.attribute), DataLossOK(mt.DataLossOK) {}
    void operator=(const MatrixType& mt)
@@ -162,10 +162,10 @@ public:
       { return ( attribute & ~mt.attribute & Mask ) == 0; }
    bool operator<(MatrixType mt) const         // for MS Visual C++ 4
       { return ( attribute & ~mt.attribute & Mask ) != 0; }
-   bool operator==(MatrixType t) const
-      { return (attribute == t.attribute); }
-   bool operator!=(MatrixType t) const
-      { return (attribute != t.attribute); }
+   bool operator==(MatrixType pt) const
+      { return (attribute == pt.attribute); }
+   bool operator!=(MatrixType pt) const
+      { return (attribute != pt.attribute); }
    bool operator!() const { return (attribute & Valid) == 0; }
    MatrixType i() const;                       ///< type of inverse
    MatrixType t() const;                       ///< type of transpose
@@ -354,31 +354,31 @@ public:
    virtual Real maximum_absolute_value() const;
    Real MaximumAbsoluteValue() const { return maximum_absolute_value(); }
    virtual Real maximum_absolute_value1(int& i) const;
-   Real MaximumAbsoluteValue1(int& i) const
-      { return maximum_absolute_value1(i); }
+   Real MaximumAbsoluteValue1(int& pi) const
+      { return maximum_absolute_value1(pi); }
    virtual Real maximum_absolute_value2(int& i, int& j) const;
-   Real MaximumAbsoluteValue2(int& i, int& j) const
-      { return maximum_absolute_value2(i,j); }
+   Real MaximumAbsoluteValue2(int& pi, int& pj) const
+      { return maximum_absolute_value2(pi,pj); }
    virtual Real minimum_absolute_value() const;
    Real MinimumAbsoluteValue() const { return minimum_absolute_value(); }
    virtual Real minimum_absolute_value1(int& i) const;
-   Real MinimumAbsoluteValue1(int& i) const
-      { return minimum_absolute_value1(i); }
+   Real MinimumAbsoluteValue1(int& pi) const
+      { return minimum_absolute_value1(pi); }
    virtual Real minimum_absolute_value2(int& i, int& j) const;
-   Real MinimumAbsoluteValue2(int& i, int& j) const
-      { return minimum_absolute_value2(i,j); }
+   Real MinimumAbsoluteValue2(int& pi, int& pj) const
+      { return minimum_absolute_value2(pi,pj); }
    virtual Real maximum() const;
    Real Maximum() const { return maximum(); }
    virtual Real maximum1(int& i) const;
-   Real Maximum1(int& i) const { return maximum1(i); }
+   Real Maximum1(int& pi) const { return maximum1(pi); }
    virtual Real maximum2(int& i, int& j) const;
-   Real Maximum2(int& i, int& j) const { return maximum2(i,j); }
+   Real Maximum2(int& pi, int& pj) const { return maximum2(pi,pj); }
    virtual Real minimum() const;
    Real Minimum() const { return minimum(); }
    virtual Real minimum1(int& i) const;
-   Real Minimum1(int& i) const { return minimum1(i); }
+   Real Minimum1(int& pi) const { return minimum1(pi); }
    virtual Real minimum2(int& i, int& j) const;
-   Real Minimum2(int& i, int& j) const { return minimum2(i,j); }
+   Real Minimum2(int& pi, int& pj) const { return minimum2(pi,pj); }
    virtual Real trace() const;
    Real Trace() const { return trace(); }
    Real norm1() const;
@@ -512,10 +512,10 @@ public:
    bool is_zero() const;                        // test matrix has all zeros
    bool IsZero() const { return is_zero(); }    // test matrix has all zeros
    void Release() { tag_val=1; }                // del store after next use
-   void Release(int t) { tag_val=t; }           // del store after t accesses
+   void Release(int pt) { tag_val=pt; }           // del store after t accesses
    void ReleaseAndDelete() { tag_val=0; }       // delete matrix after use
    void release() { tag_val=1; }                // del store after next use
-   void release(int t) { tag_val=t; }           // del store after t accesses
+   void release(int pt) { tag_val=pt; }           // del store after t accesses
    void release_and_delete() { tag_val=0; }     // delete matrix after use
    void operator<<(const double*);              // assignment from an array
    void operator<<(const float*);               // assignment from an array
@@ -1132,9 +1132,9 @@ public:
    Real maximum_absolute_value() const
       { CornerClear(); return GeneralMatrix::maximum_absolute_value(); }
    Real minimum_absolute_value() const
-      { int i, j; return GeneralMatrix::minimum_absolute_value2(i, j); }
-   Real maximum() const { int i, j; return GeneralMatrix::maximum2(i, j); }
-   Real minimum() const { int i, j; return GeneralMatrix::minimum2(i, j); }
+      { int pi, pj; return GeneralMatrix::minimum_absolute_value2(pi, pj); }
+   Real maximum() const { int pi, pj; return GeneralMatrix::maximum2(pi, pj); }
+   Real minimum() const { int pi, pj; return GeneralMatrix::minimum2(pi, pj); }
    void GetRow(MatrixRowCol&);
    void GetCol(MatrixRowCol&);
    void GetCol(MatrixColX&);
@@ -1274,9 +1274,9 @@ public:
    Real maximum_absolute_value() const
       { CornerClear(); return GeneralMatrix::maximum_absolute_value(); }
    Real minimum_absolute_value() const
-      { int i, j; return GeneralMatrix::minimum_absolute_value2(i, j); }
-   Real maximum() const { int i, j; return GeneralMatrix::maximum2(i, j); }
-   Real minimum() const { int i, j; return GeneralMatrix::minimum2(i, j); }
+      { int pi, pj; return GeneralMatrix::minimum_absolute_value2(pi, pj); }
+   Real maximum() const { int pi, pj; return GeneralMatrix::maximum2(pi, pj); }
+   Real minimum() const { int pi, pj; return GeneralMatrix::minimum2(pi, pj); }
    Real trace() const;
    LogAndSign log_determinant() const;
    void GetRow(MatrixRowCol&);
@@ -1675,7 +1675,7 @@ class InvertedMatrix : public NegatedMatrix
 public:
    ~InvertedMatrix() {}
    SolvedMatrix operator*(const BaseMatrix&) const;       // inverse(A) * B
-   ScaledMatrix operator*(Real t) const { return BaseMatrix::operator*(t); }
+   ScaledMatrix operator*(Real pt) const { return BaseMatrix::operator*(pt); }
    friend class BaseMatrix;
    GeneralMatrix* Evaluate(MatrixType mt=MatrixTypeUnSp);
    MatrixBandWidth bandwidth() const;
