@@ -130,7 +130,8 @@ void PLUGINFH::doPluginFunc(V3D_CL_INTERFACE i_v3d, V3d_PluginLoader& mypluginlo
     else
     {
         // other plugins
-        arg.type = ""; arg.p = (void *)(&imgList); pluginfunc_input << arg;
+        //arg.type = ""; arg.p = (void *)(&imgList); pluginfunc_input << arg;
+        arg.type = ""; arg.p = (void *)(&i_v3d.fileList); pluginfunc_input << arg;
         arg.type = "cmd"; arg.p = (void *)(&(i_v3d.cmdArgList)); pluginfunc_input << arg;
         
         arg.type =""; arg.p = (void *)(&(i_v3d.outputList)); pluginfunc_output << arg;
