@@ -105,7 +105,7 @@ static inline void Set_Image_Pixel(Image *image, int x, int y, int c, int v)
       is set to non-zero.  Closing the tif with Close_Tiff completes the creation or scan of 'tif'.
   */
 
-TIFF   *Open_Tiff(char *file_name, char *mode);
+TIFF   *Open_Tiff(const char *file_name, const char *mode);
 Image  *Read_Tiff(TIFF *tif, int *last);
 void   Write_Tiff(TIFF *tif, Image *a_image);
 void   Close_Tiff(TIFF *tif);

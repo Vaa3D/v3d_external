@@ -44,7 +44,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 static int Warnings = 1;
 
-static int error(char *msg, char *arg)
+static int error(const char *msg, const char *arg)
 { fprintf(stderr,"\nError in TIFF library:\n   ");
   fprintf(stderr,msg,arg);
   fprintf(stderr,"\n");
@@ -69,7 +69,7 @@ Stack_Plane *Select_Plane(Stack *a_stack, int plane)  // Build an image for a pl
 
 // Raster working buffer
 
-static uint32 *get_raster(int npixels, char *routine)
+static uint32 *get_raster(int npixels, const char *routine)
 { static uint32 *Raster = NULL;
   static int     Raster_Size = 0;                           //  Manage read work buffer
 
@@ -101,7 +101,7 @@ typedef struct __Image
 static _Image *Free_Image_List = NULL;
 static int    Image_Offset, Image_Inuse;
 
-static inline Image *new_image(int asize, char *routine)
+static inline Image *new_image(int asize, const char *routine)
 { _Image *object;
 
   if (Free_Image_List == NULL)
@@ -192,7 +192,7 @@ typedef struct __Stack
 static _Stack *Free_Stack_List = NULL;
 static int    Stack_Offset, Stack_Inuse;
 
-static inline Stack *new_stack(int vsize, char *routine)
+static inline Stack *new_stack(int vsize, const char *routine)
 { _Stack *object;
 
   if (Free_Stack_List == NULL)
@@ -271,7 +271,7 @@ void Reset_Stack()
 
 /*********** TIFF INTERFACE ****************************/
 
-TIFF *Open_Tiff(char *file_name, char *mode)
+TIFF *Open_Tiff(const char *file_name, const char *mode)
 { TIFF *tif;
 
   if (Warnings)
@@ -303,7 +303,7 @@ static int determine_kind(TIFF *tif)   //  Determine nature of current tif image
     return (COLOR);
 }
 
-static void read_directory(TIFF *tif, Image *image, char *routine)   //  Used by all readers
+static void read_directory(TIFF *tif, Image *image, const char *routine)   //  Used by all readers
 { uint32 *raster;
   uint8  *row;
   int     width, height;
@@ -357,7 +357,7 @@ static void read_directory(TIFF *tif, Image *image, char *routine)   //  Used by
           int i, j;
           int m, n;
           uint16 *buffer = (uint16 *) raster;
-          uint16 *out, *in, *rous;
+          uint16 *out, *in /*, *rous */;
     
           TIFFGetField(tif, TIFFTAG_TILELENGTH, &tile_height);
 

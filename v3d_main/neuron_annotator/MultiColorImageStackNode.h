@@ -50,7 +50,7 @@ public:
         }
         int intLength = maskSizeX * maskSizeY * maskSizeZ * 1 * 1; // one slice, 8-bit
         cout << "Preparing to output raw data size=" << intLength << endl;
-        int progress=0;
+        int progressVal=0;
         int writeUnit=100000;
         unsigned char * buffer = new unsigned char[writeUnit];
         int counter=0;
@@ -65,7 +65,7 @@ public:
                             delete [] buffer;
                             return false;
                         }
-                        progress+=counter;
+                        progressVal+=counter;
                         counter=0;
                     }
                     buffer[counter++]=rawMaskData[0][z][y][x];
@@ -73,8 +73,8 @@ public:
             }
         }
         out.write((const char *)buffer, counter);
-        progress+=counter;
-        cout << "Wrote " << progress << " bytes - done." << endl;
+        progressVal+=counter;
+        cout << "Wrote " << progressVal << " bytes - done." << endl;
         out.flush();
         out.close();
         delete [] buffer;

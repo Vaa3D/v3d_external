@@ -623,9 +623,9 @@ public:
 	}
 	
 	// create thumbnail file
-	char *y_createthumbnail()
+        const char *y_createthumbnail()
 	{
-		char fn[2048] = "NULL";
+                static char fn[2048] = "NULL";
 		
 		// to do
 		

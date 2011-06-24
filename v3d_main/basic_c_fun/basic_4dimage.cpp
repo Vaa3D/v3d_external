@@ -223,14 +223,14 @@ bool convert_data_to_8bit(void * &img, V3DLONG * sz, int datatype)
 		if (maxvv>255.0)
 		{
 			maxvv = 255.0/maxvv;
-			for (V3DLONG i=0;i<totalunits;i++)
+                        for (/*V3DLONG*/ i=0;i<totalunits;i++)
 			{
 				outimg[i] = (unsigned char)(double(tmpimg[i])*maxvv);
 			}
 		}
 		else
 		{
-			for (V3DLONG i=0;i<totalunits;i++)
+                        for (/*V3DLONG*/ i=0;i<totalunits;i++)
 			{
 				outimg[i] = (unsigned char)(tmpimg[i]); //then no need to rescale
 			}
@@ -248,14 +248,14 @@ bool convert_data_to_8bit(void * &img, V3DLONG * sz, int datatype)
 		if (maxvv!=minvv)
 		{
 			double w = 255.0/(maxvv-minvv);
-			for (V3DLONG i=0;i<totalunits;i++)
+                        for (/*V3DLONG*/ i=0;i<totalunits;i++)
 			{
 				outimg[i] = (unsigned char)(double(tmpimg[i]-minvv)*w);
 			}
 		}
 		else
 		{
-			for (V3DLONG i=0;i<totalunits;i++)
+                        for (/*V3DLONG*/ i=0;i<totalunits;i++)
 			{
 				outimg[i] = (unsigned char)(tmpimg[i]); //then no need to rescale. If the original value is small than 0 or bigger than 255, then let it be during the type-conversion
 			}

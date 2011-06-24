@@ -59,9 +59,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #define RETURN_LENGTH 80    // length over which a usage statement will be split accross lines
 
-static char *Type_Strings[] = { "int", "double", "string" };  //  command spec. base types
+static const char *Type_Strings[] = { "int", "double", "string" };  //  command spec. base types
 
-void *Guarded_Malloc(int size, char *routine)
+void *Guarded_Malloc(int size, const char *routine)
 { void *p;
 
   p = malloc(size);
@@ -73,7 +73,7 @@ void *Guarded_Malloc(int size, char *routine)
   return (p);
 }
 
-void *Guarded_Realloc(void *p, int size, char *routine)
+void *Guarded_Realloc(void *p, int size, const char *routine)
 { p = realloc(p,size);
   if (p == NULL)
     { fprintf(stderr,"\nError in %s:\n",routine);
@@ -83,8 +83,8 @@ void *Guarded_Realloc(void *p, int size, char *routine)
   return (p);
 }
 
-char *Guarded_Strdup(char *p, char *routine)
-{ p = strdup(p);
+char *Guarded_Strdup(const char *pp, const char *routine)
+{ char* p = strdup(pp);
   if (p == NULL)
     { fprintf(stderr,"\nError in %s:\n",routine);
       fprintf(stderr,"   Out of memory\n");
@@ -137,14 +137,14 @@ static char        *Program;        //  name of program
 
 //  Print an error message and quit
 
-static void spec_error(char *format, char *arg)
+static void spec_error(const char *format, const char *arg)
 { fprintf(stderr,"\nError while processing argument specification:\n   ");
   fprintf(stderr,format,arg);
   fprintf(stderr,"\n");
   return;
 }
 
-static int interp_error(char *format, char *arg)
+static int interp_error(const char *format, const char *arg)
 { fprintf(stderr,"\nError while interpreting command line:\n   ");
   fprintf(stderr,format,arg);
   fprintf(stderr,"\n\n   ");
@@ -174,8 +174,8 @@ static char *print_value(Arg_Value *value, int type, int width)
 //  Debug routine: show contents of table records
 
 static void print_arg_table(int values)
-{ static char *Print_Kind[] = { "", "FLAG", "OCMP", "OARG", "REQD", "ITR0", "ITR1" };
-  static char *Print_Type[] = { "INT", "DBL", "STR" };
+{ static const char *Print_Kind[] = { "", "FLAG", "OCMP", "OARG", "REQD", "ITR0", "ITR1" };
+  static const char *Print_Type[] = { "INT", "DBL", "STR" };
 
   int   i;
   char *s;
@@ -627,7 +627,7 @@ void Print_Argument_Usage(FILE *file)
         clen += fprintf(file,"%s",Parse[j].name);
         clen += print_synonym(file,j);
         while ((k = Parse[j].extension) >= 0)
-          { clen += fprintf(file,"[%.*s",strlen(Parse[k].name)-strlen(Parse[j].name),
+          { clen += fprintf(file,"[%.*s",(int)(strlen(Parse[k].name)-strlen(Parse[j].name)),
                                          Parse[k].name+strlen(Parse[j].name));
             clen += print_synonym(file,k);
             j = k;

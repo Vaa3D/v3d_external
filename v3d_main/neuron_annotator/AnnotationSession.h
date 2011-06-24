@@ -25,11 +25,11 @@ public:
     bool populateMaskMipList();
     QList<QPixmap> * getMaskMipList() { return &maskMipList; }
 
-    void setMultiColorImageStackNode(MultiColorImageStackNode* multiColorImageStackNode) {
-        this->multiColorImageStackNode=multiColorImageStackNode;
+    void setMultiColorImageStackNode(MultiColorImageStackNode* node) {
+        this->multiColorImageStackNode=node;
     }
-    void setNeuronAnnotatorResultNode(NeuronAnnotatorResultNode* neuronAnnotatorResultNode) {
-        this->neuronAnnotatorResultNode=neuronAnnotatorResultNode;
+    void setNeuronAnnotatorResultNode(NeuronAnnotatorResultNode* node) {
+        this->neuronAnnotatorResultNode=node;
     }
 
     // getOriginalImageStackAsMy4DImage() returns a pointer to a My4DImage object

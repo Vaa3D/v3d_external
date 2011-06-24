@@ -3393,7 +3393,7 @@ int loadMRC2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 			break;
 
 		default:
-			printf("Unrecognized data type code [%d]. The file type is incorrect or this code is not supported in this version.\n", dcode);
+                        printf("Unrecognized data type code [%d]. The file type is incorrect or this code is not supported in this version.\n", (int)dcode);
 			berror = 1;
 			return berror;
 	}

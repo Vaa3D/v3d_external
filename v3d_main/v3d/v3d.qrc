@@ -16,5 +16,6 @@
         <file>pic/default_yz_pic.jpg</file>
         <file>pic/default_zx_pic.jpg</file>
         <file>pic/v3dIcon128.png</file>
+        <file>pic/rotate_icon.png</file>
     </qresource>
 </RCC>

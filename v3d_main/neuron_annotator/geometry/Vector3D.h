@@ -14,7 +14,7 @@ class UnitVector3D;
 class BaseVector3D
 {
 public:
-    BaseVector3D(qreal x, qreal y, qreal z) : m_x(x), m_y(y), m_z(z) {}
+    BaseVector3D(qreal px, qreal py, qreal pz) : m_x(px), m_y(py), m_z(pz) {}
     BaseVector3D(const BaseVector3D& v) : m_x(v.m_x), m_y(v.m_y), m_z(v.m_z) {}
 
     qreal x() const {return m_x;}
@@ -70,7 +70,7 @@ class Vector3D : public BaseVector3D
 {
 public:
     Vector3D() : BaseVector3D(0,0,0) {}
-    Vector3D(qreal x, qreal y, qreal z) : BaseVector3D(x,y,z) {}
+    Vector3D(qreal px, qreal py, qreal pz) : BaseVector3D(px,py,pz) {}
 
     // Expose writeable accessors, unlike UnitVector3D
     using BaseVector3D::x;
@@ -136,7 +136,7 @@ public:
     UnitVector3D(const UnitVector3D& v) : BaseVector3D(v) {}
     // Expensive constructors scale to unit value
     UnitVector3D(const Vector3D& v) : BaseVector3D(v / v.norm()) {}
-    UnitVector3D(qreal x, qreal y, qreal z) : BaseVector3D(x, y, z)
+    UnitVector3D(qreal px, qreal py, qreal pz) : BaseVector3D(px, py, pz)
     {
         (*this) /= BaseVector3D::norm(); // don't use UnitVector3::norm()!
     }

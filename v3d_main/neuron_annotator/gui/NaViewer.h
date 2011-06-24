@@ -12,7 +12,7 @@
 class NaViewer
 {
 public:
-    NaViewer() : bMouseIsDragging(false), defaultScale(1.0), bPaintCrosshair(true) {}
+    NaViewer() : defaultScale(1.0), bMouseIsDragging(false), bPaintCrosshair(true) {}
     virtual ~NaViewer() {}
     // TODO replace loadMy4DImage() method with observer relationship to a lighter interface
     virtual bool loadMy4DImage(const My4DImage* my4DImage, const My4DImage* neuronMaskImage = NULL) = 0;

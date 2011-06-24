@@ -30,8 +30,8 @@ public:
 
     typedef std::vector<MipData::Pixel> Column;
 
-    explicit MipData(QObject * parent = NULL)
-        : QObject(parent)
+    explicit MipData(QObject * parentObject = NULL)
+        : QObject(parentObject)
         , neuronLayers(NULL)
     {}
     // Initialize from either a 3D data set...
@@ -98,7 +98,7 @@ public slots:
                 dataPixel.z = layerPixel.zCoordinate;
                 dataPixel.neuronIndex = layerPixel.neuronIndex;
                 int z = dataPixel.z;
-                for (int c = 0; c < dataPixel.size(); ++c) {
+                for (int c = 0; c < (int)dataPixel.size(); ++c) {
                     dataPixel[c] = (float)imgProxy.value_at(x,y,z,c);
                 }
             }

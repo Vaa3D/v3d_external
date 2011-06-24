@@ -100,8 +100,8 @@ protected:
     virtual void wheelEvent(QWheelEvent *event);
 	virtual void mouseDoubleClickEvent ( QMouseEvent * event );
 
-	virtual void keyPressEvent(QKeyEvent * event) {handleKeyPressEvent(event);}
-	virtual void keyReleaseEvent(QKeyEvent * event) {handleKeyReleaseEvent(event);}
+        virtual void keyPressEvent(QKeyEvent * e) {handleKeyPressEvent(e);}
+        virtual void keyReleaseEvent(QKeyEvent * e) {handleKeyReleaseEvent(e);}
 
     virtual void closeEvent(QCloseEvent* e); //for self closing
     virtual bool event(QEvent* e);       //090427 RZC:  for QHelpEvent of ToolTip

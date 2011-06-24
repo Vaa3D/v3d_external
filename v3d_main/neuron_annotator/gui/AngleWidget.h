@@ -22,8 +22,8 @@ public:
     /* These properties are accessible by Qt Designer */
     Q_PROPERTY(QString textLabel READ textLabel WRITE setTextLabel);
 
-    AngleWidget(QWidget * parent = NULL, QString angleLabelText = "Rot")
-        : QWidget(parent)
+    AngleWidget(QWidget * parentObject = NULL, QString angleLabelText = "Rot")
+        : QWidget(parentObject)
     {
         setupUi(this);
         label->setText(angleLabelText);

@@ -49,10 +49,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 /* The usual protected allocation and file opening routines.   */
 
-void *Guarded_Malloc(int size, char *routine);
-void *Guarded_Realloc(void *array, int size, char *routine);
-char *Guarded_Strdup(char *string, char *routine);
-FILE *Guarded_Fopen(char *name, char *options, char *routine);
+void *Guarded_Malloc(int size, const char *routine);
+void *Guarded_Realloc(void *array, int size, const char *routine);
+char *Guarded_Strdup(const char *string, const char *routine);
+FILE *Guarded_Fopen(char *name, char *options, const char *routine);
 
 /* The structure of the command line to be interpreted is specified in an array of
    'Arg_Spec' records the last of which is {NULL,NULL,NULL} signalling the end of the
