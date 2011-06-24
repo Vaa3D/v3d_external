@@ -352,18 +352,10 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
                              "Error finding file="+maskLabelFilePath);
         return false;
     }
-    QString maskLabelIndexFilePath = imageInputDirectory.absolutePath() + "/" + MultiColorImageStackNode::IMAGE_MASK_INDEX_FILENAME;
-    QFile maskLabelIndexFile(maskLabelIndexFilePath);
-    if (!maskLabelIndexFile.exists()) {
-        QMessageBox::warning(this, tr("Could not find expected image stack mask label index file"),
-                             "Error finding file="+maskLabelIndexFilePath);
-        return false;
-    }
 
     // Create input nodes
     MultiColorImageStackNode* multiColorImageStackNode = new MultiColorImageStackNode();
     multiColorImageStackNode->setPathToMulticolorLabelMaskFile(maskLabelFilePath);
-    multiColorImageStackNode->setPathToMulticolorLabelMasIndexFile(maskLabelIndexFilePath);
     multiColorImageStackNode->setPathToOriginalImageStackFile(originalImageStackFilePath);
     annotationSession->setMultiColorImageStackNode(multiColorImageStackNode);
 
@@ -384,7 +376,7 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
     if (!annotationSession->loadNeuronMaskStack()) {
         return false;
     }
-    if (!annotationSession->loadMaskLabelIndexFile()) {
+    if (!annotationSession->prepareLabelIndex()) {
         return false;
     }
     if (!annotationSession->populateMaskMipList()) {

@@ -14,7 +14,6 @@ public:
 
     const static char * IMAGE_STACK_FILENAME;
     const static char * IMAGE_MASK_FILENAME;
-    const static char * IMAGE_MASK_INDEX_FILENAME;
 
     MultiColorImageStackNode();
 

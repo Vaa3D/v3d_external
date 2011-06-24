@@ -7,6 +7,7 @@ class NeuronMaskEntry
 {
 public:
     NeuronMaskEntry();
+    NeuronMaskEntry(int label, int segment, int neuron);
     QString toString();
     bool populateFromString(QString fromString);
 

@@ -21,7 +21,7 @@ public:
 
     bool loadOriginalImageStack();
     bool loadNeuronMaskStack();
-    bool loadMaskLabelIndexFile();
+    bool prepareLabelIndex();
     bool populateMaskMipList();
     QList<QPixmap> * getMaskMipList() { return &maskMipList; }
 

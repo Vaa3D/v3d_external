@@ -71,41 +71,54 @@ bool AnnotationSession::loadNeuronMaskStack() {
         cerr << msgPrefix.toStdString() << " : problem creating My4DImage" << endl;
         return false;
     }
+    neuronMaskStack->loadImage(maskLabelFilePath.toAscii().data());
+
+    return true;
+
     // Create blank image
-    neuronMaskStack->loadImage(imageXSize, imageYSize, imageZSize, 1, 1); // single 4D slice, 8-bit color, respectively
-    if (neuronMaskStack->isEmpty()) {
-        cerr << msgPrefix.toStdString() << ": neuronMaskStack is empty after loading\n";
-        return false;
-    }
+    //neuronMaskStack->loadImage(imageXSize, imageYSize, imageZSize, 1, 1); // single 4D slice, 8-bit color, respectively
+    //if (neuronMaskStack->isEmpty()) {
+    //    cerr << msgPrefix.toStdString() << ": neuronMaskStack is empty after loading\n";
+    //    return false;
+    //}
+
     // Load binary mask data
-    bool readMaskStatus = MultiColorImageStackNode::readMaskFileToMy4DImage(neuronMaskStack, maskLabelFilePath);
-    return readMaskStatus;
+    //bool readMaskStatus = MultiColorImageStackNode::readMaskFileToMy4DImage(neuronMaskStack, maskLabelFilePath);
+    //return readMaskStatus;
 }
 
-bool AnnotationSession::loadMaskLabelIndexFile() {
-    QString msgPrefix("AnnotationSession::loadMaskLabelIndexFile()");
-    maskEntryList.clear();
-    QString maskLabelIndexFilePath=multiColorImageStackNode->getPathToMulticolorLabelMaskIndexFile();
-    QFile maskLabelFile(maskLabelIndexFilePath);
-    QFileInfo maskLabelFileInfo(maskLabelFile);
-    if (!maskLabelFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        cerr << msgPrefix.toStdString() << " : could not open file=" << maskLabelFileInfo.absolutePath().toStdString() << " to read" << endl;
+bool AnnotationSession::prepareLabelIndex() {
+    int z,y,x;
+    int imageX=originalImageStack->getXDim();
+    int imageY=originalImageStack->getYDim();
+    int imageZ=originalImageStack->getZDim();
+    int imageC=originalImageStack->getCDim();
+    if (imageC != 3) {
+        qDebug() << "Expected original image stack to have channel dim=3 but it has channel dim=" << imageC;
         return false;
     }
-    QTextStream in(&maskLabelFile);
-    while (!in.atEnd()) {
-        QString indexLine = in.readLine();
-        if (!indexLine.startsWith("#")) {
-            NeuronMaskEntry entry;
-            if (!entry.populateFromString(indexLine)) {
-                maskLabelFile.close();
-                return false;
+    Image4DProxy<My4DImage> maskProxy(neuronMaskStack);
+
+    int maxMaskIndex=0;
+
+    for (z=0;z<imageZ;z++) {
+        for (y=0;y<imageY;y++) {
+            for (x=0;x<imageX;x++) {
+                unsigned char mask = maskProxy.value8bit_at(x,y,z,0);
+                if (mask>maxMaskIndex) {
+                    maxMaskIndex=mask;
+                }
             }
-            maskEntryList.append(entry);
         }
     }
-    maskLabelFile.close();
-    qSort(maskEntryList.begin(), maskEntryList.end());
+
+    qDebug() << "Using maxMaskIndex=" << maxMaskIndex;
+
+    for (int i=0;i<maxMaskIndex;i++) {
+        NeuronMaskEntry entry(0,0,i+1);
+        maskEntryList.append(entry);
+    }
+
     for (int i=0;i<maskEntryList.size()+1;i++) { // +1 is for background position
         bool status=false;
         maskStatusList.append(status);

@@ -8,6 +8,12 @@ NeuronMaskEntry::NeuronMaskEntry()
 {
 }
 
+NeuronMaskEntry::NeuronMaskEntry(int label, int segment, int neuron) {
+    this->labelIndex=label;
+    this->segmentIndex=segment;
+    this->neuronIndex=neuron;
+}
+
 bool NeuronMaskEntry::populateFromString(QString fromString) {
     QRegExp regexp("(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\S.+\\S)");
     int matchPosition = regexp.indexIn(fromString);
