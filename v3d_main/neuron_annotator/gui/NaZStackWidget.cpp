@@ -3,6 +3,9 @@
 #include <QDebug>
 #include <QPainter>
 #include <cmath>
+#include <iostream>
+
+using namespace std;
 
 #define INF 1e9
 
@@ -285,6 +288,7 @@ void NaZStackWidget::onCameraFocusChanged(const Vector3D& focus)
     // qDebug() << "midZ = " << midZ;
     // qDebug() << "flip_Z = " << flip_Z;
     // qDebug() << "camera focus set to " << QString("%1, %2, %3").arg(focus.x()).arg(focus.y()).arg(focus.z());
+    // cerr << "on CameraFocusChanged" << __LINE__ << __FILE__ << ", " << focus.z() << ", " << sz << ", " << z << endl;
     setCurrentZSlice(z + 1);
 }
 
@@ -433,8 +437,11 @@ void NaZStackWidget::setCurrentZSlice(int slice)
     int camZ = int(floor(f.z() + 0.5));
     float midZ = sz / 2.0f;
     int flip_cur_z = int(midZ + flip_Z * (cur_z - midZ));
-    if (flip_cur_z != camZ)
-        cameraModel.setFocus(Vector3D(f.x(), f.y(), flip_cur_z));
+    if (flip_cur_z != camZ) {
+        Vector3D newFocus(f.x(), f.y(), flip_cur_z);
+        // cerr << newFocus << __LINE__ << __FILE__ << "; " << slice << ", " <<  f.z() << ", " << camZ << ", " << midZ << ", " << sz << ", " << flip_cur_z << endl;
+        cameraModel.setFocus(newFocus);
+    }
 
     emit curZsliceChanged(slice);
 }
@@ -450,6 +457,7 @@ void NaZStackWidget::wheelEvent(QWheelEvent * e) // mouse wheel
         numTicks = e->delta() > 0 ? 1 : -1;
 
     // qDebug() << "wheel";
+    // cerr << "wheel event " << __LINE__ << __FILE__ << endl;
     setCurrentZSlice(getCurrentZSlice() + numTicks);
 }
 

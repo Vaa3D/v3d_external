@@ -235,7 +235,9 @@ void NaMainWindow::nutate(const Rotation3D& R) {
 void NaMainWindow::resetView()
 {
     // TODO - might not work if cameras are not linked
-    sharedCameraModel.setFocus(ui.v3dr_glwidget->getDefaultFocus()); // center view
+    Vector3D newFocus = ui.v3dr_glwidget->getDefaultFocus();
+    // cerr << newFocus << __LINE__ << __FILE__;
+    sharedCameraModel.setFocus(newFocus);
     sharedCameraModel.setRotation(Rotation3D()); // identity rotation
     sharedCameraModel.setScale(1.0); // fit to window
     ui.viewerStackedWidget->update(); // whichever viewer is shown
@@ -485,6 +487,8 @@ bool NaMainWindow::loadMy4DImage(const My4DImage * img, const My4DImage * neuron
     ui.v3dr_glwidget->loadMy4DImage(img, neuronMaskImg);
     ui.naZStackWidget->loadMy4DImage(img, neuronMaskImg);
     setZRange(1, img->getZDim());
+    // Start in middle of volume
+    ui.naZStackWidget->setCurrentZSlice(img->getZDim() / 2 + 1);
     // Need at least two colors for use of the color buttons to make sense
     ui.HDRRed_pushButton->setEnabled(img->getCDim() > 1);
     ui.HDRGreen_pushButton->setEnabled(img->getCDim() > 1);

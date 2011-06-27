@@ -121,7 +121,9 @@ void Na2DViewer::translateImage(int dx, int dy)
 {
     if (!dx && !dy) return;
     float scale = defaultScale * cameraModel.scale();
-    cameraModel.setFocus(cameraModel.focus() - Vector3D(flip_X * dx/scale, flip_Y * dy/scale, 0));
+    Vector3D newFocus = cameraModel.focus() - Vector3D(flip_X * dx/scale, flip_Y * dy/scale, 0);
+    // cerr << newFocus << __LINE__ << __FILE__;
+    cameraModel.setFocus(newFocus);
     update();
 }
 

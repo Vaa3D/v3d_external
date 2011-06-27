@@ -47,7 +47,9 @@ void Na3DWidget::resetView()
 {
     // qDebug() << "reset";
     cameraModel.setScale(1.0); // fit to window
-    cameraModel.setFocus(getDefaultFocus()); // center view
+    Vector3D newFocus = getDefaultFocus();
+    // cerr << newFocus << __LINE__ << __FILE__ << endl;
+    cameraModel.setFocus(newFocus); // center view
     cameraModel.setRotation(Rotation3D()); // identity rotation
     // Avoid crash before data are initialized
     if (!_idep) return;
@@ -75,7 +77,9 @@ void Na3DWidget::translateImage(int dx, int dy)
                         -0.0 * flip_Z);
     Vector3D dFocus_obj = ~Rotation3D(mRot) * dFocus_eye;
     dFocus_obj /= getZoomScale();
-    cameraModel.setFocus(focus() + dFocus_obj);
+    Vector3D newFocus = focus() + dFocus_obj;
+    // cerr << newFocus << __LINE__ << __FILE__;
+    cameraModel.setFocus(newFocus);
     update();
 }
 
@@ -289,7 +293,9 @@ void Na3DWidget::wheelEvent(QWheelEvent * e)
                         0  * flip_Z);
         dFocus *= (factor - 1.0) / scale;
         dFocus = ~(cameraModel.rotation()) * dFocus;
-        cameraModel.setFocus(cameraModel.focus() + dFocus);
+        Vector3D newFocus = cameraModel.focus() + dFocus;
+        // cerr << newFocus << __LINE__ << __FILE__;
+        cameraModel.setFocus(newFocus);
     }
     update();
 }

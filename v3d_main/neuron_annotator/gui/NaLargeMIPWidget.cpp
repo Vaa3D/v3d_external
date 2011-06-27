@@ -253,10 +253,11 @@ void NaLargeMIPWidget::resetView()
 {
     cameraModel.setScale(1.0); // fit to window
     qreal focusZ = cameraModel.focus().z();
-    cameraModel.setFocus(Vector3D(
-            pixmap.size().width()/2.0,
-            pixmap.size().height()/2.0,
-            focusZ));
+    Vector3D newFocus(pixmap.size().width()/2.0,
+                pixmap.size().height()/2.0,
+                focusZ);
+    // cerr << newFocus << __LINE__ << __FILE__;
+    cameraModel.setFocus(newFocus);
 }
 
 void NaLargeMIPWidget::resizeEvent(QResizeEvent * event) {
@@ -378,7 +379,9 @@ void NaLargeMIPWidget::wheelEvent(QWheelEvent * e) // mouse wheel
         double dy = e->pos().y() - height()/2.0;
         double dx2 = ((factor - 1.0) * dx) / scale;
         double dy2 = ((factor - 1.0) * dy) / scale;
-        cameraModel.setFocus(cameraModel.focus() + Vector3D(flip_X * dx2, flip_Y * dy2, 0));
+        Vector3D newFocus = cameraModel.focus() + Vector3D(flip_X * dx2, flip_Y * dy2, 0);
+        // cerr << newFocus << __LINE__ << __FILE__;
+        cameraModel.setFocus(newFocus);
     }
     update();
 }
