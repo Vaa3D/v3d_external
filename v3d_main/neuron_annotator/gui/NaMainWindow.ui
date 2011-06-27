@@ -491,10 +491,10 @@ You can also resize the box by Ctrl + left mouse click.</string>
                           </size>
                          </property>
                          <property name="minimum">
-                          <number>0</number>
+                          <number>1</number>
                          </property>
                          <property name="maximum">
-                          <number>0</number>
+                          <number>1</number>
                          </property>
                         </widget>
                        </item>
@@ -579,7 +579,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                       <x>0</x>
                       <y>0</y>
                       <width>191</width>
-                      <height>411</height>
+                      <height>428</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_14">
@@ -614,33 +614,33 @@ You can also resize the box by Ctrl + left mouse click.</string>
                          <number>0</number>
                         </property>
                         <item>
-                         <widget class="AngleWidget" name="rotXWidget" native="true">
+                         <widget class="AngleWidget" name="rotXWidget">
                           <property name="sizePolicy">
                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                             <horstretch>0</horstretch>
                             <verstretch>0</verstretch>
                            </sizepolicy>
                           </property>
-                          <property name="textLabel" stdset="0">
+                          <property name="textLabel">
                            <string>RotX</string>
                           </property>
                          </widget>
                         </item>
                         <item>
-                         <widget class="AngleWidget" name="rotYWidget" native="true">
+                         <widget class="AngleWidget" name="rotYWidget">
                           <property name="sizePolicy">
                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                             <horstretch>0</horstretch>
                             <verstretch>0</verstretch>
                            </sizepolicy>
                           </property>
-                          <property name="textLabel" stdset="0">
+                          <property name="textLabel">
                            <string>RotY</string>
                           </property>
                          </widget>
                         </item>
                         <item>
-                         <widget class="AngleWidget" name="rotZWidget" native="true">
+                         <widget class="AngleWidget" name="rotZWidget">
                           <property name="sizePolicy">
                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                             <horstretch>0</horstretch>
@@ -659,7 +659,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                             <height>0</height>
                            </size>
                           </property>
-                          <property name="textLabel" stdset="0">
+                          <property name="textLabel">
                            <string>RotZ</string>
                           </property>
                          </widget>
@@ -762,7 +762,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="ZoomWidget" name="zoomWidget" native="true"/>
+                 <widget class="ZoomWidget" name="zoomWidget"/>
                 </item>
                 <item>
                  <widget class="QPushButton" name="resetViewButton">
@@ -796,7 +796,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="GammaWidget" name="sharedGammaWidget" native="true"/>
+                 <widget class="GammaWidget" name="sharedGammaWidget"/>
                 </item>
                 <item>
                  <widget class="QFrame" name="sharedColorFrame">

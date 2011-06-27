@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cassert>
 #include <QDebug>
+#include <limits>
 
 /* explicit */
 ZoomSpinBox::ZoomSpinBox(QWidget *parent /* = 0 */ )
@@ -10,8 +11,8 @@ ZoomSpinBox::ZoomSpinBox(QWidget *parent /* = 0 */ )
 {
     // Integer range is unlimited
     // (but float range is strictly greater than zero)
-    setMinimum(-1e9);
-    setMaximum(1e9);
+    setMinimum(-10000);
+    setMaximum(10000);
     setZoomValue(1.0);
     setSuffix(" X");
     connect(this, SIGNAL(valueChanged(int)),
@@ -52,7 +53,13 @@ QValidator::State ZoomSpinBox::validate(QString & text, int & pos) const {
 /* static */
 int ZoomSpinBox::intValueFromDoubleValue(qreal doubleValue)
 {
-    int result = int(floor(log(doubleValue) * 100.0 + 0.4999));
+    int result = 0;
+    if (doubleValue <= 0)
+        result = -10000;
+    else if (doubleValue == std::numeric_limits<qreal>::infinity())
+        result = 10000;
+    else
+        result = int(floor(log(doubleValue) * 100.0 + 0.4999));
     // assert(doubleValue == doubleValueFromIntValue(result));
     return result;
 }
@@ -60,7 +67,12 @@ int ZoomSpinBox::intValueFromDoubleValue(qreal doubleValue)
 /* static */
 qreal ZoomSpinBox::doubleValueFromIntValue(int intValue)
 {
-    qreal result = exp(intValue / 100.0);
+    qreal result = 1.0;
+    if (intValue < -10000)
+        intValue = -10000;
+    else if (intValue > 10000)
+        intValue = 10000;
+    result = exp(intValue / 100.0);
     if (intValue != intValueFromDoubleValue(result)) {
         qDebug() << "Oops: " << intValue << ", " << intValueFromDoubleValue(result) << ", " << result;
     }

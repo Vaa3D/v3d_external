@@ -99,6 +99,7 @@ target_link_libraries( v3dbase v3dbase1 jba newmat11 multithreadimageIO ${QT_LIB
 add_library(v3dbase2 ${V3D_SRCS})
 add_dependencies(v3dbase2 v3dbase)
 add_dependencies(v3dbase2 NeuronAnnotatorLib)
+add_dependencies(v3dbase NeuronAnnotatorLib)
 
 if (WIN32) # Windows MSYS build
   # All this MYS stuff is just to compile in a program icon for windows
