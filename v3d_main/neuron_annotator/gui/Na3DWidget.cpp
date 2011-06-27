@@ -23,7 +23,7 @@ Na3DWidget::Na3DWidget(QWidget* parent)
     glFormat.setDoubleBuffer(true); // attempt to reduce tearing on Mac
     setFormat(glFormat);
 
-    rotateCursor = new QCursor(QPixmap(":/pic/rotate_icon.png"));
+    rotateCursor = new QCursor(QPixmap(":/pic/rotate_icon.png"), 5, 5);
     // setMouseTracking(true); // for hover action in mouseMoveEvent()
     updateCursor();
 
