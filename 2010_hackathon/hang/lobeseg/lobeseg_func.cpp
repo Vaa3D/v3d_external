@@ -9,7 +9,7 @@
 #include "lobeseg_func.h"
 #include "lobeseg_gui.h"
 
-#include "lobeseg.h"
+#include "lobeseg_main/lobeseg.h"
 #include "../../../v3d_main/worm_straighten_c/bdb_minus.h"
 
 #include <unistd.h>

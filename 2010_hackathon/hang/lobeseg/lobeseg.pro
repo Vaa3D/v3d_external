@@ -2,14 +2,14 @@
 TEMPLATE	= lib
 CONFIG	+= qt plugin warn_off
 #CONFIG	+= x86_64
-INCLUDEPATH	+= ../../../v3d_main/basic_c_fun
+INCLUDEPATH	+= ../../../v3d_main/basic_c_fun ../../../v3d_main/common_lib/include
 LIBS += -L. -lv3dtiff -L../../../v3d_main/common_lib/lib
 
 HEADERS	= lobeseg_plugin.h
 HEADERS	+= lobeseg_func.h
 HEADERS	+= lobeseg_gui.h
 
-HEADERS += lobeseg.h
+HEADERS += lobeseg_main/lobeseg.h
 HEADERS	+= ../../../v3d_main/basic_c_fun/basic_memory.h
 HEADERS	+= ../../../v3d_main/basic_c_fun/stackutil.h
 HEADERS	+= ../../../v3d_main/basic_c_fun/mg_utilities.h
@@ -26,7 +26,7 @@ SOURCES	= lobeseg_plugin.cpp
 SOURCES	+= lobeseg_func.cpp
 SOURCES	+= ../../../v3d_main/basic_c_fun/v3d_message.cpp
 
-SOURCES += lobeseg.cpp
+SOURCES += lobeseg_main/lobeseg.cpp
 SOURCES	+= ../../../v3d_main/basic_c_fun/basic_memory.cpp
 SOURCES	+= ../../../v3d_main/basic_c_fun/stackutil.cpp
 SOURCES	+= ../../../v3d_main/basic_c_fun/mg_utilities.cpp
