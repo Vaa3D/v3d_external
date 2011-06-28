@@ -79,6 +79,23 @@ NaMainWindow::NaMainWindow()
             statusBar(), SLOT(showMessage(const QString&)));
     connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
             ui.naLargeMIPWidget, SLOT(setGammaBrightness(qreal)));
+    // Progress bar for when image is being processed
+    // ui.progressWidgetMip->hide();
+    // progressBar = new QProgressBar(this);
+    // progressBar->setValue(24);
+    // QGridLayout * gridLayout = new QGridLayout(this);
+    // gridLayout->addWidget(progressBar, 0, 0, 1, 1);
+    ui.progressWidgetMip->hide();
+    connect(ui.naLargeMIPWidget, SIGNAL(showProgress()),
+            ui.progressWidgetMip, SLOT(show()));
+    connect(ui.naLargeMIPWidget, SIGNAL(hideProgress()),
+            ui.progressWidgetMip, SLOT(hide()));
+    connect(ui.naLargeMIPWidget, SIGNAL(setProgressMax(int)),
+            ui.progressBarMip, SLOT(setMaximum(int)));
+    connect(ui.naLargeMIPWidget, SIGNAL(setProgress(int)),
+            ui.progressBarMip, SLOT(setValue(int)));
+    ui.progressWidget3D->hide();
+    ui.progressWidgetZ->hide();
 
     // Wire up Z-stack / HDR viewer
     ui.HDR_checkBox->setChecked(true);
@@ -520,7 +537,7 @@ void NaMainWindow::updateThumbnailGamma(qreal gamma)
 
 void NaMainWindow::createMaskGallery() {
     qDebug() << "createMaskGallery() start";
-    QList<QPixmap> * maskMipList = annotationSession->getMaskMipList();
+    QList<QImage> * maskMipList = annotationSession->getMaskMipList();
 
     // Step 1: Add background MIP
     QFrame* ui_maskFrame = qFindChild<QFrame*>(this, "maskFrame");
@@ -535,9 +552,10 @@ void NaMainWindow::createMaskGallery() {
     connect(backgroundButton, SIGNAL(declareChange(int,bool)), annotationSession, SLOT(neuronMaskUpdate(int,bool)));
 
     // Step 2: Add Neuron-Mask Gallery
-    QFrame* ui_maskGallery = qFindChild<QFrame*>(this, "maskGallery");
-    QHBoxLayout *galleryLayout = new QHBoxLayout();
-    ui_maskGallery->setLayout(galleryLayout);
+    // QFrame* ui_maskGallery = qFindChild<QFrame*>(this, "maskGallery");
+    QHBoxLayout *galleryLayout = (QHBoxLayout*) ui.scrollAreaWidgetContents->layout();
+    // ui_maskGallery->setLayout(galleryLayout);
+    qDebug() << "Number of neuron masks = " << maskMipList->size();
     for (int i = 1; i < maskMipList->size(); ++i) {
         GalleryButton* button = new GalleryButton(maskMipList->at(i), QString("Neuron %1").arg(i), i);
         mipGalleryButtonList.append(button);

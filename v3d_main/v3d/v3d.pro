@@ -125,8 +125,8 @@ macx {
     INCLUDEPATH += $$QTINST_SHARED_FOLDER
     LIBS += -L$$QTINST_SHARED_FOLDER
     # For faster neuron toggling. CMB 20 June 2011
-    QMAKE_CXXFLAGS+=-O3
-    CXXFLAGS+=-O3
+    # QMAKE_CXXFLAGS+=-O3
+    # CXXFLAGS+=-O3
 }
 
 unix:!macx {

@@ -8,7 +8,7 @@ class GalleryButton : public QWidget
 {
     Q_OBJECT
 public:
-    explicit GalleryButton(const QPixmap & pixmap, QString name, int index, QWidget *parent = 0);
+    explicit GalleryButton(const QImage & image, QString name, int index, QWidget *parent = 0);
     int getIndex() { return index; }
     QString getName() { return label->text(); }
     bool isChecked() { return pushButton->isChecked(); }
@@ -42,7 +42,7 @@ private:
     // correctedScaledThumbnail is a gamma corrected version of scaledThumbnail.
     QImage * correctedScaledThumbnail;
     volatile bool bImageUpdating; // hack for gamma update
-    QMutex buttonMutex; // Mutex object to help avoid multithread race conditions.
+    // QMutex buttonMutex; // Mutex object to help avoid multithread race conditions.
 };
 
 #endif // GALLERYBUTTON_H

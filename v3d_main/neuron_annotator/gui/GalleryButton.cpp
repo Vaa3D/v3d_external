@@ -2,7 +2,7 @@
 #include <cmath>
 #include "GalleryButton.h"
 
-GalleryButton::GalleryButton(const QPixmap & pixmap, QString name, int index, QWidget *parent)
+GalleryButton::GalleryButton(const QImage & image, QString name, int index, QWidget *parent)
         : QWidget(parent)
         , scaledThumbnail(NULL)
         , correctedScaledThumbnail(NULL)
@@ -10,14 +10,14 @@ GalleryButton::GalleryButton(const QPixmap & pixmap, QString name, int index, QW
 {
     this->index=index;
     QSize thumbnailSize(140, 140);
-    scaledThumbnail = new QImage(pixmap.scaled(
+    scaledThumbnail = new QImage(image.scaled(
             thumbnailSize,
             Qt::IgnoreAspectRatio,
-            Qt::SmoothTransformation).toImage());
+            Qt::SmoothTransformation));
     QVBoxLayout *layout = new QVBoxLayout();
     pushButton = new QPushButton();
     pushButton->setCheckable(true);
-    QIcon icon(pixmap);
+    QIcon icon(QPixmap::fromImage(image));
     pushButton->setIcon(icon);
     pushButton->setIconSize(thumbnailSize);
     QLabel* label = new QLabel(name);
@@ -33,16 +33,16 @@ GalleryButton::GalleryButton(const QPixmap & pixmap, QString name, int index, QW
 
 GalleryButton::~GalleryButton() {
     if (scaledThumbnail) {
-        buttonMutex.lock();
+        // buttonMutex.lock();
         delete scaledThumbnail;
         scaledThumbnail = NULL;
-        buttonMutex.unlock();
+        // buttonMutex.unlock();
     }
     if (correctedScaledThumbnail) {
-        buttonMutex.lock();
+        // buttonMutex.lock();
         delete correctedScaledThumbnail;
         correctedScaledThumbnail = NULL;
-        buttonMutex.unlock();
+        // buttonMutex.unlock();
     }
 }
 
@@ -53,14 +53,14 @@ void GalleryButton::buttonPress(bool checked) {
 void GalleryButton::setBrightness(const BrightnessCalibrator<int>& calibrator)
 {
     if (! scaledThumbnail) return;
-    buttonMutex.lock(); // Avoid possible race condition
+    // buttonMutex.lock(); // Avoid possible race condition
     if (bImageUpdating) {
-        buttonMutex.unlock();
+        // buttonMutex.unlock();
         return;
     }
     // possible race condition right here...
     bImageUpdating = true;
-    buttonMutex.unlock(); // The race is over.  We won!
+    // buttonMutex.unlock(); // The race is over.  We won!
 
     if (! correctedScaledThumbnail)
         correctedScaledThumbnail = new QImage(*scaledThumbnail);

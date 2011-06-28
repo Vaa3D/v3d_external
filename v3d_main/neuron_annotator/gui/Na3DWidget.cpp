@@ -558,7 +558,7 @@ void Na3DWidget::annotationModelUpdate(QString updateType) {
 
         // Background change requiring full reload of texture image stacks
         if (index==0) {
-            QList<QPixmap> * maskMipList = annotationSession->getMaskMipList();
+            QList<QImage> * maskMipList = annotationSession->getMaskMipList();
             QList<int> tempList;
             for (int i=1;i<maskMipList->size();i++) {
                 if (annotationSession->neuronMaskIsChecked(i)) {

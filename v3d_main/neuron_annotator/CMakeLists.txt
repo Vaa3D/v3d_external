@@ -10,6 +10,9 @@ QT4_WRAP_UI(NA_UI_SRCS
     gui/GammaWidget.ui
     gui/AngleWidget.ui
     gui/ZoomWidget.ui
+    # Repeat some ui files to avoid circular dependencies
+    ../v3d/v3d_global_preference.ui
+    ../v3d/template_matching_cellseg.ui
 )
 
 QT4_WRAP_CPP(NA_MOC_SRCS

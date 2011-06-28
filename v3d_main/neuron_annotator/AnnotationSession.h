@@ -23,7 +23,7 @@ public:
     bool loadNeuronMaskStack();
     bool prepareLabelIndex();
     bool populateMaskMipList();
-    QList<QPixmap> * getMaskMipList() { return &maskMipList; }
+    QList<QImage>* getMaskMipList() { return &maskMipList; }
 
     void setMultiColorImageStackNode(MultiColorImageStackNode* node) {
         this->multiColorImageStackNode=node;
@@ -64,7 +64,7 @@ private:
     My4DImage* originalImageStack;
     My4DImage* neuronMaskStack;
     QList<NeuronMaskEntry> maskEntryList;
-    QList<QPixmap> maskMipList;
+    QList<QImage> maskMipList;
     QList<bool> maskStatusList;
     QList<bool> neuronSelectList;
 

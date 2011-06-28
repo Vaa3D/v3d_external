@@ -158,14 +158,6 @@ NaLargeMIPWidget::NaLargeMIPWidget(QWidget * parent)
     setCursor(Qt::OpenHandCursor);
     imageUpdateThread.start();
 
-    // Progress bar for when image is being processed
-    progressBar = new QProgressBar(this);
-    progressBar->setValue(24);
-    QGridLayout * gridLayout = new QGridLayout(this);
-    gridLayout->addWidget(progressBar, 0, 0, 1, 1);
-    progressBar->hide();
-    connect(progressBar, SIGNAL(valueChanged(int)),
-            this, SLOT(update()));
     connect(&mouseClickManager, SIGNAL(singleClick(QPoint)),
             this, SLOT(onMouseSingleClick(QPoint)));
     connect(this, SIGNAL(hoverNeuronChanged(int)),
@@ -208,10 +200,11 @@ bool NaLargeMIPWidget::loadMy4DImage(const My4DImage* img, const My4DImage* mask
             this, SLOT(initializePixmap()));
     connect(this, SIGNAL(neuronDisplayToggled(int, bool)),
             mipImage, SLOT(toggleNeuronDisplay(int,bool)));
-    progressBar->setMaximum(img->getXDim());
+    emit setProgressMax(img->getXDim());
     connect(mipImage, SIGNAL(processedXColumn(int)),
-            progressBar, SLOT(setValue(int)));
-    progressBar->show();
+            this, SIGNAL(setProgress(int)));
+    // progressBar->show();
+    emit showProgress();
     emit volumeDataUpdated(img, maskImg); // Start image processing in another thread.
     return true;
 }
@@ -224,7 +217,8 @@ void NaLargeMIPWidget::updatePixmap()
 
 void NaLargeMIPWidget::initializePixmap()
 {
-    progressBar->hide();
+    emit hideProgress();
+    // progressBar->hide();
     updatePixmap();
     // resetView();
     update();

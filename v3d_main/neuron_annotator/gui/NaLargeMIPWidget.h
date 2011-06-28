@@ -76,6 +76,11 @@ signals:
     void neuronClicked(int);
     void neuronDisplayToggled(int neuronIndex, bool checked);
 
+    void setProgress(int val);
+    void setProgressMax(int val);
+    void showProgress();
+    void hideProgress();
+
 public slots:
     void annotationModelUpdate(QString updateType);
     void initializePixmap(); // when a new image has loaded
@@ -98,7 +103,7 @@ protected:
     int highlightedNeuronIndex;
 
     QThread imageUpdateThread;
-    QProgressBar * progressBar;
+    // QProgressBar * progressBar;
 
 private:
     typedef Na2DViewer super;

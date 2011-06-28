@@ -2,6 +2,7 @@
 #include "gui/RendererNeuronAnnotator.h"
 #include <QtAlgorithms>
 #include <iostream>
+#include <cassert>
 
 using namespace std;
 
@@ -144,48 +145,39 @@ bool AnnotationSession::populateMaskMipList() {
     Image4DProxy<My4DImage> originalProxy(originalImageStack);
     Image4DProxy<My4DImage> maskProxy(neuronMaskStack);
 
-    QList<QImage*> maskImageList;
     // Position 0 is background, 1..n are the neuron masks
+    maskMipList.clear();
+    assert(maskMipList.size() == 0);
     for (int maskIndex=0;maskIndex<maskEntryList.size()+1;maskIndex++) {
-        QImage* qImage = new QImage(imageX, imageY, QImage::Format_RGB888);
-        maskImageList.append(qImage);
+        maskMipList.append(QImage(imageX, imageY, QImage::Format_RGB888));
     }
     for (z=0;z<imageZ;z++) {
         for (y=0;y<imageY;y++) {
             for (x=0;x<imageX;x++) {
-                unsigned char mask = maskProxy.value8bit_at(x,y,z,0);
-                if (mask>maskImageList.size()) {
-                    qDebug() << "Found mask index=" << mask << " but the total number of mask entries is=" << maskImageList.size();
+                unsigned char maskIndex = maskProxy.value8bit_at(x,y,z,0);
+                if (maskIndex >= maskMipList.size()) {
+                    qDebug() << "Found mask index=" << maskIndex << " but the total number of mask entries is=" << maskMipList.size();
                     return false;
                 }
                 int red = originalProxy.value8bit_at(x,y,z,0);
                 int green = originalProxy.value8bit_at(x,y,z,1);
                 int blue = originalProxy.value8bit_at(x,y,z,2);
                 QRgb color=qRgb(red,green,blue);
-                QImage* maskImage = maskImageList.at(mask);
-                QRgb previousColor = maskImage->pixel(x,y);
+                QImage& maskImage = maskMipList[maskIndex];
+                QRgb previousColor = maskImage.pixel(x,y);
                 if (previousColor==0) {
-                    maskImage->setPixel(x,y,color);
+                    maskImage.setPixel(x,y,color);
                 } else {
                     int previousIntensity = qRed(previousColor) + qGreen(previousColor) + qBlue(previousColor);
                     int currentIntensity = qRed(color) + qGreen(color) + qBlue(color);
                     if (currentIntensity > previousIntensity) {
-                        maskImage->setPixel(x,y,color);
+                        maskImage.setPixel(x,y,color);
                     }
                 }
             }
         }
     }
-    for (int maskIndex=0;maskIndex<maskEntryList.size()+1;maskIndex++) {
-        QPixmap pixmap;
-        QImage* maskImage=maskImageList.at(maskIndex);
-        if (!pixmap.convertFromImage(*maskImage)) {
-            qDebug() << "Error creating pixmap from MIP image index=" << maskIndex;
-            return false;
-        }
-        delete maskImage; // assuming this is OK and will not corrupt QPixmap
-        maskMipList.append(pixmap);
-    }
+
     qDebug() << "AnnotationSession::populateMaskMipList() done";
     return true;
 }

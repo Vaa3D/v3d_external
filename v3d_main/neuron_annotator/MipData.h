@@ -99,7 +99,10 @@ public slots:
                 dataPixel.neuronIndex = layerPixel.neuronIndex;
                 int z = dataPixel.z;
                 for (int c = 0; c < (int)dataPixel.size(); ++c) {
-                    dataPixel[c] = (float)imgProxy.value_at(x,y,z,c);
+                    if (z >= 0)
+                        dataPixel[c] = (float)imgProxy.value_at(x,y,z,c);
+                    else
+                        dataPixel[c] = 0;
                 }
             }
         }
