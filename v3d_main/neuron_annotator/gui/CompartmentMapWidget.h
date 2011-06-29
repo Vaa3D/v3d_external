@@ -25,7 +25,7 @@ public:
     void init();
     
 public:
-    Renderer_tex2* renderer;
+    //Renderer_tex2* renderer;
 };
 
 #endif // COMPARTMENTMAPWIDGET_H

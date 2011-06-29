@@ -1144,6 +1144,16 @@ void Renderer_tex2::loadV3DSFile(const QString& filename)
 
     int i,j;
 
+    char logo[sizeof(V3DS_LOGO)];
+    for (i=0; i<sizeof(V3DS_LOGO); i++) QF_READ( logo[i] );	 qDebug("	[%s]", logo);
+    bool b_logo = true;
+    for (i=0; i<strlen(V3DS_LOGO); i++) b_logo = (b_logo && V3DS_LOGO[i]==logo[i]); // end with \0
+    if (! b_logo)
+    {
+        throw (const char*)"V3DS1: file format not match";
+        return;
+    }
+
     cleanLabelfieldSurf();
 
     int mesh_type;
@@ -1240,6 +1250,8 @@ void Renderer_tex2::loadV3DSFile(const QString& filename)
             MESSAGE_ASSERT(t_num==numTriangles(pT0));
             list_listTriangle.append(pT0);				// one group triangles
         }// each group
+
+        qDebug("---------------------read %d objects, %d faces, %d vertices", list_listTriangle.size(), f_num, v_num);
 
     }
     catch(...)

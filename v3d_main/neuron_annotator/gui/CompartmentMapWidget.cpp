@@ -7,10 +7,11 @@
 
 using namespace std;
 
-CompartmentMapWidget::CompartmentMapWidget(QWidget* parent): V3dR_GLWidget(NULL, parent, "Title")
+CompartmentMapWidget::CompartmentMapWidget(QWidget* parent): V3dR_GLWidget(NULL, parent, "Compartment Map")
 {
     _idep = new iDrawExternalParameter();
     _idep->image4d = NULL;
+    //_idep->image4d = new My4DImage();
     _volCompress = false;
 
     // This method for eliminating tearing artifacts works but is supposedly obsolete;
@@ -20,7 +21,7 @@ CompartmentMapWidget::CompartmentMapWidget(QWidget* parent): V3dR_GLWidget(NULL,
     setFormat(glFormat);
 
     //
-    renderer = new Renderer_tex2(this);
+    //renderer = new Renderer_tex2(this);
 }
 
 CompartmentMapWidget::~CompartmentMapWidget()
@@ -56,10 +57,14 @@ void CompartmentMapWidget::init()
     if(QFile::exists(atlasfile))
     {
         //renderer->loadV3DSFile(atlasfile);
-        renderer->loadObjectFromFile(atlasfile.toStdString().c_str());
-        updateTool();
-        //POST_updateGL();
-        update();
+        //renderer->loadObjectFromFile(atlasfile.toStdString().c_str());
+
+        _isSoftwareGL = false;
+        GLeeInit();
+
+        //updateTool();
+        //renderer->paint(); //POST_updateGL();
+        //update();
     }
 
 }

@@ -223,26 +223,30 @@ int main(int argc, char **argv)
 			// ------ V3D GUI handling module ---------------------
 			Q_INIT_RESOURCE(v3d);
 
-                        V3dApplication* app = V3dApplication::getInstance(argc, argv);
-                        app->activateMainWindow();
-                        MainWindow* mainWin=app->getMainWindow();
+            V3dApplication* app = V3dApplication::getInstance(argc, argv);
+            if(!parser.i_v3d.hideV3D)           
+                app->activateMainWindow();
+            
+            MainWindow* mainWin=app->getMainWindow();
 
 			if (!mainWin)
 			{
 				v3d_msg("Unable to open the V3D main window. Quit.");
 				return false;
 			}
-			
-                        app->installEventFilter(mainWin);
+
+            app->installEventFilter(mainWin);
 			
             if (mainWin) 
             {
                 mainWin->v3dclp.copy(parser.i_v3d);
                 
                 if(!parser.i_v3d.hideV3D)
+                {
                     mainWin->show();
+                }
             }
-			
+            
 			// plugin module
 			if(parser.i_v3d.pluginname)
 			{
@@ -253,7 +257,7 @@ int main(int argc, char **argv)
 			}
 			
 			// multiple image/object handling module
-			if(parser.i_v3d.fileList.size()==0)
+			if(parser.i_v3d.fileList.size()==0 || parser.i_v3d.hideV3D)
 			{
 				if(parser.i_v3d.pluginname)
 				{
