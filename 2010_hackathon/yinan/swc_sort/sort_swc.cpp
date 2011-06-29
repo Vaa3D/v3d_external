@@ -11,10 +11,10 @@
 #include "sort_swc.h"
 #include "v3d_message.h" 
 #include "../../../v3d_main/basic_c_fun/basic_surf_objs.h"
+#include <unistd.h>
 #include <iostream>
-#include <iomanip>
-#include <fstream>
 using namespace std;
+
 
 //Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
@@ -29,6 +29,12 @@ QStringList SORT_SWCPlugin::menulist() const
     return QStringList() 
 	<<tr("sort_swc")
 	<<tr("Help");
+}
+
+QStringList SORT_SWCPlugin::funclist() const
+{
+	return QStringList()
+		<<tr("sort_swc");
 }
 
 QHash<V3DLONG, V3DLONG> ChildParent(const NeuronTree &neurons, const QList<V3DLONG> & idlist, const QHash<V3DLONG,V3DLONG> & LUT) 
@@ -69,7 +75,7 @@ void DFS(bool** matrix, V3DLONG* neworder, V3DLONG node, V3DLONG* id, V3DLONG si
 		}
 }
 	
-void SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & lN, V3DLONG newrootid)
+bool SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & lN, V3DLONG newrootid)
 {
 	//double check the data to ensure it is correct!
 	//for (V3DLONG ii=0; ii<neurons.listNeuron.size(); ii++)
@@ -124,7 +130,7 @@ void SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & lN, V3DLONG newrooti
 	if (root==-1)
 	{
 		v3d_msg("The new root id you have chosen does not exist in the SWC file.");
-		return;
+		return(false);
 	}
 	
 	V3DLONG* neworder = new V3DLONG[siz];
@@ -136,7 +142,7 @@ void SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & lN, V3DLONG newrooti
 	DFS(matrix,neworder,root,id,siz,numbered);
 	
 	if ((*id)<siz) {
-		v3d_msg("The root you have chosen cannot reach all the nodes in neuron tree. Show the connected component only.");
+		v3d_msg(QString("new tree size: %1, original size: %2.\nThe root you have chosen cannot reach all the nodes in neuron tree. Show the connected component only.").arg(*id).arg(siz));
 		siz = (*id);
 		}
 	else if ((*id)==siz)
@@ -173,56 +179,51 @@ void SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & lN, V3DLONG newrooti
 				}
 			}
 		}
-		//write new SWC to file
-		v3d_msg("A new SWC file (result.swc) is generated under your v3d directory");
-		ofstream myfile;
-		myfile.open("result.swc");
-		for (V3DLONG i=0;i<lN.size();i++)
-			myfile <<setiosflags(ios::fixed)<< lN.at(i).n <<" " << lN.at(i).type << " " <<setprecision(3) << lN.at(i).x <<" "<<lN.at(i).y << " "<< lN.at(i).z << " "<< lN.at(i).r << " " <<setprecision(0) <<lN.at(i).pn << "\n";
-		
-	
-		myfile.close();
+	return(true);
 }
 
-void sort_swc(V3DPluginCallback &callback, QWidget *parent, int method_code)
+void sort_swc(V3DPluginCallback2 &callback, QWidget *parent, int method_code)
 {
 	NeuronTree neuron;
-	QString filename;
-	QStringList filenames;
+	QString fileOpenName;
 	if (method_code == 1)
 	{
-		filename = QFileDialog::getOpenFileName(0, QObject::tr("Open File"),
+		fileOpenName = QFileDialog::getOpenFileName(0, QObject::tr("Open File"),
 												"",
 												QObject::tr("Supported file (*.swc)"
 															";;Neuron structure	(*.swc)"
 															));
-		if(filename.isEmpty()) 
+		if(fileOpenName.isEmpty()) 
 		{
 			v3d_msg("You don't have any SWC file open in the main window.");
 			return;
 		}
 		
 		
-		if (filename.size()>0)
+		if (fileOpenName.size()>0)
 		{
-			neuron = readSWC_file(filename);
-			NeuronTree neurons_new;
-			QList<NeuronSWC> listNeuron;
-			ofstream tmp;
-			//tmp.open("tmp.txt");
-			//for (int i=0;i<neuron.listNeuron.size();i++)
-			//tmp<< neuron.listNeuron.at(i).n<<"\n";
-			//tmp.close();
-
+			neuron = readSWC_file(fileOpenName);
+			QList<NeuronSWC> lN;		
 			int rootid;
 			bool ok;
 			rootid = QInputDialog::getInteger(parent, "input root number","New root number:",1,1,neuron.listNeuron.size(),1,&ok);
-			SortSWC(neuron, listNeuron,rootid);
+			if (SortSWC(neuron, lN,rootid)){
 
-			
-			//v3dhandle newwin;
-			//newwin = callback.newImageWindow();
-			//callback.setSWC(newwin,neurons_new);		
+			//write new SWC to file
+			QString fileSaveName = QFileDialog::getSaveFileName(0, QObject::tr("Save File"),
+												"",
+												QObject::tr("Supported file (*.swc)"
+															";;Neuron structure	(*.swc)"
+															));
+			QFile file(fileSaveName);
+			file.open(QIODevice::WriteOnly|QIODevice::Text);
+			QTextStream myfile(&file);
+			for (V3DLONG i=0;i<lN.size();i++)
+				myfile << lN.at(i).n <<" " << lN.at(i).type << " "<< lN.at(i).x <<" "<<lN.at(i).y << " "<< lN.at(i).z << " "<< lN.at(i).r << " " <<lN.at(i).pn << "\n";
+	
+			file.close();
+			}
+	
 		}
 		else 
 		{
@@ -233,7 +234,7 @@ void sort_swc(V3DPluginCallback &callback, QWidget *parent, int method_code)
 	}
 }
 
-void SORT_SWCPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
+void SORT_SWCPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
 	if (menu_name == tr("sort_swc"))
 	{
@@ -243,6 +244,65 @@ void SORT_SWCPlugin::domenu(const QString &menu_name, V3DPluginCallback &callbac
 	{
 		v3d_msg("(version 0.14) Set a new root and sort the SWC file into a new order, where the newly set root has the id of 1, and the parent's id is less than its child's. If the original SWC has more than one connected components, return the sorted result of the brench with newly set root. It also includes a merging process of neuron segments, where neurons with the same x,y,z cooridinates are combined as one.");
 		return;
+	}
+}
+
+bool sort_func(const V3DPluginArgList & input, V3DPluginArgList & output)
+{
+	cout<<"==========Welcome to sort_swc function============="<<endl;
+	NeuronTree neuron;
+	char * infile = (*(vector<char*>*)(input.at(0).p)).at(0);
+	char * outfile = (*(vector<char*>*)(output.at(0).p)).at(0);
+	char * paras = (*(vector<char*>*)(input.at(1).p)).at(0);
+	
+	cout<<"infile: "<<infile<<endl;
+	cout<<"outfile: "<<outfile<<endl;
+	cout<<"new root id: "<<paras<<endl;
+	
+	QString fileOpenName = QString(infile);
+	QString fileSaveName = QString(outfile);
+	if(fileOpenName.isEmpty()) 
+	{
+		cout<<"You don't have any SWC file open in the main window."<<endl;
+		return false;
+	}
+	
+	if (fileOpenName.size()>0)
+	{
+		neuron = readSWC_file(fileOpenName);
+		QList<NeuronSWC> lN;			
+		int rootid = 0;
+		for (int i=0;i<strlen(paras);i++)
+		{
+			rootid = rootid*10 + paras[i]-'0';
+		}
+		if (SortSWC(neuron, lN,rootid)){
+			//write new SWC to file
+			QFile file(fileSaveName);
+			file.open(QIODevice::WriteOnly|QIODevice::Text);
+			QTextStream myfile(&file);
+			for (V3DLONG i=0;i<lN.size();i++)
+				myfile << lN.at(i).n <<" "<< lN.at(i).type << " "<< lN.at(i).x <<" "<<lN.at(i).y << " "<< lN.at(i).z << " "<< lN.at(i).r << " " <<lN.at(i).pn << "\n";
+	
+			file.close();
+			return true;
+		}	
+	}
+	else 
+	{
+		cout<<"You don't have any SWC file open in the main window."<<endl;
+		return false;
+	}
+		
+}
+
+	
+
+bool SORT_SWCPlugin::dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output, V3DPluginCallback2 & callback, QWidget * parent)
+{
+	if (func_name==tr("sort_swc"))
+	{
+		return sort_func(input,output); 
 	}
 }
 
