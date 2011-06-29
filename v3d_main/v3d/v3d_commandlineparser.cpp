@@ -281,6 +281,8 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
                                 // plugin function
                                 i_v3d.pluginfunc = argv[i+1];
                                 i++;
+                                
+                                i_v3d.hideV3D = true; // do not open v3d GUI
 								
                                 qDebug()<<"call plugin function ..."<<i_v3d.pluginfunc;
                             }
@@ -296,7 +298,6 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
                                     i_v3d.cmdArgList.push_back(strparameters);
                                     i++;
                                 }
-                                i_v3d.hideV3D = true;
                                 
                             }
                             else
