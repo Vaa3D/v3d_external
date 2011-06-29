@@ -13,18 +13,13 @@ Q_EXPORT_PLUGIN2(ct3d, Ct3dPlugin);
 QStringList Ct3dPlugin::menulist() const
 {
 	return QStringList()
-		<<tr("catch mouse event")
 		<<tr("open ct3d")
 		<<tr("about");
 }
 
 void Ct3dPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
-	if (menu_name == tr("catch mouse event"))
-	{
-		catch_mouse_event(callback,parent);
-	}
-	else if (menu_name == tr("open ct3d"))
+	if (menu_name == tr("open ct3d"))
 	{
 		open_ct3d(callback,parent);
 	}

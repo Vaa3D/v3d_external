@@ -11,15 +11,8 @@
 //#include "mythread.h"
 
 const QString title = QObject::tr("Ct3d Plugin");
-int catch_mouse_event(V3DPluginCallback2 &callback, QWidget *parent)
+int open_ct3d(V3DPluginCallback2 &callback, QWidget *parent)
 {
-	v3dhandleList win_list = callback.getImageWindowList();
-
-	if(win_list.size()<1)
-	{
-		QMessageBox::information(0, title, QObject::tr("No image is open."));
-		return -1;
-	}
 	Ct3dWidget * widget = new Ct3dWidget(callback, parent);
 	widget->show();
 	//MyThread * mythread = new MyThread(&callback,callback.currentImageWindow());
@@ -51,11 +44,4 @@ int catch_mouse_event(V3DPluginCallback2 &callback, QWidget *parent)
 	//callback.updateImageWindow(newwin);
 	return 1;
 }
-
-int open_ct3d(V3DPluginCallback2 &callback, QWidget *parent)
-{
-	v3d_msg("open_ct3d");
-	return 1;
-}
-
 

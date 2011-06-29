@@ -8,7 +8,6 @@
 
 #include <v3d_interface.h>
 
-int catch_mouse_event(V3DPluginCallback2 &callback, QWidget *parent);
 int open_ct3d(V3DPluginCallback2 &callback, QWidget *parent);
 
 #endif

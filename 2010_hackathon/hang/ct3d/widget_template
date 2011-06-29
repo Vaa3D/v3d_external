@@ -54,7 +54,10 @@ L undo_button
 
 D QGroupBox cmds_box "commands" | setLayout(vbox1)  setMinimumWidth(200)
 
-D QGroupBox cells_group "Cells" 
+D QScrollArea scroll_area
+D QVBoxLayout vbox2 | addWidget(scroll_area)
+D QGroupBox cells_group "Cells" | setLayout(vbox2)
+
 D QCheckBox reverse_check "reverse"
 D QCheckBox monitor_check "monitor mouse"
 

@@ -24,6 +24,7 @@ CellTrackController::~CellTrackController()
 
 bool CellTrackController::createCellTrack(vector<string> tree_files)
 {
+	this->clear();
 	celltrack = new CellTrack();	
 	return celltrack->createFromTrees(tree_files);
 }
@@ -36,6 +37,7 @@ bool CellTrackController::createCellTrack(vector<string> image_files, int _min, 
 	}
 	else
 	{
+		this->clear();
 		ComponentTree *tree = new ComponentTree();
 		vector<string> tree_files;
 		for(int i = 0; i < (int)image_files.size(); i++)
@@ -71,6 +73,7 @@ bool CellTrackController::createCellTrack(vector<string> image_files, int _min, 
 
 bool CellTrackController::loadCellTrack(vector<string> image_results, vector<string> tree_files)
 {
+	this->clear();
 	celltrack = new CellTrack();
 	bool rt = celltrack->createFromImages(image_results);
 	if(rt)
@@ -89,6 +92,7 @@ bool CellTrackController::loadCellTrack(vector<string> image_results, vector<str
 
 bool CellTrackController::loadCellTrack(string track_file, vector<string> tree_files)
 {
+	this->clear();
 	celltrack = new CellTrack();
 	return celltrack->load((char*)track_file.c_str());
 }
@@ -413,6 +417,19 @@ void CellTrackController::undo()
 		//delete celltrack;
 		celltrack = this->popState();
 	}
+}
+
+void CellTrackController::clear()
+{
+	if(celltrack!=NULL)
+	{
+		celltrack->releaseAllCells();
+		delete celltrack;
+		celltrack=NULL;
+	}
+	history.clear();
+	tracks_state.clear();
+	cell_centers.clear();
 }
 
 void CellTrackController::setCellCenters()

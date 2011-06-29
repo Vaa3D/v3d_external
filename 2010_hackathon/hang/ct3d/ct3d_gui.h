@@ -4,16 +4,21 @@
 #include <QtGui>
 #include <v3d_interface.h>
 #include "coseg/CT3D/cell_track_controller.h"
+#include "coseg/AT3D/widgets/cellwidget.h"
+#include "v3d_monitor.h"
 
 class Ct3dWidget : public QWidget , public CellTrackController
 {
 	Q_OBJECT
 
 public:
-	Ct3dWidget(V3DPluginCallback &callback, QWidget * parent) : QWidget(parent)
+	Ct3dWidget(V3DPluginCallback2 &callback, QWidget * parent) : QWidget(parent)
 	{
 		this->callback = &callback;
-		curwin=0;
+		curwin = 0;
+		cellWidget = new CellWidget();
+		connect(cellWidget, SIGNAL(cellChecked(CellTrack::Cell* )), this, SLOT(onCellMarked(CellTrack::Cell*)));
+		v3d_monitor = 0;
 
 		from_images_button = new QPushButton(tr("Create From Images"));
 		from_trees_button = new QPushButton(tr("Create From Trees"));
@@ -76,12 +81,16 @@ public:
 		cmds_box->setLayout(vbox1);
 		cmds_box->setMinimumWidth(200);
 
-		cells_group = new QGroupBox(tr("Cells"));
+		scroll_area = new QScrollArea();
+		scroll_area->setWidgetResizable(true);
+		scroll_area->setWidget(cellWidget);
+
 		reverse_check = new QCheckBox(tr("reverse"));
 		monitor_check = new QCheckBox(tr("monitor mouse"));
 
 		gridbox = new QGridLayout();
-		gridbox->addWidget(cells_group, 0, 0, 1, 2);
+		//gridbox->addWidget(cells_group, 0, 0, 1, 2);
+		gridbox->addWidget(scroll_area, 0, 0, 1, 2);
 		gridbox->addWidget(reverse_check, 1, 0);
 		gridbox->addWidget(monitor_check, 1, 1);
 
@@ -118,12 +127,23 @@ public:
 		connect(choose_button, SIGNAL(clicked()), this, SLOT(onChoose()));
 		connect(delete_button, SIGNAL(clicked()), this, SLOT(onDelete()));
 		connect(undo_button, SIGNAL(clicked()), this, SLOT(onUndo()));
+
+		connect(reverse_check, SIGNAL(stateChanged(int)), this, SLOT(onReverseCells()));
+		connect(monitor_check, SIGNAL(stateChanged(int)), this, SLOT(onMonitorV3d(int)));
 	}
 
-	~Ct3dWidget(){}
+	~Ct3dWidget(){
+		this->clear();
+		if(v3d_monitor) v3d_monitor->exit();
+	}
+
 public:
 	void updateWidgets()
 	{
+		// cellWidget
+		cellWidget->setCells(celltrack->getFrame(current_time)->getCells(), this->getMarkedCells());
+
+		// v3d 
 		if(curwin==0) curwin = callback->newImageWindow();
 
 		V3DLONG sz0 = this->getWidth();
@@ -137,243 +157,316 @@ public:
 		p4DImage->setData(inimg1d, sz0, sz1, sz2, sz3, V3D_UINT8);
 
 		callback->setImage(curwin, p4DImage);
-		callback->setImageName(curwin, tr("Time : ").arg(this->currentTime() +1));
+		callback->setImageName(curwin, tr("Time : %1").arg(this->currentTime() +1));
 		callback->updateImageWindow(curwin);
+		callback->closeROI3DWindow(curwin);
+		callback->close3DWindow(curwin);
+		callback->open3DWindow(curwin);
 	}
 
+
 public slots:
-	void onCreateFromImages()
+	void onCellMarked(CellTrack::Cell * cell)
 	{
-		QStringList filelist = QFileDialog::getOpenFileNames(
-				this,
-				"Select one or more files to open",
-				"",
-				"Images (*.tif *.tiff *.raw)");
-		if(filelist.empty())
+		if(celltrack == NULL || celltrack->frameNum() == 0) return;
+		if(!tracks_state[cell->getTrack()])
 		{
-			QMessageBox::information(0,"create from images","No image is loaded!");
-			return;
+			this->markCell(cell);
 		}
-		bool ok;
-		int min_size = 0;
-		int max_size = 100000;
-		int single_size = 10;
-		min_size = QInputDialog::getInt(0, QObject::tr("get parameters"), 
-				QObject::tr("min_size :"),
-				1000, 1, 1000000000, 1, &ok);
+		else
+		{
+			unMarkCell(cell);
+		}
+		updateWidgets();
+	}
+
+void onCreateFromImages()
+{
+	QStringList filelist = QFileDialog::getOpenFileNames(
+			this,
+			"Select one or more files to open",
+			"",
+			"Images (*.tif *.tiff *.raw)");
+	if(filelist.empty())
+	{
+		QMessageBox::information(0,"create from images","No image is loaded!");
+		return;
+	}
+	bool ok;
+	int min_size = 0;
+	int max_size = 100000;
+	int single_size = 10;
+	min_size = QInputDialog::getInt(0, QObject::tr("get parameters"), 
+			QObject::tr("min_size :"),
+			1000, 1, 1000000000, 1, &ok);
+	if(ok)
+	{
+		max_size = QInputDialog::getInt(0, QObject::tr("get parameters"), 
+				QObject::tr("max_size :"),
+				1000000, 1, 1000000000, 1, &ok);
 		if(ok)
 		{
-			max_size = QInputDialog::getInt(0, QObject::tr("get parameters"), 
-					QObject::tr("max_size :"),
-					1000000, 1, 1000000000, 1, &ok);
-			if(ok)
+			single_size = QInputDialog::getInt(0, QObject::tr("get parameters"), 
+					QObject::tr("single_size :"),
+					100, 1, 1000000000, 1, &ok);
+			if(!ok)
 			{
-				single_size = QInputDialog::getInt(0, QObject::tr("get parameters"), 
-						QObject::tr("single_size :"),
-						100, 1, 1000000000, 1, &ok);
-				if(!ok)
-				{
-					QMessageBox::information(0,"get parameters","single size error");
-					return;
-				}
-			}
-			else
-			{
-				QMessageBox::information(0,"get parameters","max size error");
+				QMessageBox::information(0,"get parameters","single size error");
 				return;
 			}
 		}
 		else
 		{
-			QMessageBox::information(0,"get parameters","min size error");
+			QMessageBox::information(0,"get parameters","max size error");
 			return;
 		}
-		cout<<"min_size : "<<min_size<<endl;
-		cout<<"max_size : "<<max_size<<endl;
-		cout<<"single_size : "<<single_size<<endl;
-
-		vector<string> image_files;
-		QStringList::iterator it = filelist.begin();
-		while(it != filelist.end())
-		{
-			cout<<(*it).toStdString().c_str()<<endl;
-			image_files.push_back((*it).toStdString());
-			it++;
-		}
-		createCellTrack(image_files, min_size, max_size, single_size);
 	}
-
-	void onCreateFromTrees()
+	else
 	{
-		QStringList filelist = QFileDialog::getOpenFileNames(
-				this,
-				"Select one or more files to open",
-				"",
-				"Images (*.tree)");
-		if(filelist.empty())
-		{
-			QMessageBox::information(0,"create from trees","No tree is loaded!");
-			return;
-		}
-		vector<string> tree_files;
-		QStringList::iterator it = filelist.begin();
-		while(it != filelist.end())
-		{
-			cout<<(*it).toStdString().c_str()<<endl;
-			tree_files.push_back((*it).toStdString());
-			it++;
-		}
-		createCellTrack(tree_files);
+		QMessageBox::information(0,"get parameters","min size error");
+		return;
 	}
+	cout<<"min_size : "<<min_size<<endl;
+	cout<<"max_size : "<<max_size<<endl;
+	cout<<"single_size : "<<single_size<<endl;
 
-	void onLoadResult()
+	vector<string> image_files;
+	QStringList::iterator it = filelist.begin();
+	while(it != filelist.end())
 	{
-		QStringList filelist = QFileDialog::getOpenFileNames(
-				this,
-				"Select one or more files to open",
-				"",
-				"Images (*.tif *.tiff *.raw)");
-		if(filelist.empty())
-		{
-			QMessageBox::information(0,"create from images","No image is loaded!");
-			return;
-		}
-		vector<string> image_results;
-		QStringList::iterator it = filelist.begin();
-		while(it != filelist.end())
-		{
-			cout<<(*it).toStdString().c_str()<<endl;
-			image_results.push_back((*it).toStdString());
-			it++;
-		}
-		vector<string> tree_files;
-		loadCellTrack(image_results, tree_files);
+		cout<<(*it).toStdString().c_str()<<endl;
+		image_files.push_back((*it).toStdString());
+		it++;
 	}
+	createCellTrack(image_files, min_size, max_size, single_size);
+	setFirst();
+	updateWidgets();
+}
 
-	void onSaveResult()
+void onCreateFromTrees()
+{
+	QStringList filelist = QFileDialog::getOpenFileNames(
+			this,
+			"Select one or more files to open",
+			"",
+			"Images (*.tree)");
+	if(filelist.empty())
 	{
-		if(celltrack == NULL || celltrack->frameNum() == 0 )    return;
-		QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),"",QFileDialog::ShowDirsOnly|QFileDialog::DontResolveSymlinks);
-		if(dir == "") return;
-		else celltrack->exportImages("", (char*)dir.toStdString().c_str());
-		QMessageBox::information(this,"Save Frames", "Successfully Saved!");
+		QMessageBox::information(0,"create from trees","No tree is loaded!");
+		return;
 	}
+	vector<string> tree_files;
+	QStringList::iterator it = filelist.begin();
+	while(it != filelist.end())
+	{
+		cout<<(*it).toStdString().c_str()<<endl;
+		tree_files.push_back((*it).toStdString());
+		it++;
+	}
+	createCellTrack(tree_files);
+	setFirst();
+	updateWidgets();
+}
 
-	void onApplyFilter()
+void onLoadResult()
+{
+	QStringList filelist = QFileDialog::getOpenFileNames(
+			this,
+			"Select one or more files to open",
+			"",
+			"Images (*.tif *.tiff *.raw)");
+	if(filelist.empty())
 	{
+		QMessageBox::information(0,"create from images","No image is loaded!");
+		return;
 	}
+	vector<string> image_results;
+	QStringList::iterator it = filelist.begin();
+	while(it != filelist.end())
+	{
+		cout<<(*it).toStdString().c_str()<<endl;
+		image_results.push_back((*it).toStdString());
+		it++;
+	}
+	vector<string> tree_files;
+	loadCellTrack(image_results, tree_files);
+	setFirst();
+	updateWidgets();
+}
 
-	void onFineTuning()
-	{
-	}
+void onSaveResult()
+{
+	if(celltrack == NULL || celltrack->frameNum() == 0 )    return;
+	QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),"",QFileDialog::ShowDirsOnly|QFileDialog::DontResolveSymlinks);
+	if(dir == "") return;
+	else celltrack->exportImages("", (char*)dir.toStdString().c_str());
+	QMessageBox::information(this,"Save Frames", "Successfully Saved!");
+}
 
-	void onSetColor()
-	{
-	}
+void onApplyFilter()
+{
+}
 
-	void onSummary()
-	{
-	}
+void onFineTuning()
+{
+}
 
-	void onSpeed()
-	{
-	}
+void onSetColor()
+{
+}
 
-	void onVolume()
-	{
-	}
+void onSummary()
+{
+}
 
-	void onDeformation()
-	{
-	}
+void onSpeed()
+{
+}
 
-	void onTrajectory()
-	{
-	}
+void onVolume()
+{
+}
 
-	void onFirst()
-	{
-		if(celltrack == NULL || celltrack->frameNum() == 0 )	return;
-		setFirst();
-		updateWidgets();
-	}
+void onDeformation()
+{
+}
 
-	void onLast()
-	{
-		if(celltrack == NULL || celltrack->frameNum() == 0 )	return;
-		setLast();
-		updateWidgets();
-	}
+void onTrajectory()
+{
+}
 
-	void onPrevious()
-	{
-		if(celltrack == NULL || celltrack->frameNum() == 0 )	return;
-		setPrev();
-		updateWidgets();
-	}
+void onFirst()
+{
+	if(celltrack == NULL || celltrack->frameNum() == 0 )	return;
+	setFirst();
+	updateWidgets();
+}
 
-	void onNext()
-	{
-		if(celltrack == NULL || celltrack->frameNum() == 0 )	return;
-		setNext();
-		updateWidgets();
-	}
+void onLast()
+{
+	if(celltrack == NULL || celltrack->frameNum() == 0 )	return;
+	setLast();
+	updateWidgets();
+}
 
-	void onChoose()
-	{
-	}
+void onPrevious()
+{
+	if(celltrack == NULL || celltrack->frameNum() == 0 )	return;
+	setPrev();
+	updateWidgets();
+}
 
-	void onDelete()
-	{
-	}
+void onNext()
+{
+	if(celltrack == NULL || celltrack->frameNum() == 0 )	return;
+	setNext();
+	updateWidgets();
+}
 
-	void onUndo()
+void onChoose()
+{
+}
+
+void onDelete()
+{
+}
+
+void onUndo()
+{
+}
+
+void onReverseCells()
+{
+	if(celltrack == NULL || celltrack->frameNum() == 0) return;
+	map<CellTrack::Track*, bool>::iterator it = tracks_state.begin();
+	while(it != tracks_state.end())
 	{
+		(*it).second = 1 - (*it).second;
+		it++;
 	}
+	updateWidgets();
+}
+
+void onMonitorV3d(int state)
+{
+	if(curwin == 0) return;
+	if(v3d_monitor == 0)
+	{
+		v3d_monitor = new V3dMonitor(callback, curwin);
+		connect(v3d_monitor, SIGNAL(mark_changed(LocationSimple)), this, SLOT(onMarkChanged(LocationSimple)));
+		cout<<"connect to v3d_monitor ! "<<endl;
+		v3d_monitor->start();
+	}
+	if(state == Qt::Unchecked)
+	{
+		v3d_monitor->exit();
+	}
+	else if(state == Qt::Checked)
+	{
+		if(!v3d_monitor->isRunning())v3d_monitor->start();
+	}
+}
+
+void onMarkChanged(LocationSimple loc)
+{
+	if(celltrack == NULL || celltrack->frameNum() == 0) return;
+	CellTrack::Cell* cell = this->getClickedCell(loc.x, loc.y, loc.z);
+	if(!tracks_state[cell->getTrack()])
+	{
+		cellWidget->setCellChecked(cell, true);
+	}
+	else 
+	{
+		cellWidget->setCellChecked(cell, false);
+	}
+	updateWidgets();
+}
 
 public:
-	QPushButton * from_images_button;
-	QPushButton * from_trees_button;
-	QPushButton * load_result_button;
-	QPushButton * save_result_button;
-	QFrame * line1;
+QPushButton * from_images_button;
+QPushButton * from_trees_button;
+QPushButton * load_result_button;
+QPushButton * save_result_button;
+QFrame * line1;
 
-	QPushButton * apply_filter_button;
-	QPushButton * fine_tuning_button;
-	QPushButton * set_color_button;
-	QFrame * line2;
+QPushButton * apply_filter_button;
+QPushButton * fine_tuning_button;
+QPushButton * set_color_button;
+QFrame * line2;
 
-	QPushButton * summary_button;
-	QPushButton * speed_button;
-	QPushButton * volume_button;
-	QPushButton * deformation_button;
-	QPushButton * trajectory_button;
-	QFrame * line3;
+QPushButton * summary_button;
+QPushButton * speed_button;
+QPushButton * volume_button;
+QPushButton * deformation_button;
+QPushButton * trajectory_button;
+QFrame * line3;
 
-	QPushButton * go_fist_button;
-	QPushButton * go_last_button;
-	QPushButton * go_prev_button;
-	QPushButton * go_next_button;
-	QFrame * line4;
+QPushButton * go_fist_button;
+QPushButton * go_last_button;
+QPushButton * go_prev_button;
+QPushButton * go_next_button;
+QFrame * line4;
 
-	QPushButton * choose_button;
-	QPushButton * delete_button;
-	QPushButton * undo_button;
+QPushButton * choose_button;
+QPushButton * delete_button;
+QPushButton * undo_button;
 
-	QVBoxLayout * vbox1;
-	QGroupBox * cmds_box;
+QVBoxLayout * vbox1;
+QGroupBox * cmds_box;
 
-	QGroupBox * cells_group;
-	QCheckBox * reverse_check;
-	QCheckBox * monitor_check;
+QScrollArea * scroll_area;
+QCheckBox * reverse_check;
+QCheckBox * monitor_check;
 
-	QGridLayout * gridbox;
-	QGroupBox * cells_box;
+QGridLayout * gridbox;
+QGroupBox * cells_box;
 
-	QHBoxLayout * hbox;
+QHBoxLayout * hbox;
 
-	V3DPluginCallback * callback;
-	v3dhandle curwin;
+V3DPluginCallback2 * callback;
+v3dhandle curwin;
+CellWidget* cellWidget;
+V3dMonitor* v3d_monitor;
 
 };
 
