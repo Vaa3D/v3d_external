@@ -4,6 +4,8 @@ CONFIG	+= qt plugin warn_off
 #CONFIG	+= x86_64
 INCLUDEPATH	+= ../../../v3d_main/basic_c_fun
 
+LIBS += -ltiff -llpsolve55
+
 DEFINES += __v3d__
 
 HEADERS	= ct3d_plugin.h
@@ -29,4 +31,4 @@ SOURCES += coseg/CT3D/bipartite.cpp
 SOURCES += coseg/CT3D/cell_track_controller.cpp
 
 TARGET	= $$qtLibraryTarget(ct3d)
-DESTDIR	= ~/Applications/v3d/plugins/ct3d/
+DESTDIR	= ~/work/v3d_external/v3d/plugins/ct3d/

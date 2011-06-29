@@ -1126,6 +1126,54 @@ int CellTrack::Cell::getOverlap(CellTrack::Cell* cell2)
 /**
  * normally c = 3
  * **/
+#ifdef __v3d__
+void CellTrack::Cell::draw(unsigned char* image, int sz0, int sz1, int sz2)
+{
+	unsigned char* imageR = image;
+	unsigned char* imageG = image + sz0 * sz1 * sz2;
+	unsigned char* imageB = image + 2 * sz0 * sz1 * sz2;
+
+	vector<int> & vertices = getVertices();
+	if(vertices.empty()) return;
+	vector<int>::iterator it = vertices.begin();
+	int color = this->getColor();
+	unsigned char r = color % 256;
+	unsigned char g = (color / 256)%256;
+	unsigned char b = (color / 256 / 256)%256;
+	while(it != vertices.end())
+	{
+		int index = (*it);
+		imageR[index] = r;
+		imageG[index] = g;
+		imageB[index] = b;
+		it++;
+	}
+}
+
+void CellTrack::Cell::drawMarker(unsigned char* image, int sz0, int sz1, int sz2)
+{
+	unsigned char* imageR = image;
+	unsigned char* imageG = image + sz0 * sz1 * sz2;
+	unsigned char* imageB = image + 2 * sz0 * sz1 * sz2;
+
+	vector<int> &vertices = getCenterArea();
+	assert(!vertices.empty());
+	if(vertices.empty()) return;
+	vector<int>::iterator it = vertices.begin();
+	int color = this->getColor();
+	unsigned char r = 255 - color % 256;
+	unsigned char g = 255 - (color / 256)%256;
+	unsigned char b = 255 - (color / 256 / 256)%256;
+	while(it != vertices.end())
+	{
+		int index = (*it) ;
+		imageR[index] = r;
+		imageG[index] = g;
+		imageB[index] = b;
+		it++;
+	}
+}
+#else
 void CellTrack::Cell::draw(unsigned char* image)
 {
 	vector<int> & vertices = getVertices();
@@ -1164,6 +1212,7 @@ void CellTrack::Cell::drawMarker(unsigned char* image)
 		it++;
 	}
 }
+#endif
 
 void CellTrack::Cell::setCenterArea()
 {

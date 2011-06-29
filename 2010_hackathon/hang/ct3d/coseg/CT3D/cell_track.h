@@ -47,8 +47,13 @@ class CellTrack
 			void setTree(ComponentTree* tree);
 			//float meanHeight() const;
 			int getOverlap(Cell* cell2);
+#ifdef __v3d__
+			void draw(unsigned char* image, int sz0, int sz1, int sz2);
+			void drawMarker(unsigned char* image, int sz0, int sz1, int sz2);
+#else
 			void draw(unsigned char* image);
 			void drawMarker(unsigned char* image);
+#endif
 
 			void setCenterArea();
 			vector<int>&  getCenterArea();  // will set cetner area too

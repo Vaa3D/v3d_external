@@ -132,11 +132,38 @@ void CellTrackController::setPrev()
  * Extract 3d texture of current frame
  * Including the marked area
  * **********************************************************/
+#ifdef __v3d__
 unsigned char* CellTrackController::getTexData()
 {
 	int w = getWidth();
 	int h = getHeight();
-   	int d = getDepth();
+	int d = getDepth();
+	unsigned char* image = new  unsigned char[3*w*h*d];
+	for(int i = 0; i < 3*w*h*d; i++) image[i] = 0;
+	vector<CellTrack::Cell*> visable_cells = celltrack->getFrame(current_time)->getCells();
+	vector<CellTrack::Cell*>::iterator it = visable_cells.begin();
+	ComponentTree* tree = celltrack->getFrame(current_time)->getTree();
+	while(it != visable_cells.end())
+	{
+		(*it)->draw(image, w, h, d);
+		it++;
+	}
+	//cout<<"cell num = "<<visable_cells.size()<<endl;
+	vector<CellTrack::Cell*> marked_cells = getMarkedCells();
+	it = marked_cells.begin();
+	while(it != marked_cells.end())
+	{
+		(*it)->drawMarker(image, w, h, d);
+		it++;
+	}
+	return image;
+}
+#else
+unsigned char* CellTrackController::getTexData()
+{
+	int w = getWidth();
+	int h = getHeight();
+	int d = getDepth();
 	unsigned char* image = new  unsigned char[3*w*h*d];
 	for(int i = 0; i < 3*w*h*d; i++) image[i] = 0;
 	vector<CellTrack::Cell*> visable_cells = celltrack->getFrame(current_time)->getCells();
@@ -157,6 +184,7 @@ unsigned char* CellTrackController::getTexData()
 	}
 	return image;
 }
+#endif
 
 int CellTrackController::currentTime()
 {
@@ -198,7 +226,7 @@ CellTrack::Cell* CellTrackController::getClickedCell(float x, float y, float z)
 		float center_y = center[1];
 		float center_z = center[2];
 		float dist = (x - center_x)*(x - center_x) +
-		   	(y - center_y)*(y - center_y) + 
+			(y - center_y)*(y - center_y) + 
 			(z - center_z)*(z - center_z);
 		if (dist < min_dist)
 		{
@@ -295,7 +323,7 @@ void CellTrackController::initTracksState(vector<CellTrack::Track*> marked_track
 		CellTrack::Track* track = celltrack->getTrack(i);
 		tracks_state[track] = false;
 	}
-	
+
 	if(!marked_tracks.empty())
 	{
 		vector<CellTrack::Track*>::iterator it = marked_tracks.begin();
@@ -319,22 +347,22 @@ void CellTrackController::choose(bool keep_unvisited_tracks)
 	{
 		vector<CellTrack::Track*> all_tracks = tracks;
 		int frame_num = celltrack->frameNum();
-        for(int i = current_time  + 1 ; i < frame_num; i++)
-        {
-            vector<CellTrack::Cell*> cells = celltrack->getFrame(i)->getCells();
-            vector<CellTrack::Cell*>::iterator it = cells.begin();
-            while(it != cells.end())
-            {
+		for(int i = current_time  + 1 ; i < frame_num; i++)
+		{
+			vector<CellTrack::Cell*> cells = celltrack->getFrame(i)->getCells();
+			vector<CellTrack::Cell*>::iterator it = cells.begin();
+			while(it != cells.end())
+			{
 				CellTrack::Cell* cell = *it;
 				CellTrack::Track* track = cell->getTrack();
 				//if appeare in later frame and not manually track
-                if(cell->getPrevCell() == NULL && !tracks_state[track])
-                {
-                   	all_tracks.push_back(cell->getTrack());
-                }
-                it++;
-            }
-        }
+				if(cell->getPrevCell() == NULL && !tracks_state[track])
+				{
+					all_tracks.push_back(cell->getTrack());
+				}
+				it++;
+			}
+		}
 		celltrack = celltrack->choose(all_tracks);
 	}
 	else
@@ -398,12 +426,12 @@ void CellTrackController::setCellCenters()
 	while(it != cells.end())
 	{
 		float mean_x, mean_y, mean_z;
-		 (*it)->getCenter(mean_x, mean_y, mean_z);
-		 vector<float> center;
-		 center.push_back(mean_x);
-		 center.push_back(mean_y);
-		 center.push_back(mean_z);
-		 cell_centers[*it] = center;
+		(*it)->getCenter(mean_x, mean_y, mean_z);
+		vector<float> center;
+		center.push_back(mean_x);
+		center.push_back(mean_y);
+		center.push_back(mean_z);
+		cell_centers[*it] = center;
 		it++;
 	}
 }
