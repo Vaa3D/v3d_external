@@ -1,0 +1,9 @@
+The git reposotory is create from all my project codes which works very well on Macos. 
+The first modification on the code is to add some c/c++ standard head files including
+cstdlib cstdio cstring. 
+
+To the state when create :
+$git reset --hard 09308c8eebedcc6253a720a8ca00c89217ee65be
+
+To the state when fix the problem on ubuntu:
+$git reset --hard 0bad166926e32ec754ec357b27a0a0274d1f50e9

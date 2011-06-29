@@ -52,7 +52,7 @@ void PartialAlignPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &ca
 	{
 		calc_feature(callback,parent,STD_VAR_FEATURE);
 	}
-	else if(menu_name == tr("calc invariant methods feature"))
+	else if(menu_name == tr("calc invariant moments feature"))
 	{
 		calc_feature(callback,parent,INVARIANT_MOMENT_FEATURE);
 	}

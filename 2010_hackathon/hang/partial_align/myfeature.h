@@ -164,7 +164,7 @@ template<class T> class MyFeature : public Image2DSimple<T>
 
 				Vector1DSimple<double> momentVec;
 				momentVec.resize(sz0);
-				V3DLONG r = 5;
+				V3DLONG r = 20;
 
 				for(V3DLONG i = 0; i < sz1; i++)
 				{
