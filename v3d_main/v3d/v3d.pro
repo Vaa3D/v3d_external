@@ -125,8 +125,8 @@ macx {
     INCLUDEPATH += $$QTINST_SHARED_FOLDER
     LIBS += -L$$QTINST_SHARED_FOLDER
     # For faster neuron toggling. CMB 20 June 2011
-    # QMAKE_CXXFLAGS+=-O3
-    # CXXFLAGS+=-O3
+    QMAKE_CXXFLAGS+=-O3
+    CXXFLAGS+=-O3
 }
 
 unix:!macx {
@@ -224,6 +224,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/gui/ZoomSpinBox.h \
     ../neuron_annotator/gui/ZoomWidget.h \
     ../neuron_annotator/gui/CompartmentMapWidget.h \
+    ../neuron_annotator/FragmentSelectionModel.h \
 	../neuron_annotator/NeuronSelector.h \
 	../webservice/v3dwebservice.hpp \
 	../webservice/v3dwebserver.h \
@@ -341,6 +342,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/gui/ZoomSpinBox.cpp \
     ../neuron_annotator/gui/ZoomWidget.cpp \
     ../neuron_annotator/gui/CompartmentMapWidget.cpp \
+    ../neuron_annotator/FragmentSelectionModel.cpp \
 	../neuron_annotator/NeuronSelector.cpp \
 	../webservice/v3dwebservice.cpp \
 	../webservice/gsoap2/stdsoap2.cpp \

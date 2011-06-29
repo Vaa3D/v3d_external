@@ -2334,7 +2334,6 @@ released_plugins/v3d_plugins/mapview/mg_image_lib11.cpp
 released_plugins/v3d_plugins/mapview/mapviewer.cpp
 v3d_main/neuron_annotator/MipData.h
 v3d_main/neuron_annotator/MipData.cpp
-v3d_main/neuron_annotator/NeuronMipManager.h
 v3d_main/neuron_annotator/CMakeLists.txt
 v3d_main/neuron_annotator/gui/angle_widget_designer_plugin/AngleWidgetPlugin.pro
 v3d_main/neuron_annotator/gui/angle_widget_designer_plugin/AngleWidgetPlugin.h
@@ -2382,8 +2381,9 @@ v3d_main/neuron_annotator/gui/BrightnessCalibrator.cpp
 v3d_main/neuron_annotator/gui/AngleWidget.cpp
 v3d_main/neuron_annotator/gui/Na2DViewer.cpp
 v3d_main/neuron_annotator/gui/CompartmentMapWidget.cpp
-v3d_main/neuron_annotator/NeuronMipManager.cpp
 v3d_main/neuron_annotator/gui/ZoomWidget.ui
 v3d_main/neuron_annotator/gui/NaMainWindow.ui
 v3d_main/neuron_annotator/gui/GammaWidget.ui
 v3d_main/neuron_annotator/gui/AngleWidget.ui
+v3d_main/neuron_annotator/FragmentSelectionModel.h
+v3d_main/neuron_annotator/FragmentSelectionModel.cpp

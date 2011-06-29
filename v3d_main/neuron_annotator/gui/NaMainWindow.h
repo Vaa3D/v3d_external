@@ -8,6 +8,7 @@
 #include "ui_NaMainWindow.h"
 #include "../AnnotationSession.h"
 #include "GalleryButton.h"
+#include "../FragmentSelectionModel.h"
 
 class NeuronSelector;
 
@@ -89,6 +90,7 @@ private:
     CameraModel sharedCameraModel; // optional camera sharing
     NutateThread * nutateThread;
     NeuronSelector* neuronSelector;
+    FragmentSelectionModel fragmentSelectionModel;
 };
 
 #endif // NAMAINWINDOW_H

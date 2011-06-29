@@ -32,7 +32,6 @@ QT4_WRAP_CPP(NA_MOC_SRCS
     AnnotationSession.h
     MipData.h
     MipLayer.h
-    NeuronMipManager.h
     NeuronSelector.h
 )
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1124</width>
-    <height>864</height>
+    <width>969</width>
+    <height>873</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -344,7 +344,7 @@
                    </property>
                    <property name="sizeHint" stdset="0">
                     <size>
-                     <width>223</width>
+                     <width>222</width>
                      <height>20</height>
                     </size>
                    </property>
@@ -389,7 +389,7 @@
                    </property>
                    <property name="sizeHint" stdset="0">
                     <size>
-                     <width>223</width>
+                     <width>222</width>
                      <height>20</height>
                     </size>
                    </property>
@@ -804,6 +804,18 @@ You can also resize the box by Ctrl + left mouse click.</string>
                             <verstretch>0</verstretch>
                            </sizepolicy>
                           </property>
+                          <property name="minimumSize">
+                           <size>
+                            <width>0</width>
+                            <height>35</height>
+                           </size>
+                          </property>
+                          <property name="baseSize">
+                           <size>
+                            <width>0</width>
+                            <height>35</height>
+                           </size>
+                          </property>
                           <property name="textLabel">
                            <string>RotX</string>
                           </property>
@@ -816,6 +828,18 @@ You can also resize the box by Ctrl + left mouse click.</string>
                             <horstretch>0</horstretch>
                             <verstretch>0</verstretch>
                            </sizepolicy>
+                          </property>
+                          <property name="minimumSize">
+                           <size>
+                            <width>0</width>
+                            <height>35</height>
+                           </size>
+                          </property>
+                          <property name="baseSize">
+                           <size>
+                            <width>0</width>
+                            <height>35</height>
+                           </size>
                           </property>
                           <property name="textLabel">
                            <string>RotY</string>
@@ -833,13 +857,13 @@ You can also resize the box by Ctrl + left mouse click.</string>
                           <property name="minimumSize">
                            <size>
                             <width>0</width>
-                            <height>0</height>
+                            <height>35</height>
                            </size>
                           </property>
                           <property name="baseSize">
                            <size>
                             <width>0</width>
-                            <height>0</height>
+                            <height>35</height>
                            </size>
                           </property>
                           <property name="textLabel">
@@ -931,6 +955,9 @@ You can also resize the box by Ctrl + left mouse click.</string>
              </item>
              <item>
               <widget class="QGroupBox" name="groupBox_3">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
                <property name="title">
                 <string>View</string>
                </property>
@@ -1183,7 +1210,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>722</width>
+                  <width>567</width>
                   <height>198</height>
                  </rect>
                 </property>
@@ -1239,7 +1266,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1124</width>
+     <width>969</width>
      <height>22</height>
     </rect>
    </property>
@@ -1264,6 +1291,13 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <property name="title">
      <string>Edit</string>
     </property>
+    <addaction name="actionUndo"/>
+    <addaction name="actionRedo"/>
+    <addaction name="separator"/>
+    <addaction name="actionSelect_All"/>
+    <addaction name="actionSelect_None"/>
+    <addaction name="actionInvert_Selection"/>
+    <addaction name="separator"/>
     <addaction name="actionPreferences"/>
    </widget>
    <widget class="QMenu" name="menuView">
@@ -1402,6 +1436,46 @@ You can also resize the box by Ctrl + left mouse click.</string>
    </property>
    <property name="text">
     <string>Show Crosshair</string>
+   </property>
+  </action>
+  <action name="actionUndo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Undo</string>
+   </property>
+  </action>
+  <action name="actionRedo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Redo</string>
+   </property>
+  </action>
+  <action name="actionSelect_All">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Select All</string>
+   </property>
+  </action>
+  <action name="actionSelect_None">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Select None</string>
+   </property>
+  </action>
+  <action name="actionInvert_Selection">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Invert Selection</string>
    </property>
   </action>
  </widget>
