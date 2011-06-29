@@ -195,8 +195,38 @@ int lobeseg_one_side_only(V3DPluginCallback2 &callback, QWidget *parent)
 	return 1;
 }
 
+void printHelp()
+{
+    printf("\nUsage: v3d -p <lobeseg_plugin_name> -n lobeseg -i <input_image_file> -o <output_image_file> -par \"#c <channalNo_reference> #A <alpha: image force> #B <beta: length force> #G <gamma: smoothness force> #n <nloop> #w <local win radius> [#s #p <position> #k <direction> #N <num_of_controls>]\"\n");
+    printf("\t -i <input_image_file>              input 3D image (tif, or Hanchuan's RAW or LSM). \n");
+    //printf("\t -p <prior control pt file>         input prior location of control points (note: the order will matter!). If unspecified, then randomly initialized. \n");
+    printf("\t -o <output_image_file>             output image where the third channel is a mask indicating the regions. \n");
+    printf("\t #c <channalNo_reference>           the ID of channel for processing (starting from 0). If unspecified, then initialized as 0.\n");
+    printf("\t #A <alpha>                         the alpha coefficient for the image force. Default = 1.0.\n");
+    printf("\t #B <beta>                          the beta coefficient for the length force. Default = 0.5.\n");
+    printf("\t #G <gamma>                         the gamma coefficient for the smoothness force Default = 0.5.\n");
+    printf("\t #n <nloop>                         the number of maximum loops of optimization. If unspecified, then initialized as 500.\n");
+    printf("\t #w <local win radius>              the radius of local window for center of mass estimation. The real win size is 2*radius+1. The default radius = 20. \n");
+    printf("\t \n");
+    printf("\t [#h]                               print this message.\n");
+    printf("\t [#s]                               lobe segmentation on one side, -p -k -N parameters is needed.\n");
+    printf("\t [#p]                               set the relative initial position, format X1xY1+X2xY2, e.g. 30x0+100x50, top left is the origin.\n");
+    printf("\t [#k]                               specifiy which direction will be kept, left or right.\n");
+    printf("\t [#N]                               the number of control points.\n");
+    printf("\t [#S]                               output the seperating surface.\n");
+    printf("\n");
+    printf("Demo :\t v3d -p liblobeseg_debug.dylib -n lobeseg -i input.tif -o output.tif \"#s #N 20 #p 30x0+100x30 #k left #S\"\n");
+    printf("Version: 0.91 (Copyright: Hanchuan Peng)\n");
+    return;
+}
+
 bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 {
+	vector<char*> * infiles = (vector<char*> *)(input.at(0).p);
+	vector<char*> * paralist = (vector<char*> *)(input.at(1).p);
+	vector<char*> * outfiles = (vector<char*> *)(output.at(0).p);
+	if(infiles->empty() || outfiles->empty()) {printHelp(); return true;}
+
 	cout<<"============== Welcome to lobeseg function ================="<<endl;
 	//char infile[500] = "";
 	//char outfile[500] = "";
@@ -244,13 +274,14 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 	cout<<"paras = \""<<paras<<"\""<<endl;
 	int argc = split(paras, argv);
 	
-	char optstring[] = "sSi:o:c:A:B:G:n:p:k:N:";
+	char optstring[] = "hsSi:o:c:A:B:G:n:p:k:N:";
 	int c;
 	optind = 0;
 	while((c = getopt(argc, argv, optstring)) != -1)
 	{
 		switch(c)
 		{
+			case 'h' : printHelp(); return true;
 			case 's' : single_side = true; cout<<"single_side = true"<<endl; break;
 			case 'S' : is_surf = true; break;
 			case 'p' : 
