@@ -14,7 +14,7 @@ public class raw_reader implements PlugIn {
     private String formatkey = "raw_image_stack_by_hpeng";
     
     public void run(String arg) {
-        OpenDialog od = new OpenDialog("Open raw Image...", arg);
+        OpenDialog od = new OpenDialog("Open V3D's RAW Image...", arg);
         String fileName = od.getFileName();
         if (fileName==null)       return;
         String directory = od.getDirectory();
