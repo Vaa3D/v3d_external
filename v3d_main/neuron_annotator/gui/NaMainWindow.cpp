@@ -541,7 +541,11 @@ void NaMainWindow::createMaskGallery() {
 
     // Step 1: Add background MIP
     QFrame* ui_maskFrame = qFindChild<QFrame*>(this, "maskFrame");
-    QHBoxLayout *managementLayout = new QHBoxLayout();
+    QLayout *managementLayout = ui_maskFrame->layout();
+    // Delete any old contents
+    if (managementLayout)
+        delete managementLayout;
+    managementLayout = new QHBoxLayout();
     ui_maskFrame->setLayout(managementLayout);
 
     GalleryButton* backgroundButton = new GalleryButton(maskMipList->at(0), "Background", 0);
@@ -553,8 +557,11 @@ void NaMainWindow::createMaskGallery() {
 
     // Step 2: Add Neuron-Mask Gallery
     // QFrame* ui_maskGallery = qFindChild<QFrame*>(this, "maskGallery");
-    QHBoxLayout *galleryLayout = (QHBoxLayout*) ui.scrollAreaWidgetContents->layout();
-    // ui_maskGallery->setLayout(galleryLayout);
+    QLayout *galleryLayout = ui.scrollAreaWidgetContents->layout();
+    if (galleryLayout)
+        delete galleryLayout;
+    galleryLayout = new QHBoxLayout();
+    ui.scrollAreaWidgetContents->setLayout(galleryLayout);
     qDebug() << "Number of neuron masks = " << maskMipList->size();
     for (int i = 1; i < maskMipList->size(); ++i) {
         GalleryButton* button = new GalleryButton(maskMipList->at(i), QString("Neuron %1").arg(i), i);

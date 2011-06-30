@@ -168,8 +168,10 @@ void RendererNeuronAnnotator::setupStackTexture(bool bfirst)
 
     } else {
 
+        /* _safeReference3DBuf does its own "delete"; this extra one causes a crash.
         if (texture3DAll!=0)
             delete [] texture3DAll;
+        */
 
         texture3DAll = _safeReference3DBuf(rgbaBuf, imageX, imageY, imageZ,  safeX, safeY, safeZ); //081008
         realX = safeX;
