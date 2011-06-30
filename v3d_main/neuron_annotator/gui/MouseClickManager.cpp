@@ -15,7 +15,7 @@ MouseClickManager::MouseClickManager(QObject *parent)
 void MouseClickManager::mousePressEvent(QMouseEvent * event)
 {
     // qDebug() << "press";
-    singleClickTimer.stop(); // void any pending single click events
+    abortSingleClick(); // void any pending single click events
     if(event->button() != Qt::LeftButton) return; // want left click only
     mousePressInterval = mousePressTime.elapsed(); // remember time to *previous* click
     mousePressTime.restart();
@@ -27,15 +27,15 @@ void MouseClickManager::mouseReleaseEvent(QMouseEvent * event)
 {
     // qDebug() << "release";
     // Could this be a single click event?
-    singleClickTimer.stop();
+    abortSingleClick();
     if(event->button() != Qt::LeftButton) return; // want left click only
     // qDebug() << "left button";
     // qDebug() << "mousePressInterval = " << mousePressInterval;
     if(mousePressInterval < 800) return; // looks more like a double click than like a single click
     int clickInterval = mousePressTime.elapsed(); // milliseconds
     // qDebug() << "clickInterval = " << clickInterval;
-    if (clickInterval < 5) return; // nobody clicks that fast
-    if (clickInterval > 1000) return; // too slow, that's not a click
+    // if (clickInterval < 2) return; // nobody clicks that fast // not sure why this is happening
+    if (clickInterval > 1500) return; // too slow, that's not a click
     QPoint dv = event->pos() - mousePressPosition;
     // qDebug() << event->pos() << ", " << mousePressPosition;
     // qDebug() << "drag distance = " << dv.manhattanLength();
@@ -51,9 +51,18 @@ void MouseClickManager::mouseDoubleClickEvent(QMouseEvent * event)
 {
     // qDebug() << "double click";
     // Seems like we miss one mouse press event when double click occurs
-    singleClickTimer.stop();
+    abortSingleClick();
     mousePressInterval = mousePressTime.elapsed();
     mousePressTime.restart();
+}
+
+void MouseClickManager::abortSingleClick()
+{
+    if (singleClickTimer.isActive()) {
+        // qDebug() << "abort single click";
+        singleClickTimer.stop();
+        emit notSingleClick();
+    }
 }
 
 void MouseClickManager::onClickTimerTimedOut()

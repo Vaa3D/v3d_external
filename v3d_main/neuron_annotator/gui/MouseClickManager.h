@@ -22,6 +22,7 @@ signals:
     // Connect to singleClick(QPoint) signal to get clean single click events
     void singleClick(QPoint);
     void possibleSingleClickAlert(); // To help provide instant visual feedback
+    void notSingleClick();
 
 public slots:
 
@@ -29,6 +30,8 @@ protected slots:
     void onClickTimerTimedOut();
 
 protected:
+    void abortSingleClick();
+
     QPoint mousePressPosition;
     QTimer singleClickTimer;
     QTime mousePressTime;

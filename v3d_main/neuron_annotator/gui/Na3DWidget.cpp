@@ -33,8 +33,13 @@ Na3DWidget::Na3DWidget(QWidget* parent)
             this, SLOT(updateRendererZoomRatio(qreal)));
     connect(&cameraModel, SIGNAL(rotationChanged(const Rotation3D&)),
             this, SLOT(updateRotation(const Rotation3D&)));
+
     connect(&mouseClickManager, SIGNAL(singleClick(QPoint)),
             this, SLOT(onMouseSingleClick(QPoint)));
+    connect(&mouseClickManager, SIGNAL(possibleSingleClickAlert()),
+            this, SLOT(onPossibleSingleClickAlert()));
+    connect(&mouseClickManager, SIGNAL(notSingleClick()),
+            this, SLOT(onNotSingleClick()));
 }
 
 Na3DWidget::~Na3DWidget()
@@ -85,6 +90,7 @@ void Na3DWidget::translateImage(int dx, int dy)
 
 void Na3DWidget::updateCursor()
 {
+    // qDebug() << "updateCursor()";
     if (QApplication::keyboardModifiers() & Qt::ShiftModifier)
     { // shift-drag to translate
         if (QApplication::mouseButtons() & Qt::LeftButton)
@@ -226,7 +232,7 @@ void Na3DWidget::mousePressEvent(QMouseEvent * event)
 void Na3DWidget::mouseReleaseEvent(QMouseEvent * event)
 {
     mouseClickManager.mouseReleaseEvent(event);
-    updateCursor();
+    // updateCursor();
     bMouseIsDragging = false;
    
 	// V3dR_GLWidget::mouseReleaseEvent(event);
@@ -259,6 +265,19 @@ void Na3DWidget::onMouseSingleClick(QPoint pos)
 {
     // qDebug() << "single left click!";
     highlightNeuronAtPosition(pos);
+    updateCursor();
+}
+
+void Na3DWidget::onPossibleSingleClickAlert()
+{
+    // Immediate visual feedback that a click has been initiated
+    // qDebug() << "possible single click";
+    setCursor(Qt::BusyCursor);
+}
+
+void Na3DWidget::onNotSingleClick()
+{
+    updateCursor();
 }
 
 void Na3DWidget::highlightNeuronAtPosition(QPoint pos)
@@ -304,6 +323,7 @@ void Na3DWidget::wheelEvent(QWheelEvent * e)
 void Na3DWidget::mouseDoubleClickEvent(QMouseEvent * event)
 {
     mouseClickManager.mouseDoubleClickEvent(event);
+    updateCursor();
     if (event->button() != Qt::LeftButton) {
         V3dR_GLWidget::mouseDoubleClickEvent(event);
         return;

@@ -282,3 +282,13 @@ endif()
 
 target_link_libraries(v3d NeuronAnnotatorLib)
 
+if(V3D_MAC_CREATE_BUNDLE)
+    # Install Qt libraries into bundle
+    find_program(MAC_DEPLOY_QT macdeployqt)
+    add_custom_command(TARGET v3d POST_BUILD
+        COMMAND "${MAC_DEPLOY_QT}" "${BUNDLE_BUILD_DIR}"
+        DEPENDS v3d
+        COMMENT "Inserting Qt libraries into v3d.app")
+endif()
+
+

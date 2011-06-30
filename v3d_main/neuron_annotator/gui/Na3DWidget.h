@@ -52,6 +52,8 @@ public slots:
     void showCrosshair(bool b) {NaViewer::showCrosshair(b); update();}
     void updateHighlightNeurons(bool b);
     void onMouseSingleClick(QPoint pos);
+    void onNotSingleClick();
+    void onPossibleSingleClickAlert();
     void updateAnnotationModels();
 
 public:

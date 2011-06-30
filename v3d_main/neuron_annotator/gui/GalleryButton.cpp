@@ -9,6 +9,7 @@ GalleryButton::GalleryButton(const QImage & image, QString name, int index, QWid
         , bImageUpdating(false)
 {
     this->index=index;
+    setMouseTracking(true); // respond to mouse hover events
     QSize thumbnailSize(140, 140);
     scaledThumbnail = new QImage(image.scaled(
             thumbnailSize,
@@ -44,6 +45,30 @@ GalleryButton::~GalleryButton() {
         correctedScaledThumbnail = NULL;
         // buttonMutex.unlock();
     }
+}
+
+/* virtual */
+void GalleryButton::paintEvent(QPaintEvent *paintEvent)
+{
+    super::paintEvent(paintEvent);
+
+    /* draw highlight border */
+    bool thisIsTheHighlightedFragment = false;
+    if (thisIsTheHighlightedFragment) {
+        QPainter painter(this);
+        QPen pen;
+        pen.setColor(Qt::yellow);
+        pen.setWidth(4);
+        painter.setPen(pen);
+        painter.drawRoundedRect(QRect(5, 5, width() - 5, height() - 5), 10, 10);
+        painter.end();
+    }
+}
+
+/* virtual */
+void GalleryButton::mouseMoveEvent(QMouseEvent *moveEvent) {
+    super::mouseMoveEvent(moveEvent);
+    emit fragmentHover(index);
 }
 
 void GalleryButton::buttonPress(bool checked) {

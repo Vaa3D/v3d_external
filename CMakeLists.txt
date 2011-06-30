@@ -113,22 +113,13 @@ if(APPLE)
     set(V3D_MAC_CREATE_BUNDLE TRUE CACHE BOOL
         "Create V3D.app application bundle, instead of v3d command line tool")
     if(V3D_MAC_CREATE_BUNDLE)
-        # Install Qt libraries into bundle
-        find_program(MAC_DEPLOY_QT macdeployqt)
-        add_custom_target(DeployQtLibraries ALL
-            COMMAND "${MAC_DEPLOY_QT}" "${BUNDLE_BUILD_DIR}"
-            COMMENT "Inserting Qt libraries into v3d.app")
-        add_dependencies(DeployQtLibraries v3d)
-        add_dependencies(DeployQtLibraries FinishedPlugins)
         # But macdeployqt does not fix up plugins properly
         find_package(Perl)
-        add_custom_target(DeployPlugins ALL
+        add_custom_TARGET(DeployPlugins ALL
             COMMAND "${PERL_EXECUTABLE}"
                 "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/mac/mac_deploy_cleanup.pl"
                 "${BUNDLE_BUILD_DIR}"
             COMMENT "Adjusting link libraries for plugins")
-        add_dependencies(DeployPlugins DeployQtLibraries)
-
         # name of Bundle in dmg file, and executable in bundle
         set(CPACK_BUNDLE_NAME v3d)
         set(CPACK_BUNDLE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/v3d/v3d.icns")
