@@ -27,8 +27,8 @@ signals:
 protected:
     bool paused;
     qreal speed;
-    qreal currentAngle;
     qreal interval;
+    qreal currentAngle;
     qreal deltaAngle;
     Rotation3D rot;
 };

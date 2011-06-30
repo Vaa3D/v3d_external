@@ -3700,7 +3700,7 @@ void XFormWidget::createGUI()
 	bExistGUI = true;
 }
 
-void XFormWidget::setWindowTitle_Prefix(char *prefix)
+void XFormWidget::setWindowTitle_Prefix(const char *prefix)
 {
 	if (!openFileNameLabel.startsWith(prefix)) //only prepend the prefix if it has not been prepended before
 	{
@@ -3709,7 +3709,7 @@ void XFormWidget::setWindowTitle_Prefix(char *prefix)
 	}
 }
 
-void XFormWidget::setWindowTitle_Suffix(char *sfix)
+void XFormWidget::setWindowTitle_Suffix(const char *sfix)
 {
 	if (!openFileNameLabel.endsWith(sfix)) //only append suffix if it has not been appended before
 	{

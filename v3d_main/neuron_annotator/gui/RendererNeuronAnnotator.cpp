@@ -1,7 +1,7 @@
 #include "../3drenderer/Renderer_gl2.h"
 #include "RendererNeuronAnnotator.h"
 
-RendererNeuronAnnotator::RendererNeuronAnnotator(void* widget) : Renderer_gl2(widget)
+RendererNeuronAnnotator::RendererNeuronAnnotator(void* w) : Renderer_gl2(w)
 {
     neuronMask=0;
     texture3DAll=0;
@@ -62,7 +62,7 @@ bool RendererNeuronAnnotator::populateNeuronMask(const My4DImage* my4Dmask) {
     int sourceZ=my4Dmask->getZDim();
 
     float sx, sy, sz;
-    V3DLONG dx, dy, dz;
+    // V3DLONG dx, dy, dz;
     sx = float(sourceX)/realX;
     sy = float(sourceY)/realY;
     sz = float(sourceZ)/realZ;
@@ -292,8 +292,8 @@ void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf, QProgressDialog 
                             CHECK_GLErrorString_throw(); // can throw const char* exception, RZC 080925
                     }
                     sliceCount++;
-                    int progress=sliceCount*100 / (realX + realY + realZ);
-                    updateProgressDialog(dialog, progress);
+                    int prog = sliceCount*100 / (realX + realY + realZ);
+                    updateProgressDialog(dialog, prog);
             }
 
     }//tex2D
@@ -549,8 +549,8 @@ void RendererNeuronAnnotator::updateCurrentTextureMask(int maskIndex, int state,
                         }
                     }
                     sliceCount++;
-                    int progress=sliceCount*100 / (realX + realY + realZ);
-                    updateProgressDialog(dialog, progress);
+                    int prog = sliceCount*100 / (realX + realY + realZ);
+                    updateProgressDialog(dialog, prog);
             }
     }
     int mSec=timer.elapsed();

@@ -1242,7 +1242,7 @@ void V3dR_MainWindow::doMenuOfAnimate()
 }
 
 
-static char* i2strRGB[] = //{"R", "G", "B"};
+static const char* i2strRGB[] = //{"R", "G", "B"};
 					{"1", "2", "3"}; //081230
 
 void V3dR_MainWindow::createMenuOfSurfFile()

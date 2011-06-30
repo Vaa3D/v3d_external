@@ -480,7 +480,7 @@ bool V3dR_GLWidget::screenShot(QString filename)
 {
 	QImage image1 = this->grabFrameBuffer();
 
-	char* format = SAVE_IMG_FORMAT;
+        const char* format = SAVE_IMG_FORMAT;
 	QString curfile = filename + "." + format;
 	bool r =false;
 	if (image1.save(curfile, format, 100)) //uncompressed
@@ -505,7 +505,7 @@ void V3dR_MainWindow::saveFrameFunc(int i)
 
 	QImage image1 = glWidget->grabFrameBuffer();
 
-	char* format = SAVE_IMG_FORMAT;
+        const char* format = SAVE_IMG_FORMAT;
 	QString curfile = QString("%1/a%2.%3").arg(outputDir).arg(i).arg(format);
 	if (image1.save(curfile, format, 100)) //uncompressed
 	{

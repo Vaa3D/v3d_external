@@ -115,8 +115,8 @@ public:
 	void changeFocusFromExternal(int x, int y, int z); //this should be called from external. When no cross-image communication is needed, should not use this.
     void changeFocusToExternal(int newx, int newy, int newz); // this is the function to call other image-view's changeFocusFromExternal() function
 
-	void setWindowTitle_Prefix(char *prefix);
-	void setWindowTitle_Suffix(char *sfix);
+        void setWindowTitle_Prefix(const char *prefix);
+        void setWindowTitle_Suffix(const char *sfix);
 
 	V3DLONG estimateRoughAmountUsedMemory(); //080810
 

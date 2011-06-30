@@ -234,12 +234,12 @@ bool smooth_curve(std::vector<T> & mCoord, int winsize)
 
 		double s, x,y,z;
 		s = x = y = z = 0;
-		for (int i=0; i<winC.size(); i++)
+                for (int i2=0; i2<winC.size(); i2++)
 		{
-			x += winW[i]* winC[i].x;
-			y += winW[i]* winC[i].y;
-			z += winW[i]* winC[i].z;
-			s += winW[i];
+                        x += winW[i2]* winC[i2].x;
+                        y += winW[i2]* winC[i2].y;
+                        z += winW[i2]* winC[i2].z;
+                        s += winW[i2];
 		}
 		if (s)
 		{

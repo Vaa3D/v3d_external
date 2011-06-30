@@ -102,7 +102,7 @@ const bool compiledLabelSurf = true; // display list or instantly drawing, seems
 			.arg(title).arg(type).arg(what) + "\n\n" + \
 		QObject::tr("3D View: The associated image had been closed, or there is not associated image channel.\n\n") ); \
 }
-static char* i2strRGB[] = //{"R", "G", "B"};
+static const char* i2strRGB[] = //{"R", "G", "B"};
 					{"1", "2", "3"}; //081230
 
 void Renderer_tex2::loadLabelfieldSurf(const QString& filename, int ch)

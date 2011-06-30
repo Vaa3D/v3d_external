@@ -100,7 +100,7 @@ namespace cwc
 {
 //-----------------------------------------------------------------------------
 // Error, Warning and Info Strings
-char* aGLSLStrings[] = {
+const char* aGLSLStrings[] = {
         "[cwc e00] GLSL is not available!",
         "[cwc e01] Not a valid program object!",
         "[cwc e02] Not a valid object!",
@@ -378,7 +378,7 @@ return is_linked;
 //-----------------------------------------------------------------------------
 // Compiler Log: Ausgabe der Compiler Meldungen in String
 
-char* glShader::getLinkerLog(void)
+const char* glShader::getLinkerLog(void)
 {
 if (!useGLSL) return aGLSLStrings[0];
 
@@ -441,7 +441,7 @@ if (!_bEnabled) return;
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform1f(GLchar* varname, GLfloat v0, GLint index)
+bool glShader::setUniform1f(const GLchar* varname, GLfloat v0, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!_bEnabled) return true;
@@ -463,7 +463,7 @@ bool glShader::setUniform1f(GLchar* varname, GLfloat v0, GLint index)
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform2f(GLchar* varname, GLfloat v0, GLfloat v1, GLint index)
+bool glShader::setUniform2f(const GLchar* varname, GLfloat v0, GLfloat v1, GLint index)
 {
    if (!useGLSL) return false; // GLSL not available
    if (!_bEnabled) return true;
@@ -484,7 +484,7 @@ bool glShader::setUniform2f(GLchar* varname, GLfloat v0, GLfloat v1, GLint index
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform3f(GLchar* varname, GLfloat v0, GLfloat v1, GLfloat v2, GLint index)
+bool glShader::setUniform3f(const GLchar* varname, GLfloat v0, GLfloat v1, GLfloat v2, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!_bEnabled) return true;
@@ -505,7 +505,7 @@ bool glShader::setUniform3f(GLchar* varname, GLfloat v0, GLfloat v1, GLfloat v2,
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform4f(GLchar* varname, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3, GLint index)
+bool glShader::setUniform4f(const GLchar* varname, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!_bEnabled) return true;
@@ -526,7 +526,7 @@ bool glShader::setUniform4f(GLchar* varname, GLfloat v0, GLfloat v1, GLfloat v2,
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform1i(GLchar* varname, GLint v0, GLint index)
+bool glShader::setUniform1i(const GLchar* varname, GLint v0, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!_bEnabled) return true;
@@ -547,7 +547,7 @@ bool glShader::setUniform1i(GLchar* varname, GLint v0, GLint index)
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform2i(GLchar* varname, GLint v0, GLint v1, GLint index)
+bool glShader::setUniform2i(const GLchar* varname, GLint v0, GLint v1, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!_bEnabled) return true;
@@ -569,7 +569,7 @@ bool glShader::setUniform2i(GLchar* varname, GLint v0, GLint v1, GLint index)
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform3i(GLchar* varname, GLint v0, GLint v1, GLint v2, GLint index)
+bool glShader::setUniform3i(const GLchar* varname, GLint v0, GLint v1, GLint v2, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!_bEnabled) return true;
@@ -590,7 +590,7 @@ bool glShader::setUniform3i(GLchar* varname, GLint v0, GLint v1, GLint v2, GLint
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform4i(GLchar* varname, GLint v0, GLint v1, GLint v2, GLint v3, GLint index)
+bool glShader::setUniform4i(const GLchar* varname, GLint v0, GLint v1, GLint v2, GLint v3, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!_bEnabled) return true;
@@ -611,7 +611,7 @@ bool glShader::setUniform4i(GLchar* varname, GLint v0, GLint v1, GLint v2, GLint
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform1ui(GLchar* varname, GLuint v0, GLint index)
+bool glShader::setUniform1ui(const GLchar* varname, GLuint v0, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!bGPUShader4) return false;
@@ -633,7 +633,7 @@ bool glShader::setUniform1ui(GLchar* varname, GLuint v0, GLint index)
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform2ui(GLchar* varname, GLuint v0, GLuint v1, GLint index)
+bool glShader::setUniform2ui(const GLchar* varname, GLuint v0, GLuint v1, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!bGPUShader4) return false;
@@ -656,7 +656,7 @@ bool glShader::setUniform2ui(GLchar* varname, GLuint v0, GLuint v1, GLint index)
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform3ui(GLchar* varname, GLuint v0, GLuint v1, GLuint v2, GLint index)
+bool glShader::setUniform3ui(const GLchar* varname, GLuint v0, GLuint v1, GLuint v2, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!bGPUShader4) return false;
@@ -678,7 +678,7 @@ bool glShader::setUniform3ui(GLchar* varname, GLuint v0, GLuint v1, GLuint v2, G
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform4ui(GLchar* varname, GLuint v0, GLuint v1, GLuint v2, GLuint v3, GLint index)
+bool glShader::setUniform4ui(const GLchar* varname, GLuint v0, GLuint v1, GLuint v2, GLuint v3, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!bGPUShader4) return false;
@@ -699,7 +699,7 @@ bool glShader::setUniform4ui(GLchar* varname, GLuint v0, GLuint v1, GLuint v2, G
 }
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform1fv(GLchar* varname, GLsizei count, GLfloat *value, GLint index)
+bool glShader::setUniform1fv(const GLchar* varname, GLsizei count, GLfloat *value, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!_bEnabled) return true;
@@ -717,7 +717,7 @@ bool glShader::setUniform1fv(GLchar* varname, GLsizei count, GLfloat *value, GLi
 
     return true;
 }
-bool glShader::setUniform2fv(GLchar* varname, GLsizei count, GLfloat *value, GLint index)
+bool glShader::setUniform2fv(const GLchar* varname, GLsizei count, GLfloat *value, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!_bEnabled) return true;
@@ -738,7 +738,7 @@ bool glShader::setUniform2fv(GLchar* varname, GLsizei count, GLfloat *value, GLi
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform3fv(GLchar* varname, GLsizei count, GLfloat *value, GLint index)
+bool glShader::setUniform3fv(const GLchar* varname, GLsizei count, GLfloat *value, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!_bEnabled) return true;
@@ -759,7 +759,7 @@ bool glShader::setUniform3fv(GLchar* varname, GLsizei count, GLfloat *value, GLi
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform4fv(GLchar* varname, GLsizei count, GLfloat *value, GLint index)
+bool glShader::setUniform4fv(const GLchar* varname, GLsizei count, GLfloat *value, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!_bEnabled) return true;
@@ -780,7 +780,7 @@ bool glShader::setUniform4fv(GLchar* varname, GLsizei count, GLfloat *value, GLi
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform1iv(GLchar* varname, GLsizei count, GLint *value, GLint index)
+bool glShader::setUniform1iv(const GLchar* varname, GLsizei count, GLint *value, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!_bEnabled) return true;
@@ -801,7 +801,7 @@ bool glShader::setUniform1iv(GLchar* varname, GLsizei count, GLint *value, GLint
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform2iv(GLchar* varname, GLsizei count, GLint *value, GLint index)
+bool glShader::setUniform2iv(const GLchar* varname, GLsizei count, GLint *value, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!_bEnabled) return true;
@@ -822,7 +822,7 @@ bool glShader::setUniform2iv(GLchar* varname, GLsizei count, GLint *value, GLint
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform3iv(GLchar* varname, GLsizei count, GLint *value, GLint index)
+bool glShader::setUniform3iv(const GLchar* varname, GLsizei count, GLint *value, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!_bEnabled) return true;
@@ -843,7 +843,7 @@ bool glShader::setUniform3iv(GLchar* varname, GLsizei count, GLint *value, GLint
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform4iv(GLchar* varname, GLsizei count, GLint *value, GLint index)
+bool glShader::setUniform4iv(const GLchar* varname, GLsizei count, GLint *value, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!_bEnabled) return true;
@@ -864,7 +864,7 @@ bool glShader::setUniform4iv(GLchar* varname, GLsizei count, GLint *value, GLint
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform1uiv(GLchar* varname, GLsizei count, GLuint *value, GLint index)
+bool glShader::setUniform1uiv(const GLchar* varname, GLsizei count, GLuint *value, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!bGPUShader4) return false;
@@ -886,7 +886,7 @@ bool glShader::setUniform1uiv(GLchar* varname, GLsizei count, GLuint *value, GLi
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform2uiv(GLchar* varname, GLsizei count, GLuint *value, GLint index)
+bool glShader::setUniform2uiv(const GLchar* varname, GLsizei count, GLuint *value, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!bGPUShader4) return false;
@@ -908,7 +908,7 @@ bool glShader::setUniform2uiv(GLchar* varname, GLsizei count, GLuint *value, GLi
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform3uiv(GLchar* varname, GLsizei count, GLuint *value, GLint index)
+bool glShader::setUniform3uiv(const GLchar* varname, GLsizei count, GLuint *value, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!bGPUShader4) return false;
@@ -930,7 +930,7 @@ bool glShader::setUniform3uiv(GLchar* varname, GLsizei count, GLuint *value, GLi
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniform4uiv(GLchar* varname, GLsizei count, GLuint *value, GLint index)
+bool glShader::setUniform4uiv(const GLchar* varname, GLsizei count, GLuint *value, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!bGPUShader4) return false;
@@ -952,7 +952,7 @@ bool glShader::setUniform4uiv(GLchar* varname, GLsizei count, GLuint *value, GLi
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniformMatrix2fv(GLchar* varname, GLsizei count, GLboolean transpose, GLfloat *value, GLint index)
+bool glShader::setUniformMatrix2fv(const GLchar* varname, GLsizei count, GLboolean transpose, GLfloat *value, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!_bEnabled) return true;
@@ -973,7 +973,7 @@ bool glShader::setUniformMatrix2fv(GLchar* varname, GLsizei count, GLboolean tra
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniformMatrix3fv(GLchar* varname, GLsizei count, GLboolean transpose, GLfloat *value, GLint index)
+bool glShader::setUniformMatrix3fv(const GLchar* varname, GLsizei count, GLboolean transpose, GLfloat *value, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!_bEnabled) return true;
@@ -994,7 +994,7 @@ bool glShader::setUniformMatrix3fv(GLchar* varname, GLsizei count, GLboolean tra
 
 //-----------------------------------------------------------------------------
 
-bool glShader::setUniformMatrix4fv(GLchar* varname, GLsizei count, GLboolean transpose, GLfloat *value, GLint index)
+bool glShader::setUniformMatrix4fv(const GLchar* varname, GLsizei count, GLboolean transpose, GLfloat *value, GLint index)
 {
     if (!useGLSL) return false; // GLSL not available
     if (!_bEnabled) return true;
@@ -1030,7 +1030,7 @@ GLint glShader::GetUniformLocation(const GLchar *name)
 
 //-----------------------------------------------------------------------------
 
-void glShader::getUniformfv(GLchar* varname, GLfloat* values, GLint index)
+void glShader::getUniformfv(const GLchar* varname, GLfloat* values, GLint index)
 {
 if (!useGLSL) return;
 
@@ -1049,7 +1049,7 @@ if (!useGLSL) return;
 
 //-----------------------------------------------------------------------------
 
-void glShader::getUniformiv(GLchar* varname, GLint* values, GLint index)
+void glShader::getUniformiv(const GLchar* varname, GLint* values, GLint index)
 {
     if (!useGLSL) return;
 
@@ -1068,7 +1068,7 @@ void glShader::getUniformiv(GLchar* varname, GLint* values, GLint index)
 
 //-----------------------------------------------------------------------------
 
-void glShader::getUniformuiv(GLchar* varname, GLuint* values, GLint index)
+void glShader::getUniformuiv(const GLchar* varname, GLuint* values, GLint index)
 {
     if (!useGLSL) return;
 
@@ -1086,7 +1086,7 @@ void glShader::getUniformuiv(GLchar* varname, GLuint* values, GLint index)
 }
 
 //-----------------------------------------------------------------------------
-void  glShader::BindAttribLocation(GLint index, GLchar* name)
+void  glShader::BindAttribLocation(GLint index, const GLchar* name)
 {
    glBindAttribLocation(ProgramObject, index, name);
 }
@@ -1428,7 +1428,7 @@ void glShaderObject::loadFromMemory(const char* program)
 
 // ----------------------------------------------------------------------------
 // Compiler Log: Ausgabe der Compiler Meldungen in String
-char* glShaderObject::getCompilerLog(void)
+const char* glShaderObject::getCompilerLog(void)
 {
 if (!useGLSL) return aGLSLStrings[0];
 

@@ -31,8 +31,8 @@ using namespace std;
 // NutateThread //
 //////////////////
 
-NutateThread::NutateThread(qreal cyclesPerSecond, QObject * parent /* = NULL */)
-    : QThread(parent)
+NutateThread::NutateThread(qreal cyclesPerSecond, QObject * parentObj /* = NULL */)
+    : QThread(parentObj)
     , speed(cyclesPerSecond)
     , interval(0.200) // update every 200 milliseconds
     , currentAngle(0.0)
@@ -295,13 +295,13 @@ void NaMainWindow::setZRange(int minZ, int maxZ) {
     ui.ZSlice_spinBox->setMinimum(minZ);
 }
 
-void NaMainWindow::handleCoordinatedCloseEvent(QCloseEvent *event) {
-    event->accept();
+void NaMainWindow::handleCoordinatedCloseEvent(QCloseEvent *e) {
+    e->accept();
 }
 
-void NaMainWindow::closeEvent(QCloseEvent *event)
+void NaMainWindow::closeEvent(QCloseEvent *e)
 {
-    V3dApplication::handleCloseEvent(event);
+    V3dApplication::handleCloseEvent(e);
 }
 
 void NaMainWindow::on_actionQuit_triggered() {
