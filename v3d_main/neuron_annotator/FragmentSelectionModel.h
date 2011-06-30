@@ -21,9 +21,9 @@ signals:
     // At most one fragment is highlighted at a time; usually when the users mouse hovers over a fragment
     void fragmentHighlightChanged(FragmentIndex);
     // Any number of fragments can be included in the current selection
-    void fragmentSelectionChanged(FragmentSet);
+    void fragmentSelectionChanged(const FragmentSet&);
     // Whether fragments should be visible is yet a third category
-    void fragmentVisibilityChanged(FragmentSet);
+    void fragmentVisibilityChanged(const FragmentSet&);
 
 public slots:
     void setHighlightedFragment(FragmentIndex);

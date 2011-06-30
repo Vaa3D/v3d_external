@@ -30,6 +30,7 @@ QT4_WRAP_CPP(NA_MOC_SRCS
     gui/NaMainWindow.h
     gui/NaZStackWidget.h
     AnnotationSession.h
+    FragmentSelectionModel.h
     MipData.h
     MipLayer.h
     NeuronSelector.h
