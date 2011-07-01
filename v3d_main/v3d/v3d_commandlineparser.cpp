@@ -34,6 +34,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "v3d_commandlineparser.h"
 
+#include <fstream>
+#include <iostream>
+#include <sstream>
+
 
 // command line interface class
 void V3D_CL_INTERFACE::copy(const V3D_CL_INTERFACE& input)
@@ -102,6 +106,8 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
     }
     else
     {
+        vector<char *> parList; // read from configuration file
+        
         // command arguments parsing
         char* key;
 
@@ -257,7 +263,7 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
                             {
                                 i_v3d.open3Dviewer = true;
                             }
-                            else if (!strcmp(key, "p"))
+                            else if (!strcmp(key, "x"))
                             {
                                 // launch V3D
                                 i_v3d.openV3D = true;
@@ -276,7 +282,7 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 
                                 qDebug()<<"call plugin method ..."<<i_v3d.pluginmethod;
                             }
-							else if (!strcmp(key, "n"))
+							else if (!strcmp(key, "f"))
                             {
                                 // plugin function
                                 i_v3d.pluginfunc = argv[i+1];
@@ -286,10 +292,8 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
 								
                                 qDebug()<<"call plugin function ..."<<i_v3d.pluginfunc;
                             }
-                            else if(!strcmp(key, "par"))
+                            else if(!strcmp(key, "p"))
                             {
-                                key += 2; // skip "par"
-                                
                                 // plugin function parameters
                                 while(i+1<argc && !QString(argv[i+1]).contains(OPTION_CHAR) )
                                 {
@@ -298,6 +302,42 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
                                     i_v3d.cmdArgList.push_back(strparameters);
                                     i++;
                                 }
+                            }
+                            else if(!strcmp(key, "pf"))
+                            {
+                                key++; // skip "pf"
+                                
+                                // plugin function parameters from configuration file
+                                if(i+1<argc)
+                                {
+                                    char *fn = argv[i+1];
+                                    ifstream pConfigFile(fn);
+                                    
+                                    string str;
+                                    
+                                    if(pConfigFile.is_open())
+                                    {
+                                        
+                                        while( !pConfigFile.eof() )
+                                        {
+                                            while( getline(pConfigFile, str) )
+                                            {
+                                                //istringstream iss(str);
+                                                parList.push_back((char *)(str.c_str()));
+                                            
+                                            } 
+                                        }
+                                    }
+                                    else
+                                    {
+                                        cout << "Unable to open the file";
+                                        return false;
+                                    }
+                                    
+                                    pConfigFile.close();
+                                    
+                                }
+                                i++;
                                 
                             }
                             else
@@ -318,6 +358,13 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
                 }
 
             }
+            
+            //
+            for(int i=0; i<parList.size(); i++)
+            {
+                i_v3d.cmdArgList.push_back(parList.at(i));
+            }
+            
         }
     }
 	
