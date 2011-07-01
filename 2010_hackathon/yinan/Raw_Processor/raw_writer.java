@@ -22,7 +22,7 @@ public class raw_writer implements PlugInFilter {
 	}
 	
 	public void run(ImageProcessor ip) {
-		SaveDialog sd = new SaveDialog("Save raw Image...",imp.getTitle(),".raw");
+		SaveDialog sd = new SaveDialog("Save V3D's Raw Image...",imp.getTitle(),".v3draw");
 		String directory = sd.getDirectory();
 		String fileName = sd.getFileName();
 		IJ.showStatus("Saving: " + directory + fileName);
