@@ -335,7 +335,16 @@ void NaMainWindow::on_actionOpen_triggered() {
                                                         QDir::currentPath(),
                                                         QFileDialog::ShowDirsOnly);
 
+    // If user presses cancel, QFileDialog::getExistingDirectory returns a null string
+    if (dirName.isEmpty()) // Silently do nothing when user presses Cancel.  No error dialogs please!
+        return;
+
     QDir imageDir(dirName);
+    if (! imageDir.exists()) {
+        QMessageBox::warning(this, tr("No such directory"),
+                             QString("No directory '%1' exists!  Please try something else.").arg(dirName));
+        return;
+    }
 
     std::cout << "Selected directory=" << imageDir.absolutePath().toStdString() << endl;
 
@@ -541,12 +550,18 @@ void NaMainWindow::createMaskGallery() {
 
     // Step 1: Add background MIP
     QFrame* ui_maskFrame = qFindChild<QFrame*>(this, "maskFrame");
+    if (! ui_maskFrame->layout()) {
+        ui_maskFrame->setLayout(new QHBoxLayout());
+        assert(ui_maskFrame->layout());
+    }
     QLayout *managementLayout = ui_maskFrame->layout();
-    // Delete any old contents
-    if (managementLayout)
-        delete managementLayout;
-    managementLayout = new QHBoxLayout();
-    ui_maskFrame->setLayout(managementLayout);
+    // Delete any old contents from the layout, such as previous thumbnails
+    QLayoutItem * item;
+    while ( ( item = managementLayout->takeAt(0)) != NULL )
+    {
+        delete item->widget();
+        delete item;
+    }
 
     GalleryButton* backgroundButton = new GalleryButton(maskMipList->at(0), "Background", 0);
     backgroundButton->setChecked(true); // since full image loaded initially
@@ -557,11 +572,18 @@ void NaMainWindow::createMaskGallery() {
 
     // Step 2: Add Neuron-Mask Gallery
     // QFrame* ui_maskGallery = qFindChild<QFrame*>(this, "maskGallery");
+    if (! ui.scrollAreaWidgetContents->layout()) {
+        ui.scrollAreaWidgetContents->setLayout(new QHBoxLayout());
+        assert(ui.scrollAreaWidgetContents->layout());
+    }
     QLayout *galleryLayout = ui.scrollAreaWidgetContents->layout();
-    if (galleryLayout)
-        delete galleryLayout;
-    galleryLayout = new QHBoxLayout();
-    ui.scrollAreaWidgetContents->setLayout(galleryLayout);
+    // Delete any old contents from the layout, such as previous thumbnails
+    while ( ( item = galleryLayout->takeAt(0)) != NULL )
+    {
+        delete item->widget();
+        delete item;
+    }
+
     qDebug() << "Number of neuron masks = " << maskMipList->size();
     for (int i = 1; i < maskMipList->size(); ++i) {
         GalleryButton* button = new GalleryButton(maskMipList->at(i), QString("Neuron %1").arg(i), i);
