@@ -31,7 +31,7 @@ public class raw_reader implements PlugIn {
           if (fileSize<lenkey+2+4*4+1) // datatype has 2 bytes, and sz has 4*4 bytes and endian flag has 1 byte.
               throw new Exception("The size of your input file is too small and is not correct, -- it is too small to contain the legal header.");
           byte[] by = new byte[lenkey];
-          int nread = fid.read(by);
+          long nread = fid.read(by);
           String keyread = new String(by);
           if (nread!=lenkey)
               throw new Exception("File unrecognized or corrupted file.");
@@ -69,14 +69,14 @@ public class raw_reader implements PlugIn {
           default:
               throw new Exception("Unrecognized datatype code"+dcode+". The file is incorrect or this code is not supported in this version");
           }
-          int unitSize = datatype;
+          long unitSize = datatype;
           by = null;
   
           
           //read the data size info (the data size is stored in either 2-byte or 4-byte space)
-          int tmpn = 0;         
-          int[] sz = new int[4];
-          int totalUnit = 1;
+          long tmpn = 0;         
+          long[] sz = new long[4];
+          long totalUnit = 1;
           
           //first assume this is a 2-byte file
           by = new byte[2];
@@ -121,22 +121,22 @@ public class raw_reader implements PlugIn {
          
           
           //construct img into an array of ImageStacks, the length of array equals number of color channels.
-          int layerOffset = sz[0]*sz[1];
-          int colorOffset = layerOffset*sz[2];
+          long layerOffset = sz[0]*sz[1];
+          long colorOffset = layerOffset*sz[2];
           
           ImagePlus[] imps = new ImagePlus[sz[3]];
           
-          for (int colorChannel=0;colorChannel<sz[3];colorChannel++)
+          for (long colorChannel=0;colorChannel<sz[3];colorChannel++)
           {
         	  ImageStack imStack = new ImageStack(sz[0],sz[1]);
           
 	          switch (unitSize) {
 	          case 1:
-        		  for (int layer=0;layer<sz[2];layer++)
+        		  for (long layer=0;layer<sz[2];layer++)
         		  {
         			  ByteProcessor cF = new ByteProcessor(sz[0],sz[1]);
             		  byte[] imtmp = new byte[layerOffset];
-            		  for (int i=0;i<layerOffset;i++)
+            		  for (long i=0;i<layerOffset;i++)
         				 imtmp[i] = img[colorChannel*colorOffset+layer*layerOffset+i];
             		  cF.setPixels(imtmp);
             		  imStack.addSlice(null,cF);
@@ -144,11 +144,11 @@ public class raw_reader implements PlugIn {
 	        	  break;
 	          case 2:
 	    		  byte[] bytmp = new byte[2];
-	    		  for (int layer=0;layer<sz[2];layer++)
+	    		  for (long layer=0;layer<sz[2];layer++)
 	    		  {
 	    			 short[] im16 = new short[layerOffset];
 	    			 ShortProcessor cF16 = new ShortProcessor(sz[0],sz[1]);
-	    			 for (int i=0;i<layerOffset;i++){
+	    			 for (long i=0;i<layerOffset;i++){
 	    				 bytmp[0] = img[colorChannel*colorOffset*2+layer*layerOffset*2+i*2];
 	    				 bytmp[1] = img[colorChannel*colorOffset*2+layer*layerOffset*2+i*2+1];
 	    				 im16[i] = (short)bytes2int(bytmp,isBig);
@@ -160,11 +160,11 @@ public class raw_reader implements PlugIn {
 	        	  break;
 	          case 4:
 	    		  bytmp = new byte[4];
-	    		  for (int layer=0;layer<sz[2];layer++)
+	    		  for (long layer=0;layer<sz[2];layer++)
 	    		  {
 	    			  float[] im32 = new float[layerOffset];
 	    			  FloatProcessor cF32 = new FloatProcessor(sz[0],sz[1]);
-	    			  for (int i=0;i<layerOffset;i++){
+	    			  for (long i=0;i<layerOffset;i++){
 	    				 bytmp[0] = img[colorChannel*colorOffset*4+layer*layerOffset*4+i*4];
 	    				 bytmp[1] = img[colorChannel*colorOffset*4+layer*layerOffset*4+i*4+1];
 	    				 bytmp[2] = img[colorChannel*colorOffset*4+layer*layerOffset*4+i*4+2];
@@ -199,11 +199,11 @@ public class raw_reader implements PlugIn {
     {
         int retVal = 0;
         if (!isBig)
-            for (int i=b.length-1;i>=0;i--) {
+            for (long i=b.length-1;i>=0;i--) {
             	retVal = (retVal<<8) + (b[i] & 0xff);
             }
         else
-            for (int i=0;i<b.length;i++) {
+            for (long i=0;i<b.length;i++) {
                 retVal = (retVal<<8) + (b[i] & 0xff);
             }
        
