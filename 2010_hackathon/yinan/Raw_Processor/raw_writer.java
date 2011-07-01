@@ -50,18 +50,15 @@ public class raw_writer implements PlugInFilter {
 			
 			
 			//unitSize & image size depends on the type of ImagePlus
-			//IJ.showMessage("image type:"+imtype);
 			switch (imtype) {
 			case ImagePlus.COLOR_RGB:case ImagePlus.GRAY8:
 				unitSize = 1;
 				break;
 			case ImagePlus.GRAY16:
 				unitSize = 2;
-				sz[3] = 1;
 				break;
 			case ImagePlus.GRAY32:
 				unitSize = 4;
-				sz[3] = 1;
 				break;
 			default:
 				unitSize = imp.getBitDepth()/8;
@@ -73,11 +70,18 @@ public class raw_writer implements PlugInFilter {
 			
 			
 			//pixel info
-			int totalUnit = sz[0]*sz[1]*sz[2]*sz[3];
-			int layerOffset = sz[0]*sz[1];
-			int colorOffset = layerOffset*sz[2];
+			
+			int w = sz[0];
+	        int h = sz[1];
+	        int nChannel = sz[3];
+	        
+	        //IJ.showMessage("w="+w+" h="+h+" s="+sz[2]+" c="+nChannels);
+	          
+			int layerOffset = w*h;
+			long colorOffset = layerOffset*(long)sz[2];
+			long totalUnit = colorOffset*sz[3];
 			ImageStack stack = imp.getStack();
-			byte[] img = new byte[totalUnit*unitSize];
+			ByteArray64 img = new ByteArray64(totalUnit*unitSize);
 			
 			switch (imtype) {
 			case ImagePlus.COLOR_RGB:
@@ -90,9 +94,9 @@ public class raw_writer implements PlugInFilter {
 					cp.getRGB(r,g,b);
 					for (int i=0;i<layerOffset;i++)
 					{
-						img[(layer-1)*layerOffset+i] = r[i];
-						img[colorOffset+(layer-1)*layerOffset+i] = g[i];
-						img[2*colorOffset+(layer-1)*layerOffset+i] = b[i];
+						img.set((layer-1)*layerOffset+i, r[i]);
+						img.set(colorOffset+(layer-1)*layerOffset+i, g[i]);
+						img.set(2*colorOffset+(layer-1)*layerOffset+i, b[i]);
 					}
 				}
 				r = null;
@@ -107,7 +111,7 @@ public class raw_writer implements PlugInFilter {
 					{
 						imtmp = (byte[])stack.getPixels((layer-1)*sz[3]+colorChannel+1);
 						for (int i=0;i<layerOffset;i++)
-							img[colorChannel*colorOffset+(layer-1)*layerOffset+i] = imtmp[i];
+							img.set(colorChannel*colorOffset+(layer-1)*layerOffset+i, imtmp[i]);
 					}
 				}
 				break;
@@ -121,8 +125,8 @@ public class raw_writer implements PlugInFilter {
 						for (int i=0;i<layerOffset;i++)
 						{
 							byte[] tmp = int2byte(im16[i],2);
-							img[2*colorChannel*colorOffset+(layer-1)*layerOffset*2+2*i] = tmp[0];
-							img[2*colorChannel*colorOffset+(layer-1)*layerOffset*2+2*i+1] = tmp[1];
+							img.set(2*colorChannel*colorOffset+(layer-1)*layerOffset*2+2*i, tmp[0]);
+							img.set(2*colorChannel*colorOffset+(layer-1)*layerOffset*2+2*i+1, tmp[1]);
 						}
 					}
 				}
@@ -138,10 +142,10 @@ public class raw_writer implements PlugInFilter {
 						for (int i=0;i<layerOffset;i++)
 						{
 							byte[] tmp = int2byte(Float.floatToIntBits(im32[i]),4);
-							img[4*colorChannel*colorOffset+(layer-1)*layerOffset*4+4*i] = tmp[0];
-							img[4*colorChannel*colorOffset+(layer-1)*layerOffset*4+4*i+1] = tmp[1];
-							img[4*colorChannel*colorOffset+(layer-1)*layerOffset*4+4*i+2] = tmp[2];
-							img[4*colorChannel*colorOffset+(layer-1)*layerOffset*4+4*i+3] = tmp[3];
+							img.set(4*colorChannel*colorOffset+(layer-1)*layerOffset*4+4*i, tmp[0]);
+							img.set(4*colorChannel*colorOffset+(layer-1)*layerOffset*4+4*i+1, tmp[1]);
+							img.set(4*colorChannel*colorOffset+(layer-1)*layerOffset*4+4*i+2, tmp[2]);
+							img.set(4*colorChannel*colorOffset+(layer-1)*layerOffset*4+4*i+3, tmp[3]);
 						}
 					}
 				}
@@ -151,7 +155,7 @@ public class raw_writer implements PlugInFilter {
 				throw new Exception("Image type not supported by this plugin.");
 			}
 			
-			out.write(img);
+			img.write(out);
 			
 			
 			out.close();
@@ -171,5 +175,72 @@ public class raw_writer implements PlugInFilter {
 		}
 		return(by);
 	}
-
 }
+
+class ByteArray64 {
+
+    private final long CHUNK_SIZE = 1024*1024*1024; //1GiB
+
+    long size;
+    byte [][] data;
+
+    public ByteArray64( long size ) {
+        this.size = size;
+        if( size == 0 ) {
+            data = null;
+        } else {
+            int chunks = (int)(size/CHUNK_SIZE);
+            int remainder = (int)(size - ((long)chunks)*CHUNK_SIZE);
+            data = new byte[chunks+(remainder==0?0:1)][];
+            for( int idx=chunks; --idx>=0; ) {
+                data[idx] = new byte[(int)CHUNK_SIZE];
+            }
+            if( remainder != 0 ) {
+                data[chunks] = new byte[remainder];
+            }
+        }
+    }
+    public byte get( long index ) {
+        if( index<0 || index>=size ) {
+            throw new IndexOutOfBoundsException("Error attempting to access data element "+index+".  Array is "+size+" elements long.");
+        }
+        int chunk = (int)(index/CHUNK_SIZE);
+        int offset = (int)(index - (((long)chunk)*CHUNK_SIZE));
+        return data[chunk][offset];
+    }
+    public void set( long index, byte b ) {
+        if( index<0 || index>=size ) {
+            throw new IndexOutOfBoundsException("Error attempting to access data element "+index+".  Array is "+size+" elements long.");
+        }
+        int chunk = (int)(index/CHUNK_SIZE);
+        int offset = (int)(index - (((long)chunk)*CHUNK_SIZE));
+        data[chunk][offset] = b;
+    }
+    /**
+     * Simulates a single read which fills the entire array via several smaller reads.
+     * 
+     * @param fileInputStream
+     * @throws IOException
+     */
+    public void read( FileInputStream fileInputStream ) throws IOException {
+        if( size == 0 ) {
+            return;
+        }
+        for( int idx=0; idx<data.length; idx++ ) {
+            if( fileInputStream.read( data[idx] ) != data[idx].length ) {
+                throw new IOException("short read.");
+            }
+        }
+    }
+    public void write( FileOutputStream fileOutputStream ) throws IOException {
+        if( size == 0 ) {
+            return;
+        }
+        for( int idx=0; idx<data.length; idx++ ) 
+            fileOutputStream.write( data[idx] );
+    }
+    public long size() {
+        return size;
+    }
+}
+

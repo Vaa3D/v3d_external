@@ -22,10 +22,10 @@ public class raw_reader implements PlugIn {
        
         // Read in the header values...
         try {
-          FileInputStream fid = new FileInputStream(directory + fileName);
+          File f = new File(directory + fileName);
+          FileInputStream fid = new FileInputStream(f);
           int lenkey = formatkey.length();
-          long fileSize = fid.available();
-         
+          long fileSize = f.length();     
          
           //read the format key
           if (fileSize<lenkey+2+4*4+1) // datatype has 2 bytes, and sz has 4*4 bytes and endian flag has 1 byte.
@@ -69,12 +69,10 @@ public class raw_reader implements PlugIn {
           default:
               throw new Exception("Unrecognized datatype code"+dcode+". The file is incorrect or this code is not supported in this version");
           }
-          long unitSize = datatype;
+          int unitSize = datatype;
           by = null;
-  
           
-          //read the data size info (the data size is stored in either 2-byte or 4-byte space)
-          long tmpn = 0;         
+          //read the data size info (the data size is stored in either 2-byte or 4-byte space)       
           long[] sz = new long[4];
           long totalUnit = 1;
           
@@ -82,7 +80,7 @@ public class raw_reader implements PlugIn {
           by = new byte[2];
           for (int i=0;i<4;i++)
           {
-              tmpn += fid.read(by);
+              fid.read(by);
               sz[i] = bytes2int(by,isBig);
               totalUnit *= sz[i];
           }         
@@ -105,39 +103,46 @@ public class raw_reader implements PlugIn {
         		  fid.read(by);
         		  sz[i] = bytes2int(by,isBig);
         	  }
-        	  totalUnit = sz[0]*sz[1]*sz[2]*sz[3];
+        	  totalUnit = 1;
+        	  for (int i=0;i<4;i++)
+        		  totalUnit *= sz[i];
         	  if ((totalUnit*unitSize+4*4+2+1+lenkey) != fileSize)
         		  throw new Exception("The input file has a size different from what specified in the header. Exit.");
         	}
-          //IJ.showMessage("image size: w="+sz[0]+" h="+sz[1]+" s="+sz[2]+" c="+sz[3]);
          
           
           
           //read the pixel info
           
           
-          byte[] img = new byte[totalUnit*unitSize];
-          fid.read(img);
+          ByteArray64 img = new ByteArray64(totalUnit*unitSize);
+          img.read(fid);
          
           
           //construct img into an array of ImageStacks, the length of array equals number of color channels.
-          long layerOffset = sz[0]*sz[1];
+          
+          int w = (int)sz[0];
+          int h = (int)sz[1];
+          int nChannel = (int)sz[3];
+          
+          int layerOffset = w*h;
           long colorOffset = layerOffset*sz[2];
           
-          ImagePlus[] imps = new ImagePlus[sz[3]];
+          //IJ.showMessage("w="+w+" h="+h+" s="+sz[2]+" c="+nChannel);
+          ImagePlus[] imps = new ImagePlus[nChannel];
           
-          for (long colorChannel=0;colorChannel<sz[3];colorChannel++)
+          for (int colorChannel=0;colorChannel<nChannel;colorChannel++)
           {
-        	  ImageStack imStack = new ImageStack(sz[0],sz[1]);
+        	  ImageStack imStack = new ImageStack(w,h);
           
 	          switch (unitSize) {
 	          case 1:
         		  for (long layer=0;layer<sz[2];layer++)
         		  {
-        			  ByteProcessor cF = new ByteProcessor(sz[0],sz[1]);
+        			  ByteProcessor cF = new ByteProcessor(w,h);
             		  byte[] imtmp = new byte[layerOffset];
-            		  for (long i=0;i<layerOffset;i++)
-        				 imtmp[i] = img[colorChannel*colorOffset+layer*layerOffset+i];
+            		  for (int i=0;i<layerOffset;i++)
+        				 imtmp[i] = img.get(colorChannel*colorOffset+layer*layerOffset+i);
             		  cF.setPixels(imtmp);
             		  imStack.addSlice(null,cF);
         		  }
@@ -147,10 +152,10 @@ public class raw_reader implements PlugIn {
 	    		  for (long layer=0;layer<sz[2];layer++)
 	    		  {
 	    			 short[] im16 = new short[layerOffset];
-	    			 ShortProcessor cF16 = new ShortProcessor(sz[0],sz[1]);
-	    			 for (long i=0;i<layerOffset;i++){
-	    				 bytmp[0] = img[colorChannel*colorOffset*2+layer*layerOffset*2+i*2];
-	    				 bytmp[1] = img[colorChannel*colorOffset*2+layer*layerOffset*2+i*2+1];
+	    			 ShortProcessor cF16 = new ShortProcessor(w,h);
+	    			 for (int i=0;i<layerOffset;i++){
+	    				 bytmp[0] = img.get(colorChannel*colorOffset*2+layer*layerOffset*2+i*2);
+	    				 bytmp[1] = img.get(colorChannel*colorOffset*2+layer*layerOffset*2+i*2+1);
 	    				 im16[i] = (short)bytes2int(bytmp,isBig);
 	    			 }
 	    			 cF16.setPixels(im16);
@@ -163,12 +168,12 @@ public class raw_reader implements PlugIn {
 	    		  for (long layer=0;layer<sz[2];layer++)
 	    		  {
 	    			  float[] im32 = new float[layerOffset];
-	    			  FloatProcessor cF32 = new FloatProcessor(sz[0],sz[1]);
-	    			  for (long i=0;i<layerOffset;i++){
-	    				 bytmp[0] = img[colorChannel*colorOffset*4+layer*layerOffset*4+i*4];
-	    				 bytmp[1] = img[colorChannel*colorOffset*4+layer*layerOffset*4+i*4+1];
-	    				 bytmp[2] = img[colorChannel*colorOffset*4+layer*layerOffset*4+i*4+2];
-	    				 bytmp[3] = img[colorChannel*colorOffset*4+layer*layerOffset*4+i*4+3];
+	    			  FloatProcessor cF32 = new FloatProcessor(w,h);
+	    			  for (int i=0;i<layerOffset;i++){
+	    				 bytmp[0] = img.get(colorChannel*colorOffset*4+layer*layerOffset*4+i*4);
+	    				 bytmp[1] = img.get(colorChannel*colorOffset*4+layer*layerOffset*4+i*4+1);
+	    				 bytmp[2] = img.get(colorChannel*colorOffset*4+layer*layerOffset*4+i*4+2);
+	    				 bytmp[3] = img.get(colorChannel*colorOffset*4+layer*layerOffset*4+i*4+3);
 	    				 im32[i] = Float.intBitsToFloat(bytes2int(bytmp,isBig));
 	    			  }
 	    			 cF32.setPixels(im32);
@@ -199,14 +204,81 @@ public class raw_reader implements PlugIn {
     {
         int retVal = 0;
         if (!isBig)
-            for (long i=b.length-1;i>=0;i--) {
+            for (int i=b.length-1;i>=0;i--) {
             	retVal = (retVal<<8) + (b[i] & 0xff);
             }
         else
-            for (long i=0;i<b.length;i++) {
+            for (int i=0;i<b.length;i++) {
                 retVal = (retVal<<8) + (b[i] & 0xff);
             }
        
         return retVal;
+    }
+}
+
+class ByteArray64 {
+
+    private final long CHUNK_SIZE = 1024*1024*1024; //1GiB
+
+    long size;
+    byte [][] data;
+
+    public ByteArray64( long size ) {
+        this.size = size;
+        if( size == 0 ) {
+            data = null;
+        } else {
+            int chunks = (int)(size/CHUNK_SIZE);
+            int remainder = (int)(size - ((long)chunks)*CHUNK_SIZE);
+            data = new byte[chunks+(remainder==0?0:1)][];
+            for( int idx=chunks; --idx>=0; ) {
+                data[idx] = new byte[(int)CHUNK_SIZE];
+            }
+            if( remainder != 0 ) {
+                data[chunks] = new byte[remainder];
+            }
+        }
+    }
+    public byte get( long index ) {
+        if( index<0 || index>=size ) {
+            throw new IndexOutOfBoundsException("Error attempting to access data element "+index+".  Array is "+size+" elements long.");
+        }
+        int chunk = (int)(index/CHUNK_SIZE);
+        int offset = (int)(index - (((long)chunk)*CHUNK_SIZE));
+        return data[chunk][offset];
+    }
+    public void set( long index, byte b ) {
+        if( index<0 || index>=size ) {
+            throw new IndexOutOfBoundsException("Error attempting to access data element "+index+".  Array is "+size+" elements long.");
+        }
+        int chunk = (int)(index/CHUNK_SIZE);
+        int offset = (int)(index - (((long)chunk)*CHUNK_SIZE));
+        data[chunk][offset] = b;
+    }
+    /**
+     * Simulates a single read which fills the entire array via several smaller reads.
+     * 
+     * @param fileInputStream
+     * @throws IOException
+     */
+    public void read( FileInputStream fileInputStream ) throws IOException {
+        if( size == 0 ) {
+            return;
+        }
+        for( int idx=0; idx<data.length; idx++ ) {
+            if( fileInputStream.read( data[idx] ) != data[idx].length ) {
+                throw new IOException("short read.");
+            }
+        }
+    }
+    public void write( FileOutputStream fileOutputStream ) throws IOException {
+        if( size == 0 ) {
+            return;
+        }
+        for( int idx=0; idx<data.length; idx++ ) 
+            fileOutputStream.write( data[idx] );
+    }
+    public long size() {
+        return size;
     }
 }
