@@ -14,7 +14,7 @@ public class raw_reader implements PlugIn {
     private String formatkey = "raw_image_stack_by_hpeng";
     
     public void run(String arg) {
-        OpenDialog od = new OpenDialog("Open V3D's RAW Image...", arg);
+        OpenDialog od = new OpenDialog("Open raw Image...", arg);
         String fileName = od.getFileName();
         if (fileName==null)       return;
         String directory = od.getDirectory();
@@ -169,7 +169,7 @@ public class raw_reader implements PlugIn {
 	    				 bytmp[1] = img[colorChannel*colorOffset*4+layer*layerOffset*4+i*4+1];
 	    				 bytmp[2] = img[colorChannel*colorOffset*4+layer*layerOffset*4+i*4+2];
 	    				 bytmp[3] = img[colorChannel*colorOffset*4+layer*layerOffset*4+i*4+3];
-	    				 im32[i] = bytes2int(bytmp,isBig);
+	    				 im32[i] = Float.intBitsToFloat(bytes2int(bytmp,isBig));
 	    			  }
 	    			 cF32.setPixels(im32);
 	    			 imStack.addSlice(null,cF32);

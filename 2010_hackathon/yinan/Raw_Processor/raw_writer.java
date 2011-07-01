@@ -22,7 +22,7 @@ public class raw_writer implements PlugInFilter {
 	}
 	
 	public void run(ImageProcessor ip) {
-		SaveDialog sd = new SaveDialog("Save V3D's RAW Image...",imp.getTitle(),".raw");
+		SaveDialog sd = new SaveDialog("Save raw Image...",imp.getTitle(),".raw");
 		String directory = sd.getDirectory();
 		String fileName = sd.getFileName();
 		IJ.showStatus("Saving: " + directory + fileName);
@@ -37,25 +37,23 @@ public class raw_writer implements PlugInFilter {
 			out.write("B".getBytes());
 			
 			int imtype = imp.getType();
+			int[] dim = new int[5];
+			dim = imp.getDimensions();
+			if (dim[4]!=1)
+				throw new Exception("Currently the plugin does not support 5d hyperstack. Please check your data.");
 			int[] sz = new int[4];
-			sz[0] = imp.getWidth();
-			sz[1] = imp.getHeight();
-			sz[2] = imp.getStackSize();
+			sz[0] = dim[0];
+			sz[1] = dim[1];
+			sz[2] = dim[3];
+			sz[3] = dim[2];
 			int unitSize;
 			
 			
 			//unitSize & image size depends on the type of ImagePlus
-			IJ.showMessage("image type:"+imtype);
+			//IJ.showMessage("image type:"+imtype);
 			switch (imtype) {
-			case ImagePlus.COLOR_RGB:
-				//IJ.showMessage("This is a RGB image");
+			case ImagePlus.COLOR_RGB:case ImagePlus.GRAY8:
 				unitSize = 1;
-				sz[3] = 3;
-				//IJ.showMessage("wid: "+sz[0]+" height: "+sz[1]+" size: "+sz[2]IJ.showMessage("This is a RGB image");+" colorChannels: "+sz[3]);
-				break;
-			case ImagePlus.GRAY8:
-				unitSize = 1;
-				sz[3] = 1;
 				break;
 			case ImagePlus.GRAY16:
 				unitSize = 2;
@@ -66,7 +64,7 @@ public class raw_writer implements PlugInFilter {
 				sz[3] = 1;
 				break;
 			default:
-				throw new Exception("Currently the image type is not supported by this plugin.");
+				unitSize = imp.getBitDepth()/8;
 			}
 			
 			out.write(int2byte(unitSize,2));
@@ -105,22 +103,27 @@ public class raw_writer implements PlugInFilter {
 				byte[] imtmp = new byte[layerOffset];
 				for (int layer=1;layer<=sz[2];layer++)
 				{
-					imtmp = (byte[])stack.getPixels(layer);
-					for (int i=0;i<layerOffset;i++)
-						img[(layer-1)*layerOffset+i] = imtmp[i];
+					for (int colorChannel=0;colorChannel<sz[3];colorChannel++)
+					{
+						imtmp = (byte[])stack.getPixels((layer-1)*sz[3]+colorChannel+1);
+						for (int i=0;i<layerOffset;i++)
+							img[colorChannel*colorOffset+(layer-1)*layerOffset+i] = imtmp[i];
+					}
 				}
-				imtmp = null;
 				break;
 			case ImagePlus.GRAY16:
 				short[] im16 = new short[layerOffset];
 				for (int layer=1;layer<=sz[2];layer++)
 				{
-					im16 = (short[])stack.getPixels(layer);
-					for (int i=0;i<layerOffset;i++)
+					for (int colorChannel=0;colorChannel<sz[3];colorChannel++)
 					{
-						byte[] tmp = int2byte(im16[i],2);
-						img[(layer-1)*layerOffset*2+2*i] = tmp[0];
-						img[(layer-1)*layerOffset*2+2*i+1] = tmp[1];
+						im16 = (short[])stack.getPixels((layer-1)*sz[3]+colorChannel+1);
+						for (int i=0;i<layerOffset;i++)
+						{
+							byte[] tmp = int2byte(im16[i],2);
+							img[2*colorChannel*colorOffset+(layer-1)*layerOffset*2+2*i] = tmp[0];
+							img[2*colorChannel*colorOffset+(layer-1)*layerOffset*2+2*i+1] = tmp[1];
+						}
 					}
 				}
 				im16 = null;
@@ -129,19 +132,23 @@ public class raw_writer implements PlugInFilter {
 				float[] im32 = new float[layerOffset];
 				for (int layer=1;layer<=sz[2];layer++)
 				{
-					im32 = (float[])stack.getPixels(layer);
-					for (int i=0;i<layerOffset;i++)
+					for (int colorChannel=0;colorChannel<sz[3];colorChannel++)
 					{
-						byte[] tmp = int2byte(im32[i],4);
-						img[(layer-1)*layerOffset*4+4*i] = tmp[0];
-						img[(layer-1)*layerOffset*4+4*i+1] = tmp[1];
-						img[(layer-1)*layerOffset*4+4*i+2] = tmp[2];
-						img[(layer-1)*layerOffset*4+4*i+3] = tmp[3];
+						im32 = (float[])stack.getPixels((layer-1)*sz[3]+colorChannel+1);
+						for (int i=0;i<layerOffset;i++)
+						{
+							byte[] tmp = int2byte(Float.floatToIntBits(im32[i]),4);
+							img[4*colorChannel*colorOffset+(layer-1)*layerOffset*4+4*i] = tmp[0];
+							img[4*colorChannel*colorOffset+(layer-1)*layerOffset*4+4*i+1] = tmp[1];
+							img[4*colorChannel*colorOffset+(layer-1)*layerOffset*4+4*i+2] = tmp[2];
+							img[4*colorChannel*colorOffset+(layer-1)*layerOffset*4+4*i+3] = tmp[3];
+						}
 					}
 				}
 				im32 = null;
 				break;
 			default:
+				throw new Exception("Image type not supported by this plugin.");
 			}
 			
 			out.write(img);
