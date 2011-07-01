@@ -127,7 +127,7 @@ bool SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & lN, V3DLONG newrooti
 	//do a DFS for the the matrix and re-allocate ids for all the nodes
 	V3DLONG root= idlist.indexOf(LUT.value(newrootid));
 	
-	if (root==-1)
+	if (LUT.keys().indexOf(newrootid)==-1)
 	{
 		v3d_msg("The new root id you have chosen does not exist in the SWC file.");
 		return(false);
@@ -142,7 +142,7 @@ bool SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & lN, V3DLONG newrooti
 	DFS(matrix,neworder,root,id,siz,numbered);
 	
 	if ((*id)<siz) {
-		v3d_msg(QString("new tree size: %1, original size: %2.\nThe root you have chosen cannot reach all the nodes in neuron tree. Show the connected component only.").arg(*id).arg(siz));
+		v3d_msg("The root you have chosen cannot reach all the nodes in neuron tree. Show the connected component only.");
 		siz = (*id);
 		}
 	else if ((*id)==siz)
@@ -207,6 +207,7 @@ void sort_swc(V3DPluginCallback2 &callback, QWidget *parent, int method_code)
 			int rootid;
 			bool ok;
 			rootid = QInputDialog::getInteger(parent, "input root number","New root number:",1,1,neuron.listNeuron.size(),1,&ok);
+		if (ok){
 			if (SortSWC(neuron, lN,rootid)){
 
 			//write new SWC to file
@@ -223,7 +224,7 @@ void sort_swc(V3DPluginCallback2 &callback, QWidget *parent, int method_code)
 	
 			file.close();
 			}
-	
+		    }
 		}
 		else 
 		{
