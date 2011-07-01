@@ -1,5 +1,5 @@
 /*
- *  sort_swc .cpp
+ *  sort_swc.cpp
  *  sort_swc 
  *
  *  Created by Wan, Yinan, on 06/20/11.
@@ -142,11 +142,11 @@ bool SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & lN, V3DLONG newrooti
 	DFS(matrix,neworder,root,id,siz,numbered);
 	
 	if ((*id)<siz) {
-		v3d_msg("The root you have chosen cannot reach all the nodes in neuron tree. Show the connected component only.");
+		v3d_msg("The root you have chosen cannot reach all other nodes in neuron tree. Show the connected component only.", 0);
 		siz = (*id);
 		}
 	else if ((*id)==siz)
-		v3d_msg("The neuronTree is connected. Show re-sorted result.");
+		v3d_msg("The neuronTree is connected. Show re-sorted result.", 0);
 
 			
 		NeuronSWC S;
