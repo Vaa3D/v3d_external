@@ -2387,3 +2387,5 @@ v3d_main/neuron_annotator/gui/GammaWidget.ui
 v3d_main/neuron_annotator/gui/AngleWidget.ui
 v3d_main/neuron_annotator/FragmentSelectionModel.h
 v3d_main/neuron_annotator/FragmentSelectionModel.cpp
+v3d_main/neuron_annotator/gui/FragmentGalleryWidget.h
+v3d_main/neuron_annotator/gui/FragmentGalleryWidget.cpp

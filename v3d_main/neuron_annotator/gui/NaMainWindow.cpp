@@ -23,6 +23,7 @@
 #include "GalleryButton.h"
 #include "../../cell_counter/CellCounter3D.h"
 #include "../NeuronSelector.h"
+#include "FragmentGalleryWidget.h"
 
 using namespace std;
 
@@ -447,7 +448,8 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
         connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(bool)), annotationSession, SLOT(showAllNeurons(bool)));
         connect(annotationSession, SIGNAL(neuronMaskStatusSet()), ui.v3dr_glwidget, SLOT(updateAnnotationModels()));
         connect(annotationSession, SIGNAL(neuronMaskStatusSet()), this, SLOT(updateAnnotationModels()));
-        connect(annotationSession, SIGNAL(scrollBarFocus(int)), ui.scrollArea->horizontalScrollBar(), SLOT(setValue(int)));
+        // connect(annotationSession, SIGNAL(scrollBarFocus(int)), ui.scrollArea->horizontalScrollBar(), SLOT(setValue(int)));
+        connect(annotationSession, SIGNAL(scrollBarFocus(int)), ui.fragmentGalleryWidget, SLOT(scrollToFragment(FragmentSelectionModel::FragmentIndex)));
 
     return true;
 }
@@ -572,23 +574,14 @@ void NaMainWindow::createMaskGallery() {
 
     // Step 2: Add Neuron-Mask Gallery
     // QFrame* ui_maskGallery = qFindChild<QFrame*>(this, "maskGallery");
-    if (! ui.scrollAreaWidgetContents->layout()) {
-        ui.scrollAreaWidgetContents->setLayout(new QHBoxLayout());
-        assert(ui.scrollAreaWidgetContents->layout());
-    }
-    QLayout *galleryLayout = ui.scrollAreaWidgetContents->layout();
     // Delete any old contents from the layout, such as previous thumbnails
-    while ( ( item = galleryLayout->takeAt(0)) != NULL )
-    {
-        delete item->widget();
-        delete item;
-    }
+    ui.fragmentGalleryWidget->clear();
 
     qDebug() << "Number of neuron masks = " << maskMipList->size();
     for (int i = 1; i < maskMipList->size(); ++i) {
         GalleryButton* button = new GalleryButton(maskMipList->at(i), QString("Neuron %1").arg(i), i);
         mipGalleryButtonList.append(button);
-        galleryLayout->addWidget(button);
+        ui.fragmentGalleryWidget->appendFragment(button);
         button->setChecked(true); // start as checked since full image loaded initially
         annotationSession->setNeuronMaskStatus(i, true);
         connect(button, SIGNAL(declareChange(int,bool)), annotationSession, SLOT(neuronMaskUpdate(int,bool)));

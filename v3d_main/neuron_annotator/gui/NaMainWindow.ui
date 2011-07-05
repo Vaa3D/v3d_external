@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>969</width>
-    <height>873</height>
+    <width>1098</width>
+    <height>909</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -1183,46 +1183,16 @@ You can also resize the box by Ctrl + left mouse click.</string>
               <number>0</number>
              </property>
              <item>
-              <widget class="QScrollArea" name="scrollArea">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
+              <widget class="FragmentGalleryWidget" name="fragmentGalleryWidget">
                <property name="frameShape">
                 <enum>QFrame::NoFrame</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Plain</enum>
-               </property>
-               <property name="lineWidth">
-                <number>0</number>
                </property>
                <property name="verticalScrollBarPolicy">
                 <enum>Qt::ScrollBarAlwaysOff</enum>
                </property>
-               <property name="widgetResizable">
-                <bool>true</bool>
+               <property name="horizontalScrollBarPolicy">
+                <enum>Qt::ScrollBarAlwaysOn</enum>
                </property>
-               <widget class="QWidget" name="scrollAreaWidgetContents">
-                <property name="geometry">
-                 <rect>
-                  <x>0</x>
-                  <y>0</y>
-                  <width>567</width>
-                  <height>198</height>
-                 </rect>
-                </property>
-                <layout class="QHBoxLayout" name="maskGalleryLayout">
-                 <property name="spacing">
-                  <number>0</number>
-                 </property>
-                 <property name="margin">
-                  <number>0</number>
-                 </property>
-                </layout>
-               </widget>
               </widget>
              </item>
             </layout>
@@ -1266,7 +1236,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>969</width>
+     <width>1098</width>
      <height>22</height>
     </rect>
    </property>
@@ -1485,6 +1455,11 @@ You can also resize the box by Ctrl + left mouse click.</string>
    <extends>QWidget</extends>
    <header>../neuron_annotator/gui/AngleWidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>FragmentGalleryWidget</class>
+   <extends>QFrame</extends>
+   <header>../neuron_annotator/gui/FragmentGalleryWidget.h</header>
   </customwidget>
   <customwidget>
    <class>GammaWidget</class>

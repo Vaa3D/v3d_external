@@ -29,6 +29,7 @@ QT4_WRAP_CPP(NA_MOC_SRCS
     gui/NaLargeMIPWidget.h
     gui/NaMainWindow.h
     gui/NaZStackWidget.h
+    gui/FragmentGalleryWidget.h
     AnnotationSession.h
     FragmentSelectionModel.h
     MipData.h

@@ -26,7 +26,7 @@ GalleryButton::GalleryButton(const QImage & image, QString name, int index, QWid
     layout->addWidget(pushButton);
     layout->addWidget(label);
     this->setLayout(layout);
-    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    // setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
     connect(pushButton, SIGNAL(clicked(bool)), this, SLOT(buttonPress(bool)));
     // Multithreaded image update must hand off to single GUI thread for final GUI pixmap update.
     connect(this, SIGNAL(thumbnailImageUpdated()),
@@ -106,4 +106,5 @@ void GalleryButton::setBrightness(const BrightnessCalibrator<int>& calibrator)
 void GalleryButton::updateThumbnailIcon() {
     if (! correctedScaledThumbnail) return;
     pushButton->setIcon(QIcon(QPixmap::fromImage(*correctedScaledThumbnail)));
+    emit widgetChanged(index);
 }

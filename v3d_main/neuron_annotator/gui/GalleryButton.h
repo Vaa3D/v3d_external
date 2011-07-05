@@ -28,6 +28,7 @@ signals:
     // pixmap update would be a good idea.
     void thumbnailImageUpdated();
     void fragmentHover(FragmentIndex fragmentIndex);
+    void widgetChanged(FragmentIndex);
 
 public slots:
     void buttonPress(bool checked);
