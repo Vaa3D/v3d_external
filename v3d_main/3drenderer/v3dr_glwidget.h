@@ -71,6 +71,7 @@ public:
 	Renderer* getRenderer() {return renderer;}
         const Renderer* getRenderer() const {return renderer;} // const version CMB
 	QString getDataTitle() {return data_title;}
+	void setDataTitle(QString newdt) {data_title = newdt;}
 	int getNumKeyHolding() {for(int i=1;i<=9; i++) if(_holding_num[i]) return i; return -1;}
 	bool getStill() 		{return _still;} //used by Renderer::beStil()
 	void setStill(bool b) 	{_still = b;}    //used by V3dR_MainWindow::doSaveMovie()
@@ -355,7 +356,7 @@ protected:
 	bool _still, _stillpaint_disable, _stillpaint_pending, _mouse_in_view;
     QTimer still_timer;
     static const int still_timer_interval = 1000;
-	
+
 	int t_mouseclick;
 
     bool _in_destructor; //for makeCurrent when valid context

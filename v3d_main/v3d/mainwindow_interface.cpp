@@ -208,13 +208,13 @@ bool MainWindow::setGlobalSetting( V3D_GlobalSetting &gs )
 //void MainWindow::setFocusLocation(void* window, V3DLONG cx, V3DLONG cy, V3DLONG cz)
 //{
 //	qDebug()<<"setFocusLocation ...";
-//	
+//
 //	//	XFormWidget* w = this->p_mainWindow->validateImageWindow(window);
 //	//	if (w)
 //	//	{
 //	//		w->forceToChangeFocus((int)cx, (int)cy, (int)cz);
 //	//	}
-//	
+//
 //	return;
 //}
 
@@ -272,13 +272,13 @@ bool XFormWidget::transferImageData(Image4DSimple *img, unsigned char *a) // FIX
 	  this->imgData->setOriginY( img->getOriginY() );
 	  this->imgData->setOriginZ( img->getOriginZ() );
 	  this->imgData->setCustomStructPointer( img->getCustomStructPointer() );
-		
+
 	  img->setRawDataPointerToNull();
 
     return true;
 	}
 	else return false;
-} 
+}
 
 void XFormWidget::open3DWindow()
 {
@@ -323,12 +323,16 @@ void XFormWidget::pushImageIn3DWindow()
 	if (mypara_3Dview.b_still_open && mypara_3Dview.window3D
 			&& (w = mypara_3Dview.window3D->getGLWidget()))
 	{
+		mypara_3Dview.image4d = getImageData();
 		w->updateImageData();
+		mypara_3Dview.window3D->setDataTitle(windowTitle());
 	}
 	if (mypara_3Dlocalview.b_still_open && mypara_3Dlocalview.window3D
 			&& (w = mypara_3Dlocalview.window3D->getGLWidget()))
 	{
+		mypara_3Dlocalview.image4d = getImageData();
 		w->updateImageData();
+		mypara_3Dlocalview.window3D->setDataTitle(windowTitle());
 	}
 }
 int XFormWidget::pushTimepointIn3DWindow(int timepoint)
