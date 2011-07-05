@@ -365,6 +365,7 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
 	if (!done)  { done = runPluginInterface(plugin, menuString); v3d_msg("done with runPluginInterface().",0); }
     // runSingleImageInterface works with both 1.0 and 2.1
     if (!done)  { done = runSingleImageInterface(plugin, menuString); v3d_msg("done with runSingleImageInterface().",0); }
+	//
     if (!done)  {v3d_msg("No interface found.",0);}
 	
 	v3d_msg(QString("already run! done status=%1").arg(done), 0);
@@ -399,14 +400,21 @@ bool V3d_PluginLoader::runSingleImageInterface(QObject* plugin, const QString &c
     // V3DSingleImageInterface *iFilter3 = dynamic_cast<V3DSingleImageInterface *>(plugin);
     // if (iFilter2 == NULL) {v3d_msg("plugin cannot be dynamic_cast to V3DSingleImageInterface*", 0);}
     
-    // For some reason dynamic_cast works, but qobject_cast fails, when plugin is V3DSingleImageInterface2_1
-    V3DSingleImageInterface *iFilter = dynamic_cast<V3DSingleImageInterface *>(plugin);
+    // For some reason dynamic_cast works, but qobject_cast fails, when plugin is V3DSingleImageInterface2_1 //this should be wrong. by PHC 110705
 
-    bool done = (iFilter != 0);
+    V3DSingleImageInterface2_1 *iFilter21 = qobject_cast<V3DSingleImageInterface2_1 *>(plugin);
+    V3DSingleImageInterface *iFilter = qobject_cast<V3DSingleImageInterface *>(plugin);
 
-    qDebug()<<"V3DSingleImageInterface ..."<<iFilter;
+    if (!iFilter21 && !iFilter)
+    {
+       return false;
+    }
 
-    if (iFilter && v3d_mainwindow)
+    bool done = true;
+
+    qDebug()<<"V3DSingleImageInterface or V3DSingleImageInterface2_1..."<<iFilter;
+
+    if (v3d_mainwindow)
     {
         My4DImage* image = v3d_mainwindow->currentImage();
 		if (!image)
@@ -422,7 +430,10 @@ bool V3d_PluginLoader::runSingleImageInterface(QObject* plugin, const QString &c
 
         try
         {
-        	iFilter->processImage(command, (Image4DSimple*)image, (QWidget*)0); //do not pass the mainwindow widget
+        	if (iFilter21)
+               	iFilter21->processImage(command, (Image4DSimple*)image, (QWidget*)0); //do not pass the mainwindow widget
+            else
+               	iFilter->processImage(command, (Image4DSimple*)image, (QWidget*)0); //do not pass the mainwindow widget
         }
         catch (...)
         {

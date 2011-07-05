@@ -20,8 +20,8 @@ void recentering(Tdata *&p, Tdata *data, Tidx nx, Tidx ny, Tidx nz, Tidx ox, Tid
 
 QStringList ReCenterImagePlugin::menulist() const
 {
-    return QStringList() << tr("ReCenterImage");
-		//				<< tr("version of this plugin");
+    return QStringList() << tr("ReCenterImage")
+						<< tr("About this plugin");
 }
 
 void ReCenterImagePlugin::processImage(const QString &arg, Image4DSimple *p4DImage, QWidget *parent)
@@ -92,10 +92,10 @@ void ReCenterImagePlugin::processImage(const QString &arg, Image4DSimple *p4DIma
 
 		}
 	}
-//	else if (arg == tr("version of this plugin"))
-//	{
-//		QMessageBox::information(parent, "Version info", "Plugin Recenter version 1.0 developed by Yang Yu.");
-//	}
+	else if (arg == tr("About this plugin"))
+	{
+		QMessageBox::information(parent, "Version info", "Plugin Recenter version 1.0 developed by Yang Yu.");
+	}
 	else
 		return;
 
