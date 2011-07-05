@@ -55,7 +55,6 @@ Last update: 2011-04-19: fix some potential problem of null mainWin pointer
 #include <vector>
 
 #include "mainwindow.h"
-#include "../neuron_annotator/gui/NaMainWindow.h"
 #include "v3d_application.h"
 
 #include <string>
