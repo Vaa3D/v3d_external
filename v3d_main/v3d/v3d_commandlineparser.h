@@ -68,6 +68,8 @@ public:
         pluginname=NULL;
         pluginmethod=NULL;
         pluginfunc=NULL;
+        
+        pluginhelp = false; 
     }
     
     ~V3D_CL_INTERFACE(){}   
@@ -87,6 +89,8 @@ public:
 	char* pluginname;
 	char* pluginmethod;
 	char* pluginfunc;
+    
+    bool pluginhelp; // list plugin menu/func
 
 };
 

@@ -49,6 +49,7 @@ void V3D_CL_INTERFACE::copy(const V3D_CL_INTERFACE& input)
     pluginmethod = input.pluginmethod;
     pluginfunc = input.pluginfunc;
     hideV3D = input.hideV3D;
+    pluginhelp = input.pluginhelp;
     
     for(int i=0; i<input.fileList.size(); i++)
     {
@@ -173,31 +174,47 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
                 }
             }
 
-            // if there is -h/H, V3D only print help info and return
+            // find -h and -x combination
+            int flagh = 0, flagx = 0;
             for(int i=1; i<argc; i++)
             {
-                key = argv[1];
+                key = argv[i];
                 if (*key == OPTION_CHAR)
                 {
                     while(*++key)
                     {
                         if (*key == '?' || !strcmp(key, "h") || !strcmp(key, "H"))
                         {
-                            help();
-                            i_v3d.clp_finished = true;
-                            return true;
-                        }
-                        // CMB Dec 7, 2010
-                        // Mac app launcher adds a command line argument
-                        // like "-psn_0_7989150"
-                        // Ignore it.
-                        else if (string(argv[1]).find("-psn_") == 0) {
-                            v3d_msg("Apparently a mac bundle", 0);
-                            v3d_msg(argv[1], 0);
-                            i_v3d.openV3D = true;
-                            return true;
+                            flagh++;
                         }
                     }
+                }
+                key = argv[i];
+                if(*key == OPTION_CHAR)
+                {
+                    while (*++key) 
+                    {
+                        if(!strcmp(key, "x"))
+                        {
+                            flagx++;
+                            
+                            if(i+1>=argc)   
+                                return error(help);
+                            
+                            // launch V3D
+                            i_v3d.openV3D = true;
+                            
+                            // plugin command
+                            i_v3d.pluginname = argv[i+1];
+                        }
+                    }
+                }
+                
+                if(flagh && flagx)
+                {
+                    i_v3d.hideV3D = true; // do not open v3d GUI
+                    i_v3d.pluginhelp = true;
+                    return true;
                 }
             }
 
@@ -330,7 +347,7 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
                                     }
                                     else
                                     {
-                                        cout << "Unable to open the file";
+                                        cout << "Unable to open the file"<<endl;
                                         return false;
                                     }
                                     
@@ -342,7 +359,7 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
                             }
                             else
                             {
-                                qDebug()<<"parsing ..."<<key<<i;
+                                qDebug()<<"parsing ..."<<key<<i<<"Unknown command. Type 'v3d -h' for usage";
 
                                 i_v3d.clp_finished = true;
                                 return error(help);

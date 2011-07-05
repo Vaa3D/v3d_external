@@ -432,21 +432,52 @@ void MainWindow::updateRunPlugin() //20110426 YuY
 				return;
 			}
 			
-			// run method
+			// run plugin
 			V3d_PluginLoader mypluginloader(this);
-			
+            
+            // help info
+            QObject *plugin = loader->instance();
+			QStringList menulist = v3d_getInterfaceMenuList(plugin);
+            QStringList funclist = v3d_getInterfaceFuncList(plugin);
+            
+            if(v3dclp.pluginhelp)
+            {
+                cout<<endl<<"plugin: "<<v3dpluginFind.toStdString().c_str()<<endl<<endl;
+                
+                cout<<"usage: "<<endl;
+                cout<<"menu -- ";
+                for (int i=0; i<menulist.size(); i++) {
+                    if(i==0)
+                    {
+                        cout<<menulist.at(i).toStdString().c_str()<<endl;
+                    }
+                    else
+                    {
+                        cout<<"     -- "<<menulist.at(i).toStdString().c_str()<<endl; 
+                    }
+                }
+                cout<<"func -- ";
+                for (int i=0; i<funclist.size(); i++) {
+                    if(i==0)
+                    {
+                        cout<<funclist.at(i).toStdString().c_str()<<endl;
+                    }
+                    else
+                    {
+                        cout<<"     -- "<<funclist.at(i).toStdString().c_str()<<endl; 
+                    }
+                }
+                cout<<endl<<endl;
+                return;
+            }
+            
+            // run
 			if(pluginmethod)
 			{
 				mypluginloader.runPlugin(loader, pluginmethod);
 			}
 			if(pluginfunc)
-			{
-//				V3DPluginArgItem arg;
-//				V3DPluginArgList pluginfunc_input;
-//				V3DPluginArgList pluginfunc_output;
-//				
-//				mypluginloader.callPluginFunc(v3dpluginFind, pluginfunc, pluginfunc_input, pluginfunc_output);
-                
+			{                
                 PLUGINFH pluginFuncHandler;
                 
                 pluginFuncHandler.doPluginFunc(v3dclp, mypluginloader, v3dpluginFind, (void *)this);

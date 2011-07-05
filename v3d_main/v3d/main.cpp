@@ -310,7 +310,6 @@ int main(int argc, char **argv)
 					}
 				}
 			}
-			
 						
 
             // Check for software updates.
