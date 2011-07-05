@@ -111,7 +111,7 @@ void printHelp_v3d()
 
 	cout<<"    -i <file>                    open single or multiple image (.tif/.tiff, .lsm, .mrc, .raw/.v3draw) / object (.ano, .apo, .swc, .marker) files"<<endl;
     cout<<"    -o <file>                    indicates single or multiple outputs"<<endl;
-	cout<<"    -c <plugin_dll_full_path>    a string indicates the full path of a dll (for a plugin) to be launched."<<endl;
+	cout<<"    -x <plugin_dll_full_path>    a string indicates the full path of a dll (for a plugin) to be launched."<<endl;
 	cout<<"    -m <menu_name>               a string indicates which menu of a plugin will be called."<<endl;
     cout<<"    -f <function_name>           a string indicates which function of a plugin will be called."<<endl;
     cout<<"    -p <parameters>              a string indicates parameters that plugin function use"<<endl;
