@@ -24,6 +24,7 @@ FragmentGalleryWidget::~FragmentGalleryWidget()
 /* virtual */
 void FragmentGalleryWidget::resizeEvent(QResizeEvent * e) {
     updateThumbnailPositions();
+    updateScrollBar();
 }
 
 // Scroll wheel to advance neurons, one half thumnail per tick
