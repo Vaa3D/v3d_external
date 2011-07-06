@@ -2,8 +2,8 @@
 #include <cassert>
 #include <cmath> /* for std::abs(double) */
 
-FragmentGalleryWidget::FragmentGalleryWidget(QWidget *parent)
-    : QAbstractScrollArea(parent)
+FragmentGalleryWidget::FragmentGalleryWidget(QWidget *pparent)
+    : QAbstractScrollArea(pparent)
     , leftPixel(0)
 {
     assert(viewport());
@@ -105,17 +105,17 @@ void FragmentGalleryWidget::updateThumbnailPositions()
     for (int b = 0; b < contents.size(); ++b)
     {
         GalleryButton * button = contents[b];
-        int x = b * (buttonWidth) - leftPixel;
-        if (x < -buttonWidth) {
+        int px = b * (buttonWidth) - leftPixel;
+        if (px < -buttonWidth) {
             button->hide();
             continue; // off screen to left
         }
-        if (x > viewport()->size().width()) {
+        if (px > viewport()->size().width()) {
             button->hide();
             continue; // off screen to right
         }
-        int y = 0;
-        button->move(x, y);
+        int py = 0;
+        button->move(px, py);
         button->show();
     }
 }

@@ -27,7 +27,7 @@ signals:
     void scrollPixelChanged(int);
 
 public slots:
-    void scrollToFragment(FragmentIndex);
+    void scrollToFragment(FragmentSelectionModel::FragmentIndex);
     void setScrollPixel(int pixel);
 
 protected:
