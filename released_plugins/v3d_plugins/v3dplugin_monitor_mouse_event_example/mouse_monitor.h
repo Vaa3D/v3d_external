@@ -19,6 +19,24 @@ public:
 	{
 		while(1)
 		{
+			// check whether closed ?
+			v3dhandleList win_list = callback->getImageWindowList();
+			if(win_list.empty())
+			{
+				emit win_closed();
+				break;
+			}
+			bool illegal = false;
+			for(int i = 0; i < win_list.size(); i++)
+			{
+				if(curwin == win_list[i]) {illegal = true; break;}
+			}
+			if(!illegal)
+			{
+				emit win_closed();
+				break;
+			}
+
 			if(curwin==callback->currentImageWindow())
 			{
 				LandmarkList new_landmarks = callback->getLandmark(curwin);
@@ -41,6 +59,7 @@ public:
 	}
 signals:
 	void mark_changed(LocationSimple loc);
+	void win_closed();
 private:
 	V3DPluginCallback2 * callback;
 	v3dhandle curwin;

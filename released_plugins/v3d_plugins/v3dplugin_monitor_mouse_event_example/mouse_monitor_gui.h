@@ -42,6 +42,12 @@ public slots:
 	{
 		v3d_msg(tr("(%1, %2, %3) is clicked !").arg(loc.x).arg(loc.y).arg(loc.z));
 	}
+	
+	void onWinClosed()
+	{
+		v3d_msg(tr("Stop monitor ! Enjoy!"));
+		this->close();
+	}
 
 	void onStart()
 	{
@@ -50,7 +56,8 @@ public slots:
 		{
 			monitor = new MouseMonitor(callback, curwin);
 			connect(monitor, SIGNAL(mark_changed(LocationSimple)), this, SLOT(onMarkChanged(LocationSimple)));
-			v3d_msg("Try create mark in 3d view!");
+			connect(monitor, SIGNAL(win_closed()), this, SLOT(onWinClosed()));
+			v3d_msg("Try to create landmark in 3d view!");
 		}		
 		if(!monitor->isRunning())monitor->start();
 		callback->open3DWindow(curwin);
