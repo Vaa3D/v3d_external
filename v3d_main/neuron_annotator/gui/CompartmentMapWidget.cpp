@@ -8,31 +8,14 @@
 using namespace std;
 
 CompartmentMapWidget::CompartmentMapWidget(QWidget* parent): V3dR_GLWidget(NULL, parent, "Compartment Map")
-{
-    _idep = new iDrawExternalParameter();
-    _idep->image4d = NULL;
-    //_idep->image4d = new My4DImage();
-    _volCompress = false;
-
-    // This method for eliminating tearing artifacts works but is supposedly obsolete;
-    // http://stackoverflow.com/questions/5174428/how-to-change-qglformat-for-an-existing-qglwidget-at-runtime
-    QGLFormat glFormat(context()->format());
-    glFormat.setDoubleBuffer(true); // attempt to reduce tearing on Mac
-    setFormat(glFormat);
-
-    //
-    //renderer = new Renderer_tex2(this);
-}
+{}
 
 CompartmentMapWidget::~CompartmentMapWidget()
-{
-    delete _idep; _idep = NULL;
-}
+{}
 
-void CompartmentMapWidget::init()
+void CompartmentMapWidget::loadAtlas()
 {
-    //
-    //QString atlasfile(":/atlas/flybraincompartmentmap.v3ds");
+    //QString atlasfile(":/atlas/flybraincompartmentmap.v3ds"); // .qrc
     QString flybrainatlas("flybraincompartmentmap.v3ds");
 
     QString atlasfile;
@@ -56,17 +39,71 @@ void CompartmentMapWidget::init()
 
     if(QFile::exists(atlasfile))
     {
-        //renderer->loadV3DSFile(atlasfile);
-        //renderer->loadObjectFromFile(atlasfile.toStdString().c_str());
+        ((Renderer_tex2 *)renderer)->loadV3DSFile(atlasfile);
+        //((Renderer_tex2 *)renderer)->loadObjectFromFile(atlasfile.toStdString().c_str());
 
-        _isSoftwareGL = false;
-        GLeeInit();
-
-        //updateTool();
+        updateTool();
         //renderer->paint(); //POST_updateGL();
         //update();
     }
-
 }
 
+// display OpenGL graphics
+void CompartmentMapWidget::initializeGL()
+{
+    _isSoftwareGL = false;
+    GLeeInit();
 
+    renderer = new Renderer_tex2(this);
+
+    // settings
+    renderer->bShowBoundingBox = true;
+    renderer->bShowAxes        = true;
+
+    renderer->tryTexCompress = false;
+    renderer->tryTex3D       = false;
+    renderer->tryTexNPT      = false;
+    renderer->tryTexStream   = true;
+
+    renderer->lineType   = true;
+
+    // prepare
+    if (renderer)
+    {
+        loadAtlas();
+        if(renderer->hasError())	POST_CLOSE(this);
+    }
+
+}
+void CompartmentMapWidget::resizeGL(int width, int height){
+    V3dR_GLWidget::resizeGL(width, height);
+}
+void CompartmentMapWidget::paintGL(){
+    V3dR_GLWidget::paintGL();
+}
+
+// event
+void CompartmentMapWidget::focusInEvent(QFocusEvent* e){
+    V3dR_GLWidget::focusInEvent(e);
+}
+void CompartmentMapWidget::focusOutEvent(QFocusEvent* e){
+    V3dR_GLWidget::focusOutEvent(e);
+}
+void CompartmentMapWidget::enterEvent(QEvent *e){
+    V3dR_GLWidget::enterEvent(e);
+}
+void CompartmentMapWidget::leaveEvent(QEvent *e){
+    V3dR_GLWidget::leaveEvent(e);
+}
+void CompartmentMapWidget::mousePressEvent(QMouseEvent *event){
+    V3dR_GLWidget::mousePressEvent(event);
+}
+void CompartmentMapWidget::mouseReleaseEvent(QMouseEvent *event){
+    V3dR_GLWidget::mouseReleaseEvent(event);
+}
+void CompartmentMapWidget::mouseMoveEvent(QMouseEvent *event){
+    V3dR_GLWidget::mouseMoveEvent(event);
+}
+void CompartmentMapWidget::wheelEvent(QWheelEvent *event){
+    V3dR_GLWidget::wheelEvent(event);
+}

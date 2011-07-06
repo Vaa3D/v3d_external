@@ -22,7 +22,21 @@ public:
     virtual ~CompartmentMapWidget();
 
 public:
-    void init();
+    void loadAtlas();
+
+protected:
+    virtual void initializeGL();
+    virtual void resizeGL(int width, int height);
+    virtual void paintGL();
+
+    virtual void focusInEvent(QFocusEvent* e);
+    virtual void focusOutEvent(QFocusEvent* e);
+    virtual void enterEvent(QEvent *e);
+    virtual void leaveEvent(QEvent *e);
+    virtual void mousePressEvent(QMouseEvent *event);
+    virtual void mouseReleaseEvent(QMouseEvent *event);
+    virtual void mouseMoveEvent(QMouseEvent *event);
+    virtual void wheelEvent(QWheelEvent *event);
     
 public:
     //Renderer_tex2* renderer;
