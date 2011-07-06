@@ -134,7 +134,7 @@ public:
 
 	~Ct3dWidget(){
 		this->clear();
-		if(v3d_monitor) v3d_monitor->exit();
+		delete v3d_monitor;
 	}
 
 public:
@@ -144,24 +144,35 @@ public:
 		cellWidget->setCells(celltrack->getFrame(current_time)->getCells(), this->getMarkedCells());
 
 		// v3d 
-		if(curwin==0) curwin = callback->newImageWindow();
+		Image4DSimple * p4DImage = 0;
+		if(curwin==0 || callback->getTriviewControl(curwin) == 0) 
+		{
+			curwin = callback->newImageWindow();
+			p4DImage = new Image4DSimple();
+		}
+		else
+		{
+			p4DImage = callback->getImage(curwin);//new Image4DSimple();
+			//p4DImage->cleanExistData();
+		}
 
 		V3DLONG sz0 = this->getWidth();
 		V3DLONG sz1 = this->getHeight();
 		V3DLONG sz2 = this->getDepth();
 		V3DLONG sz3 = 3; //rgb
 
-		Image4DSimple * p4DImage = new Image4DSimple();
 		unsigned char * inimg1d = this->getTexData();
 
 		p4DImage->setData(inimg1d, sz0, sz1, sz2, sz3, V3D_UINT8);
-
+		
+		//LandmarkList landmark = callback->getLandmark(curwin);
 		callback->setImage(curwin, p4DImage);
+		//if(!landmark.empty())callback->setLandmark(curwin, landmark);
 		callback->setImageName(curwin, tr("Time : %1").arg(this->currentTime() +1));
 		callback->updateImageWindow(curwin);
-		callback->closeROI3DWindow(curwin);
-		callback->close3DWindow(curwin);
+		//callback->close3DWindow(curwin);
 		callback->open3DWindow(curwin);
+		callback->pushImageIn3DWindow(curwin);
 	}
 
 
@@ -171,10 +182,12 @@ public slots:
 		if(celltrack == NULL || celltrack->frameNum() == 0) return;
 		if(!tracks_state[cell->getTrack()])
 		{
+			cout<<"cell "<<cell->getNodeLabel()<<" is choosed"<<endl;
 			this->markCell(cell);
 		}
 		else
 		{
+			cout<<"cell "<<cell->getNodeLabel()<<" is un choosed"<<endl;
 			unMarkCell(cell);
 		}
 		updateWidgets();
@@ -399,7 +412,7 @@ void onMonitorV3d(int state)
 	}
 	if(state == Qt::Unchecked)
 	{
-		v3d_monitor->exit();
+		v3d_monitor->terminate();
 	}
 	else if(state == Qt::Checked)
 	{
@@ -411,6 +424,7 @@ void onMarkChanged(LocationSimple loc)
 {
 	if(celltrack == NULL || celltrack->frameNum() == 0) return;
 	CellTrack::Cell* cell = this->getClickedCell(loc.x, loc.y, loc.z);
+	//v3d_msg(tr("(%1,%2,%3) is clicked!").arg(loc.x).arg(loc.y).arg(loc.z));
 	if(!tracks_state[cell->getTrack()])
 	{
 		cellWidget->setCellChecked(cell, true);
@@ -419,7 +433,7 @@ void onMarkChanged(LocationSimple loc)
 	{
 		cellWidget->setCellChecked(cell, false);
 	}
-	updateWidgets();
+	//updateWidgets(); /// forbidden
 }
 
 public:

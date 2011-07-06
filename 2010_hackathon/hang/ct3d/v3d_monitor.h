@@ -11,26 +11,26 @@ public:
 	{
 		this->callback = callback;
 		this->curwin = curwin;
-		landmarks = callback->getLandmark(curwin);
+		LandmarkList empty_marklist;
+		callback->setLandmark(curwin, empty_marklist);
 		qRegisterMetaType<LocationSimple>("LocationSimple");
+	}
+	~V3dMonitor()
+	{
+		if(isRunning()) this->terminate();
 	}
 	void run()
 	{
 		while(1)
 		{
 			LandmarkList new_landmarks = callback->getLandmark(curwin);
-			if(new_landmarks.size() != landmarks.size())
+			if(new_landmarks.size() != 0)
 			{
-				qDebug("mark changed !");
-				if(new_landmarks.size() > landmarks.size())
-				{
-					emit mark_changed(new_landmarks.last());
-				}
-				else emit mark_changed(landmarks.last());
+				emit mark_changed(new_landmarks.last());
 			}
-			landmarks = new_landmarks;
-			usleep(1000); // sleep 1ms
-			//delay(1); //delay 4ms
+			LandmarkList empty_marklist;
+			callback->setLandmark(curwin, empty_marklist);
+			usleep(5000); // sleep 1ms
 		}
 		exec();
 
@@ -40,7 +40,6 @@ signals:
 private:
 	V3DPluginCallback2 * callback;
 	v3dhandle curwin;
-	LandmarkList landmarks;
 };
 
 #endif
