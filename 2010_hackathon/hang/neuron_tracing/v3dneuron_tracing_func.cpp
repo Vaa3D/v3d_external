@@ -76,14 +76,18 @@ int v3dneuron_tracing(V3DPluginCallback2 &callback, QWidget *parent)
 	system("rm -f /tmp/tmp_out*");
 	writeMarker_file("/tmp/mymarks.marker",imagemarks);
 	QString img_file = callback.getImageName(curwin);
-	QString paras = QObject::tr("v3dneuron_tracing -s %1 -S /tmp/mymarks.marker -o /tmp/tmp_out").arg(img_file);
+	bool ok;
+	QString nt_path = QInputDialog::getText(0, QObject::tr("Set path"), QObject::tr("v3dneuron_tracing path : "), QLineEdit::Normal, "~/Local/bin/v3dneuron_tracing", &ok);
+	//QString paras = QObject::tr("v3dneuron_tracing -s %1 -S /tmp/mymarks.marker -o /tmp/tmp_out").arg(img_file);
+	QString paras = QObject::tr("%1 -s %2 -S /tmp/mymarks.marker -o /tmp/tmp_out").arg(nt_path).arg(img_file);
 	qDebug(paras.toStdString().c_str());
+	//QMessageBox::information(0,"",paras);
 	system(paras.toStdString().c_str());
 	NeuronTree nt = readSWC_file("/tmp/tmp_out_0.swc");
 	callback.setSWC(curwin, nt);
 	callback.updateImageWindow(curwin);
 	callback.open3DWindow(curwin);
-	callback.getView3DControl(curwin)->setShowSurfObjects(2);
+	//callback.getView3DControl(curwin)->setShowSurfObjects(2);
 	//TestDialog dialog(callback, parent);
 
 	//if (dialog.exec()!=QDialog::Accepted) return -1;
