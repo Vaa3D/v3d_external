@@ -1714,7 +1714,7 @@ void Renderer_tex2::loadLandmarks_from_file(const QString & filename)
 void Renderer_tex2::saveLandmarks_to_file(const QString & filename)
 {
 #ifndef test_main_cpp
-	wirteMarker_file(filename, listMarker);
+	writeMarker_file(filename, listMarker);
 #endif
 }
 

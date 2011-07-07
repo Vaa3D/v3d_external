@@ -224,7 +224,7 @@ QList <ImageMarker> readMarker_file(const QString & filename)
 	return tmp_list;
 }
 
-bool wirteMarker_file(const QString & filename, const QList <ImageMarker> & listMarker)
+bool writeMarker_file(const QString & filename, const QList <ImageMarker> & listMarker)
 {
 	QString curFile = filename;
 	if (curFile.trimmed().isEmpty()) //then open a file dialog to choose file

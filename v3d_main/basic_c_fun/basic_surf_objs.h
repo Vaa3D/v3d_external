@@ -91,7 +91,7 @@ struct ImageMarker : public BasicSurfObj
 };
 
 QList <ImageMarker> readMarker_file(const QString & filename);
-bool wirteMarker_file(const QString & filename, const QList <ImageMarker> & listMarker);
+bool writeMarker_file(const QString & filename, const QList <ImageMarker> & listMarker);
 
 
 // .apo pointcloud files
