@@ -71,6 +71,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  * 20090802: add raw5d read/write
  * 20100520: try to revise ZZBIG to allow big file, also add fstat check for windows large file size , instead of using fseek and ftell
  * 20100816: add mylib interface, by PHC.
+ * 20110708: fix a memory leak (non-crashing) of redudnant memory allocation of a sz variable
  */
 
 
@@ -3527,15 +3528,6 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 		printf("Warning: The pointer for size is not empty. This pointer will be freed first and the  reallocated. \n");
 		delete []sz; sz=0;
 	}
-	else
-	{
-		sz = new V3DLONG [4];
-		if (!sz)
-		{
-			printf("Fail to alocate memory for the size variable.\n");
-			return false;
-		}
-	}
 
 	unsigned char *tmp_data1d =0;
 	V3DLONG * tmp_sz = 0; /* note that this variable must be initialized as NULL. */
@@ -3666,15 +3658,6 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 	{
 		printf("Warning: The pointer for size is not empty. This pointer will be freed first and the  reallocated. \n");
 		delete []sz; sz=0;
-	}
-	else
-	{
-		sz = new V3DLONG [4];
-		if (!sz)
-		{
-			printf("Fail to alocate memory for the size variable.\n");
-			return false;
-		}
 	}
 
 	unsigned char *tmp_data1d =0;
