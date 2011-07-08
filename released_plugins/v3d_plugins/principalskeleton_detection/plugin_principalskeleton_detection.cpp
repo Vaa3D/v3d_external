@@ -344,7 +344,7 @@ void PrincipalSkeletonDetection(V3DPluginCallback2 &callback, QWidget *parent)
 		
 		if(saveskeleotn2markerfileCheckBox->isChecked())
 		{
-			wirteMarker_file(filename_marker_out,ql_cptpos_output);
+			writeMarker_file(filename_marker_out,ql_cptpos_output);
 		}
 		if(saveskeleton2swcfileCheckBox->isChecked())
 		{
