@@ -4,6 +4,7 @@
 //May 16, 2011 : by Hang, cp do_lobeseg_bdbminus -> do_lobeseg_bdbminus_onesideonly
 //May 30, 2011 : by Hang, 1. complex boundary detection,  2. any position (x1,y1) (x2,y2)
 //June 15, 2011. changed by Hanchuan Peng to allow saving the mask to the last channel
+//2011-07-09: add uint16/float32 support
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,10 +28,77 @@
 
 #include "../../../../v3d_main/worm_straighten_c/bdb_minus.h"
 
-bool do_lobeseg_bdbminus(unsigned char *inimg1d, const V3DLONG sz[4], int datatype_input, unsigned char *outimg1d, int in_channel_no, int out_channel_no, const BDB_Minus_ConfigParameter & mypara)
+
+template <class T> bool maskImageUsingSegBoundary(T *outimg1d, const V3DLONG sz[4], int in_channel_no, int out_channel_no, const int ** left_bound, const int ** right_bound)
+{
+	if (!outimg1d || !sz || sz[0]<0 || sz[1]<0 || sz[2]<0 || sz[3]<0 || !left_bound || !right_bound)
+	{
+		fprintf(stderr, "Invalid data to maskImageUsingSegBoundry().\n");
+		return false;
+	}
+
+	int z, i, j;
+
+	//note that for convenience I have not add pointer check in the following part. should add later
+	{
+		unsigned char **** img_output_4d=0;
+		new4dpointer(img_output_4d, sz[0], sz[1], sz[2], sz[3], outimg1d);
+
+		for (z=0; z<sz[2]; z++)
+		{
+			for (j=0; j<sz[1]; j++)
+			{
+				for (i=0; i<sz[0]; i++)
+				{
+
+					if (i<left_bound[z][j])
+					{
+						img_output_4d[in_channel_no][z][j][i] = 0; //added by PHC,090609
+					}
+					else if (i>right_bound[z][j])
+					{
+						img_output_4d[in_channel_no][z][j][i] = 0;  //added by PHC,090609
+					}
+					else
+					{
+						//do nothing
+					}
+				}
+			}
+
+			if (sz[3]>=out_channel_no) //set up the mask if possible. 090730 //change from sz[3]-1 to sz[3]. to allow save the mask in the last (additional) channel
+			{
+				for (j=0; j<sz[1]; j++)
+				{
+					for (i=0; i<sz[0]; i++)
+					{
+						if (i<left_bound[z][j])
+						{
+							img_output_4d[out_channel_no][z][j][i] = 254;
+						}
+						else if (i>right_bound[z][j])
+						{
+							img_output_4d[out_channel_no][z][j][i] = 255;
+						}
+						else
+						{
+							img_output_4d[out_channel_no][z][j][i] = 0;
+						}
+					}
+				}
+			}
+
+		}
+
+		if (img_output_4d) {delete4dpointer(img_output_4d, sz[0], sz[1], sz[2], sz[3]); img_output_4d=0;}
+	}
+
+}
+
+bool do_lobeseg_bdbminus(unsigned char *inimg1d0, const V3DLONG sz[4], int datatype_input, unsigned char *outimg1d, int in_channel_no, int out_channel_no, const BDB_Minus_ConfigParameter & mypara)
 //note: assume the inimg1d and outimg1d have the same size, and normally out_channel_no should always be 2 (i.e. the third channel)
 {
-	if (!inimg1d || !outimg1d || !sz || sz[0]<0 || sz[1]<0 || sz[2]<0 || sz[3]<0 || in_channel_no<0 || in_channel_no>=sz[3] || out_channel_no<0)
+	if (!inimg1d0 || !outimg1d || !sz || sz[0]<0 || sz[1]<0 || sz[2]<0 || sz[3]<0 || in_channel_no<0 || in_channel_no>=sz[3] || out_channel_no<0)
 	{
 		printf("Invalid parameters to the function do_lobeseg_bdbminus(). \n");
 		return false;
@@ -96,6 +164,43 @@ bool do_lobeseg_bdbminus(unsigned char *inimg1d, const V3DLONG sz[4], int dataty
 	
 	//do the computation
 	{
+		//first create a buffer of UINT8 type
+
+		V3DLONG totalunits= sz[0]*sz[1]*sz[2]*sz[3];
+		unsigned char *inimg1d = 0;
+		if (datatype_input==1)
+			inimg1d = inimg1d0; //in this case no need to use additional memory
+		else if (datatype_input==2 || datatype_input==4) //this conversion part is essential the convert_type2uint8_3dimg_1dpt() function, :-).
+		{
+			try{
+				inimg1d = new unsigned char [totalunits];
+			}
+			catch (...)
+			{
+				fprintf(stderr, "Fail to allocate memory for data conversion.\n");
+				return false;
+			}
+
+			if (datatype_input==2)
+			{
+				unsigned short int * tmpimg = (unsigned short int *)inimg1d0;
+				for (V3DLONG i=0;i<totalunits;i++)
+				{
+					inimg1d[i] = (unsigned char)(tmpimg[i]>>4); //as I knew it is 12-bit instead of 16 bit
+				}
+			}
+			else
+			{
+				float * tmpimg = (float *)inimg1d0;
+				for (V3DLONG i=0;i<totalunits;i++)
+				{
+					inimg1d[i] = (unsigned char)(tmpimg[i]*255); //as I knew it is float between 0 and 1
+				}
+			}
+		}
+
+		//now do the real computing
+
 		unsigned char ****inimg_4d = 0;
 		new4dpointer(inimg_4d, sz[0], sz[1], sz[2], sz[3], inimg1d);
 
@@ -103,7 +208,11 @@ bool do_lobeseg_bdbminus(unsigned char *inimg1d, const V3DLONG sz[4], int dataty
 		try{
 			tmp1d = new unsigned char [(V3DLONG)sz[0]*sz[1]];
 		}
-		catch(...){cerr << "Fail to allocate memory for temp image plane.\n" << endl;}
+		catch(...)
+		{
+			fprintf(stderr, "Fail to allocate memory for a temporary buffer of an image plane.\n");
+			return false;
+		}
 
 		unsigned char ** tmp2d=0;
 		new2dpointer(tmp2d, sz[0], sz[1], tmp1d);
@@ -116,7 +225,7 @@ bool do_lobeseg_bdbminus(unsigned char *inimg1d, const V3DLONG sz[4], int dataty
 				for (int ii=0; ii<sz[0]; ii++)
 					tmp2d[jj][ii] = 255 - inimg_4d[in_channel_no][z][jj][ii];
 			}
-			cout << z << " ";
+			fprintf(stdout, "%ld ", z);
 			
 			point_bdb_minus_2d_localwinmass_bl(tmp2d, sz[0], sz[1], vl.at(z), vl.at(z), mypara);
 			vl.push_back( vl.at(z));
@@ -124,11 +233,22 @@ bool do_lobeseg_bdbminus(unsigned char *inimg1d, const V3DLONG sz[4], int dataty
 			point_bdb_minus_2d_localwinmass_bl(tmp2d, sz[0], sz[1], vr.at(z), vr.at(z), mypara);
 			vr.push_back( vr.at(z));
 		}
-		cout << endl << "done computation." << endl << "Now saving file" <<endl;
+		fprintf(stdout, "\ndone lobeseg computation.\n\n");
 		
 		if (tmp2d) delete2dpointer(tmp2d, sz[0], sz[1]);
 		if (tmp1d) {delete []tmp1d; tmp1d=0;}
 		if (inimg_4d) delete4dpointer(inimg_4d, sz[0], sz[1], sz[2], sz[3]);
+
+		//delete the UINT8 buffer is necessary
+		if (datatype_input==1)
+		{
+			//do nothing. as I have not created any real buffer for this datatype
+		}
+		else if (datatype_input==2 || datatype_input==4)
+		{
+			if (inimg1d) {delete []inimg1d; inimg1d = 0;}
+		}
+
 	}
 	
 	//now generate the separating surface
@@ -149,7 +269,7 @@ bool do_lobeseg_bdbminus(unsigned char *inimg1d, const V3DLONG sz[4], int dataty
 		if (right_bound) delete2dpointer(right_bound, sz[1], sz[2]);
 		if (right_bound1d) {delete []right_bound1d; right_bound1d=0;}
 		
-		printf("Fail to allocate momery.\n");
+		fprintf(stderr, "Fail to allocate momery for surface generation.\n");
 		return false;
 	}
 	
@@ -237,62 +357,69 @@ bool do_lobeseg_bdbminus(unsigned char *inimg1d, const V3DLONG sz[4], int dataty
 	}
 	//printf("\n");
 
+	V3DLONG output_sz[4];
+	output_sz[0] = sz[0];
+	output_sz[1] = sz[1];
+	output_sz[2] = sz[2];
+	output_sz[3] = sz[3]+1;
+
+	if (!maskImageUsingSegBoundary(outimg1d, output_sz, in_channel_no, out_channel_no, left_bound, right_bound))
 	{
-		unsigned char **** img_output_4d=0;
-		new4dpointer(img_output_4d, sz[0], sz[1], sz[2], sz[3]+1, outimg1d); //add +1 to hold the output mask data
-
-		for (z=0; z<sz[2]; z++)
-		{
-			for (j=0; j<sz[1]; j++)
-			{
-				for (i=0; i<sz[0]; i++)
-				{
-
-					if (i<left_bound[z][j])
-					{
-						img_output_4d[in_channel_no][z][j][i] = 0; //added by PHC,090609
-						//img_output_4d[out_channel_no][z][j][i] = 254;
-					}
-					else if (i>right_bound[z][j])
-					{
-						img_output_4d[in_channel_no][z][j][i] = 0;  //added by PHC,090609
-						//img_output_4d[out_channel_no][z][j][i] = 255;
-					}
-					else
-					{
-						//img_output_4d[out_channel_no][z][j][i] = 0;
-					}
-				}
-			}
-
-			if (sz[3]>=out_channel_no) //set up the mask if possible. 090730 //change from sz[3]-1 to sz[3]. to allow save the mask in the last (additional) channel
-			{
-				for (j=0; j<sz[1]; j++)
-				{
-					for (i=0; i<sz[0]; i++)
-					{
-						if (i<left_bound[z][j])
-						{
-							//img_output_4d[in_channel_no][z][j][i] = 0; //added by PHC,090609
-							img_output_4d[out_channel_no][z][j][i] = 254;
-						}
-						else if (i>right_bound[z][j])
-						{
-							//img_output_4d[in_channel_no][z][j][i] = 0;  //added by PHC,090609
-							img_output_4d[out_channel_no][z][j][i] = 255;
-						}
-						else
-						{
-							img_output_4d[out_channel_no][z][j][i] = 0;
-						}
-					}
-				}
-			}
-
-		}
-		
-		if (img_output_4d) {delete4dpointer(img_output_4d, sz[0], sz[1], sz[2], sz[3]); img_output_4d=0;}
+		fprintf(stderr, "Fail to mask the optic lobe regions using the boundary.\n");
 	}
+
+	//	{
+//		unsigned char **** img_output_4d=0;
+//		new4dpointer(img_output_4d, sz[0], sz[1], sz[2], sz[3]+1, outimg1d); //add +1 to hold the output mask data
+//
+//		for (z=0; z<sz[2]; z++)
+//		{
+//			for (j=0; j<sz[1]; j++)
+//			{
+//				for (i=0; i<sz[0]; i++)
+//				{
+//
+//					if (i<left_bound[z][j])
+//					{
+//						img_output_4d[in_channel_no][z][j][i] = 0; //added by PHC,090609
+//					}
+//					else if (i>right_bound[z][j])
+//					{
+//						img_output_4d[in_channel_no][z][j][i] = 0;  //added by PHC,090609
+//					}
+//					else
+//					{
+//						//do nothing
+//					}
+//				}
+//			}
+//
+//			if (sz[3]>=out_channel_no) //set up the mask if possible. 090730 //change from sz[3]-1 to sz[3]. to allow save the mask in the last (additional) channel
+//			{
+//				for (j=0; j<sz[1]; j++)
+//				{
+//					for (i=0; i<sz[0]; i++)
+//					{
+//						if (i<left_bound[z][j])
+//						{
+//							img_output_4d[out_channel_no][z][j][i] = 254;
+//						}
+//						else if (i>right_bound[z][j])
+//						{
+//							img_output_4d[out_channel_no][z][j][i] = 255;
+//						}
+//						else
+//						{
+//							img_output_4d[out_channel_no][z][j][i] = 0;
+//						}
+//					}
+//				}
+//			}
+//
+//		}
+//
+//		if (img_output_4d) {delete4dpointer(img_output_4d, sz[0], sz[1], sz[2], sz[3]); img_output_4d=0;}
+//	}
 
 	// clean all workspace variables
 

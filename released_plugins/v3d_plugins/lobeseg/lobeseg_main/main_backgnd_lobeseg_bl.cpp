@@ -5,7 +5,7 @@
 //2008-08-22: a major revision by Hanchuan Peng
 //2010-09-30: fix a segmentation fault bug for single channel image by Lei Qu
 //2011-06-15: always add an additional channel to the output to hold the mask
-
+//2011-07-9: add the uint16 and float32 support
 
 #include <stdio.h>
 #include <stdlib.h>
