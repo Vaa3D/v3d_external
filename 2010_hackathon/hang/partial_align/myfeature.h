@@ -27,7 +27,7 @@ template<class T> class MyFeature : public Image2DSimple<T>
 		{
 			return (V3DLONG)sz1();
 		}
-		V3DLONG dims()
+		V3DLONG ndims()
 		{
 			return (V3DLONG)sz0();
 		}
@@ -164,7 +164,7 @@ template<class T> class MyFeature : public Image2DSimple<T>
 
 				Vector1DSimple<double> momentVec;
 				momentVec.resize(sz0);
-				V3DLONG r = 20;
+				V3DLONG r = 30;
 
 				for(V3DLONG i = 0; i < sz1; i++)
 				{
@@ -208,12 +208,12 @@ template<class T> class MyFeature : public Image2DSimple<T>
 
 template <class T> int get_matched_feature_list(V3DLONG* &match_list, V3DLONG &match_sz, MyFeature<T>& sub_feat, MyFeature<T>& tar_feat)
 {
-	if(sub_feat.getFeatureType() != tar_feat.getFeatureType() || match_list != 0 || match_sz <= 0 || match_sz > tar_feat.size())
+	if(sub_feat.getFeatureType() != tar_feat.getFeatureType() || match_list != 0 || match_sz <= 0 || match_sz > tar_feat.size() || sub_feat.ndims() != tar_feat.ndims())
 	{
 		cerr<<"compare two features with different type or match_list != 0"<<endl;
 		return -1;
 	}
-	V3DLONG feat_dims = sub_feat.dims();
+	V3DLONG ndims = sub_feat.ndims();
 	V3DLONG sub_sz = sub_feat.size();
 	V3DLONG tar_sz = tar_feat.size();
 	
@@ -228,13 +228,48 @@ template <class T> int get_matched_feature_list(V3DLONG* &match_list, V3DLONG &m
 		return -1;
 	}
 
+	T * min_feat = new T[ndims];
+	T * max_feat = new T[ndims];
+	double * dist_factor = new double[ndims];
+
+	int i = 0;
+	int j = 0;
+	T ** sub_data2d = sub_feat.getData2dHandle();
+	T ** tar_data2d = tar_feat.getData2dHandle();
+	for(i = 0; i < sub_feat.size(); i++)
+	{
+		if(i == 0)
+		{
+			for(j = 0; j < ndims; j++) min_feat[j] = max_feat[j] = sub_data2d[i][j];
+		}
+		else
+		{
+			for(j = 0; j < ndims; j++)
+			{
+				min_feat[j] = sub_data2d[i][j] < min_feat[j] ? sub_data2d[i][j] : min_feat[j];
+				max_feat[j] = sub_data2d[i][j] > max_feat[j] ? sub_data2d[i][j] : max_feat[j];
+			}
+		}
+	}
+	
+	for(i = 0; i < tar_feat.size(); i++)
+	{
+		for(j = 0; j < ndims; j++)
+		{
+			min_feat[j] = tar_data2d[i][j] < min_feat[j] ? tar_data2d[i][j] : min_feat[j];
+			max_feat[j] = tar_data2d[i][j] > max_feat[j] ? tar_data2d[i][j] : max_feat[j];
+		}
+	}
+	for(j = 0; j < ndims; j++) 
+	{
+		dist_factor[j] = (max_feat[j] - min_feat[j]) * (max_feat[j] - min_feat[j]);
+		if(dist_factor[j] > 0.0)  dist_factor[j] = 1.0 / dist_factor[j];
+	}
+
 	if(match_sz == tar_sz)
 	{
 		V3DLONG i,j,d;
 		V3DLONG count = 0;
-		
-		T ** sub_data2d = sub_feat.getData2dHandle();
-		T ** tar_data2d = tar_feat.getData2dHandle();
 
 		for(i = 0; i < tar_sz; i++)
 		{
@@ -243,7 +278,7 @@ template <class T> int get_matched_feature_list(V3DLONG* &match_list, V3DLONG &m
 			for(j = 0; j < sub_sz; j++)
 			{
 				double dist = 0.0;
-				for(d = 0; d < feat_dims; d++) dist += (tar_data2d[i][d] - sub_data2d[j][d]) * (tar_data2d[i][d] - sub_data2d[j][d]);
+				for(d = 0; d < ndims; d++) dist += (tar_data2d[i][d] - sub_data2d[j][d]) * (tar_data2d[i][d] - sub_data2d[j][d]) * dist_factor[d];
 				if( min_id == -1){ min_id = j; min_dist = dist;}
 				else
 				{
@@ -272,7 +307,7 @@ template <class T> int get_matched_feature_list(V3DLONG* &match_list, V3DLONG &m
 			for(j = 0; j < sub_sz; j++)
 			{
 				double dist = 0.0;
-				for(d = 0; d < feat_dims; d++) dist += (tar_data2d[i][d] - sub_data2d[j][d]) * (tar_data2d[i][d] - sub_data2d[j][d]);
+				for(d = 0; d < ndims; d++) dist += (tar_data2d[i][d] - sub_data2d[j][d]) * (tar_data2d[i][d] - sub_data2d[j][d]) * dist_factor[d];
 				if( min_id == -1){ min_id = j; min_dist = dist;}
 				else
 				{
