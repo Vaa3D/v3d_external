@@ -138,6 +138,15 @@ public:
 	}
 
 public:
+	bool isValidHandle(v3dhandle win)
+	{
+		v3dhandleList win_list = callback->getImageWindowList();
+		for(int i = 0; i < win_list.size(); i++)
+		{
+			if(win_list.at(i) == win) return true;
+		}
+		return false;
+	}
 	void updateWidgets()
 	{
 		// cellWidget
@@ -145,7 +154,7 @@ public:
 
 		// v3d 
 		Image4DSimple * p4DImage = 0;
-		if(curwin==0 || callback->getTriviewControl(curwin) == 0) 
+		if(curwin==0 || !isValidHandle(curwin)) 
 		{
 			curwin = callback->newImageWindow();
 			p4DImage = new Image4DSimple();
@@ -165,12 +174,9 @@ public:
 
 		p4DImage->setData(inimg1d, sz0, sz1, sz2, sz3, V3D_UINT8);
 		
-		//LandmarkList landmark = callback->getLandmark(curwin);
 		callback->setImage(curwin, p4DImage);
-		//if(!landmark.empty())callback->setLandmark(curwin, landmark);
 		callback->setImageName(curwin, tr("Time : %1").arg(this->currentTime() +1));
 		callback->updateImageWindow(curwin);
-		//callback->close3DWindow(curwin);
 		callback->open3DWindow(curwin);
 		callback->pushImageIn3DWindow(curwin);
 	}
@@ -402,7 +408,7 @@ void onReverseCells()
 
 void onMonitorV3d(int state)
 {
-	if(curwin == 0) return;
+	if(curwin == 0 || !isValidHandle(curwin)) return;
 	if(v3d_monitor == 0)
 	{
 		v3d_monitor = new V3dMonitor(callback, curwin);
