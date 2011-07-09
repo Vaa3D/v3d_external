@@ -27,12 +27,17 @@
 
 #include "../../../../v3d_main/worm_straighten_c/bdb_minus.h"
 
-bool do_lobeseg_bdbminus(unsigned char *inimg1d, const V3DLONG sz[4], unsigned char *outimg1d, int in_channel_no, int out_channel_no, const BDB_Minus_ConfigParameter & mypara)
+bool do_lobeseg_bdbminus(unsigned char *inimg1d, const V3DLONG sz[4], int datatype_input, unsigned char *outimg1d, int in_channel_no, int out_channel_no, const BDB_Minus_ConfigParameter & mypara)
 //note: assume the inimg1d and outimg1d have the same size, and normally out_channel_no should always be 2 (i.e. the third channel)
 {
 	if (!inimg1d || !outimg1d || !sz || sz[0]<0 || sz[1]<0 || sz[2]<0 || sz[3]<0 || in_channel_no<0 || in_channel_no>=sz[3] || out_channel_no<0)
 	{
 		printf("Invalid parameters to the function do_lobeseg_bdbminus(). \n");
+		return false;
+	}
+	if (datatype_input!=1 && datatype_input!=2 && datatype_input!=4)
+	{
+		fprintf(stderr, "The datatype is NOT UINT8/UINT16/FLOAT. The do_lobeseg_bdbminus() function quits.\n");
 		return false;
 	}
 	
@@ -300,11 +305,16 @@ bool do_lobeseg_bdbminus(unsigned char *inimg1d, const V3DLONG sz[4], unsigned c
 }
 
 
-bool do_lobeseg_bdbminus_onesideonly(unsigned char *inimg1d, const V3DLONG sz[4], unsigned char *outimg1d, int in_channel_no, int out_channel_no, const BDB_Minus_ConfigParameter & mypara, int ini_x1, int ini_y1, int ini_x2, int ini_y2, int keep_which, int num_ctrls,bool output_surface)
+bool do_lobeseg_bdbminus_onesideonly(unsigned char *inimg1d, const V3DLONG sz[4], int datatype_input, unsigned char *outimg1d, int in_channel_no, int out_channel_no, const BDB_Minus_ConfigParameter & mypara, int ini_x1, int ini_y1, int ini_x2, int ini_y2, int keep_which, int num_ctrls,bool output_surface)
 {
 	if (!inimg1d || !outimg1d || !sz || sz[0]<0 || sz[1]<0 || sz[2]<0 || sz[3]<0 || in_channel_no<0 || in_channel_no>=sz[3] || out_channel_no<0)
 	{
-		printf("Invalid parameters to the function do_lobeseg_bdbminus(). \n");
+		fprintf(stderr, "Invalid parameters to the function do_lobeseg_bdbminus(). \n");
+		return false;
+	}
+	if (datatype_input!=1)
+	{
+		fprintf(stderr, "The datatype is NOT UINT8. The do_lobeseg_bdbminus_onesideonly() function only supports UINT8 data. Thus quit.\n");
 		return false;
 	}
 	

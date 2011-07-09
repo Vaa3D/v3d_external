@@ -24,6 +24,8 @@
 
 bool convert_type2uint8_3dimg_1dpt(void * &img, V3DLONG * sz, int datatype);
 
+char lobesegver[] = "1.01";
+
 void printHelp ();
 void printHelp()
 {
@@ -46,8 +48,10 @@ void printHelp()
 	printf("\t [-N]                               the number of control points.\n");
 	printf("\t [-S]                               output the seperating surface.\n");
 	printf("\n");
+	printf("\t [-Y]                               force image data converted to UINT8 for processing.\n");
+	printf("\n");
 	printf("Demo :\t lobe_seger -i input.tif -o output.tif -s -N 20 -p 30x0+100x30 -k left -S\n");
-	printf("Version: 0.91 (Copyright: Hanchuan Peng)\n");
+	printf("Version: %s (Copyright: Hanchuan Peng, 2007-2011)\n", lobesegver);
 	return;
 }
 
@@ -79,6 +83,7 @@ int main (int argc, char *argv[])
 	char *dfile_input = NULL;
 	char *dfile_output = NULL;
 	int b_verbose_print = 0;
+	bool b_convert2uint8 = false;
 	
 	int in_channel_no = 0; //assume the reference channel is 0 
 	int out_channel_no = 2; //save the seg mask to the third channel 
@@ -96,7 +101,7 @@ int main (int argc, char *argv[])
 	
 	bool output_surface = false;
 	int c;
-	static char optstring[] = "hvsSi:o:c:A:B:G:n:p:k:N:";
+	static char optstring[] = "hvsSi:o:c:A:B:G:n:p:k:N:Y";
 	opterr = 0;
 	while ((c = getopt (argc, argv, optstring)) != -1)
 	{
@@ -293,6 +298,10 @@ int main (int argc, char *argv[])
 				}
 				break;
 			 */
+		case 'Y':
+			b_convert2uint8 = true;
+			break;
+
 		case '?':
 			fprintf (stderr, "Unknown option `-%c' or incomplete argument lists.\n", optopt);
 			return 0;
@@ -316,6 +325,7 @@ int main (int argc, char *argv[])
 	printf("gamma      : [%7.4f]\n", mypara.f_smooth);
 	//printf("radius     : [%d]\n", radius);
 	printf("nloops     : [%d]\n", mypara.nloops);
+	printf("Convert to UINT8 for processing: [%s]\n", (b_convert2uint8)?"Yes":"No");
 	printf("Verbose    : [%d]\n", (int)b_verbose_print);
 	printf("---------------------------------------------------\n\n");
 
@@ -353,7 +363,7 @@ int main (int argc, char *argv[])
 	}
 
 	//check if any one need to be converted as uint8, if so, then do the conversion.
-	if (datatype_input!=1)
+	if (b_convert2uint8 && datatype_input!=1)
 	{
 		if (datatype_input==2 || datatype_input==4)
 		{
@@ -383,39 +393,57 @@ int main (int argc, char *argv[])
 	sz_output[2] = sz_input[2];
 	sz_output[3] = sz_input[3]+1;
 	
+	//initialize the data buffer
 	{
-		img_output=0;
-		//img_output = new unsigned char [(V3DLONG)sz_input[0]*sz_input[1]*sz_input[2]*3];
-		img_output = new unsigned char [(V3DLONG)sz_output[0]*sz_output[1]*sz_output[2]*sz_output[3]]();//110611
-		
-		unsigned char **** img_input_4d=0;
-		unsigned char **** img_output_4d=0;
-		
-		new4dpointer(img_input_4d, sz_input[0], sz_input[1], sz_input[2], sz_input[3], img_input);
-		new4dpointer(img_output_4d, sz_output[0], sz_output[1], sz_output[2], sz_output[3], img_output); //change to sz_output by Hanchuan, 110615. prepare store the output in the last (additional channel)
-		
-		for (V3DLONG z=0; z<sz_output[2]; z++) 
+		if (img_output!=0) {delete []img_output; img_output=0;}
+		V3DLONG totalsz_input = sz_input[0]*sz_input[1]*sz_input[2]*sz_input[3];
+		if (datatype_input==1 || datatype_input==2 || datatype_input==4)
 		{
-			for (V3DLONG j=0; j<sz_output[1]; j++)
+			try
 			{
-				for (V3DLONG i=0; i<sz_output[0]; i++)
-				{
-					//for (V3DLONG cc=0;cc<2; cc++)
-					for (V3DLONG cc=0;cc<sz_input[3]; cc++)//modified by Lei Qu @20100930 //note here no need to +1 as the output data should have been initialized to 0 anyway
-						img_output_4d[cc][z][j][i] = img_input_4d[cc][z][j][i];
-				}
+				img_output = new unsigned char [(V3DLONG)sz_output[0]*sz_output[1]*sz_output[2]*sz_output[3]*datatype_input]();
 			}
+			catch (...)
+			{
+				fprintf(stderr, "Fail to allocate memory for the output data. Exit.\n");
+				goto Label_exit;
+			}
+			memcpy(img_output, img_input, totalsz_input*datatype_input);
 		}
-		
-		if (img_input_4d) {delete4dpointer(img_input_4d, sz_input[0], sz_input[1], sz_input[2], sz_input[3]); img_input_4d=0;}
-		if (img_output_4d) {delete4dpointer(img_output_4d, sz_output[0], sz_output[1], sz_output[2], sz_output[3]); img_output_4d=0;} 
+		else
+		{
+			fprintf(stderr, "Wrong data type detected.\n");
+			goto Label_exit;
+		}
+//
+//
+//		unsigned char **** img_input_4d=0;
+//		unsigned char **** img_output_4d=0;
+//
+//		new4dpointer(img_input_4d, sz_input[0], sz_input[1], sz_input[2], sz_input[3], img_input);
+//		new4dpointer(img_output_4d, sz_output[0], sz_output[1], sz_output[2], sz_output[3], img_output); //change to sz_output by Hanchuan, 110615. prepare store the output in the last (additional channel)
+//
+//		for (V3DLONG z=0; z<sz_output[2]; z++)
+//		{
+//			for (V3DLONG j=0; j<sz_output[1]; j++)
+//			{
+//				for (V3DLONG i=0; i<sz_output[0]; i++)
+//				{
+//					for (V3DLONG cc=0;cc<sz_input[3]; cc++)
+//						img_output_4d[cc][z][j][i] = img_input_4d[cc][z][j][i];
+//				}
+//			}
+//		}
+//
+//		if (img_input_4d) {delete4dpointer(img_input_4d, sz_input[0], sz_input[1], sz_input[2], sz_input[3]); img_input_4d=0;}
+//		if (img_output_4d) {delete4dpointer(img_output_4d, sz_output[0], sz_output[1], sz_output[2], sz_output[3]); img_output_4d=0;}
 	}
 	
 	//now call the computation program
 	out_channel_no = sz_output[3]-1; //changed by Hanchuan, 110615
 	if(both_sides)
 	{
-		if (!do_lobeseg_bdbminus(img_input, sz_input, img_output, in_channel_no, out_channel_no, mypara))
+		if (!do_lobeseg_bdbminus(img_input, sz_input, datatype_input, img_output, in_channel_no, out_channel_no, mypara))
 		{
 			printf("Fail to do the lobe seg correctly.\n");
 			b_error = 1;
@@ -425,7 +453,7 @@ int main (int argc, char *argv[])
 	else
 	{
 		cout<<"do_lobeseg_bdbminus_onesideonly ... "<<endl;
-		if (!do_lobeseg_bdbminus_onesideonly(img_input, sz_input, img_output, in_channel_no, out_channel_no, mypara, ini_x1, ini_y1, ini_x2, ini_y2, keep_which,num_ctrls, output_surface))
+		if (!do_lobeseg_bdbminus_onesideonly(img_input, sz_input, datatype_input, img_output, in_channel_no, out_channel_no, mypara, ini_x1, ini_y1, ini_x2, ini_y2, keep_which,num_ctrls, output_surface))
 		{
 			printf("Fail to do one side lobe seg correctly.\n");
 			b_error = 1;
@@ -437,12 +465,14 @@ int main (int argc, char *argv[])
 
 	if (img_output && sz_input)
 	{
-		if (saveImage(dfile_output, (const unsigned char *)img_output, sz_output, sizeof(unsigned char))!=true)
+		if (saveImage(dfile_output, (const unsigned char *)img_output, sz_output, datatype_input)!=true)
 		{
 			fprintf(stderr, "Error happens in file writing. Exit. \n");
+			goto Label_exit;
 		}
+		else
+			printf("The optic-lobe segmented image has been saved to the file [%s].\n", dfile_output);
 	}	
-	printf("The optic-lobe segmented image has been saved to the file [%s].\n", dfile_output);
 
 	// clean all workspace variables
 Label_exit:
