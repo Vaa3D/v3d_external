@@ -1540,7 +1540,7 @@ void Renderer_tex2::drawUnitVolume()
 	if (! rgbaBuf || bufSize[3]<1 ) return; // no image data, 081002
 	if ((VOL_X1<VOL_X0) || (VOL_Y1<VOL_Y0) || (VOL_Z1<VOL_Z0)) return; // all clipped, no draw
 
-	bool b_stream = _streamingTex();
+	bool b_stream = _streamTex_ready();
 	bool b_tex3d = tex3D>0;
 
 	if (b_stream   //091014: for streamed method
@@ -1910,6 +1910,9 @@ void Renderer_tex2::blendTrack()
 	glPopAttrib();
 	//glFlush();
 }
+
+
+#ifndef test_main_cpp
 
 // mouse left click to select neuron
 XYZ Renderer_tex2::selectPosition(int x, int y)
@@ -2281,13 +2284,13 @@ int Renderer_tex2::hitMenu(int x, int y)
                 listAct.append(actViewAllNeurons = new QAction("view all neurons", w));
 
                 listAct.append(actViewNeuronWBG = new QAction("view only this neuron with background", w));
-                
+
                 actViewNeuronWBG->setIcon(QIcon(":/icons/neuronwbg.svg"));
                 actViewNeuronWBG->setVisible(true);
                 actViewNeuronWBG->setIconVisibleInMenu(true);
 
                 listAct.append(actViewNeuronWOBG = new QAction("view only this neuron without background", w));
-                
+
                 actViewNeuronWOBG->setIcon(QIcon(":/icons/neuronwobg.svg"));
                 actViewNeuronWOBG->setVisible(true);
                 actViewNeuronWOBG->setIconVisibleInMenu(true);
@@ -2331,4 +2334,6 @@ int Renderer_tex2::hitMenu(int x, int y)
 
     return 0;
 }
+
+#endif
 

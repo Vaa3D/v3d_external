@@ -470,32 +470,78 @@ bool V3dR_GLWidget::event(QEvent* e) //090427 RZC
 	return QGLWidget::event(e);
 }
 
-void V3dR_GLWidget::focusInEvent(QFocusEvent*)
-{
-	//qDebug("V3dR_GLWidget::focusInEvent");
-	_stillpaint_disable = false;
-}
-void V3dR_GLWidget::focusOutEvent(QFocusEvent*)
-{
-	//qDebug("V3dR_GLWidget::focusOutEvent");
-	if (_mouse_in_view)  _stillpaint_disable = true;
-}
-
 void V3dR_GLWidget::enterEvent(QEvent*)
 {
 	//qDebug("V3dR_GLWidget::enterEvent");
-	_mouse_in_view = true;
+	mouse_in_view = 1;
 	//setFocus();
 }
 void V3dR_GLWidget::leaveEvent(QEvent*)
 {
 	//qDebug("V3dR_GLWidget::leaveEvent");
-	_mouse_in_view = false;
+	mouse_in_view = 0;
+}
+void V3dR_GLWidget::focusInEvent(QFocusEvent*)
+{
+	//qDebug("V3dR_GLWidget::focusInEvent");
+	//_stillpaint_disable = false;
+}
+void V3dR_GLWidget::focusOutEvent(QFocusEvent*)
+{
+	//qDebug("V3dR_GLWidget::focusOutEvent");
+	//if (_mouse_in_view)
+	//	_stillpaint_disable = true;
 }
 
-void V3dR_GLWidget::mouseDoubleClickEvent ( QMouseEvent * )//event )
+//091015: use still_timer instead
+//#define DELAY_STILL_PAINT()  {QTimer::singleShot(1000, this, SLOT(stillPaint())); _still = false;}
+
+void V3dR_GLWidget::paintEvent(QPaintEvent *event)
 {
-    //reserve for future additional feature like clickable points
+	//QGLWidget::paintEvent(event);
+//	if (! mouse_in_view) //TODO:  use change of viewing matrix
+//	{
+//		_still = true;
+//		QGLWidget::paintEvent(event);
+//		_still = false;
+//	}
+//	else
+	{
+		_still = false;
+		QGLWidget::paintEvent(event);
+
+		if (needStillPaint()) //pending
+		{
+			_stillpaint_pending=true;
+		}
+	}
+}
+
+bool V3dR_GLWidget::needStillPaint()
+{
+	return  (renderer && renderer->tryTexStream == 1);
+}
+
+void V3dR_GLWidget::stillPaint()
+{
+	if (_still)  return; // avoid re-enter
+	if (! _stillpaint_pending) return;
+
+	if (QCoreApplication::hasPendingEvents())
+	{
+		_still = false;
+		_stillpaint_pending = true;
+		return;    //continue pending if event loop is busy
+	}
+	else // here system must be idle
+	{
+	    still_timer.stop();
+		_still = true;
+			DO_updateGL(); // update at once, stream texture for full-resolution
+		_still = false;
+		_stillpaint_pending = false;
+	    still_timer.start(still_timer_interval); //restart timer
+	}
 }
 
 
@@ -508,59 +554,28 @@ void V3dR_GLWidget::mouseDoubleClickEvent ( QMouseEvent * )//event )
 #define MOUSE_SHIFT(dx, D)  (int(SHIFT_RANGE*2* float(dx)/D))
 #define MOUSE_ROT(dr, D)    (int(MOUSE_SENSITIVE*270* float(dr)/D) *ANGLE_TICK)
 
-#define INTERACT_BUTTON     (event->buttons())// & Qt::LeftButton)
-
-//091015: use still_timer instead
-//#define DELAY_STILL_PAINT()  {QTimer::singleShot(1000, this, SLOT(stillPaint())); _still = false;}
-
-void V3dR_GLWidget::paintEvent(QPaintEvent *event)
-{
-	QGLWidget::paintEvent(event);
-	_stillpaint_pending=true;
-}
-
-void V3dR_GLWidget::stillPaint()
-{
-	if (_still)  return; // avoid re-enter
-	if (_stillpaint_disable) return;
-
-	if (QCoreApplication::hasPendingEvents())
-	{
-		_stillpaint_pending = true;
-		return;    // do nothing if event loop is busy
-	}
-
-	// here system must be idle
-	if (_stillpaint_pending)
-	{
-	    still_timer.stop();
-		_still = true;
-			DO_updateGL(); // update at once, stream texture for full resolution
-		_still = false;
-		_stillpaint_pending = false;
-	    still_timer.start(still_timer_interval); //restart timer
-	}
-}
+//#define INTERACT_BUTTON     (event->buttons())// & Qt::LeftButton)
 
 void V3dR_GLWidget::mousePressEvent(QMouseEvent *event)
 {
 	//091025: use QMouseEvent::button()== not buttonS()&
     //qDebug("V3dR_GLWidget::mousePressEvent  button = %d", event->button());
 
+	mouse_held = 1;
+
 	if (event->button()==Qt::LeftButton)
 	{
 		lastPos = event->pos();
-		t_mouseclick = clock();
+		t_mouseclick_left = clock();
 	}
 
-	if (event->button()==Qt::RightButton && renderer)
+	if (event->button()==Qt::RightButton && renderer) //right-click
 	{
-		if (renderer->hitPoint(event->x(), event->y()))  //pop-up menu or marker definition
+		if (renderer->hitPoint(event->x(), event->y()))  //pop-up menu (selectObj) or marker definition (hitPen)
 		{
 			updateTool();
 		}
-
-		POST_updateGL();
+		POST_updateGL(); //display result after menu
 	}
 }
 
@@ -568,15 +583,16 @@ void V3dR_GLWidget::mouseReleaseEvent(QMouseEvent *event)
 {
 	//091025: use 'QMouseEvent::button()==' instead of 'buttons()&'
     //qDebug("V3dR_GLWidget::mouseReleaseEvent  button = %d", event->button());
-	
-	if (event->button()==Qt::RightButton && renderer) //right-drag
-    {
-		(renderer->movePen(event->x(), event->y(), false));
-		updateTool();
-    }
 
-    _stillpaint_disable = false;  _still=false;
-	POST_updateGL();
+	mouse_held = 0;
+
+	if (event->button()==Qt::RightButton && renderer) //right-drag end
+    {
+		(renderer->movePen(event->x(), event->y(), false)); //create curve or nothing
+		updateTool();
+
+		POST_updateGL(); //update display of curve
+    }
 }
 
 void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
@@ -584,8 +600,7 @@ void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
 	//091025: use 'QMouseEvent::buttons()&' instead of 'button()=='
     //qDebug()<<"V3dR_GLWidget::mouseMoveEvent  buttons = "<< event->buttons();
 
-	_stillpaint_disable = true;  _still=false;
-    setFocus(); // accept KeyPressEvent, by RZC 080831
+    //setFocus(); // accept KeyPressEvent, by RZC 080831
 
 	int dx = event->x() - lastPos.x();
 	int dy = event->y() - lastPos.y();
@@ -596,7 +611,7 @@ void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
 	{
 		(renderer->movePen(event->x(), event->y(), true));
 
-		DO_updateGL(); // for update pen track
+		DO_updateGL(); //instantly display pen track
 		return;
 	}
 
@@ -2244,7 +2259,7 @@ void V3dR_GLWidget::changeVolShadingOption()
 			|| ((tex_stream != renderer->tryTexStream)
 					&& !(tex_stream==1 && renderer->tryTexStream==2)
 					&& !(tex_stream==2 && renderer->tryTexStream==1))
-			//|| shader != renderer->tryVolShader   //no need reloading texture
+			//|| shader != renderer->tryVolShader   //no need of reloading texture
 			)
 		{
 
@@ -2261,7 +2276,7 @@ void V3dR_GLWidget::changeVolShadingOption()
 
 					renderer->setupData(this->_idep);
 					if (renderer->hasError())	POST_CLOSE(this);
-					renderer->getLimitedDataSize(_data_size); //for update slider size
+					renderer->getLimitedDataSize(_data_size); //for updating slider size
 				}
 
 				PROGRESS_PERCENT(70);

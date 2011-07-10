@@ -62,7 +62,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "../imaging/v3d_imaging.h"
 
-#endif
+#endif //test_main_cpp
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Select Object / Define marker
@@ -96,7 +97,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //}
 
 
-int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_menu, char* pTip) // called by hitObj after getting object's names
+int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_menu, char* pTip) // called by selectObj() after getting object's names
 {
 	//qDebug("  Renderer_tex2::processHit  pTip=%p", pTip);
 
@@ -177,6 +178,7 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 #ifndef test_main_cpp
+
 	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
 	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 
@@ -186,7 +188,7 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 #else
 	void* curImg=0;
 	void* curXWidget = 0;
-#endif
+#endif //test_main_cpp
 
 	// right click popup menu
 	QList<QAction*> listAct;
@@ -196,16 +198,16 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 			*actLockSceneEditObjGeometry=0,
 
 			*actMarkerCreate1=0, *actMarkerCreate2=0, *actMarkerCreate3=0, *actMarkerRefineT=0, *actMarkerRefineC=0, *actMarkerRefineLocal=0, *actMarkerAutoSeed=0,
-			*actMarkerZoomin3D=0, *actMarkerMoveToMiddleZ=0, 
+			*actMarkerZoomin3D=0, *actMarkerMoveToMiddleZ=0,
 			*actMarkerDelete=0, *actMarkerClearAll=0, *actMarkerCreateNearestNeuronNode=0,
 			*actMarkerTraceFromStartPos=0, *actMarkerTraceFromStartPos_selPara=0, *actMarkerLineProfileFromStartPos=0, *actMarkerLineProfileFromStartPos_drawline=0, *actMarkerLabelAsStartPos=0,
 			*actMarkerTraceFromOnePos=0, *actMarkerTraceFromOnePosToOtherMarkers=0,
 
 			*actCurveCreate1=0, *actCurveCreate2=0, *actCurveCreate3=0, *actCurveCreate_pointclick=0,
 			*actCurveCreate_zoom=0, *actMarkerCreate_zoom=0,
-	
+
 			*actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
-	        *actMarkerAblateOne_imaging=0, *actMarkerAblateAll_imaging=0, 
+	        *actMarkerAblateOne_imaging=0, *actMarkerAblateAll_imaging=0,
 			//need to add more surgical operations here later, such as curve_ablating (without displaying the curve first), etc. by PHC, 20101105
 
 			*actNeuronToEditable=0, *actDecomposeNeuron=0, *actNeuronFinishEditing=0,
@@ -238,23 +240,23 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 			listAct.append(act = new QAction("", w)); act->setSeparator(true);
 
 			listAct.append(actMarkerCreate1 = new QAction("1-right-click to define a marker (Esc to finish)", w));
-			
+
 			actMarkerCreate1->setIcon(QIcon(":/icons/click1.svg"));
 			actMarkerCreate1->setVisible(true);
 			actMarkerCreate1->setIconVisibleInMenu(true);
-			
+
 			listAct.append(actMarkerCreate2 = new QAction("2-right-clicks to define a marker", w));
-			
+
 			actMarkerCreate2->setIcon(QIcon(":/icons/click2.svg"));
 			actMarkerCreate2->setVisible(true);
 			actMarkerCreate2->setIconVisibleInMenu(true);
-			
+
 			listAct.append(actMarkerCreate3 = new QAction("3-right-clicks to define a marker", w));
-			
+
 			actMarkerCreate3->setIcon(QIcon(":/icons/click3.svg"));
 			actMarkerCreate3->setVisible(true);
 			actMarkerCreate3->setIconVisibleInMenu(true);
-			
+
 			//listAct.append(act = new QAction("", w)); act->setSeparator(true);
 #ifdef _ALLOW_AUTOMARKER_MENU_
 			listAct.append(actMarkerAutoSeed = new QAction("AutoMarker", w));
@@ -263,25 +265,25 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 #ifdef _ALLOW_3D_CURVE_
 			listAct.append(act = new QAction("", w)); act->setSeparator(true);
 			listAct.append(actCurveCreate1 = new QAction("1-right-stroke to define a 3D curve", w));
-			
+
 			actCurveCreate1->setIcon(QIcon(":/icons/stroke1.svg"));
 			actCurveCreate1->setVisible(true);
 			actCurveCreate1->setIconVisibleInMenu(true);
-			
+
 			listAct.append(actCurveCreate2 = new QAction("2-right-strokes to define a 3D curve", w));
-			
+
 			actCurveCreate2->setIcon(QIcon(":/icons/stroke2.svg"));
 			actCurveCreate2->setVisible(true);
 			actCurveCreate2->setIconVisibleInMenu(true);
-			
+
 			listAct.append(actCurveCreate3 = new QAction("3-right-strokes to define a 3D curve", w));
-			
+
 			actCurveCreate3->setIcon(QIcon(":/icons/stroke3.svg"));
 			actCurveCreate3->setVisible(true);
 			actCurveCreate3->setIconVisibleInMenu(true);
-			
+
 			listAct.append(actCurveCreate_pointclick = new QAction("Series of right-clicks to define a 3D polyline (Esc to finish)", w));
-			
+
 			actCurveCreate_pointclick->setIcon(QIcon(":/icons/strokeN.svg"));
 			actCurveCreate_pointclick->setVisible(true);
 			actCurveCreate_pointclick->setIconVisibleInMenu(true);
@@ -373,7 +375,7 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 				if (listMarker.size()>=2)
 				{
 					listAct.append(actMarkerTraceFromOnePosToOtherMarkers = new QAction("trace from 1 start pos to all other markers", w));
-					
+
 					actMarkerTraceFromOnePosToOtherMarkers->setIcon(QIcon(":/icons/trace.svg"));
 					actMarkerTraceFromOnePosToOtherMarkers->setVisible(true);
 					actMarkerTraceFromOnePosToOtherMarkers->setIconVisibleInMenu(true);
@@ -382,7 +384,7 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 
 #ifdef _ALLOW_NEURONTREE_ONE2ENTIREIMG_MENU_
 				listAct.append(actMarkerTraceFromOnePos = new QAction("trace from 1 start pos through entire image", w));
-				
+
 				actMarkerTraceFromOnePos->setIcon(QIcon(":/icons/trace.svg"));
 				actMarkerTraceFromOnePos->setVisible(true);
 				actMarkerTraceFromOnePos->setIconVisibleInMenu(true);
@@ -407,11 +409,11 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 #ifdef _ALLOW_NEURONSEG_MENU_
 					listAct.append(act = new QAction("", w)); act->setSeparator(true);
 					listAct.append(actMarkerLabelAsStartPos = new QAction("label as starting pos for tracing/measuring", w)); //by PHC, 090119
-					
+
 					actMarkerLabelAsStartPos->setIcon(QIcon(":/icons/start.svg"));
 					actMarkerLabelAsStartPos->setVisible(true);
-					actMarkerLabelAsStartPos->setIconVisibleInMenu(true);					
-					
+					actMarkerLabelAsStartPos->setIconVisibleInMenu(true);
+
 					if (curImg->last_hit_landmark >= 0 && curImg->last_hit_landmark!=currentMarkerName-1)
 					{
 						listAct.append(actMarkerTraceFromStartPos = new QAction("trace from the starting pos (and use the *1st* data channel)", w));
@@ -431,7 +433,7 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 #endif
 #endif
 				}
-#endif
+#endif //test_main_cpp
 			}
 
 
@@ -623,7 +625,7 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 		editSurfaceObjBasicGeometry(names[0], names[1], names[2]);
 
 	}
-#endif
+#endif //test_main_cpp
 
 #define __create_curve__ // dummy, just for easy locating
 
@@ -706,6 +708,9 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
 
+
+#ifndef test_main_cpp
+
 #define __v3d_imaging_func__ // dummy, just for easy locating
 	else if (act == actCurveCreate_zoom_imaging)
 	{
@@ -728,9 +733,9 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 			v3d_imaging_paras myimagingp;
 			myimagingp.OPS = "POINT_ABLATING";
 			myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
-			
+
 			bool doit = (curImg->listLandmarks.size()>0) ? true : false;
-			
+
 			if (doit && act == actMarkerAblateAll_imaging)
 				myimagingp.list_landmarks = curImg->listLandmarks;
 			else // act == actMarkerAblateOne_imaging
@@ -741,14 +746,14 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 				else
 					doit = false;
 			}
-				
+
 			//do imaging
 			if (doit)
 			{
 				//set the hiddenSelectWidget for the V3D mainwindow
 				if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
 				{
-					v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);			
+					v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
 				}
 				else
 				{
@@ -758,8 +763,6 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 			}
 		}
 	}
-	
-#ifndef test_main_cpp
 
 	else if (act == actMarkerAutoSeed)
 	{
@@ -830,8 +833,8 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 			V3DLONG newz = curImg->getZDim()/2;
 			for (V3DLONG i=0; i < curImg->listLandmarks.size(); i++)
 			{
-				ImageMarker & im = listMarker[i]; 
-				LocationSimple & ls = curImg->listLandmarks[i]; 
+				ImageMarker & im = listMarker[i];
+				LocationSimple & ls = curImg->listLandmarks[i];
 				im.z = ls.z = newz;
 			}
 		}
@@ -970,13 +973,9 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 			}
 		}
 	}
-#endif //test_main_cpp
-
 
 
 #define __actions_of_neuron__ // dummy, just for easy locating
-#ifndef test_main_cpp
-
 #define NEURON_CONDITION  (listNeuronTree.size()>=1 && w && curImg) //only allow one neuron, and assume it is the one being reconstructed from image
 
 	else if (act==actNeuronToEditable || act==actDecomposeNeuron)
@@ -1298,6 +1297,7 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 		QMessageBox::information(0, "neuron info", tmpstr);
 		qDebug() << tmpstr;
 	}
+
 #endif //tes_main_cpp
 
 
@@ -2116,11 +2116,6 @@ void Renderer_tex2::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 	//qDebug("	_idep = %p, _idep->image4d = %p", _idep, ((iDrawExternalParameter*)_idep)->image4d);
 	//qDebug("	My4DImage* = %p, XFormWidget* = %p", curImg, curXWidget);
 
-#else
-	void* curImg=0;
-	void* curXWidget = 0;
-#endif
-
 	if (w && curImg && curXWidget && loc_vec.size()>0)
 	{
 		double mx, Mx, my, My, mz, Mz;
@@ -2185,6 +2180,7 @@ void Renderer_tex2::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 		curXWidget->doImage3DLocalBBoxView(); //by PHC 101012. move from before if(b_imaging...)
 
 	}
+#endif //test_main_cpp
 }
 
 void Renderer_tex2::solveCurveViews()
@@ -2841,5 +2837,4 @@ XYZ Renderer_tex2::getCenterOfLocal(XYZ P)
 
 	return P;
 }
-
 

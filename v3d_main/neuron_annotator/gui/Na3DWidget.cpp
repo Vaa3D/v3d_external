@@ -208,14 +208,14 @@ void Na3DWidget::mousePressEvent(QMouseEvent * event)
     oldDragX = event->pos().x();
     oldDragY = event->pos().y();
     bMouseIsDragging = true;
-   
+
 	// V3dR_GLWidget::mousePressEvent(event);
 	if (event->button()==Qt::LeftButton)
 	{
 		lastPos = event->pos();
-		t_mouseclick = clock();
+		t_mouseclick_left = clock();
 	}
-	
+
 	if (event->button()==Qt::RightButton && renderer)
 	{
                 //if (renderer->hitPoint(event->x(), event->y()))  //pop-up menu or marker definition
@@ -224,7 +224,7 @@ void Na3DWidget::mousePressEvent(QMouseEvent * event)
             {
                 updateTool();
             }
-		
+
             V3dR_GLWidget::update();
 	}
 }
@@ -234,31 +234,30 @@ void Na3DWidget::mouseReleaseEvent(QMouseEvent * event)
     mouseClickManager.mouseReleaseEvent(event);
     // updateCursor();
     bMouseIsDragging = false;
-   
+
 	// V3dR_GLWidget::mouseReleaseEvent(event);
-	int clicktime = fabs(clock() - t_mouseclick);
+	int clicktime = fabs(clock() - t_mouseclick_left);
         bool left_quickclick = false;
-	
+
 	if(clicktime<1000)
                 left_quickclick = true;
-	
+
 	//qDebug()<<"release ..."<<left_quickclick<<"time elapse ..."<<clicktime<<t_mouseclick;
-	
+
 	if (event->button()==Qt::RightButton && renderer) //right-drag
     {
                 (renderer->movePen(event->x(), event->y(), false));
 		updateTool();
-                _stillpaint_disable = false;  _still=false;
                     V3dR_GLWidget::update();
     }
-	
+
         if (event->button()==Qt::LeftButton && renderer && left_quickclick) // left click
     {
             // Moved single click response to MouseClickManager
             // highlightNeuronAtPosition(event->pos());
             // return;
     }
-	
+
 }
 
 void Na3DWidget::onMouseSingleClick(QPoint pos)
@@ -415,7 +414,7 @@ void Na3DWidget::updateRotation(const Rotation3D & newRotation)
 void Na3DWidget::updateHighlightNeurons(bool b)
 {
 	enableMarkerLabel(b); // show markers' label
-	
+
 	updateWithTriView(); // update list markers and 3d viewer
 }
 

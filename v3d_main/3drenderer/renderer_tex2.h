@@ -153,9 +153,9 @@ protected:
 	virtual bool supported_TexStream()								{return false;} //091003
 	virtual void setupTexStreamBuffer()							{tex_stream_buffer = false;}; //091003
 	virtual void cleanTexStreamBuffer()							{tex_stream_buffer = false;}; //091003
-	virtual bool _streamingTex()									{return false;} //091015
 	virtual void _streamTex(int stack_i, int slice_i, int step, int slice0, int slice1) {}; //091003
 	virtual void _streamTex_end()													 	{}; //091003
+	virtual bool _streamTex_ready()									{return false;} //091015
 
 	virtual void setupFrontSliceBuffer();
 	virtual void drawUnitFrontSlice(int line=0);
@@ -187,6 +187,7 @@ public:
 	virtual void updateLandmark();
 	virtual void updateTracedNeuron();
 
+
 // process Object hit ///////////////////////////////////////////////////////////////////////////////////////
 public:
 
@@ -217,8 +218,12 @@ public:
 	void showLineProfile(int marker1, int marker2);
 	QVector<int> getLineProfile(XYZ p1, XYZ p2, int chno=0);
 
-        XYZ selectPosition(int x, int y); 	// neuron selector
+
+#ifndef test_main_cpp
+		XYZ selectPosition(int x, int y); 	// neuron selector
         int hitMenu(int x, int y); // neuron annotator right click popup menu
+#endif
+
 
 // define Marker/Curve  ///////////////////////////////////////////////
 protected:
@@ -231,7 +236,7 @@ protected:
 		double P[16];		// 4x4 projection matrix
 		double MV[16];		// 4x4 model-view matrix
 	};
-	
+
 	QCursor oldCursor;
 	int lastSliceType;
 	int currentMarkerName;

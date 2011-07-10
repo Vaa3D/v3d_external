@@ -32,7 +32,9 @@ QT += opengl
 #PRECOMPILED_HEADER += v3dr_common.h
 
 # Input
-LIBS += -L../jba/c++ -lnewmat
+LIBS += -L../jba/c++ -lv3dnewmat
+macx:LIBS += -framework CoreServices #Snow leopard GLee_r.o requires CoreServices framework
+
 HEADERS += GLee_r.h \
     renderer.h \
     renderer_tex2.h \

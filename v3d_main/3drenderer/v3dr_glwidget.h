@@ -68,17 +68,18 @@ public:
 
     iDrawExternalParameter* getiDrawExternalParameter() {return _idep;}
     QWidget * getMainWindow() {return mainwindow;}
-	Renderer* getRenderer() {return renderer;}
+	Renderer* getRenderer()   {return renderer;}
         const Renderer* getRenderer() const {return renderer;} // const version CMB
-	QString getDataTitle() {return data_title;}
+	QString getDataTitle()    {return data_title;}
 	void setDataTitle(QString newdt) {data_title = newdt;}
-	int getNumKeyHolding() {for(int i=1;i<=9; i++) if(_holding_num[i]) return i; return -1;}
-	bool getStill() 		{return _still;} //used by Renderer::beStil()
+	int getNumKeyHolding()    {for(int i=1;i<=9; i++) if(_holding_num[i]) return i; return -1;}
+	bool getStill() 		{return _still;} //used by Renderer::beStill()
 	void setStill(bool b) 	{_still = b;}    //used by V3dR_MainWindow::doSaveMovie()
-    void clearColormapDialog() {colormapDlg = 0;}
+    bool needStillPaint();
+	void clearColormapDialog() {colormapDlg = 0;}
     void clearSurfaceDialog()  {surfaceDlg = 0;}
     bool screenShot(QString filename);
-    void triggerNeuronShown(bool bg) {emit neuronShown(bg);}
+    void triggerNeuronShown(bool bg)    {emit neuronShown(bg);}
     void triggerNeuronShownAll(bool bg) {emit neuronShownAll(bg);}
 
 protected:
@@ -99,7 +100,7 @@ protected:
     virtual void mouseReleaseEvent(QMouseEvent *event);
     virtual void mouseMoveEvent(QMouseEvent *event);
     virtual void wheelEvent(QWheelEvent *event);
-	virtual void mouseDoubleClickEvent ( QMouseEvent * event );
+	virtual void mouseDoubleClickEvent ( QMouseEvent * event ) {};
 
         virtual void keyPressEvent(QKeyEvent * e) {handleKeyPressEvent(e);}
         virtual void keyReleaseEvent(QKeyEvent * e) {handleKeyReleaseEvent(e);}
@@ -119,7 +120,7 @@ protected:
     bool _isSoftwareGL; //for choiceRenderer
 
 protected slots:
-   	virtual void stillPaint();
+   	virtual void stillPaint(); //for deferred full-resolution volume painting, connected to still_timer
 
 
 #define __view3dcontrol_interface__
@@ -172,7 +173,6 @@ public:
 
 public slots:
 // most of format: set***(type) related to a change***(type)
-	//virtual void stillPaint();
 
 	virtual int setVolumeTimePoint(int t);
 	virtual void incVolumeTimePoint(float step);
@@ -353,11 +353,11 @@ signals:
         void neuronShownAll(bool bg);
 
 protected:
-	bool _still, _stillpaint_disable, _stillpaint_pending, _mouse_in_view;
+	bool _still, _stillpaint_need, _stillpaint_pending;
     QTimer still_timer;
-    static const int still_timer_interval = 1000;
+    static const int still_timer_interval = 1000; //1000 is safe enough
 
-	int t_mouseclick;
+	int t_mouseclick_left, mouse_held, mouse_in_view;
 
     bool _in_destructor; //for makeCurrent when valid context
 
@@ -390,9 +390,11 @@ protected:
 
 	void init_members()
 	{
-		_still = _stillpaint_disable = _stillpaint_pending = _mouse_in_view = false;
+		_still = _stillpaint_need = _stillpaint_pending = false;
 	    connect(&still_timer, SIGNAL(timeout()), this, SLOT(stillPaint())); //only connect once
 	    still_timer.start(still_timer_interval);
+
+	    t_mouseclick_left = mouse_held = mouse_in_view = 0;
 
 	    _in_destructor =false;
 		_isSoftwareGL =false;

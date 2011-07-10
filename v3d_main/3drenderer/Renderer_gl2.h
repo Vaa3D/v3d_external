@@ -90,9 +90,9 @@ protected:
 	virtual void setupTexStreamBuffer(); // called by subloadTex()
 	virtual void cleanTexStreamBuffer(); // called by ~Renderer_gl2 	// makeCurrent
         virtual void setupStackTexture(bool bfirst);
-	virtual bool _streamingTex();
 	virtual void _streamTex(int stack_i, int slice_i, int step, int slice0, int slice1);
 	virtual void _streamTex_end();
+	virtual bool _streamTex_ready();
 
 public:
     RGBA8 colormap[FILL_CHANNEL][256];      // [n-channel][256-intensity]

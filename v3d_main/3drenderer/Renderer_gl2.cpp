@@ -753,12 +753,15 @@ void Renderer_gl2::_streamTex_end()
 	BIND_UNPACK_PBO(0);
 }
 
-bool Renderer_gl2::_streamingTex()
+bool Renderer_gl2::_streamTex_ready()
 {
 	// tex_stream_buffer is set only when createStreamBuffer is successful.
 	// tryTexStream: -1--resident, 0--off, 1--mixed, 2--force
 	// beStill: means no user input a while
-	return ( (tryTexStream==2) || (tryTexStream==1 && beStill()) )&&tex_stream_buffer;
+	bool need_stream = (tryTexStream==2)
+					|| (tryTexStream==1 && beStill())
+					|| (renderMode==rmCrossSection); //20110709
+	return  (tex_stream_buffer && need_stream);
 }
 
 void Renderer_gl2::toggleTexStream()

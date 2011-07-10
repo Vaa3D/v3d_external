@@ -438,10 +438,8 @@ win32:LIBS += -lm -lv3dtiff \
 
 INCLUDEPATH += ../common_lib/include   
 
-# 100809 RZC: Eclipse need "-L./???" to start make at root dir of project (copy .pro to there)
-LIBS += -L./jba/c++  
-macx:LIBS += -L./common_lib/lib_mac32
 
+#removed LIBS+=./??? for Eclipse IDE using customized Build-command or Make-target instead, by RZC 20110709 
 INCLUDEPATH = $$unique(INCLUDEPATH)
 LIBS = $$unique(LIBS)
 # CONFIG = $$unique(CONFIG) # this only DOESN'T work on macx, very strange, by RZC 20080923
