@@ -29,7 +29,7 @@
 #include "../../../../v3d_main/worm_straighten_c/bdb_minus.h"
 
 
-template <class T> bool maskImageUsingSegBoundary(T *outimg1d, const V3DLONG sz[4], int in_channel_no, int out_channel_no, const int ** left_bound, const int ** right_bound)
+template <class T> bool maskImageUsingSegBoundary(T *outimg1d, V3DLONG sz[4], int in_channel_no, int out_channel_no, int ** left_bound, int ** right_bound)
 {
 	if (!outimg1d || !sz || sz[0]<0 || sz[1]<0 || sz[2]<0 || sz[3]<0 || !left_bound || !right_bound)
 	{
@@ -41,7 +41,7 @@ template <class T> bool maskImageUsingSegBoundary(T *outimg1d, const V3DLONG sz[
 
 	//note that for convenience I have not add pointer check in the following part. should add later
 	{
-		unsigned char **** img_output_4d=0;
+		T **** img_output_4d=0;
 		new4dpointer(img_output_4d, sz[0], sz[1], sz[2], sz[3], outimg1d);
 
 		for (z=0; z<sz[2]; z++)
@@ -93,6 +93,7 @@ template <class T> bool maskImageUsingSegBoundary(T *outimg1d, const V3DLONG sz[
 		if (img_output_4d) {delete4dpointer(img_output_4d, sz[0], sz[1], sz[2], sz[3]); img_output_4d=0;}
 	}
 
+	return true;
 }
 
 bool do_lobeseg_bdbminus(unsigned char *inimg1d0, const V3DLONG sz[4], int datatype_input, unsigned char *outimg1d, int in_channel_no, int out_channel_no, const BDB_Minus_ConfigParameter & mypara)
@@ -363,7 +364,20 @@ bool do_lobeseg_bdbminus(unsigned char *inimg1d0, const V3DLONG sz[4], int datat
 	output_sz[2] = sz[2];
 	output_sz[3] = sz[3]+1;
 
-	if (!maskImageUsingSegBoundary(outimg1d, output_sz, in_channel_no, out_channel_no, left_bound, right_bound))
+	bool b_maskres = false;
+	if (datatype_input==1)
+	{
+		b_maskres = maskImageUsingSegBoundary(outimg1d, output_sz, in_channel_no, out_channel_no, left_bound, right_bound);
+	}
+	else if (datatype_input==2)
+	{
+		b_maskres = maskImageUsingSegBoundary((unsigned short int *)outimg1d, output_sz, in_channel_no, out_channel_no, left_bound, right_bound);
+	}
+	else if (datatype_input==4)
+	{
+		b_maskres = maskImageUsingSegBoundary((float *)outimg1d, output_sz, in_channel_no, out_channel_no, left_bound, right_bound);
+	}
+	if (!b_maskres)
 	{
 		fprintf(stderr, "Fail to mask the optic lobe regions using the boundary.\n");
 	}
