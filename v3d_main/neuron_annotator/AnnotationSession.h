@@ -6,6 +6,7 @@
 #include "v3d_core.h"
 #include "MultiColorImageStackNode.h"
 #include "NeuronAnnotatorResultNode.h"
+#include "FragmentSelectionModel.h"
 
 class AnnotationSession : public QObject
 {
@@ -50,7 +51,7 @@ public:
 signals:
     void modelUpdated(QString updateType);
     void neuronMaskStatusSet();
-    void scrollBarFocus(int index);
+    void scrollBarFocus(FragmentSelectionModel::FragmentIndex index);
 
 public slots:
     void neuronMaskUpdate(int index, bool status);

@@ -450,7 +450,8 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
         connect(annotationSession, SIGNAL(neuronMaskStatusSet()), ui.v3dr_glwidget, SLOT(updateAnnotationModels()));
         connect(annotationSession, SIGNAL(neuronMaskStatusSet()), this, SLOT(updateAnnotationModels()));
         // connect(annotationSession, SIGNAL(scrollBarFocus(int)), ui.scrollArea->horizontalScrollBar(), SLOT(setValue(int)));
-        connect(annotationSession, SIGNAL(scrollBarFocus(int)), ui.fragmentGalleryWidget, SLOT(scrollToFragment(FragmentSelectionModel::FragmentIndex)));
+        connect(annotationSession, SIGNAL(scrollBarFocus(FragmentSelectionModel::FragmentIndex)),
+                ui.fragmentGalleryWidget, SLOT(scrollToFragment(FragmentSelectionModel::FragmentIndex)));
 
     return true;
 }
