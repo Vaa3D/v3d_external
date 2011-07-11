@@ -189,6 +189,11 @@ bool MainWindow::setSWC(void* window, NeuronTree & nt)
 		qDebug()<<"MainWindow set SWC: "<< w << &nt;
 		w->getImageData()->tracedNeuron = NeuronTree__2__V_NeuronSWC_list(nt);
 		//missing update?, by Hanchuan Peng, 100602 //updateImageWindow
+		//no need of updateImageWindow, because SWC is only displayed in 3d view, by RZC 110711
+
+		//make tracedNeuron is no editing in 3D view, by RZC 110711
+		w->finishEditingSWC();
+
 		return true;
 	}
 	else return false;
@@ -300,6 +305,21 @@ void XFormWidget::closeROI3DWindow()
 	if (mypara_3Dlocalview.b_still_open && mypara_3Dlocalview.window3D)
 	{
 		mypara_3Dlocalview.window3D->postClose();
+	}
+}
+
+void XFormWidget::finishEditingSWC()
+{
+	V3dR_GLWidget* w = 0;
+	if (mypara_3Dview.b_still_open && mypara_3Dview.window3D
+			&& (w = mypara_3Dview.window3D->getGLWidget()))
+	{
+		w->finishEditingNeuronTree();
+	}
+	if (mypara_3Dlocalview.b_still_open && mypara_3Dlocalview.window3D
+			&& (w = mypara_3Dlocalview.window3D->getGLWidget()))
+	{
+		w->finishEditingNeuronTree();
 	}
 }
 

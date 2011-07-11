@@ -132,7 +132,7 @@ public:
 	iDrawExternalParameter mypara_3Dview;
 	iDrawExternalParameter mypara_3Dlocalview;
 	V3D_atlas_viewerDialog *atlasViewerDlg;
-	
+
 	V3DLONG bbx0, bbx1, bby0, bby1, bbz0, bbz1; //by PHC. 100821. the current regional bbox. for curve based zoomin
 	void setLocal3DViewerBBox(V3DLONG x0, V3DLONG x1, V3DLONG y0, V3DLONG y1, V3DLONG z0, V3DLONG z1)
 	{
@@ -143,7 +143,7 @@ public:
 		bbz0 = z0;
 		bbz1 = z1;
 	}
-	
+
 
 	double disp_zoom; //081114
 	bool b_use_dispzoom;
@@ -154,7 +154,7 @@ protected:
     void keyPressEvent ( QKeyEvent * e); //100815, PHC
 	void closeEvent ( QCloseEvent * event );  //080814
 	//void focusInEvent ( QFocusEvent * event ); //080829
-	
+
 	void * p_customStruct; //a convenient pointer to pass back and forth some useful parameter information for an engine
 
 private:
@@ -254,7 +254,7 @@ public slots:
 	void doImage3DLocalMarkerView();
 	void doImage3DLocalRoiView();
 	void doImage3DLocalBBoxView(); //do not have arguments so that can be used as the slot of a timer signal
-	void doImage3DView(bool tmp_b_use_512x512x256, int b_local=0, V3DLONG bbx0=-1, V3DLONG bbx1=-1, V3DLONG bby0=-1, V3DLONG bby1=-1, V3DLONG bbz0=-1, V3DLONG bbz1=-1); 
+	void doImage3DView(bool tmp_b_use_512x512x256, int b_local=0, V3DLONG bbx0=-1, V3DLONG bbx1=-1, V3DLONG bby0=-1, V3DLONG bby1=-1, V3DLONG bbz0=-1, V3DLONG bbz1=-1);
 	void doMenuOf3DViewer();
 	void aboutInfo();
 
@@ -281,7 +281,7 @@ public slots:
 
 	void cascadeWindows();
 	void updateViews(); //090615: a convenient function to call my4dimage updateViews()
-	
+
 	void updateTriview(); // call MainWindow updateTriview() Dec-21-2010 YuY
 
 
@@ -289,7 +289,7 @@ signals:
     void external_focusXChanged(int c);
     void external_focusYChanged(int c);
     void external_focusZChanged(int c);
-	
+
 	void external_validZSliceChanged(long z);
 
 
@@ -298,6 +298,8 @@ public:    // in mainwindow_interface.cpp
 	bool transferImageData(Image4DSimple *img, unsigned char *a);
 	QList<QPolygon> get3ViewROI();
 	bool set3ViewROI(QList<QPolygon> & roi_list);
+
+	void finishEditingSWC();
 
 	void open3DWindow();
 	void openROI3DWindow();
@@ -314,8 +316,8 @@ public:    // in mainwindow_interface.cpp
 	V3dR_GLWidget * getLocalView3D();
 
 	// a few interface functions for external plugin use. prototyped by PHC. 2010-Dec-10
-	
-	virtual void getFocusLocation(V3DLONG & cx, V3DLONG & cy, V3DLONG & cz) const 
+
+	virtual void getFocusLocation(V3DLONG & cx, V3DLONG & cy, V3DLONG & cz) const
 	{
 		if (imgData)
 		{
@@ -324,7 +326,7 @@ public:    // in mainwindow_interface.cpp
 			cz = imgData->getFocusZ()+1;
 		}
 	}
-	virtual void setFocusLocation(V3DLONG cx, V3DLONG cy, V3DLONG cz)   
+	virtual void setFocusLocation(V3DLONG cx, V3DLONG cy, V3DLONG cz)
 	{
 		if (imgData)
 		{
@@ -332,42 +334,42 @@ public:    // in mainwindow_interface.cpp
 			imgData->updateViews(); // update trivews
 		}
 	}
-	
+
 	virtual void setFocusLocation2Center()
 	{
 		if (imgData)
 		{
 			// reinit focus to center along x, y, z
 			V3DLONG sx, sy, sz;
-			
+
 			sx = imgData->getXDim();
 			sy = imgData->getYDim();
 			sz = imgData->getZDim();
-			
+
 			forceToChangeFocus(sx/2, sy/2, sz/2);
 			imgData->updateViews(); // update trivews
 		}
 	}
-	
-	virtual void updateMinMax(V3DLONG nFrame) 
+
+	virtual void updateMinMax(V3DLONG nFrame)
 	{
 		if (imgData)
 		{
 			//imgData->updateminmaxvalues();
-			
+
 			V3DLONG sx, sy, sz, sc;
-			
+
 			sx = imgData->getXDim();
 			sy = imgData->getYDim();
 			sz = imgData->getZDim();
 			sc = imgData->getCDim();
-			
+
 			if(nFrame<0 || nFrame>=sz) // changed by YuY Feb 8, 2011
 				return;
-			
+
 			V3DLONG offsets = nFrame*sx*sy;
 			V3DLONG pagesz = sx*sy;
-			
+
 			switch (imgData->getDatatype())
 			{
 				case V3D_UINT8:
@@ -376,48 +378,48 @@ public:    // in mainwindow_interface.cpp
 						unsigned char minvv,maxvv;
 						V3DLONG tmppos_min, tmppos_max;
 						unsigned char *datahead = (unsigned char *)(imgData->getRawDataAtChannel(i));
-						
+
 						minMaxInVector(datahead+offsets, pagesz, tmppos_min, minvv, tmppos_max, maxvv);
-						
+
 						if(imgData->p_vmax[i]<maxvv)
 							imgData->p_vmax[i] = maxvv;
 						if(imgData->p_vmin[i]>minvv)
 							imgData->p_vmin[i] = minvv;
 					}
 					break;
-					
+
 				case V3D_UINT16:
 					for(V3DLONG i=0;i<sc;i++)
 					{
 						USHORTINT16 minvv,maxvv;
 						V3DLONG tmppos_min, tmppos_max;
 						USHORTINT16 *datahead = (USHORTINT16 *)(imgData->getRawDataAtChannel(i));
-						
+
 						minMaxInVector(datahead+offsets, pagesz, tmppos_min, minvv, tmppos_max, maxvv);
-						
+
 						if(imgData->p_vmax[i]<maxvv)
 							imgData->p_vmax[i] = maxvv;
 						if(imgData->p_vmin[i]>minvv)
 							imgData->p_vmin[i] = minvv;
 					}
 					break;
-					
+
 				case V3D_FLOAT32:
 					for(V3DLONG i=0;i<sc;i++)
 					{
 						float minvv,maxvv;
 						V3DLONG tmppos_min, tmppos_max;
 						float *datahead = (float *)(imgData->getRawDataAtChannel(i));
-						
+
 						minMaxInVector(datahead+offsets, pagesz, tmppos_min, minvv, tmppos_max, maxvv);
-						
+
 						if(imgData->p_vmax[i]<maxvv)
 							imgData->p_vmax[i] = maxvv;
 						if(imgData->p_vmin[i]>minvv)
 							imgData->p_vmin[i] = minvv;
 					}
 					break;
-					
+
 				default:
 					v3d_msg("Invalid data type found in updateMinMax().");
 					return;
@@ -429,21 +431,21 @@ public:    // in mainwindow_interface.cpp
 	{
 		mytype = (int) ( this->getColorType() );
 	}
-	virtual void setTriViewColorDispType(int mytype)  
+	virtual void setTriViewColorDispType(int mytype)
 	{
 		this->setColorType((ImageDisplayColorType)mytype);
 	}
-	
-	virtual void * getCustomStructPointer() const 
+
+	virtual void * getCustomStructPointer() const
 	{
 		return (this->p_customStruct);
 	}
-	
-	virtual void setCustomStructPointer(void *a) 
+
+	virtual void setCustomStructPointer(void *a)
 	{
 		this->p_customStruct = a;
 	}
-	
+
 	virtual V3DLONG getValidZslice() const
 	{
 		if (imgData)
@@ -451,15 +453,15 @@ public:    // in mainwindow_interface.cpp
 			return imgData->getValidZSliceNum();
 		}
 	}
-	
-	virtual void setValidZslice(V3DLONG curslice) 
+
+	virtual void setValidZslice(V3DLONG curslice)
 	{
 		if (imgData)
 		{
 			imgData->setValidZSliceNum(curslice);
 		}
 	}
-	
+
 	virtual V3DLONG getPreValidZslice() const
 	{
 		if (imgData)
@@ -467,15 +469,15 @@ public:    // in mainwindow_interface.cpp
 			return imgData->getPreValidZSliceNum();
 		}
 	}
-	
-	virtual void setPreValidZslice(V3DLONG preslice) 
+
+	virtual void setPreValidZslice(V3DLONG preslice)
 	{
 		if (imgData)
 		{
 			imgData->setPreValidZSliceNum(preslice);
 		}
 	}
-	
+
 	virtual void trigger(V3DLONG curslice)
 	{
 		if (imgData && curslice>0)
@@ -484,7 +486,7 @@ public:    // in mainwindow_interface.cpp
 			emit external_validZSliceChanged(curslice);
 		}
 	}
-	
+
 };
 
 

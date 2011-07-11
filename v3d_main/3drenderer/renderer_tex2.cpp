@@ -46,8 +46,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "renderer_tex2.h"
 #include "v3dr_glwidget.h"
 
-#define SIM_DIM1 756	//X
-#define SIM_DIM2 756	//Y
+#define SIM_DIM1 765	//X
+#define SIM_DIM2 567	//Y
 #define SIM_DIM3 200	//Z
 #define SIM_DIM4 3		//C
 #define SIM_DIM5 1		//T
@@ -266,7 +266,7 @@ void Renderer_tex2::setupData(void* idep)
 
 		if (dim4==1)   rgba3d_r2gray(total_rgbaBuf, bufSize); //081103
 	}
-	qDebug("   data4dp_to_rgba3d .................. cost time = %g sec", qtime.elapsed()*0.001);
+	qDebug("   data4dp_to_rgba3d ............................................... cost time = %g sec", qtime.elapsed()*0.001);
 
 }
 
@@ -1031,10 +1031,14 @@ void Renderer_tex2::subloadTex(V3DLONG timepoint, bool bfirst)
 			setupStackTexture(bfirst);  // use a temporary buffer, so first
 
 		if (tryTexStream >0 && bfirst)
+		{
 			setupTexStreamBuffer();
+		}
 
 	}
 	qDebug("   subloadTex [%d]: %s ......... cost time = %g sec", timepoint, try_vol_state(), qtime.elapsed()*0.001);
+	qDebug("	  tex_stream_buffer = %s", tex_stream_buffer?"true":"false");
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
