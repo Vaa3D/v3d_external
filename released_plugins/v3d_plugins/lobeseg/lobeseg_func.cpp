@@ -99,7 +99,7 @@ int lobeseg_two_sides(V3DPluginCallback2 &callback, QWidget *parent)
 	mypara.radius_y = radius;
 	mypara.TH = 0.1;
 
-	if(!do_lobeseg_bdbminus(inimg1d, sz, outimg1d, in_channel_no, out_channel_no, mypara))
+	if(!do_lobeseg_bdbminus(inimg1d, sz, image->getDatatype(), outimg1d, in_channel_no, out_channel_no, mypara))
 	{
 		v3d_msg("lobeseg two sides error!");
 		return -1;
@@ -173,7 +173,7 @@ int lobeseg_one_side_only(V3DPluginCallback2 &callback, QWidget *parent)
 	mypara.radius_y = radius;
 	mypara.TH = 0.1;
 
-	if(!do_lobeseg_bdbminus_onesideonly(inimg1d, sz, outimg1d, in_channel_no, out_channel_no, mypara, x0, y0, x1, y1, keep_which, nctrls, is_surf))
+	if(!do_lobeseg_bdbminus_onesideonly(inimg1d, sz, image->getDatatype(), outimg1d, in_channel_no, out_channel_no, mypara, x0, y0, x1, y1, keep_which, nctrls, is_surf))
 	{
 		v3d_msg("lobeseg two sides error!");
 		return -1;
@@ -215,7 +215,7 @@ void printHelp()
     printf("\t [#N]                               the number of control points.\n");
     printf("\t [#S]                               output the seperating surface.\n");
     printf("\n");
-    printf("Demo :\t v3d -p liblobeseg_debug.dylib -n lobeseg -i input.tif -o output.tif \"#s #N 20 #p 30x0+100x30 #k left #S\"\n");
+    printf("Demo :\t v3d -x liblobeseg_debug.dylib -f lobeseg -i input.tif -o output.tif -p \"#s #N 20 #p 30x0+100x30 #k left #S\"\n");
     printf("Version: 0.91 (Copyright: Hanchuan Peng)\n");
     return;
 }
@@ -488,7 +488,7 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 	if(!single_side)
 	{
 		cout<<"do two sides lobeseg"<<endl;
-		if (!do_lobeseg_bdbminus(inimg1d, sz, outimg1d, in_channel_no, out_channel_no, mypara))
+		if (!do_lobeseg_bdbminus(inimg1d, sz, datatype, outimg1d, in_channel_no, out_channel_no, mypara))
 		{
 			strcpy(err_str, "Fail to do two sides lobe segmentation.");
 			printf( "Fail to do two sides lobe segmentation.");
@@ -498,7 +498,7 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 	else
 	{
 		cout<<"do one side lobeseg"<<endl;
-		if (!do_lobeseg_bdbminus_onesideonly(inimg1d, sz, outimg1d, in_channel_no, out_channel_no, mypara, x0, y0, x1, y1, keep_which,nctrls, is_surf))
+		if (!do_lobeseg_bdbminus_onesideonly(inimg1d, sz, datatype, outimg1d, in_channel_no, out_channel_no, mypara, x0, y0, x1, y1, keep_which,nctrls, is_surf))
 		{
 			strcpy(err_str, "Fail to do one side lobe segmentation.");
 			printf( "Fail to do one side lobe segmentation.");
