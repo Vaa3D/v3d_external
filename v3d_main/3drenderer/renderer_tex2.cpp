@@ -2339,5 +2339,15 @@ int Renderer_tex2::hitMenu(int x, int y)
     return 0;
 }
 
+QList <LabelSurf> Renderer_tex2::getListLabelSurf()
+{
+    return listLabelSurf;
+}
+
+void Renderer_tex2::setListLabelSurf(QList <LabelSurf> listLabelSurfinput)
+{
+    listLabelSurf = listLabelSurfinput;
+}
+
 #endif
 

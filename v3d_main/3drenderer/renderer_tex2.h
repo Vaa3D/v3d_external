@@ -220,8 +220,11 @@ public:
 
 
 #ifndef test_main_cpp
-		XYZ selectPosition(int x, int y); 	// neuron selector
+        XYZ selectPosition(int x, int y); 	// neuron selector
         int hitMenu(int x, int y); // neuron annotator right click popup menu
+
+        QList <LabelSurf> getListLabelSurf();
+        void setListLabelSurf(QList <LabelSurf> listLabelSurfinput);
 #endif
 
 
