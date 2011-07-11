@@ -16,6 +16,7 @@ shopt -s expand_aliases;
 # 101202: re-enable the bundle again
 # 110203: updated by PHC. make -T also build fftw (needed for stitching plugin)
 # 110710: updated by RZC, add -noplugins 
+# 110711: updated by RZC, change ARGS,QARGS to ARG_LIB,ARG_V3D 
 #
 # Arguments:
 #    -jx                        #compile using some 'x' number of processors 
@@ -51,6 +52,9 @@ NEWMATCOMPILE="NO"          # default do not compile newmat
 MYLIBCOMPILE="NO"           # default do not comple mylibtiff
 SKIPV3DPLUGINS="NO"         # default do not skip building plugins
 
+ARG_LIB=
+QMAKE_CONFIG=
+ARG_V3D=
 ARG_PLUGINS=
 ARG_MYLIBTIFF=
 
@@ -59,11 +63,11 @@ ARG_MYLIBTIFF=
 for arg in $*; do
   #echo $arg		
 
+   #filter special switch
    if [ $arg == "-noplugins" ]; then
       SKIPV3DPLUGINS="YES"
 	  continue
    fi
-
    if [ $arg == "-T" ]; then
       TIFFCOMPILE="YES"
       MYLIBCOMPILE="YES"
@@ -71,16 +75,24 @@ for arg in $*; do
 	  continue
    fi
    
-   ARG_PLUGINS+=" $arg "      	  
-   #echo $ARG_PLUGINS
+   #other switch copy to plugins 
+   ARG_PLUGINS+=" $arg"  	  
   
+   #filter for make target of lib
    if [ $arg == "debug" -o $arg == "release" ]; then
-      ARGS+=" all"        # mac platform make doesn't has debug/release traget
+      ARG_LIB+=" all"        # mac platform make doesn't has debug/release traget
       continue
    fi
    if [ $arg == "clean" -o $arg == "all" ]; then
-      ARGS+=" $arg"
+      ARG_LIB+=" $arg"
       continue
+   fi
+
+   if [ $arg == "-B" ]; then
+	  V3DPLUGINSCOMPILE="YES"
+	  NEWMATCOMPILE="YES"      #ARG_LIB+=" -B"
+      ARG_V3D+=" -B" 
+	  continue
    fi
 
    #the tiger machine is no longer supported, thus the following section may have compiling issue
@@ -93,22 +105,16 @@ for arg in $*; do
       continue
    fi
 
-   if [ $arg == "-B" ]; then
-	  V3DPLUGINSCOMPILE="YES"
-	  NEWMATCOMPILE="YES"
-      QARGS+=" $arg " 
-	  continue
-   fi
-
 #32bit compiling
  
    if [ $arg == "-n" ]; then
    	  echo "Force to configure make for MACX -arch x86 (need 32-bit enabled Qt)"
-      #ARGS+=" ARCHS=i386 " 
+      
+      #ARG_LIB+=" ARCHS=i386 " 
       V3D_PRO_FILE="v3d.pro"    # project file for qmake
       SYSTEMBITS="32" 
 
-      QMAKE_CONFIG="CONFIG+=x86"
+      QMAKE_CONFIG+=" CONFIG+=x86"
       LOCAL_DIR=$PWD/common_lib
  	  continue
    fi
@@ -118,35 +124,36 @@ for arg in $*; do
    if [ $arg == "-m" ]; then
    	  echo "Force to configure make for MACX -arch x86_64 (need 64-bit enabled Qt, version 4.5.0 above)" 
    	  echo "If you specify -m and -n together, the behavior of this batch script is NOT well defined!!"
-      ARGS+=" ARCH_x86_64=-archx86_64 " 
+      
+      ARG_LIB+=" ARCH_x86_64=-archx86_64 " 
 	  ARG_MYLIBTIFF+=" ARCH_x86_64=-archx86_64 " 
       V3D_PRO_FILE="v3d64.pro"    # project file for qmake
       SYSTEMBITS="64" 
  
-      QMAKE_CONFIG="CONFIG+=x86_64"
+      QMAKE_CONFIG+=" CONFIG+=x86_64"
       LOCAL_DIR=$PWD/common_lib
       #ADD_PATH="VPATH=$LOCAL_DIR/include:$LOCAL_DIR/lib_mac64"
       ADD_PATH=" I_PATH=$LOCAL_DIR/include L_PATH=$LOCAL_DIR/lib_mac64"
  	  continue
    fi
-  
+ 
+   #otherwise 
    if [ ${arg:0:1} == "-" ]; then
-      QARGS+=" $arg " 
+      ARG_LIB+=" $arg"
+      ARG_V3D+=" $arg" 
    else
-      QARGS+=" CONFIG+=$arg" 
+      QMAKE_CONFIG+=" CONFIG+=$arg" 
    fi
 done;  
 
-ARGS+=" $ADD_PATH"
+ARG_LIB+=" $ADD_PATH"
 
 echo =========================================================
-echo make $ARGS
+echo "ARG_LIB      = "$ARG_LIB
+echo "QMAKE_CONFIG = "$QMAKE_CONFIG
+echo "ARG_V3D      = "$ARG_V3D 
+echo "ARG_PLUGINS  = "$ARG_PLUGINS
 echo =========================================================
-
-#build the libtiff library
-
-echo $QARGS 
-echo $QMAKE_CONFIG
 
 DOIT="YES"
 
@@ -257,7 +264,7 @@ if [ $DOIT == "YES" ]; then
   if [ $NEWMATCOMPILE == "YES" ]; then  
     make -f jba.makefile clean
   fi
-  make -f jba.makefile $ARGS
+  make -f jba.makefile $ARG_LIB
   cd ../../
 fi
 
@@ -267,8 +274,9 @@ if [ $DOIT == "YES" ]; then
   cd v3d
   echo =========================================================
   echo qmake -spec macx-g++ $V3D_PRO_FILE \"$QMAKE_CONFIG\"
-  echo make $QARGS $QMAKE_CONFIG
+  echo make $ARG_V3D
   echo =========================================================
+  
   qmake -spec macx-g++ $V3D_PRO_FILE $QMAKE_CONFIG
   touch v3d_version_info.cpp
 
@@ -279,7 +287,7 @@ if [ $DOIT == "YES" ]; then
     rm -fr v3d64.app
   fi
 
-  make  $QARGS 
+  make  $ARG_V3D 
   
   if [ $SYSTEMBITS == "32" ]; then
     cp v3d.icns v3d.app/Contents/Resources/.  
@@ -325,7 +333,7 @@ if [ $DOIT == "YES" ] && [ $SKIPV3DPLUGINS == "NO" ]; then
   echo =========================================================
   echo sh build_plugindemo.sh $ARG_PLUGINS    #$*
   echo =========================================================
-  sh build_plugindemo.sh $ARG_PLUGINS  #$*    # for plugins, just pass the args to the batch compiling script
+  sh build_plugindemo.sh $ARG_PLUGINS         #$*    # for plugins, just pass the args to the batch compiling script
   
   mkdir -p ../v3d/plugins
   if [ $SYSTEMBITS == "32" ]; then
