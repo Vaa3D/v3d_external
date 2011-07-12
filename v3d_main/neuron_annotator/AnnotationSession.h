@@ -16,15 +16,21 @@ class AnnotationSession : public QObject
 public:
     AnnotationSession();
     ~AnnotationSession();
+
+    const static int REFERENCE_MIP_INDEX;
+    const static int BACKGROUND_MIP_INDEX;
+
     bool save();
     bool load(long annotationSessionID);
     long getObjectId() { return objectId; }
 
     bool loadOriginalImageStack();
     bool loadNeuronMaskStack();
+    bool loadReferenceStack();
     bool prepareLabelIndex();
-    bool populateMaskMipList();
-    QList<QImage>* getMaskMipList() { return &maskMipList; }
+    bool populateMipLists();
+    QList<QImage>* getNeuronMipList() { return &neuronMipList; }
+    QList<QImage>* getOverlayMipList() { return &overlayMipList; }
 
     void setMultiColorImageStackNode(MultiColorImageStackNode* node) {
         this->multiColorImageStackNode=node;
@@ -37,13 +43,17 @@ public:
     // maintained by the AnnotationSession class.  Do not delete this pointer,
     // and be aware that it has a lifetime no longer than that of the AnnnotationSession object.
     My4DImage* getOriginalImageStackAsMy4DImage() { return originalImageStack; }
+    My4DImage* getReferenceStack() { return referenceStack; }
 
     My4DImage* getNeuronMaskAsMy4DImage() { return neuronMaskStack; }
 
     bool neuronMaskIsChecked(int index) { return maskStatusList.at(index); }
+    bool overlayIsChecked(int index) { return overlayStatusList.at(index); }
     void setNeuronMaskStatus(int index, bool status);
+    void setOverlayStatus(int index, bool status);
 	
 	QList<bool> getMaskStatusList(){return maskStatusList;}
+        QList<bool> getOverlayStatusList(){return overlayStatusList;}
 	QList<bool> getNeuronSelectList(){return neuronSelectList;}
 
         void switchSelectedNeuron(int index);
@@ -55,6 +65,7 @@ signals:
 
 public slots:
     void neuronMaskUpdate(int index, bool status);
+    void overlayUpdate(int index, bool status);
     void showSelectedNeuron(bool background);
     void showAllNeurons(bool background);
 
@@ -64,9 +75,12 @@ private:
     NeuronAnnotatorResultNode* neuronAnnotatorResultNode;
     My4DImage* originalImageStack;
     My4DImage* neuronMaskStack;
+    My4DImage* referenceStack;
     QList<NeuronMaskEntry> maskEntryList;
-    QList<QImage> maskMipList;
+    QList<QImage> neuronMipList;
+    QList<QImage> overlayMipList;
     QList<bool> maskStatusList;
+    QList<bool> overlayStatusList;
     QList<bool> neuronSelectList;
 
 };

@@ -382,11 +382,19 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
                              "Error finding file="+maskLabelFilePath);
         return false;
     }
+    QString referenceStackFilePath = imageInputDirectory.absolutePath() + "/" + MultiColorImageStackNode::IMAGE_REFERENCE_FILENAME;
+    QFile referenceStackFile(referenceStackFilePath);
+    if (!referenceStackFile.exists()) {
+        QMessageBox::warning(this, tr("Could not find expected reference stack file"),
+                             "Error finding file="+referenceStackFilePath);
+        return false;
+    }
 
     // Create input nodes
     MultiColorImageStackNode* multiColorImageStackNode = new MultiColorImageStackNode();
     multiColorImageStackNode->setPathToMulticolorLabelMaskFile(maskLabelFilePath);
     multiColorImageStackNode->setPathToOriginalImageStackFile(originalImageStackFilePath);
+    multiColorImageStackNode->setPathToReferenceStackFile(referenceStackFilePath);
     annotationSession->setMultiColorImageStackNode(multiColorImageStackNode);
 
     // Create result node
@@ -400,6 +408,9 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
     annotationSession->setNeuronAnnotatorResultNode(resultNode);
 
     // Load session
+    if (!annotationSession->loadReferenceStack()) {
+        return false;
+    }
     if (!annotationSession->loadOriginalImageStack()) {
         return false;
     }
@@ -409,17 +420,20 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
     if (!annotationSession->prepareLabelIndex()) {
         return false;
     }
-    if (!annotationSession->populateMaskMipList()) {
+    if (!annotationSession->populateMipLists()) {
         return false;
     }
-    createMaskGallery();
+
+    createOverlayGallery();
+
+    createNeuronGallery();
 
     // ui.v3dr_glwidget->loadMy4DImage(annotationSession->getOriginalImageStackAsMy4DImage());
     if (! loadMy4DImage(annotationSession->getOriginalImageStackAsMy4DImage(),
                   annotationSession->getNeuronMaskAsMy4DImage()) )
         return false;
 
-    if (!ui.v3dr_glwidget->populateNeuronMask(annotationSession->getNeuronMaskAsMy4DImage())) {
+    if (!ui.v3dr_glwidget->populateNeuronMaskAndReference(annotationSession->getNeuronMaskAsMy4DImage(), annotationSession->getReferenceStack())) {
         return false;
     }
 
@@ -539,26 +553,30 @@ void NaMainWindow::updateThumbnailGamma(qreal gamma)
     buttonCalibrator.setGamma(gamma);
     bool bUseConcurrent = true;
     if (bUseConcurrent) { // asynchronous update
-        QtConcurrent::map(mipGalleryButtonList, setButtonGamma);
+        QtConcurrent::map(overlayGalleryButtonList, setButtonGamma);
+        QtConcurrent::map(neuronGalleryButtonList, setButtonGamma);
     }
     else { // serial update
-        foreach(GalleryButton* button, mipGalleryButtonList) {
+        foreach(GalleryButton* button, overlayGalleryButtonList) {
+            button->setBrightness(buttonCalibrator);
+        }
+        foreach(GalleryButton* button, neuronGalleryButtonList) {
             button->setBrightness(buttonCalibrator);
         }
     }
 }
 
-void NaMainWindow::createMaskGallery() {
-    qDebug() << "createMaskGallery() start";
-    QList<QImage> * maskMipList = annotationSession->getMaskMipList();
+void NaMainWindow::createOverlayGallery() {
+    qDebug() << "createOverlayGallery() start";
+    QList<QImage> * overlayMipList = annotationSession->getOverlayMipList();
 
-    // Step 1: Add background MIP
     QFrame* ui_maskFrame = qFindChild<QFrame*>(this, "maskFrame");
     if (! ui_maskFrame->layout()) {
         ui_maskFrame->setLayout(new QHBoxLayout());
         assert(ui_maskFrame->layout());
     }
     QLayout *managementLayout = ui_maskFrame->layout();
+
     // Delete any old contents from the layout, such as previous thumbnails
     QLayoutItem * item;
     while ( ( item = managementLayout->takeAt(0)) != NULL )
@@ -567,22 +585,34 @@ void NaMainWindow::createMaskGallery() {
         delete item;
     }
 
-    GalleryButton* backgroundButton = new GalleryButton(maskMipList->at(0), "Background", 0);
-    backgroundButton->setChecked(true); // since full image loaded initially
-    annotationSession->setNeuronMaskStatus(0, true);
-    managementLayout->addWidget(backgroundButton);
-    mipGalleryButtonList.append(backgroundButton);
-    connect(backgroundButton, SIGNAL(declareChange(int,bool)), annotationSession, SLOT(neuronMaskUpdate(int,bool)));
+    GalleryButton* referenceButton = new GalleryButton(overlayMipList->at(AnnotationSession::REFERENCE_MIP_INDEX), "Reference", AnnotationSession::REFERENCE_MIP_INDEX);
+    referenceButton->setChecked(true); // since full image loaded initially
+    annotationSession->setOverlayStatus(AnnotationSession::REFERENCE_MIP_INDEX, true);
+    managementLayout->addWidget(referenceButton);
+    overlayGalleryButtonList.append(referenceButton);
+    connect(referenceButton, SIGNAL(declareChange(int,bool)), annotationSession, SLOT(overlayUpdate(int,bool)));
 
-    // Step 2: Add Neuron-Mask Gallery
+    GalleryButton* backgroundButton = new GalleryButton(overlayMipList->at(AnnotationSession::BACKGROUND_MIP_INDEX), "Background", AnnotationSession::BACKGROUND_MIP_INDEX);
+    backgroundButton->setChecked(true); // since full image loaded initially
+    annotationSession->setOverlayStatus(AnnotationSession::BACKGROUND_MIP_INDEX, true);
+    managementLayout->addWidget(backgroundButton);
+    overlayGalleryButtonList.append(backgroundButton);
+    connect(backgroundButton, SIGNAL(declareChange(int,bool)), annotationSession, SLOT(overlayUpdate(int,bool)));
+
+}
+
+void NaMainWindow::createNeuronGallery() {
+    qDebug() << "createNeuronGallery() start";
+    QList<QImage> * maskMipList = annotationSession->getNeuronMipList();
+
     // QFrame* ui_maskGallery = qFindChild<QFrame*>(this, "maskGallery");
     // Delete any old contents from the layout, such as previous thumbnails
     ui.fragmentGalleryWidget->clear();
 
     qDebug() << "Number of neuron masks = " << maskMipList->size();
-    for (int i = 1; i < maskMipList->size(); ++i) {
+    for (int i = 0; i < maskMipList->size(); ++i) {
         GalleryButton* button = new GalleryButton(maskMipList->at(i), QString("Neuron %1").arg(i), i);
-        mipGalleryButtonList.append(button);
+        neuronGalleryButtonList.append(button);
         ui.fragmentGalleryWidget->appendFragment(button);
         button->setChecked(true); // start as checked since full image loaded initially
         annotationSession->setNeuronMaskStatus(i, true);
@@ -628,20 +658,28 @@ void NaMainWindow::update3DViewerXYZBodyRotation()
 
 // update neuron selected status
 void NaMainWindow::updateAnnotationModels() {
-        for (int i=1;i<annotationSession->getMaskStatusList().size();i++) {
+        for (int i=0;i<annotationSession->getMaskStatusList().size();i++) {
             if (annotationSession->neuronMaskIsChecked(i)) {
-                mipGalleryButtonList.at(i)->setChecked(true);
+                neuronGalleryButtonList.at(i)->setChecked(true);
             }
             else{
-                mipGalleryButtonList.at(i)->setChecked(false);
+                neuronGalleryButtonList.at(i)->setChecked(false);
             }
         }
 
-        // Background toggle
-        if (annotationSession->getMaskStatusList().at(0)) {
-            mipGalleryButtonList.at(0)->setChecked(true);
+        // Reference toggle
+        if (annotationSession->getOverlayStatusList().at(AnnotationSession::REFERENCE_MIP_INDEX)) {
+            overlayGalleryButtonList.at(AnnotationSession::REFERENCE_MIP_INDEX)->setChecked(true);
         } else {
-            mipGalleryButtonList.at(0)->setChecked(false);
+            overlayGalleryButtonList.at(AnnotationSession::REFERENCE_MIP_INDEX)->setChecked(false);
+        }
+
+
+        // Background toggle
+        if (annotationSession->getOverlayStatusList().at(AnnotationSession::BACKGROUND_MIP_INDEX)) {
+            overlayGalleryButtonList.at(AnnotationSession::BACKGROUND_MIP_INDEX)->setChecked(true);
+        } else {
+            overlayGalleryButtonList.at(AnnotationSession::BACKGROUND_MIP_INDEX)->setChecked(false);
         }
 
 }

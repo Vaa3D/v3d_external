@@ -6,12 +6,16 @@
 
 using namespace std;
 
+const int AnnotationSession::REFERENCE_MIP_INDEX=0;
+const int AnnotationSession::BACKGROUND_MIP_INDEX=1;
+
 AnnotationSession::AnnotationSession()
 {
     multiColorImageStackNode=0;
     neuronAnnotatorResultNode=0;
     originalImageStack=0;
     neuronMaskStack=0;
+    referenceStack=0;
 }
 
 AnnotationSession::~AnnotationSession() {
@@ -26,6 +30,9 @@ AnnotationSession::~AnnotationSession() {
     }
     if (neuronMaskStack!=0) {
         delete neuronMaskStack;
+    }
+    if (referenceStack!=0) {
+        delete referenceStack;
     }
 }
 
@@ -88,6 +95,53 @@ bool AnnotationSession::loadNeuronMaskStack() {
     //return readMaskStatus;
 }
 
+bool AnnotationSession::loadReferenceStack() {
+
+    // Phase 1: load the data
+    QString msgPrefix("AnnotationSession::loadReferenceStack()");
+    qDebug() << msgPrefix << " : start";
+    QString referenceStackFilePath=multiColorImageStackNode->getPathToReferenceStackFile();
+    My4DImage* initialReferenceStack=new My4DImage();
+    initialReferenceStack->loadImage(referenceStackFilePath.toAscii().data());
+    if (initialReferenceStack->isEmpty()) {
+        cerr << msgPrefix.toStdString() << ": initialReferenceStack is empty after loading\n";
+        return false;
+    }
+    cout << "Loaded reference stack stack with dimensions X=" << initialReferenceStack->getXDim() << " Y=" << initialReferenceStack->getYDim()
+            << " Z=" << initialReferenceStack->getZDim() << " C=" << initialReferenceStack->getCDim() << "\n";
+
+    // Phase 2: normalize to 8-bit
+    referenceStack=new My4DImage();
+    referenceStack->loadImage(initialReferenceStack->getXDim(), initialReferenceStack->getYDim(), initialReferenceStack->getZDim(), 1 /* number of channels */, 1 /* bytes per channel */);
+    Image4DProxy<My4DImage> initialProxy(initialReferenceStack);
+    Image4DProxy<My4DImage> referenceProxy(referenceStack);
+
+    double initialMin=initialReferenceStack->getChannalMinIntensity(0);
+    double initialMax=initialReferenceStack->getChannalMaxIntensity(0);
+
+    qDebug() << "Populating reference with initial data";
+    double initialRange=initialMax-initialMin;
+    qDebug() << "Reference lsm initialMin=" << initialMin << " initialMax=" << initialMax << " initialRange=" << initialRange;
+    for (int z=0;z<initialReferenceStack->getZDim();z++) {
+        for (int y=0;y<initialReferenceStack->getYDim();y++) {
+            for (int x=0;x<initialReferenceStack->getXDim();x++) {
+                int value= (255.0*(*initialProxy.at_uint16(x,y,z,0))-initialMin)/initialRange;
+                if (value<0) {
+                    value=0;
+                } else if (value>255) {
+                    value=255;
+                }
+                referenceProxy.put8bit_fit_at(x,y,z,0,value);
+            }
+        }
+    }
+    initialReferenceStack->cleanExistData();
+    delete initialReferenceStack;
+    qDebug() << "Finished loading reference stack";
+
+    return true;
+}
+
 bool AnnotationSession::prepareLabelIndex() {
     int z,y,x;
     int imageX=originalImageStack->getXDim();
@@ -128,10 +182,10 @@ bool AnnotationSession::prepareLabelIndex() {
     return true;
 }
 
-// This function populates the maskMipList<QPixmap> with the background
-// density data in index=0, and the neuron masks in indices 1..<num-masks>
+// This function populates the neuronMipList<QPixmap> indexed 0..<num-stacks>
+// and the overlayMipList<QPixmap> with Reference in position 0 and background signal in position 1
 
-bool AnnotationSession::populateMaskMipList() {
+bool AnnotationSession::populateMipLists() {
     qDebug() << "AnnotationSession::populateMaskMipList() start";
     int z,y,x;
     int imageX=originalImageStack->getXDim();
@@ -144,34 +198,73 @@ bool AnnotationSession::populateMaskMipList() {
     }
     Image4DProxy<My4DImage> originalProxy(originalImageStack);
     Image4DProxy<My4DImage> maskProxy(neuronMaskStack);
+    Image4DProxy<My4DImage> referenceProxy(referenceStack);
 
-    // Position 0 is background, 1..n are the neuron masks
-    maskMipList.clear();
-    assert(maskMipList.size() == 0);
-    for (int maskIndex=0;maskIndex<maskEntryList.size()+1;maskIndex++) {
-        maskMipList.append(QImage(imageX, imageY, QImage::Format_RGB888));
+    neuronMipList.clear();
+    overlayMipList.clear();
+    assert(neuronMipList.size() == 0);
+    assert(overlayMipList.size() == 0);
+
+    // Neuron MIP List and Background
+    for (int maskIndex=0;maskIndex<maskEntryList.size();maskIndex++) {
+        neuronMipList.append(QImage(imageX, imageY, QImage::Format_RGB888));
     }
+
+    // Order is important here
+    overlayMipList.append((QImage(imageX, imageY, QImage::Format_RGB888))); // Reference
+    overlayMipList.append((QImage(imageX, imageY, QImage::Format_RGB888))); // Background
+
+    QImage& referenceImage = overlayMipList[AnnotationSession::REFERENCE_MIP_INDEX];
+    QImage& backgroundImage = overlayMipList[AnnotationSession::BACKGROUND_MIP_INDEX];
+
+    bool falseBool=false;
+    overlayStatusList.append(falseBool); // Reference status
+    overlayStatusList.append(falseBool); // Background status
+
     for (z=0;z<imageZ;z++) {
         for (y=0;y<imageY;y++) {
             for (x=0;x<imageX;x++) {
+
+                // Reference
+                int referenceIntensity = referenceProxy.value8bit_at(x,y,z,0);
+                QRgb referenceColor = qRgb(referenceIntensity, referenceIntensity, referenceIntensity); // gray
+                QRgb previousReferenceColor = referenceImage.pixel(x,y);
+                if (previousReferenceColor==0) {
+                    referenceImage.setPixel(x,y,referenceColor);
+                } else {
+                    int previousIntensity = qRed(previousReferenceColor) + qGreen(previousReferenceColor) + qBlue(previousReferenceColor);
+                    int currentIntensity = qRed(referenceColor) + qGreen(referenceColor) + qBlue(referenceColor);
+                    if (currentIntensity > previousIntensity) {
+                        referenceImage.setPixel(x,y,referenceColor);
+                    }
+                }
+
+                // Neurons and Background
                 unsigned char maskIndex = maskProxy.value8bit_at(x,y,z,0);
-                if (maskIndex >= maskMipList.size()) {
-                    qDebug() << "Found mask index=" << maskIndex << " but the total number of mask entries is=" << maskMipList.size();
+                if (maskIndex > neuronMipList.size()) {
+                    int totalMaskEntries=neuronMipList.size(); // since position 0 is background
+                    qDebug() << "Found mask index=" << maskIndex << " but the total number of mask entries is=" << totalMaskEntries;
                     return false;
                 }
                 int red = originalProxy.value8bit_at(x,y,z,0);
                 int green = originalProxy.value8bit_at(x,y,z,1);
                 int blue = originalProxy.value8bit_at(x,y,z,2);
                 QRgb color=qRgb(red,green,blue);
-                QImage& maskImage = maskMipList[maskIndex];
-                QRgb previousColor = maskImage.pixel(x,y);
+                QImage* maskImage=0;
+                if (maskIndex==0) {
+                    // Background
+                    maskImage=&(overlayMipList[AnnotationSession::BACKGROUND_MIP_INDEX]);
+                } else {
+                    maskImage=&(neuronMipList[maskIndex-1]);
+                }
+                QRgb previousColor = maskImage->pixel(x,y);
                 if (previousColor==0) {
-                    maskImage.setPixel(x,y,color);
+                    maskImage->setPixel(x,y,color);
                 } else {
                     int previousIntensity = qRed(previousColor) + qGreen(previousColor) + qBlue(previousColor);
                     int currentIntensity = qRed(color) + qGreen(color) + qBlue(color);
                     if (currentIntensity > previousIntensity) {
-                        maskImage.setPixel(x,y,color);
+                        maskImage->setPixel(x,y,color);
                     }
                 }
             }
@@ -180,6 +273,13 @@ bool AnnotationSession::populateMaskMipList() {
 
     qDebug() << "AnnotationSession::populateMaskMipList() done";
     return true;
+}
+
+void AnnotationSession::overlayUpdate(int index, bool status) {
+    int statusValue=(status ? 1 : 0);
+    overlayStatusList.replace(index, statusValue);
+    QString overlayUpdateString=QString("OVERLAY %1 %2").arg(index).arg(statusValue);
+    emit modelUpdated(overlayUpdateString);
 }
 
 void AnnotationSession::neuronMaskUpdate(int index, bool status) {
@@ -195,6 +295,14 @@ void AnnotationSession::setNeuronMaskStatus(int index, bool status) {
         return;
     }
     maskStatusList.replace(index, status);
+}
+
+void AnnotationSession::setOverlayStatus(int index, bool status) {
+    if (index>=overlayStatusList.size()) {
+        qDebug() << "AnnotationSession::setOverlayStatus() index=" << index << " status=" << status << " : ignoring since list size=" << overlayStatusList.size();
+        return;
+    }
+    overlayStatusList.replace(index, status);
 }
 
 // swith status of selected neuron

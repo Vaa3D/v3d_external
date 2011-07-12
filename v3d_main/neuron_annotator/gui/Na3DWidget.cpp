@@ -483,9 +483,9 @@ float Na3DWidget::getZoomScale() const
     return answer;
 }
 
-bool Na3DWidget::populateNeuronMask(const My4DImage* neuronMaskImage) {
+bool Na3DWidget::populateNeuronMaskAndReference(const My4DImage* neuronMaskImage, const My4DImage* referenceImage) {
     RendererNeuronAnnotator* rend = (RendererNeuronAnnotator*)getRenderer();
-    if (!rend->populateNeuronMask(neuronMaskImage)) {
+    if (!rend->populateNeuronMaskAndReference(neuronMaskImage, referenceImage)) {
         return false;
     }
     if (!rend->initializeTextureMasks()) {
@@ -564,39 +564,43 @@ void Na3DWidget::paintGL()
 }
 
 void Na3DWidget::annotationModelUpdate(QString updateType) {
+
+    RendererNeuronAnnotator* ra = (RendererNeuronAnnotator*)renderer;
+    QProgressDialog progressDialog( QString("Updating textures"), 0, 0, 100, this, Qt::Tool | Qt::WindowStaysOnTopHint);
+    progressDialog.setAutoClose(true);
+    QList<QString> list=updateType.split(QRegExp("\\s+"));
+    QString indexString=list.at(1);
+    QString checkedString=list.at(2);
+    int index=indexString.toInt();
+    bool checked=(checkedString.toInt()==1);
+
     if (updateType.startsWith("NEURONMASK")) {
-        QList<QString> list=updateType.split(QRegExp("\\s+"));
-        QString indexString=list.at(1);
-        QString checkedString=list.at(2);
-        int index=indexString.toInt();
-        bool checked=(checkedString.toInt()==1);
-
-        RendererNeuronAnnotator* ra = (RendererNeuronAnnotator*)renderer;
-        QProgressDialog progressDialog( QString("Updating textures"), 0, 0, 100, this, Qt::Tool | Qt::WindowStaysOnTopHint);
-        progressDialog.setAutoClose(true);
-
-        // Background change requiring full reload of texture image stacks
-        if (index==0) {
-            QList<QImage> * maskMipList = annotationSession->getMaskMipList();
-            QList<int> tempList;
-            for (int i=1;i<maskMipList->size();i++) {
-                if (annotationSession->neuronMaskIsChecked(i)) {
-                    tempList.append(i);
-                }
+        ra->updateCurrentTextureMask(index, (checked ? 1 : 0), progressDialog);
+    } else if (updateType.startsWith("OVERLAY")) {
+        // Change requiring full reload of texture image stacks
+        QList<QImage> * maskMipList = annotationSession->getNeuronMipList();
+        QList<int> tempList;
+        for (int i=0;i<maskMipList->size();i++) {
+            if (annotationSession->neuronMaskIsChecked(i)) {
+                tempList.append(i);
             }
-            // Background toggle
+        }
+        if (index==AnnotationSession::REFERENCE_MIP_INDEX) {
+            if (checked) {
+                ra->setReferenceBaseTexture(tempList, progressDialog);
+            } else {
+                ra->setBlankBaseTexture(tempList, progressDialog);
+            }
+        } else if (index==AnnotationSession::BACKGROUND_MIP_INDEX) {
             if (checked) {
                 ra->setBackgroundBaseTexture(tempList, progressDialog);
             } else {
                 ra->setBlankBaseTexture(tempList, progressDialog);
             }
-        } else {
-            // Change of individual mask
-            ra->updateCurrentTextureMask(index, (checked ? 1 : 0), progressDialog);
         }
-        ra->paint();
-        update();
     }
+    ra->paint();
+    update();
 }
 
 // update all neuron masks at once

@@ -14,6 +14,7 @@ public:
 
     const static char * IMAGE_STACK_FILENAME;
     const static char * IMAGE_MASK_FILENAME;
+    const static char * IMAGE_REFERENCE_FILENAME;
 
     MultiColorImageStackNode();
 
@@ -22,6 +23,8 @@ public:
     QString getPathToMulticolorLabelMaskFile() { return pathToMulticolorLabelMaskFile; }
 
     QString getPathToMulticolorLabelMaskIndexFile() { return pathToMulticolorLabelMaskIndexFile; }
+
+    QString getPathToReferenceStackFile() { return pathToReferenceStackFile; }
 
     void setPathToOriginalImageStackFile(QString pathToOriginalImageStackFileParam) {
         pathToOriginalImageStackFile=pathToOriginalImageStackFileParam;
@@ -32,6 +35,10 @@ public:
 
     void setPathToMulticolorLabelMasIndexFile(QString pathToMulticolorLabelMaskIndexFileParam) {
         pathToMulticolorLabelMaskIndexFile=pathToMulticolorLabelMaskIndexFileParam;
+    }
+
+    void setPathToReferenceStackFile(QString pathToReferenceStackFileParam) {
+        pathToReferenceStackFile=pathToReferenceStackFileParam;
     }
 
     static bool writeMy4DImageToMaskFile(My4DImage* my4DImageAsMask, QString maskFilePath) {
@@ -127,6 +134,7 @@ private:
     QString pathToOriginalImageStackFile;
     QString pathToMulticolorLabelMaskFile;
     QString pathToMulticolorLabelMaskIndexFile;
+    QString pathToReferenceStackFile;
 };
 
 #endif // MULTICOLORIMAGESTACKNODE_H

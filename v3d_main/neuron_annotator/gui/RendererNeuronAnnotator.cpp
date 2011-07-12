@@ -6,6 +6,7 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w) : Renderer_gl2(w)
     neuronMask=0;
     texture3DAll=0;
     texture3DBackground=0;
+    texture3DReference=0;
     texture3DBlank=0;
     texture3DCurrent=0;
     textureSetAlreadyLoaded=false;
@@ -43,7 +44,7 @@ void RendererNeuronAnnotator::loadVol() {
 // as the texture buffer. It returns false if the source image is smaller
 // than the target buffer because this isn't implemented.
 
-bool RendererNeuronAnnotator::populateNeuronMask(const My4DImage* my4Dmask) {
+bool RendererNeuronAnnotator::populateNeuronMaskAndReference(const My4DImage* my4Dmask, const My4DImage* referenceImage) {
 
     qDebug() << "Start RendererNeuronAnnotator::populateNeuronMask()";
 
@@ -79,6 +80,11 @@ bool RendererNeuronAnnotator::populateNeuronMask(const My4DImage* my4Dmask) {
     V3DLONG ox, oy, oz;
     V3DLONG ix, iy, iz;
 
+    if (texture3DReference!=0)
+        delete [] texture3DReference;
+
+    texture3DReference=new RGBA8[realZ*realY*realX];
+
     // Because we are mapping a mask, we do NOT want to 'sample' the data,
     // but rather condense it without missing any of the mask elements. Therefore,
     // we will iterate over the source mask, and then direct the contents to the
@@ -97,12 +103,20 @@ bool RendererNeuronAnnotator::populateNeuronMask(const My4DImage* my4Dmask) {
                 if (neuronMask[offset]==0) {
                     neuronMask[offset] = my4Dmask->at(ix,iy,iz);
                 }
+                RGBA8 referenceVoxel;
+                double referenceIntensity=referenceImage->at(ix,iy,iz);
+                referenceVoxel.r=referenceIntensity;
+                referenceVoxel.g=referenceIntensity;
+                referenceVoxel.b=referenceIntensity;
+                referenceVoxel.a=255;
+                texture3DReference[offset] = referenceVoxel;
     }
 
     qDebug() << "RendererNeuronAnnotator::populateNeuronMask() done";
 
     return true;
 }
+
 
 bool RendererNeuronAnnotator::populateBaseTextures() {
 
@@ -123,28 +137,26 @@ bool RendererNeuronAnnotator::populateBaseTextures() {
     texture3DBlank=new RGBA8[realZ*realY*realX];
     texture3DBackground=new RGBA8[realZ*realY*realX];
 
-
-    // Blank case
     RGBA8 blankRgba;
     blankRgba.r = 0;
     blankRgba.g = 0;
     blankRgba.b = 0;
     blankRgba.a = 0;
     int z,y,x;
-    for (z = 0; z < realZ; z++)
-            for (y = 0; y < realY; y++)
-                    for (x = 0; x < realX; x++)
-                    {
-                        texture3DBlank[z*realY*realX + y*realX + x] = blankRgba;
-                    }
 
-    // Background case
     for (z = 0; z < realZ; z++)
             for (y = 0; y < realY; y++)
                     for (x = 0; x < realX; x++)
                     {
                         V3DLONG index=z*realY*realX + y*realX + x;
+
+
+                        // Blank case
+                        texture3DBlank[index] = blankRgba;
+
                         unsigned char maskValue=neuronMask[index];
+
+                        // Background case
                         if (maskValue==0) {
                             texture3DBackground[index] = texture3DAll[index];
                         } else {
@@ -311,6 +323,13 @@ void RendererNeuronAnnotator::setBackgroundBaseTexture(QList<int> maskIndexList,
     texture3DCurrent=texture;
 }
 
+void RendererNeuronAnnotator::setReferenceBaseTexture(QList<int> maskIndexList, QProgressDialog & dialog) {
+    cleanExtendedTextures();
+    RGBA8* texture=extendTextureFromMaskList(texture3DReference, maskIndexList);
+    load3DTextureSet(texture, dialog);
+    texture3DCurrent=texture;
+}
+
 void RendererNeuronAnnotator::setAllBaseTexture(QProgressDialog & dialog) {
     cleanExtendedTextures();
     load3DTextureSet(texture3DAll, dialog);
@@ -328,6 +347,7 @@ void RendererNeuronAnnotator::cleanExtendedTextures() {
     if (texture3DCurrent!=0 &&
         texture3DCurrent!=texture3DAll &&
         texture3DCurrent!=texture3DBackground &&
+        texture3DCurrent!=texture3DReference &&
         texture3DCurrent!=texture3DBlank) {
         delete [] texture3DCurrent;
     }

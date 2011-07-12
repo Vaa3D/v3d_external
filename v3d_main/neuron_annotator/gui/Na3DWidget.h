@@ -25,7 +25,7 @@ public:
     Na3DWidget(QWidget* parent);
     virtual ~Na3DWidget();
     bool loadMy4DImage(const My4DImage* my4DImage, const My4DImage* neuronMaskImage = NULL);
-    bool populateNeuronMask(const My4DImage* neuronMaskImage);
+    bool populateNeuronMaskAndReference(const My4DImage* neuronMaskImage, const My4DImage* referenceImage);
 
     const Vector3D& focus() const {return cameraModel.focus();}
     float getZoomScale() const; // in viewport pixels per image voxel at focus

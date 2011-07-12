@@ -11,7 +11,8 @@ public:
     RendererNeuronAnnotator(void* widget);
     virtual ~RendererNeuronAnnotator();
     virtual void loadVol();
-    bool populateNeuronMask(const My4DImage* my4Dmask);
+    bool populateNeuronMaskAndReference(const My4DImage* my4Dmask, const My4DImage* referenceImage);
+    void setReferenceBaseTexture(QList<int> maskIndexList, QProgressDialog & dialog);
     void setBackgroundBaseTexture(QList<int> maskIndexList, QProgressDialog & dialog);
     void setAllBaseTexture(QProgressDialog & dialog);
     void setBlankBaseTexture(QList<int> maskIndexList, QProgressDialog & dialog);
@@ -44,6 +45,7 @@ protected:
 private:
     unsigned char* neuronMask; // sized to texture buffer dimensions realX,Y,Z
     RGBA8* texture3DAll;
+    RGBA8* texture3DReference;
     RGBA8* texture3DBackground;
     RGBA8* texture3DBlank;
     RGBA8* texture3DCurrent;

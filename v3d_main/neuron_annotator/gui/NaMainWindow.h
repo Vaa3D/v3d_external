@@ -83,9 +83,10 @@ protected:
 private:
     AnnotationSession* annotationSession;
     Ui::NaMainWindow ui;
-    void createMaskGallery();
-    QList<GalleryButton*>
-    mipGalleryButtonList;
+    void createNeuronGallery();
+    void createOverlayGallery();
+    QList<GalleryButton*> overlayGalleryButtonList;
+    QList<GalleryButton*> neuronGalleryButtonList;
     My4DImage currentStackImage;
     CameraModel sharedCameraModel; // optional camera sharing
     NutateThread * nutateThread;
