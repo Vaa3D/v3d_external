@@ -645,6 +645,45 @@ void MainWindow::webserviceResponse()
 				return;	
 			}
 		}
+        else if(string(pSoapPara->str_func) == "v3dwscallpluginfunc") // plugin func call
+		{
+			QString fileName(pSoapPara->str_message);
+			
+			// setting plugin name and method call
+			setBooleanCLplugin(true);
+			setPluginName(pSoapPara->v3dpluginf->pluginName);
+			setPluginFunc(pSoapPara->v3dpluginf->pluginFunc);
+            
+            v3dclp.pluginfunc = pluginfunc;
+			
+			// load image
+			if (!fileName.isEmpty()) 
+			{
+                v3dclp.fileList.clear();
+                v3dclp.fileList.push_back(pSoapPara->str_message);
+                
+                if(pSoapPara->v3dpluginf->parameters)
+                {
+                    v3dclp.cmdArgList.clear();
+                    v3dclp.cmdArgList.push_back(pSoapPara->v3dpluginf->parameters);
+                }
+                
+                if(pSoapPara->v3dpluginf->outputFile)
+                {
+                    v3dclp.outputList.clear();
+                    v3dclp.outputList.push_back(pSoapPara->v3dpluginf->outputFile);
+                }
+                
+				// call plugin
+				emit imageLoaded2Plugin();
+			}
+			else
+			{
+				v3d_msg(QString("The file [%1] does not exist! Do nothing.").arg(fileName), 1);
+				return;	
+			}
+
+		}
 		else
 		{
 			QMessageBox::information((QWidget *)0, QString("title: v3d web service"), QString("Wrong function to invoke!"));

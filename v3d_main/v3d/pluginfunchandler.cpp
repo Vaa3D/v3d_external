@@ -45,9 +45,16 @@ void PLUGINFH::doPluginFunc(V3D_CL_INTERFACE i_v3d, V3d_PluginLoader& mypluginlo
     V3DPluginArgList pluginfunc_output;
     
     arg.type = ""; arg.p = (void *)(&i_v3d.fileList); pluginfunc_input << arg;
-    arg.type = "cmd"; arg.p = (void *)(&(i_v3d.cmdArgList)); pluginfunc_input << arg;
     
-    arg.type =""; arg.p = (void *)(&(i_v3d.outputList)); pluginfunc_output << arg;
+    if(i_v3d.cmdArgList.size()>0)
+    {
+        arg.type = "cmd"; arg.p = (void *)(&(i_v3d.cmdArgList)); pluginfunc_input << arg;
+    }
+    
+    if(i_v3d.outputList.size()>0)
+    {
+        arg.type =""; arg.p = (void *)(&(i_v3d.outputList)); pluginfunc_output << arg;
+    }
 
     // run
     bool success = mypluginloader.callPluginFunc(v3dpluginFind, i_v3d.pluginfunc, pluginfunc_input, pluginfunc_output);

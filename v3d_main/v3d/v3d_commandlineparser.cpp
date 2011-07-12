@@ -80,20 +80,27 @@ bool CLP :: check_filename(QString fn)
 	qDebug()<<"file name ..."<<fn;
 	
 	QFileInfo curfile_info(fn);
-	if ( (curfile_info.suffix().toUpper()=="ANO") ||
-		(curfile_info.suffix().toUpper()=="APO" || curfile_info.suffix().toUpper()=="SWC" || curfile_info.suffix().toUpper()=="OBJ" || curfile_info.suffix().toUpper()=="V3DS") ||
-		(curfile_info.suffix().toUpper()=="ATLAS") ||
-		(curfile_info.suffix().toUpper()=="ZIP") ||
-		(curfile_info.suffix().toUpper()=="LSM") || (curfile_info.suffix().toUpper()=="TIF") || (curfile_info.suffix().toUpper()=="RAW") ||
-		fn.contains("://") ) // url
-	{
-		return true;
-	}
-	else
-	{
-		v3d_msg("Error: The file does not exist! Do nothing.", 0);
-		return false;
-	}
+    if(curfile_info.isDir())
+    {
+        return true;
+    }
+    else if(curfile_info.isFile())
+    {
+        if ( (curfile_info.suffix().toUpper()=="ANO") ||
+             (curfile_info.suffix().toUpper()=="APO" || curfile_info.suffix().toUpper()=="SWC" || curfile_info.suffix().toUpper()=="OBJ" || curfile_info.suffix().toUpper()=="V3DS") ||
+             (curfile_info.suffix().toUpper()=="ATLAS") ||
+             (curfile_info.suffix().toUpper()=="ZIP") ||
+             (curfile_info.suffix().toUpper()=="LSM") || (curfile_info.suffix().toUpper()=="TIF") || (curfile_info.suffix().toUpper()=="RAW") ||
+             fn.contains("://") ) // url
+        {
+            return true;
+        }
+        else
+        {
+            v3d_msg("Error: The file does not exist! Do nothing.", 0);
+            return false;
+        }
+    }
 	
 }
 
