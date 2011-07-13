@@ -128,11 +128,28 @@ void CompartmentMapWidget::wheelEvent(QWheelEvent *event){
 
 void CompartmentMapWidget::switchCompartment(int num)
 {
-    qDebug()<<"CompartmentMapWidget num ... ...";
+    qDebug()<<"CompartmentMapWidget num ... ..."<<num;
 
     listLabelSurf = ((Renderer_tex2 *)renderer)->getListLabelSurf();
 
-    listLabelSurf[num-1].on = !(listLabelSurf[num-1].on);
+    if(num==0) // all on
+    {
+        for(int i=0; i<listLabelSurf.size(); i++)
+        {
+            listLabelSurf[i].on = true;
+        }
+    }
+    else if(num==1) // all off
+    {
+        for(int i=0; i<listLabelSurf.size(); i++)
+        {
+            listLabelSurf[i].on = false;
+        }
+    }
+    else
+    {
+        listLabelSurf[num-2].on = !(listLabelSurf[num-2].on);
+    }
 
     ((Renderer_tex2 *)renderer)->setListLabelSurf(listLabelSurf);
 
