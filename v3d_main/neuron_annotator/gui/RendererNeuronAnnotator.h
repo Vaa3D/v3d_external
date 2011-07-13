@@ -44,7 +44,7 @@ protected:
 
 private:
     unsigned char* neuronMask; // sized to texture buffer dimensions realX,Y,Z
-    RGBA8* texture3DAll;
+    RGBA8* texture3DSignal;
     RGBA8* texture3DReference;
     RGBA8* texture3DBackground;
     RGBA8* texture3DBlank;

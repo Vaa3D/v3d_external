@@ -4,7 +4,7 @@
 RendererNeuronAnnotator::RendererNeuronAnnotator(void* w) : Renderer_gl2(w)
 {
     neuronMask=0;
-    texture3DAll=0;
+    texture3DSignal=0;
     texture3DBackground=0;
     texture3DReference=0;
     texture3DBlank=0;
@@ -123,8 +123,8 @@ bool RendererNeuronAnnotator::populateBaseTextures() {
     qDebug() << "RendererNeuronAnnotator::populateBaseTextures() start";
 
     // Sanity check
-    if (texture3DAll==0) {
-        qDebug() << "RendererNeuronAnnotator::populateBaseTextures() requires that texture3DAll be pre-populated";
+    if (texture3DSignal==0) {
+        qDebug() << "RendererNeuronAnnotator::populateBaseTextures() requires that texture3DSignal be pre-populated";
         return false;
     }
 
@@ -158,7 +158,7 @@ bool RendererNeuronAnnotator::populateBaseTextures() {
 
                         // Background case
                         if (maskValue==0) {
-                            texture3DBackground[index] = texture3DAll[index];
+                            texture3DBackground[index] = texture3DSignal[index];
                         } else {
                             texture3DBackground[index] = blankRgba;
                         }
@@ -181,11 +181,11 @@ void RendererNeuronAnnotator::setupStackTexture(bool bfirst)
     } else {
 
         /* _safeReference3DBuf does its own "delete"; this extra one causes a crash.
-        if (texture3DAll!=0)
-            delete [] texture3DAll;
+        if (texture3DSignal!=0)
+            delete [] texture3DSignal;
         */
 
-        texture3DAll = _safeReference3DBuf(rgbaBuf, imageX, imageY, imageZ,  safeX, safeY, safeZ); //081008
+        texture3DSignal = _safeReference3DBuf(rgbaBuf, imageX, imageY, imageZ,  safeX, safeY, safeZ); //081008
         realX = safeX;
         realY = safeY;
         realZ = safeZ;
@@ -332,8 +332,8 @@ void RendererNeuronAnnotator::setReferenceBaseTexture(QList<int> maskIndexList, 
 
 void RendererNeuronAnnotator::setAllBaseTexture(QProgressDialog & dialog) {
     cleanExtendedTextures();
-    load3DTextureSet(texture3DAll, dialog);
-    texture3DCurrent=texture3DAll;
+    load3DTextureSet(texture3DSignal, dialog);
+    texture3DCurrent=texture3DSignal;
 }
 
 void RendererNeuronAnnotator::setBlankBaseTexture(QList<int> maskIndexList, QProgressDialog & dialog) {
@@ -345,7 +345,7 @@ void RendererNeuronAnnotator::setBlankBaseTexture(QList<int> maskIndexList, QPro
 
 void RendererNeuronAnnotator::cleanExtendedTextures() {
     if (texture3DCurrent!=0 &&
-        texture3DCurrent!=texture3DAll &&
+        texture3DCurrent!=texture3DSignal &&
         texture3DCurrent!=texture3DBackground &&
         texture3DCurrent!=texture3DReference &&
         texture3DCurrent!=texture3DBlank) {
@@ -377,7 +377,7 @@ RGBA8* RendererNeuronAnnotator::extendTextureFromMaskList(RGBA8* sourceTexture, 
                 unsigned char maskValue=neuronMask[offset];
                 if (maskValue!=0 && quickList[maskValue]==maskValue) { // !=0 prevents background from always being added
                     // Add from mask
-                    newTexture[offset]=texture3DAll[offset];
+                    newTexture[offset]=texture3DSignal[offset];
                 } else {
                     newTexture[offset]=sourceTexture[offset];
                 }
@@ -494,8 +494,8 @@ void RendererNeuronAnnotator::updateCurrentTextureMask(int maskIndex, int state,
                                                 tileBuffer[tileOffset] = blank;
                                             } else {
                                                 // Turn on mask
-                                                texture3DCurrent[offset] = texture3DAll[offset];
-                                                tileBuffer[tileOffset] = texture3DAll[offset];
+                                                texture3DCurrent[offset] = texture3DSignal[offset];
+                                                tileBuffer[tileOffset] = texture3DSignal[offset];
                                             }
                                         }
                                     }
@@ -520,8 +520,8 @@ void RendererNeuronAnnotator::updateCurrentTextureMask(int maskIndex, int state,
                                                 tileBuffer[tileOffset] = blank;
                                             } else {
                                                 // Turn on mask
-                                                texture3DCurrent[offset] = texture3DAll[offset];
-                                                tileBuffer[tileOffset] = texture3DAll[offset];
+                                                texture3DCurrent[offset] = texture3DSignal[offset];
+                                                tileBuffer[tileOffset] = texture3DSignal[offset];
                                             }
                                         }
                                     }
@@ -545,8 +545,8 @@ void RendererNeuronAnnotator::updateCurrentTextureMask(int maskIndex, int state,
                                                 tileBuffer[tileOffset] = blank;
                                             } else {
                                                 // Turn on mask
-                                                texture3DCurrent[offset] = texture3DAll[offset];
-                                                tileBuffer[tileOffset] = texture3DAll[offset];
+                                                texture3DCurrent[offset] = texture3DSignal[offset];
+                                                tileBuffer[tileOffset] = texture3DSignal[offset];
                                             }
                                         }
                                     }
