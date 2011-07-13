@@ -74,6 +74,9 @@ NaMainWindow::NaMainWindow()
     // visualize compartment map
     //QDockWidget *dock = new QDockWidget(tr("Compartment Map"), this);
     //dock->setWidget( ui.compartmentMapWidget);
+
+    ui.compartmentMapWidget->setComboBox(ui.compartmentMapComboBox);
+    connect(ui.compartmentMapComboBox, SIGNAL(valueChanged(int)), ui.compartmentMapWidget, SLOT(switchCompartment(int)));
     
     // Wire up MIP viewer
     // Status bar message

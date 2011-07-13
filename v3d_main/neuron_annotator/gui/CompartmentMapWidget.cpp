@@ -1,11 +1,4 @@
 #include "CompartmentMapWidget.h"
-#include "v3d_core.h"
-#include "../3drenderer/Renderer_gl2.h"
-#include <iostream>
-#include <cmath>
-#include <cassert>
-
-using namespace std;
 
 CompartmentMapWidget::CompartmentMapWidget(QWidget* parent): V3dR_GLWidget(NULL, parent, "Compartment Map")
 {}
@@ -51,27 +44,45 @@ void CompartmentMapWidget::loadAtlas()
 // display OpenGL graphics
 void CompartmentMapWidget::initializeGL()
 {
+    qDebug()<<"CompartmentMapWidget initializeGL ... ...";
+
     _isSoftwareGL = false;
     GLeeInit();
 
     renderer = new Renderer_tex2(this);
 
     // settings
-    renderer->bShowBoundingBox = true;
-    renderer->bShowAxes        = true;
+    renderer->bShowBoundingBox = false; //
+    renderer->bShowAxes        = false;
 
-    renderer->tryTexCompress = false;
+    renderer->tryTexCompress = false; // texture
     renderer->tryTex3D       = false;
     renderer->tryTexNPT      = false;
     renderer->tryTexStream   = true;
 
-    renderer->lineType   = true;
+    renderer->lineType   = false; // swc
 
     // prepare
     if (renderer)
     {
         loadAtlas();
         if(renderer->hasError())	POST_CLOSE(this);
+
+        //qDebug()<<"label surf ..."<<((Renderer_tex2 *)renderer)->listLabelSurf.size();
+        //qDebug()<<"triangle ..."<<((Renderer_tex2 *)renderer)->list_listTriangle.size();
+        //qDebug()<<"glist label ..."<<((Renderer_tex2 *)renderer)->list_glistLabel.size();
+
+        listLabelSurf = ((Renderer_tex2 *)renderer)->getListLabelSurf();
+
+        compartmentList.clear();
+        compartmentList<<QString("All On")<<QString("All Off");
+        for(int i=0; i<listLabelSurf.size(); i++)
+        {
+            compartmentList<<listLabelSurf[i].name;
+        }
+        pCompartmentComboBox->addItems(compartmentList);
+
+        update();
     }
 
 }
@@ -105,5 +116,30 @@ void CompartmentMapWidget::mouseMoveEvent(QMouseEvent *event){
     V3dR_GLWidget::mouseMoveEvent(event);
 }
 void CompartmentMapWidget::wheelEvent(QWheelEvent *event){
-    V3dR_GLWidget::wheelEvent(event);
+    float d = (event->delta())/100;  //
+#define MOUSE_ZOOM(dz)    (int(dz*4* MOUSE_SENSITIVE));
+
+    int zoomStep = MOUSE_ZOOM(d);
+
+    setZoom((-zoomStep) + _zoom); // scroll down to zoom in
+
+    event->accept();
+}
+
+void CompartmentMapWidget::switchCompartment(int num)
+{
+    qDebug()<<"CompartmentMapWidget num ... ...";
+
+    listLabelSurf = ((Renderer_tex2 *)renderer)->getListLabelSurf();
+
+    listLabelSurf[num-1].on = !(listLabelSurf[num-1].on);
+
+    ((Renderer_tex2 *)renderer)->setListLabelSurf(listLabelSurf);
+
+    update();
+}
+
+void CompartmentMapWidget::setComboBox(QComboBox *compartmentComboBox)
+{
+    pCompartmentComboBox = compartmentComboBox;
 }

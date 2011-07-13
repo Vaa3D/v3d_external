@@ -2,9 +2,9 @@
 #define COMPARTMENTMAPWIDGET_H
 
 #include "../../3drenderer/v3dr_glwidget.h"
-#include "../../v3d/xformwidget.h"
 #include "../../3drenderer/renderer_tex2.h"
 #include <cmath>
+#include <iostream>
 
 #if defined (_MSC_VER)
 #include "../basic_c_fun/vcdiff.h"
@@ -23,6 +23,10 @@ public:
 
 public:
     void loadAtlas();
+    void setComboBox(QComboBox *compartmentComboBox);
+
+public slots:
+    void switchCompartment(int num);
 
 protected:
     virtual void initializeGL();
@@ -39,7 +43,14 @@ protected:
     virtual void wheelEvent(QWheelEvent *event);
     
 public:
-    //Renderer_tex2* renderer;
+    QList <LabelSurf> listLabelSurf; // labelfield surf
+    QStringList compartmentList;
+
+    QComboBox *pCompartmentComboBox;
+
+//    QList <Triangle*> list_listTriangle;
+//    QList <GLuint> list_glistLabel;
+//    BoundingBox labelBB;
 };
 
 #endif // COMPARTMENTMAPWIDGET_H
