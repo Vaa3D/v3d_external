@@ -35,7 +35,8 @@ QStringList SORT_SWCPlugin::menulist() const
 QStringList SORT_SWCPlugin::funclist() const
 {
 	return QStringList()
-		<<tr("sort_swc");
+		<<tr("sort_swc")
+		<<tr("Help");
 }
 
 QHash<V3DLONG, V3DLONG> ChildParent(const NeuronTree &neurons, const QList<V3DLONG> & idlist, const QHash<V3DLONG,V3DLONG> & LUT) 
@@ -309,7 +310,7 @@ void SORT_SWCPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callba
 	}
 	else if (menu_name == tr("Help"))
 	{
-		v3d_msg("(version 0.14) Set a new root and sort the SWC file into a new order, where the newly set root has the id of 1, and the parent's id is less than its child's. If the original SWC has more than one connected components, return the sorted result of the brench with newly set root. It also includes a merging process of neuron segments, where neurons with the same x,y,z cooridinates are combined as one.");
+		v3d_msg("(version 0.15) Set a new root and sort the SWC file into a new order, where the newly set root has the id of 1, and the parent's id is less than its child's. If the original SWC has more than one connected components,  the plugin will automatically link the nearest points. It also includes a merging process of neuron segments, where neurons with the same x,y,z cooridinates are combined as one.");
 		return;
 	}
 }
@@ -323,7 +324,7 @@ bool sort_func(const V3DPluginArgList & input, V3DPluginArgList & output)
 
 	int rootid;
 	bool hasPara;
-	if (((vector<char*>*)(input.at(1).p))->empty()) 
+	if (input.size()==1) 
 	{
 		cout<<"no new root id specified.\n";
 		rootid = VOID;
@@ -355,7 +356,7 @@ bool sort_func(const V3DPluginArgList & input, V3DPluginArgList & output)
 		QString fileSaveName = QString(outlist->at(iter));
 
 		cout<<"infile: "<<inlist->at(iter)<<endl;
-		cout<<"outfile: "<<inlist->at(iter)<<endl;
+		cout<<"outfile: "<<outlist->at(iter)<<endl;
 		if (hasPara)
 		{
 			char * paras = paralist->at(iter);
@@ -408,6 +409,17 @@ bool SORT_SWCPlugin::dofunc(const QString & func_name, const V3DPluginArgList & 
 		sort_func(input,output);
 		return true;
 	}
+	if (func_name==tr("Help"))
+	{
+		cout<<"(version 0.15) Set a new root and sort the SWC file into a new order, where the newly set root has the id of 1, and the parent's id is less than its child's. If the original SWC has more than one connected components, the plugin will automatically link the nearest points. It also includes a merging process of neuron segments, where neurons with the same x,y,z cooridinates are combined as one.\n";
+		cout<<"usage:\n";
+		cout<<"-i<file name>:\ta list of input swc file(s)\n";
+		cout<<"-o<file name>:\ta list specifying output sorted swc file(s), corresponding to input file.\n";
+		cout<<"-p<root number>: (not required) a list showing new root id. If you don't specify this, the plugin will set the first root in the input file as new root.\n";
+		cout<<"Demo:\t ./v3d -x plugins/neuron_uitilities/sort_a_swc/libsort_swc.so -i input.swc -o output.swc -p 1\n";
+		return true;
+	}
+
 	return false;
 }
 
