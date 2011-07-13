@@ -1739,7 +1739,7 @@ void XFormView::mouseLeftButtonPressEvent(QMouseEvent *e) //080101
 	//reserved for future editing of the the pop-up menu
 	if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 	{
-		QPoint cp = e->pos();  
+		QPoint cp = e->pos();
 
 		//add zoom-in support. by PHC 20101119
 		cp.setX(double((e->x()-curDisplayCenter.x()))/(disp_scale*m_scale)+pixmap.width()/2.0+0.5);
@@ -2765,6 +2765,8 @@ void XFormView::dispHistogram()
 	//reserved for future edit
 }
 
+#define __XFormWidget_function__
+
 XFormWidget::XFormWidget(QWidget *parent) : QWidget(parent)
 {
 	initialize();
@@ -2886,7 +2888,7 @@ void XFormWidget::initialize()
 	p_mainWindow = NULL;
 	bSendSignalToExternal = false;
 	bAcceptSignalFromExternal = false;
-	
+
 	//
 	bUsingMultithreadedImageIO = true;
 }
@@ -4017,19 +4019,19 @@ bool XFormWidget::loadData()
 		return false;
 	}
 
-	// trying to load image using multithreaded method, by YuY, added 20101216 
+	// trying to load image using multithreaded method, by YuY, added 20101216
 	if(bUsingMultithreadedImageIO)
 	{
 		//set up parameters
 		v3d_multithreadimageio_paras myimgiop;
 		myimgiop.qOperation = "HIDDEN-MTIMGIO";
 		myimgiop.qFilename = openFileNameLabel;
-		
+
 		//v3d_msg(QString("Test Parameters %1 and %2.\n").arg(myimgiop.qOperation).arg(myimgiop.qFilename.toStdString().c_str()));
-		
+
 		//load image
 		bool bloadsuccess = v3d_multithreadimageIO(this, myimgiop);
-		
+
 		if(bloadsuccess)
 		{
 			v3d_msg("File is loaded successfully by multithreaded image loading engine!\n", 0);
@@ -4038,20 +4040,20 @@ bool XFormWidget::loadData()
 	}
 
 	//the following are the original codes
-	
+
 	if (imgData)
 	{
 		cleanData();
 	}
-	
+
 	imgData = new My4DImage;
 	if (!imgData)
 		return false;
 	else {
 		imgData->setMainWidget((XFormWidget *)this); //by PHC, added 100904 to ensure imgData can access global setting
 	}
-	
-	
+
+
 	printf("%s\n", openFileNameLabel.toAscii().data());
 	imgData->loadImage(openFileNameLabel.toAscii().data());  // imgData->loadImage("/Users/hanchuanpeng/work/v3d/test1.raw");
 	if (imgData->isEmpty())
@@ -4064,26 +4066,26 @@ bool XFormWidget::loadData()
 				"(3) Your image file is too big. Since on 32-bit machines, an image is at most 2G bytes, and opening tiff files need extra-space for temporary buffer, thus currently V3D has a limitaton on the size of images: TIFF and LSM files less than 900M Bytes, and Hanchuan's RAW file less than 1.5G bytes. You can contact Hanchuan Peng to get a special version of V3D to handle very big image files.<br>");
 		return false;
 	}
-	
+
 	v3d_msg(QString("img data size %1 %2 %3 %4\n").arg(imgData->getXDim()).arg(imgData->getYDim()).arg(imgData->getZDim()).arg(imgData->getCDim()), 0);
-	
+
 	setCTypeBasedOnImageData();
-	
+
 	imgData->setFlagLinkFocusViews(bLinkFocusViews);
 	imgData->setFlagDisplayFocusCross(bDisplayFocusCross);
-	
+
 	//now set the disp_zoom. 081114
-	
+
 	if (imgData->getXDim()>512 || imgData->getYDim()>512 || imgData->getZDim()>512)
 	{
 		disp_zoom= double(512) / qMax(imgData->getXDim(), qMax(imgData->getYDim(), imgData->getZDim()));
 		b_use_dispzoom=true;
 	}
-	
+
 	// update the interface
-	
+
 	updateDataRelatedGUI();
-	
+
 	reset(); //090718. PHC. force to update once, since sometimes the 16bit image does not display correctly (why all black but once click reset button everything correct?)
 	return true;
 
@@ -4564,7 +4566,7 @@ void XFormWidget::connectEventSignals()
     connect(whatsThisButton, SIGNAL(clicked()), this, SLOT(aboutInfo()));
 	//    connect(xy_view, SIGNAL(descriptionEnabledChanged(bool)), xy_view->hoverPoints(), SLOT(setDisabled(bool)));
 	//    connect(xy_view, SIGNAL(descriptionEnabledChanged(bool)), whatsThisButton, SLOT(setChecked(bool)));
-	
+
 	connect(this, SIGNAL(external_validZSliceChanged(long)), this, SLOT(updateTriview()), Qt::AutoConnection); //, Qt::DirectConnection);
 }
 

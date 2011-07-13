@@ -267,7 +267,7 @@ void V3dr_surfaceDialog::firstCreate()
 
     QGroupBox* checkGroup = new QGroupBox("Options");
     QGridLayout *checkLayout = new QGridLayout(checkGroup);
-    checkBox_attachedToCurrentView = new QCheckBox("Attached to 3D view");
+    checkBox_attachedToCurrentView = new QCheckBox("Attached to current\n 3D view");
     checkLayout->addWidget(checkBox_attachedToCurrentView,			1,0, 1,2);
     checkBox_accumulateLastHighlightHits = new QCheckBox("Accumulate last\n highlight search");
     checkLayout->addWidget(checkBox_accumulateLastHighlightHits,	2,0, 1,2);

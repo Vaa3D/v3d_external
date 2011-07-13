@@ -72,7 +72,7 @@ void v3d_Lite_info();
 
 
 //090908 RZC: build-time info
-#define BUILD_TIME		current_time_stamp()
+#define BUILD_TIME		__TIME__" "__DATE__  //110713 RZC, fixed back from current_time_stamp()
 #include <QtGlobal>
 #if defined(Q_WS_MAC)
 	#define BUILD_OS_INFO	"Mac"
@@ -286,7 +286,7 @@ class VersionUrlValidator : public QValidator
 
 public:
     VersionUrlValidator(QObject* parentObject) : QValidator(parentObject) {}
-    
+
     State validate(QString& input, int& pos) const
     {
         return validate(input);

@@ -110,12 +110,17 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 #define IS_SURFACE() 	(namelen>=3 && names[0]==dcSurface)
 	//qDebug("	namelen=%d, names[0]=%d", namelen, names[0]);
 
-	lastSliceType = vsSliceNone;
+	lastSliceType = vsSliceNone; //for define maker on cross-section slice
 	if (IS_VOLUME()) // volume
 	{
 			QString bound_info = QString("(%1 %2 %3 -- %4 %5 %6)").arg(start1+1).arg(start2+1).arg(start3+1).arg(start1+size1).arg(start2+size2).arg(start3+size3);
+			QString unit_info = (data_unitbytes==1)?"uint8":(
+								(data_unitbytes==2)?"uint16":(
+								(data_unitbytes==4)?"float32":(
+									QString("%1bytes").arg(data_unitbytes)
+								)));
 			QString data_title = "";	//if (w) data_title = QFileInfo(w->getDataTitle()).fileName();
-			(qsName = QString("volume %1 ... ").arg(bound_info) +(data_title));
+			qsName = QString("volume %1 %2 ... ").arg(bound_info).arg(unit_info) + (data_title);
 			//qsName += QString("%1").arg(names[2]);
 			lastSliceType = names[2]; //100731
 			//qDebug()<<"sliceType:"<<currentSliceType;
