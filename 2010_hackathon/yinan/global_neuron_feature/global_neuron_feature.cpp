@@ -64,7 +64,7 @@ bool GNFPlugin::dofunc(const QString & func_name, const V3DPluginArgList & input
 	if (func_name==tr("help"))
 	{
 		cout<<"(version 0.01) Compute global features (topological or geometrical) for sigle or group of neurons."<<endl;
-		cout<<"Usage: specify swc file names as input(s)\nDemo: ./v3d -x plugins/neuron_utilities/neuron_feature/libneuron_feature.so -f neuron_feature -i 2189201.CNG.swc \n";
+		cout<<"Usage: specify swc file names as input(s)\nDemo: ./v3d -x plugins/neuron_utilities/global_neuron_feature/libglobal_neuron_feature.so -f global_neuron_feature -i 2189201.CNG.swc \n";
 		return true;
 	}
 	

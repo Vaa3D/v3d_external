@@ -7,7 +7,7 @@
  */
 
 #include <QtGlobal>
-
+#include <math.h>
 #include "sort_swc.h"
 #include "v3d_message.h" 
 #include "../../../v3d_main/basic_c_fun/basic_surf_objs.h"
@@ -16,6 +16,8 @@
 using namespace std;
 
 
+#define VOID 1000000000
+
 //Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(sort_swc, SORT_SWCPlugin);
@@ -23,7 +25,6 @@ Q_EXPORT_PLUGIN2(sort_swc, SORT_SWCPlugin);
 
 //plugin funcs
 const QString title = "sort_swc";
-
 QStringList SORT_SWCPlugin::menulist() const
 {
     return QStringList() 
@@ -63,16 +64,24 @@ QHash<V3DLONG, V3DLONG> getUniqueLUT(const NeuronTree &neurons)
 }
 
 
-void DFS(bool** matrix, V3DLONG* neworder, V3DLONG node, V3DLONG* id, V3DLONG siz, bool* numbered)
+void DFS(bool** matrix, V3DLONG* neworder, V3DLONG node, V3DLONG* id, V3DLONG siz, int* numbered, int *group)
 {
-	numbered[node] = true;
+	numbered[node] = *group;
 	neworder[*id] = node;
 	(*id)++;
 	for (V3DLONG v=0;v<siz;v++)
 		if (!numbered[v] && matrix[v][node])
 		{
-			DFS(matrix, neworder, v, id, siz,numbered);
+			DFS(matrix, neworder, v, id, siz,numbered,group);
 		}
+}
+
+double computeDist(const NeuronSWC & s1, const NeuronSWC & s2)
+{
+	double xx = s1.x-s2.x;
+	double yy = s1.y-s2.y;
+	double zz = s1.z-s2.z;
+	return (sqrt(xx*xx+yy*yy+zz*zz));
 }
 	
 bool SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & lN, V3DLONG newrootid)
@@ -97,7 +106,7 @@ bool SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & lN, V3DLONG newrooti
 
 	//create a child-parent table, both child and parent id refers to the index of idlist
 	QHash<V3DLONG, V3DLONG> cp = ChildParent(neurons,idlist,LUT);
-	
+
 	
 	V3DLONG siz = idlist.size();
 
@@ -125,60 +134,117 @@ bool SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & lN, V3DLONG newrooti
 	
 	
 	//do a DFS for the the matrix and re-allocate ids for all the nodes
-	V3DLONG root= idlist.indexOf(LUT.value(newrootid));
-	
-	if (LUT.keys().indexOf(newrootid)==-1)
+	V3DLONG root;
+	if (newrootid==VOID)
 	{
-		v3d_msg("The new root id you have chosen does not exist in the SWC file.");
-		return(false);
+		for (V3DLONG i=0;i<neurons.listNeuron.size();i++)
+			if (neurons.listNeuron.at(i).pn==-1){
+				root = idlist.indexOf(LUT.value(neurons.listNeuron.at(i).n));
+				break;
+			}
 	}
+	else{
+		root = idlist.indexOf(LUT.value(newrootid));
+	
+		if (LUT.keys().indexOf(newrootid)==-1)
+		{
+			v3d_msg("The new root id you have chosen does not exist in the SWC file.");
+			return(false);
+		}
+	}
+
 	
 	V3DLONG* neworder = new V3DLONG[siz];
-	bool* numbered = new bool[siz];
-	for (V3DLONG i=0;i<siz;i++) numbered[i] = false;
+	int* numbered = new int[siz];
+	for (V3DLONG i=0;i<siz;i++) numbered[i] = 0;
 	
 	V3DLONG id[] = {0};
 
-	DFS(matrix,neworder,root,id,siz,numbered);
-	
-	if ((*id)<siz) {
-		v3d_msg("The root you have chosen cannot reach all other nodes in neuron tree. Show the connected component only.", 0);
-		siz = (*id);
-		}
-	else if ((*id)==siz)
-		v3d_msg("The neuronTree is connected. Show re-sorted result.", 0);
+	int group[] = {1};
+	DFS(matrix,neworder,root,id,siz,numbered,group);
 
-			
-		NeuronSWC S;
-		S.n = 1;
-		S.pn = -1;
-		V3DLONG oripos = LUT.value(newrootid);
-		S.x = neurons.listNeuron.at(oripos).x;
-		S.y = neurons.listNeuron.at(oripos).y;
-		S.z = neurons.listNeuron.at(oripos).z;
-		S.r = neurons.listNeuron.at(oripos).r;
-		S.type = neurons.listNeuron.at(oripos).type;
-		lN.append(S);
-		
-		for (V3DLONG ii = 1;ii<siz;ii++)
+	while (*id<siz)
+	{
+		V3DLONG iter;
+		(*group)++;
+		for (iter=0;iter<siz;iter++)
+			if (numbered[iter]==0) break;
+		DFS(matrix,neworder,iter,id,siz,numbered,group);
+	}
+
+	//find the point in non-group 1 that is nearest to group 1, 
+	//include the nearest point as well as its neighbors into group 1, until all the nodes are connected
+	while((*group)>1)
+	{
+		double min = VOID;
+		double dist = 0;
+		int mingroup = 1;
+		V3DLONG m1,m2;
+		for (V3DLONG ii=0;ii<siz;ii++){
+			if (numbered[ii]==1)
+				for (V3DLONG jj=0;jj<siz;jj++)
+					if (numbered[jj]!=1)
+					{
+						dist = computeDist(neurons.listNeuron.at(idlist.at(ii)),neurons.listNeuron.at(idlist.at(jj)));
+						if (dist<min)
+						{
+							min = dist;
+							mingroup = numbered[jj];
+							m1 = ii;
+							m2 = jj;
+						}
+					}
+		}
+		for (V3DLONG i=0;i<siz;i++)
+			if (numbered[i]==mingroup)
+				numbered[i] = 1;
+		matrix[m1][m2] = true;
+		matrix[m2][m1] = true;
+		(*group)--;
+	}
+
+	id[0] = 0;
+	for (int i=0;i<siz;i++)
+		numbered[i] = 0;
+	*group = 1;
+	DFS(matrix,neworder,root,id,siz,numbered,group);
+
+	if ((*id)<siz) {
+		v3d_msg("Error!");
+		return false;
+	}
+	
+
+	NeuronSWC S;
+	S.n = 1;
+	S.pn = -1;
+	V3DLONG oripos = idlist.at(root);
+	S.x = neurons.listNeuron.at(oripos).x;
+	S.y = neurons.listNeuron.at(oripos).y;
+	S.z = neurons.listNeuron.at(oripos).z;
+	S.r = neurons.listNeuron.at(oripos).r;
+	S.type = neurons.listNeuron.at(oripos).type;
+	lN.append(S);
+
+	for (V3DLONG ii = 1;ii<siz;ii++)
+	{
+		for (V3DLONG jj=0;jj<ii;jj++) //after DFS the id of parent must be less than child's
 		{
-			for (V3DLONG jj=0;jj<ii;jj++) //after DFS the id of parent must be less than child's
+			if (matrix[neworder[ii]][neworder[jj]]) 
 			{
-				if (matrix[neworder[ii]][neworder[jj]]) 
-				{
-					NeuronSWC S;
-					S.n = ii+1;
-					S.pn = jj+1;
-					V3DLONG oripos = idlist.at(neworder[ii]);
-					S.x = neurons.listNeuron.at(oripos).x;
-					S.y = neurons.listNeuron.at(oripos).y;
-					S.z = neurons.listNeuron.at(oripos).z;
-					S.r = neurons.listNeuron.at(oripos).r;
-					S.type = neurons.listNeuron.at(oripos).type;
-					lN.append(S);
-				}
+				NeuronSWC S;
+				S.n = ii+1;
+				S.pn = jj+1;
+				V3DLONG oripos = idlist.at(neworder[ii]);
+				S.x = neurons.listNeuron.at(oripos).x;
+				S.y = neurons.listNeuron.at(oripos).y;
+				S.z = neurons.listNeuron.at(oripos).z;
+				S.r = neurons.listNeuron.at(oripos).r;
+				S.type = neurons.listNeuron.at(oripos).type;
+				lN.append(S);
 			}
 		}
+	}
 	return(true);
 }
 
@@ -189,49 +255,49 @@ void sort_swc(V3DPluginCallback2 &callback, QWidget *parent, int method_code)
 	if (method_code == 1)
 	{
 		fileOpenName = QFileDialog::getOpenFileName(0, QObject::tr("Open File"),
-												"",
-												QObject::tr("Supported file (*.swc)"
-															";;Neuron structure	(*.swc)"
-															));
+				"",
+				QObject::tr("Supported file (*.swc)"
+					";;Neuron structure	(*.swc)"
+					));
 		if(fileOpenName.isEmpty()) 
 		{
 			v3d_msg("You don't have any SWC file open in the main window.");
 			return;
 		}
-		
-		
+
+
 		if (fileOpenName.size()>0)
 		{
 			neuron = readSWC_file(fileOpenName);
 			QList<NeuronSWC> lN;		
 			int rootid;
 			bool ok;
-			rootid = QInputDialog::getInteger(parent, "input root number","New root number:",1,1,neuron.listNeuron.size(),1,&ok);
-		if (ok){
+			rootid = QInputDialog::getInteger(parent, "Would you like to specify new root number?","New root number:(If you select 'cancel', the first root in file is set as default)",1,1,neuron.listNeuron.size(),1,&ok);
+			if (!ok)
+				rootid = VOID;
 			if (SortSWC(neuron, lN,rootid)){
 
-			//write new SWC to file
-			QString fileSaveName = QFileDialog::getSaveFileName(0, QObject::tr("Save File"),
-												"",
-												QObject::tr("Supported file (*.swc)"
-															";;Neuron structure	(*.swc)"
-															));
-			QFile file(fileSaveName);
-			file.open(QIODevice::WriteOnly|QIODevice::Text);
-			QTextStream myfile(&file);
-			for (V3DLONG i=0;i<lN.size();i++)
-				myfile << lN.at(i).n <<" " << lN.at(i).type << " "<< lN.at(i).x <<" "<<lN.at(i).y << " "<< lN.at(i).z << " "<< lN.at(i).r << " " <<lN.at(i).pn << "\n";
-	
-			file.close();
+				//write new SWC to file
+				QString fileSaveName = QFileDialog::getSaveFileName(0, QObject::tr("Save File"),
+						"",
+						QObject::tr("Supported file (*.swc)"
+							";;Neuron structure	(*.swc)"
+							));
+				QFile file(fileSaveName);
+				file.open(QIODevice::WriteOnly|QIODevice::Text);
+				QTextStream myfile(&file);
+				for (V3DLONG i=0;i<lN.size();i++)
+					myfile << lN.at(i).n <<" " << lN.at(i).type << " "<< lN.at(i).x <<" "<<lN.at(i).y << " "<< lN.at(i).z << " "<< lN.at(i).r << " " <<lN.at(i).pn << "\n";
+
+				file.close();
 			}
-		    }
 		}
 		else 
 		{
 			v3d_msg("You don't have any SWC file open in the main window.");
 			return;
 		}
-		
+
 	}
 }
 
@@ -239,8 +305,8 @@ void SORT_SWCPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callba
 {
 	if (menu_name == tr("sort_swc"))
 	{
-    		sort_swc(callback, parent,1 );
-    	}
+		sort_swc(callback, parent,1 );
+	}
 	else if (menu_name == tr("Help"))
 	{
 		v3d_msg("(version 0.14) Set a new root and sort the SWC file into a new order, where the newly set root has the id of 1, and the parent's id is less than its child's. If the original SWC has more than one connected components, return the sorted result of the brench with newly set root. It also includes a merging process of neuron segments, where neurons with the same x,y,z cooridinates are combined as one.");
@@ -251,59 +317,97 @@ void SORT_SWCPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callba
 bool sort_func(const V3DPluginArgList & input, V3DPluginArgList & output)
 {
 	cout<<"==========Welcome to sort_swc function============="<<endl;
-	NeuronTree neuron;
-	char * infile = (*(vector<char*>*)(input.at(0).p)).at(0);
-	char * outfile = (*(vector<char*>*)(output.at(0).p)).at(0);
-	char * paras = (*(vector<char*>*)(input.at(1).p)).at(0);
-	
-	cout<<"infile: "<<infile<<endl;
-	cout<<"outfile: "<<outfile<<endl;
-	cout<<"new root id: "<<paras<<endl;
-	
-	QString fileOpenName = QString(infile);
-	QString fileSaveName = QString(outfile);
-	if(fileOpenName.isEmpty()) 
+	vector<char*>* inlist = (vector<char*>*)(input.at(0).p);
+	vector<char*>* outlist = (vector<char*>*)(output.at(0).p);
+	vector<char*>* paralist;
+
+	int rootid;
+	bool hasPara;
+	if (((vector<char*>*)(input.at(1).p))->empty()) 
 	{
-		cout<<"You don't have any SWC file open in the main window."<<endl;
+		cout<<"no new root id specified.\n";
+		rootid = VOID;
+		hasPara = false;
+	}
+	else {
+		hasPara = true;
+		paralist = (vector<char*>*)(input.at(1).p);
+	}
+
+
+	int neuronNum = inlist->size();
+	if (neuronNum!=outlist->size())
+	{
+		cout<<"input and output file number are not same, please check your input.\n";
 		return false;
 	}
-	
-	if (fileOpenName.size()>0)
-	{
-		neuron = readSWC_file(fileOpenName);
-		QList<NeuronSWC> lN;			
-		int rootid = 0;
-		for (int i=0;i<strlen(paras);i++)
+
+	if (hasPara)
+		if (paralist->size()!=neuronNum)
 		{
-			rootid = rootid*10 + paras[i]-'0';
+			cout<<"number of input files must match number of parameters, please check your input\n";
+			return false;
 		}
-		if (SortSWC(neuron, lN,rootid)){
-			//write new SWC to file
-			QFile file(fileSaveName);
-			file.open(QIODevice::WriteOnly|QIODevice::Text);
-			QTextStream myfile(&file);
-			for (V3DLONG i=0;i<lN.size();i++)
-				myfile << lN.at(i).n <<" "<< lN.at(i).type << " "<< lN.at(i).x <<" "<<lN.at(i).y << " "<< lN.at(i).z << " "<< lN.at(i).r << " " <<lN.at(i).pn << "\n";
-	
-			file.close();
-			return true;
-		}	
-	}
-	else 
+
+	for (int iter=0;iter<neuronNum;iter++)
 	{
-		cout<<"You don't have any SWC file open in the main window."<<endl;
-		return false;
+		QString fileOpenName = QString(inlist->at(iter));
+		QString fileSaveName = QString(outlist->at(iter));
+
+		cout<<"infile: "<<inlist->at(iter)<<endl;
+		cout<<"outfile: "<<inlist->at(iter)<<endl;
+		if (hasPara)
+		{
+			char * paras = paralist->at(iter);
+		   	rootid = 0;
+		   	for (int i=0;i<strlen(paras);i++)
+		   	{
+		   		rootid = rootid*10 + paras[i]-'0';
+		   	}
+		   	cout<<"new root id: "<<rootid<<endl;
+		 }
+
+		if(fileOpenName.isEmpty()) 
+		{
+			cout<<"you specified a wrong file name."<<endl;
+			return false;
+		}
+
+		NeuronTree neuron;
+		if (fileOpenName.size()>0)
+		{
+			neuron = readSWC_file(fileOpenName);
+			QList<NeuronSWC> lN;			
+			if (SortSWC(neuron, lN,rootid)){
+				//write new SWC to file
+				QFile file(fileSaveName);
+				file.open(QIODevice::WriteOnly|QIODevice::Text);
+				QTextStream myfile(&file);
+				for (V3DLONG i=0;i<lN.size();i++)
+					myfile << lN.at(i).n <<" "<< lN.at(i).type << " "<< lN.at(i).x <<" "<<lN.at(i).y << " "<< lN.at(i).z << " "<< lN.at(i).r << " " <<lN.at(i).pn << "\n";
+
+				file.close();
+				return true;
+			}	
+		}
+		else 
+		{
+			cout<<"You don't have any SWC file open in the main window."<<endl;
+			return false;
+		}
 	}
-		
+
 }
 
-	
+
 
 bool SORT_SWCPlugin::dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output, V3DPluginCallback2 & callback, QWidget * parent)
 {
 	if (func_name==tr("sort_swc"))
 	{
-		return sort_func(input,output); 
+		sort_func(input,output);
+		return true;
 	}
+	return false;
 }
 
