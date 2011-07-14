@@ -68,8 +68,7 @@ public slots:
     void resetView();
     void resetColors();
     void updateViewers();
-
-    void updateAnnotationModels();
+    void synchronizeGalleryButtonsToAnnotationSession(QString updateString);
 
 protected slots:
     void updateThumbnailGamma(qreal gamma);

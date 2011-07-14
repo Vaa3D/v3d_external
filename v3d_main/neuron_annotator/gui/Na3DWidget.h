@@ -54,7 +54,6 @@ public slots:
     void onMouseSingleClick(QPoint pos);
     void onNotSingleClick();
     void onPossibleSingleClickAlert();
-    void updateAnnotationModels();
 
 public:
 

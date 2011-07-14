@@ -60,7 +60,6 @@ public:
 
 signals:
     void modelUpdated(QString updateType);
-    void neuronMaskStatusSet();
     void scrollBarFocus(FragmentSelectionModel::FragmentIndex index);
 
 public slots:

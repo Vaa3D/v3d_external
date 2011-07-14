@@ -579,55 +579,12 @@ void Na3DWidget::annotationModelUpdate(QString updateType) {
 
     } else if (updateType.startsWith("FULL_UPDATE")) {
         // Change requiring full reload of texture image stacks
-        QList<QImage> * maskMipList = annotationSession->getNeuronMipList();
-        QList<int> tempList;
-        for (int i=0;i<maskMipList->size();i++) {
-            if (annotationSession->neuronMaskIsChecked(i)) {
-                tempList.append(i);
-            }
-        }
-        QList<RGBA8*> overlayList;
-        for (int i=0;i<list.size();i++) {
-            QString overlayStatus=list.at(i);
-            int status=overlayStatus.toInt();
-            if (status!=0) {
-                overlayList.append(ra->getOverlayTextureByAnnotationIndex(i));
-            }
-        }
-        ra->rebuildFromBaseTextures(tempList, overlayList, progressDialog);
-
-//        if (index==AnnotationSession::REFERENCE_MIP_INDEX) {
-//            if (checked) {
-//                ra->setReferenceBaseTexture(tempList, progressDialog);
-//            } else {
-//                ra->setBlankBaseTexture(tempList, progressDialog);
-//            }
-//        } else if (index==AnnotationSession::BACKGROUND_MIP_INDEX) {
-//            if (checked) {
-//                ra->setBackgroundBaseTexture(tempList, progressDialog);
-//            } else {
-//                ra->setBlankBaseTexture(tempList, progressDialog);
-//            }
-//        }
-    }
-    ra->paint();
-    update();
-}
-
-// update all neuron masks at once
-void Na3DWidget::updateAnnotationModels() {
-
-        RendererNeuronAnnotator* ra = (RendererNeuronAnnotator*)renderer;
-        QProgressDialog progressDialog( QString("Updating textures"), 0, 0, 100, this, Qt::Tool | Qt::WindowStaysOnTopHint);
-        progressDialog.setAutoClose(true);
-
         QList<int> tempList;
         for (int i=0;i<annotationSession->getMaskStatusList().size();i++) {
             if (annotationSession->neuronMaskIsChecked(i)) {
                 tempList.append(i);
             }
         }
-
         QList<RGBA8*> overlayList;
         QList<bool> overlayStatusList=annotationSession->getOverlayStatusList();
         for (int i=0;i<overlayStatusList.size();i++) {
@@ -636,9 +593,9 @@ void Na3DWidget::updateAnnotationModels() {
             }
         }
         ra->rebuildFromBaseTextures(tempList, overlayList, progressDialog);
-
-        ra->paint();
-        update();
-
+    }
+    ra->paint();
+    update();
 }
+
 

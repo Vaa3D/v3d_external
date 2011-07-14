@@ -464,8 +464,9 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
         // show selected neuron
         connect(ui.v3dr_glwidget, SIGNAL(neuronShown(QList<int>)), annotationSession, SLOT(showSelectedNeuron(QList<int>)));
         connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(QList<int>)), annotationSession, SLOT(showAllNeurons(QList<int>)));
-        connect(annotationSession, SIGNAL(neuronMaskStatusSet()), ui.v3dr_glwidget, SLOT(updateAnnotationModels()));
-        connect(annotationSession, SIGNAL(neuronMaskStatusSet()), this, SLOT(updateAnnotationModels()));
+        connect(annotationSession, SIGNAL(modelUpdated(QString)), ui.v3dr_glwidget, SLOT(annotationModelUpdate(QString)));
+        connect(annotationSession, SIGNAL(modelUpdated(QString)), this, SLOT(synchronizeGalleryButtonsToAnnotationSession(QString)));
+
         // connect(annotationSession, SIGNAL(scrollBarFocus(int)), ui.scrollArea->horizontalScrollBar(), SLOT(setValue(int)));
         connect(annotationSession, SIGNAL(scrollBarFocus(FragmentSelectionModel::FragmentIndex)),
                 ui.fragmentGalleryWidget, SLOT(scrollToFragment(FragmentSelectionModel::FragmentIndex)));
@@ -589,14 +590,14 @@ void NaMainWindow::createOverlayGallery() {
     }
 
     GalleryButton* referenceButton = new GalleryButton(overlayMipList->at(AnnotationSession::REFERENCE_MIP_INDEX), "Reference", AnnotationSession::REFERENCE_MIP_INDEX);
-    referenceButton->setChecked(true); // since full image loaded initially
-    annotationSession->setOverlayStatus(AnnotationSession::REFERENCE_MIP_INDEX, true);
+    referenceButton->setChecked(false); // we do not want reference initially loaded
+    annotationSession->setOverlayStatus(AnnotationSession::REFERENCE_MIP_INDEX, false);
     managementLayout->addWidget(referenceButton);
     overlayGalleryButtonList.append(referenceButton);
     connect(referenceButton, SIGNAL(declareChange(int,bool)), annotationSession, SLOT(overlayUpdate(int,bool)));
 
     GalleryButton* backgroundButton = new GalleryButton(overlayMipList->at(AnnotationSession::BACKGROUND_MIP_INDEX), "Background", AnnotationSession::BACKGROUND_MIP_INDEX);
-    backgroundButton->setChecked(true); // since full image loaded initially
+    backgroundButton->setChecked(true); // we do want background initially loaded
     annotationSession->setOverlayStatus(AnnotationSession::BACKGROUND_MIP_INDEX, true);
     managementLayout->addWidget(backgroundButton);
     overlayGalleryButtonList.append(backgroundButton);
@@ -660,7 +661,11 @@ void NaMainWindow::update3DViewerXYZBodyRotation()
 }
 
 // update neuron selected status
-void NaMainWindow::updateAnnotationModels() {
+void NaMainWindow::synchronizeGalleryButtonsToAnnotationSession(QString updateString) {
+    // We are not using the update string in this case, which is from the modelUpdated() signal,
+    // because we are doing a total update.
+    int maskStatusListSize=annotationSession->getMaskStatusList().size();
+    int neuronGalleryButtonSize=neuronGalleryButtonList.size();
         for (int i=0;i<annotationSession->getMaskStatusList().size();i++) {
             if (annotationSession->neuronMaskIsChecked(i)) {
                 neuronGalleryButtonList.at(i)->setChecked(true);
@@ -676,7 +681,6 @@ void NaMainWindow::updateAnnotationModels() {
         } else {
             overlayGalleryButtonList.at(AnnotationSession::REFERENCE_MIP_INDEX)->setChecked(false);
         }
-
 
         // Background toggle
         if (annotationSession->getOverlayStatusList().at(AnnotationSession::BACKGROUND_MIP_INDEX)) {

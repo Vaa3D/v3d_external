@@ -170,11 +170,11 @@ bool AnnotationSession::prepareLabelIndex() {
     qDebug() << "Using maxMaskIndex=" << maxMaskIndex;
 
     for (int i=0;i<maxMaskIndex;i++) {
-        NeuronMaskEntry entry(0,0,i+1);
+        NeuronMaskEntry entry(0,0,i);
         maskEntryList.append(entry);
     }
 
-    for (int i=0;i<maskEntryList.size()+1;i++) { // +1 is for background position
+    for (int i=0;i<maskEntryList.size();i++) {
         bool status=false;
         maskStatusList.append(status);
         neuronSelectList.append(status);
