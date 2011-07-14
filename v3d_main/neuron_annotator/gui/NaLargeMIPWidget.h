@@ -67,6 +67,7 @@ public:
     virtual void wheelEvent(QWheelEvent * e); // zoom with scroll wheel
     virtual void resizeEvent(QResizeEvent * event);
     int neuronAt(const QPoint& p);
+    bool saveImage(QString filename);
 
 signals:
     // message intended for main window status area

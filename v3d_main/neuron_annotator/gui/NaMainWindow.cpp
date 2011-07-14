@@ -383,7 +383,10 @@ void NaMainWindow::on_action3D_Volume_triggered() {
 }
 
 void NaMainWindow::on_action2D_MIP_triggered() {
-
+    QString filename = QFileDialog::getSaveFileName(0, QObject::tr("Save 2D MIP to an .tif file"), ".", QObject::tr("2D MIP (*.tif)"));
+    if (!(filename.isEmpty())){
+        bool saved = ui.naLargeMIPWidget->saveImage(filename);
+    }
 }
 
 void NaMainWindow::on_actionScreenShot_triggered() {

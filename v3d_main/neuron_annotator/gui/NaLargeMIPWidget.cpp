@@ -494,5 +494,16 @@ void NaLargeMIPWidget::annotationModelUpdate(QString updateType)
     }
 }
 
-
+bool NaLargeMIPWidget::saveImage(QString filename){
+    if (pixmap.save(filename, QFileInfo(filename).suffix().toStdString().c_str(), 100)) //uncompressed
+    {
+        printf("Successful to save screen-shot: [%s]\n",  filename.toAscii().data());
+        return true;
+    }
+    else
+    {
+        printf("Failed to save screen-shot: [%s]\n",  filename.toAscii().data());
+        return false;
+    }
+}
 
