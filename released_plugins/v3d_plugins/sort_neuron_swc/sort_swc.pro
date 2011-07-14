@@ -12,4 +12,4 @@ SOURCES      += sort_swc.cpp
 SOURCES      += $$V3DMAINPATH/basic_c_fun/v3d_message.cpp
 
 TARGET        = $$qtLibraryTarget(sort_neuron_swc)
-DESTDIR       = ../../../v3d/plugins/neuron_utilities/sort_neuron_swc
+DESTDIR       = ../../v3d/plugins/neuron_utilities/sort_neuron_swc
