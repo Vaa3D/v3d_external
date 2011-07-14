@@ -277,13 +277,14 @@ bool AnnotationSession::populateMipLists() {
 
 void AnnotationSession::overlayUpdate(int index, bool status) {
     int statusValue=(status ? 1 : 0);
-    qDebug() << "AnnotationSession: received overlayUpdate index=" << index << " status=" << status;
+    qDebug() << "AnnotationSession::overlayUpdate index=" << index << " status=" << status;
     overlayStatusList.replace(index, statusValue);
     QString overlayUpdateString=QString("FULL_UPDATE");
     emit modelUpdated(overlayUpdateString);
 }
 
 void AnnotationSession::neuronMaskUpdate(int index, bool status) {
+    qDebug() << "AnnotationSession::neuronMaskUpdate index=" << index << " status=" << status;
     int statusValue=(status ? 1 : 0);
     maskStatusList.replace(index, statusValue);
     QString neuronMaskUpdateString=QString("NEURONMASK_UPDATE %1 %2").arg(index).arg(statusValue);
@@ -291,6 +292,7 @@ void AnnotationSession::neuronMaskUpdate(int index, bool status) {
 }
 
 void AnnotationSession::neuronMaskFullUpdate() {
+    qDebug() << "AnnotationSession::neuronMaskFullUpdate() - emitting modelUpdated()";
     QString updateString=QString("FULL_UPDATE");
     emit modelUpdated(updateString);
 }
