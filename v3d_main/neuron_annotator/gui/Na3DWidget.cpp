@@ -505,7 +505,14 @@ void Na3DWidget::choiceRenderer() {
         // qDebug("Na3DWidget::choiceRenderer");
         _isSoftwareGL = false;
         GLeeInit();
-        renderer = new RendererNeuronAnnotator(this);
+        RendererNeuronAnnotator * ra = new RendererNeuronAnnotator(this);
+        renderer = ra;
+        connect(ra, SIGNAL(progressAchieved(int)),
+                this, SIGNAL(progressAchieved(int)));
+        connect(ra, SIGNAL(progressComplete()),
+                this, SIGNAL(progressComplete()));
+        connect(ra, SIGNAL(progressMessage(QString)),
+                this, SIGNAL(progressMessage(QString)));
 }
 
 // Draw a little 3D cross for testing
@@ -566,8 +573,7 @@ void Na3DWidget::paintGL()
 void Na3DWidget::annotationModelUpdate(QString updateType) {
 
     RendererNeuronAnnotator* ra = (RendererNeuronAnnotator*)renderer;
-    QProgressDialog progressDialog( QString("Updating textures"), 0, 0, 100, this, Qt::Tool | Qt::WindowStaysOnTopHint);
-    progressDialog.setAutoClose(true);
+    emit progressMessage(QString("Updating textures"));
     QList<QString> list=updateType.split(QRegExp("\\s+"));
 
     if (updateType.startsWith("NEURONMASK_UPDATE")) {
@@ -575,7 +581,7 @@ void Na3DWidget::annotationModelUpdate(QString updateType) {
         QString checkedString=list.at(2);
         int index=indexString.toInt();
         bool checked=(checkedString.toInt()==1);
-        ra->updateCurrentTextureMask(index, (checked ? 1 : 0), progressDialog);
+        ra->updateCurrentTextureMask(index, (checked ? 1 : 0));
 
     } else if (updateType.startsWith("FULL_UPDATE")) {
         // Change requiring full reload of texture image stacks
@@ -592,7 +598,7 @@ void Na3DWidget::annotationModelUpdate(QString updateType) {
                 overlayList.append(ra->getOverlayTextureByAnnotationIndex(i));
             }
         }
-        ra->rebuildFromBaseTextures(tempList, overlayList, progressDialog);
+        ra->rebuildFromBaseTextures(tempList, overlayList);
     }
     ra->paint();
     update();

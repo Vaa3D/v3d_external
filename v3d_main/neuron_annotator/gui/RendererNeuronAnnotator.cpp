@@ -2,7 +2,8 @@
 #include "RendererNeuronAnnotator.h"
 #include "../AnnotationSession.h"
 
-RendererNeuronAnnotator::RendererNeuronAnnotator(void* w) : Renderer_gl2(w)
+RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
+    : QObject(NULL), Renderer_gl2(w)
 {
     neuronMask=0;
     texture3DSignal=0;
@@ -212,19 +213,18 @@ bool RendererNeuronAnnotator::initializeTextureMasks() {
         initialMaskList.append(i);
     }
 
-    QProgressDialog progressDialog( QString("Setting up textures"), 0, 0, 100, NULL, Qt::Tool | Qt::WindowStaysOnTopHint);
-    progressDialog.setAutoClose(true);
+    emit progressMessage(QString("Setting up textures"));
 
     QList<RGBA8*> initialOverlayList;
     initialOverlayList.append(texture3DBackground);
-    rebuildFromBaseTextures(initialMaskList, initialOverlayList, progressDialog);
+    rebuildFromBaseTextures(initialMaskList, initialOverlayList);
 
     return true;
 }
 
 
 // This function assumes the size realX,Y,Z should be used
-void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf, QProgressDialog & dialog) {
+void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf) {
 
     int sliceCount=0;
 
@@ -308,7 +308,15 @@ void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf, QProgressDialog 
                     }
                     sliceCount++;
                     int prog = sliceCount*100 / (realX + realY + realZ);
-                    updateProgressDialog(dialog, prog);
+                    // updateProgressDialog(dialog, prog);
+
+                    // attempt to get away from that horrible horrible hyper-modal stack-drilling unthreadable progress dialog
+                    if (! (sliceCount % 20)) {
+                        emit progressAchieved(prog);
+                        // processEvents() kludge as long as texture updates are in GUI thread
+                        // TODO Is ExcludeUserInputEvents really necessary here?
+                        QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+                    }
             }
 
     }//tex2D
@@ -317,6 +325,7 @@ void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf, QProgressDialog 
         textureSetAlreadyLoaded=true;
     }
 
+    emit progressComplete();
 }
 
 void RendererNeuronAnnotator::cleanExtendedTextures() {
@@ -329,17 +338,17 @@ void RendererNeuronAnnotator::cleanExtendedTextures() {
     }
 }
 
-void RendererNeuronAnnotator::rebuildFromBaseTextures(QList<int> maskIndexList, QList<RGBA8*> overlayList, QProgressDialog & dialog) {
+void RendererNeuronAnnotator::rebuildFromBaseTextures(QList<int> maskIndexList, QList<RGBA8*> overlayList) {
     cleanExtendedTextures();
     if (overlayList.size()==1 && overlayList.at(0)==texture3DSignal) {
         // Then we don't need to add masks since these are implicit
-        load3DTextureSet(texture3DSignal, dialog);
+        load3DTextureSet(texture3DSignal);
         texture3DCurrent=texture3DSignal;
     } else if (overlayList.size()==0) {
         texture3DCurrent=texture3DBlank;
     } else {
         RGBA8* texture=extendTextureFromMaskList(overlayList, maskIndexList);
-        load3DTextureSet(texture, dialog);
+        load3DTextureSet(texture);
         texture3DCurrent=texture;
     }
 }
@@ -424,7 +433,7 @@ RGBA8* RendererNeuronAnnotator::extendTextureFromMaskList(const QList<RGBA8*> & 
 // for mask membership. If a match is seen, we will first modify the local texture3DCurrent,
 // and then copy this updated tile to the graphics system.
 
-void RendererNeuronAnnotator::updateCurrentTextureMask(int maskIndex, int state, QProgressDialog & dialog) {
+void RendererNeuronAnnotator::updateCurrentTextureMask(int maskIndex, int state) {
 
     qDebug() << "RendererNeuronAnnotator::updateCurrentTextureMask() start";
 
@@ -597,19 +606,30 @@ void RendererNeuronAnnotator::updateCurrentTextureMask(int maskIndex, int state,
                     }
                     sliceCount++;
                     int prog = sliceCount*100 / (realX + realY + realZ);
-                    updateProgressDialog(dialog, prog);
+                    // updateProgressDialog(dialog, prog);
+
+                    // attempt to get away from that horrible horrible hyper-modal stack-drilling unthreadable progress dialog
+                    if (! (sliceCount % 20)) {
+                        emit progressAchieved(prog);
+                        // processEvents() kludge as long as texture updates are in GUI thread
+                        // TODO Is ExcludeUserInputEvents really necessary here?
+                        QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+                    }
             }
     }
     int mSec=timer.elapsed();
     qDebug() << "RendererNeuronAnnotator::updateCurrentTextureMask() finished in " << mSec << " milliseconds  tilesIncluded=" << glTilesIncluded <<" tilesExcluded=" << glTilesExcluded;
+    emit progressComplete();
 }
 
+/*
 void RendererNeuronAnnotator::updateProgressDialog(QProgressDialog & dialog, int level) {
     QApplication::setActiveWindow(&dialog);
     dialog.setValue(level);
     dialog.repaint();
     QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 }
+*/
 
 RGBA8* RendererNeuronAnnotator::getOverlayTextureByAnnotationIndex(int index) {
     if (index==AnnotationSession::REFERENCE_MIP_INDEX) {

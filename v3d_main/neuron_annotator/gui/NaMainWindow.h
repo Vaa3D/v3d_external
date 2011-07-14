@@ -79,6 +79,9 @@ protected slots:
     void on3DViewerRotationChanged(const Rotation3D& rot);
     void update3DViewerXYZBodyRotation();
     void onViewerChanged(int viewerIndex);
+    void set3DProgress(int);
+    void complete3DProgress();
+    void set3DProgressMessage(QString);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -95,6 +98,8 @@ private:
     NutateThread * nutateThread;
     NeuronSelector* neuronSelector;
     FragmentSelectionModel fragmentSelectionModel;
+    QLabel * statusProgressMessage;
+    QProgressBar * statusProgressBar;
 };
 
 #endif // NAMAINWINDOW_H

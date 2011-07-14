@@ -65,11 +65,21 @@ void NutateThread::unpause() {paused = false;}
 //////////////////
 
 NaMainWindow::NaMainWindow()
-    : nutateThread(NULL)
+    : nutateThread(NULL), statusProgressBar(NULL)
 {
     ui.setupUi(this);
     //QMetaObject::connectSlotsByName(this); This is apparently already called by setupUi, so calling it again creates repeat trigger events
     annotationSession=0;
+
+    statusProgressMessage = new QLabel(NULL);
+    statusBar()->addWidget(statusProgressMessage);
+    statusProgressBar = new QProgressBar(NULL);
+    statusProgressBar->setValue(0);
+    statusProgressBar->setMinimum(0);
+    statusProgressBar->setMaximum(100);
+    statusBar()->addWidget(statusProgressBar);
+    statusProgressBar->hide();
+    statusProgressMessage->hide();
 
     // visualize compartment map
     //QDockWidget *dock = new QDockWidget(tr("Compartment Map"), this);
@@ -84,12 +94,6 @@ NaMainWindow::NaMainWindow()
             statusBar(), SLOT(showMessage(const QString&)));
     connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
             ui.naLargeMIPWidget, SLOT(setGammaBrightness(qreal)));
-    // Progress bar for when image is being processed
-    // ui.progressWidgetMip->hide();
-    // progressBar = new QProgressBar(this);
-    // progressBar->setValue(24);
-    // QGridLayout * gridLayout = new QGridLayout(this);
-    // gridLayout->addWidget(progressBar, 0, 0, 1, 1);
     ui.progressWidgetMip->hide();
     connect(ui.naLargeMIPWidget, SIGNAL(showProgress()),
             ui.progressWidgetMip, SLOT(show()));
@@ -99,7 +103,6 @@ NaMainWindow::NaMainWindow()
             ui.progressBarMip, SLOT(setMaximum(int)));
     connect(ui.naLargeMIPWidget, SIGNAL(setProgress(int)),
             ui.progressBarMip, SLOT(setValue(int)));
-    ui.progressWidget3D->hide();
     ui.progressWidgetZ->hide();
 
     // Wire up Z-stack / HDR viewer
@@ -155,7 +158,12 @@ NaMainWindow::NaMainWindow()
             ui.v3dr_glwidget, SLOT(setGammaBrightness(qreal)));
     connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
             this, SLOT(updateThumbnailGamma(qreal)));
-
+    connect(ui.v3dr_glwidget, SIGNAL(progressAchieved(int)),
+            this, SLOT(set3DProgress(int)));
+    connect(ui.v3dr_glwidget, SIGNAL(progressComplete()),
+            this, SLOT(complete3DProgress()));
+    connect(ui.v3dr_glwidget, SIGNAL(progressMessage(QString)),
+            this, SLOT(set3DProgressMessage(QString)));
 
     // Whether to use common zoom and focus in MIP, ZStack and 3D viewers
     connect(ui.actionLink_viewers, SIGNAL(toggled(bool)),
@@ -707,6 +715,27 @@ void NaMainWindow::synchronizeGalleryButtonsToAnnotationSession(QString updateSt
 
 }
 
+void NaMainWindow::set3DProgress(int prog) {
+    if (prog >= 100) {
+        complete3DProgress();
+    }
+    else {
+        statusProgressBar->show();
+        statusProgressBar->setValue(prog);
+    }
+}
+
+void NaMainWindow::complete3DProgress() {
+    statusProgressBar->hide();
+    statusProgressMessage->hide();
+    statusBar()->showMessage("Progress complete", 1000);
+}
+
+void NaMainWindow::set3DProgressMessage(QString msg) {
+    statusBar()->showMessage("");
+    statusProgressMessage->setText(msg);
+    statusProgressMessage->show();
+}
 
 // NutateThread
 

@@ -336,66 +336,7 @@
                   <height>240</height>
                  </size>
                 </property>
-                <layout class="QHBoxLayout" name="horizontalLayout_5">
-                 <item>
-                  <spacer name="horizontalSpacer_3">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>222</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item>
-                  <widget class="QWidget" name="progressWidget3D" native="true">
-                   <property name="enabled">
-                    <bool>true</bool>
-                   </property>
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="styleSheet">
-                    <string notr="true">background-color: rgb(255, 255, 255);</string>
-                   </property>
-                   <layout class="QVBoxLayout" name="verticalLayout_13">
-                    <item>
-                     <widget class="QLabel" name="progressLabel3D">
-                      <property name="text">
-                       <string>Updating 3D view...</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QProgressBar" name="progressBar3D">
-                      <property name="value">
-                       <number>24</number>
-                      </property>
-                     </widget>
-                    </item>
-                   </layout>
-                  </widget>
-                 </item>
-                 <item>
-                  <spacer name="horizontalSpacer_4">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>222</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                </layout>
+                <layout class="QHBoxLayout" name="horizontalLayout_5"/>
                </widget>
               </item>
              </layout>

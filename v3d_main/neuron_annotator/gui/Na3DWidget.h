@@ -123,6 +123,9 @@ protected slots:
 	
 signals:
 	void neuronSelected(double x, double y, double z);
+        void progressAchieved(int);
+        void progressComplete();
+        void progressMessage(QString);
 
 protected:
     virtual void paintGL();
