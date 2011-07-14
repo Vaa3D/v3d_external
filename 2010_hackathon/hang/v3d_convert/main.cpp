@@ -2,11 +2,14 @@
 #include <string>
 #include <list>
 
+#include "stackutil.h"
+#include "v3d_funcs.h"
+
 using namespace std;
 
 struct InputParas
 {
-	list<string> filelist;
+	vector<string> filelist;
 	
 	bool is_resize;                 
 	string para_resize;            
@@ -22,6 +25,9 @@ struct InputParas
 
 	bool is_colors;
 	string para_colors;
+	
+	bool is_gaussian_blur;
+	string para_gaussian_blur;
 
 	InputParas()
 	{
@@ -30,12 +36,14 @@ struct InputParas
 };
 
 void printHelp();
+void printVersion();
 bool parse_paras(int argc, char* argv[], InputParas &paras, string &s_error);
-bool run_with_paras(InputParas paras);
+bool run_with_paras(InputParas paras, string &s_error);
 
 int main(int argc, char* argv[])
 {
-	if(argc == 1) {printHelp(); return 0;}
+	if(argc == 1 || (argc == 2 && (string(argv[1]) == "-h"))) {printHelp(); return 0;}
+	if(argc == 2 && (string(argv[1]) == "-v" || string(argv[1]) == "--version")) {printVersion(); return 0;}
 
 	InputParas paras;
 	string s_error("");
@@ -47,6 +55,12 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
+		s_error = "";
+		if(! run_with_paras(paras, s_error))
+		{
+			cout<<"Run error : "<< s_error <<endl;
+			return false;
+		}
 	}
 	return 0;
 }
@@ -57,7 +71,28 @@ bool parse_paras(int argc, char* argv[], InputParas &paras, string &s_error)
 
 	while(i < argc)
 	{
-		if(string(argv[i]) == "-resize")
+		if(string(argv[i]) == "-gaussian-blur")
+		{
+			if(!paras.is_gaussian_blur)
+			{
+				paras.is_gaussian_blur = true;
+        		if(++i < argc && argv[i][0] != '-') 
+				{
+					paras.para_gaussian_blur = argv[i];
+				}
+				else
+				{
+					s_error += "need paras for -gaussian-blur";
+					return false;
+				}
+			}
+			else
+			{
+				s_error += "duplicate -gaussian-blur";
+				return false;
+			}
+		}
+		else if(string(argv[i]) == "-resize")
 		{
 			if(!paras.is_resize)
 			{
@@ -78,8 +113,68 @@ bool parse_paras(int argc, char* argv[], InputParas &paras, string &s_error)
 				return false;
 			}
 		}
+		else if(string(argv[i]) == "-reverse")
+		{
+			if(!paras.is_reverse)
+			{
+				paras.is_reverse = true;
+        		if(++i < argc && argv[i][0] != '-') 
+				{
+					paras.para_reverse = argv[i];
+				}
+				else
+				{
+					s_error += "need paras for -reverse";
+					return false;
+				}
+			}
+			else
+			{
+				s_error += "duplicate -reverse";
+				return false;
+			}
+		}
 		else if(string(argv[i]) == "-crop")
 		{
+			if(!paras.is_crop)
+			{
+				paras.is_crop = true;
+        		if(++i < argc && argv[i][0] != '-') 
+				{
+					paras.para_crop = argv[i];
+				}
+				else
+				{
+					s_error += "need paras for -crop";
+					return false;
+				}
+			}
+			else
+			{
+				s_error += "duplicate -crop";
+				return false;
+			}
+		}
+		else if(string(argv[i]) == "-negate")
+		{
+			if(!paras.is_negate)
+			{
+				paras.is_negate = true;
+        		if(++i < argc && argv[i][0] != '-') 
+				{
+					paras.para_negate = argv[i];
+				}
+				else
+				{
+					s_error += "need paras for -negate";
+					return false;
+				}
+			}
+			else
+			{
+				s_error += "duplicate -negate";
+				return false;
+			}
 		}
 		else
 		{
@@ -96,8 +191,39 @@ bool parse_paras(int argc, char* argv[], InputParas &paras, string &s_error)
 	return true;
 }
 
-bool run_with_paras(InputParas paras)
+bool run_with_paras(InputParas paras, string & s_error)
 {
+	if(paras.is_gaussian_blur)
+	{
+		string para_str = paras.para_gaussian_blur;
+		double sigma = atof(para_str.substr(0, para_str.find_first_of('x')).c_str());
+		double radius = atof(para_str.substr(para_str.find_last_of('x') + 1, para_str.length()).c_str());
+		cout<<"sigma = "<<sigma<<" radius = "<<radius<<endl;
+		if(paras.filelist.size() > 2) 
+		{
+			s_error = "too many files";
+			return false;
+		}
+		else if(paras.filelist.size() == 1)
+		{
+			s_error = "need output image name";
+			return false;
+		}
+		else
+		{
+			s_error = "need input and output image name";
+			return false;
+		}
+
+		string infile = paras.filelist.at(0);
+		string outfile = paras.filelist.at(1);
+		unsigned char * indata1d = 0;
+		V3DLONG * sz = 0;
+		int datatype;
+		loadImage(infile.c_str(), indata1d, sz, datatype);
+		saveImage(outfile.c_str(), indata1d, sz, datatype);
+	}
+
 	return true;
 }
 
@@ -293,4 +419,9 @@ void printHelp()
 	cout<<"  -log format          format of debugging information"<<endl;
 	cout<<"  -version             print version information"<<endl;
 	*/
+}
+
+void printVersion()
+{
+	cout<<"Version : 1.0"<<endl;
 }
