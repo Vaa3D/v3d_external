@@ -12,6 +12,7 @@
 #include "v3d_message.h" 
 #include "../../../v3d_main/basic_c_fun/basic_surf_objs.h"
 #include <unistd.h>
+#include <string.h>
 #include <iostream>
 using namespace std;
 
@@ -173,6 +174,9 @@ bool SortSWC(const NeuronTree & neurons, QList<NeuronSWC> & lN, V3DLONG newrooti
 		DFS(matrix,neworder,iter,id,siz,numbered,group);
 	}
 
+	if ((*group)>1)
+		v3d_msg(QString("Warning: The input neuron is not connected and broken into %1 parts. The program will automatically generate %2 links to merge it into one piece.").arg(*group).arg((*group)-1));
+
 	//find the point in non-group 1 that is nearest to group 1, 
 	//include the nearest point as well as its neighbors into group 1, until all the nodes are connected
 	while((*group)>1)
@@ -278,9 +282,17 @@ void sort_swc(V3DPluginCallback2 &callback, QWidget *parent, int method_code)
 				rootid = VOID;
 			if (SortSWC(neuron, lN,rootid)){
 
+				//parse fileOpenName
+				int parser;
+				for (parser=fileOpenName.length()-1;parser>=0;parser--)
+					if (fileOpenName.at(parser)==QChar('.')) break;
+				QString fileDefaultName = fileOpenName;
+				fileDefaultName.insert(parser,QString("_sorted"));
+
+
 				//write new SWC to file
 				QString fileSaveName = QFileDialog::getSaveFileName(0, QObject::tr("Save File"),
-						"",
+						fileDefaultName,
 						QObject::tr("Supported file (*.swc)"
 							";;Neuron structure	(*.swc)"
 							));
@@ -319,14 +331,14 @@ bool sort_func(const V3DPluginArgList & input, V3DPluginArgList & output)
 {
 	cout<<"==========Welcome to sort_swc function============="<<endl;
 	vector<char*>* inlist = (vector<char*>*)(input.at(0).p);
-	vector<char*>* outlist = (vector<char*>*)(output.at(0).p);
+	vector<char*>* outlist;
 	vector<char*>* paralist;
 
 	int rootid;
-	bool hasPara;
+	bool hasPara, hasOutput;
 	if (input.size()==1) 
 	{
-		cout<<"no new root id specified.\n";
+		cout<<"No new root id specified.\n";
 		rootid = VOID;
 		hasPara = false;
 	}
@@ -335,13 +347,23 @@ bool sort_func(const V3DPluginArgList & input, V3DPluginArgList & output)
 		paralist = (vector<char*>*)(input.at(1).p);
 	}
 
-
 	int neuronNum = inlist->size();
-	if (neuronNum!=outlist->size())
-	{
-		cout<<"input and output file number are not same, please check your input.\n";
-		return false;
+
+	cout<<"input size: "<<neuronNum<<"\n";
+	if (output.size()==0){
+		cout<<"No output file specified.\n";
+		hasOutput = false;
+		}
+	else {
+		hasOutput = true;
+		 outlist = (vector<char*>*)(output.at(0).p);
+		if (neuronNum!=outlist->size())
+		{
+			cout<<"input and output file number are not same, please check your input.\n";
+			return false;
+		}
 	}
+
 
 	if (hasPara)
 		if (paralist->size()!=neuronNum)
@@ -353,20 +375,33 @@ bool sort_func(const V3DPluginArgList & input, V3DPluginArgList & output)
 	for (int iter=0;iter<neuronNum;iter++)
 	{
 		QString fileOpenName = QString(inlist->at(iter));
-		QString fileSaveName = QString(outlist->at(iter));
+		QString fileSaveName;
 
+		cout<<"---------Neuron #1----------\n";
 		cout<<"infile: "<<inlist->at(iter)<<endl;
-		cout<<"outfile: "<<outlist->at(iter)<<endl;
+		if (hasOutput){
+			cout<<"outfile: "<<outlist->at(iter)<<endl;
+			fileSaveName = QString(outlist->at(iter));
+		}
+		else {
+				int parser;
+				for (parser=fileOpenName.length()-1;parser>=0;parser--)
+					if (fileOpenName.at(parser)==QChar('.')) break;
+				fileSaveName = fileOpenName;
+				fileSaveName.insert(parser,QString("_sorted"));
+				v3d_msg(QString("outfile: %1").arg(fileSaveName),0);		
+		}
+
 		if (hasPara)
 		{
 			char * paras = paralist->at(iter);
-		   	rootid = 0;
-		   	for (int i=0;i<strlen(paras);i++)
-		   	{
-		   		rootid = rootid*10 + paras[i]-'0';
-		   	}
-		   	cout<<"new root id: "<<rootid<<endl;
-		 }
+			rootid = 0;
+			for (int i=0;i<strlen(paras);i++)
+			{
+				rootid = rootid*10 + paras[i]-'0';
+			}
+			cout<<"new root id: "<<rootid<<endl;
+		}
 
 		if(fileOpenName.isEmpty()) 
 		{
@@ -388,7 +423,6 @@ bool sort_func(const V3DPluginArgList & input, V3DPluginArgList & output)
 					myfile << lN.at(i).n <<" "<< lN.at(i).type << " "<< lN.at(i).x <<" "<<lN.at(i).y << " "<< lN.at(i).z << " "<< lN.at(i).r << " " <<lN.at(i).pn << "\n";
 
 				file.close();
-				return true;
 			}	
 		}
 		else 
@@ -397,6 +431,7 @@ bool sort_func(const V3DPluginArgList & input, V3DPluginArgList & output)
 			return false;
 		}
 	}
+	return true;
 
 }
 
@@ -414,9 +449,9 @@ bool SORT_SWCPlugin::dofunc(const QString & func_name, const V3DPluginArgList & 
 		cout<<"(version 0.15) Set a new root and sort the SWC file into a new order, where the newly set root has the id of 1, and the parent's id is less than its child's. If the original SWC has more than one connected components, the plugin will automatically link the nearest points. It also includes a merging process of neuron segments, where neurons with the same x,y,z cooridinates are combined as one.\n";
 		cout<<"usage:\n";
 		cout<<"-i<file name>:\ta list of input swc file(s)\n";
-		cout<<"-o<file name>:\ta list specifying output sorted swc file(s), corresponding to input file.\n";
+		cout<<"-o<file name>:\t (not required) a list specifying output sorted swc file(s), corresponding to input file. If you don't specify this, the program will generate an swc file named 'inputName_sorted.swc' within the same directory as the input file\n";
 		cout<<"-p<root number>: (not required) a list showing new root id. If you don't specify this, the plugin will set the first root in the input file as new root.\n";
-		cout<<"Demo:\t ./v3d -x plugins/neuron_uitilities/sort_a_swc/libsort_swc.so -i input.swc -o output.swc -p 1\n";
+		cout<<"Demo:\t ./v3d -x plugins/neuron_uitilities/sort_a_swc/libsort_swc.so -i test.swc -o test_sorted.swc -p 1\n";
 		return true;
 	}
 
