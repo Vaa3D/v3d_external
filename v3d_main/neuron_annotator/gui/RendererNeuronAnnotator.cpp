@@ -342,15 +342,14 @@ void RendererNeuronAnnotator::rebuildFromBaseTextures(QList<int> maskIndexList, 
     cleanExtendedTextures();
     if (overlayList.size()==1 && overlayList.at(0)==texture3DSignal) {
         // Then we don't need to add masks since these are implicit
-        load3DTextureSet(texture3DSignal);
         texture3DCurrent=texture3DSignal;
     } else if (overlayList.size()==0) {
-        texture3DCurrent=texture3DBlank;
+        overlayList.append(texture3DBlank);
+        texture3DCurrent=extendTextureFromMaskList(overlayList, maskIndexList);
     } else {
-        RGBA8* texture=extendTextureFromMaskList(overlayList, maskIndexList);
-        load3DTextureSet(texture);
-        texture3DCurrent=texture;
+        texture3DCurrent=extendTextureFromMaskList(overlayList, maskIndexList);
     }
+    load3DTextureSet(texture3DCurrent);
 }
 
 RGBA8* RendererNeuronAnnotator::extendTextureFromMaskList(const QList<RGBA8*> & sourceTextures, const QList<int> & maskIndexList) {

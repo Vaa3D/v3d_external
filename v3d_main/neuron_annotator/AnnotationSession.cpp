@@ -277,6 +277,7 @@ bool AnnotationSession::populateMipLists() {
 
 void AnnotationSession::overlayUpdate(int index, bool status) {
     int statusValue=(status ? 1 : 0);
+    qDebug() << "AnnotationSession: received overlayUpdate index=" << index << " status=" << status;
     overlayStatusList.replace(index, statusValue);
     QString overlayUpdateString=QString("FULL_UPDATE");
     emit modelUpdated(overlayUpdateString);
