@@ -44,7 +44,6 @@ public:
     // and be aware that it has a lifetime no longer than that of the AnnnotationSession object.
     My4DImage* getOriginalImageStackAsMy4DImage() { return originalImageStack; }
     My4DImage* getReferenceStack() { return referenceStack; }
-
     My4DImage* getNeuronMaskAsMy4DImage() { return neuronMaskStack; }
 
     bool neuronMaskIsChecked(int index) { return maskStatusList.at(index); }

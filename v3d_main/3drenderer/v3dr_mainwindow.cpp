@@ -502,7 +502,7 @@ void V3dR_MainWindow::saveFrameFunc(int i)
 {
 	if (! glWidget)
 	{
-		qDebug("  No glWidget in V3dR_MainWindow::saveFrameFunc (%1) !", i);
+                qDebug("  No glWidget in V3dR_MainWindow::saveFrameFunc (%d) !", i);
 		return;
 	}
 

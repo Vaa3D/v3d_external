@@ -4014,7 +4014,7 @@ bool XFormWidget::loadData()
 	V3DLONG nbytes = estimateRoughAmountUsedMemory();
 	if (nbytes>(unsigned V3DLONG)((double(1024)*1024*1024*th_use_memory)))
 	{
-		printf("machine info: double upper limit =%5.4f V3DLONG upper limit=%ld\n long_n_bytes=%d",(double(1024)*1024*1024*th_use_memory), (V3DLONG)(double(1024)*1024*1024*th_use_memory), sizeof(V3DLONG));
+                printf("machine info: double upper limit =%5.4f V3DLONG upper limit=%ld\n long_n_bytes=%zd",(double(1024)*1024*1024*th_use_memory), (V3DLONG)(double(1024)*1024*1024*th_use_memory), sizeof(V3DLONG));
 		v3d_msg(QString("You already used about %1 bytes of memory, which is more than %2 G bytes for your images. Please close some stacks to assure you have enough memory.\n").arg(nbytes).arg(th_use_memory));
 		return false;
 	}

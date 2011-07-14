@@ -93,7 +93,7 @@ public:
 
 
 // return error message, NULL is no error
-char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1, V3DLONG dim2, //image
+const char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1, V3DLONG dim2, //image
 								  float zthickness, // z-thickness for weighted edge
 								  //const V3DLONG box[6],  //bounding box
 								  V3DLONG bx0, V3DLONG by0, V3DLONG bz0, V3DLONG bx1, V3DLONG by1, V3DLONG bz1, //bounding box (ROI)
@@ -103,7 +103,7 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 								  vector< vector<V_NeuronSWC_unit> >& mmUnit, // change from Coord3D for shortest path tree
 								  const ParaShortestPath & para);
 
-char* find_shortest_path_graphpointset(V3DLONG n_all_nodes,
+const char* find_shortest_path_graphpointset(V3DLONG n_all_nodes,
 									   double xa[], double ya[], double za[], double va[], //the coordinates and values of all nodes
 									   float zthickness, // z-thickness for weighted edge
 									   std::vector<Edge> 	edge_array0,
@@ -115,7 +115,7 @@ char* find_shortest_path_graphpointset(V3DLONG n_all_nodes,
 
 
 // assume root node at tail of vector (result of back tracing)
-char* merge_back_traced_paths(vector< vector<V_NeuronSWC_unit> >& mmUnit);
+const char* merge_back_traced_paths(vector< vector<V_NeuronSWC_unit> >& mmUnit);
 
 bool fit_radius_and_position(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1, V3DLONG dim2,
 							vector <V_NeuronSWC_unit> & mUnit, bool b_move_position, float zthickness=1.0, bool b_est_in_xyplaneonly=false);

@@ -7,7 +7,7 @@ QT4_WRAP_CPP(QT_INTERFACE_MOC_SRCS
 set(V3DInterface_SRCS
   ${QT_INTERFACE_MOC_SRCS}
   basic_4dimage.cpp
-  basic_memory.cpp
+  # basic_memory.cpp
   basic_surf_objs.cpp
   imageio_mylib.cpp
   mg_image_lib.cpp

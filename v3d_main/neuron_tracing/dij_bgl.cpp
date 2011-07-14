@@ -287,7 +287,7 @@ double edge_weight_func(int it, double va, double vb, double max_v=255)
 
 // return error message, 0 is no error
 // 
-char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1, V3DLONG dim2, //image
+const char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1, V3DLONG dim2, //image
 		float zthickness, // z-thickness for weighted edge
 		//const V3DLONG box[6],  //bounding box
 		V3DLONG bx0, V3DLONG by0, V3DLONG bz0, V3DLONG bx1, V3DLONG by1, V3DLONG bz1, //bounding box (ROI)
@@ -299,20 +299,20 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 {
 	//printf("start of find_shortest_path_graphimg \n");
 	bool b_error = false;
-	char* s_error = 0;
+        const char* s_error = 0;
 	const float dd = 0.5;
 
-	printf("sizeof(Weight) = %d, sizeof(Node) = %d \n", sizeof(Weight), sizeof(Node));
+        printf("sizeof(Weight) = %zd, sizeof(Node) = %zd \n", sizeof(Weight), sizeof(Node));
 	printf("bounding (%ld %ld %ld)--(%ld %ld %ld) in image (%ld x %ld x %ld)\n", bx0,by0,bz0, bx1,by1,bz1, dim0,dim1,dim2);
 	if (!img3d || dim0<=0 || dim1<=0 || dim2<=0)
 	{
-		printf(s_error="Error happens: no image data!\n"); 
+                printf("%s", s_error="Error happens: no image data!\n");
 		return s_error;
 	}
 	if ((bx0<0-dd || bx0>=dim0-dd || by0<0-dd || by0>=dim1-dd || bz0<0-dd || bz0>=dim2-dd)
 	   || (bx1<0-dd || bx1>=dim0-dd || by1<0-dd || by1>=dim1-dd || bz1<0-dd || bz1>=dim2-dd))
 	{
-		printf(s_error="Error happens: bounding box out of image bound!\n"); 
+                printf("%s", s_error="Error happens: bounding box out of image bound!\n");
 		printf("inside z1=%ld\n", bz1);;
 		return s_error;
 	}
@@ -338,7 +338,7 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 	V3DLONG num_edge_table = (edge_select==0)? 3:13; // exclude/include diagonal-edge
 
 	printf("valid bounding (%ld %ld %ld)--(%ld %ld %ld) ......  ", xmin,ymin,zmin, xmax,ymax,zmax);
-	printf("%ld x %ld x %ld nodes, step = %d, connect = %d \n", nx, ny, nz, min_step, num_edge_table*2);
+        printf("%ld x %ld x %ld nodes, step = %d, connect = %ld \n", nx, ny, nz, min_step, num_edge_table*2);
 
 	V3DLONG num_nodes = nx*ny*nz;
 	V3DLONG i,j,k,n,m;
@@ -369,13 +369,13 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 		
 	if (NODE_XYZ_OUT_OF_BOUND(x0,y0,z0))
 	{
-		printf(s_error="Error happens: start_node out of bound! \n");
+                printf("%s", s_error="Error happens: start_node out of bound! \n");
 		return s_error;
 	}
 	start_nodeind = NODE_FROM_XYZ(x0,y0,z0);
 	if (NODE_INDEX_OUT_OF_BOUND(start_nodeind))
 	{
-		printf(s_error="Error happens: start_node index out of range! \n");
+                printf("%s", s_error="Error happens: start_node index out of range! \n");
 		if (end_nodeind) {delete []end_nodeind; end_nodeind=0;} //100520, by PHC
 		return s_error;
 	}
@@ -386,7 +386,7 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 		if (NODE_XYZ_OUT_OF_BOUND(x1[i],y1[i],z1[i]))
 		{
 			end_nodeind[i] = -1;
-			printf("Warning: end_node[%d] out of bound! \n", i);
+                        printf("Warning: end_node[%ld] out of bound! \n", i);
 			n_end_outbound ++;
 			continue; //ignore this end_node out of ROI
 		}
@@ -394,7 +394,7 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 		if (NODE_INDEX_OUT_OF_BOUND(end_nodeind[i]))
 		{
 			end_nodeind[i] = -1;
-			printf("Warning: end_node[%d] index out of range! \n", i);
+                        printf("Warning: end_node[%ld] index out of range! \n", i);
 			n_end_outbound ++;
 			continue; //ignore this end_node out of ROI
 		}
@@ -403,7 +403,7 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 	if (n_end_nodes>0 //for 1-to-N, not 1-to-image
 		&& n_end_outbound>=n_end_nodes)
 	{
-		printf(s_error="Error happens: all end_nodes out of bound! At least one end_node must be in bound.\n");
+                printf("%s", s_error="Error happens: all end_nodes out of bound! At least one end_node must be in bound.\n");
 		if (end_nodeind) {delete []end_nodeind; end_nodeind=0;} //100520, by PHC
 		return s_error;
 	}
@@ -490,7 +490,7 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 
 	if (n != edge_array.size())
 	{
-		printf(s_error="The number of edges is not consistent \n");
+                printf("%s", s_error="The number of edges is not consistent \n");
 		if (end_nodeind) {delete []end_nodeind; end_nodeind=0;} //100520, by PHC
 		return s_error;
 	}
@@ -666,7 +666,7 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 	for (V3DLONG npath=0; npath<n_end_nodes; npath++) // n path of back tracing end-->start
 	{
 #define _output_shortest_path_N_
-		printf("the #%d path of back tracing end-->start \n", npath+1);
+                printf("the #%ld path of back tracing end-->start \n", npath+1);
 		mUnit.clear();
 
 		j = end_nodeind[npath]; //search from the last one
@@ -692,21 +692,21 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 			if (j==jj)
 			{
 				mUnit.clear();
-				printf(s_error="Error happens: this path is broken because a node has a self-link!"); printf(" [j->p(j)] %ld->%ld \n", jj, j);
+                                printf("%s", s_error="Error happens: this path is broken because a node has a self-link!"); printf(" [j->p(j)] %ld->%ld \n", jj, j);
 				break;
 			}
 
 			if (j>=num_nodes)
 			{
 				mUnit.clear();
-				printf(s_error="Error happens: this node's parent has an index out of range!"); printf(" [j->p(j)] %ld->%ld \n", jj, j);
+                                printf("%s", s_error="Error happens: this node's parent has an index out of range!"); printf(" [j->p(j)] %ld->%ld \n", jj, j);
 				break;
 			}
 
 			if (j<0) // should not be reached, because stop back trace at his child node
 			{
 				mUnit.clear();
-				printf(s_error="find the negative node, which should indicate the root has been reached over."); printf(" [j->p(j)] %ld->%ld \n", jj, j);
+                                printf("%s", s_error="find the negative node, which should indicate the root has been reached over."); printf(" [j->p(j)] %ld->%ld \n", jj, j);
 				break;
 			}
 
@@ -749,7 +749,7 @@ char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG 
 
 // return error message, 0 is no error
 // 
-char* find_shortest_path_graphpointset(V3DLONG n_all_nodes,
+const char* find_shortest_path_graphpointset(V3DLONG n_all_nodes,
 								  double xa[], double ya[], double za[], double va[], //the coordinates and values of all nodes
 								   float zthickness, // z-thickness for weighted edge
 								   std::vector<Edge> 	edge_array0,
@@ -761,13 +761,13 @@ char* find_shortest_path_graphpointset(V3DLONG n_all_nodes,
 {
 	//printf("start of find_shortest_path_graphimg \n");
 	bool b_error = false;
-	char* s_error = 0;
+        const char* s_error = 0;
 	V3DLONG i,j,k,n,m;
 
-	printf("sizeof(Weight) = %d, sizeof(Node) = %d \n", sizeof(Weight), sizeof(Node));
+        printf("sizeof(Weight) = %zd, sizeof(Node) = %zd \n", sizeof(Weight), sizeof(Node));
 	if (!xa || !ya || !za || !va || n_all_nodes<=0 || ind_startnode<0 || ind_startnode>=n_all_nodes)
 	{
-		printf(s_error="Error happens: no graph nodes's info was supplied in the input data!\n"); 
+                printf("%s", s_error="Error happens: no graph nodes's info was supplied in the input data!\n");
 		return s_error;
 	}
 	V3DLONG n_end_outbound=0, n_end_nodes = 0;
@@ -787,7 +787,7 @@ char* find_shortest_path_graphpointset(V3DLONG n_all_nodes,
 	}
 	if (n_end_nodes0>0 && n_end_outbound>=n_end_nodes0) //n_end_nodes0>0 set the condition that this is not one-to-all-others
 	{
-		printf(s_error="Error happens: all end nodes' indexes are out the valid bound. Check your data. Do nothing!\n"); 
+                printf("%s", s_error="Error happens: all end nodes' indexes are out the valid bound. Check your data. Do nothing!\n");
 		return s_error;
 	}
 	
@@ -846,7 +846,7 @@ char* find_shortest_path_graphpointset(V3DLONG n_all_nodes,
 	
 	if (n != edge_array.size())
 	{
-		printf(s_error="The number of edges is not consistent \n");
+                printf("%s", s_error="The number of edges is not consistent \n");
 		return s_error;
 	}
 	V3DLONG num_edges = n; // back to undirectEdge for less memory consumption
@@ -992,21 +992,21 @@ char* find_shortest_path_graphpointset(V3DLONG n_all_nodes,
 				if (j==jj)
 				{
 					mUnit.clear();
-					printf(s_error="Error happens: this path is broken because a node has a self-link!"); printf(" [j->p(j)] %ld->%ld \n", jj, j);
+                                        printf("%s", s_error="Error happens: this path is broken because a node has a self-link!"); printf(" [j->p(j)] %ld->%ld \n", jj, j);
 					break;
 				}
 				
 				if (j>=num_nodes)
 				{
 					mUnit.clear();
-					printf(s_error="Error happens: this node's parent has an index out of range!"); printf(" [j->p(j)] %ld->%ld \n", jj, j);
+                                        printf("%s", s_error="Error happens: this node's parent has an index out of range!"); printf(" [j->p(j)] %ld->%ld \n", jj, j);
 					break;
 				}
 				
 				if (j<0) // should not be reached, because stop back trace at his child node
 				{
 					mUnit.clear();
-					printf(s_error="find the negative node, which should indicate the root has been reached over."); printf(" [j->p(j)] %ld->%ld \n", jj, j);
+                                        printf("%s", s_error="find the negative node, which should indicate the root has been reached over."); printf(" [j->p(j)] %ld->%ld \n", jj, j);
 					break;
 				}
 				
@@ -1043,18 +1043,18 @@ char* find_shortest_path_graphpointset(V3DLONG n_all_nodes,
 }
 
 
-char* bgl_shortest_path(Edge *edge_array, V3DLONG n_edges, Weight *weights, V3DLONG n_nodes, //input graph
+const char* bgl_shortest_path(Edge *edge_array, V3DLONG n_edges, Weight *weights, V3DLONG n_nodes, //input graph
 		Node start_nodeind, //input source
 		Node *plist) //output path
 {
-	char* s_error=0;
+        const char* s_error=0;
 
 	//typedef adjacency_list < vecS, vecS, directedS, no_property, property < edge_weight_t, Weight > > graph_t;
 	typedef adjacency_list < vecS, vecS, undirectedS, no_property, property < edge_weight_t, Weight > > graph_t;
 	typedef graph_traits < graph_t >::vertex_descriptor vertex_descriptor;
 	typedef graph_traits < graph_t >::edge_descriptor edge_descriptor;
 
-    printf("n_nodes=%ld start_node=%ld \n", n_nodes, start_nodeind);
+    printf("n_nodes=%ld start_node=%ld \n", n_nodes, (long int)start_nodeind);
 
     //graph_t g(edge_array, edge_array + num_edges, weights, num_nodes);
     graph_t g(n_nodes);
@@ -1071,7 +1071,7 @@ char* bgl_shortest_path(Edge *edge_array, V3DLONG n_edges, Weight *weights, V3DL
     printf("num_vertices(g)=%ld  num_edges(g)=%ld \n", num_vertices(g), num_edges(g));
     if (n_nodes != num_vertices(g))
     {
-    	printf(s_error="ERROR to create graph: n_nodes != num_vertices(g) \n");
+        printf("%s", s_error="ERROR to create graph: n_nodes != num_vertices(g) \n");
     	return s_error;
     }
 //	//for debugging purpose
@@ -1113,18 +1113,18 @@ char* bgl_shortest_path(Edge *edge_array, V3DLONG n_edges, Weight *weights, V3DL
 
 
 //090512 PHC: add function phc_shortest_path()
-char* phc_shortest_path(Edge *edge_array, V3DLONG n_edges, Weight *weights, V3DLONG n_nodes, //input graph
+const char* phc_shortest_path(Edge *edge_array, V3DLONG n_edges, Weight *weights, V3DLONG n_nodes, //input graph
 					   Node start_nodeind, //input source
 					   Node *plist) //output path
 {
-	char* s_error=0;
+        const char* s_error=0;
 
 	//check data
 	if (!edge_array || n_edges<=0 || !weights || n_nodes<=0 ||
 		start_nodeind<0 || start_nodeind>=n_nodes ||
 		!plist)
 	{
-		printf(s_error="Invalid parameters to phc_shortest_path(). do nothing\n");
+                printf("%s", s_error="Invalid parameters to phc_shortest_path(). do nothing\n");
 		return s_error;
 	}
 
@@ -1133,14 +1133,14 @@ char* phc_shortest_path(Edge *edge_array, V3DLONG n_edges, Weight *weights, V3DL
 	DijkstraClass * p = new DijkstraClass;
 	if (!p)
     {
-		printf(s_error="Fail to allocate memory for DijkstraClass().\n");
+                printf("%s", s_error="Fail to allocate memory for DijkstraClass().\n");
 		return s_error;
 	}
 	p->nnode = n_nodes;
 	p->allocatememory(p->nnode);
 	if (!(p->adjMatrix))
 	{
-		printf(s_error="Fail to assign value to the internal edge matrix.\n");
+                printf("%s", s_error="Fail to assign value to the internal edge matrix.\n");
 		if (p) {delete p; p=0;}
 		return s_error;
 	}
@@ -1155,7 +1155,7 @@ char* phc_shortest_path(Edge *edge_array, V3DLONG n_edges, Weight *weights, V3DL
 						  minlevel, maxlevel);
 	if (s_error)
 	{
-		printf(s_error="Fail to assign value to the internal edge matrix.\n");
+                printf("%s", s_error="Fail to assign value to the internal edge matrix.\n");
 		if (p) {delete p; p=0;}
 		return s_error;
 	}
@@ -1175,22 +1175,22 @@ char* phc_shortest_path(Edge *edge_array, V3DLONG n_edges, Weight *weights, V3DL
 }
 
 
-char* copyEdgeSparseData2Adj(Edge *edge_array, V3DLONG n_edges, Weight *weights, V3DLONG n_nodes,
+const char* copyEdgeSparseData2Adj(Edge *edge_array, V3DLONG n_edges, Weight *weights, V3DLONG n_nodes,
 						  vector <connectionVal> * adjMatrix,
 						  float &minn,
 						  float &maxx)
 {
-	char* s_error=0;
+        const char* s_error=0;
 
 	if (!edge_array || n_edges<=0 || !weights || n_nodes<=0 || !adjMatrix)
-		{printf(s_error="the adjMatrix pointer or nnodes of copyEdgeSparseData2Adj() is invalid. Do nothing.\n");return s_error;}
+                {printf("%s", s_error="the adjMatrix pointer or nnodes of copyEdgeSparseData2Adj() is invalid. Do nothing.\n");return s_error;}
 
 	for (V3DLONG i=0; i<n_edges; i++)
 	{
 		if (edge_array[i].first<0 || edge_array[i].first>=n_nodes || edge_array[i].second<0 || edge_array[i].second>=n_nodes)
 		{
-			printf("illegal edge parent and child node info found in copyEdgeSparseData2Adj(). [%ld %ld w=%5.3f] n_nodes=%ld. do nothing\n",
-					edge_array[i].first, edge_array[i].second, weights[i], n_nodes);
+                        printf("illegal edge parent and child node info found in copyEdgeSparseData2Adj(). [%ld %ld w=%5.3f] n_nodes=%ld. do nothing\n",
+                                        (long int)edge_array[i].first, (long int)edge_array[i].second, weights[i], n_nodes);
 			return s_error;
 		}
 
@@ -1450,10 +1450,10 @@ bool fit_radius_and_position(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1,
 }
 
 // assume root node at tail of vector (result of back tracing)
-char* merge_back_traced_paths(vector< vector<V_NeuronSWC_unit> >& mmUnit)
+const char* merge_back_traced_paths(vector< vector<V_NeuronSWC_unit> >& mmUnit)
 {
 	printf("merge_back_traced_paths \n");
-	char* s_error=0;
+        const char* s_error=0;
 	int npath = mmUnit.size();
 	if (npath <2) return s_error; // no need to merge
 
@@ -1473,7 +1473,7 @@ char* merge_back_traced_paths(vector< vector<V_NeuronSWC_unit> >& mmUnit)
 	{
 		for (int i=0; i<npath; i++)		flag_skipped[i] = (path_start[i] <1)? 3:0;
 
-		printf("all_segment.size=%d >> \n", all_segment.size());
+                printf("all_segment.size=%ld >> \n", all_segment.size());
 //		printf("path_start:      "); 	for (int i=0; i<npath; i++)		printf("%d(%ld) ", i+1, path_start[i]);	printf("\n");
 //		printf("path_try:        "); 	for (int i=0; i<npath; i++)		printf("%d(%ld) ", i+1, path_try[i]);	printf("\n");
 //		printf("flag_skipped:    "); 	for (int i=0; i<npath; i++)		printf("%d(%ld) ", i+1, flag_skipped[i]);	printf("\n");
@@ -1572,7 +1572,7 @@ char* merge_back_traced_paths(vector< vector<V_NeuronSWC_unit> >& mmUnit)
 				same_segment.clear();
 				if (ipath > -1)
 				{
-					printf("add a valid segment form path %d(%ld -- %ld)\n", ipath+1, path_start[ipath], path_try[ipath]);
+                                        printf("add a valid segment form path %ld(%ld -- %ld)\n", ipath+1, path_start[ipath], path_try[ipath]);
 					for (jj = path_start[ipath]; jj >= path_try[ipath]; jj--)
 					{
 						same_node = mmUnit[ipath][jj];
@@ -1604,7 +1604,7 @@ char* merge_back_traced_paths(vector< vector<V_NeuronSWC_unit> >& mmUnit)
 			else
 			{
 				mmUnit = all_segment;
-				printf(s_error="Error happens: n_same_node > lastn_same_node in merge_back_traced_paths() \n");
+                                printf("%s", s_error="Error happens: n_same_node > lastn_same_node in merge_back_traced_paths() \n");
 				return s_error;
 			}
 

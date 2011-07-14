@@ -470,7 +470,7 @@ int My4DImage::proj_trace_deformablepath_all_points_shortestdist(LocationSimple 
 	}
 	printf("z1=%ld\n", V3DLONG(trace_bounding_box.z1));
 	
-	char* s_error = find_shortest_path_graphimg(data4d_uint8[chano], getXDim(), getYDim(), getZDim(),
+        const char* s_error = find_shortest_path_graphimg(data4d_uint8[chano], getXDim(), getYDim(), getZDim(),
 			trace_z_thickness,
 			trace_bounding_box.x0, trace_bounding_box.y0, trace_bounding_box.z0,
 			trace_bounding_box.x1, trace_bounding_box.y1, trace_bounding_box.z1,
@@ -1922,7 +1922,7 @@ bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()
 	curTraceNeuron.name = tracedNeuron.name;
 	curTraceNeuron.file = tracedNeuron.file;
 	
-	char *err_msg = find_shortest_path_graphpointset(ntotalnodes,
+        const char *err_msg = find_shortest_path_graphpointset(ntotalnodes,
 										   xa, ya, za, va, //the coordinates and values of all nodes
 										   zthickness, // z-thickness for weighted edge
 										   edge_array,	

@@ -448,6 +448,20 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
     if (!annotationSession->loadOriginalImageStack()) {
         return false;
     }
+
+    // At this point it should be reasonable to set the window title
+    QString lsmName("Unknown original image");
+    QFile lsmFilePathsFile(QString("%1/lsmFilePaths.txt").arg(imageInputDirectory.absolutePath()));
+    if (lsmFilePathsFile.exists()) {
+        if (lsmFilePathsFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            lsmName = lsmFilePathsFile.readLine();
+            lsmFilePathsFile.close();
+            lsmName = lsmName.trimmed(); // elide carriage return
+        }
+    }
+    QFileInfo lsmFileInfo(lsmName);
+    setWindowTitle(QString("%1 - V3D Neuron Annotator").arg(lsmFileInfo.fileName()));
+
     if (!annotationSession->loadNeuronMaskStack()) {
         return false;
     }
