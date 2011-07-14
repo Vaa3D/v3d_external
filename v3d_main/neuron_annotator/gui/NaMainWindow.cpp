@@ -366,6 +366,22 @@ void NaMainWindow::on_actionOpen_triggered() {
     }
 }
 
+void NaMainWindow::on_action3D_Volume_triggered() {
+
+}
+
+void NaMainWindow::on_action2D_MIP_triggered() {
+
+}
+
+void NaMainWindow::on_actionScreenShot_triggered() {
+    QString filename = QFileDialog::getSaveFileName(0, QObject::tr("Save 3D View to an .tif file"), ".", QObject::tr("screenshot (*.tif)"));
+    if (!(filename.isEmpty())){
+        bool saved = ui.v3dr_glwidget->screenShot(filename);
+    }
+
+}
+
 bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) {
     annotationSession = new AnnotationSession();
 

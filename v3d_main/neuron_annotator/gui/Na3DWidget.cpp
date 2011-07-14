@@ -598,4 +598,19 @@ void Na3DWidget::annotationModelUpdate(QString updateType) {
     update();
 }
 
+bool Na3DWidget::screenShot(QString filename)
+{
+    QImage image = this->grabFrameBuffer();
+
+    if (image.save(filename, QFileInfo(filename).suffix().toStdString().c_str(), 100)) //uncompressed
+    {
+        printf("Successful to save screen-shot: [%s]\n",  filename.toAscii().data());
+        return true;
+    }
+    else
+    {
+        printf("Failed to save screen-shot: [%s]\n",  filename.toAscii().data());
+        return false;
+    }
+}
 

@@ -5,6 +5,7 @@
 #include "../../3drenderer/renderer_tex2.h"
 #include <cmath>
 #include <iostream>
+#include <QStringListModel>
 
 #if defined (_MSC_VER)
 #include "../basic_c_fun/vcdiff.h"
@@ -47,6 +48,8 @@ public:
     QStringList compartmentList;
 
     QComboBox *pCompartmentComboBox;
+
+    QStringListModel model;
 
 //    QList <Triangle*> list_listTriangle;
 //    QList <GLuint> list_glistLabel;

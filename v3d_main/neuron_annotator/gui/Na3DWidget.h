@@ -98,6 +98,8 @@ public:
         return false;
     }
 
+    bool screenShot(QString filename);
+
 protected:
     void updateCursor();
     void highlightNeuronAtPosition(QPoint pos);

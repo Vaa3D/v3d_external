@@ -762,7 +762,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                       <x>0</x>
                       <y>0</y>
                       <width>191</width>
-                      <height>428</height>
+                      <height>498</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_14">
@@ -797,7 +797,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                          <number>0</number>
                         </property>
                         <item>
-                         <widget class="AngleWidget" name="rotXWidget">
+                         <widget class="AngleWidget" name="rotXWidget" native="true">
                           <property name="sizePolicy">
                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                             <horstretch>0</horstretch>
@@ -816,13 +816,13 @@ You can also resize the box by Ctrl + left mouse click.</string>
                             <height>35</height>
                            </size>
                           </property>
-                          <property name="textLabel">
+                          <property name="textLabel" stdset="0">
                            <string>RotX</string>
                           </property>
                          </widget>
                         </item>
                         <item>
-                         <widget class="AngleWidget" name="rotYWidget">
+                         <widget class="AngleWidget" name="rotYWidget" native="true">
                           <property name="sizePolicy">
                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                             <horstretch>0</horstretch>
@@ -841,13 +841,13 @@ You can also resize the box by Ctrl + left mouse click.</string>
                             <height>35</height>
                            </size>
                           </property>
-                          <property name="textLabel">
+                          <property name="textLabel" stdset="0">
                            <string>RotY</string>
                           </property>
                          </widget>
                         </item>
                         <item>
-                         <widget class="AngleWidget" name="rotZWidget">
+                         <widget class="AngleWidget" name="rotZWidget" native="true">
                           <property name="sizePolicy">
                            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                             <horstretch>0</horstretch>
@@ -866,7 +866,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                             <height>35</height>
                            </size>
                           </property>
-                          <property name="textLabel">
+                          <property name="textLabel" stdset="0">
                            <string>RotZ</string>
                           </property>
                          </widget>
@@ -972,7 +972,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="ZoomWidget" name="zoomWidget"/>
+                 <widget class="ZoomWidget" name="zoomWidget" native="true"/>
                 </item>
                 <item>
                  <widget class="QPushButton" name="resetViewButton">
@@ -1006,7 +1006,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="GammaWidget" name="sharedGammaWidget"/>
+                 <widget class="GammaWidget" name="sharedGammaWidget" native="true"/>
                 </item>
                 <item>
                  <widget class="QFrame" name="sharedColorFrame">
@@ -1187,12 +1187,6 @@ You can also resize the box by Ctrl + left mouse click.</string>
                <property name="frameShape">
                 <enum>QFrame::NoFrame</enum>
                </property>
-               <property name="verticalScrollBarPolicy">
-                <enum>Qt::ScrollBarAlwaysOff</enum>
-               </property>
-               <property name="horizontalScrollBarPolicy">
-                <enum>Qt::ScrollBarAlwaysOn</enum>
-               </property>
               </widget>
              </item>
             </layout>
@@ -1244,10 +1238,20 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuExport">
+     <property name="title">
+      <string>Export ...</string>
+     </property>
+     <addaction name="action3D_Volume"/>
+     <addaction name="action2D_MIP"/>
+     <addaction name="actionScreenShot"/>
+    </widget>
     <addaction name="actionOpen"/>
     <addaction name="separator"/>
     <addaction name="actionLoad_Tiff"/>
     <addaction name="actionCell_Counter_3D_2ch_lsm"/>
+    <addaction name="separator"/>
+    <addaction name="menuExport"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
@@ -1448,6 +1452,21 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <string>Invert Selection</string>
    </property>
   </action>
+  <action name="action3D_Volume">
+   <property name="text">
+    <string>3D Volume</string>
+   </property>
+  </action>
+  <action name="action2D_MIP">
+   <property name="text">
+    <string>2D MIP</string>
+   </property>
+  </action>
+  <action name="actionScreenShot">
+   <property name="text">
+    <string>ScreenShot</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -1460,6 +1479,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
    <class>FragmentGalleryWidget</class>
    <extends>QFrame</extends>
    <header>../neuron_annotator/gui/FragmentGalleryWidget.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>GammaWidget</class>

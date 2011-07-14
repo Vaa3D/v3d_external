@@ -61,6 +61,10 @@ public slots:
     void on_actionLoad_Tiff_triggered();
     void on_actionCell_Counter_3D_2ch_lsm_triggered();
 
+    void on_action3D_Volume_triggered();
+    void on_action2D_MIP_triggered();
+    void on_actionScreenShot_triggered();
+
     void setZRange(int minZ, int maxZ); // update number of z slices
     void unifyCameras(bool bDoUnify); // keep all zoom, focus, rotate the same
     void setNutate(bool bDoNutate);
