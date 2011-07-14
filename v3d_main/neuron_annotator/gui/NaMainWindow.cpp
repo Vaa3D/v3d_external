@@ -71,6 +71,7 @@ NaMainWindow::NaMainWindow()
     //QMetaObject::connectSlotsByName(this); This is apparently already called by setupUi, so calling it again creates repeat trigger events
     annotationSession=0;
 
+    // Create an area in the status bar for progress messages.
     statusProgressMessage = new QLabel(NULL);
     statusBar()->addWidget(statusProgressMessage);
     statusProgressBar = new QProgressBar(NULL);
@@ -80,6 +81,10 @@ NaMainWindow::NaMainWindow()
     statusBar()->addWidget(statusProgressBar);
     statusProgressBar->hide();
     statusProgressMessage->hide();
+
+    // hide the File->Open 3D Image stack menu item
+    ui.menuFile->removeAction(ui.actionLoad_Tiff);
+    ui.menuFile->removeAction(ui.actionCell_Counter_3D_2ch_lsm);
 
     // visualize compartment map
     //QDockWidget *dock = new QDockWidget(tr("Compartment Map"), this);
@@ -224,7 +229,6 @@ void NaMainWindow::resetColors() {
     ui.redToggleButton->setChecked(true);
     ui.greenToggleButton->setChecked(true);
     ui.blueToggleButton->setChecked(true);
-    ui.refToggleButton->setChecked(true);
     ui.sharedGammaWidget->reset();
 }
 
@@ -718,8 +722,11 @@ void NaMainWindow::set3DProgress(int prog) {
         complete3DProgress();
     }
     else {
-        statusProgressBar->show();
         statusProgressBar->setValue(prog);
+        statusProgressBar->show();
+        // neither setEnabled() nor raise() help with initial grayness problem of progress bar
+        // statusProgressBar->setEnabled(true);
+        // statusProgressBar->raise();
     }
 }
 
