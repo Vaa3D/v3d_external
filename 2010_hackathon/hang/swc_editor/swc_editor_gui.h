@@ -286,7 +286,7 @@ class CreateNetworkWidget : public QWidget
 			//nt.hashNeuron = hashNeuron;
 			nt.name = tr("Network");
 			writeSWC_file("/tmp/testswc.swc", nt);
-			nt = readSWC_file("/tmp/testswc.swc");
+			//nt = readSWC_file("/tmp/testswc.swc");
 			//v3d_msg(tr("size : %1").arg(nt.listNeuron.size()));
 			callback->setSWC(curwin, nt);
 			callback->updateImageWindow(curwin);

@@ -84,6 +84,7 @@ int v3dneuron_tracing(V3DPluginCallback2 &callback, QWidget *parent)
 	//QMessageBox::information(0,"",paras);
 	system(paras.toStdString().c_str());
 	NeuronTree nt = readSWC_file("/tmp/tmp_out_0.swc");
+	//nt.editable = false;
 	callback.setSWC(curwin, nt);
 	callback.updateImageWindow(curwin);
 	callback.open3DWindow(curwin);
