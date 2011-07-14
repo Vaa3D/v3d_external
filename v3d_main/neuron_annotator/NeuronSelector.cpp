@@ -51,6 +51,9 @@ int NeuronSelector::getIndexSelectedNeuron()
 	V3DLONG ye = ylc+NB; if(ye>sy) ye = sy-1;
 	V3DLONG zb = zlc-NB; if(zb<0) zb = 0;
 	V3DLONG ze = zlc+NB; if(ze>sz) ze = sz-1;
+
+        const unsigned char *neuronMask = annotationSession->getNeuronMaskAsMy4DImage()->getRawData();
+        QList<bool> maskStatusList=annotationSession->getMaskStatusList();
 	
 	for(V3DLONG k=zb; k<=ze; k++)
 	{
@@ -62,9 +65,9 @@ int NeuronSelector::getIndexSelectedNeuron()
 			{
 				V3DLONG idx = offset_j + i;
 				
-				int cur_idx = annotationSession->getNeuronMaskAsMy4DImage()->getRawData()[idx]; // value of mask stack
+                                int cur_idx = neuronMask[idx] - 1; // value of mask stack - convert to 0...n-1 neuron index
 				
-				if(cur_idx>0 && annotationSession->getMaskStatusList().at(cur_idx)) // active masks
+                                if(cur_idx>=0 && maskStatusList.at(cur_idx)) // active masks
 				{
 					sum[cur_idx]++;
 				}
@@ -73,12 +76,12 @@ int NeuronSelector::getIndexSelectedNeuron()
 	}
 	
 	//
-	index = 0;
+        index = -1;
         for(V3DLONG i=0; i<numNeuron; i++)
 	{
 		//qDebug()<<"sum ["<<i<<"] ..."<<sum[i];
 		
-		if(sum[i]>0 && sum[i]>sum[index])
+                if(sum[i]>0 && sum[i]>sum[index])
 		{
 			index = i;
 		}
@@ -118,6 +121,8 @@ void NeuronSelector::getCurNeuronBoundary()
 	
 	curNeuronBDzb = sz-1;
 	curNeuronBDze = 0;
+
+        const unsigned char *neuronMask = annotationSession->getNeuronMaskAsMy4DImage()->getRawData();
 	
 	//
 	for(V3DLONG k=0; k<sz; k++)
@@ -130,7 +135,7 @@ void NeuronSelector::getCurNeuronBoundary()
 			{
 				V3DLONG idx = offset_j + i;
 				
-				if(annotationSession->getNeuronMaskAsMy4DImage()->getRawData()[idx] == index)
+                                if(index == (neuronMask[idx]-1))
 				{
 					if(i<curNeuronBDxb) curNeuronBDxb = i;
 					if(i>curNeuronBDxe) curNeuronBDxe = i;
@@ -265,6 +270,8 @@ void NeuronSelector::highlightSelectedNeuron()
 	
 	// list of markers
 	QList<LocationSimple> listLandmarks;
+
+        const unsigned char *neuronMask = annotationSession->getNeuronMaskAsMy4DImage()->getRawData();
 	
     // mesh grids
 	for(V3DLONG k=0; k<sz; k+=STEP)
@@ -305,7 +312,7 @@ void NeuronSelector::highlightSelectedNeuron()
 							{
 								V3DLONG idx = offset_jj + ii;
 								
-								if(annotationSession->getNeuronMaskAsMy4DImage()->getRawData()[idx] == index)
+                                                                if(index == (neuronMask[idx]-1))
 								{
 									count++;
 									sumx += ii;

@@ -357,14 +357,14 @@ RGBA8* RendererNeuronAnnotator::extendTextureFromMaskList(const QList<RGBA8*> & 
     RGBA8* newTexture=new RGBA8[realZ*realY*realX];
     int* quickList=new int[256];
     for (int m=0;m<256;m++) {
-        quickList[m]=0;
+        quickList[m]=-1;
     }
     for (int m=0;m<maskIndexList.size();m++) {
         int value=maskIndexList.at(m);
-        if (value>255) {
-            qDebug() << "Error: ignoring mask entry greater than 255";
+        if (value>254) {
+            qDebug() << "Error: ignoring mask entry greater than 254";
         } else {
-            quickList[value]=value;
+            quickList[value+1]=value+1; // we want the array to be indexed by 1...n+1 rather than 0...n like maskIndexList
         }
     }
     // Move to arrays for performance
@@ -432,9 +432,11 @@ RGBA8* RendererNeuronAnnotator::extendTextureFromMaskList(const QList<RGBA8*> & 
 // for mask membership. If a match is seen, we will first modify the local texture3DCurrent,
 // and then copy this updated tile to the graphics system.
 
-void RendererNeuronAnnotator::updateCurrentTextureMask(int maskIndex, int state) {
+void RendererNeuronAnnotator::updateCurrentTextureMask(int neuronIndex, int state) {
 
     qDebug() << "RendererNeuronAnnotator::updateCurrentTextureMask() start";
+
+    int maskIndex = neuronIndex+1;
 
     QTime timer;
 

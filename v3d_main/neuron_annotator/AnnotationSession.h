@@ -76,7 +76,6 @@ private:
     My4DImage* originalImageStack;
     My4DImage* neuronMaskStack;
     My4DImage* referenceStack;
-    QList<NeuronMaskEntry> maskEntryList;
     QList<QImage> neuronMipList;
     QList<QImage> overlayMipList;
     QList<bool> maskStatusList;

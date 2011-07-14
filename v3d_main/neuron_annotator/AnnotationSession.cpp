@@ -170,15 +170,11 @@ bool AnnotationSession::prepareLabelIndex() {
     qDebug() << "Using maxMaskIndex=" << maxMaskIndex;
 
     for (int i=0;i<maxMaskIndex;i++) {
-        NeuronMaskEntry entry(0,0,i);
-        maskEntryList.append(entry);
-    }
-
-    for (int i=0;i<maskEntryList.size();i++) {
         bool status=false;
         maskStatusList.append(status);
         neuronSelectList.append(status);
     }
+
     return true;
 }
 
@@ -206,7 +202,7 @@ bool AnnotationSession::populateMipLists() {
     assert(overlayMipList.size() == 0);
 
     // Neuron MIP List and Background
-    for (int maskIndex=0;maskIndex<maskEntryList.size();maskIndex++) {
+    for (int maskIndex=0;maskIndex<maskStatusList.size();maskIndex++) {
         neuronMipList.append(QImage(imageX, imageY, QImage::Format_RGB888));
     }
 

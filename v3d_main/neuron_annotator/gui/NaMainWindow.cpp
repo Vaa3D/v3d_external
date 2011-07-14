@@ -496,24 +496,24 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
     connect(annotationSession, SIGNAL(modelUpdated(QString)), ui.naZStackWidget, SLOT(annotationModelUpdate(QString)));
     connect(annotationSession, SIGNAL(modelUpdated(QString)), ui.v3dr_glwidget, SLOT(annotationModelUpdate(QString)));
 	
-	// Neuron Selector update
-	neuronSelector = new NeuronSelector();
-	
-	connect(ui.v3dr_glwidget, SIGNAL(neuronSelected(double,double,double)), neuronSelector, SLOT(updateSelectedPosition(double,double,double)));
-        connect(neuronSelector, SIGNAL(neuronHighlighted(bool)), ui.v3dr_glwidget, SLOT(updateHighlightNeurons(bool)));
-        connect(annotationSession, SIGNAL(deselectNeuron()), neuronSelector, SLOT(deselectCurrentNeuron()));
-	
-        neuronSelector->setAnnotationSession(annotationSession);
-	neuronSelector->init();
+    // Neuron Selector update
+    neuronSelector = new NeuronSelector();
 
-        // show selected neuron
-        connect(ui.v3dr_glwidget, SIGNAL(neuronShown(QList<int>)), annotationSession, SLOT(showSelectedNeuron(QList<int>)));
-        connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(QList<int>)), annotationSession, SLOT(showAllNeurons(QList<int>)));
-        connect(annotationSession, SIGNAL(modelUpdated(QString)), this, SLOT(synchronizeGalleryButtonsToAnnotationSession(QString)));
+    connect(ui.v3dr_glwidget, SIGNAL(neuronSelected(double,double,double)), neuronSelector, SLOT(updateSelectedPosition(double,double,double)));
+    connect(neuronSelector, SIGNAL(neuronHighlighted(bool)), ui.v3dr_glwidget, SLOT(updateHighlightNeurons(bool)));
+    connect(annotationSession, SIGNAL(deselectNeuron()), neuronSelector, SLOT(deselectCurrentNeuron()));
 
-        // connect(annotationSession, SIGNAL(scrollBarFocus(int)), ui.scrollArea->horizontalScrollBar(), SLOT(setValue(int)));
-        connect(annotationSession, SIGNAL(scrollBarFocus(FragmentSelectionModel::FragmentIndex)),
-                ui.fragmentGalleryWidget, SLOT(scrollToFragment(FragmentSelectionModel::FragmentIndex)));
+    neuronSelector->setAnnotationSession(annotationSession);
+    neuronSelector->init();
+
+    // show selected neuron
+    connect(ui.v3dr_glwidget, SIGNAL(neuronShown(QList<int>)), annotationSession, SLOT(showSelectedNeuron(QList<int>)));
+    connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(QList<int>)), annotationSession, SLOT(showAllNeurons(QList<int>)));
+    connect(annotationSession, SIGNAL(modelUpdated(QString)), this, SLOT(synchronizeGalleryButtonsToAnnotationSession(QString)));
+
+    // connect(annotationSession, SIGNAL(scrollBarFocus(int)), ui.scrollArea->horizontalScrollBar(), SLOT(setValue(int)));
+    connect(annotationSession, SIGNAL(scrollBarFocus(FragmentSelectionModel::FragmentIndex)),
+            ui.fragmentGalleryWidget, SLOT(scrollToFragment(FragmentSelectionModel::FragmentIndex)));
 
     return true;
 }
