@@ -49,14 +49,14 @@ public:
 
     bool neuronMaskIsChecked(int index) { return maskStatusList.at(index); }
     bool overlayIsChecked(int index) { return overlayStatusList.at(index); }
-    void setNeuronMaskStatus(int index, bool status);
-    void setOverlayStatus(int index, bool status);
 	
-	QList<bool> getMaskStatusList(){return maskStatusList;}
-        QList<bool> getOverlayStatusList(){return overlayStatusList;}
-	QList<bool> getNeuronSelectList(){return neuronSelectList;}
+    QList<bool> getMaskStatusList(){return maskStatusList;}
+    void setNeuronMaskStatus(int index, bool status);
+    QList<bool> getOverlayStatusList(){return overlayStatusList;}
+    void setOverlayStatus(int index, bool status);
+    QList<bool> getNeuronSelectList(){return neuronSelectList;}
 
-        void switchSelectedNeuron(int index);
+    void switchSelectedNeuron(int index);
 
 signals:
     void modelUpdated(QString updateType);
@@ -65,9 +65,10 @@ signals:
 
 public slots:
     void neuronMaskUpdate(int index, bool status);
+    void neuronMaskFullUpdate();
     void overlayUpdate(int index, bool status);
-    void showSelectedNeuron(bool background);
-    void showAllNeurons(bool background);
+    void showSelectedNeuron(QList<int> overlayList);
+    void showAllNeurons(QList<int> overlayList);
 
 private:
     long objectId;

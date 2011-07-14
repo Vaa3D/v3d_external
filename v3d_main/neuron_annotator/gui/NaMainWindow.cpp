@@ -462,8 +462,8 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
 	neuronSelector->init();
 
         // show selected neuron
-        connect(ui.v3dr_glwidget, SIGNAL(neuronShown(bool)), annotationSession, SLOT(showSelectedNeuron(bool)));
-        connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(bool)), annotationSession, SLOT(showAllNeurons(bool)));
+        connect(ui.v3dr_glwidget, SIGNAL(neuronShown(QList<int>)), annotationSession, SLOT(showSelectedNeuron(QList<int>)));
+        connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(QList<int>)), annotationSession, SLOT(showAllNeurons(QList<int>)));
         connect(annotationSession, SIGNAL(neuronMaskStatusSet()), ui.v3dr_glwidget, SLOT(updateAnnotationModels()));
         connect(annotationSession, SIGNAL(neuronMaskStatusSet()), this, SLOT(updateAnnotationModels()));
         // connect(annotationSession, SIGNAL(scrollBarFocus(int)), ui.scrollArea->horizontalScrollBar(), SLOT(setValue(int)));

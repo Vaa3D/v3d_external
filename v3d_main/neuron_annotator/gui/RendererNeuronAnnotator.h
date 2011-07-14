@@ -12,10 +12,9 @@ public:
     virtual ~RendererNeuronAnnotator();
     virtual void loadVol();
     bool populateNeuronMaskAndReference(const My4DImage* my4Dmask, const My4DImage* referenceImage);
-    void setReferenceBaseTexture(QList<int> maskIndexList, QProgressDialog & dialog);
-    void setBackgroundBaseTexture(QList<int> maskIndexList, QProgressDialog & dialog);
-    void setAllBaseTexture(QProgressDialog & dialog);
-    void setBlankBaseTexture(QList<int> maskIndexList, QProgressDialog & dialog);
+
+    void rebuildFromBaseTextures(QList<int> maskIndexList, QList<RGBA8*> overlayList, QProgressDialog & dialog);
+
     void updateCurrentTextureMask(int maskIndex, int state, QProgressDialog & dialog);
     bool initializeTextureMasks();
     void setMasklessSetupStackTexture(bool state) { masklessSetupStackTexture=state; }
@@ -25,11 +24,12 @@ public:
     float glUnitsPerImageVoxel() const {
         return 2.0 / boundingBox.Dmax();
     }
+    RGBA8* getOverlayTextureByAnnotationIndex(int index);
 
 protected:
     virtual void setupStackTexture(bool bfirst);
     void load3DTextureSet(RGBA8* tex3DBuf, QProgressDialog & dialog);
-    RGBA8* extendTextureFromMaskList(RGBA8* sourceTexture, const QList<int> & maskIndexList);
+    RGBA8* extendTextureFromMaskList(const QList<RGBA8*> & sourceTextures, const QList<int> & maskIndexList);
     void cleanExtendedTextures();
     void updateProgressDialog(QProgressDialog & dialog, int level);
     bool populateBaseTextures();

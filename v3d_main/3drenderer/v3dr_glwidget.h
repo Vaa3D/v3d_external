@@ -79,8 +79,8 @@ public:
 	void clearColormapDialog() {colormapDlg = 0;}
     void clearSurfaceDialog()  {surfaceDlg = 0;}
     bool screenShot(QString filename);
-    void triggerNeuronShown(bool bg)    {emit neuronShown(bg);}
-    void triggerNeuronShownAll(bool bg) {emit neuronShownAll(bg);}
+    void triggerNeuronShown(QList<int> overlayList)    {emit neuronShown(overlayList);}
+    void triggerNeuronShownAll(QList<int> overlayList) {emit neuronShownAll(overlayList);}
 
 protected:
 	virtual void choiceRenderer();
@@ -349,8 +349,8 @@ signals:
 	void changeZClip1(int s);
 
 	void changeOrthoView(bool b);
-        void neuronShown(bool bg); // view neuron in Neuron Annotator
-        void neuronShownAll(bool bg);
+        void neuronShown(QList<int>); // view neuron in Neuron Annotator
+        void neuronShownAll(QList<int>);
 
 protected:
 	bool _still, _stillpaint_need, _stillpaint_pending;

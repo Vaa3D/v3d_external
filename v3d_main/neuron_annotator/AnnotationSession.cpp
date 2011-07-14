@@ -278,34 +278,32 @@ bool AnnotationSession::populateMipLists() {
 void AnnotationSession::overlayUpdate(int index, bool status) {
     int statusValue=(status ? 1 : 0);
     overlayStatusList.replace(index, statusValue);
-    QString overlayUpdateString=QString("OVERLAY %1 %2").arg(index).arg(statusValue);
+    QString overlayUpdateString=QString("FULL_UPDATE");
     emit modelUpdated(overlayUpdateString);
 }
 
 void AnnotationSession::neuronMaskUpdate(int index, bool status) {
     int statusValue=(status ? 1 : 0);
     maskStatusList.replace(index, statusValue);
-    QString neuronMaskUpdateString=QString("NEURONMASK %1 %2").arg(index).arg(statusValue);
+    QString neuronMaskUpdateString=QString("NEURONMASK_UPDATE %1 %2").arg(index).arg(statusValue);
     emit modelUpdated(neuronMaskUpdateString);
 }
 
-void AnnotationSession::setNeuronMaskStatus(int index, bool status) {
-    if (index>=maskStatusList.size()) {
-        qDebug() << "AnnotationSession::setNeuronMaskStatus() index=" << index << " status=" << status << " : ignoring since list size=" << maskStatusList.size();
-        return;
-    }
-    maskStatusList.replace(index, status);
+void AnnotationSession::neuronMaskFullUpdate() {
+    QString updateString=QString("FULL_UPDATE");
+    emit modelUpdated(updateString);
 }
 
 void AnnotationSession::setOverlayStatus(int index, bool status) {
-    if (index>=overlayStatusList.size()) {
-        qDebug() << "AnnotationSession::setOverlayStatus() index=" << index << " status=" << status << " : ignoring since list size=" << overlayStatusList.size();
-        return;
-    }
     overlayStatusList.replace(index, status);
 }
 
-// swith status of selected neuron
+void AnnotationSession::setNeuronMaskStatus(int index, bool status) {
+    maskStatusList.replace(index, status);
+}
+
+
+// switch status of selected neuron
 void AnnotationSession::switchSelectedNeuron(int index)
 {
     if(neuronSelectList.at(index) == true)
@@ -319,84 +317,46 @@ void AnnotationSession::switchSelectedNeuron(int index)
 }
 
 // show selected neuron
-void AnnotationSession::showSelectedNeuron(bool background)
+void AnnotationSession::showSelectedNeuron(QList<int> overlayList)
 {
-    if(background)
-    {
-        qDebug()<<"with bg ...";
-
-        // on background
-        setNeuronMaskStatus(0, true);
-        //neuronMaskUpdate(0, true);
-    }
-    else
-    {
-        qDebug()<<"without bg ...";
-
-        // off background
-        setNeuronMaskStatus(0, false);
-        //neuronMaskUpdate(0, false);
-    }
-
-    // show neuron
-    int index = -1;
-
-    for(int i=0; i<neuronSelectList.size(); i++)
-    {
-        if(neuronSelectList.at(i))
-        {
-            index = i;
-            break; // only one neuron selected at once
+    int selectionIndex=-1;
+    for (int i=0;i<neuronSelectList.size();i++) {
+        if (neuronSelectList.at(i)) {
+            selectionIndex=i;
+            break;
         }
     }
-
-    if(index<0)
-    {
-        qDebug()<<"no neuron selected ...";
+    if (selectionIndex<0 || selectionIndex>=maskStatusList.size()) {
+        // nothing to do
         return;
     }
-
-    for(int i=1; i<maskStatusList.size(); i++)
-    {
-        if(i==index) {
-            setNeuronMaskStatus(i, true);
-            //neuronMaskUpdate(i, true);
-        }
-        else {
-            setNeuronMaskStatus(i, false);
-            //neuronMaskUpdate(i, false);
-        }
+    for (int i=0;i<overlayStatusList.size();i++) {
+        overlayStatusList.replace(i, false);
     }
-
-    emit neuronMaskStatusSet();
-    emit scrollBarFocus(index);
+    for (int i=0;i<overlayList.size();i++) {
+        overlayStatusList.replace(overlayList.at(i), true);
+    }
+    for (int i=0;i<maskStatusList.size();i++) {
+        maskStatusList.replace(i, false);
+    }
+    maskStatusList.replace(selectionIndex,true);
+    neuronMaskFullUpdate();
+    emit scrollBarFocus(selectionIndex);
 }
 
 // show all neurons
-void AnnotationSession::showAllNeurons(bool background)
+void AnnotationSession::showAllNeurons(QList<int> overlayList)
 {
-    if(background)
-    {
-        qDebug()<<"with bg ...";
-
-        // on background
-        setNeuronMaskStatus(0, true);
+    for (int i=0;i<overlayStatusList.size();i++) {
+        overlayStatusList.replace(i, false);
     }
-    else
-    {
-        qDebug()<<"without bg ...";
-
-        // off background
-        setNeuronMaskStatus(0, false);
+    for (int i=0;i<overlayList.size();i++) {
+        overlayStatusList.replace(overlayList.at(i), true);
     }
-
-    // show neurons
-    for(int i=1; i<maskStatusList.size(); i++)
-    {
-        setNeuronMaskStatus(i, true);
+    for (int i=0;i<maskStatusList.size();i++) {
+        maskStatusList.replace(i, true);
     }
-
-    emit neuronMaskStatusSet();
-    emit scrollBarFocus(1);
+    neuronMaskFullUpdate();
 }
+
 

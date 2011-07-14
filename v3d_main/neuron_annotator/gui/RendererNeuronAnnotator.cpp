@@ -1,5 +1,6 @@
 #include "../3drenderer/Renderer_gl2.h"
 #include "RendererNeuronAnnotator.h"
+#include "../AnnotationSession.h"
 
 RendererNeuronAnnotator::RendererNeuronAnnotator(void* w) : Renderer_gl2(w)
 {
@@ -214,7 +215,9 @@ bool RendererNeuronAnnotator::initializeTextureMasks() {
     QProgressDialog progressDialog( QString("Setting up textures"), 0, 0, 100, NULL, Qt::Tool | Qt::WindowStaysOnTopHint);
     progressDialog.setAutoClose(true);
 
-    setBackgroundBaseTexture(initialMaskList, progressDialog);
+    QList<RGBA8*> initialOverlayList;
+    initialOverlayList.append(texture3DBackground);
+    rebuildFromBaseTextures(initialMaskList, initialOverlayList, progressDialog);
 
     return true;
 }
@@ -316,33 +319,6 @@ void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf, QProgressDialog 
 
 }
 
-void RendererNeuronAnnotator::setBackgroundBaseTexture(QList<int> maskIndexList, QProgressDialog & dialog) {
-    cleanExtendedTextures();
-    RGBA8* texture=extendTextureFromMaskList(texture3DBackground, maskIndexList);
-    load3DTextureSet(texture, dialog);
-    texture3DCurrent=texture;
-}
-
-void RendererNeuronAnnotator::setReferenceBaseTexture(QList<int> maskIndexList, QProgressDialog & dialog) {
-    cleanExtendedTextures();
-    RGBA8* texture=extendTextureFromMaskList(texture3DReference, maskIndexList);
-    load3DTextureSet(texture, dialog);
-    texture3DCurrent=texture;
-}
-
-void RendererNeuronAnnotator::setAllBaseTexture(QProgressDialog & dialog) {
-    cleanExtendedTextures();
-    load3DTextureSet(texture3DSignal, dialog);
-    texture3DCurrent=texture3DSignal;
-}
-
-void RendererNeuronAnnotator::setBlankBaseTexture(QList<int> maskIndexList, QProgressDialog & dialog) {
-    cleanExtendedTextures();
-    RGBA8* texture=extendTextureFromMaskList(texture3DBlank, maskIndexList);
-    load3DTextureSet(texture, dialog);
-    texture3DCurrent=texture;
-}
-
 void RendererNeuronAnnotator::cleanExtendedTextures() {
     if (texture3DCurrent!=0 &&
         texture3DCurrent!=texture3DSignal &&
@@ -353,7 +329,22 @@ void RendererNeuronAnnotator::cleanExtendedTextures() {
     }
 }
 
-RGBA8* RendererNeuronAnnotator::extendTextureFromMaskList(RGBA8* sourceTexture, const QList<int> & maskIndexList) {
+void RendererNeuronAnnotator::rebuildFromBaseTextures(QList<int> maskIndexList, QList<RGBA8*> overlayList, QProgressDialog & dialog) {
+    cleanExtendedTextures();
+    if (overlayList.size()==1 && overlayList.at(0)==texture3DSignal) {
+        // Then we don't need to add masks since these are implicit
+        load3DTextureSet(texture3DSignal, dialog);
+        texture3DCurrent=texture3DSignal;
+    } else if (overlayList.size()==0) {
+        texture3DCurrent=texture3DBlank;
+    } else {
+        RGBA8* texture=extendTextureFromMaskList(overlayList, maskIndexList);
+        load3DTextureSet(texture, dialog);
+        texture3DCurrent=texture;
+    }
+}
+
+RGBA8* RendererNeuronAnnotator::extendTextureFromMaskList(const QList<RGBA8*> & sourceTextures, const QList<int> & maskIndexList) {
     qDebug() << "RendererNeuronAnnotator::extendTextureFromMaskList() start";
     RGBA8* newTexture=new RGBA8[realZ*realY*realX];
     int* quickList=new int[256];
@@ -368,6 +359,12 @@ RGBA8* RendererNeuronAnnotator::extendTextureFromMaskList(RGBA8* sourceTexture, 
             quickList[value]=value;
         }
     }
+    // Move to arrays for performance
+    int numSourceTextures=sourceTextures.size();
+    RGBA8** sourceTextureArray=new RGBA8* [numSourceTextures];
+    for (int i=0;i<numSourceTextures;i++) {
+        sourceTextureArray[i]=sourceTextures.at(i);
+    }
     for (int z=0;z<realZ;z++) {
         int zRyRx=z*realY*realX;
         for (int y=0;y<realY;y++) {
@@ -379,11 +376,41 @@ RGBA8* RendererNeuronAnnotator::extendTextureFromMaskList(RGBA8* sourceTexture, 
                     // Add from mask
                     newTexture[offset]=texture3DSignal[offset];
                 } else {
-                    newTexture[offset]=sourceTexture[offset];
+                    // Add up overlays
+                    RGBA8 total;
+                    total.a=0;
+                    total.r=0;
+                    total.g=0;
+                    total.b=0;
+                    for (int i=0;i<numSourceTextures;i++) {
+                        RGBA8 rgba=sourceTextureArray[i][offset];
+                        int capA=total.a+rgba.a;
+                        if (capA>255) {
+                            capA=255;
+                        }
+                        int capR=total.r+rgba.r;
+                        if (capR>255) {
+                            capR=255;
+                        }
+                        int capG=total.g+rgba.g;
+                        if (capG>255) {
+                            capG=255;
+                        }
+                        int capB=total.b+rgba.b;
+                        if (capB>255) {
+                            capB=255;
+                        }
+                        total.a=capA;
+                        total.r=capR;
+                        total.g=capG;
+                        total.b=capB;
+                    }
+                    newTexture[offset]=total;
                 }
             }
         }
     }
+    delete [] sourceTextureArray;
     delete [] quickList;
     qDebug() << "RendererNeuronAnnotator::extendTextureFromMaskList() done";
     return newTexture;
@@ -583,6 +610,15 @@ void RendererNeuronAnnotator::updateProgressDialog(QProgressDialog & dialog, int
     dialog.repaint();
     QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 }
+
+RGBA8* RendererNeuronAnnotator::getOverlayTextureByAnnotationIndex(int index) {
+    if (index==AnnotationSession::REFERENCE_MIP_INDEX) {
+        return texture3DReference;
+    } else if (index==AnnotationSession::BACKGROUND_MIP_INDEX) {
+        return texture3DBackground;
+    }
+}
+
 
 
 

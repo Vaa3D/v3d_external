@@ -2279,25 +2279,43 @@ int Renderer_tex2::hitMenu(int x, int y)
 
     // right click popup menu
     QList<QAction*> listAct;
-    QAction *act=0, *actViewNeuronWBG=0, *actViewNeuronWOBG=0, *actViewAllNeurons=0;
+    QAction* act=0;
+    QAction* actViewNeuronOnly=0;
+    QAction* actViewNeuronWithBackground=0;
+    QAction* actViewNeuronWithReference=0;
+    QAction* actViewNeuronWithBackgroundAndReference=0;
+    QAction* actViewAllNeurons=0;
 
     if (qsName.size()>0)
     {
             if (IS_VOLUME())
             {
-                listAct.append(actViewAllNeurons = new QAction("view all neurons", w));
+                listAct.append(actViewAllNeurons = new QAction("view all neurons in empty space", w));
 
-                listAct.append(actViewNeuronWBG = new QAction("view only this neuron with background", w));
+                listAct.append(actViewNeuronOnly = new QAction("view only this neuron in empty space", w));
 
-                actViewNeuronWBG->setIcon(QIcon(":/icons/neuronwbg.svg"));
-                actViewNeuronWBG->setVisible(true);
-                actViewNeuronWBG->setIconVisibleInMenu(true);
+                actViewNeuronOnly->setIcon(QIcon(":/icons/neuronwobg.svg"));
+                actViewNeuronOnly->setVisible(true);
+                actViewNeuronOnly->setIconVisibleInMenu(true);
 
-                listAct.append(actViewNeuronWOBG = new QAction("view only this neuron without background", w));
+                listAct.append(actViewNeuronWithBackground = new QAction("view only this neuron with background", w));
 
-                actViewNeuronWOBG->setIcon(QIcon(":/icons/neuronwobg.svg"));
-                actViewNeuronWOBG->setVisible(true);
-                actViewNeuronWOBG->setIconVisibleInMenu(true);
+                actViewNeuronWithBackground->setIcon(QIcon(":/icons/neuronwbg.svg"));
+                actViewNeuronWithBackground->setVisible(true);
+                actViewNeuronWithBackground->setIconVisibleInMenu(true);
+
+                listAct.append(actViewNeuronWithReference = new QAction("view only this neuron with reference", w));
+
+                actViewNeuronWithReference->setIcon(QIcon(":/icons/neuronwbg.svg"));
+                actViewNeuronWithReference->setVisible(true);
+                actViewNeuronWithReference->setIconVisibleInMenu(true);
+
+                listAct.append(actViewNeuronWithBackgroundAndReference = new QAction("view only this neuron with background and reference", w));
+
+                actViewNeuronWithReference->setIcon(QIcon(":/icons/neuronwbg.svg"));
+                actViewNeuronWithReference->setVisible(true);
+                actViewNeuronWithReference->setIconVisibleInMenu(true);
+
             }
 
             if (w) w->updateGL(); //for highlight object
@@ -2309,26 +2327,45 @@ int Renderer_tex2::hitMenu(int x, int y)
     }
 
     // processing menu actions
+    QList<int> overlayList;
     if (act==0) 	return 0; // 081215: fix pop dialog when no choice of menu
-    else if (act == actViewNeuronWBG)
+    else if (act == actViewNeuronWithBackground)
     {
         if(w)
         {
-            emit w->triggerNeuronShown(true);
+            overlayList.append(1); // 1 == background
+            emit w->triggerNeuronShown(overlayList);
         }
     }
-    else if (act == actViewNeuronWOBG)
+    else if (act == actViewNeuronWithReference)
     {
         if(w)
         {
-            emit w->triggerNeuronShown(false);
+            overlayList.append(0); // 0 == reference
+            emit w->triggerNeuronShown(overlayList);
+        }
+    }
+    else if (act == actViewNeuronWithBackgroundAndReference)
+    {
+        if(w)
+        {
+            overlayList.append(0); // 0 == reference
+            overlayList.append(1); // 1 == background
+            emit w->triggerNeuronShown(overlayList);
+        }
+    }
+    else if (act == actViewNeuronOnly)
+    {
+        if(w)
+        {
+            emit w->triggerNeuronShown(overlayList); // overlayList should be empty
         }
     }
     else if (act == actViewAllNeurons)
     {
         if(w)
         {
-            emit w->triggerNeuronShownAll(false);
+            emit w->triggerNeuronShownAll(overlayList); // overlayList should be empty
         }
     }
 

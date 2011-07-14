@@ -482,7 +482,7 @@ void NaLargeMIPWidget::mouseMoveEvent(QMouseEvent * event)
 void NaLargeMIPWidget::annotationModelUpdate(QString updateType)
 {
     if (! mipImage) return;
-    if (updateType.startsWith("NEURONMASK")) {
+    if (updateType.startsWith("NEURONMASK_UPDATE")) {
         QList<QString> list=updateType.split(QRegExp("\\s+"));
         QString indexString=list.at(1);
         QString checkedString=list.at(2);

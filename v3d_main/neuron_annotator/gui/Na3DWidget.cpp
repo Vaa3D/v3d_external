@@ -569,14 +569,15 @@ void Na3DWidget::annotationModelUpdate(QString updateType) {
     QProgressDialog progressDialog( QString("Updating textures"), 0, 0, 100, this, Qt::Tool | Qt::WindowStaysOnTopHint);
     progressDialog.setAutoClose(true);
     QList<QString> list=updateType.split(QRegExp("\\s+"));
-    QString indexString=list.at(1);
-    QString checkedString=list.at(2);
-    int index=indexString.toInt();
-    bool checked=(checkedString.toInt()==1);
 
-    if (updateType.startsWith("NEURONMASK")) {
+    if (updateType.startsWith("NEURONMASK_UPDATE")) {
+        QString indexString=list.at(1);
+        QString checkedString=list.at(2);
+        int index=indexString.toInt();
+        bool checked=(checkedString.toInt()==1);
         ra->updateCurrentTextureMask(index, (checked ? 1 : 0), progressDialog);
-    } else if (updateType.startsWith("OVERLAY")) {
+
+    } else if (updateType.startsWith("FULL_UPDATE")) {
         // Change requiring full reload of texture image stacks
         QList<QImage> * maskMipList = annotationSession->getNeuronMipList();
         QList<int> tempList;
@@ -585,19 +586,29 @@ void Na3DWidget::annotationModelUpdate(QString updateType) {
                 tempList.append(i);
             }
         }
-        if (index==AnnotationSession::REFERENCE_MIP_INDEX) {
-            if (checked) {
-                ra->setReferenceBaseTexture(tempList, progressDialog);
-            } else {
-                ra->setBlankBaseTexture(tempList, progressDialog);
-            }
-        } else if (index==AnnotationSession::BACKGROUND_MIP_INDEX) {
-            if (checked) {
-                ra->setBackgroundBaseTexture(tempList, progressDialog);
-            } else {
-                ra->setBlankBaseTexture(tempList, progressDialog);
+        QList<RGBA8*> overlayList;
+        for (int i=0;i<list.size();i++) {
+            QString overlayStatus=list.at(i);
+            int status=overlayStatus.toInt();
+            if (status!=0) {
+                overlayList.append(ra->getOverlayTextureByAnnotationIndex(i));
             }
         }
+        ra->rebuildFromBaseTextures(tempList, overlayList, progressDialog);
+
+//        if (index==AnnotationSession::REFERENCE_MIP_INDEX) {
+//            if (checked) {
+//                ra->setReferenceBaseTexture(tempList, progressDialog);
+//            } else {
+//                ra->setBlankBaseTexture(tempList, progressDialog);
+//            }
+//        } else if (index==AnnotationSession::BACKGROUND_MIP_INDEX) {
+//            if (checked) {
+//                ra->setBackgroundBaseTexture(tempList, progressDialog);
+//            } else {
+//                ra->setBlankBaseTexture(tempList, progressDialog);
+//            }
+//        }
     }
     ra->paint();
     update();
@@ -611,18 +622,20 @@ void Na3DWidget::updateAnnotationModels() {
         progressDialog.setAutoClose(true);
 
         QList<int> tempList;
-        for (int i=1;i<annotationSession->getMaskStatusList().size();i++) {
+        for (int i=0;i<annotationSession->getMaskStatusList().size();i++) {
             if (annotationSession->neuronMaskIsChecked(i)) {
                 tempList.append(i);
             }
         }
 
-        // Background toggle
-        if (annotationSession->getMaskStatusList().at(0)) {
-            ra->setBackgroundBaseTexture( tempList, progressDialog );
-        } else {
-            ra->setBlankBaseTexture( tempList, progressDialog );
+        QList<RGBA8*> overlayList;
+        QList<bool> overlayStatusList=annotationSession->getOverlayStatusList();
+        for (int i=0;i<overlayStatusList.size();i++) {
+            if (overlayStatusList.at(i)) {
+                overlayList.append(ra->getOverlayTextureByAnnotationIndex(i));
+            }
         }
+        ra->rebuildFromBaseTextures(tempList, overlayList, progressDialog);
 
         ra->paint();
         update();
