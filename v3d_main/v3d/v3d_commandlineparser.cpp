@@ -259,12 +259,12 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
                                 // open V3D
                                 i_v3d.openV3D = true;
 
-                                while(i+1<argc && !QString(argv[i+1]).contains(OPTION_CHAR) )
+                                while(i+1<argc && !QString(argv[i+1]).startsWith(OPTION_CHAR) )
                                 {
                                     char *filename = argv[i+1];
 
                                     if( check_filename(QString(filename)) )
-                                    {
+                                    {                                        
                                         i_v3d.fileList.push_back(filename);
                                         i++;
                                     }
@@ -272,15 +272,12 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
                             }
                             else if (!strcmp(key, "o"))
                             {                                
-                                while(i+1<argc && !QString(argv[i+1]).contains(OPTION_CHAR) )
+                                while(i+1<argc && !QString(argv[i+1]).startsWith(OPTION_CHAR) )
                                 {
-                                    char *filename = argv[i+1];
-                                    
-                                    if( check_filename(QString(filename)) )
-                                    {
-                                        i_v3d.outputList.push_back(filename);
-                                        i++;
-                                    }
+                                    char *filename = argv[i+1]; // allow all kinds of file format
+
+                                    i_v3d.outputList.push_back(filename);
+                                    i++;
                                 }
                             }
                             else if (!strcmp(key, "v"))
@@ -319,7 +316,7 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
                             else if(!strcmp(key, "p"))
                             {
                                 // plugin function parameters
-                                while(i+1<argc && !QString(argv[i+1]).contains(OPTION_CHAR) )
+                                while(i+1<argc && !QString(argv[i+1]).startsWith(OPTION_CHAR) )
                                 {
                                     char *strparameters = argv[i+1];
                                     
