@@ -95,7 +95,7 @@ void FragmentGalleryWidget::updateScrollBar()
 
 void FragmentGalleryWidget::scrollToFragment(FragmentIndex)
 {
-    assert(false);
+    //assert(false);
 }
 
 void FragmentGalleryWidget::updateThumbnailPositions()

@@ -484,6 +484,7 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
 	
 	connect(ui.v3dr_glwidget, SIGNAL(neuronSelected(double,double,double)), neuronSelector, SLOT(updateSelectedPosition(double,double,double)));
         connect(neuronSelector, SIGNAL(neuronHighlighted(bool)), ui.v3dr_glwidget, SLOT(updateHighlightNeurons(bool)));
+        connect(annotationSession, SIGNAL(deselectNeuron()), neuronSelector, SLOT(deselectCurrentNeuron()));
 	
         neuronSelector->setAnnotationSession(annotationSession);
 	neuronSelector->init();

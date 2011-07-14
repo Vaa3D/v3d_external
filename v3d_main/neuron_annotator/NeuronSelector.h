@@ -20,7 +20,7 @@ public:
 	
 public:
 
-	int getIndexSetectedNeuron(); // find nearest neuron
+        int getIndexSelectedNeuron(); // find nearest neuron
 	
 	void setAnnotationSession(AnnotationSession* annotationSession);
 	
@@ -34,6 +34,7 @@ public:
 	
 public slots:
 	void updateSelectedPosition(double x, double y, double z);
+        void deselectCurrentNeuron();
 	
 signals:
 	void neuronHighlighted(bool b);

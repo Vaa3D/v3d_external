@@ -585,7 +585,6 @@ void Na3DWidget::annotationModelUpdate(QString updateType) {
 
     } else if (updateType.startsWith("FULL_UPDATE")) {
         // Change requiring full reload of texture image stacks
-        qDebug() << "Na3DWidget::annotationModelUpdate() received FULL_UPDATE";
         QList<int> tempList;
         for (int i=0;i<annotationSession->getMaskStatusList().size();i++) {
             if (annotationSession->neuronMaskIsChecked(i)) {

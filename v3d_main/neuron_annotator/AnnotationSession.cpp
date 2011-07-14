@@ -342,9 +342,10 @@ void AnnotationSession::showSelectedNeuron(QList<int> overlayList)
     for (int i=0;i<maskStatusList.size();i++) {
         maskStatusList.replace(i, false);
     }
-    maskStatusList.replace(selectionIndex,true);
+    maskStatusList.replace(selectionIndex, true);
     neuronMaskFullUpdate();
     emit scrollBarFocus(selectionIndex);
+    emit deselectNeuron();
 }
 
 // show all neurons

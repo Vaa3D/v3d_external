@@ -13,7 +13,7 @@ void NeuronSelector::init()
 }
 
 // get the index of selected neuron
-int NeuronSelector::getIndexSetectedNeuron()
+int NeuronSelector::getIndexSelectedNeuron()
 {
 	// find in mask stack
 	sx = annotationSession->getNeuronMaskAsMy4DImage()->getXDim();
@@ -74,7 +74,7 @@ int NeuronSelector::getIndexSetectedNeuron()
 	
 	//
 	index = 0;
-	for(V3DLONG i=1; i<numNeuron; i++)
+        for(V3DLONG i=0; i<numNeuron; i++)
 	{
 		//qDebug()<<"sum ["<<i<<"] ..."<<sum[i];
 		
@@ -90,7 +90,7 @@ int NeuronSelector::getIndexSetectedNeuron()
 	//
 	qDebug()<<"index ..."<<index;
 	
-	if(index>0) 
+        if(index>-1)
 	{
                 annotationSession->switchSelectedNeuron(index);
 	}
@@ -105,7 +105,7 @@ int NeuronSelector::getIndexSetectedNeuron()
 //
 void NeuronSelector::getCurNeuronBoundary()
 {
-	index = getIndexSetectedNeuron();
+        index = getIndexSelectedNeuron();
 	
 	if(index<=0) return;
 	
@@ -234,17 +234,26 @@ void NeuronSelector::updateSelectedPosition(double x, double y, double z) {
 	highlightSelectedNeuron();
 }
 
+void NeuronSelector::deselectCurrentNeuron() {
+    if (annotationSession->getNeuronSelectList().at(index)==true) {
+        annotationSession->getNeuronSelectList().replace(index, false);
+    }
+    annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks.clear();
+    emit neuronHighlighted(false);
+}
+
 // highlight selected neuron
 void NeuronSelector::highlightSelectedNeuron()
 {
     getCurNeuronBoundary();
 	
-	if(index<=0) return;
+        if(index<0) return;
 	if(curNeuronBDxb>curNeuronBDxe || curNeuronBDyb>curNeuronBDye || curNeuronBDzb>curNeuronBDze) return;
 
         // index neuron selected status is true
         if(annotationSession->getNeuronSelectList().at(index)==false)
         {
+
             // highlight result
             annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks.clear();
 
