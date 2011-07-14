@@ -51,15 +51,16 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 
 V3dr_surfaceDialog::V3dr_surfaceDialog(V3dR_GLWidget* w, QWidget* parent)
-	:SharedDialog(w, parent)
+	:SharedToolDialog(w, parent)
 {
 	qDebug("V3dr_surfaceDialog::V3dr_surfaceDialog");
 
 	init_members();//100809 RZC
-	firstCreate();
-	linkTo(w);/////
 
 	setItemEditor();
+	createFirst();
+	linkTo(w);/////
+
     this->resize(1000,300);
 }
 
@@ -96,28 +97,47 @@ void V3dr_surfaceDialog::undo()
 
 void V3dr_surfaceDialog::linkTo(QWidget* w)
 {
-	//100809 RZC
-	active_widget = (V3dR_GLWidget*)w;
-	if (bAttached) return;
-
 	///////////////////////////////////////////////////////////////////////////
 	qDebug("  V3dr_surfaceDialog::linkTo ( %p )", w);
 	if (! w)  return;
 
-	IncRef(w); //DecRef(w);
+	IncRef(w); //always add to reflist
 	qDebug("V3dr_surfaceDialog::ref = %d", ref);
+
+	//100809, 110713
+	tolink_widget = (V3dR_GLWidget*)w;
+	if (bAttached && tolink_widget != glwidget) //attached
+	{
+		widget = (QWidget*)glwidget; //restore widget
+		return;               //so only update with attached widget
+	}
 
 	glwidget = (V3dR_GLWidget*)w;
 	renderer = (Renderer_tex2*)(glwidget->getRenderer());
 
+	iLastTab = getCurTab(); //110713
 	clearTables_fromTab();
 	createTables_addtoTab();
+}
+
+int V3dr_surfaceDialog::DecRef(QWidget* w) //110713
+{
+	int ref = SharedToolDialog::DecRef(w);
+	if (bAttached && widget == 0)
+	{
+		glwidget = 0;
+		renderer = 0;
+		hide();
+		checkBox_attachedToCurrentView->setChecked(false);
+	}
+	return ref;
 }
 
 void V3dr_surfaceDialog::onAttached(bool b)
 {
 	//qDebug("  V3dr_surfaceDialog::onAttached = %d", b);
 
+	//if (isHidden())  return;
 	//if (checkBox_attachedToCurrentView && checkBox_attachedToCurrentView->isChecked())
 	if (b)
 	{
@@ -133,10 +153,11 @@ void V3dr_surfaceDialog::onAttached(bool b)
 	{
 		bAttached = false;
 		setWindowTitle(title);
-		if (active_widget)
+		if (tolink_widget)
 		{
-			qDebug("  V3dr_surfaceDialog::( active of %p )", active_widget);
-			active_widget->updateTool();
+			tolink_widget = (V3dR_GLWidget*)bestLinkable(tolink_widget);
+			qDebug("  V3dr_surfaceDialog::( tolink %p )", tolink_widget);
+			tolink_widget->updateTool();
 		}
 	}
 }
@@ -214,24 +235,20 @@ void V3dr_surfaceDialog::createTables_addtoTab()
 
 	for (int i=1; i<=5; i++) if (table[i])
 	{
-		connect(table[i], SIGNAL(cellDoubleClicked(int,int)), this, SLOT(doubleClickHandler(int,int)));
-		connect(table[i], SIGNAL(cellPressed(int,int)), this, SLOT(pressedClickHandler(int,int)));
-	}
-
-	for (int i=1; i<=5; i++) if (table[i])
-	{
 		table[i]->setSelectionBehavior(QAbstractItemView::SelectRows);
 //		table[i]->setEditTriggers(//QAbstractItemView::CurrentChanged |
 //				QAbstractItemView::DoubleClicked |
-//				QAbstractItemView::SelectedClicked);
+//				QAbstractItemView::SelectedClicked);                       //use doubleClickHandler() to override delay of popping dialog by the setEditTriggers
+
+		connect(table[i], SIGNAL(cellDoubleClicked(int,int)), this, SLOT(doubleClickHandler(int,int))); //to override delay of popping dialog by the setEditTriggers
+		connect(table[i], SIGNAL(cellPressed(int,int)), this, SLOT(pressedClickHandler(int,int)));      //to pop context menu
+
 	}
 }
 
 
-void V3dr_surfaceDialog::firstCreate()
+void V3dr_surfaceDialog::createFirst()
 {
-	qDebug("  V3dr_surfaceDialog::firstCreate");
-
 	QGroupBox* buttonGroup = new QGroupBox();
     QVBoxLayout *buttonRgnLayout = new QVBoxLayout(buttonGroup);
 
@@ -267,7 +284,7 @@ void V3dr_surfaceDialog::firstCreate()
 
     QGroupBox* checkGroup = new QGroupBox("Options");
     QGridLayout *checkLayout = new QGridLayout(checkGroup);
-    checkBox_attachedToCurrentView = new QCheckBox("Attached to current\n 3D view");
+    checkBox_attachedToCurrentView = new QCheckBox("Attached to 3D view");
     checkLayout->addWidget(checkBox_attachedToCurrentView,			1,0, 1,2);
     checkBox_accumulateLastHighlightHits = new QCheckBox("Accumulate last\n highlight search");
     checkLayout->addWidget(checkBox_accumulateLastHighlightHits,	2,0, 1,2);
@@ -571,7 +588,7 @@ void V3dr_surfaceDialog::selectedColor(int map)
 	if (map==0)
 	{
 		//qcolor0 = QColorDialog::getColor(QColor());
-		//if (! qcolor0.isValid()) return; // this no use for cancel, Qt's bug
+		//if (! qcolor0.isValid()) return;           // this is no use for clicking Cancel by user, Qt's bug !!!
 		if (! v3dr_getColorDialog( &qcolor0))  return; //090424 RZC
 	}
 

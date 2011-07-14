@@ -44,7 +44,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 
 V3dr_colormapDialog::V3dr_colormapDialog(V3dR_GLWidget* w, QWidget *parent)
-	:SharedDialog(w, parent)
+	:SharedToolDialog(w, parent)
 {
 	qDebug("V3dr_colormapDialog::V3dr_colormapDialog");
 
@@ -56,7 +56,7 @@ V3dr_colormapDialog::V3dr_colormapDialog(V3dR_GLWidget* w, QWidget *parent)
 
 	undoButton=loadButton=saveButton=applyButton = 0;
 
-	firstCreate();
+	createFirst();
 	linkTo(w);/////
 
    // shortkeyClose = new QShortcut(QKeySequence(Qt::Key_Escape), this, SLOT(hide()));
@@ -89,7 +89,7 @@ void V3dr_colormapDialog::linkTo(QWidget* w) //point to new view
 }
 
 
-void V3dr_colormapDialog::firstCreate()
+void V3dr_colormapDialog::createFirst()
 {
 	QGroupBox *editorGroup[N_CHANNEL];
     for(int i=0; i<N_CHANNEL; i++)

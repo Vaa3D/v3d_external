@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -172,10 +172,10 @@ protected:
 
 //---------------------------------------------------
 
-class SharedDialog: public QWidget //QDialog
+class SharedToolDialog: public QWidget //QDialog
 {
 public:
-	SharedDialog(QWidget* w, QWidget* parent=0)
+	SharedToolDialog(QWidget* w, QWidget* parent=0)
 		: QWidget(parent)
 	//	: QDialog(parent)
 	{
@@ -202,7 +202,7 @@ protected:
 	virtual void closeEvent(QCloseEvent* e)
 	{
 		hide();
-		e->ignore();
+		e->ignore(); // just hide
 	}
 	virtual void moveEvent(QMoveEvent* e)
 	{
@@ -221,37 +221,44 @@ protected:
 public slots:
 	virtual int IncRef(QWidget* w)
 	{
-		if (w  //&& w != widget )
-			&& !reflist.contains(w))
+		if (w  && ! reflist.contains(w))
 		{
 			widget = w;
-			reflist.append(w); ref = reflist.size();
-			//++ref;
+			reflist.append(w); ref = reflist.size(); //++ref;
 		}
 		return ref;
 	}
 	virtual int DecRef(QWidget* w)
 	{
-		if (w //&& w == widget )
-			&& reflist.contains(w))
+		if (w  && reflist.contains(w))
 		{
-			reflist.removeOne(w); ref = reflist.size();
-			//--ref;
+			reflist.removeOne(w); ref = reflist.size(); //--ref;
 			if (ref<1)
 			{
 				widget = 0;
-				ref = 0;
 				hide();
 				deleteLater();
+			}
+			else if (w == widget) //110713 link will lost
+			{
+				widget = 0;
+				hide();
 			}
 		}
 		return ref;
 	}
+	QWidget* bestLinkable(QWidget* w) //110713 candidate
+	{
+		if (reflist.contains(w))
+			return w;
+		else
+			return reflist.last();
+	}
+
 	virtual void linkTo(QWidget* w) //link to new view
 	{
 		IncRef(w);//DecRef(w);//just update ref widget
 	}
-
 
 //	virtual void accept() { done(1); } // this only hide dialog
 //	virtual void reject() { done(0); } // this only hide dialog

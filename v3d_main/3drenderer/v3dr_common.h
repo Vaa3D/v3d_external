@@ -210,7 +210,7 @@ inline bool v3dr_getColorDialog( QColor *color, QWidget *parent=0)
 	QRgb input = 0xff000000;
 	if (color)	input = color->rgba();
 	bool ok;
-	QRgb ouput = QColorDialog::getRgba(input, &ok, parent);
+	QRgb ouput = QColorDialog::getRgba(input, &ok, parent);  //also include alpha channel
 	if (ok && color)  *color = QColor::fromRgba( ouput );
 	return ok;
 }

@@ -1235,9 +1235,9 @@ void V3dR_GLWidget::updateTool()
 
 	if (surfaceDlg && !(surfaceDlg->isHidden()) ) //081215
 	{
-		int i = surfaceDlg->getCurTab();
+		//int i = surfaceDlg->getCurTab();
 		surfaceDlg->linkTo(this);
-		surfaceDlg->setCurTab(i);
+		surfaceDlg->setCurTab(-1);  //-1 = last tab
 	}
 	if (colormapDlg && !(colormapDlg->isHidden()) ) //081219
 	{
@@ -1250,19 +1250,18 @@ void V3dR_GLWidget::volumeColormapDialog()
 	// Caution: there renderer must be Renderer_gl2* at least
 	if (! renderer || renderer->class_version()<2) return;
 
-	if (colormapDlg)
-	{
-		colormapDlg->linkTo(this);
-	}
-	else
+	if (! colormapDlg)
 	{
 		colormapDlg = new V3dr_colormapDialog(this); //mainwindow);
 	}
 
 	if (colormapDlg)
 	{
-		colormapDlg->raise(); //090710
+		colormapDlg->linkTo(this);   //except isHidden, has linkTo in updateTool triggered by ActivationChange event
+
 		colormapDlg->show();
+		this->raise();        //110713
+		colormapDlg->raise(); //090710
 	}
 }
 
@@ -1274,21 +1273,21 @@ void V3dR_GLWidget::surfaceSelectDialog(int curTab)
 //	PROGRESS_DIALOG("collecting data for table", 0);
 //	PROGRESS_PERCENT(20);
 
-	if (surfaceDlg)
-	{
-		surfaceDlg->linkTo(this);
-	}
-	else
+	if (! surfaceDlg)
 	{
 		surfaceDlg = new V3dr_surfaceDialog(this); //, mainwindow);
 	}
 
 	if (surfaceDlg)
 	{
-		surfaceDlg->raise(); //090710, 090712
+		surfaceDlg->linkTo(this);  //except isHidden, has linkTo in updateTool triggered by ActivationChange event
+
 		surfaceDlg->show();
+		this->raise();       //110713
+		surfaceDlg->raise(); //090710
+
+		surfaceSelectTab(-1);  //-1 = last tab
 	}
-	surfaceSelectTab(curTab);
 }
 
 void V3dR_GLWidget::surfaceSelectTab(int curTab)
@@ -1316,6 +1315,7 @@ void V3dR_GLWidget::annotationDialog(int dc, int st, int i)
 
 
 ///////////////////////////////////////////////////////////////////////////////
+#define __interaction_controls__
 
 #define NORMALIZE_angle( angle ) \
 { \

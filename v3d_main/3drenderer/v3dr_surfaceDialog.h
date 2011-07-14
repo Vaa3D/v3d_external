@@ -49,29 +49,31 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "ItemEditor.h"
 
 
-class V3dr_surfaceDialog: public SharedDialog
+class V3dr_surfaceDialog: public SharedToolDialog
 {
     Q_OBJECT;
 
 public:
 	V3dr_surfaceDialog(V3dR_GLWidget* w, QWidget* parent=0);
 	virtual ~V3dr_surfaceDialog();
-	void setCurTab(int i) {if(tabOptions) tabOptions->setCurrentIndex(i);} // 090504 RZC
-	int getCurTab() {if(tabOptions) return tabOptions->currentIndex(); else return -1;} // 090622 RZC
+	void setCurTab(int i)  {if(i<0) i=iLastTab;  if(tabOptions) tabOptions->setCurrentIndex(i);} // 090504, 110713
+	int  getCurTab()       {if(tabOptions) return tabOptions->currentIndex(); else return -1;} // 090622
 
 protected:
-	V3dR_GLWidget *glwidget, *active_widget;
+	V3dR_GLWidget *glwidget, *tolink_widget;
 	Renderer_tex2* renderer;
-	int iLastTab;
+	int iLastTab;   //updated in linkTo before re-create tab
 	bool bCanUndo, bMod;
 	bool bAttached;
 	QString title;
-	int last_marker;
+	int last_marker; //updated in pressedClickHandler
 
-	void firstCreate();
+	void setItemEditor();
+	void createFirst();
 
 public slots:
 	virtual void linkTo(QWidget* w); //link to new view
+	virtual int DecRef(QWidget* w); //override for attached widget closing
 	void onAttached(bool);
 
 	void undo();
@@ -106,8 +108,6 @@ public slots:
 	void onMarkerLocalView();
 
 protected:
-	void setItemEditor();
-
 	void clearTables_fromTab();
 	void createTables_addtoTab();
 
@@ -148,7 +148,7 @@ protected:
 
 	void init_members()
 	{
-		glwidget = active_widget = 0;
+		glwidget = tolink_widget = 0;
 		renderer = 0;
 		iLastTab = -1;
 		bCanUndo = bMod = false;

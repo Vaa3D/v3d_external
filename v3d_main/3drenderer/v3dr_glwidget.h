@@ -191,8 +191,8 @@ public slots:
 	virtual void setVolCompress(bool b);
 
 	virtual void volumeColormapDialog();
-	virtual void surfaceSelectDialog(int curTab=0); // 090505 RZC: add curTab
-	virtual void surfaceSelectTab(int curTab=0); // 090522 RZC: just switch to curTab, no creating
+	virtual void surfaceSelectDialog(int curTab=-1); // 090505 RZC: add curTab.  110713 RZC: change curTab=-1 from 0
+	virtual void surfaceSelectTab(int curTab=-1); // 090522 RZC: just switch to curTab, no creating
 	virtual void surfaceDialogHide(); //added 090220, by PHC for convenience
 	virtual void annotationDialog(int dataClass, int surfaceType, int index);
 
