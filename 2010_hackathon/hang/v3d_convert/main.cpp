@@ -1,12 +1,104 @@
 #include <iostream>
+#include <string>
+#include <list>
+
 using namespace std;
 
+struct InputParas
+{
+	list<string> filelist;
+	
+	bool is_resize;                 
+	string para_resize;            
+
+	bool is_negate;               
+	string para_negate;
+
+	bool is_reverse;
+	string para_reverse;
+
+	bool is_crop;
+	string para_crop;
+
+	bool is_colors;
+	string para_colors;
+
+	InputParas()
+	{
+		is_resize = is_negate = is_reverse = is_crop = is_colors = 0;
+	}
+};
+
 void printHelp();
+bool parse_paras(int argc, char* argv[], InputParas &paras, string &s_error);
+bool run_with_paras(InputParas paras);
 
 int main(int argc, char* argv[])
 {
 	if(argc == 1) {printHelp(); return 0;}
+
+	InputParas paras;
+	string s_error("");
+
+	if(! parse_paras(argc, argv, paras, s_error))
+	{
+		cout<<"Invalid paras : "<< s_error<<endl;
+		return 0;
+	}
+	else
+	{
+	}
 	return 0;
+}
+
+bool parse_paras(int argc, char* argv[], InputParas &paras, string &s_error)
+{
+	int i = 1;      // switch ind
+
+	while(i < argc)
+	{
+		if(string(argv[i]) == "-resize")
+		{
+			if(!paras.is_resize)
+			{
+				paras.is_resize = true;
+        		if(++i < argc && argv[i][0] != '-') 
+				{
+					paras.para_resize = argv[i];
+				}
+				else
+				{
+					s_error += "need paras for -resize";
+					return false;
+				}
+			}
+			else
+			{
+				s_error += "duplicate -resize";
+				return false;
+			}
+		}
+		else if(string(argv[i]) == "-crop")
+		{
+		}
+		else
+		{
+			if(argv[i][0] != '-')paras.filelist.push_back(string(argv[i]));
+			else 
+			{
+				s_error += "unknow para ";
+				s_error += argv[i];
+				return false;
+			}
+		}
+		i++;
+	}
+	return true;
+}
+
+bool run_with_paras(InputParas paras)
+{
+	return true;
 }
 
 void printHelp()
