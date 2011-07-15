@@ -98,18 +98,18 @@ void V3dR_MainWindow::createControlWidgets()
     QGridLayout *layout_mainDisplayOptGroup = new QGridLayout(volDisplayOptGroup);
 
     dispType_mip = new QRadioButton("MIP", volDisplayOptGroup);
-    dispType_alphablending = new QRadioButton("Alpha", volDisplayOptGroup);
+    dispType_alpha = new QRadioButton("Alpha", volDisplayOptGroup);
     dispType_cs3d = new QRadioButton("X-section", volDisplayOptGroup);
     dispType_mip->setToolTip("Maximum Intensity Projection");
-    dispType_alphablending->setToolTip("Alpha Blending");
+    dispType_alpha->setToolTip("Alpha Blending Projection\n (affected by background color)"); //110714
     dispType_cs3d->setToolTip("Cross-section");
 
     //QLabel *labelline = new QLabel; labelline->setFrameStyle(QFrame::HLine | QFrame::Raised); labelline->setLineWidth(1);
 
     transparentSlider = createTranparentSlider();
     zthicknessBox = createThicknessSpinBox();
-    zthicknessBox->setToolTip("will slow down speed by thickness times");
     spinBox_channel = createChannelSpinBox();
+    zthicknessBox->setToolTip("more thick more Slow!");
 	spinBox_channel->setToolTip("Set the default channel for pinpointing in 3D image.");
 
 	checkBox_channelR = new QCheckBox("R", volDisplayOptGroup);
@@ -123,7 +123,7 @@ void V3dR_MainWindow::createControlWidgets()
 			//".\nUncompressed format for very large volume may cause system halt!");
 
 	layout_mainDisplayOptGroup->addWidget(dispType_mip, 1, 0, 1, 5);
-	layout_mainDisplayOptGroup->addWidget(dispType_alphablending, 1, 5, 1, 7);
+	layout_mainDisplayOptGroup->addWidget(dispType_alpha, 1, 5, 1, 7);
 	layout_mainDisplayOptGroup->addWidget(dispType_cs3d, 1, 5+7, 1, 9);
 
 	//layout_mainDisplayOptGroup->addWidget(labelline, 2, 0, 1, 21);
@@ -679,9 +679,9 @@ void V3dR_MainWindow::connectSignal()
 		connect(glWidget, SIGNAL(changeDispType_mip(bool)), dispType_mip, SLOT(setChecked(bool)));
 		connect(dispType_mip, SIGNAL(toggled(bool)), glWidget, SLOT(setRenderMode_Mip(bool)));
 	}
-	if (dispType_alphablending) {
-		connect(glWidget, SIGNAL(changeDispType_alpha(bool)), dispType_alphablending, SLOT(setChecked(bool)));
-		connect(dispType_alphablending, SIGNAL(toggled(bool)), glWidget, SLOT(setRenderMode_Alpha(bool)));
+	if (dispType_alpha) {
+		connect(glWidget, SIGNAL(changeDispType_alpha(bool)), dispType_alpha, SLOT(setChecked(bool)));
+		connect(dispType_alpha, SIGNAL(toggled(bool)), glWidget, SLOT(setRenderMode_Alpha(bool)));
 	}
 	if (dispType_cs3d) {
 		connect(glWidget, SIGNAL(changeDispType_cs3d(bool)), dispType_cs3d, SLOT(setChecked(bool)));

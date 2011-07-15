@@ -3490,7 +3490,7 @@ void XFormWidget::createGUI()
 	linkFocusCheckBox = new QCheckBox("Anchor 3 Focal Views");
 	linkFocusCheckBox->setCheckState((bLinkFocusViews) ? Qt::Checked : Qt::Unchecked);
 
-	displayFocusCrossCheckBox = new QCheckBox("Display Focus Cross Lines");
+	displayFocusCrossCheckBox = new QCheckBox("Focus Cross"); //("Display Focus Cross Lines");
 	displayFocusCrossCheckBox->setCheckState((bDisplayFocusCross) ? Qt::Checked : Qt::Unchecked);
 
     // scale factor group
@@ -3622,23 +3622,26 @@ void XFormWidget::createGUI()
 	coordGroupLayout = new QGridLayout(coordGroup);
     coordGroupLayout->addWidget(zSliderLabel, 0, 0, 1, 1);
 	coordGroupLayout->addWidget(zSlider, 0, 1, 1, 12);
-    coordGroupLayout->addWidget(zValueSpinBox, 0, 13, 1, 4);
+    coordGroupLayout->addWidget(zValueSpinBox, 0, 13, 1, 6);
 
     coordGroupLayout->addWidget(xSliderLabel, 1, 0, 1, 1);
 	coordGroupLayout->addWidget(xSlider, 1, 1, 1, 12);
-    coordGroupLayout->addWidget(xValueSpinBox, 1, 13, 1, 4);
+    coordGroupLayout->addWidget(xValueSpinBox, 1, 13, 1, 6);
 
     coordGroupLayout->addWidget(ySliderLabel, 2, 0, 1, 1);
 	coordGroupLayout->addWidget(ySlider, 2, 1, 1, 12);
-    coordGroupLayout->addWidget(yValueSpinBox, 2, 13, 1, 4);
+    coordGroupLayout->addWidget(yValueSpinBox, 2, 13, 1, 6);
 
-    coordGroupLayout->addWidget(linkFocusCheckBox, 3, 0, 1, 14);
-	coordGroupLayout->addWidget(displayFocusCrossCheckBox, 4, 0, 1, 14);
+//  coordGroupLayout->addWidget(linkFocusCheckBox, 3, 0, 1, 14);
+//	coordGroupLayout->addWidget(displayFocusCrossCheckBox, 4, 0, 1, 14);
+//	coordGroupLayout->addWidget(cBox_bSendSignalToExternal, 5, 0, 1, 6);
+//	coordGroupLayout->addWidget(cBox_bAcceptSignalFromExternal, 5, 7, 1, 7);
 
-	coordGroupLayout->addWidget(cBox_bSendSignalToExternal, 5, 0, 1, 6);
-	coordGroupLayout->addWidget(cBox_bAcceptSignalFromExternal, 5, 7, 1, 7);
+	coordGroupLayout->addWidget(displayFocusCrossCheckBox, 3, 0, 1, 7);
+	coordGroupLayout->addWidget(cBox_bSendSignalToExternal,     3, 7+1, 1, 6);
+	coordGroupLayout->addWidget(cBox_bAcceptSignalFromExternal, 3, 7+1+6, 1, 5);
 
-    // layout for scaling factors
+	// layout for scaling factors
 
     scaleGroupLayout = new QGridLayout(scaleGroup);
     scaleGroupLayout->addWidget(zScaleSlider, 0, 0, 1, 10);

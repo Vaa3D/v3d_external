@@ -78,7 +78,7 @@ protected:
 	virtual void drawObj();  // called by paint()
 	//virtual void drawVol();  // called by paint() //use default.
 
-	virtual void equAlphaBlending();
+	virtual void equAlphaBlendingProjection();
 	virtual void equMaxIntensityProjection();
 	virtual void equCrossSection();
 	virtual void shaderTexBegin(bool stream); //090722 because different shader for XYZ/F-slice

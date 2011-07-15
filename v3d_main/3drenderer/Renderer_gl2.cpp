@@ -297,11 +297,11 @@ void Renderer_gl2::shaderTexEnd()
 	shader = 0;
 }
 
-void Renderer_gl2::equAlphaBlending()
+void Renderer_gl2::equAlphaBlendingProjection()
 {
 	if (! tryVolShader)
 	{
-		Renderer_tex2::equAlphaBlending();
+		Renderer_tex2::equAlphaBlendingProjection();
 		return;
 	}
 	glBlendEquationEXT(GL_FUNC_ADD_EXT);/////////////////////

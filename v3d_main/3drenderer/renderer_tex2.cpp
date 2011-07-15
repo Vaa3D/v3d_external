@@ -491,7 +491,7 @@ void Renderer_tex2::prepareVol()
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-        if (renderMode==rmAlphaBlending || renderMode==rmMaxIntensityProjection) // not for rmCrossSection
+        if (renderMode==rmAlphaBlendingProjection || renderMode==rmMaxIntensityProjection) // not for rmCrossSection
             enableViewClipPlane(); //front-cut-plane
 
         // unit image space ==>fit in [-1,+1]^3
@@ -514,7 +514,7 @@ void Renderer_tex2::renderVol()
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-            if (renderMode==rmAlphaBlending || renderMode==rmMaxIntensityProjection) // not for rmCrossSection
+            if (renderMode==rmAlphaBlendingProjection || renderMode==rmMaxIntensityProjection) // not for rmCrossSection
                     enableViewClipPlane(); //front-cut-plane
 
             // unit image space ==>fit in [-1,+1]^3
@@ -532,7 +532,7 @@ void Renderer_tex2::renderVol()
                     drawUnitFrontSlice(1); // just draw bound Line of F-Slice
             }
 
-            if (renderMode==rmAlphaBlending || renderMode==rmMaxIntensityProjection)
+            if (renderMode==rmAlphaBlendingProjection || renderMode==rmMaxIntensityProjection)
                     disableViewClipPlane();
 
             glPopMatrix(); //============================================================== }
@@ -621,7 +621,7 @@ void Renderer_tex2::drawCrossLine(float lineWidth)
 	glPopAttrib();
 }
 
-void Renderer_tex2::equAlphaBlending()
+void Renderer_tex2::equAlphaBlendingProjection()
 {
 	glBlendEquationEXT(GL_FUNC_ADD_EXT);//this is important
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	// back to front when depth-test on, A for all of RGB
@@ -663,8 +663,8 @@ void Renderer_tex2::drawVol()
 
 	switch (renderMode)
 	{
-	case rmAlphaBlending:
-		glEnable(GL_BLEND);      equAlphaBlending();
+	case rmAlphaBlendingProjection:
+		glEnable(GL_BLEND);      equAlphaBlendingProjection();
 		glEnable(GL_ALPHA_TEST); glAlphaFunc(GL_GREATER, alpha_threshold); // > threshold Alpha
 		break;
 
@@ -684,7 +684,9 @@ void Renderer_tex2::drawVol()
 			glEnable(GL_BLEND);  equCrossSection();
 		}
 		else
+		{
 			glDisable(GL_BLEND);
+		}
 		glDisable(GL_ALPHA_TEST);
 //		if (CSbeta >=0.5)
 //			glDisable(GL_DEPTH_TEST);
@@ -701,9 +703,9 @@ void Renderer_tex2::drawVol()
 	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glColor4fv(SLICE_COLOR.c);
 
-	glDisable(GL_LIGHTING);
+	glDisable(GL_LIGHTING); //volume lighting is difference from polygon object
 
-	glShadeModel(GL_FLAT);
+	glShadeModel(GL_FLAT); //flat for slice rectangle
 	{
 		updateVolCutRange();
 
@@ -1385,7 +1387,9 @@ void Renderer_tex2::_drawStack( double ts, double th, double tw,
 
 		double tss = ts*s;
 		int k_repeat = thickness;
-		if ((thickness==1)||(step>0 && slice==slice1)||(step<0 && slice==slice0)) k_repeat = 1; // 081106
+		if ( (step>0 && slice==slice1)
+			||(step<0 && slice==slice0)
+			)  k_repeat = 1; // 081106
 
 		for (int k=0; k<k_repeat; k++) // 081105
 		{
@@ -1542,7 +1546,7 @@ void Renderer_tex2::setUnitVolumeSpace()
 void Renderer_tex2::drawUnitVolume()
 {
 	if (! rgbaBuf || bufSize[3]<1 ) return; // no image data, 081002
-	if ((VOL_X1<VOL_X0) || (VOL_Y1<VOL_Y0) || (VOL_Z1<VOL_Z0)) return; // all clipped, no draw
+	if ((VOL_X1<VOL_X0) || (VOL_Y1<VOL_Y0) || (VOL_Z1<VOL_Z0)) return; // all clipped, no drawing
 
 	bool b_stream = _streamTex_ready();
 	bool b_tex3d = tex3D>0;
@@ -1610,7 +1614,7 @@ void Renderer_tex2::drawUnitVolume()
 			//if (bFSlice)	;//in drawUnitFrontSlice
 
 		}
-		// only for one slice //090601: or 2 slice (texture compressed) //100721: cut slice
+		// only for 1 slice //090601: or 2 slices (texture compressed) //100721: cut slice
 		else if (xCut1-xCut0<=1)
 		{
 			drawStackX(-1, section, b_tex3d, b_stream);

@@ -56,7 +56,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 class Renderer
 {
 public:
-	enum RenderMode {rmCrossSection=0, rmAlphaBlending, rmMaxIntensityProjection };
+	enum RenderMode {rmCrossSection=0,
+					rmAlphaBlendingProjection,
+					rmMaxIntensityProjection,
+					};
 	enum SelectMode {smObject=0, smMultipleObject,
 					smMarkerCreate1, smMarkerCreate2, smMarkerCreate3,
 					smMarkerRefineT, smMarkerRefineC,
@@ -318,7 +321,7 @@ template <class T> float sampling3dAllTypes(T* data, V3DLONG dim1, V3DLONG dim2,
 RGBA32f sampling3dRGBA8(RGBA8* data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3,
 		V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG dx, V3DLONG dy, V3DLONG dz);
 
-template <class T> float sampling3dAllTypesat(T* data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3, 
+template <class T> float sampling3dAllTypesat(T* data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3,
 									 float x, float y, float z);
 RGBA32f sampling3dRGBA8at(RGBA8* data, V3DLONG dim1, V3DLONG dim2, V3DLONG dim3,
 		float x, float y, float z);
@@ -507,9 +510,9 @@ template <class T> float sampling3dAllTypes(T* data, V3DLONG dim1, V3DLONG dim2,
 {
 	float avg = 0;
 	float d = (dx*dy*dz);
-	
+
 	V3DLONG pagesz = dim1*dim2*dim3;
-	
+
 	if (d>0 && x>=0 && y>=0 && z>=0 && x+dx<=dim1 && y+dy<=dim2 && z+dz<=dim3)
 	{
 		//float s = 0;
@@ -520,9 +523,9 @@ template <class T> float sampling3dAllTypes(T* data, V3DLONG dim1, V3DLONG dim2,
 				{
 					//float w = MAX( (2-ABS(xi-0.5*dx)*2.0/dx), MAX( (2-ABS(yi-0.5*dy)*2.0/dy), (2-ABS(zi-0.5*dz)*2.0/dz) )); //090712
 					//s += w;
-					
+
 					V3DLONG idx = (z + zi)*dim2*dim1 + (y + yi)*dim1 + (x	+ xi);
-					
+
 					if(idx<pagesz)
 						avg += data[idx];// *w;
 					else
@@ -539,7 +542,7 @@ template <class T> float sampling3dAllTypesat(T* data, V3DLONG dim1, V3DLONG dim
 										   float x, float y, float z)
 {
 #define SAMPLE(ix,iy,iz)	sampling3dAllTypes(data,dim1,dim2,dim3,  ix,iy,iz, 1,1,1)
-	
+
 	V3DLONG x0,x1, y0,y1, z0,z1;
 	x0 = floor(x); 		x1 = ceil(x);
 	y0 = floor(y); 		y1 = ceil(y);
@@ -566,7 +569,7 @@ template <class T> float sampling3dAllTypesat(T* data, V3DLONG dim1, V3DLONG dim
 	sf[1][0][1] = (  xf)*(1-yf)*(  zf);
 	sf[1][1][0] = (  xf)*(  yf)*(1-zf);
 	sf[1][1][1] = (  xf)*(  yf)*(  zf);
-	
+
 	float* ip = &is[0][0][0];
 	float* sp = &sf[0][0][0];
 	float sum = 0;

@@ -1076,8 +1076,8 @@ void V3dR_GLWidget::setRenderMode_Alpha(bool b)
 {
 	//qDebug("V3dR_GLWidget::setRenderMode_Alpha = %i",b);
 	if (b) {
-		_renderMode = int(Renderer::rmAlphaBlending);
-		if (renderer) renderer->setRenderMode(Renderer::rmAlphaBlending);
+		_renderMode = int(Renderer::rmAlphaBlendingProjection);
+		if (renderer) renderer->setRenderMode(Renderer::rmAlphaBlendingProjection);
 		// restore renderer->Cut0
 		if (renderer) renderer->setXCut0(_xCut0);
 		if (renderer) renderer->setYCut0(_yCut0);
@@ -1701,12 +1701,10 @@ void V3dR_GLWidget::setXCut0(int s)
 		if (renderer) renderer->setXCut0(s);
 
 		if (_xCut0+dxCut>_xCut1)	setXCut1(_xCut0+dxCut); //081029,100913
-		if (dxCut && _xCut0+dxCut<_xCut1)	setXCut1(_xCut0+dxCut); //100913
+		if (lockX && _xCut0+dxCut<_xCut1)	setXCut1(_xCut0+dxCut); //100913, 110713
 		emit changeXCut0(s);
 		POST_updateGL();
 	}
-    // finite value of dxCut means cuts are locked
-	else if (dxCut) emit changeXCut1(_xCut0+dxCut);
 }
 
 void V3dR_GLWidget::setXCut1(int s)
@@ -1718,12 +1716,10 @@ void V3dR_GLWidget::setXCut1(int s)
 		if (renderer) renderer->setXCut1(s);
 
 		if (_xCut0>_xCut1-dxCut)	setXCut0(_xCut1-dxCut);
-		if (dxCut && _xCut0<_xCut1-dxCut)	setXCut0(_xCut1-dxCut); //100913
+		if (lockX && _xCut0<_xCut1-dxCut)	setXCut0(_xCut1-dxCut); //100913,110713
 		emit changeXCut1(s);
 		POST_updateGL();
 	}
-    // finite value of dxCut means cuts are locked
-	else if (dxCut) emit changeXCut0(_xCut1-dxCut);
 }
 
 void V3dR_GLWidget::setYCut0(int s)
@@ -1736,12 +1732,10 @@ void V3dR_GLWidget::setYCut0(int s)
 		if (renderer) renderer->setYCut0(s);
 
 		if (_yCut0+dyCut>_yCut1)	setYCut1(_yCut0+dyCut);
-		if (dyCut && _yCut0+dyCut<_yCut1)	setYCut1(_yCut0+dyCut);
+		if (lockY && _yCut0+dyCut<_yCut1)	setYCut1(_yCut0+dyCut);
 		emit changeYCut0(s);
 		POST_updateGL();
 	}
-    // finite value of dyCut means cuts are locked
-	else if (dyCut) emit changeYCut1(_yCut0+dyCut);
 }
 
 void V3dR_GLWidget::setYCut1(int s)
@@ -1753,12 +1747,10 @@ void V3dR_GLWidget::setYCut1(int s)
 		if (renderer) renderer->setYCut1(s);
 
 		if (_yCut0>_yCut1-dyCut)	setYCut0(_yCut1-dyCut);
-		if (dyCut && _yCut0<_yCut1-dyCut)	setYCut0(_yCut1-dyCut);
+		if (lockY && _yCut0<_yCut1-dyCut)	setYCut0(_yCut1-dyCut);
 		emit changeYCut1(s);
 		POST_updateGL();
 	}
-    // finite value of dyCut means cuts are locked
-	else if (dyCut) emit changeYCut0(_yCut1-dyCut);
 }
 
 void V3dR_GLWidget::setZCut0(int s)
@@ -1771,12 +1763,10 @@ void V3dR_GLWidget::setZCut0(int s)
 		if (renderer) renderer->setZCut0(s);
 
 		if (_zCut0+dzCut>_zCut1)	setZCut1(_zCut0+dzCut);
-		if (dzCut && _zCut0+dzCut<_zCut1)	setZCut1(_zCut0+dzCut);
+		if (lockZ && _zCut0+dzCut<_zCut1)	setZCut1(_zCut0+dzCut);
 		emit changeZCut0(_zCut0);
 		POST_updateGL();
 	}
-    // finite value of dzCut means cuts are locked
-	else if (dzCut) emit changeZCut1(_zCut0+dzCut);
 }
 
 void V3dR_GLWidget::setZCut1(int s)
@@ -1788,30 +1778,30 @@ void V3dR_GLWidget::setZCut1(int s)
 		if (renderer) renderer->setZCut1(s);
 
 		if (_zCut0>_zCut1-dzCut)	setZCut0(_zCut1-dzCut);
-		if (dzCut && _zCut0<_zCut1-dzCut)	setZCut0(_zCut1-dzCut);
+		if (lockZ && _zCut0<_zCut1-dzCut)	setZCut0(_zCut1-dzCut);
 		emit changeZCut1(_zCut1);
 		POST_updateGL();
 	}
-	// finite value of dzCut means cuts are locked
-	else if (dzCut)	emit changeZCut0(_zCut1-dzCut);
 }
 
 void V3dR_GLWidget::setXCutLock(bool b)
 {
 	if (b)	dxCut = _xCut1-_xCut0;
 	else    dxCut = 0;
+	lockX = b? 1:0;  //110714
 }
 void V3dR_GLWidget::setYCutLock(bool b)
 {
 	if (b)	dyCut = _yCut1-_yCut0;
 	else    dyCut = 0;
+	lockY = b? 1:0;  //110714
 }
 void V3dR_GLWidget::setZCutLock(bool b)
 {
 	if (b)	dzCut = _zCut1-_zCut0;
 	else    dzCut = 0;
+	lockZ = b? 1:0;  //110714
 }
-
 
 void V3dR_GLWidget::setXCS(int s)
 {

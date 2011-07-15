@@ -344,7 +344,7 @@ if [ $DOIT == "YES" ] && [ $SKIPV3DPLUGINS == "NO" ]; then
     rm -fr ../v3d/plugins/64bit
     mv -f v3d/plugins ../v3d/plugins/64bit     #copy to the executable folder
   fi	
-  cd ../
+  cd ../  ###
 fi
 
 #now automatically execute v3d
