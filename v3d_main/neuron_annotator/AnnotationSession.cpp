@@ -225,7 +225,7 @@ bool AnnotationSession::populateMipLists() {
                 int referenceIntensity = referenceProxy.value8bit_at(x,y,z,0);
                 QRgb referenceColor = qRgb(referenceIntensity, referenceIntensity, referenceIntensity); // gray
                 QRgb previousReferenceColor = referenceImage.pixel(x,y);
-                if (previousReferenceColor==0) {
+                if (z==0) {
                     referenceImage.setPixel(x,y,referenceColor);
                 } else {
                     int previousIntensity = qRed(previousReferenceColor) + qGreen(previousReferenceColor) + qBlue(previousReferenceColor);
@@ -254,7 +254,7 @@ bool AnnotationSession::populateMipLists() {
                     maskImage=&(neuronMipList[maskIndex-1]);
                 }
                 QRgb previousColor = maskImage->pixel(x,y);
-                if (previousColor==0) {
+                if (z==0) {
                     maskImage->setPixel(x,y,color);
                 } else {
                     int previousIntensity = qRed(previousColor) + qGreen(previousColor) + qBlue(previousColor);
