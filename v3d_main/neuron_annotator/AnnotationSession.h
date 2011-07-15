@@ -56,6 +56,8 @@ public:
     QList<bool> getNeuronSelectList(){return neuronSelectList;}
 
     void switchSelectedNeuron(int index);
+    void switchSelectedNeuronUniquelyIfOn(int index);
+    void clearSelections();
 
 signals:
     void modelUpdated(QString updateType);

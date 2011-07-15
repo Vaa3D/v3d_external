@@ -315,6 +315,19 @@ void AnnotationSession::switchSelectedNeuron(int index)
     }
 }
 
+void AnnotationSession::switchSelectedNeuronUniquelyIfOn(int index) {
+    bool alreadySelected=neuronSelectList.at(index);
+    if (!alreadySelected) {
+        // We want to ensure this selection is unique
+        for (int i=0;i<neuronSelectList.size();i++) {
+            neuronSelectList.replace(i,false);
+        }
+        neuronSelectList.replace(index, true);
+    } else {
+        neuronSelectList.replace(index, false);
+    }
+}
+
 // show selected neuron
 void AnnotationSession::showSelectedNeuron(QList<int> overlayList)
 {

@@ -15,6 +15,7 @@ void NeuronSelector::init()
 // get the index of selected neuron
 int NeuronSelector::getIndexSelectedNeuron()
 {
+
 	// find in mask stack
 	sx = annotationSession->getNeuronMaskAsMy4DImage()->getXDim();
 	sy = annotationSession->getNeuronMaskAsMy4DImage()->getYDim();
@@ -95,7 +96,7 @@ int NeuronSelector::getIndexSelectedNeuron()
 	
         if(index>-1)
 	{
-                annotationSession->switchSelectedNeuron(index);
+                annotationSession->switchSelectedNeuronUniquelyIfOn(index);
 	}
 	else
 	{
@@ -267,7 +268,7 @@ void NeuronSelector::highlightSelectedNeuron()
 
             return;
         }
-	
+
 	// list of markers
 	QList<LocationSimple> listLandmarks;
 
