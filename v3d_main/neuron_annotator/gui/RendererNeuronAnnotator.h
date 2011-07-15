@@ -29,6 +29,8 @@ public:
     }
     RGBA8* getOverlayTextureByAnnotationIndex(int index);
 
+    RGBA8* getTexture3DCurrent() const {return texture3DCurrent;}
+
 signals:
     void progressAchieved(int);
     void progressComplete();

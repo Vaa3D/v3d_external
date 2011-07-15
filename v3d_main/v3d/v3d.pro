@@ -227,6 +227,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/gui/FragmentGalleryWidget.h \
     ../neuron_annotator/FragmentSelectionModel.h \
 	../neuron_annotator/NeuronSelector.h \
+    ../neuron_annotator/ExportFile.h \
 	../webservice/v3dwebservice.hpp \
 	../webservice/v3dwebserver.h \
 	../webservice/gsoap2/stdsoap2.h \
@@ -346,6 +347,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/gui/FragmentGalleryWidget.cpp \
     ../neuron_annotator/FragmentSelectionModel.cpp \
 	../neuron_annotator/NeuronSelector.cpp \
+    ../neuron_annotator/ExportFile.cpp \
 	../webservice/v3dwebservice.cpp \
 	../webservice/gsoap2/stdsoap2.cpp \
 	../webservice/soapdep/soapC.cpp \

@@ -2335,6 +2335,8 @@ released_plugins/v3d_plugins/mapview/mapviewer.cpp
 v3d_main/neuron_annotator/MipData.h
 v3d_main/neuron_annotator/MipData.cpp
 v3d_main/neuron_annotator/CMakeLists.txt
+v3d_main/neuron_annotator/ExportFile.h
+v3d_main/neuron_annotator/ExportFile.cpp
 v3d_main/neuron_annotator/gui/angle_widget_designer_plugin/AngleWidgetPlugin.pro
 v3d_main/neuron_annotator/gui/angle_widget_designer_plugin/AngleWidgetPlugin.h
 v3d_main/neuron_annotator/gui/angle_widget_designer_plugin/AngleWidgetPlugin.cpp
