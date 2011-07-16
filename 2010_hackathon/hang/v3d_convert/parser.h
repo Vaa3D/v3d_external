@@ -3,22 +3,23 @@
 
 #include <string>
 #include <cstdlib>
+#include <iostream>
 
 using namespace std;
-struct SupportedPara
+struct SupportedCommand
 {
 	string para_name;
 	bool is_need_option;
 };
-
+/*
 static int supported_para_num = 6;
-static SupportedPara supported_parameters[] = {{"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-negate", 0}};
+static SupportedCommand supported_commands[] = {{"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-negate", 0}};
 
 static bool is_support(string para_name)
 {
 	for(int i = 0; i < supported_para_num; i++)
 	{
-		if(supported_parameters[i].para_name == para_name) return true;
+		if(supported_commands[i].para_name == para_name) return true;
 	}
 	return false;
 }
@@ -28,23 +29,56 @@ static bool is_need_option(string para_name)
 	if(!is_support(para_name)) return false;
 	for(int i = 0; i < supported_para_num; i++)
 	{
-		if(supported_parameters[i].para_name == para_name) return supported_parameters[i].is_need_option;
+		if(supported_commands[i].para_name == para_name) return supported_commands[i].is_need_option;
 	}
 }
+*/
 
 struct SinglePara
 {
 	string para_name;          // -resize
 	string para_string;
-	bool is_executed;
-	SinglePara(){para_name=""; para_string=""; is_executed = 0;}
-	SinglePara(string name, string str){para_name=name; para_string=str; is_executed = 0;}
+	SinglePara(){para_name=""; para_string=""; }
+	SinglePara(string name, string str){para_name=name; para_string=str; }
 };
 
 struct InputParas
 {
+	int cur_par_id;
 	vector<string> filelist;
 	vector<SinglePara> paras;
+	vector<SupportedCommand> supported_commands;
+
+	InputParas(){cur_par_id = -1;}
+	InputParas(SupportedCommand * cmds, int n){cur_par_id = -1;set_supported_cmd(cmds,n);}
+	void set_supported_cmd(SupportedCommand * cmds, int n)
+	{
+		supported_commands.clear();
+		if(n <= 0) return;
+		for(int i = 0; i < n; i++) supported_commands.push_back(cmds[i]);
+	}
+
+	bool is_support(string para_name)
+	{
+		if(supported_commands.empty()) return false;
+		int cmd_num = supported_commands.size();
+		for(int i = 0; i < cmd_num; i++)
+		{
+			if(supported_commands[i].para_name == para_name) return true;
+		}
+		return false;
+	}
+
+	bool is_need_option(string para_name)
+	{
+		if(!is_support(para_name)) return false;
+		int cmd_num = supported_commands.size();
+		for(int i = 0; i < cmd_num; i++)
+		{
+			if(supported_commands[i].para_name == para_name) return supported_commands[i].is_need_option;
+		}
+	}
+
 	int get_order(string para_name)
 	{
 		if(paras.empty()) return -1;
@@ -54,41 +88,23 @@ struct InputParas
 		}
 		return -1;
 	}
-	bool is_exist_unexecuted_para()
+	bool is_empty()
 	{
-		if(paras.empty()) return false;
-		for(int i = 0; i < paras.size(); i++)
-		{
-			if(paras[i].is_executed == false) return true;
-		}
-		return false;
-	}
-	void set_unexecutable_paras(string para_list[], int n)
-	{
-		if(n <= 0) return;
-		for(int i = 0; i < n; i++)
-		{
-			string para_name = para_list[i];
-			int order = get_order(para_name);
-			if(order != -1) paras[order].is_executed = 1;
-		}
+		return paras.empty();
 	}
 	bool is_exist(string para_name)
 	{
 		if(get_order(para_name) != -1) return true;
 		return false;
 	}
-	bool is_executed(string para_name)
+	bool get_next_cmd(string & next_cmd)
 	{
-		int order = get_order(para_name);
-		if(order == -1) return false;
-		else return paras[order].is_executed;
-	}
-	void set_executed(string para_name)
-	{
-		int order = get_order(para_name);
-		if(order == -1) return ;
-		else paras[order].is_executed = true;
+		if(paras.empty()) return false;
+		if(cur_par_id < -1) cur_par_id = -1;
+		if(cur_par_id >= (int) paras.size() - 1 ){next_cmd="error"; return false;}
+		cur_par_id++; 
+		next_cmd = paras[cur_par_id].para_name;
+		return true;
 	}
 	string get_para(string para_name)
 	{
@@ -169,13 +185,13 @@ bool parse_paras(int argc, char* argv[], InputParas &paras, string &s_error)
 	{
 		SinglePara para;
 		if(argv[i][0] != '-') paras.filelist.push_back(string(argv[i]));
-		else if(is_support(argv[i]) && !paras.is_exist(argv[i]))
+		else if(paras.is_support(argv[i]) && !paras.is_exist(argv[i]))
 		{
-			if(!is_need_option(argv[i])) paras.add_para(argv[i]);
-			if(is_need_option(argv[i]) && i+1 < argc) {paras.add_para(argv[i], argv[i+1]); i++;}
+			if(!paras.is_need_option(argv[i])) paras.add_para(argv[i]);
+			if(paras.is_need_option(argv[i]) && i+1 < argc) {paras.add_para(argv[i], argv[i+1]); i++;}
 			else {s_error += "need parameter for "; s_error += argv[i]; return false;}
 		}
-		else if(!is_support(argv[i]))
+		else if(!paras.is_support(argv[i]))
 		{
 			s_error += argv[i];
 			s_error += " is not supported";
