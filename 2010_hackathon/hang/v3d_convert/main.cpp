@@ -15,7 +15,7 @@ void printVersion();
 bool run_with_paras(InputParas paras, string &s_error);
 
 int cmd_num = 6;
-SupportedCommand supported_commands[] = {{"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-negate", 0}};
+SupportedCommand supported_commands[] = {{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-negate", 0}};
 
 int main(int argc, char* argv[])
 {
@@ -56,34 +56,50 @@ bool run_with_paras(InputParas paras, string & s_error)
 	string infile = paras.filelist.at(0);
 	string outfile = paras.filelist.at(1);
 	unsigned char * indata1d = NULL, * outdata1d = NULL;
-	V3DLONG *sz = NULL; 
+	V3DLONG *in_sz = NULL, * out_sz = NULL;
 	int datatype;
 
-	if(!loadImage((char*) infile.c_str(), indata1d, sz, datatype)) {s_error += "loadImage(\""; s_error += infile; s_error+="\")  error"; return false;}
+	if(!loadImage((char*) infile.c_str(), indata1d, in_sz, datatype)) {s_error += "loadImage(\""; s_error += infile; s_error+="\")  error"; return false;}
 
 	int channel = 0;  if(paras.is_exist("-channel")) if(!paras.get_int_para(channel, "-channel", s_error)) return false;
-	if(channel >= sz[3]){ s_error += "channel exceed the input image's total channel num"; return false;}
-	indata1d = indata1d + sz[0] * sz[1] * sz[2] * channel;
-	sz[3] = 1;
+	if(channel >= in_sz[3]){ s_error += "channel exceed the input image's total channel num"; return false;}
+	indata1d = indata1d + in_sz[0] * in_sz[1] * in_sz[2] * channel;
+	in_sz[3] = 1;
 
 	string cmd_name("");
 	while(paras.get_next_cmd(cmd_name))
 	{
-		if(cmd_name == "-rotatez")
+		cout<<"command : "<<cmd_name<<endl;
+		if(cmd_name == "-rotatex")
+		{
+			double theta; if(!paras.get_double_para(theta,"-rotatex", 0, s_error,"%")) return false;
+			cout<<"theta = "<<theta<<endl;
+			if(!rotate_along_xaxis(indata1d, in_sz, outdata1d, out_sz, theta, 0)){s_error += "rotatez error"; return false;}
+		}
+		if(cmd_name == "-rotatey")
+		{
+			double theta; if(!paras.get_double_para(theta,"-rotatey", 0, s_error,"%")) return false;
+			cout<<"theta = "<<theta<<endl;
+			if(!rotate_along_yaxis(indata1d, in_sz, outdata1d, out_sz, theta, 0)){s_error += "rotatez error"; return false;}
+		}
+		else if(cmd_name == "-rotatez")
 		{
 			double theta; if(!paras.get_double_para(theta,"-rotatez", 0, s_error,"%")) return false;
 			cout<<"theta = "<<theta<<endl;
-			if(!rotate_along_zaxis(indata1d, sz, outdata1d, theta)){s_error += "rotatez error"; return false;}
+			if(!rotate_along_zaxis(indata1d, in_sz, outdata1d, out_sz, theta, 0)){s_error += "rotatez error"; return false;}
 		}
 		else if(cmd_name == "-gaussian-blur")
 		{
 			double sigma; int radius;  if(!paras.get_double_para(sigma,"-gaussian-blur",0,s_error,"x") || !paras.get_int_para(radius, "-gaussian-blur",1, s_error,"x")) return false;
 			cout<<"sigma = "<<sigma<<" radius = "<<radius<<endl;
 
-			if(!compute_gaussian_blur(outdata1d, indata1d, sz, sigma, radius)){ s_error += "failed to compute gaussian-blur"; return false;}
+			if(!compute_gaussian_blur(outdata1d, indata1d, in_sz, sigma, radius)){ s_error += "failed to compute gaussian-blur"; return false;}
 		}
 	}
-	if(!saveImage((char*) outfile.c_str(), outdata1d, sz, datatype)) {s_error += "saveImage(\""; s_error += outfile; s_error+="\") error"; return false;}
+	if(out_sz == 0) out_sz = in_sz;
+	if(!saveImage((char*) outfile.c_str(), outdata1d, out_sz, datatype)) {s_error += "saveImage(\""; s_error += outfile; s_error+="\") error"; return false;}
+	if(indata1d) {delete indata1d; indata1d = 0;}
+	if(outdata1d) {delete outdata1d; outdata1d = 0;}
 
 	return true;
 }

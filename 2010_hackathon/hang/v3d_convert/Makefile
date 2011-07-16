@@ -1,4 +1,4 @@
-CC = g++
+CC = g++ -g
 CC_FLAGS += -I../../../v3d_main/basic_c_fun -I../../../v3d_main/common_lib/include
 LIBS +=  -L../../../v3d_main/common_lib/lib -lv3dtiff 
 
