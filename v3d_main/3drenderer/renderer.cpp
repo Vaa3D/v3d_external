@@ -1268,8 +1268,11 @@ void setFloatDrawOp(int pass, int sShow) // operator FloatDraw, by Ruan Zongcai 
 
 ////////////////////////////////////////////////////////////
 
-void blendBrighten(float fbright)
+void blendBrighten(float fbright, float fcontrast) // fast, 8-bit precision
 {
+	//fcontrast = 1.5;
+	if (fbright==0 && fcontrast==1) return;
+
 	if (fbright>=-1 && fbright<=1)
 	{
 		glPushAttrib(GL_ENABLE_BIT);
@@ -1277,39 +1280,61 @@ void blendBrighten(float fbright)
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
 		glLoadIdentity();
+		glEnable(GL_BLEND);
+#define RECT_BLEND	glRecti(-100,-100, 100,100) // assume [-1,+1]^3 view
 
-		if (fbright>=0)
+		if (fcontrast <=1)
 		{
-			glBlendEquationEXT(GL_FUNC_ADD_EXT);
-			glBlendFunc(GL_ONE, GL_SRC_ALPHA); // fbright + alpha*Dst
-			glEnable(GL_BLEND);
-			glColor4f(fbright, fbright, fbright, (1)); // fast, 8-bit precision
+			if (fbright >=0)
+			{
+				glBlendEquationEXT(GL_FUNC_ADD_EXT);
+			}
+			else //fbright <0
+			{
+				glBlendEquationEXT(GL_FUNC_REVERSE_SUBTRACT_EXT);
+				fbright = -fbright;
+			}
+			glBlendFunc(GL_ONE, GL_SRC_ALPHA); // new_color = 1*fbright + fcontrast*old_color
+			glColor4f(fbright, fbright, fbright, fcontrast);
+			RECT_BLEND;
 		}
-		else
+
+		else //fcontrast >1
 		{
-			glBlendEquationEXT(GL_FUNC_REVERSE_SUBTRACT_EXT);
-			glBlendFunc(GL_ONE, GL_SRC_ALPHA); // -(-fbright) + alpha*Dst
-			glEnable(GL_BLEND);
-			glColor4f(-fbright, -fbright, -fbright, (1));
+			float res = fcontrast -1; // int(fcontrast);
+			if (res)
+			{
+				glBlendEquationEXT(GL_FUNC_ADD_EXT);
+				glBlendFunc(GL_DST_COLOR, GL_ONE); // new_color = res*old_color + 1*old_color;
+				glColor4f(res, res, res, 1);
+				RECT_BLEND;
+			}
+
+			if (fbright >=0)
+			{
+				glBlendEquationEXT(GL_FUNC_ADD_EXT);
+			}
+			else //fbright <0
+			{
+				glBlendEquationEXT(GL_FUNC_REVERSE_SUBTRACT_EXT);
+				fbright = -fbright;
+			}
+			glBlendFunc(GL_ONE, GL_ONE); // new_color = 1*fbright + 1*old_color
+			glColor4f(fbright, fbright, fbright, 1);
+			RECT_BLEND;
 		}
-		glRecti(-100,-100, 100,100); // assume [-1,+1]^3 view
 
 		glPopMatrix();
 		glPopAttrib();
 	}
 }
 
-void accumBrighten(float fbright)
+void accumBrighten(float fbright, float fcontrast)  // slow, 16-bit precision, and need extra accumulation buffer
 {
-	if (fbright>0 && fbright<=1)
+	if (fbright>=-1 && fbright<=1)
 	{
-		glAccum(GL_LOAD, (1-fbright));  // slow, 16-bit precision
+		glAccum(GL_LOAD, fcontrast);
 		glAccum(GL_ADD, fbright);
-		glAccum(GL_RETURN, 1);
-	}
-	else if (fbright<0 && fbright>=-1)
-	{
-		glAccum(GL_LOAD, (1+fbright));
 		glAccum(GL_RETURN, 1);
 	}
 }

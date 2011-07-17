@@ -382,12 +382,10 @@ void V3dR_GLWidget::paintGL()
 	if (renderer)  renderer->paint();
 	//=========================================================================
 
-    // setBright off-line in dialog, 081101
+    // changed in setBright dialog, 081101
 	//if (sUpdate_bright)
 	{
-		float fbright = (float(_Bright)/100.f);
-		//accumBrighten(fbright); // 16-bit good precision
-		blendBrighten(fbright); // fast 8-bit poor precision
+		blendBrighten(_Bright/100.f, (_Contrast+100)/100.f); // fast 8-bit precision
 	}
 
 	//qDebug("paint frame cost time = %g sec", qtime.elapsed()*0.001);
@@ -396,7 +394,7 @@ void V3dR_GLWidget::paintGL()
 }
 
 /////////////////////////////////////////////////////////////
-#define __event_handler__
+#define __event_handlers__
 
 void V3dR_GLWidget::customEvent(QEvent* e)
 {
@@ -1900,6 +1898,60 @@ void V3dR_GLWidget::setZClip1(int s)
 	}
 }
 
+void V3dR_GLWidget::setBright()
+{
+	QString qtitle = "Brighten/Darken the whole view";
+	sUpdate_bright = 1;
+
+	QDialog d(this);
+	QFormLayout *formLayout = new QFormLayout;
+	QSpinBox* spinBright = new QSpinBox(); spinBright->setRange(-100,100);
+	QSpinBox* spinSlope = new QSpinBox(); spinSlope->setRange(0,200);
+	formLayout->addRow(QObject::tr(    "Brightness\n (default 0, range -100~+100)%: "), spinBright);
+	formLayout->addRow(QObject::tr("Contrast Slope\n (default 100,   range 0~200)%: "), spinSlope);
+	QPushButton* ok     = new QPushButton("OK");
+	QPushButton* cancel = new QPushButton("Close");
+	QPushButton* reset  = new QPushButton("Reset");
+	QFormLayout* button_right = new QFormLayout;
+	button_right->addRow(reset, cancel);
+	formLayout->addRow(ok, button_right);
+	d.setLayout(formLayout);
+	d.setWindowTitle(qtitle);
+
+	d.connect(ok,     SIGNAL(clicked()), &d, SLOT(accept()));
+	d.connect(cancel, SIGNAL(clicked()), &d, SLOT(reject()));
+
+	//d.connect(reset,  SIGNAL(clicked()), &d, SIGNAL(done(10))); //  connect signal to slot with constant parameter
+	QSignalMapper mapper(this);
+	mapper.setMapping(reset, 10); connect(reset, SIGNAL(clicked()), &mapper, SLOT(map()));
+	connect(&mapper, SIGNAL(mapped(int)), &d, SLOT(done(int)));
+
+	QPoint pos = d.pos();
+	do
+	{
+		spinBright->setValue(_Bright);
+		spinSlope->setValue(_Contrast+100);
+
+		d.move(pos);
+		int ret = d.exec();
+		if (ret==QDialog::Rejected)
+			break;
+		pos = d.pos();
+
+		_Bright = spinBright->value();
+		_Contrast = spinSlope->value()-100;
+		if (ret==10) //reset
+		{
+			_Bright = _Contrast = 0;
+		}
+		DO_updateGL();
+
+	}
+	while (true); //(ret==QMessageBox::Retry);
+	sUpdate_bright = 0;
+	POST_updateGL();
+}
+
 void V3dR_GLWidget::setBackgroundColor()
 {
 	QAction *actBackgroundColor=0, *actLineColor=0;
@@ -1938,33 +1990,6 @@ void V3dR_GLWidget::setBackgroundColor()
 			renderer->color_line = XYZW(c)/255.f;
 		}
 	}
-	POST_updateGL();
-}
-
-void V3dR_GLWidget::setBright()
-{
-	QString qtitle = "Brighten/Darken the whole view";
-	sUpdate_bright = 1;
-	bool ok;
-	int ret;
-	do
-	{
-		{
-			_Bright = QInputDialog::getInteger(0, qtitle,
-											 QObject::tr("+/-(brightness)%:"), _Bright, -100, 100, 1, &ok);
-			if (! ok) break;
-		}
-		DO_updateGL();
-
-		if ((ret = QMessageBox::question(0, qtitle,
-							tr("Do you want to retry brightening?"),
-							QMessageBox::No | QMessageBox::Retry,
-							QMessageBox::Retry))
-			==QMessageBox::No)
-			break;
-	}
-	while (ret==QMessageBox::Retry);
-	sUpdate_bright = 0;
 	POST_updateGL();
 }
 

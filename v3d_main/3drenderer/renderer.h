@@ -377,8 +377,8 @@ void setFloatDrawOp(int pass, int sShow); // sShow: 1--normal occlusion, 2--obje
 //		......
 // } setFloatDrawOp(-1, sShow); //for end
 
-void blendBrighten(float fbright); // fast, 8-bit precision
-void accumBrighten(float fbright); // slow, 16-bit precision
+void blendBrighten(float fbright, float fcontrast=1); // fast, 8-bit precision
+void accumBrighten(float fbright, float fcontrast=1); // slow, 16-bit precision
 
 
 // 1 texture pixel = (components * data_type) bytes, compress_format=GL_COMPRESSED_RGBA_S3TC_DXT5_EXT

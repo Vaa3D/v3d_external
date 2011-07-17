@@ -3621,42 +3621,42 @@ void XFormWidget::createGUI()
 
 	coordGroupLayout = new QGridLayout(coordGroup);
     coordGroupLayout->addWidget(zSliderLabel, 0, 0, 1, 1);
-	coordGroupLayout->addWidget(zSlider, 0, 1, 1, 12);
-    coordGroupLayout->addWidget(zValueSpinBox, 0, 13, 1, 6);
+	coordGroupLayout->addWidget(zSlider, 0, 1, 1, 13);
+    coordGroupLayout->addWidget(zValueSpinBox, 0, 14, 1, 6);
 
     coordGroupLayout->addWidget(xSliderLabel, 1, 0, 1, 1);
-	coordGroupLayout->addWidget(xSlider, 1, 1, 1, 12);
-    coordGroupLayout->addWidget(xValueSpinBox, 1, 13, 1, 6);
+	coordGroupLayout->addWidget(xSlider, 1, 1, 1, 13);
+    coordGroupLayout->addWidget(xValueSpinBox, 1, 14, 1, 6);
 
     coordGroupLayout->addWidget(ySliderLabel, 2, 0, 1, 1);
-	coordGroupLayout->addWidget(ySlider, 2, 1, 1, 12);
-    coordGroupLayout->addWidget(yValueSpinBox, 2, 13, 1, 6);
+	coordGroupLayout->addWidget(ySlider, 2, 1, 1, 13);
+    coordGroupLayout->addWidget(yValueSpinBox, 2, 14, 1, 6);
 
 //  coordGroupLayout->addWidget(linkFocusCheckBox, 3, 0, 1, 14);
 //	coordGroupLayout->addWidget(displayFocusCrossCheckBox, 4, 0, 1, 14);
 //	coordGroupLayout->addWidget(cBox_bSendSignalToExternal, 5, 0, 1, 6);
 //	coordGroupLayout->addWidget(cBox_bAcceptSignalFromExternal, 5, 7, 1, 7);
 
-	coordGroupLayout->addWidget(displayFocusCrossCheckBox, 3, 0, 1, 7);
-	coordGroupLayout->addWidget(cBox_bSendSignalToExternal,     3, 7+1, 1, 6);
-	coordGroupLayout->addWidget(cBox_bAcceptSignalFromExternal, 3, 7+1+6, 1, 5);
+	coordGroupLayout->addWidget(displayFocusCrossCheckBox, 3, 0, 1, 8);
+	coordGroupLayout->addWidget(cBox_bSendSignalToExternal,     3, 8+1, 1, 6);
+	coordGroupLayout->addWidget(cBox_bAcceptSignalFromExternal, 3, 8+1+6, 1, 5);
 
 	// layout for scaling factors
 
     scaleGroupLayout = new QGridLayout(scaleGroup);
-    scaleGroupLayout->addWidget(zScaleSlider, 0, 0, 1, 10);
-    scaleGroupLayout->addWidget(zScaleSliderLabel, 0, 11, 1, 3);
+    scaleGroupLayout->addWidget(zScaleSlider, 0, 0, 1, 13);
+    scaleGroupLayout->addWidget(zScaleSliderLabel, 0, 14, 1, 6);
 
-    scaleGroupLayout->addWidget(xScaleSlider, 1, 0, 1, 10);
-    scaleGroupLayout->addWidget(xScaleSliderLabel, 1, 11, 1, 3);
+    scaleGroupLayout->addWidget(xScaleSlider, 1, 0, 1, 13);
+    scaleGroupLayout->addWidget(xScaleSliderLabel, 1, 14, 1, 6);
 
-    scaleGroupLayout->addWidget(yScaleSlider, 2, 0, 1, 10);
-    scaleGroupLayout->addWidget(yScaleSliderLabel, 2, 11, 1, 3);
+    scaleGroupLayout->addWidget(yScaleSlider, 2, 0, 1, 13);
+    scaleGroupLayout->addWidget(yScaleSliderLabel, 2, 14, 1, 6);
 
-    scaleGroupLayout->addWidget(lookingGlassCheckBox, 3, 0, 1, 9);
-    scaleGroupLayout->addWidget(resetButton, 3, 10, 1, 4);
+    scaleGroupLayout->addWidget(lookingGlassCheckBox, 3, 0, 1, 13);
+    scaleGroupLayout->addWidget(resetButton, 3, 14, 1, 6);
 
-    scaleGroupLayout->addWidget(zoomWholeViewButton, 4, 0, 1, 14);
+    scaleGroupLayout->addWidget(zoomWholeViewButton, 4, 0, 1, 20);
 
     // color display layout
 
