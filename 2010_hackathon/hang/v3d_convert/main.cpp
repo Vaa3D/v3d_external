@@ -70,23 +70,30 @@ bool run_with_paras(InputParas paras, string & s_error)
 	while(paras.get_next_cmd(cmd_name))
 	{
 		cout<<"command : "<<cmd_name<<endl;
-		if(cmd_name == "-rotatex")
+		if(cmd_name == "-rotatexy")
+		{
+			double thetax; double thetay;
+			if(!paras.get_double_para(thetax,"-rotatexy", 0, s_error,"x") || !paras.get_double_para(thetay,"-rotatexy", 1, s_error,"x")) return false;
+			cout<<"thetax = "<<thetax<<" thetay = "<<thetay<<endl;
+			//if(!rotate_along_xyaxis(thetax, thetay, indata1d, in_sz, outdata1d, out_sz, 0)){s_error += "rotatez error"; return false;}
+		}
+		else if(cmd_name == "-rotatex")
 		{
 			double theta; if(!paras.get_double_para(theta,"-rotatex", 0, s_error,"%")) return false;
 			cout<<"theta = "<<theta<<endl;
-			if(!rotate_along_xaxis(indata1d, in_sz, outdata1d, out_sz, theta, 0)){s_error += "rotatez error"; return false;}
+			if(!rotate_along_xaxis(theta, indata1d, in_sz, outdata1d, out_sz, 0)){s_error += "rotatez error"; return false;}
 		}
-		if(cmd_name == "-rotatey")
+		else if(cmd_name == "-rotatey")
 		{
 			double theta; if(!paras.get_double_para(theta,"-rotatey", 0, s_error,"%")) return false;
 			cout<<"theta = "<<theta<<endl;
-			if(!rotate_along_yaxis(indata1d, in_sz, outdata1d, out_sz, theta, 0)){s_error += "rotatez error"; return false;}
+			if(!rotate_along_yaxis(theta, indata1d, in_sz, outdata1d, out_sz, 0)){s_error += "rotatez error"; return false;}
 		}
 		else if(cmd_name == "-rotatez")
 		{
 			double theta; if(!paras.get_double_para(theta,"-rotatez", 0, s_error,"%")) return false;
 			cout<<"theta = "<<theta<<endl;
-			if(!rotate_along_zaxis(indata1d, in_sz, outdata1d, out_sz, theta, 0)){s_error += "rotatez error"; return false;}
+			if(!rotate_along_zaxis(theta, indata1d, in_sz, outdata1d, out_sz, 0)){s_error += "rotatez error"; return false;}
 		}
 		else if(cmd_name == "-gaussian-blur")
 		{
