@@ -106,7 +106,7 @@ void ExportFile::run()
                 return;
             }
 
-            // saving
+            // saving 8-bit tif
             V3DLONG savesz[4];
             savesz[0] = sx; savesz[1] = sy; savesz[2] = sz; savesz[3] = sc;
 
@@ -116,6 +116,9 @@ void ExportFile::run()
                 mutex.unlock();
                 return;
             }
+
+            // de-alloc
+            if(data1d) {delete []data1d; data1d=NULL;}
 
             // done
             stopped = true;
