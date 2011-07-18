@@ -122,16 +122,19 @@ bool AnnotationSession::loadReferenceStack() {
     qDebug() << "Populating reference with initial data";
     double initialRange=initialMax-initialMin;
     qDebug() << "Reference lsm initialMin=" << initialMin << " initialMax=" << initialMax << " initialRange=" << initialRange;
-    for (int z=0;z<initialReferenceStack->getZDim();z++) {
-        for (int y=0;y<initialReferenceStack->getYDim();y++) {
-            for (int x=0;x<initialReferenceStack->getXDim();x++) {
+    int zDim=initialReferenceStack->getZDim();
+    int yDim=initialReferenceStack->getYDim();
+    int xDim=initialReferenceStack->getXDim();
+    for (int z=0;z<zDim;z++) {
+        for (int y=0;y<yDim;y++) {
+            for (int x=0;x<xDim;x++) {
                 int value= (255.0*(*initialProxy.at_uint16(x,y,z,0))-initialMin)/initialRange;
                 if (value<0) {
                     value=0;
                 } else if (value>255) {
                     value=255;
                 }
-                referenceProxy.put8bit_fit_at(x,y,z,0,value);
+                referenceProxy.put8bit_fit_at(x,(yDim-y)-1,z,0,value); // For some reason, the Y-dim seems to need inversion
             }
         }
     }
