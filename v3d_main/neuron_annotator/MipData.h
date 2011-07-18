@@ -70,6 +70,8 @@ public slots:
         // qDebug() << "MipData neuron " << neuronIndex << " toggled to " << checked;
         if (! neuronLayers) return;
         // qDebug() << "neuronLayers exists";
+        // fix off by 1 error after recent change to meaning of neuron index.
+        ++neuronIndex;
         if (neuronIndex < 0) return;
         // qDebug() << "neuronIndex >= 0";
         if (! neuronLayers[neuronIndex]) return;

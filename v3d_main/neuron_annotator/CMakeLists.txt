@@ -36,6 +36,7 @@ QT4_WRAP_CPP(NA_MOC_SRCS
     FragmentSelectionModel.h
     MipData.h
     MipLayer.h
+    NaLockableData.h
     NeuronSelector.h
 )
 

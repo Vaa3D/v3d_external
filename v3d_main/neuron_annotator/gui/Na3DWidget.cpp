@@ -601,39 +601,39 @@ void Na3DWidget::paintGL()
     }
 }
 
-void Na3DWidget::annotationModelUpdate(QString updateType) {
-    qDebug() << "Na3DWidget::annotationModelUpdate start - updateType=" << updateType;
+
+void Na3DWidget::toggleNeuronDisplay(FragmentSelectionModel::FragmentIndex index, bool checked)
+{
     RendererNeuronAnnotator* ra = (RendererNeuronAnnotator*)renderer;
     emit progressMessage(QString("Updating textures"));
-    QList<QString> list=updateType.split(QRegExp("\\s+"));
-
-    if (updateType.startsWith("NEURONMASK_UPDATE")) {
-        QString indexString=list.at(1);
-        QString checkedString=list.at(2);
-        int index=indexString.toInt();
-        bool checked=(checkedString.toInt()==1);
-        ra->updateCurrentTextureMask(index, (checked ? 1 : 0));
-
-    } else if (updateType.startsWith("FULL_UPDATE")) {
-        // Change requiring full reload of texture image stacks
-        QList<int> tempList;
-        for (int i=0;i<annotationSession->getMaskStatusList().size();i++) {
-            if (annotationSession->neuronMaskIsChecked(i)) {
-                tempList.append(i);
-            }
-        }
-        QList<RGBA8*> overlayList;
-        QList<bool> overlayStatusList=annotationSession->getOverlayStatusList();
-        for (int i=0;i<overlayStatusList.size();i++) {
-            if (overlayStatusList.at(i)) {
-                overlayList.append(ra->getOverlayTextureByAnnotationIndex(i));
-            }
-        }
-        ra->rebuildFromBaseTextures(tempList, overlayList);
-    }
+    ra->updateCurrentTextureMask(index, (checked ? 1 : 0));
     ra->paint();
     update();
 }
+
+
+void Na3DWidget::updateFullVolume()
+{
+    // Change requiring full reload of texture image stacks
+    RendererNeuronAnnotator* ra = (RendererNeuronAnnotator*)renderer;
+    QList<int> tempList;
+    for (int i=0;i<annotationSession->getMaskStatusList().size();i++) {
+        if (annotationSession->neuronMaskIsChecked(i)) {
+            tempList.append(i);
+        }
+    }
+    QList<RGBA8*> overlayList;
+    QList<bool> overlayStatusList=annotationSession->getOverlayStatusList();
+    for (int i=0;i<overlayStatusList.size();i++) {
+        if (overlayStatusList.at(i)) {
+            overlayList.append(ra->getOverlayTextureByAnnotationIndex(i));
+        }
+    }
+    ra->rebuildFromBaseTextures(tempList, overlayList);
+    ra->paint();
+    update();
+}
+
 
 bool Na3DWidget::screenShot(QString filename)
 {

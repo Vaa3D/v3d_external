@@ -1161,10 +1161,6 @@ void NaZStackWidget::updateROIsize(int boxSize)
     emit boxSizeChanged(boxSize);
 }
 
-void NaZStackWidget::annotationModelUpdate(QString updateType) {
-    // Stub
-}
-
 void NaZStackWidget::setHDRCheckState(int state) {
     if(state){
         runHDRFILTER = true;

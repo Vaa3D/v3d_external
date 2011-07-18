@@ -83,7 +83,10 @@ signals:
     void hideProgress();
 
 public slots:
-    void annotationModelUpdate(QString updateType);
+    // void annotationModelUpdate(QString updateType);
+    virtual void toggleNeuronDisplay(FragmentSelectionModel::FragmentIndex index, bool checked);
+    virtual void updateFullVolume() {/* TODO */}
+
     void initializePixmap(); // when a new image has loaded
     // Want to distinguish between double click and single click events
     void onMouseSingleClick(QPoint pos);

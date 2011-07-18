@@ -42,7 +42,10 @@ public:
 
 public slots:
     void setGammaBrightness(qreal gamma);
-    virtual void annotationModelUpdate(QString updateType);
+    virtual void annotationModelUpdate(QString updateType) {NaViewer::annotationModelUpdate(updateType);}
+    virtual void toggleNeuronDisplay(FragmentSelectionModel::FragmentIndex index, bool checked);
+    virtual void updateFullVolume();
+
     void resetView();
     void resetRotation() {
         cameraModel.setRotation(Rotation3D());

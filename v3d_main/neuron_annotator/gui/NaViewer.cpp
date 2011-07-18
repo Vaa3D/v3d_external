@@ -17,6 +17,24 @@ void NaViewer::synchronizeWithCameraModel(CameraModel* externalCamera)
             &cameraModel, SLOT(setRotation(const Rotation3D&)));
 }
 
+
+void NaViewer::annotationModelUpdate(QString updateType)
+{
+    QList<QString> list=updateType.split(QRegExp("\\s+"));
+
+    if (updateType.startsWith("NEURONMASK_UPDATE")) {
+        QString indexString=list.at(1);
+        QString checkedString=list.at(2);
+        int index=indexString.toInt();
+        bool checked=(checkedString.toInt()==1);
+        toggleNeuronDisplay(index, checked);
+    }
+    else if (updateType.startsWith("FULL_UPDATE")) {
+        updateFullVolume();
+    }
+}
+
+
 void NaViewer::decoupleCameraModel(CameraModel* externalCamera)
 {
     cameraModel.disconnect(externalCamera);

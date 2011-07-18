@@ -103,7 +103,10 @@ public slots:
     void setBlueChannel();
     void setCurrentZSlice(int sliceNum);
     void updateROIsize(int boxSize);
-    void annotationModelUpdate(QString updateType);
+    // void annotationModelUpdate(QString updateType);
+    virtual void toggleNeuronDisplay(FragmentSelectionModel::FragmentIndex index, bool checked) {/* TODO */}
+    virtual void updateFullVolume() {/* TODO */}
+
     void setHDRCheckState(int state);
 
     void setGammaBrightness(qreal gamma);

@@ -24,6 +24,7 @@ signals:
     void mouseLeftDragEvent(int dx, int dy, QPoint pos);
 
 public slots:
+    virtual void annotationModelUpdate(QString updateType) {NaViewer::annotationModelUpdate(updateType);}
     void showCrosshair(bool b) {NaViewer::showCrosshair(b); update();}
 
 protected slots:

@@ -479,19 +479,10 @@ void NaLargeMIPWidget::mouseMoveEvent(QMouseEvent * event)
     }
 }
 
-void NaLargeMIPWidget::annotationModelUpdate(QString updateType)
+void NaLargeMIPWidget::toggleNeuronDisplay(FragmentSelectionModel::FragmentIndex index, bool checked)
 {
     if (! mipImage) return;
-    if (updateType.startsWith("NEURONMASK_UPDATE")) {
-        QList<QString> list=updateType.split(QRegExp("\\s+"));
-        QString indexString=list.at(1);
-        QString checkedString=list.at(2);
-        int index=indexString.toInt();
-        bool checked=(checkedString.toInt()==1);
-        // Use signal, so image update can occur in non-gui thread
-        // qDebug() << "neuronDisplayToggled";
-        emit neuronDisplayToggled(index, checked);
-    }
+    emit neuronDisplayToggled(index, checked);
 }
 
 bool NaLargeMIPWidget::saveImage(QString filename){
