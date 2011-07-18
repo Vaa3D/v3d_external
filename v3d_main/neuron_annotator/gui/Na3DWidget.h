@@ -54,6 +54,7 @@ public slots:
     void onMouseSingleClick(QPoint pos);
     void onNotSingleClick();
     void onPossibleSingleClickAlert();
+    virtual void updateImageData();
 
 public:
 

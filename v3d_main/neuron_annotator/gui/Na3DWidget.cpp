@@ -49,6 +49,36 @@ Na3DWidget::~Na3DWidget()
     if (rotateCursor) delete rotateCursor; rotateCursor = NULL;
 }
 
+// Override updateImageData() to avoid that modal progress dialog
+/* virtual */ /* public slot */
+void Na3DWidget::updateImageData()
+{
+    // TODO - push progress signals into renderer, where it might be possible to make them finer
+    emit progressMessage(QString("Updating 3D viewer data"));
+    emit progressAchieved(30);
+    QCoreApplication::processEvents();
+    renderer->setupData(this->_idep);
+    if (renderer->hasError()) {
+        emit progressComplete(); // TODO - not strong enough
+        return;
+    }
+    renderer->getLimitedDataSize(_data_size); //for update slider size
+    emit progressAchieved(70);
+    QCoreApplication::processEvents();
+    renderer->reinitializeVol(renderer->class_version()); //100720
+    if (renderer->hasError()) {
+        emit progressComplete(); // TODO - not strong enough
+        return;
+    }
+    emit progressAchieved(100);
+    emit progressComplete();
+    // when initialize done, update status of control widgets
+    //SEND_EVENT(this, QEvent::Type(QEvent_InitControlValue)); // use event instead of signal
+    emit signalVolumeCutRange(); //100809
+
+    update();
+}
+
 void Na3DWidget::resetView()
 {
     // qDebug() << "reset";

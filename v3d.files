@@ -2394,3 +2394,4 @@ v3d_main/neuron_annotator/gui/FragmentGalleryWidget.cpp
 v3d_main/neuron_annotator/gui/VolumeColorModel.h
 v3d_main/neuron_annotator/gui/VolumeColorModel.cpp
 
+v3d_main/v3d/mainwindow_wsi.cpp

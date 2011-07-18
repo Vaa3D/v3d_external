@@ -32,6 +32,7 @@ QT4_WRAP_CPP(NA_MOC_SRCS
     gui/FragmentGalleryWidget.h
     gui/RendererNeuronAnnotator.h
     AnnotationSession.h
+    ExportFile.h
     FragmentSelectionModel.h
     MipData.h
     MipLayer.h
