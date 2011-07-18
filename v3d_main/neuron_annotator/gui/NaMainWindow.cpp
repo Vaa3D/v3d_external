@@ -619,7 +619,7 @@ void NaMainWindow::updateThumbnailGamma(qreal gamma)
 
 void NaMainWindow::createOverlayGallery() {
     qDebug() << "createOverlayGallery() start";
-    QList<QImage> * overlayMipList = annotationSession->getOverlayMipList();
+    QList<QImage*> * overlayMipList = annotationSession->getOverlayMipList();
 
     QFrame* ui_maskFrame = qFindChild<QFrame*>(this, "maskFrame");
     if (! ui_maskFrame->layout()) {
@@ -636,14 +636,14 @@ void NaMainWindow::createOverlayGallery() {
         delete item;
     }
 
-    GalleryButton* referenceButton = new GalleryButton(overlayMipList->at(AnnotationSession::REFERENCE_MIP_INDEX), "Reference", AnnotationSession::REFERENCE_MIP_INDEX);
+    GalleryButton* referenceButton = new GalleryButton(*overlayMipList->at(AnnotationSession::REFERENCE_MIP_INDEX), "Reference", AnnotationSession::REFERENCE_MIP_INDEX);
     referenceButton->setChecked(false); // we do not want reference initially loaded
     annotationSession->setOverlayStatus(AnnotationSession::REFERENCE_MIP_INDEX, false);
     managementLayout->addWidget(referenceButton);
     overlayGalleryButtonList.append(referenceButton);
     connect(referenceButton, SIGNAL(declareChange(int,bool)), annotationSession, SLOT(overlayUpdate(int,bool)));
 
-    GalleryButton* backgroundButton = new GalleryButton(overlayMipList->at(AnnotationSession::BACKGROUND_MIP_INDEX), "Background", AnnotationSession::BACKGROUND_MIP_INDEX);
+    GalleryButton* backgroundButton = new GalleryButton(*overlayMipList->at(AnnotationSession::BACKGROUND_MIP_INDEX), "Background", AnnotationSession::BACKGROUND_MIP_INDEX);
     backgroundButton->setChecked(true); // we do want background initially loaded
     annotationSession->setOverlayStatus(AnnotationSession::BACKGROUND_MIP_INDEX, true);
     managementLayout->addWidget(backgroundButton);
@@ -654,7 +654,7 @@ void NaMainWindow::createOverlayGallery() {
 
 void NaMainWindow::createNeuronGallery() {
     qDebug() << "createNeuronGallery() start";
-    QList<QImage> * maskMipList = annotationSession->getNeuronMipList();
+    QList<QImage*> * maskMipList = annotationSession->getNeuronMipList();
 
     // QFrame* ui_maskGallery = qFindChild<QFrame*>(this, "maskGallery");
     // Delete any old contents from the layout, such as previous thumbnails
@@ -662,7 +662,7 @@ void NaMainWindow::createNeuronGallery() {
 
     qDebug() << "Number of neuron masks = " << maskMipList->size();
     for (int i = 0; i < maskMipList->size(); ++i) {
-        GalleryButton* button = new GalleryButton(maskMipList->at(i), QString("Neuron %1").arg(i), i);
+        GalleryButton* button = new GalleryButton(*maskMipList->at(i), QString("Neuron %1").arg(i), i);
         neuronGalleryButtonList.append(button);
         ui.fragmentGalleryWidget->appendFragment(button);
         button->setChecked(true); // start as checked since full image loaded initially

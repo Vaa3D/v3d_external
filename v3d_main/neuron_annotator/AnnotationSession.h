@@ -29,8 +29,8 @@ public:
     bool loadReferenceStack();
     bool prepareLabelIndex();
     bool populateMipLists();
-    QList<QImage>* getNeuronMipList() { return &neuronMipList; }
-    QList<QImage>* getOverlayMipList() { return &overlayMipList; }
+    QList<QImage*>* getNeuronMipList() { return &neuronMipList; }
+    QList<QImage*>* getOverlayMipList() { return &overlayMipList; }
 
     void setMultiColorImageStackNode(MultiColorImageStackNode* node) {
         this->multiColorImageStackNode=node;
@@ -78,8 +78,8 @@ private:
     My4DImage* originalImageStack;
     My4DImage* neuronMaskStack;
     My4DImage* referenceStack;
-    QList<QImage> neuronMipList;
-    QList<QImage> overlayMipList;
+    QList<QImage*> neuronMipList;
+    QList<QImage*> overlayMipList;
     QList<bool> maskStatusList;
     QList<bool> overlayStatusList;
     QList<bool> neuronSelectList;

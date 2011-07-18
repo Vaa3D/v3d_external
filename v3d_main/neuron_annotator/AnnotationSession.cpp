@@ -34,6 +34,12 @@ AnnotationSession::~AnnotationSession() {
     if (referenceStack!=0) {
         delete referenceStack;
     }
+    for (int i=0;i<neuronMipList.size();i++) {
+        delete neuronMipList.at(i);
+    }
+    for (int i=0;i<overlayMipList.size();i++) {
+        delete overlayMipList.at(i);
+    }
 }
 
 // TBD
@@ -206,15 +212,20 @@ bool AnnotationSession::populateMipLists() {
 
     // Neuron MIP List and Background
     for (int maskIndex=0;maskIndex<maskStatusList.size();maskIndex++) {
-        neuronMipList.append(QImage(imageX, imageY, QImage::Format_RGB888));
+        QImage* mip=new QImage(imageX, imageY, QImage::Format_RGB888);
+        mip->fill(0);
+        neuronMipList.append(mip);
     }
 
     // Order is important here
-    overlayMipList.append((QImage(imageX, imageY, QImage::Format_RGB888))); // Reference
-    overlayMipList.append((QImage(imageX, imageY, QImage::Format_RGB888))); // Background
+    QImage* referenceImage = new QImage(imageX, imageY, QImage::Format_RGB888);
+    referenceImage->fill(0);
+    overlayMipList.append(referenceImage);
 
-    QImage& referenceImage = overlayMipList[AnnotationSession::REFERENCE_MIP_INDEX];
-    QImage& backgroundImage = overlayMipList[AnnotationSession::BACKGROUND_MIP_INDEX];
+    QImage* backgroundImage = new QImage(imageX, imageY, QImage::Format_RGB888);
+    backgroundImage->fill(0);
+    overlayMipList.append(backgroundImage);
+
 
     bool falseBool=false;
     overlayStatusList.append(falseBool); // Reference status
@@ -227,14 +238,14 @@ bool AnnotationSession::populateMipLists() {
                 // Reference
                 int referenceIntensity = referenceProxy.value8bit_at(x,y,z,0);
                 QRgb referenceColor = qRgb(referenceIntensity, referenceIntensity, referenceIntensity); // gray
-                QRgb previousReferenceColor = referenceImage.pixel(x,y);
+                QRgb previousReferenceColor = referenceImage->pixel(x,y);
                 if (z==0) {
-                    referenceImage.setPixel(x,y,referenceColor);
+                    referenceImage->setPixel(x,y,referenceColor);
                 } else {
                     int previousIntensity = qRed(previousReferenceColor) + qGreen(previousReferenceColor) + qBlue(previousReferenceColor);
                     int currentIntensity = qRed(referenceColor) + qGreen(referenceColor) + qBlue(referenceColor);
                     if (currentIntensity > previousIntensity) {
-                        referenceImage.setPixel(x,y,referenceColor);
+                        referenceImage->setPixel(x,y,referenceColor);
                     }
                 }
 
@@ -252,9 +263,9 @@ bool AnnotationSession::populateMipLists() {
                 QImage* maskImage=0;
                 if (maskIndex==0) {
                     // Background
-                    maskImage=&(overlayMipList[AnnotationSession::BACKGROUND_MIP_INDEX]);
+                    maskImage=overlayMipList[AnnotationSession::BACKGROUND_MIP_INDEX];
                 } else {
-                    maskImage=&(neuronMipList[maskIndex-1]);
+                    maskImage=neuronMipList[maskIndex-1];
                 }
                 QRgb previousColor = maskImage->pixel(x,y);
                 if (z==0) {
