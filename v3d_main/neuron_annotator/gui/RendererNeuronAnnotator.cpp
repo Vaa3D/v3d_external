@@ -315,7 +315,7 @@ void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf) {
                         emit progressAchieved(prog);
                         // processEvents() kludge as long as texture updates are in GUI thread
                         // TODO Is ExcludeUserInputEvents really necessary here?
-                        QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+                        QCoreApplication::processEvents(/* QEventLoop::ExcludeUserInputEvents */);
                     }
             }
 
@@ -614,7 +614,7 @@ void RendererNeuronAnnotator::updateCurrentTextureMask(int neuronIndex, int stat
                         emit progressAchieved(prog);
                         // processEvents() kludge as long as texture updates are in GUI thread
                         // TODO Is ExcludeUserInputEvents really necessary here?
-                        QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+                        QCoreApplication::processEvents(/* QEventLoop::ExcludeUserInputEvents */);
                     }
             }
     }
@@ -622,15 +622,6 @@ void RendererNeuronAnnotator::updateCurrentTextureMask(int neuronIndex, int stat
     qDebug() << "RendererNeuronAnnotator::updateCurrentTextureMask() finished in " << mSec << " milliseconds  tilesIncluded=" << glTilesIncluded <<" tilesExcluded=" << glTilesExcluded;
     emit progressComplete();
 }
-
-/*
-void RendererNeuronAnnotator::updateProgressDialog(QProgressDialog & dialog, int level) {
-    QApplication::setActiveWindow(&dialog);
-    dialog.setValue(level);
-    dialog.repaint();
-    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-}
-*/
 
 RGBA8* RendererNeuronAnnotator::getOverlayTextureByAnnotationIndex(int index) {
     if (index==AnnotationSession::REFERENCE_MIP_INDEX) {

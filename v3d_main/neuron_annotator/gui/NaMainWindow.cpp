@@ -748,6 +748,7 @@ void NaMainWindow::set3DProgress(int prog) {
         // neither setEnabled() nor raise() help with initial grayness problem of progress bar
         // statusProgressBar->setEnabled(true);
         // statusProgressBar->raise();
+        // update();
     }
 }
 
