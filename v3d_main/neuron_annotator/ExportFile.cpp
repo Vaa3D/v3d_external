@@ -70,8 +70,12 @@ void ExportFile::run()
             V3DLONG sz = p4Dimg->getZDim();
             V3DLONG sc = 3;
 
-            if(sz>256) sz = 256; // compressed size realZ, realY, realX
+            // compressed size realZ, realY, realX
+            if(sx>512) sx = 512;
+            if(sy>512) sy = 512;
+            if(sz>256) sz = 256;
 
+            //
             V3DLONG pagesz = sx*sy*sz;
             V3DLONG totalplx = pagesz*sc;
 
