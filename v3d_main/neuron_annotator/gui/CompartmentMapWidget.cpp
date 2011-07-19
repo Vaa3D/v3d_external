@@ -137,6 +137,7 @@ void CompartmentMapWidget::switchCompartment(int num)
         for(int i=0; i<listLabelSurf.size(); i++)
         {
             listLabelSurf[i].on = true;
+            //setCurrentIndex(i+2, true);
         }
     }
     else if(num==1) // all off
@@ -144,11 +145,21 @@ void CompartmentMapWidget::switchCompartment(int num)
         for(int i=0; i<listLabelSurf.size(); i++)
         {
             listLabelSurf[i].on = false;
+            //setCurrentIndex(i+2, false);
         }
     }
     else
     {
         listLabelSurf[num-2].on = !(listLabelSurf[num-2].on);
+
+//        if(listLabelSurf[num-2].on)
+//        {
+//            setCurrentIndex(num, true);
+//        }
+//        else
+//        {
+//            setCurrentIndex(num, false);
+//        }
     }
 
     ((Renderer_tex2 *)renderer)->setListLabelSurf(listLabelSurf);
@@ -159,4 +170,30 @@ void CompartmentMapWidget::switchCompartment(int num)
 void CompartmentMapWidget::setComboBox(QComboBox *compartmentComboBox)
 {
     pCompartmentComboBox = compartmentComboBox;
+
+    listView = (QListView*)pCompartmentComboBox->view();
+    //listView->setSpacing(5);
+}
+
+void CompartmentMapWidget::setCurrentIndex(int row, bool flag)
+{
+
+   QModelIndex index = listView->model()->index(row, 0);
+
+   if (index.isValid())
+   {
+       listView->selectionModel()->clear();
+
+       if(flag)
+       {
+           qDebug()<<"on";
+           listView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::SelectCurrent);
+       }
+       else
+       {
+           qDebug()<<"off";
+           listView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Deselect);
+       }
+   }
+
 }

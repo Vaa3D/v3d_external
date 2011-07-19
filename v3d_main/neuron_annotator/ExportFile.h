@@ -5,11 +5,15 @@
 #include <QThread>
 #include <QMutex>
 #include <QFileInfo>
+#include <QList>
 
 #include <iostream>
 
 #include "../v3d/v3d_core.h"
 #include "../basic_c_fun/color_xyz.h"
+
+template <class Tinput, class Tmask, class Tref, class Toutput>
+bool getCurrentStack(Tinput *input1d, Tmask *mask1d, Tref *ref1d, Toutput *output1d, V3DLONG *szStack, QList<bool> maskStatusList, QList<bool> overlayStatusList, int datatype);
 
 // export XYZC(T) tif file
 class ExportFile : public QThread
@@ -21,7 +25,7 @@ public:
     ~ExportFile();
 	
 public:
-    bool init(My4DImage *p4DimgInput, RGBA8 *p3DtexInput, QString filenameInput); // preferred
+    bool init(My4DImage *pOriginalInput, My4DImage *pMaskInput, My4DImage *pRefInput, QList<bool> maskStatusListInput, QList<bool> overlayStatusListInput, QString filenameInput);
 
 protected:
     void run();
@@ -29,8 +33,11 @@ protected:
 public:
     volatile bool stopped; //
 
-    My4DImage* p4Dimg;
-    RGBA8* p3Dtex;
+    My4DImage *pOriginal;
+    My4DImage *pMask;
+    My4DImage *pRef;
+    QList<bool> maskStatusList;
+    QList<bool> overlayStatusList;
     QString filename;
 	
 private:

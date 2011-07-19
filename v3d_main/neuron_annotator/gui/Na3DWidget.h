@@ -103,7 +103,6 @@ public:
     }
 
     bool screenShot(QString filename);
-    bool saveImageStack(QString filename);
 
 protected:
     void updateCursor();

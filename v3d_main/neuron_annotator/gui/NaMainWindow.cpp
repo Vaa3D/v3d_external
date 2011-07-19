@@ -381,7 +381,14 @@ void NaMainWindow::on_actionOpen_triggered() {
 void NaMainWindow::on_action3D_Volume_triggered() {
     QString filename = QFileDialog::getSaveFileName(0, QObject::tr("Save 3D Volume to an .tif file"), ".", QObject::tr("3D Volume (*.tif)"));
     if (!(filename.isEmpty())){
-        bool saved = ui.v3dr_glwidget->saveImageStack(filename);
+        if(annotationSession){
+            ExportFile *pExport = new ExportFile;
+            if(pExport->init(annotationSession->getOriginalImageStackAsMy4DImage(), annotationSession->getNeuronMaskAsMy4DImage(), annotationSession->getReferenceStack(),
+                             annotationSession->getMaskStatusList(), annotationSession->getOverlayStatusList(), filename)){
+                connect(pExport, SIGNAL(finished()), pExport, SLOT(deleteLater()));
+                pExport->start();
+            }
+        }
     }
 }
 

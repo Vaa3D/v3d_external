@@ -2,7 +2,6 @@
 #include "v3d_core.h"
 #include "../3drenderer/Renderer_gl2.h"
 #include "RendererNeuronAnnotator.h"
-#include "../ExportFile.h"
 #include <iostream>
 #include <cmath>
 #include <cassert>
@@ -648,17 +647,6 @@ bool Na3DWidget::screenShot(QString filename)
     {
         printf("Failed to save screen-shot: [%s]\n",  filename.toAscii().data());
         return false;
-    }
-}
-
-bool Na3DWidget::saveImageStack(QString filename)
-{
-    RendererNeuronAnnotator* ra = (RendererNeuronAnnotator*)renderer;
-
-    ExportFile *pExport = new ExportFile;
-    if(pExport->init(_idep->image4d, ra->getTexture3DCurrent(), filename)){
-        connect(pExport, SIGNAL(finished()), pExport, SLOT(deleteLater()));
-        pExport->start();
     }
 }
 

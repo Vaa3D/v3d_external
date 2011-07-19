@@ -9,6 +9,7 @@
 #include "../AnnotationSession.h"
 #include "GalleryButton.h"
 #include "../FragmentSelectionModel.h"
+#include "../ExportFile.h"
 
 class NeuronSelector;
 

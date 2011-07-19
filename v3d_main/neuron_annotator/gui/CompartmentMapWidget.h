@@ -6,6 +6,7 @@
 #include <cmath>
 #include <iostream>
 #include <QStringListModel>
+#include <QListView>
 
 #if defined (_MSC_VER)
 #include "../basic_c_fun/vcdiff.h"
@@ -25,6 +26,7 @@ public:
 public:
     void loadAtlas();
     void setComboBox(QComboBox *compartmentComboBox);
+    void setCurrentIndex(int row, bool flag);
 
 public slots:
     void switchCompartment(int num);
@@ -49,6 +51,7 @@ public:
 
     QComboBox *pCompartmentComboBox;
 
+    QListView* listView;
     QStringListModel model;
 
 //    QList <Triangle*> list_listTriangle;
