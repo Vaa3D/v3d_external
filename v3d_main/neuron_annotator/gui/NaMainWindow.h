@@ -58,9 +58,6 @@ public slots:
     void on_actionNeuronAnnotator_triggered();
     void on_actionQuit_triggered();
     void on_actionOpen_triggered();
-    void on_actionLoad_Tiff_triggered();
-    void on_actionCell_Counter_3D_2ch_lsm_triggered();
-
     void on_action3D_Volume_triggered();
     void on_action2D_MIP_triggered();
     void on_actionScreenShot_triggered();
@@ -93,7 +90,6 @@ private:
     void createOverlayGallery();
     QList<GalleryButton*> overlayGalleryButtonList;
     QList<GalleryButton*> neuronGalleryButtonList;
-    My4DImage currentStackImage;
     CameraModel sharedCameraModel; // optional camera sharing
     NutateThread * nutateThread;
     NeuronSelector* neuronSelector;

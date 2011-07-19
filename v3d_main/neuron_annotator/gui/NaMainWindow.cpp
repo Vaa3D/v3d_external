@@ -536,53 +536,6 @@ bool NaMainWindow::closeAnnotationSession() {
     return true;
 }
 
-void NaMainWindow::on_actionLoad_Tiff_triggered()
-{
-    static QString tiffDirectory;
-    QString tiffFileName = QFileDialog::getOpenFileName(this,
-            "Select 3D Image/Stack file",
-            tiffDirectory,
-            tr("TIFF/LSM/V3DRAW files (*.tif *.lsm *.raw)"));
-    if (tiffFileName.isEmpty()) return;
-    QFile tiffFile(tiffFileName);
-    if (! tiffFile.exists()) return;
-    tiffDirectory = tiffFileName;
-    currentStackImage.loadImage(tiffFileName.toLocal8Bit().data());
-    qDebug() << "currentStackImage x=" << currentStackImage.getXDim() << " y=" << currentStackImage.getYDim() << " z=" << currentStackImage.getZDim()
-            << " c=" << currentStackImage.getCDim() << " d=" << currentStackImage.getDatatype();
-    // renderer might not be created yet if 3D widget is not shown yet.
-    if (! ui.v3dr_glwidget->getRenderer())
-        ui.v3dr_glwidget->createRenderer();
-    RendererNeuronAnnotator* renderer = (RendererNeuronAnnotator*)ui.v3dr_glwidget->getRenderer();
-    assert(renderer);
-    renderer->setMasklessSetupStackTexture(true);
-    loadMy4DImage(&currentStackImage);
-}
-
-void NaMainWindow::on_actionCell_Counter_3D_2ch_lsm_triggered() {
-    static QString lsmDirectory;
-    QString lsmFileName = QFileDialog::getOpenFileName(this,
-                                                       "Select 3D 2-channel lsm file",
-                                                       lsmDirectory,
-                                                       tr("LSM files (*.lsm)"));
-    if (lsmFileName.isEmpty()) return;
-    QFile lsmFile(lsmFileName);
-    lsmDirectory = lsmFileName;
-    My4DImage tmpImage;
-    tmpImage.loadImage(lsmFileName.toLocal8Bit().data());
-    CellCounter3D::convertMy4DImage2channelToRGB(tmpImage, currentStackImage);
-    RendererNeuronAnnotator* renderer = (RendererNeuronAnnotator*)ui.v3dr_glwidget->getRenderer();
-    renderer->setMasklessSetupStackTexture(true);
-    CellCounter3D cellCounter;
-    cellCounter.setInputFilePath(lsmFileName);
-    cellCounter.loadMy4DImage(&currentStackImage);
-    cellCounter.findCells();
-    cellCounter.markImage();
-    ui.v3dr_glwidget->loadMy4DImage(&currentStackImage);
-    cellCounter.writeOutputImageFile();
-    cellCounter.writeOutputReportFile();
-}
-
 bool NaMainWindow::loadMy4DImage(const My4DImage * img, const My4DImage * neuronMaskImg)
 {
     ui.naLargeMIPWidget->loadMy4DImage(img, neuronMaskImg);
