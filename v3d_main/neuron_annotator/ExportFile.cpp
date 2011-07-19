@@ -62,14 +62,27 @@ Toutput* getCurrentStack(Tinput *input1d, Tmask *mask1d, Tref *ref1d, V3DLONG *s
                         V3DLONG idx = offset_j + i;
                         V3DLONG idxmask = idx - offset_c;
 
-                        if( (overlayStatusList.at(1) && mask1d[idxmask]==0) // background signals
-                                || (maskStatusList.at(mask1d[idxmask]) && mask1d[idxmask]) ) // neuron signals
+                        if(mask1d[idxmask]) // neuron
                         {
-                            output1d[idx] = (Toutput) (input1d[idx]);
+                            if(maskStatusList.at(mask1d[idxmask]-1))
+                            {
+                                output1d[idx] = (Toutput) (input1d[idx]);
+                            }
+                            else
+                            {
+                                output1d[idx] = 0;
+                            }
                         }
-                        else
+                        else // background
                         {
-                            output1d[idx] = 0;
+                            if(overlayStatusList.at(1))
+                            {
+                                output1d[idx] = (Toutput) (input1d[idx]);
+                            }
+                            else
+                            {
+                                output1d[idx] = 0;
+                            }
                         }
 
                     }
