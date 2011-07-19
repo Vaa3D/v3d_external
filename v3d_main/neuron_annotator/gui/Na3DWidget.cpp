@@ -605,6 +605,7 @@ void Na3DWidget::toggleNeuronDisplay(FragmentSelectionModel::FragmentIndex index
 {
     RendererNeuronAnnotator* ra = (RendererNeuronAnnotator*)renderer;
     emit progressMessage(QString("Updating textures"));
+    QCoreApplication::processEvents();
     ra->updateCurrentTextureMask(index, (checked ? 1 : 0));
     ra->paint();
     update();
@@ -613,6 +614,7 @@ void Na3DWidget::toggleNeuronDisplay(FragmentSelectionModel::FragmentIndex index
 
 void Na3DWidget::updateFullVolume()
 {
+    emit progressMessage(QString("Updating all textures"));
     // Change requiring full reload of texture image stacks
     RendererNeuronAnnotator* ra = (RendererNeuronAnnotator*)renderer;
     QList<int> tempList;
@@ -628,6 +630,7 @@ void Na3DWidget::updateFullVolume()
             overlayList.append(ra->getOverlayTextureByAnnotationIndex(i));
         }
     }
+    QCoreApplication::processEvents();
     ra->rebuildFromBaseTextures(tempList, overlayList);
     ra->paint();
     update();
