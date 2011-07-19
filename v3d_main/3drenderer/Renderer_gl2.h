@@ -65,7 +65,7 @@ public:
 	virtual void toggleShader();
 	virtual void toggleObjShader();
 	virtual void applyColormapToImage();
-	virtual RGB8 lookupColormap(RGB8 inI);
+	virtual RGB8 lookupColormap(RGB8 inC, int op);
 	virtual void toggleTexStream();
 
 //	virtual void togglePolygonMode() {polygonMode = (polygonMode +1) %5;} // FILL,LINE,POINT, transparent,outline

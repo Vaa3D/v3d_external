@@ -93,13 +93,13 @@ V3dR_GLWidget::~V3dR_GLWidget()
 	qDebug("V3dR_GLWidget::~V3dR_GLWidget =======================================");
 	_in_destructor = true;
 
-	if (colormapDlg && colormapDlg->DecRef(this)<1) ;//colormapDlg = 0;
-	if (surfaceDlg && surfaceDlg->DecRef(this)<1) ;//surfaceDlg = 0;
+	if (colormapDlg && colormapDlg->DecRef(this)<1) ;//colormapDlg = 0 safely called in destructor of colormapDlg;
+	if (surfaceDlg && surfaceDlg->DecRef(this)<1) ;  //surfaceDlg = 0  safely called in destructor of surfaceDlg;
 
 	deleteRenderer(); //090711 RZC: maybe too late, because some version Qt destroyed GL context before here.
 
 	POST_CLOSE(mainwindow);
-	QCoreApplication::sendPostedEvents(0, 0); // process all blocked event
+	QCoreApplication::sendPostedEvents(0, 0); // process all blocked events
 }
 
 V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, QString title)

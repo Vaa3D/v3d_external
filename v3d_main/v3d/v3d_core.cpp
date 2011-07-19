@@ -160,8 +160,9 @@ using namespace std;
 #endif
 
 #include "../3drenderer/v3dr_mainwindow.h" //v3d_drawmain-->v3dr_mainwindow, by RZC 20080921
-#include "../3drenderer/v3dr_glwidget.h" // by RZC 20090710
-#include "../3drenderer/renderer_tex2.h" //090117
+#include "../3drenderer/v3dr_glwidget.h" //090710 by RZC for XFormWidget::doImage3DView
+#include "../3drenderer/renderer_tex2.h" //090117 by RZC for My4DImage::update_3drenderer_neuron_view
+#include "ChannelTable.cpp"
 
 #include "../multithreadimageIO/v3d_multithreadimageIO.h"
 
@@ -197,59 +198,12 @@ double th_use_memory=1.5; //allow 1.5G memory for 32bit windows
 #endif
 
 
-///////
-// 090622 RZC: load segment neuron, used by algorithm test
-void load_segment_neuron(My4DImage* curImg, Renderer_tex2* curRen)
-{
-	V_NeuronSWC null_neuron;
-	for (int i=0; i<curImg->tracedNeuron.last_seg_num; i++)	{
-	null_neuron.name = qPrintable(QString("%1").arg(i+1)); curRen->updateNeuronTree(null_neuron);}
-	for (int i=0; i<curImg->tracedNeuron.seg.size(); i++)
-		curRen->updateNeuronTree(curImg->tracedNeuron.seg[i]);
-}
-void load_merged_neuron(My4DImage* curImg, Renderer_tex2* curRen)
-{
-	V_NeuronSWC merged_neuron = merge_V_NeuronSWC_list(curImg->tracedNeuron);
-	merged_neuron.name = curImg->tracedNeuron.name;
-	merged_neuron.file = curImg->tracedNeuron.file;
-	curRen->updateNeuronTree(merged_neuron);
-}
-#define LOAD_traced_neuron   load_merged_neuron
-
 MyTextBrowser::MyTextBrowser(QWidget * parent) : QTextBrowser(parent)
 {
 }
 
-void My4DImage::update_3drenderer_neuron_view(V3dR_GLWidget* glwidget, Renderer_tex2* renderer)
-{
-	LOAD_traced_neuron(this, renderer);
-	glwidget->updateTool();
-}
 
-void My4DImage::update_3drenderer_neuron_view()
-{
-	XFormWidget* xwidget = getXWidget();
-	if (! xwidget) return;
-
-	if (xwidget->mypara_3Dview.b_still_open && xwidget->mypara_3Dview.window3D)
-	{
-		Renderer_tex2 * cur_renderer = (Renderer_tex2 *)(xwidget->mypara_3Dview.window3D->getGLWidget()->getRenderer());
-
-		LOAD_traced_neuron(this, cur_renderer);
-
-		xwidget->mypara_3Dview.window3D->getGLWidget()->updateTool(); // 090622 RZC
-	}
-
-	//also update local view
-	if (xwidget->mypara_3Dlocalview.b_still_open && xwidget->mypara_3Dlocalview.window3D)
-	{
-		Renderer_tex2 * cur_renderer = (Renderer_tex2 *)(xwidget->mypara_3Dlocalview.window3D->getGLWidget()->getRenderer());
-
-		LOAD_traced_neuron(this, cur_renderer);
-
-		xwidget->mypara_3Dlocalview.window3D->getGLWidget()->updateTool();
-	}
-}
+// all copyRaw2QPixmap(T****, ?) called by XFormView::internal_only_imgplane_op
 
 template <class T> QPixmap copyRaw2QPixmap(const T ** p2d, V3DLONG sz0, V3DLONG sz1)
 {
@@ -946,6 +900,7 @@ template <class T> QPixmap copyRaw2QPixmap(const T **** p4d, V3DLONG sz0, V3DLON
 			return QPixmap(0,0); //return an empty image for this prohibited case
 			break;
 	}
+//	copyRaw2QPixmap_Slice(disType, cpos, p4d, sz0, sz1, sz2, sz3, Ctype, bIntensityRescale, p_vmax, p_vmin); //110718 RZC
 }
 
 QPixmap copyRaw2QPixmap_colormap(const void **** p4d, ImagePixelType dtype, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, V3DLONG cpos, const ColorMap *pc, ImagePlaneDisplayType disType)
@@ -5816,4 +5771,56 @@ void LandmarkPropertyDialog::compute_rgn_stat()
 
 
 #endif
+
+
+/////////////////////////////////////////////////////////////
+// put here instead of in my4diamge.cpp because to share the same #include with XFormWidget::doImage3DView
+#define LOAD_traced_neuron   load_merged_neuron
+
+void load_segment_neuron(My4DImage* curImg, Renderer_tex2* curRen) // 090622 RZC: load segment neuron, used by algorithm test
+{
+	V_NeuronSWC null_neuron;
+	for (int i=0; i<curImg->tracedNeuron.last_seg_num; i++)	{
+	null_neuron.name = qPrintable(QString("%1").arg(i+1)); curRen->updateNeuronTree(null_neuron);}
+	for (int i=0; i<curImg->tracedNeuron.seg.size(); i++)
+		curRen->updateNeuronTree(curImg->tracedNeuron.seg[i]);
+}
+void load_merged_neuron(My4DImage* curImg, Renderer_tex2* curRen)
+{
+	V_NeuronSWC merged_neuron = merge_V_NeuronSWC_list(curImg->tracedNeuron);
+	merged_neuron.name = curImg->tracedNeuron.name;
+	merged_neuron.file = curImg->tracedNeuron.file;
+	curRen->updateNeuronTree(merged_neuron);
+}
+
+void My4DImage::update_3drenderer_neuron_view(V3dR_GLWidget* glwidget, Renderer_tex2* renderer)
+{
+	LOAD_traced_neuron(this, renderer);
+	glwidget->updateTool();
+}
+
+void My4DImage::update_3drenderer_neuron_view()
+{
+	XFormWidget* xwidget = getXWidget();
+	if (! xwidget) return;
+
+	if (xwidget->mypara_3Dview.b_still_open && xwidget->mypara_3Dview.window3D)
+	{
+		Renderer_tex2 * cur_renderer = (Renderer_tex2 *)(xwidget->mypara_3Dview.window3D->getGLWidget()->getRenderer());
+
+		LOAD_traced_neuron(this, cur_renderer);
+
+		xwidget->mypara_3Dview.window3D->getGLWidget()->updateTool(); // 090622 RZC
+	}
+
+	//also update local view
+	if (xwidget->mypara_3Dlocalview.b_still_open && xwidget->mypara_3Dlocalview.window3D)
+	{
+		Renderer_tex2 * cur_renderer = (Renderer_tex2 *)(xwidget->mypara_3Dlocalview.window3D->getGLWidget()->getRenderer());
+
+		LOAD_traced_neuron(this, cur_renderer);
+
+		xwidget->mypara_3Dlocalview.window3D->getGLWidget()->updateTool();
+	}
+}
 

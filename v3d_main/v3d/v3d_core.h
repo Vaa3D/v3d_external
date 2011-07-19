@@ -82,6 +82,7 @@ Jan 28-30, 2010: PHC. further adjusting codes for v2.440 and above
 #include "../neuron_editing/v_neuronswc.h"
 
 #include "colormap.h"
+//#include "ChannelTable.h" //110718 RZC, lookup and mix multi-channel's color
 
 #include "arthurwidgets.h"
 
@@ -195,41 +196,41 @@ class Renderer_tex2;
 
 int mergeback_mmunits_to_neuron_path(int n_end_nodes, vector< vector<V_NeuronSWC_unit> > & mmUnit, V_NeuronSWC_list & tNeuron);
 
-class MyTextBrowser : public QTextBrowser 
+class MyTextBrowser : public QTextBrowser
 {
 	Q_OBJECT;
-	
+
 public:
 	MyTextBrowser(QWidget * parent=0);
 	~MyTextBrowser(){}
-	
+
 public slots:
 	void setText2FocusPointFeatureWidget()
 	{
 		this->setText(focusFeatureViewTextContent);
 		this->update();
 	}
-	
+
 public:
 	void setFocusFeatureViewTextContent(QString text)
 	{
 		focusFeatureViewTextContent = text;
 	}
-	
+
 	QString getFocusFeatureViewTextContent()
 	{
 		return focusFeatureViewTextContent;
 	}
-	
+
 private:
 	QString focusFeatureViewTextContent;
-	
+
 };
 
 class My4DImage : public QObject, public Image4DSimple
 {
 	Q_OBJECT;
-	
+
 public:
         double at(int x, int y, int z, int c=0) const; //return a double number because it can always be converted back to UINT8 and UINT16 without information loss
 	void **** getData(ImagePixelType & dtype);
@@ -261,10 +262,10 @@ public:
 	unsigned char **** data4d_uint8;
 	void **** data4d_virtual;
 
-	void updateViews();	
+	void updateViews();
 
-	bool reshape(V3DLONG rsz0, V3DLONG rsz1, V3DLONG rsz2, V3DLONG rsz3);	
-	bool permute(V3DLONG dimorder[4]); 
+	bool reshape(V3DLONG rsz0, V3DLONG rsz1, V3DLONG rsz2, V3DLONG rsz3);
+	bool permute(V3DLONG dimorder[4]);
 
 	double * p_vmax, * p_vmin; //whole volume max/min values. Use pointer to handle multiple channels separately
 	double getChannalMinIntensity(V3DLONG channo);
@@ -274,7 +275,7 @@ public:
 	bool bDisplayFocusCross;
 	bool bLookingGlass;
 
-	ColorMap *colorMap; 
+	ColorMap *colorMap;
 
 	void createColorMap(int len, ImageDisplayColorType c=colorPseudoMaskColor);
 	void switchColorMap(int len, ImageDisplayColorType c);
@@ -312,7 +313,7 @@ public:
 	bool getFlagDisplayFocusCross() {return bDisplayFocusCross;}
 
 	//void setFlagImgValScaleDisplay(bool t) {bImgValScaleDisplay=t;}
-	bool getFlagImgValScaleDisplay(); 
+	bool getFlagImgValScaleDisplay();
 
 	void setFlagLookingGlass(bool t) {bLookingGlass=t;}
 	bool getFlagLookingGlass() {return bLookingGlass;}
@@ -322,12 +323,12 @@ public:
 	V3DLONG find_closest_control_pt_thres(int sx, int sy, int sz, double rr, double & dmin);
 
 	QList <DataChannelColor> listChannels; //100824
-	QList <LocationSimple> listLandmarks; 
+	QList <LocationSimple> listLandmarks;
 	QList <PtIndexAndParents> listLocationRelationship;
-	QList <InvidualAtlasFileInfo> listAtlasFiles; 
-	int atlasColorBlendChannel; 
-	bool bUseFirstImgAsMask; 
-	QString curSearchText; 
+	QList <InvidualAtlasFileInfo> listAtlasFiles;
+	int atlasColorBlendChannel;
+	bool bUseFirstImgAsMask;
+	QString curSearchText;
 
 	bool compute_rgn_stat(LocationSimple & pt, int channo);
 	void loadLandmarkFromFile();
@@ -342,12 +343,12 @@ public:
 	void computePointNeighborMoment(int x, int y, int z, int c, double & curptval, double & ave, double & sdev, double & skew, double & curt);
 	void computePointNeighborMoment(LocationSimple & L, int c); //overload for convenience
 
-	bool saveVANO_data(); 
-	bool saveMovie(); 
-	bool saveFile(); 
+	bool saveVANO_data();
+	bool saveMovie();
+	bool saveFile();
         bool saveFile(char filename[]);
         bool saveFile(QString outputFile);
-	void crop(int landmark_crop_opt); 
+	void crop(int landmark_crop_opt);
 	void crop(V3DLONG bpos_x, V3DLONG epos_x, V3DLONG bpos_y, V3DLONG epos_y, V3DLONG bpos_z, V3DLONG epos_z, V3DLONG bpos_c, V3DLONG epos_c, int landmark_crop_opt);
 	bool maskBW_roi_bbox(unsigned char tval, V3DLONG c_min, V3DLONG c_max, ImageMaskingCode my_maskcode, bool b_inside);
 	bool maskBW_roi(unsigned char tval, V3DLONG c_min, V3DLONG c_max, ImageMaskingCode my_maskcode, bool b_inside);
@@ -359,7 +360,7 @@ public:
 	bool binarizeintensity(int channo, double th); //anything < th will be 0, others will be 1
 
 	bool rotate(ImagePlaneDisplayType ptype, const Options_Rotate & r_opt);
-	bool flip(AxisCode my_axiscode); 
+	bool flip(AxisCode my_axiscode);
 
 	//080314: add worm project specific codes
 
@@ -373,10 +374,10 @@ public:
 */
 
 
-	V_NeuronSWC_list tracedNeuron; 
+	V_NeuronSWC_list tracedNeuron;
 	V3DLONG last_hit_landmark, cur_hit_landmark;
-	BoundingBox trace_bounding_box; 
-	float trace_z_thickness; 
+	BoundingBox trace_bounding_box;
+	float trace_z_thickness;
 
 	bool proj_trace_deformablepath_one_point(V3DLONG startmark_id); // 090603 RZC: output a shortest path tree
 	bool proj_trace_deformablepath_one_point_to_allotherpoints(V3DLONG startmark_id); //090609: phc. one pt to all other points
@@ -473,10 +474,10 @@ public:
 	bool proj_cellseg_levelset();
 	bool proj_cellseg_GaussianFit_pos(V3DLONG posx, V3DLONG posy, V3DLONG posz, V3DLONG posc, int nGauss, bool b_isotropic);
 */
-	
+
 signals:
 	void focusFeatureViewTextUpdated();
-	
+
 public slots:
 	void setText2FocusPointFeatureWidget();
 
@@ -613,7 +614,7 @@ struct BlendingImageInfo
 };
 
 
-#include "xformwidget.h" 
+#include "xformwidget.h"
 
 #endif // v3d_core.h
 

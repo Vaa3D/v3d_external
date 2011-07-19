@@ -386,9 +386,11 @@ void Renderer_gl2::applyColormapToImage() // at most the first 3 channels
 			for (iy = 0; iy < dim2; iy++)
 				for (ix = 0; ix < dim1; ix++)
 				{
-					RGB8 oldI = getRGB3dUINT8 (data4dp, dim1, dim2, dim3, dim4,  ix, iy, iz);
-					RGB8 newI = lookupColormap(oldI);
-					setRGB3dUINT8 (data4dp, dim1, dim2, dim3, dim4,  ix, iy, iz,  newI);
+					RGB8 oldC = getRGB3dUINT8 (data4dp, dim1, dim2, dim3, dim4,  ix, iy, iz);
+
+					RGB8 newC = lookupColormap(oldC, 1); //OP_ADD
+
+					setRGB3dUINT8 (data4dp, dim1, dim2, dim3, dim4,  ix, iy, iz,  newC);
 				}
 
 		curImg->updateViews();
@@ -414,39 +416,45 @@ void Renderer_gl2::applyColormapToImage() // at most the first 3 channels
 //	oColor.a = Axsec;
 //}
 
-RGB8 Renderer_gl2::lookupColormap(RGB8 inI)
+#define OP_MAX	0
+#define OP_ADD	1
+
+RGB8 Renderer_gl2::lookupColormap(RGB8 inC, int op)
 {
-	#define R1(i)	(colormap[0][i].r/255.0)
-	#define G1(i)	(colormap[0][i].g/255.0)
-	#define B1(i)	(colormap[0][i].b/255.0)
-	#define A1(i)	(colormap[0][i].a/255.0)
+	#define R(k,j)	(colormap[k][j].r/255.0)
+	#define G(k,j)	(colormap[k][j].g/255.0)
+	#define B(k,j)	(colormap[k][j].b/255.0)
+	#define A(k,j)	(colormap[k][j].a/255.0)
 
-	#define R2(i)	(colormap[1][i].r/255.0)
-	#define G2(i)	(colormap[1][i].g/255.0)
-	#define B2(i)	(colormap[1][i].b/255.0)
-	#define A2(i)	(colormap[1][i].a/255.0)
+	#define AR(k,j)	(A(k,j)*R(k,j))
+	#define AG(k,j)	(A(k,j)*G(k,j))
+	#define AB(k,j)	(A(k,j)*B(k,j))
 
-	#define R3(i)	(colormap[2][i].r/255.0)
-	#define G3(i)	(colormap[2][i].g/255.0)
-	#define B3(i)	(colormap[2][i].b/255.0)
-	#define A3(i)	(colormap[2][i].a/255.0)
+	int i1 = inC.r;
+	int i2 = inC.g;
+	int i3 = inC.b;
 
-	int i1 = inI.r;
-	int i2 = inI.g;
-	int i3 = inI.b;
+	float o1,o2,o3; // o1=o2=o3=0;
 
-	float o1, o2, o3;
+	if (op==OP_MAX)
+	{
+		o1 = MAX(AR(1,i1), MAX(AR(2,i2), AR(3,i3)));
+		o2 = MAX(AG(1,i1), MAX(AG(2,i2), AG(3,i3)));
+		o3 = MAX(AB(1,i1), MAX(AB(2,i2), AB(3,i3)));
 
-	o1 = A1(i1)*R1(i1) + A2(i2)*R2(i2) + A3(i3)*R3(i3);
-	o2 = A1(i1)*G1(i1) + A2(i2)*G2(i2) + A3(i3)*G3(i3);
-	o3 = A1(i1)*B1(i1) + A2(i2)*B2(i2) + A3(i3)*B3(i3);
+	}
+	else if (op==OP_ADD)
+	{
+		o1 = AR(1,i1) + AR(2,i2) + AR(3,i3);
+		o2 = AG(1,i1) + AG(2,i2) + AG(3,i3);
+		o3 = AB(1,i1) + AB(2,i2) + AB(3,i3);
+	}
 
-	RGB8 tmp;
-	tmp.r = o1*255;
-	tmp.g = o2*255;
-	tmp.b = o3*255;
-
-	return tmp;
+	RGB8 oC;
+	oC.r = o1*255;
+	oC.g = o2*255;
+	oC.b = o3*255;
+	return oC;
 }
 
 
