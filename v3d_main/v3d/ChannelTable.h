@@ -50,7 +50,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 void make_linear_lut_one(RGBA8 color, vector<RGBA8>& lut);
 void make_linear_lut(vector<RGBA8>& colors, vector< vector<RGBA8> >& luts);
-RGB8 lookup_mix(vector<int>& mC, vector< vector<RGBA8> >& mLut, int op);
+RGB8 lookup_mix(vector<unsigned char>& mC, vector< vector<RGBA8> >& mLut, int op);
 template <class T> QPixmap copyRaw2QPixmap_Slice(
 		ImagePlaneDisplayType cplane,
 		V3DLONG cpos,

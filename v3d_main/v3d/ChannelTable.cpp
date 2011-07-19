@@ -59,7 +59,7 @@ void make_linear_lut(vector<RGBA8>& colors, vector< vector<RGBA8> >& luts)
 	}
 }
 
-RGB8 lookup_mix(vector<int>& mC, vector< vector<RGBA8> >& mLut, int op)
+RGB8 lookup_mix(vector<unsigned char>& mC, vector< vector<RGBA8> >& mLut, int op)
 {
 	#define R(k) (mLut[k][ mC[k] ].r /255.0)
 	#define G(k) (mLut[k][ mC[k] ].g /255.0)
@@ -141,7 +141,7 @@ template <class T> QPixmap copyRaw2QPixmap_Slice(
 		vscale[k] = (vscale[k]==0)? 255.0 : (255.0/vscale[k]);
 	}
 
-	qDebug()<<"copyRaw2QPixmap_Slice switch (Ctype)";
+	//qDebug()<<"copyRaw2QPixmap_Slice switch (Ctype)"<<Ctype;
 
 	//set lookup-table
 	vector< vector<RGBA8> > luts(4);
@@ -243,10 +243,10 @@ template <class T> QPixmap copyRaw2QPixmap_Slice(
 
 	// transfer N channel's pixels
 	int op =  (Ctype == colorGray)? OP_MEAN : OP_MAX;
-	vector<int> mC(N);
+	vector<unsigned char> mC(N);
 	QImage tmpimg;
 
-	qDebug()<<"copyRaw2QPixmap_Slice switch (cplane)";
+	//qDebug()<<"copyRaw2QPixmap_Slice switch (cplane)"<<cplane;
 
 	switch (cplane) //QImage(w,h)
 	{
@@ -259,10 +259,10 @@ template <class T> QPixmap copyRaw2QPixmap_Slice(
 			{
 				for (int k=0; k<N; k++)
 				{
-					float  c = ((bIntensityRescale==false) ? p4d[k][z][y][pp] : floor((p4d[k][y][z][pp]-vmin[k])*vscale[k]));
-					mC[k] = c;
+					float c = p4d[k][z][y][pp];
+					mC[k] =  (bIntensityRescale==false) ? c : floor((c-vmin[k])*vscale[k]);
 				}
-				qDebug("(x) y z = (%d/%d) %d/%d %d/%d", pp,sz0, y,sz1, z,sz2);
+				//qDebug("(x) y z = (%d/%d) %d/%d %d/%d", pp,sz0, y,sz1, z,sz2);
 				RGB8 o = lookup_mix(mC, luts, op);
 				tmpimg.setPixel(z, y, qRgb(o.r, o.g, o.b));
 			}
@@ -277,10 +277,10 @@ template <class T> QPixmap copyRaw2QPixmap_Slice(
 			{
 				for (int k=0; k<N; k++)
 				{
-					float  c = ((bIntensityRescale==false) ? p4d[k][z][pp][x] : floor((p4d[k][z][pp][x]-vmin[k])*vscale[k]));
-					mC[k] = c;
+					float c = p4d[k][z][pp][x];
+					mC[k] =  (bIntensityRescale==false) ? c : floor((c-vmin[k])*vscale[k]);
 				}
-				qDebug("x (y) z = %d/%d (%d/%d) %d/%d", x,sz0, pp,sz1, z,sz2);
+				//qDebug("x (y) z = %d/%d (%d/%d) %d/%d", x,sz0, pp,sz1, z,sz2);
 				RGB8 o = lookup_mix(mC, luts, op);
 				tmpimg.setPixel(x, z, qRgb(o.r, o.g, o.b));
 			}
@@ -295,15 +295,17 @@ template <class T> QPixmap copyRaw2QPixmap_Slice(
 			{
 				for (int k=0; k<N; k++)
 				{
-					float  c = ((bIntensityRescale==false) ? p4d[k][pp][y][x] : floor((p4d[k][pp][y][x]-vmin[k])*vscale[k]));
-					mC[k] = c;
+					float c = p4d[k][pp][y][x];
+					mC[k] =  (bIntensityRescale==false) ? c : floor((c-vmin[k])*vscale[k]);
 				}
-				qDebug("x y (z) = %d/%d %d/%d (%d/%d)", x,sz0, y,sz1, pp,sz2);
+				//qDebug("x y (z) = %d/%d %d/%d (%d/%d)", x,sz0, y,sz1, pp,sz2);
 				RGB8 o = lookup_mix(mC, luts, op);
 				tmpimg.setPixel(x, y, qRgb(o.r, o.g, o.b));
 			}
 		break;
 	}
+
+	//qDebug()<<"copyRaw2QPixmap_Slice fromImage(tmpimg)"<<tmpimg.size();
 
 	return QPixmap::fromImage(tmpimg);
 }

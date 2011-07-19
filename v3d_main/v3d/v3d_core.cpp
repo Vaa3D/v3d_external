@@ -881,6 +881,7 @@ template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T **** p4d,
 
 template <class T> QPixmap copyRaw2QPixmap(const T **** p4d, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, ImageDisplayColorType Ctype, V3DLONG cpos, ImagePlaneDisplayType disType, bool bIntensityRescale, double *p_vmax, double *p_vmin)
 {
+#if 0
 	switch (disType)
 	{
 		case imgPlaneX:
@@ -900,7 +901,10 @@ template <class T> QPixmap copyRaw2QPixmap(const T **** p4d, V3DLONG sz0, V3DLON
 			return QPixmap(0,0); //return an empty image for this prohibited case
 			break;
 	}
-//	copyRaw2QPixmap_Slice(disType, cpos, p4d, sz0, sz1, sz2, sz3, Ctype, bIntensityRescale, p_vmax, p_vmin); //110718 RZC
+#else
+	//110718 RZC, replacing above functions for volume data without indexed colormap
+	return copyRaw2QPixmap_Slice(disType, cpos, p4d, sz0, sz1, sz2, sz3, Ctype, bIntensityRescale, p_vmax, p_vmin);
+#endif
 }
 
 QPixmap copyRaw2QPixmap_colormap(const void **** p4d, ImagePixelType dtype, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, V3DLONG cpos, const ColorMap *pc, ImagePlaneDisplayType disType)
