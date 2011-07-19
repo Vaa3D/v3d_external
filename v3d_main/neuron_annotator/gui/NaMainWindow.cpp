@@ -428,7 +428,7 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
     }
 
     // Create input nodes
-    MultiColorImageStackNode* multiColorImageStackNode = new MultiColorImageStackNode();
+    MultiColorImageStackNode* multiColorImageStackNode = new MultiColorImageStackNode(imageInputDirectory);
     multiColorImageStackNode->setPathToMulticolorLabelMaskFile(maskLabelFilePath);
     multiColorImageStackNode->setPathToOriginalImageStackFile(originalImageStackFilePath);
     multiColorImageStackNode->setPathToReferenceStackFile(referenceStackFilePath);
@@ -448,7 +448,12 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
     if (!annotationSession->loadReferenceStack()) {
         return false;
     }
+
     if (!annotationSession->loadOriginalImageStack()) {
+        return false;
+    }
+
+    if (!annotationSession->loadLsmMetadata()) {
         return false;
     }
 
@@ -487,6 +492,8 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
     if (!ui.v3dr_glwidget->populateNeuronMaskAndReference(annotationSession->getNeuronMaskAsMy4DImage(), annotationSession->getReferenceStack())) {
         return false;
     }
+
+    ui.v3dr_glwidget->setThickness(annotationSession->getZRatio());
 
     ui.v3dr_glwidget->update();
 

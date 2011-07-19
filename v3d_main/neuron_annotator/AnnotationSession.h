@@ -29,6 +29,11 @@ public:
     bool loadReferenceStack();
     bool prepareLabelIndex();
     bool populateMipLists();
+    bool loadLsmMetadata();
+
+    double getZRatio() { return zRatio; }
+    void setZRatio(double ZRatioParam) { zRatio=ZRatioParam; }
+
     QList<QImage*>* getNeuronMipList() { return &neuronMipList; }
     QList<QImage*>* getOverlayMipList() { return &overlayMipList; }
 
@@ -83,6 +88,7 @@ private:
     QList<bool> maskStatusList;
     QList<bool> overlayStatusList;
     QList<bool> neuronSelectList;
+    double zRatio;
 
 };
 

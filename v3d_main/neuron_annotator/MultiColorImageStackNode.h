@@ -16,7 +16,7 @@ public:
     const static char * IMAGE_MASK_FILENAME;
     const static char * IMAGE_REFERENCE_FILENAME;
 
-    MultiColorImageStackNode();
+    MultiColorImageStackNode(QDir imageDirParam);
 
     QString getPathToOriginalImageStackFile() { return pathToOriginalImageStackFile; }
 
@@ -25,6 +25,8 @@ public:
     QString getPathToMulticolorLabelMaskIndexFile() { return pathToMulticolorLabelMaskIndexFile; }
 
     QString getPathToReferenceStackFile() { return pathToReferenceStackFile; }
+
+    QStringList getPathsToLsmMetadataFiles();
 
     void setPathToOriginalImageStackFile(QString pathToOriginalImageStackFileParam) {
         pathToOriginalImageStackFile=pathToOriginalImageStackFileParam;
@@ -135,6 +137,7 @@ private:
     QString pathToMulticolorLabelMaskFile;
     QString pathToMulticolorLabelMaskIndexFile;
     QString pathToReferenceStackFile;
+    QDir imageDir;
 };
 
 #endif // MULTICOLORIMAGESTACKNODE_H

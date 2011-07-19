@@ -52,6 +52,56 @@ bool AnnotationSession::load(long annotationSessionID) {
     return true;
 }
 
+bool AnnotationSession::loadLsmMetadata() {
+    QStringList lsmMetadataFilepathList=multiColorImageStackNode->getPathsToLsmMetadataFiles();
+    if (lsmMetadataFilepathList.size()==0) {
+        qDebug() << "AnnotationSession::loadLsmMetadata() received empty list of lsm metadata files";
+        return false;
+    } else {
+        QString filePath=lsmMetadataFilepathList.at(0);
+        QFile file(filePath);
+        if (!file.open(QIODevice::ReadOnly)) {
+            cerr << "Could not open file=" << filePath.toStdString() << " to read\n";
+            return false;
+        }
+        QStringList fileContents;
+        while(!file.atEnd()) {
+            fileContents.append(file.readLine());
+        }
+        file.close();
+        bool parseSuccess=false;
+        for (int i=fileContents.size()-1;i>=0;i--) {
+            QString line=fileContents.at(i);
+            if (line.trimmed().length()>0) {
+                QStringList doubleArgs = line.trimmed().split(QRegExp("\\s+"));
+                if (doubleArgs.length()!=3) {
+                    qDebug() << "Could not parse line which was expected to have 3 doubles = " << line;
+                    for (int j=0;j<doubleArgs.length();j++) {
+                        qDebug() << j << " " << doubleArgs.at(j);
+                    }
+                    return false;
+                }
+                QString d1String=doubleArgs.at(0);
+                double d1=d1String.toDouble();
+                QString d2String=doubleArgs.at(1);
+                double d2=d2String.toDouble();
+                QString d3String=doubleArgs.at(2);
+                double d3=d3String.toDouble();
+                zRatio=d3/d1;
+                qDebug() << "Using lsm dimension ratios " << d1 << " " << d2 << " " << d3 << " setting zRatio=" << zRatio;
+                parseSuccess=true;
+                break;
+            }
+        }
+        if (!parseSuccess) {
+            qDebug() << "AnnotationSession::loadLsmMetadata could not parse file to determine zRatio";
+            return false;
+        }
+        return true;
+    }
+
+}
+
 bool AnnotationSession::loadOriginalImageStack() {
     QString msgPrefix("AnnotationSession::loadOriginalImageStack()");
     QString originalImageStackFilePath=multiColorImageStackNode->getPathToOriginalImageStackFile();
