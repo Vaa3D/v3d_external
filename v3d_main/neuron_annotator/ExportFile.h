@@ -13,7 +13,7 @@
 #include "../basic_c_fun/color_xyz.h"
 
 template <class Tinput, class Tmask, class Tref, class Toutput>
-bool getCurrentStack(Tinput *input1d, Tmask *mask1d, Tref *ref1d, Toutput *output1d, V3DLONG *szStack, QList<bool> maskStatusList, QList<bool> overlayStatusList, int datatype);
+Toutput* getCurrentStack(Tinput *input1d, Tmask *mask1d, Tref *ref1d, V3DLONG *szStack, QList<bool> maskStatusList, QList<bool> overlayStatusList, int datatype);
 
 // export XYZC(T) tif file
 class ExportFile : public QThread

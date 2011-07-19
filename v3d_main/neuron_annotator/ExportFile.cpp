@@ -1,10 +1,10 @@
 #include "ExportFile.h"
 
 template <class Tinput, class Tmask, class Tref, class Toutput>
-bool getCurrentStack(Tinput *input1d, Tmask *mask1d, Tref *ref1d, Toutput *output1d, V3DLONG *szStack, QList<bool> maskStatusList, QList<bool> overlayStatusList, int datatype){
+Toutput* getCurrentStack(Tinput *input1d, Tmask *mask1d, Tref *ref1d, V3DLONG *szStack, QList<bool> maskStatusList, QList<bool> overlayStatusList, int datatype){
     if(!input1d || !mask1d || !ref1d){
         cout<<"Input image stack is NULL!"<<endl;
-        return false;
+        return NULL;
     }
 
     //
@@ -17,7 +17,7 @@ bool getCurrentStack(Tinput *input1d, Tmask *mask1d, Tref *ref1d, Toutput *outpu
     V3DLONG totalplx = pagesz*sc;
 
     //
-    if(output1d) {delete []output1d; output1d=NULL;}
+    Toutput *output1d = NULL;
     try{
         output1d = new Toutput [totalplx];
 
@@ -63,7 +63,7 @@ bool getCurrentStack(Tinput *input1d, Tmask *mask1d, Tref *ref1d, Toutput *outpu
                         V3DLONG idxmask = idx - offset_c;
 
                         if( (overlayStatusList.at(1) && mask1d[idxmask]==0) // background signals
-                                || (maskStatusList.at(mask1d[idxmask])) ) // neuron signals
+                                || (maskStatusList.at(mask1d[idxmask]) && mask1d[idxmask]) ) // neuron signals
                         {
                             output1d[idx] = (Toutput) (input1d[idx]);
                         }
@@ -80,10 +80,10 @@ bool getCurrentStack(Tinput *input1d, Tmask *mask1d, Tref *ref1d, Toutput *outpu
     }
     catch(...){
         cout<<"fail to allocate memory!"<<endl;
-        return false;
+        return NULL;
     }
 
-    return true;
+    return output1d;
 }
 
 // export file class
@@ -185,32 +185,28 @@ void ExportFile::run()
             if(overlayStatusList.at(0)) szStack[3] ++;
 
             //
-            unsigned char * data1d = NULL;
+            void * data1d = NULL;
             try {
-                bool success;
 
                 if(pOriginal->getDatatype()==V3D_UINT8 && pMask->getDatatype()==V3D_UINT8 && pRef->getDatatype()==V3D_UINT8)
                 {
-                    success = getCurrentStack<unsigned char, unsigned char, unsigned char, unsigned char>((unsigned char *)(pOriginal->getRawData()),
+                    data1d = (void *) getCurrentStack<unsigned char, unsigned char, unsigned char, unsigned char>((unsigned char *)(pOriginal->getRawData()),
                                                                                                           (unsigned char *)(pMask->getRawData()),
                                                                                                           (unsigned char *)(pRef->getRawData()),
-                                                                                                          (unsigned char *)data1d,
                                                                                                           szStack, maskStatusList, overlayStatusList, datatype);
                 }
                 else if(pOriginal->getDatatype()==V3D_UINT8 && pMask->getDatatype()==V3D_UINT8 && pRef->getDatatype()==V3D_UINT16)
                 {
-                    success = getCurrentStack<unsigned char, unsigned char, unsigned short, unsigned short>((unsigned char *)(pOriginal->getRawData()),
+                    data1d = (void *) getCurrentStack<unsigned char, unsigned char, unsigned short, unsigned short>((unsigned char *)(pOriginal->getRawData()),
                                                                                                           (unsigned char *)(pMask->getRawData()),
                                                                                                           (unsigned short *)(pRef->getRawData()),
-                                                                                                          (unsigned short *)data1d,
                                                                                                           szStack, maskStatusList, overlayStatusList, datatype);
                 }
                 else if(pOriginal->getDatatype()==V3D_UINT16 && pMask->getDatatype()==V3D_UINT8 && pRef->getDatatype()==V3D_UINT16)
                 {
-                    success = getCurrentStack<unsigned short, unsigned char, unsigned short, unsigned short>((unsigned short *)(pOriginal->getRawData()),
+                    data1d = (void *) getCurrentStack<unsigned short, unsigned char, unsigned short, unsigned short>((unsigned short *)(pOriginal->getRawData()),
                                                                                                           (unsigned char *)(pMask->getRawData()),
                                                                                                           (unsigned short *)(pRef->getRawData()),
-                                                                                                          (unsigned short *)data1d,
                                                                                                           szStack, maskStatusList, overlayStatusList, datatype);
                 }
                 else
@@ -221,7 +217,7 @@ void ExportFile::run()
                     return;
                 }
 
-                if(!success) {
+                if(!data1d) {
                     cout<<"Fail to generate current image stack!"<<endl;
                     stopped = true;
                     mutex.unlock();
@@ -237,7 +233,7 @@ void ExportFile::run()
 
             // save .tif image stack
             if (saveImage(filename.toStdString().c_str(), (const unsigned char *)data1d, szStack, datatype)!=true){
-                cout<<"Fail to save file!"<<endl;
+                cout<<"Fail to save file!"<<data1d<<datatype<<endl;
                 stopped = true;
                 mutex.unlock();
                 return;
