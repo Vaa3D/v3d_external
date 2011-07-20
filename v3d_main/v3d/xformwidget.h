@@ -80,6 +80,7 @@ public:
     ~XFormWidget();
 
     void initialize();
+    QWidget* createColorGUI(); //110719 RZC
 	void createGUI();
 	void connectEventSignals();
 	void disconnectEventSignals();
@@ -295,6 +296,7 @@ signals:
 
 #define __used_by_v3d_interface__
 public:    // in mainwindow_interface.cpp
+
 	bool transferImageData(Image4DSimple *img, unsigned char *a);
 	QList<QPolygon> get3ViewROI();
 	bool set3ViewROI(QList<QPolygon> & roi_list);

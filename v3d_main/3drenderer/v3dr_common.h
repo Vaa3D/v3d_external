@@ -181,27 +181,45 @@ extern QProgressDialog progress;
 #define PROGRESS_TEXT(text)   { QApplication::setActiveWindow(&progress);  progress.setLabelText( QString(text) );  progress.repaint();}
 #define PROGRESS_PERCENT(i)	  { QApplication::setActiveWindow(&progress);  progress.setValue(i);  progress.repaint(); \
 								QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);} //exclude user input is more safe
+//It is impossible to create progress bar in new thread because widget classes can not be used in thread.
+//The only solution is to put work in new thread and feed back progress bar in main thread.
 
-//Each QThread can have its own event loop, exec(). It makes it possible to connect signals from other threads to slots in this threads.
-//It also makes it possible to use classes that require the event loop, such as QTimer and QTcpSocket.
-//However, that is is not possible to use any widget classes in the thread.
-//class ProgressThread : public QThread // Cannot contain widget!!!
-//{
-//	Q_OBJECT
-//public:
-//	ProgressThread(QObject *parent = 0) : QThread(parent)
-//	{	}
-//public slots:
-//	setPercent(int i)
-//	{
-//		;
-//	}
-//protected:
-//	void run()
-//	{
-//		;
-//	}
-//}
+
+/////////////////////Qt Tips collected by Zongcai Ruan///////////////////////////////////////////////////////////////////////////////
+//
+//____Event, Signal, Timer and Widget in QThread
+//Each QThread can have its own event loop. You can start the event loop by calling exec(); you can stop it by calling exit() or quit().
+//Having an event loop in a thread makes it possible to connect signals from other threads to slots in this thread, using a mechanism called queued connections.
+//It also makes it possible to use classes that require the event loop, such as QTimer and QTcpSocket, in the thread.
+//Note: However, that it is not possible to use any widget classes in the thread.
+//
+//____Child-Parent relationship with Layout
+//When you use a layout, you do not need to pass a parent when constructing the child widgets.
+//The layout will automatically re-parent the widgets (using QWidget::setParent()) so that they are children of the widget on which the layout is installed.
+//You can nest layouts using addLayout() on a layout; the inner layout then becomes a child of the layout it is inserted into.
+//Note: Widgets in a layout are children of the widget on which the layout is installed, not of the layout itself.
+//      Widgets can only have other widgets as parent, not layouts.
+//
+//____Object Trees
+//QObjects organize themselves in object trees. When you create a QObject with another object as parent, it's added to the parent's children() list,
+//and is deleted when the parent is. It turns out that this approach fits the needs of GUI objects very well.
+//You can also delete child objects yourself, and they will remove themselves from their parents.
+//The debugging functions QObject::dumpObjectTree() and QObject::dumpObjectInfo() are often useful when an application looks or acts strangely.
+//Note: When QObjects are created on the stack, the C++ language standard (ISO/IEC 14882:2003) specifies that
+//     destructors of local objects are called in the reverse order of their constructors.
+//
+//____‘delete’ vs deleteLater()
+//QObject supports being deleted while signaling. In order to take advantage of it
+//you just have to be sure your object does not try to access any of its own members after being deleted.
+//However, most Qt objects are not written this way, and there is no requirement for them to be either.
+//For this reason, it is recommended that you always call deleteLater() if you need to delete an object during one of its signals,
+//because odds are that ‘delete’ will just crash the application.
+//That is, it is not always obvious that a code path has a signal source. Often, you might have a block of code that uses ‘delete’ on some objects that is safe today,
+//but at some point in the future this same block of code ends up getting invoked from a signal source and now suddenly your application is crashing.
+//The only general solution to this problem is to use deleteLater() all the time, even if at a glance it seems unnecessary.
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 // 090424RZC: because QColorDialog::getColor cannot handle correctly when user clicks Cancel
 // this function is called in ColorEditor::color, LIST_COLOR(Renderer_tex2::processHit), V3dr_surfaceDialog::selectedColor

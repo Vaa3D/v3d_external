@@ -567,8 +567,8 @@ void V3dR_MainWindow::createControlWidgets()
 	//===========================================================================================
     //Managing the layout
 
-    QGroupBox* leftGroup = new QGroupBox();
-    //QFrame *leftGroup = new QFrame;  leftGroup->setFrameStyle(QFrame::StyledPanel);
+    QGroupBox* viewGroup = new QGroupBox();
+    //QFrame *viewGroup = new QFrame;  viewGroup->setFrameStyle(QFrame::StyledPanel);
 
     glWidgetArea = new QScrollArea;
     glWidgetArea->setWidgetResizable(true);
@@ -583,10 +583,10 @@ void V3dR_MainWindow::createControlWidgets()
     timeSlider->setSingleStep(1);
     timeSlider->setPageStep(10);
 
-    QVBoxLayout *leftLayout = new QVBoxLayout(leftGroup);
-    leftLayout->addWidget(glWidgetArea);
-    leftLayout->addWidget(timeSlider);
-    leftLayout->setContentsMargins(0,0,0,0);
+    QVBoxLayout *viewLayout = new QVBoxLayout(viewGroup);
+    viewLayout->addWidget(glWidgetArea);
+    viewLayout->addWidget(timeSlider);
+    viewLayout->setContentsMargins(0,0,0,0);
 
     //------------------------------------------------
 
@@ -602,14 +602,15 @@ void V3dR_MainWindow::createControlWidgets()
     controlLayout->addWidget(tabCutPlane); //cutPlaneGroup);
     controlLayout->addWidget(tabRotZoom); //rotateBarGroup);
     controlLayout->addStretch(0);
+    controlLayout->setSpacing(0);
 
     //------------------------------------------------
 
     QHBoxLayout *centralLayout = new QHBoxLayout(this);
-    centralLayout->addWidget(leftGroup);
+    centralLayout->addWidget(viewGroup);
     centralLayout->addWidget(controlGroup);
-
-    setLayout(centralLayout);                  //by PHC, 060809
+    //centralLayout->setContentsMargins(10,10,10,10);
+    setLayout(centralLayout);
 
 	////////////////////////////////////////////////////////////////////////////////////
     connectSignal();

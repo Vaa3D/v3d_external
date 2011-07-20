@@ -878,7 +878,7 @@ template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T **** p4d,
 	return QPixmap::fromImage(tmpimg);
 }
 
-
+#define __copy_slice_from_volume__
 template <class T> QPixmap copyRaw2QPixmap(const T **** p4d, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, ImageDisplayColorType Ctype, V3DLONG cpos, ImagePlaneDisplayType disType, bool bIntensityRescale, double *p_vmax, double *p_vmin)
 {
 #if 0
@@ -1246,8 +1246,9 @@ bool getFocusCrossLinePos(int & focusPosInWidth, int & focusPosInHeight, My4DIma
 
 
 //====================================================================
-
 const int alpha = 155;
+
+#define ______XFormView_functions________
 
 XFormView::XFormView(QWidget *parent)
 //    : QWidget(parent)
@@ -1894,6 +1895,7 @@ void XFormView::changeFocusPlane(int c)
     update();
 }
 
+#define __change_with_color_type__
 void XFormView::changeColorType(ImageDisplayColorType c)
 {
     Ctype = c;
@@ -2724,7 +2726,7 @@ void XFormView::dispHistogram()
 	//reserved for future edit
 }
 
-#define __XFormWidget_function__
+#define _______XFormWidget_functions________
 
 XFormWidget::XFormWidget(QWidget *parent) : QWidget(parent)
 {
@@ -3351,6 +3353,58 @@ void XFormWidget::cleanData()
 	if (atlasViewerDlg) {atlasViewerDlg->deleteLater(); atlasViewerDlg=0;} //081211,090812 deleteLater
 }
 
+QWidget* XFormWidget::createColorGUI()
+{
+    QGroupBox *typeGroup = new QGroupBox(this);
+    //typeGroup->setAttribute(Qt::WA_ContentsPropagated);
+    typeGroup->setTitle("Color Channels");
+
+    colorRedType = new QRadioButton(typeGroup);
+    colorGreenType = new QRadioButton(typeGroup);
+    colorBlueType = new QRadioButton(typeGroup);
+    colorAllType = new QRadioButton(typeGroup);
+    colorRed2GrayType = new QRadioButton(typeGroup);
+    colorGreen2GrayType = new QRadioButton(typeGroup);
+    colorBlue2GrayType = new QRadioButton(typeGroup);
+    colorAll2GrayType = new QRadioButton(typeGroup);
+	colorMapDispType = new QRadioButton(typeGroup);
+
+    colorRedType->setText("Red (Chan 1)");
+    colorGreenType->setText("Green (Chan 2)");
+    colorBlueType->setText("Blue (Chan 3)");
+    colorAllType->setText("RGB (All)");
+    colorRed2GrayType->setText("Red (gray)");
+    colorGreen2GrayType->setText("Green (gray)");
+    colorBlue2GrayType->setText("Blue (gray)");
+    colorAll2GrayType->setText("RGB (gray)");
+	colorMapDispType->setText("Colormap (for indexed image)");
+
+	imgValScaleDisplayCheckBox = new QCheckBox("I(Voxel) rescale: m->0, M->255");
+	imgValScaleDisplayCheckBox->setCheckState(Qt::Unchecked);
+
+
+    typeGroupLayout = new QGridLayout(typeGroup);
+    typeGroupLayout->addWidget(colorAllType, 0, 0);
+    typeGroupLayout->addWidget(colorRedType, 1, 0);
+    typeGroupLayout->addWidget(colorGreenType, 2, 0);
+    typeGroupLayout->addWidget(colorBlueType, 3, 0);
+    typeGroupLayout->addWidget(colorAll2GrayType, 0, 1);
+    typeGroupLayout->addWidget(colorRed2GrayType, 1, 1);
+    typeGroupLayout->addWidget(colorGreen2GrayType, 2, 1);
+    typeGroupLayout->addWidget(colorBlue2GrayType, 3, 1);
+    typeGroupLayout->addWidget(colorMapDispType, 4, 0, 1, 2);
+
+    typeGroupLayout->addWidget(imgValScaleDisplayCheckBox, 5, 0, 1, 2);
+
+
+	//put all in a QWidget
+    QWidget* colorForm = new QWidget(this);
+    QVBoxLayout* colorFormLayout = new QVBoxLayout(colorForm);
+    colorFormLayout->setContentsMargins(0,0,0,0); //remove margins
+    colorFormLayout->addWidget(typeGroup);
+	return colorForm;
+}
+
 void XFormWidget::createGUI()
 {
 	if (bExistGUI)
@@ -3491,33 +3545,7 @@ void XFormWidget::createGUI()
 	createMenuOfTriviewZoom();
 
     // color display group
-
-    QGroupBox *typeGroup = new QGroupBox(mainGroup);
-    typeGroup->setAttribute(Qt::WA_ContentsPropagated);
-    typeGroup->setTitle("Color Channels");
-
-    colorRedType = new QRadioButton(typeGroup);
-    colorGreenType = new QRadioButton(typeGroup);
-    colorBlueType = new QRadioButton(typeGroup);
-    colorAllType = new QRadioButton(typeGroup);
-    colorRed2GrayType = new QRadioButton(typeGroup);
-    colorGreen2GrayType = new QRadioButton(typeGroup);
-    colorBlue2GrayType = new QRadioButton(typeGroup);
-    colorAll2GrayType = new QRadioButton(typeGroup);
-	colorMapDispType = new QRadioButton(typeGroup);
-
-    colorRedType->setText("Red (Chan 1)");
-    colorGreenType->setText("Green (Chan 2)");
-    colorBlueType->setText("Blue (Chan 3)");
-    colorAllType->setText("RGB (All)");
-    colorRed2GrayType->setText("Red (gray)");
-    colorGreen2GrayType->setText("Green (gray)");
-    colorBlue2GrayType->setText("Blue (gray)");
-    colorAll2GrayType->setText("RGB (gray)");
-	colorMapDispType->setText("Colormap (for indexed image)");
-
-	imgValScaleDisplayCheckBox = new QCheckBox("I(Voxel) rescale: m->0, M->255");
-	imgValScaleDisplayCheckBox->setCheckState(Qt::Unchecked);
+	//moved to createColorGUI()
 
     //other control button
 	cBox_bSendSignalToExternal = new QCheckBox("Link out");
@@ -3618,19 +3646,7 @@ void XFormWidget::createGUI()
     scaleGroupLayout->addWidget(zoomWholeViewButton, 4, 0, 1, 20);
 
     // color display layout
-
-    typeGroupLayout = new QGridLayout(typeGroup);
-    typeGroupLayout->addWidget(colorAllType, 0, 0);
-    typeGroupLayout->addWidget(colorRedType, 1, 0);
-    typeGroupLayout->addWidget(colorGreenType, 2, 0);
-    typeGroupLayout->addWidget(colorBlueType, 3, 0);
-    typeGroupLayout->addWidget(colorAll2GrayType, 0, 1);
-    typeGroupLayout->addWidget(colorRed2GrayType, 1, 1);
-    typeGroupLayout->addWidget(colorGreen2GrayType, 2, 1);
-    typeGroupLayout->addWidget(colorBlue2GrayType, 3, 1);
-    typeGroupLayout->addWidget(colorMapDispType, 4, 0, 1, 2);
-
-    typeGroupLayout->addWidget(imgValScaleDisplayCheckBox, 5, 0, 1, 2);
+    //moved to createColorGUI();
 
 	//landmark group
 
@@ -3642,17 +3658,25 @@ void XFormWidget::createGUI()
 
 	//LandmarkGroupLayout->addWidget(landmarkLabelDispCheckBox, 1, 0, 1, 11);
 
-    // main control panel layout
+
+	//110719 RZC for spacing between buttons, because setSpacing(0) between GroupBox
+	QWidget* btnArea = new QWidget(this);
+	QVBoxLayout* btnLayout = new QVBoxLayout(btnArea);
+	//btnLayout->setContentsMargins(0,0,0,0); //remove margins
+    btnLayout->addWidget(landmarkManagerButton);
+    btnLayout->addWidget(imgV3DButton);
+    btnLayout->addStretch(0);
+    btnLayout->addWidget(whatsThisButton);
+
+	// main control panel layout ====================================
 
     mainGroupLayout = new QVBoxLayout(mainGroup);
+    mainGroupLayout->setSpacing(0); //remove spacing
     mainGroupLayout->addWidget(coordGroup);
     mainGroupLayout->addWidget(scaleGroup);
-    mainGroupLayout->addWidget(typeGroup);
+    mainGroupLayout->addWidget(createColorGUI()); //typeGroup); //110719 RZC
     mainGroupLayout->addWidget(landmarkGroup); //080107
-	mainGroupLayout->addWidget(landmarkManagerButton);
-    mainGroupLayout->addWidget(imgV3DButton);
-    mainGroupLayout->addStretch(0);
-    mainGroupLayout->addWidget(whatsThisButton);
+	mainGroupLayout->addWidget(btnArea); //110719 RZC
 
 	// force layout set
 	QLayout *cur_layout=layout();

@@ -45,7 +45,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 // lookup and mix multi-channel to RGBA8
 #define OP_MAX	0
-#define OP_ADD	1
+#define OP_SUM	1
 #define OP_MEAN	2
 
 void make_linear_lut_one(RGBA8 color, vector<RGBA8>& lut);
@@ -71,14 +71,23 @@ class ChannelTable : public QWidget
     Q_OBJECT;
 
 public:
-	ChannelTable(QWidget* parent=0){};
-	virtual ~ChannelTable(){};
+	ChannelTable(QWidget* parent=0) :QWidget(parent) { setItemEditor(); create(); };
+	virtual ~ChannelTable() {};
 
 protected:
-	void create(){};
+	QTabWidget *tabOptions;
+	QTableWidget *table;
+
+	void setItemEditor();
+	void create();
+	void createTable();
 
 public slots:
+	void connectSignals(XFormWidget* form);
 
+	void pressedClickHandler(int row, int col);
+	void doubleClickHandler(int row, int col);
+	void pickChannel(int row, int col);
 
 };
 

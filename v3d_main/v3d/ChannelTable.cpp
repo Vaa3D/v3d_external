@@ -85,7 +85,7 @@ RGB8 lookup_mix(vector<unsigned char>& mC, vector< vector<RGBA8> >& mLut, int op
 			o3 = MAX(o3, AB(k));
 		}
 	}
-	else if (op==OP_ADD)
+	else if (op==OP_SUM)
 	{
 		for (int k=0; k<N; k++)
 		{
@@ -310,3 +310,83 @@ template <class T> QPixmap copyRaw2QPixmap_Slice(
 	return QPixmap::fromImage(tmpimg);
 }
 
+
+//////////////////////////////////////////////////////////////////////
+
+void ChannelTable::create()
+{
+//  /////////////////////////////////////////////////////////
+//  tabOptions = new QTabWidget(this); //tabOptions = new AutoTabWidget(this);//090117: commented by PHC
+//	/////////////////////////////////////////////////////////
+//
+//	QGroupBox* tabAndBtnGroup = new QGroupBox();
+//    QHBoxLayout *tabAndBtnLayout = new QHBoxLayout(tabAndBtnGroup);
+//    tabAndBtnLayout->addWidget(tabOptions);
+//    tabAndBtnLayout->addWidget(buttonGroup);
+//
+//	//overall layout
+//    QVBoxLayout *allLayout = new QVBoxLayout(this);
+//	allLayout->addWidget(tabAndBtnGroup);
+//	allLayout->addWidget(searchGroup);
+}
+
+void ChannelTable::createTable()
+{
+//	table[stImageMarker]     = createTableMarker();
+//	table[stLabelSurface]    = createTableSurf();
+//	table[stNeuronStructure] = createTableSWC();
+//	table[stPointCloud]      = createTableAPO();
+//	table[stPointSet]     = createTableAPO_Set();
+//
+//	//==========================================================================
+//	// for easy accessing tabs, addTab using the same order of V3dr_SurfaceType
+//	//==========================================================================
+//	if (tabOptions)
+//	{  // insertTab according to the order of enum v3dr_SurfaceType
+//		int i;
+//		QString qs;
+//		i= tabOptions->addTab(table[stImageMarker],		qs =QString("Marker (%1)").arg(table[stImageMarker]->rowCount()));
+//		tabOptions->setTabToolTip(i, qs);
+//		i= tabOptions->addTab(table[stLabelSurface],	qs =QString("Label Surface (%1)").arg(table[stLabelSurface]->rowCount()));
+//		tabOptions->setTabToolTip(i, qs);
+//		i= tabOptions->addTab(table[stNeuronStructure], qs =QString("Neuron/line Structure (%1)").arg(table[stNeuronStructure]->rowCount()));
+//		tabOptions->setTabToolTip(i, qs);
+//		i= tabOptions->addTab(table[stPointCloud],      qs =QString("Point Cloud (%1)").arg(table[stPointCloud]->rowCount()));
+//		tabOptions->setTabToolTip(i, qs);
+//		i= tabOptions->addTab(table[stPointSet],     qs =QString("Point Cloud Set (%1)").arg(table[stPointSet]->rowCount()));
+//		tabOptions->setTabToolTip(i, qs);
+//	}
+//
+//
+//	//if (renderer)	connect(renderer, SIGNAL)
+//	if (table[stImageMarker])      connect(table[stImageMarker], SIGNAL(cellChanged(int,int)), this, SLOT(pickMarker(int,int)));
+//	if (table[stLabelSurface])     connect(table[stLabelSurface], SIGNAL(cellChanged(int,int)), this, SLOT(pickSurf(int,int)));
+//	if (table[stNeuronStructure])  connect(table[stNeuronStructure], SIGNAL(cellChanged(int,int)), this, SLOT(pickSWC(int,int)));
+//	if (table[stPointCloud])       connect(table[stPointCloud], SIGNAL(cellChanged(int,int)), this, SLOT(pickAPO(int,int)));
+//	if (table[stPointSet])      connect(table[stPointSet], SIGNAL(cellChanged(int,int)), this, SLOT(pickAPO_Set(int,int)));
+//
+//	for (int i=1; i<=5; i++) if (table[i])
+//	{
+//		table[i]->setSelectionBehavior(QAbstractItemView::SelectRows);
+//	//		table[i]->setEditTriggers(//QAbstractItemView::CurrentChanged |
+//	//				QAbstractItemView::DoubleClicked |
+//	//				QAbstractItemView::SelectedClicked);                       //use doubleClickHandler() to override delay of popping dialog by the setEditTriggers
+//
+//		connect(table[i], SIGNAL(cellDoubleClicked(int,int)), this, SLOT(doubleClickHandler(int,int))); //to override delay of popping dialog by the setEditTriggers
+//		connect(table[i], SIGNAL(cellPressed(int,int)), this, SLOT(pressedClickHandler(int,int)));      //to pop context menu
+//
+//	}
+}
+
+void ChannelTable::connectSignals(XFormWidget* form)
+{
+
+}
+
+void ChannelTable::setItemEditor()
+{
+	//::setItemEditor();
+
+	// turn off item editor
+	QItemEditorFactory::setDefaultFactory( new QItemEditorFactory(*QItemEditorFactory::defaultFactory()) );
+}
