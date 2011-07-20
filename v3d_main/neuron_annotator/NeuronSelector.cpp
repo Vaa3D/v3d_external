@@ -111,7 +111,7 @@ void NeuronSelector::getCurNeuronBoundary()
 {
         index = getIndexSelectedNeuron();
 	
-	if(index<=0) return;
+        if(index<0) return;
 	
 	//
 	curNeuronBDxb = sx-1;
@@ -253,103 +253,96 @@ void NeuronSelector::highlightSelectedNeuron()
 {
     getCurNeuronBoundary();
 	
-        if(index<0) return;
-	if(curNeuronBDxb>curNeuronBDxe || curNeuronBDyb>curNeuronBDye || curNeuronBDzb>curNeuronBDze) return;
+    if(index<0) return;
+    if(curNeuronBDxb>curNeuronBDxe || curNeuronBDyb>curNeuronBDye || curNeuronBDzb>curNeuronBDze) return;
 
-        // index neuron selected status is true
-        if(annotationSession->getNeuronSelectList().at(index)==false)
-        {
+    // index neuron selected status is true
+    if(annotationSession->getNeuronSelectList().at(index)==false)
+    {
+        // highlight result
+        annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks.clear();
 
-            // highlight result
-            annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks.clear();
+        // synchronize markers shown in 3d viewer
+        emit neuronHighlighted(false);
 
-            // synchronize markers shown in 3d viewer
-            emit neuronHighlighted(false);
+        return;
+    }
 
-            return;
-        }
+    // list of markers
+    QList<LocationSimple> listLandmarks;
 
-	// list of markers
-	QList<LocationSimple> listLandmarks;
+    const unsigned char *neuronMask = annotationSession->getNeuronMaskAsMy4DImage()->getRawData();
 
-        const unsigned char *neuronMask = annotationSession->getNeuronMaskAsMy4DImage()->getRawData();
-	
     // mesh grids
-	for(V3DLONG k=0; k<sz; k+=STEP)
-	{
-		//V3DLONG offset_k = k*sx*sy;
-		for(V3DLONG j=0; j<sy; j+=STEP)
-		{
-			//V3DLONG offset_j = offset_k + j*sx;
-			for(V3DLONG i=0; i<sx; i+=STEP)
-			{
-				//V3DLONG idx = offset_j + i; // lattice point
-				
-				if(inNeuronMask(i,j,k))
-				{
-					// find avg position in cube around lattice point
-					float sumx, sumy, sumz;
-					V3DLONG count;
-					sumx = 0.0;
-					sumy = 0.0;
-					sumz = 0.0;
-					count = 0;
-					
-					//
-					V3DLONG xb = i-NB; if(xb<0) xb = 0;
-					V3DLONG xe = i+NB; if(xe>sx) xe = sx-1;
-					V3DLONG yb = j-NB; if(yb<0) yb = 0;
-					V3DLONG ye = j+NB; if(ye>sy) ye = sy-1;
-					V3DLONG zb = k-NB; if(zb<0) zb = 0;
-					V3DLONG ze = k+NB; if(ze>sz) ze = sz-1;
-					
-					for(V3DLONG kk=zb; kk<=ze; kk++)
-					{
-						V3DLONG offset_kk = kk*sx*sy;
-						for(V3DLONG jj=yb; jj<=ye; jj++)
-						{
-							V3DLONG offset_jj = offset_kk + jj*sx;
-							for(V3DLONG ii=xb; ii<=xe; ii++)
-							{
-								V3DLONG idx = offset_jj + ii;
-								
-                                                                if(index == (neuronMask[idx]-1))
-								{
-									count++;
-									sumx += ii;
-									sumy += jj;
-									sumz += kk;
-								}
-							}
-						}
-					}
+    for(V3DLONG k=0; k<sz; k+=STEP){
+        for(V3DLONG j=0; j<sy; j+=STEP){
+            for(V3DLONG i=0; i<sx; i+=STEP){
 
-					// append a marker
-					if(count>0)
-					{
-						LocationSimple p((V3DLONG)(sumx/(float)count+1.5), (V3DLONG)(sumy/(float)count+1.5), (V3DLONG)(sumz/(float)count+1.5)); // 1-based
-						RGBA8 c;
-						c.r = 0; c.g = 255; c.b = 255; c.a = 128;// cyan
-						p.color = c; // instead of random_rgba8(255);
-                                                p.radius = 1; // instead of 5
+                if(inNeuronMask(i,j,k))
+                {
+                    // find avg position in cube around lattice point
+                    float sumx, sumy, sumz;
+                    V3DLONG count;
+                    sumx = 0.0;
+                    sumy = 0.0;
+                    sumz = 0.0;
+                    count = 0;
 
-                                               // QString qstr = QString("Neuron %1").arg(index);
-                                               // p.name = qstr.toStdString().c_str();
-						
-						listLandmarks.append(p);
-					}
-				}
-			}
-		}
-	}
-	
-	// highlight result
-	annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks = listLandmarks;
-	
-	qDebug()<<"highlight selected neuron ..."<<listLandmarks.size();
-	
-	// synchronize markers shown in 3d viewer
-	emit neuronHighlighted(false);
+                    //
+                    V3DLONG xb = i-NB; if(xb<0) xb = 0;
+                    V3DLONG xe = i+NB; if(xe>sx) xe = sx-1;
+                    V3DLONG yb = j-NB; if(yb<0) yb = 0;
+                    V3DLONG ye = j+NB; if(ye>sy) ye = sy-1;
+                    V3DLONG zb = k-NB; if(zb<0) zb = 0;
+                    V3DLONG ze = k+NB; if(ze>sz) ze = sz-1;
+
+                    for(V3DLONG kk=zb; kk<=ze; kk++)
+                    {
+                        V3DLONG offset_kk = kk*sx*sy;
+                        for(V3DLONG jj=yb; jj<=ye; jj++)
+                        {
+                            V3DLONG offset_jj = offset_kk + jj*sx;
+                            for(V3DLONG ii=xb; ii<=xe; ii++)
+                            {
+                                V3DLONG idx = offset_jj + ii;
+
+                                if(index == (neuronMask[idx]-1))
+                                {
+                                    count++;
+                                    sumx += ii;
+                                    sumy += jj;
+                                    sumz += kk;
+                                }
+                            }
+                        }
+                    }
+
+                    // append a marker
+                    if(count>0)
+                    {
+                        LocationSimple p((V3DLONG)(sumx/(float)count+1.5), (V3DLONG)(sumy/(float)count+1.5), (V3DLONG)(sumz/(float)count+1.5)); // 1-based
+                        RGBA8 c;
+                        c.r = 0; c.g = 255; c.b = 255; c.a = 128;// cyan
+                        p.color = c; // instead of random_rgba8(255);
+                        p.radius = 1; // instead of 5
+
+                        // QString qstr = QString("Neuron %1").arg(index);
+                        // p.name = qstr.toStdString().c_str();
+
+                        listLandmarks.append(p);
+                    }
+                }
+            }
+        }
+    }
+
+    // highlight result
+    annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks = listLandmarks;
+
+    qDebug()<<"highlight selected neuron ..."<<listLandmarks.size();
+
+    // synchronize markers shown in 3d viewer
+    emit neuronHighlighted(false);
 
 }
 
