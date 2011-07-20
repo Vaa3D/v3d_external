@@ -224,8 +224,9 @@ bool RendererNeuronAnnotator::initializeTextureMasks() {
 
 
 // This function assumes the size realX,Y,Z should be used
-void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf) {
-
+void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf)
+{
+    makeCurrent();
     int sliceCount=0;
 
     for (int stack_i=1; stack_i<=3; stack_i++)
@@ -316,6 +317,7 @@ void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf) {
                         // processEvents() kludge as long as texture updates are in GUI thread
                         // TODO Is ExcludeUserInputEvents really necessary here?
                         QCoreApplication::processEvents(/* QEventLoop::ExcludeUserInputEvents */);
+                        makeCurrent();
                     }
             }
 
@@ -435,6 +437,7 @@ RGBA8* RendererNeuronAnnotator::extendTextureFromMaskList(const QList<RGBA8*> & 
 void RendererNeuronAnnotator::updateCurrentTextureMask(int neuronIndex, int state) {
 
     qDebug() << "RendererNeuronAnnotator::updateCurrentTextureMask() start";
+    makeCurrent();
 
     int maskIndex = neuronIndex+1;
 
@@ -615,6 +618,7 @@ void RendererNeuronAnnotator::updateCurrentTextureMask(int neuronIndex, int stat
                         // processEvents() kludge as long as texture updates are in GUI thread
                         // TODO Is ExcludeUserInputEvents really necessary here?
                         QCoreApplication::processEvents(/* QEventLoop::ExcludeUserInputEvents */);
+                        makeCurrent();
                     }
             }
     }
@@ -630,8 +634,4 @@ RGBA8* RendererNeuronAnnotator::getOverlayTextureByAnnotationIndex(int index) {
         return texture3DBackground;
     }
 }
-
-
-
-
 
