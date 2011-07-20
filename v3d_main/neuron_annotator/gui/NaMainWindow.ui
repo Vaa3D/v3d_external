@@ -1174,10 +1174,14 @@ You can also resize the box by Ctrl + left mouse click.</string>
      <addaction name="action2D_MIP"/>
      <addaction name="actionScreenShot"/>
     </widget>
+    <widget class="QMenu" name="menuOpen_Recent">
+     <property name="title">
+      <string>Open Recent</string>
+     </property>
+    </widget>
     <addaction name="actionOpen"/>
+    <addaction name="menuOpen_Recent"/>
     <addaction name="separator"/>
-    <addaction name="actionLoad_Tiff"/>
-    <addaction name="actionCell_Counter_3D_2ch_lsm"/>
     <addaction name="separator"/>
     <addaction name="menuExport"/>
     <addaction name="separator"/>
@@ -1393,6 +1397,11 @@ You can also resize the box by Ctrl + left mouse click.</string>
   <action name="actionScreenShot">
    <property name="text">
     <string>ScreenShot</string>
+   </property>
+  </action>
+  <action name="actionFoo">
+   <property name="text">
+    <string>Foo</string>
    </property>
   </action>
  </widget>

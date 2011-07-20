@@ -34,6 +34,33 @@ protected:
     Rotation3D rot;
 };
 
+
+class OpenFileAction : public QAction
+{
+    Q_OBJECT
+
+public:
+    OpenFileAction(QObject * p_parent = NULL) : QAction(p_parent)
+    {
+        connect(this, SIGNAL(triggered()),
+                this, SLOT(onTriggered()));
+    }
+    void setFileName(QString fileName) {
+        setText(fileName);
+        m_fileName = fileName;
+    }
+
+signals:
+    void openFileRequested(QString fileName);
+
+protected slots:
+    void onTriggered() {emit openFileRequested(m_fileName);}
+
+protected:
+    QString m_fileName;
+};
+
+
 class NaMainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -55,6 +82,7 @@ public:
     bool loadMy4DImage(const My4DImage * img, const My4DImage * neuronMaskImg = NULL);
 
 public slots:
+    void openMulticolorImageStack(QString dirName);
     void on_actionV3DDefault_triggered();
     void on_actionNeuronAnnotator_triggered();
     void on_actionQuit_triggered();
@@ -83,6 +111,9 @@ protected slots:
 
 protected:
     void closeEvent(QCloseEvent *event);
+    // Recent files list
+    void addDirToRecentFilesList(QDir);
+    void updateRecentFileActions();
 
 private:
     AnnotationSession* annotationSession;
@@ -97,6 +128,8 @@ private:
     FragmentSelectionModel fragmentSelectionModel;
     QLabel * statusProgressMessage;
     QProgressBar * statusProgressBar;
+    enum { MaxRecentFiles = 10 }; // clever trick to get constant in header and also use it
+    OpenFileAction *recentFileActions[MaxRecentFiles];
 };
 
 #endif // NAMAINWINDOW_H

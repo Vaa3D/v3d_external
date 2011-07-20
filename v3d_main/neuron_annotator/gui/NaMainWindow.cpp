@@ -71,6 +71,16 @@ NaMainWindow::NaMainWindow()
     //QMetaObject::connectSlotsByName(this); This is apparently already called by setupUi, so calling it again creates repeat trigger events
     annotationSession=0;
 
+    // Create stubs for recent file menu
+    for (int i = 0; i < MaxRecentFiles; ++i) {
+        recentFileActions[i] = new OpenFileAction(this);
+        ui.menuOpen_Recent->addAction(recentFileActions[i]);
+        recentFileActions[i]->setVisible(false);
+        connect(recentFileActions[i], SIGNAL(openFileRequested(QString)),
+                this, SLOT(openMulticolorImageStack(QString)));
+    }
+    updateRecentFileActions();
+
     // Create an area in the status bar for progress messages.
     statusProgressMessage = new QLabel(NULL);
     statusBar()->addWidget(statusProgressMessage);
@@ -356,7 +366,14 @@ void NaMainWindow::on_actionOpen_triggered() {
     if (dirName.isEmpty()) // Silently do nothing when user presses Cancel.  No error dialogs please!
         return;
 
+    openMulticolorImageStack(dirName);
+}
+
+
+void NaMainWindow::openMulticolorImageStack(QString dirName)
+{
     QDir imageDir(dirName);
+
     if (! imageDir.exists()) {
         QMessageBox::warning(this, tr("No such directory"),
                              QString("No directory '%1' exists!  Please try something else.").arg(dirName));
@@ -376,7 +393,48 @@ void NaMainWindow::on_actionOpen_triggered() {
                                       "Error loading image directory - please check directory contents");
             return;
     }
+
+    addDirToRecentFilesList(imageDir);
 }
+
+
+// Recent files list
+void NaMainWindow::addDirToRecentFilesList(QDir imageDir)
+{
+    QString fileName = imageDir.canonicalPath();
+    if (fileName.isEmpty()) return;
+    QSettings settings("HHMI", "V3D");
+    QStringList files = settings.value("NeuronAnnotatorRecentFileList").toStringList();
+    if ( (files.size() > 0) && (files[0] == fileName) )
+        return; // this dir is already the top entry as is
+    files.removeAll(fileName);
+    files.removeAll(QString());
+    files.prepend(fileName);
+    while (files.size() > MaxRecentFiles)
+            files.removeLast();
+    settings.setValue("NeuronAnnotatorRecentFileList", files);
+    updateRecentFileActions();
+}
+
+
+void NaMainWindow::updateRecentFileActions()
+{
+    QSettings settings("HHMI", "V3D");
+    QStringList files = settings.value("NeuronAnnotatorRecentFileList").toStringList();
+    ui.menuOpen_Recent->setEnabled(files.size() > 0);
+    for (int i = 0; i < MaxRecentFiles; ++i)
+    {
+        if ( (i < files.size() && (! files[i].isEmpty())) ) { // active
+            recentFileActions[i]->setFileName(files[i]);
+            recentFileActions[i]->setVisible(true);
+        }
+        else { // inactive
+            recentFileActions[i]->setFileName(QString());
+            recentFileActions[i]->setVisible(false);
+        }
+    }
+}
+
 
 void NaMainWindow::on_action3D_Volume_triggered() {
     QString filename = QFileDialog::getSaveFileName(0, QObject::tr("Save 3D Volume to an .tif file"), ".", QObject::tr("3D Volume (*.tif)"));
