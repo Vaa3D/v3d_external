@@ -1,37 +1,47 @@
+#define FNUM 16
+
 #include "Nfmain.h"
 #include "compute.h"
 
 #include <vector>
+#include <math.h>
 #include <iostream>
 using namespace std;
 
 void nf_main(const V3DPluginArgList & input, V3DPluginArgList & output)
 {
-	//cout<<"Welcome to nf_main"<<"\n";
 	vector<char*>* inlist = (vector<char*>*)(input.at(0).p);
-	//char * out = (*(vector<char*>*)(input.at(0).p)).at(0);
-	//QString outfileName = QString(out);
-	//QFile file(outfileName);
-	//file.open(QIODevice::WriteOnly|QIODevice::Text);
-	//QTextStream myfile(&file);
+	char * out = (*(vector<char*>*)(output.at(0).p)).at(0);
+	QString outfileName = QString(out);
+	QFile file(outfileName);
+	file.open(QIODevice::WriteOnly|QIODevice::Text);
+	QTextStream myfile(&file);
+
+	myfile <<"id\tFile Name\tN_Node\tN_stem\tN_bifs\tN_branch\tN_tips\tWidth\tHeight\tDepth\tLength\tVolume\tSurface\tContraction\tFragmentation\tPd_ratio\tHausdorff\tFractal_Dim"<<endl;
 
 	int neuronNum = (int)inlist->size();
+
 	for (int i=0;i<neuronNum;i++)
 	{
 		QString name = QString(inlist->at(i));
 		NeuronTree nt = readSWC_file(name);
 		
 		cout<<"\n--------------Neuron #"<<(i+1)<<"----------------\n";
-		QList<double> features = computeFeature(nt);
+		myfile<<(i+1)<<"\t"<<name<<"\t";
+		double * features = new double[FNUM];
+		computeFeature(nt, features);
 		printFeature(features);
-
+		for (int jj=0;jj<FNUM;jj++)
+			myfile<<features[jj]<<"\t";
+		myfile<<endl;
 	}
-//	file.close();
+	file.close();
 }
 
-void printFeature(QList<double> & features)
+void printFeature(double * features)
 {
-	for (int i=0;i<features.size();i++)
+
+	for (int i=0;i<FNUM;i++)
 	{
 		switch (i)
 		{
@@ -75,11 +85,14 @@ void printFeature(QList<double> & features)
 				cout<<"Average Fragmentation: ";
 				break;
 			case 13:
-				cout<<"Hausdorff Dimension: ";
+				cout<<"Average Parent-daughter Ratio: ";
 				break;
 			case 14:
+				cout<<"Hausdorff Dimension: ";
+				break;
+			case 15:
 				cout<<"Fractal Dimension: ";
 		}
-		cout<<"\t"<<features.at(i)<<endl;
+		cout<<features[i]<<endl;
 	}
 }

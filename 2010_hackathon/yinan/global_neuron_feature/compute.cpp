@@ -10,13 +10,13 @@ using namespace std;
 
 static double Width=0, Height=0, Depth=0, Length=0, Volume=0, Surface=0, Hausdorff=0;
 static int N_node=0, N_stem=0, N_bifs=0, N_branch=0, N_tips=0;
-static double Diameter=0, Contraction=0, Fragmentation=0, Fractal_Dim=0;
+static double Pd_ratio=0, Contraction=0, Fragmentation=0, Fractal_Dim=0;
 
-QList<double> computeFeature(const NeuronTree & nt)
+void computeFeature(const NeuronTree & nt, double * features)
 {
 	Width=0, Height=0, Depth=0, Length=0, Volume=0, Surface=0, Hausdorff=0;
 	N_node=0, N_stem=0, N_bifs=0, N_branch=0, N_tips=0;
-	Diameter=0, Contraction=0, Fragmentation=0, Fractal_Dim=0;
+	Pd_ratio=0, Contraction=0, Fragmentation=0, Fractal_Dim=0;
 	QList<NeuronSWC> list = nt.listNeuron;
 	QHash<int, int> LUT = QHash<int, int>();
 	for (int i=0;i<list.size();i++)
@@ -25,39 +25,39 @@ QList<double> computeFeature(const NeuronTree & nt)
 	computeLinear(list, LUT);
 	computeTree(list,LUT);
 	Hausdorff = computeHausdorff(list,LUT);
-	QList<double> features = QList<double>();
-	//feature # 1: N_node
-	features.append(N_node);
-	//feature # 2: N_stem
-	features.append(N_stem);
-	//feature # 3: N_bifs
-	features.append(N_bifs);
-	//feature # 4: N_branch
-	features.append(N_branch);
-	//feature # 5: N_tips
-	features.append(N_tips);
-	//feature # 6: Width
-	features.append(Width);
-	//feature # 7: Height
-	features.append(Height);
-	//feature # 8: Depth
-	features.append(Depth);
-	//feature # 9: Length
-	features.append(Length);
-	//feature # 10: Volume
-	features.append(Volume);
-	//feature # 11: Surface
-	features.append(Surface);	
-	//feature # 12: Contraction
-	features.append(Contraction);
-	//feature # 13: Fragmentation
-	features.append(Fragmentation);
+	
+	//feature # 0: N_node
+	features[0] = N_node;
+	//feature # 1: N_stem
+	features[1] = N_stem;
+	//feature # 2: N_bifs
+	features[2] = N_bifs;
+	//feature # 3: N_branch
+	features[3] = N_branch;
+	//feature # 4: N_tips
+	features[4] = N_tips;
+	//feature # 5: Width
+	features[5] = Width;
+	//feature # 6: Height
+	features[6] = Height;
+	//feature # 7: Depth
+	features[7] = Depth;
+	//feature # 8: Length
+	features[8] = Length;
+	//feature # 9: Volume
+	features[9] = Volume;
+	//feature # 10: Surface
+	features[10] = Surface;	
+	//feature # 11: Contraction
+	features[11] = Contraction;
+	//feature # 12: Fragmentation
+	features[12] = Fragmentation;
+	//feature # 13: Pd_ratio
+	features[13] = Pd_ratio;
 	//feature # 14: Hausdorff
-	features.append(Hausdorff);
+	features[14] = Hausdorff;
 	//feature # 15: Fractal_Dim
-	features.append(Fractal_Dim);
-
-	return(features);
+	features[15] = Fractal_Dim;
 }
 
 int getParent(int n, QList<NeuronSWC> & list, QHash<int,int> & LUT)
@@ -133,18 +133,22 @@ void computeTree(QList<NeuronSWC> &list, QHash<int,int> & LUT)
 		{
 			N_branch++;
 			tmp = child.at(i);
-			double pathlength = 0;
-			int fragment = 0;
+			Pd_ratio += list.at(tmp).r/list.at(t).r;
+			double pathlength = dist(list.at(tmp),list.at(t));
+			int fragment = 1;
 			QList<double> pathfr = QList<double>();
 			QList<double> eufr = QList<double>();
+			pathfr.append(pathlength);
+			eufr.append(pathlength);
+
 			while (getChild(tmp,list,LUT).size()==1)
 			{
-				int pp = getParent(tmp,list,LUT);
-				pathlength += dist(list.at(tmp),list.at(pp));
+				int ch = getChild(tmp,list,LUT).at(0);
+				pathlength += dist(list.at(ch),list.at(tmp));
 				pathfr.append(pathlength);
-				eufr.append(dist(list.at(t),list.at(tmp)));
-				tmp = getChild(tmp,list,LUT).at(0);
+				eufr.append(dist(list.at(t),list.at(ch)));
 				fragment++;
+				tmp = ch;
 			}
 			//we are reaching a tip point or another branch point, computation for this branch is over
 			if (pathlength!=0)
@@ -153,9 +157,12 @@ void computeTree(QList<NeuronSWC> &list, QHash<int,int> & LUT)
 				eud.append(eufr.last());
 			}
 			frag.append(fragment);
+			if (fragment>1)
+			{
 			double ll = loglog(eufr,pathfr,fragment);
 			if (ll!=VOID)
 				frac_d.append(ll);
+			}
 			if (getChild(tmp,list,LUT).size()==0)//tip
 				N_tips++;
 			else if (getChild(tmp,list,LUT).size()>1)//another branch
@@ -171,12 +178,16 @@ void computeTree(QList<NeuronSWC> &list, QHash<int,int> & LUT)
 		Fragmentation += frag.at(i);
 	Fragmentation /= N_branch;
 
+	Pd_ratio /= N_branch;
+
 	for (int i=0;i<path.size();i++)
 		Contraction += eud.at(i)/path.at(i);
 	Contraction /= path.size();
-	
+
 	for (int i=0;i<frac_d.size();i++)
+	{
 		Fractal_Dim += frac_d.at(i);
+	}
 	Fractal_Dim /= frac_d.size();
 }
 
@@ -184,32 +195,21 @@ void computeTree(QList<NeuronSWC> &list, QHash<int,int> & LUT)
 //compute Hausdorff dimension
 double computeHausdorff(QList <NeuronSWC> & list, QHash<int,int> & LUT)
 {
-#define N 30000            // max# sections in each file 
-
 #define LMINMAX 2
 #define LMAXMIN 1
-#define NCELL 50000        // max# nonempty lattice cells in Hausdorff analysis
+#define NCELL 5000        // max# nonempty lattice cells in Hausdorff analysis
 
 	int n;
 
 	short **r1, **r2;
 
-	r1=matrix(3,N);
-	r2=matrix(3,N);
-	for(int j=1;j<3;j++)
-		for(int u=1;u<N;u++){
-			r1[j][u]=0;
-			r2[j][u]=0;
-		}
+	n = list.size();
+	r1 = matrix(3,n);
+	r2 = matrix(3,n);
 
-	//find the root
-	int rootidx = VOID;
-	for (int i=0;i<list.size();i++)
-		if (list.at(i).pn==-1) rootidx = i;
+	n = fillArray(list, LUT, r1,  r2);
 
-	n=fillArray(rootidx, list, LUT, r1,  r2);
-
-	int i,  k, k1, l, m, cnt, dl, lmin, lmax;
+	int i,  k, k1, l, m, cnt, dl, lmin , lmax;
 	short r[3], rr[3], **cell;
 
 	int scale;
@@ -219,11 +219,12 @@ double computeHausdorff(QList <NeuronSWC> & list, QHash<int,int> & LUT)
 	length=0;
 	lmin=0;
 	lmax=0;
-	for (i=1; i<n; i++) for (k=0; k<3; k++)
-	{
-		lmin += abs(r1[k][i]-r2[k][i]);
-		if (lmax<abs(r2[k][i]-r1[k][1])) lmax=abs(r2[k][i]-r1[k][1]);
-	}
+	for (i=1; i<n; i++) 
+		for (k=0; k<3; k++)
+		{
+			lmin += abs(r1[k][i]-r2[k][i]);
+			if (lmax<abs(r2[k][i]-r1[k][1])) lmax=abs(r2[k][i]-r1[k][1]);
+		}
 	lmin /= LMINMAX*n;
 	lmax /= 2;
 	/*------------start with lattice cell >= lmin ------------*/
@@ -246,7 +247,7 @@ double computeHausdorff(QList <NeuronSWC> & list, QHash<int,int> & LUT)
 	while (lmax>LMAXMIN)
 	{
 		for (k=0; k<3; k++) r[k]=r1[k][1];
-		m=mark(0, r, cell, scale);
+		m = mark(0, r, cell);
 		for (i=1; i<n; i++) if ((r1[0][i]!=r2[0][i]) ||
 				(r1[1][i]!=r2[1][i]) ||
 				(r1[2][i]!=r2[2][i]))
@@ -260,7 +261,7 @@ double computeHausdorff(QList <NeuronSWC> & list, QHash<int,int> & LUT)
 				dr[k]=(r2[k][i]-r[k])/total;
 				rt[k]=dr[k];
 			}
-			m=mark(m, r, cell, scale);
+			m=mark(m, r, cell);
 			while((r[0]!=r2[0][i]) ||
 					(r[1]!=r2[1][i]) ||
 					(r[2]!=r2[2][i]))
@@ -287,7 +288,7 @@ double computeHausdorff(QList <NeuronSWC> & list, QHash<int,int> & LUT)
 					rt[k1]++;
 				}
 				for (k=0; k<3; k++) rt[k] += dr[k];
-				m=mark(m, r, cell, scale);
+				m=mark(m, r, cell);
 				if (m>=NCELL) cerr<<"maximal cell number reached"<<endl;;
 				if (m>=NCELL) exit(1);
 			}
@@ -305,8 +306,8 @@ double computeHausdorff(QList <NeuronSWC> & list, QHash<int,int> & LUT)
 		scale *=2;
 	}
 	/*-----------------------------main loop end-------------------------*/
-	free_matrix(r1,3,N);
-	free_matrix(r2,3,N);
+	free_matrix(r1,3,n);
+	free_matrix(r2,3,n);
 	free_matrix(cell,NCELL,3);
 	/*-----------------------------computing Hausdorff dimension---------*/
 	hd=0;
@@ -316,31 +317,24 @@ double computeHausdorff(QList <NeuronSWC> & list, QHash<int,int> & LUT)
 }
 
 
-int fillArray(int t, QList<NeuronSWC> & list, QHash<int,int> & LUT, short** r1, short** r2){
-	static int id=1;
-	static double scale=1;
+int fillArray(QList<NeuronSWC> & list, QHash<int,int> & LUT, short** r1, short** r2){
 
-	int s=getParent(t,list,LUT);
-	if(s==VOID) s=t;
-	int cst=1;
-	r2[0][id]=(short)list.at(s).x/scale+cst;
-	r2[1][id]=(short)list.at(s).y/scale+cst;
-	r2[2][id]=(short)list.at(s).z/scale+1;
-	r1[0][id]=(short)list.at(t).x/scale+cst;
-	r1[1][id]=(short)list.at(t).y/scale+cst;
-	r1[2][id]=(short)list.at(t).z/scale+1;
+	int siz = list.size();
+	for (int t=0;t<siz;t++)
+	{
+		int s = getParent(t,list,LUT);
+		if(s==VOID) s = t;
+		int cst=1;
+		r2[0][t]=(short)list.at(s).x+cst;
+		r2[1][t]=(short)list.at(s).y+cst;
+		r2[2][t]=(short)list.at(s).z+1;
+		r1[0][t]=(short)list.at(t).x+cst;
+		r1[1][t]=(short)list.at(t).y+cst;
+		r1[2][t]=(short)list.at(t).z+1;
 
-	id++;
-
-	QList<int> child = getChild(t,list,LUT);
-	for (int i=0;i<child.size();i++)
-		fillArray(child.at(i),list,LUT,r1,r2);
-
-	return id;
-
+	}
+	return siz;
 }
-
-
 short **matrix(int n,int m)
 {
 	int i;
@@ -365,11 +359,13 @@ void free_matrix(short **mat,int n,int m)
 	for (i = 0; i<n ; i++)
 	{
 		delete(mat[i]);
+		mat[i] = NULL;
 	}
 	delete(mat);
+	mat = NULL;
 }
 /*********************** mark lattice cell r, keep marked set ordered */
-int mark(int m, short r[3], short ** c, int scale)
+int mark(int m, short r[3], short ** c)
 {
 	int i, j, k;
 	if (m<=0)
@@ -415,5 +411,5 @@ double loglog(QList<double> & x, QList<double> & y, int n)
 	}
 	if (n*sumx2-sumx*sumx==0) return VOID;
 	double b=(n*sumxy-sumx*sumy)/(n*sumx2-sumx*sumx);
-	return b;
+	return fabs(b);
 }

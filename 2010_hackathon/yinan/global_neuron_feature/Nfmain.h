@@ -3,7 +3,7 @@
 #include "../../../v3d_main/basic_c_fun/basic_surf_objs.h"
 
 void nf_main(const V3DPluginArgList & input, V3DPluginArgList & output);
-void printFeature(QList<double> & features);
+void printFeature(double * features);
 
 #endif
 
