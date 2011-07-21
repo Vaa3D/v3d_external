@@ -1168,7 +1168,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     </property>
     <widget class="QMenu" name="menuExport">
      <property name="title">
-      <string>Export ...</string>
+      <string>Export</string>
      </property>
      <addaction name="action3D_Volume"/>
      <addaction name="action2D_MIP"/>
@@ -1386,17 +1386,17 @@ You can also resize the box by Ctrl + left mouse click.</string>
   </action>
   <action name="action3D_Volume">
    <property name="text">
-    <string>3D Volume</string>
+    <string>3D Volume...</string>
    </property>
   </action>
   <action name="action2D_MIP">
    <property name="text">
-    <string>2D MIP</string>
+    <string>2D MIP...</string>
    </property>
   </action>
   <action name="actionScreenShot">
    <property name="text">
-    <string>ScreenShot</string>
+    <string>ScreenShot...</string>
    </property>
   </action>
   <action name="actionFoo">

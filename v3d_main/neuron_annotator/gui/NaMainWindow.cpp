@@ -360,7 +360,10 @@ void NaMainWindow::on_actionOpen_triggered() {
     QString dirName = QFileDialog::getExistingDirectory(this,
                                                         "Select Color Separation Image Directory",
                                                         QDir::currentPath(),
-                                                        QFileDialog::ShowDirsOnly);
+                                                        QFileDialog::ShowDirsOnly
+                                                        | QFileDialog::DontResolveSymlinks);
+
+    // qDebug() << dirName;
 
     // If user presses cancel, QFileDialog::getExistingDirectory returns a null string
     if (dirName.isEmpty()) // Silently do nothing when user presses Cancel.  No error dialogs please!
@@ -401,7 +404,7 @@ void NaMainWindow::openMulticolorImageStack(QString dirName)
 // Recent files list
 void NaMainWindow::addDirToRecentFilesList(QDir imageDir)
 {
-    QString fileName = imageDir.canonicalPath();
+    QString fileName = imageDir.absolutePath();
     if (fileName.isEmpty()) return;
     QSettings settings("HHMI", "V3D");
     QStringList files = settings.value("NeuronAnnotatorRecentFileList").toStringList();
