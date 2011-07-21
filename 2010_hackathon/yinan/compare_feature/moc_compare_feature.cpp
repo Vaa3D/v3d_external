@@ -1,15 +1,15 @@
 /****************************************************************************
-** Meta object code from reading C++ file 'neuron_feature.h'
+** Meta object code from reading C++ file 'compare_feature.h'
 **
-** Created: Mon Jul 18 16:02:43 2011
+** Created: Thu Jul 21 14:38:26 2011
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.7.3)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
 
-#include "neuron_feature.h"
+#include "compare_feature.h"
 #if !defined(Q_MOC_OUTPUT_REVISION)
-#error "The header file 'neuron_feature.h' doesn't include <QObject>."
+#error "The header file 'compare_feature.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 62
 #error "This file was generated using the moc from 4.7.3. It"
 #error "cannot be used with the include files from this version of Qt."
@@ -17,7 +17,7 @@
 #endif
 
 QT_BEGIN_MOC_NAMESPACE
-static const uint qt_meta_data_NFPlugin[] = {
+static const uint qt_meta_data_Compare_featurePlugin[] = {
 
  // content:
        5,       // revision
@@ -33,37 +33,37 @@ static const uint qt_meta_data_NFPlugin[] = {
        0        // eod
 };
 
-static const char qt_meta_stringdata_NFPlugin[] = {
-    "NFPlugin\0"
+static const char qt_meta_stringdata_Compare_featurePlugin[] = {
+    "Compare_featurePlugin\0"
 };
 
-const QMetaObject NFPlugin::staticMetaObject = {
-    { &QObject::staticMetaObject, qt_meta_stringdata_NFPlugin,
-      qt_meta_data_NFPlugin, 0 }
+const QMetaObject Compare_featurePlugin::staticMetaObject = {
+    { &QObject::staticMetaObject, qt_meta_stringdata_Compare_featurePlugin,
+      qt_meta_data_Compare_featurePlugin, 0 }
 };
 
 #ifdef Q_NO_DATA_RELOCATION
-const QMetaObject &NFPlugin::getStaticMetaObject() { return staticMetaObject; }
+const QMetaObject &Compare_featurePlugin::getStaticMetaObject() { return staticMetaObject; }
 #endif //Q_NO_DATA_RELOCATION
 
-const QMetaObject *NFPlugin::metaObject() const
+const QMetaObject *Compare_featurePlugin::metaObject() const
 {
     return QObject::d_ptr->metaObject ? QObject::d_ptr->metaObject : &staticMetaObject;
 }
 
-void *NFPlugin::qt_metacast(const char *_clname)
+void *Compare_featurePlugin::qt_metacast(const char *_clname)
 {
     if (!_clname) return 0;
-    if (!strcmp(_clname, qt_meta_stringdata_NFPlugin))
-        return static_cast<void*>(const_cast< NFPlugin*>(this));
+    if (!strcmp(_clname, qt_meta_stringdata_Compare_featurePlugin))
+        return static_cast<void*>(const_cast< Compare_featurePlugin*>(this));
     if (!strcmp(_clname, "V3DPluginInterface2_1"))
-        return static_cast< V3DPluginInterface2_1*>(const_cast< NFPlugin*>(this));
+        return static_cast< V3DPluginInterface2_1*>(const_cast< Compare_featurePlugin*>(this));
     if (!strcmp(_clname, "com.janelia.v3d.V3DPluginInterface/2.1"))
-        return static_cast< V3DPluginInterface2_1*>(const_cast< NFPlugin*>(this));
+        return static_cast< V3DPluginInterface2_1*>(const_cast< Compare_featurePlugin*>(this));
     return QObject::qt_metacast(_clname);
 }
 
-int NFPlugin::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+int Compare_featurePlugin::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
     _id = QObject::qt_metacall(_c, _id, _a);
     if (_id < 0)
