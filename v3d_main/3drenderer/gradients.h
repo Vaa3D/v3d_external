@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -101,14 +101,13 @@ public:
     QSize sizeHint() const { return m_size; }
     HoverPoints* hoverPoints() const { return m_hoverPoints; }
 
-    QRgb colorAt(qreal f) { return colorAt(int(f*qMax(0, m_shade_image.width()-1) +0.5)); }
-    QRgb colorAt(int x);
+    QRgb colorF(qreal f); // 0<=f<=1
+    QRgb colorX(qreal x); //to interpolate color from stops of curve
 
 public slots:
-	void changeColors(const QPolygonF &pts) { emit colorsChanged(m_shade_type, pts); }
-
+	void changeColors(const QPolygonF &pts) { emit colorsChanged(m_shade_type, pts); } //m_hoverPoints --> this
 signals:
-    void colorsChanged(int type, const QPolygonF &);
+	void colorsChanged(int type, const QPolygonF &); // this --> parent(GradientEditor)
 
 protected:
     virtual void paintEvent(QPaintEvent *e);
@@ -137,22 +136,22 @@ public:
     void setNormalCurve(int j, const QPolygonF &curve);
     QPolygonF normalCurve(int j) const;  // 0.0<=(x,y)<=1.0, y from bottom to top
 
-    QRgb colorAt(qreal f)
+    QRgb colorF(qreal f) //0<=f<=1
     {
     	int r,g,b,a;    	r=g=b=a=0;
-    	if (m_red_shade)	r = qRed(m_red_shade->colorAt(f));
-    	if (m_green_shade)	g = qGreen(m_green_shade->colorAt(f));
-    	if (m_blue_shade)	b = qBlue(m_blue_shade->colorAt(f));
-    	if (m_alpha_shade)	a = qAlpha(m_alpha_shade->colorAt(f));
+    	if (m_red_shade)	r = qRed(m_red_shade->colorF(f));
+    	if (m_green_shade)	g = qGreen(m_green_shade->colorF(f));
+    	if (m_blue_shade)	b = qBlue(m_blue_shade->colorF(f));
+    	if (m_alpha_shade)	a = qAlpha(m_alpha_shade->colorF(f));
     	return qRgba(r, g, b, a);
     }
 
 public slots:
     void pointsUpdated(int type, const QPolygonF &);
-	QGradientStops updateAlphaShadeStops(); //081220, Separated from pointsUpdated
+	QGradientStops updateAlphaStops(); //081220, Separated from pointsUpdated
 
 signals:
-    void gradientStopsChanged(const QGradientStops&);
+    void gradientStopsChanged(const QGradientStops&); //trigger external slot to output colormap
 
 protected:
     ShadeWidget *m_red_shade;

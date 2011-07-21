@@ -340,35 +340,38 @@ void V3dR_GLWidget::paintGL()
 
 	//QTime qtime; qtime.start();
 
+	//the following translation & rotation operations are carried out in view space
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	{// 1.4 ~ sqrt(2)
-		double s = 1.4/(float)SHIFT_RANGE; // *pow(1.4, -_zoom/100.0);
-		double tx = _xShift*s;
-		double ty = _yShift*s;
-                 double tz = _zShift*s;
-                 // double tz = 0;
-                glTranslated( tx, ty, tz );
-		dxShift=dyShift=dzShift=0;  // clear shift step
+	//absolute translation
+	{
+
+		XYZ T(_xShift, _yShift, _zShift);  				//qDebug("T= %f %f %f", T.x, T.y, T.z);
+		dxShift=dyShift=dzShift=0;  // clear relative shift step
+
+		double s = 1.4/(float)SHIFT_RANGE;  // 1.4 ~ sqrt(2);
+		T = T*s;
+		glTranslated( T.x, T.y, T.z );
 	}
 
-	glMultMatrixd(mRot); // last rotation pose
+	//last absolute rotation pose
+	glMultMatrixd(mRot);
 
-	{// changed model space rotation, 081026
-		double rx = dxRot;
-		double ry = dyRot;
-		double rz = dzRot;
-		XYZ A(rx, ry, rz);  							//qDebug("A= %f %f %f", A.x, A.y, A.z);
-		double angle = norm(A)/(float)ANGLE_TICK;        //qDebug("angle=%f", angle);
+	//current relative small rotation, always around center of model
+	{
+		XYZ R(dxRot, dyRot, dzRot);  					//qDebug("R= %f %f %f", R.x, R.y, R.z);
+		dxRot=dyRot=dzRot=0;  // clear relative rotation step
+
+		double angle = norm(R)/(float)ANGLE_TICK;       //qDebug("angle=%f", angle);
 		if (angle)
 		{
-			normalize(A);          						//qDebug("A= %f %f %f", A.x, A.y, A.z);
-			glRotated( angle,  A.x, A.y, A.z);
-			dxRot=dyRot=dzRot=0;  // clear rotation step
+			normalize(R);          						//qDebug("R= %f %f %f", R.x, R.y, R.z);
+			glRotated( angle,  R.x, R.y, R.z);
 		}
 	}
 
+	//save current absolute rotation pose
 	glGetDoublev(GL_MODELVIEW_MATRIX, mRot);
 	for (int i=0; i<3; i++)	mRot[i*4 +3]=mRot[3*4 +i]=0; mRot[3*4 +3]=1; // only reserve rotation, remove translation in mRot
 
@@ -378,7 +381,6 @@ void V3dR_GLWidget::paintGL()
 
 	//=========================================================================
 	// normalized space of [-1,+1]^3;
-	//qDebug(" renderer->paint");
 	if (renderer)  renderer->paint();
 	//=========================================================================
 

@@ -344,8 +344,8 @@ void Renderer_gl2::initColormap()
 		{
 			colormap_curve[ch][j].clear();
 			int y;
-			y = colormap[ch][0].c[j];	   setColormapCurve(colormap_curve[ch][j],  0.0,  y);
-			y = colormap[ch][255].c[j];    setColormapCurve(colormap_curve[ch][j],  1.0,  y);
+			y = colormap[ch][0].c[j];	   set_colormap_curve(colormap_curve[ch][j],  0.0,  y);
+			y = colormap[ch][255].c[j];    set_colormap_curve(colormap_curve[ch][j],  1.0,  y);
 
 		//	qDebug() << QString("[%1][%2]").arg(ch).arg(j) <<  colormap_curve[ch][j];
 		}

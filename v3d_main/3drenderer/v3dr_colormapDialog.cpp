@@ -101,57 +101,68 @@ void V3dr_colormapDialog::createFirst()
 		editorGroup[i]->setTitle(tr("Channel %1").arg(i+1));
 		m_editor[i] = new GradientEditor(editorGroup[i]);
 
-		//    editorGroup1->setFixedWidth(180);
-		//    editorGroup1->setFixedHeight(400);
+		//editorGroup[i]->setMinimumSize(180,400);
     }
 
-    QGroupBox *defaultsGroup = new QGroupBox(this);
-    defaultsGroup->setTitle("Presets");
-	defaultsGroup->setFixedWidth(150);
 
-    QPushButton *default0Button = new QPushButton("Default", defaultsGroup);
-    QPushButton *default1Button = new QPushButton("Gray", defaultsGroup);
-    QPushButton *default2Button = new QPushButton("Red -> Gray", defaultsGroup);
-    QPushButton *default3Button = new QPushButton("Green -> Gray", defaultsGroup);
-    QPushButton *default4Button = new QPushButton("Blue -> Gray", defaultsGroup);
-    QPushButton *default5Button = new QPushButton("cm1", defaultsGroup);
-    QPushButton *default6Button = new QPushButton("cm2", defaultsGroup);
-//	QComboBox *defaultList = new QComboBox(defaultsGroup);
+    QGroupBox *presetGroup = new QGroupBox(this);
+    presetGroup->setTitle("Presets");
+//   QVBoxLayout *presetLayout = new QVBoxLayout(presetGroup);
+    QGridLayout *presetLayout = new QGridLayout(presetGroup);
+
+    QPushButton *default0Button = new QPushButton("Default");
+    QPushButton *default1Button = new QPushButton("Gray");
+    QPushButton *default2Button = new QPushButton("Red -> Gray");
+    QPushButton *default3Button = new QPushButton("Green -> Gray");
+    QPushButton *default4Button = new QPushButton("Blue -> Gray");
+    QPushButton *default5Button = new QPushButton("cm1");
+    QPushButton *default6Button = new QPushButton("cm2");
+//	QComboBox *defaultList = new QComboBox(btnGroup);
 //	QStringList qsl;
 //	qsl << "Default" << "Preset 1" << "Preset 2" << "Preset 3" << "Preset 4";
 //	defaultList->addItems(qsl);
 
-    undoButton = new QPushButton("Undo", defaultsGroup);
-    loadButton = new QPushButton("Load", defaultsGroup);
-    saveButton = new QPushButton("Save", defaultsGroup);
-    applyButton = new QPushButton("Apply to image", defaultsGroup);
-
-    QVBoxLayout *defaultsGroupLayout = new QVBoxLayout(defaultsGroup);
-    defaultsGroupLayout->addWidget(default0Button);
-    defaultsGroupLayout->addWidget(default1Button);
-    defaultsGroupLayout->addWidget(default2Button);
-    defaultsGroupLayout->addWidget(default3Button);
-    defaultsGroupLayout->addWidget(default4Button);
-    defaultsGroupLayout->addWidget(default5Button);
-    defaultsGroupLayout->addWidget(default6Button);
-//    defaultsGroupLayout->addWidget(defaultList);
-
-    defaultsGroupLayout->addSpacing(15);
-    defaultsGroupLayout->addWidget(undoButton);
-    defaultsGroupLayout->addWidget(loadButton);
-    defaultsGroupLayout->addWidget(saveButton);
-    defaultsGroupLayout->addSpacing(15);
-    defaultsGroupLayout->addWidget(applyButton);
-    defaultsGroupLayout->addStretch(0);
+    presetLayout->addWidget(default0Button,		1,0, 1,1);
+    presetLayout->addWidget(default1Button,		2,0, 1,1);
+    presetLayout->addWidget(default2Button,		3,0, 1,1);
+    presetLayout->addWidget(default3Button,		4,0, 1,1);
+    presetLayout->addWidget(default4Button,		5,0, 1,1);
+    presetLayout->addWidget(default5Button,		6,0, 1,1);
+    presetLayout->addWidget(default6Button,		7,0, 1,1);
+//    presetLayout->addWidget(defaultList);
 
 
-     // Layouts
-    QHBoxLayout *mainLayout = new QHBoxLayout(this);
+    QGroupBox *btnGroup = new QGroupBox(this);
+    QVBoxLayout *btnLayout = new QVBoxLayout(btnGroup);
+
+    undoButton = new QPushButton("Undo");
+    loadButton = new QPushButton("Load");
+    saveButton = new QPushButton("Save");
+    applyButton = new QPushButton("Apply to image");
+
+    btnLayout->addWidget(undoButton);
+    btnLayout->addWidget(loadButton);
+    btnLayout->addWidget(saveButton);
+    //btnLayout->addSpacing(15);
+    btnLayout->addWidget(applyButton);
+
+
+    QGroupBox *controlGroup = new QGroupBox(this);
+	controlGroup->setFixedWidth(150);
+    QVBoxLayout *controlLayout = new QVBoxLayout(controlGroup);
+    controlLayout->addWidget(presetGroup);
+    controlLayout->addWidget(btnGroup);
+    controlLayout->addStretch(0);
+    controlLayout->setContentsMargins(0,0,0,0);
+
+
+    QHBoxLayout *allLayout = new QHBoxLayout(this);
     for(int i=0; i<N_CHANNEL; i++)
     {
-    	mainLayout->addWidget(editorGroup[i]);
+    	allLayout->addWidget(editorGroup[i]);
     }
-    mainLayout->addWidget(defaultsGroup);
+    allLayout->addWidget(controlGroup);
+	HALF_MARGINS(allLayout);
 
 
     // Signal
@@ -285,7 +296,7 @@ void V3dr_colormapDialog::updateColormap()
 
 		for (int k=0; k<=255; k++)
 		{
-			QRgb argb = m_editor[i]->colorAt( k/255.0 );
+			QRgb argb = m_editor[i]->colorF( k/255.0 );
 			(renderer->colormap[i][k]).r = (unsigned char)qRed(argb);
 			(renderer->colormap[i][k]).g = (unsigned char)qGreen(argb);
 			(renderer->colormap[i][k]).b = (unsigned char)qBlue(argb);

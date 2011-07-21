@@ -121,13 +121,13 @@ private:
 
 // helping function
 
-inline void setColormapCurve(QPolygonF &curve, qreal x, int iy) // 0.0<=(x)<=1.0, 0<=(iy)<=255
+inline void set_colormap_curve(QPolygonF &curve, qreal x, int iy) // 0.0<=(x)<=1.0, 0<=(iy)<=255
 {
     x = qMax(0.0, qMin(1.0,  x));
     qreal y = qMax(0.0, qMin(1.0,  iy/255.0));
 	curve << QPointF(x, y);
 }
-inline void setColormapCurve(QPolygonF &curve, qreal x, qreal y) // 0.0<=(x, y)<=1.0
+inline void set_colormap_curve(QPolygonF &curve, qreal x, qreal y) // 0.0<=(x, y)<=1.0
 {
     x = qMax(0.0, qMin(1.0,  x));
     y = qMax(0.0, qMin(1.0,  y));

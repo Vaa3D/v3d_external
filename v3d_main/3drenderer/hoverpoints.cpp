@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -98,23 +98,17 @@ HoverPoints::HoverPoints(QWidget *widget, PointShape shape)
     m_enabled = true;
 
     widget->installEventFilter(this); // 081220 move after m_currentIndex=-1
+
     connect(this, SIGNAL(pointsChanged(const QPolygonF &)),  m_widget, SLOT(update()));
-}
-
-
-void HoverPoints::setEnabled(bool enabled)
-{
-    if (m_enabled != enabled) {
-        m_enabled = enabled;
-        m_widget->update();
-    }
 }
 
 
 bool HoverPoints::eventFilter(QObject *object, QEvent *event)
 {
-    if (object == m_widget && m_enabled) {
-        switch (event->type()) {
+    if (object == m_widget && m_enabled)
+    {
+        switch (event->type())
+        {
 
         case QEvent::MouseButtonPress:
         {
@@ -158,11 +152,13 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
                     m_points.insert(pos, clickPos);
                     m_locks.insert(pos, 0);
                     m_currentIndex = pos;
+
                     firePointChange();
+
                 } else {
                     m_currentIndex = index;
                 }
-                return true;
+                return true; //event sttopped
 
             } else if (me->button() == Qt::RightButton) {
                 if (index >= 0 && m_editable) {
@@ -170,8 +166,10 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
                         m_locks.remove(index);
                         m_points.remove(index);
                     }
+
                     firePointChange();
-                    return true;
+
+                    return true; //event stopped
                 }
             }
 
@@ -186,52 +184,62 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
             if (m_currentIndex >= 0)
             {
                 movePoint(m_currentIndex, ((QMouseEvent *)event)->pos());
+
                 firePointChange(); //090719
             }
             break;
 
-        case QEvent::Resize:
+        case QEvent::Resize: //received before m_widget
         {
             QResizeEvent *e = (QResizeEvent *) event;
             if (e->oldSize().width() == 0 || e->oldSize().height() == 0)
                 break;
+
+            m_bounds = QRectF(0,0, e->size().width(),e->size().height()); //110721
+
             qreal stretch_x = e->size().width() / qreal(e->oldSize().width());
             qreal stretch_y = e->size().height() / qreal(e->oldSize().height());
-
             for (int i=0; i<m_points.size(); ++i) {
                 QPointF p = m_points[i];
                 movePoint(i, QPointF(p.x() * stretch_x, p.y() * stretch_y)); //090719, false);
             }
-            if(m_points.size())  firePointChange(); //081220, add if(m_points.size())
+
+            firePointChange();
+
             break;
         }
 
         case QEvent::Paint:
         {
+        	// call m_widget to paint
             QWidget *that_widget = m_widget;
-            m_widget = 0;
+            m_widget = 0; //prevent to re-enter
             QApplication::sendEvent(object, event);
             m_widget = that_widget;
+
             paintPoints();
+
 #ifdef QT_OPENGL_SUPPORT
             ArthurFrame *af = qobject_cast<ArthurFrame *>(that_widget);
             if (af && af->usesOpenGL())
                 af->glWidget()->swapBuffers();
 #endif
-            return true;
+            return true; //event stopped
         }
         default:
             break;
         }
     }
 
-    return false;
+    return false; //event passed
 }
 
 
 void HoverPoints::paintPoints()
 {
-    QPainter p;
+    if (m_points.size()<1)  return; //110721
+
+	QPainter p;
 #ifdef QT_OPENGL_SUPPORT
     ArthurFrame *af = qobject_cast<ArthurFrame *>(m_widget);
     if (af && af->usesOpenGL())
@@ -272,12 +280,12 @@ void HoverPoints::paintPoints()
         QRectF bounds = pointBoundingRect(i);
         if (m_shape == CircleShape)
         {
-			if (m_locks.at(i)) p.drawRect(bounds);  else
+			if (m_locks.at(i)) p.drawRect(bounds); else
 				p.drawEllipse(bounds);
         }
         else //RectangleShape
         {
-        	if (m_locks.at(i)) p.drawEllipse(bounds);  else
+        	if (m_locks.at(i)) p.drawEllipse(bounds); else
         		p.drawRect(bounds);
         }
     }
@@ -301,20 +309,6 @@ static QPointF bound_point(const QPointF &point, const QRectF &bounds, int lock)
     return p;
 }
 
-void HoverPoints::setPoints(const QPolygonF &points)
-{
-    m_points.clear();
-    for (int i=0; i<points.size(); ++i)
-        m_points << bound_point(points.at(i), boundingRect(), 0);
-
-    m_locks.clear();
-    if (m_points.size() > 0) {
-        m_locks.resize(m_points.size());
-
-        m_locks.fill(0); //no lock
-    }
-}
-
 
 void HoverPoints::movePoint(int index, const QPointF &point)
 {
@@ -326,7 +320,9 @@ void HoverPoints::firePointChange()
 {
 //    printf("HoverPoints::firePointChange(), current=%d\n", m_currentIndex);
 
-    if (m_sortType != NoSort) {
+    if (m_sortType != NoSort
+    		&& (m_points.size()>1)) //110721
+    {
 
         QPointF oldCurrent;
         if (m_currentIndex != -1) {
@@ -385,6 +381,23 @@ void HoverPoints::firePointChange()
 //                i, m_points.at(i).x(), m_points.at(i).y(), m_locks.at(i));
 //     }
 
-    if (m_points.size())
-    	emit pointsChanged(m_points);
+    emit pointsChanged(m_points);
 }
+
+
+void HoverPoints::setPoints(const QPolygonF &points)
+{
+    m_points.clear();
+    for (int i=0; i<points.size(); ++i)
+        m_points << bound_point(points.at(i), boundingRect(), 0);
+
+    m_locks.clear();
+    if (m_points.size() > 0) {
+        m_locks.resize(m_points.size());
+
+        m_locks.fill(0); //no lock
+    }
+}
+
+
+

@@ -53,6 +53,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define QEVENT_KEY_PRESS QEvent::KeyPress
 #endif
 
+#define HALF_MARGINS(layout) {int l,t,r,b;  layout->getContentsMargins(&l, &t, &r, &b);   layout->setContentsMargins(l/2, t/2, r/2, b/2);}
 
 //---------------------------------------------------
 

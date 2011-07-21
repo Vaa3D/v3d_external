@@ -250,7 +250,7 @@ void V3dr_surfaceDialog::createTables_addtoTab()
 void V3dr_surfaceDialog::createFirst()
 {
 	QGroupBox* buttonGroup = new QGroupBox();
-    QVBoxLayout *buttonRgnLayout = new QVBoxLayout(buttonGroup);
+    QVBoxLayout *buttonLayout = new QVBoxLayout(buttonGroup);
 
     QGroupBox* deleteGroup = new QGroupBox(); //
     QVBoxLayout *deleteLayout = new QVBoxLayout(deleteGroup);
@@ -262,9 +262,9 @@ void V3dr_surfaceDialog::createFirst()
     selectAllButton = new QPushButton("Select All");
     deselectAllButton = new QPushButton("Select None");
     inverseSelectButton = new QPushButton("Select Inverse");
-    selectLayout->addWidget(selectAllButton,		1,0, 1,1+1);
-    selectLayout->addWidget(deselectAllButton,		2,0, 1,1+1);
-    selectLayout->addWidget(inverseSelectButton,	3,0, 1,1+1);
+    selectLayout->addWidget(selectAllButton,		1,0, 1,2);
+    selectLayout->addWidget(deselectAllButton,		2,0, 1,2);
+    selectLayout->addWidget(inverseSelectButton,	3,0, 1,2);
 
 //	QGroupBox* changeGroup = new QGroupBox();//"Change");
 //	QGridLayout *changeLayout = new QGridLayout(changeGroup);
@@ -280,7 +280,7 @@ void V3dr_surfaceDialog::createFirst()
     changeLayout->addWidget(editNameCommentButton,	3+3,0, 1,2);
     changeLayout->addWidget(undoButton,				4+3,0, 1,2);
 
-    markerLocalView = new QPushButton("Local 3D View around Marker");
+//    markerLocalView = new QPushButton("Local 3D View around Marker");
 
     QGroupBox* checkGroup = new QGroupBox("Options");
     QGridLayout *checkLayout = new QGridLayout(checkGroup);
@@ -289,22 +289,22 @@ void V3dr_surfaceDialog::createFirst()
     checkBox_accumulateLastHighlightHits = new QCheckBox("Accumulate last\n highlight search");
     checkLayout->addWidget(checkBox_accumulateLastHighlightHits,	2,0, 1,2);
 
-    buttonRgnLayout->addWidget(selectGroup);
-    //buttonRgnLayout->addWidget(changeGroup);
-    //buttonRgnLayout->addWidget(deleteGroup);
-    //buttonRgnLayout->addWidget(markerLocalView);
-    buttonRgnLayout->addWidget(checkGroup);
-    buttonRgnLayout->addStretch(0);
-    buttonRgnLayout->setContentsMargins(0,0,0,0);
+    buttonLayout->addWidget(selectGroup);
+    //buttonLayout->addWidget(changeGroup);
+    //buttonLayout->addWidget(deleteGroup);
+    //buttonLayout->addWidget(markerLocalView);
+    buttonLayout->addWidget(checkGroup);
+    buttonLayout->addStretch(0);
+    buttonLayout->setContentsMargins(0,0,0,0);
 
     /////////////////////////////////////////////////////////
     tabOptions = new QTabWidget(this); //tabOptions = new AutoTabWidget(this);//090117: commented by PHC
 	/////////////////////////////////////////////////////////
 
-	QGroupBox* tabAndBtnGroup = new QGroupBox();
-    QHBoxLayout *tabAndBtnLayout = new QHBoxLayout(tabAndBtnGroup);
-    tabAndBtnLayout->addWidget(tabOptions);
-    tabAndBtnLayout->addWidget(buttonGroup);
+	QGroupBox* TabAndBtnGroup = new QGroupBox();
+    QHBoxLayout *TabAndBtnLayout = new QHBoxLayout(TabAndBtnGroup);
+    TabAndBtnLayout->addWidget(tabOptions);
+    TabAndBtnLayout->addWidget(buttonGroup);
 
 	//search box
 	QGroupBox* searchGroup = new QGroupBox();
@@ -324,8 +324,9 @@ void V3dr_surfaceDialog::createFirst()
 
 	//overall layout
     QVBoxLayout *allLayout = new QVBoxLayout(this);
-	allLayout->addWidget(tabAndBtnGroup);
+	allLayout->addWidget(TabAndBtnGroup);
 	allLayout->addWidget(searchGroup);
+	HALF_MARGINS(allLayout);
 
 	createMenuOfColor();
 

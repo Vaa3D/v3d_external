@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -74,24 +74,27 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "gradients.h"
 #include "hoverpoints.h"
 
-#define __running_route__
-//------------ the route --------------------------------------------------------------------------------
-// ShadeWidget::connect(HoverPoints, SIGNAL(pointsChanged()), this, SIGNAL(colorsChanged()));
-// GradientEditor::connect(ShadeWidget, SIGNAL(colorsChanged()), this, SLOT(pointsUpdated()));
-// GradientEditor::pointsUpdated()
-// {
-//     combined stops from {R G B A} ShadeWidgets
-//     updateAlphaShadeStops() { m_alpha_shade->generateShade(); }
-//     emit GradientEditor::gradientStopsChanged();       /// output
-// }
+#define __running_road__
 //------------ initialize -------------------------------------------------------------------------------
-// GradientEditor::setNormalCurve()                       /// input
+// GradientEditor::setNormalCurve()                       /// input colormap curve
 // {
 // 	   set_shade_points();
-//     updateAlphaShadeStops();
+//     updateAlphaStops();
 // }
+//------------ signal road --------------------------------------------------------------------------------
+// ShadeWidget->connect(HoverPoints, SIGNAL(pointsChanged()), ShadeWidget, SIGNAL(colorsChanged()));
+// GradientEditor->connect(ShadeWidget, SIGNAL(colorsChanged()), GradientEditor, SLOT(pointsUpdated()));
+// GradientEditor::pointsUpdated()
+// {
+//     updateAlphaStops(); // combined stops from {R G B A} ShadeWidget
+//     m_alpha_shade->setGradientStops() { m_alpha_shade->generateShade(); }
+//	   emit gradientStopsChanged();                       /// trigger output colormap
+// }
+// this->connect(GradientEditor, SIGNAL(gradientStopsChanged()), this, SLOT(updateColormap()))
 //-------------------------------------------------------------------------------------------------------
 
+
+#define __ShadeWidget__
 
 ShadeWidget::ShadeWidget(ShadeType type, QWidget *parent)
     : QWidget(parent), m_shade_type(type)
@@ -119,8 +122,8 @@ ShadeWidget::ShadeWidget(ShadeType type, QWidget *parent)
     }
 
     m_hoverPoints = new HoverPoints(this, HoverPoints::CircleShape);
-    m_hoverPoints->setConnectionType(HoverPoints::LineConnection);
     m_hoverPoints->setSortType(HoverPoints::XSort);
+    m_hoverPoints->setConnectionType(HoverPoints::LineConnection);
 
 
 // 081220, these points will make many rubbish signal
@@ -138,34 +141,42 @@ ShadeWidget::ShadeWidget(ShadeType type, QWidget *parent)
 }
 
 
-uint ShadeWidget::colorAt(int x)
+QRgb ShadeWidget::colorF(qreal f) // 0<=f<=1
 {
-	//if (m_shade_type != ARGBShade)
-	//	generateShade();
+	//note: this->width() is same as m_hoverPoints->boundingRect().height()
+	return colorX( f * width() );
+}
 
-    QRgb argb = 0;
+QRgb ShadeWidget::colorX(qreal x) //also called by GradientEditor::updateAlphaStops()
+{
+	//TODO: using normalized point position is the best solution
+
+    QRgb argb = 0; //0xffffffff;
     QPolygonF pts = m_hoverPoints->points();
-    for (int i=1; i < pts.size(); ++i)
+    QRectF bound = m_hoverPoints->boundingRect();  //110721
+
+    //Q_ASSERT(pts.size()>=2);
+    for (int i=1; i < pts.size(); ++i)  //if (pts.size()<2) do nothing
     {
-        if (pts.at(i-1).x() <= x && pts.at(i).x() >= x)
+    	//110721, clamp x into valid range, fixed bug of fast horizontal resize
+        if (x < pts.first().x())  x = pts.first().x();
+        if (x > pts.last().x())   x = pts.last().x();
+
+        if (pts.at(i-1).x() <= x && x <= pts.at(i).x()) //found the segment that x belongs to
         {
-        	QLineF l(pts.at(i-1), pts.at(i));
-            qreal x2,y2;
+        	qreal x1 = pts.at(i-1).x();
+        	qreal y1 = pts.at(i-1).y();
+        	qreal x2 = pts.at(i).x();
+        	qreal y2 = pts.at(i).y();
+        	if (x2-x1 <= 0)
+        		continue;
+        	qreal y = (x-x1)/(x2-x1)*(y2-y1) +y1;
 
-            if (l.dx() <= 0) //090719, 090720 RZC: fixed this case
-            	continue;
+            qreal h = bound.height(); //110721, fixed bug of fast vertical resize
+					//m_shade_image.height(); //this is wrong
+    		y = 1 - qMax(0.0, qMin(h, y))/h;
+    		int I = (y*255); //090719
 
-            l.setLength(l.length() * ((x - l.x1()) / l.dx())); // linear interpolation of (x2,y2)
-            x2 = l.x2();	y2 = l.y2();
-
-    		qreal w = m_shade_image.width()-1;
-    		qreal h = m_shade_image.height()-1;
-    		int I = qRound((1 - qMin(y2,h)/h)*255); //090719
-
-//    		if (m_shade_type != ARGBShade)
-//            {
-//            	argb = m_shade_image.pixel( qRound(qMin(x2, w)), qRound(qMin(y2, h)) );
-//            }
     		if (m_shade_type == RedShade)
     		{
         		argb = qRgba( I,0,0, 255 );
@@ -183,7 +194,7 @@ uint ShadeWidget::colorAt(int x)
         		argb = qRgba( 0,0,0, I ); //081215
             }
 
-    		break;//090720
+    		break;//break loop of finding
         }
     }
     return argb;
@@ -224,13 +235,13 @@ void ShadeWidget::generateShade()
 		m_shade_image = QImage(size(), QImage::Format_RGB32);
 		QPainter p(&m_shade_image);
 
-		shade.setColorAt(1, Qt::black);
+		shade.setColorAt(1, Qt::black);      //rect bottom is black
 		if (m_shade_type == RedShade)
-			shade.setColorAt(0, Qt::red);
+			shade.setColorAt(0, Qt::red);    //rect top is red
 		else if (m_shade_type == GreenShade)
-			shade.setColorAt(0, Qt::green);
+			shade.setColorAt(0, Qt::green);  //rect top is green
 		else
-			shade.setColorAt(0, Qt::blue);
+			shade.setColorAt(0, Qt::blue);   //rect top is blue
 
 		p.fillRect(rect(), shade);
 	}
@@ -282,16 +293,16 @@ void GradientEditor::pointsUpdated(int type, const QPolygonF &pts)
 //	qDebug() << "GradientEditor::pointsUpdated";
 //	qDebug() << QString("type[%1]").arg(type) << pts;
 
-	if (pts.isClosed())  return; //081220, Rubbish signal
+	if (pts.size()<2)  return; //081220, Rubbish signal
 
-	QGradientStops stops = updateAlphaShadeStops();
+	QGradientStops stops = updateAlphaStops();
 
-    emit gradientStopsChanged(stops);
+    emit gradientStopsChanged(stops); //trigger external slot to output colormap
 }
 
-QGradientStops GradientEditor::updateAlphaShadeStops()
+QGradientStops GradientEditor::updateAlphaStops()
 {
-	//qDebug() << "GradientEditor::updtaAlphaShade";
+	//qDebug() << "GradientEditor::updtaAlphaStops";
 
 	qreal w = m_alpha_shade->width();
 
@@ -305,22 +316,23 @@ QGradientStops GradientEditor::updateAlphaShadeStops()
 
     QGradientStops stops;
 
-    for (int i=0; i<points.size(); i++)
-    {
-        qreal x = int(points.at(i).x());
-        if (x<0 || x > w) 	continue;
-        //if (i < points.size()-1 && x == points.at(i+1).x()) 	continue;
+    if (points.size()>1) //110721
+    	for (int i=0; i<points.size(); i++)
+		{
+			qreal x = (points.at(i).x());
+			if (x<0 || x > w) 	continue;
+			//if (i < points.size()-1 && x == points.at(i+1).x()) 	continue;
 
-        QColor color(qRed(  m_red_shade->colorAt(int(x))), // 081215
-                     qGreen(m_green_shade->colorAt(int(x))),
-                     qBlue( m_blue_shade->colorAt(int(x))),
-                     qAlpha(m_alpha_shade->colorAt(int(x)))
-                     );
+			QColor color(qRed(  m_red_shade->colorX(x)), // 081215
+						 qGreen(m_green_shade->colorX(x)),
+						 qBlue( m_blue_shade->colorX(x)),
+						 qAlpha(m_alpha_shade->colorX(x))
+						 );
 
-        stops << QGradientStop(x/w, color);
+			stops << QGradientStop(x/w, color);
 
-        if (x>=w) break; //090719
-    }
+			if (x>=w) break; //090719
+		}
 
     m_alpha_shade->setGradientStops(stops);  //generateShade, only for ARGBShade type
     return stops;
@@ -367,7 +379,7 @@ void GradientEditor::setGradientStops(bool mask[4], const QGradientStops &stops)
     if (mask[3])  set_shade_points(pts_alpha, m_alpha_shade);
 
     //pointsUpdated(); //081215
-    updateAlphaShadeStops(); //081220
+    updateAlphaStops(); //081220
 }
 
 void GradientEditor::setNormalCurve(int j, const QPolygonF &curve)
@@ -403,7 +415,7 @@ void GradientEditor::setNormalCurve(int j, const QPolygonF &curve)
     if (j==3)  set_shade_points(pts, m_alpha_shade);
 
     //pointsUpdated(); //081215
-    updateAlphaShadeStops(); //081220
+    updateAlphaStops(); //081220
 }
 
 QPolygonF GradientEditor::normalCurve(int j) const
@@ -442,6 +454,7 @@ QPolygonF GradientEditor::normalCurve(int j) const
 
 
 //the follows are not used in v3d
+#define __not_used_in_v3d__
 //////////////////////////////////////////////////////////////////////
 #define __GradientRenderer__
 

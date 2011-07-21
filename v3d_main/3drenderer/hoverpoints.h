@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -110,11 +110,13 @@ public:
 
     HoverPoints(QWidget *widget, PointShape shape);
 
-    bool eventFilter(QObject *object, QEvent *event);
 
-    void paintPoints();
-
-    inline QRectF boundingRect() const;
+    inline QRectF boundingRect() const {
+        if (m_bounds.isEmpty())
+            return m_widget->rect();
+        else
+            return m_bounds;
+    };
     void setBoundingRect(const QRectF &boundingRect) { m_bounds = boundingRect; }
 
     QPolygonF points() const { return m_points; }
@@ -139,18 +141,32 @@ public:
     bool editable() const { return m_editable; }
 
 public slots:
-    void setEnabled(bool enabled);
+    void setEnabled(bool enabled){
+        if (m_enabled != enabled) {
+            m_enabled = enabled;
+            m_widget->update();
+        }
+    };
     void setDisabled(bool disabled) { setEnabled(!disabled); }
 
 signals:
     void pointsChanged(const QPolygonF &points);
 
-public:
+
+protected:
+    bool eventFilter(QObject *object, QEvent *event);
+    void paintPoints();
+    void movePoint(int i, const QPointF &newPos); //090719, bool emitChange = true);
     void firePointChange();
 
-private:
-    inline QRectF pointBoundingRect(int i) const;
-    void movePoint(int i, const QPointF &newPos); //090719, bool emitChange = true);
+    inline QRectF pointBoundingRect(int i) const {
+        QPointF p = m_points.at(i);
+        qreal w = m_pointSize.width();
+        qreal h = m_pointSize.height();
+        qreal x = p.x() - w / 2;
+        qreal y = p.y() - h / 2;
+        return QRectF(x, y, w, h);
+    };
 
     QWidget *m_widget;
 
@@ -172,24 +188,6 @@ private:
     QPen m_connectionPen;
 };
 
-
-inline QRectF HoverPoints::pointBoundingRect(int i) const
-{
-    QPointF p = m_points.at(i);
-    qreal w = m_pointSize.width();
-    qreal h = m_pointSize.height();
-    qreal x = p.x() - w / 2;
-    qreal y = p.y() - h / 2;
-    return QRectF(x, y, w, h);
-}
-
-inline QRectF HoverPoints::boundingRect() const
-{
-    if (m_bounds.isEmpty())
-        return m_widget->rect();
-    else
-        return m_bounds;
-}
 
 inline bool x_less_than(const QPointF &p1, const QPointF &p2)
 {
