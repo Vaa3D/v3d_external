@@ -97,9 +97,12 @@ public:
         return false;
     }
 
-    // to be called from downstream clients in other threads
-    ReadLocker acquireReadLock() {
-        return ReadLocker(&lock);
+    // acquireReadLock() is intended to be called from downstream clients in other threads.
+    // acquireReadLock() is conceptually const, even though is manipulates the QReadWriteLock member
+    ReadLocker acquireReadLock() const
+    {
+        NaLockableData* mutable_this = const_cast<NaLockableData*>(this);
+        return ReadLocker(&(mutable_this->lock));
     }
 
 signals:
