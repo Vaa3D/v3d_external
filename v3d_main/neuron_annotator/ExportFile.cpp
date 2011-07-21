@@ -22,29 +22,33 @@ Toutput* getCurrentStack(Tinput *input1d, Tmask *mask1d, Tref *ref1d, V3DLONG *s
         output1d = new Toutput [totalplx];
 
         //
-        V3DLONG numcolor = 0;
+        V3DLONG numcolor = sc;
         if(overlayStatusList.at(0)) // ref
         {
-            numcolor = sc-1;
+            //numcolor = sc-1; // add to fouth color channel
+            //V3DLONG offset_c = numcolor*pagesz;
 
-            V3DLONG offset_c = numcolor*pagesz;
+            V3DLONG offset_c = 2*pagesz;
+
             for(V3DLONG k=0; k<sz; k++)
             {
-                V3DLONG offset_k = offset_c + k*sx*sy;
+                //V3DLONG offset_k = offset_c + k*sx*sy;
+                V3DLONG offset_k = k*sx*sy;
                 for(V3DLONG j=0; j<sy; j++)
                 {
                     V3DLONG offset_j = offset_k + j*sx;
                     for(V3DLONG i=0; i<sx; i++)
                     {
                         V3DLONG idx = offset_j + i;
-                        V3DLONG idxref = idx - offset_c;
-                        output1d[idx] = (Toutput) (ref1d[idxref]);
+
+                        //V3DLONG idxref = idx - offset_c;
+
+                        output1d[idx] = (Toutput) (ref1d[idx]); // r
+                        output1d[idx + pagesz] = (Toutput) (ref1d[idx]); // g
+                        output1d[idx + offset_c] = (Toutput) (ref1d[idx]); // b
                     }
                 }
             }
-        }
-        else{
-            numcolor = sc;
         }
 
         //
@@ -70,7 +74,7 @@ Toutput* getCurrentStack(Tinput *input1d, Tmask *mask1d, Tref *ref1d, V3DLONG *s
                             }
                             else
                             {
-                                output1d[idx] = 0;
+                                //output1d[idx] = 0;
                             }
                         }
                         else // background
@@ -81,7 +85,7 @@ Toutput* getCurrentStack(Tinput *input1d, Tmask *mask1d, Tref *ref1d, V3DLONG *s
                             }
                             else
                             {
-                                output1d[idx] = 0;
+                                //output1d[idx] = 0;
                             }
                         }
 
@@ -195,7 +199,7 @@ void ExportFile::run()
 
             szStack[0] = sx; szStack[1] = sy; szStack[2] = sz; szStack[3] = sc;
 
-            if(overlayStatusList.at(0)) szStack[3] ++;
+            //if(overlayStatusList.at(0)) szStack[3] ++;
 
             //
             void * data1d = NULL;
