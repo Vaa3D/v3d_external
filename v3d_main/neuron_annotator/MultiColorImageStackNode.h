@@ -26,6 +26,8 @@ public:
 
     QString getPathToReferenceStackFile() { return pathToReferenceStackFile; }
 
+    QString getPathToLsmFilePathsFile();
+
     QStringList getPathsToLsmMetadataFiles();
 
     void setPathToOriginalImageStackFile(QString pathToOriginalImageStackFileParam) {
@@ -130,6 +132,8 @@ public:
         delete [] buffer;
         return true;
     }
+
+    QStringList getLsmFilePathList();
 
 private:
     long objectId;

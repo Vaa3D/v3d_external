@@ -438,9 +438,52 @@ void NaMainWindow::updateRecentFileActions()
     }
 }
 
+QString NaMainWindow::suggestedExportFilenameFromCurrentState() {
+    MultiColorImageStackNode* multiColorImageStackNode=this->annotationSession->getMultiColorImageStackNode();
+    QStringList lsmFilePathsList=multiColorImageStackNode->getLsmFilePathList();
+    if (lsmFilePathsList.size()>0) {
+        // First get filename prefix
+        QString firstFilePath=lsmFilePathsList.at(0);
+        QStringList components=firstFilePath.split(QRegExp("/"));
+        QString name=components.at(components.size()-1);
+        QStringList extComponents=name.split(QRegExp("\\."));
+        QString filenamePrefix=extComponents.at(0);
+        // Next, add current state
+        if(annotationSession->getOverlayStatusList().at(AnnotationSession::REFERENCE_MIP_INDEX)) {
+            filenamePrefix.append("_R");
+        }
+        if (annotationSession->getOverlayStatusList().at(AnnotationSession::BACKGROUND_MIP_INDEX)) {
+            filenamePrefix.append("_B");
+        }
+        QList<bool> neuronStatusList = annotationSession->getMaskStatusList();
+        int activeCount=0;
+        QString neuronStatusString;
+        for (int i=0;i<neuronStatusList.size();i++) {
+            if (neuronStatusList.at(i)) {
+                neuronStatusString.append("_");
+                QString number=QString("%1").arg(i);
+                neuronStatusString.append(number);
+                activeCount++;
+            }
+        }
+        if (activeCount==neuronStatusList.size()) {
+            filenamePrefix.append("_all");
+        } else if (activeCount<6) {
+            filenamePrefix.append(neuronStatusString);
+        } else {
+            filenamePrefix.append("_multiple");
+        }
+        return filenamePrefix;
+    } else {
+        return QString("");
+    }
+}
+
+
 
 void NaMainWindow::on_action3D_Volume_triggered() {
-    QString filename = QFileDialog::getSaveFileName(0, QObject::tr("Save 3D Volume to an .tif file"), ".", QObject::tr("3D Volume (*.tif)"));
+    QString suggestedFile=suggestedExportFilenameFromCurrentState();
+    QString filename = QFileDialog::getSaveFileName(0, QObject::tr("Save 3D Volume to an .tif file"), suggestedFile, QObject::tr("3D Volume (*.tif)"));
     if (!(filename.isEmpty())){
         if(annotationSession){
             ExportFile *pExport = new ExportFile;

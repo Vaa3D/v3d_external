@@ -44,6 +44,8 @@ public:
         this->neuronAnnotatorResultNode=node;
     }
 
+    MultiColorImageStackNode* getMultiColorImageStackNode() { return multiColorImageStackNode; }
+
     // getOriginalImageStackAsMy4DImage() returns a pointer to a My4DImage object
     // maintained by the AnnotationSession class.  Do not delete this pointer,
     // and be aware that it has a lifetime no longer than that of the AnnnotationSession object.

@@ -130,6 +130,7 @@ private:
     QProgressBar * statusProgressBar;
     enum { MaxRecentFiles = 10 }; // clever trick to get constant in header and also use it
     OpenFileAction *recentFileActions[MaxRecentFiles];
+    QString suggestedExportFilenameFromCurrentState();
 };
 
 #endif // NAMAINWINDOW_H

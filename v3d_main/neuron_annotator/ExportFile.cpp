@@ -21,6 +21,11 @@ Toutput* getCurrentStack(Tinput *input1d, Tmask *mask1d, Tref *ref1d, V3DLONG *s
     try{
         output1d = new Toutput [totalplx];
 
+        // Do initial zero-fill
+        for (int i=0;i<totalplx;i++) {
+            output1d[i]=0;
+        }
+
         //
         V3DLONG numcolor = sc;
         if(overlayStatusList.at(0)) // ref
@@ -81,7 +86,13 @@ Toutput* getCurrentStack(Tinput *input1d, Tmask *mask1d, Tref *ref1d, V3DLONG *s
                         {
                             if(overlayStatusList.at(1))
                             {
-                                output1d[idx] = (Toutput) (input1d[idx]);
+                                int total=((Toutput)input1d[idx])+output1d[idx];
+                                if (total<0) {
+                                    total=0;
+                                } else if (total>255) {
+                                    total=255;
+                                }
+                                output1d[idx] = total;
                             }
                             else
                             {
