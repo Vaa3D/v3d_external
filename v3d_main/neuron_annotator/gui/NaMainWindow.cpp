@@ -179,6 +179,25 @@ NaMainWindow::NaMainWindow()
             this, SLOT(complete3DProgress()));
     connect(ui.v3dr_glwidget, SIGNAL(progressMessage(QString)),
             this, SLOT(set3DProgressMessage(QString)));
+    // 3D volume cut
+    connect(ui.v3dr_glwidget, SIGNAL(changeXCut0(int)), ui.XcminSlider, SLOT(setValue(int))); // x-cut
+    connect(ui.XcminSlider, SIGNAL(valueChanged(int)), ui.v3dr_glwidget, SLOT(setXCut0(int)));
+    connect(ui.v3dr_glwidget, SIGNAL(changeXCut1(int)), ui.XcmaxSlider, SLOT(setValue(int)));
+    connect(ui.XcmaxSlider, SIGNAL(valueChanged(int)), ui.v3dr_glwidget, SLOT(setXCut1(int)));
+
+    connect(ui.v3dr_glwidget, SIGNAL(changeYCut0(int)), ui.YcminSlider, SLOT(setValue(int))); // y-cut
+    connect(ui.YcminSlider, SIGNAL(valueChanged(int)), ui.v3dr_glwidget, SLOT(setYCut0(int)));
+    connect(ui.v3dr_glwidget, SIGNAL(changeYCut1(int)), ui.YcmaxSlider, SLOT(setValue(int)));
+    connect(ui.YcmaxSlider, SIGNAL(valueChanged(int)), ui.v3dr_glwidget, SLOT(setYCut1(int)));
+
+    connect(ui.v3dr_glwidget, SIGNAL(changeZCut0(int)), ui.ZcminSlider, SLOT(setValue(int))); // z-cut
+    connect(ui.ZcminSlider, SIGNAL(valueChanged(int)), ui.v3dr_glwidget, SLOT(setZCut0(int)));
+    connect(ui.v3dr_glwidget, SIGNAL(changeZCut1(int)), ui.ZcmaxSlider, SLOT(setValue(int)));
+    connect(ui.ZcmaxSlider, SIGNAL(valueChanged(int)), ui.v3dr_glwidget, SLOT(setZCut1(int)));
+
+    connect(ui.XCutCB, SIGNAL(stateChanged(int)), ui.v3dr_glwidget, SLOT(setXCutLock(int)));
+    connect(ui.YCutCB, SIGNAL(stateChanged(int)), ui.v3dr_glwidget, SLOT(setYCutLock(int)));
+    connect(ui.ZCutCB, SIGNAL(stateChanged(int)), ui.v3dr_glwidget, SLOT(setZCutLock(int)));
 
     // Whether to use common zoom and focus in MIP, ZStack and 3D viewers
     connect(ui.actionLink_viewers, SIGNAL(toggled(bool)),
@@ -479,8 +498,6 @@ QString NaMainWindow::suggestedExportFilenameFromCurrentState() {
     }
 }
 
-
-
 void NaMainWindow::on_action3D_Volume_triggered() {
     QString suggestedFile=suggestedExportFilenameFromCurrentState();
     QString filename = QFileDialog::getSaveFileName(0, QObject::tr("Save 3D Volume to an .tif file"), suggestedFile, QObject::tr("3D Volume (*.tif)"));
@@ -636,6 +653,34 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
     // connect(annotationSession, SIGNAL(scrollBarFocus(int)), ui.scrollArea->horizontalScrollBar(), SLOT(setValue(int)));
     connect(annotationSession, SIGNAL(scrollBarFocus(FragmentSelectionModel::FragmentIndex)),
             ui.fragmentGalleryWidget, SLOT(scrollToFragment(FragmentSelectionModel::FragmentIndex)));
+
+    // volume cut update
+    ui.XcminSlider->setRange(0, annotationSession->getOriginalImageStackAsMy4DImage()->getXDim()-1);
+    ui.XcminSlider->setTickInterval(10);
+    ui.XcminSlider->setSingleStep(1);
+    ui.XcminSlider->setValue(0);
+    ui.XcmaxSlider->setRange(0, annotationSession->getOriginalImageStackAsMy4DImage()->getXDim()-1);
+    ui.XcmaxSlider->setTickInterval(10);
+    ui.XcmaxSlider->setSingleStep(1);
+    ui.XcmaxSlider->setValue(annotationSession->getOriginalImageStackAsMy4DImage()->getXDim()-1);
+
+    ui.YcminSlider->setRange(0, annotationSession->getOriginalImageStackAsMy4DImage()->getYDim()-1);
+    ui.YcminSlider->setTickInterval(10);
+    ui.YcminSlider->setSingleStep(1);
+    ui.YcminSlider->setValue(0);
+    ui.YcmaxSlider->setRange(0, annotationSession->getOriginalImageStackAsMy4DImage()->getYDim()-1);
+    ui.YcmaxSlider->setTickInterval(10);
+    ui.YcmaxSlider->setSingleStep(1);
+    ui.YcmaxSlider->setValue(annotationSession->getOriginalImageStackAsMy4DImage()->getYDim()-1);
+
+    ui.ZcminSlider->setRange(0, annotationSession->getOriginalImageStackAsMy4DImage()->getZDim()-1);
+    ui.ZcminSlider->setTickInterval(10);
+    ui.ZcminSlider->setSingleStep(1);
+    ui.ZcminSlider->setValue(0);
+    ui.ZcmaxSlider->setRange(0, annotationSession->getOriginalImageStackAsMy4DImage()->getZDim()-1);
+    ui.ZcmaxSlider->setTickInterval(10);
+    ui.ZcmaxSlider->setSingleStep(1);
+    ui.ZcmaxSlider->setValue(annotationSession->getOriginalImageStackAsMy4DImage()->getZDim()-1);
 
     return true;
 }

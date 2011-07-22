@@ -59,6 +59,10 @@ public slots:
     void onPossibleSingleClickAlert();
     virtual void updateImageData();
 
+    void setXCutLock(int b);
+    void setYCutLock(int b);
+    void setZCutLock(int b);
+
 public:
 
     Vector3D getDefaultFocus() const;
