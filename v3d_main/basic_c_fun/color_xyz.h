@@ -97,18 +97,13 @@ struct BGR8 { union { // Windows-DIB
 	struct { unsigned char b,g,r; };
 	c_array<unsigned char, 3> c;
 };};
-struct BGRA8 { union { // Windows-DIB
+struct BGRA8 { union { // Windows-DIB  // Qt-QRgb
 	struct { unsigned char b,g,r,a; };
 	c_array<unsigned char, 4> c;
 	unsigned int i;
 };};
 struct ABGR8 { union { // little endian
 	struct { unsigned char a,b,g,r; };
-	c_array<unsigned char, 4> c;
-	unsigned int i;
-};};
-struct ARGB8 { union { // Qt-QRgb
-	struct { unsigned char a,r,g,b; };
 	c_array<unsigned char, 4> c;
 	unsigned int i;
 };};
@@ -148,18 +143,12 @@ inline RGBA8 rgba8_from(ABGR8 d) {
 inline RGBA8 rgba8_from(BGRA8 d) {
 	RGBA8 c;	c.r=d.r; c.g=d.g; c.b=d.b;	c.a=d.a;	return c;
 }
-inline RGBA8 rgba8_from(ARGB8 c) {
-	RGBA8 d;	d.r=c.r; d.g=c.g; d.b=c.b;	d.a=c.a;	return d;
-}
 
 inline ABGR8 abgr8_from(RGBA8 c) {
 	ABGR8 d;	d.r=c.r; d.g=c.g; d.b=c.b;	d.a=c.a;	return d;
 }
 inline BGRA8 bgra8_from(RGBA8 c) {
 	BGRA8 d;	d.r=c.r; d.g=c.g; d.b=c.b;	d.a=c.a;	return d;
-}
-inline ARGB8 argb8_from(RGBA8 c) {
-	ARGB8 d;	d.r=c.r; d.g=c.g; d.b=c.b;	d.a=c.a;	return d;
 }
 
 

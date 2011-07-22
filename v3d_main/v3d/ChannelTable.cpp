@@ -34,7 +34,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  *      Author: ruanz
  */
 
+#include <assert.h>
 #include "ChannelTable.h"
+#include "../3drenderer/v3dr_common.h" //for v3dr_getColorDialog()
 
 
 void make_linear_lut_one(RGBA8 color, vector<RGBA8>& lut)
@@ -114,200 +116,11 @@ RGB8 lookup_mix(vector<unsigned char>& mC, vector< vector<RGBA8> >& mLut, int op
 	return oC;
 }
 
+//////////////////////////////////////////////////////////////////////
 
-template <class T> QPixmap copyRaw2QPixmap_Slice(
-		ImagePlaneDisplayType cplane,
-		V3DLONG cpos,
-		const T **** p4d,
-		V3DLONG sz0,
-		V3DLONG sz1,
-		V3DLONG sz2,
-		V3DLONG sz3,
-		ImageDisplayColorType Ctype,
-		bool bIntensityRescale,
-		double *p_vmax,
-		double *p_vmin)
+void ChannelTable::connectSignals(XFormWidget* form)
 {
 
-	V3DLONG x,y,z,pp;
-
-	int N = MIN(sz3, 4); ////////////////
-	vector<double> vscale(N);
-	vector<double> vmin(N);
-	for (int k=0; k<N; k++)
-	{
-		vmin[k] = p_vmin[k];
-		vscale[k] = p_vmax[k]-p_vmin[k];
-		vscale[k] = (vscale[k]==0)? 255.0 : (255.0/vscale[k]);
-	}
-
-	//qDebug()<<"copyRaw2QPixmap_Slice switch (Ctype)"<<Ctype;
-
-	//set lookup-table
-	vector< vector<RGBA8> > luts(4);
-	vector<RGBA8> lut(256);
-	RGBA8 _Red		= XYZW(255,0,0,255);
-	RGBA8 _Green	= XYZW(0,255,0,255);
-	RGBA8 _Blue		= XYZW(0,0,255,255);
-	RGBA8 _Gray		= XYZW(255,255,255,255);
-	RGBA8 _Blank	= XYZW(0,0,0,0);
-	switch (Ctype)
-	{
-		case colorGray: //070716
-			make_linear_lut_one( _Gray, lut );
-			luts[0] = lut;
-			luts[1] = lut;
-			luts[2] = lut;
-			luts[3] = lut;
-			break;
-
-		case colorRedOnly:
-			make_linear_lut_one( _Red, lut );
-			luts[0] = lut;
-			make_linear_lut_one( _Blank, lut );
-			luts[1] = lut;
-			luts[2] = lut;
-			luts[3] = lut;
-			break;
-
-		case colorRed2Gray:
-			make_linear_lut_one( _Gray, lut );
-			luts[0] = lut;
-			make_linear_lut_one( _Blank, lut );
-			luts[1] = lut;
-			luts[2] = lut;
-			luts[3] = lut;
-			break;
-
-		case colorGreenOnly:
-			make_linear_lut_one( _Green, lut );
-			luts[1] = lut;
-			make_linear_lut_one( _Blank, lut );
-			luts[0] = lut;
-			luts[2] = lut;
-			luts[3] = lut;
-			break;
-
-		case colorGreen2Gray:
-			make_linear_lut_one( _Gray, lut );
-			luts[1] = lut;
-			make_linear_lut_one( _Blank, lut );
-			luts[0] = lut;
-			luts[2] = lut;
-			luts[3] = lut;
-			break;
-
-		case colorBlueOnly:
-			make_linear_lut_one( _Blue, lut );
-			luts[2] = lut;
-			make_linear_lut_one( _Blank, lut );
-			luts[0] = lut;
-			luts[1] = lut;
-			luts[3] = lut;
-			break;
-
-		case colorBlue2Gray:
-			make_linear_lut_one( _Gray, lut );
-			luts[2] = lut;
-			make_linear_lut_one( _Blank, lut );
-			luts[0] = lut;
-			luts[1] = lut;
-			luts[3] = lut;
-			break;
-
-		case colorRGB:
-			make_linear_lut_one( _Red, lut );
-			luts[0] = lut;
-			make_linear_lut_one( _Green, lut );
-			luts[1] = lut;
-			make_linear_lut_one( _Blue, lut );
-			luts[2] = lut;
-			make_linear_lut_one( _Blank, lut );
-			luts[3] = lut;
-			break;
-
-		case colorRG:
-			make_linear_lut_one( _Red, lut );
-			luts[0] = lut;
-			make_linear_lut_one( _Green, lut );
-			luts[1] = lut;
-			make_linear_lut_one( _Blank, lut );
-			luts[2] = lut;
-			luts[3] = lut;
-			break;
-
-		case colorUnknown:
-		default:
-			break;
-	}
-
-	// transfer N channel's pixels
-	int op =  (Ctype == colorGray)? OP_MEAN : OP_MAX;
-	vector<unsigned char> mC(N);
-	QImage tmpimg;
-
-	//qDebug()<<"copyRaw2QPixmap_Slice switch (cplane)"<<cplane;
-
-	switch (cplane) //QImage(w,h)
-	{
-	case imgPlaneX: //(Z,Y)
-		pp = (cpos>sz0)? sz0-1:cpos-1;   pp = (pp<0)? 0:pp;
-		tmpimg = QImage(sz2, sz1, QImage::Format_RGB32);
-
-		for (y=0; y<sz1; y++)
-		for (z=0; z<sz2; z++)
-			{
-				for (int k=0; k<N; k++)
-				{
-					float c = p4d[k][z][y][pp];
-					mC[k] =  (bIntensityRescale==false) ? c : floor((c-vmin[k])*vscale[k]);
-				}
-				//qDebug("(x) y z = (%d/%d) %d/%d %d/%d", pp,sz0, y,sz1, z,sz2);
-				RGB8 o = lookup_mix(mC, luts, op);
-				tmpimg.setPixel(z, y, qRgb(o.r, o.g, o.b));
-			}
-		break;
-
-	case imgPlaneY: //(X,Z)
-		pp = (cpos>sz1)? sz1-1:cpos-1;   pp = (pp<0)? 0:pp;
-		tmpimg = QImage(sz0, sz2, QImage::Format_RGB32);
-
-		for (z=0; z<sz2; z++)
-		for (x=0; x<sz0; x++)
-			{
-				for (int k=0; k<N; k++)
-				{
-					float c = p4d[k][z][pp][x];
-					mC[k] =  (bIntensityRescale==false) ? c : floor((c-vmin[k])*vscale[k]);
-				}
-				//qDebug("x (y) z = %d/%d (%d/%d) %d/%d", x,sz0, pp,sz1, z,sz2);
-				RGB8 o = lookup_mix(mC, luts, op);
-				tmpimg.setPixel(x, z, qRgb(o.r, o.g, o.b));
-			}
-		break;
-
-	case imgPlaneZ: //(X,Y)
-		pp = (cpos>sz2)? sz2-1:cpos-1;   pp = (pp<0)? 0:pp;
-		tmpimg = QImage(sz0, sz1, QImage::Format_RGB32);
-
-		for (y=0; y<sz1; y++)
-		for (x=0; x<sz0; x++)
-			{
-				for (int k=0; k<N; k++)
-				{
-					float c = p4d[k][pp][y][x];
-					mC[k] =  (bIntensityRescale==false) ? c : floor((c-vmin[k])*vscale[k]);
-				}
-				//qDebug("x y (z) = %d/%d %d/%d (%d/%d)", x,sz0, y,sz1, pp,sz2);
-				RGB8 o = lookup_mix(mC, luts, op);
-				tmpimg.setPixel(x, y, qRgb(o.r, o.g, o.b));
-			}
-		break;
-	}
-
-	//qDebug()<<"copyRaw2QPixmap_Slice fromImage(tmpimg)"<<tmpimg.size();
-
-	return QPixmap::fromImage(tmpimg);
 }
 
 
@@ -315,73 +128,98 @@ template <class T> QPixmap copyRaw2QPixmap_Slice(
 
 void ChannelTable::create()
 {
-//  /////////////////////////////////////////////////////////
-//  tabOptions = new QTabWidget(this); //tabOptions = new AutoTabWidget(this);//090117: commented by PHC
-//	/////////////////////////////////////////////////////////
-//
-//	QGroupBox* tabAndBtnGroup = new QGroupBox();
-//    QHBoxLayout *tabAndBtnLayout = new QHBoxLayout(tabAndBtnGroup);
-//    tabAndBtnLayout->addWidget(tabOptions);
-//    tabAndBtnLayout->addWidget(buttonGroup);
-//
-//	//overall layout
-//    QVBoxLayout *allLayout = new QVBoxLayout(this);
-//	allLayout->addWidget(tabAndBtnGroup);
-//	allLayout->addWidget(searchGroup);
+	Channel ch;
+	listChannel.clear();
+	ch.n = 1; ch.color = XYZW(255,0,0,255); listChannel << ch;
+	ch.n = 2; ch.color = XYZW(0,255,0,255); listChannel << ch;
+	ch.n = 3; ch.color = XYZW(0,0,255,255); listChannel << ch;
+	ch.n = 4; ch.color = XYZW(255,255,255,255); listChannel << ch;
+
+	/////////////////////////////////////////////////////////
+	tabOptions = new QTabWidget(this); //AutoTabWidget(this);
+	/////////////////////////////////////////////////////////
+	createTable();
+
+	QVBoxLayout *allLayout = new QVBoxLayout(this);
+	allLayout->addWidget(tabOptions);
+	allLayout->setContentsMargins(0,0,0,0); //remove margins
+
+	this->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum);
+	this->setFixedHeight(180);
 }
 
 void ChannelTable::createTable()
 {
-//	table[stImageMarker]     = createTableMarker();
-//	table[stLabelSurface]    = createTableSurf();
-//	table[stNeuronStructure] = createTableSWC();
-//	table[stPointCloud]      = createTableAPO();
-//	table[stPointSet]     = createTableAPO_Set();
-//
-//	//==========================================================================
-//	// for easy accessing tabs, addTab using the same order of V3dr_SurfaceType
-//	//==========================================================================
-//	if (tabOptions)
-//	{  // insertTab according to the order of enum v3dr_SurfaceType
-//		int i;
-//		QString qs;
-//		i= tabOptions->addTab(table[stImageMarker],		qs =QString("Marker (%1)").arg(table[stImageMarker]->rowCount()));
-//		tabOptions->setTabToolTip(i, qs);
-//		i= tabOptions->addTab(table[stLabelSurface],	qs =QString("Label Surface (%1)").arg(table[stLabelSurface]->rowCount()));
-//		tabOptions->setTabToolTip(i, qs);
-//		i= tabOptions->addTab(table[stNeuronStructure], qs =QString("Neuron/line Structure (%1)").arg(table[stNeuronStructure]->rowCount()));
-//		tabOptions->setTabToolTip(i, qs);
-//		i= tabOptions->addTab(table[stPointCloud],      qs =QString("Point Cloud (%1)").arg(table[stPointCloud]->rowCount()));
-//		tabOptions->setTabToolTip(i, qs);
-//		i= tabOptions->addTab(table[stPointSet],     qs =QString("Point Cloud Set (%1)").arg(table[stPointSet]->rowCount()));
-//		tabOptions->setTabToolTip(i, qs);
-//	}
-//
-//
-//	//if (renderer)	connect(renderer, SIGNAL)
-//	if (table[stImageMarker])      connect(table[stImageMarker], SIGNAL(cellChanged(int,int)), this, SLOT(pickMarker(int,int)));
-//	if (table[stLabelSurface])     connect(table[stLabelSurface], SIGNAL(cellChanged(int,int)), this, SLOT(pickSurf(int,int)));
-//	if (table[stNeuronStructure])  connect(table[stNeuronStructure], SIGNAL(cellChanged(int,int)), this, SLOT(pickSWC(int,int)));
-//	if (table[stPointCloud])       connect(table[stPointCloud], SIGNAL(cellChanged(int,int)), this, SLOT(pickAPO(int,int)));
-//	if (table[stPointSet])      connect(table[stPointSet], SIGNAL(cellChanged(int,int)), this, SLOT(pickAPO_Set(int,int)));
-//
-//	for (int i=1; i<=5; i++) if (table[i])
-//	{
-//		table[i]->setSelectionBehavior(QAbstractItemView::SelectRows);
-//	//		table[i]->setEditTriggers(//QAbstractItemView::CurrentChanged |
-//	//				QAbstractItemView::DoubleClicked |
-//	//				QAbstractItemView::SelectedClicked);                       //use doubleClickHandler() to override delay of popping dialog by the setEditTriggers
-//
-//		connect(table[i], SIGNAL(cellDoubleClicked(int,int)), this, SLOT(doubleClickHandler(int,int))); //to override delay of popping dialog by the setEditTriggers
-//		connect(table[i], SIGNAL(cellPressed(int,int)), this, SLOT(pressedClickHandler(int,int)));      //to pop context menu
-//
-//	}
+	table = createTableChannel();
+
+	QWidget* box = new QWidget();
+	QGridLayout* boxlayout = new QGridLayout(box);
+	boxlayout->addWidget(table,						1,0, 5,15);
+	boxlayout->addWidget(new QRadioButton("Max"),	1,15, 1,5);
+	boxlayout->addWidget(new QRadioButton("Sum"),	2,15, 1,5);
+	boxlayout->addWidget(new QRadioButton("Mean"),	3,15, 1,5);
+	boxlayout->addWidget(new QRadioButton("Index"),	4,15, 1,5);
+	boxlayout->addWidget(new QCheckBox("0~255"), 5,15, 1,5);
+	boxlayout->setContentsMargins(0,0,0,0); //remove margins
+
+	if (tabOptions)
+	{
+		int i;
+		QString qs;
+		i= tabOptions->addTab(box,		qs =QString("Channel (%1)").arg(table->rowCount()));
+		tabOptions->setTabToolTip(i, qs);
+	}
+
+	//connect cell to table handler
+	if (table)      connect(table, SIGNAL(cellChanged(int,int)), this, SLOT(pickChannel(int,int)));
+
+	if (table)
+	{
+		table->setSelectionBehavior(QAbstractItemView::SelectRows);
+	//		table->setEditTriggers(//QAbstractItemView::CurrentChanged |
+	//				QAbstractItemView::DoubleClicked |
+	//				QAbstractItemView::SelectedClicked);                       //use doubleClickHandler() to override delay of popping dialog by the setEditTriggers
+
+		connect(table, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(doubleClickHandler(int,int))); //to override delay of popping dialog by the setEditTriggers
+		connect(table, SIGNAL(cellPressed(int,int)), this, SLOT(pressedClickHandler(int,int)));      //to pop context menu
+	}
 }
 
-void ChannelTable::connectSignals(XFormWidget* form)
+QTableWidget* ChannelTable::currentTableWidget()
 {
+	if (! tabOptions) return 0;
 
+	int k = 1 + (tabOptions->currentIndex());
+
+	return table;
 }
+
+void ChannelTable::updatedContent(QTableWidget* t) //090826
+{
+//	if (! in_batch_stack.empty() && in_batch_stack.last()==true) return; //skip until end_batch
+
+	t->resizeColumnsToContents();
+}
+
+inline QColor QColorFromRGBA8(RGBA8 c)
+{
+	return QColor(c.c[0], c.c[1], c.c[2], c.c[3]);
+}
+
+inline RGBA8 RGBA8FromQColor(QColor qc)
+{
+	RGBA8 c;
+	c.r=qc.red(); c.g=qc.green(); c.b=qc.blue(); c.a=qc.alpha();
+	return c;
+}
+
+#define QCOLOR(rgba8)   QColorFromRGBA8( rgba8 )
+#define VCOLOR(rgba8)   qVariantFromValue(QColorFromRGBA8( rgba8 ))
+#define QCOLORV(var)    (qVariantValue<QColor>( var ))
+#define RGBA8V(var)     RGBA8FromQColor(qVariantValue<QColor>( var ))
+
+#define UPATE_ITEM_ICON(curItem)   curItem->setData(Qt::DecorationRole, curItem->data(0))
+
 
 void ChannelTable::setItemEditor()
 {
@@ -389,4 +227,122 @@ void ChannelTable::setItemEditor()
 
 	// turn off item editor
 	QItemEditorFactory::setDefaultFactory( new QItemEditorFactory(*QItemEditorFactory::defaultFactory()) );
+}
+
+void ChannelTable::pressedClickHandler(int i, int j)
+{
+	if (QApplication::mouseButtons()==Qt::RightButton) //right button menu
+	{
+		QTableWidget* t = currentTableWidget();
+		QTableWidgetItem *curItem = t->item(i,j);
+
+		if (t==table)
+		{
+			QMenu menu;
+			QAction *act=0,
+					*actRed=0, *actGreen=0, *actBlue=0, *actGray=0, *actOff=0;
+
+			menu.addAction(actRed 	= new QAction(tr("Red"), this));
+		    menu.addAction(actGreen = new QAction(tr("Green"), this));
+		    menu.addAction(actBlue 	= new QAction(tr("Blue"), this));
+		    menu.addAction(actGray 	= new QAction(tr("Gray"), this));
+		    menu.addAction(actOff 	= new QAction(tr("Off"), this));
+
+		    act = menu.exec(QCursor::pos());
+
+		    curItem = t->item(i,0); //color
+
+		    if (act==actRed)
+		    {
+		    	curItem->setData(0, qVariantFromValue(QColor(255,0,0)));
+		    }
+		    else if (act==actGreen)
+		    {
+		    	curItem->setData(0, qVariantFromValue(QColor(0,255,0)));
+		    }
+		    else if (act==actBlue)
+		    {
+		    	curItem->setData(0, qVariantFromValue(QColor(0,0,255)));
+		    }
+		    else if (act==actGray)
+		    {
+		    	curItem->setData(0, qVariantFromValue(QColor(255,255,255)));
+		    }
+		    else if (act==actOff)
+		    {
+		    	curItem->setData(0, qVariantFromValue(QColor(0,0,0,0))); //also alpha=0
+		    }
+		}
+	}
+}
+
+void ChannelTable::doubleClickHandler(int i, int j)
+{
+	//qDebug("	doubleClickHandler( %d, %d )", i,j);
+
+	QTableWidget* t = currentTableWidget();
+	QTableWidgetItem *curItem = t->item(i,j);
+
+	if (j==0) // color
+	{
+		QColor qcolor = QCOLORV(curItem->data(0));
+		if (! v3dr_getColorDialog( &qcolor))  return;
+		curItem->setData(0, qVariantFromValue(qcolor));
+	}
+}
+
+
+#define ADD_ONOFF(b)	{curItem = new QTableWidgetItem();	t->setItem(i, j++, curItem); \
+						curItem->setCheckState(BOOL_TO_CHECKED(b));}
+
+#define ADD_QCOLOR(c)	{curItem = new QTableWidgetItem(QVariant::Color);	t->setItem(i, j++, curItem); \
+						curItem->setData(0, VCOLOR(c)); \
+						curItem->setData(Qt::DecorationRole, VCOLOR(c));}
+
+#define ADD_STRING(s)	{curItem = new QTableWidgetItem(s);	t->setItem(i, j++, curItem);}
+
+
+QTableWidget*  ChannelTable::createTableChannel()
+{
+	QStringList qsl;
+	qsl <<"color" << "channel";
+	int row = listChannel.size();
+	int col = qsl.size();
+
+	QTableWidget* t = new QTableWidget(row,col, this);
+	//t->setHorizontalHeaderLabels(qsl);
+	t->horizontalHeader()->hide();
+
+	//qDebug("  create begin t->rowCount = %d", t->rowCount());
+	for (int i=0; i<row; i++)
+	{
+		int j=0;
+		QTableWidgetItem *curItem;
+
+		ADD_QCOLOR(listChannel[i].color);
+
+		ADD_STRING( tr("chan %1").arg(listChannel[i].n) );
+
+		assert(j==col);
+	}
+	//qDebug("  end   t->rowCount = %d", t->rowCount());
+
+	t->resizeColumnsToContents();
+	return t;
+}
+
+void ChannelTable::pickChannel(int i, int j)
+{
+	QTableWidget* t = table;
+	QTableWidgetItem *curItem = t->item(i,j);
+
+	switch(j)
+	{
+	case 0:
+		listChannel[i].color = RGBA8V(curItem->data(0));
+		UPATE_ITEM_ICON(curItem);
+		break;
+	}
+
+	updatedContent(t);
 }

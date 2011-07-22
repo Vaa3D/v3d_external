@@ -226,7 +226,7 @@ void V3dr_surfaceDialog::createTables_addtoTab()
 	}
 
 
-	//if (renderer)	connect(renderer, SIGNAL)
+	//connect cell to table handler
 	if (table[stImageMarker])      connect(table[stImageMarker], SIGNAL(cellChanged(int,int)), this, SLOT(pickMarker(int,int)));
 	if (table[stLabelSurface])     connect(table[stLabelSurface], SIGNAL(cellChanged(int,int)), this, SLOT(pickSurf(int,int)));
 	if (table[stNeuronStructure])  connect(table[stNeuronStructure], SIGNAL(cellChanged(int,int)), this, SLOT(pickSWC(int,int)));
@@ -242,7 +242,6 @@ void V3dr_surfaceDialog::createTables_addtoTab()
 
 		connect(table[i], SIGNAL(cellDoubleClicked(int,int)), this, SLOT(doubleClickHandler(int,int))); //to override delay of popping dialog by the setEditTriggers
 		connect(table[i], SIGNAL(cellPressed(int,int)), this, SLOT(pressedClickHandler(int,int)));      //to pop context menu
-
 	}
 }
 
@@ -301,10 +300,10 @@ void V3dr_surfaceDialog::createFirst()
     tabOptions = new QTabWidget(this); //tabOptions = new AutoTabWidget(this);//090117: commented by PHC
 	/////////////////////////////////////////////////////////
 
-	QGroupBox* TabAndBtnGroup = new QGroupBox();
-    QHBoxLayout *TabAndBtnLayout = new QHBoxLayout(TabAndBtnGroup);
-    TabAndBtnLayout->addWidget(tabOptions);
-    TabAndBtnLayout->addWidget(buttonGroup);
+	QGroupBox* tabAndBtnGroup = new QGroupBox();
+    QHBoxLayout *tabAndBtnLayout = new QHBoxLayout(tabAndBtnGroup);
+    tabAndBtnLayout->addWidget(tabOptions);
+    tabAndBtnLayout->addWidget(buttonGroup);
 
 	//search box
 	QGroupBox* searchGroup = new QGroupBox();
@@ -324,7 +323,7 @@ void V3dr_surfaceDialog::createFirst()
 
 	//overall layout
     QVBoxLayout *allLayout = new QVBoxLayout(this);
-	allLayout->addWidget(TabAndBtnGroup);
+	allLayout->addWidget(tabAndBtnGroup);
 	allLayout->addWidget(searchGroup);
 	HALF_MARGINS(allLayout);
 
@@ -502,9 +501,9 @@ void V3dr_surfaceDialog::setItemEditor()
 
 void V3dr_surfaceDialog::pressedClickHandler(int i, int j)
 {
-	if (QApplication::mouseButtons()==Qt::RightButton)
+	if (QApplication::mouseButtons()==Qt::RightButton) //right button menu
 	{
-		qDebug("	pressedClickHandler( %d, %d ) rightButton", i,j);
+		//qDebug("	pressedClickHandler( %d, %d ) rightButton", i,j);
 
 		QTableWidget* t = currentTableWidget();
 		//QTableWidgetItem *curItem = t->item(i,j);
@@ -526,7 +525,7 @@ void V3dr_surfaceDialog::pressedClickHandler(int i, int j)
 
 void V3dr_surfaceDialog::doubleClickHandler(int i, int j)
 {
-	qDebug("	doubleClickHandler( %d, %d )", i,j);
+	//qDebug("	doubleClickHandler( %d, %d )", i,j);
 
 	QTableWidget* t = currentTableWidget();
 	QTableWidgetItem *curItem = t->item(i,j);

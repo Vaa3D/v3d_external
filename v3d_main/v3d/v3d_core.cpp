@@ -162,7 +162,9 @@ using namespace std;
 #include "../3drenderer/v3dr_mainwindow.h" //v3d_drawmain-->v3dr_mainwindow, by RZC 20080921
 #include "../3drenderer/v3dr_glwidget.h" //090710 by RZC for XFormWidget::doImage3DView
 #include "../3drenderer/renderer_tex2.h" //090117 by RZC for My4DImage::update_3drenderer_neuron_view
-#include "ChannelTable.cpp"
+
+#include "ChannelTable.h" //110718 RZC, lookup and mix multi-channel's color
+//#include "ChannelTable.cpp"
 
 #include "../multithreadimageIO/v3d_multithreadimageIO.h"
 
@@ -3353,6 +3355,105 @@ void XFormWidget::cleanData()
 	if (atlasViewerDlg) {atlasViewerDlg->deleteLater(); atlasViewerDlg=0;} //081211,090812 deleteLater
 }
 
+
+#define __channel_table_gui__
+#if 1 // switch code path
+
+void XFormWidget::connectColorGUI()
+{
+    connect(colorRedType, SIGNAL(clicked()), this, SLOT(setColorRedType()));
+    connect(colorGreenType, SIGNAL(clicked()), this, SLOT(setColorGreenType()));
+    connect(colorBlueType, SIGNAL(clicked()), this, SLOT(setColorBlueType()));
+    connect(colorAllType, SIGNAL(clicked()), this, SLOT(setColorAllType()));
+
+    connect(colorRed2GrayType, SIGNAL(clicked()), this, SLOT(setColorRed2GrayType()));
+    connect(colorGreen2GrayType, SIGNAL(clicked()), this, SLOT(setColorGreen2GrayType()));
+    connect(colorBlue2GrayType, SIGNAL(clicked()), this, SLOT(setColorBlue2GrayType()));
+    connect(colorAll2GrayType, SIGNAL(clicked()), this, SLOT(setColorAll2GrayType()));
+
+	connect(colorMapDispType, SIGNAL(clicked()), this, SLOT(setColorMapDispType()));
+    connect(imgValScaleDisplayCheckBox, SIGNAL(clicked()), this, SLOT(toggleImgValScaleDisplay()));
+}
+void XFormWidget::disconnectColorGUI()
+{
+    disconnect(colorRedType, 0, this, 0);
+    disconnect(colorGreenType, 0, this, 0);
+    disconnect(colorBlueType, 0, this, 0);
+    disconnect(colorAllType, 0, this, 0);
+
+    disconnect(colorRed2GrayType, 0, this, 0);
+    disconnect(colorGreen2GrayType, 0, this, 0);
+    disconnect(colorBlue2GrayType, 0, this, 0);
+    disconnect(colorAll2GrayType, 0, this, 0);
+
+    disconnect(colorMapDispType, 0, this, 0);
+    disconnect(imgValScaleDisplayCheckBox, 0, this, 0);
+}
+
+void XFormWidget::setColorGUI()
+{
+	if (imgData)
+	{
+		colorRedType->setEnabled(true);
+		colorBlueType->setEnabled(true);
+		colorGreenType->setEnabled(true);
+		colorAllType->setEnabled(true);
+		colorRed2GrayType->setEnabled(true);
+		colorGreen2GrayType->setEnabled(true);
+		colorBlue2GrayType->setEnabled(true);
+		colorAll2GrayType->setEnabled(true);
+		colorMapDispType->setEnabled(true);
+
+		imgValScaleDisplayCheckBox->setEnabled(true);
+		if (imgData->getDatatype()==V3D_UINT16 || imgData->getDatatype()==V3D_FLOAT32)
+			imgValScaleDisplayCheckBox->setCheckState(Qt::Checked); //100814. PHC. set 16/32bit data default to rescale for triview display
+		//imgData->setFlagImgValScaleDisplay((imgValScaleDisplayCheckBox->checkState()==Qt::Checked) ? true : false); //100814: PHC. move to here to avoid potential error
+
+		if (imgData->getCDim()>=3) //081124
+		{
+			setColorAllType();
+		}
+
+		if (imgData->getCDim()<3)
+		{
+			colorBlueType->setEnabled(false);
+			colorBlue2GrayType->setEnabled(false);
+		}
+
+		if (imgData->getCDim()<2)
+		{
+			colorGreenType->setEnabled(false);
+			colorGreen2GrayType->setEnabled(false);
+		}
+
+		colorMapDispType->setEnabled(imgData->getCDim()==1);
+
+		if (imgData->getCDim()<=1) //100815
+			colorRed2GrayType->setChecked(true);
+		else
+			colorAllType->setChecked(true);
+
+	}
+	else // no imgData
+	{
+
+		colorRedType->setEnabled(false);
+		colorBlueType->setEnabled(false);
+		colorGreenType->setEnabled(false);
+		colorAllType->setEnabled(false);
+		colorRed2GrayType->setEnabled(false);
+		colorGreen2GrayType->setEnabled(false);
+		colorBlue2GrayType->setEnabled(false);
+		colorAll2GrayType->setEnabled(false);
+		colorMapDispType->setEnabled(false);
+
+		imgValScaleDisplayCheckBox->setEnabled(false);
+
+		colorAllType->setChecked(true);
+
+	}
+}
+
 QWidget* XFormWidget::createColorGUI()
 {
     QGroupBox *typeGroup = new QGroupBox(this);
@@ -3404,6 +3505,25 @@ QWidget* XFormWidget::createColorGUI()
     colorFormLayout->addWidget(typeGroup);
 	return colorForm;
 }
+
+#else // new code
+
+void XFormWidget::connectColorGUI()
+{
+}
+void XFormWidget::disconnectColorGUI()
+{
+}
+void XFormWidget::setColorGUI()
+{
+}
+QWidget* XFormWidget::createColorGUI()
+{
+	return new ChannelTable(this);
+}
+
+#endif
+
 
 void XFormWidget::createGUI()
 {
@@ -3688,32 +3808,6 @@ void XFormWidget::createGUI()
 	bExistGUI = true;
 }
 
-void XFormWidget::setWindowTitle_Prefix(const char *prefix)
-{
-	if (!openFileNameLabel.startsWith(prefix)) //only prepend the prefix if it has not been prepended before
-	{
-		setWindowTitle(openFileNameLabel.prepend(prefix));
-		getImageData()->setFileName((char *)(openFileNameLabel.constData())); //also update the file name
-	}
-}
-
-void XFormWidget::setWindowTitle_Suffix(const char *sfix)
-{
-	if (!openFileNameLabel.endsWith(sfix)) //only append suffix if it has not been appended before
-	{
-		setWindowTitle(openFileNameLabel.append(sfix));
-		getImageData()->setFileName((char *)qPrintable(openFileNameLabel)); //also update the file name
-	}
-}
-
-bool XFormWidget::getFlagImgValScaleDisplay()
-{
-	if (imgValScaleDisplayCheckBox)
-		return (imgValScaleDisplayCheckBox->checkState()==Qt::Checked) ? true : false;
-	else
-		return false;
-}
-
 void XFormWidget::updateDataRelatedGUI()
 {
 	if (imgData)
@@ -3825,46 +3919,9 @@ void XFormWidget::updateDataRelatedGUI()
 
 		zoomWholeViewButton->setText(QString("Tri-view zoom=%1. Click to set.").arg(disp_zoom));
 
+
 		// color channel options
-
-		colorRedType->setEnabled(true);
-		colorBlueType->setEnabled(true);
-		colorGreenType->setEnabled(true);
-		colorAllType->setEnabled(true);
-		colorRed2GrayType->setEnabled(true);
-		colorGreen2GrayType->setEnabled(true);
-		colorBlue2GrayType->setEnabled(true);
-		colorAll2GrayType->setEnabled(true);
-		colorMapDispType->setEnabled(true);
-
-		imgValScaleDisplayCheckBox->setEnabled(true);
-		if (imgData->getDatatype()==V3D_UINT16 || imgData->getDatatype()==V3D_FLOAT32)
-			imgValScaleDisplayCheckBox->setCheckState(Qt::Checked); //100814. PHC. set 16/32bit data default to rescale for triview display
-		//imgData->setFlagImgValScaleDisplay((imgValScaleDisplayCheckBox->checkState()==Qt::Checked) ? true : false); //100814: PHC. move to here to avoid potential error
-
-		if (imgData->getCDim()>=3) //081124
-		{
-			setColorAllType();
-		}
-
-		if (imgData->getCDim()<3)
-		{
-			colorBlueType->setEnabled(false);
-			colorBlue2GrayType->setEnabled(false);
-		}
-
-		if (imgData->getCDim()<2)
-		{
-			colorGreenType->setEnabled(false);
-			colorGreen2GrayType->setEnabled(false);
-		}
-
-		colorMapDispType->setEnabled(imgData->getCDim()==1);
-
-		if (imgData->getCDim()<=1) //100815
-			colorRed2GrayType->setChecked(true);
-		else
-			colorAllType->setChecked(true);
+		setColorGUI(); //110721 RZC
 
 		//landmarkLabelDispCheckBox->setEnabled(true);
 
@@ -3916,21 +3973,11 @@ void XFormWidget::updateDataRelatedGUI()
 
 		zoomWholeViewButton->setText("Set tri-view zoom");
 
+
 		// color channel options
+		setColorGUI(); //110721 RZC
 
-		colorRedType->setEnabled(false);
-		colorBlueType->setEnabled(false);
-		colorGreenType->setEnabled(false);
-		colorAllType->setEnabled(false);
-		colorRed2GrayType->setEnabled(false);
-		colorGreen2GrayType->setEnabled(false);
-		colorBlue2GrayType->setEnabled(false);
-		colorAll2GrayType->setEnabled(false);
-		colorMapDispType->setEnabled(false);
 
-		imgValScaleDisplayCheckBox->setEnabled(false);
-
-		colorAllType->setChecked(true);
 		//landmarkLabelDispCheckBox->setEnabled(true);
 
 		//imgProcessButton->setCheckable(false); //080402
@@ -3966,6 +4013,32 @@ void XFormWidget::updateDataRelatedGUI()
 	allLayout->update();
 
 	update();
+}
+
+void XFormWidget::setWindowTitle_Prefix(const char *prefix)
+{
+	if (!openFileNameLabel.startsWith(prefix)) //only prepend the prefix if it has not been prepended before
+	{
+		setWindowTitle(openFileNameLabel.prepend(prefix));
+		getImageData()->setFileName((char *)(openFileNameLabel.constData())); //also update the file name
+	}
+}
+
+void XFormWidget::setWindowTitle_Suffix(const char *sfix)
+{
+	if (!openFileNameLabel.endsWith(sfix)) //only append suffix if it has not been appended before
+	{
+		setWindowTitle(openFileNameLabel.append(sfix));
+		getImageData()->setFileName((char *)qPrintable(openFileNameLabel)); //also update the file name
+	}
+}
+
+bool XFormWidget::getFlagImgValScaleDisplay()
+{
+	if (imgValScaleDisplayCheckBox)
+		return (imgValScaleDisplayCheckBox->checkState()==Qt::Checked) ? true : false;
+	else
+		return false;
 }
 
 void XFormWidget::setOpenFileName()
@@ -4518,20 +4591,8 @@ void XFormWidget::connectEventSignals()
 
 
     // set up color mapping events
+	connectColorGUI(); //110721 RZC
 
-    connect(colorRedType, SIGNAL(clicked()), this, SLOT(setColorRedType()));
-    connect(colorGreenType, SIGNAL(clicked()), this, SLOT(setColorGreenType()));
-    connect(colorBlueType, SIGNAL(clicked()), this, SLOT(setColorBlueType()));
-    connect(colorAllType, SIGNAL(clicked()), this, SLOT(setColorAllType()));
-
-    connect(colorRed2GrayType, SIGNAL(clicked()), this, SLOT(setColorRed2GrayType()));
-    connect(colorGreen2GrayType, SIGNAL(clicked()), this, SLOT(setColorGreen2GrayType()));
-    connect(colorBlue2GrayType, SIGNAL(clicked()), this, SLOT(setColorBlue2GrayType()));
-    connect(colorAll2GrayType, SIGNAL(clicked()), this, SLOT(setColorAll2GrayType()));
-
-	connect(colorMapDispType, SIGNAL(clicked()), this, SLOT(setColorMapDispType()));
-
-    connect(imgValScaleDisplayCheckBox, SIGNAL(clicked()), this, SLOT(toggleImgValScaleDisplay()));
 
     connect(landmarkCopyButton, SIGNAL(clicked()), this, SLOT(copyLandmarkToPublicBuffer()));
     connect(landmarkPasteButton, SIGNAL(clicked()), this, SLOT(pasteLandmarkFromPublicBuffer()));
@@ -4588,19 +4649,7 @@ void XFormWidget::disconnectEventSignals()
 
     disconnect(lookingGlassCheckBox, 0, this, 0);
 
-    disconnect(colorRedType, 0, this, 0);
-    disconnect(colorGreenType, 0, this, 0);
-    disconnect(colorBlueType, 0, this, 0);
-    disconnect(colorAllType, 0, this, 0);
-
-    disconnect(colorRed2GrayType, 0, this, 0);
-    disconnect(colorGreen2GrayType, 0, this, 0);
-    disconnect(colorBlue2GrayType, 0, this, 0);
-    disconnect(colorAll2GrayType, 0, this, 0);
-
-    disconnect(colorMapDispType, 0, this, 0);
-
-    disconnect(imgValScaleDisplayCheckBox, 0, this, 0);
+    disconnectColorGUI(); //110721 RZC
 
 	disconnect(landmarkCopyButton, 0, this, 0);
 	disconnect(landmarkPasteButton, 0, this, 0);

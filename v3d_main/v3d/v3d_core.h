@@ -82,7 +82,6 @@ Jan 28-30, 2010: PHC. further adjusting codes for v2.440 and above
 #include "../neuron_editing/v_neuronswc.h"
 
 #include "colormap.h"
-//#include "ChannelTable.h" //110718 RZC, lookup and mix multi-channel's color
 
 #include "arthurwidgets.h"
 

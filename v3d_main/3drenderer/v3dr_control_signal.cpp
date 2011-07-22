@@ -272,13 +272,15 @@ void V3dR_MainWindow::createControlWidgets()
 	rotateBarBoxLayout->addWidget(yRotSlider, 1, 7+1, 1, 7);
 	rotateBarBoxLayout->addWidget(zRotSlider, 1, 7+7+1, 1, 7);
 
-	rotateBarBoxLayout->addWidget(xRotBox, 2, 0+1, 1, 6);
-	rotateBarBoxLayout->addWidget(yRotBox, 2, 7+1, 1, 6);
-	rotateBarBoxLayout->addWidget(zRotBox, 2, 7+7+1, 1, 6);
+	rotateBarBoxLayout->addWidget(xRotBox, 2, 0+1, 1, 7);
+	rotateBarBoxLayout->addWidget(yRotBox, 2, 7+1, 1, 7);
+	rotateBarBoxLayout->addWidget(zRotBox, 2, 7+7+1, 1, 7);
 
 	rotateBarBoxLayout->addWidget(rotAbsolutePose, 3, 0, 1, 7);
 	rotateBarBoxLayout->addWidget(rotAbsolute, 3, 7+1, 1, 7);
 	rotateBarBoxLayout->addWidget(rotReset, 3, 14+2, 1, 7);
+
+	//rotateBarBoxLayout->setContentsMargins(0,0,0,0);
 
 
 #define __zoom_shift_slider_box__
@@ -1347,7 +1349,7 @@ QSpinBox *V3dR_MainWindow::createRotateSpinBox()
 {
 	QSpinBox *box = new QSpinBox;
 	box->setRange(0, 360);
-	//box->setSuffix(" %o");
+	box->setSuffix("\xB0");
 	return box;
 }
 

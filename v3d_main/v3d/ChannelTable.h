@@ -51,6 +51,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 void make_linear_lut_one(RGBA8 color, vector<RGBA8>& lut);
 void make_linear_lut(vector<RGBA8>& colors, vector< vector<RGBA8> >& luts);
 RGB8 lookup_mix(vector<unsigned char>& mC, vector< vector<RGBA8> >& mLut, int op);
+
 template <class T> QPixmap copyRaw2QPixmap_Slice(
 		ImagePlaneDisplayType cplane,
 		V3DLONG cpos,
@@ -62,7 +63,199 @@ template <class T> QPixmap copyRaw2QPixmap_Slice(
 		ImageDisplayColorType Ctype,
 		bool bIntensityRescale,
 		double *p_vmax,
-		double *p_vmin);
+		double *p_vmin)
+{
+
+	V3DLONG x,y,z,pp;
+
+	int N = MIN(sz3, 4); ////////////////
+	vector<double> vscale(N);
+	vector<double> vmin(N);
+	for (int k=0; k<N; k++)
+	{
+		vmin[k] = p_vmin[k];
+		vscale[k] = p_vmax[k]-p_vmin[k];
+		vscale[k] = (vscale[k]==0)? 255.0 : (255.0/vscale[k]);
+	}
+
+	//qDebug()<<"copyRaw2QPixmap_Slice switch (Ctype)"<<Ctype;
+
+	//set lookup-table
+	vector< vector<RGBA8> > luts(4);
+	vector<RGBA8> lut(256);
+	RGBA8 _Red		= XYZW(255,0,0,255);
+	RGBA8 _Green	= XYZW(0,255,0,255);
+	RGBA8 _Blue		= XYZW(0,0,255,255);
+	RGBA8 _Gray		= XYZW(255,255,255,255);
+	RGBA8 _Blank	= XYZW(0,0,0,0);
+	switch (Ctype)
+	{
+		case colorGray: //070716
+			make_linear_lut_one( _Gray, lut );
+			luts[0] = lut;
+			luts[1] = lut;
+			luts[2] = lut;
+			luts[3] = lut;
+			break;
+
+		case colorRedOnly:
+			make_linear_lut_one( _Red, lut );
+			luts[0] = lut;
+			make_linear_lut_one( _Blank, lut );
+			luts[1] = lut;
+			luts[2] = lut;
+			luts[3] = lut;
+			break;
+
+		case colorRed2Gray:
+			make_linear_lut_one( _Gray, lut );
+			luts[0] = lut;
+			make_linear_lut_one( _Blank, lut );
+			luts[1] = lut;
+			luts[2] = lut;
+			luts[3] = lut;
+			break;
+
+		case colorGreenOnly:
+			make_linear_lut_one( _Green, lut );
+			luts[1] = lut;
+			make_linear_lut_one( _Blank, lut );
+			luts[0] = lut;
+			luts[2] = lut;
+			luts[3] = lut;
+			break;
+
+		case colorGreen2Gray:
+			make_linear_lut_one( _Gray, lut );
+			luts[1] = lut;
+			make_linear_lut_one( _Blank, lut );
+			luts[0] = lut;
+			luts[2] = lut;
+			luts[3] = lut;
+			break;
+
+		case colorBlueOnly:
+			make_linear_lut_one( _Blue, lut );
+			luts[2] = lut;
+			make_linear_lut_one( _Blank, lut );
+			luts[0] = lut;
+			luts[1] = lut;
+			luts[3] = lut;
+			break;
+
+		case colorBlue2Gray:
+			make_linear_lut_one( _Gray, lut );
+			luts[2] = lut;
+			make_linear_lut_one( _Blank, lut );
+			luts[0] = lut;
+			luts[1] = lut;
+			luts[3] = lut;
+			break;
+
+		case colorRGB:
+			make_linear_lut_one( _Red, lut );
+			luts[0] = lut;
+			make_linear_lut_one( _Green, lut );
+			luts[1] = lut;
+			make_linear_lut_one( _Blue, lut );
+			luts[2] = lut;
+			make_linear_lut_one( _Blank, lut );
+			luts[3] = lut;
+			break;
+
+		case colorRG:
+			make_linear_lut_one( _Red, lut );
+			luts[0] = lut;
+			make_linear_lut_one( _Green, lut );
+			luts[1] = lut;
+			make_linear_lut_one( _Blank, lut );
+			luts[2] = lut;
+			luts[3] = lut;
+			break;
+
+		case colorUnknown:
+		default:
+			break;
+	}
+
+	// transfer N channel's pixels
+	int op =  (Ctype == colorGray)? OP_MEAN : OP_MAX;
+	vector<unsigned char> mC(N);
+	QImage tmpimg;
+
+	//qDebug()<<"copyRaw2QPixmap_Slice switch (cplane)"<<cplane;
+
+	switch (cplane) //QImage(w,h)
+	{
+	case imgPlaneX: //(Z,Y)
+		pp = (cpos>sz0)? sz0-1:cpos-1;   pp = (pp<0)? 0:pp;
+		tmpimg = QImage(sz2, sz1, QImage::Format_RGB32);
+
+		for (y=0; y<sz1; y++)
+		for (z=0; z<sz2; z++)
+			{
+				for (int k=0; k<N; k++)
+				{
+					float c = p4d[k][z][y][pp];
+					mC[k] =  (bIntensityRescale==false) ? c : floor((c-vmin[k])*vscale[k]);
+				}
+				//qDebug("(x) y z = (%d/%d) %d/%d %d/%d", pp,sz0, y,sz1, z,sz2);
+				RGB8 o = lookup_mix(mC, luts, op);
+				tmpimg.setPixel(z, y, qRgb(o.r, o.g, o.b));
+			}
+		break;
+
+	case imgPlaneY: //(X,Z)
+		pp = (cpos>sz1)? sz1-1:cpos-1;   pp = (pp<0)? 0:pp;
+		tmpimg = QImage(sz0, sz2, QImage::Format_RGB32);
+
+		for (z=0; z<sz2; z++)
+		for (x=0; x<sz0; x++)
+			{
+				for (int k=0; k<N; k++)
+				{
+					float c = p4d[k][z][pp][x];
+					mC[k] =  (bIntensityRescale==false) ? c : floor((c-vmin[k])*vscale[k]);
+				}
+				//qDebug("x (y) z = %d/%d (%d/%d) %d/%d", x,sz0, pp,sz1, z,sz2);
+				RGB8 o = lookup_mix(mC, luts, op);
+				tmpimg.setPixel(x, z, qRgb(o.r, o.g, o.b));
+			}
+		break;
+
+	case imgPlaneZ: //(X,Y)
+		pp = (cpos>sz2)? sz2-1:cpos-1;   pp = (pp<0)? 0:pp;
+		tmpimg = QImage(sz0, sz1, QImage::Format_RGB32);
+
+		for (y=0; y<sz1; y++)
+		for (x=0; x<sz0; x++)
+			{
+				for (int k=0; k<N; k++)
+				{
+					float c = p4d[k][pp][y][x];
+					mC[k] =  (bIntensityRescale==false) ? c : floor((c-vmin[k])*vscale[k]);
+				}
+				//qDebug("x y (z) = %d/%d %d/%d (%d/%d)", x,sz0, y,sz1, pp,sz2);
+				RGB8 o = lookup_mix(mC, luts, op);
+				tmpimg.setPixel(x, y, qRgb(o.r, o.g, o.b));
+			}
+		break;
+	}
+
+	//qDebug()<<"copyRaw2QPixmap_Slice fromImage(tmpimg)"<<tmpimg.size();
+
+	return QPixmap::fromImage(tmpimg);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+struct Channel
+{
+	int n;				// index
+	RGBA8 color;
+	bool selected;
+	Channel() {n=0; color.r=color.g=color.b=color.a=255; selected=true;}
+};
 
 
 //widget for control channel's color
@@ -75,12 +268,16 @@ public:
 	virtual ~ChannelTable() {};
 
 protected:
+	QList<Channel> listChannel;
 	QTabWidget *tabOptions;
 	QTableWidget *table;
 
 	void setItemEditor();
 	void create();
 	void createTable();
+	QTableWidget* createTableChannel();
+	QTableWidget* currentTableWidget();
+	void updatedContent(QTableWidget* t);
 
 public slots:
 	void connectSignals(XFormWidget* form);

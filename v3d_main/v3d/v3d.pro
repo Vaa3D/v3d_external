@@ -237,6 +237,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
 	../webservice/soapdep/soapv3dwebserverService.h \
     ../cell_counter/CellCounter3D.h \
     colormap.h \
+    ChannelTable.h \
     rotate_image.h \
     dialog_rotate.h \
     dialog_curve_trace_para.h \
@@ -363,6 +364,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     my4dimage.cpp \
     v3dimg_proc_neuron.cpp \
     colormap.cpp \
+    ChannelTable.cpp \
     rotate_image.cpp \
     dialog_rotate.cpp \
     landmark_property_dialog.cpp \

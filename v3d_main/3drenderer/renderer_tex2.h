@@ -516,12 +516,10 @@ inline QColor QColorFromRGBA8(RGBA8 c)
 	return QColor(c.c[0], c.c[1], c.c[2], c.c[3]);
 }
 
-inline RGBA8 RGBA8FromQColor(QColor qcolor)
+inline RGBA8 RGBA8FromQColor(QColor qc)
 {
 	RGBA8 c;
-	RGBA32i ic;
-	qcolor.getRgb(&ic.c[0], &ic.c[1], &ic.c[2], &ic.c[3]);
-	c.r=(unsigned char)ic.r; c.g=(unsigned char)ic.g; c.b=(unsigned char)ic.b; c.a=(unsigned char)ic.a;
+	c.r=qc.red(); c.g=qc.green(); c.b=qc.blue(); c.a=qc.alpha();
 	return c;
 }
 

@@ -80,6 +80,9 @@ public:
     ~XFormWidget();
 
     void initialize();
+    void connectColorGUI(); //110721 RZC
+    void disconnectColorGUI(); //110721 RZC
+    void setColorGUI(); //110721 RZC
     QWidget* createColorGUI(); //110719 RZC
 	void createGUI();
 	void connectEventSignals();
