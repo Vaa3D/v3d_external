@@ -11,44 +11,38 @@
 
 class NeuronSelector : public QObject
 {
-
     Q_OBJECT
 
 public:
-	NeuronSelector(){}
-	~NeuronSelector(){}
-	
-public:
+    NeuronSelector(){}
+    ~NeuronSelector(){}
 
-        int getIndexSelectedNeuron(); // find nearest neuron
-	
-	void setAnnotationSession(AnnotationSession* annotationSession);
-	
-	void init();
-	
-	void getCurNeuronBoundary();
-	
-	bool inNeuronMask(V3DLONG x, V3DLONG y, V3DLONG z);
-	
-	void highlightSelectedNeuron();
-	
+public:
+    int getIndexSelectedNeuron(); // find nearest neuron
+    void setAnnotationSession(AnnotationSession* annotationSession);
+    void init();
+
+    void getCurNeuronBoundary();
+    bool inNeuronMask(V3DLONG x, V3DLONG y, V3DLONG z);
+
+    void highlightSelectedNeuron();
+
 public slots:
-	void updateSelectedPosition(double x, double y, double z);
-        void deselectCurrentNeuron();
-	
+    void updateSelectedPosition(double x, double y, double z);
+    void deselectCurrentNeuron();
+    void updateSelectedNeurons();
+
 signals:
-	void neuronHighlighted(bool b);
-	
+    void neuronHighlighted(bool b);
+
 private:
-	int index;
-	
-	V3DLONG xlc, ylc, zlc; // current mouse left click location in 3D
-	
-	AnnotationSession* annotationSession;
-	
-	V3DLONG sx, sy, sz;
-	
-	V3DLONG curNeuronBDxb, curNeuronBDxe, curNeuronBDyb, curNeuronBDye, curNeuronBDzb, curNeuronBDze;
+    int index;
+    V3DLONG xlc, ylc, zlc; // current mouse left click location in 3D
+
+    AnnotationSession* annotationSession;
+
+    V3DLONG sx, sy, sz;
+    V3DLONG curNeuronBDxb, curNeuronBDxe, curNeuronBDyb, curNeuronBDye, curNeuronBDzb, curNeuronBDze;
 
 };
 

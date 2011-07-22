@@ -346,3 +346,10 @@ void NeuronSelector::highlightSelectedNeuron()
 
 }
 
+void NeuronSelector::updateSelectedNeurons()
+{
+    if(index<0) return;
+
+    if(annotationSession->getMaskStatusList().at(index+1)==false)
+        deselectCurrentNeuron();
+}
