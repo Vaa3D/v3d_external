@@ -10,6 +10,121 @@
 
 #include "gaussian_blur.h"
 
+#define MAX(a,b) (a > b) ? (a) : (b)
+#define MIN(a,b) (a < b) ? (a) : (b)
+// W - window width or radius
+template<class T> void convolve_xyz(T* dst, T const * src, V3DLONG sz[3], const T* filter, V3DLONG W)
+{
+	T * temp = 0;
+	T *** src3d = 0;
+	T *** dst3d = 0;
+	T *** temp3d = 0;
+	try
+	{
+		temp = new T[sz[0] * sz[1] * sz[2]];
+		new3dpointer(src3d, sz[0], sz[1], sz[2], src);
+		new3dpointer(dst3d, sz[0], sz[1], sz[2], dst);
+		new3dpointer(temp3d, sz[0], sz[1], sz[2], temp);
+	}
+	catch(...)
+	{
+		if(temp) {delete [] temp; temp = 0;}
+		if(src3d) delete3dpointer(src3d, sz[0], sz[1], sz[2]);
+		if(dst3d) delete3dpointer(dst3d, sz[0], sz[1], sz[2]);
+		if(temp3d) delete3dpointer(temp3d, sz[0], sz[1], sz[2]);
+	}
+
+	// along x
+	
+	for(V3DLONG k = 0; k < sz[2]; k++){
+		for(V3DLONG j = 0; j < sz[1]; j++){
+			for(V3DLONG i = 0; i < sz[0]; i++){
+				T acc = 0.0;
+				if(i - W < 0){
+					for(V3DLONG ii = 0; ii < W -i; ii++) acc += filter[ii] * src3d[k][j][0];
+				}
+				if(i + W > sz[0] - 1){
+					for(V3DLONG ii = 0; ii < i+W - sz[0] +1; ii++) acc += filter[2*W - ii] * src3d[k][j][sz[0]-1];
+				}
+				V3DLONG start = MAX(0, i-W);
+				V3DLONG stop  = MIN(i+W, sz[0] - 1);
+				for(V3DLONG ii = start; ii <= stop; ii++) acc += filter[ii - i + W] * src3d[k][j][ii];
+				dst3d[k][j][i] = acc;
+			}
+		}
+	}
+
+	// along y
+	for(V3DLONG k = 0; k < sz[2]; k++){
+		for(V3DLONG i = 0; i < sz[0]; i++){
+			for(V3DLONG j = 0; j < sz[1]; j++){
+				T acc = 0.0;
+				if(j - W < 0){
+					for(V3DLONG jj = 0; jj < W - j; jj++) acc += filter[jj] * dst3d[k][0][i];
+				}
+				if(j + W > sz[1] - 1){
+					for(V3DLONG jj = 0; jj < j + W - sz[1] +1; jj++) acc += filter[2*W - jj] * dst3d[k][sz[1]-1][i];
+				}
+				V3DLONG start = MAX(0, j-W);
+				V3DLONG stop  = MIN(j+W, sz[1] - 1);
+				for(V3DLONG jj = start; jj <= stop; jj++) acc += filter[jj - j + W] * dst3d[k][jj][i];
+				temp3d[k][j][i] = acc;
+			}
+		}
+	}
+
+	// along z
+	for(V3DLONG j = 0; j < sz[1]; j++){
+		for(V3DLONG i = 0; i < sz[0]; i++){
+			for(V3DLONG k = 0; k < sz[2]; k++){
+				T acc = 0.0;
+				if(k - W < 0){
+					for(V3DLONG kk = 0; kk < W - k; kk++) acc += filter[kk] * temp3d[0][j][i];
+				}
+				if(k + W > sz[2] - 1){
+					for(V3DLONG kk = 0; kk < k + W - sz[2] +1; kk++) acc += filter[2*W - kk] * temp3d[sz[2]-1][j][i];
+				}
+				V3DLONG start = MAX(0, k-W);
+				V3DLONG stop  = MIN(k+W, sz[2] - 1);
+				for(V3DLONG kk = start; kk <= stop; kk++) acc += filter[kk - k + W] * temp3d[kk][j][i];
+				dst3d[k][j][i] = acc;
+			}
+		}
+	}
+
+	if(temp) {delete [] temp; temp = 0;}
+	if(src3d) delete3dpointer(src3d, sz[0], sz[1], sz[2]);
+	if(dst3d) delete3dpointer(dst3d, sz[0], sz[1], sz[2]);
+	if(temp3d) delete3dpointer(temp3d, sz[0], sz[1], sz[2]);
+}
+
+template<class T> bool smooth(T * &dst, T const * src, V3DLONG sz[3], double s)
+{
+	if(dst == 0 || src == 0 || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0 || s <= 0.0) return false;
+	V3DLONG W = V3DLONG(ceil(4.0f * s));
+	double * filter = 0;
+	V3DLONG filterReserved = 0;
+
+	if(filterReserved < W){
+		filterReserved = W;
+		if(filter) delete [] filter;
+		filter = new double[2*filterReserved + 1];
+	}
+
+	double acc = 0.0f;
+	for(V3DLONG j = 0; j < 2*W+1; ++j)
+	{
+		filter[j] = std::exp(-0.5 * (j-W)*(j-W)/(s*s));
+		acc += filter[j];
+	}
+	for(V3DLONG j = 0; j < 2*W+1; ++j)
+	{
+		filter[j] /= acc ;
+	}
+	convolve_xyz(dst, src,sz, filter, W); 
+	return true;
+}
+
 template <class T1, class T2> bool compute_gaussian_blur(T2 * &outimg1d, T1 * inimg1d,V3DLONG sz[3], double sigma, int r)
 {
 	if(!inimg1d || sigma < 0.0 || r%2 != 1) return false;

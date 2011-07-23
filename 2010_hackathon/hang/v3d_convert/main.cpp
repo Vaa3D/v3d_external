@@ -5,7 +5,7 @@
 #include "stackutil.h"
 #include "v3d_funcs.h"
 #include "parser.h"
-//#include "gaussian_blur.cpp"
+#include "gaussian_blur.cpp"
 
 using namespace std;
 
@@ -13,6 +13,8 @@ using namespace std;
 void printHelp();
 void printVersion();
 bool run_with_paras(InputParas paras, string &s_error);
+bool convert_uint8_to_double(double * outimg1d, unsigned char* inimg1d, V3DLONG sz[3]);
+bool convert_double_to_uint8(unsigned char* outimg1d,double * inimg1d,  V3DLONG sz[3]);
 
 int cmd_num = 6;
 SupportedCommand supported_commands[] = {{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-negate", 0}};
@@ -97,16 +99,37 @@ bool run_with_paras(InputParas paras, string & s_error)
 		}
 		else if(cmd_name == "-gaussian-blur")
 		{
-			double sigma; int radius;  if(!paras.get_double_para(sigma,"-gaussian-blur",0,s_error,"x") || !paras.get_int_para(radius, "-gaussian-blur",1, s_error,"x")) return false;
-			cout<<"sigma = "<<sigma<<" radius = "<<radius<<endl;
+			int para_num = paras.get_delim_num("-gaussian-blur", "x") + 1;
+			if(para_num == 2)
+			{
+				double sigma; int radius;  if(!paras.get_double_para(sigma,"-gaussian-blur",0,s_error,"x") || !paras.get_int_para(radius, "-gaussian-blur",1, s_error,"x")) return false;
+				cout<<"sigma = "<<sigma<<" radius = "<<radius<<endl;
 
-			if(!compute_gaussian_blur(outdata1d, indata1d, in_sz, sigma, radius)){ s_error += "failed to compute gaussian-blur"; return false;}
+				if(!compute_gaussian_blur(outdata1d, indata1d, in_sz, sigma, radius)){ s_error += "failed to compute gaussian-blur"; return false;}
+			}
+			else if(para_num == 1)
+			{
+				double sigma;if(!paras.get_double_para(sigma,"-gaussian-blur",0,s_error,"x")) return false;
+				cout<<"sigma = "<<sigma<<endl;
+				double * src = new double[in_sz[0] * in_sz[1] * in_sz[2]];
+				V3DLONG sz[3];
+				sz[0] = in_sz[0];
+				sz[1] = in_sz[1];
+				sz[2] = in_sz[2];
+				if(!convert_uint8_to_double(src, indata1d, sz)){s_error += "convert_uint8_to_double error"; return false;}
+				double * dst = new double[in_sz[0] * in_sz[1] * in_sz[2]];
+				if(!smooth(dst, src, in_sz, sigma)){ s_error += "failed to compute gaussian-blur"; return false;}
+				outdata1d = new unsigned char[sz[0] * sz[1] * sz[2]];
+				if(!convert_double_to_uint8(outdata1d, dst, sz)){s_error += "convert_double_to_uint8 error"; return false;}
+				if(src){delete [] src; src = 0;}
+				if(dst){delete [] dst; dst = 0;}
+			}
 		}
 	}
 	if(out_sz == 0) out_sz = in_sz;
 	if(!saveImage((char*) outfile.c_str(), outdata1d, out_sz, datatype)) {s_error += "saveImage(\""; s_error += outfile; s_error+="\") error"; return false;}
-	if(indata1d) {delete indata1d; indata1d = 0;}
-	if(outdata1d) {delete outdata1d; outdata1d = 0;}
+	if(indata1d) {delete [] indata1d; indata1d = 0;}
+	if(outdata1d) {delete [] outdata1d; outdata1d = 0;}
 
 	return true;
 }
@@ -129,4 +152,21 @@ void printHelp()
 void printVersion()
 {
 	cout<<"Version : 1.0"<<endl;
+}
+
+bool convert_uint8_to_double(double * outimg1d, unsigned char* inimg1d, V3DLONG sz[3])
+{
+	if(outimg1d == 0 || inimg1d == 0 || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0) return 0;
+	V3DLONG tol = sz[0] * sz[1] * sz[2];
+	for(V3DLONG i = 0; i < tol ; i++) outimg1d[i] = double(inimg1d[i])/255.0;
+	return true;
+}
+
+bool convert_double_to_uint8(unsigned char* outimg1d,double * inimg1d,  V3DLONG sz[3])
+{
+	cout<<"sz[0] = "<<sz[0]<<" sz[1] = "<<sz[1]<<" sz[2] = "<<sz[2]<<endl;
+	if(outimg1d == 0 || inimg1d == 0 || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0) return 0;
+	V3DLONG tol = sz[0] * sz[1] * sz[2];
+	for(V3DLONG i = 0; i < tol ; i++) outimg1d[i] = (unsigned char)(inimg1d[i] * 255.0);
+	return true;
 }

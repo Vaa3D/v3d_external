@@ -112,6 +112,19 @@ struct InputParas
 		if(order == -1) return string("");
 		return paras[order].para_string;
 	}
+	int get_delim_num(string para_name, string delim="x")
+	{
+		int count = 0;
+		if(!is_support(para_name) || !is_exist(para_name)) return 0;
+		string str = get_para(para_name);
+		size_t found = str.find_first_of(delim);
+		while(found != string::npos)
+		{
+			count++;
+			found = str.find_first_of(delim, found + 1);
+		}
+		return count;
+	}
 	template <class T> bool get_int_para(T &v, string para_name, string &s_error)
 	{
 		if(!is_support(para_name) || !is_exist(para_name)){s_error += "unsupported or unexist para ";s_error += para_name; return false;}

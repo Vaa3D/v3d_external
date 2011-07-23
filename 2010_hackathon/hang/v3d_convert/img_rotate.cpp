@@ -78,7 +78,7 @@ bool rotate_along_xaxis(double theta, unsigned char* inimg1d, V3DLONG * in_sz, u
 	catch(...)
 	{
 		cerr<<"Fail to allocate memory"<<endl;
-		if(outimg1d) {delete outimg1d; outimg1d = 0;}
+		if(outimg1d) {delete [] outimg1d; outimg1d = 0;}
 		if(inimg4d)delete4dpointer(inimg4d, in_sz[0], in_sz[1], in_sz[2], in_sz[3]);
 		if(outimg4d)delete4dpointer(outimg4d, out_sz[0], out_sz[1], out_sz[2], out_sz[3]);
 	}
@@ -174,7 +174,7 @@ bool rotate_along_yaxis(double theta, unsigned char* inimg1d, V3DLONG * in_sz, u
 	catch(...)
 	{
 		cerr<<"Fail to allocate memory"<<endl;
-		if(outimg1d) {delete outimg1d; outimg1d = 0;}
+		if(outimg1d) {delete [] outimg1d; outimg1d = 0;}
 		if(inimg4d)delete4dpointer(inimg4d, in_sz[0], in_sz[1], in_sz[2], in_sz[3]);
 		if(outimg4d)delete4dpointer(outimg4d, out_sz[0], out_sz[1], out_sz[2], out_sz[3]);
 	}
@@ -269,7 +269,7 @@ bool rotate_along_zaxis(double theta, unsigned char* inimg1d, V3DLONG * in_sz, u
 	catch(...)
 	{
 		cerr<<"Fail to allocate memory"<<endl;
-		if(outimg1d) {delete outimg1d; outimg1d = 0;}
+		if(outimg1d) {delete [] outimg1d; outimg1d = 0;}
 		if(inimg4d)delete4dpointer(inimg4d, in_sz[0], in_sz[1], in_sz[2], in_sz[3]);
 		if(outimg4d)delete4dpointer(outimg4d, out_sz[0], out_sz[1], out_sz[2], out_sz[3]);
 	}
