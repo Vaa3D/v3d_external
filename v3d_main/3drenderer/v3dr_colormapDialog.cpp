@@ -71,11 +71,10 @@ V3dr_colormapDialog::~V3dr_colormapDialog()
 
 void V3dr_colormapDialog::linkTo(QWidget* w) //point to new view
 {
-	qDebug("  V3dr_colormapDialog::linkTo ( %p )", w);
 	if (! w)  return;
 
 	IncRef(w); //DecRef(w);
-	qDebug("V3dr_colormapDialog::ref = %d", ref);
+	qDebug("  V3dr_colormapDialog::linkTo ( %p )  ref=%d", w, ref);
 
 	glwidget = (V3dR_GLWidget*)w;
 	renderer = (Renderer_gl2*)(glwidget->getRenderer());

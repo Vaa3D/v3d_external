@@ -299,7 +299,7 @@ void V3dR_GLWidget::preparingRenderer() // renderer->setupData & init, 100719 ex
 	POST_EVENT(this, QEvent::Type(QEvent_OpenFiles));
 	POST_EVENT(this, QEvent::Type(QEvent_Ready)); //081124
 
-	updateTool(); //081222
+	//updateTool(); //081222   //110722, no need, called by V3dR_MainWindow::changeEvent(ActivationChange)
 	// 081122, CAUTION: call updateGL from initializeGL will cause infinite loop call
 }
 
@@ -1231,7 +1231,7 @@ void V3dR_GLWidget::hideTool()
 }
 void V3dR_GLWidget::updateTool()
 {
-	qDebug("V3dR_GLWidget::updateTool");
+	qDebug("V3dR_GLWidget::updateTool (surfaceDlg=%p) (colormapDlg=%p)", surfaceDlg, colormapDlg);
 
 	if (surfaceDlg && !(surfaceDlg->isHidden()) ) //081215
 	{
@@ -1251,13 +1251,12 @@ void V3dR_GLWidget::volumeColormapDialog()
 	if (! renderer || renderer->class_version()<2) return;
 
 	if (! colormapDlg)
-	{
 		colormapDlg = new V3dr_colormapDialog(this); //mainwindow);
-	}
+	else
+		colormapDlg->linkTo(this);   //except isHidden, linkTo in updateTool triggered by ActivationChange event
 
 	if (colormapDlg)
 	{
-		colormapDlg->linkTo(this);   //except isHidden, has linkTo in updateTool triggered by ActivationChange event
 
 		colormapDlg->show();
 		this->raise();        //110713
@@ -1274,14 +1273,13 @@ void V3dR_GLWidget::surfaceSelectDialog(int curTab)
 //	PROGRESS_PERCENT(20);
 
 	if (! surfaceDlg)
-	{
 		surfaceDlg = new V3dr_surfaceDialog(this); //, mainwindow);
-	}
+	else
+		surfaceDlg->linkTo(this);  //except isHidden, linkTo in updateTool triggered by ActivationChange event
+
 
 	if (surfaceDlg)
 	{
-		surfaceDlg->linkTo(this);  //except isHidden, has linkTo in updateTool triggered by ActivationChange event
-
 		surfaceDlg->show();
 		this->raise();       //110713
 		surfaceDlg->raise(); //090710

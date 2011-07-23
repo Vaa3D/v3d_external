@@ -134,7 +134,7 @@ bool MainWindow::setImage(void* window, Image4DSimple *image)
 		qDebug()<<"MainWindow setImage now: "<< w << image;
 //image->data1d[100]=255;
 printf("[%p]\n", image->getRawData());
-		return w->transferImageData(image, image->getRawData())
+		return w->transferImageData(image, image->getRawData()) //here set a=image->getRawData()
 				&& w->setCurrentFileName(w->userFriendlyCurrentFile());
 	}
 	else return false;
@@ -258,7 +258,8 @@ bool XFormWidget::transferImageData(Image4DSimple *img, unsigned char *a) // FIX
 	if (! img || !img->valid())  return false;
 
   bool result = this->setImageData(
-    img->getRawData(),
+    //img->getRawData(),  //here may be use "a", so can combine info of img & external data of "a", by RZC 110722
+    a,
     img->getXDim(),
     img->getYDim(),
     img->getZDim(),
@@ -281,7 +282,9 @@ bool XFormWidget::transferImageData(Image4DSimple *img, unsigned char *a) // FIX
 
 	  img->setRawDataPointerToNull();
 
-    return true;
+
+	  setColorGUI(); //110722 RZC
+	  return true;
 	}
 	else return false;
 }

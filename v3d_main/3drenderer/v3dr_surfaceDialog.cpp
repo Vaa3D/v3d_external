@@ -97,12 +97,10 @@ void V3dr_surfaceDialog::undo()
 
 void V3dr_surfaceDialog::linkTo(QWidget* w)
 {
-	///////////////////////////////////////////////////////////////////////////
-	qDebug("  V3dr_surfaceDialog::linkTo ( %p )", w);
 	if (! w)  return;
 
 	IncRef(w); //always add to reflist
-	qDebug("V3dr_surfaceDialog::ref = %d", ref);
+	qDebug("  V3dr_surfaceDialog::linkTo ( %p )  ref=%d", w, ref);
 
 	//100809, 110713
 	tolink_widget = (V3dR_GLWidget*)w;
@@ -122,13 +120,18 @@ void V3dr_surfaceDialog::linkTo(QWidget* w)
 
 int V3dr_surfaceDialog::DecRef(QWidget* w) //110713
 {
+
 	int ref = SharedToolDialog::DecRef(w);
+	qDebug("  V3dr_surfaceDialog::DecRef ( %p )  ref=%d", w, ref);
+
 	if (bAttached && widget == 0)
 	{
+		if (ref>0) //110722, not deleted
+			checkBox_attachedToCurrentView->setChecked(false);
+
+		if (glwidget) glwidget->clearSurfaceDialog(); //110722, must do it before set glwidget = 0
 		glwidget = 0;
 		renderer = 0;
-		hide();
-		checkBox_attachedToCurrentView->setChecked(false);
 	}
 	return ref;
 }
@@ -156,17 +159,16 @@ void V3dr_surfaceDialog::onAttached(bool b)
 		if (tolink_widget)
 		{
 			tolink_widget = (V3dR_GLWidget*)bestLinkable(tolink_widget);
-			qDebug("  V3dr_surfaceDialog::( tolink %p )", tolink_widget);
-			tolink_widget->updateTool();
+			qDebug("  V3dr_surfaceDialog::onAttached( tolink %p )", tolink_widget);
+			if (tolink_widget) //110722
+				tolink_widget->updateTool();
 		}
 	}
 }
 
 void V3dr_surfaceDialog::clearTables_fromTab()
 {
-	//qDebug("  V3dr_surfaceDialog::createTables");
-
-	if (! tabOptions)	return;
+	//qDebug("  V3dr_surfaceDialog::clearTables_fromTab");
 
 	// clear tables to re-create
 //	if (table[stImageMarker])      disconnect(table[stImageMarker], SIGNAL(cellChanged(int,int)), this, SLOT(pickMarker(int,int)));
@@ -174,19 +176,21 @@ void V3dr_surfaceDialog::clearTables_fromTab()
 //	if (table[stNeuronStructure])  disconnect(table[stNeuronStructure], SIGNAL(cellChanged(int,int)), this, SLOT(pickSWC(int,int)));
 //	if (table[stPointCloud])       disconnect(table[stPointCloud], SIGNAL(cellChanged(int,int)), this, SLOT(pickAPO(int,int)));
 //	if (table[stPointSet])       disconnect(table[stPointSet], SIGNAL(cellChanged(int,int)), this, SLOT(pickAPO_Set(int,int)));
-	for (int i=1; i<=5; i++)  if (table[i])
+	for (int i=1; i<=5; i++)
+		if (table[i])
 	{
 		//delete table[i];  table[i]=0;		//this works well until June 09, so STRANGE !!!
-		table[i]->deleteLater();  table[i]=0; //090707 RZC: deleteLater => postEvent(DeferredDele) => qDeleteInEventHandler()
+		table[i]->deleteLater();  table[i]=0; //090707 RZC: deleteLater => postEvent(DeferredDelete) => qDeleteInEventHandler()
 	}
-	tabOptions->clear();
+
+	if (tabOptions)   tabOptions->clear();
 
 	bCanUndo = bMod = false;
 }
 
 void V3dr_surfaceDialog::createTables_addtoTab()
 {
-	//qDebug("  V3dr_surfaceDialog::createTables");
+	//qDebug("  V3dr_surfaceDialog::createTables_addtoTab");
 
 	if (renderer)
 	{
@@ -233,7 +237,8 @@ void V3dr_surfaceDialog::createTables_addtoTab()
 	if (table[stPointCloud])       connect(table[stPointCloud], SIGNAL(cellChanged(int,int)), this, SLOT(pickAPO(int,int)));
 	if (table[stPointSet])      connect(table[stPointSet], SIGNAL(cellChanged(int,int)), this, SLOT(pickAPO_Set(int,int)));
 
-	for (int i=1; i<=5; i++) if (table[i])
+	for (int i=1; i<=5; i++)
+		if (table[i])
 	{
 		table[i]->setSelectionBehavior(QAbstractItemView::SelectRows);
 //		table[i]->setEditTriggers(//QAbstractItemView::CurrentChanged |

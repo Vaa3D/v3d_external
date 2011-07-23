@@ -43,6 +43,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 class V3dR_MainWindow;
 class V3dR_GLWidget;
 class MainWindow;
+class ChannelTable;
+
 struct iDrawExternalParameter
 {
 	My4DImage* image4d;
@@ -132,6 +134,7 @@ public:
 
 	void setColorType(ImageDisplayColorType myctype) {Ctype = myctype;}
 	ImageDisplayColorType getColorType() {return Ctype;}
+    QRadioButton* colorMapRadioButton() {return colorMapDispType;} //110723 RZC
 
 	iDrawExternalParameter mypara_3Dview;
 	iDrawExternalParameter mypara_3Dlocalview;
@@ -217,6 +220,8 @@ private:
     XFormView *yz_view; //change in X
     XFormView *zx_view; //change in Y
 
+    ChannelTable *channelTableWidget;//110722 RZC
+
 	MyTextBrowser *focusPointFeatureWidget;
 
     QMenu menuTriviewZoom;
@@ -228,7 +233,12 @@ private:
 public slots:
 //    void changeColorType(ImageDisplayColorType c);
 
-    void setColorRedType();
+//110722 RZC, for directly update pixmap of 3view
+	void mixChannelColorPlaneX(QPixmap& pxm) {yz_view->setPixmap(pxm);}
+	void mixChannelColorPlaneY(QPixmap& pxm) {zx_view->setPixmap(pxm);}
+	void mixChannelColorPlaneZ(QPixmap& pxm) {xy_view->setPixmap(pxm);}
+
+	void setColorRedType();
     void setColorGreenType();
     void setColorBlueType();
     void setColorAllType();
@@ -290,6 +300,8 @@ public slots:
 
 
 signals:
+	void colorChanged(int); //110722 RZC, connected to ChannelTable::updateXFormWidget(int)
+
     void external_focusXChanged(int c);
     void external_focusYChanged(int c);
     void external_focusZChanged(int c);

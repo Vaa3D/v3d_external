@@ -236,14 +236,14 @@ public slots:
 			reflist.removeOne(w); ref = reflist.size(); //--ref;
 			if (ref<1)
 			{
-				widget = 0;
 				hide();
+				widget = 0;
 				deleteLater();
 			}
 			else if (w == widget) //110713 link will lost
 			{
-				widget = 0;
 				hide();
+				widget = 0;
 			}
 		}
 		return ref;
@@ -252,8 +252,10 @@ public slots:
 	{
 		if (reflist.contains(w))
 			return w;
+//		else if (reflist.size()) //110722
+//			return reflist.last();
 		else
-			return reflist.last();
+			return 0;
 	}
 
 	virtual void linkTo(QWidget* w) //link to new view

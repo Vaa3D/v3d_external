@@ -551,6 +551,8 @@ public slots:
     void changeFocusPlane(int c);
     void changeColorType(ImageDisplayColorType c);
 
+    void setPixmap(QPixmap& pxm) {this->pixmap = pxm; update();} //110722 RZC, for directly update pixmap of 3view
+
     void setPixmapType();
     void reset();
 
@@ -558,7 +560,9 @@ public slots:
 	void popupImageProcessingDialog(QString item); //added on 080613
 
 signals:
-    void scaleChanged(int scale);
+	void colorChanged(int); //110722 RZC, connected to XFormWidget::colorChanged(int)
+
+	void scaleChanged(int scale);
 //    void colorTypeChanged(ImageDisplayColorType c); //probably should be deleted later
     void focusXChanged(int x_new);
     void focusYChanged(int y_new);

@@ -47,10 +47,28 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define OP_MAX	0
 #define OP_SUM	1
 #define OP_MEAN	2
+#define OP_INDEX	3
+
+struct Channel
+{
+	int n;				// index
+	RGBA8 color;
+	bool selected;
+	Channel() {n=0; color.r=color.g=color.b=color.a=255; selected=true;}
+};
+
+struct MixOp
+{
+	int op;
+	bool rescale;
+	bool maskR, maskG, maskB;
+	MixOp() {op=OP_MAX; rescale=false; maskR=maskG=maskB=true;}
+};
+
 
 void make_linear_lut_one(RGBA8 color, vector<RGBA8>& lut);
 void make_linear_lut(vector<RGBA8>& colors, vector< vector<RGBA8> >& luts);
-RGB8 lookup_mix(vector<unsigned char>& mC, vector< vector<RGBA8> >& mLut, int op);
+inline RGB8 lookup_mix(vector<unsigned char>& mC, vector< vector<RGBA8> >& mLut, int op, RGB8 mask=XYZ(255,255,255));
 
 template <class T> QPixmap copyRaw2QPixmap_Slice(
 		ImagePlaneDisplayType cplane,
@@ -69,6 +87,7 @@ template <class T> QPixmap copyRaw2QPixmap_Slice(
 	V3DLONG x,y,z,pp;
 
 	int N = MIN(sz3, 4); ////////////////
+
 	vector<double> vscale(N);
 	vector<double> vmin(N);
 	for (int k=0; k<N; k++)
@@ -248,44 +267,191 @@ template <class T> QPixmap copyRaw2QPixmap_Slice(
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////
-struct Channel
+template <class T> QPixmap copyRaw2QPixmap_Slice(
+		const QList<Channel> & listChannel,
+		const MixOp & mixOp,
+		ImagePlaneDisplayType cplane,
+		V3DLONG cpos,
+		T **** p4d,  //no const for using macro expansion
+		V3DLONG sz0,
+		V3DLONG sz1,
+		V3DLONG sz2,
+		V3DLONG sz3,
+		double *p_vmax,
+		double *p_vmin)
 {
-	int n;				// index
-	RGBA8 color;
-	bool selected;
-	Channel() {n=0; color.r=color.g=color.b=color.a=255; selected=true;}
-};
 
+	V3DLONG x,y,z,pp;
 
+	int N = MIN(sz3, listChannel.size()); ////////////////
+
+	vector<double> vscale(N);
+	vector<double> vmin(N);
+	for (int k=0; k<N; k++)
+	{
+		vmin[k] = p_vmin[k];
+		vscale[k] = p_vmax[k]-p_vmin[k];
+		vscale[k] = (vscale[k]==0)? 255.0 : (255.0/vscale[k]);
+	}
+
+	//qDebug()<<"copyRaw2QPixmap_Slice switch (Ctype)"<<Ctype;
+
+	//set lookup-table
+	vector< vector<RGBA8> > luts(N);
+	vector<RGBA8> lut(256);
+	for (int k=0; k<N; k++)
+	{
+		make_linear_lut_one( listChannel[k].color, lut );
+		luts[k] = lut;
+	}
+
+	// transfer N channel's pixels
+	int op =  mixOp.op;
+	bool bIntensityRescale = mixOp.rescale;
+	RGB8 mask;
+	mask.r = (mixOp.maskR)? 255:0;
+	mask.g = (mixOp.maskG)? 255:0;
+	mask.b = (mixOp.maskB)? 255:0;
+	vector<unsigned char> mC(N);
+	QImage tmpimg;
+
+	//qDebug()<<"copyRaw2QPixmap_Slice switch (cplane)"<<cplane;
+
+	switch (cplane) //QImage(w,h)
+	{
+	case imgPlaneX: //(Z,Y)
+		pp = (cpos>sz0)? sz0-1:cpos-1;   pp = (pp<0)? 0:pp;
+		tmpimg = QImage(sz2, sz1, QImage::Format_RGB32);
+
+		for (y=0; y<sz1; y++)
+		for (z=0; z<sz2; z++)
+			{
+				for (int k=0; k<N; k++)
+				{
+					float c = p4d[k][z][y][pp];
+					mC[k] =  (bIntensityRescale==false) ? c : floor((c-vmin[k])*vscale[k]);
+				}
+				//qDebug("(x) y z = (%d/%d) %d/%d %d/%d", pp,sz0, y,sz1, z,sz2);
+				RGB8 o = lookup_mix(mC, luts, op, mask);
+				tmpimg.setPixel(z, y, qRgb(o.r, o.g, o.b));
+			}
+		break;
+
+	case imgPlaneY: //(X,Z)
+		pp = (cpos>sz1)? sz1-1:cpos-1;   pp = (pp<0)? 0:pp;
+		tmpimg = QImage(sz0, sz2, QImage::Format_RGB32);
+
+		for (z=0; z<sz2; z++)
+		for (x=0; x<sz0; x++)
+			{
+				for (int k=0; k<N; k++)
+				{
+					float c = p4d[k][z][pp][x];
+					mC[k] =  (bIntensityRescale==false) ? c : floor((c-vmin[k])*vscale[k]);
+				}
+				//qDebug("x (y) z = %d/%d (%d/%d) %d/%d", x,sz0, pp,sz1, z,sz2);
+				RGB8 o = lookup_mix(mC, luts, op, mask);
+				tmpimg.setPixel(x, z, qRgb(o.r, o.g, o.b));
+			}
+		break;
+
+	case imgPlaneZ: //(X,Y)
+		pp = (cpos>sz2)? sz2-1:cpos-1;   pp = (pp<0)? 0:pp;
+		tmpimg = QImage(sz0, sz1, QImage::Format_RGB32);
+
+		for (y=0; y<sz1; y++)
+		for (x=0; x<sz0; x++)
+			{
+				for (int k=0; k<N; k++)
+				{
+					float c = p4d[k][pp][y][x];
+					mC[k] =  (bIntensityRescale==false) ? c : floor((c-vmin[k])*vscale[k]);
+				}
+				//qDebug("x y (z) = %d/%d %d/%d (%d/%d)", x,sz0, y,sz1, pp,sz2);
+				RGB8 o = lookup_mix(mC, luts, op, mask);
+				tmpimg.setPixel(x, y, qRgb(o.r, o.g, o.b));
+			}
+		break;
+	}
+
+	//qDebug()<<"copyRaw2QPixmap_Slice fromImage(tmpimg)"<<tmpimg.size();
+
+	return QPixmap::fromImage(tmpimg);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////
 //widget for control channel's color
+
 class ChannelTable : public QWidget
 {
     Q_OBJECT;
 
 public:
-	ChannelTable(QWidget* parent=0) :QWidget(parent) { setItemEditor(); create(); };
+	ChannelTable(QWidget* parent=0) :QWidget(parent)
+	{
+		xform = (XFormWidget*)parent;
+		init_member();  setItemEditor();  createFirst();
+		connect( this,SIGNAL(channelTableChanged()), this, SLOT(updateXFormWidget()) );
+	};
 	virtual ~ChannelTable() {};
 
-protected:
-	QList<Channel> listChannel;
-	QTabWidget *tabOptions;
-	QTableWidget *table;
-
-	void setItemEditor();
-	void create();
-	void createTable();
-	QTableWidget* createTableChannel();
-	QTableWidget* currentTableWidget();
-	void updatedContent(QTableWidget* t);
+signals:
+	void channelTableChanged(); //trigger to update XFormWidget
 
 public slots:
-	void connectSignals(XFormWidget* form);
+	void updateXFormWidget(int plane=-1);  //called by linkXFormWidgetChannel
+	void linkXFormWidgetChannel(); //link updated channel
 
+protected slots:
 	void pressedClickHandler(int row, int col);
 	void doubleClickHandler(int row, int col);
 	void pickChannel(int row, int col);
 
+	void setMixOpMax();
+	void setMixOpSum();
+	void setMixOpMean();
+	void setMixOpIndex();
+	void setMixRescale();
+	void setMixMaskR();
+	void setMixMaskG();
+	void setMixMaskB();
+
+
+protected:
+	MixOp mixOp;
+	QList<Channel> listChannel;
+
+	XFormWidget* xform;
+	QTabWidget *tabOptions;
+	QWidget *boxWidget;
+	QGridLayout *boxLayout;
+	QTableWidget *table;
+	QRadioButton *radioButton_Max, *radioButton_Sum, *radioButton_Mean, *radioButton_Index;
+	QCheckBox *checkBox_Rescale, *checkBox_R, *checkBox_G, *checkBox_B;
+	void init_member()
+	{
+		tabOptions=0;
+		boxWidget=0;
+		boxLayout=0;
+		table=0;
+		radioButton_Max=radioButton_Sum=radioButton_Mean=radioButton_Index=0;
+		checkBox_Rescale=checkBox_R=checkBox_G=checkBox_B=0;
+	}
+
+	void setItemEditor();
+	void createFirst();      // no table
+	void createNewTable();  // called by createFirst & connectXFormWidgetChannel
+	void setMixOpControls();     //called by createNewTable
+	void connectMixOpSignals();  //called by createNewTable
+
+	QTableWidget* createTableChannel();
+
+	QTableWidget* currentTableWidget();
+
+	QVector<bool> in_batch_stack;
+	void begin_batch() {in_batch_stack.push_back(true);}
+	void end_batch()   {in_batch_stack.pop_back();}
+	void updatedContent(QTableWidget* t);
 };
 
 #endif /* CHANNELTABLE_H_ */

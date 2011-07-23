@@ -61,7 +61,7 @@ void make_linear_lut(vector<RGBA8>& colors, vector< vector<RGBA8> >& luts)
 	}
 }
 
-RGB8 lookup_mix(vector<unsigned char>& mC, vector< vector<RGBA8> >& mLut, int op)
+RGB8 lookup_mix(vector<unsigned char>& mC, vector< vector<RGBA8> >& mLut, int op, RGB8 mask)
 {
 	#define R(k) (mLut[k][ mC[k] ].r /255.0)
 	#define G(k) (mLut[k][ mC[k] ].g /255.0)
@@ -108,37 +108,140 @@ RGB8 lookup_mix(vector<unsigned char>& mC, vector< vector<RGBA8> >& mLut, int op
 		o2 /= N;
 		o3 /= N;
 	}
+	// OP_INDEX ignored
 
 	RGB8 oC;
 	oC.r = o1*255;
 	oC.g = o2*255;
 	oC.b = o3*255;
+	oC.r &= mask.r;
+	oC.g &= mask.g;
+	oC.b &= mask.b;
 	return oC;
 }
 
 //////////////////////////////////////////////////////////////////////
 
-void ChannelTable::connectSignals(XFormWidget* form)
+void ChannelTable::updateXFormWidget(int plane) // plane<=0 for all planes
 {
+	qDebug("ChannelTable::updateXFormWidget( %d )", plane);
+
+	if (! xform) return;
+	My4DImage* img4d = xform->getImageData();
+	if (! img4d)
+	{
+		qDebug("ChannelTable::updateXFormWidget: no image data now.");
+		return;
+	}
+    ImagePixelType dtype;
+  	unsigned char **** p4d = (unsigned char ****)img4d->getData(dtype);
+	if (!p4d)
+	{
+		qDebug("ChannelTable::updateXFormWidget: no image data pointer now.");
+		return;
+	}
+
+	if (xform->colorMapRadioButton())
+		xform->colorMapRadioButton()->setChecked(mixOp.op==OP_INDEX);
+	if (mixOp.op==OP_INDEX)
+	{
+		xform->setColorMapDispType();
+		return; // do old path of code
+	}
+
+
+	QPixmap pxm;
+//#define P4D(img4d)  ((dtype==V3D_UINT8)? img4d->data4d_uint8 : \
+//					(dtype==V3D_UINT16)? img4d->data4d_uint16 : \
+//					(dtype==V3D_FLOAT32)? img4d->data4d_float32 : img4d->data4d_virtual)
+#define COPY_mixChannel_plane( X, p4d ) {\
+	pxm = copyRaw2QPixmap_Slice( \
+			listChannel, \
+			mixOp, \
+			imgPlane##X, \
+			img4d->getFocus##X(), \
+			img4d->p4d, \
+			img4d->getXDim(), \
+			img4d->getYDim(), \
+			img4d->getZDim(), \
+			img4d->getCDim(), \
+			img4d->p_vmax, \
+			img4d->p_vmin); \
+	xform->mixChannelColorPlane##X(pxm); \
+}
+
+	switch (dtype)
+	{
+	case V3D_UINT8:
+		if (plane<=0 || plane==imgPlaneX)  COPY_mixChannel_plane( X, data4d_uint8 );
+		if (plane<=0 || plane==imgPlaneY)  COPY_mixChannel_plane( Y, data4d_uint8 );
+		if (plane<=0 || plane==imgPlaneZ)  COPY_mixChannel_plane( Z, data4d_uint8 );
+		break;
+	case V3D_UINT16:
+		if (plane<=0 || plane==imgPlaneX)  COPY_mixChannel_plane( X, data4d_uint16 );
+		if (plane<=0 || plane==imgPlaneY)  COPY_mixChannel_plane( Y, data4d_uint16 );
+		if (plane<=0 || plane==imgPlaneZ)  COPY_mixChannel_plane( Z, data4d_uint16 );
+		break;
+	case V3D_FLOAT32:
+		if (plane<=0 || plane==imgPlaneX)  COPY_mixChannel_plane( X, data4d_float32 );
+		if (plane<=0 || plane==imgPlaneY)  COPY_mixChannel_plane( Y, data4d_float32 );
+		if (plane<=0 || plane==imgPlaneZ)  COPY_mixChannel_plane( Z, data4d_float32 );
+		break;
+	default:
+		break;
+	}
+}
+
+void ChannelTable::linkXFormWidgetChannel()
+{
+	qDebug("ChannelTable::linkXFormWidgetChannel");
+
+	if (! xform) return;
+	My4DImage* img4d = xform->getImageData();
+	if (! img4d)
+	{
+		qDebug(" no image data now.");
+		return;
+	}
+	int N = img4d->getCDim();
+	qDebug(" CDim = %d", N);
+
+	listChannel.clear();
+	for (int i=0; i<N; i++)
+	{
+		Channel ch;
+		ch.n = 1+i;
+		if (ch.n==1)	ch.color = (N>1)? XYZW(255,0,0,255) : XYZW(255,255,255,255);
+		else if (ch.n==2)	ch.color = XYZW(0,255,0,255);
+		else if (ch.n==3)	ch.color = XYZW(0,0,255,255);
+		else if (ch.n==4)	ch.color = XYZW(255,255,255,255);
+		else				ch.color = random_rgba8(255);
+		listChannel << ch;
+
+		qDebug(" listChannel #%d (%d %d %d %d)", ch.n, ch.color.r,ch.color.g,ch.color.b,ch.color.a);
+	}
+
+	/////////////////////////////////////////////////////////
+	// for debug
+	//	listChannel.clear();
+	//	Channel ch;
+	//	ch.n = 1; ch.color = XYZW(255,0,0,255); listChannel << ch;
+	//	ch.n = 2; ch.color = XYZW(0,255,0,255); listChannel << ch;
+	//	ch.n = 3; ch.color = XYZW(0,0,255,255); listChannel << ch;
+	//	ch.n = 4; ch.color = XYZW(255,255,255,255); listChannel << ch;
+
+	createNewTable();
 
 }
 
-
 //////////////////////////////////////////////////////////////////////
 
-void ChannelTable::create()
+void ChannelTable::createFirst()
 {
-	Channel ch;
-	listChannel.clear();
-	ch.n = 1; ch.color = XYZW(255,0,0,255); listChannel << ch;
-	ch.n = 2; ch.color = XYZW(0,255,0,255); listChannel << ch;
-	ch.n = 3; ch.color = XYZW(0,0,255,255); listChannel << ch;
-	ch.n = 4; ch.color = XYZW(255,255,255,255); listChannel << ch;
-
-	/////////////////////////////////////////////////////////
 	tabOptions = new QTabWidget(this); //AutoTabWidget(this);
-	/////////////////////////////////////////////////////////
-	createTable();
+
+	createNewTable(); //must do it
+
 
 	QVBoxLayout *allLayout = new QVBoxLayout(this);
 	allLayout->addWidget(tabOptions);
@@ -148,31 +251,62 @@ void ChannelTable::create()
 	this->setFixedHeight(180);
 }
 
-void ChannelTable::createTable()
+void ChannelTable::createNewTable()
 {
+	if (boxWidget) //delete whole box Tab include all sub widget
+	{
+		QWidget* old = boxWidget;
+		old->deleteLater();
+	}
+	//so need re-create all sub widget again
+
 	table = createTableChannel();
+
+	radioButton_Max = new QRadioButton("Max");
+	radioButton_Sum = new QRadioButton("Sum");
+	radioButton_Mean = new QRadioButton("Mean");
+	radioButton_Index = new QRadioButton("Index");
+	checkBox_Rescale = new QCheckBox("0~255");
+	checkBox_R = new QCheckBox("R");
+	checkBox_G = new QCheckBox("G");
+	checkBox_B = new QCheckBox("B");
 
 	QWidget* box = new QWidget();
 	QGridLayout* boxlayout = new QGridLayout(box);
-	boxlayout->addWidget(table,						1,0, 5,15);
-	boxlayout->addWidget(new QRadioButton("Max"),	1,15, 1,5);
-	boxlayout->addWidget(new QRadioButton("Sum"),	2,15, 1,5);
-	boxlayout->addWidget(new QRadioButton("Mean"),	3,15, 1,5);
-	boxlayout->addWidget(new QRadioButton("Index"),	4,15, 1,5);
-	boxlayout->addWidget(new QCheckBox("0~255"), 5,15, 1,5);
+	boxWidget = box;
+	boxLayout = boxlayout; //for replacing new table in layout
+	boxlayout->addWidget(table,				1,0, 4,15); //at least need a empty table
+	boxlayout->addWidget(radioButton_Max,	1,15, 1,5);
+	boxlayout->addWidget(radioButton_Sum,	2,15, 1,5);
+	boxlayout->addWidget(radioButton_Mean,	3,15, 1,5);
+	boxlayout->addWidget(radioButton_Index,	4,15, 1,5);
+	boxlayout->addWidget(checkBox_Rescale,	5,15-1, 1,5);
+	boxlayout->addWidget(checkBox_R,		5,1, 1,4);
+	boxlayout->addWidget(checkBox_G,		5,4+1, 1,4);
+	boxlayout->addWidget(checkBox_B,		5,8+1, 1,4);
 	boxlayout->setContentsMargins(0,0,0,0); //remove margins
 
+	if (tabOptions)   tabOptions->clear();
 	if (tabOptions)
 	{
 		int i;
 		QString qs;
-		i= tabOptions->addTab(box,		qs =QString("Channel (%1)").arg(table->rowCount()));
+		i= tabOptions->addTab(box,		qs =QString("Channels (%1)").arg(table->rowCount()));
 		tabOptions->setTabToolTip(i, qs);
 	}
 
+	//	if (table)
+	//	{
+	//		if (boxLayout) boxLayout->removeWidget(table);
+	//		QTableWidget* old = table;
+	//		old->deleteLater();  // deleteLater => postEvent(DeferredDelete) => qDeleteInEventHandler()
+	//	}
+	//	//replace with new table in layout
+	//	table = createTableChannel();
+	//	if (boxLayout)  boxLayout->addWidget(table,		1,0, 5,15);
+
 	//connect cell to table handler
 	if (table)      connect(table, SIGNAL(cellChanged(int,int)), this, SLOT(pickChannel(int,int)));
-
 	if (table)
 	{
 		table->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -183,7 +317,126 @@ void ChannelTable::createTable()
 		connect(table, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(doubleClickHandler(int,int))); //to override delay of popping dialog by the setEditTriggers
 		connect(table, SIGNAL(cellPressed(int,int)), this, SLOT(pressedClickHandler(int,int)));      //to pop context menu
 	}
+
+	setMixOpControls();
+	connectMixOpSignals();
 }
+
+void ChannelTable::setMixOpControls()
+{
+    radioButton_Max->setChecked(mixOp.op==OP_MAX);
+    radioButton_Sum->setChecked(mixOp.op==OP_SUM);
+    radioButton_Mean->setChecked(mixOp.op==OP_MEAN);
+    radioButton_Index->setChecked(mixOp.op==OP_INDEX);
+
+    radioButton_Index->setEnabled(listChannel.size()==1);
+
+    checkBox_Rescale->setChecked(mixOp.rescale);
+    checkBox_R->setChecked(mixOp.maskR);
+    checkBox_G->setChecked(mixOp.maskG);
+    checkBox_B->setChecked(mixOp.maskB);
+
+}
+
+void ChannelTable::connectMixOpSignals()
+{
+    connect(radioButton_Max, SIGNAL(clicked()), this, SLOT(setMixOpMax()));
+    connect(radioButton_Sum, SIGNAL(clicked()), this, SLOT(setMixOpSum()));
+    connect(radioButton_Mean, SIGNAL(clicked()), this, SLOT(setMixOpMean()));
+    connect(radioButton_Index, SIGNAL(clicked()), this, SLOT(setMixOpIndex()));
+
+    connect(checkBox_Rescale, SIGNAL(clicked()), this, SLOT(setMixRescale()));
+    connect(checkBox_R, SIGNAL(clicked()), this, SLOT(setMixMaskR()));
+    connect(checkBox_G, SIGNAL(clicked()), this, SLOT(setMixMaskG()));
+    connect(checkBox_B, SIGNAL(clicked()), this, SLOT(setMixMaskB()));
+
+}
+
+void ChannelTable::setMixOpMax()
+{
+	bool b = radioButton_Max->isChecked();
+	if (b)
+	{
+		mixOp.op = OP_MAX;
+	    radioButton_Max->setChecked(mixOp.op==OP_MAX);
+	    radioButton_Sum->setChecked(mixOp.op==OP_SUM);
+	    radioButton_Mean->setChecked(mixOp.op==OP_MEAN);
+	    radioButton_Index->setChecked(mixOp.op==OP_INDEX);
+		emit channelTableChanged();
+		checkBox_R->setEnabled(mixOp.op!=OP_INDEX);
+		checkBox_G->setEnabled(mixOp.op!=OP_INDEX);
+		checkBox_B->setEnabled(mixOp.op!=OP_INDEX);
+	}
+}
+void ChannelTable::setMixOpSum()
+{
+	bool b = radioButton_Sum->isChecked();
+	if (b)
+	{
+		mixOp.op = OP_SUM;
+	    radioButton_Max->setChecked(mixOp.op==OP_MAX);
+	    radioButton_Sum->setChecked(mixOp.op==OP_SUM);
+	    radioButton_Mean->setChecked(mixOp.op==OP_MEAN);
+	    radioButton_Index->setChecked(mixOp.op==OP_INDEX);
+		emit channelTableChanged();
+		checkBox_R->setEnabled(mixOp.op!=OP_INDEX);
+		checkBox_G->setEnabled(mixOp.op!=OP_INDEX);
+		checkBox_B->setEnabled(mixOp.op!=OP_INDEX);
+	}
+}
+void ChannelTable::setMixOpMean()
+{
+	bool b = radioButton_Mean->isChecked();
+	if (b)
+	{
+		mixOp.op = OP_MEAN;
+	    radioButton_Max->setChecked(mixOp.op==OP_MAX);
+	    radioButton_Sum->setChecked(mixOp.op==OP_SUM);
+	    radioButton_Mean->setChecked(mixOp.op==OP_MEAN);
+	    radioButton_Index->setChecked(mixOp.op==OP_INDEX);
+		emit channelTableChanged();
+		checkBox_R->setEnabled(mixOp.op!=OP_INDEX);
+		checkBox_G->setEnabled(mixOp.op!=OP_INDEX);
+		checkBox_B->setEnabled(mixOp.op!=OP_INDEX);
+	}
+}
+void ChannelTable::setMixOpIndex()
+{
+	bool b = radioButton_Index->isChecked();
+	if (b)
+	{
+		mixOp.op = OP_INDEX;
+	    radioButton_Max->setChecked(mixOp.op==OP_MAX);
+	    radioButton_Sum->setChecked(mixOp.op==OP_SUM);
+	    radioButton_Mean->setChecked(mixOp.op==OP_MEAN);
+	    radioButton_Index->setChecked(mixOp.op==OP_INDEX);
+		emit channelTableChanged();
+		checkBox_R->setEnabled(mixOp.op!=OP_INDEX);
+		checkBox_G->setEnabled(mixOp.op!=OP_INDEX);
+		checkBox_B->setEnabled(mixOp.op!=OP_INDEX);
+	}
+}
+void ChannelTable::setMixRescale()
+{
+	mixOp.rescale = checkBox_Rescale->isChecked();
+	emit channelTableChanged();
+}
+void ChannelTable::setMixMaskR()
+{
+	mixOp.maskR = checkBox_R->isChecked();
+	emit channelTableChanged();
+}
+void ChannelTable::setMixMaskG()
+{
+	mixOp.maskG = checkBox_G->isChecked();
+	emit channelTableChanged();
+}
+void ChannelTable::setMixMaskB()
+{
+	mixOp.maskB = checkBox_B->isChecked();
+	emit channelTableChanged();
+}
+
 
 QTableWidget* ChannelTable::currentTableWidget()
 {
@@ -196,7 +449,7 @@ QTableWidget* ChannelTable::currentTableWidget()
 
 void ChannelTable::updatedContent(QTableWidget* t) //090826
 {
-//	if (! in_batch_stack.empty() && in_batch_stack.last()==true) return; //skip until end_batch
+	if (! in_batch_stack.empty() && in_batch_stack.last()==true) return; //skip until end_batch
 
 	t->resizeColumnsToContents();
 }
@@ -240,38 +493,46 @@ void ChannelTable::pressedClickHandler(int i, int j)
 		{
 			QMenu menu;
 			QAction *act=0,
-					*actRed=0, *actGreen=0, *actBlue=0, *actGray=0, *actOff=0;
+					*actRed=0, *actGreen=0, *actBlue=0, *actGray=0, *actBlank=0;
 
 			menu.addAction(actRed 	= new QAction(tr("Red"), this));
 		    menu.addAction(actGreen = new QAction(tr("Green"), this));
 		    menu.addAction(actBlue 	= new QAction(tr("Blue"), this));
-		    menu.addAction(actGray 	= new QAction(tr("Gray"), this));
-		    menu.addAction(actOff 	= new QAction(tr("Off"), this));
+		    menu.addAction(actGray 	= new QAction(tr("Gray #ffffffff"), this));
+		    menu.addAction(actBlank = new QAction(tr("Blank #00000000"), this));
 
 		    act = menu.exec(QCursor::pos());
 
-		    curItem = t->item(i,0); //color
+			begin_batch();
+			int n_row = t->rowCount();
+			for (int ii=0; ii<n_row; ii++)
+			{
+				curItem = t->item(ii,0); //color
+				if (! curItem->isSelected()) continue; // skip un-selected
 
-		    if (act==actRed)
-		    {
-		    	curItem->setData(0, qVariantFromValue(QColor(255,0,0)));
-		    }
-		    else if (act==actGreen)
-		    {
-		    	curItem->setData(0, qVariantFromValue(QColor(0,255,0)));
-		    }
-		    else if (act==actBlue)
-		    {
-		    	curItem->setData(0, qVariantFromValue(QColor(0,0,255)));
-		    }
-		    else if (act==actGray)
-		    {
-		    	curItem->setData(0, qVariantFromValue(QColor(255,255,255)));
-		    }
-		    else if (act==actOff)
-		    {
-		    	curItem->setData(0, qVariantFromValue(QColor(0,0,0,0))); //also alpha=0
-		    }
+				if (act==actRed)
+				{
+					curItem->setData(0, qVariantFromValue(QColor(255,0,0)));
+				}
+				else if (act==actGreen)
+				{
+					curItem->setData(0, qVariantFromValue(QColor(0,255,0)));
+				}
+				else if (act==actBlue)
+				{
+					curItem->setData(0, qVariantFromValue(QColor(0,0,255)));
+				}
+				else if (act==actGray)
+				{
+					curItem->setData(0, qVariantFromValue(QColor(255,255,255)));
+				}
+				else if (act==actBlank)
+				{
+					curItem->setData(0, qVariantFromValue(QColor(0,0,0,0))); //also alpha=0
+				}
+			}
+		    end_batch();
+			updatedContent(t);
 		}
 	}
 }
@@ -321,7 +582,7 @@ QTableWidget*  ChannelTable::createTableChannel()
 
 		ADD_QCOLOR(listChannel[i].color);
 
-		ADD_STRING( tr("chan %1").arg(listChannel[i].n) );
+		ADD_STRING( tr("ch %1").arg(listChannel[i].n) );
 
 		assert(j==col);
 	}
@@ -344,5 +605,6 @@ void ChannelTable::pickChannel(int i, int j)
 		break;
 	}
 
+	emit channelTableChanged();
 	updatedContent(t);
 }

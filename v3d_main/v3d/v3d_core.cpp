@@ -1291,6 +1291,7 @@ XFormView::XFormView(QWidget *parent)
 	disp_scale = 1;
 	disp_width = disp_scale * pixmap.width();
 	disp_height = disp_scale * pixmap.height();
+
 }
 
 bool XFormView::internal_only_imgplane_op()
@@ -1299,6 +1300,15 @@ bool XFormView::internal_only_imgplane_op()
     ImagePixelType dtype;
   	unsigned char **** p4d = (unsigned char ****)imgData->getData(dtype);
 	if (!p4d) return false;
+
+#if 1
+	qDebug("XFormView::internal_only_imgplane_op(), colorChanged(%d)", this->Ptype);
+	if (! (imgData->getCDim()==1 && (Ctype>=colorPseudoMaskColor)) )
+	{
+		emit colorChanged(this->Ptype); // signal indirectly connected to ChannelTable::updateXFormWidget(int plane)
+		return true;
+	}
+#endif
 
 	if (dtype==V3D_UINT8)
 	{
@@ -1897,7 +1907,6 @@ void XFormView::changeFocusPlane(int c)
     update();
 }
 
-#define __change_with_color_type__
 void XFormView::changeColorType(ImageDisplayColorType c)
 {
     Ctype = c;
@@ -2771,6 +2780,8 @@ void XFormWidget::initialize()
     yz_view = NULL;
     zx_view = NULL;
 
+    channelTableWidget = NULL; //110722 RZC
+
 	disp_zoom=1; //081114
 	b_use_dispzoom=false;
 
@@ -3357,7 +3368,7 @@ void XFormWidget::cleanData()
 
 
 #define __channel_table_gui__
-#if 1 // switch code path
+#if 0 // switch code path
 
 void XFormWidget::connectColorGUI()
 {
@@ -3516,10 +3527,15 @@ void XFormWidget::disconnectColorGUI()
 }
 void XFormWidget::setColorGUI()
 {
+	if (channelTableWidget)  channelTableWidget->linkXFormWidgetChannel();
 }
 QWidget* XFormWidget::createColorGUI()
 {
-	return new ChannelTable(this);
+	colorMapDispType = new QRadioButton(this); //just for XFormWidget::switchMaskColormap()
+
+	if (channelTableWidget = new ChannelTable(this))
+		connect(this, SIGNAL(colorChanged(int)), channelTableWidget, SLOT(updateXFormWidget(int)));
+	return channelTableWidget;;
 }
 
 #endif
@@ -3920,8 +3936,9 @@ void XFormWidget::updateDataRelatedGUI()
 		zoomWholeViewButton->setText(QString("Tri-view zoom=%1. Click to set.").arg(disp_zoom));
 
 
-		// color channel options
-		setColorGUI(); //110721 RZC
+//		// color channel options  //110723 RZC, moved out to prevent being called by XFormWidget::triview_setzoom
+//		if (! b_use_dispzoom) //110723
+//			setColorGUI(); //110721 RZC
 
 		//landmarkLabelDispCheckBox->setEnabled(true);
 
@@ -4143,6 +4160,7 @@ bool XFormWidget::loadData()
 
 	// update the interface
 
+	setColorGUI(); //110723 RZC
 	updateDataRelatedGUI();
 
 	reset(); //090718. PHC. force to update once, since sometimes the 16bit image does not display correctly (why all black but once click reset button everything correct?)
@@ -4258,6 +4276,7 @@ bool XFormWidget::setImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG nsz
 	imgData = new My4DImage;
 	if (!imgData)  return false;
 
+	setColorGUI(); //110723 RZC
 	updateDataRelatedGUI(); //this should be important to set up all pointers
 
 	printf("now in the function setImageData() line=%d.\n", __LINE__);
@@ -4541,6 +4560,7 @@ void XFormWidget::connectEventSignals()
     connect(zSlider, SIGNAL(valueChanged(int)), zValueSpinBox, SLOT(setValue(int)));
 
 	//set the navigation event connection
+
     connect(xy_view, SIGNAL(focusXChanged(int)), xSlider, SLOT(setValue(int)));
     connect(xy_view, SIGNAL(focusYChanged(int)), ySlider, SLOT(setValue(int)));
     connect(xy_view, SIGNAL(focusZChanged(int)), zSlider, SLOT(setValue(int)));
@@ -4615,6 +4635,12 @@ void XFormWidget::connectEventSignals()
 	//    connect(xy_view, SIGNAL(descriptionEnabledChanged(bool)), whatsThisButton, SLOT(setChecked(bool)));
 
 	connect(this, SIGNAL(external_validZSliceChanged(long)), this, SLOT(updateTriview()), Qt::AutoConnection); //, Qt::DirectConnection);
+
+
+	//110722 RZC, connect signal for ChannelTable::updateXFormWidget(int plane)
+	connect(xy_view, SIGNAL(colorChanged(int)), this, SIGNAL(colorChanged(int)));
+	connect(yz_view, SIGNAL(colorChanged(int)), this, SIGNAL(colorChanged(int)));
+	connect(zx_view, SIGNAL(colorChanged(int)), this, SIGNAL(colorChanged(int)));
 }
 
 void XFormWidget::disconnectEventSignals()
@@ -4785,6 +4811,8 @@ void XFormWidget::toggleCheckBox_bAcceptSignalFromExternal()
 	}
 }
 
+#define __update_3view_slice__
+
 void XFormWidget::setColorRedType()
 {
     Ctype = colorRedOnly;
@@ -4905,28 +4933,27 @@ void XFormWidget::switchMaskColormap() //080824
 	if (!imgData)
 		return;
 
-	if (!colorMapDispType->isChecked()) //switch color will only be valid is the colorMapDispType is on
-		return;
+	if (colorMapDispType && colorMapDispType->isChecked()) //switch color will only be valid is the colorMapDispType is on
+	{
 
-	int clen;  ImageDisplayColorType cc;
+		int clen;  ImageDisplayColorType cc;
 
-	imgData->getColorMapInfo(clen, cc);
+		imgData->getColorMapInfo(clen, cc);
 
-	if (cc==colorPseudoMaskColor) cc=colorHanchuanFlyBrainColor;
-	else if (cc==colorHanchuanFlyBrainColor) cc=colorArnimFlyBrainColor;
-	else if (cc==colorArnimFlyBrainColor) cc=colorPseudoMaskColor;
-	else cc=colorPseudoMaskColor;
+		if (cc==colorPseudoMaskColor) cc=colorHanchuanFlyBrainColor;
+		else if (cc==colorHanchuanFlyBrainColor) cc=colorArnimFlyBrainColor;
+		else if (cc==colorArnimFlyBrainColor) cc=colorPseudoMaskColor;
+		else cc=colorPseudoMaskColor;
 
-	imgData->switchColorMap(clen, cc);
+		imgData->switchColorMap(clen, cc);
 
-	//update
-	xy_view->changeColorType(cc);
-	yz_view->changeColorType(cc);
-	zx_view->changeColorType(cc);
+		//update
+		xy_view->changeColorType(cc);
+		yz_view->changeColorType(cc);
+		zx_view->changeColorType(cc);
 
-    update();
-	//updateDataRelatedGUI(); //just make sure the image will be displayed
-	return;
+		update();
+	}
 }
 
 
