@@ -3531,7 +3531,7 @@ void XFormWidget::setColorGUI()
 }
 QWidget* XFormWidget::createColorGUI()
 {
-	colorMapDispType = new QRadioButton(this); //just for XFormWidget::switchMaskColormap()
+	(colorMapDispType = new QRadioButton(this))->hide(); //just for XFormWidget::switchMaskColormap()
 
 	if (channelTableWidget = new ChannelTable(this))
 		connect(this, SIGNAL(colorChanged(int)), channelTableWidget, SLOT(updateXFormWidget(int)));
@@ -3639,7 +3639,7 @@ void XFormWidget::createGUI()
 	linkFocusCheckBox = new QCheckBox("Anchor 3 Focal Views");
 	linkFocusCheckBox->setCheckState((bLinkFocusViews) ? Qt::Checked : Qt::Unchecked);
 
-	displayFocusCrossCheckBox = new QCheckBox("Focus Cross"); //("Display Focus Cross Lines");
+	displayFocusCrossCheckBox = new QCheckBox("Focus cross"); //("Display Focus Cross Lines");
 	displayFocusCrossCheckBox->setCheckState((bDisplayFocusCross) ? Qt::Checked : Qt::Unchecked);
 
     // scale factor group
@@ -3760,9 +3760,9 @@ void XFormWidget::createGUI()
 //	coordGroupLayout->addWidget(cBox_bSendSignalToExternal, 5, 0, 1, 6);
 //	coordGroupLayout->addWidget(cBox_bAcceptSignalFromExternal, 5, 7, 1, 7);
 
-	coordGroupLayout->addWidget(displayFocusCrossCheckBox, 3, 0, 1, 8);
-	coordGroupLayout->addWidget(cBox_bSendSignalToExternal,     3, 8+1, 1, 6);
-	coordGroupLayout->addWidget(cBox_bAcceptSignalFromExternal, 3, 8+1+6, 1, 5);
+	coordGroupLayout->addWidget(displayFocusCrossCheckBox, 		3, 0, 1, 8);
+	coordGroupLayout->addWidget(cBox_bSendSignalToExternal,     3, 8, 1, 6);
+	coordGroupLayout->addWidget(cBox_bAcceptSignalFromExternal, 3, 8+6, 1, 6);
 
 	// layout for scaling factors
 

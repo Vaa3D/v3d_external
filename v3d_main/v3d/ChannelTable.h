@@ -401,6 +401,7 @@ signals:
 public slots:
 	void updateXFormWidget(int plane=-1);  //called by linkXFormWidgetChannel
 	void linkXFormWidgetChannel(); //link updated channel
+	void setChannelColorDefault(int N);
 
 protected slots:
 	void pressedClickHandler(int row, int col);
@@ -415,7 +416,7 @@ protected slots:
 	void setMixMaskR();
 	void setMixMaskG();
 	void setMixMaskB();
-
+	void setChannelMixDefault();
 
 protected:
 	MixOp mixOp;
@@ -428,6 +429,7 @@ protected:
 	QTableWidget *table;
 	QRadioButton *radioButton_Max, *radioButton_Sum, *radioButton_Mean, *radioButton_Index;
 	QCheckBox *checkBox_Rescale, *checkBox_R, *checkBox_G, *checkBox_B;
+	QPushButton *pushButton_Reset;
 	void init_member()
 	{
 		tabOptions=0;
@@ -436,6 +438,7 @@ protected:
 		table=0;
 		radioButton_Max=radioButton_Sum=radioButton_Mean=radioButton_Index=0;
 		checkBox_Rescale=checkBox_R=checkBox_G=checkBox_B=0;
+		pushButton_Reset=0;
 	}
 
 	void setItemEditor();
@@ -444,14 +447,15 @@ protected:
 	void setMixOpControls();     //called by createNewTable
 	void connectMixOpSignals();  //called by createNewTable
 
-	QTableWidget* createTableChannel();
-
-	QTableWidget* currentTableWidget();
-
 	QVector<bool> in_batch_stack;
 	void begin_batch() {in_batch_stack.push_back(true);}
 	void end_batch()   {in_batch_stack.pop_back();}
 	void updatedContent(QTableWidget* t);
+	QTableWidget* currentTableWidget();
+
+	QTableWidget* createTableChannel();
+	void updateTableChannel();
+
 };
 
 #endif /* CHANNELTABLE_H_ */

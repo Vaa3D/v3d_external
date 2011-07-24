@@ -110,6 +110,10 @@ RGB8 lookup_mix(vector<unsigned char>& mC, vector< vector<RGBA8> >& mLut, int op
 	}
 	// OP_INDEX ignored
 
+	o1 = CLAMP(0, 1, o1);
+	o2 = CLAMP(0, 1, o2);
+	o3 = CLAMP(0, 1, o3);
+
 	RGB8 oC;
 	oC.r = o1*255;
 	oC.g = o2*255;
@@ -192,20 +196,8 @@ void ChannelTable::updateXFormWidget(int plane) // plane<=0 for all planes
 	}
 }
 
-void ChannelTable::linkXFormWidgetChannel()
+void ChannelTable::setChannelColorDefault(int N)
 {
-	qDebug("ChannelTable::linkXFormWidgetChannel");
-
-	if (! xform) return;
-	My4DImage* img4d = xform->getImageData();
-	if (! img4d)
-	{
-		qDebug(" no image data now.");
-		return;
-	}
-	int N = img4d->getCDim();
-	qDebug(" CDim = %d", N);
-
 	listChannel.clear();
 	for (int i=0; i<N; i++)
 	{
@@ -220,6 +212,23 @@ void ChannelTable::linkXFormWidgetChannel()
 
 		qDebug(" listChannel #%d (%d %d %d %d)", ch.n, ch.color.r,ch.color.g,ch.color.b,ch.color.a);
 	}
+}
+
+void ChannelTable::linkXFormWidgetChannel()
+{
+	qDebug("ChannelTable::linkXFormWidgetChannel");
+
+	if (! xform) return;
+	My4DImage* img4d = xform->getImageData();
+	if (! img4d)
+	{
+		qDebug(" no image data now.");
+		return;
+	}
+	int N = img4d->getCDim();
+	qDebug(" CDim = %d", N);
+
+	setChannelColorDefault(N);
 
 	/////////////////////////////////////////////////////////
 	// for debug
@@ -270,21 +279,26 @@ void ChannelTable::createNewTable()
 	checkBox_R = new QCheckBox("R");
 	checkBox_G = new QCheckBox("G");
 	checkBox_B = new QCheckBox("B");
+	pushButton_Reset = new QPushButton("Reset");
 
 	QWidget* box = new QWidget();
 	QGridLayout* boxlayout = new QGridLayout(box);
+	QGridLayout* oplayout = new QGridLayout();
+	oplayout->addWidget(radioButton_Max,	1,0, 1,4);
+	oplayout->addWidget(radioButton_Sum,	2,0, 1,4);
+	oplayout->addWidget(radioButton_Mean,	3,0, 1,4);
+	oplayout->setRowStretch(4, 1);
+	oplayout->addWidget(radioButton_Index,	5,0, 1,4);
+	boxlayout->addWidget(table,				1,0, 5,16); //at least need a empty table
+	boxlayout->addLayout(oplayout, 1,16, 5,4);
+	boxlayout->addWidget(checkBox_Rescale,		6,10, 1,5);
+	boxlayout->addWidget(checkBox_R,		6,0, 1,3);
+	boxlayout->addWidget(checkBox_G,		6,3, 1,3);
+	boxlayout->addWidget(checkBox_B,		6,6, 1,3);
+	boxlayout->addWidget(pushButton_Reset,		6,15, 1,5);
+	boxlayout->setContentsMargins(0,0,0,0); //remove margins
 	boxWidget = box;
 	boxLayout = boxlayout; //for replacing new table in layout
-	boxlayout->addWidget(table,				1,0, 4,15); //at least need a empty table
-	boxlayout->addWidget(radioButton_Max,	1,15, 1,5);
-	boxlayout->addWidget(radioButton_Sum,	2,15, 1,5);
-	boxlayout->addWidget(radioButton_Mean,	3,15, 1,5);
-	boxlayout->addWidget(radioButton_Index,	4,15, 1,5);
-	boxlayout->addWidget(checkBox_Rescale,	5,15-1, 1,5);
-	boxlayout->addWidget(checkBox_R,		5,1, 1,4);
-	boxlayout->addWidget(checkBox_G,		5,4+1, 1,4);
-	boxlayout->addWidget(checkBox_B,		5,8+1, 1,4);
-	boxlayout->setContentsMargins(0,0,0,0); //remove margins
 
 	if (tabOptions)   tabOptions->clear();
 	if (tabOptions)
@@ -350,6 +364,7 @@ void ChannelTable::connectMixOpSignals()
     connect(checkBox_G, SIGNAL(clicked()), this, SLOT(setMixMaskG()));
     connect(checkBox_B, SIGNAL(clicked()), this, SLOT(setMixMaskB()));
 
+    connect(pushButton_Reset, SIGNAL(clicked()), this, SLOT(setChannelMixDefault()));
 }
 
 void ChannelTable::setMixOpMax()
@@ -437,6 +452,26 @@ void ChannelTable::setMixMaskB()
 	emit channelTableChanged();
 }
 
+void ChannelTable::setChannelMixDefault()
+{
+	setChannelColorDefault(listChannel.size());
+	updateTableChannel();
+
+	mixOp = MixOp();
+	setMixOpControls();
+
+	emit channelTableChanged();
+}
+
+#define __table_operations__
+
+void ChannelTable::updatedContent(QTableWidget* t) //090826
+{
+	if (! in_batch_stack.empty() && in_batch_stack.last()==true) return; //skip until end_batch
+
+	emit channelTableChanged();
+	t->resizeColumnsToContents();
+}
 
 QTableWidget* ChannelTable::currentTableWidget()
 {
@@ -445,13 +480,6 @@ QTableWidget* ChannelTable::currentTableWidget()
 	int k = 1 + (tabOptions->currentIndex());
 
 	return table;
-}
-
-void ChannelTable::updatedContent(QTableWidget* t) //090826
-{
-	if (! in_batch_stack.empty() && in_batch_stack.last()==true) return; //skip until end_batch
-
-	t->resizeColumnsToContents();
 }
 
 inline QColor QColorFromRGBA8(RGBA8 c)
@@ -498,8 +526,8 @@ void ChannelTable::pressedClickHandler(int i, int j)
 			menu.addAction(actRed 	= new QAction(tr("Red"), this));
 		    menu.addAction(actGreen = new QAction(tr("Green"), this));
 		    menu.addAction(actBlue 	= new QAction(tr("Blue"), this));
-		    menu.addAction(actGray 	= new QAction(tr("Gray #ffffffff"), this));
-		    menu.addAction(actBlank = new QAction(tr("Blank #00000000"), this));
+		    menu.addAction(actGray 	= new QAction(tr("Gray  (r=g=b=255)"), this));
+		    menu.addAction(actBlank = new QAction(tr("Blank (r=g=b=a=0)"), this));
 
 		    act = menu.exec(QCursor::pos());
 
@@ -592,6 +620,25 @@ QTableWidget*  ChannelTable::createTableChannel()
 	return t;
 }
 
+void ChannelTable::updateTableChannel()
+{
+	if (! table) return;
+	QTableWidget* t = table;
+	QTableWidgetItem *curItem;
+
+	begin_batch();
+	int n_row = MIN(t->rowCount(), listChannel.size());
+	for (int ii=0; ii<n_row; ii++)
+	{
+		curItem = t->item(ii,0); //color
+		curItem->setData(0, VCOLOR(listChannel[ii].color) );
+	}
+	end_batch();
+
+	t->resizeColumnsToContents();
+	//updatedContent(t);
+}
+
 void ChannelTable::pickChannel(int i, int j)
 {
 	QTableWidget* t = table;
@@ -605,6 +652,5 @@ void ChannelTable::pickChannel(int i, int j)
 		break;
 	}
 
-	emit channelTableChanged();
 	updatedContent(t);
 }
