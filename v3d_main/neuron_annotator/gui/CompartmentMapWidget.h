@@ -5,7 +5,6 @@
 #include "../../3drenderer/renderer_tex2.h"
 #include <cmath>
 #include <iostream>
-#include <QStringListModel>
 #include <QListView>
 
 #if defined (_MSC_VER)
@@ -52,7 +51,6 @@ public:
     QComboBox *pCompartmentComboBox;
 
     QListView* listView;
-    QStringListModel model;
 
 //    QList <Triangle*> list_listTriangle;
 //    QList <GLuint> list_glistLabel;

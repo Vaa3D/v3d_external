@@ -436,4 +436,21 @@ void AnnotationSession::showAllNeurons(QList<int> overlayList)
     neuronMaskFullUpdate();
 }
 
+// clear all neurons
+void AnnotationSession::clearAllNeurons()
+{
+    // deselect background and reference
+    for (int i=0;i<overlayStatusList.size();i++) {
+        overlayStatusList.replace(i, false);
+    }
+
+    // deselect neurons
+    for (int i=0;i<neuronSelectList.size();i++) {
+        neuronSelectList.replace(i, false);
+    }
+    for (int i=0;i<maskStatusList.size();i++) {
+        maskStatusList.replace(i, false);
+    }
+    neuronMaskFullUpdate();
+}
 

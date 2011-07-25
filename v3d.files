@@ -2262,6 +2262,8 @@ v3d_main/v3d/vano_linker_loader_dialog.cpp
 v3d_main/v3d/vano_linker_loader_dialog.h
 v3d_main/v3d/version_info/v3d_version_example.xml
 v3d_main/v3d/xformwidget.h
+v3d_main/v3d/ChannelTable.h
+v3d_main/v3d/ChannelTable.cpp
 v3d_main/v3dbase/CMakeLists.txt
 v3d_main/worm_straighten_c/bdb_minus.cpp
 v3d_main/worm_straighten_c/bdb_minus.h

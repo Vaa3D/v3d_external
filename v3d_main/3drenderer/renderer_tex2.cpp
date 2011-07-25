@@ -2149,11 +2149,57 @@ int Renderer_tex2::hitMenu(int x, int y)
     }
 
     b_selecting = false;
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
+    // right click popup menu
+    QList<QAction*> listAct;
+    QAction* act=0;
+    QAction* actViewNeuronOnly=0;
+    QAction* actViewNeuronWithBackground=0;
+    QAction* actViewNeuronWithReference=0;
+    QAction* actViewNeuronWithBackgroundAndReference=0;
+    QAction* actViewAllNeurons=0;
+    QAction* actClearAllNeurons=0;
+
     int hits = glRenderMode(GL_RENDER);
     if (hits==0)
     {
-            delete[] selectBuf;
-            return 0;
+        QList<QAction*> listAct;
+
+        QAction* actViewAllNeurons=0;
+        QAction* actClearAllNeurons=0;
+
+        listAct.append(actViewAllNeurons = new QAction("view all neurons in empty space", w));
+        listAct.append(actClearAllNeurons = new QAction("clear all", w));
+
+        if (w) w->updateGL(); //for highlight object
+
+        QMenu menu;
+        foreach (QAction* a, listAct) {  menu.addAction(a); }
+        //menu.setWindowOpacity(POPMENU_OPACITY); // no effect on MAC? on Windows cause blink
+        act = menu.exec(QCursor::pos());
+
+        if (act==0) 	return 0;
+        else if (act == actViewAllNeurons)
+        {
+            if(w)
+            {
+                QList<int> overlayList;
+                emit w->triggerNeuronShownAll(overlayList); // overlayList should be empty
+            }
+        }
+        else if (act == actClearAllNeurons)
+        {
+            if(w)
+            {
+                emit w->triggerNeuronClearAll();
+            }
+        }
+
+        //
+        delete[] selectBuf;
+
+        return 0;
     }
 
     //
@@ -2276,20 +2322,10 @@ int Renderer_tex2::hitMenu(int x, int y)
     }
     //qDebug() <<"\t Hit " << (qsName);
 
-    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-
     My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
     XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
 
-    // right click popup menu
-    QList<QAction*> listAct;
-    QAction* act=0;
-    QAction* actViewNeuronOnly=0;
-    QAction* actViewNeuronWithBackground=0;
-    QAction* actViewNeuronWithReference=0;
-    QAction* actViewNeuronWithBackgroundAndReference=0;
-    QAction* actViewAllNeurons=0;
-
+    // Menu Act Responses
     if (qsName.size()>0)
     {
             if (IS_VOLUME())
@@ -2320,6 +2356,11 @@ int Renderer_tex2::hitMenu(int x, int y)
                 actViewNeuronWithReference->setVisible(true);
                 actViewNeuronWithReference->setIconVisibleInMenu(true);
 
+            }
+            else // outside volume
+            {
+                listAct.append(actClearAllNeurons = new QAction("clear all", w));
+                listAct.append(actViewAllNeurons = new QAction("view all neurons in empty space", w));
             }
 
             if (w) w->updateGL(); //for highlight object
@@ -2370,6 +2411,13 @@ int Renderer_tex2::hitMenu(int x, int y)
         if(w)
         {
             emit w->triggerNeuronShownAll(overlayList); // overlayList should be empty
+        }
+    }
+    else if (act == actClearAllNeurons)
+    {
+        if(w)
+        {
+            emit w->triggerNeuronClearAll();
         }
     }
 

@@ -137,7 +137,7 @@ void CompartmentMapWidget::switchCompartment(int num)
         for(int i=0; i<listLabelSurf.size(); i++)
         {
             listLabelSurf[i].on = true;
-            //setCurrentIndex(i+2, true);
+            setCurrentIndex(i+2, true);
         }
     }
     else if(num==1) // all off
@@ -145,21 +145,21 @@ void CompartmentMapWidget::switchCompartment(int num)
         for(int i=0; i<listLabelSurf.size(); i++)
         {
             listLabelSurf[i].on = false;
-            //setCurrentIndex(i+2, false);
+            setCurrentIndex(i+2, false);
         }
     }
     else
     {
         listLabelSurf[num-2].on = !(listLabelSurf[num-2].on);
 
-//        if(listLabelSurf[num-2].on)
-//        {
-//            setCurrentIndex(num, true);
-//        }
-//        else
-//        {
-//            setCurrentIndex(num, false);
-//        }
+        if(listLabelSurf[num-2].on)
+        {
+            setCurrentIndex(num, true);
+        }
+        else
+        {
+            setCurrentIndex(num, false);
+        }
     }
 
     ((Renderer_tex2 *)renderer)->setListLabelSurf(listLabelSurf);
@@ -171,29 +171,41 @@ void CompartmentMapWidget::setComboBox(QComboBox *compartmentComboBox)
 {
     pCompartmentComboBox = compartmentComboBox;
 
+    QString styleSheet = "QComboBox QListView{color:black; background-color:white; selection-color:yellow; selection-background-color:blue;}";
+    pCompartmentComboBox->setStyleSheet(styleSheet);
+
     listView = (QListView*)pCompartmentComboBox->view();
     //listView->setSpacing(5);
+    //listView->setSelectionMode(QAbstractItemView::MultiSelection);
 }
 
 void CompartmentMapWidget::setCurrentIndex(int row, bool flag)
 {
+    QModelIndex index = listView->model()->index(row, 0);
+        qDebug()<<"setCurrentIndex ..."<<index.isValid();
 
-   QModelIndex index = listView->model()->index(row, 0);
+    QFont cmwfont = font();
+    QPalette cmwpalette = palette();
+    if (index.isValid())
+    {
+        //listView->selectionModel()->clear();
 
-   if (index.isValid())
-   {
-       listView->selectionModel()->clear();
+        if(flag)
+        {
+            cmwfont.setBold(true);
+            cmwpalette.setColor(QPalette::Text, Qt::blue);
+            listView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::SelectCurrent);
 
-       if(flag)
-       {
-           qDebug()<<"on";
-           listView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::SelectCurrent);
-       }
-       else
-       {
-           qDebug()<<"off";
-           listView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Deselect);
-       }
-   }
+            qDebug()<<"change font and palette "<<row<<flag;
+        }
+        else
+        {
+            cmwfont.setBold(false);
+            cmwpalette = this->palette();
+            listView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Deselect);
+        }
+    }
+    setFont(cmwfont);
+    setPalette(cmwpalette);
 
 }

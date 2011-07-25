@@ -81,6 +81,7 @@ public:
     bool screenShot(QString filename);
     void triggerNeuronShown(QList<int> overlayList)    {emit neuronShown(overlayList);}
     void triggerNeuronShownAll(QList<int> overlayList) {emit neuronShownAll(overlayList);}
+    void triggerNeuronClearAll() {emit neuronClearAll();}
 
 protected:
 	virtual void choiceRenderer();
@@ -351,6 +352,7 @@ signals:
 	void changeOrthoView(bool b);
         void neuronShown(QList<int>); // view neuron in Neuron Annotator
         void neuronShownAll(QList<int>);
+        void neuronClearAll();
 
 protected:
 	bool _still, _stillpaint_need, _stillpaint_pending;
