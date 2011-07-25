@@ -39,6 +39,7 @@ public:
     virtual void keyReleaseEvent(QKeyEvent *e);
 
     virtual void resizeEvent(QResizeEvent * event);
+    void onMouseRightClickMenu(QMouseEvent * event, bool b_glwidget); // for mouse click outside glwidget
 
 public slots:
     void setGammaBrightness(qreal gamma);

@@ -250,7 +250,7 @@ void Na3DWidget::mousePressEvent(QMouseEvent * event)
 	{
                 //if (renderer->hitPoint(event->x(), event->y()))  //pop-up menu or marker definition
 
-            if(renderer->hitMenu(event->x(), event->y()))
+            if(renderer->hitMenu(event->x(), event->y(), true))
             {
                 updateTool();
             }
@@ -288,6 +288,17 @@ void Na3DWidget::mouseReleaseEvent(QMouseEvent * event)
             // return;
     }
 
+}
+
+void Na3DWidget::onMouseRightClickMenu(QMouseEvent * event, bool b_glwidget)
+{
+    if(renderer){
+        if(renderer->hitMenu(event->x(), event->y(), b_glwidget)){
+            updateTool();
+        }
+    }
+
+    V3dR_GLWidget::update();
 }
 
 void Na3DWidget::onMouseSingleClick(QPoint pos)

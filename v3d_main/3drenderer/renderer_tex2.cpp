@@ -2110,7 +2110,7 @@ XYZ Renderer_tex2::selectPosition(int x, int y)
 }
 
 // neuron annotator mouse right click pop menu
-int Renderer_tex2::hitMenu(int x, int y)
+int Renderer_tex2::hitMenu(int x, int y, bool b_glwidget)
 {
     makeCurrent(); // make sure in correct OpenGL context
 
@@ -2162,7 +2162,7 @@ int Renderer_tex2::hitMenu(int x, int y)
     QAction* actClearAllNeurons=0;
 
     int hits = glRenderMode(GL_RENDER);
-    if (hits==0)
+    if (hits==0 && b_glwidget)
     {
         QList<QAction*> listAct;
 
@@ -2275,7 +2275,7 @@ int Renderer_tex2::hitMenu(int x, int y)
 }
 
     lastSliceType = vsSliceNone;
-    if (IS_VOLUME()) // volume
+    if (IS_VOLUME() || !b_glwidget) // volume
     {
         QString bound_info = QString("(%1 %2 %3 -- %4 %5 %6)").arg(start1+1).arg(start2+1).arg(start3+1).arg(start1+size1).arg(start2+size2).arg(start3+size3);
         QString data_title = "";	//if (w) data_title = QFileInfo(w->getDataTitle()).fileName();
@@ -2328,7 +2328,7 @@ int Renderer_tex2::hitMenu(int x, int y)
     // Menu Act Responses
     if (qsName.size()>0)
     {
-            if (IS_VOLUME())
+            if (IS_VOLUME() || !b_glwidget)
             {
                 listAct.append(actViewAllNeurons = new QAction("view all neurons in empty space", w));
 

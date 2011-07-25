@@ -759,6 +759,7 @@ void NaMainWindow::createOverlayGallery() {
     annotationSession->setOverlayStatus(AnnotationSession::REFERENCE_MIP_INDEX, false);
     managementLayout->addWidget(referenceButton);
     overlayGalleryButtonList.append(referenceButton);
+    referenceButton->setNa3DWidget(ui.v3dr_glwidget);
     connect(referenceButton, SIGNAL(declareChange(int,bool)), annotationSession, SLOT(overlayUpdate(int,bool)));
 
     GalleryButton* backgroundButton = new GalleryButton(*overlayMipList->at(AnnotationSession::BACKGROUND_MIP_INDEX), "Background", AnnotationSession::BACKGROUND_MIP_INDEX);
@@ -766,6 +767,7 @@ void NaMainWindow::createOverlayGallery() {
     annotationSession->setOverlayStatus(AnnotationSession::BACKGROUND_MIP_INDEX, true);
     managementLayout->addWidget(backgroundButton);
     overlayGalleryButtonList.append(backgroundButton);
+    backgroundButton->setNa3DWidget(ui.v3dr_glwidget);
     connect(backgroundButton, SIGNAL(declareChange(int,bool)), annotationSession, SLOT(overlayUpdate(int,bool)));
 
 }
@@ -781,6 +783,7 @@ void NaMainWindow::createNeuronGallery() {
     qDebug() << "Number of neuron masks = " << maskMipList->size();
     for (int i = 0; i < maskMipList->size(); ++i) {
         GalleryButton* button = new GalleryButton(*maskMipList->at(i), QString("Neuron %1").arg(i), i);
+        button->setNa3DWidget(ui.v3dr_glwidget);
         neuronGalleryButtonList.append(button);
         ui.fragmentGalleryWidget->appendFragment(button);
         button->setChecked(true); // start as checked since full image loaded initially

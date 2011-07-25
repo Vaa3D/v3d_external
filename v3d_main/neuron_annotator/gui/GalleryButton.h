@@ -4,6 +4,7 @@
 #include <QtGui>
 #include "BrightnessCalibrator.h"
 #include "../FragmentSelectionModel.h"
+#include "Na3DWidget.h"
 
 class GalleryButton : public QWidget
 {
@@ -20,6 +21,8 @@ public:
     ~GalleryButton();
     virtual void paintEvent(QPaintEvent *);
     virtual void mouseMoveEvent(QMouseEvent *);
+    virtual void mousePressEvent(QMouseEvent *);
+    void setNa3DWidget(Na3DWidget *inputNa3DWidget);
 
 signals:
     void declareChange(int index, bool checked);
@@ -53,6 +56,8 @@ private:
     QImage * correctedScaledThumbnail;
     volatile bool bImageUpdating; // hack for gamma update
     // QMutex buttonMutex; // Mutex object to help avoid multithread race conditions.
+
+    Na3DWidget *p3DWidget;
 };
 
 #endif // GALLERYBUTTON_H

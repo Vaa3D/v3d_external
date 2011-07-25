@@ -72,6 +72,14 @@ void GalleryButton::mouseMoveEvent(QMouseEvent *moveEvent) {
     emit fragmentHover(index);
 }
 
+void GalleryButton::mousePressEvent(QMouseEvent * event)
+{
+    if (event->button()==Qt::RightButton)
+    {
+        p3DWidget->onMouseRightClickMenu(event, false);
+    }
+}
+
 void GalleryButton::buttonPress(bool checked) {
     emit declareChange(index, checked);
 }
@@ -107,4 +115,8 @@ void GalleryButton::updateThumbnailIcon() {
     if (! correctedScaledThumbnail) return;
     pushButton->setIcon(QIcon(QPixmap::fromImage(*correctedScaledThumbnail)));
     emit widgetChanged(index);
+}
+
+void GalleryButton::setNa3DWidget(Na3DWidget *inputNa3DWidget){
+    p3DWidget = inputNa3DWidget;
 }
