@@ -175,6 +175,41 @@ bool unitVar(double *qf, QList<double*> & featureList, int sbjnum, int * sbj, in
 	return true;
 }
 
+//normalize features by rank score
+bool rankScore(double *qf, QList<double*> & featureList, int sbjnum, int * sbj, int fnum)
+{
+	int siz = featureList.size();
+	double * score = new double[siz];
+	int * idx = new int[siz];
+	double * dist =  new double[siz];
+
+	for (int i=0;i<siz;i++) score[i] = 0;
+	for (int j=0;j<fnum;j++)
+	{
+		for (int i=0;i<siz;i++)
+		{
+			double * curr = featureList.at(i);
+			dist[i] = fabs(qf[j]-curr[j]);
+		}
+		//sort each feature according to their distance rank. more similar ones (with shorter dist to query) have higher score.
+		pick_max_n(idx,dist,siz,siz);
+		for (int i=0;i<siz;i++)
+			score[(idx[i])] += i;
+	}
+	if (sbjnum>siz)
+	{
+		cerr<<"Too many subjects required!"<<endl;
+		return false;
+	}
+
+	pick_max_n(sbj,score,sbjnum,siz);
+	delete score; score = NULL;
+	delete idx; idx = NULL;
+	delete dist; dist = NULL;
+	return true;
+
+}
+
 
 //this function computes the max n elements' index number in the array idx[]
 //the elements stored in idx[] are aligned with a decrease of similarity

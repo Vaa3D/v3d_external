@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'compare_feature.h'
 **
-** Created: Thu Jul 21 14:38:26 2011
+** Created: Mon Jul 25 13:40:27 2011
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.7.3)
 **
 ** WARNING! All changes made in this file will be lost!

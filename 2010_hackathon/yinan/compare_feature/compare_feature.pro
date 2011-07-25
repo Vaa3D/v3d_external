@@ -7,7 +7,6 @@ INCLUDEPATH  += $$V3DMAINPATH/basic_c_fun
 HEADERS      += $$V3DMAINPATH/basic_c_fun/basic_surf_objs.h
 HEADERS      += compare_feature.h
 HEADERS      += sim_measure.h
-HEADERS      += fcompare.h
 HEADERS      += compute.h
 
 SOURCES      += $$V3DMAINPATH/basic_c_fun/basic_surf_objs.cpp

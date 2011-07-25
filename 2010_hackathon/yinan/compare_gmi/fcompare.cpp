@@ -9,23 +9,38 @@
 #include <iostream>
 using namespace std;
 
+QString parsedir(QString str);
+
 bool compare_gmi(const V3DPluginArgList & input, V3DPluginArgList & output)
 {
-	vector<char*>* inlist = (vector<char*>*)(input.at(0).p);
+	char * in = (*(vector<char*>*)(input.at(0).p)).at(0);
 	char * out = (*(vector<char*>*)(output.at(0).p)).at(0);
 
-	QString outfileName = QString(out);
-	QFile file(outfileName);
-	file.open(QIODevice::WriteOnly|QIODevice::Text);
-	QTextStream myfile(&file);
-
-
-	if (inlist->size()==1)
+	//parse input linker file
+	QString infileName = QString(in);
+	QFile linker(infileName);
+	if (!linker.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
-		cerr<<"Please specify query id and number of subjects!"<<endl;
+		cerr<<"Cannot find linker file"<<endl;
 		return false;
 	}
 
+	QString dir = parsedir(infileName);
+	
+	QList<QString> nameList = QList<QString>();
+	QTextStream files(&linker);
+	QString line;
+	line = files.readLine();
+	while (!line.isNull())
+	{
+		if (!line.startsWith("SWCFILE=")) {line = files.readLine(); continue;}
+		line.remove(0,8);
+		nameList.append(line);
+		line = files.readLine();
+	}
+	linker.close();
+		
+	//parse parameters
 	vector<char*>* par = (vector<char*>*)(input.at(1).p);
 	if (par->size()!=2)
 	{
@@ -49,27 +64,25 @@ bool compare_gmi(const V3DPluginArgList & input, V3DPluginArgList & output)
 		return false;
 	}
 	cout<<"subject number:\t"<<sbjnum<<endl;
-		
-	int neuronNum = (int)inlist->size();
+	
+	int neuronNum = nameList.size();
 	QList<double*> gmiList = QList<double*>();
-	QList<QString> nameList = QList<QString>();
 	double * queryGMI;
 	QString queryName;
 
 	for (int i=0;i<neuronNum;i++)
 	{
-		QString name = QString(inlist->at(i));
+		QString name = dir+nameList.at(i);
 		NeuronTree nt = readSWC_file(name);
 		
 		cout<<"--------------Neuron #"<<(i+1)<<"----------------\n";
-		cout<<inlist->at(i)<<endl;
+		cout<<nameList.at(i).toStdString()<<endl;
 		double * gmi = new double[VSIZE];
 		computeGMI(nt, gmi);
 		for (int jj=0;jj<VSIZE;jj++)
 			cout<<gmi[jj]<<"\t";
 		cout<<endl;
 		gmiList.append(gmi);
-		nameList.append(name);
 	}
 	queryGMI = gmiList.at(queryid);
 	queryName = nameList.at(queryid);
@@ -77,19 +90,46 @@ bool compare_gmi(const V3DPluginArgList & input, V3DPluginArgList & output)
 	//nameList.removeAt(queryid);
 
 	int* sbj = new int[sbjnum];
-	bool result = unitRange(queryGMI, gmiList, sbjnum, sbj, VSIZE);
+	bool result = rankScore(queryGMI, gmiList, sbjnum, sbj, VSIZE);
+
+	//generate output files
 	if (result)
 	{
+		QString outfileName = QString(out);
+		QFile file(outfileName);
+		if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+			v3d_msg(QString("cannot open file: %1").arg(outfileName));;
+		QTextStream myfile(&file);
 		myfile<<"query id:\t"<<queryid<<endl;
 		myfile<<"query name:\t"<<queryName<<endl;
 		myfile<<"pick:\t"<<sbjnum<<endl;
 		for (int i=0;i<sbjnum;i++)
-			myfile<<sbj[i]<<endl;
+			myfile<<sbj[i]<<"\t"<<nameList.at(sbj[i])<<endl;
+		file.close();
+
+		//generate linker files under input directory
 		for (int i=0;i<sbjnum;i++)
-			myfile<<nameList.at(sbj[i])<<" ";
-		myfile<<endl;
+		{
+			QString filename_out = dir+QString("compare_gmi_result%1").arg(i+1)+".ano";
+			QFile* outlinker=new QFile(filename_out);
+			if (!outlinker->open(QIODevice::WriteOnly | QIODevice::Text))
+				v3d_msg(QString("cannot open file: %1").arg(filename_out));
+			QTextStream outs(outlinker);
+			outs<<"SWCFILE="<<queryName<<endl;
+			outs<<"SWCFILE="<<nameList.at(sbj[i])<<endl;
+			outlinker->close();
+			v3d_msg(QString("Save the linker file to: \n\n%1\n\nComplete!").arg(filename_out),0);
+		}
 	}
-	
-	file.close();
+
 	return result;
+}
+
+QString parsedir(QString str)
+{
+	int parser;
+	for (parser=str.length()-1;parser>=0;parser--)
+		if (str.at(parser)==QChar('/')) break;
+	str.chop(str.length()-parser-1);
+	return str;
 }

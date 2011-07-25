@@ -78,8 +78,8 @@ void compute_neuron_GMI(double **b, int siz,  double* centerpos, double radius_t
 	double c021 = compute_moments_neuron(b,siz, 0,2,1, radius_thres); 
 	double c111 = compute_moments_neuron(b,siz, 1,1,1, radius_thres); 
 
-	cout<<"c000:"<<c000<<"c200:"<<c200<<"c020:"<<c020<<"c002:"<<c002<<"c110:"<<c110<<"c101:"<<c101<<"c011:"<<c011<<endl;
-	cout<<"c300:"<<c300<<"c030:"<<c030<<"c003:"<<c003<<"c120:"<<c120<<"c102:"<<c102<<"c210:"<<c210<<"c201:"<<c201<<"c012:"<<c012<<"c021:"<<c021<<"c111:"<<c111<<endl;
+	//cout<<"c000:"<<c000<<"c200:"<<c200<<"c020:"<<c020<<"c002:"<<c002<<"c110:"<<c110<<"c101:"<<c101<<"c011:"<<c011<<endl;
+	//cout<<"c300:"<<c300<<"c030:"<<c030<<"c003:"<<c003<<"c120:"<<c120<<"c102:"<<c102<<"c210:"<<c210<<"c201:"<<c201<<"c012:"<<c012<<"c021:"<<c021<<"c111:"<<c111<<endl;
 	//feaVec(:,1) = size(b,1); 
 
 	gmi[0] = c000;

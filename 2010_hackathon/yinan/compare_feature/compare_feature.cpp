@@ -11,7 +11,6 @@
 #include "compare_feature.h"
 #include "v3d_message.h" 
 #include "../../../v3d_main/basic_c_fun/basic_surf_objs.h"
-#include "fcompare.h"
 #include "fcompare.cpp"
 #include <unistd.h>
 #include <iostream>
