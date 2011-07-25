@@ -2357,11 +2357,6 @@ int Renderer_tex2::hitMenu(int x, int y)
                 actViewNeuronWithReference->setIconVisibleInMenu(true);
 
             }
-            else // outside volume
-            {
-                listAct.append(actClearAllNeurons = new QAction("clear all", w));
-                listAct.append(actViewAllNeurons = new QAction("view all neurons in empty space", w));
-            }
 
             if (w) w->updateGL(); //for highlight object
 
