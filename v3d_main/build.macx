@@ -85,6 +85,7 @@ for arg in $*; do
    fi
    if [ $arg == "clean" -o $arg == "all" ]; then
       ARG_LIB+=" $arg"
+      ARG_V3D+=" $arg"
       continue
    fi
 

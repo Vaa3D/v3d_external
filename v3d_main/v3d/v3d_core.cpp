@@ -1910,6 +1910,7 @@ void XFormView::changeFocusPlane(int c)
 void XFormView::changeColorType(ImageDisplayColorType c)
 {
     Ctype = c;
+    if (Ctype==colorUnknown)  return; //110725 RZC, just switch back to do new code
 
     if (!imgData)
 		return;
@@ -4919,9 +4920,10 @@ void XFormWidget::setColorAll2GrayType()
     update();
 }
 
-void XFormWidget::setColorMapDispType()
+void XFormWidget::setColorMapDispType(ImageDisplayColorType Ctype)
 {
-    Ctype = colorPseudoMaskColor;
+	this->Ctype = Ctype; //110725 RZC, for switching back to colorRGB by ChannelTable::updateXFormWidget
+    //Ctype = colorPseudoMaskColor;
 	xy_view->changeColorType(Ctype);
 	yz_view->changeColorType(Ctype);
 	zx_view->changeColorType(Ctype);

@@ -52,9 +52,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 struct Channel
 {
 	int n;				// index
+	bool on;
 	RGBA8 color;
-	bool selected;
-	Channel() {n=0; color.r=color.g=color.b=color.a=255; selected=true;}
+	Channel() {n=0; on=true; color.r=color.g=color.b=color.a=255;}
 };
 
 struct MixOp

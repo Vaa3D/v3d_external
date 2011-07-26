@@ -246,7 +246,7 @@ public slots:
     void setColorGreen2GrayType();
     void setColorBlue2GrayType();
     void setColorAll2GrayType();
-	void setColorMapDispType();
+	void setColorMapDispType(ImageDisplayColorType Ctype=colorPseudoMaskColor); //110725 RZC, add parameter Ctype
 	void switchMaskColormap();
 
     void toggleLinkFocusCheckBox();

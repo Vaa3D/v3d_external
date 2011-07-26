@@ -145,14 +145,18 @@ void ChannelTable::updateXFormWidget(int plane) // plane<=0 for all planes
 		return;
 	}
 
+	// do old code for OP_INDEX
 	if (xform->colorMapRadioButton())
 		xform->colorMapRadioButton()->setChecked(mixOp.op==OP_INDEX);
 	if (mixOp.op==OP_INDEX)
 	{
-		xform->setColorMapDispType();
-		return; // do old path of code
+		xform->setColorMapDispType(); //make XFormView::internal_only_imgplane_op to use old code
+		return;  /////////
 	}
-
+	else
+	{
+		xform->setColorMapDispType(colorUnknown); //110725, switch back to do new code
+	}
 
 	QPixmap pxm;
 //#define P4D(img4d)  ((dtype==V3D_UINT8)? img4d->data4d_uint8 : \
@@ -344,6 +348,7 @@ void ChannelTable::setMixOpControls()
     radioButton_Index->setChecked(mixOp.op==OP_INDEX);
 
     radioButton_Index->setEnabled(listChannel.size()==1);
+    checkBox_Rescale->setEnabled(mixOp.op!=OP_INDEX);
 
     checkBox_Rescale->setChecked(mixOp.rescale);
     checkBox_R->setChecked(mixOp.maskR);
@@ -381,6 +386,7 @@ void ChannelTable::setMixOpMax()
 		checkBox_R->setEnabled(mixOp.op!=OP_INDEX);
 		checkBox_G->setEnabled(mixOp.op!=OP_INDEX);
 		checkBox_B->setEnabled(mixOp.op!=OP_INDEX);
+	    checkBox_Rescale->setEnabled(mixOp.op!=OP_INDEX);
 	}
 }
 void ChannelTable::setMixOpSum()
@@ -397,6 +403,7 @@ void ChannelTable::setMixOpSum()
 		checkBox_R->setEnabled(mixOp.op!=OP_INDEX);
 		checkBox_G->setEnabled(mixOp.op!=OP_INDEX);
 		checkBox_B->setEnabled(mixOp.op!=OP_INDEX);
+	    checkBox_Rescale->setEnabled(mixOp.op!=OP_INDEX);
 	}
 }
 void ChannelTable::setMixOpMean()
@@ -413,6 +420,7 @@ void ChannelTable::setMixOpMean()
 		checkBox_R->setEnabled(mixOp.op!=OP_INDEX);
 		checkBox_G->setEnabled(mixOp.op!=OP_INDEX);
 		checkBox_B->setEnabled(mixOp.op!=OP_INDEX);
+	    checkBox_Rescale->setEnabled(mixOp.op!=OP_INDEX);
 	}
 }
 void ChannelTable::setMixOpIndex()
@@ -429,6 +437,7 @@ void ChannelTable::setMixOpIndex()
 		checkBox_R->setEnabled(mixOp.op!=OP_INDEX);
 		checkBox_G->setEnabled(mixOp.op!=OP_INDEX);
 		checkBox_B->setEnabled(mixOp.op!=OP_INDEX);
+	    checkBox_Rescale->setEnabled(mixOp.op!=OP_INDEX);
 	}
 }
 void ChannelTable::setMixRescale()
@@ -520,9 +529,11 @@ void ChannelTable::pressedClickHandler(int i, int j)
 		if (t==table)
 		{
 			QMenu menu;
-			QAction *act=0,
+			QAction *act=0, *actDialog=0,
 					*actRed=0, *actGreen=0, *actBlue=0, *actGray=0, *actBlank=0;
 
+			menu.addAction(actDialog 	= new QAction(tr("Color dialog ..."), this));
+			menu.addSeparator();
 			menu.addAction(actRed 	= new QAction(tr("Red"), this));
 		    menu.addAction(actGreen = new QAction(tr("Green"), this));
 		    menu.addAction(actBlue 	= new QAction(tr("Blue"), this));
@@ -538,7 +549,11 @@ void ChannelTable::pressedClickHandler(int i, int j)
 				curItem = t->item(ii,0); //color
 				if (! curItem->isSelected()) continue; // skip un-selected
 
-				if (act==actRed)
+				if (act==actDialog)
+				{
+					doubleClickHandler(i, 0); //j==0
+				}
+				else if (act==actRed)
 				{
 					curItem->setData(0, qVariantFromValue(QColor(255,0,0)));
 				}
@@ -560,7 +575,7 @@ void ChannelTable::pressedClickHandler(int i, int j)
 				}
 			}
 		    end_batch();
-			updatedContent(t);
+			if (act)  updatedContent(t);
 		}
 	}
 }
@@ -601,6 +616,7 @@ QTableWidget*  ChannelTable::createTableChannel()
 	QTableWidget* t = new QTableWidget(row,col, this);
 	//t->setHorizontalHeaderLabels(qsl);
 	t->horizontalHeader()->hide();
+	t->setToolTip(tr("Right-click on row to pop-up color menu.\n""Double-click on color cell to pop-up color dialog."));
 
 	//qDebug("  create begin t->rowCount = %d", t->rowCount());
 	for (int i=0; i<row; i++)
