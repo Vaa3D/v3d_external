@@ -225,6 +225,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/gui/ZoomSpinBox.h \
     ../neuron_annotator/gui/ZoomWidget.h \
     ../neuron_annotator/gui/CompartmentMapWidget.h \
+    ../neuron_annotator/gui/CompartmentMapComboBox.h \
     ../neuron_annotator/gui/FragmentGalleryWidget.h \
     ../neuron_annotator/FragmentSelectionModel.h \
 	../neuron_annotator/NeuronSelector.h \
@@ -347,6 +348,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/gui/ZoomSpinBox.cpp \
     ../neuron_annotator/gui/ZoomWidget.cpp \
     ../neuron_annotator/gui/CompartmentMapWidget.cpp \
+    ../neuron_annotator/gui/CompartmentMapComboBox.cpp \
     ../neuron_annotator/gui/FragmentGalleryWidget.cpp \
     ../neuron_annotator/FragmentSelectionModel.cpp \
 	../neuron_annotator/NeuronSelector.cpp \

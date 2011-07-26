@@ -1,16 +1,10 @@
 #ifndef COMPARTMENTMAPWIDGET_H
 #define COMPARTMENTMAPWIDGET_H
 
+#include <iostream>
 #include "../../3drenderer/v3dr_glwidget.h"
 #include "../../3drenderer/renderer_tex2.h"
-#include <cmath>
-#include <iostream>
-#include <QListView>
-
-#if defined (_MSC_VER)
-#include "../basic_c_fun/vcdiff.h"
-#else
-#endif
+#include "CompartmentMapComboBox.h"
 
 // Define a class for visualizing compartment map
 // interactive select compartment
@@ -24,7 +18,7 @@ public:
 
 public:
     void loadAtlas();
-    void setComboBox(QComboBox *compartmentComboBox);
+    void setComboBox(CompartmentMapComboBox *compartmentComboBox);
     void setCurrentIndex(int row, bool flag);
 
 public slots:
@@ -48,9 +42,9 @@ public:
     QList <LabelSurf> listLabelSurf; // labelfield surf
     QStringList compartmentList;
 
-    QComboBox *pCompartmentComboBox;
+    CompartmentMapComboBox *pCompartmentComboBox;
 
-    QListView* listView;
+    QListWidget *m_lw;
 
 //    QList <Triangle*> list_listTriangle;
 //    QList <GLuint> list_glistLabel;

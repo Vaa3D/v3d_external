@@ -848,7 +848,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                            <x>0</x>
                            <y>0</y>
                            <width>171</width>
-                           <height>151</height>
+                           <height>202</height>
                           </rect>
                          </property>
                          <layout class="QGridLayout" name="gridLayout_volcut">
@@ -953,10 +953,16 @@ You can also resize the box by Ctrl + left mouse click.</string>
                      </item>
                      <item>
                       <widget class="QGroupBox" name="compartmentSelectGroupBox">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
                        <property name="minimumSize">
                         <size>
-                         <width>0</width>
-                         <height>0</height>
+                         <width>128</width>
+                         <height>196</height>
                         </size>
                        </property>
                        <property name="title">
@@ -976,7 +982,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                            </widget>
                           </item>
                           <item row="1" column="0">
-                           <widget class="QComboBox" name="compartmentMapComboBox"/>
+                           <widget class="CompartmentMapComboBox" name="compartmentMapComboBox"/>
                           </item>
                          </layout>
                         </item>
@@ -1562,6 +1568,11 @@ You can also resize the box by Ctrl + left mouse click.</string>
    <extends>QWidget</extends>
    <header location="global">../neuron_annotator/gui/CompartmentMapWidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CompartmentMapComboBox</class>
+   <extends>QComboBox</extends>
+   <header>../neuron_annotator/gui/CompartmentMapComboBox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

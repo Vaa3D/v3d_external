@@ -1,7 +1,9 @@
 #include "CompartmentMapWidget.h"
 
 CompartmentMapWidget::CompartmentMapWidget(QWidget* parent): V3dR_GLWidget(NULL, parent, "Compartment Map")
-{}
+{
+    //m_lw = new QListWidget(parent);
+}
 
 CompartmentMapWidget::~CompartmentMapWidget()
 {}
@@ -82,6 +84,19 @@ void CompartmentMapWidget::initializeGL()
         }
         pCompartmentComboBox->addItems(compartmentList);
 
+//        QListWidgetItem *lwi = new QListWidgetItem("All On");
+//        lwi->setFlags(lwi->flags() & Qt::ItemIsUserCheckable);
+//        m_lw->addItem(lwi);
+//        lwi = new QListWidgetItem("All Off");
+//        lwi->setFlags(lwi->flags() & Qt::ItemIsUserCheckable);
+//        m_lw->addItem(lwi);
+//        for(int i=0; i<listLabelSurf.size(); i++)
+//        {
+//            lwi = new QListWidgetItem(listLabelSurf[i].name);
+//            lwi->setFlags(Qt::ItemIsUserCheckable);
+//            m_lw->addItem(lwi);
+//        }
+
         update();
     }
 
@@ -128,7 +143,7 @@ void CompartmentMapWidget::wheelEvent(QWheelEvent *event){
 
 void CompartmentMapWidget::switchCompartment(int num)
 {
-    qDebug()<<"CompartmentMapWidget num ... ..."<<num;
+    qDebug()<<"switch status of compartment ... #"<<num;
 
     listLabelSurf = ((Renderer_tex2 *)renderer)->getListLabelSurf();
 
@@ -137,7 +152,6 @@ void CompartmentMapWidget::switchCompartment(int num)
         for(int i=0; i<listLabelSurf.size(); i++)
         {
             listLabelSurf[i].on = true;
-            setCurrentIndex(i+2, true);
         }
     }
     else if(num==1) // all off
@@ -145,21 +159,11 @@ void CompartmentMapWidget::switchCompartment(int num)
         for(int i=0; i<listLabelSurf.size(); i++)
         {
             listLabelSurf[i].on = false;
-            setCurrentIndex(i+2, false);
         }
     }
     else
     {
         listLabelSurf[num-2].on = !(listLabelSurf[num-2].on);
-
-        if(listLabelSurf[num-2].on)
-        {
-            setCurrentIndex(num, true);
-        }
-        else
-        {
-            setCurrentIndex(num, false);
-        }
     }
 
     ((Renderer_tex2 *)renderer)->setListLabelSurf(listLabelSurf);
@@ -167,45 +171,15 @@ void CompartmentMapWidget::switchCompartment(int num)
     update();
 }
 
-void CompartmentMapWidget::setComboBox(QComboBox *compartmentComboBox)
+void CompartmentMapWidget::setComboBox(CompartmentMapComboBox *compartmentComboBox)
 {
     pCompartmentComboBox = compartmentComboBox;
 
-    QString styleSheet = "QComboBox QListView{color:black; background-color:white; selection-color:yellow; selection-background-color:blue;}";
-    pCompartmentComboBox->setStyleSheet(styleSheet);
+    //QString styleSheet = "QComboBox QListView{color:black; background-color:white; selection-color:yellow; selection-background-color:blue;}";
+    //pCompartmentComboBox->setStyleSheet(styleSheet);
 
-    listView = (QListView*)pCompartmentComboBox->view();
-    //listView->setSpacing(5);
-    //listView->setSelectionMode(QAbstractItemView::MultiSelection);
-}
 
-void CompartmentMapWidget::setCurrentIndex(int row, bool flag)
-{
-    QModelIndex index = listView->model()->index(row, 0);
-        qDebug()<<"setCurrentIndex ..."<<index.isValid();
-
-    QFont cmwfont = font();
-    QPalette cmwpalette = palette();
-    if (index.isValid())
-    {
-        //listView->selectionModel()->clear();
-
-        if(flag)
-        {
-            cmwfont.setBold(true);
-            cmwpalette.setColor(QPalette::Text, Qt::blue);
-            listView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::SelectCurrent);
-
-            qDebug()<<"change font and palette "<<row<<flag;
-        }
-        else
-        {
-            cmwfont.setBold(false);
-            cmwpalette = this->palette();
-            listView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Deselect);
-        }
-    }
-    setFont(cmwfont);
-    setPalette(cmwpalette);
+//    pCompartmentComboBox->setModel(m_lw->model());
+//    pCompartmentComboBox->setView(m_lw);
 
 }
