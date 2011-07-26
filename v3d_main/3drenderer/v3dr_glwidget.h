@@ -82,6 +82,9 @@ public:
     void triggerNeuronShown(QList<int> overlayList)    {emit neuronShown(overlayList);}
     void triggerNeuronShownAll(QList<int> overlayList) {emit neuronShownAll(overlayList);}
     void triggerNeuronClearAll() {emit neuronClearAll();}
+    void triggerNeuronIndexChanged(int index) {emit neuronIndexChanged(index);}
+    void setNeuronIndex(int index) {neuronIndex = index;}
+    int getNeuronIndex() {return neuronIndex;}
 
 protected:
 	virtual void choiceRenderer();
@@ -119,6 +122,7 @@ protected:
     static V3dr_surfaceDialog*  surfaceDlg;
 	//static SurfaceObjGeometryDialog *surfaceObjGeoDlg;
     bool _isSoftwareGL; //for choiceRenderer
+    int neuronIndex;
 
 protected slots:
    	virtual void stillPaint(); //for deferred full-resolution volume painting, connected to still_timer
@@ -353,6 +357,7 @@ signals:
         void neuronShown(QList<int>); // view neuron in Neuron Annotator
         void neuronShownAll(QList<int>);
         void neuronClearAll();
+        void neuronIndexChanged(int index);
 
 protected:
 	bool _still, _stillpaint_need, _stillpaint_pending;

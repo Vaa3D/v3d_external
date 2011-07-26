@@ -59,7 +59,7 @@ public:
 };
 
 // 
-CompartmentMapComboBox::CompartmentMapComboBox(QWidget *widget ): QComboBox(widget),m_DisplayText("Compartment Map")
+CompartmentMapComboBox::CompartmentMapComboBox(QWidget *widget ): QComboBox(widget),m_DisplayText("CompartmentMap")
 {
     // set delegate items view
     view()->setItemDelegate(new CompartmentMapComboBoxDelegate(this));

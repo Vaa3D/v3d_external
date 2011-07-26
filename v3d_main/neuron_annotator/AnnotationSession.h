@@ -78,6 +78,7 @@ public slots:
     void showSelectedNeuron(QList<int> overlayList);
     void showAllNeurons(QList<int> overlayList);
     void clearAllNeurons();
+    void updateNeuronSelectList(int index);
 
 private:
     long objectId;

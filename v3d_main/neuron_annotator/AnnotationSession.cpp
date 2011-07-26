@@ -454,3 +454,17 @@ void AnnotationSession::clearAllNeurons()
     neuronMaskFullUpdate();
 }
 
+// update Neuron Select List
+void AnnotationSession::updateNeuronSelectList(int index)
+{
+    qDebug()<<"AnnotationSession neuron index ..."<<index;
+
+    for (int i=0;i<neuronSelectList.size();i++) {
+        neuronSelectList.replace(i, false);
+        maskStatusList.replace(i, false);
+    }
+
+    neuronSelectList.replace(index, true);
+    maskStatusList.replace(index, true);
+}
+

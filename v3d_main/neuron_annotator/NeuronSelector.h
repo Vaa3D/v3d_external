@@ -31,6 +31,7 @@ public slots:
     void updateSelectedPosition(double x, double y, double z);
     void deselectCurrentNeuron();
     void updateSelectedNeurons();
+    void updateNeuronSelectList(int neuronIndex);
 
 signals:
     void neuronHighlighted(bool b);

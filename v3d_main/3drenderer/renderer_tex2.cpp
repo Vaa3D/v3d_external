@@ -2374,6 +2374,12 @@ int Renderer_tex2::hitMenu(int x, int y, bool b_glwidget)
         if(w)
         {
             overlayList.append(1); // 1 == background
+
+            if(!b_glwidget && w->getNeuronIndex()>=0)
+            {
+                emit w->triggerNeuronIndexChanged(w->getNeuronIndex());
+            }
+
             emit w->triggerNeuronShown(overlayList);
         }
     }
@@ -2382,6 +2388,12 @@ int Renderer_tex2::hitMenu(int x, int y, bool b_glwidget)
         if(w)
         {
             overlayList.append(0); // 0 == reference
+
+            if(!b_glwidget && w->getNeuronIndex()>=0)
+            {
+                emit w->triggerNeuronIndexChanged(w->getNeuronIndex());
+            }
+
             emit w->triggerNeuronShown(overlayList);
         }
     }
@@ -2391,6 +2403,12 @@ int Renderer_tex2::hitMenu(int x, int y, bool b_glwidget)
         {
             overlayList.append(0); // 0 == reference
             overlayList.append(1); // 1 == background
+
+            if(!b_glwidget && w->getNeuronIndex()>=0)
+            {
+                emit w->triggerNeuronIndexChanged(w->getNeuronIndex());
+            }
+
             emit w->triggerNeuronShown(overlayList);
         }
     }
@@ -2398,6 +2416,10 @@ int Renderer_tex2::hitMenu(int x, int y, bool b_glwidget)
     {
         if(w)
         {
+            if(!b_glwidget && w->getNeuronIndex()>=0)
+            {
+                emit w->triggerNeuronIndexChanged(w->getNeuronIndex());
+            }
             emit w->triggerNeuronShown(overlayList); // overlayList should be empty
         }
     }

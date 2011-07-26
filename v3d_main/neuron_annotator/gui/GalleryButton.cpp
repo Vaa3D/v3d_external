@@ -21,7 +21,7 @@ GalleryButton::GalleryButton(const QImage & image, QString name, int index, QWid
     QIcon icon(QPixmap::fromImage(image));
     pushButton->setIcon(icon);
     pushButton->setIconSize(thumbnailSize);
-    QLabel* label = new QLabel(name);
+    label = new QLabel(name);
     label->setAlignment(Qt::AlignCenter);
     layout->addWidget(pushButton);
     layout->addWidget(label);
@@ -76,6 +76,19 @@ void GalleryButton::mousePressEvent(QMouseEvent * event)
 {
     if (event->button()==Qt::RightButton)
     {
+        if(getName().isEmpty())
+        {
+            return;
+        }
+        else if(getName().contains("Neuron"))
+        {
+            p3DWidget->setNeuronIndex(index);
+        }
+        else
+        {
+            p3DWidget->setNeuronIndex(-index);
+        }
+
         p3DWidget->onMouseRightClickMenu(event, false);
     }
 }

@@ -350,6 +350,13 @@ void NeuronSelector::updateSelectedNeurons()
 {
     if(index<0) return;
 
-    if(annotationSession->getMaskStatusList().at(index+1)==false)
+    if(annotationSession->getMaskStatusList().at(index)==false)
         deselectCurrentNeuron();
+}
+
+void NeuronSelector::updateNeuronSelectList(int neuronIndex)
+{
+    index = neuronIndex;
+
+    annotationSession->updateNeuronSelectList(index);
 }
