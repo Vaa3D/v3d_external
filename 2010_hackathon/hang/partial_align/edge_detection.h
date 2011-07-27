@@ -3,6 +3,9 @@
 
 #include <iostream>
 #include <vector>
+#include <cmath>
+
+#include "basic_memory.cpp"
 #include "v3d_basicdatatype.h"
 
 //#include "utils.h"
@@ -200,7 +203,7 @@ template <class T> bool computeThreshold(T * &inimg1d,V3DLONG sz[3], double thet
 	for(i = 0; i < size; i++) inimg1d[i] = (inimg1d[i] < theta) ? 0 : inimg1d[i];
 }
 
-template <class T1, class T2> bool computeGaussian(T2 * &outimg1d, T1 * inimg1d,V3DLONG sz[3], double sigma, int r)
+template <class T1, class T2> bool computeGaussian(T2 * &outimg1d, T1 const * inimg1d,V3DLONG sz[3], double sigma, int r)
 {
 	if(!inimg1d || sigma < 0.0 || r%2 != 1) return false;
 	V3DLONG i, j, k;
