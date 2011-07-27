@@ -398,11 +398,6 @@ void V3dr_surfaceDialog::doMenuOfColor()
 
 ///////////////////////////////////////////////////////////////////////
 
-#define BOOL_TO_CHECKED(b) (Qt::CheckState(b*2))
-#define INT_TO_CHECKED(b) (Qt::CheckState(b))
-#define CHECKED_TO_INT(b) (int(b))
-#define CHECKED_TO_BOOL(b) (int(b)>0)
-
 void V3dr_surfaceDialog::updatedContent(QTableWidget* t) //090826
 {
 	if (! in_batch_stack.empty() && in_batch_stack.last()==true) return; //skip until end_batch
@@ -488,12 +483,13 @@ void V3dr_surfaceDialog::selectInverse()
 //};
 //int hanchuan_colortable_size = sizeof(hanchuan_colortable)/3;
 
-#define QCOLOR(rgba8)   QColorFromRGBA8( rgba8 )
-#define VCOLOR(rgba8)   qVariantFromValue(QColorFromRGBA8( rgba8 ))
-#define QCOLORV(var)    (qVariantValue<QColor>( var ))
-#define RGBA8V(var)     RGBA8FromQColor(qVariantValue<QColor>( var ))
 
 #define UPATE_ITEM_ICON(curItem)   curItem->setData(Qt::DecorationRole, curItem->data(0))
+
+#define BOOL_TO_CHECKED(b) (Qt::CheckState(b*2))
+#define INT_TO_CHECKED(b) (Qt::CheckState(b))
+#define CHECKED_TO_INT(b) (int(b))
+#define CHECKED_TO_BOOL(b) (int(b)>0)
 
 
 void V3dr_surfaceDialog::setItemEditor()

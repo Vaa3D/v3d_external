@@ -251,17 +251,15 @@ void ChannelTable::linkXFormWidgetChannel()
 
 void ChannelTable::createFirst()
 {
-	tabOptions = new QTabWidget(this); //AutoTabWidget(this);
+	tabOptions = this; //new QTabWidget(this); //AutoTabWidget(this);
+//	QVBoxLayout *allLayout = new QVBoxLayout(this);
+//	allLayout->addWidget(tabOptions);
+//	allLayout->setContentsMargins(0,0,0,0); //remove margins
 
-	createNewTable(); //must do it
-
-
-	QVBoxLayout *allLayout = new QVBoxLayout(this);
-	allLayout->addWidget(tabOptions);
-	allLayout->setContentsMargins(0,0,0,0); //remove margins
+	createNewTable(); //must do it //create table & add to tabOptions
 
 	this->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum);
-	this->setFixedHeight(180);
+	this->setFixedHeight(200); //200 is best for 4 rows
 }
 
 void ChannelTable::createNewTable()
@@ -288,18 +286,18 @@ void ChannelTable::createNewTable()
 	QWidget* box = new QWidget();
 	QGridLayout* boxlayout = new QGridLayout(box);
 	QGridLayout* oplayout = new QGridLayout();
-	oplayout->addWidget(radioButton_Max,	1,0, 1,4);
-	oplayout->addWidget(radioButton_Sum,	2,0, 1,4);
-	oplayout->addWidget(radioButton_Mean,	3,0, 1,4);
-	oplayout->setRowStretch(4, 1);
-	oplayout->addWidget(radioButton_Index,	5,0, 1,4);
-	boxlayout->addWidget(table,				1,0, 5,16); //at least need a empty table
-	boxlayout->addLayout(oplayout, 1,16, 5,4);
-	boxlayout->addWidget(checkBox_Rescale,		6,10, 1,5);
-	boxlayout->addWidget(checkBox_R,		6,0, 1,3);
-	boxlayout->addWidget(checkBox_G,		6,3, 1,3);
-	boxlayout->addWidget(checkBox_B,		6,6, 1,3);
-	boxlayout->addWidget(pushButton_Reset,		6,15, 1,5);
+	oplayout->addWidget(radioButton_Max,	1,0, 1,1);
+	oplayout->addWidget(radioButton_Sum,	2,0, 1,1);
+	oplayout->addWidget(radioButton_Mean,	3,0, 1,1);
+	oplayout->addWidget(radioButton_Index,	4,0, 1,1);
+	const int nrow = 4;
+	boxlayout->addLayout(oplayout, 			1,16, nrow,4);
+	boxlayout->addWidget(table,				1,0, nrow,16); //at least need a empty table
+	boxlayout->addWidget(checkBox_Rescale,	nrow+1,10, 1,5);
+	boxlayout->addWidget(checkBox_R,		nrow+1,0, 1,3);
+	boxlayout->addWidget(checkBox_G,		nrow+1,3, 1,3);
+	boxlayout->addWidget(checkBox_B,		nrow+1,6, 1,3);
+	boxlayout->addWidget(pushButton_Reset,	nrow+1,15, 1,5);
 	boxlayout->setContentsMargins(0,0,0,0); //remove margins
 	boxWidget = box;
 	boxLayout = boxlayout; //for replacing new table in layout
@@ -491,22 +489,6 @@ QTableWidget* ChannelTable::currentTableWidget()
 	return table;
 }
 
-inline QColor QColorFromRGBA8(RGBA8 c)
-{
-	return QColor(c.c[0], c.c[1], c.c[2], c.c[3]);
-}
-
-inline RGBA8 RGBA8FromQColor(QColor qc)
-{
-	RGBA8 c;
-	c.r=qc.red(); c.g=qc.green(); c.b=qc.blue(); c.a=qc.alpha();
-	return c;
-}
-
-#define QCOLOR(rgba8)   QColorFromRGBA8( rgba8 )
-#define VCOLOR(rgba8)   qVariantFromValue(QColorFromRGBA8( rgba8 ))
-#define QCOLORV(var)    (qVariantValue<QColor>( var ))
-#define RGBA8V(var)     RGBA8FromQColor(qVariantValue<QColor>( var ))
 
 #define UPATE_ITEM_ICON(curItem)   curItem->setData(Qt::DecorationRole, curItem->data(0))
 
@@ -524,7 +506,7 @@ void ChannelTable::pressedClickHandler(int i, int j)
 	if (QApplication::mouseButtons()==Qt::RightButton) //right button menu
 	{
 		QTableWidget* t = currentTableWidget();
-		QTableWidgetItem *curItem = t->item(i,j);
+		QTableWidgetItem *curItem = t->item(i, j);
 
 		if (t==table)
 		{
@@ -542,6 +524,32 @@ void ChannelTable::pressedClickHandler(int i, int j)
 
 		    act = menu.exec(QCursor::pos());
 
+			QColor qcolor = QCOLORV(t->item(i, 0)->data(0)); // color cell of current row
+		    if (act==actDialog)
+			{
+				if (! v3dr_getColorDialog( &qcolor))  return;
+			}
+			else if (act==actRed)
+			{
+				qcolor = QColor(255,0,0);
+			}
+			else if (act==actGreen)
+			{
+				qcolor = QColor(0,255,0);
+			}
+			else if (act==actBlue)
+			{
+				qcolor = QColor(0,0,255);
+			}
+			else if (act==actGray)
+			{
+				qcolor = QColor(255,255,255);
+			}
+			else if (act==actBlank)
+			{
+				qcolor = QColor(0,0,0,0); //also alpha=0
+			}
+
 			begin_batch();
 			int n_row = t->rowCount();
 			for (int ii=0; ii<n_row; ii++)
@@ -549,30 +557,7 @@ void ChannelTable::pressedClickHandler(int i, int j)
 				curItem = t->item(ii,0); //color
 				if (! curItem->isSelected()) continue; // skip un-selected
 
-				if (act==actDialog)
-				{
-					doubleClickHandler(i, 0); //j==0
-				}
-				else if (act==actRed)
-				{
-					curItem->setData(0, qVariantFromValue(QColor(255,0,0)));
-				}
-				else if (act==actGreen)
-				{
-					curItem->setData(0, qVariantFromValue(QColor(0,255,0)));
-				}
-				else if (act==actBlue)
-				{
-					curItem->setData(0, qVariantFromValue(QColor(0,0,255)));
-				}
-				else if (act==actGray)
-				{
-					curItem->setData(0, qVariantFromValue(QColor(255,255,255)));
-				}
-				else if (act==actBlank)
-				{
-					curItem->setData(0, qVariantFromValue(QColor(0,0,0,0))); //also alpha=0
-				}
+				curItem->setData(0, qVariantFromValue(qcolor));
 			}
 		    end_batch();
 			if (act)  updatedContent(t);
@@ -616,7 +601,8 @@ QTableWidget*  ChannelTable::createTableChannel()
 	QTableWidget* t = new QTableWidget(row,col, this);
 	//t->setHorizontalHeaderLabels(qsl);
 	t->horizontalHeader()->hide();
-	t->setToolTip(tr("Right-click on row to pop-up color menu.\n""Double-click on color cell to pop-up color dialog."));
+	t->verticalHeader()->hide();
+	t->setToolTip(tr("Right-click on row to pop color Menu.\n""Double-click on color cell to pop color Dialog."));
 
 	//qDebug("  create begin t->rowCount = %d", t->rowCount());
 	for (int i=0; i<row; i++)

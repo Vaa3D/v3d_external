@@ -70,7 +70,7 @@ void make_linear_lut_one(RGBA8 color, vector<RGBA8>& lut);
 void make_linear_lut(vector<RGBA8>& colors, vector< vector<RGBA8> >& luts);
 inline RGB8 lookup_mix(vector<unsigned char>& mC, vector< vector<RGBA8> >& mLut, int op, RGB8 mask=XYZ(255,255,255));
 
-template <class T> QPixmap copyRaw2QPixmap_Slice(
+template <class T> QPixmap copyRaw2QPixmap_Slice( //test function for 4 channels
 		ImagePlaneDisplayType cplane,
 		V3DLONG cpos,
 		const T **** p4d,
@@ -382,12 +382,12 @@ template <class T> QPixmap copyRaw2QPixmap_Slice(
 ///////////////////////////////////////////////////////////////////////////////////////////
 //widget for control channel's color
 
-class ChannelTable : public QWidget
+class ChannelTable : public QTabWidget //QWidget
 {
     Q_OBJECT;
 
 public:
-	ChannelTable(QWidget* parent=0) :QWidget(parent)
+	ChannelTable(QWidget* parent=0) :QTabWidget(parent) //QWidget(parent)
 	{
 		xform = (XFormWidget*)parent;
 		init_member();  setItemEditor();  createFirst();

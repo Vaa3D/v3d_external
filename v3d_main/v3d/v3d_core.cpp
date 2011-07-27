@@ -106,6 +106,7 @@
  July 31, 2009: RZC: XFormWidget::importGeneralImgSeries extend to 4D time series color image packed time.
  May 20, 2010: add MSVC conditiional compilation
  May 21, 2010: change the upper limit of the amount of memory a system can use. This should become a user preference later!
+ Jul 27, 2011: RZC: add code path of ChannelTable to mix many channels to RGB
  **
  ****************************************************************************/
 
@@ -164,7 +165,7 @@ using namespace std;
 #include "../3drenderer/renderer_tex2.h" //090117 by RZC for My4DImage::update_3drenderer_neuron_view
 
 #include "ChannelTable.h" //110718 RZC, lookup and mix multi-channel's color
-//#include "ChannelTable.cpp"
+#define USE_CHANNEL_TABLE 1
 
 #include "../multithreadimageIO/v3d_multithreadimageIO.h"
 
@@ -883,7 +884,7 @@ template <class T> QPixmap copyRaw2QPixmap_zPlanes(const T **** p4d,
 #define __copy_slice_from_volume__
 template <class T> QPixmap copyRaw2QPixmap(const T **** p4d, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, ImageDisplayColorType Ctype, V3DLONG cpos, ImagePlaneDisplayType disType, bool bIntensityRescale, double *p_vmax, double *p_vmin)
 {
-#if 0
+#if ! USE_CHANNEL_TABLE
 	switch (disType)
 	{
 		case imgPlaneX:
@@ -904,7 +905,7 @@ template <class T> QPixmap copyRaw2QPixmap(const T **** p4d, V3DLONG sz0, V3DLON
 			break;
 	}
 #else
-	//110718 RZC, replacing above functions for volume data without indexed colormap
+	//110718 RZC, test function for 4-channel volume data without indexed colormap
 	return copyRaw2QPixmap_Slice(disType, cpos, p4d, sz0, sz1, sz2, sz3, Ctype, bIntensityRescale, p_vmax, p_vmin);
 #endif
 }
@@ -1301,14 +1302,16 @@ bool XFormView::internal_only_imgplane_op()
   	unsigned char **** p4d = (unsigned char ****)imgData->getData(dtype);
 	if (!p4d) return false;
 
-#if 1
 	qDebug("XFormView::internal_only_imgplane_op(), colorChanged(%d)", this->Ptype);
+
+#if USE_CHANNEL_TABLE
 	if (! (imgData->getCDim()==1 && (Ctype>=colorPseudoMaskColor)) )
 	{
 		emit colorChanged(this->Ptype); // signal indirectly connected to ChannelTable::updateXFormWidget(int plane)
-		return true;
+		return true;                    // skip old code
 	}
 #endif
+
 
 	if (dtype==V3D_UINT8)
 	{
@@ -1878,8 +1881,6 @@ void XFormView::changeFocusPlane(int c)
 
     cur_focus_pos = c;
 
-	internal_only_imgplane_op();
-
 	switch (Ptype)
 	{
 		case imgPlaneX: imgData->setFocusX(cur_focus_pos); break;
@@ -1888,8 +1889,10 @@ void XFormView::changeFocusPlane(int c)
 		default: break; //do nothing
 	}
 
-	//update the focus cross lines in other two views
+	internal_only_imgplane_op(); //110727 RZC, moved to rear of switch(Ptype)
 
+
+	//update the focus cross lines in other two views
 	if (imgData->getFlagLinkFocusViews()==true) //otherwise do not update the two other views
 	{
 		if (imgData->get_xy_view()!=this)
@@ -3369,7 +3372,28 @@ void XFormWidget::cleanData()
 
 
 #define __channel_table_gui__
-#if 0 // switch code path
+#if USE_CHANNEL_TABLE // switch code path
+
+void XFormWidget::connectColorGUI()
+{
+}
+void XFormWidget::disconnectColorGUI()
+{
+}
+void XFormWidget::setColorGUI()
+{
+	if (channelTableWidget)  channelTableWidget->linkXFormWidgetChannel();
+}
+QWidget* XFormWidget::createColorGUI()
+{
+	(colorMapDispType = new QRadioButton(this))->hide(); //just for XFormWidget::switchMaskColormap()
+
+	if (channelTableWidget = new ChannelTable(this))
+		connect(this, SIGNAL(colorChanged(int)), channelTableWidget, SLOT(updateXFormWidget(int)));
+	return channelTableWidget;;
+}
+
+#else // old code
 
 void XFormWidget::connectColorGUI()
 {
@@ -3516,27 +3540,6 @@ QWidget* XFormWidget::createColorGUI()
     colorFormLayout->setContentsMargins(0,0,0,0); //remove margins
     colorFormLayout->addWidget(typeGroup);
 	return colorForm;
-}
-
-#else // new code
-
-void XFormWidget::connectColorGUI()
-{
-}
-void XFormWidget::disconnectColorGUI()
-{
-}
-void XFormWidget::setColorGUI()
-{
-	if (channelTableWidget)  channelTableWidget->linkXFormWidgetChannel();
-}
-QWidget* XFormWidget::createColorGUI()
-{
-	(colorMapDispType = new QRadioButton(this))->hide(); //just for XFormWidget::switchMaskColormap()
-
-	if (channelTableWidget = new ChannelTable(this))
-		connect(this, SIGNAL(colorChanged(int)), channelTableWidget, SLOT(updateXFormWidget(int)));
-	return channelTableWidget;;
 }
 
 #endif
@@ -4277,8 +4280,9 @@ bool XFormWidget::setImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG nsz
 	imgData = new My4DImage;
 	if (!imgData)  return false;
 
-	setColorGUI(); //110723 RZC
-	updateDataRelatedGUI(); //this should be important to set up all pointers
+	//////////////////////////
+	updateDataRelatedGUI(); //this should be very important //but strange logic
+	//////////////////////////
 
 	printf("now in the function setImageData() line=%d.\n", __LINE__);
 	if (!imgData->setNewImageData(ndata1d, nsz0, nsz1, nsz2, nsz3, ndatatype))
@@ -4310,7 +4314,11 @@ bool XFormWidget::setImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG nsz
 		b_use_dispzoom=true;
 	}
 
+
+	////////////////////////////
+	setColorGUI(); //110723 RZC //110727 RZC, must be here after imgData is complete
     updateDataRelatedGUI();
+    ////////////////////////////
 
 	v3d_msg("success in set up image data", 0);
 	return true;

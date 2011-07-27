@@ -233,6 +233,23 @@ inline bool v3dr_getColorDialog( QColor *color, QWidget *parent=0)
 	return ok;
 }
 
+inline QColor QColorFromRGBA8(RGBA8 c)
+{
+	return QColor(c.c[0], c.c[1], c.c[2], c.c[3]);
+}
+
+inline RGBA8 RGBA8FromQColor(QColor qc)
+{
+	RGBA8 c;
+	c.r=qc.red(); c.g=qc.green(); c.b=qc.blue(); c.a=qc.alpha();
+	return c;
+}
+
+#define QCOLOR(rgba8)   QColorFromRGBA8( rgba8 )
+#define VCOLOR(rgba8)   qVariantFromValue(QColorFromRGBA8( rgba8 ))
+#define QCOLORV(var)    (qVariantValue<QColor>( var ))
+#define RGBA8V(var)     RGBA8FromQColor(qVariantValue<QColor>( var ))
+
 
 //===================================================================================================================
 #ifndef test_main_cpp
