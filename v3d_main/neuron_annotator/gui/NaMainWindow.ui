@@ -712,7 +712,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                        <property name="minimumSize">
                         <size>
                          <width>128</width>
-                         <height>196</height>
+                         <height>215</height>
                         </size>
                        </property>
                        <property name="currentIndex">
@@ -725,8 +725,8 @@ You can also resize the box by Ctrl + left mouse click.</string>
                         <widget class="AngleWidget" name="rotXWidget" native="true">
                          <property name="geometry">
                           <rect>
-                           <x>7</x>
-                           <y>1</y>
+                           <x>13</x>
+                           <y>3</y>
                            <width>153</width>
                            <height>41</height>
                           </rect>
@@ -756,8 +756,8 @@ You can also resize the box by Ctrl + left mouse click.</string>
                         <widget class="AngleWidget" name="rotZWidget" native="true">
                          <property name="geometry">
                           <rect>
-                           <x>7</x>
-                           <y>83</y>
+                           <x>13</x>
+                           <y>85</y>
                            <width>153</width>
                            <height>41</height>
                           </rect>
@@ -787,8 +787,8 @@ You can also resize the box by Ctrl + left mouse click.</string>
                         <widget class="AngleWidget" name="rotYWidget" native="true">
                          <property name="geometry">
                           <rect>
-                           <x>7</x>
-                           <y>42</y>
+                           <x>13</x>
+                           <y>44</y>
                            <width>153</width>
                            <height>41</height>
                           </rect>
@@ -818,8 +818,8 @@ You can also resize the box by Ctrl + left mouse click.</string>
                         <widget class="QPushButton" name="rotationResetButton">
                          <property name="geometry">
                           <rect>
-                           <x>1</x>
-                           <y>124</y>
+                           <x>7</x>
+                           <y>130</y>
                            <width>134</width>
                            <height>32</height>
                           </rect>
@@ -837,6 +837,22 @@ You can also resize the box by Ctrl + left mouse click.</string>
                           <string>Reset Rotation</string>
                          </property>
                         </widget>
+                        <widget class="QCheckBox" name="nutateButton">
+                         <property name="geometry">
+                          <rect>
+                           <x>16</x>
+                           <y>162</y>
+                           <width>151</width>
+                           <height>20</height>
+                          </rect>
+                         </property>
+                         <property name="text">
+                          <string>Nutate</string>
+                         </property>
+                         <property name="checkable">
+                          <bool>true</bool>
+                         </property>
+                        </widget>
                        </widget>
                        <widget class="QWidget" name="tabVolumeCut">
                         <attribute name="title">
@@ -847,12 +863,18 @@ You can also resize the box by Ctrl + left mouse click.</string>
                           <rect>
                            <x>0</x>
                            <y>0</y>
-                           <width>171</width>
-                           <height>161</height>
+                           <width>181</width>
+                           <height>182</height>
                           </rect>
                          </property>
                          <layout class="QGridLayout" name="gridLayout_volcut">
-                          <item row="0" column="0">
+                          <property name="sizeConstraint">
+                           <enum>QLayout::SetDefaultConstraint</enum>
+                          </property>
+                          <property name="spacing">
+                           <number>0</number>
+                          </property>
+                          <item row="0" column="1">
                            <layout class="QGridLayout" name="gridLayout_xcut">
                             <item row="0" column="0">
                              <widget class="QCheckBox" name="XCutCB">
@@ -864,23 +886,36 @@ You can also resize the box by Ctrl + left mouse click.</string>
                               </property>
                              </widget>
                             </item>
-                            <item row="0" column="1">
+                            <item row="0" column="2">
                              <widget class="QSlider" name="XcminSlider">
                               <property name="orientation">
                                <enum>Qt::Horizontal</enum>
                               </property>
                              </widget>
                             </item>
-                            <item row="1" column="1">
+                            <item row="1" column="2">
                              <widget class="QSlider" name="XcmaxSlider">
                               <property name="orientation">
                                <enum>Qt::Horizontal</enum>
                               </property>
                              </widget>
                             </item>
+                            <item row="0" column="1">
+                             <spacer name="horizontalSpacer_3">
+                              <property name="orientation">
+                               <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                               <size>
+                                <width>40</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                             </spacer>
+                            </item>
                            </layout>
                           </item>
-                          <item row="1" column="0">
+                          <item row="1" column="1">
                            <layout class="QGridLayout" name="gridLayout_ycut">
                             <item row="0" column="0">
                              <widget class="QCheckBox" name="YCutCB">
@@ -892,23 +927,36 @@ You can also resize the box by Ctrl + left mouse click.</string>
                               </property>
                              </widget>
                             </item>
-                            <item row="0" column="1">
+                            <item row="0" column="2">
                              <widget class="QSlider" name="YcminSlider">
                               <property name="orientation">
                                <enum>Qt::Horizontal</enum>
                               </property>
                              </widget>
                             </item>
-                            <item row="1" column="1">
+                            <item row="1" column="2">
                              <widget class="QSlider" name="YcmaxSlider">
                               <property name="orientation">
                                <enum>Qt::Horizontal</enum>
                               </property>
                              </widget>
                             </item>
+                            <item row="0" column="1">
+                             <spacer name="horizontalSpacer_9">
+                              <property name="orientation">
+                               <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                               <size>
+                                <width>40</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                             </spacer>
+                            </item>
                            </layout>
                           </item>
-                          <item row="2" column="0">
+                          <item row="2" column="1">
                            <layout class="QGridLayout" name="gridLayout_zcut">
                             <item row="0" column="0">
                              <widget class="QCheckBox" name="ZCutCB">
@@ -920,21 +968,73 @@ You can also resize the box by Ctrl + left mouse click.</string>
                               </property>
                              </widget>
                             </item>
-                            <item row="0" column="1">
+                            <item row="0" column="2">
                              <widget class="QSlider" name="ZcminSlider">
                               <property name="orientation">
                                <enum>Qt::Horizontal</enum>
                               </property>
                              </widget>
                             </item>
-                            <item row="1" column="1">
+                            <item row="1" column="2">
                              <widget class="QSlider" name="ZcmaxSlider">
                               <property name="orientation">
                                <enum>Qt::Horizontal</enum>
                               </property>
                              </widget>
                             </item>
+                            <item row="0" column="1">
+                             <spacer name="horizontalSpacer_10">
+                              <property name="orientation">
+                               <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                               <size>
+                                <width>40</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                             </spacer>
+                            </item>
                            </layout>
+                          </item>
+                          <item row="3" column="1">
+                           <spacer name="verticalSpacer_3">
+                            <property name="orientation">
+                             <enum>Qt::Vertical</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                             <size>
+                              <width>20</width>
+                              <height>1</height>
+                             </size>
+                            </property>
+                           </spacer>
+                          </item>
+                          <item row="0" column="0">
+                           <spacer name="horizontalSpacer_4">
+                            <property name="orientation">
+                             <enum>Qt::Horizontal</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                             <size>
+                              <width>40</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                           </spacer>
+                          </item>
+                          <item row="0" column="2">
+                           <spacer name="horizontalSpacer_11">
+                            <property name="orientation">
+                             <enum>Qt::Horizontal</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                             <size>
+                              <width>40</width>
+                              <height>20</height>
+                             </size>
+                            </property>
+                           </spacer>
                           </item>
                          </layout>
                         </widget>
@@ -942,14 +1042,17 @@ You can also resize the box by Ctrl + left mouse click.</string>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QCheckBox" name="nutateButton">
-                       <property name="text">
-                        <string>Nutate</string>
+                      <spacer name="verticalSpacer_5">
+                       <property name="orientation">
+                        <enum>Qt::Vertical</enum>
                        </property>
-                       <property name="checkable">
-                        <bool>true</bool>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>20</width>
+                         <height>40</height>
+                        </size>
                        </property>
-                      </widget>
+                      </spacer>
                      </item>
                      <item>
                       <widget class="QGroupBox" name="compartmentSelectGroupBox">
@@ -965,12 +1068,21 @@ You can also resize the box by Ctrl + left mouse click.</string>
                          <height>196</height>
                         </size>
                        </property>
+                       <property name="font">
+                        <font>
+                         <weight>50</weight>
+                         <bold>false</bold>
+                        </font>
+                       </property>
                        <property name="title">
                         <string>Compartment Map</string>
                        </property>
                        <layout class="QVBoxLayout" name="verticalLayout_8">
                         <item>
                          <layout class="QGridLayout" name="gridLayout">
+                          <item row="1" column="0">
+                           <widget class="QComboBox" name="compartmentMapComboBox"/>
+                          </item>
                           <item row="0" column="0">
                            <widget class="CompartmentMapWidget" name="compartmentMapWidget" native="true">
                             <property name="minimumSize">
@@ -980,9 +1092,6 @@ You can also resize the box by Ctrl + left mouse click.</string>
                              </size>
                             </property>
                            </widget>
-                          </item>
-                          <item row="1" column="0">
-                           <widget class="CompartmentMapComboBox" name="compartmentMapComboBox"/>
                           </item>
                          </layout>
                         </item>
@@ -1568,11 +1677,6 @@ You can also resize the box by Ctrl + left mouse click.</string>
    <extends>QWidget</extends>
    <header location="global">../neuron_annotator/gui/CompartmentMapWidget.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>CompartmentMapComboBox</class>
-   <extends>QComboBox</extends>
-   <header>../neuron_annotator/gui/CompartmentMapComboBox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

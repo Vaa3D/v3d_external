@@ -79,17 +79,17 @@ void CompartmentMapWidget::initializeGL()
         //compartmentList.clear();
         //compartmentList<<QString("All On")<<QString("All Off");
 
-        pCompartmentComboBox->addItem("All On", true);
-        pCompartmentComboBox->addItem("All Off", false);
-        for(int i=0; i<listLabelSurf.size(); i++)
-        {
-            //compartmentList<<listLabelSurf[i].name;
+//        pCompartmentComboBox->addItem("All On", true);
+//        pCompartmentComboBox->addItem("All Off", false);
+//        for(int i=0; i<listLabelSurf.size(); i++)
+//        {
+//            //compartmentList<<listLabelSurf[i].name;
 
-            pCompartmentComboBox->addItem(listLabelSurf[i].name, true);
-        }
-        //pCompartmentComboBox->addItems(compartmentList);
+//            pCompartmentComboBox->addItem(listLabelSurf[i].name, true);
+//        }
+//        //pCompartmentComboBox->addItems(compartmentList);
 
-        QStandardItemModel *model = new QStandardItemModel;
+        model = new QStandardItemModel;
 
         QStandardItem *item = new QStandardItem("All On");
         item->setCheckable( true );
@@ -197,7 +197,7 @@ void CompartmentMapWidget::switchCompartment(int num)
     update();
 }
 
-void CompartmentMapWidget::setComboBox(CompartmentMapComboBox *compartmentComboBox)
+void CompartmentMapWidget::setComboBox(QComboBox *compartmentComboBox)
 {
     pCompartmentComboBox = compartmentComboBox;
 
@@ -205,6 +205,7 @@ void CompartmentMapWidget::setComboBox(CompartmentMapComboBox *compartmentComboB
     //pCompartmentComboBox->setStyleSheet(styleSheet);
 
     listView = (QListView *)pCompartmentComboBox->view();
+    listView->setAlternatingRowColors(true);
 
 //    pCompartmentComboBox->setModel(m_lw->model());
 //    pCompartmentComboBox->setView(m_lw);
@@ -213,5 +214,37 @@ void CompartmentMapWidget::setComboBox(CompartmentMapComboBox *compartmentComboB
 
 void CompartmentMapWidget::modelItemChanged( QStandardItem *item)
 {
+    int num = model->indexFromItem(item).row();
 
+    listLabelSurf = ((Renderer_tex2 *)renderer)->getListLabelSurf();
+
+    if(num==0) // all on
+    {
+        for(int i=0; i<listLabelSurf.size(); i++)
+        {
+            listLabelSurf[i].on = true;
+        }
+    }
+    else if(num==1) // all off
+    {
+        for(int i=0; i<listLabelSurf.size(); i++)
+        {
+            listLabelSurf[i].on = false;
+        }
+    }
+    else
+    {
+        if(item->checkState() == Qt::Checked)
+        {
+            listLabelSurf[num-2].on = false;
+        }
+        else
+        {
+            listLabelSurf[num-2].on = false;
+        }
+    }
+
+    ((Renderer_tex2 *)renderer)->setListLabelSurf(listLabelSurf);
+
+    update();
 }

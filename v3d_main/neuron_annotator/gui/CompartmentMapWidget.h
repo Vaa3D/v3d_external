@@ -18,7 +18,7 @@ public:
 
 public:
     void loadAtlas();
-    void setComboBox(CompartmentMapComboBox *compartmentComboBox);
+    void setComboBox(QComboBox *compartmentComboBox);
     void setCurrentIndex(int row, bool flag);
 
 public slots:
@@ -41,8 +41,9 @@ protected:
     
 public:
     QList <LabelSurf> listLabelSurf; // labelfield surf
-    CompartmentMapComboBox *pCompartmentComboBox;
+    QComboBox *pCompartmentComboBox;
 
+    QStandardItemModel *model;
     QListView *listView;
 
 //    QList <Triangle*> list_listTriangle;
