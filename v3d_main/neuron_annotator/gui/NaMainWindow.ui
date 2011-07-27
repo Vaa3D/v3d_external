@@ -1081,7 +1081,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                         <item>
                          <layout class="QGridLayout" name="gridLayout">
                           <item row="1" column="0">
-                           <widget class="QComboBox" name="compartmentMapComboBox"/>
+                           <widget class="CompartmentMapComboBox" name="compartmentMapComboBox"/>
                           </item>
                           <item row="0" column="0">
                            <widget class="CompartmentMapWidget" name="compartmentMapWidget" native="true">
@@ -1677,6 +1677,11 @@ You can also resize the box by Ctrl + left mouse click.</string>
    <extends>QWidget</extends>
    <header location="global">../neuron_annotator/gui/CompartmentMapWidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CompartmentMapComboBox</class>
+   <extends>QComboBox</extends>
+   <header>../neuron_annotator/gui/CompartmentMapComboBox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

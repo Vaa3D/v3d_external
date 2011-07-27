@@ -18,12 +18,11 @@ public:
 
 public:
     void loadAtlas();
-    void setComboBox(QComboBox *compartmentComboBox);
+    void setComboBox(CompartmentMapComboBox *compartmentComboBox);
     void setCurrentIndex(int row, bool flag);
 
 public slots:
     void switchCompartment(int num);
-    void modelItemChanged(QStandardItem *item);
 
 protected:
     virtual void initializeGL();
@@ -41,10 +40,7 @@ protected:
     
 public:
     QList <LabelSurf> listLabelSurf; // labelfield surf
-    QComboBox *pCompartmentComboBox;
-
-    QStandardItemModel *model;
-    QListView *listView;
+    CompartmentMapComboBox *pCompartmentComboBox;
 
 //    QList <Triangle*> list_listTriangle;
 //    QList <GLuint> list_glistLabel;

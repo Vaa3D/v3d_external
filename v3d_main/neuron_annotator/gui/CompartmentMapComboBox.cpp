@@ -23,7 +23,7 @@ public:
         opt.rect = option.rect;
         
         // draw item data as CheckBox
-        style->drawControl(QStyle::CE_CheckBox,&opt,painter);
+        style->drawControl(QStyle::CE_CheckBox, &opt, painter);
     }
     
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -116,6 +116,7 @@ void CompartmentMapComboBox::paintEvent(QPaintEvent *)
 void CompartmentMapComboBox::wheelEvent(QWheelEvent *e)
 {
 }
+
 
 void CompartmentMapComboBox::SetDisplayText(QString text)
 {

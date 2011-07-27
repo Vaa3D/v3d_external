@@ -76,52 +76,12 @@ void CompartmentMapWidget::initializeGL()
 
         listLabelSurf = ((Renderer_tex2 *)renderer)->getListLabelSurf();
 
-        //compartmentList.clear();
-        //compartmentList<<QString("All On")<<QString("All Off");
-
-//        pCompartmentComboBox->addItem("All On", true);
-//        pCompartmentComboBox->addItem("All Off", false);
-//        for(int i=0; i<listLabelSurf.size(); i++)
-//        {
-//            //compartmentList<<listLabelSurf[i].name;
-
-//            pCompartmentComboBox->addItem(listLabelSurf[i].name, true);
-//        }
-//        //pCompartmentComboBox->addItems(compartmentList);
-
-        model = new QStandardItemModel;
-
-        QStandardItem *item = new QStandardItem("All On");
-        item->setCheckable( true );
-        model->appendRow( item );
-
-        item = new QStandardItem("All Off");
-        item->setCheckable( false );
-        model->appendRow( item );
-
+        pCompartmentComboBox->addItem("All On", true);
+        pCompartmentComboBox->addItem("All Off", false);
         for(int i=0; i<listLabelSurf.size(); i++)
         {
-            QStandardItem *item = new QStandardItem(listLabelSurf[i].name);
-            item->setCheckable( true );
-            model->appendRow( item );
+            pCompartmentComboBox->addItem(listLabelSurf[i].name, true);
         }
-
-        listView->setModel( model );
-
-        connect( model, SIGNAL( itemChanged( QStandardItem * )), this, SLOT( modelItemChanged( QStandardItem * )));
-
-//        QListWidgetItem *lwi = new QListWidgetItem("All On");
-//        lwi->setFlags(lwi->flags() & Qt::ItemIsUserCheckable);
-//        m_lw->addItem(lwi);
-//        lwi = new QListWidgetItem("All Off");
-//        lwi->setFlags(lwi->flags() & Qt::ItemIsUserCheckable);
-//        m_lw->addItem(lwi);
-//        for(int i=0; i<listLabelSurf.size(); i++)
-//        {
-//            lwi = new QListWidgetItem(listLabelSurf[i].name);
-//            lwi->setFlags(Qt::ItemIsUserCheckable);
-//            m_lw->addItem(lwi);
-//        }
 
         update();
     }
@@ -197,54 +157,11 @@ void CompartmentMapWidget::switchCompartment(int num)
     update();
 }
 
-void CompartmentMapWidget::setComboBox(QComboBox *compartmentComboBox)
+void CompartmentMapWidget::setComboBox(CompartmentMapComboBox *compartmentComboBox)
 {
     pCompartmentComboBox = compartmentComboBox;
 
     //QString styleSheet = "QComboBox QListView{color:black; background-color:white; selection-color:yellow; selection-background-color:blue;}";
     //pCompartmentComboBox->setStyleSheet(styleSheet);
 
-    listView = (QListView *)pCompartmentComboBox->view();
-    listView->setAlternatingRowColors(true);
-
-//    pCompartmentComboBox->setModel(m_lw->model());
-//    pCompartmentComboBox->setView(m_lw);
-
-}
-
-void CompartmentMapWidget::modelItemChanged( QStandardItem *item)
-{
-    int num = model->indexFromItem(item).row();
-
-    listLabelSurf = ((Renderer_tex2 *)renderer)->getListLabelSurf();
-
-    if(num==0) // all on
-    {
-        for(int i=0; i<listLabelSurf.size(); i++)
-        {
-            listLabelSurf[i].on = true;
-        }
-    }
-    else if(num==1) // all off
-    {
-        for(int i=0; i<listLabelSurf.size(); i++)
-        {
-            listLabelSurf[i].on = false;
-        }
-    }
-    else
-    {
-        if(item->checkState() == Qt::Checked)
-        {
-            listLabelSurf[num-2].on = false;
-        }
-        else
-        {
-            listLabelSurf[num-2].on = false;
-        }
-    }
-
-    ((Renderer_tex2 *)renderer)->setListLabelSurf(listLabelSurf);
-
-    update();
 }
