@@ -76,13 +76,18 @@ void CompartmentMapWidget::initializeGL()
 
         listLabelSurf = ((Renderer_tex2 *)renderer)->getListLabelSurf();
 
-        compartmentList.clear();
-        compartmentList<<QString("All On")<<QString("All Off");
+        //compartmentList.clear();
+        //compartmentList<<QString("All On")<<QString("All Off");
+
+        pCompartmentComboBox->addItem("All On", true);
+        pCompartmentComboBox->addItem("All Off", false);
         for(int i=0; i<listLabelSurf.size(); i++)
         {
-            compartmentList<<listLabelSurf[i].name;
+            //compartmentList<<listLabelSurf[i].name;
+
+            pCompartmentComboBox->addItem(listLabelSurf[i].name, true);
         }
-        pCompartmentComboBox->addItems(compartmentList);
+        //pCompartmentComboBox->addItems(compartmentList);
 
 //        QListWidgetItem *lwi = new QListWidgetItem("All On");
 //        lwi->setFlags(lwi->flags() & Qt::ItemIsUserCheckable);

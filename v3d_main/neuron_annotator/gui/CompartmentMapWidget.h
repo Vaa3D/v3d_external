@@ -40,11 +40,8 @@ protected:
     
 public:
     QList <LabelSurf> listLabelSurf; // labelfield surf
-    QStringList compartmentList;
-
     CompartmentMapComboBox *pCompartmentComboBox;
 
-    QListWidget *m_lw;
 
 //    QList <Triangle*> list_listTriangle;
 //    QList <GLuint> list_glistLabel;

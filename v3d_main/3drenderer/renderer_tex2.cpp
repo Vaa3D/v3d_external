@@ -2346,15 +2346,15 @@ int Renderer_tex2::hitMenu(int x, int y, bool b_glwidget)
 
                 listAct.append(actViewNeuronWithReference = new QAction("view only this neuron with reference", w));
 
-                actViewNeuronWithReference->setIcon(QIcon(":/icons/neuronwbg.svg"));
+                actViewNeuronWithReference->setIcon(QIcon(":/icons/neuronwref.svg"));
                 actViewNeuronWithReference->setVisible(true);
                 actViewNeuronWithReference->setIconVisibleInMenu(true);
 
                 listAct.append(actViewNeuronWithBackgroundAndReference = new QAction("view only this neuron with background and reference", w));
 
-                actViewNeuronWithReference->setIcon(QIcon(":/icons/neuronwbg.svg"));
-                actViewNeuronWithReference->setVisible(true);
-                actViewNeuronWithReference->setIconVisibleInMenu(true);
+                actViewNeuronWithBackgroundAndReference->setIcon(QIcon(":/icons/neuronwbgref.svg"));
+                actViewNeuronWithBackgroundAndReference->setVisible(true);
+                actViewNeuronWithBackgroundAndReference->setIconVisibleInMenu(true);
 
             }
 

@@ -21,6 +21,7 @@ public:
     virtual void paintEvent(QPaintEvent *);
     void SetDisplayText(QString text);
     QString GetDisplayText() const;
+    virtual void wheelEvent ( QWheelEvent * e );
     
 private:
     QString m_DisplayText;

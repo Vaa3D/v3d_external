@@ -17,5 +17,7 @@
 	 <file>icons/trace.svg</file>
      <file>icons/neuronwbg.svg</file>
      <file>icons/neuronwobg.svg</file>
+     <file>icons/neuronwref.svg</file>
+     <file>icons/neuronwbgref.svg</file>
  </qresource>
  </RCC>

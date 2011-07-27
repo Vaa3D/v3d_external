@@ -111,6 +111,10 @@ void CompartmentMapComboBox::paintEvent(QPaintEvent *)
     painter.drawControl(QStyle::CE_ComboBoxLabel, opt);
 }
 
+void CompartmentMapComboBox::wheelEvent(QWheelEvent *e)
+{
+}
+
 void CompartmentMapComboBox::SetDisplayText(QString text)
 {
     m_DisplayText = text;
