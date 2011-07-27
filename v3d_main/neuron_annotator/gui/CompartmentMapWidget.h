@@ -23,6 +23,7 @@ public:
 
 public slots:
     void switchCompartment(int num);
+    void modelItemChanged(QStandardItem *item);
 
 protected:
     virtual void initializeGL();
@@ -42,6 +43,7 @@ public:
     QList <LabelSurf> listLabelSurf; // labelfield surf
     CompartmentMapComboBox *pCompartmentComboBox;
 
+    QListView *listView;
 
 //    QList <Triangle*> list_listTriangle;
 //    QList <GLuint> list_glistLabel;

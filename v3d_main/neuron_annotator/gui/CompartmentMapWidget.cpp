@@ -89,6 +89,27 @@ void CompartmentMapWidget::initializeGL()
         }
         //pCompartmentComboBox->addItems(compartmentList);
 
+        QStandardItemModel *model = new QStandardItemModel;
+
+        QStandardItem *item = new QStandardItem("All On");
+        item->setCheckable( true );
+        model->appendRow( item );
+
+        item = new QStandardItem("All Off");
+        item->setCheckable( false );
+        model->appendRow( item );
+
+        for(int i=0; i<listLabelSurf.size(); i++)
+        {
+            QStandardItem *item = new QStandardItem(listLabelSurf[i].name);
+            item->setCheckable( true );
+            model->appendRow( item );
+        }
+
+        listView->setModel( model );
+
+        connect( model, SIGNAL( itemChanged( QStandardItem * )), this, SLOT( modelItemChanged( QStandardItem * )));
+
 //        QListWidgetItem *lwi = new QListWidgetItem("All On");
 //        lwi->setFlags(lwi->flags() & Qt::ItemIsUserCheckable);
 //        m_lw->addItem(lwi);
@@ -183,8 +204,14 @@ void CompartmentMapWidget::setComboBox(CompartmentMapComboBox *compartmentComboB
     //QString styleSheet = "QComboBox QListView{color:black; background-color:white; selection-color:yellow; selection-background-color:blue;}";
     //pCompartmentComboBox->setStyleSheet(styleSheet);
 
+    listView = (QListView *)pCompartmentComboBox->view();
 
 //    pCompartmentComboBox->setModel(m_lw->model());
 //    pCompartmentComboBox->setView(m_lw);
+
+}
+
+void CompartmentMapWidget::modelItemChanged( QStandardItem *item)
+{
 
 }

@@ -4,7 +4,9 @@
 class CompartmentMapComboBoxDelegate : public QItemDelegate
 {
 public:
-    CompartmentMapComboBoxDelegate(QObject *parent) : QItemDelegate(parent){}
+    CompartmentMapComboBoxDelegate(QObject *parent) : QItemDelegate(parent)
+    {
+    }
     
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
     {
