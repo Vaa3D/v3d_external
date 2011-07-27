@@ -1,14 +1,14 @@
 CC = g++ -g
-CC_FLAGS += -I../../../../v3d_main/basic_c_fun -I../../../../v3d_main/common_lib/include -I../../v3d_convert
+CC_FLAGS += -I../../../../v3d_main/basic_c_fun -I../../../../v3d_main/common_lib/include 
 LIBS +=  -L../../../../v3d_main/common_lib/lib -lv3dtiff
 
 SHARED_FUNC_DIR = ../../../../v3d_main/basic_c_fun/
 
-COMMON_OBJS = basic_memory.o stackutil.o mg_image_lib.o mg_utilities.o  mark_detector.o mark_io.o gaussian_blur.o 
+COMMON_OBJS = main.o basic_memory.o stackutil.o mg_image_lib.o mg_utilities.o  basic_types.o utils.o gaussian_blur.o 
 
 ## main
-partial_align: main.o ${COMMON_OBJS}
-	${CC}  ${CC_FLAGS} main.o ${COMMON_OBJS} ${LIBS} -o partial_align
+partial_align: ${COMMON_OBJS}
+	${CC}  ${CC_FLAGS} ${COMMON_OBJS} ${LIBS} -o partial_align
 main.o : main.cpp
 	${CC} ${CC_FLAGS} -c main.cpp
 basic_memory.o : ${SHARED_FUNC_DIR}basic_memory.h ${SHARED_FUNC_DIR}basic_memory.cpp
@@ -20,12 +20,10 @@ mg_image_lib.o : ${SHARED_FUNC_DIR}mg_image_lib.h ${SHARED_FUNC_DIR}mg_image_lib
 mg_utilities.o : ${SHARED_FUNC_DIR}mg_utilities.h ${SHARED_FUNC_DIR}mg_utilities.cpp
 	${CC} ${CC_FLAGS} -c ${SHARED_FUNC_DIR}mg_utilities.cpp
 
-mark_detector_driver.o: mark_detector_driver.cpp
-	${CC} ${CC_FLAGS} -c mark_detector_driver.cpp
-mark_detector.o: mark_detector.cpp
-	${CC} ${CC_FLAGS} -c mark_detector.cpp 
-mark_io.o: mark_io.cpp
-	${CC} ${CC_FLAGS} -c mark_io.cpp
+basic_types.o: basic_types.cpp basic_types.h
+	${CC} ${CC_FLAGS} -c basic_types.cpp 
+utils.o: utils.cpp utils.h
+	${CC} ${CC_FLAGS} -c utils.cpp
 gaussian_blur.o: ../../v3d_convert/gaussian_blur.h ../../v3d_convert/gaussian_blur.cpp
 	${CC} ${CC_FLAGS} -c ../../v3d_convert/gaussian_blur.cpp
 
