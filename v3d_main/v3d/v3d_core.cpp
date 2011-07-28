@@ -1307,7 +1307,7 @@ bool XFormView::internal_only_imgplane_op()
 #if USE_CHANNEL_TABLE
 	if (! (imgData->getCDim()==1 && (Ctype>=colorPseudoMaskColor)) )
 	{
-		emit colorChanged(this->Ptype); // signal indirectly connected to ChannelTable::updateXFormWidget(int plane)
+		emit colorChanged(this->Ptype); // signal indirectly connected to ChannelTabWidget::updateXFormWidget(int plane)
 		return true;                    // skip old code
 	}
 #endif
@@ -2784,7 +2784,7 @@ void XFormWidget::initialize()
     yz_view = NULL;
     zx_view = NULL;
 
-    channelTableWidget = NULL; //110722 RZC
+    channelTabWidget = NULL; //110722 RZC
 
 	disp_zoom=1; //081114
 	b_use_dispzoom=false;
@@ -3382,15 +3382,15 @@ void XFormWidget::disconnectColorGUI()
 }
 void XFormWidget::setColorGUI()
 {
-	if (channelTableWidget)  channelTableWidget->linkXFormWidgetChannel();
+	if (channelTabWidget)  channelTabWidget->linkXFormWidgetChannel();
 }
 QWidget* XFormWidget::createColorGUI()
 {
 	(colorMapDispType = new QRadioButton(this))->hide(); //just for XFormWidget::switchMaskColormap()
 
-	if (channelTableWidget = new ChannelTable(this))
-		connect(this, SIGNAL(colorChanged(int)), channelTableWidget, SLOT(updateXFormWidget(int)));
-	return channelTableWidget;;
+	if (channelTabWidget = new ChannelTabWidget(this))
+		connect(this, SIGNAL(colorChanged(int)), channelTabWidget, SLOT(updateXFormWidget(int)));
+	return channelTabWidget;;
 }
 
 #else // old code
@@ -4646,7 +4646,7 @@ void XFormWidget::connectEventSignals()
 	connect(this, SIGNAL(external_validZSliceChanged(long)), this, SLOT(updateTriview()), Qt::AutoConnection); //, Qt::DirectConnection);
 
 
-	//110722 RZC, connect signal for ChannelTable::updateXFormWidget(int plane)
+	//110722 RZC, connect signal for ChannelTabWidget::updateXFormWidget(int plane)
 	connect(xy_view, SIGNAL(colorChanged(int)), this, SIGNAL(colorChanged(int)));
 	connect(yz_view, SIGNAL(colorChanged(int)), this, SIGNAL(colorChanged(int)));
 	connect(zx_view, SIGNAL(colorChanged(int)), this, SIGNAL(colorChanged(int)));
@@ -4930,7 +4930,7 @@ void XFormWidget::setColorAll2GrayType()
 
 void XFormWidget::setColorMapDispType(ImageDisplayColorType Ctype)
 {
-	this->Ctype = Ctype; //110725 RZC, for switching back to colorRGB by ChannelTable::updateXFormWidget
+	this->Ctype = Ctype; //110725 RZC, for switching back to colorRGB by ChannelTabWidget::updateXFormWidget
     //Ctype = colorPseudoMaskColor;
 	xy_view->changeColorType(Ctype);
 	yz_view->changeColorType(Ctype);

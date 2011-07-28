@@ -127,7 +127,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #define DELETE_AND_ZERO(p)	{ if ((p)!=NULL) delete (p); (p) = NULL; }
 #define Q_CSTR(qs)  ( (qs).toStdString().c_str() )
-#define QCOLOR_BGRA8(bgra)  ( QColor::fromRgba((unsigned int)(bgra)) )
+#define QCOLOR_BGRA8(bgra)  ( QColor::fromRgba((unsigned int)(bgra)) )  //QRgb = #AArrGGbb = BGRA8
 
 #define MESSAGE(s) \
 {\
@@ -249,6 +249,8 @@ inline RGBA8 RGBA8FromQColor(QColor qc)
 #define VCOLOR(rgba8)   qVariantFromValue(QColorFromRGBA8( rgba8 ))
 #define QCOLORV(var)    (qVariantValue<QColor>( var ))
 #define RGBA8V(var)     RGBA8FromQColor(qVariantValue<QColor>( var ))
+
+#define TURNOFF_ITEM_EDITOR()  QItemEditorFactory::setDefaultFactory( new QItemEditorFactory(*QItemEditorFactory::defaultFactory()) )
 
 
 //===================================================================================================================

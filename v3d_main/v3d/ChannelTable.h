@@ -382,15 +382,45 @@ template <class T> QPixmap copyRaw2QPixmap_Slice(
 ///////////////////////////////////////////////////////////////////////////////////////////
 //widget for control channel's color
 
-class ChannelTable : public QTabWidget //QWidget
+class ChannelTable;
+class BrightenBox;
+
+class ChannelTabWidget : public QTabWidget //QWidget
+{
+    Q_OBJECT;
+	XFormWidget* xform;
+	QTabWidget* tabOptions;
+	ChannelTable *channelPage;
+	BrightenBox *brightPage;
+	void createFirst();
+
+public:
+	ChannelTabWidget(QWidget* parent=0) :QTabWidget(parent)
+	{
+		xform = (XFormWidget*)parent;
+		tabOptions = 0;
+		channelPage =0;
+		brightPage =0;
+		createFirst();
+	};
+	virtual ~ChannelTabWidget() {};
+
+public slots:
+	void updateXFormWidget(int plane=-1);	//called by linkXFormWidgetChannel
+	void linkXFormWidgetChannel();			//link updated channels of XFormWidget
+};
+
+
+class ChannelTable : public QWidget
 {
     Q_OBJECT;
 
 public:
-	ChannelTable(QWidget* parent=0) :QTabWidget(parent) //QWidget(parent)
+	ChannelTable(XFormWidget* xform, QWidget* parent=0) :QWidget(parent)
 	{
-		xform = (XFormWidget*)parent;
-		init_member();  setItemEditor();  createFirst();
+		init_member();
+		this->xform = xform; /////
+		linkXFormWidgetChannel();
 		connect( this,SIGNAL(channelTableChanged()), this, SLOT(updateXFormWidget()) );
 	};
 	virtual ~ChannelTable() {};
@@ -399,9 +429,10 @@ signals:
 	void channelTableChanged(); //trigger to update XFormWidget
 
 public slots:
-	void updateXFormWidget(int plane=-1);  //called by linkXFormWidgetChannel
-	void linkXFormWidgetChannel(); //link updated channel
+	void updateXFormWidget(int plane=-1);	//called by linkXFormWidgetChannel
+	void linkXFormWidgetChannel();			//link updated channel
 	void setChannelColorDefault(int N);
+	int rowCount() {return (table)? table->rowCount() :0; };
 
 protected slots:
 	void pressedClickHandler(int row, int col);
@@ -423,8 +454,6 @@ protected:
 	QList<Channel> listChannel;
 
 	XFormWidget* xform;
-	QTabWidget *tabOptions;
-	QWidget *boxWidget;
 	QGridLayout *boxLayout;
 	QTableWidget *table;
 	QRadioButton *radioButton_Max, *radioButton_Sum, *radioButton_Mean, *radioButton_Index;
@@ -432,8 +461,6 @@ protected:
 	QPushButton *pushButton_Reset;
 	void init_member()
 	{
-		tabOptions=0;
-		boxWidget=0;
 		boxLayout=0;
 		table=0;
 		radioButton_Max=radioButton_Sum=radioButton_Mean=radioButton_Index=0;
@@ -441,9 +468,7 @@ protected:
 		pushButton_Reset=0;
 	}
 
-	void setItemEditor();
-	void createFirst();      // no table
-	void createNewTable();  // called by createFirst & connectXFormWidgetChannel
+	void createNewTable();  // called by linkXFormWidgetChannel
 	void setMixOpControls();     //called by createNewTable
 	void connectMixOpSignals();  //called by createNewTable
 
@@ -455,6 +480,22 @@ protected:
 
 	QTableWidget* createTableChannel();
 	void updateTableChannel();
+
+};
+
+class BrightenBox : public QWidget
+{
+    Q_OBJECT;
+
+public:
+	BrightenBox(XFormWidget* xform, QWidget* parent=0) :QWidget(parent)
+	{
+//		init_member();
+//		this->xform = xform; /////
+//		linkXFormWidgetChannel();
+//		connect( this,SIGNAL(channelTableChanged()), this, SLOT(updateXFormWidget()) );
+	};
+	virtual ~BrightenBox() {};
 
 };
 

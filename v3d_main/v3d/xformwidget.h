@@ -43,7 +43,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 class V3dR_MainWindow;
 class V3dR_GLWidget;
 class MainWindow;
-class ChannelTable;
+class ChannelTabWidget;
 
 struct iDrawExternalParameter
 {
@@ -220,7 +220,7 @@ private:
     XFormView *yz_view; //change in X
     XFormView *zx_view; //change in Y
 
-    ChannelTable *channelTableWidget;//110722 RZC
+    ChannelTabWidget *channelTabWidget;//110722 RZC
 
 	MyTextBrowser *focusPointFeatureWidget;
 

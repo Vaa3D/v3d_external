@@ -126,6 +126,59 @@ RGB8 lookup_mix(vector<unsigned char>& mC, vector< vector<RGBA8> >& mLut, int op
 
 //////////////////////////////////////////////////////////////////////
 
+void ChannelTabWidget::updateXFormWidget(int plane)	//called by linkXFormWidgetChannel
+{
+	if (channelPage)  channelPage->updateXFormWidget(plane);
+}
+
+void ChannelTabWidget::linkXFormWidgetChannel()			//link updated channels of XFormWidget
+{
+	if (channelPage) //delete whole box Tab include all sub widget
+	{
+		QWidget* old = channelPage;
+		old->deleteLater();
+	}
+	//so need re-create all sub widget again
+
+	channelPage = new ChannelTable(xform, this); // will call ChannelTabWidget::linkXFormWidgetChannel()
+
+	//if (tabOptions)   tabOptions->clear();
+	if (tabOptions)
+	{
+		int i;
+		QString qs;
+		i= tabOptions->insertTab(0, channelPage,		qs =QString("Channels (%1)").arg(channelPage->rowCount()));
+		tabOptions->setTabToolTip(i, qs);
+		tabOptions->setCurrentIndex(0); ///////
+	}
+}
+
+void ChannelTabWidget::createFirst()
+{
+	tabOptions = this; //new QTabWidget(this); //AutoTabWidget(this);
+//	QVBoxLayout *allLayout = new QVBoxLayout(this);
+//	allLayout->addWidget(tabOptions);
+//	allLayout->setContentsMargins(0,0,0,0); //remove margins
+
+	this->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum);
+	this->setFixedHeight(200); //200 is best for 4 rows
+
+	linkXFormWidgetChannel();
+
+	brightPage = new BrightenBox(xform, this);
+	if (tabOptions)
+	{
+		int i;
+		QString qs;
+		i= tabOptions->insertTab(1, brightPage,		qs =QString("Brighten"));
+		tabOptions->setTabToolTip(i, qs);
+	}
+
+	if (tabOptions) tabOptions->setCurrentIndex(0);
+}
+
+//////////////////////////////////////////////////////////////////////
+
 void ChannelTable::updateXFormWidget(int plane) // plane<=0 for all planes
 {
 	qDebug("ChannelTable::updateXFormWidget( %d )", plane);
@@ -222,15 +275,20 @@ void ChannelTable::linkXFormWidgetChannel()
 {
 	qDebug("ChannelTable::linkXFormWidgetChannel");
 
-	if (! xform) return;
-	My4DImage* img4d = xform->getImageData();
-	if (! img4d)
+	int N = 0;
+	if ( xform)
+	{
+		My4DImage* img4d = xform->getImageData();
+		if ( img4d)
+		{
+			N = img4d->getCDim();
+			qDebug(" CDim = %d", N);
+		}
+	}
+	if (N==0)
 	{
 		qDebug(" no image data now.");
-		return;
 	}
-	int N = img4d->getCDim();
-	qDebug(" CDim = %d", N);
 
 	setChannelColorDefault(N);
 
@@ -244,33 +302,12 @@ void ChannelTable::linkXFormWidgetChannel()
 	//	ch.n = 4; ch.color = XYZW(255,255,255,255); listChannel << ch;
 
 	createNewTable();
-
 }
 
-//////////////////////////////////////////////////////////////////////
-
-void ChannelTable::createFirst()
-{
-	tabOptions = this; //new QTabWidget(this); //AutoTabWidget(this);
-//	QVBoxLayout *allLayout = new QVBoxLayout(this);
-//	allLayout->addWidget(tabOptions);
-//	allLayout->setContentsMargins(0,0,0,0); //remove margins
-
-	createNewTable(); //must do it //create table & add to tabOptions
-
-	this->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum);
-	this->setFixedHeight(200); //200 is best for 4 rows
-}
 
 void ChannelTable::createNewTable()
 {
-	if (boxWidget) //delete whole box Tab include all sub widget
-	{
-		QWidget* old = boxWidget;
-		old->deleteLater();
-	}
-	//so need re-create all sub widget again
-
+	TURNOFF_ITEM_EDITOR();
 	table = createTableChannel();
 
 	radioButton_Max = new QRadioButton("Max");
@@ -283,13 +320,13 @@ void ChannelTable::createNewTable()
 	checkBox_B = new QCheckBox("B");
 	pushButton_Reset = new QPushButton("Reset");
 
-	QWidget* box = new QWidget();
-	QGridLayout* boxlayout = new QGridLayout(box);
+	QGridLayout* boxlayout = new QGridLayout(this);
 	QGridLayout* oplayout = new QGridLayout();
 	oplayout->addWidget(radioButton_Max,	1,0, 1,1);
 	oplayout->addWidget(radioButton_Sum,	2,0, 1,1);
 	oplayout->addWidget(radioButton_Mean,	3,0, 1,1);
 	oplayout->addWidget(radioButton_Index,	4,0, 1,1);
+
 	const int nrow = 4;
 	boxlayout->addLayout(oplayout, 			1,16, nrow,4);
 	boxlayout->addWidget(table,				1,0, nrow,16); //at least need a empty table
@@ -299,17 +336,7 @@ void ChannelTable::createNewTable()
 	boxlayout->addWidget(checkBox_B,		nrow+1,6, 1,3);
 	boxlayout->addWidget(pushButton_Reset,	nrow+1,15, 1,5);
 	boxlayout->setContentsMargins(0,0,0,0); //remove margins
-	boxWidget = box;
 	boxLayout = boxlayout; //for replacing new table in layout
-
-	if (tabOptions)   tabOptions->clear();
-	if (tabOptions)
-	{
-		int i;
-		QString qs;
-		i= tabOptions->addTab(box,		qs =QString("Channels (%1)").arg(table->rowCount()));
-		tabOptions->setTabToolTip(i, qs);
-	}
 
 	//	if (table)
 	//	{
@@ -482,9 +509,9 @@ void ChannelTable::updatedContent(QTableWidget* t) //090826
 
 QTableWidget* ChannelTable::currentTableWidget()
 {
-	if (! tabOptions) return 0;
-
-	int k = 1 + (tabOptions->currentIndex());
+//	if (! tabOptions) return 0;
+//
+//	int k = 1 + (tabOptions->currentIndex());
 
 	return table;
 }
@@ -492,14 +519,6 @@ QTableWidget* ChannelTable::currentTableWidget()
 
 #define UPATE_ITEM_ICON(curItem)   curItem->setData(Qt::DecorationRole, curItem->data(0))
 
-
-void ChannelTable::setItemEditor()
-{
-	//::setItemEditor();
-
-	// turn off item editor
-	QItemEditorFactory::setDefaultFactory( new QItemEditorFactory(*QItemEditorFactory::defaultFactory()) );
-}
 
 void ChannelTable::pressedClickHandler(int i, int j)
 {
