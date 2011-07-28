@@ -22,20 +22,33 @@ void computeGMI(const NeuronTree & nt, double * gmi)
 	
 	int siz = list.size();
 	double** b = new double*[siz];
+	double avgR = 0;
 	for (int i=0;i<siz;i++)
 	{
 		//here I only kept x,y,z & pn info because others are not used
 		b[i] = new double[4];
-		b[i][0] = list.at(i).x; centerpos[0] += b[i][0];
-		b[i][1] = list.at(i).y; centerpos[1] += b[i][1];
-		b[i][2] = list.at(i).z; centerpos[2] += b[i][2];
-		if (list.at(i).pn<0) b[i][3] = -1;
+		b[i][0] = list.at(i).x; 
+		b[i][1] = list.at(i).y; 
+		b[i][2] = list.at(i).z; 
+		avgR += list.at(i).r;
+		if (list.at(i).pn<0) {
+			b[i][3] = -1;
+		}
 		else
 			b[i][3] = LUT.value(list.at(i).pn);
+		//b[i][4] = list.at(i).r;
 	}
+	avgR /= siz;
+	gmi[13] = avgR;
+
+	double m000 = compute_moments_neuron(b,siz,0,0,0,VOID);
+	centerpos[0] = compute_moments_neuron(b,siz,1,0,0,VOID);
+	centerpos[1] = compute_moments_neuron(b,siz,0,1,0,VOID);
+	centerpos[2] = compute_moments_neuron(b,siz,0,0,1,VOID);
 
 	for (int j=0;j<3;j++)
-		centerpos[j] /= siz;
+		centerpos[j] /= m000;
+	
 
 	compute_neuron_GMI(b,siz,centerpos,VOID,gmi);
 
@@ -57,7 +70,7 @@ void compute_neuron_GMI(double **b, int siz,  double* centerpos, double radius_t
 		for (int i=0;i<siz;i++)
 			for (int j=0;j<3;j++)
 				b[i][j] -= centerpos[j];
-	
+
 	double c000 = compute_moments_neuron(b,siz,0,0,0, radius_thres); 
 
 	double c200 = compute_moments_neuron(b,siz, 2,0,0, radius_thres); 
@@ -77,16 +90,21 @@ void compute_neuron_GMI(double **b, int siz,  double* centerpos, double radius_t
 	double c012 = compute_moments_neuron(b,siz, 0,1,2, radius_thres); 
 	double c021 = compute_moments_neuron(b,siz, 0,2,1, radius_thres); 
 	double c111 = compute_moments_neuron(b,siz, 1,1,1, radius_thres); 
-
-	//cout<<"c000:"<<c000<<"c200:"<<c200<<"c020:"<<c020<<"c002:"<<c002<<"c110:"<<c110<<"c101:"<<c101<<"c011:"<<c011<<endl;
-	//cout<<"c300:"<<c300<<"c030:"<<c030<<"c003:"<<c003<<"c120:"<<c120<<"c102:"<<c102<<"c210:"<<c210<<"c201:"<<c201<<"c012:"<<c012<<"c021:"<<c021<<"c111:"<<c111<<endl;
+/*
+	gmi[0] = (c200+c020+c002)/c000;
+	gmi[1] = (c200*c020+c020*c002+c002*c200-c101*c101-c011*c011-c110*c110)/(c000*c000);
+	gmi[2] = (c200*c020*c002+2*c110*c101*c011-c200*c011*c011-c020*c101*c101-c002*c110*c110)/(c000*c000*c000);
+	gmi[3] = (c003*c003+6*c012*c012+6*c021*c021+c030*c030+6*c102*c102+15*c111*c111-3*c102*c120+6*c120*c120-3*c021*c201+6*c102*c102-3*c003*(c021+c201)-3*c030*c210+6*c210*c210-3*c012*(c030+c210)-3*c102*c300-3*c120*c300+c300*c300)/(c000*c000);
+*/
+	//cout<<"c000:"<<c000<<"\tc200:"<<c200<<"\tc020:"<<c020<<"\tc002:"<<c002<<"\tc110:"<<c110<<"\tc101:"<<c101<<"\tc011:"<<c011<<endl;
+	//cout<<"c300:"<<c300<<"\tc030:"<<c030<<"\tc003:"<<c003<<"\tc120:"<<c120<<"\tc102:"<<c102<<"\tc210:"<<c210<<"\tc201:"<<c201<<"\tc012:"<<c012<<"\tc021:"<<c021<<"\tc111:"<<c111<<endl;
 	//feaVec(:,1) = size(b,1); 
 
 	gmi[0] = c000;
 	gmi[1] = c200+c020+c002;
 	gmi[2] = c200*c020+c020*c002+c002*c200-c101*c101-c011*c011-c110*c110; 
 	gmi[3] = c200*c020*c002-c002*c110*c110+2*c110*c101*c011-c020*c101*c101-c200*c011*c011; 
-
+	
 	double spi = sqrt(PI);
 
 	complex<double> v_0_0 ((2*spi/3)*(c200+c020+c002),0);
@@ -97,7 +115,7 @@ void compute_neuron_GMI(double **b, int siz,  double* centerpos, double radius_t
 	v_2_1 *= spi*sqrt(2.0/15); 
 	complex<double> v_2_0 (2*c002-c200-c020,0);
 	v_2_0 *= spi*sqrt(4.0/45);
-	complex<double> v_2_m1 (2*c101-2*c011);
+	complex<double> v_2_m1 (2*c101,-2*c011);
 	v_2_m1 *= spi*sqrt(2.0/15); 
 	complex<double> v_2_m2 (c200-c020,-2*c110);
 	v_2_m2 *= spi*sqrt(2.0/15);
@@ -159,7 +177,6 @@ void compute_neuron_GMI(double **b, int siz,  double* centerpos, double radius_t
 	gmi[11] = real((1/sqrt(5.0)) * (v_g31_2_m2*v_2_2 - v_g31_2_m2*v_2_1 + v_g31_2_0*v_2_0 - v_g31_2_1*v_2_m1 + v_g31_2_2*v_2_m2) / tmp);
 	gmi[12] = real((1/sqrt(5.0)) * (v_g11_2_m2*v_2_2 - v_g11_2_m2*v_2_1 + v_g11_2_0*v_2_0 - v_g11_2_1*v_2_m1 + v_g11_2_2*v_2_m2) / tmp);
 
-
 }
 
 
@@ -168,7 +185,7 @@ double compute_moments_neuron(double ** a, int siz, double p, double q, double r
 {
 	double m = 0;
 	double step0=0.1;
-	double b1[3],b2[3],c;
+	double b1[4],b2[4];
 	
 	for (int i=0;i<siz;i++)
 	{
@@ -184,17 +201,19 @@ double compute_moments_neuron(double ** a, int siz, double p, double q, double r
 		double len = sqrt(sum);
 		int K = floor(len/step0)+1;
 	
-		double xstep,ystep,zstep;
+		double xstep,ystep,zstep;//,rstep;
 		xstep = (b2[0]-b1[0])/K;
 		ystep = (b2[1]-b1[1])/K;
 		zstep = (b2[2]-b1[2])/K;
+		//rstep = (b2[4]-b1[4])/K;
 
-		double x,y,z,d;
+		double x,y,z,d;//,radius;
 		for (int k=1;k<=K;k++)
 		{
 			x = b1[0]+k*xstep;
 			y = b1[1]+k*ystep;
 			z = b1[2]+k*zstep;
+			//radius = b1[4]+k*rstep;
 			d = sqrt(x*x+y*y+z*z);
 			if (d>radius_thres) { cout<<"invalid VOID!!"<<endl; break;}
 			

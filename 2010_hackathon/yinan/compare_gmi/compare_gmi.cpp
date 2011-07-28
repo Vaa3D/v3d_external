@@ -59,11 +59,14 @@ bool Compare_gmiPlugin::dofunc(const QString & func_name, const V3DPluginArgList
 {	
 	if (func_name==tr("help"))
 	{
-		cout<<"(version 0.01) Find certain number of subjects in the input group that are most similar to a query based on geometric moment invariants."<<endl;
-		cout<<"Usage: specify swc library as input(s)"<<endl;
-		cout<<"-i <fileName1 fileName2 ...>:\ta library of swc files to perform comparison"<<endl;
-		cout<<"-o <output fileName>:\toutput file name"<<endl;
-		cout<<"-p <queryid sbjnum>:\tspecify the query id in the input lib and the number of subjects to pick up"<<endl;
+		cout<<"\n(version 0.03) Find certain number of subjects in the input group that are most similar to a query based on geometric moment invariants."<<endl;
+		cout<<"\n-x <plugin_dll_full_path>\ta string indicates the full path of a dll (for a plugin) to be launched."<<endl;
+		cout<<"-f <function_name>\t\tcompare_gmi"<<endl;
+		cout<<"-i <file>\t\t\tastring indicating the linker file that specifies the library of swc files to perform comparison"<<endl;
+		cout<<"-o <file>\t\t\tname for output result file"<<endl;
+		cout<<"-p <par1 par2>\t\t\tpar1: a number indicates the query id in the input lib.\tpar2: the number of subjects you want to pick up"<<endl;
+		cout<<"\nUsage: ./v3d -x plugins/neuron_comparison/compare_gmi/libcompare_gmi.so -f compare_gmi -i mylinker.ano -o result.txt -p 1 10"<<endl;
+		cout<<endl;
 		return true;
 	}
 	

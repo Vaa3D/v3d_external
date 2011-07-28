@@ -1,4 +1,4 @@
-#define VSIZE 13
+#define VSIZE 14
 
 #include "fcompare.h"
 #include "compute_gmi.h"
@@ -42,6 +42,7 @@ bool compare_gmi(const V3DPluginArgList & input, V3DPluginArgList & output)
 		
 	//parse parameters
 	vector<char*>* par = (vector<char*>*)(input.at(1).p);
+	
 	if (par->size()!=2)
 	{
 		cerr<<"Wrong parameter list!"<<endl;
@@ -86,11 +87,12 @@ bool compare_gmi(const V3DPluginArgList & input, V3DPluginArgList & output)
 	}
 	queryGMI = gmiList.at(queryid);
 	queryName = nameList.at(queryid);
-	//gmiList.removeAt(queryid);
-	//nameList.removeAt(queryid);
+	gmiList.removeAt(queryid);
+	nameList.removeAt(queryid);
 
 	int* sbj = new int[sbjnum];
-	bool result = rankScore(queryGMI, gmiList, sbjnum, sbj, VSIZE);
+	double* score = new double[sbjnum];
+	bool result = unitVar(queryGMI, gmiList, sbjnum, sbj, VSIZE,score);
 
 	//generate output files
 	if (result)
@@ -103,14 +105,15 @@ bool compare_gmi(const V3DPluginArgList & input, V3DPluginArgList & output)
 		myfile<<"query id:\t"<<queryid<<endl;
 		myfile<<"query name:\t"<<queryName<<endl;
 		myfile<<"pick:\t"<<sbjnum<<endl;
+		myfile<<"rank\tid\tfile name"<<"\tscore"<<endl;
 		for (int i=0;i<sbjnum;i++)
-			myfile<<sbj[i]<<"\t"<<nameList.at(sbj[i])<<endl;
+			myfile<<i+1<<"\t"<<sbj[i]<<"\t"<<nameList.at(sbj[i])<<"\t"<<score[i]<<endl;
 		file.close();
 
 		//generate linker files under input directory
 		for (int i=0;i<sbjnum;i++)
 		{
-			QString filename_out = dir+QString("compare_gmi_result%1").arg(i+1)+".ano";
+			QString filename_out = dir+QString("_compare_gmi_result%1").arg(i+1)+".ano";
 			QFile* outlinker=new QFile(filename_out);
 			if (!outlinker->open(QIODevice::WriteOnly | QIODevice::Text))
 				v3d_msg(QString("cannot open file: %1").arg(filename_out));
