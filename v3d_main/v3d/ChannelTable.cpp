@@ -140,7 +140,7 @@ void ChannelTabWidget::linkXFormWidgetChannel()			//link updated channels of XFo
 	}
 	//so need re-create all sub widget again
 
-	channelPage = new ChannelTable(xform, this); // will call ChannelTabWidget::linkXFormWidgetChannel()
+	channelPage = new ChannelTable(mixOp, xform, this); //call channelPage->linkXFormWidgetChannel();
 
 	//if (tabOptions)   tabOptions->clear();
 	if (tabOptions)
@@ -163,21 +163,21 @@ void ChannelTabWidget::createFirst()
 	this->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum);
 	this->setFixedHeight(200); //200 is best for 4 rows
 
-	linkXFormWidgetChannel();
+	linkXFormWidgetChannel(); //create or re-create channelPage
 
-	brightPage = new BrightenBox(xform, this);
+	brightenPage = new BrightenBox(mixOp, xform, this);
 	if (tabOptions)
 	{
 		int i;
 		QString qs;
-		i= tabOptions->insertTab(1, brightPage,		qs =QString("Brighten"));
+		i= tabOptions->insertTab(1, brightenPage,		qs =QString("Brighten"));
 		tabOptions->setTabToolTip(i, qs);
+		tabOptions->setCurrentIndex(0);/////
 	}
-
-	if (tabOptions) tabOptions->setCurrentIndex(0);
 }
 
 //////////////////////////////////////////////////////////////////////
+#define __ChannelTable__
 
 void ChannelTable::updateXFormWidget(int plane) // plane<=0 for all planes
 {
@@ -394,7 +394,7 @@ void ChannelTable::connectMixOpSignals()
     connect(checkBox_G, SIGNAL(clicked()), this, SLOT(setMixMaskG()));
     connect(checkBox_B, SIGNAL(clicked()), this, SLOT(setMixMaskB()));
 
-    connect(pushButton_Reset, SIGNAL(clicked()), this, SLOT(setChannelMixDefault()));
+    connect(pushButton_Reset, SIGNAL(clicked()), this, SLOT(setDefault()));
 }
 
 void ChannelTable::setMixOpMax()
@@ -486,12 +486,16 @@ void ChannelTable::setMixMaskB()
 	emit channelTableChanged();
 }
 
-void ChannelTable::setChannelMixDefault()
+void ChannelTable::setDefault()
 {
 	setChannelColorDefault(listChannel.size());
 	updateTableChannel();
 
-	mixOp = MixOp();
+	MixOP old = mixOp; //save brightness/contrast
+	mixOp = MixOP();
+	mixOp.brightness = old.brightness;
+	mixOp.contrast = old.contrast;
+
 	setMixOpControls();
 
 	emit channelTableChanged();
@@ -675,3 +679,80 @@ void ChannelTable::pickChannel(int i, int j)
 
 	updatedContent(t);
 }
+
+/////////////////////////////////////////////////////////////////
+#define __BrightenBox__
+
+void BrightenBox::create()
+{
+	QLabel* label_bright = new QLabel("Brightness (-100% ~ +100%)");
+	QLabel* label_contrast = new QLabel("Contrast (0 ~ 200%)");
+
+	slider_bright = new QSlider(Qt::Horizontal);	slider_bright->setRange(-100, 100);
+	slider_bright->setTickPosition(QSlider::TicksBelow);
+	slider_contrast = new QSlider(Qt::Horizontal);	slider_contrast->setRange(0, 200);
+	slider_contrast->setTickPosition(QSlider::TicksBelow);
+	spin_bright = new QSpinBox();		spin_bright->setRange(-100, 100);
+	spin_contrast = new QSpinBox();		spin_contrast->setRange(0, 200);
+	push_reset = new QPushButton("Reset");
+
+	QGridLayout* layout = new QGridLayout(this);
+
+	layout->addWidget(label_bright, 	1,0, 1,20);
+	layout->addWidget(slider_bright,	2,0, 1,13);
+	layout->addWidget(spin_bright,		2,14, 1,6);
+	layout->addWidget(label_contrast, 	3,0, 1,20);
+	layout->addWidget(slider_contrast,	4,0, 1,13);
+	layout->addWidget(spin_contrast,	4,14, 1,6);
+	layout->addWidget(push_reset,	5,14, 1,6);
+
+	connect(slider_bright, SIGNAL(valueChanged(int)), this, SLOT(setBrightness(int)));
+	connect(spin_bright, SIGNAL(valueChanged(int)), this, SLOT(setBrightness(int)));
+	connect(slider_contrast, SIGNAL(valueChanged(int)), this, SLOT(setContrast(int)));
+	connect(spin_contrast, SIGNAL(valueChanged(int)), this, SLOT(setContrast(int)));
+	connect(push_reset, SIGNAL(clicked()), this, SLOT(reset()));
+
+	reset();
+}
+
+void BrightenBox::reset()
+{
+	mixOp.brightness = 0;
+	mixOp.contrast = 1;
+	setBrightness(0);
+	setContrast(100);
+}
+
+void BrightenBox::setBrightness(int i)
+{
+	if (i == _bright) return;
+	_bright = i;
+	mixOp.brightness = i/100.0;
+	if (slider_bright)
+	{
+		slider_bright->setValue(i);
+	}
+	if (spin_bright)
+	{
+		spin_bright->setValue(i);
+	}
+	emit brightenChanged();
+}
+
+void BrightenBox::setContrast(int i)
+{
+	if (i == _contrast) return;
+	_contrast = i;
+	mixOp.contrast = i/100.0;
+	if (slider_contrast)
+	{
+		slider_contrast->setValue(i);
+	}
+	if (spin_contrast)
+	{
+		spin_contrast->setValue(i);
+	}
+	emit brightenChanged();
+}
+
+

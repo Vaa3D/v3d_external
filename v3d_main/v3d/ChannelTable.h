@@ -57,18 +57,22 @@ struct Channel
 	Channel() {n=0; on=true; color.r=color.g=color.b=color.a=255;}
 };
 
-struct MixOp
+struct MixOP
 {
 	int op;
 	bool rescale;
 	bool maskR, maskG, maskB;
-	MixOp() {op=OP_MAX; rescale=false; maskR=maskG=maskB=true;}
+	float brightness, contrast; //ratio
+	MixOP() {op=OP_MAX; rescale=false; maskR=maskG=maskB=true;
+			brightness=0; contrast=1;}
 };
 
 
 void make_linear_lut_one(RGBA8 color, vector<RGBA8>& lut);
 void make_linear_lut(vector<RGBA8>& colors, vector< vector<RGBA8> >& luts);
+
 inline RGB8 lookup_mix(vector<unsigned char>& mC, vector< vector<RGBA8> >& mLut, int op, RGB8 mask=XYZ(255,255,255));
+
 
 template <class T> QPixmap copyRaw2QPixmap_Slice( //test function for 4 channels
 		ImagePlaneDisplayType cplane,
@@ -79,7 +83,7 @@ template <class T> QPixmap copyRaw2QPixmap_Slice( //test function for 4 channels
 		V3DLONG sz2,
 		V3DLONG sz3,
 		ImageDisplayColorType Ctype,
-		bool bIntensityRescale,
+		bool bRescale,
 		double *p_vmax,
 		double *p_vmin)
 {
@@ -88,13 +92,11 @@ template <class T> QPixmap copyRaw2QPixmap_Slice( //test function for 4 channels
 
 	int N = MIN(sz3, 4); ////////////////
 
-	vector<double> vscale(N);
-	vector<double> vmin(N);
+	vector<float> vrange(N);
 	for (int k=0; k<N; k++)
 	{
-		vmin[k] = p_vmin[k];
-		vscale[k] = p_vmax[k]-p_vmin[k];
-		vscale[k] = (vscale[k]==0)? 255.0 : (255.0/vscale[k]);
+		vrange[k] = p_vmax[k]-p_vmin[k];
+		if (vrange[k]<=0) vrange[k] = 1;
 	}
 
 	//qDebug()<<"copyRaw2QPixmap_Slice switch (Ctype)"<<Ctype;
@@ -215,12 +217,12 @@ template <class T> QPixmap copyRaw2QPixmap_Slice( //test function for 4 channels
 			{
 				for (int k=0; k<N; k++)
 				{
-					float c = p4d[k][z][y][pp];
-					mC[k] =  (bIntensityRescale==false) ? c : floor((c-vmin[k])*vscale[k]);
+					float C = p4d[k][z][y][pp];
+					mC[k] =  ( (! bRescale) ? C : floor((C-p_vmin[k])/vrange[k]*255) );
 				}
-				//qDebug("(x) y z = (%d/%d) %d/%d %d/%d", pp,sz0, y,sz1, z,sz2);
 				RGB8 o = lookup_mix(mC, luts, op);
 				tmpimg.setPixel(z, y, qRgb(o.r, o.g, o.b));
+				//qDebug("(x) y z = (%d/%d) %d/%d %d/%d", pp,sz0, y,sz1, z,sz2);
 			}
 		break;
 
@@ -233,12 +235,12 @@ template <class T> QPixmap copyRaw2QPixmap_Slice( //test function for 4 channels
 			{
 				for (int k=0; k<N; k++)
 				{
-					float c = p4d[k][z][pp][x];
-					mC[k] =  (bIntensityRescale==false) ? c : floor((c-vmin[k])*vscale[k]);
+					float C = p4d[k][z][pp][x];
+					mC[k] =  ( (! bRescale) ? C : floor((C-p_vmin[k])/vrange[k]*255) );
 				}
-				//qDebug("x (y) z = %d/%d (%d/%d) %d/%d", x,sz0, pp,sz1, z,sz2);
 				RGB8 o = lookup_mix(mC, luts, op);
 				tmpimg.setPixel(x, z, qRgb(o.r, o.g, o.b));
+				//qDebug("x (y) z = %d/%d (%d/%d) %d/%d", x,sz0, pp,sz1, z,sz2);
 			}
 		break;
 
@@ -251,12 +253,12 @@ template <class T> QPixmap copyRaw2QPixmap_Slice( //test function for 4 channels
 			{
 				for (int k=0; k<N; k++)
 				{
-					float c = p4d[k][pp][y][x];
-					mC[k] =  (bIntensityRescale==false) ? c : floor((c-vmin[k])*vscale[k]);
+					float C = p4d[k][pp][y][x];
+					mC[k] =  ( (! bRescale) ? C : floor((C-p_vmin[k])/vrange[k]*255) );
 				}
-				//qDebug("x y (z) = %d/%d %d/%d (%d/%d)", x,sz0, y,sz1, pp,sz2);
 				RGB8 o = lookup_mix(mC, luts, op);
 				tmpimg.setPixel(x, y, qRgb(o.r, o.g, o.b));
+				//qDebug("x y (z) = %d/%d %d/%d (%d/%d)", x,sz0, y,sz1, pp,sz2);
 			}
 		break;
 	}
@@ -267,9 +269,9 @@ template <class T> QPixmap copyRaw2QPixmap_Slice( //test function for 4 channels
 }
 
 
-template <class T> QPixmap copyRaw2QPixmap_Slice(
+template <class T> QPixmap copyRaw2QPixmap_Slice( //real function include brightness/contrast
 		const QList<Channel> & listChannel,
-		const MixOp & mixOp,
+		const MixOP & mixOp,
 		ImagePlaneDisplayType cplane,
 		V3DLONG cpos,
 		T **** p4d,  //no const for using macro expansion
@@ -285,13 +287,11 @@ template <class T> QPixmap copyRaw2QPixmap_Slice(
 
 	int N = MIN(sz3, listChannel.size()); ////////////////
 
-	vector<double> vscale(N);
-	vector<double> vmin(N);
+	vector<float> vrange(N);
 	for (int k=0; k<N; k++)
 	{
-		vmin[k] = p_vmin[k];
-		vscale[k] = p_vmax[k]-p_vmin[k];
-		vscale[k] = (vscale[k]==0)? 255.0 : (255.0/vscale[k]);
+		vrange[k] = p_vmax[k]-p_vmin[k];
+		if (vrange[k]<=0)  vrange[k] = 1;
 	}
 
 	//qDebug()<<"copyRaw2QPixmap_Slice switch (Ctype)"<<Ctype;
@@ -306,16 +306,26 @@ template <class T> QPixmap copyRaw2QPixmap_Slice(
 	}
 
 	// transfer N channel's pixels
+	bool bRescale = mixOp.rescale;
+	float fb = mixOp.brightness;
+	float fc = mixOp.contrast;
 	int op =  mixOp.op;
-	bool bIntensityRescale = mixOp.rescale;
 	RGB8 mask;
 	mask.r = (mixOp.maskR)? 255:0;
 	mask.g = (mixOp.maskG)? 255:0;
 	mask.b = (mixOp.maskB)? 255:0;
+
 	vector<unsigned char> mC(N);
 	QImage tmpimg;
 
 	//qDebug()<<"copyRaw2QPixmap_Slice switch (cplane)"<<cplane;
+
+#define BRIGHTEN_TRANSFORM( C ) \
+	if (fc != 1 || fb != 0) \
+	{ \
+		C = C*(fc) + (fb*vrange[k]); \
+		C = CLAMP(p_vmin[k], p_vmax[k], C); \
+	}
 
 	switch (cplane) //QImage(w,h)
 	{
@@ -328,12 +338,13 @@ template <class T> QPixmap copyRaw2QPixmap_Slice(
 			{
 				for (int k=0; k<N; k++)
 				{
-					float c = p4d[k][z][y][pp];
-					mC[k] =  (bIntensityRescale==false) ? c : floor((c-vmin[k])*vscale[k]);
+					float C = p4d[k][z][y][pp];
+					BRIGHTEN_TRANSFORM( C );
+					mC[k] =  ( (! bRescale) ? C : floor((C-p_vmin[k])/vrange[k]*255) );
 				}
-				//qDebug("(x) y z = (%d/%d) %d/%d %d/%d", pp,sz0, y,sz1, z,sz2);
 				RGB8 o = lookup_mix(mC, luts, op, mask);
 				tmpimg.setPixel(z, y, qRgb(o.r, o.g, o.b));
+				//qDebug("(x) y z = (%d/%d) %d/%d %d/%d", pp,sz0, y,sz1, z,sz2);
 			}
 		break;
 
@@ -346,12 +357,13 @@ template <class T> QPixmap copyRaw2QPixmap_Slice(
 			{
 				for (int k=0; k<N; k++)
 				{
-					float c = p4d[k][z][pp][x];
-					mC[k] =  (bIntensityRescale==false) ? c : floor((c-vmin[k])*vscale[k]);
+					float C = p4d[k][z][pp][x];
+					BRIGHTEN_TRANSFORM( C );
+					mC[k] =  ( (! bRescale) ? C : floor((C-p_vmin[k])/vrange[k]*255) );
 				}
-				//qDebug("x (y) z = %d/%d (%d/%d) %d/%d", x,sz0, pp,sz1, z,sz2);
 				RGB8 o = lookup_mix(mC, luts, op, mask);
 				tmpimg.setPixel(x, z, qRgb(o.r, o.g, o.b));
+				//qDebug("x (y) z = %d/%d (%d/%d) %d/%d", x,sz0, pp,sz1, z,sz2);
 			}
 		break;
 
@@ -364,12 +376,13 @@ template <class T> QPixmap copyRaw2QPixmap_Slice(
 			{
 				for (int k=0; k<N; k++)
 				{
-					float c = p4d[k][pp][y][x];
-					mC[k] =  (bIntensityRescale==false) ? c : floor((c-vmin[k])*vscale[k]);
+					float C = p4d[k][pp][y][x];
+					BRIGHTEN_TRANSFORM( C );
+					mC[k] =  ( (! bRescale) ? C : floor((C-p_vmin[k])/vrange[k]*255) );
 				}
-				//qDebug("x y (z) = %d/%d %d/%d (%d/%d)", x,sz0, y,sz1, pp,sz2);
 				RGB8 o = lookup_mix(mC, luts, op, mask);
 				tmpimg.setPixel(x, y, qRgb(o.r, o.g, o.b));
+				//qDebug("x y (z) = %d/%d %d/%d (%d/%d)", x,sz0, y,sz1, pp,sz2);
 			}
 		break;
 	}
@@ -391,16 +404,17 @@ class ChannelTabWidget : public QTabWidget //QWidget
 	XFormWidget* xform;
 	QTabWidget* tabOptions;
 	ChannelTable *channelPage;
-	BrightenBox *brightPage;
+	BrightenBox *brightenPage;
 	void createFirst();
+	MixOP mixOp;
 
 public:
 	ChannelTabWidget(QWidget* parent=0) :QTabWidget(parent)
 	{
 		xform = (XFormWidget*)parent;
 		tabOptions = 0;
-		channelPage =0;
-		brightPage =0;
+		channelPage = 0;
+		brightenPage = 0;
 		createFirst();
 	};
 	virtual ~ChannelTabWidget() {};
@@ -416,10 +430,11 @@ class ChannelTable : public QWidget
     Q_OBJECT;
 
 public:
-	ChannelTable(XFormWidget* xform, QWidget* parent=0) :QWidget(parent)
+	ChannelTable(MixOP& mixop, XFormWidget* xform, QWidget* parent=0) :QWidget(parent)
+		, mixOp(mixop) /////
+		, xform(xform) /////
 	{
 		init_member();
-		this->xform = xform; /////
 		linkXFormWidgetChannel();
 		connect( this,SIGNAL(channelTableChanged()), this, SLOT(updateXFormWidget()) );
 	};
@@ -447,13 +462,13 @@ protected slots:
 	void setMixMaskR();
 	void setMixMaskG();
 	void setMixMaskB();
-	void setChannelMixDefault();
+	void setDefault();
 
 protected:
-	MixOp mixOp;
+	MixOP & mixOp; //just a reference to ChannelTabWidget::mixOp
+	XFormWidget* xform;
 	QList<Channel> listChannel;
 
-	XFormWidget* xform;
 	QGridLayout *boxLayout;
 	QTableWidget *table;
 	QRadioButton *radioButton_Max, *radioButton_Sum, *radioButton_Mean, *radioButton_Index;
@@ -488,15 +503,39 @@ class BrightenBox : public QWidget
     Q_OBJECT;
 
 public:
-	BrightenBox(XFormWidget* xform, QWidget* parent=0) :QWidget(parent)
+	BrightenBox(MixOP & mixop, XFormWidget* xform, QWidget* parent=0) :QWidget(parent)
+		, mixOp(mixop) /////
+		, xform(xform) /////
 	{
-//		init_member();
-//		this->xform = xform; /////
-//		linkXFormWidgetChannel();
-//		connect( this,SIGNAL(channelTableChanged()), this, SLOT(updateXFormWidget()) );
+		init_member();
+		create();
+		connect( this,SIGNAL(brightenChanged()), parent, SLOT(updateXFormWidget()) );
 	};
 	virtual ~BrightenBox() {};
 
+signals:
+	void brightenChanged(); //trigger to update XFormWidget
+
+protected slots:
+	void setBrightness(int);
+	void setContrast(int);
+	void reset();
+
+protected:
+	MixOP & mixOp; //just a reference to ChannelTabWidget::mixOp
+	XFormWidget* xform;
+
+	QSlider *slider_bright, *slider_contrast;
+	QSpinBox *spin_bright, *spin_contrast;
+	QPushButton *push_reset;
+	int _bright, _contrast; //for stopping loop of setValue()
+	void init_member()
+	{
+		slider_bright=slider_contrast=0;
+		spin_bright=spin_contrast=0;
+		push_reset=0;
+	}
+	void create();
 };
 
 #endif /* CHANNELTABLE_H_ */
