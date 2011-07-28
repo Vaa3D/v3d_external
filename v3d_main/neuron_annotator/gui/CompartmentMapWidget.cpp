@@ -131,10 +131,21 @@ void CompartmentMapWidget::switchCompartment(int num)
 {
     qDebug()<<"switch status of compartment ... #"<<num;
 
+    if(num<0 || num>listLabelSurf.size()+1) return;
+
     listLabelSurf = ((Renderer_tex2 *)renderer)->getListLabelSurf();
 
     if(num==0) // all on
     {
+        //gui
+        pCompartmentComboBox->setItemData(0, true);
+        pCompartmentComboBox->setItemData(1, false);
+        for(int i=0; i<listLabelSurf.size(); i++)
+        {
+            pCompartmentComboBox->setItemData(i+2, true);
+        }
+
+        //widget
         for(int i=0; i<listLabelSurf.size(); i++)
         {
             listLabelSurf[i].on = true;
@@ -142,6 +153,15 @@ void CompartmentMapWidget::switchCompartment(int num)
     }
     else if(num==1) // all off
     {
+        //gui
+        pCompartmentComboBox->setItemData(0, false);
+        pCompartmentComboBox->setItemData(1, true);
+        for(int i=0; i<listLabelSurf.size(); i++)
+        {
+            pCompartmentComboBox->setItemData(i+2, false);
+        }
+
+        //widget
         for(int i=0; i<listLabelSurf.size(); i++)
         {
             listLabelSurf[i].on = false;
@@ -149,6 +169,16 @@ void CompartmentMapWidget::switchCompartment(int num)
     }
     else
     {
+        //gui
+        pCompartmentComboBox->setItemData(0, false);
+        pCompartmentComboBox->setItemData(1, false);
+
+        if(pCompartmentComboBox->itemData(num).toBool())
+            pCompartmentComboBox->setItemData(num, false);
+        else
+            pCompartmentComboBox->setItemData(num, true);
+
+        //widget
         listLabelSurf[num-2].on = !(listLabelSurf[num-2].on);
     }
 

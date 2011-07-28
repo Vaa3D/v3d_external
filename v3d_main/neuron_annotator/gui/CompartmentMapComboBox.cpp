@@ -82,12 +82,19 @@ CompartmentMapComboBox::~CompartmentMapComboBox()
 
 bool CompartmentMapComboBox::eventFilter(QObject *object, QEvent *event)
 {
-    // don't close items view after we release the mouse button
-    // by simple eating MouseButtonRelease in viewport of items view
-    if(event->type() == QEvent::MouseButtonRelease && object==view()->viewport())
+    if(object==view()->viewport())
     {
-        return true;
+        QMouseEvent *m = static_cast<QMouseEvent *>(event);
+        if(event->type() == QEvent::MouseButtonRelease
+                && view()->rect().contains(m->pos())
+                && view()->currentIndex().isValid()
+                && (view()->currentIndex().flags() & Qt::ItemIsEnabled))
+        {
+            emit currentIndexChanged(view()->currentIndex().row());
+            return true;
+        }
     }
+
     return QComboBox::eventFilter(object,event);
 }
 
