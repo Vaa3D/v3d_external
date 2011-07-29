@@ -47,7 +47,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define OP_MAX	0
 #define OP_SUM	1
 #define OP_MEAN	2
-#define OP_INDEX	3
+#define OP_OIT	3
+#define OP_INDEX	-1
 
 struct Channel
 {

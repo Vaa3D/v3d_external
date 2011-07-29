@@ -97,16 +97,55 @@ RGB8 lookup_mix(vector<unsigned char>& mC, vector< vector<RGBA8> >& mLut, int op
 		}
 	}
 	else if (op==OP_MEAN)
+//	{
+//		for (int k=0; k<N; k++)
+//		{
+//			o1 += AR(k);
+//			o2 += AG(k);
+//			o3 += AB(k);
+//		}
+//		o1 /= N;
+//		o2 /= N;
+//		o3 /= N;
+//	}
+//	else if (op==OP_OIT)
 	{
+		float avg_1,avg_2,avg_3, avg_a1,avg_a2,avg_a3, avg_a;
+		avg_1=avg_2=avg_3 =avg_a1=avg_a2=avg_a3 =avg_a = 0;
 		for (int k=0; k<N; k++)
 		{
-			o1 += AR(k);
-			o2 += AG(k);
-			o3 += AB(k);
+			o1 = AR(k);
+			o2 = AG(k);
+			o3 = AB(k);
+			avg_1 += o1*o1;
+			avg_2 += o2*o2;
+			avg_3 += o3*o3;
+			avg_a += MAX(o1, MAX(o2, o3));
+					//(o1+o2+o3)/3;
+//			avg_a1 += o1;
+//			avg_a2 += o2;
+//			avg_a3 += o3;
 		}
-		o1 /= N;
-		o2 /= N;
-		o3 /= N;
+		//avg_color
+		avg_1 /=N;
+		avg_2 /=N;
+		avg_3 /=N;
+		//avg_alpha
+		avg_a /=N;	avg_a1=avg_a2=avg_a3 = avg_a;
+//		avg_a1 /=N;
+//		avg_a2 /=N;
+//		avg_a3 /=N;
+		//(1-avg_alpha)^n
+		float bg_a1 = pow(1-avg_a1, N);
+		float bg_a2 = pow(1-avg_a2, N);
+		float bg_a3 = pow(1-avg_a3, N);
+		float bg_color = 1;
+						//0.5;
+
+		// dst_color = avg_color * (1-(1-avg_alpha)^n) + bg_color * (1-avg_alpha)^n
+		o1 = avg_1*(1-bg_a1) + bg_color*bg_a1;
+		o2 = avg_2*(1-bg_a2) + bg_color*bg_a2;
+		o3 = avg_3*(1-bg_a3) + bg_color*bg_a3;
 	}
 	// OP_INDEX ignored
 
@@ -170,7 +209,7 @@ void ChannelTabWidget::createFirst()
 	{
 		int i;
 		QString qs;
-		i= tabOptions->insertTab(1, brightenPage,		qs =QString("Brighten"));
+		i= tabOptions->insertTab(1, brightenPage,		qs =QString("Intensity"));
 		tabOptions->setTabToolTip(i, qs);
 		tabOptions->setCurrentIndex(0);/////
 	}
@@ -312,7 +351,7 @@ void ChannelTable::createNewTable()
 
 	radioButton_Max = new QRadioButton("Max");
 	radioButton_Sum = new QRadioButton("Sum");
-	radioButton_Mean = new QRadioButton("Mean");
+	radioButton_Mean = new QRadioButton("OIT");  radioButton_Mean->setToolTip("Order Independent Transparency");
 	radioButton_Index = new QRadioButton("Index");
 	checkBox_Rescale = new QCheckBox("0~255");
 	checkBox_R = new QCheckBox("R");
@@ -625,7 +664,9 @@ QTableWidget*  ChannelTable::createTableChannel()
 	//t->setHorizontalHeaderLabels(qsl);
 	t->horizontalHeader()->hide();
 	t->verticalHeader()->hide();
-	t->setToolTip(tr("Right-click on row to pop color Menu.\n""Double-click on color cell to pop color Dialog."));
+	t->setToolTip(tr("Right-click on row to pop color Menu.\n"
+			"Double-click on color cell to pop color Dialog.\n"
+			"Also you can do multi-selection."));
 
 	//qDebug("  create begin t->rowCount = %d", t->rowCount());
 	for (int i=0; i<row; i++)
@@ -683,17 +724,26 @@ void ChannelTable::pickChannel(int i, int j)
 /////////////////////////////////////////////////////////////////
 #define __BrightenBox__
 
+#define MAX_CONTRAST  500
+#define SHIFT_CONTRAST -100
+
 void BrightenBox::create()
 {
 	QLabel* label_bright = new QLabel("Brightness (-100% ~ +100%)");
-	QLabel* label_contrast = new QLabel("Contrast (0 ~ 200%)");
+	QLabel* label_contrast = new QLabel(QString("Contrast (%1% ~ %2%)").arg(SHIFT_CONTRAST).arg(MAX_CONTRAST+SHIFT_CONTRAST));
+	QString note = ("Better to check on '0~255'\n in Channels page for non-8bit.");
+	QLabel* label_note = new QLabel(note);
+	QFont font = label_note->font();
+	font.setPointSizeF(font.pointSize()*.66);
+	label_note->setFont(font);
+	label_note->setToolTip(note);
 
 	slider_bright = new QSlider(Qt::Horizontal);	slider_bright->setRange(-100, 100);
 	slider_bright->setTickPosition(QSlider::TicksBelow);
-	slider_contrast = new QSlider(Qt::Horizontal);	slider_contrast->setRange(0, 200);
+	slider_contrast = new QSlider(Qt::Horizontal);	slider_contrast->setRange(SHIFT_CONTRAST, MAX_CONTRAST+SHIFT_CONTRAST);
 	slider_contrast->setTickPosition(QSlider::TicksBelow);
 	spin_bright = new QSpinBox();		spin_bright->setRange(-100, 100);
-	spin_contrast = new QSpinBox();		spin_contrast->setRange(0, 200);
+	spin_contrast = new QSpinBox();		spin_contrast->setRange(SHIFT_CONTRAST, MAX_CONTRAST+SHIFT_CONTRAST);
 	push_reset = new QPushButton("Reset");
 
 	QGridLayout* layout = new QGridLayout(this);
@@ -705,6 +755,8 @@ void BrightenBox::create()
 	layout->addWidget(slider_contrast,	4,0, 1,13);
 	layout->addWidget(spin_contrast,	4,14, 1,6);
 	layout->addWidget(push_reset,	5,14, 1,6);
+	layout->addWidget(label_note,	5,0, 1,15);
+	//layout->addWidget(new QLabel(note),	5,0, 2,15);
 
 	connect(slider_bright, SIGNAL(valueChanged(int)), this, SLOT(setBrightness(int)));
 	connect(spin_bright, SIGNAL(valueChanged(int)), this, SLOT(setBrightness(int)));
@@ -720,14 +772,14 @@ void BrightenBox::reset()
 	mixOp.brightness = 0;
 	mixOp.contrast = 1;
 	setBrightness(0);
-	setContrast(100);
+	setContrast(100+SHIFT_CONTRAST);
 }
 
 void BrightenBox::setBrightness(int i)
 {
 	if (i == _bright) return;
 	_bright = i;
-	mixOp.brightness = i/100.0;
+	mixOp.brightness = (i)/100.0;
 	if (slider_bright)
 	{
 		slider_bright->setValue(i);
@@ -743,7 +795,7 @@ void BrightenBox::setContrast(int i)
 {
 	if (i == _contrast) return;
 	_contrast = i;
-	mixOp.contrast = i/100.0;
+	mixOp.contrast = (i-SHIFT_CONTRAST)/100.0;
 	if (slider_contrast)
 	{
 		slider_contrast->setValue(i);
