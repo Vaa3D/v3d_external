@@ -37,6 +37,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef CHANNELTABLE_H_
 #define CHANNELTABLE_H_
 
+#include <assert.h>
 #include <vector>
 #include <QtGui>
 #include "../basic_c_fun/color_xyz.h"
@@ -47,32 +48,145 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define OP_MAX	0
 #define OP_SUM	1
 #define OP_MEAN	2
-#define OP_OIT	3
+#define OP_OIT	3  //Order Independent Transparency
 #define OP_INDEX	-1
 
-struct Channel
+inline
+void make_linear_lut_one(RGBA8 color, vector<RGBA8>& lut)
 {
-	int n;				// index
-	bool on;
-	RGBA8 color;
-	Channel() {n=0; on=true; color.r=color.g=color.b=color.a=255;}
-};
-
-struct MixOP
+	assert(lut.size()==256); //////// must be
+	for (int j=0; j<256; j++)
+	{
+		float f = j/256.0;
+		lut[j].r = color.r *f;
+		lut[j].g = color.g *f;
+		lut[j].b = color.b *f;
+		lut[j].a = color.a;   //only alpha is constant
+	}
+}
+inline
+void make_linear_lut(vector<RGBA8>& colors, vector< vector<RGBA8> >& luts)
 {
-	int op;
-	bool rescale;
-	bool maskR, maskG, maskB;
-	float brightness, contrast; //ratio
-	MixOP() {op=OP_MAX; rescale=false; maskR=maskG=maskB=true;
-			brightness=0; contrast=1;}
-};
+	int N = colors.size();
+	for (int k=0; k<N; k++)
+	{
+		make_linear_lut_one(colors[k], luts[k]);
+	}
+}
+inline
+RGB8 lookup_mix(vector<unsigned char>& mC, vector< vector<RGBA8> >& mLut, int op, RGB8 mask=XYZ(255,255,255))
+{
+#define R(k) (mLut[k][ mC[k] ].r /255.0)
+#define G(k) (mLut[k][ mC[k] ].g /255.0)
+#define B(k) (mLut[k][ mC[k] ].b /255.0)
+#define A(k) (mLut[k][ mC[k] ].a /255.0)
+#define AR(k) (A(k)*R(k))
+#define AG(k) (A(k)*G(k))
+#define AB(k) (A(k)*B(k))
 
+	int N = mC.size();
+	assert(N <= mLut.size());
 
-void make_linear_lut_one(RGBA8 color, vector<RGBA8>& lut);
-void make_linear_lut(vector<RGBA8>& colors, vector< vector<RGBA8> >& luts);
+	float o1,o2,o3;
+	o1=o2=o3=0; //must be
 
-inline RGB8 lookup_mix(vector<unsigned char>& mC, vector< vector<RGBA8> >& mLut, int op, RGB8 mask=XYZ(255,255,255));
+	if (op==OP_MAX)
+	{
+		for (int k=0; k<N; k++)
+		{
+			o1 = MAX(o1, AR(k));
+			o2 = MAX(o2, AG(k));
+			o3 = MAX(o3, AB(k));
+		}
+	}
+	else if (op==OP_SUM)
+	{
+		for (int k=0; k<N; k++)
+		{
+			o1 += AR(k);
+			o2 += AG(k);
+			o3 += AB(k);
+		}
+	}
+	else if (op==OP_MEAN)
+	{
+		for (int k=0; k<N; k++)
+		{
+			o1 += AR(k);
+			o2 += AG(k);
+			o3 += AB(k);
+		}
+		o1 /= N;
+		o2 /= N;
+		o3 /= N;
+	}
+	else if (op==OP_OIT)
+	{
+		float avg_1,avg_2,avg_3, avg_a1,avg_a2,avg_a3, avg_a;
+		avg_1=avg_2=avg_3 =avg_a1=avg_a2=avg_a3 =avg_a = 0;
+		for (int k=0; k<N; k++)
+		{
+			o1 = AR(k);
+			o2 = AG(k);
+			o3 = AB(k);
+//			avg_a1 += o1;
+//			avg_a2 += o2;
+//			avg_a3 += o3;
+//			avg_1 += o1*o1;
+//			avg_2 += o2*o2;
+//			avg_3 += o3*o3;
+			float a = MAX(o1, MAX(o2, o3));
+						//(o1+o2+o3)/3;
+			avg_a += a;
+			avg_1 += o1*a;
+			avg_2 += o2*a;
+			avg_3 += o3*a;
+		}
+		//avg_alpha
+//		avg_a1 /=N;
+//		avg_a2 /=N;
+//		avg_a3 /=N;
+		avg_a /=N;	avg_a1=avg_a2=avg_a3= avg_a;
+
+		//avg_color
+		avg_1 /=N;
+		avg_2 /=N;
+		avg_3 /=N;
+		//(1-avg_alpha)^n
+		float bg_a1 = pow(1-avg_a1, N);
+		float bg_a2 = pow(1-avg_a2, N);
+		float bg_a3 = pow(1-avg_a3, N);
+		float bg_color = 1;
+						//0.5;
+
+		// dst_color = avg_color * (1-(1-avg_alpha)^n) + bg_color * (1-avg_alpha)^n
+		o1 = avg_1*(1-bg_a1) + bg_color*bg_a1;
+		o2 = avg_2*(1-bg_a2) + bg_color*bg_a2;
+		o3 = avg_3*(1-bg_a3) + bg_color*bg_a3;
+	}
+	// OP_INDEX ignored
+
+	o1 = CLAMP(0, 1, o1);
+	o2 = CLAMP(0, 1, o2);
+	o3 = CLAMP(0, 1, o3);
+
+	RGB8 oC;
+	oC.r = o1*255;
+	oC.g = o2*255;
+	oC.b = o3*255;
+	oC.r &= mask.r;
+	oC.g &= mask.g;
+	oC.b &= mask.b;
+	return oC;
+
+#undef R(k)
+#undef G(k)
+#undef B(k)
+#undef A(k)
+#undef AR(k)
+#undef AG(k)
+#undef AB(k)
+}
 
 
 template <class T> QPixmap copyRaw2QPixmap_Slice( //test function for 4 channels
@@ -269,10 +383,29 @@ template <class T> QPixmap copyRaw2QPixmap_Slice( //test function for 4 channels
 	return QPixmap::fromImage(tmpimg);
 }
 
+struct Channel
+{
+	int n;				// index
+	bool on;
+	RGBA8 color;
+	Channel() {n=0; on=true;  color.r=color.g=color.b=color.a=255;}
+};
+
+struct MixOP
+{
+	int op;
+	bool rescale;
+	bool maskR, maskG, maskB;
+	float brightness, contrast; //ratio
+	MixOP() {op=OP_MAX;  rescale=true;
+			maskR=maskG=maskB=true;
+			brightness=0; contrast=1;}
+};
 
 template <class T> QPixmap copyRaw2QPixmap_Slice( //real function include brightness/contrast
 		const QList<Channel> & listChannel,
 		const MixOP & mixOp,
+		vector< vector<RGBA8> >* p_luts, //pre-computed external LUTs, if not presented set to 0
 		ImagePlaneDisplayType cplane,
 		V3DLONG cpos,
 		T **** p4d,  //no const for using macro expansion
@@ -297,13 +430,17 @@ template <class T> QPixmap copyRaw2QPixmap_Slice( //real function include bright
 
 	//qDebug()<<"copyRaw2QPixmap_Slice switch (Ctype)"<<Ctype;
 
-	//set lookup-table
-	vector< vector<RGBA8> > luts(N);
-	vector<RGBA8> lut(256);
-	for (int k=0; k<N; k++)
+	//setup lookup-tables
+	if (! p_luts)
 	{
-		make_linear_lut_one( listChannel[k].color, lut );
-		luts[k] = lut;
+		vector< vector<RGBA8> > luts(N);
+		vector<RGBA8> lut(256);
+		for (int k=0; k<N; k++)
+		{
+			make_linear_lut_one( listChannel[k].color, lut );
+			luts[k] = lut;
+		}
+		p_luts = &luts;
 	}
 
 	// transfer N channel's pixels
@@ -327,6 +464,16 @@ template <class T> QPixmap copyRaw2QPixmap_Slice( //real function include bright
 		C = C*(fc) + (fb*vrange[k]); \
 		C = CLAMP(p_vmin[k], p_vmax[k], C); \
 	}
+#define SET_mC( k, C ) \
+	if (listChannel[k].on) \
+	{ \
+		BRIGHTEN_TRANSFORM( C ); \
+		mC[k] =  ( (! bRescale) ? C : floor((C-p_vmin[k])/vrange[k]*255) ); \
+	} \
+	else \
+	{ \
+		mC[k] = 0; \
+	}
 
 	switch (cplane) //QImage(w,h)
 	{
@@ -340,10 +487,9 @@ template <class T> QPixmap copyRaw2QPixmap_Slice( //real function include bright
 				for (int k=0; k<N; k++)
 				{
 					float C = p4d[k][z][y][pp];
-					BRIGHTEN_TRANSFORM( C );
-					mC[k] =  ( (! bRescale) ? C : floor((C-p_vmin[k])/vrange[k]*255) );
+					SET_mC( k, C );
 				}
-				RGB8 o = lookup_mix(mC, luts, op, mask);
+				RGB8 o = lookup_mix(mC, *p_luts, op, mask);
 				tmpimg.setPixel(z, y, qRgb(o.r, o.g, o.b));
 				//qDebug("(x) y z = (%d/%d) %d/%d %d/%d", pp,sz0, y,sz1, z,sz2);
 			}
@@ -359,10 +505,9 @@ template <class T> QPixmap copyRaw2QPixmap_Slice( //real function include bright
 				for (int k=0; k<N; k++)
 				{
 					float C = p4d[k][z][pp][x];
-					BRIGHTEN_TRANSFORM( C );
-					mC[k] =  ( (! bRescale) ? C : floor((C-p_vmin[k])/vrange[k]*255) );
+					SET_mC( k, C );
 				}
-				RGB8 o = lookup_mix(mC, luts, op, mask);
+				RGB8 o = lookup_mix(mC, *p_luts, op, mask);
 				tmpimg.setPixel(x, z, qRgb(o.r, o.g, o.b));
 				//qDebug("x (y) z = %d/%d (%d/%d) %d/%d", x,sz0, pp,sz1, z,sz2);
 			}
@@ -378,15 +523,17 @@ template <class T> QPixmap copyRaw2QPixmap_Slice( //real function include bright
 				for (int k=0; k<N; k++)
 				{
 					float C = p4d[k][pp][y][x];
-					BRIGHTEN_TRANSFORM( C );
-					mC[k] =  ( (! bRescale) ? C : floor((C-p_vmin[k])/vrange[k]*255) );
+					SET_mC( k, C );
 				}
-				RGB8 o = lookup_mix(mC, luts, op, mask);
+				RGB8 o = lookup_mix(mC, *p_luts, op, mask);
 				tmpimg.setPixel(x, y, qRgb(o.r, o.g, o.b));
 				//qDebug("x y (z) = %d/%d %d/%d (%d/%d)", x,sz0, y,sz1, pp,sz2);
 			}
 		break;
 	}
+
+#undef BRIGHTEN_TRANSFORM( C )
+#undef SET_mC( k, C )
 
 	//qDebug()<<"copyRaw2QPixmap_Slice fromImage(tmpimg)"<<tmpimg.size();
 
@@ -416,6 +563,7 @@ public:
 		tabOptions = 0;
 		channelPage = 0;
 		brightenPage = 0;
+		//TURNOFF_ITEM_EDITOR(); //replaced with table->setEditTriggers(QAbstractItemView::NoEditTriggers)
 		createFirst();
 	};
 	virtual ~ChannelTabWidget() {};
@@ -425,6 +573,7 @@ public slots:
 	void linkXFormWidgetChannel();			//link updated channels of XFormWidget
 };
 
+/////////////////////////////////////////////
 
 class ChannelTable : public QWidget
 {
@@ -458,6 +607,7 @@ protected slots:
 	void setMixOpMax();
 	void setMixOpSum();
 	void setMixOpMean();
+	void setMixOpOIT();
 	void setMixOpIndex();
 	void setMixRescale();
 	void setMixMaskR();
@@ -469,17 +619,18 @@ protected:
 	MixOP & mixOp; //just a reference to ChannelTabWidget::mixOp
 	XFormWidget* xform;
 	QList<Channel> listChannel;
+	vector< vector<RGBA8> > luts;
 
 	QGridLayout *boxLayout;
 	QTableWidget *table;
-	QRadioButton *radioButton_Max, *radioButton_Sum, *radioButton_Mean, *radioButton_Index;
+	QRadioButton *radioButton_Max, *radioButton_Sum, *radioButton_Mean, *radioButton_OIT, *radioButton_Index;
 	QCheckBox *checkBox_Rescale, *checkBox_R, *checkBox_G, *checkBox_B;
 	QPushButton *pushButton_Reset;
 	void init_member()
 	{
 		boxLayout=0;
 		table=0;
-		radioButton_Max=radioButton_Sum=radioButton_Mean=radioButton_Index=0;
+		radioButton_Max=radioButton_Sum=radioButton_Mean=radioButton_OIT=radioButton_Index=0;
 		checkBox_Rescale=checkBox_R=checkBox_G=checkBox_B=0;
 		pushButton_Reset=0;
 	}
@@ -496,6 +647,7 @@ protected:
 
 	QTableWidget* createTableChannel();
 	void updateTableChannel();
+	void updateLuts(int k=-1);
 
 };
 

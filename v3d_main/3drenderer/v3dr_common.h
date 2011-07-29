@@ -250,7 +250,8 @@ inline RGBA8 RGBA8FromQColor(QColor qc)
 #define QCOLORV(var)    (qVariantValue<QColor>( var ))
 #define RGBA8V(var)     RGBA8FromQColor(qVariantValue<QColor>( var ))
 
-#define TURNOFF_ITEM_EDITOR()  QItemEditorFactory::setDefaultFactory( new QItemEditorFactory(*QItemEditorFactory::defaultFactory()) )
+//it's global factory, so use table->setEditTriggers(QAbstractItemView::NoEditTriggers) for local table
+#define TURNOFF_ITEM_EDITOR()  QItemEditorFactory::setDefaultFactory(new QItemEditorFactory())
 
 
 //===================================================================================================================

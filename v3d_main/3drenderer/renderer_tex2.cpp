@@ -1919,7 +1919,7 @@ void Renderer_tex2::blendTrack()
 	//glFlush();
 }
 
-
+#define ___follows_should_be_moved_to_hit2___
 #ifndef test_main_cpp
 
 // mouse left click to select neuron

@@ -198,6 +198,12 @@ int Renderer::selectObj(int x, int y, bool b_menu, char* pTip)
 	if (hits==0)
 	{
 		delete[] selectBuf;
+
+		if (b_menu && widget) // background menu
+		{
+			((V3dR_GLWidget*)widget)->setBackgroundColor();
+		}
+
 		return 0;
 	}
 

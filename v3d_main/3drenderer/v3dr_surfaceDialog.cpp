@@ -241,10 +241,11 @@ void V3dr_surfaceDialog::createTables_addtoTab()
 		if (table[i])
 	{
 		table[i]->setSelectionBehavior(QAbstractItemView::SelectRows);
+		table[i]->setEditTriggers(QAbstractItemView::NoEditTriggers);
 //		table[i]->setEditTriggers(//QAbstractItemView::CurrentChanged |
 //				QAbstractItemView::DoubleClicked |
-//				QAbstractItemView::SelectedClicked);                       //use doubleClickHandler() to override delay of popping dialog by the setEditTriggers
-
+//				QAbstractItemView::SelectedClicked);
+		//use doubleClickHandler() to override delay of popping dialog by the setEditTriggers
 		connect(table[i], SIGNAL(cellDoubleClicked(int,int)), this, SLOT(doubleClickHandler(int,int))); //to override delay of popping dialog by the setEditTriggers
 		connect(table[i], SIGNAL(cellPressed(int,int)), this, SLOT(pressedClickHandler(int,int)));      //to pop context menu
 	}
@@ -495,9 +496,7 @@ void V3dr_surfaceDialog::selectInverse()
 void V3dr_surfaceDialog::setItemEditor()
 {
 	//::setItemEditor();
-
-	// turn off item editor
-	QItemEditorFactory::setDefaultFactory( new QItemEditorFactory(*QItemEditorFactory::defaultFactory()) );
+	//TURNOFF_ITEM_EDITOR(); //replaced with table->setEditTriggers(QAbstractItemView::NoEditTriggers)
 }
 
 void V3dr_surfaceDialog::pressedClickHandler(int i, int j)

@@ -39,129 +39,6 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../3drenderer/v3dr_common.h" //for v3dr_getColorDialog()
 
 
-void make_linear_lut_one(RGBA8 color, vector<RGBA8>& lut)
-{
-	assert(lut.size()==256); //////// must be
-	for (int j=0; j<256; j++)
-	{
-		float f = j/256.0;
-		lut[j].r = color.r *f;
-		lut[j].g = color.g *f;
-		lut[j].b = color.b *f;
-		lut[j].a = color.a;   //only alpha is constant
-	}
-}
-
-void make_linear_lut(vector<RGBA8>& colors, vector< vector<RGBA8> >& luts)
-{
-	int N = colors.size();
-	for (int k=0; k<N; k++)
-	{
-		make_linear_lut_one(colors[k], luts[k]);
-	}
-}
-
-RGB8 lookup_mix(vector<unsigned char>& mC, vector< vector<RGBA8> >& mLut, int op, RGB8 mask)
-{
-	#define R(k) (mLut[k][ mC[k] ].r /255.0)
-	#define G(k) (mLut[k][ mC[k] ].g /255.0)
-	#define B(k) (mLut[k][ mC[k] ].b /255.0)
-	#define A(k) (mLut[k][ mC[k] ].a /255.0)
-
-	#define AR(k) (A(k)*R(k))
-	#define AG(k) (A(k)*G(k))
-	#define AB(k) (A(k)*B(k))
-
-	int N = mC.size();
-	assert(N <= mLut.size());
-
-	float o1,o2,o3;
-	o1=o2=o3=0; //must be
-
-	if (op==OP_MAX)
-	{
-		for (int k=0; k<N; k++)
-		{
-			o1 = MAX(o1, AR(k));
-			o2 = MAX(o2, AG(k));
-			o3 = MAX(o3, AB(k));
-		}
-	}
-	else if (op==OP_SUM)
-	{
-		for (int k=0; k<N; k++)
-		{
-			o1 += AR(k);
-			o2 += AG(k);
-			o3 += AB(k);
-		}
-	}
-	else if (op==OP_MEAN)
-//	{
-//		for (int k=0; k<N; k++)
-//		{
-//			o1 += AR(k);
-//			o2 += AG(k);
-//			o3 += AB(k);
-//		}
-//		o1 /= N;
-//		o2 /= N;
-//		o3 /= N;
-//	}
-//	else if (op==OP_OIT)
-	{
-		float avg_1,avg_2,avg_3, avg_a1,avg_a2,avg_a3, avg_a;
-		avg_1=avg_2=avg_3 =avg_a1=avg_a2=avg_a3 =avg_a = 0;
-		for (int k=0; k<N; k++)
-		{
-			o1 = AR(k);
-			o2 = AG(k);
-			o3 = AB(k);
-			avg_1 += o1*o1;
-			avg_2 += o2*o2;
-			avg_3 += o3*o3;
-			avg_a += MAX(o1, MAX(o2, o3));
-					//(o1+o2+o3)/3;
-//			avg_a1 += o1;
-//			avg_a2 += o2;
-//			avg_a3 += o3;
-		}
-		//avg_color
-		avg_1 /=N;
-		avg_2 /=N;
-		avg_3 /=N;
-		//avg_alpha
-		avg_a /=N;	avg_a1=avg_a2=avg_a3 = avg_a;
-//		avg_a1 /=N;
-//		avg_a2 /=N;
-//		avg_a3 /=N;
-		//(1-avg_alpha)^n
-		float bg_a1 = pow(1-avg_a1, N);
-		float bg_a2 = pow(1-avg_a2, N);
-		float bg_a3 = pow(1-avg_a3, N);
-		float bg_color = 1;
-						//0.5;
-
-		// dst_color = avg_color * (1-(1-avg_alpha)^n) + bg_color * (1-avg_alpha)^n
-		o1 = avg_1*(1-bg_a1) + bg_color*bg_a1;
-		o2 = avg_2*(1-bg_a2) + bg_color*bg_a2;
-		o3 = avg_3*(1-bg_a3) + bg_color*bg_a3;
-	}
-	// OP_INDEX ignored
-
-	o1 = CLAMP(0, 1, o1);
-	o2 = CLAMP(0, 1, o2);
-	o3 = CLAMP(0, 1, o3);
-
-	RGB8 oC;
-	oC.r = o1*255;
-	oC.g = o2*255;
-	oC.b = o3*255;
-	oC.r &= mask.r;
-	oC.g &= mask.g;
-	oC.b &= mask.b;
-	return oC;
-}
 
 //////////////////////////////////////////////////////////////////////
 
@@ -216,7 +93,7 @@ void ChannelTabWidget::createFirst()
 }
 
 //////////////////////////////////////////////////////////////////////
-#define __ChannelTable__
+#define ___ChannelTable___
 
 void ChannelTable::updateXFormWidget(int plane) // plane<=0 for all planes
 {
@@ -258,6 +135,7 @@ void ChannelTable::updateXFormWidget(int plane) // plane<=0 for all planes
 	pxm = copyRaw2QPixmap_Slice( \
 			listChannel, \
 			mixOp, \
+			&luts, \
 			imgPlane##X, \
 			img4d->getFocus##X(), \
 			img4d->p4d, \
@@ -346,12 +224,12 @@ void ChannelTable::linkXFormWidgetChannel()
 
 void ChannelTable::createNewTable()
 {
-	TURNOFF_ITEM_EDITOR();
 	table = createTableChannel();
 
 	radioButton_Max = new QRadioButton("Max");
 	radioButton_Sum = new QRadioButton("Sum");
-	radioButton_Mean = new QRadioButton("OIT");  radioButton_Mean->setToolTip("Order Independent Transparency");
+	radioButton_Mean = new QRadioButton("Mean");
+	radioButton_OIT = new QRadioButton("OIT");  radioButton_OIT->setToolTip("Order Independent Transparency");
 	radioButton_Index = new QRadioButton("Index");
 	checkBox_Rescale = new QCheckBox("0~255");
 	checkBox_R = new QCheckBox("R");
@@ -364,7 +242,8 @@ void ChannelTable::createNewTable()
 	oplayout->addWidget(radioButton_Max,	1,0, 1,1);
 	oplayout->addWidget(radioButton_Sum,	2,0, 1,1);
 	oplayout->addWidget(radioButton_Mean,	3,0, 1,1);
-	oplayout->addWidget(radioButton_Index,	4,0, 1,1);
+	oplayout->addWidget(radioButton_OIT,	4,0, 1,1);
+	oplayout->addWidget(radioButton_Index,	5,0, 1,1);
 
 	const int nrow = 4;
 	boxlayout->addLayout(oplayout, 			1,16, nrow,4);
@@ -392,10 +271,11 @@ void ChannelTable::createNewTable()
 	if (table)
 	{
 		table->setSelectionBehavior(QAbstractItemView::SelectRows);
+		table->setEditTriggers(QAbstractItemView::NoEditTriggers);
 	//		table->setEditTriggers(//QAbstractItemView::CurrentChanged |
 	//				QAbstractItemView::DoubleClicked |
-	//				QAbstractItemView::SelectedClicked);                       //use doubleClickHandler() to override delay of popping dialog by the setEditTriggers
-
+	//				QAbstractItemView::SelectedClicked);
+		//use doubleClickHandler() to override delay of popping dialog by the setEditTriggers
 		connect(table, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(doubleClickHandler(int,int))); //to override delay of popping dialog by the setEditTriggers
 		connect(table, SIGNAL(cellPressed(int,int)), this, SLOT(pressedClickHandler(int,int)));      //to pop context menu
 	}
@@ -409,16 +289,15 @@ void ChannelTable::setMixOpControls()
     radioButton_Max->setChecked(mixOp.op==OP_MAX);
     radioButton_Sum->setChecked(mixOp.op==OP_SUM);
     radioButton_Mean->setChecked(mixOp.op==OP_MEAN);
+    radioButton_OIT->setChecked(mixOp.op==OP_OIT);
     radioButton_Index->setChecked(mixOp.op==OP_INDEX);
-
-    radioButton_Index->setEnabled(listChannel.size()==1);
-    checkBox_Rescale->setEnabled(mixOp.op!=OP_INDEX);
-
     checkBox_Rescale->setChecked(mixOp.rescale);
     checkBox_R->setChecked(mixOp.maskR);
     checkBox_G->setChecked(mixOp.maskG);
     checkBox_B->setChecked(mixOp.maskB);
 
+    radioButton_Index->setEnabled(listChannel.size()==1);
+    checkBox_Rescale->setEnabled(mixOp.op!=OP_INDEX);
 }
 
 void ChannelTable::connectMixOpSignals()
@@ -426,8 +305,8 @@ void ChannelTable::connectMixOpSignals()
     connect(radioButton_Max, SIGNAL(clicked()), this, SLOT(setMixOpMax()));
     connect(radioButton_Sum, SIGNAL(clicked()), this, SLOT(setMixOpSum()));
     connect(radioButton_Mean, SIGNAL(clicked()), this, SLOT(setMixOpMean()));
+    connect(radioButton_OIT, SIGNAL(clicked()), this, SLOT(setMixOpOIT()));
     connect(radioButton_Index, SIGNAL(clicked()), this, SLOT(setMixOpIndex()));
-
     connect(checkBox_Rescale, SIGNAL(clicked()), this, SLOT(setMixRescale()));
     connect(checkBox_R, SIGNAL(clicked()), this, SLOT(setMixMaskR()));
     connect(checkBox_G, SIGNAL(clicked()), this, SLOT(setMixMaskG()));
@@ -436,21 +315,26 @@ void ChannelTable::connectMixOpSignals()
     connect(pushButton_Reset, SIGNAL(clicked()), this, SLOT(setDefault()));
 }
 
+#define UPDATE_OP_CONTROL() { \
+	radioButton_Max->setChecked(mixOp.op==OP_MAX); \
+	radioButton_Sum->setChecked(mixOp.op==OP_SUM); \
+	radioButton_Mean->setChecked(mixOp.op==OP_MEAN); \
+	radioButton_OIT->setChecked(mixOp.op==OP_OIT); \
+	radioButton_Index->setChecked(mixOp.op==OP_INDEX); \
+	checkBox_R->setEnabled(mixOp.op!=OP_INDEX); \
+	checkBox_G->setEnabled(mixOp.op!=OP_INDEX); \
+	checkBox_B->setEnabled(mixOp.op!=OP_INDEX); \
+	checkBox_Rescale->setEnabled(mixOp.op!=OP_INDEX); \
+}
+
 void ChannelTable::setMixOpMax()
 {
 	bool b = radioButton_Max->isChecked();
 	if (b)
 	{
 		mixOp.op = OP_MAX;
-	    radioButton_Max->setChecked(mixOp.op==OP_MAX);
-	    radioButton_Sum->setChecked(mixOp.op==OP_SUM);
-	    radioButton_Mean->setChecked(mixOp.op==OP_MEAN);
-	    radioButton_Index->setChecked(mixOp.op==OP_INDEX);
+		UPDATE_OP_CONTROL();
 		emit channelTableChanged();
-		checkBox_R->setEnabled(mixOp.op!=OP_INDEX);
-		checkBox_G->setEnabled(mixOp.op!=OP_INDEX);
-		checkBox_B->setEnabled(mixOp.op!=OP_INDEX);
-	    checkBox_Rescale->setEnabled(mixOp.op!=OP_INDEX);
 	}
 }
 void ChannelTable::setMixOpSum()
@@ -459,15 +343,8 @@ void ChannelTable::setMixOpSum()
 	if (b)
 	{
 		mixOp.op = OP_SUM;
-	    radioButton_Max->setChecked(mixOp.op==OP_MAX);
-	    radioButton_Sum->setChecked(mixOp.op==OP_SUM);
-	    radioButton_Mean->setChecked(mixOp.op==OP_MEAN);
-	    radioButton_Index->setChecked(mixOp.op==OP_INDEX);
+		UPDATE_OP_CONTROL();
 		emit channelTableChanged();
-		checkBox_R->setEnabled(mixOp.op!=OP_INDEX);
-		checkBox_G->setEnabled(mixOp.op!=OP_INDEX);
-		checkBox_B->setEnabled(mixOp.op!=OP_INDEX);
-	    checkBox_Rescale->setEnabled(mixOp.op!=OP_INDEX);
 	}
 }
 void ChannelTable::setMixOpMean()
@@ -476,15 +353,18 @@ void ChannelTable::setMixOpMean()
 	if (b)
 	{
 		mixOp.op = OP_MEAN;
-	    radioButton_Max->setChecked(mixOp.op==OP_MAX);
-	    radioButton_Sum->setChecked(mixOp.op==OP_SUM);
-	    radioButton_Mean->setChecked(mixOp.op==OP_MEAN);
-	    radioButton_Index->setChecked(mixOp.op==OP_INDEX);
+		UPDATE_OP_CONTROL();
 		emit channelTableChanged();
-		checkBox_R->setEnabled(mixOp.op!=OP_INDEX);
-		checkBox_G->setEnabled(mixOp.op!=OP_INDEX);
-		checkBox_B->setEnabled(mixOp.op!=OP_INDEX);
-	    checkBox_Rescale->setEnabled(mixOp.op!=OP_INDEX);
+	}
+}
+void ChannelTable::setMixOpOIT()
+{
+	bool b = radioButton_OIT->isChecked();
+	if (b)
+	{
+		mixOp.op = OP_OIT;
+		UPDATE_OP_CONTROL();
+		emit channelTableChanged();
 	}
 }
 void ChannelTable::setMixOpIndex()
@@ -493,15 +373,8 @@ void ChannelTable::setMixOpIndex()
 	if (b)
 	{
 		mixOp.op = OP_INDEX;
-	    radioButton_Max->setChecked(mixOp.op==OP_MAX);
-	    radioButton_Sum->setChecked(mixOp.op==OP_SUM);
-	    radioButton_Mean->setChecked(mixOp.op==OP_MEAN);
-	    radioButton_Index->setChecked(mixOp.op==OP_INDEX);
+		UPDATE_OP_CONTROL();
 		emit channelTableChanged();
-		checkBox_R->setEnabled(mixOp.op!=OP_INDEX);
-		checkBox_G->setEnabled(mixOp.op!=OP_INDEX);
-		checkBox_B->setEnabled(mixOp.op!=OP_INDEX);
-	    checkBox_Rescale->setEnabled(mixOp.op!=OP_INDEX);
 	}
 }
 void ChannelTable::setMixRescale()
@@ -611,6 +484,10 @@ void ChannelTable::pressedClickHandler(int i, int j)
 			{
 				qcolor = QColor(0,0,0,0); //also alpha=0
 			}
+			else
+			{
+				return; //110729
+			}
 
 			begin_batch();
 			int n_row = t->rowCount();
@@ -642,6 +519,11 @@ void ChannelTable::doubleClickHandler(int i, int j)
 	}
 }
 
+#define BOOL_TO_CHECKED(b) (Qt::CheckState(b*2))
+#define INT_TO_CHECKED(b) (Qt::CheckState(b))
+#define CHECKED_TO_INT(b) (int(b))
+#define CHECKED_TO_BOOL(b) (int(b)>0)
+
 
 #define ADD_ONOFF(b)	{curItem = new QTableWidgetItem();	t->setItem(i, j++, curItem); \
 						curItem->setCheckState(BOOL_TO_CHECKED(b));}
@@ -656,7 +538,7 @@ void ChannelTable::doubleClickHandler(int i, int j)
 QTableWidget*  ChannelTable::createTableChannel()
 {
 	QStringList qsl;
-	qsl <<"color" << "channel";
+	qsl <<"color" << "channel"<<"on";
 	int row = listChannel.size();
 	int col = qsl.size();
 
@@ -676,11 +558,15 @@ QTableWidget*  ChannelTable::createTableChannel()
 
 		ADD_QCOLOR(listChannel[i].color);
 
-		ADD_STRING( tr("ch %1").arg(listChannel[i].n) );
+		ADD_STRING( tr("c%1").arg(listChannel[i].n) );
+
+		ADD_ONOFF(listChannel[i].on);
 
 		assert(j==col);
 	}
 	//qDebug("  end   t->rowCount = %d", t->rowCount());
+
+	updateLuts(); //110729
 
 	t->resizeColumnsToContents();
 	return t;
@@ -698,11 +584,38 @@ void ChannelTable::updateTableChannel()
 	{
 		curItem = t->item(ii,0); //color
 		curItem->setData(0, VCOLOR(listChannel[ii].color) );
+
+		curItem = t->item(ii,2); //on/off
+		curItem->setCheckState(BOOL_TO_CHECKED(listChannel[ii].on) );
+
 	}
 	end_batch();
 
+	updateLuts(); //110729
+
 	t->resizeColumnsToContents();
 	//updatedContent(t);
+}
+
+void ChannelTable::updateLuts(int i)
+{
+	//110729, pre-compute lookup-tables
+	int N = listChannel.size();
+	vector<RGBA8> lut(256);
+	if (i==-1)
+	{
+		luts.clear();
+		for (int k=0; k<N; k++)
+		{
+			make_linear_lut_one( listChannel[k].color, lut );
+			luts.push_back(lut);
+		}
+	}
+	else if (i>=0 && i<N)
+	{
+		make_linear_lut_one( listChannel[i].color, lut );
+		luts[i] = lut;
+	}
 }
 
 void ChannelTable::pickChannel(int i, int j)
@@ -715,6 +628,10 @@ void ChannelTable::pickChannel(int i, int j)
 	case 0:
 		listChannel[i].color = RGBA8V(curItem->data(0));
 		UPATE_ITEM_ICON(curItem);
+		updateLuts(i); //110729
+		break;
+	case 2:
+		listChannel[i].on = CHECKED_TO_BOOL(curItem->checkState());
 		break;
 	}
 
@@ -724,13 +641,12 @@ void ChannelTable::pickChannel(int i, int j)
 /////////////////////////////////////////////////////////////////
 #define __BrightenBox__
 
-#define MAX_CONTRAST  500
-#define SHIFT_CONTRAST -100
+#define PI 3.14159265
 
 void BrightenBox::create()
 {
 	QLabel* label_bright = new QLabel("Brightness (-100% ~ +100%)");
-	QLabel* label_contrast = new QLabel(QString("Contrast (%1% ~ %2%)").arg(SHIFT_CONTRAST).arg(MAX_CONTRAST+SHIFT_CONTRAST));
+	QLabel* label_contrast = new QLabel(QString("Contrast (-100% ~ +100%)"));
 	QString note = ("Better to check on '0~255'\n in Channels page for non-8bit.");
 	QLabel* label_note = new QLabel(note);
 	QFont font = label_note->font();
@@ -740,10 +656,10 @@ void BrightenBox::create()
 
 	slider_bright = new QSlider(Qt::Horizontal);	slider_bright->setRange(-100, 100);
 	slider_bright->setTickPosition(QSlider::TicksBelow);
-	slider_contrast = new QSlider(Qt::Horizontal);	slider_contrast->setRange(SHIFT_CONTRAST, MAX_CONTRAST+SHIFT_CONTRAST);
+	slider_contrast = new QSlider(Qt::Horizontal);	slider_contrast->setRange(-100, 100);
 	slider_contrast->setTickPosition(QSlider::TicksBelow);
 	spin_bright = new QSpinBox();		spin_bright->setRange(-100, 100);
-	spin_contrast = new QSpinBox();		spin_contrast->setRange(SHIFT_CONTRAST, MAX_CONTRAST+SHIFT_CONTRAST);
+	spin_contrast = new QSpinBox();		spin_contrast->setRange(-100, 100);
 	push_reset = new QPushButton("Reset");
 
 	QGridLayout* layout = new QGridLayout(this);
@@ -769,17 +685,15 @@ void BrightenBox::create()
 
 void BrightenBox::reset()
 {
-	mixOp.brightness = 0;
-	mixOp.contrast = 1;
 	setBrightness(0);
-	setContrast(100+SHIFT_CONTRAST);
+	setContrast(0);
 }
 
 void BrightenBox::setBrightness(int i)
 {
 	if (i == _bright) return;
 	_bright = i;
-	mixOp.brightness = (i)/100.0;
+	mixOp.brightness = (i/100.0);
 	if (slider_bright)
 	{
 		slider_bright->setValue(i);
@@ -795,7 +709,7 @@ void BrightenBox::setContrast(int i)
 {
 	if (i == _contrast) return;
 	_contrast = i;
-	mixOp.contrast = (i-SHIFT_CONTRAST)/100.0;
+	mixOp.contrast = tan((i+100)/100.0 *(PI/4));
 	if (slider_contrast)
 	{
 		slider_contrast->setValue(i);
