@@ -12,11 +12,12 @@
 using namespace std;
 
 template <class T> int computeEdgeGrid(V3DLONG * (&grids)[3], V3DLONG &gridnum, V3DLONG gsz[3], T * inimg1d, V3DLONG sz[3], double sigma, int r, double theta);
-template <class T> int computeEdgeGrid(V3DLONG * (&grids)[3], V3DLONG &gridnum, V3DLONG gsz[3], T * eimg1d, V3DLONG sz[3]);
+
 template <class T1, class T2> bool computeGaussian(T2 * &outimg1d, T1 * inimg1d,V3DLONG sz[3], double sigma, int r);
 template <class T1, class T2> bool computeThreshold(T2 * &outimg1d, T1 * inimg1d,V3DLONG sz[3], double theta);
 template <class T> bool computeThreshold(T * &inimg1d,V3DLONG sz[3], double theta);
-template <class T1, class T2> bool computeGradience(T2 * &outimg1d, T1 * inimg1d, V3DLONG sz[3]);
+template <class T1, class T2> bool computeGradience(T2 * &outimg1d, T1 * inimg1d, V3DLONG sz[3], double theta);
+template <class T1, class T2> int computeEdgeGrid(V3DLONG * (&grids)[3], V3DLONG &gridnum, V3DLONG gsz[3], T2 * inimg1d, T1 * eimg1d, V3DLONG sz[3], double theta);
 
 template <class T> int computeEdgeGrid(V3DLONG * (&grids)[3], V3DLONG &gridnum, V3DLONG gsz[3], T * inimg1d, V3DLONG sz[3], double sigma, int r, double theta)
 {
@@ -25,28 +26,30 @@ template <class T> int computeEdgeGrid(V3DLONG * (&grids)[3], V3DLONG &gridnum, 
 	double * outimg1d = 0;
 	double * eimg1d = 0;
 	if(computeGaussian(outimg1d, inimg1d, sz, sigma, r) == -1) return -1;
-	if(computeThreshold(outimg1d, sz, theta) == -1) return -1;
-	if(computeGradience(eimg1d, outimg1d, sz) == -1) return -1;
-	if(computeEdgeGrid(grids, gridnum, gsz, eimg1d, sz) == -1) return -1;
+	//if(computeThreshold(outimg1d, sz, theta) == -1) return -1;
+	if(computeGradience(eimg1d, outimg1d, sz, theta) == -1) return -1;
+	if(computeEdgeGrid(grids, gridnum, gsz, inimg1d, eimg1d, sz, theta) == -1) return -1;
 	
 	if(outimg1d) {delete outimg1d; outimg1d = 0;}
 	if(eimg1d) {delete eimg1d; eimg1d = 0;}
 	return 1;
 }
 
-template <class T> int computeEdgeGrid(V3DLONG * (&grids)[3], V3DLONG &gridsnum, V3DLONG gsz[3], T * eimg1d, V3DLONG sz[3])
+template <class T1, class T2> int computeEdgeGrid(V3DLONG * (&grids)[3], V3DLONG &gridsnum, V3DLONG gsz[3], T2 * inimg1d, T1 * eimg1d, V3DLONG sz[3], double theta)
 {
 	if(!eimg1d || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0 || gsz[0] <= 0 || gsz[1] <= 0 || gsz[2] <= 0) return -1;
 
 	gridsnum = gsz[0] * gsz[1] * gsz[2];
 
-	T *** eimg3d = 0;
+	T1 *** eimg3d = 0;
+	T2 *** inimg3d = 0;
 	try
 	{
 		grids[0] =  new V3DLONG[gridsnum];
 		grids[1] =  new V3DLONG[gridsnum];
 		grids[2] =  new V3DLONG[gridsnum];
 		new3dpointer(eimg3d, sz[0], sz[1], sz[2], eimg1d);
+		new3dpointer(inimg3d, sz[0], sz[1], sz[2], inimg1d);
 	}
 	catch(...)
 	{
@@ -54,6 +57,7 @@ template <class T> int computeEdgeGrid(V3DLONG * (&grids)[3], V3DLONG &gridsnum,
 		if(grids[1]) {delete[] grids[1]; grids[1] = 0;}
 		if(grids[2]) {delete[] grids[2]; grids[2] = 0;}
 		if(eimg3d) delete3dpointer(eimg3d, sz[0], sz[1], sz[2]);
+		if(inimg3d) delete3dpointer(inimg3d, sz[0], sz[1], sz[2]);
 		return 0;
 	}
 
@@ -103,12 +107,12 @@ template <class T> int computeEdgeGrid(V3DLONG * (&grids)[3], V3DLONG &gridsnum,
 						}
 					}
 				}
-				if(eimg3d[mz][my][mx] != 0)
+				if(eimg3d[mz][my][mx] >= 1.0 && inimg3d[mz][my][mx] >= theta)
 				{
-					count++;
 					grids[2][count] = mz;// (bz + ez) /2; // mz;
 					grids[1][count] = my;//(by + ey) /2; // my;
 					grids[0][count] = mx;//(bx + ex) /2; // mx;
+					count++;
 				}
 			}
 		}
@@ -116,11 +120,12 @@ template <class T> int computeEdgeGrid(V3DLONG * (&grids)[3], V3DLONG &gridsnum,
 	gridsnum = count;
 
 	if(eimg3d) delete3dpointer(eimg3d, sz[0], sz[1], sz[2]);
+	if(inimg3d) delete3dpointer(eimg3d, sz[0], sz[1], sz[2]);
 
 	return 1;
 }
 
-template <class T1, class T2> bool computeGradience(T2 * &outimg1d, T1 * inimg1d, V3DLONG sz[3])
+template <class T1, class T2> bool computeGradience(T2 * &outimg1d, T1 * inimg1d, V3DLONG sz[3], double theta)
 {
 	if(!inimg1d) return false;
 
@@ -151,6 +156,7 @@ template <class T1, class T2> bool computeGradience(T2 * &outimg1d, T1 * inimg1d
 		{
 			for(i = 0; i < sz[0]; i++)
 			{
+				if(inimg3d[k][j][i] < theta){outimg3d[k][j][i] = (T2) 0.0; continue;}
 				dx = 0; dy = 0; dz = 0;
 
 				int count = 0;
@@ -203,7 +209,7 @@ template <class T> bool computeThreshold(T * &inimg1d,V3DLONG sz[3], double thet
 	for(i = 0; i < size; i++) inimg1d[i] = (inimg1d[i] < theta) ? 0 : inimg1d[i];
 }
 
-template <class T1, class T2> bool computeGaussian(T2 * &outimg1d, T1 const * inimg1d,V3DLONG sz[3], double sigma, int r)
+template <class T1, class T2> bool computeGaussian(T2 * &outimg1d, T1 * inimg1d,V3DLONG sz[3], double sigma, int r)
 {
 	if(!inimg1d || sigma < 0.0 || r%2 != 1) return false;
 	V3DLONG i, j, k;

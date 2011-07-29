@@ -2,9 +2,60 @@
 #define __UTILS_H__
 
 #include "basic_types.h"
+#include <limits>
 
-bool detect_marker(vector<MarkerType> & vecMarker, const unsigned char* inimg1d, V3DLONG sz[3]);
+typedef struct StatisticFeature
+{
+	int ndims;
+	int nindis;
+	vector<double> sum_feat;
+	vector<double> mean_feat;
+	vector<double> min_feat;
+	vector<double> max_feat;
+	StatisticFeature(){ndims=0;}
+	StatisticFeature(int _ndims)
+	{
+		setDims(_ndims);
+	}
+	void setDims(int _ndims)
+	{
+		ndims = _ndims;
+		sum_feat.resize(ndims);
+		mean_feat.resize(ndims);
+		min_feat.resize(ndims);
+		max_feat.resize(ndims);
+	}
+	void init()
+	{
+		if(ndims > 0)
+		for(int j = 0; j < ndims; j++)
+		{
+			min_feat[j] = numeric_limits<double>::max() / 2.0 - 1.0;
+			max_feat[j] = 0.0;
+			sum_feat[j] = 0.0;
+			mean_feat[j] = 0.0;
+		}
+	}
+	void setIndiNum(int _nindis) {nindis = _nindis;}
+} StatFeat;
 
-bool mark_to_feature(vector<FeatureType> & vecFeature, vector<MarkerType> vecMarker, const unsigned char* inimg1d, V3DLONG sz[3]);
+struct CompareResult
+{
+	int id1;
+	int id2;
+	double min_dst;
+};
 
+bool detect_marker(vector<MarkerType> & vecMarker, unsigned char* inimg1d, V3DLONG sz[3]);
+
+bool marker_to_feature(vector<FeatureType> & vecFeature, vector<MarkerType> vecMarker, unsigned char* inimg1d, V3DLONG sz[3]);
+
+vector<MarkerType> feature_to_marker(vector<FeatureType> & vecFeature);
+
+bool uniform_features(vector<FeatureType> &vecFeature1, vector<FeatureType> &vecFeature2);
+
+bool compare_features(vector<CompareResult> &crs, vector<FeatureType> & vecFeature1, vector<FeatureType> & vecFeature2);
+
+vector<MarkerType> extract_id1_markers(vector<CompareResult>&crs, vector<MarkerType> & vecMarker);
+vector<MarkerType> extract_id2_markers(vector<CompareResult>&crs, vector<MarkerType> & vecMarker);
 #endif

@@ -22,7 +22,7 @@ mg_utilities.o : ${SHARED_FUNC_DIR}mg_utilities.h ${SHARED_FUNC_DIR}mg_utilities
 
 basic_types.o: basic_types.cpp basic_types.h
 	${CC} ${CC_FLAGS} -c basic_types.cpp 
-utils.o: utils.cpp utils.h
+utils.o: utils.cpp utils.h basic_types.h ../edge_detection.h
 	${CC} ${CC_FLAGS} -c utils.cpp
 gaussian_blur.o: ../../v3d_convert/gaussian_blur.h ../../v3d_convert/gaussian_blur.cpp
 	${CC} ${CC_FLAGS} -c ../../v3d_convert/gaussian_blur.cpp

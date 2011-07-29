@@ -7,9 +7,11 @@ using namespace std;
 struct MarkerType
 {
     V3DLONG x, y, z;      // point coordinates
+	//double value;
 
     MarkerType() {x=y=z=0;}
 	MarkerType(V3DLONG xx, V3DLONG yy, V3DLONG zz): x(xx), y(yy), z(zz){}
+	//MarkerType(V3DLONG xx, V3DLONG yy, V3DLONG zz, V3DLONG _value): x(xx), y(yy), z(zz), value(_value){}
 };
 
 struct FeatureType

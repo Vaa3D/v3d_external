@@ -1,4 +1,3 @@
-
 TEMPLATE      = lib
 CONFIG       += plugin warning_off
 #CONFIG	     += X86_64 

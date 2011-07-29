@@ -52,12 +52,13 @@ vector<MarkerType> readMarker_file(const string filename)
 
 			MarkerType S;
 
-			S.x = atof(args[0]);
-			S.y = atof(args[1]);
-			S.z = atof(args[2]);
+			S.x = atoi(args[0]);
+			S.y = atoi(args[1]);
+			S.z = atoi(args[2]);
+			//S.value = (argc >=4) ? atoi(args[3]) : -1;
 
 			tmp_vec.push_back(S);
-			for(int i = 0; i < argc; i++) delete [] args[i];
+			//for(int i = 0; i < argc; i++) delete [] args[i];
 		}
 	}
 
@@ -78,7 +79,10 @@ bool writeMarker_file(const string filename, const vector <MarkerType> & vecMark
 	while(it != vecMarker.end())
 	{
 		MarkerType S = *it;
-		ofs<<S.x<<","<<S.y<<","<<S.z<<endl;
+		ofs<<S.x<<","<<S.y<<","<<S.z;
+		//if(S.value >= 0) ofs<<","<<S.value<<endl;
+		//else 
+			ofs<<endl;
 		it++;
 	}
 	ofs.close();
@@ -117,7 +121,7 @@ vector<FeatureType> readFeature_file(const string filename)
 			for(int i = 3; i < argc; i++)S.descriptor.push_back(atof(args[i]));
 
 			tmp_vec.push_back(S);
-			for(int i = 0; i < argc; i++) delete [] args[i];
+			//for(int i = 0; i < argc; i++) delete [] args[i];
 		}
 	}
 
@@ -141,6 +145,7 @@ bool writeFeature_file(const string filename, const vector <FeatureType> & vecFe
 		ofs<<S.x<<","<<S.y<<","<<S.z;
 		vector<double>::iterator itr = S.descriptor.begin();
 		while(itr != S.descriptor.end()) { ofs<<","<<*itr; itr++; }
+		ofs<<endl;
 		it++;
 	}
 	ofs.close();

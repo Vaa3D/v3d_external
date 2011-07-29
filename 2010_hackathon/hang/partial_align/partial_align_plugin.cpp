@@ -296,7 +296,7 @@ int compute_edge_map(V3DPluginCallback2 &callback, QWidget *parent)
 
 	//computeGaussian(outimg1d, inimg1d, sz, sigma, r);
 	//inimg1d = outimg1d;
-	computeGradience(outimg1d, inimg1d, sz);
+	computeGradience(outimg1d, inimg1d, sz, 0.0f);
 
 	Image4DSimple* p4DImage = new Image4DSimple();
 
