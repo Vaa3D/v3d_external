@@ -41,6 +41,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 
 //////////////////////////////////////////////////////////////////////
+#define ___ChannelTabWidget___
 
 void ChannelTabWidget::updateXFormWidget(int plane)	//called by linkXFormWidgetChannel
 {
@@ -56,14 +57,14 @@ void ChannelTabWidget::linkXFormWidgetChannel()			//link updated channels of XFo
 	}
 	//so need re-create all sub widget again
 
-	channelPage = new ChannelTable(mixOp, xform, this); //call channelPage->linkXFormWidgetChannel();
+	channelPage = new ChannelTable(csdata, xform, this); //call channelPage->linkXFormWidgetChannel();
 
 	//if (tabOptions)   tabOptions->clear();
 	if (tabOptions)
 	{
 		int i;
 		QString qs;
-		i= tabOptions->insertTab(0, channelPage,		qs =QString("Channels (%1)").arg(channelPage->rowCount()));
+		i= tabOptions->insertTab(0, channelPage,	qs =QString("Channels (%1)").arg(channelPage->rowCount()));
 		tabOptions->setTabToolTip(i, qs);
 		tabOptions->setCurrentIndex(0); ///////
 	}
@@ -81,15 +82,28 @@ void ChannelTabWidget::createFirst()
 
 	linkXFormWidgetChannel(); //create or re-create channelPage
 
-	brightenPage = new BrightenBox(mixOp, xform, this);
+	brightenPage = new BrightenBox(csdata, xform, this);
 	if (tabOptions)
 	{
 		int i;
 		QString qs;
-		i= tabOptions->insertTab(1, brightenPage,		qs =QString("Intensity"));
+		i= tabOptions->insertTab( 1, brightenPage,	qs =QString("Intensity"));
 		tabOptions->setTabToolTip(i, qs);
 		tabOptions->setCurrentIndex(0);/////
 	}
+	miscPage = new MiscBox(csdata, xform, this);
+	if (tabOptions)
+	{
+		int i;
+		QString qs;
+		i= tabOptions->insertTab( 2, miscPage,		qs =QString("etc."));
+		tabOptions->setTabToolTip(i, qs);
+		tabOptions->setCurrentIndex(0);/////
+	}
+
+	//doesn't work
+	//connect( miscPage,SIGNAL(signalExportRGBStack()), channelPage, SLOT(exportRGBStack()) );
+
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -97,7 +111,7 @@ void ChannelTabWidget::createFirst()
 
 void ChannelTable::updateXFormWidget(int plane) // plane<=0 for all planes
 {
-	qDebug("ChannelTable::updateXFormWidget( %d )", plane);
+//	qDebug("ChannelTable::updateXFormWidget( %d )", plane);
 
 	if (! xform) return;
 	My4DImage* img4d = xform->getImageData();
@@ -127,12 +141,12 @@ void ChannelTable::updateXFormWidget(int plane) // plane<=0 for all planes
 		xform->setColorMapDispType(colorUnknown); //110725, switch back to do new code
 	}
 
-	QPixmap pxm;
+	QImage slice;
 //#define P4D(img4d)  ((dtype==V3D_UINT8)? img4d->data4d_uint8 : \
 //					(dtype==V3D_UINT16)? img4d->data4d_uint16 : \
 //					(dtype==V3D_FLOAT32)? img4d->data4d_float32 : img4d->data4d_virtual)
-#define COPY_mixChannel_plane( X, p4d ) {\
-	pxm = copyRaw2QPixmap_Slice( \
+#define COPY_xform_mixChannel_plane( X, p4d ) {\
+	slice = copyRaw2QImage_Slice( \
 			listChannel, \
 			mixOp, \
 			&luts, \
@@ -145,25 +159,25 @@ void ChannelTable::updateXFormWidget(int plane) // plane<=0 for all planes
 			img4d->getCDim(), \
 			img4d->p_vmax, \
 			img4d->p_vmin); \
-	xform->mixChannelColorPlane##X(pxm); \
-}
+	xform->mixChannelColorPlane##X(QPixmap::fromImage(slice)); \
+	}
 
 	switch (dtype)
 	{
 	case V3D_UINT8:
-		if (plane<=0 || plane==imgPlaneX)  COPY_mixChannel_plane( X, data4d_uint8 );
-		if (plane<=0 || plane==imgPlaneY)  COPY_mixChannel_plane( Y, data4d_uint8 );
-		if (plane<=0 || plane==imgPlaneZ)  COPY_mixChannel_plane( Z, data4d_uint8 );
+		if (plane<=0 || plane==imgPlaneX)  COPY_xform_mixChannel_plane( X, data4d_uint8 );
+		if (plane<=0 || plane==imgPlaneY)  COPY_xform_mixChannel_plane( Y, data4d_uint8 );
+		if (plane<=0 || plane==imgPlaneZ)  COPY_xform_mixChannel_plane( Z, data4d_uint8 );
 		break;
 	case V3D_UINT16:
-		if (plane<=0 || plane==imgPlaneX)  COPY_mixChannel_plane( X, data4d_uint16 );
-		if (plane<=0 || plane==imgPlaneY)  COPY_mixChannel_plane( Y, data4d_uint16 );
-		if (plane<=0 || plane==imgPlaneZ)  COPY_mixChannel_plane( Z, data4d_uint16 );
+		if (plane<=0 || plane==imgPlaneX)  COPY_xform_mixChannel_plane( X, data4d_uint16 );
+		if (plane<=0 || plane==imgPlaneY)  COPY_xform_mixChannel_plane( Y, data4d_uint16 );
+		if (plane<=0 || plane==imgPlaneZ)  COPY_xform_mixChannel_plane( Z, data4d_uint16 );
 		break;
 	case V3D_FLOAT32:
-		if (plane<=0 || plane==imgPlaneX)  COPY_mixChannel_plane( X, data4d_float32 );
-		if (plane<=0 || plane==imgPlaneY)  COPY_mixChannel_plane( Y, data4d_float32 );
-		if (plane<=0 || plane==imgPlaneZ)  COPY_mixChannel_plane( Z, data4d_float32 );
+		if (plane<=0 || plane==imgPlaneX)  COPY_xform_mixChannel_plane( X, data4d_float32 );
+		if (plane<=0 || plane==imgPlaneY)  COPY_xform_mixChannel_plane( Y, data4d_float32 );
+		if (plane<=0 || plane==imgPlaneZ)  COPY_xform_mixChannel_plane( Z, data4d_float32 );
 		break;
 	default:
 		break;
@@ -650,7 +664,7 @@ void BrightenBox::create()
 	QString note = ("Better to check on '0~255'\n in Channels page for non-8bit.");
 	QLabel* label_note = new QLabel(note);
 	QFont font = label_note->font();
-	font.setPointSizeF(font.pointSize()*.66);
+	font.setPointSizeF(font.pointSize()*.60);
 	label_note->setFont(font);
 	label_note->setToolTip(note);
 
@@ -721,4 +735,119 @@ void BrightenBox::setContrast(int i)
 	emit brightenChanged();
 }
 
+#define ___MiscBox___
+
+void MiscBox::create()
+{
+	push_export = new QPushButton("Export a RGB stack");
+
+	QGridLayout* layout = new QGridLayout(this);
+
+	layout->addWidget(push_export, 	1,0, 1,20);
+
+	//connect(push_export, SIGNAL(clicked()), this, SIGNAL(signalExportRGBStack()));
+	connect(push_export, SIGNAL(clicked()), this, SLOT(exportRGBStack()));
+}
+
+void MiscBox::exportRGBStack()
+{
+	if (! xform) return;
+	My4DImage* img4d = xform->getImageData();
+	if (! img4d)
+	{
+		v3d_msg("No image data now.");
+		return;
+	}
+    ImagePixelType dtype;
+  	unsigned char **** p4d = (unsigned char ****)img4d->getData(dtype);
+	if (!p4d)
+	{
+		v3d_msg("No image data pointer now.");
+		return;
+	}
+	MainWindow* mainwin = xform->getMainControlWindow();
+	if (! mainwin)
+	{
+		v3d_msg("No main window pointer now.");
+		return;
+	}
+
+	// do old code for OP_INDEX
+	if (mixOp.op==OP_INDEX)
+	{
+		//v3d_msg("No support for 'Index' mode.");
+		img4d->proj_general_convertIndexedImg2RGB();
+		return;
+	}
+
+	V3DLONG sx = img4d->getXDim();
+	V3DLONG sy = img4d->getYDim();
+	V3DLONG sz = img4d->getZDim();
+	unsigned char* newdata1d = new unsigned char[sx*sy*sz*3]; //RGB stack
+	Image4DSimple tmp;
+	tmp.setData(newdata1d, sx,sy,sz, 3, V3D_UINT8);
+	Image4DProxy<Image4DSimple> ptmp(&tmp);
+
+//	qDebug("MiscBox::exportRGBStack, Image4DProxy<Image4DSimple> ptmp(&tmp)");
+
+#define COPY_mixChannel_planeZ( slice, zpos, p4d ) {\
+	slice = copyRaw2QImage_Slice( \
+			listChannel, \
+			mixOp, \
+			&luts, \
+			imgPlaneZ, \
+			zpos, \
+			img4d->p4d, \
+			img4d->getXDim(), \
+			img4d->getYDim(), \
+			img4d->getZDim(), \
+			img4d->getCDim(), \
+			img4d->p_vmax, \
+			img4d->p_vmin); \
+	}
+
+	for (V3DLONG z=0; z<sz; z++)
+	{
+		QImage slice;
+		switch (dtype)
+		{
+		case V3D_UINT8:
+			COPY_mixChannel_planeZ( slice, z+1, data4d_uint8 );
+			break;
+		case V3D_UINT16:
+			COPY_mixChannel_planeZ( slice, z+1, data4d_uint16 );
+			break;
+		case V3D_FLOAT32:
+			COPY_mixChannel_planeZ( slice, z+1, data4d_float32 );
+			break;
+		default:
+			break;
+		}
+		if (slice.isNull())
+		{
+			v3d_msg("Error: Z-slice size is NULL.");
+			return;
+		}
+
+//		qDebug("MiscBox::exportRGBStack, (z=%d) pixel(%d,%d) tmp(%d %d %d %d)",
+//				z, slice.width(),slice.height(), sx,sy,sz,tmp.getCDim());
+
+		for (V3DLONG y=0; y<sy; y++)
+		for (V3DLONG x=0; x<sx; x++)
+		{
+			BGRA8 c; //QRgb #AArrGGbb
+			c.i = slice.pixel(x,y);
+			*ptmp.at_uint8(x,y,z,0) = c.r;
+			*ptmp.at_uint8(x,y,z,1) = c.g;
+			*ptmp.at_uint8(x,y,z,2) = c.b;
+		}
+	}
+
+//	qDebug("MiscBox::exportRGBStack, end of all slice");
+
+	XFormWidget* newxform = mainwin->newImageWindow(""); //here will be "?_processed"
+	mainwin->setImage(newxform, &tmp);
+	mainwin->setImageName(newxform, "exported_RGBStack");
+	mainwin->updateImageWindow(newxform);
+}
 

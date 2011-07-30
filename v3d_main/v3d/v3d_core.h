@@ -551,7 +551,7 @@ public slots:
     void changeFocusPlane(int c);
     void changeColorType(ImageDisplayColorType c);
 
-    void setPixmap(QPixmap& pxm) {this->pixmap = pxm; update();} //110722 RZC, for directly update pixmap of 3view
+    void setPixmap(const QPixmap& pxm) {this->pixmap = pxm; update();} //110722 RZC, for directly update pixmap of 3view
 
     void setPixmapType();
     void reset();

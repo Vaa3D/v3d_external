@@ -1302,8 +1302,8 @@ bool XFormView::internal_only_imgplane_op()
   	unsigned char **** p4d = (unsigned char ****)imgData->getData(dtype);
 	if (!p4d) return false;
 
-	qDebug("XFormView::internal_only_imgplane_op(), colorChanged(%d)", this->Ptype);
 
+	//qDebug("XFormView::internal_only_imgplane_op(), colorChanged(%d)", this->Ptype);
 #if USE_CHANNEL_TABLE
 	if (! (imgData->getCDim()==1 && (Ctype>=colorPseudoMaskColor)) )
 	{

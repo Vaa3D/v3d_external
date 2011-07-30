@@ -383,13 +383,6 @@ template <class T> QPixmap copyRaw2QPixmap_Slice( //test function for 4 channels
 	return QPixmap::fromImage(tmpimg);
 }
 
-struct Channel
-{
-	int n;				// index
-	bool on;
-	RGBA8 color;
-	Channel() {n=0; on=true;  color.r=color.g=color.b=color.a=255;}
-};
 
 struct MixOP
 {
@@ -402,7 +395,16 @@ struct MixOP
 			brightness=0; contrast=1;}
 };
 
-template <class T> QPixmap copyRaw2QPixmap_Slice( //real function include brightness/contrast
+struct Channel
+{
+	int n;				// index
+	bool on;
+	RGBA8 color;
+	Channel() {n=0; on=true;  color.r=color.g=color.b=color.a=255;}
+};
+
+
+template <class T> QImage copyRaw2QImage_Slice( //real function include brightness/contrast
 		const QList<Channel> & listChannel,
 		const MixOP & mixOp,
 		vector< vector<RGBA8> >* p_luts, //pre-computed external LUTs, if not presented set to 0
@@ -537,14 +539,22 @@ template <class T> QPixmap copyRaw2QPixmap_Slice( //real function include bright
 
 	//qDebug()<<"copyRaw2QPixmap_Slice fromImage(tmpimg)"<<tmpimg.size();
 
-	return QPixmap::fromImage(tmpimg);
+	return (tmpimg);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 //widget for control channel's color
 
+struct ChannelSharedData
+{
+	MixOP mixOp;
+	QList<Channel> listChannel;
+	vector< vector<RGBA8> > luts;
+};
+
 class ChannelTable;
 class BrightenBox;
+class MiscBox;
 
 class ChannelTabWidget : public QTabWidget //QWidget
 {
@@ -553,8 +563,11 @@ class ChannelTabWidget : public QTabWidget //QWidget
 	QTabWidget* tabOptions;
 	ChannelTable *channelPage;
 	BrightenBox *brightenPage;
+	MiscBox *miscPage;
+
 	void createFirst();
-	MixOP mixOp;
+
+	ChannelSharedData csdata; 		//shared with channelPage & brightenPage
 
 public:
 	ChannelTabWidget(QWidget* parent=0) :QTabWidget(parent)
@@ -563,6 +576,7 @@ public:
 		tabOptions = 0;
 		channelPage = 0;
 		brightenPage = 0;
+		miscPage = 0;
 		//TURNOFF_ITEM_EDITOR(); //replaced with table->setEditTriggers(QAbstractItemView::NoEditTriggers)
 		createFirst();
 	};
@@ -580,13 +594,15 @@ class ChannelTable : public QWidget
     Q_OBJECT;
 
 public:
-	ChannelTable(MixOP& mixop, XFormWidget* xform, QWidget* parent=0) :QWidget(parent)
-		, mixOp(mixop) /////
+	ChannelTable(ChannelSharedData& csd, XFormWidget* xform, QWidget* parent=0) :QWidget(parent)
+		, mixOp(csd.mixOp)
+		, listChannel(csd.listChannel)
+		, luts(csd.luts)
 		, xform(xform) /////
 	{
 		init_member();
 		linkXFormWidgetChannel();
-		connect( this,SIGNAL(channelTableChanged()), this, SLOT(updateXFormWidget()) );
+		connect( this,SIGNAL(channelTableChanged()), this, SLOT(updateXFormWidget()) ); //internal connect
 	};
 	virtual ~ChannelTable() {};
 
@@ -616,10 +632,10 @@ protected slots:
 	void setDefault();
 
 protected:
-	MixOP & mixOp; //just a reference to ChannelTabWidget::mixOp
+	MixOP & mixOp; 					//just a reference to ChannelTabWidget::csdata
+	QList<Channel> & listChannel;	//just a reference to ChannelTabWidget::csdata
+	vector< vector<RGBA8> > & luts; //just a reference to ChannelTabWidget::csdata
 	XFormWidget* xform;
-	QList<Channel> listChannel;
-	vector< vector<RGBA8> > luts;
 
 	QGridLayout *boxLayout;
 	QTableWidget *table;
@@ -651,13 +667,15 @@ protected:
 
 };
 
+///////////////////////////////////////////////
+
 class BrightenBox : public QWidget
 {
     Q_OBJECT;
 
 public:
-	BrightenBox(MixOP & mixop, XFormWidget* xform, QWidget* parent=0) :QWidget(parent)
-		, mixOp(mixop) /////
+	BrightenBox(ChannelSharedData& csd, XFormWidget* xform, QWidget* parent=0) :QWidget(parent)
+		, mixOp(csd.mixOp)
 		, xform(xform) /////
 	{
 		init_member();
@@ -675,7 +693,7 @@ protected slots:
 	void reset();
 
 protected:
-	MixOP & mixOp; //just a reference to ChannelTabWidget::mixOp
+	MixOP & mixOp; 					//just a reference to ChannelTabWidget::csdata
 	XFormWidget* xform;
 
 	QSlider *slider_bright, *slider_contrast;
@@ -687,6 +705,43 @@ protected:
 		slider_bright=slider_contrast=0;
 		spin_bright=spin_contrast=0;
 		push_reset=0;
+	}
+	void create();
+};
+
+/////////////////////////////////////////////////
+
+class MiscBox : public QWidget
+{
+    Q_OBJECT;
+
+public:
+	MiscBox(ChannelSharedData& csd, XFormWidget* xform, QWidget* parent=0) :QWidget(parent)
+		, mixOp(csd.mixOp)
+		, listChannel(csd.listChannel)
+		, luts(csd.luts)
+		, xform(xform)
+	{
+		init_member();
+		create();
+	};
+	virtual ~MiscBox() {};
+
+//signals:
+//	void signalExportRGBStack(); //connect( miscPage,SIGNAL(signalExportRGBStack()), channelPage, SLOT(exportRGBStack()) );
+public slots:
+	void exportRGBStack();
+
+protected:
+	MixOP & mixOp; 					//just a reference to ChannelTabWidget::csdata
+	QList<Channel> & listChannel;	//just a reference to ChannelTabWidget::csdata
+	vector< vector<RGBA8> > & luts; //just a reference to ChannelTabWidget::csdata
+	XFormWidget* xform;
+
+	QPushButton *push_export;
+	void init_member()
+	{
+		push_export=0;
 	}
 	void create();
 };

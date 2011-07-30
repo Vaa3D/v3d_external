@@ -234,9 +234,9 @@ public slots:
 //    void changeColorType(ImageDisplayColorType c);
 
 //110722 RZC, for directly update pixmap of 3view
-	void mixChannelColorPlaneX(QPixmap& pxm) {yz_view->setPixmap(pxm);}
-	void mixChannelColorPlaneY(QPixmap& pxm) {zx_view->setPixmap(pxm);}
-	void mixChannelColorPlaneZ(QPixmap& pxm) {xy_view->setPixmap(pxm);}
+	void mixChannelColorPlaneX(const QPixmap& pxm) {yz_view->setPixmap(pxm);}
+	void mixChannelColorPlaneY(const QPixmap& pxm) {zx_view->setPixmap(pxm);}
+	void mixChannelColorPlaneZ(const QPixmap& pxm) {xy_view->setPixmap(pxm);}
 
 	void setColorRedType();
     void setColorGreenType();
