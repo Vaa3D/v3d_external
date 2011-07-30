@@ -26,6 +26,8 @@
 
 #include "imageblend.h"
 
+#define EMPTY 1
+
 //
 Q_EXPORT_PLUGIN2(imageBlend, ImageBlendPlugin);
 
@@ -118,12 +120,13 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
     
     // find reference : suppose reference color channel with most information
     V3DLONG sum1 = 0, sum2 = 0;
-    V3DLONG ref1, ref2;
+    V3DLONG ref1, ref2, nullcolor;
+    bool b_existNULL=false, b_img1NULL;
     
     for(V3DLONG c=0; c<sz_img1[3]; c++)
     {
         V3DLONG offset_c = c*sz_img1[0]*sz_img1[1]*sz_img1[2];
-        V3DLONG sumint1 = 0, sumint2 = 0;
+        V3DLONG sumint1 = 0;
         for (V3DLONG k=0; k<sz_img1[2]; k++) 
         {
             V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
@@ -135,15 +138,49 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
                     V3DLONG idx = offset_j + i;
                     
                     sumint1 += p1dImg1[idx];
-                    sumint2 += p1dImg2[idx];
                 }
             }
+        }
+        
+        if(sumint1<EMPTY)
+        {
+            b_existNULL = true;
+            b_img1NULL = false;
+            nullcolor = c;
         }
         
         if(sumint1>sum1)
         {
             sum1 = sumint1;
             ref1 = c;
+        }
+        
+    }
+    
+    for(V3DLONG c=0; c<sz_img2[3]; c++)
+    {
+        V3DLONG offset_c = c*sz_img1[0]*sz_img1[1]*sz_img1[2];
+        V3DLONG sumint2 = 0;
+        for (V3DLONG k=0; k<sz_img1[2]; k++) 
+        {
+            V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
+            for(V3DLONG j=0; j<sz_img1[1]; j++)
+            {
+                V3DLONG offset_j = offset_k + j*sz_img1[0];
+                for(V3DLONG i=0; i<sz_img1[0]; i++)
+                {
+                    V3DLONG idx = offset_j + i;
+                    
+                    sumint2 += p1dImg2[idx];
+                }
+            }
+        }
+        
+        if(sumint2<EMPTY)
+        {
+            b_existNULL = true;
+            b_img1NULL = true;
+            nullcolor = c;
         }
         
         if(sumint2>sum2)
@@ -160,7 +197,7 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
     V3DLONG colordim = sz_img1[3]+sz_img2[3]-1;
     V3DLONG totalplxs = colordim * pagesz;
     
-    qDebug()<<"color dim ..."<<sz_img1[3]<<sz_img2[3]<<colordim;
+    if(b_existNULL) colordim--;
     
 	if(datatype_img1 == V3D_UINT8)
 	{
@@ -183,7 +220,7 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
         {
             V3DLONG offset_c = c*pagesz;
             
-            V3DLONG offset_c1, offset_c2;
+            V3DLONG offset_c1, offset_c2;            
             bool b_img1;
             if(c<sz_img1[3])
             {
@@ -191,7 +228,24 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
                 
                 V3DLONG c1 = c;
                 
-                if(c!=ref1)
+                if(b_existNULL && b_img1NULL)
+                {
+                    if(c1!=nullcolor)
+                    {
+                        offset_c1 = c1*pagesz;
+                    }
+                    else
+                    {
+                        c1++;
+                        
+                        if(c1<sz_img1[3])
+                            offset_c1 = c1*pagesz;
+                        else
+                            b_img1 = false;
+                    }
+                }
+                
+                if(c1!=ref1)
                 {
                     offset_c1 = c1*pagesz;
                 }
@@ -215,6 +269,23 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
             {
                 
                 V3DLONG c2 = c - sz_img1[3] - 1;
+                
+                if(b_existNULL && !b_img1NULL)
+                {
+                    if(c2!=nullcolor)
+                    {
+                        offset_c2 = c2*pagesz;
+                    }
+                    else
+                    {
+                        c2++;
+                        
+                        if(c2<sz_img2[3])
+                            offset_c2 = c2*pagesz;
+                        else
+                            continue;
+                    }
+                }
                 
                 if(c2!=ref2)
                 {
@@ -310,7 +381,24 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
                 
                 V3DLONG c1 = c;
                 
-                if(c!=ref1)
+                if(b_existNULL && b_img1NULL)
+                {
+                    if(c1!=nullcolor)
+                    {
+                        offset_c1 = c1*pagesz;
+                    }
+                    else
+                    {
+                        c1++;
+                        
+                        if(c1<sz_img1[3])
+                            offset_c1 = c1*pagesz;
+                        else
+                            b_img1 = false;
+                    }
+                }
+                
+                if(c1!=ref1)
                 {
                     offset_c1 = c1*pagesz;
                 }
@@ -334,6 +422,23 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
             {
                 
                 V3DLONG c2 = c - sz_img1[3] - 1;
+                
+                if(b_existNULL && !b_img1NULL)
+                {
+                    if(c2!=nullcolor)
+                    {
+                        offset_c2 = c2*pagesz;
+                    }
+                    else
+                    {
+                        c2++;
+                        
+                        if(c2<sz_img2[3])
+                            offset_c2 = c2*pagesz;
+                        else
+                            continue;
+                    }
+                }
                 
                 if(c2!=ref2)
                 {
@@ -428,7 +533,24 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
                 
                 V3DLONG c1 = c;
                 
-                if(c!=ref1)
+                if(b_existNULL && b_img1NULL)
+                {
+                    if(c1!=nullcolor)
+                    {
+                        offset_c1 = c1*pagesz;
+                    }
+                    else
+                    {
+                        c1++;
+                        
+                        if(c1<sz_img1[3])
+                            offset_c1 = c1*pagesz;
+                        else
+                            b_img1 = false;
+                    }
+                }
+                
+                if(c1!=ref1)
                 {
                     offset_c1 = c1*pagesz;
                 }
@@ -452,6 +574,23 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
             {
                 
                 V3DLONG c2 = c - sz_img1[3] - 1;
+                
+                if(b_existNULL && !b_img1NULL)
+                {
+                    if(c2!=nullcolor)
+                    {
+                        offset_c2 = c2*pagesz;
+                    }
+                    else
+                    {
+                        c2++;
+                        
+                        if(c2<sz_img2[3])
+                            offset_c2 = c2*pagesz;
+                        else
+                            continue;
+                    }
+                }
                 
                 if(c2!=ref2)
                 {
