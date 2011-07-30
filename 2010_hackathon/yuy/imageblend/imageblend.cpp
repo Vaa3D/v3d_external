@@ -26,6 +26,9 @@
 
 #include "imageblend.h"
 
+//
+Q_EXPORT_PLUGIN2(imageBlend, ImageBlendPlugin);
+
 // func
 int image_blending(V3DPluginCallback2 &callback, QWidget *parent);
 
@@ -34,7 +37,7 @@ const QString title = "Image Blending";
 QStringList ImageBlendPlugin::menulist() const
 {
     return QStringList() << tr("Image Blend")
-						 << tr("About");
+    << tr("About");
 }
 
 void ImageBlendPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
@@ -53,7 +56,7 @@ void ImageBlendPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &call
 // function call
 QStringList ImageBlendPlugin::funclist() const
 {
-	return QStringList() << "";
+	return QStringList() << "ImageBlend";
 }
 
 bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output, V3DPluginCallback2 & v3d, QWidget * parent)
@@ -70,7 +73,7 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
     ImageBlendingDialog dialog(callback, parent, NULL);
 	if (dialog.exec()!=QDialog::Accepted)
 		return -1;
-
+    
     QString m_InputFileName1 = dialog.fn_img1;
     QString m_InputFileName2 = dialog.fn_img2;
     
@@ -194,7 +197,7 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
                     else
                         b_img1 = false;
                 }
-                 
+                
             }
             else
             {
