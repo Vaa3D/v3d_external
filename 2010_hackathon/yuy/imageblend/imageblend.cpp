@@ -190,6 +190,8 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
         }
     }
     
+    qDebug()<<"ref ..."<<ref1<<ref2;
+    
     // image blending	
     // suppose image1 and image2 have a common reference
     // the blended image color dim = image1 color dim + image2 color dim - 1
@@ -475,11 +477,11 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
                         
                         if (b_img1) 
                         {
-                            data1d[idx] = p1dImg1[offset_j1 + i];
+                            data1d[idx] = ((unsigned short *)p1dImg1)[offset_j1 + i];
                         }
                         else
                         {
-                            data1d[idx] = p1dImg2[offset_j2 + i];
+                            data1d[idx] = ((unsigned short *)p1dImg2)[offset_j2 + i];
                         }
                     }
                 }
@@ -492,7 +494,7 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
         
         for(V3DLONG i=0; i<pagesz; i++)
         {
-            data1d[offset + i] = 0.5*(p1dImg1[offset1+i] + p1dImg2[offset2+i]);
+            data1d[offset + i] = 0.5*((unsigned short *)p1dImg1)[offset1+i] + 0.5*((unsigned short *)p1dImg2)[offset2+i];
         }
 		
 		//display
@@ -627,11 +629,11 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
                         
                         if (b_img1) 
                         {
-                            data1d[idx] = p1dImg1[offset_j1 + i];
+                            data1d[idx] = ((float *)p1dImg1)[offset_j1 + i];
                         }
                         else
                         {
-                            data1d[idx] = p1dImg2[offset_j2 + i];
+                            data1d[idx] = ((float *)p1dImg2)[offset_j2 + i];
                         }
                     }
                 }
@@ -644,7 +646,7 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
         
         for(V3DLONG i=0; i<pagesz; i++)
         {
-            data1d[offset + i] = 0.5*(p1dImg1[offset1+i] + p1dImg2[offset2+i]);
+            data1d[offset + i] = 0.5*((float *)p1dImg1)[offset1+i] + 0.5*((float *)p1dImg2)[offset2+i];
         }
 		
 		//display
