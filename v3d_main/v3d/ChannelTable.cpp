@@ -239,16 +239,17 @@ void ChannelTable::linkXFormWidgetChannel()
 void ChannelTable::createNewTable()
 {
 	table = createTableChannel();
+	table->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
 	radioButton_Max = new QRadioButton("Max");
 	radioButton_Sum = new QRadioButton("Sum");
 	radioButton_Mean = new QRadioButton("Mean");
-	radioButton_OIT = new QRadioButton("OIT");  radioButton_OIT->setToolTip("Order Independent Transparency");
+	radioButton_OIT = new QRadioButton("OIT");  	radioButton_OIT->setToolTip("Order Independent Transparency");
 	radioButton_Index = new QRadioButton("Index");
-	checkBox_Rescale = new QCheckBox("0~255");
-	checkBox_R = new QCheckBox("R");
-	checkBox_G = new QCheckBox("G");
-	checkBox_B = new QCheckBox("B");
+	checkBox_Rescale = new QCheckBox("0~255");		checkBox_Rescale->setToolTip("Re-scale before LUT");
+	checkBox_R = new QCheckBox("R");		checkBox_R->setToolTip("Output Red");
+	checkBox_G = new QCheckBox("G");		checkBox_G->setToolTip("Output Green");
+	checkBox_B = new QCheckBox("B");		checkBox_B->setToolTip("Output Blue");
 	pushButton_Reset = new QPushButton("Reset");
 
 	QGridLayout* boxlayout = new QGridLayout(this);
@@ -260,13 +261,13 @@ void ChannelTable::createNewTable()
 	oplayout->addWidget(radioButton_Index,	5,0, 1,1);
 
 	const int nrow = 4;
-	boxlayout->addLayout(oplayout, 			1,16, nrow,4);
+	boxlayout->addLayout(oplayout, 			1,16, nrow,5);
 	boxlayout->addWidget(table,				1,0, nrow,16); //at least need a empty table
-	boxlayout->addWidget(checkBox_Rescale,	nrow+1,10, 1,5);
+	boxlayout->addWidget(checkBox_Rescale,	nrow+1,16, 1,5);
 	boxlayout->addWidget(checkBox_R,		nrow+1,0, 1,3);
 	boxlayout->addWidget(checkBox_G,		nrow+1,3, 1,3);
 	boxlayout->addWidget(checkBox_B,		nrow+1,6, 1,3);
-	boxlayout->addWidget(pushButton_Reset,	nrow+1,15, 1,5);
+	boxlayout->addWidget(pushButton_Reset,	nrow+1,10, 1,5);
 	boxlayout->setContentsMargins(0,0,0,0); //remove margins
 	boxLayout = boxlayout; //for replacing new table in layout
 
@@ -461,7 +462,8 @@ void ChannelTable::pressedClickHandler(int i, int j)
 		{
 			QMenu menu;
 			QAction *act=0, *actDialog=0,
-					*actRed=0, *actGreen=0, *actBlue=0, *actGray=0, *actBlank=0;
+					*actRed=0, *actGreen=0, *actBlue=0, *actGray=0, *actBlank=0,
+					*actHanchuan=0, *actRandom=0;
 
 			menu.addAction(actDialog 	= new QAction(tr("Color dialog ..."), this));
 			menu.addSeparator();
@@ -470,6 +472,9 @@ void ChannelTable::pressedClickHandler(int i, int j)
 		    menu.addAction(actBlue 	= new QAction(tr("Blue"), this));
 		    menu.addAction(actGray 	= new QAction(tr("Gray  (r=g=b=255)"), this));
 		    menu.addAction(actBlank = new QAction(tr("Blank (r=g=b=a=0)"), this));
+			menu.addSeparator();
+		    menu.addAction(actHanchuan = new QAction(tr("Hanchuan's color"), this));
+		    menu.addAction(actRandom = new QAction(tr("Random color"), this));
 
 		    act = menu.exec(QCursor::pos());
 
@@ -498,6 +503,8 @@ void ChannelTable::pressedClickHandler(int i, int j)
 			{
 				qcolor = QColor(0,0,0,0); //also alpha=0
 			}
+			else if (act==actHanchuan) {}
+			else if (act==actRandom) {}
 			else
 			{
 				return; //110729
@@ -505,10 +512,22 @@ void ChannelTable::pressedClickHandler(int i, int j)
 
 			begin_batch();
 			int n_row = t->rowCount();
+			int i=0;
 			for (int ii=0; ii<n_row; ii++)
 			{
 				curItem = t->item(ii,0); //color
 				if (! curItem->isSelected()) continue; // skip un-selected
+
+				if (act==actHanchuan)
+				{
+					int j = (i++)%hanchuan_colortable_size();
+					qcolor = QColor(hanchuan_colortable[j][0],hanchuan_colortable[j][1],hanchuan_colortable[j][2]);
+				}
+				else if (act==actRandom)
+				{
+					RGB8 c = random_rgb8();
+					qcolor = QColor(c.r, c.g, c.b);
+				}
 
 				curItem->setData(0, qVariantFromValue(qcolor));
 			}
