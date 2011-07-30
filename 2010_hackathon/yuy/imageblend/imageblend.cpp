@@ -44,11 +44,7 @@ void ImageBlendPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &call
 {
     if (menu_name == tr("Image Blend"))
     {
-        if(!image_blending(callback, parent))
-        {
-            QMessageBox::information(parent, "Version info", QString("Fail to call function!"));
-            return;
-        }
+        image_blending(callback, parent);
     }
 	else if (menu_name == tr("About"))
 	{
@@ -164,6 +160,8 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
     V3DLONG colordim = sz_img1[3]+sz_img2[3]-1;
     V3DLONG totalplxs = colordim * pagesz;
     
+    qDebug()<<"color dim ..."<<sz_img1[3]<<sz_img2[3]<<colordim;
+    
 	if(datatype_img1 == V3D_UINT8)
 	{
 		//
@@ -211,6 +209,10 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
             else
             {
                 b_img1 = false;
+            }
+            
+            if(!b_img1)
+            {
                 
                 V3DLONG c2 = c - sz_img1[3] - 1;
                 
@@ -266,7 +268,7 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
         
         for(V3DLONG i=0; i<pagesz; i++)
         {
-            data1d[offset + i] = p1dImg1[offset1+i] + p1dImg2[offset2+i];
+            data1d[offset + i] = 0.5*p1dImg1[offset1+i] + 0.5*p1dImg2[offset2+i];
         }
 		
 		//display
@@ -326,6 +328,10 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
             else
             {
                 b_img1 = false;
+            }
+            
+            if(!b_img1)
+            {
                 
                 V3DLONG c2 = c - sz_img1[3] - 1;
                 
@@ -381,7 +387,7 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
         
         for(V3DLONG i=0; i<pagesz; i++)
         {
-            data1d[offset + i] = p1dImg1[offset1+i] + p1dImg2[offset2+i];
+            data1d[offset + i] = 0.5*(p1dImg1[offset1+i] + p1dImg2[offset2+i]);
         }
 		
 		//display
@@ -440,6 +446,10 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
             else
             {
                 b_img1 = false;
+            }
+            
+            if(!b_img1)
+            {
                 
                 V3DLONG c2 = c - sz_img1[3] - 1;
                 
@@ -495,7 +505,7 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
         
         for(V3DLONG i=0; i<pagesz; i++)
         {
-            data1d[offset + i] = p1dImg1[offset1+i] + p1dImg2[offset2+i];
+            data1d[offset + i] = 0.5*(p1dImg1[offset1+i] + p1dImg2[offset2+i]);
         }
 		
 		//display
