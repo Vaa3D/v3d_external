@@ -37,14 +37,18 @@ const QString title = "Image Blending";
 QStringList ImageBlendPlugin::menulist() const
 {
     return QStringList() << tr("Image Blend")
-    << tr("About");
+						 << tr("About");
 }
 
 void ImageBlendPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
-    if (menu_name == tr("Image Blending"))
+    if (menu_name == tr("Image Blend"))
     {
-    	image_blending(callback, parent);
+        if(!image_blending(callback, parent))
+        {
+            QMessageBox::information(parent, "Version info", QString("Fail to call function!"));
+            return;
+        }
     }
 	else if (menu_name == tr("About"))
 	{
@@ -69,13 +73,18 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
 // stitching 2 images and display in V3D
 int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
 {
+    qDebug()<<"open dialog ...";
     
     ImageBlendingDialog dialog(callback, parent, NULL);
 	if (dialog.exec()!=QDialog::Accepted)
 		return -1;
     
+    qDebug()<<"dialog opened ...";
+
     QString m_InputFileName1 = dialog.fn_img1;
     QString m_InputFileName2 = dialog.fn_img2;
+    
+    qDebug()<<"got file names ...";
     
     // load images
     V3DLONG *sz_img1 = 0; 
@@ -197,7 +206,7 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
                     else
                         b_img1 = false;
                 }
-                
+                 
             }
             else
             {
