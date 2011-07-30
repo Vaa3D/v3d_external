@@ -96,7 +96,7 @@ void ChannelTabWidget::createFirst()
 	{
 		int i;
 		QString qs;
-		i= tabOptions->insertTab( 2, miscPage,		qs =QString("etc."));
+		i= tabOptions->insertTab( 2, miscPage,		qs =QString("Misc"));
 		tabOptions->setTabToolTip(i, qs);
 		tabOptions->setCurrentIndex(0);/////
 	}
