@@ -462,20 +462,23 @@ void ChannelTable::pressedClickHandler(int i, int j)
 		{
 			QMenu menu;
 			QAction *act=0, *actDialog=0,
-					*actRed=0, *actGreen=0, *actBlue=0, *actGray=0, *actBlank=0,
-					*actHanchuan=0, *actRandom=0;
+					*actRed=0, *actGreen=0, *actBlue=0, *actMagenta=0, *actGray=0, *actBlank=0,
+					*actHanchuan=0, *actRandom=0, *actTmp=0;
 
 			menu.addAction(actDialog 	= new QAction(tr("Color dialog ..."), this));
 			menu.addSeparator();
 			menu.addAction(actRed 	= new QAction(tr("Red"), this));
 		    menu.addAction(actGreen = new QAction(tr("Green"), this));
 		    menu.addAction(actBlue 	= new QAction(tr("Blue"), this));
+		    menu.addAction(actMagenta = new QAction(tr("Magenta"), this));
 		    menu.addAction(actGray 	= new QAction(tr("Gray  (r=g=b=255)"), this));
 		    menu.addAction(actBlank = new QAction(tr("Blank (r=g=b=a=0)"), this));
 			menu.addSeparator();
+		    menu.addAction(actTmp = new QAction(tr("For selected channels:"), this));
 		    menu.addAction(actHanchuan = new QAction(tr("Hanchuan's color"), this));
 		    menu.addAction(actRandom = new QAction(tr("Random color"), this));
 
+			actTmp->setDisabled(true);
 		    act = menu.exec(QCursor::pos());
 
 			QColor qcolor = QCOLORV(t->item(i, 0)->data(0)); // color cell of current row
@@ -494,6 +497,10 @@ void ChannelTable::pressedClickHandler(int i, int j)
 			else if (act==actBlue)
 			{
 				qcolor = QColor(0,0,255);
+			}
+			else if (act==actMagenta)
+			{
+				qcolor = QColor(255,0,255);
 			}
 			else if (act==actGray)
 			{

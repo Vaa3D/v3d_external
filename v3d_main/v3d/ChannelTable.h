@@ -171,9 +171,9 @@ RGB8 lookup_mix(vector<unsigned char>& mC, vector< vector<RGBA8> >& mLut, int op
 	o3 = CLAMP(0, 1, o3);
 
 	RGB8 oC;
-	oC.r = o1*255;
-	oC.g = o2*255;
-	oC.b = o3*255;
+	oC.r = o1*255.0 +0.5;
+	oC.g = o2*255.0 +0.5;
+	oC.b = o3*255.0 +0.5;
 	oC.r &= mask.r;
 	oC.g &= mask.g;
 	oC.b &= mask.b;
@@ -470,7 +470,7 @@ template <class T> QImage copyRaw2QImage_Slice( //real function include brightne
 	if (listChannel[k].on) \
 	{ \
 		BRIGHTEN_TRANSFORM( C ); \
-		mC[k] =  ( (! bRescale) ? C : floor((C-p_vmin[k])/vrange[k]*255) ); \
+		mC[k] =  ( (! bRescale) ? floor(C+0.5) : floor((C-p_vmin[k])/vrange[k]*255.0 + 0.5) ); \
 	} \
 	else \
 	{ \
