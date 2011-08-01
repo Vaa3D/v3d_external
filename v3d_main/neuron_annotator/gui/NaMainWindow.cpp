@@ -374,11 +374,24 @@ void NaMainWindow::setNeuronAnnotatorModeCheck(bool checkState) {
     ui_actionNeuronAnnotator->setChecked(checkState);
 }
 
-void NaMainWindow::on_actionOpen_triggered() {
+void NaMainWindow::on_actionOpen_triggered()
+{
+    QString initialDialogPath = QDir::currentPath();
+    // Use previous annotation path as initial file browser location
+    QSettings settings("HHMI", "V3D");
+    QString previousAnnotationDirString = settings.value("NeuronAnnotatorPreviousAnnotationPath").toString();
+    if (! previousAnnotationDirString.isEmpty()) {
+        QDir previousAnnotationDir(previousAnnotationDirString);
+        if (previousAnnotationDir.exists() && previousAnnotationDir.isReadable())
+        {
+            initialDialogPath = previousAnnotationDir.path();
+            // qDebug() << "Annotation directory path = " << initialDialogPath;
+        }
+    }
 
     QString dirName = QFileDialog::getExistingDirectory(this,
                                                         "Select Color Separation Image Directory",
-                                                        QDir::currentPath(),
+                                                        initialDialogPath,
                                                         QFileDialog::ShowDirsOnly
                                                         | QFileDialog::DontResolveSymlinks);
 
@@ -388,7 +401,28 @@ void NaMainWindow::on_actionOpen_triggered() {
     if (dirName.isEmpty()) // Silently do nothing when user presses Cancel.  No error dialogs please!
         return;
 
-    openMulticolorImageStack(dirName);
+    QDir imageDir(dirName);
+
+    if ( imageDir.exists() )
+    {
+        // Remember parent directory to ease browsing next time
+        QDir parentDir(dirName);
+        bool bParentOk = parentDir.cdUp();
+        if (bParentOk) {
+            // qDebug() << "Saving annotation dir parent path " << parentDir.path();
+            settings.setValue("NeuronAnnotatorPreviousAnnotationPath", parentDir.path());
+        }
+        else {
+            // qDebug() << "Problem saving parent directory of " << dirName;
+        }
+
+        openMulticolorImageStack(dirName);
+    }
+    else
+    {
+        QMessageBox::warning(this, tr("No such directory"),
+                             QString("No directory '%1' exists!  Please try something else.").arg(dirName));
+    }
 }
 
 
@@ -396,13 +430,14 @@ void NaMainWindow::openMulticolorImageStack(QString dirName)
 {
     QDir imageDir(dirName);
 
-    if (! imageDir.exists()) {
+    if ( ! imageDir.exists() )
+    {
         QMessageBox::warning(this, tr("No such directory"),
                              QString("No directory '%1' exists!  Please try something else.").arg(dirName));
         return;
     }
 
-    std::cout << "Selected directory=" << imageDir.absolutePath().toStdString() << endl;
+    // std::cout << "Selected directory=" << imageDir.absolutePath().toStdString() << endl;
 
     if (!closeAnnotationSession()) {
         QMessageBox::warning(this, tr("Could not close previous Annotation Session"),
