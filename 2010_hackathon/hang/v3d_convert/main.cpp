@@ -58,15 +58,22 @@ bool run_with_paras(InputParas paras, string & s_error)
 	string infile = paras.filelist.at(0);
 	string outfile = paras.filelist.at(1);
 	unsigned char * indata1d = NULL, * outdata1d = NULL;
+	unsigned char * indata1d_orig = NULL;
 	V3DLONG *in_sz = NULL, * out_sz = NULL;
 	int datatype;
 
 	if(!loadImage((char*) infile.c_str(), indata1d, in_sz, datatype)) {s_error += "loadImage(\""; s_error += infile; s_error+="\")  error"; return false;}
 
-	int channel = 0;  if(paras.is_exist("-channel")) if(!paras.get_int_para(channel, "-channel", s_error)) return false;
+	int channel = 0;  
+	if(!paras.is_exist("-channel"))
+	{
+		if(!paras.get_int_para(channel, "-channel", s_error)){if(channel == 0) s_error += "channel should be larger then 0"; return false;}
+		channel = channel - 1;
+	}
 	if(channel >= in_sz[3]){ s_error += "channel exceed the input image's total channel num"; return false;}
+	indata1d_orig = indata1d;
 	indata1d = indata1d + in_sz[0] * in_sz[1] * in_sz[2] * channel;
-	in_sz[3] = 1;
+	//in_sz[3] = 1;
 
 	string cmd_name("");
 	while(paras.get_next_cmd(cmd_name))
@@ -74,6 +81,7 @@ bool run_with_paras(InputParas paras, string & s_error)
 		cout<<"command : "<<cmd_name<<endl;
 		if(cmd_name == "-rotatexy")
 		{
+			if(!paras.is_exist("-channel") && in_sz[3] > 1){s_error += "please specify -channel"; return false;}
 			double thetax; double thetay;
 			if(!paras.get_double_para(thetax,"-rotatexy", 0, s_error,"x") || !paras.get_double_para(thetay,"-rotatexy", 1, s_error,"x")) return false;
 			cout<<"thetax = "<<thetax<<" thetay = "<<thetay<<endl;
@@ -81,24 +89,29 @@ bool run_with_paras(InputParas paras, string & s_error)
 		}
 		else if(cmd_name == "-rotatex")
 		{
+			if(!paras.is_exist("-channel") && in_sz[3] > 1){s_error += "please specify -channel"; return false;}
+
 			double theta; if(!paras.get_double_para(theta,"-rotatex", 0, s_error,"%")) return false;
 			cout<<"theta = "<<theta<<endl;
 			if(!rotate_along_xaxis(theta, indata1d, in_sz, outdata1d, out_sz, 0)){s_error += "rotatez error"; return false;}
 		}
 		else if(cmd_name == "-rotatey")
 		{
+			if(!paras.is_exist("-channel") && in_sz[3] > 1){s_error += "please specify -channel"; return false;}
 			double theta; if(!paras.get_double_para(theta,"-rotatey", 0, s_error,"%")) return false;
 			cout<<"theta = "<<theta<<endl;
 			if(!rotate_along_yaxis(theta, indata1d, in_sz, outdata1d, out_sz, 0)){s_error += "rotatez error"; return false;}
 		}
 		else if(cmd_name == "-rotatez")
 		{
+			if(!paras.is_exist("-channel") && in_sz[3] > 1){s_error += "please specify -channel"; return false;}
 			double theta; if(!paras.get_double_para(theta,"-rotatez", 0, s_error,"%")) return false;
 			cout<<"theta = "<<theta<<endl;
 			if(!rotate_along_zaxis(theta, indata1d, in_sz, outdata1d, out_sz, 0)){s_error += "rotatez error"; return false;}
 		}
 		else if(cmd_name == "-gaussian-blur")
 		{
+			if(!paras.is_exist("-channel") && in_sz[3] > 1){s_error += "please specify -channel"; return false;}
 			int para_num = paras.get_delim_num("-gaussian-blur", "x") + 1;
 			if(para_num == 2)
 			{
@@ -111,24 +124,26 @@ bool run_with_paras(InputParas paras, string & s_error)
 			{
 				double sigma;if(!paras.get_double_para(sigma,"-gaussian-blur",0,s_error,"x")) return false;
 				cout<<"sigma = "<<sigma<<endl;
-				double * src = new double[in_sz[0] * in_sz[1] * in_sz[2]];
-				V3DLONG sz[3];
-				sz[0] = in_sz[0];
-				sz[1] = in_sz[1];
-				sz[2] = in_sz[2];
-				if(!convert_uint8_to_double(src, indata1d, sz)){s_error += "convert_uint8_to_double error"; return false;}
+				//double * src = new double[in_sz[0] * in_sz[1] * in_sz[2]];
+				//V3DLONG sz[3];
+				//sz[0] = in_sz[0];
+				//sz[1] = in_sz[1];
+				//sz[2] = in_sz[2];
+				//if(!convert_uint8_to_double(src, indata1d, sz)){s_error += "convert_uint8_to_double error"; return false;}
 				double * dst = new double[in_sz[0] * in_sz[1] * in_sz[2]];
-				if(!smooth(dst, src, in_sz, sigma)){ s_error += "failed to compute gaussian-blur"; return false;}
-				outdata1d = new unsigned char[sz[0] * sz[1] * sz[2]];
-				if(!convert_double_to_uint8(outdata1d, dst, sz)){s_error += "convert_double_to_uint8 error"; return false;}
-				if(src){delete [] src; src = 0;}
+				//if(!smooth(dst, src, in_sz, sigma)){ s_error += "failed to compute gaussian-blur"; return false;}
+				if(!smooth(dst, indata1d, in_sz, sigma)){ s_error += "failed to compute gaussian-blur"; return false;}
+				outdata1d = new unsigned char[in_sz[0] * in_sz[1] * in_sz[2]];
+				//if(!convert_double_to_uint8(outdata1d, dst, sz)){s_error += "convert_double_to_uint8 error"; return false;}
+				if(!convert_double_to_uint8(outdata1d, dst, in_sz)){s_error += "convert_double_to_uint8 error"; return false;}
+				//if(src){delete [] src; src = 0;}
 				if(dst){delete [] dst; dst = 0;}
 			}
 		}
 	}
 	if(out_sz == 0) out_sz = in_sz;
 	if(!saveImage((char*) outfile.c_str(), outdata1d, out_sz, datatype)) {s_error += "saveImage(\""; s_error += outfile; s_error+="\") error"; return false;}
-	if(indata1d) {delete [] indata1d; indata1d = 0;}
+	if(indata1d_orig) {delete [] indata1d_orig; indata1d_orig = 0; indata1d = 0;}
 	if(outdata1d) {delete [] outdata1d; outdata1d = 0;}
 
 	return true;
