@@ -46,6 +46,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../3drenderer/renderer_tex2.h" //for finishEditingNeuronTree
 
 
+#define __MainWindow_interface__
+
 XFormWidget* MainWindow::currentImageWindow() {return activeMdiChild();}
 
 My4DImage* MainWindow::currentImage()
@@ -105,7 +107,7 @@ XFormWidget* MainWindow::updateImageWindow(void* window)
 	{
 		w->show();
 		w->updateViews();
-		updateWorkspace();
+		//updateWorkspace(); //seems no need
 	}
 	return w;
 }

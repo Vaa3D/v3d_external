@@ -57,7 +57,7 @@ void make_linear_lut_one(RGBA8 color, vector<RGBA8>& lut)
 	assert(lut.size()==256); //////// must be
 	for (int j=0; j<256; j++)
 	{
-		float f = j/256.0;
+		float f = j/255.0;  //110801 fixed the bug of max=254
 		lut[j].r = color.r *f;
 		lut[j].g = color.g *f;
 		lut[j].b = color.b *f;
@@ -470,7 +470,7 @@ template <class T> QImage copyRaw2QImage_Slice( //real function include brightne
 	if (listChannel[k].on) \
 	{ \
 		BRIGHTEN_TRANSFORM( C ); \
-		mC[k] =  ( (! bRescale) ? floor(C+0.5) : floor((C-p_vmin[k])/vrange[k]*255.0 + 0.5) ); \
+		mC[k] =  ( (! bRescale) ? floor(C +0.5) : floor((C-p_vmin[k])/vrange[k]*255.0 +0.5) ); \
 	} \
 	else \
 	{ \

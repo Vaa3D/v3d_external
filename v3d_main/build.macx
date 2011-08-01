@@ -17,6 +17,7 @@ shopt -s expand_aliases;
 # 110203: updated by PHC. make -T also build fftw (needed for stitching plugin)
 # 110710: updated by RZC, add -noplugins 
 # 110711: updated by RZC, change ARGS,QARGS to ARG_LIB,ARG_V3D 
+# 110801: updated by RZC, add -norun 
 #
 # Arguments:
 #    -jx                        #compile using some 'x' number of processors 
@@ -51,6 +52,7 @@ V3DPLUGINSCOMPILE="NO"      # default do not compile v3d plugins
 NEWMATCOMPILE="NO"          # default do not compile newmat
 MYLIBCOMPILE="NO"           # default do not comple mylibtiff
 SKIPV3DPLUGINS="NO"         # default do not skip building plugins
+SKIPV3DAPP="NO"         	# default do not skip running v3d.app
 
 ARG_LIB=
 QMAKE_CONFIG=
@@ -66,6 +68,10 @@ for arg in $*; do
    #filter special switch
    if [ $arg == "-noplugins" ]; then
       SKIPV3DPLUGINS="YES"
+	  continue
+   fi
+   if [ $arg == "-norun" ]; then
+      SKIPV3DAPP="YES"
 	  continue
    fi
    if [ $arg == "-T" ]; then
@@ -350,7 +356,7 @@ fi
 
 #now automatically execute v3d
 
-if [ $DOIT == "YES" ]; then
+if [ $DOIT == "YES" ] && [ $SKIPV3DAPP == "NO" ]; then
   if [ $SYSTEMBITS == "32" ]; then
     open v3d/v3d.app &
 #    open v3d/v3d &

@@ -267,20 +267,20 @@ MainWindow::MainWindow()
     readSettings();
 
     setWindowTitle(tr("V3D"));
-	
+
 #ifdef __v3dwebservice__
 	qDebug()<<"__v3dwebservice__ defined ... ... ";
 #endif
-	
+
 #if defined(__v3dwebservice__) || defined(__V3DWSDEVELOP__)
-	
+
 	qDebug()<<"web service starting ...";
-	
+
 	v3dws = new V3DWebService(9125); //20110309 YuY
 	initWebService(v3dws);
-	
+
 	connect(v3dws, SIGNAL(webserviceRequest()), this, SLOT(webserviceResponse()), Qt::QueuedConnection); // Qt::AutoConnection
-	
+
 #endif
 
 #if COMPILE_TARGET_LEVEL == 0
@@ -289,12 +289,12 @@ MainWindow::MainWindow()
 
 	//090811 RZC
 	pluginLoader = new V3d_PluginLoader(pluginProcMenu, this);
-	
+
 	// Dec-20-2010 YuY
 	//connect(&sub_thread, SIGNAL(transactionStarted()), this, SLOT(transactionStart()), Qt::DirectConnection); //Qt::QueuedConnection
     //connect(&sub_thread, SIGNAL(allTransactionsDone()), this, SLOT(allTransactionsDone()), Qt::DirectConnection);
 	connect(this, SIGNAL(triviewUpdateTriggered()), this, SLOT(updateTriview()), Qt::QueuedConnection); // Qt::AutoConnection
-	
+
 	cl_plugin = false; // init
 	connect(this, SIGNAL(imageLoaded2Plugin()), this, SLOT(updateRunPlugin())); // command line call plugin 20110426 YuY
 
@@ -311,12 +311,12 @@ MainWindow::~MainWindow()
 	qDebug("***v3d: ~MainWindow");
 }
 
-void MainWindow::transactionStart() 
+void MainWindow::transactionStart()
 {
     v3d_msg("Transaction starts now ...", 0);
 }
 
-void MainWindow::allTransactionsDone() 
+void MainWindow::allTransactionsDone()
 {
     v3d_msg("All transactions are done successfully.", 0);
 }
@@ -328,37 +328,37 @@ void MainWindow::exit()
     emit exitAct->activate(QAction::Trigger);
 }
 
-void MainWindow::updateTriviewWindow() 
+void MainWindow::updateTriviewWindow()
 {
 	emit triviewUpdateTriggered();
 }
 
-void MainWindow::updateTriview() 
+void MainWindow::updateTriview()
 {
 	qDebug()<<"triggered in MainWindow ... ...";
-	
+
 //	TriviewControl *tvControl = (TriviewControl *)(this->curHiddenSelectedWindow());
 //	if(tvControl)
 //	{
 //		// updateMinMax then changeFocus
 //		V3DLONG currslice = tvControl->getValidZslice();
 //		V3DLONG preslice = tvControl->getPreValidZslice();
-//		
+//
 //		qDebug()<<"the triview window exist ... ..."<<currslice<<preslice;
-//		
+//
 //		if(currslice>preslice)
 //		{
 //			qDebug()<<"update triview window ... ...";
-//			
+//
 //			tvControl->updateMinMax(currslice-1);
-//			
-//			V3DLONG x, y, z; 
+//
+//			V3DLONG x, y, z;
 //			tvControl->getFocusLocation( x, y, z);
 //			tvControl->setFocusLocation( x, y, currslice);
-//			
+//
 //			tvControl->setPreValidZslice(currslice);
 //		}
-//		
+//
 //		QCoreApplication::processEvents();
 //		return;
 //	}
@@ -370,7 +370,7 @@ void MainWindow::updateTriview()
 //	}
 
 	sub_thread.setPriority(QThread::HighPriority);
-	
+
 	if(this->curHiddenSelectedWindow())
 	{
 		sub_thread.addTransaction(new UpdateTVTransaction( (TriviewControl *)(this->curHiddenSelectedWindow()) ) );
@@ -383,19 +383,19 @@ void MainWindow::updateTriview()
 
 void MainWindow::updateRunPlugin() //20110426 YuY
 {
-	
+
 	if(cl_plugin)
 	{
 		cl_plugin = false; // make sure plugin run only once 20110502 YuY
-		
+
 		// match plugin name
 		int numfind = 0; //20110429 YuY
-		
+
 		QString v3dpluginFind;
-		
+
 		QString canonicalFilePath = QFileInfo(pluginname).canonicalFilePath();
 		if (canonicalFilePath.size()==0) canonicalFilePath = pluginname;
-		
+
 		foreach(QString qstr, pluginLoader->getPluginNameList())
 		{
 			if (qstr==canonicalFilePath || QFileInfo(qstr).fileName() == canonicalFilePath) //20110429 YuY
@@ -404,7 +404,7 @@ void MainWindow::updateRunPlugin() //20110426 YuY
 				numfind++;
 			}
 		}
-		
+
 		if(!numfind) //20110427 YuY
 		{
 			// try find image name contains the input string from the end
@@ -417,7 +417,7 @@ void MainWindow::updateRunPlugin() //20110426 YuY
 				}
 			}
 		}
-		
+
 		if(numfind > 1)	//20110429 YuY
 		{
 			v3d_msg(QString("Too many choices. Please specify your plugin with whole name including absolute path and try again."), 1);
@@ -431,19 +431,19 @@ void MainWindow::updateRunPlugin() //20110426 YuY
 				v3d_msg(QString("ERROR open the specified V3D plugin [%1]").arg(v3dpluginFind), 1);
 				return;
 			}
-			
+
 			// run plugin
 			V3d_PluginLoader mypluginloader(this);
-            
+
             // help info
             QObject *plugin = loader->instance();
 			QStringList menulist = v3d_getInterfaceMenuList(plugin);
             QStringList funclist = v3d_getInterfaceFuncList(plugin);
-            
+
             if(v3dclp.pluginhelp)
             {
                 cout<<endl<<"plugin: "<<v3dpluginFind.toStdString().c_str()<<endl<<endl;
-                
+
                 cout<<"usage: "<<endl;
                 cout<<"menu -- ";
                 for (int i=0; i<menulist.size(); i++) {
@@ -453,7 +453,7 @@ void MainWindow::updateRunPlugin() //20110426 YuY
                     }
                     else
                     {
-                        cout<<"     -- "<<menulist.at(i).toStdString().c_str()<<endl; 
+                        cout<<"     -- "<<menulist.at(i).toStdString().c_str()<<endl;
                     }
                 }
                 cout<<"func -- ";
@@ -464,22 +464,22 @@ void MainWindow::updateRunPlugin() //20110426 YuY
                     }
                     else
                     {
-                        cout<<"     -- "<<funclist.at(i).toStdString().c_str()<<endl; 
+                        cout<<"     -- "<<funclist.at(i).toStdString().c_str()<<endl;
                     }
                 }
                 cout<<endl<<endl;
                 return;
             }
-            
+
             // run
 			if(pluginmethod)
 			{
 				mypluginloader.runPlugin(loader, pluginmethod);
 			}
 			if(pluginfunc)
-			{                
+			{
                 PLUGINFH pluginFuncHandler;
-                
+
                 pluginFuncHandler.doPluginFunc(v3dclp, mypluginloader, v3dpluginFind, (void *)this);
 			}
 		}
@@ -489,7 +489,7 @@ void MainWindow::updateRunPlugin() //20110426 YuY
 			return;
 		}
 	}
-	
+
 }
 
 void MainWindow::setBooleanCLplugin(bool cl_plugininput)
@@ -543,7 +543,7 @@ void MainWindow::initWebService(V3DWebService *pws)
 
 // slot function for quit web service thread
 void MainWindow::quitWebService(V3DWebService *pws)
-{	
+{
 	pws->exit();
 }
 
@@ -555,11 +555,11 @@ void MainWindow::setSoapPara(soappara *pSoapParaInput)
 
 // slot function for response web service
 void MainWindow::webserviceResponse()
-{	
+{
 	qDebug()<<"web service response here ...";
-	
+
 	this->setSoapPara(v3dws->getSoapPara());
-	
+
 	if(pSoapPara)
 	{
 		if(string(pSoapPara->str_func) == "helloworld")
@@ -575,7 +575,7 @@ void MainWindow::webserviceResponse()
 			QMessageBox::information((QWidget *)0, QString("title: v3d web service"), QString("Wrong function to invoke!"));
 		}
 	}
-	
+
 }
 
 #endif //__v3dwebservice__
@@ -713,7 +713,7 @@ void MainWindow::loadV3DUrl(QUrl url, bool b_cacheLocalFile, bool b_forceopen3dv
     QString localFileName = QFileInfo(url.path()).fileName();
     QString localFilePath = QDir::tempPath();
     QString fileName = localFilePath + "/" + localFileName;
-	
+
     DownloadManager *downloadManager = new DownloadManager(this);
     connect(downloadManager, SIGNAL(downloadFinishedSignal(QUrl, QString, bool, bool)),
             this, SLOT(finishedLoadingWebImage(QUrl, QString, bool, bool)));
@@ -742,7 +742,7 @@ void MainWindow::finishedLoadingWebImage(QUrl url, QString fileName, bool b_cach
             image_window->setWindowTitle(url.toString());
         // Put URL in recent file list
         setCurrentFile(url.toString());
-		
+
 		emit imageLoaded2Plugin(); //20110426 YuY
     }
 }
@@ -764,13 +764,13 @@ void MainWindow::checkForUpdates(bool b_verbose)
 V3dR_MainWindow * MainWindow::find3DViewer(QString fileName)
 {
 	int numfind = 0; //20110427 YuY
-	
+
 	V3dR_MainWindow * v3dRMWFind;
-	
+
 	// support image with relative path
 	QString canonicalFilePath = QFileInfo(fileName).canonicalFilePath(); //20110427 YuY
-    if (canonicalFilePath.size()==0) canonicalFilePath = fileName; //20110427 YuY 
-	
+    if (canonicalFilePath.size()==0) canonicalFilePath = fileName; //20110427 YuY
+
 	for (int i=0; i<list_3Dview_win.size(); i++)
 	{
 		if (list_3Dview_win.at(i)->getDataTitle()==canonicalFilePath || QFileInfo(list_3Dview_win.at(i)->getDataTitle()).fileName() == canonicalFilePath) //20110427 YuY
@@ -779,7 +779,7 @@ V3dR_MainWindow * MainWindow::find3DViewer(QString fileName)
 			numfind++;
 		}
 	}
-	
+
 	if(!numfind) //20110427 YuY
 	{
 		// try find image name contains the input string from the end
@@ -792,7 +792,7 @@ V3dR_MainWindow * MainWindow::find3DViewer(QString fileName)
 			}
 		}
 	}
-	
+
 	if(numfind > 1)	//20110427 YuY
 	{
 		v3d_msg(QString("Too many windows sharing the same [partial] name. Please specify your image with whole name including absolute path and try again."), 1);
@@ -810,17 +810,17 @@ V3dR_MainWindow * MainWindow::find3DViewer(QString fileName)
 
 void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool b_forceopen3dviewer)
 {
-    if (!fileName.isEmpty()) 
+    if (!fileName.isEmpty())
 	{
         XFormWidget *existing_imgwin = findMdiChild(fileName);
-        if (existing_imgwin) 
+        if (existing_imgwin)
 		{
             workspace->setActiveWindow(existing_imgwin);
             return;
         }
 
         V3dR_MainWindow *existing_3dviewer = find3DViewer(fileName);
-        if (existing_3dviewer) 
+        if (existing_3dviewer)
 		{
             existing_3dviewer->activateWindow();
             return;
@@ -954,9 +954,9 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 				}
 			}
 		}
-		else if (curfile_info.suffix().toUpper()=="APO" || 
-				 curfile_info.suffix().toUpper()=="SWC" || 
-				 curfile_info.suffix().toUpper()=="OBJ" || 
+		else if (curfile_info.suffix().toUpper()=="APO" ||
+				 curfile_info.suffix().toUpper()=="SWC" ||
+				 curfile_info.suffix().toUpper()=="OBJ" ||
 				 curfile_info.suffix().toUpper()=="V3DS")
 		{
 			//directly open the 3D viewer
@@ -1051,30 +1051,30 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 				system(qPrintable(QString("rm -f %1").arg(tmp_filename)));
 			}
 		}
-		else if ( (curfile_info.suffix().toUpper()=="LSM") || 
-				 (curfile_info.suffix().toUpper()=="TIF") || 
-				 (curfile_info.suffix().toUpper()=="TIFF") || 
+		else if ( (curfile_info.suffix().toUpper()=="LSM") ||
+				 (curfile_info.suffix().toUpper()=="TIF") ||
+				 (curfile_info.suffix().toUpper()=="TIFF") ||
 				 (curfile_info.suffix().toUpper()=="RAW") ||
 				 (curfile_info.suffix().toUpper()=="V3DRAW") ||
 				 (curfile_info.suffix().toUpper()=="RAW5") ||
-				 (curfile_info.suffix().toUpper()=="V3DRAW5") || 
+				 (curfile_info.suffix().toUpper()=="V3DRAW5") ||
 				 (curfile_info.suffix().toUpper()=="MRC") ) // specific ".tif" ".lsm" ".raw" file, changed by YuY Nov. 19, 2010
 		{
 			try
 			{
 				size_t start_t = clock();
-				
+
 				XFormWidget *child = createMdiChild();
 				if (child->loadFile(fileName))
 				{
-					if(!child) return; 
+					if(!child) return;
 					if(!child->getImageData()) return;
-					
-					
+
+
 					//if(child->getValidZslice()<child->getImageData()->getZDim()-1) return; // avoid crash when the child is closed by user, Dec 29, 2010 by YuY
-					//bug!!! by PHC. This is a very bad bug. 2011-02-09. this makes all subsequent operations unable to finish. should be disabled!!.  
-					
-					
+					//bug!!! by PHC. This is a very bad bug. 2011-02-09. this makes all subsequent operations unable to finish. should be disabled!!.
+
+
 					statusBar()->showMessage(QString("File [%1] loaded").arg(fileName), 2000);
 
 					if (global_setting.b_autoConvert2_8bit)
@@ -1103,17 +1103,17 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 					child->show();
 					workspace->cascade(); //080821
 
-					if (b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer)) 
+					if (b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer))
 					{
 						child->doImage3DView();
 					}
-					
+
 					size_t end_t = clock();
 					qDebug()<<"time consume ..."<<end_t-start_t;
 
 
-				} 
-				else 
+				}
+				else
 				{
 					child->close();
 				}
@@ -1127,18 +1127,18 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 		else // changed by YuY Nov. 19, 2010. Msg corrected by PHC, 2011-06-04
 		{
 			v3d_msg(QString("The file [%1] cannot be opened properly! Check the data type or file extension; or use the special V3D file IO plugin (e.g. BioFormat plugin, etc); or convert the file format to something V3D can read (e.g. a standard TIF file).").arg(fileName), 1);
-			return;	
+			return;
 		}
 
         //child->close();delete child; child=0; //this should be correspond to the error place! by phc, 080429
     }
-	
-	
+
+
 	//if success then out in recent file list
 	if (b_putinrecentfilelist)
 	{
 		setCurrentFile(fileName);
-		
+
 		emit imageLoaded2Plugin(); //20110426 YuY
 	}
 }
@@ -1640,7 +1640,7 @@ void MainWindow::updateWindowMenu()
 {
 	if (!windowMenu)
 		return;
-		
+
     windowMenu->clear();
     windowMenu->addAction(closeAct);
     windowMenu->addAction(closeAllAct);
@@ -1702,7 +1702,7 @@ void MainWindow::updateProcessingMenu()
 {
 	if (!basicProcMenu || !advancedProcMenu || !visualizeProcMenu || !pluginProcMenu)
 		return;
-	
+
 	//for image / data basic operations
 	basicProcMenu->clear();
 	advancedProcMenu->clear();
@@ -1938,7 +1938,7 @@ void MainWindow::createActions()
     openWebUrlAct->setShortcut(tr("Ctrl+W"));
     openWebUrlAct->setStatusTip(tr("Open a web (URL) image"));
     connect(openWebUrlAct, SIGNAL(triggered()), this, SLOT(openWebUrl()));
-	
+
     saveAct = new QAction(QIcon(":/pic/save.png"), tr("&Save or Save as"), this);
     saveAct->setShortcut(tr("Ctrl+S"));
     saveAct->setStatusTip(tr("Save the image to disk"));
@@ -2354,11 +2354,11 @@ void MainWindow::createMenus()
     connect(visualizeProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus()));
 
 	//image processing
-	
+
 	advancedProcMenu = menuBar()->addMenu(tr("Advanced"));
     connect(advancedProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateProcessingMenu()));
     connect(advancedProcMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus()));
-	
+
 	//pipeline menu
 
 	//pipelineProcMenu = menuBar()->addMenu(tr("Pipeline"));
@@ -2438,6 +2438,10 @@ void MainWindow::writeSettings()
     V3DGlobalPreferenceDialog::writeSettings(global_setting, settings);
 }
 
+//110801 RZC
+//Notice that *** geometry changes to an MDI child widget must be applied to its parentWidget(), not to the widget itself.
+//Similarly, if you want to find out the geometry of an MDI child widget you must use its parentWidget().
+//This also applies to intercepting events for MDI child widgets: you must install your event filter on the parentWidget().
 
 XFormWidget *MainWindow::createMdiChild()
 {
@@ -2446,9 +2450,10 @@ XFormWidget *MainWindow::createMdiChild()
 
     XFormWidget *child = new XFormWidget((QWidget *)0);
 
-    workspace->addWindow(child);
-    //for (int j=1; j<1000; j++) QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents); //100811 RZC: no help for update the workspace->windowList()
-    qDebug()<<"MainWindow::createMdiChild *** workspace->windowList:" << workspace->windowList() <<"+="<< child;
+    workspace->addWindow(child);  //child is wrapped in his parentWidget()
+    //for (int j=1; j<1000; j++) QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents); //100811 RZC: no help to update the workspace->windowList()
+    qDebug()<<"MainWindow::createMdiChild *** workspace->windowList:" << workspace->windowList() <<"+="<< child; //STRANGE: child isn't in windowList here ???
+
 
 	//to enable coomunication of child windows
 	child->setMainControlWindow(this);
@@ -2474,7 +2479,7 @@ XFormWidget *MainWindow::activeMdiChild()
 XFormWidget *MainWindow::findMdiChild(const QString &fileName)
 {
 	int numfind = 0; //20110427 YuY
-	
+
     QString canonicalFilePath = QFileInfo(fileName).canonicalFilePath();
     if (canonicalFilePath.size()==0) canonicalFilePath = fileName; //090818 RZC 20110427 YuY
 
@@ -2483,14 +2488,14 @@ XFormWidget *MainWindow::findMdiChild(const QString &fileName)
         XFormWidget *mdiChild = qobject_cast<XFormWidget *>(window);
         QString mdiChildPath = // CMB Oct-14-2010
                 QFileInfo(mdiChild->userFriendlyCurrentFile()).canonicalFilePath();
-		
+
         if (mdiChildPath == canonicalFilePath || QFileInfo(mdiChildPath).fileName() == canonicalFilePath) //20110427 YuY
 		{
 			mdiChildFind = mdiChild;
             numfind++;
 		}
     }
-	
+
 	if(!numfind) //20110427 YuY
 	{
 		// try find image name contains the input string from the end
@@ -2498,7 +2503,7 @@ XFormWidget *MainWindow::findMdiChild(const QString &fileName)
 			XFormWidget *mdiChild = qobject_cast<XFormWidget *>(window);
 			QString mdiChildPath = // CMB Oct-14-2010
 			QFileInfo(mdiChild->userFriendlyCurrentFile()).canonicalFilePath();
-			
+
 			if ( mdiChildPath.endsWith(canonicalFilePath) || QFileInfo(mdiChildPath).fileName().endsWith(canonicalFilePath) ) //20110427 YuY
 			{
 				mdiChildFind = mdiChild;
@@ -2506,7 +2511,7 @@ XFormWidget *MainWindow::findMdiChild(const QString &fileName)
 			}
 		}
 	}
-	
+
 	if(numfind > 1)	//20110427 YuY
 	{
 		v3d_msg(QString("Too many choices. Please specify your image with whole name including absolute path and try again."), 1);
@@ -2558,7 +2563,7 @@ bool MainWindow::setCurHiddenSelectedWindow( XFormWidget* a) //by PHC, 101009
 	}
 	else
 	{
-		curHiddenSelectedXWidget = 0; 
+		curHiddenSelectedXWidget = 0;
 		return false;
 	}
 }
@@ -2573,7 +2578,7 @@ bool MainWindow::setCurHiddenSelectedWindow_withoutcheckwinlist( XFormWidget* a)
 	}
 	else
 	{
-		curHiddenSelectedXWidget = 0; 
+		curHiddenSelectedXWidget = 0;
 		return false;
 	}
 }

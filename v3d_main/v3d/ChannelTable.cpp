@@ -798,6 +798,8 @@ void MiscBox::exportRGBStack()
 		return;
 	}
 
+	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+
 	// do old code for OP_INDEX
 	if (mixOp.op==OP_INDEX)
 	{
@@ -875,5 +877,7 @@ void MiscBox::exportRGBStack()
 	mainwin->setImage(newxform, &tmp);
 	mainwin->setImageName(newxform, "exported_RGBStack");
 	mainwin->updateImageWindow(newxform);
+
+	QApplication::restoreOverrideCursor();
 }
 

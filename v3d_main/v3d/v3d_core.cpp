@@ -3725,9 +3725,9 @@ void XFormWidget::createGUI()
 
     // All layouts
 
-    allLayout = new QHBoxLayout(this);
-    allLayout->addWidget(dataGroup);
-    allLayout->addWidget(mainGroup);
+//    allLayout = new QHBoxLayout(this);
+//    allLayout->addWidget(dataGroup);
+//    allLayout->addWidget(mainGroup);
 
     xyzViewLayout = new QGridLayout(viewGroup);
     xyzViewLayout->addWidget(xy_view, 0, 0, 1, 1, Qt::AlignRight | Qt::AlignBottom);
@@ -3735,6 +3735,7 @@ void XFormWidget::createGUI()
     xyzViewLayout->addWidget(zx_view, 1, 0, 1, 1, Qt::AlignRight | Qt::AlignTop);
 	xyzViewLayout->update();//061014
 	//xyzViewLayout->addWidget(focusPointFeatureWidget, 2, 0, 1, 2, Qt::AlignLeft | Qt::AlignBottom);
+
 
     infoGroupLayout = new QVBoxLayout(infoGroup);
 	infoGroupLayout->addWidget(focusPointFeatureWidget);
@@ -3822,7 +3823,10 @@ void XFormWidget::createGUI()
 	QLayout *cur_layout=layout();
 	printf("cur layout=%ld\n", V3DLONG(cur_layout));
 
-	setLayout(allLayout);
+    allLayout = new QHBoxLayout(this);
+    allLayout->addWidget(dataGroup);
+    allLayout->addWidget(mainGroup);
+//	setLayout(allLayout);
 
 	// set the flag
 	bExistGUI = true;
@@ -3886,6 +3890,7 @@ void XFormWidget::updateDataRelatedGUI()
 		zx_view->setFixedWidth(zx_view->get_disp_width());
 		zx_view->setFixedHeight(zx_view->get_disp_height());
 		imgData->set_zx_view(zx_view);
+
 
 		if (b_use_dispzoom)
 		{
@@ -4029,7 +4034,14 @@ void XFormWidget::updateDataRelatedGUI()
 		emit external_focusZChanged(imgData->getZDim()>>1);
 	}
 
-	updateGeometry();
+	//110801 RZC, fixed MDI window resize
+	{
+		QWidget* w = parentWidget(); // MDI child wrapper widget
+		if (w)  w->resize(w->size() - QSize(1,1));	//works!
+		if (w)  w->adjustSize();					//also need for perfect
+	}
+
+//	updateGeometry(); //seems no need
 	adjustSize();
 	allLayout->update();
 
