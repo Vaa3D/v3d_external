@@ -805,6 +805,8 @@ void MiscBox::exportRGBStack()
 	{
 		//v3d_msg("No support for 'Index' mode.");
 		img4d->proj_general_convertIndexedImg2RGB();
+
+		QApplication::restoreOverrideCursor();
 		return;
 	}
 
