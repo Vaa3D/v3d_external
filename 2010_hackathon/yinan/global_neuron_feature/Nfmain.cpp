@@ -1,4 +1,4 @@
-#define FNUM 16
+#define FNUM 22
 
 #include "Nfmain.h"
 #include "compute.h"
@@ -11,13 +11,13 @@ using namespace std;
 void nf_main(const V3DPluginArgList & input, V3DPluginArgList & output)
 {
 	vector<char*>* inlist = (vector<char*>*)(input.at(0).p);
-	char * out = (*(vector<char*>*)(output.at(0).p)).at(0);
-	QString outfileName = QString(out);
-	QFile file(outfileName);
-	file.open(QIODevice::WriteOnly|QIODevice::Text);
-	QTextStream myfile(&file);
+	//char * out = (*(vector<char*>*)(output.at(0).p)).at(0);
+	//QString outfileName = QString(out);
+	//QFile file(outfileName);
+	//file.open(QIODevice::WriteOnly|QIODevice::Text);
+	//QTextStream myfile(&file);
 
-	myfile <<"id\tFile Name\tN_Node\tN_stem\tN_bifs\tN_branch\tN_tips\tWidth\tHeight\tDepth\tLength\tVolume\tSurface\tContraction\tFragmentation\tPd_ratio\tHausdorff\tFractal_Dim"<<endl;
+	//myfile <<"id\tFile Name\tN_Node\tN_stem\tN_bifs\tN_branch\tN_tips\tWidth\tHeight\tDepth\tLength\tVolume\tSurface\tContraction\tFragmentation\tPd_ratio\tHausdorff\tFractal_Dim"<<endl;
 
 	int neuronNum = (int)inlist->size();
 
@@ -27,15 +27,15 @@ void nf_main(const V3DPluginArgList & input, V3DPluginArgList & output)
 		NeuronTree nt = readSWC_file(name);
 		
 		cout<<"\n--------------Neuron #"<<(i+1)<<"----------------\n";
-		myfile<<(i+1)<<"\t"<<name<<"\t";
+		//myfile<<(i+1)<<"\t"<<name<<"\t";
 		double * features = new double[FNUM];
 		computeFeature(nt, features);
 		printFeature(features);
-		for (int jj=0;jj<FNUM;jj++)
-			myfile<<features[jj]<<"\t";
-		myfile<<endl;
+		//for (int jj=0;jj<FNUM;jj++)
+		//	myfile<<features[jj]<<"\t";
+		//myfile<<endl;
 	}
-	file.close();
+	//file.close();
 }
 
 void printFeature(double * features)
@@ -46,53 +46,71 @@ void printFeature(double * features)
 		switch (i)
 		{
 			case 0:
-				cout<<"Number of Nodes: ";
+				cout<<"Number of Nodes:";
 				break;
 			case 1:
-				cout<<"Number of Stems: ";
+				cout<<"Soma Surface:\t";
 				break;
 			case 2:
-				cout<<"Number of Bifurcatons: ";
+				cout<<"Number of Stems:";
 				break;
 			case 3:
-				cout<<"Number of Branches: ";
+				cout<<"Number of Bifurcatons:";
 				break;
 			case 4:
-				cout<<"Number of Tips: ";
+				cout<<"Number of Branches:";
 				break;
 			case 5:
-				cout<<"Width: ";
+				cout<<"Number of Tips:\t";
 				break;
 			case 6:
-				cout<<"Height: ";
+				cout<<"Overall Width:\t";
 				break;
 			case 7:
-				cout<<"Depth: ";
+				cout<<"Overall Height:\t";
 				break;
 			case 8:
-				cout<<"Total Length: ";
+				cout<<"Overall Depth:\t";
 				break;
 			case 9:
-				cout<<"Total Volume: ";
+				cout<<"Average Diameter:";
 				break;
 			case 10:
-				cout<<"Surface Area: ";
+				cout<<"Total Length:\t";
 				break;
 			case 11:
-				cout<<"Average Contraction: ";
+				cout<<"Total Surface:\t";
 				break;
 			case 12:
-				cout<<"Average Fragmentation: ";
+				cout<<"Total Volume:\t";
 				break;
 			case 13:
-				cout<<"Average Parent-daughter Ratio: ";
+				cout<<"Max Euclidean Distance:";
 				break;
 			case 14:
-				cout<<"Hausdorff Dimension: ";
+				cout<<"Max Path Distance:\t\t";
 				break;
 			case 15:
-				cout<<"Fractal Dimension: ";
+				cout<<"Max Branch Order:\t\t";
+				break;
+			case 16:
+				cout<<"Average Contraction:\t\t";
+				break;
+			case 17:
+				cout<<"Average Fragmentation:\t\t";
+				break;
+			case 18:
+				cout<<"Average Parent-daughter Ratio:\t";
+				break;
+			case 19:
+				cout<<"Average Bifurcation Angle Local:";
+				break;
+			case 20:
+				cout<<"Average Bifurcation Angle Remote:";
+				break;
+			case 21:
+				cout<<"Hausdorff Dimension:\t\t";
 		}
-		cout<<features[i]<<endl;
+		cout<<"\t"<<features[i]<<endl;
 	}
 }
