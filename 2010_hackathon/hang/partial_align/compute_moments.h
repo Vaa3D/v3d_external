@@ -136,9 +136,9 @@ template <class T> bool computeGMI(Vector1DSimple<double> & momentVec, T *inimg1
     double * t = momentVec.getData1dHandle();
 	t[0] = inimg1d[z0 * sz[0] * sz[1] + y0 * sz[0] + x0];
 	t[1] = c000; //0.0;
-	t[2] = c200+c020+c002; t[2]=pow(t[2]/3, 0.5);
-	t[3] = c200*c020+c020*c002+c002*c200-c101*c101-c011*c011-c110*c110; t[3]=pow(t[3]/3, 0.25);
-	t[4] = c200*c020*c002-c002*c110*c110+2*c110*c101*c011-c020*c101*c101-c200*c011*c011;  t[4]=pow(t[4]/5, 0.125);
+	t[2] = c200+c020+c002; //t[2]=pow(t[2]/3, 0.5);
+	t[3] = c200*c020+c020*c002+c002*c200-c101*c101-c011*c011-c110*c110;// t[3]=pow(t[3]/3, 0.25);
+	t[4] = c200*c020*c002-c002*c110*c110+2*c110*c101*c011-c020*c101*c101-c200*c011*c011; // t[4]=pow(t[4]/5, 0.125);
 	
     return true;
 }

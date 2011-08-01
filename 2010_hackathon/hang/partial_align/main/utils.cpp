@@ -161,21 +161,23 @@ static bool operator< (const CompareResult &cr1, const CompareResult & cr2)
 
 bool compare_features(vector<CompareResult> &crs, vector<FeatureType> & vecFeature1, vector<FeatureType> & vecFeature2)
 {
+//#define USE_RANK_METHOD
 	if(!crs.empty() || vecFeature1.empty() || vecFeature2.empty() || vecFeature1.front().descriptor.size() != vecFeature2.front().descriptor.size()) return false;	
 	int nindis1 = vecFeature1.size();
 	int nindis2 = vecFeature2.size();
 	int ndims = vecFeature1.front().descriptor.size();
-	if(ndims != 5) {cerr<<"ndims != 5"<<endl;return false;}
 
 	vector<CompareResult> crs1; crs1.resize(nindis1);
 	vector<CompareResult> crs2; crs2.resize(nindis2);
+
+#ifndef USE_RANK_METHOD
+	if(ndims != 5) {cerr<<"ndims != 5"<<endl;return false;}
 
 #define DST(i,j) (pow(vecFeature1[i].descriptor[0]-vecFeature2[j].descriptor[0],2) + \
 		pow(vecFeature1[i].descriptor[1]-vecFeature2[j].descriptor[1],2) + \
 		pow(vecFeature1[i].descriptor[2]-vecFeature2[j].descriptor[2],2) + \
 		pow(vecFeature1[i].descriptor[3]-vecFeature2[j].descriptor[3],2) + \
 		pow(vecFeature1[i].descriptor[4]-vecFeature2[j].descriptor[4],2))
-
 	for(int i = 0; i < nindis1; i++)
 	{
 		double min_dst = numeric_limits<double>::max();
@@ -202,7 +204,25 @@ bool compare_features(vector<CompareResult> &crs, vector<FeatureType> & vecFeatu
 		crs2[j].id2 = min_id;
 		crs2[j].min_dst = min_dst;
 	}
+#else
+	/*
+	for(int i = 0; i < nindis1; i++)
+	{
+		vector<vector<int> > allranks;
+		map<int, double> dist;
+		for(int d = 0; d < ndims; d++)
+		{
+			vector<int> rank;
+			for(int j=0; j < nindis2; j++) dist[j] = abs(vecFeature1[i].descriptor[d] - vecFeature2[j].descriptor[d]);
+			int rankId = 1;
+			
+		}
 
+	}
+	for(int j = 0; j < nindis2; j++)
+	{
+	}*/
+#endif
 	for(int i = 0; i < nindis1; i++)
 	{
 		int j = crs1[i].id2;
@@ -218,6 +238,7 @@ vector<MarkerType> extract_id1_markers(vector<CompareResult>&crs, vector<MarkerT
 	if(crs.empty() || vecMarker.empty()) return extMarker;
 	int nresults = crs.size();
 	for(int i = 0; i < nresults; i++) extMarker.push_back(vecMarker[crs[i].id1]);
+	return extMarker;
 }
 
 vector<MarkerType> extract_id2_markers(vector<CompareResult>&crs, vector<MarkerType> & vecMarker)
@@ -226,4 +247,5 @@ vector<MarkerType> extract_id2_markers(vector<CompareResult>&crs, vector<MarkerT
 	if(crs.empty() || vecMarker.empty()) return extMarker;
 	int nresults = crs.size();
 	for(int i = 0; i < nresults; i++) extMarker.push_back(vecMarker[crs[i].id2]);
+	return extMarker;
 }

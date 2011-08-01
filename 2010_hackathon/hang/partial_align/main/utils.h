@@ -45,7 +45,31 @@ struct CompareResult
 	int id2;
 	double min_dst;
 };
-
+/*
+struct CompareResult_Rank
+{
+	int id1;
+	vector<vector<int> > allranks;
+	int getId2(){
+		if(allranks.empty()) return -1;
+		int ndims = allranks.size();
+		map<int, int> scores;
+		for(int i = 0; i < ndims; i++)
+		{
+			vector<int> rank = allranks[i];
+			for(int j = 0; j < rank.size(); j++)
+			{
+				if(scores.find(rank[j])!=scores.end())
+				{
+					scores[rank[j]] += j;
+				}
+				else scores[rank[j]] = j;
+			}
+		}
+		return (*scores.begin()).first;
+	}
+};
+*/
 bool detect_marker(vector<MarkerType> & vecMarker, unsigned char* inimg1d, V3DLONG sz[3]);
 
 bool marker_to_feature(vector<FeatureType> & vecFeature, vector<MarkerType> vecMarker, unsigned char* inimg1d, V3DLONG sz[3]);
@@ -57,5 +81,6 @@ bool uniform_features(vector<FeatureType> &vecFeature1, vector<FeatureType> &vec
 bool compare_features(vector<CompareResult> &crs, vector<FeatureType> & vecFeature1, vector<FeatureType> & vecFeature2);
 
 vector<MarkerType> extract_id1_markers(vector<CompareResult>&crs, vector<MarkerType> & vecMarker);
+
 vector<MarkerType> extract_id2_markers(vector<CompareResult>&crs, vector<MarkerType> & vecMarker);
 #endif
