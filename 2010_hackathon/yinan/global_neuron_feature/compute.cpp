@@ -15,11 +15,16 @@ int rootidx=0;
 
 void computeFeature(const NeuronTree & nt, double * features)
 {
+	Width=0, Height=0, Depth=0, Diameter=0, Length=0, Volume=0, Surface=0, Hausdorff=0;
+	N_node=0, N_stem=0, N_bifs=0, N_branch=0, N_tips=0, Max_Order=0;
+	Pd_ratio=0, Contraction=0, Max_Eux=0, Max_Path=0, BifA_local=0, BifA_remote=0, Soma_surface=0, Fragmentation=0;
+	rootidx=0;
+	
 	QList<NeuronSWC> list = nt.listNeuron;
 	QHash<int, int> LUT = QHash<int, int>();
 	for (int i=0;i<list.size();i++)
 		LUT.insert(list.at(i).n,i);
-	
+
 	//find the root
 	rootidx = VOID;
 	for (int i=0;i<list.size();i++)
@@ -29,7 +34,7 @@ void computeFeature(const NeuronTree & nt, double * features)
 		return;
 	}
 
-	
+
 	N_node = list.size();
 	N_stem = getChild(rootidx,list,LUT).size();
 	Soma_surface = 4*PI*(list.at(rootidx).r)*(list.at(rootidx).r);
@@ -37,7 +42,7 @@ void computeFeature(const NeuronTree & nt, double * features)
 	computeLinear(list, LUT);
 	computeTree(list,LUT);
 	Hausdorff = computeHausdorff(list,LUT);
-	
+
 	//feature # 0: Number of Nodes
 	features[0] = N_node;
 	//feature #1: Soma Surface
@@ -125,7 +130,7 @@ void computeLinear(QList<NeuronSWC> & list, QHash<int,int> & LUT)
 	xmin = ymin = zmin = VOID;
 	double xmax,ymax,zmax;
 	xmax = ymax = zmax = 0;
-	
+
 	for (int i=0;i<list.size();i++)
 	{
 		NeuronSWC curr = list.at(i);
@@ -173,7 +178,7 @@ void computeTree(QList<NeuronSWC> &list, QHash<int,int> & LUT)
 			tmp = child.at(i);
 			Pd_ratio += list.at(tmp).r/list.at(t).r;
 			pathlength = dist(list.at(tmp),list.at(t));
-			
+
 			fragment = 0;
 			while (getChild(tmp,list,LUT).size()==1)
 			{ 
@@ -194,7 +199,7 @@ void computeTree(QList<NeuronSWC> &list, QHash<int,int> & LUT)
 				int chsz = getChild(tmp,list,LUT).size();
 				N_bifs++;
 				stack.push(tmp);
-				
+
 				//compute local bif angle and remote bif angle
 				double local_ang,remote_ang;
 				max_local_ang = 0;

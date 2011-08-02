@@ -15,6 +15,6 @@ short **matrix(int n,int m);
 void free_matrix(short **mat,int n,int m);
 int mark(int m, short r[3], short ** c);
 double dist(const NeuronSWC & s1, const NeuronSWC & s2);
-double loglog(QList<double> & x, QList<double> & y, int n);
+double angle(const NeuronSWC & ori, const NeuronSWC & s1, const NeuronSWC & s2);
 
 #endif
