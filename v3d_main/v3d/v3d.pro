@@ -196,6 +196,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     v3d_compile_constraints.h \
     v3d_version_info.h \
     v3d_application.h \
+    ../neuron_annotator/data_model/NaLockableData.h \
     ../neuron_annotator/gui/NaViewer.h \
     ../neuron_annotator/gui/Na2DViewer.h \
     ../neuron_annotator/gui/NaMainWindow.h \
@@ -210,7 +211,6 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/AnnotationSession.h \
     ../neuron_annotator/utility/NeuronMaskEntry.h \
     ../neuron_annotator/MultiColorImageStackNode.h \
-    ../neuron_annotator/NaLockableData.h \
     ../neuron_annotator/NeuronAnnotatorResultNode.h \
     ../neuron_annotator/TimebasedIdentifierGenerator.h \
     ../neuron_annotator/gui/RendererNeuronAnnotator.h \
@@ -333,7 +333,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/AnnotationSession.cpp \
     ../neuron_annotator/utility/NeuronMaskEntry.cpp \
     ../neuron_annotator/MultiColorImageStackNode.cpp \
-    ../neuron_annotator/NaLockableData.cpp \
+    ../neuron_annotator/data_model/NaLockableData.cpp \
     ../neuron_annotator/NeuronAnnotatorResultNode.cpp \
     ../neuron_annotator/TimebasedIdentifierGenerator.cpp \
     ../neuron_annotator/gui/RendererNeuronAnnotator.cpp \

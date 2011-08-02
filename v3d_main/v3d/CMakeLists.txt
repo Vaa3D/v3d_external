@@ -28,6 +28,7 @@ set(V3D_SRCS
   ../cell_counter/CellCounter3D.cpp
   v3d_commandlineparser.cpp
   pluginfunchandler.cpp
+  ChannelTable.cpp
   v3d_actions.cpp)
 
 set(V3D_RCCS v3d.qrc ../3drenderer/3drenderer.qrc)
@@ -82,6 +83,7 @@ QT4_WRAP_CPP(QT_MOC_SRCS
   v3d_version_info.h
   v3d_actions.h
   v3d_application.h
+  ChannelTable.h
   )
 
 include_directories( BEFORE

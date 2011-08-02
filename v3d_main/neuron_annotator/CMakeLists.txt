@@ -16,8 +16,10 @@ QT4_WRAP_UI(NA_UI_SRCS
 )
 
 QT4_WRAP_CPP(NA_MOC_SRCS
+    data_model/NaLockableData.h
     geometry/CameraModel.h
     gui/AngleWidget.h
+    gui/CompartmentMapComboBox.h
     gui/CompartmentMapWidget.h
     gui/GalleryButton.h
     gui/GammaWidget.h
@@ -36,11 +38,10 @@ QT4_WRAP_CPP(NA_MOC_SRCS
     FragmentSelectionModel.h
     MipData.h
     MipLayer.h
-    NaLockableData.h
     NeuronSelector.h
 )
 
-file(GLOB NA_SRCS "*.cpp" "gui/*.cpp" "geometry/*.cpp" "utility/*.cpp")
+file(GLOB NA_SRCS "*.cpp" "data_model/*.cpp" "gui/*.cpp" "geometry/*.cpp" "utility/*.cpp")
 
 add_library(NeuronAnnotatorLib STATIC 
     ${NA_UI_SRCS} ${NA_MOC_SRCS} ${NA_SRCS})

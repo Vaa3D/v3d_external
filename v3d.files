@@ -2399,5 +2399,5 @@ v3d_main/neuron_annotator/gui/VolumeColorModel.h
 v3d_main/neuron_annotator/gui/VolumeColorModel.cpp
 
 v3d_main/v3d/mainwindow_wsi.cpp
-v3d_main/neuron_annotator/NaLockableData.h
-v3d_main/neuron_annotator/NaLockableData.cpp
+v3d_main/neuron_annotator/data_model/NaLockableData.h
+v3d_main/neuron_annotator/data_model/NaLockableData.cpp
