@@ -16,14 +16,14 @@ class NaLockableData : public QObject
 {
     Q_OBJECT
 
-
-    // An instance of the ReadLocker class is returned by the NaLockableData::acquireReadLock() method.
-    // Allocate a NaLockableData::ReadLocker on the stack to manage a read lock in a downstream client of NaLockableData.
-    // NaLockableData::ReadLocker is a non-blocking read lock on QReadWriteLock, unlike regular QReadLocker, which is blocking.
-    class ReadLocker
+public:
+    // An instance of the BaseReadLocker class is returned by the NaLockableData::acquireReadLock() method.
+    // Allocate a NaLockableData::BaseReadLocker on the stack to manage a read lock in a downstream client of NaLockableData.
+    // NaLockableData::BaseReadLocker is a non-blocking read lock on QReadWriteLock, unlike regular QReadLocker, which is blocking.
+    class BaseReadLocker
     {
     public:
-        explicit ReadLocker(QReadWriteLock* lock)
+        explicit BaseReadLocker(QReadWriteLock* lock)
             : m_hasReadLock(false), m_lock(lock), bWarnOnRefreshTime(false)
         {
             refreshLock();
@@ -31,7 +31,7 @@ class NaLockableData : public QObject
                 m_intervalTime.start();
         }
 
-        virtual ~ReadLocker()
+        virtual ~BaseReadLocker()
         {
             if (hasReadLock())
             {
@@ -42,14 +42,14 @@ class NaLockableData : public QObject
             }
         }
 
-        // Check hasReadLock() after allocating a ReadLocker on the stack, to see if it's safe to read.
+        // Check hasReadLock() after allocating a BaseReadLocker on the stack, to see if it's safe to read.
         bool hasReadLock() const
         {
             return m_hasReadLock;
         }
 
         // Clients should call refreshLock() every 25 ms or so until done reading.
-        // If refreshLock returns "false", stop reading and return, to pop this ReadLocker off the stack.
+        // If refreshLock returns "false", stop reading and return, to pop this BaseReadLocker off the stack.
         bool refreshLock()
         {
             if (hasReadLock())
@@ -88,6 +88,7 @@ class NaLockableData : public QObject
 
 public:
     explicit NaLockableData(QObject *parent = NULL);
+    virtual ~NaLockableData() {}
 
     // override writeData() with data update code.  updateData() method will handle WRITE locking.
     // Returns "true" if data were successfully changed.
@@ -97,12 +98,12 @@ public:
         return false;
     }
 
+
     // acquireReadLock() is intended to be called from downstream clients in other threads.
     // acquireReadLock() is conceptually const, even though is manipulates the QReadWriteLock member
-    ReadLocker acquireReadLock() const
+    virtual BaseReadLocker acquireReadLock() const
     {
-        NaLockableData* mutable_this = const_cast<NaLockableData*>(this);
-        return ReadLocker(&(mutable_this->lock));
+        return BaseReadLocker(getLock());
     }
 
 signals:
@@ -126,6 +127,12 @@ public slots:
     }
 
 protected:
+    // Special const access to QReadWriteLock.  Ouch.  Be careful!
+    QReadWriteLock * getLock() const {
+        NaLockableData* mutable_this = const_cast<NaLockableData*>(this);
+        return &(mutable_this->lock);
+    }
+
     QReadWriteLock lock; // used for multiple-read/single-write thread-safe locking
 };
 

@@ -13,9 +13,6 @@ AnnotationSession::AnnotationSession()
 {
     multiColorImageStackNode=0;
     neuronAnnotatorResultNode=0;
-    originalImageStack=0;
-    neuronMaskStack=0;
-    referenceStack=0;
 }
 
 AnnotationSession::~AnnotationSession() {
@@ -24,15 +21,6 @@ AnnotationSession::~AnnotationSession() {
     }
     if (neuronAnnotatorResultNode!=0) {
         delete neuronAnnotatorResultNode;
-    }
-    if (originalImageStack!=0) {
-        delete originalImageStack;
-    }
-    if (neuronMaskStack!=0) {
-        delete neuronMaskStack;
-    }
-    if (referenceStack!=0) {
-        delete referenceStack;
     }
     for (int i=0;i<neuronMipList.size();i++) {
         delete neuronMipList.at(i);
@@ -103,115 +91,37 @@ bool AnnotationSession::loadLsmMetadata() {
 }
 
 bool AnnotationSession::loadOriginalImageStack() {
-    QString msgPrefix("AnnotationSession::loadOriginalImageStack()");
     QString originalImageStackFilePath=multiColorImageStackNode->getPathToOriginalImageStackFile();
-    originalImageStack = new My4DImage;
-    if (!originalImageStack) {
-        cerr << msgPrefix.toStdString() << " : problem creating My4DImage" << endl;
-        return false;
-    }
-    originalImageStack->loadImage(originalImageStackFilePath.toAscii().data());
-    if (originalImageStack->isEmpty()) {
-        cerr << msgPrefix.toStdString() << ": originalImageStack is empty after loading\n";
-        return false;
-    }
-    cout << "Loaded original image stack with dimensions X=" << originalImageStack->getXDim() << " Y=" << originalImageStack->getYDim()
-            << " Z=" << originalImageStack->getZDim() << " C=" << originalImageStack->getCDim() << "\n";
-    return true;
+    return volumeData.loadOriginalImageStack(originalImageStackFilePath);
 }
 
 bool AnnotationSession::loadNeuronMaskStack() {
-    QString msgPrefix("AnnotationSession::loadNeuronMaskStack()");
-    if (originalImageStack==0) {
-        cerr << msgPrefix.toStdString() << " error : originalImageStack must be created before this function is called" << endl;
-        return false;
-    }
-    int imageXSize=originalImageStack->getXDim();
-    int imageYSize=originalImageStack->getYDim();
-    int imageZSize=originalImageStack->getZDim();
     QString maskLabelFilePath=multiColorImageStackNode->getPathToMulticolorLabelMaskFile();
-    neuronMaskStack = new My4DImage;
-    if (!neuronMaskStack) {
-        cerr << msgPrefix.toStdString() << " : problem creating My4DImage" << endl;
-        return false;
-    }
-    neuronMaskStack->loadImage(maskLabelFilePath.toAscii().data());
-
-    return true;
-
-    // Create blank image
-    //neuronMaskStack->loadImage(imageXSize, imageYSize, imageZSize, 1, 1); // single 4D slice, 8-bit color, respectively
-    //if (neuronMaskStack->isEmpty()) {
-    //    cerr << msgPrefix.toStdString() << ": neuronMaskStack is empty after loading\n";
-    //    return false;
-    //}
-
-    // Load binary mask data
-    //bool readMaskStatus = MultiColorImageStackNode::readMaskFileToMy4DImage(neuronMaskStack, maskLabelFilePath);
-    //return readMaskStatus;
+    return volumeData.loadNeuronMaskStack(maskLabelFilePath);
 }
 
 bool AnnotationSession::loadReferenceStack() {
-
-    // Phase 1: load the data
-    QString msgPrefix("AnnotationSession::loadReferenceStack()");
-    qDebug() << msgPrefix << " : start";
     QString referenceStackFilePath=multiColorImageStackNode->getPathToReferenceStackFile();
-    My4DImage* initialReferenceStack=new My4DImage();
-    initialReferenceStack->loadImage(referenceStackFilePath.toAscii().data());
-    if (initialReferenceStack->isEmpty()) {
-        cerr << msgPrefix.toStdString() << ": initialReferenceStack is empty after loading\n";
-        return false;
-    }
-    cout << "Loaded reference stack stack with dimensions X=" << initialReferenceStack->getXDim() << " Y=" << initialReferenceStack->getYDim()
-            << " Z=" << initialReferenceStack->getZDim() << " C=" << initialReferenceStack->getCDim() << "\n";
-
-    // Phase 2: normalize to 8-bit
-    referenceStack=new My4DImage();
-    referenceStack->loadImage(initialReferenceStack->getXDim(), initialReferenceStack->getYDim(), initialReferenceStack->getZDim(), 1 /* number of channels */, 1 /* bytes per channel */);
-    Image4DProxy<My4DImage> initialProxy(initialReferenceStack);
-    Image4DProxy<My4DImage> referenceProxy(referenceStack);
-
-    double initialMin=initialReferenceStack->getChannalMinIntensity(0);
-    double initialMax=initialReferenceStack->getChannalMaxIntensity(0);
-
-    qDebug() << "Populating reference with initial data";
-    double initialRange=initialMax-initialMin;
-    qDebug() << "Reference lsm initialMin=" << initialMin << " initialMax=" << initialMax << " initialRange=" << initialRange;
-    int zDim=initialReferenceStack->getZDim();
-    int yDim=initialReferenceStack->getYDim();
-    int xDim=initialReferenceStack->getXDim();
-    for (int z=0;z<zDim;z++) {
-        for (int y=0;y<yDim;y++) {
-            for (int x=0;x<xDim;x++) {
-                int value= (255.0*(*initialProxy.at_uint16(x,y,z,0))-initialMin)/initialRange;
-                if (value<0) {
-                    value=0;
-                } else if (value>255) {
-                    value=255;
-                }
-                referenceProxy.put8bit_fit_at(x,(yDim-y)-1,z,0,value); // For some reason, the Y-dim seems to need inversion
-            }
-        }
-    }
-    initialReferenceStack->cleanExistData();
-    delete initialReferenceStack;
-    qDebug() << "Finished loading reference stack";
-
-    return true;
+    return volumeData.loadReferenceStack(referenceStackFilePath);
 }
 
-bool AnnotationSession::prepareLabelIndex() {
+bool AnnotationSession::prepareLabelIndex()
+{
+    // Read lock is allocated on the stack, so it will be automatically released when the read operation
+    // is complete and the read lock falls out of scope.
+    NaVolumeData::Reader volumeReader = volumeData.getTemporaryReadLock();
+    if (! volumeReader.hasReadLock()) return false;
+
     int z,y,x;
-    int imageX=originalImageStack->getXDim();
-    int imageY=originalImageStack->getYDim();
-    int imageZ=originalImageStack->getZDim();
-    int imageC=originalImageStack->getCDim();
+    int imageX=volumeReader.getXDim();
+    int imageY=volumeReader.getYDim();
+    int imageZ=volumeReader.getZDim();
+    int imageC=volumeReader.getCDim();
     if (imageC != 3) {
         qDebug() << "Expected original image stack to have channel dim=3 but it has channel dim=" << imageC;
         return false;
     }
-    Image4DProxy<My4DImage> maskProxy(neuronMaskStack);
+    const Image4DProxy<My4DImage> maskProxy = volumeReader.getNeuronMaskProxy();
 
     int maxMaskIndex=0;
 
@@ -224,6 +134,7 @@ bool AnnotationSession::prepareLabelIndex() {
                 }
             }
         }
+        if (! volumeReader.refreshLock()) return false; // Try to update read lock every 25 ms.
     }
 
     qDebug() << "Using maxMaskIndex=" << maxMaskIndex;
@@ -240,20 +151,27 @@ bool AnnotationSession::prepareLabelIndex() {
 // This function populates the neuronMipList<QPixmap> indexed 0..<num-stacks>
 // and the overlayMipList<QPixmap> with Reference in position 0 and background signal in position 1
 
-bool AnnotationSession::populateMipLists() {
+bool AnnotationSession::populateMipLists()
+{
+    // Read lock is allocated on the stack, so it will be automatically released when the read operation
+    // is complete and the read lock falls out of scope.
+    NaVolumeData::Reader volumeReader = volumeData.getTemporaryReadLock();
+    if (! volumeReader.hasReadLock()) return false;
+
     qDebug() << "AnnotationSession::populateMaskMipList() start";
     int z,y,x;
-    int imageX=originalImageStack->getXDim();
-    int imageY=originalImageStack->getYDim();
-    int imageZ=originalImageStack->getZDim();
-    int imageC=originalImageStack->getCDim();
+    int imageX=volumeReader.getXDim();
+    int imageY=volumeReader.getYDim();
+    int imageZ=volumeReader.getZDim();
+    int imageC=volumeReader.getCDim();
     if (imageC != 3) {
         qDebug() << "Expected original image stack to have channel dim=3 but it has channel dim=" << imageC;
         return false;
     }
-    Image4DProxy<My4DImage> originalProxy(originalImageStack);
-    Image4DProxy<My4DImage> maskProxy(neuronMaskStack);
-    Image4DProxy<My4DImage> referenceProxy(referenceStack);
+
+    const Image4DProxy<My4DImage> originalProxy = volumeReader.getOriginalImageProxy();
+    const Image4DProxy<My4DImage> maskProxy = volumeReader.getNeuronMaskProxy();
+    const Image4DProxy<My4DImage> referenceProxy = volumeReader.getReferenceImageProxy();
 
     neuronMipList.clear();
     overlayMipList.clear();
@@ -329,6 +247,7 @@ bool AnnotationSession::populateMipLists() {
                 }
             }
         }
+        if (! volumeReader.refreshLock()) return false; // Try to reacquire lock every 25 ms
     }
 
     qDebug() << "AnnotationSession::populateMaskMipList() done";

@@ -369,11 +369,11 @@ public:
 			vmax.push_back( p_vmax[i] );
 		}
 	}
-	inline bool has_minmax()
+        inline bool has_minmax() const
 	{
 		return vmin.size()==sc && vmax.size()==sc && su>1;
 	}
-	inline v3d_uint8 value8bit_at(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c)
+        inline v3d_uint8 value8bit_at(V3DLONG x, V3DLONG y, V3DLONG z, V3DLONG c) const
 	{
 		//double v = value_at(x,y,z);
 		double v;
