@@ -30,6 +30,8 @@ public:
 
     QStringList getPathsToLsmMetadataFiles();
 
+    QDir getImageDir() {return imageDir;}
+
     void setPathToOriginalImageStackFile(QString pathToOriginalImageStackFileParam) {
         pathToOriginalImageStackFile=pathToOriginalImageStackFileParam;
     }

@@ -21,6 +21,34 @@ NaVolumeData::~NaVolumeData()
     volumeWriter.clearImageData();
 }
 
+/* slot */
+void NaVolumeData::loadAllVolumeData()
+{
+    // Allocate writer on the stack so write lock will be automatically released when method returns
+    Writer volumeWriter(*this);
+    volumeWriter.clearImageData();
+
+    if (! volumeWriter.loadOriginalImageStack()) {
+        volumeWriter.unlock(); // unlock before emit
+        emit volumeLoadFailed();
+        return;
+    }
+
+    if (! volumeWriter.loadNeuronMaskStack()) {
+        volumeWriter.unlock(); // unlock before emit
+        emit volumeLoadFailed();
+        return;
+    }
+
+    if (! volumeWriter.loadReferenceStack()) {
+        volumeWriter.unlock(); // unlock before emit
+        emit volumeLoadFailed();
+        return;
+    }
+
+    volumeWriter.unlock(); // unlock before emit
+    emit dataChanged();
+}
 
 //////////////////////////////////
 // NaVolumeData::Writer methods //

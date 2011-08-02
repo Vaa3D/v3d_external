@@ -563,8 +563,11 @@ void NaMainWindow::on_actionScreenShot_triggered() {
 
 }
 
-bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) {
+bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
+{
     annotationSession = new AnnotationSession();
+    connect(annotationSession->getVolumeData(), SIGNAL(dataChanged()),
+            this, SLOT(processUpdatedVolumeData()));
 
     // Need to construct (temporary until backend implemented) MultiColorImageStackNode from this directory
     // This code will be redone when the node/filestore is implemented.
@@ -609,18 +612,19 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
 
     // Load session
     if (! annotationSession->loadVolumeData()) return false;
+    // dataChanged() signal will be emitted if load succeeds
+    return true;
+}
 
-    // if (!annotationSession->loadReferenceStack()) {
-    //     return false;
-    // }
-
-    // if (!annotationSession->loadOriginalImageStack()) {
-    //    return false;
-    // }
+void NaMainWindow::processUpdatedVolumeData()
+{
+    // TODO -- install separate listeners for dataChanged() in the various display widgets
 
     if (!annotationSession->loadLsmMetadata()) {
-        return false;
+        return;
     }
+
+    QDir imageInputDirectory = annotationSession->getMultiColorImageStackNode()->getImageDir();
 
     // At this point it should be reasonable to set the window title
     QString lsmName("Unknown original image");
@@ -639,10 +643,10 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
     //     return false;
     // }
     if (!annotationSession->prepareLabelIndex()) {
-        return false;
+        return;
     }
     if (!annotationSession->populateMipLists()) {
-        return false;
+        return;
     }
 
     createOverlayGallery();
@@ -652,10 +656,10 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
     // ui.v3dr_glwidget->loadMy4DImage(annotationSession->getOriginalImageStackAsMy4DImage());
     if (! loadMy4DImage(annotationSession->getOriginalImageStackAsMy4DImage(),
                   annotationSession->getNeuronMaskAsMy4DImage()) )
-        return false;
+        return;
 
     if (!ui.v3dr_glwidget->populateNeuronMaskAndReference(annotationSession->getNeuronMaskAsMy4DImage(), annotationSession->getReferenceStack())) {
-        return false;
+        return;
     }
 
     ui.v3dr_glwidget->setThickness(annotationSession->getZRatio());
@@ -721,7 +725,7 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
     ui.ZcmaxSlider->setSingleStep(1);
     ui.ZcmaxSlider->setValue(annotationSession->getOriginalImageStackAsMy4DImage()->getZDim()-1);
 
-    return true;
+    return;
 }
 
 bool NaMainWindow::closeAnnotationSession() {

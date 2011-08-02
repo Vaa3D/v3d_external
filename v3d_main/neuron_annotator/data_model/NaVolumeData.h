@@ -7,8 +7,12 @@
 // NaVolumeData holds a collection of My4DImage volumes, plus a QReadWriteLock to manage
 // access to the data.  Read-only clients are expected to call refreshLock() on their
 // NaVolumeData::Reader objects every 25 ms or so, to keep the application responsive.
+// Use the NaVolumeData::Reader and NaVolumeData::Writer classes to automatically acquire
+// temporary locks when accessing the image data.
 class NaVolumeData : public NaLockableData
 {
+    Q_OBJECT
+
 public:
     NaVolumeData();
     virtual ~NaVolumeData();
@@ -26,8 +30,11 @@ public:
     const My4DImage* getReferenceStack() const { return referenceStack; }
     const My4DImage* getNeuronMaskAsMy4DImage() const { return neuronMaskStack; }
 
+signals:
+    void volumeLoadFailed();
+
 public slots:
-    void loadAllVolumeData();
+    void loadAllVolumeData(); // Assumes file name paths have already been set
 
 private:
     QString originalImageStackFilePath;

@@ -71,11 +71,13 @@ public:
     void switchSelectedNeuron(int index);
     void switchSelectedNeuronUniquelyIfOn(int index);
     void clearSelections();
+    NaVolumeData * getVolumeData() {return &volumeData;}
 
 signals:
     void modelUpdated(QString updateType);
     void scrollBarFocus(FragmentSelectionModel::FragmentIndex index);
     void deselectNeuron();
+    void volumeDataNeeded(); // stimulate VolumeData to load images from disk
 
 public slots:
     void neuronMaskUpdate(int index, bool status);
@@ -91,6 +93,7 @@ private:
     MultiColorImageStackNode* multiColorImageStackNode;
     NeuronAnnotatorResultNode* neuronAnnotatorResultNode;
     NaVolumeData volumeData;
+    QThread volumeDataThread;
     QList<QImage*> neuronMipList;
     QList<QImage*> overlayMipList;
     QList<bool> maskStatusList;

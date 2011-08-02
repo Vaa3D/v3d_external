@@ -13,6 +13,14 @@ AnnotationSession::AnnotationSession()
 {
     multiColorImageStackNode=0;
     neuronAnnotatorResultNode=0;
+
+    // Prepare to load volume data in a separate QThread
+    volumeDataThread.start();
+    volumeData.moveToThread(&volumeDataThread);
+    connect(this, SIGNAL(volumeDataNeeded()),
+            &volumeData, SLOT(loadAllVolumeData()));
+    connect(&volumeData, SIGNAL(dataChanged()),
+            this, SLOT(processUpdatedVolumeData()));
 }
 
 AnnotationSession::~AnnotationSession() {
@@ -95,19 +103,22 @@ bool AnnotationSession::loadVolumeData()
     // Allocate writer on the stack so write lock will be automatically released when method returns
     NaVolumeData::Writer volumeWriter(volumeData);
 
-    volumeWriter.clearImageData();
+    // Set file names of image files so VolumeData will know what to load.
 
     QString originalImageStackFilePath=multiColorImageStackNode->getPathToOriginalImageStackFile();
     volumeWriter.setOriginalImageStackFilePath(originalImageStackFilePath);
-    if (! volumeWriter.loadOriginalImageStack()) return false;
+    // if (! volumeWriter.loadOriginalImageStack()) return false;
 
     QString maskLabelFilePath=multiColorImageStackNode->getPathToMulticolorLabelMaskFile();
     volumeWriter.setMaskLabelFilePath(maskLabelFilePath);
-    if (! volumeWriter.loadNeuronMaskStack()) return false;
+    // if (! volumeWriter.loadNeuronMaskStack()) return false;
 
     QString referenceStackFilePath=multiColorImageStackNode->getPathToReferenceStackFile();
     volumeWriter.setReferenceStackFilePath(referenceStackFilePath);
-    if (! volumeWriter.loadReferenceStack()) return false;
+    // if (! volumeWriter.loadReferenceStack()) return false;
+
+    volumeWriter.unlock();
+    emit volumeDataNeeded(); // load data in a separate QThread
 
     return true;
 }
