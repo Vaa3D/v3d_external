@@ -26,7 +26,13 @@ public:
     const My4DImage* getReferenceStack() const { return referenceStack; }
     const My4DImage* getNeuronMaskAsMy4DImage() const { return neuronMaskStack; }
 
+public slots:
+    void loadAllVolumeData();
+
 private:
+    QString originalImageStackFilePath;
+    QString maskLabelFilePath;
+    QString referenceStackFilePath;
     My4DImage* originalImageStack;
     My4DImage* neuronMaskStack;
     My4DImage* referenceStack;
@@ -74,9 +80,15 @@ public:
         V3DLONG getZDim() const;
         V3DLONG getCDim() const;
 
-        bool loadOriginalImageStack(QString originalImageStackFilePath);
-        bool loadNeuronMaskStack(QString maskLabelFilePath);
-        bool loadReferenceStack(QString referenceStackFilePath);
+        void setOriginalImageStackFilePath(QString path) {m_data->originalImageStackFilePath = path;}
+        void setMaskLabelFilePath(QString path) {m_data->maskLabelFilePath = path;}
+        void setReferenceStackFilePath(QString path) {m_data->referenceStackFilePath = path;}
+
+        bool loadOriginalImageStack();
+        bool loadNeuronMaskStack();
+        bool loadReferenceStack();
+
+        void clearImageData();
 
     private:
         NaVolumeData * m_data;

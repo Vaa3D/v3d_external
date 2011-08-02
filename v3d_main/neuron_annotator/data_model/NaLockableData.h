@@ -98,14 +98,6 @@ public:
         return false;
     }
 
-
-    // acquireReadLock() is intended to be called from downstream clients in other threads.
-    // acquireReadLock() is conceptually const, even though is manipulates the QReadWriteLock member
-    virtual BaseReadLocker acquireReadLock() const
-    {
-        return BaseReadLocker(getLock());
-    }
-
 signals:
     void dataChanged(); // ready for downstream clients to read all data
     void progressMessage(QString msg);
@@ -127,7 +119,7 @@ public slots:
     }
 
 protected:
-    // Special const access to QReadWriteLock.  Ouch.  Be careful!
+    // Special const access to QReadWriteLock.  Ouch.  Use carefully!
     QReadWriteLock * getLock() const {
         NaLockableData* mutable_this = const_cast<NaLockableData*>(this);
         return &(mutable_this->lock);

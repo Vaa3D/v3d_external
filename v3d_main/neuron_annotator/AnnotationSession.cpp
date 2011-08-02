@@ -92,16 +92,22 @@ bool AnnotationSession::loadLsmMetadata() {
 
 bool AnnotationSession::loadVolumeData()
 {
+    // Allocate writer on the stack so write lock will be automatically released when method returns
     NaVolumeData::Writer volumeWriter(volumeData);
 
+    volumeWriter.clearImageData();
+
     QString originalImageStackFilePath=multiColorImageStackNode->getPathToOriginalImageStackFile();
-    if (! volumeWriter.loadOriginalImageStack(originalImageStackFilePath)) return false;
+    volumeWriter.setOriginalImageStackFilePath(originalImageStackFilePath);
+    if (! volumeWriter.loadOriginalImageStack()) return false;
 
     QString maskLabelFilePath=multiColorImageStackNode->getPathToMulticolorLabelMaskFile();
-    if (! volumeWriter.loadNeuronMaskStack(maskLabelFilePath)) return false;
+    volumeWriter.setMaskLabelFilePath(maskLabelFilePath);
+    if (! volumeWriter.loadNeuronMaskStack()) return false;
 
     QString referenceStackFilePath=multiColorImageStackNode->getPathToReferenceStackFile();
-    if (! volumeWriter.loadReferenceStack(referenceStackFilePath)) return false;
+    volumeWriter.setReferenceStackFilePath(referenceStackFilePath);
+    if (! volumeWriter.loadReferenceStack()) return false;
 
     return true;
 }

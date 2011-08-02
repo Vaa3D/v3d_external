@@ -17,19 +17,8 @@ NaVolumeData::NaVolumeData()
 
 NaVolumeData::~NaVolumeData()
 {
-    Writer writeLock(*this); // Wait for readers to finish before deleting
-    if (originalImageStack != NULL) {
-        delete originalImageStack;
-        originalImageStack = NULL;
-    }
-    if (neuronMaskStack != NULL) {
-        delete neuronMaskStack;
-        neuronMaskStack = NULL;
-    }
-    if (referenceStack != NULL) {
-        delete referenceStack;
-        referenceStack = NULL;
-    }
+    Writer volumeWriter(*this); // Wait for readers to finish before deleting
+    volumeWriter.clearImageData();
 }
 
 
@@ -37,7 +26,23 @@ NaVolumeData::~NaVolumeData()
 // NaVolumeData::Writer methods //
 //////////////////////////////////
 
-bool NaVolumeData::Writer::loadOriginalImageStack(QString originalImageStackFilePath)
+void NaVolumeData::Writer::clearImageData()
+{
+    if (m_data->originalImageStack != NULL) {
+        delete m_data->originalImageStack;
+        m_data->originalImageStack = NULL;
+    }
+    if (m_data->neuronMaskStack != NULL) {
+        delete m_data->neuronMaskStack;
+        m_data->neuronMaskStack = NULL;
+    }
+    if (m_data->referenceStack != NULL) {
+        delete m_data->referenceStack;
+        m_data->referenceStack = NULL;
+    }
+}
+
+bool NaVolumeData::Writer::loadOriginalImageStack()
 {
     QString msgPrefix("NaVolumeData::loadOriginalImageStack()");
     m_data->originalImageStack = new My4DImage;
@@ -46,7 +51,7 @@ bool NaVolumeData::Writer::loadOriginalImageStack(QString originalImageStackFile
         cerr << msgPrefix.toStdString() << " : problem creating My4DImage" << endl;
         return false;
     }
-    originalImageStack->loadImage(originalImageStackFilePath.toAscii().data());
+    originalImageStack->loadImage(m_data->originalImageStackFilePath.toAscii().data());
     if (originalImageStack->isEmpty()) {
         cerr << msgPrefix.toStdString() << ": originalImageStack is empty after loading\n";
         return false;
@@ -56,7 +61,7 @@ bool NaVolumeData::Writer::loadOriginalImageStack(QString originalImageStackFile
     return true;
 }
 
-bool NaVolumeData::Writer::loadNeuronMaskStack(QString maskLabelFilePath) {
+bool NaVolumeData::Writer::loadNeuronMaskStack() {
     QString msgPrefix("NaVolumeData::loadNeuronMaskStack()");
     if (m_data->originalImageStack==0) {
         cerr << msgPrefix.toStdString() << " error : originalImageStack must be created before this function is called" << endl;
@@ -68,17 +73,17 @@ bool NaVolumeData::Writer::loadNeuronMaskStack(QString maskLabelFilePath) {
         cerr << msgPrefix.toStdString() << " : problem creating My4DImage" << endl;
         return false;
     }
-    neuronMaskStack->loadImage(maskLabelFilePath.toAscii().data());
+    neuronMaskStack->loadImage(m_data->maskLabelFilePath.toAscii().data());
     return true;
 }
 
-bool NaVolumeData::Writer::loadReferenceStack(QString referenceStackFilePath)
+bool NaVolumeData::Writer::loadReferenceStack()
 {
     // Phase 1: load the data
     QString msgPrefix("NaVolumeData::loadReferenceStack()");
     qDebug() << msgPrefix << " : start";
     My4DImage* initialReferenceStack=new My4DImage();
-    initialReferenceStack->loadImage(referenceStackFilePath.toAscii().data());
+    initialReferenceStack->loadImage(m_data->referenceStackFilePath.toAscii().data());
     if (initialReferenceStack->isEmpty()) {
         cerr << msgPrefix.toStdString() << ": initialReferenceStack is empty after loading\n";
         return false;
