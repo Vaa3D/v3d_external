@@ -25,9 +25,11 @@ public:
     bool load(long annotationSessionID);
     long getObjectId() const { return objectId; }
 
-    bool loadOriginalImageStack();
-    bool loadNeuronMaskStack();
-    bool loadReferenceStack();
+    // bool loadOriginalImageStack();
+    // bool loadNeuronMaskStack();
+    // bool loadReferenceStack();
+    bool loadVolumeData();
+
     bool prepareLabelIndex();
     bool populateMipLists();
     bool loadLsmMetadata();

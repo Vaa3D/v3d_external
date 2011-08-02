@@ -608,13 +608,15 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
     annotationSession->setNeuronAnnotatorResultNode(resultNode);
 
     // Load session
-    if (!annotationSession->loadReferenceStack()) {
-        return false;
-    }
+    if (! annotationSession->loadVolumeData()) return false;
 
-    if (!annotationSession->loadOriginalImageStack()) {
-        return false;
-    }
+    // if (!annotationSession->loadReferenceStack()) {
+    //     return false;
+    // }
+
+    // if (!annotationSession->loadOriginalImageStack()) {
+    //    return false;
+    // }
 
     if (!annotationSession->loadLsmMetadata()) {
         return false;
@@ -633,9 +635,9 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory) 
     QFileInfo lsmFileInfo(lsmName);
     setWindowTitle(QString("%1 - V3D Neuron Annotator").arg(lsmFileInfo.fileName()));
 
-    if (!annotationSession->loadNeuronMaskStack()) {
-        return false;
-    }
+    // if (!annotationSession->loadNeuronMaskStack()) {
+    //     return false;
+    // }
     if (!annotationSession->prepareLabelIndex()) {
         return false;
     }

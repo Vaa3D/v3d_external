@@ -3,6 +3,11 @@
 
 using namespace std;
 
+
+//////////////////////////
+// NaVolumeData methods //
+//////////////////////////
+
 NaVolumeData::NaVolumeData()
     : originalImageStack(NULL)
     , neuronMaskStack(NULL)
@@ -12,6 +17,7 @@ NaVolumeData::NaVolumeData()
 
 NaVolumeData::~NaVolumeData()
 {
+    Writer writeLock(*this); // Wait for readers to finish before deleting
     if (originalImageStack != NULL) {
         delete originalImageStack;
         originalImageStack = NULL;
@@ -26,10 +32,16 @@ NaVolumeData::~NaVolumeData()
     }
 }
 
-bool NaVolumeData::loadOriginalImageStack(QString originalImageStackFilePath)
+
+//////////////////////////////////
+// NaVolumeData::Writer methods //
+//////////////////////////////////
+
+bool NaVolumeData::Writer::loadOriginalImageStack(QString originalImageStackFilePath)
 {
     QString msgPrefix("NaVolumeData::loadOriginalImageStack()");
-    originalImageStack = new My4DImage;
+    m_data->originalImageStack = new My4DImage;
+    My4DImage * originalImageStack = m_data->originalImageStack;
     if (!originalImageStack) {
         cerr << msgPrefix.toStdString() << " : problem creating My4DImage" << endl;
         return false;
@@ -44,13 +56,14 @@ bool NaVolumeData::loadOriginalImageStack(QString originalImageStackFilePath)
     return true;
 }
 
-bool NaVolumeData::loadNeuronMaskStack(QString maskLabelFilePath) {
+bool NaVolumeData::Writer::loadNeuronMaskStack(QString maskLabelFilePath) {
     QString msgPrefix("NaVolumeData::loadNeuronMaskStack()");
-    if (originalImageStack==0) {
+    if (m_data->originalImageStack==0) {
         cerr << msgPrefix.toStdString() << " error : originalImageStack must be created before this function is called" << endl;
         return false;
     }
-    neuronMaskStack = new My4DImage;
+    m_data->neuronMaskStack = new My4DImage;
+    My4DImage * neuronMaskStack = m_data->neuronMaskStack;
     if (!neuronMaskStack) {
         cerr << msgPrefix.toStdString() << " : problem creating My4DImage" << endl;
         return false;
@@ -59,7 +72,7 @@ bool NaVolumeData::loadNeuronMaskStack(QString maskLabelFilePath) {
     return true;
 }
 
-bool NaVolumeData::loadReferenceStack(QString referenceStackFilePath)
+bool NaVolumeData::Writer::loadReferenceStack(QString referenceStackFilePath)
 {
     // Phase 1: load the data
     QString msgPrefix("NaVolumeData::loadReferenceStack()");
@@ -74,7 +87,8 @@ bool NaVolumeData::loadReferenceStack(QString referenceStackFilePath)
             << " Z=" << initialReferenceStack->getZDim() << " C=" << initialReferenceStack->getCDim() << "\n";
 
     // Phase 2: normalize to 8-bit
-    referenceStack=new My4DImage();
+    m_data->referenceStack=new My4DImage();
+    My4DImage * referenceStack = m_data->referenceStack;
     referenceStack->loadImage(initialReferenceStack->getXDim(), initialReferenceStack->getYDim(), initialReferenceStack->getZDim(), 1 /* number of channels */, 1 /* bytes per channel */);
     Image4DProxy<My4DImage> initialProxy(initialReferenceStack);
     Image4DProxy<My4DImage> referenceProxy(referenceStack);
@@ -108,30 +122,85 @@ bool NaVolumeData::loadReferenceStack(QString referenceStackFilePath)
     return true;
 }
 
+V3DLONG NaVolumeData::Writer::getXDim() const {
+    if (m_data && m_data->originalImageStack)
+        return m_data->originalImageStack->getXDim();
+    else
+        return 0;
+}
+
+V3DLONG NaVolumeData::Writer::getYDim() const {
+    if (m_data && m_data->originalImageStack)
+        return m_data->originalImageStack->getYDim();
+    else
+        return 0;
+}
+
+V3DLONG NaVolumeData::Writer::getZDim() const {
+    if (m_data && m_data->originalImageStack)
+        return m_data->originalImageStack->getZDim();
+    else
+        return 0;
+}
+
+V3DLONG NaVolumeData::Writer::getCDim() const {
+    if (m_data && m_data->originalImageStack)
+        return m_data->originalImageStack->getCDim();
+    else
+        return 0;
+}
 
 //////////////////////////////////
 // NaVolumeData::Reader methods //
 //////////////////////////////////
 
-const Image4DProxy<My4DImage> NaVolumeData::Reader::getNeuronMaskProxy()
-{
-    // Image4DProxy class is a bit const-retarded, so const_cast here.
-    // (It's OK; we are returning a const object in the end.)
-    return Image4DProxy<My4DImage>(const_cast<My4DImage*>(neuronMaskStack));
+V3DLONG NaVolumeData::Reader::getXDim() const {
+    if (m_data && m_data->originalImageStack)
+        return m_data->originalImageStack->getXDim();
+    else
+        return 0;
 }
 
-const Image4DProxy<My4DImage> NaVolumeData::Reader::getOriginalImageProxy()
-{
-    // Image4DProxy class is a bit const-retarded, so const_cast here.
-    // (It's OK; we are returning a const object in the end.)
-    return Image4DProxy<My4DImage>(const_cast<My4DImage*>(originalImageStack));
+V3DLONG NaVolumeData::Reader::getYDim() const {
+    if (m_data && m_data->originalImageStack)
+        return m_data->originalImageStack->getYDim();
+    else
+        return 0;
 }
 
-const Image4DProxy<My4DImage> NaVolumeData::Reader::getReferenceImageProxy()
+V3DLONG NaVolumeData::Reader::getZDim() const {
+    if (m_data && m_data->originalImageStack)
+        return m_data->originalImageStack->getZDim();
+    else
+        return 0;
+}
+
+V3DLONG NaVolumeData::Reader::getCDim() const {
+    if (m_data && m_data->originalImageStack)
+        return m_data->originalImageStack->getCDim();
+    else
+        return 0;
+}
+
+const Image4DProxy<My4DImage> NaVolumeData::Reader::getNeuronMaskProxy() const
 {
     // Image4DProxy class is a bit const-retarded, so const_cast here.
     // (It's OK; we are returning a const object in the end.)
-    return Image4DProxy<My4DImage>(const_cast<My4DImage*>(referenceStack));
+    return Image4DProxy<My4DImage>(const_cast<My4DImage*>(m_data->neuronMaskStack));
+}
+
+const Image4DProxy<My4DImage> NaVolumeData::Reader::getOriginalImageProxy() const
+{
+    // Image4DProxy class is a bit const-retarded, so const_cast here.
+    // (It's OK; we are returning a const object in the end.)
+    return Image4DProxy<My4DImage>(const_cast<My4DImage*>(m_data->originalImageStack));
+}
+
+const Image4DProxy<My4DImage> NaVolumeData::Reader::getReferenceImageProxy() const
+{
+    // Image4DProxy class is a bit const-retarded, so const_cast here.
+    // (It's OK; we are returning a const object in the end.)
+    return Image4DProxy<My4DImage>(const_cast<My4DImage*>(m_data->referenceStack));
 }
 
 

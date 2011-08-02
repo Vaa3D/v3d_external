@@ -90,26 +90,27 @@ bool AnnotationSession::loadLsmMetadata() {
 
 }
 
-bool AnnotationSession::loadOriginalImageStack() {
+bool AnnotationSession::loadVolumeData()
+{
+    NaVolumeData::Writer volumeWriter(volumeData);
+
     QString originalImageStackFilePath=multiColorImageStackNode->getPathToOriginalImageStackFile();
-    return volumeData.loadOriginalImageStack(originalImageStackFilePath);
-}
+    if (! volumeWriter.loadOriginalImageStack(originalImageStackFilePath)) return false;
 
-bool AnnotationSession::loadNeuronMaskStack() {
     QString maskLabelFilePath=multiColorImageStackNode->getPathToMulticolorLabelMaskFile();
-    return volumeData.loadNeuronMaskStack(maskLabelFilePath);
-}
+    if (! volumeWriter.loadNeuronMaskStack(maskLabelFilePath)) return false;
 
-bool AnnotationSession::loadReferenceStack() {
     QString referenceStackFilePath=multiColorImageStackNode->getPathToReferenceStackFile();
-    return volumeData.loadReferenceStack(referenceStackFilePath);
+    if (! volumeWriter.loadReferenceStack(referenceStackFilePath)) return false;
+
+    return true;
 }
 
 bool AnnotationSession::prepareLabelIndex()
 {
     // Read lock is allocated on the stack, so it will be automatically released when the read operation
     // is complete and the read lock falls out of scope.
-    NaVolumeData::Reader volumeReader = volumeData.getTemporaryReadLock();
+    NaVolumeData::Reader volumeReader(volumeData);
     if (! volumeReader.hasReadLock()) return false;
 
     int z,y,x;
@@ -155,7 +156,7 @@ bool AnnotationSession::populateMipLists()
 {
     // Read lock is allocated on the stack, so it will be automatically released when the read operation
     // is complete and the read lock falls out of scope.
-    NaVolumeData::Reader volumeReader = volumeData.getTemporaryReadLock();
+    NaVolumeData::Reader volumeReader(volumeData);
     if (! volumeReader.hasReadLock()) return false;
 
     qDebug() << "AnnotationSession::populateMaskMipList() start";

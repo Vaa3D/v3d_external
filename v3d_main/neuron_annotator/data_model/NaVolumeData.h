@@ -4,15 +4,14 @@
 #include "NaLockableData.h"
 #include "../v3d/v3d_core.h"
 
+// NaVolumeData holds a collection of My4DImage volumes, plus a QReadWriteLock to manage
+// access to the data.  Read-only clients are expected to call refreshLock() on their
+// NaVolumeData::Reader objects every 25 ms or so, to keep the application responsive.
 class NaVolumeData : public NaLockableData
 {
 public:
     NaVolumeData();
     virtual ~NaVolumeData();
-
-    bool loadOriginalImageStack(QString originalImageStackFilePath);
-    bool loadNeuronMaskStack(QString maskLabelFilePath);
-    bool loadReferenceStack(QString referenceStackFilePath);
 
     // TODO - eventually deprecate direct accessors in favor of stack-allocated lock objects
     // non-const accessors should only be used for *modifying* volume data
@@ -33,32 +32,55 @@ private:
     My4DImage* referenceStack;
 
 public:
+
+    class Reader; friend class Reader;
     class Reader : public BaseReadLocker
     {
     public:
         Reader(const NaVolumeData& data)
             : BaseReadLocker(data.getLock())
-            , originalImageStack(data.getOriginalImageStackAsMy4DImage())
-            , neuronMaskStack(data.getNeuronMaskAsMy4DImage())
-            , referenceStack(data.getReferenceStack())
+            , m_data(&data)
         {}
 
-        const Image4DProxy<My4DImage> getNeuronMaskProxy();
-        const Image4DProxy<My4DImage> getOriginalImageProxy();
-        const Image4DProxy<My4DImage> getReferenceImageProxy();
+        const Image4DProxy<My4DImage> getNeuronMaskProxy() const;
+        const Image4DProxy<My4DImage> getOriginalImageProxy() const;
+        const Image4DProxy<My4DImage> getReferenceImageProxy() const;
 
-        V3DLONG getXDim() const {return originalImageStack->getXDim();}
-        V3DLONG getYDim() const {return originalImageStack->getYDim();}
-        V3DLONG getZDim() const {return originalImageStack->getZDim();}
-        V3DLONG getCDim() const {return originalImageStack->getCDim();}
+        V3DLONG getXDim() const;
+        V3DLONG getYDim() const;
+        V3DLONG getZDim() const;
+        V3DLONG getCDim() const;
 
     private:
-        const My4DImage* originalImageStack;
-        const My4DImage* neuronMaskStack;
-        const My4DImage* referenceStack;
+        const NaVolumeData * m_data;
     };
 
-    const Reader getTemporaryReadLock() const {return Reader(*this);}
+    // NaVolumeData::Writer is a blocking stack-allocated write lock manager
+    class Writer; friend class Writer;
+    class Writer : public QWriteLocker
+    {
+    public:
+        Writer(NaVolumeData& data)
+            : QWriteLocker(data.getLock())
+            , m_data(&data)
+        {}
+
+        Image4DProxy<My4DImage> getNeuronMaskProxy();
+        Image4DProxy<My4DImage> getOriginalImageProxy();
+        Image4DProxy<My4DImage> getReferenceImageProxy();
+
+        V3DLONG getXDim() const;
+        V3DLONG getYDim() const;
+        V3DLONG getZDim() const;
+        V3DLONG getCDim() const;
+
+        bool loadOriginalImageStack(QString originalImageStackFilePath);
+        bool loadNeuronMaskStack(QString maskLabelFilePath);
+        bool loadReferenceStack(QString referenceStackFilePath);
+
+    private:
+        NaVolumeData * m_data;
+    };
 };
 
 #endif // NAVOLUMEDATA_H
