@@ -68,6 +68,7 @@ inline
 void make_linear_lut(vector<RGBA8>& colors, vector< vector<RGBA8> >& luts)
 {
 	int N = colors.size();
+	assert(N <= luts.size());
 	for (int k=0; k<N; k++)
 	{
 		make_linear_lut_one(colors[k], luts[k]);
@@ -560,6 +561,7 @@ class ChannelTabWidget : public QTabWidget //QWidget
 {
     Q_OBJECT;
 	XFormWidget* xform;
+	int id;
 	QTabWidget* tabOptions;
 	ChannelTable *channelPage;
 	BrightenBox *brightenPage;
@@ -570,9 +572,10 @@ class ChannelTabWidget : public QTabWidget //QWidget
 	ChannelSharedData csdata; 		//shared with channelPage & brightenPage
 
 public:
-	ChannelTabWidget(QWidget* parent=0) :QTabWidget(parent)
+	ChannelTabWidget(XFormWidget* parent, int id=1) :QTabWidget(parent)
 	{
 		xform = (XFormWidget*)parent;
+		this->id = id;
 		tabOptions = 0;
 		channelPage = 0;
 		brightenPage = 0;

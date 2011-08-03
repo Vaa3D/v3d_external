@@ -158,7 +158,9 @@ public:
 	bool bDispMarkerLabel;
 
 protected:
-    void keyPressEvent ( QKeyEvent * e); //100815, PHC
+	virtual void changeEvent(QEvent* e);    //110802 RZC
+
+	void keyPressEvent ( QKeyEvent * e); //100815, PHC
 	void closeEvent ( QCloseEvent * event );  //080814
 	//void focusInEvent ( QFocusEvent * event ); //080829
 
@@ -220,7 +222,8 @@ private:
     XFormView *yz_view; //change in X
     XFormView *zx_view; //change in Y
 
-    ChannelTabWidget *channelTabWidget;//110722 RZC
+    ChannelTabWidget *channelTabXView;//110722 RZC
+    ChannelTabWidget *channelTabGlass;//110801 RZC
 
 	MyTextBrowser *focusPointFeatureWidget;
 
@@ -233,10 +236,12 @@ private:
 public slots:
 //    void changeColorType(ImageDisplayColorType c);
 
-//110722 RZC, for directly update pixmap of 3view
+//110722 RZC, for directly updating pixmap of 3view
 	void mixChannelColorPlaneX(const QPixmap& pxm) {yz_view->setPixmap(pxm);}
 	void mixChannelColorPlaneY(const QPixmap& pxm) {zx_view->setPixmap(pxm);}
 	void mixChannelColorPlaneZ(const QPixmap& pxm) {xy_view->setPixmap(pxm);}
+//110802 RZC, for show/hide channelTabGlass
+	void onActivated(QWidget* );
 
 	void setColorRedType();
     void setColorGreenType();

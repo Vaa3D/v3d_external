@@ -2237,20 +2237,21 @@ void V3dR_GLWidget::changeVolShadingOption()
 		QFormLayout *formLayout = new QFormLayout;
 		formLayout->addRow(QObject::tr("Compressed Resident texture: "), qComp);
 		formLayout->addRow(QObject::tr("3D Resident texture: "), qT3D);
-		formLayout->addRow(QObject::tr("non-power-of-two size texture: "), qNPT);
+		formLayout->addRow(QObject::tr("(preferable to Compressed) Non-power-of-two size texture: \n"), qNPT);
 		formLayout->addRow(QObject::tr("Stream texture mode %1: \n"
-				" [0] -- 512x512x256 down-sampled Data + down-sampled Resident texture      \n"
-				" [1] -- full resolution Data + adaptive Stream texture                     \n"
-				" [2] -- full resolution Data + full resolution Stream texture              \n"
-				"[-1] -- full resolution Data + full resolution Resident texture            \n"
-				"        (prefer turning off 3D Resident texture, and it may crash due to limited memory!)\n"
-				).arg(supported_PBO()?"(with PBO)":"(without PBO)"), qStream);
+				" [0] -- 512x512x256 Down-sampled data -> Down-sampled Resident texture      \n"
+				" [1] -- Full resolution data -> Adaptive (stream && resident) texture       \n"
+				" [2] -- Full resolution data -> Full resolution Stream texture              \n"
+				"[-1] -- Full resolution data -> Full resolution Resident texture            \n"
+				"         (prefer checking off '3D Resident texture' for [-1] mode, otherwise\n"
+				"         it may cause crash due to exceeding the limit of your video card!)\n"
+				).arg(supported_PBO()? "(with PBO support)": "(without PBO support)"), qStream);
 		formLayout->addRow(QObject::tr("(volume colormap) GLSL shader: "), qShader);
 		QPushButton* ok     = new QPushButton("OK");
 		QPushButton* cancel = new QPushButton("Cancel");
 		formLayout->addRow(ok, cancel);
 		formLayout->addRow(new QLabel("----------------------------------------------------------\n"
-				"Note: some combination may cause wrong display or dead lock on low-end video-card."
+				"Note: some combination may cause wrong display or dead lock on low-end video card."
 				));
 		d.setLayout(formLayout);
 		d.setWindowTitle(QString("Volume Advanced Options about Texture/Shader "));
@@ -2479,7 +2480,7 @@ void V3dR_GLWidget::showGLinfo()
 #endif
 
 	//QLabel *p = new QLabel(qinfo);
-	QTextEdit *p = new QTextEdit();
+	QTextEdit *p = new QTextEdit(); //no parent, otherwise will be ghost
 	p->setPlainText(qinfo);
 	p->setReadOnly(true);
 	p->setTabStopWidth(8);

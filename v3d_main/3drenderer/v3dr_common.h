@@ -175,7 +175,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 	}
 
 
-#define PROGRESS_DIALOG(text, widget)  	QProgressDialog progress( QString(text), 0, 0, 100, (QWidget*)widget, Qt::Tool | Qt::WindowStaysOnTopHint);
+#define PROGRESS_DIALOG(text, widget)  	QProgressDialog progress( QString(text), 0, 0, 100, (QWidget*)widget, Qt::Tool | Qt::WindowStaysOnTopHint \
+										| Qt::CustomizeWindowHint | Qt::WindowTitleHint ); //only title bar, disable buttons on title bar
 extern QProgressDialog progress;
 #define PROGRESS_PARENT(widget)   progress.setParent( (QWidget*)widget ); //Qt::WShowModal
 #define PROGRESS_TEXT(text)   { QApplication::setActiveWindow(&progress);  progress.setLabelText( QString(text) );  progress.repaint();}

@@ -260,33 +260,32 @@ bool XFormWidget::transferImageData(Image4DSimple *img, unsigned char *a) // FIX
 	if (! img || !img->valid())  return false;
 
   bool result = this->setImageData(
-    //img->getRawData(),  //here may be use "a", so can combine info of img & external data of "a", by RZC 110722
-    a,
-    img->getXDim(),
-    img->getYDim(),
-    img->getZDim(),
-    img->getCDim(),
-    img->getDatatype() );
+			//img->getRawData(),  //here may be use "a", so can combine info of img & external data of "a", by RZC 110722
+			a,
+			img->getXDim(),
+			img->getYDim(),
+			img->getZDim(),
+			img->getCDim(),
+			img->getDatatype() );
 
 	if (result)
 	{
 		if (! this->imgData)  return false;
 
-	  this->imgData->setTDim( img->getTDim() );
-	  this->imgData->setTimePackType( img->getTimePackType() );
-	  this->imgData->setRezX( img->getRezX() ); //100626
-	  this->imgData->setRezY( img->getRezY() );
-	  this->imgData->setRezZ( img->getRezZ() );
-	  this->imgData->setOriginX( img->getOriginX() ); //101007
-	  this->imgData->setOriginY( img->getOriginY() );
-	  this->imgData->setOriginZ( img->getOriginZ() );
-	  this->imgData->setCustomStructPointer( img->getCustomStructPointer() );
+		this->imgData->setTDim( img->getTDim() );
+		this->imgData->setTimePackType( img->getTimePackType() );
+		this->imgData->setRezX( img->getRezX() ); //100626
+		this->imgData->setRezY( img->getRezY() );
+		this->imgData->setRezZ( img->getRezZ() );
+		this->imgData->setOriginX( img->getOriginX() ); //101007
+		this->imgData->setOriginY( img->getOriginY() );
+		this->imgData->setOriginZ( img->getOriginZ() );
+		this->imgData->setCustomStructPointer( img->getCustomStructPointer() );
 
-	  img->setRawDataPointerToNull();
+		img->setRawDataPointerToNull();
 
-
-	  setColorGUI(); //110722 RZC
-	  return true;
+		//setColorGUI(); //110722, 110802 RZC: had called in setImageData() above
+		return true;
 	}
 	else return false;
 }

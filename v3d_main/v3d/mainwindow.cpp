@@ -252,11 +252,9 @@ MainWindow::MainWindow()
 
     workspace = new QWorkspace;
     setCentralWidget(workspace);
-    connect(workspace, SIGNAL(windowActivated(QWidget *)),
-            this, SLOT(updateMenus()));
+    connect(workspace, SIGNAL(windowActivated(QWidget *)),  this, SLOT(updateMenus()));
     windowMapper = new QSignalMapper(this);
-    connect(windowMapper, SIGNAL(mapped(QWidget *)),
-            workspace, SLOT(setActiveWindow(QWidget *)));
+    connect(windowMapper, SIGNAL(mapped(QWidget *)),  workspace, SLOT(setActiveWindow(QWidget *)));
 
     createActions();
     createMenus();
@@ -309,6 +307,14 @@ MainWindow::MainWindow()
 MainWindow::~MainWindow()
 {
 	qDebug("***v3d: ~MainWindow");
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    //if (workspace)  workspace->deleteLater(); //110802 RZC //will call ~XFormView to raise BAD_ACCESS
+    disconnect(workspace, SIGNAL(windowActivated(QWidget *)),  this, SLOT(updateMenus())); //instead of above line
+
+    V3dApplication::handleCloseEvent(event);
 }
 
 void MainWindow::transactionStart()
@@ -600,11 +606,6 @@ void MainWindow::handleCoordinatedCloseEvent(QCloseEvent *event) {
         //writeSettings();
         event->accept();
     }
-}
-
-void MainWindow::closeEvent(QCloseEvent *event)
-{
-    V3dApplication::handleCloseEvent(event);
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event)
@@ -2453,6 +2454,8 @@ XFormWidget *MainWindow::createMdiChild()
     workspace->addWindow(child);  //child is wrapped in his parentWidget()
     //for (int j=1; j<1000; j++) QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents); //100811 RZC: no help to update the workspace->windowList()
     qDebug()<<"MainWindow::createMdiChild *** workspace->windowList:" << workspace->windowList() <<"+="<< child; //STRANGE: child isn't in windowList here ???
+
+    connect(workspace, SIGNAL(windowActivated(QWidget *)),  child, SLOT(onActivated(QWidget *))); //110802 RZC
 
 
 	//to enable coomunication of child windows

@@ -691,7 +691,6 @@ void V3dR_MainWindow::leaveEvent(QEvent*)
 
 
 QWidget* V3dR_MainWindow::lastActive = 0;
-
 void V3dR_MainWindow::changeEvent(QEvent* e)
 {
 	//qDebug() <<"V3dR_MainWindow::changeEvent" << e->type();
@@ -700,7 +699,7 @@ void V3dR_MainWindow::changeEvent(QEvent* e)
 	{
 		if (glWidget)	glWidget->makeCurrent(); //090715
 
-		if (lastActive!=this)
+		if (lastActive != this) //need updateTool
 		{
 			lastActive = this;
 			qDebug() << QString("V3dR_MainWindow::changeEvent, ActivationChange-> %1").arg(title_prefix+" [" + data_title + "]");

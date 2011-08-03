@@ -77,8 +77,6 @@ void ChannelTabWidget::createFirst()
 //	allLayout->addWidget(tabOptions);
 //	allLayout->setContentsMargins(0,0,0,0); //remove margins
 
-	this->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum);
-	this->setFixedHeight(200); //200 is best for 4 rows
 
 	linkXFormWidgetChannel(); //create or re-create channelPage
 
@@ -91,6 +89,9 @@ void ChannelTabWidget::createFirst()
 		tabOptions->setTabToolTip(i, qs);
 		tabOptions->setCurrentIndex(0);/////
 	}
+
+	if (id<=0) return;
+
 	miscPage = new MiscBox(csdata, xform, this);
 	if (tabOptions)
 	{

@@ -121,6 +121,7 @@ protected:
 	QString prefix, surffix;
 	int offset;
 	FUNC_altTip func_alt_tip;
+
     bool eventFilter(QObject *obj, QEvent *e)
 	{
 		QAbstractSlider* slider = (QAbstractSlider*)obj;
@@ -150,7 +151,7 @@ protected:
 			break;
 		case QEVENT_KEY_PRESS: //QEvent::KeyPress: // for arrow key dragging
 //			qDebug("QEvent::KeyPress in SliderTipFilter");
-			if (slider) pos = slider->mapFromGlobal(slider->cursor().pos());
+			if (slider)   pos = slider->mapFromGlobal(slider->cursor().pos());
 			event_tip = true;
 			break;
 		}
@@ -181,9 +182,8 @@ public:
 	//	: QDialog(parent)
 	{
 		setWindowFlags( Qt::Dialog
-				//| Qt::Popup
-				//| Qt::WindowStaysOnTopHint
 				//| Qt::Tool
+				//| Qt::WindowStaysOnTopHint
 				);
 		setAttribute(Qt::WA_MacAlwaysShowToolWindow); //for convenient screen shot on mac with Qt::Tool
 

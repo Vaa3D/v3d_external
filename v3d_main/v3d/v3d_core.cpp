@@ -2784,7 +2784,8 @@ void XFormWidget::initialize()
     yz_view = NULL;
     zx_view = NULL;
 
-    channelTabWidget = NULL; //110722 RZC
+    channelTabXView = NULL; //110722 RZC
+    channelTabGlass = NULL; //1100801 RZC
 
 	disp_zoom=1; //081114
 	b_use_dispzoom=false;
@@ -2877,6 +2878,50 @@ XFormWidget::~XFormWidget()
 	cleanData();
 }
 
+void XFormWidget::closeEvent(QCloseEvent *event) //080814: this function is specially added to assure the image data will be cleaned; so that have more memory for other stacks.
+//note the reason to overload this closeEvent function but not use the QWidget destructor is because seems Qt has a build-in bug in freeing ArthurFrame object in QString freeing
+{
+	qDebug("***v3d: XFormWidget::closeEvent");
+
+	printf("Now going to free memory for this image or data of this window. .... ");
+	cleanData();
+	printf("Succeeded in freeing memory.\n");
+
+	//deleteLater(); //090812, 110802 RZC: will cause BAD_ACCESS in XFormView::~XFormView() //TODO: find solution to really do ~XFormWidget
+}
+
+void XFormWidget::cleanData()
+{
+	if (imgData) {delete imgData; imgData = 0;}
+	if (atlasViewerDlg) {atlasViewerDlg->deleteLater(); atlasViewerDlg=0;} //081211,090812 deleteLater
+	if (channelTabGlass) {channelTabGlass->deleteLater(); channelTabGlass=0;} //110802 RZC
+}
+
+void XFormWidget::changeEvent(QEvent* e)
+{
+	//qDebug() <<"XFormWidget::changeEvent" <<e->type() <<windowTitle();
+	if (e->type()==QEvent::ActivationChange && isActiveWindow())  //NO effect to MDI child widget !!!
+	{
+			qDebug() << QString("XFormWidget::changeEvent, ActivationChange-> %1").arg(windowTitle());
+
+			if (channelTabGlass)  channelTabGlass->show();
+	}
+	else	if (channelTabGlass)  channelTabGlass->hide();
+}
+void XFormWidget::onActivated(QWidget* aw)
+{
+	//qDebug() <<"XFormWidget::onActivated" <<aw <<"this="<<this <<windowTitle();
+	if (aw == this)
+	{
+		//qDebug() <<"XFormWidget::onActivated" <<this <<"channelTabGlass->show()" <<windowTitle();
+		if (channelTabGlass)  channelTabGlass->show();
+	}
+	else
+	{
+		//qDebug() <<"XFormWidget::onActivated" <<this <<"channelTabGlass->hide()" <<windowTitle();
+		if (channelTabGlass)  channelTabGlass->hide();
+	}
+}
 
 void XFormWidget::keyPressEvent(QKeyEvent * e)
 {
@@ -3331,19 +3376,6 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 }
 
 
-
-void XFormWidget::closeEvent(QCloseEvent *event) //080814: this function is specially added to assure the image data will be cleaned; so that have more memory for other stacks.
-//note the reason to overload this closeEvent function but not use the QWidget destructor is because seems Qt has a build-in bug in freeing ArthurFrame object in QString freeing
-{
-	qDebug("***v3d: XFormWidget::closeEvent");
-
-	printf("Now going to free memory for this image or data of this window. .... ");
-	cleanData();
-	printf("Succeeded in freeing memory.\n");
-
-	//if(!testAttribute(Qt::WA_DeleteOnClose)) deleteLater(); //090812 RZC
-}
-
 //void XFormWidget::focusInEvent ( QFocusEvent * event )
 //{
 //	if (p_mainWindow)
@@ -3364,12 +3396,6 @@ void XFormWidget::updateViews()
 	if (imgData) imgData->updateViews();
 }
 
-void XFormWidget::cleanData()
-{
-	if (imgData) {delete imgData; imgData = 0;}
-	if (atlasViewerDlg) {atlasViewerDlg->deleteLater(); atlasViewerDlg=0;} //081211,090812 deleteLater
-}
-
 
 #define __channel_table_gui__
 #if USE_CHANNEL_TABLE // switch code path
@@ -3382,15 +3408,20 @@ void XFormWidget::disconnectColorGUI()
 }
 void XFormWidget::setColorGUI()
 {
-	if (channelTabWidget)  channelTabWidget->linkXFormWidgetChannel();
+	if (channelTabXView)  channelTabXView->linkXFormWidgetChannel();
 }
 QWidget* XFormWidget::createColorGUI()
 {
 	(colorMapDispType = new QRadioButton(this))->hide(); //just for XFormWidget::switchMaskColormap()
 
-	if (channelTabWidget = new ChannelTabWidget(this))
-		connect(this, SIGNAL(colorChanged(int)), channelTabWidget, SLOT(updateXFormWidget(int)));
-	return channelTabWidget;;
+	if (channelTabXView = new ChannelTabWidget(this, 1)) //1 for XFormView
+	{
+		connect(this, SIGNAL(colorChanged(int)), channelTabXView, SLOT(updateXFormWidget(int)));
+
+		channelTabXView->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum);
+		channelTabXView->setFixedHeight(200); //200 is best for 4 rows
+	}
+	return channelTabXView;;
 }
 
 #else // old code
@@ -4766,7 +4797,7 @@ void XFormWidget::toggleImgValScaleDisplay()
     update();
 }
 
-
+#define __looking_glass__
 void XFormWidget::toggleLookingGlassCheckBox()
 {
 	if (imgData!=NULL)
@@ -4783,12 +4814,33 @@ void XFormWidget::toggleLookingGlassCheckBox()
 
 				zScaleSlider->setValue(4);
 				zScaleSlider->setEnabled(false);
+
+				if (channelTabGlass==NULL)
+				{
+					if (channelTabGlass = new ChannelTabWidget(this, 0)) //0 for Looking glass
+					{
+						connect(this, SIGNAL(colorChanged(int)), channelTabGlass, SLOT(updateXFormWidget(int)));
+
+						channelTabGlass->setFixedWidth(270); //270 is same width as channelTabXView
+						channelTabGlass->setFixedHeight(200); //200 is best for 4 rows
+						channelTabGlass->setWindowFlags( Qt::Widget
+								| Qt::Tool
+								| Qt::CustomizeWindowHint | Qt::WindowTitleHint  //only title bar, disable buttons on title bar
+								//| Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint  //only close buttons on title bar
+								);
+						channelTabGlass->setWindowTitle("For Looking Glass");
+					}
+				}
+				channelTabGlass->move(QCursor::pos() + QPoint(10,10));
+				channelTabGlass->show();
 			}
 			else
 			{
 				xScaleSlider->setEnabled(true);
 				yScaleSlider->setEnabled(true);
 				zScaleSlider->setEnabled(true);
+
+				if (channelTabGlass)  channelTabGlass->hide();
 			}
 
 			imgData->setFlagLookingGlass((lookingGlassCheckBox->checkState()==Qt::Checked) ? true : false);
