@@ -405,18 +405,19 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
 			return -1;
 		}
 		
-		//
+        //
+        V3DLONG c1=0, c2=0;
+        
 		for(V3DLONG c=0; c<colordim-1; c++)
         {
             V3DLONG offset_c = c*pagesz;
             
-            V3DLONG offset_c1, offset_c2;            
+            V3DLONG offset_c1, offset_c2;
             bool b_img1;
-            if(c<sz_img1[3])
+            
+            if(c1<sz_img1[3])
             {
                 b_img1 = true;
-                
-                V3DLONG c1 = c;
                 
                 if(b_img1existNULL)
                 {
@@ -448,7 +449,10 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
                     else
                         b_img1 = false;
                 }
-                 
+                
+                qDebug()<<"color 1 ..."<<c1<<c;
+                
+                c1++;
             }
             else
             {
@@ -456,12 +460,7 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
             }
             
             if(!b_img1)
-            {
-                
-                V3DLONG c2 = c - (sz_img1[3] - 1);
-                
-                if(b_img1existNULL) c2++;
-                
+            {                
                 if(b_img2existNULL)
                 {
                     if(c2!=nullcolor2)
@@ -492,6 +491,10 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
                     else
                         continue;
                 }
+                
+                qDebug()<<"color 2 ..."<<c2<<c;
+                
+                c2++;
             }
             
             for (V3DLONG k=0; k<sz_img1[2]; k++) 
@@ -559,19 +562,20 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
 			printf("Fail to allocate memory.\n");
 			return -1;
 		}
-		
-		//
+
+        //
+        V3DLONG c1=0, c2=0;
+        
 		for(V3DLONG c=0; c<colordim-1; c++)
         {
             V3DLONG offset_c = c*pagesz;
             
             V3DLONG offset_c1, offset_c2;
             bool b_img1;
-            if(c<sz_img1[3])
+            
+            if(c1<sz_img1[3])
             {
                 b_img1 = true;
-                
-                V3DLONG c1 = c;
                 
                 if(b_img1existNULL)
                 {
@@ -604,6 +608,9 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
                         b_img1 = false;
                 }
                 
+                qDebug()<<"color 1 ..."<<c1<<c;
+                
+                c1++;
             }
             else
             {
@@ -611,12 +618,7 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
             }
             
             if(!b_img1)
-            {
-                
-                V3DLONG c2 = c - (sz_img1[3] - 1);
-                
-                if(b_img1existNULL) c2++;
-                
+            {                
                 if(b_img2existNULL)
                 {
                     if(c2!=nullcolor2)
@@ -647,6 +649,10 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
                     else
                         continue;
                 }
+                
+                qDebug()<<"color 2 ..."<<c2<<c;
+                
+                c2++;
             }
             
             for (V3DLONG k=0; k<sz_img1[2]; k++) 
@@ -715,17 +721,18 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
 		}
 		
 		//
+        V3DLONG c1=0, c2=0;
+        
 		for(V3DLONG c=0; c<colordim-1; c++)
         {
             V3DLONG offset_c = c*pagesz;
             
             V3DLONG offset_c1, offset_c2;
             bool b_img1;
-            if(c<sz_img1[3])
+            
+            if(c1<sz_img1[3])
             {
                 b_img1 = true;
-                
-                V3DLONG c1 = c;
                 
                 if(b_img1existNULL)
                 {
@@ -758,6 +765,9 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
                         b_img1 = false;
                 }
                 
+                qDebug()<<"color 1 ..."<<c1<<c;
+                
+                c1++;
             }
             else
             {
@@ -765,12 +775,7 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
             }
             
             if(!b_img1)
-            {
-                
-                V3DLONG c2 = c - (sz_img1[3] - 1);
-                
-                if(b_img1existNULL) c2++;
-                
+            {                
                 if(b_img2existNULL)
                 {
                     if(c2!=nullcolor2)
@@ -801,6 +806,10 @@ int image_blending(V3DPluginCallback2 &callback, QWidget *parent)
                     else
                         continue;
                 }
+                
+                qDebug()<<"color 2 ..."<<c2<<c;
+                
+                c2++;
             }
             
             for (V3DLONG k=0; k<sz_img1[2]; k++) 
