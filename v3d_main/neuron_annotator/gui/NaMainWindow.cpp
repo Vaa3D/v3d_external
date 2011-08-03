@@ -92,7 +92,7 @@ NaMainWindow::NaMainWindow()
     statusProgressBar->hide();
     statusProgressMessage->hide();
 
-    // hide status bar for 3d viewer
+    // hide progress bar for 3d viewer until it is needed
     ui.widget_progress3d->hide();
 
     // hide the File->Open 3D Image stack menu item

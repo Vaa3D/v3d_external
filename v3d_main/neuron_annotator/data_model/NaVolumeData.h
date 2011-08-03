@@ -30,9 +30,6 @@ public:
     const My4DImage* getReferenceStack() const { return referenceStack; }
     const My4DImage* getNeuronMaskAsMy4DImage() const { return neuronMaskStack; }
 
-signals:
-    void volumeLoadFailed();
-
 public slots:
     void loadAllVolumeData(); // Assumes file name paths have already been set
 

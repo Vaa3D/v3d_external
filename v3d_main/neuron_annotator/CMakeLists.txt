@@ -17,6 +17,7 @@ QT4_WRAP_UI(NA_UI_SRCS
 
 QT4_WRAP_CPP(NA_MOC_SRCS
     data_model/NaLockableData.h
+    data_model/NaVolumeData.h
     geometry/CameraModel.h
     gui/AngleWidget.h
     gui/CompartmentMapComboBox.h

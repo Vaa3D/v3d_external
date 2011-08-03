@@ -30,19 +30,19 @@ void NaVolumeData::loadAllVolumeData()
 
     if (! volumeWriter.loadOriginalImageStack()) {
         volumeWriter.unlock(); // unlock before emit
-        emit volumeLoadFailed();
+        emit progressAborted(QString("Problem loading volume image"));
         return;
     }
 
     if (! volumeWriter.loadNeuronMaskStack()) {
         volumeWriter.unlock(); // unlock before emit
-        emit volumeLoadFailed();
+        emit progressAborted(QString("Problem loading neuron mask"));
         return;
     }
 
     if (! volumeWriter.loadReferenceStack()) {
         volumeWriter.unlock(); // unlock before emit
-        emit volumeLoadFailed();
+        emit progressAborted(QString("Problem loading reference image"));
         return;
     }
 
