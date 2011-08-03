@@ -12,6 +12,7 @@ NaVolumeData::NaVolumeData()
     : originalImageStack(NULL)
     , neuronMaskStack(NULL)
     , referenceStack(NULL)
+    , maxNeuronIndex(-1)
 {
 }
 
@@ -22,7 +23,7 @@ NaVolumeData::~NaVolumeData()
 }
 
 /* slot */
-void NaVolumeData::loadAllVolumeData()
+void NaVolumeData::loadVolumeDataFromFiles()
 {
     // Allocate writer on the stack so write lock will be automatically released when method returns
     Writer volumeWriter(*this);
@@ -68,6 +69,7 @@ void NaVolumeData::Writer::clearImageData()
         delete m_data->referenceStack;
         m_data->referenceStack = NULL;
     }
+    m_data->maxNeuronIndex = -1;
 }
 
 bool NaVolumeData::Writer::loadOriginalImageStack()
@@ -102,6 +104,29 @@ bool NaVolumeData::Writer::loadNeuronMaskStack() {
         return false;
     }
     neuronMaskStack->loadImage(m_data->maskLabelFilePath.toAscii().data());
+
+    // measure range of neuron fragment indices
+    double minFragmentIndex = 1e9;
+    double maxFragmentIndex = -1e9;
+    Image4DProxy<My4DImage> maskProxy(const_cast<My4DImage*>(m_data->neuronMaskStack));
+    int imageX = m_data->neuronMaskStack->getXDim();
+    int imageY = m_data->neuronMaskStack->getYDim();
+    int imageZ = m_data->neuronMaskStack->getZDim();
+    for (int z = 0; z < imageZ; z++) {
+        for (int y = 0; y < imageY; y++) {
+            for (int x = 0; x < imageX; x++) {
+                double fragmentIndex = maskProxy.value_at(x,y,z,0);
+                if (fragmentIndex > maxFragmentIndex)
+                    maxFragmentIndex = fragmentIndex;
+                if (fragmentIndex < minFragmentIndex)
+                    minFragmentIndex = fragmentIndex;
+            }
+        }
+    }
+    qDebug() << "Maximum fragment index = " << maxFragmentIndex;
+    qDebug() << "Minimum fragment index = " << minFragmentIndex;
+    m_data->maxNeuronIndex = maxFragmentIndex;
+
     return true;
 }
 
@@ -155,65 +180,9 @@ bool NaVolumeData::Writer::loadReferenceStack()
     return true;
 }
 
-V3DLONG NaVolumeData::Writer::getXDim() const {
-    if (m_data && m_data->originalImageStack)
-        return m_data->originalImageStack->getXDim();
-    else
-        return 0;
-}
-
-V3DLONG NaVolumeData::Writer::getYDim() const {
-    if (m_data && m_data->originalImageStack)
-        return m_data->originalImageStack->getYDim();
-    else
-        return 0;
-}
-
-V3DLONG NaVolumeData::Writer::getZDim() const {
-    if (m_data && m_data->originalImageStack)
-        return m_data->originalImageStack->getZDim();
-    else
-        return 0;
-}
-
-V3DLONG NaVolumeData::Writer::getCDim() const {
-    if (m_data && m_data->originalImageStack)
-        return m_data->originalImageStack->getCDim();
-    else
-        return 0;
-}
-
 //////////////////////////////////
 // NaVolumeData::Reader methods //
 //////////////////////////////////
-
-V3DLONG NaVolumeData::Reader::getXDim() const {
-    if (m_data && m_data->originalImageStack)
-        return m_data->originalImageStack->getXDim();
-    else
-        return 0;
-}
-
-V3DLONG NaVolumeData::Reader::getYDim() const {
-    if (m_data && m_data->originalImageStack)
-        return m_data->originalImageStack->getYDim();
-    else
-        return 0;
-}
-
-V3DLONG NaVolumeData::Reader::getZDim() const {
-    if (m_data && m_data->originalImageStack)
-        return m_data->originalImageStack->getZDim();
-    else
-        return 0;
-}
-
-V3DLONG NaVolumeData::Reader::getCDim() const {
-    if (m_data && m_data->originalImageStack)
-        return m_data->originalImageStack->getCDim();
-    else
-        return 0;
-}
 
 const Image4DProxy<My4DImage> NaVolumeData::Reader::getNeuronMaskProxy() const
 {

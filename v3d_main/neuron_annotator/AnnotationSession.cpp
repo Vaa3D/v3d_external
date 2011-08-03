@@ -19,7 +19,7 @@ AnnotationSession::AnnotationSession()
     volumeDataThread->start();
     volumeData.moveToThread(volumeDataThread);
     connect(this, SIGNAL(volumeDataNeeded()),
-            &volumeData, SLOT(loadAllVolumeData()));
+            &volumeData, SLOT(loadVolumeDataFromFiles()));
     connect(&volumeData, SIGNAL(dataChanged()),
             this, SLOT(processUpdatedVolumeData()));
 }
@@ -131,31 +131,8 @@ bool AnnotationSession::prepareLabelIndex()
     // is complete and the read lock falls out of scope.
     NaVolumeData::Reader volumeReader(volumeData);
     if (! volumeReader.hasReadLock()) return false;
-
-    int z,y,x;
-    int imageX=volumeReader.getXDim();
-    int imageY=volumeReader.getYDim();
-    int imageZ=volumeReader.getZDim();
-    int imageC=volumeReader.getCDim();
-    if (imageC != 3) {
-        qDebug() << "Expected original image stack to have channel dim=3 but it has channel dim=" << imageC;
-        return false;
-    }
-    const Image4DProxy<My4DImage> maskProxy = volumeReader.getNeuronMaskProxy();
-
-    int maxMaskIndex=0;
-
-    for (z=0;z<imageZ;z++) {
-        for (y=0;y<imageY;y++) {
-            for (x=0;x<imageX;x++) {
-                unsigned char mask = maskProxy.value8bit_at(x,y,z,0);
-                if (mask>maxMaskIndex) {
-                    maxMaskIndex=mask;
-                }
-            }
-        }
-        if (! volumeReader.refreshLock()) return false; // Try to update read lock every 25 ms.
-    }
+    int maxMaskIndex=volumeReader.getNumberOfNeurons();
+    volumeReader.unlock();
 
     qDebug() << "Using maxMaskIndex=" << maxMaskIndex;
 
@@ -179,19 +156,20 @@ bool AnnotationSession::populateMipLists()
     if (! volumeReader.hasReadLock()) return false;
 
     qDebug() << "AnnotationSession::populateMaskMipList() start";
-    int z,y,x;
-    int imageX=volumeReader.getXDim();
-    int imageY=volumeReader.getYDim();
-    int imageZ=volumeReader.getZDim();
-    int imageC=volumeReader.getCDim();
-    if (imageC != 3) {
-        qDebug() << "Expected original image stack to have channel dim=3 but it has channel dim=" << imageC;
-        return false;
-    }
 
     const Image4DProxy<My4DImage> originalProxy = volumeReader.getOriginalImageProxy();
     const Image4DProxy<My4DImage> maskProxy = volumeReader.getNeuronMaskProxy();
     const Image4DProxy<My4DImage> referenceProxy = volumeReader.getReferenceImageProxy();
+
+    int z,y,x;
+    int imageX=originalProxy.sx;
+    int imageY=originalProxy.sy;
+    int imageZ=originalProxy.sz;
+    int imageC=originalProxy.sc;
+    if (imageC != 3) {
+        qDebug() << "Expected original image stack to have channel dim=3 but it has channel dim=" << imageC;
+        return false;
+    }
 
     neuronMipList.clear();
     overlayMipList.clear();

@@ -31,7 +31,7 @@ public:
     const My4DImage* getNeuronMaskAsMy4DImage() const { return neuronMaskStack; }
 
 public slots:
-    void loadAllVolumeData(); // Assumes file name paths have already been set
+    void loadVolumeDataFromFiles(); // Assumes file name paths have already been set
 
 private:
     QString originalImageStackFilePath;
@@ -40,6 +40,7 @@ private:
     My4DImage* originalImageStack;
     My4DImage* neuronMaskStack;
     My4DImage* referenceStack;
+    int maxNeuronIndex;
 
 public:
 
@@ -55,11 +56,8 @@ public:
         const Image4DProxy<My4DImage> getNeuronMaskProxy() const;
         const Image4DProxy<My4DImage> getOriginalImageProxy() const;
         const Image4DProxy<My4DImage> getReferenceImageProxy() const;
-
-        V3DLONG getXDim() const;
-        V3DLONG getYDim() const;
-        V3DLONG getZDim() const;
-        V3DLONG getCDim() const;
+        ImagePixelType getOriginalDatatype() const {return m_data->originalImageStack->getDatatype();}
+        int getNumberOfNeurons() const {return m_data->maxNeuronIndex;} // zero is background...
 
     private:
         const NaVolumeData * m_data;
@@ -78,11 +76,8 @@ public:
         Image4DProxy<My4DImage> getNeuronMaskProxy();
         Image4DProxy<My4DImage> getOriginalImageProxy();
         Image4DProxy<My4DImage> getReferenceImageProxy();
-
-        V3DLONG getXDim() const;
-        V3DLONG getYDim() const;
-        V3DLONG getZDim() const;
-        V3DLONG getCDim() const;
+        ImagePixelType getOriginalDatatype() const {return m_data->originalImageStack->getDatatype();}
+        int getNumberOfNeurons() const {return m_data->maxNeuronIndex;} // zero is background...
 
         void setOriginalImageStackFilePath(QString path) {m_data->originalImageStackFilePath = path;}
         void setMaskLabelFilePath(QString path) {m_data->maskLabelFilePath = path;}

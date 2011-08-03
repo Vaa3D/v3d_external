@@ -6,8 +6,8 @@
 
 // MipFragmentData stores 16-bit maximum intensity projections of neuron fragments.
 // The My4DImage data structures store the different fragments along the z-dimension.
-// Background (non-fragment) data are in fragment index [XXX WHAT? XXX]
-// Reference (nc82) intensities are in fragment index [XXX WHAT? XXX]
+// Background (non-fragment) data are in fragment index (z-slice) zero (0)
+// Reference (nc82) intensities are in fragment index (z-slice) number-of-fragments-plus-one
 // TODO - deprecate MipData class in favor of MipFragmentData
 class MipFragmentData : public NaLockableData
 {
@@ -21,11 +21,11 @@ public slots:
 
 private:
     const NaVolumeData& volumeData;
-    My4DImage* fragmentData; // 16-bit intensities by channel
+    My4DImage* fragmentData; // 16-bit intensities by channel, z-coordinate is actually fragment/neuron index
     My4DImage* fragmentZValues; // value is z-coordinate where max intensity was found.  Zero value means no overlap with this fragment.
     My4DImage* fragmentIntensities; // sum of all data channels.  saves arithmetic during recombinations
-    My4DImage* fragmentMinMax; // x(X), y(Y), fragmentIndex(Z), min[0];max[1](C); useful for rescaling lookups
-
+    std::vector<int> fragmentMinimumIntensities; // across all channels
+    std::vector<int> fragmentMaximumIntensities; // across all channels
 
 public:
     class Reader; friend class Reader;
@@ -50,6 +50,8 @@ public:
             : QWriteLocker(mipParam.getLock())
             , m_mipFragmentData(mipParam)
         {}
+
+        void clearImageData();
 
     private:
         MipFragmentData& m_mipFragmentData;

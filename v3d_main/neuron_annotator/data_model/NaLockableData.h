@@ -30,6 +30,12 @@ public:
         // Clients should call refreshLock() every 25 ms or so until done reading.
         // If refreshLock returns "false", stop reading and return, to pop this BaseReadLocker off the stack.
         bool refreshLock();
+        void unlock() {
+            if (hasReadLock()) {
+                m_lock->unlock();
+                m_hasReadLock = false;
+            }
+        }
 
     protected:
         void checkRefreshTime();
