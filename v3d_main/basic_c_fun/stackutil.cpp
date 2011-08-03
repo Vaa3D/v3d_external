@@ -905,6 +905,18 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 	if (keyread) {delete [] keyread; keyread = 0;}
 	fclose(fid); //bug fix on 060412
 
+//
+	//a debug check of the min max value
+	double minvv=10000, maxvv=-1;
+	for (V3DLONG myii=0; myii<sz[0]*sz[1]*sz[2];myii++)
+	{
+		if (minvv>img[myii]) minvv=img[myii];
+		else if (maxvv<img[myii]) maxvv=img[myii];
+	}
+	printf("**************** all: minvv=%5.3f maxvv=%5.3f\n", minvv, maxvv);
+	
+	
+	
 	return berror;
 }
 
@@ -3632,7 +3644,7 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 	sz[4] = (b_5d) ? tmp_sz[4] : 1; //090802
 
 	data1d = tmp_data1d;
-
+	
 	/* clean all workspace variables */
 
 	if (tmp_sz) {delete []tmp_sz; tmp_sz=0;}
