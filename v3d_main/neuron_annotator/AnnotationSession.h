@@ -93,7 +93,7 @@ private:
     MultiColorImageStackNode* multiColorImageStackNode;
     NeuronAnnotatorResultNode* neuronAnnotatorResultNode;
     NaVolumeData volumeData;
-    QThread volumeDataThread;
+    QThread * volumeDataThread;
     QList<QImage*> neuronMipList;
     QList<QImage*> overlayMipList;
     QList<bool> maskStatusList;

@@ -15,15 +15,17 @@ AnnotationSession::AnnotationSession()
     neuronAnnotatorResultNode=0;
 
     // Prepare to load volume data in a separate QThread
-    volumeDataThread.start();
-    volumeData.moveToThread(&volumeDataThread);
+    volumeDataThread = new QThread(this);
+    volumeDataThread->start();
+    volumeData.moveToThread(volumeDataThread);
     connect(this, SIGNAL(volumeDataNeeded()),
             &volumeData, SLOT(loadAllVolumeData()));
     connect(&volumeData, SIGNAL(dataChanged()),
             this, SLOT(processUpdatedVolumeData()));
 }
 
-AnnotationSession::~AnnotationSession() {
+AnnotationSession::~AnnotationSession()
+{
     if (multiColorImageStackNode!=0) {
         delete multiColorImageStackNode;
     }

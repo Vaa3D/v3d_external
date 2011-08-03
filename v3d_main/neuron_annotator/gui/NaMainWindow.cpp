@@ -92,6 +92,9 @@ NaMainWindow::NaMainWindow()
     statusProgressBar->hide();
     statusProgressMessage->hide();
 
+    // hide status bar for 3d viewer
+    ui.widget_progress3d->hide();
+
     // hide the File->Open 3D Image stack menu item
     ui.menuFile->removeAction(ui.actionLoad_Tiff);
     ui.menuFile->removeAction(ui.actionCell_Counter_3D_2ch_lsm);
