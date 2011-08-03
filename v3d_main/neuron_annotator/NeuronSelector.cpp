@@ -78,29 +78,40 @@ int NeuronSelector::getIndexSelectedNeuron()
 	
 	//
         index = -1;
+        int neuronSum=0;
         for(V3DLONG i=0; i<numNeuron; i++)
-	{
-		//qDebug()<<"sum ["<<i<<"] ..."<<sum[i];
-		
-                if(sum[i]>0 && sum[i]>sum[index])
-		{
-			index = i;
-		}
+	{            
+
+            if(sum[i]>0 && sum[i]>neuronSum) {
+                neuronSum=sum[i];
+                index = i;
+            }
+
 	}
 	
 	// de-alloc
 	if(sum) {delete []sum; sum = NULL;}
 	
 	//
-	qDebug()<<"index ..."<<index;
-	
+        qDebug() << "NeuronSelector::getIndexSelectedNeuron index=" << index;
+
         if(index>-1)
 	{
                 annotationSession->switchSelectedNeuronUniquelyIfOn(index);
 	}
 	else
 	{
-		index = -1; // 0 is background
+            // Debug
+//            LocationSimple p((V3DLONG)xlc, (V3DLONG)ylc, (V3DLONG)zlc);
+//            RGBA8 c;
+//            c.r = 255; c.g = 0; c.b = 0; c.a = 128;// cyan
+//            p.color = c; // instead of random_rgba8(255);
+//            p.radius = 1; // instead of 5
+//            annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks.append(p);
+//            emit neuronHighlighted(false);
+            // end-Debug
+
+            index = -1; // 0 is background
 	}
 	
 	return index;
@@ -337,7 +348,7 @@ void NeuronSelector::highlightSelectedNeuron()
     }
 
     // highlight result
-    annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks = listLandmarks;
+    annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks=listLandmarks;
 
     qDebug()<<"highlight selected neuron ..."<<listLandmarks.size();
 
