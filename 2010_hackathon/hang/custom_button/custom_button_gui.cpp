@@ -104,7 +104,7 @@ QStringList v3d_getInterfaceFuncList(QObject *plugin)
 }
 
 
-CustomButtonSelectWidget::CustomButtonSelectWidget(CustomButtonToolBar * _toolBar)
+CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback, QWidget * parent, CustomButtonToolBar * _toolBar)
 {
 	toolBar = _toolBar;
 
@@ -146,8 +146,8 @@ CustomButtonSelectWidget::CustomButtonSelectWidget(CustomButtonToolBar * _toolBa
 	for(int i = 0; i < plugin_num; i++)
 	{
 		QString file = fileList.at(i);
-		QPluginLoader loader(file);
-		QObject * plugin = loader.instance();
+		QPluginLoader* loader = new QPluginLoader(file);
+		QObject * plugin = loader->instance();
 
 		if(plugin)
 		{
@@ -171,6 +171,12 @@ CustomButtonSelectWidget::CustomButtonSelectWidget(CustomButtonToolBar * _toolBa
 
 				CustomButton * qb = new CustomButton(0, editor->text(), toolBar);
 				qb->button->setVisible(false);
+				qb->slot_class = plugin;
+				qb->menu_name = menu;
+				qb->callback = &callback;
+				qb->parent = parent;
+				//connect(qb->button, SIGNAL(toggled(bool)), qb, SLOT(run()));
+
 				pluginCustomButtonList.push_back(qb);
 
 				connect(checkbox, SIGNAL(clicked(bool)), editor, SLOT(setEnabled(bool)));
@@ -178,7 +184,7 @@ CustomButtonSelectWidget::CustomButtonSelectWidget(CustomButtonToolBar * _toolBa
 				connect(editor, SIGNAL(textChanged(const QString &)), qb, SLOT(setButtonText(const QString &)));
 			}
 		}
-		loader.unload();
+		//loader->unload();
 	}
 
 	pluginTreeWidget->resizeColumnToContents(0);
@@ -240,7 +246,7 @@ CustomButtonToolBar::CustomButtonToolBar(V3DPluginCallback2 &callback, QWidget *
 	addAction(icon, tr("Add"), this, SLOT(openSelectWidget()));
 
 	addSeparator();
-	selectWidget = new CustomButtonSelectWidget(this);
+	selectWidget = new CustomButtonSelectWidget(callback, parent, this);
 }
 
 void CustomButtonToolBar::closeEvent(QCloseEvent *event)
@@ -272,3 +278,51 @@ void CustomButtonToolBar::openSelectWidget()
 	}
 }
 
+bool CustomButton::run()
+{
+	cout<<"go to run"<<endl;
+	if(slot_class==0) return false;
+	if(bt == 0) // Triview
+	{
+		(((TriviewControl*)slot_class)->*(TriviewFunc)slot_func)();
+		return true;
+	}
+	else if(bt == 1) // View3d
+	{
+		(((View3DControl*)slot_class)->*(View3DFunc)slot_func)();
+		return true;
+	}
+	else if(bt == 2) // Plugin do menu
+	{
+		QObject * plugin;
+		V3DSingleImageInterface2_1 *iFilter2_1 = qobject_cast<V3DSingleImageInterface2_1 *>(plugin);
+		if (iFilter2_1 )
+		{
+		}
+
+		V3DSingleImageInterface *iFilter = qobject_cast<V3DSingleImageInterface *>(plugin);
+		if (iFilter )
+		{
+		}
+
+		V3DPluginInterface2_1 *iface2_1 = qobject_cast<V3DPluginInterface2_1 *>(plugin);
+		if (iface2_1 )
+		{
+			iface2_1->domenu(menu_name, *callback, parent);
+		}
+
+		V3DPluginInterface2 *iface2 = qobject_cast<V3DPluginInterface2 *>(plugin);
+		if (iface2 )
+		{
+			iface2->domenu(menu_name, *callback,parent);
+		}
+
+		V3DPluginInterface *iface = qobject_cast<V3DPluginInterface *>(plugin);
+		if (iface )
+		{
+			iface->domenu(menu_name, *callback, parent);
+		}
+
+		return true;
+	}
+}

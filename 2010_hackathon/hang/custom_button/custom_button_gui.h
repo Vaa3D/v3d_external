@@ -22,7 +22,7 @@ class CustomButton : public QObject
 	Q_OBJECT
 public:
 	QAction * button;
-	void* slot_class;
+	QObject * slot_class;
 	VoidFunc slot_func;
 	int bt;
 
@@ -36,6 +36,7 @@ public:
 		if(!icon) button = new QAction(text, parent);
 		else button = new QAction(*icon, text, parent);
 		slot_class = 0;
+		connect(button, SIGNAL(triggered(bool)), this, SLOT(run()));
 	}
 	~CustomButton()
 	{
@@ -49,25 +50,8 @@ public slots:
 	{
 		if(button && button->isVisible()) button->setText(text);
 	}
-	bool run()
-	{
-		if(slot_class==0) return false;
-		if(bt == 0) // Triview
-		{
-			(((TriviewControl*)slot_class)->*(TriviewFunc)slot_func)();
-			return true;
-		}
-		else if(bt == 1) // View3d
-		{
-			(((View3DControl*)slot_class)->*(View3DFunc)slot_func)();
-			return true;
-		}
-		else if(bt == 2) // Plugin do menu
-		{
-			//(((V3DPluginInterface2_1*)slot_class)->*(PluginMenuFunc)slot_func)();
-			return true;
-		}
-	}
+
+	bool run();
 };
 
 class CustomButtonToolBar;
@@ -76,70 +60,70 @@ class CustomButtonSelectWidget : public QWidget
 {
 	Q_OBJECT
 
-public:
-	CustomButtonSelectWidget(CustomButtonToolBar * _toolBar);
-	
-	~CustomButtonSelectWidget(){}
+	public:
+		CustomButtonSelectWidget(V3DPluginCallback2 &callback, QWidget * parent, CustomButtonToolBar * _toolBar);
 
-	int isIn(QCheckBox * checkbox, QList<QCheckBox *> & checkboxList);
+		~CustomButtonSelectWidget(){}
 
-	QAction * getButton(QCheckBox* checkbox);
-	
-public slots:
-	void setToolBarButton(bool state);
+		int isIn(QCheckBox * checkbox, QList<QCheckBox *> & checkboxList);
 
-public:
-	CustomButtonToolBar * toolBar;
+		QAction * getButton(QCheckBox* checkbox);
 
-	QTabWidget * tabWidget;
-	QWidget * pageTriView;
-	QWidget * page3dView;
-	QWidget * pagePlugin;
+		public slots:
+			void setToolBarButton(bool state);
 
-	QHBoxLayout * mainLayout;
-	QGridLayout * pageTriViewLayout;
-	QVBoxLayout * pagePluginLayout;
+	public:
+		CustomButtonToolBar * toolBar;
 
-	QTreeWidget * triViewTreeWidget;
-	QList<QLineEdit *> triViewEditorList;
-	QList<QCheckBox *> triViewCheckboxList;
-	QList<CustomButton *> triViewCustomButtonList;
+		QTabWidget * tabWidget;
+		QWidget * pageTriView;
+		QWidget * page3dView;
+		QWidget * pagePlugin;
 
-	QTreeWidget * view3dTreeWidget;
-	QList<QLineEdit *> view3dEditorList;
-	QList<QCheckBox *> view3dCheckboxList;
-	QList<CustomButton *> view3dCustomButtonList;
+		QHBoxLayout * mainLayout;
+		QGridLayout * pageTriViewLayout;
+		QVBoxLayout * pagePluginLayout;
 
-	QTreeWidget * pluginTreeWidget;
-	QList<QLineEdit *> pluginEditorList;
-	QList<QCheckBox *> pluginCheckboxList;
-	QList<CustomButton *> pluginCustomButtonList;
+		QTreeWidget * triViewTreeWidget;
+		QList<QLineEdit *> triViewEditorList;
+		QList<QCheckBox *> triViewCheckboxList;
+		QList<CustomButton *> triViewCustomButtonList;
 
-	QIcon pluginIcon;
-	QIcon interfaceIcon;
-	QIcon menuIcon;
-	QIcon funcIcon;
+		QTreeWidget * view3dTreeWidget;
+		QList<QLineEdit *> view3dEditorList;
+		QList<QCheckBox *> view3dCheckboxList;
+		QList<CustomButton *> view3dCustomButtonList;
+
+		QTreeWidget * pluginTreeWidget;
+		QList<QLineEdit *> pluginEditorList;
+		QList<QCheckBox *> pluginCheckboxList;
+		QList<CustomButton *> pluginCustomButtonList;
+
+		QIcon pluginIcon;
+		QIcon interfaceIcon;
+		QIcon menuIcon;
+		QIcon funcIcon;
 };
 
 class CustomButtonToolBar : public QToolBar
 {
 	Q_OBJECT
 
-public:
-	CustomButtonToolBar(V3DPluginCallback2 &callback, QWidget * parent);
-	~CustomButtonToolBar();
+	public:
+		CustomButtonToolBar(V3DPluginCallback2 &callback, QWidget * parent);
+		~CustomButtonToolBar();
 
-	void loadSetting();
-	void saveSetting();
+		void loadSetting();
+		void saveSetting();
 
-public slots:
-	void openSelectWidget();
+		public slots:
+			void openSelectWidget();
 
-protected:
-	void closeEvent(QCloseEvent *event);
-public:
-	QIcon icon;
-	CustomButtonSelectWidget * selectWidget;
+	protected:
+		void closeEvent(QCloseEvent *event);
+	public:
+		QIcon icon;
+		CustomButtonSelectWidget * selectWidget;
 };
 
 #endif
