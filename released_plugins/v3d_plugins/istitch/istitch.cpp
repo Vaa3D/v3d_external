@@ -6966,7 +6966,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
             }
             
             char* key;
-            for(int i=1; i<argc; i++)
+            for(int i=0; i<argc; i++)
             {
                 if(i+1 != argc) // check that we haven't finished parsing yet
                 {
@@ -6974,7 +6974,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                     
                     qDebug()<<">>key ..."<<key;
                     
-                    if (!strcmp(key, "#"))
+                    if (*key == '#')
                     {
                         while(*++key)
                         {                            
