@@ -104,9 +104,13 @@ QStringList v3d_getInterfaceFuncList(QObject *plugin)
 }
 
 
-CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback, QWidget * parent, CustomButtonToolBar * _toolBar)
+CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback, QWidget * parent, QToolBar * _toolBar)
 {
 	toolBar = _toolBar;
+
+	toolButtonIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirHomeIcon));
+	toolBar->addAction(toolButtonIcon, tr("Add custom button"),this, SLOT(openMe()));
+	toolBar->addSeparator();
 
 	pluginIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirHomeIcon));
 	interfaceIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirOpenIcon),
@@ -240,44 +244,17 @@ void CustomButtonSelectWidget::setToolBarButton(bool state)
 	button->setVisible(state);
 }
 
-CustomButtonToolBar::CustomButtonToolBar(V3DPluginCallback2 &callback, QWidget * parent): QToolBar(parent)
+void CustomButtonSelectWidget::loadSetting(){}
+
+void CustomButtonSelectWidget::saveSetting(){}
+
+void CustomButtonSelectWidget::openMe()
 {
-	icon.addPixmap(style()->standardPixmap(QStyle::SP_DirHomeIcon));
-	addAction(icon, tr("Add"), this, SLOT(openSelectWidget()));
-
-	addSeparator();
-	selectWidget = new CustomButtonSelectWidget(callback, parent, this);
+	if(isVisible()) 
+		setHidden(true);
+	else
+		show();
 }
-
-void CustomButtonToolBar::closeEvent(QCloseEvent *event)
-{
-	saveSetting();
-	if(selectWidget)
-	{
-		selectWidget->close();
-		delete selectWidget;
-		selectWidget = 0;
-	}
-}
-
-CustomButtonToolBar::~CustomButtonToolBar(){
-}
-
-void CustomButtonToolBar::loadSetting(){}
-
-void CustomButtonToolBar::saveSetting(){}
-
-void CustomButtonToolBar::openSelectWidget()
-{
-	if(selectWidget)
-	{
-		if(selectWidget->isVisible()) 
-			selectWidget->setHidden(true);
-		else
-			selectWidget->show();
-	}
-}
-
 bool CustomButton::run()
 {
 	cout<<"go to run"<<endl;

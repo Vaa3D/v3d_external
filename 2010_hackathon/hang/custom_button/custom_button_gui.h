@@ -54,14 +54,12 @@ public slots:
 	bool run();
 };
 
-class CustomButtonToolBar;
-
 class CustomButtonSelectWidget : public QWidget
 {
 	Q_OBJECT
 
 	public:
-		CustomButtonSelectWidget(V3DPluginCallback2 &callback, QWidget * parent, CustomButtonToolBar * _toolBar);
+		CustomButtonSelectWidget(V3DPluginCallback2 &callback, QWidget * parent, QToolBar * _toolBar);
 
 		~CustomButtonSelectWidget(){}
 
@@ -69,11 +67,15 @@ class CustomButtonSelectWidget : public QWidget
 
 		QAction * getButton(QCheckBox* checkbox);
 
+		void loadSetting();
+		void saveSetting();
+
 		public slots:
 			void setToolBarButton(bool state);
+		void openMe();
 
 	public:
-		CustomButtonToolBar * toolBar;
+		QToolBar * toolBar;
 
 		QTabWidget * tabWidget;
 		QWidget * pageTriView;
@@ -103,27 +105,8 @@ class CustomButtonSelectWidget : public QWidget
 		QIcon interfaceIcon;
 		QIcon menuIcon;
 		QIcon funcIcon;
-};
 
-class CustomButtonToolBar : public QToolBar
-{
-	Q_OBJECT
-
-	public:
-		CustomButtonToolBar(V3DPluginCallback2 &callback, QWidget * parent);
-		~CustomButtonToolBar();
-
-		void loadSetting();
-		void saveSetting();
-
-		public slots:
-			void openSelectWidget();
-
-	protected:
-		void closeEvent(QCloseEvent *event);
-	public:
-		QIcon icon;
-		CustomButtonSelectWidget * selectWidget;
+		QIcon toolButtonIcon;
 };
 
 #endif
