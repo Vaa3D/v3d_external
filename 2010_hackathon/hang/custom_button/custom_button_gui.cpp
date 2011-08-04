@@ -164,7 +164,7 @@ CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback,
 				pluginTreeWidget->setItemWidget(menuItem, 0, checkbox);
 				pluginCheckboxList.push_back(checkbox);
 
-				QLineEdit * editor = new QLineEdit("Set Name");
+				QLineEdit * editor = new QLineEdit(menu);
 				pluginTreeWidget->setItemWidget(menuItem, 1, editor);
 				editor->setDisabled(true);
 				pluginEditorList.push_back(editor);
@@ -172,10 +172,10 @@ CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback,
 				CustomButton * qb = new CustomButton(0, editor->text(), toolBar);
 				qb->button->setVisible(false);
 				qb->slot_class = plugin;
+				qb->bt = 2;
 				qb->menu_name = menu;
 				qb->callback = &callback;
 				qb->parent = parent;
-				//connect(qb->button, SIGNAL(toggled(bool)), qb, SLOT(run()));
 
 				pluginCustomButtonList.push_back(qb);
 
@@ -294,7 +294,7 @@ bool CustomButton::run()
 	}
 	else if(bt == 2) // Plugin do menu
 	{
-		QObject * plugin;
+		QObject * plugin = slot_class;
 		V3DSingleImageInterface2_1 *iFilter2_1 = qobject_cast<V3DSingleImageInterface2_1 *>(plugin);
 		if (iFilter2_1 )
 		{
