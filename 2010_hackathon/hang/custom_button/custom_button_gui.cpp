@@ -157,6 +157,8 @@ CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback,
 	{
 		QString file = fileList.at(i);
 		QPluginLoader* loader = new QPluginLoader(file);
+		pluginLoaderList.push_back(loader);
+
 		QObject * plugin = loader->instance();
 
 		if(plugin)
@@ -211,6 +213,15 @@ CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback,
 	mainLayout->addWidget(tabWidget);
 
 	setLayout(mainLayout);
+}
+
+CustomButtonSelectWidget::~CustomButtonSelectWidget()
+{
+	if(pluginLoaderList.empty()) return;
+	foreach(QPluginLoader * loader, pluginLoaderList)
+	{
+		loader->unload();
+	}
 }
 
 int CustomButtonSelectWidget::isIn(QCheckBox * checkbox, QList<QCheckBox *> & checkboxList)

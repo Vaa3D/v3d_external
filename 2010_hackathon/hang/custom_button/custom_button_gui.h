@@ -61,7 +61,7 @@ class CustomButtonSelectWidget : public QWidget
 	public:
 		CustomButtonSelectWidget(V3DPluginCallback2 &callback, QWidget * parent, QToolBar * _toolBar);
 
-		~CustomButtonSelectWidget(){}
+		~CustomButtonSelectWidget();
 
 		int isIn(QCheckBox * checkbox, QList<QCheckBox *> & checkboxList);
 
@@ -102,6 +102,7 @@ class CustomButtonSelectWidget : public QWidget
 		QList<QLineEdit *> pluginEditorList;
 		QList<QCheckBox *> pluginCheckboxList;
 		QList<CustomButton *> pluginCustomButtonList;
+		QList<QPluginLoader *> pluginLoaderList;
 
 		QIcon pluginIcon;
 		QIcon interfaceIcon;
