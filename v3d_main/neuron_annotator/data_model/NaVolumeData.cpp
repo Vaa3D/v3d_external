@@ -8,8 +8,10 @@ using namespace std;
 // NaVolumeData methods //
 //////////////////////////
 
-NaVolumeData::NaVolumeData()
-    : originalImageStack(NULL)
+/* explicit */
+NaVolumeData::NaVolumeData(QObject * parentParam /* = NULL */)
+    : NaLockableData(parentParam)
+    , originalImageStack(NULL)
     , neuronMaskStack(NULL)
     , referenceStack(NULL)
     , maxNeuronIndex(-1)
@@ -25,6 +27,9 @@ NaVolumeData::~NaVolumeData()
 /* slot */
 void NaVolumeData::loadVolumeDataFromFiles()
 {
+    QTime stopwatch;
+    stopwatch.start();
+
     // Allocate writer on the stack so write lock will be automatically released when method returns
     Writer volumeWriter(*this);
     volumeWriter.clearImageData();
@@ -46,6 +51,15 @@ void NaVolumeData::loadVolumeDataFromFiles()
         emit progressAborted(QString("Problem loading reference image"));
         return;
     }
+
+    // nerd report
+    size_t data_size = 0;
+    data_size += originalImageStack->getTotalBytes();
+    data_size += referenceStack->getTotalBytes();
+    data_size += neuronMaskStack->getTotalBytes();
+    qDebug() << "Loading 16-bit image data from disk took " << stopwatch.elapsed() / 1000.0 << " seconds";
+    qDebug() << "Loading 16-bit image data from disk absorbed "
+            << (double)data_size / double(1e6) << " MB of RAM"; // kibibytes boo hoo whatever...
 
     volumeWriter.unlock(); // unlock before emit
     emit dataChanged();

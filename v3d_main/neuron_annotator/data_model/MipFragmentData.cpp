@@ -1,13 +1,15 @@
 #include "MipFragmentData.h"
 
 /* explicit */
-MipFragmentData::MipFragmentData(const NaVolumeData& volumeDataParam, QObject *parent /* = 0 */)
-    : NaLockableData(parent)
+MipFragmentData::MipFragmentData(const NaVolumeData& volumeDataParam, QObject *parentParam /* = 0 */)
+    : NaLockableData(parentParam)
     , volumeData(volumeDataParam)
     , fragmentData(NULL)
     , fragmentZValues(NULL)
     , fragmentIntensities(NULL)
 {
+    connect(&volumeData, SIGNAL(dataChanged()),
+            this, SLOT(updateFromVolumeData()));
 }
 
 /* virtual */
@@ -20,6 +22,9 @@ MipFragmentData::~MipFragmentData()
 /* slot */
 void MipFragmentData::updateFromVolumeData()
 {
+    QTime stopwatch;
+    stopwatch.start();
+
     // acquire read lock on volume data
     NaVolumeData::Reader volumeReader(volumeData);
     if (! volumeReader.hasReadLock()) return; // Don't worry; we'll get another data push later.
@@ -33,6 +38,10 @@ void MipFragmentData::updateFromVolumeData()
     const Image4DProxy<My4DImage> referenceProxy = volumeReader.getReferenceImageProxy();
     const Image4DProxy<My4DImage> maskProxy = volumeReader.getNeuronMaskProxy();
 
+    // clear max/min cache
+    fragmentMaximumIntensities.assign(volumeReader.getNumberOfNeurons() + 2, 0);
+    fragmentMinimumIntensities.assign(volumeReader.getNumberOfNeurons() + 2, 0);
+
     // Allocate mip images
     mipWriter.clearImageData();
     // allocate channel data
@@ -45,7 +54,6 @@ void MipFragmentData::updateFromVolumeData()
             volumeReader.getOriginalDatatype() );
     // set to zero
     memset(fragmentData->getRawData(), 0, fragmentData->getTotalBytes());
-    if (! volumeReader.refreshLock()) return;
 
     // allocate Z buffer
     fragmentZValues = new My4DImage();
@@ -57,7 +65,6 @@ void MipFragmentData::updateFromVolumeData()
             V3D_UINT16 );
     // clear each byte to xFF, should result in -1?
     memset(fragmentZValues->getRawData(), 255, fragmentZValues->getTotalBytes());
-    if (! volumeReader.refreshLock()) return;
 
     // allocate intensity cache
     fragmentIntensities = new My4DImage();
@@ -95,13 +102,26 @@ void MipFragmentData::updateFromVolumeData()
                     intensityProxy.put_at(x, y, refIndex, 0, referenceIntensity);
                     zProxy.put_at(x, y, refIndex, 0, z);
                 }
+                // update max/min cache
+                if (referenceIntensity > fragmentMaximumIntensities[refIndex])
+                    fragmentMaximumIntensities[refIndex] = referenceIntensity;
+                if (referenceIntensity < fragmentMinimumIntensities[refIndex])
+                    fragmentMinimumIntensities[refIndex] = referenceIntensity;
 
                 // Neurons and Background
                 unsigned char maskIndex = maskProxy.value8bit_at(x,y,z,0);
                 float previousIntensity = intensityProxy.value_at(x, y, maskIndex, 0);
                 float intensity = 0;
-                for (int c = 0; c < imageC; c++)
-                    intensity += originalProxy.value_at(x, y, z, c);
+                for (int c = 0; c < imageC; c++) {
+                    float channel_intensity = originalProxy.value_at(x, y, z, c);
+                    // accumulate total intensity
+                    intensity += channel_intensity;
+                    // remember max/min channel intensity
+                    if (channel_intensity > fragmentMaximumIntensities[maskIndex])
+                        fragmentMaximumIntensities[maskIndex] = channel_intensity;
+                    if (channel_intensity < fragmentMinimumIntensities[maskIndex])
+                        fragmentMinimumIntensities[maskIndex] = channel_intensity;
+                }
                 if (intensity > previousIntensity) {
                     intensityProxy.put_at(x, y, maskIndex, 0, intensity);
                     zProxy.put_at(x, y, maskIndex, 0, z);
@@ -113,10 +133,18 @@ void MipFragmentData::updateFromVolumeData()
         if (! volumeReader.refreshLock()) return; // Try to reacquire lock every 25 ms
     }
 
-    // unlock before emitting
+    // nerd report
+    size_t data_size = 0;
+    data_size += fragmentData->getTotalBytes();
+    data_size += fragmentZValues->getTotalBytes();
+    data_size += fragmentIntensities->getTotalBytes();
+    qDebug() << "Projecting 16-bit fragment MIP images took " << stopwatch.elapsed() / 1000.0 << " seconds";
+    qDebug() << "Projecting 16-bit fragment MIP images absorbed "
+            << (double)data_size / double(1e6) << " MB of RAM"; // kibibytes boo hoo whatever...
+
     volumeReader.unlock();
-    mipWriter.unlock();
-    emit dataChanged(); // success!
+    mipWriter.unlock(); // unlock before emit
+    emit dataChanged(); // declare victory!
 }
 
 

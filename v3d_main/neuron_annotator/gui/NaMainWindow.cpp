@@ -569,6 +569,7 @@ void NaMainWindow::on_actionScreenShot_triggered() {
 bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
 {
     annotationSession = new AnnotationSession();
+    // TODO - deprecate processUpdatedVolumeData() in favor of using downstream data flow components.
     connect(annotationSession->getVolumeData(), SIGNAL(dataChanged()),
             this, SLOT(processUpdatedVolumeData()));
 
@@ -619,7 +620,7 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     return true;
 }
 
-void NaMainWindow::processUpdatedVolumeData()
+void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataChanged() signal
 {
     // TODO -- install separate listeners for dataChanged() in the various display widgets
 

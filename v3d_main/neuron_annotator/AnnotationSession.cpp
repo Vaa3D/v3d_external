@@ -9,19 +9,20 @@ using namespace std;
 const int AnnotationSession::REFERENCE_MIP_INDEX=0;
 const int AnnotationSession::BACKGROUND_MIP_INDEX=1;
 
-AnnotationSession::AnnotationSession()
+/* explicit */
+AnnotationSession::AnnotationSession(QObject* parentParam /* = NULL */)
+    : QObject(parentParam)
+    , multiColorImageStackNode(NULL)
+    , neuronAnnotatorResultNode(NULL)
+    , volumeData(/* this */) // cannot move qobject with a parent to a QThread
+    , mipFragmentData(volumeData /* , this */) // cannot move qobject with parent to a QThread
+    , dataColorModel()
+    , mipFragmentColors(mipFragmentData, dataColorModel)
 {
-    multiColorImageStackNode=0;
-    neuronAnnotatorResultNode=0;
-
-    // Prepare to load volume data in a separate QThread
-    volumeDataThread = new QThread(this);
-    volumeDataThread->start();
-    volumeData.moveToThread(volumeDataThread);
+    // Prepare to load 16-bit volume data from disk in a separate QThread
     connect(this, SIGNAL(volumeDataNeeded()),
             &volumeData, SLOT(loadVolumeDataFromFiles()));
-    connect(&volumeData, SIGNAL(dataChanged()),
-            this, SLOT(processUpdatedVolumeData()));
+    // TODO connect mip color update signal to something
 }
 
 AnnotationSession::~AnnotationSession()
@@ -106,20 +107,13 @@ bool AnnotationSession::loadVolumeData()
     NaVolumeData::Writer volumeWriter(volumeData);
 
     // Set file names of image files so VolumeData will know what to load.
-
-    QString originalImageStackFilePath=multiColorImageStackNode->getPathToOriginalImageStackFile();
-    volumeWriter.setOriginalImageStackFilePath(originalImageStackFilePath);
-    // if (! volumeWriter.loadOriginalImageStack()) return false;
-
-    QString maskLabelFilePath=multiColorImageStackNode->getPathToMulticolorLabelMaskFile();
-    volumeWriter.setMaskLabelFilePath(maskLabelFilePath);
-    // if (! volumeWriter.loadNeuronMaskStack()) return false;
-
-    QString referenceStackFilePath=multiColorImageStackNode->getPathToReferenceStackFile();
-    volumeWriter.setReferenceStackFilePath(referenceStackFilePath);
-    // if (! volumeWriter.loadReferenceStack()) return false;
-
-    volumeWriter.unlock();
+    volumeWriter.setOriginalImageStackFilePath(
+            multiColorImageStackNode->getPathToOriginalImageStackFile());
+    volumeWriter.setMaskLabelFilePath(
+            multiColorImageStackNode->getPathToMulticolorLabelMaskFile());
+    volumeWriter.setReferenceStackFilePath(
+            multiColorImageStackNode->getPathToReferenceStackFile());
+    volumeWriter.unlock(); // unlock before emit
     emit volumeDataNeeded(); // load data in a separate QThread
 
     return true;

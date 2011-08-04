@@ -1,8 +1,19 @@
 #include "NaLockableData.h"
+#include <QThread>
 
-NaLockableData::NaLockableData(QObject *parent) :
-    QObject(parent)
+NaLockableData::NaLockableData(QObject *parentParam)
+    : QObject(parentParam)
+    , thread(NULL)
 {
+    // automatically create a unique QThread for each lockable data object
+    if (parentParam == NULL) {
+        thread = new QThread(this); // is this too circular?
+        thread->start();
+        this->moveToThread(thread);
+    }
+    else {
+        qDebug() << "WARNING: NaLockableData object created with a parent does not create its own QThread";
+    }
 }
 
 

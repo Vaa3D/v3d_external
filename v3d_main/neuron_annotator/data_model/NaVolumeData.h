@@ -14,7 +14,7 @@ class NaVolumeData : public NaLockableData
     Q_OBJECT
 
 public:
-    NaVolumeData();
+    explicit NaVolumeData(QObject * parentParam = NULL);
     virtual ~NaVolumeData();
 
     // TODO - eventually deprecate direct accessors in favor of stack-allocated lock objects

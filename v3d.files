@@ -2405,3 +2405,7 @@ v3d_main/neuron_annotator/data_model/NaVolumeData.h
 v3d_main/neuron_annotator/data_model/NaVolumeData.cpp
 v3d_main/neuron_annotator/data_model/MipFragmentData.h
 v3d_main/neuron_annotator/data_model/MipFragmentData.cpp
+v3d_main/neuron_annotator/data_model/MipFragmentColors.h
+v3d_main/neuron_annotator/data_model/MipFragmentColors.cpp
+v3d_main/neuron_annotator/data_model/DataColorModel.h
+v3d_main/neuron_annotator/data_model/DataColorModel.cpp

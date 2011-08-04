@@ -17,7 +17,6 @@ class NaLockableData : public QObject
     Q_OBJECT
 
 public:
-    // An instance of the BaseReadLocker class is returned by the NaLockableData::acquireReadLock() method.
     // Allocate a NaLockableData::BaseReadLocker on the stack to manage a read lock in a downstream client of NaLockableData.
     // NaLockableData::BaseReadLocker is a non-blocking read lock on QReadWriteLock, unlike regular QReadLocker, which is blocking.
     class BaseReadLocker
@@ -49,7 +48,8 @@ public:
 
 
 public:
-    explicit NaLockableData(QObject *parent = NULL);
+    // call constructor with NULL parent to automatically create a separate QThread for NaLocaableData object.
+    explicit NaLockableData(QObject *parentParam = NULL);
     virtual ~NaLockableData() {}
 
 signals:
@@ -66,6 +66,7 @@ protected:
     }
 
     QReadWriteLock lock; // used for multiple-read/single-write thread-safe locking
+    QThread * thread; // call constructor with NULL parent to automatically create a thread for NaLocaableData object.
 };
 
 #endif // NALOCKABLEDATA_H

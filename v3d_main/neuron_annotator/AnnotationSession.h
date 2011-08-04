@@ -7,7 +7,7 @@
 #include "MultiColorImageStackNode.h"
 #include "NeuronAnnotatorResultNode.h"
 #include "FragmentSelectionModel.h"
-#include "data_model/NaVolumeData.h"
+#include "data_model/MipFragmentColors.h"
 
 class AnnotationSession : public QObject
 {
@@ -15,7 +15,7 @@ class AnnotationSession : public QObject
     Q_OBJECT
 
 public:
-    AnnotationSession();
+    AnnotationSession(QObject* parentParam = NULL);
     ~AnnotationSession();
 
     const static int REFERENCE_MIP_INDEX;
@@ -92,8 +92,12 @@ private:
     long objectId;
     MultiColorImageStackNode* multiColorImageStackNode;
     NeuronAnnotatorResultNode* neuronAnnotatorResultNode;
+    // Data flow objects
     NaVolumeData volumeData;
-    QThread * volumeDataThread;
+    MipFragmentData mipFragmentData;
+    DataColorModel dataColorModel;
+    MipFragmentColors mipFragmentColors;
+    //
     QList<QImage*> neuronMipList;
     QList<QImage*> overlayMipList;
     QList<bool> maskStatusList;
