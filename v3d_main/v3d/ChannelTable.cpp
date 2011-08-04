@@ -43,23 +43,21 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //////////////////////////////////////////////////////////////////////
 #define ___ChannelTabWidget___
 
-void ChannelTabWidget::updateXFormWidget(int plane)	//called by linkXFormWidgetChannel
+void ChannelTabWidget::updateXFormWidget(int plane)
 {
 	if (channelPage)  channelPage->updateXFormWidget(plane);
 }
 
-void ChannelTabWidget::linkXFormWidgetChannel()			//link updated channels of XFormWidget
+void ChannelTabWidget::linkXFormWidgetChannel()
 {
 	if (channelPage) //delete whole box Tab include all sub widget
 	{
 		QWidget* old = channelPage;
 		old->deleteLater();
 	}
-	//so need re-create all sub widget again
+	//so need to re-create all sub widget again
 
-	channelPage = new ChannelTable(csdata, xform, this); //call channelPage->linkXFormWidgetChannel();
-
-	//if (tabOptions)   tabOptions->clear();
+	channelPage = new ChannelTable(csData, xform, this); //call channelPage->linkXFormWidgetChannel();
 	if (tabOptions)
 	{
 		int i;
@@ -78,9 +76,11 @@ void ChannelTabWidget::createFirst()
 //	allLayout->setContentsMargins(0,0,0,0); //remove margins
 
 
-	linkXFormWidgetChannel(); //create or re-create channelPage
+	//create or re-create channelPage
+	linkXFormWidgetChannel();
+	if (n_tabs==1) return;
 
-	brightenPage = new BrightenBox(csdata, xform, this);
+	brightenPage = new BrightenBox(csData, xform, this);
 	if (tabOptions)
 	{
 		int i;
@@ -89,10 +89,9 @@ void ChannelTabWidget::createFirst()
 		tabOptions->setTabToolTip(i, qs);
 		tabOptions->setCurrentIndex(0);/////
 	}
+	if (n_tabs==2) return;
 
-	if (id<=0) return;
-
-	miscPage = new MiscBox(csdata, xform, this);
+	miscPage = new MiscBox(csData, xform, this);
 	if (tabOptions)
 	{
 		int i;
@@ -100,12 +99,31 @@ void ChannelTabWidget::createFirst()
 		i= tabOptions->insertTab( 2, miscPage,		qs =QString("Misc"));
 		tabOptions->setTabToolTip(i, qs);
 		tabOptions->setCurrentIndex(0);/////
-	}
 
-	//doesn't work
-	//connect( miscPage,SIGNAL(signalExportRGBStack()), channelPage, SLOT(exportRGBStack()) );
+		//connect( miscPage,SIGNAL(signalExportRGBStack()), channelPage, SLOT(exportRGBStack()) ); //doesn't work
+	}
+	if (n_tabs==3) return;
 
 }
+
+void ChannelTabWidget::syncOpControls(const MixOP & mixop)
+{
+	csData.mixOp = mixop;
+	if (channelPage)  channelPage->setMixOpControls();
+	if (brightenPage)  brightenPage->setMixOpControls();
+}
+
+void ChannelTabWidget::syncSharedData(const ChannelSharedData & data) //except bGlass
+{
+	//qDebug("ChannelTabWidget::syncSharedData");
+	bool glass = csData.bGlass; //important, except bGlass
+	csData = data;
+	csData.bGlass = glass;
+
+	if (channelPage) { channelPage->setMixOpControls();  channelPage->updateTableChannel(false); }
+	if (brightenPage)  brightenPage->setMixOpControls();
+}
+
 
 //////////////////////////////////////////////////////////////////////
 #define ___ChannelTable___
@@ -130,16 +148,16 @@ void ChannelTable::updateXFormWidget(int plane) // plane<=0 for all planes
 	}
 
 	// do old code for OP_INDEX
-	if (xform->colorMapRadioButton())
-		xform->colorMapRadioButton()->setChecked(mixOp.op==OP_INDEX);
+	if (xform->colorMapRadioButton()) //enable XFormWidget::switchMaskColormap()
+		xform->colorMapRadioButton()->setChecked(true);//mixOp.op==OP_INDEX);
 	if (mixOp.op==OP_INDEX)
 	{
-		xform->setColorMapDispType(); //make XFormView::internal_only_imgplane_op to use old code
+		xform->setColorMapDispType(colorPseudoMaskColor, bGlass); //make XFormView::internal_only_imgplane_op to use old code
 		return;  /////////
 	}
 	else
 	{
-		xform->setColorMapDispType(colorUnknown); //110725, switch back to do new code
+		xform->setColorMapDispType(colorUnknown, bGlass); //110725, switch back to do new code
 	}
 
 	QImage slice;
@@ -160,7 +178,7 @@ void ChannelTable::updateXFormWidget(int plane) // plane<=0 for all planes
 			img4d->getCDim(), \
 			img4d->p_vmax, \
 			img4d->p_vmin); \
-	xform->mixChannelColorPlane##X(QPixmap::fromImage(slice)); \
+	xform->mixChannelColorPlane##X(QPixmap::fromImage(slice), bGlass); \
 	}
 
 	switch (dtype)
@@ -199,14 +217,12 @@ void ChannelTable::setChannelColorDefault(int N)
 		else				ch.color = random_rgba8(255);
 		listChannel << ch;
 
-		qDebug(" listChannel #%d (%d %d %d %d)", ch.n, ch.color.r,ch.color.g,ch.color.b,ch.color.a);
+		//qDebug(" listChannel #%d (%d %d %d %d)", ch.n, ch.color.r,ch.color.g,ch.color.b,ch.color.a);
 	}
 }
 
 void ChannelTable::linkXFormWidgetChannel()
 {
-	qDebug("ChannelTable::linkXFormWidgetChannel");
-
 	int N = 0;
 	if ( xform)
 	{
@@ -214,13 +230,10 @@ void ChannelTable::linkXFormWidgetChannel()
 		if ( img4d)
 		{
 			N = img4d->getCDim();
-			qDebug(" CDim = %d", N);
 		}
 	}
-	if (N==0)
-	{
-		qDebug(" no image data now.");
-	}
+	//if (N>0)
+	qDebug("ChannelTable::linkXFormWidgetChannel  CDim=%d  %s", N, ((bGlass)?"(glass)":""));
 
 	setChannelColorDefault(N);
 
@@ -300,22 +313,6 @@ void ChannelTable::createNewTable()
 	connectMixOpSignals();
 }
 
-void ChannelTable::setMixOpControls()
-{
-    radioButton_Max->setChecked(mixOp.op==OP_MAX);
-    radioButton_Sum->setChecked(mixOp.op==OP_SUM);
-    radioButton_Mean->setChecked(mixOp.op==OP_MEAN);
-    radioButton_OIT->setChecked(mixOp.op==OP_OIT);
-    radioButton_Index->setChecked(mixOp.op==OP_INDEX);
-    checkBox_Rescale->setChecked(mixOp.rescale);
-    checkBox_R->setChecked(mixOp.maskR);
-    checkBox_G->setChecked(mixOp.maskG);
-    checkBox_B->setChecked(mixOp.maskB);
-
-    radioButton_Index->setEnabled(listChannel.size()==1);
-    checkBox_Rescale->setEnabled(mixOp.op!=OP_INDEX);
-}
-
 void ChannelTable::connectMixOpSignals()
 {
     connect(radioButton_Max, SIGNAL(clicked()), this, SLOT(setMixOpMax()));
@@ -337,10 +334,23 @@ void ChannelTable::connectMixOpSignals()
 	radioButton_Mean->setChecked(mixOp.op==OP_MEAN); \
 	radioButton_OIT->setChecked(mixOp.op==OP_OIT); \
 	radioButton_Index->setChecked(mixOp.op==OP_INDEX); \
+	\
 	checkBox_R->setEnabled(mixOp.op!=OP_INDEX); \
 	checkBox_G->setEnabled(mixOp.op!=OP_INDEX); \
 	checkBox_B->setEnabled(mixOp.op!=OP_INDEX); \
 	checkBox_Rescale->setEnabled(mixOp.op!=OP_INDEX); \
+}
+
+void ChannelTable::setMixOpControls()
+{
+    UPDATE_OP_CONTROL();
+
+    checkBox_R->setChecked(mixOp.maskR);
+    checkBox_G->setChecked(mixOp.maskG);
+    checkBox_B->setChecked(mixOp.maskB);
+    checkBox_Rescale->setChecked(mixOp.rescale);
+
+    radioButton_Index->setEnabled(listChannel.size()==1);
 }
 
 void ChannelTable::setMixOpMax()
@@ -391,6 +401,8 @@ void ChannelTable::setMixOpIndex()
 		mixOp.op = OP_INDEX;
 		UPDATE_OP_CONTROL();
 		emit channelTableChanged();
+
+		//if (ctab)   xform->syncChannelTabWidgets(ctab);
 	}
 }
 void ChannelTable::setMixRescale()
@@ -613,7 +625,7 @@ QTableWidget*  ChannelTable::createTableChannel()
 	return t;
 }
 
-void ChannelTable::updateTableChannel()
+void ChannelTable::updateTableChannel(bool update_luts)
 {
 	if (! table) return;
 	QTableWidget* t = table;
@@ -632,7 +644,7 @@ void ChannelTable::updateTableChannel()
 	}
 	end_batch();
 
-	updateLuts(); //110729
+	if (update_luts)  updateLuts(); //110729
 
 	t->resizeColumnsToContents();
 	//updatedContent(t);
@@ -721,7 +733,23 @@ void BrightenBox::create()
 	connect(spin_contrast, SIGNAL(valueChanged(int)), this, SLOT(setContrast(int)));
 	connect(push_reset, SIGNAL(clicked()), this, SLOT(reset()));
 
-	reset();
+	setMixOpControls();
+	//reset();
+}
+
+#define INT_BRIGHTNESS(b)  (int(b*100))
+#define BRIGHTNESS_I(i)  (i/100.0)
+
+#define INT_CONTRAST(c)  (atan(c)*(4/PI)*100-100)
+#define CONTRAST_I(i)  (tan( (i+100)/100.0*(PI/4) ))
+
+void BrightenBox::setMixOpControls()
+{
+	int i;
+	i = INT_BRIGHTNESS(mixOp.brightness);
+	setBrightness(i);
+	i = INT_CONTRAST(mixOp.contrast);
+	setContrast(i);
 }
 
 void BrightenBox::reset()
@@ -734,7 +762,7 @@ void BrightenBox::setBrightness(int i)
 {
 	if (i == _bright) return;
 	_bright = i;
-	mixOp.brightness = (i/100.0);
+	mixOp.brightness = BRIGHTNESS_I(i);
 	if (slider_bright)
 	{
 		slider_bright->setValue(i);
@@ -750,7 +778,7 @@ void BrightenBox::setContrast(int i)
 {
 	if (i == _contrast) return;
 	_contrast = i;
-	mixOp.contrast = tan((i+100)/100.0 *(PI/4));
+	mixOp.contrast = CONTRAST_I(i);
 	if (slider_contrast)
 	{
 		slider_contrast->setValue(i);

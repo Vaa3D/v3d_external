@@ -164,8 +164,11 @@ using namespace std;
 #include "../3drenderer/v3dr_glwidget.h" //090710 by RZC for XFormWidget::doImage3DView
 #include "../3drenderer/renderer_tex2.h" //090117 by RZC for My4DImage::update_3drenderer_neuron_view
 
+
 #include "ChannelTable.h" //110718 RZC, lookup and mix multi-channel's color
-#define USE_CHANNEL_TABLE 1
+#define USE_CHANNEL_TABLE  1
+inline bool isIndexColor(ImageDisplayColorType c) { return (c>=colorPseudoMaskColor); }
+
 
 #include "../multithreadimageIO/v3d_multithreadimageIO.h"
 
@@ -1271,6 +1274,8 @@ XFormView::XFormView(QWidget *parent)
     cur_focus_pos = 1;
 	imgData = 0; //make a reference to the actual data
 	Ctype = colorRGB; //set how to display RGB color. This setting can be changed later by the setCType() function
+	Ctype_glass = colorUnknown;
+	_for_index_only = false;
 
     // set a default map
 
@@ -1297,7 +1302,7 @@ XFormView::XFormView(QWidget *parent)
 
 bool XFormView::internal_only_imgplane_op()
 {
-	if (!imgData) return false;
+	if (!imgData || imgData->getCDim()<1) return false;
     ImagePixelType dtype;
   	unsigned char **** p4d = (unsigned char ****)imgData->getData(dtype);
 	if (!p4d) return false;
@@ -1305,11 +1310,20 @@ bool XFormView::internal_only_imgplane_op()
 
 	//qDebug("XFormView::internal_only_imgplane_op(), colorChanged(%d)", this->Ptype);
 #if USE_CHANNEL_TABLE
-	if (! (imgData->getCDim()==1 && (Ctype>=colorPseudoMaskColor)) )
+	bool glass_on = (imgData->getFlagLookingGlass());
+	if (this->_for_index_only == false)
 	{
-		emit colorChanged(this->Ptype); // signal indirectly connected to ChannelTabWidget::updateXFormWidget(int plane)
-		return true;                    // skip old code
+		// signal indirectly connected to ChannelTabWidget::updateXFormWidget(int plane)
+		{
+			emit colorChanged(this->Ptype);  //if isIndexColor(Ctype)), it will iterate back with (_for_index_only=true)
+		}
+		if (glass_on)
+		{
+			emit colorChangedGlass(this->Ptype); //if isIndexColor(Ctype_glass)), it will iterate back with (_for_index_only=true)
+		}
+		return true;   //has painted, skip old code
 	}
+	//follows only for (_for_index_only)
 #endif
 
 
@@ -1478,7 +1492,7 @@ void XFormView::setImgData(ImagePlaneDisplayType ptype, My4DImage * pdata, Image
   	unsigned char **** p4d = (unsigned char ****)imgData->getData(dtype);
   	if (!p4d)
   	{
-	    printf("invalid pointer address in XFormView::setImgData()\n");
+	    //printf("invalid pointer address in XFormView::setImgData()\n");
 	    switch (Ptype)
 	    {
 			case imgPlaneX:
@@ -1910,10 +1924,16 @@ void XFormView::changeFocusPlane(int c)
     update();
 }
 
-void XFormView::changeColorType(ImageDisplayColorType c)
+#define __paint_plane_for_color_type___
+
+void XFormView::changeColorType(ImageDisplayColorType c, bool bGlass) //110803 RZC, add bGlass
 {
-    Ctype = c;
-    if (Ctype==colorUnknown)  return; //110725 RZC, just switch back to do new code
+    if (! bGlass)
+    	Ctype = c;
+    else
+    	Ctype_glass = c;
+    if (c==colorUnknown)  return; //110725 RZC, just skip back to continue new code
+
 
     if (!imgData)
 		return;
@@ -1925,7 +1945,16 @@ void XFormView::changeColorType(ImageDisplayColorType c)
 	if (!p4d)
 		return;
 
-	internal_only_imgplane_op();
+	//110804 RZC
+	QPixmap tmap;
+	ImageDisplayColorType tc;
+	if (isIndexColor(c))  this->_for_index_only=true;
+	if (bGlass && isIndexColor(Ctype_glass)) { tmap=pixmap; tc=Ctype;Ctype=Ctype_glass;}
+	{
+		internal_only_imgplane_op();
+	}
+	if (isIndexColor(c))  this->_for_index_only=false;
+	if (bGlass && isIndexColor(Ctype_glass)) {pixmap_glass=pixmap;pixmap=tmap; Ctype=tc;}
 
 	update();
 }
@@ -2707,10 +2736,16 @@ void XFormView::drawLookingGlassMap(QPainter *painter, QPoint *curPt)
 		focusPosInHeight = curPt->y();
 	}
 
-	QPixmap myrgn = pixmap.copy(QRect(QPoint(qMin(qMax(focusPosInWidth-glassRadius,0), pixmap.width()-1),
-	                                         qMin(qMax(0,focusPosInHeight-glassRadius), pixmap.height()-1)),
-									  QPoint(qMax(qMin(focusPosInWidth+glassRadius,pixmap.width()-1), 0),
-									         qMax(qMin(focusPosInHeight+glassRadius, pixmap.height()-1), 0))
+#if USE_CHANNEL_TABLE
+	QPixmap& buf = pixmap_glass;
+	//if (Ctype>=colorPseudoMaskColor) buf = pixmap; //switch in XFormView::changColorType instead
+#else
+	QPixmap& buf = pixmap;
+#endif
+	QPixmap myrgn = buf.copy(QRect(QPoint(qMin(qMax(focusPosInWidth-glassRadius,0), buf.width()-1),
+	                                         qMin(qMax(0,focusPosInHeight-glassRadius), buf.height()-1)),
+									  QPoint(qMax(qMin(focusPosInWidth+glassRadius,buf.width()-1), 0),
+									         qMax(qMin(focusPosInHeight+glassRadius, buf.height()-1), 0))
 									  )
 								);
 
@@ -2771,6 +2806,7 @@ void XFormWidget::initialize()
 	mypara_3Dview.image4d = 0;
 
 	Ctype = colorUnknown;
+	Ctype_glass = colorUnknown; //110804 RZC
 
 	atlasViewerDlg = 0; //081123
 
@@ -2887,7 +2923,9 @@ void XFormWidget::closeEvent(QCloseEvent *event) //080814: this function is spec
 	cleanData();
 	printf("Succeeded in freeing memory.\n");
 
-	//deleteLater(); //090812, 110802 RZC: will cause BAD_ACCESS in XFormView::~XFormView() //TODO: find solution to really do ~XFormWidget
+	//TODO: find solution to really do ~XFormWidget
+	//deleteLater(); //090812, 110802 RZC: will cause BAD_ACCESS in XFormView::~XFormView()
+	//110804 seems that some paint device resource are leaked
 }
 
 void XFormWidget::cleanData()
@@ -3402,6 +3440,14 @@ void XFormWidget::updateViews()
 
 void XFormWidget::connectColorGUI()
 {
+	//110722 RZC, connect signal for ChannelTabWidget::updateXFormWidget(int plane)
+	connect(xy_view, SIGNAL(colorChanged(int)), this, SIGNAL(colorChanged(int)));
+	connect(yz_view, SIGNAL(colorChanged(int)), this, SIGNAL(colorChanged(int)));
+	connect(zx_view, SIGNAL(colorChanged(int)), this, SIGNAL(colorChanged(int)));
+	//110803 RZC
+	connect(xy_view, SIGNAL(colorChangedGlass(int)), this, SIGNAL(colorChangedGlass(int)));
+	connect(yz_view, SIGNAL(colorChangedGlass(int)), this, SIGNAL(colorChangedGlass(int)));
+	connect(zx_view, SIGNAL(colorChangedGlass(int)), this, SIGNAL(colorChangedGlass(int)));
 }
 void XFormWidget::disconnectColorGUI()
 {
@@ -3414,7 +3460,7 @@ QWidget* XFormWidget::createColorGUI()
 {
 	(colorMapDispType = new QRadioButton(this))->hide(); //just for XFormWidget::switchMaskColormap()
 
-	if (channelTabXView = new ChannelTabWidget(this, 1)) //1 for XFormView
+	if (channelTabXView = new ChannelTabWidget(this, 3)) //3 tabs for XFormView
 	{
 		connect(this, SIGNAL(colorChanged(int)), channelTabXView, SLOT(updateXFormWidget(int)));
 
@@ -3861,6 +3907,10 @@ void XFormWidget::createGUI()
 
 	// set the flag
 	bExistGUI = true;
+
+	setFocusPolicy(Qt::StrongFocus);
+	this->setFocus();
+	//QTimer::singleShot(500, this, SLOT(Focus()));
 }
 
 void XFormWidget::updateDataRelatedGUI()
@@ -4688,11 +4738,6 @@ void XFormWidget::connectEventSignals()
 
 	connect(this, SIGNAL(external_validZSliceChanged(long)), this, SLOT(updateTriview()), Qt::AutoConnection); //, Qt::DirectConnection);
 
-
-	//110722 RZC, connect signal for ChannelTabWidget::updateXFormWidget(int plane)
-	connect(xy_view, SIGNAL(colorChanged(int)), this, SIGNAL(colorChanged(int)));
-	connect(yz_view, SIGNAL(colorChanged(int)), this, SIGNAL(colorChanged(int)));
-	connect(zx_view, SIGNAL(colorChanged(int)), this, SIGNAL(colorChanged(int)));
 }
 
 void XFormWidget::disconnectEventSignals()
@@ -4797,7 +4842,7 @@ void XFormWidget::toggleImgValScaleDisplay()
     update();
 }
 
-#define __looking_glass__
+#define __open_looking_glass__
 void XFormWidget::toggleLookingGlassCheckBox()
 {
 	if (imgData!=NULL)
@@ -4815,11 +4860,12 @@ void XFormWidget::toggleLookingGlassCheckBox()
 				zScaleSlider->setValue(4);
 				zScaleSlider->setEnabled(false);
 
+#if USE_CHANNEL_TABLE
 				if (channelTabGlass==NULL)
 				{
-					if (channelTabGlass = new ChannelTabWidget(this, 0)) //0 for Looking glass
+					if (channelTabGlass = new ChannelTabWidget(this, 2)) //2 tabs for Looking glass
 					{
-						connect(this, SIGNAL(colorChanged(int)), channelTabGlass, SLOT(updateXFormWidget(int)));
+						connect(this, SIGNAL(colorChangedGlass(int)), channelTabGlass, SLOT(updateXFormWidget(int)));
 
 						channelTabGlass->setFixedWidth(270); //270 is same width as channelTabXView
 						channelTabGlass->setFixedHeight(200); //200 is best for 4 rows
@@ -4829,17 +4875,20 @@ void XFormWidget::toggleLookingGlassCheckBox()
 								//| Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint  //only close buttons on title bar
 								);
 						channelTabGlass->setWindowTitle("For Looking Glass");
+
+						emit colorChangedGlass(-1); //110804
 					}
+					channelTabGlass->move(QCursor::pos() + QPoint(10,10));
 				}
-				channelTabGlass->move(QCursor::pos() + QPoint(10,10));
 				channelTabGlass->show();
+#endif
 			}
 			else
 			{
 				xScaleSlider->setEnabled(true);
 				yScaleSlider->setEnabled(true);
 				zScaleSlider->setEnabled(true);
-
+				//qDebug("hide channelTabGlass  in XFormWidget::toggleLookingGlassCheckBox()");
 				if (channelTabGlass)  channelTabGlass->hide();
 			}
 
@@ -4883,8 +4932,6 @@ void XFormWidget::toggleCheckBox_bAcceptSignalFromExternal()
 		cBox_bSendSignalToExternal->setChecked(bSendSignalToExternal);
 	}
 }
-
-#define __update_3view_slice__
 
 void XFormWidget::setColorRedType()
 {
@@ -4992,13 +5039,32 @@ void XFormWidget::setColorAll2GrayType()
     update();
 }
 
-void XFormWidget::setColorMapDispType(ImageDisplayColorType Ctype)
+void XFormWidget::syncChannelTabWidgets(ChannelTabWidget* sender) //110803 RZC
 {
-	this->Ctype = Ctype; //110725 RZC, for switching back to colorRGB by ChannelTabWidget::updateXFormWidget
-    //Ctype = colorPseudoMaskColor;
-	xy_view->changeColorType(Ctype);
-	yz_view->changeColorType(Ctype);
-	zx_view->changeColorType(Ctype);
+	if (channelTabXView && channelTabXView != sender && sender)
+	{
+		channelTabXView->syncSharedData(sender->getChannelSharedData());
+	}
+	if (channelTabGlass && channelTabGlass != sender && sender)
+	{
+		channelTabGlass->syncSharedData(sender->getChannelSharedData());
+	}
+}
+
+#define __update_for_index_mode__
+
+void XFormWidget::setColorMapDispType(ImageDisplayColorType ctype, bool bGlass) //default Ctype=colorPseudoMaskColor, bGlass=false
+{
+	//110725 RZC, for switching colorPseudoMaskColor to colorUnknown by ChannelTabWidget::updateXFormWidget
+	if (! bGlass)
+		this->Ctype = ctype;
+	else
+		this->Ctype_glass = ctype;
+
+    //Ctype = colorPseudoMaskColor; //set as default of Ctype
+	xy_view->changeColorType(ctype, bGlass);
+	yz_view->changeColorType(ctype, bGlass);
+	zx_view->changeColorType(ctype, bGlass);
     update();
 }
 
@@ -5022,9 +5088,14 @@ void XFormWidget::switchMaskColormap() //080824
 		imgData->switchColorMap(clen, cc);
 
 		//update
-		xy_view->changeColorType(cc);
-		yz_view->changeColorType(cc);
-		zx_view->changeColorType(cc);
+//		xy_view->changeColorType(cc);
+//		yz_view->changeColorType(cc);
+//		zx_view->changeColorType(cc);
+		//qDebug("Ctype=%d Ctype_glass=%d colormap->Ctype=%d", Ctype, Ctype_glass, cc);
+		if (isIndexColor(Ctype))  		setColorMapDispType(Ctype, false); //110804 RZC, copyRaw2QPixmap_colormap only use imgData->ColorMap->Ctype
+#if USE_CHANNEL_TABLE
+		if (isIndexColor(Ctype_glass))	setColorMapDispType(Ctype_glass, true);
+#endif
 
 		update();
 	}

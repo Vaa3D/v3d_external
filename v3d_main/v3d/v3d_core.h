@@ -544,15 +544,19 @@ public:
 	ImagePlaneDisplayType focusPlaneType() {return Ptype;}
 
 public slots:
+	void setPixmap(const QPixmap& pxm, bool bGlass)  //110722 RZC, for directly update pixmap of 3view. //110803 RZC, add bGlass
+	{
+		if (! bGlass)
+			this->pixmap = pxm;
+		else
+			this->pixmap_glass = pxm;
+		update();
+	}
+	void updateViewPlane() {changeFocusPlane(cur_focus_pos);} // 090504 RZC: make FocusPlane image updated from image stack
+
     void changeScale(int scale);
-
-    void updateViewPlane() {changeFocusPlane(cur_focus_pos);} // 090504 RZC: make FocusPlane image updated from image stack
-
     void changeFocusPlane(int c);
-    void changeColorType(ImageDisplayColorType c);
-
-    void setPixmap(const QPixmap& pxm) {this->pixmap = pxm; update();} //110722 RZC, for directly update pixmap of 3view
-
+    void changeColorType(ImageDisplayColorType c, bool bGlass=false); //110803 RZC
     void setPixmapType();
     void reset();
 
@@ -561,6 +565,7 @@ public slots:
 
 signals:
 	void colorChanged(int); //110722 RZC, connected to XFormWidget::colorChanged(int)
+	void colorChangedGlass(int); //110803 RZC, connected to XFormWidget::colorChangedGlass(int)
 
 	void scaleChanged(int scale);
 //    void colorTypeChanged(ImageDisplayColorType c); //probably should be deleted later
@@ -590,10 +595,13 @@ private:
 	//QPoint curMouseShiftPressPos; //080102
 
     XFormType Gtype;
-    ImageDisplayColorType Ctype;
     ImagePlaneDisplayType Ptype;
 
-    QPixmap pixmap; //xy plane
+    ImageDisplayColorType Ctype;
+    ImageDisplayColorType Ctype_glass; //110803 RZC
+    QPixmap pixmap; 		//image buffer of plane
+    QPixmap pixmap_glass; 	//image buffer of looking glass
+    bool _for_index_only;			//110803 RZC
 
     int cur_focus_pos;
 

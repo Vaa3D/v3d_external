@@ -551,6 +551,7 @@ struct ChannelSharedData
 	MixOP mixOp;
 	QList<Channel> listChannel;
 	vector< vector<RGBA8> > luts;
+	bool bGlass;
 };
 
 class ChannelTable;
@@ -561,21 +562,19 @@ class ChannelTabWidget : public QTabWidget //QWidget
 {
     Q_OBJECT;
 	XFormWidget* xform;
-	int id;
+	int n_tabs;
 	QTabWidget* tabOptions;
 	ChannelTable *channelPage;
 	BrightenBox *brightenPage;
 	MiscBox *miscPage;
-
+	ChannelSharedData csData; 		//shared with channelPage & brightenPage
 	void createFirst();
 
-	ChannelSharedData csdata; 		//shared with channelPage & brightenPage
-
 public:
-	ChannelTabWidget(XFormWidget* parent, int id=1) :QTabWidget(parent)
+	ChannelTabWidget(XFormWidget* parent, int tabs=3) :QTabWidget(parent)
 	{
 		xform = (XFormWidget*)parent;
-		this->id = id;
+		n_tabs = tabs;			csData.bGlass = (n_tabs==2);//2 tabs for looking glass
 		tabOptions = 0;
 		channelPage = 0;
 		brightenPage = 0;
@@ -584,10 +583,15 @@ public:
 		createFirst();
 	};
 	virtual ~ChannelTabWidget() {};
+	const ChannelSharedData & getChannelSharedData() {return csData;}
 
 public slots:
-	void updateXFormWidget(int plane=-1);	//called by linkXFormWidgetChannel
+	void updateXFormWidget(int plane=-1);	//called by XFormWidget's signal of colorChanged(int)
 	void linkXFormWidgetChannel();			//link updated channels of XFormWidget
+
+	void syncOpControls(const MixOP & mixop);
+	void syncSharedData(const ChannelSharedData & data);
+
 };
 
 /////////////////////////////////////////////
@@ -596,12 +600,21 @@ class ChannelTable : public QWidget
 {
     Q_OBJECT;
 
+	MixOP & mixOp; 					//just a reference to ChannelTabWidget::csData
+	QList<Channel> & listChannel;	//just a reference to ChannelTabWidget::csData
+	vector< vector<RGBA8> > & luts; //just a reference to ChannelTabWidget::csData
+	bool & bGlass; 					//just a reference to ChannelTabWidget::csData
+	XFormWidget* xform;
+	ChannelTabWidget* ctab;
+
 public:
 	ChannelTable(ChannelSharedData& csd, XFormWidget* xform, QWidget* parent=0) :QWidget(parent)
 		, mixOp(csd.mixOp)
 		, listChannel(csd.listChannel)
 		, luts(csd.luts)
+		, bGlass(csd.bGlass)
 		, xform(xform) /////
+		, ctab(dynamic_cast<ChannelTabWidget*>(parent))
 	{
 		init_member();
 		linkXFormWidgetChannel();
@@ -613,10 +626,12 @@ signals:
 	void channelTableChanged(); //trigger to update XFormWidget
 
 public slots:
-	void updateXFormWidget(int plane=-1);	//called by linkXFormWidgetChannel
+	void updateXFormWidget(int plane=-1);	//called by ChannelTabWidget
 	void linkXFormWidgetChannel();			//link updated channel
-	void setChannelColorDefault(int N);
 	int rowCount() {return (table)? table->rowCount() :0; };
+	void setChannelColorDefault(int N);
+	void updateTableChannel(bool update_luts=true);
+	void setMixOpControls();
 
 protected slots:
 	void pressedClickHandler(int row, int col);
@@ -635,11 +650,6 @@ protected slots:
 	void setDefault();
 
 protected:
-	MixOP & mixOp; 					//just a reference to ChannelTabWidget::csdata
-	QList<Channel> & listChannel;	//just a reference to ChannelTabWidget::csdata
-	vector< vector<RGBA8> > & luts; //just a reference to ChannelTabWidget::csdata
-	XFormWidget* xform;
-
 	QGridLayout *boxLayout;
 	QTableWidget *table;
 	QRadioButton *radioButton_Max, *radioButton_Sum, *radioButton_Mean, *radioButton_OIT, *radioButton_Index;
@@ -655,7 +665,6 @@ protected:
 	}
 
 	void createNewTable();  // called by linkXFormWidgetChannel
-	void setMixOpControls();     //called by createNewTable
 	void connectMixOpSignals();  //called by createNewTable
 
 	QVector<bool> in_batch_stack;
@@ -665,7 +674,6 @@ protected:
 	QTableWidget* currentTableWidget();
 
 	QTableWidget* createTableChannel();
-	void updateTableChannel();
 	void updateLuts(int k=-1);
 
 };
@@ -675,6 +683,9 @@ protected:
 class BrightenBox : public QWidget
 {
     Q_OBJECT;
+
+	MixOP & mixOp; 					//just a reference to ChannelTabWidget::csData
+	XFormWidget* xform;
 
 public:
 	BrightenBox(ChannelSharedData& csd, XFormWidget* xform, QWidget* parent=0) :QWidget(parent)
@@ -690,15 +701,13 @@ public:
 signals:
 	void brightenChanged(); //trigger to update XFormWidget
 
-protected slots:
+public slots:
+	void setMixOpControls();
+	void reset();
 	void setBrightness(int);
 	void setContrast(int);
-	void reset();
 
 protected:
-	MixOP & mixOp; 					//just a reference to ChannelTabWidget::csdata
-	XFormWidget* xform;
-
 	QSlider *slider_bright, *slider_contrast;
 	QSpinBox *spin_bright, *spin_contrast;
 	QPushButton *push_reset;
@@ -718,6 +727,11 @@ class MiscBox : public QWidget
 {
     Q_OBJECT;
 
+	MixOP & mixOp; 					//just a reference to ChannelTabWidget::csData
+	QList<Channel> & listChannel;	//just a reference to ChannelTabWidget::csData
+	vector< vector<RGBA8> > & luts; //just a reference to ChannelTabWidget::csData
+	XFormWidget* xform;
+
 public:
 	MiscBox(ChannelSharedData& csd, XFormWidget* xform, QWidget* parent=0) :QWidget(parent)
 		, mixOp(csd.mixOp)
@@ -736,11 +750,6 @@ public slots:
 	void exportRGBStack();
 
 protected:
-	MixOP & mixOp; 					//just a reference to ChannelTabWidget::csdata
-	QList<Channel> & listChannel;	//just a reference to ChannelTabWidget::csdata
-	vector< vector<RGBA8> > & luts; //just a reference to ChannelTabWidget::csdata
-	XFormWidget* xform;
-
 	QPushButton *push_export;
 	void init_member()
 	{

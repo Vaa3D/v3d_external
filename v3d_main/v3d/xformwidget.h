@@ -173,6 +173,7 @@ private:
 
 	My4DImage *imgData;
     ImageDisplayColorType Ctype;
+    ImageDisplayColorType Ctype_glass;
 
 	QString openFileNameLabel;
 
@@ -236,12 +237,14 @@ private:
 public slots:
 //    void changeColorType(ImageDisplayColorType c);
 
-//110722 RZC, for directly updating pixmap of 3view
-	void mixChannelColorPlaneX(const QPixmap& pxm) {yz_view->setPixmap(pxm);}
-	void mixChannelColorPlaneY(const QPixmap& pxm) {zx_view->setPixmap(pxm);}
-	void mixChannelColorPlaneZ(const QPixmap& pxm) {xy_view->setPixmap(pxm);}
+//110722 RZC, for directly updating pixmap of 3view.  //110803 RZC, add bGlass
+	void mixChannelColorPlaneX(const QPixmap& pxm, bool bGlass) {yz_view->setPixmap(pxm, bGlass);}
+	void mixChannelColorPlaneY(const QPixmap& pxm, bool bGlass) {zx_view->setPixmap(pxm, bGlass);}
+	void mixChannelColorPlaneZ(const QPixmap& pxm, bool bGlass) {xy_view->setPixmap(pxm, bGlass);}
 //110802 RZC, for show/hide channelTabGlass
 	void onActivated(QWidget* );
+//110803 RZC, for sync multiple ChannelTabWidget
+	void syncChannelTabWidgets(ChannelTabWidget* sender);
 
 	void setColorRedType();
     void setColorGreenType();
@@ -251,7 +254,7 @@ public slots:
     void setColorGreen2GrayType();
     void setColorBlue2GrayType();
     void setColorAll2GrayType();
-	void setColorMapDispType(ImageDisplayColorType Ctype=colorPseudoMaskColor); //110725 RZC, add parameter Ctype
+	void setColorMapDispType(ImageDisplayColorType Ctype=colorPseudoMaskColor, bool bGlass=false); //110725 RZC, add Ctype //110803 RZC, add bGlass
 	void switchMaskColormap();
 
     void toggleLinkFocusCheckBox();
@@ -306,6 +309,7 @@ public slots:
 
 signals:
 	void colorChanged(int); //110722 RZC, connected to ChannelTable::updateXFormWidget(int)
+	void colorChangedGlass(int); //110803 RZC, connected to ChannelTable::updateXFormWidget(int)
 
     void external_focusXChanged(int c);
     void external_focusYChanged(int c);

@@ -453,7 +453,7 @@ void My4DImage::switchColorMap(int len, ImageDisplayColorType c)
 	}
 
 	colorMap = new ColorMap(c, len); //
-	updateViews();//by PHC, 090211
+	//updateViews();//by PHC, 090211 //comment off by RZC 110804, no need
 }
 
 void My4DImage::getColorMapInfo(int & len, ImageDisplayColorType & c)

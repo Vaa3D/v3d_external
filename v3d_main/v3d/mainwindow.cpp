@@ -1436,6 +1436,9 @@ void MainWindow::paste()
 
 void MainWindow::updateMenus()
 {
+	if (activeMdiChild()==0 || activeMdiChild()->getImageData()==0) //110804 RZC
+		return;
+
     bool hasMdiChild = (activeMdiChild() != 0);
     saveAct->setEnabled(hasMdiChild);
 	procSettings->setEnabled(true);//always true
@@ -2456,6 +2459,7 @@ XFormWidget *MainWindow::createMdiChild()
     qDebug()<<"MainWindow::createMdiChild *** workspace->windowList:" << workspace->windowList() <<"+="<< child; //STRANGE: child isn't in windowList here ???
 
     connect(workspace, SIGNAL(windowActivated(QWidget *)),  child, SLOT(onActivated(QWidget *))); //110802 RZC
+    //workspace->setActiveWindow(child);
 
 
 	//to enable coomunication of child windows
