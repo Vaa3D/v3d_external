@@ -19,6 +19,8 @@ QT4_WRAP_CPP(NA_MOC_SRCS
     data_model/NaLockableData.h
     data_model/NaVolumeData.h
     data_model/MipFragmentData.h
+    data_model/MipFragmentColors.h
+    data_model/DataColorModel.h
     geometry/CameraModel.h
     gui/AngleWidget.h
     gui/CompartmentMapComboBox.h

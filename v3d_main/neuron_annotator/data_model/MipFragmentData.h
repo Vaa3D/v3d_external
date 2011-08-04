@@ -38,7 +38,18 @@ public:
             , m_mipFragmentData(mipParam)
         {}
 
-        // TODO - create accessor methods for downstream clients
+        int getNumberOfDataChannels() const {
+            return m_mipFragmentData.fragmentData->getCDim() + 1; // +1 for reference
+        }
+        const Image4DProxy<My4DImage> getMipProxy() const {
+            return Image4DProxy<My4DImage>(const_cast<My4DImage*>(m_mipFragmentData.fragmentData));
+        }
+        const Image4DProxy<My4DImage> getZBufferProxy() const {
+            return Image4DProxy<My4DImage>(const_cast<My4DImage*>(m_mipFragmentData.fragmentZValues));
+        }
+        const Image4DProxy<My4DImage> getIntensityProxy() const {
+            return Image4DProxy<My4DImage>(const_cast<My4DImage*>(m_mipFragmentData.fragmentIntensities));
+        }
 
     private:
         const MipFragmentData& m_mipFragmentData;

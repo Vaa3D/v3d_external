@@ -15,15 +15,15 @@
 class MipFragmentColors : public NaLockableData
 {
     Q_OBJECT
+
 public:
     explicit MipFragmentColors(
             const MipFragmentData& mipFragmentData,
             const DataColorModel& colorModel,
             QObject *parentParam = NULL);
 
-signals:
-
 public slots:
+    void update();
 
 protected:
     // input
@@ -31,6 +31,26 @@ protected:
     const DataColorModel& dataColorModel;
     // output
     QList<QImage*> fragmentMips; // entry zero(0) is background, entry nFrags+1 is reference/nc82
+
+
+public:
+
+    class Writer; friend class Writer;
+    class Writer : public QWriteLocker
+    {
+    public:
+        Writer(MipFragmentColors& mipFragmentColorsParam)
+            : QWriteLocker(mipFragmentColorsParam.getLock())
+            , mipFragmentColors(mipFragmentColorsParam)
+        {}
+
+        void allocateImages(int x, int y, int nImages);
+
+    protected:
+        MipFragmentColors& mipFragmentColors;
+    };
+
+
 };
 
 #endif // MIPFRAGMENTCOLORS_H

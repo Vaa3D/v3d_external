@@ -16,7 +16,7 @@ AnnotationSession::AnnotationSession(QObject* parentParam /* = NULL */)
     , neuronAnnotatorResultNode(NULL)
     , volumeData(/* this */) // cannot move qobject with a parent to a QThread
     , mipFragmentData(volumeData /* , this */) // cannot move qobject with parent to a QThread
-    , dataColorModel()
+    , dataColorModel(volumeData)
     , mipFragmentColors(mipFragmentData, dataColorModel)
 {
     // Prepare to load 16-bit volume data from disk in a separate QThread
