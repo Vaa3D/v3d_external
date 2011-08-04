@@ -576,7 +576,31 @@ bool ComponentTree::create(char * imgfile , int _minSize , int _maxSize, int _si
 	int _depth = 0;
 	int _channels = 1;
 	unsigned char * img = NULL;
+#ifdef __v3d__
+	V3DLONG * sz = 0;
+	int datatype;
+	if(!loadImage(imgfile, img, sz, datatype))
+	{
+		cerr<<"loadImage error."<<endl;
+		return false;
+	}
+	if(datatype != 1)
+	{
+		cerr<<"ct3d only supports 8bit data type."<<endl;
+		return false;
+	}
+	_width = sz[0];
+	_height = sz[1];
+	_depth = sz[2];
+	_channels = sz[3];
+	if(_channels != 1)
+	{
+		cerr<<"warnning : not grayscale image, only use the first channel."<<endl;
+	}
+
+#else
 	img = readtiff(imgfile, &_width,&_height, &_depth, &_channels);
+#endif
 	if((long)_width * (long)_height * (long)_depth >= 2147483648) 
 	{
 		cerr<<"image size too large "<<_width<<"*"<<_height<<"*"<<_depth<<" >= 2147483648"<<endl;
@@ -594,7 +618,9 @@ bool ComponentTree::create(char * imgfile , int _minSize , int _maxSize, int _si
 	}
 	if(_channels > 1)
 	{
-		cerr<<"_channels > 1 , convert to grayscale ... "<<endl;
+		cerr<<"ct3d dont's support multi channel, please use v3d plugin version."<<endl;
+		return false;
+	/*	cerr<<"_channels > 1 , convert to grayscale ... "<<endl;
 		int _size = _width * _height *_depth;
 		unsigned char* _img = new unsigned char[_size];
 		for(int i = 0; i < _size; i++)
@@ -609,6 +635,7 @@ bool ComponentTree::create(char * imgfile , int _minSize , int _maxSize, int _si
 		}
 		delete img;
 		img = _img;
+		*/
 	}
 	m_width = _width;
 	m_height = _height;

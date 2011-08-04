@@ -1,6 +1,7 @@
 CC = g++ -g
-CC_FLAGS += -I../../../v3d_main/basic_c_fun -I../../../v3d_main/common_lib/include
-LIBS +=  -L../../../v3d_main/common_lib/lib -lv3dtiff 
+CC_FLAGS += -I../../../v3d_main/basic_c_fun -I../../../v3d_main/common_lib/include 
+CC_FLAGS += -arch x86_64
+LIBS +=  -L../../../v3d_main/common_lib/lib_mac64 -lv3dtiff 
 
 OBJS = main.o basic_memory.o stackutil.o mg_image_lib.o mg_utilities.o gaussian_blur.o img_rotate.o
 SHARED_FUNC_DIR = ../../../v3d_main/basic_c_fun/
