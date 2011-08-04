@@ -104,9 +104,15 @@ QStringList v3d_getInterfaceFuncList(QObject *plugin)
 }
 
 
-CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback, QWidget * parent, QToolBar * _toolBar)
+CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback, QWidget * parent, QToolBar * _toolBar): QWidget(parent)
 {
 	toolBar = _toolBar;
+	if(toolBar->parent() == 0)
+	{
+		QWidget * w = QApplication::activeWindow();
+		QMainWindow * mw = qobject_cast<QMainWindow*>(w);
+		if(mw) mw->addToolBar(Qt::LeftToolBarArea, toolBar);
+	}
 
 	toolButtonIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirHomeIcon));
 	toolBar->addAction(toolButtonIcon, tr("Add custom button"),this, SLOT(openMe()));
@@ -199,6 +205,7 @@ CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback,
 	tabWidget->addTab(pageTriView, tr("Tri View"));
 	tabWidget->addTab(page3dView, tr("3D View"));
 	tabWidget->addTab(pagePlugin, tr("Plugin"));
+	tabWidget->setCurrentIndex(2);
 
 	mainLayout = new QHBoxLayout();
 	mainLayout->addWidget(tabWidget);
@@ -240,6 +247,7 @@ void CustomButtonSelectWidget::setToolBarButton(bool state)
 	if(state && !button->isVisible())
 	{
 		toolBar->addAction(button);
+		//toolBar->resize(toolBar->sizeHint());
 	}
 	button->setVisible(state);
 }
@@ -255,6 +263,12 @@ void CustomButtonSelectWidget::openMe()
 	else
 		show();
 }
+
+void CustomButtonSelectWidget::closeEvent(QCloseEvent *event)
+{
+	if(toolBar && !toolBar->isVisible()) toolBar->show();
+}
+
 bool CustomButton::run()
 {
 	cout<<"go to run"<<endl;

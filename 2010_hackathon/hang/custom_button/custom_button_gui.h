@@ -73,6 +73,8 @@ class CustomButtonSelectWidget : public QWidget
 		public slots:
 			void setToolBarButton(bool state);
 		void openMe();
+	protected:
+		void closeEvent(QCloseEvent *event);
 
 	public:
 		QToolBar * toolBar;

@@ -10,6 +10,7 @@
 
 const QString title = QObject::tr("Quick Button Plugin");
 
+static int bar_num = 1;
 int custom_button(V3DPluginCallback2 &callback, QWidget *parent)
 {
 
@@ -18,9 +19,10 @@ int custom_button(V3DPluginCallback2 &callback, QWidget *parent)
 	//toolBar->show();
 
 	/* Method 2 */
-	QToolBar* toolBar = new QToolBar(parent);
+	QString title = bar_num > 1 ? QObject::tr("Custom Buttons - %1").arg(bar_num) : QObject::tr("Custom Buttons");
+	bar_num++;
+	QToolBar* toolBar = new QToolBar(title,parent);
 	CustomButtonSelectWidget * selectWidget = new CustomButtonSelectWidget(callback, parent, toolBar);
-	toolBar->show();
 	return 1;
 }
 
