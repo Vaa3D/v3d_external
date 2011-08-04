@@ -23,11 +23,220 @@
 #include "basic_landmark.h"
 #include "basic_4dimage.h"
 
+extern "C" {
+#include "tiffio.h"
+};
+
 #include "imageblend.h"
 
 using namespace std;
 
 #define EMPTY 1
+
+// handle .lsm file
+// following the rules from ITK .lsm reader
+// Structure with LSM-specific data ( only in the first image directory).
+#define TIF_CZ_LSMINFO 34412
+#define TIF_CZ_LSMINFO_SIZE_RESERVED 90+6
+#define TIF_CZ_LSMINFO_SIZE 512
+
+typedef int			Int32_t;
+typedef unsigned	UInt32_t;
+
+typedef float       Float32_t;
+typedef double      Float64_t;
+typedef long double Float96_t;
+
+typedef struct {
+	UInt32_t    U32MagicNumber;
+	Int32_t     S32StructureSize;
+	Int32_t     S32DimensionX;
+	Int32_t     S32DimensionY;
+	Int32_t     S32DimensionZ;
+	Int32_t     S32DimensionChannels;
+	Int32_t     S32DimensionTime;
+	Int32_t     S32DataType;
+	Int32_t     S32ThumbnailX;
+	Int32_t     S32ThumbnailY;
+	Float64_t   F64VoxelSizeX;
+	Float64_t   F64VoxelSizeY;
+	Float64_t   F64VoxelSizeZ;
+	UInt32_t    u32ScanType;
+	UInt32_t    u32DataType;
+	UInt32_t    u32OffsetVectorOverlay;
+	UInt32_t    u32OffsetInputLut;
+	UInt32_t    u32OffsetOutputLut;
+	UInt32_t    u32OffsetChannelColors;
+	Float64_t   F64TimeIntervall;
+	UInt32_t    u32OffsetChannelDataTypes;
+	UInt32_t    u32OffsetScanInformation;
+	UInt32_t    u32OffsetKsData;
+	UInt32_t    u32OffsetTimeStamps;
+	UInt32_t    u32OffsetEventList;
+	UInt32_t    u32OffsetRoi;
+	UInt32_t    u32OffsetBleachRoi;
+	UInt32_t    u32OffsetNextRecording;
+	UInt32_t    u32Reserved [ TIF_CZ_LSMINFO_SIZE_RESERVED ];
+} zeiss_info; // itkLSMImageIO.cxx
+
+bool loadLSM(const char *filename, unsigned char *&p1dImg, V3DLONG *&szImg, int &datatypeImg)
+{    
+    // load header
+    TIFF  *tif=NULL;
+    int   depth, width, height, kind, datatype;
+    
+    // 
+    TIFFSetWarningHandler(NULL);
+    if( (tif = TIFFOpen(const_cast<char *>(filename),"r")) == NULL )
+    {
+        printf("Could not open incoming image\n");
+        return false;
+    }
+    
+    depth = 1;
+    while(TIFFReadDirectory(tif))
+        depth += 1;
+    TIFFClose(tif);
+    depth = depth / 2;		/* half the dirs are thumbnails */
+    
+    TIFFSetWarningHandler(NULL);
+    if( (tif = TIFFOpen(const_cast<char *>(filename),"r")) == NULL )
+    {
+        printf("Could not open incoming image\n");
+        return false;
+    }
+    TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
+    TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
+    
+    short bits, channels;
+    
+    TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bits);
+    TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &channels);
+    
+    if (bits<=8 && bits>0) datatype=1;
+    else if (bits<=16 && bits>0) datatype=2;
+    else
+    {
+        printf("LSM file should not support more than 16 bits data.\n");
+        return false;
+    }
+    
+    // resolutions
+    ttag_t tag = TIF_CZ_LSMINFO;
+    void *praw = NULL;
+    short value_count = 512; // TIF_CZ_LSMINFO_SIZE
+    const TIFFFieldInfo *fld = NULL;
+    
+    if( (fld = TIFFFieldWithTag( tif, tag )) == NULL )
+    {
+        printf("Fail in reading .lsm header info!\n");
+        return false;
+    }
+    else
+    {
+        if( fld->field_passcount )
+        {
+            if( TIFFGetField( tif, tag, &value_count, &praw ) != 1 )
+            {
+                printf("Tag of .lsm cannot be found!\n");
+                return false;
+            }
+            else
+            {
+                if( fld->field_type != TIFF_BYTE )
+                {
+                    printf("Tag of .lsm is not of type TIFF_BYTE!\n");
+                    return false;
+                }
+            }
+        }
+    }
+    
+    const zeiss_info *zi = reinterpret_cast<zeiss_info*>(praw);
+    
+    if( sizeof(*zi) != TIF_CZ_LSMINFO_SIZE)
+    {
+        printf("Problem of alignement of reading header of .lsm file on your platform.\n");
+        return false;
+    }
+    double res_x, res_y, res_z;
+    res_x = zi->F64VoxelSizeX;
+    res_y = zi->F64VoxelSizeY;
+    // TIFF only support 2 or 3 dimension:
+    if ( depth > 1 )
+    {
+        res_z = zi->F64VoxelSizeZ;
+    }
+    
+    //
+    TIFFClose(tif);
+    
+    // assign
+    szImg = new V3DLONG [4];
+    szImg[0] = width; szImg[1] = height; szImg[2] = depth; szImg[3] = channels; datatypeImg = datatype;
+    
+    // loading
+    V3DLONG dims_x, dims_y, dims_z, dims_c, sz_frame, sz_channel;
+    dims_x = width; dims_y = height; dims_z = depth;
+    sz_frame = dims_x*dims_y;
+    sz_channel = dims_x*dims_y*dims_z;
+    
+    try {
+        p1dImg = new unsigned char [sz_channel*channels*datatype];
+    } catch (...) {
+        cout<<"Unable to allocate memory for lsm image!"<<endl;
+        return false;
+    }
+    
+    TIFFSetWarningHandler(NULL);
+    if( (tif = TIFFOpen(const_cast<char *>(filename),"r")) == NULL )
+    {
+        printf("Could not open incoming image\n");
+        return false;
+    }
+    
+    for(V3DLONG nChannel=0; nChannel<channels; nChannel++)
+    {
+        V3DLONG offset_c = nChannel*sz_channel;
+        for(V3DLONG nFrame=0; nFrame<dims_z; nFrame++)
+        {
+            V3DLONG offsets = offset_c + nFrame*sz_frame;
+            
+            if (!TIFFReadDirectory(tif)) break;	  // skip the one we just read, it's a thumbnail 
+            if (!TIFFReadDirectory(tif)) break;	  // get the next slice
+            
+            // load frame
+            if (TIFFIsTiled(tif))
+            {
+                // File is tiled
+                uint32 *bytecounts;
+                TIFFGetField(tif, TIFFTAG_TILEBYTECOUNTS, &bytecounts);
+                
+                ttile_t t, nt = TIFFNumberOfTiles(tif);
+                for (t = 0; t < nt; t++)
+                {
+                    if(TIFFReadEncodedTile(tif, t, (unsigned char *)p1dImg + offsets*datatype + (V3DLONG)t*sz_channel, bytecounts[t])<0)
+                        return -1 ;
+                }
+            }
+            else
+            {
+                // File is striped 
+                tstrip_t s, ns = TIFFNumberOfStrips(tif);
+                for (s = 0; s < ns; s++)
+                {
+                    if(TIFFReadEncodedStrip(tif, s, (unsigned char *)p1dImg + offsets*datatype + (V3DLONG)s*sz_channel*datatype, sz_frame*datatype)<0)
+                        continue;
+                }
+            }
+        }
+    }
+    
+    //
+    TIFFClose(tif);
+    
+    return true;
+}
 
 //
 Q_EXPORT_PLUGIN2(imageBlend, ImageBlendPlugin);
@@ -274,20 +483,42 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         int datatype_img1 = 0;
         unsigned char* p1dImg1 = 0;
         
-        if (loadImage(const_cast<char *>(m_InputFileName1.toStdString().c_str()), p1dImg1, sz_img1, datatype_img1)!=true)
+        if(QFileInfo(m_InputFileName1).suffix().toUpper().compare("LSM") == 0)
         {
-            fprintf (stderr, "Error happens in reading the image1 file [%s]. Exit. \n",m_InputFileName1.toStdString().c_str());
-            return false;
+            if (loadLSM(const_cast<char *>(m_InputFileName1.toStdString().c_str()), p1dImg1, sz_img1, datatype_img1)!=true)
+            {
+                fprintf (stderr, "Error happens in reading the image1 file [%s]. Exit. \n",m_InputFileName1.toStdString().c_str());
+                return false;
+            }
+        }
+        else
+        {
+            if (loadImage(const_cast<char *>(m_InputFileName1.toStdString().c_str()), p1dImg1, sz_img1, datatype_img1)!=true)
+            {
+                fprintf (stderr, "Error happens in reading the image1 file [%s]. Exit. \n",m_InputFileName1.toStdString().c_str());
+                return false;
+            }
         }
         
         V3DLONG *sz_img2 = 0; 
         int datatype_img2 = 0;
         unsigned char* p1dImg2 = 0;
         
-        if (loadImage(const_cast<char *>(m_InputFileName2.toStdString().c_str()), p1dImg2, sz_img2, datatype_img2)!=true)
+        if(QFileInfo(m_InputFileName2).suffix().toUpper().compare("LSM") == 0)
         {
-            fprintf (stderr, "Error happens in reading the image1 file [%s]. Exit. \n",m_InputFileName2.toStdString().c_str());
-            return false;
+            if (loadLSM(const_cast<char *>(m_InputFileName2.toStdString().c_str()), p1dImg2, sz_img2, datatype_img2)!=true)
+            {
+                fprintf (stderr, "Error happens in reading the image1 file [%s]. Exit. \n",m_InputFileName2.toStdString().c_str());
+                return false;
+            }
+        }
+        else
+        {
+            if (loadImage(const_cast<char *>(m_InputFileName2.toStdString().c_str()), p1dImg2, sz_img2, datatype_img2)!=true)
+            {
+                fprintf (stderr, "Error happens in reading the image1 file [%s]. Exit. \n",m_InputFileName2.toStdString().c_str());
+                return false;
+            }
         }
         
         // check dims datatype
