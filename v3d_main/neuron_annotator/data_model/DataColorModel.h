@@ -15,7 +15,6 @@
 //  3 - gamma brightness correction for each channel
 // TODO - deprecate BrightnessCalibrator for DataColorModel
 // TODO - support both blend-SUM and blend-MAX
-// TODO - get (initial) hdr range from input volume
 // TODO - allow custom hdr for gallery thumbnails (where does that even go?)
 class DataColorModel : public NaLockableData
 {

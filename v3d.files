@@ -2411,3 +2411,5 @@ v3d_main/neuron_annotator/data_model/DataColorModel.h
 v3d_main/neuron_annotator/data_model/DataColorModel.cpp
 v3d_main/neuron_annotator/data_model/GalleryMipImages.h
 v3d_main/neuron_annotator/data_model/GalleryMipImages.cpp
+v3d_main/neuron_annotator/data_model/MipMergedData.h
+v3d_main/neuron_annotator/data_model/MipMergedData.cpp
