@@ -118,7 +118,6 @@ protected:
 	void setItemEditor();
 	void create();
 	void createTables();
-	QTableWidget* currentTableWidget();
 	QTableWidget* createTableAtlasRows();
 	QTableWidget* createTableLandmarks();
 	QTableWidget* createColorChannelManager();
@@ -129,6 +128,7 @@ protected:
 	void begin_batch() {in_batch_stack.push_back(true);}
 	void end_batch()   {in_batch_stack.pop_back();}
 	void updatedContent(QTableWidget* t);
+	QTableWidget* currentTableWidget();//QWidget* );
 
 	void createMenuOfColor();
 	QMenu menuColor;

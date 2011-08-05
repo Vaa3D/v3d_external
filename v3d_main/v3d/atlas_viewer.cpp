@@ -1489,10 +1489,7 @@ void V3D_atlas_viewerDialog::pickColorChannel(int i, int j)
 			break;
 	}
 
-	t->resizeColumnsToContents();
-	UPDATE_VIEW(triview_widget);
-	bMod = true;
-	undoButton->setEnabled(bCanUndo && bMod);
+	updatedContent(t); //110805 RZC
 }
 
 ChannelTabWidget* V3D_atlas_viewerDialog::createChannelTab()

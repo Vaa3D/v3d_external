@@ -1102,7 +1102,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 					}
 
 					child->show();
-					workspace->cascade(); //080821
+					//workspace->cascade(); //080821 //110805, by PHC, since RZC claims the resize MDI works now, so this should not be needed.
 
 					if (b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer))
 					{
