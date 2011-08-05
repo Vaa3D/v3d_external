@@ -72,3 +72,4 @@ win32 {
 	BUILD_TIME = $$system(date)
 } 
 message(BUILD_TIME=$$BUILD_TIME)
+
