@@ -13,6 +13,7 @@ class GalleryMipImages : public NaLockableData
 public:
     explicit GalleryMipImages(const MipFragmentColors& mipFragmentColorsParam,
                               QObject *parent = 0);
+    ~GalleryMipImages();
 
 public slots:
     void update();
@@ -26,6 +27,8 @@ protected:
     QList<QImage*> overlayMipList;
 
 
+public:
+
     class Reader : public BaseReadLocker
     {
     public:
@@ -34,8 +37,9 @@ protected:
             , galleryMipImages(galleryMipImagesParam)
         {}
 
-        const QImage* getNeuronMip(int index) {return galleryMipImages.neuronMipList[index];}
-        const QImage* getOverlayMip(int index) {return galleryMipImages.overlayMipList[index];}
+        const QImage* getNeuronMip(int index) const {return galleryMipImages.neuronMipList[index];}
+        const QImage* getOverlayMip(int index) const {return galleryMipImages.overlayMipList[index];}
+        size_t numberOfNeurons() const {return galleryMipImages.neuronMipList.size();}
 
     protected:
         const GalleryMipImages& galleryMipImages;
@@ -45,26 +49,13 @@ protected:
     class Writer : public QWriteLocker
     {
     public:
-
         Writer(GalleryMipImages& galleryMipImagesParam)
             : QWriteLocker(galleryMipImagesParam.getLock())
             , galleryMipImages(galleryMipImagesParam)
         {}
 
-        void allocateImages(int nFrags) {
-            qDebug() << "Allocating scaled mip images";
-            // Fragments/neurons
-            while (! galleryMipImages.neuronMipList.isEmpty())
-                delete galleryMipImages.neuronMipList.takeFirst();
-            for (int f = 0; f < nFrags; ++f)
-                galleryMipImages.neuronMipList << new QImage(1, 1, QImage::Format_ARGB32);
-            // Overlays/background/reference
-            while (! galleryMipImages.overlayMipList.isEmpty())
-                delete galleryMipImages.overlayMipList.takeFirst();
-            for (int f = 0; f < 2; ++f) {
-                galleryMipImages.overlayMipList << new QImage(1, 1, QImage::Format_ARGB32);
-            }
-        }
+        void allocateImages(int nFrags);
+        void deleteImages();
 
     protected:
         GalleryMipImages& galleryMipImages;

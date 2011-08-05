@@ -101,7 +101,6 @@ public slots:
     void synchronizeGalleryButtonsToAnnotationSession(QString updateString);
 
 protected slots:
-    void updateThumbnailGamma(qreal gamma);
     void on3DViewerRotationChanged(const Rotation3D& rot);
     void update3DViewerXYZBodyRotation();
     void onViewerChanged(int viewerIndex);
@@ -109,6 +108,7 @@ protected slots:
     void complete3DProgress();
     void set3DProgressMessage(QString);
     void processUpdatedVolumeData(); // respond to newly loaded image data
+    void onGalleryMipImagesChanged();
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -119,8 +119,8 @@ protected:
 private:
     AnnotationSession* annotationSession;
     Ui::NaMainWindow ui;
-    void createNeuronGallery();
-    void createOverlayGallery();
+    void updateNeuronGallery();
+    void updateOverlayGallery();
     QList<GalleryButton*> overlayGalleryButtonList;
     QList<GalleryButton*> neuronGalleryButtonList;
     CameraModel sharedCameraModel; // optional camera sharing

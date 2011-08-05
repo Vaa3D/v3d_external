@@ -29,8 +29,9 @@ public:
 public slots:
     void resetColors();
     void setChannelColor(int index, QRgb color);
-    void setChannelHdrRange(int index, float min, float max);
-    void setChannelGamma(int index, float gamma);
+    void setChannelHdrRange(int index, qreal min, qreal max);
+    void setChannelGamma(int index, qreal gamma);
+    void setGamma(qreal gamma); // all channels
 
 public:
     // ChannelColorModel specifies the colorization parameters for a single data channel
@@ -55,22 +56,24 @@ public:
             colorBlue = qBlue(channelColor);
         }
 
-        void setHdrRange(float hdrMinParam, float hdrMaxParam)
+        QRgb getColor() const {return channelColor;}
+
+        void setHdrRange(qreal hdrMinParam, qreal hdrMaxParam)
         {
             hdrMin = hdrMinParam;
             hdrMax = hdrMaxParam;
-            hdrRange = std::max(1.0f, hdrMax - hdrMin);
+            hdrRange = std::max(qreal(1.0), hdrMax - hdrMin);
         }
 
-        void setGamma(float gammaParam)
+        void setGamma(qreal gammaParam)
         {
             gamma = gammaParam;
             gammaIsNotUnity = (gamma != 1.0f); // premature optimization
             // populate gamma lookup table
-            float previous_i_out = 0.0f;
+            qreal previous_i_out = 0.0f;
             for (int i = 0; i < 256; ++i) {
-                float i_in = i / 255.0f; // range 0.0-1.0
-                float i_out = std::pow(i_in, gamma);
+                qreal i_in = i / 255.0f; // range 0.0-1.0
+                qreal i_out = std::pow(i_in, gamma);
                 gammaTable[i] = i_out;
                 if (i > 0)
                     dGammaTable[i - 1] = i_out - previous_i_out;
@@ -80,16 +83,16 @@ public:
         }
 
         // getColor() definition is in header file so it can be inlined
-        QRgb getColor(float intensity) const
+        QRgb getColor(qreal intensity) const
         {
             // 1) Apply hdr interval
-            float i = (intensity - hdrMin)/hdrRange;
+            qreal i = (intensity - hdrMin)/hdrRange;
             if (i <= 0.0) return blackColor; // clamp below
             if (i >= 1.0) return channelColor; // clamp above
             // 2) Apply gamma correction
             if (gammaIsNotUnity)
             {
-               float gf = i * 255.0f; // index for lookup table, including decimal fraction
+               qreal gf = i * 255.0f; // index for lookup table, including decimal fraction
                int gi = int(gf); // index for lookup table
                i = gammaTable[gi] + dGammaTable[gi] * (gf - gi); // Taylor series interpolation
             }
@@ -103,14 +106,14 @@ public:
         int colorRed; // red component of channelColor, for efficiency
         int colorGreen;
         int colorBlue;
-        float hdrMin; // minimum intensity to scale
-        float hdrMax; // maximum intensity to scale
-        float hdrRange; // hdrMax - hdrMin
-        float gamma; // exponential brightness correction
+        qreal hdrMin; // minimum intensity to scale
+        qreal hdrMax; // maximum intensity to scale
+        qreal hdrRange; // hdrMax - hdrMin
+        qreal gamma; // exponential brightness correction
         bool gammaIsNotUnity; // precompute gamma != 1.0
         // lookup table for faster gamma transform
-        float gammaTable[256]; // cache for efficiency
-        float dGammaTable[256]; // first derivative of gammaTable values
+        qreal gammaTable[256]; // cache for efficiency
+        qreal dGammaTable[256]; // first derivative of gammaTable values
     };
 
 

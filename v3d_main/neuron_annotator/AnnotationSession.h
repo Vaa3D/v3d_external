@@ -25,20 +25,13 @@ public:
     bool load(long annotationSessionID);
     long getObjectId() const { return objectId; }
 
-    // bool loadOriginalImageStack();
-    // bool loadNeuronMaskStack();
-    // bool loadReferenceStack();
     bool loadVolumeData();
 
     bool prepareLabelIndex();
-    bool populateMipLists();
     bool loadLsmMetadata();
 
     double getZRatio() const { return zRatio; }
     void setZRatio(double ZRatioParam) { zRatio=ZRatioParam; }
-
-    QList<QImage*>* getNeuronMipList() { return &neuronMipList; }
-    QList<QImage*>* getOverlayMipList() { return &overlayMipList; }
 
     void setMultiColorImageStackNode(MultiColorImageStackNode* node) {
         this->multiColorImageStackNode=node;
@@ -52,6 +45,7 @@ public:
     // getOriginalImageStackAsMy4DImage() returns a pointer to a My4DImage object
     // maintained by the AnnotationSession class.  Do not delete this pointer,
     // and be aware that it has a lifetime no longer than that of the AnnnotationSession object.
+    // TODO - deprecate these accessors in favor of multithreaded data flow objects.
     My4DImage* getOriginalImageStackAsMy4DImage() { return volumeData.getOriginalImageStackAsMy4DImage(); }
     My4DImage* getReferenceStack() { return volumeData.getReferenceStack(); }
     My4DImage* getNeuronMaskAsMy4DImage() { return volumeData.getNeuronMaskAsMy4DImage(); }
@@ -71,7 +65,16 @@ public:
     void switchSelectedNeuron(int index);
     void switchSelectedNeuronUniquelyIfOn(int index);
     void clearSelections();
-    NaVolumeData * getVolumeData() {return &volumeData;}
+
+    // Data flow accessors
+    NaVolumeData& getVolumeData() {return volumeData;}
+    GalleryMipImages& getGalleryMipImages() {return galleryMipImages;}
+    DataColorModel& getDataColorModel() {return dataColorModel;}
+
+    // Data flow accessors (const versions)
+    const NaVolumeData& getVolumeData() const {return volumeData;}
+    const GalleryMipImages& getGalleryMipImages() const {return galleryMipImages;}
+    const DataColorModel& getDataColorModel() const {return dataColorModel;}
 
 signals:
     void modelUpdated(QString updateType);
@@ -99,13 +102,10 @@ private:
     MipFragmentColors mipFragmentColors;
     GalleryMipImages galleryMipImages;
     //
-    QList<QImage*> neuronMipList;
-    QList<QImage*> overlayMipList;
     QList<bool> maskStatusList;
     QList<bool> overlayStatusList;
     QList<bool> neuronSelectList;
     double zRatio;
-
 };
 
 #endif // ANNOTATIONSESSION_H

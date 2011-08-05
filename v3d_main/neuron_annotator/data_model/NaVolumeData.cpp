@@ -14,7 +14,6 @@ NaVolumeData::NaVolumeData(QObject * parentParam /* = NULL */)
     , originalImageStack(NULL)
     , neuronMaskStack(NULL)
     , referenceStack(NULL)
-    , maxNeuronIndex(-1)
 {
 }
 
@@ -83,7 +82,6 @@ void NaVolumeData::Writer::clearImageData()
         delete m_data->referenceStack;
         m_data->referenceStack = NULL;
     }
-    m_data->maxNeuronIndex = -1;
 }
 
 bool NaVolumeData::Writer::loadOriginalImageStack()
@@ -102,6 +100,7 @@ bool NaVolumeData::Writer::loadOriginalImageStack()
     }
     // cout << "Loaded original image stack with dimensions X=" << originalImageStack->getXDim() << " Y=" << originalImageStack->getYDim()
     //         << " Z=" << originalImageStack->getZDim() << " C=" << originalImageStack->getCDim() << "\n";
+
     return true;
 }
 
@@ -118,28 +117,9 @@ bool NaVolumeData::Writer::loadNeuronMaskStack() {
         return false;
     }
     neuronMaskStack->loadImage(m_data->maskLabelFilePath.toAscii().data());
+    neuronMaskStack->p_vmax;
 
-    // measure range of neuron fragment indices
-    double minFragmentIndex = 1e9;
-    double maxFragmentIndex = -1e9;
-    Image4DProxy<My4DImage> maskProxy(const_cast<My4DImage*>(m_data->neuronMaskStack));
-    int imageX = m_data->neuronMaskStack->getXDim();
-    int imageY = m_data->neuronMaskStack->getYDim();
-    int imageZ = m_data->neuronMaskStack->getZDim();
-    for (int z = 0; z < imageZ; z++) {
-        for (int y = 0; y < imageY; y++) {
-            for (int x = 0; x < imageX; x++) {
-                double fragmentIndex = maskProxy.value_at(x,y,z,0);
-                if (fragmentIndex > maxFragmentIndex)
-                    maxFragmentIndex = fragmentIndex;
-                if (fragmentIndex < minFragmentIndex)
-                    minFragmentIndex = fragmentIndex;
-            }
-        }
-    }
-    // qDebug() << "Maximum fragment index = " << maxFragmentIndex;
-    // qDebug() << "Minimum fragment index = " << minFragmentIndex;
-    m_data->maxNeuronIndex = maxFragmentIndex;
+    // qDebug() << "Number of My4DImage neuron mask labels = " << m_data->neuronMaskStack->getChannalMaxIntensity(0);
 
     return true;
 }
@@ -189,6 +169,7 @@ bool NaVolumeData::Writer::loadReferenceStack()
     }
     initialReferenceStack->cleanExistData();
     delete initialReferenceStack;
+    referenceStack->updateminmaxvalues();
     qDebug() << "Finished loading reference stack";
 
     return true;
@@ -202,21 +183,30 @@ const Image4DProxy<My4DImage> NaVolumeData::Reader::getNeuronMaskProxy() const
 {
     // Image4DProxy class is a bit const-retarded, so const_cast here.
     // (It's OK; we are returning a const object in the end.)
-    return Image4DProxy<My4DImage>(const_cast<My4DImage*>(m_data->neuronMaskStack));
+    My4DImage * stack = const_cast<My4DImage*>(m_data->neuronMaskStack);
+    Image4DProxy<My4DImage> answer(stack);
+    answer.set_minmax(stack->p_vmin, stack->p_vmax);
+    return answer;
 }
 
 const Image4DProxy<My4DImage> NaVolumeData::Reader::getOriginalImageProxy() const
 {
     // Image4DProxy class is a bit const-retarded, so const_cast here.
     // (It's OK; we are returning a const object in the end.)
-    return Image4DProxy<My4DImage>(const_cast<My4DImage*>(m_data->originalImageStack));
+    My4DImage * stack = const_cast<My4DImage*>(m_data->originalImageStack);
+    Image4DProxy<My4DImage> answer(stack);
+    answer.set_minmax(stack->p_vmin, stack->p_vmax);
+    return answer;
 }
 
 const Image4DProxy<My4DImage> NaVolumeData::Reader::getReferenceImageProxy() const
 {
     // Image4DProxy class is a bit const-retarded, so const_cast here.
     // (It's OK; we are returning a const object in the end.)
-    return Image4DProxy<My4DImage>(const_cast<My4DImage*>(m_data->referenceStack));
+    My4DImage * stack = const_cast<My4DImage*>(m_data->referenceStack);
+    Image4DProxy<My4DImage> answer(stack);
+    answer.set_minmax(stack->p_vmin, stack->p_vmax);
+    return answer;
 }
 
 

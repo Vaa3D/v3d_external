@@ -40,7 +40,7 @@ private:
     My4DImage* originalImageStack;
     My4DImage* neuronMaskStack;
     My4DImage* referenceStack;
-    int maxNeuronIndex;
+    // int maxNeuronIndex;
 
 public:
 
@@ -57,7 +57,7 @@ public:
         const Image4DProxy<My4DImage> getOriginalImageProxy() const;
         const Image4DProxy<My4DImage> getReferenceImageProxy() const;
         ImagePixelType getOriginalDatatype() const {return m_data->originalImageStack->getDatatype();}
-        int getNumberOfNeurons() const {return m_data->maxNeuronIndex;} // zero is background...
+        int getNumberOfNeurons() const {return m_data->neuronMaskStack->getChannalMaxIntensity(0);}
 
     private:
         const NaVolumeData * m_data;
@@ -77,7 +77,7 @@ public:
         Image4DProxy<My4DImage> getOriginalImageProxy();
         Image4DProxy<My4DImage> getReferenceImageProxy();
         ImagePixelType getOriginalDatatype() const {return m_data->originalImageStack->getDatatype();}
-        int getNumberOfNeurons() const {return m_data->maxNeuronIndex;} // zero is background...
+        int getNumberOfNeurons() const {return m_data->neuronMaskStack->getChannalMaxIntensity(0);}
 
         void setOriginalImageStackFilePath(QString path) {m_data->originalImageStackFilePath = path;}
         void setMaskLabelFilePath(QString path) {m_data->maskLabelFilePath = path;}

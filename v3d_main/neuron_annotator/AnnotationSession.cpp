@@ -25,6 +25,10 @@ AnnotationSession::AnnotationSession(QObject* parentParam /* = NULL */)
     connect(this, SIGNAL(volumeDataNeeded()),
             &volumeData, SLOT(loadVolumeDataFromFiles()));
     // TODO connect mip color update signal to something
+
+    overlayStatusList.clear();
+    overlayStatusList.append(false); // reference status
+    overlayStatusList.append(false); // background status
 }
 
 AnnotationSession::~AnnotationSession()
@@ -34,12 +38,6 @@ AnnotationSession::~AnnotationSession()
     }
     if (neuronAnnotatorResultNode!=0) {
         delete neuronAnnotatorResultNode;
-    }
-    for (int i=0;i<neuronMipList.size();i++) {
-        delete neuronMipList.at(i);
-    }
-    for (int i=0;i<overlayMipList.size();i++) {
-        delete overlayMipList.at(i);
     }
 }
 
@@ -138,113 +136,6 @@ bool AnnotationSession::prepareLabelIndex()
         neuronSelectList.append(status);
     }
 
-    return true;
-}
-
-// This function populates the neuronMipList<QPixmap> indexed 0..<num-stacks>
-// and the overlayMipList<QPixmap> with Reference in position 0 and background signal in position 1
-
-bool AnnotationSession::populateMipLists()
-{
-    // Read lock is allocated on the stack, so it will be automatically released when the read operation
-    // is complete and the read lock falls out of scope.
-    NaVolumeData::Reader volumeReader(volumeData);
-    if (! volumeReader.hasReadLock()) return false;
-
-    qDebug() << "AnnotationSession::populateMaskMipList() start";
-
-    const Image4DProxy<My4DImage> originalProxy = volumeReader.getOriginalImageProxy();
-    const Image4DProxy<My4DImage> maskProxy = volumeReader.getNeuronMaskProxy();
-    const Image4DProxy<My4DImage> referenceProxy = volumeReader.getReferenceImageProxy();
-
-    int z,y,x;
-    int imageX=originalProxy.sx;
-    int imageY=originalProxy.sy;
-    int imageZ=originalProxy.sz;
-    int imageC=originalProxy.sc;
-    if (imageC != 3) {
-        qDebug() << "Expected original image stack to have channel dim=3 but it has channel dim=" << imageC;
-        return false;
-    }
-
-    neuronMipList.clear();
-    overlayMipList.clear();
-    assert(neuronMipList.size() == 0);
-    assert(overlayMipList.size() == 0);
-
-    // Neuron MIP List and Background
-    for (int maskIndex=0;maskIndex<maskStatusList.size();maskIndex++) {
-        QImage* mip=new QImage(imageX, imageY, QImage::Format_RGB888);
-        mip->fill(0);
-        neuronMipList.append(mip);
-    }
-
-    // Order is important here
-    QImage* referenceImage = new QImage(imageX, imageY, QImage::Format_RGB888);
-    referenceImage->fill(0);
-    overlayMipList.append(referenceImage);
-
-    QImage* backgroundImage = new QImage(imageX, imageY, QImage::Format_RGB888);
-    backgroundImage->fill(0);
-    overlayMipList.append(backgroundImage);
-
-
-    bool falseBool=false;
-    overlayStatusList.append(falseBool); // Reference status
-    overlayStatusList.append(falseBool); // Background status
-
-    for (z=0;z<imageZ;z++) {
-        for (y=0;y<imageY;y++) {
-            for (x=0;x<imageX;x++) {
-
-                // Reference
-                int referenceIntensity = referenceProxy.value8bit_at(x,y,z,0);
-                QRgb referenceColor = qRgb(referenceIntensity, referenceIntensity, referenceIntensity); // gray
-                QRgb previousReferenceColor = referenceImage->pixel(x,y);
-                if (z==0) {
-                    referenceImage->setPixel(x,y,referenceColor);
-                } else {
-                    int previousIntensity = qRed(previousReferenceColor) + qGreen(previousReferenceColor) + qBlue(previousReferenceColor);
-                    int currentIntensity = qRed(referenceColor) + qGreen(referenceColor) + qBlue(referenceColor);
-                    if (currentIntensity > previousIntensity) {
-                        referenceImage->setPixel(x,y,referenceColor);
-                    }
-                }
-
-                // Neurons and Background
-                unsigned char maskIndex = maskProxy.value8bit_at(x,y,z,0);
-                if (maskIndex > neuronMipList.size()) {
-                    int totalMaskEntries=neuronMipList.size(); // since position 0 is background
-                    qDebug() << "Found mask index=" << maskIndex << " but the total number of mask entries is=" << totalMaskEntries;
-                    return false;
-                }
-                int red = originalProxy.value8bit_at(x,y,z,0);
-                int green = originalProxy.value8bit_at(x,y,z,1);
-                int blue = originalProxy.value8bit_at(x,y,z,2);
-                QRgb color=qRgb(red,green,blue);
-                QImage* maskImage=0;
-                if (maskIndex==0) {
-                    // Background
-                    maskImage=overlayMipList[AnnotationSession::BACKGROUND_MIP_INDEX];
-                } else {
-                    maskImage=neuronMipList[maskIndex-1];
-                }
-                QRgb previousColor = maskImage->pixel(x,y);
-                if (z==0) {
-                    maskImage->setPixel(x,y,color);
-                } else {
-                    int previousIntensity = qRed(previousColor) + qGreen(previousColor) + qBlue(previousColor);
-                    int currentIntensity = qRed(color) + qGreen(color) + qBlue(color);
-                    if (currentIntensity > previousIntensity) {
-                        maskImage->setPixel(x,y,color);
-                    }
-                }
-            }
-        }
-        if (! volumeReader.refreshLock()) return false; // Try to reacquire lock every 25 ms
-    }
-
-    qDebug() << "AnnotationSession::populateMaskMipList() done";
     return true;
 }
 

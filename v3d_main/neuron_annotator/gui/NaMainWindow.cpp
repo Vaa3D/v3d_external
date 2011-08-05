@@ -174,8 +174,6 @@ NaMainWindow::NaMainWindow()
     // 3D gamma correction
     connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
             ui.v3dr_glwidget, SLOT(setGammaBrightness(qreal)));
-    connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
-            this, SLOT(updateThumbnailGamma(qreal)));
     connect(ui.v3dr_glwidget, SIGNAL(progressAchieved(int)),
             this, SLOT(set3DProgress(int)));
     connect(ui.v3dr_glwidget, SIGNAL(progressComplete()),
@@ -570,8 +568,12 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
 {
     annotationSession = new AnnotationSession();
     // TODO - deprecate processUpdatedVolumeData() in favor of using downstream data flow components.
-    connect(annotationSession->getVolumeData(), SIGNAL(dataChanged()),
+    connect(&annotationSession->getVolumeData(), SIGNAL(dataChanged()),
             this, SLOT(processUpdatedVolumeData()));
+    connect(&annotationSession->getGalleryMipImages(), SIGNAL(dataChanged()),
+            this, SLOT(onGalleryMipImagesChanged()));
+    connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
+            &annotationSession->getDataColorModel(), SLOT(setGamma(qreal)));
 
     // Need to construct (temporary until backend implemented) MultiColorImageStackNode from this directory
     // This code will be redone when the node/filestore is implemented.
@@ -620,6 +622,12 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     return true;
 }
 
+void NaMainWindow::onGalleryMipImagesChanged()
+{
+    updateOverlayGallery();
+    updateNeuronGallery();
+}
+
 void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataChanged() signal
 {
     // TODO -- install separate listeners for dataChanged() in the various display widgets
@@ -643,19 +651,9 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
     QFileInfo lsmFileInfo(lsmName);
     setWindowTitle(QString("%1 - V3D Neuron Annotator").arg(lsmFileInfo.fileName()));
 
-    // if (!annotationSession->loadNeuronMaskStack()) {
-    //     return false;
-    // }
     if (!annotationSession->prepareLabelIndex()) {
         return;
     }
-    if (!annotationSession->populateMipLists()) {
-        return;
-    }
-
-    createOverlayGallery();
-
-    createNeuronGallery();
 
     // ui.v3dr_glwidget->loadMy4DImage(annotationSession->getOriginalImageStackAsMy4DImage());
     if (! loadMy4DImage(annotationSession->getOriginalImageStackAsMy4DImage(),
@@ -755,36 +753,15 @@ bool NaMainWindow::loadMy4DImage(const My4DImage * img, const My4DImage * neuron
     return true;
 }
 
-// local setButtonGamma() method used to support multithreaded version of updateThumbnailGamma()
-static BrightnessCalibrator<int> buttonCalibrator;
-static GalleryButton* setButtonGamma(GalleryButton* & button) {
-    button->setBrightness(buttonCalibrator);
-    return button;
-}
-
-void NaMainWindow::updateThumbnailGamma(qreal gamma)
+void NaMainWindow::updateOverlayGallery()
 {
-    buttonCalibrator.setHdrRange(0, 255);
-    buttonCalibrator.setGamma(gamma);
-    bool bUseConcurrent = true;
-    if (bUseConcurrent) { // asynchronous update
-        QtConcurrent::map(overlayGalleryButtonList, setButtonGamma);
-        QtConcurrent::map(neuronGalleryButtonList, setButtonGamma);
-    }
-    else { // serial update
-        foreach(GalleryButton* button, overlayGalleryButtonList) {
-            button->setBrightness(buttonCalibrator);
-        }
-        foreach(GalleryButton* button, neuronGalleryButtonList) {
-            button->setBrightness(buttonCalibrator);
-        }
-    }
-}
+    GalleryMipImages::Reader mipReader(annotationSession->getGalleryMipImages()); // acquire read lock
+    if (! mipReader.hasReadLock()) return;
 
-void NaMainWindow::createOverlayGallery() {
-    qDebug() << "createOverlayGallery() start";
-    QList<QImage*> * overlayMipList = annotationSession->getOverlayMipList();
+    // qDebug() << "updateOverlayGallery() start";
+    // QList<QImage*> * overlayMipList = annotationSession->getOverlayMipList();
 
+    // Create layout, only if needed.
     QFrame* ui_maskFrame = qFindChild<QFrame*>(this, "maskFrame");
     if (! ui_maskFrame->layout()) {
         ui_maskFrame->setLayout(new QHBoxLayout());
@@ -792,52 +769,81 @@ void NaMainWindow::createOverlayGallery() {
     }
     QLayout *managementLayout = ui_maskFrame->layout();
 
-    // Delete any old contents from the layout, such as previous thumbnails
-    QLayoutItem * item;
-    while ( ( item = managementLayout->takeAt(0)) != NULL )
-    {
-        delete item->widget();
-        delete item;
+    // Create new buttons, only if needed.
+    if (overlayGalleryButtonList.size() != 2) {
+        // Delete any old contents from the layout, such as previous thumbnails
+        QLayoutItem * item;
+        while ( ( item = managementLayout->takeAt(0)) != NULL )
+        {
+            delete item->widget();
+            delete item;
+        }
+
+        GalleryButton* referenceButton = new GalleryButton(
+                *mipReader.getOverlayMip(AnnotationSession::REFERENCE_MIP_INDEX),
+                "Reference", AnnotationSession::REFERENCE_MIP_INDEX);
+        referenceButton->setChecked(false); // we do not want reference initially loaded
+        annotationSession->setOverlayStatus(AnnotationSession::REFERENCE_MIP_INDEX, false);
+        managementLayout->addWidget(referenceButton);
+        overlayGalleryButtonList.append(referenceButton);
+        referenceButton->setNa3DWidget(ui.v3dr_glwidget);
+        connect(referenceButton, SIGNAL(declareChange(int,bool)), annotationSession, SLOT(overlayUpdate(int,bool)));
+
+        GalleryButton* backgroundButton = new GalleryButton(
+                *mipReader.getOverlayMip(AnnotationSession::BACKGROUND_MIP_INDEX),
+                "Background", AnnotationSession::BACKGROUND_MIP_INDEX);
+        backgroundButton->setChecked(true); // we do want background initially loaded
+        annotationSession->setOverlayStatus(AnnotationSession::BACKGROUND_MIP_INDEX, true);
+        managementLayout->addWidget(backgroundButton);
+        overlayGalleryButtonList.append(backgroundButton);
+        backgroundButton->setNa3DWidget(ui.v3dr_glwidget);
+        connect(backgroundButton, SIGNAL(declareChange(int,bool)), annotationSession, SLOT(overlayUpdate(int,bool)));
     }
-
-    GalleryButton* referenceButton = new GalleryButton(*overlayMipList->at(AnnotationSession::REFERENCE_MIP_INDEX), "Reference", AnnotationSession::REFERENCE_MIP_INDEX);
-    referenceButton->setChecked(false); // we do not want reference initially loaded
-    annotationSession->setOverlayStatus(AnnotationSession::REFERENCE_MIP_INDEX, false);
-    managementLayout->addWidget(referenceButton);
-    overlayGalleryButtonList.append(referenceButton);
-    referenceButton->setNa3DWidget(ui.v3dr_glwidget);
-    connect(referenceButton, SIGNAL(declareChange(int,bool)), annotationSession, SLOT(overlayUpdate(int,bool)));
-
-    GalleryButton* backgroundButton = new GalleryButton(*overlayMipList->at(AnnotationSession::BACKGROUND_MIP_INDEX), "Background", AnnotationSession::BACKGROUND_MIP_INDEX);
-    backgroundButton->setChecked(true); // we do want background initially loaded
-    annotationSession->setOverlayStatus(AnnotationSession::BACKGROUND_MIP_INDEX, true);
-    managementLayout->addWidget(backgroundButton);
-    overlayGalleryButtonList.append(backgroundButton);
-    backgroundButton->setNa3DWidget(ui.v3dr_glwidget);
-    connect(backgroundButton, SIGNAL(declareChange(int,bool)), annotationSession, SLOT(overlayUpdate(int,bool)));
-
+    // Just update icons on subsequent updates
+    else {
+        for (int i = 0; i < 2; ++i) {
+            overlayGalleryButtonList[i]->setThumbnailIcon(*mipReader.getOverlayMip(i));
+            overlayGalleryButtonList[i]->update();
+        }
+    }
 }
 
-void NaMainWindow::createNeuronGallery() {
-    qDebug() << "createNeuronGallery() start";
-    QList<QImage*> * maskMipList = annotationSession->getNeuronMipList();
+void NaMainWindow::updateNeuronGallery()
+{
+    GalleryMipImages::Reader mipReader(annotationSession->getGalleryMipImages()); // acquire read lock
+    if (! mipReader.hasReadLock()) return;
+
+    // qDebug() << "updateNeuronGallery() start";
+    // QList<QImage*> * maskMipList = annotationSession->getNeuronMipList();
 
     // QFrame* ui_maskGallery = qFindChild<QFrame*>(this, "maskGallery");
     // Delete any old contents from the layout, such as previous thumbnails
-    ui.fragmentGalleryWidget->clear();
 
-    qDebug() << "Number of neuron masks = " << maskMipList->size();
-    for (int i = 0; i < maskMipList->size(); ++i) {
-        GalleryButton* button = new GalleryButton(*maskMipList->at(i), QString("Neuron %1").arg(i), i);
-        button->setNa3DWidget(ui.v3dr_glwidget);
-        neuronGalleryButtonList.append(button);
-        ui.fragmentGalleryWidget->appendFragment(button);
-        button->setChecked(true); // start as checked since full image loaded initially
-        annotationSession->setNeuronMaskStatus(i, true);
-        connect(button, SIGNAL(declareChange(int,bool)), annotationSession, SLOT(neuronMaskUpdate(int,bool)));
+    if (neuronGalleryButtonList.size() != mipReader.numberOfNeurons()) {
+        ui.fragmentGalleryWidget->clear();
+
+        // qDebug() << "Number of neuron masks = " << mipReader.numberOfNeurons();
+        for (int i = 0; i < mipReader.numberOfNeurons(); ++i) {
+            GalleryButton* button = new GalleryButton(
+                    *mipReader.getNeuronMip(i),
+                    QString("Neuron %1").arg(i), i);
+            button->setNa3DWidget(ui.v3dr_glwidget);
+            neuronGalleryButtonList.append(button);
+            ui.fragmentGalleryWidget->appendFragment(button);
+            button->setChecked(true); // start as checked since full image loaded initially
+            annotationSession->setNeuronMaskStatus(i, true);
+            connect(button, SIGNAL(declareChange(int,bool)), annotationSession, SLOT(neuronMaskUpdate(int,bool)));
+        }
+
+        // qDebug() << "createMaskGallery() end size=" << mipReader.numberOfNeurons();
     }
-
-    qDebug() << "createMaskGallery() end size=" << maskMipList->size();
+    else {
+        for (int i = 0; i < mipReader.numberOfNeurons(); ++i)
+        {
+            neuronGalleryButtonList[i]->setThumbnailIcon(*mipReader.getNeuronMip(i));
+            neuronGalleryButtonList[i]->update();
+        }
+    }
 }
 
 void NaMainWindow::on3DViewerRotationChanged(const Rotation3D& rot)
