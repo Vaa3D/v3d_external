@@ -846,7 +846,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 					{
 						child_rawimg = createMdiChild();
 						if (child_rawimg->loadFile(cc.raw_image_file_list.at(i))) {
-							statusBar()->showMessage(tr("File loaded"), 2000);
+							statusBar()->showMessage(tr("File loaded [%1]").arg(cc.raw_image_file_list.at(i)), 2000);
 							child_rawimg->show();
 							workspace->cascade();
 
@@ -871,7 +871,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 					{
 						child_maskimg = createMdiChild();
 						if (child_maskimg->loadFile(cc.labelfield_image_file_list.at(i))) {
-							statusBar()->showMessage(tr("File loaded"), 2000);
+							statusBar()->showMessage(tr("File loaded [%1]").arg(cc.labelfield_image_file_list.at(i)), 2000);
 							child_maskimg->show();
 							workspace->cascade();
 
@@ -1021,7 +1021,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 
 				XFormWidget *child = createMdiChild();
 				if (child->loadFile(cur_atlas_list[kk].imgfile)) {
-					statusBar()->showMessage(tr("File loaded"), 2000);
+					statusBar()->showMessage(tr("File loaded [%1]").arg(cur_atlas_list[kk].imgfile), 2000);
 					child->show();
 					workspace->cascade();
 
@@ -1180,7 +1180,7 @@ void MainWindow::import_GeneralImageFile()
 			if (child->importGeneralImageFile(fileName)) {
 				statusBar()->showMessage(tr("File imported"), 2000);
 				child->show();
-				workspace->cascade(); //080821
+				//workspace->cascade(); //080821 //110805. by PHC, should not need cascade anymore
 
 			    //setCurrentFile(fileName);//080930 //note that for the imported files, I don't keep the history record
 			} else {
@@ -1210,7 +1210,7 @@ void MainWindow::import_Leica()
 			if (child->importLeicaFile(fileName)) {
 				statusBar()->showMessage(tr("File imported"), 2000);
 				child->show();
-				workspace->cascade(); //080821
+				//workspace->cascade(); //080821 //110805. by PHC, should not need cascade anymore
 
 			    //setCurrentFile(fileName);//080930 //note that for the imported files, I don't keep the history record
 			} else {
@@ -1871,41 +1871,6 @@ void MainWindow::updateProcessingMenu()
 	proc_automarker_menu->addAction(procGeneral_automarker_roi);
 #endif
 
-
-/*
-    advancedProcMenu->addAction(closeAct);
-    advancedProcMenu->addAction(closeAllAct);
-    advancedProcMenu->addSeparator();
-    advancedProcMenu->addAction(tileAct);
-    advancedProcMenu->addAction(cascadeAct);
-    advancedProcMenu->addAction(arrangeAct);
-    advancedProcMenu->addSeparator();
-    advancedProcMenu->addAction(nextAct);
-    advancedProcMenu->addAction(previousAct);
-    advancedProcMenu->addAction(separator_ImgWindows_Act);
-
-    QList<QWidget *> windows = workspace->windowList();
-    separator_ImgWindows_Act->setVisible(!windows.isEmpty());
-
-    for (int i = 0; i < windows.size(); ++i) {
-        XFormWidget *child = qobject_cast<XFormWidget *>(windows.at(i));
-
-        QString text;
-        if (i < 9) {
-            text = tr("&%1 %2").arg(i + 1)
-                               .arg(child->userFriendlyCurrentFile());
-        } else {
-            text = tr("%1 %2").arg(i + 1)
-                              .arg(child->userFriendlyCurrentFile());
-        }
-        QAction *action  = windowMenu->addAction(text);
-        action->setCheckable(true);
-        action ->setChecked(child == activeMdiChild());
-        connect(action, SIGNAL(triggered()), windowMapper, SLOT(map()));
-        windowMapper->setMapping(action, child);
-    }
-	*/
-
 	//Visualization menu
 	visualizeProcMenu->addAction(proc3DViewer);
 	visualizeProcMenu->addAction(proc3DLocalRoiViewer);
@@ -2027,25 +1992,7 @@ void MainWindow::createActions()
     exitAct->setStatusTip(tr("Exit the application"));
     connect(exitAct, SIGNAL(triggered()), this, SLOT(close())); //090812 RZC
 				//qApp, SLOT(closeAllWindows()));
-/*
-    cutAct = new QAction(QIcon(":/pic/cut.png"), tr("Cu&t"), this);
-    cutAct->setShortcut(tr("Ctrl+X"));
-    cutAct->setStatusTip(tr("Cut the current selection's contents to the "
-                            "clipboard"));
-    connect(cutAct, SIGNAL(triggered()), this, SLOT(cut()));
 
-    copyAct = new QAction(QIcon(":/pic/copy.png"), tr("&Copy"), this);
-    copyAct->setShortcut(tr("Ctrl+C"));
-    copyAct->setStatusTip(tr("Copy the current selection's contents to the "
-                             "clipboard"));
-    connect(copyAct, SIGNAL(triggered()), this, SLOT(copy()));
-
-    pasteAct = new QAction(QIcon(":/pic/paste.png"), tr("&Paste"), this);
-    pasteAct->setShortcut(tr("Ctrl+V"));
-    pasteAct->setStatusTip(tr("Paste the clipboard's contents into the current "
-                              "selection"));
-    connect(pasteAct, SIGNAL(triggered()), this, SLOT(paste()));
-*/
     closeAct = new QAction(tr("Cl&ose"), this);
     closeAct->setShortcut(tr("Ctrl+F4"));
     closeAct->setStatusTip(tr("Close the active window"));
