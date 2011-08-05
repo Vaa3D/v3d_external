@@ -276,7 +276,14 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         int datatype_img1 = 0;
         unsigned char* p1dImg1 = 0;
         
-        p4DImage1.loadImage(const_cast<char *>(m_InputFileName1.toStdString().c_str())); // Mylib
+        if(QFileInfo(m_InputFileName1).suffix().toUpper().compare("LSM") == 0)
+        {
+            p4DImage1.loadImage(const_cast<char *>(m_InputFileName1.toStdString().c_str()), true); // Mylib
+        }
+        else
+        {
+            p4DImage1.loadImage(const_cast<char *>(m_InputFileName1.toStdString().c_str()), false); // libtiff
+        }
         
         p1dImg1 = p4DImage1.getRawData();
         
@@ -293,7 +300,14 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         int datatype_img2 = 0;
         unsigned char* p1dImg2 = 0;
         
-        p4DImage2.loadImage(const_cast<char *>(m_InputFileName2.toStdString().c_str())); // Mylib
+        if(QFileInfo(m_InputFileName2).suffix().toUpper().compare("LSM") == 0)
+        {
+            p4DImage2.loadImage(const_cast<char *>(m_InputFileName2.toStdString().c_str()), true); // Mylib
+        }
+        else
+        {
+            p4DImage2.loadImage(const_cast<char *>(m_InputFileName2.toStdString().c_str()), false); // libtiff
+        }
         
         p1dImg2 = p4DImage2.getRawData();
         
