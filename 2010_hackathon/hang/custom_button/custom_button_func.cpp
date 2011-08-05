@@ -27,7 +27,6 @@ int custom_button(V3DPluginCallback2 &callback, QWidget *parent)
 	}
 	else
 	{
-		qDebug()<<"here";
 		QString barTitle = bar_num > 1 ? QObject::tr("Custom Toolbar - %1").arg(bar_num) : QObject::tr("Custom Toolbar");
 
 		CustomButtonSetting* cbs = new CustomButtonSetting(barTitle);

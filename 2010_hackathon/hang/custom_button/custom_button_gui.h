@@ -9,6 +9,7 @@ class EmptyClass{};
 typedef void (EmptyClass::*VoidFunc)();
 typedef void (TriviewControl::*TriviewFunc)();
 typedef void (View3DControl::*View3DFunc)();
+typedef void (V3DPluginCallback2::*Callback2Func)(v3dhandle);
 typedef void (V3DPluginInterface2_1::*PluginMenuFunc)(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent);
 
 void getAllFiles(QString dirname, QStringList & fileList);
@@ -17,13 +18,19 @@ QString v3d_getInterfaceName(QObject *plugin);
 QStringList v3d_getInterfaceMenuList(QObject *plugin);
 QStringList v3d_getInterfaceFuncList(QObject *plugin);
 
+QStringList getTriViewButtonStringList();
+QList<VoidFunc> getTriViewButtonFuncList();
+
+QStringList getView3dButtonStringList();
+QList<VoidFunc> getView3dButtonFuncList();
+
 class CustomButton : public QObject
 {
 	Q_OBJECT
 	public:
 		QAction * button;
 
-		QObject * slot_class;
+		void * slot_class;
 		VoidFunc slot_func;
 		int bt;
 
@@ -31,8 +38,7 @@ class CustomButton : public QObject
 		V3DPluginCallback2 * callback;
 		QWidget * parent;
 		QString plugin_path;
-
-		int buttonIndex;
+		QString buttonName;
 
 	public:
 		CustomButton(QIcon * icon, const QString &text, QObject* parent)
@@ -64,6 +70,13 @@ class CustomButtonSetting
 		QToolBar * toolBar;
 		QString toolBarTitle;
 		Qt::ToolBarArea position;
+
+		QStringList preLoadTriViewButtonNameList;
+		QStringList preLoadTriViewButtonAliasList;
+
+		QStringList preLoadView3dButtonNameList;
+		QStringList preLoadView3dButtonAliasList;
+
 		QStringList preLoadPluginPathList;
 		QStringList preLoadPluginLabelList;
 
@@ -107,7 +120,7 @@ class CustomButtonSelectWidget : public QWidget
 
 		public slots:
 			void setToolBarButton(bool state);
-			void saveToolBarState();
+		void saveToolBarState();
 		void openMe();
 	protected:
 		void closeEvent(QCloseEvent *event);
@@ -118,11 +131,12 @@ class CustomButtonSelectWidget : public QWidget
 
 		QTabWidget * tabWidget;
 		QWidget * pageTriView;
-		QWidget * page3dView;
+		QWidget * pageView3d;
 		QWidget * pagePlugin;
 
 		QHBoxLayout * mainLayout;
-		QGridLayout * pageTriViewLayout;
+		QVBoxLayout * pageTriViewLayout;
+		QVBoxLayout * pageView3dLayout;
 		QVBoxLayout * pagePluginLayout;
 
 		QTreeWidget * triViewTreeWidget;
