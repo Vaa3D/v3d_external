@@ -26,12 +26,12 @@ public:
 				emit win_closed();
 				break;
 			}
-			bool illegal = false;
+			bool is_legal = false;
 			for(int i = 0; i < win_list.size(); i++)
 			{
-				if(curwin == win_list[i]) {illegal = true; break;}
+				if(curwin == win_list[i]) {is_legal = true; break;}
 			}
-			if(!illegal)
+			if(!is_legal)
 			{
 				emit win_closed();
 				break;
