@@ -72,6 +72,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  * 20100520: try to revise ZZBIG to allow big file, also add fstat check for windows large file size , instead of using fseek and ftell
  * 20100816: add mylib interface, by PHC.
  * 20110708: fix a memory leak (non-crashing) of redudnant memory allocation of a sz variable
+ * 20110804: fix a new Mac fread issue to read more than 2G data in one call (I don't believe I saw this on the old Leopard 64 bit Mac Pro desktop, as we (both Zongcai and I should have) 
+ *           benched tested the >3G v3draw file read. This problem is not found for Linux 64bit. Is that a new Mac std libc bug?? 
+ *           Anyway, I have now used a 2G buffer to read >2G data. I have not changed the saveStack2Raw functions. It seems they work in the Matlab mex functions. Thus I assumed
+ *           they don't need to change. Need tests anyway.
  */
 
 
@@ -270,29 +274,46 @@ int loadRaw2Stack_2byte(char * filename, unsigned char * & img, V3DLONG * & sz, 
 		return berror;
 	}
 
+	
 	if (img) {delete []img; img=0;}
-	img = new unsigned char [totalUnit*unitSize];
-	if (!img)
+	V3DLONG totalBytes = V3DLONG(unitSize)*V3DLONG(totalUnit);
+	try 
 	{
-		printf("Fail to allocate memory.\n");
+		img = new unsigned char [totalBytes];
+	}
+	catch (...)
+	{
+		fprintf(stderr, "Fail to allocate memory in loadRaw2Stack().\n");
 		if (keyread) {delete []keyread; keyread=0;}
 		if (sz) {delete []sz; sz=0;}
 		berror = 1;
 		return berror;
 	}
-
-	nread = fread(img, unitSize, totalUnit, fid);
-	if (nread!=totalUnit)
+	
+	V3DLONG remainingBytes = totalBytes;
+	V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2);
+	V3DLONG cntBuf = 0;
+	while (remainingBytes>0)
 	{
-		printf("Something wrong in file reading. The program reads [%ld data points] but the file says there should be [%ld data points].\n", nread, totalUnit);
-		if (keyread) {delete []keyread; keyread=0;}
-		if (sz) {delete []sz; sz=0;}
-		if (img) {delete []img; img=0;}
-		berror = 1;
-		return berror;
+		V3DLONG curReadBytes = (remainingBytes<nBytes2G) ? remainingBytes : nBytes2G;
+		V3DLONG curReadUnits = curReadBytes/unitSize;
+		nread = fread(img+cntBuf*nBytes2G, unitSize, curReadUnits, fid);
+		if (nread!=curReadUnits)
+		{
+			printf("Something wrong in file reading. The program reads [%ld data points] but the file says there should be [%ld data points].\n", nread, totalUnit);
+			if (keyread) {delete []keyread; keyread=0;}
+			if (sz) {delete []sz; sz=0;}
+			if (img) {delete []img; img=0;}
+			berror = 1;
+			return berror;
+		}
+		
+		remainingBytes -= nBytes2G;
+		cntBuf++;
 	}
-
-	/* swap the data bytes if necessary */
+	
+	
+	// swap the data bytes if necessary 
 
 	if (b_swap==1)
 	{
@@ -472,30 +493,47 @@ int loadRaw2Stack_2byte(char * filename, unsigned char * & img, V3DLONG * & sz, 
 	}
 
 	if (img) {delete []img; img=0;}
-	img = new unsigned char [channelUnit*unitSize];
-	if (!img)
+	V3DLONG totalBytes = V3DLONG(unitSize)*V3DLONG(channelUnit);
+	try 
 	{
-		printf("Fail to allocate memory.\n");
+		img = new unsigned char [totalBytes];
+	}
+	catch (...)
+	{
+		fprintf(stderr, "Fail to allocate memory in loadRaw2Stack_2byte().\n");
 		if (keyread) {delete []keyread; keyread=0;}
 		if (sz) {delete []sz; sz=0;}
 		berror = 1;
 		return berror;
 	}
-
+	
 	if (chan_id_to_load>0) //other no need to call the function
 		fseek(fid, channelUnit*chan_id_to_load*unitSize, SEEK_CUR);
-	nread = fread(img, unitSize, channelUnit, fid);
-	if (nread!=channelUnit)
+
+	V3DLONG remainingBytes = totalBytes;
+	V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2);
+	V3DLONG cntBuf = 0;
+	while (remainingBytes>0)
 	{
-		printf("Something wrong in file reading. The program reads [%ld data points] but the file says there should be [%ld data points].\n", nread, channelUnit);
-		if (keyread) {delete []keyread; keyread=0;}
-		if (sz) {delete []sz; sz=0;}
-		if (img) {delete []img; img=0;}
-		berror = 1;
-		return berror;
+		V3DLONG curReadBytes = (remainingBytes<nBytes2G) ? remainingBytes : nBytes2G;
+		V3DLONG curReadUnits = curReadBytes/unitSize;
+		nread = fread(img+cntBuf*nBytes2G, unitSize, curReadUnits, fid);
+		if (nread!=curReadUnits)
+		{
+			printf("Something wrong in file reading. The program reads [%ld data points] but the file says there should be [%ld data points].\n", nread, totalUnit);
+			if (keyread) {delete []keyread; keyread=0;}
+			if (sz) {delete []sz; sz=0;}
+			if (img) {delete []img; img=0;}
+			berror = 1;
+			return berror;
+		}
+		
+		remainingBytes -= nBytes2G;
+		cntBuf++;
 	}
 
-	/* swap the data bytes if necessary */
+	
+	// swap the data bytes if necessary 
 
 	if (b_swap==1)
 	{
@@ -857,25 +895,40 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 #endif
 
 	if (img) {delete []img; img=0;}
-	img = new unsigned char [totalUnit*unitSize];
-	if (!img)
+	V3DLONG totalBytes = V3DLONG(unitSize)*V3DLONG(totalUnit);
+	try 
 	{
-		printf("Fail to allocate memory.\n");
+		img = new unsigned char [totalBytes];
+	}
+	catch (...)
+	{
+		fprintf(stderr, "Fail to allocate memory in loadRaw2Stack().\n");
 		if (keyread) {delete []keyread; keyread=0;}
 		if (sz) {delete []sz; sz=0;}
 		berror = 1;
 		return berror;
 	}
 
-	nread = fread(img, unitSize, totalUnit, fid);
-	if (nread!=totalUnit)
+	V3DLONG remainingBytes = totalBytes;
+	V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2);
+	V3DLONG cntBuf = 0;
+	while (remainingBytes>0)
 	{
-		printf("Something wrong in file reading. The program reads [%ld data points] but the file says there should be [%ld data points].\n", nread, totalUnit);
-		if (keyread) {delete []keyread; keyread=0;}
-		if (sz) {delete []sz; sz=0;}
-		if (img) {delete []img; img=0;}
-		berror = 1;
-		return berror;
+		V3DLONG curReadBytes = (remainingBytes<nBytes2G) ? remainingBytes : nBytes2G;
+		V3DLONG curReadUnits = curReadBytes/unitSize;
+		nread = fread(img+cntBuf*nBytes2G, unitSize, curReadUnits, fid);
+		if (nread!=curReadUnits)
+		{
+			printf("Something wrong in file reading. The program reads [%ld data points] but the file says there should be [%ld data points].\n", nread, totalUnit);
+			if (keyread) {delete []keyread; keyread=0;}
+			if (sz) {delete []sz; sz=0;}
+			if (img) {delete []img; img=0;}
+			berror = 1;
+			return berror;
+		}
+		
+		remainingBytes -= nBytes2G;
+		cntBuf++;
 	}
 
 	// swap the data bytes if necessary 
@@ -1031,8 +1084,6 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 
 	V3DLONG unitSize = datatype; /* temporarily I use the same number, which indicates the number of bytes for each data point (pixel). This can be extended in the future. */
 
-	//short int mysz[4];
-	//V3DLONG mysz[4];//060803
 	BIT32_UNIT mysz[4];//060806
 	mysz[0]=mysz[1]=mysz[2]=mysz[3]=0;
 	int tmpn=fread(mysz, 4, 4, fid); /* because I have already checked the file size to be bigger than the header, no need to check the number of actual bytes read. */
@@ -1098,30 +1149,46 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 	}
 
 	if (img) {delete []img; img=0;}
-	img = new unsigned char [channelUnit*unitSize];
-	if (!img)
+	V3DLONG totalBytes = V3DLONG(unitSize)*V3DLONG(channelUnit);
+	try 
 	{
-		printf("Fail to allocate memory.\n");
+		img = new unsigned char [totalBytes];
+	}
+	catch (...)
+	{
+		fprintf(stderr, "Fail to allocate memory in loadRaw2Stack_2byte().\n");
 		if (keyread) {delete []keyread; keyread=0;}
 		if (sz) {delete []sz; sz=0;}
 		berror = 1;
 		return berror;
 	}
-
+	
 	if (chan_id_to_load>0) //other no need to call the function
 		fseek(fid, channelUnit*chan_id_to_load*unitSize, SEEK_CUR);
-	nread = fread(img, unitSize, channelUnit, fid);
-	if (nread!=channelUnit)
+	
+	V3DLONG remainingBytes = totalBytes;
+	V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2);
+	V3DLONG cntBuf = 0;
+	while (remainingBytes>0)
 	{
-		printf("Something wrong in file reading. The program reads [%ld data points] but the file says there should be [%ld data points].\n", nread, channelUnit);
-		if (keyread) {delete []keyread; keyread=0;}
-		if (sz) {delete []sz; sz=0;}
-		if (img) {delete []img; img=0;}
-		berror = 1;
-		return berror;
+		V3DLONG curReadBytes = (remainingBytes<nBytes2G) ? remainingBytes : nBytes2G;
+		V3DLONG curReadUnits = curReadBytes/unitSize;
+		nread = fread(img+cntBuf*nBytes2G, unitSize, curReadUnits, fid);
+		if (nread!=curReadUnits)
+		{
+			printf("Something wrong in file reading. The program reads [%ld data points] but the file says there should be [%ld data points].\n", nread, totalUnit);
+			if (keyread) {delete []keyread; keyread=0;}
+			if (sz) {delete []sz; sz=0;}
+			if (img) {delete []img; img=0;}
+			berror = 1;
+			return berror;
+		}
+		
+		remainingBytes -= nBytes2G;
+		cntBuf++;
 	}
-
-	/* swap the data bytes if necessary */
+	
+	// swap the data bytes if necessary 
 
 	if (b_swap==1)
 	{
