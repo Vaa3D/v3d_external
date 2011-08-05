@@ -753,7 +753,8 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 		return berror;
 	}
 
-	char endianCodeMachine = checkMachineEndian();
+	char endianCodeMachine;
+	endianCodeMachine = checkMachineEndian();
 	if (endianCodeMachine!='B' && endianCodeMachine!='L')
 	{
 		printf("This program only supports big- or little- endian but not other format. Check your data endian.\n");
@@ -795,13 +796,11 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 			return berror;
 	}
 
-	V3DLONG unitSize = datatype; /* temporarily I use the same number, which indicates the number of bytes for each data point (pixel). This can be extended in the future. */
+	V3DLONG unitSize = datatype; // temporarily I use the same number, which indicates the number of bytes for each data point (pixel). This can be extended in the future. 
 
-	//short int mysz[4];
-	//V3DLONG mysz[4];//060803
-	BIT32_UNIT mysz[4];//060806
+	BIT32_UNIT mysz[4];
 	mysz[0]=mysz[1]=mysz[2]=mysz[3]=0;
-	int tmpn=fread(mysz, 4, 4, fid); /* because I have already checked the file size to be bigger than the header, no need to check the number of actual bytes read. */
+	int tmpn=fread(mysz, 4, 4, fid); // because I have already checked the file size to be bigger than the header, no need to check the number of actual bytes read. 
 	if (tmpn!=4)
 	{
 		printf("This program only reads [%d] units.\n", tmpn);
@@ -822,7 +821,7 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 	}
 
 	if (sz) {delete []sz; sz=0;}
-	sz = new V3DLONG [4]; /* reallocate the memory if the input parameter is non-null. Note that this requests the input is also an NULL point, the same to img. */
+	sz = new V3DLONG [4]; // reallocate the memory if the input parameter is non-null. Note that this requests the input is also an NULL point, the same to img. 
 	if (!sz)
 	{
 		printf("Fail to allocate memory.\n");
@@ -879,7 +878,7 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 		return berror;
 	}
 
-	/* swap the data bytes if necessary */
+	// swap the data bytes if necessary 
 
 	if (b_swap==1)
 	{
@@ -900,12 +899,11 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 	}
 
 
-	/* clean and return */
+	// clean and return 
 
 	if (keyread) {delete [] keyread; keyread = 0;}
 	fclose(fid); //bug fix on 060412
 
-//
 	//a debug check of the min max value
 	double minvv=10000, maxvv=-1;
 	for (V3DLONG myii=0; myii<sz[0]*sz[1]*sz[2];myii++)
@@ -913,9 +911,7 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 		if (minvv>img[myii]) minvv=img[myii];
 		else if (maxvv<img[myii]) maxvv=img[myii];
 	}
-	printf("**************** all: minvv=%5.3f maxvv=%5.3f\n", minvv, maxvv);
-	
-	
+	printf("*** for loadRaw2Stack() all readin bytes: minvv=%5.3f maxvv=%5.3f\n", minvv, maxvv);	
 	
 	return berror;
 }
