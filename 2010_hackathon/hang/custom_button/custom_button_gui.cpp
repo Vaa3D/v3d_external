@@ -1,7 +1,12 @@
 #include <iostream>
+#include <fstream>
 #include "custom_button_gui.h"
 
 using namespace std;
+
+static QString pluginRootPath = QObject::tr("/Users/xiaoh10/Applications/v3d/plugins");
+static QString settingFilePath = QObject::tr("/Users/xiaoh10/.v3d_toolbox_layout");
+static QList<CustomButtonSetting*> settingList;
 
 void getAllFiles(QString dirname, QStringList & fileList)
 {
@@ -104,15 +109,20 @@ QStringList v3d_getInterfaceFuncList(QObject *plugin)
 }
 
 
-CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback, QWidget * parent, QToolBar * _toolBar): QWidget(parent)
+CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback, QWidget * parent, CustomButtonSetting* _cbs): QWidget(parent)
 {
-	toolBar = _toolBar;
-	if(toolBar->parent() == 0)
+	if(!_cbs) new CustomButtonSetting();
+	cbs = _cbs;
+
+	toolBar = cbs->toolBar;
+
+	if(0 && toolBar->parent() == 0)
 	{
 		QWidget * w = QApplication::activeWindow();
 		QMainWindow * mw = qobject_cast<QMainWindow*>(w);
-		if(mw) mw->addToolBar(Qt::LeftToolBarArea, toolBar);
+		if(mw) mw->addToolBar(cbs->position, toolBar);
 	}
+	toolBar->show();
 
 	toolButtonIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirHomeIcon));
 	toolBar->addAction(toolButtonIcon, tr("Add custom button"),this, SLOT(openMe()));
@@ -135,16 +145,12 @@ CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback,
 
 	pageTriView->setLayout(pageTriViewLayout);
 
-	QString pluginRoot = tr("/Users/xiaoh10/Applications/v3d/plugins");
 	QStringList fileList;
-	//QList<QObject*> objectList;
 
-	getAllFiles(pluginRoot, fileList);
-	//getObjectList(fileList, objectList);
+	getAllFiles(pluginRootPath, fileList);
 
 	pluginTreeWidget = new QTreeWidget();
 	pluginTreeWidget->setColumnCount(2);
-	//pluginTreeWidget->header()->hide();
 
 	QStringList headerStringList = QStringList() <<tr("Plugin Name")<<tr("Set Button Name");
 	QTreeWidgetItem * headerItem = new QTreeWidgetItem(headerStringList);
@@ -152,10 +158,8 @@ CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback,
 
 	pagePluginLayout = new QVBoxLayout();
 
-	int plugin_num = fileList.size();
-	for(int i = 0; i < plugin_num; i++)
+	foreach(QString file, fileList)
 	{
-		QString file = fileList.at(i);
 		QPluginLoader* loader = new QPluginLoader(file);
 		pluginLoaderList.push_back(loader);
 
@@ -164,7 +168,8 @@ CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback,
 		if(plugin)
 		{
 			QTreeWidgetItem *pluginItem = new QTreeWidgetItem(pluginTreeWidget);
-			pluginItem->setText(0, file.replace(0,pluginRoot.size(),tr("")));
+			QString pluginPath = file;
+			pluginItem->setText(0, pluginPath.replace(0,pluginRootPath.size(),tr("")));
 			pluginItem->setIcon(0, pluginIcon);
 
 			QStringList menulist = v3d_getInterfaceMenuList(plugin);
@@ -188,12 +193,19 @@ CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback,
 				qb->menu_name = menu;
 				qb->callback = &callback;
 				qb->parent = parent;
+				qb->plugin_path = file;
 
 				pluginCustomButtonList.push_back(qb);
 
 				connect(checkbox, SIGNAL(clicked(bool)), editor, SLOT(setEnabled(bool)));
 				connect(checkbox, SIGNAL(clicked(bool)), this, SLOT(setToolBarButton(bool)));
 				connect(editor, SIGNAL(textChanged(const QString &)), qb, SLOT(setButtonText(const QString &)));
+				if(cbs->preLoadPluginPathList.contains(file))
+				{
+					int i = cbs->preLoadPluginPathList.indexOf(file);
+					checkbox->setChecked(true);
+					editor->setText(cbs->preLoadPluginLabelList.at(i));
+				}
 			}
 		}
 		//loader->unload();
@@ -217,55 +229,59 @@ CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback,
 
 CustomButtonSelectWidget::~CustomButtonSelectWidget()
 {
-	if(pluginLoaderList.empty()) return;
-	foreach(QPluginLoader * loader, pluginLoaderList)
+	if(!pluginLoaderList.empty())
 	{
-		loader->unload();
+		foreach(QPluginLoader * loader, pluginLoaderList)
+		{
+			loader->unload();
+		}
 	}
+
+	delete cbs;
 }
 
-int CustomButtonSelectWidget::isIn(QCheckBox * checkbox, QList<QCheckBox *> & checkboxList)
-	{
-		int i = 0;
-		foreach(QCheckBox* cb, checkboxList)
-		{
-			if(checkbox == cb) return i;
-			i++;
-		}
-		return -1;
-	}
-
-QAction * CustomButtonSelectWidget::getButton(QCheckBox* checkbox)
+CustomButton * CustomButtonSelectWidget::getButton(QCheckBox* checkbox)
 {
 	int i = -1;
-	if((i = isIn(checkbox, triViewCheckboxList))!= -1)
+	if((i = triViewCheckboxList.indexOf(checkbox))!= -1)
 	{
 	}
-	else if((i = isIn(checkbox,view3dCheckboxList))!= -1)
+	else if((i = view3dCheckboxList.indexOf(checkbox))!= -1)
 	{
 	}
-	else if((i = isIn(checkbox,pluginCheckboxList))!= -1)
+	else if((i = pluginCheckboxList.indexOf(checkbox))!= -1)
 	{
-		return pluginCustomButtonList.at(i)->button;
+		return pluginCustomButtonList.at(i);
 	}
+	return 0;
+}
+
+CustomButton * CustomButtonSelectWidget::getButton(QAction* action)
+{
+	int i = -1;
 	return 0;
 }
 
 void CustomButtonSelectWidget::setToolBarButton(bool state)
 {
 	QCheckBox * checkbox = dynamic_cast<QCheckBox*>(sender());
-	QAction * button = getButton(checkbox);
-	if(state && !button->isVisible())
+	CustomButton* cb = getButton(checkbox);
+	if(cb==0) QMessageBox::information(0,"","0");
+	if(state && !cb->button->isVisible())
 	{
-		toolBar->addAction(button);
-		//toolBar->resize(toolBar->sizeHint());
+		cb->button->setVisible(true);
+		toolBar->addAction(cb->button);
+		cbs->activePluginButtonList.push_back(cb);
 	}
-	button->setVisible(state);
+	else if(!state && cb->button->isVisible()) 
+	{
+		cb->button->setVisible(false);
+		int i = -1;
+		if((i = cbs->activePluginButtonList.indexOf(cb)) != -1)
+			cbs->activePluginButtonList.removeAt(i);
+	}
+	saveToolBarSettings();
 }
-
-void CustomButtonSelectWidget::loadSetting(){}
-
-void CustomButtonSelectWidget::saveSetting(){}
 
 void CustomButtonSelectWidget::openMe()
 {
@@ -282,7 +298,6 @@ void CustomButtonSelectWidget::closeEvent(QCloseEvent *event)
 
 bool CustomButton::run()
 {
-	cout<<"go to run"<<endl;
 	if(slot_class==0) return false;
 	if(bt == 0) // Triview
 	{
@@ -327,4 +342,94 @@ bool CustomButton::run()
 
 		return true;
 	}
+}
+
+bool saveToolBarSettings() //QList<CustomButtonSetting*> &settingList;
+{
+	ofstream ofs(settingFilePath.toStdString().c_str());
+	if(ofs.fail())
+	{
+		qDebug()<<"open setting file error!";
+		ofs.close();
+		return false;
+	}
+
+	cout<<"list size : "<<settingList.size()<<endl;
+	foreach(CustomButtonSetting* cbs, settingList)
+	{
+		ofs<<"ToolBar"<<endl;
+		ofs<<"\t"<<cbs->toolBarTitle.toStdString()<<endl;
+		ofs<<"\t"<<(int)(cbs->position)<<endl;
+		foreach(CustomButton* cb, cbs->activeTriViewButtonList)
+		{
+		}
+		foreach(CustomButton* cb, cbs->activeView3dButtonList)
+		{
+		}
+		foreach(CustomButton* cb, cbs->activePluginButtonList)
+		{
+			ofs<<"PluginButton"<<endl;
+			ofs<<"\t"<<cb->plugin_path.toStdString()<<endl;
+			ofs<<"\t"<<cb->button->text().toStdString()<<endl;
+		}
+	}
+	ofs.close();
+	return true;
+}
+
+QList<CustomButtonSetting*> loadToolBarSettings()
+{
+	//QList<CustomButtonSetting*> settingList;
+	settingList.clear();
+	ifstream ifs(settingFilePath.toStdString().c_str());
+	if(ifs.fail())
+	{
+		qDebug()<<"load seeting file error!"<<endl;
+		ifs.close();
+		return settingList;
+	}
+	CustomButtonSetting * cbs = 0;
+	while(ifs.good())
+	{
+		string str;
+		ifs>>str;
+		if(str == "ToolBar")
+		{
+			char title[1000]; ifs.ignore(1000, '\t'); ifs.getline(title, 1000);
+			int position; ifs.ignore(1000,'\t');ifs >> position;
+			cout<<"title = \""<<title<<"\""<<endl;
+			cout<<"position = "<<position<<endl;
+
+			cbs = new CustomButtonSetting(QString(title));
+			cbs->position = (Qt::ToolBarArea)position;
+			settingList.push_back(cbs);
+		}
+		else if(str == "TriViewButton")
+		{
+		}
+		else if(str == "View3dButton")
+		{
+		}
+		else if(str == "PluginButton")
+		{
+			char path[1000]; ifs.ignore(1000,'\t'); ifs.getline(path, 1000);
+			char label[1000]; ifs.ignore(1000,'\t'); ifs.getline(label,1000);
+			cout<<"path = \""<<path<<"\""<<endl;
+			cout<<"label = \""<<label<<"\""<<endl;
+			if(cbs)
+			{
+				cbs->preLoadPluginPathList.push_back(QString(path).trimmed());
+				cbs->preLoadPluginLabelList.push_back(QString(label).trimmed());
+			}
+		}
+	}
+	return settingList;
+}
+QList<CustomButtonSetting*>& getToolBarSettingList()
+{
+	return settingList;
+}
+void setToolBarSettingList(QList<CustomButtonSetting*> & _settingList)
+{
+	settingList = _settingList;
 }

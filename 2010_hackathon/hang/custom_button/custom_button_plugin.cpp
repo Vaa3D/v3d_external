@@ -25,7 +25,7 @@ void CustomButtonPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &ca
 	}
 	else
 	{
-		v3d_msg(tr("This plugin is used to define the toolbox by yourself. "
+		v3d_msg(tr("This plugin is used to define the toolbar by yourself. "
 			"Developed by Hang Xiao, 2011-08-04"));
 	}
 }

@@ -11,19 +11,38 @@
 const QString title = QObject::tr("Quick Button Plugin");
 
 static int bar_num = 1;
+static bool isFirstLoading = true;
 int custom_button(V3DPluginCallback2 &callback, QWidget *parent)
 {
+	if(isFirstLoading)
+	{
+		isFirstLoading = false;
+		loadToolBarSettings();
+	}
+	
+	QList<CustomButtonSetting*> & settingList = getToolBarSettingList();
+	if(!settingList.empty())
+	{
+		bar_num = settingList.size() + 1;
 
-	/* Method 1 */
-	//CustomButtonToolBar* toolBar = new CustomButtonToolBar(callback, parent);
-	//toolBar->show();
+		foreach(CustomButtonSetting* cbs, settingList)
+		{
+			CustomButtonSelectWidget * selectWidget = new CustomButtonSelectWidget(callback, parent, cbs);
+		}
+		return 1;
+	}
+	else
+	{
+		QString barTitle = bar_num > 1 ? QObject::tr("Custom Toolbar - %1").arg(bar_num) : QObject::tr("Custom Toolbar");
 
-	/* Method 2 */
-	QString title = bar_num > 1 ? QObject::tr("Custom Buttons - %1").arg(bar_num) : QObject::tr("Custom Buttons");
-	bar_num++;
-	QToolBar* toolBar = new QToolBar(title,parent);
-	CustomButtonSelectWidget * selectWidget = new CustomButtonSelectWidget(callback, parent, toolBar);
-	return 1;
+		QToolBar* toolBar = new QToolBar(barTitle, parent);
+		CustomButtonSetting* cbs = new CustomButtonSetting(toolBar);
+
+		CustomButtonSelectWidget * selectWidget = new CustomButtonSelectWidget(callback, parent, cbs);
+		settingList.push_back(cbs);
+
+		bar_num++;
+		return 1;
+	}
 }
-
 

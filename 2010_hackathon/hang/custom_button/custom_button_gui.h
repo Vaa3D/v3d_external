@@ -20,55 +20,90 @@ QStringList v3d_getInterfaceFuncList(QObject *plugin);
 class CustomButton : public QObject
 {
 	Q_OBJECT
-public:
-	QAction * button;
-	QObject * slot_class;
-	VoidFunc slot_func;
-	int bt;
+	public:
+		QAction * button;
 
-	QString menu_name;
-	V3DPluginCallback2 * callback;
-	QWidget * parent;
+		QObject * slot_class;
+		VoidFunc slot_func;
+		int bt;
 
-public:
-	CustomButton(QIcon * icon, const QString &text, QObject* parent)
-	{
-		if(!icon) button = new QAction(text, parent);
-		else button = new QAction(*icon, text, parent);
-		slot_class = 0;
-		connect(button, SIGNAL(triggered(bool)), this, SLOT(run()));
-	}
-	~CustomButton()
-	{
-		delete button;
-		button = 0;
-		slot_class = 0;
-	}
+		QString menu_name;
+		V3DPluginCallback2 * callback;
+		QWidget * parent;
+		QString plugin_path;
+		// triview && view3d button
+		int buttonIndex;
 
-public slots: 
-	void setButtonText(const QString & text)
-	{
-		if(button && button->isVisible()) button->setText(text);
-	}
+	public:
+		CustomButton(QIcon * icon, const QString &text, QObject* parent)
+		{
+			if(!icon) button = new QAction(text, parent);
+			else button = new QAction(*icon, text, parent);
+			slot_class = 0;
+			connect(button, SIGNAL(triggered(bool)), this, SLOT(run()));
+		}
+		~CustomButton()
+		{
+			delete button;
+			button = 0;
+			slot_class = 0;
+		}
 
-	bool run();
+		public slots: 
+			void setButtonText(const QString & text)
+			{
+				if(button && button->isVisible()) button->setText(text);
+			}
+
+		bool run();
 };
+
+class CustomButtonSetting
+{
+	public:
+		QToolBar * toolBar;
+		QString toolBarTitle;
+		Qt::ToolBarArea position;
+		QStringList preLoadPluginPathList;
+		QStringList preLoadPluginLabelList;
+
+		QList<CustomButton*> activeTriViewButtonList;
+		QList<CustomButton*> activeView3dButtonList;
+		QList<CustomButton*> activePluginButtonList;
+	public:
+		CustomButtonSetting(QString title = "Custom Toolbar")
+		{
+			toolBarTitle = title;
+			toolBar = new QToolBar(toolBarTitle);
+			position = Qt::LeftToolBarArea;
+		}
+		CustomButtonSetting(QToolBar* _toolBar)
+		{
+			toolBar = _toolBar;
+			toolBarTitle = toolBar->windowTitle();
+			position = Qt::LeftToolBarArea;
+		}
+		~CustomButtonSetting()
+		{
+		}
+};
+
+QList<CustomButtonSetting*> loadToolBarSettings();
+bool saveToolBarSettings();
+QList<CustomButtonSetting*>& getToolBarSettingList();
+void setToolBarSettingList(QList<CustomButtonSetting*> & _settingList);
 
 class CustomButtonSelectWidget : public QWidget
 {
 	Q_OBJECT
 
 	public:
-		CustomButtonSelectWidget(V3DPluginCallback2 &callback, QWidget * parent, QToolBar * _toolBar);
+		CustomButtonSelectWidget(V3DPluginCallback2 &callback, QWidget * parent, CustomButtonSetting * _cbs);
 
 		~CustomButtonSelectWidget();
 
-		int isIn(QCheckBox * checkbox, QList<QCheckBox *> & checkboxList);
-
-		QAction * getButton(QCheckBox* checkbox);
-
-		void loadSetting();
-		void saveSetting();
+		CustomButton * getButton(QCheckBox* checkbox);
+		CustomButton * getButton(QAction* action);
 
 		public slots:
 			void setToolBarButton(bool state);
@@ -77,6 +112,7 @@ class CustomButtonSelectWidget : public QWidget
 		void closeEvent(QCloseEvent *event);
 
 	public:
+		CustomButtonSetting* cbs;
 		QToolBar * toolBar;
 
 		QTabWidget * tabWidget;
