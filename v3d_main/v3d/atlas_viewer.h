@@ -63,6 +63,7 @@ public:
 	void IncRef(XFormWidget* w);
 	void DecRef(XFormWidget* w);
 	void setCurTab(int i) {if(tabOptions) tabOptions->setCurrentIndex(i);} // 090504 RZC
+	ChannelTabWidget* getChannelTabWidget();
 
 protected:
 	bool bCanUndo, bMod;
@@ -128,7 +129,7 @@ protected:
 	void begin_batch() {in_batch_stack.push_back(true);}
 	void end_batch()   {in_batch_stack.pop_back();}
 	void updatedContent(QTableWidget* t);
-	QTableWidget* currentTableWidget();//QWidget* );
+	QTableWidget* currentTableWidget(QWidget** pp_page=0);
 
 	void createMenuOfColor();
 	QMenu menuColor;

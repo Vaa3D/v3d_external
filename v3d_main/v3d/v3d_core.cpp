@@ -4007,9 +4007,8 @@ void XFormWidget::updateDataRelatedGUI()
 		zoomWholeViewButton->setText(QString("Tri-view zoom=%1. Click to set.").arg(disp_zoom));
 
 
-//		// color channel options  //110723 RZC, moved out to prevent being called by XFormWidget::triview_setzoom
-//		if (! b_use_dispzoom) //110723
-//			setColorGUI(); //110721 RZC
+		// update color channel options
+		setColorGUI(); //110721 RZC
 
 		//landmarkLabelDispCheckBox->setEnabled(true);
 
@@ -4238,7 +4237,6 @@ bool XFormWidget::loadData()
 
 	// update the interface
 
-	setColorGUI(); //110723 RZC
 	updateDataRelatedGUI();
 
 	reset(); //090718. PHC. force to update once, since sometimes the 16bit image does not display correctly (why all black but once click reset button everything correct?)
@@ -4390,7 +4388,6 @@ bool XFormWidget::setImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG nsz
 
 
 	////////////////////////////
-	setColorGUI(); //110723 RZC //110727 RZC, must be here after imgData is complete
     updateDataRelatedGUI();
     ////////////////////////////
 
@@ -5026,9 +5023,13 @@ void XFormWidget::syncChannelTabWidgets(ChannelTabWidget* sender) //110803 RZC
 	{
 		channelTabXView->syncSharedData(sender->getChannelSharedData());
 	}
-	if (channelTabGlass && channelTabGlass != sender && sender)
+//	if (channelTabGlass && channelTabGlass != sender && sender)
+//	{
+//		channelTabGlass->syncSharedData(sender->getChannelSharedData());
+//	}
+	if (atlasViewerDlg && atlasViewerDlg->getChannelTabWidget() && (atlasViewerDlg->getChannelTabWidget() != sender) && sender)
 	{
-		channelTabGlass->syncSharedData(sender->getChannelSharedData());
+		atlasViewerDlg->getChannelTabWidget()->syncSharedData(sender->getChannelSharedData());
 	}
 }
 
@@ -5593,7 +5594,7 @@ void XFormWidget::triview_setzoom(double z, bool b_multiply) //b_multiply determ
 
 	b_use_dispzoom = (fabs(disp_zoom-1)>0.01) ? true : false;
 	updateDataRelatedGUI();
-	
+
 	//110805: by PHC. Now this should not be needed any more
 	//QTimer::singleShot(200, this, SLOT(cascadeWindows())); //this is very important to ensure the events propogate through. 2010-01-29
 }

@@ -585,9 +585,10 @@ public:
 	virtual ~ChannelTabWidget() {};
 	const ChannelSharedData & getChannelSharedData() {return csData;}
 	ChannelTable* getChannelPage() { return (channelPage); }
+	int channelCount();
 
 public slots:
-	void updateXFormWidget(int plane=-1);	//called by XFormWidget's signal of colorChanged(int)
+	void updateXFormWidget(int plane=-1);	//called by signal XFormWidget::colorChanged(int), or channelTableChanged & brightenChanged
 	void linkXFormWidgetChannel();			//link updated channels of XFormWidget
 
 	void syncOpControls(const MixOP & mixop);
@@ -619,10 +620,11 @@ public:
 	{
 		init_member();
 		linkXFormWidgetChannel();
-		connect( this,SIGNAL(channelTableChanged()), this, SLOT(updateXFormWidget()) ); //internal connect
+		connect( this,SIGNAL(channelTableChanged()), ctab, SLOT(updateXFormWidget()) ); //connect ctab for ChannelTabWidget::syncSharedData
 	};
 	virtual ~ChannelTable() {};
 	QTableWidget* getTable() {return table;};
+	int rowCount() {return (table)? table->rowCount() :0; };
 
 signals:
 	void channelTableChanged(); //trigger to update XFormWidget
@@ -630,10 +632,13 @@ signals:
 public slots:
 	void updateXFormWidget(int plane=-1);	//called by ChannelTabWidget
 	void linkXFormWidgetChannel();			//link updated channel
-	int rowCount() {return (table)? table->rowCount() :0; };
 	void setChannelColorDefault(int N);
 	void updateTableChannel(bool update_luts=true);
 	void setMixOpControls();
+
+	void begin_batch() {in_batch_stack.push_back(true);}
+	void end_batch()   {in_batch_stack.pop_back();}
+	void updatedContent(QTableWidget* t);
 
 protected slots:
 	void pressedClickHandler(int row, int col);
@@ -670,9 +675,6 @@ protected:
 	void connectMixOpSignals();  //called by createNewTable
 
 	QVector<bool> in_batch_stack;
-	void begin_batch() {in_batch_stack.push_back(true);}
-	void end_batch()   {in_batch_stack.pop_back();}
-	void updatedContent(QTableWidget* t);
 	QTableWidget* currentTableWidget();
 
 	QTableWidget* createTableChannel();

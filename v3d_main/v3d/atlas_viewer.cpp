@@ -429,23 +429,38 @@ void V3D_atlas_viewerDialog::updatedContent(QTableWidget* t) //
 }
 
 
-QTableWidget* V3D_atlas_viewerDialog::currentTableWidget()
+QTableWidget* V3D_atlas_viewerDialog::currentTableWidget(QWidget** pp_page)
 {
 	if (! tabOptions) return 0;
 
 	int k =  1+tabOptions->currentIndex();
 	Q_ASSERT(k>=1 && k<=3);
 
+
 	if (k==3)
 	{
 		ChannelTabWidget* ctw = qobject_cast<ChannelTabWidget*>(table[3]);
 		if (ctw && ctw->getChannelPage())
+		{
+			if (pp_page)  *pp_page = ctw->getChannelPage();
 			return ctw->getChannelPage()->getTable();
+		}
 		else
+		{
+			if(pp_page)  *pp_page = 0;
 			return 0;
+		}
 	}
 
+	if (pp_page)  *pp_page = 0;
 	return table[k];
+}
+
+ChannelTabWidget* V3D_atlas_viewerDialog::getChannelTabWidget()
+{
+	if (! tabOptions) return 0;
+
+	return qobject_cast<ChannelTabWidget*>(table[3]);
 }
 
 
@@ -535,11 +550,15 @@ void V3D_atlas_viewerDialog::inverseSelect()
 
 void V3D_atlas_viewerDialog::onSelected()
 {
-	QTableWidget* t = currentTableWidget();
+	QWidget* page=0;
+	QTableWidget* t = currentTableWidget( &page );
+	ChannelTable* ct = qobject_cast<ChannelTable*>(page);//110805 RZC
 	if (! t) return;
 
 	PROGRESS_DIALOG("Updating     ", this);
 	PROGRESS_PERCENT(30);
+	begin_batch();
+	if (ct)  ct->begin_batch();
 
 	QTableWidgetItem * item;
 	for (int i=0; i<t->rowCount(); i++)
@@ -549,19 +568,25 @@ void V3D_atlas_viewerDialog::onSelected()
 			item->setCheckState(BOOL_TO_CHECKED(true));
 	}
 
+	if (ct)  ct->end_batch();
+	end_batch();
 	PROGRESS_PERCENT(100);
 
-	bMod = true;
-	undoButton->setEnabled(bCanUndo && bMod);
+	if (ct)  ct->updatedContent(t);
+	updatedContent(t);
 }
 
 void V3D_atlas_viewerDialog::offSelected()
 {
-	QTableWidget* t = currentTableWidget();
+	QWidget* page=0;
+	QTableWidget* t = currentTableWidget( &page );
+	ChannelTable* ct = qobject_cast<ChannelTable*>(page);//110805 RZC
 	if (! t) return;
 
 	PROGRESS_DIALOG("Updating     ", this);
 	PROGRESS_PERCENT(30);
+	begin_batch();
+	if (ct)  ct->begin_batch();
 
 	QTableWidgetItem * item;
 	for (int i=0; i<t->rowCount(); i++)
@@ -571,10 +596,12 @@ void V3D_atlas_viewerDialog::offSelected()
 			item->setCheckState(BOOL_TO_CHECKED(false));
 	}
 
+	if (ct)  ct->end_batch();
+	end_batch();
 	PROGRESS_PERCENT(100);
 
-	bMod = true;
-	undoButton->setEnabled(bCanUndo && bMod);
+	if (ct)  ct->updatedContent(t);
+	updatedContent(t);
 }
 
 
@@ -608,7 +635,9 @@ void V3D_atlas_viewerDialog::offSelected()
 
 void V3D_atlas_viewerDialog::selectedColor(int map)
 {
-	QTableWidget* t = currentTableWidget();
+	QWidget* page=0;
+	QTableWidget* t = currentTableWidget( &page );
+	ChannelTable* ct = qobject_cast<ChannelTable*>(page); //110805 RZC
 	if (! t) return;
 
 	QColor qcolor0(255,255,255);
@@ -621,6 +650,8 @@ void V3D_atlas_viewerDialog::selectedColor(int map)
 
 	PROGRESS_DIALOG("Updating color    ", this);
 	begin_batch();
+	if (ct)  ct->begin_batch();
+
 
 	QTableWidgetItem * curItem;
 	int n_row = t->rowCount();
@@ -647,9 +678,11 @@ void V3D_atlas_viewerDialog::selectedColor(int map)
 		//UPATE_ITEM_ICON(curItem); //this will be called in slot connected cellChanged()
 	}
 
+	if (ct)  ct->end_batch();
 	end_batch();
 	PROGRESS_PERCENT(100);
 
+	if (ct)  ct->updatedContent(t);
 	updatedContent(t);
 }
 
@@ -1492,12 +1525,14 @@ void V3D_atlas_viewerDialog::pickColorChannel(int i, int j)
 	updatedContent(t); //110805 RZC
 }
 
+#define  __use_channel_table__
+
 ChannelTabWidget* V3D_atlas_viewerDialog::createChannelTab()
 {
 	ChannelTabWidget* channelTab=0;
 	if (channelTab = new ChannelTabWidget(triview_widget, 2, false)) //2 tabs
 	{
-		connect(triview_widget, SIGNAL(colorChanged(int)), channelTab, SLOT(updateXFormWidget(int)));
+		//connect(triview_widget, SIGNAL(colorChanged(int)), channelTab, SLOT(updateXFormWidget(int)));
 	}
 	return channelTab;
 }
@@ -1505,7 +1540,7 @@ void V3D_atlas_viewerDialog::deleteChannelTab(ChannelTabWidget* channelTab)
 {
 	if (channelTab)
 	{
-		disconnect(triview_widget, SIGNAL(colorChanged(int)), channelTab, SLOT(updateXFormWidget(int)));
+		//disconnect(triview_widget, SIGNAL(colorChanged(int)), channelTab, SLOT(updateXFormWidget(int)));
 		channelTab->deleteLater();
 	}
 }

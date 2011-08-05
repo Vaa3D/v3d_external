@@ -39,18 +39,41 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../3drenderer/v3dr_common.h" //for v3dr_getColorDialog()
 
 
+int xformChannelDim(XFormWidget* xform)
+{
+	int N = 0;
+	if ( xform)
+	{
+		My4DImage* img4d = xform->getImageData();
+		if ( img4d)
+		{
+			N = img4d->getCDim();
+		}
+	}
+	return N;
+}
 
 //////////////////////////////////////////////////////////////////////
 #define ___ChannelTabWidget___
 
+int ChannelTabWidget::channelCount() { return (channelPage)? channelPage->rowCount() :0; }
+
 void ChannelTabWidget::updateXFormWidget(int plane)
 {
 	if (channelPage)  channelPage->updateXFormWidget(plane);
+	if (plane<0 && xform) //-1 means issued by channelPage
+	{
+		xform->syncChannelTabWidgets(this);
+	}
 }
 
 void ChannelTabWidget::linkXFormWidgetChannel()
 {
-	if (channelPage) //delete whole box Tab include all sub widget
+	if (xformChannelDim(xform) == this->channelCount()) //same length of channel list
+		return; //110805 no need to re-create
+
+	//delete whole box Tab include all sub widget
+	if (channelPage)
 	{
 		QWidget* old = channelPage;
 		old->deleteLater();
@@ -130,7 +153,7 @@ void ChannelTabWidget::syncSharedData(const ChannelSharedData & data) //except b
 
 void ChannelTable::updateXFormWidget(int plane) // plane<=0 for all planes
 {
-//	qDebug("ChannelTable::updateXFormWidget( %d )", plane);
+	qDebug("ChannelTable::updateXFormWidget( %d )", plane);
 
 	if (! xform) return;
 	My4DImage* img4d = xform->getImageData();
@@ -141,7 +164,7 @@ void ChannelTable::updateXFormWidget(int plane) // plane<=0 for all planes
 	}
     ImagePixelType dtype;
   	unsigned char **** p4d = (unsigned char ****)img4d->getData(dtype);
-	if (!p4d)
+	if (! p4d)
 	{
 		qDebug("ChannelTable::updateXFormWidget: no image data pointer now.");
 		return;
@@ -223,15 +246,7 @@ void ChannelTable::setChannelColorDefault(int N)
 
 void ChannelTable::linkXFormWidgetChannel()
 {
-	int N = 0;
-	if ( xform)
-	{
-		My4DImage* img4d = xform->getImageData();
-		if ( img4d)
-		{
-			N = img4d->getCDim();
-		}
-	}
+	int N = xformChannelDim(xform);
 	//if (N>0)
 	qDebug("ChannelTable::linkXFormWidgetChannel  CDim=%d  %s", N, ((bGlass)?"(glass)":""));
 
@@ -734,7 +749,6 @@ void BrightenBox::create()
 	connect(push_reset, SIGNAL(clicked()), this, SLOT(reset()));
 
 	setMixOpControls();
-	//reset();
 }
 
 #define INT_BRIGHTNESS(b)  (int(b*100))
