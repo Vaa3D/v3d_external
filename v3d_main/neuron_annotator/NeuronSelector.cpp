@@ -102,13 +102,13 @@ int NeuronSelector::getIndexSelectedNeuron()
 	else
 	{
             // Debug
-//            LocationSimple p((V3DLONG)xlc, (V3DLONG)ylc, (V3DLONG)zlc);
-//            RGBA8 c;
-//            c.r = 255; c.g = 0; c.b = 0; c.a = 128;// cyan
-//            p.color = c; // instead of random_rgba8(255);
-//            p.radius = 1; // instead of 5
-//            annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks.append(p);
-//            emit neuronHighlighted(false);
+            // LocationSimple p((V3DLONG)xlc, (V3DLONG)ylc, (V3DLONG)zlc);
+            // RGBA8 c;
+            // c.r = 255; c.g = 0; c.b = 0; c.a = 128;// cyan
+            // p.color = c; // instead of random_rgba8(255);
+            // p.radius = 1; // instead of 5
+            // annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks.append(p);
+            // emit neuronHighlighted(false);
             // end-Debug
 
             index = -1; // 0 is background
@@ -369,5 +369,15 @@ void NeuronSelector::updateNeuronSelectList(int neuronIndex)
 {
     index = neuronIndex;
 
+    qDebug() << "NeuronSelector::updateNeuronSelectList() neuronIndex=" << neuronIndex;
+
     annotationSession->updateNeuronSelectList(index);
 }
+
+void NeuronSelector::clearAllSelections() {
+    // Clear selection landmarks
+    annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks.clear();
+    emit neuronHighlighted(false);
+    annotationSession->clearSelections();
+}
+

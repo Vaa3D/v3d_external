@@ -2158,19 +2158,18 @@ int Renderer_tex2::hitMenu(int x, int y, bool b_glwidget)
     QAction* actViewNeuronWithBackground=0;
     QAction* actViewNeuronWithReference=0;
     QAction* actViewNeuronWithBackgroundAndReference=0;
+
+    QAction* actClearAllSelections=0;
     QAction* actViewAllNeurons=0;
     QAction* actClearAllNeurons=0;
 
     int hits = glRenderMode(GL_RENDER);
     if (hits==0 && b_glwidget)
     {
-        QList<QAction*> listAct;
-
-        QAction* actViewAllNeurons=0;
-        QAction* actClearAllNeurons=0;
 
         listAct.append(actViewAllNeurons = new QAction("view all neurons in empty space", w));
-        listAct.append(actClearAllNeurons = new QAction("clear all", w));
+        listAct.append(actClearAllSelections = new QAction("clear all selections", w));
+        listAct.append(actClearAllNeurons = new QAction("clear all contents", w));
 
         if (w) w->updateGL(); //for highlight object
 
@@ -2186,6 +2185,13 @@ int Renderer_tex2::hitMenu(int x, int y, bool b_glwidget)
             {
                 QList<int> overlayList;
                 emit w->triggerNeuronShownAll(overlayList); // overlayList should be empty
+            }
+        }
+        else if (act == actClearAllSelections)
+        {
+            if (w)
+            {
+                emit w->triggerNeuronClearAllSelections();
             }
         }
         else if (act == actClearAllNeurons)
@@ -2330,7 +2336,9 @@ int Renderer_tex2::hitMenu(int x, int y, bool b_glwidget)
     {
             if (IS_VOLUME() || !b_glwidget)
             {
-                listAct.append(actViewAllNeurons = new QAction("view all neurons in empty space", w));
+                if (b_glwidget) {
+                    listAct.append(actViewAllNeurons = new QAction("view all neurons in empty space", w));
+                }
 
                 listAct.append(actViewNeuronOnly = new QAction("view only this neuron in empty space", w));
 
@@ -2356,6 +2364,10 @@ int Renderer_tex2::hitMenu(int x, int y, bool b_glwidget)
                 actViewNeuronWithBackgroundAndReference->setVisible(true);
                 actViewNeuronWithBackgroundAndReference->setIconVisibleInMenu(true);
 
+                if (b_glwidget) {
+                    listAct.append(actClearAllSelections = new QAction("clear all selections", w));
+                }
+
             }
 
             if (w) w->updateGL(); //for highlight object
@@ -2368,7 +2380,9 @@ int Renderer_tex2::hitMenu(int x, int y, bool b_glwidget)
 
     // processing menu actions
     QList<int> overlayList;
-    if (act==0) 	return 0; // 081215: fix pop dialog when no choice of menu
+    if (act==0) 	{
+        return 0; // 081215: fix pop dialog when no choice of menu
+    }
     else if (act == actViewNeuronWithBackground)
     {
         if(w)
@@ -2430,13 +2444,14 @@ int Renderer_tex2::hitMenu(int x, int y, bool b_glwidget)
             emit w->triggerNeuronShownAll(overlayList); // overlayList should be empty
         }
     }
-    else if (act == actClearAllNeurons)
+    else if (act == actClearAllSelections)
     {
-        if(w)
+        if (w)
         {
-            emit w->triggerNeuronClearAll();
+            emit w->triggerNeuronClearAllSelections();
         }
     }
+
 
     //
     delete[] selectBuf;

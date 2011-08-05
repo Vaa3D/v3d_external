@@ -83,6 +83,7 @@ public:
     void triggerNeuronShownAll(QList<int> overlayList) {emit neuronShownAll(overlayList);}
     void triggerNeuronClearAll() {emit neuronClearAll();}
     void triggerNeuronIndexChanged(int index) {emit neuronIndexChanged(index);}
+    void triggerNeuronClearAllSelections() {emit neuronClearAllSelections();}
     void setNeuronIndex(int index) {neuronIndex = index;}
     int getNeuronIndex() {return neuronIndex;}
 
@@ -358,6 +359,7 @@ signals:
         void neuronShownAll(QList<int>);
         void neuronClearAll();
         void neuronIndexChanged(int index);
+        void neuronClearAllSelections();
 
 protected:
 	bool _still, _stillpaint_need, _stillpaint_pending;
