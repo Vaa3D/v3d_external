@@ -100,8 +100,8 @@ bool NaVolumeData::Writer::loadOriginalImageStack()
         cerr << msgPrefix.toStdString() << ": originalImageStack is empty after loading\n";
         return false;
     }
-    cout << "Loaded original image stack with dimensions X=" << originalImageStack->getXDim() << " Y=" << originalImageStack->getYDim()
-            << " Z=" << originalImageStack->getZDim() << " C=" << originalImageStack->getCDim() << "\n";
+    // cout << "Loaded original image stack with dimensions X=" << originalImageStack->getXDim() << " Y=" << originalImageStack->getYDim()
+    //         << " Z=" << originalImageStack->getZDim() << " C=" << originalImageStack->getCDim() << "\n";
     return true;
 }
 
@@ -137,8 +137,8 @@ bool NaVolumeData::Writer::loadNeuronMaskStack() {
             }
         }
     }
-    qDebug() << "Maximum fragment index = " << maxFragmentIndex;
-    qDebug() << "Minimum fragment index = " << minFragmentIndex;
+    // qDebug() << "Maximum fragment index = " << maxFragmentIndex;
+    // qDebug() << "Minimum fragment index = " << minFragmentIndex;
     m_data->maxNeuronIndex = maxFragmentIndex;
 
     return true;
@@ -155,8 +155,8 @@ bool NaVolumeData::Writer::loadReferenceStack()
         cerr << msgPrefix.toStdString() << ": initialReferenceStack is empty after loading\n";
         return false;
     }
-    cout << "Loaded reference stack stack with dimensions X=" << initialReferenceStack->getXDim() << " Y=" << initialReferenceStack->getYDim()
-            << " Z=" << initialReferenceStack->getZDim() << " C=" << initialReferenceStack->getCDim() << "\n";
+    // cout << "Loaded reference stack stack with dimensions X=" << initialReferenceStack->getXDim() << " Y=" << initialReferenceStack->getYDim()
+    //         << " Z=" << initialReferenceStack->getZDim() << " C=" << initialReferenceStack->getCDim() << "\n";
 
     // Phase 2: normalize to 8-bit
     m_data->referenceStack=new My4DImage();

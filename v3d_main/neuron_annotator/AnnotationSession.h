@@ -7,7 +7,7 @@
 #include "MultiColorImageStackNode.h"
 #include "NeuronAnnotatorResultNode.h"
 #include "FragmentSelectionModel.h"
-#include "data_model/MipFragmentColors.h"
+#include "data_model/GalleryMipImages.h"
 
 class AnnotationSession : public QObject
 {
@@ -97,6 +97,7 @@ private:
     MipFragmentData mipFragmentData;
     DataColorModel dataColorModel;
     MipFragmentColors mipFragmentColors;
+    GalleryMipImages galleryMipImages;
     //
     QList<QImage*> neuronMipList;
     QList<QImage*> overlayMipList;

@@ -35,6 +35,22 @@ protected:
 
 public:
 
+    class Reader; friend class Reader;
+    class Reader : public BaseReadLocker
+    {
+    public:
+        Reader(const MipFragmentColors& mipFragmentColorsParam)
+            : BaseReadLocker(mipFragmentColorsParam.getLock())
+            , mipFragmentColors(mipFragmentColorsParam)
+        {}
+
+        size_t getNumImages() const {return mipFragmentColors.fragmentMips.size();}
+        const QImage* getImage(int index) {return mipFragmentColors.fragmentMips[index];}
+
+    protected:
+        const MipFragmentColors& mipFragmentColors;
+    };
+
     class Writer; friend class Writer;
     class Writer : public QWriteLocker
     {

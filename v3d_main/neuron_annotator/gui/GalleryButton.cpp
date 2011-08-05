@@ -127,7 +127,12 @@ void GalleryButton::setBrightness(const BrightnessCalibrator<int>& calibrator)
 void GalleryButton::updateThumbnailIcon() {
     if (! correctedScaledThumbnail) return;
     pushButton->setIcon(QIcon(QPixmap::fromImage(*correctedScaledThumbnail)));
-    emit widgetChanged(index);
+    // emit widgetChanged(index);
+}
+
+void GalleryButton::setThumbnailIcon(const QImage& scaledImage)
+{
+    pushButton->setIcon(QIcon(QPixmap::fromImage(scaledImage)));
 }
 
 void GalleryButton::setNa3DWidget(Na3DWidget *inputNa3DWidget){

@@ -103,7 +103,7 @@ void MipFragmentColors::update()
 
 void MipFragmentColors::Writer::allocateImages(int x, int y, int nFrags)
 {
-    qDebug() << "Allocating mip images";
+    // qDebug() << "Allocating mip images";
     while (! mipFragmentColors.fragmentMips.isEmpty())
         delete mipFragmentColors.fragmentMips.takeFirst();
     for (int f = 0; f < nFrags; ++f) {

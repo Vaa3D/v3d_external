@@ -21,6 +21,7 @@ void DataColorModel::resetColors()
     channelColors.clear();
     for (int c = 0; c < numChannels; ++c)
     {
+        // Channel color
         // single channel gets colored white
         QRgb color = qRgb(255, 255, 255);
         if (numChannels > 1) {
@@ -30,7 +31,11 @@ void DataColorModel::resetColors()
             else if (r == 2) color = qRgb(0, 0, 255); // blue
             else color = qRgb(255, 255, 255); // white
         }
-        channelColors.push_back(ChannelColorModel(color));
+        ChannelColorModel channelModel(color);
+        // volumeReader.
+        // Intensity range
+        // TODO
+        channelColors.push_back(channelModel);
     }
     colorWriter.unlock();
     emit dataChanged();

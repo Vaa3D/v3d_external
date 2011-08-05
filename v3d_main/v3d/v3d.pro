@@ -201,6 +201,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/data_model/MipFragmentData.h \
     ../neuron_annotator/data_model/DataColorModel.h \
     ../neuron_annotator/data_model/MipFragmentColors.h \
+    ../neuron_annotator/data_model/GalleryMipImages.h \
     ../neuron_annotator/gui/NaViewer.h \
     ../neuron_annotator/gui/Na2DViewer.h \
     ../neuron_annotator/gui/NaMainWindow.h \
@@ -342,6 +343,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/data_model/MipFragmentData.cpp \
     ../neuron_annotator/data_model/DataColorModel.cpp \
     ../neuron_annotator/data_model/MipFragmentColors.cpp \
+    ../neuron_annotator/data_model/GalleryMipImages.cpp \
     ../neuron_annotator/NeuronAnnotatorResultNode.cpp \
     ../neuron_annotator/TimebasedIdentifierGenerator.cpp \
     ../neuron_annotator/gui/RendererNeuronAnnotator.cpp \

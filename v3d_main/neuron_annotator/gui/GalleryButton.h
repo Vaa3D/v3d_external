@@ -12,6 +12,7 @@ class GalleryButton : public QWidget
 
 public:
     typedef FragmentSelectionModel::FragmentIndex FragmentIndex;
+    static const int ThumbnailPixelHeight = 140;
 
     explicit GalleryButton(const QImage & image, QString name, int index, QWidget *parent = 0);
     int getIndex() { return index; }
@@ -31,7 +32,7 @@ signals:
     // pixmap update would be a good idea.
     void thumbnailImageUpdated();
     void fragmentHover(FragmentIndex fragmentIndex);
-    void widgetChanged(FragmentIndex);
+    // void widgetChanged(FragmentIndex);
 
 public slots:
     void buttonPress(bool checked);
@@ -43,6 +44,7 @@ protected slots:
     // like this MUST be done in the GUI thread, so multithreading is impossible for
     // this operation.
     void updateThumbnailIcon();
+    void setThumbnailIcon(const QImage& scaledImage);
 
 private:
     typedef QWidget super;
@@ -55,7 +57,6 @@ private:
     // correctedScaledThumbnail is a gamma corrected version of scaledThumbnail.
     QImage * correctedScaledThumbnail;
     volatile bool bImageUpdating; // hack for gamma update
-    // QMutex buttonMutex; // Mutex object to help avoid multithread race conditions.
 
     Na3DWidget *p3DWidget;
 };
