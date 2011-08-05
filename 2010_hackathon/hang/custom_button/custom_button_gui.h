@@ -31,7 +31,7 @@ class CustomButton : public QObject
 		V3DPluginCallback2 * callback;
 		QWidget * parent;
 		QString plugin_path;
-		// triview && view3d button
+
 		int buttonIndex;
 
 	public:
@@ -88,7 +88,7 @@ class CustomButtonSetting
 		}
 };
 
-QList<CustomButtonSetting*> loadToolBarSettings();
+bool loadToolBarSettings();
 bool saveToolBarSettings();
 QList<CustomButtonSetting*>& getToolBarSettingList();
 void setToolBarSettingList(QList<CustomButtonSetting*> & _settingList);
@@ -107,6 +107,7 @@ class CustomButtonSelectWidget : public QWidget
 
 		public slots:
 			void setToolBarButton(bool state);
+			void saveToolBarState();
 		void openMe();
 	protected:
 		void closeEvent(QCloseEvent *event);

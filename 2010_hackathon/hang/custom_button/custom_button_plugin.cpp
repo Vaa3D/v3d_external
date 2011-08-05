@@ -7,6 +7,7 @@
 
 #include "custom_button_plugin.h"
 #include "custom_button_func.h"
+#include "custom_button_gui.h"
  
 Q_EXPORT_PLUGIN2(custom_button, CustomButtonPlugin);
  
@@ -26,7 +27,7 @@ void CustomButtonPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &ca
 	else
 	{
 		v3d_msg(tr("This plugin is used to define the toolbar by yourself. "
-			"Developed by Hang Xiao, 2011-08-04"));
+					"Developed by Hang Xiao, 2011-08-04"));
 	}
 }
 
