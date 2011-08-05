@@ -22,7 +22,7 @@ int custom_button(V3DPluginCallback2 &callback, QWidget *parent)
 
 		foreach(CustomButtonSetting* cbs, settingList)
 		{
-			CustomButtonSelectWidget * selectWidget = new CustomButtonSelectWidget(callback, parent, cbs);
+			CustomButtonSelectWidget * selectWidget = new CustomButtonSelectWidget(&callback, parent, cbs);
 		}
 	}
 	else
@@ -32,7 +32,7 @@ int custom_button(V3DPluginCallback2 &callback, QWidget *parent)
 
 		CustomButtonSetting* cbs = new CustomButtonSetting(barTitle);
 
-		CustomButtonSelectWidget * selectWidget = new CustomButtonSelectWidget(callback, parent, cbs);
+		CustomButtonSelectWidget * selectWidget = new CustomButtonSelectWidget(&callback, parent, cbs);
 		settingList.push_back(cbs);
 
 		bar_num++;

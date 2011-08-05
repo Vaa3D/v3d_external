@@ -109,7 +109,7 @@ QStringList v3d_getInterfaceFuncList(QObject *plugin)
 }
 
 
-CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback, QWidget * parent, CustomButtonSetting* _cbs): QWidget(parent)
+CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 *callback, QWidget * parent, CustomButtonSetting* _cbs): QWidget(parent)
 {
 	if(!_cbs) new CustomButtonSetting();
 	cbs = _cbs;
@@ -151,6 +151,7 @@ CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback,
 
 	pluginTreeWidget = new QTreeWidget();
 	pluginTreeWidget->setColumnCount(2);
+	pluginTreeWidget->setSortingEnabled(true);
 
 	QStringList headerStringList = QStringList() <<tr("Plugin Name")<<tr("Set Button Name");
 	QTreeWidgetItem * headerItem = new QTreeWidgetItem(headerStringList);
@@ -192,7 +193,7 @@ CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback,
 				qb->slot_class = plugin;
 				qb->bt = 2;
 				qb->menu_name = menu;
-				qb->callback = &callback;
+				qb->callback = callback;
 				qb->parent = parent;
 				qb->plugin_path = file;
 
@@ -207,6 +208,7 @@ CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback,
 					editor->setText(cbs->preLoadPluginLabelList.at(i));
 					editor->setEnabled(true);
 					checkbox->setChecked(Qt::Checked);
+					pluginItem->setExpanded(true);
 
 					qb->button->setVisible(true);
 					toolBar->addAction(qb->button);
@@ -230,6 +232,8 @@ CustomButtonSelectWidget::CustomButtonSelectWidget(V3DPluginCallback2 &callback,
 	mainLayout->addWidget(tabWidget);
 
 	setLayout(mainLayout);
+	setMaximumSize(1000,800);
+	setGeometry(400,400,1000, 800);
 }
 
 CustomButtonSelectWidget::~CustomButtonSelectWidget()

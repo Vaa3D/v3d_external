@@ -75,7 +75,7 @@ class CustomButtonSetting
 		{
 			toolBarTitle = title;
 			toolBar = new QToolBar(toolBarTitle);
-			position = Qt::LeftToolBarArea;
+			position = Qt::TopToolBarArea;
 		}
 		CustomButtonSetting(QToolBar* _toolBar)
 		{
@@ -98,7 +98,7 @@ class CustomButtonSelectWidget : public QWidget
 	Q_OBJECT
 
 	public:
-		CustomButtonSelectWidget(V3DPluginCallback2 &callback, QWidget * parent, CustomButtonSetting * _cbs);
+		CustomButtonSelectWidget(V3DPluginCallback2 *callback, QWidget * parent, CustomButtonSetting * _cbs);
 
 		~CustomButtonSelectWidget();
 

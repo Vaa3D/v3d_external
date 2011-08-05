@@ -8,6 +8,7 @@
 #include "custom_button_plugin.h"
 #include "custom_button_func.h"
 #include "custom_button_gui.h"
+#include <Phonon/VideoPlayer>
  
 Q_EXPORT_PLUGIN2(custom_button, CustomButtonPlugin);
  
