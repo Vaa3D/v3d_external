@@ -4863,7 +4863,7 @@ void XFormWidget::toggleLookingGlassCheckBox()
 #if USE_CHANNEL_TABLE
 				if (channelTabGlass==NULL)
 				{
-					if (channelTabGlass = new ChannelTabWidget(this, 2)) //2 tabs for Looking glass
+					if (channelTabGlass = new ChannelTabWidget(this, 2, true)) //2 tabs for Looking glass
 					{
 						connect(this, SIGNAL(colorChangedGlass(int)), channelTabGlass, SLOT(updateXFormWidget(int)));
 

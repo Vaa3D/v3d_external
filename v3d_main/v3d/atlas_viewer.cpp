@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -95,12 +95,12 @@ V3D_atlas_viewerDialog::V3D_atlas_viewerDialog(XFormWidget* w) : QDialog() //w, 
     this->resize(700,700);
 
 	//force the hiding of some button by calling tablChanged. 081217. revised on 100824
-	if (table[1] && table[2] && table[3]) 
+	if (table[1] && table[2] && table[3])
 	{
 		if (currentTableWidget()==table[1]) tabChanged(0);
 		else if (currentTableWidget()==table[2]) tabChanged(1);
 		else if (currentTableWidget()==table[3]) tabChanged(2);
-	}	
+	}
 }
 
 V3D_atlas_viewerDialog::~V3D_atlas_viewerDialog()
@@ -196,12 +196,15 @@ void V3D_atlas_viewerDialog::reCreateTables(XFormWidget* w)
 		disconnect(table[2], SIGNAL(cellChanged(int,int)), this, SLOT(pickLandmark(int,int)));
 		disconnect(table[2], SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(highlightLandmark(int,int,int,int))); //
 	}
-	if (table[3])	disconnect(table[3], SIGNAL(cellChanged(int,int)), this, SLOT(pickColorChannel(int,int)));
-	for (int i=0; i<=3; i++)
+	//if (table[3])	disconnect(table[3], SIGNAL(cellChanged(int,int)), this, SLOT(pickColorChannel(int,int)));
+	for (int i=0; i<=2; i++)
 		if (table[i])
 		{
 			delete table[i];  table[i]=0;
 		}
+
+	deleteChannelTab((ChannelTabWidget*)table[3]);
+
 	createTables();
 
     int i;
@@ -253,8 +256,8 @@ void V3D_atlas_viewerDialog::createTables()
 
 	table[1] = createTableAtlasRows();
 	table[2] = createTableLandmarks();
-	table[3] = createColorChannelManager();
-	for (int i=1; i<=3; i++)
+	//table[3] = createColorChannelManager();
+	for (int i=1; i<=2; i++)
 	{
 		if (table[i])
 		{
@@ -271,7 +274,9 @@ void V3D_atlas_viewerDialog::createTables()
 		connect(table[2], SIGNAL(cellChanged(int,int)), this, SLOT(pickLandmark(int,int)));
 		connect(table[2], SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(highlightLandmark(int,int,int,int)));
 	}
-	if (table[3])	connect(table[3], SIGNAL(cellChanged(int,int)), this, SLOT(pickColorChannel(int,int)));
+	//if (table[3])	connect(table[3], SIGNAL(cellChanged(int,int)), this, SLOT(pickColorChannel(int,int)));
+
+	table[3] = (QTableWidget*)createChannelTab();
 }
 
 
@@ -388,7 +393,7 @@ void V3D_atlas_viewerDialog::create()
 	if (inverseSelectButton)	connect(inverseSelectButton, SIGNAL(clicked()), this, SLOT(inverseSelect()));
 	if (onSelectButton)		connect(onSelectButton, SIGNAL(clicked()),    this, SLOT(onSelected()));
 	if (offSelectButton)	connect(offSelectButton, SIGNAL(clicked()),   this, SLOT(offSelected()));
-	
+
 	//if (colorSelectButton)	connect(colorSelectButton, SIGNAL(clicked()),   this, SLOT(colorSelected()));
 	if (colorSelectButton)	connect(colorSelectButton, SIGNAL(clicked()),   this, SLOT(doMenuOfColor()));
 
@@ -413,12 +418,12 @@ void V3D_atlas_viewerDialog::create()
 void V3D_atlas_viewerDialog::updatedContent(QTableWidget* t) //
 {
 	if (! in_batch_stack.empty() && in_batch_stack.last()==true) return; //skip until end_batch
-	
+
 	t->resizeColumnsToContents();
-	
+
 	UPDATE_VIEW(triview_widget);
 	ACTIVATE(triview_widget);
-	
+
 	bMod = true;
 	undoButton->setEnabled(bCanUndo && bMod);
 }
@@ -431,6 +436,15 @@ QTableWidget* V3D_atlas_viewerDialog::currentTableWidget()
 	int k =  1+tabOptions->currentIndex();
 	Q_ASSERT(k>=1 && k<=3);
 
+	if (k==3)
+	{
+		ChannelTabWidget* ctw = qobject_cast<ChannelTabWidget*>(table[3]);
+		if (ctw && ctw->getChannelPage())
+			return ctw->getChannelPage()->getTable();
+		else
+			return 0;
+	}
+
 	return table[k];
 }
 
@@ -438,23 +452,23 @@ QTableWidget* V3D_atlas_viewerDialog::currentTableWidget()
 void V3D_atlas_viewerDialog::createMenuOfColor()
 {
     QAction* Act;
-	
+
     Act = new QAction(tr("Single Color..."), this);
     connect(Act, SIGNAL(triggered()), this, SLOT(selectedColor()));
     menuColor.addAction(Act);
-	
+
     Act = new QAction(tr("Hanchuan's Color Mapping"), this);
-    connect(Act, SIGNAL(triggered()), this, SLOT(mapHanchuanColor()));
+    connect(Act, SIGNAL(triggered()), this, SLOT(mapHanchuanColor()));//call seletedColor(1)
     menuColor.addAction(Act);
-	
+
     Act = new QAction(tr("Random Color Mapping"), this);
-    connect(Act, SIGNAL(triggered()), this, SLOT(mapRandomColor()));
+    connect(Act, SIGNAL(triggered()), this, SLOT(mapRandomColor()));//call seletedColor(-1)
     menuColor.addAction(Act);
 }
 
 void V3D_atlas_viewerDialog::doMenuOfColor()
 {
-	try 
+	try
 	{
 		menuColor.exec(QCursor::pos());
 	}
@@ -505,6 +519,20 @@ void V3D_atlas_viewerDialog::inverseSelect()
 	}
 }
 
+#define ON_ITEM_OF_TABLE(curItem, t,i) \
+{ \
+	if 		(t==table[1])	curItem = t->item(i, 0); \
+	else if (t==table[2]) 	curItem = t->item(i, 0); \
+	else 		curItem = t->item(i, 2); \
+}
+
+#define COLOR_ITEM_OF_TABLE(curItem, t,i) \
+{ \
+	if 		(t==table[1])	curItem = t->item(i, 1); \
+	else if (t==table[2]) 	curItem = t->item(i, 1); \
+	else 		curItem = t->item(i, 0); \
+}
+
 void V3D_atlas_viewerDialog::onSelected()
 {
 	QTableWidget* t = currentTableWidget();
@@ -513,9 +541,10 @@ void V3D_atlas_viewerDialog::onSelected()
 	PROGRESS_DIALOG("Updating     ", this);
 	PROGRESS_PERCENT(30);
 
+	QTableWidgetItem * item;
 	for (int i=0; i<t->rowCount(); i++)
 	{
-		QTableWidgetItem * item = t->item(i,0);
+		ON_ITEM_OF_TABLE(item, t, i);
 		if (item->isSelected())
 			item->setCheckState(BOOL_TO_CHECKED(true));
 	}
@@ -534,9 +563,10 @@ void V3D_atlas_viewerDialog::offSelected()
 	PROGRESS_DIALOG("Updating     ", this);
 	PROGRESS_PERCENT(30);
 
+	QTableWidgetItem * item;
 	for (int i=0; i<t->rowCount(); i++)
 	{
-		QTableWidgetItem * item = t->item(i,0);
+		ON_ITEM_OF_TABLE(item, t, i);
 		if (item->isSelected())
 			item->setCheckState(BOOL_TO_CHECKED(false));
 	}
@@ -580,7 +610,7 @@ void V3D_atlas_viewerDialog::selectedColor(int map)
 {
 	QTableWidget* t = currentTableWidget();
 	if (! t) return;
-	
+
 	QColor qcolor0(255,255,255);
 	if (map==0)
 	{
@@ -588,18 +618,19 @@ void V3D_atlas_viewerDialog::selectedColor(int map)
 		//if (! qcolor0.isValid()) return; // this no use for cancel, Qt's bug
 		if (! v3dr_getColorDialog( &qcolor0))  return; //090424 RZC
 	}
-	
+
 	PROGRESS_DIALOG("Updating color    ", this);
 	begin_batch();
-	
+
+	QTableWidgetItem * curItem;
 	int n_row = t->rowCount();
 	for (int i=0; i<n_row; i++)
 	{
 		PROGRESS_PERCENT(i*100/n_row);
-		
-		QTableWidgetItem * curItem = t->item(i,1);
+
+		COLOR_ITEM_OF_TABLE(curItem, t, i);
 		QColor qcolor = qcolor0;
-		
+
 		if (map==-1)      //random color
 		{
 			qcolor = V3D_QCOLOR(random_rgba8());
@@ -611,14 +642,14 @@ void V3D_atlas_viewerDialog::selectedColor(int map)
 		}
 		else //map==0
 			if (! curItem->isSelected()) continue; // skip un-selected
-		
+
 		curItem->setData(0, qVariantFromValue(qcolor));
 		//UPATE_ITEM_ICON(curItem); //this will be called in slot connected cellChanged()
 	}
-	
+
 	end_batch();
 	PROGRESS_PERCENT(100);
-	
+
 	updatedContent(t);
 }
 
@@ -664,7 +695,7 @@ void V3D_atlas_viewerDialog::tabChanged(int t)
 			}
 		}
 	}
-	else if (t==0 || t==2)
+	else if (t==0)
 	{
 		if(channelSpinBox) channelSpinBox->show();
 		if (channelSpinBoxLabel) channelSpinBoxLabel->show();
@@ -696,6 +727,19 @@ void V3D_atlas_viewerDialog::tabChanged(int t)
 			}
 		}
 	}
+	else if (t==2)
+	{
+		if(channelSpinBox) channelSpinBox->hide();
+		if (channelSpinBoxLabel) channelSpinBoxLabel->hide();
+		if (bMaskBlendedImgsBox) bMaskBlendedImgsBox->hide();
+
+		if (seePropertyButton) seePropertyButton->hide();
+		if (moveUpButton) moveUpButton->hide();
+		if (moveDownButton) moveDownButton->hide();
+		if (deleteButton) deleteButton->hide();
+		if (resetAllLandmarkNamesButton) resetAllLandmarkNamesButton->hide();
+		if (resetAllLandmarkNamesButton) resetAllLandmarkCommentsButton->hide();
+	}
 }
 
 void V3D_atlas_viewerDialog::colorSelected()
@@ -708,9 +752,10 @@ void V3D_atlas_viewerDialog::colorSelected()
 	PROGRESS_DIALOG("Updating     ", this);
 	PROGRESS_PERCENT(30);
 
+	QTableWidgetItem * item;
 	for (int i=0; i<t->rowCount(); i++)
 	{
-		QTableWidgetItem * item = t->item(i,1);
+		COLOR_ITEM_OF_TABLE(item, t, i);
 		if (item->isSelected())
 		{
 			item->setData(Qt::DecorationRole, qVariantFromValue(qcolor));
@@ -871,8 +916,8 @@ void V3D_atlas_viewerDialog::setItemEditor()
 	static bool registered =false;
 	if (registered) return;
 	else registered = true;
-	
-	
+
+
 	QItemEditorFactory *factory = new QItemEditorFactory(*QItemEditorFactory::defaultFactory());
 
 	//	QItemEditorCreatorBase *spinCreator = new QStandardItemEditorCreator<QSpinBox>();
@@ -1366,32 +1411,32 @@ QTableWidget* V3D_atlas_viewerDialog::createColorChannelManager()
 {
 	My4DImage* r = imgdata;
 	if (! r)  return 0;
-	
+
 	QStringList qsl;
 	qsl << "on/off" << "color" << "data channel";
 	int row = r->getCDim();
 	int col = qsl.size();
-	
+
 	if (r->listChannels.size() != row)
 	{
 		v3d_msg("Fail to run createColorChannelManager() as the number of color channels mismatches the color-mapping table.");
 		return 0;
 	}
-	
+
 	QTableWidget* t = new QTableWidget(row,col, this);
 	t->setHorizontalHeaderLabels(qsl);
-	
+
 	//qDebug("  create begin t->rowCount = %d", t->rowCount());
 	for (int i=0; i<row; i++)
 	{
 		int j=0;
 		QTableWidgetItem *newItem;
 		QString s;
-		
+
 		//s = tr("%1").arg("on");
 		newItem = new QTableWidgetItem(s);	t->setItem(i, j++, newItem);
 		newItem->setCheckState(BOOL_TO_CHECKED(r->listChannels[i].on));
-		
+
 		//s = tr("%1").arg("color");
 		newItem = new QTableWidgetItem(QVariant::Color);	t->setItem(i, j++, newItem);
 		{
@@ -1404,16 +1449,16 @@ QTableWidget* V3D_atlas_viewerDialog::createColorChannelManager()
 			//qDebug() << QCOLOR(r->listLabelS[i].color);
 			//qDebug() << newItem->data(0).type();
 		}
-		
+
 		s = tr("%1").arg(i+1);
 		newItem = new QTableWidgetItem(s);	t->setItem(i, j++, newItem);
-		
+
 		Q_ASSERT(j==col);
 	}
 	//qDebug("  end   t->rowCount = %d", t->rowCount());
-	
+
 	t->resizeColumnsToContents();
-	return t;	 
+	return t;
 }
 
 void V3D_atlas_viewerDialog::pickColorChannel(int i, int j)
@@ -1428,11 +1473,11 @@ void V3D_atlas_viewerDialog::pickColorChannel(int i, int j)
 		v3d_msg("Fail to run pickColorChannel() as the number of color channels mismatches the color-mapping table.");
 		return;
 	}
-	
-	
+
+
 	QTableWidget* t = table[3];
 	QTableWidgetItem *newItem = t->item(i,j);
-	
+
 	switch(j)
 	{
 		case 0:
@@ -1443,9 +1488,27 @@ void V3D_atlas_viewerDialog::pickColorChannel(int i, int j)
 			newItem->setData(Qt::DecorationRole, VCOLOR(r->listChannels[i].color));
 			break;
 	}
-	
+
 	t->resizeColumnsToContents();
 	UPDATE_VIEW(triview_widget);
 	bMod = true;
 	undoButton->setEnabled(bCanUndo && bMod);
+}
+
+ChannelTabWidget* V3D_atlas_viewerDialog::createChannelTab()
+{
+	ChannelTabWidget* channelTab=0;
+	if (channelTab = new ChannelTabWidget(triview_widget, 2, false)) //2 tabs
+	{
+		connect(triview_widget, SIGNAL(colorChanged(int)), channelTab, SLOT(updateXFormWidget(int)));
+	}
+	return channelTab;
+}
+void V3D_atlas_viewerDialog::deleteChannelTab(ChannelTabWidget* channelTab)
+{
+	if (channelTab)
+	{
+		disconnect(triview_widget, SIGNAL(colorChanged(int)), channelTab, SLOT(updateXFormWidget(int)));
+		channelTab->deleteLater();
+	}
 }

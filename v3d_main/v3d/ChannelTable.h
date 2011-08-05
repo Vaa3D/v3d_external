@@ -571,10 +571,10 @@ class ChannelTabWidget : public QTabWidget //QWidget
 	void createFirst();
 
 public:
-	ChannelTabWidget(XFormWidget* parent, int tabs=3) :QTabWidget(parent)
+	ChannelTabWidget(XFormWidget* parent, int tabs=3, bool glass=false) :QTabWidget(parent)
 	{
 		xform = (XFormWidget*)parent;
-		n_tabs = tabs;			csData.bGlass = (n_tabs==2);//2 tabs for looking glass
+		n_tabs = tabs;			csData.bGlass = (glass);//2 tabs for looking glass
 		tabOptions = 0;
 		channelPage = 0;
 		brightenPage = 0;
@@ -584,6 +584,7 @@ public:
 	};
 	virtual ~ChannelTabWidget() {};
 	const ChannelSharedData & getChannelSharedData() {return csData;}
+	ChannelTable* getChannelPage() { return (channelPage); }
 
 public slots:
 	void updateXFormWidget(int plane=-1);	//called by XFormWidget's signal of colorChanged(int)
@@ -614,13 +615,14 @@ public:
 		, luts(csd.luts)
 		, bGlass(csd.bGlass)
 		, xform(xform) /////
-		, ctab(dynamic_cast<ChannelTabWidget*>(parent))
+		, ctab(qobject_cast<ChannelTabWidget*>(parent))
 	{
 		init_member();
 		linkXFormWidgetChannel();
 		connect( this,SIGNAL(channelTableChanged()), this, SLOT(updateXFormWidget()) ); //internal connect
 	};
 	virtual ~ChannelTable() {};
+	QTableWidget* getTable() {return table;};
 
 signals:
 	void channelTableChanged(); //trigger to update XFormWidget

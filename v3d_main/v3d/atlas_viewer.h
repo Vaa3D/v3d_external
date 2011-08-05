@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -40,6 +40,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../basic_c_fun/color_xyz.h"
 
 #include "v3d_core.h"
+#include "ChannelTable.h"
 
 class XFormWidget;
 class My4DImage;
@@ -100,7 +101,7 @@ public slots:
 	void selectedColor(int map=0);
 	void mapHanchuanColor() {selectedColor(1);}
 	void mapRandomColor()   {selectedColor(-1);}
-	
+
 	void pickAtlasRow(int row, int col);
 	void pickLandmark(int row, int col);
 	void highlightLandmark(int row, int col, int previous_row, int previous_col);
@@ -121,16 +122,18 @@ protected:
 	QTableWidget* createTableAtlasRows();
 	QTableWidget* createTableLandmarks();
 	QTableWidget* createColorChannelManager();
-	
+	ChannelTabWidget* createChannelTab();
+	void deleteChannelTab(ChannelTabWidget*);
+
 	QVector<bool> in_batch_stack;
 	void begin_batch() {in_batch_stack.push_back(true);}
 	void end_batch()   {in_batch_stack.pop_back();}
 	void updatedContent(QTableWidget* t);
-	
+
 	void createMenuOfColor();
 	QMenu menuColor;
-	
-	
+
+
 	QPushButton *okButton, *cancelButton, *undoButton,
 	*selectAllButton, *deselectAllButton, *inverseSelectButton,
 	*onSelectButton, *offSelectButton, *colorSelectButton;
