@@ -225,7 +225,7 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 	if(input.size() == 1) {printHelp(); return true;}
 	vector<char*> * infiles = (vector<char*> *)(input.at(0).p);
 	vector<char*> * paralist = (vector<char*> *)(input.at(1).p);
-	vector<char*> * outfiles = (vector<char*> *)(output.at(0).p);
+	vector<char*> * outfiles = output.empty() ? (new vector<char*>()) : (vector<char*> *)(output.at(0).p);
 	if(infiles->empty() || outfiles->empty()) {printHelp(); return true;}
 
 	cout<<"============== Welcome to lobeseg function ================="<<endl;
