@@ -2963,20 +2963,7 @@ void XFormWidget::onActivated(QWidget* aw)
 
 void XFormWidget::keyPressEvent(QKeyEvent * e)
 {
-//    //two temp variables for pop-up dialog
-//   	QStringList items;
-//    QString item;
-//
-
-//    double stepx = 1, stepy = 1; //default size is 1 pixel by pixel
-	//qDebug()<<"init: "<<stepx<<" "<<stepy;
-
-	//printf("[%d]\n",e->modifiers()); //don't know why this cause a crash!!
-
-    //if (e->modifiers()==Qt::ShiftModifier) //note that e->modifiers() does not work!!!
-
 	if (!imgData || !imgData->valid()) return;
-//	if (imgData->isEmpty()) return;
 
 	switch (e->key())
 	{
@@ -3266,12 +3253,6 @@ void XFormWidget::keyPressEvent(QKeyEvent * e)
 
 #if COMPILE_TARGET_LEVEL != 0
 		case Qt::Key_V:
-//			if(imgData->getDatatype()!=V3D_UINT8) //only work for UINT8 data
-//			{
-//				v3d_msg("Your data type is not UINT8 yet, - you will need to convert to UINT8 to see the data in 3D. Go to main menu \"Image/Data\" -> \"Image type\" to convert.");
-//				break;
-//			}
-
 		    if (QApplication::keyboardModifiers()==Qt::ControlModifier) //launch the full-image 3d view
 		    {
 				doImage3DView(true); //use the maximum display 512x512x256
@@ -5612,7 +5593,9 @@ void XFormWidget::triview_setzoom(double z, bool b_multiply) //b_multiply determ
 
 	b_use_dispzoom = (fabs(disp_zoom-1)>0.01) ? true : false;
 	updateDataRelatedGUI();
-	QTimer::singleShot(200, this, SLOT(cascadeWindows())); //this is very important to ensure the events propogate through. 2010-01-29
+	
+	//110805: by PHC. Now this should not be needed any more
+	//QTimer::singleShot(200, this, SLOT(cascadeWindows())); //this is very important to ensure the events propogate through. 2010-01-29
 }
 
 void XFormWidget::cascadeWindows()
