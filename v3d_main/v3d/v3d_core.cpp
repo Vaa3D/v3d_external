@@ -3770,7 +3770,7 @@ void XFormWidget::createGUI()
 	landmarkLoadButton->setText("Load");
 
 	landmarkManagerButton = new QPushButton(landmarkGroup);
-	landmarkManagerButton->setText("Landmark/Image-atlas Manager");
+	landmarkManagerButton->setText("Landmark/Atlas/Color Manager");
 
     imgV3DButton = new QPushButton(mainGroup);
     imgV3DButton->setText("See in 3D");
