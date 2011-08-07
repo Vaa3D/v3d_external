@@ -14,9 +14,6 @@ typedef void (V3DPluginInterface2_1::*PluginMenuFunc)(const QString &menu_name, 
 
 void getAllFiles(QString dirname, QStringList & fileList);
 void getObjectList(QStringList & fileList,QList<QObject*> &objectList);
-QString v3d_getInterfaceName(QObject *plugin);
-QStringList v3d_getInterfaceMenuList(QObject *plugin);
-QStringList v3d_getInterfaceFuncList(QObject *plugin);
 
 QStringList getTriViewButtonStringList();
 QList<VoidFunc> getTriViewButtonFuncList();

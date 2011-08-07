@@ -48,7 +48,7 @@ void getObjectList(QStringList & fileList,QList<QObject*> &objectList)
 	}
 }
 
-QString v3d_getInterfaceName(QObject *plugin)
+static QString v3d_getInterfaceName(QObject *plugin)
 {
     QString name;
 
@@ -72,7 +72,7 @@ QString v3d_getInterfaceName(QObject *plugin)
     return name;
 }
 
-QStringList v3d_getInterfaceMenuList(QObject *plugin)
+static QStringList v3d_getInterfaceMenuList(QObject *plugin)
 {
     QStringList qslist;
 
@@ -94,7 +94,7 @@ QStringList v3d_getInterfaceMenuList(QObject *plugin)
     return qslist;
 }
 
-QStringList v3d_getInterfaceFuncList(QObject *plugin)
+static QStringList v3d_getInterfaceFuncList(QObject *plugin)
 {
 	QStringList qslist;
 
