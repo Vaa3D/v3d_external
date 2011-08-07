@@ -1,4 +1,4 @@
-/* custom_button_func.h
+/* custom_toolbar_func.h
  * This plugin is used to define the toolbox by yourself
  * 2011-08-04 : by Hang Xiao
  */
@@ -8,7 +8,7 @@
 
 #include <v3d_interface.h>
 
-int custom_button(V3DPluginCallback2 &callback, QWidget *parent);
+int custom_toolbar(V3DPluginCallback2 &callback, QWidget *parent);
 
 #endif
 

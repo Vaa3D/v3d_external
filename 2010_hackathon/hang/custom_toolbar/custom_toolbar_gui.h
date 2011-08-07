@@ -24,7 +24,7 @@ QList<VoidFunc> getTriViewButtonFuncList();
 QStringList getView3dButtonStringList();
 QList<VoidFunc> getView3dButtonFuncList();
 
-class CustomButton : public QObject
+class CustomToolButton : public QObject
 {
 	Q_OBJECT
 	public:
@@ -41,14 +41,14 @@ class CustomButton : public QObject
 		QString buttonName;
 
 	public:
-		CustomButton(QIcon * icon, const QString &text, QObject* parent)
+		CustomToolButton(QIcon * icon, const QString &text, QObject* parent)
 		{
 			if(!icon) button = new QAction(text, parent);
 			else button = new QAction(*icon, text, parent);
 			slot_class = 0;
 			connect(button, SIGNAL(triggered(bool)), this, SLOT(run()));
 		}
-		~CustomButton()
+		~CustomToolButton()
 		{
 			delete button;
 			button = 0;
@@ -64,7 +64,7 @@ class CustomButton : public QObject
 		bool run();
 };
 
-class CustomButtonSetting
+class CustomToolbarSetting
 {
 	public:
 		QToolBar * toolBar;
@@ -80,53 +80,53 @@ class CustomButtonSetting
 		QStringList preLoadPluginPathList;
 		QStringList preLoadPluginLabelList;
 
-		QList<CustomButton*> activeTriViewButtonList;
-		QList<CustomButton*> activeView3dButtonList;
-		QList<CustomButton*> activePluginButtonList;
+		QList<CustomToolButton*> activeTriViewButtonList;
+		QList<CustomToolButton*> activeView3dButtonList;
+		QList<CustomToolButton*> activePluginButtonList;
 	public:
-		CustomButtonSetting(QString title = "Custom Toolbar")
+		CustomToolbarSetting(QString title)
 		{
+			toolBar = 0; //new QToolBar(toolBarTitle);
 			toolBarTitle = title;
-			toolBar = new QToolBar(toolBarTitle);
 			position = Qt::TopToolBarArea;
 		}
-		CustomButtonSetting(QToolBar* _toolBar)
+		CustomToolbarSetting(QToolBar* _toolBar)
 		{
 			toolBar = _toolBar;
 			toolBarTitle = toolBar->windowTitle();
-			position = Qt::LeftToolBarArea;
+			position = Qt::TopToolBarArea;
 		}
-		~CustomButtonSetting()
+		~CustomToolbarSetting()
 		{
 		}
 };
 
 bool loadToolBarSettings();
 bool saveToolBarSettings();
-QList<CustomButtonSetting*>& getToolBarSettingList();
-void setToolBarSettingList(QList<CustomButtonSetting*> & _settingList);
+QList<CustomToolbarSetting*>& getToolBarSettingList();
+void setToolBarSettingList(QList<CustomToolbarSetting*> & _settingList);
 
-class CustomButtonSelectWidget : public QWidget
+class CustomToolbarSelectWidget : public QWidget
 {
 	Q_OBJECT
 
 	public:
-		CustomButtonSelectWidget(V3DPluginCallback2 *callback, QWidget * parent, CustomButtonSetting * _cbs);
+		CustomToolbarSelectWidget(CustomToolbarSetting * _cts, V3DPluginCallback2 *callback, QWidget * parent);
 
-		~CustomButtonSelectWidget();
+		~CustomToolbarSelectWidget();
 
-		CustomButton * getButton(QCheckBox* checkbox);
-		CustomButton * getButton(QAction* action);
+		CustomToolButton * getButton(QCheckBox* checkbox);
+		CustomToolButton * getButton(QAction* action);
 
-		public slots:
-			void setToolBarButton(bool state);
+	public slots:
+		void setToolBarButton(bool state);
 		void saveToolBarState();
 		void openMe();
 	protected:
 		void closeEvent(QCloseEvent *event);
 
 	public:
-		CustomButtonSetting* cbs;
+		CustomToolbarSetting* cts;
 		QToolBar * toolBar;
 
 		QTabWidget * tabWidget;
@@ -142,17 +142,17 @@ class CustomButtonSelectWidget : public QWidget
 		QTreeWidget * triViewTreeWidget;
 		QList<QLineEdit *> triViewEditorList;
 		QList<QCheckBox *> triViewCheckboxList;
-		QList<CustomButton *> triViewCustomButtonList;
+		QList<CustomToolButton *> triViewCustomToolButtonList;
 
 		QTreeWidget * view3dTreeWidget;
 		QList<QLineEdit *> view3dEditorList;
 		QList<QCheckBox *> view3dCheckboxList;
-		QList<CustomButton *> view3dCustomButtonList;
+		QList<CustomToolButton *> view3dCustomToolButtonList;
 
 		QTreeWidget * pluginTreeWidget;
 		QList<QLineEdit *> pluginEditorList;
 		QList<QCheckBox *> pluginCheckboxList;
-		QList<CustomButton *> pluginCustomButtonList;
+		QList<CustomToolButton *> pluginCustomToolButtonList;
 		QList<QPluginLoader *> pluginLoaderList;
 
 		QIcon pluginIcon;
@@ -161,6 +161,19 @@ class CustomButtonSelectWidget : public QWidget
 		QIcon funcIcon;
 
 		QIcon toolButtonIcon;
+};
+
+class CustomToolbar : public QToolBar
+{
+public:
+	CustomToolbar(QString title , V3DPluginCallback2 * callback, QWidget * parent);
+	CustomToolbar(CustomToolbarSetting * _cts , V3DPluginCallback2 * callback, QWidget * parent);
+	~CustomToolbar();
+
+	bool showToMainWindow();
+public:
+	CustomToolbarSetting* cts;
+	CustomToolbarSelectWidget* selectWidget;
 };
 
 #endif

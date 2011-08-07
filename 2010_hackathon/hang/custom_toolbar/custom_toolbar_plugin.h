@@ -1,4 +1,4 @@
-/* custom_button_plugin.h
+/* custom_toolbar_plugin.h
  * This plugin is used to define the toolbox by yourself
  * 2011-08-04 : by Hang Xiao
  */
@@ -9,7 +9,7 @@
 #include <QtGui>
 #include <v3d_interface.h>
 
-class CustomButtonPlugin : public QObject, public V3DPluginInterface2_1
+class CustomToolbarPlugin : public QObject, public V3DPluginInterface2_1
 {
 	Q_OBJECT
 	Q_INTERFACES(V3DPluginInterface2_1);
