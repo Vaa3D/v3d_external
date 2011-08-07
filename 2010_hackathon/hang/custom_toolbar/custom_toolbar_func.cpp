@@ -6,14 +6,23 @@
 #include <v3d_interface.h>
 #include "v3d_message.h"
 #include "custom_toolbar_func.h"
-#include "custom_toolbar_gui.h"
+#include "v3d_custom_toolbar.h"
 
 const QString title = QObject::tr("Quick Button Plugin");
 
-static int bar_num = 1;
-bool isFirstLoading = true;
 int custom_toolbar(V3DPluginCallback2 &callback, QWidget *parent)
 {
+	static int bar_num = 1;
+	static bool isFirstLoading = true;
+
+	if(isFirstLoading)
+	{
+		//setPluginRootPath(QObject::tr("/Users/xiaoh10/Applications/v3d/plugins"));
+		setPluginRootPathAutomaticly();
+		//setToolbarSettingFilePath(QObject::tr("/Users/xiaoh10/.v3d_toolbox_layout"));
+		setToolbarSettingFilePathAutomaticly();
+	}
+
 	QList<CustomToolbarSetting*> & settingList = getToolBarSettingList();
 
 	// loadToolBarSettings will return to  settingList

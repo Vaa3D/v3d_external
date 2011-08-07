@@ -7,8 +7,7 @@
 
 #include "custom_toolbar_plugin.h"
 #include "custom_toolbar_func.h"
-#include "custom_toolbar_gui.h"
-#include <Phonon/VideoPlayer>
+#include "v3d_custom_toolbar.h"
  
 Q_EXPORT_PLUGIN2(custom_toolbar, CustomToolbarPlugin);
 

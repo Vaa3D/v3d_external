@@ -3,6 +3,7 @@
 
 #include <QtGui>
 #include <v3d_interface.h>
+//#include "../basic_c_fun/v3d_interface.h"
 
 class EmptyClass{};
 
@@ -14,6 +15,11 @@ typedef void (V3DPluginInterface2_1::*PluginMenuFunc)(const QString &menu_name, 
 
 void getAllFiles(QString dirname, QStringList & fileList);
 void getObjectList(QStringList & fileList,QList<QObject*> &objectList);
+
+bool setPluginRootPath(QString);
+bool setPluginRootPathAutomaticly();
+bool setToolbarSettingFilePath(QString);
+bool setToolbarSettingFilePathAutomaticly();
 
 QStringList getTriViewButtonStringList();
 QList<VoidFunc> getTriViewButtonFuncList();
@@ -112,8 +118,8 @@ class CustomToolbarSelectWidget : public QWidget
 
 		~CustomToolbarSelectWidget();
 
-		CustomToolButton * getButton(QCheckBox* checkbox);
-		CustomToolButton * getButton(QAction* action);
+		CustomToolButton * getButtonFromCheckbox(QCheckBox* checkbox);
+		CustomToolButton * getButtonFromAction(QAction* action);
 
 	public slots:
 		void setToolBarButton(bool state);

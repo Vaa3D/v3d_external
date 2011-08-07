@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include "custom_toolbar_gui.h"
+#include "v3d_custom_toolbar.h"
 
 using namespace std;
 
@@ -9,6 +9,34 @@ static QString settingFilePath = QObject::tr("/Users/xiaoh10/.v3d_toolbox_layout
 static QList<CustomToolbarSetting*> settingList;
 
 static Qt::ToolBarArea getToolBarArea(QToolBar* toolBar);
+
+bool setPluginRootPath(QString plugin_path){pluginRootPath = plugin_path;}
+bool setPluginRootPathAutomaticly()
+{
+	QDir testPluginsDir = QDir(qApp->applicationDirPath());
+#if defined(Q_OS_WIN)
+	if (testPluginsDir.dirName().toLower() == "debug" || testPluginsDir.dirName().toLower() == "release")
+		testPluginsDir.cdUp();
+#elif defined(Q_OS_MAC)
+	// In a Mac app bundle, plugins directory could be either
+	//  a - below the actual executable i.e. v3d.app/Contents/MacOS/plugins/
+	//  b - parallel to v3d.app i.e. foo/v3d.app and foo/plugins/
+	if (testPluginsDir.dirName() == "MacOS") {
+		QDir testUpperPluginsDir = testPluginsDir;
+		testUpperPluginsDir.cdUp();
+		testUpperPluginsDir.cdUp();
+		testUpperPluginsDir.cdUp(); // like foo/plugins next to foo/v3d.app
+		if (testUpperPluginsDir.cd("plugins")) testPluginsDir = testUpperPluginsDir;
+	}
+#endif
+	pluginRootPath=testPluginsDir.absolutePath();
+	qDebug()<<"plugin path : "<<testPluginsDir.absolutePath();
+}
+bool setToolbarSettingFilePath(QString file_path){settingFilePath = file_path;}
+bool setToolbarSettingFilePathAutomaticly()
+{
+	settingFilePath = qApp->applicationDirPath() + QObject::tr("/.v3d_toolbar");
+}
 
 void getAllFiles(QString dirname, QStringList & fileList)
 {
@@ -50,48 +78,48 @@ void getObjectList(QStringList & fileList,QList<QObject*> &objectList)
 
 static QString v3d_getInterfaceName(QObject *plugin)
 {
-    QString name;
+	QString name;
 
-    // Derived class must appear first, to be selected
-    V3DSingleImageInterface2_1 *iFilter2_1 = qobject_cast<V3DSingleImageInterface2_1 *>(plugin);
-    if (iFilter2_1 )  return (name = "V3DSingleImageInterface/2.1");
+	// Derived class must appear first, to be selected
+	V3DSingleImageInterface2_1 *iFilter2_1 = qobject_cast<V3DSingleImageInterface2_1 *>(plugin);
+	if (iFilter2_1 )  return (name = "V3DSingleImageInterface/2.1");
 
-    // Base class must appear later, so derived class has a chance
-    V3DSingleImageInterface *iFilter = qobject_cast<V3DSingleImageInterface *>(plugin);
-    if (iFilter )  return (name = "V3DSingleImageInterface/1.0");
+	// Base class must appear later, so derived class has a chance
+	V3DSingleImageInterface *iFilter = qobject_cast<V3DSingleImageInterface *>(plugin);
+	if (iFilter )  return (name = "V3DSingleImageInterface/1.0");
 
-    V3DPluginInterface2_1 *iface2_1 = qobject_cast<V3DPluginInterface2_1 *>(plugin);
-    if (iface2_1 )  return (name = "V3DPluginInterface/2.1");
+	V3DPluginInterface2_1 *iface2_1 = qobject_cast<V3DPluginInterface2_1 *>(plugin);
+	if (iface2_1 )  return (name = "V3DPluginInterface/2.1");
 
-    V3DPluginInterface2 *iface2 = qobject_cast<V3DPluginInterface2 *>(plugin);
-    if (iface2 )  return (name = "V3DPluginInterface/2.0");
+	V3DPluginInterface2 *iface2 = qobject_cast<V3DPluginInterface2 *>(plugin);
+	if (iface2 )  return (name = "V3DPluginInterface/2.0");
 
-    V3DPluginInterface *iface = qobject_cast<V3DPluginInterface *>(plugin);
-    if (iface )  return (name = "V3DPluginInterface/1.1");
+	V3DPluginInterface *iface = qobject_cast<V3DPluginInterface *>(plugin);
+	if (iface )  return (name = "V3DPluginInterface/1.1");
 
-    return name;
+	return name;
 }
 
 static QStringList v3d_getInterfaceMenuList(QObject *plugin)
 {
-    QStringList qslist;
+	QStringList qslist;
 
-    V3DSingleImageInterface2_1 *iFilter2_1 = qobject_cast<V3DSingleImageInterface2_1 *>(plugin);
-    if (iFilter2_1 )  return (qslist = iFilter2_1->menulist());
+	V3DSingleImageInterface2_1 *iFilter2_1 = qobject_cast<V3DSingleImageInterface2_1 *>(plugin);
+	if (iFilter2_1 )  return (qslist = iFilter2_1->menulist());
 
-    V3DSingleImageInterface *iFilter = qobject_cast<V3DSingleImageInterface *>(plugin);
-    if (iFilter )  return (qslist = iFilter->menulist());
+	V3DSingleImageInterface *iFilter = qobject_cast<V3DSingleImageInterface *>(plugin);
+	if (iFilter )  return (qslist = iFilter->menulist());
 
-    V3DPluginInterface *iface = qobject_cast<V3DPluginInterface *>(plugin);
-    if (iface )  return (qslist = iface->menulist());
+	V3DPluginInterface *iface = qobject_cast<V3DPluginInterface *>(plugin);
+	if (iface )  return (qslist = iface->menulist());
 
-    V3DPluginInterface2 *iface2 = qobject_cast<V3DPluginInterface2 *>(plugin);
-    if (iface2 )  return (qslist = iface2->menulist());
+	V3DPluginInterface2 *iface2 = qobject_cast<V3DPluginInterface2 *>(plugin);
+	if (iface2 )  return (qslist = iface2->menulist());
 
-    V3DPluginInterface2_1 *iface2_1 = qobject_cast<V3DPluginInterface2_1 *>(plugin);
-    if (iface2_1 )  return (qslist = iface2_1->menulist());
+	V3DPluginInterface2_1 *iface2_1 = qobject_cast<V3DPluginInterface2_1 *>(plugin);
+	if (iface2_1 )  return (qslist = iface2_1->menulist());
 
-    return qslist;
+	return qslist;
 }
 
 static QStringList v3d_getInterfaceFuncList(QObject *plugin)
@@ -356,7 +384,7 @@ CustomToolbarSelectWidget::~CustomToolbarSelectWidget()
 	delete cts;
 }
 
-CustomToolButton * CustomToolbarSelectWidget::getButton(QCheckBox* checkbox)
+CustomToolButton * CustomToolbarSelectWidget::getButtonFromCheckbox(QCheckBox* checkbox)
 {
 	int i = -1;
 	if((i = triViewCheckboxList.indexOf(checkbox))!= -1)
@@ -374,7 +402,7 @@ CustomToolButton * CustomToolbarSelectWidget::getButton(QCheckBox* checkbox)
 	return 0;
 }
 
-CustomToolButton * CustomToolbarSelectWidget::getButton(QAction* action)
+CustomToolButton * CustomToolbarSelectWidget::getButtonFromAction(QAction* action)
 {
 	int i = -1;
 	return 0;
@@ -383,7 +411,7 @@ CustomToolButton * CustomToolbarSelectWidget::getButton(QAction* action)
 void CustomToolbarSelectWidget::setToolBarButton(bool state)
 {
 	QCheckBox * checkbox = dynamic_cast<QCheckBox*>(sender());
-	CustomToolButton* cb = getButton(checkbox);
+	CustomToolButton* cb = getButtonFromCheckbox(checkbox);
 	if(cb==0) QMessageBox::information(0,"","0");
 	if(state && !cb->button->isVisible())
 	{
