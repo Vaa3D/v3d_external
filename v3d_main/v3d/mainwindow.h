@@ -72,6 +72,8 @@ class V3DWebService; //110315 YuY
 class soappara; //110315 YuY
 #endif
 
+#include "../custom_toolbar/v3d_custom_toolbar.h" // Hang Aug-06-2011
+
 #ifdef __V3DWSDEVELOP__
 #include "../webservice/src/v3dwebservice.hpp" // YuY March-16-2011
 class V3DWebService; //110315 YuY
@@ -126,6 +128,7 @@ public slots:
     void newFile();
     void open();
     void openWebUrl(); // By CMB 08-Oct-2010
+	void customToolbar(); // By Hang 06-Aug-2011
     void finishedLoadingWebImage(QUrl url, QString fileName, bool b_cacheFile, bool b_forceopen3dviewer); // By CMB 08-Oct-2010
     void checkForUpdates(bool b_informOnNoUpdate = true); // CMB Oct-22-2010
     void atlasView();
@@ -354,6 +357,7 @@ private:
     QAction *newAct;
     QAction *openAct;
     QAction *openWebUrlAct; // for web loading CMB
+	QAction *customToolbarAct;
     QAction *atlasViewAct;
     QAction *saveAct;
     QAction *saveAsAct;

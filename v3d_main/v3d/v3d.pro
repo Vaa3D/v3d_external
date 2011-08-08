@@ -82,6 +82,7 @@
 # 101129: (CMB) add link to CoreServices framework on Snow Leopard
 # 101201: (CMB) add dialog_update_list.ui
 # 101213: (CMB) add more update dialogs
+# 110806: (Hang) add ../custom_toolbar/v3d_custom_toolbar.h/.cpp
 # ######################################################################
 
 TEMPLATE = app
@@ -283,7 +284,8 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../jba/c++/histeq.h \
     ../jba/c++/convert_type2uint8.h \
     ../jba/c++/jba_affine_xform.h \
-    ../jba/c++/remove_nonaffine_points.h 
+    ../jba/c++/remove_nonaffine_points.h \
+	../custom_toolbar/v3d_custom_toolbar.h       
 unix:HEADERS += ../basic_c_fun/imageio_mylib.h 
 #macx:HEADERS += ../basic_c_fun/imageio_mylib.h 
 
@@ -398,7 +400,8 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../worm_straighten_c/mst_prim_c.cpp \
     ../worm_straighten_c/bfs_1root.cpp \
     ../worm_straighten_c/spline_cubic.cpp \
-    ../jba/c++/histeq.cpp
+    ../jba/c++/histeq.cpp \
+	../custom_toolbar/v3d_custom_toolbar.cpp
 unix:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 #macx:SOURCES += ../basic_c_fun/imageio_mylib.cpp
 

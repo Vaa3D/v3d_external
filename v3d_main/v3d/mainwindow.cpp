@@ -114,6 +114,7 @@ MainWindow::MainWindow()
     newAct = 0;
     openAct = 0;
     openWebUrlAct = 0; // CMB Oct-07-2010
+	customToolbarAct = 0;
     atlasViewAct = 0;
     saveAct = 0;
     saveAsAct = 0;
@@ -707,6 +708,53 @@ void MainWindow::openWebUrl()
     if (! imageUrl.isValid())
         return; // User entered nothing or error
     loadV3DUrl(imageUrl, b_cacheLocalFile);
+}
+
+// By Hang Aug-06-2011
+
+void MainWindow::customToolbar()
+{
+
+	//QMessageBox::information(0,"","Waiting ..");
+    static int bar_num = 1;
+    static bool isFirstLoading = true;
+
+	if(isFirstLoading)
+	{
+		//setPluginRootPath(QObject::tr("/Users/xiaoh10/Applications/v3d/plugins"));
+		setPluginRootPathAutomaticly();
+		//setToolbarSettingFilePath(QObject::tr("/Users/xiaoh10/.v3d_toolbox_layout"));
+		setToolbarSettingFilePathAutomaticly();
+	}
+
+    QList<CustomToolbarSetting*> & settingList = getToolBarSettingList();
+
+    // loadToolBarSettings will return to  settingList
+    if(isFirstLoading && loadToolBarSettings() && !settingList.empty())
+    {
+        bar_num = settingList.size() + 1;
+
+        foreach(CustomToolbarSetting* cts, settingList)
+        {
+            CustomToolbar * ct = new CustomToolbar(cts, this->pluginLoader, 0);
+            if(!ct->showToMainWindow()) ct->show();
+        }
+    }
+    else
+    {
+        qDebug()<<"start a new toolbar"<<endl;
+        QString barTitle = bar_num > 1 ? QObject::tr("Custom Toolbar - %1").arg(bar_num) : QObject::tr("Custom Toolbar");
+
+        CustomToolbar * ct = new CustomToolbar(barTitle, this->pluginLoader, 0);
+
+        if(!ct->showToMainWindow()) ct->show();
+
+        settingList.push_back(ct->cts);
+
+        bar_num++;
+    }
+
+    isFirstLoading = false;	
 }
 
 void MainWindow::loadV3DUrl(QUrl url, bool b_cacheLocalFile, bool b_forceopen3dviewer)
@@ -1908,6 +1956,12 @@ void MainWindow::createActions()
     openWebUrlAct->setStatusTip(tr("Open a web (URL) image"));
     connect(openWebUrlAct, SIGNAL(triggered()), this, SLOT(openWebUrl()));
 
+	// Custom toolbar, By Hang 06-Aug-2011
+	customToolbarAct = new QAction(QIcon(":pic/customize.png"), tr("&Customize a toolbar"), this);
+	customToolbarAct->setShortcut(tr("Ctrl+C"));
+	customToolbarAct->setStatusTip(tr("Customize a toolbar"));
+	connect(customToolbarAct, SIGNAL(triggered()), this, SLOT(customToolbar()));
+
     saveAct = new QAction(QIcon(":/pic/save.png"), tr("&Save or Save as"), this);
     saveAct->setShortcut(tr("Ctrl+S"));
     saveAct->setStatusTip(tr("Save the image to disk"));
@@ -2252,6 +2306,7 @@ void MainWindow::createMenus()
     fileMenu->addAction(openWebUrlAct);
 //    fileMenu->addAction(procGeneral_open_image_in_windows);
 //    fileMenu->addAction(atlasViewAct);
+	fileMenu->addAction(customToolbarAct);
     fileMenu->addAction(saveAct);
 //    fileMenu->addAction(saveAsAct);
 
@@ -2352,6 +2407,7 @@ void MainWindow::createToolBars()
     //fileToolBar->addAction(newAct); //commented on 080313
     fileToolBar->addAction(openAct);
     fileToolBar->addAction(openWebUrlAct);
+	fileToolBar->addAction(customToolbarAct);
 //    fileToolBar->addAction(import_GeneralImageFileAct);
 //    fileToolBar->addAction(atlasViewAct);
 	fileToolBar->addSeparator();
