@@ -81,7 +81,7 @@ class CustomToolbarSetting
 		QStringList preLoadView3dButtonAliasList;
 
 		QStringList preLoadPluginPathList;
-		QStringList preLoadPluginLabelList;
+		QStringList preLoadPluginAliasList;
 
 		QList<CustomToolButton*> activeTriViewButtonList;
 		QList<CustomToolButton*> activeView3dButtonList;
