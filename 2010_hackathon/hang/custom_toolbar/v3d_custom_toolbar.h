@@ -173,7 +173,7 @@ public:
 	CustomToolbar(CustomToolbarSetting * _cts , V3DPluginCallback2 * callback, QWidget * parent);
 	~CustomToolbar();
 
-	bool showToMainWindow();
+	bool showToMainWindow(QMainWindow* _mw = 0);
 public:
 	CustomToolbarSetting* cts;
 	CustomToolbarSelectWidget* selectWidget;

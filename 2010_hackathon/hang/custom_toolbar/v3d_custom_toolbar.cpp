@@ -673,8 +673,14 @@ CustomToolbar::~CustomToolbar()
 	}
 }
 
-bool CustomToolbar::showToMainWindow()
+bool CustomToolbar::showToMainWindow(QMainWindow * _mw)
 {
+	if(_mw)
+	{
+		_mw->addToolBar(cts->position, this);
+		return true;
+	}
+
 	if(this->parent() == 0)
 	{
 		QWidget * w = QApplication::activeWindow();
