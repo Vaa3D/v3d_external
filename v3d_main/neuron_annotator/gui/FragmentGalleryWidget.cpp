@@ -93,7 +93,7 @@ void FragmentGalleryWidget::updateScrollBar()
     horizontalScrollBar()->setRange(0, barMax);
 }
 
-void FragmentGalleryWidget::scrollToFragment(FragmentIndex)
+void FragmentGalleryWidget::scrollToFragment(NeuronIndex)
 {
     //assert(false);
 }

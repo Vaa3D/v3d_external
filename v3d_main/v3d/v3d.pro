@@ -204,6 +204,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/data_model/MipFragmentColors.h \
     ../neuron_annotator/data_model/GalleryMipImages.h \
     ../neuron_annotator/data_model/MipMergedData.h \
+    ../neuron_annotator/data_model/NeuronSelectionModel.h \
     ../neuron_annotator/gui/NaViewer.h \
     ../neuron_annotator/gui/Na2DViewer.h \
     ../neuron_annotator/gui/NaMainWindow.h \
@@ -234,7 +235,6 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/gui/CompartmentMapWidget.h \
     ../neuron_annotator/gui/CompartmentMapComboBox.h \
     ../neuron_annotator/gui/FragmentGalleryWidget.h \
-    ../neuron_annotator/FragmentSelectionModel.h \
 	../neuron_annotator/NeuronSelector.h \
     ../neuron_annotator/ExportFile.h \
 	../webservice/v3dwebservice.hpp \
@@ -348,6 +348,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/data_model/MipFragmentColors.cpp \
     ../neuron_annotator/data_model/GalleryMipImages.cpp \
     ../neuron_annotator/data_model/MipMergedData.cpp \
+    ../neuron_annotator/data_model/NeuronSelectionModel.cpp \
     ../neuron_annotator/NeuronAnnotatorResultNode.cpp \
     ../neuron_annotator/TimebasedIdentifierGenerator.cpp \
     ../neuron_annotator/gui/RendererNeuronAnnotator.cpp \
@@ -364,7 +365,6 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/gui/CompartmentMapWidget.cpp \
     ../neuron_annotator/gui/CompartmentMapComboBox.cpp \
     ../neuron_annotator/gui/FragmentGalleryWidget.cpp \
-    ../neuron_annotator/FragmentSelectionModel.cpp \
 	../neuron_annotator/NeuronSelector.cpp \
     ../neuron_annotator/ExportFile.cpp \
 	../webservice/v3dwebservice.cpp \

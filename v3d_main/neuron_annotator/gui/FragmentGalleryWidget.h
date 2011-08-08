@@ -3,7 +3,7 @@
 
 #include <QAbstractScrollArea>
 #include "GalleryButton.h"
-#include "../FragmentSelectionModel.h"
+#include "../data_model/NeuronSelectionModel.h"
 
 // FragmentGalleryWidget manages a virtual canvas of neuron fragment thumbnails,
 // to compensate for horrible inadequacies of Mac OS X QScrollArea widget, which
@@ -13,7 +13,7 @@ class FragmentGalleryWidget : public QAbstractScrollArea
     Q_OBJECT
 
 public:
-    typedef FragmentSelectionModel::FragmentIndex FragmentIndex;
+    typedef NeuronSelectionModel::NeuronIndex NeuronIndex;
 
     explicit FragmentGalleryWidget(QWidget *parent = 0);
     virtual ~FragmentGalleryWidget();
@@ -27,7 +27,7 @@ signals:
     void scrollPixelChanged(int);
 
 public slots:
-    void scrollToFragment(FragmentSelectionModel::FragmentIndex);
+    void scrollToFragment(NeuronSelectionModel::NeuronIndex);
     void setScrollPixel(int pixel);
 
 protected:

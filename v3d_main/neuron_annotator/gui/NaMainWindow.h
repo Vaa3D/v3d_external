@@ -8,8 +8,9 @@
 #include "ui_NaMainWindow.h"
 #include "../AnnotationSession.h"
 #include "GalleryButton.h"
-#include "../FragmentSelectionModel.h"
+#include "../data_model/NeuronSelectionModel.h"
 #include "../ExportFile.h"
+#include "../data_model/NeuronSelectionModel.h"
 
 class NeuronSelector;
 
@@ -108,7 +109,7 @@ protected slots:
     void complete3DProgress();
     void set3DProgressMessage(QString);
     void processUpdatedVolumeData(); // respond to newly loaded image data
-    void onGalleryMipImagesChanged();
+    void updateGalleries();
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -126,12 +127,11 @@ private:
     CameraModel sharedCameraModel; // optional camera sharing
     NutateThread * nutateThread;
     NeuronSelector* neuronSelector;
-    FragmentSelectionModel fragmentSelectionModel;
     QLabel * statusProgressMessage;
     QProgressBar * statusProgressBar;
     enum { MaxRecentFiles = 10 }; // clever trick to get constant in header and also use it
     OpenFileAction *recentFileActions[MaxRecentFiles];
-    QString suggestedExportFilenameFromCurrentState();
+    QString suggestedExportFilenameFromCurrentState(const NeuronSelectionModel::Reader&);
 };
 
 #endif // NAMAINWINDOW_H

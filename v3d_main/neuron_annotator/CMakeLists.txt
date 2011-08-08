@@ -23,6 +23,7 @@ QT4_WRAP_CPP(NA_MOC_SRCS
     data_model/DataColorModel.h
     data_model/GalleryMipImages.h
     data_model/MipMergedData.h
+    data_model/NeuronSelectionModel.h
     geometry/CameraModel.h
     gui/AngleWidget.h
     gui/CompartmentMapComboBox.h
@@ -41,7 +42,6 @@ QT4_WRAP_CPP(NA_MOC_SRCS
     gui/RendererNeuronAnnotator.h
     AnnotationSession.h
     ExportFile.h
-    FragmentSelectionModel.h
     MipData.h
     MipLayer.h
     NeuronSelector.h

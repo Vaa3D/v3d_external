@@ -3,7 +3,6 @@
 
 #include <QtGui>
 #include "BrightnessCalibrator.h"
-#include "../FragmentSelectionModel.h"
 #include "Na3DWidget.h"
 
 class GalleryButton : public QWidget
@@ -11,7 +10,7 @@ class GalleryButton : public QWidget
     Q_OBJECT
 
 public:
-    typedef FragmentSelectionModel::FragmentIndex FragmentIndex;
+    typedef NeuronSelectionModel::NeuronIndex NeuronIndex;
     static const int ThumbnailPixelHeight = 140;
 
     explicit GalleryButton(const QImage & image, QString name, int index, QWidget *parent = 0);
@@ -27,7 +26,7 @@ public:
 
 signals:
     void declareChange(int index, bool checked);
-    void fragmentHover(FragmentIndex fragmentIndex);
+    void fragmentHover(NeuronIndex fragmentIndex);
 
 public slots:
     void buttonPress(bool checked);
@@ -42,7 +41,7 @@ private:
 
     QPushButton* pushButton;
     QLabel* label;
-    FragmentIndex index;
+    NeuronIndex index;
 
     // TODO - Storing a pointer to 3dwidget is poor encapsulation.  Whatever this does should proceed through signals.
     Na3DWidget *p3DWidget;

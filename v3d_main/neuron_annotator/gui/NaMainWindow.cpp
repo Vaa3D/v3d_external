@@ -493,7 +493,8 @@ void NaMainWindow::updateRecentFileActions()
     }
 }
 
-QString NaMainWindow::suggestedExportFilenameFromCurrentState() {
+QString NaMainWindow::suggestedExportFilenameFromCurrentState(const NeuronSelectionModel::Reader& selectionReader)
+{
     MultiColorImageStackNode* multiColorImageStackNode=this->annotationSession->getMultiColorImageStackNode();
     QStringList lsmFilePathsList=multiColorImageStackNode->getLsmFilePathList();
     if (lsmFilePathsList.size()>0) {
@@ -504,13 +505,13 @@ QString NaMainWindow::suggestedExportFilenameFromCurrentState() {
         QStringList extComponents=name.split(QRegExp("\\."));
         QString filenamePrefix=extComponents.at(0);
         // Next, add current state
-        if(annotationSession->getOverlayStatusList().at(AnnotationSession::REFERENCE_MIP_INDEX)) {
+        if(selectionReader.getOverlayStatusList().at(AnnotationSession::REFERENCE_MIP_INDEX)) {
             filenamePrefix.append("_R");
         }
-        if (annotationSession->getOverlayStatusList().at(AnnotationSession::BACKGROUND_MIP_INDEX)) {
+        if (selectionReader.getOverlayStatusList().at(AnnotationSession::BACKGROUND_MIP_INDEX)) {
             filenamePrefix.append("_B");
         }
-        QList<bool> neuronStatusList = annotationSession->getMaskStatusList();
+        const QList<bool> neuronStatusList = selectionReader.getMaskStatusList();
         int activeCount=0;
         QString neuronStatusString;
         for (int i=0;i<neuronStatusList.size();i++) {
@@ -534,14 +535,34 @@ QString NaMainWindow::suggestedExportFilenameFromCurrentState() {
     }
 }
 
-void NaMainWindow::on_action3D_Volume_triggered() {
-    QString suggestedFile=suggestedExportFilenameFromCurrentState();
+void expressRegretsAboutVolumeWriting() {
+    // TODO
+}
+
+void NaMainWindow::on_action3D_Volume_triggered()
+{
+    if (! annotationSession) {
+        expressRegretsAboutVolumeWriting();
+        return;
+    }
+    NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+    if (! volumeReader.hasReadLock()) {
+        expressRegretsAboutVolumeWriting();
+        return;
+    }
+    NeuronSelectionModel::Reader selectionReader(annotationSession->getNeuronSelectionModel());
+    if (! selectionReader.hasReadLock()) {
+        expressRegretsAboutVolumeWriting();
+        return;
+    }
+
+    QString suggestedFile=suggestedExportFilenameFromCurrentState(selectionReader);
     QString filename = QFileDialog::getSaveFileName(0, QObject::tr("Save 3D Volume to an .tif file"), suggestedFile, QObject::tr("3D Volume (*.tif)"));
     if (!(filename.isEmpty())){
         if(annotationSession){
             ExportFile *pExport = new ExportFile;
             if(pExport->init(annotationSession->getOriginalImageStackAsMy4DImage(), annotationSession->getNeuronMaskAsMy4DImage(), annotationSession->getReferenceStack(),
-                             annotationSession->getMaskStatusList(), annotationSession->getOverlayStatusList(), filename)){
+                             selectionReader.getMaskStatusList(), selectionReader.getOverlayStatusList(), filename)){
                 connect(pExport, SIGNAL(finished()), pExport, SLOT(deleteLater()));
                 pExport->start();
             }
@@ -568,10 +589,15 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
 {
     annotationSession = new AnnotationSession();
     // TODO - deprecate processUpdatedVolumeData() in favor of using downstream data flow components.
-    connect(&annotationSession->getVolumeData(), SIGNAL(dataChanged()),
+    connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(initialized()),
             this, SLOT(processUpdatedVolumeData()));
+
+    // Both mip images and selection model need to be in place to update gallery
     connect(&annotationSession->getGalleryMipImages(), SIGNAL(dataChanged()),
-            this, SLOT(onGalleryMipImagesChanged()));
+            this, SLOT(updateGalleries()));
+    connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(initialized()),
+            this, SLOT(updateGalleries()));
+
     connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
             &annotationSession->getDataColorModel(), SLOT(setGamma(qreal)));
 
@@ -622,7 +648,7 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     return true;
 }
 
-void NaMainWindow::onGalleryMipImagesChanged()
+void NaMainWindow::updateGalleries()
 {
     updateOverlayGallery();
     updateNeuronGallery();
@@ -650,10 +676,6 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
     }
     QFileInfo lsmFileInfo(lsmName);
     setWindowTitle(QString("%1 - V3D Neuron Annotator").arg(lsmFileInfo.fileName()));
-
-    if (!annotationSession->prepareLabelIndex()) {
-        return;
-    }
 
     // ui.v3dr_glwidget->loadMy4DImage(annotationSession->getOriginalImageStackAsMy4DImage());
     if (! loadMy4DImage(annotationSession->getOriginalImageStackAsMy4DImage(),
@@ -688,8 +710,10 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
     neuronSelector->init();
 
     // show selected neuron
-    connect(ui.v3dr_glwidget, SIGNAL(neuronShown(QList<int>)), annotationSession, SLOT(showSelectedNeuron(QList<int>)));
-    connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(QList<int>)), annotationSession, SLOT(showAllNeurons(QList<int>)));
+    connect(ui.v3dr_glwidget, SIGNAL(neuronShown(QList<int>)),
+            &annotationSession->getNeuronSelectionModel(), SLOT(showSelectedNeuron(QList<int>)));
+    connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(QList<int>)),
+            &annotationSession->getNeuronSelectionModel(), SLOT(showAllNeurons(QList<int>)));
     connect(annotationSession, SIGNAL(modelUpdated(QString)), this, SLOT(synchronizeGalleryButtonsToAnnotationSession(QString)));
     connect(annotationSession, SIGNAL(modelUpdated(QString)), neuronSelector, SLOT(updateSelectedNeurons()));
     connect(ui.v3dr_glwidget, SIGNAL(neuronClearAll()), annotationSession, SLOT(clearAllNeurons()));
@@ -697,8 +721,8 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
     connect(ui.v3dr_glwidget, SIGNAL(neuronIndexChanged(int)), neuronSelector, SLOT(updateNeuronSelectList(int)));
 
     // connect(annotationSession, SIGNAL(scrollBarFocus(int)), ui.scrollArea->horizontalScrollBar(), SLOT(setValue(int)));
-    connect(annotationSession, SIGNAL(scrollBarFocus(FragmentSelectionModel::FragmentIndex)),
-            ui.fragmentGalleryWidget, SLOT(scrollToFragment(FragmentSelectionModel::FragmentIndex)));
+    connect(annotationSession, SIGNAL(scrollBarFocus(NeuronSelectionModel::NeuronIndex)),
+            ui.fragmentGalleryWidget, SLOT(scrollToFragment(NeuronSelectionModel::NeuronIndex)));
 
     // volume cut update
     ui.XcminSlider->setRange(0, annotationSession->getOriginalImageStackAsMy4DImage()->getXDim()-1);
@@ -758,6 +782,10 @@ void NaMainWindow::updateOverlayGallery()
 {
     GalleryMipImages::Reader mipReader(annotationSession->getGalleryMipImages()); // acquire read lock
     if (! mipReader.hasReadLock()) return;
+    if (mipReader.getNumberOfOverlays() < 1) return; // mip data are not initialized yet
+
+    NeuronSelectionModel::Reader selectionReader(annotationSession->getNeuronSelectionModel());
+    if (! selectionReader.hasReadLock()) return;
 
     // qDebug() << "updateOverlayGallery() start";
     // QList<QImage*> * overlayMipList = annotationSession->getOverlayMipList();
@@ -783,22 +811,24 @@ void NaMainWindow::updateOverlayGallery()
         GalleryButton* referenceButton = new GalleryButton(
                 *mipReader.getOverlayMip(AnnotationSession::REFERENCE_MIP_INDEX),
                 "Reference", AnnotationSession::REFERENCE_MIP_INDEX);
-        referenceButton->setChecked(false); // we do not want reference initially loaded
-        annotationSession->setOverlayStatus(AnnotationSession::REFERENCE_MIP_INDEX, false);
+        referenceButton->setChecked(selectionReader.getOverlayStatusList().at(
+                AnnotationSession::REFERENCE_MIP_INDEX)); // we do not want reference initially loaded
         managementLayout->addWidget(referenceButton);
         overlayGalleryButtonList.append(referenceButton);
         referenceButton->setNa3DWidget(ui.v3dr_glwidget);
-        connect(referenceButton, SIGNAL(declareChange(int,bool)), annotationSession, SLOT(overlayUpdate(int,bool)));
+        connect(referenceButton, SIGNAL(declareChange(int,bool)),
+                &annotationSession->getNeuronSelectionModel(), SLOT(updateOverlay(int,bool)));
 
         GalleryButton* backgroundButton = new GalleryButton(
                 *mipReader.getOverlayMip(AnnotationSession::BACKGROUND_MIP_INDEX),
                 "Background", AnnotationSession::BACKGROUND_MIP_INDEX);
-        backgroundButton->setChecked(true); // we do want background initially loaded
-        annotationSession->setOverlayStatus(AnnotationSession::BACKGROUND_MIP_INDEX, true);
+        backgroundButton->setChecked(selectionReader.getOverlayStatusList().at(
+                AnnotationSession::BACKGROUND_MIP_INDEX)); // we do want background initially loaded
         managementLayout->addWidget(backgroundButton);
         overlayGalleryButtonList.append(backgroundButton);
         backgroundButton->setNa3DWidget(ui.v3dr_glwidget);
-        connect(backgroundButton, SIGNAL(declareChange(int,bool)), annotationSession, SLOT(overlayUpdate(int,bool)));
+        connect(backgroundButton, SIGNAL(declareChange(int,bool)),
+                &annotationSession->getNeuronSelectionModel(), SLOT(updateOverlay(int,bool)));
     }
     // Just update icons on subsequent updates
     else {
@@ -814,32 +844,36 @@ void NaMainWindow::updateNeuronGallery()
     GalleryMipImages::Reader mipReader(annotationSession->getGalleryMipImages()); // acquire read lock
     if (! mipReader.hasReadLock()) return;
 
+    NeuronSelectionModel::Reader selectionReader(annotationSession->getNeuronSelectionModel());
+    if (! selectionReader.hasReadLock()) return;
+
     // qDebug() << "updateNeuronGallery() start";
     // QList<QImage*> * maskMipList = annotationSession->getNeuronMipList();
 
     // QFrame* ui_maskGallery = qFindChild<QFrame*>(this, "maskGallery");
     // Delete any old contents from the layout, such as previous thumbnails
 
-    if (neuronGalleryButtonList.size() != mipReader.numberOfNeurons()) {
+    if (neuronGalleryButtonList.size() != mipReader.getNumberOfNeurons()) {
         ui.fragmentGalleryWidget->clear();
 
-        // qDebug() << "Number of neuron masks = " << mipReader.numberOfNeurons();
-        for (int i = 0; i < mipReader.numberOfNeurons(); ++i) {
+        // qDebug() << "Number of neuron masks = " << mipReader.getNumberOfNeurons();
+        for (int i = 0; i < mipReader.getNumberOfNeurons(); ++i)
+        {
             GalleryButton* button = new GalleryButton(
                     *mipReader.getNeuronMip(i),
                     QString("Neuron %1").arg(i), i);
             button->setNa3DWidget(ui.v3dr_glwidget);
             neuronGalleryButtonList.append(button);
             ui.fragmentGalleryWidget->appendFragment(button);
-            button->setChecked(true); // start as checked since full image loaded initially
-            annotationSession->setNeuronMaskStatus(i, true);
-            connect(button, SIGNAL(declareChange(int,bool)), annotationSession, SLOT(neuronMaskUpdate(int,bool)));
+            button->setChecked(selectionReader.getMaskStatusList().at(i)); // start as checked since full image loaded initially
+            connect(button, SIGNAL(declareChange(int,bool)),
+                    &annotationSession->getNeuronSelectionModel(), SLOT(updateNeuronMask(int,bool)));
         }
 
-        // qDebug() << "createMaskGallery() end size=" << mipReader.numberOfNeurons();
+        // qDebug() << "createMaskGallery() end size=" << mipReader.getNumberOfNeurons();
     }
     else {
-        for (int i = 0; i < mipReader.numberOfNeurons(); ++i)
+        for (int i = 0; i < mipReader.getNumberOfNeurons(); ++i)
         {
             neuronGalleryButtonList[i]->setThumbnailIcon(*mipReader.getNeuronMip(i));
             neuronGalleryButtonList[i]->update();
@@ -882,34 +916,35 @@ void NaMainWindow::update3DViewerXYZBodyRotation()
 }
 
 // update neuron selected status
-void NaMainWindow::synchronizeGalleryButtonsToAnnotationSession(QString updateString) {
+void NaMainWindow::synchronizeGalleryButtonsToAnnotationSession(QString updateString)
+{
+    NeuronSelectionModel::Reader selectionReader(
+            annotationSession->getNeuronSelectionModel());
+    if (! selectionReader.hasReadLock()) return;
+
     // We are not using the update string in this case, which is from the modelUpdated() signal,
     // because we are doing a total update.
-    int maskStatusListSize=annotationSession->getMaskStatusList().size();
+    int maskStatusListSize=selectionReader.getMaskStatusList().size();
     int neuronGalleryButtonSize=neuronGalleryButtonList.size();
-        for (int i=0;i<annotationSession->getMaskStatusList().size();i++) {
-            if (annotationSession->neuronMaskIsChecked(i)) {
-                neuronGalleryButtonList.at(i)->setChecked(true);
-            }
-            else{
-                neuronGalleryButtonList.at(i)->setChecked(false);
-            }
-        }
+    assert(neuronGalleryButtonSize == maskStatusListSize);
+    for (int i = 0; i < maskStatusListSize; i++) {
+        neuronGalleryButtonList.at(i)->setChecked(
+                selectionReader.neuronMaskIsChecked(i));
+    }
 
-        // Reference toggle
-        if (annotationSession->getOverlayStatusList().at(AnnotationSession::REFERENCE_MIP_INDEX)) {
-            overlayGalleryButtonList.at(AnnotationSession::REFERENCE_MIP_INDEX)->setChecked(true);
-        } else {
-            overlayGalleryButtonList.at(AnnotationSession::REFERENCE_MIP_INDEX)->setChecked(false);
-        }
+    // Reference toggle
+    if (selectionReader.getOverlayStatusList().at(AnnotationSession::REFERENCE_MIP_INDEX)) {
+        overlayGalleryButtonList.at(AnnotationSession::REFERENCE_MIP_INDEX)->setChecked(true);
+    } else {
+        overlayGalleryButtonList.at(AnnotationSession::REFERENCE_MIP_INDEX)->setChecked(false);
+    }
 
-        // Background toggle
-        if (annotationSession->getOverlayStatusList().at(AnnotationSession::BACKGROUND_MIP_INDEX)) {
-            overlayGalleryButtonList.at(AnnotationSession::BACKGROUND_MIP_INDEX)->setChecked(true);
-        } else {
-            overlayGalleryButtonList.at(AnnotationSession::BACKGROUND_MIP_INDEX)->setChecked(false);
-        }
-
+    // Background toggle
+    if (selectionReader.getOverlayStatusList().at(AnnotationSession::BACKGROUND_MIP_INDEX)) {
+        overlayGalleryButtonList.at(AnnotationSession::BACKGROUND_MIP_INDEX)->setChecked(true);
+    } else {
+        overlayGalleryButtonList.at(AnnotationSession::BACKGROUND_MIP_INDEX)->setChecked(false);
+    }
 }
 
 void NaMainWindow::set3DProgress(int prog) {

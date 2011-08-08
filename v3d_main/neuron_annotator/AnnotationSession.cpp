@@ -16,6 +16,7 @@ AnnotationSession::AnnotationSession(QObject* parentParam /* = NULL */)
     , neuronAnnotatorResultNode(NULL)
     // Allocate data flow objects, in order, to automatically set up multithreaded data stream
     , volumeData(/* this */) // load from disk (cannot move qobject with a parent to a QThread)
+    , neuronSelectionModel(volumeData) // which layers are shown?
     , mipFragmentData(volumeData /* , this */) // project in Z, slice on fragment index
     , dataColorModel(volumeData) // choose colors
     , mipFragmentColors(mipFragmentData, dataColorModel) // color 'em
@@ -24,11 +25,17 @@ AnnotationSession::AnnotationSession(QObject* parentParam /* = NULL */)
     // Prepare to load 16-bit volume data from disk in a separate QThread
     connect(this, SIGNAL(volumeDataNeeded()),
             &volumeData, SLOT(loadVolumeDataFromFiles()));
-    // TODO connect mip color update signal to something
 
-    overlayStatusList.clear();
-    overlayStatusList.append(false); // reference status
-    overlayStatusList.append(false); // background status
+    connect(&neuronSelectionModel, SIGNAL(overlayUpdated(int, bool)),
+            this, SLOT(updateOverlay(int, bool)));
+    connect(&neuronSelectionModel, SIGNAL(neuronMaskUpdated(int,bool)),
+            this, SLOT(updateNeuronMask(int,bool)));
+    connect(&neuronSelectionModel, SIGNAL(selectedNeuronShown(int)),
+            this, SLOT(showSelectedNeuron(int)));
+    connect(&neuronSelectionModel, SIGNAL(allNeuronsShown()),
+            this, SLOT(updateNeuronMaskFull()));
+    connect(&neuronSelectionModel, SIGNAL(allNeuronsCleared()),
+            this, SLOT(updateNeuronMaskFull()));
 }
 
 AnnotationSession::~AnnotationSession()
@@ -119,162 +126,33 @@ bool AnnotationSession::loadVolumeData()
     return true;
 }
 
-bool AnnotationSession::prepareLabelIndex()
+void AnnotationSession::updateOverlay(int index, bool status)
 {
-    // Read lock is allocated on the stack, so it will be automatically released when the read operation
-    // is complete and the read lock falls out of scope.
-    NaVolumeData::Reader volumeReader(volumeData);
-    if (! volumeReader.hasReadLock()) return false;
-    int maxMaskIndex=volumeReader.getNumberOfNeurons();
-    volumeReader.unlock();
-
-    qDebug() << "Using maxMaskIndex=" << maxMaskIndex;
-
-    for (int i=0;i<maxMaskIndex;i++) {
-        bool status=false;
-        maskStatusList.append(status);
-        neuronSelectList.append(status);
-    }
-
-    return true;
+    qDebug() << "AnnotationSession::updateOverlay index=" << index << " status=" << status;
+    QString updateOverlayString=QString("FULL_UPDATE");
+    emit modelUpdated(updateOverlayString);
 }
 
-void AnnotationSession::overlayUpdate(int index, bool status) {
-    int statusValue=(status ? 1 : 0);
-    qDebug() << "AnnotationSession::overlayUpdate index=" << index << " status=" << status;
-    overlayStatusList.replace(index, statusValue);
-    QString overlayUpdateString=QString("FULL_UPDATE");
-    emit modelUpdated(overlayUpdateString);
+void AnnotationSession::updateNeuronMask(int index, bool status)
+{
+    int statusValue = (status ? 1 : 0);
+    qDebug() << "AnnotationSession::updateNeuronMask index=" << index << " status=" << status;
+    QString updateNeuronMaskString=QString("NEURONMASK_UPDATE %1 %2").arg(index).arg(statusValue);
+    emit modelUpdated(updateNeuronMaskString);
 }
 
-void AnnotationSession::neuronMaskUpdate(int index, bool status) {
-    qDebug() << "AnnotationSession::neuronMaskUpdate index=" << index << " status=" << status;
-    int statusValue=(status ? 1 : 0);
-    maskStatusList.replace(index, statusValue);
-    QString neuronMaskUpdateString=QString("NEURONMASK_UPDATE %1 %2").arg(index).arg(statusValue);
-    emit modelUpdated(neuronMaskUpdateString);
-}
-
-void AnnotationSession::neuronMaskFullUpdate() {
-    qDebug() << "AnnotationSession::neuronMaskFullUpdate() - emitting modelUpdated()";
+void AnnotationSession::updateNeuronMaskFull() {
+    qDebug() << "NeuronSelectionModel::updateNeuronMaskFull() - emitting modelUpdated()";
     QString updateString=QString("FULL_UPDATE");
     emit modelUpdated(updateString);
 }
 
-void AnnotationSession::setOverlayStatus(int index, bool status) {
-    overlayStatusList.replace(index, status);
-}
-
-void AnnotationSession::setNeuronMaskStatus(int index, bool status) {
-    maskStatusList.replace(index, status);
-}
-
-
-// switch status of selected neuron
-void AnnotationSession::switchSelectedNeuron(int index)
-{
-    if(neuronSelectList.at(index) == true)
-    {
-        neuronSelectList.replace(index, false);
-    }
-    else
-    {
-        neuronSelectList.replace(index, true);
-    }
-}
-
-void AnnotationSession::switchSelectedNeuronUniquelyIfOn(int index) {
-    bool alreadySelected=neuronSelectList.at(index);
-    if (!alreadySelected) {
-        // We want to ensure this selection is unique
-        for (int i=0;i<neuronSelectList.size();i++) {
-            neuronSelectList.replace(i,false);
-        }
-        neuronSelectList.replace(index, true);
-    } else {
-        neuronSelectList.replace(index, false);
-    }
-}
-
 // show selected neuron
-void AnnotationSession::showSelectedNeuron(QList<int> overlayList)
+void AnnotationSession::showSelectedNeuron(int selectionIndex)
 {
-    int selectionIndex=-1;
-    for (int i=0;i<neuronSelectList.size();i++) {
-        if (neuronSelectList.at(i)) {
-            selectionIndex=i;
-            break;
-        }
-    }
-    if (selectionIndex<0 || selectionIndex>=maskStatusList.size()) {
-        // nothing to do
-        return;
-    }
-    for (int i=0;i<overlayStatusList.size();i++) {
-        overlayStatusList.replace(i, false);
-    }
-    for (int i=0;i<overlayList.size();i++) {
-        overlayStatusList.replace(overlayList.at(i), true);
-    }
-    for (int i=0;i<maskStatusList.size();i++) {
-        maskStatusList.replace(i, false);
-    }
-    maskStatusList.replace(selectionIndex, true);
-    neuronMaskFullUpdate();
+    updateNeuronMaskFull();
     emit scrollBarFocus(selectionIndex);
     emit deselectNeuron();
-}
-
-// show all neurons
-void AnnotationSession::showAllNeurons(QList<int> overlayList)
-{
-    for (int i=0;i<overlayStatusList.size();i++) {
-        overlayStatusList.replace(i, false);
-    }
-    for (int i=0;i<overlayList.size();i++) {
-        overlayStatusList.replace(overlayList.at(i), true);
-    }
-    for (int i=0;i<maskStatusList.size();i++) {
-        maskStatusList.replace(i, true);
-    }
-    neuronMaskFullUpdate();
-}
-
-// clear all neurons
-void AnnotationSession::clearAllNeurons()
-{
-    // deselect background and reference
-    for (int i=0;i<overlayStatusList.size();i++) {
-        overlayStatusList.replace(i, false);
-    }
-
-    // deselect neurons
-    for (int i=0;i<neuronSelectList.size();i++) {
-        neuronSelectList.replace(i, false);
-    }
-    for (int i=0;i<maskStatusList.size();i++) {
-        maskStatusList.replace(i, false);
-    }
-    neuronMaskFullUpdate();
-}
-
-// update Neuron Select List
-void AnnotationSession::updateNeuronSelectList(int index)
-{
-
-    for (int i=0;i<neuronSelectList.size();i++) {
-        neuronSelectList.replace(i, false);
-        maskStatusList.replace(i, false);
-    }
-
-    neuronSelectList.replace(index, true);
-    maskStatusList.replace(index, true);
-}
-
-void AnnotationSession::clearSelections() {
-    for (int i=0;i<neuronSelectList.size();i++) {
-        neuronSelectList.replace(i, false);
-    }
 }
 
 

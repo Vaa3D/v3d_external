@@ -39,7 +39,8 @@ public:
 
         const QImage* getNeuronMip(int index) const {return galleryMipImages.neuronMipList[index];}
         const QImage* getOverlayMip(int index) const {return galleryMipImages.overlayMipList[index];}
-        size_t numberOfNeurons() const {return galleryMipImages.neuronMipList.size();}
+        size_t getNumberOfNeurons() const {return galleryMipImages.neuronMipList.size();}
+        size_t getNumberOfOverlays() const {return galleryMipImages.overlayMipList.size();}
 
     protected:
         const GalleryMipImages& galleryMipImages;
@@ -53,6 +54,11 @@ public:
             : QWriteLocker(galleryMipImagesParam.getLock())
             , galleryMipImages(galleryMipImagesParam)
         {}
+
+        QImage* getNeuronMip(int index) {return galleryMipImages.neuronMipList[index];}
+        QImage* getOverlayMip(int index) {return galleryMipImages.overlayMipList[index];}
+        size_t getNumberOfNeurons() const {return galleryMipImages.neuronMipList.size();}
+        size_t getNumberOfOverlays() const {return galleryMipImages.overlayMipList.size();}
 
         void allocateImages(int nFrags);
         void deleteImages();

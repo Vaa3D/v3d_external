@@ -84,7 +84,7 @@ signals:
 
 public slots:
     // void annotationModelUpdate(QString updateType);
-    virtual void toggleNeuronDisplay(FragmentSelectionModel::FragmentIndex index, bool checked);
+    virtual void toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked);
     virtual void updateFullVolume() {/* TODO */}
 
     void initializePixmap(); // when a new image has loaded

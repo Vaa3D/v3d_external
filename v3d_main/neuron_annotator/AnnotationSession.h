@@ -6,8 +6,8 @@
 #include "v3d_core.h"
 #include "MultiColorImageStackNode.h"
 #include "NeuronAnnotatorResultNode.h"
-#include "FragmentSelectionModel.h"
 #include "data_model/GalleryMipImages.h"
+#include "data_model/NeuronSelectionModel.h"
 
 class AnnotationSession : public QObject
 {
@@ -27,7 +27,6 @@ public:
 
     bool loadVolumeData();
 
-    bool prepareLabelIndex();
     bool loadLsmMetadata();
 
     double getZRatio() const { return zRatio; }
@@ -53,43 +52,36 @@ public:
     const My4DImage* getReferenceStack() const { return volumeData.getReferenceStack(); }
     const My4DImage* getNeuronMaskAsMy4DImage() const { return volumeData.getNeuronMaskAsMy4DImage(); }
 
-    bool neuronMaskIsChecked(int index) const { return maskStatusList.at(index); }
-    bool overlayIsChecked(int index) const { return overlayStatusList.at(index); }
-	
-    QList<bool> getMaskStatusList() const {return maskStatusList;}
-    void setNeuronMaskStatus(int index, bool status);
-    QList<bool> getOverlayStatusList() const {return overlayStatusList;}
-    void setOverlayStatus(int index, bool status);
-    QList<bool> getNeuronSelectList() const {return neuronSelectList;}
-
-    void switchSelectedNeuron(int index);
-    void switchSelectedNeuronUniquelyIfOn(int index);
-    void clearSelections();
-
     // Data flow accessors
     NaVolumeData& getVolumeData() {return volumeData;}
+    MipFragmentData& getMipFragmentData() {return mipFragmentData;}
+    MipFragmentColors& getMipFragmentColors() {return mipFragmentColors;}
     GalleryMipImages& getGalleryMipImages() {return galleryMipImages;}
     DataColorModel& getDataColorModel() {return dataColorModel;}
+    NeuronSelectionModel& getNeuronSelectionModel() {return neuronSelectionModel;}
 
     // Data flow accessors (const versions)
     const NaVolumeData& getVolumeData() const {return volumeData;}
+    const MipFragmentData& getMipFragmentData() const {return mipFragmentData;}
+    const MipFragmentColors& getMipFragmentColors() const {return mipFragmentColors;}
     const GalleryMipImages& getGalleryMipImages() const {return galleryMipImages;}
     const DataColorModel& getDataColorModel() const {return dataColorModel;}
+    const NeuronSelectionModel& getNeuronSelectionModel() const {return neuronSelectionModel;}
 
 signals:
-    void modelUpdated(QString updateType);
-    void scrollBarFocus(FragmentSelectionModel::FragmentIndex index);
+    void modelUpdated(QString updateType); // Tell 3D viewer how to update
+    void scrollBarFocus(NeuronSelectionModel::NeuronIndex index);
     void deselectNeuron();
     void volumeDataNeeded(); // stimulate VolumeData to load images from disk
 
 public slots:
-    void neuronMaskUpdate(int index, bool status);
-    void neuronMaskFullUpdate();
-    void overlayUpdate(int index, bool status);
-    void showSelectedNeuron(QList<int> overlayList);
-    void showAllNeurons(QList<int> overlayList);
-    void clearAllNeurons();
-    void updateNeuronSelectList(int index);
+    void updateNeuronMaskFull();
+
+protected slots:
+    // TODO - these slots should be moved to 3D viewer
+    void updateOverlay(int index, bool status);
+    void updateNeuronMask(int index, bool status);
+    void showSelectedNeuron(int selectionIndex);
 
 private:
     long objectId;
@@ -101,10 +93,9 @@ private:
     DataColorModel dataColorModel;
     MipFragmentColors mipFragmentColors;
     GalleryMipImages galleryMipImages;
-    //
-    QList<bool> maskStatusList;
-    QList<bool> overlayStatusList;
-    QList<bool> neuronSelectList;
+    NeuronSelectionModel neuronSelectionModel;
+
+    // TODO - move zRatio into VolumeData
     double zRatio;
 };
 

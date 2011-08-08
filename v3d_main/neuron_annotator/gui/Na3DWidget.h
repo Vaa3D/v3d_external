@@ -44,7 +44,7 @@ public:
 public slots:
     void setGammaBrightness(qreal gamma);
     virtual void annotationModelUpdate(QString updateType) {NaViewer::annotationModelUpdate(updateType);}
-    virtual void toggleNeuronDisplay(FragmentSelectionModel::FragmentIndex index, bool checked);
+    virtual void toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked);
     virtual void updateFullVolume();
 
     void resetView();

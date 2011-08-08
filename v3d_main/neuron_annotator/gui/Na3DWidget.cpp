@@ -612,7 +612,7 @@ void Na3DWidget::paintGL()
 }
 
 
-void Na3DWidget::toggleNeuronDisplay(FragmentSelectionModel::FragmentIndex index, bool checked)
+void Na3DWidget::toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked)
 {
     RendererNeuronAnnotator* ra = (RendererNeuronAnnotator*)renderer;
     emit progressMessage(QString("Updating textures"));
@@ -625,17 +625,23 @@ void Na3DWidget::toggleNeuronDisplay(FragmentSelectionModel::FragmentIndex index
 
 void Na3DWidget::updateFullVolume()
 {
+    // TODO - refresh these read locks frequently!
+    NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+    if (! volumeReader.hasReadLock()) return;
+    NeuronSelectionModel::Reader selectionReader(annotationSession->getNeuronSelectionModel());
+    if (! selectionReader.hasReadLock()) return;
+
     emit progressMessage(QString("Updating all textures"));
     // Change requiring full reload of texture image stacks
     RendererNeuronAnnotator* ra = (RendererNeuronAnnotator*)renderer;
     QList<int> tempList;
-    for (int i=0;i<annotationSession->getMaskStatusList().size();i++) {
-        if (annotationSession->neuronMaskIsChecked(i)) {
+    for (int i=0;i<selectionReader.getMaskStatusList().size();i++) {
+        if (selectionReader.neuronMaskIsChecked(i)) {
             tempList.append(i);
         }
     }
     QList<RGBA8*> overlayList;
-    QList<bool> overlayStatusList=annotationSession->getOverlayStatusList();
+    const QList<bool> overlayStatusList=selectionReader.getOverlayStatusList();
     for (int i=0;i<overlayStatusList.size();i++) {
         if (overlayStatusList.at(i)) {
             overlayList.append(ra->getOverlayTextureByAnnotationIndex(i));

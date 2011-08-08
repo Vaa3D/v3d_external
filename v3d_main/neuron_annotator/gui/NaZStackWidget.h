@@ -104,7 +104,7 @@ public slots:
     void setCurrentZSlice(int sliceNum);
     void updateROIsize(int boxSize);
     // void annotationModelUpdate(QString updateType);
-    virtual void toggleNeuronDisplay(FragmentSelectionModel::FragmentIndex index, bool checked) {/* TODO */}
+    virtual void toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked) {/* TODO */}
     virtual void updateFullVolume() {/* TODO */}
 
     void setHDRCheckState(int state);

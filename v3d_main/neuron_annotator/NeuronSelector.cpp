@@ -15,16 +15,19 @@ void NeuronSelector::init()
 // get the index of selected neuron
 int NeuronSelector::getIndexSelectedNeuron()
 {
+        NeuronSelectionModel::Reader selectionReader(
+                annotationSession->getNeuronSelectionModel());
+        if (! selectionReader.hasReadLock()) return -1;
 
 	// find in mask stack
 	sx = annotationSession->getNeuronMaskAsMy4DImage()->getXDim();
 	sy = annotationSession->getNeuronMaskAsMy4DImage()->getYDim();
-	sz = annotationSession->getNeuronMaskAsMy4DImage()->getZDim();
+        sz = annotationSession->getNeuronMaskAsMy4DImage()->getZDim();
 		
 	// sum of pixels of each neuron mask in the cube 
 	int *sum = NULL;
 	
-	int numNeuron = annotationSession->getMaskStatusList().size();
+        int numNeuron = selectionReader.getMaskStatusList().size();
 	
 	qDebug()<<"how many neurons ... "<<numNeuron;
 	
@@ -54,7 +57,7 @@ int NeuronSelector::getIndexSelectedNeuron()
 	V3DLONG ze = zlc+NB; if(ze>sz) ze = sz-1;
 
         const unsigned char *neuronMask = annotationSession->getNeuronMaskAsMy4DImage()->getRawData();
-        QList<bool> maskStatusList=annotationSession->getMaskStatusList();
+        const QList<bool>& maskStatusList=selectionReader.getMaskStatusList();
 	
 	for(V3DLONG k=zb; k<=ze; k++)
 	{
@@ -97,7 +100,14 @@ int NeuronSelector::getIndexSelectedNeuron()
 
         if(index>-1)
 	{
-                annotationSession->switchSelectedNeuronUniquelyIfOn(index);
+                // switchSelectedNeuronUniquelyIfOn() modifies the
+                // NeuronSelectionModel, and thus needs a Writer.
+                // But before getting a Writer, all Readers, including
+                // ours, must unlock.
+                selectionReader.unlock();
+                NeuronSelectionModel::Writer selectionWriter(
+                        annotationSession->getNeuronSelectionModel());
+                selectionWriter.switchSelectedNeuronUniquelyIfOn(index);
 	}
 	else
 	{
@@ -251,10 +261,14 @@ void NeuronSelector::updateSelectedPosition(double x, double y, double z) {
 	highlightSelectedNeuron();
 }
 
-void NeuronSelector::deselectCurrentNeuron() {
-    if (annotationSession->getNeuronSelectList().at(index)==true) {
-        annotationSession->getNeuronSelectList().replace(index, false);
+void NeuronSelector::deselectCurrentNeuron()
+{
+    NeuronSelectionModel::Writer selectionWriter(
+            annotationSession->getNeuronSelectionModel());
+    if (selectionWriter.getNeuronSelectList().at(index)==true) {
+        selectionWriter.getNeuronSelectList().replace(index, false);
     }
+    selectionWriter.unlock();
     annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks.clear();
     emit neuronHighlighted(false);
 }
@@ -267,8 +281,14 @@ void NeuronSelector::highlightSelectedNeuron()
     if(index<0) return;
     if(curNeuronBDxb>curNeuronBDxe || curNeuronBDyb>curNeuronBDye || curNeuronBDzb>curNeuronBDze) return;
 
+    NeuronSelectionModel::Reader selectionReader(
+            annotationSession->getNeuronSelectionModel());
+    if (! selectionReader.hasReadLock()) return;
+    bool bIsSelected = selectionReader.getNeuronSelectList().at(index);
+    selectionReader.unlock(); // unlock early because we are done with reader
+
     // index neuron selected status is true
-    if(annotationSession->getNeuronSelectList().at(index)==false)
+    if(! bIsSelected)
     {
         // highlight result
         annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks.clear();
@@ -361,7 +381,12 @@ void NeuronSelector::updateSelectedNeurons()
 {
     if(index<0) return;
 
-    if(annotationSession->getMaskStatusList().at(index)==false)
+    NeuronSelectionModel::Reader selectionReader(
+            annotationSession->getNeuronSelectionModel());
+    if (! selectionReader.hasReadLock()) return;
+    bool bIsVisible = selectionReader.getMaskStatusList().at(index);
+    selectionReader.unlock();
+    if(! bIsVisible)
         deselectCurrentNeuron();
 }
 
@@ -371,13 +396,17 @@ void NeuronSelector::updateNeuronSelectList(int neuronIndex)
 
     qDebug() << "NeuronSelector::updateNeuronSelectList() neuronIndex=" << neuronIndex;
 
-    annotationSession->updateNeuronSelectList(index);
+    NeuronSelectionModel::Writer selectionWriter(
+            annotationSession->getNeuronSelectionModel());
+    selectionWriter.updateNeuronSelectList(index);
 }
 
 void NeuronSelector::clearAllSelections() {
     // Clear selection landmarks
     annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks.clear();
     emit neuronHighlighted(false);
-    annotationSession->clearSelections();
+    NeuronSelectionModel::Writer selectionWriter(
+            annotationSession->getNeuronSelectionModel());
+    selectionWriter.clearSelections();
 }
 

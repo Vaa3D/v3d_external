@@ -25,7 +25,7 @@ public:
 
 // public slots: // NaViewer is not a QObject, so does not have slots.
     virtual void annotationModelUpdate(QString updateType);
-    virtual void toggleNeuronDisplay(FragmentSelectionModel::FragmentIndex index, bool checked) = 0;
+    virtual void toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked) = 0;
     virtual void updateFullVolume() = 0;
 
 public:

@@ -479,7 +479,7 @@ void NaLargeMIPWidget::mouseMoveEvent(QMouseEvent * event)
     }
 }
 
-void NaLargeMIPWidget::toggleNeuronDisplay(FragmentSelectionModel::FragmentIndex index, bool checked)
+void NaLargeMIPWidget::toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked)
 {
     if (! mipImage) return;
     emit neuronDisplayToggled(index, checked);
