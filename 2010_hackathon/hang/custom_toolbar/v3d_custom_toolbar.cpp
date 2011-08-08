@@ -30,7 +30,6 @@ bool setPluginRootPathAutomaticly()
 	}
 #endif
 	pluginRootPath=testPluginsDir.absolutePath();
-	qDebug()<<"plugin path : "<<testPluginsDir.absolutePath();
 }
 bool setToolbarSettingFilePath(QString file_path){settingFilePath = file_path;}
 bool setToolbarSettingFilePathAutomaticly()
@@ -56,7 +55,6 @@ void getAllFiles(QString dirname, QStringList & fileList)
 
 	for(QStringList::iterator it = dirlist.begin(); it != dirlist.end(); it++)
 	{
-		//cout<<(*it).toStdString().c_str()<<endl;
 		if(((*it) == ".") || ((*it) == "..")) continue;
 		getAllFiles(dir.absoluteFilePath(*it), fileList);
 	}
@@ -149,7 +147,8 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 
 	connect(toolBar, SIGNAL(visibilityChanged(bool)), this, SLOT(saveToolBarState()));
 
-	toolButtonIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirHomeIcon));
+	//toolButtonIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirHomeIcon));
+	toolButtonIcon.addFile(":/button_add.png");
 	toolBar->addAction(toolButtonIcon, tr("Add custom button"),this, SLOT(openMe()));
 	toolBar->addSeparator();
 
@@ -531,18 +530,14 @@ bool saveToolBarSettings()
 			ofs<<"ToolBar"<<endl;
 			ofs<<"\t"<<cts->toolBar->windowTitle().toStdString()<<endl;
 			ofs<<"\t"<<(int)(getToolBarArea(cts->toolBar))<<endl;
-			cout<<"triview button list size : "<<cts->activeTriViewButtonList.size()<<endl;
 			foreach(CustomToolButton* cb, cts->activeTriViewButtonList)
 			{
-				cout<<"triview"<<endl;
 				ofs<<"TriViewButton"<<endl;
 				ofs<<"\t"<<cb->buttonName.toStdString()<<endl;
 				ofs<<"\t"<<cb->button->text().toStdString()<<endl;
 			}
-			cout<<"view3d button list size : "<<cts->activeView3dButtonList.size()<<endl;
 			foreach(CustomToolButton* cb, cts->activeView3dButtonList)
 			{
-				cout<<"view3d"<<endl;
 				ofs<<"View3dButton"<<endl;
 				ofs<<"\t"<<cb->buttonName.toStdString()<<endl;
 				ofs<<"\t"<<cb->button->text().toStdString()<<endl;
@@ -576,8 +571,6 @@ bool loadToolBarSettings()
 		{
 			char title[1000]; ifs.ignore(1000, '\t'); ifs.getline(title, 1000);
 			int position; ifs.ignore(1000,'\t');ifs >> position;
-			cout<<"title = \""<<title<<"\""<<endl;
-			cout<<"position = "<<position<<endl;
 
 			cts = new CustomToolbarSetting(QString(title));
 			cts->position = (Qt::ToolBarArea)position;
@@ -607,8 +600,6 @@ bool loadToolBarSettings()
 		{
 			char path[1000]; ifs.ignore(1000,'\t'); ifs.getline(path, 1000);
 			char label[1000]; ifs.ignore(1000,'\t'); ifs.getline(label,1000);
-			cout<<"path = \""<<path<<"\""<<endl;
-			cout<<"label = \""<<label<<"\""<<endl;
 			if(cts)
 			{
 				cts->preLoadPluginPathList.push_back(QString(path).trimmed());

@@ -13,6 +13,8 @@ SOURCES	+= custom_toolbar_func.cpp
 SOURCES += v3d_custom_toolbar.cpp
 SOURCES	+= ../../../v3d_main/basic_c_fun/v3d_message.cpp
 
+RESOURCES += custom_toolbar.qrc
+
 TARGET	= $$qtLibraryTarget(custom_toolbar)
 DESTDIR	= ~/Applications/v3d/plugins/custom_toolbar/
 

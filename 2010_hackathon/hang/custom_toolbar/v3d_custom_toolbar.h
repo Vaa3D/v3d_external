@@ -1,9 +1,15 @@
 #ifndef __CUSTOM_BUTTON_H__
 #define __CUSTOM_BUTTON_H__
 
+#define  __v3d_custom_toolbar_plugin_
+
 #include <QtGui>
-#include <v3d_interface.h>
-//#include "../basic_c_fun/v3d_interface.h"
+
+#ifdef __v3d_custom_toolbar_plugin_
+	#include <v3d_interface.h>
+#else
+	#include "../basic_c_fun/v3d_interface.h"
+#endif
 
 class EmptyClass{};
 
@@ -86,6 +92,7 @@ class CustomToolbarSetting
 		QList<CustomToolButton*> activeTriViewButtonList;
 		QList<CustomToolButton*> activeView3dButtonList;
 		QList<CustomToolButton*> activePluginButtonList;
+
 	public:
 		CustomToolbarSetting(QString title)
 		{
