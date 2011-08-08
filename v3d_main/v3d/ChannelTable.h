@@ -139,9 +139,9 @@ RGB8 lookup_mix(vector<unsigned char>& mC, vector< vector<RGBA8> >& mLut, int op
 			float a = MAX(o1, MAX(o2, o3));
 						//(o1+o2+o3)/3;
 			avg_a += a;
-			avg_1 += o1*a;
-			avg_2 += o2*a;
-			avg_3 += o3*a;
+			avg_1 += o1 *a;
+			avg_2 += o2 *a;
+			avg_3 += o3 *a;
 		}
 		//avg_alpha
 //		avg_a1 /=N;

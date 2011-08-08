@@ -61,9 +61,11 @@ int ChannelTabWidget::channelCount() { return (channelPage)? channelPage->rowCou
 void ChannelTabWidget::updateXFormWidget(int plane)
 {
 	if (channelPage)  channelPage->updateXFormWidget(plane);
-	if (plane<0 && xform) //-1 means issued by channelPage
+	if (plane <0   //-1 means issued by channelPage
+		&& !csData.bGlass //110808 except glass
+		)
 	{
-		xform->syncChannelTabWidgets(this);
+		if (xform)  xform->syncChannelTabWidgets(this);
 	}
 }
 
@@ -85,7 +87,7 @@ void ChannelTabWidget::linkXFormWidgetChannel()
 	{
 		int i;
 		QString qs;
-		i= tabOptions->insertTab(0, channelPage,	qs =QString("Channels (%1)").arg(channelPage->rowCount()));
+		i= tabOptions->insertTab(0, channelPage,	qs =tr("Channels (%1)").arg(channelPage->rowCount()));
 		tabOptions->setTabToolTip(i, qs);
 		tabOptions->setCurrentIndex(0); ///////
 	}
@@ -108,8 +110,8 @@ void ChannelTabWidget::createFirst()
 	{
 		int i;
 		QString qs;
-		i= tabOptions->insertTab( 1, brightenPage,	qs =QString("Intensity"));
-		tabOptions->setTabToolTip(i, qs);
+		i= tabOptions->insertTab( 1, brightenPage,	qs =tr("Intensity"));
+		tabOptions->setTabToolTip(i, tr("Intensity transform before LUT"));
 		tabOptions->setCurrentIndex(0);/////
 	}
 	if (n_tabs==2) return;
@@ -119,7 +121,7 @@ void ChannelTabWidget::createFirst()
 	{
 		int i;
 		QString qs;
-		i= tabOptions->insertTab( 2, miscPage,		qs =QString("Misc"));
+		i= tabOptions->insertTab( 2, miscPage,		qs =tr("Misc"));
 		tabOptions->setTabToolTip(i, qs);
 		tabOptions->setCurrentIndex(0);/////
 
@@ -268,6 +270,9 @@ void ChannelTable::linkXFormWidgetChannel()
 void ChannelTable::createNewTable()
 {
 	table = createTableChannel();
+	table->setToolTip(tr("Right-click on row to pop color Menu.\n"
+			"Double-click on color cell to pop color Dialog.\n"
+			"Also you can do multi-selection."));
 	table->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
 	radioButton_Max = new QRadioButton("Max");
@@ -275,7 +280,7 @@ void ChannelTable::createNewTable()
 	radioButton_Mean = new QRadioButton("Mean");
 	radioButton_OIT = new QRadioButton("OIT");  	radioButton_OIT->setToolTip("Order Independent Transparency");
 	radioButton_Index = new QRadioButton("Index");
-	checkBox_Rescale = new QCheckBox("0~255");		checkBox_Rescale->setToolTip("Re-scale before LUT");
+	checkBox_Rescale = new QCheckBox("0~255");		checkBox_Rescale->setToolTip(tr("Re-scale before LUT"));
 	checkBox_R = new QCheckBox("R");		checkBox_R->setToolTip("Output Red");
 	checkBox_G = new QCheckBox("G");		checkBox_G->setToolTip("Output Green");
 	checkBox_B = new QCheckBox("B");		checkBox_B->setToolTip("Output Blue");
@@ -614,9 +619,6 @@ QTableWidget*  ChannelTable::createTableChannel()
 	//t->setHorizontalHeaderLabels(qsl);
 	t->horizontalHeader()->hide();
 	t->verticalHeader()->hide();
-	t->setToolTip(tr("Right-click on row to pop color Menu.\n"
-			"Double-click on color cell to pop color Dialog.\n"
-			"Also you can do multi-selection."));
 
 	//qDebug("  create begin t->rowCount = %d", t->rowCount());
 	for (int i=0; i<row; i++)

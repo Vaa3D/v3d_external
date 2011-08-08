@@ -31,7 +31,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 /*
  *  renderer_tex2.h
  *
- *  implementation in renderer_tex2.cpp, renderer_obj2.cpp, renderer_labelfield.cpp, renderer_hit2.cpp
+ *  implementation in renderer_tex2.cpp (volume rendering)
+ * 			&	renderer_obj2.cpp 		(surface object rendering)
+ *  		& 	renderer_labelfield.cpp (extracting iso-surface from label-field)
+ *  		&	renderer_hit2.cpp 		(processing object selection and the functions of object's context menu)
  *
  *
  *  Created by Ruan Zongcai on 8/6/08.
