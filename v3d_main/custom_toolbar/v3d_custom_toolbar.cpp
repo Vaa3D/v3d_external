@@ -30,7 +30,6 @@ bool setPluginRootPathAutomaticly()
 	}
 #endif
 	pluginRootPath=testPluginsDir.absolutePath();
-	qDebug()<<"plugin path : "<<testPluginsDir.absolutePath();
 }
 bool setToolbarSettingFilePath(QString file_path){settingFilePath = file_path;}
 bool setToolbarSettingFilePathAutomaticly()
@@ -56,7 +55,6 @@ void getAllFiles(QString dirname, QStringList & fileList)
 
 	for(QStringList::iterator it = dirlist.begin(); it != dirlist.end(); it++)
 	{
-		//cout<<(*it).toStdString().c_str()<<endl;
 		if(((*it) == ".") || ((*it) == "..")) continue;
 		getAllFiles(dir.absoluteFilePath(*it), fileList);
 	}
@@ -149,7 +147,8 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 
 	connect(toolBar, SIGNAL(visibilityChanged(bool)), this, SLOT(saveToolBarState()));
 
-	toolButtonIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirHomeIcon));
+	//toolButtonIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirHomeIcon));
+	toolButtonIcon.addFile(":/button_add.png");
 	toolBar->addAction(toolButtonIcon, tr("Add custom button"),this, SLOT(openMe()));
 	toolBar->addSeparator();
 
@@ -309,16 +308,16 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 			pluginItem->setIcon(0, pluginIcon);
 
 			QStringList menulist = v3d_getInterfaceMenuList(plugin);
-			foreach(QString menu, menulist)
+			foreach(QString menu_name, menulist)
 			{
 				QTreeWidgetItem * menuItem = new QTreeWidgetItem(pluginItem);
 
-				QCheckBox * checkbox = new QCheckBox(menu);
+				QCheckBox * checkbox = new QCheckBox(menu_name);
 				checkbox->setChecked(false);
 				pluginTreeWidget->setItemWidget(menuItem, 0, checkbox);
 				pluginCheckboxList.push_back(checkbox);
 
-				QLineEdit * editor = new QLineEdit(menu);
+				QLineEdit * editor = new QLineEdit(menu_name);
 				pluginTreeWidget->setItemWidget(menuItem, 1, editor);
 				editor->setDisabled(true);
 				pluginEditorList.push_back(editor);
@@ -327,7 +326,7 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 				qb->button->setVisible(false);
 				qb->slot_class = plugin;
 				qb->bt = 2;
-				qb->menu_name = menu;
+				qb->menu_name = menu_name;
 				qb->callback = callback;
 				qb->parent = parent;
 				qb->plugin_path = file;
@@ -337,10 +336,10 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 				connect(checkbox, SIGNAL(clicked(bool)), editor, SLOT(setEnabled(bool)));
 				connect(checkbox, SIGNAL(clicked(bool)), this, SLOT(setToolBarButton(bool)));
 				connect(editor, SIGNAL(textChanged(const QString &)), qb, SLOT(setButtonText(const QString &)));
-				if(cts->preLoadPluginPathList.contains(file))
+				if(cts->preLoadPluginPathList.contains(file + "::" + menu_name))
 				{
-					int i = cts->preLoadPluginPathList.indexOf(file);
-					editor->setText(cts->preLoadPluginLabelList.at(i));
+					int i = cts->preLoadPluginPathList.indexOf(file + "::" + menu_name);
+					editor->setText(cts->preLoadPluginAliasList.at(i));
 					editor->setEnabled(true);
 					checkbox->setChecked(Qt::Checked);
 					pluginItem->setExpanded(true);
@@ -531,18 +530,14 @@ bool saveToolBarSettings()
 			ofs<<"ToolBar"<<endl;
 			ofs<<"\t"<<cts->toolBar->windowTitle().toStdString()<<endl;
 			ofs<<"\t"<<(int)(getToolBarArea(cts->toolBar))<<endl;
-			cout<<"triview button list size : "<<cts->activeTriViewButtonList.size()<<endl;
 			foreach(CustomToolButton* cb, cts->activeTriViewButtonList)
 			{
-				cout<<"triview"<<endl;
 				ofs<<"TriViewButton"<<endl;
 				ofs<<"\t"<<cb->buttonName.toStdString()<<endl;
 				ofs<<"\t"<<cb->button->text().toStdString()<<endl;
 			}
-			cout<<"view3d button list size : "<<cts->activeView3dButtonList.size()<<endl;
 			foreach(CustomToolButton* cb, cts->activeView3dButtonList)
 			{
-				cout<<"view3d"<<endl;
 				ofs<<"View3dButton"<<endl;
 				ofs<<"\t"<<cb->buttonName.toStdString()<<endl;
 				ofs<<"\t"<<cb->button->text().toStdString()<<endl;
@@ -550,7 +545,7 @@ bool saveToolBarSettings()
 			foreach(CustomToolButton* cb, cts->activePluginButtonList)
 			{
 				ofs<<"PluginButton"<<endl;
-				ofs<<"\t"<<cb->plugin_path.toStdString()<<endl;
+				ofs<<"\t"<<cb->plugin_path.toStdString()<<"::"<<cb->menu_name.toStdString()<<endl;
 				ofs<<"\t"<<cb->button->text().toStdString()<<endl;
 			}
 		}
@@ -576,8 +571,6 @@ bool loadToolBarSettings()
 		{
 			char title[1000]; ifs.ignore(1000, '\t'); ifs.getline(title, 1000);
 			int position; ifs.ignore(1000,'\t');ifs >> position;
-			cout<<"title = \""<<title<<"\""<<endl;
-			cout<<"position = "<<position<<endl;
 
 			cts = new CustomToolbarSetting(QString(title));
 			cts->position = (Qt::ToolBarArea)position;
@@ -607,12 +600,10 @@ bool loadToolBarSettings()
 		{
 			char path[1000]; ifs.ignore(1000,'\t'); ifs.getline(path, 1000);
 			char label[1000]; ifs.ignore(1000,'\t'); ifs.getline(label,1000);
-			cout<<"path = \""<<path<<"\""<<endl;
-			cout<<"label = \""<<label<<"\""<<endl;
 			if(cts)
 			{
 				cts->preLoadPluginPathList.push_back(QString(path).trimmed());
-				cts->preLoadPluginLabelList.push_back(QString(label).trimmed());
+				cts->preLoadPluginAliasList.push_back(QString(label).trimmed());
 			}
 		}
 	}
@@ -673,8 +664,14 @@ CustomToolbar::~CustomToolbar()
 	}
 }
 
-bool CustomToolbar::showToMainWindow()
+bool CustomToolbar::showToMainWindow(QMainWindow * _mw)
 {
+	if(_mw)
+	{
+		_mw->addToolBar(cts->position, this);
+		return true;
+	}
+
 	if(this->parent() == 0)
 	{
 		QWidget * w = QApplication::activeWindow();

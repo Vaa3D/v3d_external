@@ -289,6 +289,9 @@ MainWindow::MainWindow()
 	//090811 RZC
 	pluginLoader = new V3d_PluginLoader(pluginProcMenu, this);
 
+	// Aug-08-2011 Hang
+	this->customToolbar();
+
 	// Dec-20-2010 YuY
 	//connect(&sub_thread, SIGNAL(transactionStarted()), this, SLOT(transactionStart()), Qt::DirectConnection); //Qt::QueuedConnection
     //connect(&sub_thread, SIGNAL(allTransactionsDone()), this, SLOT(allTransactionsDone()), Qt::DirectConnection);
@@ -719,35 +722,33 @@ void MainWindow::customToolbar()
     static int bar_num = 1;
     static bool isFirstLoading = true;
 
+    QList<CustomToolbarSetting*> & settingList = getToolBarSettingList();
 	if(isFirstLoading)
 	{
 		//setPluginRootPath(QObject::tr("/Users/xiaoh10/Applications/v3d/plugins"));
 		setPluginRootPathAutomaticly();
 		//setToolbarSettingFilePath(QObject::tr("/Users/xiaoh10/.v3d_toolbox_layout"));
 		setToolbarSettingFilePathAutomaticly();
+
+		// loadToolBarSettings will return to  settingList
+		if(loadToolBarSettings() && !settingList.empty())
+		{
+			bar_num = settingList.size() + 1;
+
+			foreach(CustomToolbarSetting* cts, settingList)
+			{
+				CustomToolbar * ct = new CustomToolbar(cts, this->pluginLoader, 0);
+				if(!ct->showToMainWindow(this)) ct->show();
+			}
+		}
 	}
-
-    QList<CustomToolbarSetting*> & settingList = getToolBarSettingList();
-
-    // loadToolBarSettings will return to  settingList
-    if(isFirstLoading && loadToolBarSettings() && !settingList.empty())
-    {
-        bar_num = settingList.size() + 1;
-
-        foreach(CustomToolbarSetting* cts, settingList)
-        {
-            CustomToolbar * ct = new CustomToolbar(cts, this->pluginLoader, 0);
-            if(!ct->showToMainWindow()) ct->show();
-        }
-    }
-    else
-    {
-        qDebug()<<"start a new toolbar"<<endl;
+	else
+	{
         QString barTitle = bar_num > 1 ? QObject::tr("Custom Toolbar - %1").arg(bar_num) : QObject::tr("Custom Toolbar");
 
         CustomToolbar * ct = new CustomToolbar(barTitle, this->pluginLoader, 0);
 
-        if(!ct->showToMainWindow()) ct->show();
+        if(!ct->showToMainWindow(this)) ct->show();
 
         settingList.push_back(ct->cts);
 

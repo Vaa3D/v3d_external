@@ -18,5 +18,6 @@
         <file>pic/v3dIcon128.png</file>
         <file>pic/rotate_icon.png</file>
 		<file>pic/customize.png</file>
+		<file alias="button_add.png">pic/button_add.png</file>
     </qresource>
 </RCC>
