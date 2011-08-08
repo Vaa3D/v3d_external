@@ -159,6 +159,7 @@ public:
 
 protected:
 	virtual void changeEvent(QEvent* e);    //110802 RZC
+	virtual void hideEvent(QHideEvent * e); //110808 RZC
 
 	void keyPressEvent ( QKeyEvent * e); //100815, PHC
 	void closeEvent ( QCloseEvent * event );  //080814

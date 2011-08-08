@@ -62,7 +62,7 @@ void ChannelTabWidget::updateXFormWidget(int plane)
 {
 	if (channelPage)  channelPage->updateXFormWidget(plane);
 	if (plane <0   //-1 means issued by channelPage
-		&& !csData.bGlass //110808 except glass
+		&& !csData.bGlass //110808 except looking glass
 		)
 	{
 		if (xform)  xform->syncChannelTabWidgets(this);
@@ -280,7 +280,7 @@ void ChannelTable::createNewTable()
 	radioButton_Mean = new QRadioButton("Mean");
 	radioButton_OIT = new QRadioButton("OIT");  	radioButton_OIT->setToolTip("Order Independent Transparency");
 	radioButton_Index = new QRadioButton("Index");
-	checkBox_Rescale = new QCheckBox("0~255");		checkBox_Rescale->setToolTip(tr("Re-scale before LUT"));
+	checkBox_Rescale = new QCheckBox("0~255");		checkBox_Rescale->setToolTip(tr("Re-scale intensity before LUT"));
 	checkBox_R = new QCheckBox("R");		checkBox_R->setToolTip("Output Red");
 	checkBox_G = new QCheckBox("G");		checkBox_G->setToolTip("Output Green");
 	checkBox_B = new QCheckBox("B");		checkBox_B->setToolTip("Output Blue");

@@ -2946,6 +2946,10 @@ void XFormWidget::changeEvent(QEvent* e)
 	}
 	else	if (channelTabGlass)  channelTabGlass->hide();
 }
+void XFormWidget::hideEvent(QHideEvent* e)
+{
+	if (channelTabGlass)  channelTabGlass->hide();
+}
 void XFormWidget::onActivated(QWidget* aw)
 {
 	//qDebug() <<"XFormWidget::onActivated" <<aw <<"this="<<this <<windowTitle();
