@@ -209,6 +209,7 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 			checkbox->setChecked(Qt::Checked);
 
 			qb->button->setVisible(true);
+			qb->button->setText(cts->preLoadTriViewButtonAliasList.at(i));
 			toolBar->addAction(qb->button);
 			cts->activeTriViewButtonList.push_back(qb);
 		}
@@ -267,6 +268,7 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 			checkbox->setChecked(Qt::Checked);
 
 			qb->button->setVisible(true);
+			qb->button->setText(cts->preLoadView3dButtonAliasList.at(i));
 			toolBar->addAction(qb->button);
 			cts->activeView3dButtonList.push_back(qb);
 		}
@@ -345,6 +347,7 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 					pluginItem->setExpanded(true);
 
 					qb->button->setVisible(true);
+					qb->button->setText(cts->preLoadPluginAliasList.at(i));
 					toolBar->addAction(qb->button);
 					cts->activePluginButtonList.push_back(qb);
 				}
@@ -445,6 +448,7 @@ void CustomToolbarSelectWidget::openMe()
 void CustomToolbarSelectWidget::closeEvent(QCloseEvent *event)
 {
 	if(toolBar && !toolBar->isVisible()) toolBar->show();
+	saveToolBarSettings();
 }
 void CustomToolbarSelectWidget::saveToolBarState()
 {
