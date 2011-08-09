@@ -1,12 +1,12 @@
 #ifndef __CUSTOM_BUTTON_H__
 #define __CUSTOM_BUTTON_H__
 
-//#define  __v3d_custom_toolbar_plugin_
+//#define  __v3d_custom_toolbar_plugin__
 
 #include <QtGui>
 #include <map>
 
-#ifdef __v3d_custom_toolbar_plugin_
+#ifdef __v3d_custom_toolbar_plugin__
 	#include <v3d_interface.h>
 #else
 	#include "../v3d/mainwindow.h"
@@ -16,7 +16,7 @@
 class EmptyClass{};
 
 typedef void (EmptyClass::*VoidFunc)();
-#ifndef __v3d_custom_toolbar_plugin_
+#ifndef __v3d_custom_toolbar_plugin__
 typedef void (MainWindow::*MainWindowFunc)();
 #endif
 typedef void (TriviewControl::*TriviewFunc)();
@@ -32,7 +32,7 @@ bool setPluginRootPathAutomaticly();
 bool setToolbarSettingFilePath(QString);
 bool setToolbarSettingFilePathAutomaticly();
 
-QList<std::pair<QString, VoidFunc> > getMainWindowMenuStringAndFuncList();
+QList<std::pair<QString, VoidFunc> > getMainWindowButtonStringAndFuncList();
 
 QStringList getTriViewButtonStringList();
 QList<VoidFunc> getTriViewButtonFuncList();
@@ -52,10 +52,12 @@ class CustomToolButton : public QObject
 
 		V3DPluginCallback2 * callback;
 		QWidget * parent;   // parent should be v3d MainWindow type, when invoke QMainWindow menu action
-		QString plugin_path;
 
-		QString menu_name;  // the original menu name of plugin menu (eg. lobeseg) and full mainwindow menu (eg. File::Open)
-		QString buttonName; // the original button name of triview and view3d button
+		QString buttonName; // the identification of different button. With Format:
+							// mainwindow menu : Full menu path,          eg. File::Open
+							// triview button  : button's display label,  eg. See in 3D
+							// view3d button   : button's display label,  eg. Sync Tri-view Objs
+							// plugin menu     : plugin path + menu name, eg. /home/hang/Applications/v3d/plugin/ct3d/libct3d_debug.dylib::About
 
 	public:
 		CustomToolButton(QIcon * icon, const QString &text, QObject* parent)
@@ -88,22 +90,15 @@ class CustomToolbarSetting
 		QString toolBarTitle;                        // preloaded toolbar title
 		Qt::ToolBarArea position;                    // preloaded toolbar position
 
-		QStringList preLoadMainWindowMenuNameList;
-		QStringList preLoadMainWindowMenuAliasList;
+		QStringList preLoadedNameList;      
+		QStringList preLoadedAliasList;
 
-		QStringList preLoadTriViewButtonNameList;
-		QStringList preLoadTriViewButtonAliasList;
-
-		QStringList preLoadView3dButtonNameList;
-		QStringList preLoadView3dButtonAliasList;
-
-		QStringList preLoadPluginMenuPathList;      // Formatted as : PluginPath::MenuName
-		QStringList preLoadPluginMenuAliasList;
-
-		QList<CustomToolButton*> activeMainWindowMenuList;
+		QList<CustomToolButton*> activeMainWindowButtonList;
 		QList<CustomToolButton*> activeTriViewButtonList;
 		QList<CustomToolButton*> activeView3dButtonList;
 		QList<CustomToolButton*> activePluginButtonList;
+
+		QList<CustomToolButton*> allActiveButtonList;
 
 	public:
 		CustomToolbarSetting(QString title)
@@ -137,6 +132,9 @@ class CustomToolbarSelectWidget : public QWidget
 
 		~CustomToolbarSelectWidget();
 
+		void setInitialToolBarButton();
+
+		CustomToolButton * getButtonFromButtonName(QString buttonName);
 		CustomToolButton * getButtonFromCheckbox(QCheckBox* checkbox);
 		CustomToolButton * getButtonFromAction(QAction* action);
 
