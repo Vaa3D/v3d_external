@@ -1,10 +1,7 @@
 #include "DataColorModel.h"
 
-DataColorModel::DataColorModel(
-        const NaVolumeData& volumeDataParam,
-        QObject *parentParam /* = NULL */)
-    : NaLockableData(parentParam)
-    , volumeData(volumeDataParam)
+DataColorModel::DataColorModel(const NaVolumeData& volumeDataParam)
+    : volumeData(volumeDataParam)
 {
     connect(&volumeData, SIGNAL(dataChanged()),
             this, SLOT(resetColors()));

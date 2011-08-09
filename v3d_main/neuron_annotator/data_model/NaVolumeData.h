@@ -14,7 +14,7 @@ class NaVolumeData : public NaLockableData
     Q_OBJECT
 
 public:
-    explicit NaVolumeData(QObject * parentParam = NULL);
+    explicit NaVolumeData();
     virtual ~NaVolumeData();
 
     // TODO - eventually deprecate direct accessors in favor of stack-allocated lock objects
@@ -49,7 +49,7 @@ public:
     {
     public:
         Reader(const NaVolumeData& data)
-            : BaseReadLocker(data.getLock())
+            : BaseReadLocker(data)
             , m_data(&data)
         {}
 
@@ -65,11 +65,11 @@ public:
 
     // NaVolumeData::Writer is a blocking stack-allocated write lock manager
     class Writer; friend class Writer;
-    class Writer : public QWriteLocker
+    class Writer : public BaseWriteLocker
     {
     public:
         Writer(NaVolumeData& data)
-            : QWriteLocker(data.getLock())
+            : BaseWriteLocker(data)
             , m_data(&data)
         {}
 

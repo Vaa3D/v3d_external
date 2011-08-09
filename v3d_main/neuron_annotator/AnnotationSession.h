@@ -8,6 +8,7 @@
 #include "NeuronAnnotatorResultNode.h"
 #include "data_model/GalleryMipImages.h"
 #include "data_model/NeuronSelectionModel.h"
+#include "data_model/MipMergedData.h"
 
 class AnnotationSession : public QObject
 {
@@ -54,19 +55,21 @@ public:
 
     // Data flow accessors
     NaVolumeData& getVolumeData() {return volumeData;}
+    NeuronSelectionModel& getNeuronSelectionModel() {return neuronSelectionModel;}
+    DataColorModel& getDataColorModel() {return dataColorModel;}
     MipFragmentData& getMipFragmentData() {return mipFragmentData;}
     MipFragmentColors& getMipFragmentColors() {return mipFragmentColors;}
     GalleryMipImages& getGalleryMipImages() {return galleryMipImages;}
-    DataColorModel& getDataColorModel() {return dataColorModel;}
-    NeuronSelectionModel& getNeuronSelectionModel() {return neuronSelectionModel;}
+    MipMergedData& getMipMergedData() {return mipMergedData;}
 
     // Data flow accessors (const versions)
     const NaVolumeData& getVolumeData() const {return volumeData;}
+    const NeuronSelectionModel& getNeuronSelectionModel() const {return neuronSelectionModel;}
+    const DataColorModel& getDataColorModel() const {return dataColorModel;}
     const MipFragmentData& getMipFragmentData() const {return mipFragmentData;}
     const MipFragmentColors& getMipFragmentColors() const {return mipFragmentColors;}
     const GalleryMipImages& getGalleryMipImages() const {return galleryMipImages;}
-    const DataColorModel& getDataColorModel() const {return dataColorModel;}
-    const NeuronSelectionModel& getNeuronSelectionModel() const {return neuronSelectionModel;}
+    const MipMergedData& getMipMergedData() const {return mipMergedData;}
 
 signals:
     void modelUpdated(QString updateType); // Tell 3D viewer how to update
@@ -79,7 +82,6 @@ public slots:
 
 protected slots:
     // TODO - these slots should be moved to 3D viewer
-    void updateOverlay(int index, bool status);
     void updateNeuronMask(int index, bool status);
     void showSelectedNeuron(int selectionIndex);
 
@@ -89,11 +91,12 @@ private:
     NeuronAnnotatorResultNode* neuronAnnotatorResultNode;
     // Data flow objects
     NaVolumeData volumeData;
-    MipFragmentData mipFragmentData;
+    NeuronSelectionModel neuronSelectionModel;
     DataColorModel dataColorModel;
+    MipFragmentData mipFragmentData;
     MipFragmentColors mipFragmentColors;
     GalleryMipImages galleryMipImages;
-    NeuronSelectionModel neuronSelectionModel;
+    MipMergedData mipMergedData;
 
     // TODO - move zRatio into VolumeData
     double zRatio;

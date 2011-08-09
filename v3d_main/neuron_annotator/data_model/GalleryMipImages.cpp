@@ -7,10 +7,8 @@
 //////////////////////////////
 
 /* explicit */
-GalleryMipImages::GalleryMipImages(const MipFragmentColors& mipFragmentColorsParam,
-                                   QObject *parentParam /* = 0 */)
-    : NaLockableData(parentParam)
-    , mipFragmentColors(mipFragmentColorsParam)
+GalleryMipImages::GalleryMipImages(const MipFragmentColors& mipFragmentColorsParam)
+    : mipFragmentColors(mipFragmentColorsParam)
 {
     connect(&mipFragmentColorsParam, SIGNAL(dataChanged()),
             this, SLOT(update()));

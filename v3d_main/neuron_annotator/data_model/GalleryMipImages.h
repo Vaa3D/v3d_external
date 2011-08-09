@@ -11,8 +11,7 @@ class GalleryMipImages : public NaLockableData
 {
     Q_OBJECT
 public:
-    explicit GalleryMipImages(const MipFragmentColors& mipFragmentColorsParam,
-                              QObject *parent = 0);
+    explicit GalleryMipImages(const MipFragmentColors& mipFragmentColorsParam);
     ~GalleryMipImages();
 
 public slots:
@@ -33,7 +32,7 @@ public:
     {
     public:
         Reader(const GalleryMipImages& galleryMipImagesParam)
-            : BaseReadLocker(galleryMipImagesParam.getLock())
+            : BaseReadLocker(galleryMipImagesParam)
             , galleryMipImages(galleryMipImagesParam)
         {}
 
@@ -47,11 +46,11 @@ public:
     };
 
 
-    class Writer : public QWriteLocker
+    class Writer : public BaseWriteLocker
     {
     public:
         Writer(GalleryMipImages& galleryMipImagesParam)
-            : QWriteLocker(galleryMipImagesParam.getLock())
+            : BaseWriteLocker(galleryMipImagesParam)
             , galleryMipImages(galleryMipImagesParam)
         {}
 

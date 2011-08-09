@@ -14,7 +14,7 @@ class MipFragmentData : public NaLockableData
 {
     Q_OBJECT
 public:
-    explicit MipFragmentData(const NaVolumeData& volumeDataParam, QObject *parent = 0);
+    explicit MipFragmentData(const NaVolumeData& volumeDataParam);
     virtual ~MipFragmentData();
 
 public slots:
@@ -34,7 +34,7 @@ public:
     {
     public:
         Reader(const MipFragmentData& mipParam)
-            : BaseReadLocker(mipParam.getLock())
+            : BaseReadLocker(mipParam)
             , m_mipFragmentData(mipParam)
         {}
 
@@ -57,17 +57,15 @@ public:
 
 
     class Writer; friend class Writer;
-    class Writer : public QWriteLocker
+    class Writer : public BaseWriteLocker
     {
     public:
         Writer(MipFragmentData& mipParam)
-            : QWriteLocker(mipParam.getLock())
+            : BaseWriteLocker(mipParam)
             , m_mipFragmentData(mipParam)
         {}
 
         void clearImageData();
-
-        // TODO - create more accessor methods, for non-privileged clients.
 
     private:
         MipFragmentData& m_mipFragmentData;

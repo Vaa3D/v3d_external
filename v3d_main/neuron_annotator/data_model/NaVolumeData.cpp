@@ -9,9 +9,8 @@ using namespace std;
 //////////////////////////
 
 /* explicit */
-NaVolumeData::NaVolumeData(QObject * parentParam /* = NULL */)
-    : NaLockableData(parentParam)
-    , originalImageStack(NULL)
+NaVolumeData::NaVolumeData()
+    : originalImageStack(NULL)
     , neuronMaskStack(NULL)
     , referenceStack(NULL)
 {

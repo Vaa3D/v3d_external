@@ -21,8 +21,8 @@ public:
     typedef NeuronSelectionModelWriter Writer;
     typedef int NeuronIndex;
 
-    explicit NeuronSelectionModel(const NaVolumeData& volumeDataParam,
-                                  QObject *parentParam = NULL);
+    // When a new data volume is loaded, a new selection model will be initialized.
+    explicit NeuronSelectionModel(const NaVolumeData& volumeDataParam);
 
 protected:
     bool neuronMaskIsChecked(int index) const { return maskStatusList.at(index); }
@@ -37,14 +37,15 @@ protected:
     void switchSelectedNeuronUniquelyIfOn(int index);
     void clearSelections();
 
-public:
 signals:
-    void initialized();
-    void overlayUpdated(int index, bool status);
-    void neuronMaskUpdated(int index, bool status);
-    void selectedNeuronShown(int selectionIndex);
-    void allNeuronsShown();
-    void allNeuronsCleared();
+    void initialized(); // signal that data structures were initialized after new volume load
+    // Visibility
+    void overlayVisibilityChanged(int index, bool status); // single overlay toggled
+    void neuronVisibilityChanged(int index, bool status); // single neuron toggled
+    void multipleVisibilityChanged(); // global change
+    // Selection
+    void selectedNeuronShown(int selectionIndex); // ?
+    // TODO highlight signals (not selection)
 
 public slots:
     void initializeSelectionModel();
@@ -56,8 +57,6 @@ public slots:
     void updateNeuronSelectList(int index);
 
 protected:
-
-
     const NaVolumeData& volumeData;
     QList<bool> maskStatusList; // neuron visibility
     QList<bool> overlayStatusList; // background/reference visibility
@@ -72,7 +71,7 @@ public:
     explicit NeuronSelectionModelReader(
             const NeuronSelectionModel& neuronSelectionModelParam,
             QObject * parentParam = NULL)
-                : NaLockableData::BaseReadLocker(neuronSelectionModelParam.getLock())
+                : NaLockableData::BaseReadLocker(neuronSelectionModelParam)
                 , neuronSelectionModel(neuronSelectionModelParam)
     {}
 
@@ -87,12 +86,11 @@ protected:
 };
 
 
-class NeuronSelectionModelWriter : public QWriteLocker
+class NeuronSelectionModelWriter : public NaLockableData::BaseWriteLocker
 {
 public:
-    explicit NeuronSelectionModelWriter(
-            NeuronSelectionModel& neuronSelectionModelParam)
-        : QWriteLocker(neuronSelectionModelParam.getLock())
+    explicit NeuronSelectionModelWriter(NeuronSelectionModel& neuronSelectionModelParam)
+        : NaLockableData::BaseWriteLocker(neuronSelectionModelParam)
         , neuronSelectionModel(neuronSelectionModelParam)
     {}
 

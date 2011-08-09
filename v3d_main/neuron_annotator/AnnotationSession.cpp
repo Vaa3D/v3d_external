@@ -17,24 +17,23 @@ AnnotationSession::AnnotationSession(QObject* parentParam /* = NULL */)
     // Allocate data flow objects, in order, to automatically set up multithreaded data stream
     , volumeData(/* this */) // load from disk (cannot move qobject with a parent to a QThread)
     , neuronSelectionModel(volumeData) // which layers are shown?
-    , mipFragmentData(volumeData /* , this */) // project in Z, slice on fragment index
     , dataColorModel(volumeData) // choose colors
+    , mipFragmentData(volumeData /* , this */) // project in Z, slice on fragment index
     , mipFragmentColors(mipFragmentData, dataColorModel) // color 'em
     , galleryMipImages(mipFragmentColors) // shrink 'em
+    , mipMergedData(mipFragmentData, dataColorModel, neuronSelectionModel)
 {
     // Prepare to load 16-bit volume data from disk in a separate QThread
     connect(this, SIGNAL(volumeDataNeeded()),
             &volumeData, SLOT(loadVolumeDataFromFiles()));
 
-    connect(&neuronSelectionModel, SIGNAL(overlayUpdated(int, bool)),
-            this, SLOT(updateOverlay(int, bool)));
-    connect(&neuronSelectionModel, SIGNAL(neuronMaskUpdated(int,bool)),
+    connect(&neuronSelectionModel, SIGNAL(overlayVisibilityChanged(int,bool)),
+            this, SLOT(updateNeuronMaskFull()));
+    connect(&neuronSelectionModel, SIGNAL(neuronVisibilityChanged(int,bool)),
             this, SLOT(updateNeuronMask(int,bool)));
     connect(&neuronSelectionModel, SIGNAL(selectedNeuronShown(int)),
             this, SLOT(showSelectedNeuron(int)));
-    connect(&neuronSelectionModel, SIGNAL(allNeuronsShown()),
-            this, SLOT(updateNeuronMaskFull()));
-    connect(&neuronSelectionModel, SIGNAL(allNeuronsCleared()),
+    connect(&neuronSelectionModel, SIGNAL(multipleVisibilityChanged()),
             this, SLOT(updateNeuronMaskFull()));
 }
 
@@ -124,13 +123,6 @@ bool AnnotationSession::loadVolumeData()
     emit volumeDataNeeded(); // load data in a separate QThread
 
     return true;
-}
-
-void AnnotationSession::updateOverlay(int index, bool status)
-{
-    qDebug() << "AnnotationSession::updateOverlay index=" << index << " status=" << status;
-    QString updateOverlayString=QString("FULL_UPDATE");
-    emit modelUpdated(updateOverlayString);
 }
 
 void AnnotationSession::updateNeuronMask(int index, bool status)

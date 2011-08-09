@@ -3,10 +3,8 @@
 
 /* explicit */
 MipFragmentColors::MipFragmentColors(const MipFragmentData& mipFragmentDataParam,
-                  const DataColorModel& colorModelParam,
-                  QObject *parentParam /* = NULL */ )
-    : NaLockableData(parentParam)
-    , mipFragmentData(mipFragmentDataParam)
+                  const DataColorModel& colorModelParam)
+    : mipFragmentData(mipFragmentDataParam)
     , dataColorModel(colorModelParam)
 {
     connect(&mipFragmentData, SIGNAL(dataChanged()),

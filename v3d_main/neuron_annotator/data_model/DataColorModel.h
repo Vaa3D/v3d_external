@@ -21,9 +21,7 @@ class DataColorModel : public NaLockableData
     Q_OBJECT
 
 public:
-    explicit DataColorModel(
-            const NaVolumeData& volumeDataParam,
-            QObject *parentParam = NULL);
+    explicit DataColorModel(const NaVolumeData& volumeDataParam);
 
 public slots:
     void resetColors();
@@ -121,7 +119,7 @@ public:
     {
     public:
         Reader(const DataColorModel& colorModelParam)
-            : BaseReadLocker(colorModelParam.getLock())
+            : BaseReadLocker(colorModelParam)
             , colorModel(colorModelParam)
         {}
 
@@ -154,11 +152,11 @@ public:
     };
 
 
-    class Writer : public QWriteLocker
+    class Writer : public BaseWriteLocker
     {
     public:
         Writer(DataColorModel& colorModelParam)
-            : QWriteLocker(colorModelParam.getLock())
+            : BaseWriteLocker(colorModelParam)
             , colorModel(colorModelParam)
         {}
 

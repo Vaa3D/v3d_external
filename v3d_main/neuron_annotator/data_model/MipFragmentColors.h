@@ -19,8 +19,7 @@ class MipFragmentColors : public NaLockableData
 public:
     explicit MipFragmentColors(
             const MipFragmentData& mipFragmentData,
-            const DataColorModel& colorModel,
-            QObject *parentParam = NULL);
+            const DataColorModel& colorModel);
 
 public slots:
     void update();
@@ -40,7 +39,7 @@ public:
     {
     public:
         Reader(const MipFragmentColors& mipFragmentColorsParam)
-            : BaseReadLocker(mipFragmentColorsParam.getLock())
+            : BaseReadLocker(mipFragmentColorsParam)
             , mipFragmentColors(mipFragmentColorsParam)
         {}
 
@@ -52,11 +51,11 @@ public:
     };
 
     class Writer; friend class Writer;
-    class Writer : public QWriteLocker
+    class Writer : public BaseWriteLocker
     {
     public:
         Writer(MipFragmentColors& mipFragmentColorsParam)
-            : QWriteLocker(mipFragmentColorsParam.getLock())
+            : BaseWriteLocker(mipFragmentColorsParam)
             , mipFragmentColors(mipFragmentColorsParam)
         {}
 

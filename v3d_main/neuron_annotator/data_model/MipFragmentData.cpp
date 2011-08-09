@@ -1,9 +1,8 @@
 #include "MipFragmentData.h"
 
 /* explicit */
-MipFragmentData::MipFragmentData(const NaVolumeData& volumeDataParam, QObject *parentParam /* = 0 */)
-    : NaLockableData(parentParam)
-    , volumeData(volumeDataParam)
+MipFragmentData::MipFragmentData(const NaVolumeData& volumeDataParam)
+    : volumeData(volumeDataParam)
     , fragmentData(NULL)
     , fragmentZValues(NULL)
     , fragmentIntensities(NULL)
