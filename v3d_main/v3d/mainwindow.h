@@ -72,8 +72,6 @@ class V3DWebService; //110315 YuY
 class soappara; //110315 YuY
 #endif
 
-#include "../custom_toolbar/v3d_custom_toolbar.h" // Hang Aug-06-2011
-
 #ifdef __V3DWSDEVELOP__
 #include "../webservice/src/v3dwebservice.hpp" // YuY March-16-2011
 class V3DWebService; //110315 YuY

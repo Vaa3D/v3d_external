@@ -34,7 +34,8 @@ bool setPluginRootPathAutomaticly()
 bool setToolbarSettingFilePath(QString file_path){settingFilePath = file_path;}
 bool setToolbarSettingFilePathAutomaticly()
 {
-	settingFilePath = qApp->applicationDirPath() + QObject::tr("/.v3d_toolbar");
+	//settingFilePath = qApp->applicationDirPath() + QObject::tr("/.v3d_toolbar");
+	settingFilePath = QDir::homePath() + QObject::tr("/.v3d_toolbar");
 }
 
 void getAllFiles(QString dirname, QStringList & fileList)
@@ -73,7 +74,7 @@ void getObjectList(QStringList & fileList,QList<QObject*> &objectList)
 		fit++;
 	}
 }
-
+#ifdef __v3d_custom_toolbar_plugin__
 static QString v3d_getInterfaceName(QObject *plugin)
 {
 	QString name;
@@ -135,9 +136,9 @@ static QStringList v3d_getInterfaceFuncList(QObject *plugin)
 
 	return qslist;
 }
+#endif
 
-
-CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts, V3DPluginCallback2 *callback, QWidget * parent): QWidget(parent)
+CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts, V3DPluginCallback2 *callback, QWidget * parent): QWidget(0/*parent*/)
 {
 	if(!_cts) return;
 
@@ -161,6 +162,67 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 	funcIcon.addPixmap(style()->standardPixmap(QStyle::SP_MessageBoxInformation));
 
 	tabWidget = new QTabWidget();
+	// page main window
+	pageMainWindow = new QWidget();
+
+	mainWindowTreeWidget = new QTreeWidget();
+	mainWindowTreeWidget->setColumnCount(2);
+	mainWindowTreeWidget->setSortingEnabled(true);
+
+	QStringList mainWindowHeaderStringList = QStringList() <<tr("Menu Name")<<tr("Alias");
+	QTreeWidgetItem * mainWindowHeaderItem = new QTreeWidgetItem(mainWindowHeaderStringList);
+	mainWindowTreeWidget->setHeaderItem(mainWindowHeaderItem);
+
+	QList<std::pair<QString, VoidFunc> > mainWindowMenuStringAndFuncList = getMainWindowMenuStringAndFuncList();
+	//foreach(std::pair<QString, VoidFunc> menuNameAndFunc, mainWindowMenuStringAndFuncList)
+	for(int i = 0; i < mainWindowMenuStringAndFuncList.size(); i++)
+	{
+		QString menuName = mainWindowMenuStringAndFuncList.at(i).first;//menuNameAndFunc.first;
+		QString menuAlias = menuName.right(menuName.size() - menuName.lastIndexOf(tr("::")) - 2);
+		VoidFunc menuFunc = mainWindowMenuStringAndFuncList.at(i).second;//menuNameAndFunc.second;
+
+		QTreeWidgetItem * mainWindowItem = new QTreeWidgetItem(mainWindowTreeWidget);
+
+		QCheckBox * checkbox = new QCheckBox(menuName);
+		checkbox->setChecked(false);
+		mainWindowTreeWidget->setItemWidget(mainWindowItem, 0, checkbox);
+		mainWindowCheckboxList.push_back(checkbox);
+
+		QLineEdit * editor = new QLineEdit(menuAlias);
+		mainWindowTreeWidget->setItemWidget(mainWindowItem, 1, editor);
+		editor->setDisabled(true);
+		mainWindowEditorList.push_back(editor);
+
+		CustomToolButton * qb = new CustomToolButton(0, editor->text(), toolBar);
+		qb->button->setVisible(false);
+		qb->slot_func = menuFunc;
+		qb->bt = 0;
+		qb->menu_name = menuName;
+		qb->callback = callback;
+		qb->parent = parent;
+		mainWindowCustomToolButtonList.push_back(qb);
+
+		connect(checkbox, SIGNAL(clicked(bool)), editor, SLOT(setEnabled(bool)));
+		connect(checkbox, SIGNAL(clicked(bool)), this, SLOT(setToolBarButton(bool)));
+		connect(editor, SIGNAL(textChanged(const QString &)), qb, SLOT(setButtonText(const QString &)));
+		if(cts->preLoadMainWindowMenuNameList.contains(menuName))
+		{
+			int i = cts->preLoadMainWindowMenuNameList.indexOf(menuName);
+			editor->setText(cts->preLoadMainWindowMenuAliasList.at(i));
+			editor->setEnabled(true);
+			checkbox->setChecked(Qt::Checked);
+
+			qb->button->setVisible(true);
+			qb->button->setText(cts->preLoadMainWindowMenuAliasList.at(i));
+			toolBar->addAction(qb->button);
+			cts->activeMainWindowMenuList.push_back(qb);
+		}
+	}
+
+	pageMainWindowLayout = new QVBoxLayout();
+	pageMainWindowLayout->addWidget(mainWindowTreeWidget);
+	pageMainWindow->setLayout(pageMainWindowLayout);
+
 	// page tri view
 	pageTriView = new QWidget();
 
@@ -192,7 +254,7 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 		CustomToolButton * qb = new CustomToolButton(0, editor->text(), toolBar);
 		qb->button->setVisible(false);
 		qb->slot_func = triViewButtonFuncList.at(ii);
-		qb->bt = 0;
+		qb->bt = 1;
 		qb->buttonName = buttonName;
 		qb->callback = callback;
 		qb->parent = parent;
@@ -251,7 +313,7 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 		CustomToolButton * qb = new CustomToolButton(0, editor->text(), toolBar);
 		qb->button->setVisible(false);
 		qb->slot_func = view3dButtonFuncList.at(jj);
-		qb->bt = 1;
+		qb->bt = 2;
 		qb->buttonName = buttonName;
 		qb->callback = callback;
 		qb->parent = parent;
@@ -327,7 +389,7 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 				CustomToolButton * qb = new CustomToolButton(0, editor->text(), toolBar);
 				qb->button->setVisible(false);
 				qb->slot_class = plugin;
-				qb->bt = 2;
+				qb->bt = 3;
 				qb->menu_name = menu_name;
 				qb->callback = callback;
 				qb->parent = parent;
@@ -338,16 +400,16 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 				connect(checkbox, SIGNAL(clicked(bool)), editor, SLOT(setEnabled(bool)));
 				connect(checkbox, SIGNAL(clicked(bool)), this, SLOT(setToolBarButton(bool)));
 				connect(editor, SIGNAL(textChanged(const QString &)), qb, SLOT(setButtonText(const QString &)));
-				if(cts->preLoadPluginPathList.contains(file + "::" + menu_name))
+				if(cts->preLoadPluginMenuPathList.contains(file + "::" + menu_name))
 				{
-					int i = cts->preLoadPluginPathList.indexOf(file + "::" + menu_name);
-					editor->setText(cts->preLoadPluginAliasList.at(i));
+					int i = cts->preLoadPluginMenuPathList.indexOf(file + "::" + menu_name);
+					editor->setText(cts->preLoadPluginMenuAliasList.at(i));
 					editor->setEnabled(true);
 					checkbox->setChecked(Qt::Checked);
 					pluginItem->setExpanded(true);
 
 					qb->button->setVisible(true);
-					qb->button->setText(cts->preLoadPluginAliasList.at(i));
+					qb->button->setText(cts->preLoadPluginMenuAliasList.at(i));
 					toolBar->addAction(qb->button);
 					cts->activePluginButtonList.push_back(qb);
 				}
@@ -360,6 +422,9 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 
 	pagePlugin->setLayout(pagePluginLayout);
 
+#ifndef __v3d_custom_toolbar_plugin__
+	tabWidget->addTab(pageMainWindow, tr("Menu"));
+#endif
 	tabWidget->addTab(pageTriView, tr("Tri View"));
 	tabWidget->addTab(pageView3d, tr("3D View"));
 	tabWidget->addTab(pagePlugin, tr("Plugin"));
@@ -401,6 +466,10 @@ CustomToolButton * CustomToolbarSelectWidget::getButtonFromCheckbox(QCheckBox* c
 	{
 		return pluginCustomToolButtonList.at(i);
 	}
+	else if((i = mainWindowCheckboxList.indexOf(checkbox))!= -1)
+	{
+		return mainWindowCustomToolButtonList.at(i);
+	}
 	return 0;
 }
 
@@ -419,20 +488,23 @@ void CustomToolbarSelectWidget::setToolBarButton(bool state)
 	{
 		cb->button->setVisible(true);
 		toolBar->addAction(cb->button);
-		if(cb->bt == 0)cts->activeTriViewButtonList.push_back(cb);
-		if(cb->bt == 1)cts->activeView3dButtonList.push_back(cb);
-		if(cb->bt == 2)cts->activePluginButtonList.push_back(cb);
+		if(cb->bt == 0)cts->activeMainWindowMenuList.push_back(cb);
+		if(cb->bt == 1)cts->activeTriViewButtonList.push_back(cb);
+		if(cb->bt == 2)cts->activeView3dButtonList.push_back(cb);
+		if(cb->bt == 3)cts->activePluginButtonList.push_back(cb);
 	}
 	else if(!state && cb->button->isVisible()) 
 	{
 		cb->button->setVisible(false);
 		int i = -1;
-		if((i = cts->activePluginButtonList.indexOf(cb)) != -1)
-			cts->activePluginButtonList.removeAt(i);
-		else if((i = cts->activeTriViewButtonList.indexOf(cb)) != -1)
+		if((cb->bt == 0) && (i = cts->activeMainWindowMenuList.indexOf(cb)) != -1)
+			cts->activeMainWindowMenuList.removeAt(i);
+		else if((cb->bt == 1) && (i = cts->activeTriViewButtonList.indexOf(cb)) != -1)
 			cts->activeTriViewButtonList.removeAt(i);
-		else if((i = cts->activeView3dButtonList.indexOf(cb)) != -1)
+		else if((cb->bt == 2) && (i = cts->activeView3dButtonList.indexOf(cb)) != -1)
 			cts->activeView3dButtonList.removeAt(i);
+		else if((cb->bt == 3) && (i = cts->activePluginButtonList.indexOf(cb)) != -1)
+			cts->activePluginButtonList.removeAt(i);
 	}
 	saveToolBarState();
 }
@@ -457,64 +529,79 @@ void CustomToolbarSelectWidget::saveToolBarState()
 
 bool CustomToolButton::run()
 {
-	if(bt == 0) // Triview
+	try
 	{
-		v3dhandleList winlist = callback->getImageWindowList();
-		if(winlist.empty()) {QMessageBox::information(0,"","No image stack!"); return true;}
-		v3dhandle handle = callback->currentImageWindow();
-		if(handle)
+		if(bt == 0) // Main Window
 		{
-			//slot_class =(void*) callback;//(void*)(callback->getTriviewControl(handle));
-			(callback->*(Callback2Func)slot_func)(handle);
-			//callback->open3DWindow(handle);
+#ifndef __v3d_custom_toolbar_plugin__
+			MainWindow * mw = qobject_cast<MainWindow*>(parent);
+			if(mw) (mw->*(MainWindowFunc)slot_func)();
+#endif
+			return true;
 		}
-		return true;
+		if(bt == 1) // Triview
+		{
+			v3dhandleList winlist = callback->getImageWindowList();
+			if(winlist.empty()) {QMessageBox::information(0,"","No image stack!"); return true;}
+			v3dhandle handle = callback->currentImageWindow();
+			if(handle)
+			{
+				//slot_class =(void*) callback;//(void*)(callback->getTriviewControl(handle));
+				(callback->*(Callback2Func)slot_func)(handle);
+				//callback->open3DWindow(handle);
+			}
+			return true;
+		}
+		else if(bt == 2) // View3d
+		{
+			v3dhandleList winlist = callback->getImageWindowList();
+			if(winlist.empty()) {QMessageBox::information(0,"","No image stack!"); return true;}
+			v3dhandle handle = callback->currentImageWindow();
+			if(handle)
+			{
+				callback->open3DWindow(handle);
+				View3DControl * view3d = callback->getView3DControl(handle);
+				(view3d->*(View3DFunc)slot_func)();
+			}
+			return true;
+		}
+		else if(bt == 3) // Plugin do menu
+		{
+			QObject * plugin = (QObject*) slot_class;
+			V3DSingleImageInterface2_1 *iFilter2_1 = qobject_cast<V3DSingleImageInterface2_1 *>(plugin);
+			if (iFilter2_1 )
+			{
+				QMessageBox::information(0,"","This is V3DSingleImageInterface2_1 plugin , only V3DPluginInterface2 and V3DPluginInterface2_1 is supported!");
+				return false;
+			}
+			V3DSingleImageInterface *iFilter = qobject_cast<V3DSingleImageInterface *>(plugin);
+			if (iFilter )
+			{
+				QMessageBox::information(0,"","This is V3DSingleImageInterface plugin , only V3DPluginInterface2 and V3DPluginInterface2_1 is supported!");
+				return false;
+			}
+			V3DPluginInterface2_1 *iface2_1 = qobject_cast<V3DPluginInterface2_1 *>(plugin);
+			if (iface2_1 )
+			{
+				iface2_1->domenu(menu_name, *callback, parent);
+			}
+			V3DPluginInterface2 *iface2 = qobject_cast<V3DPluginInterface2 *>(plugin);
+			if (iface2 )
+			{
+				iface2->domenu(menu_name, *callback,parent);
+			}
+			V3DPluginInterface *iface = qobject_cast<V3DPluginInterface *>(plugin);
+			if (iface )
+			{
+				iface->domenu(menu_name, *callback, parent);
+			}
+			return true;
+		}
 	}
-	else if(bt == 1) // View3d
+	catch(...)
 	{
-		v3dhandleList winlist = callback->getImageWindowList();
-		if(winlist.empty()) {QMessageBox::information(0,"","No image stack!"); return true;}
-		v3dhandle handle = callback->currentImageWindow();
-		if(handle)
-		{
-			callback->open3DWindow(handle);
-			View3DControl * view3d = callback->getView3DControl(handle);
-			(view3d->*(View3DFunc)slot_func)();
-		}
-		return true;
-	}
-	else if(bt == 2) // Plugin do menu
-	{
-		QObject * plugin = (QObject*) slot_class;
-		V3DSingleImageInterface2_1 *iFilter2_1 = qobject_cast<V3DSingleImageInterface2_1 *>(plugin);
-		if (iFilter2_1 )
-		{
-		}
-
-		V3DSingleImageInterface *iFilter = qobject_cast<V3DSingleImageInterface *>(plugin);
-		if (iFilter )
-		{
-		}
-
-		V3DPluginInterface2_1 *iface2_1 = qobject_cast<V3DPluginInterface2_1 *>(plugin);
-		if (iface2_1 )
-		{
-			iface2_1->domenu(menu_name, *callback, parent);
-		}
-
-		V3DPluginInterface2 *iface2 = qobject_cast<V3DPluginInterface2 *>(plugin);
-		if (iface2 )
-		{
-			iface2->domenu(menu_name, *callback,parent);
-		}
-
-		V3DPluginInterface *iface = qobject_cast<V3DPluginInterface *>(plugin);
-		if (iface )
-		{
-			iface->domenu(menu_name, *callback, parent);
-		}
-
-		return true;
+		QMessageBox::information(0,"","Unable to run this action, please check the corresponding code!");
+		return false;
 	}
 }
 
@@ -534,6 +621,12 @@ bool saveToolBarSettings()
 			ofs<<"ToolBar"<<endl;
 			ofs<<"\t"<<cts->toolBar->windowTitle().toStdString()<<endl;
 			ofs<<"\t"<<(int)(getToolBarArea(cts->toolBar))<<endl;
+			foreach(CustomToolButton* cb, cts->activeMainWindowMenuList)
+			{
+				ofs<<"MainWindowMenu"<<endl;
+				ofs<<"\t"<<cb->menu_name.toStdString()<<endl;
+				ofs<<"\t"<<cb->button->text().toStdString()<<endl;
+			}
 			foreach(CustomToolButton* cb, cts->activeTriViewButtonList)
 			{
 				ofs<<"TriViewButton"<<endl;
@@ -580,6 +673,16 @@ bool loadToolBarSettings()
 			cts->position = (Qt::ToolBarArea)position;
 			settingList.push_back(cts);
 		}
+		else if(str == "MainWindowMenu")
+		{
+			char name[1000]; ifs.ignore(1000,'\t'); ifs.getline(name, 1000);
+			char alias[1000]; ifs.ignore(1000,'\t'); ifs.getline(alias,1000);
+			if(cts)
+			{
+				cts->preLoadMainWindowMenuNameList.push_back(QString(name).trimmed());
+				cts->preLoadMainWindowMenuAliasList.push_back(QString(alias).trimmed());
+			}
+		}
 		else if(str == "TriViewButton")
 		{
 			char name[1000]; ifs.ignore(1000,'\t'); ifs.getline(name, 1000);
@@ -606,8 +709,8 @@ bool loadToolBarSettings()
 			char label[1000]; ifs.ignore(1000,'\t'); ifs.getline(label,1000);
 			if(cts)
 			{
-				cts->preLoadPluginPathList.push_back(QString(path).trimmed());
-				cts->preLoadPluginAliasList.push_back(QString(label).trimmed());
+				cts->preLoadPluginMenuPathList.push_back(QString(path).trimmed());
+				cts->preLoadPluginMenuAliasList.push_back(QString(label).trimmed());
 			}
 		}
 	}
@@ -621,6 +724,67 @@ QList<CustomToolbarSetting*>& getToolBarSettingList()
 void setToolBarSettingList(QList<CustomToolbarSetting*> & _settingList)
 {
 	settingList = _settingList;
+}
+
+#define StringAndFunc pair<QString, VoidFunc>
+#define SAF pair<QString, VoidFunc>
+
+QList<pair<QString, VoidFunc> > getMainWindowMenuStringAndFuncList()
+{
+#ifdef __v3d_custom_toolbar_plugin__
+	return QList<StringAndFunc>();
+#else
+	return QList<StringAndFunc>()
+		<<SAF (QObject::tr("File::Open image/stack in a new window ..."), \
+				(VoidFunc)(&MainWindow::open))
+		<<SAF (QObject::tr("File::Open web image/stack ..."), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("File::Save or Save as"), \
+				(VoidFunc)(&MainWindow::saveAs))
+		<<SAF (QObject::tr("File::Adjust preferences"), \
+				(VoidFunc)(&MainWindow::func_procSettings))
+		<<SAF (QObject::tr("File::Import::Import general image series to an image stack..."), \
+				(VoidFunc)(&MainWindow::func_procSettings))
+		<<SAF (QObject::tr("File::Import::Import Leica 2D tiff series to an image stack..."), \
+				(VoidFunc)(&MainWindow::import_GeneralImageFile))
+		<<SAF (QObject::tr("File::Import::Build an atlas linker file for [registered] images under a folder"), \
+				(VoidFunc)(&MainWindow::import_Leica))
+		<<SAF (QObject::tr("File::Export::Export 3D [cell] segmentation results to VANO annotation files"), \
+				(VoidFunc)(&MainWindow::func_procIO_import_atlas_imgfolder))
+		<<SAF (QObject::tr("File::Export::Export landmarks to pointcloud (.apo) file"), \
+				(VoidFunc)(&MainWindow::func_procIO_export_to_vano_format))
+		;/*
+		<<QObject::tr("File::Export::Export traced neuron/fibrous-structure path-info to graph (.swc) file")
+		<<QObject::tr("Image/Data::image type::convert indexed/mask image to RGB image")
+		<<QObject::tr("Image/Data::image type::linear rescale to [0~255] and convert to 8bit image")
+		<<QObject::tr("Image/Data::image type::saturate top/bottom 1% voxels and linear-rescale to [0~255]/8bit")
+		<<QObject::tr("Image/Data::image type::convert 16bit image to 8bit via bit-shift")
+		<<QObject::tr("Image/Data::image type::convert 32bit image to 8bit via bit-shift")
+		<<QObject::tr("Image/Data::geometry::rotate principal axis")
+		<<QObject::tr("Image/Data::geometry::rotate arbitrary angle")
+		<<QObject::tr("Image/Data::geometry::flip image")
+		<<QObject::tr("Image/Data::geometry::crop image (minMax Bounding Box)")
+		<<QObject::tr("Image/Data::geometry::crop image (ROI-based)")
+		<<QObject::tr("Image/Data::geometry::image resampling")
+		<<QObject::tr("Image/Data::intensity::mask ROI or non-ROI")
+		<<QObject::tr("Image/Data::intensity::fill value to non-ROI region for all XY planes")
+		<<QObject::tr("Image/Data::intensity::mask channel")
+		<<QObject::tr("Image/Data::intensity::clear ROI")
+		<<QObject::tr("Image/Data::intensity::max projection")
+		<<QObject::tr("Image/Data::intensity::histogram equalization")
+		<<QObject::tr("Image/Data::intensity::rescaling")
+		<<QObject::tr("Image/Data::intensity::thresholding")
+		<<QObject::tr("Image/Data::intensity::binarization")
+		<<QObject::tr("Image/Data::intensity::invert color")
+		<<QObject::tr("Image/Data::intensity::update the displayed min/max value(s)")
+		<<QObject::tr("Image/Data::color channel::split color channels")
+		<<QObject::tr("Image/Data::color channel::extract a color channel")
+		<<QObject::tr("Image/Data::color channel::image blending")
+		<<QObject::tr("Image/Data::color channel::invert color")
+		<<QObject::tr("Image/Data::landmark::landmark manager")
+		<<QObject::tr("Image/Data::landmark::clear all landmarks")
+		*/
+#endif
 }
 
 QStringList getTriViewButtonStringList()
@@ -644,14 +808,15 @@ QList<VoidFunc> getView3dButtonFuncList()
 	return QList<VoidFunc>() << (VoidFunc)(&View3DControl::updateWithTriView);
 }
 
-CustomToolbar::CustomToolbar(QString title, V3DPluginCallback2 * callback, QWidget * parent) : QToolBar(parent)
+// parent won't be used as the parent QWidget
+CustomToolbar::CustomToolbar(QString title, V3DPluginCallback2 * callback, QWidget * parent) : QToolBar(0/*parent*/)
 {
 	setWindowTitle(title);
 	cts = new CustomToolbarSetting(this);
 	selectWidget = new CustomToolbarSelectWidget(cts, callback, parent);
 }
 
-CustomToolbar::CustomToolbar(CustomToolbarSetting* _cts, V3DPluginCallback2 * callback, QWidget * parent) : QToolBar(parent)
+CustomToolbar::CustomToolbar(CustomToolbarSetting* _cts, V3DPluginCallback2 * callback, QWidget * parent) : QToolBar(0/*parent*/)
 {
 	cts = _cts;
 	setWindowTitle(cts->toolBarTitle);

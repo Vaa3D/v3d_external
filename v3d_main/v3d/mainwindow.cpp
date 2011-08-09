@@ -76,6 +76,7 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 
 #include "DownloadManager.h" // CMB 08-Oct-2010
 
+#include "../custom_toolbar/v3d_custom_toolbar.h" // Hang Aug-08-2011
 //#include "dialog_pointcloudatlas_linkerloader.h"
 
 //#include "atlas_window.h"
@@ -737,7 +738,7 @@ void MainWindow::customToolbar()
 
 			foreach(CustomToolbarSetting* cts, settingList)
 			{
-				CustomToolbar * ct = new CustomToolbar(cts, this->pluginLoader, 0);
+				CustomToolbar * ct = new CustomToolbar(cts, this->pluginLoader, this);
 				if(!ct->showToMainWindow(this)) ct->show();
 			}
 		}
@@ -746,7 +747,7 @@ void MainWindow::customToolbar()
 	{
         QString barTitle = bar_num > 1 ? QObject::tr("Custom Toolbar - %1").arg(bar_num) : QObject::tr("Custom Toolbar");
 
-        CustomToolbar * ct = new CustomToolbar(barTitle, this->pluginLoader, 0);
+        CustomToolbar * ct = new CustomToolbar(barTitle, this->pluginLoader, this);
 
         if(!ct->showToMainWindow(this)) ct->show();
 
@@ -2307,7 +2308,7 @@ void MainWindow::createMenus()
     fileMenu->addAction(openWebUrlAct);
 //    fileMenu->addAction(procGeneral_open_image_in_windows);
 //    fileMenu->addAction(atlasViewAct);
-	fileMenu->addAction(customToolbarAct);
+	//fileMenu->addAction(customToolbarAct);
     fileMenu->addAction(saveAct);
 //    fileMenu->addAction(saveAsAct);
 
