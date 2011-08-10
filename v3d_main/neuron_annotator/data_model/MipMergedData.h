@@ -6,24 +6,9 @@
 #include "DataColorModel.h"
 #include "NeuronSelectionModel.h"
 
-class MipMergeLayer : public QObject
-{
-    Q_OBJECT
 
-public:
+class MipMergeLayer; // forward declaration
 
-signals:
-    void dataChanged();
-
-public slots:
-    void setVisiblity(bool bIsVisibleParam);
-    void update(); // emits dataChanged() if data changes.
-    void updateWithoutSignal(); // for manual full updates
-
-protected:
-    bool bIsVisible();
-    int index; // into z-slice of MipMergedData::layerZValues
-};
 
 // MipMergedData combines a subset of neuron fragments and overlays into
 // a blended image, for use in the NaLargeMipWidget.
@@ -31,7 +16,10 @@ class MipMergedData : public NaLockableData
 {
     Q_OBJECT
 public:
+    friend class MipMergeLayer;
+
     explicit MipMergedData(
+            const NaVolumeData& volumeDataParam,
             const MipFragmentData& mipFragmentData,
             const DataColorModel& dataColorModel,
             const NeuronSelectionModel& neuronSelectionModel);
@@ -45,6 +33,10 @@ public slots:
     void updateColors(); // on dataColorModel.dataChanged, or mergedImage change
 
 protected:
+    bool recomputeLayerTree();
+    bool computeMergedImage();
+
+    const NaVolumeData& volumeData;
     const MipFragmentData& mipFragmentData;
     const DataColorModel& dataColorModel;
     const NeuronSelectionModel& neuronSelectionModel;
@@ -53,9 +45,14 @@ protected:
     // Z-coordinates in layerZValues represent fragment indices for Z-values in the range 0->(nfrags-1).
     // Larger Z-coordinates represent various merged layers in the binary tree.
     My4DImage* layerZValues;
+    My4DImage* layerIntensities;
+    My4DImage* layerData;
+    Image4DProxy<My4DImage> layerZProxy;
+    Image4DProxy<My4DImage> layerIntensityProxy;
+    Image4DProxy<My4DImage> layerDataProxy;
+    QList<MipMergeLayer*> layers;
     int mergedIndex; // Z-coordinate index of final merged image
     QImage * mergedImage; // colorized output image
-    QList<MipMergeLayer*> layers;
 
 public:
     class Reader : public BaseReadLocker
@@ -75,10 +72,62 @@ public:
 
     class Writer : public BaseWriteLocker
     {
+    public:
+
         explicit Writer(MipMergedData& mipMergedDataParam)
             : BaseWriteLocker(mipMergedDataParam)
+            , mipMergedData(mipMergedDataParam)
         {}
+
+        void clearData(); // deletes everything in mipMergedData
+
+    protected:
+        MipMergedData& mipMergedData;
     };
 };
+
+
+// MipMergeLayer represents one node in a binary tree of mip images.  The leaves of the tree
+// are individual neuron mips, and the root is a combined mip.
+class MipMergeLayer : public QObject
+{
+    Q_OBJECT
+
+public:
+    explicit MipMergeLayer(MipMergedData& mipMergedDataParam,
+                           int indexParam, bool isVisibleParam,
+                           MipMergeLayer * child1Param, MipMergeLayer * child2Param)
+        : mipMergedData(mipMergedDataParam)
+        , index(indexParam), bIsVisible(isVisibleParam)
+        , proxyIndex(indexParam)
+        , child1(child1Param), child2(child2Param)
+    {
+        if (child1) connect(child1, SIGNAL(dataChanged()), this, SLOT(update()));
+        if (child2) connect(child2, SIGNAL(dataChanged()), this, SLOT(update()));
+    }
+    int getIndex() const {return index;} // slice number containing this layer's data
+    int getProxyIndex() const {return proxyIndex;}
+    bool isVisible() const {return bIsVisible;}
+    void setVisibility(bool status) {bIsVisible = status;}
+    bool updateWithoutSignal();
+
+signals:
+    void dataChanged();
+
+public slots:
+    void setVisiblity(bool bIsVisibleParam);
+    void update(); // emits dataChanged() if data changes.
+
+protected:
+    bool copyChildState(MipMergeLayer * child);
+
+    MipMergedData& mipMergedData;
+    bool bIsVisible;
+    int index; // into z-slice of MipMergedData::layerZValues
+    int proxyIndex; // this layer may be represented by a layer closer to the leaves of the tree
+    MipMergeLayer * child1;
+    MipMergeLayer * child2;
+};
+
 
 #endif // MIPMERGEDDATA_H

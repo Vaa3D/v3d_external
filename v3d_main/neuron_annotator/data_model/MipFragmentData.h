@@ -51,6 +51,8 @@ public:
             return Image4DProxy<My4DImage>(const_cast<My4DImage*>(m_mipFragmentData.fragmentIntensities));
         }
 
+        ImagePixelType getOriginalDatatype() const {return m_mipFragmentData.fragmentData->getDatatype();}
+
     private:
         const MipFragmentData& m_mipFragmentData;
     };

@@ -21,7 +21,7 @@ AnnotationSession::AnnotationSession(QObject* parentParam /* = NULL */)
     , mipFragmentData(volumeData /* , this */) // project in Z, slice on fragment index
     , mipFragmentColors(mipFragmentData, dataColorModel) // color 'em
     , galleryMipImages(mipFragmentColors) // shrink 'em
-    , mipMergedData(mipFragmentData, dataColorModel, neuronSelectionModel)
+    , mipMergedData(volumeData, mipFragmentData, dataColorModel, neuronSelectionModel)
 {
     // Prepare to load 16-bit volume data from disk in a separate QThread
     connect(this, SIGNAL(volumeDataNeeded()),

@@ -716,7 +716,7 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
             &annotationSession->getNeuronSelectionModel(), SLOT(showAllNeurons(QList<int>)));
     connect(annotationSession, SIGNAL(modelUpdated(QString)), this, SLOT(synchronizeGalleryButtonsToAnnotationSession(QString)));
     connect(annotationSession, SIGNAL(modelUpdated(QString)), neuronSelector, SLOT(updateSelectedNeurons()));
-    connect(ui.v3dr_glwidget, SIGNAL(neuronClearAll()), annotationSession, SLOT(clearAllNeurons()));
+    connect(ui.v3dr_glwidget, SIGNAL(neuronClearAll()), &annotationSession->getNeuronSelectionModel(), SLOT(clearAllNeurons()));
     connect(ui.v3dr_glwidget, SIGNAL(neuronClearAllSelections()), neuronSelector, SLOT(clearAllSelections()));
     connect(ui.v3dr_glwidget, SIGNAL(neuronIndexChanged(int)), neuronSelector, SLOT(updateNeuronSelectList(int)));
 
