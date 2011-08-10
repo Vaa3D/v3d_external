@@ -6,6 +6,7 @@ There are a few sub-folders:
 * v3d_main:                the main V3D program. 
 * matlab_io_basicdatatype: matlab toolbox for file IO of some basic V3D data formats,
                            including image file, surface files, neuron, markers, etc.
+* imagej_io:               imagej plugin toolboxes for file IO of some basic V3D data formats. 
 * released_plugins:        the "standard" V3D plugins, including both examples and some 
                            real utilities.
 * 2010_hackathon:          the source code of various projects developed in the 2010
@@ -63,6 +64,6 @@ build.
 
 If you have a question, see the V3D website http://penglab.janelia.org/proj/v3d .
 
-<Aug 6, 2010>
+<Aug 10, 2011>
 
 
