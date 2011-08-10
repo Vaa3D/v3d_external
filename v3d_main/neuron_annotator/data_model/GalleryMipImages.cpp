@@ -45,7 +45,7 @@ void GalleryMipImages::update()
         *(neuronMipList)[f - 1] = mipReader.getImage(f)->scaledToHeight(height);
 
     // nerd report
-    qDebug() << "Rescaling gallery mips took " << stopwatch.elapsed() / 1000.0 << " seconds.";
+    // qDebug() << "Rescaling gallery mips took " << stopwatch.elapsed() / 1000.0 << " seconds."; // 13 ms for 22 512x512 mips
 
     mipReader.unlock(); // unlock before emit
     mipWriter.unlock();

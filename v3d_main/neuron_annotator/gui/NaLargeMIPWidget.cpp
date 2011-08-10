@@ -3,139 +3,6 @@
 #include <vector>
 #include <map>
 
-/////////////////////////////
-// MipDisplayImage methods //
-/////////////////////////////
-
-MipDisplayImage::MipDisplayImage() : originalData(this)
-{
-    connect(&originalData, SIGNAL(processedXColumn(int)),
-            this, SLOT(processedXColumnSlot(int)));
-    connect(&originalData, SIGNAL(intensitiesUpdated()),
-            this, SLOT(onDataIntensitiesUpdated()));
-}
-
-MipDisplayImage::~MipDisplayImage()
-{
-    neuronHighlightImages_t::iterator i_n;
-    for (i_n = neuronHighlightImages.begin(); i_n != neuronHighlightImages.end(); ++i_n) {
-        delete *i_n;
-        *i_n = NULL;
-    }
-}
-
-void MipDisplayImage::processedXColumnSlot(int c) {
-    // qDebug() << "foo " << c;
-    emit processedXColumn(c);
-}
-
-void MipDisplayImage::loadImageData(const My4DImage* img, const My4DImage* maskImg) {
-    load4DImage(img, maskImg);
-}
-
-void MipDisplayImage::load4DImage(const My4DImage* img, const My4DImage* maskImg)
-{
-    QSize imageSize(img->getXDim(), img->getYDim());
-    image = QImage(imageSize, QImage::Format_RGB32);
-    originalData.loadMy4DImage(img, maskImg);
-    brightnessCalibrator.setHdrRange(originalData.dataMin, originalData.dataMax);
-    // brightnessCalibrator.setGamma(1.0);
-    updateCorrectedIntensities();
-    emit initialImageDataLoaded();
-
-    // Populate neuron highlight images
-    if (maskImg)
-    {
-        // First delete any stale highlight images
-        neuronHighlightImages_t::iterator i_n;
-        for (i_n = neuronHighlightImages.begin(); i_n != neuronHighlightImages.end(); ++i_n) {
-            delete *i_n;
-            *i_n = NULL;
-        }
-        // then create a new batch of highlight images
-        neuronHighlightImages.resize(originalData.numNeurons, NULL);
-        for (i_n = neuronHighlightImages.begin(); i_n != neuronHighlightImages.end(); ++i_n) {
-            *i_n = new QImage(imageSize, QImage::Format_ARGB32);
-            QImage& img = **i_n;
-            img.fill(Qt::transparent);
-        }
-        // Fill in the masks
-        QColor color;
-        for (int y = 0; y < imageSize.height(); ++y) {
-            for (int x = 0; x < imageSize.width(); ++x) {
-                for (int z = 0; z < maskImg->getZDim(); ++z) {
-                    int neuronIndex = maskImg->at(x, y, z);
-                    if (neuronIndex < 0) continue;
-                    assert(neuronIndex >= 0);
-                    assert(neuronIndex < neuronHighlightImages.size());
-                    QImage& img = *neuronHighlightImages[neuronIndex];
-                    assert(img.width() == imageSize.width());
-                    assert(img.height() == imageSize.height());
-                    QRgb * scanline = (QRgb*) img.scanLine(y);
-                    QRgb& pixel = scanline[x];
-                    color = Qt::yellow; // TODO use neuron color
-                    color.setAlpha(120);
-                    pixel = color.rgba();
-                }
-            }
-        }
-    }
-}
-
-void MipDisplayImage::onDataIntensitiesUpdated()
-{
-    // Default display exactly entire intensity range
-    // displayMin = 0.0; // example ct image has a very large minimum
-    // brightnessCalibrator.setHdrRange(originalData.dataMin, originalData.dataMax);
-    // brightnessCalibrator.setGamma(1.0);
-    updateCorrectedIntensities();
-    emit initialImageDataLoaded();
-}
-
-void MipDisplayImage::updateCorrectedIntensities()
-{
-    for (int y = 0; y < originalData.nRows(); ++y) {
-        QRgb* scanLine = (QRgb*) image.scanLine(y); // faster than setPixel() for 32 bit rgb...
-        for (int x = 0; x < originalData.nColumns(); ++x) {
-            unsigned char red, green, blue;
-            if (originalData.nChannels() == 1)
-                red = green = blue = getCorrectedIntensity(x, y, 0);
-            else {
-                red = getCorrectedIntensity(x, y, 0);
-                green = getCorrectedIntensity(x, y, 1);
-                blue = getCorrectedIntensity(x, y, 2);
-            }
-            scanLine[x] = qRgb(red, green, blue);
-        }
-    }
-}
-
-void MipDisplayImage::setGamma(float gamma)
-{
-    if (gamma == brightnessCalibrator.getGamma()) return;
-    brightnessCalibrator.setGamma(gamma);
-    updateCorrectedIntensities();
-}
-
-// i_in as original float value
-// Output in range 0-255
-unsigned char MipDisplayImage::getCorrectedIntensity(float i_in) const
-{
-    unsigned char answer =  (unsigned char)
-                            ((brightnessCalibrator.getCorrectedIntensity(i_in) * 255.0f) + 0.4999);
-    return answer;
-}
-
-unsigned char MipDisplayImage::getCorrectedIntensity(int x, int y, int c) const
-{
-    return getCorrectedIntensity(originalData[x][y][c]);
-}
-
-void MipDisplayImage::toggleNeuronDisplay(int neuronIx, bool checked)
-{
-    // qDebug() << "MipDisplayImage toggleNeuronDisplay";
-    originalData.toggleNeuronDisplay(neuronIx, checked);
-}
 
 //////////////////////////////
 // NaLargeMIPWidget methods //
@@ -143,10 +10,9 @@ void MipDisplayImage::toggleNeuronDisplay(int neuronIx, bool checked)
 
 NaLargeMIPWidget::NaLargeMIPWidget(QWidget * parent)
     : Na2DViewer(parent)
-    , mipImage(NULL)
-    , imageUpdateThread(this)
     , highlightedNeuronMaskPixmap(200, 200)
     , highlightedNeuronIndex(-1)
+    , mipMergedData(NULL)
 {
     // Test image
     pixmap = QPixmap(200, 200);
@@ -156,7 +22,6 @@ NaLargeMIPWidget::NaLargeMIPWidget(QWidget * parent)
     resetView();
 
     setCursor(Qt::OpenHandCursor);
-    imageUpdateThread.start();
 
     connect(&mouseClickManager, SIGNAL(singleClick(QPoint)),
             this, SLOT(onMouseSingleClick(QPoint)));
@@ -168,50 +33,14 @@ NaLargeMIPWidget::NaLargeMIPWidget(QWidget * parent)
 
 NaLargeMIPWidget::~NaLargeMIPWidget()
 {
-    if (mipImage) {
-        delete mipImage;
-        mipImage = NULL;
-    }
-}
-
-bool NaLargeMIPWidget::loadMy4DImage(const My4DImage* img, const My4DImage* maskImg)
-{
-    int imageC = img->getCDim();
-    // Unsure how to map colors if not 1 or 3 colors
-    if ((imageC != 1)  && (imageC != 3)) {
-        qDebug() << "Error: number of channels = " << img->getCDim();
-        return false;
-    }
-    // Delegate computation of maximum intensity projection
-    // to MipDisplayImage class
-    if (mipImage) {
-        delete mipImage;
-        mipImage = NULL;
-    }
-    // Put loading of image data into another thread
-    qDebug() << "Starting MIP data load";
-    mipImage = new MipDisplayImage();
-    mipImage->moveToThread(&imageUpdateThread);
-    // qDebug() << "GUI thread = " << QThread::currentThread();
-    // qDebug() << "MIP thread = " << &imageUpdateThread;
-    connect(this, SIGNAL(volumeDataUpdated(const My4DImage*, const My4DImage*)),
-            mipImage, SLOT(loadImageData(const My4DImage*, const My4DImage*)));
-    connect(mipImage, SIGNAL(initialImageDataLoaded()),
-            this, SLOT(initializePixmap()));
-    connect(this, SIGNAL(neuronDisplayToggled(int, bool)),
-            mipImage, SLOT(toggleNeuronDisplay(int,bool)));
-    emit setProgressMax(img->getXDim());
-    connect(mipImage, SIGNAL(processedXColumn(int)),
-            this, SIGNAL(setProgress(int)));
-    // progressBar->show();
-    emit showProgress();
-    emit volumeDataUpdated(img, maskImg); // Start image processing in another thread.
-    return true;
 }
 
 void NaLargeMIPWidget::updatePixmap()
 {
-    pixmap = QPixmap::fromImage(mipImage->image);
+    if (! mipMergedData) return;
+    MipMergedData::Reader mipReader(*mipMergedData);
+    if (! mipReader.hasReadLock()) return;
+    pixmap = QPixmap::fromImage(*mipReader.getImage());
     updateDefaultScale();
 }
 
@@ -234,14 +63,6 @@ void NaLargeMIPWidget::onMouseSingleClick(QPoint pos)
         // qDebug() << "clicked Neuron " << neuronAt(pos);
     }
 }
-void NaLargeMIPWidget::setGammaBrightness(qreal gamma)
-{
-    if (! mipImage) return;
-    mipImage->setGamma((float)gamma);
-    // qDebug() << "set gamma";
-    updatePixmap();
-    update();
-}
 
 void NaLargeMIPWidget::resetView()
 {
@@ -260,7 +81,10 @@ void NaLargeMIPWidget::resizeEvent(QResizeEvent * event) {
 
 void NaLargeMIPWidget::paintIntensityNumerals(QPainter& painter)
 {
-    if (!mipImage) return;
+    if (!mipMergedData) return;
+    MipMergedData::Reader mipReader(*mipMergedData);
+    if (!mipReader.hasReadLock()) return;
+
     // qDebug() << "numerals";
     QPointF v_img_upleft = X_img_view * painter.viewport().topLeft();
     QPointF v_img_downright = X_img_view * painter.viewport().bottomRight();
@@ -279,27 +103,31 @@ void NaLargeMIPWidget::paintIntensityNumerals(QPainter& painter)
     // qDebug() << "nColumns = " << mipImage->originalData.nColumns();
     // qDebug() << "nRows = " << mipImage->originalData.nRows();
 
+    const Image4DProxy<My4DImage>& dataProxy = mipReader.getLayerDataProxy();
+    const int imageZ = mipReader.getMergedImageLayerIndex();
+    const QImage* image = mipReader.getImage();
+
     // Iterate over only the image pixels that are visible
     for (int x = int(v_img_upleft.x() - 0.5); x <= int(v_img_downright.x() + 0.5); ++x) {
         // qDebug() << "x = " << x;
         if (x < 0)
             continue;
-        if (x >= mipImage->originalData.nColumns())
+        if (x >= dataProxy.sx)
             continue;
         for (int y = int(v_img_upleft.y() - 0.5); y <= int(v_img_downright.y() + 0.5); ++y) {
             // qDebug() << "y = " << y;
             if (y < 0)
                 continue;
-            if (y >= mipImage->originalData.nRows())
+            if (y >= dataProxy.sy)
                 continue;
             // Transform image pixel coordinates back to viewport coordinates
             QPointF v = X_view_img * QPointF(x, y);
             // qDebug() << x << ", " << y << "; " << v.x() << ", " << v.y();
             // Print original data intensity, not displayed intensity
             // But choose font color based on displayed intensity.
-            unsigned int red = qRed(mipImage->image.pixel(x, y));
-            unsigned int green = qGreen(mipImage->image.pixel(x, y));
-            unsigned int blue = qBlue(mipImage->image.pixel(x, y));
+            unsigned int red = qRed(image->pixel(x, y));
+            unsigned int green = qGreen(image->pixel(x, y));
+            unsigned int blue = qBlue(image->pixel(x, y));
             // human color perception is important here
             float displayIntensity = 0.30 * red + 0.58 * green + 0.12 * blue;
             if (displayIntensity < 128)
@@ -307,11 +135,11 @@ void NaLargeMIPWidget::paintIntensityNumerals(QPainter& painter)
             else
                 painter.setPen(Qt::black);
 
-            int nC = mipImage->originalData.nChannels();
+            int nC = dataProxy.sc;
             float lineHeight = scale / (nC + 1.0);
             // Write a neat little column of numbers inside each pixel
             for (int c = 0; c < nC; ++c) {
-                float val = mipImage->originalData[x][y][c];
+                float val = dataProxy.value_at(x, y, imageZ, c);
                 painter.drawText(QRectF(v.x(), v.y() + (c + 0.5) * lineHeight, scale, lineHeight),
                                  Qt::AlignHCenter | Qt::AlignVCenter,
                                  QString("%1").arg(val));
@@ -399,28 +227,27 @@ void NaLargeMIPWidget::mouseReleaseEvent(QMouseEvent * event)
 int NaLargeMIPWidget::neuronAt(const QPoint& p)
 {
     int answer = -1;
-    if (!mipImage) return answer;
+    if (! mipMergedData) return answer;
+    MipMergedData::Reader mipReader(*mipMergedData);
+    if (! mipReader.hasReadLock()) return answer;
+
+    const Image4DProxy<My4DImage>& neuronProxy = mipReader.getLayerNeuronProxy();
+    int z = mipReader.getMergedImageLayerIndex();
+
     QPointF v_img = X_img_view * QPointF(p);
     int x = v_img.x();
     int y = v_img.y();
     if (x < 0) return answer;
     if (y < 0) return answer;
-    if (x >= mipImage->originalData.nColumns()) return answer;
-    if (y >= mipImage->originalData.nRows()) return answer;
-    answer = mipImage->originalData[x][y].neuronIndex;
+    if (x >= neuronProxy.sx) return answer;
+    if (y >= neuronProxy.sy) return answer;
+    answer = neuronProxy.value_at(x, y, z, 0);
     return answer;
 }
 
 void NaLargeMIPWidget::onHighlightedNeuronChanged(int neuronIx)
 {
-    if (neuronIx <= 0) return;
-    if (! mipImage) return;
-    if (mipImage->neuronHighlightImages.size() <= neuronIx) return;
-    QImage * highlightImage = mipImage->neuronHighlightImages[neuronIx];
-    if (! highlightImage) return;
-    // qDebug() << "Switching to neuron " << neuronIx;
-    highlightedNeuronMaskPixmap = QPixmap::fromImage(*highlightImage);
-    update();
+    // TODO
 }
 
 // Drag in widget to translate the MIP image in x,y
@@ -434,28 +261,35 @@ void NaLargeMIPWidget::mouseMoveEvent(QMouseEvent * event)
     if (Qt::NoButton == event->buttons())
     {
         // Hover to show (x, y, value) in status bar
-        if (!mipImage) return;
+        if (! mipMergedData) return;
+        MipMergedData::Reader mipReader(*mipMergedData);
+        if (! mipReader.hasReadLock()) return;
+
+        const Image4DProxy<My4DImage>& neuronProxy = mipReader.getLayerNeuronProxy();
+        const Image4DProxy<My4DImage>& zProxy = mipReader.getLayerZProxy();
+        const Image4DProxy<My4DImage>& dataProxy = mipReader.getLayerDataProxy();
+        const int mergeIndex = mipReader.getMergedImageLayerIndex();
+
         QPointF v_img = X_img_view * QPointF(event->pos());
         int x = v_img.x();
         int y = v_img.y();
         int z = 0;
         int neuronIx = -1;
         QString value("<None>"); // default value
-        if ( (x >= 0) && (x < mipImage->originalData.nColumns())
-            && (y >= 0) && (y < mipImage->originalData.nRows()) )
+        if ( (x >= 0) && (x < neuronProxy.sx)
+            && (y >= 0) && (y < neuronProxy.sy) )
         {
-            const MipData::Pixel& pixel = mipImage->originalData[x][y];
-            z = pixel.z;
+            z = zProxy.value_at(x, y, mergeIndex, 0);
             value = "";
-            int nC = mipImage->originalData.nChannels();
+            int nC = dataProxy.sc;
             if (nC > 1) value += "[";
             for (int c = 0; c < nC; ++c) {
                 if (c > 0) value += ", ";
-                float val = pixel[c];
+                float val = dataProxy.value_at(x, y, mergeIndex, c);
                 value += QString("%1").arg(val, 4);
             }
             if (nC > 1) value += "]";
-            neuronIx = pixel.neuronIndex;
+            neuronIx = neuronProxy.value_at(x, y, mergeIndex, 0);
         }
 
         QString msg;
@@ -481,7 +315,7 @@ void NaLargeMIPWidget::mouseMoveEvent(QMouseEvent * event)
 
 void NaLargeMIPWidget::toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked)
 {
-    if (! mipImage) return;
+    if (! mipMergedData) return;
     emit neuronDisplayToggled(index, checked);
 }
 

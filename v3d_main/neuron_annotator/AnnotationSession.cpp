@@ -128,13 +128,13 @@ bool AnnotationSession::loadVolumeData()
 void AnnotationSession::updateNeuronMask(int index, bool status)
 {
     int statusValue = (status ? 1 : 0);
-    qDebug() << "AnnotationSession::updateNeuronMask index=" << index << " status=" << status;
+    // qDebug() << "AnnotationSession::updateNeuronMask index=" << index << " status=" << status;
     QString updateNeuronMaskString=QString("NEURONMASK_UPDATE %1 %2").arg(index).arg(statusValue);
     emit modelUpdated(updateNeuronMaskString);
 }
 
 void AnnotationSession::updateNeuronMaskFull() {
-    qDebug() << "NeuronSelectionModel::updateNeuronMaskFull() - emitting modelUpdated()";
+    // qDebug() << "NeuronSelectionModel::updateNeuronMaskFull() - emitting modelUpdated()";
     QString updateString=QString("FULL_UPDATE");
     emit modelUpdated(updateString);
 }

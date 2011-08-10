@@ -55,11 +55,16 @@ void NeuronSelectionModel::updateOverlay(int index, bool status)
 
 void NeuronSelectionModel::updateNeuronMask(int index, bool status)
 {
-    if (maskStatusList[index] == status) return; // no change
+    // qDebug() << "NeuronSelectionModel::updateNeuronMask" << index << status << maskStatusList[index];
+    if (maskStatusList[index] == status) {
+        // qDebug() << maskStatusList[index] << "equals" << status;
+        return; // no change
+    }
     {
         Writer selectionWriter(*this);
         maskStatusList.replace(index, status);
     }
+    // qDebug() << "emitting neuronVisibilityChanged()" << this;
     emit neuronVisibilityChanged(index, status);
     emit dataChanged();
 }

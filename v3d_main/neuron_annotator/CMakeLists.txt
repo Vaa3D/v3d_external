@@ -42,8 +42,6 @@ QT4_WRAP_CPP(NA_MOC_SRCS
     gui/RendererNeuronAnnotator.h
     AnnotationSession.h
     ExportFile.h
-    MipData.h
-    MipLayer.h
     NeuronSelector.h
 )
 

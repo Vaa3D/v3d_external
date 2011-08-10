@@ -47,11 +47,15 @@ protected:
     My4DImage* layerZValues;
     My4DImage* layerIntensities;
     My4DImage* layerData;
+    My4DImage* layerNeurons;
+    My4DImage* emptyMy4DImage; // helper for initializing Image4DProxys
     Image4DProxy<My4DImage> layerZProxy;
     Image4DProxy<My4DImage> layerIntensityProxy;
     Image4DProxy<My4DImage> layerDataProxy;
+    Image4DProxy<My4DImage> layerNeuronProxy;
     QList<MipMergeLayer*> layers;
     int mergedIndex; // Z-coordinate index of final merged image
+    bool bShowReferenceChannel;
     QImage * mergedImage; // colorized output image
 
 public:
@@ -62,6 +66,11 @@ public:
             : BaseReadLocker(mipMergedDataParam)
             , mipMergedData(mipMergedDataParam)
         {}
+
+        int getMergedImageLayerIndex() {return mipMergedData.mergedIndex;}
+        const Image4DProxy<My4DImage>& getLayerDataProxy() {return mipMergedData.layerDataProxy;}
+        const Image4DProxy<My4DImage>& getLayerNeuronProxy() {return mipMergedData.layerNeuronProxy;}
+        const Image4DProxy<My4DImage>& getLayerZProxy() {return mipMergedData.layerZProxy;}
 
         const QImage * getImage() const {return mipMergedData.mergedImage;}
 
@@ -96,26 +105,17 @@ class MipMergeLayer : public QObject
 public:
     explicit MipMergeLayer(MipMergedData& mipMergedDataParam,
                            int indexParam, bool isVisibleParam,
-                           MipMergeLayer * child1Param, MipMergeLayer * child2Param)
-        : mipMergedData(mipMergedDataParam)
-        , index(indexParam), bIsVisible(isVisibleParam)
-        , proxyIndex(indexParam)
-        , child1(child1Param), child2(child2Param)
-    {
-        if (child1) connect(child1, SIGNAL(dataChanged()), this, SLOT(update()));
-        if (child2) connect(child2, SIGNAL(dataChanged()), this, SLOT(update()));
-    }
+                           MipMergeLayer * child1Param, MipMergeLayer * child2Param);
     int getIndex() const {return index;} // slice number containing this layer's data
     int getProxyIndex() const {return proxyIndex;}
     bool isVisible() const {return bIsVisible;}
-    void setVisibility(bool status) {bIsVisible = status;}
     bool updateWithoutSignal();
 
 signals:
     void dataChanged();
 
 public slots:
-    void setVisiblity(bool bIsVisibleParam);
+    void setVisibility(bool bIsVisibleParam);
     void update(); // emits dataChanged() if data changes.
 
 protected:

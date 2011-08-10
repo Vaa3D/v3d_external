@@ -2334,8 +2334,6 @@ released_plugins/v3d_plugins/mapview/colormap.h
 released_plugins/v3d_plugins/mapview/stackutil-11.cpp
 released_plugins/v3d_plugins/mapview/mg_image_lib11.cpp
 released_plugins/v3d_plugins/mapview/mapviewer.cpp
-v3d_main/neuron_annotator/MipData.h
-v3d_main/neuron_annotator/MipData.cpp
 v3d_main/neuron_annotator/CMakeLists.txt
 v3d_main/neuron_annotator/ExportFile.h
 v3d_main/neuron_annotator/ExportFile.cpp
@@ -2345,8 +2343,6 @@ v3d_main/neuron_annotator/gui/angle_widget_designer_plugin/AngleWidgetPlugin.cpp
 v3d_main/neuron_annotator/gui/gamma_widget_designer_plugin/GammaWidgetPlugin.pro
 v3d_main/neuron_annotator/gui/gamma_widget_designer_plugin/GammaWidgetPlugin.h
 v3d_main/neuron_annotator/gui/gamma_widget_designer_plugin/GammaWidgetPlugin.cpp
-v3d_main/neuron_annotator/MipLayer.h
-v3d_main/neuron_annotator/MipLayer.cpp
 v3d_main/neuron_annotator/utility/ColorSeparatorConsolidator.h
 v3d_main/neuron_annotator/utility/ColorSeparatorConsolidator.cpp
 v3d_main/cell_counter/CellCounter3D.cpp

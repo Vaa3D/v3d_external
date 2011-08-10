@@ -3,6 +3,7 @@
 
 NaLockableData::NaLockableData()
     : thread(NULL)
+    , lock(QReadWriteLock::NonRecursive)
 {
     thread = new QThread(this); // is this too circular?
     thread->start();

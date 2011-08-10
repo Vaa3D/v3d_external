@@ -1,52 +1,13 @@
 #ifndef NA_LARGE_MIP_WIDGET_H
 #define NA_LARGE_MIP_WIDGET_H
 
-#include "../MipData.h"
 #include <QWidget>
 #include <QImage>
 #include <QPixmap>
 #include <QPainter>
 #include "Na2DViewer.h"
 #include "MouseClickManager.h"
-#include "BrightnessCalibrator.h"
 
-// MipDisplayImage is a derived class of QImage, intended
-// to encapsulate gamma/HDR correctability.
-class MipDisplayImage : public QObject
-{
-    Q_OBJECT
-
-public:
-    explicit MipDisplayImage();
-    virtual ~MipDisplayImage();
-    void setGamma(float gamma);
-
-    MipData originalData;
-
-    // contain rather than inherit...
-    QImage image;
-    typedef std::vector<QImage*> neuronHighlightImages_t;
-    neuronHighlightImages_t neuronHighlightImages;
-
-signals:
-    void initialImageDataLoaded(); // primary MIP image ready for display
-    void maskDataLoaded(); // ready for neuron mask toggling
-    void processedXColumn(int);
-
-public slots:
-    void loadImageData(const My4DImage* img, const My4DImage* maskImg);
-    void processedXColumnSlot(int);
-    void onDataIntensitiesUpdated();
-    // when a neuron has been toggled on or off
-    void toggleNeuronDisplay(int neuronIndex, bool checked);
-
-protected:
-    unsigned char getCorrectedIntensity(float i_in) const;
-    unsigned char getCorrectedIntensity(int x, int y, int c) const;
-    void updateCorrectedIntensities();
-    void load4DImage(const My4DImage* img, const My4DImage* maskImg = NULL);
-    BrightnessCalibrator<float> brightnessCalibrator;
-};
 
 // Large maximum intensity projection viewer for Neuron Annotator
 // mode of V3D
@@ -57,8 +18,6 @@ class NaLargeMIPWidget : public Na2DViewer
 public:
     NaLargeMIPWidget(QWidget* parent);
     virtual ~NaLargeMIPWidget();
-    // virtual bool loadMy4DImage(const My4DImage* my4DImage);
-    virtual bool loadMy4DImage(const My4DImage* my4DImage, const My4DImage* maskImg = NULL);
     virtual void paintEvent(QPaintEvent *event);
     // Drag with mouse to translate
     virtual void mouseMoveEvent(QMouseEvent * event);
@@ -68,6 +27,15 @@ public:
     virtual void resizeEvent(QResizeEvent * event);
     int neuronAt(const QPoint& p);
     bool saveImage(QString filename);
+    void setMipMergedData(const MipMergedData& mipMergedDataParam)
+    {
+        mipMergedData = &mipMergedDataParam;
+        connect(mipMergedData, SIGNAL(dataChanged()),
+                this, SLOT(initializePixmap()));
+    }
+    virtual bool loadMy4DImage(const My4DImage *my4DImage, const My4DImage *neuronMaskImage) {
+        return true;
+    } // TODO - deprecate loadMy4DImage method
 
 signals:
     // message intended for main window status area
@@ -90,7 +58,6 @@ public slots:
     void initializePixmap(); // when a new image has loaded
     // Want to distinguish between double click and single click events
     void onMouseSingleClick(QPoint pos);
-    void setGammaBrightness(qreal gamma);
 
 protected slots:
     void onHighlightedNeuronChanged(int neuronIndex);
@@ -100,14 +67,10 @@ protected:
     void paintIntensityNumerals(QPainter& painter);
     void updatePixmap();
 
-    MipDisplayImage * mipImage;
-
     // QImage * highlightedNeuronMaskImage;
     QPixmap highlightedNeuronMaskPixmap;
     int highlightedNeuronIndex;
-
-    QThread imageUpdateThread;
-    // QProgressBar * progressBar;
+    const MipMergedData * mipMergedData;
 
 private:
     typedef Na2DViewer super;

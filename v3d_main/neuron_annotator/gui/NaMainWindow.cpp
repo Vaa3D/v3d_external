@@ -110,8 +110,6 @@ NaMainWindow::NaMainWindow()
     // Status bar message
     connect(ui.naLargeMIPWidget, SIGNAL(statusMessage(const QString&)),
             statusBar(), SLOT(showMessage(const QString&)));
-    connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
-            ui.naLargeMIPWidget, SLOT(setGammaBrightness(qreal)));
     ui.progressWidgetMip->hide();
     connect(ui.naLargeMIPWidget, SIGNAL(showProgress()),
             ui.progressWidgetMip, SLOT(show()));
@@ -600,6 +598,9 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
 
     connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
             &annotationSession->getDataColorModel(), SLOT(setGamma(qreal)));
+
+    // Connect mip viewer to data flow model
+    ui.naLargeMIPWidget->setMipMergedData(annotationSession->getMipMergedData());
 
     // Need to construct (temporary until backend implemented) MultiColorImageStackNode from this directory
     // This code will be redone when the node/filestore is implemented.
