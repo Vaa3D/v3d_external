@@ -483,17 +483,25 @@ CustomToolButton * CustomToolbarSelectWidget::getButtonFromAction(QAction* actio
 
 void CustomToolbarSelectWidget::setInitialToolBarButton()
 {
+	if(cts->preLoadedNameList.empty()) return;
 	int i = 0;
 	foreach(QString buttonName, cts->preLoadedNameList)
 	{
 		QString buttonAlias = cts->preLoadedAliasList.at(i);
 
 		CustomToolButton * cb = getButtonFromButtonName(buttonName);
+		if(cb)
+		{
 		cb->button->setVisible(true);
 		cb->button->setText(buttonAlias);
 
 		toolBar->addAction(cb->button);
 		cts->allActiveButtonList.push_back(cb);
+		}
+		else
+		{
+			qDebug()<<"unable to find button"<<buttonName;
+		}
 		i++;
 	}
 }
