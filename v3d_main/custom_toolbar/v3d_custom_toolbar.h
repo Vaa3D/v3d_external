@@ -2,6 +2,7 @@
 #define __CUSTOM_BUTTON_H__
 
 //#define  __v3d_custom_toolbar_plugin__
+#define __hierarchical_file_menu__
 
 #include <QtGui>
 #include <map>
@@ -131,6 +132,9 @@ class CustomToolbarSelectWidget : public QWidget
 		CustomToolbarSelectWidget(CustomToolbarSetting * _cts, V3DPluginCallback2 *callback, QWidget * parent);
 
 		~CustomToolbarSelectWidget();
+#ifdef __hierarchical_file_menu__
+		QTreeWidgetItem * createTreeWidgetItem(QString menuName, QMap<QString, QTreeWidgetItem*> & treeWidgetItemOfMenuName, QTreeWidget * treeWidget);
+#endif
 
 		void setInitialToolBarButton();
 
@@ -182,6 +186,7 @@ class CustomToolbarSelectWidget : public QWidget
 		QList<CustomToolButton *> pluginCustomToolButtonList;
 		QList<QPluginLoader *> pluginLoaderList;
 
+		QIcon fileMenuIcon;
 		QIcon pluginIcon;
 		QIcon interfaceIcon;
 		QIcon menuIcon;

@@ -138,6 +138,41 @@ static QStringList v3d_getInterfaceFuncList(QObject *plugin)
 }
 #endif
 
+#ifdef __hierarchical_file_menu__
+QTreeWidgetItem * CustomToolbarSelectWidget::createTreeWidgetItem(QString menuName, QMap<QString, QTreeWidgetItem*> & treeWidgetItemOfMenuName, QTreeWidget * treeWidget)
+{
+	if(treeWidgetItemOfMenuName.find(menuName) != treeWidgetItemOfMenuName.end())
+	{
+		qDebug()<<"duplicated menu "<<menuName;
+		return treeWidgetItemOfMenuName[menuName];
+	}
+	int prev_pos = 0, next_pos = -1;
+	QTreeWidgetItem * newItem = 0;
+	QTreeWidgetItem * parentItem = 0;
+	while((next_pos = menuName.indexOf("::", prev_pos)) != -1)
+	{
+		QString par_menu_name = menuName.mid(0, next_pos);
+		if(treeWidgetItemOfMenuName.find(par_menu_name) == treeWidgetItemOfMenuName.end())
+		{
+			if(parentItem) newItem = new QTreeWidgetItem(parentItem);
+			else newItem = new QTreeWidgetItem(treeWidget);
+			if(par_menu_name.lastIndexOf("::") != -1)
+				newItem->setText(0, par_menu_name.right(par_menu_name.size() - par_menu_name.lastIndexOf("::") - 2));
+			else newItem->setText(0, par_menu_name);
+			newItem->setIcon(0, fileMenuIcon);
+			treeWidgetItemOfMenuName[par_menu_name] = newItem;
+			parentItem = newItem;
+		}
+		else parentItem = treeWidgetItemOfMenuName[par_menu_name];
+		prev_pos = next_pos + 2;
+	}
+	if(parentItem) newItem = new QTreeWidgetItem(parentItem);
+	else newItem = new QTreeWidgetItem(treeWidget);
+	treeWidgetItemOfMenuName[menuName] = newItem;
+	return newItem;
+}
+#endif
+
 CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts, V3DPluginCallback2 *callback, QWidget * parent): QWidget(0/*parent*/)
 {
 	if(!_cts) return;
@@ -148,11 +183,11 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 
 	connect(toolBar, SIGNAL(visibilityChanged(bool)), this, SLOT(saveToolBarState()));
 
-	//toolButtonIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirHomeIcon));
 	toolButtonIcon.addFile(":/button_add.png");
 	toolBar->addAction(toolButtonIcon, tr("Add custom button"),this, SLOT(openMe()));
 	toolBar->addSeparator();
 
+	fileMenuIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirHomeIcon));
 	pluginIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirHomeIcon));
 	interfaceIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirOpenIcon),
 			QIcon::Normal, QIcon::On);
@@ -167,23 +202,30 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 
 	mainWindowTreeWidget = new QTreeWidget();
 	mainWindowTreeWidget->setColumnCount(2);
-	mainWindowTreeWidget->setSortingEnabled(true);
+	mainWindowTreeWidget->setSortingEnabled(false);
 
 	QStringList mainWindowHeaderStringList = QStringList() <<tr("Menu Name")<<tr("Alias");
 	QTreeWidgetItem * mainWindowHeaderItem = new QTreeWidgetItem(mainWindowHeaderStringList);
 	mainWindowTreeWidget->setHeaderItem(mainWindowHeaderItem);
 
+#ifdef __hierarchical_file_menu__
+	QMap<QString, QTreeWidgetItem*> treeWidgetItemOfMenuName;
+#endif
 	QList<std::pair<QString, VoidFunc> > mainWindowMenuStringAndFuncList = getMainWindowButtonStringAndFuncList();
-	//foreach(std::pair<QString, VoidFunc> menuNameAndFunc, mainWindowMenuStringAndFuncList)
 	for(int i = 0; i < mainWindowMenuStringAndFuncList.size(); i++)
 	{
-		QString menuName = mainWindowMenuStringAndFuncList.at(i).first;//menuNameAndFunc.first;
+		QString menuName = mainWindowMenuStringAndFuncList.at(i).first;
 		QString menuAlias = menuName.right(menuName.size() - menuName.lastIndexOf(tr("::")) - 2);
-		VoidFunc menuFunc = mainWindowMenuStringAndFuncList.at(i).second;//menuNameAndFunc.second;
+		VoidFunc menuFunc = mainWindowMenuStringAndFuncList.at(i).second;
 
+#ifdef __hierarchical_file_menu__
+		QTreeWidgetItem * mainWindowItem = createTreeWidgetItem(menuName, treeWidgetItemOfMenuName, mainWindowTreeWidget);
+		QCheckBox * checkbox = new QCheckBox(menuAlias);
+#else
 		QTreeWidgetItem * mainWindowItem = new QTreeWidgetItem(mainWindowTreeWidget);
-
 		QCheckBox * checkbox = new QCheckBox(menuName);
+#endif
+
 		checkbox->setChecked(false);
 		mainWindowTreeWidget->setItemWidget(mainWindowItem, 0, checkbox);
 		mainWindowCheckboxList.push_back(checkbox);
@@ -211,6 +253,17 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 			editor->setText(cts->preLoadedAliasList.at(i));
 			editor->setEnabled(true);
 			checkbox->setChecked(Qt::Checked);
+#ifdef __hierarchical_file_menu__
+			{
+				mainWindowItem->setExpanded(true);
+				QString par_menu_name = menuName;
+				int n = -1;
+				while((n = par_menu_name.lastIndexOf("::"))!=-1){
+					par_menu_name = par_menu_name.left(n); 
+					treeWidgetItemOfMenuName[par_menu_name]->setExpanded(true);
+				}
+			}
+#endif
 		}
 	}
 
@@ -492,11 +545,11 @@ void CustomToolbarSelectWidget::setInitialToolBarButton()
 		CustomToolButton * cb = getButtonFromButtonName(buttonName);
 		if(cb)
 		{
-		cb->button->setVisible(true);
-		cb->button->setText(buttonAlias);
+			cb->button->setVisible(true);
+			cb->button->setText(buttonAlias);
 
-		toolBar->addAction(cb->button);
-		cts->allActiveButtonList.push_back(cb);
+			toolBar->addAction(cb->button);
+			cts->allActiveButtonList.push_back(cb);
 		}
 		else
 		{
@@ -755,37 +808,64 @@ QList<pair<QString, VoidFunc> > getMainWindowButtonStringAndFuncList()
 				(VoidFunc)(&MainWindow::func_procIO_import_atlas_imgfolder))
 		<<SAF (QObject::tr("File::Export::Export landmarks to pointcloud (.apo) file"), \
 				(VoidFunc)(&MainWindow::func_procIO_export_to_vano_format))
-		;/*
-		<<QObject::tr("File::Export::Export traced neuron/fibrous-structure path-info to graph (.swc) file")
-		<<QObject::tr("Image/Data::image type::convert indexed/mask image to RGB image")
-		<<QObject::tr("Image/Data::image type::linear rescale to [0~255] and convert to 8bit image")
-		<<QObject::tr("Image/Data::image type::saturate top/bottom 1% voxels and linear-rescale to [0~255]/8bit")
-		<<QObject::tr("Image/Data::image type::convert 16bit image to 8bit via bit-shift")
-		<<QObject::tr("Image/Data::image type::convert 32bit image to 8bit via bit-shift")
-		<<QObject::tr("Image/Data::geometry::rotate principal axis")
-		<<QObject::tr("Image/Data::geometry::rotate arbitrary angle")
-		<<QObject::tr("Image/Data::geometry::flip image")
-		<<QObject::tr("Image/Data::geometry::crop image (minMax Bounding Box)")
-		<<QObject::tr("Image/Data::geometry::crop image (ROI-based)")
-		<<QObject::tr("Image/Data::geometry::image resampling")
-		<<QObject::tr("Image/Data::intensity::mask ROI or non-ROI")
-		<<QObject::tr("Image/Data::intensity::fill value to non-ROI region for all XY planes")
-		<<QObject::tr("Image/Data::intensity::mask channel")
-		<<QObject::tr("Image/Data::intensity::clear ROI")
-		<<QObject::tr("Image/Data::intensity::max projection")
-		<<QObject::tr("Image/Data::intensity::histogram equalization")
-		<<QObject::tr("Image/Data::intensity::rescaling")
-		<<QObject::tr("Image/Data::intensity::thresholding")
-		<<QObject::tr("Image/Data::intensity::binarization")
-		<<QObject::tr("Image/Data::intensity::invert color")
-		<<QObject::tr("Image/Data::intensity::update the displayed min/max value(s)")
-		<<QObject::tr("Image/Data::color channel::split color channels")
-		<<QObject::tr("Image/Data::color channel::extract a color channel")
-		<<QObject::tr("Image/Data::color channel::image blending")
-		<<QObject::tr("Image/Data::color channel::invert color")
-		<<QObject::tr("Image/Data::landmark::landmark manager")
-		<<QObject::tr("Image/Data::landmark::clear all landmarks")
-		*/
+		<<SAF (QObject::tr("File::Export::Export traced neuron/fibrous-structure path-info to graph (.swc) file"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::image type::convert indexed/mask image to RGB image"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::image type::linear rescale to [0~255] and convert to 8bit image"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::image type::saturate top/bottom 1% voxels and linear-rescale to [0~255]/8bit"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::image type::convert 16bit image to 8bit via bit-shift"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::image type::convert 32bit image to 8bit via bit-shift"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::geometry::rotate principal axis"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::geometry::rotate arbitrary angle"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::geometry::flip image"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::geometry::crop image (minMax Bounding Box)"), 
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::geometry::crop image (ROI-based)"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::geometry::image resampling"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::intensity::mask ROI or non-ROI"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::intensity::fill value to non-ROI region for all XY planes"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::intensity::mask channel"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::intensity::clear ROI"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::intensity::max projection"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::intensity::histogram equalization"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::intensity::rescaling"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::intensity::thresholding"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::intensity::binarization"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::intensity::invert color"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::intensity::update the displayed min/max value(s)"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::color channel::split color channels"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::color channel::extract a color channel"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::color channel::image blending"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::color channel::invert color"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::landmark::landmark manager"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::landmark::clear all landmarks"), \
+				(VoidFunc)(&MainWindow::openWebUrl));
 #endif
 }
 
