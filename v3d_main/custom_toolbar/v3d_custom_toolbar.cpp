@@ -464,7 +464,7 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 	tabWidget->addTab(pageTriView, tr("Tri View"));
 	tabWidget->addTab(pageView3d, tr("3D View"));
 	tabWidget->addTab(pagePlugin, tr("Plugin"));
-	tabWidget->setCurrentIndex(2);
+	tabWidget->setCurrentIndex(3);
 
 	mainLayout = new QHBoxLayout();
 	mainLayout->addWidget(tabWidget);
@@ -608,7 +608,11 @@ bool CustomToolButton::run()
 		{
 #ifndef __v3d_custom_toolbar_plugin__
 			MainWindow * mw = qobject_cast<MainWindow*>(parent);
-			if(mw) (mw->*(MainWindowFunc)slot_func)();
+			if(mw)
+			{
+				if(buttonName.indexOf(tr("Window::")) != -1 || buttonName.indexOf(tr("Plug-In::")) != -1) qDebug()<<"unable to menu action : "<<buttonName; // (mw->workspace->*(WorkspaceFunc)slot_func)();
+				else (mw->*(MainWindowFunc)slot_func)();
+			}
 #endif
 			return true;
 		}
