@@ -207,6 +207,7 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 	QStringList mainWindowHeaderStringList = QStringList() <<tr("Menu Name")<<tr("Alias");
 	QTreeWidgetItem * mainWindowHeaderItem = new QTreeWidgetItem(mainWindowHeaderStringList);
 	mainWindowTreeWidget->setHeaderItem(mainWindowHeaderItem);
+	mainWindowTreeWidget->setColumnWidth(0, 400);
 
 #ifdef __hierarchical_file_menu__
 	QMap<QString, QTreeWidgetItem*> treeWidgetItemOfMenuName;
@@ -281,6 +282,7 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 	QStringList triViewHeaderStringList = QStringList() <<tr("Button Name")<<tr("Alias");
 	QTreeWidgetItem * triViewHeaderItem = new QTreeWidgetItem(triViewHeaderStringList);
 	triViewTreeWidget->setHeaderItem(triViewHeaderItem);
+	triViewTreeWidget->setColumnWidth(0, 400);
 
 	QStringList triViewButtonStringList = getTriViewButtonStringList();
 	QList<VoidFunc> triViewButtonFuncList = getTriViewButtonFuncList();
@@ -335,6 +337,7 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 	QStringList view3dHeaderStringList = QStringList() <<tr("Button Name")<<tr("Alias");
 	QTreeWidgetItem * view3dHeaderItem = new QTreeWidgetItem(view3dHeaderStringList);
 	view3dTreeWidget->setHeaderItem(view3dHeaderItem);
+	view3dTreeWidget->setColumnWidth(0, 400);
 
 	QStringList view3dButtonStringList = getView3dButtonStringList();
 	QList<VoidFunc> view3dButtonFuncList = getView3dButtonFuncList();
@@ -390,6 +393,7 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 	QStringList pluginHeaderStringList = QStringList() <<tr("Plugin Name")<<tr("Set Button Name");
 	QTreeWidgetItem * pluginHeaderItem = new QTreeWidgetItem(pluginHeaderStringList);
 	pluginTreeWidget->setHeaderItem(pluginHeaderItem);
+	//pluginTreeWidget->setColumnWidth(0, 400);
 
 	pagePluginLayout = new QVBoxLayout();
 
@@ -865,7 +869,58 @@ QList<pair<QString, VoidFunc> > getMainWindowButtonStringAndFuncList()
 		<<SAF (QObject::tr("Image/Data::landmark::landmark manager"), \
 				(VoidFunc)(&MainWindow::openWebUrl))
 		<<SAF (QObject::tr("Image/Data::landmark::clear all landmarks"), \
-				(VoidFunc)(&MainWindow::openWebUrl));
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::landmark::clear graph edges/connection map"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::landmark::rescale landmark only"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Image/Data::landmark::turn on/off displaying landmark labels"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Visualize::3D viewer for entire image"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Visualize::3D viewer for Region of Interest (ROI)"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Advanced::3D tracing (V3D-Neuron tracing v2.0)::trace from one landmark to all others"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Advanced::3D tracing (V3D-Neuron tracing v2.0)::trace a path between two landmarks"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Advanced::3D tracing (V3D-Neuron tracing v2.0)::undo the last tracing step"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Advanced::3D tracing (V3D-Neuron tracing v2.0)::redo the last tracing step"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Advanced::3D tracing (V3D-Neuron tracing v2.0)::clear the traced neuron"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Advanced::3D tracing (V3D-Neuron tracing v2.0)::update 3D view(s) of traced neuron"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Advanced::3D tracing (V3D-Neuron tracing v2.0)::save the traced neuron to a file"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Advanced::3D image atlas::3D image atlas viewer"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Advanced::3D image atlas::Build an atlas linker file for [registered] images under a folder"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Plug-In::Plug-in manager"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Plug-In::Re-scan all plugins"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Window::Close"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Window::Close All"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Window::Tile"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Window::Cascade"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Window::Arrange icons"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Window::Next"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Window::Previous"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Work-Mode::V3D Default"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		<<SAF (QObject::tr("Work-Mode::Neuron Annotator"), \
+				(VoidFunc)(&MainWindow::openWebUrl))
+		;
 #endif
 }
 
