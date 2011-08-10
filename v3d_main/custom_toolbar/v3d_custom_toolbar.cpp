@@ -803,123 +803,123 @@ QList<pair<QString, VoidFunc> > getMainWindowButtonStringAndFuncList()
 		<<SAF (QObject::tr("File::Adjust preferences"), \
 				(VoidFunc)(&MainWindow::func_procSettings))
 		<<SAF (QObject::tr("File::Import::Import general image series to an image stack..."), \
-				(VoidFunc)(&MainWindow::func_procSettings))
-		<<SAF (QObject::tr("File::Import::Import Leica 2D tiff series to an image stack..."), \
 				(VoidFunc)(&MainWindow::import_GeneralImageFile))
-		<<SAF (QObject::tr("File::Import::Build an atlas linker file for [registered] images under a folder"), \
+		<<SAF (QObject::tr("File::Import::Import Leica 2D tiff series to an image stack..."), \
 				(VoidFunc)(&MainWindow::import_Leica))
-		<<SAF (QObject::tr("File::Export::Export 3D [cell] segmentation results to VANO annotation files"), \
+		<<SAF (QObject::tr("File::Import::Build an atlas linker file for [registered] images under a folder"), \
 				(VoidFunc)(&MainWindow::func_procIO_import_atlas_imgfolder))
-		<<SAF (QObject::tr("File::Export::Export landmarks to pointcloud (.apo) file"), \
+		<<SAF (QObject::tr("File::Export::Export 3D [cell] segmentation results to VANO annotation files"), \
 				(VoidFunc)(&MainWindow::func_procIO_export_to_vano_format))
+		<<SAF (QObject::tr("File::Export::Export landmarks to pointcloud (.apo) file"), \
+				(VoidFunc)(&MainWindow::func_procIO_export_landmark_to_pointcloud))
 		<<SAF (QObject::tr("File::Export::Export traced neuron/fibrous-structure path-info to graph (.swc) file"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procIO_export_tracedneuron_to_swc))
 		<<SAF (QObject::tr("Image/Data::image type::convert indexed/mask image to RGB image"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_indexedimg2rgb))
 		<<SAF (QObject::tr("Image/Data::image type::linear rescale to [0~255] and convert to 8bit image"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_scaleandconvert28bit))
 		<<SAF (QObject::tr("Image/Data::image type::saturate top/bottom 1% voxels and linear-rescale to [0~255]/8bit"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_scaleandconvert28bit_1percent))
 		<<SAF (QObject::tr("Image/Data::image type::convert 16bit image to 8bit via bit-shift"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_16bit_to_8bit))
 		<<SAF (QObject::tr("Image/Data::image type::convert 32bit image to 8bit via bit-shift"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_32bit_to_8bit))
 		<<SAF (QObject::tr("Image/Data::geometry::rotate principal axis"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_rotate_paxis))
 		<<SAF (QObject::tr("Image/Data::geometry::rotate arbitrary angle"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_rotate_angle))
 		<<SAF (QObject::tr("Image/Data::geometry::flip image"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_flip))
 		<<SAF (QObject::tr("Image/Data::geometry::crop image (minMax Bounding Box)"), 
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_crop_image_minMaxBox))
 		<<SAF (QObject::tr("Image/Data::geometry::crop image (ROI-based)"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_crop_bbox_roi))
 		<<SAF (QObject::tr("Image/Data::geometry::image resampling"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_resample_image))
 		<<SAF (QObject::tr("Image/Data::intensity::mask ROI or non-ROI"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_mask_roi))
 		<<SAF (QObject::tr("Image/Data::intensity::fill value to non-ROI region for all XY planes"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_mask_nonroi_xy))
 		<<SAF (QObject::tr("Image/Data::intensity::mask channel"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_mask_channel))
 		<<SAF (QObject::tr("Image/Data::intensity::clear ROI"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_clear_roi))
 		<<SAF (QObject::tr("Image/Data::intensity::max projection"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_projection_max))
 		<<SAF (QObject::tr("Image/Data::intensity::histogram equalization"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_histogram_equalization))
 		<<SAF (QObject::tr("Image/Data::intensity::rescaling"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_intensity_rescale))
 		<<SAF (QObject::tr("Image/Data::intensity::thresholding"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_intensity_threshold))
 		<<SAF (QObject::tr("Image/Data::intensity::binarization"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_intensity_binarize))
 		<<SAF (QObject::tr("Image/Data::intensity::invert color"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_color_invert))
 		<<SAF (QObject::tr("Image/Data::intensity::update the displayed min/max value(s)"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_intensity_updateminmax))
 		<<SAF (QObject::tr("Image/Data::color channel::split color channels"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_split_channels))
 		<<SAF (QObject::tr("Image/Data::color channel::extract a color channel"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_extract_a_channel))
 		<<SAF (QObject::tr("Image/Data::color channel::image blending"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_blend_image))
 		<<SAF (QObject::tr("Image/Data::color channel::invert color"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_color_invert))
 		<<SAF (QObject::tr("Image/Data::landmark::landmark manager"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procLandmarkManager))
 		<<SAF (QObject::tr("Image/Data::landmark::clear all landmarks"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_clear_all_landmark))
 		<<SAF (QObject::tr("Image/Data::landmark::clear graph edges/connection map"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_clear_connectmap))
 		<<SAF (QObject::tr("Image/Data::landmark::rescale landmark only"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_rescale_landmarks_only))
 		<<SAF (QObject::tr("Image/Data::landmark::turn on/off displaying landmark labels"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procGeneral_toggle_landmark_label))
 		<<SAF (QObject::tr("Visualize::3D viewer for entire image"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_proc3DViewer))
 		<<SAF (QObject::tr("Visualize::3D viewer for Region of Interest (ROI)"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_proc3DLocalRoiViewer))
 		<<SAF (QObject::tr("Advanced::3D tracing (V3D-Neuron tracing v2.0)::trace from one landmark to all others"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procTracing_one2others))
 		<<SAF (QObject::tr("Advanced::3D tracing (V3D-Neuron tracing v2.0)::trace a path between two landmarks"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procTracing_trace_a_curve))
 		<<SAF (QObject::tr("Advanced::3D tracing (V3D-Neuron tracing v2.0)::undo the last tracing step"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procTracing_undo_laststep))
 		<<SAF (QObject::tr("Advanced::3D tracing (V3D-Neuron tracing v2.0)::redo the last tracing step"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procTracing_redo_laststep))
 		<<SAF (QObject::tr("Advanced::3D tracing (V3D-Neuron tracing v2.0)::clear the traced neuron"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procTracing_clear))
 		<<SAF (QObject::tr("Advanced::3D tracing (V3D-Neuron tracing v2.0)::update 3D view(s) of traced neuron"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procTracing_update3Dview))
 		<<SAF (QObject::tr("Advanced::3D tracing (V3D-Neuron tracing v2.0)::save the traced neuron to a file"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procTracing_save))
 		<<SAF (QObject::tr("Advanced::3D image atlas::3D image atlas viewer"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procAtlasViewer))
 		<<SAF (QObject::tr("Advanced::3D image atlas::Build an atlas linker file for [registered] images under a folder"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procIO_import_atlas_imgfolder))
 		<<SAF (QObject::tr("Plug-In::Plug-in manager"), \
 				(VoidFunc)(&MainWindow::openWebUrl))
 		<<SAF (QObject::tr("Plug-In::Re-scan all plugins"), \
 				(VoidFunc)(&MainWindow::openWebUrl))
 		<<SAF (QObject::tr("Window::Close"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&QWorkspace::closeActiveWindow))
 		<<SAF (QObject::tr("Window::Close All"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&QWorkspace::closeAllWindows))
 		<<SAF (QObject::tr("Window::Tile"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&QWorkspace::tile))
 		<<SAF (QObject::tr("Window::Cascade"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&QWorkspace::cascade))
 		<<SAF (QObject::tr("Window::Arrange icons"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&QWorkspace::arrangeIcons))
 		<<SAF (QObject::tr("Window::Next"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&QWorkspace::activateNextWindow))
 		<<SAF (QObject::tr("Window::Previous"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&QWorkspace::activatePreviousWindow))
 		<<SAF (QObject::tr("Work-Mode::V3D Default"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procModeDefault))
 		<<SAF (QObject::tr("Work-Mode::Neuron Annotator"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&MainWindow::func_procModeNeuronAnnotator))
 		;
 #endif
 }
