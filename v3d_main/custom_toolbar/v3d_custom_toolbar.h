@@ -34,12 +34,8 @@ bool setToolbarSettingFilePath(QString);
 bool setToolbarSettingFilePathAutomaticly();
 
 QList<std::pair<QString, VoidFunc> > getMainWindowButtonStringAndFuncList();
-
-QStringList getTriViewButtonStringList();
-QList<VoidFunc> getTriViewButtonFuncList();
-
-QStringList getView3dButtonStringList();
-QList<VoidFunc> getView3dButtonFuncList();
+QList<std::pair<QString, VoidFunc> > getTriViewButtonStringAndFuncList();
+QList<std::pair<QString, VoidFunc> > getView3dButtonStringAndFuncList();
 
 class CustomToolButton : public QObject
 {

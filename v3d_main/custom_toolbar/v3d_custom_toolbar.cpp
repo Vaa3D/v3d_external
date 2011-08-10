@@ -284,11 +284,12 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 	triViewTreeWidget->setHeaderItem(triViewHeaderItem);
 	triViewTreeWidget->setColumnWidth(0, 400);
 
-	QStringList triViewButtonStringList = getTriViewButtonStringList();
-	QList<VoidFunc> triViewButtonFuncList = getTriViewButtonFuncList();
-	int ii = 0;
-	foreach(QString buttonName, triViewButtonStringList)
+	QList<std::pair<QString, VoidFunc> > triViewButtonStringAndFuncList = getTriViewButtonStringAndFuncList();
+	for(int i = 0; i < triViewButtonStringAndFuncList.size(); i++)
 	{
+		QString buttonName =triViewButtonStringAndFuncList.at(i).first;
+		VoidFunc buttonFunc = triViewButtonStringAndFuncList.at(i).second;
+
 		QTreeWidgetItem * triViewItem = new QTreeWidgetItem(triViewTreeWidget);
 
 		QCheckBox * checkbox = new QCheckBox(buttonName);
@@ -303,7 +304,7 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 
 		CustomToolButton * qb = new CustomToolButton(0, editor->text(), toolBar);
 		qb->button->setVisible(false);
-		qb->slot_func = triViewButtonFuncList.at(ii);
+		qb->slot_func = buttonFunc;
 		qb->bt = 1;
 		qb->buttonName = buttonName;
 		qb->callback = callback;
@@ -320,7 +321,6 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 			editor->setEnabled(true);
 			checkbox->setChecked(Qt::Checked);
 		}
-		ii++;
 	}
 
 	pageTriViewLayout = new QVBoxLayout();
@@ -339,11 +339,12 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 	view3dTreeWidget->setHeaderItem(view3dHeaderItem);
 	view3dTreeWidget->setColumnWidth(0, 400);
 
-	QStringList view3dButtonStringList = getView3dButtonStringList();
-	QList<VoidFunc> view3dButtonFuncList = getView3dButtonFuncList();
-	int jj = 0;
-	foreach(QString buttonName, view3dButtonStringList)
+	QList<std::pair<QString, VoidFunc> > view3dButtonStringAndFuncList = getView3dButtonStringAndFuncList();
+	for(int i = 0; i < view3dButtonStringAndFuncList.size(); i++)
 	{
+		QString buttonName =view3dButtonStringAndFuncList.at(i).first;
+		VoidFunc buttonFunc = view3dButtonStringAndFuncList.at(i).second;
+
 		QTreeWidgetItem * view3dItem = new QTreeWidgetItem(view3dTreeWidget);
 
 		QCheckBox * checkbox = new QCheckBox(buttonName);
@@ -358,7 +359,7 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 
 		CustomToolButton * qb = new CustomToolButton(0, editor->text(), toolBar);
 		qb->button->setVisible(false);
-		qb->slot_func = view3dButtonFuncList.at(jj);
+		qb->slot_func = buttonFunc;
 		qb->bt = 2;
 		qb->buttonName = buttonName;
 		qb->callback = callback;
@@ -375,7 +376,6 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 			editor->setEnabled(true);
 			checkbox->setChecked(Qt::Checked);
 		}
-		jj++;
 	}
 
 	pageView3dLayout = new QVBoxLayout();
@@ -924,25 +924,21 @@ QList<pair<QString, VoidFunc> > getMainWindowButtonStringAndFuncList()
 #endif
 }
 
-QStringList getTriViewButtonStringList()
+QList<pair<QString, VoidFunc> > getTriViewButtonStringAndFuncList()
 {
-	return QStringList()<<QObject::tr("See in 3D");
+	return QList<SAF >()
+		<<SAF (QObject::tr("See in 3D"), \
+				(VoidFunc)(&V3DPluginCallback2::open3DWindow))
+		;
 }
 
-QList<VoidFunc> getTriViewButtonFuncList()
+QList<pair<QString, VoidFunc> > getView3dButtonStringAndFuncList()
 {
-	return QList<VoidFunc>() << (VoidFunc)(&V3DPluginCallback2::open3DWindow);
-}
-
-QStringList getView3dButtonStringList()
-{
-	return QStringList()<<QObject::tr("Sync Tri-view Objs");
-}
-
-// refer to 3drenderer/v3dr_control_signal.cpp
-QList<VoidFunc> getView3dButtonFuncList()
-{
-	return QList<VoidFunc>() << (VoidFunc)(&View3DControl::updateWithTriView);
+	// refer to 3drenderer/v3dr_control_signal.cpp
+	return QList<SAF >()
+		<<SAF (QObject::tr("Sync Tri-view Objs"), \
+				(VoidFunc)(&View3DControl::updateWithTriView))
+		;
 }
 
 // parent won't be used as the parent QWidget
