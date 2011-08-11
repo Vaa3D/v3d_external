@@ -20,6 +20,7 @@ typedef void (EmptyClass::*VoidFunc)();
 #ifndef __v3d_custom_toolbar_plugin__
 typedef void (MainWindow::*MainWindowFunc)();
 typedef void (QWorkspace::*WorkspaceFunc)();
+typedef void (V3d_PluginLoader::*V3dPluginLoaderFunc)();
 #endif
 typedef void (TriviewControl::*TriviewFunc)();
 typedef void (View3DControl::*View3DFunc)();

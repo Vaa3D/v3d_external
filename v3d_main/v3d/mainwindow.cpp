@@ -76,7 +76,9 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 
 #include "DownloadManager.h" // CMB 08-Oct-2010
 
+#ifdef __v3d_custom_toolbar__
 #include "../custom_toolbar/v3d_custom_toolbar.h" // Hang Aug-08-2011
+#endif
 //#include "dialog_pointcloudatlas_linkerloader.h"
 
 //#include "atlas_window.h"
@@ -115,7 +117,9 @@ MainWindow::MainWindow()
     newAct = 0;
     openAct = 0;
     openWebUrlAct = 0; // CMB Oct-07-2010
+#ifdef __v3d_custom_toolbar__
 	customToolbarAct = 0;
+#endif
     atlasViewAct = 0;
     saveAct = 0;
     saveAsAct = 0;
@@ -290,8 +294,10 @@ MainWindow::MainWindow()
 	//090811 RZC
 	pluginLoader = new V3d_PluginLoader(pluginProcMenu, this);
 
+#ifdef __v3d_custom_toolbar__
 	// Aug-08-2011 Hang
 	this->customToolbar();
+#endif
 
 	// Dec-20-2010 YuY
 	//connect(&sub_thread, SIGNAL(transactionStarted()), this, SLOT(transactionStart()), Qt::DirectConnection); //Qt::QueuedConnection
@@ -714,8 +720,8 @@ void MainWindow::openWebUrl()
     loadV3DUrl(imageUrl, b_cacheLocalFile);
 }
 
+#ifdef __v3d_custom_toolbar__
 // By Hang Aug-06-2011
-
 void MainWindow::customToolbar()
 {
 
@@ -758,6 +764,7 @@ void MainWindow::customToolbar()
 
     isFirstLoading = false;	
 }
+#endif
 
 void MainWindow::loadV3DUrl(QUrl url, bool b_cacheLocalFile, bool b_forceopen3dviewer)
 {
@@ -1958,11 +1965,13 @@ void MainWindow::createActions()
     openWebUrlAct->setStatusTip(tr("Open a web (URL) image"));
     connect(openWebUrlAct, SIGNAL(triggered()), this, SLOT(openWebUrl()));
 
+#ifdef __v3d_custom_toolbar__
 	// Custom toolbar, By Hang 06-Aug-2011
 	customToolbarAct = new QAction(QIcon(":pic/customize.png"), tr("&Customize a toolbar"), this);
 	customToolbarAct->setShortcut(tr("Ctrl+C"));
 	customToolbarAct->setStatusTip(tr("Customize a toolbar"));
 	connect(customToolbarAct, SIGNAL(triggered()), this, SLOT(customToolbar()));
+#endif
 
     saveAct = new QAction(QIcon(":/pic/save.png"), tr("&Save or Save as"), this);
     saveAct->setShortcut(tr("Ctrl+S"));
@@ -2308,7 +2317,6 @@ void MainWindow::createMenus()
     fileMenu->addAction(openWebUrlAct);
 //    fileMenu->addAction(procGeneral_open_image_in_windows);
 //    fileMenu->addAction(atlasViewAct);
-	//fileMenu->addAction(customToolbarAct);
     fileMenu->addAction(saveAct);
 //    fileMenu->addAction(saveAsAct);
 
@@ -2409,7 +2417,9 @@ void MainWindow::createToolBars()
     //fileToolBar->addAction(newAct); //commented on 080313
     fileToolBar->addAction(openAct);
     fileToolBar->addAction(openWebUrlAct);
+#ifdef __v3d_custom_toolbar__
 	fileToolBar->addAction(customToolbarAct);
+#endif
 //    fileToolBar->addAction(import_GeneralImageFileAct);
 //    fileToolBar->addAction(atlasViewAct);
 	fileToolBar->addSeparator();

@@ -610,7 +610,8 @@ bool CustomToolButton::run()
 			MainWindow * mw = qobject_cast<MainWindow*>(parent);
 			if(mw)
 			{
-				if(buttonName.indexOf(tr("Window::")) != -1 || buttonName.indexOf(tr("Plug-In::")) != -1) qDebug()<<"unable to menu action : "<<buttonName; // (mw->workspace->*(WorkspaceFunc)slot_func)();
+				if(buttonName.indexOf(tr("Window::")) != -1 ) (mw->workspace->*(WorkspaceFunc)slot_func)();
+				else if(buttonName.indexOf(tr("Plug-In::")) != -1) (mw->pluginLoader->*(V3dPluginLoaderFunc)slot_func)();
 				else (mw->*(MainWindowFunc)slot_func)();
 			}
 #endif
@@ -903,9 +904,9 @@ QList<pair<QString, VoidFunc> > getMainWindowButtonStringAndFuncList()
 		<<SAF (QObject::tr("Advanced::3D image atlas::Build an atlas linker file for [registered] images under a folder"), \
 				(VoidFunc)(&MainWindow::func_procIO_import_atlas_imgfolder))
 		<<SAF (QObject::tr("Plug-In::Plug-in manager"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&V3d_PluginLoader::aboutPlugins))
 		<<SAF (QObject::tr("Plug-In::Re-scan all plugins"), \
-				(VoidFunc)(&MainWindow::openWebUrl))
+				(VoidFunc)(&V3d_PluginLoader::rescanPlugins))
 		<<SAF (QObject::tr("Window::Close"), \
 				(VoidFunc)(&QWorkspace::closeActiveWindow))
 		<<SAF (QObject::tr("Window::Close All"), \

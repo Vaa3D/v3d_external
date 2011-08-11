@@ -46,6 +46,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#define __v3d_custom_toolbar__
 #include <QtGui>
 // These two explicit includes make my IDE work better - CMB 08-Oct-2010
 #include <QMainWindow>
@@ -126,7 +127,9 @@ public slots:
     void newFile();
     void open();
     void openWebUrl(); // By CMB 08-Oct-2010
+#ifdef __v3d_custom_toolbar__
 	void customToolbar(); // By Hang 06-Aug-2011
+#endif
     void finishedLoadingWebImage(QUrl url, QString fileName, bool b_cacheFile, bool b_forceopen3dviewer); // By CMB 08-Oct-2010
     void checkForUpdates(bool b_informOnNoUpdate = true); // CMB Oct-22-2010
     void atlasView();
@@ -318,7 +321,13 @@ private:
 	QString curFile;
 	XFormWidget * curHiddenSelectedXWidget;
 
-    QWorkspace *workspace;
+#ifdef __v3d_custom_toolbar__
+public :
+	QWorkspace *workspace;
+private:
+#else
+	QWorkspace *workspace;
+#endif
     QSignalMapper *windowMapper;
 
     QMenu *fileMenu;
@@ -355,7 +364,9 @@ private:
     QAction *newAct;
     QAction *openAct;
     QAction *openWebUrlAct; // for web loading CMB
+#ifdef __v3d_custom_toolbar__
 	QAction *customToolbarAct;
+#endif
     QAction *atlasViewAct;
     QAction *saveAct;
     QAction *saveAsAct;
