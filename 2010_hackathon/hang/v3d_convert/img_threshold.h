@@ -3,7 +3,7 @@
 
 template<class T> bool black_threshold(double thresh_value, T* &inimg1d, V3DLONG sz[3], T* &outimg1d)
 {
-	if(inimg1d == 0 || sz[0] <= 0 || sz[1] >= 0 || sz[2] >= 0) return false;
+	if(inimg1d == 0 || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0) return false;
 	V3DLONG size = sz[0] * sz[1] * sz[2];
 	if(outimg1d == 0) outimg1d = new T[size];
 
@@ -13,7 +13,7 @@ template<class T> bool black_threshold(double thresh_value, T* &inimg1d, V3DLONG
 
 template<class T> bool white_threshold(double thresh_value, T* &inimg1d, V3DLONG sz[3], T* &outimg1d)
 {
-	if(inimg1d == 0 || sz[0] <= 0 || sz[1] >= 0 || sz[2] >= 0) return false;
+	if(inimg1d == 0 || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0) return false;
 	V3DLONG size = sz[0] * sz[1] * sz[2];
 	if(outimg1d == 0) outimg1d = new T[size];
 
@@ -29,7 +29,7 @@ template<class T> bool white_threshold(double thresh_value, T* &inimg1d, V3DLONG
 
 template<class T> bool binary_threshold(double thresh_value, T* &inimg1d, V3DLONG sz[3], T* &outimg1d)
 {
-	if(inimg1d == 0 || sz[0] <= 0 || sz[1] >= 0 || sz[2] >= 0) return false;
+	if(inimg1d == 0 || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0) return false;
 	V3DLONG size = sz[0] * sz[1] * sz[2];
 	if(outimg1d == 0) outimg1d = new T[size];
 
