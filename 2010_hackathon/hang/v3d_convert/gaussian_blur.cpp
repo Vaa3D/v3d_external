@@ -13,15 +13,15 @@
 #define MAX(a,b) (a > b) ? (a) : (b)
 #define MIN(a,b) (a < b) ? (a) : (b)
 // W - window width or radius
-template<class T> void convolve_xyz(T* dst, T const * src, V3DLONG sz[3], const T* filter, V3DLONG W)
+template<class T1, class T2> void convolve_xyz(T1* dst, T2 const * src, V3DLONG sz[3], const double * filter, V3DLONG W)
 {
-	T * temp = 0;
-	T *** src3d = 0;
-	T *** dst3d = 0;
-	T *** temp3d = 0;
+	T1 * temp = 0;
+	T2 *** src3d = 0;
+	T1 *** dst3d = 0;
+	T1 *** temp3d = 0;
 	try
 	{
-		temp = new T[sz[0] * sz[1] * sz[2]];
+		temp = new T1[sz[0] * sz[1] * sz[2]];
 		new3dpointer(src3d, sz[0], sz[1], sz[2], src);
 		new3dpointer(dst3d, sz[0], sz[1], sz[2], dst);
 		new3dpointer(temp3d, sz[0], sz[1], sz[2], temp);
@@ -39,7 +39,7 @@ template<class T> void convolve_xyz(T* dst, T const * src, V3DLONG sz[3], const 
 	for(V3DLONG k = 0; k < sz[2]; k++){
 		for(V3DLONG j = 0; j < sz[1]; j++){
 			for(V3DLONG i = 0; i < sz[0]; i++){
-				T acc = 0.0;
+				double acc = 0.0;
 				if(i - W < 0){
 					for(V3DLONG ii = 0; ii < W -i; ii++) acc += filter[ii] * src3d[k][j][0];
 				}
@@ -49,7 +49,7 @@ template<class T> void convolve_xyz(T* dst, T const * src, V3DLONG sz[3], const 
 				V3DLONG start = MAX(0, i-W);
 				V3DLONG stop  = MIN(i+W, sz[0] - 1);
 				for(V3DLONG ii = start; ii <= stop; ii++) acc += filter[ii - i + W] * src3d[k][j][ii];
-				dst3d[k][j][i] = acc;
+				dst3d[k][j][i] = (T1)acc;
 			}
 		}
 	}
@@ -58,7 +58,7 @@ template<class T> void convolve_xyz(T* dst, T const * src, V3DLONG sz[3], const 
 	for(V3DLONG k = 0; k < sz[2]; k++){
 		for(V3DLONG i = 0; i < sz[0]; i++){
 			for(V3DLONG j = 0; j < sz[1]; j++){
-				T acc = 0.0;
+				double acc = 0.0;
 				if(j - W < 0){
 					for(V3DLONG jj = 0; jj < W - j; jj++) acc += filter[jj] * dst3d[k][0][i];
 				}
@@ -77,7 +77,7 @@ template<class T> void convolve_xyz(T* dst, T const * src, V3DLONG sz[3], const 
 	for(V3DLONG j = 0; j < sz[1]; j++){
 		for(V3DLONG i = 0; i < sz[0]; i++){
 			for(V3DLONG k = 0; k < sz[2]; k++){
-				T acc = 0.0;
+				double acc = 0.0;
 				if(k - W < 0){
 					for(V3DLONG kk = 0; kk < W - k; kk++) acc += filter[kk] * temp3d[0][j][i];
 				}
@@ -98,7 +98,8 @@ template<class T> void convolve_xyz(T* dst, T const * src, V3DLONG sz[3], const 
 	if(temp3d) delete3dpointer(temp3d, sz[0], sz[1], sz[2]);
 }
 
-template<class T> bool smooth(T * &dst, T const * src, V3DLONG sz[3], double s)
+
+template<class T1, class T2> bool smooth(T1 * &dst, T2 const * src, V3DLONG sz[3], double s)
 {
 	if(dst == 0 || src == 0 || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0 || s <= 0.0) return false;
 	V3DLONG W = V3DLONG(ceil(4.0f * s));
@@ -121,7 +122,7 @@ template<class T> bool smooth(T * &dst, T const * src, V3DLONG sz[3], double s)
 	{
 		filter[j] /= acc ;
 	}
-	convolve_xyz(dst, src,sz, filter, W); 
+	convolve_xyz(dst, src, sz, filter, W); 
 	return true;
 }
 
