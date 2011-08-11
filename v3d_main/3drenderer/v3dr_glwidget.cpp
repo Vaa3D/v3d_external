@@ -121,7 +121,9 @@ V3dR_GLWidget::V3dR_GLWidget(iDrawExternalParameter* idep, QWidget* mainWindow, 
 	static int isGLinfoDetected = 0;
 	if (isGLinfoDetected==0) // only once when multiple views
 	{
-		//// GLinfoDetect(0); //print to console
+#ifdef test_main_cpp
+		GLinfoDetect(0); //print to console
+#endif
 		isGLinfoDetected = 1;
 	}
 
