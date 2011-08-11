@@ -2581,7 +2581,7 @@ void ImageBlendPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &call
         arg.type = ""; arg.p = (void *)(&fileList); pluginfunc_input << arg;
         arg.type = ""; arg.p = (void *)(&paraList); pluginfunc_input << arg;
         
-        bool success = dofunc("imageblend", pluginfunc_input, pluginfunc_output, callback, parent);
+        bool success = dofunc("multiscanblend", pluginfunc_input, pluginfunc_output, callback, parent);
         
         if(!success)
         {
