@@ -59,7 +59,8 @@ public:
         {
             hdrMin = hdrMinParam;
             hdrMax = hdrMaxParam;
-            hdrRange = std::max(qreal(1.0), hdrMax - hdrMin);
+            //hdrRange = std::max(qreal(1.0), hdrMax - hdrMin);
+            hdrRange = max(qreal(1.0), hdrMax - hdrMin);
         }
 
         void setGamma(qreal gammaParam)
@@ -141,9 +142,9 @@ public:
                 green += qGreen(channelColor);
                 blue += qBlue(channelColor);
             }
-            red = std::min(255, red);
-            green = std::min(255, green);
-            blue = std::min(255, blue);
+            red = min(255, red);
+            green = min(255, green);
+            blue = min(255, blue);
             return qRgb(red, green, blue);
         }
 
