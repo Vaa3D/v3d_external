@@ -215,6 +215,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/utility/ColorSeparatorConsolidator.h \
     ../neuron_annotator/utility/FileTreeSearcher.h \
     ../neuron_annotator/utility/SingleNeuronLsmSetReader.h \
+    ../neuron_annotator/utility/StitchedFileUtility.h \
     ../neuron_annotator/AnnotationSession.h \
     ../neuron_annotator/utility/NeuronMaskEntry.h \
     ../neuron_annotator/MultiColorImageStackNode.h \
@@ -335,6 +336,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/utility/ColorSeparatorConsolidator.cpp \
     ../neuron_annotator/utility/FileTreeSearcher.cpp \
     ../neuron_annotator/utility/SingleNeuronLsmSetReader.cpp \
+    ../neuron_annotator/utility/StitchedFileUtility.cpp \
     ../neuron_annotator/AnnotationSession.cpp \
     ../neuron_annotator/utility/NeuronMaskEntry.cpp \
     ../neuron_annotator/MultiColorImageStackNode.cpp \
