@@ -1476,7 +1476,8 @@ bool My4DImage::proj_trace_mergeOneClosebyNeuronSeg(V3DLONG node_id, NeuronTree 
 			scx = subject_swc.row.at(j).data[2];
 			scy = subject_swc.row.at(j).data[3];
 			scz = subject_swc.row.at(j).data[4];
-			double scr2 = subject_swc.row.at(j).data[5]; scr2 *= scr2; //squared radius
+			double scr2 = subject_swc.row.at(j).data[5]; 
+			scr2 *= scr2; //squared radius
 			for (V3DLONG i=0;i<tlength;i++)
 			{
 				double tcr2 = target_swc.row.at(i).data[5]; tcr2 *= tcr2; //squared radius
@@ -1729,7 +1730,8 @@ bool My4DImage::proj_trace_mergeAllClosebyNeuronNodes()
 			double scx = subject_swc.row.at(j).x;
 			double scy = subject_swc.row.at(j).y;
 			double scz = subject_swc.row.at(j).z;
-			double scr2 = subject_swc.row.at(j).r; scr2 *= scr2; //squared radius
+			double scr2 = subject_swc.row.at(j).r; 
+			scr2 *= scr2; //squared radius
 			
 			V3DLONG ind_best_merge_seg=-1, ind_best_merge_node=-1;	double r_best_merge=-1, dist_best; //set as -1 for initialization
 			for (cur_sid=seg_id+1;cur_sid<NSegs;cur_sid++)
