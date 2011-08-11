@@ -104,15 +104,15 @@ int soapv3dwsService::msghandler(ns__LOAD_MSG *lm, ns__LOAD_RES *lr) // message 
 	int sz_unit = 0; // compute voxel size	
 	switch (lm->dt) 
 	{
-		case UINT8:
+		case V3DWEB_UINT8:
 			sz_unit = sizeof(unsigned char);
 			break;
 			
-		case UINT16:
+		case V3DWEB_UINT16:
 			sz_unit = sizeof(unsigned short);
 			break;
 			
-		case FLOAT32:
+		case V3DWEB_FLOAT32:
 			sz_unit = sizeof(float);
 			break;
 			
