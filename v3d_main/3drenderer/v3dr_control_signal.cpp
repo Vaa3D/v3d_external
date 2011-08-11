@@ -134,7 +134,7 @@ void V3dR_MainWindow::createControlWidgets()
 	layout_mainDisplayOptGroup->addWidget(new QLabel("Z-Thick"), 3, 0, 1, 8);
 	layout_mainDisplayOptGroup->addWidget(zthicknessBox,         3, 5, 1, 7);
 
-	layout_mainDisplayOptGroup->addWidget(new QLabel("M-Chan"), 3, 11+1, 1, 8);
+	layout_mainDisplayOptGroup->addWidget(new QLabel("M-Chan"), 3, 12, 1, 8);
 	layout_mainDisplayOptGroup->addWidget(spinBox_channel,    3, 12+5, 1, 4);
 
 	layout_mainDisplayOptGroup->addWidget(checkBox_channelR,      4, 0, 1, 4);
@@ -977,8 +977,9 @@ void V3dR_MainWindow::connectSignal()
 	}
 
 
-	connect(glWidget, SIGNAL(signalVolumeCutRange()), this, SLOT(initVolumeCutRange()));    // 081122
+	connect(glWidget, SIGNAL(signalVolumeCutRange()), this, SLOT(initVolumeCutRange())); // 081122
 	connect(glWidget, SIGNAL(signalInitControlValue()), this, SLOT(initControlValue())); // 081122
+	connect(glWidget, SIGNAL(signalOnlySurfaceObj()), this, SLOT(onlySurfaceObjTab()));  // 110809
 
 	return;
 }

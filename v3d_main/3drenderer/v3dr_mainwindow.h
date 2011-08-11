@@ -85,6 +85,8 @@ public slots:
 	void initVolumeCutRange();  // called by initControlValue
 	void initSurfaceCutRange(); // called by initControlValue
 
+	void onlySurfaceObjTab() {if(tabOptions) tabOptions->setCurrentIndex(1); if(tabCutPlane) tabCutPlane->setCurrentIndex(1);}
+
 	void doMenuOfSurfFile();
 	void doMenuOfAnimate();
 
@@ -211,6 +213,7 @@ protected:
     QSpinBox *xRotBox, *yRotBox, *zRotBox, *zoomBox, *xShiftBox, *yShiftBox;
     QCheckBox *checkBox_absoluteRot;
     QPushButton *zoomReset, *rotReset, *rotAbsolute, *rotAbsolutePose;
+
     QTabWidget *tabRotZoom;
 
     // cut plane control
@@ -220,6 +223,7 @@ protected:
     QAbstractSlider *xCSSlider, *yCSSlider, *zCSSlider, *fCSSlider;
     QAbstractSlider *xSminSlider, *xSmaxSlider, *ySminSlider, *ySmaxSlider, *zSminSlider, *zSmaxSlider;
     QStackedLayout *stackedCutPlane;
+
     QTabWidget *tabCutPlane;
 
 	void init_members() // more clear putting them here, by RZC 080828
@@ -261,6 +265,7 @@ protected:
 	    xRotBox=yRotBox=zRotBox=zoomBox=xShiftBox=yShiftBox=0;
 	    checkBox_absoluteRot=0;
 		zoomReset=rotReset=rotAbsolute=rotAbsolutePose=0;
+
 		tabRotZoom=0;
 
 		xcminSlider=xcmaxSlider=ycminSlider=ycmaxSlider=zcminSlider=zcmaxSlider=fcutSlider=0;
@@ -269,6 +274,7 @@ protected:
 	    xCSSlider=yCSSlider=zCSSlider=fCSSlider=0;
 	    xSminSlider=xSmaxSlider=ySminSlider=ySmaxSlider=zSminSlider=zSmaxSlider=0;
 	    stackedCutPlane = 0;
+
 	    tabCutPlane = 0;
 	}
 	void createControlWidgets();

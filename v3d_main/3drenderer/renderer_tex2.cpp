@@ -745,7 +745,13 @@ void Renderer_tex2::setRenderMode(RenderMode rm)
 
 void Renderer_tex2::updateVolCutRange()
 {
-	Renderer::updateVolCutRange();
+//	Renderer::updateVolCutRange();
+	xCut0  = CLAMP(0, imageX-1, xCut0);
+	yCut0  = CLAMP(0, imageY-1, yCut0);
+	zCut0  = CLAMP(0, imageZ-1, zCut0);
+	xCut1  = CLAMP(0, imageX-1, xCut1);
+	yCut1  = CLAMP(0, imageY-1, yCut1);
+	zCut1  = CLAMP(0, imageZ-1, zCut1);
 
 	// [0,1] range cut box
 	VOL_X0 = (imageX-1<=0)? 0: float(xCut0)/(imageX-1);
@@ -1038,7 +1044,7 @@ void Renderer_tex2::subloadTex(V3DLONG timepoint, bool bfirst)
 		}
 
 	}
-	qDebug("   subloadTex [%d]: %s ......... cost time = %g sec", timepoint, try_vol_state(), qtime.elapsed()*0.001);
+	qDebug("   subloadTex [%d]: %s ...... cost time = %g sec", timepoint, try_vol_state(), qtime.elapsed()*0.001);
 	qDebug("	  tex_stream_buffer = %s", tex_stream_buffer?"true":"false");
 
 }
@@ -1919,7 +1925,9 @@ void Renderer_tex2::blendTrack()
 	//glFlush();
 }
 
-#define ___follows_should_be_moved_to_hit2___
+
+//neuron annotator
+#define ___follows_should_be_moved_to_separate___
 #ifndef test_main_cpp
 
 // mouse left click to select neuron
@@ -2022,7 +2030,7 @@ XYZ Renderer_tex2::selectPosition(int x, int y)
                 qDebug()<<"iter ..."<<chno<<"vp ..."<<vp;
 
                 float sum = 0;
-                for (int i=0; i<200; i++) // iteration, (2-f)^200 is big enough
+                for (int i=0; i<200; i++) // iteration, (1/f)^200 is big enough
                 {
                         double length = norm(P2-P1);
                         if (length < 0.5) // pixel
@@ -2470,5 +2478,5 @@ void Renderer_tex2::setListLabelSurf(QList <LabelSurf> listLabelSurfinput)
     listLabelSurf = listLabelSurfinput;
 }
 
-#endif
+#endif //test_main_cpp
 

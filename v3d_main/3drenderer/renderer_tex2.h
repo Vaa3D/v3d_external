@@ -223,6 +223,7 @@ public:
 
 
 #ifndef test_main_cpp
+
         XYZ selectPosition(int x, int y); 	// neuron selector
         int hitMenu(int x, int y, bool b_glwidget); // neuron annotator right click popup menu
 
@@ -242,39 +243,45 @@ protected:
 		double P[16];		// 4x4 projection matrix
 		double MV[16];		// 4x4 model-view matrix
 	};
-
-	QCursor oldCursor;
-	int lastSliceType;
-	int currentMarkerName;
 	QList <MarkerPos> listMarkerPos; //081221, screen projection position
+	QList< QList <MarkerPos> > list_listCurvePos; //screen projection position list for curve
+
+	// computation
 	void _MarkerPos_to_NearFarPoint(const MarkerPos & pos, XYZ &loc0, XYZ &loc1);
+	double distanceOfMarkerPos(const MarkerPos & pos0, const MarkerPos & pos);
 	XYZ getLocationOfListMarkerPos();
+	XYZ getTranslateOfMarkerPos(const MarkerPos& pos, const ImageMarker& S);
+	XYZ getPointOnPlane(XYZ P1, XYZ P2, double plane[4]);
+	XYZ getPointOnSections(XYZ P1, XYZ P2);
+	XYZ getCenterOfLineProfile(XYZ p1, XYZ p2,
+			int chno,    			//must be a valid channel number
+			double clipplane[4]=0);	//clipplane==0 means no clip plane
+	XYZ getCenterOfLocal(XYZ loc);
+
 	bool isInBound(const XYZ & loc, float factor=0.001, bool b_message=true);
 
-	void solveMarkerViews();
+	// marker
+	QCursor oldCursor;
+	int lastSliceType; //for cross-section
+	int currentMarkerName;
+	XYZ getCenterOfMarkerPos(const MarkerPos& pos);
 	void solveMarkerCenter();
+	void solveMarkerViews();
 	void refineMarkerTranslate();
 	void refineMarkerCenter();
 	void refineMarkerLocal(int marker_id);
-	XYZ getCenterOfMarkerPos(const MarkerPos& pos);
-	XYZ getPointOnPlane(XYZ P1, XYZ P2, double plane[4]);
-	XYZ getPointOnSections(XYZ P1, XYZ P2, double f_plane[4]);
-	XYZ getCenterOfLineProfile(XYZ p1, XYZ p2,
-			double clipplane[4]=0, //clipplane==0 to use the default viewClip plane
-			int chno=-1);    //chno==-1 to re-check the current channel # for processing
-	XYZ getCenterOfLocal(XYZ loc);
+
 	void addMarker(XYZ &loc);
 	void updateMarkerLocation(int marker_id, XYZ &loc); //PHC, 090120
 
+	// curve
 	int cntCur3DCurveMarkers; //091226. marker cnt when define a curve using marker clicking
 	bool b_addthiscurve; //for 1-stroke curve based zoom-in, PHC 100821
 	bool b_addthismarker; //for 1-click based zoom-in, PHC 100821
 	bool b_imaging; //for v3d_imaging, PHC 101008
-	QList< QList <MarkerPos> > list_listCurvePos; //screen projection position
 	void solveCurveCenter(vector <XYZ> & loc_vec_input);
 	void solveCurveViews();
 	void solveCurveFromMarkers();
-	double getDistanceOfMarkerPos(const MarkerPos & pos0, const MarkerPos & pos);
 
 	// in renderer_obj2.cpp
 	void addCurveSWC(vector<XYZ> &loc_list, int chno=0); //if no chno is specified, then assume to be the first channel

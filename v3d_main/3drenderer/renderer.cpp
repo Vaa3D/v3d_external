@@ -104,7 +104,7 @@ bool Renderer::beStill()
 const char* Renderer::try_vol_state()
 {
 	static char sbuf[200];
-	sprintf(sbuf, "(compress 3d npt stream = %d %d %d %d) (shader = %d)", tryTexCompress,tryTex3D,tryTexNPT,tryTexStream,tryVolShader);
+	sprintf(sbuf, "(compress 3d npt stream shader = %d %d %d %d %d)", tryTexCompress,tryTex3D,tryTexNPT,tryTexStream,tryVolShader);
 	return sbuf;
 }
 
@@ -548,11 +548,9 @@ void Renderer::setZoom(float ratio)
 
 void Renderer::updateVolCutRange()
 {
-	int size[10];
-	getLimitedDataSize(size);
-	int imageX = size[0];
-	int imageY = size[1];
-	int imageZ = size[2];
+	int imageX = bufSize[0];
+	int imageY = bufSize[1];
+	int imageZ = bufSize[2];
 	xCut0  = CLAMP(0, imageX-1, xCut0);
 	yCut0  = CLAMP(0, imageY-1, yCut0);
 	zCut0  = CLAMP(0, imageZ-1, zCut0);

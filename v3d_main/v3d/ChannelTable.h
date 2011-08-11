@@ -634,7 +634,8 @@ public slots:
 	void linkXFormWidgetChannel();			//link updated channel
 	void setChannelColorDefault(int N);
 	void updateTableChannel(bool update_luts=true);
-	void setMixOpControls();
+	void setRescaleDefault();
+	void updateMixOpControls();
 
 	void begin_batch() {in_batch_stack.push_back(true);}
 	void end_batch()   {in_batch_stack.pop_back();}
@@ -706,7 +707,7 @@ signals:
 	void brightenChanged(); //trigger to update XFormWidget
 
 public slots:
-	void setMixOpControls();
+	void updateMixOpControls();
 	void reset();
 	void setBrightness(int);
 	void setContrast(int);

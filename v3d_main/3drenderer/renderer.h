@@ -85,6 +85,7 @@ public:
 // link to Data (volume & surface)
 	virtual void setupData(void* data) {};
 	virtual void cleanData()           {};
+	virtual const bool has_image()   {return bool(rgbaBuf);}
 	virtual void getLimitedDataSize(int size[5]) {for (int i=0;i<5;i++) size[i]=bufSize[i];};
 	virtual bool beLimitedDataSize() {return b_limitedsize;};
 	virtual void getBoundingBox(BoundingBox& bb) {bb = boundingBox;};

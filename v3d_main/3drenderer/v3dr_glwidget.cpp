@@ -279,7 +279,6 @@ void V3dR_GLWidget::preparingRenderer() // renderer->setupData & init, 100719 ex
 
 	// when initialize done, update status of control widgets
 	SEND_EVENT(this, QEvent::Type(QEvent_InitControlValue)); // use event instead of signal
-
 	if (_isSoftwareGL)
 	{
 		emit changeDispType_cs3d(true);  // 081215, set check-box must after changeVolumeCutRange()
@@ -294,7 +293,6 @@ void V3dR_GLWidget::preparingRenderer() // renderer->setupData & init, 100719 ex
 		qDebug("	GL shading language supported, enable volume colormap function");
 		emit changeEnableVolColormap(true);
 	}
-
 
 	POST_EVENT(this, QEvent::Type(QEvent_OpenFiles));
 	POST_EVENT(this, QEvent::Type(QEvent_Ready)); //081124
@@ -420,6 +418,10 @@ void V3dR_GLWidget::customEvent(QEvent* e)
 
 	case QEvent_Ready:
 		qDebug("	( QEvent_Ready )");
+		if (renderer && !renderer->has_image())
+		{
+			emit signalOnlySurfaceObj(); // V3dR_MainWindow->onlySurfaceObjTab
+		}
 		qDebug("-------------------------------------------------------------- Ready");
 		break;
 
@@ -2261,6 +2263,8 @@ void V3dR_GLWidget::changeVolShadingOption()
 		if (d.exec()!=QDialog::Accepted)
 			return;
 
+		qDebug("V3dR_GLWidget::changeVolShadingOption begin %s", renderer->try_vol_state());
+
 		renderer->tryTexCompress = qComp->isChecked();
 		renderer->tryTex3D = qT3D->isChecked();
 		renderer->tryTexNPT = qNPT->isChecked();
@@ -2310,7 +2314,7 @@ void V3dR_GLWidget::changeVolShadingOption()
 
 		}
 
-		qDebug("V3dR_GLWidget::changeVolShadingOption: %s", renderer->try_vol_state());
+		qDebug("V3dR_GLWidget::changeVolShadingOption end %s", renderer->try_vol_state());
 		POST_updateGL();
 	}
 }
@@ -2579,6 +2583,7 @@ void V3dR_GLWidget::reloadData()
 	PROGRESS_PERCENT(100);
 
 	emit signalVolumeCutRange(); //100809
+
 	POST_EVENT(this, QEvent::Type(QEvent_OpenFiles)); // open objects after loading volume, 081025
 	POST_EVENT(this, QEvent::Type(QEvent_Ready));  //081124
 

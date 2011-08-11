@@ -182,8 +182,8 @@ public:
 	//	: QDialog(parent)
 	{
 		setWindowFlags( Qt::Dialog
-				//| Qt::Tool
 				//| Qt::WindowStaysOnTopHint
+				//| Qt::Tool
 				);
 		setAttribute(Qt::WA_MacAlwaysShowToolWindow); //for convenient screen shot on mac with Qt::Tool
 

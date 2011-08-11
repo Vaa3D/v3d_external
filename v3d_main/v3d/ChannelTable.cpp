@@ -39,7 +39,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../3drenderer/v3dr_common.h" //for v3dr_getColorDialog()
 
 
-int xformChannelDim(XFormWidget* xform)
+static int xformChannelDim(XFormWidget* xform)
 {
 	int N = 0;
 	if ( xform)
@@ -48,6 +48,19 @@ int xformChannelDim(XFormWidget* xform)
 		if ( img4d)
 		{
 			N = img4d->getCDim();
+		}
+	}
+	return N;
+}
+static int xformChannelUnitBytes(XFormWidget* xform)
+{
+	int N = 0;
+	if ( xform)
+	{
+		My4DImage* img4d = xform->getImageData();
+		if ( img4d)
+		{
+			N = img4d->getUnitBytes();
 		}
 	}
 	return N;
@@ -134,8 +147,8 @@ void ChannelTabWidget::createFirst()
 void ChannelTabWidget::syncOpControls(const MixOP & mixop)
 {
 	csData.mixOp = mixop;
-	if (channelPage)  channelPage->setMixOpControls();
-	if (brightenPage)  brightenPage->setMixOpControls();
+	if (channelPage)  channelPage->updateMixOpControls();
+	if (brightenPage)  brightenPage->updateMixOpControls();
 }
 
 void ChannelTabWidget::syncSharedData(const ChannelSharedData & data) //except bGlass
@@ -145,8 +158,8 @@ void ChannelTabWidget::syncSharedData(const ChannelSharedData & data) //except b
 	csData = data;
 	csData.bGlass = glass;
 
-	if (channelPage) { channelPage->setMixOpControls();  channelPage->updateTableChannel(false); }
-	if (brightenPage)  brightenPage->setMixOpControls();
+	if (channelPage) { channelPage->updateMixOpControls();  channelPage->updateTableChannel(false); }
+	if (brightenPage)  brightenPage->updateMixOpControls();
 }
 
 
@@ -155,6 +168,7 @@ void ChannelTabWidget::syncSharedData(const ChannelSharedData & data) //except b
 
 void ChannelTable::updateXFormWidget(int plane) // plane<=0 for all planes
 {
+	if (plane>0)
 	qDebug("ChannelTable::updateXFormWidget( %d )", plane);
 
 	if (! xform) return;
@@ -329,7 +343,9 @@ void ChannelTable::createNewTable()
 		connect(table, SIGNAL(cellPressed(int,int)), this, SLOT(pressedClickHandler(int,int)));      //to pop context menu
 	}
 
-	setMixOpControls();
+	setRescaleDefault();
+	updateMixOpControls();
+
 	connectMixOpSignals();
 }
 
@@ -348,6 +364,13 @@ void ChannelTable::connectMixOpSignals()
     connect(pushButton_Reset, SIGNAL(clicked()), this, SLOT(setDefault()));
 }
 
+void ChannelTable::setRescaleDefault()
+{
+	int N = xformChannelUnitBytes(xform);
+    mixOp.rescale = (N>1);
+	checkBox_Rescale->setChecked(mixOp.rescale);
+}
+
 #define UPDATE_OP_CONTROL() { \
 	radioButton_Max->setChecked(mixOp.op==OP_MAX); \
 	radioButton_Sum->setChecked(mixOp.op==OP_SUM); \
@@ -361,7 +384,7 @@ void ChannelTable::connectMixOpSignals()
 	checkBox_Rescale->setEnabled(mixOp.op!=OP_INDEX); \
 }
 
-void ChannelTable::setMixOpControls()
+void ChannelTable::updateMixOpControls()
 {
     UPDATE_OP_CONTROL();
 
@@ -456,8 +479,8 @@ void ChannelTable::setDefault()
 	mixOp.brightness = old.brightness;
 	mixOp.contrast = old.contrast;
 
-	setMixOpControls();
-
+	setRescaleDefault();
+	updateMixOpControls();
 	emit channelTableChanged();
 }
 
@@ -750,7 +773,7 @@ void BrightenBox::create()
 	connect(spin_contrast, SIGNAL(valueChanged(int)), this, SLOT(setContrast(int)));
 	connect(push_reset, SIGNAL(clicked()), this, SLOT(reset()));
 
-	setMixOpControls();
+	updateMixOpControls();
 }
 
 #define INT_BRIGHTNESS(b)  (int(b*100))
@@ -759,7 +782,7 @@ void BrightenBox::create()
 #define INT_CONTRAST(c)  (atan(c)*(4/PI)*100-100)
 #define CONTRAST_I(i)  (tan( (i+100)/100.0*(PI/4) ))
 
-void BrightenBox::setMixOpControls()
+void BrightenBox::updateMixOpControls()
 {
 	int i;
 	i = INT_BRIGHTNESS(mixOp.brightness);

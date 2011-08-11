@@ -1944,16 +1944,16 @@ QVector<int> Renderer_tex2::getLineProfile(XYZ P1, XYZ P2, int chno)
 //##########################################################################################
 // 090617: NOTICE that marker position is 1-based to consist with LocatonSimple
 // Now only 3 parts are concerned with adjusting +/-1:
-// (1) refineMarkerTranlate (-1)
-// (2) addMarker, updateMakerLocation (+1)
+// (1) addMarker (+1)
+// (2) updateMakerLocation (+1)
 // (3) drawMarkerList (-1)
-// BUT IT IS STILL EASY TO BE CHAOS !!!
 //##########################################################################################
 //
 // 090716: marker coordinates Fully are handled in paint() and Original image space!
 //
 //##########################################################################################
-#define __creat_curve_and_marker___
+
+#define __creat_curve___
 
 void Renderer_tex2::solveCurveCenter(vector <XYZ> & loc_vec_input)
 {
@@ -1969,14 +1969,18 @@ void Renderer_tex2::solveCurveCenter(vector <XYZ> & loc_vec_input)
 		b_use_last_approximate = V3Dmainwindow->global_setting.b_3dcurve_inertia;
 #endif
 
-	int chno=0;
+	////////////////////////////////////////////////////////////////////////
+	int chno=-1;
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	if (w)
 	{
-		chno = w->getNumKeyHolding()-1;
-		if (chno<0) chno = 0; //default channel 1
-		qDebug()<<"in w chno for 3d curve"<<chno;
+		//when chno<0, then need to recheck the current chno
+		if (chno<0) chno = w->getNumKeyHolding()-1;	// NumKey state is used firstly
+		if (chno<0) chno = curChannel; 				// GUI state is used secondly, 100802
 	}
+	if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
+	////////////////////////////////////////////////////////////////////////
+	qDebug()<<"\n  3d curve in channel # "<<chno+1;
 
 
 	vector <XYZ> loc_vec;
@@ -1993,6 +1997,13 @@ void Renderer_tex2::solveCurveCenter(vector <XYZ> & loc_vec_input)
 		for (int i=0; i<N; i++)
 		{
 			const MarkerPos & pos = list_listCurvePos.at(0).at(i);
+			////////////////////////////////////////////////////////////////////////
+			//100730 RZC, in View space, keep for dot(clip, pos)>=0
+			double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+			clipplane[3] = viewClip;
+			ViewPlaneToModel(pos.MV, clipplane);
+			//qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
+			////////////////////////////////////////////////////////////////////////
 
 			XYZ loc0, loc1;
 			_MarkerPos_to_NearFarPoint(pos, loc0, loc1);
@@ -2023,7 +2034,7 @@ void Renderer_tex2::solveCurveCenter(vector <XYZ> & loc_vec_input)
 				}
 				//printf("loc0--loc1: (%g, %g, %g)--(%g, %g, %g)\n", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
 
-				loc = getCenterOfLineProfile(loc0, loc1, 0, chno);
+				loc = getCenterOfLineProfile(loc0, loc1, chno, clipplane);
 			}
 
 			if (dataViewProcBox.isInner(loc, 0.5))
@@ -2220,7 +2231,7 @@ void Renderer_tex2::solveCurveViews()
 				//qDebug("0(%d) -- %d(%d) ", i, k, j);
 
 				const MarkerPos & pos = list_listCurvePos.at(k).at(j);
-				double dist = getDistanceOfMarkerPos(pos0, pos);
+				double dist = distanceOfMarkerPos(pos0, pos);
 
 				if (j==0 || dist < closest_dist)
 				{
@@ -2289,6 +2300,38 @@ void Renderer_tex2::solveCurveFromMarkers()
 #endif
 }
 
+#define __creat_marker___
+
+XYZ Renderer_tex2::getCenterOfMarkerPos(const MarkerPos& pos)
+{
+	////////////////////////////////////////////////////////////////////////
+	int chno=-1;
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	if (w)
+	{
+		//when chno<0, then need to recheck the current chno
+		if (chno<0) chno = w->getNumKeyHolding()-1;	// NumKey state is used firstly
+		if (chno<0) chno = curChannel; 				// GUI state is used secondly, 100802
+	}
+	if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
+	////////////////////////////////////////////////////////////////////////
+	qDebug()<<"\n  3d marker in channel # "<<chno+1;
+
+	////////////////////////////////////////////////////////////////////////
+	//100730 RZC, in View space, keep for dot(clip, pos)>=0
+	double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+	clipplane[3] = viewClip;
+	ViewPlaneToModel(pos.MV, clipplane);
+	//qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
+	////////////////////////////////////////////////////////////////////////
+
+	XYZ loc0, loc1;
+	_MarkerPos_to_NearFarPoint(pos, loc0, loc1);
+	qDebug("	loc0--loc1: (%g, %g, %g)--(%g, %g, %g)", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
+
+	XYZ loc = getCenterOfLineProfile(loc0, loc1, chno, clipplane);
+	return loc;
+}
 
 void Renderer_tex2::solveMarkerCenter()
 {
@@ -2314,40 +2357,6 @@ void Renderer_tex2::solveMarkerCenter()
 	}
 }
 
-void Renderer_tex2::refineMarkerCenter()
-{
-	if (currentMarkerName<1 || currentMarkerName>listMarker.size())  return;
-	if (listMarkerPos.size()<1)  return;
-
-	const MarkerPos & pos = listMarkerPos.at(0);
-
-	XYZ loc = getCenterOfMarkerPos(pos);
-	//added by PHC, 090120. update the marker location in both views
-	updateMarkerLocation(currentMarkerName-1, loc);
-}
-
-
-bool Renderer_tex2::isInBound(const XYZ & loc, float factor, bool b_message)
-{
-	float dZ = MAX((dim1+dim2+dim3)/3.0*factor, 10);
-	if (loc.z >= -dZ  &&  loc.z < dim3+dZ &&
-		loc.y >= -dZ  &&  loc.y < dim2+dZ &&
-		loc.x >= -dZ  &&  loc.x < dim1+dZ)
-	{
-		return true;
-	}
-	else
-	{
-		printf("*** ERROR: location is out of bound in solveMarker()!\n");
-		if (b_message)
-			QMessageBox::warning( 0, "warning",
-				QObject::tr("ERROR: location is out of image bound too much!\n\n location: (%1, %2, %3) \n\n").arg(loc.x).arg(loc.y).arg(loc.z) +
-				QObject::tr(" bound: X[0, %1) Y[0, %2) Z[0, %3)\n\n").arg(dim1).arg(dim2).arg(dim3) +
-				QObject::tr("3D View: Please make clicks in different view directions and click the same 3D location.\n\n") );
-		return false;
-	}
-}
-
 void Renderer_tex2::solveMarkerViews()
 {
 	if (listMarkerPos.size()<2)  return;
@@ -2365,32 +2374,21 @@ void Renderer_tex2::refineMarkerTranslate()
 	if (currentMarkerName<1 || currentMarkerName>listMarker.size())  return;
 	if (listMarkerPos.size()<1)  return;
 
-		const MarkerPos & pos = listMarkerPos.at(0);
-		ImageMarker & S = listMarker[currentMarkerName-1];
-		XYZ pt(S.x-1, S.y-1, S.z-1); // 090505 RZC : marker position is 1-based
+	const MarkerPos & pos = listMarkerPos.at(0);
+	const ImageMarker & S = listMarker[currentMarkerName-1];
+	XYZ loc = getTranslateOfMarkerPos(pos, S);
 
-		ColumnVector X(4);		X << pt.x << pt.y << pt.z << 1;
+	//added by PHC, 090120. update the marker location in both views
+	updateMarkerLocation(currentMarkerName-1, loc);
+}
 
-		Matrix P(4,4);		P << pos.P;   P = P.t();    // OpenGL is row-inner / C is column-inner
-		Matrix M(4,4);		M << pos.MV;  M = M.t();
-		Matrix PM = P * M;
-		//cout << "P M PM \n" << P << endl << M << endl << PM << endl;
+void Renderer_tex2::refineMarkerCenter()
+{
+	if (currentMarkerName<1 || currentMarkerName>listMarker.size())  return;
+	if (listMarkerPos.size()<1)  return;
 
-		ColumnVector pX  = PM * X;
-		pX = pX / pX(4);
-		//cout << " pX \n" << pX.t() << endl;
-
-		double x = (pos.x             - pos.view[0])*2.0/pos.view[2] -1;
-		double y = (pos.view[3]-pos.y - pos.view[1])*2.0/pos.view[3] -1; // OpenGL is bottom to top
-		double z = pX(3);                              // hold the clip space depth
-
-	ColumnVector pY(4); 	pY << x << y << z << 1;
-	ColumnVector Y = PM.i() * pY;
-	Y = Y / Y(4);
-	cout << "refine from: " << X.t() //<< endl
-	     << "         to: " << Y.t() << endl;;
-
-	XYZ loc(Y(1), Y(2), Y(3));
+	const MarkerPos & pos = listMarkerPos.at(0);
+	XYZ loc = getCenterOfMarkerPos(pos);
 
 	//added by PHC, 090120. update the marker location in both views
 	updateMarkerLocation(currentMarkerName-1, loc);
@@ -2481,8 +2479,58 @@ void Renderer_tex2::updateMarkerLocation(int marker_id, XYZ &loc) //added by PHC
 #endif
 }
 
+bool Renderer_tex2::isInBound(const XYZ & loc, float factor, bool b_message)
+{
+	float dZ = MAX((dim1+dim2+dim3)/3.0*factor, 10);
+	if (loc.z >= -dZ  &&  loc.z < dim3+dZ &&
+		loc.y >= -dZ  &&  loc.y < dim2+dZ &&
+		loc.x >= -dZ  &&  loc.x < dim1+dZ)
+	{
+		return true;
+	}
+	else
+	{
+		printf("*** ERROR: location is out of bound in solveMarker()!\n");
+		if (b_message)
+			QMessageBox::warning( 0, "warning",
+				QObject::tr("ERROR: location is out of image bound too much!\n\n location: (%1, %2, %3) \n\n").arg(loc.x).arg(loc.y).arg(loc.z) +
+				QObject::tr(" bound: X[0, %1) Y[0, %2) Z[0, %3)\n\n").arg(dim1).arg(dim2).arg(dim3) +
+				QObject::tr("3D View: Please make clicks in different view directions and click the same 3D location.\n\n") );
+		return false;
+	}
+}
 
-#define __computation__
+
+#define ___computation_functions___
+
+XYZ Renderer_tex2::getTranslateOfMarkerPos(const MarkerPos & pos, const ImageMarker & S)
+{
+	XYZ pt(S.x-1, S.y-1, S.z-1); // 090505 RZC : marker position is 1-based
+
+	ColumnVector X(4);		X << pt.x << pt.y << pt.z << 1;
+
+	Matrix P(4,4);		P << pos.P;   P = P.t();    // OpenGL is row-inner / C is column-inner
+	Matrix M(4,4);		M << pos.MV;  M = M.t();
+	Matrix PM = P * M;
+	//cout << "P M PM \n" << P << endl << M << endl << PM << endl;
+
+	ColumnVector pX  = PM * X;
+	pX = pX / pX(4);
+	//cout << " pX \n" << pX.t() << endl;
+
+	double x = (pos.x             - pos.view[0])*2.0/pos.view[2] -1;
+	double y = (pos.view[3]-pos.y - pos.view[1])*2.0/pos.view[3] -1; // OpenGL is bottom to top
+	double z = pX(3);                              // hold the clip space depth
+
+	ColumnVector pY(4); 	pY << x << y << z << 1;
+	ColumnVector Y = PM.i() * pY;
+	Y = Y / Y(4);
+	cout << "refine from: " << X.t() //<< endl
+	     << "         to: " << Y.t() << endl;;
+
+	XYZ loc(Y(1), Y(2), Y(3));
+	return loc;
+}
 
 // in Image space (model space)
 void Renderer_tex2::_MarkerPos_to_NearFarPoint(const MarkerPos & pos, XYZ &loc0, XYZ &loc1)
@@ -2511,7 +2559,7 @@ void Renderer_tex2::_MarkerPos_to_NearFarPoint(const MarkerPos & pos, XYZ &loc0,
 	loc1 = XYZ(Z1(1), Z1(2), Z1(3));
 }
 
-double Renderer_tex2::getDistanceOfMarkerPos(const MarkerPos & pos0, const MarkerPos & pos)
+double Renderer_tex2::distanceOfMarkerPos(const MarkerPos & pos0, const MarkerPos & pos)
 {
 	XYZ Y1, Y2;
 	_MarkerPos_to_NearFarPoint(pos, Y1, Y2);
@@ -2547,23 +2595,6 @@ double Renderer_tex2::getDistanceOfMarkerPos(const MarkerPos & pos0, const Marke
 //	double y0 = (pos0.view[3]-pos0.y - pos0.view[1])*2.0/pos0.view[3] -1; // OpenGL is bottom to top
 //	double dist = fabs(x0*L.x + y0*L.y + L.z)/sqrt(L.x*L.x + L.y*L.y);
 //	return dist;
-}
-
-XYZ Renderer_tex2::getCenterOfMarkerPos(const MarkerPos & pos)
-{
-	XYZ loc0, loc1;
-	_MarkerPos_to_NearFarPoint(pos, loc0, loc1);
-	qDebug("loc0--loc1: (%g, %g, %g)--(%g, %g, %g)\n", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
-
-//	//100730 RZC
-//	// in View space, keep for dot(clip, pos)>=0
-//	double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
-//	// [0, 1] ==> [+1, -1]*(s)
-//	clipplane[3] = viewClip;
-//	ViewPlaneToModel(pos.MV, clipplane);
-
-	XYZ loc = getCenterOfLineProfile(loc0, loc1, 0);//clipplane);
-	return loc;
 }
 
 XYZ Renderer_tex2::getLocationOfListMarkerPos()
@@ -2616,90 +2647,79 @@ XYZ Renderer_tex2::getPointOnPlane(XYZ P1, XYZ P2, double plane[4]) //100731
 	//        (A - B)*N
 	double t = (P1.x*plane[0] + P1.y*plane[1] + P1.z*plane[2] + plane[3])
 				/((P1.x-P2.x)*plane[0] + (P1.y-P2.y)*plane[1] + (P1.z-P2.z)*plane[2]);
+
 	XYZ loc = P1 + t*(P2-P1);
 	return loc;
 }
 
 // in Image space (model space)
-XYZ Renderer_tex2::getPointOnSections(XYZ P1, XYZ P2, double f_plane[4]) //100801
+XYZ Renderer_tex2::getPointOnSections(XYZ P1, XYZ P2) //100801
 {
 	double plane[4];
 	XYZ P = P2; // from the far location
 	XYZ loc;
 
-#define REPLACE_NEAR() \
-	loc = getPointOnPlane(P1,P2, plane); \
-	if (dist_L2(loc,P2) > dist_L2(P,P2) && dataViewProcBox.isInner(loc, 0.5)) \
-		P = loc;
+	#define REPLACE_NEAR( plane ) { \
+		loc = getPointOnPlane(P1,P2, plane); \
+		if (dist_L2(loc,P2) > dist_L2(P,P2) && dataViewProcBox.isInner(loc, 0.5)) \
+			P = loc; \
+	}
 
 	//qDebug("  P1(%g %g %g)  P2(%g %g %g)", P1.x,P1.y,P1.z, P2.x,P2.y,P2.z);
 	if (bXSlice)
 	{
 		plane[0] = -1; plane[1] = 0; plane[2] = 0; plane[3] = start1+ VOL_X0*(size1-1);
-		REPLACE_NEAR();
+		REPLACE_NEAR( plane );
 		//qDebug("  X-(%g %g %g)", loc.x,loc.y,loc.z);
 	}
 	if (bYSlice)
 	{
 		plane[0] = 0; plane[1] = -1; plane[2] = 0; plane[3] = start2+ VOL_Y0*(size2-1);
-		REPLACE_NEAR();
+		REPLACE_NEAR( plane );
 		//qDebug("  Y-(%g %g %g)", loc.x,loc.y,loc.z);
 	}
 	if (bZSlice)
 	{
 		plane[0] = 0; plane[1] = 0; plane[2] = -1; plane[3] = start3+ VOL_Z0*(size3-1);
-		REPLACE_NEAR();
+		REPLACE_NEAR( plane );
 		//qDebug("  Z-(%g %g %g)", loc.x,loc.y,loc.z);
 	}
 	if (bFSlice)
 	{
-		for (int i=0; i<4; i++) plane[i] = f_plane[i];
-		REPLACE_NEAR();
+		////////////////////////////////////////////////////////////////////////
+		//100730 RZC, in View space, keep for dot(clip, pos)>=0
+		double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+		clipplane[3] = viewClip;
+		ViewPlaneToModel(markerViewMatrix, clipplane);
+		//qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
+		////////////////////////////////////////////////////////////////////////
+
+		for (int i=0; i<4; i++) plane[i] = clipplane[i];
+		REPLACE_NEAR( plane );
 		//qDebug("  F-(%g %g %g)", loc.x,loc.y,loc.z);
 	}
 	//qDebug("  P(%g %g %g)", P.x,P.y,P.z);
 	return P;
 }
 
-// in Image space (model space)
-XYZ Renderer_tex2::getCenterOfLineProfile(XYZ P1, XYZ P2, double clip[4], int chno)
-{
-	//100731 RZC
-	// in View space, keep for dot(clip, pos)>=0
-	double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
-	// [0, 1] ==> [+1, -1]*(s)
-	clipplane[3] = viewClip;
-	ViewPlaneToModel(markerViewMatrix, clipplane);
-	//qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
 
-	if (clip)
-	{
-		for (int i=0; i<4; i++) clipplane[i]=clip[i];
-	}
-	//qDebug()<<"   clip:     "<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
+// in Image space (model space)
+XYZ Renderer_tex2::getCenterOfLineProfile(XYZ P1, XYZ P2,
+		int chno,    			//must be a valid channel number
+		double clipplane[4])	//clipplane==0 means no clip plane
+{
 
 	if (renderMode==rmCrossSection)
 	{
-		return getPointOnSections(P1,P2, clipplane);
+		return getPointOnSections(P1,P2);
 	}
 
-	XYZ loc = (P1+P2)*.5;
+	XYZ loc = (P1+P2)*0.5;
 
 #ifndef test_main_cpp
 
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-	My4DImage* curImg = 0;
-
-	////////////////////////////////////////////////////////////////////////
-	if (w)
-	{
-		curImg = v3dr_getImage4d(_idep);
-		//when chno<0, then need to recheck the current chno
-		if (chno<0) chno = w->getNumKeyHolding()-1;
-		//if (chno<0) chno = 0; //default channel 1
-		if (chno<0) chno = curChannel; //100802 RZC: default channel set by user
-	}
-	////////////////////////////////////////////////////////////////////////
+	My4DImage* curImg = v3dr_getImage4d(_idep);
 
 	if (curImg && data4dp && chno>=0 &&  chno <dim4)
 	{
@@ -2724,7 +2744,7 @@ XYZ Renderer_tex2::getCenterOfLineProfile(XYZ P1, XYZ P2, double clip[4], int ch
 				return loc;
 		}
 
-		for (int i=0; i<200; i++) // iteration, (2-f)^200 is big enough
+		for (int i=0; i<200; i++) // iteration, (1/f)^200 is big enough
 		{
 			double length = norm(P2-P1);
 			if (length < 0.5) // pixel

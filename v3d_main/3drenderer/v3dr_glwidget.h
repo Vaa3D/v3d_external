@@ -64,10 +64,10 @@ public:
 
 	void handleKeyPressEvent(QKeyEvent * event); //for hook to MainWindow
 	void handleKeyReleaseEvent(QKeyEvent * event); //for hook to MainWindow
-    QString Cut_altTip(int dim_i, int v, int minv, int maxv, int offset);
+	QString Cut_altTip(int dim_i, int v, int minv, int maxv, int offset); //tool tip function for real dimension of image
 
     iDrawExternalParameter* getiDrawExternalParameter() {return _idep;}
-    QWidget * getMainWindow() {return mainwindow;}
+    QWidget* getMainWindow() {return mainwindow;}
 	Renderer* getRenderer()   {return renderer;}
         const Renderer* getRenderer() const {return renderer;} // const version CMB
 	QString getDataTitle()    {return data_title;}
@@ -122,7 +122,6 @@ protected:
     static V3dr_colormapDialog* colormapDlg;
     static V3dr_surfaceDialog*  surfaceDlg;
 	//static SurfaceObjGeometryDialog *surfaceObjGeoDlg;
-    bool _isSoftwareGL; //for choiceRenderer
     int neuronIndex;
 
 protected slots:
@@ -306,6 +305,7 @@ signals:
 
 	void signalInitControlValue();
 	void signalVolumeCutRange();
+	void signalOnlySurfaceObj();
 
 	void changeVolumeTimePoint(int);
 
@@ -369,6 +369,7 @@ protected:
 	int t_mouseclick_left, mouse_held, mouse_in_view;
 
     bool _in_destructor; //for makeCurrent when valid context
+    bool _isSoftwareGL; //for choiceRenderer
 
 	int _renderMode;
 	//unsigned char * data;
