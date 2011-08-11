@@ -27,6 +27,6 @@ SOURCES      += $$V3DMAINDIR/basic_c_fun/v3d_message.cpp
 LIBS         += -lm -L$$V3DMAINDIR/common_lib/lib -lv3dtiff
 LIBS         += -L$$V3DMAINDIR/common_lib/src_packages/mylib_tiff -lmylib
 
-TARGET        = $$qtLibraryTarget(imageBlend)
-DESTDIR       = ../../../v3d_main/v3d/plugins/image_blending
+TARGET        = $$qtLibraryTarget(blend_multiscanstacks)
+DESTDIR       = ../../v3d/plugins/image_blending/blend_multiscanstacks
 

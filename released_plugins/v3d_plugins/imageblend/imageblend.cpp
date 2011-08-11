@@ -30,7 +30,7 @@ using namespace std;
 #define EMPTY 1
 
 //
-Q_EXPORT_PLUGIN2(imageBlend, ImageBlendPlugin);
+Q_EXPORT_PLUGIN2(blend_multiscanstacks, ImageBlendPlugin);
 
 // func mutual information for pair images with the same size
 template <class Tdata>
