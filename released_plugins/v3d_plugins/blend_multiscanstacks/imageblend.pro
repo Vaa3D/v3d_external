@@ -24,8 +24,11 @@ SOURCES      += $$V3DMAINDIR/basic_c_fun/imageio_mylib.cpp
 SOURCES      += $$V3DMAINDIR/basic_c_fun/basic_4dimage.cpp
 SOURCES      += $$V3DMAINDIR/basic_c_fun/v3d_message.cpp
 
-LIBS         += -lm -L$$V3DMAINDIR/common_lib/lib -lv3dtiff
+LIBS         += -L$$V3DMAINDIR/common_lib/lib -lv3dtiff
 LIBS         += -L$$V3DMAINDIR/common_lib/src_packages/mylib_tiff -lmylib
+LIBS         += -L$$V3DMAINDIR/common_lib/lib -lv3dfftw3f
+LIBS         += -L$$V3DMAINDIR/common_lib/lib -lv3dfftw3f_threads
+LIBS         += -lm -lpthread
 
 TARGET        = $$qtLibraryTarget(blend_multiscanstacks)
 DESTDIR       = ../../v3d/plugins/image_blending/blend_multiscanstacks
