@@ -9,117 +9,12 @@ using namespace std;
 
 #define INF 1e9
 
-// funcs for converting data and create pixmap
-// func converting kernel
-template <class Tpre, class Tpost>
-void converting(Tpre *pre1d, Tpost *pPost, V3DLONG imsz) {
-    for(V3DLONG i=0; i<imsz; i++)
-        pPost[i] = (Tpost) pre1d[i];
-}
-
-template <class T> QImage& getXYPlane(QImage& displayImage, const T * pdata, V3DLONG sx, V3DLONG sy, V3DLONG sz, V3DLONG sc, V3DLONG curz, float *p_vmax, float *p_vmin)
-{
-    displayImage = QImage(sx, sy, QImage::Format_RGB32);
-
-    int tr,tg,tb;
-
-    V3DLONG i,j;
-    float tmpr,tmpg,tmpb;
-    float tmpr_min, tmpg_min, tmpb_min;
-
-    if (sc>=3)
-    {
-        tmpb = p_vmax[2]-p_vmin[2]; tmpb = (tmpb==0)?1:tmpb;
-        tmpb_min = p_vmin[2];
-    }
-
-    if (sc>=2)
-    {
-        tmpg = p_vmax[1]-p_vmin[1]; tmpg = (tmpg==0)?1:tmpg;
-        tmpg_min = p_vmin[1];
-    }
-
-    if (sc>=1)
-    {
-        tmpr = p_vmax[0]-p_vmin[0]; tmpr = (tmpr==0)?1:tmpr;
-        tmpr_min = p_vmin[0];
-    }
-    int pagesz = sx*sy*sz;
-    long offset_k = sx*sy;
-
-    switch (sc)
-    {
-        case 1:
-
-            for (long j = 0; j < sy; j ++)
-            {
-                long offset = curz*offset_k + j*sx;
-                for (long i=0; i<sx; i++)
-                {
-                    long idx = offset + i;
-
-                    tb = tg = tr = floor((pdata[idx]-tmpr_min)/tmpr*255.0);
-                    displayImage.setPixel(i, j, qRgb(tr, tg, tb));
-                }
-            }
-            break;
-
-        case 2:
-
-            tb = 0;
-            for (long j = 0; j < sy; j ++)
-            {
-                long offset = curz*offset_k + j*sx;
-                for (long i=0; i<sx; i++)
-                {
-                    long idx = offset + i;
-                    tr = floor((pdata[idx]-tmpr_min)/tmpr*255.0);
-                    tg = floor((pdata[idx+pagesz]-tmpg_min)/tmpg*255.0);
-                    displayImage.setPixel(i, j, qRgb(tr, tg, tb));
-                }
-            }
-            break;
-
-        case 3:
-        case 4:
-
-            for (long j = 0; j < sy; j ++)
-            {
-                long offset = curz*offset_k + j*sx;
-                for (long i=0; i<sx; i++)
-                {
-                    long idx = offset + i;
-
-                    tr = floor((pdata[idx]-tmpr_min)/tmpr*255.0);
-                    tg = floor((pdata[idx+pagesz]-tmpg_min)/tmpg*255.0);
-                    tb = floor((pdata[idx+2*pagesz]-tmpb_min)/tmpb*255.0);
-                    displayImage.setPixel(i, j, qRgb(tr, tg, tb));
-                }
-            }
-            break;
-
-        default:
-            break;
-    }
-    return displayImage;
-
-}
-
 NaZStackWidget::NaZStackWidget(QWidget * parent)
     : Na2DViewer(parent)
-    , originalImage(NULL)
+    , zSliceColors(NULL)
+    , volumeData(NULL)
+    , cur_z(-1)
 {
-    pData1d = NULL;
-    pDispData1d = NULL;
-
-    displayImage = QImage(256, 256, QImage::Format_RGB32);
-    displayImage.fill(Qt::black);
-    pixmap = QPixmap::fromImage(displayImage);
-    // updateDefaultScale();
-
-    // scale_x = 1.0; scale_y = 1.0;
-    // dispscale = 0.9;
-
     translateMouse_scale = 1;
 
     b_mouseleft = false;
@@ -152,14 +47,24 @@ NaZStackWidget::NaZStackWidget(QWidget * parent)
     updateCursor();
 
     connect(this, SIGNAL(curColorChannelChanged(NaZStackWidget::Color)), this, SLOT(updateHDRView()));
-    connect(this, SIGNAL(roiChanged()), this, SLOT(updatePixmap()));
-    connect(&cameraModel, SIGNAL(focusChanged(Vector3D)),
-            this, SLOT(onCameraFocusChanged(Vector3D)));
     connect(this, SIGNAL(mouseLeftDragEvent(int, int, QPoint)),
             this, SLOT(onMouseLeftDragEvent(int, int, QPoint)));
 }
 
 NaZStackWidget::~NaZStackWidget() {}
+
+/* slot */
+void NaZStackWidget::updateVolumeParameters()
+{
+    if (! volumeData) return;
+    NaVolumeData::Reader volumeReader(*volumeData);
+    if (! volumeReader.hasReadLock()) return;
+    const Image4DProxy<My4DImage>& volProxy = volumeReader.getOriginalImageProxy();
+    sx = volProxy.sx;
+    sy = volProxy.sy;
+    sz = volProxy.sz;
+    sc = volProxy.sc + 1; // +1, reference channel too
+}
 
 void NaZStackWidget::paintEvent(QPaintEvent *event)
 {
@@ -173,24 +78,6 @@ void NaZStackWidget::paintEvent(QPaintEvent *event)
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
     transformPainterToCurrentCamera(painter);
-
-    /*
-    // TODO - these values do not need to be recalculated every paint.
-    // ...but after either widget resize or image load.
-    // scale image to to viewport
-    float temp_scale_x = (float)width()/(float)sx;
-    float temp_scale_y = (float)height()/(float)sy;
-    // fit to window; keep aspect ratio
-    float scale = temp_scale_x < temp_scale_y ? temp_scale_x : temp_scale_y;
-    scale_x = scale;
-    scale_y = scale;
-    // translate to center image in viewport
-    image_focus_x = sx/2;
-    image_focus_y = sy/2;
-
-    painter.translate(width()/2 - scale_x*image_focus_x, height()/2 - scale_y*image_focus_y);
-    painter.scale(scale_x, scale_y);
-    */
 
     painter.drawPixmap(0, 0, pixmap);
 
@@ -211,8 +98,17 @@ void NaZStackWidget::paintEvent(QPaintEvent *event)
 
 void NaZStackWidget::paintIntensityNumerals(QPainter& painter)
 {
-    if (! originalImage ) return;
-    const Image4DProxy<My4DImage> imgProxy(const_cast<My4DImage*>(originalImage));
+    if (cur_z < 0) return;
+    if (! zSliceColors) return;
+    ZSliceColors::Reader zReader(*zSliceColors);
+    if (! zReader.hasReadLock()) return;
+    const QImage * displayImage = zReader.getImage();
+    if (! displayImage) return;
+
+    if (! volumeData) return;
+    NaVolumeData::Reader volumeReader(*volumeData);
+    if (! volumeReader.hasReadLock()) return;
+    const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
 
     // qDebug() << "numerals";
     QPointF v_img_upleft = X_img_view * painter.viewport().topLeft();
@@ -233,28 +129,28 @@ void NaZStackWidget::paintIntensityNumerals(QPainter& painter)
     // qDebug() << "nRows = " << mipImage->originalData.nRows();
 
     // Iterate over only the image pixels that are visible
-    int nC = originalImage->getCDim();
+    int nC = imgProxy.sc;
     float lineHeight = scale / (nC + 1.0);
     for (int x = int(v_img_upleft.x() - 0.5); x <= int(v_img_downright.x() + 0.5); ++x) {
         // qDebug() << "x = " << x;
         if (x < 0)
             continue;
-        if (x >= displayImage.size().width())
+        if (x >= displayImage->width())
             continue;
         for (int y = int(v_img_upleft.y() - 0.5); y <= int(v_img_downright.y() + 0.5); ++y) {
             // qDebug() << "y = " << y;
             if (y < 0)
                 continue;
-            if (y >= displayImage.size().height())
+            if (y >= displayImage->height())
                 continue;
             // Transform image pixel coordinates back to viewport coordinates
             QPointF v = X_view_img * QPointF(x, y);
             // qDebug() << x << ", " << y << "; " << v.x() << ", " << v.y();
             // Print original data intensity, not displayed intensity
             // But choose font color based on displayed intensity.
-            unsigned int red = qRed(displayImage.pixel(x, y));
-            unsigned int green = qGreen(displayImage.pixel(x, y));
-            unsigned int blue = qBlue(displayImage.pixel(x, y));
+            unsigned int red = qRed(displayImage->pixel(x, y));
+            unsigned int green = qGreen(displayImage->pixel(x, y));
+            unsigned int blue = qBlue(displayImage->pixel(x, y));
             // human color perception is important here
             float displayIntensity = 0.30 * red + 0.58 * green + 0.12 * blue;
             if (displayIntensity < 128)
@@ -273,23 +169,6 @@ void NaZStackWidget::paintIntensityNumerals(QPainter& painter)
     }
     // restore coordinate system
     transformPainterToCurrentCamera(painter);
-}
-
-void NaZStackWidget::onCameraFocusChanged(const Vector3D& focus)
-{
-    if (sz <= 0) return;
-    // Drive to the corresponding z slice
-    // qDebug() << "focus.z() = " << focus.z();
-    int z = int(floor(focus.z() + 0.5));
-    // qDebug() << "z0 = " << z;
-    float midZ = sz / 2.0f;
-    z = int(midZ + flip_Z * (z - midZ));
-    // qDebug() << "z1 = " << z;
-    // qDebug() << "midZ = " << midZ;
-    // qDebug() << "flip_Z = " << flip_Z;
-    // qDebug() << "camera focus set to " << QString("%1, %2, %3").arg(focus.x()).arg(focus.y()).arg(focus.z());
-    // cerr << "on CameraFocusChanged" << __LINE__ << __FILE__ << ", " << focus.z() << ", " << sz << ", " << z << endl;
-    setCurrentZSlice(z + 1);
 }
 
 void NaZStackWidget::drawROI(QPainter *painter)
@@ -728,12 +607,15 @@ bool NaZStackWidget::checkROIchanged()
 }
 
 // HDR filter
+// This method appears to measure the range of intensities within the HDR box
 void NaZStackWidget::do_HDRfilter()
 {
+    qDebug() << "do_HDRfilter";
+
     // widget might not be initialized
+    qDebug() << cur_c << sc << runHDRFILTER;
     if (cur_c < 1) return;
-    if (cur_c > 3) return;
-    if (!pData1d) return;
+    if (cur_c > sc) return;
     if(!runHDRFILTER) return;
 
     //
@@ -757,369 +639,61 @@ void NaZStackWidget::do_HDRfilter()
     if(end_x>sx) end_x = sx-1;
     if(end_y>sy) end_y = sy-1;
 
+    qDebug() << end_x << start_x << end_y << start_y;
     if(end_x<=start_x || end_y<=start_y) return;
 
-    V3DLONG pagesz = sx*sy*sz;
-
     // min_max
-    V3DLONG c = cur_c-1;
+    V3DLONG c = cur_c - 1; // channel index
+    if (c < 0) return;
 
-    min_roi[c] = INF;
-    max_roi[c] = -INF;
+    qreal min_roi, max_roi;
 
-    V3DLONG offset_c = c*pagesz;
-
-    V3DLONG offset_z = cur_z * sx * sy; // current slice
-
-    for(V3DLONG j=start_y; j<end_y; j++)
+    qDebug() << volumeData;
+    if (! volumeData) return;
     {
-        V3DLONG offset_j = offset_c + offset_z + j*sx;
-        for(V3DLONG i=start_x; i<end_x; i++)
+        NaVolumeData::Reader volumeReader(*volumeData);
+        if (! volumeReader.hasReadLock()) return;
+        const Image4DProxy<My4DImage>& volProxy = volumeReader.getOriginalImageProxy();
+        const Image4DProxy<My4DImage>& refProxy = volumeReader.getReferenceImageProxy();
+
+        if (c > volProxy.sc) return; // ==sc means reference channel
+
+        min_roi = INF;
+        max_roi = -INF;
+
+        for(V3DLONG j=start_y; j<end_y; j++)
         {
-            V3DLONG idx = offset_j + i;
-
-            float curval;
-
-            if(datatype == V3D_UINT8)
-                curval = (float)( ((unsigned char*)pData1d)[idx] );
-            else if(datatype == V3D_UINT16)
-                curval = (float)( ((unsigned short int*)pData1d)[idx] );
-            else if(datatype == V3D_FLOAT32)
-                curval = (float)( ((float*)pData1d)[idx] );
-            else {
-                printf("Datatype is not supported.\n");
-                return;
-            }
-
-            if(min_roi[c]>curval) min_roi[c] = curval;
-            if(max_roi[c]<curval) max_roi[c] = curval;
-        }
-    }
-
-    scale_roi[c] = max_roi[c] - min_roi[c];
-
-    // filter
-    do_HDRfilter_zslice();
-
-    //
-    emit roiChanged();
-}
-
-// z slice filter
-void NaZStackWidget::do_HDRfilter_zslice()
-{
-    if (!pData1d) return; // data not initialized yet.
-    if (!pDispData1d) return; // race condition?
-
-    V3DLONG pagesz = sx*sy;
-    V3DLONG channelsz = pagesz*sz;
-    //V3DLONG c = cur_c-1;
-    V3DLONG offset_z = cur_z * pagesz;
-
-    for(V3DLONG c=0; c<sc; c++)
-    {
-        if(!hdrfiltered[c]) continue;
-
-        V3DLONG offset_c = c*channelsz;
-
-        for(V3DLONG i=0; i<pagesz; i++)
-        {
-            V3DLONG idx = offset_c + offset_z + i;
-
-            float curval;
-
-            if(datatype == V3D_UINT8){
-                curval = (float)( ((unsigned char*)pData1d)[idx] );
-
-                if(curval<min_roi[c])
-                {
-                    ((unsigned char*)pDispData1d)[idx] = (unsigned char)min_roi[c];
-                }
-                else if(curval>max_roi[c])
-                {
-                    ((unsigned char*)pDispData1d)[idx] = (unsigned char)max_roi[c];
-                }
-                else
-                {
-                    ((unsigned char*)pDispData1d)[idx] = (unsigned char)curval;
-                }
-            }
-            else if(datatype == V3D_UINT16){
-                curval = (float)( ((unsigned short int*)pData1d)[idx] );
-
-                if(curval<min_roi[c])
-                {
-                    ((unsigned short int*)pDispData1d)[idx] = (unsigned short int)min_roi[c];
-                }
-                else if(curval>max_roi[c])
-                {
-                    ((unsigned short int*)pDispData1d)[idx] = (unsigned short int)max_roi[c];
-                }
-                else
-                {
-                    ((unsigned short int*)pDispData1d)[idx] = (unsigned short int)curval;
-                }
-            }
-            else if(datatype == V3D_FLOAT32){
-                curval = (float)( ((float*)pData1d)[idx] );
-
-                if(curval<min_roi[c])
-                {
-                    ((float*)pDispData1d)[idx] = min_roi[c];
-                }
-                else if(curval>max_roi[c])
-                {
-                    ((float*)pDispData1d)[idx] = max_roi[c];
-                }
-                else
-                {
-                    ((float*)pDispData1d)[idx] = curval;
-                }
-            }
-            else {
-                printf("Datatype is not supported.\n");
-                return;
-            }
-        }
-    }
-
-}
-
-// copy data
-void NaZStackWidget::copydata2disp() // legacy function
-{
-    V3DLONG c = cur_c - 1;
-
-    V3DLONG pagesz = sx*sy*sz;
-
-    for(V3DLONG ic = 0; ic<sc; ic++)
-    {
-        if(ic==c) continue;
-
-        V3DLONG offset_c = ic*pagesz;
-
-        if(recCopy==0)
-        {
-            for(V3DLONG i=0; i<pagesz; i++)
+            for(V3DLONG i=start_x; i<end_x; i++)
             {
-                V3DLONG idx = offset_c + i;
+                float curval;
+                if (curval < volProxy.sc) // regular data channel
+                    curval = volProxy.value_at(i, j, cur_z, c);
+                else // reference channel
+                    curval = refProxy.value_at(i, j, cur_z, 0);
 
-                if(datatype == V3D_UINT8){
-                    ((unsigned char *)pDispData1d)[idx] = ((unsigned char*)pData1d)[idx];
-                }
-                else if(datatype == V3D_UINT16){
-                    ((unsigned short int *)pDispData1d)[idx] = ((unsigned short int*)pData1d)[idx];
-                }
-                else if(datatype == V3D_FLOAT32){
-                    ((float *)pDispData1d)[idx] = ((float*)pData1d)[idx];
-                }
-                else {
-                    printf("Datatype is not supported.\n");
-                    return;
-                }
+                if(min_roi>curval) min_roi = curval;
+                if(max_roi<curval) max_roi = curval;
             }
-
-            min_roi[ic] = min_img[ic];
-            max_roi[ic] = max_img[ic];
-            scale_roi[ic] = scale_img[ic];
         }
+    } // release read locks
 
-    }
-    recCopy++;
+    qDebug() << "emitting hdrRangeChanged" << c << min_roi << max_roi;
+    emit hdrRangeChanged(c, min_roi, max_roi);
 }
 
-// update pixelmap
 void NaZStackWidget::updatePixmap()
 {
-    if(runHDRFILTER){
-        // race condition?
-        if (!pDispData1d) return;
-        if(datatype == V3D_UINT8)
-            getXYPlane(displayImage, (unsigned char *)pDispData1d, sx, sy, sz, sc, cur_z, max_roi, min_roi);
-        else if(datatype == V3D_UINT16)
-            getXYPlane(displayImage, (unsigned short int *)pDispData1d, sx, sy, sz, sc, cur_z, max_roi, min_roi);
-        else if(datatype == V3D_FLOAT32)
-            getXYPlane(displayImage, (float *)pDispData1d, sx, sy, sz, sc, cur_z, max_roi, min_roi);
-        else {
-            printf("Datatype is not supported.\n");
-            return;
-        }
-        pixmap = QPixmap::fromImage(displayImage);
+    if (! zSliceColors) return;
+    {
+        ZSliceColors::Reader zReader(*zSliceColors);
+        if (! zReader.hasReadLock()) return;
+        pixmap = QPixmap::fromImage(*zReader.getImage());
+        sx = pixmap.width();
+        sy = pixmap.height();
+        cur_z = zReader.getZIndex();
     }
-    else{
-        if (!pData1d) return;
-        if(datatype == V3D_UINT8)
-            getXYPlane(displayImage, (unsigned char *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img);
-        else if(datatype == V3D_UINT16)
-            getXYPlane(displayImage, (unsigned short int *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img);
-        else if(datatype == V3D_FLOAT32)
-            getXYPlane(displayImage, (float *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img);
-        else {
-            printf("Datatype is not supported.\n");
-            return;
-        }
-        pixmap = QPixmap::fromImage(displayImage);
-
-        for(int j=0; j<pixmap.height(); j++)
-        {
-            for(int i=0; i<pixmap.width(); i++)
-            {
-                QRgb qrgb = displayImage.pixel(i, j);
-
-                int tr = (int)((brightnessCalibrator.getCorrectedIntensity((float)(qRed(qrgb))) * 255.0f) + 0.4999);
-                int tg = (int)((brightnessCalibrator.getCorrectedIntensity((float)(qGreen(qrgb))) * 255.0f) + 0.4999);
-                int tb = (int)((brightnessCalibrator.getCorrectedIntensity((float)(qBlue(qrgb))) * 255.0f) + 0.4999);
-
-                displayImage.setPixel(i, j, qRgb(tr, tg, tb));
-
-            }
-        }
-
-        pixmap = QPixmap::fromImage(displayImage);
-    }
-    // updateDefaultScale();
+    qDebug() << "NaStackWidget pixmap updated";
     update();
-}
-
-// Load image data from an in-memory image
-bool NaZStackWidget::loadMy4DImage(const My4DImage* img, const My4DImage* neuronMaskImage)
-{
-    V3DLONG imageSize[4] = {img->getXDim(), img->getYDim(), img->getZDim(), img->getCDim()};
-    initHDRViewer(imageSize, img->getRawData(), img->getDatatype());
-    originalImage = img;
-    return true;
-}
-
-void NaZStackWidget::initHDRViewer(const V3DLONG *imgsz, const unsigned char *data1d, ImagePixelType imgdatatype)
-{
-    sx = imgsz[0];
-    sy = imgsz[1];
-    sz = imgsz[2];
-    sc = imgsz[3];
-
-    datatype = imgdatatype;
-
-    ratio_x2y = (float)sx/(float)sy;
-
-    cur_z = sz/2; // init here
-
-    V3DLONG pagesz = sx*sy*sz;
-    V3DLONG imagesz = pagesz*sc;
-
-    try
-    {
-
-        if(datatype == V3D_UINT8)
-        {
-            pData1d = (void *)data1d;
-            pDispData1d = new unsigned char [imagesz];
-
-            converting<unsigned char, unsigned char>((unsigned char *)pData1d, (unsigned char *)pDispData1d, imagesz); // copy data
-
-            // min_max
-            for (V3DLONG c=0; c<sc; c++)
-            {
-                min_img[c] = INF;
-                max_img[c] = -INF;
-
-                V3DLONG offset_c = c*pagesz;
-                for(V3DLONG i=0; i<pagesz; i++)
-                {
-                    float val = (float)( data1d[i+offset_c] );
-
-                    if(min_img[c]>val) min_img[c] = val;
-                    if(max_img[c]<val) max_img[c] = val;
-                }
-                scale_img[c] = max_img[c] - min_img[c];
-
-                min_roi[c] = min_img[c];
-                max_roi[c] = max_img[c];
-                scale_roi[c] = scale_img[c];
-            }
-
-            getXYPlane(displayImage, (unsigned char *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img); // initial focus plane
-            pixmap = QPixmap::fromImage(displayImage);
-            // updateDefaultScale();
-
-            update();
-            //repaint();
-
-        }
-        else if(datatype == V3D_UINT16)
-        {
-            pData1d = (void *)data1d;
-            pDispData1d = new unsigned short int [imagesz];
-
-            converting<unsigned short int, unsigned short int>((unsigned short int*)pData1d, (unsigned short int*)pDispData1d, imagesz); // copy data
-
-            // min_max
-            for (V3DLONG c=0; c<sc; c++)
-            {
-                min_img[c] = INF;
-                max_img[c] = -INF;
-
-                V3DLONG offset_c = c*pagesz;
-                for(V3DLONG i=0; i<pagesz; i++)
-                {
-                    float val = (float)( ((unsigned short *)data1d)[i+offset_c] );
-
-                    if(min_img[c]>val) min_img[c] = val;
-                    if(max_img[c]<val) max_img[c] = val;
-                }
-                scale_img[c] = max_img[c] - min_img[c];
-
-                min_roi[c] = min_img[c];
-                max_roi[c] = max_img[c];
-                scale_roi[c] = scale_img[c];
-            }
-
-            getXYPlane(displayImage, (unsigned short int*)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img); // initial focus plane
-            pixmap = QPixmap::fromImage(displayImage);
-            // updateDefaultScale();
-
-            update();
-        }
-        else if(datatype == V3D_FLOAT32)
-        {
-            pData1d = (void *)data1d;
-            pDispData1d = new float [imagesz];
-
-            converting<float, float>((float *)pData1d, (float *)pDispData1d, imagesz); // copy data
-
-            // min_max
-            for (V3DLONG c=0; c<sc; c++)
-            {
-                min_img[c] = INF;
-                max_img[c] = -INF;
-
-                V3DLONG offset_c = c*pagesz;
-                for(V3DLONG i=0; i<pagesz; i++)
-                {
-                    float val = (float)( ((float *)data1d)[i+offset_c] );
-
-                    if(min_img[c]>val) min_img[c] = val;
-                    if(max_img[c]<val) max_img[c] = val;
-                }
-                scale_img[c] = max_img[c] - min_img[c];
-
-                min_roi[c] = min_img[c];
-                max_roi[c] = max_img[c];
-                scale_roi[c] = scale_img[c];
-
-            }
-
-            getXYPlane(displayImage, (float *)pData1d, sx, sy, sz, sc, cur_z, max_img, min_img); // initial focus plane
-            pixmap = QPixmap::fromImage(displayImage);
-            // updateDefaultScale();
-
-            update();
-        }
-
-    }
-    catch(...)
-    {
-        printf("Error allocating memory. \n");
-    }
 }
 
 void NaZStackWidget::setColorChannel(NaZStackWidget::Color col)
@@ -1171,14 +745,7 @@ void NaZStackWidget::setHDRCheckState(int state) {
         emit changedHDRCheckState(true); // show gamma widget
     }
     updateCursor();
-    updatePixmap();
-}
-
-void NaZStackWidget::setGammaBrightness(qreal gamma){
-    if (gamma == brightnessCalibrator.getGamma()) return;
-    brightnessCalibrator.setGamma(gamma);
-
-    updatePixmap();
+    update();
 }
 
 // record previous color channel ROI
@@ -1239,9 +806,8 @@ void NaZStackWidget::updateHDRView(){
     }
     else
     {
-        do_HDRfilter_zslice();
-
-        updatePixmap();
+        // do_HDRfilter_zslice();
+        update();
     }
 }
 

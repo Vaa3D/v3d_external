@@ -130,10 +130,6 @@ NaMainWindow::NaMainWindow()
     
     connect(ui.HDR_checkBox, SIGNAL(stateChanged(int)),
             ui.naZStackWidget, SLOT(setHDRCheckState(int)));
-    // connect(ui.naZStackWidget, SIGNAL(changedHDRCheckState(bool)),
-    //         ui.gammaWidget_Zstack, SLOT(setVisible(bool)));
-    connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
-            ui.naZStackWidget, SLOT(setGammaBrightness(qreal)));
     connect(ui.HDRRed_pushButton, SIGNAL(clicked()),
             ui.naZStackWidget, SLOT(setRedChannel()));
     connect(ui.HDRGreen_pushButton, SIGNAL(clicked()),
@@ -603,6 +599,10 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     qRegisterMetaType<Vector3D>("Vector3D");
     connect(&sharedCameraModel, SIGNAL(focusChanged(Vector3D)),
             &annotationSession->getZSliceColors(), SLOT(onCameraFocusChanged(Vector3D)));
+    ui.naZStackWidget->setZSliceColors(&annotationSession->getZSliceColors());
+    ui.naZStackWidget->setVolumeData(&annotationSession->getVolumeData());
+    connect(ui.naZStackWidget, SIGNAL(hdrRangeChanged(int,qreal,qreal)),
+            &annotationSession->getDataColorModel(), SLOT(setChannelHdrRange(int,qreal,qreal)));
 
     // Connect mip viewer to data flow model
     ui.naLargeMIPWidget->setMipMergedData(annotationSession->getMipMergedData());

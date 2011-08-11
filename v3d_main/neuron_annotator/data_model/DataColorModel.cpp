@@ -64,6 +64,7 @@ void DataColorModel::setChannelColor(int index, QRgb color)
 
 void DataColorModel::setChannelHdrRange(int index, qreal min, qreal max)
 {
+    qDebug() << "setChannelHdrRange" << index << min << max;
     if ( (channelColors[index].hdrMin == min)
        &&(channelColors[index].hdrMax == max) )
         return; // no change

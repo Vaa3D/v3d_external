@@ -11,6 +11,7 @@ ZSliceColors::ZSliceColors(const NaVolumeData& volumeDataParam,
     , neuronSelectionModel(neuronSelectionModelParam)
     , currentZIndex(-1)
     , image(NULL)
+    , processingImage(false)
 {
     // qDebug() << "ZSliceColors constructor";
     connect(&volumeData, SIGNAL(dataChanged()),
@@ -32,6 +33,10 @@ ZSliceColors::~ZSliceColors()
 /* slot: virtual */
 void ZSliceColors::update()
 {
+    // Sometimes the update() signals come too fast.
+    if (processingImage) return;
+    SignalGovernor(this);
+
     // qDebug() << "ZSliceColors update";
     QTime stopwatch;
     stopwatch.start();
@@ -46,14 +51,17 @@ void ZSliceColors::update()
         const Image4DProxy<My4DImage>& volumeProxy = volumeReader.getOriginalImageProxy();
         if (currentZIndex >= volumeProxy.sz) return; // inconsistent state
         Writer zWriter(*this);
-        zWriter.clearData();
-        image = new QImage(volumeProxy.sx, volumeProxy.sy, QImage::Format_RGB32);
+        if ( (! image) || (image->width() != volumeProxy.sx) || (image->height() != volumeProxy.sy) )
+        {
+            zWriter.clearData();
+            image = new QImage(volumeProxy.sx, volumeProxy.sy, QImage::Format_RGB32);
+        }
         std::vector<double> channelData(volumeProxy.sc + 1, 0.0); // +1 for reference
         channelData[volumeProxy.sc] = 0.0; // clear reference channel
         const Image4DProxy<My4DImage>& referenceProxy = volumeReader.getReferenceImageProxy();
         const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
         const bool bShowReference = selectionReader.getOverlayStatusList()[AnnotationSession::REFERENCE_MIP_INDEX];
-        for (int y = 0; y < volumeProxy.sz; ++y)
+        for (int y = 0; y < volumeProxy.sy; ++y)
             for (int x = 0; x < volumeProxy.sx; ++x)
             {
                 // Investigate visibility of the neuron in this voxel
@@ -76,8 +84,13 @@ void ZSliceColors::update()
                 image->setPixel(x, y, colorReader.blend(&channelData[0]));
             }
     } // release locks before emit
-    // qDebug() << "ZSlice update took" << stopwatch.elapsed() / 1000.0 << "seconds"; // takes 20 ms for 512x512 x 3
+    qDebug() << "ZSlice update took" << stopwatch.elapsed() / 1000.0 << "seconds"; // takes 20 ms for 512x512 x 3
     emit dataChanged();
+
+    // Pause thread to give the gui thread a chance to read the image, in case the updates() are coming hot and heavy.
+    QTime pauser;
+    pauser.start();
+    while (pauser.elapsed() < 30) {} // wait thirty milliseconds before exiting
 }
 
 /* slot */
