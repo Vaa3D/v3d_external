@@ -27,7 +27,7 @@
  *
  */
 
-enum  { UINT8=1, UINT16=2, FLOAT32=4 };
+enum  { V3DWEB_UINT8=1, V3DWEB_UINT16=2, V3DWEB_FLOAT32=4 };
 
 /**
  *
