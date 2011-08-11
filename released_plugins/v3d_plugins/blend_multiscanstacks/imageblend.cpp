@@ -37,7 +37,7 @@ Q_EXPORT_PLUGIN2(blend_multiscanstacks, ImageBlendPlugin);
 
 //
 template <class Tdata>
-void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata *pOutput, V3DLONG *szOutput)
+void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOutput)
 {
     // cutting blank plane occuring in image boundaries
     V3DLONG pz=0, nz=0, py=0, ny=0, px=0, nx=0;
@@ -102,7 +102,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata *pOutput, V3DLONG *szOut
     {
         double sum;
         
-        for(V3DLONG k=szInput[2]; k>0; k--)
+        for(V3DLONG k=szInput[2]-1; k>0; k--)
         {    
             V3DLONG offset_k = k*szInput[1]*szInput[0];
             
@@ -187,7 +187,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata *pOutput, V3DLONG *szOut
     {
         double sum;
         
-        for(V3DLONG j=szInput[1]; j>0; j--)
+        for(V3DLONG j=szInput[1]-1; j>0; j--)
         {
             V3DLONG offset_j = j*szInput[0];
             
@@ -272,7 +272,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata *pOutput, V3DLONG *szOut
     {
         double sum;
         
-        for(V3DLONG i=szInput[0]; i>0; i--)
+        for(V3DLONG i=szInput[0]-1; i>0; i--)
         {
             b_blankplanefound=false;
             for(V3DLONG c=0; c<colordim; c++)
@@ -2101,7 +2101,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             unsigned char *pOutput = NULL;
             V3DLONG szOutput[4];
             
-            img_cutting<unsigned char>( (unsigned char*)data1d, sz_blend, (unsigned char*)pOutput, szOutput);
+            img_cutting<unsigned char>( (unsigned char*)data1d, sz_blend, pOutput, szOutput);
             
             // de-alloc
             if(data1d) {delete []data1d; data1d=NULL;}
@@ -2288,7 +2288,9 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             unsigned short *pOutput = NULL;
             V3DLONG szOutput[4];
             
-            img_cutting<unsigned short>( (unsigned short*)data1d, sz_blend, (unsigned short*)pOutput, szOutput);
+            img_cutting<unsigned short>( (unsigned short*)data1d, sz_blend, pOutput, szOutput);
+            
+            qDebug()<<"output ..."<<pOutput;
             
             // de-alloc
             if(data1d) {delete []data1d; data1d=NULL;}
@@ -2474,7 +2476,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             float *pOutput = NULL;
             V3DLONG szOutput[4];
             
-            img_cutting<float>( (float*)data1d, sz_blend, (float*)pOutput, szOutput);
+            img_cutting<float>( (float*)data1d, sz_blend, pOutput, szOutput);
             
             // de-alloc
             if(data1d) {delete []data1d; data1d=NULL;}
