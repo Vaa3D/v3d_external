@@ -33,6 +33,14 @@ using namespace std;
 //
 Q_EXPORT_PLUGIN2(blend_multiscanstacks, ImageBlendPlugin);
 
+bool stitch_paired_images_with_refchan(Image4DSimple &p4DImage1, V3DLONG ref1, Image4DSimple &p4DImage2, V3DLONG ref2);
+bool stitch_paired_images_with_refchan(Image4DSimple &p4DImage1, V3DLONG ref1, Image4DSimple &p4DImage2, V3DLONG ref2)
+{
+	return true; //to be implemented
+}
+
+
+
 // func mutual information for pair images with the same size
 template <class Tdata>
 double mi_computing(Tdata *pImg1, Tdata *pImg2, V3DLONG szImg, int datatype)
@@ -142,18 +150,18 @@ double mi_computing(Tdata *pImg1, Tdata *pImg2, V3DLONG szImg, int datatype)
 }
 
 //plugin
-const QString title = "Image Blending";
+const QString title = "Multiscan Image Blending";
 
 // funcs
 QStringList ImageBlendPlugin::funclist() const
 {
-	return QStringList() << "imageblend";
+	return QStringList() << "multiscanblend";
 }
 
 bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output, V3DPluginCallback2 & v3d, QWidget * parent)
 {
     //
-    if (func_name == tr("imageblend"))
+    if (func_name == tr("multiscanblend"))
 	{
         if(input.size()<1) return false; // no inputs
         
@@ -163,14 +171,14 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         if(infilelist->empty()) 
         {
             //print Help info
-            printf("\nUsage: v3d -x imageBlend.dylib -f imageblend -i <input_images> -o <output_image> -p \"#s <save_blending_result zero(false)/nonzero(true)>\" \n");
+            printf("\nUsage: v3d -x blend_multiscanstacks.dylib -f multiscanblend -i <input_images> -o <output_image> -p \"#s <save_blending_result zero(false)/nonzero(true)>\" \n");
             
             return true;
         }
         
         if(infilelist->size()<2)
         {
-            printf("\nThe image blending program needs two images as an input!\n");
+            printf("\nThe multiscan blending program needs two images as input!\n");
             
             return false;
         }
@@ -257,13 +265,13 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         QString m_InputFileName(infile);
         m_InputFileName.chop(4);
         if(!outfile) 
-            blendImageName = m_InputFileName + "_blended.raw";
+            blendImageName = m_InputFileName + "_blended.v3draw";
         else
             blendImageName = QString(outfile);
         
-        if(QFileInfo(blendImageName).suffix().toUpper() != "RAW")
+        if(QFileInfo(blendImageName).suffix().toUpper() != "V3DRAW")
         {
-            blendImageName.append(".raw"); // force to save as .raw file
+            blendImageName.append(".v3draw"); // force to save as .v3draw file
         }
         
         // image blending
@@ -494,7 +502,16 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         
         qDebug()<<"ref ..."<<ref1<<ref2<<"null color ..."<<b_img1existNULL<<nullcolor1<<b_img2existNULL<<nullcolor2;
         
-        // image blending	
+		
+		//step 3: need to run a simple stitching to figure out the displacement
+		if(!stitch_paired_images_with_refchan(p4DImage1, ref1, p4DImage2, ref2))
+		{
+			fprintf(stderr, "The stitching step fails and thus return.\n");
+			return -1;
+		}
+		
+		
+        // step 4: image blending	
         // suppose image1 and image2 have a common reference
         // the blended image color dim = image1 color dim + image2 color dim - 1
         V3DLONG colordim = sz_img1[3]+sz_img2[3]-1;
@@ -862,7 +879,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                 arg.type = "metaImage"; arg.p = (void *)(metaImg); output << arg;
             }
         }
-        else if(datatype_img1 == V3D_FLOAT32)
+        else if(datatype_img1 == V3D_FLOAT32) //this section need further improvement, maybe discretization. by PHC, 110810
         {
             //
             float* data1d = NULL;
@@ -1009,6 +1026,10 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             {
                 data1d[offset + i] = 0.5*((float *)p1dImg1)[offset1+i] + 0.5*((float *)p1dImg2)[offset2+i];
             }
+			
+			
+			//step 5: should we remove the potential black border? If yes, add some post-processing code here. 
+			
             
             // output
             if(b_saveimage)
@@ -1041,7 +1062,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         }
         else 
         {
-            printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
+            printf("Currently this program only support UINT8, UINT16, FLOAT32 datatype.\n");
             return -1;
         }
         
