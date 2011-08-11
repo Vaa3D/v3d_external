@@ -6,6 +6,7 @@
 #include "v3d_funcs.h"
 #include "parser.h"
 #include "gaussian_blur.cpp"
+#include "img_threshold.h"
 
 using namespace std;
 
@@ -16,15 +17,14 @@ bool run_with_paras(InputParas paras, string &s_error);
 bool convert_uint8_to_double(double * outimg1d, unsigned char* inimg1d, V3DLONG sz[3]);
 bool convert_double_to_uint8(unsigned char* outimg1d,double * inimg1d,  V3DLONG sz[3]);
 
-int cmd_num = 6;
-SupportedCommand supported_commands[] = {{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-negate", 0}};
+SupportedCommand supported_commands[] = {{"-binary-threshold",1},{"-white-threshold",1},{"-black-threshold",1},{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-negate", 0}};
 
 int main(int argc, char* argv[])
 {
 	if(argc == 1 || (argc == 2 && (string(argv[1]) == "-h"))) {printHelp(); return 0;}
 	if(argc == 2 && (string(argv[1]) == "-v" || string(argv[1]) == "--version")) {printVersion(); return 0;}
 
-	InputParas paras(supported_commands, cmd_num);
+	InputParas paras(supported_commands, sizeof(supported_commands)/sizeof(SupportedCommand));
 	string s_error("");
 
 	if(! parse_paras(argc, argv, paras, s_error)){cout<<"Invalid paras : "<< s_error<<endl; return 0;}
@@ -79,13 +79,14 @@ bool run_with_paras(InputParas paras, string & s_error)
 	while(paras.get_next_cmd(cmd_name))
 	{
 		cout<<"command : "<<cmd_name<<endl;
-		if(cmd_name == "-rotatexy")
+		if(cmd_name == "-black-threshold")
 		{
-			if(!paras.is_exist("-channel") && in_sz[3] > 1){s_error += "please specify -channel"; return false;}
-			double thetax; double thetay;
-			if(!paras.get_double_para(thetax,"-rotatexy", 0, s_error,"x") || !paras.get_double_para(thetay,"-rotatexy", 1, s_error,"x")) return false;
-			cout<<"thetax = "<<thetax<<" thetay = "<<thetay<<endl;
-			//if(!rotate_along_xyaxis(thetax, thetay, indata1d, in_sz, outdata1d, out_sz, 0)){s_error += "rotatez error"; return false;}
+			if(!paras.is_exist("-black-threshold")&& in_sz[3] >1){s_error += "please specify -channel"; return false;}
+			double black_thresh_value; if(!paras.get_double_para(black_thresh_value,"-black-threshold",s_error))return false;
+			cout<<"black_thresh_value = "<<black_thresh_value<<endl;
+			if(!black_threshold(black_thresh_value,indata1d, in_sz, outdata1d)){s_error += "black threshold error"; return false;}
+			out_sz = new V3DLONG[4];
+			out_sz[0] = in_sz[0]; out_sz[1] = in_sz[1]; out_sz[2] = in_sz[2]; out_sz[3] = 1;
 		}
 		else if(cmd_name == "-rotatex")
 		{
@@ -161,6 +162,9 @@ void printHelp()
 	cout<<""<<endl;
 	cout<<" -gaussian-blur     geometry"<<endl;
 	cout<<" -rotatez           theta"<<endl;
+	cout<<" -black-threshold   thresh_value"<<endl;
+	cout<<" -white-threshold   thresh_value"<<endl;
+	cout<<" -binary-threshold  thresh_value"<<endl;
 	cout<<""<<endl;
 }
 
