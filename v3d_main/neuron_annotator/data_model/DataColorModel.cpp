@@ -11,9 +11,10 @@ void DataColorModel::resetColors()
 {
     NaVolumeData::Reader volumeReader(volumeData);
     if (! volumeReader.hasReadLock()) return;
+    const Image4DProxy<My4DImage>& volProxy = volumeReader.getOriginalImageProxy();
+    if (volProxy.sx <= 0) return; // data not populated yet?
+    const Image4DProxy<My4DImage>& refProxy = volumeReader.getReferenceImageProxy();
     // Add one for reference channel
-    const Image4DProxy<My4DImage> volProxy = volumeReader.getOriginalImageProxy();
-    const Image4DProxy<My4DImage> refProxy = volumeReader.getReferenceImageProxy();
     int numChannels = volProxy.sc + 1;
 
     Writer colorWriter(*this);

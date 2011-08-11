@@ -13,6 +13,10 @@ NaVolumeData::NaVolumeData()
     : originalImageStack(NULL)
     , neuronMaskStack(NULL)
     , referenceStack(NULL)
+    , emptyImage(new My4DImage())
+    , originalImageProxy(emptyImage)
+    , neuronMaskProxy(emptyImage)
+    , referenceImageProxy(emptyImage)
 {
 }
 
@@ -81,6 +85,10 @@ void NaVolumeData::Writer::clearImageData()
         delete m_data->referenceStack;
         m_data->referenceStack = NULL;
     }
+    if (m_data->emptyImage != NULL) {
+        delete m_data->emptyImage;
+        m_data->emptyImage = NULL;
+    }
 }
 
 bool NaVolumeData::Writer::loadOriginalImageStack()
@@ -99,6 +107,10 @@ bool NaVolumeData::Writer::loadOriginalImageStack()
     }
     // cout << "Loaded original image stack with dimensions X=" << originalImageStack->getXDim() << " Y=" << originalImageStack->getYDim()
     //         << " Z=" << originalImageStack->getZDim() << " C=" << originalImageStack->getCDim() << "\n";
+    m_data->originalImageStack->updateminmaxvalues();
+
+    m_data->originalImageProxy = Image4DProxy<My4DImage>(m_data->originalImageStack);
+    m_data->originalImageProxy.set_minmax(m_data->originalImageStack->p_vmin, m_data->originalImageStack->p_vmax);
 
     return true;
 }
@@ -116,8 +128,10 @@ bool NaVolumeData::Writer::loadNeuronMaskStack() {
         return false;
     }
     neuronMaskStack->loadImage(m_data->maskLabelFilePath.toAscii().data());
-    neuronMaskStack->p_vmax;
+    m_data->neuronMaskStack->updateminmaxvalues();
 
+    m_data->neuronMaskProxy = Image4DProxy<My4DImage>(m_data->neuronMaskStack);
+    m_data->neuronMaskProxy.set_minmax(m_data->neuronMaskStack->p_vmin, m_data->neuronMaskStack->p_vmax);
     // qDebug() << "Number of My4DImage neuron mask labels = " << m_data->neuronMaskStack->getChannalMaxIntensity(0);
 
     return true;
@@ -137,6 +151,7 @@ bool NaVolumeData::Writer::loadReferenceStack()
     // cout << "Loaded reference stack stack with dimensions X=" << initialReferenceStack->getXDim() << " Y=" << initialReferenceStack->getYDim()
     //         << " Z=" << initialReferenceStack->getZDim() << " C=" << initialReferenceStack->getCDim() << "\n";
 
+    // TODO - do not normalize to 8-bit.  This is neither the time nor place for that.
     // Phase 2: normalize to 8-bit
     m_data->referenceStack=new My4DImage();
     My4DImage * referenceStack = m_data->referenceStack;
@@ -169,6 +184,10 @@ bool NaVolumeData::Writer::loadReferenceStack()
     initialReferenceStack->cleanExistData();
     delete initialReferenceStack;
     referenceStack->updateminmaxvalues();
+
+    m_data->referenceImageProxy = Image4DProxy<My4DImage>(m_data->referenceStack);
+    m_data->referenceImageProxy.set_minmax(m_data->referenceStack->p_vmin, m_data->referenceStack->p_vmax);
+
     qDebug() << "Finished loading reference stack";
 
     return true;
@@ -178,34 +197,19 @@ bool NaVolumeData::Writer::loadReferenceStack()
 // NaVolumeData::Reader methods //
 //////////////////////////////////
 
-const Image4DProxy<My4DImage> NaVolumeData::Reader::getNeuronMaskProxy() const
+const Image4DProxy<My4DImage>& NaVolumeData::Reader::getNeuronMaskProxy() const
 {
-    // Image4DProxy class is a bit const-retarded, so const_cast here.
-    // (It's OK; we are returning a const object in the end.)
-    My4DImage * stack = const_cast<My4DImage*>(m_data->neuronMaskStack);
-    Image4DProxy<My4DImage> answer(stack);
-    answer.set_minmax(stack->p_vmin, stack->p_vmax);
-    return answer;
+    return m_data->neuronMaskProxy;
 }
 
-const Image4DProxy<My4DImage> NaVolumeData::Reader::getOriginalImageProxy() const
+const Image4DProxy<My4DImage>& NaVolumeData::Reader::getOriginalImageProxy() const
 {
-    // Image4DProxy class is a bit const-retarded, so const_cast here.
-    // (It's OK; we are returning a const object in the end.)
-    My4DImage * stack = const_cast<My4DImage*>(m_data->originalImageStack);
-    Image4DProxy<My4DImage> answer(stack);
-    answer.set_minmax(stack->p_vmin, stack->p_vmax);
-    return answer;
+    return m_data->originalImageProxy;
 }
 
-const Image4DProxy<My4DImage> NaVolumeData::Reader::getReferenceImageProxy() const
+const Image4DProxy<My4DImage>& NaVolumeData::Reader::getReferenceImageProxy() const
 {
-    // Image4DProxy class is a bit const-retarded, so const_cast here.
-    // (It's OK; we are returning a const object in the end.)
-    My4DImage * stack = const_cast<My4DImage*>(m_data->referenceStack);
-    Image4DProxy<My4DImage> answer(stack);
-    answer.set_minmax(stack->p_vmin, stack->p_vmax);
-    return answer;
+    return m_data->referenceImageProxy;
 }
 
 

@@ -9,6 +9,7 @@
 #include "data_model/GalleryMipImages.h"
 #include "data_model/NeuronSelectionModel.h"
 #include "data_model/MipMergedData.h"
+#include "data_model/ZSliceColors.h"
 
 class AnnotationSession : public QObject
 {
@@ -70,6 +71,7 @@ public:
     const MipFragmentColors& getMipFragmentColors() const {return mipFragmentColors;}
     const GalleryMipImages& getGalleryMipImages() const {return galleryMipImages;}
     const MipMergedData& getMipMergedData() const {return mipMergedData;}
+    const ZSliceColors& getZSliceColors() const {return zSliceColors;}
 
 signals:
     void modelUpdated(QString updateType); // Tell 3D viewer how to update
@@ -89,10 +91,13 @@ private:
     long objectId;
     MultiColorImageStackNode* multiColorImageStackNode;
     NeuronAnnotatorResultNode* neuronAnnotatorResultNode;
-    // Data flow objects
+    // Data flow objects.
+    // Be aware that the order of declaration here is the order of initialization,
+    // which in turn affects the order in which signals get serviced.
     NaVolumeData volumeData;
     NeuronSelectionModel neuronSelectionModel;
     DataColorModel dataColorModel;
+    ZSliceColors zSliceColors;
     MipFragmentData mipFragmentData;
     MipFragmentColors mipFragmentColors;
     GalleryMipImages galleryMipImages;

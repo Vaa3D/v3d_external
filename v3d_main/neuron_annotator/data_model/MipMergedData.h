@@ -30,7 +30,7 @@ public slots:
     void toggleNeuronVisibility(int index, bool status); // update a single neuron, on neuronSelectionModel.neuronMaskUpdated, O(log nfrags)
     void toggleOverlayVisibility(int index, bool status);
     void updateNeuronVisibility(); // remerge all neurons O(nfrags), on neuronSelectionModel.visibilityChanged? or dirty partial update.
-    void updateColors(); // on dataColorModel.dataChanged, or mergedImage change
+    void colorizeImage(); // on dataColorModel.dataChanged, or mergedImage change
 
 protected:
     bool recomputeLayerTree();
@@ -110,12 +110,12 @@ public:
     int getProxyIndex() const {return proxyIndex;}
     bool isVisible() const {return bIsVisible;}
     bool updateWithoutSignal();
+    void setVisibility(bool bIsVisibleParam);
 
 signals:
     void dataChanged();
 
 public slots:
-    void setVisibility(bool bIsVisibleParam);
     void update(); // emits dataChanged() if data changes.
 
 protected:

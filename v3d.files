@@ -2409,3 +2409,5 @@ v3d_main/neuron_annotator/data_model/MipMergedData.h
 v3d_main/neuron_annotator/data_model/MipMergedData.cpp
 v3d_main/neuron_annotator/data_model/NeuronSelectionModel.h
 v3d_main/neuron_annotator/data_model/NeuronSelectionModel.cpp
+v3d_main/neuron_annotator/data_model/ZSliceColors.h
+v3d_main/neuron_annotator/data_model/ZSliceColors.cpp

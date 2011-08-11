@@ -1,6 +1,7 @@
 #include "MipMergedData.h"
 #include "../AnnotationSession.h"
 #include <cassert>
+#include <vector>
 
 ///////////////////////////
 // MipMergeLayer methods //
@@ -167,7 +168,7 @@ MipMergedData::MipMergedData(
     connect(&mipFragmentData, SIGNAL(dataChanged()),
             this, SLOT(update()));
     connect(&dataColorModel, SIGNAL(dataChanged()),
-            this, SLOT(updateColors()));
+            this, SLOT(colorizeImage()));
     // qDebug() << "connecting neuronVisibilityChanged signal" << &neuronSelectionModel << this;
     connect(&neuronSelectionModel, SIGNAL(neuronVisibilityChanged(int,bool)),
             this, SLOT(toggleNeuronVisibility(int,bool)));
@@ -294,7 +295,7 @@ void MipMergedData::update()
         // Note that "layers" does not necessarily have the same number of elements as
         // layerZValues has slices.  "mergedIndex" is a slice number.
         connect(layers.last(), SIGNAL(dataChanged()),
-                this, SLOT(updateColors()));
+                this, SLOT(colorizeImage()));
         recomputeLayerTree();
     } // release locks
     // qDebug() << "Setting up MipMergedData structure took " << stopwatch.elapsed() / 1000.0 << " seconds";
@@ -334,7 +335,7 @@ void MipMergedData::toggleOverlayVisibility(int index, bool status)
             Writer writer(*this);
             bShowReferenceChannel = status;
         }
-        updateColors();
+        colorizeImage();
     }
 }
 
@@ -361,10 +362,10 @@ void MipMergedData::updateNeuronVisibility() // remerge all neurons O(nfrags), o
         recomputeLayerTree();
     } // release locks
 
-    updateColors();
+    colorizeImage();
 }
 
-void MipMergedData::updateColors() // on dataColorModel.dataChanged, or mergedImage change
+void MipMergedData::colorizeImage() // on dataColorModel.dataChanged, or mergedImage change
 {
     // qDebug() << "Updating mip colors";
     Writer writer(*this);
@@ -412,7 +413,7 @@ bool MipMergedData::computeMergedImage()
     int sy = layerZProxy.sy;
     int sc = layerDataProxy.sc;
     int refIndex = intensityProxy.sz - 1;
-    double *channelIntensities = new double [sc + 1]; // nFrags plus reference
+    std::vector<double> channelIntensities(sc + 1, 0.0); // nFrags plus reference
     channelIntensities[sc] = 0; // punt reference for the moment
     mergedImage = new QImage(sx, sy, QImage::Format_RGB32);
     mergedImage->fill(qRgb(0, 0, 0));
@@ -423,12 +424,11 @@ bool MipMergedData::computeMergedImage()
                 channelIntensities[sc] = intensityProxy.value_at(x, y, refIndex, 0);
             for (int c = 0; c < sc; ++c)
                 channelIntensities[c] = layerDataProxy.value_at(x, y, mergedIndex, c);
-            QRgb color = colorReader.blend(channelIntensities);
+            QRgb color = colorReader.blend(&channelIntensities[0]);
             mergedImage->setPixel(x, y, color);
         }
     // qDebug() << "Colorizing merged mip took" << stopwatch.elapsed() / 1000.0 << "seconds"; // 22ms for 512x512
 
-		if (channelIntensities) {delete []channelIntensities; channelIntensities=0;}
     return true;
 }
 

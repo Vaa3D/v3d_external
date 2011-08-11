@@ -42,7 +42,8 @@ signals:
     // Visibility
     void overlayVisibilityChanged(int index, bool status); // single overlay toggled
     void neuronVisibilityChanged(int index, bool status); // single neuron toggled
-    void multipleVisibilityChanged(); // global change
+    void multipleVisibilityChanged(); // global change, not just a single neuron
+    void visibilityChanged(); // any change in neuron or overlay visibility.  more specific that dataChanged, more general than XVisibilityChanged.
     // Selection
     void selectedNeuronShown(int selectionIndex); // ?
     // TODO highlight signals (not selection)

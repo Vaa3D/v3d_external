@@ -18,6 +18,7 @@ set(V3D_SRCS
   # atlas_window.cpp   looks for image_window.h : non-existing file : FIXME
   colormap.cpp
   mainwindow.cpp
+  ../custom_toolbar/v3d_custom_toolbar.cpp
   mainwindow_interface.cpp
   v3d_core.cpp
   dialog_keypoint_features.cpp
@@ -84,6 +85,7 @@ QT4_WRAP_CPP(QT_MOC_SRCS
   v3d_actions.h
   v3d_application.h
   ChannelTable.h
+  ../custom_toolbar/v3d_custom_toolbar.h
   )
 
 include_directories( BEFORE

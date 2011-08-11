@@ -7,6 +7,22 @@ NeuronSelectionModel::NeuronSelectionModel(const NaVolumeData& volumeDataParam)
 {
     connect(&volumeDataParam, SIGNAL(dataChanged()),
             this, SLOT(initializeSelectionModel()));
+
+    // connect specific signals to more general signals
+    connect(this, SIGNAL(initialized()),
+            this, SIGNAL(multipleVisibilityChanged()));
+    connect(this, SIGNAL(multipleVisibilityChanged()),
+            this, SIGNAL(visibilityChanged()));
+    connect(this, SIGNAL(neuronVisibilityChanged(int,bool)),
+            this, SIGNAL(visibilityChanged()));
+    connect(this, SIGNAL(overlayVisibilityChanged(int,bool)),
+            this, SIGNAL(visibilityChanged()));
+    connect(this, SIGNAL(visibilityChanged()),
+            this, SIGNAL(dataChanged()));
+
+    // TODO - what the heck is selectedNeuronShown?
+    connect(this, SIGNAL(selectedNeuronShown(int)),
+            this, SIGNAL(multipleVisibilityChanged()));
 }
 
 /* slot: */
@@ -38,8 +54,6 @@ void NeuronSelectionModel::initializeSelectionModel()
     }
 
     emit initialized();
-    emit multipleVisibilityChanged();
-    emit dataChanged();
 }
 
 void NeuronSelectionModel::updateOverlay(int index, bool status)
@@ -50,7 +64,6 @@ void NeuronSelectionModel::updateOverlay(int index, bool status)
         overlayStatusList.replace(index, status);
     }
     emit overlayVisibilityChanged(index, status);
-    emit dataChanged();
 }
 
 void NeuronSelectionModel::updateNeuronMask(int index, bool status)
@@ -66,7 +79,6 @@ void NeuronSelectionModel::updateNeuronMask(int index, bool status)
     }
     // qDebug() << "emitting neuronVisibilityChanged()" << this;
     emit neuronVisibilityChanged(index, status);
-    emit dataChanged();
 }
 
 void NeuronSelectionModel::setOverlayStatus(int index, bool status)
@@ -133,8 +145,6 @@ void NeuronSelectionModel::showSelectedNeuron(const QList<int>& overlayList)
         maskStatusList.replace(selectionIndex, true);
     }
     emit selectedNeuronShown(selectionIndex);
-    emit multipleVisibilityChanged();
-    emit dataChanged();
 }
 
 // show all neurons
@@ -153,7 +163,6 @@ void NeuronSelectionModel::showAllNeurons(const QList<int>& overlayList)
         }
     }
     emit multipleVisibilityChanged();
-    emit dataChanged();
 }
 
 // clear all neurons
@@ -175,7 +184,6 @@ void NeuronSelectionModel::clearAllNeurons()
         }
     }
     emit multipleVisibilityChanged();
-    emit dataChanged();
 }
 
 // update Neuron Select List
@@ -194,7 +202,6 @@ void NeuronSelectionModel::updateNeuronSelectList(int index)
     }
 
     emit multipleVisibilityChanged();
-    emit dataChanged();
 }
 
 void NeuronSelectionModel::clearSelections()

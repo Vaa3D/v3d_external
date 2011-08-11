@@ -129,7 +129,7 @@ public:
             return colorModel.channelColors.size(); // +1 for reference
         }
 
-        QRgb blend(double channelIntensities[]) const {
+        QRgb blend(const double channelIntensities[]) const {
             int red, green, blue;
             red = green = blue = 0;
             int sc = colorModel.channelColors.size();
@@ -146,6 +146,10 @@ public:
             green = min(255, green);
             blue = min(255, blue);
             return qRgb(red, green, blue);
+        }
+
+        QRgb blend(const std::vector<double>& channelIntensities) {
+            return blend(&channelIntensities[0]);
         }
 
     private:

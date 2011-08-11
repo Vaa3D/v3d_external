@@ -599,6 +599,11 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
             &annotationSession->getDataColorModel(), SLOT(setGamma(qreal)));
 
+    // Z value comes from camera model
+    qRegisterMetaType<Vector3D>("Vector3D");
+    connect(&sharedCameraModel, SIGNAL(focusChanged(Vector3D)),
+            &annotationSession->getZSliceColors(), SLOT(onCameraFocusChanged(Vector3D)));
+
     // Connect mip viewer to data flow model
     ui.naLargeMIPWidget->setMipMergedData(annotationSession->getMipMergedData());
 

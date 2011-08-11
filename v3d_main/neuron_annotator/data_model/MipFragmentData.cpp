@@ -33,9 +33,9 @@ void MipFragmentData::updateFromVolumeData()
     // perhaps it took some time to acquire the write lock, so check the volume again
     if (! volumeReader.refreshLock()) return;
 
-    const Image4DProxy<My4DImage> originalProxy = volumeReader.getOriginalImageProxy();
-    const Image4DProxy<My4DImage> referenceProxy = volumeReader.getReferenceImageProxy();
-    const Image4DProxy<My4DImage> maskProxy = volumeReader.getNeuronMaskProxy();
+    const Image4DProxy<My4DImage>& originalProxy = volumeReader.getOriginalImageProxy();
+    const Image4DProxy<My4DImage>& referenceProxy = volumeReader.getReferenceImageProxy();
+    const Image4DProxy<My4DImage>& maskProxy = volumeReader.getNeuronMaskProxy();
 
     // clear max/min cache
     fragmentMaximumIntensities.assign(volumeReader.getNumberOfNeurons() + 2, 0);

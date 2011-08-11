@@ -40,7 +40,10 @@ private:
     My4DImage* originalImageStack;
     My4DImage* neuronMaskStack;
     My4DImage* referenceStack;
-    // int maxNeuronIndex;
+    My4DImage* emptyImage;
+    Image4DProxy<My4DImage> originalImageProxy;
+    Image4DProxy<My4DImage> neuronMaskProxy;
+    Image4DProxy<My4DImage> referenceImageProxy;
 
 public:
 
@@ -53,9 +56,9 @@ public:
             , m_data(&data)
         {}
 
-        const Image4DProxy<My4DImage> getNeuronMaskProxy() const;
-        const Image4DProxy<My4DImage> getOriginalImageProxy() const;
-        const Image4DProxy<My4DImage> getReferenceImageProxy() const;
+        const Image4DProxy<My4DImage>& getNeuronMaskProxy() const;
+        const Image4DProxy<My4DImage>& getOriginalImageProxy() const;
+        const Image4DProxy<My4DImage>& getReferenceImageProxy() const;
         ImagePixelType getOriginalDatatype() const {return m_data->originalImageStack->getDatatype();}
         int getNumberOfNeurons() const {return m_data->neuronMaskStack->getChannalMaxIntensity(0);}
 
@@ -73,9 +76,9 @@ public:
             , m_data(&data)
         {}
 
-        Image4DProxy<My4DImage> getNeuronMaskProxy();
-        Image4DProxy<My4DImage> getOriginalImageProxy();
-        Image4DProxy<My4DImage> getReferenceImageProxy();
+        Image4DProxy<My4DImage>& getNeuronMaskProxy();
+        Image4DProxy<My4DImage>& getOriginalImageProxy();
+        Image4DProxy<My4DImage>& getReferenceImageProxy();
         ImagePixelType getOriginalDatatype() const {return m_data->originalImageStack->getDatatype();}
         int getNumberOfNeurons() const {return m_data->neuronMaskStack->getChannalMaxIntensity(0);}
 
