@@ -39,8 +39,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  */
 
 #include "v3dr_surfaceDialog.h"
+#ifndef test_main_cpp
 #include "../v3d/surfaceobj_annotation_dialog.h"
-
+#endif
 
 
 ///////////////////////////////////////////////////////////
