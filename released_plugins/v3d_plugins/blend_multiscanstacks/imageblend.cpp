@@ -24,6 +24,8 @@
 #include "basic_landmark.h"
 #include "basic_4dimage.h"
 
+#include "basic_memory.h"
+
 #include "../istitch/y_imglib.h"
 
 #include "imageblend.h"
@@ -1415,6 +1417,18 @@ bool stitch_paired_images_with_refchan(Image4DSimple &p4DImage1, V3DLONG ref1, I
     
     qDebug()<<"test ..."<<i_start<<j_start<<k_start;
 	
+	unsigned short int **** p4d=0, ****p1dImg1_4d=0;
+	try {
+		new4dpointer(p4d, szImg[0], szImg[1], szImg[2], szImg[3], (unsigned short int *)pTemImg);
+		new4dpointer(p1dImg1_4d, szImg[0], szImg[1], szImg[2], szImg[3], (unsigned short int *)p1dImg1);
+	}
+	catch (...) {
+		if (p4d) {delete4dpointer(p4d, szImg[0], szImg[1], szImg[2], szImg[3]); }
+		if (p1dImg1_4d) {delete4dpointer(p1dImg1_4d, szImg[0], szImg[1], szImg[2], szImg[3]); }
+		fprintf(stderr, "fail to create memory for 3d pointer.\n");
+		return false;
+	}
+	
 	for(V3DLONG c=0; c<szImg[3]; c++)
 	{
 		V3DLONG offset_c = c*pagesz;
@@ -1434,9 +1448,11 @@ bool stitch_paired_images_with_refchan(Image4DSimple &p4DImage1, V3DLONG ref1, I
                     }
                     else if(datatype_img == V3D_UINT16)
                     {
-                        unsigned short *p = (unsigned short *)pTemImg;
-                        
-                        p[offset_j_t + i - i_start] = ((unsigned short*)p1dImg1)[offset_j + i];
+                        //unsigned short *p = (unsigned short *)pTemImg;
+                        //
+                        //p[offset_j_t + i - i_start] = ((unsigned short*)p1dImg1)[offset_j + i];
+						
+						p4d[c][k-k_start][j-j_start][i-i_start] = p1dImg1_4d[c][k][j][i];
                     }
                     else if(datatype_img == V3D_FLOAT32)
                     {
@@ -1460,7 +1476,11 @@ bool stitch_paired_images_with_refchan(Image4DSimple &p4DImage1, V3DLONG ref1, I
         p1dImg1[i] = pTemImg[i];
     }
     
+
     // de-alloc
+	if (p4d) {delete4dpointer(p4d, szImg[0], szImg[1], szImg[2], szImg[3]); }
+	if (p1dImg1_4d) {delete4dpointer(p1dImg1_4d, szImg[0], szImg[1], szImg[2], szImg[3]); }
+	
     if(pTemImg) {delete []pTemImg; pTemImg=NULL;}
     if(offset) {delete []offset; offset=NULL;}
     
