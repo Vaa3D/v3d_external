@@ -412,7 +412,7 @@ bool MipMergedData::computeMergedImage()
     int sy = layerZProxy.sy;
     int sc = layerDataProxy.sc;
     int refIndex = intensityProxy.sz - 1;
-    double channelIntensities[sc + 1]; // nFrags plus reference
+    double *channelIntensities = new double [sc + 1]; // nFrags plus reference
     channelIntensities[sc] = 0; // punt reference for the moment
     mergedImage = new QImage(sx, sy, QImage::Format_RGB32);
     mergedImage->fill(qRgb(0, 0, 0));
@@ -427,6 +427,8 @@ bool MipMergedData::computeMergedImage()
             mergedImage->setPixel(x, y, color);
         }
     // qDebug() << "Colorizing merged mip took" << stopwatch.elapsed() / 1000.0 << "seconds"; // 22ms for 512x512
+
+		if (channelIntensities) {delete []channelIntensities; channelIntensities=0;}
     return true;
 }
 

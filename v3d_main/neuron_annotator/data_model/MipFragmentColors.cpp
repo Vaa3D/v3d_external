@@ -52,7 +52,7 @@ void MipFragmentColors::update()
     if (! mipReader.refreshLock()) return;
     if (! colorReader.refreshLock()) return;
 
-    double intensities[mipProxy.sc + 1];
+    double *intensities = new double [mipProxy.sc + 1];
     int refChannel = mipProxy.sc;
     intensities[refChannel] = 0.0; // turn off reference channel for fragment colors
     // Background and neuron/fragment images
@@ -91,6 +91,7 @@ void MipFragmentColors::update()
     size_t data_size = 4 * sx * sy * sf;
     qDebug() << "Colorized fragment MIPs use " << data_size / 1e6 << " MB of RAM";
 
+	if (intensities) {delete []intensities; intensities=0;}
     emit dataChanged();
 }
 
