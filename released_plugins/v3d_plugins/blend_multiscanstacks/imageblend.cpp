@@ -1,5 +1,6 @@
 /* imageblend.cpp
  * 2011-07-30: the program is created by Yang Yu
+ * 2011-08-10: updated by Hanchuan Peng
  */
 
 
@@ -55,7 +56,7 @@ double mi_computing(Tdata *pImg1, Tdata *pImg2, V3DLONG szImg, int datatype)
     }
     else
     {
-        cout<<"Datatype is not supported!"<<endl;
+        cout<<"Your data is not 8bit or 12bit and is currently not supported!"<<endl;
         return -1;
     }
     
@@ -1179,7 +1180,7 @@ void ImageBlendPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &call
     }
 	else if (menu_name == tr("About"))
 	{
-		QMessageBox::information(parent, "Version info", QString("ImageBlend Plugin %1 (July 30, 2011) developed by Yang Yu. (Janelia Research Farm Campus, HHMI)").arg(getPluginVersion()));
+		QMessageBox::information(parent, "Version info", QString("Blend multiple image stacks with various number of color channels, which share a common color channel (reference). Version %1 (July 30, 2011) developed by Yang Yu and Hanchuan Peng. (Janelia Research Farm Campus, HHMI)").arg(getPluginVersion()));
 		return;
 	}
 }
