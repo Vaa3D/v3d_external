@@ -1,5 +1,6 @@
 # #####################################################################
 # Created: 2010-6-17 v3d_msvc.pro under windows v0.1 by YUY
+# revised by PHC, 2011-08-11
 # ######################################################################
 
 message(CONFIG=$$unique(CONFIG))
@@ -28,13 +29,13 @@ win32 {
  
         ## Windows x86 (32bit) specific build here 
         
-        MSVC_DIR = "C:\Program Files\Microsoft Visual Studio 9.0\VC"
-		MSSDK_DIR = "C:\Program Files\Microsoft SDKs\Windows\v6.0A\"
+        MSVC_DIR = "C:\\Program Files\\Microsoft Visual Studio 9.0\\VC"
+		MSSDK_DIR = "C:\\Program Files\\Microsoft SDKs\\Windows\\v6.0A\\"
 		LOCAL_DIR = ..\ 
 
-		LIBS += -L$$MSVC_DIR\lib
-		LIBS += -L$$MSSDK_DIR\Lib
-		LIBS += -L$$LOCAL_DIR\common_lib\winlib
+		LIBS += -L$$MSVC_DIR\\lib
+		LIBS += -L$$MSSDK_DIR\\Lib
+		LIBS += -L$$LOCAL_DIR\\common_lib\\winlib
 		
 		LIBS += \ #-lm
 				-llibtiff \
@@ -43,21 +44,21 @@ win32 {
 				-llibFL_cellseg \
 				-llibFL_brainseg 
 	
-		INCLUDEPATH += $$LOCAL_DIR\basic_c_fun\include \
-		               $$LOCAL_DIR\common_lib\include
+		INCLUDEPATH += $$LOCAL_DIR\\basic_c_fun\\include \
+		               $$LOCAL_DIR\\common_lib\\include
  
     } else { 
         message("x86_64 build") 
  
         ## Windows x64 (64bit) specific build here 
  	
- 		MSVC_DIR = "C:\Program Files\Microsoft Visual Studio 9.0\VC"
-		MSSDK_DIR = "C:\Program Files\Microsoft SDKs\Windows\v6.0A\"
+ 		MSVC_DIR = "C:\\Program Files\\Microsoft Visual Studio 9.0\\VC"
+		MSSDK_DIR = "C:\\Program Files\\Microsoft SDKs\\Windows\\v6.0A\\"
 		LOCAL_DIR = ..\ 
 
-		LIBS += -L$$MSVC_DIR\lib	
-		LIBS += -L$$MSSDK_DIR\Lib\x64
-		LIBS += -L$$LOCAL_DIR\common_lib\winlib64
+		LIBS += -L$$MSVC_DIR\\lib	
+		LIBS += -L$$MSSDK_DIR\\Lib\\x64
+		LIBS += -L$$LOCAL_DIR\\common_lib\\winlib64
 		
 		LIBS += \
 				-llibtiff \
@@ -66,8 +67,8 @@ win32 {
 				-llibFL_cellseg \
 				-llibFL_brainseg 
 	
-		INCLUDEPATH += $$LOCAL_DIR\basic_c_fun\include \
-		               $$LOCAL_DIR\common_lib\include
+		INCLUDEPATH += $$LOCAL_DIR\\basic_c_fun\\include \
+		               $$LOCAL_DIR\\common_lib\\include
     } 
     
     INCLUDEPATH = $$unique(INCLUDEPATH)
