@@ -96,6 +96,7 @@ void V3dR_MainWindow::createControlWidgets()
     //QGroupBox *volDisplayOptGroup = new QGroupBox();
     //volDisplayOptGroup->setTitle("Volume display options");
     QGridLayout *layout_mainDisplayOptGroup = new QGridLayout(volDisplayOptGroup);
+    //layout_mainDisplayOptGroup->setContentsMargins(10,1,1,1);
 
     dispType_mip = new QRadioButton("MIP", volDisplayOptGroup);
     dispType_alpha = new QRadioButton("Alpha", volDisplayOptGroup);
@@ -108,9 +109,9 @@ void V3dR_MainWindow::createControlWidgets()
 
     transparentSlider = createTranparentSlider();
     zthicknessBox = createThicknessSpinBox();
-    spinBox_channel = createChannelSpinBox();
+    comboBox_channel = createChannelComboBox();
     zthicknessBox->setToolTip("more thick more Slow!");
-	spinBox_channel->setToolTip("Set the default channel for pinpointing in 3D image.");
+	comboBox_channel->setToolTip("Set the default channel for pinpointing in 3D image.");
 
 	checkBox_channelR = new QCheckBox("R", volDisplayOptGroup);
 	checkBox_channelG = new QCheckBox("G", volDisplayOptGroup);
@@ -131,16 +132,16 @@ void V3dR_MainWindow::createControlWidgets()
 	layout_mainDisplayOptGroup->addWidget(transparentSlider_Label = new QLabel("Transparency"), 2, 0, 1, 9);
 	layout_mainDisplayOptGroup->addWidget(transparentSlider,       2, 9-1, 1, 13);
 
-	layout_mainDisplayOptGroup->addWidget(new QLabel("Z-Thick"), 3, 0, 1, 8);
+	layout_mainDisplayOptGroup->addWidget(new QLabel("Z-thick"), 3, 0, 1, 8);
 	layout_mainDisplayOptGroup->addWidget(zthicknessBox,         3, 5, 1, 7);
 
-	layout_mainDisplayOptGroup->addWidget(new QLabel("M-Chan"), 3, 12, 1, 8);
-	layout_mainDisplayOptGroup->addWidget(spinBox_channel,    3, 12+5, 1, 4);
+	layout_mainDisplayOptGroup->addWidget(new QLabel("M-chan"), 3, 12, 1, 8);
+	layout_mainDisplayOptGroup->addWidget(comboBox_channel,    3, 12+5, 1, 5);
 
 	layout_mainDisplayOptGroup->addWidget(checkBox_channelR,      4, 0, 1, 4);
 	layout_mainDisplayOptGroup->addWidget(checkBox_channelG,      4, 0+4, 1, 4);
 	layout_mainDisplayOptGroup->addWidget(checkBox_channelB,      4, 0+4+4, 1, 4);
-	layout_mainDisplayOptGroup->addWidget(checkBox_volCompress, 4, 12+1, 1, 8);
+	layout_mainDisplayOptGroup->addWidget(checkBox_volCompress, 4, 12+1, 1, 9);
 
 
 //	layout_mainDisplayOptGroup->setRowStretch( 1, 21 );
@@ -701,8 +702,8 @@ void V3dR_MainWindow::connectSignal()
 		//connect(glWidget, SIGNAL(enableThicknessSlider(bool)), thicknessSlider_Label, SLOT(setEnabled(bool)));
 		//connect(glWidget, SIGNAL(enableThicknessSlider(bool)), thicknessSlider, SLOT(setEnabled(bool)));
 	}
-	if (spinBox_channel) {
-		connect(spinBox_channel, SIGNAL(valueChanged(int)), glWidget, SLOT(setCurChannel(int)));
+	if (comboBox_channel) {
+		connect(comboBox_channel, SIGNAL(currentIndexChanged(int)), glWidget, SLOT(setCurChannel(int)));
 	}
 	if (zthicknessBox) {
 		connect(zthicknessBox, SIGNAL(valueChanged(double)), glWidget, SLOT(setThickness(double)));
@@ -1145,12 +1146,17 @@ void V3dR_MainWindow::initVolumeCutRange()
 	d2 = MAX(0, glWidget->dataDim2()-1);
 	d3 = MAX(0, glWidget->dataDim3()-1);
 
-	if (spinBox_channel) {  //100802
-		int dc = MAX(1, glWidget->dataDim4()); //1-based
-		spinBox_channel->setEnabled(dc>0); //090922
-		spinBox_channel->setMaximum(dc);
-		spinBox_channel->setValue(spinBox_channel->minimum());
+	if (comboBox_channel) {  //100802 //110811 combo-box from spin-box
+		int dc = CLAMP(0,3, glWidget->dataDim4());
+		comboBox_channel->setEnabled(dc>0); //090922
+		comboBox_channel->clear();
+		comboBox_channel->addItem("all"); //index=0
+		for (int i=1; i<=dc; i++)
+		{
+			comboBox_channel->addItem(QString("%1").arg(i));
+		}
 	}
+
 	if (fcutSlider) {
 		fcutSlider->setEnabled(glWidget->dataDim4()>0); //090922
 	}
@@ -1459,12 +1465,12 @@ QSpinBox *V3dR_MainWindow::createMarkerSizeSpinBox()
 	return box;
 }
 
-QSpinBox *V3dR_MainWindow::createChannelSpinBox()
+QComboBox *V3dR_MainWindow::createChannelComboBox()
 {
-	QSpinBox *box = new QSpinBox;
-	box->setRange(1, 3);
+	QComboBox *box = new QComboBox;
+	//box->setRange(1, 3);
     //box->setSingleStep(1.0);
-    box->setValue(1);
+    //box->setValue(1);
 	//box->setSuffix(" %o");
 	return box;
 }

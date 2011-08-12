@@ -1678,9 +1678,10 @@ void GLinfoDetect(std::string* pinfo)
 
  	PRINTF(" -------------------------------------------------------------------- ");ENDL;
 
- 	PRINTF("    *** current bit_size_of(int)   = %d ", sizeof(int)*8);ENDL;
-	PRINTF("    *** current bit_size_of(V3DLONG)  = %d ", sizeof(V3DLONG)*8);ENDL;
- 	PRINTF("    *** current bit_size_of(void*) = %d ", sizeof(void*)*8);ENDL;
+ 	PRINTF("    *** current bit_size_of(   int		) = %d ", sizeof(int)*8);ENDL;
+	PRINTF("    *** current bit_size_of(   long		) = %d ", sizeof(long)*8);ENDL;
+	PRINTF("    *** current bit_size_of( long long	) = %d ", sizeof(long long)*8);ENDL;
+ 	PRINTF("    *** current bit_size_of(   void* 	) = %d ", sizeof(void*)*8);ENDL;
 
  	PRINTF(" <<GL info----------------------------------------------------------- ");ENDL;
 

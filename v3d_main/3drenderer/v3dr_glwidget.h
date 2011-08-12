@@ -425,13 +425,15 @@ protected:
 		dxCut=dyCut=dzCut= lockX=lockY=lockZ=
 		_xCS=_yCS=_zCS=
 		_xClip0=_xClip1=_yClip0=_yClip1=_zClip0=_zClip1 =0;
-		_CStransparency=0; _markerSize=1, _curChannel=1;
 		_thickness =1;
+		_CStransparency=0; _markerSize=1, _curChannel=-1;
+
 		_Bright=_Contrast=sUpdate_bright=sUpdate_track=0;
 		_showAxes = _showBoundingBox = _absRot = _orthoView =false;
 		_volCompress = _volFilter =true;
 
-		_volumeTimePoint=0; volumeTimPoint_fraction=0;
+		_volumeTimePoint=0;
+		volumeTimPoint_fraction=0;
 	}
 };
 

@@ -163,7 +163,7 @@ protected:
 	QAbstractSlider *createTranparentSlider(Qt::Orientation hv = Qt::Horizontal);
 	QAbstractSlider *createThicknessSlider(Qt::Orientation hv = Qt::Horizontal);
 	QDoubleSpinBox *createThicknessSpinBox();
-	QSpinBox *createChannelSpinBox();
+	QComboBox *createChannelComboBox();
 	QSpinBox *createMarkerSizeSpinBox();
 	QSpinBox *createRotateSpinBox();
 	QSpinBox *createShiftSpinBox();
@@ -188,7 +188,7 @@ protected:
 	QRadioButton *dispType_mip, *dispType_alpha, *dispType_cs3d;
 	QLabel *thicknessSlider_Label, *transparentSlider_Label; //for disable, by RZC 080822
 	QDoubleSpinBox *zthicknessBox; //by PHC, 090215
-	QSpinBox *spinBox_channel;
+	QComboBox *comboBox_channel;
     QAbstractSlider *thicknessSlider, *transparentSlider;
     QCheckBox *checkBox_channelR, *checkBox_channelG, *checkBox_channelB, *checkBox_channelA, *checkBox_volCompress;
     QPushButton *volumeColormapButton;
@@ -244,7 +244,7 @@ protected:
 		thicknessSlider_Label=transparentSlider_Label=0;
 		transparentSlider=0;
 	    thicknessSlider=0; zthicknessBox=0;
-	    spinBox_channel=0;
+	    comboBox_channel=0;
 		checkBox_channelR=checkBox_channelG=checkBox_channelB=checkBox_channelA=checkBox_volCompress=0;
 	    volumeColormapButton=0;
 

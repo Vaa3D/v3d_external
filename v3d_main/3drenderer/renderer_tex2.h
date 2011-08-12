@@ -252,12 +252,15 @@ protected:
 	XYZ getLocationOfListMarkerPos();
 	XYZ getTranslateOfMarkerPos(const MarkerPos& pos, const ImageMarker& S);
 	XYZ getPointOnPlane(XYZ P1, XYZ P2, double plane[4]);
-	XYZ getPointOnSections(XYZ P1, XYZ P2);
+	XYZ getPointOnSections(XYZ P1, XYZ P2, double F_plane[4]=0);
 	XYZ getCenterOfLineProfile(XYZ p1, XYZ p2,
-			int chno,    			//must be a valid channel number
-			double clipplane[4]=0);	//clipplane==0 means no clip plane
+			double clipplane[4]=0,	//clipplane==0 means no clip plane
+			int chno=0,    			//must be a valid channel number
+			float *value=0			//if value!=0, output value at center
+			);
 	XYZ getCenterOfLocal(XYZ loc);
 
+	int checkCurChannel();
 	bool isInBound(const XYZ & loc, float factor=0.001, bool b_message=true);
 
 	// marker

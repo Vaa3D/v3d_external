@@ -1144,7 +1144,7 @@ void V3dR_GLWidget::setThickness(double t) //added by PHC, 090215
 void V3dR_GLWidget::setCurChannel(int t) //100802
 {
 	if (_curChannel != t) {
-		_curChannel = CLAMP(1, dataDim4(), t);
+		_curChannel = t;
 		if (renderer) renderer->curChannel = (_curChannel-1); //0-based
 		POST_updateGL();
 	}

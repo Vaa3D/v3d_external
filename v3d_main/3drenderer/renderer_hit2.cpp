@@ -1953,6 +1953,20 @@ QVector<int> Renderer_tex2::getLineProfile(XYZ P1, XYZ P2, int chno)
 //
 //##########################################################################################
 
+int Renderer_tex2::checkCurChannel()
+{
+	////////////////////////////////////////////////////////////////////////
+	int chno=-1;
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	if (w)
+	{
+		//when chno<0, then need to recheck the current chno
+		if (chno<0) chno = w->getNumKeyHolding()-1;	// NumKey state is used firstly
+		if (chno<0) chno = curChannel; 				// GUI state is used secondly, 100802
+	}
+	return chno;
+}
+
 #define __creat_curve___
 
 void Renderer_tex2::solveCurveCenter(vector <XYZ> & loc_vec_input)
@@ -1970,17 +1984,10 @@ void Renderer_tex2::solveCurveCenter(vector <XYZ> & loc_vec_input)
 #endif
 
 	////////////////////////////////////////////////////////////////////////
-	int chno=-1;
-	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-	if (w)
-	{
-		//when chno<0, then need to recheck the current chno
-		if (chno<0) chno = w->getNumKeyHolding()-1;	// NumKey state is used firstly
-		if (chno<0) chno = curChannel; 				// GUI state is used secondly, 100802
-	}
+	int chno = checkCurChannel();
 	if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
 	////////////////////////////////////////////////////////////////////////
-	qDebug()<<"\n  3d curve in channel # "<<chno+1;
+	qDebug()<<"\n  3d curve in channel # "<<((chno<0)? chno :chno+1);
 
 
 	vector <XYZ> loc_vec;
@@ -2034,7 +2041,7 @@ void Renderer_tex2::solveCurveCenter(vector <XYZ> & loc_vec_input)
 				}
 				//printf("loc0--loc1: (%g, %g, %g)--(%g, %g, %g)\n", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
 
-				loc = getCenterOfLineProfile(loc0, loc1, chno, clipplane);
+				loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
 			}
 
 			if (dataViewProcBox.isInner(loc, 0.5))
@@ -2305,17 +2312,9 @@ void Renderer_tex2::solveCurveFromMarkers()
 XYZ Renderer_tex2::getCenterOfMarkerPos(const MarkerPos& pos)
 {
 	////////////////////////////////////////////////////////////////////////
-	int chno=-1;
-	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-	if (w)
-	{
-		//when chno<0, then need to recheck the current chno
-		if (chno<0) chno = w->getNumKeyHolding()-1;	// NumKey state is used firstly
-		if (chno<0) chno = curChannel; 				// GUI state is used secondly, 100802
-	}
-	if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
+	int chno = checkCurChannel();
 	////////////////////////////////////////////////////////////////////////
-	qDebug()<<"\n  3d marker in channel # "<<chno+1;
+	qDebug()<<"\n  3d marker in channel # "<<((chno<0)? chno :chno+1);
 
 	////////////////////////////////////////////////////////////////////////
 	//100730 RZC, in View space, keep for dot(clip, pos)>=0
@@ -2329,7 +2328,31 @@ XYZ Renderer_tex2::getCenterOfMarkerPos(const MarkerPos& pos)
 	_MarkerPos_to_NearFarPoint(pos, loc0, loc1);
 	qDebug("	loc0--loc1: (%g, %g, %g)--(%g, %g, %g)", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
 
-	XYZ loc = getCenterOfLineProfile(loc0, loc1, chno, clipplane);
+	XYZ loc;
+	if (chno>=0 && chno<dim4)
+	{
+		loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+	}
+	else //find max value location in all channels
+	{
+		float maxval, curval;
+		for (int chno=0; chno<dim4; chno++)
+		{
+			XYZ curloc = getCenterOfLineProfile(loc0, loc1, clipplane, chno, &curval);
+			if (chno==0)
+			{
+				maxval = curval;
+				loc = curloc;
+				continue;
+			}
+			else if (curval > maxval)
+			{
+				maxval = curval;
+				loc = curloc;
+			}
+		}
+	}
+
 	return loc;
 }
 
@@ -2500,7 +2523,6 @@ bool Renderer_tex2::isInBound(const XYZ & loc, float factor, bool b_message)
 	}
 }
 
-
 #define ___computation_functions___
 
 XYZ Renderer_tex2::getTranslateOfMarkerPos(const MarkerPos & pos, const ImageMarker & S)
@@ -2653,7 +2675,7 @@ XYZ Renderer_tex2::getPointOnPlane(XYZ P1, XYZ P2, double plane[4]) //100731
 }
 
 // in Image space (model space)
-XYZ Renderer_tex2::getPointOnSections(XYZ P1, XYZ P2) //100801
+XYZ Renderer_tex2::getPointOnSections(XYZ P1, XYZ P2, double F_plane[4]) //100801
 {
 	double plane[4];
 	XYZ P = P2; // from the far location
@@ -2686,15 +2708,19 @@ XYZ Renderer_tex2::getPointOnSections(XYZ P1, XYZ P2) //100801
 	}
 	if (bFSlice)
 	{
-		////////////////////////////////////////////////////////////////////////
-		//100730 RZC, in View space, keep for dot(clip, pos)>=0
-		double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
-		clipplane[3] = viewClip;
-		ViewPlaneToModel(markerViewMatrix, clipplane);
-		//qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
-		////////////////////////////////////////////////////////////////////////
-
-		for (int i=0; i<4; i++) plane[i] = clipplane[i];
+		if (F_plane)
+			for (int i=0; i<4; i++) plane[i] = F_plane[i];
+		else
+		{
+			////////////////////////////////////////////////////////////////////////
+			//100730 RZC, in View space, keep for dot(clip, pos)>=0
+			double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+			clipplane[3] = viewClip;
+			ViewPlaneToModel(markerViewMatrix, clipplane);
+			//qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
+			////////////////////////////////////////////////////////////////////////
+			for (int i=0; i<4; i++) plane[i] = clipplane[i];
+		}
 		REPLACE_NEAR( plane );
 		//qDebug("  F-(%g %g %g)", loc.x,loc.y,loc.z);
 	}
@@ -2705,13 +2731,15 @@ XYZ Renderer_tex2::getPointOnSections(XYZ P1, XYZ P2) //100801
 
 // in Image space (model space)
 XYZ Renderer_tex2::getCenterOfLineProfile(XYZ P1, XYZ P2,
+		double clipplane[4],	//clipplane==0 means no clip plane
 		int chno,    			//must be a valid channel number
-		double clipplane[4])	//clipplane==0 means no clip plane
+		float *value			//if value!=0, output value at center
+	)
 {
 
 	if (renderMode==rmCrossSection)
 	{
-		return getPointOnSections(P1,P2);
+		return getPointOnSections(P1,P2, clipplane); //clip plane also is the F-plane
 	}
 
 	XYZ loc = (P1+P2)*0.5;
