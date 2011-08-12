@@ -30,6 +30,14 @@ public slots:
     void setChannelGamma(int index, qreal gamma);
     void setGamma(qreal gamma); // all channels
 
+protected:
+    qint64 timeOfLastChange;
+
+protected slots:
+    void storeModificationTime() {
+        timeOfLastChange = QDateTime::currentMSecsSinceEpoch();
+    }
+
 public:
     // ChannelColorModel specifies the colorization parameters for a single data channel
     class ChannelColorModel
@@ -124,7 +132,10 @@ public:
             , colorModel(colorModelParam)
         {}
 
-        // TODO - create more accessor methods for downstream clients
+        qint64 getLastChangeTime() const {
+            return colorModel.timeOfLastChange;
+        }
+
         int getNumberOfDataChannels() const {
             return colorModel.channelColors.size(); // +1 for reference
         }

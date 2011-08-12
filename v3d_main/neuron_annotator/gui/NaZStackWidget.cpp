@@ -64,6 +64,8 @@ void NaZStackWidget::updateVolumeParameters()
     sy = volProxy.sy;
     sz = volProxy.sz;
     sc = volProxy.sc + 1; // +1, reference channel too
+    min_roi.assign(sc, INF);
+    max_roi.assign(sc, -INF);
 }
 
 void NaZStackWidget::paintEvent(QPaintEvent *event)
@@ -647,8 +649,6 @@ void NaZStackWidget::do_HDRfilter()
     V3DLONG c = cur_c - 1; // channel index
     if (c < 0) return;
 
-    qreal min_roi, max_roi;
-
     // qDebug() << volumeData;
     if (! volumeData) return;
     {
@@ -659,8 +659,8 @@ void NaZStackWidget::do_HDRfilter()
 
         if (c > volProxy.sc) return; // ==sc means reference channel
 
-        min_roi = INF;
-        max_roi = -INF;
+        min_roi[c] = INF;
+        max_roi[c] = -INF;
 
         for(V3DLONG j=start_y; j<end_y; j++)
         {
@@ -672,14 +672,14 @@ void NaZStackWidget::do_HDRfilter()
                 else // reference channel
                     curval = refProxy.value_at(i, j, cur_z, 0);
 
-                if(min_roi>curval) min_roi = curval;
-                if(max_roi<curval) max_roi = curval;
+                if(min_roi[c] > curval) min_roi[c] = curval;
+                if(max_roi[c] < curval) max_roi[c] = curval;
             }
         }
     } // release read locks
 
     // qDebug() << "emitting hdrRangeChanged" << c << min_roi << max_roi;
-    emit hdrRangeChanged(c, min_roi, max_roi);
+    emit hdrRangeChanged(c, min_roi[c], max_roi[c]);
 }
 
 void NaZStackWidget::updatePixmap()
@@ -688,10 +688,13 @@ void NaZStackWidget::updatePixmap()
     {
         ZSliceColors::Reader zReader(*zSliceColors);
         if (! zReader.hasReadLock()) {
+            // return; // return is what most Readers should usually do in this case.
             // In this one case it is OK to call waitForReadLock() because:
             // 1) ZSliceColors takes only 30ms to update.
             // 2) ZSliceColors has been specially modified to discard excess accumulated update() events.
-            // Don't call waitForReadLock() casually, especially from the GUI thread (like this!)
+            // Don't call waitForReadLock() casually, especially from the GUI thread (like this!).
+            // I'm calling waitForReadLock() here so the user can get continuous visual feedback while
+            // dragging the z-scrollbar.  The ZSliceColors constantly write-locks during fast dragging.
             zReader.waitForReadLock();
         }
         pixmap = QPixmap::fromImage(*zReader.getImage());

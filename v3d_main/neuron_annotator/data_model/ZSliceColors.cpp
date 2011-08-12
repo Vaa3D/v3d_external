@@ -11,7 +11,6 @@ ZSliceColors::ZSliceColors(const NaVolumeData& volumeDataParam,
     , neuronSelectionModel(neuronSelectionModelParam)
     , currentZIndex(-1)
     , image(NULL)
-    , processingImage(false)
 {
     // qDebug() << "ZSliceColors constructor";
     connect(&volumeData, SIGNAL(dataChanged()),
@@ -34,8 +33,8 @@ ZSliceColors::~ZSliceColors()
 void ZSliceColors::update()
 {
     // Sometimes the update() signals come too fast.
-    if (processingImage) return;
-    SignalGovernor(this);
+    UpdateCoalescer updateCoalescer(this);
+    if (! updateCoalescer.shouldUpdate()) return;
 
     // qDebug() << "ZSliceColors update";
     QTime stopwatch;

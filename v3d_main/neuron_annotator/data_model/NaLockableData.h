@@ -5,6 +5,7 @@
 #include <QReadWriteLock>
 #include <QTime>
 #include <QDebug>
+#include <QApplication>
 
 class NaLockableDataBaseReadLocker;
 class NaLockableDataBaseWriteLocker;
@@ -45,6 +46,43 @@ protected:
 
     QReadWriteLock lock; // used for multiple-read/single-write thread-safe locking
     QThread * thread; // call constructor with NULL parent to automatically create a thread for NaLocaableData object.
+
+
+protected:
+    // Optionally slow down those too-fast update() slot calls
+    // like this:
+    //     void MyNaLockableData::update() {
+    //         UpdateCoalescer updateCoalescer(this);
+    //         if (! updateCoalescer.shouldUpdate()) return;
+    //         ...
+    bool bAlreadyUpdating;
+    class UpdateCoalescer
+    {
+    public:
+        UpdateCoalescer(NaLockableData * dataParam)
+            : data(dataParam)
+        {
+            bIsUpdater = (! data->bAlreadyUpdating);
+            if (bIsUpdater) {
+                data->bAlreadyUpdating = true;
+                QApplication::processEvents();
+            }
+        }
+
+        ~UpdateCoalescer()
+        {
+            if (bIsUpdater)
+                data->bAlreadyUpdating = false;
+        }
+
+        bool shouldUpdate() const {return bIsUpdater;}
+
+    private:
+        NaLockableData * data;
+        bool bIsUpdater;
+    };
+    friend class UpdateCoalescer;
+
 };
 
 

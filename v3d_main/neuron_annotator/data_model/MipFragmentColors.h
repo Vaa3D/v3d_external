@@ -22,7 +22,7 @@ public:
             const DataColorModel& colorModel);
 
 public slots:
-    void update();
+    virtual void update();
 
 protected:
     // input

@@ -4,6 +4,7 @@
 NaLockableData::NaLockableData()
     : thread(NULL)
     , lock(QReadWriteLock::NonRecursive)
+    , bAlreadyUpdating(false)
 {
     thread = new QThread(this); // is this too circular?
     thread->start();

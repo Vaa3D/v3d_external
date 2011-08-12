@@ -30,27 +30,6 @@ protected:
     // output
     QImage * image;
 
-private:
-    // Slow down those too-fast update() slot calls
-    bool processingImage;
-    class SignalGovernor
-    {
-    public:
-        SignalGovernor(ZSliceColors * zSliceColorsParam)
-            : zSliceColors(zSliceColorsParam)
-        {
-            zSliceColors->processingImage = true;
-            QApplication::processEvents();
-        }
-
-        ~SignalGovernor()
-        {
-            zSliceColors->processingImage = false;
-        }
-    private:
-        ZSliceColors * zSliceColors;
-    };
-    friend class SignalGovernor;
 
 public:
     class Reader : public BaseReadLocker
