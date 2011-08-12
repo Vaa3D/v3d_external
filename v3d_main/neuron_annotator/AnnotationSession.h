@@ -10,6 +10,7 @@
 #include "data_model/NeuronSelectionModel.h"
 #include "data_model/MipMergedData.h"
 #include "data_model/ZSliceColors.h"
+#include "data_model/VolumeColors.h"
 
 class AnnotationSession : public QObject
 {
@@ -62,6 +63,7 @@ public:
     MipFragmentColors& getMipFragmentColors() {return mipFragmentColors;}
     GalleryMipImages& getGalleryMipImages() {return galleryMipImages;}
     MipMergedData& getMipMergedData() {return mipMergedData;}
+    VolumeColors& getVolumeColors() {return volumeColors;}
 
     // Data flow accessors (const versions)
     const NaVolumeData& getVolumeData() const {return volumeData;}
@@ -72,6 +74,7 @@ public:
     const GalleryMipImages& getGalleryMipImages() const {return galleryMipImages;}
     const MipMergedData& getMipMergedData() const {return mipMergedData;}
     const ZSliceColors& getZSliceColors() const {return zSliceColors;}
+    const VolumeColors& getVolumeColors() const {return volumeColors;}
 
 signals:
     void modelUpdated(QString updateType); // Tell 3D viewer how to update
@@ -102,6 +105,7 @@ private:
     MipFragmentColors mipFragmentColors;
     GalleryMipImages galleryMipImages;
     MipMergedData mipMergedData;
+    VolumeColors volumeColors;
 
     // TODO - move zRatio into VolumeData
     double zRatio;

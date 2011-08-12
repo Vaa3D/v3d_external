@@ -51,6 +51,9 @@ void DataColorModel::resetColors()
             channelColors.push_back(channelModel);
             // qDebug() << "Channel color " << channelColors.size() << qRed(color) << qGreen(color) << qBlue(color);
         }
+        statusOfSetChannelHdrSlot.assign(numChannels, SlotStatus());
+        latestChannelHdrMin.assign(numChannels, 0);
+        latestChannelHdrMax.assign(numChannels, 0);
     } // release lock
     emit dataChanged();
 }
@@ -66,8 +69,18 @@ void DataColorModel::setChannelColor(int index, QRgb color)
     emit dataChanged();
 }
 
-void DataColorModel::setChannelHdrRange(int index, qreal min, qreal max)
+void DataColorModel::setChannelHdrRange(int index, qreal minParam, qreal maxParam)
 {
+    // Combine backlog of setChannelHdrRange signal.
+    // cache args before checking.
+    latestChannelHdrMin[index] = minParam;
+    latestChannelHdrMax[index] = maxParam;
+
+    SlotMerger slotMerger(statusOfSetChannelHdrSlot[index]);
+    if (! slotMerger.shouldRun()) return;
+
+    qreal min = latestChannelHdrMin[index];
+    qreal max = latestChannelHdrMax[index];
     if ( (channelColors[index].hdrMin == min)
        &&(channelColors[index].hdrMax == max) )
         return; // no change
@@ -79,8 +92,14 @@ void DataColorModel::setChannelHdrRange(int index, qreal min, qreal max)
     emit dataChanged();
 }
 
-void DataColorModel::setGamma(qreal gamma) // for all channels
+void DataColorModel::setGamma(qreal gammaParam) // for all channels
 {
+    // qDebug() << "DataColorModel::setGamma" << gammaParam;
+    // Combine backlog of setGamma signals
+    latestGamma = gammaParam;  // back up new value before aborting
+    SlotMerger gammaMerger(statusOfSetGammaSlot);
+    if (! gammaMerger.shouldRun()) return;
+    qreal gamma = latestGamma;
     {
         Reader colorReader(*this);
         if (! colorReader.hasReadLock()) return;
@@ -92,6 +111,7 @@ void DataColorModel::setGamma(qreal gamma) // for all channels
         if (! bChanged) return;
     } // release lock
     {
+        // qDebug() << "setting gamma to" << gamma;
         Writer colorWriter(*this);
         for (int c = 0; c < channelColors.size(); ++c)
             channelColors[c].setGamma(gamma);

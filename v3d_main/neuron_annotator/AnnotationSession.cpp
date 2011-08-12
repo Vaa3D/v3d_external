@@ -23,11 +23,13 @@ AnnotationSession::AnnotationSession(QObject* parentParam /* = NULL */)
     , mipFragmentColors(mipFragmentData, dataColorModel) // color 'em
     , galleryMipImages(mipFragmentColors) // shrink 'em
     , mipMergedData(volumeData, mipFragmentData, dataColorModel, neuronSelectionModel)
+    , volumeColors(volumeData, dataColorModel, neuronSelectionModel)
 {
     // Prepare to load 16-bit volume data from disk in a separate QThread
     connect(this, SIGNAL(volumeDataNeeded()),
             &volumeData, SLOT(loadVolumeDataFromFiles()));
 
+    // TODO - deprecate these AnnotationSession neuron visiblity slots.
     connect(&neuronSelectionModel, SIGNAL(overlayVisibilityChanged(int,bool)),
             this, SLOT(updateNeuronMaskFull()));
     connect(&neuronSelectionModel, SIGNAL(neuronVisibilityChanged(int,bool)),

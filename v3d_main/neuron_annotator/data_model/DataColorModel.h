@@ -32,6 +32,13 @@ public slots:
 
 protected:
     qint64 timeOfLastChange;
+    // merge calls to setGamma(qreal)
+    SlotStatus statusOfSetGammaSlot;
+    qreal latestGamma;
+    // merge calls to setChannelHdrRange()
+    std::vector<SlotStatus> statusOfSetChannelHdrSlot;
+    std::vector<qreal> latestChannelHdrMin;
+    std::vector<qreal> latestChannelHdrMax;
 
 protected slots:
     void storeModificationTime() {

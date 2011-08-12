@@ -2413,3 +2413,5 @@ v3d_main/neuron_annotator/data_model/ZSliceColors.h
 v3d_main/neuron_annotator/data_model/ZSliceColors.cpp
 v3d_main/neuron_annotator/data_model/VolumeColors.h
 v3d_main/neuron_annotator/data_model/VolumeColors.cpp
+v3d_main/neuron_annotator/data_model/SlotMerger.h
+v3d_main/neuron_annotator/data_model/SlotMerger.cpp

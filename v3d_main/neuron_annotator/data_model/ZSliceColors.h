@@ -6,6 +6,7 @@
 #include "NeuronSelectionModel.h"
 #include "../geometry/Vector3D.h"
 
+// ZSliceColors creates a QImage for use in the z stack viewer.
 class ZSliceColors : public NaLockableData
 {
     Q_OBJECT

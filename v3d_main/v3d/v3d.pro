@@ -207,6 +207,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/data_model/NeuronSelectionModel.h \
     ../neuron_annotator/data_model/ZSliceColors.h \
     ../neuron_annotator/data_model/VolumeColors.h \
+    ../neuron_annotator/data_model/SlotMerger.h \
     ../neuron_annotator/gui/NaViewer.h \
     ../neuron_annotator/gui/Na2DViewer.h \
     ../neuron_annotator/gui/NaMainWindow.h \
@@ -351,6 +352,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/data_model/NeuronSelectionModel.cpp \
     ../neuron_annotator/data_model/ZSliceColors.cpp \
     ../neuron_annotator/data_model/VolumeColors.cpp \
+    ../neuron_annotator/data_model/SlotMerger.cpp \
     ../neuron_annotator/NeuronAnnotatorResultNode.cpp \
     ../neuron_annotator/TimebasedIdentifierGenerator.cpp \
     ../neuron_annotator/gui/RendererNeuronAnnotator.cpp \

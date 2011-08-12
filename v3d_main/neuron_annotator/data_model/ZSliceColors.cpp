@@ -33,8 +33,8 @@ ZSliceColors::~ZSliceColors()
 void ZSliceColors::update()
 {
     // Sometimes the update() signals come too fast.
-    UpdateCoalescer updateCoalescer(this);
-    if (! updateCoalescer.shouldUpdate()) return;
+    SlotMerger updateMerger(statusOfUpdateSlot);
+    if (! updateMerger.shouldRun()) return;
 
     // qDebug() << "ZSliceColors update";
     QTime stopwatch;

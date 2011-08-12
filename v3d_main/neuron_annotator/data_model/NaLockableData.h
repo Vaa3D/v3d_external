@@ -5,7 +5,7 @@
 #include <QReadWriteLock>
 #include <QTime>
 #include <QDebug>
-#include <QApplication>
+#include "SlotMerger.h"
 
 class NaLockableDataBaseReadLocker;
 class NaLockableDataBaseWriteLocker;
@@ -52,36 +52,10 @@ protected:
     // Optionally slow down those too-fast update() slot calls
     // like this:
     //     void MyNaLockableData::update() {
-    //         UpdateCoalescer updateCoalescer(this);
-    //         if (! updateCoalescer.shouldUpdate()) return;
+    //         SlotMerger updateMerger(statusOfUpdateSlot);
+    //         if (! updateMerger.shouldRun()) return;
     //         ...
-    bool bAlreadyUpdating;
-    class UpdateCoalescer
-    {
-    public:
-        UpdateCoalescer(NaLockableData * dataParam)
-            : data(dataParam)
-        {
-            bIsUpdater = (! data->bAlreadyUpdating);
-            if (bIsUpdater) {
-                data->bAlreadyUpdating = true;
-                QApplication::processEvents();
-            }
-        }
-
-        ~UpdateCoalescer()
-        {
-            if (bIsUpdater)
-                data->bAlreadyUpdating = false;
-        }
-
-        bool shouldUpdate() const {return bIsUpdater;}
-
-    private:
-        NaLockableData * data;
-        bool bIsUpdater;
-    };
-    friend class UpdateCoalescer;
+    SlotStatus statusOfUpdateSlot;
 
 };
 
