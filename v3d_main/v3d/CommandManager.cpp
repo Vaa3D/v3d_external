@@ -6,6 +6,7 @@
 #include "../neuron_annotator/utility/ColorSeparatorConsolidator.h"
 #include "../cell_counter/CellCounter3D.h"
 #include "../neuron_annotator/utility/SingleNeuronLsmSetReader.h"
+#include "../neuron_annotator/utility/StitchedFileUtility.h"
 
 using namespace std;
 
@@ -54,6 +55,14 @@ bool CommandManager::execute() {
             return false;
         }
         return lsmSetReader.execute();
+    } else if (firstArg==StitchedFileUtility::getCommandLineDescription()) {
+        StitchedFileUtility stitchedFileUtility;
+        int status=stitchedFileUtility.processArgs(argList);
+        if (status!=0) {
+            cout << getUsageString();
+            return false;
+        }
+        return stitchedFileUtility.execute();
     } else {
         cout << getUsageString();
         return false;
@@ -77,5 +86,9 @@ string CommandManager::getUsageString() {
     usage.append(SingleNeuronLsmSetReader::getCommandLineDescription());
     usage.append("\n");
     usage.append(SingleNeuronLsmSetReader::getUsage());
+    usage.append("\n");
+    usage.append(StitchedFileUtility::getCommandLineDescription());
+    usage.append("\n");
+    usage.append(StitchedFileUtility::getUsage());
     return usage;
 }
