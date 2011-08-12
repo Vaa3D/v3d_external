@@ -26,8 +26,10 @@ protected:
     const NaVolumeData& volumeData;
     const DataColorModel& dataColorModel;
     const NeuronSelectionModel& neuronSelectionModel;
-    // output?
-
+    // output
+    My4DImage* volumeColorsImage;
+    My4DImage* emptyImage;
+    Image4DProxy<My4DImage> volumeColorsProxy;
 
 public:
     class Reader : public BaseReadLocker
@@ -50,6 +52,7 @@ public:
             : BaseWriteLocker(volumeColorsParam)
             , volumeColors(volumeColorsParam)
         {}
+        void clearData();
 
     protected:
         VolumeColors& volumeColors;

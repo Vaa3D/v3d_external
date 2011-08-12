@@ -2358,7 +2358,6 @@ v3d_main/neuron_annotator/gui/NaMainWindow.h
 v3d_main/neuron_annotator/gui/NaLargeMIPWidget.h
 v3d_main/neuron_annotator/gui/Na3DWidget.h
 v3d_main/neuron_annotator/gui/MouseClickManager.h
-v3d_main/neuron_annotator/gui/ImageColorizer.h
 v3d_main/neuron_annotator/gui/GammaWidget.h
 v3d_main/neuron_annotator/gui/GalleryButton.h
 v3d_main/neuron_annotator/gui/BrightnessCalibrator.h
@@ -2375,7 +2374,6 @@ v3d_main/neuron_annotator/gui/NaMainWindow.cpp
 v3d_main/neuron_annotator/gui/NaLargeMIPWidget.cpp
 v3d_main/neuron_annotator/gui/Na3DWidget.cpp
 v3d_main/neuron_annotator/gui/MouseClickManager.cpp
-v3d_main/neuron_annotator/gui/ImageColorizer.cpp
 v3d_main/neuron_annotator/gui/GammaWidget.cpp
 v3d_main/neuron_annotator/gui/GalleryButton.cpp
 v3d_main/neuron_annotator/gui/BrightnessCalibrator.cpp
@@ -2389,8 +2387,6 @@ v3d_main/neuron_annotator/gui/GammaWidget.ui
 v3d_main/neuron_annotator/gui/AngleWidget.ui
 v3d_main/neuron_annotator/gui/FragmentGalleryWidget.h
 v3d_main/neuron_annotator/gui/FragmentGalleryWidget.cpp
-v3d_main/neuron_annotator/gui/VolumeColorModel.h
-v3d_main/neuron_annotator/gui/VolumeColorModel.cpp
 
 v3d_main/v3d/mainwindow_wsi.cpp
 v3d_main/neuron_annotator/data_model/NaLockableData.h
