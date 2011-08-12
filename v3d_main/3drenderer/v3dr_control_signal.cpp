@@ -1155,6 +1155,7 @@ void V3dR_MainWindow::initVolumeCutRange()
 		{
 			comboBox_channel->addItem(QString("%1").arg(i));
 		}
+		comboBox_channel->setCurrentIndex(1);
 	}
 
 	if (fcutSlider) {
