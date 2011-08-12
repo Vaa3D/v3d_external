@@ -49,7 +49,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 namespace v3d {
     // Set current version here.
-    VersionInfo thisVersionOfV3D(2.687);
+    VersionInfo thisVersionOfV3D(2.688);
 
     QString versionnumber = "V3D (" +
         thisVersionOfV3D.toQString() +
@@ -176,6 +176,7 @@ void v3d_aboutinfo()
         "<H3>Some known problems</H3>"
         "So far V3D has been tested on hundreds of machines with different software/hardware environments; in most cases (Mac, Linux, Windows) the software has a nice performance. Yet the following are some known problems.<br>"
         "<br><table border=\"1\">"
+	    "<tr><td>Mac machines with Snow Leopard (Mac OS X 10.6.8) and try to run a Linux version of V3D throught X-Window: </td>     <td>The 3D viewer window cannot be launched properly. This seems to be a Snow Leopard bug with X-Windows, as the Linux version of V3D's 3D viewer can run w/o a problem for other Mac OS (e.g. Leopard, i.e. OS X 10.5) and other tested Linux machines (e.g. redhar). </td></tr>"
         "<tr><td>Mac machines with Tiger (Mac OS X 10.4) and defective NVIDIA GeForce 7300GT video cards</td>     <td>GeForce 7300GT does not support multisampling while it claims to be. This incompatibility makes 3D viewer run very slow. A special V3D version disables the multipling support on this video card solves the problem.</td></tr>"
         "<tr><td>MacBook Pro with Tiger (Mac OS X 10.4) and defective NVIDIA GeForce 8600MGT video card driver</td>     <td>Sometimes the labels of markers may be hidden in the 3D volume image rendering. Upgrage to Leopard OS (and thus also upgrade Mac OpenGL driver) solves the problem.</td></tr>"
         "<tr><td>MacBook Pro with Tiger (Mac OS X 10.4) and defective NVIDIA GeForce 8600MGT video card driver</td>     <td>The 5D rendering displays abnormal patterns due to a problem in 3D texture of the video card driver. </td></tr>"
@@ -183,7 +184,7 @@ void v3d_aboutinfo()
         "<tr><td>Neuron editing: the 'merge to nearby segments' function may produce extra root-nodes</td>     <td>The neuron editing function can become quite complicated as we'd like to support any graph. if you see unwanted roots, you may choose 'reverse' nearby segments to correct; but this may make other segments' directions change.  Suggest use 'break' combined by 'tracing' instead of direct 'merge'.</td></tr>"
         "</table><br>"
         "<H2>Key releases:</H2><br> Feb 2006, Aug 16 (v1.1), Sept (v2.400), 2009. "
-        "Jan 31 (v2.449), Feb-Dec (v2.4-v2.5), 2010; Jan - Feb (v2.6), 2011. "
+        "Jan 31 (v2.449), Feb-Dec (v2.4-v2.5), 2010; Jan - Aug (v2.6), 2011. "
         "All rights reserved.<br><br> "
         "Version Note: if you see a version number followed by a letter (e.g. 1.80a), this is a customized build for a particular research lab. "
         "V3D also have additional image analysis modules, for further information, contact Hanchuan Peng.<br><br>";
