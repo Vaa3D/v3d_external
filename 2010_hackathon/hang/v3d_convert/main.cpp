@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 
@@ -7,6 +8,7 @@
 #include "parser.h"
 #include "gaussian_blur.cpp"
 #include "img_threshold.h"
+#include "img_center.h"
 
 using namespace std;
 
@@ -17,7 +19,9 @@ bool run_with_paras(InputParas paras, string &s_error);
 bool convert_uint8_to_double(double * outimg1d, unsigned char* inimg1d, V3DLONG sz[3]);
 bool convert_double_to_uint8(unsigned char* outimg1d,double * inimg1d,  V3DLONG sz[3]);
 
-SupportedCommand supported_commands[] = {{"-binary-threshold",1},{"-white-threshold",1},{"-black-threshold",1},{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-negate", 0}};
+bool is_save_img = true;
+
+SupportedCommand supported_commands[] = {{"-intensity-center",1},{"-binary-threshold",1},{"-white-threshold",1},{"-black-threshold",1},{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-negate", 0}};
 
 int main(int argc, char* argv[])
 {
@@ -36,7 +40,7 @@ bool run_with_paras(InputParas paras, string & s_error)
 {
 	s_error = "";
 
-	if(paras.filelist.size() != 2){s_error += "currently we only support one image as input and one image as output"; return false;}
+	//if(paras.filelist.size() != 2){s_error += "currently we only support one image as input and one image as output"; return false;}
 	if(paras.is_empty())   // type convert
 	{
 		if(paras.filelist.size() == 2)
@@ -56,7 +60,7 @@ bool run_with_paras(InputParas paras, string & s_error)
 	}
 
 	string infile = paras.filelist.at(0);
-	string outfile = paras.filelist.at(1);
+	string outfile = paras.filelist.size() >=2 ? paras.filelist.at(1) : string(infile+"_out.raw");
 	unsigned char * indata1d = NULL, * outdata1d = NULL;
 	unsigned char * indata1d_orig = NULL;
 	V3DLONG *in_sz = NULL, * out_sz = NULL;
@@ -65,7 +69,7 @@ bool run_with_paras(InputParas paras, string & s_error)
 	if(!loadImage((char*) infile.c_str(), indata1d, in_sz, datatype)) {s_error += "loadImage(\""; s_error += infile; s_error+="\")  error"; return false;}
 
 	int channel = 0;  
-	if(!paras.is_exist("-channel"))
+	if(paras.is_exist("-channel"))
 	{
 		if(!paras.get_int_para(channel, "-channel", s_error)){if(channel == 0) s_error += "channel should be larger then 0"; return false;}
 		channel = channel - 1;
@@ -78,13 +82,42 @@ bool run_with_paras(InputParas paras, string & s_error)
 	string cmd_name("");
 	while(paras.get_next_cmd(cmd_name))
 	{
-		cout<<"command : "<<cmd_name<<endl;
-		if(cmd_name == "-black-threshold")
+		if(cmd_name == "-intensity-center")
+		{
+			cout<<"command : "<<cmd_name<<endl;
+			if(!paras.is_exist("-intensity-center")&& in_sz[3] >1){s_error += "please specify -channel"; return false;}
+			string marker_file;if((marker_file = paras.get_para("-intensity-center")) == ""){s_error += "please specify -intensity-center para as marker file"; return false;}
+			cout<<"marker_file "<<marker_file<<endl;
+			double* pos = 0;
+			if(!intensity_center(pos, indata1d, in_sz)){s_error += "calculate intensity center error"; return false;}
+			ofstream ofs(marker_file.c_str()); if(ofs.fail()){s_error += "open marker file error"; return false;}
+			ofs<<pos[0]<<","<<pos[1]<<","<<pos[2]<<endl; ofs.close();
+			is_save_img = false;
+		}
+		else if(cmd_name == "-black-threshold")
 		{
 			if(!paras.is_exist("-black-threshold")&& in_sz[3] >1){s_error += "please specify -channel"; return false;}
 			double black_thresh_value; if(!paras.get_double_para(black_thresh_value,"-black-threshold",s_error))return false;
 			cout<<"black_thresh_value = "<<black_thresh_value<<endl;
 			if(!black_threshold(black_thresh_value,indata1d, in_sz, outdata1d)){s_error += "black threshold error"; return false;}
+			out_sz = new V3DLONG[4];
+			out_sz[0] = in_sz[0]; out_sz[1] = in_sz[1]; out_sz[2] = in_sz[2]; out_sz[3] = 1;
+		}
+		else if(cmd_name == "-white-threshold")
+		{
+			if(!paras.is_exist("-white-threshold")&& in_sz[3] >1){s_error += "please specify -channel"; return false;}
+			double white_thresh_value; if(!paras.get_double_para(white_thresh_value,"-white-threshold",s_error))return false;
+			cout<<"white_thresh_value = "<<white_thresh_value<<endl;
+			if(!white_threshold(white_thresh_value,indata1d, in_sz, outdata1d)){s_error += "white threshold error"; return false;}
+			out_sz = new V3DLONG[4];
+			out_sz[0] = in_sz[0]; out_sz[1] = in_sz[1]; out_sz[2] = in_sz[2]; out_sz[3] = 1;
+		}
+		else if(cmd_name == "-binary-threshold")
+		{
+			if(!paras.is_exist("-binary-threshold")&& in_sz[3] >1){s_error += "please specify -channel"; return false;}
+			double binary_thresh_value; if(!paras.get_double_para(binary_thresh_value,"-binary-threshold",s_error))return false;
+			cout<<"binary_thresh_value = "<<binary_thresh_value<<endl;
+			if(!binary_threshold(binary_thresh_value,indata1d, in_sz, outdata1d)){s_error += "binary threshold error"; return false;}
 			out_sz = new V3DLONG[4];
 			out_sz[0] = in_sz[0]; out_sz[1] = in_sz[1]; out_sz[2] = in_sz[2]; out_sz[3] = 1;
 		}
@@ -143,7 +176,7 @@ bool run_with_paras(InputParas paras, string & s_error)
 		}
 	}
 	if(out_sz == 0) out_sz = in_sz;
-	if(!saveImage((char*) outfile.c_str(), outdata1d, out_sz, datatype)) {s_error += "saveImage(\""; s_error += outfile; s_error+="\") error"; return false;}
+	if(is_save_img && !saveImage((char*) outfile.c_str(), outdata1d, out_sz, datatype)) {s_error += "saveImage(\""; s_error += outfile; s_error+="\") error"; return false;}
 	if(indata1d_orig) {delete [] indata1d_orig; indata1d_orig = 0; indata1d = 0;}
 	if(outdata1d) {delete [] outdata1d; outdata1d = 0;}
 
@@ -165,6 +198,7 @@ void printHelp()
 	cout<<" -black-threshold   thresh_value"<<endl;
 	cout<<" -white-threshold   thresh_value"<<endl;
 	cout<<" -binary-threshold  thresh_value"<<endl;
+	cout<<" -intensity-center  marker_file"<<endl;
 	cout<<""<<endl;
 }
 

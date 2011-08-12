@@ -25,6 +25,7 @@ HEADERS += img_rotate.h
 HEADERS += parser.h
 HEADERS += gaussian_blur.h
 HEADERS += img_threshold.h
+HEADERS += img_center.h
 HEADERS += v3d_funcs.h
 HEADERS += ../../../v3d_main/basic_c_fun/basic_memory.h
 HEADERS += ../../../v3d_main/basic_c_fun/stackutil.h
@@ -33,6 +34,7 @@ HEADERS += ../../../v3d_main/basic_c_fun/mg_image_lib.h
 
 SOURCES += gaussian_blur.cpp
 SOURCES += img_threshold.cpp
+SOURCES += img_center.cpp
 SOURCES += img_rotate.cpp
 SOURCES += main.cpp
 SOURCES += ../../../v3d_main/basic_c_fun/basic_memory.cpp
