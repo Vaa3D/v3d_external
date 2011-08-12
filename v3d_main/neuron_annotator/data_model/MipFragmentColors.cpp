@@ -89,8 +89,8 @@ void MipFragmentColors::update()
     colorReader.unlock();
 
     qDebug() << "Colorizing fragment MIPs took " << stopwatch.elapsed() / 1000.0 << " seconds";
-    size_t data_size = 4 * sx * sy * sf;
-    qDebug() << "Colorized fragment MIPs use " << data_size / 1e6 << " MB of RAM";
+    // size_t data_size = 4 * sx * sy * sf;
+    // qDebug() << "Colorized fragment MIPs use " << data_size / 1e6 << " MB of RAM";
 
     emit dataChanged();
 }

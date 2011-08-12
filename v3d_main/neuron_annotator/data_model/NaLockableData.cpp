@@ -62,6 +62,13 @@ bool NaLockableDataBaseReadLocker::refreshLock()
     return m_hasReadLock;
 }
 
+void NaLockableDataBaseReadLocker::waitForReadLock() { // Be careful how you use this one!
+    if (hasReadLock()) return;
+    m_lock->lockForRead();
+    m_hasReadLock = true;
+    return;
+}
+
 void NaLockableDataBaseReadLocker::checkRefreshTime() {
     int interval = m_intervalTime.elapsed();
     if (interval < 5) {

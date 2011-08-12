@@ -57,6 +57,7 @@ public:
     virtual ~NaLockableDataBaseReadLocker();
     // Check hasReadLock() after allocating a BaseReadLocker on the stack, to see if it's safe to read.
     bool hasReadLock() const;
+    void waitForReadLock(); // Be careful how you use this one!
     // Clients should call refreshLock() every 25 ms or so until done reading.
     // If refreshLock returns "false", stop reading and return, to pop this BaseReadLocker off the stack.
     bool refreshLock();

@@ -337,7 +337,8 @@ void NaZStackWidget::wheelEvent(QWheelEvent * e) // mouse wheel
 
     // qDebug() << "wheel";
     // cerr << "wheel event " << __LINE__ << __FILE__ << endl;
-    setCurrentZSlice(getCurrentZSlice() + numTicks);
+    // CMB 12-Aug-2011 - reverse sign to make direction match scroll wheel on scroll bar
+    setCurrentZSlice(getCurrentZSlice() - numTicks);
 }
 
 void NaZStackWidget::onMouseLeftDragEvent(int dx, int dy, QPoint pos) {
@@ -610,10 +611,10 @@ bool NaZStackWidget::checkROIchanged()
 // This method appears to measure the range of intensities within the HDR box
 void NaZStackWidget::do_HDRfilter()
 {
-    qDebug() << "do_HDRfilter";
+    // qDebug() << "do_HDRfilter";
 
     // widget might not be initialized
-    qDebug() << cur_c << sc << runHDRFILTER;
+    // qDebug() << cur_c << sc << runHDRFILTER;
     if (cur_c < 1) return;
     if (cur_c > sc) return;
     if(!runHDRFILTER) return;
@@ -639,7 +640,7 @@ void NaZStackWidget::do_HDRfilter()
     if(end_x>sx) end_x = sx-1;
     if(end_y>sy) end_y = sy-1;
 
-    qDebug() << end_x << start_x << end_y << start_y;
+    // qDebug() << end_x << start_x << end_y << start_y;
     if(end_x<=start_x || end_y<=start_y) return;
 
     // min_max
@@ -648,7 +649,7 @@ void NaZStackWidget::do_HDRfilter()
 
     qreal min_roi, max_roi;
 
-    qDebug() << volumeData;
+    // qDebug() << volumeData;
     if (! volumeData) return;
     {
         NaVolumeData::Reader volumeReader(*volumeData);
@@ -677,7 +678,7 @@ void NaZStackWidget::do_HDRfilter()
         }
     } // release read locks
 
-    qDebug() << "emitting hdrRangeChanged" << c << min_roi << max_roi;
+    // qDebug() << "emitting hdrRangeChanged" << c << min_roi << max_roi;
     emit hdrRangeChanged(c, min_roi, max_roi);
 }
 
@@ -686,13 +687,19 @@ void NaZStackWidget::updatePixmap()
     if (! zSliceColors) return;
     {
         ZSliceColors::Reader zReader(*zSliceColors);
-        if (! zReader.hasReadLock()) return;
+        if (! zReader.hasReadLock()) {
+            // In this one case it is OK to call waitForReadLock() because:
+            // 1) ZSliceColors takes only 30ms to update.
+            // 2) ZSliceColors has been specially modified to discard excess accumulated update() events.
+            // Don't call waitForReadLock() casually, especially from the GUI thread (like this!)
+            zReader.waitForReadLock();
+        }
         pixmap = QPixmap::fromImage(*zReader.getImage());
         sx = pixmap.width();
         sy = pixmap.height();
         cur_z = zReader.getZIndex();
     }
-    qDebug() << "NaStackWidget pixmap updated";
+    // qDebug() << "NaStackWidget pixmap updated";
     update();
 }
 
