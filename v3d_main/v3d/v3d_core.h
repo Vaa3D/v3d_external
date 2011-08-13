@@ -191,7 +191,7 @@ struct DataChannelColor
 
 
 class V3dR_GLWidget;
-class Renderer_tex2;
+class Renderer_gl1;
 
 int mergeback_mmunits_to_neuron_path(int n_end_nodes, vector< vector<V_NeuronSWC_unit> > & mmUnit, V_NeuronSWC_list & tNeuron);
 
@@ -419,7 +419,7 @@ public:
 	bool proj_trace_joinAllNeuronSegs(V3DLONG node_id, NeuronTree *p_tree);
 	// load traced neuron to 3D view
 	void update_3drenderer_neuron_view();
-	void update_3drenderer_neuron_view(V3dR_GLWidget* glwidget, Renderer_tex2* renderer);
+	void update_3drenderer_neuron_view(V3dR_GLWidget* glwidget, Renderer_gl1* renderer);
 
 	bool proj_general_principal_axis(ImagePlaneDisplayType ptype);
 	bool proj_general_resampling(ImageResamplingCode mycode, double target_rez, double cur_rez, int interp_method);

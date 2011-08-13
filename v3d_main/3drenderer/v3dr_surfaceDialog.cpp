@@ -112,7 +112,7 @@ void V3dr_surfaceDialog::linkTo(QWidget* w)
 	}
 
 	glwidget = (V3dR_GLWidget*)w;
-	renderer = (Renderer_tex2*)(glwidget->getRenderer());
+	renderer = (Renderer_gl1*)(glwidget->getRenderer());
 
 	iLastTab = getCurTab(); //110713
 	clearTables_fromTab();
@@ -639,7 +639,7 @@ void V3dr_surfaceDialog::selectedColor(int map)
 
 QTableWidget* V3dr_surfaceDialog::createTableSurf()
 {
-	Renderer_tex2* r = renderer;
+	Renderer_gl1* r = renderer;
 	if (! r)  return 0;
 
 	QStringList qsl;
@@ -686,7 +686,7 @@ QTableWidget* V3dr_surfaceDialog::createTableSurf()
 
 void V3dr_surfaceDialog::pickSurf(int i, int j)
 {
-	Renderer_tex2* r = renderer;
+	Renderer_gl1* r = renderer;
 	if (! r)  return;
 	if (i<0 || i>=r->listLabelSurf.size())  return;
 
@@ -711,7 +711,7 @@ void V3dr_surfaceDialog::pickSurf(int i, int j)
 
 QTableWidget* V3dr_surfaceDialog::createTableMarker()
 {
-	Renderer_tex2* r = renderer;
+	Renderer_gl1* r = renderer;
 	if (! r)  return 0;
 
 	QStringList qsl;
@@ -752,7 +752,7 @@ QTableWidget* V3dr_surfaceDialog::createTableMarker()
 
 void V3dr_surfaceDialog::pickMarker(int i, int j)
 {
-	Renderer_tex2* r = renderer;
+	Renderer_gl1* r = renderer;
 	if (! r)  return;
 	if (i<0 || i>=r->listMarker.size())  return;
 
@@ -777,7 +777,7 @@ void V3dr_surfaceDialog::pickMarker(int i, int j)
 
 QTableWidget* V3dr_surfaceDialog::createTableSWC()
 {
-	Renderer_tex2* r = renderer;
+	Renderer_gl1* r = renderer;
 	if (! r)  return 0;
 
 	QStringList qsl;
@@ -823,7 +823,7 @@ void V3dr_surfaceDialog::pickSWC(int i, int j)
 {
 	//qDebug("	pickSWC( %d, %d )", i,j);
 
-	Renderer_tex2* r = renderer;
+	Renderer_gl1* r = renderer;
 	if (! r)  return;
 	if (i<0 || i>=r->listNeuronTree.size())  return;
 
@@ -850,7 +850,7 @@ void V3dr_surfaceDialog::pickSWC(int i, int j)
 
 QTableWidget* V3dr_surfaceDialog::createTableAPO()
 {
-	Renderer_tex2* r = renderer;
+	Renderer_gl1* r = renderer;
 	if (! r)  return 0;
 
 	QStringList qsl;
@@ -895,7 +895,7 @@ QTableWidget* V3dr_surfaceDialog::createTableAPO()
 
 void V3dr_surfaceDialog::pickAPO(int i, int j)
 {
-	Renderer_tex2* r = renderer;
+	Renderer_gl1* r = renderer;
 	if (! r)  return;
 	if (i<0 || i>=r->listCell.size())  return;
 
@@ -920,7 +920,7 @@ void V3dr_surfaceDialog::pickAPO(int i, int j)
 
 QTableWidget* V3dr_surfaceDialog::createTableAPO_Set()
 {
-	Renderer_tex2* r = renderer;
+	Renderer_gl1* r = renderer;
 	if (! r)  return 0;
 
 	QStringList qsl;
@@ -970,7 +970,7 @@ void V3dr_surfaceDialog::pickAPO_Set(int i, int j)
 {
 	//qDebug("	pickAPO_Set( %d, %d )", i,j);
 
-	Renderer_tex2* r = renderer;
+	Renderer_gl1* r = renderer;
 	if (! r)  return;
 	if (i<0 || i>=r->map_APOFile_IndexList.size())  return;
 
@@ -1052,7 +1052,7 @@ void V3dr_surfaceDialog::editObjNameAndComments() //090219 unfinished yet. need 
 #ifndef test_main_cpp
 	QTableWidget* t = currentTableWidget();
 	if (! t) return;
-	Renderer_tex2* r = renderer;
+	Renderer_gl1* r = renderer;
 	if (! r)  return;
 
 //	PROGRESS_DIALOG("Updating     ", this);
@@ -1313,7 +1313,7 @@ void V3dr_surfaceDialog::onMarkerLocalView()
 {
 	qDebug("  V3dr_surfaceDialog::onMarkerLocalView");
 
-	Renderer_tex2* r = renderer;
+	Renderer_gl1* r = renderer;
 	if (! r)  return;
 	if (last_marker < 0 || last_marker >= r->listMarker.size()) return;
 

@@ -162,7 +162,7 @@ using namespace std;
 
 #include "../3drenderer/v3dr_mainwindow.h" //v3d_drawmain-->v3dr_mainwindow, by RZC 20080921
 #include "../3drenderer/v3dr_glwidget.h" //090710 by RZC for XFormWidget::doImage3DView
-#include "../3drenderer/renderer_tex2.h" //090117 by RZC for My4DImage::update_3drenderer_neuron_view
+#include "../3drenderer/renderer_gl1.h" //090117 by RZC for My4DImage::update_3drenderer_neuron_view
 
 
 #include "ChannelTable.h" //110718 RZC, lookup and mix multi-channel's color
@@ -6014,7 +6014,7 @@ void LandmarkPropertyDialog::compute_rgn_stat()
 // put here instead of in my4diamge.cpp because to share the same #include with XFormWidget::doImage3DView
 #define LOAD_traced_neuron   load_merged_neuron
 
-void load_segment_neuron(My4DImage* curImg, Renderer_tex2* curRen) // 090622 RZC: load segment neuron, used by algorithm test
+void load_segment_neuron(My4DImage* curImg, Renderer_gl1* curRen) // 090622 RZC: load segment neuron, used by algorithm test
 {
 	V_NeuronSWC null_neuron;
 	for (int i=0; i<curImg->tracedNeuron.last_seg_num; i++)	{
@@ -6022,7 +6022,7 @@ void load_segment_neuron(My4DImage* curImg, Renderer_tex2* curRen) // 090622 RZC
 	for (int i=0; i<curImg->tracedNeuron.seg.size(); i++)
 		curRen->updateNeuronTree(curImg->tracedNeuron.seg[i]);
 }
-void load_merged_neuron(My4DImage* curImg, Renderer_tex2* curRen)
+void load_merged_neuron(My4DImage* curImg, Renderer_gl1* curRen)
 {
 	V_NeuronSWC merged_neuron = merge_V_NeuronSWC_list(curImg->tracedNeuron);
 	merged_neuron.name = curImg->tracedNeuron.name;
@@ -6030,7 +6030,7 @@ void load_merged_neuron(My4DImage* curImg, Renderer_tex2* curRen)
 	curRen->updateNeuronTree(merged_neuron);
 }
 
-void My4DImage::update_3drenderer_neuron_view(V3dR_GLWidget* glwidget, Renderer_tex2* renderer)
+void My4DImage::update_3drenderer_neuron_view(V3dR_GLWidget* glwidget, Renderer_gl1* renderer)
 {
 	LOAD_traced_neuron(this, renderer);
 	glwidget->updateTool();
@@ -6043,7 +6043,7 @@ void My4DImage::update_3drenderer_neuron_view()
 
 	if (xwidget->mypara_3Dview.b_still_open && xwidget->mypara_3Dview.window3D)
 	{
-		Renderer_tex2 * cur_renderer = (Renderer_tex2 *)(xwidget->mypara_3Dview.window3D->getGLWidget()->getRenderer());
+		Renderer_gl1 * cur_renderer = (Renderer_gl1 *)(xwidget->mypara_3Dview.window3D->getGLWidget()->getRenderer());
 
 		LOAD_traced_neuron(this, cur_renderer);
 
@@ -6053,7 +6053,7 @@ void My4DImage::update_3drenderer_neuron_view()
 	//also update local view
 	if (xwidget->mypara_3Dlocalview.b_still_open && xwidget->mypara_3Dlocalview.window3D)
 	{
-		Renderer_tex2 * cur_renderer = (Renderer_tex2 *)(xwidget->mypara_3Dlocalview.window3D->getGLWidget()->getRenderer());
+		Renderer_gl1 * cur_renderer = (Renderer_gl1 *)(xwidget->mypara_3Dlocalview.window3D->getGLWidget()->getRenderer());
 
 		LOAD_traced_neuron(this, cur_renderer);
 

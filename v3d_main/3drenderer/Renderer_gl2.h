@@ -38,7 +38,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef RENDERER_GL2_H_
 #define RENDERER_GL2_H_
 
-#include "renderer_tex2.h"
+#include "renderer_gl1.h"
 #include "glsl_r.h"
 
 
@@ -48,7 +48,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 /////////////////////////////////////////////////////////////////////////
 
 
-class Renderer_gl2 : public Renderer_tex2
+class Renderer_gl2 : public Renderer_gl1
 {
 	friend class V3dr_colormapDialog; // for access colormap, colormap_curve
 

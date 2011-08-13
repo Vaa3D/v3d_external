@@ -42,7 +42,7 @@ by Hanchuan Peng
 #include "surfaceobj_geometry_dialog.h"
 
 #include "../3drenderer/v3dr_glwidget.h"
-#include "../3drenderer/renderer_tex2.h"
+#include "../3drenderer/renderer_gl1.h"
 
 #include "../neuron_editing/neuron_xforms.h"
 #include "../neuron_editing/apo_xforms.h"
@@ -67,7 +67,7 @@ double NORMALIZE_ROTATION_AngleStep( double angle )
 
 #define MY_PI 3.141592635
 
-SurfaceObjGeometryDialog::SurfaceObjGeometryDialog(V3dR_GLWidget *w, Renderer_tex2 *r, int dc, int st, int i)
+SurfaceObjGeometryDialog::SurfaceObjGeometryDialog(V3dR_GLWidget *w, Renderer_gl1 *r, int dc, int st, int i)
 {
 	glwidget = w;
 	renderer = r;

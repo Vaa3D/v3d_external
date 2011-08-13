@@ -29,7 +29,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 
 /*
- *  renderer_tex2.cpp
+ *  renderer_tex.cpp
  *
  *  Created by Ruan Zongcai on 8/6/08.
  *
@@ -43,7 +43,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 //#include "../v3d/v3d_compile_constraints.h"
 
-#include "renderer_tex2.h"
+#include "renderer_gl1.h"
 #include "v3dr_glwidget.h"
 
 #define SIM_DIM1 765	//X
@@ -84,22 +84,22 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 		\
 	}
 
-RGBA8* Renderer_tex2::_safe3DBuf=0;
+RGBA8* Renderer_gl1::_safe3DBuf=0;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Renderer_tex2::Renderer_tex2(void* widget)
+Renderer_gl1::Renderer_gl1(void* widget)
 	: Renderer(widget)
 {
-	qDebug("  Renderer_tex2::Renderer_tex2");
+	qDebug("  Renderer_gl1::Renderer_gl1");
 	init_members();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Renderer_tex2::~Renderer_tex2()
+Renderer_gl1::~Renderer_gl1()
 {
-	qDebug("  Renderer_tex2::~Renderer_tex2");
+	qDebug("  Renderer_gl1::~Renderer_gl1");
 
 	cleanVol();
 	cleanObj();
@@ -109,10 +109,10 @@ Renderer_tex2::~Renderer_tex2()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void Renderer_tex2::setupData(void* idep)
+void Renderer_gl1::setupData(void* idep)
 {
 	cleanData(); //090705
-	qDebug("  Renderer_tex2::setupData");
+	qDebug("  Renderer_gl1::setupData");
 
 	PROGRESS_DIALOG("", widget);
 
@@ -238,7 +238,7 @@ void Renderer_tex2::setupData(void* idep)
 
 		qDebug("   data box in original image space @\t(%g %g %g)--(%g %g %g)", dataBox.x0,dataBox.y0,dataBox.z0, dataBox.x1,dataBox.y1,dataBox.z1);
 
-	} CATCH_handler( "Renderer_tex2::setupData" );
+	} CATCH_handler( "Renderer_gl1::setupData" );
 
 
 	QTime qtime;  qtime.start();
@@ -272,9 +272,9 @@ void Renderer_tex2::setupData(void* idep)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void Renderer_tex2::cleanData()
+void Renderer_gl1::cleanData()
 {
-	qDebug("   Renderer_tex2::cleanData");
+	qDebug("   Renderer_gl1::cleanData");
 
 	if (isSimulatedData && data4dp) {
 		isSimulatedData = false;
@@ -297,9 +297,9 @@ void Renderer_tex2::cleanData()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void Renderer_tex2::initialize(int version)
+void Renderer_gl1::initialize(int version)
 {
-	qDebug("  Renderer_tex2::initialize (%d)", version);
+	qDebug("  Renderer_gl1::initialize (%d)", version);
 	if (b_error) return; //080924 try to catch the memory error
 
 	try {
@@ -309,7 +309,7 @@ void Renderer_tex2::initialize(int version)
 
 		loadVol();
 
-	} CATCH_handler( "Renderer_tex2::initialize" );
+	} CATCH_handler( "Renderer_gl1::initialize" );
 
 	BoundingBox& sBB =surfBoundingBox;
 	BoundingBox& BB  =boundingBox;
@@ -328,9 +328,9 @@ void Renderer_tex2::initialize(int version)
 	labelBB = NULL_BoundingBox;
 }
 
-void Renderer_tex2::reinitializeVol(int version)
+void Renderer_gl1::reinitializeVol(int version)
 {
-	qDebug("  Renderer_tex2::reinitializeVol (%d)", version);
+	qDebug("  Renderer_gl1::reinitializeVol (%d)", version);
 	if (b_error) return; //080924 try to catch the memory error
 
 	try {
@@ -339,7 +339,7 @@ void Renderer_tex2::reinitializeVol(int version)
 
 		loadVol();
 
-	} CATCH_handler( "Renderer_tex2::reinitializeVol" );
+	} CATCH_handler( "Renderer_gl1::reinitializeVol" );
 
 	BoundingBox& sBB =surfBoundingBox;
 	BoundingBox& BB  =boundingBox;
@@ -356,13 +356,13 @@ void Renderer_tex2::reinitializeVol(int version)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void Renderer_tex2::setRenderTextureLast(bool renderTextureLast) {
+void Renderer_gl1::setRenderTextureLast(bool renderTextureLast) {
     b_renderTextureLast=renderTextureLast;
 }
 
-void Renderer_tex2::paint()
+void Renderer_gl1::paint()
 {
-	//qDebug(" Renderer_tex2::paint(renderMode=%i)", renderMode);
+	//qDebug(" Renderer_gl1::paint(renderMode=%i)", renderMode);
 
 	if (b_error) return; //080924 try to catch the memory error
 
@@ -480,7 +480,7 @@ void Renderer_tex2::paint()
 	return;
 }
 
-void Renderer_tex2::prepareVol()
+void Renderer_gl1::prepareVol()
 {
     // In the b_renderTextureLast case we need to clear the volume before we draw the markers, not after.
     // Note that in the case where the textures are rendered first, drawVol() will
@@ -506,7 +506,7 @@ void Renderer_tex2::prepareVol()
     }
 }
 
-void Renderer_tex2::renderVol()
+void Renderer_gl1::renderVol()
 {
     if (has_image())
     {
@@ -541,7 +541,7 @@ void Renderer_tex2::renderVol()
 }
 
 
-void Renderer_tex2::drawBackFillVolCube()
+void Renderer_gl1::drawBackFillVolCube()
 {
 	if ((VOL_X1-VOL_X0<0)||(VOL_Y1-VOL_Y0<0)||(VOL_Z1-VOL_Z0<0)) return;
 
@@ -585,7 +585,7 @@ void Renderer_tex2::drawBackFillVolCube()
 	glPopAttrib();
 }
 
-void Renderer_tex2::drawCrossLine(float lineWidth)
+void Renderer_gl1::drawCrossLine(float lineWidth)
 {
 	glPushAttrib(GL_LINE_BIT | GL_POLYGON_BIT);
 //	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -621,19 +621,19 @@ void Renderer_tex2::drawCrossLine(float lineWidth)
 	glPopAttrib();
 }
 
-void Renderer_tex2::equAlphaBlendingProjection()
+void Renderer_gl1::equAlphaBlendingProjection()
 {
 	glBlendEquationEXT(GL_FUNC_ADD_EXT);//this is important
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	// back to front when depth-test on, A for all of RGB
 	//glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);	// back to front when depth-test on, RGBA separated, strange color
 }
 
-void Renderer_tex2::equMaxIntensityProjection()
+void Renderer_gl1::equMaxIntensityProjection()
 {
 	glBlendEquationEXT(GL_MAX_EXT);    //seems not be controlled by GL_BLEND
 }
 
-void Renderer_tex2::equCrossSection()
+void Renderer_gl1::equCrossSection()
 {
 	glBlendEquationEXT(GL_FUNC_ADD_EXT);//this is important
 	glBlendColorEXT(1, 1, 1, 1-CSbeta);
@@ -641,7 +641,7 @@ void Renderer_tex2::equCrossSection()
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	// back to front when depth-test on, Alpha for all of RGB
 }
 
-void Renderer_tex2::drawVol()
+void Renderer_gl1::drawVol()
 {
 	if (volTimeOffset)
 	{
@@ -737,13 +737,13 @@ void Renderer_tex2::drawVol()
 /////////////////////////////////////////////////////////////////////////////
 #define __renderer_detail__
 
-void Renderer_tex2::setRenderMode(RenderMode rm)
+void Renderer_gl1::setRenderMode(RenderMode rm)
 {
-	//qDebug(" Renderer_tex2::changeRenderMode = %i", rm);
+	//qDebug(" Renderer_gl1::changeRenderMode = %i", rm);
 	renderMode = rm;
 }
 
-void Renderer_tex2::updateVolCutRange()
+void Renderer_gl1::updateVolCutRange()
 {
 //	Renderer::updateVolCutRange();
 	xCut0  = CLAMP(0, imageX-1, xCut0);
@@ -786,13 +786,13 @@ void Renderer_tex2::updateVolCutRange()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void Renderer_tex2::toggleTexFilter()
+void Renderer_gl1::toggleTexFilter()
 {
 	VOLUME_FILTER = (VOLUME_FILTER+1)%2;
 	//qDebug( "	volume filter = %d", VOLUME_FILTER);
 }
 
-void Renderer_tex2::toggleTex2D3D()
+void Renderer_gl1::toggleTex2D3D()
 {
 	tryTex3D = !tryTex3D;
 	//qDebug( "	tryTex3D = %d", tryTex3D);
@@ -803,10 +803,10 @@ void Renderer_tex2::toggleTex2D3D()
 		loadVol();
 
 		PROGRESS_PERCENT(100);
-	} CATCH_handler( "Renderer_tex2::toggleTex2D3D" );
+	} CATCH_handler( "Renderer_gl1::toggleTex2D3D" );
 }
 
-void Renderer_tex2::toggleTexCompression()
+void Renderer_gl1::toggleTexCompression()
 {
 	tryTexCompress = !tryTexCompress;
 	//qDebug( "	tryTexCompress = %d", tryTex3D);
@@ -817,12 +817,12 @@ void Renderer_tex2::toggleTexCompression()
 		loadVol();
 
 		PROGRESS_PERCENT(100);
-	} CATCH_handler( "Renderer_tex2::toggleTexCompression" );
+	} CATCH_handler( "Renderer_gl1::toggleTexCompression" );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-int  Renderer_tex2::_getBufFillSize(int w)
+int  Renderer_gl1::_getBufFillSize(int w)
 {
 #if BUFFER_NPT
 	return w;
@@ -830,15 +830,15 @@ int  Renderer_tex2::_getBufFillSize(int w)
 	return power_of_two_ceil(w); //always use power_of_two
 #endif
 }
-int  Renderer_tex2::_getTexFillSize(int w)
+int  Renderer_gl1::_getTexFillSize(int w)
 {
 	if (tryTexNPT)  return w;
 	else            return power_of_two_ceil(w);
 }
 
-void Renderer_tex2::cleanVol()
+void Renderer_gl1::cleanVol()
 {
-	qDebug("   Renderer_tex2::cleanVol");
+	qDebug("   Renderer_gl1::cleanVol");
 	makeCurrent(); //ensure right context when multiple views animation or mouse drop, 081105
 
 	if (Zslice_data) delete[] Zslice_data;	Zslice_data = 0;
@@ -875,12 +875,12 @@ void Renderer_tex2::cleanVol()
 	realX = realY = realZ = realF = 0;
 }
 
-void Renderer_tex2::loadVol()
+void Renderer_gl1::loadVol()
 {
 	cleanVol(); // 081006: move to before setting imageX/Y/Z, 090705 move to first line
 	cleanTexStreamBuffer(); //091012
 
-	qDebug("  Renderer_tex2::loadVol");
+	qDebug("  Renderer_gl1::loadVol");
 	makeCurrent(); //ensure right context when multiple views animation or mouse drop, 081105
 
 	if (! rgbaBuf || bufSize[3]<1 ) return; // no image data, 081002
@@ -956,14 +956,14 @@ void Renderer_tex2::loadVol()
 
 	if (tryTex3D && supported_Tex3D())
 	{
-            qDebug() << "Renderer_tex2::loadVol() - creating 3D texture ID\n";
+            qDebug() << "Renderer_gl1::loadVol() - creating 3D texture ID\n";
 		glGenTextures(1, &tex3D);		//qDebug("	tex3D = %u", tex3D);
 	}
 	if (!tex3D || tryTexStream !=0) //stream = -1/1/2
 	{
 		//tryTex3D = 0; //091015: no need, because tex3D & tex_stream_buffer is not related now.
 
-            qDebug() << "Renderer_tex2::loadVol() - creating data structures for managing 2D texture slice set\n";
+            qDebug() << "Renderer_gl1::loadVol() - creating data structures for managing 2D texture slice set\n";
 
 		Ztex_list = new GLuint[imageZ+1]; //+1 for pbo tex
 		Ytex_list = new GLuint[imageY+1];
@@ -1023,7 +1023,7 @@ void Renderer_tex2::loadVol()
 	if (w)  w->updateControl();
 }
 
-void Renderer_tex2::subloadTex(V3DLONG timepoint, bool bfirst)
+void Renderer_gl1::subloadTex(V3DLONG timepoint, bool bfirst)
 {
 	if (texture_format==-1)  return; // not done by loadVol
 	if (! rgbaBuf || bufSize[3]<1 ) return; // no image data, 081002
@@ -1033,7 +1033,7 @@ void Renderer_tex2::subloadTex(V3DLONG timepoint, bool bfirst)
 		timepoint = CLAMP(0, imageT-1, timepoint);
 		rgbaBuf = total_rgbaBuf + timepoint*(imageZ*imageY*imageX);
 
-                qDebug() << "Calling setupStackTexture() from Renderer_tex2::subloadTex()";
+                qDebug() << "Calling setupStackTexture() from Renderer_gl1::subloadTex()";
 
 		//if (tryTexStream<=0) 			// 091014: mix down-sampled & streamed method
 			setupStackTexture(bfirst);  // use a temporary buffer, so first
@@ -1134,7 +1134,7 @@ void _copyYzxFromZyx(RGBA8* rgbaYzx, RGBA8* rgbaZyx, int bufX, int bufY, int buf
 //#define TEXTURE_CLAMP GL_CLAMP
 #define TEXTURE_CLAMP GL_CLAMP_TO_EDGE
 
-void Renderer_tex2::setTexParam3D()
+void Renderer_gl1::setTexParam3D()
 {
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, TEXTURE_CLAMP);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, TEXTURE_CLAMP);
@@ -1147,7 +1147,7 @@ void Renderer_tex2::setTexParam3D()
 		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	}
 }
-void Renderer_tex2::setTexParam2D()
+void Renderer_gl1::setTexParam2D()
 {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, TEXTURE_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, TEXTURE_CLAMP);
@@ -1174,10 +1174,10 @@ else \
 }
 
 
-void Renderer_tex2::setupStackTexture(bool bfirst)
+void Renderer_gl1::setupStackTexture(bool bfirst)
 {
 
-        qDebug() << "Renderer_tex2::setupStackTexture() start";
+        qDebug() << "Renderer_gl1::setupStackTexture() start";
 
 	// In OpenGL 1.0, storing texture maps in display lists was the preferred method for optimizing performance.
 	// However, a better solution, texture objects, introduced in OpenGL 1.1, are preferred.
@@ -1336,7 +1336,7 @@ void Renderer_tex2::setupStackTexture(bool bfirst)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void Renderer_tex2::_drawStack( double ts, double th, double tw,
+void Renderer_gl1::_drawStack( double ts, double th, double tw,
 		double s0, double s1, double h0, double h1, double w0, double w1,
 		double ds, int slice0, int slice1, int thickness,
 		GLuint tex3D, GLuint texs[], int stack_i,
@@ -1458,7 +1458,7 @@ void Renderer_tex2::_drawStack( double ts, double th, double tw,
 //	} \
 //}
 
-void Renderer_tex2::drawStackZ(float direction, int section, bool t3d, bool stream)
+void Renderer_gl1::drawStackZ(float direction, int section, bool t3d, bool stream)
 {
 	double ts = double(realZ) /fillZ;
 	double th = double(realY) /fillY;
@@ -1481,7 +1481,7 @@ void Renderer_tex2::drawStackZ(float direction, int section, bool t3d, bool stre
 			direction, section, t3d, stream);
 	glPopName();
 }
-void Renderer_tex2::drawStackY(float direction, int section, bool t3d, bool stream)
+void Renderer_gl1::drawStackY(float direction, int section, bool t3d, bool stream)
 {
 	double ts = double(realY) /fillY;
 	double th = double(realZ) /fillZ;
@@ -1504,7 +1504,7 @@ void Renderer_tex2::drawStackY(float direction, int section, bool t3d, bool stre
 			direction, section, t3d, stream);
 	glPopName();
 }
-void Renderer_tex2::drawStackX(float direction, int section, bool t3d, bool stream)
+void Renderer_gl1::drawStackX(float direction, int section, bool t3d, bool stream)
 {
 	double ts = double(realX) /fillX;
 	double th = double(realZ) /fillZ;
@@ -1530,7 +1530,7 @@ void Renderer_tex2::drawStackX(float direction, int section, bool t3d, bool stre
 
 ////////////////////////////////////////////////////
 
-void Renderer_tex2::setUnitVolumeSpace()
+void Renderer_gl1::setUnitVolumeSpace()
 {
 	BoundingBox BB = boundingBox;  // a copy
 	float DX = BB.Dx();
@@ -1549,7 +1549,7 @@ void Renderer_tex2::setUnitVolumeSpace()
 	glTranslated(-.5, -.5, -.5);
 }
 
-void Renderer_tex2::drawUnitVolume()
+void Renderer_gl1::drawUnitVolume()
 {
 	if (! rgbaBuf || bufSize[3]<1 ) return; // no image data, 081002
 	if ((VOL_X1<VOL_X0) || (VOL_Y1<VOL_Y0) || (VOL_Z1<VOL_Z0)) return; // all clipped, no drawing
@@ -1560,14 +1560,14 @@ void Renderer_tex2::drawUnitVolume()
 	if (b_stream   //091014: for streamed method
 		|| tryTexStream == -1) //091016
 	{
-            //qDebug() << "Renderer_tex2::drawUnitVolume() - setting realX,Y,Z to imageX,Y,Z   b_stream=" << b_stream << " tryTexStream=" << tryTexStream;
+            //qDebug() << "Renderer_gl1::drawUnitVolume() - setting realX,Y,Z to imageX,Y,Z   b_stream=" << b_stream << " tryTexStream=" << tryTexStream;
 		realX = imageX;
 		realY = imageY;
 		realZ = imageZ;
 	}
 	else
 	{
-            //qDebug() << "Renderer_tex2::drawUnitVolume() - settting realX,Y,Z to safeX,Y,Z";
+            //qDebug() << "Renderer_gl1::drawUnitVolume() - settting realX,Y,Z to safeX,Y,Z";
 		realX = safeX;
 		realY = safeY;
 		realZ = safeZ;
@@ -1687,7 +1687,7 @@ static void _frontSliceFromStack(RGBA8* rgbaBuf, int imageX, int imageY, int ima
 	}
 }
 
-void Renderer_tex2::setupFrontSliceBuffer()
+void Renderer_gl1::setupFrontSliceBuffer()
 {
 	if (Fslice_data==0 && texFslice==0)
 	{
@@ -1715,7 +1715,7 @@ void Renderer_tex2::setupFrontSliceBuffer()
 	}
 }
 
-void Renderer_tex2::drawUnitFrontSlice(int line)
+void Renderer_gl1::drawUnitFrontSlice(int line)
 {
 	if (!rgbaBuf || bufSize[3]<1 ) return; // no image data, 081231
 	if (boundingBox.Dmin()<=1) return; //081231
@@ -1875,7 +1875,7 @@ void Renderer_tex2::drawUnitFrontSlice(int line)
 	///////////////////////////////////////////
 }
 
-void Renderer_tex2::blendTrack()
+void Renderer_gl1::blendTrack()
 {
 	if (listMarkerPos.size()<1)  return;
 
@@ -1931,7 +1931,7 @@ void Renderer_tex2::blendTrack()
 #ifndef test_main_cpp
 
 // mouse left click to select neuron
-XYZ Renderer_tex2::selectPosition(int x, int y)
+XYZ Renderer_gl1::selectPosition(int x, int y)
 {
         // _appendMarkerPos
         MarkerPos pos;
@@ -2118,7 +2118,7 @@ XYZ Renderer_tex2::selectPosition(int x, int y)
 }
 
 // neuron annotator mouse right click pop menu
-int Renderer_tex2::hitMenu(int x, int y, bool b_glwidget)
+int Renderer_gl1::hitMenu(int x, int y, bool b_glwidget)
 {
     makeCurrent(); // make sure in correct OpenGL context
 
@@ -2468,12 +2468,12 @@ int Renderer_tex2::hitMenu(int x, int y, bool b_glwidget)
     return 0;
 }
 
-QList <LabelSurf> Renderer_tex2::getListLabelSurf()
+QList <LabelSurf> Renderer_gl1::getListLabelSurf()
 {
     return listLabelSurf;
 }
 
-void Renderer_tex2::setListLabelSurf(QList <LabelSurf> listLabelSurfinput)
+void Renderer_gl1::setListLabelSurf(QList <LabelSurf> listLabelSurfinput)
 {
     listLabelSurf = listLabelSurfinput;
 }

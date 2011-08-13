@@ -38,11 +38,12 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define CHANNELTABLE_H_
 
 #include <assert.h>
-#include <vector>
+#include <QVector>
 #include <QtGui>
 #include "../basic_c_fun/color_xyz.h"
 #include "v3d_core.h"
 
+//#define QVector std::QVector
 
 // lookup and mix multi-channel to RGBA8
 #define OP_MAX	0
@@ -52,7 +53,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define OP_INDEX	-1
 
 inline
-void make_linear_lut_one(RGBA8 color, vector<RGBA8>& lut)
+void make_linear_lut_one(RGBA8 color, QVector<RGBA8>& lut)
 {
 	assert(lut.size()==256); //////// must be
 	for (int j=0; j<256; j++)
@@ -65,7 +66,7 @@ void make_linear_lut_one(RGBA8 color, vector<RGBA8>& lut)
 	}
 }
 inline
-void make_linear_lut(vector<RGBA8>& colors, vector< vector<RGBA8> >& luts)
+void make_linear_lut(QVector<RGBA8>& colors, QVector< QVector<RGBA8> >& luts)
 {
 	int N = colors.size();
 	assert(N <= luts.size());
@@ -75,7 +76,7 @@ void make_linear_lut(vector<RGBA8>& colors, vector< vector<RGBA8> >& luts)
 	}
 }
 inline
-RGB8 lookup_mix(vector<unsigned char>& mC, vector< vector<RGBA8> >& mLut, int op, RGB8 mask=XYZ(255,255,255))
+RGB8 lookup_mix(QVector<unsigned char>& mC, QVector< QVector<RGBA8> >& mLut, int op, RGB8 mask=XYZ(255,255,255))
 {
 #define R(k) (mLut[k][ mC[k] ].r /255.0)
 #define G(k) (mLut[k][ mC[k] ].g /255.0)
@@ -208,7 +209,7 @@ template <class T> QPixmap copyRaw2QPixmap_Slice( //test function for 4 channels
 
 	int N = MIN(sz3, 4); ////////////////
 
-	vector<float> vrange(N);
+	QVector<float> vrange(N);
 	for (int k=0; k<N; k++)
 	{
 		vrange[k] = p_vmax[k]-p_vmin[k];
@@ -218,8 +219,8 @@ template <class T> QPixmap copyRaw2QPixmap_Slice( //test function for 4 channels
 	//qDebug()<<"copyRaw2QPixmap_Slice switch (Ctype)"<<Ctype;
 
 	//set lookup-table
-	vector< vector<RGBA8> > luts(4);
-	vector<RGBA8> lut(256);
+	QVector< QVector<RGBA8> > luts(4);
+	QVector<RGBA8> lut(256);
 	RGBA8 _Red		= XYZW(255,0,0,255);
 	RGBA8 _Green	= XYZW(0,255,0,255);
 	RGBA8 _Blue		= XYZW(0,0,255,255);
@@ -317,7 +318,7 @@ template <class T> QPixmap copyRaw2QPixmap_Slice( //test function for 4 channels
 
 	// transfer N channel's pixels
 	int op =  (Ctype == colorGray)? OP_MEAN : OP_MAX;
-	vector<unsigned char> mC(N);
+	QVector<unsigned char> mC(N);
 	QImage tmpimg;
 
 	//qDebug()<<"copyRaw2QPixmap_Slice switch (cplane)"<<cplane;
@@ -408,7 +409,7 @@ struct Channel
 template <class T> QImage copyRaw2QImage_Slice( //real function include brightness/contrast
 		const QList<Channel> & listChannel,
 		const MixOP & mixOp,
-		vector< vector<RGBA8> >* p_luts, //pre-computed external LUTs, if not presented set to 0
+		QVector< QVector<RGBA8> >* p_luts, //pre-computed external LUTs, if not presented set to 0
 		ImagePlaneDisplayType cplane,
 		V3DLONG cpos,
 		T **** p4d,  //no const for using macro expansion
@@ -424,7 +425,7 @@ template <class T> QImage copyRaw2QImage_Slice( //real function include brightne
 
 	int N = MIN(sz3, listChannel.size()); ////////////////
 
-	vector<float> vrange(N);
+	QVector<float> vrange(N);
 	for (int k=0; k<N; k++)
 	{
 		vrange[k] = p_vmax[k]-p_vmin[k];
@@ -436,8 +437,8 @@ template <class T> QImage copyRaw2QImage_Slice( //real function include brightne
 	//setup lookup-tables
 	if (! p_luts)
 	{
-		vector< vector<RGBA8> > luts(N);
-		vector<RGBA8> lut(256);
+		QVector< QVector<RGBA8> > luts(N);
+		QVector<RGBA8> lut(256);
 		for (int k=0; k<N; k++)
 		{
 			make_linear_lut_one( listChannel[k].color, lut );
@@ -456,7 +457,7 @@ template <class T> QImage copyRaw2QImage_Slice( //real function include brightne
 	mask.g = (mixOp.maskG)? 255:0;
 	mask.b = (mixOp.maskB)? 255:0;
 
-	vector<unsigned char> mC(N);
+	QVector<unsigned char> mC(N);
 	QImage tmpimg;
 
 	//qDebug()<<"copyRaw2QPixmap_Slice switch (cplane)"<<cplane;
@@ -550,7 +551,7 @@ struct ChannelSharedData
 {
 	MixOP mixOp;
 	QList<Channel> listChannel;
-	vector< vector<RGBA8> > luts;
+	QVector< QVector<RGBA8> > luts;
 	bool bGlass;
 };
 
@@ -604,7 +605,7 @@ class ChannelTable : public QWidget
 
 	MixOP & mixOp; 					//just a reference to ChannelTabWidget::csData
 	QList<Channel> & listChannel;	//just a reference to ChannelTabWidget::csData
-	vector< vector<RGBA8> > & luts; //just a reference to ChannelTabWidget::csData
+	QVector< QVector<RGBA8> > & luts; //just a reference to ChannelTabWidget::csData
 	bool & bGlass; 					//just a reference to ChannelTabWidget::csData
 	XFormWidget* xform;
 	ChannelTabWidget* ctab;
@@ -734,7 +735,7 @@ class MiscBox : public QWidget
 
 	MixOP & mixOp; 					//just a reference to ChannelTabWidget::csData
 	QList<Channel> & listChannel;	//just a reference to ChannelTabWidget::csData
-	vector< vector<RGBA8> > & luts; //just a reference to ChannelTabWidget::csData
+	QVector< QVector<RGBA8> > & luts; //just a reference to ChannelTabWidget::csData
 	XFormWidget* xform;
 
 public:

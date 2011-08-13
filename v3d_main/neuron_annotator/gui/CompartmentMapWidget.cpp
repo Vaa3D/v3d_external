@@ -34,8 +34,8 @@ void CompartmentMapWidget::loadAtlas()
 
     if(QFile::exists(atlasfile))
     {
-        ((Renderer_tex2 *)renderer)->loadV3DSFile(atlasfile);
-        //((Renderer_tex2 *)renderer)->loadObjectFromFile(atlasfile.toStdString().c_str());
+        ((Renderer_gl1 *)renderer)->loadV3DSFile(atlasfile);
+        //((Renderer_gl1 *)renderer)->loadObjectFromFile(atlasfile.toStdString().c_str());
 
         updateTool();
         //renderer->paint(); //POST_updateGL();
@@ -51,7 +51,7 @@ void CompartmentMapWidget::initializeGL()
     _isSoftwareGL = false;
     GLeeInit();
 
-    renderer = new Renderer_tex2(this);
+    renderer = new Renderer_gl1(this);
 
     // settings
     renderer->bShowBoundingBox = false; //
@@ -70,11 +70,11 @@ void CompartmentMapWidget::initializeGL()
         loadAtlas();
         if(renderer->hasError())	POST_CLOSE(this);
 
-        //qDebug()<<"label surf ..."<<((Renderer_tex2 *)renderer)->listLabelSurf.size();
-        //qDebug()<<"triangle ..."<<((Renderer_tex2 *)renderer)->list_listTriangle.size();
-        //qDebug()<<"glist label ..."<<((Renderer_tex2 *)renderer)->list_glistLabel.size();
+        //qDebug()<<"label surf ..."<<((Renderer_gl1 *)renderer)->listLabelSurf.size();
+        //qDebug()<<"triangle ..."<<((Renderer_gl1 *)renderer)->list_listTriangle.size();
+        //qDebug()<<"glist label ..."<<((Renderer_gl1 *)renderer)->list_glistLabel.size();
 
-        listLabelSurf = ((Renderer_tex2 *)renderer)->getListLabelSurf();
+        listLabelSurf = ((Renderer_gl1 *)renderer)->getListLabelSurf();
 
         pCompartmentComboBox->addItem("All On", true);
         pCompartmentComboBox->addItem("All Off", false);
@@ -133,7 +133,7 @@ void CompartmentMapWidget::switchCompartment(int num)
 
     if(num<0 || num>listLabelSurf.size()+1) return;
 
-    listLabelSurf = ((Renderer_tex2 *)renderer)->getListLabelSurf();
+    listLabelSurf = ((Renderer_gl1 *)renderer)->getListLabelSurf();
 
     if(num==0) // all on
     {
@@ -182,7 +182,7 @@ void CompartmentMapWidget::switchCompartment(int num)
         listLabelSurf[num-2].on = !(listLabelSurf[num-2].on);
     }
 
-    ((Renderer_tex2 *)renderer)->setListLabelSurf(listLabelSurf);
+    ((Renderer_gl1 *)renderer)->setListLabelSurf(listLabelSurf);
 
     update();
 }

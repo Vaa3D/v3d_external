@@ -48,7 +48,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 // Dynamically choice a renderer
 #include "renderer.h"
-#include "renderer_tex2.h"
+#include "renderer_gl1.h"
 #include "Renderer_gl2.h"
 
 //PROGRESS_DIALOG("", 0)
@@ -209,7 +209,7 @@ void V3dR_GLWidget::choiceRenderer()
 	else  // 081215: this comment for special version without GL 2.0 support
 	if (1) //strlen(glversion)>3 && glversion[0]>='1' && glversion[1]=='.' && glversion[2]>='0')
 	{
-		renderer = new Renderer_tex2(this);
+		renderer = new Renderer_gl1(this);
 	}
 	else
 	{
@@ -953,7 +953,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    	if (v3dr_getImage4d(_idep) && renderer)
 		    	{
 		    		v3dr_getImage4d(_idep)->proj_trace_history_undo();
-		    		v3dr_getImage4d(_idep)->update_3drenderer_neuron_view(this, (Renderer_tex2*)renderer);//090924
+		    		v3dr_getImage4d(_idep)->update_3drenderer_neuron_view(this, (Renderer_gl1*)renderer);//090924
 		    	}
 			}
 	  		break;
@@ -963,7 +963,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    	if (v3dr_getImage4d(_idep) && renderer)
 		    	{
 		    		v3dr_getImage4d(_idep)->proj_trace_history_redo();
-		    		v3dr_getImage4d(_idep)->update_3drenderer_neuron_view(this, (Renderer_tex2*)renderer);//090924
+		    		v3dr_getImage4d(_idep)->update_3drenderer_neuron_view(this, (Renderer_gl1*)renderer);//090924
 		    	}
 			}
 	  		break;
@@ -1002,7 +1002,7 @@ void V3dR_GLWidget::handleKeyReleaseEvent(QKeyEvent * e)  //090428 RZC: make pub
 QString V3dR_GLWidget::Cut_altTip(int dim_i, int v, int minv, int maxv, int offset)
 {
 	if (!getRenderer() || getRenderer()->class_version()<2) return "";
-	Renderer_tex2* r = (Renderer_tex2*)getRenderer();
+	Renderer_gl1* r = (Renderer_gl1*)getRenderer();
 	BoundingBox DB = r->getDataBox();
 
 	float minw, maxw;
@@ -1270,7 +1270,7 @@ void V3dR_GLWidget::volumeColormapDialog()
 
 void V3dR_GLWidget::surfaceSelectDialog(int curTab)
 {
-	// Caution: there renderer must be Renderer_tex2* at least
+	// Caution: there renderer must be Renderer_gl1* at least
 	if (! renderer || renderer->class_version()<1) return;
 
 //	PROGRESS_DIALOG("collecting data for table", 0);
@@ -2577,7 +2577,7 @@ void V3dR_GLWidget::reloadData()
 		PROGRESS_PERCENT(70);
 		if (renderer)
 		{
-			renderer->initialize(1); //090705 RZC: only treat as class Renderer_tex2
+			renderer->initialize(1); //090705 RZC: only treat as class Renderer_gl1
 			if (renderer->hasError())	POST_CLOSE(this);
 		}
 		//=============================================================================

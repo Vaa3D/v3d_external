@@ -38,7 +38,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "atlas_viewer.h"
 #include "v3d_core.h"
 
-#include "../3drenderer/renderer_tex2.h"
+#include "../3drenderer/renderer_gl1.h"
 #include "../3drenderer/ItemEditor.h"
 
 #include "landmark_property_dialog.h"

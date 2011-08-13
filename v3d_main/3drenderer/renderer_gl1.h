@@ -29,7 +29,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 
 /*
- *  renderer_tex2.h
+ *  renderer_gl2.h
  *
  *  implementation in renderer_tex2.cpp (volume rendering)
  * 			&	renderer_obj2.cpp 		(surface object rendering)
@@ -43,6 +43,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  *  last update: 090219: add "name" and "comment" fields to all the basic object structs
  *  last edit by Hanchuan Peng, 090306, separate some basic obj types and also neuron manipulation functions
  *  last edit: Hancuan peng and Ruan Zongcai, 090705, add a flag to enable/disable the clipBox which is used in the function drawObj()
+ *  last change: 110813 Ruan Zongcai, change Renderer_tex2 to Renderer_gl1, also changed related file names
  */
 
 #ifndef V3D_RENDERER_TEX2_H
@@ -72,15 +73,15 @@ enum v3dr_SurfaceType { stSurfaceNone=0,
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-
-class Renderer_tex2 : public Renderer
+//110813 RZC, change Renderer_tex2 to Renderer_gl1
+class Renderer_gl1 : public Renderer
 {
 	friend class V3dr_surfaceDialog; //for accessing all surface data structure
 	friend class V3dr_colormapDialog;
 
 public:
-	Renderer_tex2(void* widget);
-	virtual ~Renderer_tex2();
+	Renderer_gl1(void* widget);
+	virtual ~Renderer_gl1();
 	virtual const int class_version() {return 1;}
 
 public:
@@ -106,11 +107,11 @@ protected:
 	virtual int processHit(int namelen, int names[], int x, int y, bool b_menu, char* pTip=0);	// called by selectObj. add the x and y parameters by Hanchuan Peng,090204
 
 	virtual void loadObj();  	// called by initialize()  	// makeCurrent
-	virtual void cleanObj(); 	// called by ~Renderer_tex2	// makeCurrent
+	virtual void cleanObj(); 	// called by ~Renderer_gl1	// makeCurrent
 	virtual void drawObj();  	// called by paint()
 
 	virtual void loadVol();  	// called by initialize()  	// makeCurrent
-	virtual void cleanVol();	// called by ~Renderer_tex2	// makeCurrent
+	virtual void cleanVol();	// called by ~Renderer_gl1	// makeCurrent
 	virtual void drawVol(); 	// called by paint()
         virtual void prepareVol();
         virtual void renderVol();

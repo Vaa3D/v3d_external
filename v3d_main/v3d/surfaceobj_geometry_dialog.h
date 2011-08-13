@@ -43,10 +43,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <QDialog>
 
 #include "ui_surfaceobj_geometry_dialog.h"
-#include "../3drenderer/renderer_tex2.h"
+#include "../3drenderer/renderer_gl1.h"
 
 class V3dR_GLWidget;
-class Renderer_tex2;
+class Renderer_gl1;
 class NeuronTree;
 
 class CellAPO;
@@ -58,12 +58,12 @@ class SurfaceObjGeometryDialog : public QDialog, private Ui_SurfaceObjGeometryDi
     Q_OBJECT
 
 public:
-    SurfaceObjGeometryDialog(V3dR_GLWidget *w, Renderer_tex2 *r, int dc, int st, int i);
+    SurfaceObjGeometryDialog(V3dR_GLWidget *w, Renderer_gl1 *r, int dc, int st, int i);
 	void fetchData();
 
 protected:
 	V3dR_GLWidget* glwidget;
-	Renderer_tex2* renderer;
+	Renderer_gl1* renderer;
 	int dataclass;
 	int surfaceobjtype;
 	int objectindex;

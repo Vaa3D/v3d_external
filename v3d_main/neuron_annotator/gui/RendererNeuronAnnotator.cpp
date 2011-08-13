@@ -39,7 +39,7 @@ RendererNeuronAnnotator::~RendererNeuronAnnotator() {
 }
 
 void RendererNeuronAnnotator::loadVol() {
-    Renderer_tex2::loadVol();
+    Renderer_gl1::loadVol();
 }
 
 // This function resamples the original mask to the same dimensions
@@ -171,14 +171,14 @@ bool RendererNeuronAnnotator::populateBaseTextures() {
     return true;
 }
 
-// This is originally based on version from Renderer_tex2
+// This is originally based on version from Renderer_gl1
 void RendererNeuronAnnotator::setupStackTexture(bool bfirst)
 {
     qDebug() << "RendererNeuronAnnotator::setupStackTexture() - start";
 
     if (masklessSetupStackTexture) {
 
-        Renderer_tex2::setupStackTexture(true);
+        Renderer_gl1::setupStackTexture(true);
 
     } else {
 

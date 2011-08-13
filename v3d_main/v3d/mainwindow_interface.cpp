@@ -43,7 +43,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3d_core.h"
 #include "../3drenderer/v3dr_mainwindow.h"
 #include "../3drenderer/v3dr_glwidget.h"
-#include "../3drenderer/renderer_tex2.h" //for finishEditingNeuronTree
+#include "../3drenderer/renderer_gl1.h" //for finishEditingNeuronTree
 
 
 #define __MainWindow_interface__
@@ -319,13 +319,13 @@ void XFormWidget::finishEditingSWC()
 	if (mypara_3Dview.b_still_open && mypara_3Dview.window3D
 			&& (w = mypara_3Dview.window3D->getGLWidget()))
 	{
-		Renderer_tex2* r= (Renderer_tex2*)(w->getRenderer());
+		Renderer_gl1* r= (Renderer_gl1*)(w->getRenderer());
 		if (r) r->finishEditingNeuronTree();
 	}
 	if (mypara_3Dlocalview.b_still_open && mypara_3Dlocalview.window3D
 			&& (w = mypara_3Dlocalview.window3D->getGLWidget()))
 	{
-		Renderer_tex2* r= (Renderer_tex2*)(w->getRenderer());
+		Renderer_gl1* r= (Renderer_gl1*)(w->getRenderer());
 		if (r) r->finishEditingNeuronTree();
 	}
 }

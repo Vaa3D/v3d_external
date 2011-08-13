@@ -29,7 +29,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 
 /*
- * renderer_hit2.cpp
+ * renderer_hit.cpp
  * Last update: 20090220, Hanchuan Peng. add editing surface object func
  * Last update: 20090310, Hanchuan Peng. add neuron average distance score
  * Last update: 20090421, Zongcai Ruan. move code of object hit processing form renderer_tex2.cpp
@@ -44,7 +44,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  *
  */
 
-#include "renderer_tex2.h"
+#include "renderer_gl1.h"
 #include "v3dr_glwidget.h"
 #include "barFigureDialog.h"
 
@@ -97,9 +97,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //}
 
 
-int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_menu, char* pTip) // called by selectObj() after getting object's names
+int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_menu, char* pTip) // called by selectObj() after getting object's names
 {
-	//qDebug("  Renderer_tex2::processHit  pTip=%p", pTip);
+	//qDebug("  Renderer_gl1::processHit  pTip=%p", pTip);
 
 #define __object_name_info__ // dummy, just for easy locating
 	// object name string
@@ -1336,9 +1336,9 @@ int Renderer_tex2::processHit(int namelen, int names[], int cx, int cy, bool b_m
 
 #define __interaction__
 
-void Renderer_tex2::endSelectMode()
+void Renderer_gl1::endSelectMode()
 {
-	qDebug("  Renderer_tex2::endSelectMode");
+	qDebug("  Renderer_gl1::endSelectMode");
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
 	if (selectMode == smCurveCreate_pointclick)
@@ -1362,7 +1362,7 @@ void Renderer_tex2::endSelectMode()
 	}
 }
 
-void Renderer_tex2::_appendMarkerPos(int x, int y)
+void Renderer_gl1::_appendMarkerPos(int x, int y)
 {
 		MarkerPos pos;
 		pos.x = x;
@@ -1378,9 +1378,9 @@ void Renderer_tex2::_appendMarkerPos(int x, int y)
 		//qDebug("\t (%d, %d) listMarkerPos.size = %d", x,y, listMarkerPos.size());
 }
 
-int Renderer_tex2::movePen(int x, int y, bool b_move)
+int Renderer_gl1::movePen(int x, int y, bool b_move)
 {
-	//qDebug("  Renderer_tex2::movePen");
+	//qDebug("  Renderer_gl1::movePen");
 
 //	//100731 RZC
 //	if (renderMode==rmCrossSection)
@@ -1430,9 +1430,9 @@ int Renderer_tex2::movePen(int x, int y, bool b_move)
 	return 0; //no 2d track to display
 }
 
-int Renderer_tex2::hitPen(int x, int y)
+int Renderer_gl1::hitPen(int x, int y)
 {
-	qDebug("  Renderer_tex2::hitPen");
+	qDebug("  Renderer_gl1::hitPen");
 
 //	//100731 RZC
 //	if (renderMode==rmCrossSection)
@@ -1517,9 +1517,9 @@ int Renderer_tex2::hitPen(int x, int y)
 
 #ifndef test_main_cpp
 
-void Renderer_tex2::editSurfaceObjBasicGeometry(int dc, int st, int i) // i is 1-based
+void Renderer_gl1::editSurfaceObjBasicGeometry(int dc, int st, int i) // i is 1-based
 {
-	qDebug("  Renderer_tex2::editSurfaceObjBasicGeometry");
+	qDebug("  Renderer_gl1::editSurfaceObjBasicGeometry");
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
 	if (dc==dcSurface)
@@ -1582,9 +1582,9 @@ void Renderer_tex2::editSurfaceObjBasicGeometry(int dc, int st, int i) // i is 1
 	}
 }
 
-void Renderer_tex2::editSurfaceObjAnnotation(int dc, int st, int i) // i is 1-based
+void Renderer_gl1::editSurfaceObjAnnotation(int dc, int st, int i) // i is 1-based
 {
-	qDebug("  Renderer_tex2::editSurfaceObjAnnotation");
+	qDebug("  Renderer_gl1::editSurfaceObjAnnotation");
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* imgData = v3dr_getImage4d(_idep);
 
@@ -1665,10 +1665,10 @@ void Renderer_tex2::editSurfaceObjAnnotation(int dc, int st, int i) // i is 1-ba
 
 #endif
 
-void Renderer_tex2::updateTracedNeuron()
+void Renderer_gl1::updateTracedNeuron()
 {
 #ifndef test_main_cpp
-	qDebug("  Renderer_tex2::updateTracedNeuron");
+	qDebug("  Renderer_gl1::updateTracedNeuron");
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg =  v3dr_getImage4d(_idep); //by PHC, 090119
 	if (curImg)
@@ -1676,7 +1676,7 @@ void Renderer_tex2::updateTracedNeuron()
 #endif
 }
 
-void Renderer_tex2::loadLandmarks_from_file(const QString & filename)
+void Renderer_gl1::loadLandmarks_from_file(const QString & filename)
 {
 #ifndef test_main_cpp
 
@@ -1716,7 +1716,7 @@ void Renderer_tex2::loadLandmarks_from_file(const QString & filename)
 #endif
 }
 
-void Renderer_tex2::saveLandmarks_to_file(const QString & filename)
+void Renderer_gl1::saveLandmarks_to_file(const QString & filename)
 {
 #ifndef test_main_cpp
 	writeMarker_file(filename, listMarker);
@@ -1726,7 +1726,7 @@ void Renderer_tex2::saveLandmarks_to_file(const QString & filename)
 
 #define __info_of_object__
 
-QString Renderer_tex2::info_Marker(int marker_i)
+QString Renderer_gl1::info_Marker(int marker_i)
 {
 	QString tmpstr;
 	if (marker_i>=0 && marker_i<listMarker.size())
@@ -1736,7 +1736,7 @@ QString Renderer_tex2::info_Marker(int marker_i)
 	}
 	return tmpstr;
 }
-QString Renderer_tex2::info_NeuronNode(int n_id, NeuronTree *p_tree)
+QString Renderer_gl1::info_NeuronNode(int n_id, NeuronTree *p_tree)
 {
 	QString tmpstr, tmpstr1;
 	if (p_tree && n_id>=0 && n_id<p_tree->listNeuron.size())
@@ -1754,7 +1754,7 @@ QString Renderer_tex2::info_NeuronNode(int n_id, NeuronTree *p_tree)
 	return tmpstr;
 }
 
-QString Renderer_tex2::info_SurfVertex(int n_id, Triangle * face, int label)
+QString Renderer_gl1::info_SurfVertex(int n_id, Triangle * face, int label)
 {
 	QString tmpstr, tmpstr1;
 	if (face &&  n_id>=0 && n_id<3)
@@ -1768,7 +1768,7 @@ QString Renderer_tex2::info_SurfVertex(int n_id, Triangle * face, int label)
 
 
 
-V3DLONG Renderer_tex2::findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * ptree) //find the nearest node in a neuron in XY project of the display window
+V3DLONG Renderer_gl1::findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * ptree) //find the nearest node in a neuron in XY project of the display window
 {
 	if (!ptree) return -1;
 	QList <NeuronSWC> *p_listneuron = &(ptree->listNeuron);
@@ -1796,7 +1796,7 @@ V3DLONG Renderer_tex2::findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * 
 	return best_ind; //by PHC, 090209. return the index in the SWC file
 }
 
-Triangle * Renderer_tex2::findNearestSurfTriangle_WinXY(int cx, int cy, int & vertex_i, Triangle * plist)
+Triangle * Renderer_gl1::findNearestSurfTriangle_WinXY(int cx, int cy, int & vertex_i, Triangle * plist)
 {
 	if (!plist) return NULL;
 
@@ -1826,9 +1826,9 @@ Triangle * Renderer_tex2::findNearestSurfTriangle_WinXY(int cx, int cy, int & ve
 }
 
 
-double Renderer_tex2::computeSurfaceArea(int dc, int st, int index) //index is 1-based
+double Renderer_gl1::computeSurfaceArea(int dc, int st, int index) //index is 1-based
 {
-	qDebug("  Renderer_tex2::computeSurfaceArea");
+	qDebug("  Renderer_gl1::computeSurfaceArea");
 
 	if (dc==dcSurface && st==stLabelSurface)
 	{
@@ -1853,9 +1853,9 @@ double Renderer_tex2::computeSurfaceArea(int dc, int st, int index) //index is 1
 	return 0;
 }
 
-double Renderer_tex2::computeSurfaceVolume(int dc, int st, int index) //index is 1-based
+double Renderer_gl1::computeSurfaceVolume(int dc, int st, int index) //index is 1-based
 {
-	qDebug("  Renderer_tex2::computeSurfaceVolume");
+	qDebug("  Renderer_gl1::computeSurfaceVolume");
 
 	if (dc==dcSurface && st==stLabelSurface)
 	{
@@ -1868,9 +1868,9 @@ double Renderer_tex2::computeSurfaceVolume(int dc, int st, int index) //index is
 
 
 
-void Renderer_tex2::showLineProfile(int marker1, int marker2) // 0-based
+void Renderer_gl1::showLineProfile(int marker1, int marker2) // 0-based
 {
-	qDebug("  Renderer_tex2::showLineProfile");
+	qDebug("  Renderer_gl1::showLineProfile");
 
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
@@ -1898,7 +1898,7 @@ void Renderer_tex2::showLineProfile(int marker1, int marker2) // 0-based
 
 }
 
-QVector<int> Renderer_tex2::getLineProfile(XYZ P1, XYZ P2, int chno)
+QVector<int> Renderer_gl1::getLineProfile(XYZ P1, XYZ P2, int chno)
 {
 	QVector<int> prof;
 
@@ -1953,7 +1953,7 @@ QVector<int> Renderer_tex2::getLineProfile(XYZ P1, XYZ P2, int chno)
 //
 //##########################################################################################
 
-int Renderer_tex2::checkCurChannel()
+int Renderer_gl1::checkCurChannel()
 {
 	////////////////////////////////////////////////////////////////////////
 	int chno=-1;
@@ -1969,7 +1969,7 @@ int Renderer_tex2::checkCurChannel()
 
 #define __creat_curve___
 
-void Renderer_tex2::solveCurveCenter(vector <XYZ> & loc_vec_input)
+void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 {
 	bool b_use_seriespointclick = (loc_vec_input.size()>0) ? true : false;
 	if (b_use_seriespointclick==false && list_listCurvePos.size()<1)  return;
@@ -2129,7 +2129,7 @@ void Renderer_tex2::solveCurveCenter(vector <XYZ> & loc_vec_input)
 
 }
 
-void Renderer_tex2::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
+void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 {
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 #ifndef test_main_cpp
@@ -2206,9 +2206,9 @@ void Renderer_tex2::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 #endif //test_main_cpp
 }
 
-void Renderer_tex2::solveCurveViews()
+void Renderer_gl1::solveCurveViews()
 {
-	qDebug("  Renderer_tex2::solveCurveViews");
+	qDebug("  Renderer_gl1::solveCurveViews");
 
 	int NC = list_listCurvePos.size();
 	int N = list_listCurvePos.at(0).size(); //points of first track
@@ -2269,9 +2269,9 @@ void Renderer_tex2::solveCurveViews()
 	addCurveSWC(loc_vec, -1); //turn off post deform
 }
 
-void Renderer_tex2::solveCurveFromMarkers()
+void Renderer_gl1::solveCurveFromMarkers()
 {
-	qDebug("  Renderer_tex2::solveCurveMarkers");
+	qDebug("  Renderer_gl1::solveCurveMarkers");
 
 #ifndef test_main_cpp
 	vector <XYZ> loc_vec_input;
@@ -2309,7 +2309,7 @@ void Renderer_tex2::solveCurveFromMarkers()
 
 #define __creat_marker___
 
-XYZ Renderer_tex2::getCenterOfMarkerPos(const MarkerPos& pos)
+XYZ Renderer_gl1::getCenterOfMarkerPos(const MarkerPos& pos)
 {
 	////////////////////////////////////////////////////////////////////////
 	int chno = checkCurChannel();
@@ -2356,7 +2356,7 @@ XYZ Renderer_tex2::getCenterOfMarkerPos(const MarkerPos& pos)
 	return loc;
 }
 
-void Renderer_tex2::solveMarkerCenter()
+void Renderer_gl1::solveMarkerCenter()
 {
 	if (listMarkerPos.size()<1)  return;
 
@@ -2380,7 +2380,7 @@ void Renderer_tex2::solveMarkerCenter()
 	}
 }
 
-void Renderer_tex2::solveMarkerViews()
+void Renderer_gl1::solveMarkerViews()
 {
 	if (listMarkerPos.size()<2)  return;
 
@@ -2392,7 +2392,7 @@ void Renderer_tex2::solveMarkerViews()
 	}
 }
 
-void Renderer_tex2::refineMarkerTranslate()
+void Renderer_gl1::refineMarkerTranslate()
 {
 	if (currentMarkerName<1 || currentMarkerName>listMarker.size())  return;
 	if (listMarkerPos.size()<1)  return;
@@ -2405,7 +2405,7 @@ void Renderer_tex2::refineMarkerTranslate()
 	updateMarkerLocation(currentMarkerName-1, loc);
 }
 
-void Renderer_tex2::refineMarkerCenter()
+void Renderer_gl1::refineMarkerCenter()
 {
 	if (currentMarkerName<1 || currentMarkerName>listMarker.size())  return;
 	if (listMarkerPos.size()<1)  return;
@@ -2417,7 +2417,7 @@ void Renderer_tex2::refineMarkerCenter()
 	updateMarkerLocation(currentMarkerName-1, loc);
 }
 
-void Renderer_tex2::refineMarkerLocal(int marker_id)
+void Renderer_gl1::refineMarkerLocal(int marker_id)
 {
 	if (marker_id<0 || marker_id>listMarker.size()-1)  return;
 
@@ -2428,7 +2428,7 @@ void Renderer_tex2::refineMarkerLocal(int marker_id)
 	updateMarkerLocation(marker_id, loc);
 }
 
-void Renderer_tex2::addMarker(XYZ &loc)
+void Renderer_gl1::addMarker(XYZ &loc)
 {
 	XYZ pt(loc.x+1, loc.y+1, loc.z+1); // marker position is 1-based
 
@@ -2471,7 +2471,7 @@ void Renderer_tex2::addMarker(XYZ &loc)
 #endif
 }
 
-void Renderer_tex2::updateMarkerLocation(int marker_id, XYZ &loc) //added by PHC, 090120
+void Renderer_gl1::updateMarkerLocation(int marker_id, XYZ &loc) //added by PHC, 090120
 {
 	XYZ pt(loc.x+1, loc.y+1, loc.z+1); // 090505 RZC : marker position is 1-based
 
@@ -2502,7 +2502,7 @@ void Renderer_tex2::updateMarkerLocation(int marker_id, XYZ &loc) //added by PHC
 #endif
 }
 
-bool Renderer_tex2::isInBound(const XYZ & loc, float factor, bool b_message)
+bool Renderer_gl1::isInBound(const XYZ & loc, float factor, bool b_message)
 {
 	float dZ = MAX((dim1+dim2+dim3)/3.0*factor, 10);
 	if (loc.z >= -dZ  &&  loc.z < dim3+dZ &&
@@ -2525,7 +2525,7 @@ bool Renderer_tex2::isInBound(const XYZ & loc, float factor, bool b_message)
 
 #define ___computation_functions___
 
-XYZ Renderer_tex2::getTranslateOfMarkerPos(const MarkerPos & pos, const ImageMarker & S)
+XYZ Renderer_gl1::getTranslateOfMarkerPos(const MarkerPos & pos, const ImageMarker & S)
 {
 	XYZ pt(S.x-1, S.y-1, S.z-1); // 090505 RZC : marker position is 1-based
 
@@ -2555,7 +2555,7 @@ XYZ Renderer_tex2::getTranslateOfMarkerPos(const MarkerPos & pos, const ImageMar
 }
 
 // in Image space (model space)
-void Renderer_tex2::_MarkerPos_to_NearFarPoint(const MarkerPos & pos, XYZ &loc0, XYZ &loc1)
+void Renderer_gl1::_MarkerPos_to_NearFarPoint(const MarkerPos & pos, XYZ &loc0, XYZ &loc1)
 {
 	Matrix P(4,4);		P << pos.P;   P = P.t();    // OpenGL is row-inner / C is column-inner
 	Matrix M(4,4);		M << pos.MV;  M = M.t();
@@ -2581,7 +2581,7 @@ void Renderer_tex2::_MarkerPos_to_NearFarPoint(const MarkerPos & pos, XYZ &loc0,
 	loc1 = XYZ(Z1(1), Z1(2), Z1(3));
 }
 
-double Renderer_tex2::distanceOfMarkerPos(const MarkerPos & pos0, const MarkerPos & pos)
+double Renderer_gl1::distanceOfMarkerPos(const MarkerPos & pos0, const MarkerPos & pos)
 {
 	XYZ Y1, Y2;
 	_MarkerPos_to_NearFarPoint(pos, Y1, Y2);
@@ -2619,7 +2619,7 @@ double Renderer_tex2::distanceOfMarkerPos(const MarkerPos & pos0, const MarkerPo
 //	return dist;
 }
 
-XYZ Renderer_tex2::getLocationOfListMarkerPos()
+XYZ Renderer_gl1::getLocationOfListMarkerPos()
 {
 	int N = listMarkerPos.size();
 	if (N<2)
@@ -2662,7 +2662,7 @@ XYZ Renderer_tex2::getLocationOfListMarkerPos()
 	return loc;
 }
 
-XYZ Renderer_tex2::getPointOnPlane(XYZ P1, XYZ P2, double plane[4]) //100731
+XYZ Renderer_gl1::getPointOnPlane(XYZ P1, XYZ P2, double plane[4]) //100731
 {
 	//         A*N + d
 	//  t = -------------
@@ -2675,7 +2675,7 @@ XYZ Renderer_tex2::getPointOnPlane(XYZ P1, XYZ P2, double plane[4]) //100731
 }
 
 // in Image space (model space)
-XYZ Renderer_tex2::getPointOnSections(XYZ P1, XYZ P2, double F_plane[4]) //100801
+XYZ Renderer_gl1::getPointOnSections(XYZ P1, XYZ P2, double F_plane[4]) //100801
 {
 	double plane[4];
 	XYZ P = P2; // from the far location
@@ -2730,7 +2730,7 @@ XYZ Renderer_tex2::getPointOnSections(XYZ P1, XYZ P2, double F_plane[4]) //10080
 
 
 // in Image space (model space)
-XYZ Renderer_tex2::getCenterOfLineProfile(XYZ P1, XYZ P2,
+XYZ Renderer_gl1::getCenterOfLineProfile(XYZ P1, XYZ P2,
 		double clipplane[4],	//clipplane==0 means no clip plane
 		int chno,    			//must be a valid channel number
 		float *p_value			//if p_value!=0, output value at center
@@ -2883,7 +2883,7 @@ bool fit_center_position(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1, V3D
 	return true;
 }
 
-XYZ Renderer_tex2::getCenterOfLocal(XYZ P)
+XYZ Renderer_gl1::getCenterOfLocal(XYZ P)
 {
 #ifndef test_main_cpp
 

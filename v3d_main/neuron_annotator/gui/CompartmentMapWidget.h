@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include "../../3drenderer/v3dr_glwidget.h"
-#include "../../3drenderer/renderer_tex2.h"
+#include "../../3drenderer/renderer_gl1.h"
 #include "CompartmentMapComboBox.h"
 
 // Define a class for visualizing compartment map

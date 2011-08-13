@@ -323,7 +323,7 @@ void Na3DWidget::onNotSingleClick()
 void Na3DWidget::highlightNeuronAtPosition(QPoint pos)
 {
     // qDebug()<<"left click ... ...";
-    XYZ loc = ((Renderer_tex2*)getRenderer())->selectPosition( pos.x(),  pos.y() );
+    XYZ loc = ((Renderer_gl1*)getRenderer())->selectPosition( pos.x(),  pos.y() );
     // select neuron: set x, y, z and emit signal
     // qDebug()<<"emit a signal ...";
     emit neuronSelected(loc.x, loc.y, loc.z);

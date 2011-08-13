@@ -42,7 +42,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define V3DR_SURFACEDIALOG_H_
 
 #include "v3dr_common.h"
-#include "renderer_tex2.h"
+#include "renderer_gl1.h"
 #include "v3dr_glwidget.h"
 
 #include "qtr_widget.h"
@@ -61,7 +61,7 @@ public:
 
 protected:
 	V3dR_GLWidget *glwidget, *tolink_widget;
-	Renderer_tex2* renderer;
+	Renderer_gl1* renderer;
 	int iLastTab;   //updated in linkTo before re-create tab
 	bool bCanUndo, bMod;
 	bool bAttached;

@@ -694,7 +694,7 @@ void ChannelTable::updateLuts(int i)
 {
 	//110729, pre-compute lookup-tables
 	int N = listChannel.size();
-	vector<RGBA8> lut(256);
+	QVector<RGBA8> lut(256);
 	if (i==-1)
 	{
 		luts.clear();

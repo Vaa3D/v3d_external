@@ -39,7 +39,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  * last update: 090406 by Hanchuan Peng. fix a bug not to set the default s.on states when create the label field surface
  */
 
-#include "renderer_tex2.h"
+#include "renderer_gl1.h"
 
 #include "marchingcubes.cpp"
 
@@ -105,9 +105,9 @@ const bool compiledLabelSurf = true; // display list or instantly drawing, seems
 static const char* i2strRGB[] = //{"R", "G", "B"};
 					{"1", "2", "3"}; //081230
 
-void Renderer_tex2::loadLabelfieldSurf(const QString& filename, int ch)
+void Renderer_gl1::loadLabelfieldSurf(const QString& filename, int ch)
 {
-	qDebug("    Renderer_tex2::loadLabelfieldSurf(ch = %d)", ch);
+	qDebug("    Renderer_gl1::loadLabelfieldSurf(ch = %d)", ch);
 
     lf_data_title = filename; // 081004
 
@@ -268,9 +268,9 @@ float _labelSampleFunc(float fX, float fY, float fZ)
 	return (count*255);
 }
 
-void Renderer_tex2::constructLabelfieldSurf(int mesh_method, int mesh_density)
+void Renderer_gl1::constructLabelfieldSurf(int mesh_method, int mesh_density)
 {
-	qDebug("    Renderer_tex2::constructLabelfieldSurf");
+	qDebug("    Renderer_gl1::constructLabelfieldSurf");
 
 	//==========================================
 	//090222: try to import surface obj name if possible
@@ -427,12 +427,12 @@ void Renderer_tex2::constructLabelfieldSurf(int mesh_method, int mesh_density)
 	// create compiled list
 		compileLabelfieldSurf();
 
-	qDebug("    Renderer_tex2::createLabelfieldSurf %d faces, cost time = %g sec", f_num, qtime.elapsed()*0.001);
+	qDebug("    Renderer_gl1::createLabelfieldSurf %d faces, cost time = %g sec", f_num, qtime.elapsed()*0.001);
 	lf_busy =false;
 
 }
 
-void Renderer_tex2::compileLabelfieldSurf(int update)
+void Renderer_gl1::compileLabelfieldSurf(int update)
 {
 	makeCurrent(); //ensure right context when multiple views animation or mouse drop, 081118
 
@@ -486,7 +486,7 @@ void Renderer_tex2::compileLabelfieldSurf(int update)
 
 }
 
-void Renderer_tex2::cleanLabelfieldSurf()
+void Renderer_gl1::cleanLabelfieldSurf()
 {
 	for (int i=0; i<list_listTriangle.size(); i++)
 	{
@@ -503,10 +503,10 @@ void Renderer_tex2::cleanLabelfieldSurf()
 	listLabelSurf.clear();
 }
 
-void Renderer_tex2::drawLabelfieldSurf()
+void Renderer_gl1::drawLabelfieldSurf()
 {
 	if (sShowSurfObjects==0 || lf_busy) return;
-	//qDebug("    Renderer_tex2::drawLabelfieldSurf");
+	//qDebug("    Renderer_gl1::drawLabelfieldSurf");
 
 	//glPushMatrix();
 
@@ -538,7 +538,7 @@ void Renderer_tex2::drawLabelfieldSurf()
 }
 
 
-void Renderer_tex2::createSurfCurrent(int ch)
+void Renderer_gl1::createSurfCurrent(int ch)
 {
 	try {
 
@@ -554,7 +554,7 @@ void Renderer_tex2::createSurfCurrent(int ch)
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-void Renderer_tex2::saveWavefrontOBJ(const QString& filename)
+void Renderer_gl1::saveWavefrontOBJ(const QString& filename)
 {
 	QFile qf(filename);
 	if (! qf.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -681,7 +681,7 @@ static void _convertIndexedFace2Triangle(
 }
 
 
-void Renderer_tex2::loadWavefrontOBJ(const QString& filename)
+void Renderer_gl1::loadWavefrontOBJ(const QString& filename)
 {
 	QFile qf(filename);
 	if (! qf.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -866,7 +866,7 @@ void Renderer_tex2::loadWavefrontOBJ(const QString& filename)
 	// create compiled list
 		compileLabelfieldSurf();
 
-	qDebug("    Renderer_tex2::loadWavefrontOBJ cost time = %g sec", qtime.elapsed()*0.001);
+	qDebug("    Renderer_gl1::loadWavefrontOBJ cost time = %g sec", qtime.elapsed()*0.001);
 	lf_busy=false;
 }
 
@@ -874,7 +874,7 @@ void Renderer_tex2::loadWavefrontOBJ(const QString& filename)
 
 char V3DS1_LOGO[128] = "V3DS1\0";
 
-void Renderer_tex2::saveV3DSurface(const QString& filename)
+void Renderer_gl1::saveV3DSurface(const QString& filename)
 {
 	QFile qf(filename);
 	if (! qf.open(QIODevice::WriteOnly) )
@@ -953,7 +953,7 @@ void Renderer_tex2::saveV3DSurface(const QString& filename)
 	qDebug("---------------------write %d objects, %d faces, %d vertices", list_listTriangle.size(), f_num, v_num);
 }
 
-void Renderer_tex2::loadV3DSurface(const QString& filename)
+void Renderer_gl1::loadV3DSurface(const QString& filename)
 {
 //tmp use by Hanchuan for a movie
 	int myoffset;
@@ -1127,7 +1127,7 @@ void Renderer_tex2::loadV3DSurface(const QString& filename)
 }
 
 // revise from loadV3DSurface to truncate all interactive operations
-void Renderer_tex2::loadV3DSFile(const QString& filename)
+void Renderer_gl1::loadV3DSFile(const QString& filename)
 {
     QFile qf(filename);
     if (! qf.open(QIODevice::ReadOnly) )

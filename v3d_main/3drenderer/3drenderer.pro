@@ -37,7 +37,7 @@ macx:LIBS += -framework CoreServices #Snow leopard GLee_r.o requires CoreService
 
 HEADERS += GLee_r.h \
     renderer.h \
-    renderer_tex2.h \
+    renderer_gl1.h \
     Renderer_gl2.h \
     v3dr_mainwindow.h \
     v3dr_glwidget.h \
@@ -48,9 +48,9 @@ HEADERS += GLee_r.h \
     barFigureDialog.h
 SOURCES += GLee_r.c \
     renderer.cpp \
-    renderer_tex2.cpp \
-    renderer_obj2.cpp \
-    renderer_hit2.cpp \
+    renderer_tex.cpp \
+    renderer_obj.cpp \
+    renderer_hit.cpp \
     renderer_labelfield.cpp \
     Renderer_gl2.cpp \
     test_main.cpp \

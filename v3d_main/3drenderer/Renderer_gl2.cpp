@@ -68,7 +68,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 
 Renderer_gl2::Renderer_gl2(void* widget)
-	: Renderer_tex2(widget)
+	: Renderer_gl1(widget)
 {
 	qDebug("   Renderer_gl2::Renderer_gl2");
 	init_members();
@@ -96,7 +96,7 @@ void Renderer_gl2::initialize(int version)
 
 	try {
 
-		Renderer_tex2::initialize();
+		Renderer_gl1::initialize();
 		if (version<2) return;
 
 		loadShader();
@@ -146,7 +146,7 @@ void Renderer_gl2::drawObj()
 	}
 
 	///////////////////////////
-	Renderer_tex2::drawObj();
+	Renderer_gl1::drawObj();
 	///////////////////////////
 
 	if (IF_OBJ_SHADER )//&& polygonMode==3)
@@ -301,7 +301,7 @@ void Renderer_gl2::equAlphaBlendingProjection()
 {
 	if (! tryVolShader)
 	{
-		Renderer_tex2::equAlphaBlendingProjection();
+		Renderer_gl1::equAlphaBlendingProjection();
 		return;
 	}
 	glBlendEquationEXT(GL_FUNC_ADD_EXT);/////////////////////
@@ -311,7 +311,7 @@ void Renderer_gl2::equMaxIntensityProjection()
 {
 	if (! tryVolShader)
 	{
-		Renderer_tex2::equMaxIntensityProjection();
+		Renderer_gl1::equMaxIntensityProjection();
 		return;
 	}
 	glBlendEquationEXT(GL_MAX_EXT);//////////////////////////
@@ -320,7 +320,7 @@ void Renderer_gl2::equCrossSection()
 {
 	if (! tryVolShader)
 	{
-		Renderer_tex2::equCrossSection();
+		Renderer_gl1::equCrossSection();
 		return;
 	}
 	glBlendEquationEXT(GL_FUNC_ADD_EXT);/////////////////////
@@ -669,7 +669,7 @@ void  Renderer_gl2::setupTexStreamBuffer()
 
 void Renderer_gl2::setupStackTexture(bool bfirst) {
     qDebug() << "Renderer_gl2::setupStackTexture() start";
-    Renderer_tex2::setupStackTexture(bfirst);
+    Renderer_gl1::setupStackTexture(bfirst);
 }
 
 

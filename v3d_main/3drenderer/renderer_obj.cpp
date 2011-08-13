@@ -29,7 +29,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 
 /*
- * renderer_obj2.cpp
+ * renderer_obj.cpp
  *
  *  Created on: Aug 29, 2008
  *      Author: ruanzongcai
@@ -39,7 +39,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  * Last update: by PHC, 2010-06-02, separate the content of function copyToEditableNeuron() to NeuronTree__2__V_NeuronSWC_list()
  */
 
-#include "renderer_tex2.h"
+#include "renderer_gl1.h"
 #include "v3dr_glwidget.h"
 
 #include "freeglut_geometry_r.c"
@@ -79,9 +79,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 ////////////////////////////////////////////////////////////////////
 
 
-void Renderer_tex2::loadObjectFromFile(const char* url)
+void Renderer_gl1::loadObjectFromFile(const char* url)
 {
-	qDebug("   Renderer_tex2::loadObjectFromFile (url)");
+	qDebug("   Renderer_gl1::loadObjectFromFile (url)");
 
 	QString filename;
 	if (url)
@@ -102,9 +102,9 @@ void Renderer_tex2::loadObjectFromFile(const char* url)
 		loadObjectFilename(filename);
 }
 
-void Renderer_tex2::loadObjectListFromFile()
+void Renderer_gl1::loadObjectListFromFile()
 {
-	qDebug("   Renderer_tex2::loadObjectListFromFile");
+	qDebug("   Renderer_gl1::loadObjectListFromFile");
 
 	QStringList qsl;
 	qsl.clear();
@@ -133,7 +133,7 @@ void Renderer_tex2::loadObjectListFromFile()
 	((QWidget*)widget)->show();
 }
 
-void Renderer_tex2::loadObjectFilename(const QString& filename)
+void Renderer_gl1::loadObjectFilename(const QString& filename)
 {
 	makeCurrent(); //ensure right context when multiple views animation or mouse drop, 081105, 081122
 
@@ -176,7 +176,7 @@ void Renderer_tex2::loadObjectFilename(const QString& filename)
 			loadCellAPO(filename);
 		}
 
-	} CATCH_handler( "Renderer_tex2::loadObjectFilename" );
+	} CATCH_handler( "Renderer_gl1::loadObjectFilename" );
 
     updateBoundingBox(); ///// 081121, all of loaded bounding-box are updated here
 
@@ -186,9 +186,9 @@ void Renderer_tex2::loadObjectFilename(const QString& filename)
 	}
 }
 
-void Renderer_tex2::saveSurfFile()
+void Renderer_gl1::saveSurfFile()
 {
-	qDebug("   Renderer_tex2::saveSurfFile");
+	qDebug("   Renderer_gl1::saveSurfFile");
 
 	if (list_listTriangle.size()==0)
 	{
@@ -217,16 +217,16 @@ void Renderer_tex2::saveSurfFile()
 			saveV3DSurface(filename);
 		}
 
-    } CATCH_handler( "Renderer_tex2::saveSurfFile" );
+    } CATCH_handler( "Renderer_gl1::saveSurfFile" );
 
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-void Renderer_tex2::loadObj()
+void Renderer_gl1::loadObj()
 {
 	cleanObj(); //070905
-	qDebug("  Renderer_tex2::loadObj");
+	qDebug("  Renderer_gl1::loadObj");
 	makeCurrent(); //ensure right context when multiple views animation or mouse drop, 081105
 
 	createMarker_atom(); 		//qDebug("	 glGetError(createMarker_atom) = %u", glGetError());
@@ -236,9 +236,9 @@ void Renderer_tex2::loadObj()
 	CHECK_GLErrorString_throw();
 }
 
-void Renderer_tex2::cleanObj()
+void Renderer_gl1::cleanObj()
 {
-	qDebug("   Renderer_tex2::cleanObj");
+	qDebug("   Renderer_gl1::cleanObj");
 	makeCurrent(); //ensure right context when multiple views animation or mouse drop, 081105
 
 	// marker
@@ -271,7 +271,7 @@ void Renderer_tex2::cleanObj()
 	cleanLabelfieldSurf();
 }
 
-void Renderer_tex2::updateBoundingBox()
+void Renderer_gl1::updateBoundingBox()
 {
 	BoundingBox& sBB =surfBoundingBox;
 	BoundingBox& BB  =boundingBox;
@@ -286,20 +286,20 @@ void Renderer_tex2::updateBoundingBox()
 		//qDebug("	!have_image");
 		boundingBox = surfBoundingBox; //081031
 	}
-	qDebug("  Renderer_tex2::updateBoundingBox surface (%g %g %g)--(%g %g %g)", sBB.x0,sBB.y0,sBB.z0, sBB.x1,sBB.y1,sBB.z1 );
-	qDebug("  Renderer_tex2::updateBoundingBox default (%g %g %g)--(%g %g %g)", BB.x0,BB.y0,BB.z0, BB.x1,BB.y1,BB.z1 );
+	qDebug("  Renderer_gl1::updateBoundingBox surface (%g %g %g)--(%g %g %g)", sBB.x0,sBB.y0,sBB.z0, sBB.x1,sBB.y1,sBB.z1 );
+	qDebug("  Renderer_gl1::updateBoundingBox default (%g %g %g)--(%g %g %g)", BB.x0,BB.y0,BB.z0, BB.x1,BB.y1,BB.z1 );
 
 	updateThicknessBox(); //090806
 }
 
-void Renderer_tex2::setThickness(double t)
+void Renderer_gl1::setThickness(double t)
 {
-	//qDebug("  Renderer_tex2::setThickness");
+	//qDebug("  Renderer_gl1::setThickness");
 	thicknessZ = t;
 	updateThicknessBox();
 }
 
-void Renderer_tex2::updateThicknessBox()
+void Renderer_gl1::updateThicknessBox()
 {
 	if (has_image())
 	{
@@ -326,20 +326,20 @@ void Renderer_tex2::updateThicknessBox()
 	}
 }
 
-void Renderer_tex2::setMarkerSpace()
+void Renderer_gl1::setMarkerSpace()
 {
 	Renderer::setObjectSpace(); //// object put in original image space, 090715 off
 	glTranslated(-start1,-start2,-start3); //090715
 	glScaled(thicknessX, thicknessY, thicknessZ);
 }
-void Renderer_tex2::drawMarker()
+void Renderer_gl1::drawMarker()
 {
 	glPushName(stImageMarker);
 		drawMarkerList();
 	glPopName();
 }
 
-void Renderer_tex2::setSurfaceStretchSpace()
+void Renderer_gl1::setSurfaceStretchSpace()
 {
 	Renderer::setObjectSpace(); //// object put in original image space, 090715 off
 	glTranslated(-start1,-start2,-start3); //090715
@@ -349,7 +349,7 @@ void Renderer_tex2::setSurfaceStretchSpace()
 		glScaled(thicknessX, thicknessY, thicknessZ);
 	}
 }
-void Renderer_tex2::drawObj()
+void Renderer_gl1::drawObj()
 {
 //	if (sShowMarkers==2 || sShowSurfObjects==2) // draw float over volume
 //	{
@@ -379,7 +379,7 @@ void Renderer_tex2::drawObj()
 
 #define IS_TRANSPARENT  (polygonMode>=3 && !b_selecting)
 
-void Renderer_tex2::disObjLighting()
+void Renderer_gl1::disObjLighting()
 {
 	glDisable( GL_COLOR_MATERIAL );
 	glDisable( GL_LIGHTING );
@@ -395,7 +395,7 @@ void Renderer_tex2::disObjLighting()
 		//glDepthFunc(GL_LESS);//more artifacts ???
 	}
 }
-void Renderer_tex2::setObjLighting()
+void Renderer_gl1::setObjLighting()
 {
 	glEnable(GL_ALPHA_TEST);  glAlphaFunc(GL_GREATER, 0); //for outline mode
 	if (IS_TRANSPARENT)
@@ -472,12 +472,12 @@ void Renderer_tex2::setObjLighting()
     glPopMatrix();
 }
 
-void Renderer_tex2::beginHighlight()
+void Renderer_gl1::beginHighlight()
 {
 	XYZW mater_emission = XYZW( .3, .3, .3,  1 );
 	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, mater_emission.v);
 }
-void Renderer_tex2::endHighlight()
+void Renderer_gl1::endHighlight()
 {
 	XYZW mater_no_emission = XYZW( 0, 0, 0,  1 );
 	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, mater_no_emission.v);
@@ -679,7 +679,7 @@ static GLuint _createDode()
 
 #define __image_marker__
 
-void Renderer_tex2::createMarker_atom()
+void Renderer_gl1::createMarker_atom()
 {
 	//	{pxUnknown, pxLocaNotUseful, pxLocaUseful, pxLocaUnsure, pxTemp};
 
@@ -715,9 +715,9 @@ void Renderer_tex2::createMarker_atom()
 
 ///////////////////////////////////////////////////////
 
-void Renderer_tex2::updateLandmark()
+void Renderer_gl1::updateLandmark()
 {
-	//qDebug("  Renderer_tex2::updateLandmark");
+	//qDebug("  Renderer_gl1::updateLandmark");
 
 #ifndef test_main_cpp
 	My4DImage* image4d = v3dr_getImage4d(_idep);
@@ -752,9 +752,9 @@ void Renderer_tex2::updateLandmark()
 #endif
 }
 
-void Renderer_tex2::drawMarkerList()
+void Renderer_gl1::drawMarkerList()
 {
-	//qDebug("    Renderer_tex2::drawMarkerList");
+	//qDebug("    Renderer_gl1::drawMarkerList");
 	if (sShowMarkers==0) return;
 
 	float maxD = boundingBox.Dmax();
@@ -877,13 +877,13 @@ void Renderer_tex2::drawMarkerList()
 
 #define __cell_apo__
 
-void Renderer_tex2::createCell_atom()
+void Renderer_gl1::createCell_atom()
 {
 	glistCell = _createSphere();
-	//qDebug("Renderer_tex2::createCell_atom -- createSphere = %u", glistCell);
+	//qDebug("Renderer_gl1::createCell_atom -- createSphere = %u", glistCell);
 }
 
-void Renderer_tex2::saveCellAPO(const QString& filename)
+void Renderer_gl1::saveCellAPO(const QString& filename)
 {
 #ifndef test_main_cpp
 	writeAPO_file(filename, listCell);
@@ -891,7 +891,7 @@ void Renderer_tex2::saveCellAPO(const QString& filename)
 }
 
 
-QList <CellAPO> Renderer_tex2::listFromAPO_file(const QString& filename)
+QList <CellAPO> Renderer_gl1::listFromAPO_file(const QString& filename)
 {
 	PROGRESS_DIALOG("Loading Point cloud", widget);
 	PROGRESS_PERCENT(1); // 0 or 100 not be displayed. 081102
@@ -904,7 +904,7 @@ QList <CellAPO> Renderer_tex2::listFromAPO_file(const QString& filename)
 }
 
 
-void Renderer_tex2::loadCellAPO(const QString& filename)  //090521 RZC: merge reading code to listFromAPO_file
+void Renderer_gl1::loadCellAPO(const QString& filename)  //090521 RZC: merge reading code to listFromAPO_file
 {
 	if (map_APOFile_IndexList.contains(filename))
 	{
@@ -940,9 +940,9 @@ void Renderer_tex2::loadCellAPO(const QString& filename)  //090521 RZC: merge re
     }
 }
 
-void Renderer_tex2::drawCellList()
+void Renderer_gl1::drawCellList()
 {
-	//qDebug("    Renderer_tex2::drawCellList");
+	//qDebug("    Renderer_gl1::drawCellList");
 	if (sShowSurfObjects==0) return;
 
 	for (int pass=0; pass<numPassFloatDraw(sShowSurfObjects); pass++)
@@ -1022,13 +1022,13 @@ void Renderer_tex2::drawCellList()
 
 const int mNeuron = 36; // less than 18 make tube and sphere can not connect smoothly
 
-void Renderer_tex2::createNeuron_tube()
+void Renderer_gl1::createNeuron_tube()
 {
 	glistTube    = _createCylinder(mNeuron,1);
 	glistTubeEnd = _createSphere(mNeuron);
 }
 
-void Renderer_tex2::drawDynamicNeuronTube(float rb, float rt, float length)
+void Renderer_gl1::drawDynamicNeuronTube(float rb, float rt, float length)
 {
 	GLUquadric* Q = gluNewQuadric();
 	gluQuadricOrientation( Q, GLU_OUTSIDE);
@@ -1039,7 +1039,7 @@ void Renderer_tex2::drawDynamicNeuronTube(float rb, float rt, float length)
 	gluDeleteQuadric(Q);
 }
 
-void Renderer_tex2::saveNeuronTree(int kk, const QString& filename) //kk is the cur number of the tree to save
+void Renderer_gl1::saveNeuronTree(int kk, const QString& filename) //kk is the cur number of the tree to save
 {
 	if (kk<0 || kk>=listNeuronTree.size())
 	{
@@ -1053,7 +1053,7 @@ void Renderer_tex2::saveNeuronTree(int kk, const QString& filename) //kk is the 
 }
 
 
-void Renderer_tex2::loadNeuronTree(const QString& filename)
+void Renderer_gl1::loadNeuronTree(const QString& filename)
 {
     bool contained = false;
     int idx = -1;
@@ -1091,7 +1091,7 @@ void Renderer_tex2::loadNeuronTree(const QString& filename)
     updateNeuronBoundingBox();
 }
 
-void Renderer_tex2::updateNeuronBoundingBox()
+void Renderer_gl1::updateNeuronBoundingBox()
 {
     swcBB = NULL_BoundingBox;
     foreach(NeuronTree SS, listNeuronTree)
@@ -1112,7 +1112,7 @@ void Renderer_tex2::updateNeuronBoundingBox()
 #define CURVE_NAME "curve_segment"
 #define CURVE_FILE "curve_segment"
 
-void Renderer_tex2::addCurveSWC(vector<XYZ> &loc_list, int chno)
+void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
 {
 #ifndef test_main_cpp
 
@@ -1173,7 +1173,7 @@ void Renderer_tex2::addCurveSWC(vector<XYZ> &loc_list, int chno)
 			listNeuronTree.append(SS);
 		}
 
-	} CATCH_handler( "Renderer_tex2::addCurveSWC" );
+	} CATCH_handler( "Renderer_gl1::addCurveSWC" );
 
     updateNeuronBoundingBox();
     updateBoundingBox(); // all of loaded bounding-box are updated here
@@ -1183,9 +1183,9 @@ void Renderer_tex2::addCurveSWC(vector<XYZ> &loc_list, int chno)
 
 #ifndef test_main_cpp
 
-void Renderer_tex2::updateNeuronTree(V_NeuronSWC & seg)
+void Renderer_gl1::updateNeuronTree(V_NeuronSWC & seg)
 {
-	qDebug("  Renderer_tex2::updateNeuronTree( V_NeuronSWC_list )");
+	qDebug("  Renderer_gl1::updateNeuronTree( V_NeuronSWC_list )");
 
 //	PROGRESS_DIALOG("Updating Neuron structure", widget);
 //	PROGRESS_PERCENT(1); // 0 or 100 not be displayed. 081102
@@ -1279,22 +1279,22 @@ void Renderer_tex2::updateNeuronTree(V_NeuronSWC & seg)
 		}
 		curEditingNeuron = SS.n;
 
-	} CATCH_handler( "Renderer_tex2::updateNeuronTree( V_NeuronSWC )" );
+	} CATCH_handler( "Renderer_gl1::updateNeuronTree( V_NeuronSWC )" );
 
     updateNeuronBoundingBox();
     updateBoundingBox(); // all of loaded bounding-box are updated here
 }
 
-V_NeuronSWC_list Renderer_tex2::copyToEditableNeuron(NeuronTree * ptree)
+V_NeuronSWC_list Renderer_gl1::copyToEditableNeuron(NeuronTree * ptree)
 {
-	qDebug("  Renderer_tex2::copyToEditableNeuron");
+	qDebug("  Renderer_gl1::copyToEditableNeuron");
 
 	return NeuronTree__2__V_NeuronSWC_list(ptree); // by PHC, 2010-06-10 as I separate this function to NeuronTree__2__V_NeuronSWC_list()
 }
 
-void Renderer_tex2::finishEditingNeuronTree()
+void Renderer_gl1::finishEditingNeuronTree()
 {
-	qDebug("  Renderer_tex2::finishEditingNeuronTree");
+	qDebug("  Renderer_gl1::finishEditingNeuronTree");
 	for (int i=0; i<listNeuronTree.size(); i++)
 	{
 		listNeuronTree[i].editable = false; //090928
@@ -1307,15 +1307,15 @@ void Renderer_tex2::finishEditingNeuronTree()
 #endif
 
 
-void Renderer_tex2::toggleLineType()
+void Renderer_gl1::toggleLineType()
 {
 	lineType = (lineType +1) %2;
 	if (lineType)	tryObjShader = 0; //091019
-	//qDebug("    Renderer_tex2::toggleLineType = %d", lineType);
+	//qDebug("    Renderer_gl1::toggleLineType = %d", lineType);
 	//compileNeuronTreeList();
 }
 
-//void Renderer_tex2::compileNeuronTreeList()
+//void Renderer_gl1::compileNeuronTreeList()
 //{
 //	if (compiledNeuron)
 //		for (int i=0; i<listNeuronTree.size(); i++)
@@ -1324,7 +1324,7 @@ void Renderer_tex2::toggleLineType()
 //	}
 //}
 //
-//void Renderer_tex2::compileNeuronTree(int index)
+//void Renderer_gl1::compileNeuronTree(int index)
 //{
 //	if (! compiledNeuron) return;
 //	makeCurrent(); //ensure right context when multiple views animation or mouse drop, 081117
@@ -1368,7 +1368,7 @@ const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////
 		};//////////////////////////////////////////////////////////////////////////////////
 const int neuron_type_color_num = sizeof(neuron_type_color)/(sizeof(GLubyte)*3);
 
-void Renderer_tex2::drawNeuronTree(int index)
+void Renderer_gl1::drawNeuronTree(int index)
 {
 	if (listNeuronTree.size() <1)  return;
 	if (index<0 || index>=listNeuronTree.size()) return;
@@ -1536,9 +1536,9 @@ void Renderer_tex2::drawNeuronTree(int index)
 	}//for
 }
 
-void Renderer_tex2::drawNeuronTreeList()
+void Renderer_gl1::drawNeuronTreeList()
 {
-	//qDebug("    Renderer_tex2::drawNeuronTree");
+	//qDebug("    Renderer_gl1::drawNeuronTree");
 	if (sShowSurfObjects==0) return;
 	if (listNeuronTree.size()<1)  return;
 

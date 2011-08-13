@@ -223,7 +223,6 @@ extern QProgressDialog progress;
 
 
 // 090424RZC: because QColorDialog::getColor cannot handle correctly when user clicks Cancel
-// this function is called in ColorEditor::color, LIST_COLOR(Renderer_tex2::processHit), V3dr_surfaceDialog::selectedColor
 inline bool v3dr_getColorDialog( QColor *color, QWidget *parent=0)
 {
 	QRgb input = 0xff000000;

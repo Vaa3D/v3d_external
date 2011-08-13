@@ -183,7 +183,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../3drenderer/qtr_widget.h \
     ../3drenderer/GLee_r.h \
     ../3drenderer/renderer.h \
-    ../3drenderer/renderer_tex2.h \
+    ../3drenderer/renderer_gl1.h \
     ../3drenderer/v3dr_surfaceDialog.h \
     ../3drenderer/ItemEditor.h \
     ../3drenderer/Renderer_gl2.h \
@@ -314,9 +314,9 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../3drenderer/v3dr_glwidget.cpp \
     ../3drenderer/GLee_r.c \
     ../3drenderer/renderer.cpp \
-    ../3drenderer/renderer_tex2.cpp \
-    ../3drenderer/renderer_obj2.cpp \
-    ../3drenderer/renderer_hit2.cpp \
+    ../3drenderer/renderer_tex.cpp \
+    ../3drenderer/renderer_obj.cpp \
+    ../3drenderer/renderer_hit.cpp \
     ../3drenderer/renderer_labelfield.cpp \
     ../3drenderer/v3dr_surfaceDialog.cpp \
     ../3drenderer/ItemEditor.cpp \
