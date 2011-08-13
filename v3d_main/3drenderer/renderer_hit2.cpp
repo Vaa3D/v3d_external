@@ -2733,7 +2733,7 @@ XYZ Renderer_tex2::getPointOnSections(XYZ P1, XYZ P2, double F_plane[4]) //10080
 XYZ Renderer_tex2::getCenterOfLineProfile(XYZ P1, XYZ P2,
 		double clipplane[4],	//clipplane==0 means no clip plane
 		int chno,    			//must be a valid channel number
-		float *value			//if value!=0, output value at center
+		float *p_value			//if p_value!=0, output value at center
 	)
 {
 
@@ -2815,7 +2815,30 @@ XYZ Renderer_tex2::getCenterOfLineProfile(XYZ P1, XYZ P2,
 			P1 = loc - D*(length*f/2);
 			P2 = loc + D*(length*f/2);
 		}
-	}
+
+		if (p_value)
+		{
+			XYZ P = loc;
+			float value;
+			switch (curImg->getDatatype())
+			{
+				case V3D_UINT8:
+					value = sampling3dAllTypesatBounding( vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+					break;
+				case V3D_UINT16:
+					value = sampling3dAllTypesatBounding( (short int *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+					break;
+				case V3D_FLOAT32:
+					value = sampling3dAllTypesatBounding( (float *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+					break;
+				default:
+					v3d_msg("Unsupported data type found. You should never see this.", 0);
+					return loc;
+			}
+			*p_value = value;
+		}
+
+	}//valid data
 #endif
 
 	//100721: Now small tag added in sampling3dUINT8atBounding makes loc in bound box

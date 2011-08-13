@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -622,7 +622,7 @@ static void _convertIndexedFace2Triangle(
 	    QList <XYZ> & listVertex,
 	    QList <XYZ> & listNormal,
 	    QList <TriangleIndex> & listFaceIndex,
-	    QList <QList <int> > & list2Group,  // group(faceIndex list)
+	    QList <QList <int> > & list2Group,  // list of group(list of faceIndex)
 		QList <Triangle*> & list_pTriangle) // output
 {
 	try
@@ -745,6 +745,7 @@ void Renderer_tex2::loadWavefrontOBJ(const QString& filename)
 				for (int i=0; i<qsl.size(); i++)
 				{
 					qsl[i].truncate(99);
+					// qsl[0]=="g"
 					if (i==1) S.label = qsl[i].toInt();
 					if (i==2) S.label2 = qsl[i].toInt();
 					if (i==3) S.name = qsl[i]; //strcpy(S.name, Q_CSTR(qsl[i]));
@@ -766,6 +767,7 @@ void Renderer_tex2::loadWavefrontOBJ(const QString& filename)
 				for (int i=0; i<qsl.size(); i++)
 				{
 					qsl[i].truncate(99);
+					// qsl[0]=="v" or "vn"
 					if (i==1)  V.x = qsl[i].toFloat();
 					if (i==2)  V.y = qsl[i].toFloat();
 					if (i==3)  V.z = qsl[i].toFloat();
@@ -797,7 +799,8 @@ void Renderer_tex2::loadWavefrontOBJ(const QString& filename)
 				for (int i=0; i<qsl.size(); i++)
 				{
 					qsl[i].truncate(99);
-					if (i==1)  _readVTN(T, i-1, qsl[i]); // v_num is 1-based
+					// qsl[0]=="f"
+					if (i==1)  _readVTN(T, i-1, qsl[i]);
 					if (i==2)  _readVTN(T, i-1, qsl[i]);
 					if (i==3)  _readVTN(T, i-1, qsl[i]);
 				}
@@ -869,7 +872,7 @@ void Renderer_tex2::loadWavefrontOBJ(const QString& filename)
 
 
 
-char V3DS_LOGO[128] = "V3DS1\0";
+char V3DS1_LOGO[128] = "V3DS1\0";
 
 void Renderer_tex2::saveV3DSurface(const QString& filename)
 {
@@ -894,7 +897,7 @@ void Renderer_tex2::saveV3DSurface(const QString& filename)
     int v_num = 0;
 
 	int i,j;
-	for (i=0; i<sizeof(V3DS_LOGO); i++) QF_WRITE( V3DS_LOGO[i] );
+	for (i=0; i<sizeof(V3DS1_LOGO); i++) QF_WRITE( V3DS1_LOGO[i] );
 
 	int g_num = list_listTriangle.size();	//group/label number
 	QF_WRITE( g_num );
@@ -990,10 +993,10 @@ void Renderer_tex2::loadV3DSurface(const QString& filename)
 
 	int i,j;
 
-    char logo[sizeof(V3DS_LOGO)];
-	for (i=0; i<sizeof(V3DS_LOGO); i++) QF_READ( logo[i] );	 qDebug("	[%s]", logo);
+    char logo[sizeof(V3DS1_LOGO)];
+	for (i=0; i<sizeof(V3DS1_LOGO); i++) QF_READ( logo[i] );	 qDebug("	[%s]", logo);
 	bool b_logo = true;
-	for (i=0; i<strlen(V3DS_LOGO); i++) b_logo = (b_logo && V3DS_LOGO[i]==logo[i]); // end with \0
+	for (i=0; i<strlen(V3DS1_LOGO); i++) b_logo = (b_logo && V3DS1_LOGO[i]==logo[i]); // end with \0
 	if (! b_logo)
 	{
 		throw (const char*)"V3DS1: file format not match";
@@ -1144,10 +1147,10 @@ void Renderer_tex2::loadV3DSFile(const QString& filename)
 
     int i,j;
 
-    char logo[sizeof(V3DS_LOGO)];
-    for (i=0; i<sizeof(V3DS_LOGO); i++) QF_READ( logo[i] );	 qDebug("	[%s]", logo);
+    char logo[sizeof(V3DS1_LOGO)];
+    for (i=0; i<sizeof(V3DS1_LOGO); i++) QF_READ( logo[i] );	 qDebug("	[%s]", logo);
     bool b_logo = true;
-    for (i=0; i<strlen(V3DS_LOGO); i++) b_logo = (b_logo && V3DS_LOGO[i]==logo[i]); // end with \0
+    for (i=0; i<strlen(V3DS1_LOGO); i++) b_logo = (b_logo && V3DS1_LOGO[i]==logo[i]); // end with \0
     if (! b_logo)
     {
         throw (const char*)"V3DS1: file format not match";
