@@ -1150,12 +1150,12 @@ void V3dR_MainWindow::initVolumeCutRange()
 		int dc = CLAMP(0,3, glWidget->dataDim4());
 		comboBox_channel->setEnabled(dc>0); //090922
 		comboBox_channel->clear();
-		comboBox_channel->addItem("all"); //index=0
+		comboBox_channel->addItem("all (only for markers)"); //index=0
 		for (int i=1; i<=dc; i++)
 		{
 			comboBox_channel->addItem(QString("%1").arg(i));
 		}
-		comboBox_channel->setCurrentIndex(1);
+		comboBox_channel->setCurrentIndex(0);
 	}
 
 	if (fcutSlider) {
