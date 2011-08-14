@@ -29,14 +29,14 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 
 /*
- * Renderer_gl2.cpp
+ * renderer_gl2.cpp
  *
  *  Created on: Nov 20, 2008
  *      Author: ruanzongcai
  */
 
 
-#include "Renderer_gl2.h"
+#include "renderer_gl2.h"
 
 #include "glsl_r.cpp" //for glsl_r.h
 

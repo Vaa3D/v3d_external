@@ -38,12 +38,12 @@ macx:LIBS += -framework CoreServices #Snow leopard GLee_r.o requires CoreService
 HEADERS += GLee_r.h \
     renderer.h \
     renderer_gl1.h \
-    Renderer_gl2.h \
+    renderer_gl2.h \
     v3dr_mainwindow.h \
     v3dr_glwidget.h \
-    V3dr_surfaceDialog.h \
+    v3dr_surfaceDialog.h \
     ItemEditor.h \
-    V3dr_colormapDialog.h \
+    v3dr_colormapDialog.h \
     gradients.h hoverpoints.h \
     barFigureDialog.h
 SOURCES += GLee_r.c \
@@ -52,14 +52,14 @@ SOURCES += GLee_r.c \
     renderer_obj.cpp \
     renderer_hit.cpp \
     renderer_labelfield.cpp \
-    Renderer_gl2.cpp \
+    renderer_gl2.cpp \
     test_main.cpp \
     v3dr_mainwindow.cpp \
     v3dr_control_signal.cpp \
     v3dr_glwidget.cpp \
-    V3dr_surfaceDialog.cpp \
+    v3dr_surfaceDialog.cpp \
     ItemEditor.cpp \
-    V3dr_colormapDialog.cpp \
+    v3dr_colormapDialog.cpp \
     gradients.cpp hoverpoints.cpp \
     barFigureDialog.cpp
 RESOURCES += 3drenderer.qrc
