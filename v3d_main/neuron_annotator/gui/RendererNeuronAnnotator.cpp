@@ -1,4 +1,4 @@
-#include "../3drenderer/Renderer_gl2.h"
+#include "../3drenderer/renderer_gl2.h"
 #include "RendererNeuronAnnotator.h"
 #include "../AnnotationSession.h"
 

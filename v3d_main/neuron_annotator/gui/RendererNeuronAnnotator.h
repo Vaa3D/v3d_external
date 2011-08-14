@@ -2,7 +2,7 @@
 #define RENDERERNEURONANNOTATOR_H
 
 #include <QObject>
-#include "../../3drenderer/Renderer_gl2.h"
+#include "../../3drenderer/renderer_gl2.h"
 #include "../geometry/Vector3D.h"
 
 class RendererNeuronAnnotator : public QObject, public Renderer_gl2
