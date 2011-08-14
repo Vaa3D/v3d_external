@@ -40,7 +40,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #define V3DR_COLORMAPDIALOG_H_
 
 #include "v3dr_common.h"
-#include "Renderer_gl2.h"
+#include "renderer_gl2.h"
 #include "v3dr_glwidget.h"
 
 #include "qtr_widget.h"

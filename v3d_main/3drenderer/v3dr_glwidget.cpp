@@ -49,7 +49,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 // Dynamically choice a renderer
 #include "renderer.h"
 #include "renderer_gl1.h"
-#include "Renderer_gl2.h"
+#include "renderer_gl2.h"
 
 //PROGRESS_DIALOG("", 0)
 V3dr_colormapDialog *V3dR_GLWidget::colormapDlg = 0;
