@@ -1,6 +1,6 @@
 all: mylib
 
-CFLAGS += -O4
+CFLAGS += -O4 -fPIC
 
 modules = cdf.o fct.min.o linear.algebra.o array.o \
           fct.root.o image.o utilities.o hash.o \

@@ -1,6 +1,6 @@
 APPS = tiffconvert tifftagger tiffRGB tiffshow mrc2tiff
 
-FLAGS += -O4
+FLAGS += -O4 -fPIC
 
 all: mytiff.o $(APPS)
 
