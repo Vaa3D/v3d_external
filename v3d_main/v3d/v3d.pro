@@ -186,7 +186,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../3drenderer/renderer_gl1.h \
     ../3drenderer/v3dr_surfaceDialog.h \
     ../3drenderer/ItemEditor.h \
-    ../3drenderer/Renderer_gl2.h \
+    ../3drenderer/renderer_gl2.h \
     ../3drenderer/v3dr_colormapDialog.h \
     ../3drenderer/gradients.h \
     ../3drenderer/hoverpoints.h \
@@ -320,7 +320,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../3drenderer/renderer_labelfield.cpp \
     ../3drenderer/v3dr_surfaceDialog.cpp \
     ../3drenderer/ItemEditor.cpp \
-    ../3drenderer/Renderer_gl2.cpp \
+    ../3drenderer/renderer_gl2.cpp \
     ../3drenderer/v3dr_colormapDialog.cpp \
     ../3drenderer/gradients.cpp \
     ../3drenderer/hoverpoints.cpp \

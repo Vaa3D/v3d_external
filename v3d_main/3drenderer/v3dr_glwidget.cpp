@@ -93,8 +93,8 @@ V3dR_GLWidget::~V3dR_GLWidget()
 	qDebug("V3dR_GLWidget::~V3dR_GLWidget =======================================");
 	_in_destructor = true;
 
-	if (colormapDlg && colormapDlg->DecRef(this)<1) ;//colormapDlg = 0 safely called in destructor of colormapDlg;
-	if (surfaceDlg && surfaceDlg->DecRef(this)<1) ;  //surfaceDlg = 0  safely called in destructor of surfaceDlg;
+	if (colormapDlg && colormapDlg->DecRef(this)<1) {}//colormapDlg = 0 safely called in destructor of colormapDlg;
+	if (surfaceDlg && surfaceDlg->DecRef(this)<1) {} //surfaceDlg = 0  safely called in destructor of surfaceDlg;
 
 	deleteRenderer(); //090711 RZC: maybe too late, because some version Qt destroyed GL context before here.
 
@@ -461,11 +461,13 @@ bool V3dR_GLWidget::event(QEvent* e) //090427 RZC
 //		break;
 //		}
 	}
+
 	if (event_tip && renderer)
 	{
 		QPoint gpos = mapToGlobal(pos);
 		tipBuf[0] = '\0';
-		if (renderer->selectObj(pos.x(), pos.y(), false, tipBuf));
+		if (renderer->selectObj(pos.x(), pos.y(), false, tipBuf))
+			{} //a switch to turn on/off hover tip, because processHit always return 0 for tipBuf!=0
 		{
 			QToolTip::showText(gpos, QString(tipBuf), this);
 		}
@@ -550,10 +552,17 @@ void V3dR_GLWidget::stillPaint()
 
 
 #define KM  QApplication::keyboardModifiers()
-#define IS_SHIFT_MODIFIER  (KM==Qt::ShiftModifier)
-#define IS_MODEL_MODIFIER  (KM==Qt::AltModifier || KM==ALT2_MODIFIER)
-#define WITH_SHIFT_MODIFIER  (KM & Qt::ShiftModifier)
-#define WITH_MODEL_MODIFIER  (KM & Qt::AltModifier || KM & ALT2_MODIFIER)
+#define IS_CTRL_MODIFIER		((KM==Qt::ControlModifier) || (KM==CTRL2_MODIFIER))
+#define WITH_CTRL_MODIFIER		((KM & Qt::ControlModifier) || (KM & CTRL2_MODIFIER))
+#define IS_ALT_MODIFIER			((KM==Qt::AltModifier) || (KM==ALT2_MODIFIER))
+#define WITH_ALT_MODIFIER		((KM & Qt::AltModifier) || (KM & ALT2_MODIFIER))
+#define IS_SHIFT_MODIFIER		((KM==Qt::ShiftModifier))
+#define WITH_SHIFT_MODIFIER		((KM & Qt::ShiftModifier))
+
+#define IS_TRANSLATE_MODIFIER		IS_SHIFT_MODIFIER
+#define WITH_TRANSLATE_MODIFIER		WITH_SHIFT_MODIFIER
+#define IS_MODEL_MODIFIER			IS_ALT_MODIFIER
+#define WITH_MODEL_MODIFIER			WITH_ALT_MODIFIER
 
 #define MOUSE_SHIFT(dx, D)  (int(SHIFT_RANGE*2* float(dx)/D))
 #define MOUSE_ROT(dr, D)    (int(MOUSE_SENSITIVE*270* float(dr)/D) *ANGLE_TICK)
@@ -610,7 +619,7 @@ void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
 	int dy = event->y() - lastPos.y();
 	lastPos = event->pos();
 
-	if (event->buttons() & Qt::RightButton && renderer) //right-drag for 3d curve
+	if ((event->buttons() & Qt::RightButton) && renderer) //right-drag for 3d curve
 		if ( ABS(dx) + ABS(dy) >=2 )
 	{
 		(renderer->movePen(event->x(), event->y(), true));
@@ -628,7 +637,7 @@ void V3dR_GLWidget::mouseMoveEvent(QMouseEvent *event)
 		int yShiftStep = MOUSE_SHIFT(dy, viewH);
 
 		// mouse control view space, transformed to model space, 081026
-		if (IS_SHIFT_MODIFIER) // shift+mouse control view space translation, 081104
+		if (IS_TRANSLATE_MODIFIER) // shift+mouse control view space translation, 081104
 		{
 			setXShift(_xShift + xShiftStep);// move +view -model
 			setYShift(_yShift - yShiftStep);// move -view +model
@@ -656,7 +665,7 @@ void V3dR_GLWidget::wheelEvent(QWheelEvent *event)
 	int zoomStep = MOUSE_ZOOM(d);
     int zRotStep = MOUSE_ZROT(d);
 
-    if (IS_SHIFT_MODIFIER) // shift+mouse control view space translation, 081104
+    if (IS_TRANSLATE_MODIFIER) // shift+mouse control view space translation, 081104
     {
     	viewRotation(0, 0, zRotStep);
     }
@@ -706,7 +715,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			{
 				if (WITH_MODEL_MODIFIER)
 		        	modelRotation(0, -5, 0);
-				else if (WITH_SHIFT_MODIFIER)
+				else if (WITH_TRANSLATE_MODIFIER)
 					setXShift(_xShift -1);// move -model
 				else
 					setXShift(_xShift +1);// move +view
@@ -716,7 +725,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			{
 				if (WITH_MODEL_MODIFIER)
 		        	modelRotation(0, +5, 0);
-				else if (WITH_SHIFT_MODIFIER)
+				else if (WITH_TRANSLATE_MODIFIER)
 					setXShift(_xShift +1);// move +model
 				else
 					setXShift(_xShift -1);// move -view
@@ -726,7 +735,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			{
 				if (WITH_MODEL_MODIFIER)
 		        	modelRotation(-5, 0, 0);
-				else if (WITH_SHIFT_MODIFIER)
+				else if (WITH_TRANSLATE_MODIFIER)
 					setYShift(_yShift +1);// move +model
 				else
 					setYShift(_yShift -1);// move -view
@@ -736,7 +745,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			{
 				if (WITH_MODEL_MODIFIER)
 		        	modelRotation(+5, 0, 0);
-				else if (WITH_SHIFT_MODIFIER)
+				else if (WITH_TRANSLATE_MODIFIER)
 					setYShift(_yShift -1);// move -model
 				else
 					setYShift(_yShift +1);// move +view
@@ -768,7 +777,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			}
 	  		break;
 		case Qt::Key_Backslash:
-			if ((KM & CTRL2_MODIFIER  ||  KM & Qt::ControlModifier))
+			if (IS_CTRL_MODIFIER)
 			{
 				emit changeOrthoView(!_orthoView);
 			}
@@ -813,32 +822,32 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 
 	  		//// button shortcut //////////////////////////////////////////////////////////////////
 		case Qt::Key_B:
-		    if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
+			if (IS_CTRL_MODIFIER)
 		    {
 		    	setBright();
 			}
 	  		break;
 		case Qt::Key_R:
-		    if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
+			if (IS_CTRL_MODIFIER)
 		    {
 		    	reloadData();
 			}
 	  		break;
 		case Qt::Key_U:
-		    if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
+			if (IS_CTRL_MODIFIER)
 		    {
 		    	updateWithTriView();
 			}
 	  		break;
 //		case Qt::Key_I:
-//		    if ((KM==CTRL_MODIFIER || KM==Qt::ControlModifier))
+//		    if (IS_CTRL_MODIFIER)
 //		    {
 //		    	if (colormapDlg && !colormapDlg->isHidden()) colormapDlg->hide();
 //		    	else volumeColormapDialog();
 //			}
 //	  		break;
 //		case Qt::Key_O:
-//		    if ((KM==CTRL_MODIFIER || KM==Qt::ControlModifier))
+//		    if (IS_CTRL_MODIFIER)
 //		    {
 //		    	if (surfaceDlg && !surfaceDlg->isHidden()) surfaceDlg->hide();
 //		    	else surfaceSelectDialog();
@@ -847,15 +856,17 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 
 	  		///// advanced OpenGL shortcut // use & instead of == //////////////////////////////////////////////////////
 		case Qt::Key_I:
-		    if ((KM & Qt::ShiftModifier) && //advanced
-		    	(KM & CTRL2_MODIFIER  ||  KM & Qt::ControlModifier))
+		    if ( WITH_SHIFT_MODIFIER && //advanced
+		    		WITH_CTRL_MODIFIER
+		    	)
 		    {
 		    	showGLinfo();
 			}
 	  		break;
 		case Qt::Key_G:
-		    if ((KM & Qt::ShiftModifier) && //advanced
-		    	(KM & CTRL2_MODIFIER  ||  KM & Qt::ControlModifier))
+		    if ( WITH_SHIFT_MODIFIER && //advanced
+		    		WITH_CTRL_MODIFIER
+				)
 		    {
 		    	toggleShader();
 			}
@@ -863,36 +874,39 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 
 	  		///// volume texture operation //////////////////////////////////////////////////////
 		case Qt::Key_F:
-		    if ( (KM & CTRL2_MODIFIER || KM & Qt::ControlModifier))
+		    if (IS_CTRL_MODIFIER)
 		    {
 		    	toggleTexFilter();
 			}
 	  		break;
 		case Qt::Key_T:
-		    if ((KM & Qt::ShiftModifier) && //advanced
-		    	(KM & CTRL2_MODIFIER || KM & Qt::ControlModifier))
+		    if ( WITH_SHIFT_MODIFIER && //advanced
+		    		WITH_CTRL_MODIFIER
+				)
 		    {
 		    	toggleTex2D3D();
 			}
 	  		break;
 		case Qt::Key_C:
-		    if ((KM & Qt::ShiftModifier) && //advanced
-		    	(KM & CTRL2_MODIFIER || KM & Qt::ControlModifier))
+		    if ( WITH_SHIFT_MODIFIER && //advanced
+		    		WITH_CTRL_MODIFIER
+				)
 		    {
 		    	toggleTexCompression();
 			}
 	  		break;
 		case Qt::Key_V:
-		    if ((KM & Qt::ShiftModifier) && //advanced
-		    	(KM & CTRL2_MODIFIER  ||  KM & Qt::ControlModifier))
+		    if ( WITH_SHIFT_MODIFIER && //advanced
+		    		WITH_CTRL_MODIFIER
+				)
 		    {
 		    	toggleTexStream();
 			}
-		    else if (KM==ALT2_MODIFIER || KM==Qt::AltModifier)
+		    else if (IS_ALT_MODIFIER)
 		    {
 		    	changeVolShadingOption();
 			}
-		    else if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
+		    else if (IS_CTRL_MODIFIER)
 		    {
 		    	updateImageData();
 			}
@@ -900,16 +914,17 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 
 	  		///// surface object operation //////////////////////////////////////////////////////
 		case Qt::Key_P:
-		    if ((KM & Qt::ShiftModifier) && //advanced
-		    	(KM & CTRL2_MODIFIER  ||  KM & Qt::ControlModifier))
+		    if ( WITH_SHIFT_MODIFIER && //advanced
+		    		WITH_CTRL_MODIFIER
+				)
 		    {
 		    	toggleObjShader();
 			}
-		    else if ((KM == CTRL2_MODIFIER || KM == Qt::ControlModifier))
+		    else if (IS_CTRL_MODIFIER)
 		    {
 		    	togglePolygonMode();
 			}
-		    else if (KM==ALT2_MODIFIER || KM==Qt::AltModifier)
+		    else if (IS_ALT_MODIFIER)
 		    {
 		    	changeObjShadingOption();
 			}
@@ -924,11 +939,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 
 	  		///// cell operation ///////////////////////////////////////////////////////
 		case Qt::Key_N:
-		    if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
+		    if (IS_CTRL_MODIFIER)
 		    {
 		    	toggleCellName();
 			}
-		    else if (KM==Qt::ShiftModifier) // toggle marker name display. by Lei Qu, 110425
+		    else if (IS_SHIFT_MODIFIER) // toggle marker name display. by Lei Qu, 110425
 		    {
 		    	toggleMarkerName();
 		    }
@@ -936,11 +951,11 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 
 	  		///// neuron operation //////////////////////////////////////////////////////
 		case Qt::Key_L:
-		    if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
+		    if (IS_CTRL_MODIFIER)
 		    {
 		    	toggleLineType();
 			}
-		    else if (KM==ALT2_MODIFIER || KM==Qt::AltModifier)
+		    else if (IS_ALT_MODIFIER)
 		    {
 		    	changeLineOption();
 			}
@@ -948,7 +963,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 
 #ifndef test_main_cpp
 		case Qt::Key_Z: //undo the last tracing step if possible. by PHC, 090120
-		    if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
+		    if (IS_CTRL_MODIFIER)
 		    {
 		    	if (v3dr_getImage4d(_idep) && renderer)
 		    	{
@@ -958,7 +973,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			}
 	  		break;
 		case Qt::Key_X: //090924 RZC: redo
-		    if ((KM==CTRL2_MODIFIER || KM==Qt::ControlModifier))
+		    if (IS_CTRL_MODIFIER)
 		    {
 		    	if (v3dr_getImage4d(_idep) && renderer)
 		    	{
@@ -2039,7 +2054,7 @@ void V3dR_GLWidget::setShowMarkers(int s)
 		{
 		case Qt::Unchecked: 		s = 0; break;
 		case Qt::PartiallyChecked:	s = 1; break;
-		default: s = 2;
+		default: s = 2; break;
 		}
 		renderer->sShowMarkers = s;
 		POST_updateGL();
@@ -2055,7 +2070,7 @@ void V3dR_GLWidget::setShowSurfObjects(int s)
 		{
 		case Qt::Unchecked: 		s = 0; break;
 		case Qt::PartiallyChecked:	s = 1; break;
-		default: s = 2;
+		default: s = 2; break;
 		}
 		renderer->sShowSurfObjects = s;
 		POST_updateGL();

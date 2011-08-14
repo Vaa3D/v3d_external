@@ -375,6 +375,7 @@ int XFormWidget::pushTimepointIn3DWindow(int timepoint)
 	{
 		return w->setVolumeTimePoint(timepoint);
 	}
+	return 0;
 }
 
 bool XFormWidget::screenShot3DWindow(QString filename)
@@ -385,6 +386,7 @@ bool XFormWidget::screenShot3DWindow(QString filename)
 	{
 		return w->screenShot(filename);
 	}
+	return false;
 }
 
 bool XFormWidget::screenShotROI3DWindow(QString filename)
@@ -395,6 +397,7 @@ bool XFormWidget::screenShotROI3DWindow(QString filename)
 	{
 		return w->screenShot(filename);
 	}
+	return false;
 }
 
 

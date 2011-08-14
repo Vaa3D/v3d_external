@@ -1129,8 +1129,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			{
 				if (p_tree->listNeuron.at(ci).x==c_pos->x &&
 				    p_tree->listNeuron.at(ci).y==c_pos->y &&
-					p_tree->listNeuron.at(ci).z==c_pos->z)
-					n_id==ci;
+					p_tree->listNeuron.at(ci).z==c_pos->z
+					)
+					n_id=ci; //n_id==ci; //110814 RZC fixed by Eclipse indigo, but this act never be executed, so no effect.
 			}
 
 			if (n_id>=0)
