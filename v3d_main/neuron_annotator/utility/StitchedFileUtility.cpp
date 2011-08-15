@@ -3,6 +3,7 @@
 #include <QDir>
 #include "../../v3d/v3d_core.h"
 #include "StitchedFileUtility.h"
+#include "../basic_c_fun/imageio_mylib.h"
 
 using namespace std;
 
@@ -81,7 +82,16 @@ bool StitchedFileUtility::execute() {
     }
 
     qDebug() << "Saving signal image to file=" << outputTifFilepath;
-    signalImage.saveFile(outputTifFilepath);
+    //signalImage.saveFile(outputTifFilepath);
+
+    V3DLONG mysz[4];
+    mysz[0] = signalImage.getXDim();
+    mysz[1] = signalImage.getYDim();
+    mysz[2] = signalImage.getZDim();
+    mysz[3] = signalImage.getCDim();
+
+    saveStack2TifMylib(outputTifFilepath.toAscii().data(), (const unsigned char*)signalImage.getData(), mysz, signalImage.getDatatype());
+
     signalImage.cleanExistData();
 
     return true;
