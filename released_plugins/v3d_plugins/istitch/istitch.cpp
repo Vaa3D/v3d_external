@@ -68,8 +68,8 @@ QStringList importSeriesFileList_addnumbersort(const QString & curFilePath)
 	
 	// get the image files namelist in the directory
 	QStringList imgSuffix;
-	imgSuffix<<"*.tif"<<"*.raw"<<"*.lsm"
-			<<"*.TIF"<<"*.RAW"<<"*.LSM";
+	imgSuffix<<"*.tif"<<"*.raw"<<"*.v3draw"<<"*.lsm" 
+			<<"*.TIF"<<"*.RAW"<<"*.V3DRAW"<<"*.LSM";
 	
 	QDir dir(curFilePath);
 	if (!dir.exists())
