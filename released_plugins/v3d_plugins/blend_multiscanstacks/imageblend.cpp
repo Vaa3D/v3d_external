@@ -1597,7 +1597,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         if(infilelist->empty()) 
         {
             //print Help info
-            printf("\nUsage: v3d -x blend_multiscanstacks.dylib -f multiscanblend -i <input_images> -o <output_image> -p \"#s <save_blending_result zero(false)/nonzero(true)>\" \n");
+            printf("\nUsage: v3d -x blend_multiscanstacks.dylib -f multiscanblend -i <input_images> -o <output_image> -p \"#s <save_blending_result zero(false)/nonzero(true)> #k <keep_input_order nonzero(true)/zero(false)>\" \n");
             
             return true;
         }
@@ -1619,6 +1619,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         if(input.size()>1) { paralist = (vector<char*> *)(input.at(1).p); paras =  paralist->at(0);} // parameters
         
         bool b_saveimage = true; // save the blended image by default
+        bool b_keepinputorder = true; // keep inputs order by default
         
         qDebug()<<"parameters ..."<<paras;
         
@@ -1669,9 +1670,14 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                                 b_saveimage = atoi( argv[i+1] )?true:false;                                
                                 i++;
                             }
+                            else if (!strcmp(key, "k"))
+                            {                                
+                                b_keepinputorder = atoi( argv[i+1] )?true:false;                                
+                                i++;
+                            }
                             else
                             {
-                                cout<<"parsing ..."<<key<<i<<"Unknown command. Type 'v3d -x plugin_name -f function_name' for usage"<<endl;
+                                cout<<"parsing ..."<<key<<" "<<i<<" "<<"Unknown command. Type 'v3d -x plugin_name -f function_name' for usage"<<endl;
                                 return false;
                             }
                             
@@ -1679,7 +1685,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                     }
                     else
                     {
-                        cout<<"parsing ..."<<key<<i<<"Unknown command. Type 'v3d -x plugin_name -f function_name' for usage"<<endl;
+                        cout<<"parsing ..."<<key<<" "<<i<<" "<<"Unknown command. Type 'v3d -x plugin_name -f function_name' for usage"<<endl;
                         return false;
                     }
                     
@@ -1768,6 +1774,55 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             return false;
         }
         
+        // swap inputs' order by choosing the input with more color channels as the first input
+        if(!b_keepinputorder)
+        {
+            //
+            qDebug()<<"ori ... 1 "<<p1dImg1<<sz_img1[0]<<sz_img1[1]<<sz_img1[2]<<sz_img1[3]<<p4DImage1.getTotalUnitNumber();
+            qDebug()<<"ori ... 2 "<<p1dImg2<<sz_img2[0]<<sz_img2[1]<<sz_img2[2]<<sz_img2[3]<<p4DImage2.getTotalUnitNumber();
+            
+            unsigned char *p1 = NULL;
+            unsigned char *p2 = NULL;
+            
+            try 
+            {
+                V3DLONG totalplxs1 = p4DImage1.getTotalBytes();
+                p1 = new unsigned char [totalplxs1];
+                
+                for(V3DLONG i=0; i<totalplxs1; i++)
+                {
+                    p1[i] = (p4DImage1.getRawData())[i];
+                }
+                
+                V3DLONG totalplxs2 = p4DImage2.getTotalBytes();
+                p2 = new unsigned char [totalplxs2];
+                
+                for(V3DLONG i=0; i<totalplxs2; i++)
+                {
+                    p2[i] = (p4DImage2.getRawData())[i];
+                }
+                
+            } 
+            catch (...) 
+            {
+                cout<<"Fail to allocate memory for swaping temporary pointers."<<endl;
+                return false;
+            }
+            
+            p4DImage1.setData(p2, &p4DImage2);
+            p4DImage2.setData(p1, sz_img1[0], sz_img1[1], sz_img1[2], sz_img1[3], (ImagePixelType)datatype_img1);
+            
+            //
+            p1dImg1 = p4DImage1.getRawData();
+            sz_img1[3] = p4DImage1.getCDim();
+            
+            p1dImg2 = p4DImage2.getRawData();
+            sz_img2[3] = p4DImage2.getCDim();
+            
+            qDebug()<<"swap ... 1 "<<p1dImg1<<sz_img1[0]<<sz_img1[1]<<sz_img1[2]<<sz_img1[3]<<p4DImage1.getTotalUnitNumber();
+            qDebug()<<"swap ... 2 "<<p1dImg2<<sz_img2[0]<<sz_img2[1]<<sz_img2[2]<<sz_img2[3]<<p4DImage2.getTotalUnitNumber();
+        }
+
         //
         V3DLONG pagesz = sz_img1[0]*sz_img1[1]*sz_img1[2];
         
@@ -1928,7 +1983,6 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         
         qDebug()<<"ref ..."<<ref1<<ref2<<"null color ..."<<b_img1existNULL<<nullcolor1<<b_img2existNULL<<nullcolor2;
         
-		
 		//step 3: need to run a simple stitching to figure out the displacement
 		if(!stitch_paired_images_with_refchan(p4DImage1, ref1, p4DImage2, ref2))
 		{
