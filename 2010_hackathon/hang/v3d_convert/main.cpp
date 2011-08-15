@@ -24,7 +24,7 @@ bool convert_double_to_uint8(unsigned char* outimg1d,double * inimg1d,  V3DLONG 
 
 bool is_save_img = true;
 
-SupportedCommand supported_commands[] = {{"-down-sampling",1},{"-marker-center",1},{"-binary-threshold",1},{"-white-threshold",1},{"-black-threshold",1},{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-negate", 0}};
+SupportedCommand supported_commands[] = {{"-info",0},{"-down-sampling",1},{"-marker-center",1},{"-binary-threshold",1},{"-white-threshold",1},{"-black-threshold",1},{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-negate", 0}};
 
 int main(int argc, char* argv[])
 {
@@ -71,17 +71,21 @@ bool run_with_paras(InputParas paras, string & s_error)
 	if(!loadImage((char*) infile.c_str(), indata1d, in_sz, datatype)) {s_error += "loadImage(\""; s_error += infile; s_error+="\")  error"; return false;}
 
 	int channel = 0;  
-	//in_sz[3] = 1;
 
 	string cmd_name("");
 #define CHECK_CHANNEL if(paras.is_exist("-channel")){if(!paras.get_int_para(channel, "-channel", s_error)){if(channel <= 0 || channel > in_sz[3]) s_error += "channel should be larger then 0 and less or equal then image channel number"; return false;}channel = channel - 1; indata1d = indata1d + in_sz[0] * in_sz[1] * in_sz[2] * channel;} else if(in_sz[3] != 1){s_error += "please specify -channel"; return false;}
 	while(paras.get_next_cmd(cmd_name))
 	{
-		if(cmd_name == "-marker-center")
+		if(cmd_name == "-info")
+		{
+			cout<<"size : "<<in_sz[0]<<"x"<<in_sz[1]<<"x"<<in_sz[2]<<"x"<<in_sz[3]<<endl;
+			is_save_img = false;
+		}
+		else if(cmd_name == "-marker-center")
 		{
 			CHECK_CHANNEL
 
-			string marker_file = "output.marker";
+			string marker_file = paras.filelist.size() >=2 ? paras.filelist.at(1) : string(infile + "_output.marker");
 			double thresh; if(!paras.get_double_para(thresh,"-marker-center",s_error)){s_error += "\nplease specify -marker-center para as threshold"; return false;}
 			cout<<"marker_file "<<marker_file<<endl;
 			cout<<"thresh "<<thresh<<endl;
@@ -91,6 +95,14 @@ bool run_with_paras(InputParas paras, string & s_error)
 			cout<<"marker center : "<<pos[0]<<","<<pos[1]<<","<<pos[2]<<endl;
 			ofs<<pos[0]<<","<<pos[1]<<","<<pos[2]<<endl; ofs.close();
 			is_save_img = false;
+		}
+		else if(cmd_name == "-down-sampling")
+		{
+			CHECK_CHANNEL
+
+			int factor; if(!paras.get_int_para(factor, "-down-sampling", s_error)) return false;
+			cout<<"factor : "<<factor<<endl;
+			if(!down_sampling(factor, indata1d, in_sz, outdata1d, out_sz)){s_error += " down sampling error"; return false;}
 		}
 		else if(cmd_name == "-black-threshold")
 		{
@@ -199,7 +211,10 @@ void printHelp()
 	cout<<""<<endl;
 	cout<<"Usage: v3d_convert [options ...] file [ [options ...] file ...] [options ...] file "<<endl;
 	cout<<""<<endl;
+	cout<<" -info                          "<<endl;
 	cout<<" -gaussian-blur     geometry"<<endl;
+	cout<<" -rotatex           theta"<<endl;
+	cout<<" -rotatey           theta"<<endl;
 	cout<<" -rotatez           theta"<<endl;
 	cout<<" -black-threshold   thresh_value"<<endl;
 	cout<<" -white-threshold   thresh_value"<<endl;

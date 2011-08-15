@@ -201,7 +201,7 @@ bool parse_paras(int argc, char* argv[], InputParas &paras, string &s_error)
 		else if(paras.is_support(argv[i]) && !paras.is_exist(argv[i]))
 		{
 			if(!paras.is_need_option(argv[i])) paras.add_para(argv[i]);
-			if(paras.is_need_option(argv[i]) && i+1 < argc) {paras.add_para(argv[i], argv[i+1]); i++;}
+			else if(paras.is_need_option(argv[i]) && i+1 < argc) {paras.add_para(argv[i], argv[i+1]); i++;}
 			else {s_error += "need parameter for "; s_error += argv[i]; return false;}
 		}
 		else if(!paras.is_support(argv[i]))

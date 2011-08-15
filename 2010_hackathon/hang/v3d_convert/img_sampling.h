@@ -6,13 +6,14 @@
 template<class T> bool down_sampling(int factor, T* &inimg1d, V3DLONG * &in_sz, T* &outimg1d, V3DLONG * &out_sz)
 {
 	if(inimg1d == 0 || in_sz == 0 || in_sz[0] < factor || in_sz[1] < factor || in_sz[2] < factor) return false;
-	if(out_sz == 0) out_sz = new V3DLONG[3];
+	if(out_sz == 0) out_sz = new V3DLONG[4];
 	T *** inimg3d = 0, *** outimg3d = 0;
 	V3DLONG tol_sz = in_sz[0] * in_sz[1] * in_sz[2];
 	V3DLONG smp_sz = tol_sz / factor / factor / factor;
 	out_sz[0] = in_sz[0] / factor;
 	out_sz[1] = in_sz[1] / factor;
 	out_sz[2] = in_sz[2] / factor;
+	out_sz[3] = 1; //in_sz[3];
 	try{
 		if(outimg1d == 0) outimg1d = new T[smp_sz];
 		new3dpointer(inimg3d, in_sz[0], in_sz[1], in_sz[2], inimg1d);
