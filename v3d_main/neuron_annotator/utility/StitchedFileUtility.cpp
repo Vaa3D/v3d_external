@@ -55,9 +55,34 @@ bool StitchedFileUtility::execute() {
         return false;
     }
 
-    // Attempt to save as tif file
-    qDebug() << "Saving stitched image to file = " << outputTifFilepath;
-    stitchedImage.saveFile(outputTifFilepath);
+    // We need to reconstruct a new file with the signal information
+    My4DImage signalImage;
+    signalImage.loadImage(stitchedImage.getXDim(), stitchedImage.getYDim(), stitchedImage.getZDim(), 3 /* number of channels */, 1 /* bytes per channel */);
+    Image4DProxy<My4DImage> signalProxy(&signalImage);
+    Image4DProxy<My4DImage> stitchedProxy(&stitchedImage);
+
+    qDebug() << "Populating new image with signal data";
+    for (int z=0;z<stitchedImage.getZDim();z++) {
+        for (int y=0;y<stitchedImage.getYDim();y++) {
+            for (int x=0;x<stitchedImage.getXDim();x++) {
+                int r=((*stitchedProxy.at_uint16(x,y,z,0))*256)/4096;
+                int g=((*stitchedProxy.at_uint16(x,y,z,1))*256)/4096;
+                int b=((*stitchedProxy.at_uint16(x,y,z,3))*256)/4096;
+
+                if (r>255) r=255;
+                if (g>255) g=255;
+                if (b>255) b=255;
+
+                signalProxy.put8bit_fit_at(x,y,z,0, r);
+                signalProxy.put8bit_fit_at(x,y,z,1, g);
+                signalProxy.put8bit_fit_at(x,y,z,2, b);
+            }
+        }
+    }
+
+    qDebug() << "Saving signal image to file=" << outputTifFilepath;
+    signalImage.saveFile(outputTifFilepath);
+    signalImage.cleanExistData();
 
     return true;
 }
