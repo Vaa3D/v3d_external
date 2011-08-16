@@ -1381,30 +1381,33 @@ bool stitch_paired_images_with_refchan(Image4DSimple &p4DImage1, V3DLONG ref1, I
     
     // adjust image 1
     V3DLONG offset_tx, offset_ty, offset_tz, offset_sx, offset_sy, offset_sz;
-	
+
+    //bug fixed. by Hanchuan Peng, 20110816. 
 	if(offset[0]<0)
 	{
-		offset_sx = 0; offset_tx = -offset[0];
+		offset_sx = 0; offset_tx = offset[0];
 	}
 	else
 	{
-		offset_sx = offset[0]; offset_tx = 0;
+		offset_sx = -offset[0]; offset_tx = 0;
 	}
+	
 	if(offset[1]<0)
 	{
-		offset_sy = 0; offset_ty = -offset[1];
+		offset_sy = 0; offset_ty = offset[1];
 	}
 	else
 	{
-		offset_sy = offset[1]; offset_ty = 0;
+		offset_sy = -offset[1]; offset_ty = 0;
 	}
+	
 	if(offset[2]<0)
 	{
-		offset_sz = 0; offset_tz = -offset[2];
+		offset_sz = 0; offset_tz = offset[2];
 	}
 	else
 	{
-		offset_sz = offset[2]; offset_tz = 0;
+		offset_sz = -offset[2]; offset_tz = 0;
 	}
 
     //
@@ -1673,7 +1676,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                             else if (!strcmp(key, "k"))
                             {                                
                                 b_morecolorstack_first = (atoi( argv[i+1] )) ? true:false;                                
-                                cout<<"Now set the b_morecolorstack_first = " << (b_morecolorstack_first)? "TRUE" : "FALSE" << endl; 
+                                printf("Now set the b_morecolorstack_first = %s\n", (b_morecolorstack_first)? "TRUE" : "FALSE"); 
                                 i++;
                             }
                             else
@@ -1981,7 +1984,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
 		if(!stitch_paired_images_with_refchan(p4DImage1, ref1, p4DImage2, ref2))
 		{
 			fprintf(stderr, "The stitching step fails and thus return.\n");
-			return -1;
+			return false;
 		}
 
         // step 4: image blending	
