@@ -21,23 +21,24 @@ unix:!macx {
 }
 
 
-HEADERS += img_rotate.h
 HEADERS += parser.h
+HEADERS += img_rotate.h
 HEADERS += gaussian_blur.h
 HEADERS += img_threshold.h
 HEADERS += img_center.h
 HEADERS += img_sampling.h
-HEADERS += v3d_funcs.h
+HEADERS += sort_algorithms.h
 HEADERS += ../../../v3d_main/basic_c_fun/basic_memory.h
 HEADERS += ../../../v3d_main/basic_c_fun/stackutil.h
 HEADERS += ../../../v3d_main/basic_c_fun/mg_utilities.h
 HEADERS += ../../../v3d_main/basic_c_fun/mg_image_lib.h
 
+SOURCES += img_rotate.cpp
 SOURCES += gaussian_blur.cpp
 SOURCES += img_threshold.cpp
 SOURCES += img_center.cpp
 SOURCES += img_sampling.cpp
-SOURCES += img_rotate.cpp
+SOURCES += sort_algorithms.cpp
 SOURCES += main.cpp
 SOURCES += ../../../v3d_main/basic_c_fun/basic_memory.cpp
 SOURCES += ../../../v3d_main/basic_c_fun/stackutil.cpp

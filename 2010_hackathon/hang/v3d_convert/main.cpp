@@ -3,11 +3,12 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream> 
 #include <vector>
 
 #include "stackutil.h"
-#include "v3d_funcs.h"
 #include "parser.h"
+#include "img_rotate.h"
 #include "gaussian_blur.cpp"
 #include "img_threshold.h"
 #include "img_center.h"
@@ -24,7 +25,7 @@ bool convert_double_to_uint8(unsigned char* outimg1d,double * inimg1d,  V3DLONG 
 
 bool is_save_img = true;
 
-SupportedCommand supported_commands[] = {{"-info",0},{"-down-sampling",1},{"-marker-center",1},{"-binary-threshold",1},{"-white-threshold",1},{"-black-threshold",1},{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-negate", 0}};
+SupportedCommand supported_commands[] = {{"-info",0},{"-down-sampling",1},{"-marker-center",1},{"-auto-threshold", 1},{"-binary-threshold",1},{"-white-threshold",1},{"-black-threshold",1},{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-negate", 0}};
 
 int main(int argc, char* argv[])
 {
@@ -74,6 +75,8 @@ bool run_with_paras(InputParas paras, string & s_error)
 
 	string cmd_name("");
 #define CHECK_CHANNEL if(paras.is_exist("-channel")){if(!paras.get_int_para(channel, "-channel", s_error)){if(channel <= 0 || channel > in_sz[3]) s_error += "channel should be larger then 0 and less or equal then image channel number"; return false;}channel = channel - 1; indata1d = indata1d + in_sz[0] * in_sz[1] * in_sz[2] * channel;} else if(in_sz[3] != 1){s_error += "please specify -channel"; return false;}
+
+#define REFRESH_INDATA1D if(indata1d){delete [] indata1d; indata1d = 0;} if(in_sz){delete [] in_sz; in_sz = 0;} indata1d = outdata1d; in_sz = out_sz;
 	while(paras.get_next_cmd(cmd_name))
 	{
 		if(cmd_name == "-info")
@@ -104,6 +107,25 @@ bool run_with_paras(InputParas paras, string & s_error)
 			cout<<"factor : "<<factor<<endl;
 			if(!down_sampling(factor, indata1d, in_sz, outdata1d, out_sz)){s_error += " down sampling error"; return false;}
 		}
+		else if(cmd_name == "-auto-threshold")
+		{
+			CHECK_CHANNEL;
+
+			int thresh_type = 0; if(!paras.get_int_para(thresh_type,"-auto-threshold",s_error)) return false;
+			double thresh_value = 100.0; if(!otsu_threshold(thresh_value, indata1d, in_sz)) {s_error += " otsu_threshold error."; return false;}
+			cout<<"thresh_value : "<<thresh_value<<endl;
+			ostringstream oss;  oss<<"thresh"<<thresh_value<<"_"<<infile;
+			outfile = paras.filelist.size() >=2 ? paras.filelist.at(1) : oss.str();
+			cout<<"output file : "<<outfile<<endl;
+
+			if(thresh_type == 0 && !black_threshold(thresh_value,indata1d, in_sz, outdata1d) ){s_error += " auto threshold with black threshold error"; return false;}
+			else if(thresh_type == 1 && !white_threshold(thresh_value,indata1d, in_sz, outdata1d) ){s_error += " auto threshold with white threshold error"; return false;}
+			else if(thresh_type == 2 && !binary_threshold(thresh_value,indata1d, in_sz, outdata1d) ){s_error += " auto threshold with binary threshold error"; return false;}
+			out_sz = new V3DLONG[4];
+			out_sz[0] = in_sz[0]; out_sz[1] = in_sz[1]; out_sz[2] = in_sz[2]; out_sz[3] = 1;
+			
+			//REFRESH_INDATA1D;
+		}
 		else if(cmd_name == "-black-threshold")
 		{
 			CHECK_CHANNEL
@@ -113,6 +135,8 @@ bool run_with_paras(InputParas paras, string & s_error)
 			if(!black_threshold(black_thresh_value,indata1d, in_sz, outdata1d)){s_error += "black threshold error"; return false;}
 			out_sz = new V3DLONG[4];
 			out_sz[0] = in_sz[0]; out_sz[1] = in_sz[1]; out_sz[2] = in_sz[2]; out_sz[3] = 1;
+			
+			//REFRESH_INDATA1D;
 		}
 		else if(cmd_name == "-white-threshold")
 		{
@@ -123,6 +147,8 @@ bool run_with_paras(InputParas paras, string & s_error)
 			if(!white_threshold(white_thresh_value,indata1d, in_sz, outdata1d)){s_error += "white threshold error"; return false;}
 			out_sz = new V3DLONG[4];
 			out_sz[0] = in_sz[0]; out_sz[1] = in_sz[1]; out_sz[2] = in_sz[2]; out_sz[3] = 1;
+
+			//REFRESH_INDATA1D;
 		}
 		else if(cmd_name == "-binary-threshold")
 		{
@@ -133,6 +159,8 @@ bool run_with_paras(InputParas paras, string & s_error)
 			if(!binary_threshold(binary_thresh_value,indata1d, in_sz, outdata1d)){s_error += "binary threshold error"; return false;}
 			out_sz = new V3DLONG[4];
 			out_sz[0] = in_sz[0]; out_sz[1] = in_sz[1]; out_sz[2] = in_sz[2]; out_sz[3] = 1;
+
+			//REFRESH_INDATA1D;
 		}
 		else if(cmd_name == "-rotatex")
 		{
@@ -196,7 +224,10 @@ bool run_with_paras(InputParas paras, string & s_error)
 	}
 	if(out_sz == 0) {out_sz = in_sz; out_sz[3] = 1;}
 	if(is_save_img && !saveImage((char*) outfile.c_str(), outdata1d, out_sz, datatype)) {s_error += "saveImage(\""; s_error += outfile; s_error+="\") error"; return false;}
+	if(indata1d) {delete [] indata1d; outdata1d = 0;}
+	if(in_sz) {delete [] in_sz; in_sz = 0;}
 	if(outdata1d) {delete [] outdata1d; outdata1d = 0;}
+	if(out_sz) {delete [] out_sz; out_sz = 0;}
 
 	return true;
 }
@@ -211,15 +242,16 @@ void printHelp()
 	cout<<""<<endl;
 	cout<<"Usage: v3d_convert [options ...] file [ [options ...] file ...] [options ...] file "<<endl;
 	cout<<""<<endl;
-	cout<<" -info                          "<<endl;
-	cout<<" -gaussian-blur     geometry"<<endl;
-	cout<<" -rotatex           theta"<<endl;
-	cout<<" -rotatey           theta"<<endl;
-	cout<<" -rotatez           theta"<<endl;
-	cout<<" -black-threshold   thresh_value"<<endl;
-	cout<<" -white-threshold   thresh_value"<<endl;
-	cout<<" -binary-threshold  thresh_value"<<endl;
-	cout<<" -marker-center     thresh_value"<<endl;
+	cout<<" -info                               display the information of input image"<<endl;
+	cout<<" -gaussian-blur     geometry         smooth the image by gaussian blur"<<endl;
+	cout<<" -rotatex           theta            rotate the image along x-axis with angle theta"<<endl;
+	cout<<" -rotatey           theta            rotate the image along y-axis with angle theta"<<endl;
+	cout<<" -rotatez           theta            rotate the image along z-axis with angle theta"<<endl;
+	cout<<" -black-threshold   thresh_value     threshold the image, intensity lower than thresh_value will be set to zero"<<endl;
+	cout<<" -white-threshold   thresh_value     threshold the image, intensity higher than thresh_value will be set to maximum"<<endl;
+	cout<<" -binary-threshold  thresh_value     threshold the image, intensity lower than thresh_value to zero, higher to maximum"<<endl;
+	cout<<" -auto-threshold    thresh_type      calculate thresh_value automatically and do black/white/binary-threshold according to thresh_type"<<endl;
+	cout<<" -marker-center     thresh_value     calculate a reasonalbe marker from input image with thresholding thresh_value"<<endl;
 	cout<<""<<endl;
 }
 
