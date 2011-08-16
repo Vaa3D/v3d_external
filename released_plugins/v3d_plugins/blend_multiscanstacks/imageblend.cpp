@@ -1667,12 +1667,12 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                         {                            
                             if (!strcmp(key, "s"))
                             {                                
-                                b_saveimage = atoi( argv[i+1] )?true:false;                                
+                                b_saveimage = (atoi( argv[i+1] ))?true:false;                                
                                 i++;
                             }
                             else if (!strcmp(key, "k"))
                             {                                
-                                b_keepinputorder = atoi( argv[i+1] )?true:false;                                
+                                b_keepinputorder = (atoi( argv[i+1] ))?true:false;                                
                                 i++;
                             }
                             else
@@ -2587,13 +2587,13 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
 // menu
 QStringList ImageBlendPlugin::menulist() const
 {
-    return QStringList() << tr("Image_Blend")
+    return QStringList() << tr("Multiscan Image Blending")
                          << tr("About");
 }
 
 void ImageBlendPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
-    if (menu_name == tr("Image_Blend"))
+    if (menu_name == tr("Multiscan Image Blending"))
     {
         ImageBlendingDialog dialog(callback, parent, NULL);
         if (dialog.exec()!=QDialog::Accepted)
