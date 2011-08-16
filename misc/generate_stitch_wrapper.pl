@@ -111,8 +111,8 @@ if (keys(%lines) > 1) {
 #print "$line_name\n";
 
 #my $v3d_cmd_path = "/groups/scicomp/jacsData/sampleData/stitchedData/v3d_linux_fc14/v3d";
-#my $v3d_cmd_path = "/groups/peng/home/brainaligner/program/v3d/v3d";
-my $v3d_cmd_path = "~/work/v3d_external/v3d/v3d";
+my $v3d_cmd_path = "/groups/peng/home/brainaligner/program/v3d/v3d";
+#my $v3d_cmd_path = "~/work/v3d_external/v3d/v3d";
 
 my $shell_output = qq~\#!/bin/bash
 
@@ -128,7 +128,7 @@ foreach my $region_name (sort keys %regions) {
     my $blend_raw = $line_name . "-" . $slide_group . "-" . $region_name . ".v3draw";
 
     my $hr_images = $regions{$region_name}->{'images'};    
-    my $blend_cmd = "$v3d_cmd_path -x libblend_multiscanstacks.so -f multiscanblend -i"; 
+    my $blend_cmd = "$v3d_cmd_path -x libblend_multiscanstacks.so -f multiscanblend \"#k 0\" -i"; 
     #order by smallest channel number. We can change this logic to use channel name or track later on
     foreach my $image (sort {$$hr_images{$a}->{'channel_num'} cmp $$hr_images{$b}->{'channel_num'}} keys %$hr_images) {
 	print "\t$image $$hr_images{$image}->{'channel_num'} \n";
@@ -138,6 +138,9 @@ foreach my $region_name (sort keys %regions) {
     $shell_output .= "$blend_cmd\;\n\n";
 
 }
+
+# here need to add a judgment call to ensure the availability of all 5 tiles and thus a final stitching would be needed.
+# Noted by Hanchuan Peng, 20110815
 
 my $stitch_raw = $line_name . "-" . $slide_group . "-stitched.v3draw";
 $shell_output .= "$v3d_cmd_path -x imageStitch.so -f v3dstitch -i '$stitched_dir' -o '$stitched_dir/$stitch_raw' -p \"#c 4\"\;\n";
