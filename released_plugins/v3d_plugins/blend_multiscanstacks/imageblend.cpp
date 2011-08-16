@@ -1619,7 +1619,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         if(input.size()>1) { paralist = (vector<char*> *)(input.at(1).p); paras =  paralist->at(0);} // parameters
         
         bool b_saveimage = true; // save the blended image by default
-        bool b_keepinputorder = true; // keep inputs order by default
+        bool b_morecolorstack_first = false; // keep inputs order by default
         
         qDebug()<<"parameters ..."<<paras;
         
@@ -1672,7 +1672,8 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                             }
                             else if (!strcmp(key, "k"))
                             {                                
-                                b_keepinputorder = (atoi( argv[i+1] ))?true:false;                                
+                                b_morecolorstack_first = (atoi( argv[i+1] )) ? true:false;                                
+                                cout<<"Now set the b_morecolorstack_first = " << (b_morecolorstack_first)? "TRUE" : "FALSE" << endl; 
                                 i++;
                             }
                             else
@@ -1775,11 +1776,11 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         }
         
         // swap inputs' order by choosing the input with more color channels as the first input
-        if(!b_keepinputorder)
+        if(b_morecolorstack_first)
         {
             //
-            qDebug()<<"ori ... 1 "<<p1dImg1<<sz_img1[0]<<sz_img1[1]<<sz_img1[2]<<sz_img1[3]<<p4DImage1.getTotalUnitNumber();
-            qDebug()<<"ori ... 2 "<<p1dImg2<<sz_img2[0]<<sz_img2[1]<<sz_img2[2]<<sz_img2[3]<<p4DImage2.getTotalUnitNumber();
+            qDebug()<<"original stack 1 "<<p1dImg1<<sz_img1[0]<<sz_img1[1]<<sz_img1[2]<<sz_img1[3]<<p4DImage1.getTotalUnitNumber();
+            qDebug()<<"original stack 2 "<<p1dImg2<<sz_img2[0]<<sz_img2[1]<<sz_img2[2]<<sz_img2[3]<<p4DImage2.getTotalUnitNumber();
             
             unsigned char *p1 = NULL;
             unsigned char *p2 = NULL;
@@ -1788,28 +1789,21 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             {
                 V3DLONG totalplxs1 = p4DImage1.getTotalBytes();
                 p1 = new unsigned char [totalplxs1];
-                
-                for(V3DLONG i=0; i<totalplxs1; i++)
-                {
-                    p1[i] = (p4DImage1.getRawData())[i];
-                }
+                memcpy(p1, p4DImage1.getRawData(), totalplxs1);
                 
                 V3DLONG totalplxs2 = p4DImage2.getTotalBytes();
                 p2 = new unsigned char [totalplxs2];
-                
-                for(V3DLONG i=0; i<totalplxs2; i++)
-                {
-                    p2[i] = (p4DImage2.getRawData())[i];
-                }
-                
+                memcpy(p2, p4DImage2.getRawData(), totalplxs2);
             } 
             catch (...) 
             {
                 cout<<"Fail to allocate memory for swaping temporary pointers."<<endl;
+                if (p1) {delete []p1; p1=0;}
+                if (p2) {delete []p2; p2=0;}
                 return false;
             }
             
-            p4DImage1.setData(p2, &p4DImage2);
+            p4DImage1.setData(p2, sz_img2[0], sz_img2[1], sz_img2[2], sz_img2[3], (ImagePixelType)datatype_img2);
             p4DImage2.setData(p1, sz_img1[0], sz_img1[1], sz_img1[2], sz_img1[3], (ImagePixelType)datatype_img1);
             
             //
@@ -1819,8 +1813,8 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             p1dImg2 = p4DImage2.getRawData();
             sz_img2[3] = p4DImage2.getCDim();
             
-            qDebug()<<"swap ... 1 "<<p1dImg1<<sz_img1[0]<<sz_img1[1]<<sz_img1[2]<<sz_img1[3]<<p4DImage1.getTotalUnitNumber();
-            qDebug()<<"swap ... 2 "<<p1dImg2<<sz_img2[0]<<sz_img2[1]<<sz_img2[2]<<sz_img2[3]<<p4DImage2.getTotalUnitNumber();
+            qDebug()<<"switched stack 1 "<<p1dImg1<< " "<<sz_img1[0]<< " "<<sz_img1[1]<< " "<<sz_img1[2]<< " "<<sz_img1[3]<< " "<<p4DImage1.getTotalUnitNumber();
+            qDebug()<<"switched stack 2 "<<p1dImg2<< " "<<sz_img2[0]<< " "<<sz_img2[1]<< " "<<sz_img2[2]<< " "<<sz_img2[3]<< " "<<p4DImage2.getTotalUnitNumber();
         }
 
         //
