@@ -1597,7 +1597,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         if(infilelist->empty()) 
         {
             //print Help info
-            printf("\nUsage: v3d -x blend_multiscanstacks.dylib -f multiscanblend -i <input_images> -o <output_image> -p \"#s <save_blending_result zero(false)/nonzero(true)> #k <keep_input_order nonzero(true)/zero(false)>\" \n");
+            printf("\nUsage: v3d -x blend_multiscanstacks.dylib -f multiscanblend -i <input_images> -o <output_image> -p \"#s <save_blending_result zero(false)/nonzero(true)> #k <b_morecolorstack_first nonzero(true)/zero(false)>\" \n");
             
             return true;
         }
