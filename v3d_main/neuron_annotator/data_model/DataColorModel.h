@@ -95,13 +95,13 @@ public:
             dGammaTable[255] = 0.0f; // final unused entry for neatness
         }
 
-        // getColor() definition is in header file so it can be inlined
-        QRgb getColor(qreal intensity) const
+        // Returns a value in the range 0.0-1.0
+        qreal getScaledIntensity(qreal raw_intensity) const
         {
+            if (raw_intensity <= hdrMin) return 0.0; // clamp below
+            if (raw_intensity >= hdrMax) return 1.0; // clamp above
             // 1) Apply hdr interval
-            qreal i = (intensity - hdrMin)/hdrRange;
-            if (i <= 0.0) return blackColor; // clamp below
-            if (i >= 1.0) return channelColor; // clamp above
+            qreal i = (raw_intensity - hdrMin)/hdrRange;
             // 2) Apply gamma correction
             if (gammaIsNotUnity)
             {
@@ -109,6 +109,15 @@ public:
                int gi = int(gf); // index for lookup table
                i = gammaTable[gi] + dGammaTable[gi] * (gf - gi); // Taylor series interpolation
             }
+            return i;
+        }
+
+        // getColor() definition is in header file so it can be inlined
+        QRgb getColor(qreal raw_intensity) const
+        {
+            if (raw_intensity <= hdrMin) return blackColor; // clamp below
+            if (raw_intensity >= hdrMax) return channelColor; // clamp above
+            const qreal i = getScaledIntensity(raw_intensity);
             // 3) scale channel color
             return qRgb(int(i * colorRed), int(i * colorGreen), int(i * colorBlue));
         }
@@ -168,6 +177,10 @@ public:
 
         QRgb blend(const std::vector<double>& channelIntensities) {
             return blend(&channelIntensities[0]);
+        }
+
+        const ChannelColorModel& getReferenceChannel() const {
+            return colorModel.channelColors.back();
         }
 
     private:

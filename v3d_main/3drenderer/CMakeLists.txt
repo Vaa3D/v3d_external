@@ -10,10 +10,10 @@ set(3DRenderer_SRCS
   marchingcubes.cpp
   renderer.cpp
   Renderer_gl2.cpp
-  renderer_hit2.cpp
+  renderer_hit.cpp
   renderer_labelfield.cpp
-  renderer_obj2.cpp
-  renderer_tex2.cpp
+  renderer_obj.cpp
+  renderer_tex.cpp
   test_main.cpp
   v3dr_colormapDialog.cpp
   # v3dr_control_signal.cpp

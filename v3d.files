@@ -2411,3 +2411,11 @@ v3d_main/neuron_annotator/data_model/VolumeColors.h
 v3d_main/neuron_annotator/data_model/VolumeColors.cpp
 v3d_main/neuron_annotator/data_model/SlotMerger.h
 v3d_main/neuron_annotator/data_model/SlotMerger.cpp
+v3d_main/neuron_annotator/data_model/VolumeModel.h
+v3d_main/neuron_annotator/data_model/VolumeModel.cpp
+v3d_main/neuron_annotator/data_model/NaSharedDataModel.h
+v3d_main/neuron_annotator/data_model/NaSharedDataModel.cpp
+v3d_main/neuron_annotator/data_model/PrivateVolumeModelData.h
+v3d_main/neuron_annotator/data_model/PrivateVolumeModelData.cpp
+v3d_main/neuron_annotator/data_model/NaSharedDataSignaller.h
+v3d_main/neuron_annotator/data_model/NaSharedDataSignaller.cpp

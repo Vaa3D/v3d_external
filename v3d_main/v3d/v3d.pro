@@ -208,6 +208,10 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/data_model/ZSliceColors.h \
     ../neuron_annotator/data_model/VolumeColors.h \
     ../neuron_annotator/data_model/SlotMerger.h \
+    ../neuron_annotator/data_model/NaSharedDataSignaller.h \
+    ../neuron_annotator/data_model/NaSharedDataModel.h \
+    ../neuron_annotator/data_model/VolumeModel.h \
+    ../neuron_annotator/data_model/PrivateVolumeModelData.h \
     ../neuron_annotator/gui/NaViewer.h \
     ../neuron_annotator/gui/Na2DViewer.h \
     ../neuron_annotator/gui/NaMainWindow.h \
@@ -353,6 +357,10 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/data_model/ZSliceColors.cpp \
     ../neuron_annotator/data_model/VolumeColors.cpp \
     ../neuron_annotator/data_model/SlotMerger.cpp \
+    ../neuron_annotator/data_model/NaSharedDataSignaller.cpp \
+    ../neuron_annotator/data_model/NaSharedDataModel.cpp \
+    ../neuron_annotator/data_model/VolumeModel.cpp \
+    ../neuron_annotator/data_model/PrivateVolumeModelData.cpp \
     ../neuron_annotator/NeuronAnnotatorResultNode.cpp \
     ../neuron_annotator/TimebasedIdentifierGenerator.cpp \
     ../neuron_annotator/gui/RendererNeuronAnnotator.cpp \
