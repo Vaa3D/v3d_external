@@ -128,7 +128,7 @@ foreach my $region_name (sort keys %regions) {
     my $blend_raw = $line_name . "-" . $slide_group . "-" . $region_name . ".v3draw";
 
     my $hr_images = $regions{$region_name}->{'images'};    
-    my $blend_cmd = "$v3d_cmd_path -x libblend_multiscanstacks.so -f multiscanblend \"#k 0\" -i"; 
+    my $blend_cmd = "$v3d_cmd_path -x libblend_multiscanstacks.so -f multiscanblend -p \"#k 0\" -i"; 
     #order by smallest channel number. We can change this logic to use channel name or track later on
     foreach my $image (sort {$$hr_images{$a}->{'channel_num'} cmp $$hr_images{$b}->{'channel_num'}} keys %$hr_images) {
 	print "\t$image $$hr_images{$image}->{'channel_num'} \n";
