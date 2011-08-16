@@ -111,8 +111,8 @@ if (keys(%lines) > 1) {
 #print "$line_name\n";
 
 #my $v3d_cmd_path = "/groups/scicomp/jacsData/sampleData/stitchedData/v3d_linux_fc14/v3d";
-my $v3d_cmd_path = "/groups/peng/home/brainaligner/program/v3d/v3d";
-#my $v3d_cmd_path = "~/work/v3d_external/v3d/v3d";
+#my $v3d_cmd_path = "/groups/peng/home/brainaligner/program/v3d/v3d";
+my $v3d_cmd_path = "~/work/v3d_external/v3d/v3d";
 
 my $shell_output = qq~\#!/bin/bash
 
