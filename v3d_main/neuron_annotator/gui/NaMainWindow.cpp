@@ -664,9 +664,7 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
 {
     // TODO -- install separate listeners for dataChanged() in the various display widgets
 
-    if (!annotationSession->loadLsmMetadata()) {
-        return;
-    }
+    annotationSession->loadLsmMetadata();
 
     QDir imageInputDirectory = annotationSession->getMultiColorImageStackNode()->getImageDir();
 
