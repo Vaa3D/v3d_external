@@ -101,7 +101,7 @@ extern "C" {
 */
 
 #define b_VERBOSE_PRINT 1
-#define ZZBIG 6000 //previous I define it as 1500, so that to limit the sie of an image is at most 1.5G //change 2010-05-21
+#define ZZBIG 6000 //previous I define it as 1500, so that to limit the size of an image is at most 1.5G //change 2010-05-21
 
 #ifdef _MSC_VER       //2010-05-21, by PHC
 #include <sys/stat.h>
@@ -3614,9 +3614,9 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 		printf("The current input file has the surfix [%s]\n", curFileSuffix);
 	if (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0) //read tiff stacks
 	{
-		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*900)) //tif file at most should be 900M bytes
+		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*2047)) //tif file at most should be 900M bytes
 		{
-			printf("The tif file may not exist or may be too big to load.\n");
+			printf("The tif file may not exist or may be too big to load [sz threshold=%ld bytes].\n", (V3DLONG)1024*1024*2047);
 			return false;
 		}
 		if (loadTif2Stack(imgSrcFile, tmp_data1d, tmp_sz, tmp_datatype))
@@ -3627,9 +3627,9 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 	}
 	else if ( strcasecmp(curFileSuffix, "lsm")==0 ) //read lsm stacks
 	{
-		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*900)) //lsm file at most should be 900M bytes
+		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*2047)) //lsm file at most should be 900M bytes
 		{
-			printf("The lsm file may not exist or may be too big to load.\n");
+			printf("The lsm file may not exist or may be too big to load [sz threshold=%ld bytes].\n", (V3DLONG)1024*1024*2047);
 			return false;
 		}
 		if (loadLsm2Stack(imgSrcFile, tmp_data1d, tmp_sz, tmp_datatype))
@@ -3642,7 +3642,7 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 	{
 		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*ZZBIG)) //
 		{
-			printf("The lsm file may not exist or may be too big to load.\n");
+			printf("The lsm file may not exist or may be too big to load [sz threshold=%ld bytes].\n", (V3DLONG)1024*1024*ZZBIG);
 			return false;
 		}
 		if (loadRaw5d2Stack(imgSrcFile, tmp_data1d, tmp_sz, tmp_datatype))
