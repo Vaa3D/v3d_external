@@ -1779,7 +1779,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         }
         
         // swap inputs' order by choosing the input with more color channels as the first input
-        if(b_morecolorstack_first)
+        if(b_morecolorstack_first && sz_img1[3]<sz_img2[3])
         {
             //
             qDebug()<<"original stack 1 "<<p1dImg1<<sz_img1[0]<<sz_img1[1]<<sz_img1[2]<<sz_img1[3]<<p4DImage1.getTotalUnitNumber();
