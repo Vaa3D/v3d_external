@@ -46,6 +46,7 @@ public slots:
     virtual void annotationModelUpdate(QString updateType) {NaViewer::annotationModelUpdate(updateType);}
     virtual void toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked);
     virtual void updateFullVolume();
+    void onVolumeDataChanged();
 
     void resetView();
     void resetRotation() {

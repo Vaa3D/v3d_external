@@ -61,8 +61,6 @@ public:
     void setSquarePos(const QPointF &pos);
     QRectF rectangle_around(const QPointF &p, const QSizeF &size = QSize(25, 25));
     bool checkROIchanged();
-    // Load image data from an in-memory image
-    bool loadMy4DImage(const My4DImage* my4DImage, const My4DImage* neuronMaskImage = NULL) {}
     int getCurrentZSlice(); // 1-based slice index
     int getCurrentBoxSize();
 

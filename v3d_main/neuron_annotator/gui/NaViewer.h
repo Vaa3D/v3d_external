@@ -14,8 +14,6 @@ class NaViewer
 public:
     NaViewer() : defaultScale(1.0), bMouseIsDragging(false), bPaintCrosshair(true) {}
     virtual ~NaViewer() {}
-    // TODO replace loadMy4DImage() method with observer relationship to a lighter interface
-    virtual bool loadMy4DImage(const My4DImage* my4DImage, const My4DImage* neuronMaskImage = NULL) = 0;
     // Methods to support optional linking of zoom, focus, and rotation between viewers
     virtual void synchronizeWithCameraModel(CameraModel* externalCamera);
     virtual void decoupleCameraModel(CameraModel* externalCamera);

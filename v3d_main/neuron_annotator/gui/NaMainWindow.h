@@ -80,7 +80,6 @@ public:
     void handleCoordinatedCloseEvent(QCloseEvent *event);
     bool loadAnnotationSessionFromDirectory(QDir imageInputDirectory);
     bool closeAnnotationSession();
-    bool loadMy4DImage(const My4DImage * img, const My4DImage * neuronMaskImg = NULL);
 
 public slots:
     void openMulticolorImageStack(QString dirName);

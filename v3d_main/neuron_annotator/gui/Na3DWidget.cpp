@@ -623,6 +623,21 @@ void Na3DWidget::toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bo
 }
 
 
+// TODO - this method only works in a certain precise location in process flow
+void Na3DWidget::onVolumeDataChanged()
+{
+    NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+    if (! volumeReader.hasReadLock()) return;
+    const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
+    const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
+    const Image4DProxy<My4DImage>& refProxy = volumeReader.getReferenceImageProxy();
+
+    loadMy4DImage(imgProxy.img0, neuronProxy.img0);
+    populateNeuronMaskAndReference(neuronProxy.img0, refProxy.img0);
+    setThickness(annotationSession->getZRatio());
+    update();
+}
+
 void Na3DWidget::updateFullVolume()
 {
     // TODO - refresh these read locks frequently!

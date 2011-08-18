@@ -33,9 +33,6 @@ public:
         connect(mipMergedData, SIGNAL(dataChanged()),
                 this, SLOT(initializePixmap()));
     }
-    virtual bool loadMy4DImage(const My4DImage *my4DImage, const My4DImage *neuronMaskImage) {
-        return true;
-    } // TODO - deprecate loadMy4DImage method
 
 signals:
     // message intended for main window status area

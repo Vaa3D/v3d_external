@@ -690,19 +690,13 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
     QFileInfo lsmFileInfo(lsmName);
     setWindowTitle(QString("%1 - V3D Neuron Annotator").arg(lsmFileInfo.fileName()));
 
+    // TODO - why is 3D viewer blank if I move 3d widget stanza to end of the next block?
+    ui.v3dr_glwidget->onVolumeDataChanged();
+
     {
         NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
         if (! volumeReader.hasReadLock()) return;
         const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
-
-        // TODO - why is 3D viewer blank if I move 3d widget stanza to end of this block?
-        const My4DImage * img = annotationSession->getOriginalImageStackAsMy4DImage();
-        const My4DImage * neuronMaskImg = annotationSession->getNeuronMaskAsMy4DImage();
-        const My4DImage * refImg = annotationSession->getReferenceStack();
-        ui.v3dr_glwidget->loadMy4DImage(img, neuronMaskImg);
-        ui.v3dr_glwidget->populateNeuronMaskAndReference(neuronMaskImg, refImg);
-        ui.v3dr_glwidget->setThickness(annotationSession->getZRatio());
-        ui.v3dr_glwidget->update();
 
         setZRange(1, imgProxy.sz);
         // Start in middle of volume
@@ -761,11 +755,6 @@ bool NaMainWindow::closeAnnotationSession() {
         annotationSession->save();
         delete annotationSession;
     }
-    return true;
-}
-
-bool NaMainWindow::loadMy4DImage(const My4DImage * img, const My4DImage * neuronMaskImg)
-{
     return true;
 }
 
