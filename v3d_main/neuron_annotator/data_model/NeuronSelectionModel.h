@@ -35,27 +35,34 @@ protected:
 
     void switchSelectedNeuron(int index);
     void switchSelectedNeuronUniquelyIfOn(int index);
-    void clearSelections();
 
 signals:
     void initialized(); // signal that data structures were initialized after new volume load
+
     // Visibility
     void overlayVisibilityChanged(int index, bool status); // single overlay toggled
     void neuronVisibilityChanged(int index, bool status); // single neuron toggled
     void multipleVisibilityChanged(); // global change, not just a single neuron
-    void visibilityChanged(); // any change in neuron or overlay visibility.  more specific that dataChanged, more general than XVisibilityChanged.
+    void exactlyOneNeuronShown(int index);
+    void visibilityChanged(); // any change in neuron or overlay visibility.  more specific than dataChanged, more general than XVisibilityChanged.
+
     // Selection
-    void selectedNeuronShown(int selectionIndex); // ?
+    void exactlyOneNeuronSelected(int index);
+    void selectionCleared();
+    void selectionChanged();
+
     // TODO highlight signals (not selection)
 
 public slots:
     void initializeSelectionModel();
+    // Visibility
     void updateNeuronMask(int index, bool status);
     void updateOverlay(int index, bool status);
-    void showSelectedNeuron(const QList<int>& overlayList);
-    void showAllNeurons(const QList<int>& overlayList);
+    void showAllNeurons();
     void clearAllNeurons();
-    void updateNeuronSelectList(int index);
+    // Selection
+    void selectExactlyOneNeuron(int index);
+    void clearSelection();
 
 protected:
     const NaVolumeData& volumeData;
@@ -103,11 +110,11 @@ public:
     void switchSelectedNeuronUniquelyIfOn(int index) {
         neuronSelectionModel.switchSelectedNeuronUniquelyIfOn(index);
     }
-    void clearSelections() {
-        neuronSelectionModel.clearSelections();
+    void clearSelection() {
+        neuronSelectionModel.clearSelection();
     }
-    void updateNeuronSelectList(int index) {
-        neuronSelectionModel.updateNeuronSelectList(index);
+    void selectExactlyOneNeuron(int index) {
+        neuronSelectionModel.selectExactlyOneNeuron(index);
     }
 
 protected:

@@ -174,6 +174,7 @@ NaMainWindow::NaMainWindow()
             this, SLOT(complete3DProgress()));
     connect(ui.v3dr_glwidget, SIGNAL(progressMessage(QString)),
             this, SLOT(set3DProgressMessage(QString)));
+
     // 3D volume cut
     connect(ui.v3dr_glwidget, SIGNAL(changeXCut0(int)), ui.XcminSlider, SLOT(setValue(int))); // x-cut
     connect(ui.XcminSlider, SIGNAL(valueChanged(int)), ui.v3dr_glwidget, SLOT(setXCut0(int)));
@@ -553,16 +554,20 @@ void NaMainWindow::on_action3D_Volume_triggered()
     QString suggestedFile=suggestedExportFilenameFromCurrentState(selectionReader);
     QString filename = QFileDialog::getSaveFileName(0, QObject::tr("Save 3D Volume to an .tif file"), suggestedFile, QObject::tr("3D Volume (*.tif)"));
     if (!(filename.isEmpty())){
-        if(annotationSession){
-            ExportFile *pExport = new ExportFile;
-            if(pExport->init(annotationSession->getOriginalImageStackAsMy4DImage(), annotationSession->getNeuronMaskAsMy4DImage(), annotationSession->getReferenceStack(),
-                             selectionReader.getMaskStatusList(), selectionReader.getOverlayStatusList(), filename)){
-                connect(pExport, SIGNAL(finished()), pExport, SLOT(deleteLater()));
-                pExport->start();
-            }
+        ExportFile *pExport = new ExportFile;
+        // TODO - read lock is not held for long enough here
+        if(pExport->init(volumeReader.getOriginalImageProxy().img0,
+                         volumeReader.getNeuronMaskProxy().img0,
+                         volumeReader.getReferenceImageProxy().img0,
+                         selectionReader.getMaskStatusList(),
+                         selectionReader.getOverlayStatusList(),
+                         filename))
+        {
+            connect(pExport, SIGNAL(finished()), pExport, SLOT(deleteLater()));
+            pExport->start();
         }
     }
-}
+} // release locks
 
 void NaMainWindow::on_action2D_MIP_triggered() {
     QString filename = QFileDialog::getSaveFileName(0, QObject::tr("Save 2D MIP to an .tif file"), ".", QObject::tr("2D MIP (*.tif)"));
@@ -690,7 +695,9 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
     QFileInfo lsmFileInfo(lsmName);
     setWindowTitle(QString("%1 - V3D Neuron Annotator").arg(lsmFileInfo.fileName()));
 
+    // good
     // TODO - why is 3D viewer blank if I move 3d widget stanza to end of the next block?
+    // Looks like some race condition, with this spot near the cusp
     ui.v3dr_glwidget->onVolumeDataChanged();
 
     {
@@ -705,6 +712,13 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
         ui.HDRRed_pushButton->setEnabled(imgProxy.sc > 1);
         ui.HDRGreen_pushButton->setEnabled(imgProxy.sc > 1);
         ui.HDRBlue_pushButton->setEnabled(imgProxy.sc > 2);
+    }
+
+    // bad or good
+    {
+        NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+        if (! volumeReader.hasReadLock()) return;
+        const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
 
         // volume cut update
         ui.XcminSlider->setRange(0, imgProxy.sx-1);
@@ -723,6 +737,8 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
         ui.ZcmaxSlider->setValue(imgProxy.sz-1);
     } // release lock
 
+    // bad
+
     // Neuron Selector update
     neuronSelector = new NeuronSelector();
 
@@ -731,18 +747,21 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
     connect(annotationSession, SIGNAL(deselectNeuron()), neuronSelector, SLOT(deselectCurrentNeuron()));
 
     neuronSelector->setAnnotationSession(annotationSession);
-    neuronSelector->init();
 
     // show selected neuron
     connect(ui.v3dr_glwidget, SIGNAL(neuronShown(QList<int>)),
-            &annotationSession->getNeuronSelectionModel(), SLOT(showSelectedNeuron(QList<int>)));
+            neuronSelector, SLOT(showSelectedNeuron(QList<int>)));
     connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(QList<int>)),
-            &annotationSession->getNeuronSelectionModel(), SLOT(showAllNeurons(QList<int>)));
+            neuronSelector, SLOT(showAllNeurons(QList<int>)));
     connect(annotationSession, SIGNAL(modelUpdated(QString)), this, SLOT(synchronizeGalleryButtonsToAnnotationSession(QString)));
     connect(annotationSession, SIGNAL(modelUpdated(QString)), neuronSelector, SLOT(updateSelectedNeurons()));
     connect(ui.v3dr_glwidget, SIGNAL(neuronClearAll()), &annotationSession->getNeuronSelectionModel(), SLOT(clearAllNeurons()));
     connect(ui.v3dr_glwidget, SIGNAL(neuronClearAllSelections()), neuronSelector, SLOT(clearAllSelections()));
-    connect(ui.v3dr_glwidget, SIGNAL(neuronIndexChanged(int)), neuronSelector, SLOT(updateNeuronSelectList(int)));
+
+    // TODO - move this near annotationSession constructor
+    connect(ui.v3dr_glwidget, SIGNAL(neuronIndexChanged(int)), &annotationSession->getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
+    connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(exactlyOneNeuronSelected(int)),
+            neuronSelector, SLOT(selectExactlyOneNeuron(int)));
 
     connect(annotationSession, SIGNAL(scrollBarFocus(NeuronSelectionModel::NeuronIndex)),
             ui.fragmentGalleryWidget, SLOT(scrollToFragment(NeuronSelectionModel::NeuronIndex)));

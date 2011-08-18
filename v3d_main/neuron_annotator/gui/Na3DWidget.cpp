@@ -481,29 +481,6 @@ void Na3DWidget::setGammaBrightness(qreal gamma)
     update();
 }
 
-bool Na3DWidget::loadMy4DImage(const My4DImage* my4DImage, const My4DImage* neuronMaskImage) {
-    if (_idep==0) {
-        _idep = new iDrawExternalParameter();
-    } else {
-        if (_idep->image4d!=0) {
-            // delete _idep->image4d;
-        }
-    }
-    // TODO - get some const correctness in here...
-    _idep->image4d = const_cast<My4DImage*>(my4DImage);
-    prepareImageData();
-    updateDefaultScale();
-
-    // if (neuronMaskImage) {
-    //     if (!populateNeuronMask(neuronMaskImage)) return false;
-    // }
-
-    resetView();
-    updateCursor();
-    update();
-    return true;
-}
-
 float Na3DWidget::glUnitsPerImageVoxel() const
 {
     const RendererNeuronAnnotator* renderer = (const RendererNeuronAnnotator*)getRenderer();
@@ -522,24 +499,6 @@ float Na3DWidget::getZoomScale() const
     // return answer * 6.28; // TODO - lose the mystery 6 tc image
     // return answer * 3.5; // TODO - fudge factor is ~3.5 for E1.tif
     return answer;
-}
-
-bool Na3DWidget::populateNeuronMaskAndReference(const My4DImage* neuronMaskImage, const My4DImage* referenceImage) {
-    RendererNeuronAnnotator* rend = (RendererNeuronAnnotator*)getRenderer();
-    if (!rend->populateNeuronMaskAndReference(neuronMaskImage, referenceImage)) {
-        return false;
-    }
-    if (!rend->initializeTextureMasks()) {
-        return false;
-    }
-    return true;
-}
-
-void Na3DWidget::prepareImageData() {
-    // V3D crashes unless updateminmaxvalues is called
-    _idep->image4d->updateminmaxvalues();
-    if (!renderer) choiceRenderer();
-    updateImageData();
 }
 
 void Na3DWidget::choiceRenderer() {
@@ -611,6 +570,16 @@ void Na3DWidget::paintGL()
     }
 }
 
+/* virtual */
+void Na3DWidget::setAnnotationSession(AnnotationSession *annotationSession)
+{
+    NaViewer::setAnnotationSession(annotationSession);
+    // TODO - eventually connect up this signal, insead of calling from
+    // NaMainWindow::processUpdatedVolumeData(), as soon as I can understand
+    // what causes the viewer to be blank depending on the order of this method.
+    // connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(initialized()),
+    //        this, SLOT(onVolumeDataChanged()));
+}
 
 void Na3DWidget::toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked)
 {
@@ -626,14 +595,31 @@ void Na3DWidget::toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bo
 // TODO - this method only works in a certain precise location in process flow
 void Na3DWidget::onVolumeDataChanged()
 {
-    NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
-    if (! volumeReader.hasReadLock()) return;
-    const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
-    const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
-    const Image4DProxy<My4DImage>& refProxy = volumeReader.getReferenceImageProxy();
+    if (_idep==0) {
+        _idep = new iDrawExternalParameter();
+    }
 
-    loadMy4DImage(imgProxy.img0, neuronProxy.img0);
-    populateNeuronMaskAndReference(neuronProxy.img0, refProxy.img0);
+    {
+        NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+        if (! volumeReader.hasReadLock()) return;
+        const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
+        const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
+        const Image4DProxy<My4DImage>& refProxy = volumeReader.getReferenceImageProxy();
+
+        // TODO - get some const correctness in here...
+        // TODO - wean from _idep->image4d
+        _idep->image4d = imgProxy.img0;
+        if (!renderer) choiceRenderer();
+        updateImageData();
+        updateDefaultScale();
+        resetView();
+        updateCursor();
+        RendererNeuronAnnotator* rend = (RendererNeuronAnnotator*)getRenderer();
+        if (! rend->populateNeuronMaskAndReference(neuronProxy.img0, refProxy.img0))
+            qDebug() << "RendererNeuronAnnotator::populateNeuronMaskAndReference() failed";
+        if (! rend->initializeTextureMasks())
+            qDebug() << "RendererNeuronAnnotator::initializeTextureMasks() failed";
+    } // release locks
     setThickness(annotationSession->getZRatio());
     update();
 }

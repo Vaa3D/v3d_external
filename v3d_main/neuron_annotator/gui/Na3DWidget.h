@@ -24,8 +24,6 @@ class Na3DWidget : public V3dR_GLWidget, public NaViewer
 public:
     Na3DWidget(QWidget* parent);
     virtual ~Na3DWidget();
-    bool loadMy4DImage(const My4DImage* my4DImage, const My4DImage* neuronMaskImage = NULL);
-    bool populateNeuronMaskAndReference(const My4DImage* neuronMaskImage, const My4DImage* referenceImage);
 
     const Vector3D& focus() const {return cameraModel.focus();}
     float getZoomScale() const; // in viewport pixels per image voxel at focus
@@ -40,6 +38,7 @@ public:
 
     virtual void resizeEvent(QResizeEvent * event);
     void onMouseRightClickMenu(QMouseEvent * event, bool b_glwidget); // for mouse click outside glwidget
+    virtual void setAnnotationSession(AnnotationSession *annotationSession);
 
 public slots:
     void setGammaBrightness(qreal gamma);
@@ -141,7 +140,6 @@ protected:
     virtual void paintGL();
     void paintFiducial(const Vector3D& v);
     void paintGrid();
-    void prepareImageData();
     virtual void choiceRenderer();
     float glUnitsPerImageVoxel() const;
     void updateDefaultScale();

@@ -12,6 +12,7 @@ DataColorModel::DataColorModel(const NaVolumeData& volumeDataParam)
 
 void DataColorModel::resetColors()
 {
+    qDebug() << "Resetting DataColorModel";
     NaVolumeData::Reader volumeReader(volumeData);
     if (! volumeReader.hasReadLock()) return;
     const Image4DProxy<My4DImage>& volProxy = volumeReader.getOriginalImageProxy();
@@ -55,6 +56,7 @@ void DataColorModel::resetColors()
         latestChannelHdrMin.assign(numChannels, 0);
         latestChannelHdrMax.assign(numChannels, 0);
     } // release lock
+    qDebug() << "Done resetting DataColorModel";
     emit dataChanged();
 }
 

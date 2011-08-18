@@ -19,10 +19,14 @@ int NeuronSelector::getIndexSelectedNeuron()
                 annotationSession->getNeuronSelectionModel());
         if (! selectionReader.hasReadLock()) return -1;
 
+        NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+        if (! volumeReader.hasReadLock()) return -1;
+        const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
+
 	// find in mask stack
-	sx = annotationSession->getNeuronMaskAsMy4DImage()->getXDim();
-	sy = annotationSession->getNeuronMaskAsMy4DImage()->getYDim();
-        sz = annotationSession->getNeuronMaskAsMy4DImage()->getZDim();
+        sx = neuronProxy.sx;
+        sy = neuronProxy.sy;
+        sz = neuronProxy.sz;
 		
 	// sum of pixels of each neuron mask in the cube 
 	int *sum = NULL;
@@ -56,7 +60,7 @@ int NeuronSelector::getIndexSelectedNeuron()
 	V3DLONG zb = zlc-NB; if(zb<0) zb = 0;
 	V3DLONG ze = zlc+NB; if(ze>sz) ze = sz-1;
 
-        const unsigned char *neuronMask = annotationSession->getNeuronMaskAsMy4DImage()->getRawData();
+        const unsigned char *neuronMask = neuronProxy.img0->getRawData();
         const QList<bool>& maskStatusList=selectionReader.getMaskStatusList();
 	
 	for(V3DLONG k=zb; k<=ze; k++)
@@ -144,34 +148,40 @@ void NeuronSelector::getCurNeuronBoundary()
 	curNeuronBDzb = sz-1;
 	curNeuronBDze = 0;
 
-        const unsigned char *neuronMask = annotationSession->getNeuronMaskAsMy4DImage()->getRawData();
-	
-	//
-	for(V3DLONG k=0; k<sz; k++)
-	{
-		V3DLONG offset_k = k*sx*sy;
-		for(V3DLONG j=0; j<sy; j++)
-		{
-			V3DLONG offset_j = offset_k + j*sx;
-			for(V3DLONG i=0; i<sx; i++)
-			{
-				V3DLONG idx = offset_j + i;
-				
-                                if(index == (neuronMask[idx]-1))
-				{
-					if(i<curNeuronBDxb) curNeuronBDxb = i;
-					if(i>curNeuronBDxe) curNeuronBDxe = i;
-					
-					if(j<curNeuronBDyb) curNeuronBDyb = j;
-					if(j>curNeuronBDye) curNeuronBDye = j;
-					
-                                        if(k<curNeuronBDzb) curNeuronBDzb = k;
-                                        if(k>curNeuronBDze) curNeuronBDze = k;
-				}
-				
-			}
-		}
-	}
+        {
+            NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+            if (! volumeReader.hasReadLock()) return;
+            const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
+
+            const unsigned char *neuronMask = neuronProxy.img0->getRawData();
+
+            //
+            for(V3DLONG k=0; k<sz; k++)
+            {
+                    V3DLONG offset_k = k*sx*sy;
+                    for(V3DLONG j=0; j<sy; j++)
+                    {
+                            V3DLONG offset_j = offset_k + j*sx;
+                            for(V3DLONG i=0; i<sx; i++)
+                            {
+                                    V3DLONG idx = offset_j + i;
+
+                                    if(index == (neuronMask[idx]-1))
+                                    {
+                                            if(i<curNeuronBDxb) curNeuronBDxb = i;
+                                            if(i>curNeuronBDxe) curNeuronBDxe = i;
+
+                                            if(j<curNeuronBDyb) curNeuronBDyb = j;
+                                            if(j>curNeuronBDye) curNeuronBDye = j;
+
+                                            if(k<curNeuronBDzb) curNeuronBDzb = k;
+                                            if(k>curNeuronBDze) curNeuronBDze = k;
+                                    }
+
+                            }
+                    }
+            }
+        } // release lock
 	
 	// x
 	if( curNeuronBDxb-NB > 0 )
@@ -245,8 +255,11 @@ bool NeuronSelector::inNeuronMask(V3DLONG x, V3DLONG y, V3DLONG z)
 }
 
 //
-void NeuronSelector::setAnnotationSession(AnnotationSession* annotationSession) {
-	this->annotationSession=annotationSession;
+void NeuronSelector::setAnnotationSession(AnnotationSession* annotationSession)
+{
+    this->annotationSession=annotationSession;
+    connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(selectionCleared()),
+            this, SLOT(clearAllSelections()));
 }
 
 // 
@@ -263,6 +276,7 @@ void NeuronSelector::updateSelectedPosition(double x, double y, double z) {
 
 void NeuronSelector::deselectCurrentNeuron()
 {
+    // What is this?
     NeuronSelectionModel::Writer selectionWriter(
             annotationSession->getNeuronSelectionModel());
     if (selectionWriter.getNeuronSelectList().at(index)==true) {
@@ -390,23 +404,15 @@ void NeuronSelector::updateSelectedNeurons()
         deselectCurrentNeuron();
 }
 
-void NeuronSelector::updateNeuronSelectList(int neuronIndex)
+void NeuronSelector::selectExactlyOneNeuron(int neuronIndex)
 {
     index = neuronIndex;
-
-    qDebug() << "NeuronSelector::updateNeuronSelectList() neuronIndex=" << neuronIndex;
-
-    NeuronSelectionModel::Writer selectionWriter(
-            annotationSession->getNeuronSelectionModel());
-    selectionWriter.updateNeuronSelectList(index);
+    qDebug() << "NeuronSelector::selectExactlyOneNeuron() neuronIndex=" << neuronIndex;
 }
 
 void NeuronSelector::clearAllSelections() {
     // Clear selection landmarks
     annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks.clear();
     emit neuronHighlighted(false);
-    NeuronSelectionModel::Writer selectionWriter(
-            annotationSession->getNeuronSelectionModel());
-    selectionWriter.clearSelections();
 }
 

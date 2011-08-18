@@ -34,7 +34,7 @@ AnnotationSession::AnnotationSession(QObject* parentParam /* = NULL */)
             this, SLOT(updateNeuronMaskFull()));
     connect(&neuronSelectionModel, SIGNAL(neuronVisibilityChanged(int,bool)),
             this, SLOT(updateNeuronMask(int,bool)));
-    connect(&neuronSelectionModel, SIGNAL(selectedNeuronShown(int)),
+    connect(&neuronSelectionModel, SIGNAL(exactlyOneNeuronShown(int)),
             this, SLOT(showSelectedNeuron(int)));
     connect(&neuronSelectionModel, SIGNAL(multipleVisibilityChanged()),
             this, SLOT(updateNeuronMaskFull()));

@@ -17,17 +17,23 @@ NeuronSelectionModel::NeuronSelectionModel(const NaVolumeData& volumeDataParam)
             this, SIGNAL(visibilityChanged()));
     connect(this, SIGNAL(overlayVisibilityChanged(int,bool)),
             this, SIGNAL(visibilityChanged()));
+    connect(this, SIGNAL(exactlyOneNeuronShown(int)),
+            this, SIGNAL(visibilityChanged()));
     connect(this, SIGNAL(visibilityChanged()),
             this, SIGNAL(dataChanged()));
 
-    // TODO - what the heck is selectedNeuronShown?
-    connect(this, SIGNAL(selectedNeuronShown(int)),
-            this, SIGNAL(multipleVisibilityChanged()));
+    connect(this, SIGNAL(exactlyOneNeuronSelected(int)),
+            this, SIGNAL(selectionChanged()));
+    connect(this, SIGNAL(selectionCleared()),
+            this, SIGNAL(selectionChanged()));
+    connect(this, SIGNAL(selectionChanged()),
+            this, SIGNAL(dataChanged()));
 }
 
 /* slot: */
 void NeuronSelectionModel::initializeSelectionModel()
 {
+    qDebug() << "Initializing NeuronSelectionModel";
     { // curly brackets to restrict scope for locks
         NaVolumeData::Reader volumeReader(volumeData);
         if (! volumeReader.hasReadLock()) return;
@@ -52,6 +58,7 @@ void NeuronSelectionModel::initializeSelectionModel()
             neuronSelectList << false; // no neurons selected
         }
     }
+    qDebug() << "Done initializing NeuronSelectionModel";
 
     emit initialized();
 }
@@ -117,47 +124,12 @@ void NeuronSelectionModel::switchSelectedNeuronUniquelyIfOn(int index) {
     }
 }
 
-// show selected neuron
-void NeuronSelectionModel::showSelectedNeuron(const QList<int>& overlayList)
-{
-    int selectionIndex=-1;
-    for (int i=0;i<neuronSelectList.size();i++) {
-        if (neuronSelectList.at(i)) {
-            selectionIndex=i;
-            break;
-        }
-    }
-    if (selectionIndex<0 || selectionIndex>=maskStatusList.size()) {
-        // nothing to do
-        return;
-    }
-    {
-        Writer selectionWriter(*this);
-        for (int i=0;i<overlayStatusList.size();i++) {
-            overlayStatusList.replace(i, false);
-        }
-        for (int i=0;i<overlayList.size();i++) {
-            overlayStatusList.replace(overlayList.at(i), true);
-        }
-        for (int i=0;i<maskStatusList.size();i++) {
-            maskStatusList.replace(i, false);
-        }
-        maskStatusList.replace(selectionIndex, true);
-    }
-    emit selectedNeuronShown(selectionIndex);
-}
 
 // show all neurons
-void NeuronSelectionModel::showAllNeurons(const QList<int>& overlayList)
+void NeuronSelectionModel::showAllNeurons()
 {
     {
         Writer selectionWriter(*this);
-        for (int i=0;i<overlayStatusList.size();i++) {
-            overlayStatusList.replace(i, false);
-        }
-        for (int i=0;i<overlayList.size();i++) {
-            overlayStatusList.replace(overlayList.at(i), true);
-        }
         for (int i=0;i<maskStatusList.size();i++) {
             maskStatusList.replace(i, true);
         }
@@ -187,24 +159,30 @@ void NeuronSelectionModel::clearAllNeurons()
 }
 
 // update Neuron Select List
-void NeuronSelectionModel::updateNeuronSelectList(int index)
+void NeuronSelectionModel::selectExactlyOneNeuron(int index)
 {
+    if (index >= neuronSelectList.size()) return;
+    bool changed = false;
+    if (! neuronSelectList[index])
+        changed = true;
+    for (int i = 0; i < neuronSelectList.size(); ++i)
+    {
+        if (neuronSelectList[i] && (i != index))
+            changed = true;
+    }
+    if (! changed) return;
 
     {
         Writer selectionWriter(*this);
         for (int i=0;i<neuronSelectList.size();i++) {
             neuronSelectList.replace(i, false);
-            maskStatusList.replace(i, false);
         }
-
         neuronSelectList.replace(index, true);
-        maskStatusList.replace(index, true);
     }
-
-    emit multipleVisibilityChanged();
+    emit exactlyOneNeuronSelected(index);
 }
 
-void NeuronSelectionModel::clearSelections()
+void NeuronSelectionModel::clearSelection()
 {
     {
         Writer selectionWriter(*this);
@@ -212,7 +190,7 @@ void NeuronSelectionModel::clearSelections()
             neuronSelectList.replace(i, false);
         }
     }
-    emit dataChanged();
+    emit selectionCleared();
 }
 
 

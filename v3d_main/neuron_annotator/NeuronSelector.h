@@ -14,7 +14,7 @@ class NeuronSelector : public QObject
     Q_OBJECT
 
 public:
-    NeuronSelector(){}
+    NeuronSelector(){init();}
     ~NeuronSelector(){}
 
 public:
@@ -31,7 +31,7 @@ public slots:
     void updateSelectedPosition(double x, double y, double z);
     void deselectCurrentNeuron();
     void updateSelectedNeurons();
-    void updateNeuronSelectList(int neuronIndex);
+    void selectExactlyOneNeuron(int neuronIndex);
     void clearAllSelections();
 
 signals:
