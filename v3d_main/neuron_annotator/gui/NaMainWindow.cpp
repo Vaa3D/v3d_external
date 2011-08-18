@@ -586,6 +586,15 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(initialized()),
             this, SLOT(processUpdatedVolumeData()));
 
+    // Annotation model update
+    ui.v3dr_glwidget->setAnnotationSession(annotationSession);
+    ui.naLargeMIPWidget->setAnnotationSession(annotationSession);
+    ui.naZStackWidget->setAnnotationSession(annotationSession);
+
+    connect(annotationSession, SIGNAL(modelUpdated(QString)), ui.naLargeMIPWidget, SLOT(annotationModelUpdate(QString)));
+    connect(annotationSession, SIGNAL(modelUpdated(QString)), ui.naZStackWidget, SLOT(annotationModelUpdate(QString)));
+    connect(annotationSession, SIGNAL(modelUpdated(QString)), ui.v3dr_glwidget, SLOT(annotationModelUpdate(QString)));
+
     // Both mip images and selection model need to be in place to update gallery
     connect(&annotationSession->getGalleryMipImages(), SIGNAL(dataChanged()),
             this, SLOT(updateGalleries()));
@@ -681,28 +690,45 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
     QFileInfo lsmFileInfo(lsmName);
     setWindowTitle(QString("%1 - V3D Neuron Annotator").arg(lsmFileInfo.fileName()));
 
-    // ui.v3dr_glwidget->loadMy4DImage(annotationSession->getOriginalImageStackAsMy4DImage());
-    if (! loadMy4DImage(annotationSession->getOriginalImageStackAsMy4DImage(),
-                  annotationSession->getNeuronMaskAsMy4DImage()) )
-        return;
+    {
+        NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+        if (! volumeReader.hasReadLock()) return;
+        const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
 
-    if (!ui.v3dr_glwidget->populateNeuronMaskAndReference(annotationSession->getNeuronMaskAsMy4DImage(), annotationSession->getReferenceStack())) {
-        return;
-    }
+        // TODO - why is 3D viewer blank if I move 3d widget stanza to end of this block?
+        const My4DImage * img = annotationSession->getOriginalImageStackAsMy4DImage();
+        const My4DImage * neuronMaskImg = annotationSession->getNeuronMaskAsMy4DImage();
+        const My4DImage * refImg = annotationSession->getReferenceStack();
+        ui.v3dr_glwidget->loadMy4DImage(img, neuronMaskImg);
+        ui.v3dr_glwidget->populateNeuronMaskAndReference(neuronMaskImg, refImg);
+        ui.v3dr_glwidget->setThickness(annotationSession->getZRatio());
+        ui.v3dr_glwidget->update();
 
-    ui.v3dr_glwidget->setThickness(annotationSession->getZRatio());
+        setZRange(1, imgProxy.sz);
+        // Start in middle of volume
+        ui.naZStackWidget->setCurrentZSlice(imgProxy.sz / 2 + 1);
+        // Need at least two colors for use of the color buttons to make sense
+        ui.HDRRed_pushButton->setEnabled(imgProxy.sc > 1);
+        ui.HDRGreen_pushButton->setEnabled(imgProxy.sc > 1);
+        ui.HDRBlue_pushButton->setEnabled(imgProxy.sc > 2);
 
-    ui.v3dr_glwidget->update();
+        // volume cut update
+        ui.XcminSlider->setRange(0, imgProxy.sx-1);
+        ui.XcminSlider->setValue(0);
+        ui.XcmaxSlider->setRange(0, imgProxy.sx-1);
+        ui.XcmaxSlider->setValue(imgProxy.sx-1);
 
-    // Annotation model update
-    ui.v3dr_glwidget->setAnnotationSession(annotationSession);
-    ui.naLargeMIPWidget->setAnnotationSession(annotationSession);
-    ui.naZStackWidget->setAnnotationSession(annotationSession);
+        ui.YcminSlider->setRange(0, imgProxy.sy-1);
+        ui.YcminSlider->setValue(0);
+        ui.YcmaxSlider->setRange(0, imgProxy.sy-1);
+        ui.YcmaxSlider->setValue(imgProxy.sy-1);
 
-    connect(annotationSession, SIGNAL(modelUpdated(QString)), ui.naLargeMIPWidget, SLOT(annotationModelUpdate(QString)));
-    connect(annotationSession, SIGNAL(modelUpdated(QString)), ui.naZStackWidget, SLOT(annotationModelUpdate(QString)));
-    connect(annotationSession, SIGNAL(modelUpdated(QString)), ui.v3dr_glwidget, SLOT(annotationModelUpdate(QString)));
-	
+        ui.ZcminSlider->setRange(0, imgProxy.sz-1);
+        ui.ZcminSlider->setValue(0);
+        ui.ZcmaxSlider->setRange(0, imgProxy.sz-1);
+        ui.ZcmaxSlider->setValue(imgProxy.sz-1);
+    } // release lock
+
     // Neuron Selector update
     neuronSelector = new NeuronSelector();
 
@@ -724,37 +750,8 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
     connect(ui.v3dr_glwidget, SIGNAL(neuronClearAllSelections()), neuronSelector, SLOT(clearAllSelections()));
     connect(ui.v3dr_glwidget, SIGNAL(neuronIndexChanged(int)), neuronSelector, SLOT(updateNeuronSelectList(int)));
 
-    // connect(annotationSession, SIGNAL(scrollBarFocus(int)), ui.scrollArea->horizontalScrollBar(), SLOT(setValue(int)));
     connect(annotationSession, SIGNAL(scrollBarFocus(NeuronSelectionModel::NeuronIndex)),
             ui.fragmentGalleryWidget, SLOT(scrollToFragment(NeuronSelectionModel::NeuronIndex)));
-
-    // volume cut update
-    ui.XcminSlider->setRange(0, annotationSession->getOriginalImageStackAsMy4DImage()->getXDim()-1);
-    ui.XcminSlider->setTickInterval(10);
-    ui.XcminSlider->setSingleStep(1);
-    ui.XcminSlider->setValue(0);
-    ui.XcmaxSlider->setRange(0, annotationSession->getOriginalImageStackAsMy4DImage()->getXDim()-1);
-    ui.XcmaxSlider->setTickInterval(10);
-    ui.XcmaxSlider->setSingleStep(1);
-    ui.XcmaxSlider->setValue(annotationSession->getOriginalImageStackAsMy4DImage()->getXDim()-1);
-
-    ui.YcminSlider->setRange(0, annotationSession->getOriginalImageStackAsMy4DImage()->getYDim()-1);
-    ui.YcminSlider->setTickInterval(10);
-    ui.YcminSlider->setSingleStep(1);
-    ui.YcminSlider->setValue(0);
-    ui.YcmaxSlider->setRange(0, annotationSession->getOriginalImageStackAsMy4DImage()->getYDim()-1);
-    ui.YcmaxSlider->setTickInterval(10);
-    ui.YcmaxSlider->setSingleStep(1);
-    ui.YcmaxSlider->setValue(annotationSession->getOriginalImageStackAsMy4DImage()->getYDim()-1);
-
-    ui.ZcminSlider->setRange(0, annotationSession->getOriginalImageStackAsMy4DImage()->getZDim()-1);
-    ui.ZcminSlider->setTickInterval(10);
-    ui.ZcminSlider->setSingleStep(1);
-    ui.ZcminSlider->setValue(0);
-    ui.ZcmaxSlider->setRange(0, annotationSession->getOriginalImageStackAsMy4DImage()->getZDim()-1);
-    ui.ZcmaxSlider->setTickInterval(10);
-    ui.ZcmaxSlider->setSingleStep(1);
-    ui.ZcmaxSlider->setValue(annotationSession->getOriginalImageStackAsMy4DImage()->getZDim()-1);
 
     return;
 }
@@ -769,16 +766,6 @@ bool NaMainWindow::closeAnnotationSession() {
 
 bool NaMainWindow::loadMy4DImage(const My4DImage * img, const My4DImage * neuronMaskImg)
 {
-    ui.naLargeMIPWidget->loadMy4DImage(img, neuronMaskImg);
-    ui.v3dr_glwidget->loadMy4DImage(img, neuronMaskImg);
-    ui.naZStackWidget->loadMy4DImage(img, neuronMaskImg);
-    setZRange(1, img->getZDim());
-    // Start in middle of volume
-    ui.naZStackWidget->setCurrentZSlice(img->getZDim() / 2 + 1);
-    // Need at least two colors for use of the color buttons to make sense
-    ui.HDRRed_pushButton->setEnabled(img->getCDim() > 1);
-    ui.HDRGreen_pushButton->setEnabled(img->getCDim() > 1);
-    ui.HDRBlue_pushButton->setEnabled(img->getCDim() > 2);
     return true;
 }
 

@@ -644,7 +644,9 @@ void Na3DWidget::updateFullVolume()
     const QList<bool> overlayStatusList=selectionReader.getOverlayStatusList();
     for (int i=0;i<overlayStatusList.size();i++) {
         if (overlayStatusList.at(i)) {
-            overlayList.append(ra->getOverlayTextureByAnnotationIndex(i));
+            RGBA8* texture = ra->getOverlayTextureByAnnotationIndex(i);
+            if (! texture) return; // something is not initialized yet?
+            overlayList.append(texture);
         }
     }
     QCoreApplication::processEvents();

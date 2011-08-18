@@ -946,15 +946,27 @@ You can also resize the box by Ctrl + left mouse click.</string>
                             </item>
                             <item row="0" column="2">
                              <widget class="QSlider" name="XcminSlider">
+                              <property name="maximum">
+                               <number>1</number>
+                              </property>
                               <property name="orientation">
                                <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="tickInterval">
+                               <number>10</number>
                               </property>
                              </widget>
                             </item>
                             <item row="1" column="2">
                              <widget class="QSlider" name="XcmaxSlider">
+                              <property name="maximum">
+                               <number>1</number>
+                              </property>
                               <property name="orientation">
                                <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="tickInterval">
+                               <number>10</number>
                               </property>
                              </widget>
                             </item>
@@ -987,15 +999,27 @@ You can also resize the box by Ctrl + left mouse click.</string>
                             </item>
                             <item row="0" column="2">
                              <widget class="QSlider" name="YcminSlider">
+                              <property name="maximum">
+                               <number>1</number>
+                              </property>
                               <property name="orientation">
                                <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="tickInterval">
+                               <number>10</number>
                               </property>
                              </widget>
                             </item>
                             <item row="1" column="2">
                              <widget class="QSlider" name="YcmaxSlider">
+                              <property name="maximum">
+                               <number>1</number>
+                              </property>
                               <property name="orientation">
                                <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="tickInterval">
+                               <number>10</number>
                               </property>
                              </widget>
                             </item>
@@ -1028,15 +1052,27 @@ You can also resize the box by Ctrl + left mouse click.</string>
                             </item>
                             <item row="0" column="2">
                              <widget class="QSlider" name="ZcminSlider">
+                              <property name="maximum">
+                               <number>1</number>
+                              </property>
                               <property name="orientation">
                                <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="tickInterval">
+                               <number>10</number>
                               </property>
                              </widget>
                             </item>
                             <item row="1" column="2">
                              <widget class="QSlider" name="ZcmaxSlider">
+                              <property name="maximum">
+                               <number>1</number>
+                              </property>
                               <property name="orientation">
                                <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="tickInterval">
+                               <number>10</number>
                               </property>
                              </widget>
                             </item>

@@ -1314,11 +1314,7 @@ v3d_main/3drenderer/renderer.cpp
 v3d_main/3drenderer/renderer.h
 v3d_main/3drenderer/Renderer_gl2.cpp
 v3d_main/3drenderer/Renderer_gl2.h
-v3d_main/3drenderer/renderer_hit2.cpp
 v3d_main/3drenderer/renderer_labelfield.cpp
-v3d_main/3drenderer/renderer_obj2.cpp
-v3d_main/3drenderer/renderer_tex2.cpp
-v3d_main/3drenderer/renderer_tex2.h
 v3d_main/3drenderer/shader/color_fragment.txt
 v3d_main/3drenderer/shader/color_vertex.txt
 v3d_main/3drenderer/shader/lighting.txt
@@ -2419,3 +2415,4 @@ v3d_main/neuron_annotator/data_model/PrivateVolumeModelData.h
 v3d_main/neuron_annotator/data_model/PrivateVolumeModelData.cpp
 v3d_main/neuron_annotator/data_model/NaSharedDataSignaller.h
 v3d_main/neuron_annotator/data_model/NaSharedDataSignaller.cpp
+v3d_main/3drenderer/renderer_tex.cpp
