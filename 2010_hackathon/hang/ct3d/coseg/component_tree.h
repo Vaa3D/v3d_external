@@ -12,6 +12,10 @@
 #include <iostream>
 #include <vector>
 #include <list>
+#ifdef __v3d__
+#include "v3d_basicdatatype.h"
+#include "stackutil.h"
+#endif
 using namespace std;
 
 

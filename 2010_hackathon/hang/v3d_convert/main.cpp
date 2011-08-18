@@ -66,7 +66,7 @@ bool run_with_paras(InputParas paras, string & s_error)
 	string infile = paras.filelist.at(0);
 	string outfile = paras.filelist.size() >=2 ? paras.filelist.at(1) : string(infile+"_out.raw");
 	unsigned char * indata1d = NULL, * outdata1d = NULL;
-	V3DLONG* in_sz = NULL, * out_sz = NULL;
+	V3DLONG* in_sz = 0, * out_sz = 0;
 	int datatype;
 
 	if(!loadImage((char*) infile.c_str(), indata1d, in_sz, datatype)) {s_error += "loadImage(\""; s_error += infile; s_error+="\")  error"; return false;}
@@ -205,24 +205,15 @@ bool run_with_paras(InputParas paras, string & s_error)
 			{
 				double sigma;if(!paras.get_double_para(sigma,"-gaussian-blur",0,s_error,"x")) return false;
 				cout<<"sigma = "<<sigma<<endl;
-				//double * src = new double[in_sz[0] * in_sz[1] * in_sz[2]];
-				//V3DLONG sz[3];
-				//sz[0] = in_sz[0];
-				//sz[1] = in_sz[1];
-				//sz[2] = in_sz[2];
-				//if(!convert_uint8_to_double(src, indata1d, sz)){s_error += "convert_uint8_to_double error"; return false;}
 				double * dst = new double[in_sz[0] * in_sz[1] * in_sz[2]];
-				//if(!smooth(dst, src, in_sz, sigma)){ s_error += "failed to compute gaussian-blur"; return false;}
 				if(!smooth(dst, indata1d, in_sz, sigma)){ s_error += "failed to compute gaussian-blur"; return false;}
 				outdata1d = new unsigned char[in_sz[0] * in_sz[1] * in_sz[2]];
-				//if(!convert_double_to_uint8(outdata1d, dst, sz)){s_error += "convert_double_to_uint8 error"; return false;}
 				if(!convert_double_to_uint8(outdata1d, dst, in_sz)){s_error += "convert_double_to_uint8 error"; return false;}
-				//if(src){delete [] src; src = 0;}
 				if(dst){delete [] dst; dst = 0;}
 			}
 		}
 	}
-	if(out_sz == 0) {out_sz = in_sz; out_sz[3] = 1;}
+	if(out_sz == 0) {out_sz = new V3DLONG[4]; out_sz[0] = in_sz[0]; out_sz[1] = in_sz[1]; out_sz[2] = in_sz[2]; out_sz[3] = 1;}
 	if(is_save_img && !saveImage((char*) outfile.c_str(), outdata1d, out_sz, datatype)) {s_error += "saveImage(\""; s_error += outfile; s_error+="\") error"; return false;}
 	if(indata1d) {delete [] indata1d; outdata1d = 0;}
 	if(in_sz) {delete [] in_sz; in_sz = 0;}
