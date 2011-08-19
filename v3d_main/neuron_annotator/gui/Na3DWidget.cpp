@@ -11,6 +11,10 @@ using namespace std;
 Na3DWidget::Na3DWidget(QWidget* parent)
         : V3dR_GLWidget(NULL, parent, "Title")
 {
+    if (renderer) {
+        delete renderer;
+        renderer = NULL;
+    }
     _idep = new iDrawExternalParameter();
     _idep->image4d = NULL;
     _volCompress = false;
@@ -56,6 +60,7 @@ void Na3DWidget::updateImageData()
     emit progressMessage(QString("Updating 3D viewer data"));
     emit progressAchieved(30);
     QCoreApplication::processEvents();
+    makeCurrent();
     renderer->setupData(this->_idep);
     if (renderer->hasError()) {
         emit progressComplete(); // TODO - not strong enough
@@ -64,6 +69,7 @@ void Na3DWidget::updateImageData()
     renderer->getLimitedDataSize(_data_size); //for update slider size
     emit progressAchieved(70);
     QCoreApplication::processEvents();
+    makeCurrent();
     renderer->reinitializeVol(renderer->class_version()); //100720
     if (renderer->hasError()) {
         emit progressComplete(); // TODO - not strong enough
@@ -322,6 +328,12 @@ void Na3DWidget::onNotSingleClick()
 
 void Na3DWidget::highlightNeuronAtPosition(QPoint pos)
 {
+    if (! renderer) return;
+    RendererNeuronAnnotator * ra = (RendererNeuronAnnotator*)getRenderer();
+    // avoid crash w/ NaN markerViewMatrix
+    if (ra->hasBadMarkerViewMatrix()) {
+        return;
+    }
     // qDebug()<<"left click ... ...";
     XYZ loc = ((Renderer_gl1*)getRenderer())->selectPosition( pos.x(),  pos.y() );
     // select neuron: set x, y, z and emit signal
@@ -501,7 +513,9 @@ float Na3DWidget::getZoomScale() const
     return answer;
 }
 
-void Na3DWidget::choiceRenderer() {
+void Na3DWidget::choiceRenderer()
+{
+    if (renderer) return;
         // qDebug("Na3DWidget::choiceRenderer");
         _isSoftwareGL = false;
         GLeeInit();
@@ -578,7 +592,7 @@ void Na3DWidget::setAnnotationSession(AnnotationSession *annotationSession)
     // NaMainWindow::processUpdatedVolumeData(), as soon as I can understand
     // what causes the viewer to be blank depending on the order of this method.
     // connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(initialized()),
-    //        this, SLOT(onVolumeDataChanged()));
+    //       this, SLOT(onVolumeDataChanged()));
 }
 
 void Na3DWidget::toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked)
@@ -586,6 +600,7 @@ void Na3DWidget::toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bo
     RendererNeuronAnnotator* ra = (RendererNeuronAnnotator*)renderer;
     emit progressMessage(QString("Updating textures"));
     QCoreApplication::processEvents();
+    makeCurrent();
     ra->updateCurrentTextureMask(index, (checked ? 1 : 0));
     ra->paint();
     update();
@@ -609,6 +624,7 @@ void Na3DWidget::onVolumeDataChanged()
         // TODO - get some const correctness in here...
         // TODO - wean from _idep->image4d
         _idep->image4d = imgProxy.img0;
+        makeCurrent(); // Make sure subsequent OpenGL calls go here. (might make no difference here)
         if (!renderer) choiceRenderer();
         updateImageData();
         updateDefaultScale();
@@ -617,6 +633,7 @@ void Na3DWidget::onVolumeDataChanged()
         RendererNeuronAnnotator* rend = (RendererNeuronAnnotator*)getRenderer();
         if (! rend->populateNeuronMaskAndReference(neuronProxy.img0, refProxy.img0))
             qDebug() << "RendererNeuronAnnotator::populateNeuronMaskAndReference() failed";
+        makeCurrent(); // Make sure subsequent OpenGL calls go here. (might make no difference here)
         if (! rend->initializeTextureMasks())
             qDebug() << "RendererNeuronAnnotator::initializeTextureMasks() failed";
     } // release locks
@@ -651,6 +668,7 @@ void Na3DWidget::updateFullVolume()
         }
     }
     QCoreApplication::processEvents();
+    makeCurrent();
     ra->rebuildFromBaseTextures(tempList, overlayList);
     ra->paint();
     update();

@@ -587,14 +587,15 @@ void NaMainWindow::on_actionScreenShot_triggered() {
 bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
 {
     annotationSession = new AnnotationSession();
+
     // TODO - deprecate processUpdatedVolumeData() in favor of using downstream data flow components.
+    ui.v3dr_glwidget->setAnnotationSession(annotationSession);
+    ui.naLargeMIPWidget->setAnnotationSession(annotationSession);
+    ui.naZStackWidget->setAnnotationSession(annotationSession);
     connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(initialized()),
             this, SLOT(processUpdatedVolumeData()));
 
     // Annotation model update
-    ui.v3dr_glwidget->setAnnotationSession(annotationSession);
-    ui.naLargeMIPWidget->setAnnotationSession(annotationSession);
-    ui.naZStackWidget->setAnnotationSession(annotationSession);
 
     connect(annotationSession, SIGNAL(modelUpdated(QString)), ui.naLargeMIPWidget, SLOT(annotationModelUpdate(QString)));
     connect(annotationSession, SIGNAL(modelUpdated(QString)), ui.naZStackWidget, SLOT(annotationModelUpdate(QString)));
@@ -680,6 +681,9 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
 
     annotationSession->loadLsmMetadata();
 
+    // good
+    ui.v3dr_glwidget->onVolumeDataChanged();
+
     QDir imageInputDirectory = annotationSession->getMultiColorImageStackNode()->getImageDir();
 
     // At this point it should be reasonable to set the window title
@@ -696,10 +700,6 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
     setWindowTitle(QString("%1 - V3D Neuron Annotator").arg(lsmFileInfo.fileName()));
 
     // good
-    // TODO - why is 3D viewer blank if I move 3d widget stanza to end of the next block?
-    // Looks like some race condition, with this spot near the cusp
-    ui.v3dr_glwidget->onVolumeDataChanged();
-
     {
         NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
         if (! volumeReader.hasReadLock()) return;
@@ -714,7 +714,9 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
         ui.HDRBlue_pushButton->setEnabled(imgProxy.sc > 2);
     }
 
-    // bad or good
+    // bad or good - depends run to run
+    // TODO - why is 3D viewer blank if I move ui.v3dr_glwidget->onVolumeDataChanged() to end of the next block?
+    // Looks like some race condition, with this spot near the cusp
     {
         NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
         if (! volumeReader.hasReadLock()) return;

@@ -16,7 +16,7 @@ public:
     virtual void loadVol();
     bool populateNeuronMaskAndReference(const My4DImage* my4Dmask, const My4DImage* referenceImage);
 
-    void rebuildFromBaseTextures(QList<int> maskIndexList, QList<RGBA8*> overlayList);
+    void rebuildFromBaseTextures(const QList<int>& maskIndexList, QList<RGBA8*>& overlayList);
 
     void updateCurrentTextureMask(int maskIndex, int state);
     bool initializeTextureMasks();
@@ -28,8 +28,11 @@ public:
         return 2.0 / boundingBox.Dmax();
     }
     RGBA8* getOverlayTextureByAnnotationIndex(int index);
-
     RGBA8* getTexture3DCurrent() const {return texture3DCurrent;}
+    bool hasBadMarkerViewMatrix() const // to help avoid a crash
+    {
+        return (! (markerViewMatrix[0] == markerViewMatrix[0]));
+    }
 
 signals:
     void progressAchieved(int);
