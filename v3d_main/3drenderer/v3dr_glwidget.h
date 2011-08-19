@@ -355,8 +355,8 @@ signals:
 	void changeZClip1(int s);
 
 	void changeOrthoView(bool b);
-        void neuronShown(QList<int>); // view neuron in Neuron Annotator
-        void neuronShownAll(QList<int>);
+        void neuronShown(const QList<int> overlayList); // view neuron in Neuron Annotator
+        void neuronShownAll(const QList<int> overlayList);
         void neuronClearAll();
         void neuronIndexChanged(int index);
         void neuronClearAllSelections();

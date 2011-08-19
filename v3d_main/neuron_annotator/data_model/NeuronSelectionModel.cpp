@@ -137,7 +137,44 @@ void NeuronSelectionModel::showAllNeurons()
     emit multipleVisibilityChanged();
 }
 
+void NeuronSelectionModel::showOverlays(const QList<int> overlayList) {
+    {
+        Writer selectionWriter(*this);
+        for (int i = 0; i < overlayStatusList.size(); ++i)
+            overlayStatusList.replace(i, false);
+        for (int i = 0; i < overlayList.size(); ++i)
+            overlayStatusList.replace(overlayList[i], true);
+    }
+    emit multipleVisibilityChanged();
+}
+
+void NeuronSelectionModel::showExactlyOneNeuron(int index)
+{
+    if (index < 0) return;
+    if (index >= maskStatusList.size()) return;
+    {
+        Writer selectionWriter(*this);
+        for (int i = 0; i < maskStatusList.size(); ++i)
+            maskStatusList.replace(i, (i == index));
+    }
+    emit multipleVisibilityChanged();
+}
+
+void NeuronSelectionModel::showFirstSelectedNeuron()
+{
+    int index = -1;
+    for (int i=0;i<neuronSelectList.size();i++) {
+        if (neuronSelectList[i]) {
+            index = i;
+            break;
+        }
+    }
+    if (index < 0) return;
+    showExactlyOneNeuron(index);
+}
+
 // clear all neurons
+// affects both selection and visibility, including overlays
 void NeuronSelectionModel::clearAllNeurons()
 {
     {
@@ -146,15 +183,11 @@ void NeuronSelectionModel::clearAllNeurons()
         for (int i=0;i<overlayStatusList.size();i++) {
             overlayStatusList.replace(i, false);
         }
-
-        // deselect neurons
-        for (int i=0;i<neuronSelectList.size();i++) {
-            neuronSelectList.replace(i, false);
-        }
         for (int i=0;i<maskStatusList.size();i++) {
             maskStatusList.replace(i, false);
         }
     }
+    clearSelection();
     emit multipleVisibilityChanged();
 }
 
@@ -186,9 +219,8 @@ void NeuronSelectionModel::clearSelection()
 {
     {
         Writer selectionWriter(*this);
-        for (int i=0;i<neuronSelectList.size();i++) {
+        for (int i=0;i<neuronSelectList.size();i++)
             neuronSelectList.replace(i, false);
-        }
     }
     emit selectionCleared();
 }

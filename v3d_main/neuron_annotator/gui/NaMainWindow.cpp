@@ -230,6 +230,8 @@ NaMainWindow::NaMainWindow()
     QAction * redoAction = undoGroup->createRedoAction(this);
     ui.menuEdit->insertAction(ui.menuEdit->actions().at(0), redoAction);
     ui.menuEdit->insertAction(redoAction, undoAction);
+
+    qRegisterMetaType< QList<int> >("QList<int>");
 }
 
 void NaMainWindow::onViewerChanged(int viewerIndex) {
@@ -751,10 +753,20 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
     neuronSelector->setAnnotationSession(annotationSession);
 
     // show selected neuron
-    connect(ui.v3dr_glwidget, SIGNAL(neuronShown(QList<int>)),
-            neuronSelector, SLOT(showSelectedNeuron(QList<int>)));
-    connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(QList<int>)),
-            neuronSelector, SLOT(showAllNeurons(QList<int>)));
+    connect(ui.v3dr_glwidget, SIGNAL(neuronShown(const QList<int>)),
+            &annotationSession->getNeuronSelectionModel(), SLOT(showFirstSelectedNeuron()));
+    connect(ui.v3dr_glwidget, SIGNAL(neuronShown(const QList<int>)),
+            &annotationSession->getNeuronSelectionModel(), SLOT(showOverlays(const QList<int>)));
+    connect(ui.v3dr_glwidget, SIGNAL(neuronShown(const QList<int>)),
+            &annotationSession->getNeuronSelectionModel(), SLOT(clearSelection()));
+
+    connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(const QList<int>)),
+            &annotationSession->getNeuronSelectionModel(), SLOT(showAllNeurons()));
+    connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(const QList<int>)),
+            &annotationSession->getNeuronSelectionModel(), SLOT(showOverlays(const QList<int>)));
+    connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(const QList<int>)),
+            &annotationSession->getNeuronSelectionModel(), SLOT(clearSelection()));
+
     connect(annotationSession, SIGNAL(modelUpdated(QString)), this, SLOT(synchronizeGalleryButtonsToAnnotationSession(QString)));
     connect(annotationSession, SIGNAL(modelUpdated(QString)), neuronSelector, SLOT(updateSelectedNeurons()));
     connect(ui.v3dr_glwidget, SIGNAL(neuronClearAll()), &annotationSession->getNeuronSelectionModel(), SLOT(clearAllNeurons()));
