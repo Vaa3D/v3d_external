@@ -30,6 +30,7 @@ Na3DWidget::Na3DWidget(QWidget* parent)
     rotateCursor = new QCursor(QPixmap(":/pic/rotate_icon.png"), 5, 5);
     // setMouseTracking(true); // for hover action in mouseMoveEvent()
     updateCursor();
+    repaint();
 
     connect(&cameraModel, SIGNAL(focusChanged(const Vector3D&)),
              this, SLOT(updateFocus(const Vector3D&)));
@@ -555,6 +556,7 @@ void Na3DWidget::paintFiducial(const Vector3D& v) {
 
 void Na3DWidget::paintGL()
 {
+    makeCurrent();
     V3dR_GLWidget::paintGL();
 
     // Draw focus position to ensure it remains in center of screen,
@@ -591,8 +593,10 @@ void Na3DWidget::setAnnotationSession(AnnotationSession *annotationSession)
     // TODO - eventually connect up this signal, insead of calling from
     // NaMainWindow::processUpdatedVolumeData(), as soon as I can understand
     // what causes the viewer to be blank depending on the order of this method.
-    // connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(initialized()),
-    //       this, SLOT(onVolumeDataChanged()));
+    /*
+    connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(initialized()),
+          this, SLOT(onVolumeDataChanged()));
+    /* */
 }
 
 void Na3DWidget::toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked)
@@ -625,7 +629,10 @@ void Na3DWidget::onVolumeDataChanged()
         // TODO - wean from _idep->image4d
         _idep->image4d = imgProxy.img0;
         makeCurrent(); // Make sure subsequent OpenGL calls go here. (might make no difference here)
-        if (!renderer) choiceRenderer();
+        if (!renderer) {
+            qDebug() << "ERROR: choiceRenderer() should have been called from initializeGL()";
+            return;
+        }
         updateImageData();
         updateDefaultScale();
         resetView();

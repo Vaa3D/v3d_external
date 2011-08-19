@@ -31,6 +31,14 @@ void CompartmentMapWidget::loadAtlas()
     {
         atlasfile = QDir::tempPath().append("/").append(flybrainatlas);
     }
+    else if(QFile::exists(qApp->applicationDirPath().append("/").append(flybrainatlas)))
+    {
+        atlasfile = qApp->applicationDirPath().append("/").append(flybrainatlas);
+    }
+    else if(QFile::exists(qApp->applicationDirPath().append("/../../../").append(flybrainatlas)))
+    {
+        atlasfile = qApp->applicationDirPath().append("/../../../").append(flybrainatlas);
+    }
 
     if(QFile::exists(atlasfile))
     {
