@@ -103,8 +103,41 @@ template<class T> bool otsu_threshold(double & thresh_value, T* &inimg1d, V3DLON
 //	if(hist){delete [] hist; hist = 0;}
 	return true;
 }
-template<class T>
-void adaptive_threshold(T * &inimg1d, T * &outimg1d, )
+
+template <class T>
+bool adaptive_threshold(T * &outimg1d, T *inimg1d, V3DLONG sz[3] ,V3DLONG h, V3DLONG d) // h : sampling_interval, d : sampling_number
 {
+	if(inimg1d == 0 || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0 || h <= 0 || d <= 0) return false;
+	if(outimg1d == 0) outimg1d = new T[sz[0] * sz[1] * sz[2]];
+    V3DLONG i, j,k,n,count;
+    double t, temp;
+
+    V3DLONG mCount = sz[1] * sz[0];
+    for (i=0; i<sz[2]; i++)
+    {
+        for (j=0; j<sz[1]; j++)
+        {
+            for (k=0; k<sz[0]; k++)
+            {
+                V3DLONG curpos = i * mCount + j*sz[0] + k;
+                V3DLONG curpos1 = i* mCount + j*sz[0];
+                V3DLONG curpos2 = j* sz[0] + k;
+                temp = 0;
+                count = 0;
+                for(n =1 ; n <= d  ;n++)
+                {
+                    if (k>h*n) {temp += inimg1d[curpos1 + k-(h*n)]; count++;}
+                    if (k+(h*n)< sz[0]) { temp += inimg1d[curpos1 + k+(h*n)]; count++;}
+                    if (j>h*n) {temp += inimg1d[i* mCount + (j-(h*n))*sz[0] + k]; count++;}//    
+                    if (j+(h*n)<sz[1]) {temp += inimg1d[i* mCount + (j+(h*n))*sz[0] + k]; count++;}//
+                    if (i>(h*n)) {temp += inimg1d[(i-(h*n))* mCount + curpos2]; count++;}//    
+                    if (i+(h*n)< sz[2]) {temp += inimg1d[(i+(h*n))* mCount + j* sz[0] + k ]; count++;}
+                }
+                t =  inimg1d[curpos]-temp/(count);
+                outimg1d[curpos]= (t > 0)? t : 0;
+            }
+        }
+    }
+	return true;
 }
 #endif

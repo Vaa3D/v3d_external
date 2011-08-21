@@ -25,7 +25,7 @@ bool convert_double_to_uint8(unsigned char* outimg1d,double * inimg1d,  V3DLONG 
 
 bool is_save_img = true;
 
-SupportedCommand supported_commands[] = {{"-info",0},{"-down-sampling",1},{"-marker-center",1},{"-auto-threshold", 1},{"-binary-threshold",1},{"-white-threshold",1},{"-black-threshold",1},{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-negate", 0}};
+SupportedCommand supported_commands[] = {{"-info",0},{"-down-sampling",1},{"-marker-center",1},{"-adaptive-threshold", 1},{"-auto-threshold", 1},{"-binary-threshold",1},{"-white-threshold",1},{"-black-threshold",1},{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-negate", 0}};
 
 int main(int argc, char* argv[])
 {
@@ -106,6 +106,16 @@ bool run_with_paras(InputParas paras, string & s_error)
 			int factor; if(!paras.get_int_para(factor, "-down-sampling", s_error)) return false;
 			cout<<"factor : "<<factor<<endl;
 			if(!down_sampling(factor, indata1d, in_sz, outdata1d, out_sz)){s_error += " down sampling error"; return false;}
+		}
+		else if(cmd_name == "-adaptive-threshold")
+		{
+			CHECK_CHANNEL;
+			int sampling_interval; if(!paras.get_int_para(sampling_interval,"-adaptive-threshold",0,s_error,"+")) return false;
+			int sampling_number; if(!paras.get_int_para(sampling_number,"-adaptive-threshold",1,s_error,"+")) return false;
+			cout<<"sampling_interval = "<<sampling_interval<<" , sampling_number = "<<sampling_number<<endl;
+			if(!adaptive_threshold(outdata1d, indata1d, in_sz, sampling_interval, sampling_number)){s_error += " adaptive thresholding error!"; return false;}
+			out_sz = new V3DLONG[4];
+			out_sz[0] = in_sz[0]; out_sz[1] = in_sz[1]; out_sz[2] = in_sz[2]; out_sz[3] = 1;
 		}
 		else if(cmd_name == "-auto-threshold")
 		{
@@ -234,15 +244,16 @@ void printHelp()
 	cout<<"Usage: v3d_convert [options ...] file [ [options ...] file ...] [options ...] file "<<endl;
 	cout<<""<<endl;
 	cout<<" -info                               display the information of input image"<<endl;
-	cout<<" -gaussian-blur     geometry         smooth the image by gaussian blur"<<endl;
-	cout<<" -rotatex           theta            rotate the image along x-axis with angle theta"<<endl;
-	cout<<" -rotatey           theta            rotate the image along y-axis with angle theta"<<endl;
-	cout<<" -rotatez           theta            rotate the image along z-axis with angle theta"<<endl;
-	cout<<" -black-threshold   thresh_value     threshold the image, intensity lower than thresh_value will be set to zero"<<endl;
-	cout<<" -white-threshold   thresh_value     threshold the image, intensity higher than thresh_value will be set to maximum"<<endl;
-	cout<<" -binary-threshold  thresh_value     threshold the image, intensity lower than thresh_value to zero, higher to maximum"<<endl;
-	cout<<" -auto-threshold    thresh_type      calculate thresh_value automatically and do black/white/binary-threshold according to thresh_type"<<endl;
-	cout<<" -marker-center     thresh_value     calculate a reasonalbe marker from input image with thresholding thresh_value"<<endl;
+	cout<<" -gaussian-blur      geometry         smooth the image by gaussian blur"<<endl;
+	cout<<" -rotatex            theta            rotate the image along x-axis with angle theta"<<endl;
+	cout<<" -rotatey            theta            rotate the image along y-axis with angle theta"<<endl;
+	cout<<" -rotatez            theta            rotate the image along z-axis with angle theta"<<endl;
+	cout<<" -black-threshold    thresh_value     threshold the image, intensity lower than thresh_value will be set to zero"<<endl;
+	cout<<" -white-threshold    thresh_value     threshold the image, intensity higher than thresh_value will be set to maximum"<<endl;
+	cout<<" -binary-threshold   thresh_value     threshold the image, intensity lower than thresh_value to zero, higher to maximum"<<endl;
+	cout<<" -auto-threshold     thresh_type      calculate thresh_value automatically and do black/white/binary-threshold according to thresh_type"<<endl;
+	cout<<" -adaptive-threshold h+d              h is sampling interval, d is then number of sampling points"<<endl;
+	cout<<" -marker-center      thresh_value     calculate a reasonalbe marker from input image with thresholding thresh_value"<<endl;
 	cout<<""<<endl;
 }
 
