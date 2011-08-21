@@ -103,4 +103,8 @@ template<class T> bool otsu_threshold(double & thresh_value, T* &inimg1d, V3DLON
 //	if(hist){delete [] hist; hist = 0;}
 	return true;
 }
+template<class T>
+void adaptive_threshold(T * &inimg1d, T * &outimg1d, )
+{
+}
 #endif
