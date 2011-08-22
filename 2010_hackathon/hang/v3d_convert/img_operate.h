@@ -38,7 +38,7 @@ template<class T> bool img_plus(T* &outimg, T* &inimg1, T* &inimg2, V3DLONG tol_
 	if(outimg == 0) outimg = new T[tol_sz];
 	T max_value = (T)((1 << (sizeof(T) * 8)) - 1);
 	for(V3DLONG i = 0; i < tol_sz; i++) 
-		outimg[i] = MIN((inimg1[i] + inimg2[2]), max_value);
+		outimg[i] = MIN((inimg1[i] + inimg2[i]), max_value);
 	
 	return true;
 }
@@ -79,7 +79,7 @@ template<class T> bool img_divide(T* &outimg, T* &inimg1, T* &inimg2, V3DLONG to
 	if(inimg1 == 0 || inimg2 == 0 || tol_sz <= 0) return false;
 	if(outimg == 0) outimg = new T[tol_sz];
 	T max_value = (T)((1 << (sizeof(T) * 8)) - 1);
-	for(V3DLONG i = 0; i < tol_sz; i++) outimg[i] = inimg2[i] > inimg1[1] ? max_value : 0;
+	for(V3DLONG i = 0; i < tol_sz; i++) outimg[i] = inimg2[i] > inimg1[i] ? max_value : 0;
 	
 	return true;
 }
@@ -99,7 +99,7 @@ template<class T> bool img_and(T* &outimg, T* &inimg1, T* &inimg2, V3DLONG tol_s
 {
 	if(inimg1 == 0 || inimg2 == 0 || tol_sz <= 0) return false;
 	if(outimg == 0) outimg = new T[tol_sz];
-	for(V3DLONG i = 0; i < tol_sz; i++) outimg[i] = (inimg2[i] & inimg1[1]);
+	for(V3DLONG i = 0; i < tol_sz; i++) outimg[i] = (inimg2[i] & inimg1[i]);
 	
 	return true;
 }
@@ -108,7 +108,7 @@ template<class T> bool img_or(T* &outimg, T* &inimg1, T* &inimg2, V3DLONG tol_sz
 {
 	if(inimg1 == 0 || inimg2 == 0 || tol_sz <= 0) return false;
 	if(outimg == 0) outimg = new T[tol_sz];
-	for(V3DLONG i = 0; i < tol_sz; i++) outimg[i] = (inimg2[i] | inimg1[1]);
+	for(V3DLONG i = 0; i < tol_sz; i++) outimg[i] = (inimg2[i] | inimg1[i]);
 	
 	return true;
 }
@@ -117,7 +117,7 @@ template<class T> bool img_xor(T* &outimg, T* &inimg1, T* &inimg2, V3DLONG tol_s
 {
 	if(inimg1 == 0 || inimg2 == 0 || tol_sz <= 0) return false;
 	if(outimg == 0) outimg = new T[tol_sz];
-	for(V3DLONG i = 0; i < tol_sz; i++) outimg[i] = (inimg2[i] ^ inimg1[1]);
+	for(V3DLONG i = 0; i < tol_sz; i++) outimg[i] = (inimg2[i] ^ inimg1[i]);
 	
 	return true;
 }

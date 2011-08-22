@@ -171,6 +171,8 @@ bool run_with_paras(InputParas paras, string & s_error)
 			if(!maximum_connected_component(outdata1d, indata1d, in_sz, binary_thresh_value)){s_error += "get maximum connected component error"; return false;}
 			out_sz = new V3DLONG[4];
 			out_sz[0] = in_sz[0]; out_sz[1] = in_sz[1]; out_sz[2] = in_sz[2]; out_sz[3] = 1;
+			ostringstream oss; oss << infile<<"_thresh"<<binary_thresh_value<<"_maxcomp.raw";
+			outfile = paras.filelist.size() >=2 ? paras.filelist.at(2) : oss.str();
 		}
 		else if(cmd_name == "-binary-threshold")
 		{
@@ -227,6 +229,8 @@ bool run_with_paras(InputParas paras, string & s_error)
 				if(datatype != datatype2 || in_sz[0] != in_sz2[0] || in_sz[1] != in_sz2[1] || in_sz[2] != in_sz2[2] || in_sz[3] != in_sz2[3]){s_error += string("different datatype or different image size for " + infile + " and " + infile2); return false;}
 				delete [] in_sz2; in_sz2 = 0;
 			}
+			else 
+				outfile = paras.filelist.size() >=2 ? paras.filelist.at(1) : string(infile+ "_" + method + ".raw");
 			if(!img_operate(method, outdata1d, inimg1, in_sz, inimg2)){s_error += " img operate error"; return false;}
 			if(inimg2){delete [] inimg2; inimg2 = 0;}
 		}
