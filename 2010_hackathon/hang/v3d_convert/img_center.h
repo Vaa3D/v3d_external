@@ -140,7 +140,41 @@ template<class T> bool center_marker_max_intensity(double * &pos, T* &inimg1d, V
 	return true;
 }
 
-template<class T> bool center_marker(double * &pos, T* &inimg1d, V3DLONG * &sz, double thresh)
+// this is used for segmentated image
+template<class T> bool maximum_connecting_component_center(double * &pos, T* &inimg1d, V3DLONG * &sz)
+{
+	if(inimg1d == 0 || sz == 0 || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0) return false;
+	T*** inimg3d = 0;
+	V3DLONG * djs1d = 0, *djs3d = 0;
+	try{
+		if(pos == 0) pos = new double[3];
+
+		pos[0] = pos[1] = pos[2] = 0.0;
+		new3dpointer(inimg3d, sz[0], sz[1], sz[2], inimg1d);
+	}
+	catch(...)
+	{
+		if(inimg3d)delete3dpointer(inimg3d, sz[0], sz[1], sz[2]);
+		return false;
+	}
+		for(int k = 0; k < sz[2]; k++)
+	{
+		for(int j = 0; j < sz[1]; j++)
+		{
+			for(int i = 0; i < sz[0]; i++)
+			{
+				DisjointSet* djs = djs3d[k][j][i];
+				djs->i = i; djs->j = j; djs->k = k;
+				if
+			}
+		}
+	}
+	if(inimg3d)delete3dpointer(inimg3d, sz[0], sz[1], sz[2]);
+
+	return true;
+}
+
+template<class T> bool maximum_xyzplane_intensity_center(double * &pos, T* &inimg1d, V3DLONG * &sz, double thresh)
 {
 	if(inimg1d == 0 || sz == 0 || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0) return false;
 	T*** inimg3d = 0;
