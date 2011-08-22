@@ -17,7 +17,7 @@ using namespace std;
 #endif
 
 // larger than 255 will be set to 255 
-template<class T> bool img_operation(string method, T* &outimg, T* &inimg1, V3DLONG *&sz, T* &inimg2)
+template<class T> bool img_operate(string method, T* &outimg, T* &inimg1, V3DLONG *&sz, T* &inimg2)
 {
 	V3DLONG tol_sz = sz[0] * sz[1] * sz[2] * sz[3];
 	if(method == "plus") return img_plus(outimg, inimg1, inimg2, tol_sz);
@@ -68,7 +68,7 @@ template<class T> bool img_multiply(T* &outimg, T* &inimg1, T* &inimg2, V3DLONG 
 	if(inimg1 == 0 || inimg2 == 0 || tol_sz <= 0) return false;
 	if(outimg == 0) outimg = new T[tol_sz];
 	T max_value = (T)((1 << (sizeof(T) * 8)) - 1);
-	for(V3DLONG i = 0; i < tol_sz; i++) outimg[i] = MIN((inimg1[i] * inimg2[i]), max_value);
+	for(V3DLONG i = 0; i < tol_sz; i++) outimg[i] = (T)(inimg1[i] * inimg2[i] / 255.0 + 0.5);
 	
 	return true;
 }
