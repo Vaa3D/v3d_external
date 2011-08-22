@@ -685,7 +685,7 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
     annotationSession->loadLsmMetadata();
 
     // good
-    ui.v3dr_glwidget->onVolumeDataChanged();
+    // ui.v3dr_glwidget->onVolumeDataChanged();
 
     QDir imageInputDirectory = annotationSession->getMultiColorImageStackNode()->getImageDir();
 

@@ -38,6 +38,13 @@ RendererNeuronAnnotator::~RendererNeuronAnnotator() {
 
 }
 
+/* virtual */
+void RendererNeuronAnnotator::setXCut1(int i)
+{
+    qDebug() << "RendererNeuronAnnotator::setXCut1" << i;
+    Renderer_gl2::setXCut1(i);
+}
+
 void RendererNeuronAnnotator::loadVol() {
     Renderer_gl1::loadVol();
 }

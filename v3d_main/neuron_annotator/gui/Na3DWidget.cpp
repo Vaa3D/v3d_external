@@ -595,7 +595,7 @@ void Na3DWidget::setAnnotationSession(AnnotationSession *annotationSession)
     // TODO - eventually connect up this signal, insead of calling from
     // NaMainWindow::processUpdatedVolumeData(), as soon as I can understand
     // what causes the viewer to be blank depending on the order of this method.
-    /*
+    /* */
     connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(initialized()),
           this, SLOT(onVolumeDataChanged()));
     /* */
@@ -616,6 +616,7 @@ void Na3DWidget::toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bo
 // TODO - this method only works in a certain precise location in process flow
 void Na3DWidget::onVolumeDataChanged()
 {
+    init_members();
     if (_idep==0) {
         _idep = new iDrawExternalParameter();
     }
@@ -630,7 +631,6 @@ void Na3DWidget::onVolumeDataChanged()
         // TODO - get some const correctness in here...
         // TODO - wean from _idep->image4d
         _idep->image4d = imgProxy.img0;
-        // initializeGL();
         makeCurrent();
         choiceRenderer();
         settingRenderer();
@@ -644,6 +644,15 @@ void Na3DWidget::onVolumeDataChanged()
         makeCurrent(); // Make sure subsequent OpenGL calls go here. (might make no difference here)
         if (! rend->initializeTextureMasks())
             qDebug() << "RendererNeuronAnnotator::initializeTextureMasks() failed";
+        // Reset volume visible boundary box reveal entire volume at first.
+        // But first set to 0, so it notices a change.
+        setXCut0(0); setXCut1(0);
+        setYCut0(0); setYCut1(0);
+        setZCut0(0); setZCut1(0);
+        //
+        setXCut0(0); setXCut1(imgProxy.sx - 1);
+        setYCut0(0); setYCut1(imgProxy.sy - 1);
+        setZCut0(0); setZCut1(imgProxy.sz - 1);
     } // release locks
     setThickness(annotationSession->getZRatio());
     update();
