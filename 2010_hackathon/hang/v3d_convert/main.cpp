@@ -14,6 +14,7 @@
 #include "img_center.h"
 #include "img_sampling.h"
 #include "img_segment.cpp"
+#include "img_operate.h"
 
 using namespace std;
 
@@ -26,7 +27,7 @@ bool convert_double_to_uint8(unsigned char* outimg1d,double * inimg1d,  V3DLONG 
 
 bool is_save_img = true;
 
-SupportedCommand supported_commands[] = {{"-info",0},{"-down-sampling",1},{"-marker-center",1},{"-maximum-component",1},{"-adaptive-threshold", 1},{"-otsu-threshold", 1},{"-binary-threshold",1},{"-white-threshold",1},{"-black-threshold",1},{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-negate", 0}};
+SupportedCommand supported_commands[] = {{"-info",0},{"-down-sampling",1},{"-marker-center",1},{"-maximum-component",1},{"-adaptive-threshold", 1},{"-otsu-threshold", 1},{"-binary-threshold",1},{"-white-threshold",1},{"-black-threshold",1},{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-img-operation", 1}};
 
 int main(int argc, char* argv[])
 {
@@ -210,6 +211,25 @@ bool run_with_paras(InputParas paras, string & s_error)
 			cout<<"theta = "<<theta<<endl;
 			if(!rotate_along_zaxis(theta, indata1d, in_sz, outdata1d, out_sz, 0)){s_error += "rotatez error"; return false;}
 		}
+		else if(cmd_name == "-img-operation")
+		{
+			string method; if((method = paras.get_para("-img-operation")) == "") return false;
+			cout<<"method : "<<method<<endl;
+			unsigned char *inimg1 = indata1d,  * inimg2 = 0; 
+			if(method != "complement" && method != "not")
+			{
+				if(paras.filelist.size() < 2){s_error += "need at least two input images"; return false;}
+				string infile2 = paras.filelist.at(1);
+				outfile = paras.filelist.size() >=3 ? paras.filelist.at(2) : string(infile+infile2);
+				V3DLONG * in_sz2 = 0;
+				int datatype2;
+				if(!loadImage((char*) infile2.c_str(), inimg2, in_sz2, datatype2)) {s_error += "loadImage(\""; s_error += infile2; s_error+="\")  error"; return false;}
+				if(datatype != datatype2 || in_sz[0] != in_sz2[0] || in_sz[1] != in_sz2[1] || in_sz[2] != in_sz2[2] || in_sz[3] != in_sz2[3]){s_error += string("different datatype or different image size for " + infile + " and " + infile2); return false;}
+				delete [] in_sz2; in_sz2 = 0;
+			}
+			if(!img_operation(method, outdata1d, inimg1, in_sz, inimg2)){s_error += " img operation error"; return false;}
+			if(inimg2){delete [] inimg2; inimg2 = 0;}
+		}
 		else if(cmd_name == "-gaussian-blur")
 		{
 			CHECK_CHANNEL
@@ -248,6 +268,7 @@ void printHelp()
 {
 	cout<<"Version: 1.0"<<endl;
 	cout<<"Copyright: Opensource Licence"<<endl;
+	cout<<"Author: Hang Xiao"<<endl;
 	cout<<""<<endl;
 	cout<<"v3d_convert is the extension of imagemagic convert. It is designed to support  image operator on three dimension."<<endl;
 	cout<<"Currently support .raw .tiff/.tif .lsm image format."<<endl;
@@ -266,6 +287,7 @@ void printHelp()
 	cout<<" -adaptive-threshold h+d              h is sampling interval, d is then number of sampling points"<<endl;
 	cout<<" -maximum-component  thresh_value     get the maximum connected component in the binary thresholding result"<<endl;
 	cout<<" -marker-center      thresh_value     calculate a reasonalbe marker from input image with thresholding thresh_value"<<endl;
+	cout<<" -img-operation      method           methods: plus minus absminus multiply divide complement and or xor not."<<endl;
 	cout<<""<<endl;
 }
 
