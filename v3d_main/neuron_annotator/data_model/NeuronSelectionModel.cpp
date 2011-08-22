@@ -75,6 +75,7 @@ void NeuronSelectionModel::updateOverlay(int index, bool status)
 
 void NeuronSelectionModel::updateNeuronMask(int index, bool status)
 {
+    if (index >= maskStatusList.size()) return; // out of sync
     // qDebug() << "NeuronSelectionModel::updateNeuronMask" << index << status << maskStatusList[index];
     if (maskStatusList[index] == status) {
         // qDebug() << maskStatusList[index] << "equals" << status;

@@ -14,17 +14,6 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     textureSetAlreadyLoaded=false;
     masklessSetupStackTexture=false;
 
-    // initialize projectionMatrix and markerViewMatrix, to prevent crash on click-before-display
-    for (int i = 0; i < 4; ++i)
-    {
-        for (int j = 0; j < 4; ++j)
-        {
-            double val = (i == j) ? 1.0 : 0.0;
-            projectionMatrix[i*4 + j] = val;
-            markerViewMatrix[i*4 + j] = val;
-        }
-    }
-
     // black background for consistency with other viewers
     RGBA32f bg_color;
     bg_color.r = bg_color.g = bg_color.b = 0.0f;

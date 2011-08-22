@@ -231,6 +231,7 @@ NaMainWindow::NaMainWindow()
     ui.menuEdit->insertAction(ui.menuEdit->actions().at(0), redoAction);
     ui.menuEdit->insertAction(redoAction, undoAction);
 
+    // Allow cross-thread signals/slots that pass QList<int>
     qRegisterMetaType< QList<int> >("QList<int>");
 }
 
@@ -866,8 +867,10 @@ void NaMainWindow::updateNeuronGallery()
     // QFrame* ui_maskGallery = qFindChild<QFrame*>(this, "maskGallery");
     // Delete any old contents from the layout, such as previous thumbnails
 
-    if (neuronGalleryButtonList.size() != mipReader.getNumberOfNeurons()) {
-        ui.fragmentGalleryWidget->clear();
+    if (neuronGalleryButtonList.size() != mipReader.getNumberOfNeurons())
+    {
+        neuronGalleryButtonList.clear();
+        ui.fragmentGalleryWidget->clear(); // deletes buttons
 
         // qDebug() << "Number of neuron masks = " << mipReader.getNumberOfNeurons();
         for (int i = 0; i < mipReader.getNumberOfNeurons(); ++i)

@@ -516,18 +516,21 @@ float Na3DWidget::getZoomScale() const
 
 void Na3DWidget::choiceRenderer()
 {
-    if (renderer) return;
-        // qDebug("Na3DWidget::choiceRenderer");
-        _isSoftwareGL = false;
-        GLeeInit();
-        RendererNeuronAnnotator * ra = new RendererNeuronAnnotator(this);
-        renderer = ra;
-        connect(ra, SIGNAL(progressAchieved(int)),
-                this, SIGNAL(progressAchieved(int)));
-        connect(ra, SIGNAL(progressComplete()),
-                this, SIGNAL(progressComplete()));
-        connect(ra, SIGNAL(progressMessage(QString)),
-                this, SIGNAL(progressMessage(QString)));
+    if (renderer) {
+        delete renderer;
+        renderer = NULL;
+    }
+    // qDebug("Na3DWidget::choiceRenderer");
+    _isSoftwareGL = false;
+    GLeeInit();
+    RendererNeuronAnnotator * ra = new RendererNeuronAnnotator(this);
+    renderer = ra;
+    connect(ra, SIGNAL(progressAchieved(int)),
+            this, SIGNAL(progressAchieved(int)));
+    connect(ra, SIGNAL(progressComplete()),
+            this, SIGNAL(progressComplete()));
+    connect(ra, SIGNAL(progressMessage(QString)),
+            this, SIGNAL(progressMessage(QString)));
 }
 
 // Draw a little 3D cross for testing
@@ -556,7 +559,6 @@ void Na3DWidget::paintFiducial(const Vector3D& v) {
 
 void Na3DWidget::paintGL()
 {
-    makeCurrent();
     V3dR_GLWidget::paintGL();
 
     // Draw focus position to ensure it remains in center of screen,
@@ -628,11 +630,10 @@ void Na3DWidget::onVolumeDataChanged()
         // TODO - get some const correctness in here...
         // TODO - wean from _idep->image4d
         _idep->image4d = imgProxy.img0;
-        makeCurrent(); // Make sure subsequent OpenGL calls go here. (might make no difference here)
-        if (!renderer) {
-            qDebug() << "ERROR: choiceRenderer() should have been called from initializeGL()";
-            return;
-        }
+        // initializeGL();
+        makeCurrent();
+        choiceRenderer();
+        settingRenderer();
         updateImageData();
         updateDefaultScale();
         resetView();
@@ -650,33 +651,40 @@ void Na3DWidget::onVolumeDataChanged()
 
 void Na3DWidget::updateFullVolume()
 {
-    // TODO - refresh these read locks frequently!
-    NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
-    if (! volumeReader.hasReadLock()) return;
-    NeuronSelectionModel::Reader selectionReader(annotationSession->getNeuronSelectionModel());
-    if (! selectionReader.hasReadLock()) return;
-
-    emit progressMessage(QString("Updating all textures"));
-    // Change requiring full reload of texture image stacks
     RendererNeuronAnnotator* ra = (RendererNeuronAnnotator*)renderer;
-    QList<int> tempList;
-    for (int i=0;i<selectionReader.getMaskStatusList().size();i++) {
-        if (selectionReader.neuronMaskIsChecked(i)) {
-            tempList.append(i);
+    {
+        // TODO - refresh these read locks frequently!
+        NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+        if (! volumeReader.hasReadLock()) return;
+        NeuronSelectionModel::Reader selectionReader(annotationSession->getNeuronSelectionModel());
+        if (! selectionReader.hasReadLock()) return;
+
+        emit progressMessage(QString("Updating all textures"));
+        // Change requiring full reload of texture image stacks
+        QList<int> tempList;
+        for (int i=0;i<selectionReader.getMaskStatusList().size();i++) {
+            if (selectionReader.neuronMaskIsChecked(i)) {
+                tempList.append(i);
+            }
         }
-    }
-    QList<RGBA8*> overlayList;
-    const QList<bool> overlayStatusList=selectionReader.getOverlayStatusList();
-    for (int i=0;i<overlayStatusList.size();i++) {
-        if (overlayStatusList.at(i)) {
-            RGBA8* texture = ra->getOverlayTextureByAnnotationIndex(i);
-            if (! texture) return; // something is not initialized yet?
-            overlayList.append(texture);
+        QList<RGBA8*> overlayList;
+        const QList<bool> overlayStatusList=selectionReader.getOverlayStatusList();
+        for (int i=0;i<overlayStatusList.size();i++) {
+            if (overlayStatusList.at(i)) {
+                RGBA8* texture = ra->getOverlayTextureByAnnotationIndex(i);
+                if (! texture) return; // something is not initialized yet?
+                overlayList.append(texture);
+            }
         }
-    }
-    QCoreApplication::processEvents();
-    makeCurrent();
-    ra->rebuildFromBaseTextures(tempList, overlayList);
+        QCoreApplication::processEvents(); // let gui catch up
+        // make sure readers are OK
+        if (! volumeReader.refreshLock())
+            return;
+        if (! selectionReader.refreshLock())
+            return;
+        makeCurrent();
+        ra->rebuildFromBaseTextures(tempList, overlayList);
+    } // release locks
     ra->paint();
     update();
 }
