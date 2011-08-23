@@ -39,10 +39,11 @@ public:
     virtual void resizeEvent(QResizeEvent * event);
     void onMouseRightClickMenu(QMouseEvent * event, bool b_glwidget); // for mouse click outside glwidget
     virtual void setAnnotationSession(AnnotationSession *annotationSession);
+    void resetVolumeBoundary();
 
 public slots:
     void setGammaBrightness(qreal gamma);
-    virtual void annotationModelUpdate(QString updateType) {NaViewer::annotationModelUpdate(updateType);}
+    virtual void annotationModelUpdate(QString updateType);
     virtual void toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked);
     virtual void updateFullVolume();
     void onVolumeDataChanged();
@@ -54,7 +55,7 @@ public slots:
     }
     void translateImage(int dx, int dy);
     void showCrosshair(bool b) {NaViewer::showCrosshair(b); update();}
-    void updateHighlightNeurons(bool b);
+    void updateHighlightNeurons();
     void onMouseSingleClick(QPoint pos);
     void onNotSingleClick();
     void onPossibleSingleClickAlert();

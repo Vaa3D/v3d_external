@@ -14,7 +14,7 @@ class NeuronSelector : public QObject
     Q_OBJECT
 
 public:
-    NeuronSelector(){init();}
+    NeuronSelector();
     ~NeuronSelector(){}
 
 public:
@@ -22,20 +22,19 @@ public:
     void setAnnotationSession(AnnotationSession* annotationSession);
     void init();
 
-    void getCurNeuronBoundary();
+    void getCurIndexNeuronBoundary();
     bool inNeuronMask(V3DLONG x, V3DLONG y, V3DLONG z);
-
-    void highlightSelectedNeuron();
+    QList<LocationSimple> highlightIndexNeuron();
 
 public slots:
+    void onSelectionModelChanged();
     void updateSelectedPosition(double x, double y, double z);
-    void deselectCurrentNeuron();
-    void updateSelectedNeurons();
-    void selectExactlyOneNeuron(int neuronIndex);
-    void clearAllSelections();
 
 signals:
-    void neuronHighlighted(bool b);
+    void landmarksClearNeeded();
+    void landmarksUpdateNeeded(const QList<LocationSimple>);
+    void selectionClearNeeded();
+    void neuronSelected(int index);
 
 private:
     int index;

@@ -34,8 +34,6 @@ AnnotationSession::AnnotationSession(QObject* parentParam /* = NULL */)
             this, SLOT(updateNeuronMaskFull()));
     connect(&neuronSelectionModel, SIGNAL(neuronVisibilityChanged(int,bool)),
             this, SLOT(updateNeuronMask(int,bool)));
-    connect(&neuronSelectionModel, SIGNAL(exactlyOneNeuronShown(int)),
-            this, SLOT(showSelectedNeuron(int)));
     connect(&neuronSelectionModel, SIGNAL(multipleVisibilityChanged()),
             this, SLOT(updateNeuronMaskFull()));
 }
@@ -128,6 +126,8 @@ bool AnnotationSession::loadVolumeData()
     return true;
 }
 
+// tell 3d viewer to perform a surgical texture update
+// TODO - move logic for this into 3D viewer.
 void AnnotationSession::updateNeuronMask(int index, bool status)
 {
     int statusValue = (status ? 1 : 0);
@@ -136,18 +136,11 @@ void AnnotationSession::updateNeuronMask(int index, bool status)
     emit modelUpdated(updateNeuronMaskString);
 }
 
+// tell 3d viewer to update all textures
 void AnnotationSession::updateNeuronMaskFull() {
     // qDebug() << "NeuronSelectionModel::updateNeuronMaskFull() - emitting modelUpdated()";
     QString updateString=QString("FULL_UPDATE");
     emit modelUpdated(updateString);
-}
-
-// show selected neuron
-void AnnotationSession::showSelectedNeuron(int selectionIndex)
-{
-    updateNeuronMaskFull();
-    emit scrollBarFocus(selectionIndex);
-    emit deselectNeuron();
 }
 
 

@@ -195,6 +195,7 @@ void NeuronSelectionModel::clearAllNeurons()
 // update Neuron Select List
 void NeuronSelectionModel::selectExactlyOneNeuron(int index)
 {
+    qDebug() << "NeuronSelectionModel::selectExactlyOneNeuron" << index;
     if (index >= neuronSelectList.size()) return;
     bool changed = false;
     if (! neuronSelectList[index])

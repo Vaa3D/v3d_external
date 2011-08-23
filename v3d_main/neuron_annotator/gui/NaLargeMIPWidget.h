@@ -48,7 +48,6 @@ signals:
     void hideProgress();
 
 public slots:
-    // void annotationModelUpdate(QString updateType);
     virtual void toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked);
     virtual void updateFullVolume() {/* TODO */}
 

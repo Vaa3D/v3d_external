@@ -27,6 +27,29 @@ NaVolumeData::~NaVolumeData()
 }
 
 /* slot */
+void NaVolumeData::clearLandmarks()
+{
+    if (originalImageStack->listLandmarks.size() == 0) return; // no change
+    Writer writer(*this);
+    writer.clearLandmarks();
+    qDebug() << "landmarks cleared";
+    emit landmarksChanged();
+}
+
+/* slot */
+void NaVolumeData::setLandmarks(const QList<LocationSimple> landmarks)
+{
+    qDebug() << "NaVolumeData::setLandmarks" << landmarks.size();
+    if (landmarks == originalImageStack->listLandmarks) return; // no change
+    {
+        Writer writer(*this);
+        writer.setLandmarks(landmarks);
+    } // release lock before emit
+    qDebug() << "landmarks changed";
+    emit landmarksChanged();
+}
+
+/* slot */
 void NaVolumeData::loadVolumeDataFromFiles()
 {
     QTime stopwatch;
@@ -70,6 +93,18 @@ void NaVolumeData::loadVolumeDataFromFiles()
 //////////////////////////////////
 // NaVolumeData::Writer methods //
 //////////////////////////////////
+
+void NaVolumeData::Writer::clearLandmarks()
+{
+    if (m_data->originalImageStack != NULL)
+        m_data->originalImageStack->listLandmarks.clear();
+}
+
+void NaVolumeData::Writer::setLandmarks(const QList<LocationSimple> locations)
+{
+    if (m_data->originalImageStack != NULL)
+        m_data->originalImageStack->listLandmarks = locations;
+}
 
 void NaVolumeData::Writer::clearImageData()
 {

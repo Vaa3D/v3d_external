@@ -54,7 +54,6 @@ protected:
     virtual bool _streamingTex() {return false;}
     virtual void _streamTex(int stack_i, int slice_i, int step, int slice0, int slice1) {}
     virtual void _streamTex_end() {}
-    virtual void setXCut1(int i);
 
 private:
     unsigned char* neuronMask; // sized to texture buffer dimensions realX,Y,Z

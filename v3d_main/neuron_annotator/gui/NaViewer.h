@@ -22,7 +22,6 @@ public:
     virtual void showCrosshair(bool b) {bPaintCrosshair = b;}
 
 // public slots: // NaViewer is not a QObject, so does not have slots.
-    virtual void annotationModelUpdate(QString updateType);
     virtual void toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked) = 0;
     virtual void updateFullVolume() = 0;
 

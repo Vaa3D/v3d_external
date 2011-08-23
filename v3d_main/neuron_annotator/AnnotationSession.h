@@ -44,6 +44,7 @@ public:
 
     MultiColorImageStackNode* getMultiColorImageStackNode() { return multiColorImageStackNode; }
 
+    /*
     // getOriginalImageStackAsMy4DImage() returns a pointer to a My4DImage object
     // maintained by the AnnotationSession class.  Do not delete this pointer,
     // and be aware that it has a lifetime no longer than that of the AnnnotationSession object.
@@ -54,6 +55,7 @@ public:
     const My4DImage* getOriginalImageStackAsMy4DImage() const { return volumeData.getOriginalImageStackAsMy4DImage(); }
     const My4DImage* getReferenceStack() const { return volumeData.getReferenceStack(); }
     const My4DImage* getNeuronMaskAsMy4DImage() const { return volumeData.getNeuronMaskAsMy4DImage(); }
+     */
 
     // Data flow accessors
     NaVolumeData& getVolumeData() {return volumeData;}
@@ -88,7 +90,6 @@ public slots:
 protected slots:
     // TODO - these slots should be moved to 3D viewer
     void updateNeuronMask(int index, bool status);
-    void showSelectedNeuron(int selectionIndex);
 
 private:
     long objectId;

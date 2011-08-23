@@ -599,9 +599,6 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
             this, SLOT(processUpdatedVolumeData()));
 
     // Annotation model update
-
-    connect(annotationSession, SIGNAL(modelUpdated(QString)), ui.naLargeMIPWidget, SLOT(annotationModelUpdate(QString)));
-    connect(annotationSession, SIGNAL(modelUpdated(QString)), ui.naZStackWidget, SLOT(annotationModelUpdate(QString)));
     connect(annotationSession, SIGNAL(modelUpdated(QString)), ui.v3dr_glwidget, SLOT(annotationModelUpdate(QString)));
 
     // Both mip images and selection model need to be in place to update gallery
@@ -748,8 +745,6 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
     neuronSelector = new NeuronSelector();
 
     connect(ui.v3dr_glwidget, SIGNAL(neuronSelected(double,double,double)), neuronSelector, SLOT(updateSelectedPosition(double,double,double)));
-    connect(neuronSelector, SIGNAL(neuronHighlighted(bool)), ui.v3dr_glwidget, SLOT(updateHighlightNeurons(bool)));
-    connect(annotationSession, SIGNAL(deselectNeuron()), neuronSelector, SLOT(deselectCurrentNeuron()));
 
     neuronSelector->setAnnotationSession(annotationSession);
 
@@ -769,14 +764,6 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
             &annotationSession->getNeuronSelectionModel(), SLOT(clearSelection()));
 
     connect(annotationSession, SIGNAL(modelUpdated(QString)), this, SLOT(synchronizeGalleryButtonsToAnnotationSession(QString)));
-    connect(annotationSession, SIGNAL(modelUpdated(QString)), neuronSelector, SLOT(updateSelectedNeurons()));
-    connect(ui.v3dr_glwidget, SIGNAL(neuronClearAll()), &annotationSession->getNeuronSelectionModel(), SLOT(clearAllNeurons()));
-    connect(ui.v3dr_glwidget, SIGNAL(neuronClearAllSelections()), neuronSelector, SLOT(clearAllSelections()));
-
-    // TODO - move this near annotationSession constructor
-    connect(ui.v3dr_glwidget, SIGNAL(neuronIndexChanged(int)), &annotationSession->getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
-    connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(exactlyOneNeuronSelected(int)),
-            neuronSelector, SLOT(selectExactlyOneNeuron(int)));
 
     connect(annotationSession, SIGNAL(scrollBarFocus(NeuronSelectionModel::NeuronIndex)),
             ui.fragmentGalleryWidget, SLOT(scrollToFragment(NeuronSelectionModel::NeuronIndex)));

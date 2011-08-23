@@ -162,7 +162,14 @@ struct LocationSimple
 	PxLocationUsefulness howUseful()
 	{
 		return inputProperty;
-	}
+        }
+        // == operator for comparison of landmarks
+        bool operator==(const LocationSimple& rhs) const {
+            return
+                    (  (x == rhs.x)
+                    && (y == rhs.y)
+                    && (z == rhs.z) );
+        }
 };
 
 struct PtIndexAndParents

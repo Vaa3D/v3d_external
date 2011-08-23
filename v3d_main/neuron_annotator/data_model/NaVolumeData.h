@@ -17,6 +17,7 @@ public:
     explicit NaVolumeData();
     virtual ~NaVolumeData();
 
+    /*
     // TODO - eventually deprecate direct accessors in favor of stack-allocated lock objects
     // non-const accessors should only be used for *modifying* volume data
     // Don't forget to get a write lock while writing!
@@ -29,9 +30,15 @@ public:
     const My4DImage* getOriginalImageStackAsMy4DImage() const { return originalImageStack; }
     const My4DImage* getReferenceStack() const { return referenceStack; }
     const My4DImage* getNeuronMaskAsMy4DImage() const { return neuronMaskStack; }
+     */
+
+signals:
+    void landmarksChanged();
 
 public slots:
     void loadVolumeDataFromFiles(); // Assumes file name paths have already been set
+    void clearLandmarks();
+    void setLandmarks(const QList<LocationSimple>);
 
 private:
     QString originalImageStackFilePath;
@@ -61,6 +68,7 @@ public:
         const Image4DProxy<My4DImage>& getReferenceImageProxy() const;
         ImagePixelType getOriginalDatatype() const {return m_data->originalImageStack->getDatatype();}
         int getNumberOfNeurons() const {return m_data->neuronMaskStack->getChannalMaxIntensity(0);}
+        const QList<LocationSimple>& getLandmarks() const {return m_data->originalImageStack->listLandmarks;}
 
     private:
         const NaVolumeData * m_data;
@@ -91,6 +99,8 @@ public:
         bool loadReferenceStack();
 
         void clearImageData();
+        void clearLandmarks();
+        void setLandmarks(const QList<LocationSimple>);
 
     private:
         NaVolumeData * m_data;

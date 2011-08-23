@@ -53,6 +53,22 @@ Na3DWidget::~Na3DWidget()
     if (rotateCursor) delete rotateCursor; rotateCursor = NULL;
 }
 
+void Na3DWidget::annotationModelUpdate(QString updateType)
+{
+    QList<QString> list=updateType.split(QRegExp("\\s+"));
+
+    if (updateType.startsWith("NEURONMASK_UPDATE")) {
+        QString indexString=list.at(1);
+        QString checkedString=list.at(2);
+        int index=indexString.toInt();
+        bool checked=(checkedString.toInt()==1);
+        toggleNeuronDisplay(index, checked);
+    }
+    else if (updateType.startsWith("FULL_UPDATE")) {
+        updateFullVolume();
+    }
+}
+
 // Override updateImageData() to avoid that modal progress dialog
 /* virtual */ /* public slot */
 void Na3DWidget::updateImageData()
@@ -465,11 +481,24 @@ void Na3DWidget::updateRotation(const Rotation3D & newRotation)
     updateFocus(f);
 }
 
-void Na3DWidget::updateHighlightNeurons(bool b)
+void Na3DWidget::updateHighlightNeurons()
 {
-	enableMarkerLabel(b); // show markers' label
-
-	updateWithTriView(); // update list markers and 3d viewer
+    bool hasLandmarks = false;
+    qDebug() << "Na3DWidget::updateHighlightNeurons";
+    {
+        NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+        if (! volumeReader.hasReadLock()) return;
+        const QList<LocationSimple>& landmarks = volumeReader.getLandmarks();
+        hasLandmarks = (landmarks.size() > 0);
+    } // release locks
+    if (hasLandmarks) {
+        // setShowSurfObjects(1); // what do these numbers mean?
+        enableMarkerLabel(true); // but don't show labels
+    }
+    else {
+        // setShowSurfObjects(0);
+    }
+    updateWithTriView(); // update list markers and 3d viewer
 }
 
 void Na3DWidget::setGammaBrightness(qreal gamma)
@@ -592,13 +621,13 @@ void Na3DWidget::paintGL()
 void Na3DWidget::setAnnotationSession(AnnotationSession *annotationSession)
 {
     NaViewer::setAnnotationSession(annotationSession);
-    // TODO - eventually connect up this signal, insead of calling from
-    // NaMainWindow::processUpdatedVolumeData(), as soon as I can understand
-    // what causes the viewer to be blank depending on the order of this method.
-    /* */
     connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(initialized()),
           this, SLOT(onVolumeDataChanged()));
-    /* */
+    connect(this, SIGNAL(neuronClearAll()), &annotationSession->getNeuronSelectionModel(), SLOT(clearAllNeurons()));
+    connect(this, SIGNAL(neuronClearAllSelections()), &annotationSession->getNeuronSelectionModel(), SLOT(clearSelection()));
+    connect(this, SIGNAL(neuronIndexChanged(int)), &annotationSession->getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
+    connect(&annotationSession->getVolumeData(), SIGNAL(landmarksChanged()),
+            this, SLOT(updateHighlightNeurons()));
 }
 
 void Na3DWidget::toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked)
@@ -613,7 +642,6 @@ void Na3DWidget::toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bo
 }
 
 
-// TODO - this method only works in a certain precise location in process flow
 void Na3DWidget::onVolumeDataChanged()
 {
     init_members();
@@ -644,18 +672,26 @@ void Na3DWidget::onVolumeDataChanged()
         makeCurrent(); // Make sure subsequent OpenGL calls go here. (might make no difference here)
         if (! rend->initializeTextureMasks())
             qDebug() << "RendererNeuronAnnotator::initializeTextureMasks() failed";
-        // Reset volume visible boundary box reveal entire volume at first.
-        // But first set to 0, so it notices a change.
-        setXCut0(0); setXCut1(0);
-        setYCut0(0); setYCut1(0);
-        setZCut0(0); setZCut1(0);
-        //
-        setXCut0(0); setXCut1(imgProxy.sx - 1);
-        setYCut0(0); setYCut1(imgProxy.sy - 1);
-        setZCut0(0); setZCut1(imgProxy.sz - 1);
     } // release locks
+    resetVolumeBoundary();
     setThickness(annotationSession->getZRatio());
     update();
+}
+
+void Na3DWidget::resetVolumeBoundary()
+{
+    NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+    if (! volumeReader.hasReadLock()) return;
+    const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
+    setXCut0(0); setXCut1(imgProxy.sx - 1);
+    setYCut0(0); setYCut1(imgProxy.sy - 1);
+    setZCut0(0); setZCut1(imgProxy.sz - 1);
+    // Sometimes renderer is not in sync with 3DWidget; then above calls might short circuit as "no-change"
+    if (renderer) {
+        renderer->setXCut0(0); renderer->setXCut1(imgProxy.sx - 1);
+        renderer->setYCut0(0); renderer->setYCut1(imgProxy.sy - 1);
+        renderer->setZCut0(0); renderer->setZCut1(imgProxy.sz - 1);
+    }
 }
 
 void Na3DWidget::updateFullVolume()

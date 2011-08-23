@@ -1,9 +1,16 @@
 #include "NeuronSelector.h"
 #include <QtAlgorithms>
 #include <iostream>
+#include <cassert>
 
 using namespace std;
 
+NeuronSelector::NeuronSelector()
+{
+    init();
+    // allow passing of QList<LocationSimple> through signals/slots
+    qRegisterMetaType<QList<LocationSimple> >("QList<LocationSimple>");
+}
 
 // NeuronSelector init func
 void NeuronSelector::init()
@@ -15,73 +22,60 @@ void NeuronSelector::init()
 // get the index of selected neuron
 int NeuronSelector::getIndexSelectedNeuron()
 {
-        NeuronSelectionModel::Reader selectionReader(
-                annotationSession->getNeuronSelectionModel());
-        if (! selectionReader.hasReadLock()) return -1;
+    int numNeuron = 0;
+    // sum of pixels of each neuron mask in the cube
+    std::vector<int> sum;
+    {
+            NeuronSelectionModel::Reader selectionReader(
+                    annotationSession->getNeuronSelectionModel());
+            if (! selectionReader.hasReadLock()) return -1;
 
-        NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
-        if (! volumeReader.hasReadLock()) return -1;
-        const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
+            NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+            if (! volumeReader.hasReadLock()) return -1;
+            const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
 
-	// find in mask stack
-        sx = neuronProxy.sx;
-        sy = neuronProxy.sy;
-        sz = neuronProxy.sz;
-		
-	// sum of pixels of each neuron mask in the cube 
-	int *sum = NULL;
-	
-        int numNeuron = selectionReader.getMaskStatusList().size();
-	
-	qDebug()<<"how many neurons ... "<<numNeuron;
-	
-	try
-	{
-		sum = new int [numNeuron];		
-		
-		// init 0 
-		//memset(sum, 0, numNeuron); 
-		for(V3DLONG i=0; i<numNeuron; i++)
-		{
-			sum[i] = 0;
-		}
-	}
-	catch (...) 
-	{
-		printf("Out of memory\n");
-		return -1;
-	}
-	
-	//
-	V3DLONG xb = xlc-NB; if(xb<0) xb = 0;
-	V3DLONG xe = xlc+NB; if(xe>sx) xe = sx-1;
-	V3DLONG yb = ylc-NB; if(yb<0) yb = 0;
-	V3DLONG ye = ylc+NB; if(ye>sy) ye = sy-1;
-	V3DLONG zb = zlc-NB; if(zb<0) zb = 0;
-	V3DLONG ze = zlc+NB; if(ze>sz) ze = sz-1;
+            // find in mask stack
+            sx = neuronProxy.sx;
+            sy = neuronProxy.sy;
+            sz = neuronProxy.sz;
 
-        const unsigned char *neuronMask = neuronProxy.img0->getRawData();
-        const QList<bool>& maskStatusList=selectionReader.getMaskStatusList();
-	
-	for(V3DLONG k=zb; k<=ze; k++)
-	{
-		V3DLONG offset_k = k*sx*sy;
-		for(V3DLONG j=yb; j<=ye; j++)
-		{
-			V3DLONG offset_j = offset_k + j*sx;
-			for(V3DLONG i=xb; i<=xe; i++)
-			{
-				V3DLONG idx = offset_j + i;
-				
-                                int cur_idx = neuronMask[idx] - 1; // value of mask stack - convert to 0...n-1 neuron index
-				
-                                if(cur_idx>=0 && maskStatusList.at(cur_idx)) // active masks
-				{
-					sum[cur_idx]++;
-				}
-			}
-		}
-	}
+            numNeuron = selectionReader.getMaskStatusList().size();
+
+            qDebug()<<"how many neurons ... "<<numNeuron;
+
+            sum.assign(numNeuron, 0);
+
+            //
+            V3DLONG xb = xlc-NB; if(xb<0) xb = 0;
+            V3DLONG xe = xlc+NB; if(xe>sx) xe = sx-1;
+            V3DLONG yb = ylc-NB; if(yb<0) yb = 0;
+            V3DLONG ye = ylc+NB; if(ye>sy) ye = sy-1;
+            V3DLONG zb = zlc-NB; if(zb<0) zb = 0;
+            V3DLONG ze = zlc+NB; if(ze>sz) ze = sz-1;
+
+            const unsigned char *neuronMask = neuronProxy.img0->getRawData();
+            const QList<bool>& maskStatusList=selectionReader.getMaskStatusList();
+
+            for(V3DLONG k=zb; k<=ze; k++)
+            {
+                    V3DLONG offset_k = k*sx*sy;
+                    for(V3DLONG j=yb; j<=ye; j++)
+                    {
+                            V3DLONG offset_j = offset_k + j*sx;
+                            for(V3DLONG i=xb; i<=xe; i++)
+                            {
+                                    V3DLONG idx = offset_j + i;
+
+                                    int cur_idx = neuronMask[idx] - 1; // value of mask stack - convert to 0...n-1 neuron index
+
+                                    if(cur_idx>=0 && maskStatusList.at(cur_idx)) // active masks
+                                    {
+                                            sum[cur_idx]++;
+                                    }
+                            }
+                    }
+            }
+        } // release locks
 	
 	//
         index = -1;
@@ -96,46 +90,16 @@ int NeuronSelector::getIndexSelectedNeuron()
 
 	}
 	
-	// de-alloc
-	if(sum) {delete []sum; sum = NULL;}
-	
 	//
         qDebug() << "NeuronSelector::getIndexSelectedNeuron index=" << index;
 
-        if(index>-1)
-	{
-                // switchSelectedNeuronUniquelyIfOn() modifies the
-                // NeuronSelectionModel, and thus needs a Writer.
-                // But before getting a Writer, all Readers, including
-                // ours, must unlock.
-                selectionReader.unlock();
-                NeuronSelectionModel::Writer selectionWriter(
-                        annotationSession->getNeuronSelectionModel());
-                selectionWriter.switchSelectedNeuronUniquelyIfOn(index);
-	}
-	else
-	{
-            // Debug
-            // LocationSimple p((V3DLONG)xlc, (V3DLONG)ylc, (V3DLONG)zlc);
-            // RGBA8 c;
-            // c.r = 255; c.g = 0; c.b = 0; c.a = 128;// cyan
-            // p.color = c; // instead of random_rgba8(255);
-            // p.radius = 1; // instead of 5
-            // annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks.append(p);
-            // emit neuronHighlighted(false);
-            // end-Debug
-
-            index = -1; // 0 is background
-	}
+        if(index <= 0) index = -1;
 	
 	return index;
 }
 
-//
-void NeuronSelector::getCurNeuronBoundary()
+void NeuronSelector::getCurIndexNeuronBoundary()
 {
-        index = getIndexSelectedNeuron();
-	
         if(index<0) return;
 	
 	//
@@ -258,12 +222,21 @@ bool NeuronSelector::inNeuronMask(V3DLONG x, V3DLONG y, V3DLONG z)
 void NeuronSelector::setAnnotationSession(AnnotationSession* annotationSession)
 {
     this->annotationSession=annotationSession;
-    connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(selectionCleared()),
-            this, SLOT(clearAllSelections()));
+    connect(this, SIGNAL(landmarksClearNeeded()),
+            &annotationSession->getVolumeData(), SLOT(clearLandmarks()));
+    connect(this, SIGNAL(landmarksUpdateNeeded(QList<LocationSimple>)),
+            &annotationSession->getVolumeData(), SLOT(setLandmarks(QList<LocationSimple>)));
+    connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(selectionChanged()),
+            this, SLOT(onSelectionModelChanged()));
+    connect(this, SIGNAL(neuronSelected(int)),
+            &annotationSession->getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
+    connect(this, SIGNAL(selectionClearNeeded()),
+            &annotationSession->getNeuronSelectionModel(), SLOT(clearSelection()));
 }
 
 // 
-void NeuronSelector::updateSelectedPosition(double x, double y, double z) {
+void NeuronSelector::updateSelectedPosition(double x, double y, double z)
+{
         xlc = x + 0.5;
         ylc = y + 0.5;
         zlc = z + 0.5;
@@ -271,148 +244,171 @@ void NeuronSelector::updateSelectedPosition(double x, double y, double z) {
 	qDebug()<<"test signal/slot passing parameters ..."<<xlc<<ylc<<zlc;
 	
 	//
-	highlightSelectedNeuron();
-}
-
-void NeuronSelector::deselectCurrentNeuron()
-{
-    // What is this?
-    NeuronSelectionModel::Writer selectionWriter(
-            annotationSession->getNeuronSelectionModel());
-    if (selectionWriter.getNeuronSelectList().at(index)==true) {
-        selectionWriter.getNeuronSelectList().replace(index, false);
-    }
-    selectionWriter.unlock();
-    annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks.clear();
-    emit neuronHighlighted(false);
+        index = getIndexSelectedNeuron();
+        if (index < 0) return;
+        // reaction depends on whether neuron is already selected
+        bool alreadySelected;
+        {
+            NeuronSelectionModel::Reader selectionReader(annotationSession->getNeuronSelectionModel());
+            if (! selectionReader.hasReadLock()) return;
+            alreadySelected = (selectionReader.getNeuronSelectList()[index]);
+        } // release lock before emit
+        if (alreadySelected) {
+            qDebug() << "selectionClearNeeded()";
+            emit selectionClearNeeded();
+        }
+        else {
+            const QList<LocationSimple> landmarks = highlightIndexNeuron();
+            qDebug() << "updateSelectedPosition" << x << y << z;
+            emit neuronSelected(index);
+            if (landmarks.size() > 0)
+                emit landmarksUpdateNeeded(landmarks);
+        }
 }
 
 // highlight selected neuron
-void NeuronSelector::highlightSelectedNeuron()
+QList<LocationSimple> NeuronSelector::highlightIndexNeuron()
 {
-    getCurNeuronBoundary();
-	
-    if(index<0) return;
-    if(curNeuronBDxb>curNeuronBDxe || curNeuronBDyb>curNeuronBDye || curNeuronBDzb>curNeuronBDze) return;
+    // qDebug() << "NeuronSelector::highlightIndexNeuron" << index << __FILE__ << __LINE__;
+    // list of markers
+    QList<LocationSimple> listLandmarks;
 
-    NeuronSelectionModel::Reader selectionReader(
-            annotationSession->getNeuronSelectionModel());
-    if (! selectionReader.hasReadLock()) return;
-    bool bIsSelected = selectionReader.getNeuronSelectList().at(index);
-    selectionReader.unlock(); // unlock early because we are done with reader
+    getCurIndexNeuronBoundary();
+	
+    if(index<0) return listLandmarks;
+    if(curNeuronBDxb>curNeuronBDxe || curNeuronBDyb>curNeuronBDye || curNeuronBDzb>curNeuronBDze)
+        return listLandmarks;
+
+    bool bIsSelected;
+    { // demarcate read lock
+        NeuronSelectionModel::Reader selectionReader(
+                annotationSession->getNeuronSelectionModel());
+        if (! selectionReader.hasReadLock()) return listLandmarks;
+        bIsSelected = selectionReader.getNeuronSelectList().at(index);
+        // selectionReader.unlock(); // unlock early because we are done with reader
+    } // release lock
 
     // index neuron selected status is true
     if(! bIsSelected)
     {
-        // highlight result
-        annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks.clear();
-
-        // synchronize markers shown in 3d viewer
-        emit neuronHighlighted(false);
-
-        return;
+        return listLandmarks;
     }
+    qDebug() << "NeuronSelector::highlightIndexNeuron" << __FILE__ << __LINE__;
+    { // read lock stanza
+        // const unsigned char *neuronMask = annotationSession->getNeuronMaskAsMy4DImage()->getRawData();
+        NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+        if (! volumeReader.hasReadLock()) return listLandmarks;
+        const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
+        sx = neuronProxy.sx;
+        sy = neuronProxy.sy;
+        sz = neuronProxy.sz;
 
-    // list of markers
-    QList<LocationSimple> listLandmarks;
+        // mesh grids
+        for(V3DLONG k=0; k<neuronProxy.sz; k+=STEP){
+            for(V3DLONG j=0; j<neuronProxy.sy; j+=STEP){
+                for(V3DLONG i=0; i<neuronProxy.sx; i+=STEP){
 
-    const unsigned char *neuronMask = annotationSession->getNeuronMaskAsMy4DImage()->getRawData();
-
-    // mesh grids
-    for(V3DLONG k=0; k<sz; k+=STEP){
-        for(V3DLONG j=0; j<sy; j+=STEP){
-            for(V3DLONG i=0; i<sx; i+=STEP){
-
-                if(inNeuronMask(i,j,k))
-                {
-                    // find avg position in cube around lattice point
-                    float sumx, sumy, sumz;
-                    V3DLONG count;
-                    sumx = 0.0;
-                    sumy = 0.0;
-                    sumz = 0.0;
-                    count = 0;
-
-                    //
-                    V3DLONG xb = i-NB; if(xb<0) xb = 0;
-                    V3DLONG xe = i+NB; if(xe>sx) xe = sx-1;
-                    V3DLONG yb = j-NB; if(yb<0) yb = 0;
-                    V3DLONG ye = j+NB; if(ye>sy) ye = sy-1;
-                    V3DLONG zb = k-NB; if(zb<0) zb = 0;
-                    V3DLONG ze = k+NB; if(ze>sz) ze = sz-1;
-
-                    for(V3DLONG kk=zb; kk<=ze; kk++)
+                    if(inNeuronMask(i,j,k))
                     {
-                        V3DLONG offset_kk = kk*sx*sy;
-                        for(V3DLONG jj=yb; jj<=ye; jj++)
-                        {
-                            V3DLONG offset_jj = offset_kk + jj*sx;
-                            for(V3DLONG ii=xb; ii<=xe; ii++)
-                            {
-                                V3DLONG idx = offset_jj + ii;
+                        // find avg position in cube around lattice point
+                        float sumx, sumy, sumz;
+                        V3DLONG count;
+                        sumx = 0.0;
+                        sumy = 0.0;
+                        sumz = 0.0;
+                        count = 0;
 
-                                if(index == (neuronMask[idx]-1))
+                        //
+                        V3DLONG xb = i-NB; if(xb<0) xb = 0;
+                        V3DLONG xe = i+NB; if(xe>sx) xe = sx-1;
+                        V3DLONG yb = j-NB; if(yb<0) yb = 0;
+                        V3DLONG ye = j+NB; if(ye>sy) ye = sy-1;
+                        V3DLONG zb = k-NB; if(zb<0) zb = 0;
+                        V3DLONG ze = k+NB; if(ze>sz) ze = sz-1;
+
+                        for(V3DLONG kk=zb; kk<=ze; kk++)
+                        {
+                            V3DLONG offset_kk = kk*sx*sy;
+                            for(V3DLONG jj=yb; jj<=ye; jj++)
+                            {
+                                V3DLONG offset_jj = offset_kk + jj*sx;
+                                for(V3DLONG ii=xb; ii<=xe; ii++)
                                 {
-                                    count++;
-                                    sumx += ii;
-                                    sumy += jj;
-                                    sumz += kk;
+                                    V3DLONG idx = offset_jj + ii;
+
+                                    // qDebug() << index << neuronProxy.value_at(ii, jj, kk, 0);
+                                    if(index == ((int)neuronProxy.value_at(ii, jj, kk, 0)) - 1) // off by one
+                                    {
+                                        // qDebug() << "found landmark";
+                                        count++;
+                                        sumx += ii;
+                                        sumy += jj;
+                                        sumz += kk;
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    // append a marker
-                    if(count>0)
-                    {
-                        LocationSimple p((V3DLONG)(sumx/(float)count+1.5), (V3DLONG)(sumy/(float)count+1.5), (V3DLONG)(sumz/(float)count+1.5)); // 1-based
-                        RGBA8 c;
-                        c.r = 0; c.g = 255; c.b = 255; c.a = 128;// cyan
-                        p.color = c; // instead of random_rgba8(255);
-                        p.radius = 1; // instead of 5
+                        // append a marker
+                        if(count>0)
+                        {
+                            LocationSimple p((V3DLONG)(sumx/(float)count+1.5), (V3DLONG)(sumy/(float)count+1.5), (V3DLONG)(sumz/(float)count+1.5)); // 1-based
+                            RGBA8 c;
+                            c.r = 0; c.g = 255; c.b = 255; c.a = 128;// cyan
+                            p.color = c; // instead of random_rgba8(255);
+                            p.radius = 1; // instead of 5
 
-                        // QString qstr = QString("Neuron %1").arg(index);
-                        // p.name = qstr.toStdString().c_str();
+                            // QString qstr = QString("Neuron %1").arg(index);
+                            // p.name = qstr.toStdString().c_str();
 
-                        listLandmarks.append(p);
+                            // qDebug() << "Appending landmark";
+                            listLandmarks.append(p);
+                        }
                     }
                 }
             }
         }
+    } // release read lock
+    // qDebug() << listLandmarks.size() << "landmarks found";
+    return listLandmarks;
+}
+
+void NeuronSelector::onSelectionModelChanged()
+{
+    qDebug() << "NeuronSelector::onSelectionModelChanged";
+    QList<int> selectedIndices;
+    {
+        NeuronSelectionModel::Reader selectionReader(
+                annotationSession->getNeuronSelectionModel());
+        if (! selectionReader.hasReadLock()) return;
+        const QList<bool>& neuronSelectList = selectionReader.getNeuronSelectList();
+        for (int n = 0; n < neuronSelectList.size(); ++n)
+            if (neuronSelectList[n])
+                selectedIndices << n;
+    } // release lock before emit
+    // nothing selected?
+    if (selectedIndices.size() == 0)
+    {
+        qDebug() << "NeuronSelector: no selections";
+        if (index < 0) return; // nothing is highlighted already
+        index = -1;
+        emit landmarksClearNeeded();
+        return;
     }
-
-    // highlight result
-    annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks=listLandmarks;
-
-    qDebug()<<"highlight selected neuron ..."<<listLandmarks.size();
-
-    // synchronize markers shown in 3d viewer
-    emit neuronHighlighted(false);
-
-}
-
-void NeuronSelector::updateSelectedNeurons()
-{
-    if(index<0) return;
-
-    NeuronSelectionModel::Reader selectionReader(
-            annotationSession->getNeuronSelectionModel());
-    if (! selectionReader.hasReadLock()) return;
-    bool bIsVisible = selectionReader.getMaskStatusList().at(index);
-    selectionReader.unlock();
-    if(! bIsVisible)
-        deselectCurrentNeuron();
-}
-
-void NeuronSelector::selectExactlyOneNeuron(int neuronIndex)
-{
-    index = neuronIndex;
-    qDebug() << "NeuronSelector::selectExactlyOneNeuron() neuronIndex=" << neuronIndex;
-}
-
-void NeuronSelector::clearAllSelections() {
-    // Clear selection landmarks
-    annotationSession->getOriginalImageStackAsMy4DImage()->listLandmarks.clear();
-    emit neuronHighlighted(false);
+    else // something is selected
+    {
+        qDebug() << "NeuronSelector: single neuron selected";
+        assert(selectedIndices.size() > 0);
+        // if (index == selectedIndices[0]) return; // no change; NO - Selection might have originated from NeuronSelector.
+        index = selectedIndices[0]; // set "selected" index to first item in list
+        // accumulate little spheres to cover each selected neuron
+        // TODO - highlight multiple neurons
+        // Just highlight the first neuron in the list for now
+        const QList<LocationSimple> landmarks = highlightIndexNeuron();
+        qDebug() << "number of landmarks =" << landmarks.size();
+        if (landmarks.size() > 0)
+            emit landmarksUpdateNeeded(landmarks);
+        return;
+    }
 }
 
