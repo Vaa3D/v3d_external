@@ -56,6 +56,15 @@ template<class T> bool binary_threshold(double thresh_value, T* &inimg1d, V3DLON
 	return true;
 }
 
+template<class T> bool average_threshold(double & thresh_value, T* &inimg1d, V3DLONG sz[3])
+{
+	if(inimg1d == 0 || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0) return false;
+	thresh_value = 0.0;
+	V3DLONG tol_sz = sz[0] * sz[1] * sz[2];
+	for(V3DLONG i = 0; i < tol_sz; i++) thresh_value += inimg1d[i];
+	thresh_value /= tol_sz;
+	return true;
+}
 // refer to http://www.labbookpages.co.uk/software/imgProc/otsuThreshold.html
 template<class T> bool otsu_threshold(double & thresh_value, T* &inimg1d, V3DLONG sz[3])
 {

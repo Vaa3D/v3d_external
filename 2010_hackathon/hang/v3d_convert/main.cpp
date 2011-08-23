@@ -27,7 +27,7 @@ bool convert_double_to_uint8(unsigned char* outimg1d,double * inimg1d,  V3DLONG 
 
 bool is_save_img = true;
 
-SupportedCommand supported_commands[] = {{"-info",0},{"-down-sampling",1},{"-center-marker",1},{"-maximum-component",1},{"-adaptive-threshold", 1},{"-otsu-threshold", 1},{"-binary-threshold",1},{"-white-threshold",1},{"-black-threshold",1},{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-img-operate", 1}};
+SupportedCommand supported_commands[] = {{"-info",0},{"-down-sampling",1},{"-center-marker",1},{"-maximum-component",1},{"-average-threshold", 1},{"-adaptive-threshold", 1},{"-otsu-threshold", 1},{"-binary-threshold",1},{"-white-threshold",1},{"-black-threshold",1},{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-img-operate", 1}};
 
 int main(int argc, char* argv[])
 {
@@ -122,6 +122,25 @@ bool run_with_paras(InputParas paras, string & s_error)
 			if(!adaptive_threshold(outdata1d, indata1d, in_sz, sampling_interval, sampling_number)){s_error += " adaptive thresholding error!"; return false;}
 			out_sz = new V3DLONG[4];
 			out_sz[0] = in_sz[0]; out_sz[1] = in_sz[1]; out_sz[2] = in_sz[2]; out_sz[3] = 1;
+		}
+		else if(cmd_name == "-average-threshold")
+		{
+			CHECK_CHANNEL;
+
+			int thresh_type = 0; if(!paras.get_int_para(thresh_type,"-otsu-threshold",s_error)) return false;
+			double thresh_value = 100.0; if(!average_threshold(thresh_value, indata1d, in_sz)) return false;
+			cout<<"thresh_value : "<<thresh_value<<endl;
+			ostringstream oss;  oss<<"thresh"<<thresh_value<<"_"<<infile;
+			outfile = paras.filelist.size() >=2 ? paras.filelist.at(1) : oss.str();
+			cout<<"output file : "<<outfile<<endl;
+
+			if(thresh_type == 0 && !black_threshold(thresh_value,indata1d, in_sz, outdata1d) ){s_error += " otsu threshold with black threshold error"; return false;}
+			else if(thresh_type == 1 && !white_threshold(thresh_value,indata1d, in_sz, outdata1d) ){s_error += " otsu threshold with white threshold error"; return false;}
+			else if(thresh_type == 2 && !binary_threshold(thresh_value,indata1d, in_sz, outdata1d) ){s_error += " otsu threshold with binary threshold error"; return false;}
+			out_sz = new V3DLONG[4];
+			out_sz[0] = in_sz[0]; out_sz[1] = in_sz[1]; out_sz[2] = in_sz[2]; out_sz[3] = 1;
+			
+			//REFRESH_INDATA1D;
 		}
 		else if(cmd_name == "-otsu-threshold")
 		{
@@ -292,6 +311,7 @@ void printHelp()
 	cout<<" -white-threshold    thresh_value     threshold the image, intensity higher than thresh_value will be set to maximum"<<endl;
 	cout<<" -binary-threshold   thresh_value     threshold the image, intensity lower than thresh_value to zero, higher to maximum"<<endl;
 	cout<<" -otsu-threshold     thresh_type      calculate otsu-thresuld and do black/white/binary-threshold according to thresh_type"<<endl;
+	cout<<" -average-threshold  thresh_type      use average intensity as threshold value"<<endl;
 	cout<<" -adaptive-threshold h+d              h is sampling interval, d is then number of sampling points"<<endl;
 	cout<<" -maximum-component  thresh_value     get the maximum connected component in the binary thresholding result"<<endl;
 	cout<<" -center-marker      mthd:thr_val     methods : 0 for maximum xyz-plane density, 1 for maxim component center"<<endl;
