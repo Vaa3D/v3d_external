@@ -9,15 +9,44 @@ using namespace std;
 
 // this is used for segmentated image
 
+template<class T> bool maximum_xyzplane_density_center(double * &pos, T* &inimg1d, V3DLONG * &sz, double thresh);
+
 template<class T> bool maximum_connected_component_center(double * &pos, T* &inimg1d, V3DLONG * &sz, double thresh)
 {
 	if(inimg1d == 0 || sz == 0 || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0) return false;
-	if(pos == 0) pos = new double[3];
+	V3DLONG tol_sz = sz[0] * sz[1] * sz[2];
+	T* outimg1d = new T[tol_sz];
 
-	return true;
+	DisjointSetWithRankAndLink * djs = 0; if(!construct_disjoint_set(djs, inimg1d, sz, thresh)) return false;
+	
+	int max_sz = 0; 
+	V3DLONG max_x = 0;
+	for(V3DLONG x = 0; x < tol_sz; x++)
+	{
+		if(djs[x].sz > max_sz)
+		{
+			max_x = x;
+			max_sz = djs[x].sz;
+		}
+	}
+	DisjointSetWithRankAndLink * root = djs + max_x;
+	outimg1d[max_x] = inimg1d[max_x];
+	DisjointSetWithRankAndLink * p = root->next_node;
+	
+	while(p != root)
+	{
+		int pos = (int)(p - djs) ;
+		outimg1d[pos] = inimg1d[pos];
+		p = p->next_node;
+	}
+	if(djs){delete [] djs; djs = 0;}
+
+	bool rt = maximum_xyzplane_density_center(pos, outimg1d, sz, thresh);
+	delete [] outimg1d; outimg1d = 0; 
+	return rt;
 }
 
-template<class T> bool maximum_xyzplane_intensity_center(double * &pos, T* &inimg1d, V3DLONG * &sz, double thresh)
+template<class T> bool maximum_xyzplane_density_center(double * &pos, T* &inimg1d, V3DLONG * &sz, double thresh)
 {
 	if(inimg1d == 0 || sz == 0 || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0) return false;
 	T*** inimg3d = 0;

@@ -27,7 +27,7 @@ bool convert_double_to_uint8(unsigned char* outimg1d,double * inimg1d,  V3DLONG 
 
 bool is_save_img = true;
 
-SupportedCommand supported_commands[] = {{"-info",0},{"-down-sampling",1},{"-marker-center",1},{"-maximum-component",1},{"-adaptive-threshold", 1},{"-otsu-threshold", 1},{"-binary-threshold",1},{"-white-threshold",1},{"-black-threshold",1},{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-img-operate", 1}};
+SupportedCommand supported_commands[] = {{"-info",0},{"-down-sampling",1},{"-center-marker",1},{"-maximum-component",1},{"-adaptive-threshold", 1},{"-otsu-threshold", 1},{"-binary-threshold",1},{"-white-threshold",1},{"-black-threshold",1},{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-img-operate", 1}};
 
 int main(int argc, char* argv[])
 {
@@ -86,16 +86,20 @@ bool run_with_paras(InputParas paras, string & s_error)
 			cout<<"size : "<<in_sz[0]<<"x"<<in_sz[1]<<"x"<<in_sz[2]<<"x"<<in_sz[3]<<endl;
 			is_save_img = false;
 		}
-		else if(cmd_name == "-marker-center")
+		else if(cmd_name == "-center-marker")
 		{
 			CHECK_CHANNEL
 
 			string marker_file = paras.filelist.size() >=2 ? paras.filelist.at(1) : string(infile + "_output.marker");
-			double thresh; if(!paras.get_double_para(thresh,"-marker-center",s_error)){s_error += "\nplease specify -marker-center para as threshold"; return false;}
+			int    method; if(!paras.get_int_para(method,"-center-marker",0,s_error,":")) return false;
+			double thresh; if(!paras.get_double_para(thresh,"-center-marker",1,s_error,":")){s_error += "\nplease specify -center-marker para as threshold"; return false;}
 			cout<<"marker_file "<<marker_file<<endl;
-			cout<<"thresh "<<thresh<<endl;
+			cout<<"thresh : "<<thresh<<endl;
+			if(method == 0) cout<<"method : maximum xyzplane density center"<<endl;
+			else cout<<"method : maximum_connected_component_center"<<endl;
 			double* pos = 0;
-			if(!maximum_xyzplane_intensity_center(pos, indata1d, in_sz,thresh)){s_error += "calculate center marker error"; return false;}
+			if(method == 0 && !maximum_xyzplane_density_center(pos, indata1d, in_sz,thresh)){s_error += "calculate maximum xyzplane density center marker error"; return false;}
+			else if(method == 1 && !maximum_connected_component_center(pos, indata1d, in_sz,thresh)){s_error += "calculate maximum_connected_component center marker error"; return false;}
 			ofstream ofs(marker_file.c_str()); if(ofs.fail()){s_error += "open marker file error"; return false;}
 			cout<<"marker center : "<<pos[0]<<","<<pos[1]<<","<<pos[2]<<endl;
 			ofs<<pos[0]<<","<<pos[1]<<","<<pos[2]<<endl; ofs.close();
@@ -280,7 +284,7 @@ void printHelp()
 	cout<<"Usage: v3d_convert [options ...] file [ [options ...] file ...] [options ...] file "<<endl;
 	cout<<""<<endl;
 	cout<<" -info                                display the information of input image"<<endl;
-	cout<<" -gaussian-blur      geometry         smooth the image by gaussian blur"<<endl;
+	cout<<" -gaussian-blur      sgm x radius       smooth the image by gaussian blur"<<endl;
 	cout<<" -rotatex            theta            rotate the image along x-axis with angle theta"<<endl;
 	cout<<" -rotatey            theta            rotate the image along y-axis with angle theta"<<endl;
 	cout<<" -rotatez            theta            rotate the image along z-axis with angle theta"<<endl;
@@ -290,8 +294,8 @@ void printHelp()
 	cout<<" -otsu-threshold     thresh_type      calculate otsu-thresuld and do black/white/binary-threshold according to thresh_type"<<endl;
 	cout<<" -adaptive-threshold h+d              h is sampling interval, d is then number of sampling points"<<endl;
 	cout<<" -maximum-component  thresh_value     get the maximum connected component in the binary thresholding result"<<endl;
-	cout<<" -marker-center      thresh_value     calculate a reasonalbe marker from input image with thresholding thresh_value"<<endl;
-	cout<<" -img-operate      method           methods: plus minus absminus multiply divide complement and or xor not."<<endl;
+	cout<<" -center-marker      mthd:thr_val     methods : 0 for maximum xyz-plane density, 1 for maxim component center"<<endl;
+	cout<<" -img-operate        method           methods: plus minus absminus multiply divide complement and or xor not."<<endl;
 	cout<<""<<endl;
 }
 
