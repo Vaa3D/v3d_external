@@ -9,7 +9,7 @@
 #include "stackutil.h"
 #include "parser.h"
 #include "img_rotate.h"
-#include "gaussian_blur.cpp"
+#include "gaussian_blur.h"
 #include "img_threshold.h"
 #include "img_center.h"
 #include "img_sampling.h"
@@ -92,7 +92,13 @@ bool run_with_paras(InputParas paras, string & s_error)
 		{
 			int cmds_num = sizeof(supported_commands)/sizeof(SupportedCommand);
 			for(int i = 0; i < cmds_num; i++) cout<<supported_commands[i].para_name<<" ";
-			cout<<endl;
+			cout<<endl<<endl;
+			cout<<"Steps to add new function :"<<endl;
+			cout<<"1. prepare you .h .cpp files, and add to .pro"<<endl;
+			cout<<"2. in main.cpp, add an item in supported_commands variable"<<endl;
+			cout<<"3. in run_with_paras(), add your function on how to process your command"<<endl;
+			cout<<"4. set outfile and is_save_img if need to save your image result"<<endl;
+			cout<<""<<endl;
 			is_save_img = false;
 		}
 		else if(cmd_name == "-center-marker")
@@ -126,8 +132,8 @@ bool run_with_paras(InputParas paras, string & s_error)
 			double * phi = 0;
 			if(method == 0 && !normal_distance_transform(phi, indata1d, in_sz, thresh)){s_error += "failed to calculate normal distance transformation"; return false;}
 			else if(method == 1 && !fastmarching_distance(phi, indata1d, in_sz, thresh)){s_error += "failed to do fast marching"; return false;}
-			for(V3DLONG i = 0; i < in_sz[0] * in_sz[1] * in_sz[2]; i++) {phi[i] = - phi[i]; if(phi[i] < 0) phi[i] = 0.0;}
-			if(!scale_double_to_uint8(outdata1d, phi, in_sz)){s_error += "convert_double_to_uint8 error"; return false;}
+			if(method == 1) for(V3DLONG i = 0; i < in_sz[0] * in_sz[1] * in_sz[2]; i++) {phi[i] = - phi[i]; if(phi[i] < 0) phi[i] = 0.0;}
+			if(!scale_double_to_uint8(outdata1d, phi, in_sz)){s_error += "scale_double_to_uint8 error"; return false;}
 			if(phi) {delete [] phi; phi = 0;}
 		}
 		else if(cmd_name == "-down-sampling")
