@@ -15,6 +15,7 @@
 #include "img_sampling.h"
 #include "img_segment.cpp"
 #include "img_operate.h"
+#include "dist_transform.h"
 
 using namespace std;
 
@@ -22,12 +23,13 @@ using namespace std;
 void printHelp();
 void printVersion();
 bool run_with_paras(InputParas paras, string &s_error);
-bool convert_uint8_to_double(double * outimg1d, unsigned char* inimg1d, V3DLONG sz[3]);
-bool convert_double_to_uint8(unsigned char* outimg1d,double * inimg1d,  V3DLONG sz[3]);
+bool convert_uint8_to_double(double * &outimg1d, unsigned char* inimg1d, V3DLONG sz[3]);
+bool convert_double_to_uint8(unsigned char* &outimg1d,double * inimg1d,  V3DLONG sz[3]);
+bool scale_double_to_uint8(unsigned char* &outimg1d, double * inimg1d,  V3DLONG sz[3]);
 
 bool is_save_img = true;
 
-SupportedCommand supported_commands[] = {{"-info",0},{"-down-sampling",1},{"-center-marker",1},{"-maximum-component",1},{"-average-threshold", 1},{"-adaptive-threshold", 1},{"-otsu-threshold", 1},{"-binary-threshold",1},{"-white-threshold",1},{"-black-threshold",1},{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-img-operate", 1}};
+SupportedCommand supported_commands[] = {{"-info",0},{"-list",0},{"-down-sampling",1},{"-center-marker",1},{"-distance-transform",1},{"-maximum-component",1},{"-average-threshold", 1},{"-adaptive-threshold", 1},{"-otsu-threshold", 1},{"-binary-threshold",1},{"-white-threshold",1},{"-black-threshold",1},{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-img-operate", 1}};
 
 int main(int argc, char* argv[])
 {
@@ -65,13 +67,13 @@ bool run_with_paras(InputParas paras, string & s_error)
 		else { s_error += "need output image"; return false;}
 	}
 
-	string infile = paras.filelist.at(0);
+	string infile = paras.filelist.size() >= 1 ? paras.filelist.at(0) : string("");
 	string outfile = paras.filelist.size() >=2 ? paras.filelist.at(1) : string(infile+"_out.raw");
 	unsigned char * indata1d = NULL, * outdata1d = NULL;
 	V3DLONG* in_sz = 0, * out_sz = 0;
 	int datatype;
 
-	if(!loadImage((char*) infile.c_str(), indata1d, in_sz, datatype)) {s_error += "loadImage(\""; s_error += infile; s_error+="\")  error"; return false;}
+	if(infile != "" && !loadImage((char*) infile.c_str(), indata1d, in_sz, datatype)) {s_error += "loadImage(\""; s_error += infile; s_error+="\")  error"; return false;}
 
 	int channel = 0;  
 
@@ -86,9 +88,16 @@ bool run_with_paras(InputParas paras, string & s_error)
 			cout<<"size : "<<in_sz[0]<<"x"<<in_sz[1]<<"x"<<in_sz[2]<<"x"<<in_sz[3]<<endl;
 			is_save_img = false;
 		}
+		else if(cmd_name == "-list")
+		{
+			int cmds_num = sizeof(supported_commands)/sizeof(SupportedCommand);
+			for(int i = 0; i < cmds_num; i++) cout<<supported_commands[i].para_name<<" ";
+			cout<<endl;
+			is_save_img = false;
+		}
 		else if(cmd_name == "-center-marker")
 		{
-			CHECK_CHANNEL
+			CHECK_CHANNEL;
 
 			string marker_file = paras.filelist.size() >=2 ? paras.filelist.at(1) : string(infile + "_output.marker");
 			int    method; if(!paras.get_int_para(method,"-center-marker",0,s_error,":")) return false;
@@ -104,6 +113,22 @@ bool run_with_paras(InputParas paras, string & s_error)
 			cout<<"marker center : "<<pos[0]<<","<<pos[1]<<","<<pos[2]<<endl;
 			ofs<<pos[0]<<","<<pos[1]<<","<<pos[2]<<endl; ofs.close();
 			is_save_img = false;
+		}
+		else if(cmd_name == "-distance-transform")
+		{
+			CHECK_CHANNEL;
+			
+			int method; if(!paras.get_int_para(method,"-distance-transform",0,s_error,":")) return false;
+			double thresh; if(!paras.get_double_para(thresh,"-distance-transform",1,s_error,":")) return false;
+			if(method == 0) cout<<"method : normal distance transform"<<endl;
+			else cout<<"method : fastmarching method"<<endl;
+			cout<<"thresh : "<<thresh<<endl;
+			double * phi = 0;
+			if(method == 0 && !normal_distance_transform(phi, indata1d, in_sz, thresh)){s_error += "failed to calculate normal distance transformation"; return false;}
+			else if(method == 1 && !fastmarching_distance(phi, indata1d, in_sz, thresh)){s_error += "failed to do fast marching"; return false;}
+			for(V3DLONG i = 0; i < in_sz[0] * in_sz[1] * in_sz[2]; i++) {phi[i] = - phi[i]; if(phi[i] < 0) phi[i] = 0.0;}
+			if(!scale_double_to_uint8(outdata1d, phi, in_sz)){s_error += "convert_double_to_uint8 error"; return false;}
+			if(phi) {delete [] phi; phi = 0;}
 		}
 		else if(cmd_name == "-down-sampling")
 		{
@@ -281,8 +306,11 @@ bool run_with_paras(InputParas paras, string & s_error)
 			}
 		}
 	}
-	if(out_sz == 0) {out_sz = new V3DLONG[4]; out_sz[0] = in_sz[0]; out_sz[1] = in_sz[1]; out_sz[2] = in_sz[2]; out_sz[3] = 1;}
-	if(is_save_img && !saveImage((char*) outfile.c_str(), outdata1d, out_sz, datatype)) {s_error += "saveImage(\""; s_error += outfile; s_error+="\") error"; return false;}
+	if(is_save_img)
+	{
+		if(out_sz == 0) {out_sz = new V3DLONG[4]; out_sz[0] = in_sz[0]; out_sz[1] = in_sz[1]; out_sz[2] = in_sz[2]; out_sz[3] = 1;}
+		if(!saveImage((char*) outfile.c_str(), outdata1d, out_sz, datatype)) {s_error += "saveImage(\""; s_error += outfile; s_error+="\") error"; return false;}
+	}
 	if(indata1d) {delete [] indata1d; outdata1d = 0;}
 	if(in_sz) {delete [] in_sz; in_sz = 0;}
 	if(outdata1d) {delete [] outdata1d; outdata1d = 0;}
@@ -303,19 +331,20 @@ void printHelp()
 	cout<<"Usage: v3d_convert [options ...] file [ [options ...] file ...] [options ...] file "<<endl;
 	cout<<""<<endl;
 	cout<<" -info                                display the information of input image"<<endl;
-	cout<<" -gaussian-blur      sgm x radius       smooth the image by gaussian blur"<<endl;
-	cout<<" -rotatex            theta            rotate the image along x-axis with angle theta"<<endl;
-	cout<<" -rotatey            theta            rotate the image along y-axis with angle theta"<<endl;
-	cout<<" -rotatez            theta            rotate the image along z-axis with angle theta"<<endl;
-	cout<<" -black-threshold    thresh_value     threshold the image, intensity lower than thresh_value will be set to zero"<<endl;
-	cout<<" -white-threshold    thresh_value     threshold the image, intensity higher than thresh_value will be set to maximum"<<endl;
-	cout<<" -binary-threshold   thresh_value     threshold the image, intensity lower than thresh_value to zero, higher to maximum"<<endl;
-	cout<<" -otsu-threshold     thresh_type      calculate otsu-thresuld and do black/white/binary-threshold according to thresh_type"<<endl;
-	cout<<" -average-threshold  thresh_type      use average intensity as threshold value"<<endl;
-	cout<<" -adaptive-threshold h+d              h is sampling interval, d is then number of sampling points"<<endl;
-	cout<<" -maximum-component  thresh_value     get the maximum connected component in the binary thresholding result"<<endl;
-	cout<<" -center-marker      mthd:thr_val     methods : 0 for maximum xyz-plane density, 1 for maxim component center"<<endl;
-	cout<<" -img-operate        method           methods: plus minus absminus multiply divide complement and or xor not."<<endl;
+	cout<<" -gaussian-blur       sgm x radius       smooth the image by gaussian blur"<<endl;
+	cout<<" -rotatex             theta            rotate the image along x-axis with angle theta"<<endl;
+	cout<<" -rotatey             theta            rotate the image along y-axis with angle theta"<<endl;
+	cout<<" -rotatez             theta            rotate the image along z-axis with angle theta"<<endl;
+	cout<<" -black-threshold     thresh_value     threshold the image, intensity lower than thresh_value will be set to zero"<<endl;
+	cout<<" -white-threshold     thresh_value     threshold the image, intensity higher than thresh_value will be set to maximum"<<endl;
+	cout<<" -binary-threshold    thresh_value     threshold the image, intensity lower than thresh_value to zero, higher to maximum"<<endl;
+	cout<<" -otsu-threshold      thresh_type      calculate otsu-thresuld and do black/white/binary-threshold according to thresh_type"<<endl;
+	cout<<" -average-threshold   thresh_type      use average intensity as threshold value"<<endl;
+	cout<<" -adaptive-threshold  h+d              h is sampling interval, d is then number of sampling points"<<endl;
+	cout<<" -maximum-component   thresh_value     get the maximum connected component in the binary thresholding result"<<endl;
+	cout<<" -center-marker       mthd:thr_val     methods : 0 for maximum xyz-plane density, 1 for maxim component center"<<endl;
+	cout<<" -distance-transform  mthd:thr_val     methods : 0 for normal transform, 1 for fast marching method"<<endl;
+	cout<<" -img-operate         method           methods: plus minus absminus multiply divide complement and or xor not."<<endl;
 	cout<<""<<endl;
 }
 
@@ -324,19 +353,36 @@ void printVersion()
 	cout<<"Version : 1.0"<<endl;
 }
 
-bool convert_uint8_to_double(double * outimg1d, unsigned char* inimg1d, V3DLONG sz[3])
+bool convert_uint8_to_double(double * &outimg1d, unsigned char* inimg1d, V3DLONG sz[3])
 {
 	if(outimg1d == 0 || inimg1d == 0 || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0) return 0;
 	V3DLONG tol = sz[0] * sz[1] * sz[2];
+	if(outimg1d == 0) outimg1d = new double[tol];
 	for(V3DLONG i = 0; i < tol ; i++) outimg1d[i] = double(inimg1d[i])/255.0;
 	return true;
 }
 
-bool convert_double_to_uint8(unsigned char* outimg1d,double * inimg1d,  V3DLONG sz[3])
+bool convert_double_to_uint8(unsigned char* &outimg1d, double * inimg1d,  V3DLONG sz[3])
 {
-	cout<<"sz[0] = "<<sz[0]<<" sz[1] = "<<sz[1]<<" sz[2] = "<<sz[2]<<endl;
-	if(outimg1d == 0 || inimg1d == 0 || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0) return 0;
+	if(inimg1d == 0 || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0) return false;
 	V3DLONG tol = sz[0] * sz[1] * sz[2];
-	for(V3DLONG i = 0; i < tol ; i++) outimg1d[i] = (unsigned char)(inimg1d[i] * 255.0);
+	if(outimg1d == 0) outimg1d = new unsigned char[tol];
+	for(V3DLONG i = 0; i < tol ; i++) outimg1d[i] = (unsigned char)(inimg1d[i] * 255.0 + 0.5);
+	return true;
+}
+bool scale_double_to_uint8(unsigned char* &outimg1d, double * inimg1d,  V3DLONG sz[3])
+{
+	if(inimg1d == 0 || sz[0] <= 0 || sz[1] <= 0 || sz[2] <= 0) return false;
+	V3DLONG tol = sz[0] * sz[1] * sz[2];
+	if(outimg1d == 0) outimg1d = new unsigned char[tol];
+	double max_value = inimg1d[0];
+	double min_value = inimg1d[0];
+	for(V3DLONG i = 1; i < tol; i++)
+	{
+		max_value = inimg1d[i] > max_value ? inimg1d[i] : max_value;
+		min_value = inimg1d[i] < min_value ? inimg1d[i] : min_value;
+	}
+	double factor = 255.0 / (max_value - min_value);
+	for(V3DLONG i = 0; i < tol ; i++) outimg1d[i] = (unsigned char)((inimg1d[i] - min_value) * factor + 0.5);
 	return true;
 }
