@@ -1,11 +1,12 @@
 #include "Texture2dColors.h"
-#include "gl.h"
-#include "glu.h"
 #include <cassert>
 // So IDE can find symbols in standard header locations...
 #if defined(__APPLE__)
 #include "OpenGL/gl.h" // specific to Mac?
 #include "OpenGL/glu.h" // specific to Mac?
+#else
+#include "GL/gl.h"
+#include "GL/glu.h"
 #endif
 
 // Texture2dColors is a data source for opengl volume rendering
