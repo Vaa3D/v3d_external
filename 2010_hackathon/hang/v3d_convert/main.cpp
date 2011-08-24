@@ -16,6 +16,7 @@
 #include "img_segment.cpp"
 #include "img_operate.h"
 #include "dist_transform.h"
+#include "neuron_tracing.h"
 
 using namespace std;
 
@@ -26,10 +27,11 @@ bool run_with_paras(InputParas paras, string &s_error);
 bool convert_uint8_to_double(double * &outimg1d, unsigned char* inimg1d, V3DLONG sz[3]);
 bool convert_double_to_uint8(unsigned char* &outimg1d,double * inimg1d,  V3DLONG sz[3]);
 bool scale_double_to_uint8(unsigned char* &outimg1d, double * inimg1d,  V3DLONG sz[3]);
+inline bool check_image_binary(unsigned char* &inimg1d, V3DLONG *&sz);
 
 bool is_save_img = true;
 
-SupportedCommand supported_commands[] = {{"-info",0},{"-list",0},{"-down-sampling",1},{"-center-marker",1},{"-distance-transform",1},{"-maximum-component",1},{"-average-threshold", 1},{"-adaptive-threshold", 1},{"-otsu-threshold", 1},{"-binary-threshold",1},{"-white-threshold",1},{"-black-threshold",1},{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-img-operate", 1}};
+SupportedCommand supported_commands[] = {{"-info",0},{"-list",0},{"-down-sampling",1},{"-marker-radius",1},{"-center-marker",1},{"-distance-transform",1},{"-maximum-component",1},{"-average-threshold", 1},{"-adaptive-threshold", 1},{"-otsu-threshold", 1},{"-binary-threshold",1},{"-white-threshold",1},{"-black-threshold",1},{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-img-operate", 1}};
 
 int main(int argc, char* argv[])
 {
@@ -99,6 +101,23 @@ bool run_with_paras(InputParas paras, string & s_error)
 			cout<<"3. in run_with_paras(), add your function on how to process your command"<<endl;
 			cout<<"4. set outfile and is_save_img if need to save your image result"<<endl;
 			cout<<""<<endl;
+			is_save_img = false;
+		}
+		else if(cmd_name == "-marker-radius")
+		{
+			CHECK_CHANNEL;
+			
+			if(paras.filelist.size() < 2 || paras.filelist.at(1).find_last_of(".marker") == string::npos){s_error += " please specify input marker file"; return false;}
+			string marker_file = paras.filelist.at(1);
+			ImageMarker marker;
+			ifstream ifs(marker_file.c_str()); if(ifs.fail()){s_error += string(" unable to open marker file " + marker_file); return false;}
+			//if(ifs.get() == '#')ifs.ignore(1000,'\n'); 
+			ifs>>marker.x;ifs.ignore(10,',');ifs>>marker.y;ifs.ignore(10,',');ifs>>marker.z; ifs.close();
+			cout<<"marker:"<<marker.x<<" "<<marker.y<<" "<<marker.z<<endl;
+			double thresh; if(!paras.get_double_para(thresh,"-marker-radius",s_error)) return false;
+			cout<<"thresh: "<<thresh<<endl;
+			if(!binary_threshold(thresh, indata1d, in_sz, outdata1d))return false;
+			cout<<"radius : "<<markerRadius(outdata1d, in_sz, marker)<<endl;
 			is_save_img = false;
 		}
 		else if(cmd_name == "-center-marker")
@@ -325,35 +344,6 @@ bool run_with_paras(InputParas paras, string & s_error)
 	return true;
 }
 
-void printHelp()
-{
-	cout<<"Version: 1.0"<<endl;
-	cout<<"Copyright: Opensource Licence"<<endl;
-	cout<<"Author: Hang Xiao"<<endl;
-	cout<<""<<endl;
-	cout<<"v3d_convert is the extension of imagemagic convert. It is designed to support  image operator on three dimension."<<endl;
-	cout<<"Currently support .raw .tiff/.tif .lsm image format."<<endl;
-	cout<<""<<endl;
-	cout<<"Usage: v3d_convert [options ...] file [ [options ...] file ...] [options ...] file "<<endl;
-	cout<<""<<endl;
-	cout<<" -info                                display the information of input image"<<endl;
-	cout<<" -gaussian-blur       sgm x radius       smooth the image by gaussian blur"<<endl;
-	cout<<" -rotatex             theta            rotate the image along x-axis with angle theta"<<endl;
-	cout<<" -rotatey             theta            rotate the image along y-axis with angle theta"<<endl;
-	cout<<" -rotatez             theta            rotate the image along z-axis with angle theta"<<endl;
-	cout<<" -black-threshold     thresh_value     threshold the image, intensity lower than thresh_value will be set to zero"<<endl;
-	cout<<" -white-threshold     thresh_value     threshold the image, intensity higher than thresh_value will be set to maximum"<<endl;
-	cout<<" -binary-threshold    thresh_value     threshold the image, intensity lower than thresh_value to zero, higher to maximum"<<endl;
-	cout<<" -otsu-threshold      thresh_type      calculate otsu-thresuld and do black/white/binary-threshold according to thresh_type"<<endl;
-	cout<<" -average-threshold   thresh_type      use average intensity as threshold value"<<endl;
-	cout<<" -adaptive-threshold  h+d              h is sampling interval, d is then number of sampling points"<<endl;
-	cout<<" -maximum-component   thresh_value     get the maximum connected component in the binary thresholding result"<<endl;
-	cout<<" -center-marker       mthd:thr_val     methods : 0 for maximum xyz-plane density, 1 for maxim component center"<<endl;
-	cout<<" -distance-transform  mthd:thr_val     methods : 0 for normal transform, 1 for fast marching method"<<endl;
-	cout<<" -img-operate         method           methods: plus minus absminus multiply divide complement and or xor not."<<endl;
-	cout<<""<<endl;
-}
-
 void printVersion()
 {
 	cout<<"Version : 1.0"<<endl;
@@ -392,3 +382,41 @@ bool scale_double_to_uint8(unsigned char* &outimg1d, double * inimg1d,  V3DLONG 
 	for(V3DLONG i = 0; i < tol ; i++) outimg1d[i] = (unsigned char)((inimg1d[i] - min_value) * factor + 0.5);
 	return true;
 }
+
+inline bool check_image_binary(unsigned char* &inimg1d, V3DLONG *&sz)
+{
+	V3DLONG tol_sz = sz[0] * sz[1] * sz[2];
+	for(V3DLONG i = 0; i < tol_sz; i++){if(inimg1d[i] != 0 || inimg1d[i] != 255) return false;}
+	return true;
+}
+
+void printHelp()
+{
+	cout<<"Version: 1.0"<<endl;
+	cout<<"Copyright: Opensource Licence"<<endl;
+	cout<<"Author: Hang Xiao"<<endl;
+	cout<<""<<endl;
+	cout<<"v3d_convert is the extension of imagemagic convert. It is designed to support  image operator on three dimension."<<endl;
+	cout<<"Currently support .raw .tiff/.tif .lsm image format."<<endl;
+	cout<<""<<endl;
+	cout<<"Usage: v3d_convert [options ...] file [ [options ...] file ...] [options ...] file "<<endl;
+	cout<<""<<endl;
+	cout<<" -info                                display the information of input image"<<endl;
+	cout<<" -gaussian-blur       sgm x radius       smooth the image by gaussian blur"<<endl;
+	cout<<" -rotatex             theta            rotate the image along x-axis with angle theta"<<endl;
+	cout<<" -rotatey             theta            rotate the image along y-axis with angle theta"<<endl;
+	cout<<" -rotatez             theta            rotate the image along z-axis with angle theta"<<endl;
+	cout<<" -black-threshold     thresh_value     threshold the image, intensity lower than thresh_value will be set to zero"<<endl;
+	cout<<" -white-threshold     thresh_value     threshold the image, intensity higher than thresh_value will be set to maximum"<<endl;
+	cout<<" -binary-threshold    thresh_value     threshold the image, intensity lower than thresh_value to zero, higher to maximum"<<endl;
+	cout<<" -otsu-threshold      thresh_type      calculate otsu-thresuld and do black/white/binary-threshold according to thresh_type"<<endl;
+	cout<<" -average-threshold   thresh_type      use average intensity as threshold value"<<endl;
+	cout<<" -adaptive-threshold  h+d              h is sampling interval, d is then number of sampling points"<<endl;
+	cout<<" -maximum-component   thresh_value     get the maximum connected component in the binary thresholding result"<<endl;
+	cout<<" -center-marker       mthd:thr_val     methods : 0 for maximum xyz-plane density, 1 for maxim component center"<<endl;
+	cout<<" -marker-radius       thr mk_fl        need threshold and marker file to get the estimated radius"<<endl;
+	cout<<" -distance-transform  mthd:thr_val     methods : 0 for normal transform, 1 for fast marching method"<<endl;
+	cout<<" -img-operate         method           methods: plus minus absminus multiply divide complement and or xor not."<<endl;
+	cout<<""<<endl;
+}
+

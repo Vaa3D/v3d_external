@@ -32,6 +32,7 @@ HEADERS += img_operate.h
 HEADERS += sort_algorithms.h
 HEADERS += fastmarching.h
 HEADERS += dist_transform.h
+#HEADERS += neuron_tracing.h
 HEADERS += FL_bwdist.h
 HEADERS += ../../../v3d_main/basic_c_fun/basic_memory.h
 HEADERS += ../../../v3d_main/basic_c_fun/stackutil.h
