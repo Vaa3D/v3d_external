@@ -667,7 +667,7 @@ void NaZStackWidget::do_HDRfilter()
             for(V3DLONG i=start_x; i<end_x; i++)
             {
                 float curval;
-                if (curval < volProxy.sc) // regular data channel
+                if (c < volProxy.sc) // regular data channel
                     curval = volProxy.value_at(i, j, cur_z, c);
                 else // reference channel
                     curval = refProxy.value_at(i, j, cur_z, 0);
