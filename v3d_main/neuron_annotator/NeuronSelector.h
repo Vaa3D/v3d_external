@@ -18,16 +18,16 @@ public:
     ~NeuronSelector(){}
 
 public:
-    int getIndexSelectedNeuron(); // find nearest neuron
-    void setAnnotationSession(AnnotationSession* annotationSession);
+    int getIndexSelectedNeuron(); // returns index of neuron at selected position.  sets "index" member.
+    void setAnnotationSession(AnnotationSession* annotationSession); // wires NeuronSelector to data flow model
     void init();
 
-    void getCurIndexNeuronBoundary();
+    void getCurIndexNeuronBoundary(); // populates curNeuronBDxx members
     bool inNeuronMask(V3DLONG x, V3DLONG y, V3DLONG z);
-    QList<LocationSimple> highlightIndexNeuron();
+    QList<LocationSimple> highlightIndexNeuron(); // returns a list of points for the index neuron
 
 public slots:
-    void onSelectionModelChanged();
+    void onSelectionModelChanged(); // updates highlight based on state of NeuronSelectionModel
     void updateSelectedPosition(double x, double y, double z);
 
 signals:

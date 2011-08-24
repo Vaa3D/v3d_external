@@ -2420,3 +2420,5 @@ v3d_main/3drenderer/renderer_hit.cpp
 v3d_main/3drenderer/renderer_gl2.cpp
 v3d_main/3drenderer/renderer_obj.cpp
 v3d_main/3drenderer/renderer_gl1.h
+v3d_main/neuron_annotator/data_model/Texture2dColors.h
+v3d_main/neuron_annotator/data_model/Texture2dColors.cpp

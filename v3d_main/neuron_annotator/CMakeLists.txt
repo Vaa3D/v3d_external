@@ -26,6 +26,7 @@ QT4_WRAP_CPP(NA_MOC_SRCS
     data_model/NeuronSelectionModel.h
     data_model/ZSliceColors.h
     data_model/VolumeColors.h
+    data_model/Texture2DColors.h
     geometry/CameraModel.h
     gui/AngleWidget.h
     gui/CompartmentMapComboBox.h
