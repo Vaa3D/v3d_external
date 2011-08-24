@@ -483,6 +483,7 @@ void Na3DWidget::updateRotation(const Rotation3D & newRotation)
 
 void Na3DWidget::updateHighlightNeurons()
 {
+    // If the landmarks list is populated, we want to draw little spheres on each neuron.
     bool hasLandmarks = false;
     qDebug() << "Na3DWidget::updateHighlightNeurons";
     {
@@ -490,12 +491,12 @@ void Na3DWidget::updateHighlightNeurons()
         if (! volumeReader.hasReadLock()) return;
         const QList<LocationSimple>& landmarks = volumeReader.getLandmarks();
         hasLandmarks = (landmarks.size() > 0);
-    } // release locks
-    if (hasLandmarks) {
+    } // release read lock
+    if (hasLandmarks) { // draw the spheres
         // setShowSurfObjects(1); // what do these numbers mean?
         enableMarkerLabel(true); // but don't show labels
     }
-    else {
+    else { // don't draw the spheres
         // setShowSurfObjects(0);
     }
     updateWithTriView(); // update list markers and 3d viewer
