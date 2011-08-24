@@ -53,7 +53,7 @@ int NeuronSelector::getIndexSelectedNeuron()
             V3DLONG zb = zlc-NB; if(zb<0) zb = 0;
             V3DLONG ze = zlc+NB; if(ze>sz) ze = sz-1;
 
-            const unsigned char *neuronMask = neuronProxy.img0->getRawData();
+            // const unsigned char *neuronMask = neuronProxy.img0->getRawData();
             const QList<bool>& maskStatusList=selectionReader.getMaskStatusList();
 
             for(V3DLONG k=zb; k<=ze; k++)
@@ -66,7 +66,8 @@ int NeuronSelector::getIndexSelectedNeuron()
                             {
                                     V3DLONG idx = offset_j + i;
 
-                                    int cur_idx = neuronMask[idx] - 1; // value of mask stack - convert to 0...n-1 neuron index
+                                    // int cur_idx = neuronMask[idx] - 1; // value of mask stack - convert to 0...n-1 neuron index
+                                    int cur_idx = neuronProxy.value_at(i, j, k, 0) - 1;
 
                                     if(cur_idx>=0 && maskStatusList.at(cur_idx)) // active masks
                                     {
@@ -117,7 +118,7 @@ void NeuronSelector::getCurIndexNeuronBoundary()
             if (! volumeReader.hasReadLock()) return;
             const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
 
-            const unsigned char *neuronMask = neuronProxy.img0->getRawData();
+            // const unsigned char *neuronMask = neuronProxy.img0->getRawData();
 
             //
             for(V3DLONG k=0; k<sz; k++)
@@ -130,7 +131,8 @@ void NeuronSelector::getCurIndexNeuronBoundary()
                             {
                                     V3DLONG idx = offset_j + i;
 
-                                    if(index == (neuronMask[idx]-1))
+                                    // if(index == (neuronMask[idx]-1))
+                                    if (index == (neuronProxy.value_at(i, j, k, 0) - 1) )
                                     {
                                             if(i<curNeuronBDxb) curNeuronBDxb = i;
                                             if(i>curNeuronBDxe) curNeuronBDxe = i;
