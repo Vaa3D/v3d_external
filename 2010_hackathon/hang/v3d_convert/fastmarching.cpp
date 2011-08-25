@@ -208,7 +208,7 @@ double upwind_solver(vector<double> &parameters, double p)
 	else 
 	{
 		cerr<<"upwind_solver : parameters with zero element"<<endl;
-		exit(0);
+		return 0;
 	}
 }
 

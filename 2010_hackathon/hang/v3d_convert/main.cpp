@@ -31,7 +31,7 @@ inline bool check_image_binary(unsigned char* &inimg1d, V3DLONG *&sz);
 
 bool is_save_img = true;
 
-SupportedCommand supported_commands[] = {{"-info",0},{"-list",0},{"-down-sampling",1},{"-marker-radius",1},{"-center-marker",1},{"-distance-transform",1},{"-maximum-component",1},{"-average-threshold", 1},{"-adaptive-threshold", 1},{"-otsu-threshold", 1},{"-binary-threshold",1},{"-white-threshold",1},{"-black-threshold",1},{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-img-operate", 1}};
+SupportedCommand supported_commands[] = {{"-info",0},{"-list",0},{"-down-sampling",1},{"-tangent-plane",1},{"-marker-radius",1},{"-center-marker",1},{"-distance-transform",1},{"-maximum-component",1},{"-average-threshold", 1},{"-adaptive-threshold", 1},{"-otsu-threshold", 1},{"-binary-threshold",1},{"-white-threshold",1},{"-black-threshold",1},{"-rotatex", 1}, {"-rotatey", 1}, {"-rotatez", 1}, {"-channel", 1}, {"-gaussian-blur", 1}, {"-resize", 1}, {"-crop", 1}, {"-img-operate", 1}};
 
 int main(int argc, char* argv[])
 {
@@ -103,6 +103,19 @@ bool run_with_paras(InputParas paras, string & s_error)
 			cout<<""<<endl;
 			is_save_img = false;
 		}
+		else if(cmd_name == "-tangent-plane")
+		{
+			CHECK_CHANNEL;
+
+			string marker_file = paras.get_para("-tangent-plane");
+			ImageMarker marker1, marker2;
+			ifstream ifs(marker_file.c_str()); if(ifs.fail()){s_error += string(" unable to open marker file " + marker_file); return false;}
+			if(ifs.peek() == '#')ifs.ignore(1000,'\n'); 
+			ifs>>marker1.x;ifs.ignore(10,',');ifs>>marker1.y;ifs.ignore(10,',');ifs>>marker1.z;ifs.ignore(10,',');ifs>>marker1.radius;ifs.ignore(1000,'\n');
+			ifs>>marker2.x;ifs.ignore(10,',');ifs>>marker2.y;ifs.ignore(10,',');ifs>>marker2.z;ifs.ignore(10,',');ifs>>marker2.radius;ifs.ignore(1000,'\n');
+			ifs.close();
+			if(!get_tangent_plane(outdata1d, out_sz, indata1d, in_sz,marker1, marker2,1.0)) return false;
+		}
 		else if(cmd_name == "-marker-radius")
 		{
 			CHECK_CHANNEL;
@@ -111,13 +124,13 @@ bool run_with_paras(InputParas paras, string & s_error)
 			string marker_file = paras.filelist.at(1);
 			ImageMarker marker;
 			ifstream ifs(marker_file.c_str()); if(ifs.fail()){s_error += string(" unable to open marker file " + marker_file); return false;}
-			//if(ifs.get() == '#')ifs.ignore(1000,'\n'); 
+			if(ifs.peek() == '#')ifs.ignore(1000,'\n'); 
 			ifs>>marker.x;ifs.ignore(10,',');ifs>>marker.y;ifs.ignore(10,',');ifs>>marker.z; ifs.close();
 			cout<<"marker:"<<marker.x<<" "<<marker.y<<" "<<marker.z<<endl;
 			double thresh; if(!paras.get_double_para(thresh,"-marker-radius",s_error)) return false;
 			cout<<"thresh: "<<thresh<<endl;
-			if(!binary_threshold(thresh, indata1d, in_sz, outdata1d))return false;
-			cout<<"radius : "<<markerRadius(outdata1d, in_sz, marker)<<endl;
+			//if(!binary_threshold(thresh, indata1d, in_sz, outdata1d))return false;
+			cout<<"radius : "<<markerRadius(outdata1d, in_sz, marker, thresh)<<endl;
 			is_save_img = false;
 		}
 		else if(cmd_name == "-center-marker")
@@ -415,6 +428,7 @@ void printHelp()
 	cout<<" -maximum-component   thresh_value     get the maximum connected component in the binary thresholding result"<<endl;
 	cout<<" -center-marker       mthd:thr_val     methods : 0 for maximum xyz-plane density, 1 for maxim component center"<<endl;
 	cout<<" -marker-radius       thr mk_fl        need threshold and marker file to get the estimated radius"<<endl;
+	cout<<" -tanget-plane        marker_file      need two markers with radius in marker file to get tanget-plane on second marker"<<endl;
 	cout<<" -distance-transform  mthd:thr_val     methods : 0 for normal transform, 1 for fast marching method"<<endl;
 	cout<<" -img-operate         method           methods: plus minus absminus multiply divide complement and or xor not."<<endl;
 	cout<<""<<endl;
