@@ -42,7 +42,7 @@ void ZSliceColors::update()
     if (currentZIndex < 0) return;
     { // curly brackets for read/write locks
         DataColorModel::Reader colorReader(dataColorModel);
-        if (! colorReader.hasReadLock()) return;
+        if (dataColorModel.readerIsStale(colorReader)) return;
         NeuronSelectionModel::Reader selectionReader(neuronSelectionModel);
         if (! selectionReader.hasReadLock()) return;
         NaVolumeData::Reader volumeReader(volumeData);

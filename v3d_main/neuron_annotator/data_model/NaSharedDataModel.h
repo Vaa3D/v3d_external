@@ -20,7 +20,8 @@ public:
 
     NaSharedDataModel(); // creates empty volume
     explicit NaSharedDataModel(const NaSharedDataModel<P>& other); // copy constructor
-    bool readerIsStale(const BaseReader& reader);
+    virtual ~NaSharedDataModel();
+    bool readerIsStale(const BaseReader& reader) const;
 
 protected:
     // single data member, d, to follow QSharedData pattern
@@ -29,21 +30,28 @@ protected:
 
 
 public:
-    class BaseReader : public QSharedDataPointer<const P> // const P can never cause copy-on-write.
+    class BaseReader
     {
     public:
+        friend class NaSharedDataModel<P>;
         explicit BaseReader(
                 const NaSharedDataModel& naSharedDataModel,
                 bool waitForReadLock = false);
+        ~BaseReader();
+
+    protected:
+        QSharedDataPointer<const P> d; // const P can never cause copy-on-write.
     };
     friend class BaseReader;
 
 
+protected: // Only the original owner should ever write to the data.
     class BaseWriter : public QWriteLocker
     {
     public:
+        friend class NaSharedDataModel<P>;
         explicit BaseWriter(NaSharedDataModel& naSharedDataModel)
-            : QWriteLocker(naSharedDataModel.lock) {}
+            : QWriteLocker(naSharedDataModel.getLock()) {}
     };
 };
 

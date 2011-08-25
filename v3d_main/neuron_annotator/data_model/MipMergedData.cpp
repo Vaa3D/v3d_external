@@ -398,7 +398,7 @@ bool MipMergedData::computeMergedImage()
 
     // Color model is needed
     DataColorModel::Reader colorReader(dataColorModel);
-    if (! colorReader.hasReadLock()) return false;
+    if (dataColorModel.readerIsStale(colorReader)) return false;
 
     MipFragmentData::Reader fragmentReader(mipFragmentData);
     if (! fragmentReader.hasReadLock()) return false;

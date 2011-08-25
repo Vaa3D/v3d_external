@@ -17,6 +17,9 @@ MipFragmentColors::MipFragmentColors(const MipFragmentData& mipFragmentDataParam
 /* slot */
 void MipFragmentColors::update()
 {
+    SlotMerger slotMerger(statusOfUpdateSlot);
+    if (! slotMerger.shouldRun()) return;
+
     QTime stopwatch;
     stopwatch.start();
 
@@ -25,8 +28,7 @@ void MipFragmentColors::update()
         if (! mipReader.hasReadLock()) return;
         if (mipReader.getNumberOfDataChannels() == 0) return; // what's the use?
         DataColorModel::Reader colorReader(dataColorModel); // readlock two of two
-        if (! colorReader.hasReadLock()) return;
-        qint64 colorChangeTime = colorReader.getLastChangeTime();
+        if (dataColorModel.readerIsStale(colorReader)) return;
         if (! (colorReader.getNumberOfDataChannels() == mipReader.getNumberOfDataChannels()) )
         {
             qDebug() << "Error: color model does not match data model";
@@ -53,9 +55,7 @@ void MipFragmentColors::update()
             writer.allocateImages(sx, sy, sf);
 
         if (! mipReader.refreshLock()) return;
-        if (! colorReader.refreshLock()) return;
-        if (colorChangeTime != colorReader.getLastChangeTime())
-            return;
+        if (dataColorModel.readerIsStale(colorReader)) return;
 
         std::vector<double> intensities(mipProxy.sc + 1, 0.0);
         int refChannel = mipProxy.sc;
@@ -75,9 +75,7 @@ void MipFragmentColors::update()
             }
             // Maybe 25 ms have passed.  Check upstream.
             if (! mipReader.refreshLock()) return;
-            if (! colorReader.refreshLock()) return;
-            if (colorChangeTime != colorReader.getLastChangeTime())
-                return;
+            if (dataColorModel.readerIsStale(colorReader)) return;
         }
         // Reference image
         QImage * img = fragmentMips[refIndex];

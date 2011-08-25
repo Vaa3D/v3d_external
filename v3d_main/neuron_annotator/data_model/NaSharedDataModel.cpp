@@ -1,6 +1,5 @@
 #include "NaSharedDataModel.h"
 
-
 //////////////////////////
 // NaSharedData methods //
 //////////////////////////
@@ -18,12 +17,17 @@ NaSharedDataModel<P>::NaSharedDataModel(const NaSharedDataModel<P>& other) // co
     : d(other.d) // no slicing danger, because d (and P) aready have the exact type we want
 {}
 
+/* virtual */
 template<class P>
-bool NaSharedDataModel<P>::readerIsStale(const BaseReader& reader)
+NaSharedDataModel<P>::~NaSharedDataModel()
+{}
+
+template<class P>
+bool NaSharedDataModel<P>::readerIsStale(const BaseReader& reader) const
 {
-    if (reader == NULL)
+    if (reader.d == NULL)
         return true; // null readers are always stale
-    else if (reader == d)
+    else if (reader.d == d)
         return false; // reader has a current copy
     else
         return true; // copy is stale
@@ -44,17 +48,27 @@ NaSharedDataModel<P>::BaseReader::BaseReader(
     if (waitForReadLock)
     {
         // Only hold the read lock for a moment, just to make sure it is not writing right now.
-        naSharedDataModel.lock.lockForRead(); // block until read is available
-        *this = naSharedDataModel.d;
-        naSharedDataModel.lock.unlock();
+        naSharedDataModel.getLock()->lockForRead(); // block until read is available
+        d = naSharedDataModel.d;
+        naSharedDataModel.getLock()->unlock();
     }
-    else if ( naSharedDataModel.lock.tryLockForRead() )
+    else if ( naSharedDataModel.getLock()->tryLockForRead() )
     {
         // Only hold the read lock for a moment, just to make sure it is not writing right now.
-        *this = naSharedDataModel.d;
-        naSharedDataModel.lock.unlock();
+        d = naSharedDataModel.d;
+        naSharedDataModel.getLock()->unlock();
     }
     else
-        *this = NULL;
+        d = NULL;
 }
+
+template<class P>
+NaSharedDataModel<P>::BaseReader::~BaseReader()
+{}
+
+
+//////////////////////////////////////
+// NaSharedData::BaseWriter methods //
+//////////////////////////////////////
+
 

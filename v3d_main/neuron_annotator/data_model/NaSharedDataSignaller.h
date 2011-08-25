@@ -25,6 +25,8 @@ public slots:
     virtual void update() {} // recreate everything from upstream data
 
 protected:
+    QReadWriteLock* getLock() const {return const_cast<QReadWriteLock*>(&lock);}
+
     // Optionally slow down those too-fast update() slot calls
     // like this:
     //     void MyNaSharedDataSignaller::update()

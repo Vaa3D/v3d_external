@@ -35,7 +35,7 @@ void VolumeColors::update()
     stopwatch.start();
     {
         DataColorModel::Reader colorReader(dataColorModel);
-        if (! colorReader.hasReadLock()) return;
+        if (dataColorModel.readerIsStale(colorReader)) return;
         if (colorReader.getNumberOfDataChannels() < 1) return;
         NeuronSelectionModel::Reader selectionReader(neuronSelectionModel);
         if (! selectionReader.hasReadLock()) return;
@@ -78,7 +78,7 @@ void VolumeColors::update()
                     // alpha channel contains reference/nc82
                     // Reference channel should be normalized (0-255) but not-yet-colorized reference value
                     double reference_value =
-                        colorReader.getReferenceChannel().getScaledIntensity(referenceProxy.value_at(x, y, z, 0)) * 255.0;
+                        colorReader.getReferenceScaledIntensity(referenceProxy.value_at(x, y, z, 0)) * 255.0;
                     volumeColorsProxy.put_at(x, y, z, 3, reference_value);
                 }
         qDebug() << "Populating VolumeColors took" << stopwatch.elapsed()/1000.0 << "seconds";
