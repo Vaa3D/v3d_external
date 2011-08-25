@@ -32,6 +32,9 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     // tryTexCompress = 0;
 
     setRenderTextureLast(true);
+
+    // create display lists for markers
+    loadObj();
 }
 
 RendererNeuronAnnotator::~RendererNeuronAnnotator() {

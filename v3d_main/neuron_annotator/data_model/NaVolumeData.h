@@ -33,12 +33,9 @@ public:
      */
 
 signals:
-    void landmarksChanged();
 
 public slots:
     void loadVolumeDataFromFiles(); // Assumes file name paths have already been set
-    void clearLandmarks();
-    void setLandmarks(const QList<LocationSimple>);
 
 private:
     QString originalImageStackFilePath;

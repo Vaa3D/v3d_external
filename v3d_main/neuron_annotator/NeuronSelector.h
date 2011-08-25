@@ -24,7 +24,7 @@ public:
 
     void getCurIndexNeuronBoundary(); // populates curNeuronBDxx members
     bool inNeuronMask(V3DLONG x, V3DLONG y, V3DLONG z);
-    QList<LocationSimple> highlightIndexNeuron(); // returns a list of points for the index neuron
+    QList<ImageMarker> highlightIndexNeuron(); // returns a list of points for the index neuron
 
 public slots:
     void onSelectionModelChanged(); // updates highlight based on state of NeuronSelectionModel
@@ -32,7 +32,7 @@ public slots:
 
 signals:
     void landmarksClearNeeded();
-    void landmarksUpdateNeeded(const QList<LocationSimple>);
+    void landmarksUpdateNeeded(const QList<ImageMarker>);
     void selectionClearNeeded();
     void neuronSelected(int index);
 

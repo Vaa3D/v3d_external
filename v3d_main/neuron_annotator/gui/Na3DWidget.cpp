@@ -53,6 +53,25 @@ Na3DWidget::~Na3DWidget()
     if (rotateCursor) delete rotateCursor; rotateCursor = NULL;
 }
 
+/* slot */
+void Na3DWidget::clearLandmarks()
+{
+    RendererNeuronAnnotator* ra = getRendererNa();
+    if (! ra) return;
+    ra->clearLandmarks();
+    updateHighlightNeurons();
+}
+
+/* slot */
+void Na3DWidget::setLandmarks(const QList<ImageMarker> landmarks)
+{
+    qDebug() << "Na3DWidget::setLandmarks" << landmarks.size();
+    RendererNeuronAnnotator * rend = getRendererNa();
+    if (! rend) return;
+    rend->setLandmarks(landmarks);
+    updateHighlightNeurons();
+}
+
 void Na3DWidget::annotationModelUpdate(QString updateType)
 {
     QList<QString> list=updateType.split(QRegExp("\\s+"));
@@ -345,8 +364,8 @@ void Na3DWidget::onNotSingleClick()
 
 void Na3DWidget::highlightNeuronAtPosition(QPoint pos)
 {
-    if (! renderer) return;
-    RendererNeuronAnnotator * ra = (RendererNeuronAnnotator*)getRenderer();
+    RendererNeuronAnnotator * ra = getRendererNa();
+    if (!ra) return;
     // avoid crash w/ NaN markerViewMatrix
     if (ra->hasBadMarkerViewMatrix()) {
         return;
@@ -430,7 +449,7 @@ void Na3DWidget::updateDefaultScale()
 void Na3DWidget::updateRendererZoomRatio(qreal relativeScale)
 {
     // qDebug() << "update zoom";
-    RendererNeuronAnnotator* renderer = (RendererNeuronAnnotator*)getRenderer();
+    RendererNeuronAnnotator* renderer = getRendererNa();
 
     float desiredPixelsPerImageVoxel = defaultScale * relativeScale;
     float desiredVerticalImageVoxelsDisplayed = height() / desiredPixelsPerImageVoxel;
@@ -483,23 +502,8 @@ void Na3DWidget::updateRotation(const Rotation3D & newRotation)
 
 void Na3DWidget::updateHighlightNeurons()
 {
-    // If the landmarks list is populated, we want to draw little spheres on each neuron.
-    bool hasLandmarks = false;
-    qDebug() << "Na3DWidget::updateHighlightNeurons";
-    {
-        NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
-        if (! volumeReader.hasReadLock()) return;
-        const QList<LocationSimple>& landmarks = volumeReader.getLandmarks();
-        hasLandmarks = (landmarks.size() > 0);
-    } // release read lock
-    if (hasLandmarks) { // draw the spheres
-        // setShowSurfObjects(1); // what do these numbers mean?
-        enableMarkerLabel(true); // but don't show labels
-    }
-    else { // don't draw the spheres
-        // setShowSurfObjects(0);
-    }
-    updateWithTriView(); // update list markers and 3d viewer
+    setShowMarkers(2); // show markers
+    enableMarkerLabel(false); // but don't show labels
 }
 
 void Na3DWidget::setGammaBrightness(qreal gamma)
@@ -526,14 +530,14 @@ void Na3DWidget::setGammaBrightness(qreal gamma)
 
 float Na3DWidget::glUnitsPerImageVoxel() const
 {
-    const RendererNeuronAnnotator* renderer = (const RendererNeuronAnnotator*)getRenderer();
+    const RendererNeuronAnnotator* renderer = getRendererNa();
     return renderer->glUnitsPerImageVoxel();
 }
 
 float Na3DWidget::getZoomScale() const
 { // in (vertical) screen pixels per image voxel at focus point
     // theta is half the true vertical view aperture in radians.
-    const RendererNeuronAnnotator* renderer = (const RendererNeuronAnnotator*)getRenderer();
+    const RendererNeuronAnnotator* renderer = getRendererNa();
     float theta = (renderer->getZoomedPerspectiveViewAngle() / 2.0) * (3.14159 / 180.0);
     float screen_height_gl = 2.0 * renderer->getViewDistance() * std::tan(theta);
     float screen_pixels_per_gl_unit = height() / screen_height_gl;
@@ -627,8 +631,6 @@ void Na3DWidget::setAnnotationSession(AnnotationSession *annotationSession)
     connect(this, SIGNAL(neuronClearAll()), &annotationSession->getNeuronSelectionModel(), SLOT(clearAllNeurons()));
     connect(this, SIGNAL(neuronClearAllSelections()), &annotationSession->getNeuronSelectionModel(), SLOT(clearSelection()));
     connect(this, SIGNAL(neuronIndexChanged(int)), &annotationSession->getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
-    connect(&annotationSession->getVolumeData(), SIGNAL(landmarksChanged()),
-            this, SLOT(updateHighlightNeurons()));
 }
 
 void Na3DWidget::toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked)
@@ -667,7 +669,7 @@ void Na3DWidget::onVolumeDataChanged()
         updateDefaultScale();
         resetView();
         updateCursor();
-        RendererNeuronAnnotator* rend = (RendererNeuronAnnotator*)getRenderer();
+        RendererNeuronAnnotator* rend = getRendererNa();
         if (! rend->populateNeuronMaskAndReference(neuronProxy.img0, refProxy.img0))
             qDebug() << "RendererNeuronAnnotator::populateNeuronMaskAndReference() failed";
         makeCurrent(); // Make sure subsequent OpenGL calls go here. (might make no difference here)

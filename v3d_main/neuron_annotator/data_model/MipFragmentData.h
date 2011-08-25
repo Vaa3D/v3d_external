@@ -39,6 +39,7 @@ public:
         {}
 
         int getNumberOfDataChannels() const {
+            if (! m_mipFragmentData.fragmentData) return 0;
             return m_mipFragmentData.fragmentData->getCDim() + 1; // +1 for reference
         }
         const Image4DProxy<My4DImage> getMipProxy() const {

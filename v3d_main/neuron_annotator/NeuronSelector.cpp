@@ -8,8 +8,8 @@ using namespace std;
 NeuronSelector::NeuronSelector()
 {
     init();
-    // allow passing of QList<LocationSimple> through signals/slots
-    qRegisterMetaType<QList<LocationSimple> >("QList<LocationSimple>");
+    // allow passing of QList<ImageMarker> through signals/slots
+    qRegisterMetaType<QList<ImageMarker> >("QList<ImageMarker>");
 }
 
 // NeuronSelector init func
@@ -224,10 +224,6 @@ bool NeuronSelector::inNeuronMask(V3DLONG x, V3DLONG y, V3DLONG z)
 void NeuronSelector::setAnnotationSession(AnnotationSession* annotationSession)
 {
     this->annotationSession=annotationSession;
-    connect(this, SIGNAL(landmarksClearNeeded()),
-            &annotationSession->getVolumeData(), SLOT(clearLandmarks()));
-    connect(this, SIGNAL(landmarksUpdateNeeded(QList<LocationSimple>)),
-            &annotationSession->getVolumeData(), SLOT(setLandmarks(QList<LocationSimple>)));
     connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(selectionChanged()),
             this, SLOT(onSelectionModelChanged()));
     connect(this, SIGNAL(neuronSelected(int)),
@@ -260,20 +256,22 @@ void NeuronSelector::updateSelectedPosition(double x, double y, double z)
             emit selectionClearNeeded();
         }
         else {
-            const QList<LocationSimple> landmarks = highlightIndexNeuron();
+            const QList<ImageMarker> landmarks = highlightIndexNeuron();
             qDebug() << "updateSelectedPosition" << x << y << z;
             emit neuronSelected(index);
-            if (landmarks.size() > 0)
+            if (landmarks.size() > 0) {
+                qDebug() << landmarks[0].radius << __FILE__ << __LINE__;
                 emit landmarksUpdateNeeded(landmarks);
+            }
         }
 }
 
 // highlight selected neuron
-QList<LocationSimple> NeuronSelector::highlightIndexNeuron()
+QList<ImageMarker> NeuronSelector::highlightIndexNeuron()
 {
     // qDebug() << "NeuronSelector::highlightIndexNeuron" << index << __FILE__ << __LINE__;
     // list of markers
-    QList<LocationSimple> listLandmarks;
+    QList<ImageMarker> listLandmarks;
 
     getCurIndexNeuronBoundary();
 	
@@ -354,11 +352,16 @@ QList<LocationSimple> NeuronSelector::highlightIndexNeuron()
                         // append a marker
                         if(count>0)
                         {
-                            LocationSimple p((V3DLONG)(sumx/(float)count+1.5), (V3DLONG)(sumy/(float)count+1.5), (V3DLONG)(sumz/(float)count+1.5)); // 1-based
+                            ImageMarker p;
+                            p.x = (V3DLONG)(sumx/(float)count+1.5); // 1-based
+                            p.y = (V3DLONG)(sumy/(float)count+1.5);
+                            p.z = (V3DLONG)(sumz/(float)count+1.5);
                             RGBA8 c;
                             c.r = 0; c.g = 255; c.b = 255; c.a = 128;// cyan
                             p.color = c; // instead of random_rgba8(255);
                             p.radius = 1; // instead of 5
+                            p.on = true;
+                            p.shape = 2; // 2: dodecahedron
 
                             // QString qstr = QString("Neuron %1").arg(index);
                             // p.name = qstr.toStdString().c_str();
@@ -372,6 +375,8 @@ QList<LocationSimple> NeuronSelector::highlightIndexNeuron()
         }
     } // release read lock
     // qDebug() << listLandmarks.size() << "landmarks found";
+    if (listLandmarks.size() > 0)
+        qDebug() << listLandmarks[0].radius << __FILE__ << __LINE__;
     return listLandmarks;
 }
 
@@ -406,10 +411,12 @@ void NeuronSelector::onSelectionModelChanged()
         // accumulate little spheres to cover each selected neuron
         // TODO - highlight multiple neurons
         // Just highlight the first neuron in the list for now
-        const QList<LocationSimple> landmarks = highlightIndexNeuron();
+        const QList<ImageMarker> landmarks = highlightIndexNeuron();
         qDebug() << "number of landmarks =" << landmarks.size();
-        if (landmarks.size() > 0)
+        if (landmarks.size() > 0) {
+            qDebug() << landmarks[0].radius << __FILE__ << __LINE__;
             emit landmarksUpdateNeeded(landmarks);
+        }
         return;
     }
 }

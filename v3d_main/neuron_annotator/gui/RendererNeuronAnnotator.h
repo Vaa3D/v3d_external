@@ -33,6 +33,17 @@ public:
     {
         return (! (markerViewMatrix[0] == markerViewMatrix[0]));
     }
+    void clearLandmarks()
+    {
+        if (0 == listMarker.size()) return; // already clear
+        listMarker.clear();
+    }
+    void setLandmarks(const QList<ImageMarker>& landmarks)
+    {
+        if (landmarks == listMarker) return; // no change
+        listMarker = landmarks;
+    }
+
 
 signals:
     void progressAchieved(int);

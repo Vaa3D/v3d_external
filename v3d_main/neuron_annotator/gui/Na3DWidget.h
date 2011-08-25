@@ -8,6 +8,7 @@
 #include "BrightnessCalibrator.h"
 #include "MouseClickManager.h"
 #include <cmath>
+#include "RendererNeuronAnnotator.h"
 
 #if defined (_MSC_VER)
 #include "../basic_c_fun/vcdiff.h"
@@ -40,8 +41,19 @@ public:
     void onMouseRightClickMenu(QMouseEvent * event, bool b_glwidget); // for mouse click outside glwidget
     virtual void setAnnotationSession(AnnotationSession *annotationSession);
     void resetVolumeBoundary();
+    virtual RendererNeuronAnnotator* getRendererNa()   {return dynamic_cast<RendererNeuronAnnotator*>(renderer);}
+    virtual const RendererNeuronAnnotator* getRendererNa() const {return dynamic_cast<RendererNeuronAnnotator*>(renderer);} // const version CMB
+
+signals:
+    void neuronSelected(double x, double y, double z);
+    void progressAchieved(int);
+    void progressComplete();
+    void progressMessage(QString);
+    void landmarksChanged();
 
 public slots:
+    void clearLandmarks();
+    void setLandmarks(const QList<ImageMarker>);
     void setGammaBrightness(qreal gamma);
     virtual void annotationModelUpdate(QString updateType);
     virtual void toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked);
@@ -131,12 +143,6 @@ protected slots:
     void updateRotation(const Rotation3D&);
     void updateFocus(const Vector3D& f);
 	
-signals:
-	void neuronSelected(double x, double y, double z);
-        void progressAchieved(int);
-        void progressComplete();
-        void progressMessage(QString);
-
 protected:
     virtual void paintGL();
     void paintFiducial(const Vector3D& v);

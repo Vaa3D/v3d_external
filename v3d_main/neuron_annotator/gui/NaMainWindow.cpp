@@ -745,6 +745,10 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
     neuronSelector = new NeuronSelector();
 
     connect(ui.v3dr_glwidget, SIGNAL(neuronSelected(double,double,double)), neuronSelector, SLOT(updateSelectedPosition(double,double,double)));
+    connect(neuronSelector, SIGNAL(landmarksClearNeeded()),
+            ui.v3dr_glwidget, SLOT(clearLandmarks()));
+    connect(neuronSelector, SIGNAL(landmarksUpdateNeeded(QList<ImageMarker>)),
+            ui.v3dr_glwidget, SLOT(setLandmarks(QList<ImageMarker>)));
 
     neuronSelector->setAnnotationSession(annotationSession);
 
