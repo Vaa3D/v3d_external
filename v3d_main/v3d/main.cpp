@@ -41,7 +41,7 @@ Last update: 2008-04-25: try to add command line based utilities
 Last update: 2010-04-12: add a global try-catch to catch all exceptions
 Last update: 2010-11-19: change some of the help info 
 Last update: 2011-04-19: fix some potential problem of null mainWin pointer 
-Last update: 2011-08-25: remove some uncalled old code 
+Last update: 2011-08-25: remove some uncalled old code, and adjust the inconsistent return values of the main function
  
 ****************************************************************************/
 
@@ -162,7 +162,7 @@ int main(int argc, char **argv)
 				{
 					char *filename = parser.i_v3d.fileList.at(i);
 					
-					qDebug()<<"now try open files ...";
+					v3d_msg("now try open files ...", 0);
 					
 					QString qFile(filename);
 					
@@ -178,7 +178,7 @@ int main(int argc, char **argv)
 							if(!url.isValid()) // valid or invalid url
 							{
 								v3d_msg("The file does not exist! Do nothing.", 0);
-								return -1;	
+								return false;	
 							}
 							else if(url.scheme().toUpper() == "HTTP" || url.scheme().toUpper() == "HTTPS" || url.scheme().toUpper() == "FTP")
 							{
@@ -190,7 +190,7 @@ int main(int argc, char **argv)
 						else // impossible be a url
 						{
 							v3d_msg("The file does not exist! Do nothing.", 0);
-							return -1;	
+							return false;	
 						}
 					}
 					else
@@ -250,19 +250,19 @@ int main(int argc, char **argv)
                 if(!parser.i_v3d.hideV3D)
                     return app->exec();
                 else 
-                    return 0;
+                    return false;
 			}
 			catch (...) 
 			{
 				v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the V3D developers to figure out the problem.");
-				return 1;
+				return false;
 			}
 			// -------------------------------------------------------
 		
 		}
 		else
 		{
-			return true;
+			return false;
 		}
 		
 	}
@@ -318,9 +318,10 @@ int main(int argc, char **argv)
 	{
 		return app.exec();
 	}
-	catch (...) {
+	catch (...) 
+	{
 		v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the V3D developers to figure out the problem.");
-		return 1;
+		return false;
 	}
 
 #endif
