@@ -83,7 +83,7 @@ template<class T> double markerRadius(T*** &inimg3d, V3DLONG * sz, ImageMarker &
 	return ir;
 }
 
-template<class T> bool get_initial_two_directions()
+template<class T> bool get_initial_two_directions(T*** inimg3d, V3DLONG * &sz, ImageMarker &marker, ImageMarker &marker1, ImageMarker &marker2)
 {
 }
 

@@ -13,7 +13,7 @@
 #include "img_threshold.h"
 #include "img_center.h"
 #include "img_sampling.h"
-#include "img_segment.cpp"
+#include "img_segment.h"
 #include "img_operate.h"
 #include "dist_transform.h"
 #include "neuron_tracing.h"
