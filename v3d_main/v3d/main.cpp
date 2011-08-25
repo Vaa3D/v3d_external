@@ -41,6 +41,7 @@ Last update: 2008-04-25: try to add command line based utilities
 Last update: 2010-04-12: add a global try-catch to catch all exceptions
 Last update: 2010-11-19: change some of the help info 
 Last update: 2011-04-19: fix some potential problem of null mainWin pointer 
+Last update: 2011-08-25: remove some uncalled old code 
  
 ****************************************************************************/
 
@@ -75,33 +76,6 @@ V3dApplication* V3dApplication::theApp;
 
 void printHelp_v3d()
 {
-	//printf("\nV3D: a 3D image visualization and processing tool developed by Hanchuan Peng and colleagues.\n");
-	//printf("\nUsage: v3d -h -M moduleCode [all other options specific to different modules]\n");
-	//printf("\t -h/H         help information. \n");
-	//printf("\t -M module    a string indicate which module will be used for processing. \n");
-	//printf("\t Available/future modules/codes (no difference for capital): \n");
-	//printf("\t   ALIGN      3D image elastic registration for objects like brains.\n");
-	//printf("\t   BLEND      3D image blending.\n");
-	//printf("\t   CROP       3D image cropping.\n");
-	//printf("\t   LANDMARK   operation on the landmark files.\n");
-	//printf("\t   MASK       3D image masking.\n");
-	//printf("\t   RESAMPLE   3D image resampling (reslicing).\n");
-	//printf("\t   ROT        3D image rotation.\n");
-	//printf("\t   SAVEAS     3D image file format conversion.\n");
-	//printf("\t   SEG        3D image segmentation for spherical objects (e.g. cells, nuclei).\n");
-	//printf("\t   STITCH     3D image stitching.\n");
-	//printf("\t   STRAIGHT   3D image straightening (e.g. for C. elegans worm body).\n");
-	//printf("\t   TRACE      3D image tracing (e.g. for neurons).\n");
-
-	//printf("\n");
-	//printHelp_align();
-
-	//printf("\n");
-	//printHelp_straight();
-
-	//printf("\n");
-	//printHelp_trace();
-
 	cout<<endl<<"V3D: a 3D image visualization and analysis platform developed by Hanchuan Peng and colleagues."<<endl;
 	cout<<endl<<"Usage: v3d -h -M moduleCode [all other options specific to different modules]"<<endl;
 	
@@ -121,93 +95,10 @@ void printHelp_v3d()
 	return;
 }
 
-/*
-void printHelp_align()
-{
-	printf("\nUsage: v3d -M ALIGN -t <rawImgFile_template/target> -s <rawImgFile_subject> -o <rawImgFile_warped_subject> -c <channalNo_reference> -w <warp_type> -n <nloop>\n");
-	printf("\t -t <rawImgFile_template/target>    .raw/.tif file containing 3D template/target stack to which a subject image will be warped/mapped. \n");
-	printf("\t -s <rawImgFile_subject>            .raw/.tif file containing 3D subject which will deform/warp to best appriximate the geometry of the template/target. \n");
-	printf("\t -o <rawImgFile_warped_subject>     .raw/.tif file containing warped result stack.\n");
-	printf("\t -F <rawImgFile_DF_file>            .raw file (4-byte float) containing the displacement field (DF), chanel 0, 1, 2 for sx, sy, ans sz in terms of pixels.\n");
-	printf("\t                                    Note: specify -t will prohibit -F.\n");
-	printf("\t -L <landmark_file_target>          a plain text csv file containing landmarks of only the target_pos (if -w 9).\n");
-	printf("\t -l <landmark_file_subject>         a plain text csv file containing landmarks of only the subject_pos (if -w 9). If un-specified, then assume -w 6\n");
-	printf("\t [-C]                               the ID of the reference channel of the target image (default 0) which is used in computing warping. \n");
-	printf("\t [-c]                               the ID of the reference channel of the subject image (default 0) which is used in computing warping. All other channels will use the same warp.\n");
-	printf("\t [-w]                               the type of warp, 0 -- global, 1 -- local (without global), and 2 -- local (with global), 6-target landmark in file. 9 - landmark pairs in file. \n");
-	printf("\t [-n]                               number of loops of global/local estimation. \n");
-	printf("\t [-m]                               number of loops of local smoothing. \n");
-	printf("\t [-z]                               minimal xy size in the pyrimid (e.g. 64 or 32). \n");
-	printf("\t [-r]                               the half window size in defining the local block (e.g. 5 means a 11x11 block, and 3 means a 7x7 block). \n");
-	printf("\t [-X]                               target image: X/Y direction pixel size (resolution) in microns. Also assume the X and Y pixel size are always the same. \n");
-	printf("\t [-Z]                               target image: Z direction resolution in microns. \n");
-	printf("\t [-U]                               subject image: X/Y direction pixel size (resolution) in microns. Also assume the X and Y pixel size are always the same. \n");
-	printf("\t [-V]                               subject image: Z direction resolution in microns. \n");
-	printf("\t [-B]                               XY plane size of image mapping (default is 512, can be 1024, 2048, or 256, - note: if use 1024 and above, should use the cluster node with big memory). \n");
-	printf("\t [-e]                               multiplication factor for control points in an existing landmark file (e.g. if image size is 1024, and existing landmarks are defined using 512 image, then use -e 2. Default is 1.). \n");
-	printf("\t \n");    
-	printf("\t [-T]                               only convert the file format of the -s file to the -o file (if they have the same suffixes, then just a save as). \n");
-	printf("\t \n");
-	printf("\t [-v]                               verbose printing enabled. \n");
-	printf("\t [-h]                               print this message.\n");
-	return;
-}
-
-void printHelp_straight()
-{
-}
-
-void printHelp_trace()
-{
-}
-*/
-
 int main(int argc, char **argv)
 {
 
 #ifdef COMPILE_TO_COMMANDLINE
-	//string s1, s2;
-	//s1 = argv[1];
-	//if (s1=="-h" || s1=="-H")
-	//{
-	//	if (argc<=2)
-	//	{
-	//		printHelp_v3d();
-	//		return 0;
-	//	}
-	//	else
-	//	{
-	//		s2 = argv[2];
-	//		if (s2=="ALIGN") {return 0;}
-	//		else if (s2=="BLEND") {return 0;}
-	//		else if (s2=="CROP") {return 0;}
-	//		else if (s2=="LANDMARK") {return 0;}
-	//		else if (s2=="MASK") {return 0;}
-	//		else if (s2=="RESAMPLE") {return 0;}
-	//		else if (s2=="ROT") {return 0;}
-	//		else if (s2=="SAVEAS") {return 0;}
-	//		else if (s2=="SEG") {return 0;}
-	//		else if (s2=="STITCH") {return 0;}
-	//		else if (s2=="STRAIGHT") {return 0;}
-	//		else if (s2=="TRACE") {return 0;}
-	//		else
-	//		{
-	//			printf("Your module code is illegal. Please follow the instruction of the help page below.\n\n");
-	//			printHelp_v3d();
-	//			return 1;
-	//		}
-	//	}
-	//}
-	//else if (s1=="-M") //must be capital
-	//{
-	//	return 0;
-	//}
-	//else
-	//{
-	//	printf("Your command line input is illegal. Please follow the instruction of the help page below.\n\n");
-	//	printHelp_v3d();
-	//	return 1;
-	//}
 
 	CLP parser;
 
