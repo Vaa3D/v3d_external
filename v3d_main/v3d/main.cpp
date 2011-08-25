@@ -61,7 +61,6 @@ Last update: 2011-04-19: fix some potential problem of null mainWin pointer
 using namespace std;
 
 #include "v3d_core.h"
-//#include "idrawmain.h"
 
 #include "v3d_commandlineparser.h"
 #include "v3d_version_info.h"
@@ -110,7 +109,7 @@ void printHelp_v3d()
 
 	cout<<"    -i <file>                    open single or multiple image (.tif/.tiff, .lsm, .mrc, .raw/.v3draw) / object (.ano, .apo, .swc, .marker) files"<<endl;
     cout<<"    -o <file>                    indicates single or multiple outputs"<<endl;
-	cout<<"    -x <plugin_dll_full_path>    a string indicates the full path of a dll (for a plugin) to be launched."<<endl;
+	cout<<"    -x <plugin_dll_full_path or unique partial path>    a string indicates the full path or a unique partial path of a dll (for a plugin) to be launched."<<endl;
 	cout<<"    -m <menu_name>               a string indicates which menu of a plugin will be called."<<endl;
     cout<<"    -f <function_name>           a string indicates which function of a plugin will be called."<<endl;
     cout<<"    -p <parameters>              a string indicates parameters that plugin function use"<<endl;
@@ -122,6 +121,7 @@ void printHelp_v3d()
 	return;
 }
 
+/*
 void printHelp_align()
 {
 	printf("\nUsage: v3d -M ALIGN -t <rawImgFile_template/target> -s <rawImgFile_subject> -o <rawImgFile_warped_subject> -c <channalNo_reference> -w <warp_type> -n <nloop>\n");
@@ -160,6 +160,7 @@ void printHelp_straight()
 void printHelp_trace()
 {
 }
+*/
 
 int main(int argc, char **argv)
 {
