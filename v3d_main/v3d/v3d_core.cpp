@@ -4144,7 +4144,7 @@ void XFormWidget::setOpenFileName()
     QString tmp = QFileDialog::getOpenFileName(this,
 											   tr("Select a stack image file to open ... "),
 											   openFileNameLabel,
-											   tr("Hanchuan's Raw image stack (*.raw);TIFF stacks (*.tif; *.tiff);All Files (*)"));
+											   tr("V3D's Raw image stack (*.v3draw; *.raw);TIFF stacks (*.tif; *.tiff);All Files (*)"));
 	if (!tmp.isEmpty()) //note that I used isEmpty() instead of isNull, although seems the Cancel operation will return a null string. phc 060422
 	{
 		openFileNameLabel = tmp;
@@ -4306,8 +4306,8 @@ bool XFormWidget::saveData()
 	QString outputFile = QFileDialog::getSaveFileName(0,
 													  "Choose a filename to save under",
 													  //"./",
-													  QString(openFileNameLabel)+".tif",
-													  "Save file format (*.tif *.raw)");
+													  QString(openFileNameLabel)+".v3draw",
+													  "Save file format (*.tif *.v3draw *.raw)");
 
 	while (outputFile.isEmpty()) //note that I used isEmpty() instead of isNull, although seems the Cancel operation will return a null string. phc 060422
 	{
@@ -4318,7 +4318,7 @@ bool XFormWidget::saveData()
 		outputFile = QFileDialog::getSaveFileName(0,
 												  "Choose a filename to save under",
 												  "./",
-												  "Save file format (*.tif *.raw)");
+												  "Save file format (*.tif *.v3draw *.raw)");
 	}
 
 	saveFile(outputFile);
