@@ -193,11 +193,17 @@ void CompartmentMapWidget::switchCompartment(int num)
     ((Renderer_gl1 *)renderer)->setListLabelSurf(listLabelSurf);
 
     update();
+
+    // test codes
+    emit viscomp3dview(listLabelSurf);
 }
 
 void CompartmentMapWidget::setComboBox(CompartmentMapComboBox *compartmentComboBox)
 {
     pCompartmentComboBox = compartmentComboBox;
+
+    QScrollBar *comboScrollBar = new QScrollBar(this);
+    pCompartmentComboBox->view()->setVerticalScrollBar(comboScrollBar);
 
     //QString styleSheet = "QComboBox QListView{color:black; background-color:white; selection-color:yellow; selection-background-color:blue;}";
     //pCompartmentComboBox->setStyleSheet(styleSheet);

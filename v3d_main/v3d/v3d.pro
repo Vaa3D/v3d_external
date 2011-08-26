@@ -148,7 +148,7 @@ CONFIG += warn_off  # only work for complier
 CONFIG += thread
 
 #CONFIG += console
-#DEFINES += __v3dwebservice__
+DEFINES += __NAWEBSERVICE__
 
 # Flags for gsoap (web services)
 QMAKE_CXXFLAGS += -DWITH_NONAMESPACES

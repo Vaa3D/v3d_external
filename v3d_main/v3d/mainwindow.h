@@ -67,6 +67,12 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3d_commandlineparser.h"
 #include "pluginfunchandler.h"
 
+#ifdef __V3DWSDEVELOP__
+#include "../webservice/src/v3dwebservice.hpp" // YuY March-16-2011
+class V3DWebService; //110315 YuY
+class soappara; //110315 YuY
+#endif
+
 class V3d_PluginLoader;
 class Image4DSimple;
 class My4DImage;
@@ -483,6 +489,21 @@ private:
 	// Mode
 	QAction * procModeDefault;
 	QAction * procModeNeuronAnnotator;
+    
+#if defined(__V3DWSDEVELOP__)
+private:
+	soappara *pSoapPara;
+	V3DWebService *v3dws;
+	
+public slots:
+	void webserviceResponse();
+	void initWebService(V3DWebService *pws);
+	void quitWebService(V3DWebService *pws);
+	void setSoapPara(soappara *pSoapParaInput);
+    
+	void do3dfunc();
+	void switch3dviewercontrol(V3dR_MainWindow *existing_3dviewer);
+#endif
 	
 public: //for image processing, some of the parameters should be globally set
 	//080822

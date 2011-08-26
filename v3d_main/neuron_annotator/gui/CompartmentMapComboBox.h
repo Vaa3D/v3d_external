@@ -25,6 +25,7 @@ public:
     
 private:
     QString m_DisplayText;
+    int indexSelected;
 };
 
 

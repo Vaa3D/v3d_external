@@ -271,6 +271,15 @@ MainWindow::MainWindow()
     readSettings();
 
     setWindowTitle(tr("V3D"));
+    
+#if defined(__V3DWSDEVELOP__)
+    
+	v3dws = new V3DWebService(9125); //20110309 YuY
+	initWebService(v3dws);
+    
+	connect(v3dws, SIGNAL(webserviceRequest()), this, SLOT(webserviceResponse()), Qt::QueuedConnection); // Qt::AutoConnection
+    
+#endif
 
 #if COMPILE_TARGET_LEVEL == 0
 	v3d_Lite_info();

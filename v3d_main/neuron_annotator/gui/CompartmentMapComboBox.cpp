@@ -74,6 +74,8 @@ CompartmentMapComboBox::CompartmentMapComboBox(QWidget *widget ): QComboBox(widg
     
     // defualt
     view()->setAlternatingRowColors(true);
+    indexSelected = -1; // no selection
+
 }
 
 
@@ -85,12 +87,26 @@ bool CompartmentMapComboBox::eventFilter(QObject *object, QEvent *event)
     if(object==view()->viewport())
     {
         QMouseEvent *m = static_cast<QMouseEvent *>(event);
+
         if(event->type() == QEvent::MouseButtonRelease
-                && view()->rect().contains(m->pos())
-                && view()->currentIndex().isValid()
-                && (view()->currentIndex().flags() & Qt::ItemIsEnabled))
+           && view()->rect().contains(m->pos())
+           && view()->currentIndex().isValid()
+           && (view()->currentIndex().flags() & Qt::ItemIsEnabled)
+           && m->button() == Qt::LeftButton)
         {
-            emit currentIndexChanged(view()->currentIndex().row());
+            indexSelected = view()->currentIndex().row();
+        }
+
+        if(event->type() == QEvent::MouseButtonRelease
+           && view()->rect().contains(m->pos())
+           && view()->currentIndex().isValid()
+           && (view()->currentIndex().flags() & Qt::ItemIsEnabled)
+           && m->button() == Qt::LeftButton)
+        {
+            if(view()->currentIndex().row() == indexSelected)
+            {
+                emit currentIndexChanged(view()->currentIndex().row());
+            }
             return true;
         }
     }

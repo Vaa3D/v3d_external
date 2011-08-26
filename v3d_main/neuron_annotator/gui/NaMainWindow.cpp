@@ -25,7 +25,10 @@
 #include "../NeuronSelector.h"
 #include "FragmentGalleryWidget.h"
 #include "AnnotationWidget.h"
+
+#ifdef __NAWEBSERVICE__
 #include "../../webservice/impl/ConsoleObserverServiceImpl.cpp"
+#endif
 
 using namespace std;
 
@@ -105,9 +108,11 @@ NaMainWindow::NaMainWindow()
     // visualize compartment map
     //QDockWidget *dock = new QDockWidget(tr("Compartment Map"), this);
     //dock->setWidget( ui.compartmentMapWidget);
+    qRegisterMetaType<QList<LabelSurf> >("QList<LabelSurf>");
 
     ui.compartmentMapWidget->setComboBox(ui.compartmentMapComboBox);
     connect(ui.compartmentMapComboBox, SIGNAL(currentIndexChanged(int)), ui.compartmentMapWidget, SLOT(switchCompartment(int)));
+    //connect(ui.compartmentMapWidget, SIGNAL(viscomp3dview(QList<LabelSurf>)), (Renderer_gl1*)(ui.v3dr_glwidget->getRenderer()), SLOT(setListLabelSurf(QList<LabelSurf>))); // vis compartments in Na3Dviewer
     
     // Wire up MIP viewer
     // Status bar message
@@ -238,6 +243,8 @@ NaMainWindow::NaMainWindow()
     qRegisterMetaType< QList<int> >("QList<int>");
 
     // Start observing the console
+    
+#ifdef __NAWEBSERVICE__
 
     consoleObserver = new ConsoleObserver(this);
     connect(consoleObserver, SIGNAL(openMulticolorImageStack(QString)), this, SLOT(openMulticolorImageStack(QString)));
@@ -254,6 +261,9 @@ NaMainWindow::NaMainWindow()
     // Load the current ontology
 
     consoleObserver->loadCurrentOntology();
+    
+#endif
+
 }
 
 void NaMainWindow::onViewerChanged(int viewerIndex) {

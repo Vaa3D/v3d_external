@@ -21,6 +21,9 @@ public:
     void setComboBox(CompartmentMapComboBox *compartmentComboBox);
     void setCurrentIndex(int row, bool flag);
 
+signals:
+    void viscomp3dview(const QList <LabelSurf>);
+
 public slots:
     void switchCompartment(int num);
 
