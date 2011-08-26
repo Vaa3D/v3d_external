@@ -26,13 +26,7 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     bShowBoundingBox = false;
     bShowBoundingBox2 = false;
 
-    // Using compressed textures makes the transitions between texture sets much worse looking.
-    // especially at high zoom levels.  So turn off compression.
-    // On the other hand, uncompressed textures seem to cause some kind of swapping, so compress...
-    // tryTexCompress = 0;
-
-    setRenderTextureLast(true);
-
+    setRenderTextureLast(true); // Everyone draws opaque geometry first.  Why is this not the default?
 
     loadObj(); // create display lists for markers
     loadShader(); // create color map for fast gamma

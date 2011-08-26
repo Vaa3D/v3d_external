@@ -361,7 +361,18 @@ void NaMainWindow::setZRange(int minZ, int maxZ) {
     ui.ZSlice_spinBox->setMinimum(minZ);
 }
 
-void NaMainWindow::handleCoordinatedCloseEvent(QCloseEvent *e) {
+void NaMainWindow::handleCoordinatedCloseEvent(QCloseEvent *e)
+{
+    if (isVisible())
+    {
+        // Remember window size for next time.
+        // These settings affect both NaMainWindow and classic V3D MainWindows.  So only use
+        // NaMainWindow settings if the NaMainWindow is visible.
+        qDebug() << "Saving NaMainWindow size and position";
+        QSettings settings("HHMI", "V3D");
+        settings.setValue("pos", pos());
+        settings.setValue("size", size());
+    }
     e->accept();
 }
 
