@@ -51,7 +51,7 @@ FFTWCOMPILE="NO"            # default do not compile libfftw
 V3DPLUGINSCOMPILE="NO"      # default do not compile v3d plugins
 NEWMATCOMPILE="NO"          # default do not compile newmat
 MYLIBCOMPILE="NO"           # default do not comple mylibtiff
-SKIPV3DPLUGINS="NO"         # default do not skip building plugins
+SKIPV3DPLUGINS="YES"         # default do not skip building plugins
 SKIPV3DAPP="NO"         	# default do not skip running v3d.app
 
 ARG_LIB=
@@ -356,15 +356,15 @@ fi
 
 #now automatically execute v3d
 
-if [ $DOIT == "YES" ] && [ $SKIPV3DAPP == "NO" ]; then
-  if [ $SYSTEMBITS == "32" ]; then
-    open v3d/v3d.app &
+#if [ $DOIT == "YES" ] && [ $SKIPV3DAPP == "NO" ]; then
+#  if [ $SYSTEMBITS == "32" ]; then
+#    open v3d/v3d.app &
 #    open v3d/v3d &
-  fi
-  if [ $SYSTEMBITS == "64" ]; then
-    open v3d/v3d64.app &
+#  fi
+#  if [ $SYSTEMBITS == "64" ]; then
+#    open v3d/v3d64.app &
 #    open v3d/v3d64 &
-  fi
-fi
+#  fi
+#fi
 
 

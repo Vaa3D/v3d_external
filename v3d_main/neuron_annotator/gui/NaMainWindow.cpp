@@ -24,6 +24,8 @@
 #include "../../cell_counter/CellCounter3D.h"
 #include "../NeuronSelector.h"
 #include "FragmentGalleryWidget.h"
+#include "AnnotationWidget.h"
+#include "../../webservice/impl/ConsoleObserverServiceImpl.cpp"
 
 using namespace std;
 
@@ -68,6 +70,7 @@ NaMainWindow::NaMainWindow()
     : nutateThread(NULL), statusProgressBar(NULL)
 {
     ui.setupUi(this);
+
     //QMetaObject::connectSlotsByName(this); This is apparently already called by setupUi, so calling it again creates repeat trigger events
     annotationSession=0;
 
@@ -233,6 +236,24 @@ NaMainWindow::NaMainWindow()
 
     // Allow cross-thread signals/slots that pass QList<int>
     qRegisterMetaType< QList<int> >("QList<int>");
+
+    // Start observing the console
+
+    consoleObserver = new ConsoleObserver(this);
+    connect(consoleObserver, SIGNAL(openMulticolorImageStack(QString)), this, SLOT(openMulticolorImageStack(QString)));
+    connect(consoleObserver, SIGNAL(openOntology(Entity*)), ui.annotationFrame, SLOT(setOntology(Entity*)));
+
+    consoleObserverService = new obs::ConsoleObserverServiceImpl();
+    connect(consoleObserverService, SIGNAL(ontologySelected(long)), consoleObserver, SLOT(ontologySelected(long)));
+    connect(consoleObserverService, SIGNAL(entitySelected(long)), consoleObserver, SLOT(entitySelected(long)));
+    connect(consoleObserverService, SIGNAL(entityViewRequested(long)), consoleObserver, SLOT(entityViewRequested(long)));
+    connect(consoleObserverService, SIGNAL(annotationsChanged(long)), consoleObserver, SLOT(annotationsChanged(long)));
+    consoleObserverService->start(QThread::NormalPriority);
+    consoleObserverService->registerWithConsole();
+
+    // Load the current ontology
+
+    consoleObserver->loadCurrentOntology();
 }
 
 void NaMainWindow::onViewerChanged(int viewerIndex) {
@@ -781,6 +802,10 @@ bool NaMainWindow::closeAnnotationSession() {
         delete annotationSession;
     }
     return true;
+}
+
+AnnotationSession* NaMainWindow::getAnnotationSession() const {
+    return annotationSession;
 }
 
 void NaMainWindow::updateOverlayGallery()

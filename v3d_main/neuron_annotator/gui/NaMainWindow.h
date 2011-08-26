@@ -11,6 +11,9 @@
 #include "../data_model/NeuronSelectionModel.h"
 #include "../ExportFile.h"
 #include "../data_model/NeuronSelectionModel.h"
+#include "../../webservice/impl/ConsoleObserverServiceImpl.h"
+#include "../../webservice/console/cdsConsoleDataServiceProxy.h"
+#include "../utility/ConsoleObserver.h"
 
 class NeuronSelector;
 
@@ -34,7 +37,6 @@ protected:
     qreal deltaAngle;
     Rotation3D rot;
 };
-
 
 class OpenFileAction : public QAction
 {
@@ -80,6 +82,7 @@ public:
     void handleCoordinatedCloseEvent(QCloseEvent *event);
     bool loadAnnotationSessionFromDirectory(QDir imageInputDirectory);
     bool closeAnnotationSession();
+    AnnotationSession* getAnnotationSession() const;
 
 public slots:
     void openMulticolorImageStack(QString dirName);
@@ -124,7 +127,9 @@ private:
     QList<GalleryButton*> overlayGalleryButtonList;
     QList<GalleryButton*> neuronGalleryButtonList;
     CameraModel sharedCameraModel; // optional camera sharing
-    NutateThread * nutateThread;
+    NutateThread *nutateThread;
+    obs::ConsoleObserverServiceImpl *consoleObserverService;
+    ConsoleObserver *consoleObserver;
     NeuronSelector* neuronSelector;
     QLabel * statusProgressMessage;
     QProgressBar * statusProgressBar;

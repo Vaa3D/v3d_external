@@ -1446,7 +1446,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
      </widget>
     </item>
     <item>
-     <widget class="QFrame" name="annotationFrame">
+     <widget class="AnnotationWidget" name="annotationFrame">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
         <horstretch>0</horstretch>
@@ -1770,6 +1770,12 @@ You can also resize the box by Ctrl + left mouse click.</string>
    <class>CompartmentMapWidget</class>
    <extends>QWidget</extends>
    <header location="global">../neuron_annotator/gui/CompartmentMapWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AnnotationWidget</class>
+   <extends>QFrame</extends>
+   <header>../neuron_annotator/gui/AnnotationWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

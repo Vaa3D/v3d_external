@@ -103,7 +103,7 @@ win32 { # platform: win32-command-mingw
 	LOCAL_DIR = ../common_lib/      # c:/msys/local
 	CONFIG = $$unique(CONFIG)
 	CONFIG -= debug # for Qt-win32 which only has release install(no debug)
-	CONFIG += console
+    CONFIG += console
 LIBS += -L$$MINGW_DIR/lib \
 	-L$$LOCAL_DIR/lib_win32
 }
@@ -147,7 +147,12 @@ CONFIG += warn_off  # only work for complier
 # need Qt 4.5.0 above and reCreate Makefile, this will be automatic.
 CONFIG += thread
 
-DEFINES += __v3dwebservice__
+#CONFIG += console
+#DEFINES += __v3dwebservice__
+
+# Flags for gsoap (web services)
+QMAKE_CXXFLAGS += -DWITH_NONAMESPACES
+QMAKE_CXXFLAGS += -DWITH_PURE_VIRTUAL
 
 # Input
 HEADERS += ../basic_c_fun/mg_utilities.h \
@@ -212,6 +217,8 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/data_model/NaSharedDataModel.h \
     ../neuron_annotator/data_model/VolumeModel.h \
     ../neuron_annotator/data_model/PrivateVolumeModelData.h \
+    ../neuron_annotator/entity_model/EntityData.h \
+    ../neuron_annotator/entity_model/Entity.h \
     ../neuron_annotator/data_model/Texture2dColors.h \
     ../neuron_annotator/data_model/PrivateDataColorModel.h \
     ../neuron_annotator/gui/NaViewer.h \
@@ -236,6 +243,9 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/geometry/CameraModel.h \
     ../neuron_annotator/gui/GammaWidget.h \
     ../neuron_annotator/gui/AngleWidget.h \
+    ../neuron_annotator/gui/AnnotationWidget.h \
+    ../neuron_annotator/gui/ontology_tree/TreeItem.h \
+    ../neuron_annotator/gui/ontology_tree/TreeModel.h \
     ../neuron_annotator/gui/MouseClickManager.h \
     ../neuron_annotator/gui/BrightnessCalibrator.h \
     ../neuron_annotator/gui/ZoomSpinBox.h \
@@ -243,14 +253,22 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/gui/CompartmentMapWidget.h \
     ../neuron_annotator/gui/CompartmentMapComboBox.h \
     ../neuron_annotator/gui/FragmentGalleryWidget.h \
-	../neuron_annotator/NeuronSelector.h \
+    ../neuron_annotator/NeuronSelector.h \
     ../neuron_annotator/ExportFile.h \
-	../webservice/v3dwebservice.hpp \
-	../webservice/v3dwebserver.h \
-	../webservice/gsoap2/stdsoap2.h \
-	../webservice/soapdep/soapH.h \
-	../webservice/soapdep/soapStub.h \
-	../webservice/soapdep/soapv3dwebserverService.h \
+    ../neuron_annotator/utility/JacsUtil.h \
+    ../neuron_annotator/utility/DataThread.h \
+    ../neuron_annotator/utility/ConsoleObserver.h \
+    ../webservice/gsoap2/stdsoap2.h \
+    ../webservice/console/envH.h \
+    ../webservice/console/envStub.h \
+    ../webservice/console/cdsH.h \
+    ../webservice/console/cdsStub.h \
+    ../webservice/console/cdsConsoleDataServiceProxy.h \
+    ../webservice/console/obsH.h \
+    ../webservice/console/obsStub.h \
+    ../webservice/console/obsConsoleObserverService.h \
+    ../webservice/impl/ConsoleObserverServiceImpl.h \
+    ../webservice/impl/EntityAdapter.h \
     ../cell_counter/CellCounter3D.h \
     colormap.h \
     ChannelTable.h \
@@ -363,6 +381,8 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/data_model/NaSharedDataModel.cpp \
     ../neuron_annotator/data_model/VolumeModel.cpp \
     ../neuron_annotator/data_model/PrivateVolumeModelData.cpp \
+    ../neuron_annotator/entity_model/EntityData.cpp \
+    ../neuron_annotator/entity_model/Entity.cpp \
     ../neuron_annotator/data_model/Texture2dColors.cpp \
     ../neuron_annotator/data_model/PrivateDataColorModel.cpp \
     ../neuron_annotator/NeuronAnnotatorResultNode.cpp \
@@ -376,17 +396,27 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/gui/MouseClickManager.cpp \
     ../neuron_annotator/gui/BrightnessCalibrator.cpp \
     ../neuron_annotator/gui/AngleWidget.cpp \
+    ../neuron_annotator/gui/AnnotationWidget.cpp \
+    ../neuron_annotator/gui/ontology_tree/TreeItem.cpp \
+    ../neuron_annotator/gui/ontology_tree/TreeModel.cpp \
     ../neuron_annotator/gui/ZoomSpinBox.cpp \
     ../neuron_annotator/gui/ZoomWidget.cpp \
     ../neuron_annotator/gui/CompartmentMapWidget.cpp \
     ../neuron_annotator/gui/CompartmentMapComboBox.cpp \
     ../neuron_annotator/gui/FragmentGalleryWidget.cpp \
-	../neuron_annotator/NeuronSelector.cpp \
+    ../neuron_annotator/NeuronSelector.cpp \
     ../neuron_annotator/ExportFile.cpp \
-	../webservice/v3dwebservice.cpp \
-	../webservice/gsoap2/stdsoap2.cpp \
-	../webservice/soapdep/soapC.cpp \
-	../webservice/soapdep/soapv3dwebserverService.cpp \
+    ../neuron_annotator/utility/JacsUtil.cpp \
+    ../neuron_annotator/utility/DataThread.cpp \
+    ../neuron_annotator/utility/ConsoleObserver.cpp \
+    ../webservice/gsoap2/stdsoap2.cpp \
+    ../webservice/console/envC.cpp \
+    ../webservice/console/cdsC.cpp \
+    ../webservice/console/cdsConsoleDataServiceProxy.cpp \
+    ../webservice/console/obsC.cpp \
+    ../webservice/console/obsConsoleObserverService.cpp \
+    ../webservice/impl/ConsoleObserverServiceImpl.cpp \
+    ../webservice/impl/EntityAdapter.cpp \
     ../cell_counter/CellCounter3D.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -445,6 +475,7 @@ FORMS += landmark_property.ui \
     ../neuron_annotator/gui/NaMainWindow.ui \
     ../neuron_annotator/gui/GammaWidget.ui \
     ../neuron_annotator/gui/AngleWidget.ui \
+    ../neuron_annotator/gui/AnnotationWidget.ui \
     ../neuron_annotator/gui/ZoomWidget.ui
 
 RESOURCES += v3d.qrc

@@ -272,21 +272,6 @@ MainWindow::MainWindow()
 
     setWindowTitle(tr("V3D"));
 
-#ifdef __v3dwebservice__
-	qDebug()<<"__v3dwebservice__ defined ... ... ";
-#endif
-
-#if defined(__v3dwebservice__) || defined(__V3DWSDEVELOP__)
-
-	qDebug()<<"web service starting ...";
-
-	v3dws = new V3DWebService(9125); //20110309 YuY
-	initWebService(v3dws);
-
-	connect(v3dws, SIGNAL(webserviceRequest()), this, SLOT(webserviceResponse()), Qt::QueuedConnection); // Qt::AutoConnection
-
-#endif
-
 #if COMPILE_TARGET_LEVEL == 0
 	v3d_Lite_info();
 #endif
@@ -548,54 +533,6 @@ void MainWindow::triggerRunPlugin()
 {
 	emit imageLoaded2Plugin();
 }
-
-#ifdef __v3dwebservice__
-
-// slot function for init web service thread
-void MainWindow::initWebService(V3DWebService *pws)
-{
-	connect(pws, SIGNAL(finished()), pws, SLOT(deleteLater()));
-	pws->start();
-}
-
-// slot function for quit web service thread
-void MainWindow::quitWebService(V3DWebService *pws)
-{
-	pws->exit();
-}
-
-// slot function for passing soap parameters
-void MainWindow::setSoapPara(soappara *pSoapParaInput)
-{
-	pSoapPara = pSoapParaInput;
-}
-
-// slot function for response web service
-void MainWindow::webserviceResponse()
-{
-	qDebug()<<"web service response here ...";
-
-	this->setSoapPara(v3dws->getSoapPara());
-
-	if(pSoapPara)
-	{
-		if(string(pSoapPara->str_func) == "helloworld")
-		{
-			QMessageBox::information((QWidget *)0, QString("title: v3d web service"), QString(pSoapPara->str_message));
-		}
-		else if(string(pSoapPara->str_func) == "v3dopenfile")
-		{
-			this->loadV3DFile(pSoapPara->str_message, true, false);
-		}
-		else
-		{
-			QMessageBox::information((QWidget *)0, QString("title: v3d web service"), QString("Wrong function to invoke!"));
-		}
-	}
-
-}
-
-#endif //__v3dwebservice__
 
 void MainWindow::handleCoordinatedCloseEvent(QCloseEvent *event) {
     qDebug("***v3d: MainWindow::closeEvent");
