@@ -267,7 +267,8 @@ int main(int argc, char **argv)
 		
 	}
 
-#else
+#else  //why the following would have a pos() segment fault?? by PHC, 110825
+	
 	Q_INIT_RESOURCE(v3d);
 
 	QApplication app(argc, argv);
