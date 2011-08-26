@@ -33,8 +33,9 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
 
     setRenderTextureLast(true);
 
-    // create display lists for markers
-    loadObj();
+
+    loadObj(); // create display lists for markers
+    loadShader(); // create color map for fast gamma
 }
 
 RendererNeuronAnnotator::~RendererNeuronAnnotator() {

@@ -17,6 +17,7 @@ MipFragmentColors::MipFragmentColors(const MipFragmentData& mipFragmentDataParam
 /* slot */
 void MipFragmentColors::update()
 {
+    // Flush signal/slot queue, which can fill up when dragging gamma slider.
     SlotMerger slotMerger(statusOfUpdateSlot);
     if (! slotMerger.shouldRun()) return;
 
