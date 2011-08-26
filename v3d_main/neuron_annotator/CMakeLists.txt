@@ -6,6 +6,7 @@ include_directories(../v3d)
 include_directories(../3drenderer)
 
 QT4_WRAP_UI(NA_UI_SRCS 
+    gui/AnnotationWidget.ui
     gui/NaMainWindow.ui
     gui/GammaWidget.ui
     gui/AngleWidget.ui
@@ -15,6 +16,7 @@ QT4_WRAP_UI(NA_UI_SRCS
     ../v3d/template_matching_cellseg.ui
 )
 
+# Only headers with "Q_OBJECT" macro go here in QT4_WRAP_CPP stanza
 QT4_WRAP_CPP(NA_MOC_SRCS
     data_model/NaLockableData.h
     data_model/NaVolumeData.h
@@ -27,8 +29,10 @@ QT4_WRAP_CPP(NA_MOC_SRCS
     data_model/ZSliceColors.h
     data_model/VolumeColors.h
     data_model/Texture2DColors.h
+    data_model/NaSharedDataSignaller.h
     geometry/CameraModel.h
     gui/AngleWidget.h
+    gui/AnnotationWidget.h
     gui/CompartmentMapComboBox.h
     gui/CompartmentMapWidget.h
     gui/GalleryButton.h
@@ -43,12 +47,16 @@ QT4_WRAP_CPP(NA_MOC_SRCS
     gui/NaZStackWidget.h
     gui/FragmentGalleryWidget.h
     gui/RendererNeuronAnnotator.h
+    gui/ontology_tree/TreeModel.h
+    utility/ConsoleObserver.h
+    utility/DataThread.h
     AnnotationSession.h
     ExportFile.h
     NeuronSelector.h
+    ../webservice/impl/ConsoleObserverServiceImpl.h
 )
 
-file(GLOB NA_SRCS "*.cpp" "data_model/*.cpp" "gui/*.cpp" "geometry/*.cpp" "utility/*.cpp")
+file(GLOB NA_SRCS "*.cpp" "*/*.cpp" "gui/ontology_tree/*.cpp" "../webservice/*/*.cpp")
 
 add_library(NeuronAnnotatorLib STATIC 
     ${NA_UI_SRCS} ${NA_MOC_SRCS} ${NA_SRCS})
