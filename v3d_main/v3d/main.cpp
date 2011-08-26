@@ -45,7 +45,7 @@ Last update: 2011-08-25: remove some uncalled old code, and adjust the inconsist
  
 ****************************************************************************/
 
-#define COMPILE_TO_COMMANDLINE 1
+//#define COMPILE_TO_COMMANDLINE 1
 
 #include "v3d_compile_constraints.h"
 
@@ -283,6 +283,7 @@ int main(int argc, char **argv)
     // On Mac, allow mainWin to get QFileOpen events, such as when a tif
     // file is dragged onto the application icon.
     // CMB Nov-12-2010
+
     app.installEventFilter(mainWin);
 
 	mainWin->show();
