@@ -1,5 +1,5 @@
-#include "treemodel.h"
-#include "treeitem.h"
+#include "TreeModel.h"
+#include "TreeItem.h"
 #include "../../entity_model/Entity.h"
 #include <QtGui>
 

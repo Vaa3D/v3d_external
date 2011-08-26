@@ -1,5 +1,5 @@
 #include <QStringList>
-#include "treeitem.h"
+#include "TreeItem.h"
 
 TreeItem::TreeItem(const QList<QVariant> &data, TreeItem *parent)
 {
