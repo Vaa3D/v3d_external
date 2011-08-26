@@ -45,7 +45,7 @@ Last update: 2011-08-25: remove some uncalled old code, and adjust the inconsist
  
 ****************************************************************************/
 
-//#define COMPILE_TO_COMMANDLINE 1
+#define COMPILE_TO_COMMANDLINE 1
 
 #include "v3d_compile_constraints.h"
 
