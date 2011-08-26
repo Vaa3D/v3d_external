@@ -1446,22 +1446,17 @@ void MainWindow::atlasView()
 
 void MainWindow::save()
 {
-//	if (curFile.isEmpty())
-//		saveAs();
-//	else
-//		saveFile(curFile);
-//
+	if (activeMdiChild())
     if (activeMdiChild()->saveData())
 	{
 		setCurrentFile(activeMdiChild()->userFriendlyCurrentFile());
-        statusBar()->showMessage(tr("File saved"), 2000);
+        statusBar()->showMessage(tr("File saved [%1]").arg(activeMdiChild()->userFriendlyCurrentFile()), 2000);
 	}
 }
 
 void MainWindow::saveAs()
 {
-//    setCurrentFile(fileName);
-
+	if (activeMdiChild())
     if (activeMdiChild()->saveData())
 	{
 		setCurrentFile(activeMdiChild()->userFriendlyCurrentFile());
