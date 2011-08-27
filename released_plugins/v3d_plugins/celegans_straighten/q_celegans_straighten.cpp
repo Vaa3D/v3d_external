@@ -9,7 +9,7 @@ using namespace std;
 #include "../../v3d_main/basic_c_fun/basic_memory.cpp"
 #include "../../v3d_main/worm_straighten_c/spline_cubic.h"
 
-#include "../common/q_imresize.cpp"
+#include "../celegans_seganno/main_src/q_imresize.cpp"
 #include "q_principalskeleton_detection.h"
 
 #include "q_celegans_straighten.h"

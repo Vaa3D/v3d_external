@@ -5,7 +5,7 @@
 #include <math.h>
 #include "stackutil.h"
 
-#include "../common/q_imresize.cpp"
+#include "q_imresize.cpp"
 #include "../../v3d_main/basic_c_fun/basic_memory.cpp"//note: should not include .h file, since they are template functions
 #include "q_atlasguided_seganno.h"
 
