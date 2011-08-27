@@ -46,5 +46,5 @@ SOURCES      += main_src/plugin_atlasguided_stranno_partial.cpp
 
 TARGET        = $$qtLibraryTarget(plugin_atlasguided_stranno_partial)
 
-DESTDIR       = ../../v3d/plugins/celegans/atlasguided_seganno/ #win32 qmake couldn't handle space in path
+DESTDIR       = ../../v3d/plugins/celegans/atlasguided_seganno/ 
 

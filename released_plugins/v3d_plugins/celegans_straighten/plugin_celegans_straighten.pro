@@ -2,7 +2,7 @@
 
 TEMPLATE      = lib
 CONFIG       += plugin 
-CONFIG       += x86_64
+#CONFIG       += x86_64
 
 V3DMAINDIR = ../../../v3d_main
 
