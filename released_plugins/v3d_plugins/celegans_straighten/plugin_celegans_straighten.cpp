@@ -11,7 +11,8 @@ using namespace std;
 
 #include "../../v3d_main/worm_straighten_c/spline_cubic.h"
 #include "../../v3d_main/jba/c++/convert_type2uint8.h"
-#include "../q_skeletonbased_warp_sub2tar/q_skeletonbased_warp_sub2tar.h"
+#include "q_skeletonbased_warp_sub2tar.h"
+
 #include "q_principalskeleton_detection.h"
 #include "q_celegans_straighten.h"
 #include "q_paradialog_straighten.h"
