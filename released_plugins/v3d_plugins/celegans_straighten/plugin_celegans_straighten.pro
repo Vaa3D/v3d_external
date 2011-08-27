@@ -1,4 +1,4 @@
-#last change: by Hanchuan Peng, 2011-08-27 for porting this plugin to v3d main release folder
+#last change by Hanchuan Peng, 2011-08-27 for porting this plugin to v3d main release folder
 
 TEMPLATE      = lib
 CONFIG       += plugin 
