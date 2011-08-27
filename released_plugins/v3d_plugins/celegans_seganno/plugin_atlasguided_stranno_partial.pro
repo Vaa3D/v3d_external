@@ -14,7 +14,7 @@ INCLUDEPATH  += $$V3DMAINDIR/common_lib/include
 LIBS 	     += -L$$V3DMAINDIR/common_lib/lib -lv3dtiff
 LIBS         += -L$$V3DMAINDIR/jba/c++ -lv3dnewmat
 
-FORMS         = paradialog_stranno.ui
+FORMS         = main_src/paradialog_stranno.ui
 
 HEADERS      += $$V3DMAINDIR/basic_c_fun/v3d_message.h
 HEADERS	     += $$V3DMAINDIR/basic_c_fun/stackutil.h
@@ -39,7 +39,7 @@ SOURCES      += $$V3DMAINDIR/worm_straighten_c/spline_cubic.cpp
 SOURCES      += ../celegans_straighten/q_morphology.cpp
 SOURCES      += ../celegans_straighten/q_principalskeleton_detection.cpp
 SOURCES      += ../celegans_straighten/q_celegans_straighten.cpp
-SOURCES      += ../common/q_imresize.cpp
+SOURCES      += main_src/q_imresize.cpp
 SOURCES      += main_src/q_atlasguided_seganno.cpp
 SOURCES      += main_src/q_paradialog_stranno.cpp
 SOURCES      += main_src/plugin_atlasguided_stranno_partial.cpp
