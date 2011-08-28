@@ -33,6 +33,8 @@ void TangentPlaneWidget::update()
 	if(sender() == forward_scroller) direction = 0;
 	if(sender() == backward_scroller) direction = 1;
 
+	out_thresh_type = out_thresh_type_combo->currentIndex();
+
 	Image4DSimple * pImg4d = callback->getImage(curwin);
 	unsigned char * inimg1d = pImg4d->getRawDataAtChannel(0);
 	V3DLONG *in_sz = new V3DLONG[4]; 
@@ -45,6 +47,7 @@ void TangentPlaneWidget::update()
 	V3DLONG * out_sz = 0;
 	LocationSimple loc1 = (direction == 0)?landmarks.at(forward_id -1):landmarks.at(backward_id+1);
 	LocationSimple loc2 = (direction == 0)?landmarks.at(forward_id):landmarks.at(backward_id);
+	int marker_index = (direction == 0) ? forward_id : backward_id;
 	MyMarker marker1, marker2;
 	marker1.x = loc1.x;
 	marker1.y = loc1.y;
@@ -68,11 +71,47 @@ void TangentPlaneWidget::update()
 		return;
 	}
 
+	if(out_thresh_type == 0) out_thresh = out_thresh_spin->value();
+	else if(out_thresh_type == 1) average_threshold(out_thresh, outimg1d, out_sz);
+	else if(out_thresh_type == 2) otsu_threshold(out_thresh, outimg1d, out_sz);
+	out_thresh_spin->setValue(int(out_thresh + 0.5));
+	{
+		V3DLONG * out_sz2 = new V3DLONG[4];
+		out_sz2[0] = 2*out_sz[0] + 1;
+		out_sz2[1] = out_sz[1];
+		out_sz2[2] = out_sz[2];
+		out_sz2[3] = out_sz[3];
+		V3DLONG tol_sz2 = out_sz2[0] * out_sz2[1] * out_sz2[2] * out_sz2[3];
+		V3DLONG sz10 = out_sz[1] * out_sz[0];
+		V3DLONG sz10_2 = out_sz2[1] * out_sz2[0];
+		unsigned char* outimg1d_2 = new unsigned char[tol_sz2];
+		for(V3DLONG k = 0; k < out_sz[2]; k++)
+		{
+			for(V3DLONG j = 0; j < out_sz[1]; j++)
+			{
+				V3DLONG i = 0;
+				for(i = 0; i < out_sz[0]; i++) 
+				{
+					int ind1 = k * sz10 + j * out_sz[0] + i;
+					int ind2_1 = k * sz10_2 + j * out_sz2[0] + i;
+					int ind2_2 = k * sz10_2 + j * out_sz2[0] + i + out_sz[0] + 1;
+					outimg1d_2[ind2_1] = outimg1d[ind1];
+					outimg1d_2[ind2_2] = outimg1d[ind1] >= out_thresh ? 255 : 0;
+				}
+				outimg1d_2[k * sz10_2 + j * out_sz2[0] + out_sz[0]] = 0;
+			}
+		}
+		if(outimg1d){delete outimg1d; outimg1d = 0;}
+		if(out_sz){delete out_sz; out_sz = 0;}
+		outimg1d = outimg1d_2; out_sz = out_sz2;
+		this->setWindowTitle(tr("factor = %1 thresh = %2 thick = %3 marker = %4 out_thresh = %5").arg(radius_factor).arg(threshold).arg(plane_thick).arg(marker_index+1).arg(out_thresh));
+	}
+
+
 	Image4DSimple * newImg4d = new Image4DSimple();//callback->getImage(tangent_win);
 	newImg4d->setData(outimg1d, out_sz[0], out_sz[1], out_sz[2], out_sz[3], V3D_UINT8);
 	callback->setImage(tangent_win, newImg4d);
-	int marker_index = (direction == 0) ? forward_id : backward_id;
-	callback->setImageName(tangent_win,tr("factor = %1 thresh = %2 thick = %3 marker = %4").arg(radius_factor).arg(threshold).arg(plane_thick).arg(marker_index+1));
+	callback->setImageName(tangent_win,tr("factor = %1 thresh = %2 thick = %3 marker = %4 out_thresh = %5").arg(radius_factor).arg(threshold).arg(plane_thick).arg(marker_index+1).arg(out_thresh));
 	callback->updateImageWindow(tangent_win);
 	if(view3d_checker->isChecked())
 	{

@@ -28,6 +28,11 @@ public:
 		centroid_method_label = new QLabel(tr("centroid method"));
 
 		view3d_checker = new QCheckBox("open view3d");
+		out_thresh_type_label = new QLabel(tr("out thresh"));
+		out_thresh_type_combo = new QComboBox();
+		out_thresh_type_combo->addItem("manually");
+		out_thresh_type_combo->addItem("average");
+		out_thresh_type_combo->addItem("otsu");
 
 		factor_scroller = new QScrollBar(Qt::Horizontal);
 		factor_scroller->setMaximum(100);
@@ -72,6 +77,11 @@ public:
 		centroid_method_combo->addItem("center of mass");
 		centroid_method_combo->addItem("local distance transformation");
 
+		out_thresh_spin = new QSpinBox();
+		out_thresh_spin->setMaximum(255);
+		out_thresh_spin->setMinimum(0);
+		out_thresh_spin->setValue(0);
+
 		gridLayout = new QGridLayout();
 
 		gridLayout->addWidget(factor_label,0,0);
@@ -92,7 +102,10 @@ public:
 		gridLayout->addWidget(centroid_method_label,5,0);
 		gridLayout->addWidget(centroid_method_combo,5,1,1,5);
 		gridLayout->addWidget(view3d_checker,5,6);
-		gridLayout->addWidget(estimated_label,6,0,1,7);
+		gridLayout->addWidget(estimated_label,6,0,1,2);
+		gridLayout->addWidget(out_thresh_type_label,6,3);
+		gridLayout->addWidget(out_thresh_type_combo,6,4);
+		gridLayout->addWidget(out_thresh_spin,6,5);
 
 		connect(factor_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(thresh_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
@@ -100,6 +113,8 @@ public:
 		connect(forward_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(backward_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(view3d_checker, SIGNAL(stateChanged(int)), this, SLOT(update()));
+		connect(out_thresh_type_combo, SIGNAL(valueChanged(int)), this, SLOT(update()));
+		connect(out_thresh_spin, SIGNAL(valueChanged(int)), this, SLOT(update()));
 
 		connect(factor_scroller,SIGNAL(valueChanged(int)), factor_spin,SLOT(setValue(int)));
 		connect(factor_spin,SIGNAL(valueChanged(int)), factor_scroller,SLOT(setValue(int)));
@@ -137,6 +152,8 @@ public:
 	int forward_id;
 	int backward_id;
 	bool direction;
+	int out_thresh_type;
+	double out_thresh;
 	LandmarkList landmarks;
 
 	QLabel * factor_label;
@@ -146,6 +163,7 @@ public:
 	QLabel * backward_label;
 	QLabel * estimated_label;
 	QLabel * centroid_method_label;
+	QLabel * out_thresh_type_label;
 
 	QScrollBar * factor_scroller;
 	QScrollBar * thresh_scroller;
@@ -161,6 +179,8 @@ public:
 	QComboBox * centroid_method_combo;
 	
 	QCheckBox * view3d_checker;
+	QComboBox * out_thresh_type_combo;
+	QSpinBox * out_thresh_spin;
 
 	QGridLayout * gridLayout;
 
@@ -296,8 +316,9 @@ public:
 	int marker2_id;
 	bool direction;
 	bool is_display_temp_points;
-	LandmarkList landmarks;
 	int centroid_method_id;
+	int out_thresh_type;
+	LandmarkList landmarks;
 
 	QLabel * factor_label;
 	QLabel * thresh_label;
