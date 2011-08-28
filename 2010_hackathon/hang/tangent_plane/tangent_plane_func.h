@@ -8,7 +8,8 @@
 
 #include <v3d_interface.h>
 
-int start_program(V3DPluginCallback2 &callback, QWidget *parent);
+int get_tangent_plane(V3DPluginCallback2 &callback, QWidget *parent);
+int tracking_without_branch(V3DPluginCallback2 &callback, QWidget *parent);
 
 #endif
 

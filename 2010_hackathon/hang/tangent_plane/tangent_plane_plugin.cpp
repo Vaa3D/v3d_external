@@ -13,15 +13,20 @@ Q_EXPORT_PLUGIN2(tangent_plane, TangentPlanePlugin);
 QStringList TangentPlanePlugin::menulist() const
 {
 	return QStringList()
-		<<tr("start program")
+		<<tr("track tangent plane")
+		<<tr("tracking without branch")
 		<<tr("about");
 }
 
 void TangentPlanePlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
-	if (menu_name == tr("start program"))
+	if (menu_name == tr("track tangent plane"))
 	{
-		start_program(callback,parent);
+		get_tangent_plane(callback,parent);
+	}
+	else if(menu_name == tr("tracking without branch"))
+	{
+		tracking_without_branch(callback,parent);
 	}
 	else
 	{

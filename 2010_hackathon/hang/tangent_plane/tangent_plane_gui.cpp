@@ -1,7 +1,11 @@
 #include "tangent_plane_gui.h"
 #include "basic_memory.cpp"
 #include "neuron_tracing.h"
-
+#include "basic_surf_objs.cpp"
+#include <string>
+#include <iostream>
+#include <sstream>
+using namespace std;
 void TangentPlaneWidget::update()
 {
 	v3dhandleList win_list = callback->getImageWindowList();
@@ -82,3 +86,89 @@ void TangentPlaneWidget::update()
 	   */
 }
 
+void TrackingWithoutBranchWidget::update()
+{
+	v3dhandleList win_list = callback->getImageWindowList();
+	bool is_curwin_exist = false;
+	for(int i = 0; i < win_list.size(); i++) 
+	{
+		if(curwin == win_list[i]){is_curwin_exist = true; break;}
+	}
+	if(!is_curwin_exist)
+	{
+		this->close();
+		return;
+	}
+
+	landmarks = callback->getLandmark(curwin);
+	marker1_scroller->setMaximum(landmarks.size());
+	marker2_scroller->setMaximum(landmarks.size());
+	marker1_label = new QLabel(tr("marker1 (1 ~ %1)").arg(landmarks.size()));
+	marker2_label = new QLabel(tr("marker2 (1 ~ %1)").arg(landmarks.size()));
+
+	radius_factor =  factor_scroller->value();
+	threshold =  thresh_scroller->value();
+	plane_thick =  thick_scroller->value();
+	marker1_id =  marker1_scroller->value()-1;
+	marker2_id =  marker2_scroller->value()-1;
+	if(marker1_id == marker2_id) return;
+	if(sender() == forward_checker) backward_checker->setChecked(!forward_checker->isChecked());
+	else if(sender() == backward_checker) forward_checker->setChecked(!backward_checker->isChecked());
+	direction = !forward_checker->isChecked(); // 0 forward, 1 backward
+
+	Image4DSimple * pImg4d = callback->getImage(curwin);
+	unsigned char * inimg1d = pImg4d->getRawDataAtChannel(0);
+	V3DLONG *in_sz = new V3DLONG[4]; 
+	in_sz[0] = pImg4d->getXDim();
+	in_sz[1] = pImg4d->getYDim();
+	in_sz[2] = pImg4d->getZDim();
+	in_sz[3] = 1;
+
+	unsigned char * outimg1d = 0;
+	V3DLONG * out_sz = 0;
+	LocationSimple loc1 = landmarks.at(marker1_id - 1);
+	LocationSimple loc2 = landmarks.at(marker2_id - 1);
+	MyMarker * root_marker = new MyMarker();
+	MyMarker * marker1 = new MyMarker();
+	MyMarker * marker2 = new MyMarker();
+	marker1->x = loc1.x;
+	marker1->y = loc1.y;
+	marker1->z = loc1.z;
+	marker1->radius = loc1.radius;
+	marker1->parent = root_marker;
+
+	marker2->x = loc2.x;
+	marker2->y = loc2.y;
+	marker2->z = loc2.z;
+	marker2->radius = loc2.radius;
+	marker2->parent = root_marker;
+
+	root_marker->x = (marker1->x + marker2->x)/2.0; root_marker->y = (marker1->y + marker2->y)/2.0;
+	root_marker->z = (marker1->z + marker2->z)/2.0; root_marker->radius = (marker1->radius + marker2->radius)/2.0;
+
+	vector<MyMarker*> allmarkers;
+	allmarkers.push_back(root_marker); allmarkers.push_back(marker1); allmarkers.push_back(marker2);
+
+	if(!neuron_tracing_method_no_branch(allmarkers, inimg1d, in_sz, marker1, marker2, radius_factor, plane_thick, threshold))
+	{
+		QMessageBox::information(0,"","unable to do tracking without branch");
+		return;
+	}
+
+	ostringstream oss; 
+	if(direction == 0) oss<<"forward_tracing_marker"<<marker1_id<<"_marker"<<marker2_id<<".swc"; 
+	else oss<<"backward_tracing_marker"<<marker1_id<<"_marker"<<marker2_id<<".swc"; 
+	string out_marker_file = oss.str();
+
+	if(!saveSWC_file(out_marker_file, allmarkers))return;
+	NeuronTree nt = readSWC_file(out_marker_file.c_str());
+
+	callback->setImageName(curwin,tr("factor = %1 thresh = %2 thick = %3 marker = (%4,%5)").arg(radius_factor).arg(threshold).arg(plane_thick).arg(marker1_id).arg(marker2_id));
+	callback->setSWC(curwin, nt);
+	callback->updateImageWindow(curwin);
+	if(view3d_checker->isChecked())
+	{
+		callback->open3DWindow(curwin);
+		callback->pushObjectIn3DWindow(curwin);
+	}
+}
