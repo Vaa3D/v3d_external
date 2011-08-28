@@ -194,6 +194,7 @@ public:
 		direction_label = new QLabel(tr("trace direction"));
 
 		view3d_checker = new QCheckBox("open view3d");
+		refresh_button = new QPushButton("refresh");
 
 		factor_scroller = new QScrollBar(Qt::Horizontal);
 		factor_scroller->setMaximum(100);
@@ -205,14 +206,10 @@ public:
 		thick_scroller = new QScrollBar(Qt::Horizontal);
 		thick_scroller->setMaximum(100);
 		thick_scroller->setValue(0);
-		marker1_scroller = new QScrollBar(Qt::Horizontal);
-		marker1_scroller->setMaximum(landmarks.size());
-		marker1_scroller->setMinimum(1);
-		marker1_scroller->setValue(1);
-		marker2_scroller = new QScrollBar(Qt::Horizontal);
-		marker2_scroller->setMaximum(landmarks.size());
-		marker2_scroller->setMinimum(1);
-		marker2_scroller->setValue(2);
+		marker1_combo = new QComboBox();
+		for(int i = 0; i < landmarks.size(); i++) marker1_combo->addItem(tr("%1").arg(i+1));
+		marker2_combo = new QComboBox();
+		for(int i = 0; i < landmarks.size(); i++) marker2_combo->addItem(tr("%1").arg(i+1));
 
 		factor_spin = new QSpinBox();
 		factor_spin->setMaximum(100);
@@ -224,14 +221,6 @@ public:
 		thick_spin = new QSpinBox();
 		thick_spin->setMaximum(100);
 		thick_spin->setValue(0);
-		marker1_spin = new QSpinBox();
-		marker1_spin->setMaximum(landmarks.size());
-		marker1_spin->setMinimum(1);
-		marker1_spin->setValue(1);
-		marker2_spin = new QSpinBox();
-		marker2_spin->setMaximum(landmarks.size());
-		marker2_spin->setMinimum(1);
-		marker2_spin->setValue(1);
 
 		centroid_method_combo = new QComboBox();
 		centroid_method_combo->addItem("maximum intensity density");
@@ -254,21 +243,21 @@ public:
 		gridLayout->addWidget(thick_scroller,2,1,1,5);
 		gridLayout->addWidget(thick_spin,2,6);
 		gridLayout->addWidget(marker1_label,3,0);
-		gridLayout->addWidget(marker1_scroller,3,1,1,5);
-		gridLayout->addWidget(marker1_spin,3,6);
-		gridLayout->addWidget(marker2_label,4,0);
-		gridLayout->addWidget(marker2_scroller,4,1,1,5);
-		gridLayout->addWidget(marker2_spin,4,6);
-		gridLayout->addWidget(centroid_method_label,5,0);
-		gridLayout->addWidget(centroid_method_combo,5,1,1,2);
-		gridLayout->addWidget(direction_label,5,4);
-		gridLayout->addWidget(direction_combo,5,5,1,2);
-		gridLayout->addWidget(view3d_checker,6,0);
+		gridLayout->addWidget(marker1_combo,3,1,1,2);
+		gridLayout->addWidget(marker2_label,3,4);
+		gridLayout->addWidget(marker2_combo,3,5,1,2);
+		gridLayout->addWidget(centroid_method_label,4,0);
+		gridLayout->addWidget(centroid_method_combo,4,1,1,2);
+		gridLayout->addWidget(direction_label,4,4);
+		gridLayout->addWidget(direction_combo,4,5,1,2);
+		gridLayout->addWidget(view3d_checker,5,0);
+		gridLayout->addWidget(refresh_button,5,2);
 
 		connect(factor_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(thresh_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(thick_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(view3d_checker, SIGNAL(stateChanged(int)), this, SLOT(update()));
+		connect(refresh_button, SIGNAL(clicked()), this, SLOT(update()));
 
 		connect(factor_scroller,SIGNAL(valueChanged(int)), factor_spin,SLOT(setValue(int)));
 		connect(factor_spin,SIGNAL(valueChanged(int)), factor_scroller,SLOT(setValue(int)));
@@ -279,13 +268,9 @@ public:
 		connect(thick_scroller,SIGNAL(valueChanged(int)), thick_spin,SLOT(setValue(int)));
 		connect(thick_spin,SIGNAL(valueChanged(int)), thick_scroller,SLOT(setValue(int)));
 
-		connect(marker1_scroller,SIGNAL(valueChanged(int)), marker1_spin,SLOT(setValue(int)));
-		connect(marker1_spin,SIGNAL(valueChanged(int)), marker1_scroller,SLOT(setValue(int)));
-
-		connect(marker2_scroller,SIGNAL(valueChanged(int)), marker2_spin,SLOT(setValue(int)));
-		connect(marker2_spin,SIGNAL(valueChanged(int)), marker2_scroller,SLOT(setValue(int)));
-
 		connect(centroid_method_combo, SIGNAL(valueChanged(int)), this, SLOT(update()));
+		connect(marker1_combo, SIGNAL(valueChanged(int)), this, SLOT(update()));
+		connect(marker2_combo, SIGNAL(valueChanged(int)), this, SLOT(update()));
 
 		connect(direction_combo, SIGNAL(valueChanged(int)), this, SLOT(update()));
 
@@ -321,18 +306,17 @@ public:
 	QScrollBar * factor_scroller;
 	QScrollBar * thresh_scroller;
 	QScrollBar * thick_scroller;
-	QScrollBar * marker1_scroller;
-	QScrollBar * marker2_scroller;
+	QComboBox * marker1_combo;
+	QComboBox * marker2_combo;
 
 	QSpinBox * factor_spin;
 	QSpinBox * thresh_spin;
 	QSpinBox * thick_spin;
-	QSpinBox * marker1_spin;
-	QSpinBox * marker2_spin;
 	QComboBox * centroid_method_combo;
 	QComboBox * direction_combo;
 	
 	QCheckBox * view3d_checker;
+	QPushButton * refresh_button;
 
 
 	QGridLayout * gridLayout;

@@ -98,26 +98,25 @@ void TrackingWithoutBranchWidget::update()
 	landmarks = callback->getLandmark(curwin);
 	if(landmarks.size() < 2) return;
 
-	marker1_scroller->setMaximum(landmarks.size());
-	marker1_scroller->setMinimum(1);
-	marker2_scroller->setMaximum(landmarks.size());
-	marker2_scroller->setMinimum(1);
-	marker1_spin->setMaximum(landmarks.size());
-	marker1_spin->setMinimum(1);
-	marker2_spin->setMaximum(landmarks.size());
-	marker2_spin->setMinimum(1);
 	marker1_label = new QLabel(tr("marker1 (1 ~ %1)").arg(landmarks.size()));
 	marker2_label = new QLabel(tr("marker2 (1 ~ %1)").arg(landmarks.size()));
+	marker1_id =  marker1_combo->currentIndex();
+	marker2_id =  marker2_combo->currentIndex();
+	marker1_combo->clear(); marker2_combo->clear();
+	for(int i = 0; i < landmarks.size(); i++) marker1_combo->addItem(tr("%1").arg(i+1));
+	for(int i = 0; i < landmarks.size(); i++) marker2_combo->addItem(tr("%1").arg(i+1));
+	marker1_combo->setCurrentIndex(marker1_id); marker2_combo->setCurrentIndex(marker2_id);
 
 	radius_factor =  factor_scroller->value();
 	threshold =  thresh_scroller->value();
 	plane_thick =  thick_scroller->value();
-	marker1_id =  marker1_scroller->value();
-	marker2_id =  marker2_scroller->value();
-	if(marker1_id == marker2_id) return;
 
 	centroid_method_id = centroid_method_combo->currentIndex();
 	direction = direction_combo->currentIndex(); 
+
+	this->setWindowTitle(tr("Tracking without branch : factor = %1 thresh = %2 thick = %3 marker = (%4,%5) centroid_method = %6 direction = %7").arg(radius_factor).arg(threshold).arg(plane_thick).arg(marker1_id+1).arg(marker2_id+1).arg(centroid_method_id).arg(direction));
+
+	if(marker1_id == marker2_id) return;
 
 	Image4DSimple * pImg4d = callback->getImage(curwin);
 	unsigned char * inimg1d = pImg4d->getRawDataAtChannel(0);
@@ -129,8 +128,8 @@ void TrackingWithoutBranchWidget::update()
 
 	unsigned char * outimg1d = 0;
 	V3DLONG * out_sz = 0;
-	LocationSimple loc1 = landmarks.at(marker1_id - 1);
-	LocationSimple loc2 = landmarks.at(marker2_id - 1);
+	LocationSimple loc1 = landmarks.at(marker1_id);
+	LocationSimple loc2 = landmarks.at(marker2_id);
 	MyMarker * root_marker = new MyMarker();
 	MyMarker * marker1 = new MyMarker();
 	MyMarker * marker2 = new MyMarker();
@@ -163,15 +162,15 @@ void TrackingWithoutBranchWidget::update()
 		return;
 	}
 
-	ostringstream oss; 
-	if(direction == 0) oss<<"forward_tracing_marker"<<marker1_id<<"_marker"<<marker2_id<<".swc"; 
-	else oss<<"backward_tracing_marker"<<marker1_id<<"_marker"<<marker2_id<<".swc"; 
-	string out_marker_file = oss.str();
+	//ostringstream oss; 
+	//if(direction == 0) oss<<"forward_tracing_marker"<<(marker1_id+1)<<"_marker"<<(marker2_id+1)<<".swc"; 
+	//else oss<<"backward_tracing_marker"<<(marker1_id+1)<<"_marker"<<(marker2_id+1)<<".swc"; 
+	//string out_marker_file = oss.str();
+	string out_marker_file = "out_swc.swc";
 
 	if(!saveSWC_file(out_marker_file, allmarkers))return;
 	NeuronTree nt = readSWC_file(out_marker_file.c_str());
 
-	this->setWindowTitle(tr("Tracking without branch : factor = %1 thresh = %2 thick = %3 marker = (%4,%5) centroid_method = %6").arg(radius_factor).arg(threshold).arg(plane_thick).arg(marker1_id).arg(marker2_id).arg(centroid_method_id));
 	callback->setSWC(curwin, nt);
 	callback->updateImageWindow(curwin);
 	if(view3d_checker->isChecked())
