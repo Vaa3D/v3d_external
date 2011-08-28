@@ -194,6 +194,7 @@ public:
 		direction_label = new QLabel(tr("trace direction"));
 
 		view3d_checker = new QCheckBox("open view3d");
+		display_temp_points_checker = new QCheckBox("temp points");
 		refresh_button = new QPushButton("refresh");
 
 		factor_scroller = new QScrollBar(Qt::Horizontal);
@@ -251,12 +252,14 @@ public:
 		gridLayout->addWidget(direction_label,4,4);
 		gridLayout->addWidget(direction_combo,4,5,1,2);
 		gridLayout->addWidget(view3d_checker,5,0);
+		gridLayout->addWidget(display_temp_points_checker,5,1);
 		gridLayout->addWidget(refresh_button,5,2);
 
 		connect(factor_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(thresh_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(thick_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(view3d_checker, SIGNAL(stateChanged(int)), this, SLOT(update()));
+		connect(display_temp_points_checker, SIGNAL(stateChanged(int)), this, SLOT(update()));
 		connect(refresh_button, SIGNAL(clicked()), this, SLOT(update()));
 
 		connect(factor_scroller,SIGNAL(valueChanged(int)), factor_spin,SLOT(setValue(int)));
@@ -292,6 +295,7 @@ public:
 	int marker1_id;
 	int marker2_id;
 	bool direction;
+	bool is_display_temp_points;
 	LandmarkList landmarks;
 	int centroid_method_id;
 
@@ -316,6 +320,7 @@ public:
 	QComboBox * direction_combo;
 	
 	QCheckBox * view3d_checker;
+	QCheckBox * display_temp_points_checker;
 	QPushButton * refresh_button;
 
 

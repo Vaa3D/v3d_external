@@ -6,6 +6,8 @@ INCLUDEPATH	+= ../../../v3d_main/basic_c_fun
 V3DCONVERTPATH = ../internal/v3d_convert
 INCLUDEPATH += $$V3DCONVERTPATH 
 
+#todo : define __DISPLAY_TEMP_POINTS
+
 HEADERS	= tangent_plane_plugin.h
 HEADERS	+= tangent_plane_func.h
 HEADERS	+= tangent_plane_gui.h

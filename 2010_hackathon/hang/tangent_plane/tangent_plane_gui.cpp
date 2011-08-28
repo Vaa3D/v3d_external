@@ -113,6 +113,7 @@ void TrackingWithoutBranchWidget::update()
 
 	centroid_method_id = centroid_method_combo->currentIndex();
 	direction = direction_combo->currentIndex(); 
+	is_display_temp_points = display_temp_points_checker->isChecked();
 
 	this->setWindowTitle(tr("Tracking without branch : factor = %1 thresh = %2 thick = %3 marker = (%4,%5) centroid_method = %6 direction = %7").arg(radius_factor).arg(threshold).arg(plane_thick).arg(marker1_id+1).arg(marker2_id+1).arg(centroid_method_id).arg(direction));
 
@@ -151,12 +152,12 @@ void TrackingWithoutBranchWidget::update()
 	vector<MyMarker*> allmarkers;
 	allmarkers.push_back(root_marker); allmarkers.push_back(marker1); allmarkers.push_back(marker2);
 
-	if(direction == 0 && !neuron_tracing_method_no_branch(allmarkers, inimg1d, in_sz, marker1, marker2, radius_factor, plane_thick, threshold))
+	if(direction == 0 && !neuron_tracing_method_no_branch(allmarkers, inimg1d, in_sz, marker1, marker2, radius_factor, plane_thick, threshold,centroid_method_id, is_display_temp_points))
 	{
 		QMessageBox::information(0,"","unable to do tracking without branch");
 		return;
 	}
-	else if(direction == 1 && !neuron_tracing_method_no_branch(allmarkers, inimg1d, in_sz, marker2, marker1, radius_factor, plane_thick, threshold))
+	else if(direction == 1 && !neuron_tracing_method_no_branch(allmarkers, inimg1d, in_sz, marker2, marker1, radius_factor, plane_thick, threshold,centroid_method_id, is_display_temp_points))
 	{
 		QMessageBox::information(0,"","unable to do tracking without branch");
 		return;
