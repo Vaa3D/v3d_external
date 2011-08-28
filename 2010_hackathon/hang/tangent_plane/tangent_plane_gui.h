@@ -188,9 +188,10 @@ public:
 		factor_label = new QLabel(tr("radius factor (1 ~ 100)"));
 		thresh_label = new QLabel(tr("image threshold (0 ~ 255)"));
 		thick_label = new QLabel(tr("plane thickness (0 ~ 100)"));
-		marker1_label = new QLabel(tr("marker1 (2 ~ %1)").arg(landmarks.size()));
-		marker2_label = new QLabel(tr("marker2 (1 ~ %1)").arg(landmarks.size()-1));
+		marker1_label = new QLabel(tr("marker1 (1 ~ %1)").arg(landmarks.size()));
+		marker2_label = new QLabel(tr("marker2 (1 ~ %1)").arg(landmarks.size()));
 		centroid_method_label = new QLabel(tr("centroid method"));
+		direction_label = new QLabel(tr("trace direction"));
 
 		view3d_checker = new QCheckBox("open view3d");
 
@@ -225,10 +226,10 @@ public:
 		thick_spin->setValue(0);
 		marker1_spin = new QSpinBox();
 		marker1_spin->setMaximum(landmarks.size());
-		marker1_spin->setMinimum(2);
-		marker1_spin->setValue(2);
+		marker1_spin->setMinimum(1);
+		marker1_spin->setValue(1);
 		marker2_spin = new QSpinBox();
-		marker2_spin->setMaximum(landmarks.size()-1);
+		marker2_spin->setMaximum(landmarks.size());
 		marker2_spin->setMinimum(1);
 		marker2_spin->setValue(1);
 
@@ -237,10 +238,9 @@ public:
 		centroid_method_combo->addItem("center of mass");
 		centroid_method_combo->addItem("local distance transformation");
 
-		forward_checker = new QCheckBox("Forward Tracking");
-		forward_checker->setChecked(true);
-		backward_checker = new QCheckBox("Backward Tracking");
-		backward_checker->setChecked(false);
+		direction_combo = new QComboBox();
+		direction_combo->addItem("Forward Tracking");
+		direction_combo->addItem("Backward Tracking");
 
 		gridLayout = new QGridLayout();
 
@@ -260,16 +260,14 @@ public:
 		gridLayout->addWidget(marker2_scroller,4,1,1,5);
 		gridLayout->addWidget(marker2_spin,4,6);
 		gridLayout->addWidget(centroid_method_label,5,0);
-		gridLayout->addWidget(centroid_method_combo,5,1,1,5);
+		gridLayout->addWidget(centroid_method_combo,5,1,1,2);
+		gridLayout->addWidget(direction_label,5,4);
+		gridLayout->addWidget(direction_combo,5,5,1,2);
 		gridLayout->addWidget(view3d_checker,6,0);
-		gridLayout->addWidget(forward_checker,6,1);
-		gridLayout->addWidget(backward_checker,6,2);
 
 		connect(factor_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(thresh_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(thick_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
-		connect(marker1_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
-		connect(marker2_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(view3d_checker, SIGNAL(stateChanged(int)), this, SLOT(update()));
 
 		connect(factor_scroller,SIGNAL(valueChanged(int)), factor_spin,SLOT(setValue(int)));
@@ -289,8 +287,7 @@ public:
 
 		connect(centroid_method_combo, SIGNAL(valueChanged(int)), this, SLOT(update()));
 
-		connect(forward_checker, SIGNAL(stateChanged(int)), this, SLOT(update()));
-		connect(backward_checker, SIGNAL(stateChanged(int)), this, SLOT(update()));
+		connect(direction_combo, SIGNAL(valueChanged(int)), this, SLOT(update()));
 
 		this->setLayout(gridLayout);
 		this->setWindowTitle("Tracking without branch");
@@ -311,6 +308,7 @@ public:
 	int marker2_id;
 	bool direction;
 	LandmarkList landmarks;
+	int centroid_method_id;
 
 	QLabel * factor_label;
 	QLabel * thresh_label;
@@ -318,6 +316,7 @@ public:
 	QLabel * marker1_label;
 	QLabel * marker2_label;
 	QLabel * centroid_method_label;
+	QLabel * direction_label;
 
 	QScrollBar * factor_scroller;
 	QScrollBar * thresh_scroller;
@@ -331,11 +330,10 @@ public:
 	QSpinBox * marker1_spin;
 	QSpinBox * marker2_spin;
 	QComboBox * centroid_method_combo;
+	QComboBox * direction_combo;
 	
 	QCheckBox * view3d_checker;
 
-	QCheckBox * forward_checker;
-	QCheckBox * backward_checker;
 
 	QGridLayout * gridLayout;
 

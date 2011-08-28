@@ -10,11 +10,14 @@ void TangentPlaneWidget::update()
 {
 	v3dhandleList win_list = callback->getImageWindowList();
 	bool is_tangent_win_exist = false;
+	bool is_curwin_exist = false;
 	for(int i = 0; i < win_list.size(); i++) 
 	{
-		if(tangent_win == win_list[i]){is_tangent_win_exist = true; break;}
+		if(tangent_win == win_list[i]){is_tangent_win_exist = true;}
+		if(curwin == win_list[i]){is_curwin_exist = true;}
 	}
 	if(!is_tangent_win_exist) tangent_win = callback->newImageWindow();
+	if(!is_curwin_exist){this->close(); return;}
 
 	landmarks = callback->getLandmark(curwin);
 	forward_scroller->setMaximum(landmarks.size());
@@ -89,32 +92,32 @@ void TangentPlaneWidget::update()
 void TrackingWithoutBranchWidget::update()
 {
 	v3dhandleList win_list = callback->getImageWindowList();
-	bool is_curwin_exist = false;
-	for(int i = 0; i < win_list.size(); i++) 
-	{
-		if(curwin == win_list[i]){is_curwin_exist = true; break;}
-	}
-	if(!is_curwin_exist)
-	{
-		this->close();
-		return;
-	}
+	if(win_list.empty()) return;
+	curwin = callback->currentImageWindow();
 
 	landmarks = callback->getLandmark(curwin);
+	if(landmarks.size() < 2) return;
+
 	marker1_scroller->setMaximum(landmarks.size());
+	marker1_scroller->setMinimum(1);
 	marker2_scroller->setMaximum(landmarks.size());
+	marker2_scroller->setMinimum(1);
+	marker1_spin->setMaximum(landmarks.size());
+	marker1_spin->setMinimum(1);
+	marker2_spin->setMaximum(landmarks.size());
+	marker2_spin->setMinimum(1);
 	marker1_label = new QLabel(tr("marker1 (1 ~ %1)").arg(landmarks.size()));
 	marker2_label = new QLabel(tr("marker2 (1 ~ %1)").arg(landmarks.size()));
 
 	radius_factor =  factor_scroller->value();
 	threshold =  thresh_scroller->value();
 	plane_thick =  thick_scroller->value();
-	marker1_id =  marker1_scroller->value()-1;
-	marker2_id =  marker2_scroller->value()-1;
+	marker1_id =  marker1_scroller->value();
+	marker2_id =  marker2_scroller->value();
 	if(marker1_id == marker2_id) return;
-	if(sender() == forward_checker) backward_checker->setChecked(!forward_checker->isChecked());
-	else if(sender() == backward_checker) forward_checker->setChecked(!backward_checker->isChecked());
-	direction = !forward_checker->isChecked(); // 0 forward, 1 backward
+
+	centroid_method_id = centroid_method_combo->currentIndex();
+	direction = direction_combo->currentIndex(); 
 
 	Image4DSimple * pImg4d = callback->getImage(curwin);
 	unsigned char * inimg1d = pImg4d->getRawDataAtChannel(0);
@@ -149,7 +152,12 @@ void TrackingWithoutBranchWidget::update()
 	vector<MyMarker*> allmarkers;
 	allmarkers.push_back(root_marker); allmarkers.push_back(marker1); allmarkers.push_back(marker2);
 
-	if(!neuron_tracing_method_no_branch(allmarkers, inimg1d, in_sz, marker1, marker2, radius_factor, plane_thick, threshold))
+	if(direction == 0 && !neuron_tracing_method_no_branch(allmarkers, inimg1d, in_sz, marker1, marker2, radius_factor, plane_thick, threshold))
+	{
+		QMessageBox::information(0,"","unable to do tracking without branch");
+		return;
+	}
+	else if(direction == 1 && !neuron_tracing_method_no_branch(allmarkers, inimg1d, in_sz, marker2, marker1, radius_factor, plane_thick, threshold))
 	{
 		QMessageBox::information(0,"","unable to do tracking without branch");
 		return;
@@ -163,7 +171,7 @@ void TrackingWithoutBranchWidget::update()
 	if(!saveSWC_file(out_marker_file, allmarkers))return;
 	NeuronTree nt = readSWC_file(out_marker_file.c_str());
 
-	callback->setImageName(curwin,tr("factor = %1 thresh = %2 thick = %3 marker = (%4,%5)").arg(radius_factor).arg(threshold).arg(plane_thick).arg(marker1_id).arg(marker2_id));
+	this->setWindowTitle(tr("Tracking without branch : factor = %1 thresh = %2 thick = %3 marker = (%4,%5) centroid_method = %6").arg(radius_factor).arg(threshold).arg(plane_thick).arg(marker1_id).arg(marker2_id).arg(centroid_method_id));
 	callback->setSWC(curwin, nt);
 	callback->updateImageWindow(curwin);
 	if(view3d_checker->isChecked())
