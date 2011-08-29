@@ -6,8 +6,12 @@
 #include <iostream>
 #include <sstream>
 using namespace std;
+static bool is_update1_locked = false;
+static bool is_update2_locked = false;
 void TangentPlaneWidget::update()
 {
+	if(is_update1_locked) return;
+	else is_update1_locked = true;
 	v3dhandleList win_list = callback->getImageWindowList();
 	bool is_tangent_win_exist = false;
 	bool is_curwin_exist = false;
@@ -17,7 +21,7 @@ void TangentPlaneWidget::update()
 		if(curwin == win_list[i]){is_curwin_exist = true;}
 	}
 	if(!is_tangent_win_exist) tangent_win = callback->newImageWindow();
-	if(!is_curwin_exist){this->close(); return;}
+	if(!is_curwin_exist){this->close(); is_update1_locked = false; return;}
 
 	landmarks = callback->getLandmark(curwin);
 	forward_scroller->setMaximum(landmarks.size());
@@ -52,12 +56,13 @@ void TangentPlaneWidget::update()
 	marker1.x = loc1.x;
 	marker1.y = loc1.y;
 	marker1.z = loc1.z;
-	marker1.radius = loc1.radius;
 
 	marker2.x = loc2.x;
 	marker2.y = loc2.y;
 	marker2.z = loc2.z;
-	marker2.radius = loc2.radius;
+	double ini_radius = dist(marker1,marker2);
+	marker1.radius = ini_radius;
+	marker2.radius = ini_radius;
 
 	estimated_label->setText(tr("original radius = %1").arg(marker2.radius));
 	if(threshold > 0){
@@ -68,7 +73,7 @@ void TangentPlaneWidget::update()
 	if(!get_tangent_plane(outimg1d, out_sz, inimg1d, in_sz, marker1, marker2, radius_factor, plane_thick))
 	{
 		QMessageBox::information(0,"","unable to get tangent_plane");
-		return;
+		is_update1_locked = false; return;
 	}
 
 	if(out_thresh_type == 0) out_thresh = out_thresh_spin->value();
@@ -118,24 +123,21 @@ void TangentPlaneWidget::update()
 		callback->open3DWindow(tangent_win);
 		callback->pushImageIn3DWindow(tangent_win);
 	}
-	/*
-	   QMessageBox::information(0,"",tr("radius factor = %1\nimage threshold = %2\nplane thickness = %3\nforward id = %4\nbackward id = %5")
-	   .arg(radius_factor)
-	   .arg(threshold)
-	   .arg(plane_thick)
-	   .arg(forward_id)
-	   .arg(backward_id));
-	   */
+
+	is_update1_locked = false;
 }
 
 void TrackingWithoutBranchWidget::update()
 {
+	if(is_update2_locked) return;
+	else is_update2_locked = true;
+
 	v3dhandleList win_list = callback->getImageWindowList();
-	if(win_list.empty()) return;
+	if(win_list.empty()) {is_update2_locked = false; return;}
 	curwin = callback->currentImageWindow();
 
 	landmarks = callback->getLandmark(curwin);
-	if(landmarks.size() < 2) return;
+	if(landmarks.size() < 2) {is_update2_locked = false;return;}
 
 	marker1_label = new QLabel(tr("marker1 (1 ~ %1)").arg(landmarks.size()));
 	marker2_label = new QLabel(tr("marker2 (1 ~ %1)").arg(landmarks.size()));
@@ -147,16 +149,22 @@ void TrackingWithoutBranchWidget::update()
 	marker1_combo->setCurrentIndex(marker1_id); marker2_combo->setCurrentIndex(marker2_id);
 
 	radius_factor =  factor_scroller->value();
-	threshold =  thresh_scroller->value();
+
+	thresh_method = thresh_type_combo->currentIndex();
+	threshold =  (thresh_method == 0) ? thresh_scroller->value() : -1.0;
+	if(sender() == thresh_type_combo) thresh_scroller->setEnabled(thresh_type_combo->currentIndex() == 0);
+
+	global_tangent_radius =  (tangent_radius_type_combo->currentIndex() == 0) ? tangent_radius_scroller->value() : -1.0;
+	if(sender() == tangent_radius_type_combo) tangent_radius_scroller->setEnabled(tangent_radius_type_combo->currentIndex() == 0);
 	plane_thick =  thick_scroller->value();
 
 	centroid_method_id = centroid_method_combo->currentIndex();
 	direction = direction_combo->currentIndex(); 
 	is_display_temp_points = display_temp_points_checker->isChecked();
 
-	this->setWindowTitle(tr("Tracking without branch : factor = %1 thresh = %2 thick = %3 marker = (%4,%5) centroid_method = %6 direction = %7").arg(radius_factor).arg(threshold).arg(plane_thick).arg(marker1_id+1).arg(marker2_id+1).arg(centroid_method_id).arg(direction));
+	this->setWindowTitle(tr("Tracking without branch : factor = %1 thresh = %2 tangent_radius = %3 thick = %4 marker = (%5,%6) centroid_method = %7 direction = %8").arg(radius_factor).arg(threshold).arg(global_tangent_radius).arg(plane_thick).arg(marker1_id+1).arg(marker2_id+1).arg(centroid_method_id).arg(direction));
 
-	if(marker1_id == marker2_id) return;
+	if(marker1_id == marker2_id) {is_update2_locked = false; return;}
 
 	Image4DSimple * pImg4d = callback->getImage(curwin);
 	unsigned char * inimg1d = pImg4d->getRawDataAtChannel(0);
@@ -176,14 +184,16 @@ void TrackingWithoutBranchWidget::update()
 	marker1->x = loc1.x;
 	marker1->y = loc1.y;
 	marker1->z = loc1.z;
-	marker1->radius = loc1.radius;
 	marker1->parent = root_marker;
 
 	marker2->x = loc2.x;
 	marker2->y = loc2.y;
 	marker2->z = loc2.z;
-	marker2->radius = loc2.radius;
 	marker2->parent = root_marker;
+	double ini_radius = dist(*marker1, *marker2);
+	marker1->radius = ini_radius;
+	marker2->radius = ini_radius;
+	root_marker->radius = ini_radius;
 
 	root_marker->x = (marker1->x + marker2->x)/2.0; root_marker->y = (marker1->y + marker2->y)/2.0;
 	root_marker->z = (marker1->z + marker2->z)/2.0; root_marker->radius = (marker1->radius + marker2->radius)/2.0;
@@ -191,15 +201,15 @@ void TrackingWithoutBranchWidget::update()
 	vector<MyMarker*> allmarkers;
 	allmarkers.push_back(root_marker); allmarkers.push_back(marker1); allmarkers.push_back(marker2);
 
-	if(direction == 0 && !neuron_tracing_method_no_branch(allmarkers, inimg1d, in_sz, marker1, marker2, radius_factor, plane_thick, threshold,centroid_method_id, is_display_temp_points))
+	if(direction == 0 && !neuron_tracing_method_no_branch(allmarkers, inimg1d, in_sz, marker1, marker2, radius_factor, plane_thick, threshold,centroid_method_id, is_display_temp_points, global_tangent_radius,thresh_method))
 	{
 		QMessageBox::information(0,"","unable to do tracking without branch");
-		return;
+		is_update2_locked = false; return;
 	}
-	else if(direction == 1 && !neuron_tracing_method_no_branch(allmarkers, inimg1d, in_sz, marker2, marker1, radius_factor, plane_thick, threshold,centroid_method_id, is_display_temp_points))
+	else if(direction == 1 && !neuron_tracing_method_no_branch(allmarkers, inimg1d, in_sz, marker2, marker1, radius_factor, plane_thick, threshold,centroid_method_id, is_display_temp_points,global_tangent_radius,thresh_method))
 	{
 		QMessageBox::information(0,"","unable to do tracking without branch");
-		return;
+		is_update2_locked = false; return;
 	}
 
 	//ostringstream oss; 
@@ -208,7 +218,7 @@ void TrackingWithoutBranchWidget::update()
 	//string out_marker_file = oss.str();
 	string out_marker_file = "out_swc.swc";
 
-	if(!saveSWC_file(out_marker_file, allmarkers))return;
+	if(!saveSWC_file(out_marker_file, allmarkers)){is_update2_locked = false; return;}
 	NeuronTree nt = readSWC_file(out_marker_file.c_str());
 
 	callback->setSWC(curwin, nt);
@@ -218,4 +228,5 @@ void TrackingWithoutBranchWidget::update()
 		callback->open3DWindow(curwin);
 		callback->pushObjectIn3DWindow(curwin);
 	}
+	is_update2_locked = false;
 }

@@ -113,25 +113,25 @@ public:
 		connect(forward_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(backward_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(view3d_checker, SIGNAL(stateChanged(int)), this, SLOT(update()));
-		connect(out_thresh_type_combo, SIGNAL(valueChanged(int)), this, SLOT(update()));
+		connect(out_thresh_type_combo, SIGNAL(currentIndexChanged(int)), this, SLOT(update()));
 		connect(out_thresh_spin, SIGNAL(valueChanged(int)), this, SLOT(update()));
 
 		connect(factor_scroller,SIGNAL(valueChanged(int)), factor_spin,SLOT(setValue(int)));
-		connect(factor_spin,SIGNAL(valueChanged(int)), factor_scroller,SLOT(setValue(int)));
+		//connect(factor_spin,SIGNAL(valueChanged(int)), factor_scroller,SLOT(setValue(int)));
 
 		connect(thresh_scroller,SIGNAL(valueChanged(int)), thresh_spin,SLOT(setValue(int)));
-		connect(thresh_spin,SIGNAL(valueChanged(int)), thresh_scroller,SLOT(setValue(int)));
+		//connect(thresh_spin,SIGNAL(valueChanged(int)), thresh_scroller,SLOT(setValue(int)));
 
 		connect(thick_scroller,SIGNAL(valueChanged(int)), thick_spin,SLOT(setValue(int)));
-		connect(thick_spin,SIGNAL(valueChanged(int)), thick_scroller,SLOT(setValue(int)));
+		//connect(thick_spin,SIGNAL(valueChanged(int)), thick_scroller,SLOT(setValue(int)));
 
 		connect(forward_scroller,SIGNAL(valueChanged(int)), forward_spin,SLOT(setValue(int)));
-		connect(forward_spin,SIGNAL(valueChanged(int)), forward_scroller,SLOT(setValue(int)));
+		//connect(forward_spin,SIGNAL(valueChanged(int)), forward_scroller,SLOT(setValue(int)));
 
 		connect(backward_scroller,SIGNAL(valueChanged(int)), backward_spin,SLOT(setValue(int)));
-		connect(backward_spin,SIGNAL(valueChanged(int)), backward_scroller,SLOT(setValue(int)));
+		//connect(backward_spin,SIGNAL(valueChanged(int)), backward_scroller,SLOT(setValue(int)));
 
-		connect(centroid_method_combo, SIGNAL(valueChanged(int)), this, SLOT(update()));
+		connect(centroid_method_combo, SIGNAL(currentIndexChanged(int)), this, SLOT(update()));
 
 		this->setLayout(gridLayout);
 		this->setWindowTitle("Tagent Plane");
@@ -207,6 +207,7 @@ public:
 
 		factor_label = new QLabel(tr("radius factor (1 ~ 100)"));
 		thresh_label = new QLabel(tr("image threshold (0 ~ 255)"));
+		tangent_radius_label = new QLabel(tr("tangent radius"));
 		thick_label = new QLabel(tr("plane thickness (0 ~ 100)"));
 		marker1_label = new QLabel(tr("marker1 (1 ~ %1)").arg(landmarks.size()));
 		marker2_label = new QLabel(tr("marker2 (1 ~ %1)").arg(landmarks.size()));
@@ -224,6 +225,16 @@ public:
 		thresh_scroller->setMaximum(255);
 		thresh_scroller->setMinimum(-1);
 		thresh_scroller->setValue(-1);
+		thresh_type_combo = new QComboBox();
+		thresh_type_combo->addItem("manually global threshold");
+		thresh_type_combo->addItem("local average threshold");
+		thresh_type_combo->addItem("local otsu threshold");
+		tangent_radius_scroller = new QScrollBar(Qt::Horizontal);
+		tangent_radius_scroller->setRange(1,100);
+		tangent_radius_scroller->setValue(5);
+		tangent_radius_type_combo = new QComboBox();
+		tangent_radius_type_combo->addItem("manually global radius");
+		tangent_radius_type_combo->addItem("automatically local radius");
 		thick_scroller = new QScrollBar(Qt::Horizontal);
 		thick_scroller->setMaximum(100);
 		thick_scroller->setValue(0);
@@ -235,10 +246,6 @@ public:
 		factor_spin = new QSpinBox();
 		factor_spin->setMaximum(100);
 		factor_spin->setValue(1);
-		thresh_spin = new QSpinBox();
-		thresh_spin->setMaximum(255);
-		thresh_spin->setMinimum(-1);
-		thresh_spin->setValue(-1);
 		thick_spin = new QSpinBox();
 		thick_spin->setMaximum(100);
 		thick_spin->setValue(0);
@@ -259,43 +266,44 @@ public:
 		gridLayout->addWidget(factor_spin,0,6);
 		gridLayout->addWidget(thresh_label,1,0);
 		gridLayout->addWidget(thresh_scroller,1,1,1,5);
-		gridLayout->addWidget(thresh_spin,1,6);
-		gridLayout->addWidget(thick_label,2,0);
-		gridLayout->addWidget(thick_scroller,2,1,1,5);
-		gridLayout->addWidget(thick_spin,2,6);
-		gridLayout->addWidget(marker1_label,3,0);
-		gridLayout->addWidget(marker1_combo,3,1,1,2);
-		gridLayout->addWidget(marker2_label,3,4);
-		gridLayout->addWidget(marker2_combo,3,5,1,2);
-		gridLayout->addWidget(centroid_method_label,4,0);
-		gridLayout->addWidget(centroid_method_combo,4,1,1,2);
-		gridLayout->addWidget(direction_label,4,4);
-		gridLayout->addWidget(direction_combo,4,5,1,2);
-		gridLayout->addWidget(view3d_checker,5,0);
-		gridLayout->addWidget(display_temp_points_checker,5,1);
-		gridLayout->addWidget(refresh_button,5,2);
+		gridLayout->addWidget(thresh_type_combo,1,6);
+		gridLayout->addWidget(tangent_radius_label,2,0);
+		gridLayout->addWidget(tangent_radius_scroller,2,1,1,5);
+		gridLayout->addWidget(tangent_radius_type_combo,2,6);
+		gridLayout->addWidget(thick_label,3,0);
+		gridLayout->addWidget(thick_scroller,3,1,1,5);
+		gridLayout->addWidget(thick_spin,3,6);
+		gridLayout->addWidget(marker1_label,4,0);
+		gridLayout->addWidget(marker1_combo,4,1,1,2);
+		gridLayout->addWidget(marker2_label,4,4);
+		gridLayout->addWidget(marker2_combo,4,5,1,2);
+		gridLayout->addWidget(centroid_method_label,5,0);
+		gridLayout->addWidget(centroid_method_combo,5,1,1,2);
+		gridLayout->addWidget(direction_label,5,4);
+		gridLayout->addWidget(direction_combo,5,5,1,2);
+		gridLayout->addWidget(view3d_checker,6,0);
+		gridLayout->addWidget(display_temp_points_checker,6,1);
+		gridLayout->addWidget(refresh_button,6,2);
 
 		connect(factor_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(thresh_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
+		connect(thresh_type_combo, SIGNAL(currentIndexChanged(int)), this, SLOT(update()));
+		connect(tangent_radius_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
+		connect(tangent_radius_type_combo, SIGNAL(currentIndexChanged(int)), this, SLOT(update()));
 		connect(thick_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(view3d_checker, SIGNAL(stateChanged(int)), this, SLOT(update()));
 		connect(display_temp_points_checker, SIGNAL(stateChanged(int)), this, SLOT(update()));
 		connect(refresh_button, SIGNAL(clicked()), this, SLOT(update()));
 
 		connect(factor_scroller,SIGNAL(valueChanged(int)), factor_spin,SLOT(setValue(int)));
-		connect(factor_spin,SIGNAL(valueChanged(int)), factor_scroller,SLOT(setValue(int)));
-
-		connect(thresh_scroller,SIGNAL(valueChanged(int)), thresh_spin,SLOT(setValue(int)));
-		connect(thresh_spin,SIGNAL(valueChanged(int)), thresh_scroller,SLOT(setValue(int)));
 
 		connect(thick_scroller,SIGNAL(valueChanged(int)), thick_spin,SLOT(setValue(int)));
-		connect(thick_spin,SIGNAL(valueChanged(int)), thick_scroller,SLOT(setValue(int)));
 
-		connect(centroid_method_combo, SIGNAL(valueChanged(int)), this, SLOT(update()));
-		connect(marker1_combo, SIGNAL(valueChanged(int)), this, SLOT(update()));
-		connect(marker2_combo, SIGNAL(valueChanged(int)), this, SLOT(update()));
+		connect(centroid_method_combo, SIGNAL(currentIndexChanged(int)), this, SLOT(update()));
+		//connect(marker1_combo, SIGNAL(valueChanged(int)), this, SLOT(update()));
+		//connect(marker2_combo, SIGNAL(valueChanged(int)), this, SLOT(update()));
 
-		connect(direction_combo, SIGNAL(valueChanged(int)), this, SLOT(update()));
+		connect(direction_combo, SIGNAL(currentIndexChanged(int)), this, SLOT(update()));
 
 		this->setLayout(gridLayout);
 		this->setWindowTitle("Tracking without branch");
@@ -310,6 +318,7 @@ public slots:
 	
 public:
 	double radius_factor;
+	double global_tangent_radius;
 	double threshold;
 	double plane_thick;
 	int marker1_id;
@@ -319,9 +328,11 @@ public:
 	int centroid_method_id;
 	int out_thresh_type;
 	LandmarkList landmarks;
+	int thresh_method;
 
 	QLabel * factor_label;
 	QLabel * thresh_label;
+	QLabel * tangent_radius_label;
 	QLabel * thick_label;
 	QLabel * marker1_label;
 	QLabel * marker2_label;
@@ -330,15 +341,18 @@ public:
 
 	QScrollBar * factor_scroller;
 	QScrollBar * thresh_scroller;
+	QScrollBar * tangent_radius_scroller;
 	QScrollBar * thick_scroller;
 	QComboBox * marker1_combo;
 	QComboBox * marker2_combo;
 
 	QSpinBox * factor_spin;
-	QSpinBox * thresh_spin;
+	//QSpinBox * thresh_spin;
 	QSpinBox * thick_spin;
 	QComboBox * centroid_method_combo;
 	QComboBox * direction_combo;
+	QComboBox * thresh_type_combo;
+	QComboBox * tangent_radius_type_combo;
 	
 	QCheckBox * view3d_checker;
 	QCheckBox * display_temp_points_checker;
