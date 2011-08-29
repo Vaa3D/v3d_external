@@ -14,6 +14,8 @@ HEADERS	+= tangent_plane_gui.h
 HEADERS	+= $$V3DCONVERTPATH/neuron_tracing.h
 HEADERS	+= $$V3DCONVERTPATH/img_threshold.h
 HEADERS	+= $$V3DCONVERTPATH/img_segment.h
+HEADERS	+= $$V3DCONVERTPATH/img_convert.h
+HEADERS	+= $$V3DCONVERTPATH/dist_transform.h
 
 SOURCES	= tangent_plane_plugin.cpp
 SOURCES	+= tangent_plane_func.cpp

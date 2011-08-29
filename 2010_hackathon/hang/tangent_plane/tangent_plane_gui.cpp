@@ -1,6 +1,9 @@
 #include "tangent_plane_gui.h"
 #include "basic_memory.cpp"
 #include "neuron_tracing.h"
+#include "dist_transform.h"
+#include "img_convert.h"
+#include "img_composite.h"
 #include "basic_surf_objs.cpp"
 #include <string>
 #include <iostream>
@@ -8,6 +11,7 @@
 using namespace std;
 static bool is_update1_locked = false;
 static bool is_update2_locked = false;
+extern bool scale_double_to_uint8(unsigned char* &outimg1d, double * inimg1d,  V3DLONG sz[3]);
 void TangentPlaneWidget::update()
 {
 	if(is_update1_locked) return;
@@ -28,6 +32,7 @@ void TangentPlaneWidget::update()
 	backward_scroller->setMaximum(landmarks.size()-1);
 	forward_label = new QLabel(tr("forward (2 ~ %1)").arg(landmarks.size()));
 	backward_label = new QLabel(tr("backward (1 ~ %1)").arg(landmarks.size()-1));
+	is_df = df_checker->isChecked();
 
 	radius_factor =  factor_scroller->value();
 	threshold =  thresh_scroller->value();
@@ -80,6 +85,7 @@ void TangentPlaneWidget::update()
 	else if(out_thresh_type == 1) average_threshold(out_thresh, outimg1d, out_sz);
 	else if(out_thresh_type == 2) otsu_threshold(out_thresh, outimg1d, out_sz);
 	out_thresh_spin->setValue(int(out_thresh + 0.5));
+	if(!is_df)
 	{
 		V3DLONG * out_sz2 = new V3DLONG[4];
 		out_sz2[0] = 2*out_sz[0] + 1;
@@ -106,11 +112,24 @@ void TangentPlaneWidget::update()
 				outimg1d_2[k * sz10_2 + j * out_sz2[0] + out_sz[0]] = 0;
 			}
 		}
-		if(outimg1d){delete outimg1d; outimg1d = 0;}
-		if(out_sz){delete out_sz; out_sz = 0;}
+		if(outimg1d){delete [] outimg1d; outimg1d = 0;}
+		if(out_sz){delete [] out_sz; out_sz = 0;}
 		outimg1d = outimg1d_2; out_sz = out_sz2;
-		this->setWindowTitle(tr("factor = %1 thresh = %2 thick = %3 marker = %4 out_thresh = %5").arg(radius_factor).arg(threshold).arg(plane_thick).arg(marker_index+1).arg(out_thresh));
 	}
+	else
+	{
+		double * pDist = 0;normal_distance_transform(pDist, outimg1d, out_sz, out_thresh);
+		unsigned char * outdist_img1d = 0; scale_double_to_uint8(outdist_img1d, pDist, out_sz);
+		unsigned char * outmerge_img1d = 0; V3DLONG * out_merge_sz = 0;
+		merge_along_xaxis(outmerge_img1d, out_merge_sz, outimg1d, outdist_img1d, out_sz);
+		if(pDist){delete [] pDist; pDist = 0;}
+		if(outdist_img1d){delete [] outdist_img1d; outdist_img1d = 0;}
+		if(outimg1d){delete [] outimg1d; outimg1d = 0;}
+		if(out_sz){delete [] out_sz; out_sz = 0;}
+		outimg1d = outmerge_img1d;
+		out_sz = out_merge_sz;
+	}
+	this->setWindowTitle(tr("factor = %1 thresh = %2 thick = %3 marker = %4 out_thresh = %5").arg(radius_factor).arg(threshold).arg(plane_thick).arg(marker_index+1).arg(out_thresh));
 
 
 	Image4DSimple * newImg4d = new Image4DSimple();//callback->getImage(tangent_win);
@@ -147,6 +166,7 @@ void TrackingWithoutBranchWidget::update()
 	for(int i = 0; i < landmarks.size(); i++) marker1_combo->addItem(tr("%1").arg(i+1));
 	for(int i = 0; i < landmarks.size(); i++) marker2_combo->addItem(tr("%1").arg(i+1));
 	marker1_combo->setCurrentIndex(marker1_id); marker2_combo->setCurrentIndex(marker2_id);
+	if(marker1_id >= landmarks.size() || marker2_id >= landmarks.size()){is_update2_locked = false;return;}
 
 	radius_factor =  factor_scroller->value();
 

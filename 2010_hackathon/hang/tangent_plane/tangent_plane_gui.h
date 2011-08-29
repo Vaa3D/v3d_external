@@ -28,6 +28,7 @@ public:
 		centroid_method_label = new QLabel(tr("centroid method"));
 
 		view3d_checker = new QCheckBox("open view3d");
+		df_checker = new QCheckBox("df");
 		out_thresh_type_label = new QLabel(tr("out thresh"));
 		out_thresh_type_combo = new QComboBox();
 		out_thresh_type_combo->addItem("manually");
@@ -82,6 +83,8 @@ public:
 		out_thresh_spin->setMinimum(0);
 		out_thresh_spin->setValue(0);
 
+		refresh_button = new QPushButton("refresh");
+
 		gridLayout = new QGridLayout();
 
 		gridLayout->addWidget(factor_label,0,0);
@@ -102,10 +105,12 @@ public:
 		gridLayout->addWidget(centroid_method_label,5,0);
 		gridLayout->addWidget(centroid_method_combo,5,1,1,5);
 		gridLayout->addWidget(view3d_checker,5,6);
-		gridLayout->addWidget(estimated_label,6,0,1,2);
-		gridLayout->addWidget(out_thresh_type_label,6,3);
-		gridLayout->addWidget(out_thresh_type_combo,6,4);
-		gridLayout->addWidget(out_thresh_spin,6,5);
+		gridLayout->addWidget(out_thresh_type_label,6,0);
+		gridLayout->addWidget(out_thresh_type_combo,6,1);
+		gridLayout->addWidget(out_thresh_spin,6,2);
+		gridLayout->addWidget(df_checker,6,3);
+		gridLayout->addWidget(refresh_button,6,4);
+		gridLayout->addWidget(estimated_label,7,0,1,7);
 
 		connect(factor_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(thresh_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
@@ -113,6 +118,7 @@ public:
 		connect(forward_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(backward_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
 		connect(view3d_checker, SIGNAL(stateChanged(int)), this, SLOT(update()));
+		connect(df_checker, SIGNAL(stateChanged(int)), this, SLOT(update()));
 		connect(out_thresh_type_combo, SIGNAL(currentIndexChanged(int)), this, SLOT(update()));
 		connect(out_thresh_spin, SIGNAL(valueChanged(int)), this, SLOT(update()));
 
@@ -132,6 +138,7 @@ public:
 		//connect(backward_spin,SIGNAL(valueChanged(int)), backward_scroller,SLOT(setValue(int)));
 
 		connect(centroid_method_combo, SIGNAL(currentIndexChanged(int)), this, SLOT(update()));
+		connect(refresh_button, SIGNAL(clicked()), this, SLOT(update()));
 
 		this->setLayout(gridLayout);
 		this->setWindowTitle("Tagent Plane");
@@ -155,6 +162,7 @@ public:
 	int out_thresh_type;
 	double out_thresh;
 	LandmarkList landmarks;
+	bool is_df;
 
 	QLabel * factor_label;
 	QLabel * thresh_label;
@@ -179,8 +187,11 @@ public:
 	QComboBox * centroid_method_combo;
 	
 	QCheckBox * view3d_checker;
+	QCheckBox * df_checker;
 	QComboBox * out_thresh_type_combo;
 	QSpinBox * out_thresh_spin;
+
+	QPushButton * refresh_button;
 
 	QGridLayout * gridLayout;
 
