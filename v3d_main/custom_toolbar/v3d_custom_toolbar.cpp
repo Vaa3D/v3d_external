@@ -921,9 +921,9 @@ QList<pair<QString, VoidFunc> > getMainWindowButtonStringAndFuncList()
 				(VoidFunc)(&QWorkspace::activateNextWindow))
 		<<SAF (QObject::tr("Window::Previous"), \
 				(VoidFunc)(&QWorkspace::activatePreviousWindow))
-		<<SAF (QObject::tr("Work-Mode::V3D Default"), \
+		//<<SAF (QObject::tr("Work-Mode::V3D Default"), \
 				(VoidFunc)(&MainWindow::func_procModeDefault))
-		<<SAF (QObject::tr("Work-Mode::Neuron Annotator"), \
+		//<<SAF (QObject::tr("Work-Mode::Neuron Annotator"), \
 				(VoidFunc)(&MainWindow::func_procModeNeuronAnnotator))
 		;
 #endif
