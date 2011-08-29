@@ -12,6 +12,8 @@ using namespace std;
 static bool is_update1_locked = false;
 static bool is_update2_locked = false;
 extern bool scale_double_to_uint8(unsigned char* &outimg1d, double * inimg1d,  V3DLONG sz[3]);
+LandmarkList neurontree2landmarks(NeuronTree &nt);
+
 void TangentPlaneWidget::update()
 {
 	if(is_update1_locked) return;
@@ -27,7 +29,14 @@ void TangentPlaneWidget::update()
 	if(!is_tangent_win_exist) tangent_win = callback->newImageWindow();
 	if(!is_curwin_exist){this->close(); is_update1_locked = false; return;}
 
-	landmarks = callback->getLandmark(curwin);
+	marker_source = marker_source_combo->currentIndex();
+	if(marker_source == 0)
+		landmarks = callback->getLandmark(curwin);
+	else if(marker_source == 1)
+	{
+		NeuronTree nt = callback->getSWC(curwin);
+		landmarks = neurontree2landmarks(nt);
+	}
 	forward_scroller->setMaximum(landmarks.size());
 	backward_scroller->setMaximum(landmarks.size()-1);
 	forward_label = new QLabel(tr("forward (2 ~ %1)").arg(landmarks.size()));
@@ -249,4 +258,19 @@ void TrackingWithoutBranchWidget::update()
 		callback->pushObjectIn3DWindow(curwin);
 	}
 	is_update2_locked = false;
+}
+
+LandmarkList neurontree2landmarks(NeuronTree &nt)
+{
+	LandmarkList landmarks;
+	foreach(NeuronSWC swc, nt.listNeuron)
+	{
+		LocationSimple loc;
+		loc.x = swc.x;
+		loc.y = swc.y;
+		loc.z = swc.z;
+		loc.radius = swc.r;
+		landmarks.push_back(loc);
+	}
+	return landmarks;
 }

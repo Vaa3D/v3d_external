@@ -84,6 +84,9 @@ public:
 		out_thresh_spin->setValue(0);
 
 		refresh_button = new QPushButton("refresh");
+		marker_source_combo = new QComboBox();
+		marker_source_combo->addItem("Load landmarks");
+		marker_source_combo->addItem("Load first swc");
 
 		gridLayout = new QGridLayout();
 
@@ -110,6 +113,7 @@ public:
 		gridLayout->addWidget(out_thresh_spin,6,2);
 		gridLayout->addWidget(df_checker,6,3);
 		gridLayout->addWidget(refresh_button,6,4);
+		gridLayout->addWidget(marker_source_combo,6,5);
 		gridLayout->addWidget(estimated_label,7,0,1,7);
 
 		connect(factor_scroller, SIGNAL(valueChanged(int)), this, SLOT(update()));
@@ -139,6 +143,7 @@ public:
 
 		connect(centroid_method_combo, SIGNAL(currentIndexChanged(int)), this, SLOT(update()));
 		connect(refresh_button, SIGNAL(clicked()), this, SLOT(update()));
+		connect(marker_source_combo, SIGNAL((currentIndexChanged(int))), this, SLOT(update()));
 
 		this->setLayout(gridLayout);
 		this->setWindowTitle("Tagent Plane");
@@ -163,6 +168,7 @@ public:
 	double out_thresh;
 	LandmarkList landmarks;
 	bool is_df;
+	int marker_source;
 
 	QLabel * factor_label;
 	QLabel * thresh_label;
@@ -185,6 +191,7 @@ public:
 	QSpinBox * forward_spin;
 	QSpinBox * backward_spin;
 	QComboBox * centroid_method_combo;
+	QComboBox * marker_source_combo;
 	
 	QCheckBox * view3d_checker;
 	QCheckBox * df_checker;
