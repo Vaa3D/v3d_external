@@ -1,3 +1,5 @@
+//last change: by Hanchuan Peng, 110828. add conditional compilation of mode menu
+
 #ifndef V3D_APPLICATION_H
 #define V3D_APPLICATION_H
 
@@ -5,6 +7,8 @@
 #include <QMainWindow>
 #include "mainwindow.h"
 #include "../neuron_annotator/gui/NaMainWindow.h"
+
+#include "v3d_compile_constraints.h"
 
 class V3dApplication : public QApplication
 {
@@ -79,7 +83,9 @@ public:
         if (naMainWindow!=0) {
             naMainWindow->setV3DDefaultModeCheck(true);
         }
+#ifdef _ALLOW_WORKMODE_MENU_
         mainWindow->setV3DDefaultModeCheck(true);
+#endif
     }
 
     static void deactivateMainWindow() {
@@ -87,7 +93,9 @@ public:
             deactivateMainWindowHelper(mainWindow);
             mainWindowIsActive=false;
         }
+#ifdef _ALLOW_WORKMODE_MENU_
         mainWindow->setV3DDefaultModeCheck(false);
+#endif
         if (naMainWindow!=0) {
             naMainWindow->setV3DDefaultModeCheck(false);
         }
@@ -102,7 +110,9 @@ public:
             naMainWindowIsActive=true;
         }
         naMainWindow->setNeuronAnnotatorModeCheck(true);
+#ifdef _ALLOW_WORKMODE_MENU_
         mainWindow->setNeuronAnnotatorModeCheck(true);
+#endif
     }
 
     static void deactivateNaMainWindow() {
@@ -113,7 +123,9 @@ public:
         if (naMainWindow!=0) {
             naMainWindow->setNeuronAnnotatorModeCheck(false);
         }
+#ifdef _ALLOW_WORKMODE_MENU_
         mainWindow->setNeuronAnnotatorModeCheck(false);
+#endif
     }
 
     static V3dApplication* getInstance(int & argc, char ** argv) {

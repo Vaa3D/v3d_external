@@ -92,7 +92,9 @@ MainWindow::MainWindow()
     fileMenu = 0;
     editMenu = 0;
     windowMenu = 0;
+#ifdef _ALLOW_WORKMODE_MENU_
     modeMenu = 0;
+#endif
     helpMenu = 0;
 
 	proc_export_menu = 0;
@@ -244,10 +246,12 @@ MainWindow::MainWindow()
 	procCellSeg_Gaussian_partition = 0;
 	procCellSeg_manualCorrect = 0;
 
+#ifdef _ALLOW_WORKMODE_MENU_
 	// Mode
 	procModeDefault = 0;
 	procModeNeuronAnnotator = 0;
-
+#endif
+	
 	setup_global_imgproc_parameter_default(); //set up the default parameter for some of the global parameters of image processing or viewing
 
 	//set the drop function
@@ -1628,6 +1632,7 @@ void MainWindow::updateMenus()
 	proc3DLocalRoiViewer->setEnabled(hasMdiChild); //need to ensure the availability of roi later
 }
 
+#ifdef _ALLOW_WORKMODE_MENU_
 void MainWindow::updateModeMenu()
 {
 	if (modeMenu)
@@ -1637,6 +1642,7 @@ void MainWindow::updateModeMenu()
 		modeMenu->addAction(procModeNeuronAnnotator);
 	}
 }
+#endif
 
 void MainWindow::updateWindowMenu()
 {
@@ -2238,6 +2244,7 @@ void MainWindow::createActions()
     connect(procPC_Atlas_view_atlas_computeVanoObjStat, SIGNAL(triggered()), this, SLOT(func_procPC_Atlas_view_atlas_computeVanoObjStat()));
 
     // Mode
+#ifdef _ALLOW_WORKMODE_MENU_
     procModeDefault = new QAction(tr("V3D Default"), this);
     procModeDefault->setCheckable(true);
     procModeDefault->setChecked(true);
@@ -2247,7 +2254,8 @@ void MainWindow::createActions()
     procModeNeuronAnnotator->setCheckable(true);
     procModeNeuronAnnotator->setChecked(false);
     connect(procModeNeuronAnnotator, SIGNAL(triggered()), this, SLOT(func_procModeNeuronAnnotator()));
-
+#endif
+	
 }
 
 void MainWindow::createMenus()
@@ -2335,10 +2343,12 @@ void MainWindow::createMenus()
 
     menuBar()->addSeparator();
 
+#ifdef _ALLOW_WORKMODE_MENU_
     // Work-Mode
     modeMenu = menuBar()->addMenu(tr("Work-Mode"));
     connect(modeMenu, SIGNAL(aboutToShow()), this, SLOT(updateModeMenu()));
-
+#endif
+	
 	//
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction( aboutAct );
@@ -2654,6 +2664,7 @@ void MainWindow::func_procCellSeg_Gaussian_partition(){if (activeMdiChild()) act
 void MainWindow::func_procCellSeg_manualCorrect(){if (activeMdiChild()) activeMdiChild()->popupImageProcessingDialog(tr(" -- (available soon) manual correction/identification of spherical structures"));}
 
 
+#ifdef _ALLOW_WORKMODE_MENU_
 // Mode
 void MainWindow::func_procModeDefault()
 {
@@ -2674,6 +2685,7 @@ void MainWindow::setV3DDefaultModeCheck(bool checkState) {
 void MainWindow::setNeuronAnnotatorModeCheck(bool checkState) {
     procModeNeuronAnnotator->setChecked(checkState);
 }
+#endif
 
 //class V3D_PlugIn_Interface
 //{

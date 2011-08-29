@@ -105,8 +105,10 @@ public:
     // CMB 12-Nov-2010
     // Intercept QFileOpenEvent on Mac - drag-onto-app
     bool eventFilter(QObject *obj, QEvent *event);
+#ifdef _ALLOW_WORKMODE_MENU_
     void setV3DDefaultModeCheck(bool checkState);
     void setNeuronAnnotatorModeCheck(bool checkState);
+#endif
     void handleCoordinatedCloseEvent(QCloseEvent *event);
 
 protected:
@@ -135,7 +137,9 @@ public slots:
     // void about();
 	void openRecentFile();
     void updateMenus();
+#ifdef _ALLOW_WORKMODE_MENU_
     void updateModeMenu();
+#endif
     void updateWindowMenu();
     void exit();
     
@@ -260,9 +264,11 @@ public slots:
 	void func_procTracing_update3Dview();
 	void func_procTracing_save();
 
+#ifdef _ALLOW_WORKMODE_MENU_
         // Mode
         void func_procModeDefault();
         void func_procModeNeuronAnnotator();
+#endif
 	
 // Dec-20-2010 YuY	
 signals:
@@ -327,15 +333,15 @@ private:
     QMenu *fileMenu;
     QMenu *editMenu;
     QMenu *windowMenu;
+#ifdef _ALLOW_WORKMODE_MENU_
     QMenu *modeMenu;
+#endif
     QMenu *helpMenu;
 
 	QMenu *basicProcMenu, *advancedProcMenu, *pipelineProcMenu, *visualizeProcMenu;
 
 	QMenu *proc_export_menu;
 	QMenu *proc_import_menu;
-
-//	QMenu *proc_datatype_menu;
 
 	QMenu *proc_datatype_menu;
 	QMenu *proc_geometry_transform_menu;
@@ -486,9 +492,11 @@ private:
 	QAction * procCellSeg_Gaussian_partition;
         QAction * procCellSeg_manualCorrect;
 	
+#ifdef _ALLOW_WORKMODE_MENU_
 	// Mode
 	QAction * procModeDefault;
 	QAction * procModeNeuronAnnotator;
+#endif
     
 #if defined(__V3DWSDEVELOP__)
 private:
