@@ -1,6 +1,7 @@
 //plugin_atlasguided_stranno_partial.cpp
 // by Lei Qu
 //2010-11-09
+//2011-08-29. add download page info
 
 #include <QtGui>
 
@@ -23,23 +24,46 @@ CControlPanel* CControlPanel::panel=0;
 void AtlasGuidedStrAnnoPartial(V3DPluginCallback &callback, QWidget *parent, int mode);
 bool readCelloi_file(const QString &qs_filename,QList<QString> &ql_celloi);
 
+
+void OpenDownloadPage(QWidget *parent)
+{
+    bool b_openurl_worked;
+    b_openurl_worked=QDesktopServices::openUrl(QUrl("http://penglab.janelia.org/proj/celegans_seganno"));
+    if (! b_openurl_worked)
+        QMessageBox::warning(parent,
+							 "Error opening download page", // title
+							 "Please browse to\n"
+							 "http://penglab.janelia.org/proj/celegans_seganno\n"
+							 "to download the test data for this plugin");
+	
+}
+
+
 //************************************************************************************************************************************
 QStringList AtlasGuidedStrAnnoPartialPlugin::menulist() const
 {
     return QStringList()
-	<< tr("atlasguided_stranno...")
-	<< tr("atlasguided_stranno_parital...")
+	
+	<< tr("atlasguided_seganno...")
+	<< tr("open suppelement-material web page")
+/*	<< tr("atlasguided_stranno_parital...")
 	<< tr("grid2image...")
 	<< tr("atlas2image_affine_beforecrop...")
 	<< tr("atlas2image_affine_aftercrop...")
-	<< tr("test...");
+	<< tr("test...")
+*/
+	;
 }
 
 void AtlasGuidedStrAnnoPartialPlugin::domenu(const QString &menu_name, V3DPluginCallback &callback, QWidget *parent)
 {
-	if(menu_name==tr("atlasguided_stranno..."))
+	if(menu_name==tr("atlasguided_seganno..."))
 	{
 		AtlasGuidedStrAnnoPartial(callback,parent,-1);
+	}
+	else if(menu_name==tr("open suppelement-material web page"))
+	{
+		OpenDownloadPage(parent);
 	}
 	else if(menu_name==tr("atlasguided_stranno_parital..."))
 	{
