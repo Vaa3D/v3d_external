@@ -271,7 +271,9 @@ public:
 		centroid_method_combo = new QComboBox();
 		centroid_method_combo->addItem("maximum intensity density");
 		centroid_method_combo->addItem("center of mass");
-		centroid_method_combo->addItem("local distance transformation");
+		centroid_method_combo->addItem("max local df");
+		centroid_method_combo->addItem("max local df of max component");
+		centroid_method_combo->addItem("hanchan df forward");
 
 		direction_combo = new QComboBox();
 		direction_combo->addItem("Forward Tracking");
