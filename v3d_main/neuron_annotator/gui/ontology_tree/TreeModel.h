@@ -44,8 +44,10 @@
 #include <QAbstractItemModel>
 #include <QModelIndex>
 #include <QVariant>
+#include <QHash>
 
 class Entity;
+class Ontology;
 class TreeItem;
 
 class TreeModel : public QAbstractItemModel
@@ -53,7 +55,7 @@ class TreeModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    TreeModel(Entity *root, QObject *parent = 0);
+    TreeModel(Ontology *ontology, QObject *parent = 0);
     ~TreeModel();
 
     QVariant data(const QModelIndex &index, int role) const;
@@ -70,6 +72,7 @@ private:
     void setupModelData(Entity *entity, TreeItem *parent);
 
     TreeItem *rootItem;
+    QHash<qint64, QString> termKeyMap;
 };
 
 #endif

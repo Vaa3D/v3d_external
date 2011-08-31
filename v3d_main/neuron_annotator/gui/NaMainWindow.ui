@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1098</width>
+    <width>1131</width>
     <height>909</height>
    </rect>
   </property>
@@ -431,7 +431,7 @@
              <item>
               <widget class="QTabWidget" name="viewerControlTabWidget">
                <property name="currentIndex">
-                <number>2</number>
+                <number>1</number>
                </property>
                <widget class="QWidget" name="largeMipViewerControlPage">
                 <attribute name="title">
@@ -780,7 +780,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                         <attribute name="title">
                          <string>Rotation</string>
                         </attribute>
-                        <widget class="AngleWidget" name="rotXWidget">
+                        <widget class="AngleWidget" name="rotXWidget" native="true">
                          <property name="geometry">
                           <rect>
                            <x>13</x>
@@ -807,11 +807,11 @@ You can also resize the box by Ctrl + left mouse click.</string>
                            <height>35</height>
                           </size>
                          </property>
-                         <property name="textLabel">
+                         <property name="textLabel" stdset="0">
                           <string>RotX</string>
                          </property>
                         </widget>
-                        <widget class="AngleWidget" name="rotZWidget">
+                        <widget class="AngleWidget" name="rotZWidget" native="true">
                          <property name="geometry">
                           <rect>
                            <x>13</x>
@@ -838,11 +838,11 @@ You can also resize the box by Ctrl + left mouse click.</string>
                            <height>35</height>
                           </size>
                          </property>
-                         <property name="textLabel">
+                         <property name="textLabel" stdset="0">
                           <string>RotZ</string>
                          </property>
                         </widget>
-                        <widget class="AngleWidget" name="rotYWidget">
+                        <widget class="AngleWidget" name="rotYWidget" native="true">
                          <property name="geometry">
                           <rect>
                            <x>13</x>
@@ -869,7 +869,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                            <height>35</height>
                           </size>
                          </property>
-                         <property name="textLabel">
+                         <property name="textLabel" stdset="0">
                           <string>RotY</string>
                          </property>
                         </widget>
@@ -1232,7 +1232,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="ZoomWidget" name="zoomWidget"/>
+                 <widget class="ZoomWidget" name="zoomWidget" native="true"/>
                 </item>
                 <item>
                  <widget class="QPushButton" name="resetViewButton">
@@ -1266,7 +1266,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="GammaWidget" name="sharedGammaWidget"/>
+                 <widget class="GammaWidget" name="sharedGammaWidget" native="true"/>
                 </item>
                 <item>
                  <widget class="QFrame" name="sharedColorFrame">
@@ -1447,17 +1447,23 @@ You can also resize the box by Ctrl + left mouse click.</string>
     </item>
     <item>
      <widget class="AnnotationWidget" name="annotationFrame">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+       <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
         <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
+        <verstretch>1</verstretch>
        </sizepolicy>
       </property>
       <property name="minimumSize">
        <size>
-        <width>200</width>
+        <width>300</width>
         <height>0</height>
        </size>
+      </property>
+      <property name="autoFillBackground">
+       <bool>false</bool>
       </property>
       <property name="frameShape">
        <enum>QFrame::NoFrame</enum>
@@ -1477,7 +1483,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1098</width>
+     <width>1131</width>
      <height>22</height>
     </rect>
    </property>

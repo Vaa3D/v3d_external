@@ -15,7 +15,7 @@ compiling, linking, and/or using OpenSSL is allowed.
 
 #include "envH.h"
 
-SOAP_SOURCE_STAMP("@(#) envC.cpp ver 2.8.3 2011-08-22 20:16:42 GMT")
+SOAP_SOURCE_STAMP("@(#) envC.cpp ver 2.8.3 2011-08-29 13:17:49 GMT")
 
 
 #ifndef WITH_NOGLOBAL

@@ -1,5 +1,7 @@
 #include "DataThread.h"
+#include "../entity_model/Ontology.cpp"
 #include "../../webservice/impl/EntityAdapter.h"
+#include <QMap>
 
 DataThread::DataThread(QObject *parent) :
     QThread(parent),
@@ -36,18 +38,37 @@ GetCurrentOntologyThread::GetCurrentOntologyThread(QObject *parent) :
 
 void GetCurrentOntologyThread::fetchData()
 {
-    cds::fw__getCurrentOntologyResponse response;
+
+    Entity *root = 0;
+    QMap<QKeySequence, qint64> *keyBindMap = 0;
+
     qDebug() << "Getting current ontology...";
+    cds::fw__getCurrentOntologyResponse response;
     if (proxy.getCurrentOntology(response) == SOAP_OK)
     {
-        qDebug() << "Got results!";
-        results = convert(response.return_);
-        qDebug() << "Converted";
+        root = EntityAdapter::convert(response.return_);
+
+        qDebug() << "Getting current ontology keybindings...";
+        cds::fw__getKeybindingsResponse keybindingsResponse;
+        if (proxy.getKeybindings(*root->id, keybindingsResponse) == SOAP_OK)
+        {
+            cds::fw__ontologyKeyBindings *keyBindings = keybindingsResponse.return_;
+            keyBindMap = EntityAdapter::convert(keyBindings);
+        }
+        else
+        {
+            errorMessage = new QString(proxy.soap_fault_string());
+            delete root;
+            return;
+        }
     }
     else
     {
         errorMessage = new QString(proxy.soap_fault_string());
+        return;
     }
+
+    results = new Ontology(root, keyBindMap);
 }
 
 // ===========================================================
@@ -65,7 +86,7 @@ void GetEntityThread::fetchData()
     cds::fw__getEntityByIdResponse response;
     if (proxy.getEntityById(entityId, response) == SOAP_OK)
     {
-        results = convert(response.return_);
+        results = EntityAdapter::convert(response.return_);
     }
     else
     {

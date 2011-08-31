@@ -9,6 +9,7 @@
 #include "../../webservice/impl/EntityAdapter.h"
 
 class NaMainWindow;
+class Ontology;
 
 class ConsoleObserver : public QObject
 {
@@ -18,7 +19,7 @@ public:
     void loadCurrentOntology();
 
 signals:
-    void openOntology(Entity *entity);
+    void openOntology(Ontology *ontology);
     void openMulticolorImageStack(QString filepath);
 
 public slots:

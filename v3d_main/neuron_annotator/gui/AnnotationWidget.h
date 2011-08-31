@@ -3,7 +3,9 @@
 
 #include <QFrame>
 #include <QThread>
-#include "../entity_model/Entity.h"
+#include <QEvent>
+
+class Ontology;
 
 namespace Ui {
     class AnnotationWidget;
@@ -18,9 +20,13 @@ public:
     ~AnnotationWidget();
 
 public slots:
-    void setOntology(Entity *root);
+    void setOntology(Ontology *ontology);
+
+protected:
+    bool eventFilter (QObject* watched_object, QEvent* e);
 
 private:
+    Ontology *ontology;
     Ui::AnnotationWidget *ui;
 };
 

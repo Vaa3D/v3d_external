@@ -219,6 +219,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/data_model/PrivateVolumeModelData.h \
     ../neuron_annotator/entity_model/EntityData.h \
     ../neuron_annotator/entity_model/Entity.h \
+    ../neuron_annotator/entity_model/Ontology.h \
     ../neuron_annotator/data_model/Texture2dColors.h \
     ../neuron_annotator/data_model/PrivateDataColorModel.h \
     ../neuron_annotator/gui/NaViewer.h \
@@ -383,6 +384,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/data_model/PrivateVolumeModelData.cpp \
     ../neuron_annotator/entity_model/EntityData.cpp \
     ../neuron_annotator/entity_model/Entity.cpp \
+    ../neuron_annotator/entity_model/Ontology.cpp \
     ../neuron_annotator/data_model/Texture2dColors.cpp \
     ../neuron_annotator/data_model/PrivateDataColorModel.cpp \
     ../neuron_annotator/NeuronAnnotatorResultNode.cpp \

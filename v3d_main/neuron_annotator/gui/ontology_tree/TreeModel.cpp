@@ -1,19 +1,36 @@
 #include "TreeModel.h"
 #include "TreeItem.h"
 #include "../../entity_model/Entity.h"
+#include "../../entity_model/Ontology.h"
 #include <QtGui>
 
-TreeModel::TreeModel(Entity *root, QObject *parent)
+TreeModel::TreeModel(Ontology *ontology, QObject *parent)
     : QAbstractItemModel(parent)
 {
     QList<QVariant> rootData;
     rootData << "Term" << "Keybind";
     rootItem = new TreeItem(rootData);
-    setupModelData(root, rootItem);
+    if (ontology == NULL) return;
+
+    QMap<QKeySequence, qint64>::const_iterator i = ontology->keyBindMap()->constBegin();
+    while (i != ontology->keyBindMap()->constEnd()) {
+        if (termKeyMap.contains(i.value())) {
+            qDebug() << "Ontology term "<<i.value()<< "is already mapped to a key";
+        }
+        else {
+            QKeySequence keySeq(i.key());
+            QString keySeqLabel(keySeq.toString(QKeySequence::NativeText));
+            termKeyMap.insert(i.value(), keySeqLabel);
+        }
+        ++i;
+    }
+
+    setupModelData(ontology->root(), rootItem);
 }
 
 TreeModel::~TreeModel()
 {
+    qDebug() << "Delete existing tree";
     delete rootItem;
 }
 
@@ -106,8 +123,14 @@ int TreeModel::rowCount(const QModelIndex &parent) const
 
 void TreeModel::setupModelData(Entity *entity, TreeItem *parent)
 {
+
+    QString keybind;
+    if (termKeyMap.contains(*entity->id)) {
+        keybind = termKeyMap.value(*entity->id, "");
+    }
+
     QList<QVariant> columnData;
-    columnData << *entity->name;
+    columnData << *entity->name << keybind;
 
     TreeItem *item = new TreeItem(columnData, parent);
     parent->appendChild(item);

@@ -28,10 +28,10 @@
 
 #ifdef __NAWEBSERVICE__
 #include "../../webservice/impl/ConsoleObserverServiceImpl.cpp"
+class Ontology;
 #endif
 
 using namespace std;
-
 
 //////////////////
 // NutateThread //
@@ -242,13 +242,16 @@ NaMainWindow::NaMainWindow()
     // Allow cross-thread signals/slots that pass QList<int>
     qRegisterMetaType< QList<int> >("QList<int>");
 
+    // The annotation widget wants to listen for key strokes
+    ui.centralwidget->installEventFilter(ui.annotationFrame);
+
     // Start observing the console
     
 #ifdef __NAWEBSERVICE__
 
     consoleObserver = new ConsoleObserver(this);
     connect(consoleObserver, SIGNAL(openMulticolorImageStack(QString)), this, SLOT(openMulticolorImageStack(QString)));
-    connect(consoleObserver, SIGNAL(openOntology(Entity*)), ui.annotationFrame, SLOT(setOntology(Entity*)));
+    connect(consoleObserver, SIGNAL(openOntology(Ontology*)), ui.annotationFrame, SLOT(setOntology(Ontology*)));
 
     consoleObserverService = new obs::ConsoleObserverServiceImpl();
     connect(consoleObserverService, SIGNAL(ontologySelected(long)), consoleObserver, SLOT(ontologySelected(long)));

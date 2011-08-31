@@ -2441,3 +2441,5 @@ v3d_main/neuron_annotator/data_model/Texture2dColors.h
 v3d_main/neuron_annotator/data_model/Texture2dColors.cpp
 v3d_main/neuron_annotator/data_model/PrivateDataColorModel.h
 v3d_main/neuron_annotator/data_model/PrivateDataColorModel.cpp
+v3d_main/neuron_annotator/entity_model/Ontology.h
+v3d_main/neuron_annotator/entity_model/Ontology.cpp

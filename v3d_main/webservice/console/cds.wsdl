@@ -3,7 +3,14 @@
 <xsd:schema>
 <xsd:import namespace="http://ws.FlyWorkstation.it.janelia.org/" schemaLocation="http://localhost:30001/axis2/services/cds?xsd=1" />
 </xsd:schema>
+<xsd:schema>
+<xsd:import namespace="http://jaxb.dev.java.net/array" schemaLocation="http://localhost:30001/axis2/services/cds?xsd=2" />
+</xsd:schema>
 </types>
+<message name="removeAnnotation">
+<part name="annotationId" type="xsd:long" />
+</message>
+<message name="removeAnnotationResponse" />
 <message name="getEntityById">
 <part name="entityId" type="xsd:long" />
 </message>
@@ -15,6 +22,18 @@
 </message>
 <message name="getEntityTreeResponse">
 <part name="return" type="tns:entity" />
+</message>
+<message name="getAnnotationsForEntity">
+<part name="entityId" type="xsd:long" />
+</message>
+<message name="getAnnotationsForEntityResponse">
+<part name="return" type="tns:entityArray" />
+</message>
+<message name="getAnnotationsForEntities">
+<part xmlns:ns1="http://jaxb.dev.java.net/array" name="entityIds" type="ns1:longArray" />
+</message>
+<message name="getAnnotationsForEntitiesResponse">
+<part name="return" type="tns:entityArray" />
 </message>
 <message name="getCurrentOntology" />
 <message name="getCurrentOntologyResponse">
@@ -31,6 +50,16 @@
 <part name="endpointUrl" type="xsd:string" />
 </message>
 <message name="registerClientResponse" />
+<message name="createAnnotation">
+<part name="annotation" type="tns:ontologyAnnotation" />
+</message>
+<message name="createAnnotationResponse" />
+<message name="getKeybindings">
+<part name="ontologyId" type="xsd:long" />
+</message>
+<message name="getKeybindingsResponse">
+<part name="return" type="tns:ontologyKeyBindings" />
+</message>
 <message name="getParentEntityDataArray">
 <part name="childEntityId" type="xsd:long" />
 </message>
@@ -38,6 +67,10 @@
 <part name="return" type="tns:entityDataArray" />
 </message>
 <portType name="ConsoleDataService">
+<operation name="removeAnnotation">
+<input message="tns:removeAnnotation" />
+<output message="tns:removeAnnotationResponse" />
+</operation>
 <operation name="getEntityById">
 <input message="tns:getEntityById" />
 <output message="tns:getEntityByIdResponse" />
@@ -45,6 +78,14 @@
 <operation name="getEntityTree">
 <input message="tns:getEntityTree" />
 <output message="tns:getEntityTreeResponse" />
+</operation>
+<operation name="getAnnotationsForEntity">
+<input message="tns:getAnnotationsForEntity" />
+<output message="tns:getAnnotationsForEntityResponse" />
+</operation>
+<operation name="getAnnotationsForEntities">
+<input message="tns:getAnnotationsForEntities" />
+<output message="tns:getAnnotationsForEntitiesResponse" />
 </operation>
 <operation name="getCurrentOntology">
 <input message="tns:getCurrentOntology" />
@@ -58,6 +99,14 @@
 <input message="tns:registerClient" />
 <output message="tns:registerClientResponse" />
 </operation>
+<operation name="createAnnotation">
+<input message="tns:createAnnotation" />
+<output message="tns:createAnnotationResponse" />
+</operation>
+<operation name="getKeybindings">
+<input message="tns:getKeybindings" />
+<output message="tns:getKeybindingsResponse" />
+</operation>
 <operation name="getParentEntityDataArray">
 <input message="tns:getParentEntityDataArray" />
 <output message="tns:getParentEntityDataArrayResponse" />
@@ -65,6 +114,15 @@
 </portType>
 <binding name="CdsPortBinding" type="tns:ConsoleDataService">
 <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc" />
+<operation name="removeAnnotation">
+<soap:operation soapAction="" />
+<input>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</input>
+<output>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</output>
+</operation>
 <operation name="getEntityById">
 <soap:operation soapAction="" />
 <input>
@@ -75,6 +133,24 @@
 </output>
 </operation>
 <operation name="getEntityTree">
+<soap:operation soapAction="" />
+<input>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</input>
+<output>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</output>
+</operation>
+<operation name="getAnnotationsForEntity">
+<soap:operation soapAction="" />
+<input>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</input>
+<output>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</output>
+</operation>
+<operation name="getAnnotationsForEntities">
 <soap:operation soapAction="" />
 <input>
 <soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
@@ -102,6 +178,24 @@
 </output>
 </operation>
 <operation name="registerClient">
+<soap:operation soapAction="" />
+<input>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</input>
+<output>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</output>
+</operation>
+<operation name="createAnnotation">
+<soap:operation soapAction="" />
+<input>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</input>
+<output>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</output>
+</operation>
+<operation name="getKeybindings">
 <soap:operation soapAction="" />
 <input>
 <soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />

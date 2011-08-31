@@ -1,5 +1,6 @@
 #include "ConsoleObserver.h"
 #include "../gui/NaMainWindow.h"
+#include "../entity_model/Ontology.h"
 
 ConsoleObserver::ConsoleObserver(NaMainWindow *naMainWindow, QObject *parent) :
     QObject(parent),
@@ -29,17 +30,18 @@ void ConsoleObserver::loadCurrentOntology()
     loadOntologyThread->start(QThread::NormalPriority);
 }
 
-
 void ConsoleObserver::loadOntologyResults(const void *results) {
-    emit openOntology((Entity *)results);
+
+    emit openOntology((Ontology *)results);
+    delete loadOntologyThread;
     loadOntologyThread = NULL;
 }
 
 void ConsoleObserver::loadOntologyError(const QString &error) {
     // TODO: this should notify the user in some way
+    delete loadOntologyThread;
     loadOntologyThread = NULL;
 }
-
 
 void ConsoleObserver::ontologySelected(long rootId)
 {
@@ -98,11 +100,13 @@ void ConsoleObserver::entitySelectedResults(const void *results) {
         }
     }
 
+    delete entitySelectedThread;
     entitySelectedThread = NULL;
 }
 
 void ConsoleObserver::entitySelectedError(const QString & error) {
     // TODO: this should notify the user in some way
+    delete entitySelectedThread;
     entitySelectedThread = NULL;
 }
 
@@ -150,11 +154,13 @@ void ConsoleObserver::entityViewRequestedResults(const void *results) {
         }
     }
 
+    delete entityViewRequestedThread;
     entityViewRequestedThread = NULL;
 }
 
 void ConsoleObserver::entityViewRequestedError(const QString & error) {
     // TODO: this should notify the user in some way
+    delete entityViewRequestedThread;
     entityViewRequestedThread = NULL;
 }
 
