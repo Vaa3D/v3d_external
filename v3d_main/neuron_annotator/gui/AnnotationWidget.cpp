@@ -60,9 +60,6 @@ void AnnotationWidget::setOntology(Ontology *ontology)
     ui->ontologyTreeView->header()->moveSection(1,0);
     ui->ontologyTreeView->resizeColumnToContents(0);
     ui->ontologyTreeView->resizeColumnToContents(1);
-
-    // Disable default QTreeView keyboard shortcuts
-//    ui->ontologyTreeView->setFocusPolicy(Qt::NoFocus);
 }
 
 void AnnotationWidget::showOntologyError(const QString & text)
@@ -177,7 +174,8 @@ bool AnnotationWidget::eventFilter(QObject* watched_object, QEvent* event)
     if (event->type() == QEvent::KeyPress)
     {
         QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
-        int keyInt = keyEvent->key();
+        const int constKeyInt = keyEvent->key();
+        int keyInt = constKeyInt;
         Qt::Key key = static_cast<Qt::Key>(keyInt);
 
         // Qt doesn't understand this key code

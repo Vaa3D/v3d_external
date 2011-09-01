@@ -11,9 +11,6 @@
 #include "../data_model/NeuronSelectionModel.h"
 #include "../ExportFile.h"
 #include "../data_model/NeuronSelectionModel.h"
-#include "../../webservice/impl/ConsoleObserverServiceImpl.h"
-#include "../../webservice/console/cdsConsoleDataServiceProxy.h"
-#include "../utility/ConsoleObserver.h"
 
 class NeuronSelector;
 
