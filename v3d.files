@@ -2443,3 +2443,5 @@ v3d_main/neuron_annotator/data_model/PrivateDataColorModel.h
 v3d_main/neuron_annotator/data_model/PrivateDataColorModel.cpp
 v3d_main/neuron_annotator/entity_model/Ontology.h
 v3d_main/neuron_annotator/entity_model/Ontology.cpp
+v3d_main/neuron_annotator/gui/ontology_tree/TreeView.h
+v3d_main/neuron_annotator/gui/ontology_tree/TreeView.cpp

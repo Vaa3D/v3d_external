@@ -9,33 +9,81 @@
 namespace obs {
 
 ConsoleObserverServiceImpl::ConsoleObserverServiceImpl(QObject *parent) :
-    QThread(parent)
+    QThread(parent),
+    _port(-1),
+    _errorMessage(NULL),
+    _running(false)
 {
     cds::ConsoleDataServiceProxy proxy;
     cds::fw__reservePortResponse reservePortResponse;
-    proxy.reservePort(NULL, NULL, CLIENT_NAME, reservePortResponse);
-    port = reservePortResponse.return_;
+    if (proxy.reservePort(NULL, NULL, CLIENT_NAME, reservePortResponse) != SOAP_OK) {
+        _errorMessage = new QString(proxy.soap_fault_string());
+    }
+    else {
+        _port = reservePortResponse.return_;
+    }
 
-    qDebug() << "Received console approval to run on port "<<port;
+    QObject::connect(this, SIGNAL(finished()), this, SLOT(deleteLater()));
 }
 
+ConsoleObserverServiceImpl::~ConsoleObserverServiceImpl() {
+    qDebug() << "delete ConsoleObserverServiceImpl on port"<<_port;
+    if (_errorMessage!=0) delete _errorMessage;
+}
+
+// Reimplemented run(port) to support stopping the thread
 void ConsoleObserverServiceImpl::run()
 {
-    ConsoleObserverService::run(port);
+    _running = true;
+    for (;;)
+    {
+        accept_timeout = CONSOLE_OBSERVER_ACCEPT_TIMEOUT;
+        if (!soap_valid_socket(accept()))
+        {
+            if (errnum != 0) {
+                qDebug() << "Error accepting connection, code:" << error << "errnum:"<<errnum;
+            }
+        }
+        else {
+            (void)serve();
+            soap_destroy(this);
+            soap_end(this);
+        }
+        if (!_running) {
+            return;
+        }
+    }
+}
+
+// Like start() but returns without starting the thread if its not able to bind to the port
+void ConsoleObserverServiceImpl::startServer()
+{
+    if (soap_valid_socket(bind(NULL, _port, 100)))
+    {
+        start(QThread::NormalPriority);
+    }
+}
+
+// Asyncronously tell the server to stop. It will die on its next accept loop.
+void ConsoleObserverServiceImpl::stopServer()
+{
+    _running = false;
 }
 
 void ConsoleObserverServiceImpl::registerWithConsole()
 {
+    if (_port < 0) return;
+
     std::stringstream ss;
     std::string endpointUrl;
-    ss << "http://localhost:" << port;
+    ss << "http://localhost:" << _port;
     ss >> endpointUrl;
 
     cds::ConsoleDataServiceProxy proxy;
     cds::fw__registerClientResponse registerClientResponse;
-    proxy.registerClient(NULL, NULL, port, endpointUrl, registerClientResponse);
-
-    qDebug() << "Registered with console and listening for events";
+    if (proxy.registerClient(NULL, NULL, _port, endpointUrl, registerClientResponse) != SOAP_OK) {
+        _errorMessage = new QString(proxy.soap_fault_string());
+    }
 }
 
 int ConsoleObserverServiceImpl::ontologySelected(LONG64 rootId, struct fw__ontologySelectedResponse &response)

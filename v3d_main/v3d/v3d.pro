@@ -247,6 +247,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_annotator/gui/AnnotationWidget.h \
     ../neuron_annotator/gui/ontology_tree/TreeItem.h \
     ../neuron_annotator/gui/ontology_tree/TreeModel.h \
+    ../neuron_annotator/gui/ontology_tree/TreeView.h \
     ../neuron_annotator/gui/MouseClickManager.h \
     ../neuron_annotator/gui/BrightnessCalibrator.h \
     ../neuron_annotator/gui/ZoomSpinBox.h \
@@ -401,6 +402,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../neuron_annotator/gui/AnnotationWidget.cpp \
     ../neuron_annotator/gui/ontology_tree/TreeItem.cpp \
     ../neuron_annotator/gui/ontology_tree/TreeModel.cpp \
+    ../neuron_annotator/gui/ontology_tree/TreeView.cpp \
     ../neuron_annotator/gui/ZoomSpinBox.cpp \
     ../neuron_annotator/gui/ZoomWidget.cpp \
     ../neuron_annotator/gui/CompartmentMapWidget.cpp \

@@ -128,8 +128,6 @@ private:
     QList<GalleryButton*> neuronGalleryButtonList;
     CameraModel sharedCameraModel; // optional camera sharing
     NutateThread *nutateThread;
-    obs::ConsoleObserverServiceImpl *consoleObserverService;
-    ConsoleObserver *consoleObserver;
     NeuronSelector* neuronSelector;
     QLabel * statusProgressMessage;
     QProgressBar * statusProgressBar;

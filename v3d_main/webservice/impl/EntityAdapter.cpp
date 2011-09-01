@@ -88,7 +88,7 @@ QString EntityAdapter::convertKeyBind(QString & javaKeyBind)
 
     QString qtKeyBind(list.join("+"));
 
-    qDebug() << "Converted key bind: "<< javaKeyBind << " => " << qtKeyBind;
+    //qDebug() << "Converted key bind: "<< javaKeyBind << " => " << qtKeyBind;
     return qtKeyBind;
 }
 

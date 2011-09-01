@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1131</width>
-    <height>909</height>
+    <width>1188</width>
+    <height>915</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -1458,7 +1458,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
       </property>
       <property name="minimumSize">
        <size>
-        <width>300</width>
+        <width>350</width>
         <height>0</height>
        </size>
       </property>
@@ -1483,7 +1483,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1131</width>
+     <width>1188</width>
      <height>22</height>
     </rect>
    </property>

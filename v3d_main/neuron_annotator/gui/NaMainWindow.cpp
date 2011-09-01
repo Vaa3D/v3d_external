@@ -26,11 +26,6 @@
 #include "FragmentGalleryWidget.h"
 #include "AnnotationWidget.h"
 
-#ifdef __NAWEBSERVICE__
-#include "../../webservice/impl/ConsoleObserverServiceImpl.cpp"
-class Ontology;
-#endif
-
 using namespace std;
 
 //////////////////
@@ -242,31 +237,10 @@ NaMainWindow::NaMainWindow()
     // Allow cross-thread signals/slots that pass QList<int>
     qRegisterMetaType< QList<int> >("QList<int>");
 
-    // The annotation widget wants to listen for key strokes
+    // Set up the annotation widget
+    ui.annotationFrame->setMainWindow(this);
     ui.centralwidget->installEventFilter(ui.annotationFrame);
-
-    // Start observing the console
-    
-#ifdef __NAWEBSERVICE__
-
-    consoleObserver = new ConsoleObserver(this);
-    connect(consoleObserver, SIGNAL(openMulticolorImageStack(QString)), this, SLOT(openMulticolorImageStack(QString)));
-    connect(consoleObserver, SIGNAL(openOntology(Ontology*)), ui.annotationFrame, SLOT(setOntology(Ontology*)));
-
-    consoleObserverService = new obs::ConsoleObserverServiceImpl();
-    connect(consoleObserverService, SIGNAL(ontologySelected(long)), consoleObserver, SLOT(ontologySelected(long)));
-    connect(consoleObserverService, SIGNAL(entitySelected(long)), consoleObserver, SLOT(entitySelected(long)));
-    connect(consoleObserverService, SIGNAL(entityViewRequested(long)), consoleObserver, SLOT(entityViewRequested(long)));
-    connect(consoleObserverService, SIGNAL(annotationsChanged(long)), consoleObserver, SLOT(annotationsChanged(long)));
-    consoleObserverService->start(QThread::NormalPriority);
-    consoleObserverService->registerWithConsole();
-
-    // Load the current ontology
-
-    consoleObserver->loadCurrentOntology();
-    
-#endif
-
+    ui.annotationFrame->consoleConnect();
 }
 
 void NaMainWindow::onViewerChanged(int viewerIndex) {

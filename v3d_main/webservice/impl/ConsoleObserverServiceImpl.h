@@ -4,6 +4,8 @@
 #include <QThread>
 #include "../console/obsConsoleObserverService.h"
 
+#define CONSOLE_OBSERVER_ACCEPT_TIMEOUT 30
+
 namespace obs {
 
 class ConsoleObserverServiceImpl : public QThread, public ConsoleObserverService
@@ -12,8 +14,13 @@ class ConsoleObserverServiceImpl : public QThread, public ConsoleObserverService
 
 public:
     explicit ConsoleObserverServiceImpl(QObject *parent = 0);
+    ~ConsoleObserverServiceImpl();
     void run();
+    void startServer();
+    void stopServer();
     void registerWithConsole();
+    inline QString * errorMessage() const { return _errorMessage; }
+    inline int port() const { return _port; }
     virtual int ontologySelected(LONG64 _rootId, struct fw__ontologySelectedResponse &response);
     virtual int entitySelected(LONG64 _entityId, struct fw__entitySelectedResponse &response);
     virtual int entityViewRequested(LONG64 entityId, struct fw__entityViewRequestedResponse &response);
@@ -27,7 +34,9 @@ signals:
     void annotationsChanged(long entityId);
 
 private:
-    int port;
+    bool _running;
+    int _port;
+    QString *_errorMessage;
 
 };
 
