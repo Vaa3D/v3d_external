@@ -1,6 +1,6 @@
 #include "Ontology.h"
 #include "Entity.h"
-#include <QSet>
+#include <QtGui>
 
 void Ontology::populateTermMap(Entity *entity)
 {

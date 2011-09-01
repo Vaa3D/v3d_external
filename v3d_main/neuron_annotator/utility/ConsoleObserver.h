@@ -1,13 +1,9 @@
 #ifndef CONSOLEOBSERVER_H
 #define CONSOLEOBSERVER_H
 
-#include <QtGui>
-#include "JacsUtil.h"
-#include "DataThread.h"
-#include "../entity_model/Entity.h"
-#include "../../webservice/console/cdsConsoleDataServiceProxy.h"
-#include "../../webservice/impl/EntityAdapter.h"
+#include <QtCore>
 
+class DataThread;
 class NaMainWindow;
 class Ontology;
 

@@ -1,10 +1,9 @@
 #ifndef DATATHREAD_H
 #define DATATHREAD_H
 
+#include "../../webservice/console/cdsConsoleDataServiceProxy.h"
 #include <QObject>
 #include <QThread>
-#include "../entity_model/Entity.h"
-#include "../../webservice/console/cdsConsoleDataServiceProxy.h"
 
 class DataThread : public QThread
 {
@@ -29,7 +28,6 @@ protected:
 // ===========================================================
 // Get Current Ontology Tree
 // ===========================================================
-
 
 class GetCurrentOntologyThread : public DataThread
 {

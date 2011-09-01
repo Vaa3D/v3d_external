@@ -174,19 +174,18 @@ bool AnnotationWidget::eventFilter(QObject* watched_object, QEvent* event)
     if (event->type() == QEvent::KeyPress)
     {
         QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
-        const int constKeyInt = keyEvent->key();
-        int keyInt = constKeyInt;
-        Qt::Key key = static_cast<Qt::Key>(keyInt);
+        int keyInt = keyEvent->key();
+        Qt::Key qtKey = static_cast<Qt::Key>(keyInt);
 
         // Qt doesn't understand this key code
-        if (key == Qt::Key_unknown)
+        if (qtKey == Qt::Key_unknown)
         {
-            qDebug() << "Unknown key:"<<key;
+            qDebug() << "Unknown key:"<<qtKey;
             return false;
         }
 
         // Ignore this event if only a modifier was pressed by itself
-        if (key == Qt::Key_Control || key == Qt::Key_Shift || key == Qt::Key_Alt || key == Qt::Key_Meta)
+        if (qtKey == Qt::Key_Control || qtKey == Qt::Key_Shift || qtKey == Qt::Key_Alt || qtKey == Qt::Key_Meta)
         {
             return false;
         }

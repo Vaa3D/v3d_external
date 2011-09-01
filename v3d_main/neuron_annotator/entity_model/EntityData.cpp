@@ -1,5 +1,5 @@
-#include "EntityData.h"
 #include "Entity.h"
+#include <QtGui>
 
 EntityData::EntityData() : id(0), orderIndex(0), attributeName(0), user(0), value(0), childEntity(0), parentEntity(0)
 {

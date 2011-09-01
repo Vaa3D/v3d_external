@@ -1,6 +1,11 @@
 #include "ConsoleObserver.h"
+#include "JacsUtil.h"
+#include "DataThread.h"
 #include "../gui/NaMainWindow.h"
+#include "../entity_model/Entity.h"
 #include "../entity_model/Ontology.h"
+#include "../../webservice/impl/EntityAdapter.h"
+#include "../../webservice/console/cdsConsoleDataServiceProxy.h"
 
 ConsoleObserver::ConsoleObserver(NaMainWindow *naMainWindow, QObject *parent) :
     QObject(parent),

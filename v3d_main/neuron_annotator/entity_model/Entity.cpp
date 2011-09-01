@@ -1,4 +1,6 @@
 #include "Entity.h"
+#include "EntityData.h"
+#include <QtGui>
 
 Entity::Entity() : id(0), name(0), user(0), entityStatus(0), entityType(0)
 {

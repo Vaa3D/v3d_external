@@ -1,9 +1,7 @@
 #ifndef ONTOLOGY_H
 #define ONTOLOGY_H
 
-#include <QMap>
-#include <QHash>
-#include <QKeySequence>
+#include <QtCore>
 
 class Entity;
 

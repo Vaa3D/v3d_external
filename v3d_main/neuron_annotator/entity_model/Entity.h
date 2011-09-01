@@ -1,8 +1,8 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 
-#include <QtGui>
 #include "EntityData.h"
+#include <QtCore>
 
 class Entity
 {
