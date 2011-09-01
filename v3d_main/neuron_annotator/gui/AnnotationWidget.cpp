@@ -8,6 +8,13 @@
 #include "../utility/ConsoleObserver.h"
 #include <QtGui>
 
+// Compiler bug workaround borrowed from 3drenderer/qtr_widget.h
+#ifdef Q_WS_X11
+#define QEVENT_KEY_PRESS 6 //for crazy RedHat error: expected unqualified-id before numeric constant
+#else
+#define QEVENT_KEY_PRESS QEvent::KeyPress
+#endif
+
 #define LABEL_NONE "None"
 #define LABEL_CONSOLE_DICONNECTED "Console not connected"
 #define LABEL_CONSOLE_CONNECTED "Console connected"
@@ -171,7 +178,7 @@ void AnnotationWidget::consoleDisconnect()
 bool AnnotationWidget::eventFilter(QObject* watched_object, QEvent* event)
 {
     bool filtered = false;
-    if (event->type() == QEvent::KeyPress)
+    if (event->type() == QEVENT_KEY_PRESS)
     {
         QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
         int keyInt = keyEvent->key();
