@@ -360,14 +360,21 @@ bool ireconstructing(SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, R
                         SDATATYPE curval = (SDATATYPE)val;
 
                         //
-                        if (pWeights[idx-o_c].listWeights.size()<=1) 
+                        V3DLONG idx_w = idx-o_c;
+                        if (pWeights[idx_w].listWeights.size()<=1) 
                         {
                             pVImg[idx] = curval;
                         }
                         else
                         {
                             //pVImg[idx] = (pVImg[idx] + curval )/2; // Avg. Intensity
-                            pVImg[idx] += (SDATATYPE) (val*pWeights[idx-o_c].listWeights.at(ii)); // linear blending
+                            
+                            float sumweights=0;
+                            for (int i=0; i<pWeights[idx_w].listWeights.size(); i++) {
+                                sumweights += pWeights[idx_w].listWeights.at(ii);
+                            }
+                            float coef = pWeights[idx_w].listWeights.at(ii) / sumweights;
+                            pVImg[idx] += (SDATATYPE) (val*coef); // linear blending
                         }
 
                     }
