@@ -25,6 +25,7 @@ public:
     QRgb blend(const std::vector<double>& channelIntensities) const;
     bool setChannelColor(int index, QRgb color);
     bool setChannelHdrRange(int index, qreal minParam, qreal maxParam);
+    bool hasChannelHdrRange(int index, qreal minParam, qreal maxParam) const;
     bool setGamma(qreal gammaParam);
     bool setChannelGamma(int index, qreal gamma);
     qreal getReferenceScaledIntensity(qreal raw_intensity) const {

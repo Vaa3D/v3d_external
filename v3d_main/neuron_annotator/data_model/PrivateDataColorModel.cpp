@@ -89,10 +89,16 @@ bool PrivateDataColorModel::setChannelColor(int index, QRgb color)
     return true;
 }
 
+bool PrivateDataColorModel::hasChannelHdrRange(int index, qreal minParam, qreal maxParam) const
+{
+    if (index >= channelColors.size()) return false;
+    return ( (channelColors[index].hdrMin == minParam)
+          && (channelColors[index].hdrMax == maxParam) );
+}
+
 bool PrivateDataColorModel::setChannelHdrRange(int index, qreal minParam, qreal maxParam)
 {
-    if ( (channelColors[index].hdrMin == minParam)
-       &&(channelColors[index].hdrMax == maxParam) )
+    if ( hasChannelHdrRange(index, minParam, maxParam) )
         return false; // no change
     channelColors[index].setHdrRange(minParam, maxParam);
     return true;

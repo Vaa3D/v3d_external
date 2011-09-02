@@ -37,10 +37,6 @@ protected:
     // merge calls to setGamma(qreal)
     SlotStatus statusOfSetGammaSlot;
     qreal latestGamma;
-    // merge calls to setChannelHdrRange()
-    std::vector<SlotStatus> statusOfSetChannelHdrSlot;
-    std::vector<qreal> latestChannelHdrMin;
-    std::vector<qreal> latestChannelHdrMax;
 
 protected:
     const NaVolumeData& volumeData;

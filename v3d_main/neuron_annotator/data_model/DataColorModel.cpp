@@ -24,10 +24,6 @@ void DataColorModel::resetColors()
         Writer colorWriter(*this);
         if (! d->resetColors(volumeReader)) return;
     } // release locks
-    int numChannels = d->getNumberOfDataChannels();
-    statusOfSetChannelHdrSlot.assign(numChannels, SlotStatus());
-    latestChannelHdrMin.assign(numChannels, 0);
-    latestChannelHdrMax.assign(numChannels, 0);
     qDebug() << "Done resetting DataColorModel";
     emit dataChanged();
 }
@@ -43,19 +39,9 @@ void DataColorModel::setChannelColor(int index, QRgb color)
 
 void DataColorModel::setChannelHdrRange(int index, qreal minParam, qreal maxParam)
 {
-    // Combine backlog of setChannelHdrRange signal.
-    // cache args before checking.
-    latestChannelHdrMin[index] = minParam;
-    latestChannelHdrMax[index] = maxParam;
-
-    SlotMerger slotMerger(statusOfSetChannelHdrSlot[index]);
-    if (! slotMerger.shouldRun()) return;
-
-    qreal min = latestChannelHdrMin[index];
-    qreal max = latestChannelHdrMax[index];
     {
         Writer colorWriter(*this);
-        if (! d->setChannelHdrRange(index, min, max)) return;
+        d->setChannelHdrRange(index, minParam, maxParam);
     } // release lock
     emit dataChanged();
 }

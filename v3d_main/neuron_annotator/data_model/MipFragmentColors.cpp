@@ -23,7 +23,6 @@ void MipFragmentColors::update()
 
     QTime stopwatch;
     stopwatch.start();
-
     {
         MipFragmentData::Reader mipReader(mipFragmentData); // readlock one of two
         if (! mipReader.hasReadLock()) return;
@@ -35,7 +34,6 @@ void MipFragmentColors::update()
             qDebug() << "Error: color model does not match data model";
             return;
         }
-
         const Image4DProxy<My4DImage> mipProxy = mipReader.getMipProxy();
         const Image4DProxy<My4DImage> intensityProxy = mipReader.getIntensityProxy();
         int refIndex = intensityProxy.sz - 1; // relative to fragment indices
@@ -76,7 +74,10 @@ void MipFragmentColors::update()
             }
             // Maybe 25 ms have passed.  Check upstream.
             if (! mipReader.refreshLock()) return;
-            if (dataColorModel.readerIsStale(colorReader)) return;
+            if (dataColorModel.readerIsStale(colorReader)) {
+                // qDebug() << "stale color reader";
+                return;
+            }
         }
         // Reference image
         QImage * img = fragmentMips[refIndex];
