@@ -699,6 +699,7 @@ void Na3DWidget::resetVolumeBoundary()
 
 void Na3DWidget::updateFullVolume()
 {
+    if (!renderer) return;
     RendererNeuronAnnotator* ra = (RendererNeuronAnnotator*)renderer;
     {
         // TODO - refresh these read locks frequently!

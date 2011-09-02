@@ -131,10 +131,10 @@ if(APPLE AND TMP_OSX_SYSROOT)
     endif()
 endif()
 
-# Define _v3dwebservice_ symbol -D_v3dwebservice_
+# Define __NAWEBSERVICE__ symbol -D__NAWEBSERVICE__
 set(V3D_USE_FLYWORKSTATION_WEB_SERVICES ON CACHE BOOL "Enable web services for fly workstation")
 if(V3D_USE_FLYWORKSTATION_WEB_SERVICES)
-    add_definitions(-D_v3dwebservice_)
+    add_definitions(-D__NAWEBSERVICE__)
 endif()
 
 add_subdirectory( graph )

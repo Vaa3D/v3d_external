@@ -48,6 +48,7 @@ QT4_WRAP_CPP(NA_MOC_SRCS
     gui/FragmentGalleryWidget.h
     gui/RendererNeuronAnnotator.h
     gui/ontology_tree/TreeModel.h
+    gui/ontology_tree/TreeView.h
     utility/ConsoleObserver.h
     utility/DataThread.h
     AnnotationSession.h
@@ -57,7 +58,11 @@ QT4_WRAP_CPP(NA_MOC_SRCS
 )
 
 file(GLOB NA_SRCS "*.cpp" "*/*.cpp" "gui/ontology_tree/*.cpp" "../webservice/*/*.cpp")
+add_definitions(-DWITH_PURE_VIRTUAL -DWITH_NONAMESPACES) # needed for webservice soap stuff
 
 add_library(NeuronAnnotatorLib STATIC 
-    ${NA_UI_SRCS} ${NA_MOC_SRCS} ${NA_SRCS})
+    ${NA_UI_SRCS} ${NA_MOC_SRCS} ${NA_SRCS}
+)
+add_custom_target(NaGeneratedFiles DEPENDS ${NA_UI_SRCS})
+add_dependencies(NeuronAnnotatorLib NaGeneratedFiles)
 

@@ -1,6 +1,7 @@
 #include "DataThread.h"
 #include "../entity_model/Entity.h"
-#include "../entity_model/Ontology.cpp"
+// #include "../entity_model/Ontology.cpp"
+#include "../entity_model/Ontology.h"
 #include "../../webservice/impl/EntityAdapter.h"
 #include <QMap>
 
