@@ -35,18 +35,6 @@ Q_EXPORT_PLUGIN2(ifusion, ImageFusionPlugin);
 //plugin
 const QString title = "Image Fusion";
 
-//image fusion datatype
-class ImageFusionType
-{
-public:
-    ImageFusionType(){}
-    ~ImageFusionType(){}
-    
-public:
-    QList<float> listWeights;
-    
-};
-
 //
 class AdjustPara
 {
@@ -59,7 +47,7 @@ public:
 };
 
 // linear blending
-bool computeWeights(Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, ImageFusionType *&pWeights)
+bool computeWeights(Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, V3DLONG i, V3DLONG j, V3DLONG k, V3DLONG tilei, float &weights)
 {
 
     V3DLONG vx = vim.sz[0];
@@ -69,12 +57,7 @@ bool computeWeights(Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> 
     
     V3DLONG sz_img = vx*vy*vz;
     
-    try {
-        pWeights = new ImageFusionType [sz_img];
-    } catch (...) {
-        printf("Fail to allocate memory!\n");
-        return false;
-    }
+    QList<float> listWeights;
     
     for(V3DLONG ii=0; ii<vim.number_tiles; ii++)
     {
@@ -100,35 +83,40 @@ bool computeWeights(Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> 
         V3DLONG ry = y_end - y_start;
         V3DLONG rz = z_end - z_start;
         
-        for(V3DLONG k=z_start; k<z_end; k++)
+        if(i>=x_start && i<=x_end && j>=y_start && j<=y_end && k>=z_start && k<=z_end)
         {
-            V3DLONG o_k = k*vx*vy;
-            for(V3DLONG j=y_start; j<y_end; j++)
-            {
-                V3DLONG o_j = o_k + j*vx;
-                for(V3DLONG i=x_start; i<x_end; i++)
-                {
-                    V3DLONG idx = o_j + i;
-                    
-                    float dist2xl = fabs(float(i-x_start));
-                    float dist2xr = fabs(float(x_end-i));
-                    float dist2yu = fabs(float(j-y_start));
-                    float dist2yd = fabs(float(y_end-j));
-                    float dist2zf = fabs(float(k-z_start));
-                    float dist2zb = fabs(float(z_end-k));
-                    
-                    float dist2boundary = dist2xl;
-                    if( dist2xr<dist2boundary ) dist2boundary = dist2xr;
-                    if( dist2yu<dist2boundary ) dist2boundary = dist2yu;
-                    if( dist2yd<dist2boundary ) dist2boundary = dist2yd;
-                    if( dist2zf<dist2boundary ) dist2boundary = dist2zf;
-                    if( dist2zb<dist2boundary ) dist2boundary = dist2zb;
-                    
-                    pWeights[idx].listWeights.push_back(dist2boundary);
-                }
-            }
+            float dist2xl = fabs(float(i-x_start));
+            float dist2xr = fabs(float(x_end-i));
+            float dist2yu = fabs(float(j-y_start));
+            float dist2yd = fabs(float(y_end-j));
+            float dist2zf = fabs(float(k-z_start));
+            float dist2zb = fabs(float(z_end-k));
+            
+            float dist2boundary = dist2xl;
+            if( dist2xr<dist2boundary ) dist2boundary = dist2xr;
+            if( dist2yu<dist2boundary ) dist2boundary = dist2yu;
+            if( dist2yd<dist2boundary ) dist2boundary = dist2yd;
+            if( dist2zf<dist2boundary ) dist2boundary = dist2zf;
+            if( dist2zb<dist2boundary ) dist2boundary = dist2zb;
+            
+            listWeights.push_back(dist2boundary);
         }
+        
     }
+    
+    if (listWeights.size()<=1) 
+    {
+        weights=1.0;
+    }
+    else
+    {
+        float sumweights=0;
+        for (int i=0; i<listWeights.size(); i++) {
+            sumweights += listWeights.at(i);
+        }
+        weights = listWeights.at(tilei) / sumweights;
+    }
+    
     return true;
 }
 
@@ -285,14 +273,6 @@ bool ireconstructing(SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, R
         printf("Fail to match adjustment parameters with tiled images.\n");
         return false;
     }
-    
-    // linear blending
-    ImageFusionType *pWeights=NULL;
-    if(!computeWeights(vim, pWeights))
-    {
-        printf("Fail to call function computeWeights!\n");
-        return false;
-    }
 
     // fusion
     for(V3DLONG ii=0; ii<vim.number_tiles; ii++)
@@ -360,22 +340,15 @@ bool ireconstructing(SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, R
                         SDATATYPE curval = (SDATATYPE)val;
 
                         //
-                        V3DLONG idx_w = idx-o_c;
-                        if (pWeights[idx_w].listWeights.size()<=1) 
+                        float coef;
+                        if(!computeWeights(vim, i, j, k, ii, coef) )
                         {
-                            pVImg[idx] = curval;
+                            printf("Fail to call function computeWeights!\n");
+                            return false;
                         }
-                        else
-                        {
-                            //pVImg[idx] = (pVImg[idx] + curval )/2; // Avg. Intensity
-                            
-                            float sumweights=0;
-                            for (int i=0; i<pWeights[idx_w].listWeights.size(); i++) {
-                                sumweights += pWeights[idx_w].listWeights.at(ii);
-                            }
-                            float coef = pWeights[idx_w].listWeights.at(ii) / sumweights;
-                            pVImg[idx] += (SDATATYPE) (val*coef); // linear blending
-                        }
+                        pVImg[idx] += (SDATATYPE) (val*coef); // linear blending
+                        
+                        //pVImg[idx] = (pVImg[idx] + curval )/2; // Avg. Intensity
 
                     }
                 }
@@ -386,8 +359,6 @@ bool ireconstructing(SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, R
         if(relative1d) {delete []relative1d; relative1d=0;}
         if(sz_relative) {delete []sz_relative; sz_relative=0;}
     }
-    //de-alloc
-    if(pWeights){delete []pWeights; pWeights=NULL;}
 
     return true;
 }
