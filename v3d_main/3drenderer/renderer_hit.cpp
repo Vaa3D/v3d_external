@@ -211,6 +211,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*actCurveCreate1=0, *actCurveCreate2=0, *actCurveCreate3=0, *actCurveCreate_pointclick=0,
 			*actCurveCreate_zoom=0, *actMarkerCreate_zoom=0,
 
+          *actCurveRefine=0, *actCurveLast=0, // ZJL 110905
+
 			*actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
 	        *actMarkerAblateOne_imaging=0, *actMarkerAblateAll_imaging=0,
 			//need to add more surgical operations here later, such as curve_ablating (without displaying the curve first), etc. by PHC, 20101105
@@ -292,6 +294,15 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			actCurveCreate_pointclick->setIcon(QIcon(":/icons/strokeN.svg"));
 			actCurveCreate_pointclick->setVisible(true);
 			actCurveCreate_pointclick->setIconVisibleInMenu(true);
+
+               // For curve refinement, ZJL 110831
+               listAct.append(act = new QAction("", w)); act->setSeparator(true);
+
+               listAct.append(actCurveRefine = new QAction("n-right-strokes to define a 3D curve (refine)", w));
+
+			actCurveRefine->setIcon(QIcon(":/icons/strokeN.svg"));
+			actCurveRefine->setVisible(true);
+			actCurveRefine->setIconVisibleInMenu(true);
 
 			//if (!(((iDrawExternalParameter*)_idep)->b_local)) //only enable the menu for global 3d viewer. as it seems there is a bug in the local 3d viewer. by PHC, 100821
 			{
@@ -665,6 +676,12 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		selectMode = smCurveCreate1;
 		b_addthiscurve = false;
+		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+	}
+	else if (act == actCurveRefine) // 110831 ZJL
+	{
+		selectMode = smCurveRefineInit;
+		b_addthiscurve = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
 
@@ -1395,7 +1412,6 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 		if (b_move)
 		{
 			//qDebug("\t track ( %i, %i ) to define Curve", x,y);
-
 			this->sShowTrack = 1;
 			return 1; //display 2d track
 		}
@@ -1418,7 +1434,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 				vector <XYZ> loc_vec_input; //here as an empty input, so use list_listCurvePos internal
 				solveCurveCenter(loc_vec_input);
 			}
-			else
+               else if (selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smCurveCreate_pointclick)
 				solveCurveViews();
 
 			list_listCurvePos.clear();
@@ -1426,6 +1442,39 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 				endSelectMode();
 		}
 	}
+
+     // For curve refine, ZJL 110905
+     else if (selectMode == smCurveRefineInit || selectMode == smCurveRefineLast)
+     {
+          _appendMarkerPos(x,y);
+          if (b_move)
+          {
+               //qDebug("\t track ( %i, %i ) to refine Curve", x,y);
+               this->sShowTrack = 1;
+               return 1; //display 2d track
+          }
+          // else release button
+          qDebug("\t track-end ( %i, %i ) to refine Curve (%i points)", x,y, listMarkerPos.size());
+          if (listMarkerPos.size() >=3) //drop short click
+               list_listCurvePos.append(listMarkerPos);
+          listMarkerPos.clear();
+          if (list_listCurvePos.size() >= 1)
+          {
+               //qDebug("\t %i tracks to solve Curve", list_listCurvePos.size());
+               if (selectMode == smCurveRefineInit)
+               {
+                    vector <XYZ> loc_vec_input; //here as an empty input, so use list_listCurvePos internal
+                    loc_vec0.clear();
+                    solveCurveCenterV2(loc_vec_input, loc_vec0, 0);
+                    selectMode = smCurveRefineLast; /////////////// switch to smCurveRefineLast
+               }
+               else
+                    solveCurveRefineLast(); ///////////////////////// <===== key function
+               list_listCurvePos.clear();
+               //press Esc to endSelectMode();
+          }
+     }
+     // end of Zongcai's advice ZJL 110905
 
 	this->sShowTrack = 0;
 	return 0; //no 2d track to display
@@ -1440,7 +1489,9 @@ int Renderer_gl1::hitPen(int x, int y)
 //		selectObj(x,y, false, 0); //no menu, no tip, just for lastSliceType
 
 	// define a curve //091023
-	if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3)
+	if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 ||
+          // for curve refinement, 110831 ZJL
+          selectMode == smCurveRefineInit || selectMode == smCurveRefineLast)
 	{
 		qDebug("\t track-start ( %i, %i ) to define Curve", x,y);
 
@@ -2115,19 +2166,17 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 	if (b_use_seriespointclick==false)
 		smooth_curve(loc_vec, 5);
 #endif
+     if (b_addthiscurve)
+     {
+          addCurveSWC(loc_vec, chno);
+     }
+     else //100821
+     {
+          b_addthiscurve = true; //in this case, always reset to default to draw curve to add to a swc instead of just  zoom
+          endSelectMode();
 
-	if (b_addthiscurve)
-	{
-		addCurveSWC(loc_vec, chno);
-	}
-	else //100821
-	{
-		b_addthiscurve = true; //in this case, always reset to default to draw curve to add to a swc instead of just  zoom
-		endSelectMode();
-
-		produceZoomViewOf3DRoi(loc_vec);
-	}
-
+          produceZoomViewOf3DRoi(loc_vec);
+     }
 }
 
 void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)

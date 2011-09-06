@@ -100,7 +100,7 @@ public:
 	virtual int movePen(int x, int y, bool b_move); //return 0 means not processed
 	virtual void _appendMarkerPos(int x, int y);
 	virtual void blendTrack();       // called by paint()
-        virtual void setRenderTextureLast(bool renderTextureLast);
+     virtual void setRenderTextureLast(bool renderTextureLast);
 
 // link to Rendering function
 protected:
@@ -286,6 +286,11 @@ protected:
 	void solveCurveCenter(vector <XYZ> & loc_vec_input);
 	void solveCurveViews();
 	void solveCurveFromMarkers();
+     void getPerpendPointDist(XYZ &P, XYZ &P0, XYZ &P1, XYZ &Pb, double &dist); // ZJL 110830
+     double getRgnPropertyAt(XYZ &pos); // ZJL 110830
+     void solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index); // ZJL 110830
+     void solveCurveRefineLast(); // ZJL 110905
+     vector <XYZ> loc_vec0; // 1st curve center. ZJL 110905
 
 	// in renderer_obj2.cpp
 	void addCurveSWC(vector<XYZ> &loc_list, int chno=0); //if no chno is specified, then assume to be the first channel
@@ -360,7 +365,7 @@ private:
 		SLICE_COLOR = XYZW(1,1,1,1);
 
 		b_imaging = false; //101008
-                b_renderTextureLast = false;
+          b_renderTextureLast = false;
 	}
 
 
