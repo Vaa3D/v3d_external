@@ -467,9 +467,9 @@ void Renderer_gl1::paint()
 	    }
 	}
 
-        if (b_renderTextureLast) {
-            renderVol();
-        }
+     if (b_renderTextureLast) {
+          renderVol();
+     }
 
 	// must be at last
 	if (! b_selecting && sShowTrack)

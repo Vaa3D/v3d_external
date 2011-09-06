@@ -601,7 +601,8 @@ void V3dR_GLWidget::mouseReleaseEvent(QMouseEvent *event)
 
 	if (event->button()==Qt::RightButton && renderer) //right-drag end
     {
-		(renderer->movePen(event->x(), event->y(), false)); //create curve or nothing
+         (renderer->movePen(event->x(), event->y(), false)); //create curve or nothing
+
 		updateTool();
 
 		POST_updateGL(); //update display of curve
