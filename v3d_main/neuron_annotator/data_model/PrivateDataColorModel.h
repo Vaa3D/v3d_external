@@ -5,6 +5,7 @@
 #include <vector>
 #include <qrgb.h>
 #include "NaVolumeData.h"
+#include "DataColorModel.h"
 
 class PrivateDataColorModel : public QSharedData
 {
@@ -28,9 +29,11 @@ public:
     bool hasChannelHdrRange(int index, qreal minParam, qreal maxParam) const;
     bool setGamma(qreal gammaParam);
     bool setChannelGamma(int index, qreal gamma);
-    qreal getReferenceScaledIntensity(qreal raw_intensity) const {
-        return getReferenceChannel().getScaledIntensity(raw_intensity);
-    }
+    qreal getReferenceScaledIntensity(qreal raw_intensity) const;
+    qreal getChannelScaledIntensity(int channel, qreal raw_intensity) const;
+    qreal getChannelGamma(int channel) const;
+    void fastColorizeModel(const DataColorModel::Reader& colorReader);
+    QRgb getChannelColor(int channelIndex) const;
 
 private:
     std::vector<ChannelColorModel> channelColors;
@@ -52,6 +55,7 @@ public:
         qreal getScaledIntensity(qreal raw_intensity) const;
         // getColor() definition is in header file so it can be inlined
         QRgb getColor(qreal raw_intensity) const;
+        qreal getGamma() const {return gamma;}
 
     protected:
         QRgb blackColor;

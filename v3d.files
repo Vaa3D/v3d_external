@@ -2337,7 +2337,6 @@ v3d_main/neuron_annotator/gui/Na3DWidget.h
 v3d_main/neuron_annotator/gui/MouseClickManager.h
 v3d_main/neuron_annotator/gui/GammaWidget.h
 v3d_main/neuron_annotator/gui/GalleryButton.h
-v3d_main/neuron_annotator/gui/BrightnessCalibrator.h
 v3d_main/neuron_annotator/gui/AngleWidget.h
 v3d_main/neuron_annotator/gui/Na2DViewer.h
 v3d_main/neuron_annotator/gui/CompartmentMapWidget.h
@@ -2353,7 +2352,6 @@ v3d_main/neuron_annotator/gui/Na3DWidget.cpp
 v3d_main/neuron_annotator/gui/MouseClickManager.cpp
 v3d_main/neuron_annotator/gui/GammaWidget.cpp
 v3d_main/neuron_annotator/gui/GalleryButton.cpp
-v3d_main/neuron_annotator/gui/BrightnessCalibrator.cpp
 v3d_main/neuron_annotator/gui/AngleWidget.cpp
 v3d_main/neuron_annotator/gui/Na2DViewer.cpp
 v3d_main/neuron_annotator/gui/CompartmentMapWidget.cpp

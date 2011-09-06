@@ -29,6 +29,9 @@ AnnotationSession::AnnotationSession(QObject* parentParam /* = NULL */)
     connect(this, SIGNAL(volumeDataNeeded()),
             &volumeData, SLOT(loadVolumeDataFromFiles()));
 
+    // wire up 3d viewer fast color update system
+    fast3DColorModel.setDataColorSource(dataColorModel);
+
     // TODO - deprecate these AnnotationSession neuron visiblity slots.
     connect(&neuronSelectionModel, SIGNAL(overlayVisibilityChanged(int,bool)),
             this, SLOT(updateNeuronMaskFull()));

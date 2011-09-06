@@ -76,6 +76,7 @@ public:
     const GalleryMipImages& getGalleryMipImages() const {return galleryMipImages;}
     const MipMergedData& getMipMergedData() const {return mipMergedData;}
     const ZSliceColors& getZSliceColors() const {return zSliceColors;}
+    const DataColorModel& getFast3DColorModel() {return fast3DColorModel;}
     // const VolumeColors& getVolumeColors() const {return volumeColors;}
 
 signals:
@@ -106,6 +107,7 @@ private:
     MipFragmentColors mipFragmentColors;
     GalleryMipImages galleryMipImages;
     MipMergedData mipMergedData;
+    DataColorModel fast3DColorModel; // for fast but approximate 3D viewer color updates
     // VolumeColors volumeColors;
 
     // TODO - move zRatio into VolumeData

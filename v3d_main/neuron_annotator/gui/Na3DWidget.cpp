@@ -10,6 +10,7 @@ using namespace std;
 
 Na3DWidget::Na3DWidget(QWidget* parent)
         : V3dR_GLWidget(NULL, parent, "Title")
+        , incrementalDataColorModel(NULL)
 {
     if (renderer) {
         delete renderer;
@@ -506,26 +507,42 @@ void Na3DWidget::updateHighlightNeurons()
     enableMarkerLabel(false); // but don't show labels
 }
 
-void Na3DWidget::setGammaBrightness(qreal gamma)
+void Na3DWidget::setFastColorModel(const DataColorModel& dataColorModel)
 {
-    // I sort of hope this will address everyone's manual brightness needs.
-    Renderer_gl2* renderer = (Renderer_gl2*)getRenderer();
+    incrementalDataColorModel = &dataColorModel;
+    connect(incrementalDataColorModel, SIGNAL(dataChanged()),
+            this, SLOT(updateIncrementalColors()));
+}
+
+void Na3DWidget::updateIncrementalColors()
+{
+    // QTime stopwatch;
+    // stopwatch.start();
+    // qDebug() << "Na3DWidget::updateIncrementalColors()" << __FILE__ << __LINE__;
+    if (! incrementalDataColorModel) return;
     if (! renderer) return;
-    brightnessCalibrator.setGamma(gamma);
-    // cout << "gamma = " << gamma << endl;
-    // Map input intensities to output intensities
-    // using the renderer's "colormap" texture.
-    for (int i_in = 0; i_in < 256; ++i_in)
     {
-        unsigned char i_out = brightnessCalibrator.getCorrectedByte(i_in);
-        for (int channel = 0; channel < FILL_CHANNEL; ++channel)
+        DataColorModel::Reader colorReader(*incrementalDataColorModel);
+        if (incrementalDataColorModel->readerIsStale(colorReader)) return;
+        for (int rgb = 0; rgb < 3; ++rgb)
         {
-            // Intensities are set in the alpha channel only
-            // (i.e. not R, G, or B)
-            renderer->colormap[channel][i_in].a = i_out;
+            Renderer_gl2* renderer = (Renderer_gl2*)getRenderer();
+            for (int i_in = 0; i_in < 256; ++i_in)
+            {
+                float i_out_f = colorReader.getChannelScaledIntensity(rgb, i_in) * 255.0;
+                if (i_out_f < 0.0f) i_out_f = 0.0f;
+                if (i_out_f > 255.0) i_out_f = 255.0;
+                unsigned char i_out = (unsigned char) i_out_f;
+                // Intensities are set in the alpha channel only
+                // (i.e. not R, G, or B)
+                renderer->colormap[rgb][i_in].a = i_out;
+            }
         }
-    }
+    } // release read lock
+    // qDebug() << "Na3DWidget::updateIncrementalColors()" << __FILE__ << __LINE__;
     update();
+    // repaint();
+    // qDebug() << "3D viewer color update took" << stopwatch.elapsed() << "milliseconds"; // takes zero milliseconds
 }
 
 float Na3DWidget::glUnitsPerImageVoxel() const

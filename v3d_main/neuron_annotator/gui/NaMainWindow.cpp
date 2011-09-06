@@ -617,6 +617,9 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(initialized()),
             this, SLOT(processUpdatedVolumeData()));
 
+    // Fast approximate color updater for 3D viewer
+    ui.v3dr_glwidget->setFastColorModel(annotationSession->getFast3DColorModel());
+
     // Annotation model update
     connect(annotationSession, SIGNAL(modelUpdated(QString)), ui.v3dr_glwidget, SLOT(annotationModelUpdate(QString)));
 

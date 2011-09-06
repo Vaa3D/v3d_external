@@ -23,9 +23,11 @@ public:
     DataColorModel();
     explicit DataColorModel(const NaVolumeData& volumeDataParam);
     explicit DataColorModel(const DataColorModel& rhs);
+    void setDataColorSource(const DataColorModel& dataColorSource);
 
 public slots:
     void resetColors();
+    void fastColorizeModel();
     void setChannelColor(int index, QRgb color);
     void setChannelHdrRange(int index, qreal min, qreal max);
     void setChannelGamma(int index, qreal gamma);
@@ -39,7 +41,8 @@ protected:
     qreal latestGamma;
 
 protected:
-    const NaVolumeData& volumeData;
+    const NaVolumeData * volumeData;
+    const DataColorModel * dataColorSource; // upstream n-channel color model this 3-channel model colorizes
 
 private:
     typedef NaSharedDataModel<PrivateDataColorModel> super;
@@ -54,7 +57,10 @@ public:
         int getNumberOfDataChannels() const;
         QRgb blend(const double channelIntensities[]) const;
         QRgb blend(const std::vector<double>& channelIntensities) const;
+        QRgb getChannelColor(int channelIndex) const;
         qreal getReferenceScaledIntensity(qreal raw_intensity) const;
+        qreal getChannelScaledIntensity(int channel, qreal raw_intensity) const;
+        qreal getChannelGamma(int channel) const;
     };
 
 

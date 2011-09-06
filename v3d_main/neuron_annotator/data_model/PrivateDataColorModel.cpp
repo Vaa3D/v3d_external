@@ -13,6 +13,56 @@ PrivateDataColorModel::PrivateDataColorModel(const PrivateDataColorModel& rhs)
 /* virtual */
 PrivateDataColorModel::~PrivateDataColorModel() {}
 
+// Crudely populate 3-channel rgb color model based on n-channel data color model,
+// for use in fast mode of 3D viewer update.
+// Input HDR range is set to 0-255 for now.
+void PrivateDataColorModel::fastColorizeModel(const DataColorModel::Reader& colorReader)
+{
+    // Compute channel weights for r/g/b colors
+    std::vector< std::vector<float> > colorWeights(3, std::vector<float>(colorReader.getNumberOfDataChannels(), 0.0f) );
+    std::vector<float> colorTotalWeights(3, 0.0f);
+    for (int chan = 0; chan < colorReader.getNumberOfDataChannels(); ++chan)
+    {
+        QRgb channelColor = colorReader.getChannelColor(chan);
+        float red = qRed(channelColor) / 255.0f;
+        float green = qGreen(channelColor) / 255.0f;
+        float blue = qBlue(channelColor) / 255.0f;
+        colorTotalWeights[0] += red;
+        colorTotalWeights[1] += green;
+        colorTotalWeights[2] += blue;
+        colorWeights[0][chan] = red;
+        colorWeights[1][chan] = green;
+        colorWeights[2][chan] = blue;
+    }
+    // Normalize weights so they sum to one (or zero) for each color
+    for (int chan = 0; chan < colorReader.getNumberOfDataChannels(); ++chan)
+    {
+        for (int rgb = 0; rgb < 3; ++rgb)
+            if (colorTotalWeights[rgb] > 0)
+                colorWeights[rgb][chan] /= colorTotalWeights[rgb];
+    }
+
+    // Initialize 3 color channels
+    channelColors.clear();
+    channelColors.push_back(ChannelColorModel(QColor(255,0,0).rgb()));
+    channelColors.push_back(ChannelColorModel(QColor(0,255,0).rgb()));
+    channelColors.push_back(ChannelColorModel(QColor(0,0,255).rgb()));
+
+    // TODO - apply HDR range, in addition to applying gamma, below.
+
+    for (int rgb = 0; rgb < 3; ++rgb)
+    {
+        channelColors[rgb].setHdrRange(0, 255); // TODO - adjust according to input hdr
+
+        // kludge: use weighted average gamma of all data channels that contribute to this color channel
+        float meanGamma = 0.0;
+        for (int chan = 0; chan < colorReader.getNumberOfDataChannels(); ++chan)
+            meanGamma += colorWeights[rgb][chan] * colorReader.getChannelGamma(chan);
+        if (meanGamma <= 0) meanGamma = 1.0; // there is nothing with this color; use default gamma anyway
+        channelColors[rgb].setGamma(meanGamma);
+    }
+}
+
 bool PrivateDataColorModel::resetColors(const NaVolumeData::Reader& volumeReader)
 {
     if (! volumeReader.hasReadLock()) return false;
@@ -123,6 +173,22 @@ bool PrivateDataColorModel::setChannelGamma(int index, qreal gamma)
         return false; // no change
     channelColors[index].setGamma(gamma);
     return true;
+}
+
+QRgb PrivateDataColorModel::getChannelColor(int channelIndex) const {
+    return channelColors[channelIndex].getColor();
+}
+
+qreal PrivateDataColorModel::getReferenceScaledIntensity(qreal raw_intensity) const {
+    return getReferenceChannel().getScaledIntensity(raw_intensity);
+}
+
+qreal PrivateDataColorModel::getChannelScaledIntensity(int channel, qreal raw_intensity) const {
+    return channelColors[channel].getScaledIntensity(raw_intensity);
+}
+
+qreal PrivateDataColorModel::getChannelGamma(int channel) const {
+    return channelColors[channel].getGamma();
 }
 
 

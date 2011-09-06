@@ -5,7 +5,6 @@
 #include "../../v3d/xformwidget.h"
 #include "NaViewer.h"
 #include "../geometry/Rotation3D.h"
-#include "BrightnessCalibrator.h"
 #include "MouseClickManager.h"
 #include <cmath>
 #include "RendererNeuronAnnotator.h"
@@ -43,6 +42,7 @@ public:
     void resetVolumeBoundary();
     virtual RendererNeuronAnnotator* getRendererNa()   {return dynamic_cast<RendererNeuronAnnotator*>(renderer);}
     virtual const RendererNeuronAnnotator* getRendererNa() const {return dynamic_cast<RendererNeuronAnnotator*>(renderer);} // const version CMB
+    void setFastColorModel(const DataColorModel& dataColorModel);
 
 signals:
     void neuronSelected(double x, double y, double z);
@@ -54,11 +54,11 @@ signals:
 public slots:
     void clearLandmarks();
     void setLandmarks(const QList<ImageMarker>);
-    void setGammaBrightness(qreal gamma);
     virtual void annotationModelUpdate(QString updateType);
     virtual void toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked);
     virtual void updateFullVolume();
     void onVolumeDataChanged();
+    void updateIncrementalColors();
 
     void resetView();
     void resetRotation() {
@@ -150,7 +150,8 @@ protected:
     virtual void choiceRenderer();
     float glUnitsPerImageVoxel() const;
     void updateDefaultScale();
-    BrightnessCalibrator<unsigned char> brightnessCalibrator;
+    // BrightnessCalibrator<unsigned char> brightnessCalibrator;
+    const DataColorModel * incrementalDataColorModel;
     QCursor * rotateCursor;
 };
 

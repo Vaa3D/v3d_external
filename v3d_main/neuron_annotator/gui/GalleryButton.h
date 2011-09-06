@@ -2,7 +2,6 @@
 #define GALLERYBUTTON_H
 
 #include <QtGui>
-#include "BrightnessCalibrator.h"
 #include "Na3DWidget.h"
 
 class GalleryButton : public QWidget

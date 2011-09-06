@@ -8,18 +8,49 @@ template class NaSharedDataModel<PrivateDataColorModel>;
 // DataColorModel methods //
 ////////////////////////////
 
-DataColorModel::DataColorModel(const NaVolumeData& volumeDataParam)
-    : volumeData(volumeDataParam)
+DataColorModel::DataColorModel()
+    : volumeData(NULL)
+    , dataColorSource(NULL)
 {
-    connect(&volumeData, SIGNAL(dataChanged()),
+
+}
+
+DataColorModel::DataColorModel(const NaVolumeData& volumeDataParam)
+    : volumeData(&volumeDataParam)
+    , dataColorSource(NULL)
+{
+    connect(volumeData, SIGNAL(dataChanged()),
             this, SLOT(resetColors()));
+}
+
+void DataColorModel::setDataColorSource(const DataColorModel& dataColorSourceParam)
+{
+    dataColorSource = &dataColorSourceParam;
+    connect(dataColorSource, SIGNAL(dataChanged()),
+            this, SLOT(fastColorizeModel()));
+}
+
+/* slot */
+void DataColorModel::fastColorizeModel()
+{
+    // qDebug() << "DataColorModel::fastColorizeModel()" << __FILE__ << __LINE__;
+    if (! dataColorSource) return;
+    {
+        DataColorModel::Reader colorReader(*dataColorSource);
+        if (dataColorSource->readerIsStale(colorReader)) return;
+        Writer(*this);
+        d->fastColorizeModel(colorReader);
+    } // release locks
+    // qDebug() << "DataColorModel::fastColorizeModel()" << __FILE__ << __LINE__;
+    emit dataChanged();
 }
 
 void DataColorModel::resetColors()
 {
+    if (! volumeData) return;
     qDebug() << "Resetting DataColorModel";
     {
-        NaVolumeData::Reader volumeReader(volumeData);
+        NaVolumeData::Reader volumeReader(*volumeData);
         if (! volumeReader.hasReadLock()) return;
         Writer colorWriter(*this);
         if (! d->resetColors(volumeReader)) return;
@@ -93,6 +124,18 @@ QRgb DataColorModel::Reader::blend(const std::vector<double>& channelIntensities
 
 qreal DataColorModel::Reader::getReferenceScaledIntensity(qreal raw_intensity) const {
     return d->getReferenceScaledIntensity(raw_intensity);
+}
+
+QRgb DataColorModel::Reader::getChannelColor(int channelIndex) const {
+    return d->getChannelColor(channelIndex);
+}
+
+qreal DataColorModel::Reader::getChannelScaledIntensity(int channel, qreal raw_intensity) const {
+    return d->getChannelScaledIntensity(channel, raw_intensity);
+}
+
+qreal DataColorModel::Reader::getChannelGamma(int channel) const {
+    return d->getChannelGamma(channel);
 }
 
 ////////////////////////////////////
