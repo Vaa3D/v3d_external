@@ -137,6 +137,9 @@ if(V3D_USE_FLYWORKSTATION_WEB_SERVICES)
     add_definitions(-D__NAWEBSERVICE__)
 endif()
 
+# enable NeuronAnnotator mode
+add_definitions(-D_ALLOW_WORKMODE_MENU_)
+
 add_subdirectory( graph )
 
 add_subdirectory( basic_c_fun )
