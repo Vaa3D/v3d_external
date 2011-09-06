@@ -1,20 +1,19 @@
 #include "NaVolumeData.h"
 #include <iostream>
+#include <QFuture>
 
 using namespace std;
 
 
-//////////////////////////
-// NaVolumeData methods //
-//////////////////////////
-
-// Allocate a NaLockableData::BaseWriteLocker on the stack while modifying a NaLockableData.
+/////////////////////////////////////////
+// NaVolumeData::LoadableStack methods //
+/////////////////////////////////////////
 
 class SleepThread : QThread {
 public:
     SleepThread() {}
-    void msleep(int miliseconds) {
-        QThread::msleep(miliseconds);
+    void msleep(int milliseconds) {
+        QThread::msleep(milliseconds);
     }
 };
 
@@ -35,6 +34,10 @@ bool NaVolumeData::LoadableStack::load()
     return true;
 }
 
+
+//////////////////////////
+// NaVolumeData methods //
+//////////////////////////
 
 /* explicit */
 NaVolumeData::NaVolumeData()
@@ -61,25 +64,27 @@ void NaVolumeData::loadVolumeDataFromFiles()
     stopwatch.start();
 
     // Allocate writer on the stack so write lock will be automatically released when method returns
-    Writer volumeWriter(*this);
-    volumeWriter.clearImageData();
+    {
+        Writer volumeWriter(*this);
+        volumeWriter.clearImageData();
 
-    if (!volumeWriter.loadStacks()) {
+        if (!volumeWriter.loadStacks()) {
+            volumeWriter.unlock();
+            emit progressAborted(QString("Problem loading stacks"));
+            return;
+        }
+
+        // nerd report
+        size_t data_size = 0;
+        data_size += originalImageStack->getTotalBytes();
+        data_size += referenceStack->getTotalBytes();
+        data_size += neuronMaskStack->getTotalBytes();
+        qDebug() << "Loading 16-bit image data from disk took " << stopwatch.elapsed() / 1000.0 << " seconds";
+        qDebug() << "Loading 16-bit image data from disk absorbed "
+                << (double)data_size / double(1e6) << " MB of RAM"; // kibibytes boo hoo whatever...
+
         volumeWriter.unlock();
-        emit progressAborted(QString("Problem loading stacks"));
-        return;
-    }
-
-    // nerd report
-    size_t data_size = 0;
-    data_size += originalImageStack->getTotalBytes();
-    data_size += referenceStack->getTotalBytes();
-    data_size += neuronMaskStack->getTotalBytes();
-    qDebug() << "Loading 16-bit image data from disk took " << stopwatch.elapsed() / 1000.0 << " seconds";
-    qDebug() << "Loading 16-bit image data from disk absorbed "
-            << (double)data_size / double(1e6) << " MB of RAM"; // kibibytes boo hoo whatever...
-
-    volumeWriter.unlock(); // unlock before emit
+    } // release locks before emit
     emit dataChanged();
 }
 
