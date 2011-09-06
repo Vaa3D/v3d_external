@@ -8,6 +8,34 @@ using namespace std;
 // NaVolumeData methods //
 //////////////////////////
 
+// Allocate a NaLockableData::BaseWriteLocker on the stack while modifying a NaLockableData.
+
+class SleepThread : QThread {
+public:
+    SleepThread() {}
+    void msleep(int miliseconds) {
+        QThread::msleep(miliseconds);
+    }
+};
+
+NaVolumeData::LoadableStack::LoadableStack(My4DImage* stackp, QString filename)
+{
+    this->stackp=stackp;
+    this->filename=filename;
+}
+
+bool NaVolumeData::LoadableStack::load()
+{
+    qDebug() << "NaVolumeData::LoadableStack::load() filename=" << filename;
+    stackp->loadImage(filename.toAscii().data());
+    if (stackp->isEmpty()) {
+        return false;
+    }
+    stackp->updateminmaxvalues();
+    return true;
+}
+
+
 /* explicit */
 NaVolumeData::NaVolumeData()
     : originalImageStack(NULL)
@@ -36,21 +64,9 @@ void NaVolumeData::loadVolumeDataFromFiles()
     Writer volumeWriter(*this);
     volumeWriter.clearImageData();
 
-    if (! volumeWriter.loadOriginalImageStack()) {
-        volumeWriter.unlock(); // unlock before emit
-        emit progressAborted(QString("Problem loading volume image"));
-        return;
-    }
-
-    if (! volumeWriter.loadNeuronMaskStack()) {
-        volumeWriter.unlock(); // unlock before emit
-        emit progressAborted(QString("Problem loading neuron mask"));
-        return;
-    }
-
-    if (! volumeWriter.loadReferenceStack()) {
-        volumeWriter.unlock(); // unlock before emit
-        emit progressAborted(QString("Problem loading reference image"));
+    if (!volumeWriter.loadStacks()) {
+        volumeWriter.unlock();
+        emit progressAborted(QString("Problem loading stacks"));
         return;
     }
 
@@ -103,68 +119,64 @@ void NaVolumeData::Writer::clearImageData()
     }
 }
 
-bool NaVolumeData::Writer::loadOriginalImageStack()
+bool NaVolumeData::Writer::loadStacks()
 {
-    QString msgPrefix("NaVolumeData::loadOriginalImageStack()");
-    m_data->originalImageStack = new My4DImage;
-    My4DImage * originalImageStack = m_data->originalImageStack;
-    if (!originalImageStack) {
-        cerr << msgPrefix.toStdString() << " : problem creating My4DImage" << endl;
-        return false;
+    QTime stopwatch;
+    stopwatch.start();
+
+    QList< QFuture<void> > loaderList;
+
+    m_data->originalImageStack = new My4DImage();
+    LoadableStack originalStack(m_data->originalImageStack, m_data->originalImageStackFilePath);
+    qDebug() << "NaVolumeData::Writer::loadStacks() starting originalStack.load()";
+    QFuture<void> originalLoader = QtConcurrent::run(originalStack, &LoadableStack::load);
+    loaderList.append(originalLoader);
+
+    m_data->neuronMaskStack = new My4DImage();
+    LoadableStack maskStack(m_data->neuronMaskStack, m_data->maskLabelFilePath);
+    qDebug() << "NaVolumeData::Writer::loadStacks() starting maskStack.load()";
+    QFuture<void> maskLoader = QtConcurrent::run(maskStack, &LoadableStack::load);
+    loaderList.append(maskLoader);
+
+    My4DImage* initialReferenceStack = new My4DImage();
+    LoadableStack referenceStack(initialReferenceStack, m_data->referenceStackFilePath);
+    qDebug() << "NaVolumeData::Writer::loadStacks() starting referenceStack.load()";
+    QFuture<void> referenceLoader = QtConcurrent::run(referenceStack, &LoadableStack::load);
+    loaderList.append(referenceLoader);
+
+    while(1) {
+        SleepThread st;
+        st.msleep(1000);
+        int doneCount=0;
+        for (int i=0;i<loaderList.size();i++) {
+            QFuture<void> loader=loaderList.at(i);
+            if (loader.isFinished()) {
+                doneCount++;
+            }
+        }
+        int stillActive=loaderList.size()-doneCount;
+        if (stillActive==0) {
+            break;
+        } else {
+            qDebug() << "Waiting on " << stillActive << " loaders";
+        }
     }
-    originalImageStack->loadImage(m_data->originalImageStackFilePath.toAscii().data());
-    if (originalImageStack->isEmpty()) {
-        cerr << msgPrefix.toStdString() << ": originalImageStack is empty after loading\n";
-        return false;
-    }
-    // cout << "Loaded original image stack with dimensions X=" << originalImageStack->getXDim() << " Y=" << originalImageStack->getYDim()
-    //         << " Z=" << originalImageStack->getZDim() << " C=" << originalImageStack->getCDim() << "\n";
-    m_data->originalImageStack->updateminmaxvalues();
+
+    qDebug() << "NaVolumeData::Writer::loadStacks() done loading all stacks in " << stopwatch.elapsed() / 1000.0 << " seconds";
 
     m_data->originalImageProxy = Image4DProxy<My4DImage>(m_data->originalImageStack);
     m_data->originalImageProxy.set_minmax(m_data->originalImageStack->p_vmin, m_data->originalImageStack->p_vmax);
 
-    return true;
-}
-
-bool NaVolumeData::Writer::loadNeuronMaskStack() {
-    QString msgPrefix("NaVolumeData::loadNeuronMaskStack()");
-    if (m_data->originalImageStack==0) {
-        cerr << msgPrefix.toStdString() << " error : originalImageStack must be created before this function is called" << endl;
-        return false;
-    }
-    m_data->neuronMaskStack = new My4DImage;
-    My4DImage * neuronMaskStack = m_data->neuronMaskStack;
-    if (!neuronMaskStack) {
-        cerr << msgPrefix.toStdString() << " : problem creating My4DImage" << endl;
-        return false;
-    }
-    neuronMaskStack->loadImage(m_data->maskLabelFilePath.toAscii().data());
-    m_data->neuronMaskStack->updateminmaxvalues();
-
     m_data->neuronMaskProxy = Image4DProxy<My4DImage>(m_data->neuronMaskStack);
     m_data->neuronMaskProxy.set_minmax(m_data->neuronMaskStack->p_vmin, m_data->neuronMaskStack->p_vmax);
-    // qDebug() << "Number of My4DImage neuron mask labels = " << m_data->neuronMaskStack->getChannalMaxIntensity(0);
+
+    normalizeReferenceStack(initialReferenceStack);
 
     return true;
 }
 
-bool NaVolumeData::Writer::loadReferenceStack()
+bool NaVolumeData::Writer::normalizeReferenceStack(My4DImage* initialReferenceStack)
 {
-    // Phase 1: load the data
-    QString msgPrefix("NaVolumeData::loadReferenceStack()");
-    qDebug() << msgPrefix << " : start";
-    My4DImage* initialReferenceStack=new My4DImage();
-    initialReferenceStack->loadImage(m_data->referenceStackFilePath.toAscii().data());
-    if (initialReferenceStack->isEmpty()) {
-        cerr << msgPrefix.toStdString() << ": initialReferenceStack is empty after loading\n";
-        return false;
-    }
-    // cout << "Loaded reference stack stack with dimensions X=" << initialReferenceStack->getXDim() << " Y=" << initialReferenceStack->getYDim()
-    //         << " Z=" << initialReferenceStack->getZDim() << " C=" << initialReferenceStack->getCDim() << "\n";
-
-    // TODO - do not normalize to 8-bit.  This is neither the time nor place for that.
-    // Phase 2: normalize to 8-bit
     m_data->referenceStack=new My4DImage();
     My4DImage * referenceStack = m_data->referenceStack;
     referenceStack->loadImage(initialReferenceStack->getXDim(), initialReferenceStack->getYDim(), initialReferenceStack->getZDim(), 1 /* number of channels */, 1 /* bytes per channel */);

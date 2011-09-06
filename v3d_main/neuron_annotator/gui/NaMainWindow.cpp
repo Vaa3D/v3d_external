@@ -469,6 +469,7 @@ void NaMainWindow::openMulticolorImageStack(QString dirName)
             return;
     }
 
+    qDebug() << "NaMainWindow::openMulticolorImageStack() calling addDirToRecentFilesList with dir=" << imageDir.absolutePath();
     addDirToRecentFilesList(imageDir);
 }
 

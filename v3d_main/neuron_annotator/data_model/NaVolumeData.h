@@ -91,9 +91,8 @@ public:
         void setMaskLabelFilePath(QString path) {m_data->maskLabelFilePath = path;}
         void setReferenceStackFilePath(QString path) {m_data->referenceStackFilePath = path;}
 
-        bool loadOriginalImageStack();
-        bool loadNeuronMaskStack();
-        bool loadReferenceStack();
+        bool loadStacks();
+        bool normalizeReferenceStack(My4DImage* initialReferenceStack);
 
         void clearImageData();
         void clearLandmarks();
@@ -102,6 +101,19 @@ public:
     private:
         NaVolumeData * m_data;
     };
+
+    class LoadableStack; friend class LoadableStack;
+    class LoadableStack
+    {
+    public:
+        LoadableStack(My4DImage* stackp, QString filename);
+        virtual bool load();
+
+    private:
+        My4DImage* stackp;
+        QString filename;
+    };
+
 };
 
 #endif // NAVOLUMEDATA_H
