@@ -149,6 +149,7 @@ CONFIG += thread
 
 #CONFIG += console
 DEFINES += __NAWEBSERVICE__
+DEFINES += _ALLOW_WORKMODE_MENU_
 
 # Flags for gsoap (web services)
 QMAKE_CXXFLAGS += -DWITH_NONAMESPACES

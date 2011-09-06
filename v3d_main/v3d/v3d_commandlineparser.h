@@ -43,7 +43,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <QFileInfo>
 #include <QtCore>
 #include "../basic_c_fun/v3d_message.h"
+
+#ifdef _ALLOW_WORKMODE_MENU_
 #include "CommandManager.h"
+#endif
 
 using namespace std;
 

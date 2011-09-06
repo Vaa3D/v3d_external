@@ -6,7 +6,10 @@
 #include <QApplication>
 #include <QMainWindow>
 #include "mainwindow.h"
+
+#ifdef _ALLOW_WORKMODE_MENU_
 #include "../neuron_annotator/gui/NaMainWindow.h"
+#endif
 
 #include "v3d_compile_constraints.h"
 
@@ -18,9 +21,12 @@ private:
 
     static V3dApplication* theApp;
     static MainWindow* mainWindow;
-    static NaMainWindow* naMainWindow;
     static bool mainWindowIsActive;
+    
+#ifdef _ALLOW_WORKMODE_MENU_
+    static NaMainWindow* naMainWindow;
     static bool naMainWindowIsActive;
+#endif
 
     explicit V3dApplication(int & argc, char ** argv);
 
@@ -61,9 +67,13 @@ public:
 
     static void handleCloseEvent(QCloseEvent* event) {
         mainWindow->handleCoordinatedCloseEvent(event);
+
+#ifdef _ALLOW_WORKMODE_MENU_
         if (naMainWindow!=0) {
             naMainWindow->handleCoordinatedCloseEvent(event);
         }
+#endif
+
         QCoreApplication::postEvent(theApp, new QEvent(QEvent::Quit)); // this more OK
     }
 
@@ -71,19 +81,22 @@ public:
         return mainWindow;
     }
 
+#ifdef _ALLOW_WORKMODE_MENU_
     static NaMainWindow* getNaMainWindow() {
         return naMainWindow;
     }
+#endif
 
     static void activateMainWindow() {
         if (mainWindowIsActive==false) {
             activateMainWindowHelper(mainWindow);
             mainWindowIsActive=true;
         }
+
+#ifdef _ALLOW_WORKMODE_MENU_
         if (naMainWindow!=0) {
             naMainWindow->setV3DDefaultModeCheck(true);
         }
-#ifdef _ALLOW_WORKMODE_MENU_
         mainWindow->setV3DDefaultModeCheck(true);
 #endif
     }
@@ -95,12 +108,13 @@ public:
         }
 #ifdef _ALLOW_WORKMODE_MENU_
         mainWindow->setV3DDefaultModeCheck(false);
-#endif
         if (naMainWindow!=0) {
             naMainWindow->setV3DDefaultModeCheck(false);
         }
+#endif
     }
-
+    
+#ifdef _ALLOW_WORKMODE_MENU_
     static void activateNaMainWindow() {
         if (naMainWindowIsActive==false) {
             if (naMainWindow==0) {
@@ -110,9 +124,7 @@ public:
             naMainWindowIsActive=true;
         }
         naMainWindow->setNeuronAnnotatorModeCheck(true);
-#ifdef _ALLOW_WORKMODE_MENU_
         mainWindow->setNeuronAnnotatorModeCheck(true);
-#endif
     }
 
     static void deactivateNaMainWindow() {
@@ -123,10 +135,9 @@ public:
         if (naMainWindow!=0) {
             naMainWindow->setNeuronAnnotatorModeCheck(false);
         }
-#ifdef _ALLOW_WORKMODE_MENU_
         mainWindow->setNeuronAnnotatorModeCheck(false);
-#endif
     }
+#endif
 
     static V3dApplication* getInstance(int & argc, char ** argv) {
         if (theApp==0) {

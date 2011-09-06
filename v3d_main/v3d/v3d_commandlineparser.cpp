@@ -174,8 +174,12 @@ int CLP :: parse(int argc, char *argv[], void (*help)())
                     while (i+1<argc) {
                         i_v3d.cmdArgList.push_back(argv[++i]);
                     }
+                    
+#ifdef _ALLOW_WORKMODE_MENU_
                     CommandManager commandManager(&(i_v3d.cmdArgList));
                     commandManager.execute();
+#endif
+                    
                     i_v3d.clp_finished=true;
                     return true;
                 }
