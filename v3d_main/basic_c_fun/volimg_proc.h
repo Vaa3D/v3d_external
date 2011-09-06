@@ -934,7 +934,7 @@ template <class T> bool downsample3dimg_1dpt(T * & img, V3DLONG * sz, double dfa
 		return false;
 	}
 
-	if (sz[0]<1 || sz[1]<1 || sz[2]<1 || sz[3]<1 || sz[0]>2048 || sz[1]>2048 || sz[2]>300 || sz[3]>3)
+	if (sz[0]<1 || sz[1]<1 || sz[2]<1 || sz[3]<1 || sz[0]>2048 || sz[1]>2048 || sz[2]>1024 || sz[3]>10)
 	{
 		fprintf(stderr, "Input image size is not valid [%s][%d][%5.3f].\n", __FILE__, __LINE__, dfactor);
 		return false;
