@@ -38,6 +38,11 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "basic_memory.cpp"
 
+#if defined(_WIN32) || defined(_WIN64)
+#undef min
+#undef max
+#endif
+
 class Size2D
 {
 public:

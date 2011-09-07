@@ -46,6 +46,11 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include <stdlib.h>
 #include "c_array_struct.hpp" // CMB 2011 Jan 08
 
+#if defined(_WIN32) || defined(_WIN64)
+#undef min
+#undef max
+#endif
+
 #define BIG_FLOAT 1e+38
 
 
