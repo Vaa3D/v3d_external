@@ -1,5 +1,5 @@
 CC = gcc
-CXX = g++ -g -Wall
+CXX = g++ -g 
 
 CXXFLAGS = -ltiff -llpsolve55
 

@@ -24,6 +24,9 @@
 #define INT_MAX       2147483647
 #endif
 
+#ifdef __v3d__
+#include "stackutil.cpp"
+#endif
 using namespace std;
 
 bool component_tree_verbose = false;

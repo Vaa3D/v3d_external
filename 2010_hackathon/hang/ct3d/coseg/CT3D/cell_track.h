@@ -191,6 +191,7 @@ class CellTrack
 	bool correspondToTrees(vector<string> tree_files);         // used when cells are filtered
 	void setTracksColor();
 	void exportImages(char* prefix = NULL, char* dir = NULL) const;
+	void exportSWCS();
 
 	//CellTrack* chooseLocally(vector<Track*>  tracks, int frame_id);
 	//CellTrack* chooseGlobally(vector<Track*>  tracks);

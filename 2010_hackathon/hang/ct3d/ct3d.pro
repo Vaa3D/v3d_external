@@ -6,7 +6,7 @@ INCLUDEPATH	+= ../../../v3d_main/basic_c_fun
 
 LIBS += -ltiff -llpsolve55
 
-DEFINES += __v3d__
+#DEFINES += __v3d__
 
 HEADERS	= ct3d_plugin.h
 HEADERS	+= ct3d_func.h

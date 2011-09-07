@@ -28,6 +28,7 @@ int main(int argc, char* argv[])
 	cell_track.setMethod(0);
 	cell_track.createFromTrees(tree_files);
 	cell_track.exportImages((char*)"coseg_out");
+	cell_track.exportSWCS();
 	time(&end);
 	cout<<"time elapsed (s) : "<<difftime(end, start)<<endl;
 }

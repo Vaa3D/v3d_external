@@ -24,6 +24,7 @@
 #include <cstdio>
 #include <cstring>
 #include "lp_lib.h"
+#include "my_surf_objs.h"
 
 #ifndef INT_MAX
 #define INT_MAX       2147483647
@@ -237,6 +238,44 @@ void CellTrack::setTracksColor()
 		(*it)->setColor(color);
 		i++;
 		it++;
+	}
+}
+
+void CellTrack::exportSWCS()
+{
+	vector<Track*>::iterator it = this->m_tracks.begin();
+	int i = 0;
+	while(it != m_tracks.end())
+	{
+		ostringstream oss;
+		oss<<"track"<<i<<".swc";
+		string swcfile = oss.str();
+		Track* track = *it;
+		vector<Cell*> cells = track->getCells();
+		if(cells.size()<3){it++;i++; continue;}
+		cout<<cells.size()<<endl;
+		vector<Cell*>::iterator itr = cells.begin();
+
+		vector<MyMarker*> allmarkers;
+
+		MyMarker* p = 0;
+		while(itr != cells.end())
+		{
+			Cell* cell = *itr;
+			float x,y,z;
+			cell->getCenter(x,y,z);
+			MyMarker* newmarker = new MyMarker();
+			newmarker->x = x;
+			newmarker->y = y;
+			newmarker->z = z;
+			newmarker->parent = p;
+			allmarkers.push_back(newmarker);
+			p = newmarker;
+			itr++;
+		}
+		saveSWC_file(swcfile, allmarkers);
+		it++;
+		i++;
 	}
 }
 
