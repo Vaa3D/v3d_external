@@ -79,7 +79,7 @@ int v3dneuron_tracing(V3DPluginCallback2 &callback, QWidget *parent)
 	bool ok;
 	QString nt_path = QInputDialog::getText(0, QObject::tr("Set path"), QObject::tr("v3dneuron_tracing path : "), QLineEdit::Normal, "~/Local/bin/v3dneuron_tracing", &ok);
 	//QString paras = QObject::tr("v3dneuron_tracing -s %1 -S /tmp/mymarks.marker -o /tmp/tmp_out").arg(img_file);
-	QString paras = QObject::tr("%1 -s %2 -S /tmp/mymarks.marker -o /tmp/tmp_out").arg(nt_path).arg(img_file);
+	QString paras = QObject::tr("%1 -s \"%2\" -S /tmp/mymarks.marker -o /tmp/tmp_out").arg(nt_path).arg(img_file);
 	qDebug(paras.toStdString().c_str());
 	//QMessageBox::information(0,"",paras);
 	system(paras.toStdString().c_str());
