@@ -150,10 +150,6 @@ CONFIG += thread
 
 #CONFIG += console
 
-# Flags for gsoap (web services)
-QMAKE_CXXFLAGS += -DWITH_NONAMESPACES
-QMAKE_CXXFLAGS += -DWITH_PURE_VIRTUAL
-
 # Input
 HEADERS += ../basic_c_fun/mg_utilities.h \
     ../basic_c_fun/mg_image_lib.h \
