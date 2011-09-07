@@ -2,7 +2,6 @@
  * 2011-08-31: the program is created by Yang Yu
  */
 
-
 #include <QtGui>
 
 #include <cmath>
@@ -29,6 +28,8 @@
 
 using namespace std;
 
+//
+// image normalization and image blending program
 //
 Q_EXPORT_PLUGIN2(ifusion, ImageFusionPlugin);
 
@@ -240,6 +241,33 @@ bool computeThresholds(Tdata *pImg, V3DLONG szimg, Tdata intensityrange, float &
     return true;
 }
 
+// obtain bg mean and var
+template<class Tdata>
+bool computeBgMeanVar(Tdata *pImg, V3DLONG szimg, float bgthresh, float &bgmean, float &bgstdvar)
+{
+    // mean
+    bgmean=0;
+    
+    for (V3DLONG i=0; i<szimg; i++) 
+    {
+        bgmean += pImg[i] - bgthresh;
+    }
+    bgmean /= (float)szimg;
+    
+    bgstdvar = 0;
+    for (V3DLONG i=0; i<szimg; i++) 
+    {
+        float val = (float)(pImg[i]);
+        bgstdvar += (val - bgmean)*(val - bgmean);
+    }
+    bgstdvar /= (float)(szimg-1);
+    
+    bgstdvar = sqrt(bgstdvar);
+    
+    return true;
+}
+
+
 // obtain intensity adjustment parameters k and b -- (ft = k*fs + b) : bleaching correction function
 template<class Tdata>
 bool computeIntensityAdjustParas(Tdata ftbg, Tdata ftfg, Tdata fsbg, Tdata fsfg, Tdata &k, Tdata &b)
@@ -362,6 +390,111 @@ bool ireconstructing(SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, R
 
     return true;
 }
+
+// reconstruct tiles into one stitched image
+template <class SDATATYPE> 
+bool ireconstructingN3(SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, V3DLONG vx, V3DLONG vy, V3DLONG vz, V3DLONG vc, float **bgmean, float **bgstdvar)
+{
+    // for boundary counting
+    V3DLONG n_swc=1;
+    QString outputSWC, outputAPO;
+    FILE * fp_swc=NULL, *fp_apo=NULL; // .swc showing boundary .apo showing tile's name
+    
+    
+    // fusion
+    for(V3DLONG ii=0; ii<vim.number_tiles; ii++)
+    {
+        // loading relative imagg files
+        V3DLONG *sz_relative = 0;
+        int datatype_relative = 0;
+        unsigned char* relative1d = 0;
+        
+        if (loadImage(const_cast<char *>(vim.lut[ii].fn_img.c_str()), relative1d, sz_relative, datatype_relative)!=true)
+        {
+            fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.lut[ii].fn_img.c_str());
+            return false;
+        }
+        V3DLONG rx=sz_relative[0], ry=sz_relative[1], rz=sz_relative[2], rc=sz_relative[3];
+        
+        //
+        V3DLONG tile2vi_xs = vim.lut[ii].start_pos[0]-vim.min_vim[0];
+        V3DLONG tile2vi_xe = vim.lut[ii].end_pos[0]-vim.min_vim[0];
+        V3DLONG tile2vi_ys = vim.lut[ii].start_pos[1]-vim.min_vim[1];
+        V3DLONG tile2vi_ye = vim.lut[ii].end_pos[1]-vim.min_vim[1];
+        V3DLONG tile2vi_zs = vim.lut[ii].start_pos[2]-vim.min_vim[2];
+        V3DLONG tile2vi_ze = vim.lut[ii].end_pos[2]-vim.min_vim[2];
+        
+        V3DLONG x_start = (1 > tile2vi_xs) ? 1 : tile2vi_xs;
+        V3DLONG x_end = (vx < tile2vi_xe) ? vx : tile2vi_xe;
+        V3DLONG y_start = (1 > tile2vi_ys) ? 1 : tile2vi_ys;
+        V3DLONG y_end = (vy < tile2vi_ye) ? vy : tile2vi_ye;
+        V3DLONG z_start = (1 > tile2vi_zs) ? 1 : tile2vi_zs;
+        V3DLONG z_end = (vz < tile2vi_ze) ? vz : tile2vi_ze;
+        
+        x_end++;
+        y_end++;
+        z_end++;
+        
+        //suppose all tiles with same color dimensions
+        if(rc>vc)
+            rc = vc;
+        
+        //
+        SDATATYPE *prelative = (SDATATYPE *)relative1d;
+        
+        for(V3DLONG c=0; c<rc; c++)
+        {
+            V3DLONG o_c = c*vx*vy*vz;
+            V3DLONG o_r_c = c*rx*ry*rz;
+            for(V3DLONG k=z_start; k<z_end; k++)
+            {
+                V3DLONG o_k = o_c + k*vx*vy;
+                V3DLONG o_r_k = o_r_c + (k-z_start)*rx*ry;
+                
+                for(V3DLONG j=y_start; j<y_end; j++)
+                {
+                    V3DLONG o_j = o_k + j*vx;
+                    V3DLONG o_r_j = o_r_k + (j-y_start)*rx;
+                    for(V3DLONG i=x_start; i<x_end; i++)
+                    {
+                        V3DLONG idx = o_j + i;
+                        V3DLONG idx_r = o_r_j + (i-x_start);
+                        
+                        float val = (float)(prelative[idx_r]);
+                        
+                        val = (val - bgmean[c][ii]) / bgstdvar[c][ii]; // normalization
+                        
+                        val = val>0.0?val:0.0;
+                        
+                        SDATATYPE curval = (SDATATYPE)val;
+                        
+                        //
+//                        float coef;
+//                        if(!computeWeights(vim, i, j, k, ii, coef) )
+//                        {
+//                            printf("Fail to call function computeWeights!\n");
+//                            return false;
+//                        }
+//                        pVImg[idx] += (SDATATYPE) (val*coef); // linear blending
+                        
+                        if(pVImg[idx])
+                            pVImg[idx] = (pVImg[idx] + curval )/2; // Avg. Intensity
+                        else
+                            pVImg[idx] = curval;
+                        
+                    }
+                }
+            }
+        }
+        
+        //de-alloc
+        if(relative1d) {delete []relative1d; relative1d=0;}
+        if(sz_relative) {delete []sz_relative; sz_relative=0;}
+    }
+    
+    return true;
+}
+
 
 // funcs
 QStringList ImageFusionPlugin::funclist() const
@@ -499,6 +632,9 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
         float **bgthresh = NULL;
         float **fgthresh = NULL;
         
+        float **bgmean = NULL;
+        float **bgstdvar = NULL;
+        
         try 
         {
             bgthresh = new float* [ vim.sz[3] ];
@@ -509,6 +645,14 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             fgthresh = new float* [ vim.sz[3] ];
             for(int i = 0; i < vim.sz[3]; ++i)
                 fgthresh[i] = new float [vim.number_tiles];
+            
+            bgmean = new float* [ vim.sz[3] ];
+            for(int i = 0; i < vim.sz[3]; ++i)
+                bgmean[i] = new float [vim.number_tiles];
+            
+            bgstdvar = new float* [ vim.sz[3] ];
+            for(int i = 0; i < vim.sz[3]; ++i)
+                bgstdvar[i] = new float [vim.number_tiles];
         } 
         catch (...) 
         {
@@ -529,6 +673,22 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
                     delete [] fgthresh[i];
                 }
                 delete []fgthresh; fgthresh=NULL;
+            }
+            if(bgmean)
+            {
+                for (int i = 0; i < vim.sz[3]; ++i)
+                {
+                    delete [] bgmean[i];
+                }
+                delete []bgmean; bgmean=NULL;
+            }
+            if(bgstdvar)
+            {
+                for (int i = 0; i < vim.sz[3]; ++i)
+                {
+                    delete [] bgstdvar[i];
+                }
+                delete []bgstdvar; bgstdvar=NULL;
             }
             
             return false;
@@ -566,21 +726,36 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
                 if(datatype_tile == V3D_UINT8)
                 {
                     // 8-bit data
-                    bool success = computeThresholds<unsigned char>(relative1d + offset, szimg, 255, bgthresh[c][ii], fgthresh[c][ii]);
                     
-                    if(!success)
+                    // compute bg threshold
+                    if(!computeThresholds<unsigned char>((unsigned char*)relative1d + offset, szimg, 255, bgthresh[c][ii], fgthresh[c][ii]))
                     {
                         printf("Fail to call function computeThresholds! \n");
+                        return false;
+                    }
+                    
+                    // compute bg mean and stdvar
+                    if(!computeBgMeanVar<unsigned char>((unsigned char*)relative1d + offset, szimg, bgthresh[c][ii], bgmean[c][ii], bgstdvar[c][ii]))
+                    {
+                        printf("Fail to call function computeBgMeanVar! \n");
                         return false;
                     }
                 }
                 else if(datatype_tile == V3D_UINT16)
                 {
                     // 12-bit data
-                    bool success = computeThresholds<unsigned short>((unsigned short*)relative1d + offset, szimg, 4096, bgthresh[c][ii], fgthresh[c][ii]);                    
-                    if(!success)
+
+                    // compute bg threshold
+                    if(!computeThresholds<unsigned short>((unsigned short*)relative1d + offset, szimg, 4096, bgthresh[c][ii], fgthresh[c][ii]))
                     {
                         printf("Fail to call function computeThresholds! \n");
+                        return false;
+                    }
+                    
+                    // compute bg mean and stdvar
+                    if(!computeBgMeanVar<unsigned short>((unsigned short*)relative1d + offset, szimg, bgthresh[c][ii], bgmean[c][ii], bgstdvar[c][ii]))
+                    {
+                        printf("Fail to call function computeBgMeanVar! \n");
                         return false;
                     }
                 }
@@ -620,8 +795,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             {
                 AdjustPara adjustPara;
                 
-                bool success = computeIntensityAdjustParas<float>(ftbg, ftfg, bgthresh[c][i], fgthresh[c][i], adjustPara.k, adjustPara.b);
-                if(!success)
+                if(!computeIntensityAdjustParas<float>(ftbg, ftfg, bgthresh[c][i], fgthresh[c][i], adjustPara.k, adjustPara.b))
                 {
                     printf("Fail to call function computeIntensityAdjustParas! \n");
                     return false;
@@ -652,6 +826,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             delete []fgthresh; fgthresh=NULL;
         }
         
+        
         // do blending
         V3DLONG vx, vy, vz, vc;
 
@@ -680,7 +855,8 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             }
 
             //
-            bool success = ireconstructing<unsigned char>((unsigned char *)pVImg, vim, vx, vy, vz, vc, listCAP);
+            //bool success = ireconstructing<unsigned char>((unsigned char *)pVImg, vim, vx, vy, vz, vc, listCAP);
+            bool success = ireconstructingN3<unsigned char>((unsigned char *)pVImg, vim, vx, vy, vz, vc, bgmean, bgstdvar);
             if(!success)
             {
                 printf("Fail to call function ireconstructing! \n");
@@ -734,7 +910,8 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             }
 
             //
-            bool success = ireconstructing<unsigned short>((unsigned short *)pVImg, vim, vx, vy, vz, vc, listCAP);
+            //bool success = ireconstructing<unsigned short>((unsigned short *)pVImg, vim, vx, vy, vz, vc, listCAP);
+            bool success = ireconstructingN3<unsigned short>((unsigned short *)pVImg, vim, vx, vy, vz, vc, bgmean, bgstdvar);
             if(!success)
             {
                 printf("Fail to call function ireconstructing! \n");
@@ -779,6 +956,24 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
         {
             printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
             return false;
+        }
+        
+        // de-alloc
+        if(bgmean)
+        {
+            for (int i = 0; i < vim.sz[3]; ++i)
+            {
+                delete [] bgmean[i];
+            }
+            delete []bgmean; bgmean=NULL;
+        }
+        if(bgstdvar)
+        {
+            for (int i = 0; i < vim.sz[3]; ++i)
+            {
+                delete [] bgstdvar[i];
+            }
+            delete []bgstdvar; bgstdvar=NULL;
         }
     }
     else
