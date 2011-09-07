@@ -201,7 +201,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     v3d_global_preference_dialog.h \
     v3d_compile_constraints.h \
     v3d_version_info.h \
-    v3d_application.h 
+    v3d_application.h \ 
     colormap.h \
     ChannelTable.h \
     rotate_image.h \
@@ -228,7 +228,6 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     mainwindow.h \
     DownloadManager.h \
     v3d_actions.h \
-    CommandManager.h \
     v3d_commandlineparser.h \
     pluginfunchandler.h \
     ../worm_straighten_c/bdb_minus.h \
@@ -307,7 +306,6 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     atlas_viewer.cpp \
     DownloadManager.cpp \
     v3d_actions.cpp \
-    CommandManager.cpp \
     v3d_commandlineparser.cpp \
     pluginfunchandler.cpp \
     ../worm_straighten_c/bdb_minus.cpp \
