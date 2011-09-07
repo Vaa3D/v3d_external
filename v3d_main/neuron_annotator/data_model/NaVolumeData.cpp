@@ -1,12 +1,13 @@
 #include "NaVolumeData.h"
 #include <iostream>
 #include <QFuture>
+#include <cassert>
 
 using namespace std;
 
 
 /////////////////////////////////////////
-// NaVolumeData::LoadableStack methods //
+// NaVolumeDataLoadableStack methods //
 /////////////////////////////////////////
 
 class SleepThread : QThread {
@@ -17,21 +18,40 @@ public:
     }
 };
 
-NaVolumeData::LoadableStack::LoadableStack(My4DImage* stackp, QString filename)
+NaVolumeDataLoadableStack::NaVolumeDataLoadableStack(My4DImage* stackpParam, QString filenameParam)
+   : QObject(NULL)
+   , stackp(stackpParam)
+   , filename(filenameParam)
+   , progressValue(0)
+   , progressMin(0)
+   , progressMax(100)
 {
-    this->stackp=stackp;
-    this->filename=filename;
 }
 
-bool NaVolumeData::LoadableStack::load()
+bool NaVolumeDataLoadableStack::load()
 {
+    setRelativeProgress(0.01); // getting here *is* finite progress
     qDebug() << "NaVolumeData::LoadableStack::load() filename=" << filename;
     stackp->loadImage(filename.toAscii().data());
     if (stackp->isEmpty()) {
+        emit failed();
         return false;
     }
+    setRelativeProgress(0.70);
     stackp->updateminmaxvalues();
+    setRelativeProgress(1.0);
+    emit finished();
     return true;
+}
+
+void NaVolumeDataLoadableStack::setRelativeProgress(float relativeProgress)
+{
+    int newProgressValue = (int) (progressMin + relativeProgress * (progressMax - progressMin) + 0.5);
+    assert(newProgressValue >= progressMin);
+    assert(newProgressValue <= progressMax);
+    if (newProgressValue == progressValue) return;
+    progressValue = newProgressValue;
+    emit progressValueChanged(progressValue);
 }
 
 
@@ -134,19 +154,20 @@ bool NaVolumeData::Writer::loadStacks()
     m_data->originalImageStack = new My4DImage();
     LoadableStack originalStack(m_data->originalImageStack, m_data->originalImageStackFilePath);
     qDebug() << "NaVolumeData::Writer::loadStacks() starting originalStack.load()";
-    QFuture<void> originalLoader = QtConcurrent::run(originalStack, &LoadableStack::load);
+    // Pass stack pointer instead of stack reference to avoid problem with lack of QObject copy constructor.
+    QFuture<void> originalLoader = QtConcurrent::run(&originalStack, &LoadableStack::load);
     loaderList.append(originalLoader);
 
     m_data->neuronMaskStack = new My4DImage();
     LoadableStack maskStack(m_data->neuronMaskStack, m_data->maskLabelFilePath);
     qDebug() << "NaVolumeData::Writer::loadStacks() starting maskStack.load()";
-    QFuture<void> maskLoader = QtConcurrent::run(maskStack, &LoadableStack::load);
+    QFuture<void> maskLoader = QtConcurrent::run(&maskStack, &LoadableStack::load);
     loaderList.append(maskLoader);
 
     My4DImage* initialReferenceStack = new My4DImage();
     LoadableStack referenceStack(initialReferenceStack, m_data->referenceStackFilePath);
     qDebug() << "NaVolumeData::Writer::loadStacks() starting referenceStack.load()";
-    QFuture<void> referenceLoader = QtConcurrent::run(referenceStack, &LoadableStack::load);
+    QFuture<void> referenceLoader = QtConcurrent::run(&referenceStack, &LoadableStack::load);
     loaderList.append(referenceLoader);
 
     while(1) {

@@ -4,6 +4,34 @@
 #include "NaLockableData.h"
 #include "../v3d/v3d_core.h"
 
+
+// NaVolumeDataLoadableStack used to be an inner class of NaVolumeData,
+// but inner classes cannot be QObjects.
+class NaVolumeDataLoadableStack : public QObject
+{
+    Q_OBJECT
+
+public:
+    NaVolumeDataLoadableStack(My4DImage* stackp, QString filename);
+    virtual bool load();
+
+signals:
+    void progressValueChanged(int progressValue);
+    void failed();
+    void finished();
+
+private:
+    void setRelativeProgress(float relativeProgress);
+
+    My4DImage* stackp;
+    QString filename;
+
+    int progressValue;
+    int progressMin;
+    int progressMax;
+};
+
+
 // NaVolumeData holds a collection of My4DImage volumes, plus a QReadWriteLock to manage
 // access to the data.  Read-only clients are expected to call refreshLock() on their
 // NaVolumeData::Reader objects every 25 ms or so, to keep the application responsive.
@@ -16,23 +44,6 @@ class NaVolumeData : public NaLockableData
 public:
     explicit NaVolumeData();
     virtual ~NaVolumeData();
-
-    /*
-    // TODO - eventually deprecate direct accessors in favor of stack-allocated lock objects
-    // non-const accessors should only be used for *modifying* volume data
-    // Don't forget to get a write lock while writing!
-    My4DImage* getOriginalImageStackAsMy4DImage() { return originalImageStack; }
-    My4DImage* getReferenceStack() { return referenceStack; }
-    My4DImage* getNeuronMaskAsMy4DImage() { return neuronMaskStack; }
-    // const versions for read-only clients
-    // Don't forget to get a read lock while reading!
-    // TODO - enforce this by embedding My4DImage* access in read locker object.
-    const My4DImage* getOriginalImageStackAsMy4DImage() const { return originalImageStack; }
-    const My4DImage* getReferenceStack() const { return referenceStack; }
-    const My4DImage* getNeuronMaskAsMy4DImage() const { return neuronMaskStack; }
-     */
-
-signals:
 
 public slots:
     void loadVolumeDataFromFiles(); // Assumes file name paths have already been set
@@ -50,6 +61,7 @@ private:
     Image4DProxy<My4DImage> referenceImageProxy;
 
 public:
+    typedef NaVolumeDataLoadableStack LoadableStack;
 
     class Reader; friend class Reader;
     class Reader : public BaseReadLocker
@@ -102,17 +114,6 @@ public:
         NaVolumeData * m_data;
     };
 
-    class LoadableStack; friend class LoadableStack;
-    class LoadableStack
-    {
-    public:
-        LoadableStack(My4DImage* stackp, QString filename);
-        virtual bool load();
-
-    private:
-        My4DImage* stackp;
-        QString filename;
-    };
 
 };
 
