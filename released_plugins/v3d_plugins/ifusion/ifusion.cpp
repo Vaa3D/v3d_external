@@ -245,12 +245,20 @@ bool computeThresholds(Tdata *pImg, V3DLONG szimg, Tdata intensityrange, float &
 template<class Tdata>
 bool computeBgMeanVar(Tdata *pImg, V3DLONG szimg, float bgthresh, float &bgmean, float &bgstdvar)
 {
-    // mean
+    // mean as bgthresh
+    float mean = 0;
+    for (V3DLONG i=0; i<szimg; i++) 
+    {
+        mean += pImg[i];
+    }
+    mean /= (float)szimg;
+    
+    //
     bgmean=0;
     
     for (V3DLONG i=0; i<szimg; i++) 
     {
-        bgmean += pImg[i] - bgthresh;
+        bgmean += pImg[i] - mean;
     }
     bgmean /= (float)szimg;
     
