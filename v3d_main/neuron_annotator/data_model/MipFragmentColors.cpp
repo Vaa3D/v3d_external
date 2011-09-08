@@ -23,6 +23,7 @@ void MipFragmentColors::update()
 
     QTime stopwatch;
     stopwatch.start();
+    size_t data_size = 0;
     {
         MipFragmentData::Reader mipReader(mipFragmentData); // readlock one of two
         if (! mipReader.hasReadLock()) return;
@@ -90,10 +91,10 @@ void MipFragmentColors::update()
                 img->setPixel(x, y, color);
             }
         }
+        data_size = 4 * sx * sy * sf;
     } // release locks
 
     qDebug() << "Colorizing fragment MIPs took " << stopwatch.elapsed() / 1000.0 << " seconds";
-    // size_t data_size = 4 * sx * sy * sf;
     // qDebug() << "Colorized fragment MIPs use " << data_size / 1e6 << " MB of RAM";
 
     emit dataChanged();

@@ -57,14 +57,14 @@ void DataColorModel::colorizeIncremental()
 void DataColorModel::initialize()
 {
     if (! volumeData) return;
-    qDebug() << "Resetting DataColorModel";
+    // qDebug() << "Resetting DataColorModel";
     {
         NaVolumeData::Reader volumeReader(*volumeData);
         if (! volumeReader.hasReadLock()) return;
         Writer colorWriter(*this);
         if (! d->initialize(volumeReader)) return;
     } // release locks
-    qDebug() << "Done resetting DataColorModel";
+    // qDebug() << "Done resetting DataColorModel";
     emit dataChanged();
 }
 

@@ -298,23 +298,33 @@ void MipMergedData::update()
                 this, SLOT(colorizeImage()));
         recomputeLayerTree();
     } // release locks
-    // qDebug() << "Setting up MipMergedData structure took " << stopwatch.elapsed() / 1000.0 << " seconds";
+
+    size_t data_size = 0;
+    data_size += layerZValues->getTotalBytes();
+    data_size += layerIntensities->getTotalBytes();
+    data_size += layerData->getTotalBytes();
+    data_size += layerNeurons->getTotalBytes();
 
     updateNeuronVisibility();
+    qDebug() << "Setting up MipMergedData structure took " << stopwatch.elapsed() / 1000.0 << " seconds";
+    qDebug() << "MipMergedData consumes" << data_size / 1000.0 << "MB for" << layerNeuronProxy.sz / 2 << "neurons";
 }
 
 void MipMergedData::toggleNeuronVisibility(int index, bool status) // update a single neuron, on neuronSelectionModel.neuronMaskUpdated, O(log nfrags)
 {
+    QTime stopwatch;
+    stopwatch.start();
     // qDebug() << "MipMergedData::toggleNeuronVisibility" << index << status;
     int ix = index + 1; // layers has background layer at zero
     if (ix < 0) return;
     if (ix > layers.size()) return;
-    if (status == layers[ix]->isVisible()) return;
+    if (status == layers[ix]->isVisible()) return; // no change
     {
         Writer writer(*this);
         layers[ix]->setVisibility(status);
     }
-    layers[ix]->update(); // after lock, because it might emit
+    layers[ix]->update(); // after lock, because it might emit.  It probably propagates directly in this thread.
+    // qDebug() << "MipMergedData::toggleNeuronVisibility() took" << stopwatch.elapsed() << "milliseconds";
 }
 
 void MipMergedData::toggleOverlayVisibility(int index, bool status)

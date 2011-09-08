@@ -83,13 +83,11 @@ void ZSliceColors::update()
                 image->setPixel(x, y, colorReader.blend(&channelData[0]));
             }
     } // release locks before emit
-    // qDebug() << "ZSlice update took" << stopwatch.elapsed() / 1000.0 << "seconds"; // takes 31 ms for 512x512 x 3
-    emit dataChanged();
 
-    // Pause thread to give the gui thread a chance to read the image, in case the updates() are coming hot and heavy.
-    // QTime pauser;
-    // pauser.start();
-    // while (pauser.elapsed() < 30) {} // wait thirty milliseconds before exiting
+    // qDebug() << "ZSliceColors update took" << stopwatch.elapsed() / 1000.0 << "seconds"; // takes 31 ms for 512x512 x 3
+    // qDebug() << "ZSliceColors occupies" << 4 * image->width() * image->height() / 1000.0 << "MB of RAM";
+
+    emit dataChanged();
 }
 
 /* slot */

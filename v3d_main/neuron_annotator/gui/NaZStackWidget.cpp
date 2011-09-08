@@ -685,6 +685,8 @@ void NaZStackWidget::do_HDRfilter()
 void NaZStackWidget::updatePixmap()
 {
     if (! zSliceColors) return;
+    QTime stopwatch;
+    stopwatch.start();
     {
         ZSliceColors::Reader zReader(*zSliceColors);
         if (! zReader.hasReadLock()) {
@@ -703,6 +705,7 @@ void NaZStackWidget::updatePixmap()
         cur_z = zReader.getZIndex();
     }
     // qDebug() << "NaStackWidget pixmap updated";
+    // qDebug() << "NaZStackWidget updatePixmap took" << stopwatch.elapsed() << "milliseconds";
     update();
 }
 
