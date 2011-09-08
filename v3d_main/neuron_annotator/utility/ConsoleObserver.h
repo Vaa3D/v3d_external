@@ -20,6 +20,7 @@ signals:
 
 public slots:
     void ontologySelected(long rootId);
+    void ontologyChanged(long rootId);
     void entitySelected(long entityId);
     void entityViewRequested(long entityId);
     void annotationsChanged(long entityId);

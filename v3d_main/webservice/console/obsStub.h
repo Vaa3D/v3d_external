@@ -65,8 +65,30 @@ public:
 };
 #endif
 
+#ifndef SOAP_TYPE_obs_fw__ontologyChangedResponse
+#define SOAP_TYPE_obs_fw__ontologyChangedResponse (13)
+/* fw:ontologyChangedResponse */
+struct fw__ontologyChangedResponse
+{
+#ifdef WITH_NOEMPTYSTRUCT
+private:
+	char dummy;	/* dummy member to enable compilation */
+#endif
+};
+#endif
+
+#ifndef SOAP_TYPE_obs_fw__ontologyChanged
+#define SOAP_TYPE_obs_fw__ontologyChanged (16)
+/* fw:ontologyChanged */
+struct fw__ontologyChanged
+{
+public:
+	LONG64 rootId;	/* required element of type xsd:long */
+};
+#endif
+
 #ifndef SOAP_TYPE_obs_fw__entitySelectedResponse
-#define SOAP_TYPE_obs_fw__entitySelectedResponse (13)
+#define SOAP_TYPE_obs_fw__entitySelectedResponse (17)
 /* fw:entitySelectedResponse */
 struct fw__entitySelectedResponse
 {
@@ -78,7 +100,7 @@ private:
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__entitySelected
-#define SOAP_TYPE_obs_fw__entitySelected (16)
+#define SOAP_TYPE_obs_fw__entitySelected (20)
 /* fw:entitySelected */
 struct fw__entitySelected
 {
@@ -88,7 +110,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__entityViewRequestedResponse
-#define SOAP_TYPE_obs_fw__entityViewRequestedResponse (17)
+#define SOAP_TYPE_obs_fw__entityViewRequestedResponse (21)
 /* fw:entityViewRequestedResponse */
 struct fw__entityViewRequestedResponse
 {
@@ -100,7 +122,7 @@ private:
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__entityViewRequested
-#define SOAP_TYPE_obs_fw__entityViewRequested (20)
+#define SOAP_TYPE_obs_fw__entityViewRequested (24)
 /* fw:entityViewRequested */
 struct fw__entityViewRequested
 {
@@ -110,7 +132,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__annotationsChangedResponse
-#define SOAP_TYPE_obs_fw__annotationsChangedResponse (21)
+#define SOAP_TYPE_obs_fw__annotationsChangedResponse (25)
 /* fw:annotationsChangedResponse */
 struct fw__annotationsChangedResponse
 {
@@ -122,7 +144,7 @@ private:
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__annotationsChanged
-#define SOAP_TYPE_obs_fw__annotationsChanged (24)
+#define SOAP_TYPE_obs_fw__annotationsChanged (28)
 /* fw:annotationsChanged */
 struct fw__annotationsChanged
 {
@@ -134,7 +156,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Header
-#define SOAP_TYPE_obs_SOAP_ENV__Header (25)
+#define SOAP_TYPE_obs_SOAP_ENV__Header (29)
 /* SOAP Header: */
 struct SOAP_ENV__Header
 {
@@ -150,7 +172,7 @@ private:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Code
-#define SOAP_TYPE_obs_SOAP_ENV__Code (26)
+#define SOAP_TYPE_obs_SOAP_ENV__Code (30)
 /* SOAP Fault Code: */
 struct SOAP_ENV__Code
 {
@@ -165,7 +187,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Detail
-#define SOAP_TYPE_obs_SOAP_ENV__Detail (28)
+#define SOAP_TYPE_obs_SOAP_ENV__Detail (32)
 /* SOAP-ENV:Detail */
 struct SOAP_ENV__Detail
 {
@@ -181,7 +203,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Reason
-#define SOAP_TYPE_obs_SOAP_ENV__Reason (31)
+#define SOAP_TYPE_obs_SOAP_ENV__Reason (35)
 /* SOAP-ENV:Reason */
 struct SOAP_ENV__Reason
 {
@@ -195,7 +217,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Fault
-#define SOAP_TYPE_obs_SOAP_ENV__Fault (32)
+#define SOAP_TYPE_obs_SOAP_ENV__Fault (36)
 /* SOAP Fault: */
 struct SOAP_ENV__Fault
 {

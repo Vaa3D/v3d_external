@@ -160,6 +160,7 @@ int ConsoleObserverService::serve()
 }
 
 static int serve_fw__ontologySelected(ConsoleObserverService*);
+static int serve_fw__ontologyChanged(ConsoleObserverService*);
 static int serve_fw__entitySelected(ConsoleObserverService*);
 static int serve_fw__entityViewRequested(ConsoleObserverService*);
 static int serve_fw__annotationsChanged(ConsoleObserverService*);
@@ -168,6 +169,8 @@ int ConsoleObserverService::dispatch()
 {	soap_peek_element(this);
 	if (!soap_match_tag(this, this->tag, "fw:ontologySelected"))
 		return serve_fw__ontologySelected(this);
+	if (!soap_match_tag(this, this->tag, "fw:ontologyChanged"))
+		return serve_fw__ontologyChanged(this);
 	if (!soap_match_tag(this, this->tag, "fw:entitySelected"))
 		return serve_fw__entitySelected(this);
 	if (!soap_match_tag(this, this->tag, "fw:entityViewRequested"))
@@ -218,30 +221,30 @@ static int serve_fw__ontologySelected(ConsoleObserverService *soap)
 	return soap_closesock(soap);
 }
 
-static int serve_fw__entitySelected(ConsoleObserverService *soap)
-{	struct fw__entitySelected soap_tmp_fw__entitySelected;
-	struct fw__entitySelectedResponse _param_2;
-	soap_default_fw__entitySelectedResponse(soap, &_param_2);
-	soap_default_fw__entitySelected(soap, &soap_tmp_fw__entitySelected);
+static int serve_fw__ontologyChanged(ConsoleObserverService *soap)
+{	struct fw__ontologyChanged soap_tmp_fw__ontologyChanged;
+	struct fw__ontologyChangedResponse _param_2;
+	soap_default_fw__ontologyChangedResponse(soap, &_param_2);
+	soap_default_fw__ontologyChanged(soap, &soap_tmp_fw__ontologyChanged);
 	soap->encodingStyle = NULL;
-	if (!soap_get_fw__entitySelected(soap, &soap_tmp_fw__entitySelected, "fw:entitySelected", NULL))
+	if (!soap_get_fw__ontologyChanged(soap, &soap_tmp_fw__ontologyChanged, "fw:ontologyChanged", NULL))
 		return soap->error;
 	if (soap_body_end_in(soap)
 	 || soap_envelope_end_in(soap)
 	 || soap_end_recv(soap))
 		return soap->error;
-	soap->error = soap->entitySelected(soap_tmp_fw__entitySelected.entityId, _param_2);
+	soap->error = soap->ontologyChanged(soap_tmp_fw__ontologyChanged.rootId, _param_2);
 	if (soap->error)
 		return soap->error;
 	soap_serializeheader(soap);
-	soap_serialize_fw__entitySelectedResponse(soap, &_param_2);
+	soap_serialize_fw__ontologyChangedResponse(soap, &_param_2);
 	if (soap_begin_count(soap))
 		return soap->error;
 	if (soap->mode & SOAP_IO_LENGTH)
 	{	if (soap_envelope_begin_out(soap)
 		 || soap_putheader(soap)
 		 || soap_body_begin_out(soap)
-		 || soap_put_fw__entitySelectedResponse(soap, &_param_2, "fw:entitySelectedResponse", NULL)
+		 || soap_put_fw__ontologyChangedResponse(soap, &_param_2, "fw:ontologyChangedResponse", NULL)
 		 || soap_body_end_out(soap)
 		 || soap_envelope_end_out(soap))
 			 return soap->error;
@@ -251,7 +254,48 @@ static int serve_fw__entitySelected(ConsoleObserverService *soap)
 	 || soap_envelope_begin_out(soap)
 	 || soap_putheader(soap)
 	 || soap_body_begin_out(soap)
-	 || soap_put_fw__entitySelectedResponse(soap, &_param_2, "fw:entitySelectedResponse", NULL)
+	 || soap_put_fw__ontologyChangedResponse(soap, &_param_2, "fw:ontologyChangedResponse", NULL)
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap->error;
+	return soap_closesock(soap);
+}
+
+static int serve_fw__entitySelected(ConsoleObserverService *soap)
+{	struct fw__entitySelected soap_tmp_fw__entitySelected;
+	struct fw__entitySelectedResponse _param_3;
+	soap_default_fw__entitySelectedResponse(soap, &_param_3);
+	soap_default_fw__entitySelected(soap, &soap_tmp_fw__entitySelected);
+	soap->encodingStyle = NULL;
+	if (!soap_get_fw__entitySelected(soap, &soap_tmp_fw__entitySelected, "fw:entitySelected", NULL))
+		return soap->error;
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap->error;
+	soap->error = soap->entitySelected(soap_tmp_fw__entitySelected.entityId, _param_3);
+	if (soap->error)
+		return soap->error;
+	soap_serializeheader(soap);
+	soap_serialize_fw__entitySelectedResponse(soap, &_param_3);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_fw__entitySelectedResponse(soap, &_param_3, "fw:entitySelectedResponse", NULL)
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	};
+	if (soap_end_count(soap)
+	 || soap_response(soap, SOAP_OK)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_fw__entitySelectedResponse(soap, &_param_3, "fw:entitySelectedResponse", NULL)
 	 || soap_body_end_out(soap)
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
@@ -261,8 +305,8 @@ static int serve_fw__entitySelected(ConsoleObserverService *soap)
 
 static int serve_fw__entityViewRequested(ConsoleObserverService *soap)
 {	struct fw__entityViewRequested soap_tmp_fw__entityViewRequested;
-	struct fw__entityViewRequestedResponse _param_3;
-	soap_default_fw__entityViewRequestedResponse(soap, &_param_3);
+	struct fw__entityViewRequestedResponse _param_4;
+	soap_default_fw__entityViewRequestedResponse(soap, &_param_4);
 	soap_default_fw__entityViewRequested(soap, &soap_tmp_fw__entityViewRequested);
 	soap->encodingStyle = NULL;
 	if (!soap_get_fw__entityViewRequested(soap, &soap_tmp_fw__entityViewRequested, "fw:entityViewRequested", NULL))
@@ -271,18 +315,18 @@ static int serve_fw__entityViewRequested(ConsoleObserverService *soap)
 	 || soap_envelope_end_in(soap)
 	 || soap_end_recv(soap))
 		return soap->error;
-	soap->error = soap->entityViewRequested(soap_tmp_fw__entityViewRequested.entityId, _param_3);
+	soap->error = soap->entityViewRequested(soap_tmp_fw__entityViewRequested.entityId, _param_4);
 	if (soap->error)
 		return soap->error;
 	soap_serializeheader(soap);
-	soap_serialize_fw__entityViewRequestedResponse(soap, &_param_3);
+	soap_serialize_fw__entityViewRequestedResponse(soap, &_param_4);
 	if (soap_begin_count(soap))
 		return soap->error;
 	if (soap->mode & SOAP_IO_LENGTH)
 	{	if (soap_envelope_begin_out(soap)
 		 || soap_putheader(soap)
 		 || soap_body_begin_out(soap)
-		 || soap_put_fw__entityViewRequestedResponse(soap, &_param_3, "fw:entityViewRequestedResponse", NULL)
+		 || soap_put_fw__entityViewRequestedResponse(soap, &_param_4, "fw:entityViewRequestedResponse", NULL)
 		 || soap_body_end_out(soap)
 		 || soap_envelope_end_out(soap))
 			 return soap->error;
@@ -292,7 +336,7 @@ static int serve_fw__entityViewRequested(ConsoleObserverService *soap)
 	 || soap_envelope_begin_out(soap)
 	 || soap_putheader(soap)
 	 || soap_body_begin_out(soap)
-	 || soap_put_fw__entityViewRequestedResponse(soap, &_param_3, "fw:entityViewRequestedResponse", NULL)
+	 || soap_put_fw__entityViewRequestedResponse(soap, &_param_4, "fw:entityViewRequestedResponse", NULL)
 	 || soap_body_end_out(soap)
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
@@ -302,8 +346,8 @@ static int serve_fw__entityViewRequested(ConsoleObserverService *soap)
 
 static int serve_fw__annotationsChanged(ConsoleObserverService *soap)
 {	struct fw__annotationsChanged soap_tmp_fw__annotationsChanged;
-	struct fw__annotationsChangedResponse _param_4;
-	soap_default_fw__annotationsChangedResponse(soap, &_param_4);
+	struct fw__annotationsChangedResponse _param_5;
+	soap_default_fw__annotationsChangedResponse(soap, &_param_5);
 	soap_default_fw__annotationsChanged(soap, &soap_tmp_fw__annotationsChanged);
 	soap->encodingStyle = NULL;
 	if (!soap_get_fw__annotationsChanged(soap, &soap_tmp_fw__annotationsChanged, "fw:annotationsChanged", NULL))
@@ -312,18 +356,18 @@ static int serve_fw__annotationsChanged(ConsoleObserverService *soap)
 	 || soap_envelope_end_in(soap)
 	 || soap_end_recv(soap))
 		return soap->error;
-	soap->error = soap->annotationsChanged(soap_tmp_fw__annotationsChanged.entityId, _param_4);
+	soap->error = soap->annotationsChanged(soap_tmp_fw__annotationsChanged.entityId, _param_5);
 	if (soap->error)
 		return soap->error;
 	soap_serializeheader(soap);
-	soap_serialize_fw__annotationsChangedResponse(soap, &_param_4);
+	soap_serialize_fw__annotationsChangedResponse(soap, &_param_5);
 	if (soap_begin_count(soap))
 		return soap->error;
 	if (soap->mode & SOAP_IO_LENGTH)
 	{	if (soap_envelope_begin_out(soap)
 		 || soap_putheader(soap)
 		 || soap_body_begin_out(soap)
-		 || soap_put_fw__annotationsChangedResponse(soap, &_param_4, "fw:annotationsChangedResponse", NULL)
+		 || soap_put_fw__annotationsChangedResponse(soap, &_param_5, "fw:annotationsChangedResponse", NULL)
 		 || soap_body_end_out(soap)
 		 || soap_envelope_end_out(soap))
 			 return soap->error;
@@ -333,7 +377,7 @@ static int serve_fw__annotationsChanged(ConsoleObserverService *soap)
 	 || soap_envelope_begin_out(soap)
 	 || soap_putheader(soap)
 	 || soap_body_begin_out(soap)
-	 || soap_put_fw__annotationsChangedResponse(soap, &_param_4, "fw:annotationsChangedResponse", NULL)
+	 || soap_put_fw__annotationsChangedResponse(soap, &_param_5, "fw:annotationsChangedResponse", NULL)
 	 || soap_body_end_out(soap)
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))

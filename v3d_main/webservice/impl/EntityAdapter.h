@@ -1,8 +1,8 @@
 #ifndef ENTITYADAPTER_H
 #define ENTITYADAPTER_H
 
-#include "../neuron_annotator/entity_model/Entity.h"
-#include "../../webservice/console/cdsStub.h"
+#include "../../neuron_annotator/entity_model/Entity.h"
+#include "../console/cdsStub.h"
 #include <QHash>
 
 class EntityAdapter

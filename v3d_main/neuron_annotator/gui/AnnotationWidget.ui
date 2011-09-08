@@ -153,7 +153,7 @@
         </widget>
        </item>
        <item>
-        <widget class="TreeView" name="ontologyTreeView"/>
+        <widget class="OntologyTreeView" name="ontologyTreeView"/>
        </item>
       </layout>
      </widget>
@@ -287,9 +287,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>TreeView</class>
+   <class>OntologyTreeView</class>
    <extends>QTreeView</extends>
-   <header>../neuron_annotator/gui/ontology_tree/TreeView.h</header>
+   <header>../neuron_annotator/gui/trees/OntologyTreeView.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

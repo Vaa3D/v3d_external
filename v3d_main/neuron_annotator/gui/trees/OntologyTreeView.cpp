@@ -1,12 +1,12 @@
-#include "TreeView.h"
+#include "OntologyTreeView.h"
 #include <QtGui>
 
-TreeView::TreeView(QWidget *parent) :
+OntologyTreeView::OntologyTreeView(QWidget *parent) :
     QTreeView(parent)
 {
 }
 
-void TreeView::keyPressEvent(QKeyEvent *event) {
+void OntologyTreeView::keyPressEvent(QKeyEvent *event) {
     // Ignore all key presses so that they can be captured by AnnotationWidget's event listener
     event->ignore();
 }

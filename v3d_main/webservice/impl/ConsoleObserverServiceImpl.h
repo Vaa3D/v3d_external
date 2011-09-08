@@ -21,14 +21,16 @@ public:
     void registerWithConsole();
     inline QString * errorMessage() const { return _errorMessage; }
     inline int port() const { return _port; }
-    virtual int ontologySelected(LONG64 _rootId, struct fw__ontologySelectedResponse &response);
-    virtual int entitySelected(LONG64 _entityId, struct fw__entitySelectedResponse &response);
+    virtual int ontologySelected(LONG64 rootId, struct fw__ontologySelectedResponse &response);
+    virtual int ontologyChanged(LONG64 rootId, struct fw__ontologyChangedResponse &response);
+    virtual int entitySelected(LONG64 entityId, struct fw__entitySelectedResponse &response);
     virtual int entityViewRequested(LONG64 entityId, struct fw__entityViewRequestedResponse &response);
-    virtual int annotationsChanged(LONG64 _entityId, struct fw__annotationsChangedResponse &response);
+    virtual int annotationsChanged(LONG64 entityId, struct fw__annotationsChangedResponse &response);
     virtual ConsoleObserverService *copy();
 
 signals:
     void ontologySelected(long rootId);
+    void ontologyChanged(long rootId);
     void entitySelected(long entityId);
     void entityViewRequested(long entityId);
     void annotationsChanged(long entityId);

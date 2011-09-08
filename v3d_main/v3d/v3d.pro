@@ -142,9 +142,12 @@ HEADERS += \
     ../neuron_annotator/gui/GammaWidget.h \
     ../neuron_annotator/gui/AngleWidget.h \
     ../neuron_annotator/gui/AnnotationWidget.h \
-    ../neuron_annotator/gui/ontology_tree/TreeItem.h \
-    ../neuron_annotator/gui/ontology_tree/TreeModel.h \
-    ../neuron_annotator/gui/ontology_tree/TreeView.h \
+    ../neuron_annotator/gui/trees/EntityTreeItem.h \
+    ../neuron_annotator/gui/trees/AnnotationTreeModel.h \
+    ../neuron_annotator/gui/trees/OntologyTreeModel.h \
+    ../neuron_annotator/gui/trees/EntityTreeModel.h \
+    ../neuron_annotator/gui/trees/EntityTreeView.h \
+    ../neuron_annotator/gui/trees/OntologyTreeView.h \
     ../neuron_annotator/gui/MouseClickManager.h \
     ../neuron_annotator/gui/ZoomSpinBox.h \
     ../neuron_annotator/gui/ZoomWidget.h \
@@ -216,9 +219,12 @@ SOURCES += \
     ../neuron_annotator/gui/MouseClickManager.cpp \
     ../neuron_annotator/gui/AngleWidget.cpp \
     ../neuron_annotator/gui/AnnotationWidget.cpp \
-    ../neuron_annotator/gui/ontology_tree/TreeItem.cpp \
-    ../neuron_annotator/gui/ontology_tree/TreeModel.cpp \
-    ../neuron_annotator/gui/ontology_tree/TreeView.cpp \
+    ../neuron_annotator/gui/trees/EntityTreeItem.cpp \
+    ../neuron_annotator/gui/trees/EntityTreeModel.cpp \
+    ../neuron_annotator/gui/trees/AnnotationTreeModel.cpp \
+    ../neuron_annotator/gui/trees/OntologyTreeModel.cpp \
+    ../neuron_annotator/gui/trees/EntityTreeView.cpp \
+    ../neuron_annotator/gui/trees/OntologyTreeView.cpp \
     ../neuron_annotator/gui/ZoomSpinBox.cpp \
     ../neuron_annotator/gui/ZoomWidget.cpp \
     ../neuron_annotator/gui/CompartmentMapWidget.cpp \

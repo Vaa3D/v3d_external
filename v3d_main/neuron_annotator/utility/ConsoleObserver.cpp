@@ -54,6 +54,17 @@ void ConsoleObserver::ontologySelected(long rootId)
     loadCurrentOntology();
 }
 
+
+//*******************************************************************************************
+// ontologyChanged event
+//*******************************************************************************************
+
+void ConsoleObserver::ontologyChanged(long rootId)
+{
+    qDebug() << "Got signal ontologyChanged:" << rootId;
+    loadCurrentOntology();
+}
+
 //*******************************************************************************************
 // entitySelected event
 //*******************************************************************************************

@@ -4,6 +4,10 @@
 <part name="rootId" type="xsd:long" />
 </message>
 <message name="ontologySelectedResponse" />
+<message name="ontologyChanged">
+<part name="rootId" type="xsd:long" />
+</message>
+<message name="ontologyChangedResponse" />
 <message name="entitySelected">
 <part name="entityId" type="xsd:long" />
 </message>
@@ -21,6 +25,10 @@
 <input message="tns:ontologySelected" />
 <output message="tns:ontologySelectedResponse" />
 </operation>
+<operation name="ontologyChanged">
+<input message="tns:ontologyChanged" />
+<output message="tns:ontologyChangedResponse" />
+</operation>
 <operation name="entitySelected">
 <input message="tns:entitySelected" />
 <output message="tns:entitySelectedResponse" />
@@ -37,6 +45,15 @@
 <binding name="ObsPortBinding" type="tns:ConsoleObserver">
 <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc" />
 <operation name="ontologySelected">
+<soap:operation soapAction="" />
+<input>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</input>
+<output>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</output>
+</operation>
+<operation name="ontologyChanged">
 <soap:operation soapAction="" />
 <input>
 <soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />

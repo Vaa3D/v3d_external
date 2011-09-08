@@ -17,7 +17,7 @@ compiling, linking, and/or using OpenSSL is allowed.
 
 namespace obs {
 
-SOAP_SOURCE_STAMP("@(#) obsC.cpp ver 2.8.3 2011-08-29 13:17:49 GMT")
+SOAP_SOURCE_STAMP("@(#) obsC.cpp ver 2.8.3 2011-09-07 22:12:53 GMT")
 
 
 #ifndef WITH_NOGLOBAL
@@ -184,6 +184,10 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		return soap_in_fw__entitySelected(soap, NULL, NULL, "fw:entitySelected");
 	case SOAP_TYPE_obs_fw__entitySelectedResponse:
 		return soap_in_fw__entitySelectedResponse(soap, NULL, NULL, "fw:entitySelectedResponse");
+	case SOAP_TYPE_obs_fw__ontologyChanged:
+		return soap_in_fw__ontologyChanged(soap, NULL, NULL, "fw:ontologyChanged");
+	case SOAP_TYPE_obs_fw__ontologyChangedResponse:
+		return soap_in_fw__ontologyChangedResponse(soap, NULL, NULL, "fw:ontologyChangedResponse");
 	case SOAP_TYPE_obs_fw__ontologySelected:
 		return soap_in_fw__ontologySelected(soap, NULL, NULL, "fw:ontologySelected");
 	case SOAP_TYPE_obs_fw__ontologySelectedResponse:
@@ -237,6 +241,14 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		if (!soap_match_tag(soap, t, "fw:entitySelectedResponse"))
 		{	*type = SOAP_TYPE_obs_fw__entitySelectedResponse;
 			return soap_in_fw__entitySelectedResponse(soap, NULL, NULL, NULL);
+		}
+		if (!soap_match_tag(soap, t, "fw:ontologyChanged"))
+		{	*type = SOAP_TYPE_obs_fw__ontologyChanged;
+			return soap_in_fw__ontologyChanged(soap, NULL, NULL, NULL);
+		}
+		if (!soap_match_tag(soap, t, "fw:ontologyChangedResponse"))
+		{	*type = SOAP_TYPE_obs_fw__ontologyChangedResponse;
+			return soap_in_fw__ontologyChangedResponse(soap, NULL, NULL, NULL);
 		}
 		if (!soap_match_tag(soap, t, "fw:ontologySelected"))
 		{	*type = SOAP_TYPE_obs_fw__ontologySelected;
@@ -334,6 +346,10 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_putelement(struct soap *soap, const void *ptr, co
 		return soap_out_fw__entitySelected(soap, tag, id, (const struct fw__entitySelected *)ptr, "fw:entitySelected");
 	case SOAP_TYPE_obs_fw__entitySelectedResponse:
 		return soap_out_fw__entitySelectedResponse(soap, tag, id, (const struct fw__entitySelectedResponse *)ptr, "fw:entitySelectedResponse");
+	case SOAP_TYPE_obs_fw__ontologyChanged:
+		return soap_out_fw__ontologyChanged(soap, tag, id, (const struct fw__ontologyChanged *)ptr, "fw:ontologyChanged");
+	case SOAP_TYPE_obs_fw__ontologyChangedResponse:
+		return soap_out_fw__ontologyChangedResponse(soap, tag, id, (const struct fw__ontologyChangedResponse *)ptr, "fw:ontologyChangedResponse");
 	case SOAP_TYPE_obs_fw__ontologySelected:
 		return soap_out_fw__ontologySelected(soap, tag, id, (const struct fw__ontologySelected *)ptr, "fw:ontologySelected");
 	case SOAP_TYPE_obs_fw__ontologySelectedResponse:
@@ -371,6 +387,12 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_markelement(struct soap *soap, const void *ptr, 
 	case SOAP_TYPE_obs_fw__entitySelectedResponse:
 		soap_serialize_fw__entitySelectedResponse(soap, (const struct fw__entitySelectedResponse *)ptr);
 		break;
+	case SOAP_TYPE_obs_fw__ontologyChanged:
+		soap_serialize_fw__ontologyChanged(soap, (const struct fw__ontologyChanged *)ptr);
+		break;
+	case SOAP_TYPE_obs_fw__ontologyChangedResponse:
+		soap_serialize_fw__ontologyChangedResponse(soap, (const struct fw__ontologyChangedResponse *)ptr);
+		break;
 	case SOAP_TYPE_obs_fw__ontologySelected:
 		soap_serialize_fw__ontologySelected(soap, (const struct fw__ontologySelected *)ptr);
 		break;
@@ -395,6 +417,10 @@ SOAP_FMAC3 void * SOAP_FMAC4 obs_instantiate(struct soap *soap, int t, const cha
 		return (void*)soap_instantiate_fw__ontologySelectedResponse(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_obs_fw__ontologySelected:
 		return (void*)soap_instantiate_fw__ontologySelected(soap, -1, type, arrayType, n);
+	case SOAP_TYPE_obs_fw__ontologyChangedResponse:
+		return (void*)soap_instantiate_fw__ontologyChangedResponse(soap, -1, type, arrayType, n);
+	case SOAP_TYPE_obs_fw__ontologyChanged:
+		return (void*)soap_instantiate_fw__ontologyChanged(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_obs_fw__entitySelectedResponse:
 		return (void*)soap_instantiate_fw__entitySelectedResponse(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_obs_fw__entitySelected:
@@ -445,6 +471,18 @@ SOAP_FMAC3 int SOAP_FMAC4 obs_fdelete(struct soap_clist *p)
 			SOAP_DELETE((struct fw__ontologySelected*)p->ptr);
 		else
 			SOAP_DELETE_ARRAY((struct fw__ontologySelected*)p->ptr);
+		break;
+	case SOAP_TYPE_obs_fw__ontologyChangedResponse:
+		if (p->size < 0)
+			SOAP_DELETE((struct fw__ontologyChangedResponse*)p->ptr);
+		else
+			SOAP_DELETE_ARRAY((struct fw__ontologyChangedResponse*)p->ptr);
+		break;
+	case SOAP_TYPE_obs_fw__ontologyChanged:
+		if (p->size < 0)
+			SOAP_DELETE((struct fw__ontologyChanged*)p->ptr);
+		else
+			SOAP_DELETE_ARRAY((struct fw__ontologyChanged*)p->ptr);
 		break;
 	case SOAP_TYPE_obs_fw__entitySelectedResponse:
 		if (p->size < 0)
@@ -1908,6 +1946,209 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__entitySelectedResponse(struct soap *soa
 	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
 	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__entitySelectedResponse %p -> %p\n", q, p));
 	*(struct fw__entitySelectedResponse*)p = *(struct fw__entitySelectedResponse*)q;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__ontologyChanged(struct soap *soap, struct fw__ontologyChanged *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+	soap_default_LONG64(soap, &a->rootId);
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__ontologyChanged(struct soap *soap, const struct fw__ontologyChanged *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__ontologyChanged(struct soap *soap, const char *tag, int id, const struct fw__ontologyChanged *a, const char *type)
+{
+	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_obs_fw__ontologyChanged), type))
+		return soap->error;
+	if (soap_out_LONG64(soap, "rootId", -1, &a->rootId, ""))
+		return soap->error;
+	return soap_element_end_out(soap, tag);
+}
+
+SOAP_FMAC3 struct fw__ontologyChanged * SOAP_FMAC4 soap_in_fw__ontologyChanged(struct soap *soap, const char *tag, struct fw__ontologyChanged *a, const char *type)
+{
+	size_t soap_flag_rootId = 1;
+	if (soap_element_begin_in(soap, tag, 0, type))
+		return NULL;
+	a = (struct fw__ontologyChanged *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_obs_fw__ontologyChanged, sizeof(struct fw__ontologyChanged), 0, NULL, NULL, NULL);
+	if (!a)
+		return NULL;
+	soap_default_fw__ontologyChanged(soap, a);
+	if (soap->body && !*soap->href)
+	{
+		for (;;)
+		{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap_flag_rootId && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_LONG64(soap, "rootId", &a->rootId, "xsd:long"))
+				{	soap_flag_rootId--;
+					continue;
+				}
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+				return NULL;
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else
+	{	a = (struct fw__ontologyChanged *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_obs_fw__ontologyChanged, 0, sizeof(struct fw__ontologyChanged), 0, NULL);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	if ((soap->mode & SOAP_XML_STRICT) && (soap_flag_rootId > 0))
+	{	soap->error = SOAP_OCCURS;
+		return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__ontologyChanged(struct soap *soap, const struct fw__ontologyChanged *a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_obs_fw__ontologyChanged);
+	if (soap_out_fw__ontologyChanged(soap, tag?tag:"fw:ontologyChanged", id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 struct fw__ontologyChanged * SOAP_FMAC4 soap_get_fw__ontologyChanged(struct soap *soap, struct fw__ontologyChanged *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_fw__ontologyChanged(soap, tag, p, type)))
+		if (soap_getindependent(soap))
+			return NULL;
+	return p;
+}
+
+SOAP_FMAC1 struct fw__ontologyChanged * SOAP_FMAC2 soap_instantiate_fw__ontologyChanged(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
+{
+	(void)type; (void)arrayType; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_fw__ontologyChanged(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
+	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_obs_fw__ontologyChanged, n, obs_fdelete);
+	if (!cp)
+		return NULL;
+	if (n < 0)
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__ontologyChanged);
+		if (size)
+			*size = sizeof(struct fw__ontologyChanged);
+	}
+	else
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__ontologyChanged[n]);
+		if (!cp->ptr)
+		{	soap->error = SOAP_EOM;
+			return NULL;
+		}
+		if (size)
+			*size = n * sizeof(struct fw__ontologyChanged);
+	}
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
+	return (struct fw__ontologyChanged*)cp->ptr;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__ontologyChanged(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
+{
+	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__ontologyChanged %p -> %p\n", q, p));
+	*(struct fw__ontologyChanged*)p = *(struct fw__ontologyChanged*)q;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__ontologyChangedResponse(struct soap *soap, struct fw__ontologyChangedResponse *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__ontologyChangedResponse(struct soap *soap, const struct fw__ontologyChangedResponse *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__ontologyChangedResponse(struct soap *soap, const char *tag, int id, const struct fw__ontologyChangedResponse *a, const char *type)
+{
+	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_obs_fw__ontologyChangedResponse), type))
+		return soap->error;
+	return soap_element_end_out(soap, tag);
+}
+
+SOAP_FMAC3 struct fw__ontologyChangedResponse * SOAP_FMAC4 soap_in_fw__ontologyChangedResponse(struct soap *soap, const char *tag, struct fw__ontologyChangedResponse *a, const char *type)
+{
+	if (soap_element_begin_in(soap, tag, 0, type))
+		return NULL;
+	a = (struct fw__ontologyChangedResponse *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_obs_fw__ontologyChangedResponse, sizeof(struct fw__ontologyChangedResponse), 0, NULL, NULL, NULL);
+	if (!a)
+		return NULL;
+	soap_default_fw__ontologyChangedResponse(soap, a);
+	if (soap->body && !*soap->href)
+	{
+		for (;;)
+		{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+				return NULL;
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else
+	{	a = (struct fw__ontologyChangedResponse *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_obs_fw__ontologyChangedResponse, 0, sizeof(struct fw__ontologyChangedResponse), 0, NULL);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__ontologyChangedResponse(struct soap *soap, const struct fw__ontologyChangedResponse *a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_obs_fw__ontologyChangedResponse);
+	if (soap_out_fw__ontologyChangedResponse(soap, tag?tag:"fw:ontologyChangedResponse", id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 struct fw__ontologyChangedResponse * SOAP_FMAC4 soap_get_fw__ontologyChangedResponse(struct soap *soap, struct fw__ontologyChangedResponse *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_fw__ontologyChangedResponse(soap, tag, p, type)))
+		if (soap_getindependent(soap))
+			return NULL;
+	return p;
+}
+
+SOAP_FMAC1 struct fw__ontologyChangedResponse * SOAP_FMAC2 soap_instantiate_fw__ontologyChangedResponse(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
+{
+	(void)type; (void)arrayType; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_fw__ontologyChangedResponse(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
+	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_obs_fw__ontologyChangedResponse, n, obs_fdelete);
+	if (!cp)
+		return NULL;
+	if (n < 0)
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__ontologyChangedResponse);
+		if (size)
+			*size = sizeof(struct fw__ontologyChangedResponse);
+	}
+	else
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__ontologyChangedResponse[n]);
+		if (!cp->ptr)
+		{	soap->error = SOAP_EOM;
+			return NULL;
+		}
+		if (size)
+			*size = n * sizeof(struct fw__ontologyChangedResponse);
+	}
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
+	return (struct fw__ontologyChangedResponse*)cp->ptr;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__ontologyChangedResponse(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
+{
+	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__ontologyChangedResponse %p -> %p\n", q, p));
+	*(struct fw__ontologyChangedResponse*)p = *(struct fw__ontologyChangedResponse*)q;
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__ontologySelected(struct soap *soap, struct fw__ontologySelected *a)

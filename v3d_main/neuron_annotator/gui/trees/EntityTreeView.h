@@ -1,20 +1,20 @@
-#ifndef TREEVIEW_H
-#define TREEVIEW_H
+#ifndef ENTITYTREEVIEW_H
+#define ENTITYTREEVIEW_H
 
 #include <QTreeView>
 
 /*
  * Overriden to disable QTreeView's usual keyboard shortcuts
  */
-class TreeView : public QTreeView
+class EntityTreeView : public QTreeView
 {
     Q_OBJECT
 public:
-    explicit TreeView(QWidget *parent = 0);
+    explicit EntityTreeView(QWidget *parent = 0);
 
 protected:
     void keyPressEvent(QKeyEvent *event);
 
 };
 
-#endif // TREEVIEW_H
+#endif // ENTITYTREEVIEW_H

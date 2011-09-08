@@ -1,11 +1,13 @@
 #include "AnnotationWidget.h"
 #include "ui_AnnotationWidget.h"
-#include "ontology_tree/TreeModel.h"
+#include "trees/OntologyTreeModel.h"
+#include "trees/EntityTreeItem.h"
 #include "NaMainWindow.h"
 #include "../entity_model/Entity.h"
 #include "../entity_model/Ontology.h"
 #include "../../webservice/impl/ConsoleObserverServiceImpl.h"
 #include "../utility/ConsoleObserver.h"
+#include <QModelIndex>
 #include <QtGui>
 
 // Compiler bug workaround borrowed from 3drenderer/qtr_widget.h
@@ -25,11 +27,15 @@
 
 AnnotationWidget::AnnotationWidget(QWidget *parent) : QFrame(parent), ui(new Ui::AnnotationWidget),
     ontology(0),
+    ontologyTreeModel(0),
     consoleObserverService(0),
     consoleObserver(0),
-    naMainWindow(0)
+    naMainWindow(0),
+    firstLoad(true)
 {
     ui->setupUi(this);
+    ui->ontologyTreeView->setSelectionBehavior (QAbstractItemView::SelectRows);
+//    ui->ontologyTreeView->setVisible(true);
     showDisconnected();
 }
 
@@ -49,24 +55,35 @@ void AnnotationWidget::setMainWindow(NaMainWindow *mainWindow)
 void AnnotationWidget::setOntology(Ontology *ontology)
 {
     // Clean up memory from previous ontology if necessary
-    if (this->ontology != 0) delete this->ontology;
+    if (this->ontology != 0) {
+        delete this->ontology;
+        delete ui->ontologyTreeView->model();
+    }
     this->ontology = ontology;
 
     if (ontology->root() != NULL && ontology->root()->name != NULL)
     {
         ui->ontologyTreeTitle->setText(*ontology->root()->name);
+
+        connect(ui->ontologyTreeView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(ontologyTreeDoubleClicked(QModelIndex)));
+
+        ontologyTreeModel = new OntologyTreeModel(ontology);
+        ui->ontologyTreeView->setModel(ontologyTreeModel);
+        ui->ontologyTreeView->expandAll();
+        ui->ontologyTreeView->resizeColumnToContents(0);
+        ui->ontologyTreeView->resizeColumnToContents(1);
+
+        if (firstLoad)
+        {
+            ui->ontologyTreeView->header()->moveSection(1,0);
+            firstLoad = false;
+        }
     }
-    else {
+    else
+    {
         showOntologyError("Error");
     }
 
-    TreeModel *treeModel = new TreeModel(ontology);
-    ui->ontologyTreeView->setModel(treeModel);
-    ui->ontologyTreeView->expandAll();
-    ui->ontologyTreeView->setVisible(true);
-    ui->ontologyTreeView->header()->moveSection(1,0);
-    ui->ontologyTreeView->resizeColumnToContents(0);
-    ui->ontologyTreeView->resizeColumnToContents(1);
 }
 
 void AnnotationWidget::showOntologyError(const QString & text)
@@ -122,6 +139,7 @@ void AnnotationWidget::consoleConnect() {
     qDebug() << "Received console approval to run on port:"<<consoleObserverService->port();
 
     connect(consoleObserverService, SIGNAL(ontologySelected(long)), consoleObserver, SLOT(ontologySelected(long)));
+    connect(consoleObserverService, SIGNAL(ontologyChanged(long)), consoleObserver, SLOT(ontologyChanged(long)));
     connect(consoleObserverService, SIGNAL(entitySelected(long)), consoleObserver, SLOT(entitySelected(long)));
     connect(consoleObserverService, SIGNAL(entityViewRequested(long)), consoleObserver, SLOT(entityViewRequested(long)));
     connect(consoleObserverService, SIGNAL(annotationsChanged(long)), consoleObserver, SLOT(annotationsChanged(long)));
@@ -175,6 +193,13 @@ void AnnotationWidget::consoleDisconnect()
     showDisconnected();
 }
 
+void AnnotationWidget::ontologyTreeDoubleClicked(const QModelIndex & index)
+{
+    EntityTreeItem *item = ontologyTreeModel->node(index);
+    if (item->entity() != 0)
+        annotateSelectedItemWithOntologyTerm(item->entity());
+}
+
 bool AnnotationWidget::eventFilter(QObject* watched_object, QEvent* event)
 {
     bool filtered = false;
@@ -214,13 +239,38 @@ bool AnnotationWidget::eventFilter(QObject* watched_object, QEvent* event)
                 if (keyBind.matches(keySeq) == QKeySequence::ExactMatch)
                 {
                     Entity *termEntity = ontology->getTermById(i.value());
-                    qDebug() << "  Annotate with:"<<(termEntity == NULL ? "" : *termEntity->name) << " (id ="<< i.value()<< ")";
+
+                    OntologyTreeModel *model = static_cast<OntologyTreeModel *>(ui->ontologyTreeView->model());
+                    QModelIndex termIndex = model->indexForId(i.value());
+
+                    QModelIndex beginIndex = ui->ontologyTreeView->model()->index(termIndex.row(), 0, termIndex.parent());
+                    QModelIndex endIndex = ui->ontologyTreeView->model()->index(termIndex.row(), ui->ontologyTreeView->model()->columnCount() - 1, termIndex.parent());
+
+                    // Select the node in the tree
+                    QItemSelectionModel *selection = ui->ontologyTreeView->selectionModel();
+                    selection->clearSelection();
+                    selection->select(QItemSelection(beginIndex, endIndex), QItemSelectionModel::Select);
+
+                    annotateSelectedItemWithOntologyTerm(termEntity);
+                    filtered = true;
                 }
                 ++i;
             }
         }
-
-        filtered = true;
     }
     return filtered;
+}
+
+void AnnotationWidget::annotateSelectedItemWithOntologyTerm(const Entity *ontologyTerm)
+{
+    QString termType = ontologyTerm->getValueByAttributeName("Ontology Term Type");
+
+    qDebug() << "  Annotate current item with:"<<(ontologyTerm == NULL ? "NULL" : *ontologyTerm->name) << "id="<< *ontologyTerm->id<< "type="<<termType;
+
+    if (termType == "Tag") {
+        qDebug() << "Text";
+    }
+
+
+
 }

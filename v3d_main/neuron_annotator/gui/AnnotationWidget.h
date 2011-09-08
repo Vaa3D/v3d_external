@@ -4,9 +4,12 @@
 #include <QFrame>
 #include <QEvent>
 
+class Entity;
 class Ontology;
+class OntologyTreeModel;
 class ConsoleObserver;
 class NaMainWindow;
+class QModelIndex;
 
 namespace obs {
     class ConsoleObserverServiceImpl;
@@ -29,6 +32,8 @@ public slots:
     void setOntology(Ontology *ontology);
     void consoleConnect();
     void consoleDisconnect();
+    void ontologyTreeDoubleClicked(const QModelIndex & index);
+    void annotateSelectedItemWithOntologyTerm(const Entity *ontologyTerm);
 
 protected:
     bool eventFilter (QObject* watched_object, QEvent* e);
@@ -38,10 +43,12 @@ protected:
 
 private:
     Ontology *ontology;
+    OntologyTreeModel *ontologyTreeModel;
     Ui::AnnotationWidget *ui;
     obs::ConsoleObserverServiceImpl *consoleObserverService;
     ConsoleObserver *consoleObserver;
     NaMainWindow *naMainWindow;
+    bool firstLoad;
 };
 
 #endif // ANNOTATION_WIDGET_H_

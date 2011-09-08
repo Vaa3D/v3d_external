@@ -46,7 +46,7 @@ QList<EntityData *> Entity::getOrderedEntityData()
     return list;
 }
 
-EntityData* Entity::getEntityDataByAttributeName(const QString & attrName)
+EntityData* Entity::getEntityDataByAttributeName(const QString & attrName) const
 {
     QSet<EntityData *>::const_iterator i;
     for (i = entityDataSet.begin(); i != entityDataSet.end(); ++i)
@@ -60,7 +60,7 @@ EntityData* Entity::getEntityDataByAttributeName(const QString & attrName)
     return NULL;
 }
 
-const QString& Entity::getValueByAttributeName(const QString & attrName)
+const QString& Entity::getValueByAttributeName(const QString & attrName) const
 {
     EntityData* ed = getEntityDataByAttributeName(attrName);
     if (ed == 0 || ed->value == 0) return QString();

@@ -72,14 +72,17 @@ class SOAP_CMAC ConsoleObserverService : public soap
 	/// Web service operation 'ontologySelected' (returns error code or SOAP_OK)
 	virtual	int ontologySelected(LONG64 rootId, struct fw__ontologySelectedResponse &_param_1) SOAP_PURE_VIRTUAL;
 
+	/// Web service operation 'ontologyChanged' (returns error code or SOAP_OK)
+	virtual	int ontologyChanged(LONG64 rootId, struct fw__ontologyChangedResponse &_param_2) SOAP_PURE_VIRTUAL;
+
 	/// Web service operation 'entitySelected' (returns error code or SOAP_OK)
-	virtual	int entitySelected(LONG64 entityId, struct fw__entitySelectedResponse &_param_2) SOAP_PURE_VIRTUAL;
+	virtual	int entitySelected(LONG64 entityId, struct fw__entitySelectedResponse &_param_3) SOAP_PURE_VIRTUAL;
 
 	/// Web service operation 'entityViewRequested' (returns error code or SOAP_OK)
-	virtual	int entityViewRequested(LONG64 entityId, struct fw__entityViewRequestedResponse &_param_3) SOAP_PURE_VIRTUAL;
+	virtual	int entityViewRequested(LONG64 entityId, struct fw__entityViewRequestedResponse &_param_4) SOAP_PURE_VIRTUAL;
 
 	/// Web service operation 'annotationsChanged' (returns error code or SOAP_OK)
-	virtual	int annotationsChanged(LONG64 entityId, struct fw__annotationsChangedResponse &_param_4) SOAP_PURE_VIRTUAL;
+	virtual	int annotationsChanged(LONG64 entityId, struct fw__annotationsChangedResponse &_param_5) SOAP_PURE_VIRTUAL;
 };
 
 } // namespace obs
