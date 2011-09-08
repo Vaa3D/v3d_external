@@ -23,6 +23,8 @@ AnnotationSession::AnnotationSession(QObject* parentParam /* = NULL */)
     , mipFragmentColors(mipFragmentData, dataColorModel) // color 'em
     , galleryMipImages(mipFragmentColors) // shrink 'em
     , mipMergedData(volumeData, mipFragmentData, dataColorModel, neuronSelectionModel)
+    // TODO slow3DColorModel should depend in VolumeColors, which has not been implemented yet
+    , slow3DColorModel(volumeData) // for initial testing, slow model has default values
     // , volumeColors(volumeData, dataColorModel, neuronSelectionModel)
 {
     // Prepare to load 16-bit volume data from disk in a separate QThread
@@ -30,7 +32,7 @@ AnnotationSession::AnnotationSession(QObject* parentParam /* = NULL */)
             &volumeData, SLOT(loadVolumeDataFromFiles()));
 
     // wire up 3d viewer fast color update system
-    fast3DColorModel.setDataColorSource(dataColorModel);
+    fast3DColorModel.setIncrementalColorSource(dataColorModel, slow3DColorModel);
 
     // TODO - deprecate these AnnotationSession neuron visiblity slots.
     connect(&neuronSelectionModel, SIGNAL(overlayVisibilityChanged(int,bool)),

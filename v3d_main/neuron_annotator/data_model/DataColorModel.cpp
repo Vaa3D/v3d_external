@@ -10,42 +10,51 @@ template class NaSharedDataModel<PrivateDataColorModel>;
 
 DataColorModel::DataColorModel()
     : volumeData(NULL)
-    , dataColorSource(NULL)
+    , desiredColors(NULL)
+    , currentColors(NULL)
 {
-
 }
 
 DataColorModel::DataColorModel(const NaVolumeData& volumeDataParam)
     : volumeData(&volumeDataParam)
-    , dataColorSource(NULL)
+    , desiredColors(NULL)
+    , currentColors(NULL)
 {
     connect(volumeData, SIGNAL(dataChanged()),
-            this, SLOT(resetColors()));
+            this, SLOT(initialize()));
 }
 
-void DataColorModel::setDataColorSource(const DataColorModel& dataColorSourceParam)
+void DataColorModel::setIncrementalColorSource(const DataColorModel& desiredColorsParam, const DataColorModel& currentColorsParam)
 {
-    dataColorSource = &dataColorSourceParam;
-    connect(dataColorSource, SIGNAL(dataChanged()),
-            this, SLOT(fastColorizeModel()));
+    desiredColors = &desiredColorsParam;
+    currentColors = &currentColorsParam;
+    connect(desiredColors, SIGNAL(dataChanged()),
+            this, SLOT(colorizeIncremental()));
+    connect(currentColors, SIGNAL(dataChanged()),
+            this, SLOT(colorizeIncremental()));
 }
 
 /* slot */
-void DataColorModel::fastColorizeModel()
+void DataColorModel::colorizeIncremental()
 {
-    // qDebug() << "DataColorModel::fastColorizeModel()" << __FILE__ << __LINE__;
-    if (! dataColorSource) return;
+    // qDebug() << "DataColorModel::colorizeIncremental()" << __FILE__ << __LINE__;
+    if (! desiredColors) return;
+    if (! currentColors) return;
     {
-        DataColorModel::Reader colorReader(*dataColorSource);
-        if (dataColorSource->readerIsStale(colorReader)) return;
+        DataColorModel::Reader desiredReader(*desiredColors);
+        if (desiredColors->readerIsStale(desiredReader)) return;
+        DataColorModel::Reader currentReader(*currentColors);
+        if (currentColors->readerIsStale(currentReader)) return;
+        if (desiredReader.getNumberOfDataChannels() != currentReader.getNumberOfDataChannels())
+            return; // color models are out of sync
         Writer(*this);
-        d->fastColorizeModel(colorReader);
+        d->colorizeIncremental(desiredReader, currentReader);
     } // release locks
-    // qDebug() << "DataColorModel::fastColorizeModel()" << __FILE__ << __LINE__;
+    // qDebug() << "DataColorModel::colorizeIncremental()" << __FILE__ << __LINE__;
     emit dataChanged();
 }
 
-void DataColorModel::resetColors()
+void DataColorModel::initialize()
 {
     if (! volumeData) return;
     qDebug() << "Resetting DataColorModel";
@@ -53,7 +62,7 @@ void DataColorModel::resetColors()
         NaVolumeData::Reader volumeReader(*volumeData);
         if (! volumeReader.hasReadLock()) return;
         Writer colorWriter(*this);
-        if (! d->resetColors(volumeReader)) return;
+        if (! d->initialize(volumeReader)) return;
     } // release locks
     qDebug() << "Done resetting DataColorModel";
     emit dataChanged();
@@ -136,6 +145,16 @@ qreal DataColorModel::Reader::getChannelScaledIntensity(int channel, qreal raw_i
 
 qreal DataColorModel::Reader::getChannelGamma(int channel) const {
     return d->getChannelGamma(channel);
+}
+
+qreal DataColorModel::Reader::getChannelHdrMin(int channel) const
+{
+    return d->getChannelHdrMin(channel);
+}
+
+qreal DataColorModel::Reader::getChannelHdrMax(int channel) const
+{
+    return d->getChannelHdrMax(channel);
 }
 
 ////////////////////////////////////

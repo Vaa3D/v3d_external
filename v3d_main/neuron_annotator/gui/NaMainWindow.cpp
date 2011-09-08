@@ -168,9 +168,6 @@ NaMainWindow::NaMainWindow()
             this, SLOT(update3DViewerXYZBodyRotation()));
     connect(ui.rotZWidget, SIGNAL(angleChanged(int)),
             this, SLOT(update3DViewerXYZBodyRotation()));
-    // 3D gamma correction
-    connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
-            ui.v3dr_glwidget, SLOT(setGammaBrightness(qreal)));
     connect(ui.v3dr_glwidget, SIGNAL(progressAchieved(int)),
             this, SLOT(set3DProgress(int)));
     connect(ui.v3dr_glwidget, SIGNAL(progressComplete()),

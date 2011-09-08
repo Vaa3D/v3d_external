@@ -20,7 +20,7 @@ public:
         return channelColors.size(); // +1 for reference
     }
 
-    bool resetColors(const NaVolumeData::Reader& volumeReader);
+    bool initialize(const NaVolumeData::Reader& volumeReader);
     const ChannelColorModel& getReferenceChannel() const;
     QRgb blend(const double channelIntensities[]) const;
     QRgb blend(const std::vector<double>& channelIntensities) const;
@@ -32,7 +32,11 @@ public:
     qreal getReferenceScaledIntensity(qreal raw_intensity) const;
     qreal getChannelScaledIntensity(int channel, qreal raw_intensity) const;
     qreal getChannelGamma(int channel) const;
-    void fastColorizeModel(const DataColorModel::Reader& colorReader);
+    qreal getChannelHdrMin(int channel) const;
+    qreal getChannelHdrMax(int channel) const;
+    void colorizeIncremental(
+            const DataColorModel::Reader& desiredColorReader,
+            const DataColorModel::Reader& currentColorReader);
     QRgb getChannelColor(int channelIndex) const;
 
 private:
@@ -49,13 +53,17 @@ public:
         ChannelColorModel(QRgb channelColorParam);
         void setColor(QRgb channelColorParam);
         QRgb getColor() const;
+        void setDataRange(qreal dataMinParam, qreal dataMaxParam);
         void setHdrRange(qreal hdrMinParam, qreal hdrMaxParam);
+        void resetHdrRange();
         void setGamma(qreal gammaParam);
         // Returns a value in the range 0.0-1.0
         qreal getScaledIntensity(qreal raw_intensity) const;
         // getColor() definition is in header file so it can be inlined
         QRgb getColor(qreal raw_intensity) const;
         qreal getGamma() const {return gamma;}
+        qreal getHdrMin() const {return hdrMin;}
+        qreal getHdrMax() const {return hdrMax;}
 
     protected:
         QRgb blackColor;
@@ -66,6 +74,8 @@ public:
         qreal hdrMin; // minimum intensity to scale
         qreal hdrMax; // maximum intensity to scale
         qreal hdrRange; // hdrMax - hdrMin
+        qreal dataMin; // actual minimum intensity of data
+        qreal dataMax; // actual maximum intensity of data
         qreal gamma; // exponential brightness correction
         bool gammaIsNotUnity; // precompute gamma != 1.0
         // lookup table for faster gamma transform

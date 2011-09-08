@@ -47,8 +47,11 @@ QT4_WRAP_CPP(NA_MOC_SRCS
     gui/NaZStackWidget.h
     gui/FragmentGalleryWidget.h
     gui/RendererNeuronAnnotator.h
-    gui/ontology_tree/TreeModel.h
-    gui/ontology_tree/TreeView.h
+    gui/trees/AnnotationTreeModel.h
+    gui/trees/EntityTreeModel.h
+    gui/trees/EntityTreeView.h
+    gui/trees/OntologyTreeModel.h
+    gui/trees/OntologyTreeView.h
     utility/ConsoleObserver.h
     utility/DataThread.h
     AnnotationSession.h

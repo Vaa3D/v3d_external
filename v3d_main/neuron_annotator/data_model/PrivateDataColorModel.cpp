@@ -1,6 +1,7 @@
 #include "PrivateDataColorModel.h"
 #include <algorithm>
 #include <cmath>
+#include <cassert>
 
 PrivateDataColorModel::PrivateDataColorModel()
 {}
@@ -16,54 +17,34 @@ PrivateDataColorModel::~PrivateDataColorModel() {}
 // Crudely populate 3-channel rgb color model based on n-channel data color model,
 // for use in fast mode of 3D viewer update.
 // Input HDR range is set to 0-255 for now.
-void PrivateDataColorModel::fastColorizeModel(const DataColorModel::Reader& colorReader)
+void PrivateDataColorModel::colorizeIncremental(
+        const DataColorModel::Reader& desiredColorReader,
+        const DataColorModel::Reader& currentColorReader)
 {
-    // Compute channel weights for r/g/b colors
-    std::vector< std::vector<float> > colorWeights(3, std::vector<float>(colorReader.getNumberOfDataChannels(), 0.0f) );
-    std::vector<float> colorTotalWeights(3, 0.0f);
-    for (int chan = 0; chan < colorReader.getNumberOfDataChannels(); ++chan)
-    {
-        QRgb channelColor = colorReader.getChannelColor(chan);
-        float red = qRed(channelColor) / 255.0f;
-        float green = qGreen(channelColor) / 255.0f;
-        float blue = qBlue(channelColor) / 255.0f;
-        colorTotalWeights[0] += red;
-        colorTotalWeights[1] += green;
-        colorTotalWeights[2] += blue;
-        colorWeights[0][chan] = red;
-        colorWeights[1][chan] = green;
-        colorWeights[2][chan] = blue;
+    assert(desiredColorReader.getNumberOfDataChannels() == currentColorReader.getNumberOfDataChannels());
+    const int numChannels = desiredColorReader.getNumberOfDataChannels();
+    if (numChannels != channelColors.size()) {
+        channelColors.assign(numChannels, ChannelColorModel(0));
     }
-    // Normalize weights so they sum to one (or zero) for each color
-    for (int chan = 0; chan < colorReader.getNumberOfDataChannels(); ++chan)
+    for (int chan = 0; chan < numChannels; ++chan)
     {
-        for (int rgb = 0; rgb < 3; ++rgb)
-            if (colorTotalWeights[rgb] > 0)
-                colorWeights[rgb][chan] /= colorTotalWeights[rgb];
-    }
-
-    // Initialize 3 color channels
-    channelColors.clear();
-    channelColors.push_back(ChannelColorModel(QColor(255,0,0).rgb()));
-    channelColors.push_back(ChannelColorModel(QColor(0,255,0).rgb()));
-    channelColors.push_back(ChannelColorModel(QColor(0,0,255).rgb()));
-
-    // TODO - apply HDR range, in addition to applying gamma, below.
-
-    for (int rgb = 0; rgb < 3; ++rgb)
-    {
-        channelColors[rgb].setHdrRange(0, 255); // TODO - adjust according to input hdr
-
-        // kludge: use weighted average gamma of all data channels that contribute to this color channel
-        float meanGamma = 0.0;
-        for (int chan = 0; chan < colorReader.getNumberOfDataChannels(); ++chan)
-            meanGamma += colorWeights[rgb][chan] * colorReader.getChannelGamma(chan);
-        if (meanGamma <= 0) meanGamma = 1.0; // there is nothing with this color; use default gamma anyway
-        channelColors[rgb].setGamma(meanGamma);
+        // Use latest color information.  TODO - there might no good way to incrementally update channel colors.
+        channelColors[chan].setColor(desiredColorReader.getChannelColor(chan));
+        // Set incremental gamma; qInc = qDes / qCur
+        qreal incGamma = desiredColorReader.getChannelGamma(chan) / currentColorReader.getChannelGamma(chan);
+        channelColors[chan].setGamma(incGamma);
+        // Set incremental HDR range, on a data scale of 0.0-1.0 (though hdrMin/Max might be outside that range)
+        channelColors[chan].setDataRange(0.0, 1.0);
+        qreal desRange = desiredColorReader.getChannelHdrMax(chan) - desiredColorReader.getChannelHdrMin(chan);
+        qreal curRange = currentColorReader.getChannelHdrMax(chan) - currentColorReader.getChannelHdrMin(chan);
+        qreal incRange = desRange / curRange;
+        qreal incMin = (desiredColorReader.getChannelHdrMin(chan) - currentColorReader.getChannelHdrMin(chan)) / desRange;
+        qreal incMax = incMin + incRange;
+        channelColors[chan].setHdrRange(incMin, incMax);
     }
 }
 
-bool PrivateDataColorModel::resetColors(const NaVolumeData::Reader& volumeReader)
+bool PrivateDataColorModel::initialize(const NaVolumeData::Reader& volumeReader)
 {
     if (! volumeReader.hasReadLock()) return false;
     const Image4DProxy<My4DImage>& volProxy = volumeReader.getOriginalImageProxy();
@@ -95,9 +76,15 @@ bool PrivateDataColorModel::resetColors(const NaVolumeData::Reader& volumeReader
         ChannelColorModel channelModel(color);
         // Initialize intensity range to entire observed range
         if (channel < volProxy.sc) // fragments and background
-            channelModel.setHdrRange(volProxy.vmin[channel], volProxy.vmax[channel]);
+        {
+            channelModel.setDataRange(volProxy.vmin[channel], volProxy.vmax[channel]);
+            channelModel.resetHdrRange();
+        }
         else // reference channel
-            channelModel.setHdrRange(refProxy.vmin[0], refProxy.vmax[0]);
+        {
+            channelModel.setDataRange(refProxy.vmin[0], refProxy.vmax[0]);
+            channelModel.resetHdrRange();
+        }
         channelColors.push_back(channelModel);
         // qDebug() << "Channel color " << channelColors.size() << qRed(color) << qGreen(color) << qBlue(color);
     }
@@ -179,6 +166,14 @@ QRgb PrivateDataColorModel::getChannelColor(int channelIndex) const {
     return channelColors[channelIndex].getColor();
 }
 
+qreal PrivateDataColorModel::getChannelHdrMin(int channel) const {
+    return channelColors[channel].getHdrMin();
+}
+
+qreal PrivateDataColorModel::getChannelHdrMax(int channel) const {
+    return channelColors[channel].getHdrMax();
+}
+
 qreal PrivateDataColorModel::getReferenceScaledIntensity(qreal raw_intensity) const {
     return getReferenceChannel().getScaledIntensity(raw_intensity);
 }
@@ -201,7 +196,8 @@ PrivateDataColorModel::ChannelColorModel::ChannelColorModel(QRgb channelColorPar
 {
     setColor(channelColorParam);
     setGamma(1.0f);
-    setHdrRange(0.0f, 4095.0f);
+    setDataRange(0, 4095);
+    resetHdrRange();
 }
 
 void PrivateDataColorModel::ChannelColorModel::setColor(QRgb channelColorParam)
@@ -220,6 +216,17 @@ void PrivateDataColorModel::ChannelColorModel::setHdrRange(qreal hdrMinParam, qr
     hdrMax = hdrMaxParam;
     //hdrRange = std::max(qreal(1.0), hdrMax - hdrMin);
     hdrRange = max(qreal(1.0), hdrMax - hdrMin);
+}
+
+void PrivateDataColorModel::ChannelColorModel::setDataRange(qreal dataMinParam, qreal dataMaxParam)
+{
+    dataMin = dataMinParam;
+    dataMax = dataMaxParam;
+}
+
+void PrivateDataColorModel::ChannelColorModel::resetHdrRange()
+{
+    setHdrRange(dataMin, dataMax);
 }
 
 void PrivateDataColorModel::ChannelColorModel::setGamma(qreal gammaParam)

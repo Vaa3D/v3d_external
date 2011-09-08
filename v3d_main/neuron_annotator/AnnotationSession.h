@@ -44,19 +44,6 @@ public:
 
     MultiColorImageStackNode* getMultiColorImageStackNode() { return multiColorImageStackNode; }
 
-    /*
-    // getOriginalImageStackAsMy4DImage() returns a pointer to a My4DImage object
-    // maintained by the AnnotationSession class.  Do not delete this pointer,
-    // and be aware that it has a lifetime no longer than that of the AnnnotationSession object.
-    // TODO - deprecate these accessors in favor of multithreaded data flow objects.
-    My4DImage* getOriginalImageStackAsMy4DImage() { return volumeData.getOriginalImageStackAsMy4DImage(); }
-    My4DImage* getReferenceStack() { return volumeData.getReferenceStack(); }
-    My4DImage* getNeuronMaskAsMy4DImage() { return volumeData.getNeuronMaskAsMy4DImage(); }
-    const My4DImage* getOriginalImageStackAsMy4DImage() const { return volumeData.getOriginalImageStackAsMy4DImage(); }
-    const My4DImage* getReferenceStack() const { return volumeData.getReferenceStack(); }
-    const My4DImage* getNeuronMaskAsMy4DImage() const { return volumeData.getNeuronMaskAsMy4DImage(); }
-     */
-
     // Data flow accessors
     NaVolumeData& getVolumeData() {return volumeData;}
     NeuronSelectionModel& getNeuronSelectionModel() {return neuronSelectionModel;}
@@ -107,8 +94,8 @@ private:
     MipFragmentColors mipFragmentColors;
     GalleryMipImages galleryMipImages;
     MipMergedData mipMergedData;
+    DataColorModel slow3DColorModel;
     DataColorModel fast3DColorModel; // for fast but approximate 3D viewer color updates
-    // VolumeColors volumeColors;
 
     // TODO - move zRatio into VolumeData
     double zRatio;
