@@ -21,7 +21,7 @@
 
 
 // 20110826 ZJL
-// Refining the n-right-stroke curve drawing
+// Refining the n-right-strokes curve drawing
 
 void Renderer_gl1::solveCurveRefineLast()
 {
@@ -32,18 +32,58 @@ void Renderer_gl1::solveCurveRefineLast()
 
 	if (NC<1 || N <3)  return; //data is not enough
 
+     vector <XYZ> loc_veci; // ith curve center
+     vector <XYZ> loc_vec_input;
+
+     loc_veci.clear();
+     // get the ith curve center
+     solveCurveCenterV2(loc_vec_input, loc_veci, 0);
+
      // loc_vec0 is the previous curve control point vector
      // it is a global value
      int N0 = loc_vec0.size();
-     for (int k=0; k<N0; k++)
+     int NI=loc_veci.size();
+
+     // Find two points ka and kb on curve0 that are closest to the two end
+     // points of ith curve. i.e. the ith curve is mapped onto curve0 between ka and kb.
+     int ka, kb; // index of control points on curve0
+     float closest_dista, closest_distb;
+
+     // two end points of ith curve
+     XYZ posia = loc_veci.at(0);
+     XYZ posib = loc_veci.at(NI-1);
+     for(int kk=0; kk<N0; kk++)
+     {
+          XYZ poskk = loc_vec0.at(kk);
+          // dista, distb
+          float dista, distb;
+          dista = dist_L2(poskk, posia);
+          distb = dist_L2(poskk, posib);
+          if(kk==0 || dista<closest_dista)
+          {
+               closest_dista=dista;
+               ka = kk;
+          }
+          if(kk==0 || distb<closest_distb)
+          {
+               closest_distb=distb;
+               kb = kk;
+          }
+     }
+
+     // to ensure ka<=kb
+     if(ka>kb)
+     {
+          int temp = ka;
+          ka = kb;
+          kb = temp;
+     }
+
+     // Now do curve refinement between ka and kb on curve0
+     //for (int k=0; k<N0; k++)
+     for (int k=ka; k<=kb; k++)
      {
           XYZ pos0 = loc_vec0.at(k);
-          vector <XYZ> loc_veci; // ith curve center
-          vector <XYZ> loc_vec_input;
-
-          loc_veci.clear();
-          // get the ith curve center
-          solveCurveCenterV2(loc_vec_input, loc_veci, 0);
 
           // get the closest control point on ith curve to kth point on curve0:
           float closest_dist;
@@ -51,7 +91,6 @@ void Renderer_gl1::solveCurveRefineLast()
           int jj; // closest pos index
           int j1; // pos index before the closest pos
           int j2; // pos index after the closet pos
-          int NI=loc_veci.size();
 
           for (int j=0; j<NI; j++)
           {
@@ -105,7 +144,6 @@ void Renderer_gl1::solveCurveRefineLast()
                double mean0, mean;
                mean0 = getRgnPropertyAt(pos0);
                mean = getRgnPropertyAt(closest_pos);
-               // qDebug("mean0 and mean: mean0 = %d, mean = %d", mean0, mean);
                if (mean0 < mean)
                {
                     // replace loc_vec0.at(k) with closest_pos
@@ -118,14 +156,37 @@ void Renderer_gl1::solveCurveRefineLast()
 	smooth_curve(loc_vec0, 5);
 #endif
 
+     // V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+     // My4DImage* curImg = 0;
+     // if (w)
+     //      curImg = v3dr_getImage4d(_idep);
+
+     // int last_seg_id = curImg->tracedNeuron.seg.size()-1;
+     // V_NeuronSWC& last_seg = curImg->tracedNeuron.seg[last_seg_id];
+
+     // for (int k=0; k<last_seg.row.size(); k++)
+     // {
+     //      last_seg.row.at(k).data[2] = loc_vec0.at(k).x;
+     //      last_seg.row.at(k).data[3] = loc_vec0.at(k).y;
+     //      last_seg.row.at(k).data[4] = loc_vec0.at(k).z;
+     // }
+
+     // curImg->update_3drenderer_neuron_view(w, this);
+
+     addCurveSWC(loc_veci, -1);
+}
+
+// press key "A" to apply curve refinement
+void Renderer_gl1::applyCurveRefine()
+{
+     // update first curve
      V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
      My4DImage* curImg = 0;
      if (w)
           curImg = v3dr_getImage4d(_idep);
 
-     int last_seg_id = curImg->tracedNeuron.seg.size()-1;
+     // last_seg_id is a global value
      V_NeuronSWC& last_seg = curImg->tracedNeuron.seg[last_seg_id];
-
      for (int k=0; k<last_seg.row.size(); k++)
      {
           last_seg.row.at(k).data[2] = loc_vec0.at(k).x;
@@ -133,9 +194,17 @@ void Renderer_gl1::solveCurveRefineLast()
           last_seg.row.at(k).data[4] = loc_vec0.at(k).z;
      }
 
-     curImg->update_3drenderer_neuron_view(w, this);
+     // get the second curve seg id
+     int seg_id = curImg->tracedNeuron.seg.size()-1;
 
-     //addCurveSWC(loc_vec0, -1);
+     // delete the second curve
+     if(seg_id!=last_seg_id && seg_id>=0)
+     {
+          bool res = curImg->tracedNeuron.deleteSeg(seg_id);
+          if (res)  curImg->proj_trace_history_append();
+     }
+
+	curImg->update_3drenderer_neuron_view(w, this);
 }
 
 
@@ -154,20 +223,20 @@ void Renderer_gl1::getPerpendPointDist(XYZ &P, XYZ &P0, XYZ &P1, XYZ &Pb, double
     double c1 = dot(W,V);
     double c2 = dot(V,V);
 
-    qDebug(" getPerpendPointDist: c1 = %d, c2 = %d", c1, c2);
+    //qDebug(" getPerpendPointDist: c1 = %d, c2 = %d", c1, c2);
 
     if(c2==0.0)
     {
          // This means that P0 and P1 are the same point. Usually this is not possible
          // because if this appears, P0 and P1 will be one point
-         qDebug(" getPerpendPointDist: c2 = %d, cannot processing further!!!!", c2);
+         v3d_msg(" getPerpendPointDist: c2 = %d, cannot processing further!!!!", c2);
          return;
     }
 
     double b = c1/c2;
     XYZ Pbb = P0 + b * V;
 
-    // dist is d(P, Pb)
+    // dist is d(P, Pbb)
     dist = sqrt( dot(Pbb-P, Pbb-P) );
 
     // P is on the left of P0
@@ -186,7 +255,7 @@ void Renderer_gl1::getPerpendPointDist(XYZ &P, XYZ &P0, XYZ &P1, XYZ &Pb, double
     Pb = Pbb;
 }
 
-
+// get mean value on pos with the window size 5
 double Renderer_gl1::getRgnPropertyAt(XYZ &pos)
 {
      LocationSimple pt;
@@ -366,7 +435,22 @@ void Renderer_gl1::solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ>
      if (b_addthiscurve && selectMode==smCurveRefineInit)
      {
           addCurveSWC(loc_vec, chno);
+
+          // save the this last_seg_id and used in solveCurveRefineLast()
+          V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+          My4DImage* curImg = 0;
+          if (w)
+               curImg = v3dr_getImage4d(_idep);
+
+          last_seg_id = curImg->tracedNeuron.seg.size()-1;
      }
 }
 
-
+// used in v3dr_glwidget.cpp for Qt::Key_A event
+bool Renderer_gl1::isCurveRefineMode()
+{
+     if(selectMode == smCurveRefineLast)
+          return true;
+     else
+          return false;
+}

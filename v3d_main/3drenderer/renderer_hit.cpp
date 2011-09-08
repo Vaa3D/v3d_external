@@ -1470,11 +1470,12 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                }
                else
                     solveCurveRefineLast(); ///////////////////////// <===== key function
+
                list_listCurvePos.clear();
                //press Esc to endSelectMode();
           }
      }
-     // end of Zongcai's advice ZJL 110905
+     // end of curve refine ZJL 110905
 
 	this->sShowTrack = 0;
 	return 0; //no 2d track to display
@@ -2963,4 +2964,3 @@ XYZ Renderer_gl1::getCenterOfLocal(XYZ P)
 
 	return P;
 }
-

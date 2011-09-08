@@ -191,6 +191,8 @@ public:
 	virtual void updateLandmark();
 	virtual void updateTracedNeuron();
 
+     virtual void applyCurveRefine(); // ZJL 110907
+     virtual bool isCurveRefineMode(); // ZJL 110907
 
 // process Object hit ///////////////////////////////////////////////////////////////////////////////////////
 public:
@@ -291,6 +293,7 @@ protected:
      void solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index); // ZJL 110830
      void solveCurveRefineLast(); // ZJL 110905
      vector <XYZ> loc_vec0; // 1st curve center. ZJL 110905
+     int last_seg_id; // seg id to be refined. ZJL 110907
 
 	// in renderer_obj2.cpp
 	void addCurveSWC(vector<XYZ> &loc_list, int chno=0); //if no chno is specified, then assume to be the first channel
@@ -329,7 +332,7 @@ protected:
 	float VOL_X1, VOL_X0, VOL_Y1, VOL_Y0, VOL_Z1, VOL_Z0;
 	int VOLUME_FILTER;
 	RGBA32f SLICE_COLOR; // proxy geometry color+alpha
-        bool b_renderTextureLast;
+     bool b_renderTextureLast;
 
 private:
 	void init_members()
@@ -366,6 +369,9 @@ private:
 
 		b_imaging = false; //101008
           b_renderTextureLast = false;
+
+          //loc_vec0 = 0; // ZJL 110907
+          last_seg_id = 0; // ZJL 110907
 	}
 
 
