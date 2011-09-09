@@ -180,6 +180,7 @@ bool ireconstructing(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>
     }
 
     // fusion
+    string fn;
     for(V3DLONG ii=0; ii<vim.number_tiles; ii++)
     {
         // loading relative imagg files
@@ -187,7 +188,20 @@ bool ireconstructing(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>
         int datatype_relative = 0;
         unsigned char* relative1d = 0;
         
-        if (loadImage(const_cast<char *>(vim.lut[ii].fn_img.c_str()), relative1d, sz_relative, datatype_relative)!=true)
+        //
+        if(ii==0) 
+        {   
+            fn = vim.lut[ii].fn_img;
+        }
+        else 
+        {
+            QString curPath = QFileInfo(QString(vim.lut[0].fn_img.c_str())).path();;
+            
+            fn = curPath.append("/").append( QString(vim.lut[ii].fn_img.c_str()) ).toStdString();
+        }
+        
+        //
+        if (loadImage(const_cast<char *>(fn.c_str()), relative1d, sz_relative, datatype_relative)!=true)
         {
             fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.lut[ii].fn_img.c_str());
             return false;
