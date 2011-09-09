@@ -33,9 +33,10 @@ public:
 
 signals:
     void dataChanged(); // ready for downstream clients to read all data
-    void progressMessage(QString msg);
-    void progressAchieved(int); // on a scale of 0-100
+    void progressMessageChanged(QString msg);
+    void progressValueChanged(int); // on a scale of 0-100
     void progressAborted(QString msg); // data update was stopped for some reason
+    void progressCompleted(); // successful completion
 
 public slots:
     virtual void update() {} // recreate everything from upstream data

@@ -18,10 +18,11 @@ public:
     }
 };
 
-NaVolumeDataLoadableStack::NaVolumeDataLoadableStack(My4DImage* stackpParam, QString filenameParam)
+NaVolumeDataLoadableStack::NaVolumeDataLoadableStack(My4DImage* stackpParam, QString filenameParam, int stackIndexParam)
    : QObject(NULL)
    , stackp(stackpParam)
    , filename(filenameParam)
+   , stackIndex(stackIndexParam)
    , progressValue(0)
    , progressMin(0)
    , progressMax(100)
@@ -51,7 +52,7 @@ void NaVolumeDataLoadableStack::setRelativeProgress(float relativeProgress)
     assert(newProgressValue <= progressMax);
     if (newProgressValue == progressValue) return;
     progressValue = newProgressValue;
-    emit progressValueChanged(progressValue);
+    emit progressValueChanged(progressValue, stackIndex);
 }
 
 
@@ -68,6 +69,7 @@ NaVolumeData::NaVolumeData()
     , originalImageProxy(emptyImage)
     , neuronMaskProxy(emptyImage)
     , referenceImageProxy(emptyImage)
+    , currentProgress(0)
 {
 }
 
@@ -78,33 +80,67 @@ NaVolumeData::~NaVolumeData()
 }
 
 /* slot */
+void NaVolumeData::setStackLoadProgress(int progressValue, int stackIndex)
+{
+    // qDebug() << "setStackLoadProgress()" << progressValue << stackIndex;
+    if (stackIndex < 0) {
+        qDebug() << "stack index less than zero";
+        return;
+    }
+    if (stackIndex >= stackLoadProgressValues.size()) {
+        qDebug() << "stack index out of range";
+        return;
+    }
+    if (progressValue == stackLoadProgressValues[stackIndex])
+        return; // no change
+    // TODO - use different weights for each stack depending on file size.
+    stackLoadProgressValues[stackIndex] = progressValue;
+    float totalProgressValue = 0.0;
+    for (int i = 0; i < stackLoadProgressValues.size(); ++i) {
+        totalProgressValue += stackLoadProgressValues[i] * 1.0 / stackLoadProgressValues.size();
+    }
+    setProgressValue((int) (totalProgressValue + 0.5));
+}
+
+/* slot */
+void NaVolumeData::setProgressValue(int progressValue)
+{
+    if (progressValue < 0) return;
+    if (progressValue > 100) return;
+    if (progressValue == currentProgress) return;
+    currentProgress = progressValue;
+    qDebug() << "NaVolumeData load progress =" << currentProgress;
+    emit progressValueChanged(currentProgress);
+}
+
+/* slot */
 void NaVolumeData::loadVolumeDataFromFiles()
 {
     QTime stopwatch;
     stopwatch.start();
 
-    // Allocate writer on the stack so write lock will be automatically released when method returns
-    {
+    { // Allocate writer on the stack so write lock will be automatically released when method returns
         Writer volumeWriter(*this);
         volumeWriter.clearImageData();
 
+        emit progressMessageChanged("Loading image stack files");
         if (!volumeWriter.loadStacks()) {
-            volumeWriter.unlock();
+            volumeWriter.unlock(); // unlock before emit
             emit progressAborted(QString("Problem loading stacks"));
             return;
         }
-
-        // nerd report
-        size_t data_size = 0;
-        data_size += originalImageStack->getTotalBytes();
-        data_size += referenceStack->getTotalBytes();
-        data_size += neuronMaskStack->getTotalBytes();
-        qDebug() << "Loading 16-bit image data from disk took " << stopwatch.elapsed() / 1000.0 << " seconds";
-        qDebug() << "Loading 16-bit image data from disk absorbed "
-                << (double)data_size / double(1e6) << " MB of RAM"; // kibibytes boo hoo whatever...
-
-        volumeWriter.unlock();
     } // release locks before emit
+
+    // nerd report
+    size_t data_size = 0;
+    data_size += originalImageStack->getTotalBytes();
+    data_size += referenceStack->getTotalBytes();
+    data_size += neuronMaskStack->getTotalBytes();
+    qDebug() << "Loading 16-bit image data from disk took " << stopwatch.elapsed() / 1000.0 << " seconds";
+    qDebug() << "Loading 16-bit image data from disk absorbed "
+            << (double)data_size / double(1e6) << " MB of RAM"; // kibibytes boo hoo whatever...
+
+    emit progressCompleted();
     emit dataChanged();
 }
 
@@ -151,21 +187,33 @@ bool NaVolumeData::Writer::loadStacks()
 
     QList< QFuture<void> > loaderList;
 
+    // Prepare to track progress of 3 file load operations
+    m_data->stackLoadProgressValues.assign(3, 0);
+    m_data->currentProgress = -1; // to make sure progress value changes on the next line
+    m_data->setProgressValue(0);
+    QCoreApplication::processEvents(); // ensure that progress bar gets displayed
+
     m_data->originalImageStack = new My4DImage();
-    LoadableStack originalStack(m_data->originalImageStack, m_data->originalImageStackFilePath);
+    LoadableStack originalStack(m_data->originalImageStack, m_data->originalImageStackFilePath, 0);
+    connect(&originalStack, SIGNAL(progressValueChanged(int, int)),
+            m_data, SLOT(setStackLoadProgress(int, int)));
     qDebug() << "NaVolumeData::Writer::loadStacks() starting originalStack.load()";
     // Pass stack pointer instead of stack reference to avoid problem with lack of QObject copy constructor.
     QFuture<void> originalLoader = QtConcurrent::run(&originalStack, &LoadableStack::load);
     loaderList.append(originalLoader);
 
     m_data->neuronMaskStack = new My4DImage();
-    LoadableStack maskStack(m_data->neuronMaskStack, m_data->maskLabelFilePath);
+    LoadableStack maskStack(m_data->neuronMaskStack, m_data->maskLabelFilePath, 1);
+    connect(&maskStack, SIGNAL(progressValueChanged(int, int)),
+            m_data, SLOT(setStackLoadProgress(int, int)));
     qDebug() << "NaVolumeData::Writer::loadStacks() starting maskStack.load()";
     QFuture<void> maskLoader = QtConcurrent::run(&maskStack, &LoadableStack::load);
     loaderList.append(maskLoader);
 
     My4DImage* initialReferenceStack = new My4DImage();
-    LoadableStack referenceStack(initialReferenceStack, m_data->referenceStackFilePath);
+    LoadableStack referenceStack(initialReferenceStack, m_data->referenceStackFilePath, 2);
+    connect(&referenceStack, SIGNAL(progressValueChanged(int, int)),
+            m_data, SLOT(setStackLoadProgress(int, int)));
     qDebug() << "NaVolumeData::Writer::loadStacks() starting referenceStack.load()";
     QFuture<void> referenceLoader = QtConcurrent::run(&referenceStack, &LoadableStack::load);
     loaderList.append(referenceLoader);
@@ -186,6 +234,7 @@ bool NaVolumeData::Writer::loadStacks()
         } else {
             qDebug() << "Waiting on " << stillActive << " loaders";
         }
+        QCoreApplication::processEvents(); // let progress signals through
     }
 
     qDebug() << "NaVolumeData::Writer::loadStacks() done loading all stacks in " << stopwatch.elapsed() / 1000.0 << " seconds";

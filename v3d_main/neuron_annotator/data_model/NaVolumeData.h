@@ -12,11 +12,11 @@ class NaVolumeDataLoadableStack : public QObject
     Q_OBJECT
 
 public:
-    NaVolumeDataLoadableStack(My4DImage* stackp, QString filename);
+    NaVolumeDataLoadableStack(My4DImage* stackp, QString filename, int stackIndex = -1);
     virtual bool load();
 
 signals:
-    void progressValueChanged(int progressValue);
+    void progressValueChanged(int progressValue, int stackIndex);
     void failed();
     void finished();
 
@@ -25,6 +25,7 @@ private:
 
     My4DImage* stackp;
     QString filename;
+    int stackIndex; // to help keep track of combined progress
 
     int progressValue;
     int progressMin;
@@ -47,6 +48,8 @@ public:
 
 public slots:
     void loadVolumeDataFromFiles(); // Assumes file name paths have already been set
+    void setProgressValue(int progressValue);
+    void setStackLoadProgress(int progressValue, int stackIndex);
 
 private:
     QString originalImageStackFilePath;
@@ -59,6 +62,8 @@ private:
     Image4DProxy<My4DImage> originalImageProxy;
     Image4DProxy<My4DImage> neuronMaskProxy;
     Image4DProxy<My4DImage> referenceImageProxy;
+    std::vector<int> stackLoadProgressValues;
+    int currentProgress;
 
 public:
     typedef NaVolumeDataLoadableStack LoadableStack;

@@ -42,7 +42,6 @@ public:
     void resetVolumeBoundary();
     virtual RendererNeuronAnnotator* getRendererNa()   {return dynamic_cast<RendererNeuronAnnotator*>(renderer);}
     virtual const RendererNeuronAnnotator* getRendererNa() const {return dynamic_cast<RendererNeuronAnnotator*>(renderer);} // const version CMB
-    void setFastColorModel(const DataColorModel& dataColorModel);
 
 signals:
     void neuronSelected(double x, double y, double z);

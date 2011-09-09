@@ -109,6 +109,10 @@ protected slots:
     void set3DProgressMessage(QString);
     void processUpdatedVolumeData(); // respond to newly loaded image data
     void updateGalleries();
+    void setProgressValue(int);
+    void setProgressMessage(QString);
+    void completeProgress();
+    void abortProgress(QString);
 
 protected:
     void closeEvent(QCloseEvent *event);

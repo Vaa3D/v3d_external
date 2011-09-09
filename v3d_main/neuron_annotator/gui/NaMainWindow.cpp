@@ -615,8 +615,16 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(initialized()),
             this, SLOT(processUpdatedVolumeData()));
 
-    // Fast approximate color updater for 3D viewer
-    ui.v3dr_glwidget->setFastColorModel(annotationSession->getFast3DColorModel());
+    // Progress if NaVolumeData file load
+    // TODO - this is a lot of connection boilerplate code.  This should be abstracted into a single call or specialized ProgressManager class.
+    connect(&annotationSession->getVolumeData(), SIGNAL(progressMessageChanged(QString)),
+            this, SLOT(setProgressMessage(QString)));
+    connect(&annotationSession->getVolumeData(), SIGNAL(progressValueChanged(int)),
+            this, SLOT(setProgressValue(int)));
+    connect(&annotationSession->getVolumeData(), SIGNAL(progressCompleted()),
+            this, SLOT(completeProgress()));
+    connect(&annotationSession->getVolumeData(), SIGNAL(progressAborted(QString)),
+            this, SLOT(abortProgress(QString)));
 
     // Annotation model update
     connect(annotationSession, SIGNAL(modelUpdated(QString)), ui.v3dr_glwidget, SLOT(annotationModelUpdate(QString)));
@@ -978,33 +986,63 @@ void NaMainWindow::synchronizeGalleryButtonsToAnnotationSession(QString updateSt
     }
 }
 
-void NaMainWindow::set3DProgress(int prog) {
-    if (prog >= 100) {
-        complete3DProgress();
+/* slot */
+void NaMainWindow::setProgressValue(int progressValueParam)
+{
+    if (progressValueParam >= 100) {
+        completeProgress();
+        return;
     }
-    else {
-        statusProgressBar->setValue(prog);
-        statusProgressBar->show();
-        // neither setEnabled() nor raise() help with initial grayness problem of progress bar
-        // statusProgressBar->setEnabled(true);
-        // statusProgressBar->raise();
-        // update();
-    }
+    statusProgressBar->setValue(progressValueParam);
+    statusProgressBar->show();
 }
 
-void NaMainWindow::complete3DProgress() {
+/* slot */
+void NaMainWindow::setProgressMessage(QString msg)
+{
+    statusBar()->showMessage(""); // avoid overlap of temporary messages with progress message
+    statusProgressMessage->setText(msg);
+    statusProgressMessage->show();
+}
+
+/* slot */
+void NaMainWindow::completeProgress()
+{
     statusProgressBar->hide();
     statusProgressMessage->hide();
     statusBar()->showMessage("Progress complete", 1000);
 }
 
+/* slot */
+void NaMainWindow::abortProgress(QString msg)
+{
+    statusProgressBar->hide();
+    statusProgressMessage->hide();
+    statusBar()->showMessage(msg, 1000);
+}
+
+void NaMainWindow::set3DProgress(int prog) {
+    if (prog >= 100) {
+        complete3DProgress();
+        return;
+    }
+    ui.progressBar3d->setValue(prog);
+    ui.v3dr_glwidget->setUpdatesEnabled(false); // don't show ugly brief resize behavior
+    ui.widget_progress3d->show();
+}
+
+void NaMainWindow::complete3DProgress() {
+    ui.widget_progress3d->hide();
+    // avoid jerky resize to accomodated progress widget
+    ui.v3dr_glwidget->resizeEvent(NULL);
+    ui.v3dr_glwidget->setUpdatesEnabled(true);
+    ui.v3dr_glwidget->update();
+}
+
 void NaMainWindow::set3DProgressMessage(QString msg) {
-    statusBar()->showMessage("");
-    statusProgressMessage->setText(msg);
-    statusProgressMessage->show();
+    ui.progressLabel3d->setText(msg);
+    ui.v3dr_glwidget->setUpdatesEnabled(false); // don't show ugly brief resize behavior
+    ui.widget_progress3d->show();
 }
 
 // NutateThread
-
-
-

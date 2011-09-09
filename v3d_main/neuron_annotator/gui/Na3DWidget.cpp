@@ -507,13 +507,6 @@ void Na3DWidget::updateHighlightNeurons()
     enableMarkerLabel(false); // but don't show labels
 }
 
-void Na3DWidget::setFastColorModel(const DataColorModel& dataColorModel)
-{
-    incrementalDataColorModel = &dataColorModel;
-    connect(incrementalDataColorModel, SIGNAL(dataChanged()),
-            this, SLOT(updateIncrementalColors()));
-}
-
 void Na3DWidget::updateIncrementalColors()
 {
     // QTime stopwatch;
@@ -679,6 +672,10 @@ void Na3DWidget::setAnnotationSession(AnnotationSession *annotationSession)
     connect(this, SIGNAL(neuronClearAll()), &annotationSession->getNeuronSelectionModel(), SLOT(clearAllNeurons()));
     connect(this, SIGNAL(neuronClearAllSelections()), &annotationSession->getNeuronSelectionModel(), SLOT(clearSelection()));
     connect(this, SIGNAL(neuronIndexChanged(int)), &annotationSession->getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
+    // Fast-but-approximate color update
+    incrementalDataColorModel = &annotationSession->getFast3DColorModel();
+    connect(incrementalDataColorModel, SIGNAL(dataChanged()),
+            this, SLOT(updateIncrementalColors()));
 }
 
 void Na3DWidget::toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked)
