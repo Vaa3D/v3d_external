@@ -655,8 +655,7 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 	else if(th_idx == 1)
 	{
 		threshold = meanv + stdv;
-	}
-	
+	}	
 	
 	for(V3DLONG i=0; i<pagesz; i++)
 		bw[i] = ((double)data1d[i]>threshold)?1:0;
@@ -668,13 +667,13 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 	offset_y=sx;
 	offset_z=sx*sy;
 	
+    V3DLONG neighbors = 26;
 	V3DLONG neighborhood_26[26] = {-1, 1, -offset_y, offset_y, -offset_z, offset_z,
 		-offset_y-1, -offset_y+1, -offset_y-offset_z, -offset_y+offset_z, 
 		offset_y-1, offset_y+1, offset_y-offset_z, offset_y+offset_z,
 		offset_z-1, offset_z+1, -offset_z-1, -offset_z+1,
 		-1-offset_y-offset_z, -1-offset_y+offset_z, -1+offset_y-offset_z, -1+offset_y+offset_z,
-	1-offset_y-offset_z, 1-offset_y+offset_z, 1+offset_y-offset_z, 1+offset_y+offset_z}; 
-	V3DLONG neighbors = 26;
+        1-offset_y-offset_z, 1-offset_y+offset_z, 1+offset_y-offset_z, 1+offset_y+offset_z}; 
 	
 	// eliminate volume with only one single voxel
 	for(V3DLONG k = 0; k < sz; k++) 
@@ -683,10 +682,8 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 		for(V3DLONG j = 0;  j < sy; j++) 
 		{
 			V3DLONG idxj = idxk + j*offset_y;
-			
 			for(V3DLONG i = 0, idx = idxj; i < sx;  i++, idx++) 
 			{
-				
 				if(i==0 || i==sx-1 || j==0 || j==sy-1 || k==0 || k==sz-1)
 					continue;
 				
@@ -704,7 +701,6 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 						}
 						
 					}
-					
 					if(one_point==true)
 						bw[idx] = 0;
 				}
@@ -863,10 +859,8 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 	
 	//
 	int end_t = clock();
-	
 	qDebug() << "label objects via region growing time elapse ..." << end_t-start_t;
-	
-	
+
 	//find the second big area in labeling
 	STCL *staRegion = new STCL;
 	STCL *staRegion_begin = staRegion;
@@ -916,7 +910,7 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 	
 	qDebug() << "display "<< n_rgn<<" rgns from "<< nrgncopied;
 	
-	if(n_rgn>65535)
+	if(n_rgn>65534)
 	{
 		float *pRGCL = NULL;
 		try
@@ -948,7 +942,7 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 			{
 				//qDebug() << "idx ..." << i << cutposlist[i] << pagesz;
 				
-				pRGCL[ cutposlist[i] ] = (float)ii;
+				pRGCL[ cutposlist[i] ] = (float)ii + 1.0;
 				
 				float cv = pSub[ cutposlist[i] ];
 				
@@ -988,7 +982,7 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 		callback.updateImageWindow(newwin);
 		
 	}
-	else if(n_rgn>255)
+	else if(n_rgn>254)
 	{
 		unsigned short *pRGCL = NULL;
 		try
@@ -1020,7 +1014,7 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 			{
 				//qDebug() << "idx ..." << i << cutposlist[i] << pagesz;
 				
-				pRGCL[ cutposlist[i] ] = (unsigned short)ii;
+				pRGCL[ cutposlist[i] ] = (unsigned short)ii + 1;
 				
 				float cv = pSub[ cutposlist[i] ];
 				
@@ -1060,7 +1054,7 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 		callback.updateImageWindow(newwin);
 	}
 	else
-	{
+	{        
 		unsigned char *pRGCL = NULL;
 		try
 		{
@@ -1091,7 +1085,7 @@ void regiongrowing(V3DPluginCallback2 &callback, QWidget *parent)
 			{
 				//qDebug() << "idx ..." << i << cutposlist[i] << pagesz;
 				
-				pRGCL[ cutposlist[i] ] = (unsigned char)ii;
+				pRGCL[ cutposlist[i] ] = (unsigned char)ii + 1;
 				
 				float cv = pSub[ cutposlist[i] ];
 				
