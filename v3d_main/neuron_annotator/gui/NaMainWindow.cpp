@@ -1034,8 +1034,10 @@ void NaMainWindow::set3DProgress(int prog) {
 void NaMainWindow::complete3DProgress() {
     ui.widget_progress3d->hide();
     // avoid jerky resize to accomodated progress widget
+    QCoreApplication::processEvents(); // flush pending resize events
     ui.v3dr_glwidget->resizeEvent(NULL);
     ui.v3dr_glwidget->setUpdatesEnabled(true);
+    //
     ui.v3dr_glwidget->update();
 }
 
