@@ -2,6 +2,7 @@
 #include "EntityTreeItem.h"
 #include "../../entity_model/Entity.h"
 #include "../../entity_model/Ontology.h"
+#include "../../utility/JacsUtil.h"
 #include <QtGui>
 
 OntologyTreeModel::OntologyTreeModel(Ontology *ontology, QObject *parent)
@@ -65,3 +66,24 @@ void OntologyTreeModel::setupModelData(Entity *entity, EntityTreeItem *parent, Q
         }
     }
 }
+
+QVariant OntologyTreeModel::data(const QModelIndex &index, int role) const
+{
+    if (!index.isValid())
+        return QVariant();
+
+    EntityTreeItem *item = static_cast<EntityTreeItem*>(index.internalPointer());
+
+    if (role == Qt::DecorationRole)
+    {
+        if (index.column()==1) return QVariant(); // No icons in the keybind column
+        return getIcon(item->entity());
+    }
+
+    if (role != Qt::DisplayRole)
+        return QVariant();
+
+    return item->data(index.column());
+}
+
+

@@ -73,7 +73,7 @@
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
         <horstretch>0</horstretch>
-        <verstretch>5</verstretch>
+        <verstretch>3</verstretch>
        </sizepolicy>
       </property>
       <property name="minimumSize">
@@ -161,7 +161,7 @@
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
         <horstretch>0</horstretch>
-        <verstretch>1</verstretch>
+        <verstretch>3</verstretch>
        </sizepolicy>
       </property>
       <property name="minimumSize">
@@ -181,70 +181,13 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QWidget" name="verticalWidget" native="true">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>50</height>
-          </size>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
-          <property name="spacing">
-           <number>0</number>
-          </property>
+        <widget class="QWidget" name="horizontalWidget_2" native="true">
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
           <property name="margin">
            <number>0</number>
           </property>
           <item>
-           <widget class="QWidget" name="horizontalWidget_2" native="true">
-            <layout class="QHBoxLayout" name="horizontalLayout_2">
-             <property name="margin">
-              <number>0</number>
-             </property>
-             <item>
-              <widget class="QLabel" name="label_2">
-               <property name="font">
-                <font>
-                 <pointsize>12</pointsize>
-                 <weight>75</weight>
-                 <bold>true</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>Current Object:</string>
-               </property>
-               <property name="margin">
-                <number>5</number>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="currentObjectLabel">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>26</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>None</string>
-               </property>
-               <property name="margin">
-                <number>5</number>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_3">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>26</height>
-             </size>
-            </property>
+           <widget class="QLabel" name="label_2">
             <property name="font">
              <font>
               <pointsize>12</pointsize>
@@ -255,29 +198,32 @@
             <property name="text">
              <string>Annotations:</string>
             </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-            </property>
             <property name="margin">
              <number>5</number>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QListWidget" name="annotationPanelView">
+           <widget class="QLabel" name="annotatedBranchTreeTitle">
             <property name="minimumSize">
              <size>
-              <width>300</width>
-              <height>0</height>
+              <width>0</width>
+              <height>26</height>
              </size>
             </property>
-            <property name="autoFillBackground">
-             <bool>true</bool>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="margin">
+             <number>5</number>
             </property>
            </widget>
           </item>
          </layout>
         </widget>
+       </item>
+       <item>
+        <widget class="AnnotatedBranchTreeView" name="annotatedBranchTreeView"/>
        </item>
       </layout>
      </widget>
@@ -290,6 +236,11 @@
    <class>OntologyTreeView</class>
    <extends>QTreeView</extends>
    <header>../neuron_annotator/gui/trees/OntologyTreeView.h</header>
+  </customwidget>
+  <customwidget>
+   <class>AnnotatedBranchTreeView</class>
+   <extends>QTreeView</extends>
+   <header>../neuron_annotator/gui/trees/AnnotatedBranchTreeView.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

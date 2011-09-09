@@ -5,6 +5,9 @@
 
 class Entity;
 
+//
+// The link between two entities in a parent/child relationship.
+//
 class EntityData
 {
 public:

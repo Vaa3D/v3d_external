@@ -97,6 +97,9 @@ DEFINES += _ALLOW_WORKMODE_MENU_
 QMAKE_CXXFLAGS += -DWITH_NONAMESPACES
 QMAKE_CXXFLAGS += -DWITH_PURE_VIRTUAL
 
+# Resources such as icons
+RESOURCES += ../neuron_annotator/resources.qrc
+
 # Input
 HEADERS += \
     ../neuron_annotator/data_model/NaLockableData.h \
@@ -117,6 +120,7 @@ HEADERS += \
     ../neuron_annotator/entity_model/EntityData.h \
     ../neuron_annotator/entity_model/Entity.h \
     ../neuron_annotator/entity_model/Ontology.h \
+    ../neuron_annotator/entity_model/AnnotatedBranch.h \
     ../neuron_annotator/data_model/Texture2dColors.h \
     ../neuron_annotator/data_model/PrivateDataColorModel.h \
     ../neuron_annotator/gui/NaViewer.h \
@@ -143,10 +147,11 @@ HEADERS += \
     ../neuron_annotator/gui/AngleWidget.h \
     ../neuron_annotator/gui/AnnotationWidget.h \
     ../neuron_annotator/gui/trees/EntityTreeItem.h \
-    ../neuron_annotator/gui/trees/AnnotationTreeModel.h \
+    ../neuron_annotator/gui/trees/AnnotatedBranchTreeModel.h \
     ../neuron_annotator/gui/trees/OntologyTreeModel.h \
     ../neuron_annotator/gui/trees/EntityTreeModel.h \
     ../neuron_annotator/gui/trees/EntityTreeView.h \
+    ../neuron_annotator/gui/trees/AnnotatedBranchTreeView.h \
     ../neuron_annotator/gui/trees/OntologyTreeView.h \
     ../neuron_annotator/gui/MouseClickManager.h \
     ../neuron_annotator/gui/ZoomSpinBox.h \
@@ -206,6 +211,7 @@ SOURCES += \
     ../neuron_annotator/entity_model/EntityData.cpp \
     ../neuron_annotator/entity_model/Entity.cpp \
     ../neuron_annotator/entity_model/Ontology.cpp \
+    ../neuron_annotator/entity_model/AnnotatedBranch.cpp \
     ../neuron_annotator/data_model/Texture2dColors.cpp \
     ../neuron_annotator/data_model/PrivateDataColorModel.cpp \
     ../neuron_annotator/NeuronAnnotatorResultNode.cpp \
@@ -221,9 +227,10 @@ SOURCES += \
     ../neuron_annotator/gui/AnnotationWidget.cpp \
     ../neuron_annotator/gui/trees/EntityTreeItem.cpp \
     ../neuron_annotator/gui/trees/EntityTreeModel.cpp \
-    ../neuron_annotator/gui/trees/AnnotationTreeModel.cpp \
+    ../neuron_annotator/gui/trees/AnnotatedBranchTreeModel.cpp \
     ../neuron_annotator/gui/trees/OntologyTreeModel.cpp \
     ../neuron_annotator/gui/trees/EntityTreeView.cpp \
+    ../neuron_annotator/gui/trees/AnnotatedBranchTreeView.cpp \
     ../neuron_annotator/gui/trees/OntologyTreeView.cpp \
     ../neuron_annotator/gui/ZoomSpinBox.cpp \
     ../neuron_annotator/gui/ZoomWidget.cpp \

@@ -4,6 +4,9 @@
 #include "EntityData.h"
 #include <QtCore>
 
+//
+// An entity in the JACS system. May be part of an entity tree.
+//
 class Entity
 {
 public:

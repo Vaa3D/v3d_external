@@ -30,11 +30,11 @@ bool entityLessThan(const EntityData *e1, const EntityData *e2)
         {
             return *e1->id < *e2->id;
         }
-        return false;
+        return true;
     }
     else if (e2->orderIndex == NULL)
     {
-        return true;
+        return false;
     }
     return *e1->orderIndex < *e2->orderIndex;
 }

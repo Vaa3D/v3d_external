@@ -1,16 +1,13 @@
 #ifndef ONTOLOGYTREEVIEW_H
 #define ONTOLOGYTREEVIEW_H
 
-#include <QTreeView>
+#include "EntityTreeView.h"
 
-class OntologyTreeView : public QTreeView
+class OntologyTreeView : public EntityTreeView
 {
     Q_OBJECT
 public:
     explicit OntologyTreeView(QWidget *parent = 0);
-
-protected:
-    void keyPressEvent(QKeyEvent *event);
 
 };
 

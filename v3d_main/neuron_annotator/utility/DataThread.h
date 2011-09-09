@@ -2,8 +2,10 @@
 #define DATATHREAD_H
 
 #include "../../webservice/console/cdsConsoleDataServiceProxy.h"
+#include "../entity_model/AnnotatedBranch.h"
 #include <QObject>
 #include <QThread>
+#include <QHash>
 
 class DataThread : public QThread
 {
@@ -40,6 +42,23 @@ public:
 };
 
 // ===========================================================
+// Get AnnotatedBranch
+// ===========================================================
+
+class GetAnnotatedBranchThread : public DataThread
+{
+    Q_OBJECT
+
+public:
+    explicit GetAnnotatedBranchThread(long entityId, QObject *parent = 0);
+    void fetchData();
+private:
+    void fetchAnnotations(Entity *entity);
+    QHash<qint64, AnnotationList*> *annotationMap;
+    long entityId;
+};
+
+// ===========================================================
 // Get Entity
 // ===========================================================
 
@@ -50,6 +69,22 @@ class GetEntityThread : public DataThread
 public:
     explicit GetEntityThread(long entityId, QObject *parent = 0);
     void fetchData();
+private:
+    long entityId;
+};
+
+// ===========================================================
+// Get Entity Annotations
+// ===========================================================
+
+class GetEntityAnnotationsThread : public DataThread
+{
+    Q_OBJECT
+
+public:
+    explicit GetEntityAnnotationsThread(long entityId, QObject *parent = 0);
+    void fetchData();
+    inline long getEntityId() const { return entityId; }
 private:
     long entityId;
 };

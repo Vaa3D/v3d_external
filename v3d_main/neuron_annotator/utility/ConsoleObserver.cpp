@@ -1,5 +1,4 @@
 #include "ConsoleObserver.h"
-#include "JacsUtil.h"
 #include "DataThread.h"
 #include "../gui/NaMainWindow.h"
 #include "../entity_model/Entity.h"
@@ -35,15 +34,17 @@ void ConsoleObserver::loadCurrentOntology()
     loadOntologyThread->start(QThread::NormalPriority);
 }
 
-void ConsoleObserver::loadOntologyResults(const void *results) {
-
+void ConsoleObserver::loadOntologyResults(const void *results)
+{
     emit openOntology((Ontology *)results);
     delete loadOntologyThread;
     loadOntologyThread = NULL;
 }
 
-void ConsoleObserver::loadOntologyError(const QString &error) {
-    // TODO: this should notify the user in some way
+void ConsoleObserver::loadOntologyError(const QString &error)
+{
+    emit openOntology(0);
+    emit communicationError(error);
     delete loadOntologyThread;
     loadOntologyThread = NULL;
 }
@@ -86,42 +87,46 @@ void ConsoleObserver::entitySelected(long entityId)
     entitySelectedThread->start(QThread::NormalPriority);
 }
 
-void ConsoleObserver::entitySelectedResults(const void *results) {
+void ConsoleObserver::entitySelectedResults(const void *results)
+{
 
     Entity *entity = (Entity *)results;
     if (entity == NULL) return;
 
     QString type = *entity->entityType;
-    qDebug() << "  Type:" <<type;
-    if (type == "Tif 2D Image") // TODO: change to Neuron Fragment in the future?
-    {
-        QString filepath = entity->getValueByAttributeName("File Path");
-        qDebug() << "  File Path:"<<filepath;
 
-        if (!filepath.isEmpty())
-        {
-            QString macPath = convertPathToMac(filepath);
-            QRegExp rx("neuronSeparatorPipeline.PR.neuron(\\d+)\\.tif");
-            if (rx.indexIn(macPath) != -1)
-            {
-                QString numStr = rx.cap(1);
-                bool ok;
-                int num = numStr.toInt(&ok);
-                if (ok)
-                {
-                    qDebug() << "  Select neuron:" <<num;
-                    //mainWindow->getAnnotationSession()->getNeuronSelectionModel().showExactlyOneNeuron(num);
-                }
-            }
-        }
-    }
+    // TODO: reimplement this using entities and the annotatedBranch tree
+
+//    qDebug() << "  Type:" <<type;
+//    if (type == "Tif 2D Image") // TODO: change to Neuron Fragment in the future?
+//    {
+//        QString filepath = entity->getValueByAttributeName("File Path");
+//        qDebug() << "  File Path:"<<filepath;
+
+//        if (!filepath.isEmpty())
+//        {
+//            QString macPath = convertPathToMac(filepath);
+//            QRegExp rx("neuronSeparatorPipeline.PR.neuron(\\d+)\\.tif");
+//            if (rx.indexIn(macPath) != -1)
+//            {
+//                QString numStr = rx.cap(1);
+//                bool ok;
+//                int num = numStr.toInt(&ok);
+//                if (ok)
+//                {
+//                    qDebug() << "  Select neuron:" <<num;
+//                    //mainWindow->getAnnotationSession()->getNeuronSelectionModel().showExactlyOneNeuron(num);
+//                }
+//            }
+//        }
+//    }
 
     delete entitySelectedThread;
     entitySelectedThread = NULL;
 }
 
 void ConsoleObserver::entitySelectedError(const QString & error) {
-    // TODO: this should notify the user in some way
+    emit communicationError(error);
     delete entitySelectedThread;
     entitySelectedThread = NULL;
 }
@@ -147,7 +152,8 @@ void ConsoleObserver::entityViewRequested(long entityId)
     entityViewRequestedThread->start(QThread::NormalPriority);
 }
 
-void ConsoleObserver::entityViewRequestedResults(const void *results) {
+void ConsoleObserver::entityViewRequestedResults(const void *results)
+{
 
     Entity *entity = (Entity *)results;
     if (entity == NULL) return;
@@ -156,28 +162,69 @@ void ConsoleObserver::entityViewRequestedResults(const void *results) {
     qDebug() << "  Type:" << type;
     if (type == "Neuron Separator Pipeline Result")
     {
-        QString filepath = entity->getValueByAttributeName("File Path");
-        qDebug() << "  File Path:"<<filepath;
-
-        if (!filepath.isEmpty()) {
-            QString macPath = convertPathToMac(filepath);
-            qDebug() << "  Opening image stack:" << macPath;
-            QApplication::alert((QWidget *)mainWindow, 10000);
-            mainWindow->show();
-            mainWindow->activateWindow();
-            mainWindow->raise();
-            emit openMulticolorImageStack(macPath);
-        }
+        QApplication::alert((QWidget *)mainWindow, 10000);
+        mainWindow->show();
+        mainWindow->activateWindow();
+        mainWindow->raise();
+        // TODO: begin process indication
+        annotatedBranchViewRequested(*entity->id);
     }
 
     delete entityViewRequestedThread;
     entityViewRequestedThread = NULL;
 }
 
-void ConsoleObserver::entityViewRequestedError(const QString & error) {
-    // TODO: this should notify the user in some way
+void ConsoleObserver::entityViewRequestedError(const QString & error)
+{
+    emit communicationError(error);
     delete entityViewRequestedThread;
     entityViewRequestedThread = NULL;
+}
+
+//*******************************************************************************************
+// annotatedBranchViewRequested event
+//*******************************************************************************************
+
+void ConsoleObserver::annotatedBranchViewRequested(long entityId)
+{
+    qDebug() << "Got signal entityViewRequested:" << entityId;
+
+    if (annotatedBranchViewRequestedThread != NULL)
+    {
+        annotatedBranchViewRequestedThread->disconnect();
+    }
+
+    annotatedBranchViewRequestedThread = new GetAnnotatedBranchThread(entityId);
+    connect(annotatedBranchViewRequestedThread, SIGNAL(gotResults(const void *)),
+            this, SLOT(annotatedBranchViewRequestedResults(const void *)));
+    connect(annotatedBranchViewRequestedThread, SIGNAL(gotError(const QString &)),
+            this, SLOT(annotatedBranchViewRequestedError(const QString &)));
+    annotatedBranchViewRequestedThread->start(QThread::NormalPriority);
+}
+
+void ConsoleObserver::annotatedBranchViewRequestedResults(const void *results)
+{
+
+    AnnotatedBranch *annotatedBranch = (AnnotatedBranch *)results;
+    if (annotatedBranch == NULL) return;
+
+    QString filepath = annotatedBranch->getFilePath();
+    qDebug() << "  Name:"<<annotatedBranch->name();
+    qDebug() << "  File Path:"<<filepath;
+
+    if (!filepath.isEmpty()) {
+        emit openAnnotatedBranch(annotatedBranch);
+    }
+
+    delete annotatedBranchViewRequestedThread;
+    annotatedBranchViewRequestedThread = NULL;
+}
+
+void ConsoleObserver::annotatedBranchViewRequestedError(const QString & error)
+{
+    emit communicationError(error);
+    delete annotatedBranchViewRequestedThread;
+    annotatedBranchViewRequestedThread = NULL;
 }
 
 //*******************************************************************************************
@@ -187,4 +234,31 @@ void ConsoleObserver::entityViewRequestedError(const QString & error) {
 void ConsoleObserver::annotationsChanged(long entityId)
 {
     qDebug() << "Got signal annotationsChanged:" << entityId;
+
+    if (annotationsChangedThread != NULL)
+    {
+        annotationsChangedThread->disconnect();
+    }
+
+    annotationsChangedThread = new GetEntityAnnotationsThread(entityId);
+    connect(annotationsChangedThread, SIGNAL(gotResults(const void *)),
+            this, SLOT(annotatedBranchViewRequestedResults(const void *)));
+    connect(annotationsChangedThread, SIGNAL(gotError(const QString &)),
+            this, SLOT(annotatedBranchViewRequestedError(const QString &)));
+    annotationsChangedThread->start(QThread::NormalPriority);
+
+}
+
+void ConsoleObserver::annotationsChangedResults(const void *results)
+{
+    emit updateAnnotations(((GetEntityAnnotationsThread *)annotationsChangedThread)->getEntityId(), (AnnotationList *)results);
+    delete annotationsChangedThread;
+    annotationsChangedThread = NULL;
+}
+
+void ConsoleObserver::annotationsChangedError(const QString & error)
+{
+    emit communicationError(error);
+    delete annotationsChangedThread;
+    annotationsChangedThread = NULL;
 }

@@ -3,14 +3,14 @@
 
 #include <QTreeView>
 
-/*
- * Overriden to disable QTreeView's usual keyboard shortcuts
- */
+class Entity;
+
 class EntityTreeView : public QTreeView
 {
     Q_OBJECT
 public:
     explicit EntityTreeView(QWidget *parent = 0);
+    void selectEntity(const Entity *entity);
 
 protected:
     void keyPressEvent(QKeyEvent *event);

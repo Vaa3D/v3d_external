@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/neuron_annotator">
+        <file>resources/beaker.png</file>
+        <file>resources/folder.png</file>
+        <file>resources/folder_image.png</file>
+        <file>resources/folder_page.png</file>
+        <file>resources/image.png</file>
+        <file>resources/images.png</file>
+        <file>resources/layers.png</file>
+        <file>resources/page.png</file>
+        <file>resources/page_white.png</file>
+        <file>resources/page_white_code.png</file>
+        <file>resources/page_white_text.png</file>
+        <file>resources/page_white_edit.png</file>
+    </qresource>
+</RCC>

@@ -5,6 +5,9 @@
 
 class Entity;
 
+//
+// A tree of entities which are Ontology Elements, along with other metadata, such as the user's keybindings to this ontology.
+//
 class Ontology
 {
 

@@ -142,6 +142,18 @@ Entity* EntityAdapter::convert(cds::fw__entity *fwEntity)
     return entity;
 }
 
+QList<Entity *>* EntityAdapter::convert(cds::fw__entityArray *array)
+{
+    QList<Entity *> *list = new QList<Entity *>;
+    if (array == NULL) return list;
+    std::vector<cds::fw__entity *> items = array->item;
+    for (int c = 0; c < items.size(); ++c)
+    {
+        list->append(convert(items[c]));
+    }
+    return list;
+}
+
 
 QMap<QKeySequence, qint64>* EntityAdapter::convert(cds::fw__ontologyKeyBindings *keyBindings)
 {
@@ -163,4 +175,3 @@ QMap<QKeySequence, qint64>* EntityAdapter::convert(cds::fw__ontologyKeyBindings 
     }
     return map;
 }
-
