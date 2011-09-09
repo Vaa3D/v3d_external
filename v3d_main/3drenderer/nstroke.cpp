@@ -19,10 +19,16 @@
 
 #endif //test_main_cpp
 
-
-// 20110826 ZJL
-// Refining the n-right-strokes curve drawing
-
+// n-right-strokes curve drawing (refine), ZJL 20110826
+// This curve drawing method performs as follows:
+// 1. The user first draws the primary curve using right-mouse moving. This drawing
+// is based on the method used in solveCurveCenter()(modified version).
+// 2. The user then draws (by right-mouse moving) the modifying-curve. This modifying curve
+// is also got based on the method used in solveCurveCenter(). This curve represents
+// the position that part of the primary curve should be.
+// 3. The curve refinement is then performed to get the refined curve.
+// 4. This refine process can be performed n times on the primary curve.
+// 5. Press "Esc" to exit the curve refinement operation.
 void Renderer_gl1::solveCurveRefineLast()
 {
 	qDebug("Renderer_gl1::solveCurveRefineLast");
@@ -152,59 +158,47 @@ void Renderer_gl1::solveCurveRefineLast()
           }
      }
 
+
+     // only smooth the curve between ka and kb of loc_vec0
+     vector <XYZ> loc_vecsub;
+     loc_vecsub.clear();
+     // copy data between ka-kb in loc_vec0 to loc_vecsub
+     // make a larger window to smoothing
+     int kaa, kbb;
+     kaa = ((ka-2)<0)? 0:(ka-2);
+     kbb = ((kb+2)>=N0)? (N0-1):(kb+2);
+     for(int i=kaa; i<=kbb; i++)
+     {
+          int ii=i-kaa;
+          loc_vecsub.push_back(loc_vec0.at(i));
+     }
 #ifndef test_main_cpp
-	smooth_curve(loc_vec0, 5);
+	smooth_curve(loc_vecsub, 5);
 #endif
 
-     // V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-     // My4DImage* curImg = 0;
-     // if (w)
-     //      curImg = v3dr_getImage4d(_idep);
+     // copy data back from loc_vecsub to loc_vec0
+     for(int i=kaa; i<=kbb; i++)
+     {
+          int ii=i-kaa;
+          loc_vec0.at(i)=loc_vecsub.at(ii);
+     }
 
-     // int last_seg_id = curImg->tracedNeuron.seg.size()-1;
-     // V_NeuronSWC& last_seg = curImg->tracedNeuron.seg[last_seg_id];
-
-     // for (int k=0; k<last_seg.row.size(); k++)
-     // {
-     //      last_seg.row.at(k).data[2] = loc_vec0.at(k).x;
-     //      last_seg.row.at(k).data[3] = loc_vec0.at(k).y;
-     //      last_seg.row.at(k).data[4] = loc_vec0.at(k).z;
-     // }
-
-     // curImg->update_3drenderer_neuron_view(w, this);
-
-     addCurveSWC(loc_veci, -1);
-}
-
-// press key "A" to apply curve refinement
-void Renderer_gl1::applyCurveRefine()
-{
-     // update first curve
      V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
      My4DImage* curImg = 0;
      if (w)
           curImg = v3dr_getImage4d(_idep);
 
-     // last_seg_id is a global value
-     V_NeuronSWC& last_seg = curImg->tracedNeuron.seg[last_seg_id];
-     for (int k=0; k<last_seg.row.size(); k++)
+     int last_seg_id = curImg->tracedNeuron.seg.size()-1;
+     V_NeuronSWC& last_segs = curImg->tracedNeuron.seg[last_seg_id];
+
+     for (int k=0; k<last_segs.row.size(); k++)
      {
-          last_seg.row.at(k).data[2] = loc_vec0.at(k).x;
-          last_seg.row.at(k).data[3] = loc_vec0.at(k).y;
-          last_seg.row.at(k).data[4] = loc_vec0.at(k).z;
+          last_segs.row.at(k).data[2] = loc_vec0.at(k).x;
+          last_segs.row.at(k).data[3] = loc_vec0.at(k).y;
+          last_segs.row.at(k).data[4] = loc_vec0.at(k).z;
      }
 
-     // get the second curve seg id
-     int seg_id = curImg->tracedNeuron.seg.size()-1;
-
-     // delete the second curve
-     if(seg_id!=last_seg_id && seg_id>=0)
-     {
-          bool res = curImg->tracedNeuron.deleteSeg(seg_id);
-          if (res)  curImg->proj_trace_history_append();
-     }
-
-	curImg->update_3drenderer_neuron_view(w, this);
+     curImg->update_3drenderer_neuron_view(w, this);
 }
 
 
@@ -435,22 +429,5 @@ void Renderer_gl1::solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ>
      if (b_addthiscurve && selectMode==smCurveRefineInit)
      {
           addCurveSWC(loc_vec, chno);
-
-          // save the this last_seg_id and used in solveCurveRefineLast()
-          V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-          My4DImage* curImg = 0;
-          if (w)
-               curImg = v3dr_getImage4d(_idep);
-
-          last_seg_id = curImg->tracedNeuron.seg.size()-1;
      }
-}
-
-// used in v3dr_glwidget.cpp for Qt::Key_A event
-bool Renderer_gl1::isCurveRefineMode()
-{
-     if(selectMode == smCurveRefineLast)
-          return true;
-     else
-          return false;
 }

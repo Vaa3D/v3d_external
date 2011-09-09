@@ -168,9 +168,6 @@ public:
 	virtual void updateLandmark()     {};
 	virtual void updateTracedNeuron() {};
 
-     virtual void applyCurveRefine() {}; // ZJL 110907
-     virtual bool isCurveRefineMode(){}; // ZJL 110907
-
 	virtual void loadObjectListFromFile()              {};
 	virtual void loadObjectFromFile(const char* url=0) {};
 	virtual void createSurfCurrent(int ch=0)            {};
