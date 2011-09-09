@@ -113,5 +113,8 @@ void MipFragmentColors::Writer::allocateImages(int x, int y, int nFrags)
     for (int f = 0; f < nFrags; ++f) {
         mipFragmentColors.fragmentMips << new QImage(x, y, QImage::Format_ARGB32);
     }
+    for (int f = 0; f < nFrags; f++) {
+        mipFragmentColors.fragmentMips.at(f)->fill(0);
+    }
 }
 
