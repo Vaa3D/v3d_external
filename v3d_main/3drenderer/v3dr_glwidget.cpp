@@ -962,6 +962,13 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 			}
 	  		break;
 
+              // For apply curve refinement. ZJL 110907
+          // case Qt::Key_D:
+          //      {
+          //           if (renderer && renderer->isCurveRefineMode()) renderer->applyCurveRefine();
+          //      }
+          //      break;
+
 #ifndef test_main_cpp
 		case Qt::Key_Z: //undo the last tracing step if possible. by PHC, 090120
 		    if (IS_CTRL_MODIFIER)

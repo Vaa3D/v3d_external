@@ -211,7 +211,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*actCurveCreate1=0, *actCurveCreate2=0, *actCurveCreate3=0, *actCurveCreate_pointclick=0,
 			*actCurveCreate_zoom=0, *actMarkerCreate_zoom=0,
 
-          *actCurveRefine=0, *actCurveLast=0, // ZJL 110905
+          *actCurveRefine=0, // ZJL 110905
 
 			*actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
 	        *actMarkerAblateOne_imaging=0, *actMarkerAblateAll_imaging=0,
@@ -1464,6 +1464,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                if (selectMode == smCurveRefineInit)
                {
                     vector <XYZ> loc_vec_input; //here as an empty input, so use list_listCurvePos internal
+                    vector <XYZ> loc_vec0;
                     loc_vec0.clear();
                     solveCurveCenterV2(loc_vec_input, loc_vec0, 0);
                     selectMode = smCurveRefineLast; /////////////// switch to smCurveRefineLast
