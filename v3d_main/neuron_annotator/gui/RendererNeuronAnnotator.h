@@ -46,9 +46,9 @@ public:
 
 
 signals:
-    void progressAchieved(int);
+    void progressValueChanged(int);
     void progressComplete();
-    void progressMessage(QString);
+    void progressMessageChanged(QString);
 
 protected:
     virtual void setupStackTexture(bool bfirst);

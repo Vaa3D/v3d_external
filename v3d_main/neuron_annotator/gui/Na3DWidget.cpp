@@ -94,8 +94,8 @@ void Na3DWidget::annotationModelUpdate(QString updateType)
 void Na3DWidget::updateImageData()
 {
     // TODO - push progress signals into renderer, where it might be possible to make them finer
-    emit progressMessage(QString("Updating 3D viewer data"));
-    emit progressAchieved(30);
+    emit progressMessageChanged(QString("Updating 3D viewer data"));
+    emit progressValueChanged(30);
     QCoreApplication::processEvents();
     makeCurrent();
     renderer->setupData(this->_idep);
@@ -104,7 +104,7 @@ void Na3DWidget::updateImageData()
         return;
     }
     renderer->getLimitedDataSize(_data_size); //for update slider size
-    emit progressAchieved(70);
+    emit progressValueChanged(70);
     QCoreApplication::processEvents();
     makeCurrent();
     renderer->reinitializeVol(renderer->class_version()); //100720
@@ -112,7 +112,7 @@ void Na3DWidget::updateImageData()
         emit progressComplete(); // TODO - not strong enough
         return;
     }
-    emit progressAchieved(100);
+    emit progressValueChanged(100);
     emit progressComplete();
     // when initialize done, update status of control widgets
     //SEND_EVENT(this, QEvent::Type(QEvent_InitControlValue)); // use event instead of signal
@@ -600,12 +600,12 @@ void Na3DWidget::choiceRenderer()
     GLeeInit();
     RendererNeuronAnnotator * ra = new RendererNeuronAnnotator(this);
     renderer = ra;
-    connect(ra, SIGNAL(progressAchieved(int)),
-            this, SIGNAL(progressAchieved(int)));
+    connect(ra, SIGNAL(progressValueChanged(int)),
+            this, SIGNAL(progressValueChanged(int)));
     connect(ra, SIGNAL(progressComplete()),
             this, SIGNAL(progressComplete()));
-    connect(ra, SIGNAL(progressMessage(QString)),
-            this, SIGNAL(progressMessage(QString)));
+    connect(ra, SIGNAL(progressMessageChanged(QString)),
+            this, SIGNAL(progressMessageChanged(QString)));
 }
 
 // Draw a little 3D cross for testing
@@ -681,7 +681,7 @@ void Na3DWidget::setAnnotationSession(AnnotationSession *annotationSession)
 void Na3DWidget::toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked)
 {
     RendererNeuronAnnotator* ra = (RendererNeuronAnnotator*)renderer;
-    emit progressMessage(QString("Updating textures"));
+    emit progressMessageChanged(QString("Updating textures"));
     QCoreApplication::processEvents();
     makeCurrent();
     ra->updateCurrentTextureMask(index, (checked ? 1 : 0));
@@ -753,7 +753,7 @@ void Na3DWidget::updateFullVolume()
         NeuronSelectionModel::Reader selectionReader(annotationSession->getNeuronSelectionModel());
         if (! selectionReader.hasReadLock()) return;
 
-        emit progressMessage(QString("Updating all textures"));
+        emit progressMessageChanged(QString("Updating all textures"));
         // Change requiring full reload of texture image stacks
         QList<int> tempList;
         for (int i=0;i<selectionReader.getMaskStatusList().size();i++) {

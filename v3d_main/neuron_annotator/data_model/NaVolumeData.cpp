@@ -33,7 +33,8 @@ bool NaVolumeDataLoadableStack::load()
 {
     setRelativeProgress(0.01); // getting here *is* finite progress
     qDebug() << "NaVolumeData::LoadableStack::load() filename=" << filename;
-    stackp->loadImage(filename.toAscii().data());
+    const QByteArray fileArray = filename.toAscii();
+    stackp->loadImage(const_cast<char *>(fileArray.data()));
     if (stackp->isEmpty()) {
         emit failed();
         return false;

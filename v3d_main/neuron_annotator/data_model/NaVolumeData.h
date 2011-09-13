@@ -2,7 +2,7 @@
 #define NAVOLUMEDATA_H
 
 #include "NaLockableData.h"
-#include "../v3d/v3d_core.h"
+#include "../../v3d/v3d_core.h"
 
 
 // NaVolumeDataLoadableStack used to be an inner class of NaVolumeData,

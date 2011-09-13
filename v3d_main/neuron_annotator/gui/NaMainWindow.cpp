@@ -168,11 +168,11 @@ NaMainWindow::NaMainWindow()
             this, SLOT(update3DViewerXYZBodyRotation()));
     connect(ui.rotZWidget, SIGNAL(angleChanged(int)),
             this, SLOT(update3DViewerXYZBodyRotation()));
-    connect(ui.v3dr_glwidget, SIGNAL(progressAchieved(int)),
+    connect(ui.v3dr_glwidget, SIGNAL(progressValueChanged(int)),
             this, SLOT(set3DProgress(int)));
     connect(ui.v3dr_glwidget, SIGNAL(progressComplete()),
             this, SLOT(complete3DProgress()));
-    connect(ui.v3dr_glwidget, SIGNAL(progressMessage(QString)),
+    connect(ui.v3dr_glwidget, SIGNAL(progressMessageChanged(QString)),
             this, SLOT(set3DProgressMessage(QString)));
 
     // 3D volume cut
@@ -1010,7 +1010,7 @@ void NaMainWindow::completeProgress()
 {
     statusProgressBar->hide();
     statusProgressMessage->hide();
-    statusBar()->showMessage("Progress complete", 1000);
+    statusBar()->showMessage("", 500);
 }
 
 /* slot */

@@ -1,6 +1,7 @@
 #include "../3drenderer/renderer_gl2.h"
 #include "RendererNeuronAnnotator.h"
 #include "../AnnotationSession.h"
+#include "../3drenderer/v3dr_common.h"
 
 RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     : QObject(NULL), Renderer_gl2(w)
@@ -211,7 +212,7 @@ bool RendererNeuronAnnotator::initializeTextureMasks() {
         initialMaskList.append(i);
     }
 
-    emit progressMessage(QString("Setting up textures"));
+    emit progressMessageChanged(QString("Setting up textures"));
 
     QList<RGBA8*> initialOverlayList;
     initialOverlayList.append(texture3DBackground);
@@ -224,6 +225,9 @@ bool RendererNeuronAnnotator::initializeTextureMasks() {
 // This function assumes the size realX,Y,Z should be used
 void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf)
 {
+    // On subsequent load, some parameters might not be set yet.
+    if (! (realX && realY && realZ && imageX && imageY && imageZ) ) return;
+
     makeCurrent();
     int sliceCount=0;
 
@@ -311,7 +315,7 @@ void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf)
 
                     // attempt to get away from that horrible horrible hyper-modal stack-drilling unthreadable progress dialog
                     if (! (sliceCount % 20)) {
-                        emit progressAchieved(prog);
+                        emit progressValueChanged(prog);
                         // processEvents() kludge as long as texture updates are in GUI thread
                         // TODO Is ExcludeUserInputEvents really necessary here?
                         QCoreApplication::processEvents(/* QEventLoop::ExcludeUserInputEvents */);
@@ -333,8 +337,10 @@ void RendererNeuronAnnotator::cleanExtendedTextures() {
         texture3DCurrent!=texture3DSignal &&
         texture3DCurrent!=texture3DBackground &&
         texture3DCurrent!=texture3DReference &&
-        texture3DCurrent!=texture3DBlank) {
+        texture3DCurrent!=texture3DBlank)
+    {
         delete [] texture3DCurrent;
+        texture3DCurrent = NULL;
     }
 }
 
@@ -612,7 +618,7 @@ void RendererNeuronAnnotator::updateCurrentTextureMask(int neuronIndex, int stat
 
                     // attempt to get away from that horrible horrible hyper-modal stack-drilling unthreadable progress dialog
                     if (! (sliceCount % 20)) {
-                        emit progressAchieved(prog);
+                        emit progressValueChanged(prog);
                         // processEvents() kludge as long as texture updates are in GUI thread
                         // TODO Is ExcludeUserInputEvents really necessary here?
                         QCoreApplication::processEvents(/* QEventLoop::ExcludeUserInputEvents */);

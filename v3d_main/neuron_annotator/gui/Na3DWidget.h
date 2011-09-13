@@ -45,9 +45,9 @@ public:
 
 signals:
     void neuronSelected(double x, double y, double z);
-    void progressAchieved(int);
+    void progressValueChanged(int);
     void progressComplete();
-    void progressMessage(QString);
+    void progressMessageChanged(QString);
     void landmarksChanged();
 
 public slots:
