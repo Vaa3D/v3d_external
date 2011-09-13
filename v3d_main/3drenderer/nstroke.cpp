@@ -52,8 +52,10 @@ void Renderer_gl1::solveCurveRefineLast()
      if (w)
           curImg = v3dr_getImage4d(_idep);
 
-     //int seg_id = curImg->tracedNeuron.seg.size()-1; // last seg
+     int last_seg_id = curImg->tracedNeuron.seg.size()-1; // last seg
      V_NeuronSWC& primary_seg = curImg->tracedNeuron.seg[last_seg_id];
+
+     // loc_vec0 is the previous curve control point vector
      vector <XYZ> loc_vec0;
      loc_vec0.clear();
 
@@ -67,8 +69,6 @@ void Renderer_gl1::solveCurveRefineLast()
           loc_vec0.push_back(cpt);
      }
 
-     // loc_vec0 is the previous curve control point vector
-     //int N0 = loc_vec0.size();
      int NI=loc_veci.size();
 
      // two end points of ith curve
@@ -124,24 +124,32 @@ void Renderer_gl1::solveCurveRefineLast()
      // they are inner 3-step points (assuming curve points > 3)
      XYZ in_pt0, in_pti;
      if(end_pos0 == pos0a)
-          in_pt0 = loc_vec0.at(2);
+          in_pt0 = loc_vec0.at(4); //2
      else
-          in_pt0 = loc_vec0.at(N0-3);
+          in_pt0 = loc_vec0.at(N0-5); //3
 
      if(end_posi == posia)
-          in_pti = loc_veci.at(2);
+          in_pti = loc_veci.at(4); //2
      else
-          in_pti = loc_veci.at(NI-3);
+          in_pti = loc_veci.at(NI-5); //3
 
      XYZ v0 = in_pt0-end_pos0;
      XYZ vi = in_pti-end_posi;
      float vdot = dot(v0,vi);
 
      // join two curves
-     if((vdot < 0)&&(distf < 50))
+     if((vdot < 0)&&(distf < 30))
      {
           // update primary_seg.row
           V_NeuronSWC_unit nu;
+
+          // last n number in the swc
+          int lnt = listNeuronTree.size();
+          double last_n  = 0;
+          for(int ii = 0; ii<lnt; ii++)
+          {
+               last_n += listNeuronTree.at(ii).listNeuron.size();
+          }
 
           // there are four cases of joins
           // 1. insert loc_veci after the last point of loc_vec0
@@ -149,16 +157,16 @@ void Renderer_gl1::solveCurveRefineLast()
           {
                double type = primary_seg.row.at(N0-1).type;
                double rr = primary_seg.row.at(N0-1).r;
-               double nn = primary_seg.row.at(N0-1).n;
+
                for(int j=0; j<NI; j++)
                {
                     nu.x = loc_veci.at(j).x;
                     nu.y = loc_veci.at(j).y;
                     nu.z = loc_veci.at(j).z;
-                    nu.n = nn+1+j;
+                    nu.n = last_n+1+j;
                     nu.type = type;
                     nu.r = rr;
-                    nu.parent =  nn+j;
+                    nu.parent = last_n+j;
                     nu.seg_id = last_seg_id;
                     nu.nodeinseg_id = N0+j;
                     if(j==NI-1) nu.nchild = 0;
@@ -172,16 +180,15 @@ void Renderer_gl1::solveCurveRefineLast()
           {
                double type = primary_seg.row.at(N0-1).type;
                double rr = primary_seg.row.at(N0-1).r;
-               double nn = primary_seg.row.at(N0-1).n;
                for(int j=0; j<NI; j++)
                {
                     nu.x = loc_veci.at(NI-1-j).x;
                     nu.y = loc_veci.at(NI-1-j).y;
                     nu.z = loc_veci.at(NI-1-j).z;
-                    nu.n = nn+1+j;
+                    nu.n = last_n+1+j;
                     nu.type = type;
                     nu.r = rr;
-                    nu.parent = nn+j;
+                    nu.parent = last_n+j;
                     nu.seg_id = last_seg_id;
                     nu.nodeinseg_id = N0+j;
                     nu.nchild = (j==NI-1)?  0 : 1;
@@ -200,10 +207,10 @@ void Renderer_gl1::solveCurveRefineLast()
                     nu.x = loc_veci.at(NI-1-j).x;
                     nu.y = loc_veci.at(NI-1-j).y;
                     nu.z = loc_veci.at(NI-1-j).z;
-                    nu.n = 1+j;
+                    nu.n = last_n-N0 + 1+j;
                     nu.type = type;
                     nu.r = rr;
-                    nu.parent = (j==0)? -1 : j;
+                    nu.parent = (j==0)? -1 : (last_n-N0+j);
                     nu.seg_id = last_seg_id;
                     nu.nodeinseg_id = j;
                     nu.nchild = 1;
@@ -215,7 +222,8 @@ void Renderer_gl1::solveCurveRefineLast()
                {
                     int ind = i+NI;
                     primary_seg.row.at(ind).n = primary_seg.row.at(ind).n + NI;
-                    primary_seg.row.at(ind).parent = primary_seg.row.at(ind).parent + NI;
+                    primary_seg.row.at(ind).parent = (i==0)? (last_n-N0+NI-1):
+                         (primary_seg.row.at(ind).parent + NI);
                     primary_seg.row.at(ind).nodeinseg_id = primary_seg.row.at(ind).nodeinseg_id + NI;
                }
           }
@@ -230,22 +238,23 @@ void Renderer_gl1::solveCurveRefineLast()
                     nu.x = loc_veci.at(j).x;
                     nu.y = loc_veci.at(j).y;
                     nu.z = loc_veci.at(j).z;
-                    nu.n = 1+j;
+                    nu.n = last_n-N0 + 1+j;
                     nu.type = type;
                     nu.r = rr;
-                    nu.parent = (j==0)? -1 : j;
+                    nu.parent = (j==0)? -1 : (last_n-N0+j);
                     nu.seg_id = last_seg_id;
                     nu.nodeinseg_id = j;
                     nu.nchild = 1;
 
                     primary_seg.row.insert(primary_seg.row.begin()+j, nu);
                }
-               // update original primary_seg's info, e.g. parent, n, nodeinseg_id
+               // update original primary_seg's info, e.g. parent, n
                for(int i=0; i<N0; i++)
                {
                     int ind = i+NI;
                     primary_seg.row.at(ind).n = primary_seg.row.at(ind).n + NI;
-                    primary_seg.row.at(ind).parent = primary_seg.row.at(ind).parent + NI;
+                    primary_seg.row.at(ind).parent = (i==0)? (last_n-N0+NI-1):
+                         (primary_seg.row.at(ind).parent + NI);
                     primary_seg.row.at(ind).nodeinseg_id = primary_seg.row.at(ind).nodeinseg_id + NI;
                }
           }
@@ -402,7 +411,6 @@ void Renderer_gl1::solveCurveRefineLast()
           XYZ lpos=loc_vec0.at(N0-2);
           qDebug("Last pos in loc_vec0 after refining: (%d, %d, %d)", lpos.x, lpos.y, lpos.z);
 
-
           // temprarily delete for testing refine using pressing key "D"
           // V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
           // My4DImage* curImg = 0;
@@ -428,37 +436,6 @@ void Renderer_gl1::solveCurveRefineLast()
 }
 
 
-// press key "D" to apply curve refinement
-// this function has been disabled. It is used for testing purpose.
-void Renderer_gl1::applyCurveRefine()
-{
-     // update first curve
-     // V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-     // My4DImage* curImg = 0;
-     // if (w)
-     //      curImg = v3dr_getImage4d(_idep);
-
-     // // last_seg_id is a global value, it is the curve0 to be updated
-     // V_NeuronSWC& last_seg = curImg->tracedNeuron.seg[last_seg_id];
-     // for (int k=0; k<last_seg.row.size(); k++)
-     // {
-     //      last_seg.row.at(k).data[2] = loc_vec0.at(k).x;
-     //      last_seg.row.at(k).data[3] = loc_vec0.at(k).y;
-     //      last_seg.row.at(k).data[4] = loc_vec0.at(k).z;
-     // }
-
-     // // get the second curve seg id
-     // int seg_id = curImg->tracedNeuron.seg.size()-1;
-
-     // // delete the second curve
-     // if(seg_id!=last_seg_id && seg_id>=0)
-     // {
-     //      bool res = curImg->tracedNeuron.deleteSeg(seg_id);
-     //      if (res)  curImg->proj_trace_history_append();
-     // }
-
-	// curImg->update_3drenderer_neuron_view(w, this);
-}
 
 // Get perpendicular point Pb from P to a line determined by two points of P0 and P1
 // The computation algorithm is from (A Parametric Line):
@@ -690,20 +667,52 @@ void Renderer_gl1::solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ>
 
           // save the this last_seg_id and used in solveCurveRefineLast()
           // for testing refine
-          V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-          My4DImage* curImg = 0;
-          if (w)
-               curImg = v3dr_getImage4d(_idep);
+          // V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+          // My4DImage* curImg = 0;
+          // if (w)
+          //      curImg = v3dr_getImage4d(_idep);
 
-          last_seg_id = curImg->tracedNeuron.seg.size()-1;
+          //last_seg_id = curImg->tracedNeuron.seg.size()-1;
      }
 }
 
-// used in v3dr_glwidget.cpp for Qt::Key_A event
+// used in v3dr_glwidget.cpp for Qt::Key_D event
 bool Renderer_gl1::isCurveRefineMode()
 {
      if(selectMode == smCurveRefineLast)
           return true;
      else
           return false;
+}
+
+// press key "D" to apply curve refinement
+// this function has been disabled. It is used for testing purpose.
+void Renderer_gl1::applyCurveRefine()
+{
+     // update first curve
+     // V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+     // My4DImage* curImg = 0;
+     // if (w)
+     //      curImg = v3dr_getImage4d(_idep);
+
+     // // last_seg_id is a global value, it is the curve0 to be updated
+     // V_NeuronSWC& last_seg = curImg->tracedNeuron.seg[last_seg_id];
+     // for (int k=0; k<last_seg.row.size(); k++)
+     // {
+     //      last_seg.row.at(k).data[2] = loc_vec0.at(k).x;
+     //      last_seg.row.at(k).data[3] = loc_vec0.at(k).y;
+     //      last_seg.row.at(k).data[4] = loc_vec0.at(k).z;
+     // }
+
+     // // get the second curve seg id
+     // int seg_id = curImg->tracedNeuron.seg.size()-1;
+
+     // // delete the second curve
+     // if(seg_id!=last_seg_id && seg_id>=0)
+     // {
+     //      bool res = curImg->tracedNeuron.deleteSeg(seg_id);
+     //      if (res)  curImg->proj_trace_history_append();
+     // }
+
+	// curImg->update_3drenderer_neuron_view(w, this);
 }
