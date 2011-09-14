@@ -45,7 +45,7 @@ void NutateThread::run()
 {
     while(true) {
         if (paused) {
-            sleep(0.5);
+            msleep(500);
             continue;
         }
         // qDebug() << "nutation angle = " << currentAngle;
