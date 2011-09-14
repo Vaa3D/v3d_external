@@ -186,8 +186,6 @@ bool NaVolumeData::Writer::loadStacks()
     QTime stopwatch;
     stopwatch.start();
 
-    QList< QFuture<void> > loaderList;
-
     // Prepare to track progress of 3 file load operations
     m_data->stackLoadProgressValues.assign(3, 0);
     m_data->currentProgress = -1; // to make sure progress value changes on the next line
@@ -200,42 +198,60 @@ bool NaVolumeData::Writer::loadStacks()
             m_data, SLOT(setStackLoadProgress(int, int)));
     qDebug() << "NaVolumeData::Writer::loadStacks() starting originalStack.load()";
     // Pass stack pointer instead of stack reference to avoid problem with lack of QObject copy constructor.
-    QFuture<void> originalLoader = QtConcurrent::run(&originalStack, &LoadableStack::load);
-    loaderList.append(originalLoader);
 
     m_data->neuronMaskStack = new My4DImage();
     LoadableStack maskStack(m_data->neuronMaskStack, m_data->maskLabelFilePath, 1);
     connect(&maskStack, SIGNAL(progressValueChanged(int, int)),
             m_data, SLOT(setStackLoadProgress(int, int)));
     qDebug() << "NaVolumeData::Writer::loadStacks() starting maskStack.load()";
-    QFuture<void> maskLoader = QtConcurrent::run(&maskStack, &LoadableStack::load);
-    loaderList.append(maskLoader);
 
     My4DImage* initialReferenceStack = new My4DImage();
     LoadableStack referenceStack(initialReferenceStack, m_data->referenceStackFilePath, 2);
     connect(&referenceStack, SIGNAL(progressValueChanged(int, int)),
             m_data, SLOT(setStackLoadProgress(int, int)));
     qDebug() << "NaVolumeData::Writer::loadStacks() starting referenceStack.load()";
-    QFuture<void> referenceLoader = QtConcurrent::run(&referenceStack, &LoadableStack::load);
-    loaderList.append(referenceLoader);
 
-    while(1) {
-        SleepThread st;
-        st.msleep(1000);
-        int doneCount=0;
-        for (int i=0;i<loaderList.size();i++) {
-            QFuture<void> loader=loaderList.at(i);
-            if (loader.isFinished()) {
-                doneCount++;
+    // There are some bugs with multithreaded image loading, so make it an option.
+    bool bUseMultithreadedLoader = false;
+    if (bUseMultithreadedLoader)
+    {
+        // Load each file in a separate thread.  This assumes that loading code is reentrant...
+        QList< QFuture<void> > loaderList;
+
+        QFuture<void> originalLoader = QtConcurrent::run(&originalStack, &LoadableStack::load);
+        loaderList.append(originalLoader);
+
+        QFuture<void> maskLoader = QtConcurrent::run(&maskStack, &LoadableStack::load);
+        loaderList.append(maskLoader);
+
+        QFuture<void> referenceLoader = QtConcurrent::run(&referenceStack, &LoadableStack::load);
+        loaderList.append(referenceLoader);
+
+
+        while(1) {
+            SleepThread st;
+            st.msleep(1000);
+            int doneCount=0;
+            for (int i=0;i<loaderList.size();i++) {
+                QFuture<void> loader=loaderList.at(i);
+                if (loader.isFinished()) {
+                    doneCount++;
+                }
             }
+            int stillActive=loaderList.size()-doneCount;
+            if (stillActive==0) {
+                break;
+            } else {
+                qDebug() << "Waiting on " << stillActive << " loaders";
+            }
+            QCoreApplication::processEvents(); // let progress signals through
         }
-        int stillActive=loaderList.size()-doneCount;
-        if (stillActive==0) {
-            break;
-        } else {
-            qDebug() << "Waiting on " << stillActive << " loaders";
-        }
-        QCoreApplication::processEvents(); // let progress signals through
+    }
+    else {
+        // Non-threaded sequential loading
+        originalStack.load();
+        maskStack.load();
+        referenceStack.load();
     }
 
     qDebug() << "NaVolumeData::Writer::loadStacks() done loading all stacks in " << stopwatch.elapsed() / 1000.0 << " seconds";
