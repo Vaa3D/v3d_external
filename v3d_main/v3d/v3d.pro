@@ -265,6 +265,7 @@ INCLUDEPATH = $$unique(INCLUDEPATH)
 LIBS = $$unique(LIBS)
 message(CONFIG=$$CONFIG)
 
-SOURCES -= ../basic_c_fun/mg_image_lib.cpp
-SOURCES += ../neuron_annotator/utility/mg_image_lib_reentrant.cpp
+# aborted attempt to implement reentrant tiff image loading
+# SOURCES -= ../basic_c_fun/mg_image_lib.cpp
+# SOURCES += ../neuron_annotator/utility/mg_image_lib_reentrant.cpp
 
