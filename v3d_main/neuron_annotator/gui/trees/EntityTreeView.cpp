@@ -14,12 +14,11 @@ void EntityTreeView::keyPressEvent(QKeyEvent *event) {
     event->ignore();
 }
 
-void EntityTreeView::selectEntity(const Entity *entity)
+void EntityTreeView::selectEntity(const qint64 & entityId)
 {
-
     // Get the indexes
     EntityTreeModel *treeModel = static_cast<EntityTreeModel *>(model());
-    QModelIndex termIndex = treeModel->indexForId(*entity->id);
+    QModelIndex termIndex = treeModel->indexForId(entityId);
     QModelIndex beginIndex = treeModel->index(termIndex.row(), 0, termIndex.parent());
     QModelIndex endIndex = treeModel->index(termIndex.row(), treeModel->columnCount() - 1, termIndex.parent());
 

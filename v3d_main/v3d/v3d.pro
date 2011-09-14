@@ -120,6 +120,7 @@ HEADERS += \
     ../neuron_annotator/entity_model/EntityData.h \
     ../neuron_annotator/entity_model/Entity.h \
     ../neuron_annotator/entity_model/Ontology.h \
+    ../neuron_annotator/entity_model/OntologyAnnotation.h \
     ../neuron_annotator/entity_model/AnnotatedBranch.h \
     ../neuron_annotator/data_model/Texture2dColors.h \
     ../neuron_annotator/data_model/PrivateDataColorModel.h \
@@ -211,6 +212,7 @@ SOURCES += \
     ../neuron_annotator/entity_model/EntityData.cpp \
     ../neuron_annotator/entity_model/Entity.cpp \
     ../neuron_annotator/entity_model/Ontology.cpp \
+    ../neuron_annotator/entity_model/OntologyAnnotation.cpp \
     ../neuron_annotator/entity_model/AnnotatedBranch.cpp \
     ../neuron_annotator/data_model/Texture2dColors.cpp \
     ../neuron_annotator/data_model/PrivateDataColorModel.cpp \

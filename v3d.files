@@ -2454,5 +2454,7 @@ v3d_main/neuron_annotator/gui/trees/AnnotatedBranchTreeView.cpp
 v3d_main/neuron_annotator/gui/trees/EntityTreeView.h
 v3d_main/neuron_annotator/gui/trees/EntityTreeView.cpp
 v3d_main/neuron_annotator/resources.qrc
+v3d_main/neuron_annotator/entity_model/OntologyAnnotation.h
+v3d_main/neuron_annotator/entity_model/OntologyAnnotation.cpp
 v3d_main/v3d/v3d_essential.pro
 v3d_main/neuron_annotator/utility/mg_image_lib_reentrant.cpp

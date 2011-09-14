@@ -99,14 +99,21 @@ int EntityTreeModel::rowCount(const QModelIndex &parent) const
     return parentItem->childCount();
 }
 
+QModelIndex EntityTreeModel::indexForId(const qint64 id) const
+{
+    return termIndexMap.value(id, QModelIndex());
+}
+
 EntityTreeItem* EntityTreeModel::node(const QModelIndex &index) const
 {
     EntityTreeItem *item = static_cast<EntityTreeItem*>(index.internalPointer());
     return item;
 }
 
-QModelIndex EntityTreeModel::indexForId(const qint64 id) const
+EntityTreeItem* EntityTreeModel::node(const qint64 id) const
 {
-    return termIndexMap.value(id, QModelIndex());
+    QModelIndex index = indexForId(id);
+    EntityTreeItem *item = static_cast<EntityTreeItem*>(index.internalPointer());
+    return item;
 }
 

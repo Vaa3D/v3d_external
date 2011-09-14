@@ -6,8 +6,10 @@
 #include "NaMainWindow.h"
 #include "../entity_model/Entity.h"
 #include "../entity_model/Ontology.h"
+#include "../entity_model/OntologyAnnotation.h"
 #include "../../webservice/impl/ConsoleObserverServiceImpl.h"
 #include "../utility/ConsoleObserver.h"
+#include "../utility/DataThread.h"
 #include <QModelIndex>
 #include <QtGui>
 
@@ -26,7 +28,10 @@
 #define BUTTON_DISCONNECT "Disconnect"
 #define BUTTON_DISCONNECTING "Disconnecting..."
 
-AnnotationWidget::AnnotationWidget(QWidget *parent) : QFrame(parent), ui(new Ui::AnnotationWidget),
+AnnotationWidget::AnnotationWidget(QWidget *parent) :
+    QFrame(parent),
+    ui(new Ui::AnnotationWidget),
+    mutex(QMutex::Recursive),
     ontology(0),
     ontologyTreeModel(0),
     annotatedBranch(0),
@@ -39,15 +44,19 @@ AnnotationWidget::AnnotationWidget(QWidget *parent) : QFrame(parent), ui(new Ui:
     ui->setupUi(this);
     connect(ui->ontologyTreeView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(ontologyTreeDoubleClicked(QModelIndex)));
     connect(ui->annotatedBranchTreeView, SIGNAL(clicked(QModelIndex)), this, SLOT(annotatedBranchTreeClicked(QModelIndex)));
+    connect(ui->annotatedBranchTreeView, SIGNAL(removeAnnotation(const Entity*)), this, SLOT(removeAnnotation(const Entity*)));
     showDisconnected();
 }
 
 AnnotationWidget::~AnnotationWidget()
 {
+    closeOntology();
+    closeAnnotatedBranch();
     if (ui != 0) delete ui;
     if (consoleObserver != 0) delete consoleObserver;
-    if (ontology != 0) delete this->ontology;
     consoleObserverService->stopServer(); // will delete itself later
+    createAnnotationThread->disregard(); // will delete itself later
+    removeAnnotationThread->disregard(); // will delete itself later
 }
 
 void AnnotationWidget::setMainWindow(NaMainWindow *mainWindow)
@@ -55,13 +64,28 @@ void AnnotationWidget::setMainWindow(NaMainWindow *mainWindow)
     naMainWindow = mainWindow;
 }
 
-void AnnotationWidget::setOntology(Ontology *ontology)
+void AnnotationWidget::closeOntology()
 {
-    // Clean up memory from previous ontology if necessary
-    if (this->ontology != 0) {
+    QMutexLocker locker(&mutex);
+
+    if (this->ontology != 0)
+    {
         delete this->ontology;
-        delete ui->ontologyTreeView->model();
+        this->ontology = 0;
     }
+
+    if (ui->ontologyTreeView->model() != 0)
+    {
+        delete ui->ontologyTreeView->model();
+        ui->ontologyTreeView->setModel(0);
+    }
+}
+
+void AnnotationWidget::openOntology(Ontology *ontology)
+{
+    QMutexLocker locker(&mutex);
+
+    closeOntology();
     this->ontology = ontology;
 
     if (ontology != NULL && ontology->root() != NULL && ontology->root()->name != NULL)
@@ -84,50 +108,78 @@ void AnnotationWidget::setOntology(Ontology *ontology)
     else
     {
         ui->ontologyTreeTitle->setText("Error loading ontology");
-        ui->ontologyTreeView->setModel(0);
     }
 }
 
-void AnnotationWidget::openAnnotatedBranch(AnnotatedBranch *annotatedBranch)
+void AnnotationWidget::closeAnnotatedBranch()
 {
+    QMutexLocker locker(&mutex);
+
     if (this->annotatedBranch != 0)
     {
         delete this->annotatedBranch;
-        delete ui->annotatedBranchTreeView->model();
+        this->annotatedBranch = 0;
     }
 
-    this->annotatedBranch = annotatedBranch;
-    this->selectedEntity = 0;
-
-    if (annotatedBranch != NULL && annotatedBranch->entity() != NULL)
+    if (ui->annotatedBranchTreeView->model() != 0)
     {
-        annotatedBranchTreeModel = new AnnotatedBranchTreeModel(annotatedBranch);
-        ui->annotatedBranchTreeView->setModel(annotatedBranchTreeModel);
-        ui->annotatedBranchTreeView->expandAll();
-        ui->annotatedBranchTreeView->resizeColumnToContents(0);
-
-        naMainWindow->openMulticolorImageStack(annotatedBranch->getFilePath());
-    }
-    else {
-        ui->annotatedBranchTreeTitle->setText("Error loading annotatedBranch");
+        delete ui->annotatedBranchTreeView->model();
         ui->annotatedBranchTreeView->setModel(0);
     }
+
+    this->selectedEntity = 0;
 }
 
-void AnnotationWidget::updateAnnotations(long entityId, AnnotationList *annotations)
+void AnnotationWidget::openAnnotatedBranch(AnnotatedBranch *annotatedBranch, bool openStack)
 {
-    if (this->annotatedBranch == 0) return;
+    QMutexLocker locker(&mutex);
 
-    annotatedBranch->updateAnnotations(entityId, annotations);
+    if (annotatedBranch == 0 || annotatedBranch->entity() == NULL)
+    {
+        ui->annotatedBranchTreeTitle->setText("Error loading annotations");
+        closeAnnotatedBranch();
+        return;
+    }
 
-    if (annotatedBranchTreeModel != 0)
-        delete annotatedBranchTreeModel;
+    bool reload = (this->annotatedBranch != 0 && *annotatedBranch->entity()->id == *this->annotatedBranch->entity()->id);
+    qint64 selectedEntityId = selectedEntity==0?-1:*selectedEntity->id;
 
-    // TODO: this can be made more efficient in the future, for now let's just recreate it from scratch
+    // Don't delete things if we're just reopening the same branch
+    if (annotatedBranch != this->annotatedBranch)
+    {
+        closeAnnotatedBranch();
+        this->annotatedBranch = annotatedBranch;
+    }
+
     annotatedBranchTreeModel = new AnnotatedBranchTreeModel(annotatedBranch);
     ui->annotatedBranchTreeView->setModel(annotatedBranchTreeModel);
     ui->annotatedBranchTreeView->expandAll();
     ui->annotatedBranchTreeView->resizeColumnToContents(0);
+    if (openStack) naMainWindow->openMulticolorImageStack(annotatedBranch->getFilePath());
+
+    // Reselect the entity that was previously selected
+    if (reload && selectedEntityId >= 0)
+        ui->annotatedBranchTreeView->selectEntity(selectedEntityId);
+}
+
+void AnnotationWidget::updateAnnotations(long entityId, AnnotationList *annotations)
+{
+    QMutexLocker locker(&mutex);
+
+    if (this->annotatedBranch == 0) return;
+
+    // The next step could cause our currently selected annotation to be deleted, so lets make sure to deselect it.
+    QListIterator<Entity *> i(*annotatedBranch->getAnnotations(entityId));
+    while (i.hasNext())
+    {
+        Entity *annot = i.next();
+        if (selectedEntity == annot) selectedEntity = 0;
+    }
+
+    annotatedBranch->updateAnnotations(entityId, annotations);
+
+    // TODO: this can be made more efficient in the future, for now let's just recreate it from scratch
+    openAnnotatedBranch(annotatedBranch, false);
 }
 
 void AnnotationWidget::communicationError(const QString & errorMessage)
@@ -144,16 +196,18 @@ void AnnotationWidget::showErrorDialog(const QString & text)
 
 void AnnotationWidget::showDisconnected()
 {
+    QMutexLocker locker(&mutex);
+
     // Clear the ontology
+    ui->ontologyTreeView->setModel(NULL);
     if (this->ontology != 0) delete this->ontology;
     this->ontology = 0;
-    ui->ontologyTreeView->setModel(NULL);
     ui->ontologyTreeTitle->setText(LABEL_NONE);
 
     // Clear the annotations
+    ui->annotatedBranchTreeView->setModel(NULL);
     if (this->annotatedBranch != 0) delete this->annotatedBranch;
     this->annotatedBranch = 0;
-    ui->annotatedBranchTreeView->setModel(NULL);
 
     // Reset the console link
     ui->consoleLinkLabel->setText(LABEL_CONSOLE_DICONNECTED);
@@ -165,12 +219,15 @@ void AnnotationWidget::showDisconnected()
 
 void AnnotationWidget::consoleConnect() {
 
+    QMutexLocker locker(&mutex);
+
     ui->consoleLinkButton->setText(BUTTON_CONNECTING);
     ui->consoleLinkButton->setEnabled(false);
 
     consoleObserver = new ConsoleObserver(naMainWindow);
     connect(consoleObserver, SIGNAL(openAnnotatedBranch(AnnotatedBranch*)), this, SLOT(openAnnotatedBranch(AnnotatedBranch*)));
-    connect(consoleObserver, SIGNAL(openOntology(Ontology*)), this, SLOT(setOntology(Ontology*)));
+    connect(consoleObserver, SIGNAL(openOntology(Ontology*)), this, SLOT(openOntology(Ontology*)));
+    connect(consoleObserver, SIGNAL(updateAnnotations(long,AnnotationList*)), this, SLOT(updateAnnotations(long,AnnotationList*)));
     connect(consoleObserver, SIGNAL(communicationError(const QString&)), this, SLOT(communicationError(const QString&)));
 
     consoleObserverService = new obs::ConsoleObserverServiceImpl();
@@ -230,6 +287,8 @@ void AnnotationWidget::consoleConnect() {
 
 void AnnotationWidget::consoleDisconnect()
 {
+    QMutexLocker locker(&mutex);
+
     if (consoleObserverService == NULL) return;
 
     ui->consoleLinkButton->setText(BUTTON_DISCONNECTING);
@@ -244,7 +303,9 @@ void AnnotationWidget::ontologyTreeDoubleClicked(const QModelIndex & index)
 {
     EntityTreeItem *item = ontologyTreeModel->node(index);
     if (item->entity() != 0)
-        annotateSelectedEntityWithOntologyTerm(item->entity());
+    {
+        annotateSelectedEntityWithOntologyTerm(item->entity(), item->parent()==0?0:item->parent()->entity());
+    }
 }
 
 void AnnotationWidget::annotatedBranchTreeClicked(const QModelIndex & index)
@@ -296,8 +357,9 @@ bool AnnotationWidget::eventFilter(QObject* watched_object, QEvent* event)
                 if (keyBind.matches(keySeq) == QKeySequence::ExactMatch)
                 {
                     Entity *termEntity = ontology->getTermById(i.value());
-                    ui->ontologyTreeView->selectEntity(termEntity);
-                    annotateSelectedEntityWithOntologyTerm(termEntity);
+                    Entity *parentEntity = ontology->getParentById(i.value());
+                    ui->ontologyTreeView->selectEntity(*termEntity->id);
+                    annotateSelectedEntityWithOntologyTerm(termEntity, parentEntity);
                     filtered = true;
                 }
                 ++i;
@@ -307,26 +369,150 @@ bool AnnotationWidget::eventFilter(QObject* watched_object, QEvent* event)
     return filtered;
 }
 
-void AnnotationWidget::annotateSelectedEntityWithOntologyTerm(const Entity *ontologyTerm)
+// This reimplements the Console's AnnotateAction
+void AnnotationWidget::annotateSelectedEntityWithOntologyTerm(const Entity *term, const Entity *parentTerm)
 {
-    QString termType = ontologyTerm->getValueByAttributeName("Ontology Term Type");
+    QMutexLocker locker(&mutex);
+
+    QString termType = term->getValueByAttributeName("Ontology Term Type");
 
     if (selectedEntity == NULL) return; // Nothing to annotate
+    if (termType == "Category" || termType == "Enum") return; // Cannot use these types to annotate
+    if (*selectedEntity->entityType == "Annotation") return; // Cannot annotate annotations
 
-    qDebug() << "Annotate"<<(selectedEntity==0?"":*selectedEntity->name)<<"with"<<(ontologyTerm == NULL ? "NULL" : *ontologyTerm->name) << "id="<< *ontologyTerm->id<< "type="<<termType;
+    qDebug() << "Annotate"<<(selectedEntity==0?"":*selectedEntity->name)<<"with"<<(term == NULL ? "NULL" : *term->name) << "id="<< *term->id<< "type="<<termType;
 
-    // TODO: get user input for complex term types
-    if (termType == "Text") {
+    // Get input value, if required
+    QString *value = 0;
 
+    if (termType == "Interval")
+    {
+        bool ok;
+        QString text = QInputDialog::getText(this, "Annotating with interval", "Value:", QLineEdit::Normal, "", &ok);
+
+        if (ok && !text.isEmpty())
+        {
+            ok = false;
+            double val = text.toDouble(&ok);
+            double lowerBound = term->getValueByAttributeName("Ontology Term Type Interval Lower Bound").toDouble(&ok);
+            double upperBound = term->getValueByAttributeName("Ontology Term Type Interval Upper Bound").toDouble(&ok);
+
+            if (!ok || val < lowerBound || val > upperBound) {
+                QString msg = QString("Input must be in range: [%1,%2]").arg(lowerBound).arg(upperBound);
+                showErrorDialog(msg);
+                return;
+            }
+
+            value = new QString(text);
+        }
+    }
+    else if (termType == "Text")
+    {
+        bool ok;
+        QString text = QInputDialog::getText(this, "Annotating with text", "Value:", QLineEdit::Normal, "", &ok);
+
+        if (ok && !text.isEmpty())
+        {
+            value = new QString(text);
+        }
     }
 
-    // TODO: create the annotation
+    OntologyAnnotation *annotation = new OntologyAnnotation();
 
+    annotation->targetEntityId = new qint64(*selectedEntity->id);
+    annotation->keyEntityId = new qint64(*term->id);
+    annotation->valueEntityId = 0;
+    annotation->keyString = new QString(*term->name);
+    annotation->valueString = value;
+
+    if (termType == "EnumItem") {
+        if (parentTerm == 0)
+        {
+            qDebug() << "WARNING: Enum element has no parent! Aborting annotation.";
+            return;
+        }
+        annotation->keyEntityId = new qint64(*parentTerm->id);
+        annotation->valueEntityId = new qint64(*term->id);
+        annotation->keyString = new QString(*parentTerm->name);
+        annotation->valueString = new QString(*term->name);
+    }
+
+    if (createAnnotationThread != NULL) createAnnotationThread->disregard();
+    createAnnotationThread = new CreateAnnotationThread(annotation);
+
+    connect(createAnnotationThread, SIGNAL(gotResults(const void *)),
+            this, SLOT(createAnnotationResults(const void *)));
+    connect(createAnnotationThread, SIGNAL(gotError(const QString &)),
+            this, SLOT(createAnnotationError(const QString &)));
+    createAnnotationThread->start(QThread::NormalPriority);
+}
+
+void AnnotationWidget::createAnnotationResults(const void *results)
+{
+    QMutexLocker locker(&mutex);
+
+    // Succeeded but we can ignore this. The console will fire an annotationsChanged event so that we update the UI.
+    delete createAnnotationThread;
+    createAnnotationThread = NULL;
+}
+
+void AnnotationWidget::createAnnotationError(const QString &error)
+{
+    QMutexLocker locker(&mutex);
+
+    QString msg = QString("Annotation error: %1").arg(error);
+    showErrorDialog(msg);
+    delete createAnnotationThread;
+    createAnnotationThread = NULL;
+}
+
+// This reimplements the Console's EntityTagCloudPanel.deleteTag
+void AnnotationWidget::removeAnnotation(const Entity *annotation)
+{
+    QMutexLocker locker(&mutex);
+
+    if (annotation == NULL) return; // Nothing to annotate
+    if (*annotation->entityType != "Annotation") return; // Cannot remove non-annotations
+
+    qDebug() << "Removing Annotation"<<*annotation->name;
+
+    if (removeAnnotationThread != NULL) removeAnnotationThread->disregard();
+    removeAnnotationThread = new RemoveAnnotationThread(*annotation->id);
+
+    connect(removeAnnotationThread, SIGNAL(gotResults(const void *)),
+            this, SLOT(removeAnnotationResults(const void *)));
+    connect(removeAnnotationThread, SIGNAL(gotError(const QString &)),
+            this, SLOT(removeAnnotationError(const QString &)));
+    removeAnnotationThread->start(QThread::NormalPriority);
+}
+
+void AnnotationWidget::removeAnnotationResults(const void *results)
+{
+    QMutexLocker locker(&mutex);
+
+    // Succeeded but we can ignore this. The console will fire an annotationsChanged event so that we update the UI.
+    delete removeAnnotationThread;
+    removeAnnotationThread = NULL;
+}
+
+void AnnotationWidget::removeAnnotationError(const QString &error)
+{
+    QMutexLocker locker(&mutex);
+
+    QString msg = QString("Annotation error: %1").arg(error);
+    showErrorDialog(msg);
+    delete removeAnnotationThread;
+    removeAnnotationThread = NULL;
 }
 
 void AnnotationWidget::selectEntity(const Entity *entity)
 {
-    ui->annotatedBranchTreeView->selectEntity(entity);
+    QMutexLocker locker(&mutex);
+
     selectedEntity = entity;
+
+    if (entity!=0)
+        ui->annotatedBranchTreeView->selectEntity(*entity->id);
+
     emit entitySelected(entity); // This assumes that clients who call selectEntity are smart enough to ignore the subsequent entitySelected signal
 }

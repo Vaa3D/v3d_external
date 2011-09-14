@@ -43,12 +43,12 @@ QString AnnotatedBranch::getFilePath() const
     return QString();
 }
 
-AnnotationList* AnnotatedBranch::getAnnotations(const Entity *entity) const
+AnnotationList* AnnotatedBranch::getAnnotations(const qint64 & entityId) const
 {
-    return _annotationMap->value(*entity->id);
+    return _annotationMap->value(entityId);
 }
 
-void AnnotatedBranch::updateAnnotations(const qint64 entityId, AnnotationList* annotations)
+void AnnotatedBranch::updateAnnotations(const qint64 & entityId, AnnotationList* annotations)
 {
     if (_annotationMap->contains(entityId))
     {

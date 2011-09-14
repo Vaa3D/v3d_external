@@ -15,9 +15,10 @@ private:
     Entity *_root;
     QMap<QKeySequence, qint64> *_keyBindMap;
     QHash<qint64, Entity*> *_termMap;
+    QHash<qint64, Entity*> *_parentMap;
 
 private:
-    void populateTermMap(Entity *entity);
+    void populateMaps(Entity *entity);
 
 public:
     Ontology(Entity *root, QMap<QKeySequence, qint64> *keyBindMap);
@@ -26,6 +27,7 @@ public:
     inline Entity* root() const { return _root; }
     inline QHash<qint64, Entity*> *termMap() const { return _termMap; }
     inline Entity* getTermById(const qint64 & id) const { return _termMap->value(id); }
+    inline Entity* getParentById(const qint64 & id) const { return _parentMap->value(id); }
 };
 
 #endif // ONTOLOGY_H

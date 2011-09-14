@@ -1,6 +1,7 @@
 #include "DataThread.h"
 #include "../entity_model/Entity.h"
 #include "../entity_model/Ontology.h"
+#include "../entity_model/OntologyAnnotation.h"
 #include "../../webservice/impl/EntityAdapter.h"
 #include <QMap>
 
@@ -9,6 +10,12 @@ DataThread::DataThread(QObject *parent) :
     results(0),
     errorMessage(0)
 {
+}
+
+DataThread::~DataThread()
+{
+    proxy.destroy();
+    if (errorMessage != 0) delete errorMessage;
 }
 
 void DataThread::run()
@@ -23,11 +30,12 @@ void DataThread::run()
     }
 }
 
-DataThread::~DataThread()
+void DataThread::disregard()
 {
-    proxy.destroy();
-    if (errorMessage != 0) delete errorMessage;
+    disconnect(this, 0, 0, 0);
+    connect(this, SIGNAL(finished()), this, SLOT(deleteLater()));
 }
+
 
 // ===========================================================
 // Get Current Ontology Tree
@@ -86,7 +94,6 @@ GetAnnotatedBranchThread::GetAnnotatedBranchThread(long entityId, QObject *paren
 void GetAnnotatedBranchThread::fetchAnnotations(Entity *entity)
 {
     if (entity == NULL) return;
-    qDebug() << "Fetching annotations for entity" << *entity->name;
 
     cds::fw__getAnnotationsForEntityResponse response;
     if (proxy.getAnnotationsForEntity(*entity->id, response) == SOAP_OK)
@@ -174,3 +181,61 @@ void GetEntityAnnotationsThread::fetchData()
         errorMessage = new QString(proxy.soap_fault_string());
     }
 }
+
+// ===========================================================
+// Create Annotation
+// ===========================================================
+
+CreateAnnotationThread::CreateAnnotationThread(OntologyAnnotation *annotation, QObject *parent) :
+    DataThread(parent), annotation(annotation)
+{
+}
+
+CreateAnnotationThread::~CreateAnnotationThread()
+{
+    if (annotation!=0) delete annotation;
+}
+
+void CreateAnnotationThread::fetchData()
+{
+    cds::fw__ontologyAnnotation *fwAnnotation = EntityAdapter::convertAnnotation(annotation);
+    cds::fw__createAnnotationResponse response;
+    if (proxy.createAnnotation(fwAnnotation, response) == SOAP_OK)
+    {
+        // Assume success
+    }
+    else
+    {
+        errorMessage = new QString(proxy.soap_fault_string());
+    }
+
+    delete fwAnnotation;
+}
+
+qint64* CreateAnnotationThread::getTargetEntityId() const
+{
+    return annotation->targetEntityId;
+}
+
+// ===========================================================
+// Remove Annotation
+// ===========================================================
+
+RemoveAnnotationThread::RemoveAnnotationThread(qint64 annotationId, QObject *parent) :
+    DataThread(parent), annotationId(annotationId)
+{
+}
+
+void RemoveAnnotationThread::fetchData()
+{
+    cds::fw__removeAnnotationResponse response;
+    if (proxy.removeAnnotation(annotationId, response) == SOAP_OK)
+    {
+        // Assume success
+    }
+    else
+    {
+        errorMessage = new QString(proxy.soap_fault_string());
+    }
+}
+

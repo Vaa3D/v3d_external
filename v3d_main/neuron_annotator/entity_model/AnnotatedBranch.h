@@ -17,7 +17,8 @@ public:
     AnnotatedBranch(Entity *entity, QHash<qint64, AnnotationList*> *annotationMap);
     ~AnnotatedBranch(); // Recursively deletes all AnnotatedBranch data including entities and annotations
     AnnotationList* getAnnotations(const Entity *entity) const;
-    void updateAnnotations(const qint64 entityId, AnnotationList* annotations);
+    AnnotationList* getAnnotations(const qint64 & entityId) const;
+    void updateAnnotations(const qint64 & entityId, AnnotationList* annotations);
     QString getFilePath() const;
     QString name() const;
     inline Entity *entity() const { return _entity; }

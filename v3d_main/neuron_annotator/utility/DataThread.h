@@ -7,17 +7,27 @@
 #include <QThread>
 #include <QHash>
 
+class OntologyAnnotation;
+
 class DataThread : public QThread
 {
     Q_OBJECT
 
 public:
     explicit DataThread(QObject *parent = 0);
-    void run();
     ~DataThread();
+    void run();
+    // Let the thread continue running (since we have no way to interrupt it)
+    // but disregard all subsequent signals, and have it clean up its own memory
+    // when it's done.
+    void disregard();
 
 signals:
+    // The caller must listen for this signal and take responsibility for the
+    // memory management of the parameter object (results).
     void gotResults(const void *results);
+    // The caller must listen for this signal in order to be notified when the
+    // thread finishes with an error condition.
     void gotError(const QString & message);
 
 protected:
@@ -88,5 +98,40 @@ public:
 private:
     long entityId;
 };
+
+// ===========================================================
+// Create Annotation
+// ===========================================================
+
+class CreateAnnotationThread : public DataThread
+{
+    Q_OBJECT
+
+public:
+    explicit CreateAnnotationThread(OntologyAnnotation *annotation, QObject *parent = 0);
+    ~CreateAnnotationThread();
+    void fetchData();
+    qint64* getTargetEntityId() const;
+
+private:
+    OntologyAnnotation *annotation;
+};
+
+// ===========================================================
+// Remove Annotation
+// ===========================================================
+
+class RemoveAnnotationThread : public DataThread
+{
+    Q_OBJECT
+
+public:
+    explicit RemoveAnnotationThread(qint64 annotationId, QObject *parent = 0);
+    void fetchData();
+
+private:
+    qint64 annotationId;
+};
+
 
 #endif // DATATHREAD_H

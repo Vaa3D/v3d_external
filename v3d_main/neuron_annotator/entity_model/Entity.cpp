@@ -8,18 +8,13 @@ Entity::Entity() : id(0), name(0), user(0), entityStatus(0), entityType(0)
 
 Entity::~Entity()
 {
-//    qDebug() << "delete entity "<<id<<name;
     if (id != 0) delete id;
     if (name != 0) delete name;
     if (user != 0) delete user;
     if (entityStatus != 0) delete entityStatus;
     if (entityType != 0) delete entityType;
 
-    QSet<EntityData *>::const_iterator i;
-    for (i = entityDataSet.begin(); i != entityDataSet.end(); ++i)
-    {
-        delete *i;
-    }
+    qDeleteAll(entityDataSet);
 }
 
 bool entityLessThan(const EntityData *e1, const EntityData *e2)
@@ -39,7 +34,7 @@ bool entityLessThan(const EntityData *e1, const EntityData *e2)
     return *e1->orderIndex < *e2->orderIndex;
 }
 
-QList<EntityData *> Entity::getOrderedEntityData()
+QList<EntityData *> Entity::getOrderedEntityData() const
 {
     QList<EntityData *> list = QList<EntityData *>::fromSet(entityDataSet);
     qSort(list.begin(), list.end(), entityLessThan);
@@ -67,12 +62,12 @@ const QString& Entity::getValueByAttributeName(const QString & attrName) const
     return *ed->value;
 }
 
-void Entity::dumpEntity()
+void Entity::dumpEntity() const
 {
     dumpEntity(0);
 }
 
-void Entity::dumpEntity(int level)
+void Entity::dumpEntity(int level) const
 {
     std::string ind = std::string(level*4, ' ');
     const char * indent = ind.c_str();

@@ -2,6 +2,7 @@
 #define ENTITYADAPTER_H
 
 #include "../../neuron_annotator/entity_model/Entity.h"
+#include "../../neuron_annotator/entity_model/OntologyAnnotation.h"
 #include "../console/cdsStub.h"
 #include <QHash>
 
@@ -17,9 +18,11 @@ private:
 
 public:
     static EntityAdapter &get(); // Get the singleton
-    static Entity* convert(cds::fw__entity *entity);
+    static Entity* convert(cds::fw__entity *fwEntity);
     static QList<Entity *>* convert(cds::fw__entityArray *array);
     static QMap<QKeySequence, qint64>* convert(cds::fw__ontologyKeyBindings *keyBindings);
+    static OntologyAnnotation* convertAnnotation(cds::fw__ontologyAnnotation *fwAnnotation);
+    static cds::fw__ontologyAnnotation* convertAnnotation(OntologyAnnotation* annotation);
 
 };
 

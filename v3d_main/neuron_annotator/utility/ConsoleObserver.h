@@ -2,6 +2,7 @@
 #define CONSOLEOBSERVER_H
 
 #include <QtCore>
+#include <QMutex>
 #include "../entity_model/AnnotatedBranch.h"
 
 class DataThread;
@@ -55,11 +56,20 @@ private slots:
 
 private:
     NaMainWindow *mainWindow;
+
+    // Internal worker threads for loading data
     DataThread *loadOntologyThread;
     DataThread *entitySelectedThread;
     DataThread *entityViewRequestedThread;
     DataThread *annotatedBranchViewRequestedThread;
     DataThread *annotationsChangedThread;
+
+    // Synchronize access to the worker threads
+    QMutex loadOntologyMutex;
+    QMutex entitySelectedMutex;
+    QMutex entityViewRequestedMutex;
+    QMutex annotatedBranchViewRequestedMutex;
+    QMutex annotationsChangedMutex;
 };
 
 #endif // CONSOLEOBSERVER_H

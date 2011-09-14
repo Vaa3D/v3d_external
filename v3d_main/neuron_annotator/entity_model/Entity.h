@@ -19,11 +19,11 @@ public:
 public:
     Entity();
     ~Entity(); // Recursively deletes all ancestors in the entity tree
-    QList<EntityData *> getOrderedEntityData();
+    QList<EntityData *> getOrderedEntityData() const;
     EntityData* getEntityDataByAttributeName(const QString & attrName) const;
     const QString& getValueByAttributeName(const QString & attrName) const;
-    void dumpEntity();
-    void dumpEntity(int level);
+    void dumpEntity() const;
+    void dumpEntity(int level) const;
 };
 
 

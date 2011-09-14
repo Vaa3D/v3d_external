@@ -25,8 +25,9 @@ public:
     virtual QModelIndex parent(const QModelIndex &index) const;
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
     virtual int columnCount(const QModelIndex &parent = QModelIndex()) const;
-    virtual EntityTreeItem* node(const QModelIndex &index) const;
     virtual QModelIndex indexForId(const qint64) const;
+    virtual EntityTreeItem* node(const QModelIndex &index) const;
+    virtual EntityTreeItem* node(const qint64 id) const;
 
 protected:
     EntityTreeItem *rootItem;

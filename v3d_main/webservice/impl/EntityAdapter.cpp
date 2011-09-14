@@ -175,3 +175,30 @@ QMap<QKeySequence, qint64>* EntityAdapter::convert(cds::fw__ontologyKeyBindings 
     }
     return map;
 }
+
+OntologyAnnotation* EntityAdapter::convertAnnotation(cds::fw__ontologyAnnotation *fwAnnotation)
+{
+    OntologyAnnotation *annotation = new OntologyAnnotation;
+    if (fwAnnotation->sessionId != NULL) annotation->sessionId = new qint64(*fwAnnotation->sessionId);
+    if (fwAnnotation->targetEntityId != NULL) annotation->targetEntityId = new qint64(*fwAnnotation->targetEntityId);
+    if (fwAnnotation->keyEntityId != NULL) annotation->keyEntityId = new qint64(*fwAnnotation->keyEntityId);
+    if (fwAnnotation->keyString != NULL) annotation->keyString = new QString(fwAnnotation->keyString->c_str());
+    if (fwAnnotation->valueEntityId != NULL) annotation->valueEntityId = new qint64(*fwAnnotation->valueEntityId);
+    if (fwAnnotation->valueString != NULL) annotation->valueString = new QString(fwAnnotation->valueString->c_str());
+    return annotation;
+}
+
+cds::fw__ontologyAnnotation* EntityAdapter::convertAnnotation(OntologyAnnotation* annotation)
+{
+    cds::fw__ontologyAnnotation *fwAnnotation = new cds::fw__ontologyAnnotation;
+    if (annotation->sessionId != NULL) fwAnnotation->sessionId = new qint64(*annotation->sessionId);
+    if (annotation->targetEntityId != NULL) fwAnnotation->targetEntityId = new qint64(*annotation->targetEntityId);
+    if (annotation->keyEntityId != NULL) fwAnnotation->keyEntityId = new qint64(*annotation->keyEntityId);
+    if (annotation->keyString != NULL) fwAnnotation->keyString = new std::string(annotation->keyString->toStdString());
+    if (annotation->valueEntityId != NULL) fwAnnotation->valueEntityId = new qint64(*annotation->valueEntityId);
+    if (annotation->valueString != NULL) fwAnnotation->valueString = new std::string(annotation->valueString->toStdString());
+    return fwAnnotation;
+}
+
+
+

@@ -37,7 +37,6 @@ QVariant getOntologyIcon(Entity *entity)
 QVariant getIcon(Entity *entity)
 {
     QString type = *entity->entityType;
-    qDebug() << type;
 
     if (type=="Folder") {
         return QIcon(":/neuron_annotator/resources/folder.png");
