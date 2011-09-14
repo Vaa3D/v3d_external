@@ -315,7 +315,7 @@ bool ireconstructing(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>
 // funcs
 QStringList ImageFusionPlugin::funclist() const
 {
-    return QStringList() << "ifusion";
+    return QStringList() << "iblender"<<"inormalizer";
 }
 
 bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output, V3DPluginCallback2 & v3d, QWidget * parent)
