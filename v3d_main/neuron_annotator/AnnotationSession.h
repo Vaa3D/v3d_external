@@ -6,6 +6,7 @@
 #include "v3d_core.h"
 #include "MultiColorImageStackNode.h"
 #include "NeuronAnnotatorResultNode.h"
+#include "data_model/NeuronFragmentData.h"
 #include "data_model/GalleryMipImages.h"
 #include "data_model/NeuronSelectionModel.h"
 #include "data_model/MipMergedData.h"
@@ -58,6 +59,7 @@ public:
     const NaVolumeData& getVolumeData() const {return volumeData;}
     const NeuronSelectionModel& getNeuronSelectionModel() const {return neuronSelectionModel;}
     const DataColorModel& getDataColorModel() const {return dataColorModel;}
+    const NeuronFragmentData& getNeuronFragmentData() const {return neuronFragmentData;}
     const MipFragmentData& getMipFragmentData() const {return mipFragmentData;}
     const MipFragmentColors& getMipFragmentColors() const {return mipFragmentColors;}
     const GalleryMipImages& getGalleryMipImages() const {return galleryMipImages;}
@@ -89,6 +91,7 @@ private:
     NaVolumeData volumeData;
     NeuronSelectionModel neuronSelectionModel;
     DataColorModel dataColorModel;
+    NeuronFragmentData neuronFragmentData;
     ZSliceColors zSliceColors;
     MipFragmentData mipFragmentData;
     MipFragmentColors mipFragmentColors;

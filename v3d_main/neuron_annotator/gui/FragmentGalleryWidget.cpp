@@ -5,6 +5,7 @@
 FragmentGalleryWidget::FragmentGalleryWidget(QWidget *pparent)
     : QAbstractScrollArea(pparent)
     , leftPixel(0)
+    , order(&indexOrder)
 {
     assert(viewport());
     assert(horizontalScrollBar());
@@ -119,4 +120,34 @@ void FragmentGalleryWidget::updateThumbnailPositions()
         button->show();
     }
 }
+
+/* slot */
+void FragmentGalleryWidget::sortByIndex()
+{
+    if (sortOrder == SORT_BY_INDEX)
+        return;
+    sortOrder = SORT_BY_INDEX;
+    order = &indexOrder;
+    // TODO
+}
+
+/* slot */
+void FragmentGalleryWidget::sortByColor()
+{
+    if (sortOrder == SORT_BY_COLOR)
+        return;
+    sortOrder = SORT_BY_COLOR;
+    order = &colorOrder;
+    // TODO
+}
+
+/* slot */
+void FragmentGalleryWidget::sortBySize() {
+    if (sortOrder == SORT_BY_SIZE)
+        return;
+    sortOrder = SORT_BY_SIZE;
+    order = &sizeOrder;
+    // TODO
+}
+
 

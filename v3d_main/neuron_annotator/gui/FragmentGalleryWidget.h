@@ -13,6 +13,13 @@ class FragmentGalleryWidget : public QAbstractScrollArea
     Q_OBJECT
 
 public:
+    enum SortOrder {
+        SORT_BY_SIZE,
+        SORT_BY_INDEX,
+        SORT_BY_COLOR
+    };
+
+public:
     typedef NeuronSelectionModel::NeuronIndex NeuronIndex;
 
     explicit FragmentGalleryWidget(QWidget *parent = 0);
@@ -29,6 +36,9 @@ signals:
 public slots:
     void scrollToFragment(NeuronSelectionModel::NeuronIndex);
     void setScrollPixel(int pixel);
+    void sortByIndex();
+    void sortByColor();
+    void sortBySize();
 
 protected:
     void updateScrollBar();
@@ -38,6 +48,11 @@ protected:
     int buttonWidth;
     int buttonHeight;
     int leftPixel;
+    SortOrder sortOrder;
+    std::vector<int> indexOrder;
+    std::vector<int> sizeOrder;
+    std::vector<int> colorOrder;
+    std::vector<int> * order;
 
 private:
     typedef QAbstractScrollArea super;

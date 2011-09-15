@@ -2458,3 +2458,7 @@ v3d_main/neuron_annotator/entity_model/OntologyAnnotation.h
 v3d_main/neuron_annotator/entity_model/OntologyAnnotation.cpp
 v3d_main/v3d/v3d_essential.pro
 v3d_main/neuron_annotator/utility/mg_image_lib_reentrant.cpp
+v3d_main/neuron_annotator/data_model/NeuronFragmentData.h
+v3d_main/neuron_annotator/data_model/NeuronFragmentData.cpp
+v3d_main/neuron_annotator/data_model/PrivateNeuronFragmentData.h
+v3d_main/neuron_annotator/data_model/PrivateNeuronFragmentData.cpp

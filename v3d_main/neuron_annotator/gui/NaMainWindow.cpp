@@ -231,6 +231,14 @@ NaMainWindow::NaMainWindow()
     ui.menuEdit->insertAction(ui.menuEdit->actions().at(0), redoAction);
     ui.menuEdit->insertAction(redoAction, undoAction);
 
+    // Connect sort buttons to gallery widget
+    connect(ui.gallerySortBySizeButton, SIGNAL(clicked()),
+            ui.fragmentGalleryWidget, SLOT(sortBySize()));
+    connect(ui.gallerySortByColorButton, SIGNAL(clicked()),
+            ui.fragmentGalleryWidget, SLOT(sortByColor()));
+    connect(ui.gallerySortByIndexButton, SIGNAL(clicked()),
+            ui.fragmentGalleryWidget, SLOT(sortByIndex()));
+
     // Allow cross-thread signals/slots that pass QList<int>
     qRegisterMetaType< QList<int> >("QList<int>");
 

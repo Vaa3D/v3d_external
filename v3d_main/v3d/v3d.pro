@@ -117,6 +117,8 @@ HEADERS += \
     ../neuron_annotator/data_model/NaSharedDataModel.h \
     ../neuron_annotator/data_model/VolumeModel.h \
     ../neuron_annotator/data_model/PrivateVolumeModelData.h \
+    ../neuron_annotator/data_model/NeuronFragmentData.h \
+    ../neuron_annotator/data_model/PrivateNeuronFragmentData.h \
     ../neuron_annotator/entity_model/EntityData.h \
     ../neuron_annotator/entity_model/Entity.h \
     ../neuron_annotator/entity_model/Ontology.h \
@@ -209,6 +211,8 @@ SOURCES += \
     ../neuron_annotator/data_model/NaSharedDataModel.cpp \
     ../neuron_annotator/data_model/VolumeModel.cpp \
     ../neuron_annotator/data_model/PrivateVolumeModelData.cpp \
+    ../neuron_annotator/data_model/NeuronFragmentData.cpp \
+    ../neuron_annotator/data_model/PrivateNeuronFragmentData.cpp \
     ../neuron_annotator/entity_model/EntityData.cpp \
     ../neuron_annotator/entity_model/Entity.cpp \
     ../neuron_annotator/entity_model/Ontology.cpp \

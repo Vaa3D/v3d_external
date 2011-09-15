@@ -18,6 +18,7 @@ AnnotationSession::AnnotationSession(QObject* parentParam /* = NULL */)
     , volumeData(/* this */) // load from disk (cannot move qobject with a parent to a QThread)
     , neuronSelectionModel(volumeData) // which layers are shown?
     , dataColorModel(volumeData) // choose colors
+    , neuronFragmentData(volumeData)
     , zSliceColors(volumeData, dataColorModel, neuronSelectionModel)
     , mipFragmentData(volumeData /* , this */) // project in Z, slice on fragment index
     , mipFragmentColors(mipFragmentData, dataColorModel) // color 'em
