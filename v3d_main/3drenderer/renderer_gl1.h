@@ -191,9 +191,6 @@ public:
 	virtual void updateLandmark();
 	virtual void updateTracedNeuron();
 
-     virtual void applyCurveRefine(); // ZJL 110907
-     virtual bool isCurveRefineMode(); // ZJL 110907
-
 // process Object hit ///////////////////////////////////////////////////////////////////////////////////////
 public:
 
@@ -292,7 +289,7 @@ protected:
      double getRgnPropertyAt(XYZ &pos); // ZJL 110830
      void solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index); // ZJL 110830
      void solveCurveRefineLast(); // ZJL 110905
-     //int last_seg_id; // seg id to be refined. ZJL 110907
+     V3DLONG edit_seg_id; // ZJL 110913
 
 	// in renderer_obj2.cpp
 	void addCurveSWC(vector<XYZ> &loc_list, int chno=0); //if no chno is specified, then assume to be the first channel
@@ -368,8 +365,7 @@ private:
 
 		b_imaging = false; //101008
           b_renderTextureLast = false;
-
-          //last_seg_id = 0; // ZJL 110907
+          edit_seg_id = -1; // ZJL 110913
 	}
 
 

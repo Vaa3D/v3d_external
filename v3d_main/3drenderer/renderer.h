@@ -66,7 +66,7 @@ public:
 					smCurveCreate1, smCurveCreate2, smCurveCreate3, smCurveCreate_pointclick,
 					smCurveCreateM,
                          // for curve refinement, 110831 ZJL
-                         smCurveRefineInit, smCurveRefineLast,
+                         smCurveRefineInit, smCurveRefineLast, smCurveEditRefine,
 					};
 protected:
 	RenderMode renderMode;
@@ -167,9 +167,6 @@ public:
 	virtual void endSelectMode()      {};
 	virtual void updateLandmark()     {};
 	virtual void updateTracedNeuron() {};
-
-     virtual void applyCurveRefine() {}; // ZJL 110907
-     virtual bool isCurveRefineMode(){}; // ZJL 110907
 
 	virtual void loadObjectListFromFile()              {};
 	virtual void loadObjectFromFile(const char* url=0) {};

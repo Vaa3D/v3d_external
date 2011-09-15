@@ -212,6 +212,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*actCurveCreate_zoom=0, *actMarkerCreate_zoom=0,
 
           *actCurveRefine=0, // ZJL 110905
+          *actCurveEditRefine=0, // ZJL 110913
 
 			*actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
 	        *actMarkerAblateOne_imaging=0, *actMarkerAblateAll_imaging=0,
@@ -479,12 +480,22 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 					if (listNeuronTree.at(names[2]-1).editable==true) //this requires V_NeuronSWC
 					{
 						listAct.append(act = new QAction("", w)); act->setSeparator(true);
+
+                              // ZJL 110913:
+                              // Edit the curve by refining or extending as in "n-right-strokes to define a curve (refine)"
+                              listAct.append(actCurveEditRefine = new QAction("extend/refine nearest neuron-segment", w));
+                              actCurveEditRefine->setIcon(QIcon(":/icons/strokeN.svg"));
+                              actCurveEditRefine->setVisible(true);
+                              actCurveEditRefine->setIconVisibleInMenu(true);
+                              listAct.append(act = new QAction("", w)); act->setSeparator(true);
+
 						listAct.append(actDispRecNeuronSegInfo = new QAction("display nearest neuron-segment info", w));
 						listAct.append(actChangeNeuronSegType = new QAction("change nearest neuron-segment type", w));
 						listAct.append(actChangeNeuronSegRadius = new QAction("change nearest neuron-segment radius", w));
 						listAct.append(actReverseNeuronSeg = new QAction("reverse nearest neuron-segment link order", w));
 						listAct.append(actDeleteNeuronSeg = new QAction("delete the nearest neuron-segment", w));
 						//listAct.append(actNeuronOneSegMergeToCloseby = new QAction("merge a terminal-segment to nearby segments", w));
+
 						listAct.append(actNeuronAllSegMergeToCloseby = new QAction("merge nearby segments", w));
 						if (curImg->tracedNeuron.isJointed()==false)
 						{
@@ -1064,7 +1075,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			}
 		}
 	}
-	else if (act==actReverseNeuronSeg)
+     // ZJL 110913
+	else if (act==actCurveEditRefine)
 	{
 		if (NEURON_CONDITION)
 		{
@@ -1073,11 +1085,18 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			if (p_tree)	{n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree);}
 			if (n_id>=0)
 			{
-				curImg->proj_trace_reverseNeuronSeg(n_id, p_tree);
-				curImg->update_3drenderer_neuron_view(w, this);
+                    // using the pipeline of "n-right-strokes to define a curve (refine)"
+                    selectMode = smCurveEditRefine;
+                    b_addthiscurve = true;
+                    if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+
+                    // get seg_id and then using "n-right-strokes" refine pipeline
+                    edit_seg_id = p_tree->listNeuron.at(n_id).seg_id;
+
 			}
 		}
 	}
+
 	else if (act==actDeleteNeuronSeg)
 	{
 		if (NEURON_CONDITION)
@@ -1444,7 +1463,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	}
 
      // For curve refine, ZJL 110905
-     else if (selectMode == smCurveRefineInit || selectMode == smCurveRefineLast)
+     else if (selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine)
      {
           _appendMarkerPos(x,y);
           if (b_move)
@@ -1468,8 +1487,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     loc_vec0.clear();
                     solveCurveCenterV2(loc_vec_input, loc_vec0, 0);
                     selectMode = smCurveRefineLast; /////////////// switch to smCurveRefineLast
-               }
-               else
+               } else
                     solveCurveRefineLast(); ///////////////////////// <===== key function
 
                list_listCurvePos.clear();
@@ -1493,7 +1511,7 @@ int Renderer_gl1::hitPen(int x, int y)
 	// define a curve //091023
 	if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 ||
           // for curve refinement, 110831 ZJL
-          selectMode == smCurveRefineInit || selectMode == smCurveRefineLast)
+          selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine)
 	{
 		qDebug("\t track-start ( %i, %i ) to define Curve", x,y);
 
@@ -2105,6 +2123,8 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 			}
 		}
 	}
+
+     if(loc_vec.size()<1) return; // all points are outside the volume. ZJL 110913
 
 #ifndef test_main_cpp
 	// check if there is any existing neuron node is very close to the starting and ending points, if yes, then merge
