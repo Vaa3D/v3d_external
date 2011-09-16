@@ -21,15 +21,21 @@
 
 // n-right-strokes curve drawing (refine), ZJL 20110826
 // This curve drawing method performs as follows:
-// 1. The user first draws the primary curve using right-mouse moving. This drawing
-// is based on the method used in solveCurveCenter()(modified version).
-// 2. The user then draws (by right-mouse moving) the modifying-curve. This modifying curve
-// is also got based on the method used in solveCurveCenter(). This curve represents
-// the position that part of the primary curve should be.
-// 3. The curve refinement is then performed to get the refined curve.
-// 4. This refine process can be performed n times on the primary curve.
-// 5. The curve can also be extended on both ends by drawing extensions close to both ends.
-// 6. Press "Esc" to exit the curve refinement operation.
+//    1. The user first draws the primary curve using right-mouse moving. This drawing
+//       is based on the method used in solveCurveCenter()(modified version).
+//    2. The user then draws (by right-mouse moving) the modifying-curve. This modifying curve
+//       is also got based on the method used in solveCurveCenter(). This curve represents
+//        the position that part of the primary curve should be.
+//    3. The curve refinement is then performed to get the refined curve.
+//    4. This refine process can be performed n times on the primary curve.
+//    5. The curve can also be extended on both ends by drawing extensions close to both ends.
+//    6. Press "Esc" to exit the curve refinement operation.
+
+// "extend/refine nearest neuron segment", ZJL 20110916
+//    When right-clicking on/near an existing curve, a menu is popupped.
+//    A menu item of "extend/refine nearest neuron segment" is added to allow
+//    users edit existing curves using same operations as in "n-right-strokes
+//    curve drawing (refine)"
 void Renderer_gl1::solveCurveRefineLast()
 {
 	qDebug("Renderer_gl1::solveCurveRefineLast");
@@ -162,7 +168,6 @@ void Renderer_gl1::solveCurveRefineLast()
      {
           // update primary_seg.row
           V_NeuronSWC_unit nu;
-
           V3DLONG last_n =curImg->tracedNeuron.maxnoden();
 
           qDebug("Last_n is: %d", last_n);
@@ -185,33 +190,15 @@ void Renderer_gl1::solveCurveRefineLast()
                     nu.r = rr;
                     nu.parent = (j==0)? (nnp) : (nu.n-1);
                     nu.seg_id = last_seg_id;
-                    nu.nodeinseg_id = N0+j;
-                    if(j==NI-1) nu.nchild = 0;
-                    else nu.nchild = 1;
-
-                    if(selectMode==smCurveEditRefine)
-                         qDebug("nu.n in j=%d is: %d", j, nu.n);
+                    // nu.nodeinseg_id = N0+j;
+                    // if(j==NI-1) nu.nchild = 0;
+                    // else nu.nchild = 1;
 
                     primary_seg.append(nu);
                }
 
-
-               // // update segments with seg_id>last_seg_id
-               // V3DLONG nseg=curImg->tracedNeuron.nsegs();
-               // if(last_seg_id < nseg-1)
-               // {
-               //      // update n and parent of segs
-               //      for(V3DLONG ii=last_seg_id+1; ii<nseg; ii++)
-               //      {
-               //           V_NeuronSWC& segii = curImg->tracedNeuron.seg[ii];
-               //           for(int i=0; i<segii.nrows(); i++)
-               //           {
-               //                segii.row.at(i).n = segii.row.at(i).n - NI;
-               //                segii.row.at(i).parent = (segii.row.at(i).parent == -1)? -1 :
-               //                     (segii.row.at(i).parent-NI);
-               //           }
-               //      }
-               // }
+               // scanning the whole tracedNeuron to order index n
+               reorderNeuronIndexNumber();
           }
           // 2. insert inversed loc_veci after the last point of loc_vec0
           else if ( (end_pos0==pos0b)&&(end_posi==posib) )
@@ -229,11 +216,14 @@ void Renderer_gl1::solveCurveRefineLast()
                     nu.r = rr;
                     nu.parent = (j==0)? (nnp) : (nu.n-1);
                     nu.seg_id = last_seg_id;
-                    nu.nodeinseg_id = N0+j;
-                    nu.nchild = (j==NI-1)?  0 : 1;
+                    // nu.nodeinseg_id = N0+j;
+                    // nu.nchild = (j==NI-1)?  0 : 1;
 
                     primary_seg.append(nu);
                }
+
+               // scanning the whole tracedNeuron to order index n
+               reorderNeuronIndexNumber();
           }
           // 3. insert inversed loc_veci before the first point of loc_vec0
           else if ( (end_pos0==pos0a)&&(end_posi==posia) )
@@ -251,13 +241,16 @@ void Renderer_gl1::solveCurveRefineLast()
                     nu.r = rr;
                     nu.parent = (j==0)? -1 : (nu.n-1);
                     nu.seg_id = last_seg_id;
-                    nu.nodeinseg_id = j;
-                    nu.nchild = 1;
+                    // nu.nodeinseg_id = j;
+                    // nu.nchild = 1;
 
                     primary_seg.row.insert(primary_seg.row.begin()+j, nu);
                }
                // update original primary_seg's info, e.g. parent
                primary_seg.row.at(NI).parent = last_n+NI; // the first node in the primary curvew
+
+               // scanning the whole tracedNeuron to order index n
+               reorderNeuronIndexNumber();
           }
           // 4. insert loc_veci before the first point of loc_vec0
           else if ( (end_pos0==pos0a)&&(end_posi==posib) )
@@ -275,15 +268,17 @@ void Renderer_gl1::solveCurveRefineLast()
                     nu.r = rr;
                     nu.parent = (j==0)? -1 : (nu.n-1);
                     nu.seg_id = last_seg_id;
-                    nu.nodeinseg_id = j;
-                    nu.nchild = 1;
+                    // nu.nodeinseg_id = j;
+                    // nu.nchild = 1;
 
                     primary_seg.row.insert(primary_seg.row.begin()+j, nu);
                }
                // update original primary_seg's info, e.g. parent
                primary_seg.row.at(NI).parent = last_n+NI; // the first node in the primary curve
-          }
 
+               // scanning the whole tracedNeuron to order index n
+               reorderNeuronIndexNumber();
+          }
      }
      // C. begin to refine the primary (first) curve using the second curve
      else
@@ -665,3 +660,25 @@ void Renderer_gl1::solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ>
      qDebug("End of solveCurveCenterV2()");
 }
 
+// scanning the whole tracedNeuron to order index n
+void Renderer_gl1::reorderNeuronIndexNumber()
+{
+     // get the control points of the primary curve
+     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+     My4DImage* curImg = 0;
+     if (w)
+          curImg = v3dr_getImage4d(_idep);
+
+     V3DLONG nseg=curImg->tracedNeuron.nsegs();
+     for(V3DLONG ii=0; ii<nseg; ii++)
+     {
+          V3DLONG n=0;
+          V_NeuronSWC& segii = curImg->tracedNeuron.seg[ii];
+          for(V3DLONG i=0; i<segii.nrows(); i++)
+          {
+               segii.row.at(i).n = n+1;
+               segii.row.at(i).parent = (segii.row.at(i).parent == -1)? -1:n;
+               n++;
+          }
+     }
+}

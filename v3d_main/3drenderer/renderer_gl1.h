@@ -289,6 +289,7 @@ protected:
      double getRgnPropertyAt(XYZ &pos); // ZJL 110830
      void solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index); // ZJL 110830
      void solveCurveRefineLast(); // ZJL 110905
+     void reorderNeuronIndexNumber(); // ZJL 110916
      V3DLONG edit_seg_id; // ZJL 110913
 
 	// in renderer_obj2.cpp
