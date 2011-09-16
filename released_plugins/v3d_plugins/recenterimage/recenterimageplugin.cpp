@@ -1,6 +1,7 @@
 /* recenterimageplugin.cpp
  * 2009-08-14: created by Yang Yu
  * 2010-11-23: supporting all kinds of datatypes, changed by Yang Yu
+ * 2011-09-16: change this plugin interface from 1.0 to 2.1 by Yang Yu
  */
 
 #include <QtGui>
@@ -17,32 +18,55 @@ Q_EXPORT_PLUGIN2(recenterimage, ReCenterImagePlugin)
 template <class Tidx, class Tdata>
 void recentering(Tdata *&p, Tdata *data, Tidx nx, Tidx ny, Tidx nz, Tidx ox, Tidx oy, Tidx oz, Tidx ncolor);
 
+//dofunc
+QStringList ReCenterImagePlugin::funclist() const
+{
+    return QStringList() << "iRecenter";
+}
 
+bool ReCenterImagePlugin::dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output, V3DPluginCallback2 & v3d, QWidget * parent)
+{
+    //to-do
+    
+    //
+    return true;
+}
+
+//domenu
 QStringList ReCenterImagePlugin::menulist() const
 {
     return QStringList() << tr("ReCenterImage")
-						<< tr("About this plugin");
+						 << tr("About this plugin");
 }
 
-void ReCenterImagePlugin::processImage(const QString &arg, Image4DSimple *p4DImage, QWidget *parent)
+void ReCenterImagePlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
-    if (! p4DImage) return;
-
-	Image4DProxy<Image4DSimple> p4DProxy(p4DImage);
-	
-    //void* data1d = p4DProxy.begin();
-    V3DLONG pagesz = p4DImage->getTotalUnitNumberPerChannel();
-
-    V3DLONG N = p4DImage->getXDim();
-    V3DLONG M = p4DImage->getYDim();
-    V3DLONG P = p4DImage->getZDim();
-    V3DLONG sc = p4DImage->getCDim();
-	
-	int datatype = p4DImage->getDatatype();
-	qDebug()<<"datatype is "<<datatype;
-
-    if (arg == tr("ReCenterImage"))
+    // interactively call ReCenterImage plugin for current focused image opened by V3D
+    if (menu_name == tr("ReCenterImage"))
     {
+        v3dhandle curwin = callback.currentImageWindow();
+        if (!curwin)
+        {
+            QMessageBox::information(parent, "RecenterImage", "You don't have any image open in the main window.");
+            return;
+        }
+        
+        Image4DSimple* p4DImage = callback.getImage(curwin);
+        
+        if (! p4DImage) return;
+        
+        Image4DProxy<Image4DSimple> p4DProxy(p4DImage);
+        
+        //void* data1d = p4DProxy.begin();
+        V3DLONG pagesz = p4DImage->getTotalUnitNumberPerChannel();
+        
+        V3DLONG N = p4DImage->getXDim();
+        V3DLONG M = p4DImage->getYDim();
+        V3DLONG P = p4DImage->getZDim();
+        V3DLONG sc = p4DImage->getCDim();
+        
+        int datatype = p4DImage->getDatatype();
+        
         bool ok;
         V3DLONG ndimx = QInputDialog::getInteger(parent, tr("Dimension x"),
                                                  tr("Enter dimx:"),
@@ -60,6 +84,7 @@ void ReCenterImagePlugin::processImage(const QString &arg, Image4DSimple *p4DIma
 
 		V3DLONG ntotalpxls = sc*ndimx*ndimy*ndimz;
 
+        void *pRecenteredImage = NULL;
         if (ok)
         {
 			// For different datatype
@@ -67,37 +92,48 @@ void ReCenterImagePlugin::processImage(const QString &arg, Image4DSimple *p4DIma
 			{
 				unsigned char *pImage = NULL;
 				recentering<V3DLONG, unsigned char>( pImage, (unsigned char*)p4DProxy.begin(), ndimx, ndimy, ndimz, N, M, P, sc);
-				
-				p4DImage->setData((unsigned char*)pImage, ndimx, ndimy, ndimz, sc, p4DImage->getDatatype()); // update data in current window
-					
+                pRecenteredImage=(void *)pImage;
 			}
 			else if(datatype == 2)
 			{
-				short int *pImage = NULL;
-				recentering<V3DLONG, short int>( pImage, (short int*)p4DProxy.begin(), ndimx, ndimy, ndimz, N, M, P, sc);
-				
-				p4DImage->setData((unsigned char*)pImage, ndimx, ndimy, ndimz, sc, p4DImage->getDatatype()); // update data in current window
+				unsigned short *pImage = NULL;
+				recentering<V3DLONG, unsigned short>( pImage, (unsigned short*)p4DProxy.begin(), ndimx, ndimy, ndimz, N, M, P, sc);
+                pRecenteredImage=(void *)pImage;
 			}
 			else if(datatype == 3)
 			{
 				float *pImage = NULL;
 				recentering<V3DLONG, float>( pImage, (float*)p4DProxy.begin(), ndimx, ndimy, ndimz, N, M, P, sc);
-				
-				p4DImage->setData((unsigned char*)pImage, ndimx, ndimy, ndimz, sc, p4DImage->getDatatype()); // update data in current window
+                pRecenteredImage=(void *)pImage;
 			}
 			else 
 			{
 				return;
 			}
+            
+            Image4DSimple p4DImageRec;
+            p4DImageRec.setData((unsigned char*)pRecenteredImage, ndimx, ndimy, ndimz, sc, p4DImage->getDatatype()); // update data in current window
+            
+            v3dhandle newwin;
+            if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you want to use the existing window?"), QMessageBox::Yes, QMessageBox::No))
+                newwin = callback.currentImageWindow();
+            else
+                newwin = callback.newImageWindow();
+            
+            callback.setImage(newwin, &p4DImageRec);
+            callback.setImageName(newwin, QString("recentered image"));
+            callback.updateImageWindow(newwin);
 
 		}
 	}
-	else if (arg == tr("About this plugin"))
+	else if (menu_name == tr("About"))
 	{
-		QMessageBox::information(parent, "Version info", "Plugin Recenter version 1.0 developed by Yang Yu.");
+		QMessageBox::information(parent, "Version info", "Plugin Recenter version 1.0 developed by Yang Yu (Peng Lab, Janelia Farm Research Campus, HHMI).");
 	}
 	else
+    {
 		return;
+    }
 
 }
 
