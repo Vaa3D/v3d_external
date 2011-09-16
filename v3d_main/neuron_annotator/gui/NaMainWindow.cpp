@@ -65,7 +65,7 @@ void NutateThread::unpause() {paused = false;}
 //////////////////
 
 NaMainWindow::NaMainWindow()
-    : nutateThread(NULL), statusProgressBar(NULL)
+    : nutateThread(NULL), statusProgressBar(NULL), neuronSelector(NULL)
 {
     ui.setupUi(this);
 
@@ -655,6 +655,16 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     connect(ui.naZStackWidget, SIGNAL(hdrRangeChanged(int,qreal,qreal)),
             &annotationSession->getDataColorModel(), SLOT(setChannelHdrRange(int,qreal,qreal)));
 
+    // Connect annotation widget to neuron selection
+    connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(exactlyOneNeuronSelected(int)),
+            ui.annotationFrame, SLOT(selectNeuron(int)));
+    connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(selectionCleared()),
+            ui.annotationFrame, SLOT(deselectNeurons()));
+    connect(ui.annotationFrame, SIGNAL(neuronSelected(int)),
+            &annotationSession->getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
+    connect(ui.annotationFrame, SIGNAL(neuronsDeselected()),
+            &annotationSession->getNeuronSelectionModel(), SLOT(clearSelection()));
+
     // Connect mip viewer to data flow model
     ui.naLargeMIPWidget->setMipMergedData(annotationSession->getMipMergedData());
 
@@ -778,15 +788,16 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
     // bad
 
     // Neuron Selector update
+    if (neuronSelector != NULL) delete neuronSelector;
     neuronSelector = new NeuronSelector();
+    neuronSelector->setAnnotationSession(annotationSession);
+    neuronSelector->init();
 
     connect(ui.v3dr_glwidget, SIGNAL(neuronSelected(double,double,double)), neuronSelector, SLOT(updateSelectedPosition(double,double,double)));
     connect(neuronSelector, SIGNAL(landmarksClearNeeded()),
             ui.v3dr_glwidget, SLOT(clearLandmarks()));
     connect(neuronSelector, SIGNAL(landmarksUpdateNeeded(QList<ImageMarker>)),
             ui.v3dr_glwidget, SLOT(setLandmarks(QList<ImageMarker>)));
-
-    neuronSelector->setAnnotationSession(annotationSession);
 
     // show selected neuron
     connect(ui.v3dr_glwidget, SIGNAL(neuronShown(const QList<int>)),

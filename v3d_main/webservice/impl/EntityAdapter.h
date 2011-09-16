@@ -6,6 +6,12 @@
 #include "../console/cdsStub.h"
 #include <QHash>
 
+//
+// This class converts between GSOAP-generated classes (which are unstable) and
+// the Entity model (which is stable and used throughout Neuron Annotator).
+//
+// It may also do Java to Qt conversions for some things, such as keybinds.
+//
 class EntityAdapter
 {
 private:

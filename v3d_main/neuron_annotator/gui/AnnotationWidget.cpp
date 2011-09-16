@@ -31,20 +31,23 @@
 AnnotationWidget::AnnotationWidget(QWidget *parent) :
     QFrame(parent),
     ui(new Ui::AnnotationWidget),
-    mutex(QMutex::Recursive),
+    naMainWindow(0),
+    consoleObserverService(0),
+    consoleObserver(0),
     ontology(0),
     ontologyTreeModel(0),
     annotatedBranch(0),
     annotatedBranchTreeModel(0),
-    consoleObserverService(0),
-    consoleObserver(0),
-    naMainWindow(0),
-    firstLoad(true)
+    selectedEntity(0),
+    createAnnotationThread(0),
+    removeAnnotationThread(0),
+    mutex(QMutex::Recursive)
 {
     ui->setupUi(this);
     connect(ui->ontologyTreeView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(ontologyTreeDoubleClicked(QModelIndex)));
     connect(ui->annotatedBranchTreeView, SIGNAL(clicked(QModelIndex)), this, SLOT(annotatedBranchTreeClicked(QModelIndex)));
     connect(ui->annotatedBranchTreeView, SIGNAL(removeAnnotation(const Entity*)), this, SLOT(removeAnnotation(const Entity*)));
+    connect(this, SIGNAL(entitySelected(const Entity*)), this, SLOT(entityWasSelected(const Entity*)));
     showDisconnected();
 }
 
@@ -63,6 +66,10 @@ void AnnotationWidget::setMainWindow(NaMainWindow *mainWindow)
 {
     naMainWindow = mainWindow;
 }
+
+//*************************************************************************************
+// Actions
+//*************************************************************************************
 
 void AnnotationWidget::closeOntology()
 {
@@ -95,13 +102,7 @@ void AnnotationWidget::openOntology(Ontology *ontology)
         ontologyTreeModel = new OntologyTreeModel(ontology);
         ui->ontologyTreeView->setModel(ontologyTreeModel);
         ui->ontologyTreeView->expandAll();
-
-        if (firstLoad)
-        {
-            ui->ontologyTreeView->header()->swapSections(1,0);
-            firstLoad = false;
-        }
-
+        ui->ontologyTreeView->header()->swapSections(1,0);
         ui->ontologyTreeView->resizeColumnToContents(0);
         ui->ontologyTreeView->resizeColumnToContents(1);
     }
@@ -181,6 +182,10 @@ void AnnotationWidget::updateAnnotations(long entityId, AnnotationList *annotati
     // TODO: this can be made more efficient in the future, for now let's just recreate it from scratch
     openAnnotatedBranch(annotatedBranch, false);
 }
+
+//*************************************************************************************
+// Console link
+//*************************************************************************************
 
 void AnnotationWidget::communicationError(const QString & errorMessage)
 {
@@ -299,24 +304,9 @@ void AnnotationWidget::consoleDisconnect()
     showDisconnected();
 }
 
-void AnnotationWidget::ontologyTreeDoubleClicked(const QModelIndex & index)
-{
-    EntityTreeItem *item = ontologyTreeModel->node(index);
-    if (item->entity() != 0)
-    {
-        annotateSelectedEntityWithOntologyTerm(item->entity(), item->parent()==0?0:item->parent()->entity());
-    }
-}
-
-void AnnotationWidget::annotatedBranchTreeClicked(const QModelIndex & index)
-{
-    EntityTreeItem *item = annotatedBranchTreeModel->node(index);
-    if (item->entity() != 0)
-    {
-        selectedEntity = item->entity();
-        emit entitySelected(selectedEntity);
-    }
-}
+//*************************************************************************************
+// Annotation
+//*************************************************************************************
 
 bool AnnotationWidget::eventFilter(QObject* watched_object, QEvent* event)
 {
@@ -367,6 +357,15 @@ bool AnnotationWidget::eventFilter(QObject* watched_object, QEvent* event)
         }
     }
     return filtered;
+}
+
+void AnnotationWidget::ontologyTreeDoubleClicked(const QModelIndex & index)
+{
+    EntityTreeItem *item = ontologyTreeModel->node(index);
+    if (item->entity() != 0)
+    {
+        annotateSelectedEntityWithOntologyTerm(item->entity(), item->parent()==0?0:item->parent()->entity());
+    }
 }
 
 // This reimplements the Console's AnnotateAction
@@ -505,14 +504,62 @@ void AnnotationWidget::removeAnnotationError(const QString &error)
     removeAnnotationThread = NULL;
 }
 
-void AnnotationWidget::selectEntity(const Entity *entity)
+//*************************************************************************************
+// Entity and Neuron Selection
+//*************************************************************************************
+
+void AnnotationWidget::annotatedBranchTreeClicked(const QModelIndex & index)
 {
     QMutexLocker locker(&mutex);
 
+    EntityTreeItem *item = annotatedBranchTreeModel->node(index);
+    if (item->entity() != 0)
+    {
+        selectedEntity = item->entity();
+        emit entitySelected(selectedEntity);
+    }
+}
+
+void AnnotationWidget::entityWasSelected(const Entity *entity)
+{
+    QString neuronNumStr = entity->getValueByAttributeName("Number");
+    if (*entity->entityType == "Tif 2D Image" && !neuronNumStr.isEmpty()) // TODO: change this to "Neuron Fragment"
+    {
+        bool ok;
+        int neuronNum = neuronNumStr.toInt(&ok);
+        if (ok) emit neuronSelected(neuronNum);
+    }
+    else {
+        emit neuronsDeselected();
+    }
+}
+
+void AnnotationWidget::selectNeuron(int index)
+{
+    QString indexStr = QString("%1").arg(index);
+    QSetIterator<EntityData *> i(annotatedBranch->entity()->entityDataSet);
+    while (i.hasNext())
+    {
+        EntityData *ed = i.next();
+        Entity *entity = ed->childEntity;
+        if (entity==0) continue;
+        QString neuronNum = entity->getValueByAttributeName("Number");
+        if (neuronNum == indexStr)
+        {
+            qDebug() << "Found neuron"<<index<<"Selecting"<<*entity->name;
+            selectEntity(entity);
+        }
+    }
+}
+
+void AnnotationWidget::deselectNeurons()
+{
+    selectEntity(0);
+}
+
+void AnnotationWidget::selectEntity(const Entity *entity)
+{
+    ui->annotatedBranchTreeView->clearSelection();
     selectedEntity = entity;
-
-    if (entity!=0)
-        ui->annotatedBranchTreeView->selectEntity(*entity->id);
-
-    emit entitySelected(entity); // This assumes that clients who call selectEntity are smart enough to ignore the subsequent entitySelected signal
+    if (entity!=0) ui->annotatedBranchTreeView->selectEntity(*entity->id);
 }

@@ -137,7 +137,28 @@ Entity* EntityAdapter::convert(cds::fw__entity *fwEntity)
 
             entity->entityDataSet.insert(entityData);
         }
+    }
 
+    // TODO: DELETE ME! Here we artifically add the neuron number.
+    // This will be part of the model when we moved to the stiched pipeline, and then this piece of code can be deleted.
+    if (entity->entityType!=0 && *entity->entityType == "Tif 2D Image")
+    {
+        QString filepath = entity->getValueByAttributeName("File Path");
+        if (!filepath.isEmpty())
+        {
+            QRegExp rx("neuronSeparatorPipeline.PR.neuron(\\d+)\\.tif");
+            if (rx.indexIn(filepath) != -1)
+            {
+                QString numStr = rx.cap(1);
+                EntityData *entityData = new EntityData();
+                entityData->attributeName = new QString("Number");
+                entityData->value = new QString(numStr);
+                entityData->id = new qint64(1);
+                entityData->parentEntity = entity;
+                entityData->user = new QString("none");
+                entity->entityDataSet.insert(entityData);
+            }
+        }
     }
     return entity;
 }
@@ -153,7 +174,6 @@ QList<Entity *>* EntityAdapter::convert(cds::fw__entityArray *array)
     }
     return list;
 }
-
 
 QMap<QKeySequence, qint64>* EntityAdapter::convert(cds::fw__ontologyKeyBindings *keyBindings)
 {

@@ -35,6 +35,8 @@ public:
 
 signals:
     void entitySelected(const Entity *entity); // Parameter may be null if the selection is cleared
+    void neuronSelected(int index);
+    void neuronsDeselected();
 
 public slots:
     void closeOntology();
@@ -50,6 +52,8 @@ public slots:
     void annotateSelectedEntityWithOntologyTerm(const Entity *term, const Entity *parentTerm);
     void removeAnnotation(const Entity *annotation);
     void selectEntity(const Entity *entity);
+    void selectNeuron(int index);
+    void deselectNeurons();
 
 protected:
     bool eventFilter (QObject* watched_object, QEvent* e);
@@ -61,6 +65,7 @@ private slots:
     void createAnnotationError(const QString & error);
     void removeAnnotationResults(const void *results);
     void removeAnnotationError(const QString & error);
+    void entityWasSelected(const Entity *entity);
 
 private:
 
@@ -82,7 +87,6 @@ private:
     const Entity *selectedEntity;
 
     // Internal variables
-    bool firstLoad;
     DataThread *createAnnotationThread;
     DataThread *removeAnnotationThread;
     QMutex mutex;

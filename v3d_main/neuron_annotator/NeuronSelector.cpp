@@ -5,18 +5,31 @@
 
 using namespace std;
 
-NeuronSelector::NeuronSelector()
+NeuronSelector::NeuronSelector() : index(-1)
 {
-    init();
     // allow passing of QList<ImageMarker> through signals/slots
     qRegisterMetaType<QList<ImageMarker> >("QList<ImageMarker>");
 }
 
-// NeuronSelector init func
+// NeuronSelector init func.
 void NeuronSelector::init()
 {
-	//
-	index = -1;
+    NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+    if (! volumeReader.hasReadLock()) return;
+    const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
+
+    sx = neuronProxy.sx;
+    sy = neuronProxy.sy;
+    sz = neuronProxy.sz;
+
+    curNeuronBDxb = sx-1;
+    curNeuronBDxe = 0;
+
+    curNeuronBDyb = sy-1;
+    curNeuronBDye = 0;
+
+    curNeuronBDzb = sz-1;
+    curNeuronBDze = 0;
 }
 
 // get the index of selected neuron
@@ -33,11 +46,6 @@ int NeuronSelector::getIndexSelectedNeuron()
             NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
             if (! volumeReader.hasReadLock()) return -1;
             const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
-
-            // find in mask stack
-            sx = neuronProxy.sx;
-            sy = neuronProxy.sy;
-            sz = neuronProxy.sz;
 
             numNeuron = selectionReader.getMaskStatusList().size();
 
@@ -102,16 +110,6 @@ int NeuronSelector::getIndexSelectedNeuron()
 void NeuronSelector::getCurIndexNeuronBoundary()
 {
         if(index<0) return;
-	
-	//
-	curNeuronBDxb = sx-1;
-	curNeuronBDxe = 0;
-	
-	curNeuronBDyb = sy-1;
-	curNeuronBDye = 0;
-	
-	curNeuronBDzb = sz-1;
-	curNeuronBDze = 0;
 
         {
             NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
@@ -230,6 +228,8 @@ void NeuronSelector::setAnnotationSession(AnnotationSession* annotationSession)
             &annotationSession->getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
     connect(this, SIGNAL(selectionClearNeeded()),
             &annotationSession->getNeuronSelectionModel(), SLOT(clearSelection()));
+    connect(&annotationSession->getVolumeData(), SIGNAL(dataChanged()),
+            this, SLOT(init()));
 }
 
 // 
@@ -420,4 +420,3 @@ void NeuronSelector::onSelectionModelChanged()
         return;
     }
 }
-
