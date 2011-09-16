@@ -32,7 +32,7 @@ NaVolumeDataLoadableStack::NaVolumeDataLoadableStack(My4DImage* stackpParam, QSt
 bool NaVolumeDataLoadableStack::load()
 {
     setRelativeProgress(0.01); // getting here *is* finite progress
-    qDebug() << "NaVolumeData::LoadableStack::load() filename=" << filename;
+    // qDebug() << "NaVolumeData::LoadableStack::load() filename=" << filename;
     const QByteArray fileArray = filename.toAscii();
     stackp->loadImage(const_cast<char *>(fileArray.data()));
     if (stackp->isEmpty()) {
@@ -110,7 +110,7 @@ void NaVolumeData::setProgressValue(int progressValue)
     if (progressValue > 100) return;
     if (progressValue == currentProgress) return;
     currentProgress = progressValue;
-    qDebug() << "NaVolumeData load progress =" << currentProgress;
+    // qDebug() << "NaVolumeData load progress =" << currentProgress;
     emit progressValueChanged(currentProgress);
 }
 

@@ -620,6 +620,7 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     ui.v3dr_glwidget->setAnnotationSession(annotationSession);
     ui.naLargeMIPWidget->setAnnotationSession(annotationSession);
     ui.naZStackWidget->setAnnotationSession(annotationSession);
+    ui.fragmentGalleryWidget->setAnnotationSession(annotationSession);
     connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(initialized()),
             this, SLOT(processUpdatedVolumeData()));
 

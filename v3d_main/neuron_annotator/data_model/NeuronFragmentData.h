@@ -30,15 +30,17 @@ public:
     public:
         Reader(const NeuronFragmentData&);
         int getNumberOfFragments() const;
-        int getNumberOfVoxels(int fragmentIndex) const;
-        int getNumberOfDataChannels() const;
-        // TODO - how to handle color?
+        const std::vector<int>& getFragmentSizes() const; // in voxels
+        const std::vector<float>& getFragmentHues() const; // in range 0.0-1.0
     };
 
 
     class Writer; friend class Writer;
     class Writer : public BaseWriter
-    {};
+    {
+    public:
+        Writer(NeuronFragmentData& fragmentData) : BaseWriter(fragmentData) {}
+    };
 
 };
 

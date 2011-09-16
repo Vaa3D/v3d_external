@@ -1,11 +1,13 @@
 #include "FragmentGalleryWidget.h"
 #include <cassert>
 #include <cmath> /* for std::abs(double) */
+#include <algorithm> /* for sort() */
 
 FragmentGalleryWidget::FragmentGalleryWidget(QWidget *pparent)
     : QAbstractScrollArea(pparent)
     , leftPixel(0)
     , order(&indexOrder)
+    , neuronFragmentData(NULL)
 {
     assert(viewport());
     assert(horizontalScrollBar());
@@ -105,7 +107,15 @@ void FragmentGalleryWidget::updateThumbnailPositions()
 
     for (int b = 0; b < contents.size(); ++b)
     {
+        // default to unsorted button order
         GalleryButton * button = contents[b];
+        // Apply sort order, if available
+        if (order && order->size()) {
+            // qDebug() << order->size() << contents.size() << __FILE__ << __LINE__;
+            if (order->size() == contents.size()) {
+                button = contents[(*order)[b]];
+            }
+        }
         int px = b * (buttonWidth) - leftPixel;
         if (px < -buttonWidth) {
             button->hide();
@@ -128,6 +138,7 @@ void FragmentGalleryWidget::sortByIndex()
         return;
     sortOrder = SORT_BY_INDEX;
     order = &indexOrder;
+    updateThumbnailPositions();
     // TODO
 }
 
@@ -138,6 +149,7 @@ void FragmentGalleryWidget::sortByColor()
         return;
     sortOrder = SORT_BY_COLOR;
     order = &colorOrder;
+    updateThumbnailPositions();
     // TODO
 }
 
@@ -147,7 +159,74 @@ void FragmentGalleryWidget::sortBySize() {
         return;
     sortOrder = SORT_BY_SIZE;
     order = &sizeOrder;
+    updateThumbnailPositions();
     // TODO
+}
+
+// Index is a class to help compute sort orders
+template<class T>
+struct IndexSorter
+{
+    IndexSorter(const std::vector<T>& valuesParam, bool bAscendingParam = false)
+        : values(valuesParam)
+        , bAscending(bAscendingParam)
+    {}
+    // comparison function sorts indices based on values in values table
+    bool operator() (int i, int j) const {
+        bool result = (values[i] < values[j]);
+        if (bAscending) return result;
+        else return !result;
+    }
+    // return ordered list of array indices
+    std::vector<int> computeIndexOrder()
+    {
+        // allocate array
+        std::vector<int> result(values.size(), 0);
+        // initialize to ascending integer index order
+        for (int i = 0; i < values.size(); ++i)
+            result[i] = i;
+        // sort based on values table
+        std::sort(result.begin(), result.end(), *this);
+        // for (int i = 0; i < values.size(); ++i)
+        //     qDebug() << i << result[i] << __FILE__ << __LINE__;
+        return result;
+    }
+
+    bool bAscending;
+    const std::vector<T>& values;
+};
+
+void FragmentGalleryWidget::updateSortTables()
+{
+    qDebug() << "FragmentGalleryWidget::updateSortTables()";
+    if (!neuronFragmentData) return;
+    {
+        NeuronFragmentData::Reader fragmentReader(*neuronFragmentData);
+        if (neuronFragmentData->readerIsStale(fragmentReader)) return;
+        int sf = fragmentReader.getNumberOfFragments();
+        // Sort by index is easy.  We don't need to look anything up.
+        if (indexOrder.size() != sf) indexOrder.assign(sf, 0);
+        for (int f = 0; f < sf; ++f)
+            indexOrder[f] = f;
+        IndexSorter<int> sizeSorter(fragmentReader.getFragmentSizes(), false);
+        sizeOrder = sizeSorter.computeIndexOrder();
+        IndexSorter<float> hueSorter(fragmentReader.getFragmentHues());
+        colorOrder = hueSorter.computeIndexOrder();
+    }
+    repaint();
+}
+
+void FragmentGalleryWidget::setAnnotationSession(AnnotationSession * annotationSession)
+{
+    if (! annotationSession) {
+        neuronFragmentData = NULL;
+        return;
+    }
+    else {
+        neuronFragmentData = &annotationSession->getNeuronFragmentData();
+        connect(neuronFragmentData, SIGNAL(dataChanged()),
+                this, SLOT(updateSortTables()));
+    }
 }
 
 

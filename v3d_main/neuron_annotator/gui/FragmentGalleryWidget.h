@@ -29,6 +29,7 @@ public:
     void appendFragment(GalleryButton * button);
     virtual void wheelEvent(QWheelEvent *);
     virtual void resizeEvent(QResizeEvent *);
+    void setAnnotationSession(AnnotationSession*); // for connecting to data model
 
 signals:
     void scrollPixelChanged(int);
@@ -39,6 +40,7 @@ public slots:
     void sortByIndex();
     void sortByColor();
     void sortBySize();
+    void updateSortTables();
 
 protected:
     void updateScrollBar();
@@ -53,6 +55,7 @@ protected:
     std::vector<int> sizeOrder;
     std::vector<int> colorOrder;
     std::vector<int> * order;
+    const NeuronFragmentData * neuronFragmentData;
 
 private:
     typedef QAbstractScrollArea super;
