@@ -10,7 +10,7 @@ static QList<CustomToolbarSetting*> settingList;
 
 static Qt::ToolBarArea getToolBarArea(QToolBar* toolBar);
 
-bool setPluginRootPath(QString plugin_path){pluginRootPath = plugin_path;}
+bool setPluginRootPath(QString plugin_path){pluginRootPath = plugin_path; return true;}
 bool setPluginRootPathAutomaticly()
 {
 	QDir testPluginsDir = QDir(qApp->applicationDirPath());
@@ -30,12 +30,16 @@ bool setPluginRootPathAutomaticly()
 	}
 #endif
 	pluginRootPath=testPluginsDir.absolutePath();
+
+	return true;
 }
-bool setToolbarSettingFilePath(QString file_path){settingFilePath = file_path;}
+bool setToolbarSettingFilePath(QString file_path){settingFilePath = file_path; return true;}
 bool setToolbarSettingFilePathAutomaticly()
 {
 	//settingFilePath = qApp->applicationDirPath() + QObject::tr("/.v3d_toolbar");
 	settingFilePath = QDir::homePath() + QObject::tr("/.v3d_toolbar");
+
+	return true;
 }
 
 void getAllFiles(QString dirname, QStringList & fileList)

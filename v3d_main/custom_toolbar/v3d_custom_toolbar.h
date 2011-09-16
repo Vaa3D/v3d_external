@@ -1,14 +1,17 @@
 #ifndef __CUSTOM_BUTTON_H__
 #define __CUSTOM_BUTTON_H__
 
-//#define  __v3d_custom_toolbar_plugin__
+#if defined(_WIN32) || defined(_WIN64)
+#define  __v3d_custom_toolbar_plugin__
+#endif
+
 #define __hierarchical_file_menu__
 
 #include <QtGui>
 #include <map>
 
 #ifdef __v3d_custom_toolbar_plugin__
-	#include <v3d_interface.h>
+	#include "../basic_c_fun/v3d_interface.h"
 #else
 	#include "../v3d/mainwindow.h"
 	#include "../basic_c_fun/v3d_interface.h"
