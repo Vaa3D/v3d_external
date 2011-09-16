@@ -1056,14 +1056,18 @@ template <class T> bool reslice_Z(T * & invol1d, V3DLONG * sz, double xy_rez, do
   double z_rez_new = xy_rez;
   V3DLONG clen_out = sz[3];
 
-  T * outvol1d = new T [xlen_out*ylen_out*zlen_out*clen_out];
+  T * outvol1d = 0;
+  T **** outvol4d=0, ****invol4d=0;
+
+  try
+  {
+  outvol1d =  new T [xlen_out*ylen_out*zlen_out*clen_out];
   if (!outvol1d)
   {
     fprintf(stderr,"Fail to allocate memory for the output volume 1d in reslice_Z().\n");
 	return false;
   }
 
-  T **** outvol4d=0, ****invol4d=0;
   new4dpointer(invol4d, sz[0], sz[1], sz[2], sz[3], invol1d);
   new4dpointer(outvol4d, xlen_out, ylen_out, zlen_out, clen_out, outvol1d);
   if (!invol4d || !outvol4d)
@@ -1072,6 +1076,12 @@ template <class T> bool reslice_Z(T * & invol1d, V3DLONG * sz, double xy_rez, do
 	if (outvol4d) {delete4dpointer(outvol4d, xlen_out, ylen_out, zlen_out, clen_out); outvol4d=0;}
     fprintf(stderr,"Fail to allocate memory for the input/output volumes 4d in reslice_Z().\n");
 	return false;
+  }
+  }
+  catch(...)
+  {
+  fprintf(stderr, "Unable to allocate mmeory in reslice_Z().\n");
+  return false;
   }
 
   printf("#original slice=%ld original rez=%6.5f -> #output slices=%ld new rez=%6.5f\n", sz[2], z_rez, zlen_out, z_rez_new);
