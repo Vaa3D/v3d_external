@@ -537,6 +537,7 @@ void AnnotationWidget::entityWasSelected(const Entity *entity)
 void AnnotationWidget::selectNeuron(int index)
 {
     QString indexStr = QString("%1").arg(index);
+    if (! annotatedBranch) return;
     QSetIterator<EntityData *> i(annotatedBranch->entity()->entityDataSet);
     while (i.hasNext())
     {

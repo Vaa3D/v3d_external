@@ -5,7 +5,13 @@
 
 using namespace std;
 
-NeuronSelector::NeuronSelector() : index(-1)
+NeuronSelector::NeuronSelector(QObject * parentParam)
+    : QObject(parentParam)
+    , index(-1)
+    , annotationSession(NULL)
+    , sx(0), sy(0), sz(0)
+    , curNeuronBDxb(0), curNeuronBDyb(0), curNeuronBDzb(0)
+    , curNeuronBDxe(0), curNeuronBDye(0), curNeuronBDze(0)
 {
     // allow passing of QList<ImageMarker> through signals/slots
     qRegisterMetaType<QList<ImageMarker> >("QList<ImageMarker>");
@@ -14,6 +20,7 @@ NeuronSelector::NeuronSelector() : index(-1)
 // NeuronSelector init func.
 void NeuronSelector::init()
 {
+    if (! annotationSession) return;
     NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
     if (! volumeReader.hasReadLock()) return;
     const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
@@ -230,6 +237,7 @@ void NeuronSelector::setAnnotationSession(AnnotationSession* annotationSession)
             &annotationSession->getNeuronSelectionModel(), SLOT(clearSelection()));
     connect(&annotationSession->getVolumeData(), SIGNAL(dataChanged()),
             this, SLOT(init()));
+    init();
 }
 
 // 

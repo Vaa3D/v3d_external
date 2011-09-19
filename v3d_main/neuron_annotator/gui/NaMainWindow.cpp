@@ -790,9 +790,8 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
 
     // Neuron Selector update
     if (neuronSelector != NULL) delete neuronSelector;
-    neuronSelector = new NeuronSelector();
+    neuronSelector = new NeuronSelector(this);
     neuronSelector->setAnnotationSession(annotationSession);
-    neuronSelector->init();
 
     connect(ui.v3dr_glwidget, SIGNAL(neuronSelected(double,double,double)), neuronSelector, SLOT(updateSelectedPosition(double,double,double)));
     connect(neuronSelector, SIGNAL(landmarksClearNeeded()),

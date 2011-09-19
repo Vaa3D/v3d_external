@@ -14,7 +14,7 @@ class NeuronSelector : public QObject
     Q_OBJECT
 
 public:
-    NeuronSelector();
+    NeuronSelector(QObject * parent);
     ~NeuronSelector(){}
 
 public:
