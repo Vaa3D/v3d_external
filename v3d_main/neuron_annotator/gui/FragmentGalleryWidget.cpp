@@ -7,7 +7,7 @@ FragmentGalleryWidget::FragmentGalleryWidget(QWidget *pparent)
     : QAbstractScrollArea(pparent)
     , leftPixel(0)
     , order(&indexOrder)
-    , sortOrder(SORT_BY_SIZE)
+    , sortOrder(SORT_BY_INDEX)
     , neuronFragmentData(NULL)
 {
     assert(viewport());
