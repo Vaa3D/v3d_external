@@ -102,7 +102,12 @@ void AnnotationWidget::openOntology(Ontology *ontology)
         ontologyTreeModel = new OntologyTreeModel(ontology);
         ui->ontologyTreeView->setModel(ontologyTreeModel);
         ui->ontologyTreeView->expandAll();
-        ui->ontologyTreeView->header()->swapSections(1,0);
+
+        if (ui->ontologyTreeView->header()->visualIndex(1) > 0)
+        {
+            ui->ontologyTreeView->header()->swapSections(1,0);
+        }
+
         ui->ontologyTreeView->resizeColumnToContents(0);
         ui->ontologyTreeView->resizeColumnToContents(1);
     }
@@ -154,7 +159,20 @@ void AnnotationWidget::openAnnotatedBranch(AnnotatedBranch *annotatedBranch, boo
 
     annotatedBranchTreeModel = new AnnotatedBranchTreeModel(annotatedBranch);
     ui->annotatedBranchTreeView->setModel(annotatedBranchTreeModel);
-    ui->annotatedBranchTreeView->expandAll();
+
+    // Expand the root
+    ui->annotatedBranchTreeView->expand(annotatedBranchTreeModel->indexForId(*annotatedBranch->entity()->id));
+
+    // Expand the root's children
+    QSetIterator<EntityData *> i(annotatedBranch->entity()->entityDataSet);
+    while (i.hasNext())
+    {
+        EntityData *ed = i.next();
+        Entity *childEntity = ed->childEntity;
+        if (childEntity==0) continue;
+        ui->annotatedBranchTreeView->expand(annotatedBranchTreeModel->indexForId(*childEntity->id));
+    }
+
     ui->annotatedBranchTreeView->resizeColumnToContents(0);
     if (openStack) naMainWindow->openMulticolorImageStack(annotatedBranch->getFilePath());
 
@@ -510,6 +528,7 @@ void AnnotationWidget::removeAnnotationError(const QString &error)
 
 void AnnotationWidget::annotatedBranchTreeClicked(const QModelIndex & index)
 {
+    qDebug() << "AnnotationWidget::annotatedBranchTreeClicked";
     QMutexLocker locker(&mutex);
 
     EntityTreeItem *item = annotatedBranchTreeModel->node(index);
@@ -522,32 +541,52 @@ void AnnotationWidget::annotatedBranchTreeClicked(const QModelIndex & index)
 
 void AnnotationWidget::entityWasSelected(const Entity *entity)
 {
+    qDebug() << "AnnotationWidget::entityWasSelected"<<*entity->name;
     QString neuronNumStr = entity->getValueByAttributeName("Number");
-    if (*entity->entityType == "Tif 2D Image" && !neuronNumStr.isEmpty()) // TODO: change this to "Neuron Fragment"
+    if (!neuronNumStr.isEmpty())
     {
         bool ok;
         int neuronNum = neuronNumStr.toInt(&ok);
-        if (ok) emit neuronSelected(neuronNum);
+        if (ok)
+        {
+            if (*entity->entityType == "Tif 2D Image") // TODO: remove this case in the future
+            {
+                // This case is deprecated
+                emit neuronSelected(neuronNum);
+                return;
+            }
+            else if (*entity->entityType == "Neuron Fragment")
+            {
+                emit neuronSelected(neuronNum);
+                return;
+            }
+        }
     }
-    else {
-        emit neuronsDeselected();
-    }
+    emit neuronsDeselected();
 }
 
 void AnnotationWidget::selectNeuron(int index)
 {
+    qDebug() << "AnnotationWidget::selectNeuron"<<index;
+    if (!annotatedBranch) return;
+
     QString indexStr = QString("%1").arg(index);
-    if (! annotatedBranch) return;
-    QSetIterator<EntityData *> i(annotatedBranch->entity()->entityDataSet);
+
+    Entity *fragmentParentEntity = annotatedBranch->entity();
+    EntityData *nfed = annotatedBranch->entity()->getEntityDataByAttributeName("Neuron Fragments");
+    if (nfed!=0 && nfed->childEntity!=0) {
+        fragmentParentEntity = nfed->childEntity;
+    }
+
+    QSetIterator<EntityData *> i(fragmentParentEntity->entityDataSet);
     while (i.hasNext())
     {
         EntityData *ed = i.next();
         Entity *entity = ed->childEntity;
         if (entity==0) continue;
         QString neuronNum = entity->getValueByAttributeName("Number");
-        if (neuronNum == indexStr)
+        if (neuronNum == indexStr && selectedEntity!=entity)
         {
-            qDebug() << "Found neuron"<<index<<"Selecting"<<*entity->name;
             selectEntity(entity);
         }
     }
@@ -555,11 +594,13 @@ void AnnotationWidget::selectNeuron(int index)
 
 void AnnotationWidget::deselectNeurons()
 {
+    if (selectedEntity==0||selectedEntity->getValueByAttributeName("Number")==0) return;
     selectEntity(0);
 }
 
 void AnnotationWidget::selectEntity(const Entity *entity)
 {
+    qDebug() << "AnnotationWidget::selectEntity"<<(entity==0?"None":*entity->name);
     ui->annotatedBranchTreeView->clearSelection();
     selectedEntity = entity;
     if (entity!=0) ui->annotatedBranchTreeView->selectEntity(*entity->id);
