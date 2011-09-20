@@ -1612,6 +1612,9 @@ You can also resize the box by Ctrl + left mouse click.</string>
      <addaction name="actionV3DDefault"/>
      <addaction name="actionNeuronAnnotator"/>
     </widget>
+    <addaction name="actionShow_all_neurons_in_empty_space"/>
+    <addaction name="actionClear_Hide_All"/>
+    <addaction name="separator"/>
     <addaction name="actionShow_Crosshair"/>
     <addaction name="actionLink_viewers"/>
     <addaction name="separator"/>
@@ -1797,6 +1800,22 @@ You can also resize the box by Ctrl + left mouse click.</string>
   <action name="actionFoo">
    <property name="text">
     <string>Foo</string>
+   </property>
+  </action>
+  <action name="actionClear_Hide_All">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Show nothing</string>
+   </property>
+  </action>
+  <action name="actionShow_all_neurons_in_empty_space">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Show all neurons in empty space</string>
    </property>
   </action>
  </widget>

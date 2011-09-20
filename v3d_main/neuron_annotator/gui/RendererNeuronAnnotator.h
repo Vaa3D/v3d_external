@@ -14,6 +14,7 @@ public:
     RendererNeuronAnnotator(void* widget);
     virtual ~RendererNeuronAnnotator();
     virtual void loadVol();
+    virtual int hitMenu(int x, int y, bool b_glwidget);
     bool populateNeuronMaskAndReference(const My4DImage* my4Dmask, const My4DImage* referenceImage);
 
     void rebuildFromBaseTextures(const QList<int>& maskIndexList, QList<RGBA8*>& overlayList);

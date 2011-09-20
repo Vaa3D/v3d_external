@@ -48,6 +48,7 @@ signals:
     void progressValueChanged(int);
     void progressComplete();
     void progressMessageChanged(QString);
+    void progressAborted(QString);
     void landmarksChanged();
 
 public slots:
@@ -152,6 +153,8 @@ protected:
     // BrightnessCalibrator<unsigned char> brightnessCalibrator;
     const DataColorModel * incrementalDataColorModel;
     QCursor * rotateCursor;
+    SlotStatus toggleNeuronDisplayStatus; // help coalesce multiple toggle neuron events
+    SlotStatus updateFullVolumeStatus; // help coalesce multiple full update events
 };
 
 #endif // NA3DWIDGET_H

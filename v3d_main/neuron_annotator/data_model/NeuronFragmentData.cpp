@@ -82,6 +82,9 @@ void NeuronFragmentData::update()
         {
             const std::pair<float, float>& color2d = fragment2DColors[f];
             double hue = std::atan2(color2d.second, color2d.first) / (2.0 * 3.14159);
+            // restore 2-channel hue to range 0-0.5, instead of 0-0.25
+            if (dataProxy.sc == 2)
+                hue *= 2.0;
             d->setFragmentHue(f, (float) hue);
         }
     } // release locks

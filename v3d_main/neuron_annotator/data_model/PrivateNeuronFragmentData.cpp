@@ -51,6 +51,9 @@ void PrivateNeuronFragmentData::setFragmentSize(int index, int size)
 void PrivateNeuronFragmentData::setFragmentHue(int index, float hue)
 {
     // qDebug() << fragmentHues.size();
+    // clamp to 0.0-1.0 range
+    while (hue < 0) hue += 1.0;
+    while (hue >= 1.0) hue -= 1.0;
     if (fragmentHues.size() <= index) return;
     fragmentHues[index] = hue;
 }

@@ -174,6 +174,8 @@ NaMainWindow::NaMainWindow()
             this, SLOT(complete3DProgress()));
     connect(ui.v3dr_glwidget, SIGNAL(progressMessageChanged(QString)),
             this, SLOT(set3DProgressMessage(QString)));
+    connect(ui.v3dr_glwidget, SIGNAL(progressAborted(QString)),
+            this, SLOT(complete3DProgress()));
 
     // 3D volume cut
     connect(ui.v3dr_glwidget, SIGNAL(changeXCut0(int)), ui.XcminSlider, SLOT(setValue(int))); // x-cut

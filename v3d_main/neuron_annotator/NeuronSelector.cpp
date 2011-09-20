@@ -109,7 +109,7 @@ int NeuronSelector::getIndexSelectedNeuron()
 	//
         qDebug() << "NeuronSelector::getIndexSelectedNeuron index=" << index;
 
-        if(index <= 0) index = -1;
+        if(index < 0) index = -1; // Index zero is a real fragment
 	
 	return index;
 }
@@ -277,7 +277,7 @@ void NeuronSelector::updateSelectedPosition(double x, double y, double z)
 // highlight selected neuron
 QList<ImageMarker> NeuronSelector::highlightIndexNeuron()
 {
-    // qDebug() << "NeuronSelector::highlightIndexNeuron" << index << __FILE__ << __LINE__;
+    qDebug() << "NeuronSelector::highlightIndexNeuron" << index << __FILE__ << __LINE__;
     // list of markers
     QList<ImageMarker> listLandmarks;
 
@@ -301,6 +301,27 @@ QList<ImageMarker> NeuronSelector::highlightIndexNeuron()
     {
         return listLandmarks;
     }
+
+    // get neuron color
+    RGBA8 color;
+    color.r = 0; color.g = 255; color.b = 255; color.a = 128;// cyan
+    {
+       NeuronFragmentData::Reader fragmentReader(annotationSession->getNeuronFragmentData());
+       if (! annotationSession->getNeuronFragmentData().readerIsStale(fragmentReader)) {
+           qreal hue = (fragmentReader.getFragmentHues())[index];
+           qreal saturation = 0.8;
+           qreal value = 0.7;
+           qreal alpha = 1.0;
+           QColor c;
+           c.setHsvF(hue, saturation, value, alpha);
+           color.r = c.red();
+           color.g = c.green();
+           color.b = c.blue();
+           color.a = c.alpha();
+           qDebug() << "neuron color =" << c << hue << saturation << value << alpha;
+       }
+    }
+
     qDebug() << "NeuronSelector::highlightIndexNeuron" << __FILE__ << __LINE__;
     { // read lock stanza
         // const unsigned char *neuronMask = annotationSession->getNeuronMaskAsMy4DImage()->getRawData();
@@ -364,9 +385,9 @@ QList<ImageMarker> NeuronSelector::highlightIndexNeuron()
                             p.x = (V3DLONG)(sumx/(float)count+1.5); // 1-based
                             p.y = (V3DLONG)(sumy/(float)count+1.5);
                             p.z = (V3DLONG)(sumz/(float)count+1.5);
-                            RGBA8 c;
-                            c.r = 0; c.g = 255; c.b = 255; c.a = 128;// cyan
-                            p.color = c; // instead of random_rgba8(255);
+                            // RGBA8 c;
+                            // c.r = 0; c.g = 255; c.b = 255; c.a = 128;// cyan
+                            p.color = color; // instead of random_rgba8(255);
                             p.radius = 1; // instead of 5
                             p.on = true;
                             p.shape = 2; // 2: dodecahedron

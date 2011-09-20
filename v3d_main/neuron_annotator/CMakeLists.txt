@@ -30,6 +30,7 @@ QT4_WRAP_CPP(NA_MOC_SRCS
     data_model/VolumeColors.h
     data_model/Texture2dColors.h
     data_model/NaSharedDataSignaller.h
+    data_model/NeuronFragmentData.h
     geometry/CameraModel.h
     gui/AngleWidget.h
     gui/AnnotationWidget.h

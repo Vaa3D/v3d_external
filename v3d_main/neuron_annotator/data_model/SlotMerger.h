@@ -10,8 +10,11 @@ public:
     friend class SlotMerger;
     SlotStatus();
 
+    bool running() const {return isRunning;}
+
 private:
     bool isRunning;
+    int skippedCallCount;
 };
 
 // Slot merger helps merge multiple calls of a Qt slot into one call.
@@ -27,6 +30,7 @@ public:
     explicit SlotMerger(SlotStatus& statusParam);
     virtual ~SlotMerger();
     bool shouldRun() const;
+    int skippedCallCount() const;
 
 private:
     SlotStatus& status;
