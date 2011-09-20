@@ -53,8 +53,14 @@ QVariant getIcon(Entity *entity)
     else if (type=="Tif 2D Image") {
         return QIcon(":/neuron_annotator/resources/image.png");
     }
-    else if (type=="Tif 3D Image" || type=="LSM Stack" || type=="Tif 3D Label Mask") {
+    else if (type=="Tif 3D Image" || type=="LSM Stack" || type=="Tif 3D Label Mask" || type=="Stitched V3D Raw Stack") {
         return QIcon(":/neuron_annotator/resources/images.png");
+    }
+    else if (type=="Neuron Fragment") {
+        return QIcon(":/neuron_annotator/resources/brick.png");
+    }
+    else if (type=="Supporting Data") {
+        return QIcon(":/neuron_annotator/resources/folder_page.png");
     }
     else if (type=="Ontology Element" || type=="Ontology Root") {
         return getOntologyIcon(entity);

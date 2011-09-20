@@ -12,5 +12,6 @@
         <file>resources/page_white_code.png</file>
         <file>resources/page_white_text.png</file>
         <file>resources/page_white_edit.png</file>
+        <file>resources/brick.png</file>
     </qresource>
 </RCC>

@@ -36,8 +36,6 @@ void AnnotatedBranchTreeModel::setupModelData(Entity *entity, EntityTreeItem *pa
     AnnotationList *annotations = annotatedBranch->getAnnotations(*entity->id);
     if (annotations != NULL && !annotations->isEmpty())
     {
-        // TODO: Create annotation subnode?
-
         QListIterator<Entity *> i(*annotations);
         while (i.hasNext())
         {
