@@ -163,7 +163,7 @@ bool computeAdjustPara(Tdata *f, Tdata *g, V3DLONG szimg, float &a, float &b)
     meang /= (float)szimg;
     
     // least square
-    a = (sumfg - szimg*meanf*meang)/(sumgg - szimg*meang*meang);
+    a = (sumfg - (float)szimg*meanf*meang)/(sumgg - (float)szimg*meang*meang);
     b = meanf - a*meang;
     
     return true;
@@ -281,11 +281,6 @@ bool ireconstructing(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>
                         }
 
                         pTmp[idx] += (Tdata)(val*coef); // linear blending
-                        
-//                        if(pTmp[idx])
-//                            pTmp[idx] = (pTmp[idx] + val )/2; // Avg. Intensity
-//                        else
-//                            pTmp[idx] = val;
                         
                     }
                 }
@@ -431,10 +426,14 @@ bool ireconstructingwnorm(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, 
                         
                         float val = (float)(prelative[idx_r]);
                         
-                        // normalizing
-                        if(ii==adjparaList.at(ii).num_tile)
+                        V3DLONG itile;
+                        for(itile=0; itile<adjparaList.size(); itile++)
                         {
-                            val = val*adjparaList.at(ii).a[c] + adjparaList.at(ii).b[c];
+                            if(ii==adjparaList.at(itile).num_tile) break;
+                        }
+                        if(itile<adjparaList.size())
+                        {
+                            val = val*adjparaList.at(ii).a[c] + adjparaList.at(ii).b[c]; // normalizing
                         }
                         
                         //
@@ -445,13 +444,7 @@ bool ireconstructingwnorm(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, 
                             return false;
                         }
                         
-                        pTmp[idx] += (Tdata)(val*coef); // linear blending
-                        
-                        //                        if(pTmp[idx])
-                        //                            pTmp[idx] = (pTmp[idx] + val )/2; // Avg. Intensity
-                        //                        else
-                        //                            pTmp[idx] = val;
-                        
+                        pTmp[idx] += (Tdata)(val*coef); // linear blending                        
                     }
                 }
             }
@@ -503,8 +496,7 @@ QStringList ImageFusionPlugin::funclist() const
 
 bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output, V3DPluginCallback2 & v3d, QWidget * parent)
 {
-    // linear blending
-    if (func_name == tr("iblender"))
+    if (func_name == tr("iblender")) // linear blending
     {
         // parsing parameters
         if(input.size()<1) return false; // no inputs
@@ -780,10 +772,8 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             return false;
         }
     }
-    else if (func_name == tr("inormalizer"))
+    else if (func_name == tr("inormalizer")) // normalizing and linear blending
     {
-        // normalizing and linear blending
-        
         // parsing parameters
         if(input.size()<1) return false; // no inputs
         
@@ -1090,7 +1080,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
                 
                 try 
                 {
-                    // suppose fc = gc = 4
+                    // suppose fc = gc = vc
                     fol1d = new float [fc*pagesz_ol];
                     gol1d = new float [gc*pagesz_ol];
                 } 
@@ -1139,16 +1129,16 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
                 V3DLONG ii;
                 for (ii=0; ii<adjparaList.size(); ii++) 
                 {
-                    if(i==adjparaList.at(ii).num_tile) break;
+                    if(j==adjparaList.at(ii).num_tile) break;
                 }
                 
                 for(V3DLONG c=0; c<fc; c++)
                 {
-                    V3DLONG offsets_olc = c*dimxol*dimyol*dimzol;
+                    V3DLONG offsets_olc = c*pagesz_ol;
                     
                     float a,b;
                     
-                    if(!computeAdjustPara<float>(fol1d+offsets_olc, gol1d+offsets_olc, pagesz_ol, a, b));
+                    if(computeAdjustPara<float>(fol1d+offsets_olc, gol1d+offsets_olc, pagesz_ol, a, b)!=true)
                     {
                         printf("Fail to call function computeAdjustPara! \n");
                         return false;
@@ -1189,7 +1179,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             }
             
             //
-            if(!ireconstructingwnorm<unsigned char>((unsigned char *)pVImg, vim, 255, adjparaList))
+            if(ireconstructingwnorm<unsigned char>((unsigned char *)pVImg, vim, 255, adjparaList)!=true)
             {
                 printf("Fail to call function ireconstructing! \n");
                 return false;
@@ -1242,7 +1232,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             }
             
             //
-            if(!ireconstructingwnorm<unsigned short>((unsigned short *)pVImg, vim, 4095, adjparaList))
+            if(ireconstructingwnorm<unsigned short>((unsigned short *)pVImg, vim, 4095, adjparaList)!=true)
             {
                 printf("Fail to call function ireconstructing! \n");
                 return false;
