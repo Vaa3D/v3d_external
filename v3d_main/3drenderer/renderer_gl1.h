@@ -102,6 +102,8 @@ public:
 	virtual void blendTrack();       // called by paint()
      virtual void setRenderTextureLast(bool renderTextureLast);
 
+     virtual void _updateDragPoints(int x, int y); // For rubber editing. ZJL 110920
+
 // link to Rendering function
 protected:
 	virtual int processHit(int namelen, int names[], int x, int y, bool b_menu, char* pTip=0);	// called by selectObj. add the x and y parameters by Hanchuan Peng,090204
@@ -177,6 +179,8 @@ public:
 
 	virtual void togglePolygonMode() {polygonMode = (polygonMode +1) %4;} // FILL,LINE,POINT, transparent
 	virtual void toggleLineType();
+
+     virtual void toggleNStrokeCurveDrawing(); // For n-right-strokes curve shortcut ZJL 110920
 
 	//virtual void updateVolShadingOption();
 
@@ -289,7 +293,9 @@ protected:
      double getRgnPropertyAt(XYZ &pos); // ZJL 110830
      void solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index); // ZJL 110830
      void solveCurveRefineLast(); // ZJL 110905
-     void reorderNeuronIndexNumber(); // ZJL 110916
+     void reorderNeuronIndexNumber(V3DLONG curSeg_id, V3DLONG NI, bool newInLower); // ZJL 110916
+     void blendRubberNeuron(); // ZJL 110920
+     void solveCurveRubber();  //ZJL 110920
      V3DLONG edit_seg_id; // ZJL 110913
 
 	// in renderer_obj2.cpp

@@ -211,8 +211,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*actCurveCreate1=0, *actCurveCreate2=0, *actCurveCreate3=0, *actCurveCreate_pointclick=0,
 			*actCurveCreate_zoom=0, *actMarkerCreate_zoom=0,
 
-          *actCurveRefine=0, // ZJL 110905
-          *actCurveEditRefine=0, // ZJL 110913
+                        *actCurveRefine=0, // ZJL 110905
+                        *actCurveEditRefine=0, // ZJL 110913
 
 			*actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
 	        *actMarkerAblateOne_imaging=0, *actMarkerAblateAll_imaging=0,
@@ -304,6 +304,27 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			actCurveRefine->setIcon(QIcon(":/icons/strokeN.svg"));
 			actCurveRefine->setVisible(true);
 			actCurveRefine->setIconVisibleInMenu(true);
+
+
+               // Only enable the menu item if the click point is very close to a neuro seg
+               // ZJL 110920
+               // if (listNeuronTree.size()>=1 && w && curImg)
+               // {
+               //      // NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+               //      // V3DLONG n_id;
+               //      // if (p_tree)	{n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree);}
+               //      // if (n_id>=0)
+               //      {
+               //           // Edit the curve by refining or extending as in "n-right-strokes to define a curve (refine)"
+               //           listAct.append(actCurveEditRefine = new QAction("extend/refine nearest neuron-segment", w));
+               //           actCurveEditRefine->setIcon(QIcon(":/icons/strokeN.svg"));
+               //           actCurveEditRefine->setVisible(true);
+               //           actCurveEditRefine->setIconVisibleInMenu(true);
+               //           listAct.append(act = new QAction("", w)); act->setSeparator(true);
+               //      }
+               // }
+
+
 
 			//if (!(((iDrawExternalParameter*)_idep)->b_local)) //only enable the menu for global 3d viewer. as it seems there is a bug in the local 3d viewer. by PHC, 100821
 			{

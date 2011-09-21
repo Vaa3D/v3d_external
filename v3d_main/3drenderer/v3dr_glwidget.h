@@ -278,6 +278,8 @@ public slots:
 	virtual void toggleLineType();
 	virtual void toggleObjShader();
 
+     virtual void toggleNStrokeCurveDrawing(); // For n-right-strokes curve shortcut ZJL 110920
+
 	virtual void changeLineOption();
 	virtual void changeVolShadingOption();
 	virtual void changeObjShadingOption();

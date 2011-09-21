@@ -189,6 +189,8 @@ public:
 	virtual void updateVolShadingOption() {};
 	virtual void updateObjShadingOption() {};
 
+     virtual void toggleNStrokeCurveDrawing() {}; // For n-right-strokes curve shortcut ZJL 110920
+
 
 public:
 	int sShowTrack, curChannel;

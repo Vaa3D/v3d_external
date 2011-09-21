@@ -960,6 +960,10 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
 		    {
 		    	changeLineOption();
 			}
+              else if(IS_SHIFT_MODIFIER)
+              {
+                   toggleNStrokeCurveDrawing(); // For n-right-strokes curve shortcut ZJL 110920
+              }
 	  		break;
 
 #ifndef test_main_cpp
@@ -2398,6 +2402,16 @@ void V3dR_GLWidget::togglePolygonMode()
 	if (renderer)
 	{
 		renderer->togglePolygonMode();
+		POST_updateGL();
+	}
+}
+
+// For n-right-strokes curve shortcut ZJL 110920
+void V3dR_GLWidget::toggleNStrokeCurveDrawing()
+{
+     if (renderer)
+	{
+		renderer->toggleNStrokeCurveDrawing();
 		POST_updateGL();
 	}
 }

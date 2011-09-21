@@ -158,13 +158,14 @@ void Renderer_gl1::solveCurveRefineLast()
      XYZ vi = in_pti-end_posi;
      float vdot = dot(v0,vi);
 
+     // if vdot<0, the angle should be 90~270.
      // A. If the second curve is far from one end, discard it.
-     if ( (vdot < 0)&&(distf > 30) )
+     if ( (vdot < 0)&&(distf > 40) ) //30
      {
           return;
      }
      // B. join two curves
-     else if((vdot < 0)&&(distf < 30))
+     else if((vdot < 0)&&(distf <= 40)) //30
      {
           // update primary_seg.row
           V_NeuronSWC_unit nu;
@@ -192,13 +193,14 @@ void Renderer_gl1::solveCurveRefineLast()
                     nu.seg_id = last_seg_id;
                     // nu.nodeinseg_id = N0+j;
                     // if(j==NI-1) nu.nchild = 0;
+
                     // else nu.nchild = 1;
 
                     primary_seg.append(nu);
                }
 
                // scanning the whole tracedNeuron to order index n
-               reorderNeuronIndexNumber();
+               reorderNeuronIndexNumber(last_seg_id, NI, false);
           }
           // 2. insert inversed loc_veci after the last point of loc_vec0
           else if ( (end_pos0==pos0b)&&(end_posi==posib) )
@@ -223,7 +225,7 @@ void Renderer_gl1::solveCurveRefineLast()
                }
 
                // scanning the whole tracedNeuron to order index n
-               reorderNeuronIndexNumber();
+               reorderNeuronIndexNumber(last_seg_id, NI, false);
           }
           // 3. insert inversed loc_veci before the first point of loc_vec0
           else if ( (end_pos0==pos0a)&&(end_posi==posia) )
@@ -250,7 +252,7 @@ void Renderer_gl1::solveCurveRefineLast()
                primary_seg.row.at(NI).parent = last_n+NI; // the first node in the primary curvew
 
                // scanning the whole tracedNeuron to order index n
-               reorderNeuronIndexNumber();
+               reorderNeuronIndexNumber(last_seg_id, NI, true);
           }
           // 4. insert loc_veci before the first point of loc_vec0
           else if ( (end_pos0==pos0a)&&(end_posi==posib) )
@@ -277,7 +279,7 @@ void Renderer_gl1::solveCurveRefineLast()
                primary_seg.row.at(NI).parent = last_n+NI; // the first node in the primary curve
 
                // scanning the whole tracedNeuron to order index n
-               reorderNeuronIndexNumber();
+               reorderNeuronIndexNumber(last_seg_id, NI, true);
           }
      }
      // C. begin to refine the primary (first) curve using the second curve
@@ -651,17 +653,17 @@ void Renderer_gl1::solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ>
 #endif
      if (b_addthiscurve && selectMode==smCurveRefineInit)
      {
-          // V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-          // My4DImage* curImg =  v3dr_getImage4d(_idep);
-          // //if (w && curImg)
-          // V3DLONG last_n =curImg->tracedNeuron.maxnoden();
           addCurveSWC(loc_vec, chno);
      }
-     qDebug("End of solveCurveCenterV2()");
+
 }
 
 // scanning the whole tracedNeuron to order index n
-void Renderer_gl1::reorderNeuronIndexNumber()
+// variables from main function
+// V3DLONG curSeg_id; //curseg_id
+// V3DLONG NI; // number of inserted points
+// bool newInLower; // inserted points are in lower side
+void Renderer_gl1::reorderNeuronIndexNumber(V3DLONG curSeg_id, V3DLONG NI, bool newInLower)
 {
      // get the control points of the primary curve
      V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
@@ -670,15 +672,256 @@ void Renderer_gl1::reorderNeuronIndexNumber()
           curImg = v3dr_getImage4d(_idep);
 
      V3DLONG nseg=curImg->tracedNeuron.nsegs();
-     for(V3DLONG ii=0; ii<nseg; ii++)
+
+     V_NeuronSWC& curSeg = curImg->tracedNeuron.seg[curSeg_id];
+     // curSeg's info
+     V3DLONG cnsu = curSeg.nrows(); // this already includes NI
+     V3DLONG cn0, cnn; // min max n of curSeg before inserting NI points
+     if(newInLower==true)
      {
-          V3DLONG n=0;
-          V_NeuronSWC& segii = curImg->tracedNeuron.seg[ii];
-          for(V3DLONG i=0; i<segii.nrows(); i++)
+          cn0 = curSeg.row.at(NI).n;
+          cnn = curSeg.row.at( cnsu-1 ).n;
+     }else
+     {
+          cn0 = curSeg.row.at(0).n;
+          cnn = curSeg.row.at( cnsu-NI-1 ).n;
+     }
+
+     // before the curSeg
+     // Update segs whose parents' n are after the curSeg n
+     for(V3DLONG i=0; i<curSeg_id; i++)
+     {
+          V_NeuronSWC& segi = curImg->tracedNeuron.seg[i];
+          V3DLONG num=segi.nrows();
+          for(V3DLONG ii=0;ii<num; ii++)
           {
-               segii.row.at(i).n = n+1;
-               segii.row.at(i).parent = (segii.row.at(i).parent == -1)? -1:n;
-               n++;
+               V3DLONG p_old=segi.row.at(ii).parent;
+               // we assume that pp is not inside the inserted points
+               if(p_old>=0)
+               {
+                    if( (p_old >= cn0) && (p_old <= cnn)) // pp is on curSeg
+                    {
+                         if(newInLower==true)
+                              segi.row.at(ii).parent = p_old+NI;
+                         else
+                              segi.row.at(ii).parent = p_old;
+                    }
+                    else if(p_old>cnn) // pp is after curSeg
+                    {
+                         segi.row.at(ii).parent = p_old+NI;
+                    }
+               }
+          }
+     }
+     // the curSeg
+     // n: last_n~last_n+NI, curSeg.at(0).n ~ curSeg.at(num).n
+     // last_n does not include NI pts
+     // change curSeg's n to (n0~nn+NI)
+     for(V3DLONG j=0; j<cnsu; j++)
+     {
+          curSeg.row.at(j).n = cn0+j;
+          curSeg.row.at(j).parent = (curSeg.row.at(j).parent == -1)? -1:(cn0+j-1);
+     }
+
+     // after the curSeg
+     for(V3DLONG i=curSeg_id+1; i<nseg; i++)
+     {
+          V_NeuronSWC& segi = curImg->tracedNeuron.seg[i];
+          V3DLONG num=segi.nrows();
+          for(V3DLONG ii=0;ii<num; ii++)
+          {
+               V3DLONG pn = segi.row.at(ii).n; // old n
+               V3DLONG p_old = segi.row.at(ii).parent; // old p
+               segi.row.at(ii).n = pn+NI;
+               if(p_old==-1)
+                    segi.row.at(ii).parent = -1;
+               else if(p_old<cn0) // pp is before curSeg
+                    segi.row.at(ii).parent = p_old;
+               else if( (p_old >= cn0)&&(p_old <= cnn)) // pp is on curSeg
+               {
+                    if(newInLower==true)
+                         segi.row.at(ii).parent = p_old+NI;
+                    else
+                         segi.row.at(ii).parent = p_old;
+               }
+               else if(p_old>cnn) // pp is after curSeg
+               {
+                    segi.row.at(ii).parent = p_old+NI;
+               }
           }
      }
 }
+
+// this is used for keyboard short-cut for n-right-strokes curve drawing
+// short-cut: Shift-L
+void Renderer_gl1::toggleNStrokeCurveDrawing()
+{
+     selectMode = smCurveRefineInit;
+     b_addthiscurve = true;
+     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+
+     if (w)
+     { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+}
+
+// to refine the curve using rubber-band line
+// Steps:
+//   1. right-clicking to select the curve, get segid
+//   2. right-clicking one point on curve. this is the centre point of rubber for moving
+//   3. moving the point with a window-size to drag the curve and refine it.
+void Renderer_gl1::solveCurveRubber()
+{
+     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+     My4DImage* curImg = 0;
+     if (w)
+          curImg = v3dr_getImage4d(_idep);
+
+     V3DLONG nseg=curImg->tracedNeuron.nsegs();
+     if(edit_seg_id<0) return;
+     // edit_seg_id is the current seg
+
+     V_NeuronSWC& curSeg = curImg->tracedNeuron.seg[edit_seg_id];
+
+}
+
+void Renderer_gl1::_updateDragPoints(int x, int y)
+{
+     // variables
+     bool bGetDragCenter;
+     int nDragWinSize;
+     // the neuron is copied from original and pos is changed
+     QList <NeuronSWC> listDraggedNeuron;
+
+     V3DLONG draggedCenterIndex;
+
+     // using the drag point as center point to get "nDragWinSize" points
+     if(!bGetDragCenter) // to process at the first click
+     {
+          // edit_seg_id is the current seg
+          if(edit_seg_id<0) return;
+
+          NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(edit_seg_id)));
+          V3DLONG center_id;
+          if (p_tree) {center_id = findNearestNeuronNode_WinXY(x, y, p_tree);}
+          if (center_id>=0)
+          {
+               NeuronSWC dragCenterSWC = p_tree->listNeuron.at(center_id);
+               draggedCenterIndex=dragCenterSWC.n;
+          }
+
+          V3DLONG start_id = center_id - nDragWinSize/2; // start point for draging
+          V3DLONG end_id = center_id + nDragWinSize/2;   // end point for draging
+
+          int nuNum=p_tree->listNeuron.size();
+          if(start_id < 0)
+               start_id = 0;
+          if(end_id >= nuNum)
+               end_id = nuNum-1;
+
+          listDraggedNeuron.clear();
+          for(V3DLONG j=start_id; j<= end_id; j++)
+          {
+               NeuronSWC nus=p_tree->listNeuron.at(j);
+               listDraggedNeuron.append(nus);
+          }
+     }else
+     {
+          // this pos is always the drag point
+          MarkerPos pos;
+          pos.x = x;
+          pos.y = y;
+          for (int i=0; i<4; i++)
+               pos.view[i] = viewport[i];
+          for (int i=0; i<16; i++)
+          {
+               pos.P[i]  = projectionMatrix[i];
+               pos.MV[i] = markerViewMatrix[i];
+          }
+
+          XYZ dragPt = getCenterOfMarkerPos(pos);
+          // update drag point's XYZ and other
+          // get dragged center neuron
+          NeuronSWC centerNeuron;
+          for (int i=0; i<listDraggedNeuron.size(); i++)
+          {
+               V3DLONG ind = listDraggedNeuron.at(i).n;
+               if(ind == draggedCenterIndex)
+               {
+                    centerNeuron = listDraggedNeuron.at(i);
+                    break;
+               }
+          }
+
+          centerNeuron.x = dragPt.x;
+          centerNeuron.y = dragPt.y;
+          centerNeuron.z = dragPt.z;
+     }
+
+}
+
+// void Renderer_gl1::updateDragedCoords(XYZ &c_pt)
+// {
+//      XYZ s_pt, e_pt, c_pt;
+//      int numd==listDraggedNeuron.size();
+//      if(numd<=0) return;
+//      s_pt.x = listDraggedNeuron.at(0).x;
+//      s_pt.y = listDraggedNeuron.at(0).y;
+//      s_pt.z = listDraggedNeuron.at(0).z;
+
+//      e_pt.x = listDraggedNeuron.at(numd-1).x;
+//      e_pt.y = listDraggedNeuron.at(numd-1).y;
+//      e_pt.z = listDraggedNeuron.at(numd-1).z;
+
+
+// }
+
+
+// blend rubber-bank line like neuron dynamically when editing an existing neuron
+void Renderer_gl1::blendRubberNeuron()
+{
+	// if (listDraggedNeuron.size()<1)  return;
+
+	// int N = listDragedNeuron.size();
+
+	// glPushAttrib(GL_ENABLE_BIT);
+	// glEnable(GL_BLEND);
+	// glBlendEquationEXT(GL_FUNC_ADD_EXT);
+	// glBlendColorEXT(1, 1, 1, 0.3);
+	// glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA); // constant Alpha
+	// glDisable(GL_DEPTH_TEST);
+
+	// glMatrixMode(GL_PROJECTION);
+	// 	glPushMatrix();
+	// 	glLoadIdentity();
+	// 	gluOrtho2D(0, 1, 1, 0);  // OpenGL is bottom to top
+	// glMatrixMode(GL_MODELVIEW);
+	// 	glPushMatrix(); //100801
+	// 	glLoadIdentity();
+
+	// glLineWidth(5);
+     // glPushMatrix();
+	// glBegin(GL_LINES);
+
+	// glColor3ub(0,255,255);
+	// for (int i=0; i<N; i++)
+	// {
+	// 	const NeuronSWC &dnu = listDraggedNeuron.at(i);
+	// 	double x = dun.x;
+	// 	double y = dnu.y;
+     //      double z = dnu.z;
+	// 	glVertex3d( x, y, z );
+	// }
+
+	// glEnd();
+     // glPopMatrix();
+	// glLineWidth(1);
+
+	// glMatrixMode(GL_PROJECTION);
+	// 	glPopMatrix();
+	// glMatrixMode(GL_MODELVIEW);
+	// 	glPopMatrix();
+	// glPopAttrib();
+	// //glFlush();
+}
+
+

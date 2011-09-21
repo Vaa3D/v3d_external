@@ -1,5 +1,5 @@
 /*
- * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).  
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
  * All rights reserved.
  */
 
@@ -7,7 +7,7 @@
 /************
                                             ********* LICENSE NOTICE ************
 
-This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it. 
+This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
 
 You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
 
@@ -131,16 +131,16 @@ bool setBlockAveValue(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1, V3DLON
 	if (!img3d || dim0<=0 || dim1<=0 || dim2<=0 ||
 		x0<0 || x0>=dim0 || y0<0 || y0>=dim1 || z0<0 || z0>=dim2)
 		return false;
-	
+
 	double xsteph=fabs(xstep)/2, ysteph=fabs(ystep)/2, zsteph=fabs(zstep)/2;
 	V3DLONG xs=x0-xsteph, xe=x0+xsteph,
 	ys=y0-ysteph, ye=y0+ysteph,
 	zs=z0-zsteph, ze=z0+zsteph;
-	
+
 	if (xs<0) xs=0; if (xe>=dim0) xe=dim0-1;
 	if (ys<0) ys=0; if (ye>=dim1) ye=dim1-1;
 	if (zs<0) zs=0; if (ze>=dim2) ze=dim2-1;
-	
+
 	V3DLONG i,j,k;
 	for (k=zs;k<=ze; k++)
 		for (j=ys;j<=ye; j++)
@@ -262,7 +262,7 @@ double edge_weight_func(double dist, double va, double vb, double max_v=255)
 {
 	double m_ab = (metric_func(va, max_v) + metric_func(vb, max_v))*0.5;
 	// (metric_func((va + vb, max_v)*0.5);
-	
+
 	const double min_weight_step = 1e-5;   //090915 more precise //float min-step:1e-6
 	return (dist * m_ab) *min_weight_step;
 }
@@ -286,7 +286,7 @@ double edge_weight_func(int it, double va, double vb, double max_v=255)
 //########################################################
 
 // return error message, 0 is no error
-// 
+//
 const char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1, V3DLONG dim2, //image
 		float zthickness, // z-thickness for weighted edge
 		//const V3DLONG box[6],  //bounding box
@@ -362,11 +362,11 @@ const char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3
 
 	V3DLONG start_nodeind, *end_nodeind = 0;
 	if (n_end_nodes>0) //101210 PHC
-		end_nodeind = new V3DLONG [n_end_nodes]; //100520, PHC	
+		end_nodeind = new V3DLONG [n_end_nodes]; //100520, PHC
 	else
 		printf("**************** n_end_nodes is 0, and thus do not need to allocate memory. *********************\n");
-		
-		
+
+
 	if (NODE_XYZ_OUT_OF_BOUND(x0,y0,z0))
 	{
                 printf("%s", s_error="Error happens: start_node out of bound! \n");
@@ -474,7 +474,7 @@ const char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3
 					Edge e = Edge(node_a, node_b);
 					edge_array.push_back( e );
 
-					Weight w =	edge_weight_func(it, va,vb, 255); 
+					Weight w =	edge_weight_func(it, va,vb, 255);
 					weights.push_back( w );
 					//=========================================================================================
 
@@ -507,10 +507,11 @@ const char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3
 #define _do_shortest_path_algorithm_
 	//========================================================================================================
 	// extract key code to function ???_shortest_path()
-	char* bgl_shortest_path(Edge *edge_array, V3DLONG nedges, Weight *weights, V3DLONG num_nodes, //input graph
+     // add const for solving error LNK2019 in MSVC. ZJL 110921
+	const char* bgl_shortest_path(Edge *edge_array, V3DLONG nedges, Weight *weights, V3DLONG num_nodes, //input graph
 					Node start_nodeind,
 					Node *plist); //output path
-	char* phc_shortest_path(Edge *edge_array, V3DLONG nedges, Weight *weights, V3DLONG num_nodes, //input graph
+	const char* phc_shortest_path(Edge *edge_array, V3DLONG nedges, Weight *weights, V3DLONG num_nodes, //input graph
 					Node start_nodeind,
 					Node *plist); //output path
 
@@ -559,7 +560,7 @@ const char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3
 				cc.parent = -1;
 				cc.nchild = 1; // root isn't leaf
 				mUnit.push_back(cc);
-				index_map[cc.n] = mUnit.size()-1; //fix this bug so that the nchild file of the root will be correct, PHC, 20101231 
+				index_map[cc.n] = mUnit.size()-1; //fix this bug so that the nchild file of the root will be correct, PHC, 20101231
 				printf("[start: x y z] %ld: %g %g %g \n", j, cc.x, cc.y, cc.z);
 			}
 			else if ( (k=plist[j]) != j ) // has parent
@@ -590,7 +591,7 @@ const char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3
 		{
 			printf("labeling to remove leaf child \n");
 			//remove leaf node (nchild==0)
-			
+
 			for (k=0; k<100; k++)
 			for (j=0; j<mUnit.size(); j++)
 			{
@@ -604,7 +605,7 @@ const char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3
 							min_cut_level, min_cut_level, min_cut_level);
 
 					//if (k<min_cut_level || va <= imgAve+imgStd*min_cut_level)
-				
+
 					if (k<5 /*min_cut_level*/ || va < imgAve+imgStd)
 					//if (k<5 || mUnit[i].nchild >=2) // preserve single brunch
 					{
@@ -748,12 +749,12 @@ const char* find_shortest_path_graphimg(unsigned char ***img3d, V3DLONG dim0, V3
 }
 
 // return error message, 0 is no error
-// 
+//
 const char* find_shortest_path_graphpointset(V3DLONG n_all_nodes,
 								  double xa[], double ya[], double za[], double va[], //the coordinates and values of all nodes
 								   float zthickness, // z-thickness for weighted edge
 								   std::vector<Edge> 	edge_array0,
-								  V3DLONG ind_startnode,        // start node's index 
+								  V3DLONG ind_startnode,        // start node's index
 								  V3DLONG n_end_nodes0,          // n_end_nodes == (0 for shortest path tree) (1 for shortest path) (n-1 for n pair path)
 								  V3DLONG ind_end_nodes0[],      // all end nodes' indexes
 								  vector< vector<V_NeuronSWC_unit> >& mmUnit, // change from Coord3D for shortest path tree
@@ -790,25 +791,25 @@ const char* find_shortest_path_graphpointset(V3DLONG n_all_nodes,
                 printf("%s", s_error="Error happens: all end nodes' indexes are out the valid bound. Check your data. Do nothing!\n");
 		return s_error;
 	}
-	
+
 	//now set parameters
 	V3DLONG num_nodes = n_all_nodes;
-	
+
 #define DIST_TWO_PTS(x1,y1,z1,x2,y2,z2,zthickness) 	(sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)+(z1-z2)*(z1-z2)*zthickness*zthickness))
 
 	V3DLONG start_nodeind = ind_startnode;
-	
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	//switch back to new[] from std::vector for *** glibc detected *** ??? on Linux
 	std::vector<Node> 	plist(num_nodes);		for (i=0;i<num_nodes;i++) plist[i]=i;
 	std::vector<Edge> 	edge_array;				edge_array.clear();
 	std::vector<Weight>	weights;				weights.clear();
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	
+
 #define _setting_weight_of_edges_
 	printf("setting weight of edges ......  ");
-	
-	// set up the graph. note that the edge is z-thickness weighted 
+
+	// set up the graph. note that the edge is z-thickness weighted
 	double maxw=0, minw=1e+6; //for debug info
 	double cur_dist;
 	n=0; m=0;
@@ -819,54 +820,54 @@ const char* find_shortest_path_graphpointset(V3DLONG n_all_nodes,
 		m=m+2;
 		k = edge_array0.at(ie).first;
 		j = edge_array0.at(ie).second;
-			
+
 		//=========================================================================================
 		// edge link
 		cur_dist = DIST_TWO_PTS(xa[k], ya[k], za[k], xa[j], ya[j], za[j], zthickness);
-		//if (cur_dist > ETH)	continue; //skip this edge is it is too V3DLONG 
+		//if (cur_dist > ETH)	continue; //skip this edge is it is too V3DLONG
 
 		Edge e = Edge(k, j);
 		edge_array.push_back( e );
-			
+
 		Weight w =	edge_weight_func(cur_dist, va[k], va[j], 255); //note that edge_weight_func is an overloaded func. Don't get confused.
 		weights.push_back( w );
 
 		//=========================================================================================
-		
+
 		e = Edge(j, k);
 		edge_array.push_back( e );
 		weights.push_back( w );
-		
+
 		n=n+2; // that is the correct position of n++
-			
+
 		if (w>maxw) maxw=w;	if (w<minw) minw=w;
 	}
 	printf(" minw=%g maxw=%g ", minw,maxw);
 	printf(" graph defined!\n");
-	
+
 	if (n != edge_array.size())
 	{
                 printf("%s", s_error="The number of edges is not consistent \n");
 		return s_error;
 	}
 	V3DLONG num_edges = n; // back to undirectEdge for less memory consumption
-	
+
 	printf("select %ld out of %ld links \n", n, m);
 	printf("total %ld nodes, total %ld edges \n", num_nodes, num_edges);
 	printf("start from #%ld to ", start_nodeind);
 	for(i=0; i<n_end_nodes; i++) printf("#%ld ", ind_end_nodes[i]); printf("\n");
 	printf("---------------------------------------------------------------\n");
-	
+
 #define _do_shortest_path_algorithm_
 	//========================================================================================================
-	// extract key code to function ???_shortest_path()
-	char* bgl_shortest_path(Edge *edge_array, V3DLONG nedges, Weight *weights, V3DLONG num_nodes, //input graph
+	// extract key code to function ???_shortest_path() // add const for solving error LNK2019 in MSVC,ZJL 110921
+	const char* bgl_shortest_path(Edge *edge_array, V3DLONG nedges, Weight *weights, V3DLONG num_nodes, //input graph
 							Node start_nodeind,
 							Node *plist); //output path
-	char* phc_shortest_path(Edge *edge_array, V3DLONG nedges, Weight *weights, V3DLONG num_nodes, //input graph
+	const char* phc_shortest_path(Edge *edge_array, V3DLONG nedges, Weight *weights, V3DLONG num_nodes, //input graph
 							Node start_nodeind,
 							Node *plist); //output path
-	
+
 	int code_select = 0; // BGL has the best speed and correctness
 	switch(code_select)
 	{
@@ -881,21 +882,21 @@ const char* find_shortest_path_graphpointset(V3DLONG n_all_nodes,
 	}
 	if (s_error)
 		return s_error;
-	
-	
+
+
 	// output node coordinates of the shortest path
 	mmUnit.clear();
 	V3DLONG nexist = 0;
-	
+
 	V_NeuronSWC_unit cc;
 	vector<V_NeuronSWC_unit> mUnit;
-	
+
 	if (n_end_nodes==0) // trace from start-->each possible node
 	{
 #define _output_shortest_path_TREE_
 		printf("trace from start-->each possible node \n");
 		mUnit.clear();
-		
+
 		std::map<double,V3DLONG> index_map;	index_map.clear();
 		// set nchild=0
 		for (j=0; j<num_nodes; j++)
@@ -922,21 +923,21 @@ const char* find_shortest_path_graphpointset(V3DLONG n_all_nodes,
 					cc.nchild = 0;
 					mUnit.push_back(cc);
 					//printf("[node: x y z] %ld: %g %g %g \n", j, cc.x, cc.y, cc.z);
-					
+
 					index_map[cc.n] = mUnit.size()-1;
 				}
 		}
-		
+
 		printf("counting parent->nchild \n");
 		// count parent->nchild
 		for (j=0; j<mUnit.size(); j++)
 		{
 			double parent = mUnit[j].parent;
 			V3DLONG i = index_map[parent]; // this is very fast
-			
+
 			mUnit[i].nchild++;
 		}
-		
+
 		printf("rearranging index number \n");
 		index_map.clear();
 		for (j=0; j<mUnit.size(); j++)
@@ -958,17 +959,17 @@ const char* find_shortest_path_graphpointset(V3DLONG n_all_nodes,
 				if (parent>=1)	mUnit[j].parent = index_map[parent];
 			}
 		}
-		
+
 		mmUnit.push_back(mUnit);
 	}
-	
+
 	else
 		for (int npath=0; npath<n_end_nodes; npath++) // n path of back tracing end-->start
 		{
 #define _output_shortest_path_N_
 			printf("the #%d path of back tracing end-->start \n", npath+1);
 			mUnit.clear();
-			
+
 			j = ind_end_nodes.at(npath);//end_nodeind[npath]; //search from the last one
 			if (j<0 || j>=num_nodes) // for the end_node out of ROI
 			{
@@ -982,34 +983,34 @@ const char* find_shortest_path_graphpointset(V3DLONG n_all_nodes,
 			cc.parent = cc.n +1;
 			printf("[end: x y z] %ld: %g %g %g ", j, cc.x, cc.y, cc.z);
 			printf("\n");
-			
+
 			mUnit.push_back(cc);
-			
+
 			for (k=0;k<n;k++) //at most n edge links
 			{
 				V3DLONG jj = j;	j = plist[j];
-				
+
 				if (j==jj)
 				{
 					mUnit.clear();
                                         printf("%s", s_error="Error happens: this path is broken because a node has a self-link!"); printf(" [j->p(j)] %ld->%ld \n", jj, j);
 					break;
 				}
-				
+
 				if (j>=num_nodes)
 				{
 					mUnit.clear();
                                         printf("%s", s_error="Error happens: this node's parent has an index out of range!"); printf(" [j->p(j)] %ld->%ld \n", jj, j);
 					break;
 				}
-				
+
 				if (j<0) // should not be reached, because stop back trace at his child node
 				{
 					mUnit.clear();
                                         printf("%s", s_error="find the negative node, which should indicate the root has been reached over."); printf(" [j->p(j)] %ld->%ld \n", jj, j);
 					break;
 				}
-				
+
 				if (j!=start_nodeind)
 				{
 					cc.x = xa[j];
@@ -1029,15 +1030,15 @@ const char* find_shortest_path_graphpointset(V3DLONG n_all_nodes,
 					cc.parent = -1;
 					mUnit.push_back(cc);
 					printf("[start: x y z] %ld: %g %g %g \n", j, cc.x, cc.y, cc.z);
-					
+
 					break; //STOP back tracing
 				}
 			}
 			nexist += mUnit.size();
-			
+
 			if (mUnit.size()>=2)	mmUnit.push_back(mUnit);
 		}
-	
+
 	if (mmUnit.size())	return 0;
 	return s_error;
 }
@@ -1144,8 +1145,8 @@ const char* phc_shortest_path(Edge *edge_array, V3DLONG n_edges, Weight *weights
 		if (p) {delete p; p=0;}
 		return s_error;
 	}
-
-	char* copyEdgeSparseData2Adj(Edge *edge_array, V3DLONG n_edges, Weight *weights, V3DLONG n_nodes,
+     // add const for solving error LNK2019 in MSVC, ZJL 110921
+	const char* copyEdgeSparseData2Adj(Edge *edge_array, V3DLONG n_edges, Weight *weights, V3DLONG n_nodes,
 							  vector <connectionVal> * adjMatrix,
 							  float &minn,  float &maxx);
 
@@ -1289,7 +1290,7 @@ void fitPosition(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1, V3DLONG dim
 							float &x, float &y, float &z,  float* D, float zthickness) // 090602: add tangent D to remove movement of tangent direction
 {
 	if (zthickness<=0) { zthickness=1.0; printf("Your zthickness value in fitPosition() is invalid. disable it (i.e. reset it to 1) in computation.\n"); }//if it an invalid value then reset
-	
+
 	double s, cx,cy,cz;
 	s = cx = cy = cz = 0;
 
@@ -1300,15 +1301,15 @@ void fitPosition(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1, V3DLONG dim
 		for (double dy= -ir; dy <= +ir; ++dy)
 		{
 			double rtmpy = rtmpz+dy*dy;
-			if (rtmpy>r2) 
+			if (rtmpy>r2)
 				continue;
-				
+
 			for (double dx= -ir; dx <= +ir; ++dx)
 			{
 				double rtmpx = rtmpy+dx*dx;
 				if (rtmpx>r2)
 					continue;
-					
+
 				double r = sqrt(rtmpx);
 				if (r<=ir)
 				{
@@ -1609,7 +1610,7 @@ const char* merge_back_traced_paths(vector< vector<V_NeuronSWC_unit> >& mmUnit)
 			}
 
 			lastn_same_node = n_same_node;
-		
+
 		}//j -- along 1 branch
 	}//all branch & path
 

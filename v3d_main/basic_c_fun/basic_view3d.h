@@ -180,6 +180,8 @@ public:
 	virtual void toggleLineType() =0;
 	virtual void toggleObjShader() =0;
 
+     virtual void toggleNStrokeCurveDrawing()=0; // For n-right-strokes curve shortcut ZJL 110920
+
 	virtual void changeLineOption() =0;
 	virtual void changeVolShadingOption() =0;
 	virtual void changeObjShadingOption() =0;
