@@ -1,5 +1,4 @@
 #include "EntityAdapter.h"
-#include <QMap>
 #include <QtGui>
 
 EntityAdapter::EntityAdapter() {

@@ -8,6 +8,4 @@ class Entity;
 
 QString convertPathToMac(QString path);
 
-QVariant getIcon(Entity *entity);
-
 #endif // JACSUTIL_H

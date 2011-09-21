@@ -2,7 +2,7 @@
 #include "EntityTreeItem.h"
 #include "../../entity_model/Entity.h"
 #include "../../entity_model/AnnotatedBranch.h"
-#include "../../utility/JacsUtil.h"
+#include "../../utility/Icons.h"
 #include <QtGui>
 
 AnnotatedBranchTreeModel::AnnotatedBranchTreeModel(AnnotatedBranch *annotatedBranch, QObject *parent)
@@ -64,7 +64,7 @@ QVariant AnnotatedBranchTreeModel::data(const QModelIndex &index, int role) cons
 
     if (role == Qt::DecorationRole)
     {
-        return getIcon(item->entity());
+        return Icons::getIcon(item->entity());
     }
 
     if (role != Qt::DisplayRole)

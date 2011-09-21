@@ -165,6 +165,7 @@ HEADERS += \
     ../neuron_annotator/NeuronSelector.h \
     ../neuron_annotator/ExportFile.h \
     ../neuron_annotator/utility/JacsUtil.h \
+    ../neuron_annotator/utility/Icons.h \
     ../neuron_annotator/utility/DataThread.h \
     ../neuron_annotator/utility/ConsoleObserver.h \
     ../webservice/gsoap2/stdsoap2.h \
@@ -246,6 +247,7 @@ SOURCES += \
     ../neuron_annotator/NeuronSelector.cpp \
     ../neuron_annotator/ExportFile.cpp \
     ../neuron_annotator/utility/JacsUtil.cpp \
+    ../neuron_annotator/utility/Icons.cpp \
     ../neuron_annotator/utility/DataThread.cpp \
     ../neuron_annotator/utility/ConsoleObserver.cpp \
     ../webservice/gsoap2/stdsoap2.cpp \

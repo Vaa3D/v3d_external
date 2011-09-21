@@ -5,6 +5,7 @@
 #include "../../neuron_annotator/entity_model/OntologyAnnotation.h"
 #include "../console/cdsStub.h"
 #include <QHash>
+#include <QMap>
 
 //
 // This class converts between GSOAP-generated classes (which are unstable) and
