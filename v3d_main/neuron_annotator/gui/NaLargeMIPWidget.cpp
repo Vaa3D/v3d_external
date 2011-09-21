@@ -153,7 +153,7 @@ void NaLargeMIPWidget::paintEvent(QPaintEvent *event)
     // qDebug() << "paint MIP " << width() << ", " << height();
     painter.begin(this);
     painter.setRenderHint(QPainter::Antialiasing);
-    painter.setRenderHint(QPainter::SmoothPixmapTransform);
+    // painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
     // first fill background with black
     // painter.fillRect(0, 0, width(), height(), Qt::black);

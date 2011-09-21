@@ -77,7 +77,7 @@ void NaZStackWidget::paintEvent(QPaintEvent *event)
     painter.fillRect(0, 0, width(), height(), Qt::black);
 
     painter.setRenderHint(QPainter::Antialiasing);
-    painter.setRenderHint(QPainter::SmoothPixmapTransform);
+    // painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
     transformPainterToCurrentCamera(painter);
 
@@ -340,7 +340,9 @@ void NaZStackWidget::wheelEvent(QWheelEvent * e) // mouse wheel
     // qDebug() << "wheel";
     // cerr << "wheel event " << __LINE__ << __FILE__ << endl;
     // CMB 12-Aug-2011 - reverse sign to make direction match scroll wheel on scroll bar
-    setCurrentZSlice(getCurrentZSlice() - numTicks);
+    // setCurrentZSlice(getCurrentZSlice() - numTicks);
+    // zoom, not slice scan, for consistency with other viewers
+    wheelZoom(e->delta());
 }
 
 void NaZStackWidget::onMouseLeftDragEvent(int dx, int dy, QPoint pos) {
