@@ -31,7 +31,7 @@ using namespace std;
 //
 // image normalization and image blending
 //
-// inormalizer: 
+// inormalizer: normalizing and linear blending
 // iblender: linear blending
 //
 
@@ -45,13 +45,30 @@ const QString title = "Image Fusion";
 class AdjustPara
 {
 public:
-    AdjustPara()
+    void init(V3DLONG n)
     {
         a=NULL;
         b=NULL;
+        
+        try 
+        {
+            a = new float [n];
+            b = new float [n];
+            
+            memset(a, 0, sizeof(float)*n);
+            memset(b, 0, sizeof(float)*n);
+        } 
+        catch (...) 
+        {
+            printf("Fail to allocate memory for a and b!\n");
+            
+            clean();
+            
+            return;
+        }
     }
     
-    ~AdjustPara()
+    void clean()
     {
         if(a){delete []a; a=NULL;}
         if(b){delete []b; b=NULL;}
@@ -142,11 +159,14 @@ bool computeAdjustPara(Tdata *f, Tdata *g, V3DLONG szimg, float &a, float &b)
     a=0.0; b=0.0;
     
     //
-    float sumfg=0.0;
-    float sumgg=0.0;
+//    float sumfg=0.0;
+//    float sumgg=0.0;
     
     float meanf=0.0;
     float meang=0.0;
+    
+    float N = (float) szimg;
+    float coef = sqrt( (N-1)/N );
     
     for (V3DLONG i=0; i<szimg; i++) 
     {
@@ -156,14 +176,36 @@ bool computeAdjustPara(Tdata *f, Tdata *g, V3DLONG szimg, float &a, float &b)
         meanf += valf;
         meang += valg;
         
-        sumfg += valf*valg;
-        sumgg += valg*valg;
+//        sumfg += valf*valg;
+//        sumgg += valg*valg;
     }
-    meanf /= (float)szimg;
-    meang /= (float)szimg;
+    meanf /= N;
+    meang /= N;
     
     // least square
-    a = (sumfg - (float)szimg*meanf*meang)/(sumgg - (float)szimg*meang*meang);
+    // a might be negative, this will introduce some errors, will fix it later
+//    a = (sumfg - (float)szimg*meanf*meang)/(sumgg - (float)szimg*meang*meang);
+//    b = meanf - a*meang;
+
+
+    // use mean and standard deviation to solve a and b
+    // in this way, a will always be positive
+    float stdf=0.0, stdg=0.0;
+    for (V3DLONG i=0; i<szimg; i++) 
+    {
+        float valf=(float)f[i];
+        float valg=(float)g[i];
+        
+        stdf += (valf-meanf)*(valf-meanf);
+        stdg += (valg-meang)*(valg-meang);
+    }
+    stdf /= (N-1.0);
+    stdg /= (N-1.0);
+
+    stdf = sqrt(stdf);
+    stdg = sqrt(stdg);
+
+    a = stdf/stdg*coef;
     b = meanf - a*meang;
     
     return true;
@@ -193,7 +235,8 @@ bool ireconstructing(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>
         pTmp = new float [imgsz];
         memset(pTmp, 0.0, sizeof(float)*imgsz);
     } catch (...) {
-        printf("Fail to allocate memory!\n");
+        printf("Fail to allocate memory for pTmp!\n");
+        if(pTmp){delete []pTmp; pTmp=NULL;}
         return false;
     }
 
@@ -347,7 +390,8 @@ bool ireconstructingwnorm(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, 
         pTmp = new float [imgsz];
         memset(pTmp, 0.0, sizeof(float)*imgsz);
     } catch (...) {
-        printf("Fail to allocate memory!\n");
+        printf("Fail to allocate memory for pTmp!\n");
+        if(pTmp){delete []pTmp; pTmp=NULL;}
         return false;
     }
     
@@ -402,6 +446,12 @@ bool ireconstructingwnorm(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, 
         //suppose all tiles with same color dimensions
         if(rc>vc)
             rc = vc;
+
+        V3DLONG itile;
+        for(itile=0; itile<adjparaList.size(); itile++)
+        {
+            if(ii==adjparaList.at(itile).num_tile) break;
+        }
         
         //
         Tdata *prelative = (Tdata *)relative1d;
@@ -426,14 +476,10 @@ bool ireconstructingwnorm(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, 
                         
                         float val = (float)(prelative[idx_r]);
                         
-                        V3DLONG itile;
-                        for(itile=0; itile<adjparaList.size(); itile++)
-                        {
-                            if(ii==adjparaList.at(itile).num_tile) break;
-                        }
+                        
                         if(itile<adjparaList.size())
                         {
-                            val = val*adjparaList.at(ii).a[c] + adjparaList.at(ii).b[c]; // normalizing
+                            val = val*adjparaList.at(itile).a[c] + adjparaList.at(itile).b[c]; // normalizing
                         }
                         
                         //
@@ -444,7 +490,7 @@ bool ireconstructingwnorm(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, 
                             return false;
                         }
                         
-                        pTmp[idx] += (Tdata)(val*coef); // linear blending                        
+                        pTmp[idx] += val*coef; // linear blending                        
                     }
                 }
             }
@@ -666,8 +712,9 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             }
             catch (...)
             {
-                printf("Fail to allocate memory.\n");
-                return -1;
+                printf("Fail to allocate memory for pVImg.\n");
+                if(pVImg) {delete []pVImg; pVImg=NULL;}
+                return false;
             }
 
             //
@@ -720,8 +767,9 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             }
             catch (...)
             {
-                printf("Fail to allocate memory.\n");
-                return -1;
+                printf("Fail to allocate memory for pVImg.\n");
+                if(pVImg) {delete []pVImg; pVImg=NULL;}
+                return false;
             }
 
             //
@@ -940,21 +988,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             
             AdjustPara adjPara;
             
-            try 
-            {
-                adjPara.a = new float [vc]; // assume fc=gc
-                adjPara.b = new float [vc];
-            } 
-            catch (...)
-            {
-                printf("Fail to allocate memory!\n");
-                return false;
-            }
-            for(V3DLONG c=0; c<vc; c++)
-            {
-                adjPara.a[c]=0;
-                adjPara.b[c]=0;
-            }
+            adjPara.init(vc);
             adjPara.num_tile=ii;
             
             adjparaList.push_back(adjPara);
@@ -995,10 +1029,9 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
                 iz_e = vim.lut[i].end_pos[2] + vim.min_vim[2];
                 
                 // find whether they have common overlap region
-                if(   (ix_s>=jx_s && ix_s<=jx_e) || (ix_e>=jx_s && ix_e<=jx_e) 
-                   || (iy_s>=jy_s && iy_s<=jy_e) || (iy_e>=jy_s && iy_e<=jy_e) 
-                   || (iz_s>=jz_s && iz_s<=jz_e) || (iz_e>=jz_s && iz_e<=jz_e) 
-                   )
+                if(  ( (ix_s>=jx_s && ix_s<=jx_e) || (ix_e>=jx_s && ix_e<=jx_e) || (jx_s>=ix_s && jx_s<=ix_e) || (jx_e>=ix_s && jx_e<=ix_e) )
+                   && ( (iy_s>=jy_s && iy_s<=jy_e) || (iy_e>=jy_s && iy_e<=jy_e) || (jy_s>=iy_s && jy_s<=iy_e) || (jy_e>=iy_s && jy_e<=iy_e) )
+                   && ( (iz_s>=jz_s && iz_s<=jz_e) || (iz_e>=jz_s && iz_e<=jz_e) || (jz_s>=iz_s && jz_s<=iz_e) || (jz_e>=iz_s && jz_e<=iz_e) ) )
                 {
                     findoverlap = true;
                     break;
@@ -1074,7 +1107,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
                 V3DLONG dimzol= end_z-start_z+1;
                 
                 V3DLONG pagesz_ol = dimxol*dimyol*dimzol;
-                
+
                 float *fol1d = NULL;
                 float *gol1d = NULL;
                 
@@ -1086,7 +1119,11 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
                 } 
                 catch (...) 
                 {
-                    printf("Fail to allocate memory.\n");
+                    printf("Fail to allocate memory for fol1d and gol1d.\n");
+
+                    if (fol1d) {delete []fol1d; fol1d=NULL;}
+                    if (fol1d) {delete []fol1d; fol1d=NULL;}
+                    
                     return false;
                 }
                 
@@ -1095,19 +1132,19 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
                     V3DLONG offsets_fc = c*fx*fy*fz;
                     V3DLONG offsets_gc = c*gx*gy*gz;
                     
-                    V3DLONG offsets_olc = c*dimxol*dimyol*dimzol;
+                    V3DLONG offsets_olc = c*pagesz_ol;
                     
                     for(V3DLONG z=start_z; z<end_z; z++)
                     {
-                        V3DLONG offsets_fz = offsets_fc + (z+start_z-jz_s)*fx*fy;
-                        V3DLONG offsets_gz = offsets_gc + (z+start_z-iz_s)*gx*gy;
+                        V3DLONG offsets_fz = offsets_fc + (z-jz_s)*fx*fy;
+                        V3DLONG offsets_gz = offsets_gc + (z-iz_s)*gx*gy;
                         
                         V3DLONG offsets_olz = offsets_olc + (z-start_z)*dimxol*dimyol;
                         
                         for(V3DLONG y=start_y; y<end_y; y++)
                         {
-                            V3DLONG offsets_fy = offsets_fz + (y+start_y-jy_s)*fx;
-                            V3DLONG offsets_gy = offsets_gz + (y+start_y-iy_s)*gx;
+                            V3DLONG offsets_fy = offsets_fz + (y-jy_s)*fx;
+                            V3DLONG offsets_gy = offsets_gz + (y-iy_s)*gx;
                             
                             V3DLONG offsets_oly = offsets_olz + (y-start_y)*dimxol;
                             
@@ -1115,8 +1152,8 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
                             {
                                 V3DLONG idx = offsets_oly + x - start_x;
                                 
-                                fol1d[idx] = f1d[offsets_fy + (x+start_x-jx_s)];
-                                gol1d[idx] = g1d[offsets_gy + (x+start_x-ix_s)];
+                                fol1d[idx] = f1d[offsets_fy + (x-jx_s)];
+                                gol1d[idx] = g1d[offsets_gy + (x-ix_s)];
                             }
                         }
                     }
@@ -1160,6 +1197,12 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
                 tileList.push_back(j);
             } 
         }
+        // de-alloc
+//        while (!adjparaList.isEmpty()) 
+//        {
+//            adjparaList.at(0).clean();
+//            adjparaList.pop_front();
+//        }
         
         if(datatype_tile == V3D_UINT8)
         {
@@ -1174,8 +1217,11 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             }
             catch (...)
             {
-                printf("Fail to allocate memory.\n");
-                return -1;
+                printf("Fail to allocate memory for pVImg.\n");
+                
+                if(pVImg) {delete []pVImg; pVImg=NULL;}
+                
+                return false;
             }
             
             //
@@ -1227,8 +1273,11 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             }
             catch (...)
             {
-                printf("Fail to allocate memory.\n");
-                return -1;
+                printf("Fail to allocate memory for pVImg.\n");
+                
+                if(pVImg) {delete []pVImg; pVImg=NULL;}
+                
+                return false;
             }
             
             //
