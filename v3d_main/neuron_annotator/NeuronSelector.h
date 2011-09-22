@@ -26,7 +26,7 @@ public:
     QList<ImageMarker> highlightIndexNeuron(); // returns a list of points for the index neuron
 
 public slots:
-    void init();
+    void onVolumeDataChanged();
     void onSelectionModelChanged(); // updates highlight based on state of NeuronSelectionModel
     void updateSelectedPosition(double x, double y, double z);
 

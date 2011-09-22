@@ -13,6 +13,13 @@ NaLockableData::NaLockableData()
 /* virtual */
 NaLockableData::~NaLockableData()
 {
+    // Acquire a write lock before we delete this object,
+    // so pending Readers have a chance to finish.
+    // As usual, acquire the lock in a local block.
+    {
+        NaLockableDataBaseWriteLocker(*this);
+    }
+    // Stop our private computing thread.
     thread->quit();
     thread->wait(500);
 }
@@ -39,7 +46,7 @@ NaLockableDataBaseReadLocker::NaLockableDataBaseReadLocker(const NaLockableData&
 /* virtual */
 NaLockableDataBaseReadLocker::~NaLockableDataBaseReadLocker()
 {
-    if (hasReadLock())
+    if (m_hasReadLock)
     {
         m_lock->unlock();
         m_hasReadLock = false;
@@ -58,7 +65,7 @@ bool NaLockableDataBaseReadLocker::hasReadLock() const
 // If refreshLock returns "false", stop reading and return, to pop this BaseReadLocker off the stack.
 bool NaLockableDataBaseReadLocker::refreshLock()
 {
-    if (hasReadLock())
+    if (m_hasReadLock)
     {
         m_lock->unlock();
         m_hasReadLock = false;
@@ -88,6 +95,7 @@ void NaLockableDataBaseReadLocker::checkRefreshTime() {
     m_intervalTime.restart();
 }
 
+/*
 void NaLockableDataBaseReadLocker::unlock()
 {
     if (hasReadLock()) {
@@ -95,6 +103,7 @@ void NaLockableDataBaseReadLocker::unlock()
         m_hasReadLock = false;
     }
 }
+ */
 
 
 

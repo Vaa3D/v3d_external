@@ -65,12 +65,13 @@ void NutateThread::unpause() {paused = false;}
 //////////////////
 
 NaMainWindow::NaMainWindow()
-    : nutateThread(NULL), statusProgressBar(NULL), neuronSelector(NULL)
+    : nutateThread(NULL), statusProgressBar(NULL)
 {
     ui.setupUi(this);
 
-    //QMetaObject::connectSlotsByName(this); This is apparently already called by setupUi, so calling it again creates repeat trigger events
     dataFlowModel=0;
+    // TODO - neuronSelector should probably be a member of Na3DViewer, not of NaMainWindow
+    neuronSelector = new NeuronSelector(this);
 
     // Create stubs for recent file menu
     for (int i = 0; i < MaxRecentFiles; ++i) {
@@ -616,6 +617,7 @@ void NaMainWindow::on_actionScreenShot_triggered() {
 
 bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
 {
+    assert(! dataFlowModel);
     dataFlowModel = new DataFlowModel();
 
     // TODO - deprecate processUpdatedVolumeData() in favor of using downstream data flow components.
@@ -623,6 +625,8 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     ui.naLargeMIPWidget->setDataFlowModel(*dataFlowModel);
     ui.naZStackWidget->setDataFlowModel(*dataFlowModel);
     ui.fragmentGalleryWidget->setDataFlowModel(*dataFlowModel);
+    neuronSelector->setDataFlowModel(*dataFlowModel);
+
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(initialized()),
             this, SLOT(processUpdatedVolumeData()));
 
@@ -788,13 +792,6 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
         ui.ZcmaxSlider->setValue(imgProxy.sz-1);
     } // release lock
 
-    // bad
-
-    // Neuron Selector update
-    if (neuronSelector != NULL) delete neuronSelector;
-    neuronSelector = new NeuronSelector(this);
-    neuronSelector->setDataFlowModel(dataFlowModel);
-
     connect(ui.v3dr_glwidget, SIGNAL(neuronSelected(double,double,double)), neuronSelector, SLOT(updateSelectedPosition(double,double,double)));
     connect(neuronSelector, SIGNAL(landmarksClearNeeded()),
             ui.v3dr_glwidget, SLOT(clearLandmarks()));
@@ -828,6 +825,7 @@ bool NaMainWindow::closeAnnotationSession() {
     if (dataFlowModel!=0) {
         dataFlowModel->save();
         delete dataFlowModel;
+        dataFlowModel = NULL;
     }
     return true;
 }
@@ -921,7 +919,7 @@ void NaMainWindow::updateNeuronGallery()
         {
             GalleryButton* button = new GalleryButton(
                     *mipReader.getNeuronMip(i),
-                    QString("Neuron %1").arg(i), i);
+                    QString("Neuron fragment %1").arg(i), i);
             button->setNa3DWidget(ui.v3dr_glwidget);
             neuronGalleryButtonList.append(button);
             ui.fragmentGalleryWidget->appendFragment(button);

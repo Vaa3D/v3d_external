@@ -18,7 +18,7 @@ NeuronSelector::NeuronSelector(QObject * parentParam)
 }
 
 // NeuronSelector init func.
-void NeuronSelector::init()
+void NeuronSelector::onVolumeDataChanged()
 {
     if (! dataFlowModel) return;
     NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
@@ -236,8 +236,8 @@ void NeuronSelector::setDataFlowModel(const DataFlowModel& dataFlowModelParam)
     connect(this, SIGNAL(selectionClearNeeded()),
             &dataFlowModel->getNeuronSelectionModel(), SLOT(clearSelection()));
     connect(&dataFlowModel->getVolumeData(), SIGNAL(dataChanged()),
-            this, SLOT(init()));
-    init();
+            this, SLOT(onVolumeDataChanged()));
+    // init();
 }
 
 // 
