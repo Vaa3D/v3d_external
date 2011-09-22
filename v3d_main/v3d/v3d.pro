@@ -136,6 +136,7 @@ HEADERS += \
     ../neuron_annotator/utility/FileTreeSearcher.h \
     ../neuron_annotator/utility/SingleNeuronLsmSetReader.h \
     ../neuron_annotator/utility/StitchedFileUtility.h \
+    ../neuron_annotator/utility/ImageLoader.h \
     ../neuron_annotator/AnnotationSession.h \
     ../neuron_annotator/utility/NeuronMaskEntry.h \
     ../neuron_annotator/MultiColorImageStackNode.h \
@@ -250,6 +251,7 @@ SOURCES += \
     ../neuron_annotator/utility/Icons.cpp \
     ../neuron_annotator/utility/DataThread.cpp \
     ../neuron_annotator/utility/ConsoleObserver.cpp \
+    ../neuron_annotator/utility/ImageLoader.cpp \
     ../webservice/gsoap2/stdsoap2.cpp \
     ../webservice/console/envC.cpp \
     ../webservice/console/cdsC.cpp \

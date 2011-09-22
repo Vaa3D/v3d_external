@@ -7,6 +7,7 @@
 #include "../cell_counter/CellCounter3D.h"
 #include "../neuron_annotator/utility/SingleNeuronLsmSetReader.h"
 #include "../neuron_annotator/utility/StitchedFileUtility.h"
+#include "../neuron_annotator/utility/ImageLoader.h"
 
 using namespace std;
 
@@ -63,6 +64,14 @@ bool CommandManager::execute() {
             return false;
         }
         return stitchedFileUtility.execute();
+    } else if (firstArg==ImageLoader::getCommandLineDescription()) {
+        ImageLoader imageLoader;
+        int status=imageLoader.processArgs(argList);
+        if (status!=0) {
+            cout << getUsageString();
+            return false;
+        }
+        return imageLoader.execute();
     } else {
         cout << getUsageString();
         return false;
@@ -90,5 +99,10 @@ string CommandManager::getUsageString() {
     usage.append(StitchedFileUtility::getCommandLineDescription());
     usage.append("\n");
     usage.append(StitchedFileUtility::getUsage());
+    usage.append("\n");
+    usage.append(ImageLoader::getCommandLineDescription());
+    usage.append("\n");
+    usage.append(ImageLoader::getUsage());
+    usage.append("\n");
     return usage;
 }
