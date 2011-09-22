@@ -1,12 +1,13 @@
 #include "../3drenderer/renderer_gl2.h"
 #include "RendererNeuronAnnotator.h"
-#include "../AnnotationSession.h"
+#include "../DataFlowModel.h"
 #include "../3drenderer/v3dr_common.h"
 #include "../3drenderer/v3dr_glwidget.h"
 
 RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     : QObject(NULL), Renderer_gl2(w)
 {
+    // qDebug() << "RendererNeuronAnnotator constructor" << this;
     neuronMask=0;
     texture3DSignal=0;
     texture3DBackground=0;
@@ -15,6 +16,8 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     texture3DCurrent=0;
     textureSetAlreadyLoaded=false;
     masklessSetupStackTexture=false;
+
+    // qDebug() << this << texture3DCurrent << texture3DSignal << texture3DBackground << texture3DReference << texture3DBlank;
 
     // black background for consistency with other viewers
     RGBA32f bg_color;
@@ -35,7 +38,7 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
 }
 
 RendererNeuronAnnotator::~RendererNeuronAnnotator() {
-
+    // qDebug() << "RendererNeuronAnnotator destructor" << this;
 }
 
 void RendererNeuronAnnotator::loadVol() {
@@ -46,9 +49,9 @@ void RendererNeuronAnnotator::loadVol() {
 // as the texture buffer. It returns false if the source image is smaller
 // than the target buffer because this isn't implemented.
 
-bool RendererNeuronAnnotator::populateNeuronMaskAndReference(const My4DImage* my4Dmask, const My4DImage* referenceImage) {
-
-    qDebug() << "Start RendererNeuronAnnotator::populateNeuronMask()";
+bool RendererNeuronAnnotator::populateNeuronMaskAndReference(const My4DImage* my4Dmask, const My4DImage* referenceImage)
+{
+    // qDebug() << "Start RendererNeuronAnnotator::populateNeuronMask()";
 
     // Clean previous data
     if (neuronMask!=0) {
@@ -117,7 +120,7 @@ bool RendererNeuronAnnotator::populateNeuronMaskAndReference(const My4DImage* my
                 texture3DReference[offset] = referenceVoxel;
     }
 
-    qDebug() << "RendererNeuronAnnotator::populateNeuronMask() done";
+    // qDebug() << "RendererNeuronAnnotator::populateNeuronMask() done";
 
     return true;
 }
@@ -125,7 +128,7 @@ bool RendererNeuronAnnotator::populateNeuronMaskAndReference(const My4DImage* my
 
 bool RendererNeuronAnnotator::populateBaseTextures() {
 
-    qDebug() << "RendererNeuronAnnotator::populateBaseTextures() start";
+    // qDebug() << "RendererNeuronAnnotator::populateBaseTextures() start";
 
     // Sanity check
     if (texture3DSignal==0) {
@@ -173,7 +176,7 @@ bool RendererNeuronAnnotator::populateBaseTextures() {
                         }
                     }
 
-    qDebug() << "RendererNeuronAnnotator::populateBaseTextures() end";
+    // qDebug() << "RendererNeuronAnnotator::populateBaseTextures() end";
 
     return true;
 }
@@ -181,7 +184,7 @@ bool RendererNeuronAnnotator::populateBaseTextures() {
 // This is originally based on version from Renderer_gl1
 void RendererNeuronAnnotator::setupStackTexture(bool bfirst)
 {
-    qDebug() << "RendererNeuronAnnotator::setupStackTexture() - start";
+    // qDebug() << "RendererNeuronAnnotator::setupStackTexture() - start";
 
     if (masklessSetupStackTexture) {
 
@@ -203,10 +206,10 @@ void RendererNeuronAnnotator::setupStackTexture(bool bfirst)
         fillY = _getTexFillSize(realY);
         fillZ = _getTexFillSize(realZ);
 
-        qDebug("	texture:   real = %dx%dx%d   fill = %dx%dx%d",  realX, realY, realZ,  fillX, fillY, fillZ);
+        // qDebug("	texture:   real = %dx%dx%d   fill = %dx%dx%d",  realX, realY, realZ,  fillX, fillY, fillZ);
     }
 
-    qDebug() << "RendererNeuronAnnotator::setupStackTexture() - end";
+    // qDebug() << "RendererNeuronAnnotator::setupStackTexture() - end";
 }
 
 bool RendererNeuronAnnotator::initializeTextureMasks() {
@@ -236,7 +239,7 @@ void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf)
     // On subsequent load, some parameters might not be set yet.
     if (! (realX && realY && realZ && imageX && imageY && imageZ) ) return;
 
-    makeCurrent();
+    // makeCurrent();
     int sliceCount=0;
 
     for (int stack_i=1; stack_i<=3; stack_i++)
@@ -321,7 +324,6 @@ void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf)
                     int prog = sliceCount*100 / (realX + realY + realZ);
                     // updateProgressDialog(dialog, prog);
 
-                    // attempt to get away from that horrible horrible hyper-modal stack-drilling unthreadable progress dialog
                     if (! (sliceCount % 20)) {
                         emit progressValueChanged(prog);
                         // processEvents() kludge as long as texture updates are in GUI thread
@@ -340,6 +342,13 @@ void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf)
     emit progressComplete();
 }
 
+const RGBA8* RendererNeuronAnnotator::getTexture3DCurrent() const {
+    // qDebug() << "getTexture3DCurrent()";
+    // qDebug() << this << texture3DCurrent << texture3DSignal << texture3DBackground << texture3DReference << texture3DBlank;
+    // qDebug() << __FILE__ << __LINE__;
+    return texture3DCurrent;
+}
+
 void RendererNeuronAnnotator::cleanExtendedTextures() {
     if (texture3DCurrent!=0 &&
         texture3DCurrent!=texture3DSignal &&
@@ -347,7 +356,10 @@ void RendererNeuronAnnotator::cleanExtendedTextures() {
         texture3DCurrent!=texture3DReference &&
         texture3DCurrent!=texture3DBlank)
     {
-        qDebug() << texture3DCurrent << texture3DSignal << texture3DBackground << texture3DReference << texture3DBlank;
+        // qDebug() << "RendererNeuronAnnotator::cleanExtendedTextures()";
+        // qDebug() << __FILE__ << __LINE__;
+        // qDebug() << this;
+        // qDebug() << this << texture3DCurrent << texture3DSignal << texture3DBackground << texture3DReference << texture3DBlank;
         delete [] texture3DCurrent;
         texture3DCurrent = NULL;
     }
@@ -365,10 +377,13 @@ void RendererNeuronAnnotator::rebuildFromBaseTextures(const QList<int>& maskInde
         texture3DCurrent=extendTextureFromMaskList(overlayList, maskIndexList);
     }
     load3DTextureSet(texture3DCurrent);
+    // qDebug() << "RendererNeuronAnnotator::rebuildFromBaseTextures()";
+    // qDebug() << this << texture3DCurrent << texture3DSignal << texture3DBackground << texture3DReference << texture3DBlank;
+    // qDebug() << __FILE__ << __LINE__;
 }
 
 RGBA8* RendererNeuronAnnotator::extendTextureFromMaskList(const QList<RGBA8*> & sourceTextures, const QList<int> & maskIndexList) {
-    qDebug() << "RendererNeuronAnnotator::extendTextureFromMaskList() start";
+    // qDebug() << "RendererNeuronAnnotator::extendTextureFromMaskList() start";
     RGBA8* newTexture=new RGBA8[realZ*realY*realX];
     int* quickList=new int[256];
     for (int m=0;m<256;m++) {
@@ -377,7 +392,7 @@ RGBA8* RendererNeuronAnnotator::extendTextureFromMaskList(const QList<RGBA8*> & 
     for (int m=0;m<maskIndexList.size();m++) {
         int value=maskIndexList.at(m);
         if (value>254) {
-            qDebug() << "Error: ignoring mask entry greater than 254";
+            qDebug() << "Error: ignoring mask entry greater than 254:" << value;
         } else {
             quickList[value+1]=value+1; // we want the array to be indexed by 1...n+1 rather than 0...n like maskIndexList
         }
@@ -435,7 +450,7 @@ RGBA8* RendererNeuronAnnotator::extendTextureFromMaskList(const QList<RGBA8*> & 
     }
     delete [] sourceTextureArray;
     delete [] quickList;
-    qDebug() << "RendererNeuronAnnotator::extendTextureFromMaskList() done";
+    // qDebug() << "RendererNeuronAnnotator::extendTextureFromMaskList() done";
     return newTexture;
 }
 
@@ -449,7 +464,7 @@ RGBA8* RendererNeuronAnnotator::extendTextureFromMaskList(const QList<RGBA8*> & 
 
 void RendererNeuronAnnotator::updateCurrentTextureMask(int neuronIndex, int state) {
 
-    qDebug() << "RendererNeuronAnnotator::updateCurrentTextureMask() start";
+    // qDebug() << "RendererNeuronAnnotator::updateCurrentTextureMask() start";
     makeCurrent();
 
     int maskIndex = neuronIndex+1;
@@ -995,9 +1010,9 @@ int RendererNeuronAnnotator::hitMenu(int x, int y, bool b_glwidget)
 
 
 RGBA8* RendererNeuronAnnotator::getOverlayTextureByAnnotationIndex(int index) {
-    if (index==AnnotationSession::REFERENCE_MIP_INDEX) {
+    if (index==DataFlowModel::REFERENCE_MIP_INDEX) {
         return texture3DReference;
-    } else if (index==AnnotationSession::BACKGROUND_MIP_INDEX) {
+    } else if (index==DataFlowModel::BACKGROUND_MIP_INDEX) {
         return texture3DBackground;
     }
 }

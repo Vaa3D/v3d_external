@@ -38,9 +38,9 @@ void GalleryMipImages::update()
         else if (neuronMipList.size() != nFrags) // number of fragments has changed
             mipWriter.allocateImages(nFrags);
         // background
-        *(overlayMipList[AnnotationSession::BACKGROUND_MIP_INDEX]) = mipReader.getImage(0)->scaledToHeight(height, Qt::SmoothTransformation);
+        *(overlayMipList[DataFlowModel::BACKGROUND_MIP_INDEX]) = mipReader.getImage(0)->scaledToHeight(height, Qt::SmoothTransformation);
         // reference
-        *(overlayMipList[AnnotationSession::REFERENCE_MIP_INDEX]) = mipReader.getImage(nFrags + 1)->scaledToHeight(height, Qt::SmoothTransformation);
+        *(overlayMipList[DataFlowModel::REFERENCE_MIP_INDEX]) = mipReader.getImage(nFrags + 1)->scaledToHeight(height, Qt::SmoothTransformation);
         // fragments
         for (int f = 1; f <= nFrags; ++f)
             *(neuronMipList)[f - 1] = mipReader.getImage(f)->scaledToHeight(height);

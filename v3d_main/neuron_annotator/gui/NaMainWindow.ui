@@ -347,16 +347,6 @@
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="Na3DWidget" name="v3dr_glwidget" native="true">
-                   <property name="minimumSize">
-                    <size>
-                     <width>320</width>
-                     <height>240</height>
-                    </size>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
                   <widget class="QWidget" name="widget_progress3d" native="true">
                    <property name="enabled">
                     <bool>true</bool>
@@ -394,6 +384,16 @@ background-color: rgb(0, 0, 0);</string>
                      </widget>
                     </item>
                    </layout>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="Na3DWidget" name="v3dr_glwidget" native="true">
+                   <property name="minimumSize">
+                    <size>
+                     <width>320</width>
+                     <height>240</height>
+                    </size>
+                   </property>
                   </widget>
                  </item>
                 </layout>

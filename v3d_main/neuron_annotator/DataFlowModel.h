@@ -1,5 +1,5 @@
-#ifndef ANNOTATIONSESSION_H
-#define ANNOTATIONSESSION_H
+#ifndef DATAFLOWMODEL_H
+#define DATAFLOWMODEL_H
 
 #include <QtCore>
 #include "utility/NeuronMaskEntry.h"
@@ -13,14 +13,14 @@
 #include "data_model/ZSliceColors.h"
 #include "data_model/VolumeColors.h"
 
-class AnnotationSession : public QObject
+class DataFlowModel : public QObject
 {
 
     Q_OBJECT
 
 public:
-    AnnotationSession(QObject* parentParam = NULL);
-    ~AnnotationSession();
+    DataFlowModel(QObject* parentParam = NULL);
+    ~DataFlowModel();
 
     const static int REFERENCE_MIP_INDEX;
     const static int BACKGROUND_MIP_INDEX;
@@ -65,7 +65,7 @@ public:
     const GalleryMipImages& getGalleryMipImages() const {return galleryMipImages;}
     const MipMergedData& getMipMergedData() const {return mipMergedData;}
     const ZSliceColors& getZSliceColors() const {return zSliceColors;}
-    const DataColorModel& getFast3DColorModel() {return fast3DColorModel;}
+    const DataColorModel& getFast3DColorModel() const {return fast3DColorModel;}
     // const VolumeColors& getVolumeColors() const {return volumeColors;}
 
 signals:
@@ -104,4 +104,4 @@ private:
     double zRatio;
 };
 
-#endif // ANNOTATIONSESSION_H
+#endif // DATAFLOWMODEL_H

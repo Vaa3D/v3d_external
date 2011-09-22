@@ -38,10 +38,11 @@ public:
 
     virtual void resizeEvent(QResizeEvent * event);
     void onMouseRightClickMenu(QMouseEvent * event, bool b_glwidget); // for mouse click outside glwidget
-    virtual void setAnnotationSession(AnnotationSession *annotationSession);
+    virtual void setDataFlowModel(const DataFlowModel&);
     void resetVolumeBoundary();
     virtual RendererNeuronAnnotator* getRendererNa()   {return dynamic_cast<RendererNeuronAnnotator*>(renderer);}
     virtual const RendererNeuronAnnotator* getRendererNa() const {return dynamic_cast<RendererNeuronAnnotator*>(renderer);} // const version CMB
+    void setResizeEnabled(bool b) {bResizeEnabled = b;}
 
 signals:
     void neuronSelected(double x, double y, double z);
@@ -123,6 +124,9 @@ public:
     bool screenShot(QString filename);
 
 protected:
+    bool tryUpdateFullVolume();
+    bool bResizeEnabled; // to disable resizes during progressBar show/hide
+    virtual void resizeGL(int, int);
     void updateCursor();
     void highlightNeuronAtPosition(QPoint pos);
     // Rotation helper methods

@@ -29,7 +29,7 @@ public:
 public:
     // NaLockableData automatically creates a separate QThread for itself.
     explicit NaLockableData();
-    virtual ~NaLockableData() {}
+    virtual ~NaLockableData();
 
 signals:
     void dataChanged(); // ready for downstream clients to read all data

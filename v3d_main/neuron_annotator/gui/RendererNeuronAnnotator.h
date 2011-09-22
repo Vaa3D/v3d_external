@@ -29,7 +29,7 @@ public:
         return 2.0 / boundingBox.Dmax();
     }
     RGBA8* getOverlayTextureByAnnotationIndex(int index);
-    RGBA8* getTexture3DCurrent() const {return texture3DCurrent;}
+    const RGBA8* getTexture3DCurrent() const;
     bool hasBadMarkerViewMatrix() const // to help avoid a crash
     {
         return (! (markerViewMatrix[0] == markerViewMatrix[0]));

@@ -137,7 +137,7 @@ HEADERS += \
     ../neuron_annotator/utility/SingleNeuronLsmSetReader.h \
     ../neuron_annotator/utility/StitchedFileUtility.h \
     ../neuron_annotator/utility/ImageLoader.h \
-    ../neuron_annotator/AnnotationSession.h \
+    ../neuron_annotator/DataFlowModel.h \
     ../neuron_annotator/utility/NeuronMaskEntry.h \
     ../neuron_annotator/MultiColorImageStackNode.h \
     ../neuron_annotator/NeuronAnnotatorResultNode.h \
@@ -195,7 +195,7 @@ SOURCES += \
     ../neuron_annotator/utility/FileTreeSearcher.cpp \
     ../neuron_annotator/utility/SingleNeuronLsmSetReader.cpp \
     ../neuron_annotator/utility/StitchedFileUtility.cpp \
-    ../neuron_annotator/AnnotationSession.cpp \
+    ../neuron_annotator/DataFlowModel.cpp \
     ../neuron_annotator/utility/NeuronMaskEntry.cpp \
     ../neuron_annotator/MultiColorImageStackNode.cpp \
     ../neuron_annotator/data_model/NaLockableData.cpp \

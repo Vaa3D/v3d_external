@@ -12,6 +12,7 @@ using namespace std;
 Na3DWidget::Na3DWidget(QWidget* parent)
         : V3dR_GLWidget(NULL, parent, "Title")
         , incrementalDataColorModel(NULL)
+        , bResizeEnabled(true)
 {
     if (renderer) {
         delete renderer;
@@ -25,9 +26,10 @@ Na3DWidget::Na3DWidget(QWidget* parent)
 
     // This method for eliminating tearing artifacts works but is supposedly obsolete;
     // http://stackoverflow.com/questions/5174428/how-to-change-qglformat-for-an-existing-qglwidget-at-runtime
-    QGLFormat glFormat(context()->format());
-    glFormat.setDoubleBuffer(true); // attempt to reduce tearing on Mac
-    setFormat(glFormat);
+    // valgrind has some complaints about the context
+    // QGLFormat glFormat(context()->format());
+    // glFormat.setDoubleBuffer(true); // attempt to reduce tearing on Mac
+    // setFormat(glFormat);
 
     rotateCursor = new QCursor(QPixmap(":/pic/rotate_icon.png"), 5, 5);
     // setMouseTracking(true); // for hover action in mouseMoveEvent()
@@ -58,9 +60,8 @@ Na3DWidget::~Na3DWidget()
 /* slot */
 void Na3DWidget::clearLandmarks()
 {
-    RendererNeuronAnnotator* ra = getRendererNa();
-    if (! ra) return;
-    ra->clearLandmarks();
+    if (! getRendererNa()) return;
+    getRendererNa()->clearLandmarks();
     updateHighlightNeurons();
 }
 
@@ -68,9 +69,8 @@ void Na3DWidget::clearLandmarks()
 void Na3DWidget::setLandmarks(const QList<ImageMarker> landmarks)
 {
     qDebug() << "Na3DWidget::setLandmarks" << landmarks.size();
-    RendererNeuronAnnotator * rend = getRendererNa();
-    if (! rend) return;
-    rend->setLandmarks(landmarks);
+    if (! getRendererNa()) return;
+    getRendererNa()->setLandmarks(landmarks);
     updateHighlightNeurons();
 }
 
@@ -94,6 +94,7 @@ void Na3DWidget::annotationModelUpdate(QString updateType)
 /* virtual */ /* public slot */
 void Na3DWidget::updateImageData()
 {
+    if (!renderer) return;
     // TODO - push progress signals into renderer, where it might be possible to make them finer
     emit progressMessageChanged(QString("Updating 3D viewer data"));
     emit progressValueChanged(30);
@@ -366,10 +367,9 @@ void Na3DWidget::onNotSingleClick()
 
 void Na3DWidget::highlightNeuronAtPosition(QPoint pos)
 {
-    RendererNeuronAnnotator * ra = getRendererNa();
-    if (!ra) return;
+    if (!getRendererNa()) return;
     // avoid crash w/ NaN markerViewMatrix
-    if (ra->hasBadMarkerViewMatrix()) {
+    if (getRendererNa()->hasBadMarkerViewMatrix()) {
         return;
     }
     // qDebug()<<"left click ... ...";
@@ -425,8 +425,18 @@ void Na3DWidget::mouseDoubleClickEvent(QMouseEvent * event)
 
 void Na3DWidget::resizeEvent(QResizeEvent * event)
 {
-    updateDefaultScale();
-    resizeGL(width(), height());
+    if (bResizeEnabled)
+    {
+        updateDefaultScale();
+        resizeGL(width(), height());
+    }
+}
+
+/* virtual */
+void Na3DWidget::resizeGL(int w, int h)
+{
+    if (bResizeEnabled)
+        V3dR_GLWidget::resizeGL(w, h);
 }
 
 void Na3DWidget::updateDefaultScale()
@@ -450,19 +460,19 @@ void Na3DWidget::updateDefaultScale()
 
 void Na3DWidget::updateRendererZoomRatio(qreal relativeScale)
 {
+    if (! getRendererNa()) return;
     // qDebug() << "update zoom";
-    RendererNeuronAnnotator* renderer = getRendererNa();
 
     float desiredPixelsPerImageVoxel = defaultScale * relativeScale;
     float desiredVerticalImageVoxelsDisplayed = height() / desiredPixelsPerImageVoxel;
     float desiredVerticalGlUnitsDisplayed = desiredVerticalImageVoxelsDisplayed * glUnitsPerImageVoxel();
-    float desiredVerticalApertureInRadians = 2.0 * atan2(desiredVerticalGlUnitsDisplayed/2.0f, (float)renderer->getViewDistance());
+    float desiredVerticalApertureInRadians = 2.0 * atan2(desiredVerticalGlUnitsDisplayed/2.0f, (float)getRendererNa()->getViewDistance());
     float desiredVerticalApertureInDegrees = desiredVerticalApertureInRadians * 180.0 / 3.14159;
     if (desiredVerticalApertureInDegrees > 180.0)
         desiredVerticalApertureInDegrees = 180.0; // gl limit
-    float desiredZoomRatio = desiredVerticalApertureInDegrees / renderer->getViewAngle();
-    renderer->setInternalZoomRatio(desiredZoomRatio);
-    renderer->setupView(width(), height());
+    float desiredZoomRatio = desiredVerticalApertureInDegrees / getRendererNa()->getViewAngle();
+    getRendererNa()->setInternalZoomRatio(desiredZoomRatio);
+    getRendererNa()->setupView(width(), height());
 }
 
 void Na3DWidget::updateFocus(const Vector3D& f)
@@ -572,16 +582,15 @@ void Na3DWidget::updateIncrementalColors()
 
 float Na3DWidget::glUnitsPerImageVoxel() const
 {
-    const RendererNeuronAnnotator* renderer = getRendererNa();
-    return renderer->glUnitsPerImageVoxel();
+    return getRendererNa()->glUnitsPerImageVoxel();
 }
 
 float Na3DWidget::getZoomScale() const
 { // in (vertical) screen pixels per image voxel at focus point
     // theta is half the true vertical view aperture in radians.
-    const RendererNeuronAnnotator* renderer = getRendererNa();
-    float theta = (renderer->getZoomedPerspectiveViewAngle() / 2.0) * (3.14159 / 180.0);
-    float screen_height_gl = 2.0 * renderer->getViewDistance() * std::tan(theta);
+    if (! getRendererNa()) return 1.0;
+    float theta = (getRendererNa()->getZoomedPerspectiveViewAngle() / 2.0) * (3.14159 / 180.0);
+    float screen_height_gl = 2.0 * getRendererNa()->getViewDistance() * std::tan(theta);
     float screen_pixels_per_gl_unit = height() / screen_height_gl;
     float answer = screen_pixels_per_gl_unit * glUnitsPerImageVoxel();
     // qDebug() << "screen pixels per image pixel = " << answer;
@@ -592,8 +601,7 @@ float Na3DWidget::getZoomScale() const
 
 void Na3DWidget::choiceRenderer()
 {
-    RendererNeuronAnnotator * ra = dynamic_cast<RendererNeuronAnnotator*>(renderer);
-    if (!ra) {
+    if (!getRendererNa()) {
         if (renderer) { // Renderer but not RendererNeuronAnnotator
             delete renderer;
             renderer = NULL;
@@ -602,13 +610,12 @@ void Na3DWidget::choiceRenderer()
         _isSoftwareGL = false;
         makeCurrent();
         GLeeInit();
-        ra = new RendererNeuronAnnotator(this);
-        renderer = ra;
-        connect(ra, SIGNAL(progressValueChanged(int)),
+        renderer = new RendererNeuronAnnotator(this);
+        connect(getRendererNa(), SIGNAL(progressValueChanged(int)),
                 this, SIGNAL(progressValueChanged(int)));
-        connect(ra, SIGNAL(progressComplete()),
+        connect(getRendererNa(), SIGNAL(progressComplete()),
                 this, SIGNAL(progressComplete()));
-        connect(ra, SIGNAL(progressMessageChanged(QString)),
+        connect(getRendererNa(), SIGNAL(progressMessageChanged(QString)),
                 this, SIGNAL(progressMessageChanged(QString)));
     }
 }
@@ -669,16 +676,16 @@ void Na3DWidget::paintGL()
 }
 
 /* virtual */
-void Na3DWidget::setAnnotationSession(AnnotationSession *annotationSession)
+void Na3DWidget::setDataFlowModel(const DataFlowModel& dataFlowModelParam)
 {
-    NaViewer::setAnnotationSession(annotationSession);
-    connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(initialized()),
+    NaViewer::setDataFlowModel(dataFlowModelParam);
+    connect(&dataFlowModelParam.getNeuronSelectionModel(), SIGNAL(initialized()),
           this, SLOT(onVolumeDataChanged()));
-    connect(this, SIGNAL(neuronClearAll()), &annotationSession->getNeuronSelectionModel(), SLOT(clearAllNeurons()));
-    connect(this, SIGNAL(neuronClearAllSelections()), &annotationSession->getNeuronSelectionModel(), SLOT(clearSelection()));
-    connect(this, SIGNAL(neuronIndexChanged(int)), &annotationSession->getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
+    connect(this, SIGNAL(neuronClearAll()), &dataFlowModelParam.getNeuronSelectionModel(), SLOT(clearAllNeurons()));
+    connect(this, SIGNAL(neuronClearAllSelections()), &dataFlowModelParam.getNeuronSelectionModel(), SLOT(clearSelection()));
+    connect(this, SIGNAL(neuronIndexChanged(int)), &dataFlowModelParam.getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
     // Fast-but-approximate color update
-    incrementalDataColorModel = &annotationSession->getFast3DColorModel();
+    incrementalDataColorModel = &dataFlowModelParam.getFast3DColorModel();
     connect(incrementalDataColorModel, SIGNAL(dataChanged()),
             this, SLOT(updateIncrementalColors()));
 }
@@ -698,16 +705,15 @@ void Na3DWidget::toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bo
             needFullUpdate = true; // some calls were discarded, so do full update
         }
         else { // just one call, perform clever single neuron update
-            RendererNeuronAnnotator* ra = (RendererNeuronAnnotator*)renderer;
             emit progressMessageChanged(QString("Updating textures"));
             QCoreApplication::processEvents();
-            ra->updateCurrentTextureMask(index, (checked ? 1 : 0));
+            getRendererNa()->updateCurrentTextureMask(index, (checked ? 1 : 0));
             // More toggles might have happened during the update
             if (toggleNeuronMerger.skippedCallCount() > 0) {
                 needFullUpdate = true;
             }
             else {
-                ra->paint();
+                getRendererNa()->paint();
                 update();
             }
         }
@@ -726,7 +732,7 @@ void Na3DWidget::onVolumeDataChanged()
     }
 
     {
-        NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+        NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
         if (! volumeReader.hasReadLock()) return;
         const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
         const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
@@ -746,20 +752,21 @@ void Na3DWidget::onVolumeDataChanged()
         resetView();
         updateCursor();
         RendererNeuronAnnotator* rend = getRendererNa();
-        if (! rend->populateNeuronMaskAndReference(neuronProxy.img0, refProxy.img0))
+        if (! getRendererNa()->populateNeuronMaskAndReference(neuronProxy.img0, refProxy.img0))
             qDebug() << "RendererNeuronAnnotator::populateNeuronMaskAndReference() failed";
         makeCurrent(); // Make sure subsequent OpenGL calls go here. (might make no difference here)
-        if (! rend->initializeTextureMasks())
+        if (rend != getRendererNa()) return; // stale
+        if (! getRendererNa()->initializeTextureMasks())
             qDebug() << "RendererNeuronAnnotator::initializeTextureMasks() failed";
     } // release locks
     resetVolumeBoundary();
-    setThickness(annotationSession->getZRatio());
+    setThickness(dataFlowModel->getZRatio());
     update();
 }
 
 void Na3DWidget::resetVolumeBoundary()
 {
-    NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+    NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
     if (! volumeReader.hasReadLock()) return;
     const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
     setXCut0(0); setXCut1(imgProxy.sx - 1);
@@ -775,23 +782,33 @@ void Na3DWidget::resetVolumeBoundary()
 
 void Na3DWidget::updateFullVolume()
 {
-    if (!renderer) return;
-    RendererNeuronAnnotator* ra = dynamic_cast<RendererNeuronAnnotator*>(renderer);
-    if (!ra) return;
+    // Coalesce queued calls to updateFullVolume
+    SlotMerger updateFullMerger(updateFullVolumeStatus);
+    if (! updateFullMerger.shouldRun())
+        return; // first call is already running
+    emit progressMessageChanged(QString("Updating all textures"));
+    if (tryUpdateFullVolume())
+        emit progressComplete();
+    else {
+        emit progressAborted("");
+        return;
+    }
+    getRendererNa()->paint();
+    update();
+}
+
+bool Na3DWidget::tryUpdateFullVolume()
+{
+    RendererNeuronAnnotator* ra = getRendererNa(); // Prepare to abort if renderer pointer gets stale later
+    if (! getRendererNa()) return false;
+    if (! dataFlowModel) return false;
     {
         // TODO - refresh these read locks frequently!
-        NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
-        if (! volumeReader.hasReadLock()) return;
-        NeuronSelectionModel::Reader selectionReader(annotationSession->getNeuronSelectionModel());
-        if (! selectionReader.hasReadLock()) return;
+        NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
+        if (! volumeReader.hasReadLock()) return false;
+        NeuronSelectionModel::Reader selectionReader(dataFlowModel->getNeuronSelectionModel());
+        if (! selectionReader.hasReadLock()) return false;
 
-        // Coalesce queued calls to updateFullVolume
-        // For some reason the initial full update fails when SlotMerger is in place.
-        SlotMerger updateFullMerger(updateFullVolumeStatus);
-        if (! updateFullMerger.shouldRun())
-            return; // first call is already running
-
-        emit progressMessageChanged(QString("Updating all textures"));
         // Change requiring full reload of texture image stacks
         QList<int> tempList;
         for (int i=0;i<selectionReader.getMaskStatusList().size();i++) {
@@ -803,29 +820,22 @@ void Na3DWidget::updateFullVolume()
         const QList<bool> overlayStatusList=selectionReader.getOverlayStatusList();
         for (int i=0;i<overlayStatusList.size();i++) {
             if (overlayStatusList.at(i)) {
-                RGBA8* texture = ra->getOverlayTextureByAnnotationIndex(i);
-                if (! texture) {
-                    emit progressAborted("");
-                    return; // something is not initialized yet?
-                }
+                // renderer can get out of sync...
+                RGBA8* texture = getRendererNa()->getOverlayTextureByAnnotationIndex(i);
+                if (! texture) return false; // something not initialized
                 overlayList.append(texture);
             }
         }
         QCoreApplication::processEvents(); // let gui catch up
+        if (ra != getRendererNa()) return false; // renderer changed during processEvents
         // make sure readers are OK
-        if (! volumeReader.refreshLock()) {
-            emit progressAborted("");
-            return;
-        }
-        if (! selectionReader.refreshLock()) {
-            emit progressAborted("");
-            return;
-        }
+        if (! volumeReader.refreshLock()) return false;
+        if (! selectionReader.refreshLock()) return false;
         makeCurrent();
-        ra->rebuildFromBaseTextures(tempList, overlayList);
+        getRendererNa()->rebuildFromBaseTextures(tempList, overlayList);
     } // release locks
-    ra->paint();
-    update();
+    if (ra != getRendererNa()) return false;
+    return true;
 }
 
 

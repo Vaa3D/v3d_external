@@ -30,7 +30,7 @@ NeuronFragmentData::NeuronFragmentData(const NaVolumeData& naVolumeDataParam)
 /* slot */
 void NeuronFragmentData::update()
 {
-    qDebug() << "NeuronFragmentData::update()" << __FILE__ << __LINE__;
+    // qDebug() << "NeuronFragmentData::update()" << __FILE__ << __LINE__;
     if (!naVolumeData) return;
     { // stack block containing read/write locks
         NaVolumeData::Reader volumeReader(*naVolumeData);

@@ -15,7 +15,7 @@
 #include "ui_NaMainWindow.h"
 #include "../../basic_c_fun/v3d_message.h"
 #include "../../v3d/v3d_application.h"
-#include "../AnnotationSession.h"
+#include "../DataFlowModel.h"
 #include "../MultiColorImageStackNode.h"
 #include "../NeuronAnnotatorResultNode.h"
 #include "../TimebasedIdentifierGenerator.h"
@@ -70,7 +70,7 @@ NaMainWindow::NaMainWindow()
     ui.setupUi(this);
 
     //QMetaObject::connectSlotsByName(this); This is apparently already called by setupUi, so calling it again creates repeat trigger events
-    annotationSession=0;
+    dataFlowModel=0;
 
     // Create stubs for recent file menu
     for (int i = 0; i < MaxRecentFiles; ++i) {
@@ -476,7 +476,7 @@ void NaMainWindow::openMulticolorImageStack(QString dirName)
             return;
     }
 
-    qDebug() << "NaMainWindow::openMulticolorImageStack() calling addDirToRecentFilesList with dir=" << imageDir.absolutePath();
+    // qDebug() << "NaMainWindow::openMulticolorImageStack() calling addDirToRecentFilesList with dir=" << imageDir.absolutePath();
     addDirToRecentFilesList(imageDir);
 }
 
@@ -520,7 +520,7 @@ void NaMainWindow::updateRecentFileActions()
 
 QString NaMainWindow::suggestedExportFilenameFromCurrentState(const NeuronSelectionModel::Reader& selectionReader)
 {
-    MultiColorImageStackNode* multiColorImageStackNode=this->annotationSession->getMultiColorImageStackNode();
+    MultiColorImageStackNode* multiColorImageStackNode=this->dataFlowModel->getMultiColorImageStackNode();
     QStringList lsmFilePathsList=multiColorImageStackNode->getLsmFilePathList();
     if (lsmFilePathsList.size()>0) {
         // First get filename prefix
@@ -530,10 +530,10 @@ QString NaMainWindow::suggestedExportFilenameFromCurrentState(const NeuronSelect
         QStringList extComponents=name.split(QRegExp("\\."));
         QString filenamePrefix=extComponents.at(0);
         // Next, add current state
-        if(selectionReader.getOverlayStatusList().at(AnnotationSession::REFERENCE_MIP_INDEX)) {
+        if(selectionReader.getOverlayStatusList().at(DataFlowModel::REFERENCE_MIP_INDEX)) {
             filenamePrefix.append("_R");
         }
-        if (selectionReader.getOverlayStatusList().at(AnnotationSession::BACKGROUND_MIP_INDEX)) {
+        if (selectionReader.getOverlayStatusList().at(DataFlowModel::BACKGROUND_MIP_INDEX)) {
             filenamePrefix.append("_B");
         }
         const QList<bool> neuronStatusList = selectionReader.getMaskStatusList();
@@ -566,16 +566,16 @@ void expressRegretsAboutVolumeWriting() {
 
 void NaMainWindow::on_action3D_Volume_triggered()
 {
-    if (! annotationSession) {
+    if (! dataFlowModel) {
         expressRegretsAboutVolumeWriting();
         return;
     }
-    NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+    NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
     if (! volumeReader.hasReadLock()) {
         expressRegretsAboutVolumeWriting();
         return;
     }
-    NeuronSelectionModel::Reader selectionReader(annotationSession->getNeuronSelectionModel());
+    NeuronSelectionModel::Reader selectionReader(dataFlowModel->getNeuronSelectionModel());
     if (! selectionReader.hasReadLock()) {
         expressRegretsAboutVolumeWriting();
         return;
@@ -616,60 +616,60 @@ void NaMainWindow::on_actionScreenShot_triggered() {
 
 bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
 {
-    annotationSession = new AnnotationSession();
+    dataFlowModel = new DataFlowModel();
 
     // TODO - deprecate processUpdatedVolumeData() in favor of using downstream data flow components.
-    ui.v3dr_glwidget->setAnnotationSession(annotationSession);
-    ui.naLargeMIPWidget->setAnnotationSession(annotationSession);
-    ui.naZStackWidget->setAnnotationSession(annotationSession);
-    ui.fragmentGalleryWidget->setAnnotationSession(annotationSession);
-    connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(initialized()),
+    ui.v3dr_glwidget->setDataFlowModel(*dataFlowModel);
+    ui.naLargeMIPWidget->setDataFlowModel(*dataFlowModel);
+    ui.naZStackWidget->setDataFlowModel(*dataFlowModel);
+    ui.fragmentGalleryWidget->setDataFlowModel(*dataFlowModel);
+    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(initialized()),
             this, SLOT(processUpdatedVolumeData()));
 
     // Progress if NaVolumeData file load
     // TODO - this is a lot of connection boilerplate code.  This should be abstracted into a single call or specialized ProgressManager class.
-    connect(&annotationSession->getVolumeData(), SIGNAL(progressMessageChanged(QString)),
+    connect(&dataFlowModel->getVolumeData(), SIGNAL(progressMessageChanged(QString)),
             this, SLOT(setProgressMessage(QString)));
-    connect(&annotationSession->getVolumeData(), SIGNAL(progressValueChanged(int)),
+    connect(&dataFlowModel->getVolumeData(), SIGNAL(progressValueChanged(int)),
             this, SLOT(setProgressValue(int)));
-    connect(&annotationSession->getVolumeData(), SIGNAL(progressCompleted()),
+    connect(&dataFlowModel->getVolumeData(), SIGNAL(progressCompleted()),
             this, SLOT(completeProgress()));
-    connect(&annotationSession->getVolumeData(), SIGNAL(progressAborted(QString)),
+    connect(&dataFlowModel->getVolumeData(), SIGNAL(progressAborted(QString)),
             this, SLOT(abortProgress(QString)));
 
     // Annotation model update
-    connect(annotationSession, SIGNAL(modelUpdated(QString)), ui.v3dr_glwidget, SLOT(annotationModelUpdate(QString)));
+    connect(dataFlowModel, SIGNAL(modelUpdated(QString)), ui.v3dr_glwidget, SLOT(annotationModelUpdate(QString)));
 
     // Both mip images and selection model need to be in place to update gallery
-    connect(&annotationSession->getGalleryMipImages(), SIGNAL(dataChanged()),
+    connect(&dataFlowModel->getGalleryMipImages(), SIGNAL(dataChanged()),
             this, SLOT(updateGalleries()));
-    connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(initialized()),
+    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(initialized()),
             this, SLOT(updateGalleries()));
 
     connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
-            &annotationSession->getDataColorModel(), SLOT(setGamma(qreal)));
+            &dataFlowModel->getDataColorModel(), SLOT(setGamma(qreal)));
 
     // Z value comes from camera model
     qRegisterMetaType<Vector3D>("Vector3D");
     connect(&sharedCameraModel, SIGNAL(focusChanged(Vector3D)),
-            &annotationSession->getZSliceColors(), SLOT(onCameraFocusChanged(Vector3D)));
-    ui.naZStackWidget->setZSliceColors(&annotationSession->getZSliceColors());
-    ui.naZStackWidget->setVolumeData(&annotationSession->getVolumeData());
+            &dataFlowModel->getZSliceColors(), SLOT(onCameraFocusChanged(Vector3D)));
+    ui.naZStackWidget->setZSliceColors(&dataFlowModel->getZSliceColors());
+    ui.naZStackWidget->setVolumeData(&dataFlowModel->getVolumeData());
     connect(ui.naZStackWidget, SIGNAL(hdrRangeChanged(int,qreal,qreal)),
-            &annotationSession->getDataColorModel(), SLOT(setChannelHdrRange(int,qreal,qreal)));
+            &dataFlowModel->getDataColorModel(), SLOT(setChannelHdrRange(int,qreal,qreal)));
 
     // Connect annotation widget to neuron selection
-    connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(exactlyOneNeuronSelected(int)),
+    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(exactlyOneNeuronSelected(int)),
             ui.annotationFrame, SLOT(selectNeuron(int)));
-    connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(selectionCleared()),
+    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(selectionCleared()),
             ui.annotationFrame, SLOT(deselectNeurons()));
     connect(ui.annotationFrame, SIGNAL(neuronSelected(int)),
-            &annotationSession->getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
+            &dataFlowModel->getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
     connect(ui.annotationFrame, SIGNAL(neuronsDeselected()),
-            &annotationSession->getNeuronSelectionModel(), SLOT(clearSelection()));
+            &dataFlowModel->getNeuronSelectionModel(), SLOT(clearSelection()));
 
     // Connect mip viewer to data flow model
-    ui.naLargeMIPWidget->setMipMergedData(annotationSession->getMipMergedData());
+    ui.naLargeMIPWidget->setMipMergedData(dataFlowModel->getMipMergedData());
 
     // Need to construct (temporary until backend implemented) MultiColorImageStackNode from this directory
     // This code will be redone when the node/filestore is implemented.
@@ -700,7 +700,7 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     multiColorImageStackNode->setPathToMulticolorLabelMaskFile(maskLabelFilePath);
     multiColorImageStackNode->setPathToOriginalImageStackFile(originalImageStackFilePath);
     multiColorImageStackNode->setPathToReferenceStackFile(referenceStackFilePath);
-    annotationSession->setMultiColorImageStackNode(multiColorImageStackNode);
+    dataFlowModel->setMultiColorImageStackNode(multiColorImageStackNode);
 
     // Create result node
     long resultNodeId=TimebasedIdentifierGenerator::getSingleId();
@@ -710,10 +710,10 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
                              "Error creating directory="+resultNode->getDirectoryPath());
         return false;
     }
-    annotationSession->setNeuronAnnotatorResultNode(resultNode);
+    dataFlowModel->setNeuronAnnotatorResultNode(resultNode);
 
     // Load session
-    if (! annotationSession->loadVolumeData()) return false;
+    if (! dataFlowModel->loadVolumeData()) return false;
     // dataChanged() signal will be emitted if load succeeds
     return true;
 }
@@ -728,12 +728,12 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
 {
     // TODO -- install separate listeners for dataChanged() in the various display widgets
 
-    annotationSession->loadLsmMetadata();
+    dataFlowModel->loadLsmMetadata();
 
     // good
     // ui.v3dr_glwidget->onVolumeDataChanged();
 
-    QDir imageInputDirectory = annotationSession->getMultiColorImageStackNode()->getImageDir();
+    QDir imageInputDirectory = dataFlowModel->getMultiColorImageStackNode()->getImageDir();
 
     // At this point it should be reasonable to set the window title
     QString lsmName("Unknown original image");
@@ -750,7 +750,7 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
 
     // good
     {
-        NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+        NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
         if (! volumeReader.hasReadLock()) return;
         const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
 
@@ -767,7 +767,7 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
     // TODO - why is 3D viewer blank if I move ui.v3dr_glwidget->onVolumeDataChanged() to end of the next block?
     // Looks like some race condition, with this spot near the cusp
     {
-        NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+        NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
         if (! volumeReader.hasReadLock()) return;
         const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
 
@@ -793,7 +793,7 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
     // Neuron Selector update
     if (neuronSelector != NULL) delete neuronSelector;
     neuronSelector = new NeuronSelector(this);
-    neuronSelector->setAnnotationSession(annotationSession);
+    neuronSelector->setDataFlowModel(dataFlowModel);
 
     connect(ui.v3dr_glwidget, SIGNAL(neuronSelected(double,double,double)), neuronSelector, SLOT(updateSelectedPosition(double,double,double)));
     connect(neuronSelector, SIGNAL(landmarksClearNeeded()),
@@ -803,50 +803,50 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
 
     // show selected neuron
     connect(ui.v3dr_glwidget, SIGNAL(neuronShown(const QList<int>)),
-            &annotationSession->getNeuronSelectionModel(), SLOT(showFirstSelectedNeuron()));
+            &dataFlowModel->getNeuronSelectionModel(), SLOT(showFirstSelectedNeuron()));
     connect(ui.v3dr_glwidget, SIGNAL(neuronShown(const QList<int>)),
-            &annotationSession->getNeuronSelectionModel(), SLOT(showOverlays(const QList<int>)));
+            &dataFlowModel->getNeuronSelectionModel(), SLOT(showOverlays(const QList<int>)));
     connect(ui.v3dr_glwidget, SIGNAL(neuronShown(const QList<int>)),
-            &annotationSession->getNeuronSelectionModel(), SLOT(clearSelection()));
+            &dataFlowModel->getNeuronSelectionModel(), SLOT(clearSelection()));
 
     connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(const QList<int>)),
-            &annotationSession->getNeuronSelectionModel(), SLOT(showAllNeurons()));
+            &dataFlowModel->getNeuronSelectionModel(), SLOT(showAllNeurons()));
     connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(const QList<int>)),
-            &annotationSession->getNeuronSelectionModel(), SLOT(showOverlays(const QList<int>)));
+            &dataFlowModel->getNeuronSelectionModel(), SLOT(showOverlays(const QList<int>)));
     connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(const QList<int>)),
-            &annotationSession->getNeuronSelectionModel(), SLOT(clearSelection()));
+            &dataFlowModel->getNeuronSelectionModel(), SLOT(clearSelection()));
 
-    connect(annotationSession, SIGNAL(modelUpdated(QString)), this, SLOT(synchronizeGalleryButtonsToAnnotationSession(QString)));
+    connect(dataFlowModel, SIGNAL(modelUpdated(QString)), this, SLOT(synchronizeGalleryButtonsToAnnotationSession(QString)));
 
-    connect(annotationSession, SIGNAL(scrollBarFocus(NeuronSelectionModel::NeuronIndex)),
+    connect(dataFlowModel, SIGNAL(scrollBarFocus(NeuronSelectionModel::NeuronIndex)),
             ui.fragmentGalleryWidget, SLOT(scrollToFragment(NeuronSelectionModel::NeuronIndex)));
 
     return;
 }
 
 bool NaMainWindow::closeAnnotationSession() {
-    if (annotationSession!=0) {
-        annotationSession->save();
-        delete annotationSession;
+    if (dataFlowModel!=0) {
+        dataFlowModel->save();
+        delete dataFlowModel;
     }
     return true;
 }
 
-AnnotationSession* NaMainWindow::getAnnotationSession() const {
-    return annotationSession;
+DataFlowModel* NaMainWindow::getDataFlowModel() const {
+    return dataFlowModel;
 }
 
 void NaMainWindow::updateOverlayGallery()
 {
-    GalleryMipImages::Reader mipReader(annotationSession->getGalleryMipImages()); // acquire read lock
+    GalleryMipImages::Reader mipReader(dataFlowModel->getGalleryMipImages()); // acquire read lock
     if (! mipReader.hasReadLock()) return;
     if (mipReader.getNumberOfOverlays() < 1) return; // mip data are not initialized yet
 
-    NeuronSelectionModel::Reader selectionReader(annotationSession->getNeuronSelectionModel());
+    NeuronSelectionModel::Reader selectionReader(dataFlowModel->getNeuronSelectionModel());
     if (! selectionReader.hasReadLock()) return;
 
     // qDebug() << "updateOverlayGallery() start";
-    // QList<QImage*> * overlayMipList = annotationSession->getOverlayMipList();
+    // QList<QImage*> * overlayMipList = dataFlowModel->getOverlayMipList();
 
     // Create layout, only if needed.
     QFrame* ui_maskFrame = qFindChild<QFrame*>(this, "maskFrame");
@@ -867,26 +867,26 @@ void NaMainWindow::updateOverlayGallery()
         }
 
         GalleryButton* referenceButton = new GalleryButton(
-                *mipReader.getOverlayMip(AnnotationSession::REFERENCE_MIP_INDEX),
-                "Reference", AnnotationSession::REFERENCE_MIP_INDEX);
+                *mipReader.getOverlayMip(DataFlowModel::REFERENCE_MIP_INDEX),
+                "Reference", DataFlowModel::REFERENCE_MIP_INDEX);
         referenceButton->setChecked(selectionReader.getOverlayStatusList().at(
-                AnnotationSession::REFERENCE_MIP_INDEX)); // we do not want reference initially loaded
+                DataFlowModel::REFERENCE_MIP_INDEX)); // we do not want reference initially loaded
         managementLayout->addWidget(referenceButton);
         overlayGalleryButtonList.append(referenceButton);
         referenceButton->setNa3DWidget(ui.v3dr_glwidget);
         connect(referenceButton, SIGNAL(declareChange(int,bool)),
-                &annotationSession->getNeuronSelectionModel(), SLOT(updateOverlay(int,bool)));
+                &dataFlowModel->getNeuronSelectionModel(), SLOT(updateOverlay(int,bool)));
 
         GalleryButton* backgroundButton = new GalleryButton(
-                *mipReader.getOverlayMip(AnnotationSession::BACKGROUND_MIP_INDEX),
-                "Background", AnnotationSession::BACKGROUND_MIP_INDEX);
+                *mipReader.getOverlayMip(DataFlowModel::BACKGROUND_MIP_INDEX),
+                "Background", DataFlowModel::BACKGROUND_MIP_INDEX);
         backgroundButton->setChecked(selectionReader.getOverlayStatusList().at(
-                AnnotationSession::BACKGROUND_MIP_INDEX)); // we do want background initially loaded
+                DataFlowModel::BACKGROUND_MIP_INDEX)); // we do want background initially loaded
         managementLayout->addWidget(backgroundButton);
         overlayGalleryButtonList.append(backgroundButton);
         backgroundButton->setNa3DWidget(ui.v3dr_glwidget);
         connect(backgroundButton, SIGNAL(declareChange(int,bool)),
-                &annotationSession->getNeuronSelectionModel(), SLOT(updateOverlay(int,bool)));
+                &dataFlowModel->getNeuronSelectionModel(), SLOT(updateOverlay(int,bool)));
     }
     // Just update icons on subsequent updates
     else {
@@ -899,14 +899,14 @@ void NaMainWindow::updateOverlayGallery()
 
 void NaMainWindow::updateNeuronGallery()
 {
-    GalleryMipImages::Reader mipReader(annotationSession->getGalleryMipImages()); // acquire read lock
+    GalleryMipImages::Reader mipReader(dataFlowModel->getGalleryMipImages()); // acquire read lock
     if (! mipReader.hasReadLock()) return;
 
-    NeuronSelectionModel::Reader selectionReader(annotationSession->getNeuronSelectionModel());
+    NeuronSelectionModel::Reader selectionReader(dataFlowModel->getNeuronSelectionModel());
     if (! selectionReader.hasReadLock()) return;
 
     // qDebug() << "updateNeuronGallery() start";
-    // QList<QImage*> * maskMipList = annotationSession->getNeuronMipList();
+    // QList<QImage*> * maskMipList = dataFlowModel->getNeuronMipList();
 
     // QFrame* ui_maskGallery = qFindChild<QFrame*>(this, "maskGallery");
     // Delete any old contents from the layout, such as previous thumbnails
@@ -927,7 +927,7 @@ void NaMainWindow::updateNeuronGallery()
             ui.fragmentGalleryWidget->appendFragment(button);
             button->setChecked(selectionReader.getMaskStatusList().at(i)); // start as checked since full image loaded initially
             connect(button, SIGNAL(declareChange(int,bool)),
-                    &annotationSession->getNeuronSelectionModel(), SLOT(updateNeuronMask(int,bool)));
+                    &dataFlowModel->getNeuronSelectionModel(), SLOT(updateNeuronMask(int,bool)));
         }
 
         // qDebug() << "createMaskGallery() end size=" << mipReader.getNumberOfNeurons();
@@ -979,7 +979,7 @@ void NaMainWindow::update3DViewerXYZBodyRotation()
 void NaMainWindow::synchronizeGalleryButtonsToAnnotationSession(QString updateString)
 {
     NeuronSelectionModel::Reader selectionReader(
-            annotationSession->getNeuronSelectionModel());
+            dataFlowModel->getNeuronSelectionModel());
     if (! selectionReader.hasReadLock()) return;
 
     // We are not using the update string in this case, which is from the modelUpdated() signal,
@@ -993,17 +993,17 @@ void NaMainWindow::synchronizeGalleryButtonsToAnnotationSession(QString updateSt
     }
 
     // Reference toggle
-    if (selectionReader.getOverlayStatusList().at(AnnotationSession::REFERENCE_MIP_INDEX)) {
-        overlayGalleryButtonList.at(AnnotationSession::REFERENCE_MIP_INDEX)->setChecked(true);
+    if (selectionReader.getOverlayStatusList().at(DataFlowModel::REFERENCE_MIP_INDEX)) {
+        overlayGalleryButtonList.at(DataFlowModel::REFERENCE_MIP_INDEX)->setChecked(true);
     } else {
-        overlayGalleryButtonList.at(AnnotationSession::REFERENCE_MIP_INDEX)->setChecked(false);
+        overlayGalleryButtonList.at(DataFlowModel::REFERENCE_MIP_INDEX)->setChecked(false);
     }
 
     // Background toggle
-    if (selectionReader.getOverlayStatusList().at(AnnotationSession::BACKGROUND_MIP_INDEX)) {
-        overlayGalleryButtonList.at(AnnotationSession::BACKGROUND_MIP_INDEX)->setChecked(true);
+    if (selectionReader.getOverlayStatusList().at(DataFlowModel::BACKGROUND_MIP_INDEX)) {
+        overlayGalleryButtonList.at(DataFlowModel::BACKGROUND_MIP_INDEX)->setChecked(true);
     } else {
-        overlayGalleryButtonList.at(AnnotationSession::BACKGROUND_MIP_INDEX)->setChecked(false);
+        overlayGalleryButtonList.at(DataFlowModel::BACKGROUND_MIP_INDEX)->setChecked(false);
     }
 }
 
@@ -1048,7 +1048,7 @@ void NaMainWindow::set3DProgress(int prog) {
         return;
     }
     ui.progressBar3d->setValue(prog);
-    ui.v3dr_glwidget->setUpdatesEnabled(false); // don't show ugly brief resize behavior
+    ui.v3dr_glwidget->setResizeEnabled(false); // don't show ugly brief resize behavior
     ui.widget_progress3d->show();
 }
 
@@ -1057,14 +1057,14 @@ void NaMainWindow::complete3DProgress() {
     // avoid jerky resize to accomodated progress widget
     QCoreApplication::processEvents(); // flush pending resize events
     ui.v3dr_glwidget->resizeEvent(NULL);
-    ui.v3dr_glwidget->setUpdatesEnabled(true);
+    ui.v3dr_glwidget->setResizeEnabled(true);
     //
     ui.v3dr_glwidget->update();
 }
 
 void NaMainWindow::set3DProgressMessage(QString msg) {
     ui.progressLabel3d->setText(msg);
-    ui.v3dr_glwidget->setUpdatesEnabled(false); // don't show ugly brief resize behavior
+    ui.v3dr_glwidget->setResizeEnabled(false); // don't show ugly brief resize behavior
     ui.widget_progress3d->show();
 }
 

@@ -1,5 +1,5 @@
 #include "MipMergedData.h"
-#include "../AnnotationSession.h"
+#include "../DataFlowModel.h"
 #include <cassert>
 #include <vector>
 
@@ -329,7 +329,7 @@ void MipMergedData::toggleNeuronVisibility(int index, bool status) // update a s
 
 void MipMergedData::toggleOverlayVisibility(int index, bool status)
 {
-    if (AnnotationSession::BACKGROUND_MIP_INDEX == index) {
+    if (DataFlowModel::BACKGROUND_MIP_INDEX == index) {
         // background is in layer zero
         if (status == layers[0]->isVisible()) return;
         {
@@ -338,7 +338,7 @@ void MipMergedData::toggleOverlayVisibility(int index, bool status)
         }
         layers[0]->update();
     }
-    else if (AnnotationSession::REFERENCE_MIP_INDEX == index) {
+    else if (DataFlowModel::REFERENCE_MIP_INDEX == index) {
         // reference is handled specially
         if (status == bShowReferenceChannel) return;
         {
@@ -362,8 +362,8 @@ void MipMergedData::updateNeuronVisibility() // remerge all neurons O(nfrags), o
             }
             const QList<bool>& overlayList = selectionReader.getOverlayStatusList();
             if ( (overlayList.size() >= 2) && (layers.size() > 0) ) {
-                layers[0]->setVisibility(overlayList[AnnotationSession::BACKGROUND_MIP_INDEX]);
-                bShowReferenceChannel = overlayList[AnnotationSession::REFERENCE_MIP_INDEX];
+                layers[0]->setVisibility(overlayList[DataFlowModel::BACKGROUND_MIP_INDEX]);
+                bShowReferenceChannel = overlayList[DataFlowModel::REFERENCE_MIP_INDEX];
             }
         }
     } // release read lock
@@ -378,11 +378,13 @@ void MipMergedData::updateNeuronVisibility() // remerge all neurons O(nfrags), o
 void MipMergedData::colorizeImage() // on dataColorModel.dataChanged, or mergedImage change
 {
     // qDebug() << "Updating mip colors";
-    Writer writer(*this);
-    if (computeMergedImage()) {
-        writer.unlock();
-        emit dataChanged();
+    bool success = false;
+    {
+        Writer writer(*this);
+        success = computeMergedImage();
     }
+    if (success)
+        emit dataChanged();
 }
 
 bool MipMergedData::recomputeLayerTree()

@@ -1,4 +1,4 @@
-#include "AnnotationSession.h"
+#include "DataFlowModel.h"
 #include "gui/RendererNeuronAnnotator.h"
 #include <QtAlgorithms>
 #include <iostream>
@@ -6,11 +6,11 @@
 
 using namespace std;
 
-const int AnnotationSession::REFERENCE_MIP_INDEX=0;
-const int AnnotationSession::BACKGROUND_MIP_INDEX=1;
+const int DataFlowModel::REFERENCE_MIP_INDEX=0;
+const int DataFlowModel::BACKGROUND_MIP_INDEX=1;
 
 /* explicit */
-AnnotationSession::AnnotationSession(QObject* parentParam /* = NULL */)
+DataFlowModel::DataFlowModel(QObject* parentParam /* = NULL */)
     : QObject(parentParam)
     , multiColorImageStackNode(NULL)
     , neuronAnnotatorResultNode(NULL)
@@ -35,7 +35,7 @@ AnnotationSession::AnnotationSession(QObject* parentParam /* = NULL */)
     // wire up 3d viewer fast color update system
     fast3DColorModel.setIncrementalColorSource(dataColorModel, slow3DColorModel);
 
-    // TODO - deprecate these AnnotationSession neuron visiblity slots.
+    // TODO - deprecate these DataFlowModel neuron visiblity slots.
     connect(&neuronSelectionModel, SIGNAL(overlayVisibilityChanged(int,bool)),
             this, SLOT(updateNeuronMaskFull()));
     connect(&neuronSelectionModel, SIGNAL(neuronVisibilityChanged(int,bool)),
@@ -44,7 +44,7 @@ AnnotationSession::AnnotationSession(QObject* parentParam /* = NULL */)
             this, SLOT(updateNeuronMaskFull()));
 }
 
-AnnotationSession::~AnnotationSession()
+DataFlowModel::~DataFlowModel()
 {
     if (multiColorImageStackNode!=0) {
         delete multiColorImageStackNode;
@@ -55,19 +55,19 @@ AnnotationSession::~AnnotationSession()
 }
 
 // TBD
-bool AnnotationSession::save() {
+bool DataFlowModel::save() {
     return true;
 }
 
 // TBD
-bool AnnotationSession::load(long annotationSessionID) {
+bool DataFlowModel::load(long annotationSessionID) {
     return true;
 }
 
-bool AnnotationSession::loadLsmMetadata() {
+bool DataFlowModel::loadLsmMetadata() {
     QStringList lsmMetadataFilepathList=multiColorImageStackNode->getPathsToLsmMetadataFiles();
     if (lsmMetadataFilepathList.size()==0) {
-        qDebug() << "AnnotationSession::loadLsmMetadata() received empty list of lsm metadata files";
+        qDebug() << "DataFlowModel::loadLsmMetadata() received empty list of lsm metadata files";
         return false;
     } else {
         QString filePath=lsmMetadataFilepathList.at(0);
@@ -106,7 +106,7 @@ bool AnnotationSession::loadLsmMetadata() {
             }
         }
         if (!parseSuccess) {
-            qDebug() << "AnnotationSession::loadLsmMetadata could not parse file to determine zRatio";
+            qDebug() << "DataFlowModel::loadLsmMetadata could not parse file to determine zRatio";
             return false;
         }
         return true;
@@ -114,19 +114,20 @@ bool AnnotationSession::loadLsmMetadata() {
 
 }
 
-bool AnnotationSession::loadVolumeData()
+bool DataFlowModel::loadVolumeData()
 {
-    // Allocate writer on the stack so write lock will be automatically released when method returns
-    NaVolumeData::Writer volumeWriter(volumeData);
+    {
+        // Allocate writer on the stack so write lock will be automatically released when method returns
+        NaVolumeData::Writer volumeWriter(volumeData);
 
-    // Set file names of image files so VolumeData will know what to load.
-    volumeWriter.setOriginalImageStackFilePath(
-            multiColorImageStackNode->getPathToOriginalImageStackFile());
-    volumeWriter.setMaskLabelFilePath(
-            multiColorImageStackNode->getPathToMulticolorLabelMaskFile());
-    volumeWriter.setReferenceStackFilePath(
-            multiColorImageStackNode->getPathToReferenceStackFile());
-    volumeWriter.unlock(); // unlock before emit
+        // Set file names of image files so VolumeData will know what to load.
+        volumeWriter.setOriginalImageStackFilePath(
+                multiColorImageStackNode->getPathToOriginalImageStackFile());
+        volumeWriter.setMaskLabelFilePath(
+                multiColorImageStackNode->getPathToMulticolorLabelMaskFile());
+        volumeWriter.setReferenceStackFilePath(
+                multiColorImageStackNode->getPathToReferenceStackFile());
+    } // release locks before emit
     emit volumeDataNeeded(); // load data in a separate QThread
 
     return true;
@@ -134,16 +135,16 @@ bool AnnotationSession::loadVolumeData()
 
 // tell 3d viewer to perform a surgical texture update
 // TODO - move logic for this into 3D viewer.
-void AnnotationSession::updateNeuronMask(int index, bool status)
+void DataFlowModel::updateNeuronMask(int index, bool status)
 {
     int statusValue = (status ? 1 : 0);
-    // qDebug() << "AnnotationSession::updateNeuronMask index=" << index << " status=" << status;
+    // qDebug() << "DataFlowModel::updateNeuronMask index=" << index << " status=" << status;
     QString updateNeuronMaskString=QString("NEURONMASK_UPDATE %1 %2").arg(index).arg(statusValue);
     emit modelUpdated(updateNeuronMaskString);
 }
 
 // tell 3d viewer to update all textures
-void AnnotationSession::updateNeuronMaskFull() {
+void DataFlowModel::updateNeuronMaskFull() {
     // qDebug() << "NeuronSelectionModel::updateNeuronMaskFull() - emitting modelUpdated()";
     QString updateString=QString("FULL_UPDATE");
     emit modelUpdated(updateString);

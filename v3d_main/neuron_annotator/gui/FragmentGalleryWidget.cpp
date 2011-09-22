@@ -9,6 +9,7 @@ FragmentGalleryWidget::FragmentGalleryWidget(QWidget *pparent)
     , order(&indexOrder)
     , sortOrder(SORT_BY_INDEX)
     , neuronFragmentData(NULL)
+    , buttonWidth(0)
 {
     assert(viewport());
     assert(horizontalScrollBar());
@@ -199,7 +200,7 @@ struct IndexSorter
 
 void FragmentGalleryWidget::updateSortTables()
 {
-    qDebug() << "FragmentGalleryWidget::updateSortTables()";
+    // qDebug() << "FragmentGalleryWidget::updateSortTables()";
     if (!neuronFragmentData) return;
     {
         NeuronFragmentData::Reader fragmentReader(*neuronFragmentData);
@@ -217,17 +218,11 @@ void FragmentGalleryWidget::updateSortTables()
     repaint();
 }
 
-void FragmentGalleryWidget::setAnnotationSession(AnnotationSession * annotationSession)
+void FragmentGalleryWidget::setDataFlowModel(const DataFlowModel& dataFlowModelParam)
 {
-    if (! annotationSession) {
-        neuronFragmentData = NULL;
-        return;
-    }
-    else {
-        neuronFragmentData = &annotationSession->getNeuronFragmentData();
-        connect(neuronFragmentData, SIGNAL(dataChanged()),
-                this, SLOT(updateSortTables()));
-    }
+    neuronFragmentData = &dataFlowModelParam.getNeuronFragmentData();
+    connect(neuronFragmentData, SIGNAL(dataChanged()),
+            this, SLOT(updateSortTables()));
 }
 
 

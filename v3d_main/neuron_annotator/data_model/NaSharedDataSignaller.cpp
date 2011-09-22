@@ -12,3 +12,10 @@ NaSharedDataSignaller::NaSharedDataSignaller() // no parent, because it has its 
     this->moveToThread(thread);
 }
 
+/* virtual */
+NaSharedDataSignaller::~NaSharedDataSignaller()
+{
+    thread->quit();
+    thread->wait(500);
+}
+

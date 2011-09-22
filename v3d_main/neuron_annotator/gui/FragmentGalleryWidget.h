@@ -29,7 +29,7 @@ public:
     void appendFragment(GalleryButton * button);
     virtual void wheelEvent(QWheelEvent *);
     virtual void resizeEvent(QResizeEvent *);
-    void setAnnotationSession(AnnotationSession*); // for connecting to data model
+    void setDataFlowModel(const DataFlowModel&);
 
 signals:
     void scrollPixelChanged(int);

@@ -1,5 +1,13 @@
 #include "NaViewer.h"
 
+NaViewer::NaViewer()
+    : defaultScale(1.0)
+    , bMouseIsDragging(false)
+    , bPaintCrosshair(true)
+    , dataFlowModel(NULL)
+{
+}
+
 void NaViewer::synchronizeWithCameraModel(CameraModel* externalCamera)
 {
     // Two-way connection for all data members
@@ -24,8 +32,9 @@ void NaViewer::decoupleCameraModel(CameraModel* externalCamera)
     externalCamera->disconnect(&cameraModel);
 }
 
-void NaViewer::setAnnotationSession(AnnotationSession* annotationSession) {
-       this->annotationSession=annotationSession;
+/* virtual */
+void NaViewer::setDataFlowModel(const DataFlowModel& dataFlowModelParam) {
+       this->dataFlowModel = &dataFlowModelParam;
 }
 
 void NaViewer::wheelZoom(double delta)

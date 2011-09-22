@@ -133,7 +133,7 @@ void ConsoleObserver::entitySelectedResults(const void *results)
 //                if (ok)
 //                {
 //                    qDebug() << "  Select neuron:" <<num;
-//                    //mainWindow->getAnnotationSession()->getNeuronSelectionModel().showExactlyOneNeuron(num);
+//                    //mainWindow->getDataFlowModel()->getNeuronSelectionModel().showExactlyOneNeuron(num);
 //                }
 //            }
 //        }

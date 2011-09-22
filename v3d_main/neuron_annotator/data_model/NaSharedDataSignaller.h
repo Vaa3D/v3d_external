@@ -14,6 +14,7 @@ class NaSharedDataSignaller : public QObject
 
 public:
     NaSharedDataSignaller(); // no parent, because it has its own QThread
+    virtual ~NaSharedDataSignaller();
 
 signals:
     void dataChanged(); // ready for downstream clients to read all data

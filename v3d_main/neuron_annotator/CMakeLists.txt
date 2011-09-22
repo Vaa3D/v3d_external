@@ -56,7 +56,7 @@ QT4_WRAP_CPP(NA_MOC_SRCS
     gui/trees/OntologyTreeView.h
     utility/ConsoleObserver.h
     utility/DataThread.h
-    AnnotationSession.h
+    DataFlowModel.h
     ExportFile.h
     NeuronSelector.h
     ../webservice/impl/ConsoleObserverServiceImpl.h

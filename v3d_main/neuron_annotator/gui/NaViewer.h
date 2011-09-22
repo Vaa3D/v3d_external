@@ -4,7 +4,7 @@
 #include "../../v3d/v3d_core.h"
 #include "../geometry/CameraModel.h"
 #include <cmath>
-#include "../AnnotationSession.h"
+#include "../DataFlowModel.h"
 #include "MouseClickManager.h"
 
 // Base class for 3DViewer, ZStack viewer, and MIP viewer.
@@ -12,12 +12,12 @@
 class NaViewer
 {
 public:
-    NaViewer() : defaultScale(1.0), bMouseIsDragging(false), bPaintCrosshair(true) {}
+    NaViewer();
     virtual ~NaViewer() {}
     // Methods to support optional linking of zoom, focus, and rotation between viewers
     virtual void synchronizeWithCameraModel(CameraModel* externalCamera);
     virtual void decoupleCameraModel(CameraModel* externalCamera);
-    void setAnnotationSession(AnnotationSession* annotationSession);
+    virtual void setDataFlowModel(const DataFlowModel&);
     bool mouseIsDragging() const {return bMouseIsDragging;}
     virtual void showCrosshair(bool b) {bPaintCrosshair = b;}
 
@@ -38,7 +38,7 @@ protected:
     bool bMouseIsDragging;
     int oldDragX;
     int oldDragY;
-    AnnotationSession* annotationSession;
+    const DataFlowModel* dataFlowModel;
     bool bPaintCrosshair;
     // Help distinguish between single clicks and double clicks
     MouseClickManager mouseClickManager;

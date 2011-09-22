@@ -1,5 +1,5 @@
 #include "ZSliceColors.h"
-#include "../AnnotationSession.h"
+#include "../DataFlowModel.h"
 #include "../gui/Na2DViewer.h"
 
 /* explicit */
@@ -59,7 +59,7 @@ void ZSliceColors::update()
         channelData[volumeProxy.sc] = 0.0; // clear reference channel
         const Image4DProxy<My4DImage>& referenceProxy = volumeReader.getReferenceImageProxy();
         const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
-        const bool bShowReference = selectionReader.getOverlayStatusList()[AnnotationSession::REFERENCE_MIP_INDEX];
+        const bool bShowReference = selectionReader.getOverlayStatusList()[DataFlowModel::REFERENCE_MIP_INDEX];
         for (int y = 0; y < volumeProxy.sy; ++y)
             for (int x = 0; x < volumeProxy.sx; ++x)
             {
@@ -67,7 +67,7 @@ void ZSliceColors::update()
                 const int neuronIndex = neuronProxy.value_at(x, y, currentZIndex, 0);
                 bool bShowNeuron = false;
                 if (neuronIndex == 0) // background channel
-                    bShowNeuron = selectionReader.getOverlayStatusList()[AnnotationSession::BACKGROUND_MIP_INDEX];
+                    bShowNeuron = selectionReader.getOverlayStatusList()[DataFlowModel::BACKGROUND_MIP_INDEX];
                 else
                     bShowNeuron = selectionReader.getMaskStatusList()[neuronIndex - 1];
                 for (int c = 0; c < volumeProxy.sc; ++c)

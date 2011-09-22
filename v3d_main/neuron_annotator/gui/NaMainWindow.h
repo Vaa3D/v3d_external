@@ -6,7 +6,7 @@
 #include <QAction>
 #include <QMainWindow>
 #include "ui_NaMainWindow.h"
-#include "../AnnotationSession.h"
+#include "../DataFlowModel.h"
 #include "GalleryButton.h"
 #include "../data_model/NeuronSelectionModel.h"
 #include "../ExportFile.h"
@@ -79,7 +79,7 @@ public:
     void handleCoordinatedCloseEvent(QCloseEvent *event);
     bool loadAnnotationSessionFromDirectory(QDir imageInputDirectory);
     bool closeAnnotationSession();
-    AnnotationSession* getAnnotationSession() const;
+    DataFlowModel* getDataFlowModel() const;
 
 public slots:
     void openMulticolorImageStack(QString dirName);
@@ -121,7 +121,7 @@ protected:
     void updateRecentFileActions();
 
 private:
-    AnnotationSession* annotationSession;
+    DataFlowModel* dataFlowModel;
     Ui::NaMainWindow ui;
     void updateNeuronGallery();
     void updateOverlayGallery();

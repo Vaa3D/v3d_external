@@ -14,6 +14,8 @@ NaZStackWidget::NaZStackWidget(QWidget * parent)
     , zSliceColors(NULL)
     , volumeData(NULL)
     , cur_z(-1)
+    , sx(0), sy(0), sz(0), sc(0)
+    , runHDRFILTER(false)
 {
     translateMouse_scale = 1;
 

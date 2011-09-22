@@ -1,5 +1,5 @@
 #include "NeuronSelectionModel.h"
-#include "../AnnotationSession.h"
+#include "../DataFlowModel.h"
 
 /* explicit */
 NeuronSelectionModel::NeuronSelectionModel(const NaVolumeData& volumeDataParam)
@@ -33,7 +33,7 @@ NeuronSelectionModel::NeuronSelectionModel(const NaVolumeData& volumeDataParam)
 /* slot: */
 void NeuronSelectionModel::initializeSelectionModel()
 {
-    qDebug() << "Initializing NeuronSelectionModel";
+    // qDebug() << "Initializing NeuronSelectionModel";
     { // curly brackets to restrict scope for locks
         NaVolumeData::Reader volumeReader(volumeData);
         if (! volumeReader.hasReadLock()) return;
@@ -47,8 +47,8 @@ void NeuronSelectionModel::initializeSelectionModel()
         overlayStatusList << false << true; // ref off; bkgd on
         // Redundant, but more informative
         // We do not want reference initially loaded.
-        setOverlayStatus(AnnotationSession::REFERENCE_MIP_INDEX, false);
-        setOverlayStatus(AnnotationSession::BACKGROUND_MIP_INDEX, true);
+        setOverlayStatus(DataFlowModel::REFERENCE_MIP_INDEX, false);
+        setOverlayStatus(DataFlowModel::BACKGROUND_MIP_INDEX, true);
 
         maskStatusList.clear();
         neuronSelectList.clear();
@@ -58,7 +58,7 @@ void NeuronSelectionModel::initializeSelectionModel()
             neuronSelectList << false; // no neurons selected
         }
     }
-    qDebug() << "Done initializing NeuronSelectionModel";
+    // qDebug() << "Done initializing NeuronSelectionModel";
 
     emit initialized();
 }
@@ -195,7 +195,7 @@ void NeuronSelectionModel::clearAllNeurons()
 // update Neuron Select List
 void NeuronSelectionModel::selectExactlyOneNeuron(int index)
 {
-    qDebug() << "NeuronSelectionModel::selectExactlyOneNeuron" << index;
+    // qDebug() << "NeuronSelectionModel::selectExactlyOneNeuron" << index;
     if (index >= neuronSelectList.size()) return;
     bool changed = false;
     if (! neuronSelectList[index])

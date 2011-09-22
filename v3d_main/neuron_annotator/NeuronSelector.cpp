@@ -8,7 +8,7 @@ using namespace std;
 NeuronSelector::NeuronSelector(QObject * parentParam)
     : QObject(parentParam)
     , index(-1)
-    , annotationSession(NULL)
+    , dataFlowModel(NULL)
     , sx(0), sy(0), sz(0)
     , curNeuronBDxb(0), curNeuronBDyb(0), curNeuronBDzb(0)
     , curNeuronBDxe(0), curNeuronBDye(0), curNeuronBDze(0)
@@ -20,8 +20,8 @@ NeuronSelector::NeuronSelector(QObject * parentParam)
 // NeuronSelector init func.
 void NeuronSelector::init()
 {
-    if (! annotationSession) return;
-    NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+    if (! dataFlowModel) return;
+    NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
     if (! volumeReader.hasReadLock()) return;
     const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
 
@@ -47,10 +47,10 @@ int NeuronSelector::getIndexSelectedNeuron()
     std::vector<int> sum;
     {
             NeuronSelectionModel::Reader selectionReader(
-                    annotationSession->getNeuronSelectionModel());
+                    dataFlowModel->getNeuronSelectionModel());
             if (! selectionReader.hasReadLock()) return -1;
 
-            NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+            NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
             if (! volumeReader.hasReadLock()) return -1;
             const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
 
@@ -119,7 +119,7 @@ void NeuronSelector::getCurIndexNeuronBoundary()
         if(index<0) return;
 
         {
-            NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+            NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
             if (! volumeReader.hasReadLock()) return;
             const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
 
@@ -226,16 +226,16 @@ bool NeuronSelector::inNeuronMask(V3DLONG x, V3DLONG y, V3DLONG z)
 }
 
 //
-void NeuronSelector::setAnnotationSession(AnnotationSession* annotationSession)
+void NeuronSelector::setDataFlowModel(const DataFlowModel& dataFlowModelParam)
 {
-    this->annotationSession=annotationSession;
-    connect(&annotationSession->getNeuronSelectionModel(), SIGNAL(selectionChanged()),
+    dataFlowModel = &dataFlowModelParam;
+    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(selectionChanged()),
             this, SLOT(onSelectionModelChanged()));
     connect(this, SIGNAL(neuronSelected(int)),
-            &annotationSession->getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
+            &dataFlowModel->getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
     connect(this, SIGNAL(selectionClearNeeded()),
-            &annotationSession->getNeuronSelectionModel(), SLOT(clearSelection()));
-    connect(&annotationSession->getVolumeData(), SIGNAL(dataChanged()),
+            &dataFlowModel->getNeuronSelectionModel(), SLOT(clearSelection()));
+    connect(&dataFlowModel->getVolumeData(), SIGNAL(dataChanged()),
             this, SLOT(init()));
     init();
 }
@@ -255,7 +255,7 @@ void NeuronSelector::updateSelectedPosition(double x, double y, double z)
         // reaction depends on whether neuron is already selected
         bool alreadySelected;
         {
-            NeuronSelectionModel::Reader selectionReader(annotationSession->getNeuronSelectionModel());
+            NeuronSelectionModel::Reader selectionReader(dataFlowModel->getNeuronSelectionModel());
             if (! selectionReader.hasReadLock()) return;
             alreadySelected = (selectionReader.getNeuronSelectList()[index]);
         } // release lock before emit
@@ -290,10 +290,9 @@ QList<ImageMarker> NeuronSelector::highlightIndexNeuron()
     bool bIsSelected;
     { // demarcate read lock
         NeuronSelectionModel::Reader selectionReader(
-                annotationSession->getNeuronSelectionModel());
+                dataFlowModel->getNeuronSelectionModel());
         if (! selectionReader.hasReadLock()) return listLandmarks;
         bIsSelected = selectionReader.getNeuronSelectList().at(index);
-        // selectionReader.unlock(); // unlock early because we are done with reader
     } // release lock
 
     // index neuron selected status is true
@@ -306,8 +305,8 @@ QList<ImageMarker> NeuronSelector::highlightIndexNeuron()
     RGBA8 color;
     color.r = 0; color.g = 255; color.b = 255; color.a = 128;// cyan
     {
-       NeuronFragmentData::Reader fragmentReader(annotationSession->getNeuronFragmentData());
-       if (! annotationSession->getNeuronFragmentData().readerIsStale(fragmentReader)) {
+       NeuronFragmentData::Reader fragmentReader(dataFlowModel->getNeuronFragmentData());
+       if (! dataFlowModel->getNeuronFragmentData().readerIsStale(fragmentReader)) {
            qreal hue = (fragmentReader.getFragmentHues())[index];
            qreal saturation = 0.8;
            qreal value = 0.7;
@@ -324,8 +323,8 @@ QList<ImageMarker> NeuronSelector::highlightIndexNeuron()
 
     qDebug() << "NeuronSelector::highlightIndexNeuron" << __FILE__ << __LINE__;
     { // read lock stanza
-        // const unsigned char *neuronMask = annotationSession->getNeuronMaskAsMy4DImage()->getRawData();
-        NaVolumeData::Reader volumeReader(annotationSession->getVolumeData());
+        // const unsigned char *neuronMask = dataFlowModel->getNeuronMaskAsMy4DImage()->getRawData();
+        NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
         if (! volumeReader.hasReadLock()) return listLandmarks;
         const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
         sx = neuronProxy.sx;
@@ -415,7 +414,7 @@ void NeuronSelector::onSelectionModelChanged()
     QList<int> selectedIndices;
     {
         NeuronSelectionModel::Reader selectionReader(
-                annotationSession->getNeuronSelectionModel());
+                dataFlowModel->getNeuronSelectionModel());
         if (! selectionReader.hasReadLock()) return;
         const QList<bool>& neuronSelectList = selectionReader.getNeuronSelectList();
         for (int n = 0; n < neuronSelectList.size(); ++n)

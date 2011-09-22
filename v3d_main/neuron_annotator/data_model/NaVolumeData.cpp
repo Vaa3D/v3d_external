@@ -31,7 +31,7 @@ NaVolumeDataLoadableStack::NaVolumeDataLoadableStack(My4DImage* stackpParam, QSt
 
 bool NaVolumeDataLoadableStack::load()
 {
-    setRelativeProgress(0.01); // getting here *is* finite progress
+    setRelativeProgress(0.02); // getting here *is* finite progress
     // qDebug() << "NaVolumeData::LoadableStack::load() filename=" << filename;
     const QByteArray fileArray = filename.toAscii();
     stackp->loadImage(const_cast<char *>(fileArray.data()));
@@ -120,17 +120,18 @@ void NaVolumeData::loadVolumeDataFromFiles()
     QTime stopwatch;
     stopwatch.start();
 
+    bool stacksLoaded = false;
+    emit progressMessageChanged("Loading image stack files"); // emit outside of lock block
+    emit progressValueChanged(1); // show a bit of blue
     { // Allocate writer on the stack so write lock will be automatically released when method returns
         Writer volumeWriter(*this);
         volumeWriter.clearImageData();
-
-        emit progressMessageChanged("Loading image stack files");
-        if (!volumeWriter.loadStacks()) {
-            volumeWriter.unlock(); // unlock before emit
-            emit progressAborted(QString("Problem loading stacks"));
-            return;
-        }
+        stacksLoaded = volumeWriter.loadStacks();
     } // release locks before emit
+    if (! stacksLoaded) {
+        emit progressAborted(QString("Problem loading stacks"));
+        return;
+    }
 
     // nerd report
     size_t data_size = 0;
