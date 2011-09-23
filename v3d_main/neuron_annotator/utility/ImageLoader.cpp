@@ -52,6 +52,9 @@ bool ImageLoader::execute() {
         if (image!=0) {
             imageList.append(image);
         }
+//        QString filePrefix=getFilePrefix(inputFileList.at(i));
+//        QString saveFilepath=filePrefix.append(".v3draw");
+//        image->saveImage(saveFilepath.toAscii().data());
     }
 
     qDebug() << "Loading total time elapsed is " << stopwatch.elapsed() / 1000.0 << " seconds";
@@ -81,6 +84,15 @@ My4DImage* ImageLoader::loadImage(QString filepath) {
         image->loadImage(filepath.toAscii().data());
     }
     return image;
+}
+
+QString ImageLoader::getFilePrefix(QString filepath) {
+    QStringList list=filepath.split(QRegExp("\\."));
+    if (list.length()==0) {
+        return filepath;
+    } else {
+        return list.at(0);
+    }
 }
 
 

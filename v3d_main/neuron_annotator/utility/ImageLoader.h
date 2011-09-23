@@ -31,6 +31,7 @@ public:
     My4DImage* loadImage(QString filepath);
 
     int processArgs(vector<char*> *argList);
+    QString getFilePrefix(QString filepath);
 
 private:
     QList<QString> inputFileList;
