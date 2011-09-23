@@ -111,12 +111,9 @@ HEADERS += \
     ../neuron_annotator/data_model/MipMergedData.h \
     ../neuron_annotator/data_model/NeuronSelectionModel.h \
     ../neuron_annotator/data_model/ZSliceColors.h \
-    ../neuron_annotator/data_model/VolumeColors.h \
     ../neuron_annotator/data_model/SlotMerger.h \
     ../neuron_annotator/data_model/NaSharedDataSignaller.h \
     ../neuron_annotator/data_model/NaSharedDataModel.h \
-    ../neuron_annotator/data_model/VolumeModel.h \
-    ../neuron_annotator/data_model/PrivateVolumeModelData.h \
     ../neuron_annotator/data_model/NeuronFragmentData.h \
     ../neuron_annotator/data_model/PrivateNeuronFragmentData.h \
     ../neuron_annotator/entity_model/EntityData.h \
@@ -124,7 +121,6 @@ HEADERS += \
     ../neuron_annotator/entity_model/Ontology.h \
     ../neuron_annotator/entity_model/OntologyAnnotation.h \
     ../neuron_annotator/entity_model/AnnotatedBranch.h \
-    ../neuron_annotator/data_model/Texture2dColors.h \
     ../neuron_annotator/data_model/PrivateDataColorModel.h \
     ../neuron_annotator/gui/NaViewer.h \
     ../neuron_annotator/gui/Na2DViewer.h \
@@ -207,12 +203,9 @@ SOURCES += \
     ../neuron_annotator/data_model/MipMergedData.cpp \
     ../neuron_annotator/data_model/NeuronSelectionModel.cpp \
     ../neuron_annotator/data_model/ZSliceColors.cpp \
-    ../neuron_annotator/data_model/VolumeColors.cpp \
     ../neuron_annotator/data_model/SlotMerger.cpp \
     ../neuron_annotator/data_model/NaSharedDataSignaller.cpp \
     ../neuron_annotator/data_model/NaSharedDataModel.cpp \
-    ../neuron_annotator/data_model/VolumeModel.cpp \
-    ../neuron_annotator/data_model/PrivateVolumeModelData.cpp \
     ../neuron_annotator/data_model/NeuronFragmentData.cpp \
     ../neuron_annotator/data_model/PrivateNeuronFragmentData.cpp \
     ../neuron_annotator/entity_model/EntityData.cpp \
@@ -220,7 +213,6 @@ SOURCES += \
     ../neuron_annotator/entity_model/Ontology.cpp \
     ../neuron_annotator/entity_model/OntologyAnnotation.cpp \
     ../neuron_annotator/entity_model/AnnotatedBranch.cpp \
-    ../neuron_annotator/data_model/Texture2dColors.cpp \
     ../neuron_annotator/data_model/PrivateDataColorModel.cpp \
     ../neuron_annotator/NeuronAnnotatorResultNode.cpp \
     ../neuron_annotator/TimebasedIdentifierGenerator.cpp \
