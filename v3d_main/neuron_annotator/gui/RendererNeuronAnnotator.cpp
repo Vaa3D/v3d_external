@@ -38,6 +38,7 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
 }
 
 RendererNeuronAnnotator::~RendererNeuronAnnotator() {
+    // TODO - what about all those texture3Dwhatever?  When are those deleted?
     // qDebug() << "RendererNeuronAnnotator destructor" << this;
 }
 

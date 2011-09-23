@@ -214,8 +214,7 @@ void PrivateDataColorModel::ChannelColorModel::setHdrRange(qreal hdrMinParam, qr
 {
     hdrMin = hdrMinParam;
     hdrMax = hdrMaxParam;
-    //hdrRange = std::max(qreal(1.0), hdrMax - hdrMin);
-    hdrRange = max(qreal(1.0), hdrMax - hdrMin);
+    hdrRange = hdrMaxParam - hdrMinParam;
 }
 
 void PrivateDataColorModel::ChannelColorModel::setDataRange(qreal dataMinParam, qreal dataMaxParam)
@@ -251,8 +250,19 @@ qreal PrivateDataColorModel::ChannelColorModel::getScaledIntensity(qreal raw_int
 {
     if (raw_intensity <= hdrMin) return 0.0; // clamp below
     if (raw_intensity >= hdrMax) return 1.0; // clamp above
+    if (hdrRange <= 0) return 0.5;
     // 1) Apply hdr interval
     qreal i = (raw_intensity - hdrMin)/hdrRange;
+
+    /* if (   (colorGreen == 255) // debug green channel
+        && (raw_intensity > 0.266)
+        && (raw_intensity < 0.267) ) // i_in = 68
+    {
+        qDebug() << "ChannelColorModel::getScaledIntensity" << raw_intensity << i
+                << hdrMin << hdrMax << hdrRange
+                << __FILE__ << __LINE__;
+    } */
+
     // 2) Apply gamma correction
     if (gammaIsNotUnity)
     {
