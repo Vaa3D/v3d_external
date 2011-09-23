@@ -81,6 +81,9 @@ public:
     bool closeAnnotationSession();
     DataFlowModel* getDataFlowModel() const;
 
+signals:
+    void channelVisibilityChanged(int, bool);
+
 public slots:
     void openMulticolorImageStack(QString dirName);
     void on_actionV3DDefault_triggered();
@@ -99,6 +102,10 @@ public slots:
     void resetColors();
     void updateViewers();
     void synchronizeGalleryButtonsToAnnotationSession(QString updateString);
+    void setChannelZeroVisibility(bool);
+    void setChannelOneVisibility(bool);
+    void setChannelTwoVisibility(bool);
+    void onColorModelChanged();
 
 protected slots:
     void on3DViewerRotationChanged(const Rotation3D& rot);

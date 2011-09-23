@@ -527,66 +527,34 @@ void Na3DWidget::updateIncrementalColors()
     {
         DataColorModel::Reader colorReader(*incrementalDataColorModel);
         if (incrementalDataColorModel->readerIsStale(colorReader)) return;
+
         const size_t numChannels = colorReader.getNumberOfDataChannels();
-
-        // Compute channel weights for r/g/b colors
-        std::vector< std::vector<float> > colorWeights(4, std::vector<float>(numChannels, 0.0f) );
-        std::vector<float> colorTotalWeights(4, 0.0f);
-        int refChannel = numChannels - 1; // reference channel is in input alpha channel
-        for (int chan = 0; chan < numChannels; ++chan)
-        {
-            QRgb channelColor = colorReader.getChannelColor(chan);
-            float red = qRed(channelColor) / 255.0f;
-            float green = qGreen(channelColor) / 255.0f;
-            float blue = qBlue(channelColor) / 255.0f;
-            // reference channel owns alpha channel
-            if (chan == refChannel) {
-                colorWeights[3][chan] = 1.0;
-                colorTotalWeights[3] = 1.0;
-            } else {
-                colorTotalWeights[0] += red;
-                colorTotalWeights[1] += green;
-                colorTotalWeights[2] += blue;
-                colorWeights[0][chan] = red;
-                colorWeights[1][chan] = green;
-                colorWeights[2][chan] = blue;
-            }
-        }
-        // Normalize weights so they sum to one (or zero) for each color
-
-        for (int chan = 0; chan < numChannels; ++chan) // skip reference
-        {
-            for (int rgb = 0; rgb < 4; ++rgb)
-                if (colorTotalWeights[rgb] > 0)
-                    colorWeights[rgb][chan] /= colorTotalWeights[rgb];
+        if (numChannels > 4) {
+            qDebug() << "Coloring more than 4 channels is not implemented.  Sorry.";
+            // TODO
+            return;
         }
 
         // Populate clever opengl color map texture
         for (int rgb = 0; rgb < 4; ++rgb) // loop red, then green, then blue
         {
+            QRgb channelColor = colorReader.getChannelColor(rgb);
             Renderer_gl2* renderer = (Renderer_gl2*)getRenderer();
             for (int i_in = 0; i_in < 256; ++i_in)
             {
                 // R/G/B color channel value is sum of data channel values
-                qreal i_out_f = 0.0;
-                for (int chan = 0; chan < numChannels; ++chan) {
-                    i_out_f += colorWeights[rgb][chan] * colorReader.getChannelScaledIntensity(chan, i_in / 255.0) * 255.0;
-                }
+                qreal i_out_f = colorReader.getChannelScaledIntensity(rgb, i_in / 255.0) * 255.0;
+                // qDebug() << rgb << i_in << i_out_f << colorReader.getChannelScaledIntensity(rgb, i_in / 255.0)
+                //     << colorReader.getChannelVisibility(rgb);
                 if (i_out_f < 0.0f) i_out_f = 0.0f;
                 if (i_out_f > 255.0) i_out_f = 255.0;
                 unsigned char i_out = (unsigned char) (i_out_f + 0.49999);
                 // Intensities are set in the alpha channel only
                 // (i.e. not R, G, or B)
+                renderer->colormap[rgb][i_in].r = qRed(channelColor);
+                renderer->colormap[rgb][i_in].g = qGreen(channelColor);
+                renderer->colormap[rgb][i_in].b = qBlue(channelColor);
                 renderer->colormap[rgb][i_in].a = i_out;
-
-                /* // debugging
-                if (   (i_in == 68)
-                    && (rgb == 1) )
-                {
-                    qDebug() << "colormap (channel, in, out) ("
-                            << rgb << i_in << i_out << i_out_f << colorWeights[rgb][1]
-                            << ")";
-                } */
             }
         }
     } // release read lock

@@ -30,6 +30,7 @@ void PrivateDataColorModel::colorizeIncremental(
     {
         // Use latest color information.  TODO - there might no good way to incrementally update channel colors.
         channelColors[chan].setColor(desiredColorReader.getChannelColor(chan));
+        channelColors[chan].showChannel = desiredColorReader.getChannelVisibility(chan);
         // Set incremental gamma; qInc = qDes / qCur
         qreal incGamma = desiredColorReader.getChannelGamma(chan) / currentColorReader.getChannelGamma(chan);
         channelColors[chan].setGamma(incGamma);
@@ -101,6 +102,8 @@ QRgb PrivateDataColorModel::blend(const double channelIntensities[]) const {
     int sc = channelColors.size();
     for (int c = 0; c < sc; ++c) {
         if (channelIntensities[c] == 0.0)
+            continue;
+        if (! channelColors[c].showChannel)
             continue;
         const ChannelColorModel& ccm = channelColors[c];
         QRgb channelColor = ccm.getColor(channelIntensities[c]);
@@ -186,6 +189,22 @@ qreal PrivateDataColorModel::getChannelGamma(int channel) const {
     return channelColors[channel].getGamma();
 }
 
+bool PrivateDataColorModel::setChannelVisibility(int index, bool isVisibleParam)
+{
+    if (index >= channelColors.size()) return false;
+    if (index < 0) return false;
+    if (channelColors[index].showChannel == isVisibleParam) return false;
+    channelColors[index].showChannel = isVisibleParam;
+    return true;
+}
+
+bool PrivateDataColorModel::getChannelVisibility(int index) const
+{
+    if (index >= channelColors.size()) return false;
+    if (index < 0) return false;
+    return channelColors[index].showChannel;
+}
+
 
 //////////////////////////////////////////////////////
 // PrivateDataColorModel::ChannelColorModel methods //
@@ -193,6 +212,7 @@ qreal PrivateDataColorModel::getChannelGamma(int channel) const {
 
 PrivateDataColorModel::ChannelColorModel::ChannelColorModel(QRgb channelColorParam)
     : blackColor(qRgb(0, 0, 0))
+    , showChannel(true)
 {
     setColor(channelColorParam);
     setGamma(1.0f);
@@ -248,6 +268,7 @@ void PrivateDataColorModel::ChannelColorModel::setGamma(qreal gammaParam)
 // Returns a value in the range 0.0-1.0
 qreal PrivateDataColorModel::ChannelColorModel::getScaledIntensity(qreal raw_intensity) const
 {
+    if (! showChannel) return 0.0;
     if (raw_intensity <= hdrMin) return 0.0; // clamp below
     if (raw_intensity >= hdrMax) return 1.0; // clamp above
     if (hdrRange <= 0) return 0.5;
@@ -276,6 +297,7 @@ qreal PrivateDataColorModel::ChannelColorModel::getScaledIntensity(qreal raw_int
 // getColor() definition is in header file so it can be inlined
 QRgb PrivateDataColorModel::ChannelColorModel::getColor(qreal raw_intensity) const
 {
+    if (! showChannel) return blackColor;
     if (raw_intensity <= hdrMin) return blackColor; // clamp below
     if (raw_intensity >= hdrMax) return channelColor; // clamp above
     const qreal i = getScaledIntensity(raw_intensity);

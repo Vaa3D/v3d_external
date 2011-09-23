@@ -154,12 +154,14 @@ NaMainWindow::NaMainWindow()
             ui.v3dr_glwidget, SLOT(resetRotation()));
     connect(ui.nutateButton, SIGNAL(toggled(bool)),
             this, SLOT(setNutate(bool)));
+    /* obsolete.  now we toggle channels.
     connect(ui.redToggleButton, SIGNAL(toggled(bool)),
             ui.v3dr_glwidget, SLOT(setChannelR(bool)));
     connect(ui.greenToggleButton, SIGNAL(toggled(bool)),
             ui.v3dr_glwidget, SLOT(setChannelG(bool)));
     connect(ui.blueToggleButton, SIGNAL(toggled(bool)),
             ui.v3dr_glwidget, SLOT(setChannelB(bool)));
+            */
     // 3D rotation
     connect(&(ui.v3dr_glwidget->cameraModel), SIGNAL(rotationChanged(const Rotation3D&)),
             this, SLOT(on3DViewerRotationChanged(const Rotation3D&)));
@@ -213,6 +215,12 @@ NaMainWindow::NaMainWindow()
     // Colors
     connect(ui.resetColorsButton, SIGNAL(clicked()),
             this, SLOT(resetColors()));
+    connect(ui.redToggleButton, SIGNAL(toggled(bool)),
+            this, SLOT(setChannelZeroVisibility(bool)));
+    connect(ui.greenToggleButton, SIGNAL(toggled(bool)),
+            this, SLOT(setChannelOneVisibility(bool)));
+    connect(ui.blueToggleButton, SIGNAL(toggled(bool)),
+            this, SLOT(setChannelTwoVisibility(bool)));
 
     // Crosshair
     connect(ui.actionShow_Crosshair, SIGNAL(toggled(bool)),
@@ -249,6 +257,36 @@ NaMainWindow::NaMainWindow()
     ui.annotationFrame->setMainWindow(this);
     ui.centralwidget->installEventFilter(ui.annotationFrame);
     ui.annotationFrame->consoleConnect();
+}
+
+/* slot */
+void NaMainWindow::onColorModelChanged()
+{
+    {
+        DataColorModel::Reader colorReader(dataFlowModel->getDataColorModel());
+        if (dataFlowModel->getDataColorModel().readerIsStale(colorReader)) return;
+        ui.redToggleButton->setChecked(colorReader.getChannelVisibility(0));
+        ui.greenToggleButton->setChecked(colorReader.getChannelVisibility(1));
+        ui.blueToggleButton->setChecked(colorReader.getChannelVisibility(2));
+    }
+}
+
+/* slot */
+void NaMainWindow::setChannelZeroVisibility(bool v)
+{
+    emit channelVisibilityChanged(0, v);
+}
+
+/* slot */
+void NaMainWindow::setChannelOneVisibility(bool v)
+{
+    emit channelVisibilityChanged(1, v);
+}
+
+/* slot */
+void NaMainWindow::setChannelTwoVisibility(bool v)
+{
+    emit channelVisibilityChanged(2, v);
 }
 
 void NaMainWindow::onViewerChanged(int viewerIndex) {
@@ -640,6 +678,10 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
             this, SLOT(completeProgress()));
     connect(&dataFlowModel->getVolumeData(), SIGNAL(progressAborted(QString)),
             this, SLOT(abortProgress(QString)));
+
+    // Color toggling
+    connect(this, SIGNAL(channelVisibilityChanged(int,bool)),
+            &dataFlowModel->getDataColorModel(), SLOT(setChannelVisibility(int,bool)));
 
     // Annotation model update
     connect(dataFlowModel, SIGNAL(modelUpdated(QString)), ui.v3dr_glwidget, SLOT(annotationModelUpdate(QString)));

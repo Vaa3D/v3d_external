@@ -110,6 +110,15 @@ void DataColorModel::setChannelGamma(int index, qreal gamma)
     emit dataChanged();
 }
 
+/* slot */
+void DataColorModel::setChannelVisibility(int channel, bool isVisible) {
+    {
+        Writer colorWriter(*this);
+        if (! d->setChannelVisibility(channel, isVisible)) return;
+    } // release lock before emit
+    emit dataChanged();
+}
+
 
 ////////////////////////////////////
 // DataColorModel::Reader methods //
@@ -155,6 +164,11 @@ qreal DataColorModel::Reader::getChannelHdrMin(int channel) const
 qreal DataColorModel::Reader::getChannelHdrMax(int channel) const
 {
     return d->getChannelHdrMax(channel);
+}
+
+bool DataColorModel::Reader::getChannelVisibility(int channel) const
+{
+    return d->getChannelVisibility(channel);
 }
 
 ////////////////////////////////////

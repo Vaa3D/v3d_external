@@ -32,6 +32,7 @@ public slots:
     void setChannelHdrRange(int index, qreal min, qreal max);
     void setChannelGamma(int index, qreal gamma);
     void setGamma(qreal gamma); // all channels
+    void setChannelVisibility(int channel, bool isVisible);
 
 protected:
     int getNumberOfDataChannels() const;
@@ -64,6 +65,7 @@ public:
         qreal getChannelGamma(int channel) const;
         qreal getChannelHdrMin(int channel) const;
         qreal getChannelHdrMax(int channel) const;
+        bool getChannelVisibility(int index) const;
     };
 
 

@@ -37,9 +37,16 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     loadShader(); // create color map for fast gamma
 }
 
-RendererNeuronAnnotator::~RendererNeuronAnnotator() {
+RendererNeuronAnnotator::~RendererNeuronAnnotator()
+{
     // TODO - what about all those texture3Dwhatever?  When are those deleted?
     // qDebug() << "RendererNeuronAnnotator destructor" << this;
+    cleanExtendedTextures(); // might delete texture3DCurrent
+    if (neuronMask) {delete [] neuronMask; neuronMask = NULL;}
+    if (texture3DReference) {delete [] texture3DReference; texture3DReference = NULL;}
+    if (texture3DBlank) {delete [] texture3DBlank; texture3DBlank = NULL;}
+    if (texture3DBackground) {delete [] texture3DBackground; texture3DBackground = NULL;}
+    // NOTE that deleting texture3DSignal is handled by something else
 }
 
 void RendererNeuronAnnotator::loadVol() {

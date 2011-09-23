@@ -27,6 +27,8 @@ public:
     bool setChannelColor(int index, QRgb color);
     bool setChannelHdrRange(int index, qreal minParam, qreal maxParam);
     bool hasChannelHdrRange(int index, qreal minParam, qreal maxParam) const;
+    bool setChannelVisibility(int index, bool);
+    bool getChannelVisibility(int index) const;
     bool setGamma(qreal gammaParam);
     bool setChannelGamma(int index, qreal gamma);
     qreal getReferenceScaledIntensity(qreal raw_intensity) const;
@@ -66,6 +68,7 @@ public:
         qreal getHdrMax() const {return hdrMax;}
 
     protected:
+        bool showChannel;
         QRgb blackColor;
         QRgb channelColor; // color of channel
         int colorRed; // red component of channelColor, for efficiency
