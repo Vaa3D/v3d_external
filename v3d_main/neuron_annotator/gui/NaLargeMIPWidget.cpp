@@ -153,7 +153,13 @@ void NaLargeMIPWidget::paintEvent(QPaintEvent *event)
     // qDebug() << "paint MIP " << width() << ", " << height();
     painter.begin(this);
     painter.setRenderHint(QPainter::Antialiasing);
-    // painter.setRenderHint(QPainter::SmoothPixmapTransform);
+
+    // use zoom scale to determine when to show numbers/unsmoothed pixels
+    float scale = defaultScale * cameraModel.scale();
+    bool showNumbers = (scale > 40); // 40 display pixels per image pixel
+    if (! showNumbers)
+        // smoothing is nicer on the eyes at low zoom levels, but confusing when numbers  are shown.
+        painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
     // first fill background with black
     // painter.fillRect(0, 0, width(), height(), Qt::black);
@@ -176,8 +182,7 @@ void NaLargeMIPWidget::paintEvent(QPaintEvent *event)
     if (bPaintCrosshair) paintCrosshair(painter);
 
     // At large zoom levels, write the intensity values at each pixel
-    float scale = defaultScale * cameraModel.scale();
-    if (scale > 40) { // 40 display pixels per image pixel
+    if (showNumbers) {
         paintIntensityNumerals(painter);
     }
     painter.end();

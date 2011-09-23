@@ -567,7 +567,7 @@ void Na3DWidget::updateIncrementalColors()
             Renderer_gl2* renderer = (Renderer_gl2*)getRenderer();
             for (int i_in = 0; i_in < 256; ++i_in)
             {
-                // R/G/B color channel value is max of data channel values
+                // R/G/B color channel value is sum of data channel values
                 qreal i_out_f = 0.0;
                 for (int chan = 0; chan < numChannels; ++chan) {
                     i_out_f += colorWeights[rgb][chan] * colorReader.getChannelScaledIntensity(chan, i_in / 255.0) * 255.0;

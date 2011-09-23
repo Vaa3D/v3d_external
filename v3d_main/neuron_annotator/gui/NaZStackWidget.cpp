@@ -79,7 +79,11 @@ void NaZStackWidget::paintEvent(QPaintEvent *event)
     painter.fillRect(0, 0, width(), height(), Qt::black);
 
     painter.setRenderHint(QPainter::Antialiasing);
-    // painter.setRenderHint(QPainter::SmoothPixmapTransform);
+    float scale = defaultScale * cameraModel.scale();
+    bool showNumbers = (scale > 40); // 40 display pixels per image pixel
+    if (! showNumbers)
+        // smoothing is nicer on the eyes at low zoom levels, but confusing when numbers  are shown.
+        painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
     transformPainterToCurrentCamera(painter);
 
@@ -87,8 +91,7 @@ void NaZStackWidget::paintEvent(QPaintEvent *event)
 
     if (bPaintCrosshair) paintCrosshair(painter);
 
-    float scale = defaultScale * cameraModel.scale();
-    if (scale > 40) { // 40 display pixels per image pixel
+    if (showNumbers) { // 40 display pixels per image pixel
         paintIntensityNumerals(painter);
     }
 
