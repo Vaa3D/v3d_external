@@ -11,7 +11,6 @@
 #include "data_model/NeuronSelectionModel.h"
 #include "data_model/MipMergedData.h"
 #include "data_model/ZSliceColors.h"
-#include "data_model/VolumeColors.h"
 
 class DataFlowModel : public QObject
 {
