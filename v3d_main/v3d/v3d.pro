@@ -121,6 +121,7 @@ HEADERS += \
     ../neuron_annotator/entity_model/Ontology.h \
     ../neuron_annotator/entity_model/OntologyAnnotation.h \
     ../neuron_annotator/entity_model/AnnotatedBranch.h \
+    ../neuron_annotator/entity_model/AnnotationSession.h \
     ../neuron_annotator/data_model/PrivateDataColorModel.h \
     ../neuron_annotator/gui/NaViewer.h \
     ../neuron_annotator/gui/Na2DViewer.h \
@@ -213,6 +214,7 @@ SOURCES += \
     ../neuron_annotator/entity_model/Ontology.cpp \
     ../neuron_annotator/entity_model/OntologyAnnotation.cpp \
     ../neuron_annotator/entity_model/AnnotatedBranch.cpp \
+    ../neuron_annotator/entity_model/AnnotationSession.cpp \
     ../neuron_annotator/data_model/PrivateDataColorModel.cpp \
     ../neuron_annotator/NeuronAnnotatorResultNode.cpp \
     ../neuron_annotator/TimebasedIdentifierGenerator.cpp \

@@ -7,15 +7,27 @@
 <xsd:import namespace="http://jaxb.dev.java.net/array" schemaLocation="http://localhost:30001/axis2/services/cds?xsd=2" />
 </xsd:schema>
 </types>
-<message name="removeAnnotation">
-<part name="annotationId" type="xsd:long" />
-</message>
-<message name="removeAnnotationResponse" />
 <message name="getEntityById">
 <part name="entityId" type="xsd:long" />
 </message>
 <message name="getEntityByIdResponse">
 <part name="return" type="tns:entity" />
+</message>
+<message name="removeAnnotation">
+<part name="annotationId" type="xsd:long" />
+</message>
+<message name="removeAnnotationResponse" />
+<message name="getOntology">
+<part name="rootId" type="xsd:long" />
+</message>
+<message name="getOntologyResponse">
+<part name="return" type="tns:entity" />
+</message>
+<message name="getAnnotationSession">
+<part name="sessionId" type="xsd:long" />
+</message>
+<message name="getAnnotationSessionResponse">
+<part name="return" type="tns:annotationSession" />
 </message>
 <message name="getEntityTree">
 <part name="entityId" type="xsd:long" />
@@ -34,10 +46,6 @@
 </message>
 <message name="getAnnotationsForEntitiesResponse">
 <part name="return" type="tns:entityArray" />
-</message>
-<message name="getCurrentOntology" />
-<message name="getCurrentOntologyResponse">
-<part name="return" type="tns:entity" />
 </message>
 <message name="reservePort">
 <part name="clientName" type="xsd:string" />
@@ -67,13 +75,21 @@
 <part name="return" type="tns:entityDataArray" />
 </message>
 <portType name="ConsoleDataService">
+<operation name="getEntityById">
+<input message="tns:getEntityById" />
+<output message="tns:getEntityByIdResponse" />
+</operation>
 <operation name="removeAnnotation">
 <input message="tns:removeAnnotation" />
 <output message="tns:removeAnnotationResponse" />
 </operation>
-<operation name="getEntityById">
-<input message="tns:getEntityById" />
-<output message="tns:getEntityByIdResponse" />
+<operation name="getOntology">
+<input message="tns:getOntology" />
+<output message="tns:getOntologyResponse" />
+</operation>
+<operation name="getAnnotationSession">
+<input message="tns:getAnnotationSession" />
+<output message="tns:getAnnotationSessionResponse" />
 </operation>
 <operation name="getEntityTree">
 <input message="tns:getEntityTree" />
@@ -86,10 +102,6 @@
 <operation name="getAnnotationsForEntities">
 <input message="tns:getAnnotationsForEntities" />
 <output message="tns:getAnnotationsForEntitiesResponse" />
-</operation>
-<operation name="getCurrentOntology">
-<input message="tns:getCurrentOntology" />
-<output message="tns:getCurrentOntologyResponse" />
 </operation>
 <operation name="reservePort">
 <input message="tns:reservePort" />
@@ -114,6 +126,15 @@
 </portType>
 <binding name="CdsPortBinding" type="tns:ConsoleDataService">
 <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc" />
+<operation name="getEntityById">
+<soap:operation soapAction="" />
+<input>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</input>
+<output>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</output>
+</operation>
 <operation name="removeAnnotation">
 <soap:operation soapAction="" />
 <input>
@@ -123,7 +144,16 @@
 <soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
 </output>
 </operation>
-<operation name="getEntityById">
+<operation name="getOntology">
+<soap:operation soapAction="" />
+<input>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</input>
+<output>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</output>
+</operation>
+<operation name="getAnnotationSession">
 <soap:operation soapAction="" />
 <input>
 <soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
@@ -151,15 +181,6 @@
 </output>
 </operation>
 <operation name="getAnnotationsForEntities">
-<soap:operation soapAction="" />
-<input>
-<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
-</input>
-<output>
-<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
-</output>
-</operation>
-<operation name="getCurrentOntology">
 <soap:operation soapAction="" />
 <input>
 <soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />

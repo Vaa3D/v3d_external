@@ -100,61 +100,7 @@ char *ConsoleDataServiceProxy::soap_sprint_fault(char *buf, size_t len)
 }
 #endif
 
-int ConsoleDataServiceProxy::removeAnnotation(const char *endpoint, const char *soap_action, LONG64 annotationId, struct fw__removeAnnotationResponse &_param_1)
-{	struct soap *soap = this;
-	struct fw__removeAnnotation soap_tmp_fw__removeAnnotation;
-	if (endpoint)
-		soap_endpoint = endpoint;
-	if (!soap_endpoint)
-		soap_endpoint = "http://localhost:30001/axis2/services/cds";
-	if (!soap_action)
-		soap_action = "";
-	soap->encodingStyle = NULL;
-	soap_tmp_fw__removeAnnotation.annotationId = annotationId;
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_fw__removeAnnotation(soap, &soap_tmp_fw__removeAnnotation);
-	if (soap_begin_count(soap))
-		return soap->error;
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	if (soap_envelope_begin_out(soap)
-		 || soap_putheader(soap)
-		 || soap_body_begin_out(soap)
-		 || soap_put_fw__removeAnnotation(soap, &soap_tmp_fw__removeAnnotation, "fw:removeAnnotation", NULL)
-		 || soap_body_end_out(soap)
-		 || soap_envelope_end_out(soap))
-			 return soap->error;
-	}
-	if (soap_end_count(soap))
-		return soap->error;
-	if (soap_connect(soap, soap_endpoint, soap_action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_fw__removeAnnotation(soap, &soap_tmp_fw__removeAnnotation, "fw:removeAnnotation", NULL)
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_end_send(soap))
-		return soap_closesock(soap);
-	if (!&_param_1)
-		return soap_closesock(soap);
-	soap_default_fw__removeAnnotationResponse(soap, &_param_1);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap_closesock(soap);
-	soap_get_fw__removeAnnotationResponse(soap, &_param_1, "fw:removeAnnotationResponse", "");
-	if (soap->error)
-		return soap_recv_fault(soap, 0);
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_end_recv(soap))
-		return soap_closesock(soap);
-	return soap_closesock(soap);
-}
-
-int ConsoleDataServiceProxy::getEntityById(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__getEntityByIdResponse &_param_2)
+int ConsoleDataServiceProxy::getEntityById(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__getEntityByIdResponse &_param_1)
 {	struct soap *soap = this;
 	struct fw__getEntityById soap_tmp_fw__getEntityById;
 	if (endpoint)
@@ -190,15 +136,15 @@ int ConsoleDataServiceProxy::getEntityById(const char *endpoint, const char *soa
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
-	if (!&_param_2)
+	if (!&_param_1)
 		return soap_closesock(soap);
-	soap_default_fw__getEntityByIdResponse(soap, &_param_2);
+	soap_default_fw__getEntityByIdResponse(soap, &_param_1);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_fw__getEntityByIdResponse(soap, &_param_2, "fw:getEntityByIdResponse", "");
+	soap_get_fw__getEntityByIdResponse(soap, &_param_1, "fw:getEntityByIdResponse", "");
 	if (soap->error)
 		return soap_recv_fault(soap, 0);
 	if (soap_body_end_in(soap)
@@ -208,7 +154,169 @@ int ConsoleDataServiceProxy::getEntityById(const char *endpoint, const char *soa
 	return soap_closesock(soap);
 }
 
-int ConsoleDataServiceProxy::getEntityTree(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__getEntityTreeResponse &_param_3)
+int ConsoleDataServiceProxy::removeAnnotation(const char *endpoint, const char *soap_action, LONG64 annotationId, struct fw__removeAnnotationResponse &_param_2)
+{	struct soap *soap = this;
+	struct fw__removeAnnotation soap_tmp_fw__removeAnnotation;
+	if (endpoint)
+		soap_endpoint = endpoint;
+	if (!soap_endpoint)
+		soap_endpoint = "http://localhost:30001/axis2/services/cds";
+	if (!soap_action)
+		soap_action = "";
+	soap->encodingStyle = NULL;
+	soap_tmp_fw__removeAnnotation.annotationId = annotationId;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_fw__removeAnnotation(soap, &soap_tmp_fw__removeAnnotation);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_fw__removeAnnotation(soap, &soap_tmp_fw__removeAnnotation, "fw:removeAnnotation", NULL)
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	}
+	if (soap_end_count(soap))
+		return soap->error;
+	if (soap_connect(soap, soap_endpoint, soap_action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_fw__removeAnnotation(soap, &soap_tmp_fw__removeAnnotation, "fw:removeAnnotation", NULL)
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap_closesock(soap);
+	if (!&_param_2)
+		return soap_closesock(soap);
+	soap_default_fw__removeAnnotationResponse(soap, &_param_2);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap_closesock(soap);
+	soap_get_fw__removeAnnotationResponse(soap, &_param_2, "fw:removeAnnotationResponse", "");
+	if (soap->error)
+		return soap_recv_fault(soap, 0);
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap_closesock(soap);
+	return soap_closesock(soap);
+}
+
+int ConsoleDataServiceProxy::getOntology(const char *endpoint, const char *soap_action, LONG64 rootId, struct fw__getOntologyResponse &_param_3)
+{	struct soap *soap = this;
+	struct fw__getOntology soap_tmp_fw__getOntology;
+	if (endpoint)
+		soap_endpoint = endpoint;
+	if (!soap_endpoint)
+		soap_endpoint = "http://localhost:30001/axis2/services/cds";
+	if (!soap_action)
+		soap_action = "";
+	soap->encodingStyle = NULL;
+	soap_tmp_fw__getOntology.rootId = rootId;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_fw__getOntology(soap, &soap_tmp_fw__getOntology);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_fw__getOntology(soap, &soap_tmp_fw__getOntology, "fw:getOntology", NULL)
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	}
+	if (soap_end_count(soap))
+		return soap->error;
+	if (soap_connect(soap, soap_endpoint, soap_action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_fw__getOntology(soap, &soap_tmp_fw__getOntology, "fw:getOntology", NULL)
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap_closesock(soap);
+	if (!&_param_3)
+		return soap_closesock(soap);
+	soap_default_fw__getOntologyResponse(soap, &_param_3);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap_closesock(soap);
+	soap_get_fw__getOntologyResponse(soap, &_param_3, "fw:getOntologyResponse", "");
+	if (soap->error)
+		return soap_recv_fault(soap, 0);
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap_closesock(soap);
+	return soap_closesock(soap);
+}
+
+int ConsoleDataServiceProxy::getAnnotationSession(const char *endpoint, const char *soap_action, LONG64 sessionId, struct fw__getAnnotationSessionResponse &_param_4)
+{	struct soap *soap = this;
+	struct fw__getAnnotationSession soap_tmp_fw__getAnnotationSession;
+	if (endpoint)
+		soap_endpoint = endpoint;
+	if (!soap_endpoint)
+		soap_endpoint = "http://localhost:30001/axis2/services/cds";
+	if (!soap_action)
+		soap_action = "";
+	soap->encodingStyle = NULL;
+	soap_tmp_fw__getAnnotationSession.sessionId = sessionId;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_fw__getAnnotationSession(soap, &soap_tmp_fw__getAnnotationSession);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_fw__getAnnotationSession(soap, &soap_tmp_fw__getAnnotationSession, "fw:getAnnotationSession", NULL)
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	}
+	if (soap_end_count(soap))
+		return soap->error;
+	if (soap_connect(soap, soap_endpoint, soap_action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_fw__getAnnotationSession(soap, &soap_tmp_fw__getAnnotationSession, "fw:getAnnotationSession", NULL)
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap_closesock(soap);
+	if (!&_param_4)
+		return soap_closesock(soap);
+	soap_default_fw__getAnnotationSessionResponse(soap, &_param_4);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap_closesock(soap);
+	soap_get_fw__getAnnotationSessionResponse(soap, &_param_4, "fw:getAnnotationSessionResponse", "");
+	if (soap->error)
+		return soap_recv_fault(soap, 0);
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap_closesock(soap);
+	return soap_closesock(soap);
+}
+
+int ConsoleDataServiceProxy::getEntityTree(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__getEntityTreeResponse &_param_5)
 {	struct soap *soap = this;
 	struct fw__getEntityTree soap_tmp_fw__getEntityTree;
 	if (endpoint)
@@ -244,15 +352,15 @@ int ConsoleDataServiceProxy::getEntityTree(const char *endpoint, const char *soa
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
-	if (!&_param_3)
+	if (!&_param_5)
 		return soap_closesock(soap);
-	soap_default_fw__getEntityTreeResponse(soap, &_param_3);
+	soap_default_fw__getEntityTreeResponse(soap, &_param_5);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_fw__getEntityTreeResponse(soap, &_param_3, "fw:getEntityTreeResponse", "");
+	soap_get_fw__getEntityTreeResponse(soap, &_param_5, "fw:getEntityTreeResponse", "");
 	if (soap->error)
 		return soap_recv_fault(soap, 0);
 	if (soap_body_end_in(soap)
@@ -262,7 +370,7 @@ int ConsoleDataServiceProxy::getEntityTree(const char *endpoint, const char *soa
 	return soap_closesock(soap);
 }
 
-int ConsoleDataServiceProxy::getAnnotationsForEntity(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__getAnnotationsForEntityResponse &_param_4)
+int ConsoleDataServiceProxy::getAnnotationsForEntity(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__getAnnotationsForEntityResponse &_param_6)
 {	struct soap *soap = this;
 	struct fw__getAnnotationsForEntity soap_tmp_fw__getAnnotationsForEntity;
 	if (endpoint)
@@ -298,15 +406,15 @@ int ConsoleDataServiceProxy::getAnnotationsForEntity(const char *endpoint, const
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
-	if (!&_param_4)
+	if (!&_param_6)
 		return soap_closesock(soap);
-	soap_default_fw__getAnnotationsForEntityResponse(soap, &_param_4);
+	soap_default_fw__getAnnotationsForEntityResponse(soap, &_param_6);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_fw__getAnnotationsForEntityResponse(soap, &_param_4, "fw:getAnnotationsForEntityResponse", "");
+	soap_get_fw__getAnnotationsForEntityResponse(soap, &_param_6, "fw:getAnnotationsForEntityResponse", "");
 	if (soap->error)
 		return soap_recv_fault(soap, 0);
 	if (soap_body_end_in(soap)
@@ -316,7 +424,7 @@ int ConsoleDataServiceProxy::getAnnotationsForEntity(const char *endpoint, const
 	return soap_closesock(soap);
 }
 
-int ConsoleDataServiceProxy::getAnnotationsForEntities(const char *endpoint, const char *soap_action, ns2__longArray *entityIds, struct fw__getAnnotationsForEntitiesResponse &_param_5)
+int ConsoleDataServiceProxy::getAnnotationsForEntities(const char *endpoint, const char *soap_action, ns2__longArray *entityIds, struct fw__getAnnotationsForEntitiesResponse &_param_7)
 {	struct soap *soap = this;
 	struct fw__getAnnotationsForEntities soap_tmp_fw__getAnnotationsForEntities;
 	if (endpoint)
@@ -352,15 +460,15 @@ int ConsoleDataServiceProxy::getAnnotationsForEntities(const char *endpoint, con
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
-	if (!&_param_5)
+	if (!&_param_7)
 		return soap_closesock(soap);
-	soap_default_fw__getAnnotationsForEntitiesResponse(soap, &_param_5);
+	soap_default_fw__getAnnotationsForEntitiesResponse(soap, &_param_7);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_fw__getAnnotationsForEntitiesResponse(soap, &_param_5, "fw:getAnnotationsForEntitiesResponse", "");
+	soap_get_fw__getAnnotationsForEntitiesResponse(soap, &_param_7, "fw:getAnnotationsForEntitiesResponse", "");
 	if (soap->error)
 		return soap_recv_fault(soap, 0);
 	if (soap_body_end_in(soap)
@@ -370,60 +478,7 @@ int ConsoleDataServiceProxy::getAnnotationsForEntities(const char *endpoint, con
 	return soap_closesock(soap);
 }
 
-int ConsoleDataServiceProxy::getCurrentOntology(const char *endpoint, const char *soap_action, struct fw__getCurrentOntologyResponse &_param_6)
-{	struct soap *soap = this;
-	struct fw__getCurrentOntology soap_tmp_fw__getCurrentOntology;
-	if (endpoint)
-		soap_endpoint = endpoint;
-	if (!soap_endpoint)
-		soap_endpoint = "http://localhost:30001/axis2/services/cds";
-	if (!soap_action)
-		soap_action = "";
-	soap->encodingStyle = NULL;
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_fw__getCurrentOntology(soap, &soap_tmp_fw__getCurrentOntology);
-	if (soap_begin_count(soap))
-		return soap->error;
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	if (soap_envelope_begin_out(soap)
-		 || soap_putheader(soap)
-		 || soap_body_begin_out(soap)
-		 || soap_put_fw__getCurrentOntology(soap, &soap_tmp_fw__getCurrentOntology, "fw:getCurrentOntology", NULL)
-		 || soap_body_end_out(soap)
-		 || soap_envelope_end_out(soap))
-			 return soap->error;
-	}
-	if (soap_end_count(soap))
-		return soap->error;
-	if (soap_connect(soap, soap_endpoint, soap_action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_fw__getCurrentOntology(soap, &soap_tmp_fw__getCurrentOntology, "fw:getCurrentOntology", NULL)
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_end_send(soap))
-		return soap_closesock(soap);
-	if (!&_param_6)
-		return soap_closesock(soap);
-	soap_default_fw__getCurrentOntologyResponse(soap, &_param_6);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap_closesock(soap);
-	soap_get_fw__getCurrentOntologyResponse(soap, &_param_6, "fw:getCurrentOntologyResponse", "");
-	if (soap->error)
-		return soap_recv_fault(soap, 0);
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_end_recv(soap))
-		return soap_closesock(soap);
-	return soap_closesock(soap);
-}
-
-int ConsoleDataServiceProxy::reservePort(const char *endpoint, const char *soap_action, std::string clientName, struct fw__reservePortResponse &_param_7)
+int ConsoleDataServiceProxy::reservePort(const char *endpoint, const char *soap_action, std::string clientName, struct fw__reservePortResponse &_param_8)
 {	struct soap *soap = this;
 	struct fw__reservePort soap_tmp_fw__reservePort;
 	if (endpoint)
@@ -459,15 +514,15 @@ int ConsoleDataServiceProxy::reservePort(const char *endpoint, const char *soap_
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
-	if (!&_param_7)
+	if (!&_param_8)
 		return soap_closesock(soap);
-	soap_default_fw__reservePortResponse(soap, &_param_7);
+	soap_default_fw__reservePortResponse(soap, &_param_8);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_fw__reservePortResponse(soap, &_param_7, "fw:reservePortResponse", "");
+	soap_get_fw__reservePortResponse(soap, &_param_8, "fw:reservePortResponse", "");
 	if (soap->error)
 		return soap_recv_fault(soap, 0);
 	if (soap_body_end_in(soap)
@@ -477,7 +532,7 @@ int ConsoleDataServiceProxy::reservePort(const char *endpoint, const char *soap_
 	return soap_closesock(soap);
 }
 
-int ConsoleDataServiceProxy::registerClient(const char *endpoint, const char *soap_action, int _port, std::string _endpointUrl, struct fw__registerClientResponse &_param_8)
+int ConsoleDataServiceProxy::registerClient(const char *endpoint, const char *soap_action, int _port, std::string _endpointUrl, struct fw__registerClientResponse &_param_9)
 {	struct soap *soap = this;
 	struct fw__registerClient soap_tmp_fw__registerClient;
 	if (endpoint)
@@ -514,15 +569,15 @@ int ConsoleDataServiceProxy::registerClient(const char *endpoint, const char *so
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
-	if (!&_param_8)
+	if (!&_param_9)
 		return soap_closesock(soap);
-	soap_default_fw__registerClientResponse(soap, &_param_8);
+	soap_default_fw__registerClientResponse(soap, &_param_9);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_fw__registerClientResponse(soap, &_param_8, "fw:registerClientResponse", "");
+	soap_get_fw__registerClientResponse(soap, &_param_9, "fw:registerClientResponse", "");
 	if (soap->error)
 		return soap_recv_fault(soap, 0);
 	if (soap_body_end_in(soap)
@@ -532,7 +587,7 @@ int ConsoleDataServiceProxy::registerClient(const char *endpoint, const char *so
 	return soap_closesock(soap);
 }
 
-int ConsoleDataServiceProxy::createAnnotation(const char *endpoint, const char *soap_action, fw__ontologyAnnotation *annotation, struct fw__createAnnotationResponse &_param_9)
+int ConsoleDataServiceProxy::createAnnotation(const char *endpoint, const char *soap_action, fw__ontologyAnnotation *annotation, struct fw__createAnnotationResponse &_param_10)
 {	struct soap *soap = this;
 	struct fw__createAnnotation soap_tmp_fw__createAnnotation;
 	if (endpoint)
@@ -568,15 +623,15 @@ int ConsoleDataServiceProxy::createAnnotation(const char *endpoint, const char *
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
-	if (!&_param_9)
+	if (!&_param_10)
 		return soap_closesock(soap);
-	soap_default_fw__createAnnotationResponse(soap, &_param_9);
+	soap_default_fw__createAnnotationResponse(soap, &_param_10);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_fw__createAnnotationResponse(soap, &_param_9, "fw:createAnnotationResponse", "");
+	soap_get_fw__createAnnotationResponse(soap, &_param_10, "fw:createAnnotationResponse", "");
 	if (soap->error)
 		return soap_recv_fault(soap, 0);
 	if (soap_body_end_in(soap)
@@ -586,7 +641,7 @@ int ConsoleDataServiceProxy::createAnnotation(const char *endpoint, const char *
 	return soap_closesock(soap);
 }
 
-int ConsoleDataServiceProxy::getKeybindings(const char *endpoint, const char *soap_action, LONG64 ontologyId, struct fw__getKeybindingsResponse &_param_10)
+int ConsoleDataServiceProxy::getKeybindings(const char *endpoint, const char *soap_action, LONG64 ontologyId, struct fw__getKeybindingsResponse &_param_11)
 {	struct soap *soap = this;
 	struct fw__getKeybindings soap_tmp_fw__getKeybindings;
 	if (endpoint)
@@ -622,15 +677,15 @@ int ConsoleDataServiceProxy::getKeybindings(const char *endpoint, const char *so
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
-	if (!&_param_10)
+	if (!&_param_11)
 		return soap_closesock(soap);
-	soap_default_fw__getKeybindingsResponse(soap, &_param_10);
+	soap_default_fw__getKeybindingsResponse(soap, &_param_11);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_fw__getKeybindingsResponse(soap, &_param_10, "fw:getKeybindingsResponse", "");
+	soap_get_fw__getKeybindingsResponse(soap, &_param_11, "fw:getKeybindingsResponse", "");
 	if (soap->error)
 		return soap_recv_fault(soap, 0);
 	if (soap_body_end_in(soap)
@@ -640,7 +695,7 @@ int ConsoleDataServiceProxy::getKeybindings(const char *endpoint, const char *so
 	return soap_closesock(soap);
 }
 
-int ConsoleDataServiceProxy::getParentEntityDataArray(const char *endpoint, const char *soap_action, LONG64 childEntityId, struct fw__getParentEntityDataArrayResponse &_param_11)
+int ConsoleDataServiceProxy::getParentEntityDataArray(const char *endpoint, const char *soap_action, LONG64 childEntityId, struct fw__getParentEntityDataArrayResponse &_param_12)
 {	struct soap *soap = this;
 	struct fw__getParentEntityDataArray soap_tmp_fw__getParentEntityDataArray;
 	if (endpoint)
@@ -676,15 +731,15 @@ int ConsoleDataServiceProxy::getParentEntityDataArray(const char *endpoint, cons
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
-	if (!&_param_11)
+	if (!&_param_12)
 		return soap_closesock(soap);
-	soap_default_fw__getParentEntityDataArrayResponse(soap, &_param_11);
+	soap_default_fw__getParentEntityDataArrayResponse(soap, &_param_12);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_fw__getParentEntityDataArrayResponse(soap, &_param_11, "fw:getParentEntityDataArrayResponse", "");
+	soap_get_fw__getParentEntityDataArrayResponse(soap, &_param_12, "fw:getParentEntityDataArrayResponse", "");
 	if (soap->error)
 		return soap_recv_fault(soap, 0);
 	if (soap_body_end_in(soap)

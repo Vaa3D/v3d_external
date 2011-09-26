@@ -17,7 +17,7 @@ compiling, linking, and/or using OpenSSL is allowed.
 
 namespace cds {
 
-SOAP_SOURCE_STAMP("@(#) cdsC.cpp ver 2.8.3 2011-09-07 22:12:53 GMT")
+SOAP_SOURCE_STAMP("@(#) cdsC.cpp ver 2.8.3 2011-09-26 17:11:03 GMT")
 
 
 #ifndef WITH_NOGLOBAL
@@ -188,6 +188,8 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		return soap_in_fw__entityDataArray(soap, NULL, NULL, "fw:entityDataArray");
 	case SOAP_TYPE_cds_fw__entityArray:
 		return soap_in_fw__entityArray(soap, NULL, NULL, "fw:entityArray");
+	case SOAP_TYPE_cds_fw__annotationSession:
+		return soap_in_fw__annotationSession(soap, NULL, NULL, "fw:annotationSession");
 	case SOAP_TYPE_cds_fw__ontologyKeyBind:
 		return soap_in_fw__ontologyKeyBind(soap, NULL, NULL, "fw:ontologyKeyBind");
 	case SOAP_TYPE_cds_fw__ontologyKeyBindings:
@@ -218,10 +220,6 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		return soap_in_fw__reservePort(soap, NULL, NULL, "fw:reservePort");
 	case SOAP_TYPE_cds_fw__reservePortResponse:
 		return soap_in_fw__reservePortResponse(soap, NULL, NULL, "fw:reservePortResponse");
-	case SOAP_TYPE_cds_fw__getCurrentOntology:
-		return soap_in_fw__getCurrentOntology(soap, NULL, NULL, "fw:getCurrentOntology");
-	case SOAP_TYPE_cds_fw__getCurrentOntologyResponse:
-		return soap_in_fw__getCurrentOntologyResponse(soap, NULL, NULL, "fw:getCurrentOntologyResponse");
 	case SOAP_TYPE_cds_fw__getAnnotationsForEntities:
 		return soap_in_fw__getAnnotationsForEntities(soap, NULL, NULL, "fw:getAnnotationsForEntities");
 	case SOAP_TYPE_cds_fw__getAnnotationsForEntitiesResponse:
@@ -234,14 +232,22 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		return soap_in_fw__getEntityTree(soap, NULL, NULL, "fw:getEntityTree");
 	case SOAP_TYPE_cds_fw__getEntityTreeResponse:
 		return soap_in_fw__getEntityTreeResponse(soap, NULL, NULL, "fw:getEntityTreeResponse");
-	case SOAP_TYPE_cds_fw__getEntityById:
-		return soap_in_fw__getEntityById(soap, NULL, NULL, "fw:getEntityById");
-	case SOAP_TYPE_cds_fw__getEntityByIdResponse:
-		return soap_in_fw__getEntityByIdResponse(soap, NULL, NULL, "fw:getEntityByIdResponse");
+	case SOAP_TYPE_cds_fw__getAnnotationSession:
+		return soap_in_fw__getAnnotationSession(soap, NULL, NULL, "fw:getAnnotationSession");
+	case SOAP_TYPE_cds_fw__getAnnotationSessionResponse:
+		return soap_in_fw__getAnnotationSessionResponse(soap, NULL, NULL, "fw:getAnnotationSessionResponse");
+	case SOAP_TYPE_cds_fw__getOntology:
+		return soap_in_fw__getOntology(soap, NULL, NULL, "fw:getOntology");
+	case SOAP_TYPE_cds_fw__getOntologyResponse:
+		return soap_in_fw__getOntologyResponse(soap, NULL, NULL, "fw:getOntologyResponse");
 	case SOAP_TYPE_cds_fw__removeAnnotation:
 		return soap_in_fw__removeAnnotation(soap, NULL, NULL, "fw:removeAnnotation");
 	case SOAP_TYPE_cds_fw__removeAnnotationResponse:
 		return soap_in_fw__removeAnnotationResponse(soap, NULL, NULL, "fw:removeAnnotationResponse");
+	case SOAP_TYPE_cds_fw__getEntityById:
+		return soap_in_fw__getEntityById(soap, NULL, NULL, "fw:getEntityById");
+	case SOAP_TYPE_cds_fw__getEntityByIdResponse:
+		return soap_in_fw__getEntityByIdResponse(soap, NULL, NULL, "fw:getEntityByIdResponse");
 	case SOAP_TYPE_cds_PointerTofw__entityDataArray:
 		return soap_in_PointerTofw__entityDataArray(soap, NULL, NULL, "fw:entityDataArray");
 	case SOAP_TYPE_cds_PointerTofw__ontologyKeyBindings:
@@ -252,6 +258,8 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		return soap_in_PointerTons2__longArray(soap, NULL, NULL, "ns2:longArray");
 	case SOAP_TYPE_cds_PointerTofw__entityArray:
 		return soap_in_PointerTofw__entityArray(soap, NULL, NULL, "fw:entityArray");
+	case SOAP_TYPE_cds_PointerTofw__annotationSession:
+		return soap_in_PointerTofw__annotationSession(soap, NULL, NULL, "fw:annotationSession");
 	case SOAP_TYPE_cds_PointerTo_fw__ontologyKeyBindings_keyBindingSet:
 		return soap_in_PointerTo_fw__ontologyKeyBindings_keyBindingSet(soap, NULL, NULL, "fw:ontologyKeyBindings-keyBindingSet");
 	case SOAP_TYPE_cds_PointerTofw__ontologyKeyBind:
@@ -321,6 +329,10 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		if (!soap_match_tag(soap, t, "fw:entityArray"))
 		{	*type = SOAP_TYPE_cds_fw__entityArray;
 			return soap_in_fw__entityArray(soap, NULL, NULL, NULL);
+		}
+		if (!soap_match_tag(soap, t, "fw:annotationSession"))
+		{	*type = SOAP_TYPE_cds_fw__annotationSession;
+			return soap_in_fw__annotationSession(soap, NULL, NULL, NULL);
 		}
 		if (!soap_match_tag(soap, t, "fw:ontologyKeyBind"))
 		{	*type = SOAP_TYPE_cds_fw__ontologyKeyBind;
@@ -394,14 +406,6 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		{	*type = SOAP_TYPE_cds_fw__reservePortResponse;
 			return soap_in_fw__reservePortResponse(soap, NULL, NULL, NULL);
 		}
-		if (!soap_match_tag(soap, t, "fw:getCurrentOntology"))
-		{	*type = SOAP_TYPE_cds_fw__getCurrentOntology;
-			return soap_in_fw__getCurrentOntology(soap, NULL, NULL, NULL);
-		}
-		if (!soap_match_tag(soap, t, "fw:getCurrentOntologyResponse"))
-		{	*type = SOAP_TYPE_cds_fw__getCurrentOntologyResponse;
-			return soap_in_fw__getCurrentOntologyResponse(soap, NULL, NULL, NULL);
-		}
 		if (!soap_match_tag(soap, t, "fw:getAnnotationsForEntities"))
 		{	*type = SOAP_TYPE_cds_fw__getAnnotationsForEntities;
 			return soap_in_fw__getAnnotationsForEntities(soap, NULL, NULL, NULL);
@@ -426,13 +430,21 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		{	*type = SOAP_TYPE_cds_fw__getEntityTreeResponse;
 			return soap_in_fw__getEntityTreeResponse(soap, NULL, NULL, NULL);
 		}
-		if (!soap_match_tag(soap, t, "fw:getEntityById"))
-		{	*type = SOAP_TYPE_cds_fw__getEntityById;
-			return soap_in_fw__getEntityById(soap, NULL, NULL, NULL);
+		if (!soap_match_tag(soap, t, "fw:getAnnotationSession"))
+		{	*type = SOAP_TYPE_cds_fw__getAnnotationSession;
+			return soap_in_fw__getAnnotationSession(soap, NULL, NULL, NULL);
 		}
-		if (!soap_match_tag(soap, t, "fw:getEntityByIdResponse"))
-		{	*type = SOAP_TYPE_cds_fw__getEntityByIdResponse;
-			return soap_in_fw__getEntityByIdResponse(soap, NULL, NULL, NULL);
+		if (!soap_match_tag(soap, t, "fw:getAnnotationSessionResponse"))
+		{	*type = SOAP_TYPE_cds_fw__getAnnotationSessionResponse;
+			return soap_in_fw__getAnnotationSessionResponse(soap, NULL, NULL, NULL);
+		}
+		if (!soap_match_tag(soap, t, "fw:getOntology"))
+		{	*type = SOAP_TYPE_cds_fw__getOntology;
+			return soap_in_fw__getOntology(soap, NULL, NULL, NULL);
+		}
+		if (!soap_match_tag(soap, t, "fw:getOntologyResponse"))
+		{	*type = SOAP_TYPE_cds_fw__getOntologyResponse;
+			return soap_in_fw__getOntologyResponse(soap, NULL, NULL, NULL);
 		}
 		if (!soap_match_tag(soap, t, "fw:removeAnnotation"))
 		{	*type = SOAP_TYPE_cds_fw__removeAnnotation;
@@ -441,6 +453,14 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		if (!soap_match_tag(soap, t, "fw:removeAnnotationResponse"))
 		{	*type = SOAP_TYPE_cds_fw__removeAnnotationResponse;
 			return soap_in_fw__removeAnnotationResponse(soap, NULL, NULL, NULL);
+		}
+		if (!soap_match_tag(soap, t, "fw:getEntityById"))
+		{	*type = SOAP_TYPE_cds_fw__getEntityById;
+			return soap_in_fw__getEntityById(soap, NULL, NULL, NULL);
+		}
+		if (!soap_match_tag(soap, t, "fw:getEntityByIdResponse"))
+		{	*type = SOAP_TYPE_cds_fw__getEntityByIdResponse;
+			return soap_in_fw__getEntityByIdResponse(soap, NULL, NULL, NULL);
 		}
 		if (!soap_match_tag(soap, t, "xsd:QName"))
 		{	char **s;
@@ -546,6 +566,8 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_putelement(struct soap *soap, const void *ptr, co
 		return ((fw__entityDataArray *)ptr)->soap_out(soap, tag, id, "fw:entityDataArray");
 	case SOAP_TYPE_cds_fw__entityArray:
 		return ((fw__entityArray *)ptr)->soap_out(soap, tag, id, "fw:entityArray");
+	case SOAP_TYPE_cds_fw__annotationSession:
+		return ((fw__annotationSession *)ptr)->soap_out(soap, tag, id, "fw:annotationSession");
 	case SOAP_TYPE_cds_fw__ontologyKeyBind:
 		return ((fw__ontologyKeyBind *)ptr)->soap_out(soap, tag, id, "fw:ontologyKeyBind");
 	case SOAP_TYPE_cds_fw__ontologyKeyBindings:
@@ -576,10 +598,6 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_putelement(struct soap *soap, const void *ptr, co
 		return soap_out_fw__reservePort(soap, tag, id, (const struct fw__reservePort *)ptr, "fw:reservePort");
 	case SOAP_TYPE_cds_fw__reservePortResponse:
 		return soap_out_fw__reservePortResponse(soap, tag, id, (const struct fw__reservePortResponse *)ptr, "fw:reservePortResponse");
-	case SOAP_TYPE_cds_fw__getCurrentOntology:
-		return soap_out_fw__getCurrentOntology(soap, tag, id, (const struct fw__getCurrentOntology *)ptr, "fw:getCurrentOntology");
-	case SOAP_TYPE_cds_fw__getCurrentOntologyResponse:
-		return soap_out_fw__getCurrentOntologyResponse(soap, tag, id, (const struct fw__getCurrentOntologyResponse *)ptr, "fw:getCurrentOntologyResponse");
 	case SOAP_TYPE_cds_fw__getAnnotationsForEntities:
 		return soap_out_fw__getAnnotationsForEntities(soap, tag, id, (const struct fw__getAnnotationsForEntities *)ptr, "fw:getAnnotationsForEntities");
 	case SOAP_TYPE_cds_fw__getAnnotationsForEntitiesResponse:
@@ -592,14 +610,22 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_putelement(struct soap *soap, const void *ptr, co
 		return soap_out_fw__getEntityTree(soap, tag, id, (const struct fw__getEntityTree *)ptr, "fw:getEntityTree");
 	case SOAP_TYPE_cds_fw__getEntityTreeResponse:
 		return soap_out_fw__getEntityTreeResponse(soap, tag, id, (const struct fw__getEntityTreeResponse *)ptr, "fw:getEntityTreeResponse");
-	case SOAP_TYPE_cds_fw__getEntityById:
-		return soap_out_fw__getEntityById(soap, tag, id, (const struct fw__getEntityById *)ptr, "fw:getEntityById");
-	case SOAP_TYPE_cds_fw__getEntityByIdResponse:
-		return soap_out_fw__getEntityByIdResponse(soap, tag, id, (const struct fw__getEntityByIdResponse *)ptr, "fw:getEntityByIdResponse");
+	case SOAP_TYPE_cds_fw__getAnnotationSession:
+		return soap_out_fw__getAnnotationSession(soap, tag, id, (const struct fw__getAnnotationSession *)ptr, "fw:getAnnotationSession");
+	case SOAP_TYPE_cds_fw__getAnnotationSessionResponse:
+		return soap_out_fw__getAnnotationSessionResponse(soap, tag, id, (const struct fw__getAnnotationSessionResponse *)ptr, "fw:getAnnotationSessionResponse");
+	case SOAP_TYPE_cds_fw__getOntology:
+		return soap_out_fw__getOntology(soap, tag, id, (const struct fw__getOntology *)ptr, "fw:getOntology");
+	case SOAP_TYPE_cds_fw__getOntologyResponse:
+		return soap_out_fw__getOntologyResponse(soap, tag, id, (const struct fw__getOntologyResponse *)ptr, "fw:getOntologyResponse");
 	case SOAP_TYPE_cds_fw__removeAnnotation:
 		return soap_out_fw__removeAnnotation(soap, tag, id, (const struct fw__removeAnnotation *)ptr, "fw:removeAnnotation");
 	case SOAP_TYPE_cds_fw__removeAnnotationResponse:
 		return soap_out_fw__removeAnnotationResponse(soap, tag, id, (const struct fw__removeAnnotationResponse *)ptr, "fw:removeAnnotationResponse");
+	case SOAP_TYPE_cds_fw__getEntityById:
+		return soap_out_fw__getEntityById(soap, tag, id, (const struct fw__getEntityById *)ptr, "fw:getEntityById");
+	case SOAP_TYPE_cds_fw__getEntityByIdResponse:
+		return soap_out_fw__getEntityByIdResponse(soap, tag, id, (const struct fw__getEntityByIdResponse *)ptr, "fw:getEntityByIdResponse");
 	case SOAP_TYPE_cds_PointerTofw__entityDataArray:
 		return soap_out_PointerTofw__entityDataArray(soap, tag, id, (fw__entityDataArray *const*)ptr, "fw:entityDataArray");
 	case SOAP_TYPE_cds_PointerTofw__ontologyKeyBindings:
@@ -610,6 +636,8 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_putelement(struct soap *soap, const void *ptr, co
 		return soap_out_PointerTons2__longArray(soap, tag, id, (ns2__longArray *const*)ptr, "ns2:longArray");
 	case SOAP_TYPE_cds_PointerTofw__entityArray:
 		return soap_out_PointerTofw__entityArray(soap, tag, id, (fw__entityArray *const*)ptr, "fw:entityArray");
+	case SOAP_TYPE_cds_PointerTofw__annotationSession:
+		return soap_out_PointerTofw__annotationSession(soap, tag, id, (fw__annotationSession *const*)ptr, "fw:annotationSession");
 	case SOAP_TYPE_cds_PointerTo_fw__ontologyKeyBindings_keyBindingSet:
 		return soap_out_PointerTo_fw__ontologyKeyBindings_keyBindingSet(soap, tag, id, (_fw__ontologyKeyBindings_keyBindingSet *const*)ptr, "fw:ontologyKeyBindings-keyBindingSet");
 	case SOAP_TYPE_cds_PointerTofw__ontologyKeyBind:
@@ -679,6 +707,9 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_markelement(struct soap *soap, const void *ptr, 
 	case SOAP_TYPE_cds_fw__entityArray:
 		((fw__entityArray *)ptr)->soap_serialize(soap);
 		break;
+	case SOAP_TYPE_cds_fw__annotationSession:
+		((fw__annotationSession *)ptr)->soap_serialize(soap);
+		break;
 	case SOAP_TYPE_cds_fw__ontologyKeyBind:
 		((fw__ontologyKeyBind *)ptr)->soap_serialize(soap);
 		break;
@@ -724,12 +755,6 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_markelement(struct soap *soap, const void *ptr, 
 	case SOAP_TYPE_cds_fw__reservePortResponse:
 		soap_serialize_fw__reservePortResponse(soap, (const struct fw__reservePortResponse *)ptr);
 		break;
-	case SOAP_TYPE_cds_fw__getCurrentOntology:
-		soap_serialize_fw__getCurrentOntology(soap, (const struct fw__getCurrentOntology *)ptr);
-		break;
-	case SOAP_TYPE_cds_fw__getCurrentOntologyResponse:
-		soap_serialize_fw__getCurrentOntologyResponse(soap, (const struct fw__getCurrentOntologyResponse *)ptr);
-		break;
 	case SOAP_TYPE_cds_fw__getAnnotationsForEntities:
 		soap_serialize_fw__getAnnotationsForEntities(soap, (const struct fw__getAnnotationsForEntities *)ptr);
 		break;
@@ -748,17 +773,29 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_markelement(struct soap *soap, const void *ptr, 
 	case SOAP_TYPE_cds_fw__getEntityTreeResponse:
 		soap_serialize_fw__getEntityTreeResponse(soap, (const struct fw__getEntityTreeResponse *)ptr);
 		break;
-	case SOAP_TYPE_cds_fw__getEntityById:
-		soap_serialize_fw__getEntityById(soap, (const struct fw__getEntityById *)ptr);
+	case SOAP_TYPE_cds_fw__getAnnotationSession:
+		soap_serialize_fw__getAnnotationSession(soap, (const struct fw__getAnnotationSession *)ptr);
 		break;
-	case SOAP_TYPE_cds_fw__getEntityByIdResponse:
-		soap_serialize_fw__getEntityByIdResponse(soap, (const struct fw__getEntityByIdResponse *)ptr);
+	case SOAP_TYPE_cds_fw__getAnnotationSessionResponse:
+		soap_serialize_fw__getAnnotationSessionResponse(soap, (const struct fw__getAnnotationSessionResponse *)ptr);
+		break;
+	case SOAP_TYPE_cds_fw__getOntology:
+		soap_serialize_fw__getOntology(soap, (const struct fw__getOntology *)ptr);
+		break;
+	case SOAP_TYPE_cds_fw__getOntologyResponse:
+		soap_serialize_fw__getOntologyResponse(soap, (const struct fw__getOntologyResponse *)ptr);
 		break;
 	case SOAP_TYPE_cds_fw__removeAnnotation:
 		soap_serialize_fw__removeAnnotation(soap, (const struct fw__removeAnnotation *)ptr);
 		break;
 	case SOAP_TYPE_cds_fw__removeAnnotationResponse:
 		soap_serialize_fw__removeAnnotationResponse(soap, (const struct fw__removeAnnotationResponse *)ptr);
+		break;
+	case SOAP_TYPE_cds_fw__getEntityById:
+		soap_serialize_fw__getEntityById(soap, (const struct fw__getEntityById *)ptr);
+		break;
+	case SOAP_TYPE_cds_fw__getEntityByIdResponse:
+		soap_serialize_fw__getEntityByIdResponse(soap, (const struct fw__getEntityByIdResponse *)ptr);
 		break;
 	case SOAP_TYPE_cds_PointerTofw__entityDataArray:
 		soap_serialize_PointerTofw__entityDataArray(soap, (fw__entityDataArray *const*)ptr);
@@ -774,6 +811,9 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_markelement(struct soap *soap, const void *ptr, 
 		break;
 	case SOAP_TYPE_cds_PointerTofw__entityArray:
 		soap_serialize_PointerTofw__entityArray(soap, (fw__entityArray *const*)ptr);
+		break;
+	case SOAP_TYPE_cds_PointerTofw__annotationSession:
+		soap_serialize_PointerTofw__annotationSession(soap, (fw__annotationSession *const*)ptr);
 		break;
 	case SOAP_TYPE_cds_PointerTo_fw__ontologyKeyBindings_keyBindingSet:
 		soap_serialize_PointerTo_fw__ontologyKeyBindings_keyBindingSet(soap, (_fw__ontologyKeyBindings_keyBindingSet *const*)ptr);
@@ -841,20 +881,30 @@ SOAP_FMAC3 void * SOAP_FMAC4 cds_instantiate(struct soap *soap, int t, const cha
 		return (void*)soap_instantiate_fw__ontologyKeyBindings(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_cds_fw__ontologyKeyBind:
 		return (void*)soap_instantiate_fw__ontologyKeyBind(soap, -1, type, arrayType, n);
+	case SOAP_TYPE_cds_fw__annotationSession:
+		return (void*)soap_instantiate_fw__annotationSession(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_cds_fw__entityArray:
 		return (void*)soap_instantiate_fw__entityArray(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_cds_fw__entityDataArray:
 		return (void*)soap_instantiate_fw__entityDataArray(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_cds_ns2__longArray:
 		return (void*)soap_instantiate_ns2__longArray(soap, -1, type, arrayType, n);
-	case SOAP_TYPE_cds_fw__removeAnnotationResponse:
-		return (void*)soap_instantiate_fw__removeAnnotationResponse(soap, -1, type, arrayType, n);
-	case SOAP_TYPE_cds_fw__removeAnnotation:
-		return (void*)soap_instantiate_fw__removeAnnotation(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_cds_fw__getEntityByIdResponse:
 		return (void*)soap_instantiate_fw__getEntityByIdResponse(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_cds_fw__getEntityById:
 		return (void*)soap_instantiate_fw__getEntityById(soap, -1, type, arrayType, n);
+	case SOAP_TYPE_cds_fw__removeAnnotationResponse:
+		return (void*)soap_instantiate_fw__removeAnnotationResponse(soap, -1, type, arrayType, n);
+	case SOAP_TYPE_cds_fw__removeAnnotation:
+		return (void*)soap_instantiate_fw__removeAnnotation(soap, -1, type, arrayType, n);
+	case SOAP_TYPE_cds_fw__getOntologyResponse:
+		return (void*)soap_instantiate_fw__getOntologyResponse(soap, -1, type, arrayType, n);
+	case SOAP_TYPE_cds_fw__getOntology:
+		return (void*)soap_instantiate_fw__getOntology(soap, -1, type, arrayType, n);
+	case SOAP_TYPE_cds_fw__getAnnotationSessionResponse:
+		return (void*)soap_instantiate_fw__getAnnotationSessionResponse(soap, -1, type, arrayType, n);
+	case SOAP_TYPE_cds_fw__getAnnotationSession:
+		return (void*)soap_instantiate_fw__getAnnotationSession(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_cds_fw__getEntityTreeResponse:
 		return (void*)soap_instantiate_fw__getEntityTreeResponse(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_cds_fw__getEntityTree:
@@ -867,10 +917,6 @@ SOAP_FMAC3 void * SOAP_FMAC4 cds_instantiate(struct soap *soap, int t, const cha
 		return (void*)soap_instantiate_fw__getAnnotationsForEntitiesResponse(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_cds_fw__getAnnotationsForEntities:
 		return (void*)soap_instantiate_fw__getAnnotationsForEntities(soap, -1, type, arrayType, n);
-	case SOAP_TYPE_cds_fw__getCurrentOntologyResponse:
-		return (void*)soap_instantiate_fw__getCurrentOntologyResponse(soap, -1, type, arrayType, n);
-	case SOAP_TYPE_cds_fw__getCurrentOntology:
-		return (void*)soap_instantiate_fw__getCurrentOntology(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_cds_fw__reservePortResponse:
 		return (void*)soap_instantiate_fw__reservePortResponse(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_cds_fw__reservePort:
@@ -982,6 +1028,12 @@ SOAP_FMAC3 int SOAP_FMAC4 cds_fdelete(struct soap_clist *p)
 		else
 			SOAP_DELETE_ARRAY((fw__ontologyKeyBind*)p->ptr);
 		break;
+	case SOAP_TYPE_cds_fw__annotationSession:
+		if (p->size < 0)
+			SOAP_DELETE((fw__annotationSession*)p->ptr);
+		else
+			SOAP_DELETE_ARRAY((fw__annotationSession*)p->ptr);
+		break;
 	case SOAP_TYPE_cds_fw__entityArray:
 		if (p->size < 0)
 			SOAP_DELETE((fw__entityArray*)p->ptr);
@@ -1000,6 +1052,18 @@ SOAP_FMAC3 int SOAP_FMAC4 cds_fdelete(struct soap_clist *p)
 		else
 			SOAP_DELETE_ARRAY((ns2__longArray*)p->ptr);
 		break;
+	case SOAP_TYPE_cds_fw__getEntityByIdResponse:
+		if (p->size < 0)
+			SOAP_DELETE((struct fw__getEntityByIdResponse*)p->ptr);
+		else
+			SOAP_DELETE_ARRAY((struct fw__getEntityByIdResponse*)p->ptr);
+		break;
+	case SOAP_TYPE_cds_fw__getEntityById:
+		if (p->size < 0)
+			SOAP_DELETE((struct fw__getEntityById*)p->ptr);
+		else
+			SOAP_DELETE_ARRAY((struct fw__getEntityById*)p->ptr);
+		break;
 	case SOAP_TYPE_cds_fw__removeAnnotationResponse:
 		if (p->size < 0)
 			SOAP_DELETE((struct fw__removeAnnotationResponse*)p->ptr);
@@ -1012,17 +1076,29 @@ SOAP_FMAC3 int SOAP_FMAC4 cds_fdelete(struct soap_clist *p)
 		else
 			SOAP_DELETE_ARRAY((struct fw__removeAnnotation*)p->ptr);
 		break;
-	case SOAP_TYPE_cds_fw__getEntityByIdResponse:
+	case SOAP_TYPE_cds_fw__getOntologyResponse:
 		if (p->size < 0)
-			SOAP_DELETE((struct fw__getEntityByIdResponse*)p->ptr);
+			SOAP_DELETE((struct fw__getOntologyResponse*)p->ptr);
 		else
-			SOAP_DELETE_ARRAY((struct fw__getEntityByIdResponse*)p->ptr);
+			SOAP_DELETE_ARRAY((struct fw__getOntologyResponse*)p->ptr);
 		break;
-	case SOAP_TYPE_cds_fw__getEntityById:
+	case SOAP_TYPE_cds_fw__getOntology:
 		if (p->size < 0)
-			SOAP_DELETE((struct fw__getEntityById*)p->ptr);
+			SOAP_DELETE((struct fw__getOntology*)p->ptr);
 		else
-			SOAP_DELETE_ARRAY((struct fw__getEntityById*)p->ptr);
+			SOAP_DELETE_ARRAY((struct fw__getOntology*)p->ptr);
+		break;
+	case SOAP_TYPE_cds_fw__getAnnotationSessionResponse:
+		if (p->size < 0)
+			SOAP_DELETE((struct fw__getAnnotationSessionResponse*)p->ptr);
+		else
+			SOAP_DELETE_ARRAY((struct fw__getAnnotationSessionResponse*)p->ptr);
+		break;
+	case SOAP_TYPE_cds_fw__getAnnotationSession:
+		if (p->size < 0)
+			SOAP_DELETE((struct fw__getAnnotationSession*)p->ptr);
+		else
+			SOAP_DELETE_ARRAY((struct fw__getAnnotationSession*)p->ptr);
 		break;
 	case SOAP_TYPE_cds_fw__getEntityTreeResponse:
 		if (p->size < 0)
@@ -1059,18 +1135,6 @@ SOAP_FMAC3 int SOAP_FMAC4 cds_fdelete(struct soap_clist *p)
 			SOAP_DELETE((struct fw__getAnnotationsForEntities*)p->ptr);
 		else
 			SOAP_DELETE_ARRAY((struct fw__getAnnotationsForEntities*)p->ptr);
-		break;
-	case SOAP_TYPE_cds_fw__getCurrentOntologyResponse:
-		if (p->size < 0)
-			SOAP_DELETE((struct fw__getCurrentOntologyResponse*)p->ptr);
-		else
-			SOAP_DELETE_ARRAY((struct fw__getCurrentOntologyResponse*)p->ptr);
-		break;
-	case SOAP_TYPE_cds_fw__getCurrentOntology:
-		if (p->size < 0)
-			SOAP_DELETE((struct fw__getCurrentOntology*)p->ptr);
-		else
-			SOAP_DELETE_ARRAY((struct fw__getCurrentOntology*)p->ptr);
 		break;
 	case SOAP_TYPE_cds_fw__reservePortResponse:
 		if (p->size < 0)
@@ -2313,6 +2377,180 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__entityArray(struct soap *soap, int st, 
 	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
 	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying fw__entityArray %p -> %p\n", q, p));
 	*(fw__entityArray*)p = *(fw__entityArray*)q;
+}
+
+void fw__annotationSession::soap_default(struct soap *soap)
+{
+	this->soap = soap;
+	this->fw__annotationSession::id = NULL;
+	this->fw__annotationSession::name = NULL;
+	this->fw__annotationSession::owner = NULL;
+	/* transient soap skipped */
+}
+
+void fw__annotationSession::soap_serialize(struct soap *soap) const
+{
+	(void)soap; /* appease -Wall -Werror */
+	/* transient soap skipped */
+}
+
+int fw__annotationSession::soap_out(struct soap *soap, const char *tag, int id, const char *type) const
+{
+	return soap_out_fw__annotationSession(soap, tag, id, this, type);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__annotationSession(struct soap *soap, const char *tag, int id, const fw__annotationSession *a, const char *type)
+{
+	if (((fw__annotationSession*)a)->id)
+		soap_set_attr(soap, "id", soap_LONG642s(soap, *((fw__annotationSession*)a)->id), 1);
+	if (((fw__annotationSession*)a)->name)
+		soap_set_attr(soap, "name", ((fw__annotationSession*)a)->name->c_str(), 1);
+	if (((fw__annotationSession*)a)->owner)
+		soap_set_attr(soap, "owner", ((fw__annotationSession*)a)->owner->c_str(), 1);
+	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_cds_fw__annotationSession), type))
+		return soap->error;
+	/* transient soap skipped */
+	return soap_element_end_out(soap, tag);
+}
+
+void *fw__annotationSession::soap_in(struct soap *soap, const char *tag, const char *type)
+{	return soap_in_fw__annotationSession(soap, tag, this, type);
+}
+
+SOAP_FMAC3 fw__annotationSession * SOAP_FMAC4 soap_in_fw__annotationSession(struct soap *soap, const char *tag, fw__annotationSession *a, const char *type)
+{
+	(void)type; /* appease -Wall -Werror */
+	if (soap_element_begin_in(soap, tag, 0, NULL))
+		return NULL;
+	a = (fw__annotationSession *)soap_class_id_enter(soap, soap->id, a, SOAP_TYPE_cds_fw__annotationSession, sizeof(fw__annotationSession), soap->type, soap->arrayType);
+	if (!a)
+		return NULL;
+	if (soap->alloced)
+	{	a->soap_default(soap);
+		if (soap->clist->type != SOAP_TYPE_cds_fw__annotationSession)
+		{	soap_revert(soap);
+			*soap->id = '\0';
+			return (fw__annotationSession *)a->soap_in(soap, tag, type);
+		}
+	}
+	{	const char *t = soap_attr_value(soap, "id", 0);
+		if (t)
+		{
+			if (!(((fw__annotationSession*)a)->id = (LONG64 *)soap_malloc(soap, sizeof(LONG64))))
+			{	soap->error = SOAP_EOM;
+				return NULL;
+			}
+			if (soap_s2LONG64(soap, t, ((fw__annotationSession*)a)->id))
+			return NULL;
+		}
+		else if (soap->error)
+			return NULL;
+	}
+	{	const char *t = soap_attr_value(soap, "name", 0);
+		if (t)
+		{
+			char *s = NULL;
+			if (soap_s2string(soap, t, &s, 0, -1))
+				return NULL;
+			if (s)
+			{	((fw__annotationSession*)a)->name = soap_new_std__string(soap, -1);
+				((fw__annotationSession*)a)->name->assign(s);
+			}
+		}
+		else if (soap->error)
+			return NULL;
+	}
+	{	const char *t = soap_attr_value(soap, "owner", 0);
+		if (t)
+		{
+			char *s = NULL;
+			if (soap_s2string(soap, t, &s, 0, -1))
+				return NULL;
+			if (s)
+			{	((fw__annotationSession*)a)->owner = soap_new_std__string(soap, -1);
+				((fw__annotationSession*)a)->owner->assign(s);
+			}
+		}
+		else if (soap->error)
+			return NULL;
+	}
+	if (soap->body && !*soap->href)
+	{
+		for (;;)
+		{	soap->error = SOAP_TAG_MISMATCH;
+			/* transient soap skipped */
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+				return NULL;
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else
+	{	a = (fw__annotationSession *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_cds_fw__annotationSession, 0, sizeof(fw__annotationSession), 0, soap_copy_fw__annotationSession);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+int fw__annotationSession::soap_put(struct soap *soap, const char *tag, const  char *type) const
+{
+	register int id = soap_embed(soap, (void*)this, NULL, 0, tag, SOAP_TYPE_cds_fw__annotationSession);
+	if (this->soap_out(soap, tag?tag:"fw:annotationSession", id, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+void *fw__annotationSession::soap_get(struct soap *soap, const char *tag, const char *type)
+{
+	return soap_get_fw__annotationSession(soap, this, tag, type);
+}
+
+SOAP_FMAC3 fw__annotationSession * SOAP_FMAC4 soap_get_fw__annotationSession(struct soap *soap, fw__annotationSession *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_fw__annotationSession(soap, tag, p, type)))
+		if (soap_getindependent(soap))
+			return NULL;
+	return p;
+}
+
+SOAP_FMAC1 fw__annotationSession * SOAP_FMAC2 soap_instantiate_fw__annotationSession(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
+{
+	(void)type; (void)arrayType; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_fw__annotationSession(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
+	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_cds_fw__annotationSession, n, cds_fdelete);
+	if (!cp)
+		return NULL;
+	if (n < 0)
+	{	cp->ptr = (void*)SOAP_NEW(fw__annotationSession);
+		if (size)
+			*size = sizeof(fw__annotationSession);
+		((fw__annotationSession*)cp->ptr)->soap = soap;
+	}
+	else
+	{	cp->ptr = (void*)SOAP_NEW(fw__annotationSession[n]);
+		if (!cp->ptr)
+		{	soap->error = SOAP_EOM;
+			return NULL;
+		}
+		if (size)
+			*size = n * sizeof(fw__annotationSession);
+		for (int i = 0; i < n; i++)
+			((fw__annotationSession*)cp->ptr)[i].soap = soap;
+	}
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
+	return (fw__annotationSession*)cp->ptr;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__annotationSession(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
+{
+	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying fw__annotationSession %p -> %p\n", q, p));
+	*(fw__annotationSession*)p = *(fw__annotationSession*)q;
 }
 
 void fw__ontologyKeyBind::soap_default(struct soap *soap)
@@ -4893,206 +5131,6 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__reservePortResponse(struct soap *soap, 
 	*(struct fw__reservePortResponse*)p = *(struct fw__reservePortResponse*)q;
 }
 
-SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getCurrentOntology(struct soap *soap, struct fw__getCurrentOntology *a)
-{
-	(void)soap; (void)a; /* appease -Wall -Werror */
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getCurrentOntology(struct soap *soap, const struct fw__getCurrentOntology *a)
-{
-	(void)soap; (void)a; /* appease -Wall -Werror */
-}
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__getCurrentOntology(struct soap *soap, const char *tag, int id, const struct fw__getCurrentOntology *a, const char *type)
-{
-	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_cds_fw__getCurrentOntology), type))
-		return soap->error;
-	return soap_element_end_out(soap, tag);
-}
-
-SOAP_FMAC3 struct fw__getCurrentOntology * SOAP_FMAC4 soap_in_fw__getCurrentOntology(struct soap *soap, const char *tag, struct fw__getCurrentOntology *a, const char *type)
-{
-	if (soap_element_begin_in(soap, tag, 0, type))
-		return NULL;
-	a = (struct fw__getCurrentOntology *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_cds_fw__getCurrentOntology, sizeof(struct fw__getCurrentOntology), 0, NULL, NULL, NULL);
-	if (!a)
-		return NULL;
-	soap_default_fw__getCurrentOntology(soap, a);
-	if (soap->body && !*soap->href)
-	{
-		for (;;)
-		{	soap->error = SOAP_TAG_MISMATCH;
-			if (soap->error == SOAP_TAG_MISMATCH)
-				soap->error = soap_ignore_element(soap);
-			if (soap->error == SOAP_NO_TAG)
-				break;
-			if (soap->error)
-				return NULL;
-		}
-		if (soap_element_end_in(soap, tag))
-			return NULL;
-	}
-	else
-	{	a = (struct fw__getCurrentOntology *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_cds_fw__getCurrentOntology, 0, sizeof(struct fw__getCurrentOntology), 0, NULL);
-		if (soap->body && soap_element_end_in(soap, tag))
-			return NULL;
-	}
-	return a;
-}
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getCurrentOntology(struct soap *soap, const struct fw__getCurrentOntology *a, const char *tag, const char *type)
-{
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getCurrentOntology);
-	if (soap_out_fw__getCurrentOntology(soap, tag?tag:"fw:getCurrentOntology", id, a, type))
-		return soap->error;
-	return soap_putindependent(soap);
-}
-
-SOAP_FMAC3 struct fw__getCurrentOntology * SOAP_FMAC4 soap_get_fw__getCurrentOntology(struct soap *soap, struct fw__getCurrentOntology *p, const char *tag, const char *type)
-{
-	if ((p = soap_in_fw__getCurrentOntology(soap, tag, p, type)))
-		if (soap_getindependent(soap))
-			return NULL;
-	return p;
-}
-
-SOAP_FMAC1 struct fw__getCurrentOntology * SOAP_FMAC2 soap_instantiate_fw__getCurrentOntology(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
-{
-	(void)type; (void)arrayType; /* appease -Wall -Werror */
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_fw__getCurrentOntology(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
-	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_cds_fw__getCurrentOntology, n, cds_fdelete);
-	if (!cp)
-		return NULL;
-	if (n < 0)
-	{	cp->ptr = (void*)SOAP_NEW(struct fw__getCurrentOntology);
-		if (size)
-			*size = sizeof(struct fw__getCurrentOntology);
-	}
-	else
-	{	cp->ptr = (void*)SOAP_NEW(struct fw__getCurrentOntology[n]);
-		if (!cp->ptr)
-		{	soap->error = SOAP_EOM;
-			return NULL;
-		}
-		if (size)
-			*size = n * sizeof(struct fw__getCurrentOntology);
-	}
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
-	return (struct fw__getCurrentOntology*)cp->ptr;
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getCurrentOntology(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
-{
-	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__getCurrentOntology %p -> %p\n", q, p));
-	*(struct fw__getCurrentOntology*)p = *(struct fw__getCurrentOntology*)q;
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getCurrentOntologyResponse(struct soap *soap, struct fw__getCurrentOntologyResponse *a)
-{
-	(void)soap; (void)a; /* appease -Wall -Werror */
-	a->return_ = NULL;
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getCurrentOntologyResponse(struct soap *soap, const struct fw__getCurrentOntologyResponse *a)
-{
-	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_serialize_PointerTofw__entity(soap, &a->return_);
-}
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__getCurrentOntologyResponse(struct soap *soap, const char *tag, int id, const struct fw__getCurrentOntologyResponse *a, const char *type)
-{
-	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_cds_fw__getCurrentOntologyResponse), type))
-		return soap->error;
-	if (soap_out_PointerTofw__entity(soap, "return", -1, &a->return_, ""))
-		return soap->error;
-	return soap_element_end_out(soap, tag);
-}
-
-SOAP_FMAC3 struct fw__getCurrentOntologyResponse * SOAP_FMAC4 soap_in_fw__getCurrentOntologyResponse(struct soap *soap, const char *tag, struct fw__getCurrentOntologyResponse *a, const char *type)
-{
-	size_t soap_flag_return_ = 1;
-	if (soap_element_begin_in(soap, tag, 0, type))
-		return NULL;
-	a = (struct fw__getCurrentOntologyResponse *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_cds_fw__getCurrentOntologyResponse, sizeof(struct fw__getCurrentOntologyResponse), 0, NULL, NULL, NULL);
-	if (!a)
-		return NULL;
-	soap_default_fw__getCurrentOntologyResponse(soap, a);
-	if (soap->body && !*soap->href)
-	{
-		for (;;)
-		{	soap->error = SOAP_TAG_MISMATCH;
-			if (soap_flag_return_ && soap->error == SOAP_TAG_MISMATCH)
-				if (soap_in_PointerTofw__entity(soap, "return", &a->return_, "fw:entity"))
-				{	soap_flag_return_--;
-					continue;
-				}
-			if (soap->error == SOAP_TAG_MISMATCH)
-				soap->error = soap_ignore_element(soap);
-			if (soap->error == SOAP_NO_TAG)
-				break;
-			if (soap->error)
-				return NULL;
-		}
-		if (soap_element_end_in(soap, tag))
-			return NULL;
-	}
-	else
-	{	a = (struct fw__getCurrentOntologyResponse *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_cds_fw__getCurrentOntologyResponse, 0, sizeof(struct fw__getCurrentOntologyResponse), 0, NULL);
-		if (soap->body && soap_element_end_in(soap, tag))
-			return NULL;
-	}
-	return a;
-}
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getCurrentOntologyResponse(struct soap *soap, const struct fw__getCurrentOntologyResponse *a, const char *tag, const char *type)
-{
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getCurrentOntologyResponse);
-	if (soap_out_fw__getCurrentOntologyResponse(soap, tag?tag:"fw:getCurrentOntologyResponse", id, a, type))
-		return soap->error;
-	return soap_putindependent(soap);
-}
-
-SOAP_FMAC3 struct fw__getCurrentOntologyResponse * SOAP_FMAC4 soap_get_fw__getCurrentOntologyResponse(struct soap *soap, struct fw__getCurrentOntologyResponse *p, const char *tag, const char *type)
-{
-	if ((p = soap_in_fw__getCurrentOntologyResponse(soap, tag, p, type)))
-		if (soap_getindependent(soap))
-			return NULL;
-	return p;
-}
-
-SOAP_FMAC1 struct fw__getCurrentOntologyResponse * SOAP_FMAC2 soap_instantiate_fw__getCurrentOntologyResponse(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
-{
-	(void)type; (void)arrayType; /* appease -Wall -Werror */
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_fw__getCurrentOntologyResponse(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
-	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_cds_fw__getCurrentOntologyResponse, n, cds_fdelete);
-	if (!cp)
-		return NULL;
-	if (n < 0)
-	{	cp->ptr = (void*)SOAP_NEW(struct fw__getCurrentOntologyResponse);
-		if (size)
-			*size = sizeof(struct fw__getCurrentOntologyResponse);
-	}
-	else
-	{	cp->ptr = (void*)SOAP_NEW(struct fw__getCurrentOntologyResponse[n]);
-		if (!cp->ptr)
-		{	soap->error = SOAP_EOM;
-			return NULL;
-		}
-		if (size)
-			*size = n * sizeof(struct fw__getCurrentOntologyResponse);
-	}
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
-	return (struct fw__getCurrentOntologyResponse*)cp->ptr;
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getCurrentOntologyResponse(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
-{
-	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__getCurrentOntologyResponse %p -> %p\n", q, p));
-	*(struct fw__getCurrentOntologyResponse*)p = *(struct fw__getCurrentOntologyResponse*)q;
-}
-
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getAnnotationsForEntities(struct soap *soap, struct fw__getAnnotationsForEntities *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
@@ -5731,6 +5769,638 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getEntityTreeResponse(struct soap *soap
 	*(struct fw__getEntityTreeResponse*)p = *(struct fw__getEntityTreeResponse*)q;
 }
 
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getAnnotationSession(struct soap *soap, struct fw__getAnnotationSession *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+	soap_default_LONG64(soap, &a->sessionId);
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getAnnotationSession(struct soap *soap, const struct fw__getAnnotationSession *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+	soap_embedded(soap, &a->sessionId, SOAP_TYPE_cds_LONG64);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__getAnnotationSession(struct soap *soap, const char *tag, int id, const struct fw__getAnnotationSession *a, const char *type)
+{
+	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_cds_fw__getAnnotationSession), type))
+		return soap->error;
+	if (soap_out_LONG64(soap, "sessionId", -1, &a->sessionId, ""))
+		return soap->error;
+	return soap_element_end_out(soap, tag);
+}
+
+SOAP_FMAC3 struct fw__getAnnotationSession * SOAP_FMAC4 soap_in_fw__getAnnotationSession(struct soap *soap, const char *tag, struct fw__getAnnotationSession *a, const char *type)
+{
+	size_t soap_flag_sessionId = 1;
+	if (soap_element_begin_in(soap, tag, 0, type))
+		return NULL;
+	a = (struct fw__getAnnotationSession *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_cds_fw__getAnnotationSession, sizeof(struct fw__getAnnotationSession), 0, NULL, NULL, NULL);
+	if (!a)
+		return NULL;
+	soap_default_fw__getAnnotationSession(soap, a);
+	if (soap->body && !*soap->href)
+	{
+		for (;;)
+		{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap_flag_sessionId && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_LONG64(soap, "sessionId", &a->sessionId, "xsd:long"))
+				{	soap_flag_sessionId--;
+					continue;
+				}
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+				return NULL;
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else
+	{	a = (struct fw__getAnnotationSession *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_cds_fw__getAnnotationSession, 0, sizeof(struct fw__getAnnotationSession), 0, NULL);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	if ((soap->mode & SOAP_XML_STRICT) && (soap_flag_sessionId > 0))
+	{	soap->error = SOAP_OCCURS;
+		return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getAnnotationSession(struct soap *soap, const struct fw__getAnnotationSession *a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getAnnotationSession);
+	if (soap_out_fw__getAnnotationSession(soap, tag?tag:"fw:getAnnotationSession", id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 struct fw__getAnnotationSession * SOAP_FMAC4 soap_get_fw__getAnnotationSession(struct soap *soap, struct fw__getAnnotationSession *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_fw__getAnnotationSession(soap, tag, p, type)))
+		if (soap_getindependent(soap))
+			return NULL;
+	return p;
+}
+
+SOAP_FMAC1 struct fw__getAnnotationSession * SOAP_FMAC2 soap_instantiate_fw__getAnnotationSession(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
+{
+	(void)type; (void)arrayType; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_fw__getAnnotationSession(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
+	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_cds_fw__getAnnotationSession, n, cds_fdelete);
+	if (!cp)
+		return NULL;
+	if (n < 0)
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__getAnnotationSession);
+		if (size)
+			*size = sizeof(struct fw__getAnnotationSession);
+	}
+	else
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__getAnnotationSession[n]);
+		if (!cp->ptr)
+		{	soap->error = SOAP_EOM;
+			return NULL;
+		}
+		if (size)
+			*size = n * sizeof(struct fw__getAnnotationSession);
+	}
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
+	return (struct fw__getAnnotationSession*)cp->ptr;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getAnnotationSession(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
+{
+	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__getAnnotationSession %p -> %p\n", q, p));
+	*(struct fw__getAnnotationSession*)p = *(struct fw__getAnnotationSession*)q;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getAnnotationSessionResponse(struct soap *soap, struct fw__getAnnotationSessionResponse *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+	a->return_ = NULL;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getAnnotationSessionResponse(struct soap *soap, const struct fw__getAnnotationSessionResponse *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+	soap_serialize_PointerTofw__annotationSession(soap, &a->return_);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__getAnnotationSessionResponse(struct soap *soap, const char *tag, int id, const struct fw__getAnnotationSessionResponse *a, const char *type)
+{
+	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_cds_fw__getAnnotationSessionResponse), type))
+		return soap->error;
+	if (soap_out_PointerTofw__annotationSession(soap, "return", -1, &a->return_, ""))
+		return soap->error;
+	return soap_element_end_out(soap, tag);
+}
+
+SOAP_FMAC3 struct fw__getAnnotationSessionResponse * SOAP_FMAC4 soap_in_fw__getAnnotationSessionResponse(struct soap *soap, const char *tag, struct fw__getAnnotationSessionResponse *a, const char *type)
+{
+	size_t soap_flag_return_ = 1;
+	if (soap_element_begin_in(soap, tag, 0, type))
+		return NULL;
+	a = (struct fw__getAnnotationSessionResponse *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_cds_fw__getAnnotationSessionResponse, sizeof(struct fw__getAnnotationSessionResponse), 0, NULL, NULL, NULL);
+	if (!a)
+		return NULL;
+	soap_default_fw__getAnnotationSessionResponse(soap, a);
+	if (soap->body && !*soap->href)
+	{
+		for (;;)
+		{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap_flag_return_ && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_PointerTofw__annotationSession(soap, "return", &a->return_, "fw:annotationSession"))
+				{	soap_flag_return_--;
+					continue;
+				}
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+				return NULL;
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else
+	{	a = (struct fw__getAnnotationSessionResponse *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_cds_fw__getAnnotationSessionResponse, 0, sizeof(struct fw__getAnnotationSessionResponse), 0, NULL);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getAnnotationSessionResponse(struct soap *soap, const struct fw__getAnnotationSessionResponse *a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getAnnotationSessionResponse);
+	if (soap_out_fw__getAnnotationSessionResponse(soap, tag?tag:"fw:getAnnotationSessionResponse", id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 struct fw__getAnnotationSessionResponse * SOAP_FMAC4 soap_get_fw__getAnnotationSessionResponse(struct soap *soap, struct fw__getAnnotationSessionResponse *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_fw__getAnnotationSessionResponse(soap, tag, p, type)))
+		if (soap_getindependent(soap))
+			return NULL;
+	return p;
+}
+
+SOAP_FMAC1 struct fw__getAnnotationSessionResponse * SOAP_FMAC2 soap_instantiate_fw__getAnnotationSessionResponse(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
+{
+	(void)type; (void)arrayType; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_fw__getAnnotationSessionResponse(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
+	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_cds_fw__getAnnotationSessionResponse, n, cds_fdelete);
+	if (!cp)
+		return NULL;
+	if (n < 0)
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__getAnnotationSessionResponse);
+		if (size)
+			*size = sizeof(struct fw__getAnnotationSessionResponse);
+	}
+	else
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__getAnnotationSessionResponse[n]);
+		if (!cp->ptr)
+		{	soap->error = SOAP_EOM;
+			return NULL;
+		}
+		if (size)
+			*size = n * sizeof(struct fw__getAnnotationSessionResponse);
+	}
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
+	return (struct fw__getAnnotationSessionResponse*)cp->ptr;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getAnnotationSessionResponse(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
+{
+	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__getAnnotationSessionResponse %p -> %p\n", q, p));
+	*(struct fw__getAnnotationSessionResponse*)p = *(struct fw__getAnnotationSessionResponse*)q;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getOntology(struct soap *soap, struct fw__getOntology *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+	soap_default_LONG64(soap, &a->rootId);
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getOntology(struct soap *soap, const struct fw__getOntology *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+	soap_embedded(soap, &a->rootId, SOAP_TYPE_cds_LONG64);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__getOntology(struct soap *soap, const char *tag, int id, const struct fw__getOntology *a, const char *type)
+{
+	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_cds_fw__getOntology), type))
+		return soap->error;
+	if (soap_out_LONG64(soap, "rootId", -1, &a->rootId, ""))
+		return soap->error;
+	return soap_element_end_out(soap, tag);
+}
+
+SOAP_FMAC3 struct fw__getOntology * SOAP_FMAC4 soap_in_fw__getOntology(struct soap *soap, const char *tag, struct fw__getOntology *a, const char *type)
+{
+	size_t soap_flag_rootId = 1;
+	if (soap_element_begin_in(soap, tag, 0, type))
+		return NULL;
+	a = (struct fw__getOntology *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_cds_fw__getOntology, sizeof(struct fw__getOntology), 0, NULL, NULL, NULL);
+	if (!a)
+		return NULL;
+	soap_default_fw__getOntology(soap, a);
+	if (soap->body && !*soap->href)
+	{
+		for (;;)
+		{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap_flag_rootId && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_LONG64(soap, "rootId", &a->rootId, "xsd:long"))
+				{	soap_flag_rootId--;
+					continue;
+				}
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+				return NULL;
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else
+	{	a = (struct fw__getOntology *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_cds_fw__getOntology, 0, sizeof(struct fw__getOntology), 0, NULL);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	if ((soap->mode & SOAP_XML_STRICT) && (soap_flag_rootId > 0))
+	{	soap->error = SOAP_OCCURS;
+		return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getOntology(struct soap *soap, const struct fw__getOntology *a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getOntology);
+	if (soap_out_fw__getOntology(soap, tag?tag:"fw:getOntology", id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 struct fw__getOntology * SOAP_FMAC4 soap_get_fw__getOntology(struct soap *soap, struct fw__getOntology *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_fw__getOntology(soap, tag, p, type)))
+		if (soap_getindependent(soap))
+			return NULL;
+	return p;
+}
+
+SOAP_FMAC1 struct fw__getOntology * SOAP_FMAC2 soap_instantiate_fw__getOntology(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
+{
+	(void)type; (void)arrayType; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_fw__getOntology(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
+	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_cds_fw__getOntology, n, cds_fdelete);
+	if (!cp)
+		return NULL;
+	if (n < 0)
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__getOntology);
+		if (size)
+			*size = sizeof(struct fw__getOntology);
+	}
+	else
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__getOntology[n]);
+		if (!cp->ptr)
+		{	soap->error = SOAP_EOM;
+			return NULL;
+		}
+		if (size)
+			*size = n * sizeof(struct fw__getOntology);
+	}
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
+	return (struct fw__getOntology*)cp->ptr;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getOntology(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
+{
+	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__getOntology %p -> %p\n", q, p));
+	*(struct fw__getOntology*)p = *(struct fw__getOntology*)q;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getOntologyResponse(struct soap *soap, struct fw__getOntologyResponse *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+	a->return_ = NULL;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getOntologyResponse(struct soap *soap, const struct fw__getOntologyResponse *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+	soap_serialize_PointerTofw__entity(soap, &a->return_);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__getOntologyResponse(struct soap *soap, const char *tag, int id, const struct fw__getOntologyResponse *a, const char *type)
+{
+	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_cds_fw__getOntologyResponse), type))
+		return soap->error;
+	if (soap_out_PointerTofw__entity(soap, "return", -1, &a->return_, ""))
+		return soap->error;
+	return soap_element_end_out(soap, tag);
+}
+
+SOAP_FMAC3 struct fw__getOntologyResponse * SOAP_FMAC4 soap_in_fw__getOntologyResponse(struct soap *soap, const char *tag, struct fw__getOntologyResponse *a, const char *type)
+{
+	size_t soap_flag_return_ = 1;
+	if (soap_element_begin_in(soap, tag, 0, type))
+		return NULL;
+	a = (struct fw__getOntologyResponse *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_cds_fw__getOntologyResponse, sizeof(struct fw__getOntologyResponse), 0, NULL, NULL, NULL);
+	if (!a)
+		return NULL;
+	soap_default_fw__getOntologyResponse(soap, a);
+	if (soap->body && !*soap->href)
+	{
+		for (;;)
+		{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap_flag_return_ && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_PointerTofw__entity(soap, "return", &a->return_, "fw:entity"))
+				{	soap_flag_return_--;
+					continue;
+				}
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+				return NULL;
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else
+	{	a = (struct fw__getOntologyResponse *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_cds_fw__getOntologyResponse, 0, sizeof(struct fw__getOntologyResponse), 0, NULL);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getOntologyResponse(struct soap *soap, const struct fw__getOntologyResponse *a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getOntologyResponse);
+	if (soap_out_fw__getOntologyResponse(soap, tag?tag:"fw:getOntologyResponse", id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 struct fw__getOntologyResponse * SOAP_FMAC4 soap_get_fw__getOntologyResponse(struct soap *soap, struct fw__getOntologyResponse *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_fw__getOntologyResponse(soap, tag, p, type)))
+		if (soap_getindependent(soap))
+			return NULL;
+	return p;
+}
+
+SOAP_FMAC1 struct fw__getOntologyResponse * SOAP_FMAC2 soap_instantiate_fw__getOntologyResponse(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
+{
+	(void)type; (void)arrayType; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_fw__getOntologyResponse(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
+	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_cds_fw__getOntologyResponse, n, cds_fdelete);
+	if (!cp)
+		return NULL;
+	if (n < 0)
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__getOntologyResponse);
+		if (size)
+			*size = sizeof(struct fw__getOntologyResponse);
+	}
+	else
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__getOntologyResponse[n]);
+		if (!cp->ptr)
+		{	soap->error = SOAP_EOM;
+			return NULL;
+		}
+		if (size)
+			*size = n * sizeof(struct fw__getOntologyResponse);
+	}
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
+	return (struct fw__getOntologyResponse*)cp->ptr;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getOntologyResponse(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
+{
+	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__getOntologyResponse %p -> %p\n", q, p));
+	*(struct fw__getOntologyResponse*)p = *(struct fw__getOntologyResponse*)q;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__removeAnnotation(struct soap *soap, struct fw__removeAnnotation *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+	soap_default_LONG64(soap, &a->annotationId);
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__removeAnnotation(struct soap *soap, const struct fw__removeAnnotation *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+	soap_embedded(soap, &a->annotationId, SOAP_TYPE_cds_LONG64);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__removeAnnotation(struct soap *soap, const char *tag, int id, const struct fw__removeAnnotation *a, const char *type)
+{
+	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_cds_fw__removeAnnotation), type))
+		return soap->error;
+	if (soap_out_LONG64(soap, "annotationId", -1, &a->annotationId, ""))
+		return soap->error;
+	return soap_element_end_out(soap, tag);
+}
+
+SOAP_FMAC3 struct fw__removeAnnotation * SOAP_FMAC4 soap_in_fw__removeAnnotation(struct soap *soap, const char *tag, struct fw__removeAnnotation *a, const char *type)
+{
+	size_t soap_flag_annotationId = 1;
+	if (soap_element_begin_in(soap, tag, 0, type))
+		return NULL;
+	a = (struct fw__removeAnnotation *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_cds_fw__removeAnnotation, sizeof(struct fw__removeAnnotation), 0, NULL, NULL, NULL);
+	if (!a)
+		return NULL;
+	soap_default_fw__removeAnnotation(soap, a);
+	if (soap->body && !*soap->href)
+	{
+		for (;;)
+		{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap_flag_annotationId && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_LONG64(soap, "annotationId", &a->annotationId, "xsd:long"))
+				{	soap_flag_annotationId--;
+					continue;
+				}
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+				return NULL;
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else
+	{	a = (struct fw__removeAnnotation *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_cds_fw__removeAnnotation, 0, sizeof(struct fw__removeAnnotation), 0, NULL);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	if ((soap->mode & SOAP_XML_STRICT) && (soap_flag_annotationId > 0))
+	{	soap->error = SOAP_OCCURS;
+		return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__removeAnnotation(struct soap *soap, const struct fw__removeAnnotation *a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__removeAnnotation);
+	if (soap_out_fw__removeAnnotation(soap, tag?tag:"fw:removeAnnotation", id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 struct fw__removeAnnotation * SOAP_FMAC4 soap_get_fw__removeAnnotation(struct soap *soap, struct fw__removeAnnotation *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_fw__removeAnnotation(soap, tag, p, type)))
+		if (soap_getindependent(soap))
+			return NULL;
+	return p;
+}
+
+SOAP_FMAC1 struct fw__removeAnnotation * SOAP_FMAC2 soap_instantiate_fw__removeAnnotation(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
+{
+	(void)type; (void)arrayType; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_fw__removeAnnotation(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
+	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_cds_fw__removeAnnotation, n, cds_fdelete);
+	if (!cp)
+		return NULL;
+	if (n < 0)
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__removeAnnotation);
+		if (size)
+			*size = sizeof(struct fw__removeAnnotation);
+	}
+	else
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__removeAnnotation[n]);
+		if (!cp->ptr)
+		{	soap->error = SOAP_EOM;
+			return NULL;
+		}
+		if (size)
+			*size = n * sizeof(struct fw__removeAnnotation);
+	}
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
+	return (struct fw__removeAnnotation*)cp->ptr;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__removeAnnotation(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
+{
+	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__removeAnnotation %p -> %p\n", q, p));
+	*(struct fw__removeAnnotation*)p = *(struct fw__removeAnnotation*)q;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__removeAnnotationResponse(struct soap *soap, struct fw__removeAnnotationResponse *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__removeAnnotationResponse(struct soap *soap, const struct fw__removeAnnotationResponse *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__removeAnnotationResponse(struct soap *soap, const char *tag, int id, const struct fw__removeAnnotationResponse *a, const char *type)
+{
+	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_cds_fw__removeAnnotationResponse), type))
+		return soap->error;
+	return soap_element_end_out(soap, tag);
+}
+
+SOAP_FMAC3 struct fw__removeAnnotationResponse * SOAP_FMAC4 soap_in_fw__removeAnnotationResponse(struct soap *soap, const char *tag, struct fw__removeAnnotationResponse *a, const char *type)
+{
+	if (soap_element_begin_in(soap, tag, 0, type))
+		return NULL;
+	a = (struct fw__removeAnnotationResponse *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_cds_fw__removeAnnotationResponse, sizeof(struct fw__removeAnnotationResponse), 0, NULL, NULL, NULL);
+	if (!a)
+		return NULL;
+	soap_default_fw__removeAnnotationResponse(soap, a);
+	if (soap->body && !*soap->href)
+	{
+		for (;;)
+		{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+				return NULL;
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else
+	{	a = (struct fw__removeAnnotationResponse *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_cds_fw__removeAnnotationResponse, 0, sizeof(struct fw__removeAnnotationResponse), 0, NULL);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__removeAnnotationResponse(struct soap *soap, const struct fw__removeAnnotationResponse *a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__removeAnnotationResponse);
+	if (soap_out_fw__removeAnnotationResponse(soap, tag?tag:"fw:removeAnnotationResponse", id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 struct fw__removeAnnotationResponse * SOAP_FMAC4 soap_get_fw__removeAnnotationResponse(struct soap *soap, struct fw__removeAnnotationResponse *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_fw__removeAnnotationResponse(soap, tag, p, type)))
+		if (soap_getindependent(soap))
+			return NULL;
+	return p;
+}
+
+SOAP_FMAC1 struct fw__removeAnnotationResponse * SOAP_FMAC2 soap_instantiate_fw__removeAnnotationResponse(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
+{
+	(void)type; (void)arrayType; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_fw__removeAnnotationResponse(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
+	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_cds_fw__removeAnnotationResponse, n, cds_fdelete);
+	if (!cp)
+		return NULL;
+	if (n < 0)
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__removeAnnotationResponse);
+		if (size)
+			*size = sizeof(struct fw__removeAnnotationResponse);
+	}
+	else
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__removeAnnotationResponse[n]);
+		if (!cp->ptr)
+		{	soap->error = SOAP_EOM;
+			return NULL;
+		}
+		if (size)
+			*size = n * sizeof(struct fw__removeAnnotationResponse);
+	}
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
+	return (struct fw__removeAnnotationResponse*)cp->ptr;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__removeAnnotationResponse(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
+{
+	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__removeAnnotationResponse %p -> %p\n", q, p));
+	*(struct fw__removeAnnotationResponse*)p = *(struct fw__removeAnnotationResponse*)q;
+}
+
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getEntityById(struct soap *soap, struct fw__getEntityById *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
@@ -5943,210 +6613,6 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getEntityByIdResponse(struct soap *soap
 	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
 	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__getEntityByIdResponse %p -> %p\n", q, p));
 	*(struct fw__getEntityByIdResponse*)p = *(struct fw__getEntityByIdResponse*)q;
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__removeAnnotation(struct soap *soap, struct fw__removeAnnotation *a)
-{
-	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_default_LONG64(soap, &a->annotationId);
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__removeAnnotation(struct soap *soap, const struct fw__removeAnnotation *a)
-{
-	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_embedded(soap, &a->annotationId, SOAP_TYPE_cds_LONG64);
-}
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__removeAnnotation(struct soap *soap, const char *tag, int id, const struct fw__removeAnnotation *a, const char *type)
-{
-	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_cds_fw__removeAnnotation), type))
-		return soap->error;
-	if (soap_out_LONG64(soap, "annotationId", -1, &a->annotationId, ""))
-		return soap->error;
-	return soap_element_end_out(soap, tag);
-}
-
-SOAP_FMAC3 struct fw__removeAnnotation * SOAP_FMAC4 soap_in_fw__removeAnnotation(struct soap *soap, const char *tag, struct fw__removeAnnotation *a, const char *type)
-{
-	size_t soap_flag_annotationId = 1;
-	if (soap_element_begin_in(soap, tag, 0, type))
-		return NULL;
-	a = (struct fw__removeAnnotation *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_cds_fw__removeAnnotation, sizeof(struct fw__removeAnnotation), 0, NULL, NULL, NULL);
-	if (!a)
-		return NULL;
-	soap_default_fw__removeAnnotation(soap, a);
-	if (soap->body && !*soap->href)
-	{
-		for (;;)
-		{	soap->error = SOAP_TAG_MISMATCH;
-			if (soap_flag_annotationId && soap->error == SOAP_TAG_MISMATCH)
-				if (soap_in_LONG64(soap, "annotationId", &a->annotationId, "xsd:long"))
-				{	soap_flag_annotationId--;
-					continue;
-				}
-			if (soap->error == SOAP_TAG_MISMATCH)
-				soap->error = soap_ignore_element(soap);
-			if (soap->error == SOAP_NO_TAG)
-				break;
-			if (soap->error)
-				return NULL;
-		}
-		if (soap_element_end_in(soap, tag))
-			return NULL;
-	}
-	else
-	{	a = (struct fw__removeAnnotation *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_cds_fw__removeAnnotation, 0, sizeof(struct fw__removeAnnotation), 0, NULL);
-		if (soap->body && soap_element_end_in(soap, tag))
-			return NULL;
-	}
-	if ((soap->mode & SOAP_XML_STRICT) && (soap_flag_annotationId > 0))
-	{	soap->error = SOAP_OCCURS;
-		return NULL;
-	}
-	return a;
-}
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__removeAnnotation(struct soap *soap, const struct fw__removeAnnotation *a, const char *tag, const char *type)
-{
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__removeAnnotation);
-	if (soap_out_fw__removeAnnotation(soap, tag?tag:"fw:removeAnnotation", id, a, type))
-		return soap->error;
-	return soap_putindependent(soap);
-}
-
-SOAP_FMAC3 struct fw__removeAnnotation * SOAP_FMAC4 soap_get_fw__removeAnnotation(struct soap *soap, struct fw__removeAnnotation *p, const char *tag, const char *type)
-{
-	if ((p = soap_in_fw__removeAnnotation(soap, tag, p, type)))
-		if (soap_getindependent(soap))
-			return NULL;
-	return p;
-}
-
-SOAP_FMAC1 struct fw__removeAnnotation * SOAP_FMAC2 soap_instantiate_fw__removeAnnotation(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
-{
-	(void)type; (void)arrayType; /* appease -Wall -Werror */
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_fw__removeAnnotation(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
-	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_cds_fw__removeAnnotation, n, cds_fdelete);
-	if (!cp)
-		return NULL;
-	if (n < 0)
-	{	cp->ptr = (void*)SOAP_NEW(struct fw__removeAnnotation);
-		if (size)
-			*size = sizeof(struct fw__removeAnnotation);
-	}
-	else
-	{	cp->ptr = (void*)SOAP_NEW(struct fw__removeAnnotation[n]);
-		if (!cp->ptr)
-		{	soap->error = SOAP_EOM;
-			return NULL;
-		}
-		if (size)
-			*size = n * sizeof(struct fw__removeAnnotation);
-	}
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
-	return (struct fw__removeAnnotation*)cp->ptr;
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__removeAnnotation(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
-{
-	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__removeAnnotation %p -> %p\n", q, p));
-	*(struct fw__removeAnnotation*)p = *(struct fw__removeAnnotation*)q;
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__removeAnnotationResponse(struct soap *soap, struct fw__removeAnnotationResponse *a)
-{
-	(void)soap; (void)a; /* appease -Wall -Werror */
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__removeAnnotationResponse(struct soap *soap, const struct fw__removeAnnotationResponse *a)
-{
-	(void)soap; (void)a; /* appease -Wall -Werror */
-}
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__removeAnnotationResponse(struct soap *soap, const char *tag, int id, const struct fw__removeAnnotationResponse *a, const char *type)
-{
-	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_cds_fw__removeAnnotationResponse), type))
-		return soap->error;
-	return soap_element_end_out(soap, tag);
-}
-
-SOAP_FMAC3 struct fw__removeAnnotationResponse * SOAP_FMAC4 soap_in_fw__removeAnnotationResponse(struct soap *soap, const char *tag, struct fw__removeAnnotationResponse *a, const char *type)
-{
-	if (soap_element_begin_in(soap, tag, 0, type))
-		return NULL;
-	a = (struct fw__removeAnnotationResponse *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_cds_fw__removeAnnotationResponse, sizeof(struct fw__removeAnnotationResponse), 0, NULL, NULL, NULL);
-	if (!a)
-		return NULL;
-	soap_default_fw__removeAnnotationResponse(soap, a);
-	if (soap->body && !*soap->href)
-	{
-		for (;;)
-		{	soap->error = SOAP_TAG_MISMATCH;
-			if (soap->error == SOAP_TAG_MISMATCH)
-				soap->error = soap_ignore_element(soap);
-			if (soap->error == SOAP_NO_TAG)
-				break;
-			if (soap->error)
-				return NULL;
-		}
-		if (soap_element_end_in(soap, tag))
-			return NULL;
-	}
-	else
-	{	a = (struct fw__removeAnnotationResponse *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_cds_fw__removeAnnotationResponse, 0, sizeof(struct fw__removeAnnotationResponse), 0, NULL);
-		if (soap->body && soap_element_end_in(soap, tag))
-			return NULL;
-	}
-	return a;
-}
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__removeAnnotationResponse(struct soap *soap, const struct fw__removeAnnotationResponse *a, const char *tag, const char *type)
-{
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__removeAnnotationResponse);
-	if (soap_out_fw__removeAnnotationResponse(soap, tag?tag:"fw:removeAnnotationResponse", id, a, type))
-		return soap->error;
-	return soap_putindependent(soap);
-}
-
-SOAP_FMAC3 struct fw__removeAnnotationResponse * SOAP_FMAC4 soap_get_fw__removeAnnotationResponse(struct soap *soap, struct fw__removeAnnotationResponse *p, const char *tag, const char *type)
-{
-	if ((p = soap_in_fw__removeAnnotationResponse(soap, tag, p, type)))
-		if (soap_getindependent(soap))
-			return NULL;
-	return p;
-}
-
-SOAP_FMAC1 struct fw__removeAnnotationResponse * SOAP_FMAC2 soap_instantiate_fw__removeAnnotationResponse(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
-{
-	(void)type; (void)arrayType; /* appease -Wall -Werror */
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_fw__removeAnnotationResponse(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
-	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_cds_fw__removeAnnotationResponse, n, cds_fdelete);
-	if (!cp)
-		return NULL;
-	if (n < 0)
-	{	cp->ptr = (void*)SOAP_NEW(struct fw__removeAnnotationResponse);
-		if (size)
-			*size = sizeof(struct fw__removeAnnotationResponse);
-	}
-	else
-	{	cp->ptr = (void*)SOAP_NEW(struct fw__removeAnnotationResponse[n]);
-		if (!cp->ptr)
-		{	soap->error = SOAP_EOM;
-			return NULL;
-		}
-		if (size)
-			*size = n * sizeof(struct fw__removeAnnotationResponse);
-	}
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
-	return (struct fw__removeAnnotationResponse*)cp->ptr;
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__removeAnnotationResponse(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
-{
-	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__removeAnnotationResponse %p -> %p\n", q, p));
-	*(struct fw__removeAnnotationResponse*)p = *(struct fw__removeAnnotationResponse*)q;
 }
 
 #ifndef WITH_NOGLOBAL
@@ -6584,6 +7050,61 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__entityArray(struct soap *soap, f
 SOAP_FMAC3 fw__entityArray ** SOAP_FMAC4 soap_get_PointerTofw__entityArray(struct soap *soap, fw__entityArray **p, const char *tag, const char *type)
 {
 	if ((p = soap_in_PointerTofw__entityArray(soap, tag, p, type)))
+		if (soap_getindependent(soap))
+			return NULL;
+	return p;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTofw__annotationSession(struct soap *soap, fw__annotationSession *const*a)
+{
+	if (!soap_reference(soap, *a, SOAP_TYPE_cds_fw__annotationSession))
+		(*a)->soap_serialize(soap);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTofw__annotationSession(struct soap *soap, const char *tag, int id, fw__annotationSession *const*a, const char *type)
+{
+	id = soap_element_id(soap, tag, id, *a, NULL, 0, type, SOAP_TYPE_cds_fw__annotationSession);
+	if (id < 0)
+		return soap->error;
+	return (*a)->soap_out(soap, tag, id, type);
+}
+
+SOAP_FMAC3 fw__annotationSession ** SOAP_FMAC4 soap_in_PointerTofw__annotationSession(struct soap *soap, const char *tag, fw__annotationSession **a, const char *type)
+{
+	if (soap_element_begin_in(soap, tag, 1, NULL))
+		return NULL;
+	if (!a)
+		if (!(a = (fw__annotationSession **)soap_malloc(soap, sizeof(fw__annotationSession *))))
+			return NULL;
+	*a = NULL;
+	if (!soap->null && *soap->href != '#')
+	{	soap_revert(soap);
+		if (!(*a = (fw__annotationSession *)soap_instantiate_fw__annotationSession(soap, -1, soap->type, soap->arrayType, NULL)))
+			return NULL;
+		(*a)->soap_default(soap);
+		if (!(*a)->soap_in(soap, tag, NULL))
+			return NULL;
+	}
+	else
+	{	fw__annotationSession ** p = (fw__annotationSession **)soap_id_lookup(soap, soap->href, (void**)a, SOAP_TYPE_cds_fw__annotationSession, sizeof(fw__annotationSession), 0);
+		a = p;
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__annotationSession(struct soap *soap, fw__annotationSession *const*a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_PointerTofw__annotationSession);
+	if (soap_out_PointerTofw__annotationSession(soap, tag?tag:"fw:annotationSession", id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 fw__annotationSession ** SOAP_FMAC4 soap_get_PointerTofw__annotationSession(struct soap *soap, fw__annotationSession **p, const char *tag, const char *type)
+{
+	if ((p = soap_in_PointerTofw__annotationSession(soap, tag, p, type)))
 		if (soap_getindependent(soap))
 			return NULL;
 	return p;

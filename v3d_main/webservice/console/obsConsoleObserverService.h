@@ -83,6 +83,9 @@ class SOAP_CMAC ConsoleObserverService : public soap
 
 	/// Web service operation 'annotationsChanged' (returns error code or SOAP_OK)
 	virtual	int annotationsChanged(LONG64 entityId, struct fw__annotationsChangedResponse &_param_5) SOAP_PURE_VIRTUAL;
+
+	/// Web service operation 'sessionSelected' (returns error code or SOAP_OK)
+	virtual	int sessionSelected(LONG64 sessionId, struct fw__sessionSelectedResponse &_param_6) SOAP_PURE_VIRTUAL;
 };
 
 } // namespace obs

@@ -195,7 +195,7 @@ QMap<QKeySequence, qint64>* EntityAdapter::convert(cds::fw__ontologyKeyBindings 
     return map;
 }
 
-OntologyAnnotation* EntityAdapter::convertAnnotation(cds::fw__ontologyAnnotation *fwAnnotation)
+OntologyAnnotation* EntityAdapter::convert(cds::fw__ontologyAnnotation *fwAnnotation)
 {
     OntologyAnnotation *annotation = new OntologyAnnotation;
     if (fwAnnotation->sessionId != NULL) annotation->sessionId = new qint64(*fwAnnotation->sessionId);
@@ -207,7 +207,7 @@ OntologyAnnotation* EntityAdapter::convertAnnotation(cds::fw__ontologyAnnotation
     return annotation;
 }
 
-cds::fw__ontologyAnnotation* EntityAdapter::convertAnnotation(OntologyAnnotation* annotation)
+cds::fw__ontologyAnnotation* EntityAdapter::convert(OntologyAnnotation* annotation)
 {
     cds::fw__ontologyAnnotation *fwAnnotation = new cds::fw__ontologyAnnotation;
     if (annotation->sessionId != NULL) fwAnnotation->sessionId = (LONG64 *)new qint64(*annotation->sessionId);
@@ -219,5 +219,11 @@ cds::fw__ontologyAnnotation* EntityAdapter::convertAnnotation(OntologyAnnotation
     return fwAnnotation;
 }
 
-
-
+AnnotationSession* EntityAdapter::convert(cds::fw__annotationSession *fwAnnotationSession)
+{
+    AnnotationSession *annotationSession = new AnnotationSession;
+    if (fwAnnotationSession->id != NULL) annotationSession->sessionId = new qint64(*fwAnnotationSession->id);
+    if (fwAnnotationSession->name != NULL) annotationSession->name = new QString(fwAnnotationSession->name->c_str());
+    if (fwAnnotationSession->owner != NULL) annotationSession->owner = new QString(fwAnnotationSession->owner->c_str());
+    return annotationSession;
+}

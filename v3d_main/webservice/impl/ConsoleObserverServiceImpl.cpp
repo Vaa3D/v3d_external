@@ -103,7 +103,8 @@ int ConsoleObserverServiceImpl::entitySelected(LONG64 entityId, struct fw__entit
     return SOAP_OK;
 }
 
-int ConsoleObserverServiceImpl::entityViewRequested(LONG64 entityId, struct fw__entityViewRequestedResponse &response) {
+int ConsoleObserverServiceImpl::entityViewRequested(LONG64 entityId, struct fw__entityViewRequestedResponse &response)
+{
     emit entityViewRequested(entityId);
     return SOAP_OK;
 }
@@ -111,6 +112,12 @@ int ConsoleObserverServiceImpl::entityViewRequested(LONG64 entityId, struct fw__
 int ConsoleObserverServiceImpl::annotationsChanged(LONG64 entityId, struct fw__annotationsChangedResponse &response)
 {
     emit annotationsChanged(entityId);
+    return SOAP_OK;
+}
+
+int ConsoleObserverServiceImpl::sessionSelected(LONG64 sessionId, struct fw__sessionSelectedResponse &response)
+{
+    emit sessionSelected(sessionId);
     return SOAP_OK;
 }
 

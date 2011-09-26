@@ -7,6 +7,7 @@
 
 class DataThread;
 class NaMainWindow;
+class AnnotationSession;
 class Ontology;
 class Entity;
 
@@ -21,28 +22,30 @@ class ConsoleObserver : public QObject
     Q_OBJECT
 public:
     explicit ConsoleObserver(NaMainWindow *mainWindow = 0, QObject *parent = 0);
-    void loadCurrentOntology();
+    void loadOntology(qint64 rootId);
 
 signals:
     // These signals are emitted when a processed console event triggers an action
     void openOntology(Ontology *ontology);
     void openAnnotatedBranch(AnnotatedBranch *annotatedBranch);
-    void updateAnnotations(long entityId, AnnotationList *annotations);
+    void updateAnnotations(qint64 entityId, AnnotationList *annotations);
     void communicationError(const QString & errorMessage);
+    void openAnnotationSession(AnnotationSession *session);
 
 public slots:
     // These slots implement the console observer interface.
     // They are called by the console observer service whenever
     // a new event is received from the console.
-    void ontologySelected(long rootId);
-    void ontologyChanged(long rootId);
-    void entitySelected(long entityId);
-    void entityViewRequested(long entityId);
-    void annotationsChanged(long entityId);
+    void ontologySelected(qint64 rootId);
+    void ontologyChanged(qint64 rootId);
+    void entitySelected(qint64 entityId);
+    void entityViewRequested(qint64 entityId);
+    void annotationsChanged(qint64 entityId);
+    void sessionSelected(qint64 sessionId);
 
 private slots:
     // These slots are for listening to internal worker threads
-    void annotatedBranchViewRequested(long entityId);
+    void annotatedBranchViewRequested(qint64 entityId);
     void loadOntologyResults(const void *results);
     void loadOntologyError(const QString & error);
     void entitySelectedResults(const void *results);
@@ -53,6 +56,8 @@ private slots:
     void annotatedBranchViewRequestedError(const QString & error);
     void annotationsChangedResults(const void *results);
     void annotationsChangedError(const QString & error);
+    void loadAnnotationSessionResults(const void *results);
+    void loadAnnotationSessionError(const QString & error);
 
 private:
     NaMainWindow *mainWindow;
@@ -63,6 +68,7 @@ private:
     DataThread *entityViewRequestedThread;
     DataThread *annotatedBranchViewRequestedThread;
     DataThread *annotationsChangedThread;
+    DataThread *loadAnnotationSessionThread;
 
     // Synchronize access to the worker threads
     QMutex loadOntologyMutex;
@@ -70,6 +76,7 @@ private:
     QMutex entityViewRequestedMutex;
     QMutex annotatedBranchViewRequestedMutex;
     QMutex annotationsChangedMutex;
+    QMutex loadAnnotationSessionMutex;
 };
 
 #endif // CONSOLEOBSERVER_H

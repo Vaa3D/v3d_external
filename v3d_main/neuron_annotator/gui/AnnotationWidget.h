@@ -12,6 +12,7 @@ class OntologyTreeModel;
 class AnnotatedBranch;
 class AnnotatedBranchTreeModel;
 class ConsoleObserver;
+class AnnotationSession;
 class DataThread;
 class NaMainWindow;
 class QModelIndex;
@@ -41,9 +42,11 @@ signals:
 public slots:
     void closeOntology();
     void openOntology(Ontology *ontology);
+    void closeAnnotationSession();
+    void openAnnotationSession(AnnotationSession *annotationSession);
     void closeAnnotatedBranch();
     void openAnnotatedBranch(AnnotatedBranch *annotatedBranch, bool openStack = true);
-    void updateAnnotations(long entityId, AnnotationList *annotations);
+    void updateAnnotations(qint64 entityId, AnnotationList *annotations);
     void communicationError(const QString & errorMessage);
     void consoleConnect();
     void consoleDisconnect();
@@ -82,6 +85,7 @@ private:
     OntologyTreeModel *ontologyTreeModel;
 
     // Annotations
+    AnnotationSession *annotationSession;
     AnnotatedBranch *annotatedBranch;
     AnnotatedBranchTreeModel *annotatedBranchTreeModel;
     const Entity *selectedEntity;

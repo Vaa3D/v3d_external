@@ -71,7 +71,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_int(struct soap*, const int *, const char*, c
 SOAP_FMAC3 int * SOAP_FMAC4 soap_get_int(struct soap*, int *, const char*, const char*);
 
 #ifndef SOAP_TYPE_cds_LONG64
-#define SOAP_TYPE_cds_LONG64 (21)
+#define SOAP_TYPE_cds_LONG64 (22)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_LONG64(struct soap*, LONG64 *);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_LONG64(struct soap*, const char*, int, const LONG64 *, const char*);
@@ -91,7 +91,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_LONG64(struct soap*, const LONG64 *, const ch
 SOAP_FMAC3 LONG64 * SOAP_FMAC4 soap_get_LONG64(struct soap*, LONG64 *, const char*, const char*);
 
 #ifndef SOAP_TYPE_cds__fw__ontologyKeyBindings_keyBindingSet
-#define SOAP_TYPE_cds__fw__ontologyKeyBindings_keyBindingSet (35)
+#define SOAP_TYPE_cds__fw__ontologyKeyBindings_keyBindingSet (36)
 #endif
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_out__fw__ontologyKeyBindings_keyBindingSet(struct soap*, const char*, int, const _fw__ontologyKeyBindings_keyBindingSet *, const char*);
@@ -117,7 +117,7 @@ SOAP_FMAC1 _fw__ontologyKeyBindings_keyBindingSet * SOAP_FMAC2 soap_instantiate_
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy__fw__ontologyKeyBindings_keyBindingSet(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds__fw__entity_entityDataSet
-#define SOAP_TYPE_cds__fw__entity_entityDataSet (28)
+#define SOAP_TYPE_cds__fw__entity_entityDataSet (29)
 #endif
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_out__fw__entity_entityDataSet(struct soap*, const char*, int, const _fw__entity_entityDataSet *, const char*);
@@ -143,7 +143,7 @@ SOAP_FMAC1 _fw__entity_entityDataSet * SOAP_FMAC2 soap_instantiate__fw__entity_e
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy__fw__entity_entityDataSet(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_fw__entityAttribute
-#define SOAP_TYPE_cds_fw__entityAttribute (20)
+#define SOAP_TYPE_cds_fw__entityAttribute (21)
 #endif
 
 #define soap_default_fw__entityAttribute(soap, a) soap_default_std__string(soap, a)
@@ -179,7 +179,7 @@ SOAP_FMAC3 std::string * SOAP_FMAC4 soap_get_fw__entityAttribute(struct soap*, s
 #define soap_copy_fw__entityAttribute soap_copy_std__string
 
 #ifndef SOAP_TYPE_cds_fw__entityType
-#define SOAP_TYPE_cds_fw__entityType (19)
+#define SOAP_TYPE_cds_fw__entityType (20)
 #endif
 
 #define soap_default_fw__entityType(soap, a) soap_default_std__string(soap, a)
@@ -215,7 +215,7 @@ SOAP_FMAC3 std::string * SOAP_FMAC4 soap_get_fw__entityType(struct soap*, std::s
 #define soap_copy_fw__entityType soap_copy_std__string
 
 #ifndef SOAP_TYPE_cds_fw__entityStatus
-#define SOAP_TYPE_cds_fw__entityStatus (18)
+#define SOAP_TYPE_cds_fw__entityStatus (19)
 #endif
 
 #define soap_default_fw__entityStatus(soap, a) soap_default_std__string(soap, a)
@@ -251,7 +251,7 @@ SOAP_FMAC3 std::string * SOAP_FMAC4 soap_get_fw__entityStatus(struct soap*, std:
 #define soap_copy_fw__entityStatus soap_copy_std__string
 
 #ifndef SOAP_TYPE_cds_fw__user
-#define SOAP_TYPE_cds_fw__user (17)
+#define SOAP_TYPE_cds_fw__user (18)
 #endif
 
 #define soap_default_fw__user(soap, a) soap_default_std__string(soap, a)
@@ -287,7 +287,7 @@ SOAP_FMAC3 std::string * SOAP_FMAC4 soap_get_fw__user(struct soap*, std::string 
 #define soap_copy_fw__user soap_copy_std__string
 
 #ifndef SOAP_TYPE_cds_std__string
-#define SOAP_TYPE_cds_std__string (16)
+#define SOAP_TYPE_cds_std__string (17)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_std__string(struct soap*, std::string *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_std__string(struct soap*, const std::string *);
@@ -316,7 +316,7 @@ SOAP_FMAC1 std::string * SOAP_FMAC2 soap_instantiate_std__string(struct soap*, i
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_std__string(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_ns2__longArray
-#define SOAP_TYPE_cds_ns2__longArray (15)
+#define SOAP_TYPE_cds_ns2__longArray (16)
 #endif
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_ns2__longArray(struct soap*, const char*, int, const ns2__longArray *, const char*);
@@ -342,7 +342,7 @@ SOAP_FMAC1 ns2__longArray * SOAP_FMAC2 soap_instantiate_ns2__longArray(struct so
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_ns2__longArray(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_fw__entityDataArray
-#define SOAP_TYPE_cds_fw__entityDataArray (14)
+#define SOAP_TYPE_cds_fw__entityDataArray (15)
 #endif
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__entityDataArray(struct soap*, const char*, int, const fw__entityDataArray *, const char*);
@@ -368,7 +368,7 @@ SOAP_FMAC1 fw__entityDataArray * SOAP_FMAC2 soap_instantiate_fw__entityDataArray
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__entityDataArray(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_fw__entityArray
-#define SOAP_TYPE_cds_fw__entityArray (13)
+#define SOAP_TYPE_cds_fw__entityArray (14)
 #endif
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__entityArray(struct soap*, const char*, int, const fw__entityArray *, const char*);
@@ -392,6 +392,32 @@ SOAP_FMAC3 fw__entityArray * SOAP_FMAC4 soap_get_fw__entityArray(struct soap*, f
 
 SOAP_FMAC1 fw__entityArray * SOAP_FMAC2 soap_instantiate_fw__entityArray(struct soap*, int, const char*, const char*, size_t*);
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__entityArray(struct soap*, int, int, void*, size_t, const void*, size_t);
+
+#ifndef SOAP_TYPE_cds_fw__annotationSession
+#define SOAP_TYPE_cds_fw__annotationSession (13)
+#endif
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__annotationSession(struct soap*, const char*, int, const fw__annotationSession *, const char*);
+SOAP_FMAC3 fw__annotationSession * SOAP_FMAC4 soap_in_fw__annotationSession(struct soap*, const char*, fw__annotationSession *, const char*);
+
+#ifndef soap_write_fw__annotationSession
+#define soap_write_fw__annotationSession(soap, data) ( soap_begin_send(soap) || ((data)->soap_serialize(soap), 0) || (data)->soap_put(soap, "fw:annotationSession", NULL) || soap_end_send(soap) )
+#endif
+
+
+#ifndef soap_read_fw__annotationSession
+#define soap_read_fw__annotationSession(soap, data) ( soap_begin_recv(soap) || !cds::soap_get_fw__annotationSession(soap, data, NULL, NULL) || soap_end_recv(soap) )
+#endif
+
+SOAP_FMAC3 fw__annotationSession * SOAP_FMAC4 soap_get_fw__annotationSession(struct soap*, fw__annotationSession *, const char*, const char*);
+
+#define soap_new_fw__annotationSession(soap, n) soap_instantiate_fw__annotationSession(soap, n, NULL, NULL, NULL)
+
+
+#define soap_delete_fw__annotationSession(soap, p) soap_delete(soap, p)
+
+SOAP_FMAC1 fw__annotationSession * SOAP_FMAC2 soap_instantiate_fw__annotationSession(struct soap*, int, const char*, const char*, size_t*);
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__annotationSession(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_fw__ontologyKeyBind
 #define SOAP_TYPE_cds_fw__ontologyKeyBind (12)
@@ -526,7 +552,7 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__ontologyAnnotation(struct soap*, int, i
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_cds_SOAP_ENV__Fault
-#define SOAP_TYPE_cds_SOAP_ENV__Fault (97)
+#define SOAP_TYPE_cds_SOAP_ENV__Fault (103)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_SOAP_ENV__Fault(struct soap*, struct SOAP_ENV__Fault *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_SOAP_ENV__Fault(struct soap*, const struct SOAP_ENV__Fault *);
@@ -559,7 +585,7 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_SOAP_ENV__Fault(struct soap*, int, int, voi
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_cds_SOAP_ENV__Reason
-#define SOAP_TYPE_cds_SOAP_ENV__Reason (96)
+#define SOAP_TYPE_cds_SOAP_ENV__Reason (102)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_SOAP_ENV__Reason(struct soap*, struct SOAP_ENV__Reason *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_SOAP_ENV__Reason(struct soap*, const struct SOAP_ENV__Reason *);
@@ -592,7 +618,7 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_SOAP_ENV__Reason(struct soap*, int, int, vo
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_cds_SOAP_ENV__Detail
-#define SOAP_TYPE_cds_SOAP_ENV__Detail (93)
+#define SOAP_TYPE_cds_SOAP_ENV__Detail (99)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_SOAP_ENV__Detail(struct soap*, struct SOAP_ENV__Detail *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_SOAP_ENV__Detail(struct soap*, const struct SOAP_ENV__Detail *);
@@ -625,7 +651,7 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_SOAP_ENV__Detail(struct soap*, int, int, vo
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_cds_SOAP_ENV__Code
-#define SOAP_TYPE_cds_SOAP_ENV__Code (91)
+#define SOAP_TYPE_cds_SOAP_ENV__Code (97)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_SOAP_ENV__Code(struct soap*, struct SOAP_ENV__Code *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_SOAP_ENV__Code(struct soap*, const struct SOAP_ENV__Code *);
@@ -658,7 +684,7 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_SOAP_ENV__Code(struct soap*, int, int, void
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_cds_SOAP_ENV__Header
-#define SOAP_TYPE_cds_SOAP_ENV__Header (90)
+#define SOAP_TYPE_cds_SOAP_ENV__Header (96)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_SOAP_ENV__Header(struct soap*, struct SOAP_ENV__Header *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_SOAP_ENV__Header(struct soap*, const struct SOAP_ENV__Header *);
@@ -689,7 +715,7 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_SOAP_ENV__Header(struct soap*, int, int, vo
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__getParentEntityDataArray
-#define SOAP_TYPE_cds_fw__getParentEntityDataArray (89)
+#define SOAP_TYPE_cds_fw__getParentEntityDataArray (95)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getParentEntityDataArray(struct soap*, struct fw__getParentEntityDataArray *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getParentEntityDataArray(struct soap*, const struct fw__getParentEntityDataArray *);
@@ -718,7 +744,7 @@ SOAP_FMAC1 struct fw__getParentEntityDataArray * SOAP_FMAC2 soap_instantiate_fw_
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getParentEntityDataArray(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_fw__getParentEntityDataArrayResponse
-#define SOAP_TYPE_cds_fw__getParentEntityDataArrayResponse (85)
+#define SOAP_TYPE_cds_fw__getParentEntityDataArrayResponse (91)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getParentEntityDataArrayResponse(struct soap*, struct fw__getParentEntityDataArrayResponse *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getParentEntityDataArrayResponse(struct soap*, const struct fw__getParentEntityDataArrayResponse *);
@@ -747,7 +773,7 @@ SOAP_FMAC1 struct fw__getParentEntityDataArrayResponse * SOAP_FMAC2 soap_instant
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getParentEntityDataArrayResponse(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_fw__getKeybindings
-#define SOAP_TYPE_cds_fw__getKeybindings (84)
+#define SOAP_TYPE_cds_fw__getKeybindings (90)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getKeybindings(struct soap*, struct fw__getKeybindings *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getKeybindings(struct soap*, const struct fw__getKeybindings *);
@@ -776,7 +802,7 @@ SOAP_FMAC1 struct fw__getKeybindings * SOAP_FMAC2 soap_instantiate_fw__getKeybin
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getKeybindings(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_fw__getKeybindingsResponse
-#define SOAP_TYPE_cds_fw__getKeybindingsResponse (80)
+#define SOAP_TYPE_cds_fw__getKeybindingsResponse (86)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getKeybindingsResponse(struct soap*, struct fw__getKeybindingsResponse *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getKeybindingsResponse(struct soap*, const struct fw__getKeybindingsResponse *);
@@ -805,7 +831,7 @@ SOAP_FMAC1 struct fw__getKeybindingsResponse * SOAP_FMAC2 soap_instantiate_fw__g
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getKeybindingsResponse(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_fw__createAnnotation
-#define SOAP_TYPE_cds_fw__createAnnotation (79)
+#define SOAP_TYPE_cds_fw__createAnnotation (85)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__createAnnotation(struct soap*, struct fw__createAnnotation *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__createAnnotation(struct soap*, const struct fw__createAnnotation *);
@@ -834,7 +860,7 @@ SOAP_FMAC1 struct fw__createAnnotation * SOAP_FMAC2 soap_instantiate_fw__createA
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__createAnnotation(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_fw__createAnnotationResponse
-#define SOAP_TYPE_cds_fw__createAnnotationResponse (75)
+#define SOAP_TYPE_cds_fw__createAnnotationResponse (81)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__createAnnotationResponse(struct soap*, struct fw__createAnnotationResponse *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__createAnnotationResponse(struct soap*, const struct fw__createAnnotationResponse *);
@@ -863,7 +889,7 @@ SOAP_FMAC1 struct fw__createAnnotationResponse * SOAP_FMAC2 soap_instantiate_fw_
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__createAnnotationResponse(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_fw__registerClient
-#define SOAP_TYPE_cds_fw__registerClient (74)
+#define SOAP_TYPE_cds_fw__registerClient (80)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__registerClient(struct soap*, struct fw__registerClient *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__registerClient(struct soap*, const struct fw__registerClient *);
@@ -892,7 +918,7 @@ SOAP_FMAC1 struct fw__registerClient * SOAP_FMAC2 soap_instantiate_fw__registerC
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__registerClient(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_fw__registerClientResponse
-#define SOAP_TYPE_cds_fw__registerClientResponse (71)
+#define SOAP_TYPE_cds_fw__registerClientResponse (77)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__registerClientResponse(struct soap*, struct fw__registerClientResponse *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__registerClientResponse(struct soap*, const struct fw__registerClientResponse *);
@@ -921,7 +947,7 @@ SOAP_FMAC1 struct fw__registerClientResponse * SOAP_FMAC2 soap_instantiate_fw__r
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__registerClientResponse(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_fw__reservePort
-#define SOAP_TYPE_cds_fw__reservePort (70)
+#define SOAP_TYPE_cds_fw__reservePort (76)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__reservePort(struct soap*, struct fw__reservePort *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__reservePort(struct soap*, const struct fw__reservePort *);
@@ -950,7 +976,7 @@ SOAP_FMAC1 struct fw__reservePort * SOAP_FMAC2 soap_instantiate_fw__reservePort(
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__reservePort(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_fw__reservePortResponse
-#define SOAP_TYPE_cds_fw__reservePortResponse (67)
+#define SOAP_TYPE_cds_fw__reservePortResponse (73)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__reservePortResponse(struct soap*, struct fw__reservePortResponse *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__reservePortResponse(struct soap*, const struct fw__reservePortResponse *);
@@ -978,66 +1004,8 @@ SOAP_FMAC3 struct fw__reservePortResponse * SOAP_FMAC4 soap_get_fw__reservePortR
 SOAP_FMAC1 struct fw__reservePortResponse * SOAP_FMAC2 soap_instantiate_fw__reservePortResponse(struct soap*, int, const char*, const char*, size_t*);
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__reservePortResponse(struct soap*, int, int, void*, size_t, const void*, size_t);
 
-#ifndef SOAP_TYPE_cds_fw__getCurrentOntology
-#define SOAP_TYPE_cds_fw__getCurrentOntology (66)
-#endif
-SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getCurrentOntology(struct soap*, struct fw__getCurrentOntology *);
-SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getCurrentOntology(struct soap*, const struct fw__getCurrentOntology *);
-SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__getCurrentOntology(struct soap*, const char*, int, const struct fw__getCurrentOntology *, const char*);
-SOAP_FMAC3 struct fw__getCurrentOntology * SOAP_FMAC4 soap_in_fw__getCurrentOntology(struct soap*, const char*, struct fw__getCurrentOntology *, const char*);
-
-#ifndef soap_write_fw__getCurrentOntology
-#define soap_write_fw__getCurrentOntology(soap, data) ( soap_begin_send(soap) || (cds::soap_serialize_fw__getCurrentOntology(soap, data), 0) || cds::soap_put_fw__getCurrentOntology(soap, data, "fw:getCurrentOntology", NULL) || soap_end_send(soap) )
-#endif
-
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getCurrentOntology(struct soap*, const struct fw__getCurrentOntology *, const char*, const char*);
-
-#ifndef soap_read_fw__getCurrentOntology
-#define soap_read_fw__getCurrentOntology(soap, data) ( soap_begin_recv(soap) || !cds::soap_get_fw__getCurrentOntology(soap, data, NULL, NULL) || soap_end_recv(soap) )
-#endif
-
-SOAP_FMAC3 struct fw__getCurrentOntology * SOAP_FMAC4 soap_get_fw__getCurrentOntology(struct soap*, struct fw__getCurrentOntology *, const char*, const char*);
-
-#define soap_new_fw__getCurrentOntology(soap, n) soap_instantiate_fw__getCurrentOntology(soap, n, NULL, NULL, NULL)
-
-
-#define soap_delete_fw__getCurrentOntology(soap, p) soap_delete(soap, p)
-
-SOAP_FMAC1 struct fw__getCurrentOntology * SOAP_FMAC2 soap_instantiate_fw__getCurrentOntology(struct soap*, int, const char*, const char*, size_t*);
-SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getCurrentOntology(struct soap*, int, int, void*, size_t, const void*, size_t);
-
-#ifndef SOAP_TYPE_cds_fw__getCurrentOntologyResponse
-#define SOAP_TYPE_cds_fw__getCurrentOntologyResponse (63)
-#endif
-SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getCurrentOntologyResponse(struct soap*, struct fw__getCurrentOntologyResponse *);
-SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getCurrentOntologyResponse(struct soap*, const struct fw__getCurrentOntologyResponse *);
-SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__getCurrentOntologyResponse(struct soap*, const char*, int, const struct fw__getCurrentOntologyResponse *, const char*);
-SOAP_FMAC3 struct fw__getCurrentOntologyResponse * SOAP_FMAC4 soap_in_fw__getCurrentOntologyResponse(struct soap*, const char*, struct fw__getCurrentOntologyResponse *, const char*);
-
-#ifndef soap_write_fw__getCurrentOntologyResponse
-#define soap_write_fw__getCurrentOntologyResponse(soap, data) ( soap_begin_send(soap) || (cds::soap_serialize_fw__getCurrentOntologyResponse(soap, data), 0) || cds::soap_put_fw__getCurrentOntologyResponse(soap, data, "fw:getCurrentOntologyResponse", NULL) || soap_end_send(soap) )
-#endif
-
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getCurrentOntologyResponse(struct soap*, const struct fw__getCurrentOntologyResponse *, const char*, const char*);
-
-#ifndef soap_read_fw__getCurrentOntologyResponse
-#define soap_read_fw__getCurrentOntologyResponse(soap, data) ( soap_begin_recv(soap) || !cds::soap_get_fw__getCurrentOntologyResponse(soap, data, NULL, NULL) || soap_end_recv(soap) )
-#endif
-
-SOAP_FMAC3 struct fw__getCurrentOntologyResponse * SOAP_FMAC4 soap_get_fw__getCurrentOntologyResponse(struct soap*, struct fw__getCurrentOntologyResponse *, const char*, const char*);
-
-#define soap_new_fw__getCurrentOntologyResponse(soap, n) soap_instantiate_fw__getCurrentOntologyResponse(soap, n, NULL, NULL, NULL)
-
-
-#define soap_delete_fw__getCurrentOntologyResponse(soap, p) soap_delete(soap, p)
-
-SOAP_FMAC1 struct fw__getCurrentOntologyResponse * SOAP_FMAC2 soap_instantiate_fw__getCurrentOntologyResponse(struct soap*, int, const char*, const char*, size_t*);
-SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getCurrentOntologyResponse(struct soap*, int, int, void*, size_t, const void*, size_t);
-
 #ifndef SOAP_TYPE_cds_fw__getAnnotationsForEntities
-#define SOAP_TYPE_cds_fw__getAnnotationsForEntities (62)
+#define SOAP_TYPE_cds_fw__getAnnotationsForEntities (72)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getAnnotationsForEntities(struct soap*, struct fw__getAnnotationsForEntities *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getAnnotationsForEntities(struct soap*, const struct fw__getAnnotationsForEntities *);
@@ -1066,7 +1034,7 @@ SOAP_FMAC1 struct fw__getAnnotationsForEntities * SOAP_FMAC2 soap_instantiate_fw
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getAnnotationsForEntities(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_fw__getAnnotationsForEntitiesResponse
-#define SOAP_TYPE_cds_fw__getAnnotationsForEntitiesResponse (58)
+#define SOAP_TYPE_cds_fw__getAnnotationsForEntitiesResponse (68)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getAnnotationsForEntitiesResponse(struct soap*, struct fw__getAnnotationsForEntitiesResponse *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getAnnotationsForEntitiesResponse(struct soap*, const struct fw__getAnnotationsForEntitiesResponse *);
@@ -1095,7 +1063,7 @@ SOAP_FMAC1 struct fw__getAnnotationsForEntitiesResponse * SOAP_FMAC2 soap_instan
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getAnnotationsForEntitiesResponse(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_fw__getAnnotationsForEntity
-#define SOAP_TYPE_cds_fw__getAnnotationsForEntity (57)
+#define SOAP_TYPE_cds_fw__getAnnotationsForEntity (67)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getAnnotationsForEntity(struct soap*, struct fw__getAnnotationsForEntity *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getAnnotationsForEntity(struct soap*, const struct fw__getAnnotationsForEntity *);
@@ -1124,7 +1092,7 @@ SOAP_FMAC1 struct fw__getAnnotationsForEntity * SOAP_FMAC2 soap_instantiate_fw__
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getAnnotationsForEntity(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_fw__getAnnotationsForEntityResponse
-#define SOAP_TYPE_cds_fw__getAnnotationsForEntityResponse (53)
+#define SOAP_TYPE_cds_fw__getAnnotationsForEntityResponse (63)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getAnnotationsForEntityResponse(struct soap*, struct fw__getAnnotationsForEntityResponse *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getAnnotationsForEntityResponse(struct soap*, const struct fw__getAnnotationsForEntityResponse *);
@@ -1153,7 +1121,7 @@ SOAP_FMAC1 struct fw__getAnnotationsForEntityResponse * SOAP_FMAC2 soap_instanti
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getAnnotationsForEntityResponse(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_fw__getEntityTree
-#define SOAP_TYPE_cds_fw__getEntityTree (52)
+#define SOAP_TYPE_cds_fw__getEntityTree (62)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getEntityTree(struct soap*, struct fw__getEntityTree *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getEntityTree(struct soap*, const struct fw__getEntityTree *);
@@ -1182,7 +1150,7 @@ SOAP_FMAC1 struct fw__getEntityTree * SOAP_FMAC2 soap_instantiate_fw__getEntityT
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getEntityTree(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_fw__getEntityTreeResponse
-#define SOAP_TYPE_cds_fw__getEntityTreeResponse (49)
+#define SOAP_TYPE_cds_fw__getEntityTreeResponse (59)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getEntityTreeResponse(struct soap*, struct fw__getEntityTreeResponse *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getEntityTreeResponse(struct soap*, const struct fw__getEntityTreeResponse *);
@@ -1210,66 +1178,124 @@ SOAP_FMAC3 struct fw__getEntityTreeResponse * SOAP_FMAC4 soap_get_fw__getEntityT
 SOAP_FMAC1 struct fw__getEntityTreeResponse * SOAP_FMAC2 soap_instantiate_fw__getEntityTreeResponse(struct soap*, int, const char*, const char*, size_t*);
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getEntityTreeResponse(struct soap*, int, int, void*, size_t, const void*, size_t);
 
-#ifndef SOAP_TYPE_cds_fw__getEntityById
-#define SOAP_TYPE_cds_fw__getEntityById (48)
+#ifndef SOAP_TYPE_cds_fw__getAnnotationSession
+#define SOAP_TYPE_cds_fw__getAnnotationSession (58)
 #endif
-SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getEntityById(struct soap*, struct fw__getEntityById *);
-SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getEntityById(struct soap*, const struct fw__getEntityById *);
-SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__getEntityById(struct soap*, const char*, int, const struct fw__getEntityById *, const char*);
-SOAP_FMAC3 struct fw__getEntityById * SOAP_FMAC4 soap_in_fw__getEntityById(struct soap*, const char*, struct fw__getEntityById *, const char*);
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getAnnotationSession(struct soap*, struct fw__getAnnotationSession *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getAnnotationSession(struct soap*, const struct fw__getAnnotationSession *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__getAnnotationSession(struct soap*, const char*, int, const struct fw__getAnnotationSession *, const char*);
+SOAP_FMAC3 struct fw__getAnnotationSession * SOAP_FMAC4 soap_in_fw__getAnnotationSession(struct soap*, const char*, struct fw__getAnnotationSession *, const char*);
 
-#ifndef soap_write_fw__getEntityById
-#define soap_write_fw__getEntityById(soap, data) ( soap_begin_send(soap) || (cds::soap_serialize_fw__getEntityById(soap, data), 0) || cds::soap_put_fw__getEntityById(soap, data, "fw:getEntityById", NULL) || soap_end_send(soap) )
-#endif
-
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getEntityById(struct soap*, const struct fw__getEntityById *, const char*, const char*);
-
-#ifndef soap_read_fw__getEntityById
-#define soap_read_fw__getEntityById(soap, data) ( soap_begin_recv(soap) || !cds::soap_get_fw__getEntityById(soap, data, NULL, NULL) || soap_end_recv(soap) )
-#endif
-
-SOAP_FMAC3 struct fw__getEntityById * SOAP_FMAC4 soap_get_fw__getEntityById(struct soap*, struct fw__getEntityById *, const char*, const char*);
-
-#define soap_new_fw__getEntityById(soap, n) soap_instantiate_fw__getEntityById(soap, n, NULL, NULL, NULL)
-
-
-#define soap_delete_fw__getEntityById(soap, p) soap_delete(soap, p)
-
-SOAP_FMAC1 struct fw__getEntityById * SOAP_FMAC2 soap_instantiate_fw__getEntityById(struct soap*, int, const char*, const char*, size_t*);
-SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getEntityById(struct soap*, int, int, void*, size_t, const void*, size_t);
-
-#ifndef SOAP_TYPE_cds_fw__getEntityByIdResponse
-#define SOAP_TYPE_cds_fw__getEntityByIdResponse (45)
-#endif
-SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getEntityByIdResponse(struct soap*, struct fw__getEntityByIdResponse *);
-SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getEntityByIdResponse(struct soap*, const struct fw__getEntityByIdResponse *);
-SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__getEntityByIdResponse(struct soap*, const char*, int, const struct fw__getEntityByIdResponse *, const char*);
-SOAP_FMAC3 struct fw__getEntityByIdResponse * SOAP_FMAC4 soap_in_fw__getEntityByIdResponse(struct soap*, const char*, struct fw__getEntityByIdResponse *, const char*);
-
-#ifndef soap_write_fw__getEntityByIdResponse
-#define soap_write_fw__getEntityByIdResponse(soap, data) ( soap_begin_send(soap) || (cds::soap_serialize_fw__getEntityByIdResponse(soap, data), 0) || cds::soap_put_fw__getEntityByIdResponse(soap, data, "fw:getEntityByIdResponse", NULL) || soap_end_send(soap) )
+#ifndef soap_write_fw__getAnnotationSession
+#define soap_write_fw__getAnnotationSession(soap, data) ( soap_begin_send(soap) || (cds::soap_serialize_fw__getAnnotationSession(soap, data), 0) || cds::soap_put_fw__getAnnotationSession(soap, data, "fw:getAnnotationSession", NULL) || soap_end_send(soap) )
 #endif
 
 
-SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getEntityByIdResponse(struct soap*, const struct fw__getEntityByIdResponse *, const char*, const char*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getAnnotationSession(struct soap*, const struct fw__getAnnotationSession *, const char*, const char*);
 
-#ifndef soap_read_fw__getEntityByIdResponse
-#define soap_read_fw__getEntityByIdResponse(soap, data) ( soap_begin_recv(soap) || !cds::soap_get_fw__getEntityByIdResponse(soap, data, NULL, NULL) || soap_end_recv(soap) )
+#ifndef soap_read_fw__getAnnotationSession
+#define soap_read_fw__getAnnotationSession(soap, data) ( soap_begin_recv(soap) || !cds::soap_get_fw__getAnnotationSession(soap, data, NULL, NULL) || soap_end_recv(soap) )
 #endif
 
-SOAP_FMAC3 struct fw__getEntityByIdResponse * SOAP_FMAC4 soap_get_fw__getEntityByIdResponse(struct soap*, struct fw__getEntityByIdResponse *, const char*, const char*);
+SOAP_FMAC3 struct fw__getAnnotationSession * SOAP_FMAC4 soap_get_fw__getAnnotationSession(struct soap*, struct fw__getAnnotationSession *, const char*, const char*);
 
-#define soap_new_fw__getEntityByIdResponse(soap, n) soap_instantiate_fw__getEntityByIdResponse(soap, n, NULL, NULL, NULL)
+#define soap_new_fw__getAnnotationSession(soap, n) soap_instantiate_fw__getAnnotationSession(soap, n, NULL, NULL, NULL)
 
 
-#define soap_delete_fw__getEntityByIdResponse(soap, p) soap_delete(soap, p)
+#define soap_delete_fw__getAnnotationSession(soap, p) soap_delete(soap, p)
 
-SOAP_FMAC1 struct fw__getEntityByIdResponse * SOAP_FMAC2 soap_instantiate_fw__getEntityByIdResponse(struct soap*, int, const char*, const char*, size_t*);
-SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getEntityByIdResponse(struct soap*, int, int, void*, size_t, const void*, size_t);
+SOAP_FMAC1 struct fw__getAnnotationSession * SOAP_FMAC2 soap_instantiate_fw__getAnnotationSession(struct soap*, int, const char*, const char*, size_t*);
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getAnnotationSession(struct soap*, int, int, void*, size_t, const void*, size_t);
+
+#ifndef SOAP_TYPE_cds_fw__getAnnotationSessionResponse
+#define SOAP_TYPE_cds_fw__getAnnotationSessionResponse (54)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getAnnotationSessionResponse(struct soap*, struct fw__getAnnotationSessionResponse *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getAnnotationSessionResponse(struct soap*, const struct fw__getAnnotationSessionResponse *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__getAnnotationSessionResponse(struct soap*, const char*, int, const struct fw__getAnnotationSessionResponse *, const char*);
+SOAP_FMAC3 struct fw__getAnnotationSessionResponse * SOAP_FMAC4 soap_in_fw__getAnnotationSessionResponse(struct soap*, const char*, struct fw__getAnnotationSessionResponse *, const char*);
+
+#ifndef soap_write_fw__getAnnotationSessionResponse
+#define soap_write_fw__getAnnotationSessionResponse(soap, data) ( soap_begin_send(soap) || (cds::soap_serialize_fw__getAnnotationSessionResponse(soap, data), 0) || cds::soap_put_fw__getAnnotationSessionResponse(soap, data, "fw:getAnnotationSessionResponse", NULL) || soap_end_send(soap) )
+#endif
+
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getAnnotationSessionResponse(struct soap*, const struct fw__getAnnotationSessionResponse *, const char*, const char*);
+
+#ifndef soap_read_fw__getAnnotationSessionResponse
+#define soap_read_fw__getAnnotationSessionResponse(soap, data) ( soap_begin_recv(soap) || !cds::soap_get_fw__getAnnotationSessionResponse(soap, data, NULL, NULL) || soap_end_recv(soap) )
+#endif
+
+SOAP_FMAC3 struct fw__getAnnotationSessionResponse * SOAP_FMAC4 soap_get_fw__getAnnotationSessionResponse(struct soap*, struct fw__getAnnotationSessionResponse *, const char*, const char*);
+
+#define soap_new_fw__getAnnotationSessionResponse(soap, n) soap_instantiate_fw__getAnnotationSessionResponse(soap, n, NULL, NULL, NULL)
+
+
+#define soap_delete_fw__getAnnotationSessionResponse(soap, p) soap_delete(soap, p)
+
+SOAP_FMAC1 struct fw__getAnnotationSessionResponse * SOAP_FMAC2 soap_instantiate_fw__getAnnotationSessionResponse(struct soap*, int, const char*, const char*, size_t*);
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getAnnotationSessionResponse(struct soap*, int, int, void*, size_t, const void*, size_t);
+
+#ifndef SOAP_TYPE_cds_fw__getOntology
+#define SOAP_TYPE_cds_fw__getOntology (53)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getOntology(struct soap*, struct fw__getOntology *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getOntology(struct soap*, const struct fw__getOntology *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__getOntology(struct soap*, const char*, int, const struct fw__getOntology *, const char*);
+SOAP_FMAC3 struct fw__getOntology * SOAP_FMAC4 soap_in_fw__getOntology(struct soap*, const char*, struct fw__getOntology *, const char*);
+
+#ifndef soap_write_fw__getOntology
+#define soap_write_fw__getOntology(soap, data) ( soap_begin_send(soap) || (cds::soap_serialize_fw__getOntology(soap, data), 0) || cds::soap_put_fw__getOntology(soap, data, "fw:getOntology", NULL) || soap_end_send(soap) )
+#endif
+
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getOntology(struct soap*, const struct fw__getOntology *, const char*, const char*);
+
+#ifndef soap_read_fw__getOntology
+#define soap_read_fw__getOntology(soap, data) ( soap_begin_recv(soap) || !cds::soap_get_fw__getOntology(soap, data, NULL, NULL) || soap_end_recv(soap) )
+#endif
+
+SOAP_FMAC3 struct fw__getOntology * SOAP_FMAC4 soap_get_fw__getOntology(struct soap*, struct fw__getOntology *, const char*, const char*);
+
+#define soap_new_fw__getOntology(soap, n) soap_instantiate_fw__getOntology(soap, n, NULL, NULL, NULL)
+
+
+#define soap_delete_fw__getOntology(soap, p) soap_delete(soap, p)
+
+SOAP_FMAC1 struct fw__getOntology * SOAP_FMAC2 soap_instantiate_fw__getOntology(struct soap*, int, const char*, const char*, size_t*);
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getOntology(struct soap*, int, int, void*, size_t, const void*, size_t);
+
+#ifndef SOAP_TYPE_cds_fw__getOntologyResponse
+#define SOAP_TYPE_cds_fw__getOntologyResponse (50)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getOntologyResponse(struct soap*, struct fw__getOntologyResponse *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getOntologyResponse(struct soap*, const struct fw__getOntologyResponse *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__getOntologyResponse(struct soap*, const char*, int, const struct fw__getOntologyResponse *, const char*);
+SOAP_FMAC3 struct fw__getOntologyResponse * SOAP_FMAC4 soap_in_fw__getOntologyResponse(struct soap*, const char*, struct fw__getOntologyResponse *, const char*);
+
+#ifndef soap_write_fw__getOntologyResponse
+#define soap_write_fw__getOntologyResponse(soap, data) ( soap_begin_send(soap) || (cds::soap_serialize_fw__getOntologyResponse(soap, data), 0) || cds::soap_put_fw__getOntologyResponse(soap, data, "fw:getOntologyResponse", NULL) || soap_end_send(soap) )
+#endif
+
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getOntologyResponse(struct soap*, const struct fw__getOntologyResponse *, const char*, const char*);
+
+#ifndef soap_read_fw__getOntologyResponse
+#define soap_read_fw__getOntologyResponse(soap, data) ( soap_begin_recv(soap) || !cds::soap_get_fw__getOntologyResponse(soap, data, NULL, NULL) || soap_end_recv(soap) )
+#endif
+
+SOAP_FMAC3 struct fw__getOntologyResponse * SOAP_FMAC4 soap_get_fw__getOntologyResponse(struct soap*, struct fw__getOntologyResponse *, const char*, const char*);
+
+#define soap_new_fw__getOntologyResponse(soap, n) soap_instantiate_fw__getOntologyResponse(soap, n, NULL, NULL, NULL)
+
+
+#define soap_delete_fw__getOntologyResponse(soap, p) soap_delete(soap, p)
+
+SOAP_FMAC1 struct fw__getOntologyResponse * SOAP_FMAC2 soap_instantiate_fw__getOntologyResponse(struct soap*, int, const char*, const char*, size_t*);
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getOntologyResponse(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_fw__removeAnnotation
-#define SOAP_TYPE_cds_fw__removeAnnotation (44)
+#define SOAP_TYPE_cds_fw__removeAnnotation (49)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__removeAnnotation(struct soap*, struct fw__removeAnnotation *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__removeAnnotation(struct soap*, const struct fw__removeAnnotation *);
@@ -1298,7 +1324,7 @@ SOAP_FMAC1 struct fw__removeAnnotation * SOAP_FMAC2 soap_instantiate_fw__removeA
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__removeAnnotation(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_fw__removeAnnotationResponse
-#define SOAP_TYPE_cds_fw__removeAnnotationResponse (41)
+#define SOAP_TYPE_cds_fw__removeAnnotationResponse (46)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__removeAnnotationResponse(struct soap*, struct fw__removeAnnotationResponse *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__removeAnnotationResponse(struct soap*, const struct fw__removeAnnotationResponse *);
@@ -1326,10 +1352,68 @@ SOAP_FMAC3 struct fw__removeAnnotationResponse * SOAP_FMAC4 soap_get_fw__removeA
 SOAP_FMAC1 struct fw__removeAnnotationResponse * SOAP_FMAC2 soap_instantiate_fw__removeAnnotationResponse(struct soap*, int, const char*, const char*, size_t*);
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__removeAnnotationResponse(struct soap*, int, int, void*, size_t, const void*, size_t);
 
+#ifndef SOAP_TYPE_cds_fw__getEntityById
+#define SOAP_TYPE_cds_fw__getEntityById (45)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getEntityById(struct soap*, struct fw__getEntityById *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getEntityById(struct soap*, const struct fw__getEntityById *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__getEntityById(struct soap*, const char*, int, const struct fw__getEntityById *, const char*);
+SOAP_FMAC3 struct fw__getEntityById * SOAP_FMAC4 soap_in_fw__getEntityById(struct soap*, const char*, struct fw__getEntityById *, const char*);
+
+#ifndef soap_write_fw__getEntityById
+#define soap_write_fw__getEntityById(soap, data) ( soap_begin_send(soap) || (cds::soap_serialize_fw__getEntityById(soap, data), 0) || cds::soap_put_fw__getEntityById(soap, data, "fw:getEntityById", NULL) || soap_end_send(soap) )
+#endif
+
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getEntityById(struct soap*, const struct fw__getEntityById *, const char*, const char*);
+
+#ifndef soap_read_fw__getEntityById
+#define soap_read_fw__getEntityById(soap, data) ( soap_begin_recv(soap) || !cds::soap_get_fw__getEntityById(soap, data, NULL, NULL) || soap_end_recv(soap) )
+#endif
+
+SOAP_FMAC3 struct fw__getEntityById * SOAP_FMAC4 soap_get_fw__getEntityById(struct soap*, struct fw__getEntityById *, const char*, const char*);
+
+#define soap_new_fw__getEntityById(soap, n) soap_instantiate_fw__getEntityById(soap, n, NULL, NULL, NULL)
+
+
+#define soap_delete_fw__getEntityById(soap, p) soap_delete(soap, p)
+
+SOAP_FMAC1 struct fw__getEntityById * SOAP_FMAC2 soap_instantiate_fw__getEntityById(struct soap*, int, const char*, const char*, size_t*);
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getEntityById(struct soap*, int, int, void*, size_t, const void*, size_t);
+
+#ifndef SOAP_TYPE_cds_fw__getEntityByIdResponse
+#define SOAP_TYPE_cds_fw__getEntityByIdResponse (42)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getEntityByIdResponse(struct soap*, struct fw__getEntityByIdResponse *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getEntityByIdResponse(struct soap*, const struct fw__getEntityByIdResponse *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__getEntityByIdResponse(struct soap*, const char*, int, const struct fw__getEntityByIdResponse *, const char*);
+SOAP_FMAC3 struct fw__getEntityByIdResponse * SOAP_FMAC4 soap_in_fw__getEntityByIdResponse(struct soap*, const char*, struct fw__getEntityByIdResponse *, const char*);
+
+#ifndef soap_write_fw__getEntityByIdResponse
+#define soap_write_fw__getEntityByIdResponse(soap, data) ( soap_begin_send(soap) || (cds::soap_serialize_fw__getEntityByIdResponse(soap, data), 0) || cds::soap_put_fw__getEntityByIdResponse(soap, data, "fw:getEntityByIdResponse", NULL) || soap_end_send(soap) )
+#endif
+
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getEntityByIdResponse(struct soap*, const struct fw__getEntityByIdResponse *, const char*, const char*);
+
+#ifndef soap_read_fw__getEntityByIdResponse
+#define soap_read_fw__getEntityByIdResponse(soap, data) ( soap_begin_recv(soap) || !cds::soap_get_fw__getEntityByIdResponse(soap, data, NULL, NULL) || soap_end_recv(soap) )
+#endif
+
+SOAP_FMAC3 struct fw__getEntityByIdResponse * SOAP_FMAC4 soap_get_fw__getEntityByIdResponse(struct soap*, struct fw__getEntityByIdResponse *, const char*, const char*);
+
+#define soap_new_fw__getEntityByIdResponse(soap, n) soap_instantiate_fw__getEntityByIdResponse(soap, n, NULL, NULL, NULL)
+
+
+#define soap_delete_fw__getEntityByIdResponse(soap, p) soap_delete(soap, p)
+
+SOAP_FMAC1 struct fw__getEntityByIdResponse * SOAP_FMAC2 soap_instantiate_fw__getEntityByIdResponse(struct soap*, int, const char*, const char*, size_t*);
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getEntityByIdResponse(struct soap*, int, int, void*, size_t, const void*, size_t);
+
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_cds_PointerToSOAP_ENV__Reason
-#define SOAP_TYPE_cds_PointerToSOAP_ENV__Reason (99)
+#define SOAP_TYPE_cds_PointerToSOAP_ENV__Reason (105)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerToSOAP_ENV__Reason(struct soap*, struct SOAP_ENV__Reason *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerToSOAP_ENV__Reason(struct soap*, const char *, int, struct SOAP_ENV__Reason *const*, const char *);
@@ -1352,7 +1436,7 @@ SOAP_FMAC3 struct SOAP_ENV__Reason ** SOAP_FMAC4 soap_get_PointerToSOAP_ENV__Rea
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_cds_PointerToSOAP_ENV__Detail
-#define SOAP_TYPE_cds_PointerToSOAP_ENV__Detail (98)
+#define SOAP_TYPE_cds_PointerToSOAP_ENV__Detail (104)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerToSOAP_ENV__Detail(struct soap*, struct SOAP_ENV__Detail *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerToSOAP_ENV__Detail(struct soap*, const char *, int, struct SOAP_ENV__Detail *const*, const char *);
@@ -1375,7 +1459,7 @@ SOAP_FMAC3 struct SOAP_ENV__Detail ** SOAP_FMAC4 soap_get_PointerToSOAP_ENV__Det
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_cds_PointerToSOAP_ENV__Code
-#define SOAP_TYPE_cds_PointerToSOAP_ENV__Code (92)
+#define SOAP_TYPE_cds_PointerToSOAP_ENV__Code (98)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerToSOAP_ENV__Code(struct soap*, struct SOAP_ENV__Code *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerToSOAP_ENV__Code(struct soap*, const char *, int, struct SOAP_ENV__Code *const*, const char *);
@@ -1396,7 +1480,7 @@ SOAP_FMAC3 struct SOAP_ENV__Code ** SOAP_FMAC4 soap_get_PointerToSOAP_ENV__Code(
 #endif
 
 #ifndef SOAP_TYPE_cds_PointerTofw__entityDataArray
-#define SOAP_TYPE_cds_PointerTofw__entityDataArray (86)
+#define SOAP_TYPE_cds_PointerTofw__entityDataArray (92)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTofw__entityDataArray(struct soap*, fw__entityDataArray *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTofw__entityDataArray(struct soap*, const char *, int, fw__entityDataArray *const*, const char *);
@@ -1415,7 +1499,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__entityDataArray(struct soap*, fw
 SOAP_FMAC3 fw__entityDataArray ** SOAP_FMAC4 soap_get_PointerTofw__entityDataArray(struct soap*, fw__entityDataArray **, const char*, const char*);
 
 #ifndef SOAP_TYPE_cds_PointerTofw__ontologyKeyBindings
-#define SOAP_TYPE_cds_PointerTofw__ontologyKeyBindings (81)
+#define SOAP_TYPE_cds_PointerTofw__ontologyKeyBindings (87)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTofw__ontologyKeyBindings(struct soap*, fw__ontologyKeyBindings *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTofw__ontologyKeyBindings(struct soap*, const char *, int, fw__ontologyKeyBindings *const*, const char *);
@@ -1434,7 +1518,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__ontologyKeyBindings(struct soap*
 SOAP_FMAC3 fw__ontologyKeyBindings ** SOAP_FMAC4 soap_get_PointerTofw__ontologyKeyBindings(struct soap*, fw__ontologyKeyBindings **, const char*, const char*);
 
 #ifndef SOAP_TYPE_cds_PointerTofw__ontologyAnnotation
-#define SOAP_TYPE_cds_PointerTofw__ontologyAnnotation (76)
+#define SOAP_TYPE_cds_PointerTofw__ontologyAnnotation (82)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTofw__ontologyAnnotation(struct soap*, fw__ontologyAnnotation *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTofw__ontologyAnnotation(struct soap*, const char *, int, fw__ontologyAnnotation *const*, const char *);
@@ -1453,7 +1537,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__ontologyAnnotation(struct soap*,
 SOAP_FMAC3 fw__ontologyAnnotation ** SOAP_FMAC4 soap_get_PointerTofw__ontologyAnnotation(struct soap*, fw__ontologyAnnotation **, const char*, const char*);
 
 #ifndef SOAP_TYPE_cds_PointerTons2__longArray
-#define SOAP_TYPE_cds_PointerTons2__longArray (59)
+#define SOAP_TYPE_cds_PointerTons2__longArray (69)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTons2__longArray(struct soap*, ns2__longArray *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTons2__longArray(struct soap*, const char *, int, ns2__longArray *const*, const char *);
@@ -1472,7 +1556,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTons2__longArray(struct soap*, ns2__lo
 SOAP_FMAC3 ns2__longArray ** SOAP_FMAC4 soap_get_PointerTons2__longArray(struct soap*, ns2__longArray **, const char*, const char*);
 
 #ifndef SOAP_TYPE_cds_PointerTofw__entityArray
-#define SOAP_TYPE_cds_PointerTofw__entityArray (54)
+#define SOAP_TYPE_cds_PointerTofw__entityArray (64)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTofw__entityArray(struct soap*, fw__entityArray *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTofw__entityArray(struct soap*, const char *, int, fw__entityArray *const*, const char *);
@@ -1490,8 +1574,27 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__entityArray(struct soap*, fw__en
 
 SOAP_FMAC3 fw__entityArray ** SOAP_FMAC4 soap_get_PointerTofw__entityArray(struct soap*, fw__entityArray **, const char*, const char*);
 
+#ifndef SOAP_TYPE_cds_PointerTofw__annotationSession
+#define SOAP_TYPE_cds_PointerTofw__annotationSession (55)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTofw__annotationSession(struct soap*, fw__annotationSession *const*);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTofw__annotationSession(struct soap*, const char *, int, fw__annotationSession *const*, const char *);
+SOAP_FMAC3 fw__annotationSession ** SOAP_FMAC4 soap_in_PointerTofw__annotationSession(struct soap*, const char*, fw__annotationSession **, const char*);
+
+#ifndef soap_write_PointerTofw__annotationSession
+#define soap_write_PointerTofw__annotationSession(soap, data) ( soap_begin_send(soap) || (cds::soap_serialize_PointerTofw__annotationSession(soap, data), 0) || cds::soap_put_PointerTofw__annotationSession(soap, data, "fw:annotationSession", NULL) || soap_end_send(soap) )
+#endif
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__annotationSession(struct soap*, fw__annotationSession *const*, const char*, const char*);
+
+#ifndef soap_read_PointerTofw__annotationSession
+#define soap_read_PointerTofw__annotationSession(soap, data) ( soap_begin_recv(soap) || !cds::soap_get_PointerTofw__annotationSession(soap, data, NULL, NULL) || soap_end_recv(soap) )
+#endif
+
+SOAP_FMAC3 fw__annotationSession ** SOAP_FMAC4 soap_get_PointerTofw__annotationSession(struct soap*, fw__annotationSession **, const char*, const char*);
+
 #ifndef SOAP_TYPE_cds_PointerTo_fw__ontologyKeyBindings_keyBindingSet
-#define SOAP_TYPE_cds_PointerTo_fw__ontologyKeyBindings_keyBindingSet (38)
+#define SOAP_TYPE_cds_PointerTo_fw__ontologyKeyBindings_keyBindingSet (39)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTo_fw__ontologyKeyBindings_keyBindingSet(struct soap*, _fw__ontologyKeyBindings_keyBindingSet *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTo_fw__ontologyKeyBindings_keyBindingSet(struct soap*, const char *, int, _fw__ontologyKeyBindings_keyBindingSet *const*, const char *);
@@ -1510,7 +1613,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTo_fw__ontologyKeyBindings_keyBindingS
 SOAP_FMAC3 _fw__ontologyKeyBindings_keyBindingSet ** SOAP_FMAC4 soap_get_PointerTo_fw__ontologyKeyBindings_keyBindingSet(struct soap*, _fw__ontologyKeyBindings_keyBindingSet **, const char*, const char*);
 
 #ifndef SOAP_TYPE_cds_PointerTofw__ontologyKeyBind
-#define SOAP_TYPE_cds_PointerTofw__ontologyKeyBind (36)
+#define SOAP_TYPE_cds_PointerTofw__ontologyKeyBind (37)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTofw__ontologyKeyBind(struct soap*, fw__ontologyKeyBind *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTofw__ontologyKeyBind(struct soap*, const char *, int, fw__ontologyKeyBind *const*, const char *);
@@ -1529,7 +1632,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__ontologyKeyBind(struct soap*, fw
 SOAP_FMAC3 fw__ontologyKeyBind ** SOAP_FMAC4 soap_get_PointerTofw__ontologyKeyBind(struct soap*, fw__ontologyKeyBind **, const char*, const char*);
 
 #ifndef SOAP_TYPE_cds_PointerToint
-#define SOAP_TYPE_cds_PointerToint (34)
+#define SOAP_TYPE_cds_PointerToint (35)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerToint(struct soap*, int *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerToint(struct soap*, const char *, int, int *const*, const char *);
@@ -1548,7 +1651,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerToint(struct soap*, int *const*, const
 SOAP_FMAC3 int ** SOAP_FMAC4 soap_get_PointerToint(struct soap*, int **, const char*, const char*);
 
 #ifndef SOAP_TYPE_cds_PointerTofw__entity
-#define SOAP_TYPE_cds_PointerTofw__entity (33)
+#define SOAP_TYPE_cds_PointerTofw__entity (34)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTofw__entity(struct soap*, fw__entity *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTofw__entity(struct soap*, const char *, int, fw__entity *const*, const char *);
@@ -1567,7 +1670,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__entity(struct soap*, fw__entity 
 SOAP_FMAC3 fw__entity ** SOAP_FMAC4 soap_get_PointerTofw__entity(struct soap*, fw__entity **, const char*, const char*);
 
 #ifndef SOAP_TYPE_cds_PointerTofw__entityAttribute
-#define SOAP_TYPE_cds_PointerTofw__entityAttribute (32)
+#define SOAP_TYPE_cds_PointerTofw__entityAttribute (33)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTofw__entityAttribute(struct soap*, std::string *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTofw__entityAttribute(struct soap*, const char *, int, std::string *const*, const char *);
@@ -1586,7 +1689,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__entityAttribute(struct soap*, st
 SOAP_FMAC3 std::string ** SOAP_FMAC4 soap_get_PointerTofw__entityAttribute(struct soap*, std::string **, const char*, const char*);
 
 #ifndef SOAP_TYPE_cds_PointerTo_fw__entity_entityDataSet
-#define SOAP_TYPE_cds_PointerTo_fw__entity_entityDataSet (31)
+#define SOAP_TYPE_cds_PointerTo_fw__entity_entityDataSet (32)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTo_fw__entity_entityDataSet(struct soap*, _fw__entity_entityDataSet *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTo_fw__entity_entityDataSet(struct soap*, const char *, int, _fw__entity_entityDataSet *const*, const char *);
@@ -1605,7 +1708,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTo_fw__entity_entityDataSet(struct soa
 SOAP_FMAC3 _fw__entity_entityDataSet ** SOAP_FMAC4 soap_get_PointerTo_fw__entity_entityDataSet(struct soap*, _fw__entity_entityDataSet **, const char*, const char*);
 
 #ifndef SOAP_TYPE_cds_PointerTofw__entityData
-#define SOAP_TYPE_cds_PointerTofw__entityData (29)
+#define SOAP_TYPE_cds_PointerTofw__entityData (30)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTofw__entityData(struct soap*, fw__entityData *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTofw__entityData(struct soap*, const char *, int, fw__entityData *const*, const char *);
@@ -1624,7 +1727,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__entityData(struct soap*, fw__ent
 SOAP_FMAC3 fw__entityData ** SOAP_FMAC4 soap_get_PointerTofw__entityData(struct soap*, fw__entityData **, const char*, const char*);
 
 #ifndef SOAP_TYPE_cds_PointerTofw__entityType
-#define SOAP_TYPE_cds_PointerTofw__entityType (27)
+#define SOAP_TYPE_cds_PointerTofw__entityType (28)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTofw__entityType(struct soap*, std::string *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTofw__entityType(struct soap*, const char *, int, std::string *const*, const char *);
@@ -1643,7 +1746,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__entityType(struct soap*, std::st
 SOAP_FMAC3 std::string ** SOAP_FMAC4 soap_get_PointerTofw__entityType(struct soap*, std::string **, const char*, const char*);
 
 #ifndef SOAP_TYPE_cds_PointerTofw__entityStatus
-#define SOAP_TYPE_cds_PointerTofw__entityStatus (26)
+#define SOAP_TYPE_cds_PointerTofw__entityStatus (27)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTofw__entityStatus(struct soap*, std::string *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTofw__entityStatus(struct soap*, const char *, int, std::string *const*, const char *);
@@ -1662,7 +1765,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__entityStatus(struct soap*, std::
 SOAP_FMAC3 std::string ** SOAP_FMAC4 soap_get_PointerTofw__entityStatus(struct soap*, std::string **, const char*, const char*);
 
 #ifndef SOAP_TYPE_cds_PointerTofw__user
-#define SOAP_TYPE_cds_PointerTofw__user (25)
+#define SOAP_TYPE_cds_PointerTofw__user (26)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTofw__user(struct soap*, std::string *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTofw__user(struct soap*, const char *, int, std::string *const*, const char *);
@@ -1681,7 +1784,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTofw__user(struct soap*, std::string *
 SOAP_FMAC3 std::string ** SOAP_FMAC4 soap_get_PointerTofw__user(struct soap*, std::string **, const char*, const char*);
 
 #ifndef SOAP_TYPE_cds_PointerTostd__string
-#define SOAP_TYPE_cds_PointerTostd__string (23)
+#define SOAP_TYPE_cds_PointerTostd__string (24)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerTostd__string(struct soap*, std::string *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerTostd__string(struct soap*, const char *, int, std::string *const*, const char *);
@@ -1700,7 +1803,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_PointerTostd__string(struct soap*, std::strin
 SOAP_FMAC3 std::string ** SOAP_FMAC4 soap_get_PointerTostd__string(struct soap*, std::string **, const char*, const char*);
 
 #ifndef SOAP_TYPE_cds_PointerToLONG64
-#define SOAP_TYPE_cds_PointerToLONG64 (22)
+#define SOAP_TYPE_cds_PointerToLONG64 (23)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerToLONG64(struct soap*, LONG64 *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerToLONG64(struct soap*, const char *, int, LONG64 *const*, const char *);
@@ -1763,7 +1866,7 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_string(struct soap*, char *const*, const char
 SOAP_FMAC3 char ** SOAP_FMAC4 soap_get_string(struct soap*, char **, const char*, const char*);
 
 #ifndef SOAP_TYPE_cds_std__vectorTemplateOfLONG64
-#define SOAP_TYPE_cds_std__vectorTemplateOfLONG64 (40)
+#define SOAP_TYPE_cds_std__vectorTemplateOfLONG64 (41)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_std__vectorTemplateOfLONG64(struct soap*, std::vector<LONG64 >*);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_std__vectorTemplateOfLONG64(struct soap*, const std::vector<LONG64 >*);
@@ -1779,7 +1882,7 @@ SOAP_FMAC1 std::vector<LONG64 > * SOAP_FMAC2 soap_instantiate_std__vectorTemplat
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_std__vectorTemplateOfLONG64(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_std__vectorTemplateOfPointerTofw__entity
-#define SOAP_TYPE_cds_std__vectorTemplateOfPointerTofw__entity (39)
+#define SOAP_TYPE_cds_std__vectorTemplateOfPointerTofw__entity (40)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_std__vectorTemplateOfPointerTofw__entity(struct soap*, std::vector<fw__entity * >*);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_std__vectorTemplateOfPointerTofw__entity(struct soap*, const std::vector<fw__entity * >*);
@@ -1795,7 +1898,7 @@ SOAP_FMAC1 std::vector<fw__entity * > * SOAP_FMAC2 soap_instantiate_std__vectorT
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_std__vectorTemplateOfPointerTofw__entity(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_std__vectorTemplateOfPointerTofw__ontologyKeyBind
-#define SOAP_TYPE_cds_std__vectorTemplateOfPointerTofw__ontologyKeyBind (37)
+#define SOAP_TYPE_cds_std__vectorTemplateOfPointerTofw__ontologyKeyBind (38)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_std__vectorTemplateOfPointerTofw__ontologyKeyBind(struct soap*, std::vector<fw__ontologyKeyBind * >*);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_std__vectorTemplateOfPointerTofw__ontologyKeyBind(struct soap*, const std::vector<fw__ontologyKeyBind * >*);
@@ -1811,7 +1914,7 @@ SOAP_FMAC1 std::vector<fw__ontologyKeyBind * > * SOAP_FMAC2 soap_instantiate_std
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_std__vectorTemplateOfPointerTofw__ontologyKeyBind(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_cds_std__vectorTemplateOfPointerTofw__entityData
-#define SOAP_TYPE_cds_std__vectorTemplateOfPointerTofw__entityData (30)
+#define SOAP_TYPE_cds_std__vectorTemplateOfPointerTofw__entityData (31)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_std__vectorTemplateOfPointerTofw__entityData(struct soap*, std::vector<fw__entityData * >*);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_std__vectorTemplateOfPointerTofw__entityData(struct soap*, const std::vector<fw__entityData * >*);

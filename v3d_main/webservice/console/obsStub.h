@@ -153,10 +153,32 @@ public:
 };
 #endif
 
+#ifndef SOAP_TYPE_obs_fw__sessionSelectedResponse
+#define SOAP_TYPE_obs_fw__sessionSelectedResponse (29)
+/* fw:sessionSelectedResponse */
+struct fw__sessionSelectedResponse
+{
+#ifdef WITH_NOEMPTYSTRUCT
+private:
+	char dummy;	/* dummy member to enable compilation */
+#endif
+};
+#endif
+
+#ifndef SOAP_TYPE_obs_fw__sessionSelected
+#define SOAP_TYPE_obs_fw__sessionSelected (32)
+/* fw:sessionSelected */
+struct fw__sessionSelected
+{
+public:
+	LONG64 sessionId;	/* required element of type xsd:long */
+};
+#endif
+
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Header
-#define SOAP_TYPE_obs_SOAP_ENV__Header (29)
+#define SOAP_TYPE_obs_SOAP_ENV__Header (33)
 /* SOAP Header: */
 struct SOAP_ENV__Header
 {
@@ -172,7 +194,7 @@ private:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Code
-#define SOAP_TYPE_obs_SOAP_ENV__Code (30)
+#define SOAP_TYPE_obs_SOAP_ENV__Code (34)
 /* SOAP Fault Code: */
 struct SOAP_ENV__Code
 {
@@ -187,7 +209,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Detail
-#define SOAP_TYPE_obs_SOAP_ENV__Detail (32)
+#define SOAP_TYPE_obs_SOAP_ENV__Detail (36)
 /* SOAP-ENV:Detail */
 struct SOAP_ENV__Detail
 {
@@ -203,7 +225,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Reason
-#define SOAP_TYPE_obs_SOAP_ENV__Reason (35)
+#define SOAP_TYPE_obs_SOAP_ENV__Reason (39)
 /* SOAP-ENV:Reason */
 struct SOAP_ENV__Reason
 {
@@ -217,7 +239,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Fault
-#define SOAP_TYPE_obs_SOAP_ENV__Fault (36)
+#define SOAP_TYPE_obs_SOAP_ENV__Fault (40)
 /* SOAP Fault: */
 struct SOAP_ENV__Fault
 {

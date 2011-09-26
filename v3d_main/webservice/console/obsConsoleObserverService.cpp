@@ -164,6 +164,7 @@ static int serve_fw__ontologyChanged(ConsoleObserverService*);
 static int serve_fw__entitySelected(ConsoleObserverService*);
 static int serve_fw__entityViewRequested(ConsoleObserverService*);
 static int serve_fw__annotationsChanged(ConsoleObserverService*);
+static int serve_fw__sessionSelected(ConsoleObserverService*);
 
 int ConsoleObserverService::dispatch()
 {	soap_peek_element(this);
@@ -177,6 +178,8 @@ int ConsoleObserverService::dispatch()
 		return serve_fw__entityViewRequested(this);
 	if (!soap_match_tag(this, this->tag, "fw:annotationsChanged"))
 		return serve_fw__annotationsChanged(this);
+	if (!soap_match_tag(this, this->tag, "fw:sessionSelected"))
+		return serve_fw__sessionSelected(this);
 	return this->error = SOAP_NO_METHOD;
 }
 
@@ -378,6 +381,47 @@ static int serve_fw__annotationsChanged(ConsoleObserverService *soap)
 	 || soap_putheader(soap)
 	 || soap_body_begin_out(soap)
 	 || soap_put_fw__annotationsChangedResponse(soap, &_param_5, "fw:annotationsChangedResponse", NULL)
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap->error;
+	return soap_closesock(soap);
+}
+
+static int serve_fw__sessionSelected(ConsoleObserverService *soap)
+{	struct fw__sessionSelected soap_tmp_fw__sessionSelected;
+	struct fw__sessionSelectedResponse _param_6;
+	soap_default_fw__sessionSelectedResponse(soap, &_param_6);
+	soap_default_fw__sessionSelected(soap, &soap_tmp_fw__sessionSelected);
+	soap->encodingStyle = NULL;
+	if (!soap_get_fw__sessionSelected(soap, &soap_tmp_fw__sessionSelected, "fw:sessionSelected", NULL))
+		return soap->error;
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap->error;
+	soap->error = soap->sessionSelected(soap_tmp_fw__sessionSelected.sessionId, _param_6);
+	if (soap->error)
+		return soap->error;
+	soap_serializeheader(soap);
+	soap_serialize_fw__sessionSelectedResponse(soap, &_param_6);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_fw__sessionSelectedResponse(soap, &_param_6, "fw:sessionSelectedResponse", NULL)
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	};
+	if (soap_end_count(soap)
+	 || soap_response(soap, SOAP_OK)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_fw__sessionSelectedResponse(soap, &_param_6, "fw:sessionSelectedResponse", NULL)
 	 || soap_body_end_out(soap)
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))

@@ -38,23 +38,23 @@ void DataThread::disregard()
 
 
 // ===========================================================
-// Get Current Ontology Tree
+// Get Ontology Tree
 // ===========================================================
 
-GetCurrentOntologyThread::GetCurrentOntologyThread(QObject *parent) :
-    DataThread(parent)
+GetOntologyThread::GetOntologyThread(qint64 entityId, QObject *parent) :
+    DataThread(parent),
+    entityId(entityId)
 {
 }
 
-void GetCurrentOntologyThread::fetchData()
+void GetOntologyThread::fetchData()
 {
-
     Entity *root = 0;
     QMap<QKeySequence, qint64> *keyBindMap = 0;
 
-    qDebug() << "Getting current ontology...";
-    cds::fw__getCurrentOntologyResponse response;
-    if (proxy.getCurrentOntology(response) == SOAP_OK)
+    qDebug() << "Getting ontology..." << entityId;
+    cds::fw__getOntologyResponse response;
+    if (proxy.getOntology(entityId, response) == SOAP_OK)
     {
         root = EntityAdapter::convert(response.return_);
 
@@ -85,7 +85,7 @@ void GetCurrentOntologyThread::fetchData()
 // Get AnnotatedBranch
 // ===========================================================
 
-GetAnnotatedBranchThread::GetAnnotatedBranchThread(long entityId, QObject *parent) :
+GetAnnotatedBranchThread::GetAnnotatedBranchThread(qint64 entityId, QObject *parent) :
     DataThread(parent),
     entityId(entityId)
 {
@@ -140,7 +140,7 @@ void GetAnnotatedBranchThread::fetchData()
 // Get Entity
 // ===========================================================
 
-GetEntityThread::GetEntityThread(long entityId, QObject *parent) :
+GetEntityThread::GetEntityThread(qint64 entityId, QObject *parent) :
     DataThread(parent),
     entityId(entityId)
 {
@@ -163,7 +163,7 @@ void GetEntityThread::fetchData()
 // Get Entity Annotations
 // ===========================================================
 
-GetEntityAnnotationsThread::GetEntityAnnotationsThread(long entityId, QObject *parent) :
+GetEntityAnnotationsThread::GetEntityAnnotationsThread(qint64 entityId, QObject *parent) :
     DataThread(parent),
     entityId(entityId)
 {
@@ -198,7 +198,7 @@ CreateAnnotationThread::~CreateAnnotationThread()
 
 void CreateAnnotationThread::fetchData()
 {
-    cds::fw__ontologyAnnotation *fwAnnotation = EntityAdapter::convertAnnotation(annotation);
+    cds::fw__ontologyAnnotation *fwAnnotation = EntityAdapter::convert(annotation);
     cds::fw__createAnnotationResponse response;
     if (proxy.createAnnotation(fwAnnotation, response) == SOAP_OK)
     {
@@ -239,3 +239,25 @@ void RemoveAnnotationThread::fetchData()
     }
 }
 
+
+// ===========================================================
+// Get Annotation Session
+// ===========================================================
+
+GetAnnotationSessionThread::GetAnnotationSessionThread(qint64 sessionId, QObject *parent) :
+    DataThread(parent), sessionId(sessionId)
+{
+}
+
+void GetAnnotationSessionThread::fetchData()
+{
+    cds::fw__getAnnotationSessionResponse response;
+    if (proxy.getAnnotationSession(sessionId, response) == SOAP_OK)
+    {
+        results = EntityAdapter::convert(response.return_);
+    }
+    else
+    {
+        errorMessage = new QString(proxy.soap_fault_string());
+    }
+}

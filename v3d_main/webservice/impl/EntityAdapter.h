@@ -3,6 +3,7 @@
 
 #include "../../neuron_annotator/entity_model/Entity.h"
 #include "../../neuron_annotator/entity_model/OntologyAnnotation.h"
+#include "../../neuron_annotator/entity_model/AnnotationSession.h"
 #include "../console/cdsStub.h"
 #include <QHash>
 #include <QMap>
@@ -28,8 +29,9 @@ public:
     static Entity* convert(cds::fw__entity *fwEntity);
     static QList<Entity *>* convert(cds::fw__entityArray *array);
     static QMap<QKeySequence, qint64>* convert(cds::fw__ontologyKeyBindings *keyBindings);
-    static OntologyAnnotation* convertAnnotation(cds::fw__ontologyAnnotation *fwAnnotation);
-    static cds::fw__ontologyAnnotation* convertAnnotation(OntologyAnnotation* annotation);
+    static OntologyAnnotation* convert(cds::fw__ontologyAnnotation *fwAnnotation);
+    static cds::fw__ontologyAnnotation* convert(OntologyAnnotation* annotation);
+    static AnnotationSession* convert(cds::fw__annotationSession *fwAnnotationSession);
 
 };
 

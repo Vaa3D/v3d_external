@@ -7,6 +7,7 @@
 #include "../entity_model/Entity.h"
 #include "../entity_model/Ontology.h"
 #include "../entity_model/OntologyAnnotation.h"
+#include "../entity_model/AnnotationSession.h"
 #include "../../webservice/impl/ConsoleObserverServiceImpl.h"
 #include "../utility/ConsoleObserver.h"
 #include "../utility/DataThread.h"
@@ -117,6 +118,36 @@ void AnnotationWidget::openOntology(Ontology *ontology)
     }
 }
 
+void AnnotationWidget::closeAnnotationSession()
+{
+    QMutexLocker locker(&mutex);
+
+    if (this->annotationSession != 0)
+    {
+        delete this->annotationSession;
+        this->annotationSession = 0;
+    }
+
+    // TODO: propagate this change to any relevant GUI components
+}
+
+void AnnotationWidget::openAnnotationSession(AnnotationSession *annotationSession)
+{
+    QMutexLocker locker(&mutex);
+
+    closeAnnotationSession();
+    this->annotationSession = annotationSession;
+
+    if (annotationSession != NULL && annotationSession->sessionId != NULL)
+    {
+        qDebug() << "Loaded session"<<*annotationSession->sessionId;
+    }
+    else
+    {
+        qDebug() << "Error loading session";
+    }
+}
+
 void AnnotationWidget::closeAnnotatedBranch()
 {
     QMutexLocker locker(&mutex);
@@ -181,7 +212,7 @@ void AnnotationWidget::openAnnotatedBranch(AnnotatedBranch *annotatedBranch, boo
         ui->annotatedBranchTreeView->selectEntity(selectedEntityId);
 }
 
-void AnnotationWidget::updateAnnotations(long entityId, AnnotationList *annotations)
+void AnnotationWidget::updateAnnotations(qint64 entityId, AnnotationList *annotations)
 {
     QMutexLocker locker(&mutex);
 
@@ -248,28 +279,32 @@ void AnnotationWidget::consoleConnect() {
     ui->consoleLinkButton->setEnabled(false);
 
     consoleObserver = new ConsoleObserver(naMainWindow);
-    connect(consoleObserver, SIGNAL(openAnnotatedBranch(AnnotatedBranch*)), this, SLOT(openAnnotatedBranch(AnnotatedBranch*)));
     connect(consoleObserver, SIGNAL(openOntology(Ontology*)), this, SLOT(openOntology(Ontology*)));
-    connect(consoleObserver, SIGNAL(updateAnnotations(long,AnnotationList*)), this, SLOT(updateAnnotations(long,AnnotationList*)));
+    connect(consoleObserver, SIGNAL(openAnnotatedBranch(AnnotatedBranch*)), this, SLOT(openAnnotatedBranch(AnnotatedBranch*)));
+    connect(consoleObserver, SIGNAL(openAnnotationSession(AnnotationSession*)), this, SLOT(openAnnotationSession(AnnotationSession*)));
+    connect(consoleObserver, SIGNAL(updateAnnotations(qint64,AnnotationList*)), this, SLOT(updateAnnotations(qint64,AnnotationList*)));
     connect(consoleObserver, SIGNAL(communicationError(const QString&)), this, SLOT(communicationError(const QString&)));
 
     consoleObserverService = new obs::ConsoleObserverServiceImpl();
 
     if (consoleObserverService->errorMessage()!=0)
     {
-        QString msg = QString("Could not connect to the Console: %1").arg(*consoleObserverService->errorMessage());
-        showErrorDialog(msg);
-        showDisconnected();
+        if (ui->ontologyTreeView->isVisible()) {
+            QString msg = QString("Could not connect to the Console: %1").arg(*consoleObserverService->errorMessage());
+            showErrorDialog(msg);
+            showDisconnected();
+        }
         return;
     }
 
     qDebug() << "Received console approval to run on port:"<<consoleObserverService->port();
 
-    connect(consoleObserverService, SIGNAL(ontologySelected(long)), consoleObserver, SLOT(ontologySelected(long)));
-    connect(consoleObserverService, SIGNAL(ontologyChanged(long)), consoleObserver, SLOT(ontologyChanged(long)));
-    connect(consoleObserverService, SIGNAL(entitySelected(long)), consoleObserver, SLOT(entitySelected(long)));
-    connect(consoleObserverService, SIGNAL(entityViewRequested(long)), consoleObserver, SLOT(entityViewRequested(long)));
-    connect(consoleObserverService, SIGNAL(annotationsChanged(long)), consoleObserver, SLOT(annotationsChanged(long)));
+    connect(consoleObserverService, SIGNAL(ontologySelected(qint64)), consoleObserver, SLOT(ontologySelected(qint64)));
+    connect(consoleObserverService, SIGNAL(ontologyChanged(qint64)), consoleObserver, SLOT(ontologyChanged(qint64)));
+    connect(consoleObserverService, SIGNAL(entitySelected(qint64)), consoleObserver, SLOT(entitySelected(qint64)));
+    connect(consoleObserverService, SIGNAL(entityViewRequested(qint64)), consoleObserver, SLOT(entityViewRequested(qint64)));
+    connect(consoleObserverService, SIGNAL(annotationsChanged(qint64)), consoleObserver, SLOT(annotationsChanged(qint64)));
+    connect(consoleObserverService, SIGNAL(sessionSelected(qint64)), consoleObserver, SLOT(sessionSelected(qint64)));
     consoleObserverService->startServer();
 
     if (consoleObserverService->error!=0)
@@ -302,10 +337,6 @@ void AnnotationWidget::consoleConnect() {
     ui->consoleLinkLabel->setText(LABEL_CONSOLE_CONNECTED);
     ui->consoleLinkButton->setText(BUTTON_DISCONNECT);
     ui->consoleLinkButton->setEnabled(true);
-
-    // Load the current ontology
-    ui->ontologyTreeTitle->setText(QString("Loading..."));
-    consoleObserver->loadCurrentOntology();
 }
 
 void AnnotationWidget::consoleDisconnect()
@@ -435,6 +466,10 @@ void AnnotationWidget::annotateSelectedEntityWithOntologyTerm(const Entity *term
     }
 
     OntologyAnnotation *annotation = new OntologyAnnotation();
+
+    if (annotationSession != 0) {
+        annotation->sessionId = new qint64(*annotationSession->sessionId);
+    }
 
     annotation->targetEntityId = new qint64(*selectedEntity->id);
     annotation->keyEntityId = new qint64(*term->id);

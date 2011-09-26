@@ -3,6 +3,7 @@
 #include "../gui/NaMainWindow.h"
 #include "../entity_model/Entity.h"
 #include "../entity_model/Ontology.h"
+#include "../entity_model/AnnotationSession.h"
 #include "../../webservice/impl/EntityAdapter.h"
 #include "../../webservice/console/cdsConsoleDataServiceProxy.h"
 
@@ -26,7 +27,7 @@ ConsoleObserver::ConsoleObserver(NaMainWindow *naMainWindow, QObject *parent) :
 // ontologySelected event
 //*******************************************************************************************
 
-void ConsoleObserver::loadCurrentOntology()
+void ConsoleObserver::loadOntology(qint64 rootId)
 {
     QMutexLocker locker(&loadOntologyMutex);
 
@@ -35,7 +36,7 @@ void ConsoleObserver::loadCurrentOntology()
         loadOntologyThread->disregard();
     }
 
-    loadOntologyThread = new GetCurrentOntologyThread;
+    loadOntologyThread = new GetOntologyThread(rootId);
     connect(loadOntologyThread, SIGNAL(gotResults(const void *)),
             this, SLOT(loadOntologyResults(const void *)));
     connect(loadOntologyThread, SIGNAL(gotError(const QString &)),
@@ -62,12 +63,12 @@ void ConsoleObserver::loadOntologyError(const QString &error)
     loadOntologyThread = NULL;
 }
 
-void ConsoleObserver::ontologySelected(long rootId)
+void ConsoleObserver::ontologySelected(qint64 rootId)
 {
     QMutexLocker locker(&loadOntologyMutex);
 
     qDebug() << "Got signal ontologySelected:" << rootId;
-    loadCurrentOntology();
+    loadOntology(rootId);
 }
 
 
@@ -75,17 +76,17 @@ void ConsoleObserver::ontologySelected(long rootId)
 // ontologyChanged event
 //*******************************************************************************************
 
-void ConsoleObserver::ontologyChanged(long rootId)
+void ConsoleObserver::ontologyChanged(qint64 rootId)
 {
     qDebug() << "Got signal ontologyChanged:" << rootId;
-    loadCurrentOntology();
+    loadOntology(rootId);
 }
 
 //*******************************************************************************************
 // entitySelected event
 //*******************************************************************************************
 
-void ConsoleObserver::entitySelected(long entityId)
+void ConsoleObserver::entitySelected(qint64 entityId)
 {
     QMutexLocker locker(&entitySelectedMutex);
 
@@ -156,7 +157,7 @@ void ConsoleObserver::entitySelectedError(const QString & error)
 // entityViewRequested event
 //*******************************************************************************************
 
-void ConsoleObserver::entityViewRequested(long entityId)
+void ConsoleObserver::entityViewRequested(qint64 entityId)
 {
     QMutexLocker locker(&entityViewRequestedMutex);
 
@@ -211,7 +212,7 @@ void ConsoleObserver::entityViewRequestedError(const QString & error)
 // annotatedBranchViewRequested event
 //*******************************************************************************************
 
-void ConsoleObserver::annotatedBranchViewRequested(long entityId)
+void ConsoleObserver::annotatedBranchViewRequested(qint64 entityId)
 {
     QMutexLocker locker(&annotatedBranchViewRequestedMutex);
 
@@ -261,7 +262,7 @@ void ConsoleObserver::annotatedBranchViewRequestedError(const QString & error)
 // annotationsChanged event
 //*******************************************************************************************
 
-void ConsoleObserver::annotationsChanged(long entityId)
+void ConsoleObserver::annotationsChanged(qint64 entityId)
 {
     QMutexLocker locker(&annotationsChangedMutex);
 
@@ -296,4 +297,45 @@ void ConsoleObserver::annotationsChangedError(const QString & error)
     emit communicationError(error);
     delete annotationsChangedThread;
     annotationsChangedThread = NULL;
+}
+
+//*******************************************************************************************
+// sessionSelected event
+//*******************************************************************************************
+
+void ConsoleObserver::sessionSelected(qint64 sessionId)
+{
+    QMutexLocker locker(&loadAnnotationSessionMutex);
+
+    qDebug() << "Got signal sessionSelected:" << sessionId;
+
+    if (loadAnnotationSessionThread != NULL)
+    {
+        loadAnnotationSessionThread->disregard();
+    }
+
+    loadAnnotationSessionThread = new GetAnnotationSessionThread(sessionId);
+    connect(loadAnnotationSessionThread, SIGNAL(gotResults(const void *)),
+            this, SLOT(loadAnnotationSessionResults(const void *)));
+    connect(loadAnnotationSessionThread, SIGNAL(gotError(const QString &)),
+            this, SLOT(loadAnnotationSessionError(const QString &)));
+    loadAnnotationSessionThread->start(QThread::NormalPriority);
+}
+
+void ConsoleObserver::loadAnnotationSessionResults(const void *results)
+{
+    QMutexLocker locker(&loadAnnotationSessionMutex);
+
+    emit openAnnotationSession((AnnotationSession *)results);
+    delete loadAnnotationSessionThread;
+    loadAnnotationSessionThread = NULL;
+}
+
+void ConsoleObserver::loadAnnotationSessionError(const QString & error)
+{
+    QMutexLocker locker(&loadAnnotationSessionMutex);
+
+    emit communicationError(error);
+    delete loadAnnotationSessionThread;
+    loadAnnotationSessionThread = NULL;
 }

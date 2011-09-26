@@ -38,17 +38,18 @@ protected:
 };
 
 // ===========================================================
-// Get Current Ontology Tree
+// Get Ontology Tree
 // ===========================================================
 
-class GetCurrentOntologyThread : public DataThread
+class GetOntologyThread : public DataThread
 {
     Q_OBJECT
 
 public:
-    explicit GetCurrentOntologyThread(QObject *parent = 0);
+    explicit GetOntologyThread(qint64 entityId, QObject *parent = 0);
     void fetchData();
-
+private:
+    qint64 entityId;
 };
 
 // ===========================================================
@@ -60,12 +61,12 @@ class GetAnnotatedBranchThread : public DataThread
     Q_OBJECT
 
 public:
-    explicit GetAnnotatedBranchThread(long entityId, QObject *parent = 0);
+    explicit GetAnnotatedBranchThread(qint64 entityId, QObject *parent = 0);
     void fetchData();
 private:
     void fetchAnnotations(Entity *entity);
     QHash<qint64, AnnotationList*> *annotationMap;
-    long entityId;
+    qint64 entityId;
 };
 
 // ===========================================================
@@ -77,10 +78,10 @@ class GetEntityThread : public DataThread
     Q_OBJECT
 
 public:
-    explicit GetEntityThread(long entityId, QObject *parent = 0);
+    explicit GetEntityThread(qint64 entityId, QObject *parent = 0);
     void fetchData();
 private:
-    long entityId;
+    qint64 entityId;
 };
 
 // ===========================================================
@@ -92,11 +93,11 @@ class GetEntityAnnotationsThread : public DataThread
     Q_OBJECT
 
 public:
-    explicit GetEntityAnnotationsThread(long entityId, QObject *parent = 0);
+    explicit GetEntityAnnotationsThread(qint64 entityId, QObject *parent = 0);
     void fetchData();
-    inline long getEntityId() const { return entityId; }
+    inline qint64 getEntityId() const { return entityId; }
 private:
-    long entityId;
+    qint64 entityId;
 };
 
 // ===========================================================
@@ -132,6 +133,23 @@ public:
 private:
     qint64 annotationId;
 };
+
+// ===========================================================
+// Get Annotation Session
+// ===========================================================
+
+class GetAnnotationSessionThread : public DataThread
+{
+    Q_OBJECT
+
+public:
+    explicit GetAnnotationSessionThread(qint64 sessionId, QObject *parent = 0);
+    void fetchData();
+
+private:
+    qint64 sessionId;
+};
+
 
 
 #endif // DATATHREAD_H
