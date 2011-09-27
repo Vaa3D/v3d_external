@@ -601,6 +601,8 @@ void Na3DWidget::choiceRenderer()
                 this, SIGNAL(progressComplete()));
         connect(getRendererNa(), SIGNAL(progressMessageChanged(QString)),
                 this, SIGNAL(progressMessageChanged(QString)));
+        connect(getRendererNa(), SIGNAL(progressAborted(QString)),
+                this, SIGNAL(progressAborted(QString)));
     }
 }
 
@@ -719,8 +721,6 @@ void Na3DWidget::onVolumeDataChanged()
         NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
         if (! volumeReader.hasReadLock()) return;
         const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
-        const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
-        const Image4DProxy<My4DImage>& refProxy = volumeReader.getReferenceImageProxy();
 
         // TODO - get some const correctness in here...
         // TODO - wean from _idep->image4d
@@ -736,7 +736,7 @@ void Na3DWidget::onVolumeDataChanged()
         resetView();
         updateCursor();
         RendererNeuronAnnotator* rend = getRendererNa();
-        if (! getRendererNa()->populateNeuronMaskAndReference(neuronProxy.img0, refProxy.img0))
+        if (! getRendererNa()->populateNeuronMaskAndReference(volumeReader))
             qDebug() << "RendererNeuronAnnotator::populateNeuronMaskAndReference() failed";
         makeCurrent(); // Make sure subsequent OpenGL calls go here. (might make no difference here)
         if (rend != getRendererNa()) return; // stale

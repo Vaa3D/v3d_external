@@ -4,6 +4,7 @@
 #include <QObject>
 #include "../../3drenderer/renderer_gl2.h"
 #include "../geometry/Vector3D.h"
+#include "../data_model/NaVolumeData.h"
 
 class RendererNeuronAnnotator : public QObject, public Renderer_gl2
 {
@@ -15,7 +16,7 @@ public:
     virtual ~RendererNeuronAnnotator();
     virtual void loadVol();
     virtual int hitMenu(int x, int y, bool b_glwidget);
-    bool populateNeuronMaskAndReference(const My4DImage* my4Dmask, const My4DImage* referenceImage);
+    bool populateNeuronMaskAndReference(NaVolumeData::Reader& volumeReader);
 
     void rebuildFromBaseTextures(const QList<int>& maskIndexList, QList<RGBA8*>& overlayList);
 
@@ -50,13 +51,13 @@ signals:
     void progressValueChanged(int);
     void progressComplete();
     void progressMessageChanged(QString);
+    void progressAborted(QString);
 
 protected:
     virtual void setupStackTexture(bool bfirst);
     void load3DTextureSet(RGBA8* tex3DBuf);
     RGBA8* extendTextureFromMaskList(const QList<RGBA8*> & sourceTextures, const QList<int> & maskIndexList);
     void cleanExtendedTextures();
-    // void updateProgressDialog(QProgressDialog & dialog, int level);
     bool populateBaseTextures();
 
     // We want all of these OFF for now to keep the texture handling constant across different hardware environments

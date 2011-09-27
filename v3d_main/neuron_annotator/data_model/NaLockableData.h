@@ -75,7 +75,7 @@ public:
     // If refreshLock returns "false", stop reading and return, to pop this BaseReadLocker off the stack.
     bool refreshLock();
     // unlock() method for manual early termination, for optimization.
-    // void unlock();
+    void unlock();
 
 protected:
     void checkRefreshTime();

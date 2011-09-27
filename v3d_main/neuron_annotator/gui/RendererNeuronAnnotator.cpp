@@ -57,8 +57,14 @@ void RendererNeuronAnnotator::loadVol() {
 // as the texture buffer. It returns false if the source image is smaller
 // than the target buffer because this isn't implemented.
 
-bool RendererNeuronAnnotator::populateNeuronMaskAndReference(const My4DImage* my4Dmask, const My4DImage* referenceImage)
+bool RendererNeuronAnnotator::populateNeuronMaskAndReference(NaVolumeData::Reader& volumeReader)
 {
+    QTime stopwatch;
+    stopwatch.start();
+    if (! volumeReader.hasReadLock()) return false;
+    const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
+    const Image4DProxy<My4DImage>& refProxy = volumeReader.getReferenceImageProxy();
+
     // qDebug() << "Start RendererNeuronAnnotator::populateNeuronMask()";
 
     // Clean previous data
@@ -67,14 +73,14 @@ bool RendererNeuronAnnotator::populateNeuronMaskAndReference(const My4DImage* my
         neuronMask = NULL;
     }
 
-    if (my4Dmask==0) {  
-        qDebug() << "RendererNeuronAnnotator::populateNeuronMask() can't process NULL my4Dmask";
+    if (neuronProxy.sz == 0) {
+        qDebug() << "RendererNeuronAnnotator::populateNeuronMask() can't process empty my4Dmask";
         return false;
     }
 
-    int sourceX=my4Dmask->getXDim();
-    int sourceY=my4Dmask->getYDim();
-    int sourceZ=my4Dmask->getZDim();
+    int sourceX = neuronProxy.sx;
+    int sourceY = neuronProxy.sy;
+    int sourceZ = neuronProxy.sz;
 
     float sx, sy, sz;
     // V3DLONG dx, dy, dz;
@@ -108,8 +114,8 @@ bool RendererNeuronAnnotator::populateNeuronMaskAndReference(const My4DImage* my
 
     // Note that the first mask entry is not overwritten by subsequent entries.
 
-    for (iz = 0; iz < sourceZ; iz++)
-        for (iy = 0; iy < sourceY; iy++)
+    for (iz = 0; iz < sourceZ; iz++) {
+        for (iy = 0; iy < sourceY; iy++) {
             for (ix = 0; ix < sourceX; ix++) {
                 ox = CLAMP(0,realX-1, IROUND(ix/sx));
                 oy = CLAMP(0,realY-1, IROUND(iy/sy));
@@ -117,18 +123,33 @@ bool RendererNeuronAnnotator::populateNeuronMaskAndReference(const My4DImage* my
 
                 V3DLONG offset = oz*realX*realY + oy*realX + ox;
                 if (neuronMask[offset]==0) {
-                    neuronMask[offset] = my4Dmask->at(ix,iy,iz);
+                    neuronMask[offset] = neuronProxy.value_at(ix, iy, iz, 0);
                 }
                 RGBA8 referenceVoxel;
-                double referenceIntensity=referenceImage->at(ix,iy,iz);
+                double referenceIntensity = refProxy.value_at(ix,iy,iz,0);
                 referenceVoxel.r=referenceIntensity;
                 referenceVoxel.g=referenceIntensity;
                 referenceVoxel.b=referenceIntensity;
                 referenceVoxel.a=255;
                 texture3DReference[offset] = referenceVoxel;
+            }
+        }
+        // Stay interactive by flushing event queue every 20 milliseconds.
+        if (stopwatch.elapsed() > 20) {
+            volumeReader.unlock();
+            emit progressMessageChanged("Populating neuron mask and reference");
+            emit progressValueChanged(int((100.0 * iz) / sourceZ));
+            QCoreApplication::processEvents();
+            if (! volumeReader.refreshLock()) {
+                emit progressAborted("");
+                return false; // volume is no longer available for reading
+            }
+            stopwatch.restart();
+        }
     }
 
     // qDebug() << "RendererNeuronAnnotator::populateNeuronMask() done";
+    // qDebug() << "RendererNeuronAnnotator::populateNeuronMaskAndReference() took" << stopwatch.elapsed() / 1000.0 << "seconds";
 
     return true;
 }

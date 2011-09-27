@@ -95,7 +95,6 @@ void NaLockableDataBaseReadLocker::checkRefreshTime() {
     m_intervalTime.restart();
 }
 
-/*
 void NaLockableDataBaseReadLocker::unlock()
 {
     if (hasReadLock()) {
@@ -103,7 +102,6 @@ void NaLockableDataBaseReadLocker::unlock()
         m_hasReadLock = false;
     }
 }
- */
 
 
 
