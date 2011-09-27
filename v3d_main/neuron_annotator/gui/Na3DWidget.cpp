@@ -130,18 +130,19 @@ void Na3DWidget::resetView()
     // cerr << newFocus << __LINE__ << __FILE__ << endl;
     cameraModel.setFocus(newFocus); // center view
     cameraModel.setRotation(Rotation3D()); // identity rotation
-    // Avoid crash before data are initialized
-    if (!_idep) return;
-    if (!_idep->image4d) return;
-    update();
 }
 
-Vector3D Na3DWidget::getDefaultFocus() const {
-    if (_idep && _idep->image4d)
-        return Vector3D(_idep->image4d->getXDim()/2.0,
-                             _idep->image4d->getYDim()/2.0,
-                             _idep->image4d->getZDim()/2.0);
-    else return Vector3D(0, 0, 0);
+Vector3D Na3DWidget::getDefaultFocus() const
+{
+    Vector3D result(0, 0, 0);
+    if (! dataFlowModel) return result;
+    NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
+    if (! volumeReader.hasReadLock()) return result;
+    const Image4DProxy<My4DImage>& volumeProxy = volumeReader.getOriginalImageProxy();
+    result = Vector3D(  volumeProxy.sx / 2.0
+                      , volumeProxy.sy / 2.0
+                      , volumeProxy.sz / 2.0);
+    return result;
 }
 
 // Translate view by dx,dy screen pixels
@@ -442,10 +443,13 @@ void Na3DWidget::updateDefaultScale()
 {
     float screenWidth = width();
     float screenHeight = height();
-    if (!_idep) return;
-    if (!_idep->image4d) return;
-    float objectWidth = _idep->image4d->getXDim();
-    float objectHeight = _idep->image4d->getYDim();
+
+    if (! dataFlowModel) return;
+    NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
+    if (! volumeReader.hasReadLock()) return;
+    const Image4DProxy<My4DImage>& volumeProxy = volumeReader.getOriginalImageProxy();
+    float objectWidth = volumeProxy.sx;
+    float objectHeight = volumeProxy.sy;
 
     if (screenWidth < 1) return;
     if (screenHeight < 1) return;
