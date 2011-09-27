@@ -1037,12 +1037,155 @@ int RendererNeuronAnnotator::hitMenu(int x, int y, bool b_glwidget)
     return 0;
 }
 
-
-RGBA8* RendererNeuronAnnotator::getOverlayTextureByAnnotationIndex(int index) {
+RGBA8* RendererNeuronAnnotator::getOverlayTextureByAnnotationIndex(int index)
+{
     if (index==DataFlowModel::REFERENCE_MIP_INDEX) {
         return texture3DReference;
     } else if (index==DataFlowModel::BACKGROUND_MIP_INDEX) {
         return texture3DBackground;
     }
 }
+
+float RendererNeuronAnnotator::glUnitsPerImageVoxel() const {
+    return 2.0 / boundingBox.Dmax();
+}
+
+bool RendererNeuronAnnotator::hasBadMarkerViewMatrix() const // to help avoid a crash
+{
+    return (! (markerViewMatrix[0] == markerViewMatrix[0]));
+}
+
+void RendererNeuronAnnotator::clearLandmarks()
+{
+    if (0 == listMarker.size()) return; // already clear
+    listMarker.clear();
+}
+
+void RendererNeuronAnnotator::setLandmarks(const QList<ImageMarker>& landmarks)
+{
+    if (landmarks == listMarker) return; // no change
+    listMarker = landmarks;
+}
+
+// Copied from Renderer_gl1::paint() 27 Sep 2011 CMB
+void RendererNeuronAnnotator::paint()
+{
+        //qDebug(" Renderer_gl1::paint(renderMode=%i)", renderMode);
+
+        if (b_error) return; //080924 try to catch the memory error
+
+        glClearColor(color_background.r, color_background.g, color_background.b, 0);
+        glClearStencil(0);
+        glClearDepth(1);
+        glDepthRange(0, 1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+                                //GL_LEQUAL);
+
+        glMatrixMode(GL_MODELVIEW);
+        // here, MUST BE normalized space of [-1,+1]^3;
+
+        glGetDoublev(GL_MODELVIEW_MATRIX, volumeViewMatrix); //no scale here, used for drawUnitVolume()
+
+        glPushMatrix();
+                setMarkerSpace(); // space to define marker & curve
+                glGetIntegerv(GL_VIEWPORT,         viewport);            // used for selectObj(smMarkerCreate)
+                glGetDoublev(GL_PROJECTION_MATRIX, projectionMatrix);    // used for selectObj(smMarkerCreate)
+                glGetDoublev(GL_MODELVIEW_MATRIX,  markerViewMatrix);    // used for selectObj(smMarkerCreate)
+        glPopMatrix();
+
+        bShowCSline = bShowAxes;
+        bShowFSline = bShowBoundingBox;
+
+        prepareVol();
+
+        if (!b_renderTextureLast) {
+            renderVol();
+        }
+
+        if (sShowMarkers>0 || sShowSurfObjects>0)
+        {
+                if (polygonMode==1)	      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                else if (polygonMode==2)  glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+                else                      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+                setObjLighting();
+
+                if (sShowSurfObjects>0)
+                {
+                        glPushMatrix(); //================================================= SurfObject {
+
+                        // original surface object space ==>fit in [-1,+1]^3
+                        setSurfaceStretchSpace();
+                        glPushName(dcSurface);
+                                drawObj();  // neuron-swc, cell-apo, label-surf, etc
+                        glPopName();
+
+                        glPopMatrix(); //============================================================= }
+                }
+
+                if (sShowMarkers>0)
+                {
+                        glPushMatrix(); //===================================================== Marker {
+
+                        // marker defined in original image space ==>fit in [-1,+1]^3
+                        setMarkerSpace();
+                        glPushName(dcSurface);
+                                drawMarker();  // just markers
+                        glPopName();
+
+                        glPopMatrix(); //============================================================= }
+                }
+
+                disObjLighting();
+        }
+
+        if (! b_selecting)
+        {
+                if (bShowBoundingBox || bShowAxes)
+                {
+                        glPushMatrix(); //========================== default bounding frame & axes {
+
+                        // bounding box space ==>fit in [-1,+1]^3
+                        setObjectSpace();
+                        drawBoundingBoxAndAxes(boundingBox, 1, 3);
+
+                        glPopMatrix(); //========================================================= }
+                }
+
+                if (bShowBoundingBox2 && has_image() && !surfBoundingBox.isNegtive() )
+                {
+                        glPushMatrix(); //============================ surface object bounding box {
+
+                        setSurfaceStretchSpace();
+                        drawBoundingBoxAndAxes(surfBoundingBox, 1, 0);
+
+                        glPopMatrix(); //========================================================= }
+                }
+
+            if (bOrthoView)
+            {
+                        glPushMatrix(); //============================================== scale bar {
+
+                        drawScaleBar();
+
+                        glPopMatrix(); //========================================================= }
+            }
+        }
+
+     if (b_renderTextureLast) {
+          renderVol();
+     }
+
+        // must be at last
+        if (! b_selecting && sShowTrack)
+        {
+                blendTrack();
+        }
+
+        return;
+}
+
 

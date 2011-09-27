@@ -14,38 +14,23 @@ Q_OBJECT
 public:
     RendererNeuronAnnotator(void* widget);
     virtual ~RendererNeuronAnnotator();
+    virtual void paint();
     virtual void loadVol();
     virtual int hitMenu(int x, int y, bool b_glwidget);
     bool populateNeuronMaskAndReference(NaVolumeData::Reader& volumeReader);
-
     void rebuildFromBaseTextures(const QList<int>& maskIndexList, QList<RGBA8*>& overlayList);
-
     void updateCurrentTextureMask(int maskIndex, int state);
     bool initializeTextureMasks();
     void setMasklessSetupStackTexture(bool state) { masklessSetupStackTexture=state; }
     // useful value for computing zoom level
     float getZoomedPerspectiveViewAngle() const {return viewAngle * zoomRatio;}
     void setInternalZoomRatio(float z) {zoomRatio = z;}
-    float glUnitsPerImageVoxel() const {
-        return 2.0 / boundingBox.Dmax();
-    }
+    float glUnitsPerImageVoxel() const;
     RGBA8* getOverlayTextureByAnnotationIndex(int index);
     const RGBA8* getTexture3DCurrent() const;
-    bool hasBadMarkerViewMatrix() const // to help avoid a crash
-    {
-        return (! (markerViewMatrix[0] == markerViewMatrix[0]));
-    }
-    void clearLandmarks()
-    {
-        if (0 == listMarker.size()) return; // already clear
-        listMarker.clear();
-    }
-    void setLandmarks(const QList<ImageMarker>& landmarks)
-    {
-        if (landmarks == listMarker) return; // no change
-        listMarker = landmarks;
-    }
-
+    bool hasBadMarkerViewMatrix() const;
+    void clearLandmarks();
+    void setLandmarks(const QList<ImageMarker>& landmarks);
 
 signals:
     void progressValueChanged(int);
