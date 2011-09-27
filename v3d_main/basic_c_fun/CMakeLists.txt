@@ -14,8 +14,14 @@ set(V3DInterface_SRCS
   mg_utilities.cpp
   stackutil.cpp
   v3d_message.cpp
-  vcdiff.cpp
+  # vcdiff.cpp
   )
+  
+if (WIN32)
+    set(V3DInterface_SRCS ${V3DInterface_SRCS} vcdiff.cpp)
+else()
+    set(V3DInterface_SRCS ${V3DInterface_SRCS} imageio_mylib.cpp)
+endif()
 
 add_library(V3DInterface ${V3DInterface_SRCS})
 

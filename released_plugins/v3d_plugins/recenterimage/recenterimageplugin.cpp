@@ -9,7 +9,8 @@
 
 #include <math.h>
 #include <stdlib.h>
-#include <vector.h>
+#include <vector>
+#include <iostream>
 
 #include "basic_surf_objs.h"
 #include "stackutil.h"
@@ -24,6 +25,8 @@
 #include "basic_4dimage.h"
 
 #include "recenterimageplugin.h"
+
+using namespace std;
 
 //Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
