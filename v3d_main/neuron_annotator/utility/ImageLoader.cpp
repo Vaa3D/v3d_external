@@ -53,13 +53,14 @@ bool ImageLoader::execute() {
             imageList.append(image);
         }
         QString filePrefix=getFilePrefix(inputFileList.at(i));
-        QString saveFilepath=filePrefix.append(".v3drawre");
+        QString saveFilepath=filePrefix.append(".v3dvre");
         V3DLONG sz[4];
         sz[0] = image->getXDim();
         sz[1] = image->getYDim();
         sz[2] = image->getZDim();
         sz[3] = image->getCDim();
-        saveStack2RawRE(saveFilepath.toAscii().data(), (const unsigned char *)image->getData(), sz, image->getDatatype());
+        unsigned char**** data = (unsigned char****)image->getData();
+        saveStack2RawRE(saveFilepath.toAscii().data(), data, sz, image->getDatatype());
         //image->saveImage(saveFilepath.toAscii().data());
     }
 
@@ -108,9 +109,11 @@ QString ImageLoader::getFilePrefix(QString filepath) {
    in a row, then its value is simply used without invoking the runlength trigger code. If the code itself is
    present in the data as a n-mer (where n can be 1, 2, etc.) then it is encoded as <trigger-code><n><trigger-code> */
 
-int ImageLoader::saveStack2RawRE(const char * filename, const unsigned char * img, const V3DLONG * sz, int datatype)
+int ImageLoader::saveStack2RawRE(const char * filename, unsigned char**** data, const V3DLONG * sz, int datatype)
 {
     int berror=0;
+
+    const int CUBE_SIZE=6;
 
     if (datatype!=1) {
         printf("saveStack2RawRE : Only datatype 1 is supported\n");
@@ -133,7 +136,7 @@ int ImageLoader::saveStack2RawRE(const char * filename, const unsigned char * im
 
         /* Write header */
                          // raw_image_stack_by_hpeng
-        char formatkey[] = "raw_hpeng_w_runlen_encod";
+        char formatkey[] = "v3d_volume_runleng_encod";
         int lenkey = strlen(formatkey);
 
         V3DLONG nwrite = fwrite(formatkey, 1, lenkey, fid);
@@ -203,22 +206,26 @@ int ImageLoader::saveStack2RawRE(const char * filename, const unsigned char * im
                 totalUnit *= sz[i];
         }
 
-        V3DLONG maxSize = totalUnit*2;
+        V3DLONG maxSize = totalUnit;
         V3DLONG actualSize=0;
         V3DLONG sourceVoxelCount=0;
-        unsigned char * imgRe = new unsigned char [maxSize];
+        unsigned char * imgRe = new unsigned char [totalUnit];
+
+        printf("Allocated imgRe with maxSize=%d\n", totalUnit);
 
         V3DLONG xSize = sz[0];
         V3DLONG ySize = sz[1];
         V3DLONG zSize = sz[2];
         V3DLONG cSize = sz[3];
 
-        V3DLONG xCube = (xSize/8) + 1;
-        V3DLONG yCube = (ySize/8) + 1;
-        V3DLONG zCube = (zSize/8) + 1;
+        V3DLONG xCube = (xSize/CUBE_SIZE) + 1;
+        V3DLONG yCube = (ySize/CUBE_SIZE) + 1;
+        V3DLONG zCube = (zSize/CUBE_SIZE) + 1;
 
-        unsigned char cubeBuffer [512];
-        int cubeSize=0;
+        V3DLONG cubeSize3=CUBE_SIZE*CUBE_SIZE*CUBE_SIZE;
+
+        unsigned char * cubeBuffer = new unsigned char [cubeSize3];
+        //int cubeSize=0;
         V3DLONG channelSize = xSize*ySize*zSize;
         V3DLONG planeSize = xSize*ySize;
 
@@ -226,42 +233,61 @@ int ImageLoader::saveStack2RawRE(const char * filename, const unsigned char * im
             for (V3DLONG zc=0;zc<zCube;zc++) {
                 for (V3DLONG yc=0;yc<yCube;yc++) {
                     for (V3DLONG xc=0;xc<xCube;xc++) {
+
                         // Reset buffer
-                        cubeSize=0;
-                        for (i=0;i<512;i++) {
+                        //cubeSize=0;
+                        for (i=0;i<cubeSize3;i++) {
                             cubeBuffer[i]=0;
                         }
+
                         // Populate buffer for current cube
-                        V3DLONG zStart=zc*8;
-                        V3DLONG yStart=yc*8;
-                        V3DLONG xStart=xc*8;
+                        V3DLONG zStart=zc*CUBE_SIZE;
+                        V3DLONG yStart=yc*CUBE_SIZE;
+                        V3DLONG xStart=xc*CUBE_SIZE;
 
-                        i=0;
+                        i=0L;
 
-                        for (V3DLONG z=zStart;z<zStart+8;z++) {
-                            for (V3DLONG y=yStart;y<yStart+8;y++) {
-                                for (V3DLONG x=xStart;x<xStart+8;x++) {
-                                    if (z<zSize && y<ySize && x<xSize && i<512) {
-                                        cubeBuffer[i++] = *(img + channelSize*cc + planeSize*z + xSize*y + x);
+                        ////printf("Inner loop start : zStart=%d  yStart=%d  xStart=%d\n", zStart, yStart, xStart);
+                        fflush(stdout);
+
+                        for (V3DLONG z=zStart;z<zStart+CUBE_SIZE;z++) {
+                            for (V3DLONG y=yStart;y<yStart+CUBE_SIZE;y++) {
+                                for (V3DLONG x=xStart;x<xStart+CUBE_SIZE;x++) {
+                                    if (z<zSize && y<ySize && x<xSize && i<cubeSize3) {
+                                        //printf("Adding cubeBuffer entry i=%d  z=%d  y=%d  x=%d\n", i, z, y, x);
+                                        cubeBuffer[i++] = data[cc][z][y][x];
+                                    } else {
+                                        // printf("Inner loop skip : z=%d zSize=%d  y=%d ySize=%d  x=%d xSize=%d  i=%d\n",z,zSize,y,ySize,x,xSize,i);
                                     }
                                 }
                             }
                         }
 
-                        sourceVoxelCount+=i;
-                        int compressionSize = compressCubeBuffer(imgRe+actualSize, cubeBuffer, i, maxSize-actualSize);
-                        if (compressionSize==0) {
-                            printf("Error during compressCubeBuffer\n");
-                            berror=1;
-                            return berror;
+                        //printf("After inner loop\n");
+                        //fflush(stdout);
+
+                        if (i>0) {
+
+                            sourceVoxelCount+=i;
+                            V3DLONG compressionSize = compressCubeBuffer(imgRe+actualSize, cubeBuffer, i, maxSize-actualSize);
+                            double compressionRatio=(sourceVoxelCount*1.0)/actualSize;
+                            printf("Compression-ratio=%f  sourceVoxels=%d  actualSize=%d  pre-size=%d   post-size=%d\n", compressionRatio, sourceVoxelCount, actualSize, i, compressionSize);
+                            if (compressionSize==0) {
+                                printf("Error during compressCubeBuffer\n");
+                                berror=1;
+                                return berror;
+                            }
+                            actualSize += compressionSize;
+
                         }
-                        actualSize += compressionSize;
                     }
                 }
             }
         }
 
-        printf("Total original size=%d  sourceVoxelCount=%d  post-compression size=%d\n", totalUnit, sourceVoxelCount, actualSize);
+        double finalCompressionRatio = (sourceVoxelCount*1.0)/actualSize;
+
+        printf("Total original size=%d  sourceVoxelCount=%d  post-compression size=%d  ratio=%f\n", totalUnit, sourceVoxelCount, actualSize, finalCompressionRatio);
 
         printf("Writing file...");
 
@@ -277,6 +303,10 @@ int ImageLoader::saveStack2RawRE(const char * filename, const unsigned char * im
 
         fclose(fid);
 
+        delete [] cubeBuffer;
+
+        delete [] imgRe;
+
         printf("done.\n");
 
         return berror;
@@ -284,14 +314,16 @@ int ImageLoader::saveStack2RawRE(const char * filename, const unsigned char * im
 
 // We assume here that preBuffer is
 V3DLONG ImageLoader::compressCubeBuffer(unsigned char * imgRe, unsigned char * preBuffer, V3DLONG bufferLength, V3DLONG spaceLeft) {
-    unsigned char postBuffer[5000];
     const unsigned char RE_TRIGGER_CODE=249;
+    bool debug=false;
     V3DLONG p=0;
 
     if (bufferLength==0) {
         printf("ImageLoader::compressCubeBuffer - unexpectedly received buffer of zero size\n");
         return 0;
     }
+
+    //printf("\nStart compression, length=%d\n", bufferLength);
 
     unsigned char currentValue=0;
     unsigned char count=0;
@@ -301,44 +333,167 @@ V3DLONG ImageLoader::compressCubeBuffer(unsigned char * imgRe, unsigned char * p
             return 0;
         }
         bool last=(i==(bufferLength-1));
-        if (i==0) {
+        if (i==0 && !last) {
             // Initialize
+            if (debug) printf("%d\t---\n",preBuffer[i]);
             currentValue=preBuffer[i];
             count=1;
-        } else {
-            if ( count<255 && preBuffer[i]==currentValue && !last ) {
-                // We are free to continue counting
-                count++;
-            } else if (count==255 && preBuffer[i]==currentValue && !last) {
+        } else if (i==0 && last) {
+            if (currentValue==RE_TRIGGER_CODE) {
+                // We use this expanded form even if count is low in this case
+                imgRe[p++]=RE_TRIGGER_CODE;
+                imgRe[p++]=1;
+                imgRe[p++]=RE_TRIGGER_CODE;
+                if (debug) printf("%d\t%d\n",preBuffer[i],imgRe[p-3]);
+                if (debug) printf("---\t%d\n",imgRe[p-2]);
+                if (debug) printf("---\t%d\n",imgRe[p-1]);
+
+            } else {
+                if (debug) printf("%d\t%d\n",preBuffer[i],imgRe[p-1]);
+                imgRe[p++]=currentValue;
+            }
+        } else if (!last) {
+            if (count<255 && preBuffer[i]==currentValue) {
+                if (debug) printf("%d\t---\n",preBuffer[i]);
+                count++; // This is the easy case
+            } else if (count==255 && preBuffer[i]==currentValue) {
                 // We must flush because we are at max count
                 imgRe[p++]=RE_TRIGGER_CODE;
                 imgRe[p++]=count;
                 imgRe[p++]=currentValue;
-                count=1;
-            } else if (preBuffer[i]!=currentValue || last) {
-                // We have changed currentValues
+                if (debug) printf("%d\t%d\n",preBuffer[i],imgRe[p-3]);
+                if (debug) printf("---\t%d\n",imgRe[p-2]);
+                if (debug) printf("---\t%d\n",imgRe[p-1]);
+                count=1; // currentValue stays the same
+            } else if (preBuffer[i]!=currentValue) {
+                // We don't have to check 255 because we are flushing anyway
                 if (currentValue==RE_TRIGGER_CODE) {
+                    // We use this expanded form even if count is low in this case
                     imgRe[p++]=RE_TRIGGER_CODE;
                     imgRe[p++]=count;
                     imgRe[p++]=RE_TRIGGER_CODE;
+                    if (debug) printf("---\t%d\n",imgRe[p-3]);
+                    if (debug) printf("---\t%d\n",imgRe[p-2]);
+                    if (debug) printf("---\t%d\n",imgRe[p-1]);
                 } else {
                     if (count<4) {
                         for (int j=0;j<count;j++) {
                             imgRe[p++]=currentValue;
+                            if (debug) printf("---\t%d\n",imgRe[p-1]);
                         }
                     } else {
+                        // Use compression
                         imgRe[p++]=RE_TRIGGER_CODE;
                         imgRe[p++]=count;
                         imgRe[p++]=currentValue;
+                        if (debug) printf("---\t%d\n",imgRe[p-3]);
+                        if (debug) printf("---\t%d\n",imgRe[p-2]);
+                        if (debug) printf("---\t%d\n",imgRe[p-1]);
                     }
-                    currentValue=preBuffer[i];
-                    count=1;
+                }
+                currentValue=preBuffer[i];
+                if (debug) printf("%d\t---\n",currentValue);
+                count=1;
+            } else {
+                printf("Should not get to this state in not-last possibilities\n");
+                return 0;
+            }
+        } else if (last) {
+            if (count<255 && preBuffer[i]==currentValue) {
+                count++;
+                if (currentValue==RE_TRIGGER_CODE) {
+                    // We use this expanded form even if count is low in this case
+                    imgRe[p++]=RE_TRIGGER_CODE;
+                    imgRe[p++]=count;
+                    imgRe[p++]=RE_TRIGGER_CODE;
+                    if (debug) printf("%d\t%d\n",preBuffer[i],imgRe[p-3]);
+                    if (debug) printf("---\t%d\n",imgRe[p-2]);
+                    if (debug) printf("---\t%d\n",imgRe[p-1]);
+                } else {
+                    if (count<4) {
+                        if (debug) printf("%d\t---\n",preBuffer[i]);
+                        for (int j=0;j<count;j++) {
+                            imgRe[p++]=currentValue;
+                            if (debug) printf("---\t%d\n",imgRe[p-1]);
+                        }
+                    } else {
+                        // Use compression
+                        if (debug) printf("%d\t---\n",preBuffer[i]);
+                        imgRe[p++]=RE_TRIGGER_CODE;
+                        imgRe[p++]=count;
+                        imgRe[p++]=currentValue;
+                        if (debug) printf("---\t%d\n",imgRe[p-3]);
+                        if (debug) printf("---\t%d\n",imgRe[p-2]);
+                        if (debug) printf("---\t%d\n",imgRe[p-1]);
+                    }
+                }
+            } else if (count==255 && preBuffer[i]==currentValue) {
+                // We must flush because we are at max count
+                imgRe[p++]=RE_TRIGGER_CODE;
+                imgRe[p++]=count;
+                imgRe[p++]=currentValue;
+                if (debug) printf("---\t%d\n",imgRe[p-3]);
+                if (debug) printf("---\t%d\n",imgRe[p-2]);
+                if (debug) printf("---\t%d\n",imgRe[p-1]);
+                count=1; // currentValue stays the same
+                if (debug) printf("%d\t---\n",preBuffer[i]);
+                if (currentValue==RE_TRIGGER_CODE) {
+                    imgRe[p++]=RE_TRIGGER_CODE;
+                    imgRe[p++]=count;
+                    imgRe[p++]=RE_TRIGGER_CODE;
+                    if (debug) printf("---\t%d\n",imgRe[p-3]);
+                    if (debug) printf("---\t%d\n",imgRe[p-2]);
+                    if (debug) printf("---\t%d\n",imgRe[p-1]);
+                } else {
+                    imgRe[p++]=currentValue;
+                    if (debug) printf("---\t%d\n",imgRe[p-1]);
+                }
+            } else if (preBuffer[i]!=currentValue) {
+                // We don't have to check 255 because we are flushing anyway
+                if (currentValue==RE_TRIGGER_CODE) {
+                    // We use this expanded form even if count is low in this case
+                    imgRe[p++]=RE_TRIGGER_CODE;
+                    imgRe[p++]=count;
+                    imgRe[p++]=RE_TRIGGER_CODE;
+                    if (debug) printf("---\t%d\n",imgRe[p-3]);
+                    if (debug) printf("---\t%d\n",imgRe[p-2]);
+                    if (debug) printf("---\t%d\n",imgRe[p-1]);
+                } else {
+                    if (count<4) {
+                        for (int j=0;j<count;j++) {
+                            imgRe[p++]=currentValue;
+                            if (debug) printf("---\t%d\n",imgRe[p-1]);
+                        }
+                    } else {
+                        // Use compression
+                        imgRe[p++]=RE_TRIGGER_CODE;
+                        imgRe[p++]=count;
+                        imgRe[p++]=currentValue;
+                        if (debug) printf("---\t%d\n",imgRe[p-3]);
+                        if (debug) printf("---\t%d\n",imgRe[p-2]);
+                        if (debug) printf("---\t%d\n",imgRe[p-1]);
+                    }
+                }
+                currentValue=preBuffer[i];
+                count=1;
+                if (debug) printf("%d\t---\n",preBuffer[i]);
+                if (currentValue==RE_TRIGGER_CODE) {
+                    imgRe[p++]=RE_TRIGGER_CODE;
+                    imgRe[p++]=count;
+                    imgRe[p++]=RE_TRIGGER_CODE;
+                    if (debug) printf("---\t%d\n",imgRe[p-3]);
+                    if (debug) printf("---\t%d\n",imgRe[p-2]);
+                    if (debug) printf("---\t%d\n",imgRe[p-1]);
+                } else {
+                    imgRe[p++]=currentValue;
+                    if (debug) printf("---\t%d\n",imgRe[p-1]);
                 }
             } else {
-                printf("ImageLoader::compressCubeBuffer - we should never get to this point i=%d count=%d currentValue=%d\n", i, count, currentValue);
+                printf("Should not get to this state in last possibilities\n");
                 return 0;
             }
         }
+
     }
     return p;
 }
