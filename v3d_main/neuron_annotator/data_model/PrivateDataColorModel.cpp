@@ -9,6 +9,7 @@ PrivateDataColorModel::PrivateDataColorModel()
 PrivateDataColorModel::PrivateDataColorModel(const PrivateDataColorModel& rhs)
 {
     channelColors = rhs.channelColors;
+    // qDebug() << "PrivateDataColorModel copy ctor";
 }
 
 /* virtual */
@@ -32,12 +33,15 @@ void PrivateDataColorModel::colorizeIncremental(
         channelColors[chan].setColor(desiredColorReader.getChannelColor(chan));
         channelColors[chan].showChannel = desiredColorReader.getChannelVisibility(chan);
         // Set incremental gamma; qInc = qDes / qCur
-        qreal incGamma = desiredColorReader.getChannelGamma(chan) / currentColorReader.getChannelGamma(chan);
+        qreal incGamma = desiredColorReader.getChannelGamma(chan) / currentColorReader.getChannelGamma(chan); // the usual case
         channelColors[chan].setGamma(incGamma);
         // Set incremental HDR range, on a data scale of 0.0-1.0 (though hdrMin/Max might be outside that range)
         channelColors[chan].setDataRange(0.0, 1.0);
         qreal desRange = desiredColorReader.getChannelHdrMax(chan) - desiredColorReader.getChannelHdrMin(chan);
         qreal curRange = currentColorReader.getChannelHdrMax(chan) - currentColorReader.getChannelHdrMin(chan);
+        // avoid divide by zero
+        if (0 == desRange) desRange = 0.0001;
+        if (0 == curRange) curRange = 0.0001;
         qreal incRange = desRange / curRange;
         qreal incMin = (desiredColorReader.getChannelHdrMin(chan) - currentColorReader.getChannelHdrMin(chan)) / desRange;
         qreal incMax = incMin + incRange;
@@ -138,6 +142,7 @@ bool PrivateDataColorModel::hasChannelHdrRange(int index, qreal minParam, qreal 
 
 bool PrivateDataColorModel::setChannelHdrRange(int index, qreal minParam, qreal maxParam)
 {
+    // qDebug() << "setChannelHdrRange" << index << minParam << maxParam;
     if ( hasChannelHdrRange(index, minParam, maxParam) )
         return false; // no change
     channelColors[index].setHdrRange(minParam, maxParam);
@@ -232,6 +237,12 @@ QRgb PrivateDataColorModel::ChannelColorModel::getColor() const {return channelC
 
 void PrivateDataColorModel::ChannelColorModel::setHdrRange(qreal hdrMinParam, qreal hdrMaxParam)
 {
+    // qDebug() << "PrivateDataColorModel::ChannelColorModel::setHdrRange()" << hdrMinParam << hdrMaxParam;
+    if (! (hdrMinParam == hdrMinParam)) // NaN
+    {
+        qDebug() << "hdrMinParam set to NaN";
+        return; // don't do that.
+    }
     hdrMin = hdrMinParam;
     hdrMax = hdrMaxParam;
     hdrRange = hdrMaxParam - hdrMinParam;
