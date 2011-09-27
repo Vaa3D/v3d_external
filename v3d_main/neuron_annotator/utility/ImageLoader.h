@@ -29,6 +29,7 @@ public:
     bool execute();
     bool validateFiles();
     My4DImage* loadImage(QString filepath);
+    int saveStack2RawRE(const char * filename, const unsigned char * img, const V3DLONG * sz, int datatype);
 
     int processArgs(vector<char*> *argList);
     QString getFilePrefix(QString filepath);
@@ -36,6 +37,9 @@ public:
 private:
     QList<QString> inputFileList;
     QList<My4DImage*> imageList;
+
+    V3DLONG compressCubeBuffer(unsigned char * imgRe, unsigned char * cubeBuffer, V3DLONG bufferLength, V3DLONG spaceLeft);
+
 
 };
 
