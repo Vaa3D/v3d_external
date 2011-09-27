@@ -63,6 +63,8 @@ public slots:
     void showOverlays(const QList<int>);
     void showExactlyOneNeuron(int index);
     void showFirstSelectedNeuron();
+    void showAllNeuronsInEmptySpace();
+    void showNothing();
     // Selection
     void selectExactlyOneNeuron(int index);
     void clearSelection();

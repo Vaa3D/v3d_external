@@ -1804,15 +1804,15 @@ You can also resize the box by Ctrl + left mouse click.</string>
   </action>
   <action name="actionClear_Hide_All">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show nothing</string>
+    <string>Hide everything</string>
    </property>
   </action>
   <action name="actionShow_all_neurons_in_empty_space">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Show all neurons in empty space</string>

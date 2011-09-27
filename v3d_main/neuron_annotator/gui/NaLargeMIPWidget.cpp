@@ -2,6 +2,7 @@
 #include <cassert>
 #include <vector>
 #include <map>
+#include "NeuronQAction.h"
 
 
 //////////////////////////////
@@ -13,6 +14,8 @@ NaLargeMIPWidget::NaLargeMIPWidget(QWidget * parent)
     , highlightedNeuronMaskPixmap(200, 200)
     , highlightedNeuronIndex(-1)
     , mipMergedData(NULL)
+    , viewerContextMenu(NULL)
+    , neuronContextMenu(NULL)
 {
     // Test image
     pixmap = QPixmap(200, 200);
@@ -33,6 +36,39 @@ NaLargeMIPWidget::NaLargeMIPWidget(QWidget * parent)
 
 NaLargeMIPWidget::~NaLargeMIPWidget()
 {
+}
+
+void NaLargeMIPWidget::setContextMenus(QMenu* viewerMenu, QMenu* neuronMenu)
+{
+    if (viewerMenu) {
+        viewerContextMenu = viewerMenu;
+    }
+    if (neuronMenu) {
+        neuronContextMenu = neuronMenu;
+    }
+    setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this, SIGNAL(customContextMenuRequested(QPoint)),
+            this, SLOT(showContextMenu(QPoint)));
+}
+
+/* slot */
+void NaLargeMIPWidget::showContextMenu(QPoint point)
+{
+    int neuronIx = neuronAt(point);
+    // qDebug() << "context menu for neuron" << neuronIx;
+    // -1 means click outside of volume
+    // 0 means background
+    // >=1 means neuron fragment with Murphy index neuronIx-1
+    if (neuronIx >= 1) { // neuron clicked
+        QAction* act = neuronContextMenu->exec(mapToGlobal(point));
+        NeuronQAction* nact = dynamic_cast<NeuronQAction*>(act);
+        if (nact)
+            nact->triggerWithIndex(neuronIx);
+    }
+    else {
+        // non neuron case
+        viewerContextMenu->exec(mapToGlobal(point));
+    }
 }
 
 void NaLargeMIPWidget::updatePixmap()
@@ -229,7 +265,7 @@ void NaLargeMIPWidget::mouseReleaseEvent(QMouseEvent * event)
     setCursor(Qt::OpenHandCursor);
 }
 
-int NaLargeMIPWidget::neuronAt(const QPoint& p)
+int NaLargeMIPWidget::neuronAt(const QPoint& p) const
 {
     int answer = -1;
     if (! mipMergedData) return answer;

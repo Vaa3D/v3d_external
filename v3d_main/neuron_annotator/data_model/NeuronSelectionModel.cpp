@@ -192,6 +192,29 @@ void NeuronSelectionModel::clearAllNeurons()
     emit multipleVisibilityChanged();
 }
 
+/* slot */
+void NeuronSelectionModel::showAllNeuronsInEmptySpace()
+{
+    qDebug() << "NeuronSelectionModel::showAllNeuronsInEmptySpace()";
+    blockSignals(true);
+    showAllNeurons();
+    for (int i = 0; i < overlayStatusList.size(); ++i)
+        overlayStatusList[i] = false;
+    blockSignals(false);
+    emit multipleVisibilityChanged();
+}
+
+/* slot */
+void NeuronSelectionModel::showNothing()
+{
+    blockSignals(true);
+    clearAllNeurons();
+    for (int i = 0; i < overlayStatusList.size(); ++i)
+        overlayStatusList[i] = false;
+    blockSignals(false);
+    emit multipleVisibilityChanged();
+}
+
 // update Neuron Select List
 void NeuronSelectionModel::selectExactlyOneNeuron(int index)
 {

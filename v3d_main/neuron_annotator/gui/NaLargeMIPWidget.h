@@ -25,8 +25,9 @@ public:
     virtual void mouseReleaseEvent(QMouseEvent * event);
     virtual void wheelEvent(QWheelEvent * e); // zoom with scroll wheel
     virtual void resizeEvent(QResizeEvent * event);
-    int neuronAt(const QPoint& p);
+    int neuronAt(const QPoint& p) const;
     bool saveImage(QString filename);
+    void setContextMenus(QMenu* viewerMenu, QMenu* neuronMenu);
     void setMipMergedData(const MipMergedData& mipMergedDataParam)
     {
         mipMergedData = &mipMergedDataParam;
@@ -54,6 +55,7 @@ public slots:
     void initializePixmap(); // when a new image has loaded
     // Want to distinguish between double click and single click events
     void onMouseSingleClick(QPoint pos);
+    void showContextMenu(QPoint);
 
 protected slots:
     void onHighlightedNeuronChanged(int neuronIndex);
@@ -67,6 +69,8 @@ protected:
     QPixmap highlightedNeuronMaskPixmap;
     int highlightedNeuronIndex;
     const MipMergedData * mipMergedData;
+    QMenu* viewerContextMenu;
+    QMenu* neuronContextMenu;
 
 private:
     typedef Na2DViewer super;

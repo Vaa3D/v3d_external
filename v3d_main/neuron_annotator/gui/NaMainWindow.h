@@ -11,6 +11,7 @@
 #include "../data_model/NeuronSelectionModel.h"
 #include "../ExportFile.h"
 #include "../data_model/NeuronSelectionModel.h"
+#include "NeuronQAction.h"
 
 class NeuronSelector;
 
@@ -122,6 +123,8 @@ protected slots:
     void abortProgress(QString);
 
 protected:
+    void initializeContextMenus();
+    void connectContextMenus(const NeuronSelectionModel& neuronSelectionModel);
     void closeEvent(QCloseEvent *event);
     // Recent files list
     void addDirToRecentFilesList(QDir);
@@ -142,6 +145,19 @@ private:
     enum { MaxRecentFiles = 10 }; // clever trick to get constant in header and also use it
     OpenFileAction *recentFileActions[MaxRecentFiles];
     QString suggestedExportFilenameFromCurrentState(const NeuronSelectionModel::Reader&);
+
+    // Actions for viewer context menus
+    QAction* showAllNeuronsInEmptySpaceAction;
+    QAction* hideAllAction;
+    QAction* selectNoneAction;
+    //
+    NeuronQAction* showOnlyThisNeuronAction;
+    NeuronQAction* showOnlyThisNeuronWithBackgroundAction;
+    NeuronQAction* showOnlyThisNeuronWithReferenceAction;
+    NeuronQAction* showOnlyThisNeuronWithBackgroundAndReferenceAction;
+    //
+    QMenu* neuronContextMenu;
+    QMenu* viewerContextMenu;
 };
 
 #endif // NAMAINWINDOW_H

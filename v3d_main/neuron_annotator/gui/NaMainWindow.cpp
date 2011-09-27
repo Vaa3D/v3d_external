@@ -257,6 +257,65 @@ NaMainWindow::NaMainWindow()
     ui.annotationFrame->setMainWindow(this);
     ui.centralwidget->installEventFilter(ui.annotationFrame);
     ui.annotationFrame->consoleConnect();
+
+    initializeContextMenus();
+}
+
+void NaMainWindow::connectContextMenus(const NeuronSelectionModel& neuronSelectionModel)
+{
+    connect(showAllNeuronsInEmptySpaceAction, SIGNAL(triggered()),
+            &neuronSelectionModel, SLOT(showAllNeuronsInEmptySpace()));
+    connect(selectNoneAction, SIGNAL(triggered()),
+            &neuronSelectionModel, SLOT(clearSelection()));
+    connect(hideAllAction, SIGNAL(triggered()),
+            &neuronSelectionModel, SLOT(showNothing()));
+    // TODO - neuron actions
+}
+
+void NaMainWindow::initializeContextMenus()
+{
+    viewerContextMenu = new QMenu(this);
+    neuronContextMenu = new QMenu(this);
+    // Some QActions were already made in Qt Designer
+    showAllNeuronsInEmptySpaceAction = ui.actionShow_all_neurons_in_empty_space;
+    hideAllAction = ui.actionClear_Hide_All;
+    selectNoneAction = ui.actionSelect_None;
+    //
+    showOnlyThisNeuronAction = new NeuronQAction(
+            "View only this neuron in empty space",
+            this);
+    showOnlyThisNeuronAction->setIcon(QIcon(":/icons/neuronwobg.svg"));
+
+    showOnlyThisNeuronWithBackgroundAction = new NeuronQAction(
+            "View only this neuron with background",
+            this);
+    showOnlyThisNeuronWithBackgroundAction->setIcon(QIcon(":/icons/neuronwbg.svg"));
+
+    showOnlyThisNeuronWithReferenceAction = new NeuronQAction(
+            "View only this neuron with reference",
+            this);
+    showOnlyThisNeuronWithReferenceAction->setIcon(QIcon(":/icons/neuronwref.svg"));
+
+    showOnlyThisNeuronWithBackgroundAndReferenceAction = new NeuronQAction(
+            "View only this neuron with background and reference",
+            this);
+    showOnlyThisNeuronWithBackgroundAndReferenceAction->setIcon(QIcon(":/icons/neuronwbgref.svg"));
+
+    //
+    viewerContextMenu->addAction(showAllNeuronsInEmptySpaceAction);
+    viewerContextMenu->addAction(hideAllAction);
+    viewerContextMenu->addAction(selectNoneAction);
+    //
+    neuronContextMenu->addAction(showOnlyThisNeuronAction);
+    neuronContextMenu->addAction(showOnlyThisNeuronWithBackgroundAction);
+    neuronContextMenu->addAction(showOnlyThisNeuronWithReferenceAction);
+    neuronContextMenu->addAction(showOnlyThisNeuronWithBackgroundAndReferenceAction);
+    neuronContextMenu->addSeparator();
+    neuronContextMenu->addAction(showAllNeuronsInEmptySpaceAction);
+    neuronContextMenu->addAction(hideAllAction);
+    neuronContextMenu->addAction(selectNoneAction);
+    //
+    ui.naLargeMIPWidget->setContextMenus(viewerContextMenu, neuronContextMenu);
 }
 
 /* slot */
@@ -664,6 +723,7 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     ui.naZStackWidget->setDataFlowModel(*dataFlowModel);
     ui.fragmentGalleryWidget->setDataFlowModel(*dataFlowModel);
     neuronSelector->setDataFlowModel(*dataFlowModel);
+    connectContextMenus(dataFlowModel->getNeuronSelectionModel());
 
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(initialized()),
             this, SLOT(processUpdatedVolumeData()));
