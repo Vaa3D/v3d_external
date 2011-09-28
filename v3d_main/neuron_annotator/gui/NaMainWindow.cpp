@@ -951,7 +951,6 @@ void NaMainWindow::updateOverlayGallery()
                 DataFlowModel::REFERENCE_MIP_INDEX)); // we do not want reference initially loaded
         managementLayout->addWidget(referenceButton);
         overlayGalleryButtonList.append(referenceButton);
-        referenceButton->setNa3DWidget(ui.v3dr_glwidget);
         connect(referenceButton, SIGNAL(declareChange(int,bool)),
                 &dataFlowModel->getNeuronSelectionModel(), SLOT(updateOverlay(int,bool)));
 
@@ -962,7 +961,6 @@ void NaMainWindow::updateOverlayGallery()
                 DataFlowModel::BACKGROUND_MIP_INDEX)); // we do want background initially loaded
         managementLayout->addWidget(backgroundButton);
         overlayGalleryButtonList.append(backgroundButton);
-        backgroundButton->setNa3DWidget(ui.v3dr_glwidget);
         connect(backgroundButton, SIGNAL(declareChange(int,bool)),
                 &dataFlowModel->getNeuronSelectionModel(), SLOT(updateOverlay(int,bool)));
     }
@@ -1000,7 +998,7 @@ void NaMainWindow::updateNeuronGallery()
             GalleryButton* button = new GalleryButton(
                     *mipReader.getNeuronMip(i),
                     QString("Neuron fragment %1").arg(i), i);
-            button->setNa3DWidget(ui.v3dr_glwidget);
+            button->setContextMenu(neuronContextMenu);
             neuronGalleryButtonList.append(button);
             ui.fragmentGalleryWidget->appendFragment(button);
             button->setChecked(selectionReader.getMaskStatusList().at(i)); // start as checked since full image loaded initially

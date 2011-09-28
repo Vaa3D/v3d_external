@@ -3,6 +3,7 @@
 
 #include <QtGui>
 #include "Na3DWidget.h"
+#include "NeuronContextMenu.h"
 
 class GalleryButton : public QWidget
 {
@@ -20,8 +21,9 @@ public:
     void setChecked(bool checked) { pushButton->setChecked(checked); }
     virtual void paintEvent(QPaintEvent *);
     virtual void mouseMoveEvent(QMouseEvent *);
-    virtual void mousePressEvent(QMouseEvent *);
-    void setNa3DWidget(Na3DWidget *inputNa3DWidget);
+    // virtual void mousePressEvent(QMouseEvent *);
+    // void setNa3DWidget(Na3DWidget *inputNa3DWidget);
+    void setContextMenu(NeuronContextMenu* menu);
 
 signals:
     void declareChange(int index, bool checked);
@@ -34,6 +36,7 @@ public slots:
     // like this MUST be done in the GUI thread, so multithreading is impossible for
     // this operation.
     void setThumbnailIcon(const QImage& scaledImage);
+    void showContextMenu(QPoint point);
 
 private:
     typedef QWidget super;
@@ -41,9 +44,7 @@ private:
     QPushButton* pushButton;
     QLabel* label;
     NeuronIndex index;
-
-    // TODO - Storing a pointer to 3dwidget is poor encapsulation.  Whatever this does should proceed through signals.
-    Na3DWidget *p3DWidget;
+    NeuronContextMenu* neuronContextMenu;
 };
 
 #endif // GALLERYBUTTON_H

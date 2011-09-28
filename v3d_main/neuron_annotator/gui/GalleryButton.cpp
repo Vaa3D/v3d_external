@@ -4,6 +4,7 @@
 
 GalleryButton::GalleryButton(const QImage & image, QString name, int index, QWidget *parent)
         : QWidget(parent)
+        , neuronContextMenu(NULL)
 {
     this->index=index;
     setMouseTracking(true); // respond to mouse hover events
@@ -50,27 +51,6 @@ void GalleryButton::mouseMoveEvent(QMouseEvent *moveEvent) {
     emit fragmentHover(index);
 }
 
-void GalleryButton::mousePressEvent(QMouseEvent * event)
-{
-    if (event->button()==Qt::RightButton)
-    {
-        if(getName().isEmpty())
-        {
-            return;
-        }
-        else if(getName().contains("Neuron"))
-        {
-            p3DWidget->setNeuronIndex(index);
-        }
-        else
-        {
-            p3DWidget->setNeuronIndex(-index);
-        }
-
-        p3DWidget->onMouseRightClickMenu(event, false);
-    }
-}
-
 void GalleryButton::buttonPress(bool checked) {
     emit declareChange(index, checked);
 }
@@ -81,6 +61,19 @@ void GalleryButton::setThumbnailIcon(const QImage& scaledImage)
     pushButton->setIconSize(scaledImage.size());
 }
 
-void GalleryButton::setNa3DWidget(Na3DWidget *inputNa3DWidget){
-    p3DWidget = inputNa3DWidget;
+void GalleryButton::setContextMenu(NeuronContextMenu* menu)
+{
+    if (!menu) return;
+    neuronContextMenu = menu;
+    setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this, SIGNAL(customContextMenuRequested(QPoint)),
+            this, SLOT(showContextMenu(QPoint)));
 }
+
+/* slot */
+void GalleryButton::showContextMenu(QPoint point)
+{
+    if (! neuronContextMenu) return;
+    neuronContextMenu->exec(mapToGlobal(point), index);
+}
+
