@@ -58,7 +58,10 @@ bool ImageLoader::execute() {
                 return false;
             }
         } else {
+            stopwatch.restart();
             image=loadImage(inputFileList.at(i));
+            qDebug() << "Loading total time is " << stopwatch.elapsed() / 1000.0 << " seconds";
+
             QString filePrefix=getFilePrefix(inputFileList.at(i));
             QString saveFilepath=filePrefix.append(".v3dvre");
             V3DLONG sz[4];
@@ -76,7 +79,7 @@ bool ImageLoader::execute() {
         //image->saveImage(saveFilepath.toAscii().data());
     }
 
-    qDebug() << "Loading total time elapsed is " << stopwatch.elapsed() / 1000.0 << " seconds";
+    //qDebug() << "Loading total time elapsed is " << stopwatch.elapsed() / 1000.0 << " seconds";
     return true;
 }
 
@@ -282,7 +285,7 @@ int ImageLoader::saveStack2RawRE(const char * filename, unsigned char**** data, 
                             sourceVoxelCount+=i;
                             V3DLONG compressionSize = compressCubeBuffer(imgRe+actualSize, cubeBuffer, i, maxSize-actualSize);
                             double compressionRatio=(sourceVoxelCount*1.0)/actualSize;
-                            printf("Compression-ratio=%f  sourceVoxels=%d  actualSize=%d  pre-size=%d   post-size=%d\n", compressionRatio, sourceVoxelCount, actualSize, i, compressionSize);
+                            //printf("Compression-ratio=%f  sourceVoxels=%d  actualSize=%d  pre-size=%d   post-size=%d\n", compressionRatio, sourceVoxelCount, actualSize, i, compressionSize);
                             if (compressionSize==0) {
                                 printf("Error during compressCubeBuffer\n");
                                 berror=1;
