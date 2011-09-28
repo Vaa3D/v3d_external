@@ -62,21 +62,27 @@ bool ImageLoader::execute() {
             image=loadImage(inputFileList.at(i));
             qDebug() << "Loading total time is " << stopwatch.elapsed() / 1000.0 << " seconds";
 
-            QString filePrefix=getFilePrefix(inputFileList.at(i));
-            QString saveFilepath=filePrefix.append(".v3dvre");
-            V3DLONG sz[4];
-            sz[0] = image->getXDim();
-            sz[1] = image->getYDim();
-            sz[2] = image->getZDim();
-            sz[3] = image->getCDim();
-            unsigned char**** data = (unsigned char****)image->getData();
-            saveStack2RawRE(saveFilepath.toAscii().data(), data, sz, image->getDatatype());
+//            QString filePrefix=getFilePrefix(inputFileList.at(i));
+//            QString saveFilepath=filePrefix.append(".v3dvre");
+//            V3DLONG sz[4];
+//            sz[0] = image->getXDim();
+//            sz[1] = image->getYDim();
+//            sz[2] = image->getZDim();
+//            sz[3] = image->getCDim();
+//            unsigned char**** data = (unsigned char****)image->getData();
+//            saveStack2RawRE(saveFilepath.toAscii().data(), data, sz, image->getDatatype());
         }
         if (image!=0) {
             imageList.append(image);
         }
 
-        //image->saveImage(saveFilepath.toAscii().data());
+        if (!inputFileList.at(i).endsWith(".v3draw")) {
+            QString filePrefix=getFilePrefix(inputFileList.at(i));
+            QString saveFilepath=filePrefix.append(".v3draw");
+            qDebug() << "Saving to file " << saveFilepath;
+            image->saveImage(saveFilepath.toAscii().data());
+            qDebug() << "Done.";
+        }
     }
 
     //qDebug() << "Loading total time elapsed is " << stopwatch.elapsed() / 1000.0 << " seconds";
