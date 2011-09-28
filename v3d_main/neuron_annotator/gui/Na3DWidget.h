@@ -8,6 +8,7 @@
 #include "MouseClickManager.h"
 #include <cmath>
 #include "RendererNeuronAnnotator.h"
+#include "NeuronContextMenu.h"
 
 #if defined (_MSC_VER)
 #include "../basic_c_fun/vcdiff.h"
@@ -37,12 +38,13 @@ public:
     virtual void keyReleaseEvent(QKeyEvent *e);
 
     virtual void resizeEvent(QResizeEvent * event);
-    void onMouseRightClickMenu(QMouseEvent * event, bool b_glwidget); // for mouse click outside glwidget
     virtual void setDataFlowModel(const DataFlowModel&);
     void resetVolumeBoundary();
     virtual RendererNeuronAnnotator* getRendererNa()   {return dynamic_cast<RendererNeuronAnnotator*>(renderer);}
     virtual const RendererNeuronAnnotator* getRendererNa() const {return dynamic_cast<RendererNeuronAnnotator*>(renderer);} // const version CMB
     void setResizeEnabled(bool b) {bResizeEnabled = b;}
+    int neuronAt(QPoint pos);
+    void setContextMenus(QMenu* viewerMenu, NeuronContextMenu* neuronMenu);
 
 signals:
     void neuronSelected(double x, double y, double z);
@@ -60,7 +62,7 @@ public slots:
     virtual void updateFullVolume();
     void onVolumeDataChanged();
     void updateIncrementalColors();
-
+    void showContextMenu(QPoint point);
     void resetView();
     void resetRotation() {
         cameraModel.setRotation(Rotation3D());
@@ -159,6 +161,8 @@ protected:
     QCursor * rotateCursor;
     SlotStatus toggleNeuronDisplayStatus; // help coalesce multiple toggle neuron events
     SlotStatus updateFullVolumeStatus; // help coalesce multiple full update events
+    QMenu* viewerContextMenu;
+    NeuronContextMenu* neuronContextMenu;
 };
 
 #endif // NA3DWIDGET_H

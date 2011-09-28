@@ -13,6 +13,8 @@ Na3DWidget::Na3DWidget(QWidget* parent)
         : V3dR_GLWidget(NULL, parent, "Title")
         , incrementalDataColorModel(NULL)
         , bResizeEnabled(true)
+        , viewerContextMenu(NULL)
+        , neuronContextMenu(NULL)
 {
     if (renderer) {
         delete renderer;
@@ -290,18 +292,6 @@ void Na3DWidget::mousePressEvent(QMouseEvent * event)
 		lastPos = event->pos();
 		t_mouseclick_left = clock();
 	}
-
-	if (event->button()==Qt::RightButton && renderer)
-	{
-                //if (renderer->hitPoint(event->x(), event->y()))  //pop-up menu or marker definition
-
-            if(renderer->hitMenu(event->x(), event->y(), true))
-            {
-                updateTool();
-            }
-
-            V3dR_GLWidget::update();
-	}
 }
 
 void Na3DWidget::mouseReleaseEvent(QMouseEvent * event)
@@ -335,17 +325,6 @@ void Na3DWidget::mouseReleaseEvent(QMouseEvent * event)
 
 }
 
-void Na3DWidget::onMouseRightClickMenu(QMouseEvent * event, bool b_glwidget)
-{
-    if(renderer){
-        if(renderer->hitMenu(event->x(), event->y(), b_glwidget)){
-            updateTool();
-        }
-    }
-
-    V3dR_GLWidget::update();
-}
-
 void Na3DWidget::onMouseSingleClick(QPoint pos)
 {
     // qDebug() << "single left click!";
@@ -363,6 +342,123 @@ void Na3DWidget::onPossibleSingleClickAlert()
 void Na3DWidget::onNotSingleClick()
 {
     updateCursor();
+}
+
+void Na3DWidget::setContextMenus(QMenu* viewerMenuParam, NeuronContextMenu* neuronMenuParam)
+{
+    if (viewerMenuParam) {
+        viewerContextMenu = viewerMenuParam;
+    }
+    if (neuronMenuParam) {
+        neuronContextMenu = neuronMenuParam;
+    }
+    setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this, SIGNAL(customContextMenuRequested(QPoint)),
+            this, SLOT(showContextMenu(QPoint)));
+}
+
+/* slot */
+void Na3DWidget::showContextMenu(QPoint point)
+{
+    // Myers index (GUI index) is one less than the volume label field index
+    int neuronMyersIx = neuronAt(point);
+    // qDebug() << "context menu for neuron" << neuronIx;
+    // -1 means click outside of volume
+    // 0 means background
+    // >=1 means neuron fragment with  index neuronIx-1
+    if (neuronMyersIx >= 0) { // neuron clicked
+        neuronContextMenu->exec(mapToGlobal(point), neuronMyersIx);
+    }
+    else {
+        // non neuron case
+        viewerContextMenu->exec(mapToGlobal(point));
+    }
+}
+
+// neuronAt() returns the index of a neuron shown at screen position pos.
+// It is cobbled from methods:
+//      Na3DWidget::highlightNeuronAtPosition(QPoint pos)
+//      NeuronSelector::updateSelectedPosition()
+//      NeuronSelector::getIndexSelectedNeuron()
+int Na3DWidget::neuronAt(QPoint pos)
+{
+    int neuronIx = -1;
+    if (!renderer) return neuronIx;
+    XYZ loc = getRendererNa()->selectPosition(pos.x(), pos.y());
+
+    qreal xlc = loc.x + 0.5;
+    qreal ylc = loc.y + 0.5;
+    qreal zlc = loc.z + 0.5;
+
+    // getIndexSelectedNeuron();
+    int numNeuron = 0;
+    // sum of pixels of each neuron mask in the cube
+    std::vector<int> sum;
+    {
+        NeuronSelectionModel::Reader selectionReader(
+                dataFlowModel->getNeuronSelectionModel());
+        if (! selectionReader.hasReadLock()) return -1;
+
+        NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
+        if (! volumeReader.hasReadLock()) return -1;
+        const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
+
+        const int sx = neuronProxy.sx;
+        const int sy = neuronProxy.sy;
+        const int sz = neuronProxy.sz;
+        const int NB = 3;
+
+        numNeuron = selectionReader.getMaskStatusList().size();
+
+        sum.assign(numNeuron, 0);
+
+        //
+        V3DLONG xb = xlc-NB; if(xb<0) xb = 0;
+        V3DLONG xe = xlc+NB; if(xe>sx) xe = sx-1;
+        V3DLONG yb = ylc-NB; if(yb<0) yb = 0;
+        V3DLONG ye = ylc+NB; if(ye>sy) ye = sy-1;
+        V3DLONG zb = zlc-NB; if(zb<0) zb = 0;
+        V3DLONG ze = zlc+NB; if(ze>sz) ze = sz-1;
+
+        // const unsigned char *neuronMask = neuronProxy.img0->getRawData();
+        const QList<bool>& maskStatusList=selectionReader.getMaskStatusList();
+
+        for(V3DLONG k=zb; k<=ze; k++)
+        {
+                V3DLONG offset_k = k*sx*sy;
+                for(V3DLONG j=yb; j<=ye; j++)
+                {
+                        V3DLONG offset_j = offset_k + j*sx;
+                        for(V3DLONG i=xb; i<=xe; i++)
+                        {
+                                V3DLONG idx = offset_j + i;
+
+                                // int cur_idx = neuronMask[idx] - 1; // value of mask stack - convert to 0...n-1 neuron index
+                                int cur_idx = neuronProxy.value_at(i, j, k, 0) - 1;
+
+                                if(cur_idx>=0 && maskStatusList.at(cur_idx)) // active masks
+                                {
+                                        sum[cur_idx]++;
+                                }
+                        }
+                }
+        }
+    } // release locks
+
+    int neuronSum=0;
+    for(V3DLONG i=0; i<numNeuron; i++)
+    {
+
+        if(sum[i]>0 && sum[i]>neuronSum) {
+            neuronSum=sum[i];
+            neuronIx = i;
+        }
+    }
+
+    if (neuronIx < 0)
+        neuronIx = -1; // Index zero is a real fragment
+
+    return neuronIx;
 }
 
 void Na3DWidget::highlightNeuronAtPosition(QPoint pos)

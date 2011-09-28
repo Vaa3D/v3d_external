@@ -294,6 +294,7 @@ void NaMainWindow::initializeContextMenus()
     //
     ui.naLargeMIPWidget->setContextMenus(viewerContextMenu, neuronContextMenu);
     ui.naZStackWidget->setContextMenus(viewerContextMenu, neuronContextMenu);
+    ui.v3dr_glwidget->setContextMenus(viewerContextMenu, neuronContextMenu);
 }
 
 /* slot */
