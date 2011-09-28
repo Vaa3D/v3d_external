@@ -883,10 +883,12 @@ void NaZStackWidget::updateROIsize(int boxSize)
 void NaZStackWidget::setHDRCheckState(int state) {
     if(state){
         runHDRFILTER = true;
+        setContextMenuPolicy(Qt::NoContextMenu); // because hdr right-click does not work with context menu
         emit changedHDRCheckState(false); // hide gamma widget
     }
     else{
         runHDRFILTER = false;
+        setContextMenuPolicy(Qt::CustomContextMenu);
         emit changedHDRCheckState(true); // show gamma widget
     }
     updateCursor();
