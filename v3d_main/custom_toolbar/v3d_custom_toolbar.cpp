@@ -406,7 +406,9 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 	foreach(QString file, fileList)
 	{
 		QPluginLoader* loader = new QPluginLoader(file);
-		pluginLoaderList.push_back(loader);
+		if(!loader) continue;
+
+		//pluginLoaderList.push_back(loader);
 
 		QObject * plugin = loader->instance();
 
@@ -434,7 +436,7 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 
 				CustomToolButton * qb = new CustomToolButton(0, editor->text(), toolBar);
 				qb->button->setVisible(false);
-				qb->slot_class = plugin;
+				qb->plugin_path = file;
 				qb->bt = 3;
 				qb->callback = callback;
 				qb->parent = parent;
@@ -455,6 +457,9 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 				}
 			}
 		}
+		//while(loader->isLoaded()) 
+			loader->unload();
+		delete loader;
 	}
 
 	pluginTreeWidget->resizeColumnToContents(0);
@@ -482,6 +487,7 @@ CustomToolbarSelectWidget::CustomToolbarSelectWidget(CustomToolbarSetting* _cts,
 
 CustomToolbarSelectWidget::~CustomToolbarSelectWidget()
 {
+	/*
 	if(!pluginLoaderList.empty())
 	{
 		foreach(QPluginLoader * loader, pluginLoaderList)
@@ -489,6 +495,7 @@ CustomToolbarSelectWidget::~CustomToolbarSelectWidget()
 			loader->unload();
 		}
 	}
+	*/
 
 	delete cts;
 }
@@ -628,7 +635,6 @@ bool CustomToolButton::run()
 			v3dhandle handle = callback->currentImageWindow();
 			if(handle)
 			{
-				//slot_class =(void*) callback;//(void*)(callback->getTriviewControl(handle));
 				(callback->*(Callback2Func)slot_func)(handle);
 				//callback->open3DWindow(handle);
 			}
@@ -649,7 +655,16 @@ bool CustomToolButton::run()
 		}
 		else if(bt == 3) // Plugin do menu
 		{
-			QObject * plugin = (QObject*) slot_class;
+			QPluginLoader* loader = new QPluginLoader(plugin_path);
+			cout<<"plugin_file = "<<plugin_path.toStdString()<<endl;
+			if(!loader)
+			{
+				QMessageBox::information(0,"","Unable to load this plugin!");
+				return true;
+			}
+
+			loader->unload();
+			QObject * plugin = loader->instance();
 			QString menu_name = buttonName.right(buttonName.size() - buttonName.lastIndexOf(tr("::")) - 2);
 			V3DSingleImageInterface2_1 *iFilter2_1 = qobject_cast<V3DSingleImageInterface2_1 *>(plugin);
 			if (iFilter2_1 )
@@ -678,6 +693,10 @@ bool CustomToolButton::run()
 			{
 				iface->domenu(menu_name, *callback, parent);
 			}
+			//while(loader->isLoaded()) 
+			loader->unload();
+			delete loader;
+
 			return true;
 		}
 	}

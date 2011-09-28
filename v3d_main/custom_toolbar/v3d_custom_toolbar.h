@@ -48,7 +48,8 @@ class CustomToolButton : public QObject
 	public:
 		QAction * button;
 
-		void * slot_class;
+		//void * slot_class;  // replace by plugin_path. Hang @ Sep 28, 2011
+		QString plugin_path;
 		VoidFunc slot_func;
 		int bt;  			// 0 mainwindow menu, 1 triview button, 2 view3d button, 3 plugin menu
 
@@ -66,14 +67,14 @@ class CustomToolButton : public QObject
 		{
 			if(!icon) button = new QAction(text, parent);
 			else button = new QAction(*icon, text, parent);
-			slot_class = 0;
+			//slot_class = 0;
 			connect(button, SIGNAL(triggered(bool)), this, SLOT(run()));
 		}
 		~CustomToolButton()
 		{
 			delete button;
 			button = 0;
-			slot_class = 0;
+			//slot_class = 0;
 		}
 
 		public slots: 
