@@ -781,11 +781,13 @@ int ImageLoader::loadRaw2StackRE(char * filename, My4DImage * & image)
 
                         for (V3DLONG z=zStart;z<zl;z++) {
                             if (z<zSize) {
+                                unsigned char ** zp=imageData[cc][z];
                                 for (V3DLONG y=yStart;y<yl;y++) {
                                     if (y<ySize) {
+                                        unsigned char * yp=zp[y];
                                         for (V3DLONG x=xStart;x<xl;x++) {
                                             if (x<xSize) {
-                                                imageData[cc][z][y][x]=decompressedData[dp++];
+                                                yp[x]=decompressedData[dp++];
                                             }
                                         }
                                     }
