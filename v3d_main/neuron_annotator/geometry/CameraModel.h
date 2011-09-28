@@ -18,6 +18,7 @@ signals:
     void focusChanged(const Vector3D&);
     void rotationChanged(const Rotation3D&);
     void scaleChanged(qreal);
+    void viewChanged();
 
 public slots:
     void setFocus(const Vector3D& v);

@@ -161,6 +161,7 @@ HEADERS += \
     ../neuron_annotator/gui/CompartmentMapComboBox.h \
     ../neuron_annotator/gui/FragmentGalleryWidget.h \
     ../neuron_annotator/gui/NeuronQAction.h \
+    ../neuron_annotator/gui/NeuronContextMenu.h \
     ../neuron_annotator/NeuronSelector.h \
     ../neuron_annotator/ExportFile.h \
     ../neuron_annotator/utility/JacsUtil.h \
@@ -241,6 +242,7 @@ SOURCES += \
     ../neuron_annotator/gui/CompartmentMapComboBox.cpp \
     ../neuron_annotator/gui/FragmentGalleryWidget.cpp \
     ../neuron_annotator/gui/NeuronQAction.cpp \
+    ../neuron_annotator/gui/NeuronContextMenu.cpp \
     ../neuron_annotator/NeuronSelector.cpp \
     ../neuron_annotator/ExportFile.cpp \
     ../neuron_annotator/utility/JacsUtil.cpp \

@@ -2458,3 +2458,5 @@ v3d_main/neuron_annotator/utility/ImageLoader.h
 v3d_main/neuron_annotator/utility/ImageLoader.cpp
 v3d_main/neuron_annotator/gui/NeuronQAction.h
 v3d_main/neuron_annotator/gui/NeuronQAction.cpp
+v3d_main/neuron_annotator/gui/NeuronContextMenu.h
+v3d_main/neuron_annotator/gui/NeuronContextMenu.cpp

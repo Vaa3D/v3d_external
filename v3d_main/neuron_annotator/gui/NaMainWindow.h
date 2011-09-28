@@ -11,7 +11,7 @@
 #include "../data_model/NeuronSelectionModel.h"
 #include "../ExportFile.h"
 #include "../data_model/NeuronSelectionModel.h"
-#include "NeuronQAction.h"
+#include "NeuronContextMenu.h"
 
 class NeuronSelector;
 
@@ -151,12 +151,7 @@ private:
     QAction* hideAllAction;
     QAction* selectNoneAction;
     //
-    NeuronQAction* showOnlyThisNeuronAction;
-    NeuronQAction* showOnlyThisNeuronWithBackgroundAction;
-    NeuronQAction* showOnlyThisNeuronWithReferenceAction;
-    NeuronQAction* showOnlyThisNeuronWithBackgroundAndReferenceAction;
-    //
-    QMenu* neuronContextMenu;
+    NeuronContextMenu* neuronContextMenu;
     QMenu* viewerContextMenu;
 };
 

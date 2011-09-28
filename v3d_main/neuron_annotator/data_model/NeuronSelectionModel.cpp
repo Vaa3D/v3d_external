@@ -195,23 +195,75 @@ void NeuronSelectionModel::clearAllNeurons()
 /* slot */
 void NeuronSelectionModel::showAllNeuronsInEmptySpace()
 {
+    bool oldBlockSignals = signalsBlocked();
     qDebug() << "NeuronSelectionModel::showAllNeuronsInEmptySpace()";
     blockSignals(true);
     showAllNeurons();
     for (int i = 0; i < overlayStatusList.size(); ++i)
         overlayStatusList[i] = false;
-    blockSignals(false);
+    blockSignals(oldBlockSignals);
     emit multipleVisibilityChanged();
 }
 
 /* slot */
 void NeuronSelectionModel::showNothing()
 {
+    bool oldBlockSignals = signalsBlocked();
     blockSignals(true);
     clearAllNeurons();
     for (int i = 0; i < overlayStatusList.size(); ++i)
         overlayStatusList[i] = false;
-    blockSignals(false);
+    blockSignals(oldBlockSignals);
+    emit multipleVisibilityChanged();
+}
+
+/* slot */
+void NeuronSelectionModel::showExactlyOneNeuronInEmptySpace(int ix)
+{
+    bool oldBlockSignals = signalsBlocked();
+    blockSignals(true);
+    showNothing();
+    showExactlyOneNeuron(ix);
+    blockSignals(oldBlockSignals);
+    emit multipleVisibilityChanged();
+}
+
+/* slot */
+void NeuronSelectionModel::showExactlyOneNeuronWithBackground(int ix)
+{
+    bool oldBlockSignals = signalsBlocked();
+    blockSignals(true);
+    showExactlyOneNeuron(ix);
+    QList<int> overlayList;
+    overlayList << DataFlowModel::BACKGROUND_MIP_INDEX;
+    showOverlays(overlayList);
+    blockSignals(oldBlockSignals);
+    emit multipleVisibilityChanged();
+}
+
+/* slot */
+void NeuronSelectionModel::showExactlyOneNeuronWithReference(int ix)
+{
+    bool oldBlockSignals = signalsBlocked();
+    blockSignals(true);
+    showExactlyOneNeuron(ix);
+    QList<int> overlayList;
+    overlayList << DataFlowModel::REFERENCE_MIP_INDEX;
+    showOverlays(overlayList);
+    blockSignals(oldBlockSignals);
+    emit multipleVisibilityChanged();
+}
+
+/* slot */
+void NeuronSelectionModel::showExactlyOneNeuronWithBackgroundAndReference(int ix)
+{
+    bool oldBlockSignals = signalsBlocked();
+    blockSignals(true);
+    showExactlyOneNeuron(ix);
+    QList<int> overlayList;
+    overlayList << DataFlowModel::REFERENCE_MIP_INDEX << DataFlowModel::BACKGROUND_MIP_INDEX;
+    showOverlays(overlayList);
+    blockSignals(oldBlockSignals);
     emit multipleVisibilityChanged();
 }
 

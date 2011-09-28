@@ -1768,7 +1768,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
   </action>
   <action name="actionSelect_None">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Select None</string>

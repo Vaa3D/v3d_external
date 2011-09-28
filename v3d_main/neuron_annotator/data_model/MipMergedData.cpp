@@ -43,32 +43,33 @@ void MipMergeLayer::update() // emits dataChanged()
 
 bool MipMergeLayer::copyChildState(MipMergeLayer * child)
 {
-    bool answer = false; // no change yet
+    bool bChanged = false; // no change yet
     if (child->getProxyIndex() != getProxyIndex()) {
         proxyIndex = child->getProxyIndex();
-        answer = true;
+        bChanged = true;
     }
     if (child->isVisible() != isVisible()) {
         setVisibility(child->isVisible());
-        answer = true;
+        bChanged = true;
     }
-    return answer;
+    return bChanged;
 }
 
 bool MipMergeLayer::updateWithoutSignal() // for manual full updates
 {
-    bool answer = false; // no change yet
+    // qDebug() << "MipMergeLayer::updateWithoutSignal()" << __FILE__ << __LINE__;
+    bool bChanged = false; // no change yet
     // Leaf nodes cannot be updated (or are always updated?)
     if ( (child1 == NULL) && (child2 == NULL) ) {
         // qDebug() << "Leaf node, no update";
-        return true; // not updated; this is a leaf
+        // return bChanged; // not updated; this is a leaf; but let's defer to end of method for consistency.
     }
     else if (child2 == NULL)
     {
         // Just one child?  No extra computation needed.
         // qDebug() << "Edge node, simple copy";
         if (copyChildState(child1))
-            answer = true;
+            bChanged = true;
     }
     else {
         // Two child nodes to combine
@@ -76,7 +77,7 @@ bool MipMergeLayer::updateWithoutSignal() // for manual full updates
             // Both child nodes invisible? So is this combined one.  Only compute isVisible flag.
             if (isVisible()) {
                 bIsVisible = false;
-                answer = true; // changed
+                bChanged = true; // changed
             }
             // qDebug() << "Invisible node";
         }
@@ -124,7 +125,7 @@ bool MipMergeLayer::updateWithoutSignal() // for manual full updates
                 }
             // qDebug() << "Merging mip layers" << destinationSlice << sourceSlice1 << sourceSlice2;
             bIsVisible = true;
-            answer = true;
+            bChanged = true;
             // TODO
         }
         else {
@@ -132,10 +133,11 @@ bool MipMergeLayer::updateWithoutSignal() // for manual full updates
             // qDebug() << "One visible child, simple copy";
             MipMergeLayer * child = child1;
             if (child2->isVisible()) child = child2;
-            copyChildState(child);
+            if (copyChildState(child))
+                bChanged = true;
         }
     }
-    return answer;
+    return bChanged;
 }
 
 
@@ -255,8 +257,12 @@ void MipMergedData::update()
                 for (int x = 0; x < fragmentZProxy.sx; ++x)
                 {
                     layerZProxy.put_at(x, y, z, 0, fragmentZProxy.value_at(x, y, z, 0));
-                    layerIntensityProxy.put_at(x, y, z, 0, fragmentIntensityProxy.value_at(x, y, z, 0));
-                    layerNeuronProxy.put_at(x, y, z, 0, z); // At leaf level neuron-index == slice-number
+                    double intensity = fragmentIntensityProxy.value_at(x, y, z, 0);
+                    layerIntensityProxy.put_at(x, y, z, 0, intensity);
+                    if (intensity == 0)
+                        layerNeuronProxy.put_at(x, y, z, 0, 0); // actually background
+                    else
+                        layerNeuronProxy.put_at(x, y, z, 0, z); // At leaf level neuron-index == slice-number
                     for (int c = 0; c < fragmentDataProxy.sc; ++c)
                         layerDataProxy.put_at(x, y, z, c,
                                               fragmentDataProxy.value_at(x, y, z, c));
@@ -290,7 +296,6 @@ void MipMergedData::update()
                 levelLayers << newLayer;
             }
         }
-        mergedIndex = nextSliceIndex - 1;
         // qDebug() << "mergedIndex = " << mergedIndex << layers.last();
         // Note that "layers" does not necessarily have the same number of elements as
         // layerZValues has slices.  "mergedIndex" is a slice number.
@@ -306,15 +311,15 @@ void MipMergedData::update()
     data_size += layerNeurons->getTotalBytes();
 
     updateNeuronVisibility();
-    qDebug() << "Setting up MipMergedData structure took " << stopwatch.elapsed() / 1000.0 << " seconds";
-    qDebug() << "MipMergedData consumes" << data_size / 1000.0 << "MB for" << layerNeuronProxy.sz / 2 << "neurons";
+    // qDebug() << "Setting up MipMergedData structure took " << stopwatch.elapsed() / 1000.0 << " seconds";
+    // qDebug() << "MipMergedData consumes" << data_size / 1000.0 << "MB for" << layerNeuronProxy.sz / 2 << "neurons";
 }
 
 void MipMergedData::toggleNeuronVisibility(int index, bool status) // update a single neuron, on neuronSelectionModel.neuronMaskUpdated, O(log nfrags)
 {
     QTime stopwatch;
     stopwatch.start();
-    // qDebug() << "MipMergedData::toggleNeuronVisibility" << index << status;
+    // qDebug() << "MipMergedData::toggleNeuronVisibility" << index << status << __FILE__ << __LINE__;
     int ix = index + 1; // layers has background layer at zero
     if (ix < 0) return;
     if (ix > layers.size()) return;
@@ -351,6 +356,7 @@ void MipMergedData::toggleOverlayVisibility(int index, bool status)
 
 void MipMergedData::updateNeuronVisibility() // remerge all neurons O(nfrags), on neuronSelectionModel.visibilityChanged? or dirty partial update.
 {
+    // qDebug() << "MipMergedData::updateNeuronVisibility()" << __FILE__ << __LINE__;
     {
         // Even if we cannot get the current visibilities, it might be worth updating the tree anyway
         NeuronSelectionModel::Reader selectionReader(neuronSelectionModel);
@@ -365,11 +371,13 @@ void MipMergedData::updateNeuronVisibility() // remerge all neurons O(nfrags), o
                 layers[0]->setVisibility(overlayList[DataFlowModel::BACKGROUND_MIP_INDEX]);
                 bShowReferenceChannel = overlayList[DataFlowModel::REFERENCE_MIP_INDEX];
             }
+            // qDebug() << "MipMergedData::updateNeuronVisibility()" << __FILE__ << __LINE__;
         }
     } // release read lock
     {
         Writer writer(*this);
         recomputeLayerTree();
+        // qDebug() << "MipMergedData::updateNeuronVisibility()" << __FILE__ << __LINE__;
     } // release locks
 
     colorizeImage();
@@ -377,7 +385,7 @@ void MipMergedData::updateNeuronVisibility() // remerge all neurons O(nfrags), o
 
 void MipMergedData::colorizeImage() // on dataColorModel.dataChanged, or mergedImage change
 {
-    // qDebug() << "Updating mip colors";
+    // qDebug() << "MipMergedData::colorizeImage()" << __FILE__ << __LINE__;
     bool success = false;
     {
         Writer writer(*this);
@@ -395,13 +403,17 @@ bool MipMergedData::recomputeLayerTree()
     for (int i = 0; i < layers.size(); ++i)
     {
         layers[i]->updateWithoutSignal();
+        // qDebug() << "MipMergedData::recomputeLayerTree()"
+        //        << i << layers[i]->isVisible() << layers[i]->getIndex() << layers[i]->getProxyIndex()
+        //        << __FILE__ << __LINE__;
     }
-    qDebug() << "Computing full mip layer tree took" << stopwatch.elapsed() / 1000.0 << "seconds";
+    // qDebug() << "Computing full mip layer tree took" << stopwatch.elapsed() / 1000.0 << "seconds";
     return true;
 }
 
 bool MipMergedData::computeMergedImage()
 {
+    // qDebug() << "MipMergedData::computeMergedImage()" << __FILE__ << __LINE__;
     // Must have 16 bit data before we can compute color data.
     if (!layerZValues) return false;
 
@@ -416,33 +428,56 @@ bool MipMergedData::computeMergedImage()
     if (! fragmentReader.hasReadLock()) return false;
     const Image4DProxy<My4DImage>& intensityProxy = fragmentReader.getIntensityProxy();
 
-    if (mergedImage) {
-        delete mergedImage;
-        mergedImage = NULL;
-    }
-
     int sx = layerZProxy.sx;
     int sy = layerZProxy.sy;
     int sc = layerDataProxy.sc;
+
+    if (mergedImage && (mergedImage->size() != QSize(sx, sy)))
+    {
+        delete mergedImage;
+        mergedImage = NULL;
+    }
+    if (!mergedImage)
+        mergedImage = new QImage(sx, sy, QImage::Format_RGB32);
+
     int refIndex = intensityProxy.sz - 1;
     std::vector<double> channelIntensities(sc + 1, 0.0); // nFrags plus reference
     channelIntensities[sc] = 0; // punt reference for the moment
-    mergedImage = new QImage(sx, sy, QImage::Format_RGB32);
     mergedImage->fill(qRgb(0, 0, 0));
+    bool bShowNeurons = layers.last()->isVisible(); // all neurons plus background might be hidden
+    int proxyIndex = layers.last()->getProxyIndex(); // the layer with the actual image data
+    // qDebug() << "proxyIndex =" << proxyIndex;
     for (int y = 0; y < sy; ++y)
         for (int x = 0; x < sx; ++x)
         {
+            channelIntensities.assign(sc + 1, 0.0);
             if (bShowReferenceChannel)
                 channelIntensities[sc] = intensityProxy.value_at(x, y, refIndex, 0);
-            for (int c = 0; c < sc; ++c)
-                channelIntensities[c] = layerDataProxy.value_at(x, y, mergedIndex, c);
+            if (bShowNeurons) {
+                for (int c = 0; c < sc; ++c)
+                    channelIntensities[c] = layerDataProxy.value_at(x, y, proxyIndex, c);
+            }
             QRgb color = colorReader.blend(&channelIntensities[0]);
             mergedImage->setPixel(x, y, color);
         }
     // qDebug() << "Colorizing merged mip took" << stopwatch.elapsed() / 1000.0 << "seconds"; // 22ms for 512x512
+    // qDebug() << "MipMergedData::computeMergedImage()" << __FILE__ << __LINE__;
 
     return true;
 }
+
+
+///////////////////////////////////
+// MipMergedData::Reader methods //
+///////////////////////////////////
+
+int MipMergedData::Reader::getMergedImageLayerIndex()
+{
+    if (mipMergedData.layers.size() < 1)
+        return -1;
+    return mipMergedData.layers.last()->getProxyIndex();
+}
+
 
 ///////////////////////////////////
 // MipMergedData::Writer methods //

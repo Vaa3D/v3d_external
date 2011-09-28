@@ -721,6 +721,8 @@ void Na3DWidget::onVolumeDataChanged()
         _idep = new iDrawExternalParameter();
     }
 
+    RendererNeuronAnnotator* rend = NULL;
+    bool bSucceeded = true;
     {
         NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
         if (! volumeReader.hasReadLock()) return;
@@ -739,16 +741,30 @@ void Na3DWidget::onVolumeDataChanged()
         updateDefaultScale();
         resetView();
         updateCursor();
-        RendererNeuronAnnotator* rend = getRendererNa();
-        if (! getRendererNa()->populateNeuronMaskAndReference(volumeReader))
+        rend = getRendererNa();
+        if (! getRendererNa()->populateNeuronMaskAndReference(volumeReader)) {
             qDebug() << "RendererNeuronAnnotator::populateNeuronMaskAndReference() failed";
-        makeCurrent(); // Make sure subsequent OpenGL calls go here. (might make no difference here)
-        if (rend != getRendererNa()) return; // stale
-        if (! getRendererNa()->initializeTextureMasks())
-            qDebug() << "RendererNeuronAnnotator::initializeTextureMasks() failed";
-    } // release locks
+            bSucceeded = false;
+        }
+    } // release locks before emit
+    if (! bSucceeded)
+    {
+        emit progressAborted("");
+        return;
+    }
+    makeCurrent(); // Make sure subsequent OpenGL calls go here. (might make no difference here)
+    if (rend != getRendererNa()) {
+        emit progressAborted("");
+        return; // stale
+    }
+    if (! getRendererNa()->initializeTextureMasks()) {
+        qDebug() << "RendererNeuronAnnotator::initializeTextureMasks() failed";
+        emit progressAborted("");
+        return;
+    }
     resetVolumeBoundary();
     setThickness(dataFlowModel->getZRatio());
+    emit progressComplete();
     update();
 }
 

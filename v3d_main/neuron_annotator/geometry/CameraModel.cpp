@@ -3,7 +3,11 @@
 CameraModel::CameraModel()
     : m_scale(1.0)
     , m_focusPosition(0, 0, 0)
-{}
+{
+    connect(this, SIGNAL(focusChanged(Vector3D)), this, SIGNAL(viewChanged()));
+    connect(this, SIGNAL(rotationChanged(Rotation3D)), this, SIGNAL(viewChanged()));
+    connect(this, SIGNAL(scaleChanged(qreal)), this, SIGNAL(viewChanged()));
+}
 
 void CameraModel::setFocus(const Vector3D& v)
 {

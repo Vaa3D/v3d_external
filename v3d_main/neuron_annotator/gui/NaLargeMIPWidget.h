@@ -7,6 +7,7 @@
 #include <QPainter>
 #include "Na2DViewer.h"
 #include "MouseClickManager.h"
+#include "NeuronContextMenu.h"
 
 
 // Large maximum intensity projection viewer for Neuron Annotator
@@ -27,7 +28,7 @@ public:
     virtual void resizeEvent(QResizeEvent * event);
     int neuronAt(const QPoint& p) const;
     bool saveImage(QString filename);
-    void setContextMenus(QMenu* viewerMenu, QMenu* neuronMenu);
+    void setContextMenus(QMenu* viewerMenu, NeuronContextMenu* neuronMenu);
     void setMipMergedData(const MipMergedData& mipMergedDataParam)
     {
         mipMergedData = &mipMergedDataParam;
@@ -70,7 +71,7 @@ protected:
     int highlightedNeuronIndex;
     const MipMergedData * mipMergedData;
     QMenu* viewerContextMenu;
-    QMenu* neuronContextMenu;
+    NeuronContextMenu* neuronContextMenu;
 
 private:
     typedef Na2DViewer super;

@@ -65,6 +65,10 @@ public slots:
     void showFirstSelectedNeuron();
     void showAllNeuronsInEmptySpace();
     void showNothing();
+    void showExactlyOneNeuronInEmptySpace(int);
+    void showExactlyOneNeuronWithBackground(int);
+    void showExactlyOneNeuronWithReference(int);
+    void showExactlyOneNeuronWithBackgroundAndReference(int);
     // Selection
     void selectExactlyOneNeuron(int index);
     void clearSelection();

@@ -32,13 +32,15 @@ NaLargeMIPWidget::NaLargeMIPWidget(QWidget * parent)
             this, SLOT(onHighlightedNeuronChanged(int)));
     connect(this, SIGNAL(mouseLeftDragEvent(int, int, QPoint)),
             this, SLOT(translateImage(int,int)));
+
+    connect(&cameraModel, SIGNAL(viewChanged()), this, SLOT(update()));
 }
 
 NaLargeMIPWidget::~NaLargeMIPWidget()
 {
 }
 
-void NaLargeMIPWidget::setContextMenus(QMenu* viewerMenu, QMenu* neuronMenu)
+void NaLargeMIPWidget::setContextMenus(QMenu* viewerMenu, NeuronContextMenu* neuronMenu)
 {
     if (viewerMenu) {
         viewerContextMenu = viewerMenu;
@@ -54,16 +56,14 @@ void NaLargeMIPWidget::setContextMenus(QMenu* viewerMenu, QMenu* neuronMenu)
 /* slot */
 void NaLargeMIPWidget::showContextMenu(QPoint point)
 {
-    int neuronIx = neuronAt(point);
+    // Myers index (GUI index) is one less than the volume label field index
+    int neuronMyersIx = neuronAt(point);
     // qDebug() << "context menu for neuron" << neuronIx;
     // -1 means click outside of volume
     // 0 means background
-    // >=1 means neuron fragment with Murphy index neuronIx-1
-    if (neuronIx >= 1) { // neuron clicked
-        QAction* act = neuronContextMenu->exec(mapToGlobal(point));
-        NeuronQAction* nact = dynamic_cast<NeuronQAction*>(act);
-        if (nact)
-            nact->triggerWithIndex(neuronIx);
+    // >=1 means neuron fragment with  index neuronIx-1
+    if (neuronMyersIx >= 0) { // neuron clicked
+        neuronContextMenu->exec(mapToGlobal(point), neuronMyersIx);
     }
     else {
         // non neuron case
@@ -93,9 +93,9 @@ void NaLargeMIPWidget::initializePixmap()
 // Want to distinguish between double click and single click events
 void NaLargeMIPWidget::onMouseSingleClick(QPoint pos)
 {
-    int neuronIx = neuronAt(pos);
-    if (neuronIx > 0) {
-        emit neuronClicked(neuronIx);
+    int neuronMyersIx = neuronAt(pos);
+    if (neuronMyersIx >= 0) {
+        emit neuronClicked(neuronMyersIx);
         // qDebug() << "clicked Neuron " << neuronAt(pos);
     }
 }
@@ -274,6 +274,8 @@ int NaLargeMIPWidget::neuronAt(const QPoint& p) const
 
     const Image4DProxy<My4DImage>& neuronProxy = mipReader.getLayerNeuronProxy();
     int z = mipReader.getMergedImageLayerIndex();
+    if (z < 0) return answer;
+    if (z >= neuronProxy.sz) return answer;
 
     QPointF v_img = X_img_view * QPointF(p);
     int x = v_img.x();
@@ -282,7 +284,7 @@ int NaLargeMIPWidget::neuronAt(const QPoint& p) const
     if (y < 0) return answer;
     if (x >= neuronProxy.sx) return answer;
     if (y >= neuronProxy.sy) return answer;
-    answer = neuronProxy.value_at(x, y, z, 0);
+    answer = neuronProxy.value_at(x, y, z, 0) - 1; // -1 : volume labelfield index to Myers index
     return answer;
 }
 
@@ -330,7 +332,7 @@ void NaLargeMIPWidget::mouseMoveEvent(QMouseEvent * event)
                 value += QString("%1").arg(val, 4);
             }
             if (nC > 1) value += "]";
-            neuronIx = neuronProxy.value_at(x, y, mergeIndex, 0);
+            neuronIx = neuronProxy.value_at(x, y, mergeIndex, 0) - 1;
         }
 
         QString msg;
@@ -341,8 +343,8 @@ void NaLargeMIPWidget::mouseMoveEvent(QMouseEvent * event)
                       .arg(value);
 
 
-        if (neuronIx > 0) { // Zero means background
-            msg = QString("Neuron %1; ").arg(neuronIx, 2) + msg;
+        if (neuronIx >= 0) { // Zero means background in label field, so -1 in Myers index
+            msg = QString("Neuron fragment %1; ").arg(neuronIx, 2) + msg;
             if (neuronIx != highlightedNeuronIndex) {
                 highlightedNeuronIndex = neuronIx;
                 emit(hoverNeuronChanged(neuronIx));

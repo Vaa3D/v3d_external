@@ -54,7 +54,6 @@ protected:
     Image4DProxy<My4DImage> layerDataProxy;
     Image4DProxy<My4DImage> layerNeuronProxy;
     QList<MipMergeLayer*> layers;
-    int mergedIndex; // Z-coordinate index of final merged image
     bool bShowReferenceChannel;
     QImage * mergedImage; // colorized output image
 
@@ -67,7 +66,7 @@ public:
             , mipMergedData(mipMergedDataParam)
         {}
 
-        int getMergedImageLayerIndex() {return mipMergedData.mergedIndex;}
+        int getMergedImageLayerIndex();
         const Image4DProxy<My4DImage>& getLayerDataProxy() {return mipMergedData.layerDataProxy;}
         const Image4DProxy<My4DImage>& getLayerNeuronProxy() {return mipMergedData.layerNeuronProxy;}
         const Image4DProxy<My4DImage>& getLayerZProxy() {return mipMergedData.layerZProxy;}
