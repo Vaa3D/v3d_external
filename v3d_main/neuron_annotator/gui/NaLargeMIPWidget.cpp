@@ -33,7 +33,8 @@ NaLargeMIPWidget::NaLargeMIPWidget(QWidget * parent)
     connect(this, SIGNAL(mouseLeftDragEvent(int, int, QPoint)),
             this, SLOT(translateImage(int,int)));
 
-    connect(&cameraModel, SIGNAL(viewChanged()), this, SLOT(update()));
+    connect(&cameraModel, SIGNAL(focusChanged(Vector3D)), this, SLOT(update()));
+    connect(&cameraModel, SIGNAL(scaleChanged(qreal)), this, SLOT(update()));
 }
 
 NaLargeMIPWidget::~NaLargeMIPWidget()

@@ -12,6 +12,7 @@ class QSizeF;
 class QRectF;
 
 #include "Na2DViewer.h"
+#include "NeuronContextMenu.h"
 
 // NaZStackWidget is a viewer for successive slices of a 3D volume.
 // NaZStackWidget is based on HDRViewer class created by Yang Yu,
@@ -33,23 +34,13 @@ public:
 
     NaZStackWidget(QWidget* parent);
     virtual ~NaZStackWidget();
-
-    void setZSliceColors(const ZSliceColors * zSliceColorsParam) {
-        zSliceColors = zSliceColorsParam;
-        connect(zSliceColors, SIGNAL(dataChanged()),
-                this, SLOT(updatePixmap()));
-    }
-
-    void setVolumeData(const NaVolumeData * volumeDataParam) {
-        volumeData = volumeDataParam;
-        connect(volumeData, SIGNAL(dataChanged()),
-                this, SLOT(updateVolumeParameters()));
-    }
-
+    void setContextMenus(QMenu* viewerMenu, NeuronContextMenu* neuronMenu);
+    int neuronAt(const QPoint& point) const;
+    void setZSliceColors(const ZSliceColors * zSliceColorsParam);
+    void setVolumeData(const NaVolumeData * volumeDataParam);
     void paintEvent(QPaintEvent *event);
     // ROI controller functions
     void drawROI(QPainter *painter);
-
     void enterEvent (QEvent * e); // mouse found
     void mouseLeftButtonPressEvent(QMouseEvent *e);
     void mouseRightButtonPressEvent(QMouseEvent *e);
@@ -57,31 +48,18 @@ public:
     void mouseMoveEvent (QMouseEvent * e); // mouse move
     void mousePressEvent(QMouseEvent *e); // mouse button press
     void mouseReleaseEvent(QMouseEvent * e); // mouse button release
-
     void setSquarePos(const QPointF &pos);
     QRectF rectangle_around(const QPointF &p, const QSizeF &size = QSize(25, 25));
     bool checkROIchanged();
     int getCurrentZSlice(); // 1-based slice index
     int getCurrentBoxSize();
-
     // Convert between image data coordinates and screen coordinates.
     //  * scale by scale_x, scale_y
     //  * translate so image_focus_[xy] is in center of viewport
     //  * shift by one pixel so image[0,0] maps to viewport[1,1]
-    QPointF viewportXYToImageXY(float vx, float vy)
-    {
-        return X_img_view * QPointF(vx, vy);
-    }
-    QPoint viewportXYToImageXY(const QPoint& vp)
-    {
-        QPointF ipf = viewportXYToImageXY(vp.x(), vp.y());
-        return QPoint(int(ipf.x()), int(ipf.y()));
-    }
-    QPointF imageXYToViewportXY(float ix, float iy)
-    {
-        return X_view_img * QPointF(ix, iy);
-    }
-
+    QPointF viewportXYToImageXY(float vx, float vy);
+    QPoint viewportXYToImageXY(const QPoint& vp);
+    QPointF imageXYToViewportXY(float ix, float iy);
     void recordColorChannelROIPos();
 
 public slots:
@@ -97,6 +75,7 @@ public slots:
     void setHDRCheckState(int state);
     void updateVolumeParameters();
     void updateHDRView();
+    void showContextMenu(QPoint);
 
 signals:
     void curZsliceChanged(int);
@@ -104,6 +83,7 @@ signals:
     void boxSizeChanged(int boxSize);
     void changedHDRCheckState(bool state);
     void hdrRangeChanged(int channel, qreal min, qreal max);
+    void statusMessage(const QString&);
 
 protected slots:
     void onMouseLeftDragEvent(int dx, int dy, QPoint pos);
@@ -155,6 +135,9 @@ protected:
     // on/off HDR filter
     bool runHDRFILTER;
     bool hdrfiltered[NCLRCHNNL];
+
+    QMenu* viewerContextMenu;
+    NeuronContextMenu* neuronContextMenu;
 
 private:
     typedef Na2DViewer super;

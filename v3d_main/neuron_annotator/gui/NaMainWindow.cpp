@@ -114,6 +114,8 @@ NaMainWindow::NaMainWindow()
     // Status bar message
     connect(ui.naLargeMIPWidget, SIGNAL(statusMessage(const QString&)),
             statusBar(), SLOT(showMessage(const QString&)));
+    connect(ui.naZStackWidget, SIGNAL(statusMessage(const QString&)),
+            statusBar(), SLOT(showMessage(const QString&)));
     ui.progressWidgetMip->hide();
     connect(ui.naLargeMIPWidget, SIGNAL(showProgress()),
             ui.progressWidgetMip, SLOT(show()));
@@ -291,6 +293,7 @@ void NaMainWindow::initializeContextMenus()
     neuronContextMenu->addAction(selectNoneAction);
     //
     ui.naLargeMIPWidget->setContextMenus(viewerContextMenu, neuronContextMenu);
+    ui.naZStackWidget->setContextMenus(viewerContextMenu, neuronContextMenu);
 }
 
 /* slot */

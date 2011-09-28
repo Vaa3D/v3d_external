@@ -16,6 +16,8 @@ NaZStackWidget::NaZStackWidget(QWidget * parent)
     , cur_z(-1)
     , sx(0), sy(0), sz(0), sc(0)
     , runHDRFILTER(false)
+    , viewerContextMenu(NULL)
+    , neuronContextMenu(NULL)
 {
     translateMouse_scale = 1;
 
@@ -54,6 +56,88 @@ NaZStackWidget::NaZStackWidget(QWidget * parent)
 }
 
 NaZStackWidget::~NaZStackWidget() {}
+
+void NaZStackWidget::setContextMenus(QMenu* viewerMenuParam, NeuronContextMenu* neuronMenuParam)
+{
+    if (viewerMenuParam) {
+        viewerContextMenu = viewerMenuParam;
+    }
+    if (neuronMenuParam) {
+        neuronContextMenu = neuronMenuParam;
+    }
+    setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this, SIGNAL(customContextMenuRequested(QPoint)),
+            this, SLOT(showContextMenu(QPoint)));
+}
+
+/* slot */
+void NaZStackWidget::showContextMenu(QPoint point)
+{
+    // Myers index (GUI index) is one less than the volume label field index
+    int neuronMyersIx = neuronAt(point);
+    // qDebug() << "context menu for neuron" << neuronIx;
+    // -1 means click outside of volume
+    // 0 means background
+    // >=1 means neuron fragment with  index neuronIx-1
+    if (neuronMyersIx >= 0) { // neuron clicked
+        neuronContextMenu->exec(mapToGlobal(point), neuronMyersIx);
+    }
+    else {
+        // non neuron case
+        viewerContextMenu->exec(mapToGlobal(point));
+    }
+}
+
+int NaZStackWidget::neuronAt(const QPoint& point) const
+{
+    QPointF v_img = X_img_view * QPointF(point);
+    int x = v_img.x();
+    int y = v_img.y();
+    int z = cur_z;
+    int neuronIx = -1;
+    if (! volumeData) return neuronIx;
+    NaVolumeData::Reader volumeReader(*volumeData);
+    if ( !volumeReader.hasReadLock()) return neuronIx;
+    const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
+    if (   (x < 0) || (x >= neuronProxy.sx)
+        || (y < 0) || (y >= neuronProxy.sy)
+        || (z < 0) || (z >= neuronProxy.sz) )
+    return neuronIx;
+    neuronIx = neuronProxy.value_at(x, y, z, 0) - 1;
+    return neuronIx;
+}
+
+void NaZStackWidget::setZSliceColors(const ZSliceColors * zSliceColorsParam) {
+    zSliceColors = zSliceColorsParam;
+    connect(zSliceColors, SIGNAL(dataChanged()),
+            this, SLOT(updatePixmap()));
+}
+
+void NaZStackWidget::setVolumeData(const NaVolumeData * volumeDataParam) {
+    volumeData = volumeDataParam;
+    connect(volumeData, SIGNAL(dataChanged()),
+            this, SLOT(updateVolumeParameters()));
+}
+
+// Convert between image data coordinates and screen coordinates.
+//  * scale by scale_x, scale_y
+//  * translate so image_focus_[xy] is in center of viewport
+//  * shift by one pixel so image[0,0] maps to viewport[1,1]
+QPointF NaZStackWidget::viewportXYToImageXY(float vx, float vy)
+{
+    return X_img_view * QPointF(vx, vy);
+}
+
+QPoint NaZStackWidget::viewportXYToImageXY(const QPoint& vp)
+{
+    QPointF ipf = viewportXYToImageXY(vp.x(), vp.y());
+    return QPoint(int(ipf.x()), int(ipf.y()));
+}
+
+QPointF NaZStackWidget::imageXYToViewportXY(float ix, float iy)
+{
+    return X_view_img * QPointF(ix, iy);
+}
 
 /* slot */
 void NaZStackWidget::updateVolumeParameters()
@@ -360,8 +444,49 @@ static bool downRightDragR = true;
 void NaZStackWidget::mouseMoveEvent (QMouseEvent * e) // mouse move
 {
     super::mouseMoveEvent(e);
-    if (Qt::NoButton == e->buttons()) {
+    if (Qt::NoButton == e->buttons())
+    {
         // hover, not drag
+        // Hover to show ([neuron], x, y, z, value) in status bar
+        QPointF v_img = X_img_view * QPointF(e->pos());
+        int x = v_img.x();
+        int y = v_img.y();
+        int z = cur_z;
+        int neuronIx = -1;
+        QString value("<None>"); // default value
+        if (volumeData)
+        {
+            NaVolumeData::Reader volumeReader(*volumeData);
+            if (volumeReader.hasReadLock()) {
+                const Image4DProxy<My4DImage>& dataProxy = volumeReader.getOriginalImageProxy();
+                const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
+                if (   (x >= 0) && (x < dataProxy.sx)
+                    && (y >= 0) && (y < dataProxy.sy)
+                    && (z >= 0) && (z < dataProxy.sz) )
+                {
+                    value = "";
+                    int nC = dataProxy.sc;
+                    if (nC > 1) value += "[";
+                    for (int c = 0; c < nC; ++c) {
+                        if (c > 0) value += ", ";
+                        float val = dataProxy.value_at(x, y, z, c);
+                        value += QString("%1").arg(val, 4);
+                    }
+                    if (nC > 1) value += "]";
+                    neuronIx = neuronProxy.value_at(x, y, z, 0) - 1;
+                }
+            }
+        }
+        QString msg = QString("x =%1, y =%2, z =%3, value =%4")
+                      .arg(x, 3)
+                      .arg(y, 3)
+                      .arg(z, 3)
+                      .arg(value);
+        if (neuronIx >= 0) { // Zero means background in label field, so -1 in Myers index
+            msg = QString("Neuron fragment %1; ").arg(neuronIx, 2) + msg;
+        }
+        emit statusMessage(msg);
+
         return;
     }
     if (bMouseCurorIn)
