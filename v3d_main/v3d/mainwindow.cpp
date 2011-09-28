@@ -694,7 +694,7 @@ void MainWindow::customToolbar()
 
 			foreach(CustomToolbarSetting* cts, settingList)
 			{
-				CustomToolbar * ct = new CustomToolbar(cts, this->pluginLoader, this);
+				CustomToolbar * ct = new CustomToolbar(cts, this->pluginLoader, 0/*this*/);
 				if(!ct->showToMainWindow(this)) ct->show();
 			}
 		}
@@ -703,7 +703,7 @@ void MainWindow::customToolbar()
 	{
         QString barTitle = bar_num > 1 ? QObject::tr("Custom Toolbar - %1").arg(bar_num) : QObject::tr("Custom Toolbar");
 
-        CustomToolbar * ct = new CustomToolbar(barTitle, this->pluginLoader, this);
+        CustomToolbar * ct = new CustomToolbar(barTitle, this->pluginLoader, 0/*this*/);
 
         if(!ct->showToMainWindow(this)) ct->show();
 
@@ -1915,7 +1915,7 @@ void MainWindow::createActions()
 #ifdef __v3d_custom_toolbar__
 	// Custom toolbar, By Hang 06-Aug-2011
 	customToolbarAct = new QAction(QIcon(":pic/customize.png"), tr("&Customize a toolbar"), this);
-	customToolbarAct->setShortcut(tr("Ctrl+C"));
+	//customToolbarAct->setShortcut(tr("Ctrl+C"));
 	customToolbarAct->setStatusTip(tr("Customize a toolbar"));
 	connect(customToolbarAct, SIGNAL(triggered()), this, SLOT(customToolbar()));
 #endif
