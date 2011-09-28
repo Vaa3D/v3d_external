@@ -7,6 +7,9 @@
 
 using namespace std;
 
+const unsigned char RE_TRIGGER_CODE=249;
+const int RE_CUBE_SIZE=6;
+
 ImageLoader::ImageLoader()
 {
 }
@@ -48,19 +51,28 @@ bool ImageLoader::execute() {
     stopwatch.start();
 
     for (int i=0;i<inputFileList.size();i++) {
-        My4DImage* image=loadImage(inputFileList.at(i));
+        My4DImage* image=0;
+        if (inputFileList.at(i).endsWith(".v3dvre")) {
+            if (loadRaw2StackRE(inputFileList.at(i).toAscii().data(), image)!=0) {
+                qDebug() << "Error with loadRaw2StackRE";
+                return false;
+            }
+        } else {
+            image=loadImage(inputFileList.at(i));
+            QString filePrefix=getFilePrefix(inputFileList.at(i));
+            QString saveFilepath=filePrefix.append(".v3dvre");
+            V3DLONG sz[4];
+            sz[0] = image->getXDim();
+            sz[1] = image->getYDim();
+            sz[2] = image->getZDim();
+            sz[3] = image->getCDim();
+            unsigned char**** data = (unsigned char****)image->getData();
+            saveStack2RawRE(saveFilepath.toAscii().data(), data, sz, image->getDatatype());
+        }
         if (image!=0) {
             imageList.append(image);
         }
-        QString filePrefix=getFilePrefix(inputFileList.at(i));
-        QString saveFilepath=filePrefix.append(".v3dvre");
-        V3DLONG sz[4];
-        sz[0] = image->getXDim();
-        sz[1] = image->getYDim();
-        sz[2] = image->getZDim();
-        sz[3] = image->getCDim();
-        unsigned char**** data = (unsigned char****)image->getData();
-        saveStack2RawRE(saveFilepath.toAscii().data(), data, sz, image->getDatatype());
+
         //image->saveImage(saveFilepath.toAscii().data());
     }
 
@@ -113,7 +125,6 @@ int ImageLoader::saveStack2RawRE(const char * filename, unsigned char**** data, 
 {
     int berror=0;
 
-    const int CUBE_SIZE=6;
 
     if (datatype!=1) {
         printf("saveStack2RawRE : Only datatype 1 is supported\n");
@@ -218,11 +229,11 @@ int ImageLoader::saveStack2RawRE(const char * filename, unsigned char**** data, 
         V3DLONG zSize = sz[2];
         V3DLONG cSize = sz[3];
 
-        V3DLONG xCube = (xSize/CUBE_SIZE) + 1;
-        V3DLONG yCube = (ySize/CUBE_SIZE) + 1;
-        V3DLONG zCube = (zSize/CUBE_SIZE) + 1;
+        V3DLONG xCube = (xSize/RE_CUBE_SIZE) + 1;
+        V3DLONG yCube = (ySize/RE_CUBE_SIZE) + 1;
+        V3DLONG zCube = (zSize/RE_CUBE_SIZE) + 1;
 
-        V3DLONG cubeSize3=CUBE_SIZE*CUBE_SIZE*CUBE_SIZE;
+        V3DLONG cubeSize3=RE_CUBE_SIZE*RE_CUBE_SIZE*RE_CUBE_SIZE;
 
         unsigned char * cubeBuffer = new unsigned char [cubeSize3];
         //int cubeSize=0;
@@ -241,18 +252,18 @@ int ImageLoader::saveStack2RawRE(const char * filename, unsigned char**** data, 
                         }
 
                         // Populate buffer for current cube
-                        V3DLONG zStart=zc*CUBE_SIZE;
-                        V3DLONG yStart=yc*CUBE_SIZE;
-                        V3DLONG xStart=xc*CUBE_SIZE;
+                        V3DLONG zStart=zc*RE_CUBE_SIZE;
+                        V3DLONG yStart=yc*RE_CUBE_SIZE;
+                        V3DLONG xStart=xc*RE_CUBE_SIZE;
 
                         i=0L;
 
                         ////printf("Inner loop start : zStart=%d  yStart=%d  xStart=%d\n", zStart, yStart, xStart);
                         fflush(stdout);
 
-                        for (V3DLONG z=zStart;z<zStart+CUBE_SIZE;z++) {
-                            for (V3DLONG y=yStart;y<yStart+CUBE_SIZE;y++) {
-                                for (V3DLONG x=xStart;x<xStart+CUBE_SIZE;x++) {
+                        for (V3DLONG z=zStart;z<zStart+RE_CUBE_SIZE;z++) {
+                            for (V3DLONG y=yStart;y<yStart+RE_CUBE_SIZE;y++) {
+                                for (V3DLONG x=xStart;x<xStart+RE_CUBE_SIZE;x++) {
                                     if (z<zSize && y<ySize && x<xSize && i<cubeSize3) {
                                         //printf("Adding cubeBuffer entry i=%d  z=%d  y=%d  x=%d\n", i, z, y, x);
                                         cubeBuffer[i++] = data[cc][z][y][x];
@@ -314,7 +325,6 @@ int ImageLoader::saveStack2RawRE(const char * filename, unsigned char**** data, 
 
 // We assume here that preBuffer is
 V3DLONG ImageLoader::compressCubeBuffer(unsigned char * imgRe, unsigned char * preBuffer, V3DLONG bufferLength, V3DLONG spaceLeft) {
-    const unsigned char RE_TRIGGER_CODE=249;
     bool debug=false;
     V3DLONG p=0;
 
@@ -496,6 +506,314 @@ V3DLONG ImageLoader::compressCubeBuffer(unsigned char * imgRe, unsigned char * p
 
     }
     return p;
+}
+
+
+int ImageLoader::loadRaw2StackRE(char * filename, My4DImage * & image)
+{
+        int berror = 0;
+
+        QTime stopwatch;
+        stopwatch.start();
+
+        int datatype;
+
+        FILE * fid = fopen(filename, "rb");
+        if (!fid)
+        {
+                printf("Fail to open file for reading.\n");
+                berror = 1;
+                return berror;
+        }
+
+        fseek (fid, 0, SEEK_END);
+        V3DLONG fileSize = ftell(fid);
+        rewind(fid);
+
+        /* Read header */
+
+        char formatkey[] = "v3d_volume_runleng_encod";
+        V3DLONG lenkey = strlen(formatkey);
+
+#ifndef _MSC_VER //added by PHC, 2010-05-21
+        if (fileSize<lenkey+2+4*4+1) // datatype has 2 bytes, and sz has 4*4 bytes and endian flag has 1 byte.
+        {
+                printf("The size of your input file is too small and is not correct, -- it is too small to contain the legal header.\n");
+                printf("The fseek-ftell produces a file size = %ld.", fileSize);
+                berror = 1;
+                return berror;
+        }
+#endif
+
+        char * keyread = new char [lenkey+1];
+        if (!keyread)
+        {
+                printf("Fail to allocate memory.\n");
+                berror = 1;
+                return berror;
+        }
+        V3DLONG nread = fread(keyread, 1, lenkey, fid);
+        if (nread!=lenkey)
+        {
+                printf("File unrecognized or corrupted file.\n");
+                berror = 1;
+                return berror;
+        }
+        keyread[lenkey] = '\0';
+
+        V3DLONG i;
+        if (strcmp(formatkey, keyread)) /* is non-zero then the two strings are different */
+        {
+                printf("Unrecognized file format.\n");
+                if (keyread) {delete []keyread; keyread=0;}
+                berror = 1;
+                return berror;
+        }
+
+        char endianCodeData;
+        fread(&endianCodeData, 1, 1, fid);
+        if (endianCodeData!='B' && endianCodeData!='L')
+        {
+                printf("This program only supports big- or little- endian but not other format. Check your data endian.\n");
+                berror = 1;
+                if (keyread) {delete []keyread; keyread=0;}
+                return berror;
+        }
+
+        char endianCodeMachine;
+        endianCodeMachine = checkMachineEndian();
+        if (endianCodeMachine!='B' && endianCodeMachine!='L')
+        {
+                printf("This program only supports big- or little- endian but not other format. Check your data endian.\n");
+                berror = 1;
+                if (keyread) {delete []keyread; keyread=0;}
+                return berror;
+        }
+
+        int b_swap = (endianCodeMachine==endianCodeData)?0:1;
+
+        short int dcode = 0;
+        fread(&dcode, 2, 1, fid); /* because I have already checked the file size to be bigger than the header, no need to check the number of actual bytes read. */
+        if (b_swap)
+                swap2bytes((void *)&dcode);
+
+        switch (dcode)
+        {
+                case 1:
+                        datatype = 1; /* temporarily I use the same number, which indicates the number of bytes for each data point (pixel). This can be extended in the future. */
+                        break;
+
+                case 2:
+                        datatype = 2;
+                        break;
+
+                case 4:
+                        datatype = 4;
+                        break;
+
+                default:
+                        printf("Unrecognized data type code [%d]. The file type is incorrect or this code is not supported in this version.\n", dcode);
+                        if (keyread) {delete []keyread; keyread=0;}
+                                berror = 1;
+                        return berror;
+        }
+
+        if (datatype!=1) {
+            printf("ImageLoader::loadRaw2StackRE : only datatype=1 supported\n");
+            berror=1;
+            return berror;
+        }
+
+        V3DLONG unitSize = datatype; // temporarily I use the same number, which indicates the number of bytes for each data point (pixel). This can be extended in the future.
+
+        BIT32_UNIT mysz[4];
+        mysz[0]=mysz[1]=mysz[2]=mysz[3]=0;
+        int tmpn=fread(mysz, 4, 4, fid); // because I have already checked the file size to be bigger than the header, no need to check the number of actual bytes read.
+        if (tmpn!=4)
+        {
+                printf("This program only reads [%d] units.\n", tmpn);
+                berror=1;
+                return berror;
+        }
+        if (b_swap)
+        {
+                for (i=0;i<4;i++)
+                {
+                        //swap2bytes((void *)(mysz+i));
+                    printf("mysz raw read unit[%ld]: [%d] ", i, mysz[i]);
+                    swap4bytes((void *)(mysz+i));
+                    printf("swap unit: [%d][%0x] \n", mysz[i], mysz[i]);
+                }
+        }
+
+        V3DLONG * sz = new V3DLONG [4]; // reallocate the memory if the input parameter is non-null. Note that this requests the input is also an NULL point, the same to img.
+        if (!sz)
+        {
+                printf("Fail to allocate memory.\n");
+                if (keyread) {delete []keyread; keyread=0;}
+                berror = 1;
+                return berror;
+        }
+
+        V3DLONG totalUnit = 1;
+        for (i=0;i<4;i++)
+        {
+                sz[i] = (V3DLONG)mysz[i];
+                totalUnit *= sz[i];
+        }
+
+        //mexPrintf("The input file has a size [%ld bytes], different from what specified in the header [%ld bytes]. Exit.\n", fileSize, totalUnit*unitSize+4*4+2+1+lenkey);
+        //mexPrintf("The read sizes are: %ld %ld %ld %ld\n", sz[0], sz[1], sz[2], sz[3]);
+
+        V3DLONG headerSize=4*4+2+1+lenkey;
+        V3DLONG compressedBytes=fileSize-headerSize;
+        V3DLONG decompressedBytes=totalUnit*unitSize;
+
+        if (image) delete image;
+        image = new My4DImage();
+
+        unsigned char * compressedData = new unsigned char [compressedBytes];
+        unsigned char * decompressedData = new unsigned char [decompressedBytes];
+
+        V3DLONG remainingBytes = compressedBytes;
+        V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2);
+        V3DLONG cntBuf = 0;
+        while (remainingBytes>0)
+        {
+                V3DLONG curReadBytes = (remainingBytes<nBytes2G) ? remainingBytes : nBytes2G;
+                V3DLONG curReadUnits = curReadBytes/unitSize;
+                nread = fread(compressedData+cntBuf*nBytes2G, unitSize, curReadUnits, fid);
+                if (nread!=curReadUnits)
+                {
+                        printf("Something wrong in file reading. The program reads [%ld data points] but the file says there should be [%ld data points].\n", nread, totalUnit);
+                        delete [] compressedData;
+                        delete image;
+                        delete [] keyread;
+                        berror = 1;
+                        return berror;
+                }
+
+                remainingBytes -= nBytes2G;
+                cntBuf++;
+        }
+
+        // swap the data bytes if necessary
+
+        if (b_swap==1)
+        {
+                if (unitSize==2)
+                {
+                        for (i=0;i<totalUnit; i++)
+                        {
+                                swap2bytes((void *)(compressedData+i*unitSize));
+                        }
+                }
+                else if (unitSize==4)
+                {
+                        for (i=0;i<totalUnit; i++)
+                        {
+                                swap4bytes((void *)(compressedData+i*unitSize));
+                        }
+                }
+        }
+
+        qDebug() << "Loading total time elapsed is " << stopwatch.elapsed() / 1000.0 << " seconds";
+        stopwatch.restart();
+
+        // Decompress data
+        V3DLONG cp=0;
+        V3DLONG dp=0;
+        while(cp<compressedBytes) {
+            if (compressedData[cp]==RE_TRIGGER_CODE) {
+                cp++;
+                for (int cpi=0;cpi<compressedData[cp];cpi++) {
+                    decompressedData[dp++]=compressedData[cp+1];
+                }
+                cp++;
+            } else {
+                decompressedData[dp++]=compressedData[cp];
+            }
+            cp++;
+        }
+        if (dp!=decompressedBytes) {
+            printf("Error - expected decompressed byte count=%ld but only found %ld\n",decompressedBytes, dp);
+            delete [] compressedData;
+            delete [] decompressedData;
+            delete [] keyread;
+            fclose(fid);
+            berror=1;
+            return berror;
+        }
+
+        qDebug() << "Decompression total time elapsed is " << stopwatch.elapsed() / 1000.0 << " seconds";
+        stopwatch.restart();
+
+        // Success - can delete compressedData
+        delete [] compressedData; compressedData=0;
+
+        // Transfer data to My4DImage
+        image->loadImage(sz[0], sz[1], sz[2], sz[3], 1);
+        unsigned char**** imageData = (unsigned char ****)image->getData();
+
+        V3DLONG xSize = sz[0];
+        V3DLONG ySize = sz[1];
+        V3DLONG zSize = sz[2];
+        V3DLONG cSize = sz[3];
+
+        V3DLONG xCube = (xSize/RE_CUBE_SIZE) + 1;
+        V3DLONG yCube = (ySize/RE_CUBE_SIZE) + 1;
+        V3DLONG zCube = (zSize/RE_CUBE_SIZE) + 1;
+
+        dp=0;
+
+        for (V3DLONG cc=0;cc<cSize;cc++) {
+            for (V3DLONG zc=0;zc<zCube;zc++) {
+                for (V3DLONG yc=0;yc<yCube;yc++) {
+                    for (V3DLONG xc=0;xc<xCube;xc++) {
+
+                        V3DLONG zStart=zc*RE_CUBE_SIZE;
+                        V3DLONG yStart=yc*RE_CUBE_SIZE;
+                        V3DLONG xStart=xc*RE_CUBE_SIZE;
+
+                        V3DLONG zl=zStart+RE_CUBE_SIZE;
+                        V3DLONG yl=yStart+RE_CUBE_SIZE;
+                        V3DLONG xl=xStart+RE_CUBE_SIZE;
+
+                        for (V3DLONG z=zStart;z<zl;z++) {
+                            if (z<zSize) {
+                                for (V3DLONG y=yStart;y<yl;y++) {
+                                    if (y<ySize) {
+                                        for (V3DLONG x=xStart;x<xl;x++) {
+                                            if (x<xSize) {
+                                                imageData[cc][z][y][x]=decompressedData[dp++];
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (dp!=decompressedBytes) {
+            printf("Error after transer to My4DImage - expected dp to equal total decompressed bytes=%ld but only=%ld\n", decompressedBytes, dp);
+            delete [] decompressedData;
+            delete image;
+            delete [] keyread;
+            berror=1;
+            fclose(fid);
+            return berror;
+        }
+
+        qDebug() << "Transfer to My4DImage total time elapsed is " << stopwatch.elapsed() / 1000.0 << " seconds";
+
+        // clean and return
+        if (keyread) {delete [] keyread; keyread = 0;}
+        delete [] decompressedData;
+        fclose(fid); //bug fix on 060412
+        return berror;
 }
 
 
