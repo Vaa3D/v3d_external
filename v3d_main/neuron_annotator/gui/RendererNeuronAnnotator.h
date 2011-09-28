@@ -16,7 +16,6 @@ public:
     virtual ~RendererNeuronAnnotator();
     virtual void paint();
     virtual void loadVol();
-    virtual int hitMenu(int x, int y, bool b_glwidget);
     bool populateNeuronMaskAndReference(NaVolumeData::Reader& volumeReader);
     void rebuildFromBaseTextures(const QList<int>& maskIndexList, QList<RGBA8*>& overlayList);
     void updateCurrentTextureMask(int maskIndex, int state);
