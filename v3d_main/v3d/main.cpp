@@ -90,6 +90,7 @@ void printHelp_v3d()
     cout<<"    -pf <configuration>          a string read from configuration file indicates parameters that plugin function use"<<endl;
 	
 	cout<<"    -v                           force to open a 3d viewer when loading an image, otherwise use the default v3d global setting (from \"Adjust Preference\")"<<endl;
+    cout<<"    -na                          open NeuronAnnotator work-mode directly"<<endl;
     cout<<"    -cmd  [headless command-line arguments, intended for compute grid use. Try \'-cmd -h\' for more information on this option]"<<endl;
 
 	return;
@@ -116,8 +117,10 @@ int main(int argc, char **argv)
 			Q_INIT_RESOURCE(v3d);
 
             V3dApplication* app = V3dApplication::getInstance(argc, argv);
-            if(!parser.i_v3d.hideV3D)           
+            if(!parser.i_v3d.hideV3D)
+            {
                 app->activateMainWindow();
+            }
             
             MainWindow* mainWin=app->getMainWindow();
 
@@ -136,6 +139,13 @@ int main(int argc, char **argv)
                 if(!parser.i_v3d.hideV3D)
                 {
                     mainWin->show();
+                    
+                    if(parser.i_v3d.openNeuronAnnotator)
+                    {
+#ifdef _ALLOW_WORKMODE_MENU_
+                        mainWin->func_procModeNeuronAnnotator();
+#endif
+                    }
                 }
             }
             

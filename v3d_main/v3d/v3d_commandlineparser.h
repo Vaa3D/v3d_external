@@ -65,6 +65,7 @@ public:
     {
         open3Dviewer = false;
         openV3D = false;
+        openNeuronAnnotator = false;
         clp_finished = false;
         hideV3D = false;
         
@@ -88,6 +89,7 @@ public:
     bool hideV3D;
     bool open3Dviewer;
 	bool openV3D;
+    bool openNeuronAnnotator;
 	bool clp_finished; // parsing finished
 	char* pluginname;
 	char* pluginmethod;

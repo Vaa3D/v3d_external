@@ -157,6 +157,15 @@ int CLP::parse(int argc, char *argv[], void (*help)())
                         i_v3d.clp_finished = true;
                         return true;
                     }
+                    else if(!strcmp(key, "na"))
+                    {
+                        key++; // skip "na"
+                        
+                        i_v3d.openV3D = true;
+                        i_v3d.openNeuronAnnotator = true;
+                        
+                        break;
+                    }
                 }
 
             }
