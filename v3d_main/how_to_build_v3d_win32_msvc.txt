@@ -31,3 +31,28 @@ Additional Note 2: If you want to build 64bit V3D using MSVC, you will need a 64
                    explained in Step 0.
 Additional Note 3: So far the V3D plugins have not been built yet. They can be built in similar ways.
 
+
+
+************How to build V3D (32bit and 64bit) on Windows 7 (64bit) Using MS Visual Studio 2008***************
+(1) Check out V3D src
+
+(2) Open "Visual Studio 2008 Command Prompt" (for 32bit building) window or "Visual Studio 2008 x64 Win64 Command Prompt" (for 64bit building) window
+	from "MS Visual Studio 2008 -> Visual Studio Tools" menu item in Windows Start menu
+
+(3) Enter "v3d_main\v3d" folder
+
+(4) Run "qmake -tp vc v3d_msvc.pro". This command creates a MS Visual Studio 2008 project file "v3d_msvc.vcproj" in "v3d_main\v3d" folder
+
+(5) Double click "v3d_msvc.vcproj" in "v3d_main\v3d" folder and open it in MS Visual Studio 2008
+
+(6) Choose building in "Release" mode in MS Visual Studio 2008
+
+(7) Choose building in "Win32" (for 32bit building) or "x64" (for 64bit building) mode in v3d_msvc Property Pages (by right-click v3d_msvc project icon 
+	in the left collumn in workspace in MS Visual Studio 2008) or just on the toolbar
+
+(8) Choose menu "Build->Build Solution F7" to build the solution. A popup dialog will appear to ask to save solution file for this project. 
+	Just click "OK" in this dialog
+
+(9) Now V3D has been built. You can run it from the location "v3d_main\v3d\release\v3d_msvc.exe".
+
+The building method works for both 32bit and 64bit buildings.

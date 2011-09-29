@@ -188,7 +188,7 @@ QMap<QKeySequence, qint64>* EntityAdapter::convert(cds::fw__ontologyKeyBindings 
             QString javaKeyBind(QString::fromStdString(*keyBind->key));
             QString qtKeyBind(get().convertKeyBind(javaKeyBind));
             qint64 termId(*keyBind->ontologyTermId);
-            QKeySequence keySeq(qtKeyBind, QKeySequence::PortableText);
+            QKeySequence keySeq(qtKeyBind, QKeySequence::PortableText); 
             map->insert(keySeq, termId);
         }
     }

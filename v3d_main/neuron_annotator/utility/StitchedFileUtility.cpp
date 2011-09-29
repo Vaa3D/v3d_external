@@ -91,7 +91,7 @@ bool StitchedFileUtility::execute() {
     mysz[3] = signalImage.getCDim();
 
 	// This version of mylib does not work with Windows.
-#if defined _WIN32
+#if defined(_WIN32) || defined(_WIN64)
 	saveStack2Tif(outputTifFilepath.toAscii().data(), (const unsigned char*)signalImage.getData(), mysz, signalImage.getDatatype());
 #else
     saveStack2TifMylib(outputTifFilepath.toAscii().data(), (const unsigned char*)signalImage.getData(), mysz, signalImage.getDatatype());
