@@ -12,7 +12,7 @@
 #include "lobeseg_main/lobeseg.h"
 #include "../../../v3d_main/worm_straighten_c/bdb_minus.h"
 
-#include <unistd.h>
+#include "getopt.h"
 #include <iostream>
 using namespace std;
 extern char *optarg;

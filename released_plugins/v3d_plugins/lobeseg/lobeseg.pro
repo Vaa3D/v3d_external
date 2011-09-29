@@ -10,6 +10,7 @@ LIBS += -L. -lv3dtiff -L$$V3DMAINFOLER/common_lib/lib
 HEADERS = lobeseg_plugin.h
 HEADERS += lobeseg_func.h
 HEADERS += lobeseg_gui.h
+HEADERS += getopt.h
 
 HEADERS += lobeseg_main/lobeseg.h
 HEADERS += $$V3DMAINFOLER/basic_c_fun/basic_memory.h
@@ -27,6 +28,7 @@ HEADERS += $$V3DMAINFOLER/worm_straighten_c/bfs.h
 
 SOURCES	= lobeseg_plugin.cpp
 SOURCES	+= lobeseg_func.cpp
+SOURCES += getopt.c
 SOURCES	+= $$V3DMAINFOLER/basic_c_fun/v3d_message.cpp
 
 SOURCES += lobeseg_main/lobeseg.cpp
