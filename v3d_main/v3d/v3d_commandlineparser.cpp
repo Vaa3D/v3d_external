@@ -82,8 +82,7 @@ bool CLP::check_filename(QString fn)
 	QFileInfo curfile_info(fn);
     if(curfile_info.isDir())
     {
-		v3d_msg("error: your file path is a folder.", 0);
-        return false;
+        return true;
     }
     else if(curfile_info.isFile())
     {
