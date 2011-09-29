@@ -52,9 +52,9 @@ bool ImageLoader::execute() {
 
     for (int i=0;i<inputFileList.size();i++) {
         My4DImage* image=0;
-        if (inputFileList.at(i).endsWith(".v3dvre")) {
-            if (loadRaw2StackRE(inputFileList.at(i).toAscii().data(), image)!=0) {
-                qDebug() << "Error with loadRaw2StackRE";
+        if (inputFileList.at(i).endsWith(".v3dpbd")) {
+            if (loadRaw2StackPBD(inputFileList.at(i).toAscii().data(), image)!=0) {
+                qDebug() << "Error with loadRaw2StackPBD";
                 return false;
             }
         } else {
@@ -62,27 +62,27 @@ bool ImageLoader::execute() {
             image=loadImage(inputFileList.at(i));
             qDebug() << "Loading total time is " << stopwatch.elapsed() / 1000.0 << " seconds";
 
-//            QString filePrefix=getFilePrefix(inputFileList.at(i));
-//            QString saveFilepath=filePrefix.append(".v3dvre");
-//            V3DLONG sz[4];
-//            sz[0] = image->getXDim();
-//            sz[1] = image->getYDim();
-//            sz[2] = image->getZDim();
-//            sz[3] = image->getCDim();
-//            unsigned char**** data = (unsigned char****)image->getData();
-//            saveStack2RawRE(saveFilepath.toAscii().data(), data, sz, image->getDatatype());
+            QString filePrefix=getFilePrefix(inputFileList.at(i));
+            QString saveFilepath=filePrefix.append(".v3dpbd");
+            V3DLONG sz[4];
+            sz[0] = image->getXDim();
+            sz[1] = image->getYDim();
+            sz[2] = image->getZDim();
+            sz[3] = image->getCDim();
+            unsigned char**** data = (unsigned char****)image->getData();
+            saveStack2RawPBD(saveFilepath.toAscii().data(), data, sz, image->getDatatype());
         }
         if (image!=0) {
             imageList.append(image);
         }
 
-        if (!inputFileList.at(i).endsWith(".v3draw")) {
-            QString filePrefix=getFilePrefix(inputFileList.at(i));
-            QString saveFilepath=filePrefix.append(".v3draw");
-            qDebug() << "Saving to file " << saveFilepath;
-            image->saveImage(saveFilepath.toAscii().data());
-            qDebug() << "Done.";
-        }
+//        if (!inputFileList.at(i).endsWith(".v3draw")) {
+//            QString filePrefix=getFilePrefix(inputFileList.at(i));
+//            QString saveFilepath=filePrefix.append(".v3draw");
+//            qDebug() << "Saving to file " << saveFilepath;
+//            image->saveImage(saveFilepath.toAscii().data());
+//            qDebug() << "Done.";
+//        }
     }
 
     //qDebug() << "Loading total time elapsed is " << stopwatch.elapsed() / 1000.0 << " seconds";
@@ -838,7 +838,8 @@ int ImageLoader::loadRaw2StackRE(char * filename, My4DImage * & image)
 
  0 to 32   : Implies the following (n+1) bytes are literal
  33 to 127 : Implies the prior byte is to be followed by (n-32) 2-bit (4-value) differences, to be applied accumulatively.
-             Any extra space to the remaining byte boundary is to be ignored. The 4 values are interpreted as:
+             Any extra space to the remaining byte boundary is to be ignored. The 4 values are interpreted as as a progessive
+             4D array incrementing the following values in order { 0, 1, 2, -1 }, such that,
 
              Value   Difference Sequence
 
@@ -851,120 +852,7 @@ int ImageLoader::loadRaw2StackRE(char * filename, My4DImage * & image)
              6    =  0,  0,  1,  2
              7    =  0,  0,  1, -1
              8    =  0,  0,  2,  0
-             9    =  0,  0,  2,  1
-             10   =  0,  0,  2,  2
-             11   =  0,  0,  2, -1
-             12   =  0,  0, -1,  0
-             13   =  0,  0, -1,  1
-             14   =  0,  0, -1,  2
-             15   =  0,  0, -1, -1
-             16   =  0,  1,  0,  0
-             17   =  0,  1,  0,  1
-             18   =  0,  1,  0,  2
-             19   =  0,  1,  0, -1
-             20   =  0,  1,  1,  0
-             21   =  0,  1,  1,  1
-             22   =  0,  1,  1,  2
-             23   =  0,  1,  1, -1
-             24   =  0,  1,  2,  0
-             25   =  0,  1,  2,  1
-             26   =  0,  1,  2,  2
-             27   =  0,  1,  2, -1
-             28   =  0,  1, -1,  0
-             29   =  0,  1, -1,  1
-             30   =  0,  1, -1,  2
-             31   =  0,  1, -1, -1
-             32   =  0,  2,  0,  0
-             33   =  0,  2,  0,  1
-             34   =  0,  2,  0,  2
-             35   =  0,  2,  0, -1
-             36   =  0,  2,  1,  0
-             37   =  0,  2,  1,  1
-             38   =  0,  2,  1,  2
-             39   =  0,  2,  1, -1
-             40   =  0,  2,  2,  0
-             41   =  0,  2,  2,  1
-             42   =  0,  2,  2,  2
-             43   =  0,  2,  2, -1
-             44   =  0,  2, -1,  0
-             45   =  0,  2, -1,  1
-             46   =  0,  2, -1,  2
-             47   =  0,  2, -1, -1
-             48   =  0, -1,  0,  0
-             49   =  0, -1,  0,  1
-             50   =  0, -1,  0,  2
-             51   =  0, -1,  0, -1
-             52   =  0, -1,  1,  0
-             53   =  0, -1,  1,  1
-             54   =  0, -1,  1,  2
-             55   =  0, -1,  1, -1
-             56   =  0, -1,  2,  0
-             57   =  0, -1,  2,  1
-             58   =  0, -1,  2,  2
-             59   =  0, -1,  2, -1
-             60   =  0, -1, -1,  0
-             61   =  0, -1, -1,  1
-             62   =  0, -1, -1,  2
-             63   =  0, -1, -1, -1
-             64   =  1,  0,  0,  0
-             65   =  1,  0,  0,  1
-             66   =  1,  0,  0,  2
-             67   =  1,  0,  0, -1
-             68   =  1,  0,  1,  0
-             69   =  1,  0,  1,  1
-             70   =  1,  0,  1,  2
-             71   =  1,  0,  1, -1
-             72   =  1,  0,  2,  0
-             73   =  1,  0,  2,  1
-             74   =  1,  0,  2,  2
-             75   =  1,  0,  2, -1
-             76   =  1,  0, -1,  0
-             77   =  1,  0, -1,  1
-             78   =  1,  0, -1,  2
-             79   =  1,  0, -1, -1
-             80   =  1,  1,  0,  0
-             81   =  1,  1,  0,  1
-             82   =  1,  1,  0,  2
-             83   =  1,  1,  0, -1
-             84   =  1,  1,  1,  0
-             85   =  1,  1,  1,  1
-             86   =  1,  1,  1,  2
-             87   =  1,  1,  1, -1
-             88   =  1,  1,  2,  0
-             89   =  1,  1,  2,  1
-             90   =  1,  1,  2,  2
-             91   =  1,  1,  2, -1
-             92   =  1,  1, -1,  0
-             93   =  1,  1, -1,  1
-             94   =  1,  1, -1,  2
-             95   =  1,  1, -1, -1
-             96   =  1,  2,  0,  0
-             97   =  1,  2,  0,  1
-             98   =  1,  2,  0,  2
-             99   =  1,  2,  0, -1
-            100   =  1,  2,  1,  0
-            101   =  1,  2,  1,  1
-            102   =  1,  2,  1,  2
-            103   =  1,  2,  1, -1
-            104   =  1,  2,  2,  0
-            105   =  1,  2,  2,  1
-            106   =  1,  2,  2,  2
-            107   =  1,  2,  2, -1
-            108   =  1,  2, -1,  0
-            109   =  1,  2, -1,  1
-            110   =  1,  2, -1,  2
-            111   =  1,  2, -1, -1
-            112   =  1, -1,  0,  0
-            113   =  1, -1,  0,  1
-            114   =  1, -1,  0,  2
-            115   =  1, -1,  0, -1
-            116   =  1, -1,  1,  0
-            117   =  1, -1,  1,  1
-            118   =  1, -1,  1,  2
-            119   =  1, -1,  1, -1
-            120   =  1, -1,  2,  0
-            121   =  1, -1,  2,  1
-            122   =  1, -1,  2,  2
+            ...
             123   =  1, -1,  2, -1
             124   =  1, -1, -1,  0
             125   =  1, -1, -1,  1
@@ -976,60 +864,7 @@ int ImageLoader::loadRaw2StackRE(char * filename, My4DImage * & image)
             131   =  2,  0,  0, -1
             132   =  2,  0,  1,  0
             133   =  2,  0,  1,  1
-            134   =  2,  0,  1,  2
-            135   =  2,  0,  1, -1
-            136   =  2,  0,  2,  0
-            137   =  2,  0,  2,  1
-            138   =  2,  0,  2,  2
-            139   =  2,  0,  2, -1
-            140   =  2,  0, -1,  0
-            141   =  2,  0, -1,  1
-            142   =  2,  0, -1,  2
-            143   =  2,  0, -1, -1
-            144   =  2,  1,  0,  0
-            145   =  2,  1,  0,  1
-            146   =  2,  1,  0,  2
-            147   =  2,  1,  0, -1
-            148   =  2,  1,  1,  0
-            149   =  2,  1,  1,  1
-            150   =  2,  1,  1,  2
-            151   =  2,  1,  1, -1
-            152   =  2,  1,  2,  0
-            153   =  2,  1,  2,  1
-            154   =  2,  1,  2,  2
-            155   =  2,  1,  2, -1
-            156   =  2,  1, -1,  0
-            157   =  2,  1, -1,  1
-            158   =  2,  1, -1,  2
-            159   =  2,  1, -1, -1
-            160   =  2,  2,  0,  0
-            161   =  2,  2,  0,  1
-            162   =  2,  2,  0,  2
-            163   =  2,  2,  0, -1
-            164   =  2,  2,  1,  0
-            165   =  2,  2,  1,  1
-            166   =  2,  2,  1,  2
-            167   =  2,  2,  1, -1
-            168   =  2,  2,  2,  0
-            169   =  2,  2,  2,  1
-            170   =  2,  2,  2,  2
-            171   =  2,  2,  2, -1
-            172   =  2,  2, -1,  0
-            173   =  2,  2, -1,  1
-            174   =  2,  2, -1,  2
-            175   =  2,  2, -1, -1
-            176   =  2, -1,  0,  0
-            177   =  2, -1,  0,  1
-            178   =  2, -1,  0,  2
-            179   =  2, -1,  0, -1
-            180   =  2, -1,  1,  0
-            181   =  2, -1,  1,  1
-            182   =  2, -1,  1,  2
-            183   =  2, -1,  1, -1
-            184   =  2, -1,  2,  0
-            185   =  2, -1,  2,  1
-            186   =  2, -1,  2,  2
-            187   =  2, -1,  2, -1
+            ...
             188   =  2, -1, -1,  0
             189   =  2, -1, -1,  1
             190   =  2, -1, -1,  2
@@ -1038,59 +873,7 @@ int ImageLoader::loadRaw2StackRE(char * filename, My4DImage * & image)
             193   = -1,  0,  0,  1
             194   = -1,  0,  0,  2
             195   = -1,  0,  0, -1
-            196   = -1,  0,  1,  0
-            197   = -1,  0,  1,  1
-            198   = -1,  0,  1,  2
-            199   = -1,  0,  1, -1
-            200   = -1,  0,  2,  0
-            201   = -1,  0,  2,  1
-            202   = -1,  0,  2,  2
-            203   = -1,  0,  2, -1
-            204   = -1,  0, -1,  0
-            205   = -1,  0, -1,  1
-            206   = -1,  0, -1,  2
-            207   = -1,  0, -1, -1
-            208   = -1,  1,  0,  0
-            209   = -1,  1,  0,  1
-            210   = -1,  1,  0,  2
-            211   = -1,  1,  0, -1
-            212   = -1,  1,  1,  0
-            213   = -1,  1,  1,  1
-            214   = -1,  1,  1,  2
-            215   = -1,  1,  1, -1
-            216   = -1,  1,  2,  0
-            217   = -1,  1,  2,  1
-            218   = -1,  1,  2,  2
-            219   = -1,  1,  2, -1
-            220   = -1,  1, -1,  0
-            221   = -1,  1, -1,  1
-            222   = -1,  1, -1,  2
-            223   = -1,  1, -1, -1
-            224   = -1,  2,  0,  0
-            225   = -1,  2,  0,  1
-            226   = -1,  2,  0,  2
-            227   = -1,  2,  0, -1
-            228   = -1,  2,  1,  0
-            229   = -1,  2,  1,  1
-            230   = -1,  2,  1,  2
-            231   = -1,  2,  1, -1
-            232   = -1,  2,  2,  0
-            233   = -1,  2,  2,  1
-            234   = -1,  2,  2,  2
-            235   = -1,  2,  2, -1
-            236   = -1,  2, -1,  0
-            237   = -1,  2, -1,  1
-            238   = -1,  2, -1,  2
-            239   = -1,  2, -1, -1
-            240   = -1, -1,  0,  0
-            241   = -1, -1,  0,  1
-            242   = -1, -1,  0,  2
-            243   = -1, -1,  0, -1
-            244   = -1, -1,  1,  0
-            245   = -1, -1,  1,  1
-            246   = -1, -1,  1,  2
-            247   = -1, -1,  1, -1
-            248   = -1, -1,  2,  0
+            ...
             249   = -1, -1,  2,  1
             250   = -1, -1,  2,  2
             251   = -1, -1,  2, -1
@@ -1299,7 +1082,7 @@ int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char**** data,
                             sourceVoxelCount+=i;
                             V3DLONG compressionSize = compressCubeBufferPBD(imgRe+actualSize, cubeBuffer, i, maxSize-actualSize, dfValueByKey);
                             double compressionRatio=(sourceVoxelCount*1.0)/actualSize;
-                            //printf("Compression-ratio=%f  sourceVoxels=%d  actualSize=%d  pre-size=%d   post-size=%d\n", compressionRatio, sourceVoxelCount, actualSize, i, compressionSize);
+                            printf("Compression-ratio=%f  sourceVoxels=%d  actualSize=%d  pre-size=%d   post-size=%d\n", compressionRatio, sourceVoxelCount, actualSize, i, compressionSize);
                             if (compressionSize==0) {
                                 printf("Error during compressCubeBuffer\n");
                                 berror=1;
@@ -1346,6 +1129,10 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
     bool debug=false;
     V3DLONG p=0;
 
+    if (debug) {
+        printf("\n");
+    }
+
     if (bufferLength==0) {
         printf("ImageLoader::compressCubeBufferPBD - unexpectedly received buffer of zero size\n");
         return 0;
@@ -1354,7 +1141,6 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
     //printf("\nStart compression, length=%d\n", bufferLength);
 
     unsigned char currentValue=0; // This is important - by definition current value starts at zero
-    unsigned char count=0;
     int dbuffer[95];
     V3DLONG activeLiteralIndex=-1; // if -1 this means there is no literal mode started
     for (int i=0;i<bufferLength;i++) {
@@ -1376,7 +1162,7 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
         int currentPosition=i;
         currentValue=preBuffer[i];
         while(currentPosition<bufferLength && reTest<128) { // 128 is the max number of repeats supported
-            if (preBuffer[currentPosition]==currentValue) {
+            if (preBuffer[currentPosition++]==currentValue) {
                 reTest++;
             } else {
                 break;
@@ -1390,6 +1176,11 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
             imgRe[p++]=currentValue; // The repeated value
             i+=(reTest-1); // because will increment one more time at top of loop
             activeLiteralIndex=-1;
+            if (debug) {
+                for (int d=0;d<reTest;d++) {
+                    printf("r");
+                }
+            }
         } else {
             // We need to evaluate difference encoding starting with the prior value
             unsigned char priorValue=0;
@@ -1422,6 +1213,11 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
                 imgRe[p++]=currentValue; // The repeated value
                 i+=(reTest-1); // because will increment one more time at top of loop
                 activeLiteralIndex=-1;
+                if (debug) {
+                    for (int d=0;d<reTest;d++) {
+                        printf("r");
+                    }
+                }
             } else if (dfEfficiency>1.0) {
                 // First, encode the number of units we expect
                 imgRe[p++]=c-i+32;
@@ -1432,38 +1228,57 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
                 int d0,d1,d2,d3;
                 d0=d1=d2=d3=0;
                 while(cp<c) {
-                    d0=dbuffer[cp];
+                    int start=cp-i;
+                    d0=dbuffer[start];
                     if (cp+1<c) {
-                        d1=dbuffer[cp+1];
+                        d1=dbuffer[start+1];
                         if (cp+2<c) {
-                            d2=dbuffer[cp+2];
+                            d2=dbuffer[start+2];
                             if (cp+3<c) {
-                                d3=dbuffer[cp+3];
+                                d3=dbuffer[start+3];
                             }
                         }
                     }
                     int lookupKey=1000*d0+100*d1+10*d2+d3;
                     unsigned char dc=dfmap[lookupKey];
+                    //printf("\ndebug: i=%d  c=%d  cp=%d  lookupKey=%d  p=%ld\n", i, c, cp, lookupKey, p);
+                    fflush(stdout);
                     imgRe[p++]=dc;
+                    cp+=4; // Move ahead 4 steps at a time
                 }
                 activeLiteralIndex=-1;
+                if (debug) {
+                    for (int d=0;d<(c-i);d++) {
+                        printf("d");
+                    }
+                }
+                i=c-1; // will increment at top
             } else {
                 // We need to add this value as a literal. If there is already a literal mode, then simply
                 // add it. Otherwise, start a new one.
-                if (activeLiteralIndex>=0) {
-                    // Check to see if it is too big for another value
-                    if (imgRe[activeLiteralIndex]>=32) {
-                        // We need a new index
-                        imgRe[p++]=1;
-                        activeLiteralIndex=p-1; // Our new literal index
-                    }
-                    imgRe[p++]=currentValue; // Add the current value as literal
+                if (activeLiteralIndex<0 || imgRe[activeLiteralIndex]>=32) {
+                    // We need a new index
+                    imgRe[p++]=0;
+                    activeLiteralIndex=p-1; // Our new literal index
+                    imgRe[p++]=currentValue; // Add the current value onto current sequence of literals
+                } else {
+                    imgRe[activeLiteralIndex] += 1; // Increment existing literal count
+                    imgRe[p++]=currentValue; // Add the current value onto current sequence of literals
+                }
+                if (debug) {
+                    printf("l");
                 }
             }
         }
     }
+    printf("\n");
     return p;
 }
+
+int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image) {
+    return 1;
+}
+
 
 
 

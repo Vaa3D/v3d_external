@@ -29,11 +29,12 @@ public:
     bool execute();
     bool validateFiles();
     My4DImage* loadImage(QString filepath);
+
     int saveStack2RawRE(const char * filename, unsigned char**** data, const V3DLONG * sz, int datatype);
     int loadRaw2StackRE(char * filename, My4DImage * & image);
 
     int saveStack2RawPBD(const char * filename, unsigned char**** data, const V3DLONG * sz, int datatype);
-
+    int loadRaw2StackPBD(char * filename, My4DImage * & image);
 
     int processArgs(vector<char*> *argList);
     QString getFilePrefix(QString filepath);
