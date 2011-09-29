@@ -282,6 +282,11 @@ int CLP::parse(int argc, char *argv[], void (*help)())
                                         i_v3d.fileList.push_back(filename);
                                         i++;
                                     }
+                                    else
+                                    {
+                                        cout << "The format not supported."<<endl;
+                                        return false;
+                                    }
                                 }
                             }
                             else if (!strcmp(key, "o"))
