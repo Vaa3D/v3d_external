@@ -74,30 +74,40 @@ int CLP::error( void (*help)() )
     return false;
 }
 
-// check the file valid
-bool CLP :: check_filename(QString fn)
+// check if the file is valid
+bool CLP::check_filename(QString fn)
 {
 	qDebug()<<"file name ..."<<fn;
 	
 	QFileInfo curfile_info(fn);
     if(curfile_info.isDir())
     {
-        return true;
+		v3d_msg("error: your file path is a folder.", 0);
+        return false;
     }
     else if(curfile_info.isFile())
     {
         if ( (curfile_info.suffix().toUpper()=="ANO") ||
-             (curfile_info.suffix().toUpper()=="APO" || curfile_info.suffix().toUpper()=="SWC" || curfile_info.suffix().toUpper()=="OBJ" || curfile_info.suffix().toUpper()=="V3DS") ||
+             (curfile_info.suffix().toUpper()=="APO" || 
+			  curfile_info.suffix().toUpper()=="SWC" || 
+			  curfile_info.suffix().toUpper()=="OBJ" || 
+			  curfile_info.suffix().toUpper()=="V3DS") ||
              (curfile_info.suffix().toUpper()=="ATLAS") ||
              (curfile_info.suffix().toUpper()=="ZIP") ||
-             (curfile_info.suffix().toUpper()=="LSM") || (curfile_info.suffix().toUpper()=="TIF")  || (curfile_info.suffix().toUpper()=="TIFF") || (curfile_info.suffix().toUpper()=="MRC") || (curfile_info.suffix().toUpper()=="RAW") || (curfile_info.suffix().toUpper()=="V3DRAW") ||
+             (curfile_info.suffix().toUpper()=="LSM") || 
+			 (curfile_info.suffix().toUpper()=="TIF")  || 
+			 (curfile_info.suffix().toUpper()=="TIFF") || 
+			 (curfile_info.suffix().toUpper()=="MRC") || 
+			 (curfile_info.suffix().toUpper()=="RAW") || 
+ 			 (curfile_info.suffix().toUpper()=="RAW5") || 
+			 (curfile_info.suffix().toUpper()=="V3DRAW") ||
              fn.contains("://") ) // url
         {
             return true;
         }
         else
         {
-            v3d_msg("error: your file has an extension V3D does not recognize.", 0);
+            v3d_msg(QString("error: your file [%1] has an extension V3D does not recognize.").arg(fn), 0);
             return false;
         }
     }
@@ -105,7 +115,7 @@ bool CLP :: check_filename(QString fn)
 }
 
 // parsing parameters
-int CLP :: parse(int argc, char *argv[], void (*help)())
+int CLP::parse(int argc, char *argv[], void (*help)())
 {
     //
     if (argc<=1)

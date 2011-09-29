@@ -177,7 +177,7 @@ int main(int argc, char **argv)
 							
 							if(!url.isValid()) // valid or invalid url
 							{
-								v3d_msg("The file does not exist! Do nothing.", 0);
+								v3d_msg(QString("The file path [%1] is not valid! Do nothing.").arg(filename), 0);
 								return false;	
 							}
 							else if(url.scheme().toUpper() == "HTTP" || url.scheme().toUpper() == "HTTPS" || url.scheme().toUpper() == "FTP")
@@ -189,7 +189,7 @@ int main(int argc, char **argv)
 						}
 						else // impossible be a url
 						{
-							v3d_msg("The file does not exist! Do nothing.", 0);
+							v3d_msg(QString("The file path [%1] seems invalid (not a local file or a URL)! Do nothing.").arg(filename), 0);
 							return false;	
 						}
 					}
