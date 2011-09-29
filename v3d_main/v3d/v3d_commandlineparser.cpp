@@ -90,7 +90,7 @@ bool CLP :: check_filename(QString fn)
              (curfile_info.suffix().toUpper()=="APO" || curfile_info.suffix().toUpper()=="SWC" || curfile_info.suffix().toUpper()=="OBJ" || curfile_info.suffix().toUpper()=="V3DS") ||
              (curfile_info.suffix().toUpper()=="ATLAS") ||
              (curfile_info.suffix().toUpper()=="ZIP") ||
-             (curfile_info.suffix().toUpper()=="LSM") || (curfile_info.suffix().toUpper()=="TIF")  || (curfile_info.suffix().toUpper()=="TIFF") (curfile_info.suffix().toUpper()=="MRC") || (curfile_info.suffix().toUpper()=="RAW") || (curfile_info.suffix().toUpper()=="V3DRAW") ||
+             (curfile_info.suffix().toUpper()=="LSM") || (curfile_info.suffix().toUpper()=="TIF")  || (curfile_info.suffix().toUpper()=="TIFF") || (curfile_info.suffix().toUpper()=="MRC") || (curfile_info.suffix().toUpper()=="RAW") || (curfile_info.suffix().toUpper()=="V3DRAW") ||
              fn.contains("://") ) // url
         {
             return true;
