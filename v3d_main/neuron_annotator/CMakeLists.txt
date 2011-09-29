@@ -44,6 +44,8 @@ QT4_WRAP_CPP(NA_MOC_SRCS
     gui/NaLargeMIPWidget.h
     gui/NaMainWindow.h
     gui/NaZStackWidget.h
+    gui/NeuronContextMenu.h
+    gui/NeuronQAction.h
     gui/FragmentGalleryWidget.h
     gui/RendererNeuronAnnotator.h
     gui/trees/AnnotatedBranchTreeModel.h
