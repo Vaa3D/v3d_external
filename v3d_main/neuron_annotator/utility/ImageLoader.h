@@ -32,14 +32,22 @@ public:
     int saveStack2RawRE(const char * filename, unsigned char**** data, const V3DLONG * sz, int datatype);
     int loadRaw2StackRE(char * filename, My4DImage * & image);
 
+    int saveStack2RawPBD(const char * filename, unsigned char**** data, const V3DLONG * sz, int datatype);
+
+
     int processArgs(vector<char*> *argList);
     QString getFilePrefix(QString filepath);
+
+    int createDfValueByKeyMap(unsigned char * dfValueByKey);
+
 
 private:
     QList<QString> inputFileList;
     QList<My4DImage*> imageList;
 
     V3DLONG compressCubeBuffer(unsigned char * imgRe, unsigned char * cubeBuffer, V3DLONG bufferLength, V3DLONG spaceLeft);
+    V3DLONG compressCubeBufferPBD(unsigned char * imgRe, unsigned char * cubeBuffer, V3DLONG bufferLength, V3DLONG spaceLeft, unsigned char * dfmap);
+
 
 
 };

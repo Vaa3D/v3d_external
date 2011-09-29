@@ -162,7 +162,7 @@ int ImageLoader::saveStack2RawRE(const char * filename, unsigned char**** data, 
         V3DLONG nwrite = fwrite(formatkey, 1, lenkey, fid);
         if (nwrite!=lenkey)
         {
-                printf("File write error.\n");
+                printf("Fi le write error.\n");
                 berror = 1;
                 return berror;
         }
@@ -825,6 +825,644 @@ int ImageLoader::loadRaw2StackRE(char * filename, My4DImage * & image)
         delete [] decompressedData;
         fclose(fid); //bug fix on 060412
         return berror;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+
+ This function implements a hybrid of PackBits with difference-encoding, as follows:
+
+ <header byte>
+
+ 0 to 32   : Implies the following (n+1) bytes are literal
+ 33 to 127 : Implies the prior byte is to be followed by (n-32) 2-bit (4-value) differences, to be applied accumulatively.
+             Any extra space to the remaining byte boundary is to be ignored. The 4 values are interpreted as:
+
+             Value   Difference Sequence
+
+             0    =  0,  0,  0,  0
+             1    =  0,  0,  0,  1
+             2    =  0,  0,  0,  2
+             3    =  0,  0,  0, -1
+             4    =  0,  0,  1,  0
+             5    =  0,  0,  1,  1
+             6    =  0,  0,  1,  2
+             7    =  0,  0,  1, -1
+             8    =  0,  0,  2,  0
+             9    =  0,  0,  2,  1
+             10   =  0,  0,  2,  2
+             11   =  0,  0,  2, -1
+             12   =  0,  0, -1,  0
+             13   =  0,  0, -1,  1
+             14   =  0,  0, -1,  2
+             15   =  0,  0, -1, -1
+             16   =  0,  1,  0,  0
+             17   =  0,  1,  0,  1
+             18   =  0,  1,  0,  2
+             19   =  0,  1,  0, -1
+             20   =  0,  1,  1,  0
+             21   =  0,  1,  1,  1
+             22   =  0,  1,  1,  2
+             23   =  0,  1,  1, -1
+             24   =  0,  1,  2,  0
+             25   =  0,  1,  2,  1
+             26   =  0,  1,  2,  2
+             27   =  0,  1,  2, -1
+             28   =  0,  1, -1,  0
+             29   =  0,  1, -1,  1
+             30   =  0,  1, -1,  2
+             31   =  0,  1, -1, -1
+             32   =  0,  2,  0,  0
+             33   =  0,  2,  0,  1
+             34   =  0,  2,  0,  2
+             35   =  0,  2,  0, -1
+             36   =  0,  2,  1,  0
+             37   =  0,  2,  1,  1
+             38   =  0,  2,  1,  2
+             39   =  0,  2,  1, -1
+             40   =  0,  2,  2,  0
+             41   =  0,  2,  2,  1
+             42   =  0,  2,  2,  2
+             43   =  0,  2,  2, -1
+             44   =  0,  2, -1,  0
+             45   =  0,  2, -1,  1
+             46   =  0,  2, -1,  2
+             47   =  0,  2, -1, -1
+             48   =  0, -1,  0,  0
+             49   =  0, -1,  0,  1
+             50   =  0, -1,  0,  2
+             51   =  0, -1,  0, -1
+             52   =  0, -1,  1,  0
+             53   =  0, -1,  1,  1
+             54   =  0, -1,  1,  2
+             55   =  0, -1,  1, -1
+             56   =  0, -1,  2,  0
+             57   =  0, -1,  2,  1
+             58   =  0, -1,  2,  2
+             59   =  0, -1,  2, -1
+             60   =  0, -1, -1,  0
+             61   =  0, -1, -1,  1
+             62   =  0, -1, -1,  2
+             63   =  0, -1, -1, -1
+             64   =  1,  0,  0,  0
+             65   =  1,  0,  0,  1
+             66   =  1,  0,  0,  2
+             67   =  1,  0,  0, -1
+             68   =  1,  0,  1,  0
+             69   =  1,  0,  1,  1
+             70   =  1,  0,  1,  2
+             71   =  1,  0,  1, -1
+             72   =  1,  0,  2,  0
+             73   =  1,  0,  2,  1
+             74   =  1,  0,  2,  2
+             75   =  1,  0,  2, -1
+             76   =  1,  0, -1,  0
+             77   =  1,  0, -1,  1
+             78   =  1,  0, -1,  2
+             79   =  1,  0, -1, -1
+             80   =  1,  1,  0,  0
+             81   =  1,  1,  0,  1
+             82   =  1,  1,  0,  2
+             83   =  1,  1,  0, -1
+             84   =  1,  1,  1,  0
+             85   =  1,  1,  1,  1
+             86   =  1,  1,  1,  2
+             87   =  1,  1,  1, -1
+             88   =  1,  1,  2,  0
+             89   =  1,  1,  2,  1
+             90   =  1,  1,  2,  2
+             91   =  1,  1,  2, -1
+             92   =  1,  1, -1,  0
+             93   =  1,  1, -1,  1
+             94   =  1,  1, -1,  2
+             95   =  1,  1, -1, -1
+             96   =  1,  2,  0,  0
+             97   =  1,  2,  0,  1
+             98   =  1,  2,  0,  2
+             99   =  1,  2,  0, -1
+            100   =  1,  2,  1,  0
+            101   =  1,  2,  1,  1
+            102   =  1,  2,  1,  2
+            103   =  1,  2,  1, -1
+            104   =  1,  2,  2,  0
+            105   =  1,  2,  2,  1
+            106   =  1,  2,  2,  2
+            107   =  1,  2,  2, -1
+            108   =  1,  2, -1,  0
+            109   =  1,  2, -1,  1
+            110   =  1,  2, -1,  2
+            111   =  1,  2, -1, -1
+            112   =  1, -1,  0,  0
+            113   =  1, -1,  0,  1
+            114   =  1, -1,  0,  2
+            115   =  1, -1,  0, -1
+            116   =  1, -1,  1,  0
+            117   =  1, -1,  1,  1
+            118   =  1, -1,  1,  2
+            119   =  1, -1,  1, -1
+            120   =  1, -1,  2,  0
+            121   =  1, -1,  2,  1
+            122   =  1, -1,  2,  2
+            123   =  1, -1,  2, -1
+            124   =  1, -1, -1,  0
+            125   =  1, -1, -1,  1
+            126   =  1, -1, -1,  2
+            127   =  1, -1, -1, -1
+            128   =  2,  0,  0,  0
+            129   =  2,  0,  0,  1
+            130   =  2,  0,  0,  2
+            131   =  2,  0,  0, -1
+            132   =  2,  0,  1,  0
+            133   =  2,  0,  1,  1
+            134   =  2,  0,  1,  2
+            135   =  2,  0,  1, -1
+            136   =  2,  0,  2,  0
+            137   =  2,  0,  2,  1
+            138   =  2,  0,  2,  2
+            139   =  2,  0,  2, -1
+            140   =  2,  0, -1,  0
+            141   =  2,  0, -1,  1
+            142   =  2,  0, -1,  2
+            143   =  2,  0, -1, -1
+            144   =  2,  1,  0,  0
+            145   =  2,  1,  0,  1
+            146   =  2,  1,  0,  2
+            147   =  2,  1,  0, -1
+            148   =  2,  1,  1,  0
+            149   =  2,  1,  1,  1
+            150   =  2,  1,  1,  2
+            151   =  2,  1,  1, -1
+            152   =  2,  1,  2,  0
+            153   =  2,  1,  2,  1
+            154   =  2,  1,  2,  2
+            155   =  2,  1,  2, -1
+            156   =  2,  1, -1,  0
+            157   =  2,  1, -1,  1
+            158   =  2,  1, -1,  2
+            159   =  2,  1, -1, -1
+            160   =  2,  2,  0,  0
+            161   =  2,  2,  0,  1
+            162   =  2,  2,  0,  2
+            163   =  2,  2,  0, -1
+            164   =  2,  2,  1,  0
+            165   =  2,  2,  1,  1
+            166   =  2,  2,  1,  2
+            167   =  2,  2,  1, -1
+            168   =  2,  2,  2,  0
+            169   =  2,  2,  2,  1
+            170   =  2,  2,  2,  2
+            171   =  2,  2,  2, -1
+            172   =  2,  2, -1,  0
+            173   =  2,  2, -1,  1
+            174   =  2,  2, -1,  2
+            175   =  2,  2, -1, -1
+            176   =  2, -1,  0,  0
+            177   =  2, -1,  0,  1
+            178   =  2, -1,  0,  2
+            179   =  2, -1,  0, -1
+            180   =  2, -1,  1,  0
+            181   =  2, -1,  1,  1
+            182   =  2, -1,  1,  2
+            183   =  2, -1,  1, -1
+            184   =  2, -1,  2,  0
+            185   =  2, -1,  2,  1
+            186   =  2, -1,  2,  2
+            187   =  2, -1,  2, -1
+            188   =  2, -1, -1,  0
+            189   =  2, -1, -1,  1
+            190   =  2, -1, -1,  2
+            191   =  2, -1, -1, -1
+            192   = -1,  0,  0,  0
+            193   = -1,  0,  0,  1
+            194   = -1,  0,  0,  2
+            195   = -1,  0,  0, -1
+            196   = -1,  0,  1,  0
+            197   = -1,  0,  1,  1
+            198   = -1,  0,  1,  2
+            199   = -1,  0,  1, -1
+            200   = -1,  0,  2,  0
+            201   = -1,  0,  2,  1
+            202   = -1,  0,  2,  2
+            203   = -1,  0,  2, -1
+            204   = -1,  0, -1,  0
+            205   = -1,  0, -1,  1
+            206   = -1,  0, -1,  2
+            207   = -1,  0, -1, -1
+            208   = -1,  1,  0,  0
+            209   = -1,  1,  0,  1
+            210   = -1,  1,  0,  2
+            211   = -1,  1,  0, -1
+            212   = -1,  1,  1,  0
+            213   = -1,  1,  1,  1
+            214   = -1,  1,  1,  2
+            215   = -1,  1,  1, -1
+            216   = -1,  1,  2,  0
+            217   = -1,  1,  2,  1
+            218   = -1,  1,  2,  2
+            219   = -1,  1,  2, -1
+            220   = -1,  1, -1,  0
+            221   = -1,  1, -1,  1
+            222   = -1,  1, -1,  2
+            223   = -1,  1, -1, -1
+            224   = -1,  2,  0,  0
+            225   = -1,  2,  0,  1
+            226   = -1,  2,  0,  2
+            227   = -1,  2,  0, -1
+            228   = -1,  2,  1,  0
+            229   = -1,  2,  1,  1
+            230   = -1,  2,  1,  2
+            231   = -1,  2,  1, -1
+            232   = -1,  2,  2,  0
+            233   = -1,  2,  2,  1
+            234   = -1,  2,  2,  2
+            235   = -1,  2,  2, -1
+            236   = -1,  2, -1,  0
+            237   = -1,  2, -1,  1
+            238   = -1,  2, -1,  2
+            239   = -1,  2, -1, -1
+            240   = -1, -1,  0,  0
+            241   = -1, -1,  0,  1
+            242   = -1, -1,  0,  2
+            243   = -1, -1,  0, -1
+            244   = -1, -1,  1,  0
+            245   = -1, -1,  1,  1
+            246   = -1, -1,  1,  2
+            247   = -1, -1,  1, -1
+            248   = -1, -1,  2,  0
+            249   = -1, -1,  2,  1
+            250   = -1, -1,  2,  2
+            251   = -1, -1,  2, -1
+            252   = -1, -1, -1,  0
+            253   = -1, -1, -1,  1
+            254   = -1, -1, -1,  2
+            255   = -1, -1, -1, -1
+
+128 to 255 : Implies the following single byte is to be repeated (n-127) times
+
+*/
+
+int ImageLoader::createDfValueByKeyMap(unsigned char *dfValueByKey) {
+    // First clear the map
+    for (int i=0;i<4000;i++) {
+        dfValueByKey[i]=0;
+    }
+    // This assumes dfValueByKey is an array of unsigned int size=4000
+    unsigned char vlist [4];
+    vlist[0]=0;
+    vlist[1]=1;
+    vlist[2]=2;
+    vlist[3]=3;
+    unsigned char value=0;
+    for (int l0=0;l0<4;l0++) {
+        for (int l1=0;l1<4;l1++) {
+            for (int l2=0;l2<4;l2++) {
+                for (int l3=0;l3<4;l3++) {
+                    int key=vlist[l0]*1000 + vlist[l1]*100 + vlist[l2]*10 + vlist[l3];
+                    if (key>=4000) {
+                        printf("ImageLoader::createDfValueByKeyMap key index unexpectedly greater than 3999\n");
+                        return 1;
+                    } else if (value==256) {
+                        printf("ImageLoader::createDfValueByKeyMap unexpectedly ran out of values\n");
+                        return 1;
+                    }
+                    dfValueByKey[key]=value++;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char**** data, const V3DLONG * sz, int datatype)
+{
+    int berror=0;
+
+    unsigned char dfValueByKey [4000];
+
+    createDfValueByKeyMap(dfValueByKey);
+
+    if (datatype!=1) {
+        printf("saveStack2RawPBD : Only datatype 1 is supported\n");
+        berror=1;
+        return berror;
+    }
+
+        /* This function save a data stack to raw file */
+                printf("size of [V3DLONG]=[%ld], [V3DLONG]=[%ld] [int]=[%ld], [short int]=[%ld], [double]=[%ld], [float]=[%ld]\n",
+                       sizeof(V3DLONG), sizeof(V3DLONG), sizeof(int), sizeof(short int), sizeof(double), sizeof(float));
+        V3DLONG i;
+
+        FILE * fid = fopen(filename, "wb");
+        if (!fid)
+        {
+                printf("Fail to open file for writing.\n");
+                berror = 1;
+                return berror;
+        }
+
+        /* Write header */
+                         // raw_image_stack_by_hpeng
+        char formatkey[] = "v3d_volume_pkbitdf_encod";
+        int lenkey = strlen(formatkey);
+
+        V3DLONG nwrite = fwrite(formatkey, 1, lenkey, fid);
+        if (nwrite!=lenkey)
+        {
+                printf("File write error.\n");
+                berror = 1;
+                return berror;
+        }
+
+        char endianCodeMachine = checkMachineEndian();
+        if (endianCodeMachine!='B' && endianCodeMachine!='L')
+        {
+                printf("This program only supports big- or little- endian but not other format. Cannot save data on this machine.\n");
+                berror = 1;
+                return berror;
+        }
+
+        nwrite = fwrite(&endianCodeMachine, 1, 1, fid);
+        if (nwrite!=1)
+        {
+                printf("Error happened in file writing.\n");
+                berror = 1;
+                return berror;
+        }
+
+        //int b_swap = (endianCodeMachine==endianCodeData)?0:1;
+        //int b_swap = 0; //for this machine itself, should not swap data.
+
+        short int dcode = (short int)datatype;
+        if (dcode!=1 && dcode!=2 && dcode!=4)
+        {
+                printf("Unrecognized data type code [%d]. This code is not supported in this version.\n", dcode);
+                berror = 1;
+                return berror;
+        }
+
+        //if (b_swap) swap2bytes((void *)&dcode);
+        nwrite=fwrite(&dcode, 2, 1, fid); /* because I have already checked the file size to be bigger than the header, no need to check the number of actual bytes read. */
+        if (nwrite!=1)
+        {
+                printf("Writing file error.\n");
+                berror = 1;
+                return berror;
+        }
+
+        V3DLONG unitSize = datatype; /* temporarily I use the same number, which indicates the number of bytes for each data point (pixel). This can be extended in the future. */
+
+        //short int mysz[4];
+        BIT32_UNIT mysz[4];//060806
+                                           //if (b_swap)  {
+                                           //for (i=0;i<4;i++) mysz[i] = (short int) sz[i];
+                for (i=0;i<4;i++) mysz[i] = (BIT32_UNIT) sz[i];
+                //swap2bytes((void *)(mysz+i));
+                //}
+                nwrite = fwrite(mysz, 4, 4, fid); /* because I have already checked the file size to be bigger than the header, no need to check the number of actual bytes read. */
+        if (nwrite!=4)
+        {
+                printf("Writing file error.\n");
+                berror = 1;
+                return berror;
+        }
+
+        V3DLONG totalUnit = 1;
+        for (i=0;i<4;i++)
+        {
+                totalUnit *= sz[i];
+        }
+
+        V3DLONG maxSize = totalUnit;
+        V3DLONG actualSize=0;
+        V3DLONG sourceVoxelCount=0;
+        unsigned char * imgRe = new unsigned char [totalUnit];
+
+        printf("Allocated imgRe with maxSize=%d\n", totalUnit);
+
+        V3DLONG xSize = sz[0];
+        V3DLONG ySize = sz[1];
+        V3DLONG zSize = sz[2];
+        V3DLONG cSize = sz[3];
+
+        V3DLONG xCube = (xSize/RE_CUBE_SIZE) + 1;
+        V3DLONG yCube = (ySize/RE_CUBE_SIZE) + 1;
+        V3DLONG zCube = (zSize/RE_CUBE_SIZE) + 1;
+
+        V3DLONG cubeSize3=RE_CUBE_SIZE*RE_CUBE_SIZE*RE_CUBE_SIZE;
+
+        unsigned char * cubeBuffer = new unsigned char [cubeSize3];
+        //int cubeSize=0;
+        V3DLONG channelSize = xSize*ySize*zSize;
+        V3DLONG planeSize = xSize*ySize;
+
+        for (V3DLONG cc=0;cc<cSize;cc++) {
+            for (V3DLONG zc=0;zc<zCube;zc++) {
+                for (V3DLONG yc=0;yc<yCube;yc++) {
+                    for (V3DLONG xc=0;xc<xCube;xc++) {
+
+                        // Reset buffer
+                        //cubeSize=0;
+                        for (i=0;i<cubeSize3;i++) {
+                            cubeBuffer[i]=0;
+                        }
+
+                        // Populate buffer for current cube
+                        V3DLONG zStart=zc*RE_CUBE_SIZE;
+                        V3DLONG yStart=yc*RE_CUBE_SIZE;
+                        V3DLONG xStart=xc*RE_CUBE_SIZE;
+
+                        i=0L;
+
+                        ////printf("Inner loop start : zStart=%d  yStart=%d  xStart=%d\n", zStart, yStart, xStart);
+                        fflush(stdout);
+
+                        for (V3DLONG z=zStart;z<zStart+RE_CUBE_SIZE;z++) {
+                            for (V3DLONG y=yStart;y<yStart+RE_CUBE_SIZE;y++) {
+                                for (V3DLONG x=xStart;x<xStart+RE_CUBE_SIZE;x++) {
+                                    if (z<zSize && y<ySize && x<xSize && i<cubeSize3) {
+                                        //printf("Adding cubeBuffer entry i=%d  z=%d  y=%d  x=%d\n", i, z, y, x);
+                                        cubeBuffer[i++] = data[cc][z][y][x];
+                                    } else {
+                                        // printf("Inner loop skip : z=%d zSize=%d  y=%d ySize=%d  x=%d xSize=%d  i=%d\n",z,zSize,y,ySize,x,xSize,i);
+                                    }
+                                }
+                            }
+                        }
+
+                        //printf("After inner loop\n");
+                        //fflush(stdout);
+
+                        if (i>0) {
+
+                            sourceVoxelCount+=i;
+                            V3DLONG compressionSize = compressCubeBufferPBD(imgRe+actualSize, cubeBuffer, i, maxSize-actualSize, dfValueByKey);
+                            double compressionRatio=(sourceVoxelCount*1.0)/actualSize;
+                            //printf("Compression-ratio=%f  sourceVoxels=%d  actualSize=%d  pre-size=%d   post-size=%d\n", compressionRatio, sourceVoxelCount, actualSize, i, compressionSize);
+                            if (compressionSize==0) {
+                                printf("Error during compressCubeBuffer\n");
+                                berror=1;
+                                return berror;
+                            }
+                            actualSize += compressionSize;
+
+                        }
+                    }
+                }
+            }
+        }
+
+        double finalCompressionRatio = (sourceVoxelCount*1.0)/actualSize;
+
+        printf("Total original size=%d  sourceVoxelCount=%d  post-compression size=%d  ratio=%f\n", totalUnit, sourceVoxelCount, actualSize, finalCompressionRatio);
+
+        printf("Writing file...");
+
+        nwrite = fwrite(imgRe, unitSize, actualSize, fid);
+        if (nwrite!=actualSize)
+        {
+                printf("Something wrong in file writing. The program wrote [%ld data points] but the file says there should be [%ld data points].\n", nwrite, totalUnit);
+                berror = 1;
+                return berror;
+        }
+
+        /* clean and return */
+
+        fclose(fid);
+
+        delete [] cubeBuffer;
+
+        delete [] imgRe;
+
+        printf("done.\n");
+
+        return berror;
+}
+
+
+// We assume here that preBuffer is
+V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char * preBuffer, V3DLONG bufferLength, V3DLONG spaceLeft, unsigned char * dfmap) {
+    bool debug=false;
+    V3DLONG p=0;
+
+    if (bufferLength==0) {
+        printf("ImageLoader::compressCubeBufferPBD - unexpectedly received buffer of zero size\n");
+        return 0;
+    }
+
+    //printf("\nStart compression, length=%d\n", bufferLength);
+
+    unsigned char currentValue=0; // This is important - by definition current value starts at zero
+    unsigned char count=0;
+    int dbuffer[95];
+    V3DLONG activeLiteralIndex=-1; // if -1 this means there is no literal mode started
+    for (int i=0;i<bufferLength;i++) {
+        if (p>=spaceLeft) {
+            printf("ImageLoader::compressCubeBufferPBD ran out of space p=%d\n", p);
+            return 0;
+        }
+        bool last=(i==(bufferLength-1));
+
+        // From this point we assume the result has been accumulating in imgRe, and at this moment
+        // we are searching for the best approach for the next segment. First, we will try reading
+        // the next value, and testing what the runlength encoding efficiency would be. The
+        // efficiency is simply the (number of bytes encoded / actual bytes). Next, we will test
+        // the different encoding, and (depending on its reach), see what its efficiency is.
+        // The minimum number of unencoded bytes to use run-length encoding for is 3 (code, value).
+        // The minimum number of unencoded bytes to use difference encoding is 3 also (code, value).
+
+        int reTest=1;
+        int currentPosition=i;
+        currentValue=preBuffer[i];
+        while(currentPosition<bufferLength && reTest<128) { // 128 is the max number of repeats supported
+            if (preBuffer[currentPosition]==currentValue) {
+                reTest++;
+            } else {
+                break;
+            }
+        }
+        double reEfficiency = reTest*1.0 / 2.0; // 2-bytes are used for the encoding
+
+        if (reEfficiency>=4.0) { // 4.0 is the max efficiency from the difference encoding
+            // Then use RE
+            imgRe[p++]=reTest+127; // The code for number of repeats
+            imgRe[p++]=currentValue; // The repeated value
+            i+=(reTest-1); // because will increment one more time at top of loop
+            activeLiteralIndex=-1;
+        } else {
+            // We need to evaluate difference encoding starting with the prior value
+            unsigned char priorValue=0;
+            if (i>0) {
+                priorValue=preBuffer[i-1];
+            }
+            int unitsToCheck=bufferLength-i;
+            if (unitsToCheck>95) {
+                unitsToCheck=95; // 95 is max supported number of differences
+            }
+            int c=i;
+            for (int j=0;j<95;j++) {
+                dbuffer[j]=0; // clear the difference buffer
+            }
+            for (;c<i+unitsToCheck;c++) {
+                int d=preBuffer[c] - priorValue;
+                if (d>2 || d<-1) {
+                    break;
+                }
+                priorValue+=d; // since by definition the diff encoding is cumulative
+                if (d==-1) {
+                    d=3; // we use this to represent -1 in the dbuffer for key lookup later
+                }
+                dbuffer[c-i]=d;
+            }
+            double dfEfficiency = ((c-i)*1.0)/(((c-i)/4)+2); // The denominator includes the coding byte and the encoding bytes
+            if (reEfficiency>dfEfficiency && reEfficiency>1.0) {
+                // Then use RE
+                imgRe[p++]=reTest+127; // The code for number of repeats
+                imgRe[p++]=currentValue; // The repeated value
+                i+=(reTest-1); // because will increment one more time at top of loop
+                activeLiteralIndex=-1;
+            } else if (dfEfficiency>1.0) {
+                // First, encode the number of units we expect
+                imgRe[p++]=c-i+32;
+                // Then use DF. We want to move forward in units of 4, and pick the correct encoding.
+                // Note that is doesn't matter if we pad extra 0s because we know what the correct
+                // length is from above.
+                int cp=i;
+                int d0,d1,d2,d3;
+                d0=d1=d2=d3=0;
+                while(cp<c) {
+                    d0=dbuffer[cp];
+                    if (cp+1<c) {
+                        d1=dbuffer[cp+1];
+                        if (cp+2<c) {
+                            d2=dbuffer[cp+2];
+                            if (cp+3<c) {
+                                d3=dbuffer[cp+3];
+                            }
+                        }
+                    }
+                    int lookupKey=1000*d0+100*d1+10*d2+d3;
+                    unsigned char dc=dfmap[lookupKey];
+                    imgRe[p++]=dc;
+                }
+                activeLiteralIndex=-1;
+            } else {
+                // We need to add this value as a literal. If there is already a literal mode, then simply
+                // add it. Otherwise, start a new one.
+                if (activeLiteralIndex>=0) {
+                    // Check to see if it is too big for another value
+                    if (imgRe[activeLiteralIndex]>=32) {
+                        // We need a new index
+                        imgRe[p++]=1;
+                        activeLiteralIndex=p-1; // Our new literal index
+                    }
+                    imgRe[p++]=currentValue; // Add the current value as literal
+                }
+            }
+        }
+    }
+    return p;
 }
 
 
