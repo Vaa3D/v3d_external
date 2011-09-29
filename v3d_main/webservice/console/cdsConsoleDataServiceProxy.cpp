@@ -478,7 +478,61 @@ int ConsoleDataServiceProxy::getAnnotationsForEntities(const char *endpoint, con
 	return soap_closesock(soap);
 }
 
-int ConsoleDataServiceProxy::reservePort(const char *endpoint, const char *soap_action, std::string clientName, struct fw__reservePortResponse &_param_8)
+int ConsoleDataServiceProxy::getUserAnnotationColor(const char *endpoint, const char *soap_action, std::string username, struct fw__getUserAnnotationColorResponse &_param_8)
+{	struct soap *soap = this;
+	struct fw__getUserAnnotationColor soap_tmp_fw__getUserAnnotationColor;
+	if (endpoint)
+		soap_endpoint = endpoint;
+	if (!soap_endpoint)
+		soap_endpoint = "http://localhost:30001/axis2/services/cds";
+	if (!soap_action)
+		soap_action = "";
+	soap->encodingStyle = NULL;
+	soap_tmp_fw__getUserAnnotationColor.username = username;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_fw__getUserAnnotationColor(soap, &soap_tmp_fw__getUserAnnotationColor);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_fw__getUserAnnotationColor(soap, &soap_tmp_fw__getUserAnnotationColor, "fw:getUserAnnotationColor", NULL)
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	}
+	if (soap_end_count(soap))
+		return soap->error;
+	if (soap_connect(soap, soap_endpoint, soap_action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_fw__getUserAnnotationColor(soap, &soap_tmp_fw__getUserAnnotationColor, "fw:getUserAnnotationColor", NULL)
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap_closesock(soap);
+	if (!&_param_8)
+		return soap_closesock(soap);
+	soap_default_fw__getUserAnnotationColorResponse(soap, &_param_8);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap_closesock(soap);
+	soap_get_fw__getUserAnnotationColorResponse(soap, &_param_8, "fw:getUserAnnotationColorResponse", "");
+	if (soap->error)
+		return soap_recv_fault(soap, 0);
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap_closesock(soap);
+	return soap_closesock(soap);
+}
+
+int ConsoleDataServiceProxy::reservePort(const char *endpoint, const char *soap_action, std::string clientName, struct fw__reservePortResponse &_param_9)
 {	struct soap *soap = this;
 	struct fw__reservePort soap_tmp_fw__reservePort;
 	if (endpoint)
@@ -514,15 +568,15 @@ int ConsoleDataServiceProxy::reservePort(const char *endpoint, const char *soap_
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
-	if (!&_param_8)
+	if (!&_param_9)
 		return soap_closesock(soap);
-	soap_default_fw__reservePortResponse(soap, &_param_8);
+	soap_default_fw__reservePortResponse(soap, &_param_9);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_fw__reservePortResponse(soap, &_param_8, "fw:reservePortResponse", "");
+	soap_get_fw__reservePortResponse(soap, &_param_9, "fw:reservePortResponse", "");
 	if (soap->error)
 		return soap_recv_fault(soap, 0);
 	if (soap_body_end_in(soap)
@@ -532,7 +586,7 @@ int ConsoleDataServiceProxy::reservePort(const char *endpoint, const char *soap_
 	return soap_closesock(soap);
 }
 
-int ConsoleDataServiceProxy::registerClient(const char *endpoint, const char *soap_action, int _port, std::string _endpointUrl, struct fw__registerClientResponse &_param_9)
+int ConsoleDataServiceProxy::registerClient(const char *endpoint, const char *soap_action, int _port, std::string _endpointUrl, struct fw__registerClientResponse &_param_10)
 {	struct soap *soap = this;
 	struct fw__registerClient soap_tmp_fw__registerClient;
 	if (endpoint)
@@ -569,15 +623,15 @@ int ConsoleDataServiceProxy::registerClient(const char *endpoint, const char *so
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
-	if (!&_param_9)
+	if (!&_param_10)
 		return soap_closesock(soap);
-	soap_default_fw__registerClientResponse(soap, &_param_9);
+	soap_default_fw__registerClientResponse(soap, &_param_10);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_fw__registerClientResponse(soap, &_param_9, "fw:registerClientResponse", "");
+	soap_get_fw__registerClientResponse(soap, &_param_10, "fw:registerClientResponse", "");
 	if (soap->error)
 		return soap_recv_fault(soap, 0);
 	if (soap_body_end_in(soap)
@@ -587,7 +641,7 @@ int ConsoleDataServiceProxy::registerClient(const char *endpoint, const char *so
 	return soap_closesock(soap);
 }
 
-int ConsoleDataServiceProxy::createAnnotation(const char *endpoint, const char *soap_action, fw__ontologyAnnotation *annotation, struct fw__createAnnotationResponse &_param_10)
+int ConsoleDataServiceProxy::createAnnotation(const char *endpoint, const char *soap_action, fw__ontologyAnnotation *annotation, struct fw__createAnnotationResponse &_param_11)
 {	struct soap *soap = this;
 	struct fw__createAnnotation soap_tmp_fw__createAnnotation;
 	if (endpoint)
@@ -623,15 +677,15 @@ int ConsoleDataServiceProxy::createAnnotation(const char *endpoint, const char *
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
-	if (!&_param_10)
+	if (!&_param_11)
 		return soap_closesock(soap);
-	soap_default_fw__createAnnotationResponse(soap, &_param_10);
+	soap_default_fw__createAnnotationResponse(soap, &_param_11);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_fw__createAnnotationResponse(soap, &_param_10, "fw:createAnnotationResponse", "");
+	soap_get_fw__createAnnotationResponse(soap, &_param_11, "fw:createAnnotationResponse", "");
 	if (soap->error)
 		return soap_recv_fault(soap, 0);
 	if (soap_body_end_in(soap)
@@ -641,7 +695,7 @@ int ConsoleDataServiceProxy::createAnnotation(const char *endpoint, const char *
 	return soap_closesock(soap);
 }
 
-int ConsoleDataServiceProxy::getKeybindings(const char *endpoint, const char *soap_action, LONG64 ontologyId, struct fw__getKeybindingsResponse &_param_11)
+int ConsoleDataServiceProxy::getKeybindings(const char *endpoint, const char *soap_action, LONG64 ontologyId, struct fw__getKeybindingsResponse &_param_12)
 {	struct soap *soap = this;
 	struct fw__getKeybindings soap_tmp_fw__getKeybindings;
 	if (endpoint)
@@ -677,15 +731,15 @@ int ConsoleDataServiceProxy::getKeybindings(const char *endpoint, const char *so
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
-	if (!&_param_11)
+	if (!&_param_12)
 		return soap_closesock(soap);
-	soap_default_fw__getKeybindingsResponse(soap, &_param_11);
+	soap_default_fw__getKeybindingsResponse(soap, &_param_12);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_fw__getKeybindingsResponse(soap, &_param_11, "fw:getKeybindingsResponse", "");
+	soap_get_fw__getKeybindingsResponse(soap, &_param_12, "fw:getKeybindingsResponse", "");
 	if (soap->error)
 		return soap_recv_fault(soap, 0);
 	if (soap_body_end_in(soap)
@@ -695,7 +749,7 @@ int ConsoleDataServiceProxy::getKeybindings(const char *endpoint, const char *so
 	return soap_closesock(soap);
 }
 
-int ConsoleDataServiceProxy::getParentEntityDataArray(const char *endpoint, const char *soap_action, LONG64 childEntityId, struct fw__getParentEntityDataArrayResponse &_param_12)
+int ConsoleDataServiceProxy::getParentEntityDataArray(const char *endpoint, const char *soap_action, LONG64 childEntityId, struct fw__getParentEntityDataArrayResponse &_param_13)
 {	struct soap *soap = this;
 	struct fw__getParentEntityDataArray soap_tmp_fw__getParentEntityDataArray;
 	if (endpoint)
@@ -731,15 +785,15 @@ int ConsoleDataServiceProxy::getParentEntityDataArray(const char *endpoint, cons
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
-	if (!&_param_12)
+	if (!&_param_13)
 		return soap_closesock(soap);
-	soap_default_fw__getParentEntityDataArrayResponse(soap, &_param_12);
+	soap_default_fw__getParentEntityDataArrayResponse(soap, &_param_13);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_fw__getParentEntityDataArrayResponse(soap, &_param_12, "fw:getParentEntityDataArrayResponse", "");
+	soap_get_fw__getParentEntityDataArrayResponse(soap, &_param_13, "fw:getParentEntityDataArrayResponse", "");
 	if (soap->error)
 		return soap_recv_fault(soap, 0);
 	if (soap_body_end_in(soap)

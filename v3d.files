@@ -2390,10 +2390,16 @@ v3d_main/neuron_annotator/data_model/NeuronSelectionModel.h
 v3d_main/neuron_annotator/data_model/NeuronSelectionModel.cpp
 v3d_main/neuron_annotator/data_model/ZSliceColors.h
 v3d_main/neuron_annotator/data_model/ZSliceColors.cpp
+v3d_main/neuron_annotator/data_model/VolumeColors.h
+v3d_main/neuron_annotator/data_model/VolumeColors.cpp
 v3d_main/neuron_annotator/data_model/SlotMerger.h
 v3d_main/neuron_annotator/data_model/SlotMerger.cpp
+v3d_main/neuron_annotator/data_model/VolumeModel.h
+v3d_main/neuron_annotator/data_model/VolumeModel.cpp
 v3d_main/neuron_annotator/data_model/NaSharedDataModel.h
 v3d_main/neuron_annotator/data_model/NaSharedDataModel.cpp
+v3d_main/neuron_annotator/data_model/PrivateVolumeModelData.h
+v3d_main/neuron_annotator/data_model/PrivateVolumeModelData.cpp
 v3d_main/neuron_annotator/data_model/NaSharedDataSignaller.h
 v3d_main/neuron_annotator/data_model/NaSharedDataSignaller.cpp
 v3d_main/webservice/gsoap2/stdsoap2.cpp
@@ -2431,6 +2437,8 @@ v3d_main/neuron_annotator/entity_model/Ontology.h
 v3d_main/neuron_annotator/entity_model/Ontology.cpp
 v3d_main/neuron_annotator/entity_model/AnnotatedBranch.h
 v3d_main/neuron_annotator/entity_model/AnnotatedBranch.cpp
+v3d_main/neuron_annotator/data_model/Texture2dColors.h
+v3d_main/neuron_annotator/data_model/Texture2dColors.cpp
 v3d_main/neuron_annotator/data_model/PrivateDataColorModel.h
 v3d_main/neuron_annotator/data_model/PrivateDataColorModel.cpp
 v3d_main/neuron_annotator/gui/trees/OntologyTreeModel.h
@@ -2448,6 +2456,10 @@ v3d_main/neuron_annotator/entity_model/OntologyAnnotation.h
 v3d_main/neuron_annotator/entity_model/OntologyAnnotation.cpp
 v3d_main/v3d/v3d_essential.pro
 v3d_main/neuron_annotator/utility/mg_image_lib_reentrant.cpp
+v3d_main/neuron_annotator/utility/Icons.h
+v3d_main/neuron_annotator/utility/Icons.cpp
+v3d_main/neuron_annotator/entity_model/AnnotationSession.h
+v3d_main/neuron_annotator/entity_model/AnnotationSession.cpp
 v3d_main/neuron_annotator/data_model/NeuronFragmentData.h
 v3d_main/neuron_annotator/data_model/NeuronFragmentData.cpp
 v3d_main/neuron_annotator/data_model/PrivateNeuronFragmentData.h

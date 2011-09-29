@@ -47,6 +47,12 @@
 <message name="getAnnotationsForEntitiesResponse">
 <part name="return" type="tns:entityArray" />
 </message>
+<message name="getUserAnnotationColor">
+<part name="username" type="xsd:string" />
+</message>
+<message name="getUserAnnotationColorResponse">
+<part name="return" type="xsd:string" />
+</message>
 <message name="reservePort">
 <part name="clientName" type="xsd:string" />
 </message>
@@ -102,6 +108,10 @@
 <operation name="getAnnotationsForEntities">
 <input message="tns:getAnnotationsForEntities" />
 <output message="tns:getAnnotationsForEntitiesResponse" />
+</operation>
+<operation name="getUserAnnotationColor">
+<input message="tns:getUserAnnotationColor" />
+<output message="tns:getUserAnnotationColorResponse" />
 </operation>
 <operation name="reservePort">
 <input message="tns:reservePort" />
@@ -181,6 +191,15 @@
 </output>
 </operation>
 <operation name="getAnnotationsForEntities">
+<soap:operation soapAction="" />
+<input>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</input>
+<output>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</output>
+</operation>
+<operation name="getUserAnnotationColor">
 <soap:operation soapAction="" />
 <input>
 <soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />

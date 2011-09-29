@@ -121,6 +121,12 @@ int ConsoleObserverServiceImpl::sessionSelected(LONG64 sessionId, struct fw__ses
     return SOAP_OK;
 }
 
+int ConsoleObserverServiceImpl::sessionDeselected(struct fw__sessionDeselectedResponse &response)
+{
+    emit sessionDeselected();
+    return SOAP_OK;
+}
+
 ConsoleObserverService *ConsoleObserverServiceImpl::copy()
 {
     // Would need to implement the other constructors to do this, but who needs it anyway?

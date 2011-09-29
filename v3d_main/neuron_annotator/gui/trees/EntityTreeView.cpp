@@ -26,6 +26,19 @@ void EntityTreeView::selectEntity(const qint64 & entityId)
     QItemSelectionModel *selection = selectionModel();
     selection->clearSelection();
     selection->select(QItemSelection(beginIndex, endIndex), QItemSelectionModel::Select);
+
+    // Expand to the node
+    expandTo(termIndex);
+    scrollTo(termIndex);
 }
 
+void EntityTreeView::expandTo(const QModelIndex &index)
+{
+    EntityTreeModel *treeModel = static_cast<EntityTreeModel *>(model());
 
+    QModelIndex curr = index;
+    while (curr.isValid()) {
+        setExpanded(model()->index(curr.row(), 0, treeModel->parent(curr)), true);
+        curr = treeModel->parent(curr);
+    }
+}

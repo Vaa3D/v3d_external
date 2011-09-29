@@ -23,6 +23,7 @@ void AnnotatedBranchTreeView::showContextMenu(const QPoint& point)
         Entity *entity = item->entity();
         if (entity==0) return;
         if (*entity->entityType != "Annotation") return;
+        // TODO: only allow this action if the annotation is owned by the current user
         actions.append(removeAnnotationAction);
         QMenu::exec(actions, mapToGlobal(point));
     }

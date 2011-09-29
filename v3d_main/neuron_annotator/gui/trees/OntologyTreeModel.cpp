@@ -80,10 +80,10 @@ QVariant OntologyTreeModel::data(const QModelIndex &index, int role) const
         return Icons::getIcon(item->entity());
     }
 
-    if (role != Qt::DisplayRole)
-        return QVariant();
+    if (role == Qt::DisplayRole)
+        return item->data(index.column());
 
-    return item->data(index.column());
+    return QVariant();
 }
 
 

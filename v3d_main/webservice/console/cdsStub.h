@@ -51,42 +51,41 @@ namespace cds {
 
 #endif
 
-#ifndef SOAP_TYPE_cds_fw__ontologyAnnotation
-#define SOAP_TYPE_cds_fw__ontologyAnnotation (8)
-/* fw:ontologyAnnotation */
-class SOAP_CMAC fw__ontologyAnnotation
+#ifndef SOAP_TYPE_cds_fw__entityData
+#define SOAP_TYPE_cds_fw__entityData (8)
+/* fw:entityData */
+class SOAP_CMAC fw__entityData
 {
 public:
-	LONG64 *sessionId;	/* optional element of type xsd:long */
-	LONG64 *targetEntityId;	/* optional element of type xsd:long */
-	LONG64 *keyEntityId;	/* optional element of type xsd:long */
-	std::string *keyString;	/* optional element of type xsd:string */
-	LONG64 *valueEntityId;	/* optional element of type xsd:long */
-	std::string *valueString;	/* optional element of type xsd:string */
+	std::string *entityAttribute;	/* optional element of type fw:entityAttribute */
+	class fw__entity *childEntity;	/* optional element of type fw:entity */
+	std::string *user;	/* optional element of type fw:user */
+	std::string *value;	/* optional element of type xsd:string */
+	int *orderIndex;	/* optional element of type xsd:int */
 	LONG64 *id;	/* optional attribute */
 	struct soap *soap;	/* transient */
 public:
-	virtual int soap_type() const { return 8; } /* = unique id SOAP_TYPE_cds_fw__ontologyAnnotation */
+	virtual int soap_type() const { return 8; } /* = unique id SOAP_TYPE_cds_fw__entityData */
 	virtual void soap_default(struct soap*);
 	virtual void soap_serialize(struct soap*) const;
 	virtual int soap_put(struct soap*, const char*, const char*) const;
 	virtual int soap_out(struct soap*, const char*, int, const char*) const;
 	virtual void *soap_get(struct soap*, const char*, const char*);
 	virtual void *soap_in(struct soap*, const char*, const char*);
-	         fw__ontologyAnnotation() { fw__ontologyAnnotation::soap_default(NULL); }
-	virtual ~fw__ontologyAnnotation() { }
+	         fw__entityData() { fw__entityData::soap_default(NULL); }
+	virtual ~fw__entityData() { }
 };
 #endif
 
 #ifndef SOAP_TYPE_cds__fw__entity_entityDataSet
-#define SOAP_TYPE_cds__fw__entity_entityDataSet (29)
+#define SOAP_TYPE_cds__fw__entity_entityDataSet (32)
 /* fw:entity-entityDataSet */
 class SOAP_CMAC _fw__entity_entityDataSet
 {
 public:
-	std::vector<class fw__entityData * >entityData;	/* optional element of type fw:entityData */
+	std::vector<fw__entityData * >entityData;	/* optional element of type fw:entityData */
 public:
-	virtual int soap_type() const { return 29; } /* = unique id SOAP_TYPE_cds__fw__entity_entityDataSet */
+	virtual int soap_type() const { return 32; } /* = unique id SOAP_TYPE_cds__fw__entity_entityDataSet */
 	virtual void soap_default(struct soap*);
 	virtual void soap_serialize(struct soap*) const;
 	virtual int soap_put(struct soap*, const char*, const char*) const;
@@ -124,32 +123,6 @@ public:
 };
 #endif
 
-#ifndef SOAP_TYPE_cds_fw__entityData
-#define SOAP_TYPE_cds_fw__entityData (10)
-/* fw:entityData */
-class SOAP_CMAC fw__entityData
-{
-public:
-	std::string *entityAttribute;	/* optional element of type fw:entityAttribute */
-	fw__entity *childEntity;	/* optional element of type fw:entity */
-	std::string *user;	/* optional element of type fw:user */
-	std::string *value;	/* optional element of type xsd:string */
-	int *orderIndex;	/* optional element of type xsd:int */
-	LONG64 *id;	/* optional attribute */
-	struct soap *soap;	/* transient */
-public:
-	virtual int soap_type() const { return 10; } /* = unique id SOAP_TYPE_cds_fw__entityData */
-	virtual void soap_default(struct soap*);
-	virtual void soap_serialize(struct soap*) const;
-	virtual int soap_put(struct soap*, const char*, const char*) const;
-	virtual int soap_out(struct soap*, const char*, int, const char*) const;
-	virtual void *soap_get(struct soap*, const char*, const char*);
-	virtual void *soap_in(struct soap*, const char*, const char*);
-	         fw__entityData() { fw__entityData::soap_default(NULL); }
-	virtual ~fw__entityData() { }
-};
-#endif
-
 #ifndef SOAP_TYPE_cds__fw__ontologyKeyBindings_keyBindingSet
 #define SOAP_TYPE_cds__fw__ontologyKeyBindings_keyBindingSet (36)
 /* fw:ontologyKeyBindings-keyBindingSet */
@@ -171,7 +144,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__ontologyKeyBindings
-#define SOAP_TYPE_cds_fw__ontologyKeyBindings (11)
+#define SOAP_TYPE_cds_fw__ontologyKeyBindings (10)
 /* fw:ontologyKeyBindings */
 class SOAP_CMAC fw__ontologyKeyBindings
 {
@@ -181,7 +154,7 @@ public:
 	_fw__ontologyKeyBindings_keyBindingSet *keyBindingSet;	/* optional element of type fw:ontologyKeyBindings-keyBindingSet */
 	struct soap *soap;	/* transient */
 public:
-	virtual int soap_type() const { return 11; } /* = unique id SOAP_TYPE_cds_fw__ontologyKeyBindings */
+	virtual int soap_type() const { return 10; } /* = unique id SOAP_TYPE_cds_fw__ontologyKeyBindings */
 	virtual void soap_default(struct soap*);
 	virtual void soap_serialize(struct soap*) const;
 	virtual int soap_put(struct soap*, const char*, const char*) const;
@@ -194,7 +167,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__ontologyKeyBind
-#define SOAP_TYPE_cds_fw__ontologyKeyBind (12)
+#define SOAP_TYPE_cds_fw__ontologyKeyBind (11)
 /* fw:ontologyKeyBind */
 class SOAP_CMAC fw__ontologyKeyBind
 {
@@ -203,7 +176,7 @@ public:
 	LONG64 *ontologyTermId;	/* optional element of type xsd:long */
 	struct soap *soap;	/* transient */
 public:
-	virtual int soap_type() const { return 12; } /* = unique id SOAP_TYPE_cds_fw__ontologyKeyBind */
+	virtual int soap_type() const { return 11; } /* = unique id SOAP_TYPE_cds_fw__ontologyKeyBind */
 	virtual void soap_default(struct soap*);
 	virtual void soap_serialize(struct soap*) const;
 	virtual int soap_put(struct soap*, const char*, const char*) const;
@@ -212,6 +185,33 @@ public:
 	virtual void *soap_in(struct soap*, const char*, const char*);
 	         fw__ontologyKeyBind() { fw__ontologyKeyBind::soap_default(NULL); }
 	virtual ~fw__ontologyKeyBind() { }
+};
+#endif
+
+#ifndef SOAP_TYPE_cds_fw__ontologyAnnotation
+#define SOAP_TYPE_cds_fw__ontologyAnnotation (12)
+/* fw:ontologyAnnotation */
+class SOAP_CMAC fw__ontologyAnnotation
+{
+public:
+	LONG64 *sessionId;	/* optional element of type xsd:long */
+	LONG64 *targetEntityId;	/* optional element of type xsd:long */
+	LONG64 *keyEntityId;	/* optional element of type xsd:long */
+	std::string *keyString;	/* optional element of type xsd:string */
+	LONG64 *valueEntityId;	/* optional element of type xsd:long */
+	std::string *valueString;	/* optional element of type xsd:string */
+	LONG64 *id;	/* optional attribute */
+	struct soap *soap;	/* transient */
+public:
+	virtual int soap_type() const { return 12; } /* = unique id SOAP_TYPE_cds_fw__ontologyAnnotation */
+	virtual void soap_default(struct soap*);
+	virtual void soap_serialize(struct soap*) const;
+	virtual int soap_put(struct soap*, const char*, const char*) const;
+	virtual int soap_out(struct soap*, const char*, int, const char*) const;
+	virtual void *soap_get(struct soap*, const char*, const char*);
+	virtual void *soap_in(struct soap*, const char*, const char*);
+	         fw__ontologyAnnotation() { fw__ontologyAnnotation::soap_default(NULL); }
+	virtual ~fw__ontologyAnnotation() { }
 };
 #endif
 
@@ -238,29 +238,8 @@ public:
 };
 #endif
 
-#ifndef SOAP_TYPE_cds_fw__entityArray
-#define SOAP_TYPE_cds_fw__entityArray (14)
-/* fw:entityArray */
-class SOAP_CMAC fw__entityArray
-{
-public:
-	std::vector<fw__entity * >item;	/* optional element of type fw:entity */
-	struct soap *soap;	/* transient */
-public:
-	virtual int soap_type() const { return 14; } /* = unique id SOAP_TYPE_cds_fw__entityArray */
-	virtual void soap_default(struct soap*);
-	virtual void soap_serialize(struct soap*) const;
-	virtual int soap_put(struct soap*, const char*, const char*) const;
-	virtual int soap_out(struct soap*, const char*, int, const char*) const;
-	virtual void *soap_get(struct soap*, const char*, const char*);
-	virtual void *soap_in(struct soap*, const char*, const char*);
-	         fw__entityArray() { fw__entityArray::soap_default(NULL); }
-	virtual ~fw__entityArray() { }
-};
-#endif
-
 #ifndef SOAP_TYPE_cds_fw__entityDataArray
-#define SOAP_TYPE_cds_fw__entityDataArray (15)
+#define SOAP_TYPE_cds_fw__entityDataArray (14)
 /* fw:entityDataArray */
 class SOAP_CMAC fw__entityDataArray
 {
@@ -268,7 +247,7 @@ public:
 	std::vector<fw__entityData * >item;	/* optional element of type fw:entityData */
 	struct soap *soap;	/* transient */
 public:
-	virtual int soap_type() const { return 15; } /* = unique id SOAP_TYPE_cds_fw__entityDataArray */
+	virtual int soap_type() const { return 14; } /* = unique id SOAP_TYPE_cds_fw__entityDataArray */
 	virtual void soap_default(struct soap*);
 	virtual void soap_serialize(struct soap*) const;
 	virtual int soap_put(struct soap*, const char*, const char*) const;
@@ -277,6 +256,27 @@ public:
 	virtual void *soap_in(struct soap*, const char*, const char*);
 	         fw__entityDataArray() { fw__entityDataArray::soap_default(NULL); }
 	virtual ~fw__entityDataArray() { }
+};
+#endif
+
+#ifndef SOAP_TYPE_cds_fw__entityArray
+#define SOAP_TYPE_cds_fw__entityArray (15)
+/* fw:entityArray */
+class SOAP_CMAC fw__entityArray
+{
+public:
+	std::vector<fw__entity * >item;	/* optional element of type fw:entity */
+	struct soap *soap;	/* transient */
+public:
+	virtual int soap_type() const { return 15; } /* = unique id SOAP_TYPE_cds_fw__entityArray */
+	virtual void soap_default(struct soap*);
+	virtual void soap_serialize(struct soap*) const;
+	virtual int soap_put(struct soap*, const char*, const char*) const;
+	virtual int soap_out(struct soap*, const char*, int, const char*) const;
+	virtual void *soap_get(struct soap*, const char*, const char*);
+	virtual void *soap_in(struct soap*, const char*, const char*);
+	         fw__entityArray() { fw__entityArray::soap_default(NULL); }
+	virtual ~fw__entityArray() { }
 };
 #endif
 
@@ -443,8 +443,28 @@ public:
 };
 #endif
 
+#ifndef SOAP_TYPE_cds_fw__getUserAnnotationColorResponse
+#define SOAP_TYPE_cds_fw__getUserAnnotationColorResponse (73)
+/* fw:getUserAnnotationColorResponse */
+struct fw__getUserAnnotationColorResponse
+{
+public:
+	std::string return_;	/* SOAP 1.2 RPC return element (when namespace qualified) */	/* required element of type xsd:string */
+};
+#endif
+
+#ifndef SOAP_TYPE_cds_fw__getUserAnnotationColor
+#define SOAP_TYPE_cds_fw__getUserAnnotationColor (76)
+/* fw:getUserAnnotationColor */
+struct fw__getUserAnnotationColor
+{
+public:
+	std::string username;	/* required element of type xsd:string */
+};
+#endif
+
 #ifndef SOAP_TYPE_cds_fw__reservePortResponse
-#define SOAP_TYPE_cds_fw__reservePortResponse (73)
+#define SOAP_TYPE_cds_fw__reservePortResponse (77)
 /* fw:reservePortResponse */
 struct fw__reservePortResponse
 {
@@ -454,7 +474,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__reservePort
-#define SOAP_TYPE_cds_fw__reservePort (76)
+#define SOAP_TYPE_cds_fw__reservePort (80)
 /* fw:reservePort */
 struct fw__reservePort
 {
@@ -464,7 +484,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__registerClientResponse
-#define SOAP_TYPE_cds_fw__registerClientResponse (77)
+#define SOAP_TYPE_cds_fw__registerClientResponse (81)
 /* fw:registerClientResponse */
 struct fw__registerClientResponse
 {
@@ -476,7 +496,7 @@ private:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__registerClient
-#define SOAP_TYPE_cds_fw__registerClient (80)
+#define SOAP_TYPE_cds_fw__registerClient (84)
 /* fw:registerClient */
 struct fw__registerClient
 {
@@ -487,7 +507,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__createAnnotationResponse
-#define SOAP_TYPE_cds_fw__createAnnotationResponse (81)
+#define SOAP_TYPE_cds_fw__createAnnotationResponse (85)
 /* fw:createAnnotationResponse */
 struct fw__createAnnotationResponse
 {
@@ -499,7 +519,7 @@ private:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__createAnnotation
-#define SOAP_TYPE_cds_fw__createAnnotation (85)
+#define SOAP_TYPE_cds_fw__createAnnotation (89)
 /* fw:createAnnotation */
 struct fw__createAnnotation
 {
@@ -509,7 +529,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__getKeybindingsResponse
-#define SOAP_TYPE_cds_fw__getKeybindingsResponse (86)
+#define SOAP_TYPE_cds_fw__getKeybindingsResponse (90)
 /* fw:getKeybindingsResponse */
 struct fw__getKeybindingsResponse
 {
@@ -519,7 +539,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__getKeybindings
-#define SOAP_TYPE_cds_fw__getKeybindings (90)
+#define SOAP_TYPE_cds_fw__getKeybindings (94)
 /* fw:getKeybindings */
 struct fw__getKeybindings
 {
@@ -529,7 +549,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__getParentEntityDataArrayResponse
-#define SOAP_TYPE_cds_fw__getParentEntityDataArrayResponse (91)
+#define SOAP_TYPE_cds_fw__getParentEntityDataArrayResponse (95)
 /* fw:getParentEntityDataArrayResponse */
 struct fw__getParentEntityDataArrayResponse
 {
@@ -539,7 +559,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__getParentEntityDataArray
-#define SOAP_TYPE_cds_fw__getParentEntityDataArray (95)
+#define SOAP_TYPE_cds_fw__getParentEntityDataArray (99)
 /* fw:getParentEntityDataArray */
 struct fw__getParentEntityDataArray
 {
@@ -551,7 +571,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_cds_SOAP_ENV__Header
-#define SOAP_TYPE_cds_SOAP_ENV__Header (96)
+#define SOAP_TYPE_cds_SOAP_ENV__Header (100)
 /* SOAP Header: */
 struct SOAP_ENV__Header
 {
@@ -567,7 +587,7 @@ private:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_cds_SOAP_ENV__Code
-#define SOAP_TYPE_cds_SOAP_ENV__Code (97)
+#define SOAP_TYPE_cds_SOAP_ENV__Code (101)
 /* SOAP Fault Code: */
 struct SOAP_ENV__Code
 {
@@ -582,7 +602,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_cds_SOAP_ENV__Detail
-#define SOAP_TYPE_cds_SOAP_ENV__Detail (99)
+#define SOAP_TYPE_cds_SOAP_ENV__Detail (103)
 /* SOAP-ENV:Detail */
 struct SOAP_ENV__Detail
 {
@@ -598,7 +618,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_cds_SOAP_ENV__Reason
-#define SOAP_TYPE_cds_SOAP_ENV__Reason (102)
+#define SOAP_TYPE_cds_SOAP_ENV__Reason (106)
 /* SOAP-ENV:Reason */
 struct SOAP_ENV__Reason
 {
@@ -612,7 +632,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_cds_SOAP_ENV__Fault
-#define SOAP_TYPE_cds_SOAP_ENV__Fault (103)
+#define SOAP_TYPE_cds_SOAP_ENV__Fault (107)
 /* SOAP Fault: */
 struct SOAP_ENV__Fault
 {
@@ -647,24 +667,24 @@ typedef char *_QName;
 typedef char *_XML;
 #endif
 
+#ifndef SOAP_TYPE_cds_fw__entityAttribute
+#define SOAP_TYPE_cds_fw__entityAttribute (18)
+typedef std::string fw__entityAttribute;
+#endif
+
 #ifndef SOAP_TYPE_cds_fw__user
-#define SOAP_TYPE_cds_fw__user (18)
+#define SOAP_TYPE_cds_fw__user (19)
 typedef std::string fw__user;
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__entityStatus
-#define SOAP_TYPE_cds_fw__entityStatus (19)
+#define SOAP_TYPE_cds_fw__entityStatus (20)
 typedef std::string fw__entityStatus;
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__entityType
-#define SOAP_TYPE_cds_fw__entityType (20)
+#define SOAP_TYPE_cds_fw__entityType (21)
 typedef std::string fw__entityType;
-#endif
-
-#ifndef SOAP_TYPE_cds_fw__entityAttribute
-#define SOAP_TYPE_cds_fw__entityAttribute (21)
-typedef std::string fw__entityAttribute;
 #endif
 
 

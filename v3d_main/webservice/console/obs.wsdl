@@ -24,6 +24,8 @@
 <part name="sessionId" type="xsd:long" />
 </message>
 <message name="sessionSelectedResponse" />
+<message name="sessionDeselected" />
+<message name="sessionDeselectedResponse" />
 <portType name="ConsoleObserver">
 <operation name="ontologySelected">
 <input message="tns:ontologySelected" />
@@ -48,6 +50,10 @@
 <operation name="sessionSelected">
 <input message="tns:sessionSelected" />
 <output message="tns:sessionSelectedResponse" />
+</operation>
+<operation name="sessionDeselected">
+<input message="tns:sessionDeselected" />
+<output message="tns:sessionDeselectedResponse" />
 </operation>
 </portType>
 <binding name="ObsPortBinding" type="tns:ConsoleObserver">
@@ -98,6 +104,15 @@
 </output>
 </operation>
 <operation name="sessionSelected">
+<soap:operation soapAction="" />
+<input>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</input>
+<output>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</output>
+</operation>
+<operation name="sessionDeselected">
 <soap:operation soapAction="" />
 <input>
 <soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />

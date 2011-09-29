@@ -11,6 +11,7 @@ class EntityTreeView : public QTreeView
 public:
     explicit EntityTreeView(QWidget *parent = 0);
     void selectEntity(const qint64 & entityId);
+    void expandTo(const QModelIndex &index);
 
 protected:
     void keyPressEvent(QKeyEvent *event);

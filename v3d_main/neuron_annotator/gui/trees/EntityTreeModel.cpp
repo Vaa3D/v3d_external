@@ -26,12 +26,14 @@ QVariant EntityTreeModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    if (role != Qt::DisplayRole)
-        return QVariant();
-
     EntityTreeItem *item = static_cast<EntityTreeItem*>(index.internalPointer());
 
-    return item->data(index.column());
+    if (role == Qt::DisplayRole)
+    {
+        return item->data(index.column());
+    }
+
+    return QVariant();
 }
 
 Qt::ItemFlags EntityTreeModel::flags(const QModelIndex &index) const

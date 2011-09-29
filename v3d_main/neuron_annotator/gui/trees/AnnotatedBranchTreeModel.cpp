@@ -62,15 +62,21 @@ QVariant AnnotatedBranchTreeModel::data(const QModelIndex &index, int role) cons
 
     EntityTreeItem *item = static_cast<EntityTreeItem*>(index.internalPointer());
 
-    if (role == Qt::DecorationRole)
+    if (role == Qt::BackgroundRole)
     {
-        return Icons::getIcon(item->entity());
+        if (*item->entity()->entityType == "Annotation") {
+            return annotatedBranch->getUserColor(*item->entity()->user);
+        }
+        return QVariant();
     }
 
-    if (role != Qt::DisplayRole)
-        return QVariant();
+    if (role == Qt::DecorationRole)
+        return Icons::getIcon(item->entity());
 
-    return item->data(index.column());
+    if (role == Qt::DisplayRole)
+        return item->data(index.column());
+
+    return QVariant();
 }
 
 

@@ -28,9 +28,11 @@ signals:
     // These signals are emitted when a processed console event triggers an action
     void openOntology(Ontology *ontology);
     void openAnnotatedBranch(AnnotatedBranch *annotatedBranch);
-    void updateAnnotations(qint64 entityId, AnnotationList *annotations);
-    void communicationError(const QString & errorMessage);
+    void updateAnnotations(qint64 entityId, AnnotationList *annotations, UserColorMap *userColorMap);
     void openAnnotationSession(AnnotationSession *session);
+    void closeAnnotationSession();
+    void selectEntityById(const qint64 & entityId);
+    void communicationError(const QString & errorMessage);
 
 public slots:
     // These slots implement the console observer interface.
@@ -42,6 +44,7 @@ public slots:
     void entityViewRequested(qint64 entityId);
     void annotationsChanged(qint64 entityId);
     void sessionSelected(qint64 sessionId);
+    void sessionDeselected();
 
 private slots:
     // These slots are for listening to internal worker threads

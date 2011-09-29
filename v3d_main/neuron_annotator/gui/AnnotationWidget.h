@@ -5,6 +5,7 @@
 #include <QFrame>
 #include <QEvent>
 #include <QMutex>
+#include <QHash>
 
 class Entity;
 class Ontology;
@@ -46,7 +47,7 @@ public slots:
     void openAnnotationSession(AnnotationSession *annotationSession);
     void closeAnnotatedBranch();
     void openAnnotatedBranch(AnnotatedBranch *annotatedBranch, bool openStack = true);
-    void updateAnnotations(qint64 entityId, AnnotationList *annotations);
+    void updateAnnotations(qint64 entityId, AnnotationList *annotations, UserColorMap *userColorMap);
     void communicationError(const QString & errorMessage);
     void consoleConnect();
     void consoleDisconnect();
@@ -55,6 +56,7 @@ public slots:
     void annotateSelectedEntityWithOntologyTerm(const Entity *term, const Entity *parentTerm);
     void removeAnnotation(const Entity *annotation);
     void selectEntity(const Entity *entity);
+    void selectEntityById(const qint64 & entityId);
     void selectNeuron(int index);
     void deselectNeurons();
 

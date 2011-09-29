@@ -9,6 +9,7 @@ compiling, linking, and/or using OpenSSL is allowed.
 */
 
 #include "obsConsoleObserverService.h"
+#include <QtCore>
 
 namespace obs {
 
@@ -102,11 +103,12 @@ const SOAP_ENV__Header *ConsoleObserverService::soap_header()
 int ConsoleObserverService::run(int port)
 {	if (soap_valid_socket(bind(NULL, port, 100)))
 	{	for (;;)
-		{	if (!soap_valid_socket(accept()))
-				return this->error;
-			(void)serve();
+                {
+                        if (!soap_valid_socket(accept()))
+                                return this->error;
+                        (void)serve();
 			soap_destroy(this);
-			soap_end(this);
+                        soap_end(this);
 		}
 	}
 	else
@@ -165,6 +167,7 @@ static int serve_fw__entitySelected(ConsoleObserverService*);
 static int serve_fw__entityViewRequested(ConsoleObserverService*);
 static int serve_fw__annotationsChanged(ConsoleObserverService*);
 static int serve_fw__sessionSelected(ConsoleObserverService*);
+static int serve_fw__sessionDeselected(ConsoleObserverService*);
 
 int ConsoleObserverService::dispatch()
 {	soap_peek_element(this);
@@ -180,6 +183,8 @@ int ConsoleObserverService::dispatch()
 		return serve_fw__annotationsChanged(this);
 	if (!soap_match_tag(this, this->tag, "fw:sessionSelected"))
 		return serve_fw__sessionSelected(this);
+	if (!soap_match_tag(this, this->tag, "fw:sessionDeselected"))
+		return serve_fw__sessionDeselected(this);
 	return this->error = SOAP_NO_METHOD;
 }
 
@@ -422,6 +427,47 @@ static int serve_fw__sessionSelected(ConsoleObserverService *soap)
 	 || soap_putheader(soap)
 	 || soap_body_begin_out(soap)
 	 || soap_put_fw__sessionSelectedResponse(soap, &_param_6, "fw:sessionSelectedResponse", NULL)
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap->error;
+	return soap_closesock(soap);
+}
+
+static int serve_fw__sessionDeselected(ConsoleObserverService *soap)
+{	struct fw__sessionDeselected soap_tmp_fw__sessionDeselected;
+	struct fw__sessionDeselectedResponse _param_7;
+	soap_default_fw__sessionDeselectedResponse(soap, &_param_7);
+	soap_default_fw__sessionDeselected(soap, &soap_tmp_fw__sessionDeselected);
+	soap->encodingStyle = NULL;
+	if (!soap_get_fw__sessionDeselected(soap, &soap_tmp_fw__sessionDeselected, "fw:sessionDeselected", NULL))
+		return soap->error;
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap->error;
+	soap->error = soap->sessionDeselected(_param_7);
+	if (soap->error)
+		return soap->error;
+	soap_serializeheader(soap);
+	soap_serialize_fw__sessionDeselectedResponse(soap, &_param_7);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_fw__sessionDeselectedResponse(soap, &_param_7, "fw:sessionDeselectedResponse", NULL)
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	};
+	if (soap_end_count(soap)
+	 || soap_response(soap, SOAP_OK)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_fw__sessionDeselectedResponse(soap, &_param_7, "fw:sessionDeselectedResponse", NULL)
 	 || soap_body_end_out(soap)
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))

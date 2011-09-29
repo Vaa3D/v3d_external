@@ -8,4 +8,6 @@ class Entity;
 
 QString convertPathToMac(QString path);
 
+int getNeuronNumber(const Entity *entity);
+
 #endif // JACSUTIL_H

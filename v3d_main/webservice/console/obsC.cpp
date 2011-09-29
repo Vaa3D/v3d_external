@@ -17,7 +17,7 @@ compiling, linking, and/or using OpenSSL is allowed.
 
 namespace obs {
 
-SOAP_SOURCE_STAMP("@(#) obsC.cpp ver 2.8.3 2011-09-26 17:11:03 GMT")
+SOAP_SOURCE_STAMP("@(#) obsC.cpp ver 2.8.3 2011-09-27 20:59:17 GMT")
 
 
 #ifndef WITH_NOGLOBAL
@@ -172,6 +172,10 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		return soap_in_int(soap, NULL, NULL, "xsd:int");
 	case SOAP_TYPE_obs_LONG64:
 		return soap_in_LONG64(soap, NULL, NULL, "xsd:long");
+	case SOAP_TYPE_obs_fw__sessionDeselected:
+		return soap_in_fw__sessionDeselected(soap, NULL, NULL, "fw:sessionDeselected");
+	case SOAP_TYPE_obs_fw__sessionDeselectedResponse:
+		return soap_in_fw__sessionDeselectedResponse(soap, NULL, NULL, "fw:sessionDeselectedResponse");
 	case SOAP_TYPE_obs_fw__sessionSelected:
 		return soap_in_fw__sessionSelected(soap, NULL, NULL, "fw:sessionSelected");
 	case SOAP_TYPE_obs_fw__sessionSelectedResponse:
@@ -221,6 +225,14 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		if (!soap_match_tag(soap, t, "xsd:long"))
 		{	*type = SOAP_TYPE_obs_LONG64;
 			return soap_in_LONG64(soap, NULL, NULL, NULL);
+		}
+		if (!soap_match_tag(soap, t, "fw:sessionDeselected"))
+		{	*type = SOAP_TYPE_obs_fw__sessionDeselected;
+			return soap_in_fw__sessionDeselected(soap, NULL, NULL, NULL);
+		}
+		if (!soap_match_tag(soap, t, "fw:sessionDeselectedResponse"))
+		{	*type = SOAP_TYPE_obs_fw__sessionDeselectedResponse;
+			return soap_in_fw__sessionDeselectedResponse(soap, NULL, NULL, NULL);
 		}
 		if (!soap_match_tag(soap, t, "fw:sessionSelected"))
 		{	*type = SOAP_TYPE_obs_fw__sessionSelected;
@@ -346,6 +358,10 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_putelement(struct soap *soap, const void *ptr, co
 		return soap_out_int(soap, tag, id, (const int *)ptr, "xsd:int");
 	case SOAP_TYPE_obs_LONG64:
 		return soap_out_LONG64(soap, tag, id, (const LONG64 *)ptr, "xsd:long");
+	case SOAP_TYPE_obs_fw__sessionDeselected:
+		return soap_out_fw__sessionDeselected(soap, tag, id, (const struct fw__sessionDeselected *)ptr, "fw:sessionDeselected");
+	case SOAP_TYPE_obs_fw__sessionDeselectedResponse:
+		return soap_out_fw__sessionDeselectedResponse(soap, tag, id, (const struct fw__sessionDeselectedResponse *)ptr, "fw:sessionDeselectedResponse");
 	case SOAP_TYPE_obs_fw__sessionSelected:
 		return soap_out_fw__sessionSelected(soap, tag, id, (const struct fw__sessionSelected *)ptr, "fw:sessionSelected");
 	case SOAP_TYPE_obs_fw__sessionSelectedResponse:
@@ -385,6 +401,12 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_markelement(struct soap *soap, const void *ptr, 
 	(void)soap; (void)ptr; (void)type; /* appease -Wall -Werror */
 	switch (type)
 	{
+	case SOAP_TYPE_obs_fw__sessionDeselected:
+		soap_serialize_fw__sessionDeselected(soap, (const struct fw__sessionDeselected *)ptr);
+		break;
+	case SOAP_TYPE_obs_fw__sessionDeselectedResponse:
+		soap_serialize_fw__sessionDeselectedResponse(soap, (const struct fw__sessionDeselectedResponse *)ptr);
+		break;
 	case SOAP_TYPE_obs_fw__sessionSelected:
 		soap_serialize_fw__sessionSelected(soap, (const struct fw__sessionSelected *)ptr);
 		break;
@@ -459,6 +481,10 @@ SOAP_FMAC3 void * SOAP_FMAC4 obs_instantiate(struct soap *soap, int t, const cha
 		return (void*)soap_instantiate_fw__sessionSelectedResponse(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_obs_fw__sessionSelected:
 		return (void*)soap_instantiate_fw__sessionSelected(soap, -1, type, arrayType, n);
+	case SOAP_TYPE_obs_fw__sessionDeselectedResponse:
+		return (void*)soap_instantiate_fw__sessionDeselectedResponse(soap, -1, type, arrayType, n);
+	case SOAP_TYPE_obs_fw__sessionDeselected:
+		return (void*)soap_instantiate_fw__sessionDeselected(soap, -1, type, arrayType, n);
 #ifndef WITH_NOGLOBAL
 	case SOAP_TYPE_obs_SOAP_ENV__Header:
 		return (void*)soap_instantiate_SOAP_ENV__Header(soap, -1, type, arrayType, n);
@@ -557,6 +583,18 @@ SOAP_FMAC3 int SOAP_FMAC4 obs_fdelete(struct soap_clist *p)
 			SOAP_DELETE((struct fw__sessionSelected*)p->ptr);
 		else
 			SOAP_DELETE_ARRAY((struct fw__sessionSelected*)p->ptr);
+		break;
+	case SOAP_TYPE_obs_fw__sessionDeselectedResponse:
+		if (p->size < 0)
+			SOAP_DELETE((struct fw__sessionDeselectedResponse*)p->ptr);
+		else
+			SOAP_DELETE_ARRAY((struct fw__sessionDeselectedResponse*)p->ptr);
+		break;
+	case SOAP_TYPE_obs_fw__sessionDeselected:
+		if (p->size < 0)
+			SOAP_DELETE((struct fw__sessionDeselected*)p->ptr);
+		else
+			SOAP_DELETE_ARRAY((struct fw__sessionDeselected*)p->ptr);
 		break;
 #ifndef WITH_NOGLOBAL
 	case SOAP_TYPE_obs_SOAP_ENV__Header:
@@ -1376,6 +1414,196 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_SOAP_ENV__Header(struct soap *soap, int st,
 }
 
 #endif
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__sessionDeselected(struct soap *soap, struct fw__sessionDeselected *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__sessionDeselected(struct soap *soap, const struct fw__sessionDeselected *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__sessionDeselected(struct soap *soap, const char *tag, int id, const struct fw__sessionDeselected *a, const char *type)
+{
+	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_obs_fw__sessionDeselected), type))
+		return soap->error;
+	return soap_element_end_out(soap, tag);
+}
+
+SOAP_FMAC3 struct fw__sessionDeselected * SOAP_FMAC4 soap_in_fw__sessionDeselected(struct soap *soap, const char *tag, struct fw__sessionDeselected *a, const char *type)
+{
+	if (soap_element_begin_in(soap, tag, 0, type))
+		return NULL;
+	a = (struct fw__sessionDeselected *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_obs_fw__sessionDeselected, sizeof(struct fw__sessionDeselected), 0, NULL, NULL, NULL);
+	if (!a)
+		return NULL;
+	soap_default_fw__sessionDeselected(soap, a);
+	if (soap->body && !*soap->href)
+	{
+		for (;;)
+		{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+				return NULL;
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else
+	{	a = (struct fw__sessionDeselected *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_obs_fw__sessionDeselected, 0, sizeof(struct fw__sessionDeselected), 0, NULL);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__sessionDeselected(struct soap *soap, const struct fw__sessionDeselected *a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_obs_fw__sessionDeselected);
+	if (soap_out_fw__sessionDeselected(soap, tag?tag:"fw:sessionDeselected", id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 struct fw__sessionDeselected * SOAP_FMAC4 soap_get_fw__sessionDeselected(struct soap *soap, struct fw__sessionDeselected *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_fw__sessionDeselected(soap, tag, p, type)))
+		if (soap_getindependent(soap))
+			return NULL;
+	return p;
+}
+
+SOAP_FMAC1 struct fw__sessionDeselected * SOAP_FMAC2 soap_instantiate_fw__sessionDeselected(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
+{
+	(void)type; (void)arrayType; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_fw__sessionDeselected(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
+	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_obs_fw__sessionDeselected, n, obs_fdelete);
+	if (!cp)
+		return NULL;
+	if (n < 0)
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__sessionDeselected);
+		if (size)
+			*size = sizeof(struct fw__sessionDeselected);
+	}
+	else
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__sessionDeselected[n]);
+		if (!cp->ptr)
+		{	soap->error = SOAP_EOM;
+			return NULL;
+		}
+		if (size)
+			*size = n * sizeof(struct fw__sessionDeselected);
+	}
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
+	return (struct fw__sessionDeselected*)cp->ptr;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__sessionDeselected(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
+{
+	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__sessionDeselected %p -> %p\n", q, p));
+	*(struct fw__sessionDeselected*)p = *(struct fw__sessionDeselected*)q;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__sessionDeselectedResponse(struct soap *soap, struct fw__sessionDeselectedResponse *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__sessionDeselectedResponse(struct soap *soap, const struct fw__sessionDeselectedResponse *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__sessionDeselectedResponse(struct soap *soap, const char *tag, int id, const struct fw__sessionDeselectedResponse *a, const char *type)
+{
+	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_obs_fw__sessionDeselectedResponse), type))
+		return soap->error;
+	return soap_element_end_out(soap, tag);
+}
+
+SOAP_FMAC3 struct fw__sessionDeselectedResponse * SOAP_FMAC4 soap_in_fw__sessionDeselectedResponse(struct soap *soap, const char *tag, struct fw__sessionDeselectedResponse *a, const char *type)
+{
+	if (soap_element_begin_in(soap, tag, 0, type))
+		return NULL;
+	a = (struct fw__sessionDeselectedResponse *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_obs_fw__sessionDeselectedResponse, sizeof(struct fw__sessionDeselectedResponse), 0, NULL, NULL, NULL);
+	if (!a)
+		return NULL;
+	soap_default_fw__sessionDeselectedResponse(soap, a);
+	if (soap->body && !*soap->href)
+	{
+		for (;;)
+		{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+				return NULL;
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else
+	{	a = (struct fw__sessionDeselectedResponse *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_obs_fw__sessionDeselectedResponse, 0, sizeof(struct fw__sessionDeselectedResponse), 0, NULL);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__sessionDeselectedResponse(struct soap *soap, const struct fw__sessionDeselectedResponse *a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_obs_fw__sessionDeselectedResponse);
+	if (soap_out_fw__sessionDeselectedResponse(soap, tag?tag:"fw:sessionDeselectedResponse", id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 struct fw__sessionDeselectedResponse * SOAP_FMAC4 soap_get_fw__sessionDeselectedResponse(struct soap *soap, struct fw__sessionDeselectedResponse *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_fw__sessionDeselectedResponse(soap, tag, p, type)))
+		if (soap_getindependent(soap))
+			return NULL;
+	return p;
+}
+
+SOAP_FMAC1 struct fw__sessionDeselectedResponse * SOAP_FMAC2 soap_instantiate_fw__sessionDeselectedResponse(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
+{
+	(void)type; (void)arrayType; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_fw__sessionDeselectedResponse(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
+	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_obs_fw__sessionDeselectedResponse, n, obs_fdelete);
+	if (!cp)
+		return NULL;
+	if (n < 0)
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__sessionDeselectedResponse);
+		if (size)
+			*size = sizeof(struct fw__sessionDeselectedResponse);
+	}
+	else
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__sessionDeselectedResponse[n]);
+		if (!cp->ptr)
+		{	soap->error = SOAP_EOM;
+			return NULL;
+		}
+		if (size)
+			*size = n * sizeof(struct fw__sessionDeselectedResponse);
+	}
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
+	return (struct fw__sessionDeselectedResponse*)cp->ptr;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__sessionDeselectedResponse(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
+{
+	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__sessionDeselectedResponse %p -> %p\n", q, p));
+	*(struct fw__sessionDeselectedResponse*)p = *(struct fw__sessionDeselectedResponse*)q;
+}
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__sessionSelected(struct soap *soap, struct fw__sessionSelected *a)
 {

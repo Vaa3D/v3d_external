@@ -93,7 +93,7 @@ SOAP_FMAC3 LONG64 * SOAP_FMAC4 soap_get_LONG64(struct soap*, LONG64 *, const cha
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Fault
-#define SOAP_TYPE_obs_SOAP_ENV__Fault (40)
+#define SOAP_TYPE_obs_SOAP_ENV__Fault (44)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_SOAP_ENV__Fault(struct soap*, struct SOAP_ENV__Fault *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_SOAP_ENV__Fault(struct soap*, const struct SOAP_ENV__Fault *);
@@ -126,7 +126,7 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_SOAP_ENV__Fault(struct soap*, int, int, voi
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Reason
-#define SOAP_TYPE_obs_SOAP_ENV__Reason (39)
+#define SOAP_TYPE_obs_SOAP_ENV__Reason (43)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_SOAP_ENV__Reason(struct soap*, struct SOAP_ENV__Reason *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_SOAP_ENV__Reason(struct soap*, const struct SOAP_ENV__Reason *);
@@ -159,7 +159,7 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_SOAP_ENV__Reason(struct soap*, int, int, vo
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Detail
-#define SOAP_TYPE_obs_SOAP_ENV__Detail (36)
+#define SOAP_TYPE_obs_SOAP_ENV__Detail (40)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_SOAP_ENV__Detail(struct soap*, struct SOAP_ENV__Detail *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_SOAP_ENV__Detail(struct soap*, const struct SOAP_ENV__Detail *);
@@ -192,7 +192,7 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_SOAP_ENV__Detail(struct soap*, int, int, vo
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Code
-#define SOAP_TYPE_obs_SOAP_ENV__Code (34)
+#define SOAP_TYPE_obs_SOAP_ENV__Code (38)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_SOAP_ENV__Code(struct soap*, struct SOAP_ENV__Code *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_SOAP_ENV__Code(struct soap*, const struct SOAP_ENV__Code *);
@@ -225,7 +225,7 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_SOAP_ENV__Code(struct soap*, int, int, void
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Header
-#define SOAP_TYPE_obs_SOAP_ENV__Header (33)
+#define SOAP_TYPE_obs_SOAP_ENV__Header (37)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_SOAP_ENV__Header(struct soap*, struct SOAP_ENV__Header *);
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_SOAP_ENV__Header(struct soap*, const struct SOAP_ENV__Header *);
@@ -254,6 +254,64 @@ SOAP_FMAC1 struct SOAP_ENV__Header * SOAP_FMAC2 soap_instantiate_SOAP_ENV__Heade
 SOAP_FMAC3 void SOAP_FMAC4 soap_copy_SOAP_ENV__Header(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #endif
+
+#ifndef SOAP_TYPE_obs_fw__sessionDeselected
+#define SOAP_TYPE_obs_fw__sessionDeselected (36)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__sessionDeselected(struct soap*, struct fw__sessionDeselected *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__sessionDeselected(struct soap*, const struct fw__sessionDeselected *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__sessionDeselected(struct soap*, const char*, int, const struct fw__sessionDeselected *, const char*);
+SOAP_FMAC3 struct fw__sessionDeselected * SOAP_FMAC4 soap_in_fw__sessionDeselected(struct soap*, const char*, struct fw__sessionDeselected *, const char*);
+
+#ifndef soap_write_fw__sessionDeselected
+#define soap_write_fw__sessionDeselected(soap, data) ( soap_begin_send(soap) || (obs::soap_serialize_fw__sessionDeselected(soap, data), 0) || obs::soap_put_fw__sessionDeselected(soap, data, "fw:sessionDeselected", NULL) || soap_end_send(soap) )
+#endif
+
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__sessionDeselected(struct soap*, const struct fw__sessionDeselected *, const char*, const char*);
+
+#ifndef soap_read_fw__sessionDeselected
+#define soap_read_fw__sessionDeselected(soap, data) ( soap_begin_recv(soap) || !obs::soap_get_fw__sessionDeselected(soap, data, NULL, NULL) || soap_end_recv(soap) )
+#endif
+
+SOAP_FMAC3 struct fw__sessionDeselected * SOAP_FMAC4 soap_get_fw__sessionDeselected(struct soap*, struct fw__sessionDeselected *, const char*, const char*);
+
+#define soap_new_fw__sessionDeselected(soap, n) soap_instantiate_fw__sessionDeselected(soap, n, NULL, NULL, NULL)
+
+
+#define soap_delete_fw__sessionDeselected(soap, p) soap_delete(soap, p)
+
+SOAP_FMAC1 struct fw__sessionDeselected * SOAP_FMAC2 soap_instantiate_fw__sessionDeselected(struct soap*, int, const char*, const char*, size_t*);
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__sessionDeselected(struct soap*, int, int, void*, size_t, const void*, size_t);
+
+#ifndef SOAP_TYPE_obs_fw__sessionDeselectedResponse
+#define SOAP_TYPE_obs_fw__sessionDeselectedResponse (33)
+#endif
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__sessionDeselectedResponse(struct soap*, struct fw__sessionDeselectedResponse *);
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__sessionDeselectedResponse(struct soap*, const struct fw__sessionDeselectedResponse *);
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__sessionDeselectedResponse(struct soap*, const char*, int, const struct fw__sessionDeselectedResponse *, const char*);
+SOAP_FMAC3 struct fw__sessionDeselectedResponse * SOAP_FMAC4 soap_in_fw__sessionDeselectedResponse(struct soap*, const char*, struct fw__sessionDeselectedResponse *, const char*);
+
+#ifndef soap_write_fw__sessionDeselectedResponse
+#define soap_write_fw__sessionDeselectedResponse(soap, data) ( soap_begin_send(soap) || (obs::soap_serialize_fw__sessionDeselectedResponse(soap, data), 0) || obs::soap_put_fw__sessionDeselectedResponse(soap, data, "fw:sessionDeselectedResponse", NULL) || soap_end_send(soap) )
+#endif
+
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__sessionDeselectedResponse(struct soap*, const struct fw__sessionDeselectedResponse *, const char*, const char*);
+
+#ifndef soap_read_fw__sessionDeselectedResponse
+#define soap_read_fw__sessionDeselectedResponse(soap, data) ( soap_begin_recv(soap) || !obs::soap_get_fw__sessionDeselectedResponse(soap, data, NULL, NULL) || soap_end_recv(soap) )
+#endif
+
+SOAP_FMAC3 struct fw__sessionDeselectedResponse * SOAP_FMAC4 soap_get_fw__sessionDeselectedResponse(struct soap*, struct fw__sessionDeselectedResponse *, const char*, const char*);
+
+#define soap_new_fw__sessionDeselectedResponse(soap, n) soap_instantiate_fw__sessionDeselectedResponse(soap, n, NULL, NULL, NULL)
+
+
+#define soap_delete_fw__sessionDeselectedResponse(soap, p) soap_delete(soap, p)
+
+SOAP_FMAC1 struct fw__sessionDeselectedResponse * SOAP_FMAC2 soap_instantiate_fw__sessionDeselectedResponse(struct soap*, int, const char*, const char*, size_t*);
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__sessionDeselectedResponse(struct soap*, int, int, void*, size_t, const void*, size_t);
 
 #ifndef SOAP_TYPE_obs_fw__sessionSelected
 #define SOAP_TYPE_obs_fw__sessionSelected (32)
@@ -606,7 +664,7 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__ontologySelectedResponse(struct soap*, 
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_PointerToSOAP_ENV__Reason
-#define SOAP_TYPE_obs_PointerToSOAP_ENV__Reason (42)
+#define SOAP_TYPE_obs_PointerToSOAP_ENV__Reason (46)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerToSOAP_ENV__Reason(struct soap*, struct SOAP_ENV__Reason *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerToSOAP_ENV__Reason(struct soap*, const char *, int, struct SOAP_ENV__Reason *const*, const char *);
@@ -629,7 +687,7 @@ SOAP_FMAC3 struct SOAP_ENV__Reason ** SOAP_FMAC4 soap_get_PointerToSOAP_ENV__Rea
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_PointerToSOAP_ENV__Detail
-#define SOAP_TYPE_obs_PointerToSOAP_ENV__Detail (41)
+#define SOAP_TYPE_obs_PointerToSOAP_ENV__Detail (45)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerToSOAP_ENV__Detail(struct soap*, struct SOAP_ENV__Detail *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerToSOAP_ENV__Detail(struct soap*, const char *, int, struct SOAP_ENV__Detail *const*, const char *);
@@ -652,7 +710,7 @@ SOAP_FMAC3 struct SOAP_ENV__Detail ** SOAP_FMAC4 soap_get_PointerToSOAP_ENV__Det
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_PointerToSOAP_ENV__Code
-#define SOAP_TYPE_obs_PointerToSOAP_ENV__Code (35)
+#define SOAP_TYPE_obs_PointerToSOAP_ENV__Code (39)
 #endif
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_PointerToSOAP_ENV__Code(struct soap*, struct SOAP_ENV__Code *const*);
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_PointerToSOAP_ENV__Code(struct soap*, const char *, int, struct SOAP_ENV__Code *const*, const char *);

@@ -86,6 +86,9 @@ class SOAP_CMAC ConsoleObserverService : public soap
 
 	/// Web service operation 'sessionSelected' (returns error code or SOAP_OK)
 	virtual	int sessionSelected(LONG64 sessionId, struct fw__sessionSelectedResponse &_param_6) SOAP_PURE_VIRTUAL;
+
+	/// Web service operation 'sessionDeselected' (returns error code or SOAP_OK)
+	virtual	int sessionDeselected(struct fw__sessionDeselectedResponse &_param_7) SOAP_PURE_VIRTUAL;
 };
 
 } // namespace obs

@@ -27,6 +27,7 @@ public:
     virtual int entityViewRequested(LONG64 entityId, struct fw__entityViewRequestedResponse &response);
     virtual int annotationsChanged(LONG64 entityId, struct fw__annotationsChangedResponse &response);
     virtual int sessionSelected(LONG64 sessionId, struct fw__sessionSelectedResponse &response);
+    virtual int sessionDeselected(struct fw__sessionDeselectedResponse &response);
     virtual ConsoleObserverService *copy();
 
 signals:
@@ -36,6 +37,7 @@ signals:
     void entityViewRequested(qint64 entityId);
     void annotationsChanged(qint64 entityId);
     void sessionSelected(qint64 sessionId);
+    void sessionDeselected();
 
 private:
     bool _running;

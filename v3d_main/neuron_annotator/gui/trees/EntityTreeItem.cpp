@@ -2,11 +2,11 @@
 #include "EntityTreeItem.h"
 #include <QtGui>
 
-EntityTreeItem::EntityTreeItem(const QList<QVariant> &data, Entity *entity, EntityTreeItem *parent)
+EntityTreeItem::EntityTreeItem(const QList<QVariant> &data, Entity *entity, EntityTreeItem *parent) :
+    parentItem(parent),
+    itemData(data),
+    _entity(entity)
 {
-    parentItem = parent;
-    itemData = data;
-    _entity = entity;
 }
 
 EntityTreeItem::~EntityTreeItem()

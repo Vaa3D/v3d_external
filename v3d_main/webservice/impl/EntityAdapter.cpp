@@ -107,6 +107,7 @@ Entity* EntityAdapter::convert(cds::fw__entity *fwEntity)
 
     if (fwEntity->id != NULL) entity->id = new qint64(*fwEntity->id);
     if (fwEntity->name != NULL) entity->name = new QString(fwEntity->name->c_str());
+    if (fwEntity->user != NULL) entity->user = new QString(fwEntity->user->c_str());
     if (fwEntity->entityType != NULL) entity->entityType = new QString(fwEntity->entityType->c_str());
     if (fwEntity->entityStatus != NULL) entity->entityStatus = new QString(fwEntity->entityStatus->c_str());
 

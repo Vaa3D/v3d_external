@@ -85,25 +85,29 @@ class SOAP_CMAC ConsoleDataServiceProxy : public soap
 	virtual	int getAnnotationsForEntities(ns2__longArray *entityIds, struct fw__getAnnotationsForEntitiesResponse &_param_7) { return getAnnotationsForEntities(NULL, NULL, entityIds, _param_7); }
 	virtual	int getAnnotationsForEntities(const char *endpoint, const char *soap_action, ns2__longArray *entityIds, struct fw__getAnnotationsForEntitiesResponse &_param_7);
 
+	/// Web service operation 'getUserAnnotationColor' (returns error code or SOAP_OK)
+	virtual	int getUserAnnotationColor(std::string username, struct fw__getUserAnnotationColorResponse &_param_8) { return getUserAnnotationColor(NULL, NULL, username, _param_8); }
+	virtual	int getUserAnnotationColor(const char *endpoint, const char *soap_action, std::string username, struct fw__getUserAnnotationColorResponse &_param_8);
+
 	/// Web service operation 'reservePort' (returns error code or SOAP_OK)
-	virtual	int reservePort(std::string clientName, struct fw__reservePortResponse &_param_8) { return reservePort(NULL, NULL, clientName, _param_8); }
-	virtual	int reservePort(const char *endpoint, const char *soap_action, std::string clientName, struct fw__reservePortResponse &_param_8);
+	virtual	int reservePort(std::string clientName, struct fw__reservePortResponse &_param_9) { return reservePort(NULL, NULL, clientName, _param_9); }
+	virtual	int reservePort(const char *endpoint, const char *soap_action, std::string clientName, struct fw__reservePortResponse &_param_9);
 
 	/// Web service operation 'registerClient' (returns error code or SOAP_OK)
-	virtual	int registerClient(int _port, std::string _endpointUrl, struct fw__registerClientResponse &_param_9) { return registerClient(NULL, NULL, _port, _endpointUrl, _param_9); }
-	virtual	int registerClient(const char *endpoint, const char *soap_action, int _port, std::string _endpointUrl, struct fw__registerClientResponse &_param_9);
+	virtual	int registerClient(int _port, std::string _endpointUrl, struct fw__registerClientResponse &_param_10) { return registerClient(NULL, NULL, _port, _endpointUrl, _param_10); }
+	virtual	int registerClient(const char *endpoint, const char *soap_action, int _port, std::string _endpointUrl, struct fw__registerClientResponse &_param_10);
 
 	/// Web service operation 'createAnnotation' (returns error code or SOAP_OK)
-	virtual	int createAnnotation(fw__ontologyAnnotation *annotation, struct fw__createAnnotationResponse &_param_10) { return createAnnotation(NULL, NULL, annotation, _param_10); }
-	virtual	int createAnnotation(const char *endpoint, const char *soap_action, fw__ontologyAnnotation *annotation, struct fw__createAnnotationResponse &_param_10);
+	virtual	int createAnnotation(fw__ontologyAnnotation *annotation, struct fw__createAnnotationResponse &_param_11) { return createAnnotation(NULL, NULL, annotation, _param_11); }
+	virtual	int createAnnotation(const char *endpoint, const char *soap_action, fw__ontologyAnnotation *annotation, struct fw__createAnnotationResponse &_param_11);
 
 	/// Web service operation 'getKeybindings' (returns error code or SOAP_OK)
-	virtual	int getKeybindings(LONG64 ontologyId, struct fw__getKeybindingsResponse &_param_11) { return getKeybindings(NULL, NULL, ontologyId, _param_11); }
-	virtual	int getKeybindings(const char *endpoint, const char *soap_action, LONG64 ontologyId, struct fw__getKeybindingsResponse &_param_11);
+	virtual	int getKeybindings(LONG64 ontologyId, struct fw__getKeybindingsResponse &_param_12) { return getKeybindings(NULL, NULL, ontologyId, _param_12); }
+	virtual	int getKeybindings(const char *endpoint, const char *soap_action, LONG64 ontologyId, struct fw__getKeybindingsResponse &_param_12);
 
 	/// Web service operation 'getParentEntityDataArray' (returns error code or SOAP_OK)
-	virtual	int getParentEntityDataArray(LONG64 childEntityId, struct fw__getParentEntityDataArrayResponse &_param_12) { return getParentEntityDataArray(NULL, NULL, childEntityId, _param_12); }
-	virtual	int getParentEntityDataArray(const char *endpoint, const char *soap_action, LONG64 childEntityId, struct fw__getParentEntityDataArrayResponse &_param_12);
+	virtual	int getParentEntityDataArray(LONG64 childEntityId, struct fw__getParentEntityDataArrayResponse &_param_13) { return getParentEntityDataArray(NULL, NULL, childEntityId, _param_13); }
+	virtual	int getParentEntityDataArray(const char *endpoint, const char *soap_action, LONG64 childEntityId, struct fw__getParentEntityDataArrayResponse &_param_13);
 };
 
 } // namespace cds

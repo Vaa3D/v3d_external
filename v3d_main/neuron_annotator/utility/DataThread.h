@@ -64,7 +64,7 @@ public:
     explicit GetAnnotatedBranchThread(qint64 entityId, QObject *parent = 0);
     void fetchData();
 private:
-    void fetchAnnotations(Entity *entity);
+    void fetchAnnotations(Entity *entity, QHash<QString, QColor> *userColorMap);
     QHash<qint64, AnnotationList*> *annotationMap;
     qint64 entityId;
 };
@@ -96,8 +96,10 @@ public:
     explicit GetEntityAnnotationsThread(qint64 entityId, QObject *parent = 0);
     void fetchData();
     inline qint64 getEntityId() const { return entityId; }
+    QHash<QString, QColor> * getUserColorMap() const { return userColorMap; }
 private:
     qint64 entityId;
+    QHash<QString, QColor> *userColorMap;
 };
 
 // ===========================================================

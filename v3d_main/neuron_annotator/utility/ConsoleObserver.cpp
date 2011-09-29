@@ -4,6 +4,7 @@
 #include "../entity_model/Entity.h"
 #include "../entity_model/Ontology.h"
 #include "../entity_model/AnnotationSession.h"
+#include "../utility/JacsUtil.h"
 #include "../../webservice/impl/EntityAdapter.h"
 #include "../../webservice/console/cdsConsoleDataServiceProxy.h"
 
@@ -97,6 +98,8 @@ void ConsoleObserver::entitySelected(qint64 entityId)
         entitySelectedThread->disregard();
     }
 
+    // Since we just end up selecting by id, we could do that here without bothering to retrieve the id.
+    // In the future we'll have to decide if we want to get rid of this thread step.
     entitySelectedThread = new GetEntityThread(entityId);
     connect(entitySelectedThread, SIGNAL(gotResults(const void *)),
             this, SLOT(entitySelectedResults(const void *)));
@@ -112,34 +115,16 @@ void ConsoleObserver::entitySelectedResults(const void *results)
     Entity *entity = (Entity *)results;
     if (entity == NULL) return;
 
-    QString type = *entity->entityType;
-
-    // TODO: reimplement this using entities and the annotatedBranch tree
-
-//    qDebug() << "  Type:" <<type;
-//    if (type == "Tif 2D Image") // TODO: change to Neuron Fragment in the future?
-//    {
-//        QString filepath = entity->getValueByAttributeName("File Path");
-//        qDebug() << "  File Path:"<<filepath;
-
-//        if (!filepath.isEmpty())
-//        {
-//            QString macPath = convertPathToMac(filepath);
-//            QRegExp rx("neuronSeparatorPipeline.PR.neuron(\\d+)\\.tif");
-//            if (rx.indexIn(macPath) != -1)
-//            {
-//                QString numStr = rx.cap(1);
-//                bool ok;
-//                int num = numStr.toInt(&ok);
-//                if (ok)
-//                {
-//                    qDebug() << "  Select neuron:" <<num;
-//                    //mainWindow->getDataFlowModel()->getNeuronSelectionModel().showExactlyOneNeuron(num);
-//                }
-//            }
+//    QString type = *entity->entityType;
+//    if (type == "Neuron Fragment" || type == "Tif 2D Image") {
+//        int neuronNum = getNeuronNumber(entity);
+//        if (neuronNum >= 0) {
 //        }
 //    }
 
+    emit selectEntityById(*entity->id);
+
+    delete entity;
     delete entitySelectedThread;
     entitySelectedThread = NULL;
 }
@@ -184,7 +169,6 @@ void ConsoleObserver::entityViewRequestedResults(const void *results)
     if (entity == NULL) return;
 
     QString type = *entity->entityType;
-    qDebug() << "  Type:" << type;
     if (type == "Neuron Separator Pipeline Result")
     {
         QApplication::alert((QWidget *)mainWindow, 10000);
@@ -284,8 +268,8 @@ void ConsoleObserver::annotationsChanged(qint64 entityId)
 void ConsoleObserver::annotationsChangedResults(const void *results)
 {
     QMutexLocker locker(&annotationsChangedMutex);
-
-    emit updateAnnotations(((GetEntityAnnotationsThread *)annotationsChangedThread)->getEntityId(), (AnnotationList *)results);
+    GetEntityAnnotationsThread *t = (GetEntityAnnotationsThread *)annotationsChangedThread;
+    emit updateAnnotations(t->getEntityId(), (AnnotationList *)results, t->getUserColorMap());
     delete annotationsChangedThread;
     annotationsChangedThread = NULL;
 }
@@ -293,7 +277,6 @@ void ConsoleObserver::annotationsChangedResults(const void *results)
 void ConsoleObserver::annotationsChangedError(const QString & error)
 {
     QMutexLocker locker(&annotationsChangedMutex);
-
     emit communicationError(error);
     delete annotationsChangedThread;
     annotationsChangedThread = NULL;
@@ -339,3 +322,16 @@ void ConsoleObserver::loadAnnotationSessionError(const QString & error)
     delete loadAnnotationSessionThread;
     loadAnnotationSessionThread = NULL;
 }
+
+
+//*******************************************************************************************
+// sessionDeselected event
+//*******************************************************************************************
+
+void ConsoleObserver::sessionDeselected()
+{
+    qDebug() << "Got signal sessionDeselected";
+
+    emit closeAnnotationSession();
+}
+

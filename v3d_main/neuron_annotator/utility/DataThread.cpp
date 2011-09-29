@@ -5,6 +5,45 @@
 #include "../../webservice/impl/EntityAdapter.h"
 #include <QMap>
 
+
+// ===========================================================
+// Utility Functions
+// ===========================================================
+
+QString fetchUserColor(cds::ConsoleDataServiceProxy & proxy, const QString & username)
+{
+    cds::fw__getUserAnnotationColorResponse response;
+    if (proxy.getUserAnnotationColor(username.toStdString(), response) == SOAP_OK)
+    {
+         return QString(response.return_.c_str());
+    }
+    return QString();
+}
+
+void fetchUserColors(cds::ConsoleDataServiceProxy & proxy, AnnotationList *alist, QHash<QString, QColor> *userColorMap)
+{
+    QListIterator<Entity *> i(*alist);
+    while (i.hasNext())
+    {
+        Entity *annotation = i.next();
+        if (annotation->user == 0) continue;
+        QString username(*annotation->user);
+        if (!userColorMap->contains(username))
+        {
+            QString colorHex("#");
+            colorHex.append(fetchUserColor(proxy, username));
+            QColor color;
+            color.setNamedColor(colorHex);
+            userColorMap->insert(username, color);
+        }
+    }
+}
+
+
+// ===========================================================
+// Data Thread Base Class
+// ===========================================================
+
 DataThread::DataThread(QObject *parent) :
     QThread(parent),
     results(0),
@@ -91,7 +130,7 @@ GetAnnotatedBranchThread::GetAnnotatedBranchThread(qint64 entityId, QObject *par
 {
 }
 
-void GetAnnotatedBranchThread::fetchAnnotations(Entity *entity)
+void GetAnnotatedBranchThread::fetchAnnotations(Entity *entity, QHash<QString, QColor> *userColorMap)
 {
     if (entity == NULL) return;
 
@@ -100,6 +139,7 @@ void GetAnnotatedBranchThread::fetchAnnotations(Entity *entity)
     {
         AnnotationList *alist = EntityAdapter::convert(response.return_);
         annotationMap->insert(*entity->id, alist);
+        fetchUserColors(proxy, alist, userColorMap);
     }
     else
     {
@@ -111,12 +151,13 @@ void GetAnnotatedBranchThread::fetchAnnotations(Entity *entity)
     while (i.hasNext())
     {
         EntityData *data = i.next();
-        fetchAnnotations(data->childEntity);
+        fetchAnnotations(data->childEntity, userColorMap);
     }
 }
 
 void GetAnnotatedBranchThread::fetchData()
 {
+    QHash<QString, QColor> *userColorMap = new QHash<QString, QColor>();
     Entity *entity;
     cds::fw__getEntityTreeResponse response;
     if (proxy.getEntityTree(entityId, response) == SOAP_OK)
@@ -125,7 +166,7 @@ void GetAnnotatedBranchThread::fetchData()
         entity = EntityAdapter::convert(response.return_);
         // Recursively retrieve annotations for every entity in the tree and populate the annotationMap
         annotationMap = new QHash<qint64, AnnotationList*>;
-        fetchAnnotations(entity);
+        fetchAnnotations(entity, userColorMap);
     }
     else
     {
@@ -133,7 +174,7 @@ void GetAnnotatedBranchThread::fetchData()
         return;
     }
 
-    results = new AnnotatedBranch(entity, annotationMap);
+    results = new AnnotatedBranch(entity, annotationMap, userColorMap);
 }
 
 // ===========================================================
@@ -171,10 +212,12 @@ GetEntityAnnotationsThread::GetEntityAnnotationsThread(qint64 entityId, QObject 
 
 void GetEntityAnnotationsThread::fetchData()
 {
+    userColorMap = new QHash<QString, QColor>();
     cds::fw__getAnnotationsForEntityResponse response;
     if (proxy.getAnnotationsForEntity(entityId, response) == SOAP_OK)
     {
         results = EntityAdapter::convert(response.return_);
+        fetchUserColors(proxy, (AnnotationList *)results, userColorMap);
     }
     else
     {
