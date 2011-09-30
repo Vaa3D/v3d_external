@@ -478,9 +478,9 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
     bool debug=true;
     V3DLONG p=0;
 
-    if (debug) {
-        printf("\n");
-    }
+//    if (debug) {
+//        printf("\n");
+//    }
 
     if (bufferLength==0) {
         printf("ImageLoader::compressCubeBufferPBD - unexpectedly received buffer of zero size\n");
