@@ -30,9 +30,6 @@ public:
     bool validateFiles();
     My4DImage* loadImage(QString filepath);
 
-    int saveStack2RawRE(const char * filename, unsigned char**** data, const V3DLONG * sz, int datatype);
-    int loadRaw2StackRE(char * filename, My4DImage * & image);
-
     int saveStack2RawPBD(const char * filename, unsigned char**** data, const V3DLONG * sz, int datatype);
     int loadRaw2StackPBD(char * filename, My4DImage * & image);
 
@@ -40,16 +37,14 @@ public:
     QString getFilePrefix(QString filepath);
 
     int createDfValueByKeyMap(unsigned char * dfValueByKey);
-
+    int createDfKeyByValueMap(int * dfKeyByValue);
 
 private:
     QList<QString> inputFileList;
     QList<My4DImage*> imageList;
 
-    V3DLONG compressCubeBuffer(unsigned char * imgRe, unsigned char * cubeBuffer, V3DLONG bufferLength, V3DLONG spaceLeft);
     V3DLONG compressCubeBufferPBD(unsigned char * imgRe, unsigned char * cubeBuffer, V3DLONG bufferLength, V3DLONG spaceLeft, unsigned char * dfmap);
-
-
+    unsigned char fillDfByValue(unsigned char prior, unsigned char * toFill, int numberToFill, unsigned char value, int * dfKeyByValue);
 
 };
 
