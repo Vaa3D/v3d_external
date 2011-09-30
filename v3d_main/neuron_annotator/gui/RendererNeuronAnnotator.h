@@ -16,6 +16,9 @@ public:
     virtual ~RendererNeuronAnnotator();
     virtual void paint();
     virtual void loadVol();
+    // Renderer_gl1::selectPosition(x,y) is not virtual, so I renamed
+    // this reimplementation to screenPositionToVolumePosition(QPoint)
+    virtual XYZ screenPositionToVolumePosition(const QPoint& screenPos);
     bool populateNeuronMaskAndReference(NaVolumeData::Reader& volumeReader);
     void rebuildFromBaseTextures(const QList<int>& maskIndexList, QList<RGBA8*>& overlayList);
     void updateCurrentTextureMask(int maskIndex, int state);

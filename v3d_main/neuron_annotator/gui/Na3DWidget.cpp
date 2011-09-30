@@ -384,7 +384,7 @@ int Na3DWidget::neuronAt(QPoint pos)
 {
     int neuronIx = -1;
     if (!renderer) return neuronIx;
-    XYZ loc = getRendererNa()->selectPosition(pos.x(), pos.y());
+    XYZ loc = getRendererNa()->screenPositionToVolumePosition(pos);
 
     qreal xlc = loc.x + 0.5;
     qreal ylc = loc.y + 0.5;
@@ -469,7 +469,7 @@ void Na3DWidget::highlightNeuronAtPosition(QPoint pos)
         return;
     }
     // qDebug()<<"left click ... ...";
-    XYZ loc = ((Renderer_gl1*)getRenderer())->selectPosition( pos.x(),  pos.y() );
+    XYZ loc = getRendererNa()->screenPositionToVolumePosition(pos);
     // select neuron: set x, y, z and emit signal
     // qDebug()<<"emit a signal ...";
     emit neuronSelected(loc.x, loc.y, loc.z);
@@ -853,6 +853,7 @@ void Na3DWidget::onVolumeDataChanged()
         emit progressAborted("");
         return; // stale
     }
+    emit progressComplete();
     if (! getRendererNa()->initializeTextureMasks()) {
         qDebug() << "RendererNeuronAnnotator::initializeTextureMasks() failed";
         emit progressAborted("");
@@ -860,7 +861,6 @@ void Na3DWidget::onVolumeDataChanged()
     }
     resetVolumeBoundary();
     setThickness(dataFlowModel->getZRatio());
-    emit progressComplete();
     update();
 }
 
