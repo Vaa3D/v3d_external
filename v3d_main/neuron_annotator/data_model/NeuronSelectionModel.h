@@ -60,19 +60,19 @@ public slots:
     bool updateNeuronMask(int index, bool status);
     bool updateOverlay(int index, bool status);
     bool showAllNeurons();
-    void clearAllNeurons();
-    void showOverlays(const QList<int>);
-    void showExactlyOneNeuron(int index);
-    void showFirstSelectedNeuron();
+    bool clearAllNeurons();
+    bool showOverlays(const QList<int>);
+    bool showExactlyOneNeuron(int index);
+    bool showFirstSelectedNeuron();
     bool showAllNeuronsInEmptySpace();
-    void showNothing();
-    void showExactlyOneNeuronInEmptySpace(int);
-    void showExactlyOneNeuronWithBackground(int);
-    void showExactlyOneNeuronWithReference(int);
-    void showExactlyOneNeuronWithBackgroundAndReference(int);
+    bool showNothing();
+    bool showExactlyOneNeuronInEmptySpace(int);
+    bool showExactlyOneNeuronWithBackground(int);
+    bool showExactlyOneNeuronWithReference(int);
+    bool showExactlyOneNeuronWithBackgroundAndReference(int);
     // Selection
-    void selectExactlyOneNeuron(int index);
-    void clearSelection();
+    bool selectExactlyOneNeuron(int index);
+    bool clearSelection();
 
 protected:
     const NaVolumeData& volumeData;

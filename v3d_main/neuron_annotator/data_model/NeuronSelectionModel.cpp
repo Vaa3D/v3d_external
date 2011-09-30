@@ -150,40 +150,50 @@ bool NeuronSelectionModel::showAllNeurons()
     return bChanged;
 }
 
-void NeuronSelectionModel::showOverlays(const QList<int> overlayList) {
+bool NeuronSelectionModel::showOverlays(const QList<int> overlayList) {
+    bool bChanged = false;
+    std::vector<bool> newList(overlayStatusList.size(), false);
+    for (int i = 0; i < overlayList.size(); ++i)
+        newList[overlayList[i]] = true;
     {
         Writer selectionWriter(*this);
-        for (int i = 0; i < overlayStatusList.size(); ++i)
-            overlayStatusList.replace(i, false);
-        for (int i = 0; i < overlayList.size(); ++i)
-            overlayStatusList.replace(overlayList[i], true);
+        for (int i = 0; i < overlayStatusList.size(); ++i) {
+            if (overlayStatusList[i] != newList[i]) {
+                overlayStatusList[i] = newList[i];
+                bChanged = true;
+            }
+        }
     }
-    emit multipleVisibilityChanged();
+    if (bChanged)
+        emit multipleVisibilityChanged();
+    return bChanged;
 }
 
-void NeuronSelectionModel::showExactlyOneNeuron(int index)
+bool NeuronSelectionModel::showExactlyOneNeuron(int index)
 {
-    if (index < 0) return;
-    if (index >= maskStatusList.size()) return;
+    bool bChanged = false;
+    if (index < 0) return bChanged;
+    if (index >= maskStatusList.size()) return bChanged;
     {
-        bool bChanged = false;
         Writer selectionWriter(*this);
         for (int i = 0; i < maskStatusList.size(); ++i)
             if (maskStatusList[i] != (i == index)) {
                 maskStatusList.replace(i, (i == index));
                 bChanged = true;
             }
-        if (! bChanged) return;
+        if (! bChanged) return bChanged;
     }
     // Unselect any previously selected but now invisible neurons
     if (neuronSelectList[index])
         selectExactlyOneNeuron(index);
     else
         clearSelection();
-    emit multipleVisibilityChanged();
+    if (bChanged)
+        emit multipleVisibilityChanged();
+    return bChanged;
 }
 
-void NeuronSelectionModel::showFirstSelectedNeuron()
+bool NeuronSelectionModel::showFirstSelectedNeuron()
 {
     int index = -1;
     for (int i=0;i<neuronSelectList.size();i++) {
@@ -192,26 +202,36 @@ void NeuronSelectionModel::showFirstSelectedNeuron()
             break;
         }
     }
-    if (index < 0) return;
-    showExactlyOneNeuron(index);
+    if (index < 0) return false;
+    return showExactlyOneNeuron(index);
 }
 
 // clear all neurons
 // affects both selection and visibility, including overlays
-void NeuronSelectionModel::clearAllNeurons()
+bool NeuronSelectionModel::clearAllNeurons()
 {
+    bool bChanged = false;
     {
         Writer selectionWriter(*this);
         // deselect background and reference
         for (int i=0;i<overlayStatusList.size();i++) {
-            overlayStatusList.replace(i, false);
+            if (overlayStatusList[i]) {
+                overlayStatusList[i] = false;
+                bChanged = true;
+            }
         }
         for (int i=0;i<maskStatusList.size();i++) {
-            maskStatusList.replace(i, false);
+            if (maskStatusList[i]) {
+                maskStatusList[i] = false;
+                bChanged = true;
+            }
         }
     }
-    clearSelection();
-    emit multipleVisibilityChanged();
+    if (clearSelection())
+        bChanged = true;
+    if (bChanged)
+        emit multipleVisibilityChanged();
+    return bChanged;
 }
 
 /* slot */
@@ -236,77 +256,107 @@ bool NeuronSelectionModel::showAllNeuronsInEmptySpace()
 }
 
 /* slot */
-void NeuronSelectionModel::showNothing()
+bool NeuronSelectionModel::showNothing()
 {
+    bool bVisibilityChanged = false;
     bool oldBlockSignals = signalsBlocked();
     blockSignals(true);
-    clearAllNeurons();
+    if (clearAllNeurons())
+        bVisibilityChanged = true;
     for (int i = 0; i < overlayStatusList.size(); ++i)
-        overlayStatusList[i] = false;
+        if (overlayStatusList[i]) {
+            overlayStatusList[i] = false;
+            bVisibilityChanged = true;
+        }
     blockSignals(oldBlockSignals);
     // Unselect anything that is now hidden
     // TODO - do this for all potentially hiding visibility operations.
     qDebug() << "Clearing selection after hiding all";
-    clearSelection();
-    emit multipleVisibilityChanged();
+    clearSelection(); // sends its own signal
+    if (bVisibilityChanged)
+        emit multipleVisibilityChanged();
+    return bVisibilityChanged;
 }
 
 /* slot */
-void NeuronSelectionModel::showExactlyOneNeuronInEmptySpace(int ix)
+bool NeuronSelectionModel::showExactlyOneNeuronInEmptySpace(int ix)
 {
+    bool bChanged = false;
     bool oldBlockSignals = signalsBlocked();
     blockSignals(true);
-    showNothing();
-    showExactlyOneNeuron(ix);
+    for (int i = 0; i < overlayStatusList.size(); ++i)
+        if (overlayStatusList[i]) {
+            overlayStatusList[i] = false;
+            bChanged = true;
+        }
+    if (showExactlyOneNeuron(ix))
+        bChanged = true;
     blockSignals(oldBlockSignals);
-    emit multipleVisibilityChanged();
+    if (bChanged)
+        emit multipleVisibilityChanged();
+    return bChanged;
 }
 
 /* slot */
-void NeuronSelectionModel::showExactlyOneNeuronWithBackground(int ix)
+bool NeuronSelectionModel::showExactlyOneNeuronWithBackground(int ix)
 {
+    bool bChanged = false;
     bool oldBlockSignals = signalsBlocked();
     blockSignals(true);
-    showExactlyOneNeuron(ix);
+    if (showExactlyOneNeuron(ix))
+        bChanged = true;
     QList<int> overlayList;
     overlayList << DataFlowModel::BACKGROUND_MIP_INDEX;
-    showOverlays(overlayList);
+    if (showOverlays(overlayList))
+        bChanged = true;
     blockSignals(oldBlockSignals);
-    emit multipleVisibilityChanged();
+    if (bChanged)
+        emit multipleVisibilityChanged();
+    return bChanged;
 }
 
 /* slot */
-void NeuronSelectionModel::showExactlyOneNeuronWithReference(int ix)
+bool NeuronSelectionModel::showExactlyOneNeuronWithReference(int ix)
 {
+    bool bChanged = false;
     bool oldBlockSignals = signalsBlocked();
     blockSignals(true);
-    showExactlyOneNeuron(ix);
+    if (showExactlyOneNeuron(ix))
+        bChanged = true;
     QList<int> overlayList;
     overlayList << DataFlowModel::REFERENCE_MIP_INDEX;
-    showOverlays(overlayList);
+    if (showOverlays(overlayList))
+        bChanged = true;
     blockSignals(oldBlockSignals);
-    emit multipleVisibilityChanged();
+    if (bChanged)
+        emit multipleVisibilityChanged();
+    return bChanged;
 }
 
 /* slot */
-void NeuronSelectionModel::showExactlyOneNeuronWithBackgroundAndReference(int ix)
+bool NeuronSelectionModel::showExactlyOneNeuronWithBackgroundAndReference(int ix)
 {
+    bool bChanged = false;
     bool oldBlockSignals = signalsBlocked();
     blockSignals(true);
-    showExactlyOneNeuron(ix);
+    if (showExactlyOneNeuron(ix))
+        bChanged = true;
     QList<int> overlayList;
     overlayList << DataFlowModel::REFERENCE_MIP_INDEX << DataFlowModel::BACKGROUND_MIP_INDEX;
-    showOverlays(overlayList);
+    if (showOverlays(overlayList))
+        bChanged = true;
     blockSignals(oldBlockSignals);
-    emit multipleVisibilityChanged();
+    if (bChanged)
+        emit multipleVisibilityChanged();
+    return bChanged;
 }
 
 // update Neuron Select List
-void NeuronSelectionModel::selectExactlyOneNeuron(int index)
+bool NeuronSelectionModel::selectExactlyOneNeuron(int index)
 {
-    // qDebug() << "NeuronSelectionModel::selectExactlyOneNeuron" << index;
-    if (index >= neuronSelectList.size()) return;
     bool changed = false;
+    // qDebug() << "NeuronSelectionModel::selectExactlyOneNeuron" << index;
+    if (index >= neuronSelectList.size()) return changed;
     if (! neuronSelectList[index])
         changed = true;
     for (int i = 0; i < neuronSelectList.size(); ++i)
@@ -314,8 +364,7 @@ void NeuronSelectionModel::selectExactlyOneNeuron(int index)
         if (neuronSelectList[i] && (i != index))
             changed = true;
     }
-    if (! changed) return;
-
+    if (! changed) return changed;
     {
         Writer selectionWriter(*this);
         for (int i=0;i<neuronSelectList.size();i++) {
@@ -323,23 +372,27 @@ void NeuronSelectionModel::selectExactlyOneNeuron(int index)
         }
         neuronSelectList.replace(index, true);
     }
-    emit exactlyOneNeuronSelected(index);
+    if (changed)
+        emit exactlyOneNeuronSelected(index);
+    return changed;
 }
 
-void NeuronSelectionModel::clearSelection()
+bool NeuronSelectionModel::clearSelection()
 {
+    bool bChanged = false;
     {
-        bool bChanged = false;
         Writer selectionWriter(*this);
         for (int i=0;i<neuronSelectList.size();i++)
             if (neuronSelectList[i]) {
                 neuronSelectList.replace(i, false);
                 bChanged = true;
             }
-        if (!bChanged) return;
+        if (!bChanged) return bChanged;
     }
     qDebug() << "emit selectionCleared";
-    emit selectionCleared();
+    if (bChanged)
+        emit selectionCleared();
+    return bChanged;
 }
 
 
