@@ -181,6 +181,7 @@ public:
 	virtual void toggleObjShader() =0;
 
      virtual void toggleNStrokeCurveDrawing()=0; // For n-right-strokes curve shortcut ZJL 110920
+     virtual void setDragWinSize(int csize)=0; // ZJL 110927
 
 	virtual void changeLineOption() =0;
 	virtual void changeVolShadingOption() =0;

@@ -211,9 +211,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*actCurveCreate1=0, *actCurveCreate2=0, *actCurveCreate3=0, *actCurveCreate_pointclick=0,
 			*actCurveCreate_zoom=0, *actMarkerCreate_zoom=0,
 
-                        *actCurveRefine=0, // ZJL 110905
-                        *actCurveEditRefine=0, // ZJL 110913
-
+          *actCurveRefine=0, // ZJL 110905
+          *actCurveEditRefine=0, // ZJL 110913
+          *actCurveRubberDrag=0, // ZJL 110921
 			*actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
 	        *actMarkerAblateOne_imaging=0, *actMarkerAblateAll_imaging=0,
 			//need to add more surgical operations here later, such as curve_ablating (without displaying the curve first), etc. by PHC, 20101105
@@ -229,6 +229,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
 			*actDispSurfVertexInfo=0,
 			*actComputeSurfArea=0, *actComputeSurfVolume=0;
+     // used to control whether menu item is added in VOLUME popup menu ZJL
+     //bool bHasSegID = false;
 
 	if (qsName.size()>0)
 	{
@@ -301,30 +303,36 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
                listAct.append(actCurveRefine = new QAction("n-right-strokes to define a 3D curve (refine)", w));
 
+               // add these menus if click is close to a seg
+               // V3DLONG segid, ind;
+               // bool me = findNearestNeuronSeg_WinXY(cx, cy, segid, ind);
+               // V3DLONG NS = curImg->tracedNeuron.seg.size();
+               // if(/*segid>=0*/me && NS>0)
+               // {
+               //      // Edit the curve by refining or extending as in "n-right-strokes to define a curve (refine)"
+               //      listAct.append(actCurveEditRefine = new QAction("extend/refine nearest neuron-segment", w));
+               //      actCurveEditRefine->setIcon(QIcon(":/icons/strokeN.svg"));
+               //      actCurveEditRefine->setVisible(true);
+               //      actCurveEditRefine->setIconVisibleInMenu(true);
+               //      //listAct.append(act = new QAction("", w));
+
+               //      // Drag a curve to refine it by using rubber-band line like method
+               //      listAct.append(actCurveRubberDrag = new QAction("drag/refine nearest neuron-segment", w));
+               //      actCurveRubberDrag->setIcon(QIcon(":/icons/click3.svg"));
+               //      actCurveRubberDrag->setVisible(true);
+               //      actCurveRubberDrag->setIconVisibleInMenu(true);
+               //      listAct.append(act = new QAction("", w));
+
+               //      act->setSeparator(true);
+
+               //      edit_seg_id = segid;
+               //      bHasSegID = true;
+               // // End of ZJL
+               // }
+
 			actCurveRefine->setIcon(QIcon(":/icons/strokeN.svg"));
 			actCurveRefine->setVisible(true);
 			actCurveRefine->setIconVisibleInMenu(true);
-
-
-               // Only enable the menu item if the click point is very close to a neuro seg
-               // ZJL 110920
-               // if (listNeuronTree.size()>=1 && w && curImg)
-               // {
-               //      // NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
-               //      // V3DLONG n_id;
-               //      // if (p_tree)	{n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree);}
-               //      // if (n_id>=0)
-               //      {
-               //           // Edit the curve by refining or extending as in "n-right-strokes to define a curve (refine)"
-               //           listAct.append(actCurveEditRefine = new QAction("extend/refine nearest neuron-segment", w));
-               //           actCurveEditRefine->setIcon(QIcon(":/icons/strokeN.svg"));
-               //           actCurveEditRefine->setVisible(true);
-               //           actCurveEditRefine->setIconVisibleInMenu(true);
-               //           listAct.append(act = new QAction("", w)); act->setSeparator(true);
-               //      }
-               // }
-
-
 
 			//if (!(((iDrawExternalParameter*)_idep)->b_local)) //only enable the menu for global 3d viewer. as it seems there is a bug in the local 3d viewer. by PHC, 100821
 			{
@@ -508,7 +516,17 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                               actCurveEditRefine->setIcon(QIcon(":/icons/strokeN.svg"));
                               actCurveEditRefine->setVisible(true);
                               actCurveEditRefine->setIconVisibleInMenu(true);
-                              listAct.append(act = new QAction("", w)); act->setSeparator(true);
+                              //listAct.append(act = new QAction("", w));
+
+                              // Drag a curve to refine it by using rubber-band line like method
+                              listAct.append(actCurveRubberDrag = new QAction("drag nearest neuron-segment", w));
+                              actCurveRubberDrag->setIcon(QIcon(":/icons/click3.svg"));
+                              actCurveRubberDrag->setVisible(true);
+                              actCurveRubberDrag->setIconVisibleInMenu(true);
+                              listAct.append(act = new QAction("", w));
+
+                              act->setSeparator(true);
+                              // End of ZJL
 
 						listAct.append(actDispRecNeuronSegInfo = new QAction("display nearest neuron-segment info", w));
 						listAct.append(actChangeNeuronSegType = new QAction("change nearest neuron-segment type", w));
@@ -1118,6 +1136,26 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		}
 	}
 
+     // ZJL 110921
+	else if (act==actCurveRubberDrag)
+	{
+		if (NEURON_CONDITION)
+		{
+			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
+			V3DLONG n_id;
+			if (p_tree)	{n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree);}
+			if (n_id>=0)
+			{
+                    selectMode = smCurveRubberDrag;
+                    if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+
+                    // get seg_id and then using "n-right-strokes" refine pipeline
+                    edit_seg_id = p_tree->listNeuron.at(n_id).seg_id;
+
+			}
+		}
+	}
+
 	else if (act==actDeleteNeuronSeg)
 	{
 		if (NEURON_CONDITION)
@@ -1503,19 +1541,36 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                //qDebug("\t %i tracks to solve Curve", list_listCurvePos.size());
                if (selectMode == smCurveRefineInit)
                {
-                    vector <XYZ> loc_vec_input; //here as an empty input, so use list_listCurvePos internal
+                    vector <XYZ> loc_vec_input;
                     vector <XYZ> loc_vec0;
                     loc_vec0.clear();
                     solveCurveCenterV2(loc_vec_input, loc_vec0, 0);
-                    selectMode = smCurveRefineLast; /////////////// switch to smCurveRefineLast
+                    selectMode = smCurveRefineLast; // switch to smCurveRefineLast
                } else
-                    solveCurveRefineLast(); ///////////////////////// <===== key function
+                    solveCurveRefineLast();
 
                list_listCurvePos.clear();
                //press Esc to endSelectMode();
           }
+     } // end of curve refine ZJL 110905
+     // for rubber drag the curve
+     else if (selectMode == smCurveRubberDrag)
+     {
+          _appendMarkerPos(x, y);
+          _updateDragPoints(x,y);
+          if (b_move)
+          {
+               this->sShowRubberBand = 1;
+               return 1; //display 2d track
+          }
+          // else release button
+          listMarkerPos.clear();
+          bInitDragPoints = false; // prepare for the next drag
+          solveCurveRubberDrag();
+          DraggedNeurons.clear();
+          // press Esc to endSelectMode();
      }
-     // end of curve refine ZJL 110905
+     this->sShowRubberBand = 0;
 
 	this->sShowTrack = 0;
 	return 0; //no 2d track to display
@@ -1541,7 +1596,12 @@ int Renderer_gl1::hitPen(int x, int y)
 		// endSlectMode() in movePen
 		return 1;
 	}
-
+     // for rubber drag the curve
+     else if (selectMode == smCurveRubberDrag)
+     {
+          _appendMarkerPos(x, y);
+          return 1;
+     }
 	else if (selectMode == smCurveCreate_pointclick) //091226
 	{
 		_appendMarkerPos(x,y);
@@ -1868,8 +1928,7 @@ V3DLONG Renderer_gl1::findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * p
 	if (!p_listneuron) return -1;
 
 	//qDebug()<<"win click position:"<<cx<<" "<<cy;
-
-	GLdouble px, py, pz, ix, iy, iz;
+     GLdouble px, py, pz, ix, iy, iz;
 
 	V3DLONG best_ind=-1; double best_dist=-1;
 	for (V3DLONG i=0;i<p_listneuron->size();i++)
@@ -2419,7 +2478,7 @@ XYZ Renderer_gl1::getCenterOfMarkerPos(const MarkerPos& pos)
 
 	XYZ loc0, loc1;
 	_MarkerPos_to_NearFarPoint(pos, loc0, loc1);
-	qDebug("	loc0--loc1: (%g, %g, %g)--(%g, %g, %g)", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
+	// qDebug("	loc0--loc1: (%g, %g, %g)--(%g, %g, %g)", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
 
 	XYZ loc;
 	if (chno>=0 && chno<dim4)
@@ -2829,7 +2888,6 @@ XYZ Renderer_gl1::getCenterOfLineProfile(XYZ P1, XYZ P2,
 		float *p_value			//if p_value!=0, output value at center
 	)
 {
-
 	if (renderMode==rmCrossSection)
 	{
 		return getPointOnSections(P1,P2, clipplane); //clip plane also is the F-plane

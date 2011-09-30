@@ -6030,7 +6030,8 @@ void load_merged_neuron(My4DImage* curImg, Renderer_gl1* curRen)
 	curRen->updateNeuronTree(merged_neuron);
 }
 
-void My4DImage::update_3drenderer_neuron_view(V3dR_GLWidget* glwidget, Renderer_gl1* renderer)
+void My4DImage::
+update_3drenderer_neuron_view(V3dR_GLWidget* glwidget, Renderer_gl1* renderer)
 {
 	LOAD_traced_neuron(this, renderer);
 	glwidget->updateTool();

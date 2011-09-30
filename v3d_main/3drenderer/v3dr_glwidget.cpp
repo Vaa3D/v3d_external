@@ -964,6 +964,17 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
               {
                    toggleNStrokeCurveDrawing(); // For n-right-strokes curve shortcut ZJL 110920
               }
+              break;
+
+          case Qt::Key_W:
+		    if (IS_CTRL_MODIFIER)
+		    {
+                   setDragWinSize(+2);
+              }
+              else if(IS_SHIFT_MODIFIER)
+              {
+                   setDragWinSize(-2);
+              }
 	  		break;
 
 #ifndef test_main_cpp
@@ -2412,6 +2423,15 @@ void V3dR_GLWidget::toggleNStrokeCurveDrawing()
      if (renderer)
 	{
 		renderer->toggleNStrokeCurveDrawing();
+		POST_updateGL();
+	}
+}
+
+void V3dR_GLWidget::setDragWinSize(int csize)
+{
+     if (renderer)
+	{
+		renderer->setDragWinSize(csize);
 		POST_updateGL();
 	}
 }

@@ -66,7 +66,7 @@ public:
 					smCurveCreate1, smCurveCreate2, smCurveCreate3, smCurveCreate_pointclick,
 					smCurveCreateM,
                          // for curve refinement, 110831 ZJL
-                         smCurveRefineInit, smCurveRefineLast, smCurveEditRefine,
+                      smCurveRefineInit, smCurveRefineLast, smCurveEditRefine, smCurveRubberDrag,
 					};
 protected:
 	RenderMode renderMode;
@@ -190,10 +190,12 @@ public:
 	virtual void updateObjShadingOption() {};
 
      virtual void toggleNStrokeCurveDrawing() {}; // For n-right-strokes curve shortcut ZJL 110920
+     virtual void setDragWinSize(int csize) {}; // ZJL 110927
 
 
 public:
 	int sShowTrack, curChannel;
+     int sShowRubberBand; // ZJL 1109221
 
 	bool bShowBoundingBox, bShowBoundingBox2, bShowAxes, bOrthoView;
 	bool bShowCSline, bShowFSline, bFSlice, bXSlice, bYSlice, bZSlice;
@@ -237,6 +239,7 @@ private:
 
 		sShowTrack = 0;
 		curChannel = 0;
+          sShowRubberBand = 0; // ZJL 110921
 
 		bShowBoundingBox = true;
 		bShowBoundingBox2 = false;

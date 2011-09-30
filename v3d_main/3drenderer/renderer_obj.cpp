@@ -863,9 +863,9 @@ void Renderer_gl1::drawMarkerList()
 					mystr = QString("%1").arg(i+1);
 				}
 			}
-			
+
 			((QGLWidget*)widget)->renderText(0., 0., 0., (mystr)); //do not use font for now. by PHC, 110426
-			//((QGLWidget*)widget)->renderText(0., 0., 0., (mystr), font); 
+			//((QGLWidget*)widget)->renderText(0., 0., 0., (mystr), font);
 
 			glPopMatrix();
 		}
@@ -1119,7 +1119,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg =  v3dr_getImage4d(_idep);
 	if (w && curImg)
-	{		
+	{
 		curImg->proj_trace_add_curve_segment(loc_list, chno);
 		curImg->update_3drenderer_neuron_view(w, this);
 	}
@@ -1163,6 +1163,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
 		SS.on = true;
 		SS.listNeuron = listNeuron;
 		SS.hashNeuron = hashNeuron;
+
 
 		//091028: this is important
 		{

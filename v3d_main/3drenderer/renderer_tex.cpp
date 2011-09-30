@@ -472,6 +472,23 @@ void Renderer_gl1::paint()
      }
 
 	// must be at last
+     // show rubber band track for dragging neuron
+     if (! b_selecting && sShowRubberBand)
+     {
+          if (polygonMode==1)	      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		else if (polygonMode==2)  glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+		else                      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+          setObjLighting();
+          beginHighlight();
+          glPushMatrix();
+          setMarkerSpace();
+	     //blendRubberNeuron();
+          blendDraggedNeuron();
+          glPopMatrix();
+          endHighlight();
+          disObjLighting();
+     }
 	if (! b_selecting && sShowTrack)
 	{
 		blendTrack();

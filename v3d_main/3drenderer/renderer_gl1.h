@@ -181,6 +181,7 @@ public:
 	virtual void toggleLineType();
 
      virtual void toggleNStrokeCurveDrawing(); // For n-right-strokes curve shortcut ZJL 110920
+     virtual void setDragWinSize(int csize); // set rubber drag win size, ZJL 110921
 
 	//virtual void updateVolShadingOption();
 
@@ -295,8 +296,19 @@ protected:
      void solveCurveRefineLast(); // ZJL 110905
      void reorderNeuronIndexNumber(V3DLONG curSeg_id, V3DLONG NI, bool newInLower); // ZJL 110916
      void blendRubberNeuron(); // ZJL 110920
-     void solveCurveRubber();  //ZJL 110920
+     void solveCurveRubberDrag();  //ZJL 110920
+     void blendDraggedNeuron(); // ZJL 110922
+     void MarkerPosToXYZCenter(const MarkerPos & pos, XYZ &loc, XYZ &lastpos); //ZJL 110922
+     void updateDraggedNeuronXYZ(); // ZJL 110923
+     V3DLONG findNearestNeuronNode_WinXYV2(int cx, int cy);
+     void canCurveConnect(XYZ &e, V3DLONG &closest_seg, V3DLONG &closest_node,
+          bool &bConnect);
+     void connectCurve(V3DLONG &curSeg);
+     bool findNearestNeuronSeg_WinXY(int cx, int cy, V3DLONG &best_seg,
+          V3DLONG &best_ind);
      V3DLONG edit_seg_id; // ZJL 110913
+     int nDragWinSize; // ZJL 110921
+     bool bInitDragPoints; // ZJL
 
 	// in renderer_obj2.cpp
 	void addCurveSWC(vector<XYZ> &loc_list, int chno=0); //if no chno is specified, then assume to be the first channel
@@ -373,6 +385,9 @@ private:
 		b_imaging = false; //101008
           b_renderTextureLast = false;
           edit_seg_id = -1; // ZJL 110913
+          draggedCenterIndex = -1; // ZJL 110921
+          nDragWinSize = 3; // better be odd, ZJL 110921
+          bInitDragPoints = false;
 	}
 
 
@@ -397,6 +412,12 @@ protected:
 	GLuint glistTube, glistTubeEnd;
 	BoundingBox swcBB;
 	int curEditingNeuron;
+
+     // dragged neuron
+     // the neuron is copied from original and pos is changed
+     QList <V_NeuronSWC_unit> DraggedNeurons; // ZJL 110921
+     V3DLONG draggedCenterIndex; // ZJL 110921
+
 
 	// labelfield surf
 	QList <LabelSurf> listLabelSurf;

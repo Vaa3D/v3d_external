@@ -280,6 +280,8 @@ public slots:
 
      virtual void toggleNStrokeCurveDrawing(); // For n-right-strokes curve shortcut ZJL 110920
 
+     virtual void setDragWinSize(int csize); // ZJL 110927
+
 	virtual void changeLineOption();
 	virtual void changeVolShadingOption();
 	virtual void changeObjShadingOption();
