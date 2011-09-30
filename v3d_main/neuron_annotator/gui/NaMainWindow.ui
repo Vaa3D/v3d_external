@@ -1612,11 +1612,27 @@ You can also resize the box by Ctrl + left mouse click.</string>
      <addaction name="actionV3DDefault"/>
      <addaction name="actionNeuronAnnotator"/>
     </widget>
+    <widget class="QMenu" name="menuStereo_3D">
+     <property name="title">
+      <string>Stereo 3D</string>
+     </property>
+     <addaction name="actionMono_Off"/>
+     <addaction name="actionLeft_eye_view"/>
+     <addaction name="actionRight_eye_view"/>
+     <addaction name="actionQuadro_120_Hz"/>
+     <addaction name="actionAnaglyph_Red_Cyan"/>
+     <addaction name="actionAnaglyph_Green_Magenta"/>
+     <addaction name="actionRow_Interleaved_Zalman"/>
+     <addaction name="separator"/>
+     <addaction name="actionSwap_Eyes"/>
+    </widget>
     <addaction name="actionShow_all_neurons_in_empty_space"/>
     <addaction name="actionClear_Hide_All"/>
     <addaction name="separator"/>
     <addaction name="actionShow_Crosshair"/>
     <addaction name="actionLink_viewers"/>
+    <addaction name="separator"/>
+    <addaction name="menuStereo_3D"/>
     <addaction name="separator"/>
     <addaction name="menuMode"/>
    </widget>
@@ -1816,6 +1832,91 @@ You can also resize the box by Ctrl + left mouse click.</string>
    </property>
    <property name="text">
     <string>Show all neurons in empty space</string>
+   </property>
+  </action>
+  <action name="actionMono_Off">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Mono/Off</string>
+   </property>
+  </action>
+  <action name="actionLeft_eye_view">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Left Eye View</string>
+   </property>
+  </action>
+  <action name="actionRight_eye_view">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Right Eye View</string>
+   </property>
+  </action>
+  <action name="actionAnaglyph_Red_Cyan">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Anaglyph Red/Cyan</string>
+   </property>
+  </action>
+  <action name="actionAnaglyph_Green_Magenta">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Anaglyph Green/Magenta</string>
+   </property>
+  </action>
+  <action name="actionRow_Interleaved_Zalman">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Row Interleaved (Zalman)</string>
+   </property>
+  </action>
+  <action name="actionQuadro_120_Hz">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Quadro (120 Hz)</string>
+   </property>
+  </action>
+  <action name="actionSwap_Eyes">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Swap Eyes</string>
    </property>
   </action>
  </widget>

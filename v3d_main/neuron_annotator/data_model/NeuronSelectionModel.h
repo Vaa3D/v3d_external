@@ -58,12 +58,12 @@ public slots:
     // Visibility
     void updateNeuronMask(int index, bool status);
     void updateOverlay(int index, bool status);
-    void showAllNeurons();
+    bool showAllNeurons();
     void clearAllNeurons();
     void showOverlays(const QList<int>);
     void showExactlyOneNeuron(int index);
     void showFirstSelectedNeuron();
-    void showAllNeuronsInEmptySpace();
+    bool showAllNeuronsInEmptySpace();
     void showNothing();
     void showExactlyOneNeuronInEmptySpace(int);
     void showExactlyOneNeuronWithBackground(int);
