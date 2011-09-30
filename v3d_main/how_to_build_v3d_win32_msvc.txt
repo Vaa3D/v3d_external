@@ -1,7 +1,7 @@
 
 ******** How to build V3D (32bit) on Windows 7 (64bit) using MSVC Express (32bit) using command line tool: *************
 
-(-1) Ensure you have checked out V3D source code, installed QT (e.g. QT 4.6.2 from googlecode site), and installed MSVC on your machine!
+(-1) Ensure you have checked out V3D source code, installed QT (e.g. QT 4.6.2 from googlecode site: the correct project should be "qt-msvc-installer", which has a web site http://code.google.com/p/qt-msvc-installer/), and installed MSVC on your machine!
 
 (0) Click Windows 7 "Start" Button to enter the "All Programs" and then go to
     "Microsoft Visual C++ 2008 Express Edition" and then "Visual Studio Tools" 
