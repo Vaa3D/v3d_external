@@ -767,9 +767,14 @@ void Na3DWidget::setDataFlowModel(const DataFlowModel& dataFlowModelParam)
     NaViewer::setDataFlowModel(dataFlowModelParam);
     connect(&dataFlowModelParam.getNeuronSelectionModel(), SIGNAL(initialized()),
           this, SLOT(onVolumeDataChanged()));
+
     connect(this, SIGNAL(neuronClearAll()), &dataFlowModelParam.getNeuronSelectionModel(), SLOT(clearAllNeurons()));
     connect(this, SIGNAL(neuronClearAllSelections()), &dataFlowModelParam.getNeuronSelectionModel(), SLOT(clearSelection()));
     connect(this, SIGNAL(neuronIndexChanged(int)), &dataFlowModelParam.getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
+
+    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(selectionCleared()),
+            this, SLOT(clearLandmarks()));
+
     // Fast-but-approximate color update
     incrementalDataColorModel = &dataFlowModelParam.getFast3DColorModel();
     connect(incrementalDataColorModel, SIGNAL(dataChanged()),

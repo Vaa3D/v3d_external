@@ -63,30 +63,36 @@ void NeuronSelectionModel::initializeSelectionModel()
     emit initialized();
 }
 
-void NeuronSelectionModel::updateOverlay(int index, bool status)
+bool NeuronSelectionModel::updateOverlay(int index, bool status)
 {
-    if (overlayStatusList[index] == status) return; // no change
+    bool bChanged = false;
+    if (overlayStatusList[index] == status) return bChanged; // no change
     {
         Writer selectionWriter(*this);
         overlayStatusList.replace(index, status);
+        bChanged = true;
     }
     emit overlayVisibilityChanged(index, status);
+    return bChanged;
 }
 
-void NeuronSelectionModel::updateNeuronMask(int index, bool status)
+bool NeuronSelectionModel::updateNeuronMask(int index, bool status)
 {
-    if (index >= maskStatusList.size()) return; // out of sync
+    bool bChanged = false;
+    if (index >= maskStatusList.size()) return bChanged; // out of sync
     // qDebug() << "NeuronSelectionModel::updateNeuronMask" << index << status << maskStatusList[index];
     if (maskStatusList[index] == status) {
         // qDebug() << maskStatusList[index] << "equals" << status;
-        return; // no change
+        return bChanged; // no change
     }
     {
         Writer selectionWriter(*this);
         maskStatusList.replace(index, status);
+        bChanged = true;
     }
     // qDebug() << "emitting neuronVisibilityChanged()" << this;
     emit neuronVisibilityChanged(index, status);
+    return bChanged;
 }
 
 void NeuronSelectionModel::setOverlayStatus(int index, bool status)

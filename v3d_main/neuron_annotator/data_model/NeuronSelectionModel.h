@@ -54,10 +54,11 @@ signals:
     // TODO highlight signals (not selection)
 
 public slots:
+    // bool return values indicate whether the model was actually changed.  "true" if changed.  "false" otherwise.
     void initializeSelectionModel();
     // Visibility
-    void updateNeuronMask(int index, bool status);
-    void updateOverlay(int index, bool status);
+    bool updateNeuronMask(int index, bool status);
+    bool updateOverlay(int index, bool status);
     bool showAllNeurons();
     void clearAllNeurons();
     void showOverlays(const QList<int>);
