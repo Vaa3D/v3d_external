@@ -43,7 +43,8 @@ private:
     QList<QString> inputFileList;
     QList<My4DImage*> imageList;
 
-    V3DLONG compressCubeBufferPBD(unsigned char * imgRe, unsigned char * cubeBuffer, V3DLONG bufferLength, V3DLONG spaceLeft, unsigned char * dfmap);
+    V3DLONG compressCubeBufferPBD(unsigned char * imgRe, unsigned char * cubeBuffer, V3DLONG bufferLength, V3DLONG spaceLeft, unsigned char * dfmap, int * dfKeyMap);
+    V3DLONG decompressPBD(unsigned char * sourceData, unsigned char * targetData, V3DLONG sourceLength, int * dfKeyMap);
     unsigned char fillDfByValue(unsigned char prior, unsigned char * toFill, int numberToFill, unsigned char value, int * dfKeyByValue);
 
 };

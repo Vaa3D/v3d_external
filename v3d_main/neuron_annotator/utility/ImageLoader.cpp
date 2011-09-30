@@ -270,6 +270,10 @@ int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char**** data,
 
     createDfValueByKeyMap(dfValueByKey);
 
+    int dfKeyMap[256];
+    createDfKeyByValueMap(dfKeyMap);
+
+
     if (datatype!=1) {
         printf("saveStack2RawPBD : Only datatype 1 is supported\n");
         berror=1;
@@ -424,7 +428,7 @@ int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char**** data,
                         if (i>0) {
 
                             sourceVoxelCount+=i;
-                            V3DLONG compressionSize = compressCubeBufferPBD(imgRe+actualSize, cubeBuffer, i, maxSize-actualSize, dfValueByKey);
+                            V3DLONG compressionSize = compressCubeBufferPBD(imgRe+actualSize, cubeBuffer, i, maxSize-actualSize, dfValueByKey, dfKeyMap);
                             double compressionRatio=(sourceVoxelCount*1.0)/actualSize;
                             //printf("Compression-ratio=%f  sourceVoxels=%d  actualSize=%d  pre-size=%d   post-size=%d\n", compressionRatio, sourceVoxelCount, actualSize, i, compressionSize);
                             if (compressionSize==0) {
@@ -469,8 +473,9 @@ int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char**** data,
 
 
 // We assume here that preBuffer is
-V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char * preBuffer, V3DLONG bufferLength, V3DLONG spaceLeft, unsigned char * dfmap) {
-    bool debug=false;
+V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char * preBuffer, V3DLONG bufferLength, V3DLONG spaceLeft,
+                                           unsigned char * dfmap, int * dfKeyMap) {
+    bool debug=true;
     V3DLONG p=0;
 
     if (debug) {
@@ -520,11 +525,11 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
             imgRe[p++]=currentValue; // The repeated value
             i+=(reTest-1); // because will increment one more time at top of loop
             activeLiteralIndex=-1;
-            if (debug) {
-                for (int d=0;d<reTest;d++) {
-                    printf("r");
-                }
-            }
+//            if (debug) {
+//                for (int d=0;d<reTest;d++) {
+//                    printf("r");
+//                }
+//            }
         } else {
             // We need to evaluate difference encoding starting with the prior value
             unsigned char priorValue=0;
@@ -557,11 +562,11 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
                 imgRe[p++]=currentValue; // The repeated value
                 i+=(reTest-1); // because will increment one more time at top of loop
                 activeLiteralIndex=-1;
-                if (debug) {
-                    for (int d=0;d<reTest;d++) {
-                        printf("r");
-                    }
-                }
+//                if (debug) {
+//                    for (int d=0;d<reTest;d++) {
+//                        printf("r");
+//                    }
+//                }
             } else if (dfEfficiency>1.0) {
                 // First, encode the number of units we expect
                 imgRe[p++]=c-i+32;
@@ -591,11 +596,11 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
                     cp+=4; // Move ahead 4 steps at a time
                 }
                 activeLiteralIndex=-1;
-                if (debug) {
-                    for (int d=0;d<(c-i);d++) {
-                        printf("d");
-                    }
-                }
+//                if (debug) {
+//                    for (int d=0;d<(c-i);d++) {
+//                        printf("d");
+//                    }
+//                }
                 i=c-1; // will increment at top
             } else {
                 // We need to add this value as a literal. If there is already a literal mode, then simply
@@ -609,13 +614,53 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
                     imgRe[activeLiteralIndex] += 1; // Increment existing literal count
                     imgRe[p++]=currentValue; // Add the current value onto current sequence of literals
                 }
-                if (debug) {
-                    printf("l");
-                }
+//                if (debug) {
+//                    printf("l");
+//                }
             }
         }
     }
     //printf("\n");
+
+    if (debug) {
+
+        // Validate
+        unsigned char validationData[100000];
+        V3DLONG dp=decompressPBD(imgRe, validationData, p, dfKeyMap);
+
+        bool same=true;
+        int l=0;
+        for (l=0;l<bufferLength;l++) {
+            if(preBuffer[l]!=validationData[l]) same=false;
+        }
+        if (!same) {
+            printf("\nCompression did not validate:\n\n");
+            for (l=0;l<bufferLength;l++) {
+                printf("%d\t%d\t%d\n", l, preBuffer[l], validationData[l]);
+            }
+
+            printf("\nDebug cube compression summary:\n");
+            int l=(bufferLength>p?bufferLength:p);
+            for (int i=0;i<l;i++) {
+                if (i<bufferLength) {
+                    printf("%d\t", preBuffer[i]);
+                } else {
+                    printf("---\t");
+                }
+                if (i<p) {
+                    printf("%d\n",imgRe[i]);
+                } else {
+                    printf("---\n");
+                }
+            }
+            printf("---end summary---\n\n");
+
+
+            printf("Validation of PBD failed\n");
+            exit(1);
+        }
+    }
+
     return p;
 }
 
@@ -834,43 +879,8 @@ int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image) {
             stopwatch.restart();
 
             // Decompress data
-            V3DLONG cp=0;
-            V3DLONG dp=0;
-            unsigned char prior=0;
-            unsigned char value=0;
-            while(cp<compressedBytes) {
-                value=compressedData[cp];
-                if (value<33) {
-                    // Literal 0-32
-                    unsigned char count=value+1;
-                    for (int j=cp+1;j<cp+1+count;j++) {
-                        decompressedData[dp++]=compressedData[j];
-                    }
-                    cp+=(count+1);
-                    prior=compressedData[cp-1];
-                } else if (value<128) {
-                    // Difference 33-127
-                    int leftToFill=value-32;
-                    while(leftToFill>0) {
-                        int fillNumber=(leftToFill<4 ? leftToFill : 4);
-                        prior=fillDfByValue(prior, decompressedData+dp, fillNumber, compressedData[++cp], dfKeyMap);
-                        dp+=fillNumber;
-                        leftToFill-=fillNumber;
-                    }
-                    cp++;
-                } else {
-                    // Repeat 128-255
-                    unsigned char repeatCount=value-127;
-                    unsigned char repeatValue=compressedData[++cp];
-                    //printf("Unpacking repeat cp=%ld  repeatCount=%d   repeatValue=%d  dp=%ld\n", cp, repeatCount, repeatValue, dp);
-                    fflush(stdout);
-                    for (int j=0;j<repeatCount;j++) {
-                        decompressedData[dp++]=repeatValue;
-                    }
-                    prior=repeatValue;
-                    cp++;
-                }
-            }
+            V3DLONG dp = 0;
+            dp=decompressPBD(compressedData, decompressedData, compressedBytes, dfKeyMap);
 
             if (dp!=decompressedBytes) {
                 printf("Error - expected decompressed byte count=%ld but only found %ld\n",decompressedBytes, dp);
@@ -955,6 +965,49 @@ int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image) {
             return berror;
     }
 }
+
+V3DLONG ImageLoader::decompressPBD(unsigned char * sourceData, unsigned char * targetData, V3DLONG sourceLength, int * dfKeyMap) {
+    // Decompress data
+    V3DLONG cp=0;
+    V3DLONG dp=0;
+    unsigned char prior=0;
+    unsigned char value=0;
+    while(cp<sourceLength) {
+        value=sourceData[cp];
+        if (value<33) {
+            // Literal 0-32
+            unsigned char count=value+1;
+            for (int j=cp+1;j<cp+1+count;j++) {
+                targetData[dp++]=sourceData[j];
+            }
+            cp+=(count+1);
+            prior=targetData[dp-1];
+        } else if (value<128) {
+            // Difference 33-127
+            int leftToFill=value-32;
+            while(leftToFill>0) {
+                int fillNumber=(leftToFill<4 ? leftToFill : 4);
+                prior=fillDfByValue(prior, targetData+dp, fillNumber, sourceData[++cp], dfKeyMap);
+                dp+=fillNumber;
+                leftToFill-=fillNumber;
+            }
+            cp++;
+        } else {
+            // Repeat 128-255
+            unsigned char repeatCount=value-127;
+            unsigned char repeatValue=sourceData[++cp];
+            //printf("Unpacking repeat cp=%ld  repeatCount=%d   repeatValue=%d  dp=%ld\n", cp, repeatCount, repeatValue, dp);
+            //fflush(stdout);
+            for (int j=0;j<repeatCount;j++) {
+                targetData[dp++]=repeatValue;
+            }
+            prior=repeatValue;
+            cp++;
+        }
+    }
+    return dp;
+}
+
 
 
 
