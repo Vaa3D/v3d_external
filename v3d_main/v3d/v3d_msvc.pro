@@ -1,6 +1,11 @@
 # #####################################################################
 # Created: 2010-6-17 v3d_msvc.pro under windows v0.1 by YUY
 # revised by PHC, 2011-08-11
+# nited added by PHC: 2011-09-30: if people use MSVC 2010 (instead of MSVC 2008), maybe they can simply change
+#                                 the MSVC_DIR and MSSDK_DIR folders to the correct ones
+#                                 under the "c:\\Program Files". Also note that Yang indeed
+#                                 redefine the LIBS variables, which explains why my previous
+#                                 change of libv3dnewmat, etc does not play a role here any more.
 # ######################################################################
 
 message(CONFIG=$$unique(CONFIG))
