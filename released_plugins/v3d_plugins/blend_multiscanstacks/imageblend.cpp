@@ -266,7 +266,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
         }
     }
     
-    // along x +
+    // along x -
     b_blankplanefound=true;
     while (b_blankplanefound) 
     {
@@ -326,15 +326,15 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
         {
             V3DLONG offset_c_old = c*pagesz;
             V3DLONG offset_c_new = c*pagesz_new;
-            for(V3DLONG k=start_z; k<end_z; k++)
+            for(V3DLONG k=start_z; k<=end_z; k++)
             {
                 V3DLONG offset_k_old = offset_c_old + k*szInput[0]*szInput[1];
                 V3DLONG offset_k_new = offset_c_new + (k-start_z)*sx*sy;
-                for(V3DLONG j=start_y; j<end_y; j++)
+                for(V3DLONG j=start_y; j<=end_y; j++)
                 {
                     V3DLONG offset_j_old = offset_k_old + j*szInput[0];
                     V3DLONG offset_j_new = offset_k_new + (j-start_y)*sx;
-                    for(V3DLONG i=start_x; i<end_x; i++)
+                    for(V3DLONG i=start_x; i<=end_x; i++)
                     {
                         pOutput[offset_j_new + i - start_x] = pInput[offset_j_old + i];
                     }
