@@ -384,9 +384,6 @@ int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char**** data,
         V3DLONG cubeSize3=RE_CUBE_SIZE*RE_CUBE_SIZE*RE_CUBE_SIZE;
 
         unsigned char * cubeBuffer = new unsigned char [cubeSize3];
-        //int cubeSize=0;
-        V3DLONG channelSize = xSize*ySize*zSize;
-        V3DLONG planeSize = xSize*ySize;
 
         for (V3DLONG cc=0;cc<cSize;cc++) {
             for (V3DLONG zc=0;zc<zCube;zc++) {
@@ -404,21 +401,23 @@ int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char**** data,
                         V3DLONG yStart=yc*RE_CUBE_SIZE;
                         V3DLONG xStart=xc*RE_CUBE_SIZE;
 
-                        i=0L;
+                        i=0;
 
                         ////printf("Inner loop start : zStart=%d  yStart=%d  xStart=%d\n", zStart, yStart, xStart);
-                        fflush(stdout);
+                        //fflush(stdout);
 
                         for (V3DLONG z=zStart;z<zStart+RE_CUBE_SIZE;z++) {
-                            for (V3DLONG y=yStart;y<yStart+RE_CUBE_SIZE;y++) {
-                                for (V3DLONG x=xStart;x<xStart+RE_CUBE_SIZE;x++) {
-                                    if (z<zSize && y<ySize && x<xSize && i<cubeSize3) {
-                                        //printf("Adding cubeBuffer entry i=%d  z=%d  y=%d  x=%d\n", i, z, y, x);
-                                        cubeBuffer[i++] = data[cc][z][y][x];
-                                    } else {
-                                        // printf("Inner loop skip : z=%d zSize=%d  y=%d ySize=%d  x=%d xSize=%d  i=%d\n",z,zSize,y,ySize,x,xSize,i);
+                            if (z<zSize) {
+                                for (V3DLONG y=yStart;y<yStart+RE_CUBE_SIZE;y++) {
+                                    if (y<ySize) {
+                                        for (V3DLONG x=xStart;x<xStart+RE_CUBE_SIZE;x++) {
+                                            if (x<xSize) {
+                                                //printf("Adding cubeBuffer entry i=%d  z=%d  y=%d  x=%d\n", i, z, y, x);
+                                                cubeBuffer[i++] = data[cc][z][y][x];
+                                            }
+                                        }
                                     }
-                                }
+                                 }
                             }
                         }
 
@@ -475,7 +474,7 @@ int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char**** data,
 // We assume here that preBuffer is
 V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char * preBuffer, V3DLONG bufferLength, V3DLONG spaceLeft,
                                            unsigned char * dfmap, int * dfKeyMap) {
-    bool debug=true;
+    bool debug=false;
     V3DLONG p=0;
 
 //    if (debug) {
@@ -485,6 +484,12 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
     if (bufferLength==0) {
         printf("ImageLoader::compressCubeBufferPBD - unexpectedly received buffer of zero size\n");
         return 0;
+    }
+
+    if (debug) {
+        for (int q=0;q<bufferLength;q++) {
+            printf("q=%d  b=%lx\n",q,preBuffer[q]);
+        }
     }
 
     //printf("\nStart compression, length=%d\n", bufferLength);
@@ -531,31 +536,35 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
 //                }
 //            }
         } else {
-            // We need to evaluate difference encoding starting with the prior value
-            unsigned char priorValue=0;
-            if (i>0) {
-                priorValue=preBuffer[i-1];
-            }
-            int unitsToCheck=bufferLength-i;
-            if (unitsToCheck>95) {
-                unitsToCheck=95; // 95 is max supported number of differences
-            }
+            double dfEfficiency=0.0;
             int c=i;
-            for (int j=0;j<95;j++) {
-                dbuffer[j]=0; // clear the difference buffer
-            }
-            for (;c<i+unitsToCheck;c++) {
-                int d=preBuffer[c] - priorValue;
-                if (d>2 || d<-1) {
-                    break;
+            if (i>0) { // I.e., if not first since we can't start with a difference encoding
+                // We need to evaluate difference encoding starting with the prior value
+                unsigned int priorValue=preBuffer[i-1];
+                int unitsToCheck=bufferLength-i;
+                if (unitsToCheck>95) {
+                    unitsToCheck=95; // 95 is max supported number of differences
                 }
-                priorValue+=d; // since by definition the diff encoding is cumulative
-                if (d==-1) {
-                    d=3; // we use this to represent -1 in the dbuffer for key lookup later
+                for (int j=0;j<95;j++) {
+                    dbuffer[j]=0; // clear the difference buffer
                 }
-                dbuffer[c-i]=d;
+                if (debug) printf("run check start\n");
+                for (;c<i+unitsToCheck;c++) {
+                    int d=preBuffer[c] - priorValue;
+                    if (d>2 || d<-1) {
+                        break;
+                    }
+                    if (debug) printf("pb=%d  pv=%d  d=%d  c=%d  i=%d\n",preBuffer[c],priorValue,d,c,i);
+                    priorValue=preBuffer[c]; // since by definition the diff encoding is cumulative
+                    if (d==-1) {
+                        d=3; // we use this to represent -1 in the dbuffer for key lookup later
+                    }
+                    dbuffer[c-i]=d;
+                }
+                if (debug) printf("run check end\n");
+                dfEfficiency = ((c-i)*1.0)/(((c-i)/4)+2); // The denominator includes the coding byte and the encoding bytes
             }
-            double dfEfficiency = ((c-i)*1.0)/(((c-i)/4)+2); // The denominator includes the coding byte and the encoding bytes
+            // Now we can decide between RE and DF based on efficiency
             if (reEfficiency>dfEfficiency && reEfficiency>1.0) {
                 // Then use RE
                 imgRe[p++]=reTest+127; // The code for number of repeats
@@ -576,7 +585,9 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
                 int cp=i;
                 int d0,d1,d2,d3;
                 d0=d1=d2=d3=0;
+                if (debug) printf("START\n");
                 while(cp<c) {
+                    if (debug) printf("TOP  c=%d  i=%d  cp=%d  p=%ld",c,i,cp,p);
                     int start=cp-i;
                     d0=dbuffer[start];
                     if (cp+1<c) {
@@ -588,12 +599,18 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
                             }
                         }
                     }
+                    if (debug) printf(" s0=%d s1=%d s2=%d s3=%d ",dbuffer[start],dbuffer[start+1],dbuffer[start+2],dbuffer[start+3]);
                     int lookupKey=1000*d0+100*d1+10*d2+d3;
                     unsigned char dc=dfmap[lookupKey];
                     //printf("\ndebug: i=%d  c=%d  cp=%d  lookupKey=%d  p=%ld\n", i, c, cp, lookupKey, p);
                     //fflush(stdout);
                     imgRe[p++]=dc;
+                    if (debug) printf(" d0=%d d1=%d d2=%d d3=%d lookupKey=%d dc=%lx\n", d0,d1,d2,d3,lookupKey,dc);
                     cp+=4; // Move ahead 4 steps at a time
+                }
+                if (debug) {
+                    printf("DONE\n");
+                    exit(0);
                 }
                 activeLiteralIndex=-1;
 //                if (debug) {
@@ -602,7 +619,7 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
 //                    }
 //                }
                 i=c-1; // will increment at top
-            } else {
+            } else { // This will catch the case where dfEfficiency is 0.0 due to i==0
                 // We need to add this value as a literal. If there is already a literal mode, then simply
                 // add it. Otherwise, start a new one.
                 if (activeLiteralIndex<0 || imgRe[activeLiteralIndex]>=32) {
