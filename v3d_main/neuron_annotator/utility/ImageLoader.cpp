@@ -8,7 +8,7 @@
 using namespace std;
 
 const unsigned char RE_TRIGGER_CODE=249;
-const int RE_CUBE_SIZE=6;
+const int RE_CUBE_SIZE=60;
 
 ImageLoader::ImageLoader()
 {
