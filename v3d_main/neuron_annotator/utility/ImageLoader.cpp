@@ -486,11 +486,11 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
         return 0;
     }
 
-    if (debug) {
-        for (int q=0;q<bufferLength;q++) {
-            printf("q=%d  b=%lx\n",q,preBuffer[q]);
-        }
-    }
+//    if (debug) {
+//        for (int q=0;q<bufferLength;q++) {
+//            printf("q=%d  b=%lx\n",q,preBuffer[q]);
+//        }
+//    }
 
     //printf("\nStart compression, length=%d\n", bufferLength);
 
@@ -498,11 +498,11 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
     int dbuffer[95];
     V3DLONG activeLiteralIndex=-1; // if -1 this means there is no literal mode started
     for (int i=0;i<bufferLength;i++) {
+
         if (p>=spaceLeft) {
             printf("ImageLoader::compressCubeBufferPBD ran out of space p=%d\n", p);
             return 0;
         }
-        bool last=(i==(bufferLength-1));
 
         // From this point we assume the result has been accumulating in imgRe, and at this moment
         // we are searching for the best approach for the next segment. First, we will try reading
@@ -548,20 +548,20 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
                 for (int j=0;j<95;j++) {
                     dbuffer[j]=0; // clear the difference buffer
                 }
-                if (debug) printf("run check start\n");
+//                if (debug) printf("run check start\n");
                 for (;c<i+unitsToCheck;c++) {
                     int d=preBuffer[c] - priorValue;
                     if (d>2 || d<-1) {
                         break;
                     }
-                    if (debug) printf("pb=%d  pv=%d  d=%d  c=%d  i=%d\n",preBuffer[c],priorValue,d,c,i);
+//                    if (debug) printf("pb=%d  pv=%d  d=%d  c=%d  i=%d\n",preBuffer[c],priorValue,d,c,i);
                     priorValue=preBuffer[c]; // since by definition the diff encoding is cumulative
                     if (d==-1) {
                         d=3; // we use this to represent -1 in the dbuffer for key lookup later
                     }
                     dbuffer[c-i]=d;
                 }
-                if (debug) printf("run check end\n");
+//                if (debug) printf("run check end\n");
                 dfEfficiency = ((c-i)*1.0)/(((c-i)/4)+2); // The denominator includes the coding byte and the encoding bytes
             }
             // Now we can decide between RE and DF based on efficiency
@@ -585,9 +585,9 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
                 int cp=i;
                 int d0,d1,d2,d3;
                 d0=d1=d2=d3=0;
-                if (debug) printf("START\n");
+//                if (debug) printf("START\n");
                 while(cp<c) {
-                    if (debug) printf("TOP  c=%d  i=%d  cp=%d  p=%ld",c,i,cp,p);
+//                    if (debug) printf("TOP  c=%d  i=%d  cp=%d  p=%ld",c,i,cp,p);
                     int start=cp-i;
                     d0=dbuffer[start];
                     if (cp+1<c) {
@@ -599,19 +599,19 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
                             }
                         }
                     }
-                    if (debug) printf(" s0=%d s1=%d s2=%d s3=%d ",dbuffer[start],dbuffer[start+1],dbuffer[start+2],dbuffer[start+3]);
+//                    if (debug) printf(" s0=%d s1=%d s2=%d s3=%d ",dbuffer[start],dbuffer[start+1],dbuffer[start+2],dbuffer[start+3]);
                     int lookupKey=1000*d0+100*d1+10*d2+d3;
                     unsigned char dc=dfmap[lookupKey];
                     //printf("\ndebug: i=%d  c=%d  cp=%d  lookupKey=%d  p=%ld\n", i, c, cp, lookupKey, p);
                     //fflush(stdout);
                     imgRe[p++]=dc;
-                    if (debug) printf(" d0=%d d1=%d d2=%d d3=%d lookupKey=%d dc=%lx\n", d0,d1,d2,d3,lookupKey,dc);
+//                    if (debug) printf(" d0=%d d1=%d d2=%d d3=%d lookupKey=%d dc=%lx\n", d0,d1,d2,d3,lookupKey,dc);
                     cp+=4; // Move ahead 4 steps at a time
                 }
-                if (debug) {
-                    printf("DONE\n");
-                    exit(0);
-                }
+//                if (debug) {
+//                    printf("DONE\n");
+//                    exit(0);
+//                }
                 activeLiteralIndex=-1;
 //                if (debug) {
 //                    for (int d=0;d<(c-i);d++) {
@@ -639,44 +639,44 @@ V3DLONG ImageLoader::compressCubeBufferPBD(unsigned char * imgRe, unsigned char 
     }
     //printf("\n");
 
-    if (debug) {
+//    if (debug) {
 
-        // Validate
-        unsigned char validationData[100000];
-        V3DLONG dp=decompressPBD(imgRe, validationData, p, dfKeyMap);
+//        // Validate
+//        unsigned char validationData[100000];
+//        V3DLONG dp=decompressPBD(imgRe, validationData, p, dfKeyMap);
 
-        bool same=true;
-        int l=0;
-        for (l=0;l<bufferLength;l++) {
-            if(preBuffer[l]!=validationData[l]) same=false;
-        }
-        if (!same) {
-            printf("\nCompression did not validate:\n\n");
-            for (l=0;l<bufferLength;l++) {
-                printf("%d\t%d\t%d\n", l, preBuffer[l], validationData[l]);
-            }
+//        bool same=true;
+//        int l=0;
+//        for (l=0;l<bufferLength;l++) {
+//            if(preBuffer[l]!=validationData[l]) same=false;
+//        }
+//        if (!same) {
+//            printf("\nCompression did not validate:\n\n");
+//            for (l=0;l<bufferLength;l++) {
+//                printf("%d\t%d\t%d\n", l, preBuffer[l], validationData[l]);
+//            }
 
-            printf("\nDebug cube compression summary:\n");
-            int l=(bufferLength>p?bufferLength:p);
-            for (int i=0;i<l;i++) {
-                if (i<bufferLength) {
-                    printf("%d\t", preBuffer[i]);
-                } else {
-                    printf("---\t");
-                }
-                if (i<p) {
-                    printf("%d\n",imgRe[i]);
-                } else {
-                    printf("---\n");
-                }
-            }
-            printf("---end summary---\n\n");
+//            printf("\nDebug cube compression summary:\n");
+//            int l=(bufferLength>p?bufferLength:p);
+//            for (int i=0;i<l;i++) {
+//                if (i<bufferLength) {
+//                    printf("%d\t", preBuffer[i]);
+//                } else {
+//                    printf("---\t");
+//                }
+//                if (i<p) {
+//                    printf("%d\n",imgRe[i]);
+//                } else {
+//                    printf("---\n");
+//                }
+//            }
+//            printf("---end summary---\n\n");
 
 
-            printf("Validation of PBD failed\n");
-            exit(1);
-        }
-    }
+//            printf("Validation of PBD failed\n");
+//            exit(1);
+//        }
+//    }
 
     return p;
 }
