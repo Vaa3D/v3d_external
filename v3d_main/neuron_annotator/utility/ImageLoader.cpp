@@ -433,7 +433,21 @@ V3DLONG ImageLoader::compressPBD(unsigned char * imgRe, unsigned char * preBuffe
                 for (int j=0;j<95;j++) {
                     dbuffer[j]=0; // clear the difference buffer
                 }
+                int forwardRepeats=0;
                 for (;c<i+unitsToCheck;c++) {
+                    int forwardCheck=c+24;
+                    if (forwardCheck<(i+unitsToCheck)) {
+                        for (int f=c;f<forwardCheck;f++) {
+                            if (preBuffer[f]==priorValue) {
+                                forwardRepeats++;
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                    if (forwardRepeats==24) {
+                        break;
+                    }
                     int d=preBuffer[c] - priorValue;
                     if (d>2 || d<-1) {
                         break;
