@@ -291,7 +291,7 @@ int loadRaw2Stack_2byte(char * filename, unsigned char * & img, V3DLONG * & sz, 
 	}
 	
 	V3DLONG remainingBytes = totalBytes;
-	V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2);
+	V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2) -1;
 	V3DLONG cntBuf = 0;
 	while (remainingBytes>0)
 	{
@@ -511,7 +511,7 @@ int loadRaw2Stack_2byte(char * filename, unsigned char * & img, V3DLONG * & sz, 
 		fseek(fid, channelUnit*chan_id_to_load*unitSize, SEEK_CUR);
 
 	V3DLONG remainingBytes = totalBytes;
-	V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2);
+	V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2) -1;
 	V3DLONG cntBuf = 0;
 	while (remainingBytes>0)
 	{
@@ -910,7 +910,7 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 	}
 
 	V3DLONG remainingBytes = totalBytes;
-	V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2);
+	V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2) -1;
 	V3DLONG cntBuf = 0;
 	while (remainingBytes>0)
 	{
@@ -1167,7 +1167,7 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 		fseek(fid, channelUnit*chan_id_to_load*unitSize, SEEK_CUR);
 	
 	V3DLONG remainingBytes = totalBytes;
-	V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2);
+	V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2) -1;
 	V3DLONG cntBuf = 0;
 	while (remainingBytes>0)
 	{
