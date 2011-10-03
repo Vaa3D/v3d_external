@@ -129,6 +129,9 @@
               </disabled>
              </palette>
             </property>
+            <property name="toolTip">
+             <string/>
+            </property>
             <property name="frameShape">
              <enum>QFrame::NoFrame</enum>
             </property>
@@ -148,6 +151,11 @@
               </property>
               <item>
                <widget class="NaLargeMIPWidget" name="naLargeMIPWidget" native="true">
+                <property name="toolTip">
+                 <string>scroll to zoom
+drag to pan
+double-click to recenter</string>
+                </property>
                 <property name="autoFillBackground">
                  <bool>true</bool>
                 </property>
@@ -240,6 +248,11 @@
                  </property>
                  <item>
                   <widget class="NaZStackWidget" name="naZStackWidget" native="true">
+                   <property name="toolTip">
+                    <string>scroll to zoom
+drag to pan
+double-click to recenter</string>
+                   </property>
                    <property name="autoFillBackground">
                     <bool>true</bool>
                    </property>
@@ -393,6 +406,13 @@ background-color: rgb(0, 0, 0);</string>
                      <width>320</width>
                      <height>240</height>
                     </size>
+                   </property>
+                   <property name="toolTip">
+                    <string>shift-drag to rotate
+scroll to zoom
+drag to pan
+double-click to recenter
+single-click to select a neuron fragment</string>
                    </property>
                   </widget>
                  </item>
@@ -775,10 +795,16 @@ You can also resize the box by Ctrl + left mouse click.</string>
                          <height>215</height>
                         </size>
                        </property>
+                       <property name="toolTip">
+                        <string>Adjust 3D viewer object orientation</string>
+                       </property>
                        <property name="currentIndex">
                         <number>0</number>
                        </property>
                        <widget class="QWidget" name="tabRotation">
+                        <property name="toolTip">
+                         <string>Shift-drag in 3D viewer to rotate with the mouse.</string>
+                        </property>
                         <attribute name="title">
                          <string>Rotation</string>
                         </attribute>
@@ -808,6 +834,9 @@ You can also resize the box by Ctrl + left mouse click.</string>
                            <width>0</width>
                            <height>35</height>
                           </size>
+                         </property>
+                         <property name="toolTip">
+                          <string>Rotate about the object X axis</string>
                          </property>
                          <property name="textLabel">
                           <string>RotX</string>
@@ -840,6 +869,9 @@ You can also resize the box by Ctrl + left mouse click.</string>
                            <height>35</height>
                           </size>
                          </property>
+                         <property name="toolTip">
+                          <string>Rotate about the object Z axis</string>
+                         </property>
                          <property name="textLabel">
                           <string>RotZ</string>
                          </property>
@@ -871,6 +903,9 @@ You can also resize the box by Ctrl + left mouse click.</string>
                            <height>35</height>
                           </size>
                          </property>
+                         <property name="toolTip">
+                          <string>Rotate about the object Y axis</string>
+                         </property>
                          <property name="textLabel">
                           <string>RotY</string>
                          </property>
@@ -890,6 +925,9 @@ You can also resize the box by Ctrl + left mouse click.</string>
                            <verstretch>0</verstretch>
                           </sizepolicy>
                          </property>
+                         <property name="toolTip">
+                          <string>Restore original orientation to match MIP and Z-slice views</string>
+                         </property>
                          <property name="autoFillBackground">
                           <bool>false</bool>
                          </property>
@@ -906,6 +944,9 @@ You can also resize the box by Ctrl + left mouse click.</string>
                            <height>20</height>
                           </rect>
                          </property>
+                         <property name="toolTip">
+                          <string>Gently rotate the view to enhance the 3D effect.</string>
+                         </property>
                          <property name="text">
                           <string>Nutate</string>
                          </property>
@@ -915,6 +956,9 @@ You can also resize the box by Ctrl + left mouse click.</string>
                         </widget>
                        </widget>
                        <widget class="QWidget" name="tabVolumeCut">
+                        <property name="toolTip">
+                         <string>Trim boundaries of displayed volume</string>
+                        </property>
                         <attribute name="title">
                          <string>Volume Cut</string>
                         </attribute>
@@ -1453,6 +1497,9 @@ You can also resize the box by Ctrl + left mouse click.</string>
              </item>
              <item>
               <widget class="QPushButton" name="gallerySortBySizeButton">
+               <property name="toolTip">
+                <string>Show fragments with largest volume first</string>
+               </property>
                <property name="text">
                 <string>Size</string>
                </property>
@@ -1466,6 +1513,9 @@ You can also resize the box by Ctrl + left mouse click.</string>
              </item>
              <item>
               <widget class="QPushButton" name="gallerySortByIndexButton">
+               <property name="toolTip">
+                <string>Arrange fragments by numeric index</string>
+               </property>
                <property name="text">
                 <string>Index</string>
                </property>
@@ -1482,6 +1532,9 @@ You can also resize the box by Ctrl + left mouse click.</string>
              </item>
              <item>
               <widget class="QPushButton" name="gallerySortByColorButton">
+               <property name="toolTip">
+                <string>Arrange fragments by similar hue (first and last may be simiar too)</string>
+               </property>
                <property name="text">
                 <string>Color</string>
                </property>

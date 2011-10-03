@@ -75,6 +75,7 @@ public slots:
     void onNotSingleClick();
     void onPossibleSingleClickAlert();
     virtual void updateImageData();
+    void onNeuronSelectionChanged(); // highlight selected neurons
 
     void setXCutLock(int b);
     void setYCutLock(int b);

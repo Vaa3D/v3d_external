@@ -523,7 +523,7 @@ void NaMainWindow::on_actionOpen_triggered()
     else
     {
         QMessageBox::warning(this, tr("No such directory"),
-                             QString("No directory '%1' exists!  Please try something else.").arg(dirName));
+                             QString("'%1'\n No such directory.\nIs the file share mounted?\nHas the directory moved?").arg(dirName));
     }
 }
 
@@ -535,7 +535,7 @@ void NaMainWindow::openMulticolorImageStack(QString dirName)
     if ( ! imageDir.exists() )
     {
         QMessageBox::warning(this, tr("No such directory"),
-                             QString("No directory '%1' exists!  Please try something else.").arg(dirName));
+                             QString("'%1'\n No such directory.\nIs the file share mounted?\nHas the directory moved?").arg(dirName));
         return;
     }
 

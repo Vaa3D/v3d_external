@@ -63,7 +63,8 @@ void Na3DWidget::clearLandmarks()
 {
     if (! getRendererNa()) return;
     getRendererNa()->clearLandmarks();
-    updateHighlightNeurons();
+    setShowMarkers(0);
+    // updateHighlightNeurons();
 }
 
 /* slot */
@@ -772,8 +773,8 @@ void Na3DWidget::setDataFlowModel(const DataFlowModel& dataFlowModelParam)
     connect(this, SIGNAL(neuronClearAllSelections()), &dataFlowModelParam.getNeuronSelectionModel(), SLOT(clearSelection()));
     connect(this, SIGNAL(neuronIndexChanged(int)), &dataFlowModelParam.getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
 
-    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(selectionCleared()),
-            this, SLOT(clearLandmarks()));
+    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(selectionChanged()),
+            this, SLOT(onNeuronSelectionChanged()));
 
     // Fast-but-approximate color update
     incrementalDataColorModel = &dataFlowModelParam.getFast3DColorModel();
@@ -814,6 +815,30 @@ void Na3DWidget::toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bo
     }
 }
 
+/* slot */
+void Na3DWidget::onNeuronSelectionChanged() { // highlight selected neurons
+    // TODO - for now we are still highlighting just one neuron (at most)
+    if (!dataFlowModel) return;
+    int neuronIx = -1;
+    {
+        NeuronSelectionModel::Reader selectionReader(dataFlowModel->getNeuronSelectionModel());
+        if (! selectionReader.hasReadLock()) return;
+        const QList<bool>& selectList = selectionReader.getNeuronSelectList();
+        for (int i = 0; i < selectList.size(); ++i) {
+            if (selectList[i]) {
+                neuronIx = i;
+                break; // just the first neuron for now
+            }
+        }
+    }
+    if (neuronIx < 0) {
+        qDebug() << "clearing landmarks" << __FILE__ << __LINE__;
+        clearLandmarks(); // should remove selection
+    }
+    else {
+
+    }
+}
 
 void Na3DWidget::onVolumeDataChanged()
 {

@@ -156,10 +156,15 @@ if(APPLE)
     if (V3D_MAC_CREATE_BUNDLE)
         # Build app bundle in place at build time
         file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/v3d")
-        if(V3D_STAGING_BASE_DIR)
-            set(BUNDLE_BUILD_DIR "${V3D_STAGING_BASE_DIR}/v3d.app" CACHE PATH "Where to build Mac OS X application bundle")
+        if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
+            set(BUNDLE_APP_NAME NeuronAnnotator.app)
         else()
-            set(BUNDLE_BUILD_DIR "${CMAKE_BINARY_DIR}/v3d/v3d.app" CACHE PATH "Where to build Mac OS X application bundle")
+            set(BUNDLE_APP_NAME v3d.app)
+        endif()
+        if(V3D_STAGING_BASE_DIR)
+            set(BUNDLE_BUILD_DIR "${V3D_STAGING_BASE_DIR}/${BUNDLE_APP_NAME}" CACHE PATH "Where to build Mac OS X application bundle" FORCE)
+        else()
+            set(BUNDLE_BUILD_DIR "${CMAKE_BINARY_DIR}/v3d/${BUNDLE_APP_NAME}" CACHE PATH "Where to build Mac OS X application bundle" FORCE)
         endif()
         set(V3D_BUILD_BINARY_DIR "${BUNDLE_BUILD_DIR}/Contents/MacOS" CACHE INTERNAL "" FORCE)
         # file(REMOVE_RECURSE "${BUNDLE_BUILD_DIR}/Contents/Frameworks") # Dangerous...
@@ -187,10 +192,17 @@ if(APPLE)
           ${BUNDLE_BUILD_DIR}/Contents/Info.plist
           @ONLY
         )
-        configure_file(
-            "${CMAKE_CURRENT_SOURCE_DIR}/../CMake/package/v3d_mac.sh"
-            "${BUNDLE_BUILD_DIR}/Contents/MacOS/${MACOSX_BUNDLE_EXECUTABLE_NAME}"
-            COPYONLY)
+        if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
+            configure_file(
+                "${CMAKE_CURRENT_SOURCE_DIR}/../CMake/package/neuron_annotator_mac.sh"
+                "${BUNDLE_BUILD_DIR}/Contents/MacOS/${MACOSX_BUNDLE_EXECUTABLE_NAME}"
+                COPYONLY)
+        else()
+            configure_file(
+                "${CMAKE_CURRENT_SOURCE_DIR}/../CMake/package/v3d_mac.sh"
+                "${BUNDLE_BUILD_DIR}/Contents/MacOS/${MACOSX_BUNDLE_EXECUTABLE_NAME}"
+                COPYONLY)
+        endif()
         configure_file(
             "${CMAKE_CURRENT_SOURCE_DIR}/../v3d/v3d.icns"
             "${BUNDLE_BUILD_DIR}/Contents/Resources/v3d.icns"

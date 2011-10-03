@@ -4,6 +4,8 @@ cmake_minimum_required(VERSION 2.6)
 
 include(CTest)
 
+set(V3D_PACKAGE_AS_NEURON_ANNOTATOR OFF CACHE BOOL "Whether to package custom NeuronAnnotator mode")
+
 # It is important on Windows for both v3d and plugins to use same build type.
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING 
@@ -84,9 +86,14 @@ add_subdirectory(released_plugins)
 # Packaging custom installers for each platform using cpack #
 #############################################################
 
-set(CPACK_PACKAGE_NAME v3d)
+if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
+    set(CPACK_PACKAGE_NAME NeuronAnnotator)
+    set(CPACK_PACKAGE_FILE_NAME "InstallNeuronAnnotator-${V3D_VERSION}-${V3D_PLATFORM_NAME}")
+else()
+    set(CPACK_PACKAGE_NAME v3d)
+    set(CPACK_PACKAGE_FILE_NAME "InstallV3d-${V3D_VERSION}-${V3D_PLATFORM_NAME}")
+endif()
 # name of dmg file
-set(CPACK_PACKAGE_FILE_NAME "InstallV3d-${V3D_VERSION}-${V3D_PLATFORM_NAME}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
     "V3D is a bioimage volume visualization and analysis application.")
 set(CPACK_PACKAGE_VENDOR "Howard Hughes Medical Institute Janelia Farm Research Campus")
@@ -121,7 +128,11 @@ if(APPLE)
                 "${BUNDLE_BUILD_DIR}"
             COMMENT "Adjusting link libraries for plugins")
         # name of Bundle in dmg file, and executable in bundle
-        set(CPACK_BUNDLE_NAME v3d)
+        if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
+            set(CPACK_BUNDLE_NAME NeuronAnnotator)
+        else()
+            set(CPACK_BUNDLE_NAME v3d)
+        endif()
         set(CPACK_BUNDLE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/v3d/v3d.icns")
         set(CPACK_BUNDLE_PLIST "${CMAKE_CURRENT_BINARY_DIR}/Info.plist")
     else(V3D_MAC_CREATE_BUNDLE)
@@ -129,8 +140,16 @@ if(APPLE)
 
     # Whether or not we create a bundle, we create a dmg disk image.
     # Hope for recent version of cpack to pretty up dmg...
-    set(CPACK_DMG_VOLUME_NAME "v3d-${V3D_VERSION}")
-    set(CPACK_DMG_DS_STORE "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/dmg_DS_STORE")
+    if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
+        set(CPACK_DMG_VOLUME_NAME "NeuronAnnotator-${V3D_VERSION}")
+    else()
+        set(CPACK_DMG_VOLUME_NAME "v3d-${V3D_VERSION}")
+    endif()
+    if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
+        set(CPACK_DMG_DS_STORE "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/dmg_DS_Store_na")
+    else()
+        set(CPACK_DMG_DS_STORE "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/dmg_DS_STORE")
+    endif()
     set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/v3d_dmg_bgd.png")
     #
     set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/V3D_Disk.icns")
@@ -151,8 +170,13 @@ elseif(WIN32)
     set(CPACK_PACKAGE_ICON
        "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/windows\\\\v3dInBox128.png")
 
-    set(CPACK_NSIS_MENU_LINKS "bin/v3d.exe" "V3D")
-    SET(CPACK_NSIS_DISPLAY_NAME V3D)
+    if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
+        set(CPACK_NSIS_MENU_LINKS "bin/v3d.exe" "NeuronAnnotator")
+        SET(CPACK_NSIS_DISPLAY_NAME NeuronAnnotator)
+    else()
+        set(CPACK_NSIS_MENU_LINKS "bin/v3d.exe" "V3D")
+        SET(CPACK_NSIS_DISPLAY_NAME V3D)
+    endif()
     SET(CPACK_NSIS_URL_INFO_ABOUT  
         "http://penglab.janelia.org/proj/v3d/V3D/About_V3D.html")
 
@@ -178,7 +202,7 @@ else() # Linux
     endif()
 endif()
 
-add_subdirectory(doc/api)
+# add_subdirectory(doc/api)
 
 # include(CPack) must always be last!
 include(CPack)
