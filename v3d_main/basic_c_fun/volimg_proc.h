@@ -816,9 +816,9 @@ template <class T> bool fit_to_cube(T * & img, V3DLONG * sz, V3DLONG * sz_target
 		return false;
 	}
 
-	if (sz[0]<1 || sz[1]<1 || sz[2]<1 || sz[3]<1 || sz[0]>2048 || sz[1]>2048 || sz[2]>300 || sz[3]>3)
+	if (sz[0]<1 || sz[1]<1 || sz[2]<1 || sz[3]<1 || sz[0]>2048 || sz[1]>2048 || sz[2]>1024 || sz[3]>10)
 	{
-		fprintf(stderr, "Input image size is not valid  [%s][%d].\n", __FILE__, __LINE__);
+		fprintf(stderr, "Input image size is not valid  [%s][%d], maybe because the sizes are too small or too large.\n", __FILE__, __LINE__);
 		return false;
 	}
 
