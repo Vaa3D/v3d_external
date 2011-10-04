@@ -178,74 +178,9 @@ QString ImageLoader::getFilePrefix(QString filepath) {
 
 */
 
-int ImageLoader::createDfValueByKeyMap(unsigned char *dfValueByKey) {
-    // First clear the map
-    for (int i=0;i<4000;i++) {
-        dfValueByKey[i]=0;
-    }
-    // This assumes dfValueByKey is an array of unsigned int size=4000
-    unsigned char vlist [4];
-    vlist[0]=0;
-    vlist[1]=1;
-    vlist[2]=2;
-    vlist[3]=3;
-    unsigned char value=0;
-    for (int l0=0;l0<4;l0++) {
-        for (int l1=0;l1<4;l1++) {
-            for (int l2=0;l2<4;l2++) {
-                for (int l3=0;l3<4;l3++) {
-                    int key=vlist[l0]*1000 + vlist[l1]*100 + vlist[l2]*10 + vlist[l3];
-                    if (key>=4000) {
-                        printf("ImageLoader::createDfValueByKeyMap key index unexpectedly greater than 3999\n");
-                        return 1;
-                    } else if (value==256) {
-                        printf("ImageLoader::createDfValueByKeyMap unexpectedly ran out of values\n");
-                        return 1;
-                    }
-                    dfValueByKey[key]=value++;
-                }
-            }
-        }
-    }
-    return 0;
-}
-
-int ImageLoader::createDfKeyByValueMap(int * dfKeyByValue) {
-    // First clear the map
-    for (int i=0;i<256;i++) {
-        dfKeyByValue[i]=0;
-    }
-
-    // This assumes dfValueByKey is an array of unsigned int size=4000
-    unsigned char vlist [4];
-    vlist[0]=0;
-    vlist[1]=1;
-    vlist[2]=2;
-    vlist[3]=3;
-    unsigned char value=0;
-    for (int l0=0;l0<4;l0++) {
-        for (int l1=0;l1<4;l1++) {
-            for (int l2=0;l2<4;l2++) {
-                for (int l3=0;l3<4;l3++) {
-                    int key=vlist[l0]*1000 + vlist[l1]*100 + vlist[l2]*10 + vlist[l3];
-                    dfKeyByValue[value++]=key;
-                }
-            }
-        }
-    }
-    return 0;
-}
-
 int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char* data, const V3DLONG * sz, int datatype)
 {
     int berror=0;
-
-    unsigned char dfValueByKey [4000];
-    createDfValueByKeyMap(dfValueByKey);
-
-    int dfKeyMap[256];
-    createDfKeyByValueMap(dfKeyMap);
-
 
     if (datatype!=1) {
         printf("saveStack2RawPBD : Only datatype 1 is supported\n");
@@ -343,7 +278,7 @@ int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char* data, co
 
         printf("Allocated compression target with maxSize=%d\n", maxSize);
 
-        V3DLONG compressionSize = compressPBD(imgRe, data, maxSize, maxSize, dfValueByKey, dfKeyMap);
+        V3DLONG compressionSize = compressPBD(imgRe, data, maxSize, maxSize);
 
         if (compressionSize==0) {
             printf("Error during compressPBD\n");
@@ -374,8 +309,7 @@ int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char* data, co
 
 
 // We assume here that preBuffer is
-V3DLONG ImageLoader::compressPBD(unsigned char * imgRe, unsigned char * preBuffer, V3DLONG bufferLength, V3DLONG spaceLeft,
-                                           unsigned char * dfmap, int * dfKeyMap) {
+V3DLONG ImageLoader::compressPBD(unsigned char * imgRe, unsigned char * preBuffer, V3DLONG bufferLength, V3DLONG spaceLeft) {
     bool debug=false;
     V3DLONG p=0;
 
@@ -456,11 +390,12 @@ V3DLONG ImageLoader::compressPBD(unsigned char * imgRe, unsigned char * preBuffe
             } else if (dfEfficiency>1.0) {
                 // First, encode the number of units we expect
                 imgRe[p++]=c-i+32;
+
                 // Then use DF. We want to move forward in units of 4, and pick the correct encoding.
                 // Note that is doesn't matter if we pad extra 0s because we know what the correct
                 // length is from above.
                 int cp=i;
-                int d0,d1,d2,d3;
+                unsigned char d0,d1,d2,d3;
                 d0=d1=d2=d3=0;
                 while(cp<c) {
                     int start=cp-i;
@@ -474,11 +409,20 @@ V3DLONG ImageLoader::compressPBD(unsigned char * imgRe, unsigned char * preBuffe
                             }
                         }
                     }
-                    int lookupKey=1000*d0+100*d1+10*d2+d3;
-                    unsigned char dc=dfmap[lookupKey];
-                    imgRe[p++]=dc;
+                    // In decompression, we want FIFO for speed, so we put last first.
+                    unsigned char v=0;
+                    v |= d3;
+                    v <<= 2;
+                    v |= d2;
+                    v <<= 2;
+                    v |= d1;
+                    v <<= 2;
+                    v |= d0;
+
+                    imgRe[p++]=v;
                     cp+=4; // Move ahead 4 steps at a time
                 }
+
                 activeLiteralIndex=-1;
                 i=c-1; // will increment at top
             } else { // This will catch the case where dfEfficiency is 0.0 due to i==0
@@ -502,12 +446,9 @@ V3DLONG ImageLoader::compressPBD(unsigned char * imgRe, unsigned char * preBuffe
 int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image) {
     {
             int berror = 0;
-            int dfKeyMap [256];
 
             QTime stopwatch;
             stopwatch.start();
-
-            createDfKeyByValueMap(dfKeyMap);
 
             int datatype;
 
@@ -669,13 +610,14 @@ int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image) {
             unsigned char * decompressedData = new unsigned char [decompressedBytes];
 
             V3DLONG remainingBytes = compressedBytes;
-            V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2);
+            //V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2);
+            V3DLONG readStepSizeBytes = V3DLONG(1024)*5000;
             V3DLONG cntBuf = 0;
             while (remainingBytes>0)
             {
-                    V3DLONG curReadBytes = (remainingBytes<nBytes2G) ? remainingBytes : nBytes2G;
+                    V3DLONG curReadBytes = (remainingBytes<readStepSizeBytes) ? remainingBytes : readStepSizeBytes;
                     V3DLONG curReadUnits = curReadBytes/unitSize;
-                    nread = fread(compressedData+cntBuf*nBytes2G, unitSize, curReadUnits, fid);
+                    nread = fread(compressedData+cntBuf*readStepSizeBytes, unitSize, curReadUnits, fid);
                     if (nread!=curReadUnits)
                     {
                             printf("Something wrong in file reading. The program reads [%ld data points] but the file says there should be [%ld data points].\n", nread, totalUnit);
@@ -686,8 +628,9 @@ int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image) {
                             return berror;
                     }
 
-                    remainingBytes -= nBytes2G;
+                    remainingBytes -= readStepSizeBytes;
                     cntBuf++;
+                    printf("Bytes remaining=%d\n", remainingBytes);
             }
 
             // swap the data bytes if necessary
@@ -719,7 +662,7 @@ int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image) {
 
             // Decompress data
             V3DLONG dp = 0;
-            dp=decompressPBD(compressedData, imageData, compressedBytes, dfKeyMap);
+            dp=decompressPBD(compressedData, imageData, compressedBytes);
 
             if (dp!=decompressedBytes) {
                 printf("Error - expected decompressed byte count=%ld but only found %ld\n",decompressedBytes, dp);
@@ -745,13 +688,20 @@ int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image) {
     }
 }
 
-V3DLONG ImageLoader::decompressPBD(unsigned char * sourceData, unsigned char * targetData, V3DLONG sourceLength, int * dfKeyMap) {
+V3DLONG ImageLoader::decompressPBD(unsigned char * sourceData, unsigned char * targetData, V3DLONG sourceLength) {
     // Decompress data
     V3DLONG cp=0;
     V3DLONG dp=0;
-    int p[4];
+    const unsigned char mask=0x0003;
+    unsigned char p0,p1,p2,p3;
     unsigned char prior=0;
     unsigned char value=0;
+    unsigned char pva=0;
+    unsigned char pvb=0;
+    int leftToFill=0;
+    int fillNumber=0;
+    unsigned char * toFill=0;
+    unsigned char sourceChar=0;
     while(cp<sourceLength) {
         value=sourceData[cp];
         if (value<33) {
@@ -764,32 +714,35 @@ V3DLONG ImageLoader::decompressPBD(unsigned char * sourceData, unsigned char * t
             prior=targetData[dp-1];
         } else if (value<128) {
             // Difference 33-127
-            int leftToFill=value-32;
+            leftToFill=value-32;
             while(leftToFill>0) {
-                int fillNumber=(leftToFill<4 ? leftToFill : 4);
-
-                // Moved this from separate function for speed ///
-                unsigned char * toFill = targetData+dp;
-                int key=dfKeyMap[sourceData[++cp]];
-                p[0]=key/1000;
-                int p1k=p[0]*1000;
-                p[1]=(key-p1k)/100;
-                int p2k=p1k+p[1]*100;
-                p[2]=(key-p2k)/10;
-                int p3k=p2k+p[2]*10;
-                p[3]=key-p3k;
-                if (p[0]==3) p[0]=-1;
-                if (p[1]==3) p[1]=-1;
-                if (p[2]==3) p[2]=-1;
-                if (p[3]==3) p[3]=-1;
-                int f=0;
-                toFill[f++]=prior+p[0];
-                for (;f<fillNumber;f++) {
-                    toFill[f]=toFill[f-1]+p[f];
+                fillNumber=(leftToFill<4 ? leftToFill : 4);
+                sourceChar=sourceData[++cp];
+                toFill = targetData+dp;
+                p0=sourceChar & mask;
+                sourceChar >>= 2;
+                p1=sourceChar & mask;
+                sourceChar >>= 2;
+                p2=sourceChar & mask;
+                sourceChar >>= 2;
+                p3=sourceChar & mask;
+                pva=(p0==3?-1:p0)+prior;
+                *toFill=pva;
+                if (fillNumber>1) {
+                    toFill++;
+                    pvb=pva+(p1==3?-1:p1);
+                    *toFill=pvb;
+                    if (fillNumber>2) {
+                        toFill++;
+                        pva=(p2==3?-1:p2)+pvb;
+                        *toFill=pva;
+                        if (fillNumber>3) {
+                            toFill++;
+                            *toFill=(p3==3?-1:p3)+pva;
+                        }
+                    }
                 }
-                prior = toFill[f-1];
-                //////////////////////////////////////////////////
-
+                prior = *toFill;
                 dp+=fillNumber;
                 leftToFill-=fillNumber;
             }
