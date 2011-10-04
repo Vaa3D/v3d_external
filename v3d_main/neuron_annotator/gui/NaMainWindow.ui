@@ -1685,6 +1685,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <addaction name="separator"/>
     <addaction name="actionShow_Crosshair"/>
     <addaction name="actionLink_viewers"/>
+    <addaction name="actionShow_Axes"/>
     <addaction name="separator"/>
     <addaction name="menuStereo_3D"/>
     <addaction name="separator"/>
@@ -1799,6 +1800,9 @@ You can also resize the box by Ctrl + left mouse click.</string>
    </property>
    <property name="text">
     <string>Link viewers</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionShow_Crosshair">
@@ -1973,6 +1977,17 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <string>Swap Eyes</string>
    </property>
   </action>
+  <action name="actionShow_Axes">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Show Axes</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -2091,12 +2106,12 @@ You can also resize the box by Ctrl + left mouse click.</string>
    <slot>reset()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>661</x>
-     <y>436</y>
+     <x>756</x>
+     <y>561</y>
     </hint>
     <hint type="destinationlabel">
-     <x>662</x>
-     <y>418</y>
+     <x>820</x>
+     <y>529</y>
     </hint>
    </hints>
   </connection>

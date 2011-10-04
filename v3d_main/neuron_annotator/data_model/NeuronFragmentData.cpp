@@ -45,7 +45,7 @@ void NeuronFragmentData::update()
         const Image4DProxy<My4DImage>& dataProxy = volumeReader.getOriginalImageProxy();
         // Temporary 2D representation of color (ignoring saturation) because hue is a circular parameter
         std::vector< std::pair<float, float> > fragment2DColors(sf, std::pair<float, float>(0.0, 0.0) );
-        const std::vector<int>& fragmentSizes = d->getFragmentSizes();
+        const std::vector<int>& fragmentSizes = d.constData()->getFragmentSizes();
         // Hue wheel has a number of spokes depending on number of data channels.
         // (polar coordinates with angle as hue and radius as intensity)
         std::vector<float> hueChannelX(dataProxy.sc, 0.0);
@@ -102,17 +102,17 @@ NeuronFragmentData::Reader::Reader(const NeuronFragmentData& fragmentData)
 
 int NeuronFragmentData::Reader::getNumberOfFragments() const
 {
-    return d->getNumberOfFragments();
+    return d.constData()->getNumberOfFragments();
 }
 
 const std::vector<int>& NeuronFragmentData::Reader::getFragmentSizes() const // in voxels
 {
-    return d->getFragmentSizes();
+    return d.constData()->getFragmentSizes();
 }
 
 const std::vector<float>& NeuronFragmentData::Reader::getFragmentHues() const // in range 0.0-1.0
 {
-    return d->getFragmentHues();
+    return d.constData()->getFragmentHues();
 }
 
 

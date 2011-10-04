@@ -127,21 +127,24 @@ NaMainWindow::NaMainWindow()
             ui.progressBarMip, SLOT(setValue(int)));
     ui.progressWidgetZ->hide();
 
-    // Wire up Z-stack / HDR viewer
-    ui.HDR_checkBox->setChecked(true);
-    ui.naZStackWidget->setHDRCheckState(false);
-    ui.HDR_checkBox->setChecked(false);
     // ui.gammaWidget_Zstack->hide();
     ui.BoxSize_spinBox->setMinimum(MINSZBOX);
     
-    connect(ui.HDR_checkBox, SIGNAL(stateChanged(int)),
-            ui.naZStackWidget, SLOT(setHDRCheckState(int)));
+    // Wire up Z-stack / HDR viewer
+    connect(ui.HDR_checkBox, SIGNAL(toggled(bool)),
+            ui.naZStackWidget, SLOT(setHDRCheckState(bool)));
+    connect(ui.naZStackWidget, SIGNAL(changedHDRCheckState(bool)),
+            ui.HDR_checkBox, SLOT(setChecked(bool)));
     connect(ui.HDRRed_pushButton, SIGNAL(clicked()),
             ui.naZStackWidget, SLOT(setRedChannel()));
     connect(ui.HDRGreen_pushButton, SIGNAL(clicked()),
             ui.naZStackWidget, SLOT(setGreenChannel()));
     connect(ui.HDRBlue_pushButton, SIGNAL(clicked()),
             ui.naZStackWidget, SLOT(setBlueChannel()));
+    connect(ui.naZStackWidget, SIGNAL(curColorChannelChanged(NaZStackWidget::Color)),
+            this, SLOT(onHdrChannelChanged(NaZStackWidget::Color)));
+    ui.naZStackWidget->setHDRCheckState(false);
+
     connect(ui.ZSlice_horizontalScrollBar, SIGNAL(valueChanged(int)),
             ui.naZStackWidget, SLOT(setCurrentZSlice(int)));
     connect(ui.naZStackWidget, SIGNAL(curZsliceChanged(int)),
@@ -230,6 +233,11 @@ NaMainWindow::NaMainWindow()
     connect(ui.actionShow_Crosshair, SIGNAL(toggled(bool)),
             ui.naZStackWidget, SLOT(showCrosshair(bool)));
 
+    // Axes
+    // TODO I want a small set of axes that sits in the lower left corner.  The gigantic axes are less useful.
+    // connect(ui.actionShow_Axes, SIGNAL(toggled(bool)),
+    //         ui.v3dr_glwidget, SLOT(enableShowAxes(bool)));
+
     // Clear status message when viewer changes
     connect(ui.viewerStackedWidget, SIGNAL(currentChanged(int)),
             this, SLOT(onViewerChanged(int)));
@@ -293,6 +301,24 @@ void NaMainWindow::initializeContextMenus()
     ui.naLargeMIPWidget->setContextMenus(viewerContextMenu, neuronContextMenu);
     ui.naZStackWidget->setContextMenus(viewerContextMenu, neuronContextMenu);
     ui.v3dr_glwidget->setContextMenus(viewerContextMenu, neuronContextMenu);
+}
+
+/* slot */
+void NaMainWindow::onHdrChannelChanged(NaZStackWidget::Color channel)
+{
+    switch(channel)
+    {
+    // Due to exclusive group, checking one button unchecks the others.
+    case NaZStackWidget::COLOR_RED:
+        ui.HDRRed_pushButton->setChecked(true);
+        break;
+    case NaZStackWidget::COLOR_GREEN:
+        ui.HDRGreen_pushButton->setChecked(true);
+        break;
+    case NaZStackWidget::COLOR_BLUE:
+        ui.HDRBlue_pushButton->setChecked(true);
+        break;
+    }
 }
 
 /* slot */

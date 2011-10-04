@@ -36,6 +36,7 @@ NaZStackWidget::NaZStackWidget(QWidget * parent)
     }
 
     setRedChannel(); // by default
+    setHDRCheckState(false);
 
     m_square_pos.setX(sx/2);
     m_square_pos.setY(sy/2);
@@ -429,9 +430,35 @@ void NaZStackWidget::wheelEvent(QWheelEvent * e) // mouse wheel
     // qDebug() << "wheel";
     // cerr << "wheel event " << __LINE__ << __FILE__ << endl;
     // CMB 12-Aug-2011 - reverse sign to make direction match scroll wheel on scroll bar
-    if (QApplication::keyboardModifiers() & Qt::ShiftModifier)
+    if (e->modifiers() & Qt::ShiftModifier)
     { // shift-scroll to scan in Z
         setCurrentZSlice(getCurrentZSlice() - numTicks);
+    }
+    else if (runHDRFILTER && (
+               (e->modifiers() & Qt::AltModifier)
+            || (e->modifiers() & Qt::MetaModifier)
+            || (e->modifiers() & Qt::ControlModifier)
+            ))
+    { // ctrl-scroll to shift HDR color/data channel
+        qDebug() << "modified scroll" << sc;
+        const int min_color = COLOR_RED;
+        const int max_color = std::min((int)sc, (int)COLOR_BLUE);
+        if (max_color <= 1) return; // no other colors to change to
+        int old_color = cur_c;
+        int new_color = old_color;
+        if (numTicks == 0)
+            return;
+        else if (numTicks < 0)
+            --new_color;
+        else
+            ++new_color;
+        // wrap around channel-list boundaries
+        while (new_color > max_color)
+            new_color -= max_color;
+        while (new_color < min_color)
+            new_color += max_color;
+        setColorChannel((Color)new_color);
+        // qDebug() << new_color << __FILE__ << __LINE__;
     }
     else
     {
@@ -852,27 +879,24 @@ void NaZStackWidget::setColorChannel(NaZStackWidget::Color col)
     // Ensure there are enough channels to support this color
     if ( (int)col > sc )
         return; // outside of range of available color channels
+    setHDRCheckState(true); // Turn on HDR mode when a color channel is selected
+    if (col == cur_c) return; // No change
+    recNum = 0;
+    hdrfiltered[(int)col - 1] = true;
     pre_c = cur_c;
     cur_c = col;
-
     emit curColorChannelChanged(col);
 }
 
 void NaZStackWidget::setRedChannel() {
-    recNum = 0;
-    hdrfiltered[0] = true;
     setColorChannel(COLOR_RED);
 }
 
 void NaZStackWidget::setGreenChannel() {
-    recNum = 0;
-    hdrfiltered[1] = true;
     setColorChannel(COLOR_GREEN);
 }
 
 void NaZStackWidget::setBlueChannel() {
-    recNum = 0;
-    hdrfiltered[2] = true;
     setColorChannel(COLOR_BLUE);
 }
 
@@ -886,21 +910,21 @@ void NaZStackWidget::updateROIsize(int boxSize)
     emit boxSizeChanged(boxSize);
 }
 
-void NaZStackWidget::setHDRCheckState(int state) {
+void NaZStackWidget::setHDRCheckState(bool state)
+{
+    if (state == runHDRFILTER) return;
+    runHDRFILTER = state;
     if(state){
-        runHDRFILTER = true;
         setContextMenuPolicy(Qt::NoContextMenu); // because hdr right-click does not work with context menu
-        setToolTip("drag to move HDR window\nright-drag to change HDR window size\nscroll to zoom\nshift-scroll to z-scan\ndouble-click to recenter");
-        emit changedHDRCheckState(false); // hide gamma widget
+        setToolTip("drag to move HDR window\nright-drag to change HDR window size\nalt-scroll to change HDR channel\nscroll to zoom\nshift-scroll to z-scan\ndouble-click to recenter");
     }
     else{
-        runHDRFILTER = false;
         setContextMenuPolicy(Qt::CustomContextMenu);
         setToolTip("drag to pan\nscroll to zoom\nshift-scroll to z-scan\ndouble-click to recenter");
-        emit changedHDRCheckState(true); // show gamma widget
     }
     updateCursor();
     update();
+    emit changedHDRCheckState(state); // hide gamma widget
 }
 
 // record previous color channel ROI

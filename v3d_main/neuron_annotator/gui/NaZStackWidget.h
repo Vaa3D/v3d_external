@@ -72,7 +72,7 @@ public slots:
     void updateROIsize(int boxSize);
     virtual void toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked) {/* TODO */}
     virtual void updateFullVolume() {/* TODO -- deprecate */}
-    void setHDRCheckState(int state);
+    void setHDRCheckState(bool state);
     void updateVolumeParameters();
     void updateHDRView();
     void showContextMenu(QPoint);

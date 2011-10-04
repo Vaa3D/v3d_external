@@ -106,6 +106,7 @@ public slots:
     void setChannelOneVisibility(bool);
     void setChannelTwoVisibility(bool);
     void onColorModelChanged();
+    void onHdrChannelChanged(NaZStackWidget::Color);
 
 protected slots:
     void on3DViewerRotationChanged(const Rotation3D& rot);
