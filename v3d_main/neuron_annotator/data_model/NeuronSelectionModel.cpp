@@ -239,7 +239,7 @@ bool NeuronSelectionModel::showAllNeuronsInEmptySpace()
 {
     bool bChanged = false;
     bool oldBlockSignals = signalsBlocked();
-    qDebug() << "NeuronSelectionModel::showAllNeuronsInEmptySpace()";
+    // qDebug() << "NeuronSelectionModel::showAllNeuronsInEmptySpace()";
     blockSignals(true);
     if (showAllNeurons())
         bChanged = true;
@@ -258,24 +258,9 @@ bool NeuronSelectionModel::showAllNeuronsInEmptySpace()
 /* slot */
 bool NeuronSelectionModel::showNothing()
 {
-    bool bVisibilityChanged = false;
-    bool oldBlockSignals = signalsBlocked();
-    blockSignals(true);
-    if (clearAllNeurons())
-        bVisibilityChanged = true;
-    for (int i = 0; i < overlayStatusList.size(); ++i)
-        if (overlayStatusList[i]) {
-            overlayStatusList[i] = false;
-            bVisibilityChanged = true;
-        }
-    blockSignals(oldBlockSignals);
-    // Unselect anything that is now hidden
-    // TODO - do this for all potentially hiding visibility operations.
-    qDebug() << "Clearing selection after hiding all";
-    clearSelection(); // sends its own signal
-    if (bVisibilityChanged)
-        emit multipleVisibilityChanged();
-    return bVisibilityChanged;
+    // hides all neurons and overlays.
+    // we deselect everything that's hidden, so showNothing() is equivalent to clearAllNeurons()
+    clearAllNeurons();
 }
 
 /* slot */
@@ -373,25 +358,29 @@ bool NeuronSelectionModel::selectExactlyOneNeuron(int index)
         neuronSelectList.replace(index, true);
     }
     if (changed)
+        // qDebug() << "emitting exactlyOneNeuronSelected" << index;
         emit exactlyOneNeuronSelected(index);
     return changed;
 }
 
 bool NeuronSelectionModel::clearSelection()
 {
+    // qDebug() << "NeuronSelectionModel::clearSelection()" << __FILE__ << __LINE__;
     bool bChanged = false;
+    for (int i=0;i<neuronSelectList.size();i++) {
+        if (neuronSelectList[i]) {
+            bChanged = true;
+            break;
+        }
+    }
+    if (!bChanged) return bChanged;
     {
         Writer selectionWriter(*this);
         for (int i=0;i<neuronSelectList.size();i++)
-            if (neuronSelectList[i]) {
-                neuronSelectList.replace(i, false);
-                bChanged = true;
-            }
-        if (!bChanged) return bChanged;
+            neuronSelectList[i] = false;
     }
-    qDebug() << "emit selectionCleared";
-    if (bChanged)
-        emit selectionCleared();
+    // qDebug() << "emit selectionCleared";
+    emit selectionCleared();
     return bChanged;
 }
 

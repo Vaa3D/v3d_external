@@ -56,7 +56,7 @@ int NeuronSelector::getIndexSelectedNeuron()
 
             numNeuron = selectionReader.getMaskStatusList().size();
 
-            qDebug()<<"how many neurons ... "<<numNeuron;
+            // qDebug()<<"how many neurons ... "<<numNeuron;
 
             sum.assign(numNeuron, 0);
 
@@ -107,7 +107,7 @@ int NeuronSelector::getIndexSelectedNeuron()
 	}
 	
 	//
-        qDebug() << "NeuronSelector::getIndexSelectedNeuron index=" << index;
+        // qDebug() << "NeuronSelector::getIndexSelectedNeuron index=" << index;
 
         if(index < 0) index = -1; // Index zero is a real fragment
 	
@@ -260,15 +260,15 @@ void NeuronSelector::updateSelectedPosition(double x, double y, double z)
             alreadySelected = (selectionReader.getNeuronSelectList()[index]);
         } // release lock before emit
         if (alreadySelected) {
-            qDebug() << "selectionClearNeeded()";
+            // qDebug() << "selectionClearNeeded()";
             emit selectionClearNeeded();
         }
         else {
             const QList<ImageMarker> landmarks = highlightIndexNeuron();
-            qDebug() << "updateSelectedPosition" << x << y << z;
+            // qDebug() << "updateSelectedPosition" << x << y << z;
             emit neuronSelected(index);
             if (landmarks.size() > 0) {
-                qDebug() << landmarks[0].radius << __FILE__ << __LINE__;
+                // qDebug() << landmarks[0].radius << __FILE__ << __LINE__;
                 emit landmarksUpdateNeeded(landmarks);
             }
         }
@@ -277,7 +277,7 @@ void NeuronSelector::updateSelectedPosition(double x, double y, double z)
 // highlight selected neuron
 QList<ImageMarker> NeuronSelector::highlightIndexNeuron()
 {
-    qDebug() << "NeuronSelector::highlightIndexNeuron" << index << __FILE__ << __LINE__;
+    // qDebug() << "NeuronSelector::highlightIndexNeuron" << index << __FILE__ << __LINE__;
     // list of markers
     QList<ImageMarker> listLandmarks;
 
@@ -317,11 +317,11 @@ QList<ImageMarker> NeuronSelector::highlightIndexNeuron()
            color.g = c.green();
            color.b = c.blue();
            color.a = c.alpha();
-           qDebug() << "neuron color =" << c << hue << saturation << value << alpha;
+           // qDebug() << "neuron color =" << c << hue << saturation << value << alpha;
        }
     }
 
-    qDebug() << "NeuronSelector::highlightIndexNeuron" << __FILE__ << __LINE__;
+    // qDebug() << "NeuronSelector::highlightIndexNeuron" << __FILE__ << __LINE__;
     { // read lock stanza
         // const unsigned char *neuronMask = dataFlowModel->getNeuronMaskAsMy4DImage()->getRawData();
         NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
@@ -404,13 +404,13 @@ QList<ImageMarker> NeuronSelector::highlightIndexNeuron()
     } // release read lock
     // qDebug() << listLandmarks.size() << "landmarks found";
     if (listLandmarks.size() > 0)
-        qDebug() << listLandmarks[0].radius << __FILE__ << __LINE__;
+        // qDebug() << listLandmarks[0].radius << __FILE__ << __LINE__;
     return listLandmarks;
 }
 
 void NeuronSelector::onSelectionModelChanged()
 {
-    qDebug() << "NeuronSelector::onSelectionModelChanged";
+    // qDebug() << "NeuronSelector::onSelectionModelChanged";
     QList<int> selectedIndices;
     {
         NeuronSelectionModel::Reader selectionReader(
@@ -424,7 +424,7 @@ void NeuronSelector::onSelectionModelChanged()
     // nothing selected?
     if (selectedIndices.size() == 0)
     {
-        qDebug() << "NeuronSelector: no selections";
+        // qDebug() << "NeuronSelector: no selections";
         if (index < 0) return; // nothing is highlighted already
         index = -1;
         emit landmarksClearNeeded();
@@ -432,7 +432,7 @@ void NeuronSelector::onSelectionModelChanged()
     }
     else // something is selected
     {
-        qDebug() << "NeuronSelector: single neuron selected";
+        // qDebug() << "NeuronSelector: single neuron selected";
         assert(selectedIndices.size() > 0);
         // if (index == selectedIndices[0]) return; // no change; NO - Selection might have originated from NeuronSelector.
         index = selectedIndices[0]; // set "selected" index to first item in list
@@ -440,9 +440,9 @@ void NeuronSelector::onSelectionModelChanged()
         // TODO - highlight multiple neurons
         // Just highlight the first neuron in the list for now
         const QList<ImageMarker> landmarks = highlightIndexNeuron();
-        qDebug() << "number of landmarks =" << landmarks.size();
+        // qDebug() << "number of landmarks =" << landmarks.size();
         if (landmarks.size() > 0) {
-            qDebug() << landmarks[0].radius << __FILE__ << __LINE__;
+            // qDebug() << landmarks[0].radius << __FILE__ << __LINE__;
             emit landmarksUpdateNeeded(landmarks);
         }
         return;
