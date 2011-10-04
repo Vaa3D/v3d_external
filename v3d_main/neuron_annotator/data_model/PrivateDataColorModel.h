@@ -40,6 +40,11 @@ public:
             const DataColorModel::Reader& desiredColorReader,
             const DataColorModel::Reader& currentColorReader);
     QRgb getChannelColor(int channelIndex) const;
+    void resetColors() {
+        for (int c = 0; c < channelColors.size(); ++c) {
+            channelColors[c].resetColors();
+        }
+    }
 
 private:
     std::vector<ChannelColorModel> channelColors;
@@ -66,6 +71,11 @@ public:
         qreal getGamma() const {return gamma;}
         qreal getHdrMin() const {return hdrMin;}
         qreal getHdrMax() const {return hdrMax;}
+        void resetColors() {
+            setGamma(1.0);
+            resetHdrRange();
+            showChannel = true;
+        }
 
     protected:
         bool showChannel;

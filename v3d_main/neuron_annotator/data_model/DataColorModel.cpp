@@ -70,6 +70,7 @@ void DataColorModel::initialize()
 
 void DataColorModel::setChannelColor(int index, QRgb color)
 {
+    if (d.constData()->getChannelColor(index) == color) return;
     {
         Writer colorWriter(*this);
         if (! d->setChannelColor(index, color)) return;
@@ -79,6 +80,7 @@ void DataColorModel::setChannelColor(int index, QRgb color)
 
 void DataColorModel::setChannelHdrRange(int index, qreal minParam, qreal maxParam)
 {
+    if (d.constData()->hasChannelHdrRange(index, minParam, maxParam)) return;
     {
         Writer colorWriter(*this);
         d->setChannelHdrRange(index, minParam, maxParam);
@@ -88,6 +90,7 @@ void DataColorModel::setChannelHdrRange(int index, qreal minParam, qreal maxPara
 
 void DataColorModel::setGamma(qreal gammaParam) // for all channels
 {
+    if (d.constData()->getChannelGamma(0) == gammaParam) return;
     // qDebug() << "DataColorModel::setGamma" << gammaParam;
     // Combine backlog of setGamma signals
     latestGamma = gammaParam;  // back up new value before aborting
@@ -103,6 +106,7 @@ void DataColorModel::setGamma(qreal gammaParam) // for all channels
 
 void DataColorModel::setChannelGamma(int index, qreal gamma)
 {
+    if (d.constData()->getChannelGamma(index) == gamma) return;
     {
         Writer colorWriter(*this);
         if (! d->setChannelGamma(index, gamma)) return;
@@ -112,6 +116,7 @@ void DataColorModel::setChannelGamma(int index, qreal gamma)
 
 /* slot */
 void DataColorModel::setChannelVisibility(int channel, bool isVisible) {
+    if (d.constData()->getChannelVisibility(channel) == isVisible) return;
     {
         Writer colorWriter(*this);
         if (! d->setChannelVisibility(channel, isVisible)) return;
@@ -119,6 +124,15 @@ void DataColorModel::setChannelVisibility(int channel, bool isVisible) {
     emit dataChanged();
 }
 
+/* slot */
+void DataColorModel::resetColors() {
+    {
+        Writer colorWriter(*this);
+        d->resetColors();
+    }
+    // qDebug() << "DataColorModel::resetColors()" << __FILE__ << __LINE__;
+    emit dataChanged();
+}
 
 ////////////////////////////////////
 // DataColorModel::Reader methods //
@@ -129,46 +143,46 @@ DataColorModel::Reader::Reader(const DataColorModel& colorModelParam)
 {}
 
 int DataColorModel::Reader::getNumberOfDataChannels() const {
-    return d->getNumberOfDataChannels(); // note special "->" operator
+    return d.constData()->getNumberOfDataChannels(); // note special "->" operator
 }
 
 QRgb DataColorModel::Reader::blend(const double channelIntensities[]) const {
-    return d->blend(channelIntensities);
+    return d.constData()->blend(channelIntensities);
 }
 
 QRgb DataColorModel::Reader::blend(const std::vector<double>& channelIntensities) const {
-    return d->blend(channelIntensities);
+    return d.constData()->blend(channelIntensities);
 }
 
 qreal DataColorModel::Reader::getReferenceScaledIntensity(qreal raw_intensity) const {
-    return d->getReferenceScaledIntensity(raw_intensity);
+    return d.constData()->getReferenceScaledIntensity(raw_intensity);
 }
 
 QRgb DataColorModel::Reader::getChannelColor(int channelIndex) const {
-    return d->getChannelColor(channelIndex);
+    return d.constData()->getChannelColor(channelIndex);
 }
 
 qreal DataColorModel::Reader::getChannelScaledIntensity(int channel, qreal raw_intensity) const {
-    return d->getChannelScaledIntensity(channel, raw_intensity);
+    return d.constData()->getChannelScaledIntensity(channel, raw_intensity);
 }
 
 qreal DataColorModel::Reader::getChannelGamma(int channel) const {
-    return d->getChannelGamma(channel);
+    return d.constData()->getChannelGamma(channel);
 }
 
 qreal DataColorModel::Reader::getChannelHdrMin(int channel) const
 {
-    return d->getChannelHdrMin(channel);
+    return d.constData()->getChannelHdrMin(channel);
 }
 
 qreal DataColorModel::Reader::getChannelHdrMax(int channel) const
 {
-    return d->getChannelHdrMax(channel);
+    return d.constData()->getChannelHdrMax(channel);
 }
 
 bool DataColorModel::Reader::getChannelVisibility(int channel) const
 {
-    return d->getChannelVisibility(channel);
+    return d.constData()->getChannelVisibility(channel);
 }
 
 ////////////////////////////////////
@@ -177,6 +191,8 @@ bool DataColorModel::Reader::getChannelVisibility(int channel) const
 
 DataColorModel::Writer::Writer(DataColorModel& colorModelParam)
     : BaseWriter(colorModelParam)
-{}
+{
+    // qDebug() << "DataColorModel::Writer constructor";
+}
 
 

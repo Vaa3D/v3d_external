@@ -17,6 +17,7 @@ MipFragmentColors::MipFragmentColors(const MipFragmentData& mipFragmentDataParam
 /* slot */
 void MipFragmentColors::update()
 {
+    // qDebug() << "MipFragmentColors::update()" << __FILE__ << __LINE__;
     // Flush signal/slot queue, which can fill up when dragging gamma slider.
     SlotMerger slotMerger(statusOfUpdateSlot);
     if (! slotMerger.shouldRun()) return;
@@ -24,6 +25,7 @@ void MipFragmentColors::update()
     QTime stopwatch;
     stopwatch.start();
     size_t data_size = 0;
+    // qDebug() << "MipFragmentColors::update()" << __FILE__ << __LINE__;
     {
         MipFragmentData::Reader mipReader(mipFragmentData); // readlock one of two
         if (! mipReader.hasReadLock()) return;
@@ -39,6 +41,7 @@ void MipFragmentColors::update()
         const Image4DProxy<My4DImage> intensityProxy = mipReader.getIntensityProxy();
         int refIndex = intensityProxy.sz - 1; // relative to fragment indices
 
+        // qDebug() << "MipFragmentColors::update()" << __FILE__ << __LINE__;
         Writer writer(*this); // acquire write lock
 
         int sx = mipProxy.sx; // image width
@@ -57,6 +60,8 @@ void MipFragmentColors::update()
         if (! mipReader.refreshLock()) return;
         if (dataColorModel.readerIsStale(colorReader)) return;
 
+        // qDebug() << "MipFragmentColors::update()" << __FILE__ << __LINE__;
+
         std::vector<double> intensities(mipProxy.sc + 1, 0.0);
         int refChannel = mipProxy.sc;
         intensities[refChannel] = 0.0; // turn off reference channel for fragment colors
@@ -74,12 +79,16 @@ void MipFragmentColors::update()
                 }
             }
             // Maybe 25 ms have passed.  Check upstream.
-            if (! mipReader.refreshLock()) return;
+            if (! mipReader.refreshLock()) {
+                // qDebug() << "mipReader busy";
+                return;
+            }
             if (dataColorModel.readerIsStale(colorReader)) {
                 // qDebug() << "stale color reader";
                 return;
             }
         }
+        // qDebug() << "MipFragmentColors::update()" << __FILE__ << __LINE__;
         // Reference image
         QImage * img = fragmentMips[refIndex];
         for (int c = 0; c < refChannel; ++c) intensities[c] = 0.0; // clear non-reference intensities

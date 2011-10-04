@@ -249,8 +249,9 @@ double-click to recenter</string>
                  <item>
                   <widget class="NaZStackWidget" name="naZStackWidget" native="true">
                    <property name="toolTip">
-                    <string>scroll to zoom
-drag to pan
+                    <string>drag to pan
+scroll to zoom
+shift-scroll to z-scan
 double-click to recenter</string>
                    </property>
                    <property name="autoFillBackground">
@@ -1697,7 +1698,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionOpen">
    <property name="text">
-    <string>Annotate MultiColor Stack...</string>
+    <string>Open MultiColor Stack Folder...</string>
    </property>
    <property name="autoRepeat">
     <bool>false</bool>

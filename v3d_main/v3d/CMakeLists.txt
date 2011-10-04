@@ -121,6 +121,11 @@ else()
       ${V3D_RCC_SRCS} )
 endif()
 
+if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
+    set_target_properties(v3d PROPERTIES
+        OUTPUT_NAME NeuronAnnotator)
+endif()
+
 target_link_libraries( v3d
   v3dbase2
   v3dbase

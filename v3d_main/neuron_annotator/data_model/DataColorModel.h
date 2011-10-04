@@ -33,6 +33,7 @@ public slots:
     void setChannelGamma(int index, qreal gamma);
     void setGamma(qreal gamma); // all channels
     void setChannelVisibility(int channel, bool isVisible);
+    void resetColors();
 
 protected:
     int getNumberOfDataChannels() const;

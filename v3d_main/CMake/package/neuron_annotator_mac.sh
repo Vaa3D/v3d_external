@@ -6,5 +6,5 @@ MACOS_DIR=`dirname $0`
 # running install_name_tool on plugins.
 export DYLD_FRAMEWORK_PATH=${MACOS_DIR}/../Frameworks
 
-${MACOS_DIR}/v3d -na
+${MACOS_DIR}/NeuronAnnotator -na
 

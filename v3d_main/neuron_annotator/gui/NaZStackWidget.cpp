@@ -429,9 +429,15 @@ void NaZStackWidget::wheelEvent(QWheelEvent * e) // mouse wheel
     // qDebug() << "wheel";
     // cerr << "wheel event " << __LINE__ << __FILE__ << endl;
     // CMB 12-Aug-2011 - reverse sign to make direction match scroll wheel on scroll bar
-    // setCurrentZSlice(getCurrentZSlice() - numTicks);
-    // zoom, not slice scan, for consistency with other viewers
-    wheelZoom(e->delta());
+    if (QApplication::keyboardModifiers() & Qt::ShiftModifier)
+    { // shift-scroll to scan in Z
+        setCurrentZSlice(getCurrentZSlice() - numTicks);
+    }
+    else
+    {
+        // zoom, not slice scan, for consistency with other viewers
+        wheelZoom(e->delta());
+    }
 }
 
 void NaZStackWidget::onMouseLeftDragEvent(int dx, int dy, QPoint pos) {
@@ -884,11 +890,13 @@ void NaZStackWidget::setHDRCheckState(int state) {
     if(state){
         runHDRFILTER = true;
         setContextMenuPolicy(Qt::NoContextMenu); // because hdr right-click does not work with context menu
+        setToolTip("drag to move HDR window\nright-drag to change HDR window size\nscroll to zoom\nshift-scroll to z-scan\ndouble-click to recenter");
         emit changedHDRCheckState(false); // hide gamma widget
     }
     else{
         runHDRFILTER = false;
         setContextMenuPolicy(Qt::CustomContextMenu);
+        setToolTip("drag to pan\nscroll to zoom\nshift-scroll to z-scan\ndouble-click to recenter");
         emit changedHDRCheckState(true); // show gamma widget
     }
     updateCursor();

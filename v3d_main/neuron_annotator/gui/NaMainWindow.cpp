@@ -215,8 +215,6 @@ NaMainWindow::NaMainWindow()
     connect(&sharedCameraModel, SIGNAL(scaleChanged(qreal)),
             this, SLOT(updateViewers()));
     // Colors
-    connect(ui.resetColorsButton, SIGNAL(clicked()),
-            this, SLOT(resetColors()));
     connect(ui.redToggleButton, SIGNAL(toggled(bool)),
             this, SLOT(setChannelZeroVisibility(bool)));
     connect(ui.greenToggleButton, SIGNAL(toggled(bool)),
@@ -306,6 +304,7 @@ void NaMainWindow::onColorModelChanged()
         ui.redToggleButton->setChecked(colorReader.getChannelVisibility(0));
         ui.greenToggleButton->setChecked(colorReader.getChannelVisibility(1));
         ui.blueToggleButton->setChecked(colorReader.getChannelVisibility(2));
+        ui.sharedGammaWidget->setGammaBrightness(colorReader.getChannelGamma(0));
     }
 }
 
@@ -343,13 +342,6 @@ void NaMainWindow::onViewerChanged(int viewerIndex) {
         break;
     }
     ui.statusbar->showMessage(msg);
-}
-
-void NaMainWindow::resetColors() {
-    ui.redToggleButton->setChecked(true);
-    ui.greenToggleButton->setChecked(true);
-    ui.blueToggleButton->setChecked(true);
-    ui.sharedGammaWidget->reset();
 }
 
 void NaMainWindow::setNutate(bool bDoNutate)
@@ -721,6 +713,12 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     // Color toggling
     connect(this, SIGNAL(channelVisibilityChanged(int,bool)),
             &dataFlowModel->getDataColorModel(), SLOT(setChannelVisibility(int,bool)));
+    connect(ui.resetColorsButton, SIGNAL(clicked()),
+            &dataFlowModel->getDataColorModel(), SLOT(resetColors()));
+    connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
+            &dataFlowModel->getDataColorModel(), SLOT(setGamma(qreal)));
+    connect(&dataFlowModel->getDataColorModel(), SIGNAL(dataChanged()),
+            this, SLOT(onColorModelChanged()));
 
     // Annotation model update
     connect(dataFlowModel, SIGNAL(modelUpdated(QString)), ui.v3dr_glwidget, SLOT(annotationModelUpdate(QString)));
@@ -730,9 +728,6 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
             this, SLOT(updateGalleries()));
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(initialized()),
             this, SLOT(updateGalleries()));
-
-    connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
-            &dataFlowModel->getDataColorModel(), SLOT(setGamma(qreal)));
 
     // Z value comes from camera model
     qRegisterMetaType<Vector3D>("Vector3D");
