@@ -1460,41 +1460,41 @@ void Renderer_gl1::connectCurve(V3DLONG &segid)
 bool Renderer_gl1::findNearestNeuronSeg_WinXY(int cx, int cy, V3DLONG &best_seg,
      V3DLONG &best_ind)
 {
-     // V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-     // My4DImage* curImg = 0;
-     // if(w) curImg = v3dr_getImage4d(_idep);
+      //V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+      //My4DImage* curImg = 0;
+      //if(w) curImg = v3dr_getImage4d(_idep);
 
-     // GLdouble px, py, pz, ix, iy, iz;
-     // best_ind=-1; best_seg=-1;
-     // double best_dist=-1;
+      //GLdouble px, py, pz, ix, iy, iz;
+      //best_ind=-1; best_seg=-1;
+      //double best_dist=-1;
 
-     // V3DLONG NS = curImg->tracedNeuron.seg.size();
-     // for(V3DLONG j=0;j<NS;j++)
-     // {
-     //      V_NeuronSWC& segi = curImg->tracedNeuron.seg.at(j);
+      //V3DLONG NS = curImg->tracedNeuron.seg.size();
+      //for(V3DLONG j=0;j<NS;j++)
+      //{
+      //     V_NeuronSWC& segi = curImg->tracedNeuron.seg.at(j);
 
-     //      int N = segi.row.size();
-     //      for (V3DLONG i=0;i<N;i++)
-     //      {
-     //           ix = segi.row.at(i).x, iy = segi.row.at(i).y, iz = segi.row.at(i).z;
-     //           GLint res = gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz);// note: should use the saved modelview,projection and viewport matrix
-     //           py = viewport[3]-py; //the Y axis is reversed
-     //           if (res==GL_FALSE) {qDebug()<<"gluProject() fails for NeuronTree ["<<i<<"] node"; return -1;}
-     //           // qDebug("(px,py) is: (%d, %d)", px, py);
-     //           // qDebug("(cx,cy) is: (%d, %d)", cx, cy);
-     //           double cur_dist = (px-cx)*(px-cx)+(py-cy)*(py-cy);
-     //           qDebug("cur_dist at (%d,%d) step is: %f", j,i, cur_dist);
-     //           if (i==0 && j==0) {	best_dist = cur_dist; best_ind=0; best_seg=0;}
-     //           else {	if (cur_dist<best_dist)
-     //                {best_dist=cur_dist; best_ind = i; best_seg = j;}
-     //           }
-     //      }
-     // }
-     // qDebug("best_seg is: %d, best_ind is: %d", best_seg, best_ind);
-     // qDebug("best_dist is: %f", best_dist);
+      //     int N = segi.row.size();
+      //     for (V3DLONG i=0;i<N;i++)
+      //     {
+      //          ix = segi.row.at(i).x, iy = segi.row.at(i).y, iz = segi.row.at(i).z;
+      //          GLint res = gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz);// note: should use the saved modelview,projection and viewport matrix
+      //          py = viewport[3]-py; //the Y axis is reversed
+      //          if (res==GL_FALSE) {qDebug()<<"gluProject() fails for NeuronTree ["<<i<<"] node"; return -1;}
+      //          // qDebug("(px,py) is: (%d, %d)", px, py);
+      //          // qDebug("(cx,cy) is: (%d, %d)", cx, cy);
+      //          double cur_dist = (px-cx)*(px-cx)+(py-cy)*(py-cy);
+      //          qDebug("cur_dist at (%d,%d) step is: %f", j,i, cur_dist);
+      //          if (i==0 && j==0) {	best_dist = cur_dist; best_ind=0; best_seg=0;}
+      //          else {	if (cur_dist<best_dist)
+      //               {best_dist=cur_dist; best_ind = i; best_seg = j;}
+      //          }
+      //     }
+      //}
+      //qDebug("best_seg is: %d, best_ind is: %d", best_seg, best_ind);
+      //qDebug("best_dist is: %f", best_dist);
 
-     // if(best_dist > 900) return false; // dist should be sqrt
-     // else return true;
+      //if(best_dist > 900) return false; // dist should be sqrt
+      //else return true;
 }
 
 
