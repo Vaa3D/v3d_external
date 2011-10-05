@@ -260,7 +260,7 @@ bool NeuronSelectionModel::showNothing()
 {
     // hides all neurons and overlays.
     // we deselect everything that's hidden, so showNothing() is equivalent to clearAllNeurons()
-    clearAllNeurons();
+    return clearAllNeurons();
 }
 
 /* slot */
