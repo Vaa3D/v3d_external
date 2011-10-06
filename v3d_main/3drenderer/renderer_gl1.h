@@ -290,25 +290,28 @@ protected:
 	void solveCurveCenter(vector <XYZ> & loc_vec_input);
 	void solveCurveViews();
 	void solveCurveFromMarkers();
-     void getPerpendPointDist(XYZ &P, XYZ &P0, XYZ &P1, XYZ &Pb, double &dist); // ZJL 110830
-     double getRgnPropertyAt(XYZ &pos); // ZJL 110830
-     void solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index); // ZJL 110830
-     void solveCurveRefineLast(); // ZJL 110905
-     void reorderNeuronIndexNumber(V3DLONG curSeg_id, V3DLONG NI, bool newInLower); // ZJL 110916
-     void blendRubberNeuron(); // ZJL 110920
-     void solveCurveRubberDrag();  //ZJL 110920
-     void blendDraggedNeuron(); // ZJL 110922
-     void MarkerPosToXYZCenter(const MarkerPos & pos, XYZ &loc, XYZ &lastpos); //ZJL 110922
-     void updateDraggedNeuronXYZ(); // ZJL 110923
+     // beginning of ZJL
+     void getPerpendPointDist(XYZ &P, XYZ &P0, XYZ &P1, XYZ &Pb, double &dist);
+     double getRgnPropertyAt(XYZ &pos);
+     void solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index);
+     void solveCurveRefineLast();
+     void reorderNeuronIndexNumber(V3DLONG curSeg_id, V3DLONG NI, bool newInLower);
+     void blendRubberNeuron();
+     void solveCurveRubberDrag();
+     void blendDraggedNeuron();
+
+     void updateDraggedNeuronXYZ();
      V3DLONG findNearestNeuronNode_WinXYV2(int cx, int cy);
      void canCurveConnect(XYZ &e, V3DLONG &closest_seg, V3DLONG &closest_node,
           bool &bConnect);
      void connectCurve(V3DLONG &curSeg);
-     bool findNearestNeuronSeg_WinXY(int cx, int cy, V3DLONG &best_seg,
-          V3DLONG &best_ind);
-     V3DLONG edit_seg_id; // ZJL 110913
-     int nDragWinSize; // ZJL 110921
-     bool bInitDragPoints; // ZJL
+     /* bool findNearestNeuronSeg_WinXY(int cx, int cy, V3DLONG &best_seg, */
+     /*      V3DLONG &best_ind); */
+     /* void MarkerPosToXYZCenter(const MarkerPos & pos, XYZ &loc, XYZ &lastpos); //ZJL 110922 */
+     V3DLONG edit_seg_id;
+     int nDragWinSize;
+     bool bInitDragPoints;
+     // END of ZJL
 
 	// in renderer_obj2.cpp
 	void addCurveSWC(vector<XYZ> &loc_list, int chno=0); //if no chno is specified, then assume to be the first channel

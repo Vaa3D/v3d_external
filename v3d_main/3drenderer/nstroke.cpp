@@ -1,41 +1,54 @@
 
+/**
+ * @file nstroke.cpp
+ * @brief n-right-strokes curve drawing (refine)
+ * This curve drawing method performs as follows:
+ *  1. The user first draws the primary curve using right-mouse moving. This drawing
+ *     is based on the method used in solveCurveCenter()(modified version).
+ *  2. The user then draws (by right-mouse moving) the modifying-curve. This modifying curve
+ *     is also got based on the method used in solveCurveCenter(). This curve represents
+ *      the position that part of the primary curve should be.
+ *  3. The curve refinement is then performed to get the refined curve.
+ *  4. This refine process can be performed n times on the primary curve.
+ *  5. The curve can also be extended on both ends by drawing extensions close to both ends.
+ *  6. Press "Esc" to exit the curve refinement operation.
+ *
+ * extend/refine nearest neuron segment:
+ *  When right-clicking on/near an existing curve, a menu is popupped.
+ *  A menu item of "extend/refine nearest neuron segment" is added to allow
+ *  users edit existing curves using same operations as in "n-right-strokes
+ *  curve drawing (refine)".
+ *
+ * drag nearest neuron segment:
+ *  users can drag any part of the curve by right clicking and moving it. The drag window
+ *  size can be modified in real time by "CTRL+W" (increased by 2 each time) and "SHIFT+W"
+ *  (decreased by 2 each time).
+ *
+ * @author: ZJL
+ * @date: Oct. 3 2011
+ *
+ */
+
+
+
 #include "renderer_gl1.h"
 #include "v3dr_glwidget.h"
 #include "barFigureDialog.h"
-
+#include "v3d_application.h"
 
 #ifndef test_main_cpp
 
 #include "../v3d/v3d_compile_constraints.h"
-
 #include "../v3d/landmark_property_dialog.h"
 #include "../v3d/surfaceobj_annotation_dialog.h"
 #include "../v3d/surfaceobj_geometry_dialog.h"
-
 #include "../neuron_editing/neuron_sim_scores.h"
 #include "../neuron_tracing/neuron_tracing.h"
-
 #include "../imaging/v3d_imaging.h"
+#include "../basic_c_fun/v3d_curvetracepara.h"
 
 #endif //test_main_cpp
 
-// n-right-strokes curve drawing (refine), ZJL 20110826
-// This curve drawing method performs as follows:
-//    1. The user first draws the primary curve using right-mouse moving. This drawing
-//       is based on the method used in solveCurveCenter()(modified version).
-//    2. The user then draws (by right-mouse moving) the modifying-curve. This modifying curve
-//       is also got based on the method used in solveCurveCenter(). This curve represents
-//        the position that part of the primary curve should be.
-//    3. The curve refinement is then performed to get the refined curve.
-//    4. This refine process can be performed n times on the primary curve.
-//    5. The curve can also be extended on both ends by drawing extensions close to both ends.
-//    6. Press "Esc" to exit the curve refinement operation.
-
-// "extend/refine nearest neuron segment", ZJL 20110916
-//    When right-clicking on/near an existing curve, a menu is popupped.
-//    A menu item of "extend/refine nearest neuron segment" is added to allow
-//    users edit existing curves using same operations as in "n-right-strokes
-//    curve drawing (refine)"
 void Renderer_gl1::solveCurveRefineLast()
 {
 	qDebug("Renderer_gl1::solveCurveRefineLast");
@@ -142,41 +155,103 @@ void Renderer_gl1::solveCurveRefineLast()
      // get two vectors for direction comparision
      // they are inner 5-step points (assuming curve points > 3)
      XYZ in_pt0, in_pti;
-     if(end_pos0 == pos0a)
-          in_pt0 = loc_vec0.at(4);
-     else
-          in_pt0 = loc_vec0.at(N0-5);
+     // if(end_pos0 == pos0a)
+     //      in_pt0 = loc_vec0.at(4);
+     // else
+     //      in_pt0 = loc_vec0.at(N0-5);
 
-     if(end_posi == posia)
-          in_pti = loc_veci.at(4);
-     else
-          in_pti = loc_veci.at(NI-5);
+     // if(end_posi == posia)
+     //      in_pti = loc_veci.at(4);
+     // else
+     //      in_pti = loc_veci.at(NI-5);
 
-     XYZ v0 = in_pt0-end_pos0;
-     XYZ vi = in_pti-end_posi;
-     float vdot = dot(v0,vi);
+     // We decide whether to extend or refine curve based on distance and angle of
+     // part curve. in_pt0 is an inside point on loc_vec0 used to decide loc_vec0 direction.
+     float vdot;
+     XYZ v0, vi;
 
+     //if(distf<40)
+     {
+          // get in_pt0 by computer dist incursively for loc_vec0
+          if(end_pos0 == pos0a)
+          {
+               int i=1;
+               float dis=0.0;
+               while(dis<3*distf && i<N0)
+               {
+                    dis = dis+dist_L2(end_pos0, loc_vec0.at(i));
+                    i++;
+               }
+               if(i>4 && i<N0) in_pt0=loc_vec0.at(i);
+               else     in_pt0=loc_vec0.at(4);
+          }else
+          {
+               int i=N0-2;
+               float dis=0.0;
+               while(dis<3*distf && i>0)
+               {
+                    dis = dis+dist_L2(end_pos0, loc_vec0.at(i));
+                    i--;
+               }
+               if(i<N0-5 && i>0) in_pt0=loc_vec0.at(i);
+               else    in_pt0=loc_vec0.at(N0-5);
+          }
+          // get in_pti by computer dist incursively for loc_veci
+          if(end_posi == posia)
+          {
+               int i=1;
+               float dis=0.0;
+               while(dis<3*distf && i<NI)
+               {
+                    dis = dis+dist_L2(end_posi, loc_veci.at(i));
+                    i++;
+               }
+               if(i>4 && i<NI) in_pti=loc_veci.at(i);
+               else     in_pti=loc_veci.at(4);
+          }else
+          {
+               int i=NI-2;
+               float dis=0.0;
+               while(dis<3*distf && i>0)
+               {
+                    dis = dis+dist_L2(end_posi, loc_veci.at(i));
+                    i--;
+               }
+               if(i<NI-5 && i>0) in_pti=loc_veci.at(i);
+               else    in_pti=loc_veci.at(NI-5);
+          }
+
+          v0 = in_pt0-end_pos0;
+          vi = in_pti-end_posi;
+          vdot = dot(v0,vi);
+     }// else
+     // {
+     //      // parallel to the primary curve, not actually, but here just for avoiding connecting
+     //      vdot= 1;
+     // }
+
+     qDebug("vdot is: %f, distf is: %f",vdot, distf);
      // if vdot<0, the angle should be 90~270.
      // A. If the second curve is far from one end, discard it.
-     if ( (vdot < 0)&&(distf > 40) )
-     {
-          return;
-     }
+     // if(vdot<0 && distf>40)
+     // {
+     //      return;
+     // }
      // B. join two curves
-     else if((vdot < 0)&&(distf <= 40))
+     if((vdot < 0)&&(distf <= 40))
      {
           // update primary_seg.row
           V_NeuronSWC_unit nu;
           V3DLONG last_n =curImg->tracedNeuron.maxnoden();
 
-          qDebug("Last_n is: %d", last_n);
+          qDebug("Extend curve!");
 
           // there are four cases of joins
           // 1. insert loc_veci after the last point of loc_vec0
           if ( (end_pos0==pos0b)&&(end_posi==posia) )
           {
                double type = primary_seg.row.at(N0-1).type;
-               double rr = primary_seg.row.at(N0-1).r;
+               //double rr = primary_seg.row.at(N0-1).r;
                double nnp = primary_seg.row.at(N0-1).n;
 
                for(int j=0; j<NI; j++)
@@ -186,12 +261,11 @@ void Renderer_gl1::solveCurveRefineLast()
                     nu.z = loc_veci.at(j).z;
                     nu.n = last_n+1+j;
                     nu.type = type;
-                    nu.r = rr;
+                    nu.r = 1;
                     nu.parent = (j==0)? (nnp) : (nu.n-1);
                     nu.seg_id = last_seg_id;
                     // nu.nodeinseg_id = N0+j;
                     // if(j==NI-1) nu.nchild = 0;
-
                     // else nu.nchild = 1;
 
                     primary_seg.append(nu);
@@ -204,7 +278,7 @@ void Renderer_gl1::solveCurveRefineLast()
           else if ( (end_pos0==pos0b)&&(end_posi==posib) )
           {
                double type = primary_seg.row.at(N0-1).type;
-               double rr = primary_seg.row.at(N0-1).r;
+               //double rr = primary_seg.row.at(N0-1).r;
                double nnp = primary_seg.row.at(N0-1).n;
                for(int j=0; j<NI; j++)
                {
@@ -213,7 +287,7 @@ void Renderer_gl1::solveCurveRefineLast()
                     nu.z = loc_veci.at(NI-1-j).z;
                     nu.n = last_n+1+j;
                     nu.type = type;
-                    nu.r = rr;
+                    nu.r = 1;
                     nu.parent = (j==0)? (nnp) : (nu.n-1);
                     nu.seg_id = last_seg_id;
                     // nu.nodeinseg_id = N0+j;
@@ -229,7 +303,7 @@ void Renderer_gl1::solveCurveRefineLast()
           else if ( (end_pos0==pos0a)&&(end_posi==posia) )
           {
                double type = primary_seg.row.at(0).type;
-               double rr = primary_seg.row.at(0).r;
+               //double rr = primary_seg.row.at(0).r;
 
                for(int j=0; j<NI; j++)
                {
@@ -238,7 +312,7 @@ void Renderer_gl1::solveCurveRefineLast()
                     nu.z = loc_veci.at(NI-1-j).z;
                     nu.n = last_n + 1+j;
                     nu.type = type;
-                    nu.r = rr;
+                    nu.r = 1;
                     nu.parent = (j==0)? -1 : (nu.n-1);
                     nu.seg_id = last_seg_id;
                     // nu.nodeinseg_id = j;
@@ -256,7 +330,7 @@ void Renderer_gl1::solveCurveRefineLast()
           else if ( (end_pos0==pos0a)&&(end_posi==posib) )
           {
                double type = primary_seg.row.at(0).type;
-               double rr = primary_seg.row.at(0).r;
+               //double rr = primary_seg.row.at(0).r;
 
                for(int j=0; j<NI; j++)
                {
@@ -265,7 +339,7 @@ void Renderer_gl1::solveCurveRefineLast()
                     nu.z = loc_veci.at(j).z;
                     nu.n = last_n+1+j;
                     nu.type = type;
-                    nu.r = rr;
+                    nu.r = 1;
                     nu.parent = (j==0)? -1 : (nu.n-1);
                     nu.seg_id = last_seg_id;
                     // nu.nodeinseg_id = j;
@@ -282,7 +356,10 @@ void Renderer_gl1::solveCurveRefineLast()
           // for curve connection: if end points of last_seg_id are close
           // enough to a seg, connect them to their closest points.
           V3DLONG nums=curImg->tracedNeuron.seg.size();
-          bool bConnectCurve = true;
+
+          MainWindow* V3Dmainwindow = 0;
+          V3Dmainwindow = v3dr_getV3Dmainwindow(_idep);
+          bool bConnectCurve = (V3Dmainwindow && V3Dmainwindow->global_setting.b_3dcurve_autoconnecttips);
           if(bConnectCurve && nums>1)
           {
                V3DLONG cursegid = last_seg_id;
@@ -290,10 +367,34 @@ void Renderer_gl1::solveCurveRefineLast()
                bConnectCurve = false;
           }
 
+          // decide radius of each point
+          int chno = checkCurChannel();
+          if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
+          CurveTracePara trace_para;
+          {
+               trace_para.channo = (chno<0)?0:chno; if (trace_para.channo>=curImg->getCDim())
+                                                         trace_para.channo=curImg->getCDim()-1;
+               trace_para.landmark_id_start = -1;
+               trace_para.landmark_id_end = -1;
+               trace_para.sp_num_end_nodes = 2;
+               trace_para.nloops = 100; //100130 change from 200 to 100
+               trace_para.b_deformcurve = true;
+               trace_para.sp_smoothing_win_sz = 2;
+          }
+
+          if (chno >=0) //100115, 100130: for solveCurveViews.
+          {
+               if (V3dApplication::getMainWindow()->global_setting.b_3dcurve_autowidth)
+                    curImg->proj_trace_compute_radius_of_last_traced_neuron(trace_para, last_seg_id, last_seg_id,
+                         curImg->trace_z_thickness);
+          }
+
      }
      // C. begin to refine the primary (first) curve using the second curve
-     else
+     //else
+     if(vdot>=0)
      {
+          qDebug("Refine curve!");
           // Find two points ka and kb on curve0 that are closest to the two end
           // points of ith curve. i.e. the ith curve is mapped onto curve0 between ka and kb.
           int ka, kb; // index of control points on curve0
@@ -354,11 +455,11 @@ void Renderer_gl1::solveCurveRefineLast()
                }
 
                // if the pos on ith curve is too far (e.g. >10), ignore it and process next point
-               if (closest_dist > 20.0)
-               {
-                    // process next point of loc_vec0,k++
-                    continue;
-               }else
+               // if (closest_dist > 20.0)
+               // {
+               //      // process next point of loc_vec0,k++
+               //      continue;
+               // }else
                {
                     // further processing to get correct closest_pos
                     if ((jj==0)||(jj==NI-1))
@@ -429,6 +530,29 @@ void Renderer_gl1::solveCurveRefineLast()
                primary_seg.row.at(k).data[3] = loc_vec0.at(k).y;
                primary_seg.row.at(k).data[4] = loc_vec0.at(k).z;
           }
+
+          // update radius of each point
+          int chno = checkCurChannel();
+          if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
+          CurveTracePara trace_para;
+          {
+               trace_para.channo = (chno<0)?0:chno; if (trace_para.channo>=curImg->getCDim())
+                                                         trace_para.channo=curImg->getCDim()-1;
+               trace_para.landmark_id_start = -1;
+               trace_para.landmark_id_end = -1;
+               trace_para.sp_num_end_nodes = 2;
+               trace_para.nloops = 100;
+               trace_para.b_deformcurve = true;
+               trace_para.sp_smoothing_win_sz = 2;
+          }
+
+          if (chno >=0) //100115, 100130: for solveCurveViews.
+          {
+               if (V3dApplication::getMainWindow()->global_setting.b_3dcurve_autowidth)
+                    curImg->proj_trace_compute_radius_of_last_traced_neuron(trace_para, last_seg_id, last_seg_id,
+                         curImg->trace_z_thickness);
+          }//end updating radius
+
      }// end of refine curve
 
      curImg->proj_trace_history_append();
@@ -512,11 +636,12 @@ double Renderer_gl1::getRgnPropertyAt(XYZ &pos)
      return 0.0;
 }
 
-
-// This function is based on solveCurveCenter(). The differences in this version are:
-// 1. add curve "int index" to get curve center for different curves. "index" is the curve index
-// 2. return the created loc_vec vector for each index curve
-// ZJL 110829
+/**
+ * @brief This function is based on solveCurveCenter(). The differences in this version are:
+ *  1. add curve "int index" to get curve center for different curves. "index" is the curve index
+ *  2. return the created loc_vec vector for each index curve
+ *  ZJL 110829
+*/
 void Renderer_gl1::solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index)
 {
 	bool b_use_seriespointclick = (loc_vec_input.size()>0) ? true : false;
@@ -670,7 +795,10 @@ void Renderer_gl1::solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ>
           if(w) curImg = v3dr_getImage4d(_idep);
 
           V3DLONG N = curImg->tracedNeuron.seg.size();
-          bool bConnectCurve = true;
+
+          MainWindow* V3Dmainwindow = 0;
+          V3Dmainwindow = v3dr_getV3Dmainwindow(_idep);
+          bool bConnectCurve = (V3Dmainwindow && V3Dmainwindow->global_setting.b_3dcurve_autoconnecttips);
           if(bConnectCurve && N>1)
           {
                // the added curve is the last curve
@@ -683,11 +811,14 @@ void Renderer_gl1::solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ>
 }
 
 
-// scanning the whole tracedNeuron to order index n
-// variables from main function
-// V3DLONG curSeg_id; //curseg_id
-// V3DLONG NI; // number of inserted points
-// bool newInLower; // inserted points are in lower side
+/**
+ * @brief scanning the whole tracedNeuron to order index n
+ * variables from main function
+ * @param curSeg_id Current seg_id
+ * @param NI  Number of inserted points
+ * @param  newInLower Whether the inserted points are at the lower number
+ *  side of original curve
+*/
 void Renderer_gl1::reorderNeuronIndexNumber(V3DLONG curSeg_id, V3DLONG NI, bool newInLower)
 {
      // get the control points of the primary curve
@@ -777,8 +908,10 @@ void Renderer_gl1::reorderNeuronIndexNumber(V3DLONG curSeg_id, V3DLONG NI, bool 
      }
 }
 
-// this is used for keyboard short-cut for n-right-strokes curve drawing
-// short-cut: Shift-L
+/**
+ * @brief This is used for keyboard short-cut for n-right-strokes curve drawing
+ * short-cut: Shift-L
+*/
 void Renderer_gl1::toggleNStrokeCurveDrawing()
 {
      selectMode = smCurveRefineInit;
@@ -788,12 +921,13 @@ void Renderer_gl1::toggleNStrokeCurveDrawing()
      if (w)
      { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 }
-
-// Edit curve using rubber-band line
-// Steps:
-//   1. right-clicking to select the curve, get segid
-//   2. right-clicking one point on curve. this is the centre point of rubber for moving
-//   3. moving the point with a window-size to drag the curve and refine it.
+/**
+ * @brief Edit curve using rubber-band line
+ * Steps:
+ * 1. right-clicking to select the curve, get segid
+ * 2. right-clicking one point on curve. this is the centre point of rubber for moving
+ * 3. moving the point with a window-size to drag the curve and refine it.
+*/
 void Renderer_gl1::solveCurveRubberDrag()
 {
      // edit_seg_id is the current seg
@@ -936,8 +1070,8 @@ void Renderer_gl1::setDragWinSize(int csize)
 }
 
 /**
-   This function is based on findNearestNeuronNode_WinXY(int cx, int cy,
-   NeuronTree* ptree).
+ * @brief This function is based on findNearestNeuronNode_WinXY(int cx, int cy,
+ *  NeuronTree* ptree).
  */
 V3DLONG Renderer_gl1::findNearestNeuronNode_WinXYV2(int cx, int cy)
 {
@@ -956,15 +1090,13 @@ V3DLONG Renderer_gl1::findNearestNeuronNode_WinXYV2(int cx, int cy)
 		GLint res = gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz);// note: should use the saved modelview,projection and viewport matrix
 		py = viewport[3]-py; //the Y axis is reversed
 		if (res==GL_FALSE) {qDebug()<<"gluProject() fails for NeuronTree ["<<i<<"] node"; return -1;}
-		//qDebug()<<i<<" "<<px<<" "<<py<<" "<<pz<<"\n";
 
 		double cur_dist = (px-cx)*(px-cx)+(py-cy)*(py-cy);
 		if (i==0) {	best_dist = cur_dist; best_ind=0; }
 		else {	if (cur_dist<best_dist) {best_dist=cur_dist; best_ind = i;}}
 	}
 
-	//best_ind = p_listneuron->at(best_ind).n; // this no used, because it changed in V_NeuronSWC
-	return best_ind; //by PHC, 090209. return the index in the SWC file
+     return best_ind;
 }
 
 
@@ -1063,17 +1195,86 @@ void Renderer_gl1::updateDraggedNeuronXYZ()
           }
      }
 
+     // smooth using one section
+     // // only smooth the curve between dragged neuron nodes of loc_vec0
+//      vector <XYZ> loc_vecsub;
+//      loc_vecsub.clear();
+//      // copy data between ka-kb in original seg to loc_vecsub
+//      // make a larger window for smoothing
+//      int ka = sindex - cindex;
+//      int kb = sindex - cindex + numd -1;
+//      int N0 = segi.row.size();
+//      int kaa, kbb;
+//      int wsize = 1;
+//      kaa = ((ka-wsize)<0)? 0:(ka-wsize);
+//      kbb = ((kb+wsize)>=N0)? (N0-1):(kb+wsize);
+//      for(int i=kaa; i<=kbb; i++)
+//      {
+//           int ii=i-kaa;
+//           XYZ pt;
+//           pt.x=segi.row.at(i).x;
+//           pt.y=segi.row.at(i).y;
+//           pt.z=segi.row.at(i).z;
+//           loc_vecsub.push_back(pt);
+//      }
+// #ifndef test_main_cpp
+//      smooth_curve(loc_vecsub, 5); // do smoothing
+// #endif
+//      // copy data back from loc_vecsub to segi
+//      for(int i=kaa; i<=kbb; i++)
+//      {
+//           int ii=i-kaa;
+//           XYZ pt = loc_vecsub.at(ii);
+
+//           segi.row.at(i).data[2] = pt.x;
+//           segi.row.at(i).data[3] = pt.y;
+//           segi.row.at(i).data[4] = pt.z;
+//      }
+
+     // smooth using two sections
      // only smooth the curve between dragged neuron nodes of loc_vec0
      vector <XYZ> loc_vecsub;
      loc_vecsub.clear();
+     // 1) smooth 0~cindex section
      // copy data between ka-kb in original seg to loc_vecsub
      // make a larger window for smoothing
      int ka = sindex - cindex;
-     int kb = sindex - cindex + numd -1;
+     int kb = sindex;
      int N0 = segi.row.size();
      int kaa, kbb;
      int wsize = 1;
      kaa = ((ka-wsize)<0)? 0:(ka-wsize);
+     kbb = kb;
+     for(int i=kaa; i<=kbb; i++)
+     {
+          int ii=i-kaa;
+          XYZ pt;
+          pt.x=segi.row.at(i).x;
+          pt.y=segi.row.at(i).y;
+          pt.z=segi.row.at(i).z;
+          loc_vecsub.push_back(pt);
+     }
+#ifndef test_main_cpp
+     smooth_curve(loc_vecsub, 5); // do smoothing
+#endif
+     // copy data back from loc_vecsub to segi
+     for(int i=kaa; i<=kbb; i++)
+     {
+          int ii=i-kaa;
+          XYZ pt = loc_vecsub.at(ii);
+
+          segi.row.at(i).data[2] = pt.x;
+          segi.row.at(i).data[3] = pt.y;
+          segi.row.at(i).data[4] = pt.z;
+     }
+
+     // 2) smooth cindex~draggedneuronend section
+     // copy data between ka-kb in original seg to loc_vecsub
+     // make a larger window for smoothing
+     loc_vecsub.clear();
+     ka = sindex;
+     kb = sindex - cindex + numd -1;
+     kaa = ka;
      kbb = ((kb+wsize)>=N0)? (N0-1):(kb+wsize);
      for(int i=kaa; i<=kbb; i++)
      {
@@ -1097,6 +1298,63 @@ void Renderer_gl1::updateDraggedNeuronXYZ()
           segi.row.at(i).data[3] = pt.y;
           segi.row.at(i).data[4] = pt.z;
      }
+
+//      // 3) smooth size 3 sindex-centered section
+//      // copy data between ka-kb in original seg to loc_vecsub
+//      // make a larger window for smoothing
+//      loc_vecsub.clear();
+//      ka = sindex-1;
+//      kb = sindex+1;
+//      kaa = ka;
+//      kbb = kb;
+//      for(int i=kaa; i<=kbb; i++)
+//      {
+//           int ii=i-kaa;
+//           XYZ pt;
+//           pt.x=segi.row.at(i).x;
+//           pt.y=segi.row.at(i).y;
+//           pt.z=segi.row.at(i).z;
+//           loc_vecsub.push_back(pt);
+//      }
+// #ifndef test_main_cpp
+//      smooth_curve(loc_vecsub, 5); // do smoothing
+// #endif
+//      // copy data back from loc_vecsub to segi
+//      for(int i=kaa; i<=kbb; i++)
+//      {
+//           int ii=i-kaa;
+//           XYZ pt = loc_vecsub.at(ii);
+
+//           segi.row.at(i).data[2] = pt.x;
+//           segi.row.at(i).data[3] = pt.y;
+//           segi.row.at(i).data[4] = pt.z;
+//      }
+
+
+
+     // update radius of each point
+     if (V3dApplication::getMainWindow()->global_setting.b_3dcurve_autowidth)
+     {
+          int chno = checkCurChannel();
+          if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
+          CurveTracePara trace_para;
+          {
+               trace_para.channo = (chno<0)?0:chno; if (trace_para.channo>=curImg->getCDim())
+                                                         trace_para.channo=curImg->getCDim()-1;
+               trace_para.landmark_id_start = -1;
+               trace_para.landmark_id_end = -1;
+               trace_para.sp_num_end_nodes = 2;
+               trace_para.nloops = 100;
+               trace_para.b_deformcurve = true;
+               trace_para.sp_smoothing_win_sz = 2;
+          }
+
+          if (chno >=0) //100115, 100130: for solveCurveViews.
+          {
+               curImg->proj_trace_compute_radius_of_last_traced_neuron(trace_para, edit_seg_id, edit_seg_id,
+                    curImg->trace_z_thickness);
+          }
+     }//end updating radius
 }
 
 
@@ -1261,7 +1519,7 @@ void Renderer_gl1::blendDraggedNeuron()
                if (rgba[3]==0) //make the skeleton be able to use the default color by adjusting alpha value
 			{
 				int type = S1.type; 			 // 090925
-                    type = (int)S1.seg_id %(neuron_type_color_num -5)+5; //090829, 091027 RZC: segment color using hanchuan's neuron_type_color
+                    type = (int)S1.seg_id %(neuron_type_color_num -5)+5;
 
                     // light color for different appearences
                     int idx = (type>=0 && type<neuron_type_color_num)? type : 0;
@@ -1269,7 +1527,7 @@ void Renderer_gl1::blendDraggedNeuron()
                     cc[0]= neuron_type_color[idx][0]/3;
                     cc[1]= neuron_type_color[idx][1]/3;
                     cc[2]= neuron_type_color[idx][2]/3;
-                    cc[3]= 800;
+                    cc[3]= 80;
                     glColor4ubv( cc );
 
                     // GLubyte cc0[3];
@@ -1290,7 +1548,7 @@ void Renderer_gl1::blendDraggedNeuron()
 			float length = norm(D);
 			float r1 = S1.r;
 			float r0 = S0.r;
-			//if (r1*length<1) qDebug("length, r1, r0 = (%g %g %g)", length, r1, r0);
+
 			float rf = 2;
 			r1 *= rf;
 			r0 *= rf;
@@ -1364,7 +1622,7 @@ void Renderer_gl1::blendDraggedNeuron()
  }
 
 /**
-   Function: decide whether point e is close enough to connect a curve
+ * @brief Function: decide whether point e is close enough to connect a curve
  */
 void Renderer_gl1::canCurveConnect(XYZ &e, V3DLONG &closest_seg, V3DLONG &closest_node,
      bool &bConnect)
@@ -1396,7 +1654,7 @@ void Renderer_gl1::canCurveConnect(XYZ &e, V3DLONG &closest_seg, V3DLONG &closes
           }
      }
 
-     if(closest_dist<6) // threshold for determining whether connect or not
+     if(closest_dist<5) // threshold for determining whether connect or not
      {
           bConnect = true;
           return;
@@ -1410,144 +1668,144 @@ void Renderer_gl1::canCurveConnect(XYZ &e, V3DLONG &closest_seg, V3DLONG &closes
      }
 }
 /**
-   Function: connect curve at the end points of segid
-*/
+ * @brief  Function: connect curve at the end points of segid
+ */
 void Renderer_gl1::connectCurve(V3DLONG &segid)
 {
      // for curve connection
-     // V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-     // My4DImage* curImg = 0;
-     // if(w) curImg = v3dr_getImage4d(_idep);
+     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+     My4DImage* curImg = 0;
+     if(w) curImg = v3dr_getImage4d(_idep);
 
-     // V3DLONG N = curImg->tracedNeuron.seg.size();
+     V3DLONG N = curImg->tracedNeuron.seg.size();
 
-     // // two end points of segid
-     // XYZ p0, pn;
-     // V_NeuronSWC& curSeg = curImg->tracedNeuron.seg[segid];
-     // int nn=curSeg.row.size();
-     // p0.x=curSeg.row.at(0).x; p0.y=curSeg.row.at(0).y; p0.z=curSeg.row.at(0).z;
-     // pn.x=curSeg.row.at(nn-1).x; pn.y=curSeg.row.at(nn-1).y; pn.z=curSeg.row.at(nn-1).z;
+     // two end points of segid
+     XYZ p0, pn;
+     V_NeuronSWC& curSeg = curImg->tracedNeuron.seg[segid];
+     int nn=curSeg.row.size();
+     p0.x=curSeg.row.at(0).x; p0.y=curSeg.row.at(0).y; p0.z=curSeg.row.at(0).z;
+     pn.x=curSeg.row.at(nn-1).x; pn.y=curSeg.row.at(nn-1).y; pn.z=curSeg.row.at(nn-1).z;
 
-     // V3DLONG closest_seg, closest_node;
-     // bool bConnect;
-     // // justify p0
-     // canCurveConnect(p0, closest_seg, closest_node, bConnect);
-     // if(bConnect)
-     // {
-     //      // replace p0 with closest_node on closest_seg
-     //      V_NeuronSWC& conSeg = curImg->tracedNeuron.seg[closest_seg];
-     //      curSeg.row.at(0).x = conSeg.row.at(closest_node).x;
-     //      curSeg.row.at(0).y = conSeg.row.at(closest_node).y;
-     //      curSeg.row.at(0).z = conSeg.row.at(closest_node).z;
-     // }
-     // // justify pn
-     // canCurveConnect(pn, closest_seg, closest_node, bConnect);
-     // if(bConnect)
-     // {
-     //      // replace p0 with closest_node on closest_seg
-     //      V_NeuronSWC& conSeg = curImg->tracedNeuron.seg[closest_seg];
-     //      curSeg.row.at(nn-1).x = conSeg.row.at(closest_node).x;
-     //      curSeg.row.at(nn-1).y = conSeg.row.at(closest_node).y;
-     //      curSeg.row.at(nn-1).z = conSeg.row.at(closest_node).z;
-     // }
+     V3DLONG closest_seg, closest_node;
+     bool bConnect;
+     // justify p0
+     canCurveConnect(p0, closest_seg, closest_node, bConnect);
+     if(bConnect)
+     {
+          // replace p0 with closest_node on closest_seg
+          V_NeuronSWC& conSeg = curImg->tracedNeuron.seg[closest_seg];
+          curSeg.row.at(0).x = conSeg.row.at(closest_node).x;
+          curSeg.row.at(0).y = conSeg.row.at(closest_node).y;
+          curSeg.row.at(0).z = conSeg.row.at(closest_node).z;
+     }
+     // justify pn
+     canCurveConnect(pn, closest_seg, closest_node, bConnect);
+     if(bConnect)
+     {
+          // replace p0 with closest_node on closest_seg
+          V_NeuronSWC& conSeg = curImg->tracedNeuron.seg[closest_seg];
+          curSeg.row.at(nn-1).x = conSeg.row.at(closest_node).x;
+          curSeg.row.at(nn-1).y = conSeg.row.at(closest_node).y;
+          curSeg.row.at(nn-1).z = conSeg.row.at(closest_node).z;
+     }
 }
 
 
 /**
-   Function: decide whether to add an item in the popup menu of drawing curves.
-   Not used at the moment.
+ * @brief Function: decide whether to add an item in the popup menu of drawing curves.
+ *  Not used at the moment.
  */
-bool Renderer_gl1::findNearestNeuronSeg_WinXY(int cx, int cy, V3DLONG &best_seg,
-     V3DLONG &best_ind)
-{
-      //V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-      //My4DImage* curImg = 0;
-      //if(w) curImg = v3dr_getImage4d(_idep);
+// bool Renderer_gl1::findNearestNeuronSeg_WinXY(int cx, int cy, V3DLONG &best_seg,
+//      V3DLONG &best_ind)
+// {
+//       V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+//       My4DImage* curImg = 0;
+//       if(w) curImg = v3dr_getImage4d(_idep);
 
-      //GLdouble px, py, pz, ix, iy, iz;
-      //best_ind=-1; best_seg=-1;
-      //double best_dist=-1;
+//       GLdouble px, py, pz, ix, iy, iz;
+//       best_ind=-1; best_seg=-1;
+//       double best_dist=-1;
 
-      //V3DLONG NS = curImg->tracedNeuron.seg.size();
-      //for(V3DLONG j=0;j<NS;j++)
-      //{
-      //     V_NeuronSWC& segi = curImg->tracedNeuron.seg.at(j);
+//       V3DLONG NS = curImg->tracedNeuron.seg.size();
+//       for(V3DLONG j=0;j<NS;j++)
+//       {
+//           V_NeuronSWC& segi = curImg->tracedNeuron.seg.at(j);
 
-      //     int N = segi.row.size();
-      //     for (V3DLONG i=0;i<N;i++)
-      //     {
-      //          ix = segi.row.at(i).x, iy = segi.row.at(i).y, iz = segi.row.at(i).z;
-      //          GLint res = gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz);// note: should use the saved modelview,projection and viewport matrix
-      //          py = viewport[3]-py; //the Y axis is reversed
-      //          if (res==GL_FALSE) {qDebug()<<"gluProject() fails for NeuronTree ["<<i<<"] node"; return -1;}
-      //          // qDebug("(px,py) is: (%d, %d)", px, py);
-      //          // qDebug("(cx,cy) is: (%d, %d)", cx, cy);
-      //          double cur_dist = (px-cx)*(px-cx)+(py-cy)*(py-cy);
-      //          qDebug("cur_dist at (%d,%d) step is: %f", j,i, cur_dist);
-      //          if (i==0 && j==0) {	best_dist = cur_dist; best_ind=0; best_seg=0;}
-      //          else {	if (cur_dist<best_dist)
-      //               {best_dist=cur_dist; best_ind = i; best_seg = j;}
-      //          }
-      //     }
-      //}
-      //qDebug("best_seg is: %d, best_ind is: %d", best_seg, best_ind);
-      //qDebug("best_dist is: %f", best_dist);
+//           int N = segi.row.size();
+//           for (V3DLONG i=0;i<N;i++)
+//           {
+//                ix = segi.row.at(i).x, iy = segi.row.at(i).y, iz = segi.row.at(i).z;
+//                GLint res = gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz);// note: should use the saved modelview,projection and viewport matrix
+//                py = viewport[3]-py; //the Y axis is reversed
+//                if (res==GL_FALSE) {qDebug()<<"gluProject() fails for NeuronTree ["<<i<<"] node"; return -1;}
+//                // qDebug("(px,py) is: (%d, %d)", px, py);
+//                // qDebug("(cx,cy) is: (%d, %d)", cx, cy);
+//                double cur_dist = (px-cx)*(px-cx)+(py-cy)*(py-cy);
+//                qDebug("cur_dist at (%d,%d) step is: %f", j,i, cur_dist);
+//                if (i==0 && j==0) {	best_dist = cur_dist; best_ind=0; best_seg=0;}
+//                else {	if (cur_dist<best_dist)
+//                     {best_dist=cur_dist; best_ind = i; best_seg = j;}
+//                }
+//           }
+//       }
+//       qDebug("best_seg is: %d, best_ind is: %d", best_seg, best_ind);
+//       qDebug("best_dist is: %f", best_dist);
 
-      //if(best_dist > 900) return false; // dist should be sqrt
-      //else return true;
-}
+//       if(best_dist > 900) return false; // dist should be sqrt
+//       else return true;
+// }
 
 
 /**
    This function is to get XYZ from MarkerPos based on the method used
    in solveCurveCenter(). -This function is not used at the moment.
  */
-void Renderer_gl1::MarkerPosToXYZCenter(const MarkerPos & pos, XYZ &loc, XYZ &lastpos)
-{
-     // bool b_use_last_approximate = true;
-	// int chno = checkCurChannel();
-	// if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
+// void Renderer_gl1::MarkerPosToXYZCenter(const MarkerPos & pos, XYZ &loc, XYZ &lastpos)
+// {
+//      bool b_use_last_approximate = true;
+// 	int chno = checkCurChannel();
+// 	if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
 
-     // //100730 RZC, in View space, keep for dot(clip, pos)>=0
-     // double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
-     // clipplane[3] = viewClip;
-     // ViewPlaneToModel(pos.MV, clipplane);
-     // //qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
+//      //100730 RZC, in View space, keep for dot(clip, pos)>=0
+//      double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+//      clipplane[3] = viewClip;
+//      ViewPlaneToModel(pos.MV, clipplane);
+//      //qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
 
-     // XYZ loc0, loc1;
-     // _MarkerPos_to_NearFarPoint(pos, loc0, loc1);
+//      XYZ loc0, loc1;
+//      _MarkerPos_to_NearFarPoint(pos, loc0, loc1);
 
-     // //XYZ loc;
-     // float length01 = dist_L2(loc0, loc1);
-     // if (length01<1.0)
-     // {
-     //      loc=(loc0+loc1)/2.0;
-     // }
-     // else
-     // {
-     //      if (b_use_last_approximate)
-     //      {
-     //           //XYZ lastpos = loc_vec.at(last_j);
-     //           if (dataViewProcBox.isInner(lastpos, 0.5))
-     //           {
-     //                XYZ v_1_0 = loc1-loc0, v_0_last=loc0-lastpos;
-     //                XYZ nearestloc = loc0-v_1_0*dot(v_0_last, v_1_0)/dot(v_1_0, v_1_0); //since loc0!=loc1, this is safe
+//      //XYZ loc;
+//      float length01 = dist_L2(loc0, loc1);
+//      if (length01<1.0)
+//      {
+//           loc=(loc0+loc1)/2.0;
+//      }
+//      else
+//      {
+//           if (b_use_last_approximate)
+//           {
+//                //XYZ lastpos = loc_vec.at(last_j);
+//                if (dataViewProcBox.isInner(lastpos, 0.5))
+//                {
+//                     XYZ v_1_0 = loc1-loc0, v_0_last=loc0-lastpos;
+//                     XYZ nearestloc = loc0-v_1_0*dot(v_0_last, v_1_0)/dot(v_1_0, v_1_0); //since loc0!=loc1, this is safe
 
-     //                double ranget = (length01/2.0)>10?10:(length01/2.0); //at most 30 pixels aparts
+//                     double ranget = (length01/2.0)>10?10:(length01/2.0); //at most 30 pixels aparts
 
-     //                XYZ D = v_1_0; normalize(D);
-     //                loc0 = nearestloc - D*(ranget);
-     //                loc1 = nearestloc + D*(ranget);
-     //           }
-     //      }
+//                     XYZ D = v_1_0; normalize(D);
+//                     loc0 = nearestloc - D*(ranget);
+//                     loc1 = nearestloc + D*(ranget);
+//                }
+//           }
 
-     //      loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
-     // }
+//           loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+//      }
 
-     // if (dataViewProcBox.isInner(loc, 0.5))
-     // {
-     //      dataViewProcBox.clamp(loc);
-     // }else
-     //      return;
+//      if (dataViewProcBox.isInner(loc, 0.5))
+//      {
+//           dataViewProcBox.clamp(loc);
+//      }else
+//           return;
 
-}
+// }
