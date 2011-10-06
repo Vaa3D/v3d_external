@@ -1523,12 +1523,21 @@ QRect XFormView::getRoiBoundingRect()
 		return roiPolygon.boundingRect();
 }
 
+QPointF	 XFormView::mouseEventToImageCoords(const QPoint& p)
+{
+	return	QPointF(
+		double((p.x()-curDisplayCenter.x()))/(disp_scale*m_scale)+pixmap.width()/2.0+0.5,
+		double((p.y()-curDisplayCenter.y()))/(disp_scale*m_scale)+pixmap.height()/2.0+0.5
+	);
+}
+
 void XFormView::mouseDoubleClickEvent(QMouseEvent * e)
 {
     if (!imgData)
 		return;
-
-    QPoint cp = e->pos()/disp_scale;
+		
+    QPoint cp = mouseEventToImageCoords(e->pos()).toPoint();
+    
 	int sx,sy,sz; //current selection location's x,y,z
 
 	switch(Ptype)
@@ -1691,21 +1700,23 @@ void XFormView::mouseRightButtonPressEvent(QMouseEvent *e)
 	else
 	{
 #endif
+		QPoint	eImgCoords = mouseEventToImageCoords(e->pos()).toPoint();
+		
 		switch (Ptype)
 		{
 			case imgPlaneX:
-				emit focusZChanged(double((e->x()-curDisplayCenter.x()))/(disp_scale*m_scale)+pixmap.width()/2.0+0.5);
-				emit focusYChanged(double((e->y()-curDisplayCenter.y()))/(disp_scale*m_scale)+pixmap.height()/2.0+0.5);
+				emit focusZChanged(eImgCoords.x());
+				emit focusYChanged(eImgCoords.y());
 				break;
 
 			case imgPlaneY:
-				emit focusXChanged(double((e->x()-curDisplayCenter.x()))/(disp_scale*m_scale)+pixmap.width()/2.0+0.5);
-				emit focusZChanged(double((e->y()-curDisplayCenter.y()))/(disp_scale*m_scale)+pixmap.height()/2.0+0.5);
+				emit focusXChanged(eImgCoords.x());
+				emit focusZChanged(eImgCoords.y());
 				break;
 
 			case imgPlaneZ:
-				emit focusXChanged(double((e->x()-curDisplayCenter.x()))/(disp_scale*m_scale)+pixmap.width()/2.0+0.5);
-				emit focusYChanged(double((e->y()-curDisplayCenter.y()))/(disp_scale*m_scale)+pixmap.height()/2.0+0.5);
+				emit focusXChanged(eImgCoords.x());
+				emit focusYChanged(eImgCoords.y());
 				//qDebug()<<"x="<<e->x()<<"y="<<e->y()<<"disp_scale="<<disp_scale<<"m_scale="<<m_scale<<"curdispcenter.x="<<curDisplayCenter.x()<<"curdispcenter.y="<<curDisplayCenter.y();
 
 				break;
@@ -1720,14 +1731,12 @@ void XFormView::mouseRightButtonPressEvent(QMouseEvent *e)
 
 void XFormView::mouseLeftButtonPressEvent(QMouseEvent *e) //080101
 {
+	
 	//reserved for future editing of the the pop-up menu
 	if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 	{
-		QPoint cp = e->pos();
-
 		//add zoom-in support. by PHC 20101119
-		cp.setX(double((e->x()-curDisplayCenter.x()))/(disp_scale*m_scale)+pixmap.width()/2.0+0.5);
-		cp.setY(double((e->y()-curDisplayCenter.y()))/(disp_scale*m_scale)+pixmap.height()/2.0+0.5);
+		QPoint	cp = mouseEventToImageCoords(e->pos()).toPoint();
 
 		roiPolygon << cp;
 		update();
@@ -1742,11 +1751,7 @@ void XFormView::mouseLeftButtonPressEvent(QMouseEvent *e) //080101
 	}
 	else if (b_moveCurrentLandmark==true && ind_landmarkToBeChanged>=0 && QApplication::keyboardModifiers()==Qt::ShiftModifier)
 	{
-		QPoint cp = e->pos(); ///(disp_scale*m_scale); //100909
-
-        //the following two lines are suggested by Carlos Becker, 111004. Apparently are duplicates of my code on 1733/1734 above. by PHC
-        cp.setX(double((e->x()-curDisplayCenter.x()))/(disp_scale*m_scale)+pixmap.width()/2.0+0.5);
-        cp.setY(double((e->y()-curDisplayCenter.y()))/(disp_scale*m_scale)+pixmap.height()/2.0+0.5);
+		QPoint cp = mouseEventToImageCoords(e->pos()).toPoint();
         
 		int sx,sy,sz; //current selection location's x,y,z
 
