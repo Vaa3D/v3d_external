@@ -72,8 +72,6 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 #include "import_filelist_dialog.h"
 #include "import_images_tool_dialog.h"
 
-#include "../jba/c++/jba_mainfunc.h"
-
 #include "DownloadManager.h" // CMB 08-Oct-2010
 
 #ifdef __v3d_custom_toolbar__
@@ -1163,8 +1161,8 @@ void MainWindow::setup_global_imgproc_parameter_default()
 	flybrain_lobeseg_para.nloops = 500;
 	flybrain_lobeseg_para.TH = 0.1;
 
-	global_setting.GPara_df_compute_method = (int)DF_GEN_TPS_LINEAR_INTERP;
-	global_setting.GPara_landmarkMatchingMethod = (int)MATCH_MI;
+	//global_setting.GPara_df_compute_method = (int)DF_GEN_TPS_LINEAR_INTERP;
+	//global_setting.GPara_landmarkMatchingMethod = (int)MATCH_MI;
 
 	global_setting.b_3dcurve_autodeform=false;
 	global_setting.b_3dcurve_autowidth=false;

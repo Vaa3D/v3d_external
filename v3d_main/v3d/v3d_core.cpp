@@ -132,9 +132,6 @@
 #include <iostream> //080107
 using namespace std;
 
-//#include "../worm_straighten_c/bdb_minus.h"
-//#include "../worm_straighten_c/spline_cubic.h"
-
 #include "rotate_image.h"
 #include "dialog_rotate.h"
 #include "landmark_property_dialog.h"
@@ -151,8 +148,6 @@ using namespace std;
 #include "v3d_version_info.h"
 
 #include "../basic_c_fun/volimg_proc.h"
-
-#include "../jba/c++/jba_mainfunc.h"
 
 //#if !defined(WIN32) // skip under win32
 #if defined(__APPLE__) //081124
