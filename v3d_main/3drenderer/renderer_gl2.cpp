@@ -316,6 +316,17 @@ void Renderer_gl2::equMaxIntensityProjection()
 	}
 	glBlendEquationEXT(GL_MAX_EXT);//////////////////////////
 }
+
+void Renderer_gl2::equMinIntensityProjection()
+{
+	if (! tryVolShader)
+	{
+		Renderer_gl1::equMinIntensityProjection();
+		return;
+	}
+	glBlendEquationEXT(GL_MIN_EXT);//////////////////////////
+}
+
 void Renderer_gl2::equCrossSection()
 {
 	if (! tryVolShader)

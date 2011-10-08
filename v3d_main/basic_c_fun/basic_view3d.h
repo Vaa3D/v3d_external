@@ -89,7 +89,8 @@ public:
 	virtual void incVolumeTimePoint(float step) =0;
 	virtual int volumeTimePoint() const =0; // CMB 19Apr2011
 
-	virtual void setRenderMode_Mip(bool b) =0;
+	virtual void setRenderMode_Maxip(bool b) =0;
+	virtual void setRenderMode_Minip(bool b) =0;
 	virtual void setRenderMode_Alpha(bool b) =0;
 	virtual void setRenderMode_Cs3d(bool b) =0;
 

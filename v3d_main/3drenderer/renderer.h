@@ -59,6 +59,7 @@ public:
 	enum RenderMode {rmCrossSection=0,
 					rmAlphaBlendingProjection,
 					rmMaxIntensityProjection,
+					rmMinIntensityProjection,
 					};
 	enum SelectMode {smObject=0, smMultipleObject,
 					smMarkerCreate1, smMarkerCreate2, smMarkerCreate3,

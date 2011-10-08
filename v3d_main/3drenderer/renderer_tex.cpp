@@ -508,7 +508,7 @@ void Renderer_gl1::prepareVol()
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-        if (renderMode==rmAlphaBlendingProjection || renderMode==rmMaxIntensityProjection) // not for rmCrossSection
+        if (renderMode==rmAlphaBlendingProjection || renderMode==rmMaxIntensityProjection || renderMode==rmMinIntensityProjection) // not for rmCrossSection
             enableViewClipPlane(); //front-cut-plane
 
         // unit image space ==>fit in [-1,+1]^3
@@ -517,6 +517,11 @@ void Renderer_gl1::prepareVol()
         if (renderMode==rmMaxIntensityProjection) {
             glColor3f(0, 0, 0);
             drawBackFillVolCube(); // clear the project region to zero for MIP
+        }
+        
+        if (renderMode==rmMinIntensityProjection) {
+            glColor3f(0.8, 0.8, 0.8);
+            drawBackFillVolCube(); // clear the project region to near-white for mIP
         }
 
         glPopMatrix(); //============================================================== }
@@ -531,7 +536,7 @@ void Renderer_gl1::renderVol()
 
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-            if (renderMode==rmAlphaBlendingProjection || renderMode==rmMaxIntensityProjection) // not for rmCrossSection
+            if (renderMode==rmAlphaBlendingProjection || renderMode==rmMaxIntensityProjection || renderMode==rmMinIntensityProjection) // not for rmCrossSection
                     enableViewClipPlane(); //front-cut-plane
 
             // unit image space ==>fit in [-1,+1]^3
@@ -549,7 +554,7 @@ void Renderer_gl1::renderVol()
                     drawUnitFrontSlice(1); // just draw bound Line of F-Slice
             }
 
-            if (renderMode==rmAlphaBlendingProjection || renderMode==rmMaxIntensityProjection)
+            if (renderMode==rmAlphaBlendingProjection || renderMode==rmMaxIntensityProjection || renderMode==rmMinIntensityProjection)
                     disableViewClipPlane();
 
             glPopMatrix(); //============================================================== }
@@ -650,6 +655,11 @@ void Renderer_gl1::equMaxIntensityProjection()
 	glBlendEquationEXT(GL_MAX_EXT);    //seems not be controlled by GL_BLEND
 }
 
+void Renderer_gl1::equMinIntensityProjection()
+{
+	glBlendEquationEXT(GL_MIN_EXT);    //seems not be controlled by GL_BLEND
+}
+
 void Renderer_gl1::equCrossSection()
 {
 	glBlendEquationEXT(GL_FUNC_ADD_EXT);//this is important
@@ -686,13 +696,23 @@ void Renderer_gl1::drawVol()
 		break;
 
 	case rmMaxIntensityProjection:
-                if (has_image() && !b_renderTextureLast) // if rendering texture first, we can clear - otherwise this is done in prepareVol()
+        if (has_image() && !b_renderTextureLast) // if rendering texture first, we can clear - otherwise this is done in prepareVol()
 		{
 			glColor3f(0, 0, 0);
 			drawBackFillVolCube(); // clear the project region to zero for MIP
 		}
 		glEnable(GL_BLEND);      equMaxIntensityProjection();
 		glEnable(GL_ALPHA_TEST); glAlphaFunc(GL_GEQUAL, alpha_threshold); // >= threshold Alpha, 080930
+		break;
+		
+	case rmMinIntensityProjection:
+		if (has_image() && !b_renderTextureLast) // if rendering texture first, we can clear - otherwise this is done in prepareVol()
+		{
+			glColor3f(0.8, 0.8, 0.8);
+			drawBackFillVolCube(); // clear the project region to a high gray-level value for MIP (black won't do fine)
+		}
+		glEnable(GL_BLEND);      equMinIntensityProjection();
+		glEnable(GL_ALPHA_TEST); glAlphaFunc(GL_LEQUAL, 1 - alpha_threshold); // >= threshold Alpha, 080930
 		break;
 
 	case rmCrossSection:

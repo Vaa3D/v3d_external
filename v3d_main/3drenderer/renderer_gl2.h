@@ -80,6 +80,7 @@ protected:
 
 	virtual void equAlphaBlendingProjection();
 	virtual void equMaxIntensityProjection();
+	virtual void equMinIntensityProjection();
 	virtual void equCrossSection();
 	virtual void shaderTexBegin(bool stream); //090722 because different shader for XYZ/F-slice
 	virtual void shaderTexEnd();

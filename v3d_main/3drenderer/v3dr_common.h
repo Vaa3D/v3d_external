@@ -94,7 +94,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 // 081025 by RZC
 #define WIN_SIZEX 1024 //800
 #define WIN_SIZEY 768  //800
-#define CTRL_SIZEX 300
+#define CTRL_SIZEX 350
 #define MINVIEW_SIZEX 700  //800
 #define MINVIEW_SIZEY 700  //800
 

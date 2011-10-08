@@ -1085,19 +1085,29 @@ void V3dR_GLWidget::incVolumeTimePoint(float step)
 	setVolumeTimePoint(int(t));
 }
 
-void V3dR_GLWidget::setRenderMode_Mip(bool b)
+void V3dR_GLWidget::setRenderMode_Mip(bool b, bool useMin)
 {
 	//qDebug("V3dR_GLWidget::setRenderMode_Mip = %i",b);
 	if (b) {
-		_renderMode = int(Renderer::rmMaxIntensityProjection);
-		if (renderer) renderer->setRenderMode(Renderer::rmMaxIntensityProjection);
+		if (!useMin) {	//max IP
+			_renderMode = int(Renderer::rmMaxIntensityProjection);
+			if (renderer) renderer->setRenderMode(Renderer::rmMaxIntensityProjection);
+		} else {
+			//mIP
+			_renderMode = int(Renderer::rmMinIntensityProjection);
+			if (renderer) renderer->setRenderMode(Renderer::rmMinIntensityProjection);
+		}
 		// restore renderer->Cut0
 		if (renderer) renderer->setXCut0(_xCut0);
 		if (renderer) renderer->setYCut0(_yCut0);
 		if (renderer) renderer->setZCut0(_zCut0);
 		POST_updateGL();
 	}
-	emit changeDispType_mip(b);
+	
+	if (!useMin)
+		emit changeDispType_maxip(b);
+	else
+		emit changeDispType_minip(b);
 
 	emit changeTransparentSliderLabel("Threshold");
 	emit changeEnableCut0Slider(b);

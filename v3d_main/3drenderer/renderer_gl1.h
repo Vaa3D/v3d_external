@@ -121,6 +121,7 @@ protected:
 	virtual void subloadTex(V3DLONG timepoint, bool bfisrt=false);	// called by loadVol, drawVol
 	virtual void equAlphaBlendingProjection();			// for blending equation
 	virtual void equMaxIntensityProjection();	// for blending equation
+	virtual void equMinIntensityProjection();	// for blending equation
 	virtual void equCrossSection();				// for blending equation
 	virtual void shaderTexBegin(bool stream) 	{};		// for texture2D/3D shader
 	virtual void shaderTexEnd()	 				{};		// for texture2D/3D shader

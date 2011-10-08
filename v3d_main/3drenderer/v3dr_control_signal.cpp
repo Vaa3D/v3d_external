@@ -98,10 +98,13 @@ void V3dR_MainWindow::createControlWidgets()
     QGridLayout *layout_mainDisplayOptGroup = new QGridLayout(volDisplayOptGroup);
     //layout_mainDisplayOptGroup->setContentsMargins(10,1,1,1);
 
-    dispType_mip = new QRadioButton("MIP", volDisplayOptGroup);
+    dispType_maxip = new QRadioButton("MIP", volDisplayOptGroup);
+    dispType_minip = new QRadioButton("mIP", volDisplayOptGroup);
+    
     dispType_alpha = new QRadioButton("Alpha", volDisplayOptGroup);
     dispType_cs3d = new QRadioButton("X-section", volDisplayOptGroup);
-    dispType_mip->setToolTip("Maximum Intensity Projection");
+    dispType_maxip->setToolTip("Maximum Intensity Projection");
+    dispType_minip->setToolTip("Minimum Intensity Projection");
     dispType_alpha->setToolTip("Alpha Blending Projection\n (affected by background color)"); //110714
     dispType_cs3d->setToolTip("Cross-section");
 
@@ -123,9 +126,10 @@ void V3dR_MainWindow::createControlWidgets()
 	checkBox_volCompress->setToolTip("Compressed format can improve\n interactive speed of static volume");
 			//".\nUncompressed format for very large volume may cause system halt!");
 
-	layout_mainDisplayOptGroup->addWidget(dispType_mip, 1, 0, 1, 5);
-	layout_mainDisplayOptGroup->addWidget(dispType_alpha, 1, 5, 1, 7);
-	layout_mainDisplayOptGroup->addWidget(dispType_cs3d, 1, 5+7, 1, 9);
+	layout_mainDisplayOptGroup->addWidget(dispType_maxip, 1, 0, 1, 5);
+	layout_mainDisplayOptGroup->addWidget(dispType_minip, 1, 5, 1, 5);
+	layout_mainDisplayOptGroup->addWidget(dispType_alpha, 1, 5+5, 1, 7);
+	layout_mainDisplayOptGroup->addWidget(dispType_cs3d, 1, 5+5+7, 1, 9);
 
 	//layout_mainDisplayOptGroup->addWidget(labelline, 2, 0, 1, 21);
 
@@ -679,10 +683,16 @@ void V3dR_MainWindow::connectSignal()
 		connect(timeSlider, SIGNAL(valueChanged(int)), glWidget, SLOT(setVolumeTimePoint(int)));
 	}
 
-	if (dispType_mip) {
-		connect(glWidget, SIGNAL(changeDispType_mip(bool)), dispType_mip, SLOT(setChecked(bool)));
-		connect(dispType_mip, SIGNAL(toggled(bool)), glWidget, SLOT(setRenderMode_Mip(bool)));
+	if (dispType_maxip) {
+		connect(glWidget, SIGNAL(changeDispType_maxip(bool)), dispType_maxip, SLOT(setChecked(bool)));
+		connect(dispType_maxip, SIGNAL(toggled(bool)), glWidget, SLOT(setRenderMode_Maxip(bool)));
 	}
+	
+	if (dispType_minip) {
+		connect(glWidget, SIGNAL(changeDispType_minip(bool)), dispType_minip, SLOT(setChecked(bool)));
+		connect(dispType_minip, SIGNAL(toggled(bool)), glWidget, SLOT(setRenderMode_Minip(bool)));
+	}
+	
 	if (dispType_alpha) {
 		connect(glWidget, SIGNAL(changeDispType_alpha(bool)), dispType_alpha, SLOT(setChecked(bool)));
 		connect(dispType_alpha, SIGNAL(toggled(bool)), glWidget, SLOT(setRenderMode_Alpha(bool)));
@@ -1017,7 +1027,7 @@ void V3dR_MainWindow::initControlValue()
 
 	// volume tab
 	///////////////////////////////////////////////////////////
-	if (dispType_mip) dispType_mip->setChecked(true);
+	if (dispType_maxip) dispType_maxip->setChecked(true);
 	if (transparentSlider) transparentSlider->setValue(0); //10. max=100
 	//if (thicknessSlider) thicknessSlider->setValue(1);    //1, max=10
 	if (zthicknessBox)

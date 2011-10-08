@@ -182,7 +182,16 @@ public slots:
 	virtual int setVolumeTimePoint(int t);
 	virtual void incVolumeTimePoint(float step);
 
-	virtual void setRenderMode_Mip(bool b);
+	/** if useMin == false => minimum intensity projection **/
+	virtual void setRenderMode_Mip(bool b, bool useMin = false);
+	
+	virtual void setRenderMode_Maxip(bool b) {
+		setRenderMode_Mip(b, false);
+	}
+	virtual void setRenderMode_Minip(bool b) {
+		setRenderMode_Mip(b, true);
+	}
+	
 	virtual void setRenderMode_Alpha(bool b);
 	virtual void setRenderMode_Cs3d(bool b);
 
@@ -313,7 +322,8 @@ signals:
 
 	void changeVolumeTimePoint(int);
 
-	void changeDispType_mip(bool);
+	void changeDispType_maxip(bool);
+	void changeDispType_minip(bool);
 	void changeDispType_alpha(bool);
 	void changeDispType_cs3d(bool);
 

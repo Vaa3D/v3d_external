@@ -185,7 +185,7 @@ protected:
     QScrollBar* timeSlider;
 
     // volume display control
-	QRadioButton *dispType_mip, *dispType_alpha, *dispType_cs3d;
+	QRadioButton *dispType_maxip, *dispType_minip, *dispType_alpha, *dispType_cs3d;
 	QLabel *thicknessSlider_Label, *transparentSlider_Label; //for disable, by RZC 080822
 	QDoubleSpinBox *zthicknessBox; //by PHC, 090215
 	QComboBox *comboBox_channel;
@@ -240,7 +240,7 @@ protected:
 	    glWidget=0;
 	    timeSlider=0;
 
-	    dispType_mip=dispType_alpha=dispType_cs3d=0;
+	    dispType_minip=dispType_maxip=dispType_alpha=dispType_cs3d=0;
 		thicknessSlider_Label=transparentSlider_Label=0;
 		transparentSlider=0;
 	    thicknessSlider=0; zthicknessBox=0;
