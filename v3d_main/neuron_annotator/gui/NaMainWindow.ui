@@ -250,8 +250,8 @@ double-click to recenter</string>
                   <widget class="NaZStackWidget" name="naZStackWidget" native="true">
                    <property name="toolTip">
                     <string>drag to pan
-scroll to zoom
-shift-scroll to z-scan
+shift-scroll to zoom
+scroll to z-scan
 double-click to recenter</string>
                    </property>
                    <property name="autoFillBackground">
@@ -409,9 +409,9 @@ background-color: rgb(0, 0, 0);</string>
                     </size>
                    </property>
                    <property name="toolTip">
-                    <string>shift-drag to rotate
+                    <string>drag to rotate
 scroll to zoom
-drag to pan
+shift-drag to pan
 double-click to recenter
 single-click to select a neuron fragment</string>
                    </property>
@@ -800,7 +800,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                         <string>Adjust 3D viewer object orientation</string>
                        </property>
                        <property name="currentIndex">
-                        <number>0</number>
+                        <number>1</number>
                        </property>
                        <widget class="QWidget" name="tabRotation">
                         <property name="toolTip">

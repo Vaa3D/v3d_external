@@ -430,9 +430,10 @@ void NaZStackWidget::wheelEvent(QWheelEvent * e) // mouse wheel
     // qDebug() << "wheel";
     // cerr << "wheel event " << __LINE__ << __FILE__ << endl;
     // CMB 12-Aug-2011 - reverse sign to make direction match scroll wheel on scroll bar
-    if (e->modifiers() & Qt::ShiftModifier)
-    { // shift-scroll to scan in Z
-        setCurrentZSlice(getCurrentZSlice() - numTicks);
+    if (e->modifiers() & Qt::ShiftModifier) // shift-scroll to zoom
+    {
+        // setCurrentZSlice(getCurrentZSlice() - numTicks); // z-scan
+        wheelZoom(e->delta()); // zoom
     }
     else if (runHDRFILTER && (
                (e->modifiers() & Qt::AltModifier)
@@ -460,10 +461,10 @@ void NaZStackWidget::wheelEvent(QWheelEvent * e) // mouse wheel
         setColorChannel((Color)new_color);
         // qDebug() << new_color << __FILE__ << __LINE__;
     }
-    else
+    else // regular-scroll to z-scan
     {
-        // zoom, not slice scan, for consistency with other viewers
-        wheelZoom(e->delta());
+        setCurrentZSlice(getCurrentZSlice() - numTicks); // z-scan
+        // wheelZoom(e->delta());
     }
 }
 
@@ -916,11 +917,11 @@ void NaZStackWidget::setHDRCheckState(bool state)
     runHDRFILTER = state;
     if(state){
         setContextMenuPolicy(Qt::NoContextMenu); // because hdr right-click does not work with context menu
-        setToolTip("drag to move HDR window\nright-drag to change HDR window size\nalt-scroll to change HDR channel\nscroll to zoom\nshift-scroll to z-scan\ndouble-click to recenter");
+        setToolTip("drag to move HDR window\nright-drag to change HDR window size\nalt-scroll to change HDR channel\nshift-scroll to zoom\nscroll to z-scan\ndouble-click to recenter");
     }
     else{
         setContextMenuPolicy(Qt::CustomContextMenu);
-        setToolTip("drag to pan\nscroll to zoom\nshift-scroll to z-scan\ndouble-click to recenter");
+        setToolTip("drag to pan\nshift-scroll to zoom\nscroll to z-scan\ndouble-click to recenter");
     }
     updateCursor();
     update();

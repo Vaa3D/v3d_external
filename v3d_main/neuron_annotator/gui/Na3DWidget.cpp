@@ -169,15 +169,15 @@ void Na3DWidget::translateImage(int dx, int dy)
 void Na3DWidget::updateCursor()
 {
     // qDebug() << "updateCursor()";
-    if (! (QApplication::keyboardModifiers() & Qt::ShiftModifier) )
-    { // regular drag to translate
+    if ( (QApplication::keyboardModifiers() & Qt::ShiftModifier) )
+    { // shift drag to translate
         if (QApplication::mouseButtons() & Qt::LeftButton)
             setCursor(Qt::ClosedHandCursor); // dragging
         else
             setCursor(Qt::OpenHandCursor); // hovering
     }
     else
-    { // shift-drag to rotate
+    { // regular-drag to rotate
         if (rotateCursor)
             setCursor(*rotateCursor);
         else
@@ -214,7 +214,8 @@ void Na3DWidget::mouseMoveEvent(QMouseEvent * event)
         return;
     }
 
-    // I'm not sure what to do if user is dragging with non-left mouse button
+    // I'm not sure what to do if user is dragging with non-left mouse button,
+    // so revert to default V3D behavior.
     if (! (event->buttons() & Qt::LeftButton) )
     {
         bMouseIsDragging = false;
@@ -238,15 +239,15 @@ void Na3DWidget::mouseMoveEvent(QMouseEvent * event)
     if (! (dx || dy)) // no motion?!?!
         return;
 
-    // non-Shift regular drag to translate
-    if ( ! (event->modifiers() & (Qt::ShiftModifier)))
+    // shift-drag to translate
+    if (  (event->modifiers() & (Qt::ShiftModifier)))
     {
         // qDebug() << "translate";
         translateImage(dx, dy);
         update();
         return;
     }
-    // Shift-drag to rotate
+    // regular-drag to rotate
     else
     {
         // qDebug() << "rotate";
