@@ -16,6 +16,7 @@ public:
     virtual ~RendererNeuronAnnotator();
     virtual void paint();
     virtual void loadVol();
+    virtual void loadShader();
     virtual void equAlphaBlendingProjection();
     // Renderer_gl1::selectPosition(x,y) is not virtual, so I renamed
     // this reimplementation to screenPositionToVolumePosition(QPoint)

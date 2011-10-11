@@ -36,8 +36,8 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     loadObj(); // create display lists for markers
     loadShader(); // create color map for fast gamma
 
-    // experimental alpha blending mode
-    setAlphaBlending(false);
+    // initial alpha blending mode
+    setAlphaBlending(true);
 }
 
 RendererNeuronAnnotator::~RendererNeuronAnnotator()
@@ -69,15 +69,89 @@ void RendererNeuronAnnotator::setAlphaBlending(bool b)
     emit alphaBlendingChanged(b);
 }
 
+// helper for loadShader(), copied from Renderer_gl2.cpp
+static QString resourceTextFile(QString filename)
+{
+    //QFile inputFile(":/subdir/input.txt");
+        qDebug() << "Load shader: " << filename;
+
+        QFile inputFile(filename);
+    if (inputFile.open(QIODevice::ReadOnly)==false)
+        qDebug() << "   *** ERROR in Load shader: " << filename;
+
+    QTextStream in(&inputFile);
+    QString line = in.readAll();
+    inputFile.close();
+    return line;
+}
+
+// helper for loadShader(), copied from Renderer_gl2.cpp
+static void linkGLShader(cwc::glShaderManager& SMgr,
+                cwc::glShader*& shader, //output
+                const char* vertex, const char* fragment)
+{
+        glGetError(); // clear error
+        shader = SMgr.loadfromMemory(vertex, fragment);
+        if (shader==0)
+        {
+           qDebug() << "Renderer_gl2::init:  Error Loading, compiling or linking shader\n";
+           throw SMgr.getInfoLog();
+        }
+}
+
+/* virtual */
+void RendererNeuronAnnotator::loadShader()
+{
+    qDebug() << "RendererNeuronAnnotator::loadShader()";
+    cleanShader(); //090705
+    makeCurrent(); //ensure right context when multiple views animation or mouse drop
+
+    try {
+
+            qDebug("+++++++++ shader for Surface Object");
+            linkGLShader(SMgr, shaderObj, //0,0);
+                            //0,
+                            Q_CSTR(resourceTextFile(":/shader/lighting.txt") + resourceTextFile(":/shader/color_vertex.txt")),
+                            //Q_CSTR(resourceTextFile(":/shader/vertex_normal.txt")),
+                            //0);
+                            Q_CSTR(resourceTextFile(":/shader/lighting.txt") + resourceTextFile(":/shader/obj_fragment.txt")));
+
+            #ifdef TEX_LOD
+                    QString deftexlod = "#define TEX_LOD \n";
+            #else
+                    QString deftexlod = "#undef TEX_LOD \n";
+            #endif
+
+            qDebug("+++++++++ shader for Volume texture2D");
+            linkGLShader(SMgr, shaderTex2D,
+                            0, //Q_CSTR(resourceTextFile(":/shader/color_vertex.txt")),
+                            Q_CSTR(QString("#undef TEX3D \n") + deftexlod + resourceTextFile(":/neuron_annotator/resources/tex_fragment_cmb.txt")));
+
+            qDebug("+++++++++ shader for Volume texture3D");
+            linkGLShader(SMgr, shaderTex3D,
+                            0, //Q_CSTR(resourceTextFile(":/shader/color_vertex.txt")),
+                            Q_CSTR(QString("#define TEX3D \n") + deftexlod + resourceTextFile(":/neuron_annotator/resources/tex_fragment_cmb.txt")));
+
+    }
+    catch (...) {
+        qDebug() << "ERROR: shader loading failed";
+    }
+
+    qDebug("+++++++++ GLSL shader setup finished.");
+
+
+    glGenTextures(1, &texColormap);
+    initColormap();
+}
+
 void RendererNeuronAnnotator::equAlphaBlendingProjection()
 {
     // qDebug() << "RendererNeuronAnnotator::equAlphaBlendingProjection()";
 
-    Renderer_gl2::equAlphaBlendingProjection();
-    /*
+    // Renderer_gl2::equAlphaBlendingProjection();
+
     glBlendEquationEXT(GL_FUNC_ADD_EXT);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-     */
 }
 
 // mouse left click to select neuron
