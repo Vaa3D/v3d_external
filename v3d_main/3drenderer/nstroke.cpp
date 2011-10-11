@@ -1104,6 +1104,7 @@ void Renderer_gl1::updateDraggedNeuronXYZ()
 {
      XYZ sp, ep, cp;
      int numd = DraggedNeurons.size();
+     int wsize = 1; // the half-number of points extended for the dragged points used in smooth_curve
 
      if(numd<=0) return;
      sp.x = DraggedNeurons.at(0).x;
@@ -1147,6 +1148,27 @@ void Renderer_gl1::updateDraggedNeuronXYZ()
                break;
           }
      }
+
+     // save the original position of dragged points plus 2*wsize points.
+     // used for connection checking of other segs to dragged points.
+     vector <XYZ> old_dragged_loc;
+     old_dragged_loc.clear();
+     int ia = sindex - cindex; // start index in original seg
+     int ib = sindex - cindex + numd -1; // end index in original seg
+     int N0 = segi.row.size();
+     int iaa, ibb;
+     iaa = ((ia-wsize)<0)? 0:(ia-wsize); // considering wsize
+     ibb = ((ib+wsize)>=N0)? (N0-1):(ib+wsize);
+
+     for(int i=iaa; i<=ibb; i++)
+     {
+          XYZ pt;
+          pt.x=segi.row.at(i).x;
+          pt.y=segi.row.at(i).y;
+          pt.z=segi.row.at(i).z;
+          old_dragged_loc.push_back(pt);
+     } // end saving old dragged points
+
 
      // update dragged center pos in SWC.
      segi.row.at(sindex).x = cp.x;
@@ -1240,14 +1262,12 @@ void Renderer_gl1::updateDraggedNeuronXYZ()
      // make a larger window for smoothing
      int ka = sindex - cindex;
      int kb = sindex;
-     int N0 = segi.row.size();
+     //int N0 = segi.row.size();
      int kaa, kbb;
-     int wsize = 1;
      kaa = ((ka-wsize)<0)? 0:(ka-wsize);
      kbb = kb;
      for(int i=kaa; i<=kbb; i++)
      {
-          int ii=i-kaa;
           XYZ pt;
           pt.x=segi.row.at(i).x;
           pt.y=segi.row.at(i).y;
@@ -1330,7 +1350,51 @@ void Renderer_gl1::updateDraggedNeuronXYZ()
 //           segi.row.at(i).data[4] = pt.z;
 //      }
 
+     // Update endpoints of linked segments
+     V3DLONG nsegs = curImg->tracedNeuron.nsegs();
+     for(V3DLONG j=0; j<nsegs; j++)
+     {
+          if(j!=edit_seg_id)
+          {
+               V_NeuronSWC& segj = curImg->tracedNeuron.seg.at(j);
+               // get two end points of segj
+               XYZ pt1, pt2;
+               int nn = segj.row.size();
+               pt1.x=segj.row.at(0).x;
+               pt1.y=segj.row.at(0).y;
+               pt1.z=segj.row.at(0).z;
 
+               pt2.x=segj.row.at(nn-1).x;
+               pt2.y=segj.row.at(nn-1).y;
+               pt2.z=segj.row.at(nn-1).z;
+               // check distance between pt1/pt2 and old dragged points
+               // if dist== 0, then update to connect
+               for(int i=iaa; i<=ibb; i++)
+               {
+                    XYZ pt;
+                    int ii = i-iaa;
+                    pt=old_dragged_loc.at(ii);
+                    double dist;
+                    dist = dist_L2(pt1, pt);
+                    if(dist==0.0) //for pt1
+                    {
+                         // update loc of segj's end points to loc of dragged pt
+                         segj.row.at(0).data[2]= segi.row.at(i).x;
+                         segj.row.at(0).data[3]= segi.row.at(i).y;
+                         segj.row.at(0).data[4]= segi.row.at(i).z;
+                    }
+                    dist = dist_L2(pt2, pt);
+                    if(dist==0.0) //for pt2
+                    {
+                         // update loc of segj's end points to loc of dragged pt
+                         segj.row.at(nn-1).data[2]= segi.row.at(i).x;
+                         segj.row.at(nn-1).data[3]= segi.row.at(i).y;
+                         segj.row.at(nn-1).data[4]= segi.row.at(i).z;
+                    }
+               }
+
+          }
+     }
 
      // update radius of each point
      if (V3dApplication::getMainWindow()->global_setting.b_3dcurve_autowidth)
