@@ -1995,7 +1995,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <bool>true</bool>
    </property>
    <property name="checked">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>Use 3D alpha blending</string>

@@ -37,7 +37,7 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     loadShader(); // create color map for fast gamma
 
     // initial alpha blending mode
-    setAlphaBlending(true);
+    setAlphaBlending(false);
 }
 
 RendererNeuronAnnotator::~RendererNeuronAnnotator()
@@ -152,6 +152,14 @@ void RendererNeuronAnnotator::equAlphaBlendingProjection()
 
     glBlendEquationEXT(GL_FUNC_ADD_EXT);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void RendererNeuronAnnotator::setDepthClip(float totalDepthInGlUnits)
+{
+    if (totalDepthInGlUnits <= 0) return;
+    viewNear = viewDistance - 0.3 * totalDepthInGlUnits;
+    viewNear = viewNear < 1.0 ? 1.0 : viewNear;
+    viewFar = viewDistance + 0.7 * totalDepthInGlUnits;
 }
 
 // mouse left click to select neuron

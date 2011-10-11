@@ -574,6 +574,12 @@ void Na3DWidget::updateRendererZoomRatio(qreal relativeScale)
         desiredVerticalApertureInDegrees = 180.0; // gl limit
     float desiredZoomRatio = desiredVerticalApertureInDegrees / getRendererNa()->getViewAngle();
     getRendererNa()->setInternalZoomRatio(desiredZoomRatio);
+
+    bool bAutoClipNearFar = true; // TODO - expose this variable
+    // set near and far clip planes
+    if (bAutoClipNearFar)
+        getRendererNa()->setDepthClip(2.0 * desiredVerticalGlUnitsDisplayed);
+
     getRendererNa()->setupView(width(), height());
 }
 

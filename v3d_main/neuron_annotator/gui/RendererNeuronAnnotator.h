@@ -18,6 +18,7 @@ public:
     virtual void loadVol();
     virtual void loadShader();
     virtual void equAlphaBlendingProjection();
+    void setDepthClip(float totalDepthInGlUnits);
     // Renderer_gl1::selectPosition(x,y) is not virtual, so I renamed
     // this reimplementation to screenPositionToVolumePosition(QPoint)
     virtual XYZ screenPositionToVolumePosition(const QPoint& screenPos);
