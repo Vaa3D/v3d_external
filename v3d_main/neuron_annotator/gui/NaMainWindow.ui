@@ -1685,6 +1685,8 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <addaction name="separator"/>
     <addaction name="actionShow_Crosshair"/>
     <addaction name="actionLink_viewers"/>
+    <addaction name="action3D_alpha_blending"/>
+    <addaction name="actionAnimate_3D_nutation"/>
     <addaction name="actionShow_Axes"/>
     <addaction name="separator"/>
     <addaction name="menuStereo_3D"/>
@@ -1986,6 +1988,25 @@ You can also resize the box by Ctrl + left mouse click.</string>
    </property>
    <property name="text">
     <string>Show Axes</string>
+   </property>
+  </action>
+  <action name="action3D_alpha_blending">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Use 3D alpha blending</string>
+   </property>
+  </action>
+  <action name="actionAnimate_3D_nutation">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Animate 3D nutation</string>
    </property>
   </action>
  </widget>

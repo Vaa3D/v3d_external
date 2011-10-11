@@ -65,7 +65,8 @@ void NutateThread::unpause() {paused = false;}
 //////////////////
 
 NaMainWindow::NaMainWindow()
-    : nutateThread(NULL), statusProgressBar(NULL)
+    : nutateThread(NULL)
+    , statusProgressBar(NULL)
 {
     ui.setupUi(this);
 
@@ -159,6 +160,12 @@ NaMainWindow::NaMainWindow()
             ui.v3dr_glwidget, SLOT(resetRotation()));
     connect(ui.nutateButton, SIGNAL(toggled(bool)),
             this, SLOT(setNutate(bool)));
+    connect(this, SIGNAL(nutatingChanged(bool)),
+            ui.nutateButton, SLOT(setChecked(bool)));
+    connect(ui.actionAnimate_3D_nutation, SIGNAL(toggled(bool)),
+            this, SLOT(setNutate(bool)));
+    connect(this, SIGNAL(nutatingChanged(bool)),
+            ui.actionAnimate_3D_nutation, SLOT(setChecked(bool)));
     /* obsolete.  now we toggle channels.
     connect(ui.redToggleButton, SIGNAL(toggled(bool)),
             ui.v3dr_glwidget, SLOT(setChannelR(bool)));
@@ -204,6 +211,12 @@ NaMainWindow::NaMainWindow()
     connect(ui.XCutCB, SIGNAL(stateChanged(int)), ui.v3dr_glwidget, SLOT(setXCutLock(int)));
     connect(ui.YCutCB, SIGNAL(stateChanged(int)), ui.v3dr_glwidget, SLOT(setYCutLock(int)));
     connect(ui.ZCutCB, SIGNAL(stateChanged(int)), ui.v3dr_glwidget, SLOT(setZCutLock(int)));
+
+    // alpha blending
+    connect(ui.action3D_alpha_blending, SIGNAL(toggled(bool)),
+            ui.v3dr_glwidget, SLOT(setAlphaBlending(bool)));
+    connect(ui.v3dr_glwidget, SIGNAL(alphaBlendingChanged(bool)),
+            ui.action3D_alpha_blending, SLOT(setChecked(bool)));
 
     // Whether to use common zoom and focus in MIP, ZStack and 3D viewers
     connect(ui.actionLink_viewers, SIGNAL(toggled(bool)),
@@ -383,14 +396,18 @@ void NaMainWindow::setNutate(bool bDoNutate)
 
         if (! nutateThread->isRunning())
             nutateThread->start(QThread::IdlePriority);
-        if (nutateThread->isRunning())
+        if (nutateThread->isRunning() && nutateThread->isPaused()) {
             nutateThread->unpause();
+            emit nutatingChanged(bDoNutate);
+        }
     }
     else {
         // qDebug() << "stop nutating";
         if (!nutateThread) return;
-        if (nutateThread->isRunning())
+        if (nutateThread->isRunning() && (!nutateThread->isPaused())) {
             nutateThread->pause();
+            emit nutatingChanged(bDoNutate);
+        }
     }
 }
 

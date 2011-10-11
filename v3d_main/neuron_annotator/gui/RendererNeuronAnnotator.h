@@ -16,6 +16,7 @@ public:
     virtual ~RendererNeuronAnnotator();
     virtual void paint();
     virtual void loadVol();
+    virtual void equAlphaBlendingProjection();
     // Renderer_gl1::selectPosition(x,y) is not virtual, so I renamed
     // this reimplementation to screenPositionToVolumePosition(QPoint)
     virtual XYZ screenPositionToVolumePosition(const QPoint& screenPos);
@@ -39,6 +40,10 @@ signals:
     void progressComplete();
     void progressMessageChanged(QString);
     void progressAborted(QString);
+    void alphaBlendingChanged(bool);
+
+public slots:
+    void setAlphaBlending(bool);
 
 protected:
     virtual void setupStackTexture(bool bfirst);

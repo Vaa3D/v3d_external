@@ -35,6 +35,9 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
 
     loadObj(); // create display lists for markers
     loadShader(); // create color map for fast gamma
+
+    // experimental alpha blending mode
+    setAlphaBlending(false);
 }
 
 RendererNeuronAnnotator::~RendererNeuronAnnotator()
@@ -47,6 +50,34 @@ RendererNeuronAnnotator::~RendererNeuronAnnotator()
     if (texture3DBlank) {delete [] texture3DBlank; texture3DBlank = NULL;}
     if (texture3DBackground) {delete [] texture3DBackground; texture3DBackground = NULL;}
     // NOTE that deleting texture3DSignal is handled by something else
+}
+
+/* slot */
+void RendererNeuronAnnotator::setAlphaBlending(bool b)
+{
+    // qDebug() << "RendererNeuronAnnotator::setAlphaBlending()" << b;
+    if (b == (renderMode == Renderer::rmAlphaBlendingProjection))
+        return; // no change
+    if (b)
+    {
+        makeCurrent();
+        renderMode = Renderer::rmAlphaBlendingProjection;
+        equAlphaBlendingProjection();
+    }
+    else
+        renderMode = Renderer::rmMaxIntensityProjection;
+    emit alphaBlendingChanged(b);
+}
+
+void RendererNeuronAnnotator::equAlphaBlendingProjection()
+{
+    // qDebug() << "RendererNeuronAnnotator::equAlphaBlendingProjection()";
+
+    Renderer_gl2::equAlphaBlendingProjection();
+    /*
+    glBlendEquationEXT(GL_FUNC_ADD_EXT);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+     */
 }
 
 // mouse left click to select neuron

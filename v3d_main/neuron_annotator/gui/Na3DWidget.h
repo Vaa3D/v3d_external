@@ -53,8 +53,10 @@ signals:
     void progressMessageChanged(QString);
     void progressAborted(QString);
     void landmarksChanged();
+    void alphaBlendingChanged(bool);
 
 public slots:
+    void setAlphaBlending(bool);
     void clearLandmarks();
     void setLandmarks(const QList<ImageMarker>);
     virtual void annotationModelUpdate(QString updateType);

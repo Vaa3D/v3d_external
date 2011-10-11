@@ -706,7 +706,18 @@ void Na3DWidget::choiceRenderer()
                 this, SIGNAL(progressMessageChanged(QString)));
         connect(getRendererNa(), SIGNAL(progressAborted(QString)),
                 this, SIGNAL(progressAborted(QString)));
+        connect(getRendererNa(), SIGNAL(alphaBlendingChanged(bool)),
+                this, SIGNAL(alphaBlendingChanged(bool)));
+        connect(getRendererNa(), SIGNAL(alphaBlendingChanged(bool)),
+                this, SLOT(update()));
     }
+}
+
+/* slot */
+void Na3DWidget::setAlphaBlending(bool b)
+{
+    if (! getRendererNa()) return;
+    getRendererNa()->setAlphaBlending(b);
 }
 
 // Draw a little 3D cross for testing
