@@ -5,7 +5,10 @@
 #include "../3drenderer/v3dr_glwidget.h"
 
 RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
-    : QObject(NULL), Renderer_gl2(w)
+    : QObject(NULL)
+    , Renderer_gl2(w)
+    , stereo3DMode(STEREO_OFF)
+    , bStereoSwapEyes(false)
 {
     // qDebug() << "RendererNeuronAnnotator constructor" << this;
     neuronMask=0;
@@ -50,6 +53,12 @@ RendererNeuronAnnotator::~RendererNeuronAnnotator()
     if (texture3DBlank) {delete [] texture3DBlank; texture3DBlank = NULL;}
     if (texture3DBackground) {delete [] texture3DBackground; texture3DBackground = NULL;}
     // NOTE that deleting texture3DSignal is handled by something else
+}
+
+/* slot */
+void RendererNeuronAnnotator::setStereoMode(int m)
+{
+    stereo3DMode = (Stereo3DMode) m;
 }
 
 /* slot */
@@ -1040,8 +1049,146 @@ void RendererNeuronAnnotator::setLandmarks(const QList<ImageMarker>& landmarks)
     listMarker = landmarks;
 }
 
-// Copied from Renderer_gl1::paint() 27 Sep 2011 CMB
+// StereoEyeView sets either left or right eye view, depending on constructor argument.
+class StereoEyeView
+{
+public:
+    enum Eye {LEFT, RIGHT};
+
+    StereoEyeView(Eye eyeActual, Eye eyeGeom)
+    {
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        // Set camera for left eye
+        // Rotate by about 4 degrees about Y axis
+        // TODO - a shear operation on the projection matrix might clip better.
+        // We'll solve that problem when it appears...
+        // Need to PRE-multiply rotation matrix, so some tedious manipulation
+        GLdouble viewMat[16];
+        glGetDoublev(GL_MODELVIEW_MATRIX, viewMat); // remember current modelview
+        glLoadIdentity();
+        double angle = 1.7; // left eye
+        if (eyeGeom == RIGHT) angle = -angle; // right eye is opposite direction
+        glRotated(angle, 0, 1, 0); // put rotation in modelview
+        glMultMatrixd(viewMat); // end result is premultiply by Rotation
+    }
+
+    virtual ~StereoEyeView()
+    {
+        glMatrixMode(GL_MODELVIEW);
+        glPopMatrix();
+    }
+};
+
+class AnaglyphRedCyanEyeView : public StereoEyeView
+{
+public:
+    AnaglyphRedCyanEyeView(Eye eye, Eye eyeGeom) : StereoEyeView(eye, eyeGeom)
+    {
+        if (eye == LEFT)
+            glColorMask(GL_TRUE, GL_FALSE, GL_FALSE, GL_TRUE); // red only
+        else
+            glColorMask(GL_FALSE, GL_TRUE, GL_TRUE, GL_TRUE); // cyan only
+    }
+
+    ~AnaglyphRedCyanEyeView()
+    {
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // Show all colors
+    }
+};
+
+class AnaglyphGreenMagentaEyeView : public StereoEyeView
+{
+public:
+    AnaglyphGreenMagentaEyeView(Eye eye, Eye eyeGeom) : StereoEyeView(eye, eyeGeom)
+    {
+        if (eye == LEFT)
+            glColorMask(GL_FALSE, GL_TRUE, GL_FALSE, GL_TRUE); // green only
+        else
+            glColorMask(GL_TRUE, GL_FALSE, GL_TRUE, GL_TRUE); // magenta only
+    }
+
+    ~AnaglyphGreenMagentaEyeView()
+    {
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); // Show all colors
+    }
+};
+
+class QuadBufferView : public StereoEyeView
+{
+public:
+    QuadBufferView(Eye eye, Eye eyeGeom) : StereoEyeView(eye, eyeGeom)
+    {
+        if (eye == LEFT)
+            glDrawBuffer(GL_BACK_LEFT);
+        else
+            glDrawBuffer(GL_BACK_RIGHT);
+    }
+
+    ~QuadBufferView()
+    {}
+};
+
+/* virtual */
 void RendererNeuronAnnotator::paint()
+{
+    makeCurrent();
+    switch(stereo3DMode)
+    {
+    case STEREO_OFF:
+        paint_mono();
+        break;
+    case STEREO_LEFT_EYE:
+        {
+            StereoEyeView v(StereoEyeView::LEFT, bStereoSwapEyes? StereoEyeView::RIGHT : StereoEyeView::LEFT);
+            paint_mono();
+        }
+        break;
+    case STEREO_RIGHT_EYE:
+        {
+            StereoEyeView v(StereoEyeView::RIGHT, bStereoSwapEyes? StereoEyeView::LEFT : StereoEyeView::RIGHT);
+            paint_mono();
+        }
+        break;
+    case STEREO_ANAGLYPH_RED_CYAN:
+        {
+            AnaglyphRedCyanEyeView v(StereoEyeView::LEFT, bStereoSwapEyes? StereoEyeView::RIGHT : StereoEyeView::LEFT);
+            paint_mono();
+        }
+        {
+            AnaglyphRedCyanEyeView v(StereoEyeView::RIGHT, bStereoSwapEyes? StereoEyeView::LEFT : StereoEyeView::RIGHT);
+            paint_mono();
+        }
+        break;
+    case STEREO_ANAGLYPH_GREEN_MAGENTA:
+        {
+            AnaglyphGreenMagentaEyeView v(StereoEyeView::LEFT, bStereoSwapEyes? StereoEyeView::RIGHT : StereoEyeView::LEFT);
+            paint_mono();
+        }
+        {
+            AnaglyphGreenMagentaEyeView v(StereoEyeView::RIGHT, bStereoSwapEyes? StereoEyeView::LEFT : StereoEyeView::RIGHT);
+            paint_mono();
+        }
+        break;
+    case STEREO_QUAD_BUFFERED:
+        {
+            QuadBufferView v(StereoEyeView::LEFT, bStereoSwapEyes? StereoEyeView::RIGHT : StereoEyeView::LEFT);
+            paint_mono();
+        }
+        {
+            QuadBufferView v(StereoEyeView::RIGHT, bStereoSwapEyes? StereoEyeView::LEFT : StereoEyeView::RIGHT);
+            paint_mono();
+        }
+        break;
+    default:
+        qDebug() << "Error: Unsupported Stereo mode" << stereo3DMode;
+        paint_mono();
+        break;
+    }
+}
+
+// Copied from Renderer_gl1::paint() 27 Sep 2011 CMB
+void RendererNeuronAnnotator::paint_mono()
 {
         //qDebug(" Renderer_gl1::paint(renderMode=%i)", renderMode);
 

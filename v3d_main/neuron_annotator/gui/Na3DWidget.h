@@ -83,6 +83,15 @@ public slots:
     void setYCutLock(int b);
     void setZCutLock(int b);
 
+    void setStereoOff(bool);
+    void setStereoLeftEye(bool);
+    void setStereoRightEye(bool);
+    void setStereoQuadBuffered(bool);
+    void setStereoAnaglyphRedCyan(bool);
+    void setStereoAnaglyphGreenMagenta(bool);
+    void setStereoRowInterleaved(bool);
+    void setStereoMode(int);
+
 public:
 
     Vector3D getDefaultFocus() const;
@@ -166,6 +175,7 @@ protected:
     SlotStatus updateFullVolumeStatus; // help coalesce multiple full update events
     QMenu* viewerContextMenu;
     NeuronContextMenu* neuronContextMenu;
+    bool bHasQuadStereo;
 };
 
 #endif // NA3DWIDGET_H

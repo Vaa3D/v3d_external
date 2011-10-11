@@ -12,9 +12,21 @@ class RendererNeuronAnnotator : public QObject, public Renderer_gl2
 Q_OBJECT
 
 public:
+    enum Stereo3DMode {
+        STEREO_OFF,
+        STEREO_LEFT_EYE,
+        STEREO_RIGHT_EYE,
+        STEREO_QUAD_BUFFERED,
+        STEREO_ANAGLYPH_RED_CYAN,
+        STEREO_ANAGLYPH_GREEN_MAGENTA,
+        STEREO_ROW_INTERLEAVED
+    };
+
+public:
     RendererNeuronAnnotator(void* widget);
     virtual ~RendererNeuronAnnotator();
     virtual void paint();
+    void paint_mono();
     virtual void loadVol();
     virtual void loadShader();
     virtual void equAlphaBlendingProjection();
@@ -46,6 +58,7 @@ signals:
 
 public slots:
     void setAlphaBlending(bool);
+    void setStereoMode(int);
 
 protected:
     virtual void setupStackTexture(bool bfirst);
@@ -61,6 +74,9 @@ protected:
     virtual bool _streamingTex() {return false;}
     virtual void _streamTex(int stack_i, int slice_i, int step, int slice0, int slice1) {}
     virtual void _streamTex_end() {}
+
+    Stereo3DMode stereo3DMode;
+    bool bStereoSwapEyes;
 
 private:
     unsigned char* neuronMask; // sized to texture buffer dimensions realX,Y,Z

@@ -125,6 +125,7 @@ protected slots:
 
 protected:
     void initializeContextMenus();
+    void initializeStereo3DOptions();
     void connectContextMenus(const NeuronSelectionModel& neuronSelectionModel);
     void closeEvent(QCloseEvent *event);
     // Recent files list

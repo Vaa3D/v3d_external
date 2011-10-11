@@ -28,9 +28,15 @@ Na3DWidget::Na3DWidget(QWidget* parent)
     // This method for eliminating tearing artifacts works but is supposedly obsolete;
     // http://stackoverflow.com/questions/5174428/how-to-change-qglformat-for-an-existing-qglwidget-at-runtime
     // valgrind has some complaints about the context
-    // QGLFormat glFormat(context()->format());
-    // glFormat.setDoubleBuffer(true); // attempt to reduce tearing on Mac
-    // setFormat(glFormat);
+    QGLFormat glFormat(context()->format());
+    glFormat.setDoubleBuffer(true); // attempt to reduce tearing on Mac
+    glFormat.setStereo(true);
+    setFormat(glFormat);
+    bHasQuadStereo = true;
+    if (! context()->format().stereo())
+        bHasQuadStereo = false;
+    if (! context()->format().doubleBuffer())
+        bHasQuadStereo = false;
 
     rotateCursor = new QCursor(QPixmap(":/pic/rotate_icon.png"), 5, 5);
     // setMouseTracking(true); // for hover action in mouseMoveEvent()
@@ -56,6 +62,60 @@ Na3DWidget::~Na3DWidget()
 {
     delete _idep; _idep = NULL;
     if (rotateCursor) delete rotateCursor; rotateCursor = NULL;
+}
+
+void Na3DWidget::setStereoOff(bool b)
+{
+    if (b)
+        setStereoMode(RendererNeuronAnnotator::STEREO_OFF);
+}
+
+void Na3DWidget::setStereoLeftEye(bool b)
+{
+    if (b)
+        setStereoMode(RendererNeuronAnnotator::STEREO_LEFT_EYE);
+}
+
+void Na3DWidget::setStereoRightEye(bool b)
+{
+    if (b)
+        setStereoMode(RendererNeuronAnnotator::STEREO_RIGHT_EYE);
+}
+
+void Na3DWidget::setStereoQuadBuffered(bool b)
+{
+    if (!b) return;
+    if (!bHasQuadStereo) {
+        qDebug() << "Error: Quad buffered stereo is not supported on this computer.";
+        return;
+    }
+    setStereoMode(RendererNeuronAnnotator::STEREO_QUAD_BUFFERED);
+}
+
+void Na3DWidget::setStereoAnaglyphRedCyan(bool b)
+{
+    if (b)
+        setStereoMode(RendererNeuronAnnotator::STEREO_ANAGLYPH_RED_CYAN);
+}
+
+void Na3DWidget::setStereoAnaglyphGreenMagenta(bool b)
+{
+    if (b)
+        setStereoMode(RendererNeuronAnnotator::STEREO_ANAGLYPH_GREEN_MAGENTA);
+}
+
+void Na3DWidget::setStereoRowInterleaved(bool b)
+{
+    if (b)
+        setStereoMode(RendererNeuronAnnotator::STEREO_ROW_INTERLEAVED);
+}
+
+
+void Na3DWidget::setStereoMode(int m)
+{
+    if (! getRendererNa()) return;
+    getRendererNa()->setStereoMode(m);
+    update();
 }
 
 /* slot */

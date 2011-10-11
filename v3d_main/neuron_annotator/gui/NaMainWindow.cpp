@@ -280,6 +280,36 @@ NaMainWindow::NaMainWindow()
     ui.annotationFrame->consoleConnect();
 
     initializeContextMenus();
+    initializeStereo3DOptions();
+}
+
+void NaMainWindow::initializeStereo3DOptions()
+{
+    // Only check one stereo format at a time
+    QActionGroup* stereoModeGroup = new QActionGroup(this);
+    stereoModeGroup->setExclusive(true);
+    stereoModeGroup->addAction(ui.actionMono_Off);
+    stereoModeGroup->addAction(ui.actionLeft_eye_view);
+    stereoModeGroup->addAction(ui.actionRight_eye_view);
+    stereoModeGroup->addAction(ui.actionQuadro_120_Hz);
+    stereoModeGroup->addAction(ui.actionAnaglyph_Red_Cyan);
+    stereoModeGroup->addAction(ui.actionAnaglyph_Green_Magenta);
+    stereoModeGroup->addAction(ui.actionRow_Interleaved_Zalman);
+
+    connect(ui.actionMono_Off, SIGNAL(toggled(bool)),
+            ui.v3dr_glwidget, SLOT(setStereoOff(bool)));
+    connect(ui.actionLeft_eye_view, SIGNAL(toggled(bool)),
+            ui.v3dr_glwidget, SLOT(setStereoLeftEye(bool)));
+    connect(ui.actionRight_eye_view, SIGNAL(toggled(bool)),
+            ui.v3dr_glwidget, SLOT(setStereoRightEye(bool)));
+    connect(ui.actionQuadro_120_Hz, SIGNAL(toggled(bool)),
+            ui.v3dr_glwidget, SLOT(setStereoQuadBuffered(bool)));
+    connect(ui.actionAnaglyph_Red_Cyan, SIGNAL(toggled(bool)),
+            ui.v3dr_glwidget, SLOT(setStereoAnaglyphRedCyan(bool)));
+    connect(ui.actionAnaglyph_Green_Magenta, SIGNAL(toggled(bool)),
+            ui.v3dr_glwidget, SLOT(setStereoAnaglyphGreenMagenta(bool)));
+    connect(ui.actionRow_Interleaved_Zalman, SIGNAL(toggled(bool)),
+            ui.v3dr_glwidget, SLOT(setStereoRowInterleaved(bool)));
 }
 
 void NaMainWindow::connectContextMenus(const NeuronSelectionModel& neuronSelectionModel)

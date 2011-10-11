@@ -1910,7 +1910,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <bool>true</bool>
    </property>
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Left Eye View</string>
@@ -1921,7 +1921,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <bool>true</bool>
    </property>
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Right Eye View</string>
@@ -1932,7 +1932,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <bool>true</bool>
    </property>
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Anaglyph Red/Cyan</string>
@@ -1943,7 +1943,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <bool>true</bool>
    </property>
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Anaglyph Green/Magenta</string>
@@ -1965,7 +1965,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <bool>true</bool>
    </property>
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Quadro (120 Hz)</string>
