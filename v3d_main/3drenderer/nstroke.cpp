@@ -238,7 +238,7 @@ void Renderer_gl1::solveCurveRefineLast()
      //      return;
      // }
      // B. join two curves
-     if((vdot < 0)&&(distf <= 40))
+     if((vdot < 0)&&(distf <= 30))
      {
           // update primary_seg.row
           V_NeuronSWC_unit nu;
@@ -385,8 +385,8 @@ void Renderer_gl1::solveCurveRefineLast()
           if (chno >=0) //100115, 100130: for solveCurveViews.
           {
                if (V3dApplication::getMainWindow()->global_setting.b_3dcurve_autowidth)
-                    curImg->proj_trace_compute_radius_of_last_traced_neuron(trace_para, last_seg_id, last_seg_id,
-                         curImg->trace_z_thickness);
+                    curImg->proj_trace_compute_radius_of_last_traced_neuron(trace_para, last_seg_id,
+                         last_seg_id, curImg->trace_z_thickness);
           }
 
      }
@@ -919,7 +919,7 @@ void Renderer_gl1::toggleNStrokeCurveDrawing()
      V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
      if (w)
-     { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+     { oldCursor = QCursor(Qt::ArrowCursor)/*w->cursor()*/; w->setCursor(QCursor(Qt::PointingHandCursor)); }
 }
 /**
  * @brief Edit curve using rubber-band line
