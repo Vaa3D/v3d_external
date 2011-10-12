@@ -49,6 +49,8 @@ DataThread::DataThread(QObject *parent) :
     results(0),
     errorMessage(0)
 {
+    // Deletes itself when done
+    connect(this, SIGNAL(finished()), this, SLOT(deleteLater()));
 }
 
 DataThread::~DataThread()
@@ -72,7 +74,6 @@ void DataThread::run()
 void DataThread::disregard()
 {
     disconnect(this, 0, 0, 0);
-    connect(this, SIGNAL(finished()), this, SLOT(deleteLater()));
 }
 
 
@@ -298,6 +299,29 @@ void GetAnnotationSessionThread::fetchData()
     if (proxy.getAnnotationSession(sessionId, response) == SOAP_OK)
     {
         results = EntityAdapter::convert(response.return_);
+    }
+    else
+    {
+        errorMessage = new QString(proxy.soap_fault_string());
+    }
+}
+
+
+// ===========================================================
+// Select Entity
+// ===========================================================
+
+SelectEntityThread::SelectEntityThread(qint64 entityId, QObject *parent) :
+    DataThread(parent), entityId(entityId)
+{
+}
+
+void SelectEntityThread::fetchData()
+{
+    cds::fw__selectEntityResponse response;
+    if (proxy.selectEntity(entityId, response) == SOAP_OK)
+    {
+        // Success
     }
     else
     {

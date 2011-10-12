@@ -56,7 +56,9 @@ public slots:
     void annotateSelectedEntityWithOntologyTerm(const Entity *term, const Entity *parentTerm);
     void removeAnnotation(const Entity *annotation);
     void selectEntity(const Entity *entity);
+    void selectEntity(const Entity *entity, const bool external);
     void selectEntityById(const qint64 & entityId);
+    void selectEntityById(const qint64 & entityId, const bool external);
     void selectNeuron(int index);
     void deselectNeurons();
 
@@ -70,6 +72,8 @@ private slots:
     void createAnnotationError(const QString & error);
     void removeAnnotationResults(const void *results);
     void removeAnnotationError(const QString & error);
+    void selectEntityResults(const void *results);
+    void selectEntityError(const QString &error);
     void entityWasSelected(const Entity *entity);
 
 private:
@@ -95,6 +99,7 @@ private:
     // Internal variables
     DataThread *createAnnotationThread;
     DataThread *removeAnnotationThread;
+    DataThread *selectEntityThread;
     QMutex mutex;
 };
 

@@ -12,15 +12,15 @@ ConsoleObserver::ConsoleObserver(NaMainWindow *naMainWindow, QObject *parent) :
     QObject(parent),
     mainWindow(naMainWindow),
     loadOntologyThread(0),
-    entitySelectedThread(0),
     entityViewRequestedThread(0),
     annotatedBranchViewRequestedThread(0),
     annotationsChangedThread(0),
+    loadAnnotationSessionThread(0),
     loadOntologyMutex(QMutex::Recursive),
-    entitySelectedMutex(QMutex::Recursive),
     entityViewRequestedMutex(QMutex::Recursive),
     annotatedBranchViewRequestedMutex(QMutex::Recursive),
-    annotationsChangedMutex(QMutex::Recursive)
+    annotationsChangedMutex(QMutex::Recursive),
+    loadAnnotationSessionMutex(QMutex::Recursive)
 {
 }
 
@@ -50,7 +50,6 @@ void ConsoleObserver::loadOntologyResults(const void *results)
     QMutexLocker locker(&loadOntologyMutex);
 
     emit openOntology((Ontology *)results);
-    delete loadOntologyThread;
     loadOntologyThread = NULL;
 }
 
@@ -60,7 +59,6 @@ void ConsoleObserver::loadOntologyError(const QString &error)
 
     emit openOntology(0);
     emit communicationError(error);
-    delete loadOntologyThread;
     loadOntologyThread = NULL;
 }
 
@@ -89,53 +87,8 @@ void ConsoleObserver::ontologyChanged(qint64 rootId)
 
 void ConsoleObserver::entitySelected(qint64 entityId)
 {
-    QMutexLocker locker(&entitySelectedMutex);
-
     qDebug() << "Got signal entitySelected:" << entityId;
-
-    if (entitySelectedThread != NULL)
-    {
-        entitySelectedThread->disregard();
-    }
-
-    // Since we just end up selecting by id, we could do that here without bothering to retrieve the id.
-    // In the future we'll have to decide if we want to get rid of this thread step.
-    entitySelectedThread = new GetEntityThread(entityId);
-    connect(entitySelectedThread, SIGNAL(gotResults(const void *)),
-            this, SLOT(entitySelectedResults(const void *)));
-    connect(entitySelectedThread, SIGNAL(gotError(const QString &)),
-            this, SLOT(entitySelectedError(const QString &)));
-    entitySelectedThread->start(QThread::NormalPriority);
-}
-
-void ConsoleObserver::entitySelectedResults(const void *results)
-{
-    QMutexLocker locker(&entitySelectedMutex);
-
-    Entity *entity = (Entity *)results;
-    if (entity == NULL) return;
-
-//    QString type = *entity->entityType;
-//    if (type == "Neuron Fragment" || type == "Tif 2D Image") {
-//        int neuronNum = getNeuronNumber(entity);
-//        if (neuronNum >= 0) {
-//        }
-//    }
-
-    emit selectEntityById(*entity->id);
-
-    delete entity;
-    delete entitySelectedThread;
-    entitySelectedThread = NULL;
-}
-
-void ConsoleObserver::entitySelectedError(const QString & error)
-{
-    QMutexLocker locker(&entitySelectedMutex);
-
-    emit communicationError(error);
-    delete entitySelectedThread;
-    entitySelectedThread = NULL;
+    emit selectEntityById(entityId, true);
 }
 
 //*******************************************************************************************
@@ -179,7 +132,6 @@ void ConsoleObserver::entityViewRequestedResults(const void *results)
         annotatedBranchViewRequested(*entity->id);
     }
 
-    delete entityViewRequestedThread;
     entityViewRequestedThread = NULL;
 }
 
@@ -188,7 +140,6 @@ void ConsoleObserver::entityViewRequestedError(const QString & error)
     QMutexLocker locker(&entityViewRequestedMutex);
 
     emit communicationError(error);
-    delete entityViewRequestedThread;
     entityViewRequestedThread = NULL;
 }
 
@@ -229,7 +180,6 @@ void ConsoleObserver::annotatedBranchViewRequestedResults(const void *results)
         emit openAnnotatedBranch(annotatedBranch);
     }
 
-    delete annotatedBranchViewRequestedThread;
     annotatedBranchViewRequestedThread = NULL;
 }
 
@@ -238,7 +188,6 @@ void ConsoleObserver::annotatedBranchViewRequestedError(const QString & error)
     QMutexLocker locker(&annotatedBranchViewRequestedMutex);
 
     emit communicationError(error);
-    delete annotatedBranchViewRequestedThread;
     annotatedBranchViewRequestedThread = NULL;
 }
 
@@ -270,7 +219,6 @@ void ConsoleObserver::annotationsChangedResults(const void *results)
     QMutexLocker locker(&annotationsChangedMutex);
     GetEntityAnnotationsThread *t = (GetEntityAnnotationsThread *)annotationsChangedThread;
     emit updateAnnotations(t->getEntityId(), (AnnotationList *)results, t->getUserColorMap());
-    delete annotationsChangedThread;
     annotationsChangedThread = NULL;
 }
 
@@ -278,7 +226,6 @@ void ConsoleObserver::annotationsChangedError(const QString & error)
 {
     QMutexLocker locker(&annotationsChangedMutex);
     emit communicationError(error);
-    delete annotationsChangedThread;
     annotationsChangedThread = NULL;
 }
 
@@ -310,7 +257,6 @@ void ConsoleObserver::loadAnnotationSessionResults(const void *results)
     QMutexLocker locker(&loadAnnotationSessionMutex);
 
     emit openAnnotationSession((AnnotationSession *)results);
-    delete loadAnnotationSessionThread;
     loadAnnotationSessionThread = NULL;
 }
 
@@ -319,7 +265,6 @@ void ConsoleObserver::loadAnnotationSessionError(const QString & error)
     QMutexLocker locker(&loadAnnotationSessionMutex);
 
     emit communicationError(error);
-    delete loadAnnotationSessionThread;
     loadAnnotationSessionThread = NULL;
 }
 

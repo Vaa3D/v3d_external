@@ -823,7 +823,7 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
             &dataFlowModel->getDataColorModel(), SLOT(setChannelHdrRange(int,qreal,qreal)));
 
     // Connect annotation widget to neuron selection
-    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(exactlyOneNeuronSelected(int)),
+    connect(neuronSelector, SIGNAL(neuronSelected(int)),
             ui.annotationFrame, SLOT(selectNeuron(int)));
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(selectionCleared()),
             ui.annotationFrame, SLOT(deselectNeurons()));

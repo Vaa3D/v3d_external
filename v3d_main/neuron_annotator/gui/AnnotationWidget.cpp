@@ -4,6 +4,7 @@
 #include "trees/AnnotatedBranchTreeModel.h"
 #include "trees/EntityTreeItem.h"
 #include "NaMainWindow.h"
+#include "../data_model/NeuronSelectionModel.h"
 #include "../entity_model/Entity.h"
 #include "../entity_model/Ontology.h"
 #include "../entity_model/OntologyAnnotation.h"
@@ -43,6 +44,7 @@ AnnotationWidget::AnnotationWidget(QWidget *parent) :
     selectedEntity(0),
     createAnnotationThread(0),
     removeAnnotationThread(0),
+    selectEntityThread(0),
     mutex(QMutex::Recursive)
 {
     ui->setupUi(this);
@@ -59,9 +61,10 @@ AnnotationWidget::~AnnotationWidget()
     closeAnnotatedBranch();
     if (ui != 0) delete ui;
     if (consoleObserver != 0) delete consoleObserver;
-    consoleObserverService->stopServer(); // will delete itself later
-    createAnnotationThread->disregard(); // will delete itself later
-    removeAnnotationThread->disregard(); // will delete itself later
+    if (consoleObserverService != 0) consoleObserverService->stopServer(); // will delete itself later
+    if (createAnnotationThread != 0) createAnnotationThread->disregard(); // will delete itself later
+    if (removeAnnotationThread != 0) removeAnnotationThread->disregard(); // will delete itself later
+    if (selectEntityThread != 0) selectEntityThread->disregard(); // will delete itself later
 }
 
 void AnnotationWidget::setMainWindow(NaMainWindow *mainWindow)
@@ -288,7 +291,7 @@ void AnnotationWidget::consoleConnect() {
     connect(consoleObserver, SIGNAL(openAnnotationSession(AnnotationSession*)), this, SLOT(openAnnotationSession(AnnotationSession*)));
     connect(consoleObserver, SIGNAL(closeAnnotationSession()), this, SLOT(closeAnnotationSession()));
     connect(consoleObserver, SIGNAL(updateAnnotations(qint64,AnnotationList*,UserColorMap*)), this, SLOT(updateAnnotations(qint64,AnnotationList*,UserColorMap*)));
-    connect(consoleObserver, SIGNAL(selectEntityById(qint64)), this, SLOT(selectEntityById(qint64)));
+    connect(consoleObserver, SIGNAL(selectEntityById(qint64,bool)), this, SLOT(selectEntityById(qint64,bool)));
     connect(consoleObserver, SIGNAL(communicationError(const QString&)), this, SLOT(communicationError(const QString&)));
 
     consoleObserverService = new obs::ConsoleObserverServiceImpl();
@@ -298,8 +301,8 @@ void AnnotationWidget::consoleConnect() {
         if (ui->ontologyTreeView->isVisible()) {
             QString msg = QString("Could not connect to the Console: %1").arg(*consoleObserverService->errorMessage());
             showErrorDialog(msg);
-            showDisconnected();
         }
+        showDisconnected();
         return;
     }
 
@@ -511,7 +514,6 @@ void AnnotationWidget::createAnnotationResults(const void *results)
     QMutexLocker locker(&mutex);
 
     // Succeeded but we can ignore this. The console will fire an annotationsChanged event so that we update the UI.
-    delete createAnnotationThread;
     createAnnotationThread = NULL;
 }
 
@@ -521,7 +523,6 @@ void AnnotationWidget::createAnnotationError(const QString &error)
 
     QString msg = QString("Annotation error: %1").arg(error);
     showErrorDialog(msg);
-    delete createAnnotationThread;
     createAnnotationThread = NULL;
 }
 
@@ -550,7 +551,6 @@ void AnnotationWidget::removeAnnotationResults(const void *results)
     QMutexLocker locker(&mutex);
 
     // Succeeded but we can ignore this. The console will fire an annotationsChanged event so that we update the UI.
-    delete removeAnnotationThread;
     removeAnnotationThread = NULL;
 }
 
@@ -560,7 +560,6 @@ void AnnotationWidget::removeAnnotationError(const QString &error)
 
     QString msg = QString("Annotation error: %1").arg(error);
     showErrorDialog(msg);
-    delete removeAnnotationThread;
     removeAnnotationThread = NULL;
 }
 
@@ -578,17 +577,16 @@ void AnnotationWidget::annotatedBranchTreeClicked(const QModelIndex & index)
 
 void AnnotationWidget::entityWasSelected(const Entity *entity)
 {
+    if (entity==0) return;
     int neuronNum = getNeuronNumber(entity);
     if (neuronNum >= 0) {
-        if (*entity->entityType == "Tif 2D Image") // TODO: remove this case in the future
+        qDebug() << "AnnotationWidget::neuronSelected"<<neuronNum;
+        if (*entity->entityType == "Tif 2D Image" || *entity->entityType == "Neuron Fragment")
         {
-            // This case is deprecated
-            emit neuronSelected(neuronNum);
-            return;
-        }
-        else if (*entity->entityType == "Neuron Fragment")
-        {
-            emit neuronSelected(neuronNum);
+            naMainWindow->getDataFlowModel()->getNeuronSelectionModel().selectExactlyOneNeuron(neuronNum);
+
+//            emit neuronSelected(neuronNum);
+            qDebug() << "AnnotationWidget::emitted neuronSelected"<<neuronNum;
             return;
         }
     }
@@ -597,24 +595,64 @@ void AnnotationWidget::entityWasSelected(const Entity *entity)
 
 void AnnotationWidget::selectEntity(const Entity *entity)
 {
-    QMutexLocker locker(&mutex);
-    qDebug() << "AnnotationWidget::selectEntity"<<(entity==0?"None":*entity->name);
+    selectEntity(entity, false);
+}
 
-    if ((selectedEntity==0 && entity==0) || (selectedEntity!=0 && entity!=0 && *selectedEntity->id==*entity->id)) return;
+void AnnotationWidget::selectEntity(const Entity *entity, const bool external)
+{
+    QMutexLocker locker(&mutex);
+    qDebug() << "AnnotationWidget::selectEntity"<<(entity==0?"None":*entity->name)<<"external?"<<external;
+
+    if ((selectedEntity==entity) || (selectedEntity!=0 && entity!=0 && *selectedEntity->id==*entity->id)) return;
     selectedEntity = entity;
     ui->annotatedBranchTreeView->clearSelection();
     if (entity!=0) ui->annotatedBranchTreeView->selectEntity(*entity->id);
     emit entitySelected(selectedEntity);
+
+    if (!external)
+    {
+        if (entity!=0)
+        {
+            qDebug() << "AnnotationWidget::selectEntity (notifying console)"<<*entity->id;
+            selectEntityThread = new SelectEntityThread(*entity->id);
+            selectEntityThread->start(QThread::NormalPriority);
+        }
+        else
+        {
+            // TODO: deselectEntity event?
+        }
+    }
 }
 
-void AnnotationWidget::selectEntityById(const qint64 & entityId)
+void AnnotationWidget::selectEntityResults(const void *results)
 {
     QMutexLocker locker(&mutex);
-    qDebug() << "AnnotationWidget::selectEntityById"<<entityId;
+
+    // Succeeded but we can ignore this.
+    selectEntityThread = NULL;
+}
+
+void AnnotationWidget::selectEntityError(const QString &error)
+{
+    QMutexLocker locker(&mutex);
+
+    QString msg = QString("Entity selection error: %1").arg(error);
+    showErrorDialog(msg);
+    selectEntityThread = NULL;
+}
+void AnnotationWidget::selectEntityById(const qint64 & entityId)
+{
+    selectEntityById(entityId, false);
+}
+
+void AnnotationWidget::selectEntityById(const qint64 & entityId, const bool external)
+{
+    QMutexLocker locker(&mutex);
+    qDebug() << "AnnotationWidget::selectEntityById"<<entityId<<"external?"<<external;
 
     if (annotatedBranch==0) return;
     Entity *entity = annotatedBranch->getEntityById(entityId);
-    if (entity!=0) selectEntity(entity);
+    if (entity!=0) selectEntity(entity, external);
 }
 
 void AnnotationWidget::selectNeuron(int index)

@@ -31,7 +31,7 @@ signals:
     void updateAnnotations(qint64 entityId, AnnotationList *annotations, UserColorMap *userColorMap);
     void openAnnotationSession(AnnotationSession *session);
     void closeAnnotationSession();
-    void selectEntityById(const qint64 & entityId);
+    void selectEntityById(const qint64 & entityId, const bool external);
     void communicationError(const QString & errorMessage);
 
 public slots:
@@ -51,8 +51,6 @@ private slots:
     void annotatedBranchViewRequested(qint64 entityId);
     void loadOntologyResults(const void *results);
     void loadOntologyError(const QString & error);
-    void entitySelectedResults(const void *results);
-    void entitySelectedError(const QString & error);
     void entityViewRequestedResults(const void *results);
     void entityViewRequestedError(const QString & error);
     void annotatedBranchViewRequestedResults(const void *results);
@@ -67,7 +65,6 @@ private:
 
     // Internal worker threads for loading data
     DataThread *loadOntologyThread;
-    DataThread *entitySelectedThread;
     DataThread *entityViewRequestedThread;
     DataThread *annotatedBranchViewRequestedThread;
     DataThread *annotationsChangedThread;
@@ -75,7 +72,6 @@ private:
 
     // Synchronize access to the worker threads
     QMutex loadOntologyMutex;
-    QMutex entitySelectedMutex;
     QMutex entityViewRequestedMutex;
     QMutex annotatedBranchViewRequestedMutex;
     QMutex annotationsChangedMutex;

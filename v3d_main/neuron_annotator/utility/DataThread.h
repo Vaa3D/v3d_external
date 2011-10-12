@@ -153,5 +153,22 @@ private:
 };
 
 
+// ===========================================================
+// Select Entity
+// ===========================================================
+
+class SelectEntityThread : public DataThread
+{
+    Q_OBJECT
+
+public:
+    explicit SelectEntityThread(qint64 entityId, QObject *parent = 0);
+    void fetchData();
+
+private:
+    qint64 entityId;
+};
+
+
 
 #endif // DATATHREAD_H

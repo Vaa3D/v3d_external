@@ -9,7 +9,6 @@ compiling, linking, and/or using OpenSSL is allowed.
 */
 
 #include "obsConsoleObserverService.h"
-#include <QtCore>
 
 namespace obs {
 
@@ -103,12 +102,11 @@ const SOAP_ENV__Header *ConsoleObserverService::soap_header()
 int ConsoleObserverService::run(int port)
 {	if (soap_valid_socket(bind(NULL, port, 100)))
 	{	for (;;)
-                {
-                        if (!soap_valid_socket(accept()))
-                                return this->error;
-                        (void)serve();
+		{	if (!soap_valid_socket(accept()))
+				return this->error;
+			(void)serve();
 			soap_destroy(this);
-                        soap_end(this);
+			soap_end(this);
 		}
 	}
 	else
