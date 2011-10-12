@@ -21,6 +21,7 @@ MipFragmentData::~MipFragmentData()
 /* slot */
 void MipFragmentData::updateFromVolumeData()
 {
+	// qDebug() << "MipFragmentData::updateFromVolumeData()" << __FILE__ << __LINE__;
     QTime stopwatch;
     stopwatch.start();
 
@@ -38,12 +39,15 @@ void MipFragmentData::updateFromVolumeData()
         const Image4DProxy<My4DImage>& referenceProxy = volumeReader.getReferenceImageProxy();
         const Image4DProxy<My4DImage>& maskProxy = volumeReader.getNeuronMaskProxy();
 
-        // clear max/min cache
-        fragmentMaximumIntensities.assign(volumeReader.getNumberOfNeurons() + 2, 0);
-        fragmentMinimumIntensities.assign(volumeReader.getNumberOfNeurons() + 2, 0);
-
         // Allocate mip images
         mipWriter.clearImageData();
+
+		// clear max/min cache - AFTER clearImageData();
+        fragmentMaximumIntensities.assign(volumeReader.getNumberOfNeurons() + 2, 0);
+        fragmentMinimumIntensities.assign(volumeReader.getNumberOfNeurons() + 2, 0);
+		// qDebug() << "fragmentMaximumIntensities.size() =" << fragmentMaximumIntensities.size();
+		// qDebug() << "fragmentMinimumIntensities.size() =" << fragmentMinimumIntensities.size();
+
         // allocate channel data
         fragmentData = new My4DImage();
         fragmentData->loadImage(
@@ -88,7 +92,10 @@ void MipFragmentData::updateFromVolumeData()
         int imageZ = originalProxy.sz;
         int imageC = originalProxy.sc;
         // Reference/nc82 channel appears after all of the neuron/fragments
-        int refIndex = volumeReader.getNumberOfNeurons() + 1;
+        const int refIndex = volumeReader.getNumberOfNeurons() + 1;
+		// qDebug() << "refIndex =" << refIndex;
+		// qDebug() << "fragmentMaximumIntensities.size() =" << fragmentMaximumIntensities.size();
+		// qDebug() << "fragmentMinimumIntensities.size() =" << fragmentMinimumIntensities.size();
         for (int z = 0; z < imageZ; z++)
         {
             for (int y = 0; y < imageY; y++)

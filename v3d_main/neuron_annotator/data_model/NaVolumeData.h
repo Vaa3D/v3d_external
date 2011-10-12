@@ -81,7 +81,11 @@ public:
         const Image4DProxy<My4DImage>& getOriginalImageProxy() const;
         const Image4DProxy<My4DImage>& getReferenceImageProxy() const;
         ImagePixelType getOriginalDatatype() const {return m_data->originalImageStack->getDatatype();}
-        int getNumberOfNeurons() const {return m_data->neuronMaskStack->getChannalMaxIntensity(0);}
+        int getNumberOfNeurons() const {
+			int numNeurons = m_data->neuronMaskStack->getChannalMaxIntensity(0);
+			// qDebug() << "Number of neurons =" << numNeurons;
+			return numNeurons;
+		}
         const QList<LocationSimple>& getLandmarks() const {return m_data->originalImageStack->listLandmarks;}
 
     private:
