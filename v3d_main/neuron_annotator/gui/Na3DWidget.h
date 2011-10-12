@@ -54,6 +54,7 @@ signals:
     void progressAborted(QString);
     void landmarksChanged();
     void alphaBlendingChanged(bool);
+    void quadStereoSupported(bool);
 
 public slots:
     void setAlphaBlending(bool);

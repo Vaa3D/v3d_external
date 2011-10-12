@@ -108,6 +108,7 @@ public slots:
     void setChannelTwoVisibility(bool);
     void onColorModelChanged();
     void onHdrChannelChanged(NaZStackWidget::Color);
+    void supportQuadStereo(bool b);
 
 protected slots:
     void on3DViewerRotationChanged(const Rotation3D& rot);

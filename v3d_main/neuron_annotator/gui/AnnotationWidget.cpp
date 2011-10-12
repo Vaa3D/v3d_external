@@ -206,7 +206,7 @@ void AnnotationWidget::openAnnotatedBranch(AnnotatedBranch *annotatedBranch, boo
     }
 
     ui->annotatedBranchTreeView->resizeColumnToContents(0);
-    //if (openStack) naMainWindow->openMulticolorImageStack(annotatedBranch->getFilePath());
+    if (openStack) naMainWindow->openMulticolorImageStack(annotatedBranch->getFilePath());
 
     // Reselect the entity that was previously selected
     if (reload && selectedEntityId >= 0)

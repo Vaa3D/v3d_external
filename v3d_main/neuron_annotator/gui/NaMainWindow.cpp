@@ -310,6 +310,17 @@ void NaMainWindow::initializeStereo3DOptions()
             ui.v3dr_glwidget, SLOT(setStereoAnaglyphGreenMagenta(bool)));
     connect(ui.actionRow_Interleaved_Zalman, SIGNAL(toggled(bool)),
             ui.v3dr_glwidget, SLOT(setStereoRowInterleaved(bool)));
+
+    connect(ui.v3dr_glwidget, SIGNAL(quadStereoSupported(bool)),
+            this, SLOT(supportQuadStereo(bool)));
+}
+
+/* slot */
+void NaMainWindow::supportQuadStereo(bool b)
+{
+    ui.actionQuadro_120_Hz->setEnabled(b);
+    if ( (!b) && ui.actionQuadro_120_Hz->isChecked() )
+        ui.actionMono_Off->setChecked(true);
 }
 
 void NaMainWindow::connectContextMenus(const NeuronSelectionModel& neuronSelectionModel)

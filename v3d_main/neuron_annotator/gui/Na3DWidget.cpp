@@ -37,6 +37,7 @@ Na3DWidget::Na3DWidget(QWidget* parent)
         bHasQuadStereo = false;
     if (! context()->format().doubleBuffer())
         bHasQuadStereo = false;
+    emit quadStereoSupported(bHasQuadStereo);
 
     rotateCursor = new QCursor(QPixmap(":/pic/rotate_icon.png"), 5, 5);
     // setMouseTracking(true); // for hover action in mouseMoveEvent()
@@ -86,6 +87,7 @@ void Na3DWidget::setStereoQuadBuffered(bool b)
 {
     if (!b) return;
     if (!bHasQuadStereo) {
+        emit quadStereoSupported(bHasQuadStereo);
         qDebug() << "Error: Quad buffered stereo is not supported on this computer.";
         return;
     }

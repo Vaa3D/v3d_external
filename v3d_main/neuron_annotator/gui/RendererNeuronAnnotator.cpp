@@ -132,10 +132,10 @@ void RendererNeuronAnnotator::loadShader()
             #endif
 
             qDebug("+++++++++ shader for Volume texture2D");
-			QString texShaderName(":/neuron_annotator/resources/tex_fragment_cmb.txt");
-			bool bUseClassicV3dShader = false;
-			if (bUseClassicV3dShader)
-				texShaderName = ":/shader/tex_fragment.txt";
+            QString texShaderName(":/neuron_annotator/resources/tex_fragment_cmb.txt");
+            bool bUseClassicV3dShader = false;
+            if (bUseClassicV3dShader)
+                 texShaderName = ":/shader/tex_fragment.txt";
             linkGLShader(SMgr, shaderTex2D,
                             0, //Q_CSTR(resourceTextFile(":/shader/color_vertex.txt")),
                             Q_CSTR(QString("#undef TEX3D \n") + deftexlod + resourceTextFile(texShaderName)));
