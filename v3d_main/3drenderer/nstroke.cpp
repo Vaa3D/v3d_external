@@ -167,6 +167,7 @@ void Renderer_gl1::solveCurveRefineLast()
 
      // We decide whether to extend or refine curve based on distance and angle of
      // part curve. in_pt0 is an inside point on loc_vec0 used to decide loc_vec0 direction.
+     // in_pti is an inside point on loc_veci used to decide loc_veci direction.
      float vdot;
      XYZ v0, vi;
 
@@ -224,11 +225,7 @@ void Renderer_gl1::solveCurveRefineLast()
           v0 = in_pt0-end_pos0;
           vi = in_pti-end_posi;
           vdot = dot(v0,vi);
-     }// else
-     // {
-     //      // parallel to the primary curve, not actually, but here just for avoiding connecting
-     //      vdot= 1;
-     // }
+     }
 
      qDebug("vdot is: %f, distf is: %f",vdot, distf);
      // if vdot<0, the angle should be 90~270.
@@ -251,7 +248,6 @@ void Renderer_gl1::solveCurveRefineLast()
           if ( (end_pos0==pos0b)&&(end_posi==posia) )
           {
                double type = primary_seg.row.at(N0-1).type;
-               //double rr = primary_seg.row.at(N0-1).r;
                double nnp = primary_seg.row.at(N0-1).n;
 
                for(int j=0; j<NI; j++)
@@ -278,7 +274,6 @@ void Renderer_gl1::solveCurveRefineLast()
           else if ( (end_pos0==pos0b)&&(end_posi==posib) )
           {
                double type = primary_seg.row.at(N0-1).type;
-               //double rr = primary_seg.row.at(N0-1).r;
                double nnp = primary_seg.row.at(N0-1).n;
                for(int j=0; j<NI; j++)
                {
@@ -303,7 +298,6 @@ void Renderer_gl1::solveCurveRefineLast()
           else if ( (end_pos0==pos0a)&&(end_posi==posia) )
           {
                double type = primary_seg.row.at(0).type;
-               //double rr = primary_seg.row.at(0).r;
 
                for(int j=0; j<NI; j++)
                {
@@ -330,7 +324,6 @@ void Renderer_gl1::solveCurveRefineLast()
           else if ( (end_pos0==pos0a)&&(end_posi==posib) )
           {
                double type = primary_seg.row.at(0).type;
-               //double rr = primary_seg.row.at(0).r;
 
                for(int j=0; j<NI; j++)
                {
@@ -368,27 +361,29 @@ void Renderer_gl1::solveCurveRefineLast()
           }
 
           // decide radius of each point
-          int chno = checkCurChannel();
-          if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
-          CurveTracePara trace_para;
+          if (V3dApplication::getMainWindow()->global_setting.b_3dcurve_autowidth)
           {
-               trace_para.channo = (chno<0)?0:chno; if (trace_para.channo>=curImg->getCDim())
-                                                         trace_para.channo=curImg->getCDim()-1;
-               trace_para.landmark_id_start = -1;
-               trace_para.landmark_id_end = -1;
-               trace_para.sp_num_end_nodes = 2;
-               trace_para.nloops = 100; //100130 change from 200 to 100
-               trace_para.b_deformcurve = true;
-               trace_para.sp_smoothing_win_sz = 2;
-          }
+               int chno = checkCurChannel();
+               if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
+               CurveTracePara trace_para;
+               {
+                    trace_para.channo = (chno<0)?0:chno;
+                    if (trace_para.channo>=curImg->getCDim())
+                         trace_para.channo=curImg->getCDim()-1;
+                    trace_para.landmark_id_start = -1;
+                    trace_para.landmark_id_end = -1;
+                    trace_para.sp_num_end_nodes = 2;
+                    trace_para.nloops = 100; //100130 change from 200 to 100
+                    trace_para.b_deformcurve = true;
+                    trace_para.sp_smoothing_win_sz = 2;
+               }
 
-          if (chno >=0) //100115, 100130: for solveCurveViews.
-          {
-               if (V3dApplication::getMainWindow()->global_setting.b_3dcurve_autowidth)
-                    curImg->proj_trace_compute_radius_of_last_traced_neuron(trace_para, last_seg_id,
-                         last_seg_id, curImg->trace_z_thickness);
-          }
-
+               if (chno >=0)
+               {
+                    curImg->proj_trace_compute_radius_of_last_traced_neuron(trace_para,
+                         last_seg_id, last_seg_id, curImg->trace_z_thickness);
+               }
+          }// end update radius
      }
      // C. begin to refine the primary (first) curve using the second curve
      //else
@@ -426,6 +421,25 @@ void Renderer_gl1::solveCurveRefineLast()
                ka = kb;
                kb = temp;
           }
+
+          // save the original position of refined points plus 2*wsize points.
+          // used for connection checking of other segs to refined points.
+          vector <XYZ> old_refined_loc;
+          old_refined_loc.clear();
+          int wsize =2;
+          // make a larger window for smoothing
+          int kaa, kbb;
+          kaa = ((ka-wsize)<0)? 0:(ka-wsize); // considering wsize
+          kbb = ((kb+wsize)>=N0)? (N0-1):(kb+wsize);
+
+          for(int i=kaa; i<=kbb; i++)
+          {
+               XYZ pt;
+               pt.x=loc_vec0.at(i).x;
+               pt.y=loc_vec0.at(i).y;
+               pt.z=loc_vec0.at(i).z;
+               old_refined_loc.push_back(pt);
+          } // end saving old refined points
 
           // Now do curve refinement between ka and kb on curve0
           for (int k=ka; k<=kb; k++)
@@ -503,10 +517,7 @@ void Renderer_gl1::solveCurveRefineLast()
           vector <XYZ> loc_vecsub;
           loc_vecsub.clear();
           // copy data between ka-kb in loc_vec0 to loc_vecsub
-          // make a larger window for smoothing
-          int kaa, kbb;
-          kaa = ((ka-2)<0)? 0:(ka-2);
-          kbb = ((kb+2)>=N0)? (N0-1):(kb+2);
+          // make a larger window (ka,kb+wsize) for smoothing
           for(int i=kaa; i<=kbb; i++)
           {
                int ii=i-kaa;
@@ -531,26 +542,75 @@ void Renderer_gl1::solveCurveRefineLast()
                primary_seg.row.at(k).data[4] = loc_vec0.at(k).z;
           }
 
-          // update radius of each point
-          int chno = checkCurChannel();
-          if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
-          CurveTracePara trace_para;
+          // Update endpoints of linked segments
+          V3DLONG nsegs = curImg->tracedNeuron.nsegs();
+          for(V3DLONG j=0; j<nsegs; j++)
           {
-               trace_para.channo = (chno<0)?0:chno; if (trace_para.channo>=curImg->getCDim())
-                                                         trace_para.channo=curImg->getCDim()-1;
-               trace_para.landmark_id_start = -1;
-               trace_para.landmark_id_end = -1;
-               trace_para.sp_num_end_nodes = 2;
-               trace_para.nloops = 100;
-               trace_para.b_deformcurve = true;
-               trace_para.sp_smoothing_win_sz = 2;
-          }
+               if(j!=last_seg_id)
+               {
+                    V_NeuronSWC& segj = curImg->tracedNeuron.seg.at(j);
+                    // get two end points of segj
+                    XYZ pt1, pt2;
+                    int nn = segj.row.size();
+                    pt1.x=segj.row.at(0).x;
+                    pt1.y=segj.row.at(0).y;
+                    pt1.z=segj.row.at(0).z;
 
-          if (chno >=0) //100115, 100130: for solveCurveViews.
+                    pt2.x=segj.row.at(nn-1).x;
+                    pt2.y=segj.row.at(nn-1).y;
+                    pt2.z=segj.row.at(nn-1).z;
+                    // check distance between pt1/pt2 and old refined points
+                    // if dist== 0, then update to connect
+                    for(int i=kaa; i<=kbb; i++)
+                    {
+                         XYZ pt;
+                         int ii = i-kaa;
+                         pt=old_refined_loc.at(ii);
+                         double dist;
+                         dist = dist_L2(pt1, pt);
+                         if(dist==0.0) //for pt1
+                         {
+                              // update loc of segj's end points to loc of refined pt
+                              segj.row.at(0).data[2]= primary_seg.row.at(i).data[2];
+                              segj.row.at(0).data[3]= primary_seg.row.at(i).data[3];
+                              segj.row.at(0).data[4]= primary_seg.row.at(i).data[4];
+                         }
+                         dist = dist_L2(pt2, pt);
+                         if(dist==0.0) //for pt2
+                         {
+                              // update loc of segj's end points to loc of refined pt
+                              segj.row.at(nn-1).data[2]= primary_seg.row.at(i).data[2];
+                              segj.row.at(nn-1).data[3]= primary_seg.row.at(i).data[3];
+                              segj.row.at(nn-1).data[4]= primary_seg.row.at(i).data[4];
+                         }
+                    }
+
+               }
+          } // end update linking for refined points
+
+          // update radius of each point
+          if (V3dApplication::getMainWindow()->global_setting.b_3dcurve_autowidth)
           {
-               if (V3dApplication::getMainWindow()->global_setting.b_3dcurve_autowidth)
-                    curImg->proj_trace_compute_radius_of_last_traced_neuron(trace_para, last_seg_id, last_seg_id,
-                         curImg->trace_z_thickness);
+               int chno = checkCurChannel();
+               if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
+               CurveTracePara trace_para;
+               {
+                    trace_para.channo = (chno<0)?0:chno;
+                    if (trace_para.channo>=curImg->getCDim())
+                         trace_para.channo=curImg->getCDim()-1;
+                    trace_para.landmark_id_start = -1;
+                    trace_para.landmark_id_end = -1;
+                    trace_para.sp_num_end_nodes = 2;
+                    trace_para.nloops = 100;
+                    trace_para.b_deformcurve = true;
+                    trace_para.sp_smoothing_win_sz = 2;
+               }
+
+               if (chno >=0)
+               {
+                    curImg->proj_trace_compute_radius_of_last_traced_neuron(trace_para,
+                         last_seg_id, last_seg_id, curImg->trace_z_thickness);
+               }
           }//end updating radius
 
      }// end of refine curve

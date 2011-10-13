@@ -967,7 +967,7 @@ void V3dR_GLWidget::handleKeyPressEvent(QKeyEvent * e)  //090428 RZC: make publi
               break;
 
           case Qt::Key_W:
-		    if (IS_CTRL_MODIFIER)
+		    if (IS_ALT_MODIFIER)
 		    {
                    setDragWinSize(+2);
               }
@@ -1103,7 +1103,7 @@ void V3dR_GLWidget::setRenderMode_Mip(bool b, bool useMin)
 		if (renderer) renderer->setZCut0(_zCut0);
 		POST_updateGL();
 	}
-	
+
 	if (!useMin)
 		emit changeDispType_maxip(b);
 	else
