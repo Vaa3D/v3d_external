@@ -1075,6 +1075,7 @@ public:
         if (eyeGeom == RIGHT) angle = -angle; // right eye is opposite direction
         glRotated(angle, 0, 1, 0); // put rotation in modelview
         glMultMatrixd(viewMat); // end result is premultiply by Rotation
+        glDrawBuffer(GL_BACK); // for non-quad modes
     }
 
     virtual ~StereoEyeView()
@@ -1130,7 +1131,8 @@ public:
     }
 
     ~QuadBufferView()
-    {}
+    {
+    }
 };
 
 /* virtual */

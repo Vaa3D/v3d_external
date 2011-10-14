@@ -28,10 +28,10 @@ Na3DWidget::Na3DWidget(QWidget* parent)
     // This method for eliminating tearing artifacts works but is supposedly obsolete;
     // http://stackoverflow.com/questions/5174428/how-to-change-qglformat-for-an-existing-qglwidget-at-runtime
     // valgrind has some complaints about the context
-    // QGLFormat glFormat(context()->format());
-    // glFormat.setDoubleBuffer(true); // attempt to reduce tearing on Mac
-    // glFormat.setStereo(true);
-    // setFormat(glFormat);
+    QGLFormat glFormat(context()->format());
+    glFormat.setDoubleBuffer(true); // attempt to reduce tearing on Mac
+    glFormat.setStereo(true);
+    setFormat(glFormat);
     bHasQuadStereo = true;
     if (! context()->format().stereo())
         bHasQuadStereo = false;
