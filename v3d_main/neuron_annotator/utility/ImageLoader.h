@@ -57,7 +57,7 @@ private:
 
 };
 
-class ImageLoaderDecompressor : public QObject
+class ImageLoaderDecompressor : public QThread
 {
     Q_OBJECT
 

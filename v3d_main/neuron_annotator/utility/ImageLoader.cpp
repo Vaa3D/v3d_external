@@ -50,6 +50,7 @@ bool ImageLoaderDecompressor::isProcessing() {
 // points to the first invalid data position, i.e., all previous positions starting with compressionBuffer
 // are valid.
 void ImageLoaderDecompressor::updateCompressionBuffer(unsigned char * updatedCompressionBuffer) {
+    printf("d1\n");
     if (processing) {
         qDebug() << "ImageLoaderDecompressor::updateCompressionBuffer : unexpectedly found processing state true at start";
         decompressionError=true;
@@ -77,19 +78,22 @@ void ImageLoaderDecompressor::updateCompressionBuffer(unsigned char * updatedCom
             }
         } else if (lav<128) {
             // Difference section. The number of difference entries is equal to lav-32, so that
-            // if lav==33, the minimum, there will be 1 difference entry.
-            if ( lookAhead+lav-32 < updatedCompressionBuffer ) {
+            // if lav==33, the minimum, there will be 1 difference entry. For a given number of
+            // difference entries, there are a factor of 4 fewer compressed entries. With the
+            // equation below, lav-33 will be 4 when lav==37, which is 5 entries, requiring 2 bytes, etc.
+            unsigned char compressedDiffEntries=(lav-33)/4 + 1;
+            if ( lookAhead+compressedDiffEntries < updatedCompressionBuffer ) {
                 // We can process this section, so advance to next position to evaluate
-                lookAhead += (lav-31);
+                lookAhead += (compressedDiffEntries+1);
             } else {
                 break; // leave in current max position
             }
         } else {
             // Repeat section. Number of repeats is equal to lav-127, but the very first
-            // value is the value to be repeated, so the number of implicated positions
-            // is lav-126
-            if ( lookAhead+lav-126 < updatedCompressionBuffer ) {
-                lookAhead += (lav-125);
+            // value is the value to be repeated. The total number of compressed positions
+            // is always == 2
+            if ( lookAhead+1 < updatedCompressionBuffer ) {
+                lookAhead += 2;
             } else {
                 break; // leave in current max position
             }
@@ -97,10 +101,18 @@ void ImageLoaderDecompressor::updateCompressionBuffer(unsigned char * updatedCom
     }
     // At this point, lookAhead is in an invalid position, which if equal to updatedCompressionBuffer
     // means the entire compressed update can be processed.
-    V3DLONG dlength=imageLoader->decompressPBD(compressionPosition, decompressionPosition, (lookAhead-compressionPosition));
+    V3DLONG compressionLength=lookAhead-compressionPosition;
+    if (decompressionPosition==0) {
+        // Needs to be initialized
+        decompressionPosition=decompressionBuffer;
+    }
+    //qDebug() << "updateCompressionBuffer calling decompressPBD compressionPosition=" << compressionPosition << " decompressionPosition=" << decompressionPosition
+    //        << " size=" << compressionLength << " previousTotalDecompSize=" << getDecompressionSize() << " maxDecompSize=" << maxDecompressionSize;
+    V3DLONG dlength=imageLoader->decompressPBD(compressionPosition, decompressionPosition, compressionLength);
     compressionPosition=lookAhead;
     decompressionPosition+=dlength;
     processing=false;
+    printf("d2\n");
 }
 
 
@@ -627,6 +639,12 @@ int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image) {
                     QString errorMessage = QString("This program only reads [%1] units.").arg(tmpn);
                     return exitWithError(errorMessage);
             }
+
+            if (b_swap && (unitSize==2 || unitSize==4)) {
+                QString errorMessage = "b_swap true and unitSize > 1 - this is not implemented in current code";
+                return exitWithError(errorMessage);
+            }
+
             if (b_swap)
             {
                     for (i=0;i<4;i++)
@@ -665,7 +683,8 @@ int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image) {
 
             V3DLONG remainingBytes = compressedBytes;
             //V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2);
-            V3DLONG readStepSizeBytes = V3DLONG(1024)*5000;
+            V3DLONG readStepSizeBytes = V3DLONG(1024)*10000;
+            V3DLONG totalReadBytes = 0;
             V3DLONG cntBuf = 0;
 
             // Transfer data to My4DImage
@@ -680,21 +699,25 @@ int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image) {
                     V3DLONG curReadBytes = (remainingBytes<readStepSizeBytes) ? remainingBytes : readStepSizeBytes;
                     V3DLONG curReadUnits = curReadBytes/unitSize;
                     nread = fread(compressedData+cntBuf*readStepSizeBytes, unitSize, curReadUnits, fid);
+                    totalReadBytes+=nread;
                     if (nread!=curReadUnits)
                     {
                         QString errorMessage = QString("Something wrong in file reading. The program reads [%1 data points] but the file says there should be [%2 data points].")
                                                .arg(nread).arg(totalUnit);
                             return exitWithError(errorMessage);
                     }
-                    remainingBytes -= readStepSizeBytes;
+                    remainingBytes -= nread;
                     cntBuf++;
                     if (decompressor.hasError()) {
                         QString errorMessage = QString("Error with decompressor - curReadBytes=%1  remainingBytes=%2").arg(curReadBytes).arg(remainingBytes);
                         return exitWithError(errorMessage);
                     }
-                    updateCompressionBuffer(compressedData+cntBuf*readStepSizeBytes);
-                    printf("Bytes remaining=%d\n", remainingBytes);
+                    printf("r1\n");
+                    updateCompressionBuffer(compressedData+totalReadBytes);
+                    printf("r2\n");
             }
+            qDebug() << "Loading total time elapsed is " << stopwatch.elapsed() / 1000.0 << " seconds";
+            stopwatch.restart();
             const int MAX_CHECKS_PER_DECOMPRESSION=5000;
             int checks=0;
             while( (!decompressor.getDecompressionSize()==decompressedBytes) || decompressor.isProcessing() ) {
@@ -709,42 +732,7 @@ int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image) {
                 checks++;
             }
 
-            // swap the data bytes if necessary
-
-            if (b_swap==1)
-            {
-                    if (unitSize==2)
-                    {
-                            for (i=0;i<totalUnit; i++)
-                            {
-                                    swap2bytes((void *)(compressedData+i*unitSize));
-                            }
-                    }
-                    else if (unitSize==4)
-                    {
-                            for (i=0;i<totalUnit; i++)
-                            {
-                                    swap4bytes((void *)(compressedData+i*unitSize));
-                            }
-                    }
-            }
-
-            qDebug() << "Loading total time elapsed is " << stopwatch.elapsed() / 1000.0 << " seconds";
-            stopwatch.restart();
-
-
-
-            // Decompress data
-            V3DLONG dp = 0;
-            dp=decompressPBD(compressedData, imageData, compressedBytes);
-
-            if (dp!=decompressedBytes) {
-                QString errorMessage = QString("Error - expected decompressed byte count=%1 but only found %2").arg(decompressedBytes).arg(dp);
-                return exitWithError(errorMessage);
-            }
-
-            qDebug() << "Decompression total time elapsed is " << stopwatch.elapsed() / 1000.0 << " seconds";
-            stopwatch.restart();
+            qDebug() << "Extra time for decompression is " << stopwatch.elapsed() / 1000.0 << " seconds";
 
             // Success - can delete compressedData
             delete [] compressedData; compressedData=0;
@@ -783,6 +771,7 @@ V3DLONG ImageLoader::decompressPBD(unsigned char * sourceData, unsigned char * t
     unsigned char * toFill=0;
     unsigned char sourceChar=0;
     while(cp<sourceLength) {
+
         value=sourceData[cp];
         if (value<33) {
             // Literal 0-32
@@ -831,8 +820,6 @@ V3DLONG ImageLoader::decompressPBD(unsigned char * sourceData, unsigned char * t
             // Repeat 128-255
             unsigned char repeatCount=value-127;
             unsigned char repeatValue=sourceData[++cp];
-            //printf("Unpacking repeat cp=%ld  repeatCount=%d   repeatValue=%d  dp=%ld\n", cp, repeatCount, repeatValue, dp);
-            //fflush(stdout);
             for (int j=0;j<repeatCount;j++) {
                 targetData[dp++]=repeatValue;
             }
