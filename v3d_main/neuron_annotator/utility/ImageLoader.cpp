@@ -15,7 +15,7 @@ public:
     }
 };
 
-ImageLoaderDecompressor::ImageLoaderDecompressor(ImageLoader * imageLoader, unsigned char *compressionBuffer, unsigned char *decompressionBuffer, long maxDecompressionSize)
+ImageLoaderDecompressor::ImageLoaderDecompressor(ImageLoader * imageLoader, unsigned char *compressionBuffer, unsigned char *decompressionBuffer, V3DLONG maxDecompressionSize)
 {
     this->imageLoader=imageLoader;
     this->compressionBuffer=compressionBuffer;
