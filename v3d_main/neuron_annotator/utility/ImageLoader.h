@@ -41,50 +41,27 @@ public:
 
     V3DLONG decompressPBD(unsigned char * sourceData, unsigned char * targetData, V3DLONG sourceLength);
 
-signals:
-    void updateCompressionBuffer(unsigned char * updatedCompressionBuffer);
+//signals:
+//    void updateCompressionBuffer(unsigned char * updatedCompressionBuffer);
 
 
 private:
     QString inputFilepath;
     My4DImage * image;
-    unsigned char * compressedData;
     FILE * fid;
     char * keyread;
 
     V3DLONG compressPBD(unsigned char * imgRe, unsigned char * preBuffer, V3DLONG bufferLength, V3DLONG spaceLeft);
     int exitWithError(QString errorMessage);
-
-};
-
-class ImageLoaderDecompressor : public QThread
-{
-    Q_OBJECT
-
-public:
-    explicit ImageLoaderDecompressor(
-            ImageLoader * imageLoader,
-            unsigned char * compressionBuffer,
-            unsigned char * decompressionBuffer,
-            V3DLONG maxDecompressionSize);
-
-    bool hasError();
-    V3DLONG getDecompressionSize();
-    bool isProcessing();
-
-public slots:
     void updateCompressionBuffer(unsigned char * updatedCompressionBuffer);
 
-private:
-    ImageLoader * imageLoader;
     unsigned char * compressionBuffer;
     unsigned char * decompressionBuffer;
     V3DLONG maxDecompressionSize;
-    bool decompressionError;
-    bool processing;
-
     unsigned char * compressionPosition;
     unsigned char * decompressionPosition;
+
+    QFuture<void> * decompressionThread;
 
 };
 
