@@ -81,24 +81,24 @@ bool ImageLoader::execute() {
         image=loadImage(inputFilepath);
         qDebug() << "Loading total time is " << stopwatch.elapsed() / 1000.0 << " seconds";
 
-        QString filePrefix=getFilePrefix(inputFilepath);
-        QString saveFilepath=filePrefix.append(".v3dpbd");
-        V3DLONG sz[4];
-        sz[0] = image->getXDim();
-        sz[1] = image->getYDim();
-        sz[2] = image->getZDim();
-        sz[3] = image->getCDim();
-        unsigned char* data = image->getRawData();
-        saveStack2RawPBD(saveFilepath.toAscii().data(), data, sz, image->getDatatype());
+//        QString filePrefix=getFilePrefix(inputFilepath);
+//        QString saveFilepath=filePrefix.append(".v3dpbd");
+//        V3DLONG sz[4];
+//        sz[0] = image->getXDim();
+//        sz[1] = image->getYDim();
+//        sz[2] = image->getZDim();
+//        sz[3] = image->getCDim();
+//        unsigned char* data = image->getRawData();
+//        saveStack2RawPBD(saveFilepath.toAscii().data(), data, sz, image->getDatatype());
     }
 
-    if (!inputFilepath.endsWith(".v3draw")) {
-        QString filePrefix=getFilePrefix(inputFilepath);
-        QString saveFilepath=filePrefix.append(".v3draw");
-        qDebug() << "Saving to file " << saveFilepath;
-        image->saveImage(saveFilepath.toAscii().data());
-        qDebug() << "Done.";
-    }
+//    if (!inputFilepath.endsWith(".v3draw")) {
+//        QString filePrefix=getFilePrefix(inputFilepath);
+//        QString saveFilepath=filePrefix.append(".v3draw");
+//        qDebug() << "Saving to file " << saveFilepath;
+//        image->saveImage(saveFilepath.toAscii().data());
+//        qDebug() << "Done.";
+//    }
 
     return true;
 }
