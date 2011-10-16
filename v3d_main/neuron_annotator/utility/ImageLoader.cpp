@@ -33,10 +33,10 @@ ImageLoader::~ImageLoader()
         delete [] compressionBuffer;
     if (keyread!=0)
         delete [] keyread;
-    if (decompressionThread!=0) {
-        decompressionThread->~QFuture();
-        decompressionThread=0;
-    }
+//    if (decompressionThread!=0) {
+//        decompressionThread->~QFuture();
+//        decompressionThread=0;
+//    }
 
     // Note we do not delete image because we do this explicitly only if error
 }
@@ -627,10 +627,10 @@ int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image) {
                         st.msleep(5);
                         decompChecks++;
                     }
-                    if (decompressionThread!=0) {
-                        decompressionThread->~QFuture();
-                        decompressionThread=0;
-                    }
+//                    if (decompressionThread!=0) {
+//                        decompressionThread->~QFuture();
+//                        decompressionThread=0;
+//                    }
                     decompressionThread=&(QtConcurrent::run(this, &ImageLoader::updateCompressionBuffer, compressionBuffer+totalReadBytes));
                     printf("r2\n");
             }
@@ -659,8 +659,8 @@ int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image) {
 
 int ImageLoader::exitWithError(QString errorMessage) {
     qDebug() << errorMessage;
-    if (decompressionThread!=0)
-        decompressionThread->~QFuture();
+//    if (decompressionThread!=0)
+//        decompressionThread->~QFuture();
     if (compressionBuffer!=0)
         delete [] compressionBuffer;
     if (keyread!=0)
