@@ -33,11 +33,6 @@ ImageLoader::~ImageLoader()
         delete [] compressionBuffer;
     if (keyread!=0)
         delete [] keyread;
-//    if (decompressionThread!=0) {
-//        decompressionThread->~QFuture();
-//        decompressionThread=0;
-//    }
-
     // Note we do not delete image because we do this explicitly only if error
 }
 
@@ -556,7 +551,7 @@ int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image) {
             {
                     for (i=0;i<4;i++)
                     {
-                            //swap2bytes((void *)(mysz+i));
+                        //swap2bytes((void *)(mysz+i));
                         printf("mysz raw read unit[%ld]: [%d] ", i, mysz[i]);
                         swap4bytes((void *)(mysz+i));
                         printf("swap unit: [%d][%0x] \n", mysz[i], mysz[i]);
@@ -590,7 +585,7 @@ int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image) {
 
             V3DLONG remainingBytes = compressedBytes;
             //V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2);
-            V3DLONG readStepSizeBytes = V3DLONG(1024)*10000;
+            V3DLONG readStepSizeBytes = V3DLONG(1024)*20000;
             V3DLONG totalReadBytes = 0;
             V3DLONG cntBuf = 0;
 
@@ -599,10 +594,8 @@ int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image) {
             decompressionBuffer = image->getRawData();
 
             const int MAX_CHECKS_PER_DECOMPRESSION=2000;
+            const int CYCLE_WAIT_MS=5;
             int decompChecks=0;
-
-            //ImageLoaderDecompressor decompressor(this, compressedData, imageData, decompressedBytes);
-            //connect(this, SIGNAL(updateCompressionBuffer(unsigned char *)), &decompressor, SLOT(updateCompressionBuffer(unsigned char *)));
 
             while (remainingBytes>0)
             {
@@ -618,21 +611,17 @@ int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image) {
                     }
                     remainingBytes -= nread;
                     cntBuf++;
-                    printf("r1\n");
+                    //printf("r1\n");
                     while (decompressionThread!=0 && !decompressionThread->isFinished()) {
                         if (decompChecks>MAX_CHECKS_PER_DECOMPRESSION) {
                             exitWithError("Error in decompressor : exceeded time limit for decompression thread");
                         }
                         SleepThread st;
-                        st.msleep(5);
+                        st.msleep(CYCLE_WAIT_MS);
                         decompChecks++;
                     }
-//                    if (decompressionThread!=0) {
-//                        decompressionThread->~QFuture();
-//                        decompressionThread=0;
-//                    }
                     decompressionThread=&(QtConcurrent::run(this, &ImageLoader::updateCompressionBuffer, compressionBuffer+totalReadBytes));
-                    printf("r2\n");
+                    //printf("r2\n");
             }
             qDebug() << "Total time elapsed after all reads is " << stopwatch.elapsed() / 1000.0 << " seconds";
             stopwatch.restart();
@@ -642,7 +631,7 @@ int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image) {
                     exitWithError("Error in decompressor : exceeded time limit for decompression thread");
                 }
                 SleepThread st;
-                st.msleep(5);
+                st.msleep(CYCLE_WAIT_MS);
                 decompChecks++;
             }
             qDebug() << "Time to complete final decompression thread is " << stopwatch.elapsed() / 1000.0 << " seconds";
@@ -752,7 +741,7 @@ V3DLONG ImageLoader::decompressPBD(unsigned char * sourceData, unsigned char * t
 // points to the first invalid data position, i.e., all previous positions starting with compressionBuffer
 // are valid.
 void ImageLoader::updateCompressionBuffer(unsigned char * updatedCompressionBuffer) {
-    printf("d1\n");
+    //printf("d1\n");
     if (compressionPosition==0) {
         // Just starting
         compressionPosition=compressionBuffer;
@@ -807,7 +796,7 @@ void ImageLoader::updateCompressionBuffer(unsigned char * updatedCompressionBuff
     V3DLONG dlength=decompressPBD(compressionPosition, decompressionPosition, compressionLength);
     compressionPosition=lookAhead;
     decompressionPosition+=dlength;
-    printf("d2\n");
+    //printf("d2\n");
 }
 
 
