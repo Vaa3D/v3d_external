@@ -19,6 +19,7 @@
 
 char JBA_VERSION[128] = "1.000";
 
+bool quick_save_image(unsigned char *img, V3DLONG sz[4], int datatype, char *dfile);
 void printHelp ();
 void printHelp()
 {
@@ -761,6 +762,9 @@ int main (int argc, char *argv[])
 		fprintf (stderr, "The reference channelNo of either subject image or target image is (or both are) invalid (bigger than the number of channels the images have). Exit. \n");
 		goto Label_exit;
 	}
+
+	if (!quick_save_image(img_subject, sz_subject, datatype_subject, "subject_tmp.v3draw"))
+		goto Label_exit;
 		
 	// do the computation
 	printf("\n-------------------------------------------------\n");
@@ -897,3 +901,42 @@ Label_exit:
 	return 0;
 }
 
+bool quick_save_image(unsigned char *img, V3DLONG sz[4], int datatype, char *dfile)
+{
+	if (img && sz && dfile)
+	{
+		printf("Now save the image [pointer=%p] datatype=%d sz=[%ld, %ld, %ld, %ld]\n", img, datatype, sz[0], sz[1], sz[2], sz[3]);
+	
+		switch (datatype)
+		{
+			case 1:
+				if (saveImage(dfile, (const unsigned char *)img, sz, sizeof(unsigned char))!=true)
+				{
+					fprintf(stderr, "Error happens in 8bit file writing. Exit. \n");
+				}
+				break;
+
+			case 2:
+				if (saveImage(dfile, (const unsigned char *)img, sz, 2)!=true)
+				{
+					fprintf(stderr, "Error happens in 16bit file writing. Exit. \n");
+				}
+				break;
+
+			case 4:
+				if (saveImage(dfile, (const unsigned char *)img, sz, 4)!=true)
+				{
+					fprintf(stderr, "Error happens in 32bit file writing. Exit. \n");
+				}
+				break;
+
+			default:
+				fprintf(stderr, "Something wrong with the program, -- should NOT display this message at all. Check your program. \n");
+				return false;
+		}
+		printf("The image has been saved to the file [%s].\n", dfile);
+		return true;
+	}
+	else
+		return false;
+}
