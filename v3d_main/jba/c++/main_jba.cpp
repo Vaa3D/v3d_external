@@ -493,10 +493,9 @@ int main (int argc, char *argv[])
 		return 0;
 	}
 	
-	//
 	b_attach_channel_to_subject = (chan_attached_subject>=0 && chan_attached_target>=0) ? true : false;
 
-	// Declear some necessary variables. 
+	// some necessary variables. 
 
 	unsigned char * img_target = 0; /* note that this variable must be initialized as NULL. */
 	V3DLONG * sz_target = 0; /* note that this variable must be initialized as NULL. */
@@ -831,7 +830,7 @@ int main (int argc, char *argv[])
 			}
 		}
 
-		if (b_need_resize)
+		if (0 && b_need_resize)
 		{
 			printf("Now fit the warped image [pointer=%p] with size [%ld, %ld, %ld, %ld] to the target size of [%ld, %ld, %ld, %ld]\n", 
 			        img_warped, sz_warped[0], sz_warped[1], sz_warped[2], sz_warped[3], sz_target[0], sz_target[1], sz_target[2], sz_target[3]);
