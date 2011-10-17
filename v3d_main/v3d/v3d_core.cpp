@@ -2598,6 +2598,8 @@ void XFormView::drawSelectedLocations(QPainter *painter, QList <LocationSimple> 
 			continue;
 		}
 
+//20111017: disable this for now
+/*
 		switch(tmpLocation.howUseful())
 		{
 			case pxLocaUseful:
@@ -2628,6 +2630,10 @@ void XFormView::drawSelectedLocations(QPainter *painter, QList <LocationSimple> 
 				b_draw=0;
 				break;
 		}
+*/
+
+		//
+		curShape = tmpLocation.shape;//use the saved info
 
 		if (b_draw==0)
 		{
