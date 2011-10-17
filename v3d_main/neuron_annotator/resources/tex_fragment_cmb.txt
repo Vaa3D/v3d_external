@@ -54,11 +54,11 @@ void main()
                 // modified 11 Oct 2011 CMB
                 // voxel alpha/opacity is the maximum of all channel opacities (not the average!)
                 // kludge: but also leave a bit of transparency even on the densest areas (clamp max to 0.9), to help see inner structure of dense areas
-                oColor.a = 0.90 * Amax;
+                oColor.a = 0.10 * Amax;
                 // voxel color is the weighted sum of channel colors,
                 // normalized to full brightness for brightest channel (alpha channel is used for dimness...),
                 // kludge: limit brightness of very dim voxels to reduce apparent background (clamp min scale 0.10).
-                oColor.rgb = (aC1 + aC2 + aC3) / clamp(Amax, 0.10, 1.0);
+                oColor.rgb = (aC1 + aC2 + aC3) / clamp(Amax, 0.05, 1.0);
         }
 	else // max-intensity
 	{
