@@ -8,9 +8,9 @@ LDFLAGS += $(subst x, x,$(ARCH_x86_64))
 CC_FLAGS += $(patsubst %,-I%,$(subst ;, ,$(VPATH))) $(patsubst %,-L%,$(subst ;, ,$(VPATH)))
 
 ifneq ($(strip $(ARCH_x86_64)),)
-LIBS += -L. -L../../common_lib/lib/ -L$(L_PATH) -lv3dtiff64 -lz -lnewmat
+LIBS += -L. -L../../common_lib/lib/ -L$(L_PATH) -lv3dtiff64 -lz -lv3dnewmat
 else
-LIBS += -L. -L../../common_lib/lib/ -lv3dtiff -lnewmat
+LIBS += -L. -L../../common_lib/lib/ -lv3dtiff -lv3dnewmat
 endif
 
 INCLUDEDIRS += -I../../basic_c_fun/
@@ -63,7 +63,7 @@ newmat_lobj = ${newmat_dir}newmat1.o ${newmat_dir}newmat2.o ${newmat_dir}newmat3
 
 .PHONY: alljba
 alljba : ${JBALIB_OBJS} $(MAINJBA_OBJ) \
-    libnewmat 
+    libv3dnewmat 
 	${CC} ${CC_FLAGS} ${JBALIB_OBJS} $(MAINJBA_OBJ)  ${LIBS} -o brainaligner
 
 .PHONY: brainaligner
@@ -75,10 +75,10 @@ libjba : $(JBALIB_OBJS)
 	$(AR) -cr libjba.a $(JBALIB_OBJS)
 	ranlib libjba.a
 
-.PHONY: libnewmat
-libnewmat : $(newmat_lobj)
-	$(AR) -cr libnewmat.a  $(newmat_lobj)
-	ranlib libnewmat.a
+.PHONY: libv3dnewmat
+libv3dnewmat : $(newmat_lobj)
+	$(AR) -cr libv3dnewmat.a  $(newmat_lobj)
+	ranlib libv3dnewmat.a
 
 
 #for main JBA program
@@ -120,7 +120,7 @@ remove_nonaffine_points.o : remove_nonaffine_points.cpp remove_nonaffine_points.
 .PHONY: clean
 clean :
 	rm $(newmat_lobj)
-	if [ -f libnewmat.a ]; then rm libnewmat.a; fi
+	if [ -f libv3dnewmat.a ]; then rm libv3dnewmat.a; fi
 	rm ${JBALIB_OBJS} 
 	if [ -f  $(MAINJBA_OBJ) ]; then rm  $(MAINJBA_OBJ); fi
 
