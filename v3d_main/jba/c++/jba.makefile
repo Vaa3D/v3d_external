@@ -8,7 +8,8 @@ LDFLAGS += $(subst x, x,$(ARCH_x86_64))
 CC_FLAGS += $(patsubst %,-I%,$(subst ;, ,$(VPATH))) $(patsubst %,-L%,$(subst ;, ,$(VPATH)))
 
 ifneq ($(strip $(ARCH_x86_64)),)
-LIBS += -L. -L../../common_lib/lib/ -L$(L_PATH) -lv3dtiff64 -lz -lv3dnewmat
+#LIBS += -L. -L../../common_lib/lib/ -L$(L_PATH) -lv3dtiff64 -lz -lv3dnewmat
+LIBS += -L. -L../../common_lib/lib/ -L$(L_PATH) -lv3dtiff -lz -lv3dnewmat
 else
 LIBS += -L. -L../../common_lib/lib/ -lv3dtiff -lv3dnewmat
 endif
