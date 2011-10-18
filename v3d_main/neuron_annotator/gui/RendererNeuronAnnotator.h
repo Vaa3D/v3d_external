@@ -55,10 +55,12 @@ signals:
     void progressMessageChanged(QString);
     void progressAborted(QString);
     void alphaBlendingChanged(bool);
+    void showCornerAxesChanged(bool);
 
 public slots:
     void setAlphaBlending(bool);
     void setStereoMode(int);
+    void setShowCornerAxes(bool b);
 
 protected:
     virtual void setupStackTexture(bool bfirst);
@@ -66,6 +68,7 @@ protected:
     RGBA8* extendTextureFromMaskList(const QList<RGBA8*> & sourceTextures, const QList<int> & maskIndexList);
     void cleanExtendedTextures();
     bool populateBaseTextures();
+    void paint_corner_axes();
 
     // We want all of these OFF for now to keep the texture handling constant across different hardware environments
     virtual bool supported_TexStream() {return false;}
@@ -77,6 +80,7 @@ protected:
 
     Stereo3DMode stereo3DMode;
     bool bStereoSwapEyes;
+    bool bShowCornerAxes;
 
 private:
     unsigned char* neuronMask; // sized to texture buffer dimensions realX,Y,Z

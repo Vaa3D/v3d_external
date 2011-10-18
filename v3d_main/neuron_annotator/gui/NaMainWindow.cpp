@@ -224,6 +224,10 @@ NaMainWindow::NaMainWindow()
     connect(ui.v3dr_glwidget, SIGNAL(alphaBlendingChanged(bool)),
             ui.action3D_alpha_blending, SLOT(setChecked(bool)));
 
+    // show axes
+    connect(ui.actionShow_Axes, SIGNAL(toggled(bool)),
+            ui.v3dr_glwidget, SLOT(setShowCornerAxes(bool)));
+
     // Whether to use common zoom and focus in MIP, ZStack and 3D viewers
     connect(ui.actionLink_viewers, SIGNAL(toggled(bool)),
             this, SLOT(unifyCameras(bool)));

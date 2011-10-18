@@ -1983,8 +1983,11 @@ You can also resize the box by Ctrl + left mouse click.</string>
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Show Axes</string>

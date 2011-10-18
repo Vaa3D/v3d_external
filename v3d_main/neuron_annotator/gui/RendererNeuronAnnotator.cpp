@@ -3,12 +3,14 @@
 #include "../DataFlowModel.h"
 #include "../3drenderer/v3dr_common.h"
 #include "../3drenderer/v3dr_glwidget.h"
+#include "../geometry/Rotation3D.h"
 
 RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     : QObject(NULL)
     , Renderer_gl2(w)
     , stereo3DMode(STEREO_OFF)
     , bStereoSwapEyes(false)
+    , bShowCornerAxes(true)
 {
     // qDebug() << "RendererNeuronAnnotator constructor" << this;
     neuronMask=0;
@@ -1305,13 +1307,90 @@ void RendererNeuronAnnotator::paint_mono()
           renderVol();
      }
 
-        // must be at last
-        if (! b_selecting && sShowTrack)
-        {
-                blendTrack();
-        }
+    if (bShowCornerAxes)
+    {
+        paint_corner_axes();
+    }
 
-        return;
+    // must be at last
+    if (! b_selecting && sShowTrack)
+    {
+            blendTrack();
+    }
+
+    return;
+}
+
+void RendererNeuronAnnotator::setShowCornerAxes(bool b)
+{
+    if (b == bShowCornerAxes) return;
+    bShowCornerAxes = b;
+    emit showCornerAxesChanged(bShowCornerAxes);
+}
+
+void RendererNeuronAnnotator::paint_corner_axes()
+{
+    // Keep rotation of scene, but not scale nor translation.
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glPushAttrib(GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT); // save color and depth test
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        double aspect = double(screenW)/MAX(screenH,1);
+        gluPerspective(30.0, aspect, 1.0, 10.0);
+        glMatrixMode(GL_MODELVIEW);
+        GLdouble modelviewMatrix[16];
+        glGetDoublev(GL_MODELVIEW_MATRIX, modelviewMatrix);
+        Rotation3D rotation(modelviewMatrix);
+        Vector3D eulerAngles = rotation.convertBodyFixedXYZRotationToThreeAngles();
+        eulerAngles *= 180.0 / 3.14159; // radians to degrees
+        for (int i = 0; i < 3; ++i) {
+            while (eulerAngles[i] < 0) eulerAngles[i] += 360.0;
+            while (eulerAngles[i] >= 360.0) eulerAngles[i] -= 360.0;
+        }
+        glLoadIdentity();
+        glTranslated(-1.1 * aspect, -1.1, 0); // move to corner
+        glTranslated(0, 0, -viewDistance); // place axes in front of camera
+        glScaled(0.2, 0.2, 0.2); // keep axes small in relation to screen
+        // Apply scene rotation
+        glRotated(eulerAngles[0], 1, 0, 0);
+        glRotated(eulerAngles[1], 0, 1, 0);
+        glRotated(eulerAngles[2], 0, 0, 1);
+        // glDisable(GL_DEPTH_TEST);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_LINE_SMOOTH);
+        glLineWidth(5.0);
+        glBegin(GL_LINES);
+            // thicker black lines
+            glColor3f(0.1, 0.1, 0.1); // black
+            glVertex3f(0, 0, 0); // x0
+            glVertex3f(1, 0, 0); // x1
+            glVertex3f(0, 0, 0); // y0
+            glVertex3f(0, -1, 0); // y1
+            glVertex3f(0, 0, 0); // z0
+            glVertex3f(0, 0, -1); // z1
+        glEnd();
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glLineWidth(3.0);
+        glBegin(GL_LINES);
+            // Thinner colored lines
+            glColor3f(0.8, 0.3, 0.3); // red
+            glVertex3f(0, 0, 0); // x0
+            glVertex3f(1, 0, 0); // x1
+            glColor3f(0.3, 0.7, 0.3); // green
+            glVertex3f(0, 0, 0); // y0
+            glVertex3f(0, -1, 0); // y1
+            glColor3f(0.3, 0.3, 0.9); // blue
+            glVertex3f(0, 0, 0); // z0
+            glVertex3f(0, 0, -1); // z1
+        glEnd();
+    glPopAttrib();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
 }
 
 

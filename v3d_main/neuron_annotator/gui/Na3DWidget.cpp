@@ -15,6 +15,7 @@ Na3DWidget::Na3DWidget(QWidget* parent)
         , bResizeEnabled(true)
         , viewerContextMenu(NULL)
         , neuronContextMenu(NULL)
+        , bShowCornerAxes(true)
 {
     if (renderer) {
         delete renderer;
@@ -775,9 +776,16 @@ void Na3DWidget::choiceRenderer()
         connect(getRendererNa(), SIGNAL(progressAborted(QString)),
                 this, SIGNAL(progressAborted(QString)));
         connect(getRendererNa(), SIGNAL(alphaBlendingChanged(bool)),
-                this, SIGNAL(alphaBlendingChanged(bool)));
+                this, SLOT(setAlphaBlending(bool)));
         connect(getRendererNa(), SIGNAL(alphaBlendingChanged(bool)),
                 this, SLOT(update()));
+        connect(this, SIGNAL(alphaBlendingChanged(bool)),
+                getRendererNa(), SLOT(setAlphaBlending(bool)));
+        connect(this, SIGNAL(showCornerAxesChanged(bool)),
+                getRendererNa(), SLOT(setShowCornerAxes(bool)));
+        connect(getRendererNa(), SIGNAL(showCornerAxesChanged()),
+                this, SLOT(setShowCornerAxes(bool)));
+        getRendererNa()->setShowCornerAxes(bShowCornerAxes);
     }
 }
 
@@ -786,6 +794,14 @@ void Na3DWidget::setAlphaBlending(bool b)
 {
     if (! getRendererNa()) return;
     getRendererNa()->setAlphaBlending(b);
+}
+
+/* slot */
+void Na3DWidget::setShowCornerAxes(bool b)
+{
+    if (b == bShowCornerAxes) return;
+    bShowCornerAxes = b;
+    emit showCornerAxesChanged(bShowCornerAxes);
 }
 
 // Draw a little 3D cross for testing

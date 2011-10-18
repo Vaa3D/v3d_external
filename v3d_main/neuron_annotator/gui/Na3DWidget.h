@@ -55,8 +55,10 @@ signals:
     void landmarksChanged();
     void alphaBlendingChanged(bool);
     void quadStereoSupported(bool);
+    void showCornerAxesChanged(bool);
 
 public slots:
+    void setShowCornerAxes(bool b);
     void setAlphaBlending(bool);
     void clearLandmarks();
     void setLandmarks(const QList<ImageMarker>);
@@ -177,6 +179,8 @@ protected:
     QMenu* viewerContextMenu;
     NeuronContextMenu* neuronContextMenu;
     bool bHasQuadStereo;
+    bool bShowCornerAxes;
+    bool bAlphaBlending;
 };
 
 #endif // NA3DWIDGET_H
