@@ -67,6 +67,7 @@ private:
     V3DLONG maxDecompressionSize;
     unsigned char * compressionPosition;
     unsigned char * decompressionPosition;
+    unsigned char decompressionPrior;
 
     QFuture<void> * decompressionThread;
 
