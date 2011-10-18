@@ -694,8 +694,6 @@ int ImageLoader::exitWithError(QString errorMessage) {
 
 V3DLONG ImageLoader::decompressPBD(unsigned char * sourceData, unsigned char * targetData, V3DLONG sourceLength) {
 
-    bool DEBUG=true;
-
     // Decompress data
     V3DLONG cp=0;
     V3DLONG dp=0;
@@ -710,26 +708,12 @@ V3DLONG ImageLoader::decompressPBD(unsigned char * sourceData, unsigned char * t
     unsigned char sourceChar=0;
     while(cp<sourceLength) {
 
-        bool INNER_DEBUG=false;
-
         value=sourceData[cp];
-
-        if (DEBUG) {
-            unsigned long currentPosition = (targetData + dp + 43) - decompressionBuffer;
-            if (currentPosition >= 0x9cf6740 && currentPosition <= 0x9cf6970) {
-                INNER_DEBUG=true;
-                printf("position=%lx    value=%d\n", currentPosition, value);
-            }
-        }
 
         if (value<33) {
             // Literal 0-32
             unsigned char count=value+1;
             for (int j=cp+1;j<cp+1+count;j++) {
-                if (INNER_DEBUG) {
-                    unsigned long currentPosition = (targetData + dp + 43) - decompressionBuffer;
-                    printf("position=%lx  literal  j=%d  sourceData[j]=%d\n", currentPosition, j, sourceData[j]);
-                }
                 targetData[dp++]=sourceData[j];
             }
             cp+=(count+1);
@@ -750,11 +734,6 @@ V3DLONG ImageLoader::decompressPBD(unsigned char * sourceData, unsigned char * t
                 p3=sourceChar & mask;
                 pva=(p0==3?-1:p0)+decompressionPrior;
 
-                if (INNER_DEBUG) {
-                    unsigned long currentPosition = (targetData + dp + 43) - decompressionBuffer;
-                    printf("position=%lx   diff  prior=%x   p0=%x  p1=%x  p2=%x  p3=%x  pva=%x \n", currentPosition, decompressionPrior, p0, p1, p2, p3, pva);
-                }
-
                 *toFill=pva;
                 if (fillNumber>1) {
                     toFill++;
@@ -770,6 +749,7 @@ V3DLONG ImageLoader::decompressPBD(unsigned char * sourceData, unsigned char * t
                         }
                     }
                 }
+
                 decompressionPrior = *toFill;
                 dp+=fillNumber;
                 leftToFill-=fillNumber;
@@ -779,20 +759,14 @@ V3DLONG ImageLoader::decompressPBD(unsigned char * sourceData, unsigned char * t
             // Repeat 128-255
             unsigned char repeatCount=value-127;
             unsigned char repeatValue=sourceData[++cp];
-            if (INNER_DEBUG) {
-                unsigned long currentPosition = (targetData + dp + 43) - decompressionBuffer;
-                printf("position=%lx  repeat  repeatCount=%d  repeatValue=%d\n", currentPosition, repeatCount, repeatValue);
-            }
+
             for (int j=0;j<repeatCount;j++) {
                 targetData[dp++]=repeatValue;
             }
             decompressionPrior=repeatValue;
             cp++;
         }
-        if (INNER_DEBUG) {
-            unsigned long currentPosition = (targetData + dp + 43) - decompressionBuffer;
-            printf("position=%lx  end-of-loop prior=%x\n", currentPosition, decompressionPrior);
-        }
+
     }
     return dp;
 }
