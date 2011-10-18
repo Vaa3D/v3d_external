@@ -102,6 +102,43 @@ void CompartmentMapWidget::paintGL(){
     V3dR_GLWidget::paintGL();
 }
 
+void CompartmentMapWidget::setRotation(const Rotation3D& newRotation)
+{
+    // Update mRot cached opengl matrix
+    newRotation.setGLMatrix(mRot);
+    // Update _xRot, _yRot, _zRot Euler angles
+    Vector3D eulerAngles = newRotation.convertBodyFixedXYZRotationToThreeAngles();
+    eulerAngles *= 180.0 / 3.14159; // convert radians to degrees
+    _xRot = eulerAngles[0];
+    _yRot = eulerAngles[1];
+    _zRot = eulerAngles[2];
+    while(_xRot < 0.0) _xRot += 360.0;
+    while(_yRot < 0.0) _yRot += 360.0;
+    while(_zRot < 0.0) _zRot += 360.0;
+    // Yes, this is an absolute orientation.  I don't even want to think about
+    // whatever that non-absolute case entails.
+    _absRot = true;
+    dxRot = dyRot = dzRot = 0;
+    update();
+}
+
+void CompartmentMapWidget::setFocus(const Vector3D& f)
+{
+    Rotation3D R_eye_obj(mRot);
+    // _[xyz]Shift variables are relative to the center of the volume
+    Vector3D defaultFocus(0, 0, 0);
+    Vector3D shift_eye = R_eye_obj * (f - defaultFocus);
+    // _xShift is in gl coordinates scaled by 100/1.4
+    // see V3dR_GLWidget::paintGL() method in v3dr_glwidget.cpp
+    double glUnitsPerImageVoxel = 0.01; // TODO - set this correctly
+    shift_eye *= -glUnitsPerImageVoxel * 100.0f/1.4f;
+    _xShift = shift_eye.x();
+    _yShift = shift_eye.y();
+    _zShift = shift_eye.z();
+    dxShift=dyShift=dzShift=0;
+    update();
+}
+
 // event
 void CompartmentMapWidget::focusInEvent(QFocusEvent* e){
     V3dR_GLWidget::focusInEvent(e);

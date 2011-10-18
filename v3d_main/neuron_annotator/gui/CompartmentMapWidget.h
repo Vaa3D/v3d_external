@@ -4,6 +4,7 @@
 #include <iostream>
 #include "../../3drenderer/v3dr_glwidget.h"
 #include "../../3drenderer/renderer_gl1.h"
+#include "../geometry/Rotation3D.h"
 #include "CompartmentMapComboBox.h"
 
 // Define a class for visualizing compartment map
@@ -26,6 +27,8 @@ signals:
 
 public slots:
     void switchCompartment(int num);
+    void setRotation(const Rotation3D&);
+    void setFocus(const Vector3D& f);
 
 protected:
     virtual void initializeGL();

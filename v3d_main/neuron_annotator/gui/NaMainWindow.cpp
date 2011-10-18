@@ -175,6 +175,12 @@ NaMainWindow::NaMainWindow()
             ui.v3dr_glwidget, SLOT(setChannelB(bool)));
             */
     // 3D rotation
+    // synchronize compartment map
+    connect(&sharedCameraModel, SIGNAL(rotationChanged(const Rotation3D&)),
+            ui.compartmentMapWidget, SLOT(setRotation(const Rotation3D&)));
+    // connect(&sharedCameraModel, SIGNAL(focusChanged(const Vector3D&)),
+    //        ui.compartmentMapWidget, SLOT(setFocus(const Vector3D&)));
+
     connect(&(ui.v3dr_glwidget->cameraModel), SIGNAL(rotationChanged(const Rotation3D&)),
             this, SLOT(on3DViewerRotationChanged(const Rotation3D&)));
     connect(ui.rotXWidget, SIGNAL(angleChanged(int)),
