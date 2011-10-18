@@ -770,7 +770,6 @@ void Renderer_gl1::solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ>
 						loc1 = nearestloc + D*(ranget);
 					}
 				}
-				//printf("loc0--loc1: (%g, %g, %g)--(%g, %g, %g)\n", loc0.x,loc0.y,loc0.z, loc1.x,loc1.y,loc1.z);
 
 				loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
 			}
@@ -867,7 +866,6 @@ void Renderer_gl1::solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ>
                bConnectCurve = false;
           }
      }
-
 }
 
 
@@ -1736,7 +1734,7 @@ void Renderer_gl1::blendDraggedNeuron()
 			}
 		}
 		glPopMatrix();
-		//valid = false;
+
 	}//for
 
      glDisable(GL_ALPHA_TEST);
@@ -1834,102 +1832,3 @@ void Renderer_gl1::connectCurve(V3DLONG &segid)
      }
 }
 
-
-/**
- * @brief Function: decide whether to add an item in the popup menu of drawing curves.
- *  Not used at the moment.
- */
-// bool Renderer_gl1::findNearestNeuronSeg_WinXY(int cx, int cy, V3DLONG &best_seg,
-//      V3DLONG &best_ind)
-// {
-//       V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-//       My4DImage* curImg = 0;
-//       if(w) curImg = v3dr_getImage4d(_idep);
-
-//       GLdouble px, py, pz, ix, iy, iz;
-//       best_ind=-1; best_seg=-1;
-//       double best_dist=-1;
-
-//       V3DLONG NS = curImg->tracedNeuron.seg.size();
-//       for(V3DLONG j=0;j<NS;j++)
-//       {
-//           V_NeuronSWC& segi = curImg->tracedNeuron.seg.at(j);
-
-//           int N = segi.row.size();
-//           for (V3DLONG i=0;i<N;i++)
-//           {
-//                ix = segi.row.at(i).x, iy = segi.row.at(i).y, iz = segi.row.at(i).z;
-//                GLint res = gluProject(ix, iy, iz, markerViewMatrix, projectionMatrix, viewport, &px, &py, &pz);// note: should use the saved modelview,projection and viewport matrix
-//                py = viewport[3]-py; //the Y axis is reversed
-//                if (res==GL_FALSE) {qDebug()<<"gluProject() fails for NeuronTree ["<<i<<"] node"; return -1;}
-//                // qDebug("(px,py) is: (%d, %d)", px, py);
-//                // qDebug("(cx,cy) is: (%d, %d)", cx, cy);
-//                double cur_dist = (px-cx)*(px-cx)+(py-cy)*(py-cy);
-//                qDebug("cur_dist at (%d,%d) step is: %f", j,i, cur_dist);
-//                if (i==0 && j==0) {	best_dist = cur_dist; best_ind=0; best_seg=0;}
-//                else {	if (cur_dist<best_dist)
-//                     {best_dist=cur_dist; best_ind = i; best_seg = j;}
-//                }
-//           }
-//       }
-//       qDebug("best_seg is: %d, best_ind is: %d", best_seg, best_ind);
-//       qDebug("best_dist is: %f", best_dist);
-
-//       if(best_dist > 900) return false; // dist should be sqrt
-//       else return true;
-// }
-
-
-/**
-   This function is to get XYZ from MarkerPos based on the method used
-   in solveCurveCenter(). -This function is not used at the moment.
- */
-// void Renderer_gl1::MarkerPosToXYZCenter(const MarkerPos & pos, XYZ &loc, XYZ &lastpos)
-// {
-//      bool b_use_last_approximate = true;
-// 	int chno = checkCurChannel();
-// 	if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
-
-//      //100730 RZC, in View space, keep for dot(clip, pos)>=0
-//      double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
-//      clipplane[3] = viewClip;
-//      ViewPlaneToModel(pos.MV, clipplane);
-//      //qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
-
-//      XYZ loc0, loc1;
-//      _MarkerPos_to_NearFarPoint(pos, loc0, loc1);
-
-//      //XYZ loc;
-//      float length01 = dist_L2(loc0, loc1);
-//      if (length01<1.0)
-//      {
-//           loc=(loc0+loc1)/2.0;
-//      }
-//      else
-//      {
-//           if (b_use_last_approximate)
-//           {
-//                //XYZ lastpos = loc_vec.at(last_j);
-//                if (dataViewProcBox.isInner(lastpos, 0.5))
-//                {
-//                     XYZ v_1_0 = loc1-loc0, v_0_last=loc0-lastpos;
-//                     XYZ nearestloc = loc0-v_1_0*dot(v_0_last, v_1_0)/dot(v_1_0, v_1_0); //since loc0!=loc1, this is safe
-
-//                     double ranget = (length01/2.0)>10?10:(length01/2.0); //at most 30 pixels aparts
-
-//                     XYZ D = v_1_0; normalize(D);
-//                     loc0 = nearestloc - D*(ranget);
-//                     loc1 = nearestloc + D*(ranget);
-//                }
-//           }
-
-//           loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
-//      }
-
-//      if (dataViewProcBox.isInner(loc, 0.5))
-//      {
-//           dataViewProcBox.clamp(loc);
-//      }else
-//           return;
-
-// }
