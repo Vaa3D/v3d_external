@@ -7,6 +7,10 @@
 
 using namespace std;
 
+const int ImageLoader::MODE_UNDEFINED=0;
+const int ImageLoader::MODE_LOAD_TEST=1;
+const int ImageLoader::MODE_CONVERT=2;
+
 class SleepThread : QThread {
 public:
     SleepThread() {}
@@ -17,7 +21,9 @@ public:
 
 ImageLoader::ImageLoader()
 {
+    mode=MODE_UNDEFINED;
     inputFilepath="";
+    targetFilepath="";
     compressionBuffer=0;
     fid=0;
     keyread=0;
@@ -39,12 +45,28 @@ ImageLoader::~ImageLoader()
 int ImageLoader::processArgs(vector<char*> *argList) {
     for (int i=0;i<argList->size();i++) {
         QString arg=(*argList)[i];
-        if (arg=="-load") {
-            bool done=false;
+        bool done=false;
+        if (arg=="-loadtest") {
+            mode=MODE_LOAD_TEST;
             do {
                 QString possibleFile=(*argList)[++i];
                 if (!possibleFile.startsWith("-")) {
                     inputFilepath=possibleFile;
+                } else {
+                    done=true;
+                    i--; // rewind
+                }
+            } while(!done && i<(argList->size()-1));
+        } else if (arg=="-convert") {
+            mode=MODE_CONVERT;
+            bool haveInput=false;
+            do {
+                QString possibleFile=(*argList)[++i];
+                if (!possibleFile.startsWith("-") && !haveInput) {
+                    inputFilepath=possibleFile;
+                    haveInput=true;
+                } else if (!possibleFile.startsWith("-") && haveInput) {
+                    targetFilepath=possibleFile;
                 } else {
                     done=true;
                     i--; // rewind
@@ -64,38 +86,41 @@ bool ImageLoader::execute() {
     QTime stopwatch;
     stopwatch.start();
 
-    if (inputFilepath.endsWith(".v3dpbd")) {
-        stopwatch.restart();
-        if (loadRaw2StackPBD(inputFilepath.toAscii().data(), image)!=0) {
-            qDebug() << "Error with loadRaw2StackPBD";
+    if (mode==MODE_UNDEFINED) {
+        qDebug() << "ImageLoader::execute() - no mode defined - doing nothing";
+        return true;
+    } else if (mode==MODE_LOAD_TEST) {
+        stopwatch.start();
+        image=loadImage(inputFilepath);
+        if (image!=0) {
+            qDebug() << "Loading time is " << stopwatch.elapsed() / 1000.0 << " seconds";
+            return true;
+        }
+        return false;
+    } else if (mode==MODE_CONVERT) {
+        if (inputFilepath.compare(targetFilepath)==0) {
+            qDebug() << "ImageLoader::execute() - can not convert a file to itself";
             return false;
         }
-        qDebug() << "Loading total time is " << stopwatch.elapsed() / 1000.0 << " seconds";
-    } else {
-        stopwatch.restart();
         image=loadImage(inputFilepath);
-        qDebug() << "Loading total time is " << stopwatch.elapsed() / 1000.0 << " seconds";
-
-//        QString filePrefix=getFilePrefix(inputFilepath);
-//        QString saveFilepath=filePrefix.append(".v3dpbd");
-//        V3DLONG sz[4];
-//        sz[0] = image->getXDim();
-//        sz[1] = image->getYDim();
-//        sz[2] = image->getZDim();
-//        sz[3] = image->getCDim();
-//        unsigned char* data = image->getRawData();
-//        saveStack2RawPBD(saveFilepath.toAscii().data(), data, sz, image->getDatatype());
+        qDebug() << "Loading time is " << stopwatch.elapsed() / 1000.0 << " seconds";
+        stopwatch.restart();
+        qDebug() << "Saving to file " << targetFilepath;
+        if (targetFilepath.endsWith(".v3dpbd")) {
+            V3DLONG sz[4];
+            sz[0] = image->getXDim();
+            sz[1] = image->getYDim();
+            sz[2] = image->getZDim();
+            sz[3] = image->getCDim();
+            unsigned char* data = image->getRawData();
+            saveStack2RawPBD(targetFilepath.toAscii().data(), data, sz, image->getDatatype());
+        } else {
+            image->saveImage(targetFilepath.toAscii().data());
+        }
+        qDebug() << "Saving time is " << stopwatch.elapsed() / 1000.0 << " seconds";
+        return true;
     }
-
-//    if (!inputFilepath.endsWith(".v3draw")) {
-//        QString filePrefix=getFilePrefix(inputFilepath);
-//        QString saveFilepath=filePrefix.append(".v3draw");
-//        qDebug() << "Saving to file " << saveFilepath;
-//        image->saveImage(saveFilepath.toAscii().data());
-//        qDebug() << "Done.";
-//    }
-
-    return true;
+    return false; // should not get here
 }
 
 bool ImageLoader::validateFile() {
@@ -115,6 +140,11 @@ My4DImage* ImageLoader::loadImage(QString filepath) {
     My4DImage* image=new My4DImage();
     if (filepath.endsWith(".tif") || filepath.endsWith(".lsm") || filepath.endsWith(".v3draw") || filepath.endsWith(".raw")) {
         image->loadImage(filepath.toAscii().data());
+    } else if (filepath.endsWith(".v3dpbd")) {
+        if (loadRaw2StackPBD(filepath.toAscii().data(), image)!=0) {
+            qDebug() << "Error with loadRaw2StackPBD";
+            return 0;
+        }
     }
     return image;
 }

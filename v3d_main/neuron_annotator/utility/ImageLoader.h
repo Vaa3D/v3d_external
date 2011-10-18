@@ -17,6 +17,10 @@ public:
     ImageLoader();
     ~ImageLoader();
 
+    static const int MODE_UNDEFINED;
+    static const int MODE_LOAD_TEST;
+    static const int MODE_CONVERT;
+
     static string getCommandLineDescription() {
         return "image-loader";
     }
@@ -25,7 +29,8 @@ public:
         string usage;
         usage.append("  Image Loader Utility                                                    \n");
         usage.append("                                                                          \n");
-        usage.append("   -load <filepath>                                                       \n");
+        usage.append("   -loadtest <filepath>                                                   \n");
+        usage.append("   -convert  <source file>    <target file>                               \n");
         return usage;
     }
 
@@ -46,7 +51,9 @@ public:
 
 
 private:
+    int mode;
     QString inputFilepath;
+    QString targetFilepath;
     My4DImage * image;
     FILE * fid;
     char * keyread;
