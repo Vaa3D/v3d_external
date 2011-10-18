@@ -851,41 +851,9 @@ int main (int argc, char *argv[])
 			}
 		}
 	}
-	
-	if (img_warped && sz_warped)
-	{
-		printf("Now save the output/warped image [pointer=%p] datatype_warped=%d sz_warped=[%ld, %ld, %ld, %ld]\n", img_warped, datatype_warped, sz_warped[0], sz_warped[1], sz_warped[2], sz_warped[3]);
-	
-		switch (datatype_warped)
-		{
-			case 1:
-				if (saveImage(dfile_warped, (const unsigned char *)img_warped, sz_warped, sizeof(unsigned char))!=true)
-				{
-					fprintf(stderr, "Error happens in 8bit file writing. Exit. \n");
-				}
-				break;
 
-			case 2:
-				if (saveImage(dfile_warped, (const unsigned char *)img_warped, sz_warped, 2)!=true)
-				{
-					fprintf(stderr, "Error happens in 16bit file writing. Exit. \n");
-				}
-				break;
-
-			case 4:
-				if (saveImage(dfile_warped, (const unsigned char *)img_warped, sz_warped, 4)!=true)
-				{
-					fprintf(stderr, "Error happens in 32bit file writing. Exit. \n");
-				}
-				break;
-
-			default:
-				fprintf(stderr, "Something wrong with the program, -- should NOT display this message at all. Check your program. \n");
-				goto Label_exit;
-				return 1;
-		}
-		printf("The warped image has been saved to the file [%s].\n", dfile_warped);
-	}
+	if(!quick_save_image(img_warped, sz_warped, datatype_warped, dfile_warped))
+		goto Label_exit;
 
 Label_exit:
 
