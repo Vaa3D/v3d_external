@@ -3732,7 +3732,7 @@ using namespace RBD_LIBRARIES;
 bool My4DImage::proj_general_principal_axis(ImagePlaneDisplayType ptype)
 {
 	//first generate the sum image of all planes for a particular axis code
-	if (!data4d_uint8) {v3d_msg("now only support unit8 in proj_general_principal_axis().");  return false;}
+	//if (!data4d_uint8) {v3d_msg("now only support unit8 in proj_general_principal_axis().");  return false;}
 
 	float * sumdata1d = 0;
 	float ** sumdata2d = 0;
@@ -3748,6 +3748,8 @@ bool My4DImage::proj_general_principal_axis(ImagePlaneDisplayType ptype)
 			if (!sumdata1d) return false;
 			if(!new2dpointer(sumdata2d, d0, d1, sumdata1d)) {if (sumdata1d) {delete []sumdata1d; sumdata1d=0;} return false;}
 
+			if (data4d_uint8)
+			{
 			for (k=0;k<this->getZDim();k++)
 			{
 				for (j=0;j<this->getYDim();j++)
@@ -3759,6 +3761,36 @@ bool My4DImage::proj_general_principal_axis(ImagePlaneDisplayType ptype)
 					sumdata2d[k][j]=tmp;
 				}
 			}
+			}
+			else if (data4d_uint16)
+{
+			for (k=0;k<this->getZDim();k++)
+			{
+				for (j=0;j<this->getYDim();j++)
+				{
+					double tmp=0;
+					for (i=0;i<this->getXDim();i++)
+						for (c=0;c<this->getCDim();c++)
+							tmp += float(data4d_uint16[c][k][j][i]);
+					sumdata2d[k][j]=tmp;
+				}
+			}
+}
+			else if (data4d_float32)
+{
+			for (k=0;k<this->getZDim();k++)
+			{
+				for (j=0;j<this->getYDim();j++)
+				{
+					double tmp=0;
+					for (i=0;i<this->getXDim();i++)
+						for (c=0;c<this->getCDim();c++)
+							tmp += float(data4d_float32[c][k][j][i]);
+					sumdata2d[k][j]=tmp;
+				}
+			}
+}
+
 			break;
 
 		case imgPlaneY:
@@ -3767,6 +3799,8 @@ bool My4DImage::proj_general_principal_axis(ImagePlaneDisplayType ptype)
 			if (!sumdata1d) return false;
 			if(!new2dpointer(sumdata2d, d0, d1, sumdata1d)) {if (sumdata1d) {delete []sumdata1d; sumdata1d=0;} return false;}
 
+if (data4d_uint8)
+{
 			for (k=0;k<this->getZDim();k++)
 			{
 				for (i=0;i<this->getXDim(); i++)
@@ -3778,6 +3812,36 @@ bool My4DImage::proj_general_principal_axis(ImagePlaneDisplayType ptype)
 					sumdata2d[k][i]=tmp;
 				}
 			}
+}
+else if (data4d_uint16)
+{
+			for (k=0;k<this->getZDim();k++)
+			{
+				for (i=0;i<this->getXDim(); i++)
+				{
+					double tmp=0;
+					for (j=0;j<this->getYDim(); j++)
+						for (c=0;c<this->getCDim();c++)
+							tmp += float(data4d_uint16[c][k][j][i]);
+					sumdata2d[k][i]=tmp;
+				}
+			}
+}
+else if (data4d_float32)
+{
+			for (k=0;k<this->getZDim();k++)
+			{
+				for (i=0;i<this->getXDim(); i++)
+				{
+					double tmp=0;
+					for (j=0;j<this->getYDim(); j++)
+						for (c=0;c<this->getCDim();c++)
+							tmp += float(data4d_float32[c][k][j][i]);
+					sumdata2d[k][i]=tmp;
+				}
+			}
+}
+
 			break;
 
 		case imgPlaneZ:
@@ -3786,6 +3850,8 @@ bool My4DImage::proj_general_principal_axis(ImagePlaneDisplayType ptype)
 			if (!sumdata1d) return false;
 			if(!new2dpointer(sumdata2d, d0, d1, sumdata1d)) {if (sumdata1d) {delete []sumdata1d; sumdata1d=0;} return false;}
 
+if (data4d_uint8)
+{
 			for (j=0;j<this->getYDim();j++)
 			{
 				for (i=0;i<this->getXDim(); i++)
@@ -3797,6 +3863,35 @@ bool My4DImage::proj_general_principal_axis(ImagePlaneDisplayType ptype)
 					sumdata2d[j][i]=tmp;
 				}
 			}
+}
+else if (data4d_uint16)
+{
+			for (j=0;j<this->getYDim();j++)
+			{
+				for (i=0;i<this->getXDim(); i++)
+				{
+					double tmp=0;
+					for (k=0;k<this->getZDim(); k++)
+						for (c=0;c<this->getCDim();c++)
+							tmp += float(data4d_uint16[c][k][j][i]);
+					sumdata2d[j][i]=tmp;
+				}
+			}
+}
+else if (data4d_float32)
+{
+			for (j=0;j<this->getYDim();j++)
+			{
+				for (i=0;i<this->getXDim(); i++)
+				{
+					double tmp=0;
+					for (k=0;k<this->getZDim(); k++)
+						for (c=0;c<this->getCDim();c++)
+							tmp += float(data4d_float32[c][k][j][i]);
+					sumdata2d[j][i]=tmp;
+				}
+			}
+}
 			break;
 
 		default:
