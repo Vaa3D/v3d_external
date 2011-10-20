@@ -614,13 +614,8 @@ void XFormView::popupImageProcessingDialog(QString item)
 			}
 			else if (item== tr(" -- convert 32bit (single-precision float) image to 8 bit"))
 			{
-//				bool ok1;
-//				int shiftnbits = QInputDialog::getInteger(this, tr("Dividing factor"), tr("How many bits you would like to shift to the right during the 16-bit to 8-bit conversion?"), 0, 0, 8, 1, &ok1);
-//				if (ok1)
-//				{
 				//2010-01-29. no need to ask how many bits, just shift 0 bit as the function indeed will call the proj_general_scaleandconvert28bit()
 					imgData->proj_general_convert32bit_to_8bit(0);
-//				}
 			}
 			else if (item== tr(" -- intensity scaling"))
 			{
