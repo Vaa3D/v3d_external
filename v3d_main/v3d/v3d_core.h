@@ -115,29 +115,20 @@ class V3D_atlas_viewerDialog;
 struct CurveTracePara; //in curve_trace_para_dialog.h
 struct Options_Rotate;
 
-//#include "thread_regist.h"
-
 typedef unsigned short int USHORTINT16;
-
-//class RegistrationThread;
-/**********************************************************/
 
 enum ImagePlaneDisplayType {imgPlaneUndefined, imgPlaneX, imgPlaneY, imgPlaneZ};
 enum AxisCode {axis_x, axis_y, axis_z, axis_c};
 enum ImageResamplingCode {PRS_Z_ONLY, PRS_X_ONLY, PRS_Y_ONLY, PRS_XY_SAME, PRS_XYZ_SAME};
 enum ImageMaskingCode {IMC_XYZ_INTERSECT, IMC_XYZ_UNION, IMC_XY, IMC_YZ, IMC_XZ};
 
-
-//080314: add _v3d suffix for several memory functions, as they are specific to V3D interface
 template <class T> int new3dpointer_v3d(T *** & p, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, unsigned char * p1d);
 template <class T> void delete3dpointer_v3d(T *** & p, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2);
 
 template <class T> int new4dpointer_v3d(T **** & p, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3, unsigned char * p1d);
 template <class T> void delete4dpointer_v3d(T **** & p, V3DLONG sz0, V3DLONG sz1, V3DLONG sz2, V3DLONG sz3);
 
-
 void v3d_aboutinfo();
-//
 
 template <class T> QPixmap copyRaw2QPixmap(const T ** p2d, V3DLONG sz0, V3DLONG sz1);
 template <class T> QPixmap copyRaw2QPixmap(const T ** p2dRed, const unsigned char ** p2dGreen, const unsigned char ** p2dBlue, V3DLONG sz0, V3DLONG sz1);
@@ -160,13 +151,13 @@ bool compute_statistics_objects(My4DImage *grayimg, V3DLONG c, My4DImage * maski
 bool compute_statistics_objects(Vol3DSimple<unsigned char> *grayimg, Vol3DSimple<unsigned short int> * maskimg, LocationSimple * & p_ano, V3DLONG & n_objects);
 
 
-bool convert_data_to_8bit(void * &img, V3DLONG * sz, int datatype); //080302
+bool convert_data_to_8bit(void * &img, V3DLONG * sz, int datatype); 
 
 QList <LocationSimple> readPosFile(const char * posFile); //080107. obsolete. try not to use. 090725
-QList <LocationSimple> readPosFile_usingMarkerCode(const char * posFile); //added 090725
-bool readSingleImageFile(char *imgSrcFile, unsigned char * & data1d, V3DLONG * & sz, ImagePixelType & datatype); //080318, added for convenience
+QList <LocationSimple> readPosFile_usingMarkerCode(const char * posFile); 
+bool readSingleImageFile(char *imgSrcFile, unsigned char * & data1d, V3DLONG * & sz, ImagePixelType & datatype); 
 
-QStringList importSeriesFileList_addnumbersort(const QString & individualFileName, TimePackType & timepacktype); //sort file name sbased inserting some number. written by Yu Yang
+QStringList importSeriesFileList_addnumbersort(const QString & individualFileName, TimePackType & timepacktype); 
 
 
 struct InvidualAtlasFileInfo
