@@ -52,7 +52,6 @@
 #endif
 
 #include <stdio.h>
-//#include <strings.h>
 #include <math.h>
 
 #include <QLayout>
@@ -3960,7 +3959,12 @@ else if (data4d_float32)
 			tmp_opt.center_x = (this->getXDim()-1.0)/2;
 			tmp_opt.center_y = d0mean;
 			tmp_opt.center_z = d1mean;
-			b_res = rotate_inPlaneX(this->getRawData(), insz, tmp_opt, outvol1d, outsz);
+			if (data4d_uint8)
+				b_res = rotate_inPlaneX(this->getRawData(), insz, tmp_opt, outvol1d, outsz);
+			else if (data4d_uint16)	
+				b_res = rotate_inPlaneX((unsigned short int *)(this->getRawData()), insz, tmp_opt, outvol1d, outsz);
+			else if (data4d_float32)	
+				b_res = rotate_inPlaneX((float *)(this->getRawData()), insz, tmp_opt, outvol1d, outsz);
 			break;
 
 		case imgPlaneY:
@@ -3968,7 +3972,12 @@ else if (data4d_float32)
 			tmp_opt.center_x = d0mean;
 			tmp_opt.center_y = (this->getYDim()-1.0)/2;
 			tmp_opt.center_z = d1mean;
-			b_res = rotate_inPlaneY(this->getRawData(), insz, tmp_opt, outvol1d, outsz);
+			if (data4d_uint8)
+				b_res = rotate_inPlaneY(this->getRawData(), insz, tmp_opt, outvol1d, outsz);
+			else if (data4d_uint16)	
+				b_res = rotate_inPlaneY((unsigned short int *)(this->getRawData()), insz, tmp_opt, outvol1d, outsz);
+			else if (data4d_float32)	
+				b_res = rotate_inPlaneY((float *)(this->getRawData()), insz, tmp_opt, outvol1d, outsz);
 			break;
 
 		case imgPlaneZ:
@@ -3976,7 +3985,13 @@ else if (data4d_float32)
 			tmp_opt.center_x = d0mean;
 			tmp_opt.center_y = d1mean;
 			tmp_opt.center_z = (this->getZDim()-1.0)/2;
-			b_res = rotate_inPlaneZ(this->getRawData(), insz, tmp_opt, outvol1d, outsz);
+			if (data4d_uint8)
+				b_res = rotate_inPlaneZ(this->getRawData(), insz, tmp_opt, outvol1d, outsz);
+			else if (data4d_uint16)	
+				b_res = rotate_inPlaneZ((unsigned short int *)(this->getRawData()), insz, tmp_opt, outvol1d, outsz);
+			else if (data4d_float32)	
+				b_res = rotate_inPlaneZ((float *)(this->getRawData()), insz, tmp_opt, outvol1d, outsz);
+			
 			break;
 
 		default:
@@ -3998,8 +4013,6 @@ else if (data4d_float32)
 	updateViews();
 	return true;
 }
-
-
 
 bool My4DImage::proj_general_resampling(ImageResamplingCode mycode, double target_rez, double cur_rez, int interp_method)
 {
