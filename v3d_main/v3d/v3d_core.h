@@ -91,7 +91,6 @@ Jan 28-30, 2010: PHC. further adjusting codes for v2.440 and above
 
 #include <QBasicTimer>
 #include <QPolygonF>
-//#include <QMainWindow>
 
 class HoverPoints;
 class QLineEdit;
@@ -430,7 +429,6 @@ public:
 	bool proj_general_blend_channels();
 	bool proj_general_blend_atlasfiles();
 	bool proj_general_split_channels(bool b_keepallchannels, int chno);
-	bool proj_general_stitchTwoImages(V3DLONG channo);
 	bool proj_general_hist_display();
 	bool proj_general_linear_adjustment();
 	bool proj_general_hist_equalization(unsigned char lowerbound, unsigned char higherbound);
@@ -445,35 +443,6 @@ public:
 	QList <LocationSimple> autoMarkerFromImg(V3DLONG chno);
 	QList <LocationSimple> autoMarkerFromImg(V3DLONG chno, BoundingBox bbox, float zthickness);
 
-	/*
-	bool proj_alignment_seed_grid(int kch);
-	bool proj_alignment_seed_gradient(int kch);
-	bool proj_alignment_seed_curvature(int kch);
-	bool proj_alignment_seed_random(int kch, double Kfactor, V3DLONG KK);
-	bool proj_alignment_seed_file(QString curfile);
-	bool proj_alignment_global();
-	bool proj_alignment_global_real(My4DImage * pSubjectImg);
-	bool proj_alignment_affine_matching_landmarks();
-	bool proj_alignment_affine_matching_landmarks_real(My4DImage * pSubjectImg);
-	bool proj_alignment_flybrain_lobeseg();
-	bool proj_alignment_matching_point();
-	bool proj_alignment_matching_point_real(My4DImage * pSubjectImg); //the real function for computing
-	bool proj_alignment_matching_1single_pt(int markerIndex_target);
-	//bool proj_alignment_matching_1single_pt_real(My4DImage * pSubjectImg, int pt_ind);
-	bool proj_alignment_matching_1single_pt_real(My4DImage * pSubjectImg, int markerIndex_target, int markerIndex_subject);
-	bool proj_alignment_warp_using_landmarks_real(My4DImage * pSubjectImg); //the real function for computing
-	bool proj_alignment_warp_using_landmarks(bool b_overwrite_original);
-	bool proj_alignment_find_landmark_and_warp(bool b_overwrite_original); //the all-in-one matching and warping
-
-	RegistrationThread reg_thread;
-
-	bool proj_cellseg_templatematching();
-	bool proj_cellseg_cellcounting(); //for Yu Yang. 090706
-	bool proj_cellseg_watershed();
-	bool proj_cellseg_levelset();
-	bool proj_cellseg_GaussianFit_pos(V3DLONG posx, V3DLONG posy, V3DLONG posz, V3DLONG posc, int nGauss, bool b_isotropic);
-*/
-
 signals:
 	void focusFeatureViewTextUpdated();
 
@@ -483,16 +452,12 @@ public slots:
 };
 
 
-/**********************************************************/
 bool getFocusCrossLinePos(int & focusPosInWidth, int & focusPosInHeight, My4DImage * imgData, ImagePlaneDisplayType Ptype);
 
 
 class XFormView : public ArthurFrame //class XFormView : public QWidget
 {
     Q_OBJECT
-//    Q_PROPERTY(bool animation READ animation WRITE setAnimation)
-//    Q_PROPERTY(double shear READ shear WRITE changeShear)
-//    Q_PROPERTY(double rotation READ rotation WRITE changeRotation)
     Q_PROPERTY(double scale READ scale WRITE changeScale)
 
 public:
@@ -515,7 +480,7 @@ public:
 	void set_disp_height(int a) {disp_height = a;}
 	void set_disp_scale(double a) {disp_scale = a; }
 	
-	/* Converts point from mouse event coordinates to image coordinates */
+	// Converts point from mouse event coordinates to image coordinates 
 	QPointF mouseEventToImageCoords(const QPoint& p);
 
     void mousePressEvent(QMouseEvent *e);
@@ -528,18 +493,12 @@ public:
     void enterEvent (QEvent * e);
     void leaveEvent (QEvent * e);
 
-	void wheelEvent(QWheelEvent * e); //add this on 2008-01-10
-
-	//void dragMoveEvent(QDragMoveEvent * e); //090212
+	void wheelEvent(QWheelEvent * e); 
 
     void dispHistogram();
 	QRect getRoiBoundingRect();
 	void deleteROI();
 	const QPolygon & getRoi() {return roiPolygon;}
-
-//    void resizeEvent(QResizeEvent *e);
-
-    //QLineEdit *textEditor; //080131
 
     double scale() const { return m_scale; }
 

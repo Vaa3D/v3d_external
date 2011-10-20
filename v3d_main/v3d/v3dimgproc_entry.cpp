@@ -93,7 +93,6 @@ void XFormView::popupImageProcessingDialog(QString item)
 		  << tr(" -- resample image (and also associated landmarks)")
 		  << tr(" -- projection (max)")
 		  << tr(" -- merge channels of multple images")
-		  << tr(" -- stitch two images")
 	      << tr(" -- display histogram")
 		  << tr(" -- linear adjustment")
 		  << tr(" -- histogram equalization")
@@ -108,40 +107,12 @@ void XFormView::popupImageProcessingDialog(QString item)
 		  << tr(" -- intensity minmaxvalue recomputing")
 		  << tr(" -- invert image color")
 		  << tr(" -- rearrange grayscale image as color images")
-		  //<< tr(" -- open another image/stack in *THIS* window") //080930: this may crash the software if the new image is too big. thus disabled
 		  << tr(" -- save to file")
 		  << tr(" -- save to VANO annotation files")
 		  << tr(" -- save to movie")
 		  << tr(" -- Export landmarks to point cloud (APO) file")
 		  << tr(" -- Export landmarks and their relationship to graph (SWC) file")
 		  << tr(" -- Export traced neuron or fibrous structures to graph (SWC) file")
-/*
-#ifdef _ALLOW_IMGSTD_MENU_
-		  << tr("For C. elegans or similarly elongated images")
-		  << tr(" -- Randomly seed landmarks/control-points")
-		  << tr(" -- Find MST (Minimum spanning tree) of landmarks")
-		  << tr(" -- Detect diameter graph of MST")
-		  << tr(" -- Find cutting plane locations")
-		  << tr(" -- Straighten using slice-restacking")
-	//<< tr(" -- (available soon) Adjust backbone graph using BDB_minus algorithm")
-#endif
-#ifdef _ALLOW_IMGREG_MENU_
-		  << tr("For 3D image registration")
-		  << tr(" -- Seed landmarks/control-points on regular grid")
-		  << tr(" -- Seed landmarks/control-points randomly")
-		  << tr(" -- Seed landmarks/control-points using a file")
-		  << tr(" -- Global affine alignment (using image content)")
-		  << tr(" -- Global affine alignment (using xform derived from matching landmarks)")
-		  << tr(" -- Segmenting optical lobes of a fly brain (for a globally aligned fly brain)")
-		  << tr(" -- Mask blue to 0")
-		  << tr(" -- Match landmarks defined for another image (i.e. registration target)")
-		  << tr(" -- Match one single landmark in another image")
-		  << tr(" -- Warp image using corresponding landmarks")
-		  << tr(" -- ** All-in-one: detect corresponding landmarks and then warp")
-	//<< tr(" -- (available soon) Seed landmarks/control-points using big gradient (edge) points")
-	//<< tr(" -- (available soon) Seed landmarks/control-points using big curvature (corner) points")
-#endif
-*/
 #ifdef _ALLOW_NEURONSEG_MENU_
 	<< tr("For 3D fibrous structure segmentation/tracing")
     << tr(" -- top-down skeletonization")
@@ -152,23 +123,8 @@ void XFormView::popupImageProcessingDialog(QString item)
 	<< tr(" -- clear traced neuron")
 	<< tr(" -- update 3D view of traced neuron")
 	<< tr(" -- save traced neuron")
-		  //<< tr(" -- (available soon) bottom-up marching")
-		  //<< tr(" -- (available soon) global-local (Global) integration of top-down/bottom-up results")
-		  //<< tr(" -- (available soon) manual correction of fibrous segmentation")
 #endif
-	/*
-#ifdef _ALLOW_CELLSEG_MENU_
-	<< tr("For globular structure (e.g. cells, nuclei) segmentation")
-	  << tr(" -- local template matching")
-	  << tr(" -- cell counting (Yang Yu)")
-	  << tr(" -- watershed segmentation")
-	  //<< tr(" -- levelset segmentation")
-	  << tr(" -- 1-Gaussian fit of current focus pos")
-	  << tr(" -- N-Gaussian fit of current focus pos")
-	  //<< tr(" -- (available soon) Gaussian partition")
-	  //<< tr(" -- (available soon) manual correction/identification of spherical structures")
-#endif
-*/
+
 #ifdef _ALLOW_AUTOMARKER_MENU_
 	<< tr("For AutoMarker")
 	<< tr(" -- automarker for entire image")
@@ -183,7 +139,6 @@ void XFormView::popupImageProcessingDialog(QString item)
 	}
 
 	bool ok;
-	//QString item;
 	if (item.isEmpty()) //if the string is null or contains no character
 		item = QInputDialog::getItem(this, tr("Image processing"),
 								 tr("Please select the image processing procedure you like to do"), items, 0, false, &ok);
@@ -607,14 +562,6 @@ void XFormView::popupImageProcessingDialog(QString item)
 			else if (item==tr(" -- merge channels of multple images"))
 			{
 				imgData->proj_general_blend_channels();
-			}
-			else if (item==tr(" -- stitch two images"))
-			{
-				V3DLONG channo;
-				bool ok1;
-				channo = QInputDialog::getInteger(this, tr("Channel"), tr("Which channel to align:"), 1, 1, imgData->getCDim(), 1, &ok1);
-				if (ok1)
-					imgData->proj_general_stitchTwoImages(channo-1);
 			}
 			else if (item==tr(" -- display histogram") )
 			{
