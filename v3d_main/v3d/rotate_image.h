@@ -32,22 +32,12 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 //by Hanchuan Peng
 //080321
 //080808
-
+//111018
 
 #ifndef __ROTATE_IMAGE_H__
 #define __ROTATE_IMAGE_H__
 
 #include "../basic_c_fun/v3d_basicdatatype.h"
-
-/*
-#ifndef BYTE
-#define BYTE signed char
-#endif
-*/
-
-//#ifndef UBYTE
-//#define UBYTE unsigned char
-//#endif
 
 #include "opt_rotate.h"
 

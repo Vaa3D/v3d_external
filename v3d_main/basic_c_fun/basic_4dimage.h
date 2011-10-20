@@ -64,6 +64,28 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  */
 class Image4DSimple
 {
+protected:
+	unsigned char * data1d;
+	V3DLONG sz0;
+	V3DLONG sz1;
+	V3DLONG sz2;
+	V3DLONG sz3;
+	V3DLONG sz_time;
+	TimePackType timepacktype;
+	ImagePixelType datatype;
+	char imgSrcFile[1024]; //the full file path
+	int b_error;
+	double rez_x, rez_y, rez_z; //the resolution of a image pixel along the 3 axes
+	double origin_x, origin_y, origin_z; //the "true" orgin of an image, in term of the physical units (not pixels) using resolution information
+
+	V3DLONG valid_zslicenum; //indicate how many zslices are usable. This can be used by a plugin program to stream read data
+	V3DLONG prevalid_zslicenum; //indicate previous valid slices loaded before update GUI
+	void * p_customStruct; //a convenient pointer to pass back and forth some useful parameter information for a plugin
+
+	void setError( int v ) {b_error = v;}
+
+private:
+
 public:
 	Image4DSimple()
 	{
@@ -255,28 +277,6 @@ public:
 			else return true;
 		}
 	}
-
-protected:
-	void setError( int v ) {b_error = v;}
-
-	unsigned char * data1d;
-	V3DLONG sz0;
-	V3DLONG sz1;
-	V3DLONG sz2;
-	V3DLONG sz3;
-	V3DLONG sz_time;
-	TimePackType timepacktype;
-	ImagePixelType datatype;
-	char imgSrcFile[1024]; //use a V3DLONG path to store the full path
-	int b_error;
-	double rez_x, rez_y, rez_z; //the resolution of a image pixel along the 3 axes
-	double origin_x, origin_y, origin_z; //the "true" orgin of an image, in term of the physical units (not pixels) using resolution information
-
-	V3DLONG valid_zslicenum; //indicate how many zslices are usable. This can be used by a plugin program to stream read data
-	V3DLONG prevalid_zslicenum; //indicate previous valid slices loaded before update GUI
-	void * p_customStruct; //a convenient pointer to pass back and forth some useful parameter information for a plugin
-
-private:
 };
 
 bool convert_data_to_8bit(void * &img, V3DLONG * sz, int datatype);
