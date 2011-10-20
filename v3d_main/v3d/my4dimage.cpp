@@ -3986,11 +3986,6 @@ else if (data4d_float32)
 
 	//finally rotate image in plane
 
-	V3DLONG insz[4]; insz[0]=this->getXDim(); insz[1]=this->getYDim(); insz[2]=this->getZDim(); insz[3]=this->getCDim();
-	unsigned char * outvol1d=0;
-	V3DLONG *outsz=0;
-	bool b_res=false;
-
 	Options_Rotate tmp_opt;
 	tmp_opt.b_keepSameSize = true;
 	tmp_opt.fillcolor=0;
@@ -4001,20 +3996,6 @@ else if (data4d_float32)
 			tmp_opt.center_x = (this->getXDim()-1.0)/2;
 			tmp_opt.center_y = d0mean;
 			tmp_opt.center_z = d1mean;
-			if (data4d_uint8)
-				b_res = rotate_inPlaneX(this->getRawData(), insz, tmp_opt, outvol1d, outsz);
-			else if (data4d_uint16)	
-			{
-				unsigned short int * tmpout=0;
-				b_res = rotate_inPlaneX((unsigned short int *)(this->getRawData()), insz, tmp_opt, tmpout, outsz);
-				outvol1d = (unsigned char *)tmpout;
-			}
-			else if (data4d_float32)	
-			{
-				float * tmpout=0;
-				b_res = rotate_inPlaneX((float *)(this->getRawData()), insz, tmp_opt, tmpout, outsz);
-				outvol1d = (unsigned char *)tmpout;
-			}
 			break;
 
 		case imgPlaneY:
@@ -4022,20 +4003,6 @@ else if (data4d_float32)
 			tmp_opt.center_x = d0mean;
 			tmp_opt.center_y = (this->getYDim()-1.0)/2;
 			tmp_opt.center_z = d1mean;
-			if (data4d_uint8)
-				b_res = rotate_inPlaneY(this->getRawData(), insz, tmp_opt, outvol1d, outsz);
-			else if (data4d_uint16)	
-			{
-				unsigned short int * tmpout=0;
-				b_res = rotate_inPlaneY((unsigned short int *)(this->getRawData()), insz, tmp_opt, tmpout, outsz);
-				outvol1d = (unsigned char *)tmpout;
-			}
-			else if (data4d_float32)	
-			{
-				float * tmpout=0;
-				b_res = rotate_inPlaneY((float *)(this->getRawData()), insz, tmp_opt, tmpout, outsz);
-				outvol1d = (unsigned char *)tmpout;
-			}
 			break;
 
 		case imgPlaneZ:
@@ -4043,36 +4010,14 @@ else if (data4d_float32)
 			tmp_opt.center_x = d0mean;
 			tmp_opt.center_y = d1mean;
 			tmp_opt.center_z = (this->getZDim()-1.0)/2;
-			if (data4d_uint8)
-				b_res = rotate_inPlaneZ(this->getRawData(), insz, tmp_opt, outvol1d, outsz);
-			else if (data4d_uint16)	
-			{
-				unsigned short int * tmpout=0;
-				b_res = rotate_inPlaneZ((unsigned short int *)(this->getRawData()), insz, tmp_opt, tmpout, outsz);
-				outvol1d = (unsigned char *)tmpout;
-			}
-			else if (data4d_float32)	
-			{
-				float * tmpout=0;
-				b_res = rotate_inPlaneZ((float *)(this->getRawData()), insz, tmp_opt, tmpout, outsz);
-				outvol1d = (unsigned char *)tmpout;
-			}
 			break;
 
 		default:
 			return false;
 	}
-
-	//assign the rotated image to the current image and update the pointers
-
-	if (b_res)
-		setNewImageData(outvol1d, outsz[0], outsz[1], outsz[2], outsz[3],  this->getDatatype() );
-	else
-	{
-		v3d_msg("The rotate operation fails.\n");
+	
+	if (!rotate(ptype, tmp_opt)) //this will update image, so remove the following code
 		return false;
-	}
-	if (outsz) {delete []outsz; outsz=0;}
 
 	//update view
 	updateViews();
