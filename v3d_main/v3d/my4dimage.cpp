@@ -3962,9 +3962,17 @@ else if (data4d_float32)
 			if (data4d_uint8)
 				b_res = rotate_inPlaneX(this->getRawData(), insz, tmp_opt, outvol1d, outsz);
 			else if (data4d_uint16)	
-				b_res = rotate_inPlaneX((unsigned short int *)(this->getRawData()), insz, tmp_opt, outvol1d, outsz);
+			{
+				unsigned short int * tmpout=0;
+				b_res = rotate_inPlaneX((unsigned short int *)(this->getRawData()), insz, tmp_opt, tmpout, outsz);
+				outvol1d = (unsigned char *)tmpout;
+			}
 			else if (data4d_float32)	
-				b_res = rotate_inPlaneX((float *)(this->getRawData()), insz, tmp_opt, outvol1d, outsz);
+			{
+				float * tmpout=0;
+				b_res = rotate_inPlaneX((float *)(this->getRawData()), insz, tmp_opt, tmpout, outsz);
+				outvol1d = (unsigned char *)tmpout;
+			}
 			break;
 
 		case imgPlaneY:
@@ -3975,9 +3983,17 @@ else if (data4d_float32)
 			if (data4d_uint8)
 				b_res = rotate_inPlaneY(this->getRawData(), insz, tmp_opt, outvol1d, outsz);
 			else if (data4d_uint16)	
-				b_res = rotate_inPlaneY((unsigned short int *)(this->getRawData()), insz, tmp_opt, outvol1d, outsz);
+			{
+				unsigned short int * tmpout=0;
+				b_res = rotate_inPlaneY((unsigned short int *)(this->getRawData()), insz, tmp_opt, tmpout, outsz);
+				outvol1d = (unsigned char *)tmpout;
+			}
 			else if (data4d_float32)	
-				b_res = rotate_inPlaneY((float *)(this->getRawData()), insz, tmp_opt, outvol1d, outsz);
+			{
+				float * tmpout=0;
+				b_res = rotate_inPlaneY((float *)(this->getRawData()), insz, tmp_opt, tmpout, outsz);
+				outvol1d = (unsigned char *)tmpout;
+			}
 			break;
 
 		case imgPlaneZ:
@@ -3988,10 +4004,17 @@ else if (data4d_float32)
 			if (data4d_uint8)
 				b_res = rotate_inPlaneZ(this->getRawData(), insz, tmp_opt, outvol1d, outsz);
 			else if (data4d_uint16)	
-				b_res = rotate_inPlaneZ((unsigned short int *)(this->getRawData()), insz, tmp_opt, outvol1d, outsz);
+			{
+				unsigned short int * tmpout=0;
+				b_res = rotate_inPlaneZ((unsigned short int *)(this->getRawData()), insz, tmp_opt, tmpout, outsz);
+				outvol1d = (unsigned char *)tmpout;
+			}
 			else if (data4d_float32)	
-				b_res = rotate_inPlaneZ((float *)(this->getRawData()), insz, tmp_opt, outvol1d, outsz);
-			
+			{
+				float * tmpout=0;
+				b_res = rotate_inPlaneZ((float *)(this->getRawData()), insz, tmp_opt, tmpout, outsz);
+				outvol1d = (unsigned char *)tmpout;
+			}
 			break;
 
 		default:
