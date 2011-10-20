@@ -113,16 +113,60 @@ bool ImageLoader::execute() {
             sz[1] = image->getYDim();
             sz[2] = image->getZDim();
             sz[3] = image->getCDim();
-            unsigned char* data = image->getRawData();
-            saveStack2RawPBD(targetFilepath.toAscii().data(), data, sz, image->getDatatype());
+            unsigned char* data = 0;
+            if (image->getDatatype()==1) {
+                data = image->getRawData();
+            } else if (image->getDatatype()==2) {
+                data = convertType2Type1(sz, image);
+                if (data==0) {
+                    qDebug() << "ImageLoader::execute - problem allocating memory for conversion of type 2 to type 1";
+                    return false;
+                }
+                delete image;
+                image=0;
+            } else {
+                qDebug() << "ImageLoader::execute - do not support source data other than type 1 or type 2";
+                return false;
+            }
+            saveStack2RawPBD(targetFilepath.toAscii().data(), data, sz);
+            if (image!=0) {
+                delete image;
+            } else {
+                delete data;
+            }
         } else {
             image->saveImage(targetFilepath.toAscii().data());
+            delete image;
         }
         qDebug() << "Saving time is " << stopwatch.elapsed() / 1000.0 << " seconds";
         return true;
     }
     return false; // should not get here
 }
+
+unsigned char * ImageLoader::convertType2Type1(const V3DLONG * sz, My4DImage *image) {
+    Image4DProxy<My4DImage> proxy(image);
+    V3DLONG totalSize=sz[0]*sz[1]*sz[2]*sz[3];
+    unsigned char * data = new unsigned char [totalSize];
+    if (data==0) {
+        return data;
+    }
+    for (V3DLONG s3=0;s3<sz[3];s3++) {
+        for (V3DLONG s2=0;s2<sz[2];s2++) {
+            for (V3DLONG s1=0;s1<sz[1];s1++) {
+                for (V3DLONG s0=0;s0<sz[0];s0++) {
+                    unsigned int v = (*proxy.at_uint16(s0,s1,s2,s3)) / 16;
+                    if (v>255) {
+                        v=255;
+                    }
+                    data[s3*sz[2]*sz[1]*sz[0] + s2*sz[1]*sz[0] + s1*sz[0] + s0] = v;
+                }
+            }
+        }
+    }
+    return data;
+}
+
 
 bool ImageLoader::validateFile() {
     qDebug() << "Input file = " << inputFilepath;
@@ -216,15 +260,10 @@ QString ImageLoader::getFilePrefix(QString filepath) {
 
 */
 
-int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char* data, const V3DLONG * sz, int datatype)
+int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char* data, const V3DLONG * sz)
 {
     int berror=0;
-
-    if (datatype!=1) {
-        printf("saveStack2RawPBD : Only datatype 1 is supported\n");
-        berror=1;
-        return berror;
-    }
+    int datatype=1; // PBD only supports type=1 as output
 
         /* This function save a data stack to raw file */
                 printf("size of [V3DLONG]=[%ld], [V3DLONG]=[%ld] [int]=[%ld], [short int]=[%ld], [double]=[%ld], [float]=[%ld]\n",
