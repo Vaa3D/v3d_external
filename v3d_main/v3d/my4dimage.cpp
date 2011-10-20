@@ -2000,24 +2000,67 @@ bool My4DImage::setNewImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG ns
 
 bool My4DImage::rotate(ImagePlaneDisplayType ptype, const Options_Rotate & r_opt)
 {
-	if (!data4d_uint8) {v3d_msg("now only support unit8 in rotate().");  return false;}
+	if (!data4d_uint8 && !data4d_uint16 && !data4d_float32) 
+	{
+		v3d_msg("None of the 4d data pointers is valid in rotate().");  return false;
+	}
 
 	V3DLONG insz[4]; insz[0]=this->getXDim(); insz[1]=this->getYDim(); insz[2]=this->getZDim(); insz[3]=this->getCDim();
 	unsigned char * outvol1d=0;
 	V3DLONG *outsz=0;
 	bool b_res=false;
+
 	switch (ptype)
 	{
 		case imgPlaneX:
-			b_res = rotate_inPlaneX(this->getRawData(), insz, r_opt, outvol1d, outsz);
+			if (data4d_uint8)
+				b_res = rotate_inPlaneX(this->getRawData(), insz, r_opt, outvol1d, outsz);
+			else if (data4d_uint16)	
+			{
+				unsigned short int * tmpout=0;
+				b_res = rotate_inPlaneX((unsigned short int *)(this->getRawData()), insz, r_opt, tmpout, outsz);
+				outvol1d = (unsigned char *)tmpout;
+			}
+			else if (data4d_float32)	
+			{
+				float * tmpout=0;
+				b_res = rotate_inPlaneX((float *)(this->getRawData()), insz, r_opt, tmpout, outsz);
+				outvol1d = (unsigned char *)tmpout;
+			}
 			break;
 
 		case imgPlaneY:
-			b_res = rotate_inPlaneY(this->getRawData(), insz, r_opt, outvol1d, outsz);
+			if (data4d_uint8)
+				b_res = rotate_inPlaneY(this->getRawData(), insz, r_opt, outvol1d, outsz);
+			else if (data4d_uint16)	
+			{
+				unsigned short int * tmpout=0;
+				b_res = rotate_inPlaneY((unsigned short int *)(this->getRawData()), insz, r_opt, tmpout, outsz);
+				outvol1d = (unsigned char *)tmpout;
+			}
+			else if (data4d_float32)	
+			{
+				float * tmpout=0;
+				b_res = rotate_inPlaneY((float *)(this->getRawData()), insz, r_opt, tmpout, outsz);
+				outvol1d = (unsigned char *)tmpout;
+			}
 			break;
 
 		case imgPlaneZ:
-			b_res = rotate_inPlaneZ(this->getRawData(), insz, r_opt, outvol1d, outsz);
+			if (data4d_uint8)
+				b_res = rotate_inPlaneZ(this->getRawData(), insz, r_opt, outvol1d, outsz);
+			else if (data4d_uint16)	
+			{
+				unsigned short int * tmpout=0;
+				b_res = rotate_inPlaneZ((unsigned short int *)(this->getRawData()), insz, r_opt, tmpout, outsz);
+				outvol1d = (unsigned char *)tmpout;
+			}
+			else if (data4d_float32)	
+			{
+				float * tmpout=0;
+				b_res = rotate_inPlaneZ((float *)(this->getRawData()), insz, r_opt, tmpout, outsz);
+				outvol1d = (unsigned char *)tmpout;
+			}
 			break;
 
 		default:
@@ -2025,7 +2068,6 @@ bool My4DImage::rotate(ImagePlaneDisplayType ptype, const Options_Rotate & r_opt
 	}
 
 	//assign the rotated image to the current image and update the pointers
-
 	if (b_res)
     {
 		setNewImageData(outvol1d, outsz[0], outsz[1], outsz[2], outsz[3], this->getDatatype());
