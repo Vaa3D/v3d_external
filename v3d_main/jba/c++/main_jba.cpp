@@ -834,7 +834,7 @@ int main (int argc, char *argv[])
 			}
 		}
 
-		if (0 && b_need_resize)
+		if (b_need_resize)
 		{
 			printf("Now fit the warped image [pointer=%p] with size [%ld, %ld, %ld, %ld] to the target size of [%ld, %ld, %ld, %ld]\n", 
 			        img_warped, sz_warped[0], sz_warped[1], sz_warped[2], sz_warped[3], sz_target[0], sz_target[1], sz_target[2], sz_target[3]);
