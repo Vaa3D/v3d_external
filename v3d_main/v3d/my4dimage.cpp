@@ -3712,7 +3712,10 @@ using namespace RBD_LIBRARIES;
 bool My4DImage::proj_general_principal_axis(ImagePlaneDisplayType ptype)
 {
 	//first generate the sum image of all planes for a particular axis code
-	//if (!data4d_uint8) {v3d_msg("now only support unit8 in proj_general_principal_axis().");  return false;}
+	if (!data4d_uint8 && !data4d_uint16 && !data4d_float32) 
+	{
+	  v3d_msg("None of the 4D pointers is valid in proj_general_principal_axis().");  return false;
+	}
 
 	float * sumdata1d = 0;
 	float ** sumdata2d = 0;

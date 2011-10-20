@@ -326,17 +326,14 @@ public:
 	void exportLandmarkandRelationToSWCFile();
 	void exportNeuronToSWCFile();
 
-	//int landmarkMatchingMethod; //080820: should be PointMatchMethodType but I will force to convert to that type in the code
-	//BDB_Minus_ConfigParameter * p_flybrain_lobeseg_para; //080822
-
 	void computePointNeighborMoment(int x, int y, int z, int c, double & curptval, double & ave, double & sdev, double & skew, double & curt);
 	void computePointNeighborMoment(LocationSimple & L, int c); //overload for convenience
 
 	bool saveVANO_data();
 	bool saveMovie();
 	bool saveFile();
-        bool saveFile(char filename[]);
-        bool saveFile(QString outputFile);
+    bool saveFile(char filename[]);
+    bool saveFile(QString outputFile);
 	void crop(int landmark_crop_opt);
 	void crop(V3DLONG bpos_x, V3DLONG epos_x, V3DLONG bpos_y, V3DLONG epos_y, V3DLONG bpos_z, V3DLONG epos_z, V3DLONG bpos_c, V3DLONG epos_c, int landmark_crop_opt);
 	bool maskBW_roi_bbox(unsigned char tval, V3DLONG c_min, V3DLONG c_max, ImageMaskingCode my_maskcode, bool b_inside);
@@ -351,17 +348,7 @@ public:
 	bool rotate(ImagePlaneDisplayType ptype, const Options_Rotate & r_opt);
 	bool flip(AxisCode my_axiscode);
 
-	//080314: add worm project specific codes
-
 	bool b_proj_worm_mst_diameter_set;
-
-/*	bool proj_worm_random_landmarking(int kch, double Kfactor, V3DLONG KK);
-	bool proj_worm_mst_diameter(bool b_keepDiameterOnly);
-	bool proj_worm_bdb_backbone();
-	//  bool proj_worm_cubic_spline_backbone();
-	bool proj_worm_straightening(bool b_Restacking, int OutWid);
-*/
-
 
 	V_NeuronSWC_list tracedNeuron;
 	V3DLONG last_hit_landmark, cur_hit_landmark;
