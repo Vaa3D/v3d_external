@@ -649,7 +649,7 @@ template <class T1, class T2> bool Warp3D::setInitData(
 	float T2Normalizer = getNormalizer(img0_subject1d);
 	fprintf(stdout, "in setInitData(), the subject image data normalizer=%5.3f\n", T2Normalizer);
 	new4dpointer(img0_subject4d, (V3DLONG)img0_sz_subject[0], (V3DLONG)img0_sz_subject[1], (V3DLONG)img0_sz_subject[2], (V3DLONG)img0_sz_subject[3], img0_subject1d);
-	saveImage("test1subject.raw", (unsigned char *)img0_subject1d, img0_sz_subject, sizeof(T2));
+	//saveImage("test1subject.raw", (unsigned char *)img0_subject1d, img0_sz_subject, sizeof(T2));
 	
 	if (img0_subject4d)
 	{

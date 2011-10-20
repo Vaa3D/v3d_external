@@ -763,8 +763,7 @@ int main (int argc, char *argv[])
 		goto Label_exit;
 	}
 
-	if (!quick_save_image(img_subject, sz_subject, datatype_subject, "subject_tmp.v3draw"))
-		goto Label_exit;
+	//if (!quick_save_image(img_subject, sz_subject, datatype_subject, "subject_tmp.v3draw")) goto Label_exit;
 		
 	// do the computation
 	printf("\n-------------------------------------------------\n");
