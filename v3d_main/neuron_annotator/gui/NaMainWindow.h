@@ -71,7 +71,8 @@ class NaMainWindow : public QMainWindow
         // indices correspond to children of ui.viewerStackedWidget
         VIEWER_MIP = 0,
         VIEWER_ZSTACK = 1,
-        VIEWER_3D = 2
+        VIEWER_3D = 2,
+        VIEWER_WAIT_LOADING_SCREEN
     };
 
 public:
@@ -88,6 +89,8 @@ signals:
     void nutatingChanged(bool);
 
 public slots:
+    void onDataLoadStarted();
+    void onDataLoadFinished();
     void openMulticolorImageStack(QString dirName);
     void on_actionV3DDefault_triggered();
     void on_actionNeuronAnnotator_triggered();
@@ -156,6 +159,7 @@ private:
     //
     NeuronContextMenu* neuronContextMenu;
     QMenu* viewerContextMenu;
+    ViewerIndex recentViewer;
 };
 
 #endif // NAMAINWINDOW_H

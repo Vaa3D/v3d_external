@@ -528,7 +528,7 @@ int Na3DWidget::neuronAt(QPoint pos)
 
 void Na3DWidget::highlightNeuronAtPosition(QPoint pos)
 {
-    qDebug() << "Na3DWidget::highlightNeuronAtPosition" << __FILE__ << __LINE__;
+    // qDebug() << "Na3DWidget::highlightNeuronAtPosition" << __FILE__ << __LINE__;
     if (!getRendererNa()) return;
     // avoid crash w/ NaN markerViewMatrix
     if (getRendererNa()->hasBadMarkerViewMatrix()) {
@@ -783,7 +783,7 @@ void Na3DWidget::choiceRenderer()
                 getRendererNa(), SLOT(setAlphaBlending(bool)));
         connect(this, SIGNAL(showCornerAxesChanged(bool)),
                 getRendererNa(), SLOT(setShowCornerAxes(bool)));
-        connect(getRendererNa(), SIGNAL(showCornerAxesChanged()),
+        connect(getRendererNa(), SIGNAL(showCornerAxesChanged(bool)),
                 this, SLOT(setShowCornerAxes(bool)));
         getRendererNa()->setShowCornerAxes(bShowCornerAxes);
     }

@@ -1358,8 +1358,7 @@ void RendererNeuronAnnotator::paint_corner_axes()
         glRotated(eulerAngles[0], 1, 0, 0);
         glRotated(eulerAngles[1], 0, 1, 0);
         glRotated(eulerAngles[2], 0, 0, 1);
-        // glDisable(GL_DEPTH_TEST);
-        glClear(GL_DEPTH_BUFFER_BIT);
+        glClear(GL_DEPTH_BUFFER_BIT); // draw over the existing scene
         glEnable(GL_LINE_SMOOTH);
         glLineWidth(5.0);
         glBegin(GL_LINES);
@@ -1372,7 +1371,7 @@ void RendererNeuronAnnotator::paint_corner_axes()
             glVertex3f(0, 0, 0); // z0
             glVertex3f(0, 0, -1); // z1
         glEnd();
-        glClear(GL_DEPTH_BUFFER_BIT);
+        glClear(GL_DEPTH_BUFFER_BIT); // draw over the black lines
         glLineWidth(3.0);
         glBegin(GL_LINES);
             // Thinner colored lines

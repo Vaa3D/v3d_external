@@ -67,6 +67,7 @@ void NutateThread::unpause() {paused = false;}
 NaMainWindow::NaMainWindow()
     : nutateThread(NULL)
     , statusProgressBar(NULL)
+    , recentViewer(VIEWER_3D)
 {
     ui.setupUi(this);
 
@@ -293,6 +294,22 @@ NaMainWindow::NaMainWindow()
     initializeStereo3DOptions();
 }
 
+void NaMainWindow::onDataLoadStarted()
+{
+    // Give strong indication to user that load is in progress
+    ui.viewerControlTabWidget->setEnabled(false);
+    ViewerIndex currentIndex = (ViewerIndex)ui.viewerStackedWidget->currentIndex();
+    if (currentIndex != VIEWER_WAIT_LOADING_SCREEN)
+        recentViewer = currentIndex;
+    ui.viewerStackedWidget->setCurrentIndex(VIEWER_WAIT_LOADING_SCREEN);
+}
+
+void NaMainWindow::onDataLoadFinished()
+{
+    ui.viewerStackedWidget->setCurrentIndex(recentViewer);
+    ui.viewerControlTabWidget->setEnabled(true);
+}
+
 void NaMainWindow::initializeStereo3DOptions()
 {
     // Only check one stereo format at a time
@@ -416,7 +433,8 @@ void NaMainWindow::setChannelTwoVisibility(bool v)
     emit channelVisibilityChanged(2, v);
 }
 
-void NaMainWindow::onViewerChanged(int viewerIndex) {
+void NaMainWindow::onViewerChanged(int viewerIndex)
+{
     QString msg(" viewer selected.");
     switch(viewerIndex) {
     case VIEWER_MIP:
@@ -429,6 +447,7 @@ void NaMainWindow::onViewerChanged(int viewerIndex) {
         msg = "3D" + msg;
         break;
     default:
+        return; // wait window gets no message
         break;
     }
     ui.statusbar->showMessage(msg);
@@ -633,10 +652,13 @@ void NaMainWindow::openMulticolorImageStack(QString dirName)
                  return;
     }
 
+    onDataLoadStarted();
     if (!loadAnnotationSessionFromDirectory(imageDir)) {
         QMessageBox::warning(this, tr("Could not load image directory"),
                                       "Error loading image directory - please check directory contents");
-            return;
+
+        onDataLoadFinished();
+        return;
     }
 
     // qDebug() << "NaMainWindow::openMulticolorImageStack() calling addDirToRecentFilesList with dir=" << imageDir.absolutePath();
@@ -900,6 +922,7 @@ void NaMainWindow::updateGalleries()
 
 void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataChanged() signal
 {
+    onDataLoadFinished();
     // TODO -- install separate listeners for dataChanged() in the various display widgets
 
     dataFlowModel->loadLsmMetadata();
@@ -922,7 +945,6 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
     QFileInfo lsmFileInfo(lsmName);
     setWindowTitle(QString("%1 - V3D Neuron Annotator").arg(lsmFileInfo.fileName()));
 
-    // good
     {
         NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
         if (! volumeReader.hasReadLock()) return;
@@ -937,9 +959,6 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
         ui.HDRBlue_pushButton->setEnabled(imgProxy.sc > 2);
     }
 
-    // bad or good - depends run to run
-    // TODO - why is 3D viewer blank if I move ui.v3dr_glwidget->onVolumeDataChanged() to end of the next block?
-    // Looks like some race condition, with this spot near the cusp
     {
         NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
         if (! volumeReader.hasReadLock()) return;

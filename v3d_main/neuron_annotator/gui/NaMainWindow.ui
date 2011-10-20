@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1188</width>
-    <height>915</height>
+    <width>1237</width>
+    <height>850</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -419,6 +419,53 @@ single-click to select a neuron fragment</string>
                  </item>
                 </layout>
                </widget>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="viewer_busy_loading_Page">
+             <layout class="QVBoxLayout" name="verticalLayout_17">
+              <item>
+               <spacer name="verticalSpacer_7">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>290</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_2">
+                <property name="text">
+                 <string>Loading data...</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QProgressBar" name="progressBar">
+                <property name="maximum">
+                 <number>0</number>
+                </property>
+                <property name="value">
+                 <number>-1</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="verticalSpacer_8">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>290</height>
+                 </size>
+                </property>
+               </spacer>
               </item>
              </layout>
             </widget>
@@ -1607,7 +1654,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1188</width>
+     <width>1237</width>
      <height>22</height>
     </rect>
    </property>
@@ -2076,6 +2123,22 @@ You can also resize the box by Ctrl + left mouse click.</string>
  <resources/>
  <connections>
   <connection>
+   <sender>resetViewButton</sender>
+   <signal>clicked()</signal>
+   <receiver>zoomWidget</receiver>
+   <slot>reset()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>756</x>
+     <y>561</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>820</x>
+     <y>529</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
    <sender>viewerControlTabWidget</sender>
    <signal>currentChanged(int)</signal>
    <receiver>viewerStackedWidget</receiver>
@@ -2120,22 +2183,6 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <hint type="destinationlabel">
      <x>100</x>
      <y>52</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>resetViewButton</sender>
-   <signal>clicked()</signal>
-   <receiver>zoomWidget</receiver>
-   <slot>reset()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>756</x>
-     <y>561</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>820</x>
-     <y>529</y>
     </hint>
    </hints>
   </connection>
