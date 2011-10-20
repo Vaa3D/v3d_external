@@ -74,33 +74,18 @@ using namespace std;
 
 #include "rotate_image.h"
 #include "dialog_rotate.h"
-//#include "dialog_watershed_para.h"
-//#include "FL_levelsetSegPara_dialog.h"
 
 #include "histogramsimple.h"
 
 #include "atlas_viewer.h"
 
-//#include "v3d_version_info.h"
-
-//#include "../jba/c++/jba_mainfunc.h"
-//#include "../jba/c++/jba_match_landmarks.h"
 #include "../jba/c++/histeq.h"
-//#include "../jba/c++/jba_affine_xform.h"
 
 #include "../basic_c_fun/volimg_proc.h"
 
-//#if !defined(WIN32) // skip under win32
 #if defined(__APPLE__) //081124
-//#include "../neurolabi/c/tz_dimage_lib.h"
-//#include "../neurolabi/c/tz_fimage_lib.h"
 #endif
 
-//#include "../lobeseg/lobeseg.h"
-
-//#include "../cellseg/FL_cellSegmentation3D.h"
-//#include "../cellseg/FL_main_brainseg.h"
-//#include "../cellseg/template_matching_seg.h"
 #include "template_matching_cellseg_dialog.h"
 
 #include "../gmm/fit_gmm.h"
@@ -109,11 +94,6 @@ using namespace std;
 
 #include "../3drenderer/barFigureDialog.h"
 #include "../v3d/v3d_application.h"
-
-//#include "thread_regist.h"
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 
 bool compute_statistics_objects(Vol3DSimple<unsigned char> *grayimg, Vol3DSimple<unsigned short int> * maskimg, LocationSimple * & p_ano, V3DLONG & n_objects)
