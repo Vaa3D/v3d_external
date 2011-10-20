@@ -3758,6 +3758,14 @@ bool My4DImage::proj_general_principal_axis(ImagePlaneDisplayType ptype)
 	  v3d_msg("None of the 4D pointers is valid in proj_general_principal_axis().");  return false;
 	}
 
+	Options_Rotate tmp_opt;
+	tmp_opt.b_keepSameSize = (QMessageBox::Yes == QMessageBox::question (0, "", "Keep rotated image the same size with the original image?", QMessageBox::Yes, QMessageBox::No)) ?
+		true : false;
+	
+	tmp_opt.fillcolor=0;
+
+	//
+	
 	float * sumdata1d = 0;
 	float ** sumdata2d = 0;
 
@@ -3986,11 +3994,6 @@ else if (data4d_float32)
 
 	//finally rotate image in plane
 
-	Options_Rotate tmp_opt;
-	tmp_opt.b_keepSameSize = (QMessageBox::Yes == QMessageBox::question (0, "", "Keep rotated image the same size", QMessageBox::Yes, QMessageBox::No)) ?
-		true : false;
-	
-	tmp_opt.fillcolor=0;
 	switch (ptype)
 	{
 		case imgPlaneX:
