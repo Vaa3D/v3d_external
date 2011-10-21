@@ -28,7 +28,7 @@ public:
 public slots:
     void initialize();
     void colorizeIncremental();
-    void setChannelColor(int index, QRgb color);
+    void setChannelColor(int index, /*QRgb*/ int color);
     void setChannelHdrRange(int index, qreal min, qreal max);
     void setChannelGamma(int index, qreal gamma);
     void setGamma(qreal gamma); // all channels

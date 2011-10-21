@@ -68,6 +68,7 @@ NaMainWindow::NaMainWindow()
     : nutateThread(NULL)
     , statusProgressBar(NULL)
     , recentViewer(VIEWER_3D)
+    , dynamicRangeTool(NULL)
 {
     ui.setupUi(this);
 
@@ -290,8 +291,23 @@ NaMainWindow::NaMainWindow()
     ui.centralwidget->installEventFilter(ui.annotationFrame);
     ui.annotationFrame->consoleConnect();
 
+    connect(ui.actionDynamic_range, SIGNAL(triggered(bool)),
+            this, SLOT(showDynamicRangeTool()));
+
     initializeContextMenus();
     initializeStereo3DOptions();
+}
+
+/* slot */
+void NaMainWindow::showDynamicRangeTool()
+{
+    // qDebug() << "NaMainWindow::showDynamicRangeTool";
+    if (! dynamicRangeTool) {
+        dynamicRangeTool = new DynamicRangeTool(this);
+        if (dataFlowModel)
+            dynamicRangeTool->setColorModel(dataFlowModel->getDataColorModel());
+    }
+    dynamicRangeTool->show();
 }
 
 void NaMainWindow::onDataLoadStarted()
@@ -811,6 +827,8 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     ui.fragmentGalleryWidget->setDataFlowModel(*dataFlowModel);
     neuronSelector->setDataFlowModel(*dataFlowModel);
     connectContextMenus(dataFlowModel->getNeuronSelectionModel());
+    if (dynamicRangeTool)
+        dynamicRangeTool->setColorModel(dataFlowModel->getDataColorModel());
 
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(initialized()),
             this, SLOT(processUpdatedVolumeData()));

@@ -2465,3 +2465,5 @@ v3d_main/neuron_annotator/gui/NeuronQAction.cpp
 v3d_main/neuron_annotator/gui/NeuronContextMenu.h
 v3d_main/neuron_annotator/gui/NeuronContextMenu.cpp
 v3d_main/neuron_annotator/resources/tex_fragment_cmb.txt
+v3d_main/neuron_annotator/gui/DynamicRangeTool.h
+v3d_main/neuron_annotator/gui/DynamicRangeTool.cpp

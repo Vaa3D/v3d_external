@@ -12,6 +12,7 @@
 #include "../ExportFile.h"
 #include "../data_model/NeuronSelectionModel.h"
 #include "NeuronContextMenu.h"
+#include "DynamicRangeTool.h"
 
 class NeuronSelector;
 
@@ -112,6 +113,7 @@ public slots:
     void onColorModelChanged();
     void onHdrChannelChanged(NaZStackWidget::Color);
     void supportQuadStereo(bool b);
+    void showDynamicRangeTool();
 
 protected slots:
     void on3DViewerRotationChanged(const Rotation3D& rot);
@@ -160,6 +162,7 @@ private:
     NeuronContextMenu* neuronContextMenu;
     QMenu* viewerContextMenu;
     ViewerIndex recentViewer;
+    DynamicRangeTool* dynamicRangeTool;
 };
 
 #endif // NAMAINWINDOW_H

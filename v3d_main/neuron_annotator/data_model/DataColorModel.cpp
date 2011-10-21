@@ -68,7 +68,7 @@ void DataColorModel::initialize()
     emit dataChanged();
 }
 
-void DataColorModel::setChannelColor(int index, QRgb color)
+void DataColorModel::setChannelColor(int index, /*QRgb*/ int color)
 {
     if (d.constData()->getChannelColor(index) == color) return;
     {

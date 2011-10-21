@@ -1700,6 +1700,8 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <addaction name="actionSelect_None"/>
     <addaction name="actionInvert_Selection"/>
     <addaction name="separator"/>
+    <addaction name="actionDynamic_range"/>
+    <addaction name="separator"/>
     <addaction name="actionPreferences"/>
    </widget>
    <widget class="QMenu" name="menuView">
@@ -2057,6 +2059,11 @@ You can also resize the box by Ctrl + left mouse click.</string>
    </property>
    <property name="text">
     <string>Animate 3D nutation</string>
+   </property>
+  </action>
+  <action name="actionDynamic_range">
+   <property name="text">
+    <string>Dynamic range...</string>
    </property>
   </action>
  </widget>
