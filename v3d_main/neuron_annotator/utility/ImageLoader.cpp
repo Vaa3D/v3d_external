@@ -337,24 +337,24 @@ int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char* data, co
                 totalUnit *= sz[i];
         }
 
-        V3DLONG maxSize = totalUnit*unitSize;
-        unsigned char * imgRe = new unsigned char [totalUnit];
+        V3DLONG maxSize = totalUnit*unitSize*2;
+        unsigned char * compressionBuffer = new unsigned char [maxSize];
 
         printf("Allocated compression target with maxSize=%d\n", maxSize);
 
-        V3DLONG compressionSize = compressPBD(imgRe, data, maxSize, maxSize);
+        V3DLONG compressionSize = compressPBD(compressionBuffer, data, totalUnit*unitSize, maxSize);
 
         if (compressionSize==0) {
             return exitWithError("Error during compressPBD");
         }
 
-        double finalCompressionRatio = (maxSize*1.0)/compressionSize;
+        double finalCompressionRatio = (totalUnit*unitSize*1.0)/compressionSize;
 
         printf("Total original size=%d  post-compression size=%d  ratio=%f\n", totalUnit, compressionSize, finalCompressionRatio);
 
         printf("Writing file...");
 
-        nwrite = fwrite(imgRe, unitSize, compressionSize, fid);
+        nwrite = fwrite(compressionBuffer, unitSize, compressionSize, fid);
         if (nwrite!=compressionSize)
         {
                 QString errorMsg = QString("Something wrong in file writing. The program wrote %1 data points but the file says there should be %2 data points.")
@@ -364,18 +364,18 @@ int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char* data, co
 
         /* clean and return */
         fclose(fid);
-        delete [] imgRe;
+        delete [] compressionBuffer;
         printf("done.\n");
         return berror;
 }
 
 
-// We assume here that preBuffer is
-V3DLONG ImageLoader::compressPBD(unsigned char * imgRe, unsigned char * preBuffer, V3DLONG bufferLength, V3DLONG spaceLeft) {
+// We assume here that sourceBuffer is
+V3DLONG ImageLoader::compressPBD(unsigned char * compressionBuffer, unsigned char * sourceBuffer, V3DLONG sourceBufferLength, V3DLONG spaceLeft) {
     bool debug=false;
     V3DLONG p=0;
 
-    if (bufferLength==0) {
+    if (sourceBufferLength==0) {
         printf("ImageLoader::compressPBD - unexpectedly received buffer of zero size\n");
         return 0;
     }
@@ -383,14 +383,14 @@ V3DLONG ImageLoader::compressPBD(unsigned char * imgRe, unsigned char * preBuffe
     unsigned char currentValue=0;
     int dbuffer[95];
     V3DLONG activeLiteralIndex=-1; // if -1 this means there is no literal mode started
-    for (int i=0;i<bufferLength;i++) {
+    for (int i=0;i<sourceBufferLength;i++) {
 
         if (p>=spaceLeft) {
             printf("ImageLoader::compressPBD ran out of space p=%d\n", p);
             return 0;
         }
 
-        // From this point we assume the result has been accumulating in imgRe, and at this moment
+        // From this point we assume the result has been accumulating in compressionBuffer, and at this moment
         // we are searching for the best approach for the next segment. First, we will try reading
         // the next value, and testing what the runlength encoding efficiency would be. The
         // efficiency is simply the (number of bytes encoded / actual bytes). Next, we will test
@@ -399,10 +399,10 @@ V3DLONG ImageLoader::compressPBD(unsigned char * imgRe, unsigned char * preBuffe
         // The minimum number of unencoded bytes to use difference encoding is 3 also (code, value).
 
         int reTest=1;
-        currentValue=preBuffer[i];
+        currentValue=sourceBuffer[i];
         int currentPosition=i+1;
-        while(currentPosition<bufferLength && reTest<128) { // 128 is the max number of repeats supported
-            if (preBuffer[currentPosition++]==currentValue) {
+        while(currentPosition<sourceBufferLength && reTest<128) { // 128 is the max number of repeats supported
+            if (sourceBuffer[currentPosition++]==currentValue) {
                 reTest++;
             } else {
                 break;
@@ -412,8 +412,8 @@ V3DLONG ImageLoader::compressPBD(unsigned char * imgRe, unsigned char * preBuffe
 
         if (reEfficiency>=4.0) { // 4.0 is the max efficiency from the difference encoding
             // Then use RE
-            imgRe[p++]=reTest+127; // The code for number of repeats
-            imgRe[p++]=currentValue; // The repeated value
+            compressionBuffer[p++]=reTest+127; // The code for number of repeats
+            compressionBuffer[p++]=currentValue; // The repeated value
             i+=(reTest-1); // because will increment one more time at top of loop
             activeLiteralIndex=-1;
         } else {
@@ -421,8 +421,8 @@ V3DLONG ImageLoader::compressPBD(unsigned char * imgRe, unsigned char * preBuffe
             int c=i;
             if (i>0) { // I.e., if not first since we can't start with a difference encoding
                 // We need to evaluate difference encoding starting with the prior value
-                unsigned int priorValue=preBuffer[i-1];
-                int unitsToCheck=bufferLength-i;
+                unsigned int priorValue=sourceBuffer[i-1];
+                int unitsToCheck=sourceBufferLength-i;
                 if (unitsToCheck>95) {
                     unitsToCheck=95; // 95 is max supported number of differences
                 }
@@ -430,11 +430,11 @@ V3DLONG ImageLoader::compressPBD(unsigned char * imgRe, unsigned char * preBuffe
                     dbuffer[j]=0; // clear the difference buffer
                 }
                 for (;c<i+unitsToCheck;c++) {
-                    int d=preBuffer[c] - priorValue;
+                    int d=sourceBuffer[c] - priorValue;
                     if (d>2 || d<-1) {
                         break;
                     }
-                    priorValue=preBuffer[c]; // since by definition the diff encoding is cumulative
+                    priorValue=sourceBuffer[c]; // since by definition the diff encoding is cumulative
                     if (d==-1) {
                         d=3; // we use this to represent -1 in the dbuffer for key lookup later
                     }
@@ -445,13 +445,13 @@ V3DLONG ImageLoader::compressPBD(unsigned char * imgRe, unsigned char * preBuffe
             // Now we can decide between RE and DF based on efficiency
             if (reEfficiency>dfEfficiency && reEfficiency>1.0) {
                 // Then use RE
-                imgRe[p++]=reTest+127; // The code for number of repeats
-                imgRe[p++]=currentValue; // The repeated value
+                compressionBuffer[p++]=reTest+127; // The code for number of repeats
+                compressionBuffer[p++]=currentValue; // The repeated value
                 i+=(reTest-1); // because will increment one more time at top of loop
                 activeLiteralIndex=-1;
             } else if (dfEfficiency>1.0) {
                 // First, encode the number of units we expect
-                imgRe[p++]=c-i+32;
+                compressionBuffer[p++]=c-i+32;
 
                 // Then use DF. We want to move forward in units of 4, and pick the correct encoding.
                 // Note that is doesn't matter if we pad extra 0s because we know what the correct
@@ -481,7 +481,7 @@ V3DLONG ImageLoader::compressPBD(unsigned char * imgRe, unsigned char * preBuffe
                     v <<= 2;
                     v |= d0;
 
-                    imgRe[p++]=v;
+                    compressionBuffer[p++]=v;
                     cp+=4; // Move ahead 4 steps at a time
                 }
 
@@ -490,14 +490,14 @@ V3DLONG ImageLoader::compressPBD(unsigned char * imgRe, unsigned char * preBuffe
             } else { // This will catch the case where dfEfficiency is 0.0 due to i==0
                 // We need to add this value as a literal. If there is already a literal mode, then simply
                 // add it. Otherwise, start a new one.
-                if (activeLiteralIndex<0 || imgRe[activeLiteralIndex]>=32) {
+                if (activeLiteralIndex<0 || compressionBuffer[activeLiteralIndex]>=32) {
                     // We need a new index
-                    imgRe[p++]=0;
+                    compressionBuffer[p++]=0;
                     activeLiteralIndex=p-1; // Our new literal index
-                    imgRe[p++]=currentValue; // Add the current value onto current sequence of literals
+                    compressionBuffer[p++]=currentValue; // Add the current value onto current sequence of literals
                 } else {
-                    imgRe[activeLiteralIndex] += 1; // Increment existing literal count
-                    imgRe[p++]=currentValue; // Add the current value onto current sequence of literals
+                    compressionBuffer[activeLiteralIndex] += 1; // Increment existing literal count
+                    compressionBuffer[p++]=currentValue; // Add the current value onto current sequence of literals
                 }
             }
         }

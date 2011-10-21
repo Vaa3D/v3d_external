@@ -58,7 +58,7 @@ private:
     FILE * fid;
     char * keyread;
 
-    V3DLONG compressPBD(unsigned char * imgRe, unsigned char * preBuffer, V3DLONG bufferLength, V3DLONG spaceLeft);
+    V3DLONG compressPBD(unsigned char * compressionBuffer, unsigned char * sourceBuffer, V3DLONG sourceBufferLength, V3DLONG spaceLeft);
     int exitWithError(QString errorMessage);
     void updateCompressionBuffer(unsigned char * updatedCompressionBuffer);
     unsigned char * convertType2Type1(const V3DLONG * sz, My4DImage *image);
