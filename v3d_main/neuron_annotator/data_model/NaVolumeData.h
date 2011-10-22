@@ -22,6 +22,7 @@ signals:
 
 private:
     void setRelativeProgress(float relativeProgress);
+    QString determineFullFilepath();
 
     My4DImage* stackp;
     QString filename;

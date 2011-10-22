@@ -37,9 +37,10 @@ public:
     bool execute();
     bool validateFile();
     My4DImage* loadImage(QString filepath);
+    void loadImage(My4DImage * stackp, QString filepath);
 
     int saveStack2RawPBD(const char * filename, unsigned char* data, const V3DLONG * sz);
-    int loadRaw2StackPBD(char * filename, My4DImage * & image);
+    int loadRaw2StackPBD(char * filename, My4DImage * & image, bool useThreading);
 
     int processArgs(vector<char*> *argList);
     QString getFilePrefix(QString filepath);

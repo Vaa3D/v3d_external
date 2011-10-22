@@ -180,17 +180,20 @@ bool ImageLoader::validateFile() {
     return true;
 }
 
+void ImageLoader::loadImage(My4DImage * stackp, QString filepath) {
+    if (filepath.endsWith(".tif") || filepath.endsWith(".lsm") || filepath.endsWith(".v3draw") || filepath.endsWith(".raw")) {
+        stackp->loadImage(filepath.toAscii().data());
+    } else if (filepath.endsWith(".v3dpbd")) {
+        if (loadRaw2StackPBD(filepath.toAscii().data(), stackp, false)!=0) {
+            qDebug() << "Error with loadRaw2StackPBD";
+        }
+    }
+}
+
 My4DImage* ImageLoader::loadImage(QString filepath) {
     qDebug() << "Starting to load file " << filepath;
     My4DImage* image=new My4DImage();
-    if (filepath.endsWith(".tif") || filepath.endsWith(".lsm") || filepath.endsWith(".v3draw") || filepath.endsWith(".raw")) {
-        image->loadImage(filepath.toAscii().data());
-    } else if (filepath.endsWith(".v3dpbd")) {
-        if (loadRaw2StackPBD(filepath.toAscii().data(), image)!=0) {
-            qDebug() << "Error with loadRaw2StackPBD";
-            return 0;
-        }
-    }
+    loadImage(image, filepath);
     return image;
 }
 
@@ -340,7 +343,7 @@ int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char* data, co
         V3DLONG maxSize = totalUnit*unitSize*2;
         unsigned char * compressionBuffer = new unsigned char [maxSize];
 
-        printf("Allocated compression target with maxSize=%d\n", maxSize);
+        printf("Allocated compression target with maxSize=%ld\n", maxSize);
 
         V3DLONG compressionSize = compressPBD(compressionBuffer, data, totalUnit*unitSize, maxSize);
 
@@ -350,7 +353,7 @@ int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char* data, co
 
         double finalCompressionRatio = (totalUnit*unitSize*1.0)/compressionSize;
 
-        printf("Total original size=%d  post-compression size=%d  ratio=%f\n", totalUnit, compressionSize, finalCompressionRatio);
+        printf("Total original size=%ld  post-compression size=%ld  ratio=%f\n", totalUnit, compressionSize, finalCompressionRatio);
 
         printf("Writing file...");
 
@@ -505,196 +508,215 @@ V3DLONG ImageLoader::compressPBD(unsigned char * compressionBuffer, unsigned cha
     return p;
 }
 
-int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image) {
+int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image, bool useThreading) {
     {
-            int berror = 0;
-            decompressionPrior = 0;
 
-            QTime stopwatch;
-            stopwatch.start();
+        qDebug() << "ImageLoader::loadRaw2StackPBD starting filename=" << filename;
 
-            int datatype;
+        int berror = 0;
+        decompressionPrior = 0;
 
-            fid = fopen(filename, "rb");
-            if (!fid)
-            {
-                    return exitWithError("Fail to open file for reading.");
-            }
+        QTime stopwatch;
+        stopwatch.start();
 
-            fseek (fid, 0, SEEK_END);
-            V3DLONG fileSize = ftell(fid);
-            rewind(fid);
+        int datatype;
 
-            /* Read header */
+        fid = fopen(filename, "rb");
+        if (!fid)
+        {
+            return exitWithError("Fail to open file for reading.");
+        }
 
-            char formatkey[] = "v3d_volume_pkbitdf_encod";
-            V3DLONG lenkey = strlen(formatkey);
+        fseek (fid, 0, SEEK_END);
+        V3DLONG fileSize = ftell(fid);
+        rewind(fid);
 
-    #ifndef _MSC_VER //added by PHC, 2010-05-21
-            if (fileSize<lenkey+2+4*4+1) // datatype has 2 bytes, and sz has 4*4 bytes and endian flag has 1 byte.
-            {
-                    QString errorMessage =
-                            QString("The size of your input file is too small and is not correct, -- it is too small to contain the legal header.\n");
-                    errorMessage.append(QString("The fseek-ftell produces a file size = %1.").arg(fileSize));
-                   return exitWithError(errorMessage);
-            }
-    #endif
+        /* Read header */
 
-            keyread = new char [lenkey+1];
-            if (!keyread)
-            {
-                    return exitWithError("Fail to allocate memory.");
-            }
-            V3DLONG nread = fread(keyread, 1, lenkey, fid);
-            if (nread!=lenkey)
-            {
-                    return exitWithError("File unrecognized or corrupted file.");
-            }
-            keyread[lenkey] = '\0';
+        char formatkey[] = "v3d_volume_pkbitdf_encod";
+        V3DLONG lenkey = strlen(formatkey);
 
-            V3DLONG i;
-            if (strcmp(formatkey, keyread)) /* is non-zero then the two strings are different */
-            {
-                    return exitWithError("Unrecognized file format.");
-            }
+#ifndef _MSC_VER //added by PHC, 2010-05-21
+        if (fileSize<lenkey+2+4*4+1) // datatype has 2 bytes, and sz has 4*4 bytes and endian flag has 1 byte.
+        {
+            QString errorMessage =
+                    QString("The size of your input file is too small and is not correct, -- it is too small to contain the legal header.\n");
+            errorMessage.append(QString("The fseek-ftell produces a file size = %1.").arg(fileSize));
+            return exitWithError(errorMessage);
+        }
+#endif
 
-            char endianCodeData;
-            fread(&endianCodeData, 1, 1, fid);
-            if (endianCodeData!='B' && endianCodeData!='L')
-            {
-                    return exitWithError("This program only supports big- or little- endian but not other format. Check your data endian.");
-            }
+        keyread = new char [lenkey+1];
+        if (!keyread)
+        {
+            return exitWithError("Fail to allocate memory.");
+        }
+        V3DLONG nread = fread(keyread, 1, lenkey, fid);
+        if (nread!=lenkey)
+        {
+            return exitWithError("File unrecognized or corrupted file.");
+        }
+        keyread[lenkey] = '\0';
 
-            char endianCodeMachine;
-            endianCodeMachine = checkMachineEndian();
-            if (endianCodeMachine!='B' && endianCodeMachine!='L')
-            {
-                    return exitWithError("This program only supports big- or little- endian but not other format. Check your data endian.");
-            }
+        V3DLONG i;
+        if (strcmp(formatkey, keyread)) /* is non-zero then the two strings are different */
+        {
+            return exitWithError("Unrecognized file format.");
+        }
 
-            int b_swap = (endianCodeMachine==endianCodeData)?0:1;
+        char endianCodeData;
+        fread(&endianCodeData, 1, 1, fid);
+        if (endianCodeData!='B' && endianCodeData!='L')
+        {
+            return exitWithError("This program only supports big- or little- endian but not other format. Check your data endian.");
+        }
 
-            short int dcode = 0;
-            fread(&dcode, 2, 1, fid); /* because I have already checked the file size to be bigger than the header, no need to check the number of actual bytes read. */
-            if (b_swap)
-                    swap2bytes((void *)&dcode);
+        char endianCodeMachine;
+        endianCodeMachine = checkMachineEndian();
+        if (endianCodeMachine!='B' && endianCodeMachine!='L')
+        {
+            return exitWithError("This program only supports big- or little- endian but not other format. Check your data endian.");
+        }
 
-            switch (dcode)
-            {
-                    case 1:
-                            datatype = 1; /* temporarily I use the same number, which indicates the number of bytes for each data point (pixel). This can be extended in the future. */
-                            break;
+        int b_swap = (endianCodeMachine==endianCodeData)?0:1;
 
-                    case 2:
-                            datatype = 2;
-                            break;
+        short int dcode = 0;
+        fread(&dcode, 2, 1, fid); /* because I have already checked the file size to be bigger than the header, no need to check the number of actual bytes read. */
+        if (b_swap)
+            swap2bytes((void *)&dcode);
 
-                    case 4:
-                            datatype = 4;
-                            break;
+        switch (dcode)
+        {
+        case 1:
+            datatype = 1; /* temporarily I use the same number, which indicates the number of bytes for each data point (pixel). This can be extended in the future. */
+            break;
 
-                    default:
-                            QString errorMessage = QString("Unrecognized data type code [%1]. The file type is incorrect or this code is not supported in this version.").arg(dcode);
-                            return exitWithError(errorMessage);
-            }
+        case 2:
+            datatype = 2;
+            break;
 
-            if (datatype!=1) {
-                return exitWithError("ImageLoader::loadRaw2StackPBD : only datatype=1 supported");
-            }
+        case 4:
+            datatype = 4;
+            break;
 
-            V3DLONG unitSize = datatype; // temporarily I use the same number, which indicates the number of bytes for each data point (pixel). This can be extended in the future.
+        default:
+            QString errorMessage = QString("Unrecognized data type code [%1]. The file type is incorrect or this code is not supported in this version.").arg(dcode);
+            return exitWithError(errorMessage);
+        }
 
-            BIT32_UNIT mysz[4];
-            mysz[0]=mysz[1]=mysz[2]=mysz[3]=0;
-            int tmpn=fread(mysz, 4, 4, fid); // because I have already checked the file size to be bigger than the header, no need to check the number of actual bytes read.
-            if (tmpn!=4)
-            {
-                    QString errorMessage = QString("This program only reads [%1] units.").arg(tmpn);
-                    return exitWithError(errorMessage);
-            }
+        if (datatype!=1) {
+            return exitWithError("ImageLoader::loadRaw2StackPBD : only datatype=1 supported");
+        }
 
-            if (b_swap && (unitSize==2 || unitSize==4)) {
-                QString errorMessage = "b_swap true and unitSize > 1 - this is not implemented in current code";
-                return exitWithError(errorMessage);
-            }
+        image->setDatatype(V3D_UINT8);
 
-            if (b_swap)
-            {
-                    for (i=0;i<4;i++)
-                    {
-                        //swap2bytes((void *)(mysz+i));
-                        printf("mysz raw read unit[%ld]: [%d] ", i, mysz[i]);
-                        swap4bytes((void *)(mysz+i));
-                        printf("swap unit: [%d][%0x] \n", mysz[i], mysz[i]);
-                    }
-            }
+        V3DLONG unitSize = datatype; // temporarily I use the same number, which indicates the number of bytes for each data point (pixel). This can be extended in the future.
 
-            V3DLONG * sz = new V3DLONG [4]; // reallocate the memory if the input parameter is non-null. Note that this requests the input is also an NULL point, the same to img.
-            if (!sz)
-            {
-                    return exitWithError("Fail to allocate memory.");
-            }
+        BIT32_UNIT mysz[4];
+        mysz[0]=mysz[1]=mysz[2]=mysz[3]=0;
+        int tmpn=fread(mysz, 4, 4, fid); // because I have already checked the file size to be bigger than the header, no need to check the number of actual bytes read.
+        if (tmpn!=4)
+        {
+            QString errorMessage = QString("This program only reads [%1] units.").arg(tmpn);
+            return exitWithError(errorMessage);
+        }
 
-            V3DLONG totalUnit = 1;
+        if (b_swap && (unitSize==2 || unitSize==4)) {
+            QString errorMessage = "b_swap true and unitSize > 1 - this is not implemented in current code";
+            return exitWithError(errorMessage);
+        }
+
+        if (b_swap)
+        {
             for (i=0;i<4;i++)
             {
-                    sz[i] = (V3DLONG)mysz[i];
-                    totalUnit *= sz[i];
+                //swap2bytes((void *)(mysz+i));
+                printf("mysz raw read unit[%ld]: [%d] ", i, mysz[i]);
+                swap4bytes((void *)(mysz+i));
+                printf("swap unit: [%d][%0x] \n", mysz[i], mysz[i]);
             }
+        }
 
-            //mexPrintf("The input file has a size [%ld bytes], different from what specified in the header [%ld bytes]. Exit.\n", fileSize, totalUnit*unitSize+4*4+2+1+lenkey);
-            //mexPrintf("The read sizes are: %ld %ld %ld %ld\n", sz[0], sz[1], sz[2], sz[3]);
+        V3DLONG * sz = new V3DLONG [4]; // reallocate the memory if the input parameter is non-null. Note that this requests the input is also an NULL point, the same to img.
+        if (!sz)
+        {
+            return exitWithError("Fail to allocate memory.");
+        }
 
-            V3DLONG headerSize=4*4+2+1+lenkey;
-            V3DLONG compressedBytes=fileSize-headerSize;
-            maxDecompressionSize=totalUnit*unitSize;
+        V3DLONG totalUnit = 1;
+        for (i=0;i<4;i++)
+        {
+            sz[i] = (V3DLONG)mysz[i];
+            totalUnit *= sz[i];
+        }
 
-            if (image) delete image;
-            image = new My4DImage();
+        //mexPrintf("The input file has a size [%ld bytes], different from what specified in the header [%ld bytes]. Exit.\n", fileSize, totalUnit*unitSize+4*4+2+1+lenkey);
+        //mexPrintf("The read sizes are: %ld %ld %ld %ld\n", sz[0], sz[1], sz[2], sz[3]);
 
-            compressionBuffer = new unsigned char [compressedBytes];
+        V3DLONG headerSize=4*4+2+1+lenkey;
+        V3DLONG compressedBytes=fileSize-headerSize;
+        maxDecompressionSize=totalUnit*unitSize;
 
-            V3DLONG remainingBytes = compressedBytes;
-            //V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2);
-            V3DLONG readStepSizeBytes = V3DLONG(1024)*20000;
-            V3DLONG totalReadBytes = 0;
-            V3DLONG cntBuf = 0;
+        compressionBuffer = new unsigned char [compressedBytes];
 
-            // Transfer data to My4DImage
-            image->loadImage(sz[0], sz[1], sz[2], sz[3], 1);
-            decompressionBuffer = image->getRawData();
+        V3DLONG remainingBytes = compressedBytes;
+        //V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2);
+        V3DLONG readStepSizeBytes = V3DLONG(1024)*20000;
+        V3DLONG totalReadBytes = 0;
+        V3DLONG cntBuf = 0;
 
-            const int MAX_CHECKS_PER_DECOMPRESSION=2000;
-            const int CYCLE_WAIT_MS=5;
-            int decompChecks=0;
+        // Transfer data to My4DImage
+        image->loadImage(sz[0], sz[1], sz[2], sz[3], 1);
+        decompressionBuffer = image->getRawData();
 
-            while (remainingBytes>0)
+        const int MAX_CHECKS_PER_DECOMPRESSION=50000;
+        const int CYCLE_WAIT_MS=20;
+        int decompChecks=0;
+
+        QThreadPool * globalThreadPool = QThreadPool::globalInstance();
+
+        while (remainingBytes>0)
+        {
+            V3DLONG curReadBytes = (remainingBytes<readStepSizeBytes) ? remainingBytes : readStepSizeBytes;
+            V3DLONG curReadUnits = curReadBytes/unitSize;
+            nread = fread(compressionBuffer+cntBuf*readStepSizeBytes, unitSize, curReadUnits, fid);
+            totalReadBytes+=nread;
+            if (nread!=curReadUnits)
             {
-                    V3DLONG curReadBytes = (remainingBytes<readStepSizeBytes) ? remainingBytes : readStepSizeBytes;
-                    V3DLONG curReadUnits = curReadBytes/unitSize;
-                    nread = fread(compressionBuffer+cntBuf*readStepSizeBytes, unitSize, curReadUnits, fid);
-                    totalReadBytes+=nread;
-                    if (nread!=curReadUnits)
-                    {
-                        QString errorMessage = QString("Something wrong in file reading. The program reads [%1 data points] but the file says there should be [%2 data points].")
-                                               .arg(nread).arg(totalUnit);
-                            return exitWithError(errorMessage);
-                    }
-                    remainingBytes -= nread;
-                    cntBuf++;
-                    //printf("r1\n");
-                    while (decompressionThread!=0 && !decompressionThread->isFinished()) {
-                        if (decompChecks>MAX_CHECKS_PER_DECOMPRESSION) {
-                            exitWithError("Error in decompressor : exceeded time limit for decompression thread");
-                        }
-                        SleepThread st;
-                        st.msleep(CYCLE_WAIT_MS);
-                        decompChecks++;
-                    }
-                    decompressionThread=&(QtConcurrent::run(this, &ImageLoader::updateCompressionBuffer, compressionBuffer+totalReadBytes));
-                    //printf("r2\n");
+                QString errorMessage = QString("Something wrong in file reading. The program reads [%1 data points] but the file says there should be [%2 data points].")
+                                       .arg(nread).arg(totalUnit);
+                return exitWithError(errorMessage);
             }
-            qDebug() << "Total time elapsed after all reads is " << stopwatch.elapsed() / 1000.0 << " seconds";
+            remainingBytes -= nread;
+            cntBuf++;
+            if (useThreading) {
+                while (decompressionThread!=0 && !decompressionThread->isFinished()) {
+                    if (decompChecks>MAX_CHECKS_PER_DECOMPRESSION) {
+                        exitWithError("Error in decompressor : exceeded time limit for decompression thread");
+                    }
+                    SleepThread st;
+                    st.msleep(CYCLE_WAIT_MS);
+                    if (decompressionThread!=0) {
+                        bool isRunning = decompressionThread->isRunning();
+                        bool isPaused = decompressionThread->isPaused();
+                        bool isCanceled = decompressionThread->isCanceled();
+                        bool isStarted = decompressionThread->isStarted();
+                        bool isFinished = decompressionThread->isFinished();
+                        qDebug() << "CurrThreads= " << globalThreadPool->activeThreadCount() << " MaxThreads=" << globalThreadPool->maxThreadCount() << " Running=" << isRunning << " Paused=" << isPaused << " Canceled=" << isCanceled << " Started=" << isStarted << " Finished=" << isFinished;
+                    }
+                    decompChecks++;
+                }
+                if (cntBuf!=1) {
+                    qDebug() << "Finished";
+                }
+                decompressionThread=&(QtConcurrent::run(this, &ImageLoader::updateCompressionBuffer, compressionBuffer+totalReadBytes));
+                qDebug() << "Started decompression thread " << cntBuf;
+            } else {
+                updateCompressionBuffer(compressionBuffer+totalReadBytes);
+            }
+        }
+        qDebug() << "Total time elapsed after all reads is " << stopwatch.elapsed() / 1000.0 << " seconds";
+        if (useThreading) {
             stopwatch.restart();
             decompChecks=0;
             while (decompressionThread!=0 && !decompressionThread->isFinished()) {
@@ -705,15 +727,16 @@ int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image) {
                 st.msleep(CYCLE_WAIT_MS);
                 decompChecks++;
             }
-            qDebug() << "Time to complete final decompression thread is " << stopwatch.elapsed() / 1000.0 << " seconds";
+            qDebug() << "Finished final decompression thread in " << stopwatch.elapsed() / 1000.0 << " seconds";
+        }
 
-            // Success - can delete compressedData
-            delete [] compressionBuffer; compressionBuffer=0;
+        // Success - can delete compressedData
+        delete [] compressionBuffer; compressionBuffer=0;
 
-            // clean and return
-            if (keyread) {delete [] keyread; keyread = 0;}
-            fclose(fid); //bug fix on 060412
-            return berror;
+        // clean and return
+        if (keyread) {delete [] keyread; keyread = 0;}
+        fclose(fid); //bug fix on 060412
+        return berror;
     }
 }
 

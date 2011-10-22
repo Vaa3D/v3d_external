@@ -887,27 +887,27 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
 
     // Need to construct (temporary until backend implemented) MultiColorImageStackNode from this directory
     // This code will be redone when the node/filestore is implemented.
-    QString originalImageStackFilePath = imageInputDirectory.absolutePath() + "/" + MultiColorImageStackNode::IMAGE_STACK_FILENAME;
-    QFile originalImageStackFile(originalImageStackFilePath);
-    if (!originalImageStackFile.exists()) {
-        QMessageBox::warning(this, tr("Could not find expected image stack tif file"),
-                             "Error finding file="+originalImageStackFilePath);
-        return false;
-    }
-    QString maskLabelFilePath = imageInputDirectory.absolutePath() + "/" + MultiColorImageStackNode::IMAGE_MASK_FILENAME;
-    QFile maskLabelFile(maskLabelFilePath);
-    if (!maskLabelFile.exists()) {
-        QMessageBox::warning(this, tr("Could not find expected image stack mask file"),
-                             "Error finding file="+maskLabelFilePath);
-        return false;
-    }
-    QString referenceStackFilePath = imageInputDirectory.absolutePath() + "/" + MultiColorImageStackNode::IMAGE_REFERENCE_FILENAME;
-    QFile referenceStackFile(referenceStackFilePath);
-    if (!referenceStackFile.exists()) {
-        QMessageBox::warning(this, tr("Could not find expected reference stack file"),
-                             "Error finding file="+referenceStackFilePath);
-        return false;
-    }
+    QString originalImageStackFilePath = imageInputDirectory.absolutePath() + "/" + MultiColorImageStackNode::IMAGE_STACK_BASE_FILENAME;
+//    QFile originalImageStackFile(originalImageStackFilePath);
+//    if (!originalImageStackFile.exists()) {
+//        QMessageBox::warning(this, tr("Could not find expected image stack tif file"),
+//                             "Error finding file="+originalImageStackFilePath);
+//        return false;
+//    }
+    QString maskLabelFilePath = imageInputDirectory.absolutePath() + "/" + MultiColorImageStackNode::IMAGE_MASK_BASE_FILENAME;
+//    QFile maskLabelFile(maskLabelFilePath);
+//    if (!maskLabelFile.exists()) {
+//        QMessageBox::warning(this, tr("Could not find expected image stack mask file"),
+//                             "Error finding file="+maskLabelFilePath);
+//        return false;
+//    }
+    QString referenceStackFilePath = imageInputDirectory.absolutePath() + "/" + MultiColorImageStackNode::IMAGE_REFERENCE_BASE_FILENAME;
+//    QFile referenceStackFile(referenceStackFilePath);
+//    if (!referenceStackFile.exists()) {
+//        QMessageBox::warning(this, tr("Could not find expected reference stack file"),
+//                             "Error finding file="+referenceStackFilePath);
+//        return false;
+//    }
 
     // Create input nodes
     MultiColorImageStackNode* multiColorImageStackNode = new MultiColorImageStackNode(imageInputDirectory);

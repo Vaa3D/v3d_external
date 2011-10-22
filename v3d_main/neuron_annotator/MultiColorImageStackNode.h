@@ -12,9 +12,9 @@ class MultiColorImageStackNode
 {
 public:
 
-    const static char * IMAGE_STACK_FILENAME;
-    const static char * IMAGE_MASK_FILENAME;
-    const static char * IMAGE_REFERENCE_FILENAME;
+    const static char * IMAGE_STACK_BASE_FILENAME;
+    const static char * IMAGE_MASK_BASE_FILENAME;
+    const static char * IMAGE_REFERENCE_BASE_FILENAME;
 
     MultiColorImageStackNode(QDir imageDirParam);
 

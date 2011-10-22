@@ -1,8 +1,8 @@
 #include "MultiColorImageStackNode.h"
 
-const char * MultiColorImageStackNode::IMAGE_STACK_FILENAME = "ConsolidatedSignal.tif";
-const char * MultiColorImageStackNode::IMAGE_MASK_FILENAME = "ConsolidatedLabel.tif";
-const char * MultiColorImageStackNode::IMAGE_REFERENCE_FILENAME = "Reference.tif";
+const char * MultiColorImageStackNode::IMAGE_STACK_BASE_FILENAME = "ConsolidatedSignal";
+const char * MultiColorImageStackNode::IMAGE_MASK_BASE_FILENAME = "ConsolidatedLabel";
+const char * MultiColorImageStackNode::IMAGE_REFERENCE_BASE_FILENAME = "Reference";
 
 MultiColorImageStackNode::MultiColorImageStackNode(QDir imageDirParam)
 {

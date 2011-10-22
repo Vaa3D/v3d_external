@@ -3,6 +3,8 @@
 #include <QFuture>
 #include <cassert>
 
+#include "../utility/ImageLoader.h"
+
 using namespace std;
 
 
@@ -33,8 +35,9 @@ bool NaVolumeDataLoadableStack::load()
 {
     setRelativeProgress(0.02); // getting here *is* finite progress
     // qDebug() << "NaVolumeData::LoadableStack::load() filename=" << filename;
-    const QByteArray fileArray = filename.toAscii();
-    stackp->loadImage(const_cast<char *>(fileArray.data()));
+    QString fullFilepath=determineFullFilepath();
+    ImageLoader imageLoader;
+    imageLoader.loadImage(stackp, fullFilepath);
     if (stackp->isEmpty()) {
         emit failed();
         return false;
@@ -55,6 +58,26 @@ void NaVolumeDataLoadableStack::setRelativeProgress(float relativeProgress)
     progressValue = newProgressValue;
     emit progressValueChanged(progressValue, stackIndex);
 }
+
+QString NaVolumeDataLoadableStack::determineFullFilepath()
+{
+    QString f1=filename;
+    QString v3dpbdTestFilename=f1.append(".v3dpbd");
+    QFile v3dpbdTestFile(v3dpbdTestFilename);
+    if (v3dpbdTestFile.exists())
+        return v3dpbdTestFilename;
+
+    QString f2=filename;
+    QString v3drawTestFilename=f2.append(".v3draw");
+    QFile v3drawTestFile(v3drawTestFilename);
+    if (v3drawTestFile.exists())
+        return v3drawTestFilename;
+
+    QString f3=filename;
+    QString tifFilename=f3.append(".tif");
+    return tifFilename;
+}
+
 
 
 //////////////////////////
@@ -263,44 +286,47 @@ bool NaVolumeData::Writer::loadStacks()
     m_data->neuronMaskProxy = Image4DProxy<My4DImage>(m_data->neuronMaskStack);
     m_data->neuronMaskProxy.set_minmax(m_data->neuronMaskStack->p_vmin, m_data->neuronMaskStack->p_vmax);
 
+    qDebug() << "Calling normalizeReferenceStack...";
     normalizeReferenceStack(initialReferenceStack);
+    qDebug() << "Done calling normalizeReferenceStack";
 
     return true;
 }
 
 bool NaVolumeData::Writer::normalizeReferenceStack(My4DImage* initialReferenceStack)
 {
+    int datatype=(int)initialReferenceStack->getDatatype();
+    qDebug() << "NaVolume::Writer::normalizeReferenceStack - datatype=" << datatype;
     m_data->referenceStack=new My4DImage();
-    My4DImage * referenceStack = m_data->referenceStack;
-    referenceStack->loadImage(initialReferenceStack->getXDim(), initialReferenceStack->getYDim(), initialReferenceStack->getZDim(), 1 /* number of channels */, 1 /* bytes per channel */);
+    m_data->referenceStack->loadImage(initialReferenceStack->getXDim(), initialReferenceStack->getYDim(), initialReferenceStack->getZDim(), 1 /* number of channels */, 1 /* bytes per channel */);
     Image4DProxy<My4DImage> initialProxy(initialReferenceStack);
-    Image4DProxy<My4DImage> referenceProxy(referenceStack);
-
-    double initialMin=initialReferenceStack->getChannalMinIntensity(0);
-    double initialMax=initialReferenceStack->getChannalMaxIntensity(0);
+    Image4DProxy<My4DImage> referenceProxy(m_data->referenceStack);
 
     qDebug() << "Populating reference with initial data";
-    double initialRange=initialMax-initialMin;
-    qDebug() << "Reference lsm initialMin=" << initialMin << " initialMax=" << initialMax << " initialRange=" << initialRange;
     int zDim=initialReferenceStack->getZDim();
     int yDim=initialReferenceStack->getYDim();
     int xDim=initialReferenceStack->getXDim();
-    for (int z=0;z<zDim;z++) {
-        for (int y=0;y<yDim;y++) {
-            for (int x=0;x<xDim;x++) {
-                int value= (255.0*(*initialProxy.at_uint16(x,y,z,0))-initialMin)/initialRange;
-                if (value<0) {
-                    value=0;
-                } else if (value>255) {
-                    value=255;
+    if (initialReferenceStack->getDatatype()==2) {
+        for (int z=0;z<zDim;z++) {
+            for (int y=0;y<yDim;y++) {
+                for (int x=0;x<xDim;x++) {
+                    int value=(*initialProxy.at_uint16(x,y,z,0))/16; // convert from 12-bit to 8-bit
+                    referenceProxy.put8bit_fit_at(x,(yDim-y)-1,z,0,value); // For some reason, the Y-dim seems to need inversion
                 }
-                referenceProxy.put8bit_fit_at(x,(yDim-y)-1,z,0,value); // For some reason, the Y-dim seems to need inversion
+            }
+        }
+    } else { // datatype==1
+        for (int z=0;z<zDim;z++) {
+            for (int y=0;y<yDim;y++) {
+                for (int x=0;x<xDim;x++) {
+                    referenceProxy.put8bit_fit_at(x,(yDim-y)-1,z,0, (*initialProxy.at_uint8(x,y,z,0))); // For some reason, the Y-dim seems to need inversion
+                }
             }
         }
     }
     initialReferenceStack->cleanExistData();
     delete initialReferenceStack;
-    referenceStack->updateminmaxvalues();
+    m_data->referenceStack->updateminmaxvalues();
 
     m_data->referenceImageProxy = Image4DProxy<My4DImage>(m_data->referenceStack);
     m_data->referenceImageProxy.set_minmax(m_data->referenceStack->p_vmin, m_data->referenceStack->p_vmax);
