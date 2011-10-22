@@ -11,14 +11,6 @@ const int ImageLoader::MODE_UNDEFINED=0;
 const int ImageLoader::MODE_LOAD_TEST=1;
 const int ImageLoader::MODE_CONVERT=2;
 
-class SleepThread : QThread {
-public:
-    SleepThread() {}
-    void msleep(int miliseconds) {
-        QThread::msleep(miliseconds);
-    }
-};
-
 ImageLoader::ImageLoader()
 {
     mode=MODE_UNDEFINED;
@@ -28,7 +20,6 @@ ImageLoader::ImageLoader()
     fid=0;
     keyread=0;
     image=0;
-    decompressionThread=0;
     compressionPosition=0;
     decompressionPosition=0;
     decompressionPrior=0;
@@ -184,7 +175,7 @@ void ImageLoader::loadImage(My4DImage * stackp, QString filepath) {
     if (filepath.endsWith(".tif") || filepath.endsWith(".lsm") || filepath.endsWith(".v3draw") || filepath.endsWith(".raw")) {
         stackp->loadImage(filepath.toAscii().data());
     } else if (filepath.endsWith(".v3dpbd")) {
-        if (loadRaw2StackPBD(filepath.toAscii().data(), stackp, false)!=0) {
+        if (loadRaw2StackPBD(filepath.toAscii().data(), stackp, true)!=0) {
             qDebug() << "Error with loadRaw2StackPBD";
         }
     }
@@ -662,18 +653,15 @@ int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image, bool use
         V3DLONG remainingBytes = compressedBytes;
         //V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2);
         V3DLONG readStepSizeBytes = V3DLONG(1024)*20000;
-        V3DLONG totalReadBytes = 0;
+        totalReadBytes = 0;
         V3DLONG cntBuf = 0;
 
         // Transfer data to My4DImage
         image->loadImage(sz[0], sz[1], sz[2], sz[3], 1);
         decompressionBuffer = image->getRawData();
 
-        const int MAX_CHECKS_PER_DECOMPRESSION=50000;
-        const int CYCLE_WAIT_MS=20;
-        int decompChecks=0;
-
-        QThreadPool * globalThreadPool = QThreadPool::globalInstance();
+        QThreadPool threadPool;
+        setAutoDelete(false);
 
         while (remainingBytes>0)
         {
@@ -689,45 +677,22 @@ int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image, bool use
             }
             remainingBytes -= nread;
             cntBuf++;
+
             if (useThreading) {
-                while (decompressionThread!=0 && !decompressionThread->isFinished()) {
-                    if (decompChecks>MAX_CHECKS_PER_DECOMPRESSION) {
-                        exitWithError("Error in decompressor : exceeded time limit for decompression thread");
-                    }
-                    SleepThread st;
-                    st.msleep(CYCLE_WAIT_MS);
-                    if (decompressionThread!=0) {
-                        bool isRunning = decompressionThread->isRunning();
-                        bool isPaused = decompressionThread->isPaused();
-                        bool isCanceled = decompressionThread->isCanceled();
-                        bool isStarted = decompressionThread->isStarted();
-                        bool isFinished = decompressionThread->isFinished();
-                        qDebug() << "CurrThreads= " << globalThreadPool->activeThreadCount() << " MaxThreads=" << globalThreadPool->maxThreadCount() << " Running=" << isRunning << " Paused=" << isPaused << " Canceled=" << isCanceled << " Started=" << isStarted << " Finished=" << isFinished;
-                    }
-                    decompChecks++;
-                }
-                if (cntBuf!=1) {
-                    qDebug() << "Finished";
-                }
-                decompressionThread=&(QtConcurrent::run(this, &ImageLoader::updateCompressionBuffer, compressionBuffer+totalReadBytes));
-                qDebug() << "Started decompression thread " << cntBuf;
+                qDebug() << "Waiting for current thread";
+                threadPool.waitForDone();
+                qDebug() << "Starting thread";
+                threadPool.start(this);
             } else {
                 updateCompressionBuffer(compressionBuffer+totalReadBytes);
             }
         }
         qDebug() << "Total time elapsed after all reads is " << stopwatch.elapsed() / 1000.0 << " seconds";
+
         if (useThreading) {
-            stopwatch.restart();
-            decompChecks=0;
-            while (decompressionThread!=0 && !decompressionThread->isFinished()) {
-                if (decompChecks>MAX_CHECKS_PER_DECOMPRESSION) {
-                    exitWithError("Error in decompressor : exceeded time limit for decompression thread");
-                }
-                SleepThread st;
-                st.msleep(CYCLE_WAIT_MS);
-                decompChecks++;
-            }
-            qDebug() << "Finished final decompression thread in " << stopwatch.elapsed() / 1000.0 << " seconds";
+            qDebug() << "Final thread wait";
+            threadPool.waitForDone();
+            qDebug() << "Done final wait";
         }
 
         // Success - can delete compressedData
@@ -896,6 +861,10 @@ void ImageLoader::updateCompressionBuffer(unsigned char * updatedCompressionBuff
     compressionPosition=lookAhead;
     decompressionPosition+=dlength;
     //printf("d2\n");
+}
+
+void ImageLoader::run() {
+    updateCompressionBuffer(compressionBuffer+totalReadBytes);
 }
 
 

@@ -9,9 +9,8 @@
 using namespace std;
 
 
-class ImageLoader : public QObject
+class ImageLoader : public QRunnable
 {
-    Q_OBJECT
 
 public:
     ImageLoader();
@@ -47,9 +46,7 @@ public:
 
     V3DLONG decompressPBD(unsigned char * sourceData, unsigned char * targetData, V3DLONG sourceLength);
 
-//signals:
-//    void updateCompressionBuffer(unsigned char * updatedCompressionBuffer);
-
+    virtual void run();
 
 private:
     int mode;
@@ -64,14 +61,13 @@ private:
     void updateCompressionBuffer(unsigned char * updatedCompressionBuffer);
     unsigned char * convertType2Type1(const V3DLONG * sz, My4DImage *image);
 
+    V3DLONG totalReadBytes;
+    V3DLONG maxDecompressionSize;
     unsigned char * compressionBuffer;
     unsigned char * decompressionBuffer;
-    V3DLONG maxDecompressionSize;
     unsigned char * compressionPosition;
     unsigned char * decompressionPosition;
     unsigned char decompressionPrior;
-
-    QFuture<void> * decompressionThread;
 
 };
 
