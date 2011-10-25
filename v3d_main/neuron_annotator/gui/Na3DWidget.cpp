@@ -31,7 +31,7 @@ Na3DWidget::Na3DWidget(QWidget* parent)
     // valgrind has some complaints about the context
     QGLFormat glFormat(context()->format());
     glFormat.setDoubleBuffer(true); // attempt to reduce tearing on Mac
-    glFormat.setStereo(true);
+//    glFormat.setStereo(true);
     setFormat(glFormat);
     bHasQuadStereo = true;
     if (! context()->format().stereo())
