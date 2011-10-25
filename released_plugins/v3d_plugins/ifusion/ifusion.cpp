@@ -79,78 +79,6 @@ public:
     V3DLONG num_tile;
 };
 
-// linear blending func
-bool computeWeights(Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, V3DLONG i, V3DLONG j, V3DLONG k, V3DLONG tilei, float &weights)
-{
-
-    V3DLONG vx = vim.sz[0];
-    V3DLONG vy = vim.sz[1];
-    V3DLONG vz = vim.sz[2];
-    V3DLONG vc = vim.sz[3];
-    
-    V3DLONG sz_img = vx*vy*vz;
-    
-    QList<float> listWeights;
-    listWeights.clear();
-    
-    V3DLONG numtile;
-
-    for(V3DLONG ii=0; ii<vim.number_tiles; ii++)
-    {
-        V3DLONG tile2vi_xs = vim.lut[ii].start_pos[0]-vim.min_vim[0];
-        V3DLONG tile2vi_xe = vim.lut[ii].end_pos[0]-vim.min_vim[0];
-        V3DLONG tile2vi_ys = vim.lut[ii].start_pos[1]-vim.min_vim[1];
-        V3DLONG tile2vi_ye = vim.lut[ii].end_pos[1]-vim.min_vim[1];
-        V3DLONG tile2vi_zs = vim.lut[ii].start_pos[2]-vim.min_vim[2];
-        V3DLONG tile2vi_ze = vim.lut[ii].end_pos[2]-vim.min_vim[2];
-        
-        V3DLONG x_start = (0 > tile2vi_xs) ? 0 : tile2vi_xs;
-        V3DLONG x_end = (vx-1 < tile2vi_xe) ? vx-1 : tile2vi_xe;
-        V3DLONG y_start = (0 > tile2vi_ys) ? 0 : tile2vi_ys;
-        V3DLONG y_end = (vy-1 < tile2vi_ye) ? vy-1 : tile2vi_ye;
-        V3DLONG z_start = (0 > tile2vi_zs) ? 0 : tile2vi_zs;
-        V3DLONG z_end = (vz-1 < tile2vi_ze) ? vz-1 : tile2vi_ze;
-        
-        x_end++;
-        y_end++;
-        z_end++;
-        
-        if(i>=x_start && i<x_end && j>=y_start && j<y_end && k>=z_start && k<z_end)
-        {
-            float dist2xl = fabs(float(i-x_start));
-            float dist2xr = fabs(float(x_end-1-i));
-            float dist2yu = fabs(float(j-y_start));
-            float dist2yd = fabs(float(y_end-1-j));
-            float dist2zf = fabs(float(k-z_start));
-            float dist2zb = fabs(float(z_end-1-k));
-
-            if( dist2xr<dist2xl ) dist2xl = dist2xr;
-            if( dist2yd<dist2yu ) dist2yu = dist2yd;
-            if( dist2zf>dist2zb ) dist2zf = dist2zb;
-            
-            listWeights.push_back(dist2xl*dist2yu*dist2zf+1);
-
-            if(ii==tilei) numtile = listWeights.size()-1;
-        }
-        
-    }
-    
-    if (listWeights.size()<=1) 
-    {
-        weights=1.0;
-    }
-    else
-    {
-        float sumweights=0;
-        for (int i=0; i<listWeights.size(); i++) {
-            sumweights += listWeights.at(i);
-        }
-        weights = listWeights.at(numtile) / sumweights;
-    }
-    
-    return true;
-}
-
 // normalizing func
 template<class Tdata>
 bool computeAdjustPara(Tdata *f, Tdata *g, V3DLONG szimg, float &a, float &b)
@@ -166,7 +94,7 @@ bool computeAdjustPara(Tdata *f, Tdata *g, V3DLONG szimg, float &a, float &b)
     float meang=0.0;
     
     float N = (float) szimg;
-    float coef = sqrt( (N-1)/N );
+    float coef = sqrt( (N-1.0)/N );
     
     for (V3DLONG i=0; i<szimg; i++) 
     {
@@ -211,158 +139,29 @@ bool computeAdjustPara(Tdata *f, Tdata *g, V3DLONG szimg, float &a, float &b)
     return true;
 }
 
-// fusing func
-// reconstruct tiles into one stitched image
-template <class Tdata> 
-bool ireconstructing(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, Tdata intensityrange)
+// normalizing func
+template<class Tdata>
+bool findHighestIntensityLevelTile(Tdata *f, Tdata *g, V3DLONG szimg, V3DLONG &tilen)
 {
-    // for boundary counting
-    V3DLONG n_swc=1;
-    QString outputSWC, outputAPO;
-    FILE * fp_swc=NULL, *fp_apo=NULL; // .swc showing boundary .apo showing tile's name
+    float meanf=0.0;
+    float meang=0.0;
     
-    //
-    V3DLONG vx = vim.sz[0];
-    V3DLONG vy = vim.sz[1];
-    V3DLONG vz = vim.sz[2];
-    V3DLONG vc = vim.sz[3];
+    float N = (float) szimg;
+    float coef = sqrt( (N-1.0)/N );
     
-    V3DLONG pagesz = vx*vy*vz;
-    V3DLONG imgsz = pagesz*vc;
-    
-    float *pTmp = NULL;
-    try {
-        pTmp = new float [imgsz];
-        memset(pTmp, 0.0, sizeof(float)*imgsz);
-    } catch (...) {
-        printf("Fail to allocate memory for pTmp!\n");
-        if(pTmp){delete []pTmp; pTmp=NULL;}
-        return false;
-    }
-
-    // fusion
-    string fn;
-    for(V3DLONG ii=0; ii<vim.number_tiles; ii++)
+    for (V3DLONG i=0; i<szimg; i++) 
     {
-        // loading relative imagg files
-        V3DLONG *sz_relative = 0;
-        int datatype_relative = 0;
-        unsigned char* relative1d = 0;
+        float valf=(float)f[i];
+        float valg=(float)g[i];
         
-        //
-        if(ii==0) 
-        {   
-            fn = vim.lut[ii].fn_img;
-        }
-        else 
-        {
-            QString curPath = QFileInfo(QString(vim.lut[0].fn_img.c_str())).path();;
-            
-            fn = curPath.append("/").append( QString(vim.lut[ii].fn_img.c_str()) ).toStdString();
-        }
-        
-        //
-        if (loadImage(const_cast<char *>(fn.c_str()), relative1d, sz_relative, datatype_relative)!=true)
-        {
-            fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.lut[ii].fn_img.c_str());
-            return false;
-        }
-        V3DLONG rx=sz_relative[0], ry=sz_relative[1], rz=sz_relative[2], rc=sz_relative[3];
-        
-        //
-        V3DLONG tile2vi_xs = vim.lut[ii].start_pos[0]-vim.min_vim[0];
-        V3DLONG tile2vi_xe = vim.lut[ii].end_pos[0]-vim.min_vim[0];
-        V3DLONG tile2vi_ys = vim.lut[ii].start_pos[1]-vim.min_vim[1];
-        V3DLONG tile2vi_ye = vim.lut[ii].end_pos[1]-vim.min_vim[1];
-        V3DLONG tile2vi_zs = vim.lut[ii].start_pos[2]-vim.min_vim[2];
-        V3DLONG tile2vi_ze = vim.lut[ii].end_pos[2]-vim.min_vim[2];
-        
-        V3DLONG x_start = (0 > tile2vi_xs) ? 0 : tile2vi_xs;
-        V3DLONG x_end = (vx-1 < tile2vi_xe) ? vx-1 : tile2vi_xe;
-        V3DLONG y_start = (0 > tile2vi_ys) ? 0 : tile2vi_ys;
-        V3DLONG y_end = (vy-1 < tile2vi_ye) ? vy-1 : tile2vi_ye;
-        V3DLONG z_start = (0 > tile2vi_zs) ? 0 : tile2vi_zs;
-        V3DLONG z_end = (vz-1 < tile2vi_ze) ? vz-1 : tile2vi_ze;
-        
-        x_end++;
-        y_end++;
-        z_end++;
-        
-        //suppose all tiles with same color dimensions
-        if(rc>vc)
-            rc = vc;
-        
-        //
-        Tdata *prelative = (Tdata *)relative1d;
-        
-        for(V3DLONG c=0; c<rc; c++)
-        {
-            V3DLONG o_c = c*vx*vy*vz;
-            V3DLONG o_r_c = c*rx*ry*rz;
-            for(V3DLONG k=z_start; k<z_end; k++)
-            {
-                V3DLONG o_k = o_c + k*vx*vy;
-                V3DLONG o_r_k = o_r_c + (k-z_start)*rx*ry;
-                
-                for(V3DLONG j=y_start; j<y_end; j++)
-                {
-                    V3DLONG o_j = o_k + j*vx;
-                    V3DLONG o_r_j = o_r_k + (j-y_start)*rx;
-                    for(V3DLONG i=x_start; i<x_end; i++)
-                    {
-                        V3DLONG idx = o_j + i;
-                        V3DLONG idx_r = o_r_j + (i-x_start);
-                        
-                        float val = (float)(prelative[idx_r]);
-                        
-                        //
-                        float coef;
-                        if(!computeWeights(vim, i, j, k, ii, coef) )
-                        {
-                            printf("Fail to call function computeWeights!\n");
-                            return false;
-                        }
-
-                        pTmp[idx] += (Tdata)(val*coef); // linear blending
-                        
-                    }
-                }
-            }
-        }
-        
-        //de-alloc
-        if(relative1d) {delete []relative1d; relative1d=0;}
-        if(sz_relative) {delete []sz_relative; sz_relative=0;}
+        meanf += valf;
+        meang += valg;
     }
+    meanf /= N;
+    meang /= N;
     
-    float minval, maxval;
-    for(V3DLONG c=0; c<vc; c++) 
-    {
-        V3DLONG offsets = c*pagesz;
-        
-        minval=1e9;
-        maxval=-1e9;
-        for (V3DLONG i=0; i<pagesz; i++) 
-        {
-            V3DLONG idx = offsets+i;
-            
-            float val=pTmp[idx];
-            
-            if(minval>val) minval = val;
-            if(maxval<val) maxval = val;
-        }
-        maxval -= minval;
-        
-        for (V3DLONG i=0; i<pagesz; i++) 
-        {
-            V3DLONG idx = offsets+i;
-            
-            pVImg[idx] = (Tdata) (intensityrange * (pTmp[idx] - minval)/maxval);
-        }
-    }
     
-    //de-alloc
-    if(pTmp) {delete []pTmp; pTmp=NULL;}
+    qDebug()<<"mean value ..."<<meanf<<meang;
     
     return true;
 }
@@ -370,12 +169,7 @@ bool ireconstructing(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>
 // reconstruct tiles into one stitched image
 template <class Tdata> 
 bool ireconstructingwnorm(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, Tdata intensityrange, QList<AdjustPara> adjparaList)
-{
-    // for boundary counting
-    V3DLONG n_swc=1;
-    QString outputSWC, outputAPO;
-    FILE * fp_swc=NULL, *fp_apo=NULL; // .swc showing boundary .apo showing tile's name
-    
+{    
     //
     V3DLONG vx = vim.sz[0];
     V3DLONG vy = vim.sz[1];
@@ -475,8 +269,7 @@ bool ireconstructingwnorm(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, 
                         V3DLONG idx_r = o_r_j + (i-x_start);
                         
                         float val = (float)(prelative[idx_r]);
-                        
-                        
+
                         if(itile<adjparaList.size())
                         {
                             val = val*adjparaList.at(itile).a[c] + adjparaList.at(itile).b[c]; // normalizing
@@ -491,6 +284,156 @@ bool ireconstructingwnorm(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, 
                         }
                         
                         pTmp[idx] += val*coef; // linear blending                        
+                    }
+                }
+            }
+        }
+        
+        //de-alloc
+        if(relative1d) {delete []relative1d; relative1d=0;}
+        if(sz_relative) {delete []sz_relative; sz_relative=0;}
+    }
+    
+    float minval, maxval;
+    for(V3DLONG c=0; c<vc; c++) 
+    {
+        V3DLONG offsets = c*pagesz;
+        
+        minval=1e9;
+        maxval=-1e9;
+        for (V3DLONG i=0; i<pagesz; i++) 
+        {
+            V3DLONG idx = offsets+i;
+            
+            float val=pTmp[idx];
+            
+            if(minval>val) minval = val;
+            if(maxval<val) maxval = val;
+        }
+        maxval -= minval;
+        
+        for (V3DLONG i=0; i<pagesz; i++) 
+        {
+            V3DLONG idx = offsets+i;
+            
+            pVImg[idx] = (Tdata) (intensityrange * (pTmp[idx] - minval)/maxval);
+        }
+    }
+    
+    //de-alloc
+    if(pTmp) {delete []pTmp; pTmp=NULL;}
+    
+    return true;
+}
+
+// reconstruct tiles into one stitched image
+template <class Tdata> 
+bool ireconstructing(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, Tdata intensityrange)
+{    
+    //
+    V3DLONG vx = vim.sz[0];
+    V3DLONG vy = vim.sz[1];
+    V3DLONG vz = vim.sz[2];
+    V3DLONG vc = vim.sz[3];
+    
+    V3DLONG pagesz = vx*vy*vz;
+    V3DLONG imgsz = pagesz*vc;
+    
+    float *pTmp = NULL;
+    try {
+        pTmp = new float [imgsz];
+        memset(pTmp, 0.0, sizeof(float)*imgsz);
+    } catch (...) {
+        printf("Fail to allocate memory for pTmp!\n");
+        if(pTmp){delete []pTmp; pTmp=NULL;}
+        return false;
+    }
+    
+    // fusion
+    string fn;
+    for(V3DLONG ii=0; ii<vim.number_tiles; ii++)
+    {
+        // loading relative imagg files
+        V3DLONG *sz_relative = 0;
+        int datatype_relative = 0;
+        unsigned char* relative1d = 0;
+        
+        //
+        if(ii==0) 
+        {   
+            fn = vim.lut[ii].fn_img;
+        }
+        else 
+        {
+            QString curPath = QFileInfo(QString(vim.lut[0].fn_img.c_str())).path();;
+            
+            fn = curPath.append("/").append( QString(vim.lut[ii].fn_img.c_str()) ).toStdString();
+        }
+        
+        //
+        if (loadImage(const_cast<char *>(fn.c_str()), relative1d, sz_relative, datatype_relative)!=true)
+        {
+            fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.lut[ii].fn_img.c_str());
+            return false;
+        }
+        V3DLONG rx=sz_relative[0], ry=sz_relative[1], rz=sz_relative[2], rc=sz_relative[3];
+        
+        //
+        V3DLONG tile2vi_xs = vim.lut[ii].start_pos[0]-vim.min_vim[0];
+        V3DLONG tile2vi_xe = vim.lut[ii].end_pos[0]-vim.min_vim[0];
+        V3DLONG tile2vi_ys = vim.lut[ii].start_pos[1]-vim.min_vim[1];
+        V3DLONG tile2vi_ye = vim.lut[ii].end_pos[1]-vim.min_vim[1];
+        V3DLONG tile2vi_zs = vim.lut[ii].start_pos[2]-vim.min_vim[2];
+        V3DLONG tile2vi_ze = vim.lut[ii].end_pos[2]-vim.min_vim[2];
+        
+        V3DLONG x_start = (0 > tile2vi_xs) ? 0 : tile2vi_xs;
+        V3DLONG x_end = (vx-1 < tile2vi_xe) ? vx-1 : tile2vi_xe;
+        V3DLONG y_start = (0 > tile2vi_ys) ? 0 : tile2vi_ys;
+        V3DLONG y_end = (vy-1 < tile2vi_ye) ? vy-1 : tile2vi_ye;
+        V3DLONG z_start = (0 > tile2vi_zs) ? 0 : tile2vi_zs;
+        V3DLONG z_end = (vz-1 < tile2vi_ze) ? vz-1 : tile2vi_ze;
+        
+        x_end++;
+        y_end++;
+        z_end++;
+        
+        //suppose all tiles with same color dimensions
+        if(rc>vc)
+            rc = vc;
+        
+        //
+        Tdata *prelative = (Tdata *)relative1d;
+        
+        for(V3DLONG c=0; c<rc; c++)
+        {
+            V3DLONG o_c = c*vx*vy*vz;
+            V3DLONG o_r_c = c*rx*ry*rz;
+            for(V3DLONG k=z_start; k<z_end; k++)
+            {
+                V3DLONG o_k = o_c + k*vx*vy;
+                V3DLONG o_r_k = o_r_c + (k-z_start)*rx*ry;
+                
+                for(V3DLONG j=y_start; j<y_end; j++)
+                {
+                    V3DLONG o_j = o_k + j*vx;
+                    V3DLONG o_r_j = o_r_k + (j-y_start)*rx;
+                    for(V3DLONG i=x_start; i<x_end; i++)
+                    {
+                        V3DLONG idx = o_j + i;
+                        V3DLONG idx_r = o_r_j + (i-x_start);
+                        
+                        float val = (float)(prelative[idx_r]);
+                        
+                        //
+                        float coef;
+                        if(!computeWeights(vim, i, j, k, ii, coef) )
+                        {
+                            printf("Fail to call function computeWeights!\n");
+                            return false;
+                        }
+                        
+                        pTmp[idx] += (Tdata)(val*coef); // linear blending
+                        
                     }
                 }
             }
@@ -962,7 +905,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
             V3DLONG *sz_relative = 0; 
             unsigned char* relative1d = 0;
             
-            QString curPath = QFileInfo(tcfile).path();;
+            QString curPath = QFileInfo(tcfile).path();
             
             string fn = curPath.append("/").append( QString(vim.lut[ii].fn_img.c_str()) ).toStdString();
             
@@ -981,7 +924,215 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
         // the first tile chosen to be a reference image, all other tile will be normalized to this reference image
         QList<V3DLONG> normList, tileList;
         QList<AdjustPara> adjparaList;
-        normList<<0;
+        
+        //normList<<0; // choose the first tile as the reference to normalize
+        // find the highest mean value of overlap region as the reference tile
+        V3DLONG reftile=0;
+        QList<V3DLONG> aList, bList;
+        aList<<0;
+        for(V3DLONG ii=1; ii<vim.number_tiles; ii++)
+        {
+            bList.append(ii);
+        }
+        while (!bList.isEmpty()) 
+        {
+            // pick one from tileList
+            V3DLONG j=bList.at(0);
+            bList.pop_front();
+            
+            V3DLONG i;
+            
+            V3DLONG jx_s, jy_s, jz_s, jx_e, jy_e, jz_e;
+            V3DLONG ix_s, iy_s, iz_s, ix_e, iy_e, iz_e;
+            
+            jx_s = vim.lut[j].start_pos[0] + vim.min_vim[0];
+            jy_s = vim.lut[j].start_pos[1] + vim.min_vim[1];
+            jz_s = vim.lut[j].start_pos[2] + vim.min_vim[2];
+            
+            jx_e = vim.lut[j].end_pos[0] + vim.min_vim[0];
+            jy_e = vim.lut[j].end_pos[1] + vim.min_vim[1];
+            jz_e = vim.lut[j].end_pos[2] + vim.min_vim[2];
+            
+            bool findoverlap = false;
+            for (V3DLONG ii=0; ii<aList.size(); ii++) 
+            {
+                // pick one from normList
+                i=aList.at(ii);
+                
+                ix_s = vim.lut[i].start_pos[0] + vim.min_vim[0];
+                iy_s = vim.lut[i].start_pos[1] + vim.min_vim[1];
+                iz_s = vim.lut[i].start_pos[2] + vim.min_vim[2];
+                
+                ix_e = vim.lut[i].end_pos[0] + vim.min_vim[0];
+                iy_e = vim.lut[i].end_pos[1] + vim.min_vim[1];
+                iz_e = vim.lut[i].end_pos[2] + vim.min_vim[2];
+                
+                // find whether they have common overlap region
+                if(  ( (ix_s>=jx_s && ix_s<=jx_e) || (ix_e>=jx_s && ix_e<=jx_e) || (jx_s>=ix_s && jx_s<=ix_e) || (jx_e>=ix_s && jx_e<=ix_e) )
+                   && ( (iy_s>=jy_s && iy_s<=jy_e) || (iy_e>=jy_s && iy_e<=jy_e) || (jy_s>=iy_s && jy_s<=iy_e) || (jy_e>=iy_s && jy_e<=iy_e) )
+                   && ( (iz_s>=jz_s && iz_s<=jz_e) || (iz_e>=jz_s && iz_e<=jz_e) || (jz_s>=iz_s && jz_s<=iz_e) || (jz_e>=iz_s && jz_e<=iz_e) ) )
+                {
+                    findoverlap = true;
+                    break;
+                }
+            }
+            
+            // find a and b
+            if(findoverlap)
+            {
+                // load image f
+                V3DLONG *sz_f = 0;
+                int datatype_f = 0;
+                unsigned char* f1d = 0;
+                
+                string fn;
+                
+                // j <-> f
+                if(j==0) 
+                {   
+                    fn = vim.lut[j].fn_img;
+                }
+                else 
+                {
+                    QString curPath = QFileInfo(QString(vim.lut[0].fn_img.c_str())).path();;
+                    
+                    fn = curPath.append("/").append( QString(vim.lut[j].fn_img.c_str()) ).toStdString();
+                }
+                
+                //
+                if (loadImage(const_cast<char *>(fn.c_str()), f1d, sz_f, datatype_f)!=true)
+                {
+                    fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",fn.c_str());
+                    return false;
+                }
+                V3DLONG fx=sz_f[0], fy=sz_f[1], fz=sz_f[2], fc=sz_f[3];
+                
+                // load image g
+                V3DLONG *sz_g = 0;
+                int datatype_g = 0;
+                unsigned char* g1d = 0;
+                
+                // i <-> g
+                if(i==0) 
+                {   
+                    fn = vim.lut[i].fn_img;
+                }
+                else 
+                {
+                    QString curPath = QFileInfo(QString(vim.lut[0].fn_img.c_str())).path();;
+                    
+                    fn = curPath.append("/").append( QString(vim.lut[i].fn_img.c_str()) ).toStdString();
+                }
+                
+                //
+                if (loadImage(const_cast<char *>(fn.c_str()), g1d, sz_g, datatype_g)!=true)
+                {
+                    fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",fn.c_str());
+                    return false;
+                }
+                V3DLONG gx=sz_g[0], gy=sz_g[1], gz=sz_g[2], gc=sz_g[3];
+                
+                // overlap image from f and g
+                V3DLONG start_x = qMax(jx_s, ix_s);
+                V3DLONG start_y = qMax(jy_s, iy_s);
+                V3DLONG start_z = qMax(jz_s, iz_s);
+                
+                V3DLONG end_x = qMin(jx_e, ix_e);
+                V3DLONG end_y = qMin(jy_e, iy_e);
+                V3DLONG end_z = qMin(jz_e, iz_e);
+                
+                V3DLONG dimxol= end_x-start_x+1;
+                V3DLONG dimyol= end_y-start_y+1;
+                V3DLONG dimzol= end_z-start_z+1;
+                
+                V3DLONG pagesz_ol = dimxol*dimyol*dimzol;
+                
+                float *fol1d = NULL;
+                float *gol1d = NULL;
+                
+                try 
+                {
+                    // suppose fc = gc = vc
+                    fol1d = new float [fc*pagesz_ol];
+                    gol1d = new float [gc*pagesz_ol];
+                } 
+                catch (...) 
+                {
+                    printf("Fail to allocate memory for fol1d and gol1d.\n");
+                    
+                    if (fol1d) {delete []fol1d; fol1d=NULL;}
+                    if (gol1d) {delete []gol1d; gol1d=NULL;}
+                    
+                    return false;
+                }
+                
+                for(V3DLONG c=0; c<fc; c++)
+                {
+                    V3DLONG offsets_fc = c*fx*fy*fz;
+                    V3DLONG offsets_gc = c*gx*gy*gz;
+                    
+                    V3DLONG offsets_olc = c*pagesz_ol;
+                    
+                    for(V3DLONG z=start_z; z<end_z; z++)
+                    {
+                        V3DLONG offsets_fz = offsets_fc + (z-jz_s)*fx*fy;
+                        V3DLONG offsets_gz = offsets_gc + (z-iz_s)*gx*gy;
+                        
+                        V3DLONG offsets_olz = offsets_olc + (z-start_z)*dimxol*dimyol;
+                        
+                        for(V3DLONG y=start_y; y<end_y; y++)
+                        {
+                            V3DLONG offsets_fy = offsets_fz + (y-jy_s)*fx;
+                            V3DLONG offsets_gy = offsets_gz + (y-iy_s)*gx;
+                            
+                            V3DLONG offsets_oly = offsets_olz + (y-start_y)*dimxol;
+                            
+                            for(V3DLONG x=start_x; x<end_x; x++)
+                            {
+                                V3DLONG idx = offsets_oly + x - start_x;
+                                
+                                fol1d[idx] = f1d[offsets_fy + (x-jx_s)];
+                                gol1d[idx] = g1d[offsets_gy + (x-ix_s)];
+                            }
+                        }
+                    }
+                }
+                // de-alloc
+                if (f1d) {delete []f1d; f1d=NULL;}
+                if (g1d) {delete []g1d; g1d=NULL;}
+                
+                //                
+                for(V3DLONG c=0; c<fc; c++)
+                {
+                    V3DLONG offsets_olc = c*pagesz_ol;
+                    
+                    float a,b;
+                    V3DLONG tilen;
+                    
+                    if(findHighestIntensityLevelTile<float>(fol1d+offsets_olc, gol1d+offsets_olc, pagesz_ol, tilen)!=true)
+                    {
+                        printf("Fail to call function computeAdjustPara! \n");
+                        return false;
+                    }
+                    
+                    qDebug()<<"color ..."<<c;
+                }
+                
+                // de-alloc
+                if (fol1d) {delete []fol1d; fol1d=NULL;}
+                if (gol1d) {delete []gol1d; gol1d=NULL;}
+                
+                //
+                aList.push_back(j);
+            }
+            else
+            {
+                bList.push_back(j);
+            }
+        }
+        
+        normList.append(reftile);
+        
         for(V3DLONG ii=1; ii<vim.number_tiles; ii++)
         {
             tileList.append(ii);
@@ -1122,7 +1273,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
                     printf("Fail to allocate memory for fol1d and gol1d.\n");
 
                     if (fol1d) {delete []fol1d; fol1d=NULL;}
-                    if (fol1d) {delete []fol1d; fol1d=NULL;}
+                    if (gol1d) {delete []gol1d; gol1d=NULL;}
                     
                     return false;
                 }
@@ -1187,7 +1338,7 @@ bool ImageFusionPlugin::dofunc(const QString & func_name, const V3DPluginArgList
                 
                 // de-alloc
                 if (fol1d) {delete []fol1d; fol1d=NULL;}
-                if (fol1d) {delete []fol1d; fol1d=NULL;}
+                if (gol1d) {delete []gol1d; gol1d=NULL;}
                 
                 //
                 normList.push_back(j);
