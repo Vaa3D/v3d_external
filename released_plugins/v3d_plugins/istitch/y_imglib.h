@@ -60,6 +60,7 @@ typedef float REAL; // -lfftw3f -lfftw3f_threads // fftwf_
 #define TC_COMMENT4 (" origin (XYZ) ")
 #define TC_COMMENT5 (" resolution (XYZ) ")
 #define TC_COMMENT6 (" image coordinates look up table ")
+#define TC_COMMENT7 (" MST LUT ")
 
 //statistics of count of labeling
 class STCL
@@ -72,7 +73,6 @@ public:
 	int count;
 	int label;
 };
-
 
 // this is an extension to 3D region growing from octave 2D bwlabel code
 // find func copied from octave bwlabel code
@@ -101,6 +101,14 @@ T y_abs(T x)
 {
 	return (x<0)?-x:x;
 }
+
+// delete 1d pointer
+template <class T>
+void y_del(T *p)
+{
+	if(p) {delete []p; p=NULL;}
+}
+
 
 // Define a lookup table
 template <class T>
@@ -210,6 +218,8 @@ public:
 	{
 		T1 len = 3; //in_offsets.size();
 		
+		offsets_sa = NULL;
+        
 		try
 		{
 			offsets = new T1 [len];
@@ -239,6 +249,50 @@ public:
 		sz_image[3] = 1;
 
 	}
+    
+	indexed_t()
+	{
+		T1 len = 3; // x, y, z
+		
+		offsets = NULL;
+        
+		try
+		{
+			offsets_sa = new T2 [len];
+		}
+		catch (...) 
+		{
+			printf("Fail to allocate memory.\n");
+			return;
+		}
+		
+		try
+		{
+			sz_image = new T1 [len+1]; // X Y Z C
+		}
+		catch (...) 
+		{
+			printf("Fail to allocate memory.\n");
+			return;
+		}
+		
+		// init
+		for(T1 i=0; i<len; i++)
+		{
+			offsets_sa[i] = 0.0;
+			sz_image[i] = 1;
+		}
+		sz_image[3] = 1;
+        
+	}
+    
+	void clean() 
+	{
+        	y_del<T1>(offsets);
+        	y_del<T2>(offsets_sa);
+        	y_del<T1>(sz_image);
+	}
+    
 	~indexed_t(){}
 	
 public:
@@ -247,6 +301,7 @@ public:
 	T1 n;
 	
 	T2 score;
+    T2 *offsets_sa; // subpixel accuracy
 	
 	string fn_image; // absolute path + file name
 	T1 *sz_image;
@@ -323,9 +378,21 @@ public:
 	
 public:
 	
+    // error func
+    bool error(ifstream *pFileLUT)
+    {
+        //QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
+        
+        cout<<"Your stitching configuration (.tc) file is illegal."<<endl;
+        pFileLUT->close();
+        return false;
+    }
+    
 	//load a virtual image
 	bool y_load(string fn)
 	{
+        QString curPath = QFileInfo(fn.c_str()).path();
+        
 		ifstream pFileLUT(fn.c_str());
 		string str;
 		
@@ -346,9 +413,7 @@ public:
 			
 			if(strcmp(str.c_str(), TC_COMMENT1))
 			{
-				QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
-				pFileLUT.close();
-				return false;
+				return error(&pFileLUT);
 			}
 			else
 			{
@@ -360,15 +425,15 @@ public:
 			{
 				pFileLUT >> letter;
 			}
-			while(letter!='#');
+			while(letter!='#' && !pFileLUT.eof());
+            
+            if(pFileLUT.eof()) return error(&pFileLUT);
 			
 			getline(pFileLUT, str); // read comments line
 			
 			if(strcmp(str.c_str(), TC_COMMENT2))
 			{
-				QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
-				pFileLUT.close();
-				return false;
+				return error(&pFileLUT);
 			}
 			else
 			{
@@ -380,15 +445,15 @@ public:
 			{
 				pFileLUT >> letter;
 			}
-			while(letter!='#');
+			while(letter!='#' && !pFileLUT.eof());
+            
+            if(pFileLUT.eof()) return error(&pFileLUT);
 			
 			getline(pFileLUT, str); // read comments line
 			
 			if(strcmp(str.c_str(), TC_COMMENT3))
 			{
-				QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
-				pFileLUT.close();
-				return false;
+				return error(&pFileLUT);
 			}
 			else
 			{
@@ -400,15 +465,15 @@ public:
 			{
 				pFileLUT >> letter;
 			}
-			while(letter!='#');
+			while(letter!='#' && !pFileLUT.eof());
+            
+            if(pFileLUT.eof()) return error(&pFileLUT);
 			
 			getline(pFileLUT, str); // read comments line
 			
 			if(strcmp(str.c_str(), TC_COMMENT4))
 			{
-				QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
-				pFileLUT.close();
-				return false;
+				return error(&pFileLUT);
 			}
 			else
 			{
@@ -420,15 +485,15 @@ public:
 			{
 				pFileLUT >> letter;
 			}
-			while(letter!='#');
+			while(letter!='#' && !pFileLUT.eof());
+            
+            if(pFileLUT.eof()) return error(&pFileLUT);
 			
 			getline(pFileLUT, str); // read comments line
 			
 			if(strcmp(str.c_str(), TC_COMMENT5))
 			{
-				QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
-				pFileLUT.close();
-				return false;
+				return error(&pFileLUT);
 			}
 			else
 			{
@@ -440,15 +505,15 @@ public:
 			{
 				pFileLUT >> letter;
 			}
-			while(letter!='#');
+			while(letter!='#' && !pFileLUT.eof());
+            
+            if(pFileLUT.eof()) return error(&pFileLUT);
 			
 			getline(pFileLUT, str); // read comments line
 			
 			if(strcmp(str.c_str(), TC_COMMENT6))
 			{
-				QMessageBox::information(0, "TC file reading", QObject::tr("Your .tc file is illegal."));
-				pFileLUT.close();
-				return false;
+				return error(&pFileLUT);
 			}
 			else
 			{
@@ -456,41 +521,85 @@ public:
 				lut = new LUT [number_tiles];
 				T2 count=0;
 				
-				while( !pFileLUT.eof() )
-				{
-					while( getline(pFileLUT, str) && count<number_tiles)
-					{
-						istringstream iss(str);
-						
-						if(iss.fail() || iss.eof())
-							continue;
-						
-						iss >> buf;
-						
-						fn_str = buf;
-						
-						//
-						iss >> buf; iss >> start[0];
-						iss >> buf; iss >> start[1];
-						iss >> buf; iss >> start[2];
-						
-						iss >> buf;
-						
-						iss >> buf; iss >> end[0];
-						iss >> buf; iss >> end[1];
-						iss >> buf; iss >> end[2];
-						
-						lut[count] = LUT(start, end, false);
-						lut[count].fn_img = fn_str;
-						
-						count++;
-						
-						//iss >> letter;
-					}
-					
-				}
+				while( !pFileLUT.eof() && getline(pFileLUT, str) && count<number_tiles)
+                {
+                    istringstream iss(str);
+                    
+                    if(iss.fail() || iss.eof())
+                        continue;
+                    
+                    iss >> fn_str;
+                    
+                    //
+                    iss >> buf; iss >> start[0];
+                    iss >> buf; iss >> start[1];
+                    iss >> buf; iss >> start[2];
+                    
+                    iss >> buf;
+                    
+                    iss >> buf; iss >> end[0];
+                    iss >> buf; iss >> end[1];
+                    iss >> buf; iss >> end[2];
+                    
+                    lut[count] = LUT(start, end, false);
+                    lut[count].fn_img = fn_str; // relative path
+                    
+                    count++;
+                }
 			}
-			
+
+			if(!pFileLUT.eof()) // compatible with old .tc file
+			{
+				do
+				{
+					pFileLUT >> letter;
+				}
+				while(letter!='#' && !pFileLUT.eof());
+                
+                if(!pFileLUT.eof())
+                {
+                    getline(pFileLUT, str); // read comments line
+                    
+                    if(strcmp(str.c_str(), TC_COMMENT7) == 0)
+                    {
+                        for(V3DLONG i=0; i<number_tiles; i++)
+                        { 
+                            indexed_t t;  //
+                            
+                            t.n = i;
+                            t.predecessor = -1;
+                            
+                            t.fn_image = curPath.append("/").append( QString(lut[i].fn_img.c_str()) ).toStdString(); // absolute path
+                            
+                            tilesList.push_back(t);
+                        }
+                        
+                        T2 count=0;
+                        
+                        while( !pFileLUT.eof() && getline(pFileLUT, str)  && count<number_tiles)
+                        {
+                            istringstream iss(str);
+                            
+                            if(iss.fail() || iss.eof())
+                                continue;
+                            
+                            iss >> tilesList.at(count).n;
+                            iss >> tilesList.at(count).predecessor;
+                            
+                            iss >> tilesList.at(count).offsets_sa[0];
+                            iss >> tilesList.at(count).offsets_sa[1];
+                            iss >> tilesList.at(count).offsets_sa[2];
+                            
+                            count++;
+                        }
+                    }
+                }
+                else
+                {
+                    cout<<"Warning: This stitching configuration file is old version without MST info."<<endl;
+                }
+			}
+
 		}
 		else
 		{
@@ -574,19 +683,26 @@ public:
 		fprintf(pFileLUT, "%lf %lf %lf \n\n", rez_x, rez_y, rez_z);
 		
 		fprintf(pFileLUT, "# image coordinates look up table \n"); // TC_COMMENT6
-		for(int j=0; j<number_tiles; j++)
+		for(T2 j=0; j<number_tiles; j++)
 		{
-                        string fns;
+            string fns;
 			string fn_img_tile = lut[j].fn_img;
 			
-			int len_abpath = QFileInfo(QString(fn_img_tile.c_str())).path().length();
+			T2 len_abpath = QFileInfo(QString(fn_img_tile.c_str())).path().length();
 			
 			if(len_abpath>1)
-                                fns = QString(fn_img_tile.c_str()).remove(0, len_abpath+1).toStdString();
+                fns = QString(fn_img_tile.c_str()).remove(0, len_abpath+1).toStdString();
 			else
-                                fns = fn_img_tile;
+                fns = fn_img_tile;
 			
-                        fprintf(pFileLUT, "%s  ( %ld, %ld, %ld ) ( %ld, %ld, %ld ) \n", fns.c_str(), lut[j].start_pos[0], lut[j].start_pos[1], lut[j].start_pos[2], lut[j].end_pos[0], lut[j].end_pos[1], lut[j].end_pos[2]);
+            fprintf(pFileLUT, "%s  ( %ld, %ld, %ld ) ( %ld, %ld, %ld ) \n", fns.c_str(), lut[j].start_pos[0], lut[j].start_pos[1], lut[j].start_pos[2], lut[j].end_pos[0], lut[j].end_pos[1], lut[j].end_pos[2]);
+		}
+        
+        fprintf(pFileLUT, "\n# MST LUT \n"); // TC_COMMENT7
+        for(T2 j=1; j<number_tiles; j++)
+		{
+            T2 pre = tilesList.at(j).predecessor;
+            fprintf(pFileLUT, "%ld %ld %ld %ld %ld \n", tilesList.at(j).n, pre, tilesList.at(j).record.at(pre).offsets[0], tilesList.at(j).record.at(pre).offsets[1], tilesList.at(j).record.at(pre).offsets[2]);
 		}
 		
 		fclose(pFileLUT);
@@ -619,13 +735,13 @@ public:
 	// point navigation
 	POINT y_navigate(POINT p)
 	{
-                return p;
+        return p;
 	}
 	
 	// create thumbnail file
-        const char *y_createthumbnail()
+    const char *y_createthumbnail()
 	{
-                static char fn[2048] = "NULL";
+        static char fn[2048] = "NULL";
 		
 		// to do
 		
@@ -1052,7 +1168,7 @@ int mstPrim(vector<indexed_t<T1, T2> > &tilesList)
 		while(ks(tilesList)) 
 		{
 			
-                        T1 ni, /* n1, */ n2;
+            T1 ni, /* n1, */ n2;
 			T2 max_score = 0;
 			T1 mse_node; // corresponding maxmum score edge
 			T1 parent;
@@ -1169,6 +1285,9 @@ public:
 	
 	//func all-in-one fft phase-correlation and cross-correlation
 	void fftpccc3D(Y_IMG1 pOut, Y_IMG2 pIn, T2 even_odd, bool fftwf_in_place, PEAKSLIST *peakList);
+    
+    //func fft phase-correlation in subpixel extension
+	void fftpcsubspace3D(Y_IMG1 pOut, Y_IMG2 pIn, T2 even_odd, bool fftwf_in_place, rPEAKS *pos);
 	
 	//func all-in-one fft phase-correlation and cross-correlation using 1d fft
 	void fftpatientpccc3D(Y_IMG1 pOut, Y_IMG2 pIn, T2 even_odd, bool fftwf_in_place, PEAKSLIST *peakList);
@@ -1205,6 +1324,9 @@ public:
 	
 	//func fft ncc ND
 	void fftnccND(Y_IMG1 pOut, Y_IMG2 pIn, T2 *sznd, T1 overlap_percent);
+    
+    //func subpixel translate
+    void subpixeltranslate(Y_IMG1 pOut, T2 even_odd, bool fftwf_in_place, rPEAKS *pos);
 	
 	//func region growing 3D
 	void regiongrow3D(Y_IMG1 pOut, Y_IMG2 pIn, rPEAKSLIST *peakList, T2 ncm);
@@ -2947,6 +3069,139 @@ template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IM
 	//fftwf_cleanup_threads();
 }
 
+//func fft phase-correlation in subpixel extension
+template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IMG1, Y_IMG2> :: fftpcsubspace3D(Y_IMG1 pOut, Y_IMG2 pIn, T2 even_odd, bool fftwf_in_place, rPEAKS *pos)
+{
+	//
+    T1 max_v = 0;
+		
+	T2 sx_pad, sy_pad, sz_pad;
+	
+	sx_pad=pIn.sz[0];
+	sy_pad=pIn.sz[1];
+	sz_pad=pIn.sz[2];
+	
+	T2 len_pad = sx_pad*sy_pad*sz_pad;
+	
+	//
+	//fftwf_init_threads(); //pthread
+	//fftwf_plan_with_nthreads(PROCESSORS); 
+	
+	fftwf_plan p;
+    T2 x,y,z;
+	
+	if(fftwf_in_place)
+	{
+		T2 sx_pad_ori = sx_pad - (2-even_odd); //2*(sx_pad/2-1);
+		T2 len_pad_tmp = sx_pad_ori*sy_pad*sz_pad;
+		
+		p = fftwf_plan_dft_r2c_3d(sz_pad, sy_pad, sx_pad_ori, pIn.pImg, (fftwf_complex*)pIn.pImg, FFTW_ESTIMATE);
+		
+		fftwf_execute(p);
+		fftwf_destroy_plan(p);
+		
+		p = fftwf_plan_dft_r2c_3d(sz_pad, sy_pad, sx_pad_ori, pOut.pImg, (fftwf_complex*)pOut.pImg, FFTW_ESTIMATE);
+		
+		fftwf_execute(p);
+		fftwf_destroy_plan(p);
+		
+		// compute pc & cc
+		for(T2 k=0; k<sz_pad; k++)
+		{
+			T2 offset_k = k*sy_pad*sx_pad;
+			for(T2 j=0; j<sy_pad; j++)
+			{
+				T2 offset_j = offset_k + j*sx_pad;
+				for(T2 i=0; i<sx_pad; i+=2)
+				{
+					T2 idx = offset_j + i;
+					
+					T1 tmp = pOut.pImg[idx];
+					
+					// obtain cross correlation
+					pOut.pImg[idx+1] = -pOut.pImg[idx+1]; //conjugate
+					
+					pOut.pImg[idx] = pIn.pImg[idx]*tmp - pIn.pImg[idx+1]*pOut.pImg[idx+1];
+					pOut.pImg[idx+1] = pIn.pImg[idx+1]*tmp + pIn.pImg[idx]*pOut.pImg[idx+1];
+					
+					// obtain normalized cross power spectrum					
+					T1 tmp2 = sqrt(pOut.pImg[idx]*pOut.pImg[idx] + pOut.pImg[idx+1]*pOut.pImg[idx+1]);
+					
+					pOut.pImg[idx] /= tmp2;
+					pOut.pImg[idx+1] /= tmp2;
+                    
+				}
+			}
+		}
+		
+		// obtain the phase correlation
+		fftwf_complex* out_pc_sub = (fftwf_complex*)pOut.pImg;
+		
+		p = fftwf_plan_dft_c2r_3d(sz_pad, sy_pad, sx_pad_ori, out_pc_sub, pOut.pImg, FFTW_ESTIMATE);
+		
+		fftwf_execute(p);
+		fftwf_destroy_plan(p);
+		
+		// cleanup
+		// fftwf_cleanup_threads();
+		
+		// normalizing
+		for(T2 k=0; k<sz_pad; k++)
+		{
+			T2 offset_k = k*sy_pad*sx_pad;
+			for(T2 j=0; j<sy_pad; j++)
+			{
+				T2 offset_j = offset_k + j*sx_pad;
+				for(T2 i=0; i<sx_pad; i++)
+				{
+					T2 idx = offset_j + i;
+					
+					if(i<sx_pad_ori)
+					{
+						pOut.pImg[idx] /= (T1)len_pad_tmp; //
+					}
+					else
+					{
+						pOut.pImg[idx] = 0;
+					}
+					
+					// peak
+					if(pOut.pImg[idx] >= max_v)
+					{
+                        max_v = pOut.pImg[idx];
+                        x = i; y = j; z = k; pos->value = max_v;
+                    }
+					
+				}
+			}
+		}
+		
+	}
+    else
+    {
+        // need more memory
+        // not support
+    }
+    
+    T2 idxcur = z*sy_pad*sx_pad + y*sx_pad + x;
+    T2 xp = 1;
+    T2 yp = sx_pad;
+    T2 zp = sy_pad*sx_pad;
+    
+    pos->x = x + (pOut.pImg[idxcur+xp])/(pOut.pImg[idxcur+xp] + pOut.pImg[idxcur]); 
+    pos->y = y + (pOut.pImg[idxcur+yp])/(pOut.pImg[idxcur+yp] + pOut.pImg[idxcur]);
+    pos->z = z + (pOut.pImg[idxcur+zp])/(pOut.pImg[idxcur+zp] + pOut.pImg[idxcur]);
+    
+    if(pos->x > sx_pad/2) pos->x -= sx_pad;
+    if(pos->y > sy_pad/2) pos->y -= sy_pad;
+    if(pos->z > sz_pad/2) pos->z -= sz_pad;
+    
+    qDebug()<<"subspace shifts ... "<<pos->x<<pos->y<<pos->z;
+	
+    //
+	return;
+}
+
 
 // fft pc-ncc 3D
 template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IMG1, Y_IMG2> :: fftpcncc3D(Y_IMG1 pOut, Y_IMG2 pIn, T2 *sz3d, T2 even_odd, bool fftwf_in_place, T1 overlap_percent, PEAKS *pos)
@@ -3838,6 +4093,88 @@ template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IM
 	}
 	
 	
+}
+
+template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IMG1, Y_IMG2> :: subpixeltranslate(Y_IMG1 pOut, T2 even_odd, bool fftwf_in_place, rPEAKS *pos)
+{
+	//    
+	T2 sx_pad, sy_pad, sz_pad;
+	
+	sx_pad=pOut.sz[0];
+	sy_pad=pOut.sz[1];
+	sz_pad=pOut.sz[2];
+	
+	T2 len_pad = sx_pad*sy_pad*sz_pad;
+    
+    T1 frac_x = pos->x - T2(pos->x);
+    T1 frac_y = pos->y - T2(pos->y);
+    T1 frac_z = pos->z - T2(pos->z);
+	
+	//
+	//fftwf_init_threads(); //pthread
+	//fftwf_plan_with_nthreads(PROCESSORS); 
+	
+	fftwf_plan p;
+	
+	if(fftwf_in_place)
+	{
+		T2 sx_pad_ori = sx_pad - (2-even_odd); //2*(sx_pad/2-1);
+		T2 len_pad_tmp = sx_pad_ori*sy_pad*sz_pad;
+		
+		p = fftwf_plan_dft_r2c_3d(sz_pad, sy_pad, sx_pad_ori, pOut.pImg, (fftwf_complex*)pOut.pImg, FFTW_ESTIMATE);
+		
+		fftwf_execute(p);
+		fftwf_destroy_plan(p);
+		
+		
+		// compute traslations
+        // (a+bi)(c+di) = (ac-bd) + (bc+ad)i
+		for(T2 kz=0; kz<sz_pad; kz++)
+		{
+			T2 offset_k = kz*sy_pad*sx_pad;
+			for(T2 jy=0; jy<sy_pad; jy++)
+			{
+				T2 offset_j = offset_k + jy*sx_pad;
+				for(T2 ix=0; ix<sx_pad; ix+=2)
+				{
+					T2 idx = offset_j + ix;
+					
+					T1 a = pOut.pImg[idx];
+                    T1 b = pOut.pImg[idx+1];
+                    
+                    T1 phi = 2*PI*(ix*frac_x + jy*frac_y + kz*frac_z); // exp(i*phi)
+                    
+                    T1 c = cos(phi);
+                    T1 d = sin(phi);
+					
+					// shifts					
+					pOut.pImg[idx] = a*c - b*d;
+					pOut.pImg[idx+1] = b*c + a*d;
+                    
+				}
+			}
+		}
+		
+		// obtain the phase correlation
+		fftwf_complex* out_pc_sub = (fftwf_complex*)pOut.pImg;
+		
+		p = fftwf_plan_dft_c2r_3d(sz_pad, sy_pad, sx_pad_ori, out_pc_sub, pOut.pImg, FFTW_ESTIMATE);
+		
+		fftwf_execute(p);
+		fftwf_destroy_plan(p);
+		
+		// cleanup
+		// fftwf_cleanup_threads();
+		
+	}
+    else
+    {
+        // need more memory
+        // not support
+    }
+    	
+    //
+	return;
 }
 
 // func region growing 3D
@@ -5082,6 +5419,80 @@ template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IM
 	}
 	
 	
+}
+
+// fusion or blending functions
+//---------------------------------------------------------------------------------------------------------------------------------------------------
+// func weights map for 3D linear blending 
+bool computeWeights(Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, V3DLONG i, V3DLONG j, V3DLONG k, V3DLONG tilei, float &weights)
+{
+    
+    V3DLONG vx = vim.sz[0];
+    V3DLONG vy = vim.sz[1];
+    V3DLONG vz = vim.sz[2];
+    V3DLONG vc = vim.sz[3];
+    
+    V3DLONG sz_img = vx*vy*vz;
+    
+    QList<float> listWeights;
+    listWeights.clear();
+    
+    V3DLONG numtile;
+    
+    for(V3DLONG ii=0; ii<vim.number_tiles; ii++)
+    {
+        V3DLONG tile2vi_xs = vim.lut[ii].start_pos[0]-vim.min_vim[0];
+        V3DLONG tile2vi_xe = vim.lut[ii].end_pos[0]-vim.min_vim[0];
+        V3DLONG tile2vi_ys = vim.lut[ii].start_pos[1]-vim.min_vim[1];
+        V3DLONG tile2vi_ye = vim.lut[ii].end_pos[1]-vim.min_vim[1];
+        V3DLONG tile2vi_zs = vim.lut[ii].start_pos[2]-vim.min_vim[2];
+        V3DLONG tile2vi_ze = vim.lut[ii].end_pos[2]-vim.min_vim[2];
+        
+        V3DLONG x_start = (0 > tile2vi_xs) ? 0 : tile2vi_xs;
+        V3DLONG x_end = (vx-1 < tile2vi_xe) ? vx-1 : tile2vi_xe;
+        V3DLONG y_start = (0 > tile2vi_ys) ? 0 : tile2vi_ys;
+        V3DLONG y_end = (vy-1 < tile2vi_ye) ? vy-1 : tile2vi_ye;
+        V3DLONG z_start = (0 > tile2vi_zs) ? 0 : tile2vi_zs;
+        V3DLONG z_end = (vz-1 < tile2vi_ze) ? vz-1 : tile2vi_ze;
+        
+        x_end++;
+        y_end++;
+        z_end++;
+        
+        if(i>=x_start && i<x_end && j>=y_start && j<y_end && k>=z_start && k<z_end)
+        {
+            float dist2xl = fabs(float(i-x_start));
+            float dist2xr = fabs(float(x_end-1-i));
+            float dist2yu = fabs(float(j-y_start));
+            float dist2yd = fabs(float(y_end-1-j));
+            float dist2zf = fabs(float(k-z_start));
+            float dist2zb = fabs(float(z_end-1-k));
+            
+            if( dist2xr<dist2xl ) dist2xl = dist2xr;
+            if( dist2yd<dist2yu ) dist2yu = dist2yd;
+            if( dist2zf>dist2zb ) dist2zf = dist2zb;
+            
+            listWeights.push_back(dist2xl*dist2yu*dist2zf+1);
+            
+            if(ii==tilei) numtile = listWeights.size()-1;
+        }
+        
+    }
+    
+    if (listWeights.size()<=1) 
+    {
+        weights=1.0;
+    }
+    else
+    {
+        float sumweights=0;
+        for (int i=0; i<listWeights.size(); i++) {
+            sumweights += listWeights.at(i);
+        }
+        weights = listWeights.at(numtile) / sumweights;
+    }
+    
+    return true;
 }
 
 #endif
