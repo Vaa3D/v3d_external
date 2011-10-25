@@ -10,6 +10,7 @@ using namespace std;
 const int ImageLoader::MODE_UNDEFINED=0;
 const int ImageLoader::MODE_LOAD_TEST=1;
 const int ImageLoader::MODE_CONVERT=2;
+const int ImageLoader::MODE_MIP=3;
 
 ImageLoader::ImageLoader()
 {
@@ -23,6 +24,7 @@ ImageLoader::ImageLoader()
     compressionPosition=0;
     decompressionPosition=0;
     decompressionPrior=0;
+    flipy=false;
 }
 
 ImageLoader::~ImageLoader()
@@ -59,6 +61,23 @@ int ImageLoader::processArgs(vector<char*> *argList) {
                     haveInput=true;
                 } else if (!possibleFile.startsWith("-") && haveInput) {
                     targetFilepath=possibleFile;
+                } else {
+                    done=true;
+                    i--; // rewind
+                }
+            } while(!done && i<(argList->size()-1));
+        } else if (arg=="-mip") {
+            mode=MODE_MIP;
+            bool haveInput=false;
+            do {
+                QString possibleFile=(*argList)[++i];
+                if (!possibleFile.startsWith("-") && !haveInput) {
+                    inputFilepath=possibleFile;
+                    haveInput=true;
+                } else if (!possibleFile.startsWith("-") && haveInput) {
+                    targetFilepath=possibleFile;
+                } else if (possibleFile=="-flipy") {
+                    flipy=true;
                 } else {
                     done=true;
                     i--; // rewind
@@ -131,8 +150,54 @@ bool ImageLoader::execute() {
         }
         qDebug() << "Saving time is " << stopwatch.elapsed() / 1000.0 << " seconds";
         return true;
+    } else if (mode==MODE_MIP) {
+        image=loadImage(inputFilepath);
+        create2DMIPFromStack(image, targetFilepath);
     }
     return false; // should not get here
+}
+
+void ImageLoader::create2DMIPFromStack(My4DImage * image, QString mipFilepath) {
+    Image4DProxy<My4DImage> stackProxy(image);
+    My4DImage * mip = new My4DImage();
+    mip->loadImage( stackProxy.sx, stackProxy.sy, 1 /* z */, stackProxy.sc, V3D_UINT8 );
+    memset(mip->getRawData(), 0, mip->getTotalBytes());
+    Image4DProxy<My4DImage> mipProxy(mip);
+
+    int divFactor=1;
+    if (image->getDatatype()==2) {
+        divFactor=16;
+    }
+
+    qDebug() << "Computing mip";
+    for (int y=0;y<stackProxy.sy;y++) {
+        for (int x=0;x<stackProxy.sx;x++) {
+            V3DLONG maxIntensity=0;
+            int maxPosition=0;
+            for (int z=0;z<stackProxy.sz;z++) {
+                V3DLONG currentIntensity=0;
+                for (int c=0;c<stackProxy.sc;c++) {
+                    currentIntensity+=(*stackProxy.at(x,y,z,c));
+                }
+                if (currentIntensity>maxIntensity) {
+                    maxIntensity=currentIntensity;
+                    maxPosition=z;
+                }
+            }
+            if (flipy) {
+                for (int c=0;c<stackProxy.sc;c++) {
+                    mipProxy.put_at(x,stackProxy.sy-y-1,0,c,(*stackProxy.at(x,y,maxPosition,c))/divFactor);
+                }
+            } else {
+                for (int c=0;c<stackProxy.sc;c++) {
+                    mipProxy.put_at(x,y,0,c,(*stackProxy.at(x,y,maxPosition,c))/divFactor);
+                }
+            }
+        }
+    }
+    qDebug() << "Saving mip to file " << targetFilepath;
+    mip->saveImage(targetFilepath.toAscii().data());
+    delete mip;
 }
 
 unsigned char * ImageLoader::convertType2Type1(const V3DLONG * sz, My4DImage *image) {
