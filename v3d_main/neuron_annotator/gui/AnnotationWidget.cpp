@@ -23,13 +23,18 @@
 #define QEVENT_KEY_PRESS QEvent::KeyPress
 #endif
 
+#define CONSOLE_CONNECT_RETRY_INTERVAL_MSECS 3000
 #define LABEL_NONE "None"
-#define LABEL_CONSOLE_DICONNECTED "Console not connected"
+#define LABEL_CONSOLE_DISCONNECTED "Console not connected"
 #define LABEL_CONSOLE_CONNECTED "Console connected"
 #define BUTTON_CONNECT "Connect"
 #define BUTTON_CONNECTING "Connecting..."
 #define BUTTON_DISCONNECT "Disconnect"
 #define BUTTON_DISCONNECTING "Disconnecting..."
+#define LABEL_CONSOLE_DESYCNED "Console not synced"
+#define LABEL_CONSOLE_SYNCED "Console synced"
+#define BUTTON_SYNC "Synchronize"
+#define BUTTON_SYNCING "Synchronizing..."
 
 AnnotationWidget::AnnotationWidget(QWidget *parent) :
     QFrame(parent),
@@ -45,7 +50,8 @@ AnnotationWidget::AnnotationWidget(QWidget *parent) :
     createAnnotationThread(0),
     removeAnnotationThread(0),
     selectEntityThread(0),
-    mutex(QMutex::Recursive)
+    mutex(QMutex::Recursive),
+    retries(0)
 {
     ui->setupUi(this);
     connect(ui->ontologyTreeView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(ontologyTreeDoubleClicked(QModelIndex)));
@@ -271,16 +277,46 @@ void AnnotationWidget::showDisconnected()
     this->annotatedBranch = 0;
 
     // Reset the console link
-    ui->consoleLinkLabel->setText(LABEL_CONSOLE_DICONNECTED);
+    ui->consoleLinkLabel->setText(LABEL_CONSOLE_DISCONNECTED);
     ui->consoleLinkButton->setText(BUTTON_CONNECT);
     ui->consoleLinkButton->setEnabled(true);
     ui->consoleLinkButton->disconnect();
     connect(ui->consoleLinkButton, SIGNAL(clicked()), this, SLOT(consoleConnect()));
+
+    // Reset console sy
+    showDesynced();
+    ui->consoleSyncButton->setEnabled(false);
+}
+
+void AnnotationWidget::showDesynced() {
+
+    QMutexLocker locker(&mutex);
+
+    // Reset the console sync
+    ui->consoleSyncLabel->setText(LABEL_CONSOLE_DESYCNED);
+    ui->consoleSyncButton->setText(BUTTON_SYNC);
+    ui->consoleSyncButton->setEnabled(true);
+    ui->consoleSyncButton->disconnect();
+    connect(ui->consoleLinkButton, SIGNAL(clicked()), this, SLOT(consoleSync()));
+}
+
+void AnnotationWidget::showSynced() {
+
+    QMutexLocker locker(&mutex);
+
+    // Reset the console sync
+    ui->consoleSyncLabel->setText(LABEL_CONSOLE_SYNCED);
+    ui->consoleSyncButton->setText(BUTTON_SYNC);
+    ui->consoleSyncButton->setEnabled(false);
+    ui->consoleSyncButton->disconnect();
+    connect(ui->consoleLinkButton, SIGNAL(clicked()), this, SLOT(consoleSync()));
 }
 
 void AnnotationWidget::consoleConnect() {
 
     QMutexLocker locker(&mutex);
+
+    qDebug() << "Connecting to the console, retries=" << retries;
 
     ui->consoleLinkButton->setText(BUTTON_CONNECTING);
     ui->consoleLinkButton->setEnabled(false);
@@ -298,16 +334,20 @@ void AnnotationWidget::consoleConnect() {
 
     if (consoleObserverService->errorMessage()!=0)
     {
-        if (ui->ontologyTreeView->isVisible()) {
+        showDisconnected();
+        if (retries>0)
+        {
+            retries--;
+            QTimer::singleShot(CONSOLE_CONNECT_RETRY_INTERVAL_MSECS, this, SLOT(consoleConnect()));
+        }
+        else if (ui->ontologyTreeView->isVisible()) {
             QString msg = QString("Could not connect to the Console: %1").arg(*consoleObserverService->errorMessage());
             showErrorDialog(msg);
         }
-        showDisconnected();
         return;
     }
 
     qDebug() << "Received console approval to run on port:"<<consoleObserverService->port();
-
     connect(consoleObserverService, SIGNAL(ontologySelected(qint64)), consoleObserver, SLOT(ontologySelected(qint64)));
     connect(consoleObserverService, SIGNAL(ontologyChanged(qint64)), consoleObserver, SLOT(ontologyChanged(qint64)));
     connect(consoleObserverService, SIGNAL(entitySelected(qint64)), consoleObserver, SLOT(entitySelected(qint64)));
@@ -347,6 +387,15 @@ void AnnotationWidget::consoleConnect() {
     ui->consoleLinkLabel->setText(LABEL_CONSOLE_CONNECTED);
     ui->consoleLinkButton->setText(BUTTON_DISCONNECT);
     ui->consoleLinkButton->setEnabled(true);
+
+    ui->consoleSyncLabel->setText(LABEL_CONSOLE_SYNCED);
+    ui->consoleSyncButton->setText(BUTTON_SYNC);
+    ui->consoleSyncButton->setEnabled(false);
+}
+
+void AnnotationWidget::consoleConnect(int retries) {
+    this->retries = retries;
+    consoleConnect();
 }
 
 void AnnotationWidget::consoleDisconnect()
@@ -362,6 +411,17 @@ void AnnotationWidget::consoleDisconnect()
     qDebug() << "The consoleObserverService is now is defunct. It will free its own memory within the next"<<CONSOLE_OBSERVER_ACCEPT_TIMEOUT<<"seconds.";
     showDisconnected();
 }
+
+void AnnotationWidget::consoleSync() {
+
+    QMutexLocker locker(&mutex);
+
+    ui->consoleSyncButton->setText(BUTTON_SYNCING);
+    ui->consoleSyncButton->setEnabled(false);
+
+
+}
+
 
 //*************************************************************************************
 // Annotation

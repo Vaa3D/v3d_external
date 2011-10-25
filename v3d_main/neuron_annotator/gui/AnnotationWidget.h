@@ -50,7 +50,9 @@ public slots:
     void updateAnnotations(qint64 entityId, AnnotationList *annotations, UserColorMap *userColorMap);
     void communicationError(const QString & errorMessage);
     void consoleConnect();
+    void consoleConnect(int retries);
     void consoleDisconnect();
+    void consoleSync();
     void ontologyTreeDoubleClicked(const QModelIndex & index);
     void annotatedBranchTreeClicked(const QModelIndex & index);
     void annotateSelectedEntityWithOntologyTerm(const Entity *term, const Entity *parentTerm);
@@ -66,6 +68,8 @@ protected:
     bool eventFilter (QObject* watched_object, QEvent* e);
     void showErrorDialog(const QString & text);
     void showDisconnected();
+    void showSynced();
+    void showDesynced();
 
 private slots:
     void createAnnotationResults(const void *results);
@@ -101,6 +105,7 @@ private:
     DataThread *removeAnnotationThread;
     DataThread *selectEntityThread;
     QMutex mutex;
+    int retries;
 };
 
 #endif // ANNOTATION_WIDGET_H_

@@ -289,7 +289,7 @@ NaMainWindow::NaMainWindow()
     // Set up the annotation widget
     ui.annotationFrame->setMainWindow(this);
     ui.centralwidget->installEventFilter(ui.annotationFrame);
-    ui.annotationFrame->consoleConnect();
+    ui.annotationFrame->consoleConnect(3);
 
     connect(ui.actionDynamic_range, SIGNAL(triggered(bool)),
             this, SLOT(showDynamicRangeTool()));
