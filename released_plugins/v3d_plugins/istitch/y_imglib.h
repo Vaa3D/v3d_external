@@ -5514,4 +5514,138 @@ bool computeWeights(Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> 
     return true;
 }
 
+// subpixel translation using trilinear interpolation
+template <class Tdata>
+bool subpixshift3D(REAL *pShift, Tdata *pImg, V3DLONG *szImg, rPEAKS pos, V3DLONG *effectiveEnvelope)
+{
+    // output subpixel translated image: pShift
+    // output effective envelope of the image: effectiveEnvelope[6] x,y,z
+
+    qDebug()<<"subpixel translating ...";
+
+    //
+    V3DLONG vx = szImg[0];
+    V3DLONG vy = szImg[1];
+    V3DLONG vz = szImg[2];
+    V3DLONG vc = szImg[3];
+
+    V3DLONG pagesz = vx*vy*vz;
+    V3DLONG sz_img = pagesz*vc;
+
+    //
+    memset(pShift, 0.0, sizeof(Tdata)*sz_img); // filled by zeros
+
+    //
+    REAL xd = 0.0, yd = 0.0, zd = 0.0;
+
+    V3DLONG x_start=0, y_start=0, z_start=0; // pImg
+    V3DLONG xs_start=0, ys_start=0, zs_start=0; // pShift
+
+    V3DLONG x_end=vx, y_end=vy, z_end=vz;
+
+    if(pos.x<0)
+    {
+        x_start -= floor(pos.x) + 1;
+        xd = -pos.x - (REAL)x_start;
+
+        x_end -= x_start;
+    }
+    else
+    {
+        xs_start += floor(pos.x) + 1;
+        xd = - pos.x + (REAL)xs_start;
+    }
+
+    effectiveEnvelope[0] = xs_start;
+    effectiveEnvelope[1] = x_end;
+
+    if(pos.y<0)
+    {
+        y_start -= floor(pos.y) + 1;
+        yd = -pos.y - (REAL)y_start;
+
+        y_end -= y_start;
+    }
+    else
+    {
+        ys_start += floor(pos.y) + 1;
+        yd = - pos.y + (REAL)ys_start;
+    }
+
+    effectiveEnvelope[2] = ys_start;
+    effectiveEnvelope[3] = y_end;
+
+    if(pos.z<0)
+    {
+        z_start -= floor(pos.z) + 1;
+        zd = -pos.z - (REAL)z_start;
+
+        z_end -= z_start;
+    }
+    else
+    {
+        zs_start += floor(pos.z) + 1;
+        zd = - pos.z + (REAL)zs_start;
+    }
+
+    effectiveEnvelope[4] = zs_start;
+    effectiveEnvelope[5] = z_end;
+
+    qDebug()<<"test ..."<<effectiveEnvelope[0]<<effectiveEnvelope[1]<<effectiveEnvelope[2]<<effectiveEnvelope[3]<<effectiveEnvelope[4]<<effectiveEnvelope[5];
+
+    qDebug()<<"z ..."<<vz<<" ... "<<z_end-1+zs_start<<z_end-1+z_start;
+    qDebug()<<"y ..."<<vy<<" ... "<<y_end-1+ys_start<<y_end-1+y_start;
+    qDebug()<<"x ..."<<vx<<" ... "<<x_end-1+xs_start<<x_end-1+x_start;
+
+    //
+    V3DLONG xp = 1;
+    V3DLONG yp = vx;
+    V3DLONG zp = vx*vy;
+
+    REAL i1=0, i2=0, j1=0, j2=0, w1=0, w2=0;
+
+    for(V3DLONG c=0; c<vc; c++)
+    {
+        V3DLONG offset_c = c*pagesz;
+
+        for(V3DLONG k=zs_start; k<z_end; k++)
+        {
+            if(k-zs_start+z_start>=vz) continue;
+
+            V3DLONG offset_ks = offset_c + k*vx*vy;
+            V3DLONG offset_k = offset_c + (k-zs_start+z_start)*vx*vy;
+
+            for(V3DLONG j=ys_start; j<y_end; j++)
+            {
+                if(j-ys_start+y_start>=vy) continue;
+
+                V3DLONG offset_js = offset_ks + j*vx;
+                V3DLONG offset_j = offset_k + (j-ys_start+y_start)*vx;
+
+                for(V3DLONG i=xs_start; i<vx; i++)
+                {
+                    if(i-xs_start+x_start>=vx) continue;
+
+                    V3DLONG idxs = offset_js + i;
+                    V3DLONG idx = offset_j + i-xs_start+x_start;
+
+                    i1 = (REAL)(pImg[idx])*(1.0 - zd) + (REAL)(pImg[idx+zp])*zd;
+                    i2 = (REAL)(pImg[idx+yp])*(1.0 - zd) + (REAL)(pImg[idx+yp+zp])*zd;
+                    j1 = (REAL)(pImg[idx+xp])*(1.0 - zd) + (REAL)(pImg[idx+xp+zp])*zd;
+                    j2 = (REAL)(pImg[idx+xp+yp])*(1.0 - zd) + (REAL)(pImg[idx+xp+yp+zp])*zd;
+
+                    w1 = i1*(1.0-yd) + i2*yd;
+                    w2 = j1*(1.0-yd) + j2*yd;
+
+                    pShift[idxs] = w1*(1.0-xd) + w2*xd;
+                }
+            }
+        }
+    }
+
+
+    //
+    return true;
+}
+
 #endif

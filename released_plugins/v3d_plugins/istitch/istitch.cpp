@@ -4110,8 +4110,8 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
         REAL *prelative = NULL;
         V3DLONG even_odd = rx%2;
         V3DLONG rx_pad = rx;
-        if(fftw_in_place)
-            rx_pad += (2-even_odd);
+//        if(fftw_in_place)
+//            rx_pad += (2-even_odd);
 
         try {
             V3DLONG szRelative = rx_pad*ry*rz*rc;
@@ -4151,15 +4151,41 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
             return false;
         }
         
-        for(V3DLONG c=0; c<rc; c++)
-        {
-            V3DLONG offset_c = c*rx_pad*ry*rz;
+//        for(V3DLONG c=0; c<rc; c++)
+//        {
+//            V3DLONG offset_c = c*rx_pad*ry*rz;
             
-            Y_IMG_REAL pOut(prelative+offset_c, sz_relative);
+//            Y_IMG_REAL pOut(prelative+offset_c, sz_relative);
             
 
-            YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_REAL> tmp;
-            tmp.subpixeltranslate(pOut, even_odd, fftw_in_place, &pos);
+//            YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_REAL> tmp;
+//            tmp.subpixeltranslate(pOut, even_odd, fftw_in_place, &pos);
+//        }
+
+        V3DLONG *effectiveEnvelope = new V3DLONG [6];
+        if(subpixshift3D<Tdata>(prelative, (Tdata *)relative1d, sz_relative, pos, effectiveEnvelope)!=true)
+        {
+            cout<<"Fail to subpixel translate image!"<<endl;
+            return false;
+        }
+
+        {
+            qDebug()<<"shifts ..."<<pos.x<<pos.y<<pos.z;
+
+            QString fName("/groups/peng/home/yuy/work/newFlylightData/blendstitch/scripts/20110615_2_A1/stitched/ori/test/125/test/t1_shift.raw");
+
+            V3DLONG *szSave = new V3DLONG [4];
+            szSave[0] = rx_pad;
+            szSave[1] = ry;
+            szSave[2] = rz;
+            szSave[3] = rc;
+
+            if (saveImage(fName.toStdString().c_str(), (unsigned char *)prelative, szSave, 4)!=true)
+            {
+                fprintf(stderr, "Error happens in file writing. Exit. \n");
+                return false;
+            }
+
         }
         
         //
@@ -4198,7 +4224,7 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
                 for(V3DLONG j=y_start; j<y_end; j++)
                 {
                     V3DLONG o_j = o_k + j*vx;
-                    V3DLONG o_r_j = o_r_k + (j-y_start)*rx;
+                    V3DLONG o_r_j = o_r_k + (j-y_start)*rx_pad;
                     for(V3DLONG i=x_start; i<x_end; i++)
                     {
                         V3DLONG idx = o_j + i;
