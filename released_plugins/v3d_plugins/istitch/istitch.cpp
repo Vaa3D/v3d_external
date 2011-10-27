@@ -5061,6 +5061,17 @@ int group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 
     for(int i_path=1; i_path<NTILES; i_path++)
     {
+        // record final shifts
+        V3DLONG current = vim.tilesList.at(i_path).n;
+        V3DLONG previous = vim.tilesList.at(i_path).predecessor;
+
+        vim.tilesList.at(i_path).record.at(previous).offsets[0] = vim.tilesList.at(current).offsets[0];
+        vim.tilesList.at(i_path).record.at(previous).offsets[1] = vim.tilesList.at(current).offsets[1];
+        vim.tilesList.at(i_path).record.at(previous).offsets[2] = vim.tilesList.at(current).offsets[2];
+    }
+
+    for(int i_path=1; i_path<NTILES; i_path++)
+    {
         // ref
         (&vim.tilesList.at(i_path))->ref_n = ref_image;
 
@@ -5074,6 +5085,8 @@ int group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
             {
                 break;
             }
+
+
 
             (&vim.tilesList.at(i_path))->offsets[0] += vim.tilesList.at(previous).offsets[0];
             (&vim.tilesList.at(i_path))->offsets[1] += vim.tilesList.at(previous).offsets[1];
@@ -7926,6 +7939,17 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
         for(int i=0; i<NTILES; i++)
         {
             vim.tilesList.at(i).visited = false;
+        }
+
+        for(int i_path=1; i_path<NTILES; i_path++)
+        {
+            // record final shifts
+            V3DLONG current = vim.tilesList.at(i_path).n;
+            V3DLONG previous = vim.tilesList.at(i_path).predecessor;
+
+            vim.tilesList.at(i_path).record.at(previous).offsets[0] = vim.tilesList.at(current).offsets[0];
+            vim.tilesList.at(i_path).record.at(previous).offsets[1] = vim.tilesList.at(current).offsets[1];
+            vim.tilesList.at(i_path).record.at(previous).offsets[2] = vim.tilesList.at(current).offsets[2];
         }
         
         for(int i_path=1; i_path<NTILES; i_path++)
