@@ -5521,8 +5521,6 @@ bool subpixshift3D(REAL *pShift, Tdata *pImg, V3DLONG *szImg, rPEAKS pos, V3DLON
     // output subpixel translated image: pShift
     // output effective envelope of the image: effectiveEnvelope[6] x,y,z
 
-    qDebug()<<"subpixel translating ...";
-
     //
     V3DLONG vx = szImg[0];
     V3DLONG vy = szImg[1];
@@ -5548,7 +5546,7 @@ bool subpixshift3D(REAL *pShift, Tdata *pImg, V3DLONG *szImg, rPEAKS pos, V3DLON
         x_start -= floor(pos.x) + 1;
         xd = -pos.x - (REAL)x_start;
 
-        x_end -= x_start;
+        x_end -= x_start + 1;
     }
     else
     {
@@ -5564,7 +5562,7 @@ bool subpixshift3D(REAL *pShift, Tdata *pImg, V3DLONG *szImg, rPEAKS pos, V3DLON
         y_start -= floor(pos.y) + 1;
         yd = -pos.y - (REAL)y_start;
 
-        y_end -= y_start;
+        y_end -= y_start + 1;
     }
     else
     {
@@ -5580,7 +5578,7 @@ bool subpixshift3D(REAL *pShift, Tdata *pImg, V3DLONG *szImg, rPEAKS pos, V3DLON
         z_start -= floor(pos.z) + 1;
         zd = -pos.z - (REAL)z_start;
 
-        z_end -= z_start;
+        z_end -= z_start + 1;
     }
     else
     {
@@ -5596,6 +5594,8 @@ bool subpixshift3D(REAL *pShift, Tdata *pImg, V3DLONG *szImg, rPEAKS pos, V3DLON
     qDebug()<<"z ..."<<vz<<" ... "<<z_end-1+zs_start<<z_end-1+z_start;
     qDebug()<<"y ..."<<vy<<" ... "<<y_end-1+ys_start<<y_end-1+y_start;
     qDebug()<<"x ..."<<vx<<" ... "<<x_end-1+xs_start<<x_end-1+x_start;
+
+    qDebug()<<"pos ..."<<pos.x<<pos.y<<pos.z;
 
     //
     V3DLONG xp = 1;
@@ -5615,6 +5615,9 @@ bool subpixshift3D(REAL *pShift, Tdata *pImg, V3DLONG *szImg, rPEAKS pos, V3DLON
             V3DLONG offset_ks = offset_c + k*vx*vy;
             V3DLONG offset_k = offset_c + (k-zs_start+z_start)*vx*vy;
 
+           // qDebug()<<"test z ... "<<k<<k-zs_start+z_start<<z_end<<vz;
+
+
             for(V3DLONG j=ys_start; j<y_end; j++)
             {
                 if(j-ys_start+y_start>=vy) continue;
@@ -5622,12 +5625,16 @@ bool subpixshift3D(REAL *pShift, Tdata *pImg, V3DLONG *szImg, rPEAKS pos, V3DLON
                 V3DLONG offset_js = offset_ks + j*vx;
                 V3DLONG offset_j = offset_k + (j-ys_start+y_start)*vx;
 
+                 //qDebug()<<"test y ... "<<j<<j-ys_start+y_start<<y_end<<vy;
+
                 for(V3DLONG i=xs_start; i<vx; i++)
                 {
                     if(i-xs_start+x_start>=vx) continue;
 
                     V3DLONG idxs = offset_js + i;
                     V3DLONG idx = offset_j + i-xs_start+x_start;
+
+                    //qDebug()<<"test x ... "<<i<<i-xs_start+x_start<<x_end<<vx<<"idx ..."<<idxs<<idx;
 
                     i1 = (REAL)(pImg[idx])*(1.0 - zd) + (REAL)(pImg[idx+zp])*zd;
                     i2 = (REAL)(pImg[idx+yp])*(1.0 - zd) + (REAL)(pImg[idx+yp+zp])*zd;

@@ -4005,32 +4005,6 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
         // de-alloc
         y_del<Tdata>((Tdata *)f1d);
         y_del<Tdata>((Tdata *)g1d);
-        
-        qDebug()<<"Now try subspace translation estimating in Fourier domain ...";
-
-//        {
-//            QString fName("/groups/peng/home/yuy/work/newFlylightData/blendstitch/scripts/20110615_2_A1/stitched/ori/test/125/test/t1.raw");
-
-//            V3DLONG *szSave = new V3DLONG [4];
-//            szSave[0] = dimxol;
-//            szSave[1] = dimyol;
-//            szSave[2] = dimzol;
-//            szSave[3] = 1;
-
-//            if (saveImage(fName.toStdString().c_str(), (unsigned char *)fol1d, szSave, 4)!=true)
-//            {
-//                fprintf(stderr, "Error happens in file writing. Exit. \n");
-//                return false;
-//            }
-
-//            QString gName("/groups/peng/home/yuy/work/newFlylightData/blendstitch/scripts/20110615_2_A1/stitched/ori/test/125/test/t2.raw");
-
-//            if (saveImage(gName.toStdString().c_str(), (unsigned char *)gol1d, szSave, 4)!=true)
-//            {
-//                fprintf(stderr, "Error happens in file writing. Exit. \n");
-//                return false;
-//            }
-//        }
 
         // subpixel registration using Foroosh's method
         rPEAKS pos;
@@ -4039,8 +4013,6 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
         
         YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_REAL> tmp;
         tmp.fftpcsubspace3D(pOut, pIn, even_odd, fftw_in_place, &pos); // subpixel shifts
-
-        qDebug() << "subpixel shifts ... "<<pos.x<<pos.y<<pos.z;
         
         // subpixel translation estimation
         (&vim.tilesList.at(j))->offsets_sa[0] += pos.x;
@@ -4150,7 +4122,7 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
             cout<<"Fail to allocate memory!"<<endl;
             return false;
         }
-        
+
 //        for(V3DLONG c=0; c<rc; c++)
 //        {
 //            V3DLONG offset_c = c*rx_pad*ry*rz;
@@ -4169,25 +4141,6 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
             return false;
         }
 
-        {
-            qDebug()<<"shifts ..."<<pos.x<<pos.y<<pos.z;
-
-            QString fName("/groups/peng/home/yuy/work/newFlylightData/blendstitch/scripts/20110615_2_A1/stitched/ori/test/125/test/t1_shift.raw");
-
-            V3DLONG *szSave = new V3DLONG [4];
-            szSave[0] = rx_pad;
-            szSave[1] = ry;
-            szSave[2] = rz;
-            szSave[3] = rc;
-
-            if (saveImage(fName.toStdString().c_str(), (unsigned char *)prelative, szSave, 4)!=true)
-            {
-                fprintf(stderr, "Error happens in file writing. Exit. \n");
-                return false;
-            }
-
-        }
-        
         //
         V3DLONG tile2vi_xs = vim.lut[ii].start_pos[0]-vim.min_vim[0];
         V3DLONG tile2vi_xe = vim.lut[ii].end_pos[0]-vim.min_vim[0];
@@ -4206,6 +4159,16 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
         x_end++;
         y_end++;
         z_end++;
+
+        // fit into envelope from subspace translation
+        x_start += effectiveEnvelope[0];
+        x_end -= rx - effectiveEnvelope[1];
+
+        y_start += effectiveEnvelope[2];
+        y_end -= ry - effectiveEnvelope[3];
+
+        z_start += effectiveEnvelope[4];
+        z_end -= rz - effectiveEnvelope[5];
         
         //suppose all tiles with same color dimensions
         if(rc>vc)
