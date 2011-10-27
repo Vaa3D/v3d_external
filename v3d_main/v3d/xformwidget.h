@@ -39,11 +39,14 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3d_core.h"
 #include "../basic_c_fun/basic_triview.h"
 #include "../basic_c_fun/volimg_proc.h"
+//#include "../3drenderer/v3dr_common.h"
 
 class V3dR_MainWindow;
 class V3dR_GLWidget;
 class MainWindow;
 class ChannelTabWidget;
+
+#define DELETE_AND_ZERO(p)	{ if ((p)!=NULL) delete (p); (p) = NULL; }
 
 struct iDrawExternalParameter
 {
@@ -68,8 +71,50 @@ struct iDrawExternalParameter
 
 	bool b_use_512x512x256;
 	bool b_still_open;
-	iDrawExternalParameter() {b_use_512x512x256=true; b_local=b_still_open=false; image4d=0; xwidget=0; window3D=0; p_list_3Dview_win=0; V3Dmainwindow=0; /*zthickness=1;*/}
-	~iDrawExternalParameter() {if (xwidget==0 && image4d) delete image4d;}
+
+     // used for saving resampled 512X512X256 data, ZJL
+
+          // for data
+          RGBA8 *total_rgbaBuf, *rgbaBuf;
+          float sampleScale[5];
+          V3DLONG bufSize[5]; //(x,y,z,c,t) 090731: add time dim
+          bool b_limitedsize;
+          bool isSimulatedData;
+          int data_unitbytes;
+          unsigned char* data4dp;
+          unsigned char**** data4d_uint8;
+
+          V3DLONG dim1, dim2, dim3, dim4, dim5;
+          V3DLONG start1, start2, start3, start4, start5;
+          V3DLONG size1, size2, size3, size4, size5;
+          BoundingBox dataBox;
+          BoundingBox dataViewProcBox;
+          bool bSavedDataFor3DViewer;
+
+          // for texture
+          int imageX, imageY, imageZ, imageT;
+          int safeX, safeY, safeZ;
+          int realX, realY, realZ, realF;
+          int fillX, fillY, fillZ, fillF;
+
+
+
+     iDrawExternalParameter() {b_use_512x512x256=true; b_local=b_still_open=false;
+          image4d=0; xwidget=0; window3D=0; p_list_3Dview_win=0; V3Dmainwindow=0;
+          // for saving resampled
+          total_rgbaBuf=0; rgbaBuf=0; b_limitedsize=true;isSimulatedData=false;
+          sampleScale[0]=sampleScale[1]=sampleScale[2]=sampleScale[3]=sampleScale[4]=1;
+          bufSize[0]=bufSize[1]=bufSize[2]=bufSize[3]=bufSize[4]=0;
+          data4dp=0; data4d_uint8=0;
+          dim1=dim2=dim3=dim4=dim5=0;
+		start1=start2=start3=start4=start5=0;
+		size1=size2=size3=size4=size5=0;
+          bSavedDataFor3DViewer = true;
+          /*zthickness=1;*/}
+     ~iDrawExternalParameter() {if (xwidget==0 && image4d) delete image4d;
+          DELETE_AND_ZERO(total_rgbaBuf);
+          DELETE_AND_ZERO(rgbaBuf); DELETE_AND_ZERO(data4dp);
+     }
 };
 
 class XFormWidget : public QWidget, public TriviewControl //class XFormWidget : public QMainWindow

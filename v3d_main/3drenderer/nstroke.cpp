@@ -1189,6 +1189,7 @@ void Renderer_gl1::updateDraggedNeuronXYZ()
      cp.y =DraggedNeurons.at(cindex).y;
      cp.z =DraggedNeurons.at(cindex).z;
 
+
      V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
      My4DImage* curImg = 0;
      if(w)  curImg = v3dr_getImage4d(_idep);
@@ -1233,47 +1234,72 @@ void Renderer_gl1::updateDraggedNeuronXYZ()
      segi.row.at(sindex).y = cp.y;
      segi.row.at(sindex).z = cp.z;
 
-     // project pt beteen sp and ep onto lines sp-cp, cp-ep
+     // temp pts for Lagrange interpolation
+     vector <XYZ> inpt;
+     inpt.clear();
+     inpt.push_back(sp);
+     inpt.push_back(cp);
+     inpt.push_back(ep);
+
+     // smooth dragged pt using Lagrange interpolation
+     vector <XYZ> outpt;
+     outpt.clear();
+     smoothLagrange(inpt, outpt, numd-1);
+
+     // copy back the interpolated pts to swc seg.
+     // we project pts between sp to ep to interpolated pts.
+     // sp, cp, ep are not changed
      for(int i=1; i<numd-1; i++)
      {
-          // 1. get bp between sp-cp
-          if(i<cindex)
-          {
-               // node between sp-cp
-               XYZ bp; // perpendicular point
-               XYZ ip1;
-               double dist;
-               ip1.x = DraggedNeurons.at(i).x;
-               ip1.y = DraggedNeurons.at(i).y;
-               ip1.z = DraggedNeurons.at(i).z;
-
-               // we only need bp here, dist is no use and discard it
-               getPerpendPointDist(ip1, sp, cp, bp, dist);
-               // use bp to update the nuero pos in SWC
-               int ind = sindex - cindex + i;
-               segi.row.at(ind).x = bp.x;
-               segi.row.at(ind).y = bp.y;
-               segi.row.at(ind).z = bp.z;
-          }else if (i > cindex)
-          {
-               // 2. get bp between cp-sp
-               XYZ bp; // perpendicular point
-               XYZ ip2; // node between cp-ep
-               double dist;
-               ip2.x = DraggedNeurons.at(i).x;
-               ip2.y = DraggedNeurons.at(i).y;
-               ip2.z = DraggedNeurons.at(i).z;
-
-               // we only need bp here, dist is no use and discard it
-               getPerpendPointDist(ip2, cp, ep, bp, dist);
-
-               // use bp to update the nuero pos
-               int ind = sindex - cindex + i;
-               segi.row.at(ind).x = bp.x;
-               segi.row.at(ind).y = bp.y;
-               segi.row.at(ind).z = bp.z;
-          }
+          int ind = sindex - cindex + i;
+          segi.row.at(ind).x = outpt.at(i).x;
+          segi.row.at(ind).y = outpt.at(i).y;
+          segi.row.at(ind).z = outpt.at(i).z;
      }
+
+     // // project pt beteen sp and ep onto lines sp-cp, cp-ep
+     // for(int i=1; i<numd-1; i++)
+     // {
+     //      // 1. get bp between sp-cp
+     //      if(i<cindex)
+     //      {
+     //           // node between sp-cp
+     //           XYZ bp; // perpendicular point
+     //           XYZ ip1;
+     //           double dist;
+     //           ip1.x = DraggedNeurons.at(i).x;
+     //           ip1.y = DraggedNeurons.at(i).y;
+     //           ip1.z = DraggedNeurons.at(i).z;
+
+     //           // we only need bp here, dist is no use and discard it
+     //           getPerpendPointDist(ip1, sp, cp, bp, dist);
+     //           // use bp to update the nuero pos in SWC
+     //           int ind = sindex - cindex + i;
+     //           segi.row.at(ind).x = bp.x;
+     //           segi.row.at(ind).y = bp.y;
+     //           segi.row.at(ind).z = bp.z;
+     //      }else if (i > cindex)
+     //      {
+     //           // 2. get bp between cp-sp
+     //           XYZ bp; // perpendicular point
+     //           XYZ ip2; // node between cp-ep
+     //           double dist;
+     //           ip2.x = DraggedNeurons.at(i).x;
+     //           ip2.y = DraggedNeurons.at(i).y;
+     //           ip2.z = DraggedNeurons.at(i).z;
+
+     //           // we only need bp here, dist is no use and discard it
+     //           getPerpendPointDist(ip2, cp, ep, bp, dist);
+
+     //           // use bp to update the nuero pos
+     //           int ind = sindex - cindex + i;
+     //           segi.row.at(ind).x = bp.x;
+     //           segi.row.at(ind).y = bp.y;
+     //           segi.row.at(ind).z = bp.z;
+     //      }
+     // }
+
+
 
      // smooth using one section
      // // only smooth the curve between dragged neuron nodes of loc_vec0
@@ -1311,6 +1337,7 @@ void Renderer_gl1::updateDraggedNeuronXYZ()
 //           segi.row.at(i).data[4] = pt.z;
 //      }
 
+
      // smooth using two sections
      // only smooth the curve between dragged neuron nodes of loc_vec0
      vector <XYZ> loc_vecsub;
@@ -1319,8 +1346,12 @@ void Renderer_gl1::updateDraggedNeuronXYZ()
      // copy data between ka-kb in original seg to loc_vecsub
      // make a larger window for smoothing
      int ka = sindex - cindex;
-     int kb = sindex;
-     //int N0 = segi.row.size();
+     //int kb = sindex;
+     // smooth without center point
+     int kb = sindex-1;
+     if(kb<ka)
+          kb = ka;
+
      int kaa, kbb;
      kaa = ((ka-wsize)<0)? 0:(ka-wsize);
      kbb = kb;
@@ -1350,8 +1381,13 @@ void Renderer_gl1::updateDraggedNeuronXYZ()
      // copy data between ka-kb in original seg to loc_vecsub
      // make a larger window for smoothing
      loc_vecsub.clear();
-     ka = sindex;
+     //ka = sindex;
      kb = sindex - cindex + numd -1;
+     // smooth without center point
+     ka = sindex+1;
+     if(ka>kb)
+          ka = kb;
+
      kaa = ka;
      kbb = ((kb+wsize)>=N0)? (N0-1):(kb+wsize);
      for(int i=kaa; i<=kbb; i++)
@@ -1376,6 +1412,7 @@ void Renderer_gl1::updateDraggedNeuronXYZ()
           segi.row.at(i).data[3] = pt.y;
           segi.row.at(i).data[4] = pt.z;
      }
+
 
 //      // 3) smooth size 3 sindex-centered section
 //      // copy data between ka-kb in original seg to loc_vecsub
@@ -1831,4 +1868,59 @@ void Renderer_gl1::connectCurve(V3DLONG &segid)
           curSeg.row.at(nn-1).z = conSeg.row.at(closest_node).z;
      }
 }
+
+
+/**
+ * @brief Smooth the sharp dragged part of a curve using Lagrange interpolation.
+ * The method is based on:
+ * http://stackoverflow.com/questions/4120839/iteratively-smooth-a-curve
+ */
+void Renderer_gl1::smoothLagrange(vector <XYZ> inPoints, vector <XYZ> & outPoints, int numberOfSegments)
+{
+     int pointsCount = inPoints.size();
+
+     outPoints.clear();
+
+     // compute multipliers
+     double multipliers[pointsCount][numberOfSegments];
+     double pointCountMinusOne = (double)(pointsCount - 1);
+
+     for (int currentStep = 0; currentStep <= numberOfSegments; currentStep++)
+     {
+          double t = currentStep / (double)numberOfSegments;
+          for (int pointIndex1 = 0; pointIndex1 < pointsCount; pointIndex1++)
+          {
+               double point1Weight = pointIndex1 / pointCountMinusOne;
+               double currentMultiplier = 1;
+               for (int pointIndex2 = 0; pointIndex2 < pointsCount; pointIndex2++)
+               {
+                    if (pointIndex2 == pointIndex1)
+                         continue;
+
+                    double point2Weight = pointIndex2 / pointCountMinusOne;
+                    currentMultiplier *= (t - point2Weight) / (point1Weight - point2Weight);
+               }
+               multipliers[pointIndex1][currentStep] = currentMultiplier;
+          }
+     }
+
+     // create points
+     for (int currentStep = 0; currentStep <= numberOfSegments; currentStep++)
+     {
+          double sumX = 0;
+          double sumY = 0;
+          double sumZ = 0;
+          for (int pointIndex = 0; pointIndex < pointsCount; pointIndex++)
+          {
+               sumX += inPoints.at(pointIndex).x * multipliers[pointIndex][currentStep];
+               sumY += inPoints.at(pointIndex).y * multipliers[pointIndex][currentStep];
+               sumZ += inPoints.at(pointIndex).z * multipliers[pointIndex][currentStep];
+          }
+
+          XYZ newPoint = XYZ(round(sumX), round(sumY), round(sumZ));
+          // save this newPoint as a control point in curve
+          outPoints.push_back(newPoint);
+     }
+}
+
 

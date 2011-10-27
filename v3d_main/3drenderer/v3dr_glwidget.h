@@ -86,12 +86,12 @@ public:
     void triggerNeuronClearAllSelections() {emit neuronClearAllSelections();}
     void setNeuronIndex(int index) {neuronIndex = index;}
     int getNeuronIndex() {return neuronIndex;}
+    virtual void preparingRenderer();
 
 protected:
 	virtual void choiceRenderer();
 	virtual void settingRenderer(); // for setting the default renderer state when initialize
-	virtual void preparingRenderer();
-	virtual void initializeGL();
+     virtual void initializeGL();
 	virtual void resizeGL(int width, int height);
     virtual void paintGL();
 
@@ -184,14 +184,14 @@ public slots:
 
 	/** if useMin == false => minimum intensity projection **/
 	virtual void setRenderMode_Mip(bool b, bool useMin = false);
-	
+
 	virtual void setRenderMode_Maxip(bool b) {
 		setRenderMode_Mip(b, false);
 	}
 	virtual void setRenderMode_Minip(bool b) {
 		setRenderMode_Mip(b, true);
 	}
-	
+
 	virtual void setRenderMode_Alpha(bool b);
 	virtual void setRenderMode_Cs3d(bool b);
 

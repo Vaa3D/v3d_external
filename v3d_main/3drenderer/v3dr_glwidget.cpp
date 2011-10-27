@@ -323,7 +323,7 @@ void V3dR_GLWidget::initializeGL()
 
 	settingRenderer(); //091007, 100719 moved to position before renderer->setupData
 
-	preparingRenderer();
+     preparingRenderer();
 }
 
 

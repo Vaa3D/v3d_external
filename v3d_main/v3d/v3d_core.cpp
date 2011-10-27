@@ -1535,9 +1535,9 @@ void XFormView::mouseDoubleClickEvent(QMouseEvent * e)
 {
     if (!imgData)
 		return;
-		
+
     QPoint cp = mouseEventToImageCoords(e->pos()).toPoint();
-    
+
 	int sx,sy,sz; //current selection location's x,y,z
 
 	switch(Ptype)
@@ -1701,7 +1701,7 @@ void XFormView::mouseRightButtonPressEvent(QMouseEvent *e)
 	{
 #endif
 		QPoint	eImgCoords = mouseEventToImageCoords(e->pos()).toPoint();
-		
+
 		switch (Ptype)
 		{
 			case imgPlaneX:
@@ -1731,7 +1731,7 @@ void XFormView::mouseRightButtonPressEvent(QMouseEvent *e)
 
 void XFormView::mouseLeftButtonPressEvent(QMouseEvent *e) //080101
 {
-	
+
 	//reserved for future editing of the the pop-up menu
 	if (QApplication::keyboardModifiers()==Qt::ControlModifier)
 	{
@@ -1752,7 +1752,7 @@ void XFormView::mouseLeftButtonPressEvent(QMouseEvent *e) //080101
 	else if (b_moveCurrentLandmark==true && ind_landmarkToBeChanged>=0 && QApplication::keyboardModifiers()==Qt::ShiftModifier)
 	{
 		QPoint cp = mouseEventToImageCoords(e->pos()).toPoint();
-        
+
 		int sx,sy,sz; //current selection location's x,y,z
 
 		switch(Ptype)
@@ -1777,16 +1777,16 @@ void XFormView::mouseLeftButtonPressEvent(QMouseEvent *e) //080101
 		//LocationSimple tmpLocation(sx,sy,sz);
 		//tmpLocation.inputProperty = imgData->listLandmarks.at(ind_landmarkToBeChanged).inputProperty;
 		//tmpLocation.radius = imgData->listLandmarks.at(ind_landmarkToBeChanged).radius;
-		
+
         //the following 4 lines are suggested by Carlos Becker to replace the above three lines, 111004 to preserve the comments and other info when a marker is moved
         LocationSimple tmpLocation = imgData->listLandmarks.at(ind_landmarkToBeChanged);
         tmpLocation.x = sx;
         tmpLocation.y = sy;
         tmpLocation.z = sz;
-        
+
         imgData->listLandmarks.replace(ind_landmarkToBeChanged, tmpLocation);
 		imgData->setFocusFeatureViewText();
-        
+
 		imgData->b_proj_worm_mst_diameter_set = false; //080318: whenever a landmark's location has been changed, reset the flag of MST diameter existency
 
 		printf("end moving point [%ld].\n", ind_landmarkToBeChanged);
@@ -4256,8 +4256,10 @@ bool XFormWidget::loadData()
 		b_use_dispzoom=true;
 	}
 
-	// update the interface
+     // save imgData for use in saveDataFor3DViewer() in MainWindow.cpp. ZJL 111021
+     mypara_3Dview.image4d = imgData;
 
+	// update the interface
 	updateDataRelatedGUI();
 
 	reset(); //090718. PHC. force to update once, since sometimes the 16bit image does not display correctly (why all black but once click reset button everything correct?)

@@ -249,7 +249,7 @@ MainWindow::MainWindow()
 	procModeDefault = 0;
 	procModeNeuronAnnotator = 0;
 #endif
-	
+
 	setup_global_imgproc_parameter_default(); //set up the default parameter for some of the global parameters of image processing or viewing
 
 	//set the drop function
@@ -273,14 +273,14 @@ MainWindow::MainWindow()
     readSettings();
 
     setWindowTitle(tr("V3D"));
-    
+
 #if defined(__V3DWSDEVELOP__)
-    
+
 	v3dws = new V3DWebService(9125); //20110309 YuY
 	initWebService(v3dws);
-    
+
 	connect(v3dws, SIGNAL(webserviceRequest()), this, SLOT(webserviceResponse()), Qt::QueuedConnection); // Qt::AutoConnection
-    
+
 #endif
 
 #if COMPILE_TARGET_LEVEL == 0
@@ -710,7 +710,7 @@ void MainWindow::customToolbar()
         bar_num++;
     }
 
-    isFirstLoading = false;	
+    isFirstLoading = false;
 }
 #endif
 
@@ -1109,6 +1109,11 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 					child->show();
 					//workspace->cascade(); //080821 //110805, by PHC, since RZC claims the resize MDI works now, so this should not be needed.
 
+                         // create sampled data 512x512x256 and save it for use in 3dviewer
+                         // to improve openning speed. ZJL 111019
+                         // qDebug("   child->mypara_3Dview = %0p", &(child->mypara_3Dview));
+                         // saveDataFor3DViewer( &(child->mypara_3Dview));
+
 					if (b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer))
 					{
 						child->doImage3DView();
@@ -1116,8 +1121,6 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 
 					size_t end_t = clock();
 					qDebug()<<"time consume ..."<<end_t-start_t;
-
-
 				}
 				else
 				{
@@ -2253,7 +2256,7 @@ void MainWindow::createActions()
     procModeNeuronAnnotator->setChecked(false);
     connect(procModeNeuronAnnotator, SIGNAL(triggered()), this, SLOT(func_procModeNeuronAnnotator()));
 #endif
-	
+
 }
 
 void MainWindow::createMenus()
@@ -2346,7 +2349,7 @@ void MainWindow::createMenus()
     modeMenu = menuBar()->addMenu(tr("Work-Mode"));
     connect(modeMenu, SIGNAL(aboutToShow()), this, SLOT(updateModeMenu()));
 #endif
-	
+
 	//
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction( aboutAct );

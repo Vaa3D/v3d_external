@@ -117,156 +117,211 @@ void Renderer_gl1::setupData(void* idep)
 	PROGRESS_DIALOG("", widget);
 
 	this->_idep = idep;
-	isSimulatedData = false;
-	bool bLocal = false;
-	b_limitedsize = (tryTexStream==0); //091022, 100720: down-sampling only if tryTexStream==0
-	if (b_limitedsize)
-	{
-		qDebug("	Down-sampling to 512x512x256 ");
-	}
 
-	try
-	{
+     b_limitedsize = (tryTexStream==0); //091022, 100720: down-sampling only if tryTexStream==0
+
+     // // using saved data. ZJL 111020
+     // if(((iDrawExternalParameter*)_idep)->bSavedDataFor3DViewer && b_limitedsize)
+     // {
+     //      // copy data from saved _idep to all variables
+     //      QTime qtime;  qtime.start();
+
+     //      total_rgbaBuf=((iDrawExternalParameter*)_idep)->total_rgbaBuf;
+     //      rgbaBuf=((iDrawExternalParameter*)_idep)->rgbaBuf;
+     //      sampleScale[0]=((iDrawExternalParameter*)_idep)->sampleScale[0];
+     //      sampleScale[1]=((iDrawExternalParameter*)_idep)->sampleScale[1];
+     //      sampleScale[2]=((iDrawExternalParameter*)_idep)->sampleScale[2];
+     //      sampleScale[3]=((iDrawExternalParameter*)_idep)->sampleScale[3];
+     //      sampleScale[4]=((iDrawExternalParameter*)_idep)->sampleScale[4];
+
+     //      bufSize[0]=((iDrawExternalParameter*)_idep)->bufSize[0];
+     //      bufSize[1]=((iDrawExternalParameter*)_idep)->bufSize[1];
+     //      bufSize[2]=((iDrawExternalParameter*)_idep)->bufSize[2];
+     //      bufSize[3]=((iDrawExternalParameter*)_idep)->bufSize[3];
+     //      bufSize[4]=((iDrawExternalParameter*)_idep)->bufSize[4];
+
+     //      isSimulatedData=((iDrawExternalParameter*)_idep)->isSimulatedData;
+     //      data_unitbytes=((iDrawExternalParameter*)_idep)->data_unitbytes;
+     //      data4dp=((iDrawExternalParameter*)_idep)->data4dp;
+     //      data4d_uint8=((iDrawExternalParameter*)_idep)->data4d_uint8;
+     //      dim1=((iDrawExternalParameter*)_idep)->dim1;
+     //      dim2=((iDrawExternalParameter*)_idep)->dim2;
+     //      dim3=((iDrawExternalParameter*)_idep)->dim3;
+     //      dim4=((iDrawExternalParameter*)_idep)->dim4;
+     //      dim5=((iDrawExternalParameter*)_idep)->dim5;
+
+     //      start1=((iDrawExternalParameter*)_idep)->start1;
+     //      start2=((iDrawExternalParameter*)_idep)->start2;
+     //      start3=((iDrawExternalParameter*)_idep)->start3;
+     //      start4=((iDrawExternalParameter*)_idep)->start4;
+     //      start5=((iDrawExternalParameter*)_idep)->start5;
+
+     //      size1=((iDrawExternalParameter*)_idep)->size1;
+     //      size2=((iDrawExternalParameter*)_idep)->size2;
+     //      size3=((iDrawExternalParameter*)_idep)->size3;
+     //      size4=((iDrawExternalParameter*)_idep)->size4;
+     //      size5=((iDrawExternalParameter*)_idep)->size5;
+
+     //      dataBox=((iDrawExternalParameter*)_idep)->dataBox;
+     //      dataViewProcBox=((iDrawExternalParameter*)_idep)->dataViewProcBox;
+
+     //      qDebug("data4dp_to_rgba3d using saved data...................... cost time = %g sec",
+     //           qtime.elapsed()*0.001);
+
+     // }else
+     {
+          // creating data for 3dviewer when needed
+          isSimulatedData = false;
+          bool bLocal = false;
+
+          if (b_limitedsize)
+          {
+               qDebug("	Down-sampling to 512x512x256 ");
+          }
+
+          try
+          {
 #ifndef test_main_cpp
 
-		My4DImage* image4d = v3dr_getImage4d(_idep);
-		if (image4d && image4d->getCDim()>0)
-		{
-			bLocal = ((iDrawExternalParameter*)_idep)->b_local;
-			//bLimited = ((iDrawExternalParameter*)_idep)->b_use_512x512x256; //091015: no need this, because always can use stream texture
+               My4DImage* image4d = v3dr_getImage4d(_idep);
+               if (image4d && image4d->getCDim()>0)
+               {
+                    bLocal = ((iDrawExternalParameter*)_idep)->b_local;
+                    //bLimited = ((iDrawExternalParameter*)_idep)->b_use_512x512x256; //091015: no need this, because always can use stream texture
 
-			data_unitbytes = image4d->getUnitBytes();
-			data4dp = image4d->getRawData();
-			data4d_uint8 = image4d->data4d_uint8;
+                    data_unitbytes = image4d->getUnitBytes();
+                    data4dp = image4d->getRawData();
+                    data4d_uint8 = image4d->data4d_uint8;
 
-			size1=dim1 = image4d->getXDim();
-			size2=dim2 = image4d->getYDim();
-			size3=dim3 = image4d->getZDim();
-			size4=dim4 = image4d->getCDim();
-			size5=dim5 = 1;
-			if (image4d->getTDim()>1 && image4d->getTimePackType()==TIME_PACK_C)
-			{
-				MESSAGE_ASSERT(image4d->getCDim() >= image4d->getTDim());
+                    size1=dim1 = image4d->getXDim();
+                    size2=dim2 = image4d->getYDim();
+                    size3=dim3 = image4d->getZDim();
+                    size4=dim4 = image4d->getCDim();
+                    size5=dim5 = 1;
+                    if (image4d->getTDim()>1 && image4d->getTimePackType()==TIME_PACK_C)
+                    {
+                         MESSAGE_ASSERT(image4d->getCDim() >= image4d->getTDim());
 
-				size4=dim4 = image4d->getCDim()/image4d->getTDim();
-				size5=dim5 = image4d->getTDim();
-			}
-			start1 = 0;
-			start2 = 0;
-			start3 = 0;
-			start4 = 0;
-			start5 = 0;
+                         size4=dim4 = image4d->getCDim()/image4d->getTDim();
+                         size5=dim5 = image4d->getTDim();
+                    }
+                    start1 = 0;
+                    start2 = 0;
+                    start3 = 0;
+                    start4 = 0;
+                    start5 = 0;
 
-			if (bLocal)
-			{
-				size1 = ((iDrawExternalParameter*)_idep)->local_size.x;
-				size2 = ((iDrawExternalParameter*)_idep)->local_size.y;
-				size3 = ((iDrawExternalParameter*)_idep)->local_size.z;
-				sampleScale[0] = sampleScale[1] =sampleScale[2] = 1;
+                    if (bLocal)
+                    {
+                         size1 = ((iDrawExternalParameter*)_idep)->local_size.x;
+                         size2 = ((iDrawExternalParameter*)_idep)->local_size.y;
+                         size3 = ((iDrawExternalParameter*)_idep)->local_size.z;
+                         sampleScale[0] = sampleScale[1] =sampleScale[2] = 1;
 
-				start1 = ((iDrawExternalParameter*)_idep)->local_start.x;
-				start2 = ((iDrawExternalParameter*)_idep)->local_start.y;
-				start3 = ((iDrawExternalParameter*)_idep)->local_start.z;
-				//data4dp += start3*(dim2*dim1) + start2*(dim1) + start1;
-			}
-		}
-		else // image4d==0  default coordinate frame for surface
-		{
-			size1=dim1 = 0; //DEFAULT_DIM1;
-			size2=dim2 = 0; //DEFAULT_DIM2;
-			size3=dim3 = 0; //DEFAULT_DIM3;
-			size4=dim4 = 0; // this make no rgbaBuf allocated
-			size5=dim5 = 0; // packed time
-			start1 = 0;
-			start2 = 0;
-			start3 = 0;
-			start4 = 0;
-			start5 = 0;
-			data4dp = 0; // this make no rgbaBuf allocated
-		}
+                         start1 = ((iDrawExternalParameter*)_idep)->local_start.x;
+                         start2 = ((iDrawExternalParameter*)_idep)->local_start.y;
+                         start3 = ((iDrawExternalParameter*)_idep)->local_start.z;
+                         //data4dp += start3*(dim2*dim1) + start2*(dim1) + start1;
+                    }
+               }
+               else // image4d==0  default coordinate frame for surface
+               {
+                    size1=dim1 = 0; //DEFAULT_DIM1;
+                    size2=dim2 = 0; //DEFAULT_DIM2;
+                    size3=dim3 = 0; //DEFAULT_DIM3;
+                    size4=dim4 = 0; // this make no rgbaBuf allocated
+                    size5=dim5 = 0; // packed time
+                    start1 = 0;
+                    start2 = 0;
+                    start3 = 0;
+                    start4 = 0;
+                    start5 = 0;
+                    data4dp = 0; // this make no rgbaBuf allocated
+               }
 #else // then _idep==0
-		{
-			PROGRESS_TEXT( QObject::tr("new a simulated Data") );
-			PROGRESS_PERCENT(10);
-			{
-				isSimulatedData = true;
-				size1=dim1 = SIM_DIM1;
-				size2=dim2 = SIM_DIM2;
-				size3=dim3 = SIM_DIM3;
-				size4=dim4 = SIM_DIM4;
-				size5=dim5 = SIM_DIM5;
-				start1 = 0;
-				start2 = 0;
-				start3 = 0;
-				start4 = 0;
-				start5 = 0;
-				data4dp = createSimulatedData(dim1, dim2, dim3, dim4, dim5);
-				qDebug("   new data4dp = @%0p", data4dp);
-			}
-			PROGRESS_PERCENT(100); //auto close when reach 100%
-		}
+               {
+                    PROGRESS_TEXT( QObject::tr("new a simulated Data") );
+                    PROGRESS_PERCENT(10);
+                    {
+                         isSimulatedData = true;
+                         size1=dim1 = SIM_DIM1;
+                         size2=dim2 = SIM_DIM2;
+                         size3=dim3 = SIM_DIM3;
+                         size4=dim4 = SIM_DIM4;
+                         size5=dim5 = SIM_DIM5;
+                         start1 = 0;
+                         start2 = 0;
+                         start3 = 0;
+                         start4 = 0;
+                         start5 = 0;
+                         data4dp = createSimulatedData(dim1, dim2, dim3, dim4, dim5);
+                         qDebug("   new data4dp = @%0p", data4dp);
+                    }
+                    PROGRESS_PERCENT(100); //auto close when reach 100%
+               }
 #endif
 
-		if (b_limitedsize)
-		{
-			getLimitedSampleScaleBufSize(size1, size2, size3, size4, size5, sampleScale, bufSize);
-		}
-		else
-		{
-			bufSize[0] = size1;
-			bufSize[1] = size2;
-			bufSize[2] = size3;
-			bufSize[3] = size4;
-			bufSize[4] = size5;
-			sampleScale[0]=sampleScale[1]=sampleScale[2]=sampleScale[3]=sampleScale[4] = 1;
-		}
+               if (b_limitedsize)
+               {
+                    getLimitedSampleScaleBufSize(size1, size2, size3, size4, size5, sampleScale, bufSize);
+               }
+               else
+               {
+                    bufSize[0] = size1;
+                    bufSize[1] = size2;
+                    bufSize[2] = size3;
+                    bufSize[3] = size4;
+                    bufSize[4] = size5;
+                    sampleScale[0]=sampleScale[1]=sampleScale[2]=sampleScale[3]=sampleScale[4] = 1;
+               }
 
-		total_rgbaBuf = rgbaBuf = 0; //(RGBA*)-1; //test whether the new sets pointer to 0 when failed
-		if (data4dp && size4>0)
-		{
-			// only RGB, first 3 channels of original image
-			total_rgbaBuf = rgbaBuf = new RGBA8[ bufSize[0] * bufSize[1] * bufSize[2] * 1 * bufSize[4] ];
-		}
+               total_rgbaBuf = rgbaBuf = 0; //(RGBA*)-1; //test whether the new sets pointer to 0 when failed
+               if (data4dp && size4>0)
+               {
+                    // only RGB, first 3 channels of original image
+                    total_rgbaBuf = rgbaBuf = new RGBA8[ bufSize[0] * bufSize[1] * bufSize[2] * 1 * bufSize[4] ];
+               }
 
-		qDebug("   data4dp = %0p \t(start %dx%dx%d_%d_%d, size %dx%dx%d_%d_%d)", data4dp,
+               qDebug("   data4dp = %0p \t(start %dx%dx%d_%d_%d, size %dx%dx%d_%d_%d)", data4dp,
 				start1,start2,start3,start4,start5,  size1,size2,size3,size4, size5);
 
-		qDebug("   rgbaBuf = %0p \t(%dx%dx%d_%d_%d)", rgbaBuf, bufSize[0],bufSize[1],bufSize[2],bufSize[3],bufSize[4]);
+               qDebug("   rgbaBuf = %0p \t(%dx%dx%d_%d_%d)", rgbaBuf, bufSize[0],bufSize[1],bufSize[2],bufSize[3],bufSize[4]);
 
 
-		dataViewProcBox = dataBox = BoundingBox(start1, start2, start3, start1+(size1-1), start2+(size2-1), start3+(size3-1));
+               dataViewProcBox = dataBox = BoundingBox(start1, start2, start3, start1+(size1-1), start2+(size2-1), start3+(size3-1));
 
-		qDebug("   data box in original image space @\t(%g %g %g)--(%g %g %g)", dataBox.x0,dataBox.y0,dataBox.z0, dataBox.x1,dataBox.y1,dataBox.z1);
+               qDebug("   data box in original image space @\t(%g %g %g)--(%g %g %g)", dataBox.x0,dataBox.y0,dataBox.z0, dataBox.x1,dataBox.y1,dataBox.z1);
 
-	} CATCH_handler( "Renderer_gl1::setupData" );
+          } CATCH_handler( "Renderer_gl1::setupData" );
 
 
-	QTime qtime;  qtime.start();
-	{
+          QTime qtime;  qtime.start();
+          {
 #ifndef test_main_cpp
 
-		My4DImage* image4d = v3dr_getImage4d(_idep);
-		if (image4d)
-		{
-			Image4DProxy<Image4DSimple> img4dp( image4d );
-			img4dp.set_minmax(image4d->p_vmin, image4d->p_vmax);
+               My4DImage* image4d = v3dr_getImage4d(_idep);
+               if (image4d)
+               {
+                    Image4DProxy<Image4DSimple> img4dp( image4d );
+                    img4dp.set_minmax(image4d->p_vmin, image4d->p_vmax);
 
-			data4dp_to_rgba3d(img4dp,  dim5,
+                    data4dp_to_rgba3d(img4dp,  dim5,
 					start1, start2, start3, start4,
 					size1, size2, size3, size4,
 					total_rgbaBuf, bufSize);
-		}
+               }
 #else // then _idep==0
-		data4dp_to_rgba3d(data4dp,
+               data4dp_to_rgba3d(data4dp,
 				dim1, dim2, dim3, dim4, dim5,
 				start1, start2, start3, start4,
 				size1, size2, size3, size4,
 				total_rgbaBuf, bufSize);
 #endif
 
-		if (dim4==1)   rgba3d_r2gray(total_rgbaBuf, bufSize); //081103
-	}
-	qDebug("   data4dp_to_rgba3d ............................................... cost time = %g sec", qtime.elapsed()*0.001);
+               if (dim4==1)   rgba3d_r2gray(total_rgbaBuf, bufSize); //081103
+          }
+          qDebug("   data4dp_to_rgba3d ............................................... cost time = %g sec", qtime.elapsed()*0.001);
+     } // end if else for creating data for 3dviewer
 
 }
 
@@ -518,7 +573,7 @@ void Renderer_gl1::prepareVol()
             glColor3f(0, 0, 0);
             drawBackFillVolCube(); // clear the project region to zero for MIP
         }
-        
+
         if (renderMode==rmMinIntensityProjection) {
             glColor3f(0.8, 0.8, 0.8);
             drawBackFillVolCube(); // clear the project region to near-white for mIP
@@ -704,7 +759,7 @@ void Renderer_gl1::drawVol()
 		glEnable(GL_BLEND);      equMaxIntensityProjection();
 		glEnable(GL_ALPHA_TEST); glAlphaFunc(GL_GEQUAL, alpha_threshold); // >= threshold Alpha, 080930
 		break;
-		
+
 	case rmMinIntensityProjection:
 		if (has_image() && !b_renderTextureLast) // if rendering texture first, we can clear - otherwise this is done in prepareVol()
 		{
@@ -1070,8 +1125,7 @@ void Renderer_gl1::subloadTex(V3DLONG timepoint, bool bfirst)
 		timepoint = CLAMP(0, imageT-1, timepoint);
 		rgbaBuf = total_rgbaBuf + timepoint*(imageZ*imageY*imageX);
 
-                qDebug() << "Calling setupStackTexture() from Renderer_gl1::subloadTex()";
-
+          qDebug() << "Calling setupStackTexture() from Renderer_gl1::subloadTex()";
 		//if (tryTexStream<=0) 			// 091014: mix down-sampled & streamed method
 			setupStackTexture(bfirst);  // use a temporary buffer, so first
 

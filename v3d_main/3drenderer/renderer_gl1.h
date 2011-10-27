@@ -306,9 +306,7 @@ protected:
      void canCurveConnect(XYZ &e, V3DLONG &closest_seg, V3DLONG &closest_node,
           bool &bConnect);
      void connectCurve(V3DLONG &curSeg);
-     /* bool findNearestNeuronSeg_WinXY(int cx, int cy, V3DLONG &best_seg, */
-     /*      V3DLONG &best_ind); */
-     /* void MarkerPosToXYZCenter(const MarkerPos & pos, XYZ &loc, XYZ &lastpos); //ZJL 110922 */
+     void smoothLagrange(vector <XYZ> inPoints, vector <XYZ> & outPoints, int numberOfSegments);
      V3DLONG edit_seg_id;
      int nDragWinSize;
      bool bInitDragPoints;

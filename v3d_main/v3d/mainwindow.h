@@ -142,7 +142,7 @@ public slots:
 #endif
     void updateWindowMenu();
     void exit();
-    
+
 	void updateProcessingMenu();
 //    MdiChild *createMdiChild();
 
@@ -269,21 +269,21 @@ public slots:
         void func_procModeDefault();
         void func_procModeNeuronAnnotator();
 #endif
-	
-// Dec-20-2010 YuY	
+
+// Dec-20-2010 YuY
 signals:
 	void triviewUpdateTriggered();
 	void imageLoaded2Plugin();
-	
+
 public slots:
 	void transactionStart();
 	void allTransactionsDone();
 	void updateTriview();
 	void updateTriviewWindow(); // trigger a signal triviewUpdateTriggered
 	void updateRunPlugin();
-	
+
 // April-26-2011 YuY
-public: 
+public:
 	void setBooleanCLplugin(bool cl_plugininput);
 	void setPluginName(char *pluginnameinput);
 	void setPluginMethod(char *pluginmethodinput);
@@ -291,9 +291,9 @@ public:
 	char *getPluginName();
 	char *getPluginMethod();
 	char *getPluginFunc();
-	
+
 	void triggerRunPlugin();
-    
+
     V3D_CL_INTERFACE v3dclp;
 
 private:
@@ -307,19 +307,21 @@ private:
 	void setCurrentFile(const QString &fileName);
 	void updateRecentFileActions();
 	QString strippedName(const QString &fullFileName);
-	
-	void addTransaction(Transaction *transact); // Dec-20-2010 YuY	
-	
-	TransactionThread sub_thread; // Dec-20-2010 YuY	
-	
+
+	void addTransaction(Transaction *transact); // Dec-20-2010 YuY
+
+	TransactionThread sub_thread; // Dec-20-2010 YuY
+
 	bool cl_plugin; // command line call a plugin
-	
+
 	char *pluginname;
 	char *pluginmethod;
 	char *pluginfunc;
 
 	QString curFile;
 	XFormWidget * curHiddenSelectedXWidget;
+     // save data for 3d view quick display. ZJL 111020
+     void saveDataFor3DViewer(iDrawExternalParameter* _idep);
 
 #ifdef __v3d_custom_toolbar__
 public :
@@ -491,28 +493,28 @@ private:
     QAction * procCellSeg_Gaussian_fit_1_spot_N_Gauss;
 	QAction * procCellSeg_Gaussian_partition;
         QAction * procCellSeg_manualCorrect;
-	
+
 #ifdef _ALLOW_WORKMODE_MENU_
 	// Mode
 	QAction * procModeDefault;
 	QAction * procModeNeuronAnnotator;
 #endif
-    
+
 #if defined(__V3DWSDEVELOP__)
 private:
 	soappara *pSoapPara;
 	V3DWebService *v3dws;
-	
+
 public slots:
 	void webserviceResponse();
 	void initWebService(V3DWebService *pws);
 	void quitWebService(V3DWebService *pws);
 	void setSoapPara(soappara *pSoapParaInput);
-    
+
 	void do3dfunc();
 	void switch3dviewercontrol(V3dR_MainWindow *existing_3dviewer);
 #endif
-	
+
 public: //for image processing, some of the parameters should be globally set
 	//080822
 	BDB_Minus_ConfigParameter flybrain_lobeseg_para;
@@ -552,11 +554,11 @@ public: //for image processing, some of the parameters should be globally set
 public:	//2009-2010: used by V3D_PluginLoader 	// in mainwindow_interface.cpp
 	XFormWidget* currentImageWindow();
 	My4DImage* currentImage();
-	
+
 	XFormWidget* curHiddenSelectedWindow() {return curHiddenSelectedXWidget;}
 	bool setCurHiddenSelectedWindow( XFormWidget* a);
 	bool setCurHiddenSelectedWindow_withoutcheckwinlist( XFormWidget* a); // added by YuY, Dec 16, 2010.
-	
+
 	QList<void*> allWindowList();
 	XFormWidget* validateImageWindow(void* window);
 	QString getWindowName(void* window);
