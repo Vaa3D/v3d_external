@@ -269,7 +269,6 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../3drenderer/renderer_obj.cpp \
     ../3drenderer/renderer_hit.cpp \
     ../3drenderer/nstroke.cpp \
-    ../3drenderer/v3dr_savefor3DViewer.cpp \
     ../3drenderer/renderer_labelfield.cpp \
     ../3drenderer/v3dr_surfaceDialog.cpp \
     ../3drenderer/ItemEditor.cpp \

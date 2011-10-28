@@ -321,7 +321,7 @@ private:
 	QString curFile;
 	XFormWidget * curHiddenSelectedXWidget;
      // save data for 3d view quick display. ZJL 111020
-     void saveDataFor3DViewer(iDrawExternalParameter* _idep);
+     //void saveDataFor3DViewer(iDrawExternalParameter* _idep);
 
 #ifdef __v3d_custom_toolbar__
 public :
