@@ -3084,6 +3084,10 @@ template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IM
     sy_pad=pIn.sz[1];
     sz_pad=pIn.sz[2];
 
+    T2 dimx = sx_pad/2 + sx_pad%2;
+    T2 dimy = sy_pad/2 + sy_pad%2;
+    T2 dimz = sz_pad/2 + sz_pad%2;
+
     T2 len_pad = sx_pad*sy_pad*sz_pad;
 
     //
@@ -3095,8 +3099,6 @@ template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IM
 
     if(fftwf_in_place)
     {
-        qDebug()<<"pionters ..."<<pIn.pImg<<pOut.pImg;
-
         T2 sx_pad_ori = sx_pad - (2-even_odd); //2*(sx_pad/2-1);
         T2 len_pad_tmp = sx_pad_ori*sy_pad*sz_pad;
 
@@ -3109,8 +3111,6 @@ template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IM
 
         fftwf_execute(p);
         fftwf_destroy_plan(p);
-
-        qDebug()<<"Frequency domain ...";
 
         // compute pc
         for(T2 k=0; k<sz_pad; k++)
@@ -3141,8 +3141,6 @@ template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IM
             }
         }
 
-        qDebug()<<"Cross power spectrum obtained ... ";
-
         // obtain the phase correlation
         fftwf_complex* out_pc_sub = (fftwf_complex*)pOut.pImg;
 
@@ -3150,8 +3148,6 @@ template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IM
 
         fftwf_execute(p);
         fftwf_destroy_plan(p);
-
-        qDebug()<<"phase correlation obtained ... ";
 
         // cleanup
         // fftwf_cleanup_threads();
@@ -3196,10 +3192,6 @@ template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IM
 
     qDebug()<<"integer shifts ... "<<x<<y<<z<<" dims ..."<<sx_pad<<sy_pad<<sz_pad<<"max_v ..."<<max_v;
 
-    //x -= sx_pad-1;
-    //y -= sy_pad-1;
-    //z -= sz_pad-1;
-    
     T2 idxcur = z*sy_pad*sx_pad + y*sx_pad + x;
     T2 xp = 1;
     T2 yp = sx_pad;
@@ -3207,13 +3199,19 @@ template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IM
 
     qDebug()<<"test ..."<<idxcur<<idxcur+xp<<pOut.pImg[idxcur]<<" x "<<pOut.pImg[idxcur+xp]<<" y "<<idxcur+yp<<pOut.pImg[idxcur+yp]<<" z "<<idxcur+zp<<pOut.pImg[idxcur+zp];
     
+    x -= dimx;
+    y -= dimy;
+    z -= dimz;
+
+    qDebug()<<"x, y, z ..."<<x<<y<<z;
+
     pos->x = x + (pOut.pImg[idxcur+xp])/(pOut.pImg[idxcur+xp] + pOut.pImg[idxcur]);
     pos->y = y + (pOut.pImg[idxcur+yp])/(pOut.pImg[idxcur+yp] + pOut.pImg[idxcur]);
     pos->z = z + (pOut.pImg[idxcur+zp])/(pOut.pImg[idxcur+zp] + pOut.pImg[idxcur]);
     
-    if(pos->x > sx_pad/2) pos->x -= sx_pad;
-    if(pos->y > sy_pad/2) pos->y -= sy_pad;
-    if(pos->z > sz_pad/2) pos->z -= sz_pad;
+    if(pos->x > dimx/2) pos->x -= dimx;
+    if(pos->y > dimy/2) pos->y -= dimy;
+    if(pos->z > dimz/2) pos->z -= dimz;
     
     qDebug()<<"subspace shifts ... "<<pos->x<<pos->y<<pos->z;
 
@@ -5589,12 +5587,7 @@ bool subpixshift3D(REAL *pShift, Tdata *pImg, V3DLONG *szImg, rPEAKS pos, V3DLON
     effectiveEnvelope[4] = zs_start;
     effectiveEnvelope[5] = z_end;
 
-    qDebug()<<"test ..."<<effectiveEnvelope[0]<<effectiveEnvelope[1]<<effectiveEnvelope[2]<<effectiveEnvelope[3]<<effectiveEnvelope[4]<<effectiveEnvelope[5];
-
-    qDebug()<<"z ..."<<vz<<" ... "<<z_end-1+zs_start<<z_end-1+z_start;
-    qDebug()<<"y ..."<<vy<<" ... "<<y_end-1+ys_start<<y_end-1+y_start;
-    qDebug()<<"x ..."<<vx<<" ... "<<x_end-1+xs_start<<x_end-1+x_start;
-
+    qDebug()<<"envelop ..."<<effectiveEnvelope[0]<<effectiveEnvelope[1]<<effectiveEnvelope[2]<<effectiveEnvelope[3]<<effectiveEnvelope[4]<<effectiveEnvelope[5];
     qDebug()<<"pos ..."<<pos.x<<pos.y<<pos.z;
 
     //
@@ -5615,9 +5608,6 @@ bool subpixshift3D(REAL *pShift, Tdata *pImg, V3DLONG *szImg, rPEAKS pos, V3DLON
             V3DLONG offset_ks = offset_c + k*vx*vy;
             V3DLONG offset_k = offset_c + (k-zs_start+z_start)*vx*vy;
 
-           // qDebug()<<"test z ... "<<k<<k-zs_start+z_start<<z_end<<vz;
-
-
             for(V3DLONG j=ys_start; j<y_end; j++)
             {
                 if(j-ys_start+y_start>=vy) continue;
@@ -5625,16 +5615,12 @@ bool subpixshift3D(REAL *pShift, Tdata *pImg, V3DLONG *szImg, rPEAKS pos, V3DLON
                 V3DLONG offset_js = offset_ks + j*vx;
                 V3DLONG offset_j = offset_k + (j-ys_start+y_start)*vx;
 
-                 //qDebug()<<"test y ... "<<j<<j-ys_start+y_start<<y_end<<vy;
-
                 for(V3DLONG i=xs_start; i<vx; i++)
                 {
                     if(i-xs_start+x_start>=vx) continue;
 
                     V3DLONG idxs = offset_js + i;
                     V3DLONG idx = offset_j + i-xs_start+x_start;
-
-                    //qDebug()<<"test x ... "<<i<<i-xs_start+x_start<<x_end<<vx<<"idx ..."<<idxs<<idx;
 
                     i1 = (REAL)(pImg[idx])*(1.0 - zd) + (REAL)(pImg[idx+zp])*zd;
                     i2 = (REAL)(pImg[idx+yp])*(1.0 - zd) + (REAL)(pImg[idx+yp+zp])*zd;

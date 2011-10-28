@@ -3788,7 +3788,7 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
     for(V3DLONG ii=0; ii<vim.number_tiles; ii++)
     {
 
-        qDebug()<<"tile "<<ii<<"\'s predecessor ..."<<vim.tilesList.at(ii).predecessor;
+        qDebug()<<"tile g "<<ii<<"\'s predecessor f ..."<<vim.tilesList.at(ii).predecessor;
 
         if(vim.tilesList.at(ii).predecessor<0) // reference image without parent
         {
@@ -3871,14 +3871,10 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
 
             continue;
         }
-
-        qDebug() << " ******************** tile "<<ii<<" ********************";
         
         //
         V3DLONG i = ii; // current tile g
         V3DLONG j = vim.tilesList.at(ii).predecessor; // parent tile f
-
-        qDebug() << "f ... "<<j<<"g ... "<<i;
         
         V3DLONG jx_s, jy_s, jz_s, jx_e, jy_e, jz_e;
         V3DLONG ix_s, iy_s, iz_s, ix_e, iy_e, iz_e;
@@ -3954,24 +3950,24 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
         
         V3DLONG pagesz_ol = dimxol*dimyol*dimzol;
         
-        REAL *fol1d = NULL;
-        REAL *gol1d = NULL;
+        Tdata *fol1d = NULL;
+        Tdata *gol1d = NULL;
         
         try 
         {
             // suppose fc = gc = vc
-            fol1d = new REAL [pagesz_ol];
-            gol1d = new REAL [pagesz_ol];
+            fol1d = new Tdata [pagesz_ol];
+            gol1d = new Tdata [pagesz_ol];
 
-            memset(fol1d, 0.0, sizeof(REAL)*pagesz_ol);
-            memset(gol1d, 0.0, sizeof(REAL)*pagesz_ol);
+            memset(fol1d, 0.0, sizeof(Tdata)*pagesz_ol);
+            memset(gol1d, 0.0, sizeof(Tdata)*pagesz_ol);
         } 
         catch (...) 
         {
             printf("Fail to allocate memory for fol1d and gol1d.\n");
             
-            y_del<REAL>(fol1d);
-            y_del<REAL>(gol1d);
+            y_del<Tdata>(fol1d);
+            y_del<Tdata>(gol1d);
             
             return false;
         }
@@ -4006,25 +4002,565 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
         y_del<Tdata>((Tdata *)f1d);
         y_del<Tdata>((Tdata *)g1d);
 
+        // zero-padding
+        REAL rate_x, rate_y, rate_z;
+
+        rate_x = qMax( (REAL)dimxol/(REAL)gx, (REAL)dimxol/(REAL)fx);
+        rate_y = qMax( (REAL)dimyol/(REAL)gy, (REAL)dimyol/(REAL)fy);
+        rate_z = qMax( (REAL)dimzol/(REAL)gz, (REAL)dimzol/(REAL)fz);
+
+        bool plane_yz=false, plane_xz=false, plane_xy=false;
+
+        V3DLONG bsx=0, esx=dimxol, bsy=0, esy=dimyol, bsz=0, esz=dimzol;
+        V3DLONG bbsx=dimxol, bbsy=dimyol, bbsz=dimzol;
+
+        if(rate_x < rate_y && rate_x < rate_z)
+        {
+            plane_yz = true;
+        }
+        if(rate_y < rate_x && rate_y < rate_z)
+        {
+            plane_xz = true;
+        }
+        if(rate_z < rate_x && rate_z < rate_y)
+        {
+            plane_xy = true;
+        }
+
+        REAL sum=0;
+        for(V3DLONG k=bsz; k<esz; k++)
+        {
+            V3DLONG offset_o_k = k*dimxol*dimyol;
+            for(V3DLONG j=bsy; j<esy; j++)
+            {
+                V3DLONG offset_o_j = offset_o_k + j*dimxol;
+                for(V3DLONG i=bsx; i<esx; i++)
+                {
+                    V3DLONG idx_o = offset_o_j + i;
+
+                    sum += fol1d[idx_o];
+                }
+            }
+        }
+        Tdata meanv = (Tdata) (sum/(REAL)(bbsx*bbsy*bbsz));
+
+        if(plane_yz == true)
+        {
+            // finding key-plane along x direction
+            V3DLONG info_count=0, xpln=0, max_info=0;
+
+            //
+            V3DLONG weights = bbsx*0.15; // threshold
+            weights /= 2;
+            V3DLONG start_x=bsx+weights+1, end_x=esx-weights-1;
+            for(V3DLONG i=start_x; i<end_x; i++) //
+            {
+                info_count = 0;
+
+                for(V3DLONG k=bsz; k<esz; k++)
+                {
+                    V3DLONG offset_o_k = k*dimxol*dimyol;
+                    for(V3DLONG j=bsy; j<esy; j++)
+                    {
+                        V3DLONG idx_o = offset_o_k + j*dimxol + i;
+
+                        if( fol1d[idx_o] > meanv)
+                            info_count++;
+                    }
+                }
+
+                if(info_count > max_info)
+                {
+                    max_info = info_count;
+                    xpln = i;
+                }
+
+            }
+
+            if(xpln<start_x) xpln = start_x;
+
+            qDebug() << "xpln ..." << xpln;
+
+            // extraction
+            V3DLONG b_bsx = xpln - weights; //
+
+            if(b_bsx>bsx)
+                bsx = b_bsx;
+
+            V3DLONG e_esx = xpln + weights;
+
+            if(e_esx<esx)
+                esx = e_esx;
+
+            bbsx = esx-bsx+1; // dims
+
+            V3DLONG pagesz_bb_sub = bbsx*bbsy*bbsz;
+            V3DLONG pagesz_bb_tar = pagesz_bb_sub;
+
+            // extract one plane from sub
+            Tdata *p_sub = NULL, *p_tar = NULL;
+            try
+            {
+                p_sub = new Tdata [pagesz_bb_sub];
+                p_tar = new Tdata [pagesz_bb_sub];
+
+                for(V3DLONG k=bsz; k<esz; k++)
+                {
+                    V3DLONG offset_k = (k-bsz)*bbsx*bbsy;
+                    V3DLONG offset_o_k = k*dimxol*dimyol;
+                    for(V3DLONG j=bsy; j<esy; j++)
+                    {
+                        V3DLONG offset_j = offset_k + (j-bsy)*bbsx;
+                        V3DLONG offset_o_j = offset_o_k + j*dimxol;
+                        for(V3DLONG i=bsx; i<esx; i++)
+                        {
+                            V3DLONG idx = offset_j + (i-bsx);
+                            V3DLONG idx_o = offset_o_j + i;
+
+                            p_sub[idx] = fol1d[idx_o];
+                            p_tar[idx] = gol1d[idx_o];
+                        }
+                    }
+                }
+            }
+            catch(...)
+            {
+                printf("Fail to allocate memory.\n");
+                return false;
+            }
+            //
+            y_del<Tdata>(fol1d);
+            y_del<Tdata>(gol1d);
+
+            //
+            V3DLONG sx_pad = 2*bbsx-1, sy_pad = 2*bbsy-1, sz_pad = 2*bbsz-1;
+
+            V3DLONG even_odd = sx_pad%2; // 0 for even 1 for odd
+
+            if(fftw_in_place)
+                sx_pad += (2-even_odd); //
+
+            V3DLONG len_pad = sx_pad*sy_pad*sz_pad;
+
+            V3DLONG *szPad = new V3DLONG [3];
+            szPad[0] = sx_pad;
+            szPad[1] = sy_pad;
+            szPad[2] = sz_pad;
+
+            V3DLONG *szSub = new V3DLONG [3];
+            szSub[0] = bbsx;
+            szSub[1] = bbsy;
+            szSub[2] = bbsz;
+
+            REAL* p_f_sub = NULL;
+            try
+            {
+                p_f_sub = new REAL [len_pad];
+                memset(p_f_sub, 0, sizeof(REAL)*len_pad);
+
+                //padding zeros
+                Y_IMG_REAL pOut(p_f_sub, szPad);
+                Y_IMG_DATATYPE pIn(p_sub, szSub);
+
+                YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_DATATYPE> tmp;
+                tmp.padding(pOut, pIn, true, fftw_in_place, even_odd, 3);
+            }
+            catch(...)
+            {
+                printf("Fail to allocate memory.\n");
+                return false;
+            }
+
+            REAL* p_f_tar = NULL;
+            try
+            {
+                p_f_tar = new REAL [len_pad];
+                memset(p_f_tar, 0, sizeof(REAL)*len_pad);
+
+                //padding zeros
+                Y_IMG_REAL pOut(p_f_tar, szPad);
+                Y_IMG_DATATYPE pIn(p_tar, szSub);
+
+                YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_DATATYPE> tmp;
+                tmp.padding(pOut, pIn, false, fftw_in_place, even_odd, 3);
+            }
+            catch(...)
+            {
+                printf("Fail to allocate memory.\n");
+                return false;
+            }
+            //de-alloc
+            y_del<Tdata>(p_sub);
+            y_del<Tdata>(p_tar);
+
+            // fft-pc subspace translation estimating (Foroosh's method)
+            rPEAKS pos;
+            Y_IMG_REAL pOut(p_f_sub, szPad);
+            Y_IMG_REAL pIn(p_f_tar, szPad);
+
+            YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_REAL> tmp;
+            tmp.fftpcsubspace3D(pOut, pIn, even_odd, fftw_in_place, &pos); // subpixel shifts
+
+            // subpixel translation estimation
+            (&vim.tilesList.at(j))->offsets_sa[0] += pos.x;
+            (&vim.tilesList.at(j))->offsets_sa[1] += pos.y;
+            (&vim.tilesList.at(j))->offsets_sa[2] += pos.z;
+
+            //de-alloc
+            y_del<REAL>(p_f_sub);
+            y_del<REAL>(p_f_tar);
+        }
+
         // subpixel registration using Foroosh's method
-        rPEAKS pos;
-        Y_IMG_REAL pOut(gol1d, szOL);
-        Y_IMG_REAL pIn(fol1d, szOL);
+        //        rPEAKS pos;
+        //        Y_IMG_REAL pOut(gol1d, szOL);
+        //        Y_IMG_REAL pIn(fol1d, szOL);
         
-        YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_REAL> tmp;
-        tmp.fftpcsubspace3D(pOut, pIn, even_odd, fftw_in_place, &pos); // subpixel shifts
+        //        YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_REAL> tmp;
+        //        tmp.fftpcsubspace3D(pOut, pIn, even_odd, fftw_in_place, &pos); // subpixel shifts
         
-        // subpixel translation estimation
-        (&vim.tilesList.at(j))->offsets_sa[0] += pos.x;
-        (&vim.tilesList.at(j))->offsets_sa[1] += pos.y;
-        (&vim.tilesList.at(j))->offsets_sa[2] += pos.z;
+        //        // subpixel translation estimation
+        //        (&vim.tilesList.at(j))->offsets_sa[0] += pos.x;
+        //        (&vim.tilesList.at(j))->offsets_sa[1] += pos.y;
+        //        (&vim.tilesList.at(j))->offsets_sa[2] += pos.z;
         
-        // de-alloc
-        y_del<REAL>(fol1d);
-        y_del<REAL>(gol1d);
-        
+        //        // de-alloc
+        //        y_del<REAL>(fol1d);
+        //        y_del<REAL>(gol1d);
+
+        else if(plane_xz == true)
+        {
+            // finding key-plane along y direction
+            V3DLONG info_count=0, ypln=0, max_info=0;
+
+            //
+            V3DLONG weights = bbsy*0.15; // threshold
+            weights /= 2;
+            V3DLONG start_y=bsy+weights+1, end_y=esy-weights-1;
+            for(V3DLONG j=start_y; j<end_y; j++) //
+            {
+                info_count = 0;
+
+                V3DLONG offset_o_j = j*dimxol;
+                for(V3DLONG k=bsz; k<esz; k++)
+                {
+                    V3DLONG offset_o_k = k*dimxol*dimyol;
+                    for(V3DLONG i=bsx; i<esx; i++)
+                    {
+                        V3DLONG idx_o = offset_o_k + offset_o_j + i;
+
+                        if( fol1d[idx_o] > meanv)
+                            info_count++;
+                    }
+                }
+
+                if(info_count > max_info)
+                {
+                    max_info = info_count;
+                    ypln = j;
+                }
+
+            }
+
+            if(ypln<start_y) ypln = start_y;
+
+            qDebug() << "ypln ..." << ypln;
+
+            // extraction
+            V3DLONG b_bsy = ypln - weights;
+
+            if(b_bsy>bsy)
+                bsy = b_bsy;
+
+            V3DLONG e_esy = ypln + weights;
+
+            if(e_esy<esy)
+                esy = e_esy;
+
+            bbsy = esy-bsy+1; // dims
+
+            V3DLONG pagesz_bb_sub = bbsx*bbsy*bbsz;
+            V3DLONG pagesz_bb_tar = pagesz_bb_sub;
+
+            // extract one plane from sub
+            Tdata *p_sub = NULL, *p_tar = NULL;
+            try
+            {
+                p_sub = new Tdata [pagesz_bb_sub];
+                p_tar = new Tdata [pagesz_bb_sub];
+
+                for(V3DLONG k=bsz; k<esz; k++)
+                {
+                    V3DLONG offset_k = (k-bsz)*bbsx*bbsy;
+                    V3DLONG offset_o_k = k*dimxol*dimyol;
+                    for(V3DLONG j=bsy; j<esy; j++)
+                    {
+                        V3DLONG offset_j = offset_k + (j-bsy)*bbsx;
+                        V3DLONG offset_o_j = offset_o_k + j*dimxol;
+                        for(V3DLONG i=bsx; i<esx; i++)
+                        {
+                            V3DLONG idx = offset_j + (i-bsx);
+                            V3DLONG idx_o = offset_o_j + i;
+
+                            p_sub[idx] = fol1d[idx_o];
+                            p_tar[idx] = gol1d[idx_o];
+                        }
+                    }
+                }
+            }
+            catch(...)
+            {
+                printf("Fail to allocate memory.\n");
+                return false;
+            }
+            //
+            y_del<Tdata>(fol1d);
+            y_del<Tdata>(gol1d);
+
+            //
+            V3DLONG sx_pad = 2*bbsx-1, sy_pad = 2*bbsy-1, sz_pad = 2*bbsz-1;
+
+            V3DLONG even_odd = sx_pad%2; // 0 for even 1 for odd
+
+            if(fftw_in_place)
+                sx_pad += (2-even_odd); //
+
+            V3DLONG len_pad = sx_pad*sy_pad*sz_pad;
+
+            V3DLONG *szPad = new V3DLONG [3];
+            szPad[0] = sx_pad;
+            szPad[1] = sy_pad;
+            szPad[2] = sz_pad;
+
+            V3DLONG *szSub = new V3DLONG [3];
+            szSub[0] = bbsx;
+            szSub[1] = bbsy;
+            szSub[2] = bbsz;
+
+            REAL* p_f_sub = NULL;
+            try
+            {
+                p_f_sub = new REAL [len_pad];
+                memset(p_f_sub, 0, sizeof(REAL)*len_pad);
+
+                //padding zeros
+                Y_IMG_REAL pOut(p_f_sub, szPad);
+                Y_IMG_DATATYPE pIn(p_sub, szSub);
+
+                YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_DATATYPE> tmp;
+                tmp.padding(pOut, pIn, true, fftw_in_place, even_odd, 3);
+            }
+            catch(...)
+            {
+                printf("Fail to allocate memory.\n");
+                return false;
+            }
+
+            REAL* p_f_tar = NULL;
+            try
+            {
+                p_f_tar = new REAL [len_pad];
+                memset(p_f_tar, 0, sizeof(REAL)*len_pad);
+
+                //padding zeros
+                Y_IMG_REAL pOut(p_f_tar, szPad);
+                Y_IMG_DATATYPE pIn(p_tar, szSub);
+
+                YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_DATATYPE> tmp;
+                tmp.padding(pOut, pIn, false, fftw_in_place, even_odd, 3);
+            }
+            catch(...)
+            {
+                printf("Fail to allocate memory.\n");
+                return false;
+            }
+            //de-alloc
+            y_del<Tdata>(p_sub);
+            y_del<Tdata>(p_tar);
+
+            // fft-pc subspace translation estimating (Foroosh's method)
+            rPEAKS pos;
+            Y_IMG_REAL pOut(p_f_sub, szPad);
+            Y_IMG_REAL pIn(p_f_tar, szPad);
+
+            YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_REAL> tmp;
+            tmp.fftpcsubspace3D(pOut, pIn, even_odd, fftw_in_place, &pos); // subpixel shifts
+
+            // subpixel translation estimation
+            (&vim.tilesList.at(j))->offsets_sa[0] += pos.x;
+            (&vim.tilesList.at(j))->offsets_sa[1] += pos.y;
+            (&vim.tilesList.at(j))->offsets_sa[2] += pos.z;
+
+            //de-alloc
+            y_del<REAL>(p_f_sub);
+            y_del<REAL>(p_f_tar);
+        }
+        else if(plane_xy == true)
+        {
+            // finding key-plane along x direction
+            V3DLONG info_count=0, zpln=0, max_info=0;
+
+            //
+            V3DLONG weights = bbsz*0.15; // threshold
+            weights /= 2;
+            V3DLONG start_z=bsz+weights+1, end_z=esz-weights-1;
+            for(V3DLONG k=start_z; k<end_z; k++) //
+            {
+                info_count = 0;
+
+                V3DLONG offset_o_k = k*dimxol*dimyol;
+                for(V3DLONG j=bsy; j<esy; j++)
+                {
+                    V3DLONG offset_o_j = j*dimxol;
+                    for(V3DLONG i=bsx; i<esx; i++)
+                    {
+                        V3DLONG idx_o = offset_o_k + offset_o_j + i;
+
+                        if( fol1d[idx_o] > meanv)
+                            info_count++;
+                    }
+                }
+
+                if(info_count > max_info)
+                {
+                    max_info = info_count;
+                    zpln = k;
+                }
+
+            }
+
+            // extraction
+            V3DLONG b_bsz = zpln - weights/2;
+
+            if(b_bsz>bsz)
+                bsz = b_bsz;
+
+            V3DLONG e_esz = zpln + weights/2;
+
+            if(e_esz<esz)
+                esz = e_esz;
+
+            bbsz = esz-bsz+1; // dims
+
+            V3DLONG pagesz_bb_sub = bbsx*bbsy*bbsz;
+            V3DLONG pagesz_bb_tar = pagesz_bb_sub;
+
+            // extract one plane from sub
+            Tdata *p_sub = NULL, *p_tar = NULL;
+            try
+            {
+                p_sub = new Tdata [pagesz_bb_sub];
+                p_tar = new Tdata [pagesz_bb_sub];
+
+                for(V3DLONG k=bsz; k<esz; k++)
+                {
+                    V3DLONG offset_k = (k-bsz)*bbsx*bbsy;
+                    V3DLONG offset_o_k = k*dimxol*dimyol;
+                    for(V3DLONG j=bsy; j<esy; j++)
+                    {
+                        V3DLONG offset_j = offset_k + (j-bsy)*bbsx;
+                        V3DLONG offset_o_j = offset_o_k + j*dimxol;
+                        for(V3DLONG i=bsx; i<esx; i++)
+                        {
+                            V3DLONG idx = offset_j + (i-bsx);
+                            V3DLONG idx_o = offset_o_j + i;
+
+                            p_sub[idx] = fol1d[idx_o];
+                            p_tar[idx] = gol1d[idx_o];
+                        }
+                    }
+                }
+            }
+            catch(...)
+            {
+                printf("Fail to allocate memory.\n");
+                return false;
+            }
+            //
+            y_del<Tdata>(fol1d);
+            y_del<Tdata>(gol1d);
+
+            //
+            V3DLONG sx_pad = 2*bbsx-1, sy_pad = 2*bbsy-1, sz_pad = 2*bbsz-1;
+
+            V3DLONG even_odd = sx_pad%2; // 0 for even 1 for odd
+
+            if(fftw_in_place)
+                sx_pad += (2-even_odd); //
+
+            V3DLONG len_pad = sx_pad*sy_pad*sz_pad;
+
+            V3DLONG *szPad = new V3DLONG [3];
+            szPad[0] = sx_pad;
+            szPad[1] = sy_pad;
+            szPad[2] = sz_pad;
+
+            V3DLONG *szSub = new V3DLONG [3];
+            szSub[0] = bbsx;
+            szSub[1] = bbsy;
+            szSub[2] = bbsz;
+
+            REAL* p_f_sub = NULL;
+            try
+            {
+                p_f_sub = new REAL [len_pad];
+                memset(p_f_sub, 0, sizeof(REAL)*len_pad);
+
+                //padding zeros
+                Y_IMG_REAL pOut(p_f_sub, szPad);
+                Y_IMG_DATATYPE pIn(p_sub, szSub);
+
+                YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_DATATYPE> tmp;
+                tmp.padding(pOut, pIn, true, fftw_in_place, even_odd, 3);
+            }
+            catch(...)
+            {
+                printf("Fail to allocate memory.\n");
+                return false;
+            }
+
+            REAL* p_f_tar = NULL;
+            try
+            {
+                p_f_tar = new REAL [len_pad];
+                memset(p_f_tar, 0, sizeof(REAL)*len_pad);
+
+                //padding zeros
+                Y_IMG_REAL pOut(p_f_tar, szPad);
+                Y_IMG_DATATYPE pIn(p_tar, szSub);
+
+                YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_DATATYPE> tmp;
+                tmp.padding(pOut, pIn, false, fftw_in_place, even_odd, 3);
+            }
+            catch(...)
+            {
+                printf("Fail to allocate memory.\n");
+                return false;
+            }
+            //de-alloc
+            y_del<Tdata>(p_sub);
+            y_del<Tdata>(p_tar);
+
+            // fft-pc subspace translation estimating (Foroosh's method)
+            rPEAKS pos;
+            Y_IMG_REAL pOut(p_f_sub, szPad);
+            Y_IMG_REAL pIn(p_f_tar, szPad);
+
+            YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_REAL> tmp;
+            tmp.fftpcsubspace3D(pOut, pIn, even_odd, fftw_in_place, &pos); // subpixel shifts
+
+            // subpixel translation estimation
+            (&vim.tilesList.at(j))->offsets_sa[0] += pos.x;
+            (&vim.tilesList.at(j))->offsets_sa[1] += pos.y;
+            (&vim.tilesList.at(j))->offsets_sa[2] += pos.z;
+
+            //de-alloc
+            y_del<REAL>(p_f_sub);
+            y_del<REAL>(p_f_tar);
+        }
+
     }
-    
+
     for(int i=0; i<vim.number_tiles; i++)
     {
         vim.tilesList.at(i).visited = false;
@@ -4082,8 +4618,8 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
         REAL *prelative = NULL;
         V3DLONG even_odd = rx%2;
         V3DLONG rx_pad = rx;
-//        if(fftw_in_place)
-//            rx_pad += (2-even_odd);
+        //        if(fftw_in_place)
+        //            rx_pad += (2-even_odd);
 
         try {
             V3DLONG szRelative = rx_pad*ry*rz*rc;
@@ -4123,16 +4659,16 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
             return false;
         }
 
-//        for(V3DLONG c=0; c<rc; c++)
-//        {
-//            V3DLONG offset_c = c*rx_pad*ry*rz;
-            
-//            Y_IMG_REAL pOut(prelative+offset_c, sz_relative);
-            
+        //        for(V3DLONG c=0; c<rc; c++)
+        //        {
+        //            V3DLONG offset_c = c*rx_pad*ry*rz;
 
-//            YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_REAL> tmp;
-//            tmp.subpixeltranslate(pOut, even_odd, fftw_in_place, &pos);
-//        }
+        //            Y_IMG_REAL pOut(prelative+offset_c, sz_relative);
+
+
+        //            YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_REAL> tmp;
+        //            tmp.subpixeltranslate(pOut, even_odd, fftw_in_place, &pos);
+        //        }
 
         V3DLONG *effectiveEnvelope = new V3DLONG [6];
         if(subpixshift3D<Tdata>(prelative, (Tdata *)relative1d, sz_relative, pos, effectiveEnvelope)!=true)
@@ -8380,7 +8916,9 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
         {
             printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
             return false;
-        }        
+        }
+
+        cout<<"time elapse ... "<<clock()-start_t<<endl;
         
         //
         return true;
