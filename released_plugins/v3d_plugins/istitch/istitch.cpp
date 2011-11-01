@@ -3784,6 +3784,12 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
         }
     }
 
+    // testing
+    for(int i_path=0; i_path<vim.number_tiles; i_path++)
+    {
+        qDebug()<<"current ..."<<vim.tilesList.at(i_path).n<<"init offsets ..."<<vim.tilesList.at(i_path).offsets_sa[0]<<vim.tilesList.at(i_path).offsets_sa[1]<<vim.tilesList.at(i_path).offsets_sa[2];
+    }
+
     // subspace stitch
     for(V3DLONG ii=0; ii<vim.number_tiles; ii++)
     {
@@ -4117,8 +4123,8 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
                             V3DLONG idx = offset_j + (i-bsx);
                             V3DLONG idx_o = offset_o_j + i;
 
-                            p_sub[idx] = fol1d[idx_o];
-                            p_tar[idx] = gol1d[idx_o];
+                            p_sub[idx] = gol1d[idx_o];
+                            p_tar[idx] = fol1d[idx_o];
                         }
                     }
                 }
@@ -4202,9 +4208,9 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
             tmp.fftpcsubspace3D(pOut, pIn, even_odd, fftw_in_place, &pos); // subpixel shifts
 
             // subpixel translation estimation
-            (&vim.tilesList.at(j))->offsets_sa[0] += pos.x;
-            (&vim.tilesList.at(j))->offsets_sa[1] += pos.y;
-            (&vim.tilesList.at(j))->offsets_sa[2] += pos.z;
+            (&vim.tilesList.at(i))->offsets_sa[0] += pos.x;
+            (&vim.tilesList.at(i))->offsets_sa[1] += pos.y;
+            (&vim.tilesList.at(i))->offsets_sa[2] += pos.z;
 
             //de-alloc
             y_del<REAL>(p_f_sub);
@@ -4302,8 +4308,8 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
                             V3DLONG idx = offset_j + (i-bsx);
                             V3DLONG idx_o = offset_o_j + i;
 
-                            p_sub[idx] = fol1d[idx_o];
-                            p_tar[idx] = gol1d[idx_o];
+                            p_sub[idx] = gol1d[idx_o];
+                            p_tar[idx] = fol1d[idx_o];
                         }
                     }
                 }
@@ -4387,9 +4393,9 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
             tmp.fftpcsubspace3D(pOut, pIn, even_odd, fftw_in_place, &pos); // subpixel shifts
 
             // subpixel translation estimation
-            (&vim.tilesList.at(j))->offsets_sa[0] += pos.x;
-            (&vim.tilesList.at(j))->offsets_sa[1] += pos.y;
-            (&vim.tilesList.at(j))->offsets_sa[2] += pos.z;
+            (&vim.tilesList.at(i))->offsets_sa[0] += pos.x;
+            (&vim.tilesList.at(i))->offsets_sa[1] += pos.y;
+            (&vim.tilesList.at(i))->offsets_sa[2] += pos.z;
 
             //de-alloc
             y_del<REAL>(p_f_sub);
@@ -4465,8 +4471,8 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
                             V3DLONG idx = offset_j + (i-bsx);
                             V3DLONG idx_o = offset_o_j + i;
 
-                            p_sub[idx] = fol1d[idx_o];
-                            p_tar[idx] = gol1d[idx_o];
+                            p_sub[idx] = gol1d[idx_o];
+                            p_tar[idx] = fol1d[idx_o];
                         }
                     }
                 }
@@ -4550,9 +4556,9 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
             tmp.fftpcsubspace3D(pOut, pIn, even_odd, fftw_in_place, &pos); // subpixel shifts
 
             // subpixel translation estimation
-            (&vim.tilesList.at(j))->offsets_sa[0] += pos.x;
-            (&vim.tilesList.at(j))->offsets_sa[1] += pos.y;
-            (&vim.tilesList.at(j))->offsets_sa[2] += pos.z;
+            (&vim.tilesList.at(i))->offsets_sa[0] += pos.x;
+            (&vim.tilesList.at(i))->offsets_sa[1] += pos.y;
+            (&vim.tilesList.at(i))->offsets_sa[2] += pos.z;
 
             //de-alloc
             y_del<REAL>(p_f_sub);
@@ -4561,16 +4567,31 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
 
     }
 
+    // testing
+    for(int i_path=0; i_path<vim.number_tiles; i_path++)
+    {
+        qDebug()<<"current ..."<<vim.tilesList.at(i_path).n<<"computed offsets ..."<<vim.tilesList.at(i_path).offsets_sa[0]<<vim.tilesList.at(i_path).offsets_sa[1]<<vim.tilesList.at(i_path).offsets_sa[2];
+    }
+
     for(int i=0; i<vim.number_tiles; i++)
     {
         vim.tilesList.at(i).visited = false;
     }
+
+    qDebug()<<"ref ..."<<vim.tilesList.at(0).n<<"offsets ..."<<vim.tilesList.at(0).offsets_sa[0]<<vim.tilesList.at(0).offsets_sa[1]<<vim.tilesList.at(0).offsets_sa[2];
+
+    // init offsets of ref
+    vim.tilesList.at(0).offsets_sa[0] = 0;
+    vim.tilesList.at(0).offsets_sa[1] = 0;
+    vim.tilesList.at(0).offsets_sa[2] = 0;
 
     for(int i_path=1; i_path<vim.number_tiles; i_path++)
     {
         //
         V3DLONG current = vim.tilesList.at(i_path).n;
         V3DLONG previous = vim.tilesList.at(i_path).predecessor;
+
+        qDebug()<<"current ..."<<vim.tilesList.at(i_path).n<<"offsets ..."<<vim.tilesList.at(i_path).offsets_sa[0]<<vim.tilesList.at(i_path).offsets_sa[1]<<vim.tilesList.at(i_path).offsets_sa[2];
 
         //
         while(previous!=-1)
@@ -4592,11 +4613,16 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
         (&vim.tilesList.at(i_path))->visited = true;
     }
 
-    // fusion
-    string fn;
+    // testing
+    for(int i_path=0; i_path<vim.number_tiles; i_path++)
+    {
+        qDebug()<<"current ..."<<vim.tilesList.at(i_path).n<<"accumulate offsets ..."<<vim.tilesList.at(i_path).offsets_sa[0]<<vim.tilesList.at(i_path).offsets_sa[1]<<vim.tilesList.at(i_path).offsets_sa[2];
+    }
+
+    // blending
     for(V3DLONG ii=1; ii<vim.number_tiles; ii++)
     {
-        // loading relative imagg files
+        // loading relative image files
         V3DLONG *sz_relative = 0;
         int datatype_relative = 0;
         unsigned char* relative1d = 0;
@@ -4615,13 +4641,16 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
         pos.y = vim.tilesList.at(ii).offsets_sa[1] - vim.lut[ii].start_pos[1];
         pos.z = vim.tilesList.at(ii).offsets_sa[2] - vim.lut[ii].start_pos[2];
 
+        qDebug()<<"current ... "<<ii<<" pre ... "<<vim.tilesList.at(ii).predecessor<<"offsets ..."<<pos.x<<pos.y<<pos.z;
+
         REAL *prelative = NULL;
         V3DLONG even_odd = rx%2;
         V3DLONG rx_pad = rx;
         //        if(fftw_in_place)
         //            rx_pad += (2-even_odd);
 
-        try {
+        try
+        {
             V3DLONG szRelative = rx_pad*ry*rz*rc;
             
             prelative = new REAL [szRelative];
@@ -4652,7 +4681,9 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
                 }
             }
             
-        } catch (...) {
+        }
+        catch (...)
+        {
             y_del<REAL>(prelative);
             
             cout<<"Fail to allocate memory!"<<endl;
@@ -4717,17 +4748,26 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
             V3DLONG o_r_c = c*rx_pad*ry*rz;
             for(V3DLONG k=z_start; k<z_end; k++)
             {
+                V3DLONG k_idx = k-z_start + effectiveEnvelope[4];
+                if(k_idx>=effectiveEnvelope[5]) continue;
+
                 V3DLONG o_k = o_c + k*vx*vy;
-                V3DLONG o_r_k = o_r_c + (k-z_start)*rx_pad*ry;
+                V3DLONG o_r_k = o_r_c + (k_idx)*rx_pad*ry;
                 
                 for(V3DLONG j=y_start; j<y_end; j++)
                 {
+                    V3DLONG j_idx = j-y_start + effectiveEnvelope[2];
+                    if(j_idx>=effectiveEnvelope[3]) continue;
+
                     V3DLONG o_j = o_k + j*vx;
-                    V3DLONG o_r_j = o_r_k + (j-y_start)*rx_pad;
+                    V3DLONG o_r_j = o_r_k + (j_idx)*rx_pad;
                     for(V3DLONG i=x_start; i<x_end; i++)
                     {
+                        V3DLONG i_idx = i-x_start + effectiveEnvelope[0];
+                        if(i_idx>=effectiveEnvelope[1]) continue;
+
                         V3DLONG idx = o_j + i;
-                        V3DLONG idx_r = o_r_j + (i-x_start);
+                        V3DLONG idx_r = o_r_j + (i_idx);
                         
                         REAL val = (REAL)(prelative[idx_r]);
                         

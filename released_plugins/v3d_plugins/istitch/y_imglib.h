@@ -3084,9 +3084,9 @@ template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IM
     sy_pad=pIn.sz[1];
     sz_pad=pIn.sz[2];
 
-    T2 dimx = sx_pad/2 + sx_pad%2;
-    T2 dimy = sy_pad/2 + sy_pad%2;
-    T2 dimz = sz_pad/2 + sz_pad%2;
+    T2 dimx = (sx_pad+1 - (2-even_odd))/2;
+    T2 dimy = (sy_pad+1)/2;
+    T2 dimz = (sz_pad+1)/2;
 
     T2 len_pad = sx_pad*sy_pad*sz_pad;
 
@@ -3199,15 +3199,23 @@ template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IM
 
     qDebug()<<"test ..."<<idxcur<<idxcur+xp<<pOut.pImg[idxcur]<<" x "<<pOut.pImg[idxcur+xp]<<" y "<<idxcur+yp<<pOut.pImg[idxcur+yp]<<" z "<<idxcur+zp<<pOut.pImg[idxcur+zp];
     
-    x -= dimx;
-    y -= dimy;
-    z -= dimz;
+    x -= dimx-1; //
+    y -= dimy-1; //
+    z -= dimz-1; //
 
     qDebug()<<"x, y, z ..."<<x<<y<<z;
 
-    pos->x = x + (pOut.pImg[idxcur+xp])/(pOut.pImg[idxcur+xp] + pOut.pImg[idxcur]);
-    pos->y = y + (pOut.pImg[idxcur+yp])/(pOut.pImg[idxcur+yp] + pOut.pImg[idxcur]);
-    pos->z = z + (pOut.pImg[idxcur+zp])/(pOut.pImg[idxcur+zp] + pOut.pImg[idxcur]);
+    T1 sign_x = 1.0;
+    T1 sign_y = 1.0;
+    T1 sign_z = 1.0;
+
+    if(dimx%2==0) sign_x = -1.0;
+    if(dimy%2==0) sign_y = -1.0;
+    if(dimz%2==0) sign_z = -1.0;
+
+    pos->x = x + (pOut.pImg[idxcur+xp])/(pOut.pImg[idxcur+xp] + sign_x * pOut.pImg[idxcur]);
+    pos->y = y + (pOut.pImg[idxcur+yp])/(pOut.pImg[idxcur+yp] + sign_y * pOut.pImg[idxcur]);
+    pos->z = z + (pOut.pImg[idxcur+zp])/(pOut.pImg[idxcur+zp] + sign_z * pOut.pImg[idxcur]);
     
     if(pos->x > dimx/2) pos->x -= dimx;
     if(pos->y > dimy/2) pos->y -= dimy;
