@@ -704,8 +704,7 @@ public:
         fprintf(pFileLUT, "\n# MST LUT \n"); // TC_COMMENT7
         for(T2 j=1; j<number_tiles; j++)
         {
-            T2 pre = tilesList.at(j).predecessor;
-            fprintf(pFileLUT, "%ld %ld %ld %ld %ld \n", tilesList.at(j).n, pre, tilesList.at(j).record.at(pre).offsets[0], tilesList.at(j).record.at(pre).offsets[1], tilesList.at(j).record.at(pre).offsets[2]);
+            fprintf(pFileLUT, "%ld %ld %ld %ld %ld \n", tilesList.at(j).n, tilesList.at(j).predecessor, tilesList.at(j).record.at(0).offsets[0], tilesList.at(j).record.at(0).offsets[1], tilesList.at(j).record.at(0).offsets[2]);
         }
 
         fclose(pFileLUT);
@@ -1136,7 +1135,7 @@ int mstPrim(vector<indexed_t<T1, T2> > &tilesList)
     //
     T1 size = tilesList.size();
     if(size<1)	return -1;
-    else if(size==1) return true;
+    else if(size==1) return 0;
     else if(size==2)
     {
         //step 1. choose 0 as anchor image
@@ -1171,7 +1170,7 @@ int mstPrim(vector<indexed_t<T1, T2> > &tilesList)
         while(ks(tilesList))
         {
 
-            T1 ni, /* n1, */ n2;
+            T1 ni, n2;
             T2 max_score = 0;
             T1 mse_node; // corresponding maxmum score edge
             T1 parent;
@@ -1183,8 +1182,6 @@ int mstPrim(vector<indexed_t<T1, T2> > &tilesList)
                 if(!tilesList.at(i).visited) continue;
 
                 ni = i;
-
-                //cout<< "test... i "<<i<<endl;
 
                 for(T1 j=1; j<size; j++)
                 {
@@ -1233,7 +1230,7 @@ int mstPrim(vector<indexed_t<T1, T2> > &tilesList)
 
     }
 
-
+    return 0;
 }
 
 // keep searching judgement function

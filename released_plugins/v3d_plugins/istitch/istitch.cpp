@@ -2030,6 +2030,8 @@ int stitching_bb_thickplanes(SDATATYPE *subject1d, V3DLONG *sz_subject1d, SDATAT
     //1: return the score and shift offsets of downsampled images
     //2: rerurn the final score and shift offsets
 
+    qDebug()<<"func stitching_bb_thickplanes ...";
+
     //
     V3DLONG sx = sz_subject1d[0];
     V3DLONG sy = sz_subject1d[1];
@@ -5410,7 +5412,11 @@ int group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
     {
         vim.tilesList.at(i).visited = false;
     }
-    mstPrim(vim.tilesList); // run Prim's algorithm
+    if(mstPrim(vim.tilesList)) // run Prim's algorithm
+    {
+        cout<<"Fail to call MST approach!"<<endl;
+        return false;
+    }
 
     //define threshold of correlation coeffecient score
     //REAL threshold_corr_score = 0.75; //
@@ -5472,6 +5478,11 @@ int group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
 
             V3DLONG current = vim.tilesList.at(i).n;
             V3DLONG previous = vim.tilesList.at(i).predecessor;
+
+            if(vim.tilesList.at(current).visited) // computed
+            {
+                continue;
+            }
 
             //loading subject files
             V3DLONG *sz_subject = 0;
@@ -5601,12 +5612,9 @@ int group_stitching(V3DPluginCallback2 &callback, QWidget *parent)
     for(int i_path=1; i_path<NTILES; i_path++)
     {
         // record final shifts
-        V3DLONG current = vim.tilesList.at(i_path).n;
-        V3DLONG previous = vim.tilesList.at(i_path).predecessor;
-
-        vim.tilesList.at(i_path).record.at(previous).offsets[0] = vim.tilesList.at(current).offsets[0];
-        vim.tilesList.at(i_path).record.at(previous).offsets[1] = vim.tilesList.at(current).offsets[1];
-        vim.tilesList.at(i_path).record.at(previous).offsets[2] = vim.tilesList.at(current).offsets[2];
+        vim.tilesList.at(i_path).record.at(0).offsets[0] = vim.tilesList.at(i_path).offsets[0];
+        vim.tilesList.at(i_path).record.at(0).offsets[1] = vim.tilesList.at(i_path).offsets[1];
+        vim.tilesList.at(i_path).record.at(0).offsets[2] = vim.tilesList.at(i_path).offsets[2];
     }
 
     for(int i_path=1; i_path<NTILES; i_path++)
@@ -8271,9 +8279,9 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 
                 (&vim.tilesList.at(j))->record.push_back(t);
                 
-                qDebug()<<"t offsets ..."<<t.offsets[0]<<t.offsets[1]<<t.offsets[2];
+                qDebug()<<"subimg"<<j<<"tarimg"<<i<<"offsets ..."<<t.offsets[0]<<t.offsets[1]<<t.offsets[2];
                 
-                cout << vim.tilesList.at(i).fn_image << " over " << vim.tilesList.at(j).fn_image << endl;
+                cout << " subject "<< vim.tilesList.at(i).fn_image << " over " << " target " <<vim.tilesList.at(j).fn_image << endl;
                 
                 //de-alloc
                 if(subject1d) {delete []subject1d; subject1d=0;}
@@ -8292,7 +8300,11 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
         {
             vim.tilesList.at(i).visited = false;
         }
-        mstPrim(vim.tilesList); // run Prim's algorithm
+        if(mstPrim(vim.tilesList)) // run Prim's algorithm
+        {
+            cout<<"Fail to call MST approach!"<<endl;
+            return false;
+        }
         
         //define threshold of correlation coeffecient score
         //REAL threshold_corr_score = 0.75; //
@@ -8354,18 +8366,22 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 
                 V3DLONG current = vim.tilesList.at(i).n;
                 V3DLONG previous = vim.tilesList.at(i).predecessor;
+
+                if(vim.tilesList.at(current).visited) // computed
+                {
+                    continue;
+                }
                 
                 //loading subject files
                 V3DLONG *sz_subject = 0; 
                 int datatype_subject = 0;
                 unsigned char* subject1d = 0;
-                
+
                 if (loadImage(const_cast<char *>(vim.tilesList.at(current).fn_image.c_str()), subject1d, sz_subject, datatype_subject)!=true)
                 {
                     fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n", vim.tilesList.at(current).fn_image.c_str());
                     return false;
                 }
-                
                 V3DLONG sx=sz_subject[0], sy=sz_subject[1], sz=sz_subject[2], sc=sz_subject[3];
                 
                 // try rest of tiles
@@ -8376,7 +8392,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                     V3DLONG *sz_target = 0; 
                     int datatype_target = 0;
                     unsigned char* target1d = 0;
-                    
+
                     if (loadImage(const_cast<char *>(vim.tilesList.at(previous).fn_image.c_str()), target1d, sz_target, datatype_target)!=true)
                     {
                         fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(previous).fn_image.c_str());
@@ -8432,7 +8448,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                         return -1;
                     }
                     if(success!=true) return false;
-                    
+
                     // update offsets of current to previous
                     (&vim.tilesList.at(current))->offsets[0] = pos->x - sx +1;
                     (&vim.tilesList.at(current))->offsets[1] = pos->y - sy +1;
@@ -8443,7 +8459,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                     //
                     current = previous;
                     previous = vim.tilesList.at(current).predecessor;
-                    
+
                     //de-alloc
                     if(subject1d) {delete []subject1d; subject1d=0;}
                     if(sz_subject) {delete []sz_subject; sz_subject=0;}
@@ -8460,14 +8476,11 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                     }
                     
                 }
-                
-                
-            }
-            
+            } 
         }
         //de-alloc
-        if(scale) {delete []scale; scale=0;}
-        
+        y_del<REAL>(scale);
+
         // adjusting offset reference to ref. image
         // compute accumulate offsets from path list
         int ref_image = vim.tilesList.at(0).n;
@@ -8483,12 +8496,9 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
         for(int i_path=1; i_path<NTILES; i_path++)
         {
             // record final shifts
-            V3DLONG current = vim.tilesList.at(i_path).n;
-            V3DLONG previous = vim.tilesList.at(i_path).predecessor;
-
-            vim.tilesList.at(i_path).record.at(previous).offsets[0] = vim.tilesList.at(current).offsets[0];
-            vim.tilesList.at(i_path).record.at(previous).offsets[1] = vim.tilesList.at(current).offsets[1];
-            vim.tilesList.at(i_path).record.at(previous).offsets[2] = vim.tilesList.at(current).offsets[2];
+            vim.tilesList.at(i_path).record.at(0).offsets[0] = vim.tilesList.at(i_path).offsets[0];
+            vim.tilesList.at(i_path).record.at(0).offsets[1] = vim.tilesList.at(i_path).offsets[1];
+            vim.tilesList.at(i_path).record.at(0).offsets[2] = vim.tilesList.at(i_path).offsets[2];
         }
         
         for(int i_path=1; i_path<NTILES; i_path++)
