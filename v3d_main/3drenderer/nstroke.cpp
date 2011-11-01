@@ -1882,7 +1882,11 @@ void Renderer_gl1::smoothLagrange(vector <XYZ> inPoints, vector <XYZ> & outPoint
      outPoints.clear();
 
      // compute multipliers
-     double multipliers[pointsCount][numberOfSegments];
+	 // dynamically allocate a 2D array
+	 double** multipliers = new double *[pointsCount];
+	 for(int pc=0; pc<pointsCount; pc++)
+		 multipliers[pc]=new double[numberOfSegments];		
+
      double pointCountMinusOne = (double)(pointsCount - 1);
 
      for (int currentStep = 0; currentStep <= numberOfSegments; currentStep++)
@@ -1921,6 +1925,11 @@ void Renderer_gl1::smoothLagrange(vector <XYZ> inPoints, vector <XYZ> & outPoint
           // save this newPoint as a control point in curve
           outPoints.push_back(newPoint);
      }
+
+	 // free memory
+	 for(int pc=0; pc<pointsCount; pc++)
+		 delete [] multipliers[pc];
+	 delete [] multipliers;
 }
 
 
