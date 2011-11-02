@@ -3092,7 +3092,7 @@ template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IM
     //fftwf_plan_with_nthreads(PROCESSORS);
 
     fftwf_plan p;
-    T2 x=0,y=0,z=0;
+    T1 x=0,y=0,z=0;
 
     if(fftwf_in_place)
     {
@@ -3206,17 +3206,35 @@ template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IM
     T1 sign_y = 1.0;
     T1 sign_z = 1.0;
 
-    if(dimx%2==0) sign_x = -1.0;
-    if(dimy%2==0) sign_y = -1.0;
-    if(dimz%2==0) sign_z = -1.0;
+    if(sx_pad%2==0) sign_x = -1.0;
+    if(sy_pad%2==0) sign_y = -1.0;
+    if(sz_pad%2==0) sign_z = -1.0;
+
+    qDebug()<<"test ..."<<sign_x<<sign_y<<sign_z;
 
     pos->x = x + (pOut.pImg[idxcur+xp])/(pOut.pImg[idxcur+xp] + sign_x * pOut.pImg[idxcur]);
+
+    if(y_abs<T1>(pos->x-x)>1) // result should be in the interval [-1, 1]
+    {
+        sign_x *= -1.0;
+        pos->x = x + (pOut.pImg[idxcur+xp])/(pOut.pImg[idxcur+xp] + sign_x * pOut.pImg[idxcur]);
+    }
+
     pos->y = y + (pOut.pImg[idxcur+yp])/(pOut.pImg[idxcur+yp] + sign_y * pOut.pImg[idxcur]);
+
+    if(y_abs<T1>(pos->y-y)>1)
+    {
+        sign_y *= -1.0;
+        pos->y = y + (pOut.pImg[idxcur+yp])/(pOut.pImg[idxcur+yp] + sign_y * pOut.pImg[idxcur]);
+    }
+
     pos->z = z + (pOut.pImg[idxcur+zp])/(pOut.pImg[idxcur+zp] + sign_z * pOut.pImg[idxcur]);
-    
-    if(pos->x > dimx/2) pos->x -= dimx;
-    if(pos->y > dimy/2) pos->y -= dimy;
-    if(pos->z > dimz/2) pos->z -= dimz;
+
+    if(y_abs<T1>(pos->z-z)>1)
+    {
+        sign_z *= -1.0;
+        pos->z = z + (pOut.pImg[idxcur+zp])/(pOut.pImg[idxcur+zp] + sign_z * pOut.pImg[idxcur]);
+    }
     
     qDebug()<<"subspace shifts ... "<<pos->x<<pos->y<<pos->z;
 
