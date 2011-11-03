@@ -2063,7 +2063,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
   </action>
   <action name="actionDynamic_range">
    <property name="text">
-    <string>Dynamic range...</string>
+    <string>Data colors...</string>
    </property>
   </action>
  </widget>

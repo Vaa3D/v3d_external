@@ -66,6 +66,8 @@ public:
         qreal getChannelGamma(int channel) const;
         qreal getChannelHdrMin(int channel) const;
         qreal getChannelHdrMax(int channel) const;
+        qreal getChannelDataMin(int channel) const;
+        qreal getChannelDataMax(int channel) const;
         bool getChannelVisibility(int index) const;
     };
 

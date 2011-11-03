@@ -22,12 +22,26 @@ signals:
 public slots:
     void setChannel(int channelIndex);
     void selectColor();
+    void setHdrMin(int min);
+    void setHdrMax(int max);
+    void setGamma(double gamma);
+    void resetColors();
+
+protected:
+    void updateHdrWidgets();
+    void updateDataRange(qreal min, qreal max);
+    void updateColor();
 
 private:
     Ui::DynamicRangeTool ui;
     size_t currentChannelIndex;
     DataColorModel* dataColorModel;
-    QColor currentChannelColor;
+    QColor channelColor;
+    int channelHdrMin;
+    int channelHdrMax;
+    int channelDataMin;
+    int channelDataMax;
+    double channelGamma;
 };
 
 #endif // DYNAMICRANGETOOL_H

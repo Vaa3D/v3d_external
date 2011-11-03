@@ -36,6 +36,8 @@ public:
     qreal getChannelGamma(int channel) const;
     qreal getChannelHdrMin(int channel) const;
     qreal getChannelHdrMax(int channel) const;
+    qreal getChannelDataMin(int channel) const;
+    qreal getChannelDataMax(int channel) const;
     void colorizeIncremental(
             const DataColorModel::Reader& desiredColorReader,
             const DataColorModel::Reader& currentColorReader);
@@ -71,6 +73,8 @@ public:
         qreal getGamma() const {return gamma;}
         qreal getHdrMin() const {return hdrMin;}
         qreal getHdrMax() const {return hdrMax;}
+        qreal getDataMin() const {return dataMin;}
+        qreal getDataMax() const {return dataMax;}
         void resetColors() {
             setGamma(1.0);
             resetHdrRange();

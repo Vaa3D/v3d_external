@@ -130,6 +130,7 @@ HEADERS += \
     ../neuron_annotator/gui/NaZStackWidget.h \
     ../neuron_annotator/gui/NaLargeMIPWidget.h \
     ../neuron_annotator/gui/DynamicRangeTool.h \
+    ../neuron_annotator/gui/ColorRangeSliderWidget.h \
     ../neuron_annotator/utility/ColorSeparatorConsolidator.h \
     ../neuron_annotator/utility/FileTreeSearcher.h \
     ../neuron_annotator/utility/SingleNeuronLsmSetReader.h \
@@ -245,6 +246,7 @@ SOURCES += \
     ../neuron_annotator/gui/NeuronQAction.cpp \
     ../neuron_annotator/gui/NeuronContextMenu.cpp \
     ../neuron_annotator/gui/DynamicRangeTool.cpp \
+    ../neuron_annotator/gui/ColorRangeSliderWidget.cpp \
     ../neuron_annotator/NeuronSelector.cpp \
     ../neuron_annotator/ExportFile.cpp \
     ../neuron_annotator/utility/JacsUtil.cpp \

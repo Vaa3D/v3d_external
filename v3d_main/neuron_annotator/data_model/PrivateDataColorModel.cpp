@@ -182,6 +182,16 @@ qreal PrivateDataColorModel::getChannelHdrMax(int channel) const {
     return channelColors[channel].getHdrMax();
 }
 
+qreal PrivateDataColorModel::getChannelDataMin(int channel) const
+{
+    return channelColors[channel].getDataMin();
+}
+
+qreal PrivateDataColorModel::getChannelDataMax(int channel) const
+{
+    return channelColors[channel].getDataMax();
+}
+
 qreal PrivateDataColorModel::getReferenceScaledIntensity(qreal raw_intensity) const {
     return getReferenceChannel().getScaledIntensity(raw_intensity);
 }

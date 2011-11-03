@@ -180,6 +180,16 @@ qreal DataColorModel::Reader::getChannelHdrMax(int channel) const
     return d.constData()->getChannelHdrMax(channel);
 }
 
+qreal DataColorModel::Reader::getChannelDataMin(int channel) const
+{
+    return d.constData()->getChannelDataMin(channel);
+}
+
+qreal DataColorModel::Reader::getChannelDataMax(int channel) const
+{
+    return d.constData()->getChannelDataMax(channel);
+}
+
 bool DataColorModel::Reader::getChannelVisibility(int channel) const
 {
     return d.constData()->getChannelVisibility(channel);
