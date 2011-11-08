@@ -18,6 +18,7 @@ shopt -s expand_aliases;
 # 110710: updated by RZC, add -noplugins 
 # 110711: updated by RZC, change ARGS,QARGS to ARG_LIB,ARG_V3D 
 # 110801: updated by RZC, add -norun 
+# 111108: updated by PHC, use vaa3d instead of v3d
 #
 # Arguments:
 #    -jx                        #compile using some 'x' number of processors 
@@ -43,7 +44,7 @@ shopt -s expand_aliases;
 #    sh build.macx -B -n -j4 -T    #rebuild for 32-bit (not depend on order), including the TIF and FFTW libraries
 
 
-V3D_PRO_FILE="v3d.pro"    # default project file for qmake
+V3D_PRO_FILE="vaa3d.pro"    # default project file for qmake
 
 SYSTEMBITS="32"             # default use 32bit libtiff
 TIFFCOMPILE="NO"            # default do not compile libtiff
@@ -134,7 +135,7 @@ for arg in $*; do
       
       ARG_LIB+=" ARCH_x86_64=-archx86_64 " 
 	  ARG_MYLIBTIFF+=" ARCH_x86_64=-archx86_64 " 
-      V3D_PRO_FILE="v3d64.pro"    # project file for qmake
+      V3D_PRO_FILE="vaa3d64.pro"    # project file for qmake
       SYSTEMBITS="64" 
  
       QMAKE_CONFIG+=" CONFIG+=x86_64"
@@ -288,21 +289,21 @@ if [ $DOIT == "YES" ]; then
   touch v3d_version_info.cpp
 
   if [ $SYSTEMBITS == "32" ]; then
-    rm -fr v3d.app
+    rm -fr vaa3d.app
   fi
   if [ $SYSTEMBITS == "64" ]; then
-    rm -fr v3d64.app
+    rm -fr vaa3d64.app
   fi
 
   make  $ARG_V3D 
   
   if [ $SYSTEMBITS == "32" ]; then
-    cp v3d.icns v3d.app/Contents/Resources/.  
-    cp v3d.Info.plist v3d.app/Contents/Info.plist
+    cp v3d.icns vaa3d.app/Contents/Resources/vaa3d.icns  
+    cp v3d.Info.plist vaa3d.app/Contents/Info.plist
   fi
   if [ $SYSTEMBITS == "64" ]; then
-    cp v3d.icns v3d64.app/Contents/Resources/.  
-    cp v3d64.Info.plist v3d64.app/Contents/Info.plist
+    cp v3d.icns v3d64.app/Contents/Resources/vaa3d.icns  
+    cp v3d64.Info.plist vaa3d64.app/Contents/Info.plist
   fi
   
   cd ../
@@ -312,14 +313,14 @@ fi
 
 if [ $DOIT == "YES" ]; then
   if [ $SYSTEMBITS == "32" ]; then
-    rm -fr ../v3d/v3d.app
-    cp -r ./v3d/v3d.app ../v3d/.   #copy to the executable folder
+    rm -fr ../v3d/vaa3d.app
+    cp -r ./v3d/vaa3d.app ../v3d/.   #copy to the executable folder
 #    rm -fr ../v3d/v3d
 #    cp -r ./v3d/v3d ../v3d/.   #copy to the executable folder
   fi
   if [ $SYSTEMBITS == "64" ]; then
-    rm -fr ../v3d/v3d64.app
-    cp -r ./v3d/v3d64.app ../v3d/. #copy to the executable folder
+    rm -fr ../v3d/vaa3d64.app
+    cp -r ./v3d/vaa3d64.app ../v3d/. #copy to the executable folder
 #    rm -fr ../v3d/v3d64
 #    cp -r ./v3d/v3d64 ../v3d/. #copy to the executable folder
   fi  
@@ -358,11 +359,11 @@ fi
 
 if [ $DOIT == "YES" ] && [ $SKIPV3DAPP == "NO" ]; then
   if [ $SYSTEMBITS == "32" ]; then
-    open v3d/v3d.app &
+    open v3d/vaa3d.app &
 #    open v3d/v3d &
   fi
   if [ $SYSTEMBITS == "64" ]; then
-    open v3d/v3d64.app &
+    open v3d/vaa3d64.app &
 #    open v3d/v3d64 &
   fi
 fi
