@@ -78,12 +78,12 @@ make -f jba.makefile $ARGS
 cd ../../
 
 cd v3d
-echo qmake v3d.pro \"$QARGS\"
+echo qmake vaa3d.pro \"$QARGS\"
 echo =========================================================
-qmake v3d.pro $QARGS
+qmake vaa3d.pro $QARGS
 touch v3d_version_info.cpp
 make $ARGS
-cp v3d ../../v3d/.   #copy to the system's v3d folder
+cp vaa3d ../../v3d/.   #copy to the system's v3d folder
 cd ../
 
 
@@ -96,5 +96,5 @@ cd ../v3d_main
 cd ../v3d
 echo "Now run V3D..."
 export LD_LIBRARY_PATH=../v3d_main/common_lib/lib
-./v3d
+./vaa3d
 
