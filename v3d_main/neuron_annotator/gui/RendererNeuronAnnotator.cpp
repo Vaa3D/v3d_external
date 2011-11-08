@@ -45,6 +45,17 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     setAlphaBlending(false);
 }
 
+static void turn_off_specular()
+{
+    // attempt to turn off specular lighting
+    float black_color[4] = {0,0,0,0};
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, black_color);
+    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, black_color);
+    glLightfv(GL_LIGHT1, GL_SPECULAR, black_color);
+    glLightfv(GL_LIGHT2, GL_SPECULAR, black_color);
+}
+
 RendererNeuronAnnotator::~RendererNeuronAnnotator()
 {
     // TODO - what about all those texture3Dwhatever?  When are those deleted?
@@ -1198,6 +1209,7 @@ void RendererNeuronAnnotator::paint()
 // Copied from Renderer_gl1::paint() 27 Sep 2011 CMB
 void RendererNeuronAnnotator::paint_mono()
 {
+        // turn_off_specular();
         //qDebug(" Renderer_gl1::paint(renderMode=%i)", renderMode);
 
         if (b_error) return; //080924 try to catch the memory error
@@ -1239,7 +1251,9 @@ void RendererNeuronAnnotator::paint_mono()
                 else if (polygonMode==2)  glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
                 else                      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+                turn_off_specular();
                 setObjLighting();
+                turn_off_specular();
 
                 if (sShowSurfObjects>0)
                 {

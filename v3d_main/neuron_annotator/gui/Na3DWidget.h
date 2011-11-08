@@ -181,6 +181,7 @@ protected:
     bool bHasQuadStereo;
     bool bShowCornerAxes;
     bool bAlphaBlending;
+    bool bClickIsWaiting;
 };
 
 #endif // NA3DWIDGET_H

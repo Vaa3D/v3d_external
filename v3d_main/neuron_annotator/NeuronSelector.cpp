@@ -247,7 +247,7 @@ void NeuronSelector::updateSelectedPosition(double x, double y, double z)
         ylc = y + 0.5;
         zlc = z + 0.5;
 	
-	qDebug()<<"test signal/slot passing parameters ..."<<xlc<<ylc<<zlc;
+        // qDebug()<<"test signal/slot passing parameters ..."<<xlc<<ylc<<zlc;
 	
 	//
         index = getIndexSelectedNeuron();

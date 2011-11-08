@@ -16,6 +16,7 @@ Na3DWidget::Na3DWidget(QWidget* parent)
         , viewerContextMenu(NULL)
         , neuronContextMenu(NULL)
         , bShowCornerAxes(true)
+        , bClickIsWaiting(false)
 {
     if (renderer) {
         delete renderer;
@@ -133,7 +134,7 @@ void Na3DWidget::clearLandmarks()
 /* slot */
 void Na3DWidget::setLandmarks(const QList<ImageMarker> landmarks)
 {
-    qDebug() << "Na3DWidget::setLandmarks" << landmarks.size();
+    // qDebug() << "Na3DWidget::setLandmarks" << landmarks.size();
     if (! getRendererNa()) return;
     getRendererNa()->setLandmarks(landmarks);
     updateHighlightNeurons();
@@ -232,6 +233,10 @@ void Na3DWidget::translateImage(int dx, int dy)
 void Na3DWidget::updateCursor()
 {
     // qDebug() << "updateCursor()";
+    if(bClickIsWaiting) {
+        setCursor(Qt::BusyCursor);
+        return;
+    }
     if ( (QApplication::keyboardModifiers() & Qt::ShiftModifier) )
     { // shift drag to translate
         if (QApplication::mouseButtons() & Qt::LeftButton)
@@ -394,18 +399,21 @@ void Na3DWidget::onMouseSingleClick(QPoint pos)
 {
     // qDebug() << "single left click!";
     highlightNeuronAtPosition(pos);
+    bClickIsWaiting = false; // turn off busy cursor
     updateCursor();
 }
 
 void Na3DWidget::onPossibleSingleClickAlert()
 {
     // Immediate visual feedback that a click has been initiated
-    // qDebug() << "possible single click";
-    setCursor(Qt::BusyCursor);
+    qDebug() << "possible single click";
+    bClickIsWaiting = true; // busy cursor
+    updateCursor();
 }
 
 void Na3DWidget::onNotSingleClick()
 {
+    bClickIsWaiting = false; // turn off busy cursor
     updateCursor();
 }
 
@@ -539,7 +547,7 @@ void Na3DWidget::highlightNeuronAtPosition(QPoint pos)
     // select neuron: set x, y, z and emit signal
     // qDebug()<<"emit a signal ...";
     emit neuronSelected(loc.x, loc.y, loc.z);
-    update(); // TODO - this update() should be postponed until the response to whatever happens after neuronSelected(...) completes.
+    // update(); // TODO - this update() should be postponed until the response to whatever happens after neuronSelected(...) completes.
 }
 
 // Zoom using mouse wheel
