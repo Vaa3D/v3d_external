@@ -60,30 +60,30 @@ namespace v3d {
 void v3d_aboutinfo()
 {
     QString helptext =
-        "<H3>V3D: A Swiss army knife for 3D/4D/5D volume image and surface visualization and processing, developed by Hanchuan Peng, Zongcai Ruan, Fuhui Long, et al. (JFRC, HHMI). All rights reserved.</H3> "
+        "<H3>Vaa3D: A Swiss army knife for 3D/4D/5D volume image and surface visualization and processing, developed by Hanchuan Peng, Zongcai Ruan, Fuhui Long, et al. (JFRC, HHMI). All rights reserved.</H3> "
 //      "<H3><span style=\"color:#FF0000\">If you are seeing this red color information, you are using an alpha-testing version of V3D. If you experience any problem, please contact Hanchuan Peng. </span></H3> "
-        "If you have used V3D in your research and would like to cite it, please cite as the following: <br><br>"
-        "<span style=\"color:#0000FF\">Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) \"V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,\" Nature Biotechnology, Vol. 28, No. 4, pp.348-353, DOI: 10.1038/nbt.1612. (http://penglab.janelia.org/proj/v3d) </span><br> "
+        "If you have used Vaa3D in your research and would like to cite it, please cite as the following: <br><br>"
+        "<span style=\"color:#0000FF\">Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) \"V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,\" Nature Biotechnology, Vol. 28, No. 4, pp.348-353, DOI: 10.1038/nbt.1612. (http://penglab.janelia.org/proj/vaa3d) </span><br> "
         "<br>"
-        "For the latest information/help and further documentations, visit the V3D website <a href=\"http://penglab.janelia.org/proj/v3d\">http://penglab.janelia.org/proj/v3d</a><br>"
+        "For the latest information/help and further documentations, visit the Vaa3D website <a href=\"http://penglab.janelia.org/proj/vaa3d\">http://penglab.janelia.org/proj/vaa3d</a><br>"
         "<br>============================================="
         "<H1>Help Information</H1>"
         "=============================================<br>"
         "Most functions of this software should be intuitive and easy to use. A few short-cuts are listed below.<br>"
         "<H3>Supported file types</H3>"
-        "You can also download a Matlab toolbox to read and write most of the basic data formats at the V3D website <a href=\"http://penglab.janelia.org/proj/v3d\">http://penglab.janelia.org/proj/v3d</a>."
+        "You can also download a Matlab toolbox to read and write most of the basic data formats at the Vaa3D website <a href=\"http://penglab.janelia.org/proj/vaa3d\">http://penglab.janelia.org/proj/vaa3d</a>."
         "<br><table border=\"1\">"
         "<tr><td>.TIF, .TIFF, .LSM (Tiff and LSM stacks) </td><td>3D image stacks. </td></tr>"
-        "<tr><td>.RAW (V3D's RAW) </td><td>a simple raw file which supports 8-bit unsigned char, 16-bit unsigned short, 32-bit single-precision float 4D image stacks. </td></tr>"
+        "<tr><td>.RAW (Vaa3D's RAW) </td><td>a simple raw file which supports 8-bit unsigned char, 16-bit unsigned short, 32-bit single-precision float 4D image stacks. </td></tr>"
         "<tr><td>.TIF (Series 2D tiff section) </td><td>the Leica scope produced series tiff files can be imported. </td></tr>"
         "<tr><td>.SWC </td><td>reconstructed neurons or other relational data which can be described as a graph. </td></tr>"
         "<tr><td>.APO </td><td>point cloud file used in WANO to describe the cells and any other image objects. </td></tr>"
-        "<tr><td>.V3DS, .OBJ </td><td>surface object files. OBJ file is ASCII description of surface objects, which will be slow in opening but can be read by other software; V3DS is binary representation of surface and much faster to load. </td></tr>"
+        "<tr><td>.VAA3DS, .OBJ </td><td>surface object files. OBJ file is ASCII description of surface objects, which will be slow in opening but can be read by other software; VAA3DS is binary representation of surface and much faster to load. </td></tr>"
         "<tr><td>.ANO </td><td>the linker file which contains file names of other heterogeneous files. </td></tr>"
         "<tr><td>.MARKER </td><td>the landmark recording file (which is just a plain csv file with a specified format). </td></tr>"
         "<tr><td>.ATLAS </td><td>the linker file which contains a list of image-stack file names that can be opened using the atlas manager. </td></tr>"
         "<tr><td>.PC_ATLAS </td><td>the linker file which contains a list of point cloud files names for the point cloud atlas. </td></tr>"
-                                    "<tr><td>.ZIP </td><td>on Mac and Linux the .zip files of the above V3D file formats can be opened automatically. </td></tr>"
+                                    "<tr><td>.ZIP </td><td>on Mac and Linux the .zip files of the above Vaa3D file formats can be opened automatically. </td></tr>"
         "</table><br>"
         "<H3>Keyboard operations</H3>"
         "When any view of images is active, the following short-cut keys can be used. </td></tr>"
@@ -94,7 +94,7 @@ void v3d_aboutinfo()
         "<tr><td>I </td><td>Zoom-in by a factor 2.</td></tr>"
         "<tr><td>O </td><td>Zoom-out by a a factor 2 (will not be effective if any displayed dimension of an image is <=1 pixel.</td></tr>"
         "<tr><td>1/2/3/4 </td><td>set the tri-view zoom to x1 (no zoom-in or out) or x2, x3, x4 zoom. The windows may be zipped together but can be expaned by either slightly resizing the window boundary or click the cascade menu</td></tr>"
-        "<tr><td>Ctrl-O (Windows, Linux) or Cmd-O (Mac) </td><td>Open an image stack. Note that you can also directly drag and drop an image file (Tiff stack or LSM or Hanchuan Peng's RAW files) into V3D to open it. </td></tr>"
+        "<tr><td>Ctrl-O (Windows, Linux) or Cmd-O (Mac) </td><td>Open an image stack. Note that you can also directly drag and drop an image file (Tiff stack or LSM or Hanchuan Peng's RAW files) into Vaa3D to open it. </td></tr>"
         "<tr><td>Ctrl-I (Windows, Linux) or Cmd-I (Mac) </td><td>Import Leica tiff series as an image stack. </td></tr>"
         "<tr><td>Ctrl-S (Windows, Linux) or Cmd-S (Mac) </td><td>Save image file. </td></tr>"
         "<tr><td>Ctrl-C (Windows, Linux) or Cmd-C (Mac) </td><td>Crop image based on the Region Of Interest (ROI) defined (see the Ctrl-click mouse operation to edit the ROI). </td></tr>"
@@ -174,10 +174,10 @@ void v3d_aboutinfo()
         "</table><br>"
 
         "<H3>Some known problems</H3>"
-        "So far V3D has been tested on hundreds of machines with different software/hardware environments; in most cases (Mac, Linux, Windows) the software has a nice performance. Yet the following are some known problems.<br>"
+        "So far Vaa3D has been tested on hundreds of machines with different software/hardware environments; in most cases (Mac, Linux, Windows) the software has a nice performance. Yet the following are some known problems.<br>"
         "<br><table border=\"1\">"
-	    "<tr><td>Mac machines with Snow Leopard (Mac OS X 10.6.8) and try to run a Linux version of V3D throught X-Window: </td>     <td>The 3D viewer window cannot be launched properly. This seems to be a Snow Leopard bug with X-Windows, as the Linux version of V3D's 3D viewer can run w/o a problem for other Mac OS (e.g. Leopard, i.e. OS X 10.5) and other tested Linux machines (e.g. redhar). </td></tr>"
-        "<tr><td>Mac machines with Tiger (Mac OS X 10.4) and defective NVIDIA GeForce 7300GT video cards</td>     <td>GeForce 7300GT does not support multisampling while it claims to be. This incompatibility makes 3D viewer run very slow. A special V3D version disables the multipling support on this video card solves the problem.</td></tr>"
+	    "<tr><td>Mac machines with Snow Leopard (Mac OS X 10.6.8) and try to run a Linux version of Vaa3D throught X-Window: </td>     <td>The 3D viewer window cannot be launched properly. This seems to be a Snow Leopard bug with X-Windows, as the Linux version of Vaa3D's 3D viewer can run w/o a problem for other Mac OS (e.g. Leopard, i.e. OS X 10.5) and other tested Linux machines (e.g. redhar). </td></tr>"
+        "<tr><td>Mac machines with Tiger (Mac OS X 10.4) and defective NVIDIA GeForce 7300GT video cards</td>     <td>GeForce 7300GT does not support multisampling while it claims to be. This incompatibility makes 3D viewer run very slow. A special Vaa3D version disables the multipling support on this video card solves the problem.</td></tr>"
         "<tr><td>MacBook Pro with Tiger (Mac OS X 10.4) and defective NVIDIA GeForce 8600MGT video card driver</td>     <td>Sometimes the labels of markers may be hidden in the 3D volume image rendering. Upgrage to Leopard OS (and thus also upgrade Mac OpenGL driver) solves the problem.</td></tr>"
         "<tr><td>MacBook Pro with Tiger (Mac OS X 10.4) and defective NVIDIA GeForce 8600MGT video card driver</td>     <td>The 5D rendering displays abnormal patterns due to a problem in 3D texture of the video card driver. </td></tr>"
         "<tr><td>Some Windows machines cannot display the 3D viewer</td>     <td>Some video card drivers report that it supports OpenGL 2.0, but actually it cannot support. Try to press Ctrl-Shift-G to disable OpenGL 2.0 functions used.  </td></tr>"
@@ -187,7 +187,7 @@ void v3d_aboutinfo()
         "Jan 31 (v2.449), Feb-Dec (v2.4-v2.5), 2010; Jan - Aug (v2.6), 2011. "
         "All rights reserved.<br><br> "
         "Version Note: if you see a version number followed by a letter (e.g. 1.80a), this is a customized build for a particular research lab. "
-        "V3D also have additional image analysis modules, for further information, contact Hanchuan Peng.<br><br>";
+        "Vaa3D also have additional image analysis modules, for further information, contact Hanchuan Peng.<br><br>";
 
     //QMessageBox::information(0, versionnumber, versionnumber + "<br>" + helptext);
 
@@ -215,9 +215,9 @@ void v3d_aboutinfo()
 
 void v3d_Lite_info()
 {
-	QString helptext =      "<H2><span style=\"color:#0000FF\">You are using the </span><span style=\"color:#FF0000\">V3D Lite</span>.<span style=\"color:#0000FF\"> "
+	QString helptext =      "<H2><span style=\"color:#0000FF\">You are using the </span><span style=\"color:#FF0000\">Vaa3D Lite</span>.<span style=\"color:#0000FF\"> "
 							"Most 3D visualization modules have been enabled. However the 3D data/image processing modules have been disabled. "
-							"To enable these tools (and disable this message), you can <span style=\"color:#FF0000\">register as a V3D Pro user for free</span> at http://penglab.janelia.org/proj/v3d </span></H2>";
+							"To enable these tools (and disable this message), you can <span style=\"color:#FF0000\">register as a Vaa3D Pro user for free</span> at http://penglab.janelia.org/proj/v3d </span></H2>";
 
 	//QMessageBox::information(0, versionnumber, versionnumber + "<br>" + helptext);
 
@@ -421,7 +421,7 @@ QString V3DVersionChecker::getDefaultV3DVersionXmlFileName() {
 QString V3DVersionChecker::getDefaultV3DVersionUrl()
 {
     // return "http://brunsc-wm1.janelia.priv/~brunsc/v3d/stable_version/" // testing
-    return "http://penglab.janelia.org/proj/v3d/stable_version/"
+    return "http://penglab.janelia.org/proj/vaa3d/stable_version/"
             + getPlatformString() + "/"
             + getDefaultV3DVersionXmlFileName();
 }
@@ -446,7 +446,7 @@ void V3DVersionChecker::createVersionXml()
     QString defaultPath = defaultDir.filePath(getDefaultV3DVersionXmlFileName());
 
     QString xmlFile = QFileDialog::getSaveFileName(guiParent,
-            tr("Save V3D version xml file"),
+            tr("Save Vaa3D version xml file"),
             defaultPath,
             tr("XML files (*.xml)"));
 
@@ -507,7 +507,7 @@ void V3DVersionChecker::checkForLatestVersion(bool b_verbose)
 
     QUrl xmlFileUrl(getDefaultV3DVersionUrl()); // begin by assuming default
     // Is there already a setting for the url?
-	QSettings settings("HHMI", "V3D");
+	QSettings settings("HHMI", "Vaa3D");
     QString versionUrl = settings.value("versionUrl").toString();
     if (versionUrl.length() > 0) xmlFileUrl = versionUrl;
 
@@ -537,7 +537,7 @@ void V3DVersionChecker::checkForLatestVersion(bool b_verbose)
 // we want to give the user another chance to verify the "Never".
 bool V3DVersionChecker::userSelectedNeverUpdateInAnOlderVersionOfV3D()
 {
-    QSettings settings("HHMI", "V3D");
+    QSettings settings("HHMI", "Vaa3D");
     QVariant checkIntervalVariant =
             settings.value("updateCheckInterval");
     if (! checkIntervalVariant.isValid())
@@ -558,7 +558,7 @@ bool V3DVersionChecker::userSelectedNeverUpdateInAnOlderVersionOfV3D()
 
 /* static */ void V3DVersionChecker::never_update()
 {
-    QSettings settings("HHMI", "V3D");
+    QSettings settings("HHMI", "Vaa3D");
     settings.setValue("updateCheckInterval", -1); // never
     settings.setValue( "latestNeverUpdateVersion",
             (double)(v3d::thisVersionOfV3D.toFloat()) );
@@ -578,7 +578,7 @@ bool V3DVersionChecker::shouldCheckNow()
 
     bool bCheckNow = true; // default is to check for updates
     // Load relevant persistent variables from Qt cache
-	QSettings settings("HHMI", "V3D");
+	QSettings settings("HHMI", "Vaa3D");
     QVariant latestCheckVariant = settings.value("timeOfLatestUpdateCheck");
     QVariant checkIntervalVariant = settings.value("updateCheckInterval");
     // Use default behavior unless persistent variables are set
@@ -589,7 +589,7 @@ bool V3DVersionChecker::shouldCheckNow()
         if (checkInterval == 0) // zero means "always"
             bCheckNow = true; // redundant, as true is the default
         else if (checkInterval < 0) { // negative means "never"
-            v3d_msg("V3D is set to NEVER check for updates.",0);
+            v3d_msg("Vaa3D is set to NEVER check for updates.",0);
             bCheckNow = false;
         }
         else {
@@ -623,7 +623,7 @@ void V3DVersionChecker::gotVersion(QNetworkReply* reply)
         if (b_showAllMessages) {
             if (checkingDialog) checkingDialog->close();
             QMessageBox::information(guiParent,
-                    "Unable to connect to V3D server",
+                    "Unable to connect to Vaa3D server",
                     "Could not get latest version information.\n"
                     "Please try again later;\nOr double check the version URL in the Updates->Options... menu.");
         }
@@ -634,7 +634,7 @@ void V3DVersionChecker::gotVersion(QNetworkReply* reply)
     // If we get this far, consider the update "checked" for the purpose
     // of update check timeout interval.  In particular, even if the update
     // file is unparsable, don't necessarily check again immediately.
-	QSettings settings("HHMI", "V3D");
+	QSettings settings("HHMI", "Vaa3D");
     settings.setValue("timeOfLatestUpdateCheck", QDateTime::currentDateTime());
 
     // CMB Oct-22-2010
@@ -740,8 +740,8 @@ void V3DVersionChecker::processVersionXmlFile(const QDomDocument& versionDoc)
         {
             QMessageBox *upToDateBox = new QMessageBox(
                     QMessageBox::Information,
-                    "V3D is more than up to date",
-                    "You are using a future version of V3D or plugins",
+                    "Vaa3D is more than up to date",
+                    "You are using a future version of Vaa3D or plugins",
                     QMessageBox::Ok,
                     guiParent);
             QPushButton* openButton = upToDateBox->addButton(tr("Open updater anyway..."), QMessageBox::ActionRole);
@@ -759,8 +759,8 @@ void V3DVersionChecker::processVersionXmlFile(const QDomDocument& versionDoc)
         {
             QMessageBox *upToDateBox = new QMessageBox(
                     QMessageBox::Information,
-                    "V3D is up to date",
-                    "You are using the latest version of V3D",
+                    "Vaa3D is up to date",
+                    "You are using the latest version of Vaa3D",
                     QMessageBox::Ok,
                     guiParent);
             QPushButton* openButton = upToDateBox->addButton(tr("Open updater anyway..."), QMessageBox::ActionRole);
@@ -824,7 +824,7 @@ void V3DVersionChecker::install_updates()
     progressDialog->progressBar->setMaximum(2 * installCount); // zero means "unknown"
     progressDialog->progressBar->setValue(0);
 
-    qDebug() << "installing V3D software updates...";
+    qDebug() << "installing Vaa3D software updates...";
 
     // Kick off the first update
     firstUpdateItem->startUpdate(progressDialog);
@@ -1098,7 +1098,7 @@ UpdateOptionsDialog::UpdateOptionsDialog(QWidget* guiParent)
     redPalette->setColor(QPalette::Text, QColor(255, 0, 0)); // red text
 
     // Sync with current update frequency
-    QSettings settings("HHMI", "V3D");
+    QSettings settings("HHMI", "Vaa3D");
     QVariant checkIntervalVariant = settings.value("updateCheckInterval");
     if ( checkIntervalVariant.isValid() )
     {
@@ -1121,7 +1121,7 @@ UpdateOptionsDialog::UpdateOptionsDialog(QWidget* guiParent)
     if (openButton) {
         v3d::OpenV3dWebPageAction *action = new
                 v3d::OpenV3dWebPageAction(this);
-        openButton->setText(tr("Open V3D download page"));
+        openButton->setText(tr("Open Vaa3D download page"));
         connect(openButton, SIGNAL(clicked()), action, SLOT(trigger()));
     }
 
@@ -1155,7 +1155,7 @@ void UpdateOptionsDialog::use_default_version_file()
     QString defUrl = V3DVersionChecker::getDefaultV3DVersionUrl();
     lineEdit->setText(defUrl);
     // Use default setting in the future, as well.
-	QSettings settings("HHMI", "V3D");
+	QSettings settings("HHMI", "Vaa3D");
     settings.setValue("versionUrl", defUrl);
 }
 
@@ -1169,7 +1169,7 @@ void UpdateOptionsDialog::on_comboBox_currentIndexChanged(const QString& updateF
 {
     // Store update interval in the persistent cache
     qDebug() << "Changing update frequency to " << updateFrequency;
-    QSettings settings("HHMI", "V3D");
+    QSettings settings("HHMI", "Vaa3D");
     if (updateFrequency == tr("never"))
         V3DVersionChecker::never_update();
     else if (updateFrequency == tr("every time"))
@@ -1188,7 +1188,7 @@ void UpdateOptionsDialog::on_comboBox_currentIndexChanged(const QString& updateF
 void UpdateOptionsDialog::on_lineEdit_editingFinished() {
     // Save new url
     // v3d_msg("New version file = " + lineEdit->text(), 0);
-	QSettings settings("HHMI", "V3D");
+	QSettings settings("HHMI", "Vaa3D");
     settings.setValue("versionUrl", lineEdit->text());
 }
 
@@ -1217,10 +1217,10 @@ UpdatesAvailableDialog::UpdatesAvailableDialog(QWidget *parent)
     QPixmap pIconPixmap = appIcon.pixmap(75,75);
     setIconPixmap(pIconPixmap);
     setText(tr("There are updates available."));
-    setInformativeText("Do you want to start the V3D updater now?");
+    setInformativeText("Do you want to start the Vaa3D updater now?");
     // setDetailedText("The V3D team periodically makes software improvements. "
     //         "Click 'Yes' to install recent improvements now.");
-    setWindowTitle(tr("V3D software update check"));
+    setWindowTitle(tr("Vaa3D software update check"));
     setSizeGripEnabled(false);
 
     QPushButton *noButton = addButton( tr("Remind me later"), QMessageBox::RejectRole);
@@ -1240,7 +1240,7 @@ void UpdatesAvailableDialog::never_update()
 
 void UpdatesAvailableDialog::remind_me_later()
 {
-    QSettings settings("HHMI", "V3D");
+    QSettings settings("HHMI", "Vaa3D");
     int interval = settings.value("updateCheckInterval").toInt();
     if (interval < 0) // if set to never
         // run again when user starts V3D, but not for at least 5 minutes.
