@@ -298,12 +298,12 @@ if [ $DOIT == "YES" ]; then
   make  $ARG_V3D 
   
   if [ $SYSTEMBITS == "32" ]; then
-    cp v3d.icns vaa3d.app/Contents/Resources/vaa3d.icns  
-    cp v3d.Info.plist vaa3d.app/Contents/Info.plist
+    cp vaa3d.icns vaa3d.app/Contents/Resources/.
+    cp vaa3d.Info.plist vaa3d.app/Contents/Info.plist
   fi
   if [ $SYSTEMBITS == "64" ]; then
-    cp v3d.icns v3d64.app/Contents/Resources/vaa3d.icns  
-    cp v3d64.Info.plist vaa3d64.app/Contents/Info.plist
+    cp vaa3d.icns v3d64.app/Contents/Resources/.  
+    cp vaa3d64.Info.plist vaa3d64.app/Contents/Info.plist
   fi
   
   cd ../
@@ -315,14 +315,10 @@ if [ $DOIT == "YES" ]; then
   if [ $SYSTEMBITS == "32" ]; then
     rm -fr ../v3d/vaa3d.app
     cp -r ./v3d/vaa3d.app ../v3d/.   #copy to the executable folder
-#    rm -fr ../v3d/v3d
-#    cp -r ./v3d/v3d ../v3d/.   #copy to the executable folder
   fi
   if [ $SYSTEMBITS == "64" ]; then
     rm -fr ../v3d/vaa3d64.app
     cp -r ./v3d/vaa3d64.app ../v3d/. #copy to the executable folder
-#    rm -fr ../v3d/v3d64
-#    cp -r ./v3d/v3d64 ../v3d/. #copy to the executable folder
   fi  
 fi
 
@@ -360,11 +356,9 @@ fi
 if [ $DOIT == "YES" ] && [ $SKIPV3DAPP == "NO" ]; then
   if [ $SYSTEMBITS == "32" ]; then
     open v3d/vaa3d.app &
-#    open v3d/v3d &
   fi
   if [ $SYSTEMBITS == "64" ]; then
     open v3d/vaa3d64.app &
-#    open v3d/v3d64 &
   fi
 fi
 

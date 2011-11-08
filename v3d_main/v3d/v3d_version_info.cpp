@@ -51,9 +51,9 @@ namespace v3d {
     // Set current version here.
     VersionInfo thisVersionOfV3D(2.706);
 
-    QString versionnumber = "V3D (" +
+    QString versionnumber = "Vaa3D (3D Visualization-Assisted Analysis) (" +
         thisVersionOfV3D.toQString() +
-        "), V3D-Neuron (2.0), V3D Plugin Interface (2.1) ";
+        "), Vaa3D-Neuron (2.0), Vaa3D Plugin Interface (2.1) ";
 }
 
 
