@@ -97,9 +97,9 @@ int ConsoleObserverServiceImpl::ontologyChanged(LONG64 rootId, struct fw__ontolo
     return SOAP_OK;
 }
 
-int ConsoleObserverServiceImpl::entitySelected(LONG64 entityId, struct fw__entitySelectedResponse &response)
+int ConsoleObserverServiceImpl::entitySelected(LONG64 entityId, bool outline, struct fw__entitySelectedResponse &response)
 {
-    emit entitySelected(entityId);
+    emit entitySelected(entityId, outline);
     return SOAP_OK;
 }
 

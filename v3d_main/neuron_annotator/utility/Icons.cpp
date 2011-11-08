@@ -71,7 +71,7 @@ QVariant Icons::getIcon(Entity *entity)
     else if (type=="Sample") {
         return getIcon("beaker.png");
     }
-    else if (type=="Tif 2D Image") {
+    else if (type=="Tif 2D Image" || type=="Image 2D") {
         return getIcon("image.png");
     }
     else if (type=="Tif 3D Image" || type=="LSM Stack" || type=="Tif 3D Label Mask" || type=="Stitched V3D Raw Stack") {

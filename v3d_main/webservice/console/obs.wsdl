@@ -10,6 +10,7 @@
 <message name="ontologyChangedResponse" />
 <message name="entitySelected">
 <part name="entityId" type="xsd:long" />
+<part name="outline" type="xsd:boolean" />
 </message>
 <message name="entitySelectedResponse" />
 <message name="entityViewRequested">
@@ -35,7 +36,7 @@
 <input message="tns:ontologyChanged" />
 <output message="tns:ontologyChangedResponse" />
 </operation>
-<operation name="entitySelected">
+<operation name="entitySelected" parameterOrder="entityId outline">
 <input message="tns:entitySelected" />
 <output message="tns:entitySelectedResponse" />
 </operation>

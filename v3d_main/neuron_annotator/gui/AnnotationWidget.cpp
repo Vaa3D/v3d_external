@@ -211,6 +211,7 @@ void AnnotationWidget::openAnnotatedBranch(AnnotatedBranch *annotatedBranch, boo
         EntityData *ed = i.next();
         Entity *childEntity = ed->childEntity;
         if (childEntity==0) continue;
+        if (*childEntity->entityType == "Supporting Data") continue;
         ui->annotatedBranchTreeView->expand(annotatedBranchTreeModel->indexForId(*childEntity->id));
     }
 
@@ -350,7 +351,7 @@ void AnnotationWidget::consoleConnect() {
     qDebug() << "Received console approval to run on port:"<<consoleObserverService->port();
     connect(consoleObserverService, SIGNAL(ontologySelected(qint64)), consoleObserver, SLOT(ontologySelected(qint64)));
     connect(consoleObserverService, SIGNAL(ontologyChanged(qint64)), consoleObserver, SLOT(ontologyChanged(qint64)));
-    connect(consoleObserverService, SIGNAL(entitySelected(qint64)), consoleObserver, SLOT(entitySelected(qint64)));
+    connect(consoleObserverService, SIGNAL(entitySelected(qint64,bool)), consoleObserver, SLOT(entitySelected(qint64,bool)));
     connect(consoleObserverService, SIGNAL(entityViewRequested(qint64)), consoleObserver, SLOT(entityViewRequested(qint64)));
     connect(consoleObserverService, SIGNAL(annotationsChanged(qint64)), consoleObserver, SLOT(annotationsChanged(qint64)));
     connect(consoleObserverService, SIGNAL(sessionSelected(qint64)), consoleObserver, SLOT(sessionSelected(qint64)));
@@ -736,7 +737,7 @@ void AnnotationWidget::selectNeuron(int index)
         if (entity==0) continue;
         if (getNeuronNumber(entity) == index && selectedEntity!=entity)
         {
-            if (*entity->entityType == "Tif 2D Image") // TODO: remove this case in the future
+            if (entity->entityType->endsWith("2D Image")) // TODO: remove this case in the future
             {
                 // This case is deprecated
                 selectEntity(entity);

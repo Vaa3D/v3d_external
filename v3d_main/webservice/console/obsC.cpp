@@ -17,7 +17,7 @@ compiling, linking, and/or using OpenSSL is allowed.
 
 namespace obs {
 
-SOAP_SOURCE_STAMP("@(#) obsC.cpp ver 2.8.3 2011-10-10 15:22:52 GMT")
+SOAP_SOURCE_STAMP("@(#) obsC.cpp ver 2.8.3 2011-11-08 16:48:40 GMT")
 
 
 #ifndef WITH_NOGLOBAL
@@ -172,6 +172,8 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		return soap_in_int(soap, NULL, NULL, "xsd:int");
 	case SOAP_TYPE_obs_LONG64:
 		return soap_in_LONG64(soap, NULL, NULL, "xsd:long");
+	case SOAP_TYPE_obs_bool:
+		return soap_in_bool(soap, NULL, NULL, "xsd:boolean");
 	case SOAP_TYPE_obs_fw__sessionDeselected:
 		return soap_in_fw__sessionDeselected(soap, NULL, NULL, "fw:sessionDeselected");
 	case SOAP_TYPE_obs_fw__sessionDeselectedResponse:
@@ -225,6 +227,10 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		if (!soap_match_tag(soap, t, "xsd:long"))
 		{	*type = SOAP_TYPE_obs_LONG64;
 			return soap_in_LONG64(soap, NULL, NULL, NULL);
+		}
+		if (!soap_match_tag(soap, t, "xsd:boolean"))
+		{	*type = SOAP_TYPE_obs_bool;
+			return soap_in_bool(soap, NULL, NULL, NULL);
 		}
 		if (!soap_match_tag(soap, t, "fw:sessionDeselected"))
 		{	*type = SOAP_TYPE_obs_fw__sessionDeselected;
@@ -358,6 +364,8 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_putelement(struct soap *soap, const void *ptr, co
 		return soap_out_int(soap, tag, id, (const int *)ptr, "xsd:int");
 	case SOAP_TYPE_obs_LONG64:
 		return soap_out_LONG64(soap, tag, id, (const LONG64 *)ptr, "xsd:long");
+	case SOAP_TYPE_obs_bool:
+		return soap_out_bool(soap, tag, id, (const bool *)ptr, "xsd:boolean");
 	case SOAP_TYPE_obs_fw__sessionDeselected:
 		return soap_out_fw__sessionDeselected(soap, tag, id, (const struct fw__sessionDeselected *)ptr, "fw:sessionDeselected");
 	case SOAP_TYPE_obs_fw__sessionDeselectedResponse:
@@ -772,6 +780,90 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_put_LONG64(struct soap *soap, const LONG64 *a, co
 SOAP_FMAC3 LONG64 * SOAP_FMAC4 soap_get_LONG64(struct soap *soap, LONG64 *p, const char *tag, const char *type)
 {
 	if ((p = soap_in_LONG64(soap, tag, p, type)))
+		if (soap_getindependent(soap))
+			return NULL;
+	return p;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_bool(struct soap *soap, bool *a)
+{
+	(void)soap; /* appease -Wall -Werror */
+#ifdef SOAP_DEFAULT_bool
+	*a = SOAP_DEFAULT_bool;
+#else
+	*a = (bool)0;
+#endif
+}
+
+static const struct soap_code_map soap_codes_bool[] =
+{	{ (long)false, "false" },
+	{ (long)true, "true" },
+	{ 0, NULL }
+};
+
+SOAP_FMAC3S const char* SOAP_FMAC4S soap_bool2s(struct soap *soap, bool n)
+{
+	(void)soap; /* appease -Wall -Werror */
+return soap_code_str(soap_codes_bool, n!=0);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_bool(struct soap *soap, const char *tag, int id, const bool *a, const char *type)
+{	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_obs_bool), type) || soap_send(soap, soap_bool2s(soap, *a)))
+		return soap->error;
+	return soap_element_end_out(soap, tag);
+}
+
+SOAP_FMAC3S int SOAP_FMAC4S soap_s2bool(struct soap *soap, const char *s, bool *a)
+{
+	const struct soap_code_map *map;
+	if (!s)
+		return soap->error;
+	map = soap_code(soap_codes_bool, s);
+	if (map)
+		*a = (bool)(map->code != 0);
+	else
+	{	long n;
+		if (soap_s2long(soap, s, &n) || n < 0 || n > 1)
+			return soap->error = SOAP_TYPE;
+		*a = (bool)(n != 0);
+	}
+	return SOAP_OK;
+}
+
+SOAP_FMAC3 bool * SOAP_FMAC4 soap_in_bool(struct soap *soap, const char *tag, bool *a, const char *type)
+{
+	if (soap_element_begin_in(soap, tag, 0, NULL))
+		return NULL;
+	if (*soap->type && soap_match_tag(soap, soap->type, type) && soap_match_tag(soap, soap->type, ":boolean"))
+	{	soap->error = SOAP_TYPE;
+		return NULL;
+	}
+	a = (bool *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_obs_bool, sizeof(bool), 0, NULL, NULL, NULL);
+	if (!a)
+		return NULL;
+	if (soap->body && !*soap->href)
+	{	if (!a || soap_s2bool(soap, soap_value(soap), a) || soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else
+	{	a = (bool *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_obs_bool, 0, sizeof(bool), 0, NULL);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_bool(struct soap *soap, const bool *a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_obs_bool);
+	if (soap_out_bool(soap, tag?tag:"boolean", id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 bool * SOAP_FMAC4 soap_get_bool(struct soap *soap, bool *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_bool(soap, tag, p, type)))
 		if (soap_getindependent(soap))
 			return NULL;
 	return p;
@@ -2217,7 +2309,8 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__entityViewRequestedResponse(struct soap
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__entitySelected(struct soap *soap, struct fw__entitySelected *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_default_LONG64(soap, &a->entityId);
+	soap_default_LONG64(soap, &a->_entityId);
+	soap_default_bool(soap, &a->_outline);
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__entitySelected(struct soap *soap, const struct fw__entitySelected *a)
@@ -2229,14 +2322,17 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__entitySelected(struct soap *soap, const c
 {
 	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_obs_fw__entitySelected), type))
 		return soap->error;
-	if (soap_out_LONG64(soap, "entityId", -1, &a->entityId, ""))
+	if (soap_out_LONG64(soap, "entityId", -1, &a->_entityId, ""))
+		return soap->error;
+	if (soap_out_bool(soap, "outline", -1, &a->_outline, ""))
 		return soap->error;
 	return soap_element_end_out(soap, tag);
 }
 
 SOAP_FMAC3 struct fw__entitySelected * SOAP_FMAC4 soap_in_fw__entitySelected(struct soap *soap, const char *tag, struct fw__entitySelected *a, const char *type)
 {
-	size_t soap_flag_entityId = 1;
+	size_t soap_flag__entityId = 1;
+	size_t soap_flag__outline = 1;
 	if (soap_element_begin_in(soap, tag, 0, type))
 		return NULL;
 	a = (struct fw__entitySelected *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_obs_fw__entitySelected, sizeof(struct fw__entitySelected), 0, NULL, NULL, NULL);
@@ -2247,9 +2343,14 @@ SOAP_FMAC3 struct fw__entitySelected * SOAP_FMAC4 soap_in_fw__entitySelected(str
 	{
 		for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
-			if (soap_flag_entityId && soap->error == SOAP_TAG_MISMATCH)
-				if (soap_in_LONG64(soap, "entityId", &a->entityId, "xsd:long"))
-				{	soap_flag_entityId--;
+			if (soap_flag__entityId && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_LONG64(soap, NULL, &a->_entityId, "xsd:long"))
+				{	soap_flag__entityId--;
+					continue;
+				}
+			if (soap_flag__outline && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_bool(soap, NULL, &a->_outline, "xsd:boolean"))
+				{	soap_flag__outline--;
 					continue;
 				}
 			if (soap->error == SOAP_TAG_MISMATCH)
@@ -2267,7 +2368,7 @@ SOAP_FMAC3 struct fw__entitySelected * SOAP_FMAC4 soap_in_fw__entitySelected(str
 		if (soap->body && soap_element_end_in(soap, tag))
 			return NULL;
 	}
-	if ((soap->mode & SOAP_XML_STRICT) && (soap_flag_entityId > 0))
+	if ((soap->mode & SOAP_XML_STRICT) && (soap_flag__entityId > 0 || soap_flag__outline > 0))
 	{	soap->error = SOAP_OCCURS;
 		return NULL;
 	}

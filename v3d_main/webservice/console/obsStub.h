@@ -100,17 +100,18 @@ private:
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__entitySelected
-#define SOAP_TYPE_obs_fw__entitySelected (20)
+#define SOAP_TYPE_obs_fw__entitySelected (21)
 /* fw:entitySelected */
 struct fw__entitySelected
 {
 public:
-	LONG64 entityId;	/* required element of type xsd:long */
+	LONG64 _entityId;	/* required element of type xsd:long */
+	bool _outline;	/* required element of type xsd:boolean */
 };
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__entityViewRequestedResponse
-#define SOAP_TYPE_obs_fw__entityViewRequestedResponse (21)
+#define SOAP_TYPE_obs_fw__entityViewRequestedResponse (22)
 /* fw:entityViewRequestedResponse */
 struct fw__entityViewRequestedResponse
 {
@@ -122,7 +123,7 @@ private:
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__entityViewRequested
-#define SOAP_TYPE_obs_fw__entityViewRequested (24)
+#define SOAP_TYPE_obs_fw__entityViewRequested (25)
 /* fw:entityViewRequested */
 struct fw__entityViewRequested
 {
@@ -132,7 +133,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__annotationsChangedResponse
-#define SOAP_TYPE_obs_fw__annotationsChangedResponse (25)
+#define SOAP_TYPE_obs_fw__annotationsChangedResponse (26)
 /* fw:annotationsChangedResponse */
 struct fw__annotationsChangedResponse
 {
@@ -144,7 +145,7 @@ private:
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__annotationsChanged
-#define SOAP_TYPE_obs_fw__annotationsChanged (28)
+#define SOAP_TYPE_obs_fw__annotationsChanged (29)
 /* fw:annotationsChanged */
 struct fw__annotationsChanged
 {
@@ -154,7 +155,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__sessionSelectedResponse
-#define SOAP_TYPE_obs_fw__sessionSelectedResponse (29)
+#define SOAP_TYPE_obs_fw__sessionSelectedResponse (30)
 /* fw:sessionSelectedResponse */
 struct fw__sessionSelectedResponse
 {
@@ -166,7 +167,7 @@ private:
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__sessionSelected
-#define SOAP_TYPE_obs_fw__sessionSelected (32)
+#define SOAP_TYPE_obs_fw__sessionSelected (33)
 /* fw:sessionSelected */
 struct fw__sessionSelected
 {
@@ -176,7 +177,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__sessionDeselectedResponse
-#define SOAP_TYPE_obs_fw__sessionDeselectedResponse (33)
+#define SOAP_TYPE_obs_fw__sessionDeselectedResponse (34)
 /* fw:sessionDeselectedResponse */
 struct fw__sessionDeselectedResponse
 {
@@ -188,7 +189,7 @@ private:
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__sessionDeselected
-#define SOAP_TYPE_obs_fw__sessionDeselected (36)
+#define SOAP_TYPE_obs_fw__sessionDeselected (37)
 /* fw:sessionDeselected */
 struct fw__sessionDeselected
 {
@@ -202,7 +203,7 @@ private:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Header
-#define SOAP_TYPE_obs_SOAP_ENV__Header (37)
+#define SOAP_TYPE_obs_SOAP_ENV__Header (38)
 /* SOAP Header: */
 struct SOAP_ENV__Header
 {
@@ -218,7 +219,7 @@ private:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Code
-#define SOAP_TYPE_obs_SOAP_ENV__Code (38)
+#define SOAP_TYPE_obs_SOAP_ENV__Code (39)
 /* SOAP Fault Code: */
 struct SOAP_ENV__Code
 {
@@ -233,7 +234,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Detail
-#define SOAP_TYPE_obs_SOAP_ENV__Detail (40)
+#define SOAP_TYPE_obs_SOAP_ENV__Detail (41)
 /* SOAP-ENV:Detail */
 struct SOAP_ENV__Detail
 {
@@ -249,7 +250,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Reason
-#define SOAP_TYPE_obs_SOAP_ENV__Reason (43)
+#define SOAP_TYPE_obs_SOAP_ENV__Reason (44)
 /* SOAP-ENV:Reason */
 struct SOAP_ENV__Reason
 {
@@ -263,7 +264,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Fault
-#define SOAP_TYPE_obs_SOAP_ENV__Fault (44)
+#define SOAP_TYPE_obs_SOAP_ENV__Fault (45)
 /* SOAP Fault: */
 struct SOAP_ENV__Fault
 {

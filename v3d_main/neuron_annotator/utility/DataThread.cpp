@@ -319,7 +319,7 @@ SelectEntityThread::SelectEntityThread(qint64 entityId, QObject *parent) :
 void SelectEntityThread::fetchData()
 {
     cds::fw__selectEntityResponse response;
-    if (proxy.selectEntity(entityId, response) == SOAP_OK)
+    if (proxy.selectEntity(entityId, false, response) == SOAP_OK)
     {
         // Success
     }

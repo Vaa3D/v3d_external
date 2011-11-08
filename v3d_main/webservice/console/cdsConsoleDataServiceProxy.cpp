@@ -100,7 +100,7 @@ char *ConsoleDataServiceProxy::soap_sprint_fault(char *buf, size_t len)
 }
 #endif
 
-int ConsoleDataServiceProxy::selectEntity(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__selectEntityResponse &_param_1)
+int ConsoleDataServiceProxy::selectEntity(const char *endpoint, const char *soap_action, LONG64 _entityId, bool _outline, struct fw__selectEntityResponse &_param_1)
 {	struct soap *soap = this;
 	struct fw__selectEntity soap_tmp_fw__selectEntity;
 	if (endpoint)
@@ -110,7 +110,8 @@ int ConsoleDataServiceProxy::selectEntity(const char *endpoint, const char *soap
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
-	soap_tmp_fw__selectEntity.entityId = entityId;
+	soap_tmp_fw__selectEntity._entityId = _entityId;
+	soap_tmp_fw__selectEntity._outline = _outline;
 	soap_begin(soap);
 	soap_serializeheader(soap);
 	soap_serialize_fw__selectEntity(soap, &soap_tmp_fw__selectEntity);

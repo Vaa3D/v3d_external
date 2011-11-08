@@ -280,7 +280,7 @@ static int serve_fw__entitySelected(ConsoleObserverService *soap)
 	 || soap_envelope_end_in(soap)
 	 || soap_end_recv(soap))
 		return soap->error;
-	soap->error = soap->entitySelected(soap_tmp_fw__entitySelected.entityId, _param_3);
+	soap->error = soap->entitySelected(soap_tmp_fw__entitySelected._entityId, soap_tmp_fw__entitySelected._outline, _param_3);
 	if (soap->error)
 		return soap->error;
 	soap_serializeheader(soap);

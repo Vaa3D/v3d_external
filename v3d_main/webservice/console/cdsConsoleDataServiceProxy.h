@@ -58,8 +58,8 @@ class SOAP_CMAC ConsoleDataServiceProxy : public soap
 #endif
 
 	/// Web service operation 'selectEntity' (returns error code or SOAP_OK)
-	virtual	int selectEntity(LONG64 entityId, struct fw__selectEntityResponse &_param_1) { return selectEntity(NULL, NULL, entityId, _param_1); }
-	virtual	int selectEntity(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__selectEntityResponse &_param_1);
+	virtual	int selectEntity(LONG64 _entityId, bool _outline, struct fw__selectEntityResponse &_param_1) { return selectEntity(NULL, NULL, _entityId, _outline, _param_1); }
+	virtual	int selectEntity(const char *endpoint, const char *soap_action, LONG64 _entityId, bool _outline, struct fw__selectEntityResponse &_param_1);
 
 	/// Web service operation 'getEntityById' (returns error code or SOAP_OK)
 	virtual	int getEntityById(LONG64 entityId, struct fw__getEntityByIdResponse &_param_2) { return getEntityById(NULL, NULL, entityId, _param_2); }

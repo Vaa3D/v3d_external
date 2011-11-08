@@ -76,7 +76,7 @@ class SOAP_CMAC ConsoleObserverService : public soap
 	virtual	int ontologyChanged(LONG64 rootId, struct fw__ontologyChangedResponse &_param_2) SOAP_PURE_VIRTUAL;
 
 	/// Web service operation 'entitySelected' (returns error code or SOAP_OK)
-	virtual	int entitySelected(LONG64 entityId, struct fw__entitySelectedResponse &_param_3) SOAP_PURE_VIRTUAL;
+	virtual	int entitySelected(LONG64 _entityId, bool _outline, struct fw__entitySelectedResponse &_param_3) SOAP_PURE_VIRTUAL;
 
 	/// Web service operation 'entityViewRequested' (returns error code or SOAP_OK)
 	virtual	int entityViewRequested(LONG64 entityId, struct fw__entityViewRequestedResponse &_param_4) SOAP_PURE_VIRTUAL;

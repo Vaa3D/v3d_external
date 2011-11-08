@@ -9,6 +9,7 @@
 </types>
 <message name="selectEntity">
 <part name="entityId" type="xsd:long" />
+<part name="outline" type="xsd:boolean" />
 </message>
 <message name="selectEntityResponse" />
 <message name="getEntityById">
@@ -85,7 +86,7 @@
 <part name="return" type="tns:entityDataArray" />
 </message>
 <portType name="ConsoleDataService">
-<operation name="selectEntity">
+<operation name="selectEntity" parameterOrder="entityId outline">
 <input message="tns:selectEntity" />
 <output message="tns:selectEntityResponse" />
 </operation>
