@@ -1239,7 +1239,7 @@ void MainWindow::func_procIO_import_atlas_imgfolder()
 							 "To import a series of images to an .atlas linker file, these files should be put into the same folder and have the same size (X,Y,Z dimensions and number of color channels). <br><br>"
 							 "You will be first asked to specify one of these files, and you can define a string filter of their file names.<br><br>"
 							 "Normally these files should be aligned/registered images; but this function can also be used to produce a linker file just for screening a series of image stacks.<br><br>"
-							 "Note that these files must be valid .tif files (or another image file format supported in V3D).<br><br>"
+							 "Note that these files must be valid .tif or Vaa3D's Raw files (or another image file format supported in Vaa3D).<br><br>"
 							 "You will be then asked to specify a file name of the output .atlas linker file.<br><br>"
 							 );
 
