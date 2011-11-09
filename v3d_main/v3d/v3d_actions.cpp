@@ -26,7 +26,7 @@ void BrowseToWebPageAction::openWebPage() {
 
 OpenV3dWebPageAction::OpenV3dWebPageAction(QObject* parent)
         : BrowseToWebPageAction(tr("Go to Vaa3D web site..."),
-                QUrl("http://penglab.janelia.org/proj/v3d/"),
+                QUrl("http://vaa3d.org"),
                 parent)
 {}
 
