@@ -37,6 +37,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "stackutil.h"
 #include "basic_4dimage.h"
+#include "../neuron_annotator/utility/ImageLoader.h"
 
 typedef unsigned short int USHORTINT16;
 
@@ -133,6 +134,23 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 			return;
 		}
 	}
+        else if ( strcasecmp(curFileSurfix, "v3dpbd")==0 ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
+        {
+            ImageLoader imageLoader;
+            QString imageSrcFile(imgSrcFile);
+            if (!imageLoader.loadImage(this, imageSrcFile)) {
+                v3d_msg("Error happens in v3dpbd file reading. Stop. \n", false);
+                b_error=1;
+                return;
+            }
+            // The following few lines are to avoid disturbing the existing code below
+            tmp_datatype=1; // always true for v3dpbd at this point
+            tmp_sz=new V3DLONG[4];
+            tmp_sz[0]=this->getXDim();
+            tmp_sz[1]=this->getYDim();
+            tmp_sz[2]=this->getZDim();
+            tmp_sz[3]=this->getCDim();
+        }
 	else //then assume it is Hanchuan's RAW format
 	{
 		v3d_msg("The data is not with a TIF surfix, -- now this program assumes it is RAW format defined by Hanchuan Peng. \n", false);

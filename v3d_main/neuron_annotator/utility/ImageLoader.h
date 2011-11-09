@@ -40,11 +40,11 @@ public:
     bool execute();
     bool validateFile();
     My4DImage* loadImage(QString filepath);
-    void loadImage(My4DImage * stackp, QString filepath);
+    bool loadImage(Image4DSimple * stackp, QString filepath);
     bool saveImage(My4DImage * stackp, QString filepath);
 
     int saveStack2RawPBD(const char * filename, unsigned char* data, const V3DLONG * sz);
-    int loadRaw2StackPBD(char * filename, My4DImage * & image, bool useThreading);
+    int loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool useThreading);
 
     int processArgs(vector<char*> *argList);
     QString getFilePrefix(QString filepath);

@@ -1064,7 +1064,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 				 (curfile_info.suffix().toUpper()=="V3DRAW") ||
 				 (curfile_info.suffix().toUpper()=="RAW5") ||
 				 (curfile_info.suffix().toUpper()=="V3DRAW5") ||
-				 (curfile_info.suffix().toUpper()=="MRC") ) // specific ".tif" ".lsm" ".raw" file, changed by YuY Nov. 19, 2010
+                                 (curfile_info.suffix().toUpper()=="MRC") || // specific ".tif" ".lsm" ".raw" file, changed by YuY Nov. 19, 2010
+                                  (curfile_info.suffix().toUpper()=="V3DPBD"))
 		{
 			try
 			{

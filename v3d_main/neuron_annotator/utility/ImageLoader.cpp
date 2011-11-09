@@ -336,12 +336,13 @@ bool ImageLoader::validateFile() {
     return true;
 }
 
-void ImageLoader::loadImage(My4DImage * stackp, QString filepath) {
+bool ImageLoader::loadImage(Image4DSimple * stackp, QString filepath) {
     if (filepath.endsWith(".tif") || filepath.endsWith(".lsm") || filepath.endsWith(".v3draw") || filepath.endsWith(".raw")) {
         stackp->loadImage(filepath.toAscii().data());
     } else if (filepath.endsWith(".v3dpbd")) {
         if (loadRaw2StackPBD(filepath.toAscii().data(), stackp, true)!=0) {
             qDebug() << "Error with loadRaw2StackPBD";
+            return false;
         }
     }
 }
@@ -697,7 +698,7 @@ V3DLONG ImageLoader::compressPBD(unsigned char * compressionBuffer, unsigned cha
     return p;
 }
 
-int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image, bool useThreading) {
+int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool useThreading) {
     {
 
         qDebug() << "ImageLoader::loadRaw2StackPBD starting filename=" << filename;
@@ -855,7 +856,7 @@ int ImageLoader::loadRaw2StackPBD(char * filename, My4DImage * & image, bool use
         V3DLONG cntBuf = 0;
 
         // Transfer data to My4DImage
-        image->loadImage(sz[0], sz[1], sz[2], sz[3], 1);
+        image->createBlankImage(sz[0], sz[1], sz[2], sz[3], 1);
         decompressionBuffer = image->getRawData();
 
         QThreadPool threadPool;
