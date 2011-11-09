@@ -339,7 +339,7 @@ void V3d_PluginLoader::populateMenus()
 void V3d_PluginLoader::aboutPlugins()
 {
     QList<QDir> pluginsDirList = getPluginsDirList();
-    PluginDialog dialog("V3D", pluginsDirList, pluginFilenameList, v3d_mainwindow);
+    PluginDialog dialog("Vaa3D", pluginsDirList, pluginFilenameList, v3d_mainwindow);
     dialog.exec();
 }
 
@@ -347,7 +347,7 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
 {
     if (!loader)
     {
-    	v3d_msg("ERROR in V3d_PluginLoader::runPlugin: invalid pointer to the plugin loader detected.");
+    	v3d_msg("ERROR in Vaa3D_PluginLoader::runPlugin: invalid pointer to the plugin loader detected.");
     	return;
     }
 	
@@ -355,7 +355,7 @@ void V3d_PluginLoader::runPlugin(QPluginLoader *loader, const QString & menuStri
     QObject *plugin = loader->instance();
     if (!plugin)
     {
-    	v3d_msg("ERROR in V3d_PluginLoader::runPlugin: loader->instance()");
+    	v3d_msg("ERROR in Vaa3D_PluginLoader::runPlugin: loader->instance()");
     	return;
     }
 	
@@ -412,7 +412,7 @@ bool V3d_PluginLoader::runSingleImageInterface(QObject* plugin, const QString &c
 
     bool done = true;
 
-    qDebug()<<"V3DSingleImageInterface or V3DSingleImageInterface2_1..."<<iFilter;
+    qDebug()<<"Vaa3DSingleImageInterface or Vaa3DSingleImageInterface2_1..."<<iFilter;
 
     if (v3d_mainwindow)
     {
@@ -618,7 +618,7 @@ bool V3d_PluginLoader::callPluginFunc(const QString &plugin_name,
     }
     else // (! (iface && callback) )
 	{
-		qDebug()<<QString("ERROR: callPluginFunc cannot cast (V3DPluginInterface2_1) of plugin '%1'").arg(plugin_name);
+		qDebug()<<QString("ERROR: callPluginFunc cannot cast (Vaa3DPluginInterface2_1) of plugin '%1'").arg(plugin_name);
 		return false;
 	}
 }
