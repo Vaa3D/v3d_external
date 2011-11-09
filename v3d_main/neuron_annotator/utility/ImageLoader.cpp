@@ -11,6 +11,7 @@ const int ImageLoader::MODE_UNDEFINED=0;
 const int ImageLoader::MODE_LOAD_TEST=1;
 const int ImageLoader::MODE_CONVERT=2;
 const int ImageLoader::MODE_MIP=3;
+const int ImageLoader::MODE_MAP_CHANNELS=4;
 
 ImageLoader::ImageLoader()
 {
@@ -83,6 +84,25 @@ int ImageLoader::processArgs(vector<char*> *argList) {
                     i--; // rewind
                 }
             } while(!done && i<(argList->size()-1));
+        } else if (arg=="-mapchannels") {
+            mode=MODE_MAP_CHANNELS;
+            int sourcePosition=i+1;
+            int targetPosition=i+2;
+            int mapPosition=i+3;
+            if (mapPosition>=argList->size()) {
+                qDebug() <<  "Insufficient arguments for -mapchannels option";
+                return 1;
+            }
+            inputFilepath=(*argList)[sourcePosition];
+            targetFilepath=(*argList)[targetPosition];
+            mapChannelString=(*argList)[mapPosition];
+            if (inputFilepath.startsWith("-") ||
+                targetFilepath.startsWith("-") ||
+                mapChannelString.startsWith("-")) {
+                qDebug() << "Please see usage for -mapchannels option";
+                return 1;
+            }
+            i+=3;
         }
     }
     if (inputFilepath.length()<1) {
@@ -117,44 +137,124 @@ bool ImageLoader::execute() {
         qDebug() << "Loading time is " << stopwatch.elapsed() / 1000.0 << " seconds";
         stopwatch.restart();
         qDebug() << "Saving to file " << targetFilepath;
-        if (targetFilepath.endsWith(".v3dpbd")) {
-            V3DLONG sz[4];
-            sz[0] = image->getXDim();
-            sz[1] = image->getYDim();
-            sz[2] = image->getZDim();
-            sz[3] = image->getCDim();
-            unsigned char* data = 0;
-            if (image->getDatatype()==1) {
-                data = image->getRawData();
-            } else if (image->getDatatype()==2) {
-                data = convertType2Type1(sz, image);
-                if (data==0) {
-                    qDebug() << "ImageLoader::execute - problem allocating memory for conversion of type 2 to type 1";
-                    return false;
-                }
-                delete image;
-                image=0;
-            } else {
-                qDebug() << "ImageLoader::execute - do not support source data other than type 1 or type 2";
-                return false;
-            }
-            saveStack2RawPBD(targetFilepath.toAscii().data(), data, sz);
-            if (image!=0) {
-                delete image;
-            } else {
-                delete data;
-            }
-        } else {
-            image->saveImage(targetFilepath.toAscii().data());
+        bool saveStatus=saveImage(image, targetFilepath);
+        if (image!=0) {
             delete image;
+            image=0;
+        }
+        if (!saveStatus) {
+            return false;
         }
         qDebug() << "Saving time is " << stopwatch.elapsed() / 1000.0 << " seconds";
         return true;
     } else if (mode==MODE_MIP) {
         image=loadImage(inputFilepath);
         create2DMIPFromStack(image, targetFilepath);
+        return true;
+    } else if (mode==MODE_MAP_CHANNELS) {
+        if (!mapChannels()) {
+            qDebug() << "ImageLoader::execute - error in mapChannels()";
+            return false;
+        }
+        return true;
     }
     return false; // should not get here
+}
+
+bool ImageLoader::mapChannels() {
+    qDebug() << "mapChannels() source=" << inputFilepath << " target=" << targetFilepath << " mapString=" << mapChannelString;
+    // Create some convenient representations of the mapChannelString data
+    QList<int> sourceChannelList;
+    QList<int> targetChannelList;
+    QStringList mapChannelList=mapChannelString.split(",");
+    int i=0;
+    int maxTargetChannel=0;
+    int maxSourceChannel=0;
+    for (;i<mapChannelList.size();i++) {
+        if (i==0 || i%2==0) {
+            QString sourceString=mapChannelList.at(i);
+            int source=sourceString.toInt();
+            if (source>maxSourceChannel) {
+                maxSourceChannel=source;
+            }
+            sourceChannelList.append(source);
+        } else {
+            QString targetString=mapChannelList.at(i);
+            int target=targetString.toInt();
+            if (target>maxTargetChannel) {
+                maxTargetChannel=target;
+            }
+            targetChannelList.append(target);
+        }
+    }
+    if (sourceChannelList.size()!=targetChannelList.size()) {
+        qDebug() << "sourceChannelList size=" << sourceChannelList.size() << " does not match targetChannelList size=" << targetChannelList.size();
+        return false;
+    }
+    My4DImage* sourceImage=new My4DImage();
+    qDebug() << "Loading source image=" << inputFilepath;
+    loadImage(sourceImage, inputFilepath.toAscii().data());
+    Image4DProxy<My4DImage> sourceProxy(sourceImage);
+    My4DImage* targetImage=new My4DImage();
+    // Check to see if target already exists. If it does, then load it.
+    QFile targetFile(targetFilepath);
+    if (targetFile.exists()) {
+        qDebug() << "Loading target image=" << targetFilepath;
+        targetImage->loadImage(targetFilepath.toAscii().data());
+    } else {
+        // Must create new image
+        targetImage->loadImage(sourceProxy.sx, sourceProxy.sy, sourceProxy.sz, (maxTargetChannel+1), V3D_UINT8);
+        memset(targetImage->getRawData(), 0, targetImage->getTotalBytes());
+    }
+    Image4DProxy<My4DImage> targetProxy(targetImage);
+    if (sourceProxy.sx==targetProxy.sx &&
+        sourceProxy.sy==targetProxy.sy &&
+        sourceProxy.sz==targetProxy.sz) {
+        qDebug() << "Verified that source and target x y z dimensions match";
+    } else {
+        qDebug() << "Source sx=" << sourceProxy.sx << " sy=" << sourceProxy.sy << " sz=" << sourceProxy.sz << " Target tx=" <<
+                targetProxy.sx << " ty=" << targetProxy.sy << " tz=" << targetProxy.sz << " dimensions do not match";
+        return false;
+    }
+    if (maxSourceChannel>=sourceProxy.sc) {
+        qDebug() << "requested sourceChannel " << maxSourceChannel << " is greater than source channel size=" << sourceProxy.sc;
+        return false;
+    }
+    if (maxTargetChannel>=targetProxy.sc) {
+        qDebug() << "requested targetChannel " << maxTargetChannel << " is greater than target channel size=" << targetProxy.sc;
+        return false;
+    }
+    // Do the transfer
+    if (sourceImage->getDatatype()==1) {
+        for (int c=0;c<sourceChannelList.size();c++) {
+            int sourceChannel=sourceChannelList.at(c);
+            int targetChannel=targetChannelList.at(c);
+            for (int z=0;z<sourceProxy.sz;z++) {
+                for (int y=0;y<sourceProxy.sy;y++) {
+                    for (int x=0;x<sourceProxy.sx;x++) {
+                        targetProxy.put_at(x,y,z,targetChannel, *(sourceProxy.at(x,y,z,sourceChannel)));
+                    }
+                }
+            }
+        }
+    } else if (sourceImage->getDatatype()==2) {
+        for (int c=0;c<sourceChannelList.size();c++) {
+            int sourceChannel=sourceChannelList.at(c);
+            int targetChannel=targetChannelList.at(c);
+            for (int z=0;z<sourceProxy.sz;z++) {
+                for (int y=0;y<sourceProxy.sy;y++) {
+                    for (int x=0;x<sourceProxy.sx;x++) {
+                        long sourceValue=*(sourceProxy.at_uint16(x,y,z,sourceChannel));
+                        targetProxy.put_at(x,y,z,targetChannel, sourceValue/16); // assume 12-bit to 8-bit conversion
+                    }
+                }
+            }
+        }
+    }
+    bool saveStatus=saveImage(targetImage, targetFilepath);
+    delete sourceImage;
+    delete targetImage;
+    return saveStatus;
 }
 
 void ImageLoader::create2DMIPFromStack(My4DImage * image, QString mipFilepath) {
@@ -252,6 +352,39 @@ My4DImage* ImageLoader::loadImage(QString filepath) {
     loadImage(image, filepath);
     return image;
 }
+
+bool ImageLoader::saveImage(My4DImage * stackp, QString filepath) {
+    qDebug() << "Saving to file " << filepath;
+    if (filepath.endsWith(".v3dpbd")) {
+        V3DLONG sz[4];
+        sz[0] = stackp->getXDim();
+        sz[1] = stackp->getYDim();
+        sz[2] = stackp->getZDim();
+        sz[3] = stackp->getCDim();
+        unsigned char* data = 0;
+        bool converted=false;
+        if (stackp->getDatatype()==1) {
+            data = stackp->getRawData();
+        } else if (stackp->getDatatype()==2) {
+            data = convertType2Type1(sz, stackp);
+            converted=true;
+            if (data==0) {
+                qDebug() << "ImageLoader::execute - problem allocating memory for conversion of type 2 to type 1";
+                return false;
+            }
+        } else {
+            qDebug() << "ImageLoader::execute - do not support source data other than type 1 or type 2";
+            return false;
+        }
+        saveStack2RawPBD(targetFilepath.toAscii().data(), data, sz);
+        if (data!=0 && converted) {
+            delete data;
+        }
+    } else {
+        stackp->saveImage(targetFilepath.toAscii().data());
+    }
+}
+
 
 QString ImageLoader::getFilePrefix(QString filepath) {
     QStringList list=filepath.split(QRegExp("\\."));
