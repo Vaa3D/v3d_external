@@ -76,7 +76,7 @@ V3dApplication* V3dApplication::theApp;
 
 void printHelp_v3d()
 {
-	cout<<endl<<"V3D: a 3D image visualization and analysis platform developed by Hanchuan Peng and colleagues."<<endl;
+	cout<<endl<<"Vaa3D: a 3D image visualization and analysis platform developed by Hanchuan Peng and colleagues."<<endl;
 	cout<<endl<<"Usage: v3d -h -M moduleCode [all other options specific to different modules]"<<endl;
 	
 	cout<<"    -h/H         help information."<<endl;
@@ -126,7 +126,7 @@ int main(int argc, char **argv)
 
 			if (!mainWin)
 			{
-				v3d_msg("Unable to open the V3D main window. Quit.");
+				v3d_msg("Unable to open the Vaa3D main window. Quit.");
 				return false;
 			}
 
@@ -264,7 +264,7 @@ int main(int argc, char **argv)
 			}
 			catch (...) 
 			{
-				v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the V3D developers to figure out the problem.");
+				v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the Vaa3D developers to figure out the problem.");
 				return false;
 			}
 			// -------------------------------------------------------
@@ -287,7 +287,7 @@ int main(int argc, char **argv)
 	MainWindow* mainWin = new MainWindow;
 	if (!mainWin)
 	{
-		v3d_msg("Unable to open the V3D main window. Quit.");
+		v3d_msg("Unable to open the Vaa3D main window. Quit.");
 		return false;
 	}
 	
@@ -332,7 +332,7 @@ int main(int argc, char **argv)
 	}
 	catch (...) 
 	{
-		v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the V3D developers to figure out the problem.");
+		v3d_msg("Catch an exception at the main application level. Basically you should never see this. Please click Ok to quit and send the error log to the Vaa3D developers to figure out the problem.");
 		return false;
 	}
 
