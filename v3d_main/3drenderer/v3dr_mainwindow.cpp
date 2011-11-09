@@ -864,7 +864,7 @@ void iDrawMainWindow::openAnoFile()
 
 void V3dR_MainWindow::about()
 {
-	QMessageBox::information(this, "V3D.3drenderer", "V3D: a 3D image visualization and analysis software.\n"
+	QMessageBox::information(this, "Vaa3D.3drenderer", "Vaa3D: a 3D image visualization and analysis software.\n"
 			"\n\n"
 			 "Help information for the 3D viewer:\n"
 			"Mouse operations:\n"

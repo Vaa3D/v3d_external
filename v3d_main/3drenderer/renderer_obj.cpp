@@ -93,7 +93,7 @@ void Renderer_gl1::loadObjectFromFile(const char* url)
 	    				";;Neuron structure	(*.swc)"
 	    				";;Point Cloud		(*.apo)"
 	    				";;Label field		(*.raw *.tif *.tiff)"
-	    				";;Label Surface	(*.v3ds *.obj)"
+	    				";;Label Surface	(*.vaa3ds *.v3ds *.obj)"
 						";;Landmarks		(*.marker *.csv)"
 	    				));
     qDebug()<< "open file: " << filename;
@@ -153,7 +153,7 @@ void Renderer_gl1::loadObjectFilename(const QString& filename)
 			loadWavefrontOBJ(filename);
 		}
 		// if label surface v3ds --binary format obj
-		else if (filename.endsWith(".v3ds", Qt::CaseInsensitive))
+		else if (filename.endsWith(".v3ds", Qt::CaseInsensitive) || filename.endsWith(".vaa3ds", Qt::CaseInsensitive) )
 		{
 			type = stLabelSurface;
 			loadV3DSurface(filename);
@@ -199,7 +199,7 @@ void Renderer_gl1::saveSurfFile()
 	extern QString lf_data_title;
     QString filename = QFileDialog::getSaveFileName(0, QObject::tr("Save Surface File"),
     		lf_data_title+".v3ds",
-    		QObject::tr("V3D Surface Object (*.v3ds)"
+    		QObject::tr("Vaa3D Surface Object (*.vaa3ds)"
     				";;Wavefront Object (*.obj)"
     				));
     qDebug()<< "save file: " << filename;
@@ -212,7 +212,7 @@ void Renderer_gl1::saveSurfFile()
 			saveWavefrontOBJ(filename);
 		}
 		// if v3ds
-		if (filename.endsWith(".v3ds", Qt::CaseInsensitive))
+		if (filename.endsWith(".vaa3ds", Qt::CaseInsensitive))
 		{
 			saveV3DSurface(filename);
 		}

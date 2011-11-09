@@ -1114,7 +1114,7 @@ void Renderer_gl1::loadV3DSurface(const QString& filename)
 	}
 	catch(...)
 	{
-		QMessageBox::critical(0, "loadV3DSurface", QObject::tr("loadV3DSurface: OUT OF MEMEORY."));
+		QMessageBox::critical(0, "loadVaa3DSurface", QObject::tr("loadVaa3DSurface: OUT OF MEMEORY."));
 	}
 
 	PROGRESS_TEXT("Compiling geometric data");
@@ -1259,7 +1259,7 @@ void Renderer_gl1::loadV3DSFile(const QString& filename)
     }
     catch(...)
     {
-        QMessageBox::critical(0, "loadV3DSFile", QObject::tr("loadV3DSFile: OUT OF MEMEORY."));
+        QMessageBox::critical(0, "loadVaa3DSFile", QObject::tr("loadVaa3DSFile: OUT OF MEMEORY."));
     }
 
     // create compiled list

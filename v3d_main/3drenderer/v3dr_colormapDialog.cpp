@@ -344,12 +344,12 @@ void V3dr_colormapDialog::undo()
 
 void V3dr_colormapDialog::load()
 {
-	qDebug("V3dr_colormapDialog::load");
+	qDebug("Vaa3dr_colormapDialog::load");
 	hide();
 
     QString filename = QFileDialog::getOpenFileName(0, QObject::tr("Open Color Map File"),
-    		".v3dcm",
-    		QObject::tr("V3D Color Map File (*.v3dcm);;(*.*)"
+    		".vaa3dcm",
+    		QObject::tr("Vaa3D Color Map File (*.vaa3dcm);;(*.*)"
     				));
     qDebug()<< "load file: " << filename;
 
@@ -364,12 +364,12 @@ void V3dr_colormapDialog::load()
 
 void V3dr_colormapDialog::save()
 {
-	qDebug("V3dr_colormapDialog::save");
+	qDebug("Vaa3dr_colormapDialog::save");
 	hide();
 
     QString filename = QFileDialog::getSaveFileName(0, QObject::tr("Save Color Map File"),
-    		".v3dcm",
-    		QObject::tr("V3D Color Map File (*.v3dcm);;(*.*)"
+    		".vaa3dcm",
+    		QObject::tr("Vaa3D Color Map File (*.vaa3dcm);;(*.*)"
     				));
     qDebug()<< "save file: " << filename;
 

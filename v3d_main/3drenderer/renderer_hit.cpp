@@ -829,7 +829,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				}
 				else
 				{
-					v3d_msg("Fail to set up the curHiddenSelectedXWidget for the V3D mainwindow. Do nothing.");
+					v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
 				}
 
 			}
@@ -2326,7 +2326,7 @@ void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 			//set the hiddenSelectWidget for the V3D mainwindow
 			if (!curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
 			{
-				v3d_msg("Fail to set up the curHiddenSelectedXWidget for the V3D mainwindow. Do nothing.");
+				v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
 				return;
 			}
 
