@@ -43,7 +43,7 @@ bool NaVolumeDataLoadableStack::load()
         return false;
     }
     setRelativeProgress(0.70);
-    stackp->updateminmaxvalues();
+    // stackp->updateminmaxvalues();
     setRelativeProgress(1.0);
     emit finished();
     return true;
@@ -280,9 +280,11 @@ bool NaVolumeData::Writer::loadStacks()
 
     qDebug() << "NaVolumeData::Writer::loadStacks() done loading all stacks in " << stopwatch.elapsed() / 1000.0 << " seconds";
 
+    m_data->originalImageStack->updateminmaxvalues();
     m_data->originalImageProxy = Image4DProxy<My4DImage>(m_data->originalImageStack);
     m_data->originalImageProxy.set_minmax(m_data->originalImageStack->p_vmin, m_data->originalImageStack->p_vmax);
 
+    m_data->neuronMaskStack->updateminmaxvalues();
     m_data->neuronMaskProxy = Image4DProxy<My4DImage>(m_data->neuronMaskStack);
     m_data->neuronMaskProxy.set_minmax(m_data->neuronMaskStack->p_vmin, m_data->neuronMaskStack->p_vmax);
 

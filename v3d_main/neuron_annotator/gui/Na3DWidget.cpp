@@ -140,6 +140,7 @@ void Na3DWidget::setLandmarks(const QList<ImageMarker> landmarks)
     updateHighlightNeurons();
 }
 
+/*
 void Na3DWidget::annotationModelUpdate(QString updateType)
 {
     QList<QString> list=updateType.split(QRegExp("\\s+"));
@@ -152,9 +153,11 @@ void Na3DWidget::annotationModelUpdate(QString updateType)
         toggleNeuronDisplay(index, checked);
     }
     else if (updateType.startsWith("FULL_UPDATE")) {
+        qDebug() << "Na3DWidget::annotationModelUpdate" << __FILE__ << __LINE__;
         updateFullVolume();
     }
 }
+*/
 
 // Override updateImageData() to avoid that modal progress dialog
 /* virtual */ /* public slot */
@@ -406,7 +409,7 @@ void Na3DWidget::onMouseSingleClick(QPoint pos)
 void Na3DWidget::onPossibleSingleClickAlert()
 {
     // Immediate visual feedback that a click has been initiated
-    qDebug() << "possible single click";
+    // qDebug() << "possible single click";
     bClickIsWaiting = true; // busy cursor
     updateCursor();
 }
@@ -1017,6 +1020,7 @@ void Na3DWidget::resetVolumeBoundary()
 
 void Na3DWidget::updateFullVolume()
 {
+    qDebug() << "Na3DWidget::updateFullVolume()" << __FILE__ << __LINE__;
     // Coalesce queued calls to updateFullVolume
     SlotMerger updateFullMerger(updateFullVolumeStatus);
     if (! updateFullMerger.shouldRun())

@@ -854,8 +854,9 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     connect(&dataFlowModel->getDataColorModel(), SIGNAL(dataChanged()),
             this, SLOT(onColorModelChanged()));
 
-    // Annotation model update
-    connect(dataFlowModel, SIGNAL(modelUpdated(QString)), ui.v3dr_glwidget, SLOT(annotationModelUpdate(QString)));
+    // Annotation model update - obsolete.
+    // causes extra full update of viewer.
+    // connect(dataFlowModel, SIGNAL(modelUpdated(QString)), ui.v3dr_glwidget, SLOT(annotationModelUpdate(QString)));
 
     // Both mip images and selection model need to be in place to update gallery
     connect(&dataFlowModel->getGalleryMipImages(), SIGNAL(dataChanged()),

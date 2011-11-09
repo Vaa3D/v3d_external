@@ -62,7 +62,7 @@ public slots:
     void setAlphaBlending(bool);
     void clearLandmarks();
     void setLandmarks(const QList<ImageMarker>);
-    virtual void annotationModelUpdate(QString updateType);
+    // virtual void annotationModelUpdate(QString updateType);
     virtual void toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked);
     virtual void updateFullVolume();
     void onVolumeDataChanged();
