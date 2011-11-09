@@ -20,20 +20,20 @@ const QString title = "Example for plugin calling each other";
 //#if defined(__MAC_x86_64__) //seems not working!! (by PHC, 2011-02-04)
 //#if defined(__i386__) //this works but may not be the best way
 #if QT_POINTER_SIZE==4
-QString plugin_name = "plugins/32bit/V3D_PluginInterface_Demos/call_each_other/libex_matrix_debug.dylib";
+QString plugin_name = "plugins/32bit/Vaa3D_PluginInterface_Demos/call_each_other/libex_matrix_debug.dylib";
 //#else
 #elif QT_POINTER_SIZE==8
-QString plugin_name = "plugins/64bit/V3D_PluginInterface_Demos/call_each_other/libex_matrix_debug.dylib";
+QString plugin_name = "plugins/64bit/Vaa3D_PluginInterface_Demos/call_each_other/libex_matrix_debug.dylib";
 //#elif QT_POINTER_SIZE==16
 #endif
 
 #elif defined (_WIN32) || defined (_WIN64)
 
-QString plugin_name = "plugins/V3D_PluginInterface_Demos/call_each_other/libex_matrix_debug.dll";  //for Windows
+QString plugin_name = "plugins/Vaa3D_PluginInterface_Demos/call_each_other/libex_matrix_debug.dll";  //for Windows
 
 #else
 
-QString plugin_name = "plugins/V3D_PluginInterface_Demos/call_each_other/libex_matrix_debug.so";  //for Linux
+QString plugin_name = "plugins/Vaa3D_PluginInterface_Demos/call_each_other/libex_matrix_debug.so";  //for Linux
 
 #endif
 
