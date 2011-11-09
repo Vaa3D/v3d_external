@@ -65,16 +65,16 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 		}
 #endif
 		//if (pluginsDir.cd("plugins/64bit/Canvas_Eraser")==false)
-		if (pluginsDir.cd("plugins/imaging_piezo")==false) 
+		if (pluginsDir.cd("plugins/smartscope_controller")==false) //imaging_piezo
 		{
-			v3d_msg("Cannot find ./plugins/imaging_piezo directory!");
+			v3d_msg("Cannot find ./plugins/smartscope_controller directory!");
 			return false;
 		}
 		
 		QStringList fileList = pluginsDir.entryList(QDir::Files);
 		if (fileList.size()<1)
 		{
-			v3d_msg("Cannot find any file in the ./plugins/imaging_piezo directory!");
+			v3d_msg("Cannot find any file in the ./plugins/smartscope_controller directory!");
 			return false;
 		}
 		
@@ -96,7 +96,7 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 		curw->getImageData()->setCustomStructPointer((void *)(&p)); //to pass parameters to the imaging plugin
 		
 		mypluginloader.runPlugin(loader, p.OPS);
-			//mypluginloader.runPlugin(loader, "about");
+		//mypluginloader.runPlugin(loader, "about");
 			
 	}
 	catch (...)

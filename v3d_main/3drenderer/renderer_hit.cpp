@@ -803,7 +803,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		if (w && curImg && curXWidget)
 		{
 			v3d_imaging_paras myimagingp;
-			myimagingp.OPS = "POINT_ABLATING";
+			myimagingp.OPS = "POINT_ABLATING from 3D Viewer";
 			myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
 
 			bool doit = (curImg->listLandmarks.size()>0) ? true : false;
@@ -2332,7 +2332,7 @@ void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 
 			//set up parameters
 			v3d_imaging_paras myimagingp;
-			myimagingp.OPS = "ROI_IMAGING";
+			myimagingp.OPS = "ROI_IMAGING from 3D Viewer";
 			myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
 			myimagingp.xs = mx;
 			myimagingp.ys = my;
