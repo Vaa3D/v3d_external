@@ -2048,7 +2048,7 @@ void MainWindow::createActions()
 
     checkForUpdatesAct = new QAction(tr("Check for Updates..."), this);
     checkForUpdatesAct->setStatusTip(tr("Check whether a more recent version "
-        "of V3D is available."));
+        "of Vaa3D is available."));
     connect(checkForUpdatesAct, SIGNAL(triggered()),
             this, SLOT(checkForUpdates()));
 
@@ -2247,7 +2247,7 @@ void MainWindow::createActions()
 
     // Mode
 #ifdef _ALLOW_WORKMODE_MENU_
-    procModeDefault = new QAction(tr("V3D Default"), this);
+    procModeDefault = new QAction(tr("Vaa3D Default"), this);
     procModeDefault->setCheckable(true);
     procModeDefault->setChecked(true);
     connect(procModeDefault, SIGNAL(triggered()), this, SLOT(func_procModeDefault()));
@@ -2392,7 +2392,7 @@ void MainWindow::createStatusBar()
 
 void MainWindow::readSettings()
 {
-    QSettings settings("HHMI", "V3D");
+    QSettings settings("HHMI", "Vaa3D");
     QPoint pos = settings.value("pos", QPoint(10, 10)).toPoint();
     QSize size = settings.value("size", QSize(1000, 700)).toSize();
     move(pos);
@@ -2403,7 +2403,7 @@ void MainWindow::readSettings()
 
 void MainWindow::writeSettings()
 {
-    QSettings settings("HHMI", "V3D");
+    QSettings settings("HHMI", "Vaa3D");
     settings.setValue("pos", pos());
     settings.setValue("size", size());
 
