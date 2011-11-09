@@ -200,7 +200,7 @@ bool ImageLoader::mapChannels() {
     QFile targetFile(targetFilepath);
     if (targetFile.exists()) {
         qDebug() << "Loading target image=" << targetFilepath;
-        targetImage->loadImage(targetFilepath.toAscii().data());
+        loadImage(targetImage, targetFilepath);
     } else {
         // Must create new image
         targetImage->loadImage(sourceProxy.sx, sourceProxy.sy, sourceProxy.sz, (maxTargetChannel+1), V3D_UINT8);
