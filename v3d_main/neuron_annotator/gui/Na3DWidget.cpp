@@ -1020,7 +1020,7 @@ void Na3DWidget::resetVolumeBoundary()
 
 void Na3DWidget::updateFullVolume()
 {
-    qDebug() << "Na3DWidget::updateFullVolume()" << __FILE__ << __LINE__;
+    // qDebug() << "Na3DWidget::updateFullVolume()" << __FILE__ << __LINE__;
     // Coalesce queued calls to updateFullVolume
     SlotMerger updateFullMerger(updateFullVolumeStatus);
     if (! updateFullMerger.shouldRun())
