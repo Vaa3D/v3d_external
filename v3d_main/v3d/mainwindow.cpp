@@ -272,7 +272,7 @@ MainWindow::MainWindow()
 
     readSettings();
 
-    setWindowTitle(tr("V3D"));
+    setWindowTitle(tr("Vaa3D"));
 
 #if defined(__V3DWSDEVELOP__)
 
@@ -313,7 +313,7 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
-	qDebug("***v3d: ~MainWindow");
+	qDebug("***vaa3d: ~MainWindow");
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -441,7 +441,7 @@ void MainWindow::updateRunPlugin() //20110426 YuY
 			QPluginLoader* loader = new QPluginLoader(v3dpluginFind);
 			if (!loader)
 			{
-				v3d_msg(QString("ERROR open the specified V3D plugin [%1]").arg(v3dpluginFind), 1);
+				v3d_msg(QString("ERROR open the specified Vaa3D plugin [%1]").arg(v3dpluginFind), 1);
 				return;
 			}
 
@@ -546,7 +546,7 @@ void MainWindow::triggerRunPlugin()
 }
 
 void MainWindow::handleCoordinatedCloseEvent(QCloseEvent *event) {
-    qDebug("***v3d: MainWindow::closeEvent");
+    qDebug("***vaa3d: MainWindow::closeEvent");
 
     writeSettings(); //added on 090501 to save setting (default preferences)
 
@@ -589,7 +589,7 @@ void MainWindow::dropEvent(QDropEvent *event)
 {
 	QString fileName;
 
-	qDebug("V3D MainWindow::dropEvent");
+	qDebug("Vaa3D MainWindow::dropEvent");
     const QMimeData *mimeData = event->mimeData();
     if (mimeData->hasImage())
     {
@@ -955,7 +955,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 				}
 				catch (...)
 				{
-					v3d_msg("You fail to open a 3D view window. You may have opened too many stacks (if so please close some first) or try to render a too-big 3D view (if so please contact Hanchuan Peng for a 64-bit version of V3D).");
+					v3d_msg("You fail to open a 3D view window. You may have opened too many stacks (if so please close some first) or try to render a too-big 3D view (if so please contact Hanchuan Peng for a 64-bit version of Vaa3D).");
 					return;
 				}
 			}
@@ -963,6 +963,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 		else if (curfile_info.suffix().toUpper()=="APO" ||
 				 curfile_info.suffix().toUpper()=="SWC" ||
 				 curfile_info.suffix().toUpper()=="OBJ" ||
+				 curfile_info.suffix().toUpper()=="VAA3DS")
 				 curfile_info.suffix().toUpper()=="V3DS")
 		{
 			//directly open the 3D viewer
@@ -978,7 +979,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 			//set up data
 			if (curfile_info.suffix().toUpper()=="APO") mypara_3Dview->pointcloud_file_list.append(fileName);
 			else if (curfile_info.suffix().toUpper()=="SWC") mypara_3Dview->swc_file_list.append(fileName);
-			else if (curfile_info.suffix().toUpper()=="OBJ" || curfile_info.suffix().toUpper()=="V3DS") mypara_3Dview->surface_file = fileName;
+			else if (curfile_info.suffix().toUpper()=="OBJ" || curfile_info.suffix().toUpper()=="V3DS" || curfile_info.suffix().toUpper()=="VAA3DS") 
+                mypara_3Dview->surface_file = fileName;
 			else {delete mypara_3Dview; mypara_3Dview=0; return;}
 
 			//
@@ -994,7 +996,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 			}
 			catch (...)
 			{
-				v3d_msg("You fail to open a 3D view window. You may have opened too many stacks (if so please close some first) or try to render a too-big 3D view (if so please contact Hanchuan Peng for a 64-bit version of V3D).");
+				v3d_msg("You fail to open a 3D view window. You may have opened too many stacks (if so please close some first) or try to render a too-big 3D view (if so please contact Hanchuan Peng for a 64-bit version of Vaa3D).");
 				return;
 			}
 
@@ -1062,10 +1064,14 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 				 (curfile_info.suffix().toUpper()=="TIFF") ||
 				 (curfile_info.suffix().toUpper()=="RAW") ||
 				 (curfile_info.suffix().toUpper()=="V3DRAW") ||
+				 (curfile_info.suffix().toUpper()=="VAA3DRAW") ||
 				 (curfile_info.suffix().toUpper()=="RAW5") ||
 				 (curfile_info.suffix().toUpper()=="V3DRAW5") ||
-                                 (curfile_info.suffix().toUpper()=="MRC") || // specific ".tif" ".lsm" ".raw" file, changed by YuY Nov. 19, 2010
-                                  (curfile_info.suffix().toUpper()=="V3DPBD"))
+				 (curfile_info.suffix().toUpper()=="VAA3DRAW5") ||
+                                 (curfile_info.suffix().toUpper()=="MRC") || 
+                                  (curfile_info.suffix().toUpper()=="V3DPBD") ||
+                 (curfile_info.suffix().toUpper()=="VAA3DPBD")
+                 )
 		{
 			try
 			{
@@ -1136,7 +1142,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 		}
 		else // changed by YuY Nov. 19, 2010. Msg corrected by PHC, 2011-06-04
 		{
-			v3d_msg(QString("The file [%1] cannot be opened properly! Check the data type or file extension; or use the special V3D file IO plugin (e.g. BioFormat plugin, etc); or convert the file format to something V3D can read (e.g. a standard TIF file).").arg(fileName), 1);
+			v3d_msg(QString("The file [%1] cannot be opened properly! Check the data type or file extension; or use the special Vaa3D file IO plugin (e.g. BioFormat plugin, etc); or convert the file format to something Vaa3D can read (e.g. a standard TIF file).").arg(fileName), 1);
 			return;
 		}
 
@@ -1329,7 +1335,7 @@ void MainWindow::setCurrentFile(const QString &fileName)
 //	else
 //		setWindowTitle(tr("%1 - %2").arg(strippedName(curFile)));
 
-	QSettings settings("HHMI", "V3D");
+	QSettings settings("HHMI", "Vaa3D");
 	QStringList files = settings.value("recentFileList").toStringList();
 	files.removeAll(fileName);
 	files.prepend(fileName);
@@ -1347,7 +1353,7 @@ void MainWindow::setCurrentFile(const QString &fileName)
 
 void MainWindow::updateRecentFileActions()
 {
-	QSettings settings("HHMI", "V3D");
+	QSettings settings("HHMI", "Vaa3D");
 	QStringList files = settings.value("recentFileList").toStringList();
 
 	int numRecentFiles = qMin(files.size(), (int)MaxRecentFiles);
@@ -1448,7 +1454,7 @@ void MainWindow::updateMenus()
 	procSettings->setEnabled(true);//always true
 
 	{
-		QSettings settings("HHMI", "V3D");
+		QSettings settings("HHMI", "Vaa3D");
 		QStringList files = settings.value("recentFileList").toStringList();
 		int numRecentFiles = qMin(files.size(), (int)MaxRecentFiles);
 		separator_RecentFiles_Act->setVisible(numRecentFiles > 0);
@@ -1784,7 +1790,7 @@ void MainWindow::updateProcessingMenu()
     proc_segmentation_menu = advancedProcMenu->addMenu(tr("3D segmentation"));
 #endif
 #ifdef _ALLOW_NEURONSEG_MENU_
-    proc_tracing_menu = advancedProcMenu->addMenu(tr("3D tracing (V3D-Neuron tracing v2.0)"));
+    proc_tracing_menu = advancedProcMenu->addMenu(tr("3D tracing (Vaa3D-Neuron tracing v2.0)"));
 #endif
 #ifdef _ALLOW_IMGREG_MENU_
     proc_registration_menu = advancedProcMenu->addMenu(tr("3D registration"));
