@@ -1,0 +1,121 @@
+<ui version="4.0" >
+ <class>import_filelist_tool</class>
+ <widget class="QDialog" name="import_filelist_tool" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>371</width>
+    <height>163</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Image/file sequence importer</string>
+  </property>
+  <widget class="QWidget" name="layoutWidget" >
+   <property name="geometry" >
+    <rect>
+     <x>30</x>
+     <y>21</y>
+     <width>318</width>
+     <height>117</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" >
+    <item>
+     <layout class="QGridLayout" >
+      <item row="0" column="0" >
+       <widget class="QPushButton" name="filterButton" >
+        <property name="text" >
+         <string>File name filter</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" >
+       <widget class="QLineEdit" name="filterEdit" />
+      </item>
+      <item row="1" column="0" >
+       <widget class="QPushButton" name="numimgButton" >
+        <property name="text" >
+         <string># files-filtered in this folder</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" >
+       <widget class="QSpinBox" name="numimgBox" />
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" >
+      <item>
+       <spacer>
+        <property name="orientation" >
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0" >
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="cancelButton" >
+        <property name="text" >
+         <string>Cancel</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="okButton" >
+        <property name="text" >
+         <string>OK</string>
+        </property>
+        <property name="default" >
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>okButton</sender>
+   <signal>clicked()</signal>
+   <receiver>import_filelist_tool</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>145</x>
+     <y>79</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>76</x>
+     <y>88</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cancelButton</sender>
+   <signal>clicked()</signal>
+   <receiver>import_filelist_tool</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>243</x>
+     <y>84</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>280</x>
+     <y>92</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

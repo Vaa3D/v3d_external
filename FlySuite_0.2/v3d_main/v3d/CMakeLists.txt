@@ -1,0 +1,315 @@
+set(V3D_SRCS
+  # main.cpp
+  dialog_rotate.cpp
+  # dialog_watershed_para.cpp
+  idrawmain.cpp
+  import_filelistname.cpp
+  import_tiffseries.cpp
+  # dialog_pointcloudatlas_linkerloader.cpp
+  glwidget.cpp # duplicate symbol in arthurwidget.cpp
+  histogramsimple.cpp
+  mdichild.cpp
+  my4dimage.cpp
+  rotate_image.cpp
+  v3dimgproc_entry.cpp
+  v3dimg_proc_neuron.cpp
+  # vano_linker_loader_dialog.cpp
+  atlas_viewer.cpp
+  # atlas_window.cpp   looks for image_window.h : non-existing file : FIXME
+  colormap.cpp
+  mainwindow.cpp
+  ../custom_toolbar/v3d_custom_toolbar.cpp
+  mainwindow_interface.cpp
+  v3d_core.cpp
+  dialog_keypoint_features.cpp
+  landmark_property_dialog.cpp
+  DownloadManager.cpp
+  CommandManager.cpp
+  v3d_application.cpp
+  ../cell_counter/CellCounter3D.cpp
+  v3d_commandlineparser.cpp
+  pluginfunchandler.cpp
+  ChannelTable.cpp
+  v3d_actions.cpp)
+
+set(V3D_RCCS v3d.qrc ../3drenderer/3drenderer.qrc)
+
+QT4_ADD_RESOURCES(V3D_RCC_SRCS ${V3D_RCCS})
+
+QT4_WRAP_UI(QT_UI_SRCS
+  v3d_global_preference.ui
+  template_matching_cellseg.ui
+  landmark_property.ui
+  surface_obj_annotation.ui
+  surfaceobj_geometry_dialog.ui
+  dialog_update_v3d.ui
+  dialog_update_list.ui
+  dialog_update_options.ui
+  dialog_update_downloading.ui
+  dialog_update_checking.ui
+  dialog_curve_trace.ui
+  dialog_imagecrop_bbox.ui
+  dialog_imageresample.ui
+  dialog_keypoint_features.ui
+  dialog_maskroi.ui
+  # dialog_pointcloudatlas_linkerloader.ui
+  # dialog_vano_linkerloader.ui
+  # FL_levelsetSegPara.ui
+  # FL_watershedSegPara.ui
+  import_filelist_dialog.ui
+  import_images_tool.ui
+  dialog_url_entry.ui
+  )
+
+QT4_WRAP_CPP(QT_MOC_SRCS
+  atlas_viewer.h
+  dialog_rotate.h
+  # dialog_watershed_para.h
+  dialog_imagecrop_bbox.h
+  dialog_maskroi.h
+  dialog_imageresample.h
+  dialog_curve_trace_para.h
+  dialog_keypoint_features.h
+  DownloadManager.h
+  glwidget.h
+  idrawmain.h
+  import_filelist_dialog.h
+  import_images_tool_dialog.h
+  landmark_property_dialog.h
+  mdichild.h
+  mainwindow.h
+  xformwidget.h
+  v3d_core.h
+  v3d_global_preference_dialog.h
+  v3d_version_info.h
+  v3d_actions.h
+  v3d_application.h
+  ChannelTable.h
+  ../custom_toolbar/v3d_custom_toolbar.h
+  )
+
+include_directories( BEFORE
+  "${CMAKE_CURRENT_BINARY_DIR}/../v3dbase"
+  "${CMAKE_CURRENT_BINARY_DIR}"
+  "${CMAKE_CURRENT_BINARY_DIR}/../neuron_annotator"
+  ../neuron_annotator
+  "${CMAKE_CURRENT_SOURCE_DIR}"
+  )
+
+add_library(v3dbase ${QT_UI_SRCS} ${QT_MOC_SRCS})
+
+target_link_libraries( v3dbase v3dbase1 jba newmat11 multithreadimageIO ${QT_LIBRARIES} )
+
+add_library(v3dbase2 ${V3D_SRCS})
+add_dependencies(v3dbase2 v3dbase)
+add_dependencies(v3dbase2 NeuronAnnotatorLib)
+add_dependencies(v3dbase NeuronAnnotatorLib)
+
+if (WIN32) # Windows MSYS build
+  # All this MYS stuff is just to compile in a program icon for windows
+  set(CMAKE_RC_COMPILER_INIT windres)
+  enable_language(RC)
+  set(CMAKE_RC_COMPILE_OBJECT
+    "<CMAKE_RC_COMPILER> -O coff -i <SOURCE> -o <OBJECT>")
+  add_executable( v3d # *not* WIN32, which causes MSVC to call WinMain() instead of main()
+      main.cpp
+      ${V3D_RCC_SRCS}
+      v3d_win.rc)
+else()
+  add_executable( v3d 
+      main.cpp
+      ${V3D_RCC_SRCS} )
+endif()
+
+if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
+    set_target_properties(v3d PROPERTIES
+        OUTPUT_NAME NeuronAnnotator)
+endif()
+
+target_link_libraries( v3d
+  v3dbase2
+  v3dbase
+  V3DInterface
+  v3d_plugin_loader
+  3drenderer
+  neuron_tracing
+  worm_straighten_c
+  # mylib_tiff
+  cellseg
+  ${OPENGL_glu_LIBRARY}
+  ${QT4_DEMOS_LIBRARY}
+  )
+  
+if (MSVC)
+  target_link_libraries(v3d ${TIFF_LIBRARY})
+else()
+  target_link_libraries(v3d mylib_tiff)
+endif()
+
+# CMB 11-Oct-2010
+target_link_libraries(v3d ${QT_QTNETWORK_LIBRARY})
+target_link_libraries(v3d ${QT_QTXML_LIBRARY})
+
+if(APPLE)
+    # There are two ways to build V3D on Mac.
+    # Either as an application bundle in directory "v3d.app",
+    # or as a command line tool in directory "v3d".
+    # Redefine V3D_MAC_CREATE_BUNDLE variable, in case this is not built
+    # from very top trunk directory.
+    set(V3D_MAC_CREATE_BUNDLE TRUE CACHE BOOL
+        "Create V3D.app application bundle, instead of v3d command line tool")
+    if (V3D_MAC_CREATE_BUNDLE)
+        # Build app bundle in place at build time
+        file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/v3d")
+        if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
+            set(BUNDLE_APP_NAME NeuronAnnotator.app)
+        else()
+            set(BUNDLE_APP_NAME v3d.app)
+        endif()
+        if(V3D_STAGING_BASE_DIR)
+            set(BUNDLE_BUILD_DIR "${V3D_STAGING_BASE_DIR}/${BUNDLE_APP_NAME}" CACHE PATH "Where to build Mac OS X application bundle" FORCE)
+        else()
+            set(BUNDLE_BUILD_DIR "${CMAKE_BINARY_DIR}/v3d/${BUNDLE_APP_NAME}" CACHE PATH "Where to build Mac OS X application bundle" FORCE)
+        endif()
+        set(V3D_BUILD_BINARY_DIR "${BUNDLE_BUILD_DIR}/Contents/MacOS" CACHE INTERNAL "" FORCE)
+        # file(REMOVE_RECURSE "${BUNDLE_BUILD_DIR}/Contents/Frameworks") # Dangerous...
+        # file(REMOVE_RECURSE "${BUNDLE_BUILD_DIR}/Contents/Plugins") # Dangerous...
+        file(MAKE_DIRECTORY "${BUNDLE_BUILD_DIR}"
+                            "${BUNDLE_BUILD_DIR}/Contents"
+                            "${BUNDLE_BUILD_DIR}/Contents/MacOS"
+                            "${BUNDLE_BUILD_DIR}/Contents/Resources"
+        )
+        # MACOSX_BUNDLE_WHATEVER parameters must be set before configure_file statement on Info.plist is called
+        # MACOSX_BUNDLE_EXECUTABLE_NAME should match CPACK_BUNDLE_NAME
+        # Launch script is called v3d_script (not just 'v3d'), because...
+        # ...actual binary must be called "v3d", so macdeployqt tool can find it.
+        set(MACOSX_BUNDLE_EXECUTABLE_NAME v3d_script)
+        set(MACOSX_BUNDLE_INFO_STRING "v3d")
+        set(MACOSX_BUNDLE_ICON_FILE "v3d.icns")
+        set(MACOSX_BUNDLE_GUI_IDENTIFIER "org.hhmi.janelia.v3d")
+        set(MACOSX_BUNDLE_LONG_VERSION_STRING ${V3D_VERSION})
+        set(MACOSX_BUNDLE_BUNDLE_NAME v3d)
+        set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${V3D_VERSION})
+        set(MACOSX_BUNDLE_BUNDLE_VERSION ${PACKAGE_VERSION})
+        set(MACOSX_BUNDLE_COPYRIGHT "(c) 2006-2010 Hanchuan Peng")
+        configure_file(
+          ${CMAKE_CURRENT_SOURCE_DIR}/../CMake/package/MacOSXBundleInfo.plist.in
+          ${BUNDLE_BUILD_DIR}/Contents/Info.plist
+          @ONLY
+        )
+        if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
+            configure_file(
+                "${CMAKE_CURRENT_SOURCE_DIR}/../CMake/package/neuron_annotator_mac.sh"
+                "${BUNDLE_BUILD_DIR}/Contents/MacOS/${MACOSX_BUNDLE_EXECUTABLE_NAME}"
+                COPYONLY)
+        else()
+            configure_file(
+                "${CMAKE_CURRENT_SOURCE_DIR}/../CMake/package/v3d_mac.sh"
+                "${BUNDLE_BUILD_DIR}/Contents/MacOS/${MACOSX_BUNDLE_EXECUTABLE_NAME}"
+                COPYONLY)
+        endif()
+        configure_file(
+            "${CMAKE_CURRENT_SOURCE_DIR}/../v3d/v3d.icns"
+            "${BUNDLE_BUILD_DIR}/Contents/Resources/v3d.icns"
+            COPYONLY)
+        install(DIRECTORY ${BUNDLE_BUILD_DIR}
+            DESTINATION "."
+            USE_SOURCE_PERMISSIONS)
+    else(V3D_MAC_CREATE_BUNDLE)
+        # Don't create a bundle, just a v3d folder containing v3d and plugins
+        # Place v3d in a folder called "v3d"
+        set(V3D_INSTALL_DIR "v3d" CACHE INTERNAL "Relative path where V3D will be installed")
+        install(TARGETS v3d
+            DESTINATION ${V3D_INSTALL_DIR}
+            COMPONENT v3d)
+    endif(V3D_MAC_CREATE_BUNDLE)
+
+else(APPLE)
+
+    # On non-apple platforms, install executable, libraries, and plugins individually
+    set(V3D_INSTALL_DIR "bin" CACHE INTERNAL "Relative path where V3D will be installed")
+    install(TARGETS v3d 
+        DESTINATION ${V3D_INSTALL_DIR}
+        COMPONENT v3d)
+    
+    # Also install shared libraries that are needed by v3d
+    if(WIN32) # well, MSYS, mostly
+        get_filename_component(CXX_BINDIR "${CMAKE_CXX_COMPILER}" PATH)
+        set(LIB_PATHS
+            "${TIFF_INCLUDE_DIR}/../bin"
+            "${QT_LIBRARY_DIR}/../bin"
+            "${CXX_BINDIR}")
+        set(SHLIBS zlib1.dll jpeg62.dll libtiff3.dll
+            QtCore4.dll QtGui4.dll QtNetwork4.dll QtOpenGL4.dll QtXml4.dll
+            mingwm10.dll "libgcc_s_dw2-1.dll" "libstdc++-6.dll")
+    endif()
+    if(UNIX AND NOT APPLE) # Linux
+        set(LIB_PATHS "")
+        set(SHLIBS "")
+        # On second thought, don't install any libraries with linux.
+        # We should document dependencies.
+        # set(SHLIBS libtiff.so.4 libz.so.1 libjpeg.so.62
+        #     libQtCore.so.4 libQtGui.so.4 libQtNetwork.so.4 libQtOpenGL.so.4 libQtXml.so.4)
+    endif()
+    # message("LIB_PATHS = ${LIB_PATHS}")
+    foreach(SHLIB ${SHLIBS})
+        # message("Searching for ${SHLIB}")
+        set(lib_var_name "${SHLIB}_LIB_FILE")
+        find_file(${lib_var_name}
+            NAMES 
+                ${SHLIB}
+            PATHS "${LIB_PATHS}" 
+            NO_DEFAULT_PATH)
+        find_file(${lib_var_name}
+            NAMES ${SHLIB}
+            PATHS /usr/lib /lib
+                "${TIFF_INCLUDE_DIR}/../bin" # ${LIB_PATHS} does not work if spaces are in name...
+           # Yes default paths, if above find_library failed
+            )
+        set(lib_name "${${lib_var_name}}")
+        # Follow symlinks to the real file
+        # So we don't just install symlinks
+        if(lib_name)
+            # message("Found ${lib_name}")
+        else()
+            # message("${SHLIB} (${lib_name}) not found")
+        endif()
+        get_filename_component(real_lib ${lib_name} REALPATH)
+        get_filename_component(lib_name ${lib_name} NAME) # Strip path
+        if(real_lib)
+            install(PROGRAMS
+                ${real_lib}
+                DESTINATION ${V3D_INSTALL_DIR}
+                COMPONENT RuntimeLibraries
+                RENAME ${lib_name}
+        )
+        endif()
+        mark_as_advanced(${lib_var_name})
+    endforeach()
+    
+endif(APPLE)
+
+# Enforce a particular location for v3d.exe at build time.  So it can be next to plugins, for testing  before install.
+# This must be defined after above check for BUNDLE_BUILD_DIR
+if (V3D_BUILD_BINARY_DIR)
+    # Build v3d directly into nascent app bundle
+    set_target_properties(v3d PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${V3D_BUILD_BINARY_DIR}")
+    if (MSVC)
+        # hack to get around the "Debug" and "Release" directories cmake tries to add on Windows
+        set_target_properties (v3d PROPERTIES PREFIX "../")
+    endif()
+endif()
+
+target_link_libraries(v3d NeuronAnnotatorLib)
+
+if(V3D_MAC_CREATE_BUNDLE)
+    # Install Qt libraries into bundle
+    find_program(MAC_DEPLOY_QT macdeployqt)
+    add_custom_command(TARGET v3d POST_BUILD
+        COMMAND "${MAC_DEPLOY_QT}" "${BUNDLE_BUILD_DIR}"
+        DEPENDS v3d
+        COMMENT "Inserting Qt libraries into v3d.app")
+endif()
+
+

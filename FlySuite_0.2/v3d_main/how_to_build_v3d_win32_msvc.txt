@@ -1,0 +1,58 @@
+
+******** How to build V3D (32bit) on Windows 7 (64bit) using MSVC Express (32bit) using command line tool: *************
+
+(-1) Ensure you have checked out V3D source code, installed QT (e.g. QT 4.6.2 from googlecode site: the correct project should be "qt-msvc-installer", which has a web site http://code.google.com/p/qt-msvc-installer/), and installed MSVC on your machine!
+
+(0) Click Windows 7 "Start" Button to enter the "All Programs" and then go to
+    "Microsoft Visual C++ 2008 Express Edition" and then "Visual Studio Tools" 
+    and then click "Visual Studio 2008 Command Prompt" to open a command line window.
+
+(1) Check out V3D src
+
+(2) Enter v3d_main\v3d folder, run "qmake v3d_msvc.pro"
+
+(3) Enter v3d_main\common_lib\src_package folder, unzip tiff.3.8.2.1.tar.gz, and extract the four files:
+        tiff.h
+        tiffio.h
+        tiffvers.h
+        tiffconf.h.vc (and rename it to tiffconf.h)
+    (note A: the actual 32bit tif library has been pre-complied and put in the v3d_main\common_lib\winlib folder, so no need to worry about how to build libtiff)
+    (note B: the actual 64bit tif library should be in the folder v3d_main\common_lib\winlib64)
+
+(4) Enter v3d_main\common_lib\src_package folder, unzip the boost_1_46_0.tar.gz and then move its sub-folder "boost" to "v3d_main\common_lib\include\boost".
+
+(5) Enter v3d_main\v3d folder and run "nmake /f Makefile.Release"
+
+(6) Now V3D has been built. You can run it from the location "v3d_main\v3d\release\v3d_msvc.exe".
+
+
+Additional Note 1: If you have built V3D using similar ways before and already have "libtiff" and "boost" header files, you can skip steps (3) and (4).
+Additional Note 2: If you want to build 64bit V3D using MSVC, you will need a 64bit MSVC compiler, plus using a similar command line window for the 64bit MSVC as 
+                   explained in Step 0.
+Additional Note 3: So far the V3D plugins have not been built yet. They can be built in similar ways.
+
+
+
+************How to build V3D (32bit and 64bit) on Windows 7 (64bit) Using MS Visual Studio 2008***************
+(1) Check out V3D src
+
+(2) Open "Visual Studio 2008 Command Prompt" (for 32bit building) window or "Visual Studio 2008 x64 Win64 Command Prompt" (for 64bit building) window
+	from "MS Visual Studio 2008 -> Visual Studio Tools" menu item in Windows Start menu
+
+(3) Enter "v3d_main\v3d" folder
+
+(4) Run "qmake -tp vc v3d_msvc.pro". This command creates a MS Visual Studio 2008 project file "v3d_msvc.vcproj" in "v3d_main\v3d" folder
+
+(5) Double click "v3d_msvc.vcproj" in "v3d_main\v3d" folder and open it in MS Visual Studio 2008
+
+(6) Choose building in "Release" mode in MS Visual Studio 2008
+
+(7) Choose building in "Win32" (for 32bit building) or "x64" (for 64bit building) mode in v3d_msvc Property Pages (by right-click v3d_msvc project icon 
+	in the left collumn in workspace in MS Visual Studio 2008) or just on the toolbar
+
+(8) Choose menu "Build->Build Solution F7" to build the solution. A popup dialog will appear to ask to save solution file for this project. 
+	Just click "OK" in this dialog
+
+(9) Now V3D has been built. You can run it from the location "v3d_main\v3d\release\v3d_msvc.exe".
+
+The building method works for both 32bit and 64bit buildings.

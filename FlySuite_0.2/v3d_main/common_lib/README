@@ -1,0 +1,16 @@
+The 3rd party library files were provided here only for convenience. These packages should be downloaded 
+from the respective websites directly, except libtiff, which was changed a little bit so that it can be
+used to read Zeiss LSM file.
+
+The two not-really-needed libraries fftw and gsl are standard. They are kept here for convenience.
+
+The newmat11 library is necessary.
+
+The boost library is also necessary.
+
+When compile fftw libraries, two versions for both single-precision (float) and double-precision (double) 
+numbers need to be generated. So it needs to be configure twice and make and make install twice.
+
+
+-- 080507
+
