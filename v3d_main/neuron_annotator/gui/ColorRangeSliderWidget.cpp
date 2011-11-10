@@ -2,6 +2,7 @@
 #include <cmath>
 #include <QMouseEvent>
 #include <QDebug>
+#include <cstdlib>
 
 ColorRangeSliderWidget::ColorRangeSliderWidget(QWidget *parent)
     : QWidget(parent)
@@ -28,7 +29,7 @@ ColorRangeSliderWidget::Control ColorRangeSliderWidget::getControlAtPosition(int
     int minPos = getMinPos();
     int gammaPos = getGammaPos();
     int maxPos = getMaxPos();
-    if (std::abs(pos - gammaPos) < 10)
+    if (std::abs((pos - gammaPos)) < 10)
     {
         // qDebug() << "gamma";
         return CONTROL_GAMMA;
