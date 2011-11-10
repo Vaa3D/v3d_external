@@ -277,7 +277,7 @@ bool ireconstructingwnorm(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, 
                         
                         //
                         float coef;
-                        if(!computeWeights(vim, i, j, k, ii, coef) )
+                        if(!computeWeights<REAL>(vim, i, j, k, ii, coef) )
                         {
                             printf("Fail to call function computeWeights!\n");
                             return false;
@@ -426,7 +426,7 @@ bool ireconstructing(Tdata *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>
                         
                         //
                         float coef;
-                        if(!computeWeights(vim, i, j, k, ii, coef) )
+                        if(!computeWeights<REAL>(vim, i, j, k, ii, coef) )
                         {
                             printf("Fail to call function computeWeights!\n");
                             return false;
