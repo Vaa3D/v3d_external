@@ -77,7 +77,7 @@ public:
 
 // this is an extension to 3D region growing from octave 2D bwlabel code
 // find func copied from octave bwlabel code
-static int find( int set[], int x )
+static int find(int set[], int x)
 {
     int r = x;
     while ( set[r] != r )
@@ -100,7 +100,7 @@ T y_min(T x, T y)
 template <class T>
 T y_abs(T x)
 {
-    return (x<0)?-x:x;
+    return (x<(T)0)?-x:x;
 }
 
 // delete 1d pointer
@@ -110,6 +110,105 @@ void y_del(T *p)
     if(p) {delete []p; p=NULL;}
 }
 
+// new 1d pointer
+template<class T, class Tidx>
+void y_new(T *p, Tidx N)
+{
+    try
+    {
+        p = new T [N];
+    }
+    catch(...)
+    {
+        cout<<"Attempt to allocate memory failed!"<<endl;
+        y_del<T>(p);
+        return;
+    }
+}
+
+template<class T>
+T sign(T x)
+{
+    return ((x>=(T)0) ? (T)1 : (T)(-1));
+}
+
+template<class T>
+T sign2v(T a, T b)
+{
+    return (sign<T>(b)*y_abs<T>(a));
+}
+
+// Displacement fields for pairwise images with overlap regions
+template <class T, class Tidx>
+class DF
+{
+public:
+    DF(T *in_offsets, Tidx N)
+    {
+        length = N; // x,y,z
+
+        offsets = NULL;
+
+        try
+        {
+            offsets = new T [length];
+
+            for(Tidx i=0; i<length; i++)
+            {
+                offsets[i] = in_offsets[i];
+            }
+        }
+        catch (...)
+        {
+            printf("Fail to allocate memory.\n");
+            return;
+        }
+
+    }
+
+    DF()
+    {
+        length = 3; // x, y, z
+
+        offsets = NULL;
+
+        try
+        {
+            offsets = new T [length];
+            memset(offsets, 0, sizeof(T)*length);
+        }
+        catch (...)
+        {
+            printf("Fail to allocate memory.\n");
+            return;
+        }
+    }
+
+    Tidx getSize()
+    {
+        return length;
+    }
+
+    void clean()
+    {
+        y_del<T>(offsets);
+    }
+
+    ~DF(){}
+
+public:
+    T *offsets;
+    Tidx length;
+
+    Tidx n;
+    Tidx pre;
+
+    T coeff;
+
+    string fn_image; // absolute path + file name
+};
+
+typedef vector< DF<REAL, V3DLONG> > DFList;
 
 // Define a lookup table
 template <class T>
@@ -336,6 +435,625 @@ public:
 
 // define a point type
 typedef _POINT<V3DLONG, float> POINT;
+
+// swap
+template <class Tdata>
+void swap2v(Tdata a, Tdata b)
+{
+    Tdata tmp = a;
+    a=b;
+    b=tmp;
+}
+
+//sort by ascending order
+template <class Tdata, class Tidx>
+void quickSortAscending(Tdata *a, Tidx l, Tidx r)
+{
+    if(l>=r) return;
+    Tidx i=l;
+    Tidx j=r+1;
+
+    Tdata pivot = a[l];
+
+    while(true)
+    {
+        do{ i = i+1; } while(a[i]<pivot);
+        do{ j = j-1; } while(a[j]>pivot);
+
+        if(i>=j) break;
+
+        //swap
+        swap2v<Tdata>(a[i], a[j]);
+    }
+
+    //
+    a[l] = a[j];
+    a[j] = pivot;
+
+    //
+    quickSortAscending(a, l, j-1);
+    quickSortAscending(a, j+1, r);
+}
+
+//sort by descending order
+template <class Tdata, class Tidx>
+void quickSortDescending(Tdata *a, Tidx l, Tidx r)
+{
+    if(l>=r) return;
+    Tidx i=l;
+    Tidx j=r;
+
+    Tdata pivot = a[r];
+
+    while(true)
+    {
+        while(a[i]>=pivot) i++;
+        while(a[j]<=pivot) j--;
+
+        if(i>=j) break;
+
+        //swap
+        swap2v<Tdata>(a[i], a[j]);
+    }
+
+    //
+    a[r] = a[i];
+    a[i] = pivot;
+
+    qDebug()<<"i j"<<i<<j;
+
+    //
+    quickSortDescending(a, i+1, r);
+    quickSortDescending(a, l, i-1);
+}
+
+// Matrix class
+template<class Tdata, class Tidx>
+class Y_MAT
+{
+public:
+    Y_MAT(){p=NULL; v=NULL;}
+
+    Y_MAT(Tidx dimx, Tidx dimy, Tdata value)
+    {
+        // value == 0 is a zero matrix
+        // value == 1 is a unitary matrix
+        // otherwise create a diagonal matrix
+
+        row = dimx;
+        column = dimy;
+
+        p=NULL;
+
+        try
+        {
+            Tidx N = row*column;
+            p=new Tdata [N];
+            v=new Tdata *[column];
+        }
+        catch(...)
+        {
+            cout<<"Fail to allocate memory for new Matrix!"<<endl;
+            return;
+        }
+
+        // construct 2d pointer proxy
+        for(Tidx j=0; j<column; j++)
+        {
+            v[j] = p + j*row;
+        }
+
+        if(column<row)
+        {
+            for(Tidx j=0; j<column; j++)
+            {
+                for(Tidx i=0; i<row; i++)
+                {
+                    v[j][i] = 0;
+                }
+
+                v[j][j] = (Tdata)value;
+            }
+        }
+        else
+        {
+            for(Tidx i=0; i<row; i++)
+            {
+                for(Tidx j=0; j<column; j++)
+                {
+                    v[j][i] = 0;
+                }
+
+                v[i][i] = (Tdata)value;
+            }
+        }
+
+
+    }
+
+    Y_MAT(Tdata *pInput, Tidx dimx, Tidx dimy)
+    {
+        p = pInput;
+        row = dimx;
+        column = dimy;
+
+        // construct 2d pointer proxy
+        try
+        {
+            v=new Tdata *[column];
+            for(Tidx j=0; j<column; j++)
+            {
+                v[j] = p + j*row;
+            }
+        }
+        catch(...)
+        {
+            cout<<"Fail to allocate memory for new Matrix!"<<endl;
+            return;
+        }
+    }
+
+    ~Y_MAT(){}
+
+public:
+    void clone(Y_MAT pIn, bool t)
+    {
+        if(t) // transpose
+        {
+            row = pIn.column;
+            column = pIn.row;
+        }
+        else
+        {
+            row = pIn.row;
+            column = pIn.column;
+        }
+
+
+        Tidx N = row*column;
+
+        try
+        {
+            p=new Tdata [N];
+            v=new Tdata *[column];
+
+            for(Tidx j=0; j<column; j++)
+            {
+                v[j] = p + j*row;
+            }
+
+            if(t)
+            {
+                for(Tidx j=0; j<column; j++)
+                {
+                    for(Tidx i=0; i<row; i++)
+                    {
+                        v[j][i] = pIn.v[i][j];
+                    }
+                }
+            }
+            else
+            {
+                for(Tidx i=0; i<N; i++)
+                {
+                    p[i] = pIn.p[i];
+                }
+            }
+
+        }
+        catch(...)
+        {
+            cout<<"Fail to allocate memory for new Matrix!"<<endl;
+            return;
+        }
+
+        return;
+    }
+
+    void copy(Y_MAT M)
+    {
+        clean();
+        clone(M, false);
+    }
+
+    void clean()
+    {
+        y_del<Tdata>(p);
+        if(v){ delete [] v; v=NULL;} // because v is a 2D proxy pointer of p and p has been deleted
+    }
+
+    void prod(Y_MAT M)
+    {
+        if(column!=M.row)
+        {
+            cout<<"Matrix cannot multiply because dimensions are not match!"<<endl;
+            return;
+        }
+
+        Y_MAT T(row,M.column, 0);
+
+        // multiply
+        for(Tidx k=0; k<M.column; k++)
+        {
+            for(Tidx i=0; i<row; i++)
+            {
+                Tdata sum=0;
+                for(Tidx j=0; j<column; j++)
+                {
+                     sum += v[j][i]*M.v[k][j];
+                }
+                T.v[k][i] = sum;
+            }
+        }
+
+        //
+        copy(T);
+        T.clean();
+    }
+
+    void transpose()
+    {
+        Y_MAT T; // tmp Matrix
+
+        T.clone(*this, true);
+
+        copy(T);
+
+        T.clean();
+    }
+
+    void pseudoinverse()
+    {
+        // A = U*S*V'
+        // inv(A) = V*inv(S)*U'
+
+        if(row!=column)
+        {
+            cout<<"Need a square matrix to decomposition!"<<endl;
+            return;
+        }
+
+        //
+        Tidx N = row;
+
+        // init
+        Y_MAT V(N, N, 0);
+        Y_MAT S(N, N, 0);
+        Y_MAT U;
+        U.copy(*this);
+
+        svd(U, S, V);
+
+        // U'
+        U.transpose();
+
+        // inv(S)
+        for(Tidx i=0; i<N; i++)
+        {
+            if(S.v[i][i]>EPS)
+                S.v[i][i] = 1.0/S.v[i][i];
+            else
+                S.v[i][i] = 0.0;
+        }
+
+        // V*inv(S)*U'
+        V.prod(S);
+        V.prod(U);
+
+        copy(V);
+
+        //
+        V.clean();
+        S.clean();
+        U.clean();
+    }
+
+    // computes (sqrt(a^2 + b^2)) without destructive underflow or overflow
+    // "Numerical Recipes" 1992
+    Tdata pythagorean(Tdata a, Tdata b)
+    {
+        Tdata at = fabs(a), bt = fabs(b), ct, result;
+
+        if (at > bt)       { ct = bt / at; result = at * sqrt(1.0 + ct * ct); }
+        else if (bt > 0.0) { ct = at / bt; result = bt * sqrt(1.0 + ct * ct); }
+        else result = 0.0;
+
+        return result;
+    }
+
+    // if A=U*S*V'
+    //  INPUT: A (U=A, S=0, V=0)
+    // OUTPUT: U, S, V
+    // row=column case of the routine SVDCMP from "Numerical Recipes" 1992
+    void svd(Y_MAT U, Y_MAT S, Y_MAT V)
+    {
+        if(row!=column)
+        {
+            cout<<"Need a square matrix to decomposition!"<<endl;
+            return;
+        }
+
+        Tidx N = row;
+
+        Tidx flag, i, its, j, jj, k, l, nm;
+        Tdata anorm = 0.0, g = 0.0, scale = 0.0;
+
+        Tdata c, f, h, s, x, y, z;
+        Tdata *rv1=NULL;
+
+        try
+        {
+            rv1 = new Tdata [N];
+        }
+        catch(...)
+        {
+            cout<<"Fail to allocate memory for temporary variable in svd function!"<<endl;
+            y_del<Tdata>(rv1);
+            return;
+        }
+
+        // Householder reduction to bidiagonal form
+        for (i = 0; i < N; i++)
+        {
+            l = i + 1;
+            rv1[i] = scale * g;
+
+            // left-hand reduction
+            g = s = scale = 0.0;
+            if (i < N)
+            {
+                for (k = i; k < N; k++)
+                    scale += fabs(U.v[i][k]);
+                if (scale)
+                {
+                    for (k = i; k < N; k++)
+                    {
+                        U.v[i][k] /= scale;
+                        s += (U.v[i][k] * U.v[i][k]);
+                    }
+                    f = U.v[i][i];
+                    g = -sign2v<Tdata>(sqrt(s), f);
+                    h = f * g - s;
+                    U.v[i][i] = f - g;
+                    if (i != N - 1)
+                    {
+                        for (j = l; j < N; j++)
+                        {
+                            for (s = 0.0, k = i; k < N; k++)
+                                s += (U.v[i][k] * U.v[j][k]);
+                            f = s / h;
+                            for (k = i; k < N; k++)
+                                U.v[j][k] += f * U.v[i][k];
+                        }
+                    }
+                    for (k = i; k < N; k++)
+                        U.v[i][k] *= scale;
+                }
+            }
+            S.v[i][i] = scale * g;
+
+            // right-hand reduction
+            g = s = scale = 0.0;
+            if (i < N && i != N - 1)
+            {
+                for (k = l; k < N; k++)
+                    scale += fabs(U.v[k][i]);
+                if (scale)
+                {
+                    for (k = l; k < N; k++)
+                    {
+                        U.v[k][i] /= scale;
+                        s += U.v[k][i] * U.v[k][i];
+                    }
+                    f = U.v[l][i];
+                    g = -sign2v<Tdata>(sqrt(s), f);
+                    h = f * g - s;
+                    U.v[l][i] = f - g;
+                    for (k = l; k < N; k++)
+                        rv1[k] = U.v[k][i] / h;
+                    if (i != N - 1)
+                    {
+                        for (j = l; j < N; j++)
+                        {
+                            for (s = 0.0, k = l; k < N; k++)
+                                s += U.v[k][j] * U.v[k][i];
+                            for (k = l; k < N; k++)
+                                U.v[k][j] += s * rv1[k];
+                        }
+                    }
+                    for (k = l; k < N; k++)
+                        U.v[k][i] *= scale;
+                }
+            }
+            anorm = y_max(anorm, (fabs(S.v[i][i]) + fabs(rv1[i])));
+        }
+
+        // accumulate the right-hand transformation
+        for (i = N - 1; i >= 0; i--)
+        {
+            if (i < N - 1)
+            {
+                if (g)
+                {
+                    for (j = l; j < N; j++)
+                        V.v[i][j] = (U.v[j][i] / U.v[l][i]) / g;
+                    // double division to avoid underflow
+                    for (j = l; j < N; j++)
+                    {
+                        for (s = 0.0, k = l; k < N; k++)
+                            s += (U.v[k][i] * V.v[j][k]);
+                        for (k = l; k < N; k++)
+                            V.v[j][k] += (s * V.v[i][k]);
+                    }
+                }
+                for (j = l; j < N; j++)
+                    V.v[i][j] = V.v[j][i] = 0.0;
+            }
+            V.v[i][i] = 1.0;
+            g = rv1[i];
+            l = i;
+        }
+
+        // accumulate the left-hand transformation
+        for (i = N - 1; i >= 0; i--)
+        {
+            l = i + 1;
+            g = S.v[i][i];
+            if (i < N - 1)
+                for (j = l; j < N; j++)
+                    U.v[j][i] = 0.0;
+            if (g)
+            {
+                g = 1.0 / g;
+                if (i != N - 1)
+                {
+                    for (j = l; j < N; j++)
+                    {
+                        for (s = 0.0, k = l; k < N; k++)
+                            s += (U.v[i][k] * U.v[j][k]);
+                        f = (s / U.v[i][i]) * g;
+                        for (k = i; k < N; k++)
+                            U.v[j][k] += f * U.v[i][k];
+                    }
+                }
+                for (j = i; j < N; j++)
+                    U.v[i][j] *= g;
+            }
+            else
+            {
+                for (j = i; j < N; j++)
+                    U.v[i][j] = 0.0;
+            }
+            ++U.v[i][i];
+        }
+
+        // diagonalize the bidiagonal form
+        for (k = N - 1; k >= 0; k--)
+        {   // loop over singular values
+            for (its = 0; its < 30; its++)
+            {   // loop over allowed iterations
+                flag = 1;
+                for (l = k; l >= 0; l--)
+                {   // Test for splitting
+                    // Note that rv1[1] is always zero
+                    nm = l - 1;
+                    if (fabs(rv1[l]) + anorm == anorm)
+                    {
+                        flag = 0;
+                        break;
+                    }
+                    if (fabs(S.v[nm][nm]) + anorm == anorm)
+                        break;
+                }
+                if (flag)
+                {
+                    c = 0.0;
+                    s = 1.0;
+                    for (i = l; i <= k; i++)
+                    {
+                        f = s * rv1[i];
+                        if (fabs(f) + anorm != anorm)
+                        {
+                            g = S.v[i][i];
+                            h = pythagorean(f, g);
+                            S.v[i][i] = h;
+                            h = 1.0 / h;
+                            c = g * h;
+                            s = (- f * h);
+                            for (j = 0; j < N; j++)
+                            {
+                                y = U.v[nm][j];
+                                z = U.v[i][j];
+                                U.v[nm][j] = y*c + z*s;
+                                U.v[i][j] = z*c - y*s;
+                            }
+                        }
+                    }
+                }
+                z = S.v[k][k];
+                if (l == k)
+                {   //convergence
+                    if (z < 0.0)
+                    {   // singular value is made nonnegative
+                        S.v[k][k] = -z;
+                        for (j = 0; j < N; j++)
+                            V.v[k][j] = -V.v[k][j];
+                    }
+                    break;
+                }
+                if (its >= 30) {
+                    y_del<Tdata>(rv1);
+                    cout<<"No convergence in 30 svdcmp iterations!"<<endl;
+                    return;
+                }
+
+                // shift from bottom 2-by-2 minor
+                x = S.v[l][l];
+                nm = k - 1;
+                y = S.v[nm][nm];
+                g = rv1[nm];
+                h = rv1[k];
+                f = ((y - z) * (y + z) + (g - h) * (g + h)) / (2.0 * h * y);
+                g = pythagorean(f, 1.0);
+                f = ((x - z) * (x + z) + h * ((y / (f + sign2v<Tdata>(g, f))) - h)) / x;
+
+                // next QR transformation
+                c = s = 1.0;
+                for (j = l; j <= nm; j++)
+                {
+                    i = j + 1;
+                    g = rv1[i];
+                    y = S.v[i][i];
+                    h = s * g;
+                    g = c * g;
+                    z = pythagorean(f, h);
+                    rv1[j] = z;
+                    c = f / z;
+                    s = h / z;
+                    f = x * c + g * s;
+                    g = g * c - x * s;
+                    h = y * s;
+                    y = y * c;
+                    for (jj = 0; jj < N; jj++)
+                    {
+                        x = V.v[j][jj];
+                        z = V.v[i][jj];
+                        V.v[j][jj] = x*c + z*s;
+                        V.v[i][jj] = z*c - x*s;
+                    }
+                    z = pythagorean(f, h);
+                    S.v[j][j] = z;
+                    if (z)
+                    {
+                        z = 1.0 / z;
+                        c = f * z;
+                        s = h * z;
+                    }
+                    f = (c * g) + (s * y);
+                    x = (c * y) - (s * g);
+                    for (jj = 0; jj < N; jj++)
+                    {
+                        y = U.v[j][jj];
+                        z = U.v[i][jj];
+                        U.v[j][jj] = y*c + z*s;
+                        U.v[i][jj] = z*c - y*s;
+                    }
+                }
+                rv1[l] = 0.0;
+                rv1[k] = f;
+                S.v[k][k] = x;
+            }
+        }
+        y_del<Tdata>(rv1);
+
+        return;
+    }
+    
+public:
+    Tdata *p;
+    Tdata **v;
+    Tidx row, column;
+};
 
 // Virtual Image Class
 template <class T1, class T2, class indexed_t, class LUT>
@@ -5463,8 +6181,9 @@ template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IM
 
 // fusion or blending functions
 //---------------------------------------------------------------------------------------------------------------------------------------------------
-// func weights map for 3D linear blending 
-bool computeWeights(Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, V3DLONG i, V3DLONG j, V3DLONG k, V3DLONG tilei, REAL &weights)
+// func weights map for 3D linear blending
+template<class T>
+bool computeWeights(Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, V3DLONG i, V3DLONG j, V3DLONG k, V3DLONG tilei, T &weights)
 {
     
     V3DLONG vx = vim.sz[0];
@@ -5474,7 +6193,7 @@ bool computeWeights(Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> 
     
     V3DLONG sz_img = vx*vy*vz;
     
-    QList<float> listWeights;
+    QList<T> listWeights;
     listWeights.clear();
     
     V3DLONG numtile;
@@ -5501,12 +6220,12 @@ bool computeWeights(Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> 
         
         if(i>=x_start && i<x_end && j>=y_start && j<y_end && k>=z_start && k<z_end)
         {
-            float dist2xl = fabs(float(i-x_start));
-            float dist2xr = fabs(float(x_end-1-i));
-            float dist2yu = fabs(float(j-y_start));
-            float dist2yd = fabs(float(y_end-1-j));
-            float dist2zf = fabs(float(k-z_start));
-            float dist2zb = fabs(float(z_end-1-k));
+            T dist2xl = fabs(T(i-x_start));
+            T dist2xr = fabs(T(x_end-1-i));
+            T dist2yu = fabs(T(j-y_start));
+            T dist2yd = fabs(T(y_end-1-j));
+            T dist2zf = fabs(T(k-z_start));
+            T dist2zb = fabs(T(z_end-1-k));
             
             if( dist2xr<dist2xl ) dist2xl = dist2xr;
             if( dist2yd<dist2yu ) dist2yu = dist2yd;
@@ -5525,7 +6244,7 @@ bool computeWeights(Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> 
     }
     else
     {
-        float sumweights=0;
+        T sumweights=0;
         for (int i=0; i<listWeights.size(); i++) {
             sumweights += listWeights.at(i);
         }
@@ -5535,7 +6254,7 @@ bool computeWeights(Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> 
     return true;
 }
 
-// subpixel translation using trilinear interpolation
+// func subpixel translation using trilinear interpolation
 template <class Tdata>
 bool subpixshift3D(REAL *pShift, Tdata *pImg, V3DLONG *szImg, rPEAKS pos, V3DLONG *effectiveEnvelope)
 {
