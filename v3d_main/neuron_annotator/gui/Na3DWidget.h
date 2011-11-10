@@ -25,10 +25,8 @@ class Na3DWidget : public V3dR_GLWidget, public NaViewer
 public:
     Na3DWidget(QWidget* parent);
     virtual ~Na3DWidget();
-
     const Vector3D& focus() const {return cameraModel.focus();}
     float getZoomScale() const; // in viewport pixels per image voxel at focus
-
     virtual void mouseMoveEvent(QMouseEvent * event);
     virtual void mousePressEvent(QMouseEvent * event);
     virtual void mouseReleaseEvent(QMouseEvent * event);
@@ -36,7 +34,6 @@ public:
     virtual void mouseDoubleClickEvent(QMouseEvent * event); // double click to center
     virtual void keyPressEvent(QKeyEvent *e);
     virtual void keyReleaseEvent(QKeyEvent *e);
-
     virtual void resizeEvent(QResizeEvent * event);
     virtual void setDataFlowModel(const DataFlowModel&);
     void resetVolumeBoundary();
@@ -45,6 +42,12 @@ public:
     void setResizeEnabled(bool b) {bResizeEnabled = b;}
     int neuronAt(QPoint pos);
     void setContextMenus(QMenu* viewerMenu, NeuronContextMenu* neuronMenu);
+    Vector3D getDefaultFocus() const;
+    // Don't update if the current rotation is within 0.5 of the specified integer angle
+    void setXYZBodyRotationInt(int rotX, int rotY, int rotZ);
+    static int radToDeg(double angleInRadians);
+    static bool eulerAnglesAreEquivalent(int x1, int y1, int z1, int x2, int y2, int z2);
+    bool screenShot(QString filename);
 
 signals:
     void neuronSelected(double x, double y, double z);
@@ -62,17 +65,13 @@ public slots:
     void setAlphaBlending(bool);
     void clearLandmarks();
     void setLandmarks(const QList<ImageMarker>);
-    // virtual void annotationModelUpdate(QString updateType);
-    virtual void toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked);
-    virtual void updateFullVolume();
+    void toggleNeuronDisplay(int index, bool checked);
+    void updateFullVolume();
     void onVolumeDataChanged();
     void updateIncrementalColors();
     void showContextMenu(QPoint point);
     void resetView();
-    void resetRotation() {
-        cameraModel.setRotation(Rotation3D());
-        update();
-    }
+    void resetRotation();
     void translateImage(int dx, int dy);
     void showCrosshair(bool b) {NaViewer::showCrosshair(b); update();}
     void updateHighlightNeurons();
@@ -81,11 +80,9 @@ public slots:
     void onPossibleSingleClickAlert();
     virtual void updateImageData();
     void onNeuronSelectionChanged(); // highlight selected neurons
-
     void setXCutLock(int b);
     void setYCutLock(int b);
     void setZCutLock(int b);
-
     void setStereoOff(bool);
     void setStereoLeftEye(bool);
     void setStereoRightEye(bool);
@@ -95,50 +92,11 @@ public slots:
     void setStereoRowInterleaved(bool);
     void setStereoMode(int);
 
-public:
-
-    Vector3D getDefaultFocus() const;
-    // Don't update if the current rotation is within 0.5 of the specified integer angle
-    void setXYZBodyRotationInt(int rotX, int rotY, int rotZ)
-    {
-        Vector3D rotXYZInDegrees = cameraModel.rotation().convertBodyFixedXYZRotationToThreeAngles() * 180.0 / 3.14159;
-        int oldRotX = round(rotXYZInDegrees.x());
-        int oldRotY = round(rotXYZInDegrees.y());
-        int oldRotZ = round(rotXYZInDegrees.z());
-        if (eulerAnglesAreEquivalent(rotX, rotY, rotZ, oldRotX, oldRotY, oldRotZ))
-            return; // no significant change
-        Vector3D newRot = Vector3D(rotX, rotY, rotZ) * 3.14159 / 180.0;
-        cameraModel.setRotation(Rotation3D().setRotationFromBodyFixedXYZAngles(newRot.x(), newRot.y(), newRot.z()));
-        update();
-    }
-
-    static int radToDeg(double angleInRadians) {
-        return round(angleInRadians * 180.0 / 3.14159);
-    }
-    static bool eulerAnglesAreEquivalent(int x1, int y1, int z1, int x2, int y2, int z2) // in degrees
-    {
-        if (   anglesAreEqual(x1, x2)
-            && anglesAreEqual(y1, y2)
-            && anglesAreEqual(z1, z2) )
-        {
-            return true;
-        }
-        // Euler angles are equivalent if y' = -y + 180, x' = x + 180, z' = z + 180
-        int x3 = x2 + 180;
-        // int x3 = x2;
-        int y3 = -y2 + 180;
-        int z3 = z2 + 180;
-        if (   anglesAreEqual(x1, x3)
-            && anglesAreEqual(y1, y3)
-            && anglesAreEqual(z1, z3) )
-        {
-            return true;
-        }
-        // qDebug() << x1 << ", " << y1 << ", " << z1 << ", " << x2 << ", " << y2 << ", " << z2;
-        return false;
-    }
-
-    bool screenShot(QString filename);
+protected slots:
+    // focus setting should be done via cameraModel, not with these methods.
+    void updateRendererZoomRatio(qreal relativeScale);
+    void updateRotation(const Rotation3D&);
+    void updateFocus(const Vector3D& f);
 
 protected:
     bool tryUpdateFullVolume();
@@ -147,30 +105,15 @@ protected:
     void updateCursor();
     void highlightNeuronAtPosition(QPoint pos);
     // Rotation helper methods
-    static int round(double d) {return floor(d + 0.5);}
-    static bool anglesAreEqual(int a1, int a2) // in degrees
-    {
-        if (a1 == a2)
-            return true; // trivially equal
-        else if (((a1 - a2) % 360) == 0)
-            return true;
-        else
-            return false;
-    }
-
-protected slots:
-    // focus setting should be done via cameraModel, not with these methods.
-    void updateRendererZoomRatio(qreal relativeScale);
-    void updateRotation(const Rotation3D&);
-    void updateFocus(const Vector3D& f);
-	
-protected:
+    static int round(double d);
+    static bool anglesAreEqual(int a1, int a2); // in degrees
     virtual void paintGL();
     void paintFiducial(const Vector3D& v);
     void paintGrid();
     virtual void choiceRenderer();
     float glUnitsPerImageVoxel() const;
     void updateDefaultScale();
+
     // BrightnessCalibrator<unsigned char> brightnessCalibrator;
     const DataColorModel * incrementalDataColorModel;
     QCursor * rotateCursor;
@@ -182,6 +125,7 @@ protected:
     bool bShowCornerAxes;
     bool bAlphaBlending;
     bool bClickIsWaiting;
+    bool bVolumeInitialized; // hack to prevent double update on file load
 };
 
 #endif // NA3DWIDGET_H

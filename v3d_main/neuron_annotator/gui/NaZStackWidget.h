@@ -70,8 +70,6 @@ public slots:
     void setBlueChannel();
     void setCurrentZSlice(int sliceNum);
     void updateROIsize(int boxSize);
-    virtual void toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked) {/* TODO */}
-    virtual void updateFullVolume() {/* TODO -- deprecate */}
     void setHDRCheckState(bool state);
     void updateVolumeParameters();
     void updateHDRView();

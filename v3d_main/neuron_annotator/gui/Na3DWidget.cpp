@@ -140,25 +140,6 @@ void Na3DWidget::setLandmarks(const QList<ImageMarker> landmarks)
     updateHighlightNeurons();
 }
 
-/*
-void Na3DWidget::annotationModelUpdate(QString updateType)
-{
-    QList<QString> list=updateType.split(QRegExp("\\s+"));
-
-    if (updateType.startsWith("NEURONMASK_UPDATE")) {
-        QString indexString=list.at(1);
-        QString checkedString=list.at(2);
-        int index=indexString.toInt();
-        bool checked=(checkedString.toInt()==1);
-        toggleNeuronDisplay(index, checked);
-    }
-    else if (updateType.startsWith("FULL_UPDATE")) {
-        qDebug() << "Na3DWidget::annotationModelUpdate" << __FILE__ << __LINE__;
-        updateFullVolume();
-    }
-}
-*/
-
 // Override updateImageData() to avoid that modal progress dialog
 /* virtual */ /* public slot */
 void Na3DWidget::updateImageData()
@@ -200,6 +181,11 @@ void Na3DWidget::resetView()
     // cerr << newFocus << __LINE__ << __FILE__ << endl;
     cameraModel.setFocus(newFocus); // center view
     cameraModel.setRotation(Rotation3D()); // identity rotation
+}
+
+void Na3DWidget::resetRotation() {
+    cameraModel.setRotation(Rotation3D());
+    update();
 }
 
 Vector3D Na3DWidget::getDefaultFocus() const
@@ -431,6 +417,49 @@ void Na3DWidget::setContextMenus(QMenu* viewerMenuParam, NeuronContextMenu* neur
     setContextMenuPolicy(Qt::CustomContextMenu);
     connect(this, SIGNAL(customContextMenuRequested(QPoint)),
             this, SLOT(showContextMenu(QPoint)));
+}
+
+// Don't update if the current rotation is within 0.5 of the specified integer angle
+void Na3DWidget::setXYZBodyRotationInt(int rotX, int rotY, int rotZ)
+{
+    Vector3D rotXYZInDegrees = cameraModel.rotation().convertBodyFixedXYZRotationToThreeAngles() * 180.0 / 3.14159;
+    int oldRotX = round(rotXYZInDegrees.x());
+    int oldRotY = round(rotXYZInDegrees.y());
+    int oldRotZ = round(rotXYZInDegrees.z());
+    if (eulerAnglesAreEquivalent(rotX, rotY, rotZ, oldRotX, oldRotY, oldRotZ))
+        return; // no significant change
+    Vector3D newRot = Vector3D(rotX, rotY, rotZ) * 3.14159 / 180.0;
+    cameraModel.setRotation(Rotation3D().setRotationFromBodyFixedXYZAngles(newRot.x(), newRot.y(), newRot.z()));
+    update();
+}
+
+/* static */
+int Na3DWidget::radToDeg(double angleInRadians) {
+    return round(angleInRadians * 180.0 / 3.14159);
+}
+
+/* static */
+bool Na3DWidget::eulerAnglesAreEquivalent(int x1, int y1, int z1, int x2, int y2, int z2) // in degrees
+{
+    if (   anglesAreEqual(x1, x2)
+        && anglesAreEqual(y1, y2)
+        && anglesAreEqual(z1, z2) )
+    {
+        return true;
+    }
+    // Euler angles are equivalent if y' = -y + 180, x' = x + 180, z' = z + 180
+    int x3 = x2 + 180;
+    // int x3 = x2;
+    int y3 = -y2 + 180;
+    int z3 = z2 + 180;
+    if (   anglesAreEqual(x1, x3)
+        && anglesAreEqual(y1, y3)
+        && anglesAreEqual(z1, z3) )
+    {
+        return true;
+    }
+    // qDebug() << x1 << ", " << y1 << ", " << z1 << ", " << x2 << ", " << y2 << ", " << z2;
+    return false;
 }
 
 /* slot */
@@ -874,8 +903,6 @@ void Na3DWidget::paintGL()
 void Na3DWidget::setDataFlowModel(const DataFlowModel& dataFlowModelParam)
 {
     NaViewer::setDataFlowModel(dataFlowModelParam);
-    connect(&dataFlowModelParam.getNeuronSelectionModel(), SIGNAL(initialized()),
-          this, SLOT(onVolumeDataChanged()));
 
     connect(this, SIGNAL(neuronClearAll()), &dataFlowModelParam.getNeuronSelectionModel(), SLOT(clearAllNeurons()));
     connect(this, SIGNAL(neuronClearAllSelections()), &dataFlowModelParam.getNeuronSelectionModel(), SLOT(clearSelection()));
@@ -884,13 +911,21 @@ void Na3DWidget::setDataFlowModel(const DataFlowModel& dataFlowModelParam)
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(selectionChanged()),
             this, SLOT(onNeuronSelectionChanged()));
 
+    connect(&dataFlowModelParam.getNeuronSelectionModel(), SIGNAL(initialized()),
+          this, SLOT(onVolumeDataChanged()));
+    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(multipleVisibilityChanged()),
+            this, SLOT(updateFullVolume()));
+    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(overlayVisibilityChanged(int,bool)),
+            this, SLOT(updateFullVolume()));
+    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(neuronVisibilityChanged(int,bool)),
+            this, SLOT(toggleNeuronDisplay(int,bool)));
     // Fast-but-approximate color update
     incrementalDataColorModel = &dataFlowModelParam.getFast3DColorModel();
     connect(incrementalDataColorModel, SIGNAL(dataChanged()),
             this, SLOT(updateIncrementalColors()));
 }
 
-void Na3DWidget::toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked)
+void Na3DWidget::toggleNeuronDisplay(int index, bool checked)
 {
     // Don't update single neuron if full update is underway
     if (updateFullVolumeStatus.running()) return;
@@ -905,6 +940,7 @@ void Na3DWidget::toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bo
             needFullUpdate = true; // some calls were discarded, so do full update
         }
         else { // just one call, perform clever single neuron update
+            emit progressValueChanged(10);
             emit progressMessageChanged(QString("Updating textures"));
             QCoreApplication::processEvents();
             getRendererNa()->updateCurrentTextureMask(index, (checked ? 1 : 0));
@@ -950,6 +986,8 @@ void Na3DWidget::onNeuronSelectionChanged() { // highlight selected neurons
 
 void Na3DWidget::onVolumeDataChanged()
 {
+    // qDebug() << "Na3DWidget::onVolumeDataChanged()" << __FILE__ << __LINE__;
+
     init_members();
     if (_idep==0) {
         _idep = new iDrawExternalParameter();
@@ -999,6 +1037,9 @@ void Na3DWidget::onVolumeDataChanged()
     }
     resetVolumeBoundary();
     setThickness(dataFlowModel->getZRatio());
+
+    bVolumeInitialized = true;
+
     update();
 }
 
@@ -1021,10 +1062,21 @@ void Na3DWidget::resetVolumeBoundary()
 void Na3DWidget::updateFullVolume()
 {
     // qDebug() << "Na3DWidget::updateFullVolume()" << __FILE__ << __LINE__;
+    bVolumeInitialized = false;
+
     // Coalesce queued calls to updateFullVolume
     SlotMerger updateFullMerger(updateFullVolumeStatus);
     if (! updateFullMerger.shouldRun())
         return; // first call is already running
+
+    // hack to avoid double update on image load
+    if (bVolumeInitialized)
+    {
+        qDebug() << "Skipping extra volume update because volume was just initialized";
+        return;
+    }
+
+    emit progressValueChanged(5);
     emit progressMessageChanged(QString("Updating all textures"));
     if (tryUpdateFullVolume())
         emit progressComplete();
@@ -1112,3 +1164,22 @@ void Na3DWidget::setZCutLock(int b)
     else    dzCut = 0;
     lockZ = b? 1:0;
 }
+
+/* static */
+int Na3DWidget::round(double d)
+{
+    return floor(d + 0.5);
+}
+
+/* static */
+bool Na3DWidget::anglesAreEqual(int a1, int a2) // in degrees
+{
+    if (a1 == a2)
+        return true; // trivially equal
+    else if (((a1 - a2) % 360) == 0)
+        return true;
+    else
+        return false;
+}
+
+

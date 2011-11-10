@@ -51,7 +51,9 @@ void GalleryButton::mouseMoveEvent(QMouseEvent *moveEvent) {
     emit fragmentHover(index);
 }
 
-void GalleryButton::buttonPress(bool checked) {
+void GalleryButton::buttonPress(bool checked)
+{
+    // qDebug() << "GalleryButton::buttonPress" << checked << __FILE__ << __LINE__;
     emit declareChange(index, checked);
 }
 

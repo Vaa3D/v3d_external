@@ -21,10 +21,6 @@ public:
     bool mouseIsDragging() const {return bMouseIsDragging;}
     virtual void showCrosshair(bool b) {bPaintCrosshair = b;}
 
-// public slots: // NaViewer is not a QObject, so does not have slots.
-    virtual void toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked) = 0;
-    virtual void updateFullVolume() = 0;
-
 public:
     // Each viewer has an internal CameraModel that can optionally be synchronized with an external CameraModel
     CameraModel cameraModel;

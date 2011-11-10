@@ -662,7 +662,7 @@ void NaMainWindow::openMulticolorImageStack(QString dirName)
 
     // std::cout << "Selected directory=" << imageDir.absolutePath().toStdString() << endl;
 
-    if (!closeAnnotationSession()) {
+    if (!deleteDataFlowModel()) {
         QMessageBox::warning(this, tr("Could not close previous Annotation Session"),
                      "Error saving previous session and/or clearing memory - please exit application");
                  return;
@@ -862,7 +862,7 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     connect(&dataFlowModel->getGalleryMipImages(), SIGNAL(dataChanged()),
             this, SLOT(updateGalleries()));
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(initialized()),
-            this, SLOT(updateGalleries()));
+            this, SLOT(initializeGalleries()));
 
     // Z value comes from camera model
     qRegisterMetaType<Vector3D>("Vector3D");
@@ -931,12 +931,6 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     if (! dataFlowModel->loadVolumeData()) return false;
     // dataChanged() signal will be emitted if load succeeds
     return true;
-}
-
-void NaMainWindow::updateGalleries()
-{
-    updateOverlayGallery();
-    updateNeuronGallery();
 }
 
 void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataChanged() signal
@@ -1021,7 +1015,7 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
     connect(ui.v3dr_glwidget, SIGNAL(neuronShownAll(const QList<int>)),
             &dataFlowModel->getNeuronSelectionModel(), SLOT(clearSelection()));
 
-    connect(dataFlowModel, SIGNAL(modelUpdated(QString)), this, SLOT(synchronizeGalleryButtonsToAnnotationSession(QString)));
+    // connect(dataFlowModel, SIGNAL(modelUpdated(QString)), this, SLOT(synchronizeGalleryButtonsToAnnotationSession(QString)));
 
     connect(dataFlowModel, SIGNAL(scrollBarFocus(NeuronSelectionModel::NeuronIndex)),
             ui.fragmentGalleryWidget, SLOT(scrollToFragment(NeuronSelectionModel::NeuronIndex)));
@@ -1029,9 +1023,9 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
     return;
 }
 
-bool NaMainWindow::closeAnnotationSession() {
+bool NaMainWindow::deleteDataFlowModel() {
     if (dataFlowModel!=0) {
-        dataFlowModel->save();
+        // dataFlowModel->save();
         delete dataFlowModel;
         dataFlowModel = NULL;
     }
@@ -1042,17 +1036,21 @@ DataFlowModel* NaMainWindow::getDataFlowModel() const {
     return dataFlowModel;
 }
 
-void NaMainWindow::updateOverlayGallery()
+void NaMainWindow::initializeGalleries()
 {
-    GalleryMipImages::Reader mipReader(dataFlowModel->getGalleryMipImages()); // acquire read lock
-    if (! mipReader.hasReadLock()) return;
-    if (mipReader.getNumberOfOverlays() < 1) return; // mip data are not initialized yet
+    initializeOverlayGallery();
+    initializeNeuronGallery();
+}
 
-    NeuronSelectionModel::Reader selectionReader(dataFlowModel->getNeuronSelectionModel());
-    if (! selectionReader.hasReadLock()) return;
+void NaMainWindow::updateGalleries()
+{
+    updateOverlayGallery();
+    updateNeuronGallery();
+}
 
-    // qDebug() << "updateOverlayGallery() start";
-    // QList<QImage*> * overlayMipList = dataFlowModel->getOverlayMipList();
+void NaMainWindow::initializeOverlayGallery()
+{
+    qDebug() << "NaMainWindow::initializeOverlayGallery()" << __FILE__ << __LINE__;
 
     // Create layout, only if needed.
     QFrame* ui_maskFrame = qFindChild<QFrame*>(this, "maskFrame");
@@ -1072,48 +1070,61 @@ void NaMainWindow::updateOverlayGallery()
             delete item;
         }
 
+        QImage initialImage(100, 140, QImage::Format_ARGB32);
+        initialImage.fill(Qt::gray);
         GalleryButton* referenceButton = new GalleryButton(
-                *mipReader.getOverlayMip(DataFlowModel::REFERENCE_MIP_INDEX),
+                initialImage,
                 "Reference", DataFlowModel::REFERENCE_MIP_INDEX);
-        referenceButton->setChecked(selectionReader.getOverlayStatusList().at(
-                DataFlowModel::REFERENCE_MIP_INDEX)); // we do not want reference initially loaded
         managementLayout->addWidget(referenceButton);
         overlayGalleryButtonList.append(referenceButton);
-        connect(referenceButton, SIGNAL(declareChange(int,bool)),
-                &dataFlowModel->getNeuronSelectionModel(), SLOT(updateOverlay(int,bool)));
 
         GalleryButton* backgroundButton = new GalleryButton(
-                *mipReader.getOverlayMip(DataFlowModel::BACKGROUND_MIP_INDEX),
+                initialImage,
                 "Background", DataFlowModel::BACKGROUND_MIP_INDEX);
-        backgroundButton->setChecked(selectionReader.getOverlayStatusList().at(
-                DataFlowModel::BACKGROUND_MIP_INDEX)); // we do want background initially loaded
         managementLayout->addWidget(backgroundButton);
         overlayGalleryButtonList.append(backgroundButton);
-        connect(backgroundButton, SIGNAL(declareChange(int,bool)),
+    }
+    // Initialize signals whether the buttons were already there or not
+    for (int i = 0; i < 2; ++i)
+    {
+        connect(overlayGalleryButtonList[i], SIGNAL(declareChange(int,bool)),
                 &dataFlowModel->getNeuronSelectionModel(), SLOT(updateOverlay(int,bool)));
     }
-    // Just update icons on subsequent updates
-    else {
-        for (int i = 0; i < 2; ++i) {
-            overlayGalleryButtonList[i]->setThumbnailIcon(*mipReader.getOverlayMip(i));
-            overlayGalleryButtonList[i]->update();
-        }
-    }
+    updateOverlayGallery();
 }
 
-void NaMainWindow::updateNeuronGallery()
+void NaMainWindow::updateOverlayGallery()
+{
+    if (overlayGalleryButtonList.size() != 2) return; // not initialized
+
+    {
+        NeuronSelectionModel::Reader selectionReader(dataFlowModel->getNeuronSelectionModel());
+        if (selectionReader.hasReadLock())
+        {
+            for (int i = 0; i < 2; ++i)
+                overlayGalleryButtonList[i]->setChecked(selectionReader.getOverlayStatusList().at(i));
+        }
+    }
+
+    {
+        GalleryMipImages::Reader mipReader(dataFlowModel->getGalleryMipImages()); // acquire read lock
+        if (mipReader.hasReadLock() && (mipReader.getNumberOfOverlays() == 2))
+        {
+            for (int i = 0; i < 2; ++i)
+                overlayGalleryButtonList[i]->setThumbnailIcon(*mipReader.getOverlayMip(i));
+        }
+    }
+    for (int i = 0; i < 2; ++i)
+        overlayGalleryButtonList[i]->update();
+}
+
+void NaMainWindow::initializeNeuronGallery()
 {
     GalleryMipImages::Reader mipReader(dataFlowModel->getGalleryMipImages()); // acquire read lock
     if (! mipReader.hasReadLock()) return;
 
     NeuronSelectionModel::Reader selectionReader(dataFlowModel->getNeuronSelectionModel());
     if (! selectionReader.hasReadLock()) return;
-
-    // qDebug() << "updateNeuronGallery() start";
-    // QList<QImage*> * maskMipList = dataFlowModel->getNeuronMipList();
-
-    // QFrame* ui_maskGallery = qFindChild<QFrame*>(this, "maskGallery");
-    // Delete any old contents from the layout, such as previous thumbnails
 
     if (neuronGalleryButtonList.size() != mipReader.getNumberOfNeurons())
     {
@@ -1129,17 +1140,35 @@ void NaMainWindow::updateNeuronGallery()
             button->setContextMenu(neuronContextMenu);
             neuronGalleryButtonList.append(button);
             ui.fragmentGalleryWidget->appendFragment(button);
-            button->setChecked(selectionReader.getMaskStatusList().at(i)); // start as checked since full image loaded initially
-            connect(button, SIGNAL(declareChange(int,bool)),
-                    &dataFlowModel->getNeuronSelectionModel(), SLOT(updateNeuronMask(int,bool)));
         }
 
         // qDebug() << "createMaskGallery() end size=" << mipReader.getNumberOfNeurons();
     }
+    // Update signals whether the buttons were already there or not
+    for (int i = 0; i < mipReader.getNumberOfNeurons(); ++i)
+    {
+        neuronGalleryButtonList[i]->setThumbnailIcon(*mipReader.getNeuronMip(i));
+        neuronGalleryButtonList[i]->setChecked(selectionReader.getMaskStatusList().at(i));
+        neuronGalleryButtonList[i]->update();
+        connect(neuronGalleryButtonList[i], SIGNAL(declareChange(int,bool)),
+                &dataFlowModel->getNeuronSelectionModel(), SLOT(updateNeuronMask(int,bool)));
+    }
+}
+
+void NaMainWindow::updateNeuronGallery()
+{
+    GalleryMipImages::Reader mipReader(dataFlowModel->getGalleryMipImages()); // acquire read lock
+    if (! mipReader.hasReadLock()) return;
+    NeuronSelectionModel::Reader selectionReader(dataFlowModel->getNeuronSelectionModel());
+    if (! selectionReader.hasReadLock()) return;
+
+    if (neuronGalleryButtonList.size() != mipReader.getNumberOfNeurons())
+        initializeNeuronGallery();
     else {
         for (int i = 0; i < mipReader.getNumberOfNeurons(); ++i)
         {
             neuronGalleryButtonList[i]->setThumbnailIcon(*mipReader.getNeuronMip(i));
+            neuronGalleryButtonList[i]->setChecked(selectionReader.getMaskStatusList().at(i));
             neuronGalleryButtonList[i]->update();
         }
     }

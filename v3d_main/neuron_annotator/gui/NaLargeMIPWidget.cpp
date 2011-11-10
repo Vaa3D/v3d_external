@@ -357,12 +357,6 @@ void NaLargeMIPWidget::mouseMoveEvent(QMouseEvent * event)
     }
 }
 
-void NaLargeMIPWidget::toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked)
-{
-    if (! mipMergedData) return;
-    emit neuronDisplayToggled(index, checked);
-}
-
 bool NaLargeMIPWidget::saveImage(QString filename){
     if (pixmap.save(filename, QFileInfo(filename).suffix().toStdString().c_str(), 100)) //uncompressed
     {

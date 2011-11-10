@@ -50,9 +50,6 @@ signals:
     void hideProgress();
 
 public slots:
-    virtual void toggleNeuronDisplay(NeuronSelectionModel::NeuronIndex index, bool checked);
-    virtual void updateFullVolume() {/* TODO */}
-
     void initializePixmap(); // when a new image has loaded
     // Want to distinguish between double click and single click events
     void onMouseSingleClick(QPoint pos);

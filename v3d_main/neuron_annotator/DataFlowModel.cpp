@@ -34,14 +34,6 @@ DataFlowModel::DataFlowModel(QObject* parentParam /* = NULL */)
 
     // wire up 3d viewer fast color update system
     fast3DColorModel.setIncrementalColorSource(dataColorModel, slow3DColorModel);
-
-    // TODO - deprecate these DataFlowModel neuron visiblity slots.
-    connect(&neuronSelectionModel, SIGNAL(overlayVisibilityChanged(int,bool)),
-            this, SLOT(updateNeuronMaskFull()));
-    connect(&neuronSelectionModel, SIGNAL(neuronVisibilityChanged(int,bool)),
-            this, SLOT(updateNeuronMask(int,bool)));
-    connect(&neuronSelectionModel, SIGNAL(multipleVisibilityChanged()),
-            this, SLOT(updateNeuronMaskFull()));
 }
 
 DataFlowModel::~DataFlowModel()
@@ -52,16 +44,6 @@ DataFlowModel::~DataFlowModel()
     if (neuronAnnotatorResultNode!=0) {
         delete neuronAnnotatorResultNode;
     }
-}
-
-// TBD
-bool DataFlowModel::save() {
-    return true;
-}
-
-// TBD
-bool DataFlowModel::load(long annotationSessionID) {
-    return true;
 }
 
 bool DataFlowModel::loadLsmMetadata() {
@@ -132,23 +114,5 @@ bool DataFlowModel::loadVolumeData()
 
     return true;
 }
-
-// tell 3d viewer to perform a surgical texture update
-// TODO - move logic for this into 3D viewer.
-void DataFlowModel::updateNeuronMask(int index, bool status)
-{
-    int statusValue = (status ? 1 : 0);
-    // qDebug() << "DataFlowModel::updateNeuronMask index=" << index << " status=" << status;
-    QString updateNeuronMaskString=QString("NEURONMASK_UPDATE %1 %2").arg(index).arg(statusValue);
-    emit modelUpdated(updateNeuronMaskString);
-}
-
-// tell 3d viewer to update all textures
-void DataFlowModel::updateNeuronMaskFull() {
-    // qDebug() << "NeuronSelectionModel::updateNeuronMaskFull() - emitting modelUpdated()";
-    QString updateString=QString("FULL_UPDATE");
-    emit modelUpdated(updateString);
-}
-
 
 

@@ -68,17 +68,9 @@ public:
     // const VolumeColors& getVolumeColors() const {return volumeColors;}
 
 signals:
-    void modelUpdated(QString updateType); // Tell 3D viewer how to update
     void scrollBarFocus(NeuronSelectionModel::NeuronIndex index);
     void deselectNeuron();
     void volumeDataNeeded(); // stimulate VolumeData to load images from disk
-
-public slots:
-    void updateNeuronMaskFull();
-
-protected slots:
-    // TODO - these slots should be moved to 3D viewer
-    void updateNeuronMask(int index, bool status);
 
 private:
     long objectId;

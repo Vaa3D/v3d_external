@@ -84,8 +84,6 @@ void FragmentGalleryWidget::appendFragment(GalleryButton * button)
     contents.append(button);
     updateThumbnailPositions();
     updateScrollBar();
-    // When a gallery button changes (e.g. gamma), repaint Gallery
-    // connect(button, SIGNAL(widgetChanged(FragmentIndex)), this, SLOT(onThumbnailChanged(FragmentIndex)));
 }
 
 void FragmentGalleryWidget::updateScrollBar()

@@ -82,7 +82,7 @@ public:
     void setNeuronAnnotatorModeCheck(bool checkState);
     void handleCoordinatedCloseEvent(QCloseEvent *event);
     bool loadAnnotationSessionFromDirectory(QDir imageInputDirectory);
-    bool closeAnnotationSession();
+    bool deleteDataFlowModel();
     DataFlowModel* getDataFlowModel() const;
 
 signals:
@@ -124,6 +124,7 @@ protected slots:
     void set3DProgressMessage(QString);
     void processUpdatedVolumeData(); // respond to newly loaded image data
     void updateGalleries();
+    void initializeGalleries();
     void setProgressValue(int);
     void setProgressMessage(QString);
     void completeProgress();
@@ -141,6 +142,8 @@ protected:
 private:
     DataFlowModel* dataFlowModel;
     Ui::NaMainWindow ui;
+    void initializeNeuronGallery();
+    void initializeOverlayGallery();
     void updateNeuronGallery();
     void updateOverlayGallery();
     QList<GalleryButton*> overlayGalleryButtonList;

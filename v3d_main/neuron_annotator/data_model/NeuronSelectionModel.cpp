@@ -58,13 +58,14 @@ void NeuronSelectionModel::initializeSelectionModel()
             neuronSelectList << false; // no neurons selected
         }
     }
-    // qDebug() << "Done initializing NeuronSelectionModel";
+    // qDebug() << "Done initializing NeuronSelectionModel" << __FILE__ << __LINE__;
 
     emit initialized();
 }
 
 bool NeuronSelectionModel::updateOverlay(int index, bool status)
 {
+    // qDebug() << "NeuronSelectionModel::updateOverlay" << index << status << __FILE__ << __LINE__;
     bool bChanged = false;
     if (overlayStatusList[index] == status) return bChanged; // no change
     {
@@ -91,6 +92,7 @@ bool NeuronSelectionModel::updateNeuronMask(int index, bool status)
         bChanged = true;
     }
     // qDebug() << "emitting neuronVisibilityChanged()" << this;
+    // qDebug() << "NeuronSelectionModel::updateNeuronMask" << index << status << __FILE__ << __LINE__;
     emit neuronVisibilityChanged(index, status);
     return bChanged;
 }
@@ -145,8 +147,10 @@ bool NeuronSelectionModel::showAllNeurons()
             }
         }
     }
-    if (bChanged)
+    if (bChanged) {
+        // qDebug() << "NeuronSelectionModel::showAllNeurons()" << __FILE__ << __LINE__;
         emit multipleVisibilityChanged();
+    }
     return bChanged;
 }
 
@@ -164,8 +168,10 @@ bool NeuronSelectionModel::showOverlays(const QList<int> overlayList) {
             }
         }
     }
-    if (bChanged)
+    if (bChanged) {
+        // qDebug() << "NeuronSelectionModel::showOverlays()" << __FILE__ << __LINE__;
         emit multipleVisibilityChanged();
+    }
     return bChanged;
 }
 
@@ -188,8 +194,10 @@ bool NeuronSelectionModel::showExactlyOneNeuron(int index)
         selectExactlyOneNeuron(index);
     else
         clearSelection();
-    if (bChanged)
+    if (bChanged) {
+        // qDebug() << "NeuronSelectionModel::showExactlyOneNeuron" << index << __FILE__ << __LINE__;
         emit multipleVisibilityChanged();
+    }
     return bChanged;
 }
 
@@ -229,8 +237,10 @@ bool NeuronSelectionModel::clearAllNeurons()
     }
     if (clearSelection())
         bChanged = true;
-    if (bChanged)
+    if (bChanged) {
+        // qDebug() << "NeuronSelectionModel::clearAllNeurons" << __FILE__ << __LINE__;
         emit multipleVisibilityChanged();
+    }
     return bChanged;
 }
 
@@ -250,8 +260,10 @@ bool NeuronSelectionModel::showAllNeuronsInEmptySpace()
         }
     }
     blockSignals(oldBlockSignals);
-    if (bChanged)
+    if (bChanged) {
+        // qDebug() << "NeuronSelectionModel::showAllNeuronsInEmptySpace" << __FILE__ << __LINE__;
         emit multipleVisibilityChanged();
+    }
     return bChanged;
 }
 
