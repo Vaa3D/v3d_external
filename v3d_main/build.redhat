@@ -74,7 +74,7 @@ echo ==========================================================
 #compile newmat library
 
 cd jba/c++ 
-make -f jba.makefile $ARGS  
+make -f jba.makefile $ARGS 
 cd ../../
 
 cd v3d

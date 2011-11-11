@@ -20,7 +20,7 @@ INCLUDEDIRS += -I../newmat11
 
 CC = g++
 CC_FLAGS += -w   # -w for no compiling warning
-CC_FLAGS += -g   # assign -g for gdb debugging
+CC_FLAGS += -g -fPIC   # assign -g for gdb debugging
 CC_FLAGS += $(INCLUDEDIRS)
 
 all: alljba
