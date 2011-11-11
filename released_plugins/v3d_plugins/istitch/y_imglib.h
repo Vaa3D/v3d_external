@@ -114,6 +114,10 @@ void y_del(T *p)
 template<class T, class Tidx>
 void y_new(T *p, Tidx N)
 {
+    //
+    y_del<T>(p);
+    
+    //
     try
     {
         p = new T [N];
@@ -148,6 +152,7 @@ public:
         length = N; // x,y,z
 
         offsets = NULL;
+        sz_image = NULL; // not using 
 
         try
         {
@@ -171,17 +176,28 @@ public:
         length = 3; // x, y, z
 
         offsets = NULL;
+        sz_image = NULL;
 
         try
         {
             offsets = new T [length];
+            sz_image = new Tidx [length];
+            
             memset(offsets, 0, sizeof(T)*length);
+            memset(sz_image, 1, sizeof(Tidx)*length);
         }
         catch (...)
         {
             printf("Fail to allocate memory.\n");
             return;
         }
+    }
+    
+    void setImageSize(Tidx sx, Tidx sy, Tidx sz)
+    {
+        sz_image[0] = sx;
+        sz_image[1] = sy;
+        sz_image[2] = sz;
     }
 
     Tidx getSize()
@@ -192,6 +208,7 @@ public:
     void clean()
     {
         y_del<T>(offsets);
+        y_del<Tidx>(sz_image);
     }
 
     ~DF(){}
@@ -206,9 +223,114 @@ public:
     T coeff;
 
     string fn_image; // absolute path + file name
+    Tidx *sz_image;
+    
+    // 3D lut
+    Tidx rBX, rBY, rBZ;
+    Tidx rEX, rEY, rEZ;
+    Tidx aBX, aBY, aBZ;
+    Tidx aEX, aEY, aEZ;
+
 };
 
 typedef vector< DF<REAL, V3DLONG> > DFList;
+
+// tiles' offsets look up table
+template <class T, class Tidx, class DF>
+class Y_TLUT 
+{
+public:
+    Tidx vx, vy, vz, vc;
+    Tidx minDimx, minDimy, minDimz;
+    
+    vector<DF> tcList;
+    
+public:
+    Y_TLUT(){}
+    ~Y_TLUT(){}
+    
+public:
+    void clut() // construct look up table
+    {
+        // 
+        minDimx=INF;
+        minDimy=INF;
+        minDimz=INF;
+        
+        Tidx maxDimx=-INF;
+        Tidx maxDimy=-INF;
+        Tidx maxDimz=-INF;
+        
+        for(Tidx i=0; i<tcList.size(); i++)
+        {
+            V3DLONG startX = (Tidx)(tcList.at(i).offsets[0]);
+            V3DLONG endX = (Tidx)(tcList.at(i).offsets[0]+tcList.at(i).sz_image[0]-1);
+            
+            if(minDimx > startX)
+                minDimx = startX;
+            if(maxDimx < endX)
+                maxDimx = endX;
+            
+            Tidx startY = (Tidx)(tcList.at(i).offsets[1]);
+            Tidx endY = (Tidx)(tcList.at(i).offsets[1]+tcList.at(i).sz_image[1]-1);
+            
+            if(minDimy > startY)
+                minDimy = startY;
+            if(maxDimy < endY)
+                maxDimy = endY;
+            
+            Tidx startZ = (Tidx)(tcList.at(i).offsets[2]);
+            Tidx endZ = (Tidx)(tcList.at(i).offsets[2]+tcList.at(i).sz_image[2]-1);
+            
+            if(minDimz > startZ)
+                minDimz = startZ;
+            if(maxDimz < endZ)
+                maxDimz = endZ;
+            
+            (&tcList.at(i))->rBX = startX;
+            (&tcList.at(i))->rEX = endX;
+            
+            (&tcList.at(i))->rBY = startY;
+            (&tcList.at(i))->rEY = endY;
+            
+            (&tcList.at(i))->rBZ = startZ;
+            (&tcList.at(i))->rEZ = endZ;
+        }
+
+        //
+        vx = maxDimx - minDimx + 1;
+        vy = maxDimy - minDimy + 1;
+        vz = maxDimz - minDimz + 1;
+    
+        //
+        for(Tidx i=0; i<tcList.size(); i++)
+        {
+            Tidx tile2vi_xs = tcList.at(i).rBX-minDimx;
+            Tidx tile2vi_xe = tcList.at(i).rEX-minDimx;
+            Tidx tile2vi_ys = tcList.at(i).rBY-minDimy;
+            Tidx tile2vi_ye = tcList.at(i).rEY-minDimy;
+            Tidx tile2vi_zs = tcList.at(i).rBZ-minDimz;
+            Tidx tile2vi_ze = tcList.at(i).rEZ-minDimz;
+            
+            tcList.at(i).aBX = (1 > tile2vi_xs) ? 1 : tile2vi_xs;
+            tcList.at(i).aEX= (vx < tile2vi_xe) ? vx : tile2vi_xe;
+            tcList.at(i).aBY = (1 > tile2vi_ys) ? 1 : tile2vi_ys;
+            tcList.at(i).aEY = (vy < tile2vi_ye) ? vy : tile2vi_ye;
+            tcList.at(i).aBZ = (1 > tile2vi_zs) ? 1 : tile2vi_zs;
+            tcList.at(i).aEZ = (vz < tile2vi_ze) ? vz : tile2vi_ze;
+            
+            tcList.at(i).aEX++;
+            tcList.at(i).aEY++;
+            tcList.at(i).aEZ++;   
+        }
+    }
+    
+    void setDimC(Tidx dimc)
+    {
+        vc = dimc;
+    }
+    
+};
 
 // Define a lookup table
 template <class T>
@@ -6251,6 +6373,63 @@ bool computeWeights(Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> 
         weights = listWeights.at(numtile) / sumweights;
     }
     
+    return true;
+}
+
+// func weights map for 3D linear blending from Tile Configuration
+template<class T, class Tidx, class Y_TLUT>
+bool computeWeightsTC(Y_TLUT tlut, Tidx i, Tidx j, Tidx k, Tidx tilei, T &weights)
+{
+    QList<T> listWeights;
+    listWeights.clear();
+
+    Tidx weighti;
+    Tidx ntiles = tlut.tcList.size();
+
+    for(Tidx ii=0; ii<ntiles; ii++)
+    {        
+        Tidx x_start = tlut.tcList.at(ii).aBX;
+        Tidx x_end = tlut.tcList.at(ii).aEX;
+
+        Tidx y_start = tlut.tcList.at(ii).aBY;
+        Tidx y_end = tlut.tcList.at(ii).aEY;
+
+        Tidx z_start = tlut.tcList.at(ii).aBZ;
+        Tidx z_end = tlut.tcList.at(ii).aEZ;
+
+        if(i>=x_start && i<x_end && j>=y_start && j<y_end && k>=z_start && k<z_end)
+        {
+            T dist2xl = fabs(T(i-x_start));
+            T dist2xr = fabs(T(x_end-1-i));
+            T dist2yu = fabs(T(j-y_start));
+            T dist2yd = fabs(T(y_end-1-j));
+            T dist2zf = fabs(T(k-z_start));
+            T dist2zb = fabs(T(z_end-1-k));
+
+            if( dist2xr<dist2xl ) dist2xl = dist2xr;
+            if( dist2yd<dist2yu ) dist2yu = dist2yd;
+            if( dist2zf>dist2zb ) dist2zf = dist2zb;
+
+            listWeights.push_back(dist2xl*dist2yu*dist2zf+1);
+
+            if(ii==tilei) weighti = listWeights.size()-1;
+        }
+
+    }
+
+    if (listWeights.size()<=1)
+    {
+        weights=1.0;
+    }
+    else
+    {
+        T sumweights=0;
+        for (int i=0; i<listWeights.size(); i++) {
+            sumweights += listWeights.at(i);
+        }
+        weights = listWeights.at(weighti) / sumweights;
+    }
+
     return true;
 }
 
