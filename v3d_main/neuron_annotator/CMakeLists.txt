@@ -5,55 +5,38 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/../v3dbase)
 include_directories(../v3d)
 include_directories(../3drenderer)
 
+file(GLOB NA_UI_FILES gui/*.ui)
 QT4_WRAP_UI(NA_UI_SRCS 
-    gui/AnnotationWidget.ui
-    gui/NaMainWindow.ui
-    gui/GammaWidget.ui
-    gui/AngleWidget.ui
-    gui/ZoomWidget.ui
+    ${NA_UI_FILES}
     # Repeat some ui files to avoid circular dependencies
     ../v3d/v3d_global_preference.ui
     ../v3d/template_matching_cellseg.ui
 )
 
+# Look for "Q_OBJECT" in headers to determine which ones to MOC
+# Begin with a list of all header file candidates
+message(STATUS "Finding header files containing 'Q_OBJECT' macro...")
+file(GLOB NA_MOC_CANDIDATES gui/*.h data_model/*.h gui/trees/*.h)
+foreach(NA_MOC_CAND ${NA_MOC_CANDIDATES})
+    # Examine beginning of each header file
+    file(READ "${NA_MOC_CAND}" HEADER_TEXT LIMIT 10000)
+    # message("${HEADER_TEXT}")
+    # Does it contain the string "Q_OBJECT"?
+    string(REGEX MATCH "Q_OBJECT" QOB_RESULT ${HEADER_TEXT})
+    # message("${QOB_RESULT}")
+    if(QOB_RESULT)
+        # This is a Q_OBJECT header, and thus needs to be parsed for Qt
+        set(NA_MOC_FILES ${NA_MOC_FILES} ${NA_MOC_CAND})
+        # message("${NA_MOC_CAND}")
+    endif()
+endforeach()
+message(STATUS "Finished examining header files")
+# message("${NA_MOC_FILES}")
+
 # Only headers with "Q_OBJECT" macro go here in QT4_WRAP_CPP stanza
 QT4_WRAP_CPP(NA_MOC_SRCS
-    data_model/NaLockableData.h
-    data_model/NaVolumeData.h
-    data_model/MipFragmentData.h
-    data_model/MipFragmentColors.h
-    data_model/DataColorModel.h
-    data_model/GalleryMipImages.h
-    data_model/MipMergedData.h
-    data_model/NeuronSelectionModel.h
-    data_model/ZSliceColors.h
-    data_model/NaSharedDataSignaller.h
-    data_model/NeuronFragmentData.h
+    ${NA_MOC_FILES}
     geometry/CameraModel.h
-    gui/AngleWidget.h
-    gui/AnnotationWidget.h
-    gui/CompartmentMapComboBox.h
-    gui/CompartmentMapWidget.h
-    gui/GalleryButton.h
-    gui/GammaWidget.h
-    gui/ZoomSpinBox.h
-    gui/ZoomWidget.h
-    gui/MouseClickManager.h
-    gui/Na2DViewer.h
-    gui/Na3DWidget.h
-    gui/NaLargeMIPWidget.h
-    gui/NaMainWindow.h
-    gui/NaZStackWidget.h
-    gui/NeuronContextMenu.h
-    gui/NeuronQAction.h
-    gui/FragmentGalleryWidget.h
-    gui/RendererNeuronAnnotator.h
-    gui/trees/AnnotatedBranchTreeModel.h
-    gui/trees/AnnotatedBranchTreeView.h
-    gui/trees/EntityTreeModel.h
-    gui/trees/EntityTreeView.h
-    gui/trees/OntologyTreeModel.h
-    gui/trees/OntologyTreeView.h
     utility/ConsoleObserver.h
     utility/DataThread.h
     utility/ImageLoader.h

@@ -62,12 +62,12 @@ set(V3D_BUILD_BINARY_DIR ${V3D_STAGING_BASE_DIR} CACHE INTERNAL "Location of v3d
 add_subdirectory(v3d_main)
 
 if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
-    find_file(COMPARTMENT_MAP_FILE
+    find_file(V3D_COMPARTMENT_MAP_FILE
         flybraincompartmentmap.v3ds
         PATHS "${CMAKE_SOURCE_DIR}/v3d"
     )
-    if(COMPARTMENT_MAP_FILE AND BUNDLE_BUILD_DIR)
-        configure_file(${COMPARTMENT_MAP_FILE} "${BUNDLE_BUILD_DIR}/Contents/MacOS/flybraincompartmentmap.v3ds" COPYONLY)
+    if(V3D_COMPARTMENT_MAP_FILE AND BUNDLE_BUILD_DIR)
+        configure_file(${V3D_COMPARTMENT_MAP_FILE} "${BUNDLE_BUILD_DIR}/Contents/MacOS/flybraincompartmentmap.v3ds" COPYONLY)
     endif()
 endif()
 
