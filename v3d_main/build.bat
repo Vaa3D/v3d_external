@@ -14,6 +14,7 @@ echo Usage: build.bat -B
 echo -----------------------------------------------------------------
 echo on
 
+
 set MINGW_DIR=c:/mingw
 :: set LOCAL_DIR=c:/msys/local
 set LOCAL_DIR=%CD%/common_lib
