@@ -17,6 +17,8 @@
 using namespace std;
 
 
+
+
 //Q_EXPORT_PLUGIN2 ( PluginName, ClassName )
 //The value of PluginName should correspond to the TARGET specified in the plugin's project file.
 Q_EXPORT_PLUGIN2(compare_feature, Compare_featurePlugin);
