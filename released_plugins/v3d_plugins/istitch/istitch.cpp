@@ -2022,7 +2022,7 @@ QStringList IStitchPlugin::funclist() const
 {
     return QStringList() << tr("v3dstitch")
                          << tr("istitch-subspace")
-                         << tr("istitch-warp");
+                         << tr("istitch-gc");
 }
 
 // Multiscale pairwise images stitching with thick planes (e.g. 10 pixels width) in boundary bounding box
@@ -4009,8 +4009,8 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
             }
         }
         // de-alloc
-        y_del<Tdata>((Tdata *)f1d);
-        y_del<Tdata>((Tdata *)g1d);
+        y_del<unsigned char>(f1d);
+        y_del<unsigned char>(g1d);
 
         // zero-padding
         REAL rate_x, rate_y, rate_z;
@@ -4792,7 +4792,7 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
         
         //de-alloc
         y_del<REAL>(prelative);
-        y_del<Tdata>((Tdata *)relative1d);
+        y_del<unsigned char>(relative1d);
         y_del<V3DLONG>(sz_relative);
     }
     
@@ -4830,13 +4830,13 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
 
 // intensity-based multiscale pairwise-image stitching (coarse-to-fine)
 template <class SDATATYPE, class Y_IMG_DATATYPE>
-int istitching_pw(SDATATYPE *subject1d, V3DLONG *sz_subject1d, SDATATYPE *target1d, V3DLONG *sz_target1d, REAL overlap_percent, REAL *scale, rPEAKS *&pos)
+int pistitching(SDATATYPE *subject1d, V3DLONG *sz_subject1d, SDATATYPE *target1d, V3DLONG *sz_target1d, REAL overlap_percent, REAL *scale, rPEAKS &pos)
 {
     // input:  pairwise images (1d pointers of 3D images)
     // output: subspace shifts
 
     bool fftw_in_place = true; //
-    bool b_SubpixelEst = true;
+    bool b_SubpixelEst = false; // true to do subspace pair-wise stitching
 
     //
     V3DLONG sx = sz_subject1d[0];
@@ -5831,7 +5831,7 @@ int istitching_pw(SDATATYPE *subject1d, V3DLONG *sz_subject1d, SDATATYPE *target
 
         }
 
-        qDebug() << " pixel-precise translation ..." << pos_x << pos_y << pos_z << "offset ..." << pos_x - sx_ori +1 << pos_y - sy_ori +1 << pos_z;
+        qDebug() << " pixel-precise translation ..." << pos_x << pos_y << pos_z << "offset ..." << pos_x - sx_ori +1 << pos_y - sy_ori +1 << pos_z - sz_ori + 1;
 
     }
 
@@ -6513,10 +6513,10 @@ int istitching_pw(SDATATYPE *subject1d, V3DLONG *sz_subject1d, SDATATYPE *target
     qDebug() << "time elapse ... " << end_t-start_t;
 
     //Output
-    //------------------------------------------------------------------------------------------------
-    pos->x = pos_x; pos->y = pos_y; pos->z = pos_z; pos->value = pos_score;
+     //--------------------------------------------------------------------------------------
+    pos.x = pos_x; pos.y = pos_y; pos.z = pos_z; pos.value = pos_score;
 
-    qDebug() << " finally..." << pos->x << pos->y << pos->z << pos->value << "offset ..." << pos_x - sx_ori +1 << pos_y - sy_ori +1 << pos_z - sz_ori +1;
+    qDebug() << " finally..." << pos.x << pos.y << pos.z << pos.value << "offset ..." << pos_x - sx_ori +1 << pos_y - sy_ori +1 << pos_z - sz_ori +1;
 
     return true;
 }
@@ -6561,9 +6561,11 @@ bool ifusing(SDATATYPE *pVImg, Y_TLUT tlut, SDATATYPE intensityrange)
 
         // subpixel translate
         rPEAKS pos;
-        pos.x = tlut.tcList.at(ii).offsets[0] - tlut.tcList.at(ii).rBX;
-        pos.y = tlut.tcList.at(ii).offsets[1] - tlut.tcList.at(ii).rBY;
-        pos.z = tlut.tcList.at(ii).offsets[2] - tlut.tcList.at(ii).rBZ;
+        pos.x = tlut.tcList.at(ii).aBX - (V3DLONG)(tlut.tcList.at(ii).aBX);
+        pos.y = tlut.tcList.at(ii).aBY - (V3DLONG)(tlut.tcList.at(ii).aBY);
+        pos.z = tlut.tcList.at(ii).aBZ - (V3DLONG)(tlut.tcList.at(ii).aBZ);
+
+        qDebug()<<"pos ... "<<pos.x<<pos.y<<pos.z;
 
         REAL *prelative = NULL;
         V3DLONG npxls_relative = rx*ry*rz*rc;
@@ -6582,11 +6584,16 @@ bool ifusing(SDATATYPE *pVImg, Y_TLUT tlut, SDATATYPE intensityrange)
         }
         else
         {
-            memset(effectiveEnvelope, 0, sizeof(V3DLONG)*6);
+            effectiveEnvelope[0] = 0;
+            effectiveEnvelope[1] = rx;
+            effectiveEnvelope[2] = 0;
+            effectiveEnvelope[3] = ry;
+            effectiveEnvelope[4] = 0;
+            effectiveEnvelope[5] = rz;
 
             for(V3DLONG i=0; i<npxls_relative; i++)
             {
-                prelative[i] = relative1d[i];
+                prelative[i] = (REAL)(((SDATATYPE*)relative1d)[i]);
             }
         }
 
@@ -6599,9 +6606,6 @@ bool ifusing(SDATATYPE *pVImg, Y_TLUT tlut, SDATATYPE intensityrange)
 
         V3DLONG z_start =tlut.tcList.at(ii).aBZ + effectiveEnvelope[4];
         V3DLONG z_end =tlut.tcList.at(ii).aEZ - (rz - effectiveEnvelope[5]);
-
-        //
-        y_del<V3DLONG>(effectiveEnvelope);
 
         //suppose all tiles with same color dimensions
         if(rc>vc)   rc = vc;
@@ -6655,6 +6659,7 @@ bool ifusing(SDATATYPE *pVImg, Y_TLUT tlut, SDATATYPE intensityrange)
         y_del<V3DLONG>(effectiveEnvelope);
         y_del<unsigned char>(relative1d);
         y_del<V3DLONG>(sz_relative);
+        y_del<V3DLONG>(effectiveEnvelope);
     }
 
     // output
@@ -9840,8 +9845,6 @@ int roi_navigating(V3DPluginCallback2 &callback, QWidget *parent)
     }
 
     return true;
-
-
 }
 
 // image stitch plugin dofunc
@@ -11223,7 +11226,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
 
             for(int j=0; j<NTILES_I; j++) // traverse all tiled images except the last one
             {
-                rPEAKS *pos;
+                rPEAKS pos;
 
                 //loading target files
                 V3DLONG *sz_target = 0;
@@ -11295,15 +11298,15 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                         //
                         if(imgdatatype == V3D_UINT8)
                         {
-                            success = istitching_pw<unsigned char, Y_IMG_UINT8>((unsigned char *)subject1d+offsets_sub, sz_subject, (unsigned char *)target1d+offsets_tar, sz_target, overlap_percent, scale, pos);
+                            success = pistitching<unsigned char, Y_IMG_UINT8>((unsigned char *)subject1d+offsets_sub, sz_subject, (unsigned char *)target1d+offsets_tar, sz_target, overlap_percent, scale, pos);
                         }
                         else if(imgdatatype == V3D_UINT16)
                         {
-                            success = istitching_pw<unsigned short, Y_IMG_UINT16>((unsigned short *)(subject1d)+offsets_sub, sz_subject, (unsigned short *)(target1d)+offsets_tar, sz_target, overlap_percent, scale, pos);
+                            success = pistitching<unsigned short, Y_IMG_UINT16>((unsigned short *)(subject1d)+offsets_sub, sz_subject, (unsigned short *)(target1d)+offsets_tar, sz_target, overlap_percent, scale, pos);
                         }
                         else if(imgdatatype == V3D_FLOAT32)
                         {
-                            success = istitching_pw<REAL, Y_IMG_REAL>((REAL *)(subject1d)+offsets_sub, sz_subject, (REAL *)(target1d)+offsets_tar, sz_target, overlap_percent, scale, pos);
+                            success = pistitching<REAL, Y_IMG_REAL>((REAL *)(subject1d)+offsets_sub, sz_subject, (REAL *)(target1d)+offsets_tar, sz_target, overlap_percent, scale, pos);
                         }
                         else
                         {
@@ -11316,11 +11319,11 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                         df.n = i;
                         df.pre = j; // suppose 0 is the reference
 
-                        df.coeff = pos->value;
+                        df.coeff = pos.value;
 
-                        df.offsets[0] = pos->x - REAL(sx-1);
-                        df.offsets[1] = pos->y - REAL(sy-1);
-                        df.offsets[2] = pos->z - REAL(sz-1);
+                        df.offsets[0] = pos.x - REAL(sx-1);
+                        df.offsets[1] = pos.y - REAL(sy-1);
+                        df.offsets[2] = pos.z - REAL(sz-1);
 
                         dfVector.push_back(df);
                     }
@@ -11353,9 +11356,9 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 V3DLONG ii = dfVector.at(i).n;
                 V3DLONG jj = dfVector.at(i).pre;
 
-                if(jj>=1) A.v[i][jj-1] = -1.0;
+                if(jj>=1) A.v[jj-1][i] = -1.0;
 
-                A.v[i][ii-1] = 1.0;
+                A.v[ii-1][i] = 1.0;
             }
 
             // inv(A'A)A'
@@ -11377,7 +11380,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
             {
                 for(V3DLONG i=0; i<rows; i++)
                 {
-                    D.v[i][0] = dfVector.at(i).offsets[dim];
+                    D.v[0][i] = dfVector.at(i).offsets[dim];
                 }
                 Y_MAT<double, V3DLONG> M;
                 M.clone(invATA, false);
@@ -11386,7 +11389,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
 
                 for(V3DLONG i=1; i<tlut.tcList.size(); i++)
                 {
-                    (&tlut.tcList.at(i))->offsets[dim] = M.v[i][0];
+                    (&tlut.tcList.at(i))->offsets[dim] = M.v[0][i-1];
                 }
             }
         }
@@ -11394,6 +11397,10 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
         // subpixel shifts and linear blending
         tlut.clut();
         tlut.setDimC(cdim);
+
+        QString tmp_filename = QFileInfo(m_InputFileName).path() + "/" + "stitched_image.tc"; //.tc tile configuration
+        tlut.y_save(tmp_filename.toStdString());
+
         V3DLONG pagesz_vim = tlut.vx*tlut.vy*tlut.vz*tlut.vc;
 
         if(imgdatatype == V3D_UINT8)
@@ -11409,7 +11416,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 bool success = ifusing<unsigned char, Y_TLUT<REAL, V3DLONG, DF<REAL, V3DLONG> > >((unsigned char *)pVImg, tlut, intensityrange);
                 if(!success)
                 {
-                    printf("Fail to call function iSubspaceStitching! \n");
+                    printf("Fail to call function ifusing! \n");
                     return false;
                 }
             }
@@ -11465,10 +11472,10 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 memset(pVImg, 0, sizeof(unsigned short)*pagesz_vim);
 
                 unsigned short intensityrange = 4095;
-                bool success = iSubspaceStitching<unsigned short, Y_IMG_UINT16>((unsigned short *)pVImg, vim, intensityrange, channel1, img_show);
+                bool success = ifusing<unsigned short, Y_TLUT<REAL, V3DLONG, DF<REAL, V3DLONG> > >((unsigned short *)pVImg, tlut, intensityrange);
                 if(!success)
                 {
-                    printf("Fail to call function iSubspaceStitching! \n");
+                    printf("Fail to call function ifusing! \n");
                     return false;
                 }
             }
@@ -11525,6 +11532,9 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
             return false;
         }
 
+        qDebug()<<"time cost for whole joint stitching ..."<<clock()-start_t;
+
+        return true;
 
     }
     else if (func_name == tr("istitch-warp"))

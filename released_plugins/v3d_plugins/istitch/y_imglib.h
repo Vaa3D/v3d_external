@@ -105,14 +105,14 @@ T y_abs(T x)
 
 // delete 1d pointer
 template <class T>
-void y_del(T *p)
+void y_del(T *&p)
 {
     if(p) {delete []p; p=NULL;}
 }
 
 // new 1d pointer
 template<class T, class Tidx>
-void y_new(T *p, Tidx N)
+void y_new(T *&p, Tidx N)
 {
     //
     y_del<T>(p);
@@ -226,10 +226,10 @@ public:
     Tidx *sz_image;
     
     // 3D lut
-    Tidx rBX, rBY, rBZ;
-    Tidx rEX, rEY, rEZ;
-    Tidx aBX, aBY, aBZ;
-    Tidx aEX, aEY, aEZ;
+    T rBX, rBY, rBZ;
+    T rEX, rEY, rEZ;
+    T aBX, aBY, aBZ;
+    T aEX, aEY, aEZ;
 
 };
 
@@ -241,7 +241,7 @@ class Y_TLUT
 {
 public:
     Tidx vx, vy, vz, vc;
-    Tidx minDimx, minDimy, minDimz;
+    T minDimx, minDimy, minDimz;
     
     vector<DF> tcList;
     
@@ -257,30 +257,30 @@ public:
         minDimy=INF;
         minDimz=INF;
         
-        Tidx maxDimx=-INF;
-        Tidx maxDimy=-INF;
-        Tidx maxDimz=-INF;
+        T maxDimx=-INF;
+        T maxDimy=-INF;
+        T maxDimz=-INF;
         
         for(Tidx i=0; i<tcList.size(); i++)
         {
-            V3DLONG startX = (Tidx)(tcList.at(i).offsets[0]);
-            V3DLONG endX = (Tidx)(tcList.at(i).offsets[0]+tcList.at(i).sz_image[0]-1);
+            T startX = tcList.at(i).offsets[0];
+            T endX = tcList.at(i).offsets[0]+(T)(tcList.at(i).sz_image[0]-1);
             
             if(minDimx > startX)
                 minDimx = startX;
             if(maxDimx < endX)
                 maxDimx = endX;
             
-            Tidx startY = (Tidx)(tcList.at(i).offsets[1]);
-            Tidx endY = (Tidx)(tcList.at(i).offsets[1]+tcList.at(i).sz_image[1]-1);
+            T startY = tcList.at(i).offsets[1];
+            T endY = tcList.at(i).offsets[1]+(T)(tcList.at(i).sz_image[1]-1);
             
             if(minDimy > startY)
                 minDimy = startY;
             if(maxDimy < endY)
                 maxDimy = endY;
             
-            Tidx startZ = (Tidx)(tcList.at(i).offsets[2]);
-            Tidx endZ = (Tidx)(tcList.at(i).offsets[2]+tcList.at(i).sz_image[2]-1);
+            T startZ = tcList.at(i).offsets[2];
+            T endZ = tcList.at(i).offsets[2]+(T)(tcList.at(i).sz_image[2]-1);
             
             if(minDimz > startZ)
                 minDimz = startZ;
@@ -298,26 +298,26 @@ public:
         }
 
         //
-        vx = maxDimx - minDimx + 1;
-        vy = maxDimy - minDimy + 1;
-        vz = maxDimz - minDimz + 1;
+        vx = (Tidx)(maxDimx - minDimx + 1.5);
+        vy = (Tidx)(maxDimy - minDimy + 1.5);
+        vz = (Tidx)(maxDimz - minDimz + 1.5);
     
         //
         for(Tidx i=0; i<tcList.size(); i++)
         {
-            Tidx tile2vi_xs = tcList.at(i).rBX-minDimx;
-            Tidx tile2vi_xe = tcList.at(i).rEX-minDimx;
-            Tidx tile2vi_ys = tcList.at(i).rBY-minDimy;
-            Tidx tile2vi_ye = tcList.at(i).rEY-minDimy;
-            Tidx tile2vi_zs = tcList.at(i).rBZ-minDimz;
-            Tidx tile2vi_ze = tcList.at(i).rEZ-minDimz;
+            T tile2vi_xs = tcList.at(i).rBX-minDimx;
+            T tile2vi_xe = tcList.at(i).rEX-minDimx;
+            T tile2vi_ys = tcList.at(i).rBY-minDimy;
+            T tile2vi_ye = tcList.at(i).rEY-minDimy;
+            T tile2vi_zs = tcList.at(i).rBZ-minDimz;
+            T tile2vi_ze = tcList.at(i).rEZ-minDimz;
             
-            tcList.at(i).aBX = (1 > tile2vi_xs) ? 1 : tile2vi_xs;
-            tcList.at(i).aEX= (vx < tile2vi_xe) ? vx : tile2vi_xe;
-            tcList.at(i).aBY = (1 > tile2vi_ys) ? 1 : tile2vi_ys;
-            tcList.at(i).aEY = (vy < tile2vi_ye) ? vy : tile2vi_ye;
-            tcList.at(i).aBZ = (1 > tile2vi_zs) ? 1 : tile2vi_zs;
-            tcList.at(i).aEZ = (vz < tile2vi_ze) ? vz : tile2vi_ze;
+            tcList.at(i).aBX = (0 > tile2vi_xs) ? 0 : tile2vi_xs;
+            tcList.at(i).aEX = (vx < tile2vi_xe) ? vx-1 : tile2vi_xe;
+            tcList.at(i).aBY = (0 > tile2vi_ys) ? 0 : tile2vi_ys;
+            tcList.at(i).aEY = (vy < tile2vi_ye) ? vy-1 : tile2vi_ye;
+            tcList.at(i).aBZ = (0 > tile2vi_zs) ? 0 : tile2vi_zs;
+            tcList.at(i).aEZ = (vz < tile2vi_ze) ? vz-1 : tile2vi_ze;
             
             tcList.at(i).aEX++;
             tcList.at(i).aEY++;
@@ -328,6 +328,51 @@ public:
     void setDimC(Tidx dimc)
     {
         vc = dimc;
+    }
+
+    void y_save(string fn) //save virtual image
+    {
+        FILE *pFileLUT=0;
+
+        pFileLUT = fopen(fn.c_str(),"wt");
+
+        V3DLONG number_tiles = tcList.size();
+
+        //
+        fprintf(pFileLUT, "# thumbnail file \n"); // TC_COMMENT1
+        fprintf(pFileLUT, "%s \n\n", NULL);
+
+        fprintf(pFileLUT, "# tiles \n"); // TC_COMMENT2
+        fprintf(pFileLUT, "%d \n\n", number_tiles);
+
+        fprintf(pFileLUT, "# dimensions (XYZC) \n"); // TC_COMMENT3
+        fprintf(pFileLUT, "%ld %ld %ld %ld \n\n", vx, vy, vz, vc);
+
+        fprintf(pFileLUT, "# origin (XYZ) \n"); // TC_COMMENT4
+        fprintf(pFileLUT, "%f %f %f \n\n", minDimx, minDimy, minDimz);
+
+        fprintf(pFileLUT, "# resolution (XYZ) \n"); // TC_COMMENT5
+        fprintf(pFileLUT, "%lf %lf %lf \n\n", 1.0f, 1.0f, 1.0f);
+
+        fprintf(pFileLUT, "# image coordinates look up table \n"); // TC_COMMENT6
+        for(Tidx j=0; j<number_tiles; j++)
+        {
+            string fns;
+            string fn_img_tile = tcList.at(j).fn_image;
+
+            Tidx len_abpath = QFileInfo(QString(fn_img_tile.c_str())).path().length();
+
+            if(len_abpath>1)
+                fns = QString(fn_img_tile.c_str()).remove(0, len_abpath+1).toStdString();
+            else
+                fns = fn_img_tile;
+
+            fprintf(pFileLUT, "%s  ( %f, %f, %lf ) ( %f, %f, %f ) \n", fns.c_str(), tcList.at(j).rBX, tcList.at(j).rBY, tcList.at(j).rBZ, tcList.at(j).rEX, tcList.at(j).rEY, tcList.at(j).rEZ);
+        }
+
+        //fprintf(pFileLUT, "\n# MST LUT \n"); // TC_COMMENT7
+
+        fclose(pFileLUT);
     }
     
 };
@@ -6435,7 +6480,7 @@ bool computeWeightsTC(Y_TLUT tlut, Tidx i, Tidx j, Tidx k, Tidx tilei, T &weight
 
 // func subpixel translation using trilinear interpolation
 template <class Tdata>
-bool subpixshift3D(REAL *pShift, Tdata *pImg, V3DLONG *szImg, rPEAKS pos, V3DLONG *effectiveEnvelope)
+bool subpixshift3D(REAL *&pShift, Tdata *pImg, V3DLONG *szImg, rPEAKS pos, V3DLONG *&effectiveEnvelope)
 {
     // output subpixel translated image: pShift
     // output effective envelope of the image: effectiveEnvelope[6] x,y,z
