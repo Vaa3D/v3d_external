@@ -29,6 +29,7 @@ ColorRangeSliderWidget::Control ColorRangeSliderWidget::getControlAtPosition(int
     int minPos = getMinPos();
     int gammaPos = getGammaPos();
     int maxPos = getMaxPos();
+    // Apparently std::abs(int) is in <cstdlib>, not <cmath> on Linux.  Weird.
     if (std::abs((pos - gammaPos)) < 10)
     {
         // qDebug() << "gamma";
