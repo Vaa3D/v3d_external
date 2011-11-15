@@ -64,6 +64,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #endif //test_main_cpp
 
+#define _IMAGING_MENU_
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Select Object / Define marker
@@ -803,7 +804,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		if (w && curImg && curXWidget)
 		{
 			v3d_imaging_paras myimagingp;
-			myimagingp.OPS = "POINT_ABLATING from 3D Viewer";
+			myimagingp.OPS = "Marker Ablation from 3D Viewer";
 			myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
 
 			bool doit = (curImg->listLandmarks.size()>0) ? true : false;
@@ -2332,7 +2333,7 @@ void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 
 			//set up parameters
 			v3d_imaging_paras myimagingp;
-			myimagingp.OPS = "ROI_IMAGING from 3D Viewer";
+			myimagingp.OPS = "Acquisition: ROI from 3D Viewer";
 			myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
 			myimagingp.xs = mx;
 			myimagingp.ys = my;

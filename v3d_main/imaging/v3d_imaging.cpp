@@ -46,7 +46,9 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 	
 	try 
 	{
-		XFormWidget *curw = mainwindow->activeMdiChild();
+		const char* filename=p.imgp->getFileName();
+		XFormWidget *curw = mainwindow->findMdiChild(QString(filename)); //search window using name
+
 		if (!curw)
 		{
 			v3d_msg("No window open yet.");
