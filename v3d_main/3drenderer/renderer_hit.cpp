@@ -64,7 +64,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #endif //test_main_cpp
 
-#define _IMAGING_MENU_
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Select Object / Define marker
