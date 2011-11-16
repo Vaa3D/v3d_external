@@ -64,7 +64,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #endif //test_main_cpp
 
-
+#define _IMAGING_MENU_
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Select Object / Define marker
@@ -217,6 +217,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
           *actCurveRubberDrag=0, // ZJL 110921
 			*actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
 	        *actMarkerAblateOne_imaging=0, *actMarkerAblateAll_imaging=0,
+			*actMarkerOne_imaging=0, *actMarkerAll_imaging=0,
 			//need to add more surgical operations here later, such as curve_ablating (without displaying the curve first), etc. by PHC, 20101105
 
 			*actNeuronToEditable=0, *actDecomposeNeuron=0, *actNeuronFinishEditing=0,
@@ -407,6 +408,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				listAct.append(actMarkerAblateOne_imaging = new QAction("ablate this marker", w));
 				listAct.append(actMarkerAblateAll_imaging = new QAction("ablate All markers", w));
+				listAct.append(actMarkerOne_imaging = new QAction("Imaging on this marker", w));
+				listAct.append(actMarkerAll_imaging = new QAction("Imaging on All markers", w));
 #endif
 				// marker to tracing -----------------------------------------------------------
 
@@ -832,7 +835,42 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				{
 					v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
 				}
+			}
+		}
+	}
+	else if (act == actMarkerOne_imaging || act == actMarkerAll_imaging) // marker imaging
+	{
+		if (w && curImg && curXWidget)
+		{
+			v3d_imaging_paras myimagingp;
+			myimagingp.OPS = "Acquisition: Markers from 3D Viewer";
+			myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
 
+			bool doit = (curImg->listLandmarks.size()>0) ? true : false;
+
+			if (doit && act == actMarkerAll_imaging)
+				myimagingp.list_landmarks = curImg->listLandmarks;
+			else // act == actMarkerOne_imaging
+			{
+				int tmpind = names[2]-1;
+				if (tmpind>=0)
+					myimagingp.list_landmarks << curImg->listLandmarks.at(tmpind);
+				else
+					doit = false;
+			}
+
+			//do imaging
+			if (doit)
+			{
+				//set the hiddenSelectWidget for the V3D mainwindow
+				if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+				{
+					v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+				}
+				else
+				{
+					v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+				}
 			}
 		}
 	}
