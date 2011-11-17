@@ -55,3 +55,5 @@ add_library(NeuronAnnotatorLib STATIC
 add_custom_target(NaGeneratedFiles DEPENDS ${NA_UI_SRCS})
 add_dependencies(NeuronAnnotatorLib NaGeneratedFiles)
 
+add_subdirectory(tests)
+

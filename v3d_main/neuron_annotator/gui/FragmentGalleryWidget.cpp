@@ -86,6 +86,18 @@ void FragmentGalleryWidget::appendFragment(GalleryButton * button)
     updateScrollBar();
 }
 
+void FragmentGalleryWidget::updateButtonsGeometry()
+{
+    if (contents.isEmpty()) return;
+    GalleryButton* firstButton = contents[0];
+    buttonWidth = firstButton->layout()->sizeHint().width();
+    buttonHeight = firstButton->layout()->sizeHint().width();
+    for (int i = 0; i < contents.size(); ++i)
+        contents[i]->resize(buttonWidth, buttonHeight);
+    updateThumbnailPositions();
+    updateScrollBar();
+}
+
 void FragmentGalleryWidget::updateScrollBar()
 {
     int viewWidth = viewport()->width();
@@ -125,7 +137,8 @@ void FragmentGalleryWidget::updateThumbnailPositions()
             button->hide();
             continue; // off screen to right
         }
-        int py = 0;
+        // Center thumbnail vertically
+        int py = (viewport()->size().height() - buttonHeight) / 2;
         button->move(px, py);
         button->show();
     }

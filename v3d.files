@@ -2469,3 +2469,7 @@ v3d_main/neuron_annotator/gui/DynamicRangeTool.h
 v3d_main/neuron_annotator/gui/DynamicRangeTool.cpp
 v3d_main/neuron_annotator/gui/ColorRangeSliderWidget.h
 v3d_main/neuron_annotator/gui/ColorRangeSliderWidget.cpp
+v3d_main/neuron_annotator/data_model/NeuronSeparationResult.h
+v3d_main/neuron_annotator/data_model/NeuronSeparationResult.cpp
+v3d_main/neuron_annotator/tests/test_load_chk4.cpp
+v3d_main/neuron_annotator/tests/CMakeLists.txt

@@ -1,8 +1,10 @@
 #ifndef PRIVATENEURONFRAGMENTDATA_H
 #define PRIVATENEURONFRAGMENTDATA_H
 
+#include "NeuronSeparationResult.h"
 #include <QSharedData>
 #include <vector>
+#include <iostream>
 
 class PrivateNeuronFragmentData : public QSharedData
 {
@@ -22,6 +24,8 @@ public:
 protected:
     std::vector<int> fragmentVoxelCount;
     std::vector<float> fragmentHues;
+    // TODO obsolete fragmentHues and fragmentVoxelCount in favor of fragments
+    jfrc::NeuronSeparationResult neuronSeparationResult;
 };
 
 #endif // PRIVATENEURONFRAGMENTDATA_H

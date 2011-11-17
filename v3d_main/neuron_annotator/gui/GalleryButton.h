@@ -10,10 +10,20 @@ class GalleryButton : public QWidget
     Q_OBJECT
 
 public:
+    enum ButtonType {
+        NEURON_BUTTON,
+        OVERLAY_BUTTON
+    };
+
     typedef NeuronSelectionModel::NeuronIndex NeuronIndex;
     static const int ThumbnailPixelHeight = 140;
 
-    explicit GalleryButton(const QImage & image, QString name, int index, QWidget *parent = 0);
+    explicit GalleryButton(
+            const QImage & image,
+            QString name,
+            int index,
+            ButtonType type,
+            QWidget *parent = 0);
     ~GalleryButton();
     int getIndex() { return index; }
     QString getName() { return label->text(); }
@@ -24,13 +34,19 @@ public:
     // virtual void mousePressEvent(QMouseEvent *);
     // void setNa3DWidget(Na3DWidget *inputNa3DWidget);
     void setContextMenu(NeuronContextMenu* menu);
+    void setNeuronSelectionModel(const NeuronSelectionModel&);
 
 signals:
-    void declareChange(int index, bool checked);
-    void fragmentHover(NeuronIndex fragmentIndex);
+    void fragmentVisibilityChanged(int index, bool visible);
+    void fragmentSelectionChanged(int index, bool selected); // not used
+    void fragmentHighlightChanged(NeuronIndex fragmentIndex, bool highlighted); // not used
 
 public slots:
-    void buttonPress(bool checked);
+    /// Returns true if value changed
+    bool setFragmentVisibility(bool checked);
+    bool setFragmentSelection(bool selected);
+    bool setFragmentHighlighted(bool highlighted);
+    bool updateVisibility();
     // updateThumbnailIcon() updates the GUI pixmap for this button to reflect the
     // curent state of the internal correctedScaledThumbnail image.  Pixmap updates
     // like this MUST be done in the GUI thread, so multithreading is impossible for
@@ -45,7 +61,11 @@ private:
     QLabel* label;
     NeuronIndex index;
     NeuronContextMenu* neuronContextMenu;
+    bool bIsVisible;
+    bool bIsSelected;
+    bool bIsHighlighted;
+    const NeuronSelectionModel* neuronSelectionModel;
+    ButtonType buttonType;
 };
 
 #endif // GALLERYBUTTON_H
-

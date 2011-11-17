@@ -30,6 +30,7 @@ public:
     virtual void wheelEvent(QWheelEvent *);
     virtual void resizeEvent(QResizeEvent *);
     void setDataFlowModel(const DataFlowModel&);
+    void updateButtonsGeometry();
 
 signals:
     void scrollPixelChanged(int);

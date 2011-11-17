@@ -2,11 +2,21 @@
 #include <cmath>
 #include "GalleryButton.h"
 
-GalleryButton::GalleryButton(const QImage & image, QString name, int index, QWidget *parent)
-        : QWidget(parent)
-        , neuronContextMenu(NULL)
+GalleryButton::GalleryButton(
+        const QImage & image,
+        QString name,
+        int indexParam,
+        ButtonType type,
+        QWidget *parent)
+    : QWidget(parent)
+    , index(indexParam)
+    , buttonType(type)
+    , neuronContextMenu(NULL)
+    , bIsVisible(true)
+    , bIsSelected(false)
+    , bIsHighlighted(false)
+    , neuronSelectionModel(NULL)
 {
-    this->index=index;
     setMouseTracking(true); // respond to mouse hover events
     QVBoxLayout *layout = new QVBoxLayout();
     pushButton = new QPushButton();
@@ -21,7 +31,7 @@ GalleryButton::GalleryButton(const QImage & image, QString name, int index, QWid
     layout->addWidget(label);
     this->setLayout(layout);
     // setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
-    connect(pushButton, SIGNAL(clicked(bool)), this, SLOT(buttonPress(bool)));
+    connect(pushButton, SIGNAL(clicked(bool)), this, SLOT(setFragmentVisibility(bool)));
 }
 
 GalleryButton::~GalleryButton()
@@ -48,13 +58,7 @@ void GalleryButton::paintEvent(QPaintEvent *paintEvent)
 /* virtual */
 void GalleryButton::mouseMoveEvent(QMouseEvent *moveEvent) {
     super::mouseMoveEvent(moveEvent);
-    emit fragmentHover(index);
-}
-
-void GalleryButton::buttonPress(bool checked)
-{
-    // qDebug() << "GalleryButton::buttonPress" << checked << __FILE__ << __LINE__;
-    emit declareChange(index, checked);
+    setFragmentHighlighted(true);
 }
 
 void GalleryButton::setThumbnailIcon(const QImage& scaledImage)
@@ -72,10 +76,82 @@ void GalleryButton::setContextMenu(NeuronContextMenu* menu)
             this, SLOT(showContextMenu(QPoint)));
 }
 
+void GalleryButton::setNeuronSelectionModel(const NeuronSelectionModel& n)
+{
+    // qDebug() << "GalleryButton::setNeuronSelectionModel" << index;
+    neuronSelectionModel = &n;
+    switch(buttonType) {
+    case NEURON_BUTTON:
+        connect(this, SIGNAL(fragmentVisibilityChanged(int,bool)),
+                neuronSelectionModel, SLOT(updateNeuronMask(int,bool)));
+        connect(neuronSelectionModel, SIGNAL(visibilityChanged()),
+                this, SLOT(updateVisibility()));
+        break;
+    case OVERLAY_BUTTON:
+        connect(this, SIGNAL(fragmentVisibilityChanged(int,bool)),
+                neuronSelectionModel, SLOT(updateOverlay(int,bool)));
+        connect(neuronSelectionModel, SIGNAL(visibilityChanged()),
+                this, SLOT(updateVisibility()));
+        break;
+    }
+}
+
+/* slot */
+bool GalleryButton::setFragmentVisibility(bool visible)
+{
+    // qDebug() << "GalleryButton::setFragmentVisibility" << visible << bIsVisible << index;
+    if (visible == bIsVisible) return false; // no change
+    bIsVisible = visible;
+    setChecked(visible);
+    emit fragmentVisibilityChanged(index, bIsVisible);
+    return true;
+}
+
+/* slot */
+bool GalleryButton::setFragmentSelection(bool selected)
+{
+    if (selected == bIsSelected) return false; // no change
+    bIsSelected = selected;
+    emit fragmentSelectionChanged(index, bIsSelected);
+    return true;
+}
+
+/* slot */
+bool GalleryButton::setFragmentHighlighted(bool highlighted)
+{
+    if (highlighted == bIsHighlighted) return false; // no change
+    bIsHighlighted = highlighted;
+    emit fragmentHighlightChanged(index, bIsHighlighted);
+    return true;
+}
+
+/* slot */
+bool GalleryButton::updateVisibility()
+{
+    // qDebug() << "GalleryButton::updateVisibility()" << index;
+    if (NULL == neuronSelectionModel) return false;
+    if (index < 0) return false;
+    bool newVisibility = true;
+    {
+        NeuronSelectionModel::Reader selectionReader(*neuronSelectionModel);
+        switch(buttonType) {
+            case NEURON_BUTTON:
+                if (selectionReader.getMaskStatusList().size() <= index) return false;
+                newVisibility = selectionReader.getMaskStatusList()[index];
+                break;
+            case OVERLAY_BUTTON:
+                if (selectionReader.getOverlayStatusList().size() <= index) return false;
+                newVisibility = selectionReader.getOverlayStatusList()[index];
+                break;
+        }
+    } // release lock
+    setFragmentVisibility(newVisibility);
+    return true;
+}
+
 /* slot */
 void GalleryButton::showContextMenu(QPoint point)
 {
     if (! neuronContextMenu) return;
     neuronContextMenu->exec(mapToGlobal(point), index);
 }
-

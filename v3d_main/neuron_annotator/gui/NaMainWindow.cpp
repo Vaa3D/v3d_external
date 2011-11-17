@@ -1074,21 +1074,24 @@ void NaMainWindow::initializeOverlayGallery()
         initialImage.fill(Qt::gray);
         GalleryButton* referenceButton = new GalleryButton(
                 initialImage,
-                "Reference", DataFlowModel::REFERENCE_MIP_INDEX);
+                "Reference",
+                DataFlowModel::REFERENCE_MIP_INDEX,
+                GalleryButton::OVERLAY_BUTTON);
         managementLayout->addWidget(referenceButton);
         overlayGalleryButtonList.append(referenceButton);
 
         GalleryButton* backgroundButton = new GalleryButton(
                 initialImage,
-                "Background", DataFlowModel::BACKGROUND_MIP_INDEX);
+                "Background",
+                DataFlowModel::BACKGROUND_MIP_INDEX,
+                GalleryButton::OVERLAY_BUTTON);
         managementLayout->addWidget(backgroundButton);
         overlayGalleryButtonList.append(backgroundButton);
     }
     // Initialize signals whether the buttons were already there or not
     for (int i = 0; i < 2; ++i)
     {
-        connect(overlayGalleryButtonList[i], SIGNAL(declareChange(int,bool)),
-                &dataFlowModel->getNeuronSelectionModel(), SLOT(updateOverlay(int,bool)));
+        overlayGalleryButtonList[i]->setNeuronSelectionModel(dataFlowModel->getNeuronSelectionModel());
     }
     updateOverlayGallery();
 }
@@ -1136,7 +1139,9 @@ void NaMainWindow::initializeNeuronGallery()
         {
             GalleryButton* button = new GalleryButton(
                     *mipReader.getNeuronMip(i),
-                    QString("Neuron fragment %1").arg(i), i);
+                    QString("Neuron fragment %1").arg(i),
+                    i,
+                    GalleryButton::NEURON_BUTTON);
             button->setContextMenu(neuronContextMenu);
             neuronGalleryButtonList.append(button);
             ui.fragmentGalleryWidget->appendFragment(button);
@@ -1150,9 +1155,10 @@ void NaMainWindow::initializeNeuronGallery()
         neuronGalleryButtonList[i]->setThumbnailIcon(*mipReader.getNeuronMip(i));
         neuronGalleryButtonList[i]->setChecked(selectionReader.getMaskStatusList().at(i));
         neuronGalleryButtonList[i]->update();
-        connect(neuronGalleryButtonList[i], SIGNAL(declareChange(int,bool)),
-                &dataFlowModel->getNeuronSelectionModel(), SLOT(updateNeuronMask(int,bool)));
+        neuronGalleryButtonList[i]->setNeuronSelectionModel(
+                dataFlowModel->getNeuronSelectionModel());
     }
+    ui.fragmentGalleryWidget->updateButtonsGeometry();
 }
 
 void NaMainWindow::updateNeuronGallery()
@@ -1171,6 +1177,7 @@ void NaMainWindow::updateNeuronGallery()
             neuronGalleryButtonList[i]->setChecked(selectionReader.getMaskStatusList().at(i));
             neuronGalleryButtonList[i]->update();
         }
+        ui.fragmentGalleryWidget->updateButtonsGeometry();
     }
 }
 

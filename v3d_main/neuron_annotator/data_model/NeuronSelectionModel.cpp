@@ -218,6 +218,7 @@ bool NeuronSelectionModel::showFirstSelectedNeuron()
 // affects both selection and visibility, including overlays
 bool NeuronSelectionModel::clearAllNeurons()
 {
+    // qDebug() << "NeuronSelectionModel::clearAllNeurons";
     bool bChanged = false;
     {
         Writer selectionWriter(*this);
