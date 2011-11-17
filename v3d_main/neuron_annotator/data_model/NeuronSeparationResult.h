@@ -4,6 +4,9 @@
 #include <boost/shared_array.hpp>
 #include <vector>
 #include <iostream>
+extern "C" {
+#include <stdint.h>
+}
 
 namespace jfrc {
 
