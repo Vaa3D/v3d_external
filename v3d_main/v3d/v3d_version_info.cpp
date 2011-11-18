@@ -164,6 +164,8 @@ void v3d_aboutinfo()
         "<tr><td>Escape </td>                             <td>Exit from status of defining markers or curves.</td></tr>"
         "<tr><td>Shift , and Shift . </td>                <td>Backward and forward volume time point.</td></tr>"
         "<tr><td>Shift / </td>                            <td>Reset volume time point.</td></tr>"
+		"<tr><td>Shift-W </td>                            <td>Decrease the size of drag window in curve dragging mode.</td></tr>"
+		"<tr><td>Alt-W </td>                              <td>Increase the size of drag window in curve dragging mode.</td></tr>"
         "</table><br>"
         "<H3>Volume colormap control</H3>"
         "Rectangle point is start or end of colormap curve, and its horizontal coordinate is locked at left or right side. Circle point can be moved freely.<br>"
