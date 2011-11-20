@@ -203,7 +203,14 @@ bool ImageLoader::mapChannels() {
         loadImage(targetImage, targetFilepath);
     } else {
         // Must create new image
-        targetImage->loadImage(sourceProxy.sx, sourceProxy.sy, sourceProxy.sz, (maxTargetChannel+1), V3D_UINT8);
+        if (sourceImage->getDatatype()==1) {
+            targetImage->loadImage(sourceProxy.sx, sourceProxy.sy, sourceProxy.sz, (maxTargetChannel+1), V3D_UINT8);
+        } else if (sourceImage->getDatatype()==2) {
+            targetImage->loadImage(sourceProxy.sx, sourceProxy.sy, sourceProxy.sz, (maxTargetChannel+1), V3D_UINT16);
+        } else {
+            qDebug() << "Can not handle source datatype=" << sourceImage->getDatatype();
+            return false;
+        }
         memset(targetImage->getRawData(), 0, targetImage->getTotalBytes());
     }
     Image4DProxy<My4DImage> targetProxy(targetImage);
@@ -232,7 +239,13 @@ bool ImageLoader::mapChannels() {
             for (int z=0;z<sourceProxy.sz;z++) {
                 for (int y=0;y<sourceProxy.sy;y++) {
                     for (int x=0;x<sourceProxy.sx;x++) {
-                        targetProxy.put_at(x,y,z,targetChannel, *(sourceProxy.at(x,y,z,sourceChannel)));
+                        if (targetImage->getDatatype()==1) {
+                            targetProxy.put_at(x,y,z,targetChannel, *(sourceProxy.at(x,y,z,sourceChannel)));
+                        } else {
+                            // Assume type 2
+                            unsigned short value=(*(sourceProxy.at(x,y,z,sourceChannel)))*16; // assume 12-bit
+                            targetProxy.put_at(x, y, z, targetChannel, value);
+                        }
                     }
                 }
             }
@@ -244,8 +257,13 @@ bool ImageLoader::mapChannels() {
             for (int z=0;z<sourceProxy.sz;z++) {
                 for (int y=0;y<sourceProxy.sy;y++) {
                     for (int x=0;x<sourceProxy.sx;x++) {
-                        long sourceValue=*(sourceProxy.at_uint16(x,y,z,sourceChannel));
-                        targetProxy.put_at(x,y,z,targetChannel, sourceValue/16); // assume 12-bit to 8-bit conversion
+                        unsigned short sourceValue=*(sourceProxy.at_uint16(x,y,z,sourceChannel));
+                        if (targetImage->getDatatype()==1) {
+                            targetProxy.put_at(x, y, z, targetChannel, sourceValue/16); // assume 12-bit to 8-bit conversion
+                        } else {
+                            // Assume type 2
+                            targetProxy.put_at(x, y, z, targetChannel, sourceValue);
+                        }
                     }
                 }
             }
