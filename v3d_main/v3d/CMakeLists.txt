@@ -139,6 +139,12 @@ target_link_libraries( v3d
   ${OPENGL_glu_LIBRARY}
   ${QT4_DEMOS_LIBRARY}
   )
+if(UNIX AND NOT APPLE)
+  find_package(ZLIB)
+  find_package(JPEG)
+  mark_as_advanced(CLEAR ZLIB_LIBRARY JPEG_LIBRARY)
+  target_link_libraries(v3d ${ZLIB_LIBRARY} ${JPEG_LIBRARY})
+endif()
   
 if (MSVC)
   target_link_libraries(v3d ${TIFF_LIBRARY})
