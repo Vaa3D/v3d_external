@@ -11882,6 +11882,32 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
             return false;
         }
 
+        // undirected graph
+        bool **udgraph = NULL;
+        int *visited=NULL;
+        try
+        {
+            udgraph = new bool *[NTILES];
+            for(V3DLONG i=0; i<NTILES; i++)
+                udgraph[i] = new bool [NTILES];
+
+            for(V3DLONG i=0; i<NTILES; i++)
+            {
+                for(V3DLONG j=0; j<NTILES; j++)
+                {
+                    udgraph[i][j] = false;
+                }
+            }
+
+            visited = new int [NTILES];
+            memset(visited, 0, sizeof(int)*NTILES);
+        }
+        catch(...)
+        {
+            cout<<"Fail to allocate memory for undirected graph!"<<endl;
+            return false;
+        }
+
         // grouping tiles
         REAL stitch_threshold = 0.85;
         for(int i=1; i<NTILES; i++)
@@ -11896,16 +11922,11 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
                 pre = i;
             }
 
-            if(vim.tilesList.at(cur).record.at(pre).score<stitch_threshold)
+            if(vim.tilesList.at(cur).record.at(pre).score>stitch_threshold)
             {
-                (&vim.tilesList.at(i))->predecessor = -1;
+                udgraph[pre][cur] = true;
             }
 
-        }
-
-        for(int i=0; i<NTILES; i++)
-        {
-            vim.tilesList.at(i).visited = false;
         }
 
         // output
@@ -11914,42 +11935,46 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
         pTGFile = fopen(tg_filename.toStdString().c_str(),"wt");
 
         V3DLONG count_group = 1;
-        for(int i=NTILES_I; i>=0; i--)
+        for(V3DLONG i=0; i<NTILES_I; i++)
         {
-            if(vim.tilesList.at(i).visited)
-            {
-                continue;
-            }
-
-            V3DLONG current = vim.tilesList.at(i).n;
-            V3DLONG previous = vim.tilesList.at(current).predecessor;
-
-            // find node without parent
-            bool b_hasParent = false;
-            for(int j=1; j<NTILES; j++)
-            {
-                if(vim.tilesList.at(j).predecessor == current) b_hasParent=true;
-            }
-            if(b_hasParent)
+            if(visited[i])
             {
                 continue;
             }
 
             fprintf(pTGFile, "# tiled image group %ld \n", count_group);
-            while(previous!=-1)
-            {
-                (&vim.tilesList.at(current))->visited = true;
-                fprintf(pTGFile, "%s \n", vim.tilesList.at(current).fn_image.c_str());
 
-                //
-                current = previous;
-                previous = vim.tilesList.at(current).predecessor;
+            visited[i] = count_group;
+            fprintf(pTGFile, "%s \n", vim.tilesList.at(i).fn_image.c_str());
+
+            for(int j=i; j<NTILES_I; j++)
+            {
+                if(visited[j]!=count_group)
+                {
+                    continue;
+                }
+
+                for(int k=j+1; k<NTILES; k++)
+                {
+                    if(udgraph[j][k])
+                    {
+                        visited[k] = count_group;
+                        fprintf(pTGFile, "%s \n", vim.tilesList.at(k).fn_image.c_str());
+                    }
+                }
             }
-            fprintf(pTGFile, "%s \n\n", vim.tilesList.at(current).fn_image.c_str());
+            fprintf(pTGFile, "\n");
             count_group++;
+
 
         }
         fclose(pTGFile);
+
+        // de-alloc
+        y_del<int>(visited);
+        for(V3DLONG i=0; i<NTILES; i++)
+            delete[] udgraph[i];
+        delete[] udgraph;
 
         return true;
 
