@@ -2105,6 +2105,10 @@ int mstPrim(vector<indexed_t<T1, T2> > &tilesList)
                 coef = -1;
             }
 
+            //
+            //qDebug()<<"mst: current "<<sn1<<"previous "<<sn2<<"score "<<max_score;
+
+            //
             (&tilesList.at(mse_node))->offsets[0] = coef*tilesList.at(sn1).record.at(sn2).offsets[0];
             (&tilesList.at(mse_node))->offsets[1] = coef*tilesList.at(sn1).record.at(sn2).offsets[1];
             (&tilesList.at(mse_node))->offsets[2] = coef*tilesList.at(sn1).record.at(sn2).offsets[2];
