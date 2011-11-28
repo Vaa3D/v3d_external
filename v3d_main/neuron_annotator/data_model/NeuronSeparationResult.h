@@ -37,6 +37,9 @@ struct NeuronFragment
 
 
 /// Class the mimics some aspects of Array class in Gene Myers' mylib
+/// but in C++
+/// without global variables
+/// with more conventional reference-counted memory management using boost::shared_array
 struct MyLibArrayImposter
 {
     enum Array_Kind {

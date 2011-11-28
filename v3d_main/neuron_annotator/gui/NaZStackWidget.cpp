@@ -844,7 +844,7 @@ void NaZStackWidget::do_HDRfilter()
         }
     } // release read locks
 
-    // qDebug() << "emitting hdrRangeChanged" << c << min_roi << max_roi;
+    // qDebug() << "emitting hdrRangeChanged" << c << min_roi[c] << max_roi[c];
     emit hdrRangeChanged(c, min_roi[c], max_roi[c]);
 }
 

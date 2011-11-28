@@ -751,6 +751,7 @@ void Na3DWidget::updateIncrementalColors()
         // Populate clever opengl color map texture
         for (int rgb = 0; rgb < 4; ++rgb) // loop red, then green, then blue
         {
+            // qDebug() << "color" << rgb;
             QRgb channelColor = colorReader.getChannelColor(rgb);
             Renderer_gl2* renderer = (Renderer_gl2*)getRenderer();
             for (int i_in = 0; i_in < 256; ++i_in)
@@ -768,6 +769,7 @@ void Na3DWidget::updateIncrementalColors()
                 renderer->colormap[rgb][i_in].g = qGreen(channelColor);
                 renderer->colormap[rgb][i_in].b = qBlue(channelColor);
                 renderer->colormap[rgb][i_in].a = i_out;
+                // qDebug() << "  i_in:" << i_in << "; i_out:" << i_out;
             }
         }
     } // release read lock

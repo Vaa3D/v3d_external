@@ -25,6 +25,7 @@
 #include "../NeuronSelector.h"
 #include "FragmentGalleryWidget.h"
 #include "AnnotationWidget.h"
+#include "CurtainWidget.h"
 
 using namespace std;
 
@@ -294,9 +295,36 @@ NaMainWindow::NaMainWindow()
     connect(ui.actionDynamic_range, SIGNAL(triggered(bool)),
             this, SLOT(showDynamicRangeTool()));
 
+    // Experimental curtain interface
+    // connect(ui.curtainBox, SIGNAL(activated(int)),
+    //         this, SLOT(selectCurtain(int)));
+
     initializeContextMenus();
     initializeStereo3DOptions();
 }
+
+/* slot */
+/*
+void NaMainWindow::selectCurtain(int index)
+{
+    if (index == 0)
+        addNewCurtain();
+    else
+        qDebug() << "TODO - actually select a curtain";
+}
+*/
+
+/* slot */
+/*
+void NaMainWindow::addNewCurtain()
+{
+    int index = ui.curtainBox->count();
+    QString name("Curtain %1"); name = name.arg(index);
+    ui.curtainBox->addItem(name);
+    ui.curtainBox->setCurrentIndex(index);
+    qDebug() << "TODO - actually add a curtain";
+}
+*/
 
 /* slot */
 void NaMainWindow::showDynamicRangeTool()

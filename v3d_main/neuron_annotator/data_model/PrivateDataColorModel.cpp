@@ -42,8 +42,10 @@ void PrivateDataColorModel::colorizeIncremental(
         // avoid divide by zero
         if (0 == desRange) desRange = 0.0001;
         if (0 == curRange) curRange = 0.0001;
-        qreal incRange = desRange / curRange;
-        qreal incMin = (desiredColorReader.getChannelHdrMin(chan) - currentColorReader.getChannelHdrMin(chan)) / desRange;
+        qreal incRange = desRange / curRange; // hdr range
+        qreal totalInputRange = desiredColorReader.getChannelDataMax(chan) - desiredColorReader.getChannelDataMin(chan); // data range, NOT hdr range
+        if (0 == totalInputRange) totalInputRange = 0.0001;
+        qreal incMin = (desiredColorReader.getChannelHdrMin(chan) - currentColorReader.getChannelHdrMin(chan)) / totalInputRange;
         qreal incMax = incMin + incRange;
         channelColors[chan].setHdrRange(incMin, incMax);
     }

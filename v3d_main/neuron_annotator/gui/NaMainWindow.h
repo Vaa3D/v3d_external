@@ -90,6 +90,8 @@ signals:
     void nutatingChanged(bool);
 
 public slots:
+    // void selectCurtain(int index);
+    // void addNewCurtain();
     void onDataLoadStarted();
     void onDataLoadFinished();
     void openMulticolorImageStack(QString dirName);
