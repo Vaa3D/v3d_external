@@ -33,8 +33,9 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "../plugin_loader/v3d_plugin_loader.h"
 
-//#include "../v3d/v3d_core.h"
 #include "../v3d/mainwindow.h"
+//#include "../3drenderer/v3dr_mainwindow.h"
+//#include "../v3d/v3d_core.h"
 
 #ifdef __WIN32 
 // #include "../sub_projects/imaging_piezo/microimaging.h"
@@ -47,7 +48,20 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 	try 
 	{
 		const char* filename=p.imgp->getFileName();
-		XFormWidget *curw = mainwindow->findMdiChild(QString(filename)); //search window using name
+		XFormWidget *curw = mainwindow->findMdiChild(QString(filename)); //search window using name. ZJL
+
+		//unsigned char* rawdata=p.imgp->getRawData();
+		//QList <V3dR_MainWindow *> winlist=mainwindow->list_3Dview_win;   
+		//V3dR_MainWindow *curwin;
+		//for(int i=0;i<winlist.size();i++)
+		//{
+		//	unsigned char* winrawdata=winlist.at(i)->getGLWidget()->getiDrawExternalParameter()->image4d->getRawData();
+		//	if(rawdata==winrawdata)
+		//	{
+		//		curwin=winlist.at(i);
+		//		continue;
+		//	}
+		//}
 
 		if (!curw)
 		{
@@ -66,8 +80,7 @@ bool v3d_imaging(MainWindow* mainwindow, const v3d_imaging_paras & p)
 			pluginsDir.cdUp();
 		}
 #endif
-		//if (pluginsDir.cd("plugins/64bit/Canvas_Eraser")==false)
-		if (pluginsDir.cd("plugins/smartscope_controller")==false) //imaging_piezo
+		if (pluginsDir.cd("plugins/smartscope_controller")==false) 
 		{
 			v3d_msg("Cannot find ./plugins/smartscope_controller directory!");
 			return false;

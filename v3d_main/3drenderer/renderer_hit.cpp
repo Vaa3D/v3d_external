@@ -2386,12 +2386,13 @@ void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 			//do imaging
 			v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
 		}
+		else //b_imaging does not open 3D Viewer here
+		{
+			curXWidget->setLocal3DViewerBBox(mx, Mx, my, My, mz, Mz);
+			//QTimer::singleShot( 1000, curXWidget, SLOT(doImage3DLocalView()) );
 
-
-		curXWidget->setLocal3DViewerBBox(mx, Mx, my, My, mz, Mz);
-		//QTimer::singleShot( 1000, curXWidget, SLOT(doImage3DLocalView()) );
-
-		curXWidget->doImage3DLocalBBoxView(); //by PHC 101012. move from before if(b_imaging...)
+			curXWidget->doImage3DLocalBBoxView(); //by PHC 101012. move from before if(b_imaging...)
+		}
 
 	}
 #endif //test_main_cpp

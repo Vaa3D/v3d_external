@@ -1445,6 +1445,7 @@ void Renderer_gl1::updateDraggedNeuronXYZ()
 //           segi.row.at(i).data[4] = pt.z;
 //      }
 
+
      // Update endpoints of linked segments
      V3DLONG nsegs = curImg->tracedNeuron.nsegs();
      for(V3DLONG j=0; j<nsegs; j++)
