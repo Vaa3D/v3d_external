@@ -11909,7 +11909,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
         }
 
         // grouping tiles
-        REAL stitch_threshold = 0.85;
+        REAL stitch_threshold = 0.888;
         for(int i=1; i<NTILES; i++)
         {
             //
@@ -11949,17 +11949,36 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
 
             for(int j=i; j<NTILES_I; j++)
             {
-                if(visited[j]!=count_group)
+                if(visited[j] && visited[j]!=count_group)
                 {
                     continue;
                 }
 
+                for(int k=0; k<j; k++)
+                {
+                    if(udgraph[k][j] && (visited[j]==count_group || visited[k]==count_group))
+                    {
+                        if(visited[j]!=count_group)
+                            fprintf(pTGFile, "%s \n", vim.tilesList.at(j).fn_image.c_str());
+                        if(visited[k]!=count_group)
+                            fprintf(pTGFile, "%s \n", vim.tilesList.at(k).fn_image.c_str());
+
+                        visited[j] = count_group;
+                        visited[k] = count_group;
+                    }
+                }
+
                 for(int k=j+1; k<NTILES; k++)
                 {
-                    if(udgraph[j][k])
+                    if(udgraph[j][k] && (visited[j]==count_group || visited[k]==count_group))
                     {
+                        if(visited[j]!=count_group)
+                            fprintf(pTGFile, "%s \n", vim.tilesList.at(j).fn_image.c_str());
+                        if(visited[k]!=count_group)
+                            fprintf(pTGFile, "%s \n", vim.tilesList.at(k).fn_image.c_str());
+
+                        visited[j] = count_group;
                         visited[k] = count_group;
-                        fprintf(pTGFile, "%s \n", vim.tilesList.at(k).fn_image.c_str());
                     }
                 }
             }
