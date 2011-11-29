@@ -25,7 +25,7 @@
 #include "../NeuronSelector.h"
 #include "FragmentGalleryWidget.h"
 #include "AnnotationWidget.h"
-#include "CurtainWidget.h"
+// #include "CurtainWidget.h"
 
 using namespace std;
 
