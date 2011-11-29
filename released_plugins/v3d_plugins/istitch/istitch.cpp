@@ -11909,7 +11909,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
         }
 
         // grouping tiles
-        REAL stitch_threshold = 0.888;
+        REAL stitch_threshold = 0.885;
         for(int i=1; i<NTILES; i++)
         {
             //
