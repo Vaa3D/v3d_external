@@ -31,7 +31,7 @@ GalleryButton::GalleryButton(
     layout->addWidget(label);
     this->setLayout(layout);
     // setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
-    connect(pushButton, SIGNAL(clicked(bool)), this, SLOT(setFragmentVisibility(bool)));
+    connect(pushButton, SIGNAL(toggled(bool)), this, SLOT(setFragmentVisibility(bool)));
 }
 
 GalleryButton::~GalleryButton()
@@ -88,6 +88,14 @@ void GalleryButton::setNeuronSelectionModel(const NeuronSelectionModel& n)
                 this, SLOT(updateVisibility()));
         break;
     case OVERLAY_BUTTON:
+        // Reference channel is initially OFF.  Ensure it is set that way
+        {
+            NeuronSelectionModel::Reader reader(n);
+            if (reader.hasReadLock()) {
+                if (reader.getOverlayStatusList().size() > index)
+                    setFragmentVisibility(reader.getOverlayStatusList()[index]);
+            }
+        }
         connect(this, SIGNAL(fragmentVisibilityChanged(int,bool)),
                 neuronSelectionModel, SLOT(updateOverlay(int,bool)));
         connect(neuronSelectionModel, SIGNAL(visibilityChanged()),

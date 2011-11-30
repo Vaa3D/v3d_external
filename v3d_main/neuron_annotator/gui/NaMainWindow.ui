@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1217</width>
-    <height>909</height>
+    <height>923</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -415,7 +415,6 @@ shift-drag to pan
 double-click to recenter
 single-click to select a neuron fragment</string>
                    </property>
-                   <zorder>annotationFrame</zorder>
                   </widget>
                  </item>
                 </layout>
@@ -1832,7 +1831,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>V3D default</string>
+    <string>Vaa3D default</string>
    </property>
   </action>
   <action name="actionNeuronAnnotator">

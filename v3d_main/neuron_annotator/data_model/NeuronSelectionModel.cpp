@@ -66,6 +66,8 @@ void NeuronSelectionModel::initializeSelectionModel()
 bool NeuronSelectionModel::updateOverlay(int index, bool status)
 {
     // qDebug() << "NeuronSelectionModel::updateOverlay" << index << status << __FILE__ << __LINE__;
+    if (index < 0) return false;
+    if (index >= overlayStatusList.size()) return false;
     bool bChanged = false;
     if (overlayStatusList[index] == status) return bChanged; // no change
     {
