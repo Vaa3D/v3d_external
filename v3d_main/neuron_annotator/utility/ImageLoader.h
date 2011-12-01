@@ -9,8 +9,10 @@
 using namespace std;
 
 
-class ImageLoader : public QRunnable
+class ImageLoader : public QObject, public QRunnable
 {
+
+Q_OBJECT
 
 public:
     ImageLoader();
@@ -55,6 +57,14 @@ public:
     bool mapChannels();
 
     virtual void run();
+    // Set numeric index to help track which file is being loaded, for use in progress computation.
+    ImageLoader& setProgressIndex(int index) {progressIndex = index; return *this;}
+
+signals:
+    void progressValueChanged(int progress, int progressIndex); // 0-100
+    void progressComplete(int progressIndex);
+    void progressAborted(int progressIndex);
+    void progressMessageChanged(QString message);
 
 private:
     int mode;
@@ -79,6 +89,7 @@ private:
     unsigned char * decompressionPosition;
     unsigned char decompressionPrior;
 
+    int progressIndex;
 };
 
 #endif // IMAGELOADER_H

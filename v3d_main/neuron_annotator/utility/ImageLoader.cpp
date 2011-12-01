@@ -4,6 +4,7 @@
 #include <QDir>
 #include "../../v3d/v3d_core.h"
 #include "ImageLoader.h"
+#include <cassert>
 
 using namespace std;
 
@@ -14,6 +15,7 @@ const int ImageLoader::MODE_MIP=3;
 const int ImageLoader::MODE_MAP_CHANNELS=4;
 
 ImageLoader::ImageLoader()
+    : progressIndex(0)
 {
     mode=MODE_UNDEFINED;
     inputFilepath="";
@@ -721,11 +723,15 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
 
         qDebug() << "ImageLoader::loadRaw2StackPBD starting filename=" << filename;
 
+        int progressValue = 0;
+        emit progressValueChanged(++progressValue, progressIndex);
+
         int berror = 0;
         decompressionPrior = 0;
 
         QTime stopwatch;
         stopwatch.start();
+        // qDebug() << "ImageLoader::loadRaw2StackPBD" << filename << stopwatch.elapsed() << __FILE__ << __LINE__;
 
         int datatype;
 
@@ -873,8 +879,16 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
         totalReadBytes = 0;
         V3DLONG cntBuf = 0;
 
+        // done reading header
+        emit progressValueChanged(++progressValue, progressIndex);
+
+        // qDebug() << "ImageLoader::loadRaw2StackPBD" << filename << stopwatch.elapsed() << __FILE__ << __LINE__;
+
         // Transfer data to My4DImage
-        image->createBlankImage(sz[0], sz[1], sz[2], sz[3], 1);
+        // Allocating memory can take seconds.  So send a message
+        emit progressMessageChanged("Allocating image memory...");
+        image->createBlankImage(sz[0], sz[1], sz[2], sz[3], 1);        
+        emit progressMessageChanged("Decompressing image...");
         decompressionBuffer = image->getRawData();
 
         QThreadPool threadPool;
@@ -882,6 +896,8 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
 
         while (remainingBytes>0)
         {
+            // qDebug() << "ImageLoader::loadRaw2StackPBD" << filename << stopwatch.elapsed() << __FILE__ << __LINE__;
+
             V3DLONG curReadBytes = (remainingBytes<readStepSizeBytes) ? remainingBytes : readStepSizeBytes;
             V3DLONG curReadUnits = curReadBytes/unitSize;
             nread = fread(compressionBuffer+cntBuf*readStepSizeBytes, unitSize, curReadUnits, fid);
@@ -903,7 +919,16 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
             } else {
                 updateCompressionBuffer(compressionBuffer+totalReadBytes);
             }
+
+            int newProgressValue = (int)(75.0 * (compressedBytes - remainingBytes) / (float)compressedBytes + 0.49);
+            assert(newProgressValue <= 100);
+            assert(newProgressValue >= 0);
+            if (progressValue < newProgressValue) {
+                progressValue = newProgressValue;
+                emit progressValueChanged(progressValue, progressIndex);
+            }
         }
+        // qDebug() << "ImageLoader::loadRaw2StackPBD" << filename << stopwatch.elapsed() << __FILE__ << __LINE__;
         qDebug() << "Total time elapsed after all reads is " << stopwatch.elapsed() / 1000.0 << " seconds";
 
         if (useThreading) {
@@ -911,6 +936,7 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
             threadPool.waitForDone();
             qDebug() << "Done final wait";
         }
+        emit progressComplete(progressIndex);
 
         // Success - can delete compressedData
         delete [] compressionBuffer; compressionBuffer=0;
@@ -933,6 +959,7 @@ int ImageLoader::exitWithError(QString errorMessage) {
     if (fid!=0)
         fclose(fid);
     int berror=1;
+    emit progressAborted(progressIndex);
     return berror;
 }
 

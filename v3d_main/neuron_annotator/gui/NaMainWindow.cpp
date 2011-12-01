@@ -1078,7 +1078,7 @@ void NaMainWindow::updateGalleries()
 
 void NaMainWindow::initializeOverlayGallery()
 {
-    qDebug() << "NaMainWindow::initializeOverlayGallery()" << __FILE__ << __LINE__;
+    // qDebug() << "NaMainWindow::initializeOverlayGallery()" << __FILE__ << __LINE__;
 
     // Create layout, only if needed.
     QFrame* ui_maskFrame = qFindChild<QFrame*>(this, "maskFrame");

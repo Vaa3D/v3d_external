@@ -37,13 +37,24 @@ bool NaVolumeDataLoadableStack::load()
     // qDebug() << "NaVolumeData::LoadableStack::load() filename=" << filename;
     QString fullFilepath=determineFullFilepath();
     ImageLoader imageLoader;
+    imageLoader.setProgressIndex(stackIndex);
+    connect(&imageLoader, SIGNAL(progressValueChanged(int,int)),
+            this, SIGNAL(progressValueChanged(int,int)));
+    connect(&imageLoader, SIGNAL(progressAborted(int)),
+            this, SIGNAL(failed()));
+    connect(&imageLoader, SIGNAL(progressMessageChanged(QString)),
+            this, SIGNAL(progressMessageChanged(QString)));
     imageLoader.loadImage(stackp, fullFilepath);
+    /*
+    // stackp->isEmpty() is returning 'true' for correctly loaded images.
+    // so I'm commenting out this block.
     if (stackp->isEmpty()) {
         emit failed();
         return false;
     }
-    setRelativeProgress(0.70);
-    // stackp->updateminmaxvalues();
+    */
+    setRelativeProgress(0.75);
+    stackp->updateminmaxvalues();
     setRelativeProgress(1.0);
     emit finished();
     return true;
@@ -142,14 +153,18 @@ void NaVolumeData::loadVolumeDataFromFiles()
 {
     QTime stopwatch;
     stopwatch.start();
+    // qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() << __FILE__ << __LINE__;
 
     bool stacksLoaded = false;
     emit progressMessageChanged("Loading image stack files"); // emit outside of lock block
     emit progressValueChanged(1); // show a bit of blue
     { // Allocate writer on the stack so write lock will be automatically released when method returns
         Writer volumeWriter(*this);
+        // qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() << __FILE__ << __LINE__;
         volumeWriter.clearImageData();
+        // qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() << __FILE__ << __LINE__;
         stacksLoaded = volumeWriter.loadStacks();
+        // qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() << __FILE__ << __LINE__;
     } // release locks before emit
     if (! stacksLoaded) {
         emit progressAborted(QString("Problem loading stacks"));
@@ -165,6 +180,7 @@ void NaVolumeData::loadVolumeDataFromFiles()
     qDebug() << "Loading 16-bit image data from disk absorbed "
             << (double)data_size / double(1e6) << " MB of RAM"; // kibibytes boo hoo whatever...
 
+    // qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() << __FILE__ << __LINE__;
     emit progressCompleted();
     emit dataChanged();
 }
@@ -220,6 +236,8 @@ bool NaVolumeData::Writer::loadStacks()
     LoadableStack originalStack(m_data->originalImageStack, m_data->originalImageStackFilePath, 0);
     connect(&originalStack, SIGNAL(progressValueChanged(int, int)),
             m_data, SLOT(setStackLoadProgress(int, int)));
+    connect(&originalStack, SIGNAL(progressMessageChanged(QString)),
+            m_data, SIGNAL(progressMessageChanged(QString)));
     qDebug() << "NaVolumeData::Writer::loadStacks() starting originalStack.load()";
     // Pass stack pointer instead of stack reference to avoid problem with lack of QObject copy constructor.
 
@@ -227,12 +245,16 @@ bool NaVolumeData::Writer::loadStacks()
     LoadableStack maskStack(m_data->neuronMaskStack, m_data->maskLabelFilePath, 1);
     connect(&maskStack, SIGNAL(progressValueChanged(int, int)),
             m_data, SLOT(setStackLoadProgress(int, int)));
+    connect(&maskStack, SIGNAL(progressMessageChanged(QString)),
+            m_data, SIGNAL(progressMessageChanged(QString)));
     qDebug() << "NaVolumeData::Writer::loadStacks() starting maskStack.load()";
 
     My4DImage* initialReferenceStack = new My4DImage();
     LoadableStack referenceStack(initialReferenceStack, m_data->referenceStackFilePath, 2);
     connect(&referenceStack, SIGNAL(progressValueChanged(int, int)),
             m_data, SLOT(setStackLoadProgress(int, int)));
+    connect(&referenceStack, SIGNAL(progressMessageChanged(QString)),
+            m_data, SIGNAL(progressMessageChanged(QString)));
     qDebug() << "NaVolumeData::Writer::loadStacks() starting referenceStack.load()";
 
     // There are some bugs with multithreaded image loading, so make it an option.
@@ -273,18 +295,21 @@ bool NaVolumeData::Writer::loadStacks()
     }
     else {
         // Non-threaded sequential loading
+        m_data->setProgressMessage("Loading multicolor brain images...");
         originalStack.load();
+        m_data->setProgressMessage("Loading neuron fragment locations...");
         maskStack.load();
+        m_data->setProgressMessage("Loading nc82 synaptic reference image...");
         referenceStack.load();
     }
 
     qDebug() << "NaVolumeData::Writer::loadStacks() done loading all stacks in " << stopwatch.elapsed() / 1000.0 << " seconds";
 
-    m_data->originalImageStack->updateminmaxvalues();
+    // m_data->originalImageStack->updateminmaxvalues();
     m_data->originalImageProxy = Image4DProxy<My4DImage>(m_data->originalImageStack);
     m_data->originalImageProxy.set_minmax(m_data->originalImageStack->p_vmin, m_data->originalImageStack->p_vmax);
 
-    m_data->neuronMaskStack->updateminmaxvalues();
+    // m_data->neuronMaskStack->updateminmaxvalues();
     m_data->neuronMaskProxy = Image4DProxy<My4DImage>(m_data->neuronMaskStack);
     m_data->neuronMaskProxy.set_minmax(m_data->neuronMaskStack->p_vmin, m_data->neuronMaskStack->p_vmax);
 

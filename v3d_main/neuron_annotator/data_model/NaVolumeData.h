@@ -17,6 +17,7 @@ public:
 
 signals:
     void progressValueChanged(int progressValue, int stackIndex);
+    void progressMessageChanged(QString);
     void failed();
     void finished();
 
@@ -50,6 +51,7 @@ public:
 public slots:
     void loadVolumeDataFromFiles(); // Assumes file name paths have already been set
     void setProgressValue(int progressValue);
+    void setProgressMessage(QString message) {emit progressMessageChanged(message);}
     void setStackLoadProgress(int progressValue, int stackIndex);
 
 private:
