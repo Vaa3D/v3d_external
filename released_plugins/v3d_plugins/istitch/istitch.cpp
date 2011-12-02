@@ -2022,7 +2022,8 @@ QStringList IStitchPlugin::funclist() const
 {
     return QStringList() << tr("v3dstitch")
                          << tr("istitch-subspace")
-                         << tr("istitch-gc");
+                         << tr("istitch-gc")
+                         << tr("istitch-grouping");
 }
 
 // Multiscale pairwise images stitching with thick planes (e.g. 10 pixels width) in boundary bounding box
