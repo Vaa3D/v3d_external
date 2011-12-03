@@ -138,7 +138,7 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 		}
 	}
 #ifdef _ALLOW_WORKMODE_MENU_    
-        else if ( strcasecmp(curFileSurfix, "v3dpbd")==0 ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
+        else if ( ImageLoader::hasPbdExtension(QString(filename)) ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
         {
             ImageLoader imageLoader;
             QString imageSrcFile(imgSrcFile);
