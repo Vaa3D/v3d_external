@@ -148,7 +148,7 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
                 return;
             }
             // The following few lines are to avoid disturbing the existing code below
-            tmp_datatype=1; // always true for v3dpbd at this point
+            tmp_datatype=this->getDatatype();
             tmp_sz=new V3DLONG[4];
             tmp_sz[0]=this->getXDim();
             tmp_sz[1]=this->getYDim();
