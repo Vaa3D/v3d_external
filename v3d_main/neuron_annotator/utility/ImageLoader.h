@@ -24,8 +24,23 @@ public:
     static const int MODE_MIP;
     static const int MODE_MAP_CHANNELS;
 
+    static const unsigned char oooooool;
+    static const unsigned char oooooolo;
+    static const unsigned char ooooooll;
+    static const unsigned char oooooloo;
+    static const unsigned char ooooolol;
+    static const unsigned char ooooollo;
+    static const unsigned char ooooolll;
+
     static string getCommandLineDescription() {
         return "image-loader";
+    }
+
+    static bool hasPbdExtension(QString filename) {
+        if (filename.endsWith(".pbd") || filename.endsWith(".v3dpbd") || filename.endsWith(".vaa3dpbd")) {
+            return true;
+        }
+        return false;
     }
 
     static string getUsage() {
@@ -45,13 +60,14 @@ public:
     bool loadImage(Image4DSimple * stackp, QString filepath);
     bool saveImage(My4DImage * stackp, QString filepath);
 
-    int saveStack2RawPBD(const char * filename, unsigned char* data, const V3DLONG * sz);
+    int saveStack2RawPBD(const char * filename, ImagePixelType dataType, unsigned char* data, const V3DLONG * sz);
     int loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool useThreading);
 
     int processArgs(vector<char*> *argList);
     QString getFilePrefix(QString filepath);
 
-    V3DLONG decompressPBD(unsigned char * sourceData, unsigned char * targetData, V3DLONG sourceLength);
+    V3DLONG decompressPBD8(unsigned char * sourceData, unsigned char * targetData, V3DLONG sourceLength);
+    V3DLONG decompressPBD16(unsigned char * sourceData, unsigned char * targetData, V3DLONG sourceLength);
     void create2DMIPFromStack(My4DImage * image, QString mipFilepath);
 
     bool mapChannels();
@@ -75,10 +91,13 @@ private:
     FILE * fid;
     char * keyread;
     bool flipy;
+    int loadDatatype;
 
-    V3DLONG compressPBD(unsigned char * compressionBuffer, unsigned char * sourceBuffer, V3DLONG sourceBufferLength, V3DLONG spaceLeft);
+    V3DLONG compressPBD8(unsigned char * compressionBuffer, unsigned char * sourceBuffer, V3DLONG sourceBufferLength, V3DLONG spaceLeft);
+    V3DLONG compressPBD16(unsigned char * compressionBuffer, unsigned char * sourceBuffer, V3DLONG sourceBufferLength, V3DLONG spaceLeft);
     int exitWithError(QString errorMessage);
-    void updateCompressionBuffer(unsigned char * updatedCompressionBuffer);
+    void updateCompressionBuffer8(unsigned char * updatedCompressionBuffer);
+    void updateCompressionBuffer16(unsigned char * updatedCompressionBuffer);
     unsigned char * convertType2Type1(const V3DLONG * sz, My4DImage *image);
 
     V3DLONG totalReadBytes;
@@ -87,7 +106,7 @@ private:
     unsigned char * decompressionBuffer;
     unsigned char * compressionPosition;
     unsigned char * decompressionPosition;
-    unsigned char decompressionPrior;
+    int decompressionPrior;
 
     int progressIndex;
 };

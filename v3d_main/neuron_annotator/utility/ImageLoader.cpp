@@ -3,6 +3,7 @@
 #include <QtCore>
 #include <QDir>
 #include "../../v3d/v3d_core.h"
+#include "../../basic_c_fun/v3d_basicdatatype.h"
 #include "ImageLoader.h"
 #include <cassert>
 
@@ -14,9 +15,18 @@ const int ImageLoader::MODE_CONVERT=2;
 const int ImageLoader::MODE_MIP=3;
 const int ImageLoader::MODE_MAP_CHANNELS=4;
 
+const unsigned char ImageLoader::oooooool = 1;
+const unsigned char ImageLoader::oooooolo = 2;
+const unsigned char ImageLoader::ooooooll = 3;
+const unsigned char ImageLoader::oooooloo = 4;
+const unsigned char ImageLoader::ooooolol = 5;
+const unsigned char ImageLoader::ooooollo = 6;
+const unsigned char ImageLoader::ooooolll = 7;
+
 ImageLoader::ImageLoader()
     : progressIndex(0)
 {
+    qDebug() << "ImageLoader() constructor called";
     mode=MODE_UNDEFINED;
     inputFilepath="";
     targetFilepath="";
@@ -24,6 +34,7 @@ ImageLoader::ImageLoader()
     fid=0;
     keyread=0;
     image=0;
+    loadDatatype=0;
     compressionPosition=0;
     decompressionPosition=0;
     decompressionPrior=0;
@@ -359,7 +370,7 @@ bool ImageLoader::validateFile() {
 bool ImageLoader::loadImage(Image4DSimple * stackp, QString filepath) {
     if (filepath.endsWith(".tif") || filepath.endsWith(".lsm") || filepath.endsWith(".v3draw") || filepath.endsWith(".raw")) {
         stackp->loadImage(filepath.toAscii().data());
-    } else if (filepath.endsWith(".v3dpbd")) {
+    } else if (hasPbdExtension(filepath)) {
         if (loadRaw2StackPBD(filepath.toAscii().data(), stackp, true)!=0) {
             qDebug() << "Error with loadRaw2StackPBD";
             return false;
@@ -376,31 +387,31 @@ My4DImage* ImageLoader::loadImage(QString filepath) {
 
 bool ImageLoader::saveImage(My4DImage * stackp, QString filepath) {
     qDebug() << "Saving to file " << filepath;
-    if (filepath.endsWith(".v3dpbd")) {
+    if (hasPbdExtension(filepath)) {
         V3DLONG sz[4];
         sz[0] = stackp->getXDim();
         sz[1] = stackp->getYDim();
         sz[2] = stackp->getZDim();
         sz[3] = stackp->getCDim();
         unsigned char* data = 0;
-        bool converted=false;
-        if (stackp->getDatatype()==1) {
+//        bool converted=false;
+//        if (stackp->getDatatype()==1) {
             data = stackp->getRawData();
-        } else if (stackp->getDatatype()==2) {
-            data = convertType2Type1(sz, stackp);
-            converted=true;
-            if (data==0) {
-                qDebug() << "ImageLoader::execute - problem allocating memory for conversion of type 2 to type 1";
-                return false;
-            }
-        } else {
-            qDebug() << "ImageLoader::execute - do not support source data other than type 1 or type 2";
-            return false;
-        }
-        saveStack2RawPBD(targetFilepath.toAscii().data(), data, sz);
-        if (data!=0 && converted) {
-            delete data;
-        }
+//        } else if (stackp->getDatatype()==2) {
+//            data = convertType2Type1(sz, stackp);
+//            converted=true;
+//            if (data==0) {
+//                qDebug() << "ImageLoader::execute - problem allocating memory for conversion of type 2 to type 1";
+//                return false;
+//            }
+//        } else {
+//            qDebug() << "ImageLoader::execute - do not support source data other than type 1 or type 2";
+//            return false;
+//        }
+        saveStack2RawPBD(targetFilepath.toAscii().data(), stackp->getDatatype(), data, sz);
+//        if (data!=0 && converted) {
+//            delete data;
+//        }
     } else {
         stackp->saveImage(targetFilepath.toAscii().data());
     }
@@ -420,6 +431,9 @@ QString ImageLoader::getFilePrefix(QString filepath) {
 /*
 
  This function implements a hybrid of PackBits with difference-encoding, as follows:
+
+ ==========================================================================================================
+ 8-bit
 
  <header byte>
 
@@ -471,12 +485,47 @@ QString ImageLoader::getFilePrefix(QString filepath) {
 
 128 to 255 : Implies the following single byte is to be repeated (n-127) times
 
+ ==========================================================================================================
+ 16-bit
+
+ <header byte>
+
+ 0 to 31   : Implies the following (n+1) positions are literal, which requires 2*(n+1) following bytes.
+
+ 32 to 79 : Implies the prior 2-byte value is to be followed by (n-31) 3-bit (8-value) differences, to be applied accumutively.
+            Any extra space within a 1-byte boundary is to be ignored. The difference is encoded thus:
+
+             3-bit
+
+             0 - 4 (literal)
+             5-7 (4-n)
+
+ 80 to 182 : Implies the prior 2-byte value is to be followed by (n-79) 4-bit (16-value) differences, to be applied accumutively.
+             Any extra space within a 1-byte boundary is to be ignored. The difference is encoded thus:
+
+             4-bit
+
+             0 - 8 (literal)
+             9-15 (8-n)
+
+
+ 183 to 222 : Implies the prior 2-byte value is to be followed by (n-182) 5-bit (32-value) differences, applied accumulatively.
+              Any extra space within a 1-byte boundary is ignored. The difference is encoded as:
+
+              5-bit
+
+              0-16 (literal)
+              17-31 (16-n)
+
+
+223 to 255 : Implies the following two-byte value is to be repeated (n-222) times
+
+
 */
 
-int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char* data, const V3DLONG * sz)
+int ImageLoader::saveStack2RawPBD(const char * filename, ImagePixelType datatype, unsigned char* data, const V3DLONG * sz)
 {
     int berror=0;
-    int datatype=1; // PBD only supports type=1 as output
 
         /* This function save a data stack to raw file */
                 printf("size of [V3DLONG]=[%ld], [V3DLONG]=[%ld] [int]=[%ld], [short int]=[%ld], [double]=[%ld], [float]=[%ld]\n",
@@ -516,7 +565,7 @@ int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char* data, co
         //int b_swap = 0; //for this machine itself, should not swap data.
 
         short int dcode = (short int)datatype;
-        if (dcode!=1 && dcode!=2 && dcode!=4)
+        if (!(dcode==1 || dcode==2))
         {
             QString errorMsg = QString("Unrecognized data type code = [%1]. This code is not supported in this version.").arg(dcode);
             return exitWithError(errorMsg);
@@ -535,7 +584,10 @@ int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char* data, co
         BIT32_UNIT mysz[4];//060806
                                            //if (b_swap)  {
                                            //for (i=0;i<4;i++) mysz[i] = (short int) sz[i];
-                for (i=0;i<4;i++) mysz[i] = (BIT32_UNIT) sz[i];
+                for (i=0;i<4;i++) {
+                    mysz[i] = (BIT32_UNIT) sz[i];
+                    qDebug() << " size " << i << " = " << mysz[i];
+                }
                 //swap2bytes((void *)(mysz+i));
                 //}
                 nwrite = fwrite(mysz, 4, 4, fid); /* because I have already checked the file size to be bigger than the header, no need to check the number of actual bytes read. */
@@ -550,12 +602,21 @@ int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char* data, co
                 totalUnit *= sz[i];
         }
 
-        V3DLONG maxSize = totalUnit*unitSize*2;
-        unsigned char * compressionBuffer = new unsigned char [maxSize];
+        qDebug() << "Using totalUnit=" << totalUnit << " unitSize=" << unitSize;
+
+        V3DLONG maxSize = totalUnit*unitSize*2;                          // NOTE:
+        unsigned char * compressionBuffer = new unsigned char [maxSize]; // we give the compression buffer 2x room without throwing an error,
+                                                                         // even though we hope it peforms well below 1, obviously
 
         printf("Allocated compression target with maxSize=%ld\n", maxSize);
 
-        V3DLONG compressionSize = compressPBD(compressionBuffer, data, totalUnit*unitSize, maxSize);
+        V3DLONG compressionSize = 0;
+
+        if (datatype==1) {
+            compressionSize=compressPBD8(compressionBuffer, data, totalUnit*unitSize, maxSize);
+        } else if (datatype==2) {
+            compressionSize=compressPBD16(compressionBuffer, data, totalUnit*unitSize, maxSize);
+        }
 
         if (compressionSize==0) {
             return exitWithError("Error during compressPBD");
@@ -563,11 +624,13 @@ int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char* data, co
 
         double finalCompressionRatio = (totalUnit*unitSize*1.0)/compressionSize;
 
-        printf("Total original size=%ld  post-compression size=%ld  ratio=%f\n", totalUnit, compressionSize, finalCompressionRatio);
+        V3DLONG originalSize=totalUnit*unitSize;
+
+        printf("Total original size=%ld  post-compression size=%ld  ratio=%f\n", originalSize, compressionSize, finalCompressionRatio);
 
         printf("Writing file...");
 
-        nwrite = fwrite(compressionBuffer, unitSize, compressionSize, fid);
+        nwrite = fwrite(compressionBuffer, 1, compressionSize, fid);
         if (nwrite!=compressionSize)
         {
                 QString errorMsg = QString("Something wrong in file writing. The program wrote %1 data points but the file says there should be %2 data points.")
@@ -582,14 +645,12 @@ int ImageLoader::saveStack2RawPBD(const char * filename, unsigned char* data, co
         return berror;
 }
 
-
-// We assume here that sourceBuffer is
-V3DLONG ImageLoader::compressPBD(unsigned char * compressionBuffer, unsigned char * sourceBuffer, V3DLONG sourceBufferLength, V3DLONG spaceLeft) {
+V3DLONG ImageLoader::compressPBD8(unsigned char * compressionBuffer, unsigned char * sourceBuffer, V3DLONG sourceBufferLength, V3DLONG spaceLeft) {
     bool debug=false;
     V3DLONG p=0;
 
     if (sourceBufferLength==0) {
-        printf("ImageLoader::compressPBD - unexpectedly received buffer of zero size\n");
+        printf("ImageLoader::compressPBD8 - unexpectedly received buffer of zero size\n");
         return 0;
     }
 
@@ -599,7 +660,7 @@ V3DLONG ImageLoader::compressPBD(unsigned char * compressionBuffer, unsigned cha
     for (int i=0;i<sourceBufferLength;i++) {
 
         if (p>=spaceLeft) {
-            printf("ImageLoader::compressPBD ran out of space p=%d\n", p);
+            printf("ImageLoader::compressPBD8 ran out of space p=%d\n", p);
             return 0;
         }
 
@@ -718,6 +779,360 @@ V3DLONG ImageLoader::compressPBD(unsigned char * compressionBuffer, unsigned cha
     return p;
 }
 
+V3DLONG ImageLoader::compressPBD16(unsigned char * compressionBuffer, unsigned char * sourceBuffer, V3DLONG sourceBufferLength, V3DLONG spaceLeft) {
+    bool debug=false;
+    V3DLONG p=0;
+    const int THREE_BIT_DIFF_MAX_LENGTH=79-31;
+    const int FOUR_BIT_DIFF_MAX_LENGTH=182-79;
+    const int FIVE_BIT_DIFF_MAX_LENGTH=222-182;
+    const int REPEAT_MAX_LENGTH=255-222;
+
+    if (sourceBufferLength==0) {
+        printf("ImageLoader::compressPBD16 - unexpectedly received buffer of zero size\n");
+        return 0;
+    }
+
+    v3d_uint16 currentValue=0;
+    v3d_uint16 * source16Buffer = (v3d_uint16*)sourceBuffer;
+    V3DLONG source16BufferLength = sourceBufferLength/2;
+    int* dbuffer = 0;
+    int d3buffer[256];
+    int d4buffer[256];
+    int d5buffer[256];
+    V3DLONG activeLiteralIndex=-1; // if -1 this means there is no literal mode started
+
+    // Minimum number of values to accept as an encoding preferable to literal:
+    //
+    //      Run-length: 2 { code, value } = 3 bytes to encode 2 values as repeats, vs 4 bytes to encode 2 literal values (STARTS NEW VALUE)
+    //
+    //      Three-bit: 2 { code, diff } = 2 bytes to encode 2 or more values, superior to literal starting at 2 values (EXTENDS PRIOR VALUE)
+    //
+    //      Four-bit:  2 { code, diff } = 2 bytes to encode 2 values, superior to literal starting at 2 values (EXTENDS PRIOR VALUE)
+    //
+    //      Five-bit: 3 { code, diff } = 3 bytes to encode 3 values, superior to literal start at 3 values (EXTENDS PRIOR VALUE)
+
+    const double THREE_BIT_MAX_EFF = 16.0/3.0;
+    const double FOUR_BIT_MAX_EFF = 16.0/4.0;
+    const double FIVE_BIT_MAX_EFF = 16.0/5.0;
+
+    for (V3DLONG i=0;i<source16BufferLength;i++) {
+
+        if (p>=spaceLeft) {
+            printf("ImageLoader::compressPBD16 ran out of space p=%d\n", p);
+            return 0;
+        }
+
+        // From this point we assume the result has been accumulating in compressionBuffer, and at this moment
+        // we are searching for the best approach for the next segment. First, we will try reading
+        // the next value, and testing what the runlength encoding efficiency would be. The
+        // efficiency is simply the (number of bytes encoded / actual bytes). Next, we will test
+        // the different encoding, and (depending on its reach), see what its efficiency is.
+
+        // We will test the efficiency of the various methods and see how well we can do from the current position.
+
+        int repeatTest=1;
+        currentValue=source16Buffer[i];
+        //qDebug() << "At position=" << i << " value=" << currentValue;
+        V3DLONG currentPosition=i+1;
+        while(currentPosition<source16BufferLength && repeatTest<REPEAT_MAX_LENGTH) {
+            if (source16Buffer[currentPosition++]==currentValue) {
+                repeatTest++;
+            } else {
+                break;
+            }
+        }
+        double repeatEfficiency = repeatTest*1.0 / 3.0; // 3-bytes are used for the encoding
+
+        if (repeatEfficiency>=THREE_BIT_MAX_EFF) { // we can't do better than this with difference encoding
+            // Then go ahead and use repeat runlength encoding - this will work even at the start
+            compressionBuffer[p++]=repeatTest+222; // The code for number of repeats
+            v3d_uint16 * repeatValuePointer = (v3d_uint16*)(compressionBuffer + p);
+            *repeatValuePointer=currentValue;
+            p=p+2; // advance p by two bytes
+            i+=(repeatTest-1); // because will increment one more time at top of loop
+            activeLiteralIndex=-1; // we have no current literal context
+        } else {
+            // This means we don't have an impossible-to-beat repeat context, so we'll try a difference encoding
+            // to see if we can do better. We will try them from most efficient to least.
+            double dfEfficiency=0.0;
+            int dfType=0; // 0 is unknown, 3=3-bit, 4=4-bit, etc.
+            double df3Efficiency=0.0;
+            double df4Efficiency=0.0;
+            double df5Efficiency=0.0;
+            V3DLONG c=0;
+            V3DLONG d3c=0;
+            V3DLONG d4c=0;
+            V3DLONG d5c=0;
+            if (i>0) { // We can only use a difference encoding if we are initialized to have a prior value.
+                v3d_uint16 priorValue=source16Buffer[i-1];
+                int unitsToCheck=source16BufferLength-i;
+                for (dfType=3;dfType<6;dfType++) {
+                    c=i;
+                    if (dfType==3) {
+                        if (unitsToCheck>THREE_BIT_DIFF_MAX_LENGTH) {
+                            unitsToCheck=THREE_BIT_DIFF_MAX_LENGTH;
+                        }
+                        for (int j=0;j<256;j++) {
+                            d3buffer[j]=0; // clear the difference buffer
+                        }
+                        for (;c<i+unitsToCheck;c++) {
+                            //qDebug() << "debug: df3  c=" << c << " value=" << source16Buffer[c];
+                            int d=source16Buffer[c] - priorValue;
+                            if (d>4 || d<-3) {
+                                break;
+                            }
+                            priorValue=source16Buffer[c]; // since by definition the diff encoding is cumulative
+                            d3buffer[c-i]=d;
+                        }
+                        df3Efficiency=((c-i)*2.0)/(((c-i)*(3.0/8.0))+2.0); // 2.0 handles 1 byte boundary + length bias
+                        d3c=c;
+                    } else if (dfType==4) {
+                        if (unitsToCheck>FOUR_BIT_DIFF_MAX_LENGTH) {
+                            unitsToCheck=FOUR_BIT_DIFF_MAX_LENGTH;
+                        }
+                        for (int j=0;j<256;j++) {
+                            d4buffer[j]=0; // clear the difference buffer
+                        }
+                        for (;c<i+unitsToCheck;c++) {
+                            int d=source16Buffer[c] - priorValue;
+                            if (d>8 || d<-7) {
+                                break;
+                            }
+                            priorValue=source16Buffer[c]; // since by definition the diff encoding is cumulative
+                            d4buffer[c-i]=d;
+                        }
+                        df4Efficiency=((c-i)*2.0)/(((c-i)/2.0)+2.0); // 2.0 handles 1 byte boundary + length bias
+                        d4c=c;
+                    } else if (dfType==5) {
+                        if (unitsToCheck>FIVE_BIT_DIFF_MAX_LENGTH) {
+                            unitsToCheck=FIVE_BIT_DIFF_MAX_LENGTH;
+                        }
+                        for (int j=0;j<256;j++) {
+                            d5buffer[j]=0; // clear the difference buffer
+                        }
+                        for (;c<i+unitsToCheck;c++) {
+                            int d=source16Buffer[c] - priorValue;
+                            if (d>16 || d<-15) {
+                                break;
+                            }
+                            priorValue=source16Buffer[c]; // since by definition the diff encoding is cumulative
+                            d5buffer[c-i]=d;
+                        }
+                        df5Efficiency=((c-i)*2.0)/(((c-i)*(5.0/8.0))+2.0); // 2.0 handles 1 byte boundary + length bias
+                        d5c=c;
+                    }
+                }
+
+                // DEBUG - TYPE 3 ONLY FOR NOW
+                dfEfficiency=df3Efficiency;
+                c=d3c;
+                dfType=3;
+                dbuffer=d3buffer;
+
+//                if (df4Efficiency>df3Efficiency) {
+//                    dfEfficiency=df4Efficiency;
+//                    c=d4c;
+//                    dfType=4;
+//                    dbuffer=d4buffer;
+//                } else {
+//                    dfEfficiency=df3Efficiency;
+//                    c=d3c;
+//                    dfType=3;
+//                    dbuffer=d3buffer;
+//                }
+//                if (df5Efficiency>dfEfficiency) {
+//                    dfEfficiency=df5Efficiency;
+//                    c=d5c;
+//                    dfType=5;
+//                    dbuffer=d5buffer;
+//                }
+            }
+            // Now we can decide between RE and DF based on efficiency
+            if (repeatEfficiency>dfEfficiency && repeatEfficiency>1.0) {
+                // Then use RE
+                compressionBuffer[p++]=repeatTest+222; // The code for number of repeats
+                v3d_uint16 * cbp = (v3d_uint16*)(compressionBuffer + p);
+                *cbp=currentValue;
+                p=p+2;
+                i+=(repeatTest-1); // because will increment one more time at top of loop
+                activeLiteralIndex=-1;
+            } else if (dfEfficiency>1.0) {
+
+                int cp;
+                unsigned char d0,d1,d2,d3,d4;
+
+                if (dfType==3) {
+                    // First, encode the number of units we expect
+                    compressionBuffer[p++]=c-i+31;
+
+                    // Then use DF. We want to move forward in units of 4, and pick the correct encoding.
+                    // Note that is doesn't matter if we pad extra 0s because we know what the correct
+                    // length is from above.
+                    cp=i;
+                    d0=d1=d2=d3=d4=0;
+
+                    // byte partition sequence 332, 1331, 233
+
+                    while(cp<c) {
+
+                        // 332
+                        int dvalue=dbuffer[cp-i];
+                        if (dvalue<0) {
+                            d0=4-dvalue;
+                        } else {
+                            d0=dvalue;
+                        }
+                        cp++;
+                        if (cp==c) {
+                            d0 <<= 5;
+                            compressionBuffer[p++]=d0;
+                            break;
+                        }
+                        d0 <<= 3;
+                        dvalue=dbuffer[cp-i];
+                        if (dvalue<0) {
+                            d1=4-dvalue;
+                        } else {
+                            d1=dvalue;
+                        }
+                        d0 |= d1;
+                        cp++;
+                        d0 <<= 2;
+                        if (cp==c) {
+                            compressionBuffer[p++]=d0;
+                            break;
+                        }
+                        dvalue=dbuffer[cp-i];
+                        if (dvalue<0) {
+                            d2=4-dvalue;
+                        } else {
+                            d2=dvalue;
+                        }
+                        d3 = d2;
+                        d3 &= ooooollo;
+                        d3 >>= 1;
+                        d0 |= d3;
+                        compressionBuffer[p++]=d0;
+                        d4 = d2;
+                        d4 &= oooooool;
+                        unsigned char carryOver=d4;
+                        d0=d1=d2=d3=d4=0;
+
+                        // 1331
+                        d0=carryOver;
+                        cp++;
+                        if (cp==c) {
+                            d0 <<= 7;
+                            compressionBuffer[p++]=d0;
+                            break;
+                        }
+                        d0 <<= 3;
+                        dvalue=dbuffer[cp-i];
+                        if (dvalue<0) {
+                            d1=4-dvalue;
+                        } else {
+                            d1=dvalue;
+                        }
+                        d0 |= d1;
+                        cp++;
+                        d0 <<= 3;
+                        if (cp==c) {
+                            d0 <<= 1;
+                            compressionBuffer[p++]=d0;
+                            break;
+                        }
+                        dvalue=dbuffer[cp-i];
+                        if (dvalue<0) {
+                            d2=4-dvalue;
+                        } else {
+                            d2=dvalue;
+                        }
+                        d0 |= d2;
+                        cp++;
+                        d0 <<= 1;
+                        if (cp==c) {
+                            compressionBuffer[p++]=d0;
+                            break;
+                        }
+                        dvalue=dbuffer[cp-i];
+                        if (dvalue<0) {
+                            d3=4-dvalue;
+                        } else {
+                            d3=dvalue;
+                        }
+                        d4=d3;
+                        d3 &= oooooloo;
+                        d3 >>= 2;
+                        d0 |= d3;
+                        compressionBuffer[p++]=d0;
+                        d4 &= ooooooll;
+                        carryOver = d4;
+                        d0=d1=d2=d3=d4=0;
+
+                        // 233
+                        d0=carryOver;
+                        cp++;
+                        if (cp==c) {
+                            d0 <<= 6;
+                            compressionBuffer[p++]=d0;
+                            break;
+                        }
+                        d0 <<= 3;
+                        dvalue=dbuffer[cp-i];
+                        if (dvalue<0) {
+                            d1=4-dvalue;
+                        } else {
+                            d1=dvalue;
+                        }
+                        d0 |= d1;
+                        cp++;
+                        d0 <<= 3;
+                        if (cp==c) {
+                            compressionBuffer[p++]=d0;
+                            break;
+                        }
+                        dvalue=dbuffer[cp-i];
+                        if (dvalue<0) {
+                            d2=4-dvalue;
+                        } else {
+                            d2=dvalue;
+                        }
+                        d0 |= d2;
+                        compressionBuffer[p++]=d0;
+                        cp++;
+                    }
+                }
+
+                activeLiteralIndex=-1;
+                i=c-1; // will increment at top
+
+            } else { // This will catch the case where dfEfficiency is 0.0 due to i==0
+                // We need to add this value as a literal. If there is already a literal mode, then simply
+                // add it. Otherwise, start a new one.
+                if (activeLiteralIndex<0 || compressionBuffer[activeLiteralIndex]>=31) {
+                    // We need a new index
+                    compressionBuffer[p++]=0;
+                    activeLiteralIndex=p-1; // Our new literal index
+                    v3d_uint16 * cbp = (v3d_uint16*)(compressionBuffer + p); // Add the current value onto current sequence of literals
+                    *cbp=currentValue;
+                    //v3d_uint16 testValue=*((v3d_uint16*)(compressionBuffer + p));
+                    if (debug) qDebug() << "Assigned literal value for i=" << i << " index=0  p=" << p << " currentValue=" << currentValue;
+                    p+=2;
+                } else {
+                    compressionBuffer[activeLiteralIndex] += 1; // Increment existing literal count
+                    v3d_uint16 * cbp = (v3d_uint16*)(compressionBuffer + p); // Add the current value onto current sequence of literals
+                    *cbp=currentValue;
+                    //v3d_uint16 testValue=*((v3d_uint16*)(compressionBuffer + p));
+                    if (debug) qDebug() << "Assigned literal value for i=" << i << " index=" << compressionBuffer[activeLiteralIndex] << "  p=" << p << " currentValue=" << currentValue;
+                    p+=2;
+                }
+            }
+        }
+    }
+    return p;
+}
+
+
 int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool useThreading) {
     {
 
@@ -818,11 +1233,18 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
             return exitWithError(errorMessage);
         }
 
-        if (datatype!=1) {
-            return exitWithError("ImageLoader::loadRaw2StackPBD : only datatype=1 supported");
-        }
+        qDebug() << "Setting datatype=" << datatype;
 
-        image->setDatatype(V3D_UINT8);
+        if (datatype==1) {
+            image->setDatatype(V3D_UINT8);
+        } else if (datatype==2) {
+            image->setDatatype(V3D_UINT16);
+        } else {
+            return exitWithError("ImageLoader::loadRaw2StackPBD : only datatype=1 or datatype=2 supported");
+        }
+        loadDatatype=image->getDatatype(); // used for threaded loading
+
+        qDebug() << "Finished setting datatype=" << image->getDatatype();
 
         V3DLONG unitSize = datatype; // temporarily I use the same number, which indicates the number of bytes for each data point (pixel). This can be extended in the future.
 
@@ -877,7 +1299,6 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
         //V3DLONG nBytes2G = V3DLONG(1024)*V3DLONG(1024)*V3DLONG(1024)*V3DLONG(2);
         V3DLONG readStepSizeBytes = V3DLONG(1024)*20000;
         totalReadBytes = 0;
-        V3DLONG cntBuf = 0;
 
         // done reading header
         emit progressValueChanged(++progressValue, progressIndex);
@@ -885,9 +1306,10 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
         // qDebug() << "ImageLoader::loadRaw2StackPBD" << filename << stopwatch.elapsed() << __FILE__ << __LINE__;
 
         // Transfer data to My4DImage
+
         // Allocating memory can take seconds.  So send a message
         emit progressMessageChanged("Allocating image memory...");
-        image->createBlankImage(sz[0], sz[1], sz[2], sz[3], 1);        
+        image->createBlankImage(sz[0], sz[1], sz[2], sz[3], datatype);
         emit progressMessageChanged("Decompressing image...");
         decompressionBuffer = image->getRawData();
 
@@ -899,25 +1321,33 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
             // qDebug() << "ImageLoader::loadRaw2StackPBD" << filename << stopwatch.elapsed() << __FILE__ << __LINE__;
 
             V3DLONG curReadBytes = (remainingBytes<readStepSizeBytes) ? remainingBytes : readStepSizeBytes;
-            V3DLONG curReadUnits = curReadBytes/unitSize;
-            nread = fread(compressionBuffer+cntBuf*readStepSizeBytes, unitSize, curReadUnits, fid);
+            nread = fread(compressionBuffer+totalReadBytes, 1, curReadBytes, fid);
             totalReadBytes+=nread;
-            if (nread!=curReadUnits)
+            if (nread!=curReadBytes)
             {
                 QString errorMessage = QString("Something wrong in file reading. The program reads [%1 data points] but the file says there should be [%2 data points].")
-                                       .arg(nread).arg(totalUnit);
+                                       .arg(nread).arg(curReadBytes);
                 return exitWithError(errorMessage);
             }
             remainingBytes -= nread;
-            cntBuf++;
 
             if (useThreading) {
                 qDebug() << "Waiting for current thread";
                 threadPool.waitForDone();
                 qDebug() << "Starting thread";
+                if (image==0x0) {
+                    qDebug() << "Prior to start() image is 0";
+                } else {
+                    qDebug() << "Prior to start() image is non-zero";
+                }
                 threadPool.start(this);
             } else {
-                updateCompressionBuffer(compressionBuffer+totalReadBytes);
+                if (datatype==1) {
+                    updateCompressionBuffer8(compressionBuffer+totalReadBytes);
+                } else {
+                    // assume datatype==2
+                    updateCompressionBuffer16(compressionBuffer+totalReadBytes);
+                }
             }
 
             int newProgressValue = (int)(75.0 * (compressedBytes - remainingBytes) / (float)compressedBytes + 0.49);
@@ -963,7 +1393,7 @@ int ImageLoader::exitWithError(QString errorMessage) {
     return berror;
 }
 
-V3DLONG ImageLoader::decompressPBD(unsigned char * sourceData, unsigned char * targetData, V3DLONG sourceLength) {
+V3DLONG ImageLoader::decompressPBD8(unsigned char * sourceData, unsigned char * targetData, V3DLONG sourceLength) {
 
     // Decompress data
     V3DLONG cp=0;
@@ -984,7 +1414,7 @@ V3DLONG ImageLoader::decompressPBD(unsigned char * sourceData, unsigned char * t
         if (value<33) {
             // Literal 0-32
             unsigned char count=value+1;
-            for (int j=cp+1;j<cp+1+count;j++) {
+            for (V3DLONG j=cp+1;j<cp+1+count;j++) {
                 targetData[dp++]=sourceData[j];
             }
             cp+=(count+1);
@@ -1042,13 +1472,174 @@ V3DLONG ImageLoader::decompressPBD(unsigned char * sourceData, unsigned char * t
     return dp;
 }
 
+V3DLONG ImageLoader::decompressPBD16(unsigned char * sourceData, unsigned char * targetData, V3DLONG sourceLength) {
+
+    bool debug=false;
+
+    // Decompress data
+    V3DLONG cp=0;
+    V3DLONG dp=0;
+    unsigned char code=0;
+    int leftToFill=0;
+    unsigned char sourceChar=0;
+    unsigned char carryOver=0;
+    v3d_uint16* target16Data=(v3d_uint16*)targetData;
+
+    unsigned char d0,d1,d2,d3,d4;
+
+    while(cp<sourceLength) {
+
+        code=sourceData[cp];
+
+         //if (debug) qDebug() << "decompressPBD16  dPos=" << decompPos << " dBuf=" << decompBuf << " decompressionPrior=" << decompressionPrior << " debugThreshold=" << debugThreshold << " cp=" << cp << " code=" << code;
+
+        // Literal 0-31
+        if (code<32) {
+            unsigned char count=code+1;
+            //if (debug) qDebug() << "decompressPBD16  literal count=" << count;
+            v3d_uint16 * initialOffset = (v3d_uint16*)(sourceData + cp + 1);
+            for (int j=0;j<count;j++) {
+                target16Data[dp++]=initialOffset[j];
+                //if (debug) qDebug() << "decompressPBD16 added literal value=" << target16Data[dp-1] << " at position=" << ((decompressionPosition-decompressionBuffer) + 2*(dp-1));
+            }
+            cp+=(count*2+1);
+            decompressionPrior=target16Data[dp-1];
+            //if (debug) qDebug() << "debug: literal set decompressionPrior=" << decompressionPrior;
+        }
+
+        // NOTE: For the difference sections, we will unroll conditional
+        // logic and explicitly go through the full cycle byte-boundary cycle.
+
+        // Difference 3-bit 32-79
+        else if (code<80) {
+            leftToFill=code-31;
+            //if (debug) qDebug() << "decompressPBD16 leftToFill start=" << leftToFill << " decompressionPrior=" << decompressionPrior;
+            while(leftToFill>0) {
+
+                // 332
+                d0=d1=d2=d3=d4=0;
+                sourceChar=sourceData[++cp];
+                d0=sourceChar;
+                d0 >>= 5;
+                target16Data[dp++]=decompressionPrior+(d0<5?d0:4-d0);
+                //if (debug) qDebug() << "debug: position " << (dp-1) << " diff value=" << target16Data[dp-1] << " d0=" << d0;
+                leftToFill--;
+                if (leftToFill==0) {
+                    break;
+                }
+                d1=sourceChar;
+                d1 >>= 2;
+                d1 &= ooooolll;
+                target16Data[dp++]=target16Data[dp-1]+(d1<5?d1:4-d1);
+                //if (debug) qDebug() << "debug: position " << (dp-1) << " diff value=" << target16Data[dp-1];
+                leftToFill--;
+                if (leftToFill==0) {
+                    break;
+                }
+                d2=sourceChar;
+                d2 &= ooooooll;
+                carryOver=d2;
+
+                // 1331
+                d0=d1=d2=d3=d4=0;
+                sourceChar=sourceData[++cp];
+                d0=sourceChar;
+                carryOver <<= 1;
+                d0 >>= 7;
+                d0 |= carryOver;
+                target16Data[dp++]=target16Data[dp-1]+(d0<5?d0:4-d0);
+                //if (debug) qDebug() << "debug: position " << (dp-1) << " diff value=" << target16Data[dp-1];
+                leftToFill--;
+                if (leftToFill==0) {
+                    break;
+                }
+                d1=sourceChar;
+                d1 >>= 4;
+                d1 &= ooooolll;
+                target16Data[dp++]=target16Data[dp-1]+(d1<5?d1:4-d1);
+                //if (debug) qDebug() << "debug: position " << (dp-1) << " diff value=" << target16Data[dp-1];
+                leftToFill--;
+                if (leftToFill==0) {
+                    break;
+                }
+                d2=sourceChar;
+                d2 >>= 1;
+                d2 &= ooooolll;
+                target16Data[dp++]=target16Data[dp-1]+(d2<5?d2:4-d2);
+                //if (debug) qDebug() << "debug: position " << (dp-1) << " diff value=" << target16Data[dp-1];
+                leftToFill--;
+                if (leftToFill==0) {
+                    break;
+                }
+                d3=sourceChar;
+                d3 &= oooooool;
+                carryOver=d3;
+
+                // 233
+                d0=d1=d2=d3=d4=0;
+                sourceChar=sourceData[++cp];
+                d0=sourceChar;
+                d0 >>= 6;
+                carryOver <<= 2;
+                d0 |= carryOver;
+                target16Data[dp++]=target16Data[dp-1]+(d0<5?d0:4-d0);
+                //if (debug) qDebug() << "debug: position " << (dp-1) << " diff value=" << target16Data[dp-1];
+                leftToFill--;
+                if (leftToFill==0) {
+                    break;
+                }
+                d1=sourceChar;
+                d1 >>= 3;
+                d1 &= ooooolll;
+                target16Data[dp++]=target16Data[dp-1]+(d1<5?d1:4-d1);
+                //if (debug) qDebug() << "debug: position " << (dp-1) << " diff value=" << target16Data[dp-1];
+                leftToFill--;
+                if (leftToFill==0) {
+                    break;
+                }
+                d2=sourceChar;
+                d2 &= ooooolll;
+                target16Data[dp++]=target16Data[dp-1]+(d2<5?d2:4-d2);
+                //if (debug) qDebug() << "debug: position " << (dp-1) << " diff value=" << target16Data[dp-1];
+                leftToFill--;
+                if (leftToFill==0) {
+                    break;
+                }
+                decompressionPrior=target16Data[dp-1];
+            }
+            decompressionPrior=target16Data[dp-1];
+            //if (debug) qDebug() << "debug: diff set decompressionPrior=" << decompressionPrior;
+            cp++;
+        } else if (code<223) {
+            qDebug() << "DEBUG: Mistakenly received unimplemented code of " << code << " at dp=" << dp << " cp=" << cp << " decompressionPrior=" << decompressionPrior;
+        }
+        // Repeat 223-255
+        else {
+            unsigned char repeatCount=code-222;
+            cp++;
+            v3d_uint16 repeatValue=*((v3d_uint16*)(sourceData + cp));
+            //if (debug) qDebug() << "decompressPBD16  repeatCount=" << repeatCount << " repeatValue=" << repeatValue;
+            for (int j=0;j<repeatCount;j++) {
+                target16Data[dp++]=repeatValue;
+            }
+            decompressionPrior=repeatValue;
+            //if (debug) qDebug() << "debug: repeat set decompressionPrior=" << decompressionPrior;
+            cp+=2;
+            //if (debug) qDebug() << "decompressPBD16  finished adding repeats at dp=" << dp << " cp=" << cp;
+        }
+
+    }
+    return dp*2;
+}
+
+
 // This is the main decompression function, which is basically a wrapper for the decompression function
 // of ImageLoader, except it determines the boundary of acceptable processing given the contents of the
-// most recently read block. This function assumes it is called sequentially in order by the signal/slot
-// system, and so doesn't have to check that the prior processing step is finished. updatedCompressionBuffer
+// most recently read block. This function assumes it is called sequentially (i.e., not in parallel)
+// and so doesn't have to check that the prior processing step is finished. updatedCompressionBuffer
 // points to the first invalid data position, i.e., all previous positions starting with compressionBuffer
 // are valid.
-void ImageLoader::updateCompressionBuffer(unsigned char * updatedCompressionBuffer) {
+void ImageLoader::updateCompressionBuffer8(unsigned char * updatedCompressionBuffer) {
     //printf("d1\n");
     if (compressionPosition==0) {
         // Just starting
@@ -1101,14 +1692,117 @@ void ImageLoader::updateCompressionBuffer(unsigned char * updatedCompressionBuff
     }
     //qDebug() << "updateCompressionBuffer calling decompressPBD compressionPosition=" << compressionPosition << " decompressionPosition=" << decompressionPosition
     //        << " size=" << compressionLength << " previousTotalDecompSize=" << getDecompressionSize() << " maxDecompSize=" << maxDecompressionSize;
-    V3DLONG dlength=decompressPBD(compressionPosition, decompressionPosition, compressionLength);
+    V3DLONG dlength=decompressPBD8(compressionPosition, decompressionPosition, compressionLength);
     compressionPosition=lookAhead;
     decompressionPosition+=dlength;
     //printf("d2\n");
 }
 
+
+// This is the main decompression function, which is basically a wrapper for the decompression function
+// of ImageLoader, except it determines the boundary of acceptable processing given the contents of the
+// most recently read block. This function assumes it is called sequentially (i.e., not in parallel)
+// and so doesn't have to check that the prior processing step is finished. updatedCompressionBuffer
+// points to the first invalid data position, i.e., all previous positions starting with compressionBuffer
+// are valid.
+void ImageLoader::updateCompressionBuffer16(unsigned char * updatedCompressionBuffer) {
+    //printf("d1\n");
+    if (compressionPosition==0) {
+        // Just starting
+        compressionPosition=compressionBuffer;
+    }
+    unsigned char * lookAhead=compressionPosition;
+    while(lookAhead<updatedCompressionBuffer) {
+        // We assume at this point that lookAhead is at a code position
+        unsigned char lav=*lookAhead;
+        // We will keep going until we find nonsense or reach the end of the block
+        if (lav<32) {
+            // Literal values - the actual number of following literal values
+            // is equal to the lav+1, so that if lav==31, there are 32 following
+            // literal values.
+            if ( lookAhead+((lav+1)*2) < updatedCompressionBuffer ) {
+                // Then we can process the whole literal section - we can move to
+                // the next position
+                lookAhead += ( (lav+1)*2 + 1); // +1 is for code
+            } else {
+                break; // leave lookAhead in current maximum position
+            }
+        } else if (lav<80) {
+            // Difference section, 3-bit encoding.
+            // The number of difference entries is equal to lav-31, so that
+            // if lav==32, the minimum, there will be 1 difference entry.
+            unsigned char compressedDiffBytes=int(((((lav-31)*3)*1.0)/8.0)-0.0001) + 1;
+//            int a=(lav-31)*3;
+//            double b=a*1.0;
+//            double c=b/8.0;
+//            double d=c-0.0001;
+//            int e=int(d);
+//            int f=e+1;
+//            qDebug() << "lav=" << lav << " lav-31=" << (lav-31) << " cdb=" << compressedDiffBytes;
+//            qDebug() << "a=" << a << " b=" << b << " c=" << c << " d=" << d << " e=" << e << " f=" << f;
+            if ( lookAhead+compressedDiffBytes < updatedCompressionBuffer ) {
+                // We can process this section, so advance to next position to evaluate
+                lookAhead += (compressedDiffBytes+1); // +1 is for code
+            } else {
+                break; // leave in current max position
+            }
+        } else if (lav<183) {
+            // Difference section, 4-bit encoding.
+            // The number of difference entries is equal to lav-79, so that
+            // if lav==80, the minimum, there will be 1 difference entry.
+            unsigned char compressedDiffBytes=int(((((lav-79)*4)*1.0)/8.0)-0.0001) + 1;
+            if ( lookAhead+compressedDiffBytes < updatedCompressionBuffer ) {
+                // We can process this section, so advance to next position to evaluate
+                lookAhead += (compressedDiffBytes+1); // +1 is for code
+            } else {
+                break; // leave in current max position
+            }
+        } else if (lav<223) {
+            // Difference section, 5-bit encoding.
+            // The number of difference entries is equal to lav-182, so that
+            // if lav==183, the minimum, there will be 1 difference entry.
+            unsigned char compressedDiffBytes=int(((((lav-182)*5)*1.0)/8.0)-0.0001) + 1;
+            if ( lookAhead+compressedDiffBytes < updatedCompressionBuffer ) {
+                // We can process this section, so advance to next position to evaluate
+                lookAhead += (compressedDiffBytes+1); // +1 is for code
+            } else {
+                break; // leave in current max position
+            }
+        } else {
+            // Repeat section. Number of repeats is equal to lav-222, but the very first
+            // value is the value to be repeated. The total number of compressed positions
+            // is always == 3, one for the code and 2 for the 16-bit value
+            if ( lookAhead+2 < updatedCompressionBuffer ) {
+                lookAhead += 3;
+            } else {
+                break; // leave in current max position
+            }
+        }
+    }
+    // At this point, lookAhead is in an invalid position, which if equal to updatedCompressionBuffer
+    // means the entire compressed update can be processed.
+    V3DLONG compressionLength=lookAhead-compressionPosition;
+    if (decompressionPosition==0) {
+        // Needs to be initialized
+        decompressionPosition=decompressionBuffer;
+    }
+    //qDebug() << "updateCompressionBuffer calling decompressPBD compressionPosition=" << compressionPosition << " decompressionPosition=" << decompressionPosition
+    //        << " size=" << compressionLength << " previousTotalDecompSize=" << getDecompressionSize() << " maxDecompSize=" << maxDecompressionSize;
+    V3DLONG dlength=decompressPBD16(compressionPosition, decompressionPosition, compressionLength);
+    compressionPosition=lookAhead;
+    decompressionPosition+=dlength;
+    //printf("d2\n");
+}
+
+
+
+
 void ImageLoader::run() {
-    updateCompressionBuffer(compressionBuffer+totalReadBytes);
+    if (loadDatatype==1) {
+        updateCompressionBuffer8(compressionBuffer+totalReadBytes);
+    } else {
+        updateCompressionBuffer16(compressionBuffer+totalReadBytes);
+    }
 }
 
 
