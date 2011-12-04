@@ -12,8 +12,9 @@ using namespace std;
 const int ImageLoader::MODE_UNDEFINED=0;
 const int ImageLoader::MODE_LOAD_TEST=1;
 const int ImageLoader::MODE_CONVERT=2;
-const int ImageLoader::MODE_MIP=3;
-const int ImageLoader::MODE_MAP_CHANNELS=4;
+const int ImageLoader::MODE_CONVERT8=3;
+const int ImageLoader::MODE_MIP=4;
+const int ImageLoader::MODE_MAP_CHANNELS=5;
 
 const unsigned char ImageLoader::oooooool = 1;
 const unsigned char ImageLoader::oooooolo = 2;
@@ -67,6 +68,21 @@ int ImageLoader::processArgs(vector<char*> *argList) {
             } while(!done && i<(argList->size()-1));
         } else if (arg=="-convert") {
             mode=MODE_CONVERT;
+            bool haveInput=false;
+            do {
+                QString possibleFile=(*argList)[++i];
+                if (!possibleFile.startsWith("-") && !haveInput) {
+                    inputFilepath=possibleFile;
+                    haveInput=true;
+                } else if (!possibleFile.startsWith("-") && haveInput) {
+                    targetFilepath=possibleFile;
+                } else {
+                    done=true;
+                    i--; // rewind
+                }
+            } while(!done && i<(argList->size()-1));
+        } else if (arg=="-convert8") {
+            mode=MODE_CONVERT8;
             bool haveInput=false;
             do {
                 QString possibleFile=(*argList)[++i];
@@ -141,7 +157,7 @@ bool ImageLoader::execute() {
             return true;
         }
         return false;
-    } else if (mode==MODE_CONVERT) {
+    } else if (mode==MODE_CONVERT || mode==MODE_CONVERT8) {
         if (inputFilepath.compare(targetFilepath)==0) {
             qDebug() << "ImageLoader::execute() - can not convert a file to itself";
             return false;
@@ -150,7 +166,7 @@ bool ImageLoader::execute() {
         qDebug() << "Loading time is " << stopwatch.elapsed() / 1000.0 << " seconds";
         stopwatch.restart();
         qDebug() << "Saving to file " << targetFilepath;
-        bool saveStatus=saveImage(image, targetFilepath);
+        bool saveStatus=saveImage(image, targetFilepath, mode==MODE_CONVERT8);
         if (image!=0) {
             delete image;
             image=0;
@@ -331,7 +347,23 @@ void ImageLoader::create2DMIPFromStack(My4DImage * image, QString mipFilepath) {
     delete mip;
 }
 
-unsigned char * ImageLoader::convertType2Type1(const V3DLONG * sz, My4DImage *image) {
+void ImageLoader::convertType2Type1InPlace(My4DImage *image) {
+    if (image->getDatatype()==1) {
+        return;
+    } else {
+        unsigned char * newData=convertType2Type1(image);
+        image->deleteRawDataAndSetPointerToNull();
+        image->setRawDataPointer(newData);
+        image->setDatatype(V3D_UINT8);
+    }
+}
+
+unsigned char * ImageLoader::convertType2Type1(My4DImage *image) {
+    V3DLONG sz[4];
+    sz[0]=image->getXDim();
+    sz[1]=image->getYDim();
+    sz[2]=image->getZDim();
+    sz[3]=image->getCDim();
     Image4DProxy<My4DImage> proxy(image);
     V3DLONG totalSize=sz[0]*sz[1]*sz[2]*sz[3];
     unsigned char * data = new unsigned char [totalSize];
@@ -385,8 +417,15 @@ My4DImage* ImageLoader::loadImage(QString filepath) {
     return image;
 }
 
-bool ImageLoader::saveImage(My4DImage * stackp, QString filepath) {
+bool ImageLoader::saveImage(My4DImage *stackp, QString filepath) {
+    return saveImage(stackp, filepath, false);
+}
+
+bool ImageLoader::saveImage(My4DImage * stackp, QString filepath, bool saveTo8bit) {
     qDebug() << "Saving to file " << filepath;
+    if (saveTo8bit) {
+        convertType2Type1InPlace(stackp);
+    }
     if (hasPbdExtension(filepath)) {
         V3DLONG sz[4];
         sz[0] = stackp->getXDim();
@@ -394,24 +433,8 @@ bool ImageLoader::saveImage(My4DImage * stackp, QString filepath) {
         sz[2] = stackp->getZDim();
         sz[3] = stackp->getCDim();
         unsigned char* data = 0;
-//        bool converted=false;
-//        if (stackp->getDatatype()==1) {
-            data = stackp->getRawData();
-//        } else if (stackp->getDatatype()==2) {
-//            data = convertType2Type1(sz, stackp);
-//            converted=true;
-//            if (data==0) {
-//                qDebug() << "ImageLoader::execute - problem allocating memory for conversion of type 2 to type 1";
-//                return false;
-//            }
-//        } else {
-//            qDebug() << "ImageLoader::execute - do not support source data other than type 1 or type 2";
-//            return false;
-//        }
+        data = stackp->getRawData();
         saveStack2RawPBD(targetFilepath.toAscii().data(), stackp->getDatatype(), data, sz);
-//        if (data!=0 && converted) {
-//            delete data;
-//        }
     } else {
         stackp->saveImage(targetFilepath.toAscii().data());
     }

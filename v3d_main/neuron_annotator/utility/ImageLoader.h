@@ -21,6 +21,7 @@ public:
     static const int MODE_UNDEFINED;
     static const int MODE_LOAD_TEST;
     static const int MODE_CONVERT;
+    static const int MODE_CONVERT8;
     static const int MODE_MIP;
     static const int MODE_MAP_CHANNELS;
 
@@ -49,6 +50,7 @@ public:
         usage.append("                                                                                                        \n");
         usage.append("   -loadtest <filepath>                                                                                 \n");
         usage.append("   -convert  <source file>    <target file>                                                             \n");
+        usage.append("   -convert8 <source file>    <target file>                                                             \n");
         usage.append("   -mip <stack input filepath>  <2D mip tif output filepath> [-flipy]                                   \n");
         usage.append("   -mapchannels <sourcestack> <targetstack> <csv map string, eg, \"0,1,2,0\" maps s0 to t1 and s2 to t0>\n");
         return usage;
@@ -59,6 +61,7 @@ public:
     My4DImage* loadImage(QString filepath);
     bool loadImage(Image4DSimple * stackp, QString filepath);
     bool saveImage(My4DImage * stackp, QString filepath);
+    bool saveImage(My4DImage *stackp, QString filepath, bool saveTo8bit);
 
     int saveStack2RawPBD(const char * filename, ImagePixelType dataType, unsigned char* data, const V3DLONG * sz);
     int loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool useThreading);
@@ -75,6 +78,9 @@ public:
     virtual void run();
     // Set numeric index to help track which file is being loaded, for use in progress computation.
     ImageLoader& setProgressIndex(int index) {progressIndex = index; return *this;}
+
+    unsigned char * convertType2Type1(My4DImage *image);
+    void convertType2Type1InPlace(My4DImage *image);
 
 signals:
     void progressValueChanged(int progress, int progressIndex); // 0-100
@@ -98,7 +104,6 @@ private:
     int exitWithError(QString errorMessage);
     void updateCompressionBuffer8(unsigned char * updatedCompressionBuffer);
     void updateCompressionBuffer16(unsigned char * updatedCompressionBuffer);
-    unsigned char * convertType2Type1(const V3DLONG * sz, My4DImage *image);
 
     V3DLONG totalReadBytes;
     V3DLONG maxDecompressionSize;
