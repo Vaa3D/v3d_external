@@ -77,7 +77,7 @@ void FragmentGalleryWidget::appendFragment(GalleryButton * button)
     // Assume all buttons are the same size
     if (contents.isEmpty()) {
         buttonWidth = button->layout()->sizeHint().width();
-        buttonHeight = button->layout()->sizeHint().width();
+        buttonHeight = button->layout()->sizeHint().height();
     }
     button->setGeometry(0, 0, buttonWidth, buttonHeight);
     button->setParent(viewport());
@@ -91,7 +91,7 @@ void FragmentGalleryWidget::updateButtonsGeometry()
     if (contents.isEmpty()) return;
     GalleryButton* firstButton = contents[0];
     buttonWidth = firstButton->layout()->sizeHint().width();
-    buttonHeight = firstButton->layout()->sizeHint().width();
+    buttonHeight = firstButton->layout()->sizeHint().height();
     for (int i = 0; i < contents.size(); ++i)
         contents[i]->resize(buttonWidth, buttonHeight);
     updateThumbnailPositions();
