@@ -1723,12 +1723,13 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         
         if(QFileInfo(m_InputFileName1).suffix().toUpper().compare("LSM") == 0)
         {
-            p4DImage1.loadImage(const_cast<char *>(m_InputFileName1.toStdString().c_str()), true); // Mylib
+            p4DImage1.loadImage(const_cast<char *>(m_InputFileName1.toStdString().c_str()), true); // Mylib	
         }
         else
         {
             p4DImage1.loadImage(const_cast<char *>(m_InputFileName1.toStdString().c_str()), false); // libtiff
         }
+	if( p4DImage1.getError() ) return false;
         
         p1dImg1 = p4DImage1.getRawData();
         
