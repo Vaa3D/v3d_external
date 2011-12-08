@@ -627,7 +627,7 @@ void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf)
 
     for (int stack_i = 1; stack_i <= 3; ++stack_i)
     {
-        qDebug() << "RendererNeuronAnnotator::load3DTextureSet()" << stack_i << __FILE__ << __LINE__;
+        // qDebug() << "RendererNeuronAnnotator::load3DTextureSet()" << stack_i << __FILE__ << __LINE__;
 
             int n_slice = 0;
             RGBA8* p_slice = 0;
