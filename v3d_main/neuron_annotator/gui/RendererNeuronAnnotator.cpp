@@ -622,9 +622,12 @@ void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf)
 
     // makeCurrent();
     int sliceCount=0;
+    QTime stopwatch;
+    stopwatch.start();
 
-    for (int stack_i=1; stack_i<=3; stack_i++)
+    for (int stack_i = 1; stack_i <= 3; ++stack_i)
     {
+        qDebug() << "RendererNeuronAnnotator::load3DTextureSet()" << stack_i << __FILE__ << __LINE__;
 
             int n_slice = 0;
             RGBA8* p_slice = 0;
@@ -657,6 +660,26 @@ void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf)
                     break;
             }
 
+            // On Linux, glTexSubImage2D() silently fails if a dimension is not
+            // divisible by 4.
+#ifdef __linux__
+            if (textureSetAlreadyLoaded)
+            {
+                // Ensure subtexture sizes are divisible by 4 on linux
+                // TODO - this is a hack
+                // This approach can leave some wrong pixels at the edge of the volume.
+                // But its better than having all of the pixels wrong.
+                if ((sw%4)||(sh%4))
+                {
+                    // glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // this does not help
+                    // glPixelStorei(GL_PACK_ALIGNMENT, 1);  // this does not help
+                    sw = sw - (sw%4); // truncate texture update to multiple of 4
+                    sh = sh - (sh%4); // truncate texture update to multiple of 4
+                    qDebug() << "Applying hack to work around linux non-multiple-of-4 texture bug";
+                }
+            }
+#endif
+
             MESSAGE_ASSERT(imageX>=realX && imageY>=realY && imageZ>=realZ);
             MESSAGE_ASSERT(COPY_X>=realX && COPY_Y>=realY && COPY_Z>=realZ);
 //		sw+=1, sh+=1;  // to get rid of artifacts at sub-tex border // or use NPT tex
@@ -666,6 +689,7 @@ void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf)
             for (int i = 0; i < n_slice; i++)
 
             {
+                // qDebug() << "   " << i;
                     glBindTexture(GL_TEXTURE_2D, p_tex[i+1]); //[0] reserved for pbo tex
                     RGBA8* p_first = NULL;
 
@@ -689,6 +713,7 @@ void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf)
                     // Notice: compressed texture is corrupted with TexSubImage2D but TexSubImage3D !!!
                     else
                     {
+                        // qDebug() << "    textureSetAlreadyLoaded" << i << stopwatch.elapsed();
                             _copySliceFromStack(tex3DBuf, realX,realY,realZ,  p_slice, sw,  stack_i, i);
 
                             glTexSubImage2D(GL_TEXTURE_2D, // target
@@ -886,9 +911,21 @@ void RendererNeuronAnnotator::updateCurrentTextureMask(int neuronIndex, int stat
                     break;
             }
 
+            // Temporary hack to imperfectly deal with non-multiple-of-8 texture sizes
+            // TODO - this is a hack
+            // This approach can leave some wrong pixels at the edge of the volume.
+            // But its better than having all of the pixels wrong.
+            if ((sw%8)||(sh%8))
+            {
+                sw = sw - (sw%8); // truncate texture update to multiple of 8
+                sh = sh - (sh%8); // truncate texture update to multiple of 8
+                qDebug() << "Applying hack to work around non-multiple-of-8 texture dimension issue";
+            }
+
             if (sw%TILE_DIMENSION!=0 || sh%TILE_DIMENSION!=0) {
                 qDebug() << "RendererNeuronAnnotator::updateCurrentTextureMask() ERROR: width and height of texture buffer must both be divisible by "
                         << TILE_DIMENSION << "! width=" << sw << " height=" << sh << " realX=" << realX << " realY=" << realY << " realZ=" << realZ;
+                emit progressAborted("Error - texture size is not a multiple of 8");
                 return;
             }
 
