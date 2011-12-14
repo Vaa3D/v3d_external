@@ -438,6 +438,7 @@ bool ImageLoader::saveImage(My4DImage * stackp, QString filepath, bool saveTo8bi
     } else {
         stackp->saveImage(targetFilepath.toAscii().data());
     }
+	return true;
 }
 
 
