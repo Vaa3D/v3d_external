@@ -457,7 +457,7 @@ void **** My4DImage::getData(ImagePixelType & dtype)
 double My4DImage::at(int x, int y, int z, int c) const //return a double number because it can always be converted back to UINT8 and UINT16 without information loss
 { //return -1 in case error such as x,y,z,c are illegal values
 	bool result =  (!data4d_virtual || x<0 || y<0 || z<0 || c<0 ||
-					x >= this->getXDim() || y >= this->getYDim() || z>=this->getZDim() || c>=this->getCDim() );
+					x >= this->getXDim() || y >= this->getYDim() || z>= this->getZDim() || c>=this->getCDim() );
 	if ( result )
 	{
 		v3d_msg("error happened. Check the command line debuging info.");

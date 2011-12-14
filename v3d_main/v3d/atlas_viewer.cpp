@@ -1074,17 +1074,17 @@ bool V3D_atlas_viewerDialog::updateTableItem_Landmark(QTableWidget *t, int row, 
 		newItem = new QTableWidgetItem(s);	t->setItem(row, j++, newItem);
 
 		//the following three will be later replaced by the real RGB pixel values. Left here temporarily
-		s = tr("%1").arg(int(imgdata->at(p_landmark->x, p_landmark->y, p_landmark->z, 0)));
+		s = tr("%1").arg(int(imgdata->at(p_landmark->x-1, p_landmark->y-1, p_landmark->z-1, 0)));
 		newItem = new QTableWidgetItem(s);	t->setItem(row, j++, newItem);
 
 		if (imgdata->getCDim()>=2)
-			s = tr("%1").arg(int(imgdata->at(p_landmark->x, p_landmark->y, p_landmark->z, 1)));
+			s = tr("%1").arg(int(imgdata->at(p_landmark->x-1, p_landmark->y-1, p_landmark->z-1, 1)));
 		else
 			s = tr("%1").arg(0);
 		newItem = new QTableWidgetItem(s);	t->setItem(row, j++, newItem);
 
 		if (imgdata->getCDim()>=3)
-			s = tr("%1").arg(int(imgdata->at(p_landmark->x, p_landmark->y, p_landmark->z, 2)));
+			s = tr("%1").arg(int(imgdata->at(p_landmark->x-1, p_landmark->y-1, p_landmark->z-1, 2)));
 		else
 			s = tr("%1").arg(0);
 		newItem = new QTableWidgetItem(s);	t->setItem(row, j++, newItem);
@@ -1135,7 +1135,7 @@ bool V3D_atlas_viewerDialog::updateTableItem_Landmark(QTableWidget *t, int row, 
 		newItem = t->item(row, j);
 		if (newItem)
 		{
-			newItem->setText(tr("%1").arg(int(imgdata->at(p_landmark->x, p_landmark->y, p_landmark->z, 0))));
+			newItem->setText(tr("%1").arg(int(imgdata->at(p_landmark->x-1, p_landmark->y-1, p_landmark->z-1, 0))));
 		}
 		else {qDebug("In updateTableItem_Landmark() the # of column ends at %d.\n", j); return false;}
 		j++;
@@ -1144,7 +1144,7 @@ bool V3D_atlas_viewerDialog::updateTableItem_Landmark(QTableWidget *t, int row, 
 		if (newItem)
 		{
 			if (imgdata->getCDim()>=2)
-				newItem->setText(tr("%1").arg(int(imgdata->at(p_landmark->x, p_landmark->y, p_landmark->z, 1))));
+				newItem->setText(tr("%1").arg(int(imgdata->at(p_landmark->x-1, p_landmark->y-1, p_landmark->z-1, 1))));
 			else
 				newItem->setText(tr("%1").arg(int(0)));
 		}
@@ -1155,7 +1155,7 @@ bool V3D_atlas_viewerDialog::updateTableItem_Landmark(QTableWidget *t, int row, 
 		if (newItem)
 		{
 			if (imgdata->getCDim()>=3)
-				newItem->setText(tr("%1").arg(int(imgdata->at(p_landmark->x, p_landmark->y, p_landmark->z, 2))));
+				newItem->setText(tr("%1").arg(int(imgdata->at(p_landmark->x-1, p_landmark->y-1, p_landmark->z-1, 2))));
 			else
 				newItem->setText(tr("%1").arg(int(0)));
 		}
