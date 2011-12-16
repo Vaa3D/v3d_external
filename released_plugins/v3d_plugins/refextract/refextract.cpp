@@ -219,9 +219,8 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                     {
                         while(*++key)
                         {
-                            if (!strcmp(key, "ct"))
+                            if (!strcmp(key, "c"))
                             {
-                                key++;
                                 channel_ref = atoi( argv[i+1] ) - 1; // red 1 green 2 blue 3
                                 i++;
                             }
