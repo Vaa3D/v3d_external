@@ -93,7 +93,7 @@ bool extconv(Tdata *p, Tidx sx, Tidx sy, Tidx sz, unsigned char *&pOutput)
     
     for(Tidx i=0; i<pagesz; i++)
     {
-        pOutput[i] = 255*(p[i]-min_v)/max_v;
+        pOutput[i] = 255*((double)p[i]-min_v)/max_v;
     }
     
     //
@@ -295,17 +295,17 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         unsigned char *pOutput = NULL;
         if(datatype_tile == V3D_UINT8)
         {
-            if(extconv<unsigned char, V3DLONG>((unsigned char *)relative1d + offset_c, sz_relative[0], sz_relative[1], sz_relative[2], pOutput)!=true);
+            if(extconv<unsigned char, V3DLONG>((unsigned char *)relative1d + offset_c, sz_relative[0], sz_relative[1], sz_relative[2], pOutput)!=true)
             {
-                printf("Fail to call function imgtiling! \n");
+                printf("Fail to call function extconv! \n");
                 return false;
             }
         }
         else if(datatype_tile == V3D_UINT16)
         {
-            if(extconv<unsigned short, V3DLONG>((unsigned short *)relative1d + offset_c, sz_relative[0], sz_relative[1], sz_relative[2], pOutput)!=true);
+            if(extconv<unsigned short, V3DLONG>((unsigned short *)relative1d + offset_c, sz_relative[0], sz_relative[1], sz_relative[2], pOutput)!=true)
             {
-                printf("Fail to call function imgtiling! \n");
+                printf("Fail to call function extconv! \n");
                 return false;
             }
 
