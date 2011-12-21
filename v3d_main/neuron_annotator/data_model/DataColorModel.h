@@ -31,7 +31,8 @@ public slots:
     void setChannelColor(int index, /*QRgb*/ int color);
     void setChannelHdrRange(int index, qreal min, qreal max);
     void setChannelGamma(int index, qreal gamma);
-    void setGamma(qreal gamma); // all channels
+    void setSharedGamma(qreal gamma);
+    // void setGamma(qreal gamma); // all channels
     void setChannelVisibility(int channel, bool isVisible);
     void resetColors();
 
@@ -59,11 +60,13 @@ public:
         Reader(const DataColorModel& colorModelParam);
         int getNumberOfDataChannels() const;
         QRgb blend(const double channelIntensities[]) const;
+        QRgb blendInvisible(const double channelIntensities[]) const; // Ignores channel visibility
         QRgb blend(const std::vector<double>& channelIntensities) const;
         QRgb getChannelColor(int channelIndex) const;
         qreal getReferenceScaledIntensity(qreal raw_intensity) const;
         qreal getChannelScaledIntensity(int channel, qreal raw_intensity) const;
         qreal getChannelGamma(int channel) const;
+        qreal getSharedGamma() const;
         qreal getChannelHdrMin(int channel) const;
         qreal getChannelHdrMax(int channel) const;
         qreal getChannelDataMin(int channel) const;

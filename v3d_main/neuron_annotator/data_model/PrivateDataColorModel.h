@@ -23,17 +23,19 @@ public:
     bool initialize(const NaVolumeData::Reader& volumeReader);
     const ChannelColorModel& getReferenceChannel() const;
     QRgb blend(const double channelIntensities[]) const;
+    QRgb blendInvisible(const double channelIntensities[]) const; // Ignores channel visibility
     QRgb blend(const std::vector<double>& channelIntensities) const;
     bool setChannelColor(int index, QRgb color);
     bool setChannelHdrRange(int index, qreal minParam, qreal maxParam);
     bool hasChannelHdrRange(int index, qreal minParam, qreal maxParam) const;
     bool setChannelVisibility(int index, bool);
     bool getChannelVisibility(int index) const;
-    bool setGamma(qreal gammaParam);
+    bool setSharedGamma(qreal gammaParam);
     bool setChannelGamma(int index, qreal gamma);
     qreal getReferenceScaledIntensity(qreal raw_intensity) const;
     qreal getChannelScaledIntensity(int channel, qreal raw_intensity) const;
     qreal getChannelGamma(int channel) const;
+    qreal getSharedGamma() const;
     qreal getChannelHdrMin(int channel) const;
     qreal getChannelHdrMax(int channel) const;
     qreal getChannelDataMin(int channel) const;
@@ -42,15 +44,25 @@ public:
             const DataColorModel::Reader& desiredColorReader,
             const DataColorModel::Reader& currentColorReader);
     QRgb getChannelColor(int channelIndex) const;
-    void resetColors() {
+    void resetColors()
+    {
+        sharedGamma = 1.0;
+        // Don't change visibility of reference channel
+        bool referenceVisibility = false;
+        const int refChannel = 3;
+        if (channelColors.size() > refChannel)
+            referenceVisibility = channelColors[refChannel].showChannel;
         for (int c = 0; c < channelColors.size(); ++c) {
             channelColors[c].resetColors();
         }
+        // restore reference visibility
+        if (channelColors.size() > refChannel)
+            channelColors[refChannel].showChannel = referenceVisibility;
     }
 
 private:
     std::vector<ChannelColorModel> channelColors;
-
+    qreal sharedGamma;
 
 public:
     // getRendererNa specifies the colorization parameters for a single data channel
@@ -67,9 +79,10 @@ public:
         void resetHdrRange();
         void setGamma(qreal gammaParam);
         // Returns a value in the range 0.0-1.0
-        qreal getScaledIntensity(qreal raw_intensity) const;
-        // getColor() definition is in header file so it can be inlined
+        qreal getScaledIntensity(qreal raw_intensity) const; // Applies visibility toggle
+        qreal getInvisibleScaledIntensity(qreal raw_intensity) const; // Ignores visibility toggle
         QRgb getColor(qreal raw_intensity) const;
+        QRgb getInvisibleColor(qreal raw_intensity) const; // Ignores visibility toggle
         qreal getGamma() const {return gamma;}
         qreal getHdrMin() const {return hdrMin;}
         qreal getHdrMax() const {return hdrMax;}

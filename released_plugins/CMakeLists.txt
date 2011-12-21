@@ -61,5 +61,5 @@ add_custom_target(FinishedPlugins
 include(${PROJECT_SOURCE_DIR}/CMake/PluginConfiguration.cmake)
 
 add_subdirectory( v3d_plugins )
-add_subdirectory( special_v3d_plugins )
+# add_subdirectory( special_v3d_plugins )
 

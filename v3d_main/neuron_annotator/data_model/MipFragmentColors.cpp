@@ -95,8 +95,9 @@ void MipFragmentColors::update()
         for (int y = 0; y < intensityProxy.sy; ++y) {
             for (int x = 0; x < intensityProxy.sx; ++x) {
                 intensities[refChannel] = intensityProxy.value_at(x, y, refIndex, 0);
-                // blend intensities using color model
-                QRgb color = colorReader.blend(&intensities[0]);
+                // blend intensities using color model.
+                // Even if reference channel is off, we want to see reference in thumbnail.
+                QRgb color = colorReader.blendInvisible(&intensities[0]);
                 img->setPixel(x, y, color);
             }
         }

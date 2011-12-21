@@ -88,9 +88,9 @@ void DataColorModel::setChannelHdrRange(int index, qreal minParam, qreal maxPara
     emit dataChanged();
 }
 
-void DataColorModel::setGamma(qreal gammaParam) // for all channels
+void DataColorModel::setSharedGamma(qreal gammaParam) // for all channels
 {
-    if (d.constData()->getChannelGamma(0) == gammaParam) return;
+    if (d.constData()->getSharedGamma() == gammaParam) return;
     // qDebug() << "DataColorModel::setGamma" << gammaParam;
     // Combine backlog of setGamma signals
     latestGamma = gammaParam;  // back up new value before aborting
@@ -99,7 +99,7 @@ void DataColorModel::setGamma(qreal gammaParam) // for all channels
     qreal gamma = latestGamma;
     {
         Writer colorWriter(*this);
-        if (! d->setGamma(gamma)) return;
+        if (! d->setSharedGamma(gamma)) return;
     } // release lock
     emit dataChanged();
 }
@@ -150,6 +150,10 @@ QRgb DataColorModel::Reader::blend(const double channelIntensities[]) const {
     return d.constData()->blend(channelIntensities);
 }
 
+QRgb DataColorModel::Reader::blendInvisible(const double channelIntensities[]) const {
+    return d.constData()->blendInvisible(channelIntensities);
+}
+
 QRgb DataColorModel::Reader::blend(const std::vector<double>& channelIntensities) const {
     return d.constData()->blend(channelIntensities);
 }
@@ -168,6 +172,10 @@ qreal DataColorModel::Reader::getChannelScaledIntensity(int channel, qreal raw_i
 
 qreal DataColorModel::Reader::getChannelGamma(int channel) const {
     return d.constData()->getChannelGamma(channel);
+}
+
+qreal DataColorModel::Reader::getSharedGamma() const {
+    return d.constData()->getSharedGamma();
 }
 
 qreal DataColorModel::Reader::getChannelHdrMin(int channel) const

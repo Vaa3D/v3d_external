@@ -2473,3 +2473,5 @@ v3d_main/neuron_annotator/data_model/NeuronSeparationResult.h
 v3d_main/neuron_annotator/data_model/NeuronSeparationResult.cpp
 v3d_main/neuron_annotator/tests/test_load_chk4.cpp
 v3d_main/neuron_annotator/tests/CMakeLists.txt
+v3d_main/neuron_annotator/data_model/VolumeTexture.h
+v3d_main/neuron_annotator/data_model/VolumeTexture.cpp

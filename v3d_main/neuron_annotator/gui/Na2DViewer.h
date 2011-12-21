@@ -23,7 +23,7 @@ public:
     // Screen Y-axis is flipped with respect to data Y-axis in V3D 3D viewer
     static const int flip_X =  1;
     static const int flip_Y = -1;
-    static const int flip_Z = -1; // (flips Z too, to maintain right-handed coordinate system)
+    static const int flip_Z = -1;
 
 signals:
     void mouseLeftDragEvent(int dx, int dy, QPoint pos);

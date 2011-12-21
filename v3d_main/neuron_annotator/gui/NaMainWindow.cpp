@@ -449,14 +449,46 @@ void NaMainWindow::onHdrChannelChanged(NaZStackWidget::Color channel)
 /* slot */
 void NaMainWindow::onColorModelChanged()
 {
+    // For historical reasons, reference channel is denormalized into both NeuronSelectionModel and DataColorModel
+    bool bReferenceColorIsVisible;
+    bool bReferenceOverlayIsVisible;
     {
         DataColorModel::Reader colorReader(dataFlowModel->getDataColorModel());
         if (dataFlowModel->getDataColorModel().readerIsStale(colorReader)) return;
         ui.redToggleButton->setChecked(colorReader.getChannelVisibility(0));
         ui.greenToggleButton->setChecked(colorReader.getChannelVisibility(1));
         ui.blueToggleButton->setChecked(colorReader.getChannelVisibility(2));
-        ui.sharedGammaWidget->setGammaBrightness(colorReader.getChannelGamma(0));
+
+        // TODO - implement global gamma
+        ui.sharedGammaWidget->setGammaBrightness(colorReader.getSharedGamma());
+
+        // Communicate reference channel changes between NeuronSelectionModel and DataColorModel
+        bReferenceColorIsVisible = colorReader.getChannelVisibility(3);
+        NeuronSelectionModel::Reader selectionReader(dataFlowModel->getNeuronSelectionModel());
+        if (! selectionReader.hasReadLock()) return;
+        bReferenceOverlayIsVisible = selectionReader.getOverlayStatusList()[DataFlowModel::REFERENCE_MIP_INDEX];
+    } // release read locks
+    // Communicate reference visibility change, if any, to NeuronSelectionModel
+    if (bReferenceColorIsVisible != bReferenceOverlayIsVisible)
+        dataFlowModel->getNeuronSelectionModel().updateOverlay(DataFlowModel::REFERENCE_MIP_INDEX, bReferenceColorIsVisible);
+}
+
+/* slot */
+void NaMainWindow::onSelectionModelVisibilityChanged()
+{
+    // For historical reasons, reference channel is denormalized into both NeuronSelectionModel and DataColorModel
+    bool bReferenceColorIsVisible;
+    bool bReferenceOverlayIsVisible;
+    {
+        DataColorModel::Reader colorReader(dataFlowModel->getDataColorModel());
+        if (dataFlowModel->getDataColorModel().readerIsStale(colorReader)) return;
+        bReferenceColorIsVisible = colorReader.getChannelVisibility(3);
+        NeuronSelectionModel::Reader selectionReader(dataFlowModel->getNeuronSelectionModel());
+        if (! selectionReader.hasReadLock()) return;
+        bReferenceOverlayIsVisible = selectionReader.getOverlayStatusList()[DataFlowModel::REFERENCE_MIP_INDEX];
     }
+    if (bReferenceColorIsVisible != bReferenceOverlayIsVisible)
+        dataFlowModel->getDataColorModel().setChannelVisibility(3, bReferenceOverlayIsVisible);
 }
 
 /* slot */
@@ -475,6 +507,15 @@ void NaMainWindow::setChannelOneVisibility(bool v)
 void NaMainWindow::setChannelTwoVisibility(bool v)
 {
     emit channelVisibilityChanged(2, v);
+}
+
+/* slot */
+void NaMainWindow::setChannelThreeVisibility(bool v) // reference channel
+{
+    // For reference channel, update both DataColorModel AND "overlay" of NeuronSelectionModel
+    if (dataFlowModel)
+        dataFlowModel->getNeuronSelectionModel().updateOverlay(DataFlowModel::REFERENCE_MIP_INDEX, v);
+    emit channelVisibilityChanged(3, v);
 }
 
 void NaMainWindow::onViewerChanged(int viewerIndex)
@@ -531,6 +572,8 @@ void NaMainWindow::nutate(const Rotation3D& R) {
     CameraModel& cam = ui.v3dr_glwidget->cameraModel;
     if (!ui.v3dr_glwidget->mouseIsDragging()) {
         cam.setRotation(R * cam.rotation());
+        // TODO - use a signal here instead of processEvents
+        QCoreApplication::processEvents(); // keep responsive during nutation
         ui.v3dr_glwidget->update();
     }
 }
@@ -878,9 +921,11 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     connect(ui.resetColorsButton, SIGNAL(clicked()),
             &dataFlowModel->getDataColorModel(), SLOT(resetColors()));
     connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
-            &dataFlowModel->getDataColorModel(), SLOT(setGamma(qreal)));
+            &dataFlowModel->getDataColorModel(), SLOT(setSharedGamma(qreal)));
     connect(&dataFlowModel->getDataColorModel(), SIGNAL(dataChanged()),
             this, SLOT(onColorModelChanged()));
+    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(visibilityChanged()),
+            this, SLOT(onSelectionModelVisibilityChanged()));
 
     // Annotation model update - obsolete.
     // causes extra full update of viewer.
@@ -1316,7 +1361,7 @@ void NaMainWindow::set3DProgress(int prog) {
         return;
     }
     ui.progressBar3d->setValue(prog);
-    ui.v3dr_glwidget->setResizeEnabled(false); // don't show ugly brief resize behavior
+    // ui.v3dr_glwidget->setResizeEnabled(false); // don't show ugly brief resize behavior
     ui.widget_progress3d->show();
 }
 
@@ -1332,7 +1377,7 @@ void NaMainWindow::complete3DProgress() {
 
 void NaMainWindow::set3DProgressMessage(QString msg) {
     ui.progressLabel3d->setText(msg);
-    ui.v3dr_glwidget->setResizeEnabled(false); // don't show ugly brief resize behavior
+    // ui.v3dr_glwidget->setResizeEnabled(false); // don't show ugly brief resize behavior
     ui.widget_progress3d->show();
 }
 

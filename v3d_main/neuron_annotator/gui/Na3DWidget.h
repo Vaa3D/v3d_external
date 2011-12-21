@@ -9,6 +9,7 @@
 #include <cmath>
 #include "RendererNeuronAnnotator.h"
 #include "NeuronContextMenu.h"
+#include "../data_model/VolumeTexture.h"
 
 #if defined (_MSC_VER)
 #include "../basic_c_fun/vcdiff.h"
@@ -25,6 +26,7 @@ class Na3DWidget : public V3dR_GLWidget, public NaViewer
 public:
     Na3DWidget(QWidget* parent);
     virtual ~Na3DWidget();
+    virtual void initializeGL();
     const Vector3D& focus() const {return cameraModel.focus();}
     float getZoomScale() const; // in viewport pixels per image voxel at focus
     virtual void mouseMoveEvent(QMouseEvent * event);
@@ -66,7 +68,7 @@ public slots:
     void clearLandmarks();
     void setLandmarks(const QList<ImageMarker>);
     void toggleNeuronDisplay(int index, bool checked);
-    void updateFullVolume();
+    // void updateFullVolume();
     void onVolumeDataChanged();
     void updateIncrementalColors();
     void showContextMenu(QPoint point);
@@ -99,7 +101,7 @@ protected slots:
     void updateFocus(const Vector3D& f);
 
 protected:
-    bool tryUpdateFullVolume();
+    // bool tryUpdateFullVolume();
     bool bResizeEnabled; // to disable resizes during progressBar show/hide
     virtual void resizeGL(int, int);
     void updateCursor();
@@ -110,7 +112,8 @@ protected:
     virtual void paintGL();
     void paintFiducial(const Vector3D& v);
     void paintGrid();
-    virtual void choiceRenderer();
+    virtual void choiceRenderer(); // Create a new internal renderer object
+    virtual void settingRenderer(); // Apply settings to internal renderer object
     float glUnitsPerImageVoxel() const;
     void updateDefaultScale();
 
@@ -126,6 +129,10 @@ protected:
     bool bAlphaBlending;
     bool bClickIsWaiting;
     bool bVolumeInitialized; // hack to prevent double update on file load
+
+    vaa3d::VolumeTexture volumeTexture;
+    vaa3d::NeuronVisibilityTexture neuronVisibilityTexture;
+    // vaa3d::NeuronLabelTexture neuronLabelTexture;
 };
 
 #endif // NA3DWIDGET_H

@@ -32,7 +32,10 @@ set(V3D_SRCS
   ChannelTable.cpp
   v3d_actions.cpp)
 
-set(V3D_RCCS v3d.qrc ../3drenderer/3drenderer.qrc)
+set(V3D_RCCS 
+    v3d.qrc 
+    ../3drenderer/3drenderer.qrc
+    ../neuron_annotator/resources.qrc)
 
 QT4_ADD_RESOURCES(V3D_RCC_SRCS ${V3D_RCCS})
 

@@ -104,13 +104,14 @@ void ZSliceColors::setZIndex(int z)
 
 void ZSliceColors::onCameraFocusChanged(const Vector3D& focus)
 {
+    // qDebug() << "ZSliceColors::onCameraFocusChanged()" << focus.x() << focus.y() << focus.z();
     int z = int(floor(focus.z() + 0.5));
     if (z < 0) return;
     NaVolumeData::Reader volumeReader(volumeData);
     if (! volumeReader.hasReadLock()) return;
     const Image4DProxy<My4DImage>& volumeProxy = volumeReader.getOriginalImageProxy();
     if (volumeProxy.sz <= 0) return;
-    float midZ = volumeProxy.sz / 2.0f;
+    float midZ = (volumeProxy.sz - 1) / 2.0f;
     z = int(midZ + Na2DViewer::flip_Z * (z - midZ));
     setZIndex(z);
 }

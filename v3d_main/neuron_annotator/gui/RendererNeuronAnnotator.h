@@ -5,6 +5,7 @@
 #include "../../3drenderer/renderer_gl2.h"
 #include "../geometry/Vector3D.h"
 #include "../data_model/NaVolumeData.h"
+#include "../data_model/VolumeTexture.h"
 
 class RendererNeuronAnnotator : public QObject, public Renderer_gl2
 {
@@ -28,26 +29,31 @@ public:
     virtual void paint();
     void paint_mono();
     virtual void loadVol();
+    virtual void cleanVol();
     virtual void loadShader();
     virtual void equAlphaBlendingProjection();
     void setDepthClip(float totalDepthInGlUnits);
     // Renderer_gl1::selectPosition(x,y) is not virtual, so I renamed
     // this reimplementation to screenPositionToVolumePosition(QPoint)
     virtual XYZ screenPositionToVolumePosition(const QPoint& screenPos);
-    bool populateNeuronMaskAndReference(NaVolumeData::Reader& volumeReader);
-    void rebuildFromBaseTextures(const QList<int>& maskIndexList, QList<RGBA8*>& overlayList);
-    void updateCurrentTextureMask(int maskIndex, int state);
-    bool initializeTextureMasks();
-    void setMasklessSetupStackTexture(bool state) { masklessSetupStackTexture=state; }
+    // bool populateNeuronMaskAndReference(NaVolumeData::Reader& volumeReader);
+    // void rebuildFromBaseTextures(const QList<int>& maskIndexList, QList<RGBA8*>& overlayList);
+    // void updateCurrentTextureMask(int maskIndex, int state);
+    // bool initializeTextureMasks();
+    // void setMasklessSetupStackTexture(bool state) { masklessSetupStackTexture=state; }
     // useful value for computing zoom level
     float getZoomedPerspectiveViewAngle() const {return viewAngle * zoomRatio;}
     void setInternalZoomRatio(float z) {zoomRatio = z;}
     float glUnitsPerImageVoxel() const;
-    RGBA8* getOverlayTextureByAnnotationIndex(int index);
-    const RGBA8* getTexture3DCurrent() const;
+    // RGBA8* getOverlayTextureByAnnotationIndex(int index);
+    // const RGBA8* getTexture3DCurrent() const;
     bool hasBadMarkerViewMatrix() const;
     void clearLandmarks();
     void setLandmarks(const QList<ImageMarker>& landmarks);
+    void updateSettingsFromVolumeTexture(const vaa3d::VolumeTexture& volumeTexture);
+    void setVolumeTexture(const vaa3d::VolumeTexture& v) {volumeTexture = &v;}
+    void setNeuronLabelTexture(const vaa3d::NeuronLabelTexture& t) {neuronLabelTexture = &t;}
+    void setNeuronVisibilityTexture(const vaa3d::NeuronVisibilityTexture& t) {neuronVisibilityTexture = &t;}
 
 signals:
     void progressValueChanged(int);
@@ -63,11 +69,18 @@ public slots:
     void setShowCornerAxes(bool b);
 
 protected:
+    virtual void shaderTexBegin(bool stream);
+    virtual void shaderTexEnd();
     virtual void setupStackTexture(bool bfirst);
+    virtual void _drawStack( double ts, double th, double tw,
+                    double s0, double s1, double h0, double h1, double w0, double w1,
+                    double ds, int slice0, int slice1, int thickness,
+                    GLuint tex3D, GLuint texs[], int stack_i,
+                    float direction, int section, bool t3d, bool stream);
     void load3DTextureSet(RGBA8* tex3DBuf);
-    RGBA8* extendTextureFromMaskList(const QList<RGBA8*> & sourceTextures, const QList<int> & maskIndexList);
-    void cleanExtendedTextures();
-    bool populateBaseTextures();
+    // RGBA8* extendTextureFromMaskList(const QList<RGBA8*> & sourceTextures, const QList<int> & maskIndexList);
+    // void cleanExtendedTextures();
+    // bool populateBaseTextures();
     void paint_corner_axes();
 
     // We want all of these OFF for now to keep the texture handling constant across different hardware environments
@@ -83,6 +96,7 @@ protected:
     bool bShowCornerAxes;
 
 private:
+    /*
     unsigned char* neuronMask; // sized to texture buffer dimensions realX,Y,Z
     RGBA8* texture3DSignal;
     RGBA8* texture3DReference;
@@ -91,6 +105,10 @@ private:
     RGBA8* texture3DCurrent;
     bool textureSetAlreadyLoaded;
     bool masklessSetupStackTexture;
+    */
+    const vaa3d::VolumeTexture* volumeTexture;
+    const vaa3d::NeuronLabelTexture* neuronLabelTexture;
+    const vaa3d::NeuronVisibilityTexture* neuronVisibilityTexture;
 };
 
 #endif // RENDERERNEURONANNOTATOR_H

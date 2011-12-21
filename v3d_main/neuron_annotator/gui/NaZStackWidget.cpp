@@ -172,7 +172,8 @@ void NaZStackWidget::paintEvent(QPaintEvent *event)
 
     transformPainterToCurrentCamera(painter);
 
-    painter.drawPixmap(0, 0, pixmap);
+    QPointF origin(0, 0);
+    painter.drawPixmap(origin, pixmap);
 
     if (bPaintCrosshair) paintCrosshair(painter);
 
@@ -406,7 +407,7 @@ void NaZStackWidget::setCurrentZSlice(int slice)
     // Consider updating camera focus to match latest z-slice
     const Vector3D& f = cameraModel.focus();
     int camZ = int(floor(f.z() + 0.5));
-    float midZ = sz / 2.0f;
+    float midZ = (sz - 1) / 2.0f;
     int flip_cur_z = int(midZ + flip_Z * (cur_z - midZ));
     if (flip_cur_z != camZ) {
         Vector3D newFocus(f.x(), f.y(), flip_cur_z);
@@ -852,6 +853,7 @@ void NaZStackWidget::updatePixmap()
 {
     if (! zSliceColors) return;
     QTime stopwatch;
+    int newZ = -1;
     stopwatch.start();
     {
         ZSliceColors::Reader zReader(*zSliceColors);
@@ -868,8 +870,9 @@ void NaZStackWidget::updatePixmap()
         pixmap = QPixmap::fromImage(*zReader.getImage());
         sx = pixmap.width();
         sy = pixmap.height();
-        cur_z = zReader.getZIndex();
+        newZ = zReader.getZIndex() + 1;
     }
+    setCurrentZSlice(newZ);
     // qDebug() << "NaStackWidget pixmap updated";
     // qDebug() << "NaZStackWidget updatePixmap took" << stopwatch.elapsed() << "milliseconds";
     update();

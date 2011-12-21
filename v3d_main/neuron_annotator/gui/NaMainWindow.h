@@ -112,7 +112,10 @@ public slots:
     void setChannelZeroVisibility(bool);
     void setChannelOneVisibility(bool);
     void setChannelTwoVisibility(bool);
+    void setChannelThreeVisibility(bool); // reference channel
+    // help comminicate reference channel changes between DataColorModel and NeuronSelectionModel
     void onColorModelChanged();
+    void onSelectionModelVisibilityChanged();
     void onHdrChannelChanged(NaZStackWidget::Color);
     void supportQuadStereo(bool b);
     void showDynamicRangeTool();

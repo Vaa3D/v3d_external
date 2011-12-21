@@ -25,7 +25,7 @@ Na3DWidget::Na3DWidget(QWidget* parent)
     _idep = new iDrawExternalParameter();
     _idep->image4d = NULL;
     resetView();
-    // setVolCompress(false); // might look nicer?
+    setVolCompress(false); // might look nicer?
 
     // This method for eliminating tearing artifacts works but is supposedly obsolete;
     // http://stackoverflow.com/questions/5174428/how-to-change-qglformat-for-an-existing-qglwidget-at-runtime
@@ -59,13 +59,34 @@ Na3DWidget::Na3DWidget(QWidget* parent)
     connect(&mouseClickManager, SIGNAL(possibleSingleClickAlert()),
             this, SLOT(onPossibleSingleClickAlert()));
     connect(&mouseClickManager, SIGNAL(notSingleClick()),
-            this, SLOT(onNotSingleClick()));
+            this, SLOT(onNotSingleClick()));    
+    connect(&neuronVisibilityTexture, SIGNAL(textureChanged()),
+            this, SLOT(update()));
 }
 
 Na3DWidget::~Na3DWidget()
 {
     delete _idep; _idep = NULL;
     if (rotateCursor) delete rotateCursor; rotateCursor = NULL;
+}
+
+/* virtual */
+void Na3DWidget::initializeGL()
+{
+    V3dR_GLWidget::initializeGL();
+    neuronVisibilityTexture.initializeGL();
+    volumeTexture.neuronLabelTexture.initializeGL();
+}
+
+/* virtual */
+void Na3DWidget::settingRenderer() // before renderer->setupData & init
+{
+    // qDebug() << "Na3DWidget::settingRenderer()" << __FILE__ << __LINE__;
+    RendererNeuronAnnotator* rend = getRendererNa();
+    rend->setNeuronLabelTexture(volumeTexture.neuronLabelTexture);
+    rend->setNeuronVisibilityTexture(neuronVisibilityTexture);
+    rend->setVolumeTexture(volumeTexture);
+    rend->loadShader(); // Actually use those fancy textures
 }
 
 void Na3DWidget::setStereoOff(bool b)
@@ -196,9 +217,10 @@ Vector3D Na3DWidget::getDefaultFocus() const
     NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
     if (! volumeReader.hasReadLock()) return result;
     const Image4DProxy<My4DImage>& volumeProxy = volumeReader.getOriginalImageProxy();
-    result = Vector3D(  volumeProxy.sx / 2.0
-                      , volumeProxy.sy / 2.0
-                      , volumeProxy.sz / 2.0);
+    // Place origin in the center of a voxel, so subtract 1
+    result = Vector3D(  (volumeProxy.sx - 1.0) / 2.0
+                      , (volumeProxy.sy - 1.0) / 2.0
+                      , (volumeProxy.sz - 1.0) / 2.0 - 1.0); // Why is Z value off by 1?
     return result;
 }
 
@@ -829,12 +851,20 @@ void Na3DWidget::choiceRenderer()
         connect(getRendererNa(), SIGNAL(showCornerAxesChanged(bool)),
                 this, SLOT(setShowCornerAxes(bool)));
         getRendererNa()->setShowCornerAxes(bShowCornerAxes);
+        // Retain current setting for alpha blending
+        // qDebug() << "alpha blending = " << (_renderMode == Renderer::rmAlphaBlendingProjection) << __FILE__ << __LINE__;
+        setAlphaBlending(_renderMode == Renderer::rmAlphaBlendingProjection);
     }
 }
 
 /* slot */
 void Na3DWidget::setAlphaBlending(bool b)
 {
+    if (b)
+        _renderMode = int(Renderer::rmAlphaBlendingProjection);
+    else
+        _renderMode = int(Renderer::rmMaxIntensityProjection);
+
     if (! getRendererNa()) return;
     getRendererNa()->setAlphaBlending(b);
 }
@@ -913,13 +943,16 @@ void Na3DWidget::setDataFlowModel(const DataFlowModel& dataFlowModelParam)
 
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(selectionChanged()),
             this, SLOT(onNeuronSelectionChanged()));
+    neuronVisibilityTexture.setNeuronSelectionModel(dataFlowModel->getNeuronSelectionModel());
+    neuronVisibilityTexture.update();
 
     connect(&dataFlowModelParam.getNeuronSelectionModel(), SIGNAL(initialized()),
           this, SLOT(onVolumeDataChanged()));
-    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(multipleVisibilityChanged()),
-            this, SLOT(updateFullVolume()));
-    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(overlayVisibilityChanged(int,bool)),
-            this, SLOT(updateFullVolume()));
+    // TODO - resurrect toggling
+    // connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(multipleVisibilityChanged()),
+    //         this, SLOT(updateFullVolume()));
+    // connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(overlayVisibilityChanged(int,bool)),
+    //         this, SLOT(updateFullVolume()));
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(neuronVisibilityChanged(int,bool)),
             this, SLOT(toggleNeuronDisplay(int,bool)));
     // Fast-but-approximate color update
@@ -943,22 +976,24 @@ void Na3DWidget::toggleNeuronDisplay(int index, bool checked)
             needFullUpdate = true; // some calls were discarded, so do full update
         }
         else { // just one call, perform clever single neuron update
-            emit progressValueChanged(10);
-            emit progressMessageChanged(QString("Updating textures"));
+            // emit progressValueChanged(10);
+            // emit progressMessageChanged(QString("Updating textures"));
             QCoreApplication::processEvents();
-            getRendererNa()->updateCurrentTextureMask(index, (checked ? 1 : 0));
+            makeCurrent();
+            // TODO - need new way to toggle neurons
+            // getRendererNa()->updateCurrentTextureMask(index, (checked ? 1 : 0));
             // More toggles might have happened during the update
             if (toggleNeuronMerger.skippedCallCount() > 0) {
                 needFullUpdate = true;
             }
             else {
-                getRendererNa()->paint();
+                // getRendererNa()->paint();
                 update();
             }
         }
     } // pop SlotMerger off stack before full update;
     if (needFullUpdate) {
-        updateFullVolume();
+        // updateFullVolume();
     }
 }
 
@@ -979,7 +1014,7 @@ void Na3DWidget::onNeuronSelectionChanged() { // highlight selected neurons
         }
     }
     if (neuronIx < 0) {
-        qDebug() << "clearing landmarks" << __FILE__ << __LINE__;
+        // qDebug() << "clearing landmarks" << __FILE__ << __LINE__;
         clearLandmarks(); // should remove selection
     }
     else {
@@ -990,8 +1025,11 @@ void Na3DWidget::onNeuronSelectionChanged() { // highlight selected neurons
 void Na3DWidget::onVolumeDataChanged()
 {
     // qDebug() << "Na3DWidget::onVolumeDataChanged()" << __FILE__ << __LINE__;
-
+    // Remember whether alpha blending was on before calling init_members();
+    bool alphaBlendingMode = (_renderMode == Renderer::rmAlphaBlendingProjection);
     init_members();
+    if (alphaBlendingMode)
+        _renderMode = Renderer::rmAlphaBlendingProjection;
     if (_idep==0) {
         _idep = new iDrawExternalParameter();
     }
@@ -1012,15 +1050,40 @@ void Na3DWidget::onVolumeDataChanged()
         }
         choiceRenderer();
         settingRenderer();
+
+        rend = getRendererNa();
+        DataColorModel::Reader colorReader(dataFlowModel->getDataColorModel());
+        if (! dataFlowModel->getDataColorModel().readerIsStale(colorReader))  {
+            makeCurrent();
+            if (volumeTexture.populateVolume(volumeReader, colorReader) )
+            {
+                // succeeded
+                // rend->setVolumeTexture(volumeTexture);
+                // rend->updateSettingsFromVolumeTexture(volumeTexture);
+            }
+            else
+            {
+                qDebug() << "Error: volumeTexture.populateVolume() failed" << __FILE__ << __LINE__;
+                bSucceeded = false;
+            }
+        }
+        else {
+            qDebug() << "Color reader not available" << __FILE__ << __LINE__;
+            bSucceeded = false;
+        }
         updateImageData();
+
         updateDefaultScale();
         resetView();
         updateCursor();
-        rend = getRendererNa();
+        
+        /*
         if (! getRendererNa()->populateNeuronMaskAndReference(volumeReader)) {
             qDebug() << "RendererNeuronAnnotator::populateNeuronMaskAndReference() failed";
             bSucceeded = false;
         }
+        */
+
     } // release locks before emit
     if (! bSucceeded)
     {
@@ -1033,11 +1096,16 @@ void Na3DWidget::onVolumeDataChanged()
         return; // stale
     }
     emit progressComplete();
+
+    
+    /* 
     if (! getRendererNa()->initializeTextureMasks()) {
         qDebug() << "RendererNeuronAnnotator::initializeTextureMasks() failed";
         emit progressAborted("");
         return;
     }
+     */
+    
     resetVolumeBoundary();
     setThickness(dataFlowModel->getZRatio());
 
@@ -1062,6 +1130,7 @@ void Na3DWidget::resetVolumeBoundary()
     }
 }
 
+/*
 void Na3DWidget::updateFullVolume()
 {
     // qDebug() << "Na3DWidget::updateFullVolume()" << __FILE__ << __LINE__;
@@ -1090,7 +1159,9 @@ void Na3DWidget::updateFullVolume()
     getRendererNa()->paint();
     update();
 }
+ */
 
+/*
 bool Na3DWidget::tryUpdateFullVolume()
 {
     RendererNeuronAnnotator* ra = getRendererNa(); // Prepare to abort if renderer pointer gets stale later
@@ -1131,6 +1202,7 @@ bool Na3DWidget::tryUpdateFullVolume()
     if (ra != getRendererNa()) return false;
     return true;
 }
+ */
 
 
 bool Na3DWidget::screenShot(QString filename)

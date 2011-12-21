@@ -2,76 +2,87 @@
 #ifdef TEX3D
 uniform sampler3D volume;
 #else
-uniform sampler2D volume;
+uniform sampler2D volume; // 3D scaled fly brain image intensities
 #endif
 
-uniform sampler2D colormap;
+uniform sampler2D colormap; // Color/HDR/gamma correction for each data channel
+uniform sampler1D neuronVisibility; // On/off visibility of each neuron fragment
+uniform sampler3D neuronLabel; // 3D volume locations of neuron indices
 
-uniform vec3 channel;
+uniform vec3 channel; // Lookup table for channel index into colormap.  When would this ever change?
 uniform int blend_mode;
 uniform int format_bgra;
 
 //////////////////////////////////////
 void main()
 {
+    // Use 3D texture coordinate in texture unit 3 to get neuron label position
+    float neuronIx = texture3D(neuronLabel, gl_TexCoord[3].xyz).r;
+    // prepare to multiply neuron colors by visibility value; so neurons will toggle on/off
+    float neuronScale = texture1D(neuronVisibility, neuronIx).r;
 
+    // vColor is the scaled intensity of 3 data channels(in r,g,b) plus nc82 reference(in a)
 #ifdef TEX3D
-	vec4 vColor = texture3D(volume, gl_TexCoord[0].xyz);
+        vec4 vColor = texture3D(volume, gl_TexCoord[0].xyz);
 #else
-	vec4 vColor = texture2D(volume, gl_TexCoord[0].xy);
+        vec4 vColor = texture2D(volume, gl_TexCoord[0].xy);
 #endif
 	if (format_bgra==1)
 	{
 		vColor.rgba = vColor.bgra;
 	}
 
+    // C1...C4 are the colorized, gamma-ed, HDR-ed versions of the channel data
 #ifdef TEX_LOD // only works in vertex shader!!!
-	vec4 C1 = texture2DLod(colormap, vec2(vColor.r, 0), channel.x);
-	vec4 C2 = texture2DLod(colormap, vec2(vColor.g, 0), channel.y);
-	vec4 C3 = texture2DLod(colormap, vec2(vColor.b, 0), channel.z);
+        vec4 C1 = texture2DLod(colormap, vec2(vColor.r, 0), channel.x); // 0.0
+        vec4 C2 = texture2DLod(colormap, vec2(vColor.g, 0), 0.25);
+        vec4 C3 = texture2DLod(colormap, vec2(vColor.b, 0), 0.50);
+        vec4 C4 = texture2DLod(colormap, vec2(vColor.a, 0), 0.75);
 #else
-	vec4 C1 = texture2D(colormap, vec2(vColor.r, channel.x));
-	vec4 C2 = texture2D(colormap, vec2(vColor.g, channel.y));
-	vec4 C3 = texture2D(colormap, vec2(vColor.b, channel.z));
+        vec4 C1 = texture2D(colormap, vec2(vColor.r, channel.x)) * neuronScale; // 0.0
+        vec4 C2 = texture2D(colormap, vec2(vColor.g, 0.25)) * neuronScale;
+        vec4 C3 = texture2D(colormap, vec2(vColor.b, 0.50)) * neuronScale;
+        vec4 C4 = texture2D(colormap, vec2(vColor.a, 0.75)); // ref is unaffected by neuron visibility
 #endif
 
+        // aC1..aC4 are colors scaled by alpha component
 	vec3 aC1 = C1.rgb * C1.a;
 	vec3 aC2 = C2.rgb * C2.a;
 	vec3 aC3 = C3.rgb * C3.a;
-	float Amean = (C1.a + C2.a + C3.a)/3.0;
-				//= pow((C1.a * C2.a * C3.a), 1.0/3.0);
-	float Amax	= max(C1.a, max(C2.a, C3.a));
+        vec3 aC4 = C4.rgb * C4.a;
+
+        float Amean = (C1.a + C2.a + C3.a + C4.a)/4.0;
+        float Asum = C1.a + C2.a + C3.a + C4.a;
+        float Amax = max(C1.a, max(C2.a, max(C3.a, C4.a)));
 
 	vec4 oColor;
         if (blend_mode==0) // cross-section
 	{
 		float Asec = Amean;
-		oColor.rgb = (aC1 + aC2 + aC3);
+                oColor.rgb = (aC1 + aC2 + aC3 + aC4);
 		oColor.a = Asec;
 	}
 	else if (blend_mode==1) // alpha-blending
 	{
+                C4.a = 0.20 * C4.a; // increase transparency of reference channel
                 // modified 11 Oct 2011 CMB
                 // voxel alpha/opacity is the maximum of all channel opacities (not the average!)
-                // kludge: but also leave a bit of transparency even on the densest areas (clamp max to 0.9), to help see inner structure of dense areas
-                oColor.a = 0.15 * Amax;
+                // kludge: but also leave a bit of transparency even on the densest areas (clamp max), to help see inner structure of dense areas
                 // voxel color is the weighted sum of channel colors,
                 // normalized to full brightness for brightest channel (alpha channel is used for dimness...),
                 // kludge: limit brightness of very dim voxels to reduce apparent background (clamp min scale 0.10).
-                oColor.rgb = (aC1 + aC2 + aC3) / clamp(Amax, 0.10, 1.0);
+                // oColor.rgb = (aC1 + aC2 + aC3 + aC4) / clamp(Amax, 0.10, 1.0);
+                // Want color pretty much saturated in alpha blending mode, and handle brightness via alpha
+                float Amax2 = max(C1.a, max(C2.a, max(C3.a, C4.a)));
+                oColor.a = 0.30 * Amax2;
+                oColor.rgb = (aC1 + aC2 + aC3 + aC4) / (0.9 * Amax2 + 0.10);
         }
 	else // max-intensity
 	{
-		float Amip = Amean;
-		oColor.rgb = max(aC1.rgb, max(aC2.rgb, aC3.rgb));
-		oColor.a = Amip;
-
-//		float Asec = Amean;
-//		oColor.rgb = (aC1 + aC2 + aC3);
-//		oColor.a = Asec;
-	}
+                oColor.rgb = (aC1 + aC2 + aC3 + aC4) / clamp(1.0 / Amax, 0.0, 1.0); // blend colors without oversaturating
+                // oColor.rgb = max(aC1.rgb, max(aC2.rgb, max(aC3.rgb, aC4.rgb)));
+                // oColor.a = 0.15 * Amax; // alpha does not affect maximum intensity projection
+        }
 
 	gl_FragColor = gl_Color * oColor; // modulated by color_proxy
-	//gl_FragData[0] = gl_Color * vColor;
-	//gl_FragData[1] = vec4(0,1,0,1);
 }

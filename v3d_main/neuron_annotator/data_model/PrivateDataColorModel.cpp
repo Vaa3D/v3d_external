@@ -4,11 +4,13 @@
 #include <cassert>
 
 PrivateDataColorModel::PrivateDataColorModel()
+    : sharedGamma(1.0)
 {}
 
 PrivateDataColorModel::PrivateDataColorModel(const PrivateDataColorModel& rhs)
 {
     channelColors = rhs.channelColors;
+    sharedGamma = rhs.sharedGamma;
     // qDebug() << "PrivateDataColorModel copy ctor";
 }
 
@@ -27,14 +29,17 @@ void PrivateDataColorModel::colorizeIncremental(
     if (numChannels != channelColors.size()) {
         channelColors.assign(numChannels, ChannelColorModel(0));
     }
+    qreal incGamma = currentColorReader.getSharedGamma() / desiredColorReader.getSharedGamma();
+    setSharedGamma(incGamma);
     for (int chan = 0; chan < numChannels; ++chan)
     {
         // Use latest color information.  TODO - there might no good way to incrementally update channel colors.
         channelColors[chan].setColor(desiredColorReader.getChannelColor(chan));
         channelColors[chan].showChannel = desiredColorReader.getChannelVisibility(chan);
         // Set incremental gamma; qInc = qDes / qCur
-        qreal incGamma = desiredColorReader.getChannelGamma(chan) / currentColorReader.getChannelGamma(chan); // the usual case
-        channelColors[chan].setGamma(incGamma);
+        incGamma = desiredColorReader.getChannelGamma(chan) / currentColorReader.getChannelGamma(chan); // the usual case
+        setChannelGamma(chan, incGamma); // setChannelGamma() folds in sharedGamma
+        // channelColors[chan].setGamma(incGamma); // channel.setGamma() does not fold in sharedGamma
         // Set incremental HDR range, on a data scale of 0.0-1.0 (though hdrMin/Max might be outside that range)
         channelColors[chan].setDataRange(0.0, 1.0);
         qreal desRange = desiredColorReader.getChannelHdrMax(chan) - desiredColorReader.getChannelHdrMin(chan);
@@ -53,6 +58,7 @@ void PrivateDataColorModel::colorizeIncremental(
 
 bool PrivateDataColorModel::initialize(const NaVolumeData::Reader& volumeReader)
 {
+    setSharedGamma(1.0);
     if (! volumeReader.hasReadLock()) return false;
     const Image4DProxy<My4DImage>& volProxy = volumeReader.getOriginalImageProxy();
     if (volProxy.sx <= 0) return false; // data not populated yet?
@@ -123,6 +129,25 @@ QRgb PrivateDataColorModel::blend(const double channelIntensities[]) const {
     return qRgb(red, green, blue);
 }
 
+QRgb PrivateDataColorModel::blendInvisible(const double channelIntensities[]) const {
+    int red, green, blue;
+    red = green = blue = 0;
+    int sc = channelColors.size();
+    for (int c = 0; c < sc; ++c) {
+        if (channelIntensities[c] == 0.0)
+            continue;
+        const ChannelColorModel& ccm = channelColors[c];
+        QRgb channelColor = ccm.getInvisibleColor(channelIntensities[c]);
+        red += qRed(channelColor);
+        green += qGreen(channelColor);
+        blue += qBlue(channelColor);
+    }
+    red = min(255, red);
+    green = min(255, green);
+    blue = min(255, blue);
+    return qRgb(red, green, blue);
+}
+
 QRgb PrivateDataColorModel::blend(const std::vector<double>& channelIntensities) const {
     return blend(&channelIntensities[0]);
 }
@@ -151,21 +176,26 @@ bool PrivateDataColorModel::setChannelHdrRange(int index, qreal minParam, qreal 
     return true;
 }
 
-bool PrivateDataColorModel::setGamma(qreal gamma) // for all channels
+bool PrivateDataColorModel::setSharedGamma(qreal gamma) // for all channels
 {
     bool bChanged = false;
-    for (int c = 0; c < channelColors.size(); ++c) {
-        if (channelColors[c].gamma != gamma)
-            bChanged = true;
-    }
-    if (! bChanged) return false;
+    if (gamma == sharedGamma)
+        return bChanged;
+    qreal incGamma = gamma / sharedGamma; // Compute change in gamma
+    // Update channels *before* updating sharedGamma
     for (int c = 0; c < channelColors.size(); ++c)
-        channelColors[c].setGamma(gamma);
-    return true;
+    {
+        qreal oldChannelGamma = getChannelGamma(c);
+        channelColors[c].setGamma( gamma * oldChannelGamma );
+    }
+    sharedGamma = gamma;
+    bChanged = true;
+    return bChanged;
 }
 
-bool PrivateDataColorModel::setChannelGamma(int index, qreal gamma)
+bool PrivateDataColorModel::setChannelGamma(int index, qreal gammaParam)
 {
+    qreal gamma = gammaParam / sharedGamma; // Correct for preapplication of global gamma
     if (channelColors[index].gamma == gamma)
         return false; // no change
     channelColors[index].setGamma(gamma);
@@ -203,7 +233,11 @@ qreal PrivateDataColorModel::getChannelScaledIntensity(int channel, qreal raw_in
 }
 
 qreal PrivateDataColorModel::getChannelGamma(int channel) const {
-    return channelColors[channel].getGamma();
+    return channelColors[channel].getGamma() / sharedGamma; // Correct for preapplied shared Gamma
+}
+
+qreal PrivateDataColorModel::getSharedGamma() const {
+    return sharedGamma;
 }
 
 bool PrivateDataColorModel::setChannelVisibility(int index, bool isVisibleParam)
@@ -271,8 +305,10 @@ void PrivateDataColorModel::ChannelColorModel::resetHdrRange()
     setHdrRange(dataMin, dataMax);
 }
 
+/// Stored gamma with sharedGamma already applied.  (Unlike PrivateDataColorModel::setChannelGamma(g))
 void PrivateDataColorModel::ChannelColorModel::setGamma(qreal gammaParam)
 {
+    // qDebug() << "PrivateDataColorModel::ChannelColorModel::setGamma()" << gammaParam << __FILE__ << __LINE__;
     gamma = gammaParam;
     gammaIsNotUnity = (gamma != 1.0f); // premature optimization
     // populate gamma lookup table
@@ -289,23 +325,33 @@ void PrivateDataColorModel::ChannelColorModel::setGamma(qreal gammaParam)
 }
 
 // Returns a value in the range 0.0-1.0
+// Applies channel visibility toggle
 qreal PrivateDataColorModel::ChannelColorModel::getScaledIntensity(qreal raw_intensity) const
 {
     if (! showChannel) return 0.0;
+    return getInvisibleScaledIntensity(raw_intensity);
+}
+
+// Returns a value in the range 0.0-1.0
+// Ignores channel visibility toggle.
+qreal PrivateDataColorModel::ChannelColorModel::getInvisibleScaledIntensity(qreal raw_intensity) const
+{
     if (raw_intensity <= hdrMin) return 0.0; // clamp below
     if (raw_intensity >= hdrMax) return 1.0; // clamp above
     if (hdrRange <= 0) return 0.5;
     // 1) Apply hdr interval
     qreal i = (raw_intensity - hdrMin)/hdrRange;
 
-    /* if (   (colorGreen == 255) // debug green channel
+    /*
+    if (   (colorGreen == 255) // debug green channel
         && (raw_intensity > 0.266)
         && (raw_intensity < 0.267) ) // i_in = 68
     {
         qDebug() << "ChannelColorModel::getScaledIntensity" << raw_intensity << i
                 << hdrMin << hdrMax << hdrRange
                 << __FILE__ << __LINE__;
-    } */
+    }
+     */
 
     // 2) Apply gamma correction
     if (gammaIsNotUnity)
@@ -317,15 +363,18 @@ qreal PrivateDataColorModel::ChannelColorModel::getScaledIntensity(qreal raw_int
     return i;
 }
 
-// getColor() definition is in header file so it can be inlined
+QRgb PrivateDataColorModel::ChannelColorModel::getInvisibleColor(qreal raw_intensity) const
+{
+    if (raw_intensity <= hdrMin) return blackColor; // clamp below
+    if (raw_intensity >= hdrMax) return channelColor; // clamp above
+    const qreal i = getInvisibleScaledIntensity(raw_intensity);
+    return qRgb(int(i * colorRed), int(i * colorGreen), int(i * colorBlue));
+}
+
 QRgb PrivateDataColorModel::ChannelColorModel::getColor(qreal raw_intensity) const
 {
     if (! showChannel) return blackColor;
-    if (raw_intensity <= hdrMin) return blackColor; // clamp below
-    if (raw_intensity >= hdrMax) return channelColor; // clamp above
-    const qreal i = getScaledIntensity(raw_intensity);
-    // 3) scale channel color
-    return qRgb(int(i * colorRed), int(i * colorGreen), int(i * colorBlue));
+    return getInvisibleColor(raw_intensity);
 }
 
 

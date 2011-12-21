@@ -5,14 +5,20 @@
 #include "../3drenderer/v3dr_glwidget.h"
 #include "../geometry/Rotation3D.h"
 
+#define NA_USE_VOLUME_TEXTURE_CMB 1
+
 RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     : QObject(NULL)
     , Renderer_gl2(w)
     , stereo3DMode(STEREO_OFF)
     , bStereoSwapEyes(false)
     , bShowCornerAxes(true)
+    , volumeTexture(NULL)
+    , neuronLabelTexture(NULL)
+    , neuronVisibilityTexture(NULL)
 {
     // qDebug() << "RendererNeuronAnnotator constructor" << this;
+    /*
     neuronMask=0;
     texture3DSignal=0;
     texture3DBackground=0;
@@ -21,6 +27,7 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     texture3DCurrent=0;
     textureSetAlreadyLoaded=false;
     masklessSetupStackTexture=false;
+    */
 
     // qDebug() << this << texture3DCurrent << texture3DSignal << texture3DBackground << texture3DReference << texture3DBlank;
 
@@ -39,10 +46,12 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     setRenderTextureLast(true); // Everyone draws opaque geometry first.  Why is this not the default?
 
     loadObj(); // create display lists for markers
-    loadShader(); // create color map for fast gamma
 
     // initial alpha blending mode
     setAlphaBlending(false);
+
+    // VOLUME_FILTER = 0; // Use sharp voxel boundaries (at least for testing)
+    tryTexNPT = true; // Don't use Vaa3D rescale of image dimensions (because we are taking care of that...)
 }
 
 static void turn_off_specular()
@@ -60,12 +69,18 @@ RendererNeuronAnnotator::~RendererNeuronAnnotator()
 {
     // TODO - what about all those texture3Dwhatever?  When are those deleted?
     // qDebug() << "RendererNeuronAnnotator destructor" << this;
+    /*
     cleanExtendedTextures(); // might delete texture3DCurrent
     if (neuronMask) {delete [] neuronMask; neuronMask = NULL;}
     if (texture3DReference) {delete [] texture3DReference; texture3DReference = NULL;}
     if (texture3DBlank) {delete [] texture3DBlank; texture3DBlank = NULL;}
     if (texture3DBackground) {delete [] texture3DBackground; texture3DBackground = NULL;}
+     */
     // NOTE that deleting texture3DSignal is handled by something else
+
+    // I manage the texture memory, not you.  So set to NULL before you get a chance to clear it.
+    Xslice_data = Yslice_data = Zslice_data = NULL;
+    Xtex_list = Ytex_list = Ztex_list = NULL;
 }
 
 /* slot */
@@ -165,9 +180,94 @@ void RendererNeuronAnnotator::loadShader()
 
     qDebug("+++++++++ GLSL shader setup finished.");
 
-
     glGenTextures(1, &texColormap);
     initColormap();
+
+    if (neuronLabelTexture)
+        neuronLabelTexture->uploadPixels();
+    else
+        qDebug() << "NeuronLabelTexture not set" << __FILE__ << __LINE__;
+
+    if (neuronVisibilityTexture)
+        neuronVisibilityTexture->uploadPixels();
+    else
+        qDebug() << "NeuronVisibilityTexture not set" << __FILE__ << __LINE__;
+}
+
+void RendererNeuronAnnotator::shaderTexBegin(bool stream)
+{
+        shader = (texture_unit0_3D && !stream)? shaderTex3D : shaderTex2D;
+
+        int format_bgra = (stream && pbo_image_format==GL_BGRA)? 1:0;
+
+        if (tryVolShader && shader && !b_selecting)
+        {
+                shader->begin(); //must before setUniform
+                shader->setUniform1i("volume",   0); //GL_TEXTURE0
+                shader->setUniform1i("colormap", 1); //GL_TEXTURE1, 2D
+                shader->setUniform1i("neuronVisibility", 2); // GL_TEXTURE2, 1D
+                shader->setUniform1i("neuronLabel", 3);
+
+                float n = FILL_CHANNEL-1; // 0-based
+                shader->setUniform3f("channel", 0/n, 1/n, 2/n);
+                shader->setUniform1i("blend_mode", renderMode);
+                shader->setUniform1i("format_bgra", format_bgra);
+
+                // switch to colormap texture
+                glActiveTextureARB(GL_TEXTURE1_ARB);
+                glEnable(GL_TEXTURE_2D);
+                glBindTexture(GL_TEXTURE_2D, texColormap);
+                glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); // GLSL will replace TexEnv
+                CHECK_GLError_print();
+
+//		glTexImage2D(GL_TEXTURE_2D, // target
+//				0, // level
+//				GL_RGBA, // texture format
+//				256, // width
+//				FILL_CHANNEL,   // height
+//				0, // border
+//				GL_RGBA, // image format
+//				GL_UNSIGNED_BYTE, // image type
+//				&colormap[0][0]);
+                // qDebug() << "Uploading color map" << __FILE__ << __LINE__;
+                glTexSubImage2D(GL_TEXTURE_2D, // target
+                                0, // level
+                                0,0, // offset
+                                256, // width
+                                FILL_CHANNEL,   // height
+                                GL_RGBA, // image format
+                                GL_UNSIGNED_BYTE, // image type
+                                &colormap[0][0]);
+                CHECK_GLError_print();
+
+                if (neuronVisibilityTexture && neuronVisibilityTexture->bNeedsUpload)
+                {
+                    neuronVisibilityTexture->uploadPixels();
+                }
+
+                // switch back to volume data texture
+                glActiveTextureARB(GL_TEXTURE0_ARB);
+        }
+}
+
+void RendererNeuronAnnotator::shaderTexEnd()
+{
+        if (tryVolShader && shader && !b_selecting)
+        {
+                // off colormap
+                glActiveTextureARB(GL_TEXTURE0_ARB);
+                glDisable(GL_TEXTURE_2D);
+                glActiveTextureARB(GL_TEXTURE1_ARB);
+                glDisable(GL_TEXTURE_2D);
+                glActiveTextureARB(GL_TEXTURE2_ARB);
+                glDisable(GL_TEXTURE_1D);
+                glActiveTextureARB(GL_TEXTURE3_ARB);
+                glDisable(GL_TEXTURE_3D);
+                glActiveTextureARB(GL_TEXTURE0_ARB);
+
+                shader->end();
+        }
+        shader = 0;
 }
 
 void RendererNeuronAnnotator::equAlphaBlendingProjection()
@@ -395,14 +495,163 @@ XYZ RendererNeuronAnnotator::screenPositionToVolumePosition(const QPoint& screen
         return selectloc;
 }
 
-void RendererNeuronAnnotator::loadVol() {
-    Renderer_gl1::loadVol();
+void RendererNeuronAnnotator::loadVol()
+{
+    // Renderer_gl1::loadVol();
+    cleanVol(); // 081006: move to before setting imageX/Y/Z, 090705 move to first line
+    cleanTexStreamBuffer(); //091012
+
+    qDebug("  Renderer_gl1::loadVol");
+    makeCurrent(); //ensure right context when multiple views animation or mouse drop, 081105
+
+    if (! rgbaBuf || bufSize[3]<1 ) return; // no image data, 081002
+
+    ////////////////////////////////////////////////////////////////
+    // set coordinate frame size
+    sampleScaleX = sampleScale[0];
+    sampleScaleY = sampleScale[1];
+    sampleScaleZ = sampleScale[2];
+    imageX = bufSize[0];
+    imageY = bufSize[1];
+    imageZ = bufSize[2];
+    imageT = bufSize[4];
+
+    bool ok;
+    if ( !(ok = supported_TexNPT()) )
+            tryTexNPT = 0;
+    qDebug()<< QString("	ARB_texture_non_power_of_two          %1 supported ").arg(ok?"":"NOT");
+
+    if ( !(ok = supported_TexCompression()) )
+            tryTexCompress = 0;
+    qDebug()<< QString("	ARB_texture_compression               %1 supported ").arg(ok?"":"NOT");
+
+    if ( !(ok = supported_Tex3D()) )
+            tryTex3D = 0;
+    qDebug()<< QString("	EXT_texture3D (or OpenGL 2.0)         %1 supported ").arg(ok?"":"NOT");
+
+    if ( !(ok = supported_TexStream()) )
+            if (tryTexStream != -1)
+                    tryTexStream = 0;
+    qDebug()<< QString("	texture stream (need PBO and GLSL)    %1 supported ").arg(ok?"":"NOT");
+
+    ok = supported_GL2();
+    qDebug()<< QString("	GLSL (and OpenGL 2.0)                 %1 supported ").arg(ok?"":"NOT");
+
+
+    if (imageT>1) //090802: TexSubImage conflicts against compressed texture2D, but is good for compressed texture3D
+    {
+            //tryTex3D = 1; 			qDebug("	Turn on tryTex3D for Time series");
+            tryTexCompress = 0;		qDebug("		Turn off tryTexCompress for time series");
+            tryTexStream = 0;		qDebug("		Turn off tryTexStream for time series");
+    }
+
+//	// comment for easy test on small volume
+//	if (IS_FITTED_VOLUME(imageX,imageY,imageZ))
+//	{
+//		if (tryTexStream==1)
+//		{
+//			qDebug("	No need texture stream for small volume (fitted in %dx%dx%d)", LIMIT_VOLX,LIMIT_VOLY,LIMIT_VOLZ);
+//			tryTexStream = 0;  // no need stream, because volume can be fitted in video memory
+//		}
+//	}
+
+    ////////////////////////////////////////////////////////////////
+    // coordinate system
+    //
+    //     y_slice[z][x]
+    //      |
+    //      |
+    //      |_______ x_slice[z][y]
+    //     /
+    //    /z_slice[y][x]
+    //
+    ////////////////////////////////////////////////////////////////
+    QTime qtime;  qtime.start();
+    qDebug("   setupStack start --- try %s", try_vol_state());
+
+    fillX = _getTexFillSize(imageX);
+    fillY = _getTexFillSize(imageY);
+    fillZ = _getTexFillSize(imageZ);
+    qDebug("   sampleScale = %gx%gx%g""   sampledImage = %dx%dx%d""   fillTexture = %dx%dx%d",
+                    sampleScaleX, sampleScaleY, sampleScaleZ,  imageX, imageY, imageZ,  fillX, fillY, fillZ);
+
+    if (tryTex3D && supported_Tex3D())
+    {
+        qDebug() << "Renderer_gl1::loadVol() - creating 3D texture ID\n";
+            glGenTextures(1, &tex3D);		//qDebug("	tex3D = %u", tex3D);
+    }
+    if (!tex3D || tryTexStream !=0) //stream = -1/1/2
+    {
+            //tryTex3D = 0; //091015: no need, because tex3D & tex_stream_buffer is not related now.
+
+        qDebug() << "Renderer_gl1::loadVol() - creating data structures for managing 2D texture slice set\n";
+
+            // Ztex_list = new GLuint[imageZ+1]; //+1 for pbo tex
+            // Ytex_list = new GLuint[imageY+1];
+            // Xtex_list = new GLuint[imageX+1];
+            // memset(Ztex_list, 0, sizeof(GLuint)*(imageZ+1));
+            // memset(Ytex_list, 0, sizeof(GLuint)*(imageY+1));
+            // memset(Xtex_list, 0, sizeof(GLuint)*(imageX+1));
+            // /glGenTextures(imageZ+1, Ztex_list);
+            // glGenTextures(imageY+1, Ytex_list);
+            // glGenTextures(imageX+1, Xtex_list);
+
+            CHECK_GLErrorString_throw(); // can throw const char* exception, RZC 080925
+
+            int X = _getBufFillSize(imageX);
+            int Y = _getBufFillSize(imageY);
+            int Z = _getBufFillSize(imageZ);
+            // Zslice_data = new RGBA8 [Y * X];//[Z][y][x] //base order
+            // Yslice_data = new RGBA8 [Z * X];//[Y][z][x]
+            // Xslice_data = new RGBA8 [Z * Y];//[X][z][y]
+            // memset(Zslice_data, 0, sizeof(RGBA8)* (Y * X));
+            // memset(Yslice_data, 0, sizeof(RGBA8)* (Z * X));
+            // memset(Xslice_data, 0, sizeof(RGBA8)* (Z * Y));
+
+            // optimized copy slice data in setupStackTexture, by RZC 2008-10-04
+    }
+
+    qDebug("   setupStack: id & buffer ....................... cost time = %g sec", qtime.elapsed()*0.001);
+
+
+    ///////////////////////////////////////
+    if (texture_format==-1)
+    {
+            texture_format = GL_RGBA;
+            //Call TexImage with a generic compressed internal format. The texture image will be compressed by the GL, if possible.
+            //Call CompressedTexImage to Load pre-compressed image.
+            //S3TC: DXT1(1bit alpha), DXT3(sharp alpha), DXT5(smooth alpha)
+            //glHint(GL_TEXTURE_COMPRESSION_HINT_ARB, GL_NICEST); // seems no use, choice DXT3, but DXT5 is better, 081020
+            if (tryTexCompress && GLEE_ARB_texture_compression)
+                    texture_format = GL_COMPRESSED_RGBA_ARB;
+            if (texture_format==GL_COMPRESSED_RGBA_ARB && GLEE_EXT_texture_compression_s3tc)
+                    texture_format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+    }
+    if (image_format==-1)
+    {
+            image_format = GL_RGBA;
+    }
+    if (image_type==-1)
+    {
+            image_type = GL_UNSIGNED_BYTE;
+    }
+
+    subloadTex(volTimePoint, true);   // first loading
+    ///////////////////////////////////////
+
+    //091013
+    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+    if (w)  w->updateControl();
+
+    if (volumeTexture)
+        updateSettingsFromVolumeTexture(*volumeTexture);
 }
 
 // This function resamples the original mask to the same dimensions
 // as the texture buffer. It returns false if the source image is smaller
 // than the target buffer because this isn't implemented.
 
+/*
 bool RendererNeuronAnnotator::populateNeuronMaskAndReference(NaVolumeData::Reader& volumeReader)
 {
     QTime stopwatch;
@@ -561,10 +810,15 @@ bool RendererNeuronAnnotator::populateBaseTextures() {
 
     return true;
 }
+*/
 
 // This is originally based on version from Renderer_gl1
 void RendererNeuronAnnotator::setupStackTexture(bool bfirst)
 {
+#ifdef NA_USE_VOLUME_TEXTURE_CMB
+    if (!volumeTexture) return;
+    updateSettingsFromVolumeTexture(*volumeTexture);
+#else
     // qDebug() << "RendererNeuronAnnotator::setupStackTexture() - start";
 
     if (masklessSetupStackTexture) {
@@ -591,8 +845,167 @@ void RendererNeuronAnnotator::setupStackTexture(bool bfirst)
     }
 
     // qDebug() << "RendererNeuronAnnotator::setupStackTexture() - end";
+#endif
 }
 
+void RendererNeuronAnnotator::updateSettingsFromVolumeTexture(const vaa3d::VolumeTexture& volumeTexture)
+{
+    realX = volumeTexture.usedTextureSize.x();
+    realY = volumeTexture.usedTextureSize.y();
+    realZ = volumeTexture.usedTextureSize.z();
+    safeX = realX; // necessary
+    safeY = realY;
+    safeZ = realZ;
+    imageX = volumeTexture.originalImageSize.x();
+    imageY = volumeTexture.originalImageSize.y();
+    imageZ = volumeTexture.originalImageSize.z();
+    sampleScaleX = sampleScale[0] = (float)volumeTexture.paddedTextureSize.x() / volumeTexture.originalImageSize.x();
+    sampleScaleY = sampleScale[1] = (float)volumeTexture.paddedTextureSize.y() / volumeTexture.originalImageSize.y();
+    sampleScaleZ = sampleScale[2] = (float)volumeTexture.paddedTextureSize.z() / volumeTexture.originalImageSize.z();
+    boundingBox.x0 = boundingBox.y0 = boundingBox.z0 = 0.0;
+    boundingBox.x1 = volumeTexture.originalImageSize.x();
+    boundingBox.y1 = volumeTexture.originalImageSize.y();
+    boundingBox.z1 = volumeTexture.originalImageSize.z();
+    // TODO VOL_[XYZ][01]?
+    VOL_X0 = VOL_Y0 = VOL_Z0 = 0;
+    VOL_X1 = VOL_Y1 = VOL_Z1 = 1;
+    // TODO boundingBox?
+    // HACK: Postpone propagating const correctness into legacy texture code...
+    Xslice_data = (RGBA8*)(volumeTexture.getDataPtr(vaa3d::VolumeTexture::Stack::X));
+    Yslice_data = (RGBA8*)(volumeTexture.getDataPtr(vaa3d::VolumeTexture::Stack::Y));
+    Zslice_data = (RGBA8*)(volumeTexture.getDataPtr(vaa3d::VolumeTexture::Stack::Z));
+    Xtex_list = (GLuint*)(volumeTexture.getTexIDPtr(vaa3d::VolumeTexture::Stack::X));
+    Ytex_list = (GLuint*)(volumeTexture.getTexIDPtr(vaa3d::VolumeTexture::Stack::Y));
+    Ztex_list = (GLuint*)(volumeTexture.getTexIDPtr(vaa3d::VolumeTexture::Stack::Z));
+
+    image_format = GL_BGRA;
+    image_type = GL_UNSIGNED_INT_8_8_8_8_REV;
+    tryTexCompress = false;
+}
+
+
+/* virtual */
+void RendererNeuronAnnotator::cleanVol()
+{
+    // I manage the texture memory, not you.  So set to NULL before you get a chance to clear it.
+    Xslice_data = Yslice_data = Zslice_data = NULL;
+    Xtex_list = Ytex_list = Ztex_list = NULL;
+    Renderer_gl1::cleanVol();
+}
+
+// copied from renderer_tex.cpp
+void RendererNeuronAnnotator::_drawStack( double ts, double th, double tw,
+                double s0, double s1, double h0, double h1, double w0, double w1,
+                double ds, int slice0, int slice1, int thickness,
+                GLuint tex3D, GLuint texs[], int stack_i,
+                float direction, int section, bool b_tex3d, bool b_stream)
+{
+        //qDebug("		s(%g-%g)h(%g-%g)w(%g-%g)", s0,s1, h0,h1, w0,w1);
+        if ((s1-s0<0)||(h1-h0<0)||(w1-w0<0)) return; // no draw
+        if (thickness <1) return; // only support thickness>=1
+
+        if (section >0) { // cross-section
+                h0 = 0;		h1 = 1;
+                w0 = 0;		w1 = 1;
+                s1 = s0;
+                slice1 = slice0;
+        }
+
+//	double moreslice = ((tex3D)? 4 : 1); // 081009: more slice for tex3D
+        double step, slice, s;
+        if (direction <0) {
+                step = (+1); ///moreslice);
+                slice = slice0;
+                s = s0;
+        } else {
+                step = (-1); ///moreslice);
+                slice = slice1;
+                s = s1;
+        }
+
+        double tw0 = tw*w0;  double tw1 = tw*w1;
+        double th0 = th*h0;  double th1 = th*h1;
+
+        for (;
+                slice0 <= slice && slice <= slice1;
+                slice += step, s += step * ds
+                )
+        {
+                if (!b_tex3d)
+                {
+                        if (b_stream)
+                        {
+                                _streamTex(stack_i, int(slice), int(step), slice0, slice1);
+                        }
+                        else
+                        {
+                                glBindTexture(GL_TEXTURE_2D, texs[int(slice)+1]); //[0] reserved for pbo tex
+                                setTexParam2D();
+                        }
+                }
+                else // (btex_3d && !btex_stream)
+                {
+                        glBindTexture(GL_TEXTURE_3D, tex3D);
+                        setTexParam3D();
+                }
+
+                double tss = ts*s;
+                int k_repeat = thickness;
+                if ( (step>0 && slice==slice1)
+                        ||(step<0 && slice==slice0)
+                        )  k_repeat = 1; // 081106
+
+                for (int k=0; k<k_repeat; k++) // 081105
+                {
+                        double ids = step * k*ds/thickness;
+                        double idts = ts*ids;
+
+                        glBegin(GL_QUADS);
+
+                        // Store different texture coordinates in texture units 0 and 3,
+                        // so we can use both 2D and 3D textures, until we move everything
+                        // to 3D textures.  I'm using 3D texture for the neuron labels because
+                        // its easier; I'm using 2D textures for the volume because that is what
+                        // is working already.
+                        glMultiTexCoord2dARB(GL_TEXTURE0_ARB, tw0, th0);
+                        if (stack_i==1) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tw0, th0, tss +idts);
+                        else if (stack_i==2) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tw0, tss +idts, th0);
+                        else if (stack_i==3) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tss +idts, tw0, th0);
+                        if      (stack_i==1) glVertex3d(w0, h0, s +ids);
+                        else if (stack_i==2) glVertex3d(w0, s +ids, h0);
+                        else if (stack_i==3) glVertex3d(s +ids, w0, h0);
+
+                        if (!b_tex3d)  glMultiTexCoord2dARB(GL_TEXTURE0_ARB, tw1, th0);
+                        if (stack_i==1) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tw1, th0, tss +idts);
+                        else if (stack_i==2) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tw1, tss +idts, th0);
+                        else if (stack_i==3) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tss +idts, tw1, th0);
+                        if      (stack_i==1) glVertex3d(w1, h0, s +ids);
+                        else if (stack_i==2) glVertex3d(w1, s +ids, h0);
+                        else if (stack_i==3) glVertex3d(s +ids, w1, h0);
+
+                        if (!b_tex3d)  glMultiTexCoord2dARB(GL_TEXTURE0_ARB, tw1, th1);
+                        if (stack_i==1) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tw1, th1, tss +idts);
+                        else if (stack_i==2) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tw1, tss +idts, th1);
+                        else if (stack_i==3) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tss +idts, tw1, th1);
+                        if      (stack_i==1) glVertex3d(w1, h1, s +ids);
+                        else if (stack_i==2) glVertex3d(w1, s +ids, h1);
+                        else if (stack_i==3) glVertex3d(s +ids, w1, h1);
+
+                        if (!b_tex3d)  glMultiTexCoord2dARB(GL_TEXTURE0_ARB, tw0, th1);
+                        if (stack_i==1) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tw0, th1, tss +idts);
+                        else if (stack_i==2) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tw0, tss +idts, th1);
+                        else if (stack_i==3) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tss +idts, tw0, th1);
+                        if      (stack_i==1) glVertex3d(w0, h1, s +ids);
+                        else if (stack_i==2) glVertex3d(w0, s +ids, h1);
+                        else if (stack_i==3) glVertex3d(s +ids, w0, h1);
+
+                        glEnd();
+                }
+        }
+        if (b_stream) _streamTex_end();
+}
+
+/*
 bool RendererNeuronAnnotator::initializeTextureMasks() {
 
     if (!populateBaseTextures()) {
@@ -734,7 +1147,7 @@ void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf)
                         emit progressValueChanged(prog);
                         // processEvents() kludge as long as texture updates are in GUI thread
                         // TODO Is ExcludeUserInputEvents really necessary here?
-                        QCoreApplication::processEvents(/* QEventLoop::ExcludeUserInputEvents */);
+                        QCoreApplication::processEvents(); //  QEventLoop::ExcludeUserInputEvents );
                         makeCurrent();
                     }
             }
@@ -869,6 +1282,7 @@ RGBA8* RendererNeuronAnnotator::extendTextureFromMaskList(const QList<RGBA8*> & 
 // and then copy this updated tile to the graphics system.
 
 void RendererNeuronAnnotator::updateCurrentTextureMask(int neuronIndex, int state) {
+    if(!texture3DCurrent) return;
 
     // qDebug() << "RendererNeuronAnnotator::updateCurrentTextureMask() start";
     makeCurrent();
@@ -1063,7 +1477,7 @@ void RendererNeuronAnnotator::updateCurrentTextureMask(int neuronIndex, int stat
                         emit progressValueChanged(prog);
                         // processEvents() kludge as long as texture updates are in GUI thread
                         // TODO Is ExcludeUserInputEvents really necessary here?
-                        QCoreApplication::processEvents(/* QEventLoop::ExcludeUserInputEvents */);
+                        QCoreApplication::processEvents(); //  QEventLoop::ExcludeUserInputEvents);
                         makeCurrent();
                     }
             }
@@ -1081,6 +1495,8 @@ RGBA8* RendererNeuronAnnotator::getOverlayTextureByAnnotationIndex(int index)
         return texture3DBackground;
     }
 }
+
+*/
 
 float RendererNeuronAnnotator::glUnitsPerImageVoxel() const {
     return 2.0 / boundingBox.Dmax();
@@ -1442,5 +1858,6 @@ void RendererNeuronAnnotator::paint_corner_axes()
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
 }
+
 
 
