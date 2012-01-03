@@ -7083,7 +7083,7 @@ int group_stitching_wrap(V3DPluginCallback2 &callback, QWidget *parent)
     {
         group_stitching(callback, parent);
     }
-
+	return true;
 }
 
 // stitching a group images and saving as a virtual image

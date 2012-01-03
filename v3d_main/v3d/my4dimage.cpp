@@ -5078,6 +5078,7 @@ bool My4DImage::proj_general_scaleandconvert28bit(int lb, int ub) //lb, ub: lowe
 	V3DLONG tsz0 = getXDim(), tsz1 = getYDim(), tsz2 = getZDim(), tsz3 = getCDim();
 	V3DLONG tunits =tsz0*tsz1*tsz2*tsz3;
 	V3DLONG tbytes = tunits;
+
 	unsigned char * outvol1d = 0;
 	try
 	{
@@ -5115,7 +5116,7 @@ bool My4DImage::proj_general_scaleandconvert28bit(int lb, int ub) //lb, ub: lowe
 		if (outvol1d) {delete []outvol1d;outvol1d=0;}
 		return false;
 	}
-
+	
 	setNewImageData(outvol1d, tsz0, tsz1, tsz2, tsz3, V3D_UINT8);
 
 	getXWidget()->reset(); //to force reset the color etc
