@@ -12,8 +12,9 @@ namespace vaa3d {
 
 VolumeTexture::VolumeTexture(QObject *parent)
     : QObject(parent)
-    , memoryLimit(1e9)
+    , memoryLimit(5e8)
     , memoryAlignment(8)
+    , subsampleScale(1.0)
 {
 }
 
@@ -31,6 +32,7 @@ bool VolumeTexture::populateVolume(const NaVolumeData::Reader& volumeReader,
     if (inputSize != originalImageSize) // new/changed volume size
     {
         originalImageSize = inputSize;
+        subsampleScale = inputSize.computeLinearSubsampleScale(memoryLimit/3);
         usedTextureSize = inputSize.sampledSize(memoryLimit/3);
         paddedTextureSize = usedTextureSize.padToMultipleOf(memoryAlignment);
         slicesXyz.setSize(Dimension(paddedTextureSize.x(), paddedTextureSize.y(), paddedTextureSize.z()));
@@ -82,10 +84,10 @@ bool VolumeTexture::populateVolume(const NaVolumeData::Reader& volumeReader,
                         for(int sz = z0; sz < z1; ++sz)
                         {
                             for (int c = 0; c < imageProxy.sc; ++c)
-                                channelIntensities[c] += imageProxy.value_at(x, y, z, c);
-                            channelIntensities[refIx] += referenceProxy.value_at(x, y, z, 0);
+                                channelIntensities[c] += imageProxy.value_at(sx, sy, sz, c);
+                            channelIntensities[refIx] += referenceProxy.value_at(sx, sy, sz, 0);
                             if (neuronIndex == 0) // take first non-zero value
-                                neuronIndex = (int)labelProxy.value_at(x, y, z, 0);
+                                neuronIndex = (int)labelProxy.value_at(sx, sy, sz, 0);
                             weight += 1.0;
                         }
                 for (int c = 0; c <= refIx; ++c) // Normalize
@@ -263,6 +265,7 @@ bool VolumeTexture::Stack::populateGLTextures()
             }
         }
     }
+    // qDebug() << width << height;
     qDebug() << "Populate textures took" << stopwatch.elapsed() / 1000.0 << "seconds";
     return true;
 }
@@ -318,14 +321,21 @@ bool Dimension::operator==(const Dimension& rhs) const {
     return ! (lhs != rhs);
 }
 
+/// Intermediate value used in sampledSizeMethod
+double Dimension::computeLinearSubsampleScale(size_t memoryLimit) const
+{
+    if (memoryLimit <= 0) return 1.0; // zero means no limit
+    size_t memoryUse = x() * y() * z() * 2; // bytes
+    if (memoryUse <= memoryLimit) return 1.0; // already fits into memory as-is
+    double sampleFactor = std::pow((double)memoryLimit / (double)memoryUse, 1.0/3.0);
+    return sampleFactor;
+}
+
 /// Compute a possibly smaller size that would fit in a particular GPU memory limit,
 /// assuming 32 bit pixels.
 Dimension Dimension::sampledSize(size_t memoryLimit) const
 {
-    if (memoryLimit <= 0) return *this; // zero means no limit
-    size_t memoryUse = x() * y() * z() * 2; // bytes
-    if (memoryUse <= memoryLimit) return *this; // already fits into memory as-is
-    double sampleFactor = (double)memoryLimit / (double)memoryUse;
+    double sampleFactor = computeLinearSubsampleScale(memoryLimit);
     return Dimension((int)(x() * sampleFactor), // scale all dimensions
                      (int)(y() * sampleFactor),
                      (int)(z() * sampleFactor));

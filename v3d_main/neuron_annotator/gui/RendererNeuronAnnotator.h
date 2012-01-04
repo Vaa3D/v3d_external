@@ -28,6 +28,9 @@ public:
     virtual ~RendererNeuronAnnotator();
     virtual void paint();
     void paint_mono();
+    virtual void setupData(void* data);
+    virtual int  _getBufFillSize(int w);
+    virtual int  _getTexFillSize(int w);
     virtual void loadVol();
     virtual void cleanVol();
     virtual void loadShader();
@@ -54,6 +57,14 @@ public:
     void setVolumeTexture(const vaa3d::VolumeTexture& v) {volumeTexture = &v;}
     void setNeuronLabelTexture(const vaa3d::NeuronLabelTexture& t) {neuronLabelTexture = &t;}
     void setNeuronVisibilityTexture(const vaa3d::NeuronVisibilityTexture& t) {neuronVisibilityTexture = &t;}
+
+    // expose sampleScale[XYZ], thickness[XYZ]
+    using Renderer_gl2::sampleScaleX;
+    using Renderer_gl2::sampleScaleY;
+    using Renderer_gl2::sampleScaleZ;
+    using Renderer_gl2::thicknessX;
+    using Renderer_gl2::thicknessY;
+    using Renderer_gl2::thicknessZ;
 
 signals:
     void progressValueChanged(int);

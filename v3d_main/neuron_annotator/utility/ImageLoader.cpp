@@ -27,7 +27,7 @@ const unsigned char ImageLoader::ooooolll = 7;
 ImageLoader::ImageLoader()
     : progressIndex(0)
 {
-    qDebug() << "ImageLoader() constructor called";
+    // qDebug() << "ImageLoader() constructor called";
     mode=MODE_UNDEFINED;
     inputFilepath="";
     targetFilepath="";
@@ -1356,13 +1356,13 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
             remainingBytes -= nread;
 
             if (useThreading) {
-                qDebug() << "Waiting for current thread";
+                // qDebug() << "Waiting for current thread";
                 threadPool.waitForDone();
-                qDebug() << "Starting thread";
+                // qDebug() << "Starting thread";
                 if (image==0x0) {
-                    qDebug() << "Prior to start() image is 0";
+                    // qDebug() << "Prior to start() image is 0";
                 } else {
-                    qDebug() << "Prior to start() image is non-zero";
+                    // qDebug() << "Prior to start() image is non-zero";
                 }
                 threadPool.start(this);
             } else {

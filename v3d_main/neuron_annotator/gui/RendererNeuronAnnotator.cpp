@@ -504,7 +504,7 @@ void RendererNeuronAnnotator::loadVol()
     qDebug("  Renderer_gl1::loadVol");
     makeCurrent(); //ensure right context when multiple views animation or mouse drop, 081105
 
-    if (! rgbaBuf || bufSize[3]<1 ) return; // no image data, 081002
+    if (! volumeTexture || bufSize[3]<1 ) return; // no image data, 081002
 
     ////////////////////////////////////////////////////////////////
     // set coordinate frame size
@@ -569,9 +569,9 @@ void RendererNeuronAnnotator::loadVol()
     QTime qtime;  qtime.start();
     qDebug("   setupStack start --- try %s", try_vol_state());
 
-    fillX = _getTexFillSize(imageX);
-    fillY = _getTexFillSize(imageY);
-    fillZ = _getTexFillSize(imageZ);
+    // fillX = _getTexFillSize(imageX);
+    // fillY = _getTexFillSize(imageY);
+    // fillZ = _getTexFillSize(imageZ);
     qDebug("   sampleScale = %gx%gx%g""   sampledImage = %dx%dx%d""   fillTexture = %dx%dx%d",
                     sampleScaleX, sampleScaleY, sampleScaleZ,  imageX, imageY, imageZ,  fillX, fillY, fillZ);
 
@@ -856,20 +856,34 @@ void RendererNeuronAnnotator::updateSettingsFromVolumeTexture(const vaa3d::Volum
     safeX = realX; // necessary
     safeY = realY;
     safeZ = realZ;
-    imageX = volumeTexture.originalImageSize.x();
-    imageY = volumeTexture.originalImageSize.y();
-    imageZ = volumeTexture.originalImageSize.z();
-    sampleScaleX = sampleScale[0] = (float)volumeTexture.paddedTextureSize.x() / volumeTexture.originalImageSize.x();
-    sampleScaleY = sampleScale[1] = (float)volumeTexture.paddedTextureSize.y() / volumeTexture.originalImageSize.y();
-    sampleScaleZ = sampleScale[2] = (float)volumeTexture.paddedTextureSize.z() / volumeTexture.originalImageSize.z();
+
+    // imageX = volumeTexture.originalImageSize.x();
+    // imageY = volumeTexture.originalImageSize.y();
+    // imageZ = volumeTexture.originalImageSize.z();
+    imageX = volumeTexture.usedTextureSize.x();
+    imageY = volumeTexture.usedTextureSize.y();
+    imageZ = volumeTexture.usedTextureSize.z();
+    bufSize[0] = imageX;
+    bufSize[1] = imageY;
+    bufSize[2] = imageZ;
+
+    // sampleScaleX = sampleScaleY = sampleScaleZ = sampleScale[0] = sampleScale[1] = sampleScale[2] = 1.0;
+    sampleScaleX = sampleScale[0] = (float)volumeTexture.usedTextureSize.x() / (float)volumeTexture.originalImageSize.x();
+    sampleScaleY = sampleScale[1] = (float)volumeTexture.usedTextureSize.y() / (float)volumeTexture.originalImageSize.y();
+    sampleScaleZ = sampleScale[2] = (float)volumeTexture.usedTextureSize.z() / (float)volumeTexture.originalImageSize.z();
+
     boundingBox.x0 = boundingBox.y0 = boundingBox.z0 = 0.0;
+    // boundingBox.x1 = volumeTexture.usedTextureSize.x();
+    // boundingBox.y1 = volumeTexture.usedTextureSize.y();
+    // boundingBox.z1 = volumeTexture.usedTextureSize.z();
     boundingBox.x1 = volumeTexture.originalImageSize.x();
     boundingBox.y1 = volumeTexture.originalImageSize.y();
     boundingBox.z1 = volumeTexture.originalImageSize.z();
+
     // TODO VOL_[XYZ][01]?
     VOL_X0 = VOL_Y0 = VOL_Z0 = 0;
     VOL_X1 = VOL_Y1 = VOL_Z1 = 1;
-    // TODO boundingBox?
+
     // HACK: Postpone propagating const correctness into legacy texture code...
     Xslice_data = (RGBA8*)(volumeTexture.getDataPtr(vaa3d::VolumeTexture::Stack::X));
     Yslice_data = (RGBA8*)(volumeTexture.getDataPtr(vaa3d::VolumeTexture::Stack::Y));
@@ -883,6 +897,17 @@ void RendererNeuronAnnotator::updateSettingsFromVolumeTexture(const vaa3d::Volum
     tryTexCompress = false;
 }
 
+/* virtual */
+int RendererNeuronAnnotator::_getBufFillSize(int w)
+{
+    return vaa3d::Dimension::padToMultipleOf(w, 8);
+}
+
+/* virtual */
+int RendererNeuronAnnotator::_getTexFillSize(int w)
+{
+    return vaa3d::Dimension::padToMultipleOf(w, 8);
+}
 
 /* virtual */
 void RendererNeuronAnnotator::cleanVol()
@@ -960,6 +985,9 @@ void RendererNeuronAnnotator::_drawStack( double ts, double th, double tw,
                         double ids = step * k*ds/thickness;
                         double idts = ts*ids;
 
+                        // temporary test to show boundaries of quads
+                        // glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
+
                         glBegin(GL_QUADS);
 
                         // Store different texture coordinates in texture units 0 and 3,
@@ -998,6 +1026,8 @@ void RendererNeuronAnnotator::_drawStack( double ts, double th, double tw,
                         if      (stack_i==1) glVertex3d(w0, h1, s +ids);
                         else if (stack_i==2) glVertex3d(w0, s +ids, h1);
                         else if (stack_i==3) glVertex3d(s +ids, w0, h1);
+
+                        // qDebug() << "texture coordinates =" << tw0 << tw1 << th0 << th1;
 
                         glEnd();
                 }
@@ -1498,8 +1528,17 @@ RGBA8* RendererNeuronAnnotator::getOverlayTextureByAnnotationIndex(int index)
 
 */
 
-float RendererNeuronAnnotator::glUnitsPerImageVoxel() const {
-    return 2.0 / boundingBox.Dmax();
+float RendererNeuronAnnotator::glUnitsPerImageVoxel() const
+{
+    if (0 == imageZ)
+        return 2.0 / boundingBox.Dmax();
+
+    if ( (boundingBox.Dx() >= boundingBox.Dy()) && (boundingBox.Dx() >= boundingBox.Dz()) )
+        return 2.0 * sampleScaleX / imageX;
+    else if (boundingBox.Dy() >= boundingBox.Dz())
+        return 2.0 * sampleScaleY / imageY;
+    else
+        return 2.0 * sampleScaleZ / imageZ;
 }
 
 bool RendererNeuronAnnotator::hasBadMarkerViewMatrix() const // to help avoid a crash
@@ -1787,6 +1826,78 @@ void RendererNeuronAnnotator::paint_mono()
 
     return;
 }
+
+
+void RendererNeuronAnnotator::setupData(void* idep)
+{
+    qDebug("  RendererNeuronAnnotator::setupData");
+    cleanData();
+
+    // Begin assuming emptiness
+    start1 = 0;
+    start2 = 0;
+    start3 = 0;
+    start4 = 0;
+    start5 = 0;
+    size1 = dim1 = 0;
+    size2 = dim2 = 0;
+    size3 = dim3 = 0;
+    size4 = dim4 = 0;
+    size5 = dim5 = 0;
+    sampleScaleX = sampleScaleY = sampleScaleZ = sampleScale[0] = sampleScale[1] = sampleScale[2] = sampleScale[3] = sampleScale[4] = 1;
+    data4dp = NULL;
+
+    // Try to get existing VolumeTexture data - otherwise exit
+    vaa3d::VolumeTexture const * vt_ptr = volumeTexture;
+    if (NULL == vt_ptr)
+    {
+        qDebug() << "setupData() called with NULL volumeTexture";
+        return;
+    }
+
+    size1 = dim1 = vt_ptr->originalImageSize.x();
+    size2 = dim2 = vt_ptr->originalImageSize.y();
+    size3 = dim3 = vt_ptr->originalImageSize.z();
+    size4 = dim4 = 4; // RGBA
+    size5 = dim5 = 1;
+
+    bufSize[0] = size1;
+    bufSize[1] = size2;
+    bufSize[2] = size3;
+    bufSize[3] = size4;
+    bufSize[4] = size5;
+
+    b_limitedsize = (vt_ptr->originalImageSize != vt_ptr->usedTextureSize);
+    if (b_limitedsize)
+    {
+        bufSize[0] = vt_ptr->paddedTextureSize.x();
+        bufSize[1] = vt_ptr->paddedTextureSize.y();
+        bufSize[2] = vt_ptr->paddedTextureSize.z();
+        sampleScaleX = sampleScale[0] = (float)vt_ptr->usedTextureSize.x() / (float)vt_ptr->originalImageSize.x();
+        sampleScaleY = sampleScale[1] = (float)vt_ptr->usedTextureSize.y() / (float)vt_ptr->originalImageSize.y();
+        sampleScaleZ = sampleScale[2] = (float)vt_ptr->usedTextureSize.z() / (float)vt_ptr->originalImageSize.z();
+        qDebug() << "  Down sampling to" << bufSize[0] << bufSize[1] << bufSize[2];
+    }
+    // TODO - implement local subvolume
+    isSimulatedData = false;
+
+
+    dataViewProcBox = dataBox = BoundingBox(start1, start2, start3, start1+(size1-1), start2+(size2-1), start3+(size3-1));
+
+    // Pretend there is vaa3d-classic data
+    // TODO - set to NULL
+    My4DImage* image4d = v3dr_getImage4d(_idep);
+    if (image4d)
+        data4dp = image4d->getRawData();
+    else
+        data4dp = NULL;
+    rgbaBuf = total_rgbaBuf = NULL;
+
+    this->_idep = idep;
+        rgbaBuf = total_rgbaBuf = new RGBA8[1]; // TODO token memory allocation until I can clear things up
+    updateSettingsFromVolumeTexture(*volumeTexture);
+}
+
 
 void RendererNeuronAnnotator::setShowCornerAxes(bool b)
 {

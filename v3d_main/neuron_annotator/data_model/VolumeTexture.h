@@ -53,6 +53,8 @@ public:
     size_t& z();
     bool operator!=(const Dimension& rhs) const;
     bool operator==(const Dimension& rhs) const;
+    /// Intermediate value used in sampledSizeMethod
+    double computeLinearSubsampleScale(size_t memoryLimit) const;
     /// Compute a possibly smaller size that would fit in a particular GPU memory limit,
     /// assuming 32 bit pixels.
     Dimension sampledSize(size_t memoryLimit = 0) const;
@@ -448,6 +450,7 @@ public:
     Dimension originalImageSize; ///< Size of data volume being approximated by this texture set.
     Dimension usedTextureSize; ///< Size of subsection of this texture set containing scaled data volume
     Dimension paddedTextureSize; ///< Total size of this texture set, including empty padded edges to get desired memory alignment
+    double subsampleScale; ///< Factor by which a single dimension is subsampled
 
     // TODO method to load compressed texture directly from file
 
