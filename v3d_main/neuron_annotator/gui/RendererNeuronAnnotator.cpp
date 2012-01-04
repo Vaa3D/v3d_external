@@ -362,7 +362,10 @@ XYZ RendererNeuronAnnotator::screenPositionToVolumePosition(const QPoint& screen
 
         XYZ P2ori = P2;
         XYZ P1ori = P1;
-        for(chno=0; chno<dim4; chno++)
+        // Do not include reference channel
+        int maxChan = dim4 - 1;
+        if (maxChan == 3) maxChan = 2;
+        for(chno=0; chno <= maxChan; chno++)
         {
            P2 = P2ori;
            P1 = P1ori;
@@ -1845,7 +1848,6 @@ void RendererNeuronAnnotator::setupData(void* idep)
     size4 = dim4 = 0;
     size5 = dim5 = 0;
     sampleScaleX = sampleScaleY = sampleScaleZ = sampleScale[0] = sampleScale[1] = sampleScale[2] = sampleScale[3] = sampleScale[4] = 1;
-    data4dp = NULL;
 
     // Try to get existing VolumeTexture data - otherwise exit
     vaa3d::VolumeTexture const * vt_ptr = volumeTexture;
@@ -1889,8 +1891,6 @@ void RendererNeuronAnnotator::setupData(void* idep)
     My4DImage* image4d = v3dr_getImage4d(_idep);
     if (image4d)
         data4dp = image4d->getRawData();
-    else
-        data4dp = NULL;
     rgbaBuf = total_rgbaBuf = NULL;
 
     this->_idep = idep;

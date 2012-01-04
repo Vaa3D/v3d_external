@@ -1058,8 +1058,9 @@ void Na3DWidget::onVolumeDataChanged()
             if (volumeTexture.populateVolume(volumeReader, colorReader) )
             {
                 // succeeded
-                // rend->setVolumeTexture(volumeTexture);
-                // rend->updateSettingsFromVolumeTexture(volumeTexture);
+                rend->setVolumeTexture(volumeTexture);
+                rend->updateSettingsFromVolumeTexture(volumeTexture);
+                rend->setupData(_idep);
             }
             else
             {
