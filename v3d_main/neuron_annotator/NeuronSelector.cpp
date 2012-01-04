@@ -348,11 +348,11 @@ QList<ImageMarker> NeuronSelector::highlightIndexNeuron()
 
                         //
                         V3DLONG xb = i-NB; if(xb<0) xb = 0;
-                        V3DLONG xe = i+NB; if(xe>sx) xe = sx-1;
+                        V3DLONG xe = i+NB; if(xe>=sx) xe = sx-1;
                         V3DLONG yb = j-NB; if(yb<0) yb = 0;
-                        V3DLONG ye = j+NB; if(ye>sy) ye = sy-1;
+                        V3DLONG ye = j+NB; if(ye>=sy) ye = sy-1;
                         V3DLONG zb = k-NB; if(zb<0) zb = 0;
-                        V3DLONG ze = k+NB; if(ze>sz) ze = sz-1;
+                        V3DLONG ze = k+NB; if(ze>=sz) ze = sz-1;
 
                         for(V3DLONG kk=zb; kk<=ze; kk++)
                         {
