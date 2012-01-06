@@ -1436,21 +1436,24 @@ bool stitch_paired_images_with_refchan(Image4DSimple &p4DImage1, V3DLONG ref1, I
                     V3DLONG ii = i - i_start + offset_tx;
                     if(ii>=szImg[0]) break;
 
+                    V3DLONG idx = offset_j + i;
+                    V3DLONG idx_t = offset_j_t + ii;
+
                     if(datatype_img == V3D_UINT8)
                     {
-                        pTemImg[offset_j_t + ii] = p1dImg1[offset_j + i];
+                        pTemImg[idx] = p1dImg1[idx_t];
                     }
                     else if(datatype_img == V3D_UINT16)
                     {
                         unsigned short *p = (unsigned short *)pTemImg;
 
-                        p[offset_j_t + ii] = ((unsigned short*)p1dImg1)[offset_j + i];
+                        p[idx] = ((unsigned short*)p1dImg1)[idx_t];
                     }
                     else if(datatype_img == V3D_FLOAT32)
                     {
                         float *p = (float *)pTemImg;
 
-                        p[offset_j_t + ii] = ((float*)p1dImg1)[offset_j + i];
+                        p[idx] = ((float*)p1dImg1)[idx_t];
                     }
                     else
                     {
