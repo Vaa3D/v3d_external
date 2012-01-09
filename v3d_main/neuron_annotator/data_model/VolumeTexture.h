@@ -9,8 +9,10 @@
 #ifdef __APPLE__
 #include "OpenGL/gl.h"
 #else
-#include "GL/gl.h"
+//#include "GL/gl.h"
+#include "../../3drenderer/GLee_r.h"
 #endif
+
 #include <QObject>
 #include <vector>
 
