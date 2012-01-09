@@ -13,8 +13,9 @@
 #include "../data_model/NeuronSelectionModel.h"
 #include "NeuronContextMenu.h"
 #include "DynamicRangeTool.h"
+#include "../NeuronSelector.h"
 
-class NeuronSelector;
+// class NeuronSelector;
 
 class NutateThread : public QThread
 {
@@ -155,7 +156,7 @@ private:
     QList<GalleryButton*> neuronGalleryButtonList;
     CameraModel sharedCameraModel; // optional camera sharing
     NutateThread *nutateThread;
-    NeuronSelector* neuronSelector;
+    NeuronSelector neuronSelector;
     QLabel * statusProgressMessage;
     QProgressBar * statusProgressBar;
     enum { MaxRecentFiles = 10 }; // clever trick to get constant in header and also use it

@@ -6,6 +6,7 @@
 #include "../geometry/Vector3D.h"
 #include "../data_model/NaVolumeData.h"
 #include "../data_model/VolumeTexture.h"
+#include "../data_model/Dimension.h"
 
 class RendererNeuronAnnotator : public QObject, public Renderer_gl2
 {
@@ -35,29 +36,20 @@ public:
     virtual void cleanVol();
     virtual void loadShader();
     virtual void equAlphaBlendingProjection();
+    virtual void drawBackFillVolCube() {}
     void setDepthClip(float totalDepthInGlUnits);
     // Renderer_gl1::selectPosition(x,y) is not virtual, so I renamed
     // this reimplementation to screenPositionToVolumePosition(QPoint)
     virtual XYZ screenPositionToVolumePosition(const QPoint& screenPos);
-    // bool populateNeuronMaskAndReference(NaVolumeData::Reader& volumeReader);
-    // void rebuildFromBaseTextures(const QList<int>& maskIndexList, QList<RGBA8*>& overlayList);
-    // void updateCurrentTextureMask(int maskIndex, int state);
-    // bool initializeTextureMasks();
-    // void setMasklessSetupStackTexture(bool state) { masklessSetupStackTexture=state; }
     // useful value for computing zoom level
     float getZoomedPerspectiveViewAngle() const {return viewAngle * zoomRatio;}
     void setInternalZoomRatio(float z) {zoomRatio = z;}
     float glUnitsPerImageVoxel() const;
-    // RGBA8* getOverlayTextureByAnnotationIndex(int index);
-    // const RGBA8* getTexture3DCurrent() const;
     bool hasBadMarkerViewMatrix() const;
     void clearLandmarks();
     void setLandmarks(const QList<ImageMarker>& landmarks);
-    void updateSettingsFromVolumeTexture(const vaa3d::VolumeTexture& volumeTexture);
-    void setVolumeTexture(const vaa3d::VolumeTexture& v) {volumeTexture = &v;}
-    void setNeuronLabelTexture(const vaa3d::NeuronLabelTexture& t) {neuronLabelTexture = &t;}
-    void setNeuronVisibilityTexture(const vaa3d::NeuronVisibilityTexture& t) {neuronVisibilityTexture = &t;}
-
+    void updateSettingsFromVolumeTexture(
+            const jfrc::VolumeTexture::Reader& textureReader);
     // expose sampleScale[XYZ], thickness[XYZ]
     using Renderer_gl2::sampleScaleX;
     using Renderer_gl2::sampleScaleY;
@@ -88,12 +80,7 @@ protected:
                     double ds, int slice0, int slice1, int thickness,
                     GLuint tex3D, GLuint texs[], int stack_i,
                     float direction, int section, bool t3d, bool stream);
-    void load3DTextureSet(RGBA8* tex3DBuf);
-    // RGBA8* extendTextureFromMaskList(const QList<RGBA8*> & sourceTextures, const QList<int> & maskIndexList);
-    // void cleanExtendedTextures();
-    // bool populateBaseTextures();
     void paint_corner_axes();
-
     // We want all of these OFF for now to keep the texture handling constant across different hardware environments
     virtual bool supported_TexStream() {return false;}
     virtual void setupTexStreamBuffer() {tex_stream_buffer = false;}
@@ -105,21 +92,6 @@ protected:
     Stereo3DMode stereo3DMode;
     bool bStereoSwapEyes;
     bool bShowCornerAxes;
-
-private:
-    /*
-    unsigned char* neuronMask; // sized to texture buffer dimensions realX,Y,Z
-    RGBA8* texture3DSignal;
-    RGBA8* texture3DReference;
-    RGBA8* texture3DBackground;
-    RGBA8* texture3DBlank;
-    RGBA8* texture3DCurrent;
-    bool textureSetAlreadyLoaded;
-    bool masklessSetupStackTexture;
-    */
-    const vaa3d::VolumeTexture* volumeTexture;
-    const vaa3d::NeuronLabelTexture* neuronLabelTexture;
-    const vaa3d::NeuronVisibilityTexture* neuronVisibilityTexture;
 };
 
 #endif // RENDERERNEURONANNOTATOR_H

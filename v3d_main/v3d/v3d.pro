@@ -102,6 +102,7 @@ RESOURCES += ../neuron_annotator/resources.qrc
 
 # Input
 HEADERS += \
+    ../neuron_annotator/data_model/Dimension.h \
     ../neuron_annotator/data_model/NaLockableData.h \
     ../neuron_annotator/data_model/NaVolumeData.h \
     ../neuron_annotator/data_model/MipFragmentData.h \
@@ -117,6 +118,7 @@ HEADERS += \
     ../neuron_annotator/data_model/NeuronFragmentData.h \
     ../neuron_annotator/data_model/PrivateNeuronFragmentData.h \
     ../neuron_annotator/data_model/VolumeTexture.h \
+    ../neuron_annotator/data_model/PrivateVolumeTexture.h \
     ../neuron_annotator/entity_model/EntityData.h \
     ../neuron_annotator/entity_model/Entity.h \
     ../neuron_annotator/entity_model/Ontology.h \
@@ -200,6 +202,7 @@ SOURCES += \
     ../neuron_annotator/DataFlowModel.cpp \
     ../neuron_annotator/utility/NeuronMaskEntry.cpp \
     ../neuron_annotator/MultiColorImageStackNode.cpp \
+    ../neuron_annotator/data_model/Dimension.cpp \
     ../neuron_annotator/data_model/NaLockableData.cpp \
     ../neuron_annotator/data_model/NaVolumeData.cpp \
     ../neuron_annotator/data_model/MipFragmentData.cpp \
@@ -215,6 +218,7 @@ SOURCES += \
     ../neuron_annotator/data_model/NeuronFragmentData.cpp \
     ../neuron_annotator/data_model/PrivateNeuronFragmentData.cpp \
     ../neuron_annotator/data_model/VolumeTexture.cpp \
+    ../neuron_annotator/data_model/PrivateVolumeTexture.cpp \
     ../neuron_annotator/entity_model/EntityData.cpp \
     ../neuron_annotator/entity_model/Entity.cpp \
     ../neuron_annotator/entity_model/Ontology.cpp \

@@ -59,9 +59,23 @@ Na3DWidget::Na3DWidget(QWidget* parent)
     connect(&mouseClickManager, SIGNAL(possibleSingleClickAlert()),
             this, SLOT(onPossibleSingleClickAlert()));
     connect(&mouseClickManager, SIGNAL(notSingleClick()),
-            this, SLOT(onNotSingleClick()));    
-    connect(&neuronVisibilityTexture, SIGNAL(textureChanged()),
-            this, SLOT(update()));
+            this, SLOT(onNotSingleClick()));
+    connect(&volumeTexture, SIGNAL(volumeTexturesChanged()),
+          this, SLOT(onVolumeTextureDataChanged()));
+    // Promote progress from VolumeTexture to 3D viewer
+    connect(&volumeTexture, SIGNAL(progressValueChanged(int)),
+            this, SIGNAL(progressValueChanged(int)));
+    connect(&volumeTexture, SIGNAL(progressAborted(QString)),
+            this, SIGNAL(progressAborted(QString)));
+    connect(&volumeTexture, SIGNAL(progressMessageChanged(QString)),
+            this, SIGNAL(progressMessageChanged(QString)));
+    // but not progressComplete()?
+    connect(&volumeTexture, SIGNAL(neuronVisibilityTextureChanged()),
+            this, SLOT(uploadNeuronVisibilityTextureGL()));
+    connect(&volumeTexture, SIGNAL(colorMapTextureChanged()),
+            this, SLOT(uploadColorMapTextureGL()));
+    // connect(&volumeTexture, SIGNAL(volumeTexturesChanged()),
+    //         this, SLOT(uploadVolumeTexturesGL()));
 }
 
 Na3DWidget::~Na3DWidget()
@@ -74,8 +88,50 @@ Na3DWidget::~Na3DWidget()
 void Na3DWidget::initializeGL()
 {
     V3dR_GLWidget::initializeGL();
-    neuronVisibilityTexture.initializeGL();
-    volumeTexture.neuronLabelTexture.initializeGL();
+    volumeTexture.initializeGL();
+}
+
+// VolumeTexture methods that must be run in the main/OpenGL thread are implemented in
+// Na3DViewer slots
+
+/* slot */
+void Na3DWidget::uploadNeuronVisibilityTextureGL()
+{
+    {
+        jfrc::VolumeTexture::Reader textureReader(volumeTexture);
+        if (volumeTexture.readerIsStale(textureReader)) return;
+        if (! textureReader.uploadNeuronVisibilityTextureToVideoCardGL())
+            return;
+    } // Release locks
+    update();
+}
+
+/* slot */
+bool Na3DWidget::uploadVolumeTexturesGL()
+{
+    bool bSucceeded = true;
+    {
+        jfrc::VolumeTexture::Reader textureReader(volumeTexture);
+        if (volumeTexture.readerIsStale(textureReader)) bSucceeded = false;
+        makeCurrent();
+        if (bSucceeded && (! textureReader.uploadVolumeTexturesToVideoCardGL())) {
+            bSucceeded = false;
+        }
+    } // Release locks
+    return bSucceeded;
+}
+
+/* slot */
+// TODO - refactor colormap response into this method
+void Na3DWidget::uploadColorMapTextureGL()
+{
+    {
+        jfrc::VolumeTexture::Reader textureReader(volumeTexture);
+        if (volumeTexture.readerIsStale(textureReader)) return;
+        if (! textureReader.uploadColorMapTextureToVideoCardGL())
+            return;
+    } // Release locks
+    update();
 }
 
 /* virtual */
@@ -83,10 +139,13 @@ void Na3DWidget::settingRenderer() // before renderer->setupData & init
 {
     // qDebug() << "Na3DWidget::settingRenderer()" << __FILE__ << __LINE__;
     RendererNeuronAnnotator* rend = getRendererNa();
-    rend->setNeuronLabelTexture(volumeTexture.neuronLabelTexture);
-    rend->setNeuronVisibilityTexture(neuronVisibilityTexture);
-    rend->setVolumeTexture(volumeTexture);
-    rend->loadShader(); // Actually use those fancy textures
+    {
+        rend->loadShader(); // Actually use those fancy textures
+        // This is the moment when textures should be uploaded
+        uploadVolumeTexturesGL();
+        uploadNeuronVisibilityTextureGL();
+        uploadColorMapTextureGL();
+    }
 }
 
 void Na3DWidget::setStereoOff(bool b)
@@ -174,20 +233,39 @@ void Na3DWidget::updateImageData()
     makeCurrent();
     renderer->setupData(this->_idep);
     if (renderer->hasError()) {
-        emit progressComplete(); // TODO - not strong enough
+        emit progressAborted("Renderer error");
         return;
     }
-    renderer->getLimitedDataSize(_data_size); //for update slider size
     emit progressValueChanged(70);
     QCoreApplication::processEvents();
     makeCurrent();
     renderer->reinitializeVol(renderer->class_version()); //100720
     if (renderer->hasError()) {
-        emit progressComplete(); // TODO - not strong enough
+        emit progressAborted("Renderer error");
         return;
     }
-    emit progressValueChanged(100);
-    emit progressComplete();
+    RendererNeuronAnnotator* ra = getRendererNa();
+    if (!ra) {
+        emit progressAborted("No RendererNeuronAnnotator object");
+        return;
+    }
+    bool bSuccess = true; // convoluted logic to avoid emitting before lock is release
+    {
+        jfrc::VolumeTexture::Reader textureReader(volumeTexture); // acquire lock
+        if (volumeTexture.readerIsStale(textureReader))
+            bSuccess = false;
+        else {
+            ra->updateSettingsFromVolumeTexture(textureReader);
+            renderer->getLimitedDataSize(_data_size); //for update slider size
+        }
+    } // release lock
+    if (! bSuccess) {
+        emit progressAborted("Reading texture sizes failed");
+    }
+    else {
+        emit progressValueChanged(100);
+        emit progressComplete();
+    }
     // when initialize done, update status of control widgets
     //SEND_EVENT(this, QEvent::Type(QEvent_InitControlValue)); // use event instead of signal
     emit signalVolumeCutRange(); //100809
@@ -591,14 +669,16 @@ int Na3DWidget::neuronAt(QPoint pos)
 
 void Na3DWidget::highlightNeuronAtPosition(QPoint pos)
 {
-    // qDebug() << "Na3DWidget::highlightNeuronAtPosition" << __FILE__ << __LINE__;
+    qDebug() << "Na3DWidget::highlightNeuronAtPosition" << pos << __FILE__ << __LINE__;
     if (!getRendererNa()) return;
     // avoid crash w/ NaN markerViewMatrix
     if (getRendererNa()->hasBadMarkerViewMatrix()) {
         return;
     }
     // qDebug()<<"left click ... ...";
+
     XYZ loc = getRendererNa()->screenPositionToVolumePosition(pos);
+
     // select neuron: set x, y, z and emit signal
     // qDebug()<<"emit a signal ...";
     emit neuronSelected(loc.x, loc.y, loc.z);
@@ -771,7 +851,7 @@ void Na3DWidget::updateIncrementalColors()
         }
 
         // Populate clever opengl color map texture
-        for (int rgb = 0; rgb < 4; ++rgb) // loop red, then green, then blue
+        for (int rgb = 0; rgb < 4; ++rgb) // loop red, then green, then blue, then reference
         {
             // qDebug() << "color" << rgb;
             QRgb channelColor = colorReader.getChannelColor(rgb);
@@ -943,16 +1023,7 @@ void Na3DWidget::setDataFlowModel(const DataFlowModel& dataFlowModelParam)
 
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(selectionChanged()),
             this, SLOT(onNeuronSelectionChanged()));
-    neuronVisibilityTexture.setNeuronSelectionModel(dataFlowModel->getNeuronSelectionModel());
-    neuronVisibilityTexture.update();
-
-    connect(&dataFlowModelParam.getNeuronSelectionModel(), SIGNAL(initialized()),
-          this, SLOT(onVolumeDataChanged()));
-    // TODO - resurrect toggling
-    // connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(multipleVisibilityChanged()),
-    //         this, SLOT(updateFullVolume()));
-    // connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(overlayVisibilityChanged(int,bool)),
-    //         this, SLOT(updateFullVolume()));
+    volumeTexture.setDataFlowModel(dataFlowModelParam);
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(neuronVisibilityChanged(int,bool)),
             this, SLOT(toggleNeuronDisplay(int,bool)));
     // Fast-but-approximate color update
@@ -1022,7 +1093,8 @@ void Na3DWidget::onNeuronSelectionChanged() { // highlight selected neurons
     }
 }
 
-void Na3DWidget::onVolumeDataChanged()
+// Refactor to respond to changes in VolumeTexture, not to NaVolumeData
+void Na3DWidget::onVolumeTextureDataChanged()
 {
     // qDebug() << "Na3DWidget::onVolumeDataChanged()" << __FILE__ << __LINE__;
     // Remember whether alpha blending was on before calling init_members();
@@ -1036,6 +1108,8 @@ void Na3DWidget::onVolumeDataChanged()
 
     RendererNeuronAnnotator* rend = NULL;
     bool bSucceeded = true;
+    emit progressMessageChanged("Copying textures to video card");
+    emit progressValueChanged(15);
     {
         NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
         if (! volumeReader.hasReadLock()) return;
@@ -1049,41 +1123,28 @@ void Na3DWidget::onVolumeDataChanged()
             renderer = NULL;
         }
         choiceRenderer();
+        uploadVolumeTexturesGL();
         settingRenderer();
 
         rend = getRendererNa();
-        DataColorModel::Reader colorReader(dataFlowModel->getDataColorModel());
-        if (! dataFlowModel->getDataColorModel().readerIsStale(colorReader))  {
-            makeCurrent();
-            if (volumeTexture.populateVolume(volumeReader, colorReader) )
-            {
-                // succeeded
-                rend->setVolumeTexture(volumeTexture);
-                rend->updateSettingsFromVolumeTexture(volumeTexture);
-                rend->setupData(_idep);
-            }
-            else
-            {
-                qDebug() << "Error: volumeTexture.populateVolume() failed" << __FILE__ << __LINE__;
-                bSucceeded = false;
-            }
-        }
-        else {
-            qDebug() << "Color reader not available" << __FILE__ << __LINE__;
+        jfrc::VolumeTexture::Reader textureReader(volumeTexture);
+        if (volumeTexture.readerIsStale(textureReader))
+        {
+            qDebug() << "Error: volumeTexture.populateVolume() failed" << __FILE__ << __LINE__;
             bSucceeded = false;
+        }
+        else
+        {
+            // succeeded
+            makeCurrent();
+            rend->setupData(_idep);
+            rend->updateSettingsFromVolumeTexture(textureReader);
         }
         updateImageData();
 
         updateDefaultScale();
         resetView();
         updateCursor();
-        
-        /*
-        if (! getRendererNa()->populateNeuronMaskAndReference(volumeReader)) {
-            qDebug() << "RendererNeuronAnnotator::populateNeuronMaskAndReference() failed";
-            bSucceeded = false;
-        }
-        */
 
     } // release locks before emit
     if (! bSucceeded)
@@ -1091,24 +1152,15 @@ void Na3DWidget::onVolumeDataChanged()
         emit progressAborted("");
         return;
     }
-    makeCurrent(); // Make sure subsequent OpenGL calls go here. (might make no difference here)
     if (rend != getRendererNa()) {
         emit progressAborted("");
         return; // stale
     }
     emit progressComplete();
-
-    
-    /* 
-    if (! getRendererNa()->initializeTextureMasks()) {
-        qDebug() << "RendererNeuronAnnotator::initializeTextureMasks() failed";
-        emit progressAborted("");
-        return;
-    }
-     */
     
     resetVolumeBoundary();
     setThickness(dataFlowModel->getZRatio());
+    updateIncrementalColors(); // Otherwise reference channel might be garbled
 
     bVolumeInitialized = true;
 
@@ -1130,81 +1182,6 @@ void Na3DWidget::resetVolumeBoundary()
         renderer->setZCut0(0); renderer->setZCut1(imgProxy.sz - 1);
     }
 }
-
-/*
-void Na3DWidget::updateFullVolume()
-{
-    // qDebug() << "Na3DWidget::updateFullVolume()" << __FILE__ << __LINE__;
-    bVolumeInitialized = false;
-
-    // Coalesce queued calls to updateFullVolume
-    SlotMerger updateFullMerger(updateFullVolumeStatus);
-    if (! updateFullMerger.shouldRun())
-        return; // first call is already running
-
-    // hack to avoid double update on image load
-    if (bVolumeInitialized)
-    {
-        qDebug() << "Skipping extra volume update because volume was just initialized";
-        return;
-    }
-
-    emit progressValueChanged(5);
-    emit progressMessageChanged(QString("Updating all textures"));
-    if (tryUpdateFullVolume())
-        emit progressComplete();
-    else {
-        emit progressAborted("");
-        return;
-    }
-    getRendererNa()->paint();
-    update();
-}
- */
-
-/*
-bool Na3DWidget::tryUpdateFullVolume()
-{
-    RendererNeuronAnnotator* ra = getRendererNa(); // Prepare to abort if renderer pointer gets stale later
-    if (! getRendererNa()) return false;
-    if (! dataFlowModel) return false;
-    {
-        // TODO - refresh these read locks frequently!
-        NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
-        if (! volumeReader.hasReadLock()) return false;
-        NeuronSelectionModel::Reader selectionReader(dataFlowModel->getNeuronSelectionModel());
-        if (! selectionReader.hasReadLock()) return false;
-
-        // Change requiring full reload of texture image stacks
-        QList<int> tempList;
-        for (int i=0;i<selectionReader.getMaskStatusList().size();i++) {
-            if (selectionReader.neuronMaskIsChecked(i)) {
-                tempList.append(i);
-            }
-        }
-        QList<RGBA8*> overlayList;
-        const QList<bool> overlayStatusList=selectionReader.getOverlayStatusList();
-        for (int i=0;i<overlayStatusList.size();i++) {
-            if (overlayStatusList.at(i)) {
-                // renderer can get out of sync...
-                RGBA8* texture = getRendererNa()->getOverlayTextureByAnnotationIndex(i);
-                if (! texture) return false; // something not initialized
-                overlayList.append(texture);
-            }
-        }
-        QCoreApplication::processEvents(); // let gui catch up
-        if (ra != getRendererNa()) return false; // renderer changed during processEvents
-        // make sure readers are OK
-        if (! volumeReader.refreshLock()) return false;
-        if (! selectionReader.refreshLock()) return false;
-        makeCurrent();
-        getRendererNa()->rebuildFromBaseTextures(tempList, overlayList);
-    } // release locks
-    if (ra != getRendererNa()) return false;
-    return true;
-}
- */
-
 
 bool Na3DWidget::screenShot(QString filename)
 {

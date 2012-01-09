@@ -2475,3 +2475,7 @@ v3d_main/neuron_annotator/tests/test_load_chk4.cpp
 v3d_main/neuron_annotator/tests/CMakeLists.txt
 v3d_main/neuron_annotator/data_model/VolumeTexture.h
 v3d_main/neuron_annotator/data_model/VolumeTexture.cpp
+v3d_main/neuron_annotator/data_model/PrivateVolumeTexture.h
+v3d_main/neuron_annotator/data_model/PrivateVolumeTexture.cpp
+v3d_main/neuron_annotator/data_model/Dimension.h
+v3d_main/neuron_annotator/data_model/Dimension.cpp

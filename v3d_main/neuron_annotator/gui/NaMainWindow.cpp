@@ -70,12 +70,13 @@ NaMainWindow::NaMainWindow()
     , statusProgressBar(NULL)
     , recentViewer(VIEWER_3D)
     , dynamicRangeTool(NULL)
+    , neuronSelector(this)
 {
     ui.setupUi(this);
 
     dataFlowModel=0;
     // TODO - neuronSelector should probably be a member of Na3DViewer, not of NaMainWindow
-    neuronSelector = new NeuronSelector(this);
+    // neuronSelector = new NeuronSelector(this);
 
     // Create stubs for recent file menu
     for (int i = 0; i < MaxRecentFiles; ++i) {
@@ -291,6 +292,16 @@ NaMainWindow::NaMainWindow()
     ui.annotationFrame->setMainWindow(this);
     ui.centralwidget->installEventFilter(ui.annotationFrame);
     ui.annotationFrame->consoleConnect(3);
+
+    // NeuronSelector helper class for selecting neurons
+    connect(&neuronSelector, SIGNAL(neuronSelected(int)),
+            ui.annotationFrame, SLOT(selectNeuron(int)));
+    connect(ui.v3dr_glwidget, SIGNAL(neuronSelected(double,double,double)),
+            &neuronSelector, SLOT(updateSelectedPosition(double,double,double)));
+    connect(&neuronSelector, SIGNAL(landmarksClearNeeded()),
+            ui.v3dr_glwidget, SLOT(clearLandmarks()));
+    connect(&neuronSelector, SIGNAL(landmarksUpdateNeeded(QList<ImageMarker>)),
+            ui.v3dr_glwidget, SLOT(setLandmarks(QList<ImageMarker>)));
 
     connect(ui.actionDynamic_range, SIGNAL(triggered(bool)),
             this, SLOT(showDynamicRangeTool()));
@@ -896,7 +907,7 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     ui.naLargeMIPWidget->setDataFlowModel(*dataFlowModel);
     ui.naZStackWidget->setDataFlowModel(*dataFlowModel);
     ui.fragmentGalleryWidget->setDataFlowModel(*dataFlowModel);
-    neuronSelector->setDataFlowModel(*dataFlowModel);
+    neuronSelector.setDataFlowModel(*dataFlowModel);
     connectContextMenus(dataFlowModel->getNeuronSelectionModel());
     if (dynamicRangeTool)
         dynamicRangeTool->setColorModel(dataFlowModel->getDataColorModel());
@@ -947,8 +958,10 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
             &dataFlowModel->getDataColorModel(), SLOT(setChannelHdrRange(int,qreal,qreal)));
 
     // Connect annotation widget to neuron selection
-    connect(neuronSelector, SIGNAL(neuronSelected(int)),
-            ui.annotationFrame, SLOT(selectNeuron(int)));
+    // But NOT every time a new image is loaded!
+    // connect(neuronSelector, SIGNAL(neuronSelected(int)),
+    //         ui.annotationFrame, SLOT(selectNeuron(int)));
+
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(selectionCleared()),
             ui.annotationFrame, SLOT(deselectNeurons()));
     connect(ui.annotationFrame, SIGNAL(neuronSelected(int)),
@@ -1066,12 +1079,6 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
         ui.ZcmaxSlider->setRange(0, imgProxy.sz-1);
         ui.ZcmaxSlider->setValue(imgProxy.sz-1);
     } // release lock
-
-    connect(ui.v3dr_glwidget, SIGNAL(neuronSelected(double,double,double)), neuronSelector, SLOT(updateSelectedPosition(double,double,double)));
-    connect(neuronSelector, SIGNAL(landmarksClearNeeded()),
-            ui.v3dr_glwidget, SLOT(clearLandmarks()));
-    connect(neuronSelector, SIGNAL(landmarksUpdateNeeded(QList<ImageMarker>)),
-            ui.v3dr_glwidget, SLOT(setLandmarks(QList<ImageMarker>)));
 
     // show selected neuron
     connect(ui.v3dr_glwidget, SIGNAL(neuronShown(const QList<int>)),

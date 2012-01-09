@@ -21,6 +21,7 @@ signals:
     void progressMessageChanged(QString msg);
     void progressValueChanged(int); // on a scale of 0-100
     void progressAborted(QString msg); // data update was stopped for some reason
+    void progressComplete();
 
 public slots:
     virtual void update() {} // recreate everything from upstream data

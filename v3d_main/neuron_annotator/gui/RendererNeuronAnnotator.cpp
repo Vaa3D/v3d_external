@@ -13,23 +13,8 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     , stereo3DMode(STEREO_OFF)
     , bStereoSwapEyes(false)
     , bShowCornerAxes(true)
-    , volumeTexture(NULL)
-    , neuronLabelTexture(NULL)
-    , neuronVisibilityTexture(NULL)
 {
     // qDebug() << "RendererNeuronAnnotator constructor" << this;
-    /*
-    neuronMask=0;
-    texture3DSignal=0;
-    texture3DBackground=0;
-    texture3DReference=0;
-    texture3DBlank=0;
-    texture3DCurrent=0;
-    textureSetAlreadyLoaded=false;
-    masklessSetupStackTexture=false;
-    */
-
-    // qDebug() << this << texture3DCurrent << texture3DSignal << texture3DBackground << texture3DReference << texture3DBlank;
 
     // black background for consistency with other viewers
     RGBA32f bg_color;
@@ -67,18 +52,7 @@ static void turn_off_specular()
 
 RendererNeuronAnnotator::~RendererNeuronAnnotator()
 {
-    // TODO - what about all those texture3Dwhatever?  When are those deleted?
-    // qDebug() << "RendererNeuronAnnotator destructor" << this;
-    /*
-    cleanExtendedTextures(); // might delete texture3DCurrent
-    if (neuronMask) {delete [] neuronMask; neuronMask = NULL;}
-    if (texture3DReference) {delete [] texture3DReference; texture3DReference = NULL;}
-    if (texture3DBlank) {delete [] texture3DBlank; texture3DBlank = NULL;}
-    if (texture3DBackground) {delete [] texture3DBackground; texture3DBackground = NULL;}
-     */
-    // NOTE that deleting texture3DSignal is handled by something else
-
-    // I manage the texture memory, not you.  So set to NULL before you get a chance to clear it.
+    // VolumeTexture manages the texture memory, not base class.  So set to NULL before it gets a chance to clear it.
     Xslice_data = Yslice_data = Zslice_data = NULL;
     Xtex_list = Ytex_list = Ztex_list = NULL;
 }
@@ -182,16 +156,6 @@ void RendererNeuronAnnotator::loadShader()
 
     glGenTextures(1, &texColormap);
     initColormap();
-
-    if (neuronLabelTexture)
-        neuronLabelTexture->uploadPixels();
-    else
-        qDebug() << "NeuronLabelTexture not set" << __FILE__ << __LINE__;
-
-    if (neuronVisibilityTexture)
-        neuronVisibilityTexture->uploadPixels();
-    else
-        qDebug() << "NeuronVisibilityTexture not set" << __FILE__ << __LINE__;
 }
 
 void RendererNeuronAnnotator::shaderTexBegin(bool stream)
@@ -240,13 +204,23 @@ void RendererNeuronAnnotator::shaderTexBegin(bool stream)
                                 &colormap[0][0]);
                 CHECK_GLError_print();
 
+                // TODO - does uploadPixels need to happen after shader->begin() like this?
+                /*
                 if (neuronVisibilityTexture && neuronVisibilityTexture->bNeedsUpload)
                 {
                     neuronVisibilityTexture->uploadPixels();
                 }
+                 */
+
+                glActiveTextureARB(GL_TEXTURE2_ARB); // neuron visibility
+                glEnable(GL_TEXTURE_1D);
+                glActiveTextureARB(GL_TEXTURE3_ARB); // neuron label
+                glEnable(GL_TEXTURE_3D);
+                glActiveTextureARB(GL_TEXTURE0_ARB);
 
                 // switch back to volume data texture
-                glActiveTextureARB(GL_TEXTURE0_ARB);
+                glActiveTextureARB(GL_TEXTURE0_ARB); // volume
+                glEnable(GL_TEXTURE_2D);
         }
 }
 
@@ -255,13 +229,13 @@ void RendererNeuronAnnotator::shaderTexEnd()
         if (tryVolShader && shader && !b_selecting)
         {
                 // off colormap
-                glActiveTextureARB(GL_TEXTURE0_ARB);
+                glActiveTextureARB(GL_TEXTURE0_ARB); // volume
                 glDisable(GL_TEXTURE_2D);
-                glActiveTextureARB(GL_TEXTURE1_ARB);
+                glActiveTextureARB(GL_TEXTURE1_ARB); // color map
                 glDisable(GL_TEXTURE_2D);
-                glActiveTextureARB(GL_TEXTURE2_ARB);
+                glActiveTextureARB(GL_TEXTURE2_ARB); // neuron visibility
                 glDisable(GL_TEXTURE_1D);
-                glActiveTextureARB(GL_TEXTURE3_ARB);
+                glActiveTextureARB(GL_TEXTURE3_ARB); // neuron label
                 glDisable(GL_TEXTURE_3D);
                 glActiveTextureARB(GL_TEXTURE0_ARB);
 
@@ -346,9 +320,6 @@ XYZ RendererNeuronAnnotator::screenPositionToVolumePosition(const QPoint& screen
         if (w)
         {
                 curImg = v3dr_getImage4d(_idep);
-
-//		chno = w->getNumKeyHolding()-1; // #channel info got from keyboard
-//		if (chno<0 || chno>dim4) chno = curChannel; // default channel set by user
         }
 
         double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
@@ -490,7 +461,7 @@ XYZ RendererNeuronAnnotator::screenPositionToVolumePosition(const QPoint& screen
 
             }
 
-            qDebug()<<"chno ..."<<chno<<"dim4 ..."<<dim4;
+            // qDebug()<<"chno ..."<<chno<<"dim4 ..."<<dim4;
 
         }
         qDebug()<<"0-based pos ... "<<selectloc.x<<selectloc.y<<selectloc.z;
@@ -507,7 +478,7 @@ void RendererNeuronAnnotator::loadVol()
     qDebug("  Renderer_gl1::loadVol");
     makeCurrent(); //ensure right context when multiple views animation or mouse drop, 081105
 
-    if (! volumeTexture || bufSize[3]<1 ) return; // no image data, 081002
+    if ( bufSize[3]<1 ) return; // no image data, 081002
 
     ////////////////////////////////////////////////////////////////
     // set coordinate frame size
@@ -548,16 +519,6 @@ void RendererNeuronAnnotator::loadVol()
             tryTexStream = 0;		qDebug("		Turn off tryTexStream for time series");
     }
 
-//	// comment for easy test on small volume
-//	if (IS_FITTED_VOLUME(imageX,imageY,imageZ))
-//	{
-//		if (tryTexStream==1)
-//		{
-//			qDebug("	No need texture stream for small volume (fitted in %dx%dx%d)", LIMIT_VOLX,LIMIT_VOLY,LIMIT_VOLZ);
-//			tryTexStream = 0;  // no need stream, because volume can be fitted in video memory
-//		}
-//	}
-
     ////////////////////////////////////////////////////////////////
     // coordinate system
     //
@@ -589,27 +550,12 @@ void RendererNeuronAnnotator::loadVol()
 
         qDebug() << "Renderer_gl1::loadVol() - creating data structures for managing 2D texture slice set\n";
 
-            // Ztex_list = new GLuint[imageZ+1]; //+1 for pbo tex
-            // Ytex_list = new GLuint[imageY+1];
-            // Xtex_list = new GLuint[imageX+1];
-            // memset(Ztex_list, 0, sizeof(GLuint)*(imageZ+1));
-            // memset(Ytex_list, 0, sizeof(GLuint)*(imageY+1));
-            // memset(Xtex_list, 0, sizeof(GLuint)*(imageX+1));
-            // /glGenTextures(imageZ+1, Ztex_list);
-            // glGenTextures(imageY+1, Ytex_list);
-            // glGenTextures(imageX+1, Xtex_list);
 
             CHECK_GLErrorString_throw(); // can throw const char* exception, RZC 080925
 
             int X = _getBufFillSize(imageX);
             int Y = _getBufFillSize(imageY);
             int Z = _getBufFillSize(imageZ);
-            // Zslice_data = new RGBA8 [Y * X];//[Z][y][x] //base order
-            // Yslice_data = new RGBA8 [Z * X];//[Y][z][x]
-            // Xslice_data = new RGBA8 [Z * Y];//[X][z][y]
-            // memset(Zslice_data, 0, sizeof(RGBA8)* (Y * X));
-            // memset(Yslice_data, 0, sizeof(RGBA8)* (Z * X));
-            // memset(Xslice_data, 0, sizeof(RGBA8)* (Z * Y));
 
             // optimized copy slice data in setupStackTexture, by RZC 2008-10-04
     }
@@ -645,271 +591,90 @@ void RendererNeuronAnnotator::loadVol()
     //091013
     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
     if (w)  w->updateControl();
-
-    if (volumeTexture)
-        updateSettingsFromVolumeTexture(*volumeTexture);
 }
-
-// This function resamples the original mask to the same dimensions
-// as the texture buffer. It returns false if the source image is smaller
-// than the target buffer because this isn't implemented.
-
-/*
-bool RendererNeuronAnnotator::populateNeuronMaskAndReference(NaVolumeData::Reader& volumeReader)
-{
-    QTime stopwatch;
-    stopwatch.start();
-    if (! volumeReader.hasReadLock()) return false;
-    const Image4DProxy<My4DImage>& neuronProxy = volumeReader.getNeuronMaskProxy();
-    const Image4DProxy<My4DImage>& refProxy = volumeReader.getReferenceImageProxy();
-
-    // qDebug() << "Start RendererNeuronAnnotator::populateNeuronMask()";
-
-    // Clean previous data
-    if (neuronMask!=0) {
-        delete [] neuronMask;
-        neuronMask = NULL;
-    }
-
-    if (neuronProxy.sz == 0) {
-        qDebug() << "RendererNeuronAnnotator::populateNeuronMask() can't process empty my4Dmask";
-        return false;
-    }
-
-    int sourceX = neuronProxy.sx;
-    int sourceY = neuronProxy.sy;
-    int sourceZ = neuronProxy.sz;
-
-    float sx, sy, sz;
-    // V3DLONG dx, dy, dz;
-    sx = float(sourceX)/realX;
-    sy = float(sourceY)/realY;
-    sz = float(sourceZ)/realZ;
-
-    if (!(sx>=1.0 && sy>=1.0 && sz>=1.0)) {
-        qDebug() << "RendererNeuronAnnotator::populateNeuronMask() source image must be equal or larger dimension than texture with current implementation";
-        return false;
-    }
-
-    neuronMask=new unsigned char[realX*realY*realZ];
-
-    memset(neuronMask, 0, realX*realY*realZ);
-
-    V3DLONG ox, oy, oz;
-    V3DLONG ix, iy, iz;
-
-    if (texture3DReference!=0) {
-        delete [] texture3DReference;
-        texture3DReference = NULL;
-    }
-
-    texture3DReference=new RGBA8[realZ*realY*realX];
-
-    // Because we are mapping a mask, we do NOT want to 'sample' the data,
-    // but rather condense it without missing any of the mask elements. Therefore,
-    // we will iterate over the source mask, and then direct the contents to the
-    // equivalent target voxel.
-
-    // Note that the first mask entry is not overwritten by subsequent entries.
-
-    for (iz = 0; iz < sourceZ; iz++) {
-        for (iy = 0; iy < sourceY; iy++) {
-            for (ix = 0; ix < sourceX; ix++) {
-                ox = CLAMP(0,realX-1, IROUND(ix/sx));
-                oy = CLAMP(0,realY-1, IROUND(iy/sy));
-                oz = CLAMP(0,realZ-1, IROUND(iz/sz));
-
-                V3DLONG offset = oz*realX*realY + oy*realX + ox;
-                if (neuronMask[offset]==0) {
-                    neuronMask[offset] = neuronProxy.value_at(ix, iy, iz, 0);
-                }
-                RGBA8 referenceVoxel;
-                double referenceIntensity = refProxy.value_at(ix,iy,iz,0);
-                referenceVoxel.r=referenceIntensity;
-                referenceVoxel.g=referenceIntensity;
-                referenceVoxel.b=referenceIntensity;
-                referenceVoxel.a=255;
-                texture3DReference[offset] = referenceVoxel;
-            }
-        }
-        // Stay interactive by flushing event queue every 20 milliseconds.
-        if (stopwatch.elapsed() > 20) {
-            volumeReader.unlock();
-            emit progressMessageChanged("Populating neuron mask and reference");
-            emit progressValueChanged(int((100.0 * iz) / sourceZ));
-            QCoreApplication::processEvents();
-            if (! volumeReader.refreshLock()) {
-                emit progressAborted("");
-                return false; // volume is no longer available for reading
-            }
-            stopwatch.restart();
-        }
-    }
-
-    // qDebug() << "RendererNeuronAnnotator::populateNeuronMask() done";
-    // qDebug() << "RendererNeuronAnnotator::populateNeuronMaskAndReference() took" << stopwatch.elapsed() / 1000.0 << "seconds";
-
-    return true;
-}
-
-
-bool RendererNeuronAnnotator::populateBaseTextures() {
-
-    // qDebug() << "RendererNeuronAnnotator::populateBaseTextures() start";
-
-    // Sanity check
-    if (texture3DSignal==0) {
-        qDebug() << "RendererNeuronAnnotator::populateBaseTextures() requires that texture3DSignal be pre-populated";
-        return false;
-    }
-
-    // Clean
-    if (texture3DBlank!=0) {
-        delete [] texture3DBlank;
-        texture3DBlank = NULL;
-    }
-    if (texture3DBackground!=0) {
-        delete [] texture3DBackground;
-        texture3DBackground = NULL;
-    }
-
-    try {
-        texture3DBlank=new RGBA8[realZ*realY*realX];
-        texture3DBackground=new RGBA8[realZ*realY*realX];
-    } catch (std::exception exc) {
-        qDebug() << "Ran out of memory in RendererNeuronAnnotator::populateBaseTextures()"
-                    << __FILE__ << __LINE__;
-        return false;
-    }
-
-    RGBA8 blankRgba;
-    blankRgba.r = 0;
-    blankRgba.g = 0;
-    blankRgba.b = 0;
-    blankRgba.a = 0;
-    int z,y,x;
-
-    for (z = 0; z < realZ; z++)
-            for (y = 0; y < realY; y++)
-                    for (x = 0; x < realX; x++)
-                    {
-                        V3DLONG index=z*realY*realX + y*realX + x;
-
-
-                        // Blank case
-                        texture3DBlank[index] = blankRgba;
-
-                        unsigned char maskValue=neuronMask[index];
-
-                        // Background case
-                        if (maskValue==0) {
-                            texture3DBackground[index] = texture3DSignal[index];
-                        } else {
-                            texture3DBackground[index] = blankRgba;
-                        }
-                    }
-
-    // qDebug() << "RendererNeuronAnnotator::populateBaseTextures() end";
-
-    return true;
-}
-*/
 
 // This is originally based on version from Renderer_gl1
 void RendererNeuronAnnotator::setupStackTexture(bool bfirst)
 {
-#ifdef NA_USE_VOLUME_TEXTURE_CMB
-    if (!volumeTexture) return;
-    updateSettingsFromVolumeTexture(*volumeTexture);
-#else
-    // qDebug() << "RendererNeuronAnnotator::setupStackTexture() - start";
-
-    if (masklessSetupStackTexture) {
-
-        Renderer_gl1::setupStackTexture(true);
-
-    } else {
-
-        /* _safeReference3DBuf does its own "delete"; this extra one causes a crash.
-        if (texture3DSignal!=0)
-            delete [] texture3DSignal;
-        */
-
-        texture3DSignal = _safeReference3DBuf(rgbaBuf, imageX, imageY, imageZ,  safeX, safeY, safeZ); //081008
-        realX = safeX;
-        realY = safeY;
-        realZ = safeZ;
-
-        fillX = _getTexFillSize(realX);
-        fillY = _getTexFillSize(realY);
-        fillZ = _getTexFillSize(realZ);
-
-        // qDebug("	texture:   real = %dx%dx%d   fill = %dx%dx%d",  realX, realY, realZ,  fillX, fillY, fillZ);
-    }
-
-    // qDebug() << "RendererNeuronAnnotator::setupStackTexture() - end";
-#endif
 }
 
-void RendererNeuronAnnotator::updateSettingsFromVolumeTexture(const vaa3d::VolumeTexture& volumeTexture)
+// Sets various size-related internal variables
+// Try to call this whenever setupData() is called
+void RendererNeuronAnnotator::updateSettingsFromVolumeTexture(
+        const jfrc::VolumeTexture::Reader& textureReader)
 {
-    realX = volumeTexture.usedTextureSize.x();
-    realY = volumeTexture.usedTextureSize.y();
-    realZ = volumeTexture.usedTextureSize.z();
+    // Set values as if empty volume
+    start1 = 0;
+    start2 = 0;
+    start3 = 0;
+    start4 = 0;
+    start5 = 0;
+    size1 = dim1 = 0;
+    size2 = dim2 = 0;
+    size3 = dim3 = 0;
+    size4 = dim4 = 0;
+    size5 = dim5 = 0;
+    sampleScaleX = sampleScaleY = sampleScaleZ = sampleScale[0] = sampleScale[1] = sampleScale[2] = sampleScale[3] = sampleScale[4] = 1.0;
+
+    // Set (subset of) values as if full size unresampled volume
+    size1 = dim1 = textureReader.originalImageSize().x();
+    size2 = dim2 = textureReader.originalImageSize().y();
+    size3 = dim3 = textureReader.originalImageSize().z();
+    size4 = dim4 = 4; // RGBA
+    size5 = dim5 = 1;
+    bufSize[0] = size1;
+    bufSize[1] = size2;
+    bufSize[2] = size3;
+    bufSize[3] = size4;
+    bufSize[4] = size5;
+    boundingBox.x0 = boundingBox.y0 = boundingBox.z0 = 0.0;
+    boundingBox.x1 = textureReader.originalImageSize().x();
+    boundingBox.y1 = textureReader.originalImageSize().y();
+    boundingBox.z1 = textureReader.originalImageSize().z();
+    VOL_X0 = VOL_Y0 = VOL_Z0 = 0;
+    VOL_X1 = VOL_Y1 = VOL_Z1 = 1;
+    dataViewProcBox = dataBox = BoundingBox(start1, start2, start3, start1+(size1-1), start2+(size2-1), start3+(size3-1));
+
+    // Set (subset of) values using resampled size
+    realX = textureReader.usedTextureSize().x();
+    realY = textureReader.usedTextureSize().y();
+    realZ = textureReader.usedTextureSize().z();
     safeX = realX; // necessary
     safeY = realY;
     safeZ = realZ;
+    imageX = textureReader.usedTextureSize().x();
+    imageY = textureReader.usedTextureSize().y();
+    imageZ = textureReader.usedTextureSize().z();
+    b_limitedsize = (textureReader.originalImageSize() != textureReader.usedTextureSize());
+    if (b_limitedsize)
+    {
+        bufSize[0] = textureReader.paddedTextureSize().x();
+        bufSize[1] = textureReader.paddedTextureSize().y();
+        bufSize[2] = textureReader.paddedTextureSize().z();
+        sampleScaleX = sampleScale[0] = (float)textureReader.usedTextureSize().x() / (float)textureReader.originalImageSize().x();
+        sampleScaleY = sampleScale[1] = (float)textureReader.usedTextureSize().y() / (float)textureReader.originalImageSize().y();
+        sampleScaleZ = sampleScale[2] = (float)textureReader.usedTextureSize().z() / (float)textureReader.originalImageSize().z();
+        // qDebug() << "  Down sampling to" << bufSize[0] << bufSize[1] << bufSize[2];
+    }
 
-    // imageX = volumeTexture.originalImageSize.x();
-    // imageY = volumeTexture.originalImageSize.y();
-    // imageZ = volumeTexture.originalImageSize.z();
-    imageX = volumeTexture.usedTextureSize.x();
-    imageY = volumeTexture.usedTextureSize.y();
-    imageZ = volumeTexture.usedTextureSize.z();
-    bufSize[0] = imageX;
-    bufSize[1] = imageY;
-    bufSize[2] = imageZ;
+    // Copy pointers to openGL texture ID lists
+    Xtex_list = const_cast<GLuint*>(textureReader.Xtex_list());
+    Ytex_list = const_cast<GLuint*>(textureReader.Ytex_list());
+    Ztex_list = const_cast<GLuint*>(textureReader.Ztex_list());
 
-    // sampleScaleX = sampleScaleY = sampleScaleZ = sampleScale[0] = sampleScale[1] = sampleScale[2] = 1.0;
-    sampleScaleX = sampleScale[0] = (float)volumeTexture.usedTextureSize.x() / (float)volumeTexture.originalImageSize.x();
-    sampleScaleY = sampleScale[1] = (float)volumeTexture.usedTextureSize.y() / (float)volumeTexture.originalImageSize.y();
-    sampleScaleZ = sampleScale[2] = (float)volumeTexture.usedTextureSize.z() / (float)volumeTexture.originalImageSize.z();
-
-    boundingBox.x0 = boundingBox.y0 = boundingBox.z0 = 0.0;
-    // boundingBox.x1 = volumeTexture.usedTextureSize.x();
-    // boundingBox.y1 = volumeTexture.usedTextureSize.y();
-    // boundingBox.z1 = volumeTexture.usedTextureSize.z();
-    boundingBox.x1 = volumeTexture.originalImageSize.x();
-    boundingBox.y1 = volumeTexture.originalImageSize.y();
-    boundingBox.z1 = volumeTexture.originalImageSize.z();
-
-    // TODO VOL_[XYZ][01]?
-    VOL_X0 = VOL_Y0 = VOL_Z0 = 0;
-    VOL_X1 = VOL_Y1 = VOL_Z1 = 1;
-
-    // HACK: Postpone propagating const correctness into legacy texture code...
-    Xslice_data = (RGBA8*)(volumeTexture.getDataPtr(vaa3d::VolumeTexture::Stack::X));
-    Yslice_data = (RGBA8*)(volumeTexture.getDataPtr(vaa3d::VolumeTexture::Stack::Y));
-    Zslice_data = (RGBA8*)(volumeTexture.getDataPtr(vaa3d::VolumeTexture::Stack::Z));
-    Xtex_list = (GLuint*)(volumeTexture.getTexIDPtr(vaa3d::VolumeTexture::Stack::X));
-    Ytex_list = (GLuint*)(volumeTexture.getTexIDPtr(vaa3d::VolumeTexture::Stack::Y));
-    Ztex_list = (GLuint*)(volumeTexture.getTexIDPtr(vaa3d::VolumeTexture::Stack::Z));
-
-    image_format = GL_BGRA;
-    image_type = GL_UNSIGNED_INT_8_8_8_8_REV;
-    tryTexCompress = false;
+    // TODO - implement local subvolume
 }
 
 /* virtual */
 int RendererNeuronAnnotator::_getBufFillSize(int w)
 {
-    return vaa3d::Dimension::padToMultipleOf(w, 8);
+    return jfrc::Dimension::padToMultipleOf(w, 8);
 }
 
 /* virtual */
 int RendererNeuronAnnotator::_getTexFillSize(int w)
 {
-    return vaa3d::Dimension::padToMultipleOf(w, 8);
+    return jfrc::Dimension::padToMultipleOf(w, 8);
 }
 
 /* virtual */
@@ -1037,499 +802,6 @@ void RendererNeuronAnnotator::_drawStack( double ts, double th, double tw,
         }
         if (b_stream) _streamTex_end();
 }
-
-/*
-bool RendererNeuronAnnotator::initializeTextureMasks() {
-
-    if (!populateBaseTextures()) {
-        return false;
-    }
-
-    QList<int> initialMaskList;
-    for (int i=0;i<256;i++) {
-        initialMaskList.append(i);
-    }
-
-    emit progressMessageChanged(QString("Setting up textures"));
-
-    QList<RGBA8*> initialOverlayList;
-    initialOverlayList.append(texture3DBackground);
-    rebuildFromBaseTextures(initialMaskList, initialOverlayList);
-
-    return true;
-}
-
-
-// This function assumes the size realX,Y,Z should be used
-void RendererNeuronAnnotator::load3DTextureSet(RGBA8* tex3DBuf)
-{
-    // On subsequent load, some parameters might not be set yet.
-    if (! (realX && realY && realZ && imageX && imageY && imageZ) ) return;
-
-    // makeCurrent();
-    int sliceCount=0;
-    QTime stopwatch;
-    stopwatch.start();
-
-    for (int stack_i = 1; stack_i <= 3; ++stack_i)
-    {
-        // qDebug() << "RendererNeuronAnnotator::load3DTextureSet()" << stack_i << __FILE__ << __LINE__;
-
-            int n_slice = 0;
-            RGBA8* p_slice = 0;
-            GLuint* p_tex = 0;
-            int w = 0, h =0;
-            int sw = 0, sh = 0;
-
-            switch (stack_i)
-            {
-            case 1: //Z[y][x]
-                    n_slice = realZ;
-                    p_slice = Zslice_data;
-                    p_tex = Ztex_list;
-                    w = fillX, h = fillY;
-                    sw = COPY_X, sh = COPY_Y;
-                    break;
-            case 2: //Y[z][x]
-                    n_slice = realY;
-                    p_slice = Yslice_data;
-                    p_tex = Ytex_list;
-                    w = fillX, h = fillZ;
-                    sw = COPY_X, sh = COPY_Z;
-                    break;
-            case 3: //X[z][y]
-                    n_slice = realX;
-                    p_slice = Xslice_data;
-                    p_tex = Xtex_list;
-                    w = fillY, h = fillZ;
-                    sw = COPY_Y, sh = COPY_Z;
-                    break;
-            }
-
-            // On Linux, glTexSubImage2D() silently fails if a dimension is not
-            // divisible by 4.
-#ifdef __linux__
-            if (textureSetAlreadyLoaded)
-            {
-                // Ensure subtexture sizes are divisible by 4 on linux
-                // TODO - this is a hack
-                // This approach can leave some wrong pixels at the edge of the volume.
-                // But its better than having all of the pixels wrong.
-                if ((sw%4)||(sh%4))
-                {
-                    // glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // this does not help
-                    // glPixelStorei(GL_PACK_ALIGNMENT, 1);  // this does not help
-                    sw = sw - (sw%4); // truncate texture update to multiple of 4
-                    sh = sh - (sh%4); // truncate texture update to multiple of 4
-                    qDebug() << "Applying hack to work around linux non-multiple-of-4 texture bug";
-                }
-            }
-#endif
-
-            MESSAGE_ASSERT(imageX>=realX && imageY>=realY && imageZ>=realZ);
-            MESSAGE_ASSERT(COPY_X>=realX && COPY_Y>=realY && COPY_Z>=realZ);
-//		sw+=1, sh+=1;  // to get rid of artifacts at sub-tex border // or use NPT tex
-//		if (sw>w) sw = w;
-//		if (sh>h) sh = h;
-
-            for (int i = 0; i < n_slice; i++)
-
-            {
-                // qDebug() << "   " << i;
-                    glBindTexture(GL_TEXTURE_2D, p_tex[i+1]); //[0] reserved for pbo tex
-                    RGBA8* p_first = NULL;
-
-                    if (!textureSetAlreadyLoaded)
-                    {
-                            p_first = p_slice;
-                            if (p_first) _copySliceFromStack(tex3DBuf, realX,realY,realZ,  p_first, w,  stack_i, i);
-
-                            setTexParam2D();
-                            glTexImage2D(GL_TEXTURE_2D, // target
-                                    0, // level
-                                    texture_format, // texture format
-                                    w, // width
-                                    h, // height
-                                    0, // border
-                                    image_format, // image format
-                                    image_type, // image type
-                                    p_first);
-                            CHECK_GLErrorString_throw(); // can throw const char* exception, RZC 080925
-                    }
-                    // Notice: compressed texture is corrupted with TexSubImage2D but TexSubImage3D !!!
-                    else
-                    {
-                        // qDebug() << "    textureSetAlreadyLoaded" << i << stopwatch.elapsed();
-                            _copySliceFromStack(tex3DBuf, realX,realY,realZ,  p_slice, sw,  stack_i, i);
-
-                            glTexSubImage2D(GL_TEXTURE_2D, // target
-                                    0, // level
-                                    0,0,  // offset
-                                    sw, // sub width
-                                    sh, // sub height
-                                    image_format, // image format
-                                    image_type, // image type
-                                    p_slice);
-                            CHECK_GLErrorString_throw(); // can throw const char* exception, RZC 080925
-                    }
-                    sliceCount++;
-                    int prog = sliceCount*100 / (realX + realY + realZ);
-                    // updateProgressDialog(dialog, prog);
-
-                    if (! (sliceCount % 20)) {
-                        emit progressValueChanged(prog);
-                        // processEvents() kludge as long as texture updates are in GUI thread
-                        // TODO Is ExcludeUserInputEvents really necessary here?
-                        QCoreApplication::processEvents(); //  QEventLoop::ExcludeUserInputEvents );
-                        makeCurrent();
-                    }
-            }
-
-    }//tex2D
-
-    if (!textureSetAlreadyLoaded) {
-        textureSetAlreadyLoaded=true;
-    }
-
-    emit progressComplete();
-}
-
-const RGBA8* RendererNeuronAnnotator::getTexture3DCurrent() const {
-    // qDebug() << "getTexture3DCurrent()";
-    // qDebug() << this << texture3DCurrent << texture3DSignal << texture3DBackground << texture3DReference << texture3DBlank;
-    // qDebug() << __FILE__ << __LINE__;
-    return texture3DCurrent;
-}
-
-void RendererNeuronAnnotator::cleanExtendedTextures() {
-    if (texture3DCurrent!=0 &&
-        texture3DCurrent!=texture3DSignal &&
-        texture3DCurrent!=texture3DBackground &&
-        texture3DCurrent!=texture3DReference &&
-        texture3DCurrent!=texture3DBlank)
-    {
-        // qDebug() << "RendererNeuronAnnotator::cleanExtendedTextures()";
-        // qDebug() << __FILE__ << __LINE__;
-        // qDebug() << this;
-        // qDebug() << this << texture3DCurrent << texture3DSignal << texture3DBackground << texture3DReference << texture3DBlank;
-        delete [] texture3DCurrent;
-        texture3DCurrent = NULL;
-    }
-}
-
-void RendererNeuronAnnotator::rebuildFromBaseTextures(const QList<int>& maskIndexList, QList<RGBA8*>& overlayList) {
-    cleanExtendedTextures();
-    if (overlayList.size()==1 && overlayList.at(0)==texture3DSignal) {
-        // Then we don't need to add masks since these are implicit
-        texture3DCurrent=texture3DSignal;
-    } else if (overlayList.size()==0) {
-        overlayList.append(texture3DBlank);
-        texture3DCurrent=extendTextureFromMaskList(overlayList, maskIndexList);
-    } else {
-        texture3DCurrent=extendTextureFromMaskList(overlayList, maskIndexList);
-    }
-    load3DTextureSet(texture3DCurrent);
-    // qDebug() << "RendererNeuronAnnotator::rebuildFromBaseTextures()";
-    // qDebug() << this << texture3DCurrent << texture3DSignal << texture3DBackground << texture3DReference << texture3DBlank;
-    // qDebug() << __FILE__ << __LINE__;
-}
-
-RGBA8* RendererNeuronAnnotator::extendTextureFromMaskList(const QList<RGBA8*> & sourceTextures, const QList<int> & maskIndexList) {
-    // qDebug() << "RendererNeuronAnnotator::extendTextureFromMaskList() start";
-    RGBA8* newTexture=new RGBA8[realZ*realY*realX];
-    int* quickList=new int[256];
-    for (int m=0;m<256;m++) {
-        quickList[m]=-1;
-    }
-    for (int m=0;m<maskIndexList.size();m++) {
-        int value=maskIndexList.at(m);
-        if (value>254) {
-            qDebug() << "Error: ignoring mask entry greater than 254:" << value;
-        } else {
-            quickList[value+1]=value+1; // we want the array to be indexed by 1...n+1 rather than 0...n like maskIndexList
-        }
-    }
-    // Move to arrays for performance
-    int numSourceTextures=sourceTextures.size();
-    RGBA8** sourceTextureArray=new RGBA8* [numSourceTextures];
-    for (int i=0;i<numSourceTextures;i++) {
-        sourceTextureArray[i]=sourceTextures.at(i);
-    }
-    for (int z=0;z<realZ;z++) {
-        int zRyRx=z*realY*realX;
-        for (int y=0;y<realY;y++) {
-            int yRx=y*realX;
-            for (int x=0;x<realX;x++) {
-                int offset=zRyRx + yRx + x;
-                unsigned char maskValue=neuronMask[offset];
-                if (maskValue!=0 && quickList[maskValue]==maskValue) { // !=0 prevents background from always being added
-                    // Add from mask
-                    newTexture[offset]=texture3DSignal[offset];
-                } else {
-                    // Add up overlays
-                    RGBA8 total;
-                    total.a=0;
-                    total.r=0;
-                    total.g=0;
-                    total.b=0;
-                    for (int i=0;i<numSourceTextures;i++) {
-                        RGBA8 rgba=sourceTextureArray[i][offset];
-                        int capA=total.a+rgba.a;
-                        if (capA>255) {
-                            capA=255;
-                        }
-                        int capR=total.r+rgba.r;
-                        if (capR>255) {
-                            capR=255;
-                        }
-                        int capG=total.g+rgba.g;
-                        if (capG>255) {
-                            capG=255;
-                        }
-                        int capB=total.b+rgba.b;
-                        if (capB>255) {
-                            capB=255;
-                        }
-                        total.a=capA;
-                        total.r=capR;
-                        total.g=capG;
-                        total.b=capB;
-                    }
-                    newTexture[offset]=total;
-                }
-            }
-        }
-    }
-    delete [] sourceTextureArray;
-    delete [] quickList;
-    // qDebug() << "RendererNeuronAnnotator::extendTextureFromMaskList() done";
-    return newTexture;
-}
-
-// What we want to do in this function is constrained by the requirement that texture
-// updates must be of size power-of-2, beginning with size 4. This is an empirical
-// finding from the current Mac Book Pro. We will choose size 16 and see how this performs.
-//
-// We will iterate through 16x16 tiles of the current texture set. For each tile, we will scan
-// for mask membership. If a match is seen, we will first modify the local texture3DCurrent,
-// and then copy this updated tile to the graphics system.
-
-void RendererNeuronAnnotator::updateCurrentTextureMask(int neuronIndex, int state) {
-    if(!texture3DCurrent) return;
-
-    // qDebug() << "RendererNeuronAnnotator::updateCurrentTextureMask() start";
-    makeCurrent();
-
-    int maskIndex = neuronIndex+1;
-
-    QTime timer;
-
-    timer.start();
-
-    const int TILE_DIMENSION=8;
-    int tileBufferSize=TILE_DIMENSION*TILE_DIMENSION;
-    RGBA8* tileBuffer = new RGBA8[tileBufferSize];
-    int glTilesIncluded=0;
-    int glTilesExcluded=0;
-    int sliceCount=0;
-
-    for (int stack_i=1; stack_i<=3; stack_i++)
-    {
-            GLuint* p_tex = 0;
-            int sw = 0, sh = 0;
-            int n_slice = 0;
-
-            switch (stack_i)
-            {
-            case 1: //Z[y][x]
-                    n_slice = realZ;
-                    p_tex = Ztex_list;
-                    sw = COPY_X, sh = COPY_Y;
-                    break;
-            case 2: //Y[z][x]
-                    n_slice = realY;
-                    p_tex = Ytex_list;
-                    sw = COPY_X, sh = COPY_Z;
-                    break;
-            case 3: //X[z][y]
-                    n_slice = realX;
-                    p_tex = Xtex_list;
-                    sw = COPY_Y, sh = COPY_Z;
-                    break;
-            }
-
-            // Temporary hack to imperfectly deal with non-multiple-of-8 texture sizes
-            // TODO - this is a hack
-            // This approach can leave some wrong pixels at the edge of the volume.
-            // But its better than having all of the pixels wrong.
-            if ((sw%8)||(sh%8))
-            {
-                sw = sw - (sw%8); // truncate texture update to multiple of 8
-                sh = sh - (sh%8); // truncate texture update to multiple of 8
-                qDebug() << "Applying hack to work around non-multiple-of-8 texture dimension issue";
-            }
-
-            if (sw%TILE_DIMENSION!=0 || sh%TILE_DIMENSION!=0) {
-                qDebug() << "RendererNeuronAnnotator::updateCurrentTextureMask() ERROR: width and height of texture buffer must both be divisible by "
-                        << TILE_DIMENSION << "! width=" << sw << " height=" << sh << " realX=" << realX << " realY=" << realY << " realZ=" << realZ;
-                emit progressAborted("Error - texture size is not a multiple of 8");
-                return;
-            }
-
-            RGBA8 blank;
-            blank.r=0;
-            blank.g=0;
-            blank.b=0;
-            blank.a=0;
-
-            int RxRy = realX* realY;
-
-            for (int i = 0; i < n_slice; i++)
-
-            {
-                    glBindTexture(GL_TEXTURE_2D, p_tex[i+1]); //[0] reserved for pbo tex
-
-                    // Let's consider each tile
-                    for (int h=0;h<sh;h+=TILE_DIMENSION) {
-                        for (int w=0;w<sw;w+=TILE_DIMENSION) {
-                            bool updateMaskTile=false;
-                            // While we are traversing each pixel of the tile, we will update
-                            // any position in texture3DCurrent which is affected by the mask
-                            // change, and also flag the tile for graphics update.
-
-                            // Update matrix:
-                            // stack_i     i   :  ho   :  wo
-
-                            //    1       [z]     [y]     [x]
-
-                            //    2       [y]     [z]     [x]
-
-                            //    3       [x]     [z]     [y]
-
-                            int bufX, bufY, bufZ;
-                            if (stack_i==1) {
-                                bufZ=i;
-                                int m1=bufZ*RxRy;
-                                for (int ho=h;ho<(h+TILE_DIMENSION);ho++) {
-                                    bufY=ho;
-                                    int m2=bufY*realX;
-                                    for (int wo=w;wo<(w+TILE_DIMENSION);wo++) {
-                                        bufX=wo;
-                                        int offset = m1 + m2 + bufX;
-                                        int tileOffset = (ho-h)*TILE_DIMENSION + (wo-w);
-                                        tileBuffer[tileOffset]=texture3DCurrent[offset];
-                                        int maskValue=neuronMask[offset];
-                                        if (maskValue==maskIndex) {
-                                            updateMaskTile=true;
-                                            if (state==0) {
-                                                // Turn off mask
-                                                texture3DCurrent[offset] = blank;
-                                                tileBuffer[tileOffset] = blank;
-                                            } else {
-                                                // Turn on mask
-                                                texture3DCurrent[offset] = texture3DSignal[offset];
-                                                tileBuffer[tileOffset] = texture3DSignal[offset];
-                                            }
-                                        }
-                                    }
-                                }
-                            } else if (stack_i==2) {
-                                bufY=i;
-                                int m2=bufY*realX;
-                                for (int ho=h;ho<(h+TILE_DIMENSION);ho++) {
-                                    bufZ=ho;
-                                    int m1=bufZ*RxRy;
-                                    for (int wo=w;wo<(w+TILE_DIMENSION);wo++) {
-                                        bufX=wo;
-                                        int offset = m1 + m2 + bufX;
-                                        int tileOffset = (ho-h)*TILE_DIMENSION + (wo-w);
-                                        tileBuffer[tileOffset]=texture3DCurrent[offset];
-                                        int maskValue=neuronMask[offset];
-                                        if (maskValue==maskIndex) {
-                                            updateMaskTile=true;
-                                            if (state==0) {
-                                                // Turn off mask
-                                                texture3DCurrent[offset] = blank;
-                                                tileBuffer[tileOffset] = blank;
-                                            } else {
-                                                // Turn on mask
-                                                texture3DCurrent[offset] = texture3DSignal[offset];
-                                                tileBuffer[tileOffset] = texture3DSignal[offset];
-                                            }
-                                        }
-                                    }
-                                }
-                            } else if (stack_i==3) {
-                                bufX=i;
-                                for (int ho=h;ho<(h+TILE_DIMENSION);ho++) {
-                                    bufZ=ho;
-                                    int m1=bufZ*RxRy;
-                                    for (int wo=w;wo<(w+TILE_DIMENSION);wo++) {
-                                        bufY=wo;
-                                        int offset = m1 + bufY*realX + bufX;
-                                        int tileOffset = (ho-h)*TILE_DIMENSION + (wo-w);
-                                        tileBuffer[tileOffset]=texture3DCurrent[offset];
-                                        int maskValue=neuronMask[offset];
-                                        if (maskValue==maskIndex) {
-                                            updateMaskTile=true;
-                                            if (state==0) {
-                                                // Turn off mask
-                                                texture3DCurrent[offset] = blank;
-                                                tileBuffer[tileOffset] = blank;
-                                            } else {
-                                                // Turn on mask
-                                                texture3DCurrent[offset] = texture3DSignal[offset];
-                                                tileBuffer[tileOffset] = texture3DSignal[offset];
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            if (updateMaskTile) {
-                                glTexSubImage2D(GL_TEXTURE_2D, // target
-                                                0, // level
-                                                w,h,  // offset
-                                                TILE_DIMENSION, // sub width
-                                                TILE_DIMENSION, // sub heighttexture3DCurrent
-                                                image_format, // image format
-                                                image_type, // image type
-                                                tileBuffer);
-                                CHECK_GLErrorString_throw();
-                                glTilesIncluded++;
-                            } else {
-                                glTilesExcluded++;
-                            }
-                        }
-                    }
-                    sliceCount++;
-                    int prog = sliceCount*100 / (realX + realY + realZ);
-                    // updateProgressDialog(dialog, prog);
-
-                    // attempt to get away from that horrible horrible hyper-modal stack-drilling unthreadable progress dialog
-                    if (! (sliceCount % 20)) {
-                        emit progressValueChanged(prog);
-                        // processEvents() kludge as long as texture updates are in GUI thread
-                        // TODO Is ExcludeUserInputEvents really necessary here?
-                        QCoreApplication::processEvents(); //  QEventLoop::ExcludeUserInputEvents);
-                        makeCurrent();
-                    }
-            }
-    }
-    int mSec=timer.elapsed();
-    qDebug() << "RendererNeuronAnnotator::updateCurrentTextureMask() finished in " << mSec << " milliseconds  tilesIncluded=" << glTilesIncluded <<" tilesExcluded=" << glTilesExcluded;
-    emit progressComplete();
-}
-
-RGBA8* RendererNeuronAnnotator::getOverlayTextureByAnnotationIndex(int index)
-{
-    if (index==DataFlowModel::REFERENCE_MIP_INDEX) {
-        return texture3DReference;
-    } else if (index==DataFlowModel::BACKGROUND_MIP_INDEX) {
-        return texture3DBackground;
-    }
-}
-
-*/
 
 float RendererNeuronAnnotator::glUnitsPerImageVoxel() const
 {
@@ -1830,74 +1102,26 @@ void RendererNeuronAnnotator::paint_mono()
     return;
 }
 
-
 void RendererNeuronAnnotator::setupData(void* idep)
 {
     qDebug("  RendererNeuronAnnotator::setupData");
-    cleanData();
+    // cleanData();
 
-    // Begin assuming emptiness
-    start1 = 0;
-    start2 = 0;
-    start3 = 0;
-    start4 = 0;
-    start5 = 0;
-    size1 = dim1 = 0;
-    size2 = dim2 = 0;
-    size3 = dim3 = 0;
-    size4 = dim4 = 0;
-    size5 = dim5 = 0;
-    sampleScaleX = sampleScaleY = sampleScaleZ = sampleScale[0] = sampleScale[1] = sampleScale[2] = sampleScale[3] = sampleScale[4] = 1;
-
-    // Try to get existing VolumeTexture data - otherwise exit
-    vaa3d::VolumeTexture const * vt_ptr = volumeTexture;
-    if (NULL == vt_ptr)
-    {
-        qDebug() << "setupData() called with NULL volumeTexture";
-        return;
-    }
-
-    size1 = dim1 = vt_ptr->originalImageSize.x();
-    size2 = dim2 = vt_ptr->originalImageSize.y();
-    size3 = dim3 = vt_ptr->originalImageSize.z();
-    size4 = dim4 = 4; // RGBA
-    size5 = dim5 = 1;
-
-    bufSize[0] = size1;
-    bufSize[1] = size2;
-    bufSize[2] = size3;
-    bufSize[3] = size4;
-    bufSize[4] = size5;
-
-    b_limitedsize = (vt_ptr->originalImageSize != vt_ptr->usedTextureSize);
-    if (b_limitedsize)
-    {
-        bufSize[0] = vt_ptr->paddedTextureSize.x();
-        bufSize[1] = vt_ptr->paddedTextureSize.y();
-        bufSize[2] = vt_ptr->paddedTextureSize.z();
-        sampleScaleX = sampleScale[0] = (float)vt_ptr->usedTextureSize.x() / (float)vt_ptr->originalImageSize.x();
-        sampleScaleY = sampleScale[1] = (float)vt_ptr->usedTextureSize.y() / (float)vt_ptr->originalImageSize.y();
-        sampleScaleZ = sampleScale[2] = (float)vt_ptr->usedTextureSize.z() / (float)vt_ptr->originalImageSize.z();
-        qDebug() << "  Down sampling to" << bufSize[0] << bufSize[1] << bufSize[2];
-    }
-    // TODO - implement local subvolume
     isSimulatedData = false;
 
-
-    dataViewProcBox = dataBox = BoundingBox(start1, start2, start3, start1+(size1-1), start2+(size2-1), start3+(size3-1));
-
-    // Pretend there is vaa3d-classic data
-    // TODO - set to NULL
+    // TODO - set image4d to NULL, after refactoring neuron clicking to not use image4d
     My4DImage* image4d = v3dr_getImage4d(_idep);
     if (image4d)
         data4dp = image4d->getRawData();
-    rgbaBuf = total_rgbaBuf = NULL;
 
     this->_idep = idep;
+    if (NULL == rgbaBuf)
         rgbaBuf = total_rgbaBuf = new RGBA8[1]; // TODO token memory allocation until I can clear things up
-    updateSettingsFromVolumeTexture(*volumeTexture);
-}
 
+    image_format = GL_BGRA;
+    image_type = GL_UNSIGNED_INT_8_8_8_8_REV;
+    tryTexCompress = false;
+}
 
 void RendererNeuronAnnotator::setShowCornerAxes(bool b)
 {
@@ -1969,6 +1193,4 @@ void RendererNeuronAnnotator::paint_corner_axes()
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
 }
-
-
 

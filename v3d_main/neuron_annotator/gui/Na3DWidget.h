@@ -69,7 +69,7 @@ public slots:
     void setLandmarks(const QList<ImageMarker>);
     void toggleNeuronDisplay(int index, bool checked);
     // void updateFullVolume();
-    void onVolumeDataChanged();
+    void onVolumeTextureDataChanged();
     void updateIncrementalColors();
     void showContextMenu(QPoint point);
     void resetView();
@@ -99,6 +99,10 @@ protected slots:
     void updateRendererZoomRatio(qreal relativeScale);
     void updateRotation(const Rotation3D&);
     void updateFocus(const Vector3D& f);
+    // VolumeTexture methods that must be run in the main/OpenGL thread are implemented in Na3DWidget slots
+    void uploadNeuronVisibilityTextureGL();
+    bool uploadVolumeTexturesGL();
+    void uploadColorMapTextureGL();
 
 protected:
     // bool tryUpdateFullVolume();
@@ -130,9 +134,7 @@ protected:
     bool bClickIsWaiting;
     bool bVolumeInitialized; // hack to prevent double update on file load
 
-    vaa3d::VolumeTexture volumeTexture;
-    vaa3d::NeuronVisibilityTexture neuronVisibilityTexture;
-    // vaa3d::NeuronLabelTexture neuronLabelTexture;
+    jfrc::VolumeTexture volumeTexture;
 };
 
 #endif // NA3DWIDGET_H

@@ -399,15 +399,20 @@ bool ImageLoader::validateFile() {
     return true;
 }
 
-bool ImageLoader::loadImage(Image4DSimple * stackp, QString filepath) {
+bool ImageLoader::loadImage(Image4DSimple * stackp, QString filepath)
+{
+    bool bSucceeded = true;
+    QString msg(QString("Waiting on disk access for file ") + filepath);
+    emit progressMessageChanged(msg);
     if (filepath.endsWith(".tif") || filepath.endsWith(".lsm") || filepath.endsWith(".v3draw") || filepath.endsWith(".raw")) {
         stackp->loadImage(filepath.toAscii().data());
     } else if (hasPbdExtension(filepath)) {
         if (loadRaw2StackPBD(filepath.toAscii().data(), stackp, true)!=0) {
             qDebug() << "Error with loadRaw2StackPBD";
-            return false;
+            bSucceeded = false;
         }
     }
+    return bSucceeded;
 }
 
 My4DImage* ImageLoader::loadImage(QString filepath) {

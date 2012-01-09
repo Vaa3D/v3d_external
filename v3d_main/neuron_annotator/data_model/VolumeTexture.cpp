@@ -1,365 +1,158 @@
 #include "VolumeTexture.h"
-#include "DataColorModel.h"
-#include <QColor>
-#include <cassert>
+#include "PrivateVolumeTexture.h"
+#include "NaSharedDataModel.cpp"
 
+template class NaSharedDataModel<jfrc::PrivateVolumeTexture>;
 
-namespace vaa3d {
+namespace jfrc {
+
 
 ///////////////////////////
 // VolumeTexture methods //
 ///////////////////////////
 
-VolumeTexture::VolumeTexture(QObject *parent)
-    : QObject(parent)
-    , memoryLimit(5e8)
-    , memoryAlignment(8)
-    , subsampleScale(1.0)
+VolumeTexture::VolumeTexture()
+    : volumeData(NULL)
+{}
+
+bool VolumeTexture::initializeGL()
 {
+    {
+        Writer(*this); // acquire lock, waits for Readers to release their locks
+        d->initializeGL();
+    } // release lock
 }
 
-// Create host texture memory for data volume
-bool VolumeTexture::populateVolume(const NaVolumeData::Reader& volumeReader,
-                                   const DataColorModel::Reader& colorReader)
+void VolumeTexture::setDataFlowModel(const DataFlowModel& dataFlowModel)
 {
-    QTime stopwatch;
-    stopwatch.start();
-    const Image4DProxy<My4DImage>& imageProxy = volumeReader.getOriginalImageProxy();
-    const Image4DProxy<My4DImage>& referenceProxy = volumeReader.getReferenceImageProxy();
-    const Image4DProxy<My4DImage>& labelProxy = volumeReader.getNeuronMaskProxy();
-    Dimension inputSize(imageProxy.sx, imageProxy.sy, imageProxy.sz);
-    /// If originalImageSize is unchanged, assume all size parameters are already correct.
-    if (inputSize != originalImageSize) // new/changed volume size
+    if (volumeData != &dataFlowModel.getVolumeData())
     {
-        originalImageSize = inputSize;
-        subsampleScale = inputSize.computeLinearSubsampleScale(memoryLimit/3);
-        usedTextureSize = inputSize.sampledSize(memoryLimit/3);
-        paddedTextureSize = usedTextureSize.padToMultipleOf(memoryAlignment);
-        slicesXyz.setSize(Dimension(paddedTextureSize.x(), paddedTextureSize.y(), paddedTextureSize.z()));
-        slicesYzx.setSize(Dimension(paddedTextureSize.y(), paddedTextureSize.x(), paddedTextureSize.z()));
-        slicesZxy.setSize(Dimension(paddedTextureSize.z(), paddedTextureSize.x(), paddedTextureSize.y()));
-        neuronLabelTexture.allocateSize(paddedTextureSize);
+        volumeData = &dataFlowModel.getVolumeData();
+        connect(volumeData, SIGNAL(dataChanged()),
+                this, SLOT(updateVolume()));
+        Writer(*this);
+        d->setNeuronSelectionModel(dataFlowModel.getNeuronSelectionModel());
+        connect(&dataFlowModel.getNeuronSelectionModel(), SIGNAL(visibilityChanged()),
+                this, SLOT(updateNeuronVisibilityTexture()));
     }
-
-    // Scale RGBA channel colors to actual data range of input
-    // (Final coloring will be handled in the shader, so don't use colorReader.blend())
-    // Precompute coefficients for scaling.
-    int minData[4] = {0, 0, 0, 0}; // minimum data value of channel
-    double rangeData[4] = {1.0, 1.0, 1.0, 1.0}; // 255.0 divided by data range of channel
-    for (int c = 0; c < colorReader.getNumberOfDataChannels(); ++c)
-    {
-        minData[c] = colorReader.getChannelDataMin(c);
-        rangeData[c] = 255.0 / (colorReader.getChannelDataMax(c) - colorReader.getChannelDataMin(c));
-    }
-    // Use stupid box filter for now.  Once that's working, use Lanczos for better sampling.
-    // TODO
-    double xScale = (double)originalImageSize.x() / (double)usedTextureSize.x();
-    double yScale = (double)originalImageSize.y() / (double)usedTextureSize.y();
-    double zScale = (double)originalImageSize.z() / (double)usedTextureSize.z();
-    // qDebug() << "x, y, z Scale =" << xScale << yScale << zScale << __FILE__ << __LINE__;
-    std::vector<double> channelIntensities(imageProxy.sc + 1, 0.0); // For colorReader::blend() interface; +1 for reference channel
-    size_t refIx = imageProxy.sc; // index of reference channel
-    for(int z = 0; z < usedTextureSize.z(); ++z)
-    {
-        // if (! z%10)
-            // qDebug() << "VolumeTexture::populateVolume()" << z;
-        int z0 = (int)(z * zScale + 0.49);
-        int z1 = (int)((z + 1) * zScale + 0.49);
-        for(int y = 0; y < usedTextureSize.y(); ++y)
-        {
-            int y0 = (int)(y * yScale + 0.49);
-            int y1 = (int)((y + 1) * yScale + 0.49);
-            for(int x = 0; x < usedTextureSize.x(); ++x)
-            {
-                int x0 = (int)(x * xScale + 0.49);
-                int x1 = (int)((x + 1) * xScale + 0.49);
-                float weight = 0.0;
-                // Choose exactly one neuron index for this voxel.  Default to zero (background),
-                // but accept any non-background value in its place.
-                int neuronIndex = 0;
-                // Average over multiple voxels in input image
-                channelIntensities.assign(refIx + 1, 0.0);
-                for(int sx = x0; sx < x1; ++sx)
-                    for(int sy = y0; sy < y1; ++sy)
-                        for(int sz = z0; sz < z1; ++sz)
-                        {
-                            for (int c = 0; c < imageProxy.sc; ++c)
-                                channelIntensities[c] += imageProxy.value_at(sx, sy, sz, c);
-                            channelIntensities[refIx] += referenceProxy.value_at(sx, sy, sz, 0);
-                            if (neuronIndex == 0) // take first non-zero value
-                                neuronIndex = (int)labelProxy.value_at(sx, sy, sz, 0);
-                            weight += 1.0;
-                        }
-                for (int c = 0; c <= refIx; ++c) // Normalize
-                    if (weight > 0)
-                        channelIntensities[c]  = ((channelIntensities[c] / weight) - minData[c]) * rangeData[c];
-                // Swap red and blue from RGBA to BGRA, for Windows texture efficiency
-                // Create unsigned int with #AARRGGBB pattern
-                BGRA color = 0;
-                color |= (((int)channelIntensities[2]));       // #000000BB blue  : channel 3
-                color |= (((int)channelIntensities[1]) << 8);  // #0000GGBB green : channel 2
-                color |= (((int)channelIntensities[0]) << 16); // #00RRGGBB red   : channel 1
-                color |= (((int)channelIntensities[3]) << 24); // #AARRGGBB white : reference
-                neuronLabelTexture.setValueAt(x, y, z, neuronIndex);
-                slicesXyz.setValueAt(x, y, z, color);
-                slicesYzx.setValueAt(y, x, z, color);
-                slicesZxy.setValueAt(z, x, y, color);
-            }
-        }
-    }
-    qDebug() << "Sampling 3D volume for 3D viewer took" << stopwatch.elapsed() / 1000.0 << "seconds";
-
-    if (! slicesZxy.populateGLTextures()) return false;
-    if (! slicesYzx.populateGLTextures()) return false;
-    if (! slicesXyz.populateGLTextures()) return false;
-    if (! neuronLabelTexture.uploadPixels()) return false;
-
-    return true;
 }
 
-
-//////////////////////////////////
-// VolumeTexture::Stack methods //
-//////////////////////////////////
-
-// Run once to create (but not populate/update) opengl textures
-bool VolumeTexture::Stack::initializeGLTextures()
+/* slot */
+bool VolumeTexture::updateVolume()
 {
-    QTime stopwatch;
-    stopwatch.start();
-    // qDebug() << "VolumeTexture::Stack::initializeGLTextures()" << __FILE__ << __LINE__;
-    int numberOfSlices = size.x();
-    int width = size.y();
-    int height = size.z();
-    if (numberOfSlices <= 0) return false;
-    if (width <= 0) return false;
-    if (height <= 0) return false;
-
-    // Clear GL errors
+    bool bSucceeded = true; // avoid signalling before unlocking
+    if (NULL == volumeData) return false;
+    int numSlices = 0;
     {
-        int count = 0;
-        while (glGetError() != GL_NO_ERROR)
-        {
-            ++count;
-            if (count > 1000) break;
-        }
-        GLenum err = glGetError();
-        if (err != GL_NO_ERROR) {
-            qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
+        NaVolumeData::Reader volumeReader(*volumeData); // acquire lock
+        if(! volumeReader.hasReadLock())
             return false;
-        }
-    }
-
-    if (textureIDs.size() != (numberOfSlices + 1))
+        d->initializeSizes(volumeReader);
+        numSlices = d->usedTextureSize.z();
+    } // release lock before emit
+    if (numSlices < 1) return false;
+    emit progressMessageChanged("Sampling volume for 3D viewer");
+    float progress = 1.0; // out of 100
+    emit progressValueChanged(int(progress));
+    int deltaZ = 10; // Report every 10 slices
+    qDebug() << "Populating volume data for 3D viewer";
+    for (int z = 0; z < numSlices; z += deltaZ)
     {
-         if (textureIDs.size() > 0) {
-            glDeleteTextures(textureIDs.size(), &textureIDs.front());
-            // textureIDs.clear();
-        }
-        textureIDs.assign(numberOfSlices + 1, 0);
-        glGenTextures(numberOfSlices + 1, &textureIDs.front());
-        // Check for GL errors
         {
-            GLenum err = glGetError();
-            if (err != GL_NO_ERROR) {
-                qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
-                return false;
+            NaVolumeData::Reader volumeReader(*volumeData);
+            if(! volumeReader.hasReadLock()) {
+                bSucceeded = false;
+                break;
             }
-        }
+            Writer textureWriter(*this); // acquire lock
+            bSucceeded = d->populateVolume(volumeReader, z, z + deltaZ);
+        } // release lock
+        if (! bSucceeded) break;
+        progress = 3.0 + 90.0 * z / numSlices; // 3 - 93 percent in this loop
+        emit progressValueChanged((int) progress);
     }
-    int border = 0;
-    for (int i = 0; i < numberOfSlices + 1; ++i)
+    if (bSucceeded) {
+        emit progressComplete();
+        emit volumeTexturesChanged();
+    }
+    else {
+        emit progressAborted("Volume update failed");
+    }
+    return bSucceeded;
+}
+
+/* slot */
+void VolumeTexture::updateNeuronVisibilityTexture()
+{
+    bool bSucceeded = true;
     {
-        glBindTexture(GL_TEXTURE_2D, textureIDs[i]);
-        glTexImage2D(GL_TEXTURE_2D,
-            0, ///< mipmap level; zero means base level
-            GL_RGBA8, ///< texture format, in bytes per pixel
-            width,
-            height,
-            border,
-            GL_BGRA, // image format
-            GL_UNSIGNED_INT_8_8_8_8_REV, // image type
-            NULL); ///< NULL means initialize but don't populate
-        // Check for GL errors
-        {
-            GLenum err = glGetError();
-            if (err != GL_NO_ERROR) {
-                qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
-                return false;
-            }
-        }
+        Writer(*this);
+        bSucceeded = d->updateNeuronVisibilityTexture();
     }
-
-    // fill plane zero with empty image (for testing)
-    std::vector<unsigned int> blankPlane(width*height, 0);
-    glBindTexture(GL_TEXTURE_2D, textureIDs[0]);
-    glTexSubImage2D(GL_TEXTURE_2D, // target
-            0, // level
-            0,0,  // offset
-            width, // sub width
-            height, // sub height
-            GL_BGRA, // image format
-            GL_UNSIGNED_INT_8_8_8_8_REV, // image type
-            &blankPlane.front());
-    // Check for GL errors
-    {
-        GLenum err = glGetError();
-        if (err != GL_NO_ERROR) {
-            qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
-            return false;
-        }
-    }
-
-    // qDebug() << "Initialize textures took" << stopwatch.elapsed() / 1000.0 << "seconds";
-    return true;
+    if (bSucceeded)
+        emit neuronVisibilityTextureChanged();
 }
 
-bool VolumeTexture::Stack::populateGLTextures()
+
+///////////////////////////////////
+// VolumeTexture::Reader methods //
+///////////////////////////////////
+
+VolumeTexture::Reader::Reader(const VolumeTexture& volumeTexture)
+    : BaseReader(volumeTexture)
+{}
+
+const jfrc::Dimension& VolumeTexture::Reader::originalImageSize() const
 {
-    QTime stopwatch;
-    stopwatch.start();
-    // qDebug() << "VolumeTexture::Stack::populateGLTextures()" << __FILE__ << __LINE__;
-    int numberOfSlices = size.x();
-    int width = size.y();
-    int height = size.z();
-    for (int i = 0; i < numberOfSlices; ++i)
-    {
-        glBindTexture(GL_TEXTURE_2D, textureIDs[i + 1]);
-        // Check for GL errors
-        {
-            GLenum err = glGetError();
-            if (err != GL_NO_ERROR) {
-                qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
-                return false;
-            }
-        }
-
-        const int border = 0;
-        glTexImage2D(GL_TEXTURE_2D,
-            0, ///< mipmap level; zero means base level
-            GL_RGBA8, ///< texture format, in bytes per pixel
-            width,
-            height,
-            border,
-            GL_BGRA, // image format
-            GL_UNSIGNED_INT_8_8_8_8_REV, // image type
-            getSlice(i)); ///< NULL means initialize but don't populate
-
-        /*
-        glTexSubImage2D(GL_TEXTURE_2D, // target
-                0, // level
-                0,0,  // offset
-                width, // sub width
-                height, // sub height
-                GL_BGRA, // image format
-                GL_UNSIGNED_INT_8_8_8_8_REV, // image type
-                slices[i][0]);
-         */
-
-        // Check for GL errors
-        {
-            GLenum err = glGetError();
-            if (err != GL_NO_ERROR) {
-                qDebug() << "OpenGL error" << err << __FILE__ << __LINE__;
-                return false;
-            }
-        }
-    }
-    // qDebug() << width << height;
-    qDebug() << "Populate textures took" << stopwatch.elapsed() / 1000.0 << "seconds";
-    return true;
+    return d.constData()->originalImageSize;
 }
 
-
-////////////////////////
-// Dimension methods //
-///////////////////////
-
-Dimension::Dimension()
+const jfrc::Dimension& VolumeTexture::Reader::usedTextureSize() const
 {
-    data[0] = 0; data[1] = 0; data[2] = 0;
+    return d.constData()->usedTextureSize;
 }
 
-Dimension::Dimension(size_t x, size_t y, size_t z)
+const jfrc::Dimension& VolumeTexture::Reader::paddedTextureSize() const
 {
-    data[0] = x; data[1] = y; data[2] = z;
+    return d.constData()->paddedTextureSize;
 }
 
-const size_t& Dimension::operator[](size_t ix) const
-{return data[ix];}
-
-size_t& Dimension::operator[](size_t ix)
-{return data[ix];}
-
-const size_t& Dimension::x() const
-{return data[X];}
-
-const size_t& Dimension::y() const
-{return data[Y];}
-
-const size_t& Dimension::z() const
-{return data[Z];}
-
-size_t& Dimension::x()
-{return data[X];}
-
-size_t& Dimension::y()
-{return data[Y];}
-
-size_t& Dimension::z()
-{return data[Z];}
-
-bool Dimension::operator!=(const Dimension& rhs) const {
-    const Dimension& lhs = *this;
-    for (int i = 0; i < 3; ++i)
-        if (lhs[i] != rhs[i]) return true;
-    return false;
-}
-
-bool Dimension::operator==(const Dimension& rhs) const {
-    const Dimension& lhs = *this;
-    return ! (lhs != rhs);
-}
-
-/// Intermediate value used in sampledSizeMethod
-double Dimension::computeLinearSubsampleScale(size_t memoryLimit) const
+bool VolumeTexture::Reader::uploadVolumeTexturesToVideoCardGL() const
 {
-    if (memoryLimit <= 0) return 1.0; // zero means no limit
-    size_t memoryUse = x() * y() * z() * 2; // bytes
-    if (memoryUse <= memoryLimit) return 1.0; // already fits into memory as-is
-    double sampleFactor = std::pow((double)memoryLimit / (double)memoryUse, 1.0/3.0);
-    return sampleFactor;
+    return d.constData()->uploadVolumeTexturesToVideoCardGL();
 }
 
-/// Compute a possibly smaller size that would fit in a particular GPU memory limit,
-/// assuming 32 bit pixels.
-Dimension Dimension::sampledSize(size_t memoryLimit) const
+bool VolumeTexture::Reader::uploadNeuronVisibilityTextureToVideoCardGL() const
 {
-    double sampleFactor = computeLinearSubsampleScale(memoryLimit);
-    return Dimension((int)(x() * sampleFactor), // scale all dimensions
-                     (int)(y() * sampleFactor),
-                     (int)(z() * sampleFactor));
+    return d.constData()->uploadNeuronVisibilityTextureToVideoCardGL();
 }
 
-/// Expand dimensions, if necessary, to be a multiple of 8
-Dimension Dimension::padToMultipleOf(unsigned int factor)
+bool VolumeTexture::Reader::uploadColorMapTextureToVideoCardGL() const
 {
-    return Dimension(padToMultipleOf(x(), factor),
-                     padToMultipleOf(y(), factor),
-                     padToMultipleOf(z(), factor));
+    return d.constData()->uploadColorMapTextureToVideoCardGL();
 }
 
-/// Compute next multiple of factor greater than or equal to coord
-/* static */
-size_t Dimension::padToMultipleOf(size_t coord, unsigned int factor)
-{
-    const int remainder = coord % factor;
-    if (0 == remainder) return coord;
-    size_t result = coord + factor - remainder;
-    assert(0 == (result % factor));
-    return result;
+const GLuint* VolumeTexture::Reader::Xtex_list() const {
+    return d.constData()->getTexIDPtr(jfrc::PrivateVolumeTexture::Stack::X);
+}
+
+const GLuint* VolumeTexture::Reader::Ytex_list() const {
+    return d.constData()->getTexIDPtr(jfrc::PrivateVolumeTexture::Stack::Y);
+}
+
+const GLuint* VolumeTexture::Reader::Ztex_list() const {
+    return d.constData()->getTexIDPtr(jfrc::PrivateVolumeTexture::Stack::Z);
 }
 
 
-} // namespace vaa3d
+///////////////////////////////////
+// VolumeTexture::Writer methods //
+///////////////////////////////////
+
+VolumeTexture::Writer::Writer(VolumeTexture& volumeTexture)
+    : BaseWriter(volumeTexture)
+{}
+
+
+} // namespace jfrc
 
