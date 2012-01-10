@@ -34,6 +34,8 @@ void VolumeTexture::setDataFlowModel(const DataFlowModel& dataFlowModel)
         d->setNeuronSelectionModel(dataFlowModel.getNeuronSelectionModel());
         connect(&dataFlowModel.getNeuronSelectionModel(), SIGNAL(visibilityChanged()),
                 this, SLOT(updateNeuronVisibilityTexture()));
+        connect(&dataFlowModel.getNeuronSelectionModel(), SIGNAL(selectionChanged()),
+                this, SLOT(updateNeuronVisibilityTexture()));
     }
 }
 

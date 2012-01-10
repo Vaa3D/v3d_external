@@ -143,7 +143,7 @@ class NeuronVisibilityTexture
 {
 public:
     explicit NeuronVisibilityTexture(int maxNeurons = 256)
-        : visibilities(maxNeurons, 255)
+        : visibilities(maxNeurons, 0x000000ff) // visible, neither selected nor highlighted
         , textureID(0)
         , neuronSelectionModel(NULL)
         , textureUnit(GL_TEXTURE2_ARB)
@@ -186,10 +186,10 @@ public:
 
         glTexImage1D(GL_TEXTURE_1D, // target
                         0, // level
-                        GL_INTENSITY8, // texture format
+                        GL_RGBA, // texture format
                         visibilities.size(), // width
                         0, // border
-                        GL_RED, // image format
+                        GL_RGBA, // image format
                         GL_UNSIGNED_BYTE, // image type
                         NULL);
 
@@ -208,11 +208,31 @@ public:
                 return false;
             // Check each neuron fragment
             const QList<bool>& visList = selectionReader.getMaskStatusList();
+            const QList<bool>& selList = selectionReader.getNeuronSelectList();
+            assert(visList.size() == selList.size());
             for(int i = 0; i < visList.size(); ++i)
             {
                 int ix = i + 1; // position zero is for background signal
                 if (ix >= visibilities.size()) break;
-                int val = visList[i] ? 255 : 0;
+                // Visiblity
+                unsigned int val;
+                if (visList[i]) { // visible
+                    val = visibilities[ix] | 0x000000ff; // 0xAABBGGRR, turn on red/visibility
+                }
+                else { // not visible
+                    val = visibilities[ix] & 0xffffff00; // 0xAABBGGRR, turn off red/visibility
+                }
+                if (val != visibilities[ix]) {
+                    visibilities[ix] = val;
+                    bChanged = true;
+                }
+                // Selection
+                if (selList[i]) { // selected
+                    val = visibilities[ix] | 0x0000ff00; // 0xAABBGGRR, turn on green/selection
+                }
+                else { // not selected
+                    val = visibilities[ix] & 0xffff00ff; // 0xAABBGGRR, turn off green/selection
+                }
                 if (val != visibilities[ix]) {
                     visibilities[ix] = val;
                     bChanged = true;
@@ -223,7 +243,11 @@ public:
             if ( (overlayList.size() > DataFlowModel::BACKGROUND_MIP_INDEX)
                 && (visibilities.size() > 0) )
             {
-                int val = overlayList[DataFlowModel::BACKGROUND_MIP_INDEX] ? 255 : 0;
+                int val;
+                if (overlayList[DataFlowModel::BACKGROUND_MIP_INDEX])
+                    val = 0x000000ff; // visible, never selected nor highlighted
+                else
+                    val = 0x00000000; // not visible
                 if (val != visibilities[0]) {
                     visibilities[0] = val;
                     bChanged = true;
@@ -255,10 +279,10 @@ public:
 
         glTexImage1D(GL_TEXTURE_1D, // target
                         0, // level
-                        GL_INTENSITY8, // texture format
+                        GL_RGBA, // texture format
                         visibilities.size(), // width
                         0, // border
-                        GL_RED, // image format
+                        GL_RGBA, // image format
                         GL_UNSIGNED_BYTE, // image type
                         &visibilities.front());
 
@@ -291,7 +315,7 @@ protected:
     const NeuronSelectionModel* neuronSelectionModel;
     GLuint textureID;
     GLenum textureUnit;
-    std::vector<unsigned char> visibilities;
+    std::vector<unsigned int> visibilities;
     bool bInitialized;
 };
 

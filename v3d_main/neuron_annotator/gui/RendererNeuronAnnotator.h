@@ -36,7 +36,10 @@ public:
     virtual void cleanVol();
     virtual void loadShader();
     virtual void equAlphaBlendingProjection();
+    //
     virtual void drawBackFillVolCube() {}
+    // virtual void drawUnitFrontSlice(int line=0) {}
+    //
     void setDepthClip(float totalDepthInGlUnits);
     // Renderer_gl1::selectPosition(x,y) is not virtual, so I renamed
     // this reimplementation to screenPositionToVolumePosition(QPoint)

@@ -1737,6 +1737,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <addaction name="action3D_alpha_blending"/>
     <addaction name="actionAnimate_3D_nutation"/>
     <addaction name="actionShow_Axes"/>
+    <addaction name="actionShow_Brain_Compartments"/>
     <addaction name="separator"/>
     <addaction name="menuStereo_3D"/>
     <addaction name="separator"/>
@@ -2064,6 +2065,17 @@ You can also resize the box by Ctrl + left mouse click.</string>
   <action name="actionDynamic_range">
    <property name="text">
     <string>Data colors...</string>
+   </property>
+  </action>
+  <action name="actionShow_Brain_Compartments">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Show Brain Compartments</string>
    </property>
   </action>
  </widget>

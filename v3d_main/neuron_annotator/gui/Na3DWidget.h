@@ -57,7 +57,6 @@ signals:
     void progressComplete();
     void progressMessageChanged(QString);
     void progressAborted(QString);
-    void landmarksChanged();
     void alphaBlendingChanged(bool);
     void quadStereoSupported(bool);
     void showCornerAxesChanged(bool);
@@ -65,10 +64,6 @@ signals:
 public slots:
     void setShowCornerAxes(bool b);
     void setAlphaBlending(bool);
-    void clearLandmarks();
-    void setLandmarks(const QList<ImageMarker>);
-    void toggleNeuronDisplay(int index, bool checked);
-    // void updateFullVolume();
     void onVolumeTextureDataChanged();
     void updateIncrementalColors();
     void showContextMenu(QPoint point);
@@ -81,7 +76,6 @@ public slots:
     void onNotSingleClick();
     void onPossibleSingleClickAlert();
     virtual void updateImageData();
-    void onNeuronSelectionChanged(); // highlight selected neurons
     void setXCutLock(int b);
     void setYCutLock(int b);
     void setZCutLock(int b);
@@ -124,8 +118,6 @@ protected:
     // BrightnessCalibrator<unsigned char> brightnessCalibrator;
     const DataColorModel * incrementalDataColorModel;
     QCursor * rotateCursor;
-    SlotStatus toggleNeuronDisplayStatus; // help coalesce multiple toggle neuron events
-    SlotStatus updateFullVolumeStatus; // help coalesce multiple full update events
     QMenu* viewerContextMenu;
     NeuronContextMenu* neuronContextMenu;
     bool bHasQuadStereo;
@@ -133,7 +125,6 @@ protected:
     bool bAlphaBlending;
     bool bClickIsWaiting;
     bool bVolumeInitialized; // hack to prevent double update on file load
-
     jfrc::VolumeTexture volumeTexture;
 };
 

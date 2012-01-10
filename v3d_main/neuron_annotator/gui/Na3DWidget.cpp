@@ -203,24 +203,6 @@ void Na3DWidget::setStereoMode(int m)
     update();
 }
 
-/* slot */
-void Na3DWidget::clearLandmarks()
-{
-    if (! getRendererNa()) return;
-    getRendererNa()->clearLandmarks();
-    setShowMarkers(0);
-    // updateHighlightNeurons();
-}
-
-/* slot */
-void Na3DWidget::setLandmarks(const QList<ImageMarker> landmarks)
-{
-    // qDebug() << "Na3DWidget::setLandmarks" << landmarks.size();
-    if (! getRendererNa()) return;
-    getRendererNa()->setLandmarks(landmarks);
-    updateHighlightNeurons();
-}
-
 // Override updateImageData() to avoid that modal progress dialog
 /* virtual */ /* public slot */
 void Na3DWidget::updateImageData()
@@ -983,6 +965,7 @@ void Na3DWidget::paintFiducial(const Vector3D& v) {
 
 void Na3DWidget::paintGL()
 {
+    // static QTime stopwatch;
     V3dR_GLWidget::paintGL();
 
     // Draw focus position to ensure it remains in center of screen,
@@ -1010,6 +993,8 @@ void Na3DWidget::paintGL()
         paintFiducial(focus0);
         glPopAttrib();
     }
+    // qDebug() << "Frame render took" << stopwatch.elapsed() << "milliseconds";
+    // stopwatch.restart();
 }
 
 /* virtual */
@@ -1021,76 +1006,15 @@ void Na3DWidget::setDataFlowModel(const DataFlowModel& dataFlowModelParam)
     connect(this, SIGNAL(neuronClearAllSelections()), &dataFlowModelParam.getNeuronSelectionModel(), SLOT(clearSelection()));
     connect(this, SIGNAL(neuronIndexChanged(int)), &dataFlowModelParam.getNeuronSelectionModel(), SLOT(selectExactlyOneNeuron(int)));
 
-    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(selectionChanged()),
-            this, SLOT(onNeuronSelectionChanged()));
+    // connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(selectionChanged()),
+    //         this, SLOT(onNeuronSelectionChanged()));
     volumeTexture.setDataFlowModel(dataFlowModelParam);
-    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(neuronVisibilityChanged(int,bool)),
-            this, SLOT(toggleNeuronDisplay(int,bool)));
+    // connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(neuronVisibilityChanged(int,bool)),
+    //         this, SLOT(toggleNeuronDisplay(int,bool)));
     // Fast-but-approximate color update
     incrementalDataColorModel = &dataFlowModelParam.getFast3DColorModel();
     connect(incrementalDataColorModel, SIGNAL(dataChanged()),
             this, SLOT(updateIncrementalColors()));
-}
-
-void Na3DWidget::toggleNeuronDisplay(int index, bool checked)
-{
-    // Don't update single neuron if full update is underway
-    if (updateFullVolumeStatus.running()) return;
-
-    bool needFullUpdate = false;
-    {
-        // Coalesce multiple toggle events
-        SlotMerger toggleNeuronMerger(toggleNeuronDisplayStatus);
-        if (! toggleNeuronMerger.shouldRun())
-            return; // first call is already running
-        if (toggleNeuronMerger.skippedCallCount() > 0) {
-            needFullUpdate = true; // some calls were discarded, so do full update
-        }
-        else { // just one call, perform clever single neuron update
-            // emit progressValueChanged(10);
-            // emit progressMessageChanged(QString("Updating textures"));
-            QCoreApplication::processEvents();
-            makeCurrent();
-            // TODO - need new way to toggle neurons
-            // getRendererNa()->updateCurrentTextureMask(index, (checked ? 1 : 0));
-            // More toggles might have happened during the update
-            if (toggleNeuronMerger.skippedCallCount() > 0) {
-                needFullUpdate = true;
-            }
-            else {
-                // getRendererNa()->paint();
-                update();
-            }
-        }
-    } // pop SlotMerger off stack before full update;
-    if (needFullUpdate) {
-        // updateFullVolume();
-    }
-}
-
-/* slot */
-void Na3DWidget::onNeuronSelectionChanged() { // highlight selected neurons
-    // TODO - for now we are still highlighting just one neuron (at most)
-    if (!dataFlowModel) return;
-    int neuronIx = -1;
-    {
-        NeuronSelectionModel::Reader selectionReader(dataFlowModel->getNeuronSelectionModel());
-        if (! selectionReader.hasReadLock()) return;
-        const QList<bool>& selectList = selectionReader.getNeuronSelectList();
-        for (int i = 0; i < selectList.size(); ++i) {
-            if (selectList[i]) {
-                neuronIx = i;
-                break; // just the first neuron for now
-            }
-        }
-    }
-    if (neuronIx < 0) {
-        // qDebug() << "clearing landmarks" << __FILE__ << __LINE__;
-        clearLandmarks(); // should remove selection
-    }
-    else {
-
-    }
 }
 
 // Refactor to respond to changes in VolumeTexture, not to NaVolumeData

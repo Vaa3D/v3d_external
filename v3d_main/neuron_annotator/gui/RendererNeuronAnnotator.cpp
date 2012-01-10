@@ -135,6 +135,7 @@ void RendererNeuronAnnotator::loadShader()
 
             qDebug("+++++++++ shader for Volume texture2D");
             QString texShaderName(":/neuron_annotator/resources/tex_fragment_cmb.txt");
+            // QString texShaderName(":/neuron_annotator/resources/mip_volume.frag");
             bool bUseClassicV3dShader = false;
             if (bUseClassicV3dShader)
                  texShaderName = ":/shader/tex_fragment.txt";
@@ -172,8 +173,9 @@ void RendererNeuronAnnotator::shaderTexBegin(bool stream)
                 shader->setUniform1i("neuronVisibility", 2); // GL_TEXTURE2, 1D
                 shader->setUniform1i("neuronLabel", 3);
 
-                float n = FILL_CHANNEL-1; // 0-based
-                shader->setUniform3f("channel", 0/n, 1/n, 2/n);
+                // float n = FILL_CHANNEL-1; // 0-based
+                float n = 4.0;
+                shader->setUniform4f("channel", 0/n, 1/n, 2/n, 3/n);
                 shader->setUniform1i("blend_mode", renderMode);
                 shader->setUniform1i("format_bgra", format_bgra);
 

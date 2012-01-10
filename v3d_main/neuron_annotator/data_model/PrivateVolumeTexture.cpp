@@ -12,7 +12,7 @@ namespace jfrc {
 ///////////////////////////
 
 PrivateVolumeTexture::PrivateVolumeTexture()
-    : memoryLimit(5e8)
+    : memoryLimit(5e8) // 500 MB for volume texture
     , memoryAlignment(8)
     , subsampleScale(1.0)
 {

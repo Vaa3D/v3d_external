@@ -74,6 +74,9 @@ NaMainWindow::NaMainWindow()
 {
     ui.setupUi(this);
 
+    // hide compartment map until it works correctly and is not so slow on Mac
+    ui.compartmentSelectGroupBox->hide();
+
     dataFlowModel=0;
     // TODO - neuronSelector should probably be a member of Na3DViewer, not of NaMainWindow
     // neuronSelector = new NeuronSelector(this);
@@ -298,11 +301,6 @@ NaMainWindow::NaMainWindow()
             ui.annotationFrame, SLOT(selectNeuron(int)));
     connect(ui.v3dr_glwidget, SIGNAL(neuronSelected(double,double,double)),
             &neuronSelector, SLOT(updateSelectedPosition(double,double,double)));
-    connect(&neuronSelector, SIGNAL(landmarksClearNeeded()),
-            ui.v3dr_glwidget, SLOT(clearLandmarks()));
-    connect(&neuronSelector, SIGNAL(landmarksUpdateNeeded(QList<ImageMarker>)),
-            ui.v3dr_glwidget, SLOT(setLandmarks(QList<ImageMarker>)));
-
     connect(ui.actionDynamic_range, SIGNAL(triggered(bool)),
             this, SLOT(showDynamicRangeTool()));
 

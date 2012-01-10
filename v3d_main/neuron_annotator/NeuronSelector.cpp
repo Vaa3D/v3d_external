@@ -43,6 +43,7 @@ void NeuronSelector::onVolumeDataChanged()
 int NeuronSelector::getIndexSelectedNeuron()
 {
     int numNeuron = 0;
+    if (NULL == dataFlowModel) return -1;
     // sum of pixels of each neuron mask in the cube
     std::vector<int> sum;
     {
