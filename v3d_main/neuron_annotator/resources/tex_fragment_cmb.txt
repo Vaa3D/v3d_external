@@ -19,11 +19,9 @@ void main()
     // Use 3D texture coordinate in texture unit 3 to get neuron label position
     float neuronIx = texture3D(neuronLabel, gl_TexCoord[3].xyz).r;
     // prepare to multiply neuron colors by visibility value; so neurons will toggle on/off
-    // visibility is stored in the red channel
-    vec4 vis = texture1D(neuronVisibility, neuronIx);
-    float neuronScale = vis.r;
-    // selection status is stored in the green channel
-    float neuronSelected = vis.g;
+    vec4 visSel = texture1D(neuronVisibility, neuronIx);
+    float visibility = visSel.x;
+    float selectedness = visSel.y;
 
     // vColor is the scaled intensity of 3 data channels(in r,g,b) plus nc82 reference(in a)
 #ifdef TEX3D
@@ -43,14 +41,17 @@ void main()
         vec4 C3 = texture2DLod(colormap, vec2(vColor.b, 0), 0.50);
         vec4 C4 = texture2DLod(colormap, vec2(vColor.a, 0), 0.75);
 #else
-        vec4 C1 = texture2D(colormap, vec2(vColor.r, channel.x)) * neuronScale; // 0.0
-        vec4 C2 = texture2D(colormap, vec2(vColor.g, 0.25)) * neuronScale;
-        vec4 C3 = texture2D(colormap, vec2(vColor.b, 0.50)) * neuronScale;
-        vec4 C4 = texture2D(colormap, vec2(vColor.a, 0.75)); // ref is unaffected by neuron visibility
+        vec4 C1 = texture2D(colormap, vec2(vColor.r, channel.x)); // 0.0
+        vec4 C2 = texture2D(colormap, vec2(vColor.g, channel.y));
+        vec4 C3 = texture2D(colormap, vec2(vColor.b, channel.z));
+        vec4 C4 = texture2D(colormap, vec2(vColor.a, channel.w)); // ref is unaffected by neuron visibility
 #endif
 
-        // Downweight reference channel
-        // C4.a = 0.2 * C4.a;
+        // Turn off data channels if visibility is toggled off
+        C1.a *= visibility;
+        C2.a *= visibility;
+        C3.a *= visibility;
+        // Reference remains visible, even if neuron is toggled off.
 
         // aC1..aC4 are colors scaled by alpha component
 	vec3 aC1 = C1.rgb * C1.a;
@@ -58,44 +59,46 @@ void main()
 	vec3 aC3 = C3.rgb * C3.a;
         vec3 aC4 = C4.rgb * C4.a;
 
-        vec3 neuronColor = aC1 + aC2 + aC3; // blend of non-reference channels
-        float chanMax = max(C1.a, max(C2.a, C3.a)); // NOT reference
-        float alpha = chanMax;
+        float dataAlphaMax = max(C1.a, max(C2.a, C3.a));
+        float alphaMax = max(dataAlphaMax, 0.25 * C4.a); // put some extra transparency into reference/nc82 channel
 
-        // When a neuron is selected, it is colored with max brightness and opacity
-        vec3 selectedColor = neuronColor * 0.9 / alpha; // saturate brightest channel
-        const float selectedAlpha = 0.9; // make selected neurons (nearly) opaque
+        vec3 neuronColor = aC1 + aC2 + aC3 + aC4;
+        float alpha = alphaMax;
 
-        // When a neuron is highlighted, it is colored pale yellow, blended with selection color
-        vec3 highlightedColor = vec3(0.50, 0.50, 0.25) + 0.50 * selectedColor; // pale yellow
-        const float highlightedAlpha = 0.9;
+        // Selected neurons are opaque, and have a high brightness
+        // For numerical stability, compute alpha part first
+        float aScale1 = selectedness * 0.9 / (dataAlphaMax + 0.01); // avoid NaN
+        vec3 selectedColor = aC1 * aScale1 + aC2 * aScale1 + aC3 * aScale1; // no reference channel in selected
+        float selectedAlpha = selectedness * (dataAlphaMax + 0.5); // selected neurons are mostly opaque
 
-        // blend in visiblity
-        neuronColor = neuronScale * neuronColor;
-        alpha = neuronScale * alpha;
-        // blend neuron color with reference channel; ref will not appear with selected/highlighted neurons
-        neuronColor = neuronColor + aC4;
-        if (blend_mode == 1) { // alpha blending
-            neuronColor = neuronColor / max(chanMax, C4.a); // max brightness of color, then dim with alpha
+        if (blend_mode == 1) {
+            // Alpha blending mode (as opposed to maximum intensity projection)
+            // Maximize brightness of color.  All dimming is done via alpha.
+            float aScale2 = 1.0 / max(dataAlphaMax, C4.a);
+            neuronColor = C1.rgb * (C1.a * aScale2) + C2.rgb * (C2.a * aScale2) + C3.rgb * (C3.a * aScale2) + C4.rgb * (C4.a * aScale2);
         }
-        alpha = max(alpha, 0.3 * C4.a); // Increase transparency of reference/nc82 channel
-        // Exponent chosen empirically to make alpha blending resemble MIP intensities
-        alpha = pow(alpha, 1.7); // reduce effect of small intensities
-        // color selected neurons
-        neuronColor = neuronSelected * selectedColor + (1.0 - neuronSelected) * neuronColor;
-        alpha = neuronSelected * selectedAlpha + (1.0 - neuronSelected) * alpha;
 
         float Amean = (C1.a + C2.a + C3.a + C4.a)/4.0;
         float Asum = C1.a + C2.a + C3.a + C4.a;
         float Amax = max(C1.a, max(C2.a, max(C3.a, C4.a)));
 
 	vec4 oColor;
-        oColor.rgb = neuronColor;
-        oColor.a = alpha;
+
+        // This blending was not working on linux (selectedColor had NaN?)
+        float a2 = 1.0 - selectedness; // complement of selectedness
+        oColor.rgb = selectedColor + neuronColor * a2; // OK, now that NaN is elided
+        alpha = selectedAlpha + alpha * a2;
+        oColor.a = pow(alpha, 1.6); // reduce effect of small intensities
         /*
-        if (blend_mode==1) // alpha-blending
+        if (blend_mode==0) // cross-section
 	{
-                // C4.a = 0.20 * C4.a; // increase transparency of reference channel
+		float Asec = Amean;
+                oColor.rgb = (aC1 + aC2 + aC3 + aC4);
+		oColor.a = Asec;
+	}
+	else if (blend_mode==1) // alpha-blending
+	{
+                C4.a = 0.20 * C4.a; // increase transparency of reference channel
                 // modified 11 Oct 2011 CMB
                 // voxel alpha/opacity is the maximum of all channel opacities (not the average!)
                 // kludge: but also leave a bit of transparency even on the densest areas (clamp max), to help see inner structure of dense areas
@@ -104,19 +107,17 @@ void main()
                 // kludge: limit brightness of very dim voxels to reduce apparent background (clamp min scale 0.10).
                 // oColor.rgb = (aC1 + aC2 + aC3 + aC4) / clamp(Amax, 0.10, 1.0);
                 // Want color pretty much saturated in alpha blending mode, and handle brightness via alpha
-                // float Amax2 = max(C1.a, max(C2.a, max(C3.a, C4.a)));
-                oColor.a = alpha;
-                oColor.rgb = neuronColor;
+                float Amax2 = max(C1.a, max(C2.a, max(C3.a, C4.a)));
+                oColor.a = 0.30 * Amax2;
+                oColor.rgb = (aC1 + aC2 + aC3 + aC4) / (0.9 * Amax2 + 0.10);
         }
 	else // max-intensity
 	{
-                oColor.rgb = neuronColor;
-                oColor.a = alpha;
-                // oColor.rgb = (aC1 + aC2 + aC3 + aC4) / clamp(1.0 / Amax, 0.0, 1.0); // blend colors without oversaturating
+                oColor.rgb = (aC1 + aC2 + aC3 + aC4) / clamp(1.0 / Amax, 0.0, 1.0); // blend colors without oversaturating
                 // oColor.rgb = max(aC1.rgb, max(aC2.rgb, max(aC3.rgb, aC4.rgb)));
                 // oColor.a = 0.15 * Amax; // alpha does not affect maximum intensity projection
         }
-         */
+        */
 
 	gl_FragColor = gl_Color * oColor; // modulated by color_proxy
 }
