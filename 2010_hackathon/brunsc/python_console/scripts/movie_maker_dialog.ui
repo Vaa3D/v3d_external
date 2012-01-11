@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>V3DCinema Movie Maker</string>
+   <string>Vaa3DCinema Movie Maker</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
@@ -30,7 +30,7 @@
           <item>
            <widget class="QPushButton" name="addCurrentViewButton">
             <property name="toolTip">
-             <string>Add new key frame from current V3D 3D viewer state to your movie</string>
+             <string>Add new key frame from current Vaa3D 3D viewer state to your movie</string>
             </property>
             <property name="text">
              <string>Add current view</string>

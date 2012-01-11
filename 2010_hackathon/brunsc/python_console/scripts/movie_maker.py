@@ -291,7 +291,7 @@ class CameraPosition:
 
 class V3dMovieFrame:
     """
-    Any single frame of a V3D movie.
+    Any single frame of a Vaa3D movie.
     
     Includes both key frames and in-between frames
     """
@@ -356,7 +356,8 @@ class V3dMovie:
                                         # need special logic to set renderMode
                                         # ; these getters do not exist
                                         'renderMode_Cs3d' : 'setRenderMode_Cs3d',
-                                        'renderMode_Mip' : 'setRenderMode_Mip',
+                                        'renderMode_Maxip' : 'setRenderMode_Maxip',
+                                        'renderMode_Minip' : 'setRenderMode_Minip',
                                         'renderMode_Alpha' : 'setRenderMode_Alpha',
                                         }
 
@@ -433,7 +434,7 @@ class V3dMovie:
           file_root -- base name for frame files.  For example, a file_root
             of "foo" would result in frame files like "foo_frame_00001.BMP",
             "foo_frame_00002.BMP", etc.  If file_root is not specified,
-            the file name is based on the name of the V3D image.
+            the file name is based on the name of the Vaa3D image.
             
         Unlike V3dMovie.play(), V3dMovie.write_frames() might play back
         the movie faster than real time, depending on rendering and I/O
@@ -498,7 +499,7 @@ class V3dMovie:
     def generate_frame_views(self):
         """
         Unlike generate_frame_info(), generate_frame_views() actually
-        adjusts the current view in the V3D 3D viewer.
+        adjusts the current view in the Vaa3D 3D viewer.
         """
         # self.image_window.open3DWindow()
         # Turn off cut plane locks
@@ -542,7 +543,7 @@ class V3dMovie:
         if not self.view_control:
             self._find_view_control()
         if not self.view_control:
-            raise ValueError("No V3D window is attached")
+            raise ValueError("No Vaa3D window is attached")
         # print "Setting view control..."
         for getter_name in self.view_control_param_names:
             setter_name = self.view_control_param_names[getter_name]
@@ -563,7 +564,7 @@ class V3dMovie:
             if 'renderMode' in getter_name:
                 val = (val > 0.5) # boolean
             fn = getattr(self.view_control, setter_name)
-            fn(val) # set parameter in V3D view_control
+            fn(val) # set parameter in Vaa3D view_control
             # print "Setting parameter %s to %s" % (getter_name, val)
         # For some reason set[XYZ]Rotation() does an incremental change
         R = v3d.Rotation()
@@ -586,7 +587,7 @@ class V3dMovie:
         if not self.view_control:
             self._find_view_control()
         if not self.view_control:
-            raise ValueError("No V3D window is attached")
+            raise ValueError("No Vaa3D window is attached")
         # TODO absoluteRotPose() changes the view slightly.  I don't think it should...
         self.view_control.absoluteRotPose()
         camera = CameraPosition()
@@ -600,13 +601,15 @@ class V3dMovie:
             # print "Parameter %s = %s" % (param_name, val)
         # Handle render mode explicitly
         # enum RenderMode {rmCrossSection=0, rmAlphaBlending, rmMaxIntensityProjection };
-        # virtual void setRenderMode_Mip(bool b);
+        # virtual void setRenderMode_Maxip(bool b);
+        # virtual void setRenderMode_Minip(bool b);
         # virtual void setRenderMode_Alpha(bool b);
         # virtual void setRenderMode_Cs3d(bool b);
         rm = self.view_control.renderMode()
         camera.renderMode_Cs3d = (rm == 0)
         camera.renderMode_Alpha = (rm == 1)
-        camera.renderMode_Mip = (rm == 2) # boolean        
+        camera.renderMode_Maxip = (rm == 2) # boolean        
+        camera.renderMode_Minip = (rm == 3) # boolean        
         # Rotation we handle explicitly
         camera.populate_quaterion()
         return camera

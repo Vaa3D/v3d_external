@@ -82,7 +82,7 @@ bool PrivateVolumeTexture::populateVolume(const NaVolumeData::Reader& volumeRead
         // rangeData[c] = 255.0 / (colorReader.getChannelDataMax(c) - colorReader.getChannelDataMin(c));
     }
     minData[refIx] = referenceProxy.vmin[0];
-    rangeData[refIx] = 255.0 / (referenceProxy.vmax[0] - referenceProxy.vmin[0]);
+    rangeData[refIx] = 255.0 / (referenceProxy.vmax[0] / REF_CHANNEL_DIMNESS_FACTOR - referenceProxy.vmin[0]);
 
     // Use stupid box filter for now.  Once that's working, use Lanczos for better sampling.
     // TODO

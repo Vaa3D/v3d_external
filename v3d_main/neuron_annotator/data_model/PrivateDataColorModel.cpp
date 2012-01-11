@@ -33,6 +33,7 @@ void PrivateDataColorModel::colorizeIncremental(
     setSharedGamma(incGamma);
     for (int chan = 0; chan < numChannels; ++chan)
     {
+        channelColors[chan].bUseSharedGamma = desiredColorReader.getChannelUseSharedGamma(chan);
         // Use latest color information.  TODO - there might no good way to incrementally update channel colors.
         channelColors[chan].setColor(desiredColorReader.getChannelColor(chan));
         channelColors[chan].showChannel = desiredColorReader.getChannelVisibility(chan);
@@ -95,8 +96,9 @@ bool PrivateDataColorModel::initialize(const NaVolumeData::Reader& volumeReader)
         }
         else // reference channel
         {
-            channelModel.setDataRange(refProxy.vmin[0], refProxy.vmax[0]);
+            channelModel.setDataRange(refProxy.vmin[0], refProxy.vmax[0] / REF_CHANNEL_DIMNESS_FACTOR); // darken reference by giving it a higher hdr max
             channelModel.resetHdrRange();
+            channelModel.bUseSharedGamma = false; // Don't apply shared gamma to reference channel
         }
         channelColors.push_back(channelModel);
         // qDebug() << "Channel color " << channelColors.size() << qRed(color) << qGreen(color) << qBlue(color);
@@ -186,7 +188,8 @@ bool PrivateDataColorModel::setSharedGamma(qreal gamma) // for all channels
     for (int c = 0; c < channelColors.size(); ++c)
     {
         qreal oldChannelGamma = getChannelGamma(c);
-        channelColors[c].setGamma( gamma * oldChannelGamma );
+        if (channelColors[c].bUseSharedGamma)
+            channelColors[c].setGamma( gamma * oldChannelGamma );
     }
     sharedGamma = gamma;
     bChanged = true;
@@ -196,6 +199,8 @@ bool PrivateDataColorModel::setSharedGamma(qreal gamma) // for all channels
 bool PrivateDataColorModel::setChannelGamma(int index, qreal gammaParam)
 {
     qreal gamma = gammaParam / sharedGamma; // Correct for preapplication of global gamma
+    if (! channelColors[index].bUseSharedGamma)
+        gamma = gammaParam;
     if (channelColors[index].gamma == gamma)
         return false; // no change
     channelColors[index].setGamma(gamma);
@@ -233,7 +238,10 @@ qreal PrivateDataColorModel::getChannelScaledIntensity(int channel, qreal raw_in
 }
 
 qreal PrivateDataColorModel::getChannelGamma(int channel) const {
-    return channelColors[channel].getGamma() / sharedGamma; // Correct for preapplied shared Gamma
+    if (channelColors[channel].bUseSharedGamma)
+        return channelColors[channel].getGamma() / sharedGamma; // Correct for preapplied shared Gamma
+    else
+        return channelColors[channel].getGamma();
 }
 
 qreal PrivateDataColorModel::getSharedGamma() const {
@@ -256,6 +264,17 @@ bool PrivateDataColorModel::getChannelVisibility(int index) const
     return channelColors[index].showChannel;
 }
 
+bool PrivateDataColorModel::setChannelUseSharedGamma(int index, bool useIt)
+{
+    if (useIt == channelColors[index].bUseSharedGamma) return false;
+    channelColors[index].bUseSharedGamma = useIt;
+    return true;
+}
+
+bool PrivateDataColorModel::getChannelUseSharedGamma(int index) const
+{
+    return channelColors[index].bUseSharedGamma;
+}
 
 //////////////////////////////////////////////////////
 // PrivateDataColorModel::ChannelColorModel methods //
@@ -264,6 +283,7 @@ bool PrivateDataColorModel::getChannelVisibility(int index) const
 PrivateDataColorModel::ChannelColorModel::ChannelColorModel(QRgb channelColorParam)
     : blackColor(qRgb(0, 0, 0))
     , showChannel(true)
+    , bUseSharedGamma(true)
 {
     setColor(channelColorParam);
     setGamma(1.0f);

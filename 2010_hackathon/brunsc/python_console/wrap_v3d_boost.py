@@ -410,7 +410,7 @@ class V3DWrapper:
                               allow_empty=True ).exclude()
         cls.variables( access_type_matcher_t( 'protected' ), 
                               allow_empty=True ).exclude()
-        cls.member_function('getRawData').exclude() # raw pointer not useful in python
+        cls.member_functions('getRawData').exclude() # raw pointer not useful in python
         cls.member_function('getRawDataAtChannel').exclude()
         # link errors
         cls.member_functions('loadImage').exclude()        

@@ -32,6 +32,8 @@ public:
     bool getChannelVisibility(int index) const;
     bool setSharedGamma(qreal gammaParam);
     bool setChannelGamma(int index, qreal gamma);
+    bool setChannelUseSharedGamma(int index, bool useIt);
+    bool getChannelUseSharedGamma(int index) const;
     qreal getReferenceScaledIntensity(qreal raw_intensity) const;
     qreal getChannelScaledIntensity(int channel, qreal raw_intensity) const;
     qreal getChannelGamma(int channel) const;
@@ -111,6 +113,7 @@ public:
         // lookup table for faster gamma transform
         qreal gammaTable[256]; // cache for efficiency
         qreal dGammaTable[256]; // first derivative of gammaTable values
+        bool bUseSharedGamma; // flag that permits reference channel to not use shared gamma
     };
 };
 

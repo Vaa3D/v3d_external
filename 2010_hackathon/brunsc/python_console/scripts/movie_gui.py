@@ -22,7 +22,7 @@ except ImportError:
         from ui_movie_maker_dialog_pyqt4 import Ui_movie_dialog
     except ImportError:
         print """
-To use V3D Movie GUI, you must install either PySide or PyQt4.
+To use Vaa3D Movie GUI, you must install either PySide or PyQt4.
     http://www.pyside.org/
       OR
     http://www.riverbankcomputing.co.uk/software/pyqt/download
@@ -76,7 +76,7 @@ class SingleKeyFrameLabel(QtGui.QLabel):
             # print 'press'
  
     def mouseDoubleClickEvent(self, event):
-        "After double click, set V3D 3D viewer to this key frame"
+        "After double click, set Vaa3D 3D viewer to this key frame"
         # print "double click sent"
         self.go_to_frame.emit(self.frame)
         
@@ -189,9 +189,9 @@ class MovieGui(QtGui.QDialog):
 
     def help(self):
         QtGui.QMessageBox.information(self, 
-                "About V3D movie maker", 
+                "About Vaa3D movie maker", 
                 """
-First adjust the V3D 3D window to the view you want to begin your movie with.  Next press "Add current view".  
+First adjust the Vaa3D 3D window to the view you want to begin your movie with.  Next press "Add current view".  
 Continue alternately changing the view and pressing "Add current view".
 
 Press "Play" to preview your movie.
@@ -229,7 +229,7 @@ Press "Save images..." to save the movie frames to disk.
         frame_cartoon.frame.camera_position = self.movie.get_current_v3d_camera()
         
     def append_view(self):
-        "Add a new key frame based on the current view in the V3D 3D viewer"
+        "Add a new key frame based on the current view in the Vaa3D 3D viewer"
         # Perhaps there was no 3D viewer when the MovieGui was launched
         try:
             self.movie.append_current_view(interval=self.frame_interval)
@@ -239,8 +239,8 @@ Press "Save images..." to save the movie frames to disk.
                 self.movie.append_current_view(interval=self.frame_interval)
             except:
                 QtGui.QMessageBox.information(self,
-                        "Movie maker cannot find a V3D 3D window.",
-                        "Movie maker cannot find a V3D 3D window.  Perhaps you need to open one")
+                        "Movie maker cannot find a Vaa3D 3D window.",
+                        "Movie maker cannot find a Vaa3D 3D window.  Perhaps you need to open one")
                 return
         frame = self.movie.key_frames[-1]
         self.append_cartoon_frame(frame)
@@ -336,7 +336,7 @@ Press "Save images..." to save the movie frames to disk.
                     self,
                     "Choose file to save frame parameters in",
                     self.previous_save_dir,
-                    "V3D movie files (*.vmv)")[0]
+                    "Vaa3D movie files (*.vmv)")[0]
         if None == fname: return
         if len(fname) < 1: return
         fname = str(fname)
@@ -353,9 +353,9 @@ Press "Save images..." to save the movie frames to disk.
     def load_parameters(self):
         result = QtGui.QFileDialog.getOpenFileName(
                         self,
-                        "Open V3D movie parameters file",
+                        "Open Vaa3D movie parameters file",
                         self.previous_save_dir,
-                        "V3D movie files (*.vmv)")
+                        "Vaa3D movie files (*.vmv)")
         self.show() # why does window get hidden in this method?
         if None == result: return
         if 2 > len(result): return

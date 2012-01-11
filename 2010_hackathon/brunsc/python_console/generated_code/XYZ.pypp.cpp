@@ -10,7 +10,7 @@ void register_XYZ_class(){
 
     { //::XYZ
         typedef bp::class_< XYZ > XYZ_exposer_t;
-        XYZ_exposer_t XYZ_exposer = XYZ_exposer_t( "XYZ", bp::init< float, float, float >(( bp::arg("x"), bp::arg("y"), bp::arg("z") )) );
+        XYZ_exposer_t XYZ_exposer = XYZ_exposer_t( "XYZ", bp::init< float, float, float >(( bp::arg("px"), bp::arg("py"), bp::arg("pz") )) );
         bp::scope XYZ_scope( XYZ_exposer );
         XYZ_exposer.def_readwrite( "x", &XYZ::x );
         XYZ_exposer.def_readwrite( "y", &XYZ::y );

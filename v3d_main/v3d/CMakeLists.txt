@@ -192,15 +192,15 @@ if(APPLE)
         # MACOSX_BUNDLE_EXECUTABLE_NAME should match CPACK_BUNDLE_NAME
         # Launch script is called v3d_script (not just 'v3d'), because...
         # ...actual binary must be called "v3d", so macdeployqt tool can find it.
-        set(MACOSX_BUNDLE_EXECUTABLE_NAME v3d_script)
-        set(MACOSX_BUNDLE_INFO_STRING "v3d")
+        set(MACOSX_BUNDLE_EXECUTABLE_NAME vaa3d_script)
+        set(MACOSX_BUNDLE_INFO_STRING "vaa3d")
         set(MACOSX_BUNDLE_ICON_FILE "v3d.icns")
-        set(MACOSX_BUNDLE_GUI_IDENTIFIER "org.hhmi.janelia.v3d")
+        set(MACOSX_BUNDLE_GUI_IDENTIFIER "org.hhmi.janelia.vaa3d")
         set(MACOSX_BUNDLE_LONG_VERSION_STRING ${V3D_VERSION})
-        set(MACOSX_BUNDLE_BUNDLE_NAME v3d)
+        set(MACOSX_BUNDLE_BUNDLE_NAME vaa3d)
         set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${V3D_VERSION})
         set(MACOSX_BUNDLE_BUNDLE_VERSION ${PACKAGE_VERSION})
-        set(MACOSX_BUNDLE_COPYRIGHT "(c) 2006-2010 Hanchuan Peng")
+        set(MACOSX_BUNDLE_COPYRIGHT "(c) 2006-2012 Hanchuan Peng")
         configure_file(
           ${CMAKE_CURRENT_SOURCE_DIR}/../CMake/package/MacOSXBundleInfo.plist.in
           ${BUNDLE_BUILD_DIR}/Contents/Info.plist

@@ -57,6 +57,7 @@ void register_LocationSimple_class(){
         .def( 
             "init"
             , (void ( ::LocationSimple::* )(  ) )( &::LocationSimple::init ) )    
+        .def( bp::self == bp::self )    
         .def_readwrite( "ave", &LocationSimple::ave )    
         .def_readwrite( "category", &LocationSimple::category )    
         .def_readwrite( "color", &LocationSimple::color )    

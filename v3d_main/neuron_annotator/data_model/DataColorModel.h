@@ -24,6 +24,7 @@ public:
     explicit DataColorModel(const NaVolumeData& volumeDataParam);
     explicit DataColorModel(const DataColorModel& rhs);
     void setIncrementalColorSource(const DataColorModel& desiredColors, const DataColorModel& currentColors);
+    bool setChannelUseSharedGamma(int index, bool useIt);
 
 public slots:
     void initialize();
@@ -72,6 +73,7 @@ public:
         qreal getChannelDataMin(int channel) const;
         qreal getChannelDataMax(int channel) const;
         bool getChannelVisibility(int index) const;
+        bool getChannelUseSharedGamma(int index) const;
     };
 
 

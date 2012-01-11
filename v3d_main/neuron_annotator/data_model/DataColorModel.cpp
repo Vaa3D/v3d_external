@@ -24,6 +24,20 @@ DataColorModel::DataColorModel(const NaVolumeData& volumeDataParam)
             this, SLOT(initialize()));
 }
 
+bool DataColorModel::setChannelUseSharedGamma(int index, bool useIt)
+{
+    bool bChanged = false;
+    if (useIt == d.constData()->getChannelUseSharedGamma(index))
+        return false; // no change
+    {
+        Writer(*this);
+        bChanged = d->setChannelUseSharedGamma(index, useIt);
+    }
+    if (bChanged)
+        emit dataChanged();
+    return bChanged;
+}
+
 void DataColorModel::setIncrementalColorSource(const DataColorModel& desiredColorsParam, const DataColorModel& currentColorsParam)
 {
     desiredColors = &desiredColorsParam;
@@ -201,6 +215,11 @@ qreal DataColorModel::Reader::getChannelDataMax(int channel) const
 bool DataColorModel::Reader::getChannelVisibility(int channel) const
 {
     return d.constData()->getChannelVisibility(channel);
+}
+
+bool DataColorModel::Reader::getChannelUseSharedGamma(int index) const
+{
+    return d.constData()->getChannelUseSharedGamma(index);
 }
 
 ////////////////////////////////////

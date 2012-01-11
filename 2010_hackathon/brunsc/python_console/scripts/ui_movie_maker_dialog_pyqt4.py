@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'movie_maker_dialog.ui'
 #
-# Created: Tue Mar  1 16:32:24 2011
+# Created: Wed Jan 11 15:06:36 2012
 #      by: PyQt4 UI code generator 4.8.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -133,9 +133,9 @@ class Ui_movie_dialog(object):
         QtCore.QMetaObject.connectSlotsByName(movie_dialog)
 
     def retranslateUi(self, movie_dialog):
-        movie_dialog.setWindowTitle(QtGui.QApplication.translate("movie_dialog", "V3DCinema Movie Maker", None, QtGui.QApplication.UnicodeUTF8))
+        movie_dialog.setWindowTitle(QtGui.QApplication.translate("movie_dialog", "Vaa3DCinema Movie Maker", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox.setTitle(QtGui.QApplication.translate("movie_dialog", "Key Frames", None, QtGui.QApplication.UnicodeUTF8))
-        self.addCurrentViewButton.setToolTip(QtGui.QApplication.translate("movie_dialog", "Add new key frame from current V3D 3D viewer state to your movie", None, QtGui.QApplication.UnicodeUTF8))
+        self.addCurrentViewButton.setToolTip(QtGui.QApplication.translate("movie_dialog", "Add new key frame from current Vaa3D 3D viewer state to your movie", None, QtGui.QApplication.UnicodeUTF8))
         self.addCurrentViewButton.setText(QtGui.QApplication.translate("movie_dialog", "Add current view", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("movie_dialog", "after", None, QtGui.QApplication.UnicodeUTF8))
         self.frameIntervalSelector.setToolTip(QtGui.QApplication.translate("movie_dialog", "Amount of time to transition from the previous key frame to the new view", None, QtGui.QApplication.UnicodeUTF8))

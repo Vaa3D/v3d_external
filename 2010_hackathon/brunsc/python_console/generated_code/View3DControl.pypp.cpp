@@ -270,6 +270,11 @@ struct View3DControl_wrapper : View3DControl, bp::wrapper< View3DControl > {
         func_setCurChannel( arg0 );
     }
 
+    virtual void setDragWinSize( int csize ){
+        bp::override func_setDragWinSize = this->get_override( "setDragWinSize" );
+        func_setDragWinSize( csize );
+    }
+
     virtual void setFrontCut( int s ){
         bp::override func_setFrontCut = this->get_override( "setFrontCut" );
         func_setFrontCut( s );
@@ -290,9 +295,14 @@ struct View3DControl_wrapper : View3DControl, bp::wrapper< View3DControl > {
         func_setRenderMode_Cs3d( b );
     }
 
-    virtual void setRenderMode_Mip( bool b ){
-        bp::override func_setRenderMode_Mip = this->get_override( "setRenderMode_Mip" );
-        func_setRenderMode_Mip( b );
+    virtual void setRenderMode_Maxip( bool b ){
+        bp::override func_setRenderMode_Maxip = this->get_override( "setRenderMode_Maxip" );
+        func_setRenderMode_Maxip( b );
+    }
+
+    virtual void setRenderMode_Minip( bool b ){
+        bp::override func_setRenderMode_Minip = this->get_override( "setRenderMode_Minip" );
+        func_setRenderMode_Minip( b );
     }
 
     virtual void setShowMarkers( int s ){
@@ -513,6 +523,11 @@ struct View3DControl_wrapper : View3DControl, bp::wrapper< View3DControl > {
     virtual void toggleLineType(  ){
         bp::override func_toggleLineType = this->get_override( "toggleLineType" );
         func_toggleLineType(  );
+    }
+
+    virtual void toggleNStrokeCurveDrawing(  ){
+        bp::override func_toggleNStrokeCurveDrawing = this->get_override( "toggleNStrokeCurveDrawing" );
+        func_toggleNStrokeCurveDrawing(  );
     }
 
     virtual void toggleObjShader(  ){
@@ -846,6 +861,10 @@ void register_View3DControl_class(){
             , bp::pure_virtual( (void ( ::View3DControl::* )( int ) )(&::View3DControl::setCurChannel) )
             , ( bp::arg("arg0") ) )    
         .def( 
+            "setDragWinSize"
+            , bp::pure_virtual( (void ( ::View3DControl::* )( int ) )(&::View3DControl::setDragWinSize) )
+            , ( bp::arg("csize") ) )    
+        .def( 
             "setFrontCut"
             , bp::pure_virtual( (void ( ::View3DControl::* )( int ) )(&::View3DControl::setFrontCut) )
             , ( bp::arg("s") ) )    
@@ -862,8 +881,12 @@ void register_View3DControl_class(){
             , bp::pure_virtual( (void ( ::View3DControl::* )( bool ) )(&::View3DControl::setRenderMode_Cs3d) )
             , ( bp::arg("b") ) )    
         .def( 
-            "setRenderMode_Mip"
-            , bp::pure_virtual( (void ( ::View3DControl::* )( bool ) )(&::View3DControl::setRenderMode_Mip) )
+            "setRenderMode_Maxip"
+            , bp::pure_virtual( (void ( ::View3DControl::* )( bool ) )(&::View3DControl::setRenderMode_Maxip) )
+            , ( bp::arg("b") ) )    
+        .def( 
+            "setRenderMode_Minip"
+            , bp::pure_virtual( (void ( ::View3DControl::* )( bool ) )(&::View3DControl::setRenderMode_Minip) )
             , ( bp::arg("b") ) )    
         .def( 
             "setShowMarkers"
@@ -1036,6 +1059,9 @@ void register_View3DControl_class(){
         .def( 
             "toggleLineType"
             , bp::pure_virtual( (void ( ::View3DControl::* )(  ) )(&::View3DControl::toggleLineType) ) )    
+        .def( 
+            "toggleNStrokeCurveDrawing"
+            , bp::pure_virtual( (void ( ::View3DControl::* )(  ) )(&::View3DControl::toggleNStrokeCurveDrawing) ) )    
         .def( 
             "toggleObjShader"
             , bp::pure_virtual( (void ( ::View3DControl::* )(  ) )(&::View3DControl::toggleObjShader) ) )    

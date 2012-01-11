@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'movie_maker_dialog.ui'
 #
-# Created: Tue Mar  1 16:32:24 2011
-#      by: PySide uic UI code generator
+# Created: Wed Jan 11 15:06:36 2012
+#      by: pyside-uic 0.2.9 running on PySide 1.0.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -20,7 +20,7 @@ class Ui_movie_dialog(object):
         self.groupBox = QtGui.QGroupBox(movie_dialog)
         self.groupBox.setObjectName("groupBox")
         self.verticalLayout = QtGui.QVBoxLayout(self.groupBox)
-        self.verticalLayout.setMargin(0)
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
@@ -63,7 +63,7 @@ class Ui_movie_dialog(object):
         self.frame.setLineWidth(0)
         self.frame.setObjectName("frame")
         self.horizontalLayout_5 = QtGui.QHBoxLayout(self.frame)
-        self.horizontalLayout_5.setMargin(0)
+        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_5.setObjectName("horizontalLayout_5")
         self.playButtonBox = QtGui.QDialogButtonBox(self.frame)
         self.playButtonBox.setStandardButtons(QtGui.QDialogButtonBox.Help|QtGui.QDialogButtonBox.Reset)
@@ -85,7 +85,7 @@ class Ui_movie_dialog(object):
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
-        self.scrollAreaWidgetContents = QtGui.QWidget(self.scrollArea)
+        self.scrollAreaWidgetContents = QtGui.QWidget()
         self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 528, 61))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.horizontalLayout_3 = QtGui.QHBoxLayout(self.scrollAreaWidgetContents)
@@ -99,7 +99,7 @@ class Ui_movie_dialog(object):
         self.keyLabelFrame.setLineWidth(0)
         self.keyLabelFrame.setObjectName("keyLabelFrame")
         self.horizontalLayout_4 = QtGui.QHBoxLayout(self.keyLabelFrame)
-        self.horizontalLayout_4.setMargin(0)
+        self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
         self.frameCartoonLabel = QtGui.QLabel(self.keyLabelFrame)
         self.frameCartoonLabel.setMinimumSize(QtCore.QSize(50, 50))
@@ -115,6 +115,7 @@ class Ui_movie_dialog(object):
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.verticalLayout_2.addWidget(self.scrollArea)
         self.buttonBox = QtGui.QDialogButtonBox(movie_dialog)
+        self.buttonBox.setToolTip("")
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Close|QtGui.QDialogButtonBox.Open|QtGui.QDialogButtonBox.Reset|QtGui.QDialogButtonBox.Save|QtGui.QDialogButtonBox.SaveAll)
         self.buttonBox.setObjectName("buttonBox")
@@ -127,9 +128,9 @@ class Ui_movie_dialog(object):
         QtCore.QMetaObject.connectSlotsByName(movie_dialog)
 
     def retranslateUi(self, movie_dialog):
-        movie_dialog.setWindowTitle(QtGui.QApplication.translate("movie_dialog", "V3DCinema Movie Maker", None, QtGui.QApplication.UnicodeUTF8))
+        movie_dialog.setWindowTitle(QtGui.QApplication.translate("movie_dialog", "Vaa3DCinema Movie Maker", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox.setTitle(QtGui.QApplication.translate("movie_dialog", "Key Frames", None, QtGui.QApplication.UnicodeUTF8))
-        self.addCurrentViewButton.setToolTip(QtGui.QApplication.translate("movie_dialog", "Add new key frame from current V3D 3D viewer state to your movie", None, QtGui.QApplication.UnicodeUTF8))
+        self.addCurrentViewButton.setToolTip(QtGui.QApplication.translate("movie_dialog", "Add new key frame from current Vaa3D 3D viewer state to your movie", None, QtGui.QApplication.UnicodeUTF8))
         self.addCurrentViewButton.setText(QtGui.QApplication.translate("movie_dialog", "Add current view", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("movie_dialog", "after", None, QtGui.QApplication.UnicodeUTF8))
         self.frameIntervalSelector.setToolTip(QtGui.QApplication.translate("movie_dialog", "Amount of time to transition from the previous key frame to the new view", None, QtGui.QApplication.UnicodeUTF8))

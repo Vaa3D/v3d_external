@@ -180,7 +180,7 @@ void NaVolumeData::loadVolumeDataFromFiles()
     qDebug() << "Loading 16-bit image data from disk absorbed "
             << (double)data_size / double(1e6) << " MB of RAM"; // kibibytes boo hoo whatever...
 
-    // qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() << __FILE__ << __LINE__;
+    qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() << __FILE__ << __LINE__;
     emit progressCompleted();
     emit dataChanged();
 }

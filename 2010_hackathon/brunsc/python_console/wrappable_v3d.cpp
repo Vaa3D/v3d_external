@@ -185,6 +185,7 @@ TriviewControl* ImageWindow::getTriviewControl() {
     return v3d::get_plugin_callback()->getTriviewControl(handle);
 }
 
+/*
 bool operator!=(const LocationSimple& lhs, const LocationSimple& rhs)
 {
     if (lhs.x != rhs.x) return true;
@@ -197,6 +198,7 @@ bool operator==(const LocationSimple& lhs, const LocationSimple& rhs)
 {
     return ! (lhs != rhs);
 }
+*/
 
 bool operator==(const V3DPluginArgItem& lhs, const V3DPluginArgItem& rhs) {
     return lhs.p == rhs.p;

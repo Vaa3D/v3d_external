@@ -50,7 +50,7 @@ struct Image4DSimple_wrapper : Image4DSimple, bp::wrapper< Image4DSimple > {
 
 void register_Image4DSimple_class(){
 
-    bp::class_< Image4DSimple_wrapper >( "Image4DSimple", "\n Volume image with dimensions X, Y, Z, and time.\n", bp::init< >("\n Volume image with dimensions X, Y, Z, and time.\n") )    
+    bp::class_< Image4DSimple_wrapper >( "Image4DSimple", "\n Volume image with dimensions X, Y, Z, and time.\n", bp::init< >() )    
         .def( 
             "cleanExistData"
             , (void ( ::Image4DSimple::* )(  ) )(&::Image4DSimple::cleanExistData)
@@ -60,74 +60,74 @@ void register_Image4DSimple_class(){
             , (void ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::deleteRawDataAndSetPointerToNull ) )    
         .def( 
             "getCDim"
-            , (long int ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getCDim ) )    
+            , (long int ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getCDim ) )    
         .def( 
             "getCustomStructPointer"
             , (void * ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getCustomStructPointer )
             , bp::return_value_policy< bp::return_opaque_pointer >() )    
         .def( 
             "getDatatype"
-            , (::ImagePixelType ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getDatatype ) )    
+            , (::ImagePixelType ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getDatatype ) )    
         .def( 
             "getError"
-            , (int ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getError ) )    
+            , (int ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getError ) )    
         .def( 
             "getFileName"
             , (char const * ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getFileName ) )    
         .def( 
             "getOriginX"
-            , (double ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getOriginX ) )    
+            , (double ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getOriginX ) )    
         .def( 
             "getOriginY"
-            , (double ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getOriginY ) )    
+            , (double ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getOriginY ) )    
         .def( 
             "getOriginZ"
-            , (double ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getOriginZ ) )    
+            , (double ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getOriginZ ) )    
         .def( 
             "getPreValidZSliceNum"
-            , (long int ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getPreValidZSliceNum ) )    
+            , (long int ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getPreValidZSliceNum ) )    
         .def( 
             "getRezX"
-            , (double ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getRezX ) )    
+            , (double ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getRezX ) )    
         .def( 
             "getRezY"
-            , (double ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getRezY ) )    
+            , (double ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getRezY ) )    
         .def( 
             "getRezZ"
-            , (double ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getRezZ ) )    
+            , (double ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getRezZ ) )    
         .def( 
             "getTDim"
-            , (long int ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getTDim ) )    
+            , (long int ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getTDim ) )    
         .def( 
             "getTimePackType"
-            , (::TimePackType ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getTimePackType ) )    
+            , (::TimePackType ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getTimePackType ) )    
         .def( 
             "getTotalBytes"
-            , (long int ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getTotalBytes ) )    
+            , (long int ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getTotalBytes ) )    
         .def( 
             "getTotalUnitNumber"
-            , (long int ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getTotalUnitNumber ) )    
+            , (long int ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getTotalUnitNumber ) )    
         .def( 
             "getTotalUnitNumberPerChannel"
-            , (long int ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getTotalUnitNumberPerChannel ) )    
+            , (long int ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getTotalUnitNumberPerChannel ) )    
         .def( 
             "getTotalUnitNumberPerPlane"
-            , (long int ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getTotalUnitNumberPerPlane ) )    
+            , (long int ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getTotalUnitNumberPerPlane ) )    
         .def( 
             "getUnitBytes"
-            , (long int ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getUnitBytes ) )    
+            , (long int ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getUnitBytes ) )    
         .def( 
             "getValidZSliceNum"
-            , (long int ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getValidZSliceNum ) )    
+            , (long int ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getValidZSliceNum ) )    
         .def( 
             "getXDim"
-            , (long int ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getXDim ) )    
+            , (long int ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getXDim ) )    
         .def( 
             "getYDim"
-            , (long int ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getYDim ) )    
+            , (long int ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getYDim ) )    
         .def( 
             "getZDim"
-            , (long int ( ::Image4DSimple::* )(  ) )( &::Image4DSimple::getZDim ) )    
+            , (long int ( ::Image4DSimple::* )(  ) const)( &::Image4DSimple::getZDim ) )    
         .def( 
             "isSameDataBuffer"
             , (bool ( ::Image4DSimple::* )( ::Image4DSimple * ) )( &::Image4DSimple::isSameDataBuffer )

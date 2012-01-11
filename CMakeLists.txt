@@ -51,10 +51,10 @@ if(APPLE)
     endif()
 endif()
 
-set(V3D_PLATFORM_NAME "${PLATFORM_FLAVOR}" CACHE STRING "Platform name describing this particular V3D binary type.")
+set(V3D_PLATFORM_NAME "${PLATFORM_FLAVOR}" CACHE STRING "Platform name describing this particular Vaa3D binary type.")
 add_definitions(-DV3D_PLATFORM_NAME=\"${V3D_PLATFORM_NAME}\") # so we can access platform name from running code.
 
-# I want to have a runnable arrangement of V3D and plugins in the build area
+# I want to have a runnable arrangement of Vaa3D and plugins in the build area
 set(V3D_STAGING_BASE_DIR "${CMAKE_BINARY_DIR}/v3d/${V3D_PLATFORM_NAME}" CACHE PATH "Build location for v3d and plugin binaries.")
 set(V3D_BUILD_BINARY_DIR ${V3D_STAGING_BASE_DIR} CACHE INTERNAL "Location of v3d executable and plugins." FORCE)
 
@@ -101,11 +101,11 @@ if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
     set(CPACK_PACKAGE_FILE_NAME "InstallNeuronAnnotator-${V3D_VERSION}-${V3D_PLATFORM_NAME}")
 else()
     set(CPACK_PACKAGE_NAME v3d)
-    set(CPACK_PACKAGE_FILE_NAME "InstallV3d-${V3D_VERSION}-${V3D_PLATFORM_NAME}")
+    set(CPACK_PACKAGE_FILE_NAME "InstallVaa3D-${V3D_VERSION}-${V3D_PLATFORM_NAME}")
 endif()
 # name of dmg file
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
-    "V3D is a bioimage volume visualization and analysis application.")
+    "Vaa3D is a bioimage volume visualization and analysis application.")
 set(CPACK_PACKAGE_VENDOR "Howard Hughes Medical Institute Janelia Farm Research Campus")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/LICENSE")
 set(CPACK_PACKAGE_VERSION "${V3D_VERSION}")
@@ -115,11 +115,11 @@ set(CPACK_PACKAGE_EXECUTABLES "v3d.exe" "v3d")
 
 # Component arrangement in NSIS installer (and possible mac package installer, if we make one)
 set(CPACK_COMPONENT_V3D_REQUIRED TRUE)
-set(CPACK_COMPONENT_V3D_DESCRIPTION "V3D application for bioimage visualization and analysis")
+set(CPACK_COMPONENT_V3D_DESCRIPTION "Vaa3D application for bioimage visualization and analysis")
 set(CPACK_COMPONENT_PLUGINS_DEPENDS v3d)
-set(CPACK_COMPONENT_PLUGINS_DESCRIPTION "Standard plugin extensions to V3D")
+set(CPACK_COMPONENT_PLUGINS_DESCRIPTION "Standard plugin extensions to Vaa3D")
 set(CPACK_COMPONENT_RUNTIMELIBRARIES_DEPENDS v3d)
-set(CPACK_COMPONENT_RUNTIMELIBRARIES_DESCRIPTION "Qt, Tiff, and other dynamic libraries needed by V3D")
+set(CPACK_COMPONENT_RUNTIMELIBRARIES_DESCRIPTION "Qt, Tiff, and other dynamic libraries needed by Vaa3D")
 set(CPACK_COMPONENTS_ALL_IN_ONE_PACKAGE TRUE) # Just one stgz installer, please
 
 # Mac installer is a .dmg disk image containing an application bundle,
@@ -128,7 +128,7 @@ set(CPACK_COMPONENTS_ALL_IN_ONE_PACKAGE TRUE) # Just one stgz installer, please
 # when the user tries to open the dmg file.
 if(APPLE)
     set(V3D_MAC_CREATE_BUNDLE TRUE CACHE BOOL
-        "Create V3D.app application bundle, instead of v3d command line tool")
+        "Create Vaa3D.app application bundle, instead of v3d command line tool")
     if(V3D_MAC_CREATE_BUNDLE)
         # But macdeployqt does not fix up plugins properly
         find_package(Perl)
@@ -153,7 +153,7 @@ if(APPLE)
     if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
         set(CPACK_DMG_VOLUME_NAME "NeuronAnnotator-${V3D_VERSION}")
     else()
-        set(CPACK_DMG_VOLUME_NAME "v3d-${V3D_VERSION}")
+        set(CPACK_DMG_VOLUME_NAME "Vaa3D-${V3D_VERSION}")
     endif()
     if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
         set(CPACK_DMG_DS_STORE "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/dmg_DS_Store_na")
@@ -181,11 +181,11 @@ elseif(WIN32)
        "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/CMake/package/windows\\\\v3dInBox128.png")
 
     if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
-        set(CPACK_NSIS_MENU_LINKS "bin/v3d.exe" "NeuronAnnotator")
+        set(CPACK_NSIS_MENU_LINKS "bin/vaa3d.exe" "NeuronAnnotator")
         SET(CPACK_NSIS_DISPLAY_NAME NeuronAnnotator)
     else()
-        set(CPACK_NSIS_MENU_LINKS "bin/v3d.exe" "V3D")
-        SET(CPACK_NSIS_DISPLAY_NAME V3D)
+        set(CPACK_NSIS_MENU_LINKS "bin/vaa3d.exe" "Vaa3D")
+        SET(CPACK_NSIS_DISPLAY_NAME Vaa3D)
     endif()
     SET(CPACK_NSIS_URL_INFO_ABOUT  
         "http://penglab.janelia.org/proj/v3d/V3D/About_V3D.html")
@@ -200,9 +200,9 @@ else() # Linux
     # cpack 2.8.3 is better, but it turns out that cpack/deb is inadequate to make a world class deb distribution.
     # if(DPKG)
     if(FALSE)
-      # Debian package.  Our eventual goal is "apt-get install v3d"
+      # Debian package.  Our eventual goal is "apt-get install vaa3d"
       set(CPACK_GENERATOR DEB)
-      set(CPACK_PACKAGE_FILE_NAME v3d-${V3D_VERSION})
+      set(CPACK_PACKAGE_FILE_NAME vaa3d-${V3D_VERSION})
       set(CPACK_DEBIAN_PACKAGE_DEPENDS
         "libtiff4 (>= 3.9.4-2), libqt4-opengl (>= 4.7.0), libqt4-network (>= 4.7.0), libqt4-xml (>= 4.7.0)"
       )
