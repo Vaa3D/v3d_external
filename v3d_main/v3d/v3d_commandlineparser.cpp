@@ -64,7 +64,7 @@ void V3D_CL_INTERFACE::copy(const V3D_CL_INTERFACE& input)
         outputList.push_back(input.outputList.at(i));
     }
 }
-    
+
 
 // command line parser class
 int CLP::error( void (*help)() )
@@ -77,9 +77,10 @@ int CLP::error( void (*help)() )
 // check if the file is valid
 bool CLP::check_filename(QString fn)
 {
-	qDebug()<<"file name ..."<<fn;
-	
-	QFileInfo curfile_info(fn);
+    qDebug()<<"file name ..."<<fn;
+
+    QFileInfo curfile_info(fn);
+
     if(curfile_info.isDir())
     {
         return true;
@@ -88,18 +89,21 @@ bool CLP::check_filename(QString fn)
     {
         if ( (curfile_info.suffix().toUpper()=="ANO") ||
              (curfile_info.suffix().toUpper()=="APO" || 
-			  curfile_info.suffix().toUpper()=="SWC" || 
-			  curfile_info.suffix().toUpper()=="OBJ" || 
-			  curfile_info.suffix().toUpper()=="V3DS") ||
+              curfile_info.suffix().toUpper()=="SWC" ||
+              curfile_info.suffix().toUpper()=="OBJ" ||
+              curfile_info.suffix().toUpper()=="V3DS") ||
              (curfile_info.suffix().toUpper()=="ATLAS") ||
              (curfile_info.suffix().toUpper()=="ZIP") ||
              (curfile_info.suffix().toUpper()=="LSM") || 
-			 (curfile_info.suffix().toUpper()=="TIF")  || 
-			 (curfile_info.suffix().toUpper()=="TIFF") || 
-			 (curfile_info.suffix().toUpper()=="MRC") || 
-			 (curfile_info.suffix().toUpper()=="RAW") || 
- 			 (curfile_info.suffix().toUpper()=="RAW5") || 
-			 (curfile_info.suffix().toUpper()=="V3DRAW") ||
+             (curfile_info.suffix().toUpper()=="TIF")  ||
+             (curfile_info.suffix().toUpper()=="TIFF") ||
+             (curfile_info.suffix().toUpper()=="MRC") ||
+             (curfile_info.suffix().toUpper()=="RAW") ||
+             (curfile_info.suffix().toUpper()=="RAW5") ||
+             (curfile_info.suffix().toUpper()=="V3DRAW") ||
+             (curfile_info.suffix().toUpper()=="IMG") ||
+             (curfile_info.suffix().toUpper()=="HDR") ||
+             (curfile_info.suffix().toUpper()=="NII") ||
              fn.contains("://") ) // url
         {
             return true;
@@ -110,7 +114,7 @@ bool CLP::check_filename(QString fn)
             return false;
         }
     }
-	
+
 }
 
 // parsing parameters
@@ -292,7 +296,7 @@ int CLP::parse(int argc, char *argv[], void (*help)())
                                     }
                                     else
                                     {
-                                        cout << "The format not supported."<<endl;
+                                        cout << "The file format is not supported or the file does not exist."<<endl;
                                         return false;
                                     }
                                 }
@@ -330,14 +334,14 @@ int CLP::parse(int argc, char *argv[], void (*help)())
 
                                 qDebug()<<"call plugin method ..."<<i_v3d.pluginmethod;
                             }
-							else if (!strcmp(key, "f"))
+                            else if (!strcmp(key, "f"))
                             {
                                 // plugin function
                                 i_v3d.pluginfunc = argv[i+1];
                                 i++;
                                 
                                 i_v3d.hideV3D = true; // do not open v3d GUI
-								
+
                                 qDebug()<<"call plugin function ..."<<i_v3d.pluginfunc;
                             }
                             else if(!strcmp(key, "p"))
@@ -372,7 +376,7 @@ int CLP::parse(int argc, char *argv[], void (*help)())
                                             {
                                                 //istringstream iss(str);
                                                 parList.push_back((char *)(str.c_str()));
-                                            
+
                                             } 
                                         }
                                     }
@@ -398,10 +402,10 @@ int CLP::parse(int argc, char *argv[], void (*help)())
 
                         }
                     }
-					else
-					{
-						return error(help);
-					}
+                    else
+                    {
+                        return error(help);
+                    }
 
                 }
 
@@ -415,7 +419,7 @@ int CLP::parse(int argc, char *argv[], void (*help)())
             
         }
     }
-	
-	return true;
+
+    return true;
 }
 
