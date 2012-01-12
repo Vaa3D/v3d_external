@@ -175,7 +175,7 @@ void RendererNeuronAnnotator::shaderTexBegin(bool stream)
 
                 // float n = FILL_CHANNEL-1; // 0-based
                 float n = 4.0;
-                shader->setUniform4f("channel", 0/n, 1/n, 2/n, 3/n);
+                shader->setUniform4f("channel", 0.0/n, 1.0/n, 2.0/n, 3.0/n);
                 shader->setUniform1i("blend_mode", renderMode);
                 shader->setUniform1i("format_bgra", format_bgra);
 

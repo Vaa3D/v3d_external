@@ -25,18 +25,16 @@ bool VolumeTexture::initializeGL()
 
 void VolumeTexture::setDataFlowModel(const DataFlowModel& dataFlowModel)
 {
-    if (volumeData != &dataFlowModel.getVolumeData())
-    {
-        volumeData = &dataFlowModel.getVolumeData();
-        connect(volumeData, SIGNAL(dataChanged()),
-                this, SLOT(updateVolume()));
-        Writer(*this);
-        d->setNeuronSelectionModel(dataFlowModel.getNeuronSelectionModel());
-        connect(&dataFlowModel.getNeuronSelectionModel(), SIGNAL(visibilityChanged()),
-                this, SLOT(updateNeuronVisibilityTexture()));
-        connect(&dataFlowModel.getNeuronSelectionModel(), SIGNAL(selectionChanged()),
-                this, SLOT(updateNeuronVisibilityTexture()));
-    }
+    volumeData = &dataFlowModel.getVolumeData();
+    // qDebug() << "Connecting NaVolumeData::dataChanged() to VolumeTexture::updateVolume()";
+    // I cannot understand why this signal gets disconnected between loads sometimes, but it does.
+    // ...so try reestablishing it every time.  Thank you Qt::UniqueConnection.
+    connect(volumeData, SIGNAL(dataChanged()),
+            this, SLOT(updateVolume()), Qt::UniqueConnection);
+    Writer(*this);
+    d->setNeuronSelectionModel(dataFlowModel.getNeuronSelectionModel());
+    connect(&dataFlowModel.getNeuronSelectionModel(), SIGNAL(dataChanged()),
+            this, SLOT(updateNeuronVisibilityTexture()), Qt::UniqueConnection);
 }
 
 /* slot */
@@ -87,6 +85,7 @@ bool VolumeTexture::updateVolume()
 /* slot */
 void VolumeTexture::updateNeuronVisibilityTexture()
 {
+    // qDebug() << "VolumeTexture::updateNeuronVisibilityTexture()" << __FILE__ << __LINE__;
     bool bSucceeded = true;
     {
         Writer(*this);
