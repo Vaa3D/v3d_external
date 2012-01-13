@@ -148,6 +148,47 @@ void NaVolumeData::setProgressValue(int progressValue)
     emit progressValueChanged(currentProgress);
 }
 
+// You might ask why I don't use My4DImage::flip(axis):
+// Method My4DImage::flip(axis) does not work for multichannel images, and is 5 times slower
+// than this flipY method.
+void flipY(My4DImage* img)
+{
+    if (NULL == img) return;
+    const long su = img->getUnitBytes();
+    const long sx = img->getXDim();
+    const long sy = img->getYDim();
+    const long sz = img->getZDim();
+    const long sc = img->getCDim();
+    size_t rowBytes = su * sx;
+    size_t sliceBytes = rowBytes * sy;
+    size_t chanBytes = sliceBytes * sz;
+    size_t halfY = sy / 2;
+    std::vector<unsigned char> rowSwapBuf(rowBytes);
+    unsigned char* rowBuf = &rowSwapBuf[0];
+    // qDebug() << sx << sy << sz << sc << halfY;
+    // qDebug() << img->getTotalBytes() << img->getTotalUnitNumber() << sx * sy * sz * sc << img->getTotalUnitNumberPerPlane() << sliceBytes;
+    unsigned char* rawData = img->getRawData();
+    unsigned char* chanPtr;
+    unsigned char* slicePtr;
+    for (int c = 0; c < sc; ++c)
+    {
+        chanPtr = rawData + c * chanBytes;
+        for (int z = 0; z < sz; ++z)
+        {
+            slicePtr = chanPtr + z * sliceBytes;
+            for (int y = 0; y <= halfY; ++y)
+            {
+                // swap scan line y with scan line (sz - y - 1)
+                unsigned char* rowA = slicePtr + y * rowBytes;
+                unsigned char* rowB = slicePtr + (sy - 1 - y) * rowBytes;
+                memcpy(rowBuf, rowA, rowBytes);
+                memcpy(rowA, rowB, rowBytes);
+                memcpy(rowB, rowBuf, rowBytes);
+            }
+        }
+    }
+}
+
 /* slot */
 void NaVolumeData::loadVolumeDataFromFiles()
 {
@@ -165,6 +206,17 @@ void NaVolumeData::loadVolumeDataFromFiles()
         // qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() << __FILE__ << __LINE__;
         stacksLoaded = volumeWriter.loadStacks();
         // qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() << __FILE__ << __LINE__;
+
+        // Temporary kludge to counteract complicated flipping that occurs during neuron separation.
+        if (stacksLoaded) {
+            qDebug() << "Flipping Y-axis of images to compensate for unfortunate 2011-2012 data issues" << stopwatch.elapsed() << __FILE__ << __LINE__;
+            flipY(originalImageStack);
+            flipY(neuronMaskStack);
+            // Data images are flipped relative to reference image.  I turned off flipping in
+            // method NaVolumeData::Writer::normalizeReferenceStack(), rather than revert it here.
+            // flipY(referenceStack);
+            // qDebug() << stopwatch.elapsed();
+        }
     } // release locks before emit
     if (! stacksLoaded) {
         emit progressAborted(QString("Problem loading stacks"));
@@ -179,6 +231,7 @@ void NaVolumeData::loadVolumeDataFromFiles()
     qDebug() << "Loading 16-bit image data from disk took " << stopwatch.elapsed() / 1000.0 << " seconds";
     qDebug() << "Loading 16-bit image data from disk absorbed "
             << (double)data_size / double(1e6) << " MB of RAM"; // kibibytes boo hoo whatever...
+
 
     // qDebug() << "NaVolumeData::loadVolumeDataFromFiles()" << stopwatch.elapsed() / 1000.0 << "seconds" << __FILE__ << __LINE__;
     emit progressCompleted();
@@ -339,7 +392,7 @@ bool NaVolumeData::Writer::normalizeReferenceStack(My4DImage* initialReferenceSt
             for (int y=0;y<yDim;y++) {
                 for (int x=0;x<xDim;x++) {
                     int value=(*initialProxy.at_uint16(x,y,z,0))/16; // convert from 12-bit to 8-bit
-                    referenceProxy.put8bit_fit_at(x,(yDim-y)-1,z,0,value); // For some reason, the Y-dim seems to need inversion
+                    referenceProxy.put8bit_fit_at(x,y,z,0,value); // For some reason, the Y-dim seems to need inversion
                 }
             }
         }
@@ -347,7 +400,7 @@ bool NaVolumeData::Writer::normalizeReferenceStack(My4DImage* initialReferenceSt
         for (int z=0;z<zDim;z++) {
             for (int y=0;y<yDim;y++) {
                 for (int x=0;x<xDim;x++) {
-                    referenceProxy.put8bit_fit_at(x,(yDim-y)-1,z,0, (*initialProxy.at_uint8(x,y,z,0))); // For some reason, the Y-dim seems to need inversion
+                    referenceProxy.put8bit_fit_at(x,y,z,0, (*initialProxy.at_uint8(x,y,z,0))); // For some reason, the Y-dim seems to need inversion
                 }
             }
         }
