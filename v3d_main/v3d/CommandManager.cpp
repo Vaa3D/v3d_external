@@ -8,6 +8,7 @@
 #include "../neuron_annotator/utility/SingleNeuronLsmSetReader.h"
 #include "../neuron_annotator/utility/StitchedFileUtility.h"
 #include "../neuron_annotator/utility/ImageLoader.h"
+#include "../neuron_annotator/analysis/ScreenPatternAnnotator.h"
 
 using namespace std;
 
@@ -72,6 +73,14 @@ bool CommandManager::execute() {
             return false;
         }
         return imageLoader.execute();
+    } else if (firstArg==ScreenPatternAnnotator::getCommandLineDescription()) {
+        ScreenPatternAnnotator screenPatternAnnotator;
+        int status=screenPatternAnnotator.processArgs(argList);
+        if (status!=0) {
+            cout << getUsageString();
+            return false;
+        }
+        return screenPatternAnnotator.execute();
     } else {
         cout << getUsageString();
         return false;
@@ -103,6 +112,10 @@ string CommandManager::getUsageString() {
     usage.append(ImageLoader::getCommandLineDescription());
     usage.append("\n");
     usage.append(ImageLoader::getUsage());
+    usage.append("\n");
+    usage.append(ScreenPatternAnnotator::getCommandLineDescription());
+    usage.append("\n");
+    usage.append(ScreenPatternAnnotator::getUsage());
     usage.append("\n");
     return usage;
 }
