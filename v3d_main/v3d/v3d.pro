@@ -173,6 +173,7 @@ HEADERS += \
     ../neuron_annotator/utility/Icons.h \
     ../neuron_annotator/utility/DataThread.h \
     ../neuron_annotator/utility/ConsoleObserver.h \
+    ../neuron_annotator/analysis/ScreenPatternAnnotator.h \
     ../webservice/gsoap2/stdsoap2.h \
     ../webservice/console/envH.h \
     ../webservice/console/envStub.h \
@@ -260,6 +261,7 @@ SOURCES += \
     ../neuron_annotator/utility/DataThread.cpp \
     ../neuron_annotator/utility/ConsoleObserver.cpp \
     ../neuron_annotator/utility/ImageLoader.cpp \
+    ../neuron_annotator/analysis/ScreenPatternAnnotator.cpp \
     ../webservice/gsoap2/stdsoap2.cpp \
     ../webservice/console/envC.cpp \
     ../webservice/console/cdsC.cpp \
