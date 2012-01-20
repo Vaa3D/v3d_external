@@ -87,6 +87,9 @@ public slots:
     void setStereoAnaglyphGreenMagenta(bool);
     void setStereoRowInterleaved(bool);
     void setStereoMode(int);
+    void setCustomCutMode();
+    void cancelCustomCutMode();
+    void applyCustomCut();
 
 protected slots:
     // focus setting should be done via cameraModel, not with these methods.

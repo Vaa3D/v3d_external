@@ -31,8 +31,11 @@ public:
              || (m_y != rhs.m_y)
              || (m_z != rhs.m_z));
     }
+    qreal dot(const BaseVector3D& rhs) const {
+        return m_x * rhs.m_x + m_y * rhs.m_y + m_z * rhs.m_z;
+    }
     qreal normSquared() const {
-        return m_x * m_x + m_y * m_y + m_z * m_z;
+        return this->dot(*this);
     }
     qreal norm() const {
         return std::sqrt(normSquared());

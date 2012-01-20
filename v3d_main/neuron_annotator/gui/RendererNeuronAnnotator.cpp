@@ -5,16 +5,24 @@
 #include "../3drenderer/v3dr_glwidget.h"
 #include "../geometry/Rotation3D.h"
 
-#define NA_USE_VOLUME_TEXTURE_CMB 1
-
 RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     : QObject(NULL)
     , Renderer_gl2(w)
     , stereo3DMode(STEREO_OFF)
     , bStereoSwapEyes(false)
     , bShowCornerAxes(true)
+    , maxGLClipPlanes(1)
+    , customClipPlanes(maxGLClipPlanes)
+    , bShowClipGuide(false)
 {
     // qDebug() << "RendererNeuronAnnotator constructor" << this;
+
+
+    // Hard code first plane to positive y-axis for testing
+    if (maxGLClipPlanes > 0) { // set to (0,1,0,-0.5)
+        customClipPlanes[0][1] = 1.0;
+        customClipPlanes[0][3] = -0.1;
+    }
 
     // black background for consistency with other viewers
     RGBA32f bg_color;
@@ -55,6 +63,29 @@ RendererNeuronAnnotator::~RendererNeuronAnnotator()
     // VolumeTexture manages the texture memory, not base class.  So set to NULL before it gets a chance to clear it.
     Xslice_data = Yslice_data = Zslice_data = NULL;
     Xtex_list = Ytex_list = Ztex_list = NULL;
+}
+
+void RendererNeuronAnnotator::applyCustomCut(const CameraModel& cameraModel)
+{
+    // Cut plane passes through the camera focus
+    Vector3D f = cameraModel.focus();
+    // convert focus to lie within unit cube, to match opengl transforms used.
+    // TODO - might need to rotate before scaling?
+    f.x() = f.x() / dim1;
+    f.y() = 1.0 - f.y() / dim2;
+    f.z() = 1.0 - f.z() / dim3;
+    Vector3D up_eye(0, 1, 0); // up direction in eye coordinate system = y axis
+    Rotation3D R_obj_eye = cameraModel.rotation().transpose(); // rotation to convert eye coordinates to object coordinates
+    Vector3D up_obj = R_obj_eye * up_eye;
+    up_obj.x() *= -1; // ?
+    double distance = f.dot(up_obj);
+    // qDebug() << f.x() << f.y() << f.z() << distance;
+    // qDebug() << up_obj.x() << up_obj.y() << up_obj.z() << -distance;
+    int planeIndex = 0; // TODO - for testing only - should be "next" index
+    customClipPlanes[planeIndex][0] = up_obj.x();
+    customClipPlanes[planeIndex][1] = up_obj.y();
+    customClipPlanes[planeIndex][2] = up_obj.z();
+    customClipPlanes[planeIndex][3] = -distance;
 }
 
 /* slot */
@@ -134,19 +165,29 @@ void RendererNeuronAnnotator::loadShader()
             #endif
 
             qDebug("+++++++++ shader for Volume texture2D");
-            QString texShaderName(":/neuron_annotator/resources/tex_fragment_cmb.txt");
-            // QString texShaderName(":/neuron_annotator/resources/mip_volume.frag");
+            // glGetIntegerv(GL_MAX_CLIP_PLANES, &maxGLClipPlanes);
             bool bUseClassicV3dShader = false;
+            QString volVertexShaderName(":/neuron_annotator/resources/color_vertex_cmb.txt");
+            QString volFragmentShaderName(":/neuron_annotator/resources/tex_fragment_cmb.txt");
             if (bUseClassicV3dShader)
-                 texShaderName = ":/shader/tex_fragment.txt";
+                 volFragmentShaderName = ":/shader/tex_fragment.txt";
+            QString defClip = QString("#version 120\n#define MaxClipPlanes %1\n").arg(maxGLClipPlanes);
+            qDebug() << defClip;
             linkGLShader(SMgr, shaderTex2D,
-                            0, //Q_CSTR(resourceTextFile(":/shader/color_vertex.txt")),
-                            Q_CSTR(QString("#undef TEX3D \n") + deftexlod + resourceTextFile(texShaderName)));
+                         Q_CSTR(
+                                defClip +
+                                resourceTextFile(volVertexShaderName)),
+                         Q_CSTR(
+                                defClip +
+                                QString("#undef TEX3D \n") + deftexlod + resourceTextFile(volFragmentShaderName)));
 
             qDebug("+++++++++ shader for Volume texture3D");
             linkGLShader(SMgr, shaderTex3D,
-                            0, //Q_CSTR(resourceTextFile(":/shader/color_vertex.txt")),
-                            Q_CSTR(QString("#define TEX3D \n") + deftexlod + resourceTextFile(texShaderName)));
+                         Q_CSTR(
+                                defClip +
+                                resourceTextFile(volVertexShaderName)),
+                         Q_CSTR(defClip +
+                                QString("#define TEX3D \n") + deftexlod + resourceTextFile(volFragmentShaderName)));
 
     }
     catch (...) {
@@ -178,6 +219,14 @@ void RendererNeuronAnnotator::shaderTexBegin(bool stream)
                 shader->setUniform4f("channel", 0.0/n, 1.0/n, 2.0/n, 3.0/n);
                 shader->setUniform1i("blend_mode", renderMode);
                 shader->setUniform1i("format_bgra", format_bgra);
+
+                // Hard coded first clip plane for testing
+                for (int p = 0; p < customClipPlanes.size(); ++p)
+                {
+                    const double* v = &customClipPlanes[0][0];
+                    QString varStr = QString("clipPlane[%1]").arg(p);
+                    shader->setUniform4f(varStr.toStdString().c_str(), v[0], v[1], v[2], v[3]);
+                }
 
                 // switch to colormap texture
                 glActiveTextureARB(GL_TEXTURE1_ARB);
@@ -1092,7 +1141,12 @@ void RendererNeuronAnnotator::paint_mono()
 
     if (bShowCornerAxes)
     {
-        paint_corner_axes();
+        paintCornerAxes();
+    }
+
+    if (bShowClipGuide)
+    {
+        paintClipGuide();
     }
 
     // must be at last
@@ -1132,7 +1186,31 @@ void RendererNeuronAnnotator::setShowCornerAxes(bool b)
     emit showCornerAxesChanged(bShowCornerAxes);
 }
 
-void RendererNeuronAnnotator::paint_corner_axes()
+// Draw a yellow line accross the screen for setting user clip plane
+void RendererNeuronAnnotator::paintClipGuide()
+{
+    glPushAttrib(GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT); // save color and depth test
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    glDisable(GL_DEPTH_TEST); // draw over the existing scene
+    glBegin(GL_LINES);
+        glColor3f(0.9, 0.9, 0.4); // yellow
+        glVertex3f(-2, 0, 0);
+        glVertex3f(+2, 0, 0);
+    glEnd();
+
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glPopAttrib();
+}
+
+void RendererNeuronAnnotator::paintCornerAxes()
 {
     // Keep rotation of scene, but not scale nor translation.
     glMatrixMode(GL_PROJECTION);
@@ -1171,9 +1249,9 @@ void RendererNeuronAnnotator::paint_corner_axes()
             glVertex3f(0, 0, 0); // x0
             glVertex3f(1, 0, 0); // x1
             glVertex3f(0, 0, 0); // y0
-            glVertex3f(0, -1, 0); // y1
+            glVertex3f(0, 1, 0); // y1
             glVertex3f(0, 0, 0); // z0
-            glVertex3f(0, 0, -1); // z1
+            glVertex3f(0, 0, 1); // z1
         glEnd();
         glClear(GL_DEPTH_BUFFER_BIT); // draw over the black lines
         glLineWidth(3.0);
@@ -1184,10 +1262,10 @@ void RendererNeuronAnnotator::paint_corner_axes()
             glVertex3f(1, 0, 0); // x1
             glColor3f(0.3, 0.7, 0.3); // green
             glVertex3f(0, 0, 0); // y0
-            glVertex3f(0, -1, 0); // y1
+            glVertex3f(0, 1, 0); // y1
             glColor3f(0.3, 0.3, 0.9); // blue
             glVertex3f(0, 0, 0); // z0
-            glVertex3f(0, 0, -1); // z1
+            glVertex3f(0, 0, 1); // z1
         glEnd();
     glPopAttrib();
     glMatrixMode(GL_MODELVIEW);

@@ -14,5 +14,6 @@
         <file>resources/page_white_edit.png</file>
         <file>resources/brick.png</file>
         <file>resources/tex_fragment_cmb.txt</file>
+        <file>resources/color_vertex_cmb.txt</file>
     </qresource>
 </RCC>

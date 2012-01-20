@@ -102,6 +102,7 @@ RESOURCES += ../neuron_annotator/resources.qrc
 
 # Input
 HEADERS += \
+    ../neuron_annotator/data_model/CustomClipPlanes.h \
     ../neuron_annotator/data_model/Dimension.h \
     ../neuron_annotator/data_model/NaLockableData.h \
     ../neuron_annotator/data_model/NaVolumeData.h \
@@ -203,6 +204,7 @@ SOURCES += \
     ../neuron_annotator/DataFlowModel.cpp \
     ../neuron_annotator/utility/NeuronMaskEntry.cpp \
     ../neuron_annotator/MultiColorImageStackNode.cpp \
+    ../neuron_annotator/data_model/CustomClipPlanes.cpp \
     ../neuron_annotator/data_model/Dimension.cpp \
     ../neuron_annotator/data_model/NaLockableData.cpp \
     ../neuron_annotator/data_model/NaVolumeData.cpp \

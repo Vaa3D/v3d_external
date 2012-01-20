@@ -7,6 +7,8 @@
 #include "../data_model/NaVolumeData.h"
 #include "../data_model/VolumeTexture.h"
 #include "../data_model/Dimension.h"
+#include "../data_model/CustomClipPlanes.h"
+#include "../geometry/CameraModel.h"
 
 class RendererNeuronAnnotator : public QObject, public Renderer_gl2
 {
@@ -54,6 +56,8 @@ public:
     void updateSettingsFromVolumeTexture(
             const jfrc::VolumeTexture::Reader& textureReader);
     // expose sampleScale[XYZ], thickness[XYZ]
+    void setShowClipGuide(bool b) {bShowClipGuide = b;}
+    void applyCustomCut(const CameraModel&);
     using Renderer_gl2::sampleScaleX;
     using Renderer_gl2::sampleScaleY;
     using Renderer_gl2::sampleScaleZ;
@@ -83,7 +87,8 @@ protected:
                     double ds, int slice0, int slice1, int thickness,
                     GLuint tex3D, GLuint texs[], int stack_i,
                     float direction, int section, bool t3d, bool stream);
-    void paint_corner_axes();
+    void paintCornerAxes();
+    void paintClipGuide();
     // We want all of these OFF for now to keep the texture handling constant across different hardware environments
     virtual bool supported_TexStream() {return false;}
     virtual void setupTexStreamBuffer() {tex_stream_buffer = false;}
@@ -95,6 +100,10 @@ protected:
     Stereo3DMode stereo3DMode;
     bool bStereoSwapEyes;
     bool bShowCornerAxes;
+    bool bShowClipGuide;
+
+    GLint maxGLClipPlanes;
+    jfrc::CustomClipPlanes customClipPlanes;
 };
 
 #endif // RENDERERNEURONANNOTATOR_H

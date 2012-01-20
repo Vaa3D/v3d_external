@@ -13,9 +13,18 @@ uniform vec4 channel; // Lookup table for channel index into colormap.  When wou
 uniform int blend_mode;
 uniform int format_bgra;
 
+varying float clipDistance[MaxClipPlanes];
+
 //////////////////////////////////////
 void main()
 {
+    // Apply user clip planes (slowly) in fragment shader because useless ATI/Mac combo is broken for years at a time.
+    for (int p = 0; p < MaxClipPlanes; ++p) {
+        if (clipDistance[p] < 0) {
+            discard;
+        }
+    }
+
     // Use 3D texture coordinate in texture unit 3 to get neuron label position
     float neuronIx = texture3D(neuronLabel, gl_TexCoord[3].xyz).r;
     // prepare to multiply neuron colors by visibility value; so neurons will toggle on/off
@@ -88,36 +97,7 @@ void main()
         float a2 = 1.0 - selectedness; // complement of selectedness
         oColor.rgb = selectedColor + neuronColor * a2; // OK, now that NaN is elided
         alpha = selectedAlpha + alpha * a2;
-        oColor.a = pow(alpha, 1.6); // reduce effect of small intensities
-        /*
-        if (blend_mode==0) // cross-section
-	{
-		float Asec = Amean;
-                oColor.rgb = (aC1 + aC2 + aC3 + aC4);
-		oColor.a = Asec;
-	}
-	else if (blend_mode==1) // alpha-blending
-	{
-                C4.a = 0.20 * C4.a; // increase transparency of reference channel
-                // modified 11 Oct 2011 CMB
-                // voxel alpha/opacity is the maximum of all channel opacities (not the average!)
-                // kludge: but also leave a bit of transparency even on the densest areas (clamp max), to help see inner structure of dense areas
-                // voxel color is the weighted sum of channel colors,
-                // normalized to full brightness for brightest channel (alpha channel is used for dimness...),
-                // kludge: limit brightness of very dim voxels to reduce apparent background (clamp min scale 0.10).
-                // oColor.rgb = (aC1 + aC2 + aC3 + aC4) / clamp(Amax, 0.10, 1.0);
-                // Want color pretty much saturated in alpha blending mode, and handle brightness via alpha
-                float Amax2 = max(C1.a, max(C2.a, max(C3.a, C4.a)));
-                oColor.a = 0.30 * Amax2;
-                oColor.rgb = (aC1 + aC2 + aC3 + aC4) / (0.9 * Amax2 + 0.10);
-        }
-	else // max-intensity
-	{
-                oColor.rgb = (aC1 + aC2 + aC3 + aC4) / clamp(1.0 / Amax, 0.0, 1.0); // blend colors without oversaturating
-                // oColor.rgb = max(aC1.rgb, max(aC2.rgb, max(aC3.rgb, aC4.rgb)));
-                // oColor.a = 0.15 * Amax; // alpha does not affect maximum intensity projection
-        }
-        */
+        oColor.a = pow(alpha, 1.5); // reduce effect of small intensities
 
 	gl_FragColor = gl_Color * oColor; // modulated by color_proxy
 }

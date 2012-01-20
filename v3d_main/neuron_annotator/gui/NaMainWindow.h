@@ -135,6 +135,8 @@ protected slots:
     void setProgressMessage(QString);
     void completeProgress();
     void abortProgress(QString);
+    void applyCustomCut();
+    void toggleCustomCutMode();
 
 protected:
     void initializeContextMenus();
@@ -144,6 +146,7 @@ protected:
     // Recent files list
     void addDirToRecentFilesList(QDir);
     void updateRecentFileActions();
+    void connectCustomCut();
 
 private:
     DataFlowModel* dataFlowModel;
@@ -172,6 +175,8 @@ private:
     QMenu* viewerContextMenu;
     ViewerIndex recentViewer;
     DynamicRangeTool* dynamicRangeTool;
+
+    bool isInCustomCutMode;
 };
 
 #endif // NAMAINWINDOW_H

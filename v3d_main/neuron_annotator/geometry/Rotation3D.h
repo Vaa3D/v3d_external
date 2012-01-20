@@ -46,6 +46,7 @@ public:
     Vector3D operator*(const Vector3D& rhs) const;
     // inverse/transpose of rotation
     Rotation3D operator~() const;
+    Rotation3D transpose() const {return ~(*this);}
     bool operator==(const Rotation3D& rhs) const;
     bool operator!=(const Rotation3D& rhs) const;
     // Interconvert body-centered XYZ Euler angles and rotation matrix.

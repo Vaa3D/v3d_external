@@ -71,6 +71,7 @@ NaMainWindow::NaMainWindow()
     , recentViewer(VIEWER_3D)
     , dynamicRangeTool(NULL)
     , neuronSelector(this)
+    , isInCustomCutMode(false)
 {
     ui.setupUi(this);
 
@@ -310,6 +311,45 @@ NaMainWindow::NaMainWindow()
 
     initializeContextMenus();
     initializeStereo3DOptions();
+    connectCustomCut();
+}
+
+void NaMainWindow::connectCustomCut()
+{
+    connect(ui.customCutButton, SIGNAL(pressed()),
+            this, SLOT(applyCustomCut()));
+    connect(ui.defineClipPlaneButton, SIGNAL(pressed()),
+            this, SLOT(toggleCustomCutMode()));
+}
+
+/* slot */
+void NaMainWindow::applyCustomCut()
+{
+    assert(isInCustomCutMode);
+    ui.v3dr_glwidget->applyCustomCut();
+    if (isInCustomCutMode)
+        toggleCustomCutMode();
+}
+
+/* slot */
+void NaMainWindow::toggleCustomCutMode()
+{
+    if (isInCustomCutMode)
+    {
+        // Turn off custom cut mode
+        ui.defineClipPlaneButton->setText(tr("Custom..."));
+        ui.customCutButton->setEnabled(false);
+        ui.v3dr_glwidget->cancelCustomCutMode();
+    }
+    else
+    {
+        // Activate custom cut mode
+        ui.defineClipPlaneButton->setText(tr("Cancel"));
+        ui.customCutButton->setEnabled(true);
+        ui.v3dr_glwidget->setCustomCutMode();
+    }
+    // Switch mode flag
+    isInCustomCutMode = ! isInCustomCutMode;
 }
 
 /* slot */

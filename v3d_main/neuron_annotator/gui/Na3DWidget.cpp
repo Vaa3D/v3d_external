@@ -91,6 +91,28 @@ void Na3DWidget::initializeGL()
     volumeTexture.initializeGL();
 }
 
+/* slot */
+void Na3DWidget::setCustomCutMode()
+{
+    getRendererNa()->setShowClipGuide(true);
+    update();
+}
+
+/* slot */
+void Na3DWidget::cancelCustomCutMode()
+{
+    getRendererNa()->setShowClipGuide(false);
+    update();
+}
+
+/* slot */
+void Na3DWidget::applyCustomCut()
+{
+    if (renderer)
+        getRendererNa()->applyCustomCut(cameraModel);
+    cancelCustomCutMode();
+}
+
 // VolumeTexture methods that must be run in the main/OpenGL thread are implemented in
 // Na3DViewer slots
 
@@ -342,6 +364,8 @@ void Na3DWidget::keyReleaseEvent(QKeyEvent *e)
 // Drag mouse to rotate; shift-drag to translate.
 void Na3DWidget::mouseMoveEvent(QMouseEvent * event)
 {
+    // qDebug() << "Na3DWidget::mouseMoveEvent()";
+
     // updateCursor();
 
     // Maybe write status message when hovering with mouse.
@@ -378,6 +402,8 @@ void Na3DWidget::mouseMoveEvent(QMouseEvent * event)
     // Should not happen
     if (! (dx || dy)) // no motion?!?!
         return;
+
+    // qDebug() << "dx, dy = " << dx << dy;
 
     // shift-drag to translate
     if (  (event->modifiers() & (Qt::ShiftModifier)))

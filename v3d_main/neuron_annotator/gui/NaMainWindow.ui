@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1217</width>
-    <height>923</height>
+    <height>1019</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -1006,222 +1006,184 @@ You can also resize the box by Ctrl + left mouse click.</string>
                          <attribute name="title">
                           <string>Volume Cut</string>
                          </attribute>
-                         <widget class="QWidget" name="layoutWidget_5">
-                          <property name="geometry">
-                           <rect>
-                            <x>0</x>
-                            <y>0</y>
-                            <width>181</width>
-                            <height>182</height>
-                           </rect>
+                         <layout class="QVBoxLayout" name="verticalLayout_19">
+                          <property name="spacing">
+                           <number>0</number>
                           </property>
-                          <layout class="QGridLayout" name="gridLayout_volcut">
-                           <property name="sizeConstraint">
-                            <enum>QLayout::SetDefaultConstraint</enum>
-                           </property>
-                           <property name="spacing">
-                            <number>0</number>
-                           </property>
-                           <item row="0" column="1">
-                            <layout class="QGridLayout" name="gridLayout_xcut">
-                             <item row="0" column="0">
-                              <widget class="QCheckBox" name="XCutCB">
-                               <property name="toolTip">
-                                <string>checked to lock cut volume</string>
+                          <property name="leftMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="topMargin">
+                           <number>5</number>
+                          </property>
+                          <property name="rightMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="bottomMargin">
+                           <number>5</number>
+                          </property>
+                          <item>
+                           <widget class="QCheckBox" name="XCutCB">
+                            <property name="toolTip">
+                             <string>checked to lock cut volume</string>
+                            </property>
+                            <property name="text">
+                             <string>XCut</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QSlider" name="XcminSlider">
+                            <property name="focusPolicy">
+                             <enum>Qt::WheelFocus</enum>
+                            </property>
+                            <property name="maximum">
+                             <number>1</number>
+                            </property>
+                            <property name="orientation">
+                             <enum>Qt::Horizontal</enum>
+                            </property>
+                            <property name="tickInterval">
+                             <number>10</number>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QSlider" name="XcmaxSlider">
+                            <property name="focusPolicy">
+                             <enum>Qt::WheelFocus</enum>
+                            </property>
+                            <property name="maximum">
+                             <number>1</number>
+                            </property>
+                            <property name="orientation">
+                             <enum>Qt::Horizontal</enum>
+                            </property>
+                            <property name="tickInterval">
+                             <number>10</number>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QCheckBox" name="YCutCB">
+                            <property name="toolTip">
+                             <string>checked to lock cut volume</string>
+                            </property>
+                            <property name="text">
+                             <string>YCut</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QSlider" name="YcminSlider">
+                            <property name="focusPolicy">
+                             <enum>Qt::WheelFocus</enum>
+                            </property>
+                            <property name="maximum">
+                             <number>1</number>
+                            </property>
+                            <property name="orientation">
+                             <enum>Qt::Horizontal</enum>
+                            </property>
+                            <property name="tickInterval">
+                             <number>10</number>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QSlider" name="YcmaxSlider">
+                            <property name="focusPolicy">
+                             <enum>Qt::WheelFocus</enum>
+                            </property>
+                            <property name="maximum">
+                             <number>1</number>
+                            </property>
+                            <property name="orientation">
+                             <enum>Qt::Horizontal</enum>
+                            </property>
+                            <property name="tickInterval">
+                             <number>10</number>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QCheckBox" name="ZCutCB">
+                            <property name="toolTip">
+                             <string>checked to lock cut volume</string>
+                            </property>
+                            <property name="text">
+                             <string>ZCut</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QSlider" name="ZcminSlider">
+                            <property name="focusPolicy">
+                             <enum>Qt::WheelFocus</enum>
+                            </property>
+                            <property name="maximum">
+                             <number>1</number>
+                            </property>
+                            <property name="orientation">
+                             <enum>Qt::Horizontal</enum>
+                            </property>
+                            <property name="tickInterval">
+                             <number>10</number>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QSlider" name="ZcmaxSlider">
+                            <property name="focusPolicy">
+                             <enum>Qt::WheelFocus</enum>
+                            </property>
+                            <property name="maximum">
+                             <number>1</number>
+                            </property>
+                            <property name="orientation">
+                             <enum>Qt::Horizontal</enum>
+                            </property>
+                            <property name="tickInterval">
+                             <number>10</number>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QFrame" name="frame_2">
+                            <property name="frameShape">
+                             <enum>QFrame::StyledPanel</enum>
+                            </property>
+                            <property name="frameShadow">
+                             <enum>QFrame::Raised</enum>
+                            </property>
+                            <layout class="QHBoxLayout" name="horizontalLayout_9">
+                             <property name="topMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="bottomMargin">
+                              <number>0</number>
+                             </property>
+                             <item>
+                              <widget class="QPushButton" name="defineClipPlaneButton">
+                               <property name="text">
+                                <string>Custom...</string>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <widget class="QPushButton" name="customCutButton">
+                               <property name="enabled">
+                                <bool>false</bool>
                                </property>
                                <property name="text">
-                                <string>XCut</string>
+                                <string>Cut</string>
                                </property>
                               </widget>
-                             </item>
-                             <item row="0" column="2">
-                              <widget class="QSlider" name="XcminSlider">
-                               <property name="maximum">
-                                <number>1</number>
-                               </property>
-                               <property name="orientation">
-                                <enum>Qt::Horizontal</enum>
-                               </property>
-                               <property name="tickInterval">
-                                <number>10</number>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="1" column="2">
-                              <widget class="QSlider" name="XcmaxSlider">
-                               <property name="maximum">
-                                <number>1</number>
-                               </property>
-                               <property name="orientation">
-                                <enum>Qt::Horizontal</enum>
-                               </property>
-                               <property name="tickInterval">
-                                <number>10</number>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="0" column="1">
-                              <spacer name="horizontalSpacer_3">
-                               <property name="orientation">
-                                <enum>Qt::Horizontal</enum>
-                               </property>
-                               <property name="sizeHint" stdset="0">
-                                <size>
-                                 <width>40</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                              </spacer>
                              </item>
                             </layout>
-                           </item>
-                           <item row="1" column="1">
-                            <layout class="QGridLayout" name="gridLayout_ycut">
-                             <item row="0" column="0">
-                              <widget class="QCheckBox" name="YCutCB">
-                               <property name="toolTip">
-                                <string>checked to lock cut volume</string>
-                               </property>
-                               <property name="text">
-                                <string>YCut</string>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="0" column="2">
-                              <widget class="QSlider" name="YcminSlider">
-                               <property name="maximum">
-                                <number>1</number>
-                               </property>
-                               <property name="orientation">
-                                <enum>Qt::Horizontal</enum>
-                               </property>
-                               <property name="tickInterval">
-                                <number>10</number>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="1" column="2">
-                              <widget class="QSlider" name="YcmaxSlider">
-                               <property name="maximum">
-                                <number>1</number>
-                               </property>
-                               <property name="orientation">
-                                <enum>Qt::Horizontal</enum>
-                               </property>
-                               <property name="tickInterval">
-                                <number>10</number>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="0" column="1">
-                              <spacer name="horizontalSpacer_9">
-                               <property name="orientation">
-                                <enum>Qt::Horizontal</enum>
-                               </property>
-                               <property name="sizeHint" stdset="0">
-                                <size>
-                                 <width>40</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                              </spacer>
-                             </item>
-                            </layout>
-                           </item>
-                           <item row="2" column="1">
-                            <layout class="QGridLayout" name="gridLayout_zcut">
-                             <item row="0" column="0">
-                              <widget class="QCheckBox" name="ZCutCB">
-                               <property name="toolTip">
-                                <string>checked to lock cut volume</string>
-                               </property>
-                               <property name="text">
-                                <string>ZCut</string>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="0" column="2">
-                              <widget class="QSlider" name="ZcminSlider">
-                               <property name="maximum">
-                                <number>1</number>
-                               </property>
-                               <property name="orientation">
-                                <enum>Qt::Horizontal</enum>
-                               </property>
-                               <property name="tickInterval">
-                                <number>10</number>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="1" column="2">
-                              <widget class="QSlider" name="ZcmaxSlider">
-                               <property name="maximum">
-                                <number>1</number>
-                               </property>
-                               <property name="orientation">
-                                <enum>Qt::Horizontal</enum>
-                               </property>
-                               <property name="tickInterval">
-                                <number>10</number>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="0" column="1">
-                              <spacer name="horizontalSpacer_10">
-                               <property name="orientation">
-                                <enum>Qt::Horizontal</enum>
-                               </property>
-                               <property name="sizeHint" stdset="0">
-                                <size>
-                                 <width>40</width>
-                                 <height>20</height>
-                                </size>
-                               </property>
-                              </spacer>
-                             </item>
-                            </layout>
-                           </item>
-                           <item row="3" column="1">
-                            <spacer name="verticalSpacer_3">
-                             <property name="orientation">
-                              <enum>Qt::Vertical</enum>
-                             </property>
-                             <property name="sizeHint" stdset="0">
-                              <size>
-                               <width>20</width>
-                               <height>1</height>
-                              </size>
-                             </property>
-                            </spacer>
-                           </item>
-                           <item row="0" column="0">
-                            <spacer name="horizontalSpacer_4">
-                             <property name="orientation">
-                              <enum>Qt::Horizontal</enum>
-                             </property>
-                             <property name="sizeHint" stdset="0">
-                              <size>
-                               <width>40</width>
-                               <height>20</height>
-                              </size>
-                             </property>
-                            </spacer>
-                           </item>
-                           <item row="0" column="2">
-                            <spacer name="horizontalSpacer_11">
-                             <property name="orientation">
-                              <enum>Qt::Horizontal</enum>
-                             </property>
-                             <property name="sizeHint" stdset="0">
-                              <size>
-                               <width>40</width>
-                               <height>20</height>
-                              </size>
-                             </property>
-                            </spacer>
-                           </item>
-                          </layout>
-                         </widget>
+                           </widget>
+                          </item>
+                         </layout>
                         </widget>
                        </widget>
                       </item>
@@ -1278,6 +1240,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                                <height>128</height>
                               </size>
                              </property>
+                             <zorder>controlTabWidget</zorder>
                             </widget>
                            </item>
                           </layout>
