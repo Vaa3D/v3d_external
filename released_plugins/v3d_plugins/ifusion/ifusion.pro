@@ -25,10 +25,13 @@ SOURCES      += $$V3DMAINDIR/basic_c_fun/imageio_mylib.cpp
 SOURCES      += $$V3DMAINDIR/basic_c_fun/v3d_message.cpp
 
 LIBS         += -lm -lpthread
-LIBS         += -L$$V3DMAINDIR/common_lib/lib/libv3dtiff.a
-LIBS         += -L$$V3DMAINDIR/common_lib/lib/libfftw3f.a
-LIBS         += -L$$V3DMAINDIR/common_lib/lib/libfftw3f_threads.a 
-LIBS         += -L$$V3DMAINDIR/common_lib/src_packages/mylib_tiff/libmylib.a
+#LIBS         += -L$$V3DMAINDIR/common_lib/lib/libv3dtiff.a
+#LIBS         += -L$$V3DMAINDIR/common_lib/lib/libfftw3f.a
+#LIBS         += -L$$V3DMAINDIR/common_lib/lib/libfftw3f_threads.a 
+#LIBS         += -L$$V3DMAINDIR/common_lib/src_packages/mylib_tiff/libmylib.a
+
+LIBS         += -L$$V3DMAINDIR/common_lib/lib/ -lv3dtiff -lfftw3f -lfftw3f_threads
+LIBS         += -L$$V3DMAINDIR/common_lib/src_packages/mylib_tiff/ -lmylib
 
 TARGET        = $$qtLibraryTarget(ifusion)
 DESTDIR       = ../../v3d/plugins/image_stitching/ifusion
