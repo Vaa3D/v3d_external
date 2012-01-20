@@ -5,6 +5,7 @@
 #include <QtCore>
 #include <QDir>
 #include "../../v3d/v3d_core.h"
+#include "../../v3d/histogramsimple.h"
 
 using namespace std;
 
@@ -38,7 +39,20 @@ public:
 
     int processArgs(vector<char*> *argList);
 
+    My4DImage * create3DHeatmapFromChannel(My4DImage * sourceImage, V3DLONG sourceChannel, v3d_uint8 * lookupTable);
 
+    v3d_uint8 * create16Color8BitLUT();
+
+private:
+
+    QString inputStackFilepath;
+    QString outputDirectoryPath;
+    int patternChannelIndex;
+    QString outputPrefix;
+    My4DImage * inputImage;
+    My4DImage * imageGlobal16ColorImage;
+    HistogramSimple global256BinHistogram;
+    v3d_uint8 * lut16Color;
 
 };
 

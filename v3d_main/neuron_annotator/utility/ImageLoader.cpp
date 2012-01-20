@@ -439,9 +439,9 @@ bool ImageLoader::saveImage(My4DImage * stackp, QString filepath, bool saveTo8bi
         sz[3] = stackp->getCDim();
         unsigned char* data = 0;
         data = stackp->getRawData();
-        saveStack2RawPBD(targetFilepath.toAscii().data(), stackp->getDatatype(), data, sz);
+        saveStack2RawPBD(filepath.toAscii().data(), stackp->getDatatype(), data, sz);
     } else {
-        stackp->saveImage(targetFilepath.toAscii().data());
+        stackp->saveImage(filepath.toAscii().data());
     }
 	return true;
 }
