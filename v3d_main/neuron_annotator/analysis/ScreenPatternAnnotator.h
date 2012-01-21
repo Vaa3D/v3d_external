@@ -53,6 +53,7 @@ private:
     My4DImage * imageGlobal16ColorImage;
     HistogramSimple global256BinHistogram;
     v3d_uint8 * lut16Color;
+    QString returnFullPathWithOutputPrefix(QString filename);
 
 };
 

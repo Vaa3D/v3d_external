@@ -342,8 +342,8 @@ void ImageLoader::create2DMIPFromStack(My4DImage * image, QString mipFilepath) {
             }
         }
     }
-    qDebug() << "Saving mip to file " << targetFilepath;
-    mip->saveImage(targetFilepath.toAscii().data());
+    qDebug() << "Saving mip to file " << mipFilepath;
+    mip->saveImage(mipFilepath.toAscii().data());
     delete mip;
 }
 

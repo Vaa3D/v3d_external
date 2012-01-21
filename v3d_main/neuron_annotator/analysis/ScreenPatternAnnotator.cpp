@@ -25,6 +25,7 @@ ScreenPatternAnnotator::~ScreenPatternAnnotator()
 
 bool ScreenPatternAnnotator::execute()
 {
+    // Load Input Stack
     inputImage=new My4DImage();
     ImageLoader imageLoader;
     imageLoader.loadImage(inputImage, inputStackFilepath);
@@ -32,6 +33,7 @@ bool ScreenPatternAnnotator::execute()
         qDebug() << "ScreenPatternGenerator currently only supports 8-bit input data";
         return false;
     }
+
     // Compute Global 256-bin Histogram
     V3DLONG xSize=inputImage->getXDim();
     V3DLONG ySize=inputImage->getYDim();
@@ -40,18 +42,34 @@ bool ScreenPatternAnnotator::execute()
     global256BinHistogram.compute(inputImage->getRawData() + channelSize*patternChannelIndex ,channelSize);
     V3DLONG* global256BinHistogramArray=global256BinHistogram.getHistogram();
 
+    // Create Output Directory
+    if (!QFileInfo(outputDirectoryPath).isDir()) {
+        QDir().mkpath(outputDirectoryPath);
+    }
+
     // Create Global 16-Color Image
     lut16Color=create16Color8BitLUT();
     imageGlobal16ColorImage=create3DHeatmapFromChannel(inputImage, patternChannelIndex, lut16Color);
     ImageLoader imageLoaderForSave;
-    QString filepathToSave("heatmap16Color.v3dpbd");
+    QString filepathToSave(returnFullPathWithOutputPrefix("heatmap16Color.v3dpbd"));
+    qDebug() << "Saving global 16-color heatmap to file=" << filepathToSave;
     bool saveHeatmapStatus=imageLoaderForSave.saveImage(imageGlobal16ColorImage, filepathToSave);
     if (!saveHeatmapStatus) {
         qDebug() << "ScreenPatternAnnotator::execute() Error during save of heatmap file";
         return false;
     }
 
+    // Create MIP
+    ImageLoader imageLoaderForMip;
+    imageLoaderForMip.create2DMIPFromStack(imageGlobal16ColorImage, returnFullPathWithOutputPrefix("heatmap16ColorMIP.tif"));
+
     return true;
+}
+
+QString ScreenPatternAnnotator::returnFullPathWithOutputPrefix(QString filename) {
+    QString outputDirectoryPathCopy=outputDirectoryPath;
+    QString outputPrefixCopy=outputPrefix;
+    return outputDirectoryPathCopy.append(QDir::separator()).append(outputPrefixCopy).append("_").append(filename);
 }
 
 int ScreenPatternAnnotator::processArgs(vector<char*> *argList)
