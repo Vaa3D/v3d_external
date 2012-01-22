@@ -13,6 +13,11 @@ using namespace std;
 class ScreenPatternAnnotator
 {
 public:
+
+    static const int MODE_UNDEFINED;
+    static const int MODE_ANNOTATE;
+    static const int MODE_COMPARTMENT_INDEX;
+
     ScreenPatternAnnotator();
 
     ~ScreenPatternAnnotator();
@@ -28,10 +33,18 @@ public:
         usage.append("    This tool takes as input the 3D stack containing a Fly-Brain expression pattern. It assumes the     \n");
         usage.append("    stack is already aligned.                                                                           \n");
         usage.append("                                                                                                        \n");
+        usage.append("  Normal usage to generate screen pattern annotation:                                                   \n");
+        usage.append("                                                                                                        \n");
         usage.append("   -input <filepath for stack>                                                                          \n");
         usage.append("   -pattern_channel  <0-based channel index in stack for pattern channel>                               \n");
         usage.append("   -prefix <prefix for output files>                                                                    \n");
-        usage.append("   -dir <output directory>                                                                              \n");
+        usage.append("   -resourceDir <resource dir with compartment indices files>                                           \n");
+        usage.append("   -outputDir <output directory>                                                                        \n");
+        usage.append("                                                                                                        \n");
+        usage.append("  To generate resourceDir from source compartment masks:                                                \n");
+        usage.append("                                                                                                        \n");
+        usage.append("   -topLevelCompartmentMaskDir <dir path>                                                               \n");
+        usage.append("   -outputResourceDir <resource dir path>                                                               \n");
         return usage;
     }
 
@@ -45,15 +58,29 @@ public:
 
 private:
 
+    int mode;
     QString inputStackFilepath;
     QString outputDirectoryPath;
+    QString resourceDirectoryPath;
     int patternChannelIndex;
     QString outputPrefix;
     My4DImage * inputImage;
     My4DImage * imageGlobal16ColorImage;
     HistogramSimple global256BinHistogram;
     v3d_uint8 * lut16Color;
+    QString topLevelCompartmentMaskDirPath;
+    QString outputResourceDirPath;
+    My4DImage * compartmentIndexImage;
+    QMap<int, QString> compartmentIndexAbbreviationMap;
+
+
     QString returnFullPathWithOutputPrefix(QString filename);
+    bool createCompartmentIndex();
+    bool annotate();
+    int getIndexFromCompartmentMaskFilename(QString filename);
+    QString getAbbreviationFromCompartmentMaskFilename(QString filename);
+
+
 
 };
 
