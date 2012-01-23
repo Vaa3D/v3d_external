@@ -50,6 +50,7 @@ public:
     static int radToDeg(double angleInRadians);
     static bool eulerAnglesAreEquivalent(int x1, int y1, int z1, int x2, int y2, int z2);
     bool screenShot(QString filename);
+    void setUndoStack(QUndoStack& undoStackParam); // for undo/redo custom clip planes
 
 signals:
     void neuronSelected(double x, double y, double z);
@@ -129,6 +130,7 @@ protected:
     bool bClickIsWaiting;
     bool bVolumeInitialized; // hack to prevent double update on file load
     jfrc::VolumeTexture volumeTexture;
+    QUndoStack* undoStack;
 };
 
 #endif // NA3DWIDGET_H

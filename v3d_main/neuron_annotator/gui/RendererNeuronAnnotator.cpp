@@ -11,18 +11,9 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     , stereo3DMode(STEREO_OFF)
     , bStereoSwapEyes(false)
     , bShowCornerAxes(true)
-    , maxGLClipPlanes(1)
-    , customClipPlanes(maxGLClipPlanes)
     , bShowClipGuide(false)
 {
     // qDebug() << "RendererNeuronAnnotator constructor" << this;
-
-
-    // Hard code first plane to positive y-axis for testing
-    if (maxGLClipPlanes > 0) { // set to (0,1,0,-0.5)
-        customClipPlanes[0][1] = 1.0;
-        customClipPlanes[0][3] = -0.1;
-    }
 
     // black background for consistency with other viewers
     RGBA32f bg_color;
@@ -65,6 +56,11 @@ RendererNeuronAnnotator::~RendererNeuronAnnotator()
     Xtex_list = Ytex_list = Ztex_list = NULL;
 }
 
+void RendererNeuronAnnotator::setUndoStack(QUndoStack& undoStackParam)
+{
+    customClipPlanes.setUndoStack(undoStackParam);
+}
+
 void RendererNeuronAnnotator::applyCustomCut(const CameraModel& cameraModel)
 {
     // Cut plane passes through the camera focus
@@ -74,18 +70,25 @@ void RendererNeuronAnnotator::applyCustomCut(const CameraModel& cameraModel)
     f.x() = f.x() / dim1;
     f.y() = 1.0 - f.y() / dim2;
     f.z() = 1.0 - f.z() / dim3;
-    Vector3D up_eye(0, 1, 0); // up direction in eye coordinate system = y axis
+    // Keep density in the lower (down) part of the screen
+    Vector3D down_eye(0, 1, 0); // down direction in eye coordinate system = y axis
     Rotation3D R_obj_eye = cameraModel.rotation().transpose(); // rotation to convert eye coordinates to object coordinates
-    Vector3D up_obj = R_obj_eye * up_eye;
-    up_obj.x() *= -1; // ?
-    double distance = f.dot(up_obj);
+    Vector3D down_obj = R_obj_eye * down_eye;
+    // Off-axis cut planes are skewed without scaling.  We need to scale axes by anisotropic scale
+    down_obj.x() *= dim1; // this works
+    down_obj.y() *= dim2;
+    down_obj.z() *= dim3;
+    down_obj /= down_obj.norm(); // scale result to unit length
+    // TODO
+    //
+    down_obj.x() *= -1; // ?
+    double distance = f.dot(down_obj); // signed distance from origin to cut plane
     // qDebug() << f.x() << f.y() << f.z() << distance;
-    // qDebug() << up_obj.x() << up_obj.y() << up_obj.z() << -distance;
-    int planeIndex = 0; // TODO - for testing only - should be "next" index
-    customClipPlanes[planeIndex][0] = up_obj.x();
-    customClipPlanes[planeIndex][1] = up_obj.y();
-    customClipPlanes[planeIndex][2] = up_obj.z();
-    customClipPlanes[planeIndex][3] = -distance;
+    // qDebug() << down_obj.x() << down_obj.y() << down_obj.z() << -distance;
+    customClipPlanes.addPlane(down_obj.x(),
+                              down_obj.y(),
+                              down_obj.z(),
+                              -distance);
 }
 
 /* slot */
@@ -171,7 +174,7 @@ void RendererNeuronAnnotator::loadShader()
             QString volFragmentShaderName(":/neuron_annotator/resources/tex_fragment_cmb.txt");
             if (bUseClassicV3dShader)
                  volFragmentShaderName = ":/shader/tex_fragment.txt";
-            QString defClip = QString("#version 120\n#define MaxClipPlanes %1\n").arg(maxGLClipPlanes);
+            QString defClip = QString("#version 120\n#define MaxClipPlanes %1\n").arg(customClipPlanes.size());
             qDebug() << defClip;
             linkGLShader(SMgr, shaderTex2D,
                          Q_CSTR(
@@ -223,7 +226,7 @@ void RendererNeuronAnnotator::shaderTexBegin(bool stream)
                 // Hard coded first clip plane for testing
                 for (int p = 0; p < customClipPlanes.size(); ++p)
                 {
-                    const double* v = &customClipPlanes[0][0];
+                    const double* v = &customClipPlanes[p][0];
                     QString varStr = QString("clipPlane[%1]").arg(p);
                     shader->setUniform4f(varStr.toStdString().c_str(), v[0], v[1], v[2], v[3]);
                 }

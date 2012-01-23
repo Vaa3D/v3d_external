@@ -58,6 +58,7 @@ public:
     // expose sampleScale[XYZ], thickness[XYZ]
     void setShowClipGuide(bool b) {bShowClipGuide = b;}
     void applyCustomCut(const CameraModel&);
+    void setUndoStack(QUndoStack& undoStackParam); // for undo/redo custom clip planes
     using Renderer_gl2::sampleScaleX;
     using Renderer_gl2::sampleScaleY;
     using Renderer_gl2::sampleScaleZ;
@@ -102,7 +103,6 @@ protected:
     bool bShowCornerAxes;
     bool bShowClipGuide;
 
-    GLint maxGLClipPlanes;
     jfrc::CustomClipPlanes customClipPlanes;
 };
 

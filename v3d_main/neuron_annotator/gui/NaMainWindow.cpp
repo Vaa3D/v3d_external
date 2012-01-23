@@ -72,6 +72,7 @@ NaMainWindow::NaMainWindow()
     , dynamicRangeTool(NULL)
     , neuronSelector(this)
     , isInCustomCutMode(false)
+    , undoStack(NULL)
 {
     ui.setupUi(this);
 
@@ -280,6 +281,10 @@ NaMainWindow::NaMainWindow()
     QAction * redoAction = undoGroup->createRedoAction(this);
     ui.menuEdit->insertAction(ui.menuEdit->actions().at(0), redoAction);
     ui.menuEdit->insertAction(redoAction, undoAction);
+    // expose undoStack
+    undoStack = new QUndoStack(undoGroup);
+    undoGroup->setActiveStack(undoStack);
+    ui.v3dr_glwidget->setUndoStack(*undoStack);
 
     // Connect sort buttons to gallery widget
     connect(ui.gallerySortBySizeButton, SIGNAL(clicked()),

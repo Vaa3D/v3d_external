@@ -165,6 +165,7 @@ private:
     enum { MaxRecentFiles = 10 }; // clever trick to get constant in header and also use it
     OpenFileAction *recentFileActions[MaxRecentFiles];
     QString suggestedExportFilenameFromCurrentState(const NeuronSelectionModel::Reader&);
+    QUndoStack* undoStack;
 
     // Actions for viewer context menus
     QAction* showAllNeuronsInEmptySpaceAction;

@@ -17,6 +17,7 @@ Na3DWidget::Na3DWidget(QWidget* parent)
         , neuronContextMenu(NULL)
         , bShowCornerAxes(true)
         , bClickIsWaiting(false)
+        , undoStack(NULL)
 {
     if (renderer) {
         delete renderer;
@@ -82,6 +83,14 @@ Na3DWidget::~Na3DWidget()
 {
     delete _idep; _idep = NULL;
     if (rotateCursor) delete rotateCursor; rotateCursor = NULL;
+}
+
+void Na3DWidget::setUndoStack(QUndoStack& undoStackParam) // for undo/redo custom clip planes
+{
+    undoStack = &undoStackParam;
+    RendererNeuronAnnotator * ra = getRendererNa();
+    if (NULL != ra)
+        ra->setUndoStack(undoStackParam);
 }
 
 /* virtual */
@@ -942,6 +951,8 @@ void Na3DWidget::choiceRenderer()
         // Retain current setting for alpha blending
         // qDebug() << "alpha blending = " << (_renderMode == Renderer::rmAlphaBlendingProjection) << __FILE__ << __LINE__;
         setAlphaBlending(_renderMode == Renderer::rmAlphaBlendingProjection);
+        if (undoStack)
+            getRendererNa()->setUndoStack(*undoStack);
     }
 }
 
