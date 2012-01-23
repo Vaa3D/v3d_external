@@ -1,6 +1,6 @@
-#include "CustomClipPlanes.h"
-#include <QString>
 #include <QDebug>
+#include <QString>
+#include "CustomClipPlanes.h"
 
 namespace jfrc {
 
