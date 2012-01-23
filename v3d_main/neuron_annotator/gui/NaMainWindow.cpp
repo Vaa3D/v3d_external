@@ -404,6 +404,8 @@ void NaMainWindow::onDataLoadStarted()
 
 void NaMainWindow::onDataLoadFinished()
 {
+    if (undoStack)
+        undoStack->clear();
     ui.viewerStackedWidget->setCurrentIndex(recentViewer);
     ui.viewerControlTabWidget->setEnabled(true);
 }
