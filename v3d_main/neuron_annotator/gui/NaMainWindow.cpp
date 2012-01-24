@@ -227,6 +227,17 @@ NaMainWindow::NaMainWindow()
     connect(ui.YCutCB, SIGNAL(stateChanged(int)), ui.v3dr_glwidget, SLOT(setYCutLock(int)));
     connect(ui.ZCutCB, SIGNAL(stateChanged(int)), ui.v3dr_glwidget, SLOT(setZCutLock(int)));
 
+    connect(ui.slabThicknessSlider, SIGNAL(valueChanged(int)),
+            ui.v3dr_glwidget, SLOT(setSlabThickness(int)));
+    connect(ui.slabPositionSlider, SIGNAL(valueChanged(int)),
+            ui.v3dr_glwidget, SLOT(setSlabPosition(int)));
+    connect(ui.v3dr_glwidget, SIGNAL(slabThicknessChanged(int)),
+            ui.slabThicknessSlider, SLOT(setValue(int)));
+    connect(ui.v3dr_glwidget, SIGNAL(slabPositionChanged(int)),
+            ui.slabPositionSlider, SLOT(setValue(int)));
+    connect(ui.freezeFrontBackButton, SIGNAL(clicked()),
+            ui.v3dr_glwidget, SLOT(clipSlab()));
+
     // alpha blending
     connect(ui.action3D_alpha_blending, SIGNAL(toggled(bool)),
             ui.v3dr_glwidget, SLOT(setAlphaBlending(bool)));

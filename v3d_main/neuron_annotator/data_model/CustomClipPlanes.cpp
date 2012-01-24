@@ -55,7 +55,7 @@ void AddClipPlaneCommand::redo()
 //////////////////////
 
 CustomClipPlanes::CustomClipPlanes()
-    : std::vector<ClipPlane>(8) // maximum of 8 planes
+    : std::vector<ClipPlane>(12) // maximum of 12 planes
     , nextClipPlaneIndex(0)
     , undoStack(NULL)
 {}
@@ -73,7 +73,7 @@ void CustomClipPlanes::addPlane(double x, double y, double z, double w)
 int CustomClipPlanes::simpleAddPlane(const ClipPlane& rhs)
 {
     int result = nextClipPlaneIndex;
-    qDebug() << "adding plane" << result + 1;
+    // qDebug() << "adding plane" << result + 1;
     ClipPlane& p = (*this)[nextClipPlaneIndex];
     p = rhs;
     ++nextClipPlaneIndex;
@@ -85,7 +85,7 @@ int CustomClipPlanes::simpleAddPlane(const ClipPlane& rhs)
 // Remove the latest added plane
 void CustomClipPlanes::simpleUndoPlane(int planeIndex)
 {
-    qDebug() << "removing plane" << planeIndex + 1;
+    // qDebug() << "removing plane" << planeIndex + 1;
     int topPlaneIndex = nextClipPlaneIndex - 1;
     if (topPlaneIndex < 0)
         topPlaneIndex = size() - 1;

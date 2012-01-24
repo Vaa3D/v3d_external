@@ -51,6 +51,7 @@ public:
     static bool eulerAnglesAreEquivalent(int x1, int y1, int z1, int x2, int y2, int z2);
     bool screenShot(QString filename);
     void setUndoStack(QUndoStack& undoStackParam); // for undo/redo custom clip planes
+    int getSlabPosition() const;
 
 signals:
     void neuronSelected(double x, double y, double z);
@@ -61,6 +62,8 @@ signals:
     void alphaBlendingChanged(bool);
     void quadStereoSupported(bool);
     void showCornerAxesChanged(bool);
+    void slabThicknessChanged(int);
+    void slabPositionChanged(int);
 
 public slots:
     void setShowCornerAxes(bool b);
@@ -91,6 +94,9 @@ public slots:
     void setCustomCutMode();
     void cancelCustomCutMode();
     void applyCustomCut();
+    void setSlabThickness(int); // range 2-1000 voxels
+    void setSlabPosition(int); // range -500 - +500 voxels
+    void clipSlab(); // Apply clip plane to current slab
 
 protected slots:
     // focus setting should be done via cameraModel, not with these methods.
@@ -131,6 +137,7 @@ protected:
     bool bVolumeInitialized; // hack to prevent double update on file load
     jfrc::VolumeTexture volumeTexture;
     QUndoStack* undoStack;
+    qreal cachedRelativeScale;
 };
 
 #endif // NA3DWIDGET_H

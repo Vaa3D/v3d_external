@@ -40,9 +40,12 @@ public:
     virtual void equAlphaBlendingProjection();
     //
     virtual void drawBackFillVolCube() {}
-    // virtual void drawUnitFrontSlice(int line=0) {}
+    virtual void drawUnitFrontSlice(int line=0) {
+        // qDebug() << "drawUnitFrontSlice";
+    }
     //
     void setDepthClip(float totalDepthInGlUnits);
+    void updateDepthClip();
     // Renderer_gl1::selectPosition(x,y) is not virtual, so I renamed
     // this reimplementation to screenPositionToVolumePosition(QPoint)
     virtual XYZ screenPositionToVolumePosition(const QPoint& screenPos);
@@ -58,6 +61,7 @@ public:
     // expose sampleScale[XYZ], thickness[XYZ]
     void setShowClipGuide(bool b) {bShowClipGuide = b;}
     void applyCustomCut(const CameraModel&);
+    void applyCutPlaneInGround(Vector3D point, Vector3D direction);
     void setUndoStack(QUndoStack& undoStackParam); // for undo/redo custom clip planes
     using Renderer_gl2::sampleScaleX;
     using Renderer_gl2::sampleScaleY;
@@ -73,11 +77,14 @@ signals:
     void progressAborted(QString);
     void alphaBlendingChanged(bool);
     void showCornerAxesChanged(bool);
+    void slabThicknessChanged(int);
 
 public slots:
     void setAlphaBlending(bool);
     void setStereoMode(int);
     void setShowCornerAxes(bool b);
+    bool setSlabThickness(int); // range 2-1000 voxels
+    void clipSlab(const CameraModel& cameraModel); // Apply clip plane to current slab
 
 protected:
     virtual void shaderTexBegin(bool stream);
@@ -104,6 +111,9 @@ protected:
     bool bShowClipGuide;
 
     jfrc::CustomClipPlanes customClipPlanes;
+
+    int slabThickness;
+    int slabDepth;
 };
 
 #endif // RENDERERNEURONANNOTATOR_H

@@ -18,6 +18,7 @@ Na3DWidget::Na3DWidget(QWidget* parent)
         , bShowCornerAxes(true)
         , bClickIsWaiting(false)
         , undoStack(NULL)
+        , cachedRelativeScale(1.0)
 {
     if (renderer) {
         delete renderer;
@@ -785,6 +786,7 @@ void Na3DWidget::updateDefaultScale()
 
 void Na3DWidget::updateRendererZoomRatio(qreal relativeScale)
 {
+    cachedRelativeScale = relativeScale;
     if (! getRendererNa()) return;
     // qDebug() << "update zoom";
 
@@ -798,10 +800,12 @@ void Na3DWidget::updateRendererZoomRatio(qreal relativeScale)
     float desiredZoomRatio = desiredVerticalApertureInDegrees / getRendererNa()->getViewAngle();
     getRendererNa()->setInternalZoomRatio(desiredZoomRatio);
 
-    bool bAutoClipNearFar = true; // TODO - expose this variable
+    bool bAutoClipNearFar = false; // TODO - expose this variable
     // set near and far clip planes
-    if (bAutoClipNearFar)
-        getRendererNa()->setDepthClip(2.0 * desiredVerticalGlUnitsDisplayed);
+    if (bAutoClipNearFar) {
+        getRendererNa()->setSlabThickness(3.0 * desiredVerticalImageVoxelsDisplayed);
+        // getRendererNa()->setDepthClip(3.0 * desiredVerticalGlUnitsDisplayed);
+    }
 
     getRendererNa()->setupView(width(), height());
 }
@@ -818,6 +822,7 @@ void Na3DWidget::updateFocus(const Vector3D& f)
     _yShift = shift_eye.y();
     _zShift = shift_eye.z();
     dxShift=dyShift=dzShift=0;
+    emit slabPositionChanged(getSlabPosition());
 }
 
 void Na3DWidget::updateRotation(const Rotation3D & newRotation)
@@ -948,12 +953,63 @@ void Na3DWidget::choiceRenderer()
         connect(getRendererNa(), SIGNAL(showCornerAxesChanged(bool)),
                 this, SLOT(setShowCornerAxes(bool)));
         getRendererNa()->setShowCornerAxes(bShowCornerAxes);
+
+        connect(getRendererNa(), SIGNAL(slabThicknessChanged(int)),
+                this, SIGNAL(slabThicknessChanged(int)));
+
         // Retain current setting for alpha blending
         // qDebug() << "alpha blending = " << (_renderMode == Renderer::rmAlphaBlendingProjection) << __FILE__ << __LINE__;
         setAlphaBlending(_renderMode == Renderer::rmAlphaBlendingProjection);
         if (undoStack)
             getRendererNa()->setUndoStack(*undoStack);
     }
+}
+
+/* slot */
+void Na3DWidget::setSlabThickness(int val) // range 0-1000; 0 means maximally close
+{
+    // qDebug() << "Na3DWidget::setSlabThickness" << val;
+    RendererNeuronAnnotator* ra = getRendererNa();
+    if (!ra) return;
+    if (! ra->setSlabThickness(val))
+        return;
+    ra->setupView(width(), height());
+    update();
+}
+
+int Na3DWidget::getSlabPosition() const
+{
+    Vector3D viewDirection = ~Rotation3D(mRot) * Vector3D(0, 0, 1);
+    // cout << "view direction = " << viewDirection << endl;
+    Vector3D df = cameraModel.focus() - getDefaultFocus();
+    int slabPosition = int(df.dot(viewDirection) + 0.5);
+    // cout << "slab position = " << slabPosition << endl;
+    return slabPosition;
+}
+
+/* slot */
+void Na3DWidget::setSlabPosition(int val) // range 0-1000, 1000 means maximally far
+{
+    // qDebug() << "Na3DWidget::setSlabPosition" << val;
+    int oldSlabPosition = getSlabPosition();
+    if (val == oldSlabPosition) return; // no change
+    float dSlabPos = val - oldSlabPosition;
+    Vector3D viewDirection = ~Rotation3D(mRot) * Vector3D(0, 0, 1);
+    Vector3D newFocus = viewDirection * dSlabPos + cameraModel.focus();
+    // qDebug() << newFocus.x() << newFocus.y() << newFocus.z();
+    cameraModel.setFocus(newFocus);
+    emit slabPositionChanged(val);
+    update();
+}
+
+/* slot */
+void Na3DWidget::clipSlab()
+{
+    RendererNeuronAnnotator* ra = getRendererNa();
+    if (!ra) return;
+    ra->clipSlab(cameraModel);
+    // Reset slab now that clip plane recapitulates cut
+    setSlabThickness(1000);
 }
 
 /* slot */

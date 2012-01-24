@@ -12,6 +12,8 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     , bStereoSwapEyes(false)
     , bShowCornerAxes(true)
     , bShowClipGuide(false)
+    , slabThickness(1000)
+    , slabDepth(0)
 {
     // qDebug() << "RendererNeuronAnnotator constructor" << this;
 
@@ -63,32 +65,45 @@ void RendererNeuronAnnotator::setUndoStack(QUndoStack& undoStackParam)
 
 void RendererNeuronAnnotator::applyCustomCut(const CameraModel& cameraModel)
 {
-    // Cut plane passes through the camera focus
-    Vector3D f = cameraModel.focus();
-    // convert focus to lie within unit cube, to match opengl transforms used.
-    // TODO - might need to rotate before scaling?
-    f.x() = f.x() / dim1;
-    f.y() = 1.0 - f.y() / dim2;
-    f.z() = 1.0 - f.z() / dim3;
-    // Keep density in the lower (down) part of the screen
-    Vector3D down_eye(0, 1, 0); // down direction in eye coordinate system = y axis
     Rotation3D R_obj_eye = cameraModel.rotation().transpose(); // rotation to convert eye coordinates to object coordinates
-    Vector3D down_obj = R_obj_eye * down_eye;
-    // Off-axis cut planes are skewed without scaling.  We need to scale axes by anisotropic scale
-    down_obj.x() *= dim1; // this works
-    down_obj.y() *= dim2;
-    down_obj.z() *= dim3;
-    down_obj /= down_obj.norm(); // scale result to unit length
-    // TODO
-    //
-    down_obj.x() *= -1; // ?
-    double distance = f.dot(down_obj); // signed distance from origin to cut plane
-    // qDebug() << f.x() << f.y() << f.z() << distance;
-    // qDebug() << down_obj.x() << down_obj.y() << down_obj.z() << -distance;
-    customClipPlanes.addPlane(down_obj.x(),
-                              down_obj.y(),
-                              down_obj.z(),
-                              -distance);
+    Vector3D down_obj = R_obj_eye * Vector3D(0, 1, 0);
+    applyCutPlaneInGround(cameraModel.focus(), down_obj);
+}
+
+void RendererNeuronAnnotator::applyCutPlaneInGround(Vector3D point, Vector3D direction)
+{
+    // cout << point << direction << endl;
+    // convert focus to lie within unit cube, to match opengl transforms used.
+    point.x() = point.x() / dim1;
+    point.y() = 1.0 - point.y() / dim2;
+    point.z() = 1.0 - point.z() / dim3;
+    // skew direction by scaled axes
+    direction.x() *= dim1;
+    direction.y() *= dim2;
+    direction.z() *= dim3;
+    direction /= direction.norm();
+    direction.x() *= -1; // ?
+    double distance = point.dot(direction);
+    customClipPlanes.addPlane(direction.x(), direction.y(), direction.z(), -distance);
+}
+
+void RendererNeuronAnnotator::clipSlab(const CameraModel& cameraModel) // Apply clip plane to current slab
+{
+    Rotation3D R_obj_eye = cameraModel.rotation().transpose(); // rotation to convert eye coordinates to object coordinates
+    Vector3D viewDirection = R_obj_eye * Vector3D(0, 0, 1);
+    // cout << "view direction = " << viewDirection << endl;
+    // Plane equation for front clip
+    Vector3D direction1 = viewDirection;
+    Vector3D point1 = cameraModel.focus() + viewDirection * (viewDistance - viewNear) / glUnitsPerImageVoxel();
+    // Plane equation for back clip
+    Vector3D direction2 = viewDirection * -1;
+    Vector3D point2 = cameraModel.focus() - viewDirection * (viewFar - viewDistance) / glUnitsPerImageVoxel();
+    // cout << cameraModel.focus() << ", " << viewDistance << ", " << viewNear << endl;
+    // cout << point1 << direction1 << endl;
+    // cout << point2 << direction2 << endl;
+
+    applyCutPlaneInGround(point1, direction1);
+    applyCutPlaneInGround(point2, direction2);
 }
 
 /* slot */
@@ -175,7 +190,7 @@ void RendererNeuronAnnotator::loadShader()
             if (bUseClassicV3dShader)
                  volFragmentShaderName = ":/shader/tex_fragment.txt";
             QString defClip = QString("#version 120\n#define MaxClipPlanes %1\n").arg(customClipPlanes.size());
-            qDebug() << defClip;
+            // qDebug() << defClip;
             linkGLShader(SMgr, shaderTex2D,
                          Q_CSTR(
                                 defClip +
@@ -308,12 +323,48 @@ void RendererNeuronAnnotator::equAlphaBlendingProjection()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
+/*
 void RendererNeuronAnnotator::setDepthClip(float totalDepthInGlUnits)
 {
     if (totalDepthInGlUnits <= 0) return;
-    viewNear = viewDistance - 0.3 * totalDepthInGlUnits;
-    viewNear = viewNear < 1.0 ? 1.0 : viewNear;
-    viewFar = viewDistance + 0.7 * totalDepthInGlUnits;
+    double minFront = viewDistance - 0.3 * totalDepthInGlUnits;
+    if (minFront < 0.5) minFront = 0.5;
+    double maxBack = viewDistance + 0.7 * totalDepthInGlUnits;
+    if (maxBack <= minFront) maxBack = minFront;
+    double range = maxBack - minFront;
+
+    viewNear = minFront + relativeFrontClip * range;
+    viewFar = minFront + relativeBackClip * range;
+}
+*/
+
+void RendererNeuronAnnotator::updateDepthClip()
+{
+    // qDebug() << "RendererNeuronAnnotator::updateDepthClip()";
+    double minFront = viewDistance - 0.3 * slabThickness * glUnitsPerImageVoxel();
+    if (minFront < 0.5) minFront = 0.5;
+    double maxBack = viewDistance + 0.7 * slabThickness * glUnitsPerImageVoxel();
+    if (maxBack <= minFront) maxBack = minFront;
+
+    viewNear = minFront;
+    viewFar = maxBack;
+    // qDebug() << viewNear << viewFar;
+}
+
+/* slot */
+bool RendererNeuronAnnotator::setSlabThickness(int val) // range 2-1000
+{
+    // qDebug() << "RendererNeuronAnnotator::setSlabThickness" << val;
+    // check range
+    if (val < 2) val = 2;
+    if (val > 1000) val = 1000;
+    // check whether value changed
+    if (val == slabThickness)
+        return false; // unchanged
+    slabThickness = val;
+    updateDepthClip();
+    emit slabThicknessChanged(slabThickness);
+    return true;
 }
 
 // mouse left click to select neuron
