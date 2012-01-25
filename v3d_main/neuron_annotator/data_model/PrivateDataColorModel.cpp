@@ -75,13 +75,13 @@ bool PrivateDataColorModel::initialize(const NaVolumeData::Reader& volumeReader)
         if (numChannels > 1) {
             int remainder = channel % 4; // cycle through red, green, blue, gray
             if (remainder == 0) {
-                color = qRgb(255, 0, 0); // red
+                color = qRgb(0, 0, 255); // blue
             }
             else if (remainder == 1) {
                 color = qRgb(0, 255, 0); // green
             }
             else if (remainder == 2) {
-                color = qRgb(0, 0, 255); // blue
+                color = qRgb(255, 0, 0); // red
             }
             else {
                 color = qRgb(255, 255, 255); // white
