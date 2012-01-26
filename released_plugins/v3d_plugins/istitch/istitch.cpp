@@ -2022,8 +2022,7 @@ QStringList IStitchPlugin::funclist() const
 {
     return QStringList() << tr("v3dstitch")
                          << tr("istitch-subspace")
-                         << tr("istitch-gc")
-                         << tr("istitch-grouping");
+                         << tr("istitch-gc");
 }
 
 // Multiscale pairwise images stitching with thick planes (e.g. 10 pixels width) in boundary bounding box
@@ -7083,7 +7082,7 @@ int group_stitching_wrap(V3DPluginCallback2 &callback, QWidget *parent)
     {
         group_stitching(callback, parent);
     }
-	return true;
+
 }
 
 // stitching a group images and saving as a virtual image

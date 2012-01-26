@@ -83,7 +83,8 @@ struct LocationSimple
 	double pixval;
 	double ave, sdev, skew, curt;
 	double size, mass, pixmax;
-	double ev_pc1, ev_pc2, ev_pc3; //the eigen values of principal components
+        double ev_pc1, ev_pc2, ev_pc3; //the eigen values of principal components
+        XYZ mcenter; //mass center
 
 	string name; //the name of a landmark
 	string comments; //other info of the landmark
@@ -113,6 +114,8 @@ struct LocationSimple
 		pixmax = 0;
 
 		ev_pc1=ev_pc2=ev_pc3=VAL_INVALID; //set as invalid value
+
+                mcenter.x=0; mcenter.y=0; mcenter.z=0;
 
 		on=true;
 	}

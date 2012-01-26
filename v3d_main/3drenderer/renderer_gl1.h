@@ -293,7 +293,8 @@ protected:
 	void solveCurveFromMarkers();
      // beginning of ZJL
      void getPerpendPointDist(XYZ &P, XYZ &P0, XYZ &P1, XYZ &Pb, double &dist);
-     double getRgnPropertyAt(XYZ &pos);
+     void getRgnPropertyAt(XYZ &pos, LocationSimple &pt);
+
      void solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index);
      void solveCurveRefineLast();
      void reorderNeuronIndexNumber(V3DLONG curSeg_id, V3DLONG NI, bool newInLower);
@@ -301,10 +302,16 @@ protected:
      void solveCurveRubberDrag();
      void blendDraggedNeuron();
 
+     void solveCurveTracing(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index);
+     XYZ getLocUsingMassCenter(bool firstloc, XYZ lastpos, XYZ p1, XYZ p2,
+			double clipplane[4]=0,	//clipplane==0 means no clip plane
+			int chno=0,    			//must be a valid channel number
+			float *value=0			//if value!=0, output value at center
+			);
+
      void updateDraggedNeuronXYZ();
      V3DLONG findNearestNeuronNode_WinXYV2(int cx, int cy);
-     void canCurveConnect(XYZ &e, V3DLONG &closest_seg, V3DLONG &closest_node,
-          bool &bConnect);
+     void canCurveConnect(XYZ &e, V3DLONG &closest_seg, V3DLONG &closest_node, bool &bConnect);
      void connectCurve(V3DLONG &curSeg);
      void smoothLagrange(vector <XYZ> inPoints, vector <XYZ> & outPoints, int numberOfSegments);
      V3DLONG edit_seg_id;

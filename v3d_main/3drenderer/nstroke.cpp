@@ -63,8 +63,15 @@ void Renderer_gl1::solveCurveRefineLast()
 
      loc_veci.clear();
      loc_vec_input.clear();
+
      // get the ith curve center
-     solveCurveCenterV2(loc_vec_input, loc_veci, 0);
+     if(selectMode==smCurveTracing)
+     {
+          solveCurveTracing(loc_vec_input, loc_veci, 0);
+     }else
+     {
+          solveCurveCenterV2(loc_vec_input, loc_veci, 0);
+     }
 
      int NI=loc_veci.size();
 
@@ -503,8 +510,10 @@ void Renderer_gl1::solveCurveRefineLast()
 
                     // compare average intensity value of pos0 and closest_pos with windows size 5
                     double mean0, mean;
-                    mean0 = getRgnPropertyAt(pos0);
-                    mean = getRgnPropertyAt(closest_pos);
+                    LocationSimple pt0, pt;
+                    getRgnPropertyAt(pos0, pt0);
+                    getRgnPropertyAt(closest_pos, pt);
+                    mean0=pt0.ave; mean = pt.ave;
                     if (mean0 < mean)
                     {
                          // replace loc_vec0.at(k) with closest_pos
@@ -667,10 +676,8 @@ void Renderer_gl1::getPerpendPointDist(XYZ &P, XYZ &P0, XYZ &P1, XYZ &Pb, double
 }
 
 // get mean value on pos with the window size 5
-double Renderer_gl1::getRgnPropertyAt(XYZ &pos)
+void Renderer_gl1::getRgnPropertyAt(XYZ &pos, LocationSimple &pt)
 {
-     LocationSimple pt;
-
 	pt.x = pos.x;
 	pt.y = pos.y;
 	pt.z = pos.z;
@@ -684,16 +691,18 @@ double Renderer_gl1::getRgnPropertyAt(XYZ &pos)
 	pt.shape = pxCube;
 
 	//now do the computation
-	if (curImg->compute_rgn_stat(pt, cc)==true)
+	if (curImg->compute_rgn_stat(pt, cc)!=true)
 	{
           // average intensity value
-          double mean = pt.ave;
+          //mean = pt.ave;
+          //sdev = pt.sdev;
           // mass value
           // double mass = pt.mass;
-          return mean;
+          v3d_msg("Failed to get region properties.\n");
+          return ;
 	}
-     v3d_msg("Failed to get region properties.\n");
-     return 0.0;
+
+     return ;
 }
 
 /**
@@ -1886,7 +1895,7 @@ void Renderer_gl1::smoothLagrange(vector <XYZ> inPoints, vector <XYZ> & outPoint
 	 // dynamically allocate a 2D array
 	 double** multipliers = new double *[pointsCount];
 	 for(int pc=0; pc<pointsCount; pc++)
-		 multipliers[pc]=new double[numberOfSegments];		
+		 multipliers[pc]=new double[numberOfSegments];
 
      double pointCountMinusOne = (double)(pointsCount - 1);
 

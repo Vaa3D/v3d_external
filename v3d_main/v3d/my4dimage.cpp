@@ -2000,7 +2000,7 @@ bool My4DImage::setNewImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG ns
 
 bool My4DImage::rotate(ImagePlaneDisplayType ptype, const Options_Rotate & r_opt)
 {
-	if (!data4d_uint8 && !data4d_uint16 && !data4d_float32) 
+	if (!data4d_uint8 && !data4d_uint16 && !data4d_float32)
 	{
 		v3d_msg("None of the 4d data pointers is valid in rotate().");  return false;
 	}
@@ -2015,13 +2015,13 @@ bool My4DImage::rotate(ImagePlaneDisplayType ptype, const Options_Rotate & r_opt
 		case imgPlaneX:
 			if (data4d_uint8)
 				b_res = rotate_inPlaneX(this->getRawData(), insz, r_opt, outvol1d, outsz);
-			else if (data4d_uint16)	
+			else if (data4d_uint16)
 			{
 				unsigned short int * tmpout=0;
 				b_res = rotate_inPlaneX((unsigned short int *)(this->getRawData()), insz, r_opt, tmpout, outsz);
 				outvol1d = (unsigned char *)tmpout;
 			}
-			else if (data4d_float32)	
+			else if (data4d_float32)
 			{
 				float * tmpout=0;
 				b_res = rotate_inPlaneX((float *)(this->getRawData()), insz, r_opt, tmpout, outsz);
@@ -2032,13 +2032,13 @@ bool My4DImage::rotate(ImagePlaneDisplayType ptype, const Options_Rotate & r_opt
 		case imgPlaneY:
 			if (data4d_uint8)
 				b_res = rotate_inPlaneY(this->getRawData(), insz, r_opt, outvol1d, outsz);
-			else if (data4d_uint16)	
+			else if (data4d_uint16)
 			{
 				unsigned short int * tmpout=0;
 				b_res = rotate_inPlaneY((unsigned short int *)(this->getRawData()), insz, r_opt, tmpout, outsz);
 				outvol1d = (unsigned char *)tmpout;
 			}
-			else if (data4d_float32)	
+			else if (data4d_float32)
 			{
 				float * tmpout=0;
 				b_res = rotate_inPlaneY((float *)(this->getRawData()), insz, r_opt, tmpout, outsz);
@@ -2049,13 +2049,13 @@ bool My4DImage::rotate(ImagePlaneDisplayType ptype, const Options_Rotate & r_opt
 		case imgPlaneZ:
 			if (data4d_uint8)
 				b_res = rotate_inPlaneZ(this->getRawData(), insz, r_opt, outvol1d, outsz);
-			else if (data4d_uint16)	
+			else if (data4d_uint16)
 			{
 				unsigned short int * tmpout=0;
 				b_res = rotate_inPlaneZ((unsigned short int *)(this->getRawData()), insz, r_opt, tmpout, outsz);
 				outvol1d = (unsigned char *)tmpout;
 			}
-			else if (data4d_float32)	
+			else if (data4d_float32)
 			{
 				float * tmpout=0;
 				b_res = rotate_inPlaneZ((float *)(this->getRawData()), insz, r_opt, tmpout, outsz);
@@ -3299,6 +3299,8 @@ bool My4DImage::compute_rgn_stat(LocationSimple & pt, int channo)
 	double res_mean=0, res_std=0;
 	double res_size=0, res_mass=0;
 	V3DLONG i,j,k;
+     XYZ res_mcenter; //mass center
+     double res_xI=0, res_yI=0,res_zI=0; // for mass center computation
 
 	V3DLONG xs,xe,ys,ye,zs,ze;
 	xs = xx-rr; if (xs<0) xs=0;
@@ -3331,11 +3333,17 @@ bool My4DImage::compute_rgn_stat(LocationSimple & pt, int channo)
 						res_size++;
 						res_mass += cur_v;
 						res_std += cur_v*cur_v; //use the incremental formula
+                              res_xI += i*cur_v;
+                              res_yI += j*cur_v;
+                              res_zI += k*cur_v;
 					}
 				}
 			}
 			res_mean = res_mass/res_size;
 			res_std = sqrt(res_std/res_size - res_mean*res_mean);
+               res_mcenter.x = res_xI/res_mass;
+               res_mcenter.y = res_yI/res_mass;
+               res_mcenter.z = res_zI/res_mass;
 			break;
 
 		case pxCube:
@@ -3348,9 +3356,15 @@ bool My4DImage::compute_rgn_stat(LocationSimple & pt, int channo)
 						res_size++;
 						res_mass += cur_v;
 						res_std += cur_v*cur_v; //use the incremental formula
+                              res_xI += i*cur_v;
+                              res_yI += j*cur_v;
+                              res_zI += k*cur_v;
 					}
 			res_mean = res_mass/res_size;
 			res_std = sqrt(res_std/res_size - res_mean*res_mean);
+               res_mcenter.x = res_xI/res_mass;
+               res_mcenter.y = res_yI/res_mass;
+               res_mcenter.z = res_zI/res_mass;
 			break;
 
 		case pxCircleX:
@@ -3373,11 +3387,17 @@ bool My4DImage::compute_rgn_stat(LocationSimple & pt, int channo)
 						res_size++;
 						res_mass += cur_v;
 						res_std += cur_v*cur_v; //use the incremental formula
+                              res_xI += i*cur_v;
+                              res_yI += j*cur_v;
+                              res_zI += k*cur_v;
 					}
 				}
 			}
 			res_mean = res_mass/res_size;
 			res_std = sqrt(res_std/res_size - res_mean*res_mean);
+               res_mcenter.x = res_xI/res_mass;
+               res_mcenter.y = res_yI/res_mass;
+               res_mcenter.z = res_zI/res_mass;
 			break;
 
 		case pxCircleY:
@@ -3400,11 +3420,17 @@ bool My4DImage::compute_rgn_stat(LocationSimple & pt, int channo)
 						res_size++;
 						res_mass += cur_v;
 						res_std += cur_v*cur_v; //use the incremental formula
+                              res_xI += i*cur_v;
+                              res_yI += j*cur_v;
+                              res_zI += k*cur_v;
 					}
 				}
 			}
 			res_mean = res_mass/res_size;
 			res_std = sqrt(res_std/res_size - res_mean*res_mean);
+               res_mcenter.x = res_xI/res_mass;
+               res_mcenter.y = res_yI/res_mass;
+               res_mcenter.z = res_zI/res_mass;
 			break;
 
 		case pxCircleZ:
@@ -3427,11 +3453,17 @@ bool My4DImage::compute_rgn_stat(LocationSimple & pt, int channo)
 						res_size++;
 						res_mass += cur_v;
 						res_std += cur_v*cur_v; //use the incremental formula
+                              res_xI += i*cur_v;
+                              res_yI += j*cur_v;
+                              res_zI += k*cur_v;
 					}
 				}
 			}
 			res_mean = res_mass/res_size;
 			res_std = sqrt(res_std/res_size - res_mean*res_mean);
+               res_mcenter.x = res_xI/res_mass;
+               res_mcenter.y = res_yI/res_mass;
+               res_mcenter.z = res_zI/res_mass;
 			break;
 
 		case pxSquareX:
@@ -3444,9 +3476,15 @@ bool My4DImage::compute_rgn_stat(LocationSimple & pt, int channo)
 						res_size++;
 						res_mass += cur_v;
 						res_std += cur_v*cur_v; //use the incremental formula
+                              res_xI += i*cur_v;
+                              res_yI += j*cur_v;
+                              res_zI += k*cur_v;
 					}
 			res_mean = res_mass/res_size;
 			res_std = sqrt(res_std/res_size - res_mean*res_mean);
+               res_mcenter.x = res_xI/res_mass;
+               res_mcenter.y = res_yI/res_mass;
+               res_mcenter.z = res_zI/res_mass;
 			break;
 
 		case pxSquareY:
@@ -3459,9 +3497,15 @@ bool My4DImage::compute_rgn_stat(LocationSimple & pt, int channo)
 						res_size++;
 						res_mass += cur_v;
 						res_std += cur_v*cur_v; //use the incremental formula
+                              res_xI += i*cur_v;
+                              res_yI += j*cur_v;
+                              res_zI += k*cur_v;
 					}
 			res_mean = res_mass/res_size;
 			res_std = sqrt(res_std/res_size - res_mean*res_mean);
+               res_mcenter.x = res_xI/res_mass;
+               res_mcenter.y = res_yI/res_mass;
+               res_mcenter.z = res_zI/res_mass;
 			break;
 
 		case pxSquareZ:
@@ -3474,9 +3518,15 @@ bool My4DImage::compute_rgn_stat(LocationSimple & pt, int channo)
 						res_size++;
 						res_mass += cur_v;
 						res_std += cur_v*cur_v; //use the incremental formula
+                              res_xI += i*cur_v;
+                              res_yI += j*cur_v;
+                              res_zI += k*cur_v;
 					}
 			res_mean = res_mass/res_size;
 			res_std = sqrt(res_std/res_size - res_mean*res_mean);
+               res_mcenter.x = res_xI/res_mass;
+               res_mcenter.y = res_yI/res_mass;
+               res_mcenter.z = res_zI/res_mass;
 			break;
 
 		case pxLineX:
@@ -3489,9 +3539,15 @@ bool My4DImage::compute_rgn_stat(LocationSimple & pt, int channo)
 						res_size++;
 						res_mass += cur_v;
 						res_std += cur_v*cur_v; //use the incremental formula
+                              res_xI += i*cur_v;
+                              res_yI += j*cur_v;
+                              res_zI += k*cur_v;
 					}
 			res_mean = res_mass/res_size;
 			res_std = sqrt(res_std/res_size - res_mean*res_mean);
+               res_mcenter.x = res_xI/res_mass;
+               res_mcenter.y = res_yI/res_mass;
+               res_mcenter.z = res_zI/res_mass;
 			break;
 
 		case pxLineY:
@@ -3504,9 +3560,15 @@ bool My4DImage::compute_rgn_stat(LocationSimple & pt, int channo)
 						res_size++;
 						res_mass += cur_v;
 						res_std += cur_v*cur_v; //use the incremental formula
+                              res_xI += i*cur_v;
+                              res_yI += j*cur_v;
+                              res_zI += k*cur_v;
 					}
 			res_mean = res_mass/res_size;
 			res_std = sqrt(res_std/res_size - res_mean*res_mean);
+               res_mcenter.x = res_xI/res_mass;
+               res_mcenter.y = res_yI/res_mass;
+               res_mcenter.z = res_zI/res_mass;
 			break;
 
 		case pxLineZ:
@@ -3519,9 +3581,15 @@ bool My4DImage::compute_rgn_stat(LocationSimple & pt, int channo)
 						res_size++;
 						res_mass += cur_v;
 						res_std += cur_v*cur_v; //use the incremental formula
+                              res_xI += i*cur_v;
+                              res_yI += j*cur_v;
+                              res_zI += k*cur_v;
 					}
 			res_mean = res_mass/res_size;
 			res_std = sqrt(res_std/res_size - res_mean*res_mean);
+               res_mcenter.x = res_xI/res_mass;
+               res_mcenter.y = res_yI/res_mass;
+               res_mcenter.z = res_zI/res_mass;
 			break;
 
 		case pxDot:
@@ -3534,9 +3602,15 @@ bool My4DImage::compute_rgn_stat(LocationSimple & pt, int channo)
 						res_size++;
 						res_mass += cur_v;
 						res_std += cur_v*cur_v; //use the incremental formula
+                              res_xI += i*cur_v;
+                              res_yI += j*cur_v;
+                              res_zI += k*cur_v;
 					}
 			res_mean = res_mass/res_size;
 			res_std = sqrt(res_std/res_size - res_mean*res_mean);
+               res_mcenter.x = res_xI/res_mass;
+               res_mcenter.y = res_yI/res_mass;
+               res_mcenter.z = res_zI/res_mass;
 			break;
 
 		case pxUnset:
@@ -3633,6 +3707,7 @@ bool My4DImage::compute_rgn_stat(LocationSimple & pt, int channo)
 	pt.sdev = res_std;
 	pt.size = res_size;
 	pt.mass = res_mass;
+     pt.mcenter = res_mcenter;
 
 	//no need to update pt's ev_pc field as they have been updated
 
@@ -3753,7 +3828,7 @@ using namespace RBD_LIBRARIES;
 bool My4DImage::proj_general_principal_axis(ImagePlaneDisplayType ptype)
 {
 	//first generate the sum image of all planes for a particular axis code
-	if (!data4d_uint8 && !data4d_uint16 && !data4d_float32) 
+	if (!data4d_uint8 && !data4d_uint16 && !data4d_float32)
 	{
 	  v3d_msg("None of the 4D pointers is valid in proj_general_principal_axis().");  return false;
 	}
@@ -3761,11 +3836,11 @@ bool My4DImage::proj_general_principal_axis(ImagePlaneDisplayType ptype)
 	Options_Rotate tmp_opt;
 	tmp_opt.b_keepSameSize = (QMessageBox::Yes == QMessageBox::question (0, "", "Keep rotated image the same size with the original image?", QMessageBox::Yes, QMessageBox::No)) ?
 		true : false;
-	
+
 	tmp_opt.fillcolor=0;
 
 	//
-	
+
 	float * sumdata1d = 0;
 	float ** sumdata2d = 0;
 
@@ -4020,7 +4095,7 @@ else if (data4d_float32)
 		default:
 			return false;
 	}
-	
+
 	if (!rotate(ptype, tmp_opt)) //this will update image, so remove the following code
 		return false;
 
@@ -5116,7 +5191,7 @@ bool My4DImage::proj_general_scaleandconvert28bit(int lb, int ub) //lb, ub: lowe
 		if (outvol1d) {delete []outvol1d;outvol1d=0;}
 		return false;
 	}
-	
+
 	setNewImageData(outvol1d, tsz0, tsz1, tsz2, tsz3, V3D_UINT8);
 
 	getXWidget()->reset(); //to force reset the color etc
