@@ -1610,7 +1610,9 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         if(infilelist->empty())
         {
             //print Help info
-            printf("\nUsage: v3d -x blend_multiscanstacks.dylib -f multiscanblend -i <input_images> -o <output_image> -p \"#s <save_blending_result zero(false)/nonzero(true)> #k <b_morecolorstack_first nonzero(true)/zero(false)>\" \n");
+            printf("\nUsage: v3d -x blend_multiscanstacks.dylib -f multiscanblend -i <input_images> -o <output_image> \
+                   -p \"#s <save_blending_result zero(false)/nonzero(true)> #k <b_morecolorstack_first nonzero(true)/zero(false)> \
+                   [#c10 <num_colorchannel> #c11 <num_colorchannel> #c12 <num_colorchannel> #c20 <num_colorchannel> #c21 <num_colorchannel>]\" \n");
 
             return true;
         }
@@ -1633,7 +1635,11 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
 
         bool b_saveimage = true; // save the blended image by default
         bool b_morecolorstack_first = false; // keep inputs order by default
-
+        
+        // color mapping
+        V3DLONG c10=-1, c11=-1, c12=-1;
+        V3DLONG c20=-1, c21=-1;
+        
         qDebug()<<"parameters ..."<<paras;
 
         if(paras)
@@ -1687,6 +1693,54 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                             {
                                 b_morecolorstack_first = (atoi( argv[i+1] )) ? true:false;
                                 printf("Now set the b_morecolorstack_first = %s\n", (b_morecolorstack_first)? "TRUE" : "FALSE");
+                                i++;
+                            }
+                            else if (!strcmp(key, "c10"))
+                            {
+                                key++;
+                                key++;
+                                
+                                c10 = atoi( argv[i+1] );                                
+                                i++;
+                            }
+                            else if (!strcmp(key, "c10"))
+                            {
+                                key++;
+                                key++;
+                                
+                                c10 = atoi( argv[i+1] );                                
+                                i++;
+                            }
+                            else if (!strcmp(key, "c11"))
+                            {
+                                key++;
+                                key++;
+                                
+                                c11 = atoi( argv[i+1] );                                
+                                i++;
+                            }
+                            else if (!strcmp(key, "c12"))
+                            {
+                                key++;
+                                key++;
+                                
+                                c12 = atoi( argv[i+1] );                                
+                                i++;
+                            }
+                            else if (!strcmp(key, "c20"))
+                            {
+                                key++;
+                                key++;
+                                
+                                c20 = atoi( argv[i+1] );                                
+                                i++;
+                            }
+                            else if (!strcmp(key, "c21"))
+                            {
+                                key++;
+                                key++;
+                                
+                                c21 = atoi( argv[i+1] );                                
                                 i++;
                             }
                             else
@@ -1788,6 +1842,14 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             cout<<"Images are different dimensions! Do nothing!"<<endl;
             return false;
         }
+        
+        bool b_color_order_specified = false;
+        if(!(c10==-1 && c11==-1 && c12==-1 && c20==-1 && c21==-1))
+        {
+            b_color_order_specified = true;
+            b_morecolorstack_first = true;
+        }
+        
 
         // swap inputs' order by choosing the input with more color channels as the first input
         if(b_morecolorstack_first && sz_img1[3]<sz_img2[3])
@@ -1829,6 +1891,15 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
 
             qDebug()<<"switched stack 1 "<<p1dImg1<< " "<<sz_img1[0]<< " "<<sz_img1[1]<< " "<<sz_img1[2]<< " "<<sz_img1[3]<< " "<<p4DImage1.getTotalUnitNumber();
             qDebug()<<"switched stack 2 "<<p1dImg2<< " "<<sz_img2[0]<< " "<<sz_img2[1]<< " "<<sz_img2[2]<< " "<<sz_img2[3]<< " "<<p4DImage2.getTotalUnitNumber();
+        }
+        
+        if(b_color_order_specified)
+        {
+            if(c10<0 || c10>3 || c11<0 || c11>3 || c12<0 || c12>3 || c20<0 || c20>3 || c21<0 || c21>3)
+            {
+                cout<<"Error: invalid input color orders"<<endl;
+                return false;
+            }
         }
 
         //
@@ -2028,128 +2099,178 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             }
 
             //
-            V3DLONG c1=0, c2=0;
-
-            for(V3DLONG c=0; c<colordim-1; c++)
+            if(b_color_order_specified)
             {
-                V3DLONG offset_c = c*pagesz;
-
-                V3DLONG offset_c1, offset_c2;
-                bool b_img1;
-
-                if(c1<sz_img1[3])
+                for(V3DLONG c=0; c<colordim-1; c++)
                 {
-                    b_img1 = true;
-
-                    if(b_img1existNULL)
+                    V3DLONG offset_c = c*pagesz;
+                    
+                    V3DLONG offset_c1, offset_c2;
+                    bool b_img1 = true;
+                    
+                    if(c10==c) offset_c1 = 0;
+                    else if(c11==c) offset_c1 = pagesz;
+                    else if(c12==c) offset_c1 = 2*pagesz;
+                    
+                    if(c20==c) {b_img1=false; offset_c2=0;}
+                    else if(c21==c) {b_img1=false; offset_c2=pagesz;}
+                    
+                    for (V3DLONG k=0; k<sz_img1[2]; k++)
                     {
-                        if(c1!=nullcolor1)
+                        V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
+                        
+                        V3DLONG offset_k1 = offset_k - offset_c + offset_c1;
+                        V3DLONG offset_k2 = offset_k - offset_c + offset_c2;
+                        
+                        for(V3DLONG j=0; j<sz_img1[1]; j++)
+                        {
+                            V3DLONG offset_j = offset_k + j*sz_img1[0];
+                            
+                            V3DLONG offset_j1 = offset_k1 + j*sz_img1[0];
+                            V3DLONG offset_j2 = offset_k2 + j*sz_img1[0];
+                            
+                            for(V3DLONG i=0; i<sz_img1[0]; i++)
+                            {
+                                V3DLONG idx = offset_j + i;
+                                
+                                if (b_img1)
+                                {
+                                    data1d[idx] = p1dImg1[offset_j1 + i];
+                                }
+                                else
+                                {
+                                    data1d[idx] = p1dImg2[offset_j2 + i];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                V3DLONG c1=0, c2=0;
+                
+                for(V3DLONG c=0; c<colordim-1; c++)
+                {
+                    V3DLONG offset_c = c*pagesz;
+                    
+                    V3DLONG offset_c1, offset_c2;
+                    bool b_img1;
+                    
+                    if(c1<sz_img1[3])
+                    {
+                        b_img1 = true;
+                        
+                        if(b_img1existNULL)
+                        {
+                            if(c1!=nullcolor1)
+                            {
+                                offset_c1 = c1*pagesz;
+                            }
+                            else
+                            {
+                                c1++;
+                                
+                                if(c1<sz_img1[3])
+                                    offset_c1 = c1*pagesz;
+                                else
+                                    b_img1 = false;
+                            }
+                        }
+                        
+                        if(c1!=ref1)
                         {
                             offset_c1 = c1*pagesz;
                         }
                         else
                         {
                             c1++;
-
+                            
                             if(c1<sz_img1[3])
                                 offset_c1 = c1*pagesz;
                             else
                                 b_img1 = false;
                         }
-                    }
-
-                    if(c1!=ref1)
-                    {
-                        offset_c1 = c1*pagesz;
+                        
+                        qDebug()<<"color 1 ..."<<c1<<c;
+                        
+                        c1++;
                     }
                     else
                     {
-                        c1++;
-
-                        if(c1<sz_img1[3])
-                            offset_c1 = c1*pagesz;
-                        else
-                            b_img1 = false;
+                        b_img1 = false;
                     }
-
-                    qDebug()<<"color 1 ..."<<c1<<c;
-
-                    c1++;
-                }
-                else
-                {
-                    b_img1 = false;
-                }
-
-                if(!b_img1)
-                {
-                    if(b_img2existNULL)
+                    
+                    if(!b_img1)
                     {
-                        if(c2!=nullcolor2)
+                        if(b_img2existNULL)
+                        {
+                            if(c2!=nullcolor2)
+                            {
+                                offset_c2 = c2*pagesz;
+                            }
+                            else
+                            {
+                                c2++;
+                                
+                                if(c2<sz_img2[3])
+                                    offset_c2 = c2*pagesz;
+                                else
+                                    continue;
+                            }
+                        }
+                        
+                        if(c2!=ref2)
                         {
                             offset_c2 = c2*pagesz;
                         }
                         else
                         {
                             c2++;
-
+                            
                             if(c2<sz_img2[3])
                                 offset_c2 = c2*pagesz;
                             else
                                 continue;
                         }
-                    }
-
-                    if(c2!=ref2)
-                    {
-                        offset_c2 = c2*pagesz;
-                    }
-                    else
-                    {
+                        
+                        qDebug()<<"color 2 ..."<<c2<<c;
+                        
                         c2++;
-
-                        if(c2<sz_img2[3])
-                            offset_c2 = c2*pagesz;
-                        else
-                            continue;
                     }
-
-                    qDebug()<<"color 2 ..."<<c2<<c;
-
-                    c2++;
-                }
-
-                for (V3DLONG k=0; k<sz_img1[2]; k++)
-                {
-                    V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
-
-                    V3DLONG offset_k1 = offset_k - offset_c + offset_c1;
-                    V3DLONG offset_k2 = offset_k - offset_c + offset_c2;
-
-                    for(V3DLONG j=0; j<sz_img1[1]; j++)
+                    
+                    for (V3DLONG k=0; k<sz_img1[2]; k++)
                     {
-                        V3DLONG offset_j = offset_k + j*sz_img1[0];
-
-                        V3DLONG offset_j1 = offset_k1 + j*sz_img1[0];
-                        V3DLONG offset_j2 = offset_k2 + j*sz_img1[0];
-
-                        for(V3DLONG i=0; i<sz_img1[0]; i++)
+                        V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
+                        
+                        V3DLONG offset_k1 = offset_k - offset_c + offset_c1;
+                        V3DLONG offset_k2 = offset_k - offset_c + offset_c2;
+                        
+                        for(V3DLONG j=0; j<sz_img1[1]; j++)
                         {
-                            V3DLONG idx = offset_j + i;
-
-                            if (b_img1)
+                            V3DLONG offset_j = offset_k + j*sz_img1[0];
+                            
+                            V3DLONG offset_j1 = offset_k1 + j*sz_img1[0];
+                            V3DLONG offset_j2 = offset_k2 + j*sz_img1[0];
+                            
+                            for(V3DLONG i=0; i<sz_img1[0]; i++)
                             {
-                                data1d[idx] = p1dImg1[offset_j1 + i];
-                            }
-                            else
-                            {
-                                data1d[idx] = p1dImg2[offset_j2 + i];
+                                V3DLONG idx = offset_j + i;
+                                
+                                if (b_img1)
+                                {
+                                    data1d[idx] = p1dImg1[offset_j1 + i];
+                                }
+                                else
+                                {
+                                    data1d[idx] = p1dImg2[offset_j2 + i];
+                                }
                             }
                         }
                     }
                 }
             }
-
+            
             V3DLONG offset = (colordim-1)*pagesz;
             V3DLONG offset1 = ref1*pagesz;
             V3DLONG offset2 = ref2*pagesz;
@@ -2214,23 +2335,86 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                 return -1;
             }
 
-
-            V3DLONG c1=0, c2=0;
-
-            for(V3DLONG c=0; c<colordim-1; c++)
+            if(b_color_order_specified)
             {
-                V3DLONG offset_c = c*pagesz;
-
-                V3DLONG offset_c1, offset_c2;
-                bool b_img1;
-
-                if(c1<sz_img1[3])
+                for(V3DLONG c=0; c<colordim-1; c++)
                 {
-                    b_img1 = true;
-
-                    if(b_img1existNULL)
+                    V3DLONG offset_c = c*pagesz;
+                    
+                    V3DLONG offset_c1, offset_c2;
+                    bool b_img1 = true;
+                    
+                    if(c10==c) offset_c1 = 0;
+                    else if(c11==c) offset_c1 = pagesz;
+                    else if(c12==c) offset_c1 = 2*pagesz;
+                    
+                    if(c20==c) {b_img1=false; offset_c2=0;}
+                    else if(c21==c) {b_img1=false; offset_c2=pagesz;}
+                    
+                    for (V3DLONG k=0; k<sz_img1[2]; k++)
                     {
-                        if(c1!=nullcolor1)
+                        V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
+                        
+                        V3DLONG offset_k1 = offset_k - offset_c + offset_c1;
+                        V3DLONG offset_k2 = offset_k - offset_c + offset_c2;
+                        
+                        for(V3DLONG j=0; j<sz_img1[1]; j++)
+                        {
+                            V3DLONG offset_j = offset_k + j*sz_img1[0];
+                            
+                            V3DLONG offset_j1 = offset_k1 + j*sz_img1[0];
+                            V3DLONG offset_j2 = offset_k2 + j*sz_img1[0];
+                            
+                            for(V3DLONG i=0; i<sz_img1[0]; i++)
+                            {
+                                V3DLONG idx = offset_j + i;
+                                
+                                if (b_img1)
+                                {
+                                    data1d[idx] = ((unsigned short *)p1dImg1)[offset_j1 + i];
+                                }
+                                else
+                                {
+                                    data1d[idx] = ((unsigned short *)p1dImg2)[offset_j2 + i];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                V3DLONG c1=0, c2=0;
+
+                for(V3DLONG c=0; c<colordim-1; c++)
+                {
+                    V3DLONG offset_c = c*pagesz;
+
+                    V3DLONG offset_c1, offset_c2;
+                    bool b_img1;
+
+                    if(c1<sz_img1[3])
+                    {
+                        b_img1 = true;
+
+                        if(b_img1existNULL)
+                        {
+                            if(c1!=nullcolor1)
+                            {
+                                offset_c1 = c1*pagesz;
+                            }
+                            else
+                            {
+                                c1++;
+
+                                if(c1<sz_img1[3])
+                                    offset_c1 = c1*pagesz;
+                                else
+                                    b_img1 = false;
+                            }
+                        }
+
+                        if(c1!=ref1)
                         {
                             offset_c1 = c1*pagesz;
                         }
@@ -2243,36 +2427,36 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                             else
                                 b_img1 = false;
                         }
-                    }
 
-                    if(c1!=ref1)
-                    {
-                        offset_c1 = c1*pagesz;
+                        qDebug()<<"color 1 ..."<<c1<<c;
+
+                        c1++;
                     }
                     else
                     {
-                        c1++;
-
-                        if(c1<sz_img1[3])
-                            offset_c1 = c1*pagesz;
-                        else
-                            b_img1 = false;
+                        b_img1 = false;
                     }
 
-                    qDebug()<<"color 1 ..."<<c1<<c;
-
-                    c1++;
-                }
-                else
-                {
-                    b_img1 = false;
-                }
-
-                if(!b_img1)
-                {
-                    if(b_img2existNULL)
+                    if(!b_img1)
                     {
-                        if(c2!=nullcolor2)
+                        if(b_img2existNULL)
+                        {
+                            if(c2!=nullcolor2)
+                            {
+                                offset_c2 = c2*pagesz;
+                            }
+                            else
+                            {
+                                c2++;
+
+                                if(c2<sz_img2[3])
+                                    offset_c2 = c2*pagesz;
+                                else
+                                    continue;
+                            }
+                        }
+
+                        if(c2!=ref2)
                         {
                             offset_c2 = c2*pagesz;
                         }
@@ -2285,52 +2469,38 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                             else
                                 continue;
                         }
-                    }
 
-                    if(c2!=ref2)
-                    {
-                        offset_c2 = c2*pagesz;
-                    }
-                    else
-                    {
+                        qDebug()<<"color 2 ..."<<c2<<c;
+
                         c2++;
-
-                        if(c2<sz_img2[3])
-                            offset_c2 = c2*pagesz;
-                        else
-                            continue;
                     }
 
-                    qDebug()<<"color 2 ..."<<c2<<c;
-
-                    c2++;
-                }
-
-                for (V3DLONG k=0; k<sz_img1[2]; k++)
-                {
-                    V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
-
-                    V3DLONG offset_k1 = offset_k - offset_c + offset_c1;
-                    V3DLONG offset_k2 = offset_k - offset_c + offset_c2;
-
-                    for(V3DLONG j=0; j<sz_img1[1]; j++)
+                    for (V3DLONG k=0; k<sz_img1[2]; k++)
                     {
-                        V3DLONG offset_j = offset_k + j*sz_img1[0];
+                        V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
 
-                        V3DLONG offset_j1 = offset_k1 + j*sz_img1[0];
-                        V3DLONG offset_j2 = offset_k2 + j*sz_img1[0];
+                        V3DLONG offset_k1 = offset_k - offset_c + offset_c1;
+                        V3DLONG offset_k2 = offset_k - offset_c + offset_c2;
 
-                        for(V3DLONG i=0; i<sz_img1[0]; i++)
+                        for(V3DLONG j=0; j<sz_img1[1]; j++)
                         {
-                            V3DLONG idx = offset_j + i;
+                            V3DLONG offset_j = offset_k + j*sz_img1[0];
 
-                            if (b_img1)
+                            V3DLONG offset_j1 = offset_k1 + j*sz_img1[0];
+                            V3DLONG offset_j2 = offset_k2 + j*sz_img1[0];
+
+                            for(V3DLONG i=0; i<sz_img1[0]; i++)
                             {
-                                data1d[idx] = ((unsigned short *)p1dImg1)[offset_j1 + i];
-                            }
-                            else
-                            {
-                                data1d[idx] = ((unsigned short *)p1dImg2)[offset_j2 + i];
+                                V3DLONG idx = offset_j + i;
+
+                                if (b_img1)
+                                {
+                                    data1d[idx] = ((unsigned short *)p1dImg1)[offset_j1 + i];
+                                }
+                                else
+                                {
+                                    data1d[idx] = ((unsigned short *)p1dImg2)[offset_j2 + i];
+                                }
                             }
                         }
                     }
@@ -2403,22 +2573,86 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             }
 
             //
-            V3DLONG c1=0, c2=0;
-
-            for(V3DLONG c=0; c<colordim-1; c++)
+            if(b_color_order_specified)
             {
-                V3DLONG offset_c = c*pagesz;
-
-                V3DLONG offset_c1, offset_c2;
-                bool b_img1;
-
-                if(c1<sz_img1[3])
+                for(V3DLONG c=0; c<colordim-1; c++)
                 {
-                    b_img1 = true;
-
-                    if(b_img1existNULL)
+                    V3DLONG offset_c = c*pagesz;
+                    
+                    V3DLONG offset_c1, offset_c2;
+                    bool b_img1 = true;
+                    
+                    if(c10==c) offset_c1 = 0;
+                    else if(c11==c) offset_c1 = pagesz;
+                    else if(c12==c) offset_c1 = 2*pagesz;
+                    
+                    if(c20==c) {b_img1=false; offset_c2=0;}
+                    else if(c21==c) {b_img1=false; offset_c2=pagesz;}
+                    
+                    for (V3DLONG k=0; k<sz_img1[2]; k++)
                     {
-                        if(c1!=nullcolor1)
+                        V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
+                        
+                        V3DLONG offset_k1 = offset_k - offset_c + offset_c1;
+                        V3DLONG offset_k2 = offset_k - offset_c + offset_c2;
+                        
+                        for(V3DLONG j=0; j<sz_img1[1]; j++)
+                        {
+                            V3DLONG offset_j = offset_k + j*sz_img1[0];
+                            
+                            V3DLONG offset_j1 = offset_k1 + j*sz_img1[0];
+                            V3DLONG offset_j2 = offset_k2 + j*sz_img1[0];
+                            
+                            for(V3DLONG i=0; i<sz_img1[0]; i++)
+                            {
+                                V3DLONG idx = offset_j + i;
+                                
+                                if (b_img1)
+                                {
+                                    data1d[idx] = p1dImg1[offset_j1 + i];
+                                }
+                                else
+                                {
+                                    data1d[idx] = p1dImg2[offset_j2 + i];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                V3DLONG c1=0, c2=0;
+
+                for(V3DLONG c=0; c<colordim-1; c++)
+                {
+                    V3DLONG offset_c = c*pagesz;
+
+                    V3DLONG offset_c1, offset_c2;
+                    bool b_img1;
+
+                    if(c1<sz_img1[3])
+                    {
+                        b_img1 = true;
+
+                        if(b_img1existNULL)
+                        {
+                            if(c1!=nullcolor1)
+                            {
+                                offset_c1 = c1*pagesz;
+                            }
+                            else
+                            {
+                                c1++;
+
+                                if(c1<sz_img1[3])
+                                    offset_c1 = c1*pagesz;
+                                else
+                                    b_img1 = false;
+                            }
+                        }
+
+                        if(c1!=ref1)
                         {
                             offset_c1 = c1*pagesz;
                         }
@@ -2431,36 +2665,36 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                             else
                                 b_img1 = false;
                         }
-                    }
 
-                    if(c1!=ref1)
-                    {
-                        offset_c1 = c1*pagesz;
+                        qDebug()<<"color 1 ..."<<c1<<c;
+
+                        c1++;
                     }
                     else
                     {
-                        c1++;
-
-                        if(c1<sz_img1[3])
-                            offset_c1 = c1*pagesz;
-                        else
-                            b_img1 = false;
+                        b_img1 = false;
                     }
 
-                    qDebug()<<"color 1 ..."<<c1<<c;
-
-                    c1++;
-                }
-                else
-                {
-                    b_img1 = false;
-                }
-
-                if(!b_img1)
-                {
-                    if(b_img2existNULL)
+                    if(!b_img1)
                     {
-                        if(c2!=nullcolor2)
+                        if(b_img2existNULL)
+                        {
+                            if(c2!=nullcolor2)
+                            {
+                                offset_c2 = c2*pagesz;
+                            }
+                            else
+                            {
+                                c2++;
+
+                                if(c2<sz_img2[3])
+                                    offset_c2 = c2*pagesz;
+                                else
+                                    continue;
+                            }
+                        }
+
+                        if(c2!=ref2)
                         {
                             offset_c2 = c2*pagesz;
                         }
@@ -2473,52 +2707,38 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                             else
                                 continue;
                         }
-                    }
 
-                    if(c2!=ref2)
-                    {
-                        offset_c2 = c2*pagesz;
-                    }
-                    else
-                    {
+                        qDebug()<<"color 2 ..."<<c2<<c;
+
                         c2++;
-
-                        if(c2<sz_img2[3])
-                            offset_c2 = c2*pagesz;
-                        else
-                            continue;
                     }
 
-                    qDebug()<<"color 2 ..."<<c2<<c;
-
-                    c2++;
-                }
-
-                for (V3DLONG k=0; k<sz_img1[2]; k++)
-                {
-                    V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
-
-                    V3DLONG offset_k1 = offset_k - offset_c + offset_c1;
-                    V3DLONG offset_k2 = offset_k - offset_c + offset_c2;
-
-                    for(V3DLONG j=0; j<sz_img1[1]; j++)
+                    for (V3DLONG k=0; k<sz_img1[2]; k++)
                     {
-                        V3DLONG offset_j = offset_k + j*sz_img1[0];
+                        V3DLONG offset_k = offset_c + k*sz_img1[0]*sz_img1[1];
 
-                        V3DLONG offset_j1 = offset_k1 + j*sz_img1[0];
-                        V3DLONG offset_j2 = offset_k2 + j*sz_img1[0];
+                        V3DLONG offset_k1 = offset_k - offset_c + offset_c1;
+                        V3DLONG offset_k2 = offset_k - offset_c + offset_c2;
 
-                        for(V3DLONG i=0; i<sz_img1[0]; i++)
+                        for(V3DLONG j=0; j<sz_img1[1]; j++)
                         {
-                            V3DLONG idx = offset_j + i;
+                            V3DLONG offset_j = offset_k + j*sz_img1[0];
 
-                            if (b_img1)
+                            V3DLONG offset_j1 = offset_k1 + j*sz_img1[0];
+                            V3DLONG offset_j2 = offset_k2 + j*sz_img1[0];
+
+                            for(V3DLONG i=0; i<sz_img1[0]; i++)
                             {
-                                data1d[idx] = ((float *)p1dImg1)[offset_j1 + i];
-                            }
-                            else
-                            {
-                                data1d[idx] = ((float *)p1dImg2)[offset_j2 + i];
+                                V3DLONG idx = offset_j + i;
+
+                                if (b_img1)
+                                {
+                                    data1d[idx] = ((float *)p1dImg1)[offset_j1 + i];
+                                }
+                                else
+                                {
+                                    data1d[idx] = ((float *)p1dImg2)[offset_j2 + i];
+                                }
                             }
                         }
                     }
