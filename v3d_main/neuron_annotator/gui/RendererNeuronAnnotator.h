@@ -61,7 +61,7 @@ public:
     // expose sampleScale[XYZ], thickness[XYZ]
     void setShowClipGuide(bool b) {bShowClipGuide = b;}
     void applyCustomCut(const CameraModel&);
-    void applyCutPlaneInGround(Vector3D point, Vector3D direction);
+    void applyCutPlaneInImageFrame(Vector3D point, Vector3D direction);
     void setUndoStack(QUndoStack& undoStackParam); // for undo/redo custom clip planes
     using Renderer_gl2::sampleScaleX;
     using Renderer_gl2::sampleScaleY;

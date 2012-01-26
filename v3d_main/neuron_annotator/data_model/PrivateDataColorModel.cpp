@@ -70,10 +70,12 @@ bool PrivateDataColorModel::initialize(const NaVolumeData::Reader& volumeReader)
     for (int channel = 0; channel < numChannels; ++channel)
     {
         // Channel color
-        // single channel gets colored white
+        // The Janelia Zeiss microscope computers are configured to show the data channels as blue/green/red/gray
+        // from pairs of images gray/blue/green and gray/red.
+        // Single channel gets colored white
         QRgb color = qRgb(255, 255, 255);
         if (numChannels > 1) {
-            int remainder = channel % 4; // cycle through red, green, blue, gray
+            int remainder = channel % 4; // cycle through blue, green, red, gray
             if (remainder == 0) {
                 color = qRgb(0, 0, 255); // blue
             }

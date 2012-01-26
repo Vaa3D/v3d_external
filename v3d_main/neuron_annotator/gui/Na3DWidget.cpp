@@ -328,6 +328,7 @@ void Na3DWidget::translateImage(int dx, int dy)
                         -0.0 * flip_Z);
     Vector3D dFocus_obj = ~Rotation3D(mRot) * dFocus_eye;
     dFocus_obj /= getZoomScale();
+    dFocus_obj.z() /= _thickness; // Euclidean scale to image scale
     Vector3D newFocus = focus() + dFocus_obj;
     // cerr << newFocus << __LINE__ << __FILE__;
     cameraModel.setFocus(newFocus);
@@ -814,7 +815,9 @@ void Na3DWidget::updateFocus(const Vector3D& f)
 {
     Rotation3D R_eye_obj(mRot);
     // _[xyz]Shift variables are relative to the center of the volume
-    Vector3D shift_eye = R_eye_obj * (f - getDefaultFocus());
+    Vector3D shift_img = f - getDefaultFocus();
+    shift_img.z() *= _thickness;
+    Vector3D shift_eye = R_eye_obj * shift_img;
     // _xShift is in gl coordinates scaled by 100/1.4
     // see V3dR_GLWidget::paintGL() method in v3dr_glwidget.cpp
     shift_eye *= -glUnitsPerImageVoxel() * 100.0f/1.4f;
@@ -995,7 +998,9 @@ void Na3DWidget::setSlabPosition(int val) // range 0-1000, 1000 means maximally 
     if (val == oldSlabPosition) return; // no change
     float dSlabPos = val - oldSlabPosition;
     Vector3D viewDirection = ~Rotation3D(mRot) * Vector3D(0, 0, 1);
-    Vector3D newFocus = viewDirection * dSlabPos + cameraModel.focus();
+    Vector3D dFocus = viewDirection * dSlabPos;
+    dFocus.z() /= _thickness; // Euclidean scale to image scale
+    Vector3D newFocus = dFocus + cameraModel.focus();
     // qDebug() << newFocus.x() << newFocus.y() << newFocus.z();
     cameraModel.setFocus(newFocus);
     emit slabPositionChanged(val);
@@ -1073,6 +1078,7 @@ void Na3DWidget::paintGL()
         focus0.x() *= flip_X;
         focus0.y() *= flip_Y;
         focus0.z() *= flip_Z;
+        focus0.z() *= _thickness;
         // Don't allow other geometry to obscure the marker
         // glClear(GL_DEPTH_BUFFER_BIT); // Destroys depth buffer; probably too harsh
         glPushAttrib(GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT); // save color and depth test

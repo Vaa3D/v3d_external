@@ -67,21 +67,21 @@ void RendererNeuronAnnotator::applyCustomCut(const CameraModel& cameraModel)
 {
     Rotation3D R_obj_eye = cameraModel.rotation().transpose(); // rotation to convert eye coordinates to object coordinates
     Vector3D down_obj = R_obj_eye * Vector3D(0, 1, 0);
-    applyCutPlaneInGround(cameraModel.focus(), down_obj);
+    applyCutPlaneInImageFrame(cameraModel.focus(), down_obj);
 }
 
-void RendererNeuronAnnotator::applyCutPlaneInGround(Vector3D point, Vector3D direction)
+void RendererNeuronAnnotator::applyCutPlaneInImageFrame(Vector3D point, Vector3D direction)
 {
     // cout << point << direction << endl;
     // convert focus to lie within unit cube, to match opengl transforms used.
-    point.x() = point.x() / dim1;
-    point.y() = 1.0 - point.y() / dim2;
-    point.z() = 1.0 - point.z() / dim3;
+    point.x() = point.x() / (dim1);
+    point.y() = 1.0 - point.y() / (dim2);
+    point.z() = 1.0 - point.z() / (dim3);
     // skew direction by scaled axes
-    direction.x() *= dim1;
-    direction.y() *= dim2;
-    direction.z() *= dim3;
-    direction /= direction.norm();
+    direction.x() *= dim1 * thicknessX;
+    direction.y() *= dim2 * thicknessY;
+    direction.z() *= dim3 * thicknessZ;
+    direction /= direction.norm(); // convert to unit length
     direction.x() *= -1; // ?
     double distance = point.dot(direction);
     customClipPlanes.addPlane(direction.x(), direction.y(), direction.z(), -distance);
@@ -102,8 +102,8 @@ void RendererNeuronAnnotator::clipSlab(const CameraModel& cameraModel) // Apply 
     // cout << point1 << direction1 << endl;
     // cout << point2 << direction2 << endl;
 
-    applyCutPlaneInGround(point1, direction1);
-    applyCutPlaneInGround(point2, direction2);
+    applyCutPlaneInImageFrame(point1, direction1);
+    applyCutPlaneInImageFrame(point2, direction2);
 }
 
 /* slot */
