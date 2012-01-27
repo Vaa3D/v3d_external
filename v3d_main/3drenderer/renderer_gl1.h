@@ -302,6 +302,8 @@ protected:
      void solveCurveRubberDrag();
      void blendDraggedNeuron();
 
+	 bool lineLineIntersect( XYZ p1,XYZ p2,XYZ p3,XYZ p4,XYZ *pa,XYZ *pb,
+									   double *mua, double *mub);
      void solveCurveTracing(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index);
      XYZ getLocUsingMassCenter(bool firstloc, XYZ lastpos, XYZ p1, XYZ p2,
 			double clipplane[4]=0,	//clipplane==0 means no clip plane

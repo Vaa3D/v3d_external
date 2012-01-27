@@ -41,7 +41,8 @@
 #include "../basic_c_fun/v3d_curvetracepara.h"
 
 #endif //test_main_cpp
-#define SIGNAL_THRESHOLD 3
+
+#define EPS 0.01
 
 void Renderer_gl1::solveCurveTracing(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index)
 {
@@ -96,7 +97,8 @@ void Renderer_gl1::solveCurveTracing(vector <XYZ> & loc_vec_input, vector <XYZ> 
 			else
 			{
 				int last_j = loc_vec.size()-1;
-                    XYZ lastpos;
+				int last_j2 = loc_vec.size()-2;
+				XYZ lastpos, lastpos2;
 				if (last_j>=0 && b_use_last_approximate) //091114 PHC make it more stable by conditioned on previous location
 				{
 					lastpos = loc_vec.at(last_j);
@@ -113,11 +115,41 @@ void Renderer_gl1::solveCurveTracing(vector <XYZ> & loc_vec_input, vector <XYZ> 
 					}
 				}
 
-                    if(last_j<0) //first loc
-                         loc = getLocUsingMassCenter(true, lastpos, loc0, loc1, clipplane, chno);
-                    else
-                         loc = getLocUsingMassCenter(false, lastpos, loc0, loc1, clipplane, chno);
-
+				//if(last_j<0) //first loc
+				//	loc = getLocUsingMassCenter(true, lastpos, loc0, loc1, clipplane, chno);
+				//else
+				//	loc = getLocUsingMassCenter(false, lastpos, loc0, loc1, clipplane, chno);
+				
+				
+				// determine loc based on intersection of vector (lastpos2, lastpos) and (loc0,loc1)
+				if (last_j2>=0) 
+				{
+					XYZ pa, pb;
+					double mua, mub;
+					lastpos2 = loc_vec.at(last_j2);
+					lineLineIntersect(lastpos2, lastpos, loc0,loc1, &pa, &pb, &mua, &mub);
+					
+					// pb is the point nearest to line (lastpos2,lastpos), loc should be on the line of loc0-loc1
+					loc = pb;
+					
+					// to see whether this is the right loc by comparing mean+sdev
+					LocationSimple pt, lastpt;
+					getRgnPropertyAt(loc, pt);
+					getRgnPropertyAt(lastpos, lastpt);
+					
+					loc.x=pt.mcenter.x;
+					loc.y=pt.mcenter.y;
+					loc.z=pt.mcenter.z;
+					/*
+					if (abs((pt.ave+pt.sdev)-(lastpt.ave+lastpt.sdev))>EPS) 
+					{
+						
+					}*/
+					
+				} else // for first two locs
+				{
+					loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+				}
 			}
 
 
@@ -376,3 +408,58 @@ XYZ Renderer_gl1::getLocUsingMassCenter(bool firstloc, XYZ lastpos, XYZ P1, XYZ 
           return loc;
 
 }
+
+/*
+ Calculate the line segment PaPb that is the shortest route between
+ two lines P1P2 and P3P4. Calculate also the values of mua and mub where
+ Pa = P1 + mua (P2 - P1)
+ Pb = P3 + mub (P4 - P3)
+ Return FALSE if no solution exists.
+http://paulbourke.net/geometry/lineline3d/
+ */
+bool Renderer_gl1::lineLineIntersect( XYZ p1,XYZ p2,XYZ p3,XYZ p4,XYZ *pa,XYZ *pb,
+					  double *mua, double *mub)
+{
+	XYZ p13,p43,p21;
+	double d1343,d4321,d1321,d4343,d2121;
+	double numer,denom;
+	
+	p13.x = p1.x - p3.x;
+	p13.y = p1.y - p3.y;
+	p13.z = p1.z - p3.z;
+	p43.x = p4.x - p3.x;
+	p43.y = p4.y - p3.y;
+	p43.z = p4.z - p3.z;
+	if (abs(p43.x) < EPS && abs(p43.y) < EPS && abs(p43.z) < EPS)
+		return false;
+	p21.x = p2.x - p1.x;
+	p21.y = p2.y - p1.y;
+	p21.z = p2.z - p1.z;
+	if (abs(p21.x) < EPS && abs(p21.y) < EPS && abs(p21.z) < EPS)
+		return false;
+	
+	d1343 = p13.x * p43.x + p13.y * p43.y + p13.z * p43.z;
+	d4321 = p43.x * p21.x + p43.y * p21.y + p43.z * p21.z;
+	d1321 = p13.x * p21.x + p13.y * p21.y + p13.z * p21.z;
+	d4343 = p43.x * p43.x + p43.y * p43.y + p43.z * p43.z;
+	d2121 = p21.x * p21.x + p21.y * p21.y + p21.z * p21.z;
+	
+	denom = d2121 * d4343 - d4321 * d4321;
+	if (abs(denom) < EPS)
+		return false;
+	numer = d1343 * d4321 - d1321 * d4343;
+	
+	*mua = numer / denom;
+	*mub = (d1343 + d4321 * (*mua)) / d4343;
+	
+	pa->x = p1.x + *mua * p21.x;
+	pa->y = p1.y + *mua * p21.y;
+	pa->z = p1.z + *mua * p21.z;
+	pb->x = p3.x + *mub * p43.x;
+	pb->y = p3.y + *mub * p43.y;
+	pb->z = p3.z + *mub * p43.z;
+	
+	return true;
+}
+
+
