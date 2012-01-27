@@ -7,11 +7,24 @@
 <xsd:import namespace="http://jaxb.dev.java.net/array" schemaLocation="http://localhost:30001/axis2/services/cds?xsd=2" />
 </xsd:schema>
 </types>
+<message name="selectOutlineEntity">
+<part name="uniqueId" type="xsd:string" />
+<part name="clearAll" type="xsd:boolean" />
+</message>
+<message name="selectOutlineEntityResponse" />
+<message name="deselectOutlineEntity">
+<part name="uniqueId" type="xsd:string" />
+</message>
+<message name="deselectOutlineEntityResponse" />
 <message name="selectEntity">
 <part name="entityId" type="xsd:long" />
-<part name="outline" type="xsd:boolean" />
+<part name="clearAll" type="xsd:boolean" />
 </message>
 <message name="selectEntityResponse" />
+<message name="deselectEntity">
+<part name="entityId" type="xsd:long" />
+</message>
+<message name="deselectEntityResponse" />
 <message name="getEntityById">
 <part name="entityId" type="xsd:long" />
 </message>
@@ -86,9 +99,21 @@
 <part name="return" type="tns:entityDataArray" />
 </message>
 <portType name="ConsoleDataService">
-<operation name="selectEntity" parameterOrder="entityId outline">
+<operation name="selectOutlineEntity" parameterOrder="uniqueId clearAll">
+<input message="tns:selectOutlineEntity" />
+<output message="tns:selectOutlineEntityResponse" />
+</operation>
+<operation name="deselectOutlineEntity">
+<input message="tns:deselectOutlineEntity" />
+<output message="tns:deselectOutlineEntityResponse" />
+</operation>
+<operation name="selectEntity" parameterOrder="entityId clearAll">
 <input message="tns:selectEntity" />
 <output message="tns:selectEntityResponse" />
+</operation>
+<operation name="deselectEntity">
+<input message="tns:deselectEntity" />
+<output message="tns:deselectEntityResponse" />
 </operation>
 <operation name="getEntityById">
 <input message="tns:getEntityById" />
@@ -145,7 +170,34 @@
 </portType>
 <binding name="CdsPortBinding" type="tns:ConsoleDataService">
 <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc" />
+<operation name="selectOutlineEntity">
+<soap:operation soapAction="" />
+<input>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</input>
+<output>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</output>
+</operation>
+<operation name="deselectOutlineEntity">
+<soap:operation soapAction="" />
+<input>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</input>
+<output>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</output>
+</operation>
 <operation name="selectEntity">
+<soap:operation soapAction="" />
+<input>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</input>
+<output>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</output>
+</operation>
+<operation name="deselectEntity">
 <soap:operation soapAction="" />
 <input>
 <soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />

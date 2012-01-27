@@ -62,26 +62,38 @@ QVariant Icons::getIcon(Entity *entity)
     if (type=="Folder") {
         return getIcon("folder.png");
     }
-    else if (type=="LSM Stack Pair") {
+    else if (type=="Sample" || type=="Screen Sample") {
+        return getIcon("beaker.png");
+    }
+    else if (type=="Supporting Data") {
+        return getIcon("folder_page.png");
+    }
+    else if (type=="Sample Processing Result") {
+        return getIcon("folder_image.png");
+    }
+    else if (type=="Alignment Result") {
         return getIcon("folder_image.png");
     }
     else if (type=="Neuron Separator Pipeline Result") {
-        return getIcon("folder_image.png");
+        return getIcon("bricks.png");
     }
-    else if (type=="Sample") {
-        return getIcon("beaker.png");
+    else if (type=="LSM Stack Pair") {
+        return getIcon("page_copy.png");
     }
     else if (type=="Tif 2D Image" || type=="Image 2D") {
         return getIcon("image.png");
     }
-    else if (type=="Tif 3D Image" || type=="LSM Stack" || type=="Tif 3D Label Mask" || type=="Stitched V3D Raw Stack") {
+    else if (type=="Text File") {
+        return getIcon("page_white.png");
+    }
+    else if (type=="Image 3D" || type=="Tif 3D Image" || type=="LSM Stack" || type=="Tif 3D Label Mask" || type=="Stitched V3D Raw Stack" || type=="Aligned Brain Stack") {
         return getIcon("images.png");
     }
     else if (type=="Neuron Fragment") {
         return getIcon("brick.png");
     }
-    else if (type=="Supporting Data") {
-        return getIcon("folder_page.png");
+    else if (type=="Neuron Fragment Collection") {
+        return getIcon("folder_brick.png");
     }
     else if (type=="Ontology Element" || type=="Ontology Root") {
         return getOntologyIcon(entity);
@@ -89,6 +101,11 @@ QVariant Icons::getIcon(Entity *entity)
     else if (type=="Annotation") {
         return getIcon("page_white_edit.png");
     }
+    else if (type=="Annotation") {
+        return getIcon("fruit_fly_small.png");
+    }
 
-    return QVariant();
+    //    return QVariant(); // blank icon
+    return getIcon("bullet_error.png");
+
 }

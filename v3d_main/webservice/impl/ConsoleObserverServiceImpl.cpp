@@ -97,14 +97,40 @@ int ConsoleObserverServiceImpl::ontologyChanged(LONG64 rootId, struct fw__ontolo
     return SOAP_OK;
 }
 
-int ConsoleObserverServiceImpl::entitySelected(LONG64 entityId, bool outline, struct fw__entitySelectedResponse &response)
+int ConsoleObserverServiceImpl::entityOutlineSelected(std::string uniqueId, bool clearAll, struct fw__entityOutlineSelectedResponse &response)
 {
-    emit entitySelected(entityId, outline);
+    emit entityOutlineSelected(uniqueId, clearAll);
+    return SOAP_OK;
+}
+
+int ConsoleObserverServiceImpl::entityOutlineDeselected(std::string uniqueId, struct fw__entityOutlineDeselectedResponse &response)
+{
+    emit entityOutlineDeselected(uniqueId);
+    return SOAP_OK;
+}
+
+int ConsoleObserverServiceImpl::entitySelected(LONG64 entityId, bool clearAll, struct fw__entitySelectedResponse &response)
+{
+    qDebug() << "ConsoleObserverServiceImpl::entitySelected"<<entityId;
+    emit entitySelected(entityId, clearAll);
+    return SOAP_OK;
+}
+
+int ConsoleObserverServiceImpl::entityDeselected(LONG64 entityId, struct fw__entityDeselectedResponse &response)
+{
+    emit entityDeselected(entityId);
+    return SOAP_OK;
+}
+
+int ConsoleObserverServiceImpl::entityChanged(LONG64 entityId, struct fw__entityChangedResponse &response)
+{
+    emit entityChanged(entityId);
     return SOAP_OK;
 }
 
 int ConsoleObserverServiceImpl::entityViewRequested(LONG64 entityId, struct fw__entityViewRequestedResponse &response)
 {
+    qDebug() << "ConsoleObserverServiceImpl::entityViewRequested"<<entityId;
     emit entityViewRequested(entityId);
     return SOAP_OK;
 }

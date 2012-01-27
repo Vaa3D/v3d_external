@@ -75,8 +75,7 @@ QString AnnotatedBranch::getFilePath() const
 {
     QString filepath = _entity->getValueByAttributeName("File Path");
     if (!filepath.isEmpty()) {
-        QString macPath = convertPathToMac(filepath);
-        return macPath;
+        return filepath;
     }
     return QString();
 }

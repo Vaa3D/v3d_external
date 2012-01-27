@@ -85,10 +85,19 @@ void ConsoleObserver::ontologyChanged(qint64 rootId)
 // entitySelected event
 //*******************************************************************************************
 
-void ConsoleObserver::entitySelected(qint64 entityId, bool outline)
+void ConsoleObserver::entitySelected(qint64 entityId, bool clearAll)
 {
-    qDebug() << "Got signal entitySelected:" << entityId << "isOutline?=" << outline;
+    qDebug() << "Got signal entitySelected:" << entityId << "clearAll?=" << clearAll;
     emit selectEntityById(entityId, true);
+}
+
+//*******************************************************************************************
+// entityDeselected event
+//*******************************************************************************************
+
+void ConsoleObserver::entityDeselected(qint64 entityId)
+{
+    qDebug() << "Got signal entityDeselected:" << entityId;
 }
 
 //*******************************************************************************************

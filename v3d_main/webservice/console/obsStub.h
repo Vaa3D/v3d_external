@@ -87,8 +87,57 @@ public:
 };
 #endif
 
+#ifndef SOAP_TYPE_obs_fw__entityOutlineSelectedResponse
+#define SOAP_TYPE_obs_fw__entityOutlineSelectedResponse (17)
+/* fw:entityOutlineSelectedResponse */
+struct fw__entityOutlineSelectedResponse
+{
+#ifdef WITH_NOEMPTYSTRUCT
+private:
+	char dummy;	/* dummy member to enable compilation */
+#endif
+};
+#endif
+
+#if 0 /* volatile type: do not declare here, declared elsewhere */
+
+#endif
+
+#ifndef SOAP_TYPE_obs_fw__entityOutlineSelected
+#define SOAP_TYPE_obs_fw__entityOutlineSelected (22)
+/* fw:entityOutlineSelected */
+struct fw__entityOutlineSelected
+{
+public:
+	std::string _uniqueId;	/* required element of type xsd:string */
+	bool _clearAll;	/* required element of type xsd:boolean */
+};
+#endif
+
+#ifndef SOAP_TYPE_obs_fw__entityOutlineDeselectedResponse
+#define SOAP_TYPE_obs_fw__entityOutlineDeselectedResponse (23)
+/* fw:entityOutlineDeselectedResponse */
+struct fw__entityOutlineDeselectedResponse
+{
+#ifdef WITH_NOEMPTYSTRUCT
+private:
+	char dummy;	/* dummy member to enable compilation */
+#endif
+};
+#endif
+
+#ifndef SOAP_TYPE_obs_fw__entityOutlineDeselected
+#define SOAP_TYPE_obs_fw__entityOutlineDeselected (26)
+/* fw:entityOutlineDeselected */
+struct fw__entityOutlineDeselected
+{
+public:
+	std::string uniqueId;	/* required element of type xsd:string */
+};
+#endif
+
 #ifndef SOAP_TYPE_obs_fw__entitySelectedResponse
-#define SOAP_TYPE_obs_fw__entitySelectedResponse (17)
+#define SOAP_TYPE_obs_fw__entitySelectedResponse (27)
 /* fw:entitySelectedResponse */
 struct fw__entitySelectedResponse
 {
@@ -100,18 +149,62 @@ private:
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__entitySelected
-#define SOAP_TYPE_obs_fw__entitySelected (21)
+#define SOAP_TYPE_obs_fw__entitySelected (30)
 /* fw:entitySelected */
 struct fw__entitySelected
 {
 public:
 	LONG64 _entityId;	/* required element of type xsd:long */
-	bool _outline;	/* required element of type xsd:boolean */
+	bool _clearAll;	/* required element of type xsd:boolean */
+};
+#endif
+
+#ifndef SOAP_TYPE_obs_fw__entityDeselectedResponse
+#define SOAP_TYPE_obs_fw__entityDeselectedResponse (31)
+/* fw:entityDeselectedResponse */
+struct fw__entityDeselectedResponse
+{
+#ifdef WITH_NOEMPTYSTRUCT
+private:
+	char dummy;	/* dummy member to enable compilation */
+#endif
+};
+#endif
+
+#ifndef SOAP_TYPE_obs_fw__entityDeselected
+#define SOAP_TYPE_obs_fw__entityDeselected (34)
+/* fw:entityDeselected */
+struct fw__entityDeselected
+{
+public:
+	LONG64 entityId;	/* required element of type xsd:long */
+};
+#endif
+
+#ifndef SOAP_TYPE_obs_fw__entityChangedResponse
+#define SOAP_TYPE_obs_fw__entityChangedResponse (35)
+/* fw:entityChangedResponse */
+struct fw__entityChangedResponse
+{
+#ifdef WITH_NOEMPTYSTRUCT
+private:
+	char dummy;	/* dummy member to enable compilation */
+#endif
+};
+#endif
+
+#ifndef SOAP_TYPE_obs_fw__entityChanged
+#define SOAP_TYPE_obs_fw__entityChanged (38)
+/* fw:entityChanged */
+struct fw__entityChanged
+{
+public:
+	LONG64 entityId;	/* required element of type xsd:long */
 };
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__entityViewRequestedResponse
-#define SOAP_TYPE_obs_fw__entityViewRequestedResponse (22)
+#define SOAP_TYPE_obs_fw__entityViewRequestedResponse (39)
 /* fw:entityViewRequestedResponse */
 struct fw__entityViewRequestedResponse
 {
@@ -123,7 +216,7 @@ private:
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__entityViewRequested
-#define SOAP_TYPE_obs_fw__entityViewRequested (25)
+#define SOAP_TYPE_obs_fw__entityViewRequested (42)
 /* fw:entityViewRequested */
 struct fw__entityViewRequested
 {
@@ -133,7 +226,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__annotationsChangedResponse
-#define SOAP_TYPE_obs_fw__annotationsChangedResponse (26)
+#define SOAP_TYPE_obs_fw__annotationsChangedResponse (43)
 /* fw:annotationsChangedResponse */
 struct fw__annotationsChangedResponse
 {
@@ -145,7 +238,7 @@ private:
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__annotationsChanged
-#define SOAP_TYPE_obs_fw__annotationsChanged (29)
+#define SOAP_TYPE_obs_fw__annotationsChanged (46)
 /* fw:annotationsChanged */
 struct fw__annotationsChanged
 {
@@ -155,7 +248,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__sessionSelectedResponse
-#define SOAP_TYPE_obs_fw__sessionSelectedResponse (30)
+#define SOAP_TYPE_obs_fw__sessionSelectedResponse (47)
 /* fw:sessionSelectedResponse */
 struct fw__sessionSelectedResponse
 {
@@ -167,7 +260,7 @@ private:
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__sessionSelected
-#define SOAP_TYPE_obs_fw__sessionSelected (33)
+#define SOAP_TYPE_obs_fw__sessionSelected (50)
 /* fw:sessionSelected */
 struct fw__sessionSelected
 {
@@ -177,7 +270,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__sessionDeselectedResponse
-#define SOAP_TYPE_obs_fw__sessionDeselectedResponse (34)
+#define SOAP_TYPE_obs_fw__sessionDeselectedResponse (51)
 /* fw:sessionDeselectedResponse */
 struct fw__sessionDeselectedResponse
 {
@@ -189,7 +282,7 @@ private:
 #endif
 
 #ifndef SOAP_TYPE_obs_fw__sessionDeselected
-#define SOAP_TYPE_obs_fw__sessionDeselected (37)
+#define SOAP_TYPE_obs_fw__sessionDeselected (54)
 /* fw:sessionDeselected */
 struct fw__sessionDeselected
 {
@@ -203,7 +296,7 @@ private:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Header
-#define SOAP_TYPE_obs_SOAP_ENV__Header (38)
+#define SOAP_TYPE_obs_SOAP_ENV__Header (55)
 /* SOAP Header: */
 struct SOAP_ENV__Header
 {
@@ -219,7 +312,7 @@ private:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Code
-#define SOAP_TYPE_obs_SOAP_ENV__Code (39)
+#define SOAP_TYPE_obs_SOAP_ENV__Code (56)
 /* SOAP Fault Code: */
 struct SOAP_ENV__Code
 {
@@ -234,7 +327,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Detail
-#define SOAP_TYPE_obs_SOAP_ENV__Detail (41)
+#define SOAP_TYPE_obs_SOAP_ENV__Detail (58)
 /* SOAP-ENV:Detail */
 struct SOAP_ENV__Detail
 {
@@ -250,7 +343,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Reason
-#define SOAP_TYPE_obs_SOAP_ENV__Reason (44)
+#define SOAP_TYPE_obs_SOAP_ENV__Reason (61)
 /* SOAP-ENV:Reason */
 struct SOAP_ENV__Reason
 {
@@ -264,7 +357,7 @@ public:
 #ifndef WITH_NOGLOBAL
 
 #ifndef SOAP_TYPE_obs_SOAP_ENV__Fault
-#define SOAP_TYPE_obs_SOAP_ENV__Fault (45)
+#define SOAP_TYPE_obs_SOAP_ENV__Fault (62)
 /* SOAP Fault: */
 struct SOAP_ENV__Fault
 {
