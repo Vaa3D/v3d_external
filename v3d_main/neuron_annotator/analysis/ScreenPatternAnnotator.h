@@ -9,6 +9,17 @@
 
 using namespace std;
 
+class SPA_BoundingBox
+{
+public:
+    int x0;
+    int x1;
+    int y0;
+    int y1;
+    int z0;
+    int z1;
+};
+
 
 class ScreenPatternAnnotator
 {
@@ -79,8 +90,10 @@ private:
     bool annotate();
     int getIndexFromCompartmentMaskFilename(QString filename);
     QString getAbbreviationFromCompartmentMaskFilename(QString filename);
-
-
+    void createCompartmentAnnotation(int index, QString abbreviation);
+    SPA_BoundingBox findBoundingBoxFromIndex(int index);
+    My4DImage * createSub3DImageFromMask(My4DImage * imageGlobal16ColorImage, int index, SPA_BoundingBox bb);
+    My4DImage * createMIPFromImage(My4DImage * image);
 
 };
 

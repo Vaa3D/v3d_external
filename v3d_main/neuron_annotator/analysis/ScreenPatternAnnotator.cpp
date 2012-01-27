@@ -211,7 +211,241 @@ bool ScreenPatternAnnotator::annotate() {
     ImageLoader imageLoaderForMip;
     imageLoaderForMip.create2DMIPFromStack(imageGlobal16ColorImage, returnFullPathWithOutputPrefix("heatmap16ColorMIP.tif"));
 
+    // Load Compartment Index
+    ImageLoader compartmentIndexLoader;
+    if (compartmentIndexImage!=0) {
+        delete compartmentIndexImage;
+    }
+    compartmentIndexImage=new My4DImage();
+    QString resourceDirectoryPathCopy=resourceDirectoryPath;
+    QString compartmentIndexImageFilepath=resourceDirectoryPathCopy.append(QDir::separator()).append("compartmentIndex.v3dpbd");
+    if (!compartmentIndexLoader.loadImage(compartmentIndexImage, compartmentIndexImageFilepath)) {
+        qDebug() << "Could not load compartmentIndexImage from file=" << compartmentIndexImageFilepath;
+        return false;
+    }
+
+    // Load Abbreviation Index Map
+    compartmentIndexAbbreviationMap.clear();
+    QString resourceDirectoryPathCopy2=resourceDirectoryPath;
+    QString abbreviationMapFilepath=resourceDirectoryPathCopy2.append(QDir::separator()).append("compartmentAbbreviationIndex.txt");
+    QFile abbreviationMapFile(abbreviationMapFilepath);
+    if (!abbreviationMapFile.open(QIODevice::ReadOnly)) {
+        qDebug() << "Could not open file=" << abbreviationMapFilepath << " to read";
+        return false;
+    }
+    while(!abbreviationMapFile.atEnd()) {
+        QString abLine=abbreviationMapFile.readLine();
+        QList<QString> abList=abLine.split(" ");
+        QString indexString=abList.at(0);
+        int indexKey=indexString.toInt();
+        QString abbreviationValue=abList.at(1);
+        compartmentIndexAbbreviationMap[indexKey]=abbreviationValue;
+    }
+    abbreviationMapFile.close();
+
+    // Perform Compartment Annotations
+    QList<int> compartmentIndexList=compartmentIndexAbbreviationMap.keys();
+    for (int k=0;k<compartmentIndexList.size();k++) {
+        int index=compartmentIndexList.at(k);
+        QString abbreviation=compartmentIndexAbbreviationMap[index];
+        createCompartmentAnnotation(index, abbreviation);
+    }
+
     return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//  This method generates the annotation artifacts for each compartment.
+//
+//  Here are the steps:
+//
+//     (1) A bounding-box (set of coordinates)
+//
+//     (2) A 16-color heatmap based on the raw image values
+//
+//     (3) A MIP based on the global 16-color heatmap
+//
+//     (4) A 16-color heatmap based on the auto-normalization of the compartment mask itself
+//
+//     (5) A MIP based on #5
+//
+//     (6.1, 6.2, 6.3, 6.4, 6.5) A re-sampled volume (RSV) version, which is 256x256xZ, where 256 is the largest XY dimension of the box, and Z is equiv re-scaled Z
+//
+//  The above are the graphics artifacts. Below are the numerical measurements to support search, with attribute strings:
+//
+//     (7) A measure of the overall pattern strength within the compartment, the sum of the 16-color heatmap normalized by volume
+//
+//     (8) The coefficient of variance of #8
+//
+//     (9) A measure of the distribution of the pattern within the compartment, the sum of the auto-normalized heatmap normalized by volume
+//
+//     (10) The coefficient of variance of #10
+//
+//     (11) Using a super-voxel (5x5x5) cubified set of the original volume, the coefficient of variance of the intensity of this set
+//
+//     (12) The percentage of 5x5x5 cubes containing 50% of the total intensity for all cubes
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbreviation) {
+
+    SPA_BoundingBox bb=findBoundingBoxFromIndex(index);
+    qDebug() << "Bounding box for " << abbreviation << " = " << bb.x0 << " " << bb.x1 << " " << bb.y0 << " " << bb.y1 << " " << bb.z0 << " " << bb.z1;
+
+    My4DImage * compartmentHeatmap=createSub3DImageFromMask(imageGlobal16ColorImage, index, bb);
+    if (compartmentHeatmap==0) {
+        qDebug() << "compartmentHeatmap returned as 0";
+        return;
+    }
+    qDebug() << "Created subimage from compartment mask";
+
+    My4DImage * compartmentHeatmapMIP=createMIPFromImage(compartmentHeatmap);
+    if (compartmentHeatmapMIP==0) {
+        qDebug() << "compartmentHeatmapMIP returned as 0";
+        return;
+    }
+    qDebug() << "Created MIP from compartment heatmap";
+
+}
+
+My4DImage * ScreenPatternAnnotator::createMIPFromImage(My4DImage * image) {
+
+    if (image->getDatatype()!=V3D_UINT8) {
+        qDebug() << "createMIPFromImage only supports datatype 1";
+        return 0;
+    }
+    Image4DProxy<My4DImage> stackProxy(image);
+    My4DImage * mip = new My4DImage();
+    mip->loadImage( stackProxy.sx, stackProxy.sy, 1 /* z */, stackProxy.sc, V3D_UINT8 );
+    memset(mip->getRawData(), 0, mip->getTotalBytes());
+    Image4DProxy<My4DImage> mipProxy(mip);
+
+    for (int y=0;y<stackProxy.sy;y++) {
+        for (int x=0;x<stackProxy.sx;x++) {
+            V3DLONG maxIntensity=0;
+            int maxPosition=0;
+            for (int z=0;z<stackProxy.sz;z++) {
+                V3DLONG currentIntensity=0;
+                for (int c=0;c<stackProxy.sc;c++) {
+                    currentIntensity+=(*stackProxy.at(x,y,z,c));
+                }
+                if (currentIntensity>maxIntensity) {
+                    maxIntensity=currentIntensity;
+                    maxPosition=z;
+                }
+            }
+            for (int c=0;c<stackProxy.sc;c++) {
+                mipProxy.put_at(x,y,0,c,(*stackProxy.at(x,y,maxPosition,c)));
+            }
+        }
+    }
+    return mip;
+}
+
+
+// Here we will iterate through the mask and add the corresponding
+My4DImage * ScreenPatternAnnotator::createSub3DImageFromMask(My4DImage * sourceImage, int index, SPA_BoundingBox bb) {
+
+    V3DLONG xmax=compartmentIndexImage->getXDim();
+    V3DLONG ymax=compartmentIndexImage->getYDim();
+    V3DLONG zmax=compartmentIndexImage->getZDim();
+
+    v3d_uint8 * iData=compartmentIndexImage->getRawData();
+    v3d_uint8 * rData=sourceImage->getRawDataAtChannel(0);
+    v3d_uint8 * gData=sourceImage->getRawDataAtChannel(1);
+    v3d_uint8 * bData=sourceImage->getRawDataAtChannel(2);
+
+    My4DImage * subImage = new My4DImage();
+    V3DLONG s_xlen=(bb.x1-bb.x0)+1;
+    V3DLONG s_ylen=(bb.y1-bb.y0)+1;
+    V3DLONG s_zlen=(bb.z1-bb.z0)+1;
+    subImage->loadImage( s_xlen, s_ylen, s_zlen , 3 /* rgb */, V3D_UINT8 /* datatype */);
+    v3d_uint8 * sRaw=subImage->getRawData();
+    for (V3DLONG i=0;i<subImage->getTotalBytes();i++) {
+        sRaw[i]=0;
+    }
+
+    v3d_uint8 * s_rData=subImage->getRawDataAtChannel(0);
+    v3d_uint8 * s_gData=subImage->getRawDataAtChannel(1);
+    v3d_uint8 * s_bData=subImage->getRawDataAtChannel(2);
+
+    for (int z=bb.z0;z<=bb.z1;z++) {
+        V3DLONG zoffset=z*ymax*xmax;
+        V3DLONG s_zoffset=(z-bb.z0)*s_ylen*s_xlen;
+        for (int y=bb.y0;y<=bb.y1;y++) {
+            V3DLONG yoffset = y*xmax + zoffset;
+            V3DLONG s_yoffset = (y-bb.y0)*s_xlen + s_zoffset;
+            for (int x=bb.x0;x<=bb.x1;x++) {
+                V3DLONG position = yoffset + x;
+                V3DLONG s_position = s_yoffset + (x-bb.x0);
+                if (iData[position]==index) {
+                    s_rData[s_position]=rData[position];
+                    s_gData[s_position]=gData[position];
+                    s_bData[s_position]=bData[position];
+                }
+            }
+        }
+    }
+    return subImage;
+}
+
+// This method determines the bounding box for the given compartment index
+SPA_BoundingBox ScreenPatternAnnotator::findBoundingBoxFromIndex(int index) {
+    V3DLONG xmax=compartmentIndexImage->getXDim();
+    V3DLONG ymax=compartmentIndexImage->getYDim();
+    V3DLONG zmax=compartmentIndexImage->getZDim();
+    V3DLONG x0=xmax;
+    V3DLONG x1=-1;
+    V3DLONG y0=ymax;
+    V3DLONG y1=-1;
+    V3DLONG z0=zmax;
+    V3DLONG z1=-1;
+    V3DLONG offset=0;
+    v3d_uint8 * data=compartmentIndexImage->getRawData();
+    V3DLONG totalBytes=compartmentIndexImage->getTotalBytes();
+    V3DLONG totalUnits=compartmentIndexImage->getTotalUnitNumber();
+    V3DLONG totalCalcUnits=xmax*ymax*zmax;
+    for (V3DLONG z=0;z<zmax;z++) {
+        V3DLONG zoffset=z*ymax*xmax;
+        for (V3DLONG y=0;y<ymax;y++) {
+            V3DLONG yoffset = y*xmax + zoffset;
+            for (V3DLONG x=0;x<xmax;x++) {
+                offset = yoffset + x;
+                if (offset >= totalBytes) {
+                    qDebug() << "ERROR  offset=" << offset << " totalBytes=" << totalBytes << " x=" << x << " y=" << y << " z=" << z;
+                }
+                if (data[offset]==index) {
+                    if (x>x1) {
+                        x1=x;
+                    }
+                    if (x<x0) {
+                        x0=x;
+                    }
+                    if (y>y1) {
+                        y1=y;
+                    }
+                    if (y<y0) {
+                        y0=y;
+                    }
+                    if (z>z1) {
+                        z1=z;
+                    }
+                    if (z<z0) {
+                        z0=z;
+                    }
+                }
+            }
+        }
+    }
+    SPA_BoundingBox bb;
+    bb.x0=x0;
+    bb.x1=x1;
+    bb.y0=y0;
+    bb.y1=y1;
+    bb.z0=z0;
+    bb.z1=z1;
+    return bb;
 }
 
 QString ScreenPatternAnnotator::returnFullPathWithOutputPrefix(QString filename) {
@@ -246,6 +480,8 @@ int ScreenPatternAnnotator::processArgs(vector<char*> *argList)
             topLevelCompartmentMaskDirPath=(*argList)[++i];
         } else if (arg=="-outputResourceDir") {
             outputResourceDirPath=(*argList)[++i];
+        } else if (arg=="-resourceDir") {
+            resourceDirectoryPath=(*argList)[++i];
         }
     }
     if (topLevelCompartmentMaskDirPath.length()>0 && outputResourceDirPath.length()>0) {
@@ -262,6 +498,9 @@ int ScreenPatternAnnotator::processArgs(vector<char*> *argList)
             return 1;
         } else if (outputDirectoryPath.length()<1) {
             qDebug() << "outputDirectoryPath has invalid length";
+            return 1;
+        } else if (resourceDirectoryPath.length()<1) {
+            qDebug() << "resourceDirectoryPath has invalid length";
             return 1;
         }
         mode=MODE_ANNOTATE;
