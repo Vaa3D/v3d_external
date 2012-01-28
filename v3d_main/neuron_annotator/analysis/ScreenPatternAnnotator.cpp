@@ -6,6 +6,9 @@ const int ScreenPatternAnnotator::MODE_UNDEFINED=-1;
 const int ScreenPatternAnnotator::MODE_ANNOTATE=0;
 const int ScreenPatternAnnotator::MODE_COMPARTMENT_INDEX=1;
 
+const int VIEWABLE_DIMENSION = 256;
+const int VIEWABLE_BORDER = 10;
+
 ScreenPatternAnnotator::ScreenPatternAnnotator()
 {
     mode=MODE_UNDEFINED;
@@ -235,6 +238,7 @@ bool ScreenPatternAnnotator::annotate() {
     }
     while(!abbreviationMapFile.atEnd()) {
         QString abLine=abbreviationMapFile.readLine();
+        abLine=abLine.trimmed();
         QList<QString> abList=abLine.split(" ");
         QString indexString=abList.at(0);
         int indexKey=indexString.toInt();
@@ -307,6 +311,133 @@ void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbr
     }
     qDebug() << "Created MIP from compartment heatmap";
 
+    My4DImage * compartmentImage=getChannelSubImageFromMask(inputImage, patternChannelIndex, index, bb);
+    qDebug() << "Created compartmentImage using getChannelSubImageFromMask";
+
+    My4DImage * compartmentNormalizedImage=createNormalizedImage(compartmentImage);
+    qDebug() << "Created normalized image for compartment";
+
+    My4DImage * normalizedCompartmentHeatmap=create3DHeatmapFromChannel(compartmentNormalizedImage, 0 /* only one channel */, lut16Color);
+    qDebug() << "Created normalizedCompartmentHeatmap";
+
+    My4DImage * normalizedCompartmentHeatmapMIP=createMIPFromImage(normalizedCompartmentHeatmap);
+    qDebug() << "Created normalizedCompartmentHeatmapMIP";
+
+    ImageLoader imageLoaderForSave;
+    bool saveStatus=false;
+
+    My4DImage * compartmentHeatmapFullSize=createViewableImage(compartmentHeatmap, VIEWABLE_BORDER);
+    QString filenameCompartmentHeatmapFullSize=abbreviation;
+    filenameCompartmentHeatmapFullSize.append("_heatmap16Color.v3dpbd");
+    QString savepathCompartmentHeatmapFullSize(returnFullPathWithOutputPrefix(filenameCompartmentHeatmapFullSize));
+    qDebug() << "Saving " << abbreviation << " 16-color heatmap to file=" << savepathCompartmentHeatmapFullSize;
+    saveStatus=imageLoaderForSave.saveImage(compartmentHeatmapFullSize, savepathCompartmentHeatmapFullSize);
+    if (!saveStatus) {
+        qDebug() << "ScreenPatternAnnotator::createCompartmentAnnotation() Error during save of " << savepathCompartmentHeatmapFullSize;
+    }
+    delete compartmentHeatmapFullSize;
+
+    // Cleanup
+    delete compartmentHeatmap;
+    delete compartmentHeatmapMIP;
+    delete compartmentImage;
+    delete compartmentNormalizedImage;
+    delete normalizedCompartmentHeatmap;
+    delete normalizedCompartmentHeatmapMIP;
+}
+
+My4DImage * ScreenPatternAnnotator::createViewableImage(My4DImage * sourceImage, int borderSize) {
+
+    V3DLONG xmax=sourceImage->getXDim();
+    V3DLONG ymax=sourceImage->getYDim();
+    V3DLONG zmax=sourceImage->getZDim();
+    V3DLONG cmax=sourceImage->getCDim();
+
+    My4DImage * targetImage = new My4DImage();
+    double targetRatio=1.0;
+    if (xmax>=ymax) {
+        targetRatio=( (VIEWABLE_DIMENSION-2*borderSize)*1.0) / (xmax*1.0);
+    } else {
+        targetRatio=( (VIEWABLE_DIMENSION-2*borderSize)*1.0) / (ymax*1.0);
+    }
+    V3DLONG xv=VIEWABLE_DIMENSION;
+    V3DLONG yv=VIEWABLE_DIMENSION;
+    V3DLONG zv=zmax*targetRatio+2*borderSize;
+
+    targetImage->loadImage(xv, yv, zv, sourceImage->getCDim(), V3D_UINT8 /* datatype */);
+    memset(targetImage->getRawData(), 0, targetImage->getTotalBytes());
+
+    for (int c=0;c<sourceImage->getCDim();c++) {
+        v3d_uint8 * sData=sourceImage->getRawDataAtChannel(c);
+        v3d_uint8 * vData=targetImage->getRawDataAtChannel(c);
+        for (V3DLONG z=borderSize;z<(zv-borderSize);z++) {
+            for (V3DLONG y=borderSize;y<(yv-borderSize);y++) {
+                for (V3DLONG x=borderSize;x<(xv-borderSize);x++) {
+                    V3DLONG sx=((x-borderSize)*1.0+0.5)/targetRatio;
+                    V3DLONG sy=((y-borderSize)*1.0+0.5)/targetRatio;
+                    V3DLONG sz=((z-borderSize)*1.0+0.5)/targetRatio;
+                    if (sx<0) {
+                        sx=0;
+                    } else if (sx>=xmax) {
+                        sx=xmax-1;
+                    }
+                    if (sy<0) {
+                        sy=0;
+                    } else if (sy>=ymax) {
+                        sy=ymax-1;
+                    }
+                    if (sz<0) {
+                        sz=0;
+                    } else if (sz>=zmax) {
+                        sz=zmax-1;
+                    }
+                    V3DLONG sPosition=sz*xmax*ymax+sy*xmax+sx;
+                    V3DLONG tPosition=z*xv*yv+y*xv+x;
+                    vData[tPosition]=sData[sPosition];
+                }
+            }
+        }
+    }
+    return targetImage;
+}
+
+My4DImage * ScreenPatternAnnotator::getChannelSubImageFromMask(My4DImage * sourceImage, int sourceChannel, int index, SPA_BoundingBox bb) {
+
+    V3DLONG xmax=compartmentIndexImage->getXDim();
+    V3DLONG ymax=compartmentIndexImage->getYDim();
+    V3DLONG zmax=compartmentIndexImage->getZDim();
+
+    v3d_uint8 * iData=compartmentIndexImage->getRawData();
+    v3d_uint8 * rData=sourceImage->getRawDataAtChannel(sourceChannel);
+
+    My4DImage * subImage = new My4DImage();
+    V3DLONG s_xlen=(bb.x1-bb.x0)+1;
+    V3DLONG s_ylen=(bb.y1-bb.y0)+1;
+    V3DLONG s_zlen=(bb.z1-bb.z0)+1;
+    subImage->loadImage( s_xlen, s_ylen, s_zlen , 1 /* single channel */, V3D_UINT8 /* datatype */);
+    v3d_uint8 * sRaw=subImage->getRawData();
+    for (V3DLONG i=0;i<subImage->getTotalBytes();i++) {
+        sRaw[i]=0;
+    }
+
+    v3d_uint8 * sData=subImage->getRawDataAtChannel(0);
+
+    for (int z=bb.z0;z<=bb.z1;z++) {
+        V3DLONG zoffset=z*ymax*xmax;
+        V3DLONG s_zoffset=(z-bb.z0)*s_ylen*s_xlen;
+        for (int y=bb.y0;y<=bb.y1;y++) {
+            V3DLONG yoffset = y*xmax + zoffset;
+            V3DLONG s_yoffset = (y-bb.y0)*s_xlen + s_zoffset;
+            for (int x=bb.x0;x<=bb.x1;x++) {
+                V3DLONG position = yoffset + x;
+                V3DLONG s_position = s_yoffset + (x-bb.x0);
+                if (iData[position]==index) {
+                    sData[s_position]=rData[position];
+                }
+            }
+        }
+    }
+    return subImage;
 }
 
 My4DImage * ScreenPatternAnnotator::createMIPFromImage(My4DImage * image) {
@@ -343,6 +474,31 @@ My4DImage * ScreenPatternAnnotator::createMIPFromImage(My4DImage * image) {
     return mip;
 }
 
+My4DImage * ScreenPatternAnnotator::createNormalizedImage(My4DImage * sourceImage) {
+    if (sourceImage->getDatatype()!=V3D_UINT8) {
+        qDebug() << "ERROR - createNormalizedImage only supports datatype=1";
+        return 0;
+    }
+    My4DImage * normalizedImage=new My4DImage();
+    normalizedImage->loadImage(sourceImage->getXDim(), sourceImage->getYDim(), sourceImage->getZDim(), sourceImage->getCDim(), V3D_UINT8);
+    for (int c=0;c<sourceImage->getCDim();c++) {
+        double min=sourceImage->getChannalMinIntensity(c);
+        double max=sourceImage->getChannalMaxIntensity(c);
+        v3d_uint8 * cdata=sourceImage->getRawDataAtChannel(c);
+        v3d_uint8 * ndata=normalizedImage->getRawDataAtChannel(c);
+        for (V3DLONG p=0;p<sourceImage->getTotalUnitNumberPerChannel();p++) {
+            double value=cdata[p];
+            double nvalue=(255.0*(value-min))/(max-min);
+            if (nvalue>255.0) {
+                nvalue=255.0;
+            } else if (nvalue<0.0) {
+                nvalue=0.0;
+            }
+            ndata[p] = nvalue;
+        }
+    }
+    return normalizedImage;
+}
 
 // Here we will iterate through the mask and add the corresponding
 My4DImage * ScreenPatternAnnotator::createSub3DImageFromMask(My4DImage * sourceImage, int index, SPA_BoundingBox bb) {
