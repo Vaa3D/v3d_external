@@ -27,6 +27,7 @@
 #include "../istitch/y_imglib.h"
 
 #include "imageblend.h"
+#include "y_lsminfo.h"
 
 using namespace std;
 
