@@ -337,6 +337,16 @@ void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbr
     if (!saveStatus) {
         qDebug() << "ScreenPatternAnnotator::createCompartmentAnnotation() Error during save of " << savepathCompartmentHeatmapFullSize;
     }
+    My4DImage * viewableCompartmentMIP=createMIPFromImage(compartmentHeatmapFullSize);
+    QString filenameCompartmentHeatmapFullSizeMIP=abbreviation;
+    filenameCompartmentHeatmapFullSizeMIP.append("_heatmap16ColorMIP.tif");
+    QString savepathCompartmentHeatmapFullSizeMIP(returnFullPathWithOutputPrefix(filenameCompartmentHeatmapFullSizeMIP));
+    qDebug() << "Saving " << abbreviation << " 16-color heatmap MIP to file=" << savepathCompartmentHeatmapFullSizeMIP;
+    saveStatus=imageLoaderForSave.saveImage(viewableCompartmentMIP, savepathCompartmentHeatmapFullSizeMIP);
+    if (!saveStatus) {
+        qDebug() << "ScreenPatternAnnotator::createCompartmentAnnotation() Error during save of " << savepathCompartmentHeatmapFullSizeMIP;
+    }
+    delete viewableCompartmentMIP;
     delete compartmentHeatmapFullSize;
 
     My4DImage * normalizedCompartmentHeatmapFullSize=createViewableImage(normalizedCompartmentHeatmap, VIEWABLE_BORDER);
@@ -348,6 +358,16 @@ void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbr
     if (!saveStatus) {
         qDebug() << "ScreenPatternAnnotator::createCompartmentAnnotation() Error during save of " << savepathNormalizedCompartmentHeatmapFullSize;
     }
+    My4DImage * viewableNormalizedCompartmentMIP=createMIPFromImage(normalizedCompartmentHeatmapFullSize);
+    QString filenameNormalizedCompartmentHeatmapFullSizeMIP=abbreviation;
+    filenameNormalizedCompartmentHeatmapFullSizeMIP.append("_normalized_heatmap16ColorMIP.tif");
+    QString savepathNormalizedCompartmentHeatmapFullSizeMIP(returnFullPathWithOutputPrefix(filenameNormalizedCompartmentHeatmapFullSizeMIP));
+    qDebug() << "Saving " << abbreviation << " 16-color normalized heatmap MIP to file=" << savepathNormalizedCompartmentHeatmapFullSizeMIP;
+    saveStatus=imageLoaderForSave.saveImage(viewableNormalizedCompartmentMIP, savepathNormalizedCompartmentHeatmapFullSizeMIP);
+    if (!saveStatus) {
+        qDebug() << "ScreenPatternAnnotator::createCompartmentAnnotation() Error during save of " << savepathNormalizedCompartmentHeatmapFullSizeMIP;
+    }
+    delete viewableNormalizedCompartmentMIP;
     delete normalizedCompartmentHeatmapFullSize;
 
 
