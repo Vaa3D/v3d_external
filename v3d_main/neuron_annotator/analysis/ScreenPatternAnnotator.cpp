@@ -8,6 +8,7 @@ const int ScreenPatternAnnotator::MODE_COMPARTMENT_INDEX=1;
 
 const int VIEWABLE_DIMENSION = 256;
 const int VIEWABLE_BORDER = 10;
+const double NORMALIZATION_CUTOFF=0.02;
 
 ScreenPatternAnnotator::ScreenPatternAnnotator()
 {
@@ -311,10 +312,10 @@ void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbr
     }
     qDebug() << "Created MIP from compartment heatmap";
 
-    My4DImage * compartmentImage=getChannelSubImageFromMask(inputImage, patternChannelIndex, index, bb, false /* normalize */);
+    My4DImage * compartmentImage=getChannelSubImageFromMask(inputImage, patternChannelIndex, index, bb, false /* normalize */, 0.0);
     qDebug() << "Created compartmentImage using getChannelSubImageFromMask";
 
-    My4DImage * compartmentNormalizedImage=getChannelSubImageFromMask(inputImage, patternChannelIndex, index, bb, true /* normalize */);
+    My4DImage * compartmentNormalizedImage=getChannelSubImageFromMask(inputImage, patternChannelIndex, index, bb, true /* normalize */, NORMALIZATION_CUTOFF);
     qDebug() << "Created normalized image for compartment";
 
     My4DImage * normalizedCompartmentHeatmap=create3DHeatmapFromChannel(compartmentNormalizedImage, 0 /* only one channel */, lut16Color);
@@ -431,7 +432,8 @@ My4DImage * ScreenPatternAnnotator::createViewableImage(My4DImage * sourceImage,
     return targetImage;
 }
 
-My4DImage * ScreenPatternAnnotator::getChannelSubImageFromMask(My4DImage * sourceImage, int sourceChannel, int index, SPA_BoundingBox bb, bool normalize) {
+My4DImage * ScreenPatternAnnotator::getChannelSubImageFromMask(My4DImage * sourceImage, int sourceChannel, int index, SPA_BoundingBox bb,
+                                                               bool normalize, double normalizationCutoff /* 0.0 - 1.0 */) {
 
     V3DLONG xmax=compartmentIndexImage->getXDim();
     V3DLONG ymax=compartmentIndexImage->getYDim();
@@ -455,8 +457,16 @@ My4DImage * ScreenPatternAnnotator::getChannelSubImageFromMask(My4DImage * sourc
     double min=256.0;
     double max=-1.0;
 
-    // First pass is to get accurate min/max for bounding box
+    // First pass is to get accurate min/max for bounding box, which is tricky because we want to use a histogram to
+    // apply the normalizationCutoff, so that outliers don't dominate the normalized range.
+    v3d_uint8 histogram[256];
+    int h=0;
+    for (h=0;h<256;h++) {
+        histogram[h]=0;
+    }
+
     if (normalize) {
+        V3DLONG hcount=0;
         for (int z=bb.z0;z<=bb.z1;z++) {
             V3DLONG zoffset=z*ymax*xmax;
             V3DLONG s_zoffset=(z-bb.z0)*s_ylen*s_xlen;
@@ -467,16 +477,41 @@ My4DImage * ScreenPatternAnnotator::getChannelSubImageFromMask(My4DImage * sourc
                     V3DLONG position = yoffset + x;
                     V3DLONG s_position = s_yoffset + (x-bb.x0);
                     if (iData[position]==index) {
-                        if (rData[position]<min) {
-                            min=rData[position];
-                        }
-                        if (rData[position]>max) {
-                            max=rData[position];
-                        }
+                        histogram[rData[position]]++;
+                        hcount++;
                     }
                 }
             }
         }
+        double lowerThreshold=normalizationCutoff*hcount;
+        V3DLONG lowerCount=0;
+        for (h=0;h<256;h++) {
+            lowerCount+=histogram[h];
+            if (lowerCount>=lowerThreshold) {
+                break;
+            }
+        }
+        if (h==256) {
+            qDebug() << "ERROR: could not find lower threshold for histogram";
+            min=0;
+        } else {
+            min=h*1.0;
+        }
+        double higherThreshold=(1.0-normalizationCutoff)*hcount;
+        V3DLONG higherCount=hcount;
+        for (h=255;h>-1;h--) {
+            higherCount-=histogram[h];
+            if (higherCount<=higherThreshold) {
+                break;
+            }
+        }
+        if (h==-1) {
+            qDebug() << "ERROR: could not find upper threshold for histogram";
+            max=255.0;
+        } else {
+            max=h*1.0;
+        }
+        qDebug() << " Using normalization min/max of " << min << " " << max;
     }
 
     for (int z=bb.z0;z<=bb.z1;z++) {
@@ -490,8 +525,16 @@ My4DImage * ScreenPatternAnnotator::getChannelSubImageFromMask(My4DImage * sourc
                 V3DLONG s_position = s_yoffset + (x-bb.x0);
                 if (iData[position]==index) {
                     if (normalize) {
-                        v3d_uint8 value=(255.0*((1.0*rData[position])-min))/(max-min);
-                        sData[s_position]=value;
+                        double nvalue=(255.0*((1.0*rData[position])-min))/(max-min);
+                        v3d_uint8 nv=0;
+                        if (nvalue>255.0) {
+                            nv=255;
+                        } else if (nvalue<0.0) {
+                            nv=0;
+                        } else {
+                            nv=nvalue;
+                        }
+                        sData[s_position]=nv;
                     } else {
                         sData[s_position]=rData[position];
                     }

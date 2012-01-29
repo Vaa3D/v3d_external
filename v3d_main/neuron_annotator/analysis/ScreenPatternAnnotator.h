@@ -95,7 +95,7 @@ private:
     My4DImage * createSub3DImageFromMask(My4DImage * image, int index, SPA_BoundingBox bb);
     My4DImage * createNormalizedImage(My4DImage * image, int maskIndex);
     My4DImage * createMIPFromImage(My4DImage * image);
-    My4DImage * getChannelSubImageFromMask(My4DImage * sourceImage, int sourceChannel, int index, SPA_BoundingBox bb, bool normalize);
+    My4DImage * getChannelSubImageFromMask(My4DImage * sourceImage, int sourceChannel, int index, SPA_BoundingBox bb, bool normalize, double normalizationCutoff /* 0.0-1.0 */);
     My4DImage * createViewableImage(My4DImage * sourceImage, int borderSize);
 
 };
