@@ -302,7 +302,7 @@ void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbr
         qDebug() << "compartmentHeatmap returned as 0";
         return;
     }
-    qDebug() << "Created subimage from compartment mask";
+    qDebug() << "Created compartment heatmap with dimensions " << compartmentHeatmap->getXDim() << " " << compartmentHeatmap->getYDim() << " " << compartmentHeatmap->getZDim();
 
     My4DImage * compartmentHeatmapMIP=createMIPFromImage(compartmentHeatmap);
     if (compartmentHeatmapMIP==0) {
@@ -318,7 +318,8 @@ void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbr
     qDebug() << "Created normalized image for compartment";
 
     My4DImage * normalizedCompartmentHeatmap=create3DHeatmapFromChannel(compartmentNormalizedImage, 0 /* only one channel */, lut16Color);
-    qDebug() << "Created normalizedCompartmentHeatmap";
+    qDebug() << "Created normalizedCompartmentHeatmap with dimensions " << normalizedCompartmentHeatmap->getXDim() << " " <<
+                normalizedCompartmentHeatmap->getYDim() << " " << normalizedCompartmentHeatmap->getZDim();
 
     My4DImage * normalizedCompartmentHeatmapMIP=createMIPFromImage(normalizedCompartmentHeatmap);
     qDebug() << "Created normalizedCompartmentHeatmapMIP";
@@ -367,10 +368,18 @@ My4DImage * ScreenPatternAnnotator::createViewableImage(My4DImage * sourceImage,
 
     My4DImage * targetImage = new My4DImage();
     double targetRatio=1.0;
+    V3DLONG xViewCenterOffset=0;
+    V3DLONG yViewCenterOffset=0;
     if (xmax>=ymax) {
         targetRatio=( (VIEWABLE_DIMENSION-2*borderSize)*1.0) / (xmax*1.0);
+        double originalYPosition=borderSize+ymax/2.0;
+        double viewYPosition=VIEWABLE_DIMENSION/2.0;
+        yViewCenterOffset=viewYPosition-originalYPosition;
     } else {
         targetRatio=( (VIEWABLE_DIMENSION-2*borderSize)*1.0) / (ymax*1.0);
+        double originalXPosition=borderSize+xmax/2.0;
+        double viewXPosition=VIEWABLE_DIMENSION/2.0;
+        xViewCenterOffset=viewXPosition-originalXPosition;
     }
     V3DLONG xv=VIEWABLE_DIMENSION;
     V3DLONG yv=VIEWABLE_DIMENSION;
@@ -388,24 +397,33 @@ My4DImage * ScreenPatternAnnotator::createViewableImage(My4DImage * sourceImage,
                     V3DLONG sx=((x-borderSize)*1.0+0.5)/targetRatio;
                     V3DLONG sy=((y-borderSize)*1.0+0.5)/targetRatio;
                     V3DLONG sz=((z-borderSize)*1.0+0.5)/targetRatio;
+                    bool outOfBounds=false;
                     if (sx<0) {
-                        sx=0;
+                        outOfBounds=true;
                     } else if (sx>=xmax) {
-                        sx=xmax-1;
+                        outOfBounds=true;
                     }
                     if (sy<0) {
-                        sy=0;
+                        outOfBounds=true;
                     } else if (sy>=ymax) {
-                        sy=ymax-1;
+                        outOfBounds=true;
                     }
                     if (sz<0) {
-                        sz=0;
+                        outOfBounds=true;
                     } else if (sz>=zmax) {
-                        sz=zmax-1;
+                        outOfBounds=true;
                     }
                     V3DLONG sPosition=sz*xmax*ymax+sy*xmax+sx;
-                    V3DLONG tPosition=z*xv*yv+y*xv+x;
-                    vData[tPosition]=sData[sPosition];
+                    V3DLONG tPosition=z*xv*yv+(y+yViewCenterOffset)*xv+(x+xViewCenterOffset);
+                    if (tPosition>targetImage->getTotalUnitNumberPerChannel()) {
+                        qDebug() << "ERROR: tPosition=" << tPosition << " and total channel unit size=" << targetImage->getTotalUnitNumberPerChannel();
+                        return 0;
+                    }
+                    if (outOfBounds) {
+                        vData[tPosition]=0;
+                    } else {
+                        vData[tPosition]=sData[sPosition];
+                    }
                 }
             }
         }
