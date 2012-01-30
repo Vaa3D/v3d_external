@@ -137,7 +137,7 @@ public:
 template <class Tidx> 
 void Y_LSMINFO<Tidx> :: loadHeader()
 {
-    //
+    /// open lsm file
     FILE * lsm = fopen(fn_image.c_str(), "rb");
     if (!lsm)
     {
@@ -155,6 +155,7 @@ void Y_LSMINFO<Tidx> :: loadHeader()
         return;
     }
     
+    /// read header
     fseek(lsm, 8, SEEK_SET);
     Tidx num_entries=0;
     fread(pbuf, 2, 1, lsm);
@@ -300,37 +301,24 @@ void Y_LSMINFO<Tidx> :: loadHeader()
         offset = *((UInt32_t *)pbuf);
     }
     
-    //
+    /// read lsm info
     fseek(lsm, offset, SEEK_SET);    
     fread(pbuf, 1, TIF_CZ_LSMINFO_SIZE, lsm); //
     
-    zi = *(reinterpret_cast<zeiss_info*>(pbuf));  
+    zi = *(reinterpret_cast<zeiss_info*>(pbuf));
     
-    cout<<"DimX ..."<<zi.DimensionX<<endl;
-    cout<<"DimY ..."<<zi.DimensionY<<endl;
-    cout<<"DimZ ..."<<zi.DimensionZ<<endl;
-    cout<<"DimC ..."<<zi.DimensionChannels<<endl;
-    cout<<"DimT ..."<<zi.DimensionTime<<endl;
-    
-    //
+    /// read color channel info
     fseek(lsm, zi.OffsetChannelColors, SEEK_SET);
     fread(pbuf, 1, TIF_CZ_CHNINFO_SIZE, lsm);
 
     ci = *(reinterpret_cast<colorchannel_info*>(pbuf));
     
-    cout<<"BlockSize ... "<<ci.BlockSize<<endl;
-    cout<<"NumberColors ... "<<ci.NumberColors<<endl;
-    cout<<"NumberNames ... "<<ci.NumberNames<<endl;
-    cout<<"ColorsOffset ... "<<ci.ColorsOffset<<endl;
-    cout<<"NamesOffset ... "<<ci.NamesOffset<<endl;
-    cout<<"Mono ... "<<ci.Mono<<endl;
-    
-    //
+    // read colors
     fseek(lsm, zi.OffsetChannelColors+ci.ColorsOffset, SEEK_SET);
     
     for(Tidx i=0; i<ci.NumberColors; i++)
     {
-        fread(pbuf, 1, 3, lsm);
+        fread(pbuf, 1, 4, lsm); // 4 bytes
 
         Colors c;
 
@@ -341,10 +329,10 @@ void Y_LSMINFO<Tidx> :: loadHeader()
         this->colorchannels.push_back(c);
     }
     
-//    for(Tidx i=0; i<colorchannels.size(); i++)
-//    {
-//        cout<<"colors ..."<<colorchannels.at(i).R<<colorchannels.at(i).G<<colorchannels.at(i).B<<endl;
-//    }
+    // read names
+    // ...
+    
+    //
     fclose(lsm);
     
     // de-alloc
