@@ -300,22 +300,6 @@ bool ScreenPatternAnnotator::annotate() {
     inputImageCubified=cubifyImage(inputImage, CUBE_SIZE, CUBIFY_TYPE_AVERAGE);
     qDebug() << "Done";
 
-
-
-
-    ImageLoader imageLoaderForTest;
-    QString filepathToTestInputCubify(returnFullPathWithOutputPrefix("inputImageCubified.v3dpbd"));
-    qDebug() << "Saving inputImage cubified to file=" << filepathToTestInputCubify;
-    bool saveTestStatus=imageLoaderForTest.saveImage(inputImageCubified, filepathToTestInputCubify);
-    if (!saveTestStatus) {
-        qDebug() << "ScreenPatternAnnotator::execute() Error during save of inputImage cubify test file";
-        return false;
-    }
-
-
-
-
-
     // Compute Global 256-bin Histogram
     V3DLONG xSize=inputImage->getXDim();
     V3DLONG ySize=inputImage->getYDim();
@@ -360,22 +344,6 @@ bool ScreenPatternAnnotator::annotate() {
     qDebug() << "Cubifying compartmentIndexImage";
     compartmentIndexImageCubified=cubifyImage(compartmentIndexImage, CUBE_SIZE, CUBIFY_TYPE_MODE);
     qDebug() << "Done";
-
-
-
-
-    QString filepathToTestIndexCubify(returnFullPathWithOutputPrefix("indexCubified.v3dpbd"));
-    qDebug() << "Saving indexImage cubified to file=" << filepathToTestIndexCubify;
-    saveTestStatus=imageLoaderForTest.saveImage(compartmentIndexImageCubified, filepathToTestIndexCubify);
-    if (!saveTestStatus) {
-        qDebug() << "ScreenPatternAnnotator::execute() Error during save of index cubify test file";
-        return false;
-    }
-
-
-
-
-
 
     // Load Abbreviation Index Map
     compartmentIndexAbbreviationMap.clear();
@@ -428,18 +396,23 @@ bool ScreenPatternAnnotator::annotate() {
 //
 //  The above are the graphics artifacts. Below are the numerical measurements to support search, with attribute strings:
 //
-//     (a) discard the lower-intensity values (say, below 32) and compute the averge signal voxel intensity. This will serve as a relatve indicator of the signal
-//         strength for the sample.
+//     (a) We will create 5 zones of intensity ranges:
 //
-//     (b) compute the % of voxels in the compartment at or over the threshold from (a). This is the base compartment activation level.
+//           (1) zone 1 is 0-31
 //
-//     (c) amoungst the signal voxels for the whole sample from (a), determine the median level
+//           Call As the average of all voxels above 31, A1 the average of those below As but above 31, and A2 the average of those above As
 //
-//     (d) determine the % of voxels in the compartment at or over the median threshold from (c). This is the high-signal compartment activation level.
+//           (2) zone 2 is 32-A1
 //
-//     (e) cubify the volume into 5x5x5 cubes
+//           (3) zone 3 is A1-As
 //
-//     (f) determine the % of cubes from (e) where the average value is (1) below 32 (2) 32-high-signal-cutoff (3) above high-signal cutoff
+//           (4) zone 4 is As-A2
+//
+//           (5) zone 5 is A2 and above
+//
+//     (b) We will score the % of voxels in each zone for each compartment
+//
+//     (c) We will take the 5x5x5 cubified version and then re-score the percentages
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
