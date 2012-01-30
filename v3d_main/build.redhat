@@ -91,6 +91,14 @@ cd ../released_plugins
 sh build_plugindemo.sh $ARGS
 cp -r v3d/plugins ../v3d/.
 
+if [ -d ../released_plugins_more ]; then
+cd ../released_plugins_more
+sh build_plugindemo.sh $ARGS
+cp -r v3d/plugins ../v3d/.
+fi
+
+
+
 cd ../v3d_main
 
 cd ../v3d
