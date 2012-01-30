@@ -8,7 +8,7 @@ const int ScreenPatternAnnotator::MODE_COMPARTMENT_INDEX=1;
 
 const int VIEWABLE_DIMENSION = 256;
 const int VIEWABLE_BORDER = 10;
-const double NORMALIZATION_CUTOFF=0.02;
+const double NORMALIZATION_CUTOFF=0.01;
 const int CUBE_SIZE = 5;
 
 const int CUBIFY_TYPE_AVERAGE=1;
@@ -544,12 +544,12 @@ My4DImage * ScreenPatternAnnotator::createViewableImage(My4DImage * sourceImage,
     V3DLONG yViewCenterOffset=0;
     if (xmax>=ymax) {
         targetRatio=( (VIEWABLE_DIMENSION-2*borderSize)*1.0) / (xmax*1.0);
-        double originalYPosition=borderSize+ymax/2.0;
+        double originalYPosition=borderSize+(ymax*targetRatio)/2.0;
         double viewYPosition=VIEWABLE_DIMENSION/2.0;
         yViewCenterOffset=viewYPosition-originalYPosition;
     } else {
         targetRatio=( (VIEWABLE_DIMENSION-2*borderSize)*1.0) / (ymax*1.0);
-        double originalXPosition=borderSize+xmax/2.0;
+        double originalXPosition=borderSize+(xmax*targetRatio)/2.0;
         double viewXPosition=VIEWABLE_DIMENSION/2.0;
         xViewCenterOffset=viewXPosition-originalXPosition;
     }
