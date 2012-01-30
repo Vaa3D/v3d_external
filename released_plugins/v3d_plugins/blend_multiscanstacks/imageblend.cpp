@@ -2805,13 +2805,47 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
 // menu
 QStringList ImageBlendPlugin::menulist() const
 {
-    return QStringList() << tr("Multiscan Image Blending")
+    return QStringList() << tr("Show LSM Info")
+                         << tr("Multiscan Image Blending")
                          << tr("About");
 }
 
 void ImageBlendPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
 {
-    if (menu_name == tr("Multiscan Image Blending"))
+    if (menu_name == tr("Show LSM Info"))
+    {
+        // anchor the image to handle
+        QString m_FileName = QFileDialog::getOpenFileName(0, QObject::tr("Find a file"), "/", QObject::tr("Image (*.lsm)"));
+        
+        string filename = m_FileName.toStdString();
+        
+        // image header info
+        Y_LSMINFO<V3DLONG> lsminfo(filename);
+        lsminfo.loadHeader();
+        
+        QTextEdit *lsminfoTxt = new QTextEdit(QString("image: %1 <br>\
+                                                   <br><br> Dimensions: \
+                                                   <br> x (%2) \
+                                                   <br> y (%3) \
+                                                   <br> z (%4) \
+                                                   <br> c (%5) \
+                                                   <br><br> Resolutions: \
+                                                   <br> x (%6) um\
+                                                   <br> y (%7) um\
+                                                   <br> z (%8) um").arg(filename.c_str()).arg(lsminfo.zi.DimensionX).arg(lsminfo.zi.DimensionY).arg(lsminfo.zi.DimensionZ)
+                                           .arg(lsminfo.zi.DimensionChannels).arg(lsminfo.zi.VoxelSizeX*1e6).arg(lsminfo.zi.VoxelSizeY*1e6).arg(lsminfo.zi.VoxelSizeZ*1e6));
+        
+        lsminfoTxt->setDocumentTitle("Image Header Info");
+        lsminfoTxt->resize(500, 300);
+        lsminfoTxt->setReadOnly(true);
+        lsminfoTxt->setFontPointSize(12);
+        lsminfoTxt->show();
+ 
+        
+        //
+        return;
+    }
+    else if (menu_name == tr("Multiscan Image Blending"))
     {
         ImageBlendingDialog dialog(callback, parent, NULL);
         if (dialog.exec()!=QDialog::Accepted)

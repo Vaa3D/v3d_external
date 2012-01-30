@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
+#include <iostream>
 
 using namespace std;
 
@@ -23,6 +24,7 @@ using namespace std;
 #define TIF_CZ_LSMINFO 34412
 #define TIF_CZ_LSMINFO_SIZE_RESERVED 72
 #define TIF_CZ_LSMINFO_SIZE 224
+#define TIF_CZ_CHNINFO_SIZE 24
 
 typedef char Int8_t;
 typedef unsigned char UInt8_t;
@@ -107,9 +109,15 @@ class Y_LSMINFO
 {
 public:
 
-    Y_LSMINFO(char * imgname)
+    Y_LSMINFO(string imgname)
     {
         fn_image = imgname;
+        
+        if(fn_image.substr(fn_image.find_last_of(".") + 1)!="lsm")
+        {
+            cout<<"Error: invalid .lsm file"<<endl;
+            return;
+        }
     }
 
     ~Y_LSMINFO(){}
@@ -119,25 +127,35 @@ public:
     void loadHeader();
 
 public:
-    const char                 *fn_image;
+    string               fn_image;
     
-    const zeiss_info           *zi;
-    const colorchannel_info    *ci;
+    zeiss_info           zi;
+    colorchannel_info    ci;
     
-    vector<Colors>             colorchannels;
+    vector<Colors>       colorchannels;
 };
 
 // load header info
-template <class Tidx> void Y_LSMINFO<Tidx> :: loadHeader()
+template <class Tidx> 
+void Y_LSMINFO<Tidx> :: loadHeader()
 {
     //
-    FILE * lsm = fopen(fn_image, "rb");
+    FILE * lsm = fopen(fn_image.c_str(), "rb");
     if (!lsm)
     {
         printf("Fail to open file for reading.\n");
         return;
     }
-    char *pbuf = new char [512];
+    char *pbuf = NULL;
+    try
+    {
+        pbuf = new char [512];
+    }
+    catch(...)
+    {
+        cout<<"Fail to allocate memory"<<endl;
+        return;
+    }
     
     fseek(lsm, 8, SEEK_SET);
     Tidx num_entries=0;
@@ -287,41 +305,55 @@ template <class Tidx> void Y_LSMINFO<Tidx> :: loadHeader()
     //
     fseek(lsm, offset, SEEK_SET);    
     fread(pbuf, 1, TIF_CZ_LSMINFO_SIZE, lsm); //
+    
+    zi = *(reinterpret_cast<zeiss_info*>(pbuf));  
+    
+    cout<<"DimX ..."<<zi.DimensionX<<endl;
+    cout<<"DimY ..."<<zi.DimensionY<<endl;
+    cout<<"DimZ ..."<<zi.DimensionZ<<endl;
+    cout<<"DimC ..."<<zi.DimensionChannels<<endl;
+    cout<<"DimT ..."<<zi.DimensionTime<<endl;
+    
+    //
+    fseek(lsm, zi.OffsetChannelColors, SEEK_SET);
+    fread(pbuf, 1, TIF_CZ_CHNINFO_SIZE, lsm);
 
-    this->zi = reinterpret_cast<zeiss_info*>(pbuf);   
+    ci = *(reinterpret_cast<colorchannel_info*>(pbuf));
+    
+    cout<<"BlockSize ... "<<ci.BlockSize<<endl;
+    cout<<"NumberColors ... "<<ci.NumberColors<<endl;
+    cout<<"NumberNames ... "<<ci.NumberNames<<endl;
+    cout<<"ColorsOffset ... "<<ci.ColorsOffset<<endl;
+    cout<<"NamesOffset ... "<<ci.NamesOffset<<endl;
+    cout<<"Mono ... "<<ci.Mono<<endl;
     
     //
-    fseek(lsm, zi->OffsetChannelColors, SEEK_SET);
+    fseek(lsm, zi.OffsetChannelColors+ci.ColorsOffset, SEEK_SET);
     
-    fread(pbuf, 1, 24, lsm);
-    this->ci = reinterpret_cast<colorchannel_info*>(pbuf);
-    
-    cout<<"BlockSize ... "<<ci->BlockSize<<endl;
-    cout<<"NumberColors ... "<<ci->NumberColors<<endl;
-    cout<<"NumberNames ... "<<ci->NumberNames<<endl;
-    cout<<"ColorsOffset ... "<<ci->ColorsOffset<<endl;
-    cout<<"NamesOffset ... "<<ci->NamesOffset<<endl;
-    cout<<"Mono ... "<<ci->Mono<<endl;
-    
-    //
-    fseek(lsm, zi->OffsetChannelColors+ci->ColorsOffset, SEEK_SET);
-    
-    for(Tidx i=0; i<ci->NumberColors; i++)
+    for(Tidx i=0; i<ci.NumberColors; i++)
     {
         fread(pbuf, 1, 3, lsm);
         
-        const Colors *c = reinterpret_cast<Colors*>(pbuf);
+//        cout<<"R ..."<<pbuf[0]<<endl;
+//        cout<<"G ..."<<pbuf[1]<<endl;
+//        cout<<"B ..."<<pbuf[2]<<endl;
         
-        this->colorchannels.push_back(*c);
+        Colors c = *(reinterpret_cast<Colors*>(pbuf));
+        
+        this->colorchannels.push_back(c);
     }
     
     for(Tidx i=0; i<colorchannels.size(); i++)
     {
-        cout<<"test ..."<<colorchannels.at(i).R<<colorchannels.at(i).G<<colorchannels.at(i).B<<endl;
+        cout<<"colors ..."<<colorchannels.at(i).R<<colorchannels.at(i).G<<colorchannels.at(i).B<<endl;
     }
-    
-    
     fclose(lsm);
+    
+    // de-alloc
+    if(pbuf){delete []pbuf; pbuf=0;}
+    
+    //
+    return;
 }
 
 
