@@ -8,6 +8,7 @@ V3DMAINDIR = ../../../v3d_main
 INCLUDEPATH  += $$V3DMAINDIR/basic_c_fun
 INCLUDEPATH  += $$V3DMAINDIR/common_lib/include
 
+HEADERS      += y_lsminfo.h
 HEADERS      += imageblend.h
 HEADERS      +=	$$V3DMAINDIR/basic_c_fun/stackutil.h
 HEADERS      +=	$$V3DMAINDIR/basic_c_fun/mg_utilities.h

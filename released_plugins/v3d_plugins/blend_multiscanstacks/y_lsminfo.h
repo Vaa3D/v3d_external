@@ -97,9 +97,7 @@ typedef struct{
 }colorchannel_info;
 
 typedef struct{
-    UInt8_t R;
-    UInt8_t G;
-    UInt8_t B;
+    int R, G, B; // UInt8_t
 }Colors;
 
 
@@ -333,20 +331,20 @@ void Y_LSMINFO<Tidx> :: loadHeader()
     for(Tidx i=0; i<ci.NumberColors; i++)
     {
         fread(pbuf, 1, 3, lsm);
-        
-//        cout<<"R ..."<<pbuf[0]<<endl;
-//        cout<<"G ..."<<pbuf[1]<<endl;
-//        cout<<"B ..."<<pbuf[2]<<endl;
-        
-        Colors c = *(reinterpret_cast<Colors*>(pbuf));
+
+        Colors c;
+
+        c.R = int (pbuf[0]) & 255;
+        c.G = int (pbuf[1] >> 8 ) & 255;
+        c.B = int (pbuf[2] >> 16) & 255;
         
         this->colorchannels.push_back(c);
     }
     
-    for(Tidx i=0; i<colorchannels.size(); i++)
-    {
-        cout<<"colors ..."<<colorchannels.at(i).R<<colorchannels.at(i).G<<colorchannels.at(i).B<<endl;
-    }
+//    for(Tidx i=0; i<colorchannels.size(); i++)
+//    {
+//        cout<<"colors ..."<<colorchannels.at(i).R<<colorchannels.at(i).G<<colorchannels.at(i).B<<endl;
+//    }
     fclose(lsm);
     
     // de-alloc

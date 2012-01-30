@@ -2815,8 +2815,14 @@ void ImageBlendPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &call
     if (menu_name == tr("Show LSM Info"))
     {
         // anchor the image to handle
-        QString m_FileName = QFileDialog::getOpenFileName(0, QObject::tr("Find a file"), "/", QObject::tr("Image (*.lsm)"));
+        QString m_FileName = QFileDialog::getOpenFileName(0, QObject::tr("Find a file"), QDir::currentPath(), QObject::tr("Image (*.lsm)"));
         
+        if ( !QFile::exists(m_FileName) )
+        {
+            cout<<"Image does not exist!"<<endl;
+            return;
+        }
+
         string filename = m_FileName.toStdString();
         
         // image header info
