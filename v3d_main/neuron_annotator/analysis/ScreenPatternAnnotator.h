@@ -76,12 +76,14 @@ private:
     int patternChannelIndex;
     QString outputPrefix;
     My4DImage * inputImage;
+    My4DImage * inputImageCubified;
     My4DImage * imageGlobal16ColorImage;
     HistogramSimple global256BinHistogram;
     v3d_uint8 * lut16Color;
     QString topLevelCompartmentMaskDirPath;
     QString outputResourceDirPath;
     My4DImage * compartmentIndexImage;
+    My4DImage * compartmentIndexImageCubified;
     QMap<int, QString> compartmentIndexAbbreviationMap;
 
 
@@ -97,6 +99,7 @@ private:
     My4DImage * createMIPFromImage(My4DImage * image);
     My4DImage * getChannelSubImageFromMask(My4DImage * sourceImage, int sourceChannel, int index, SPA_BoundingBox bb, bool normalize, double normalizationCutoff /* 0.0-1.0 */);
     My4DImage * createViewableImage(My4DImage * sourceImage, int borderSize);
+    My4DImage * cubifyImage(My4DImage * sourceImage, int cubeSize, int type);
 
 };
 

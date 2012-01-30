@@ -9,14 +9,21 @@ const int ScreenPatternAnnotator::MODE_COMPARTMENT_INDEX=1;
 const int VIEWABLE_DIMENSION = 256;
 const int VIEWABLE_BORDER = 10;
 const double NORMALIZATION_CUTOFF=0.02;
+const int CUBE_SIZE = 5;
+
+const int CUBIFY_TYPE_AVERAGE=1;
+const int CUBIFY_TYPE_MODE=2;
 
 ScreenPatternAnnotator::ScreenPatternAnnotator()
 {
     mode=MODE_UNDEFINED;
     inputImage=0;
+    inputImageCubified=0;
     patternChannelIndex=-1;
     lut16Color=0;
     imageGlobal16ColorImage=0;
+    compartmentIndexImage=0;
+    compartmentIndexImageCubified=0;
 }
 
 ScreenPatternAnnotator::~ScreenPatternAnnotator()
@@ -24,11 +31,20 @@ ScreenPatternAnnotator::~ScreenPatternAnnotator()
     if (inputImage!=0) {
         delete inputImage;
     }
+    if (inputImageCubified!=0) {
+        delete inputImageCubified;
+    }
     if (lut16Color!=0) {
         delete [] lut16Color;
     }
     if (imageGlobal16ColorImage!=0) {
         delete imageGlobal16ColorImage;
+    }
+    if (compartmentIndexImage!=0) {
+        delete compartmentIndexImage;
+    }
+    if (compartmentIndexImageCubified!=0) {
+        delete compartmentIndexImageCubified;
     }
 }
 
@@ -59,6 +75,10 @@ bool ScreenPatternAnnotator::createCompartmentIndex() {
         delete compartmentIndexImage;
     }
     compartmentIndexImage=0;
+    if (compartmentIndexImageCubified!=0) {
+        delete compartmentIndexImageCubified;
+    }
+    compartmentIndexImageCubified=0;
     compartmentIndexAbbreviationMap.clear();
 
     // Create Output Directory
@@ -174,6 +194,76 @@ int ScreenPatternAnnotator::getIndexFromCompartmentMaskFilename(QString filename
     return indexString.toInt();
 }
 
+My4DImage * ScreenPatternAnnotator::cubifyImage(My4DImage * sourceImage, int cubeSize, int type) {
+    V3DLONG s_xmax=sourceImage->getXDim();
+    V3DLONG s_ymax=sourceImage->getYDim();
+    V3DLONG s_zmax=sourceImage->getZDim();
+    V3DLONG s_cmax=sourceImage->getCDim();
+
+    V3DLONG c_xmax=s_xmax/cubeSize;
+    V3DLONG c_ymax=s_ymax/cubeSize;
+    V3DLONG c_zmax=s_zmax/cubeSize;
+
+    My4DImage * cubeImage=new My4DImage();
+    cubeImage->loadImage(c_xmax, c_ymax, c_zmax, s_cmax, V3D_UINT8);
+
+    for (V3DLONG c=0;c<s_xmax;c++) {
+        v3d_uint8 * cData=cubeImage->getRawDataAtChannel(c);
+        v3d_uint8 * sData=sourceImage->getRawDataAtChannel(c);
+        for (V3DLONG z=0;z<c_zmax;z++) {
+            V3DLONG zOffset=z*c_xmax*c_ymax;
+            for (V3DLONG y=0;y<c_ymax;y++) {
+                V3DLONG yOffset=y*c_xmax + zOffset;
+                for (V3DLONG x=0;x<c_xmax;x++) {
+                    V3DLONG offset=x+yOffset;
+                    V3DLONG cubeData[cubeSize*cubeSize];
+                    V3DLONG zStart=z*cubeSize;
+                    V3DLONG zEnd=zStart+cubeSize<s_zmax?zStart+cubeSize:s_zmax;
+                    V3DLONG yStart=y*cubeSize;
+                    V3DLONG yEnd=yStart+cubeSize<s_ymax?yStart+cubeSize:s_ymax;
+                    V3DLONG xStart=x*cubeSize;
+                    V3DLONG xEnd=xStart+cubeSize<s_xmax?xStart+cubeSize:s_xmax;
+                    V3DLONG cubeDataPosition=0;
+                    for (V3DLONG z=zStart;z<zEnd;z++) {
+                        V3DLONG s_zOffset=z*s_xmax*s_ymax;
+                        for (V3DLONG y=yStart;y<yEnd;y++) {
+                            V3DLONG s_yOffset=y*s_xmax + s_zOffset;
+                            for (V3DLONG x=xStart;x<xEnd;x++) {
+                                cubeData[cubeDataPosition++]=sData[x+s_yOffset];
+                            }
+                        }
+                    }
+                    if (type==CUBIFY_TYPE_AVERAGE) {
+                        V3DLONG avg=0;
+                        for (V3DLONG a=0;a<cubeDataPosition;a++) {
+                            avg+=cubeData[a];
+                        }
+                        avg/=cubeDataPosition;
+                        cData[offset]=avg;
+                    } else if (type==CUBIFY_TYPE_MODE) {
+                        v3d_uint8 histogram[256];
+                        for (int h=0;h<256;h++) {
+                            histogram[h]=0;
+                        }
+                        for (V3DLONG a=0;a<cubeDataPosition;a++) {
+                            histogram[cubeData[a]]++;
+                        }
+                        v3d_uint8 hmax=0;
+                        v3d_uint8 hval=0;
+                        for (int h=0;h<256;h++) {
+                            if (histogram[h]>hmax) {
+                                hmax=histogram[h];
+                                hval=h;
+                            }
+                        }
+                        cData[offset]=hval;
+                    }
+                }
+            }
+        }
+    }
+    return cubeImage;
+}
 
 bool ScreenPatternAnnotator::annotate() {
 
@@ -185,6 +275,7 @@ bool ScreenPatternAnnotator::annotate() {
         qDebug() << "ScreenPatternGenerator currently only supports 8-bit input data";
         return false;
     }
+    inputImageCubified=cubifyImage(inputImage, CUBE_SIZE, CUBIFY_TYPE_AVERAGE);
 
     // Compute Global 256-bin Histogram
     V3DLONG xSize=inputImage->getXDim();
@@ -279,19 +370,21 @@ bool ScreenPatternAnnotator::annotate() {
 //
 //  The above are the graphics artifacts. Below are the numerical measurements to support search, with attribute strings:
 //
-//     (7) A measure of the overall pattern strength within the compartment, the sum of the 16-color heatmap normalized by volume
+//     (a) discard the lower-intensity values (say, below 32) and compute the averge signal voxel intensity. This will serve as a relatve indicator of the signal
+//         strength for the sample.
 //
-//     (8) The coefficient of variance of #8
+//     (b) compute the % of voxels in the compartment at or over the threshold from (a). This is the base compartment activation level.
 //
-//     (9) A measure of the distribution of the pattern within the compartment, the sum of the auto-normalized heatmap normalized by volume
+//     (c) amoungst the signal voxels for the whole sample from (a), determine the median level
 //
-//     (10) The coefficient of variance of #10
+//     (d) determine the % of voxels in the compartment at or over the median threshold from (c). This is the high-signal compartment activation level.
 //
-//     (11) Using a super-voxel (5x5x5) cubified set of the original volume, the coefficient of variance of the intensity of this set
+//     (e) cubify the volume into 5x5x5 cubes
 //
-//     (12) The percentage of 5x5x5 cubes containing 50% of the total intensity for all cubes
+//     (f) determine the % of cubes from (e) where the average value is (1) below 32 (2) 32-high-signal-cutoff (3) above high-signal cutoff
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbreviation) {
 
