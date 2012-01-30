@@ -56,6 +56,7 @@ public:
         usage.append("                                                                                                        \n");
         usage.append("   -topLevelCompartmentMaskDir <dir path>                                                               \n");
         usage.append("   -outputResourceDir <resource dir path>                                                               \n");
+        usage.append("   -flipYWhenLoadingMasks <true/false>                                                                  \n");
         return usage;
     }
 
@@ -85,6 +86,7 @@ private:
     My4DImage * compartmentIndexImage;
     My4DImage * compartmentIndexImageCubified;
     QMap<int, QString> compartmentIndexAbbreviationMap;
+    bool flipYWhenLoadingMasks;
 
 
     QString returnFullPathWithOutputPrefix(QString filename);

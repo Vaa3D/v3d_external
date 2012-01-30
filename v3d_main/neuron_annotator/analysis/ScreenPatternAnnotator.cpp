@@ -24,6 +24,7 @@ ScreenPatternAnnotator::ScreenPatternAnnotator()
     imageGlobal16ColorImage=0;
     compartmentIndexImage=0;
     compartmentIndexImageCubified=0;
+    flipYWhenLoadingMasks=true;
 }
 
 ScreenPatternAnnotator::~ScreenPatternAnnotator()
@@ -137,13 +138,31 @@ bool ScreenPatternAnnotator::createCompartmentIndex() {
             V3DLONG maskSizeCount=0;
             v3d_uint8 * maskData=maskImage->getRawDataAtChannel(0L);
             v3d_uint8 * indexData=compartmentIndexImage->getRawData();
-            V3DLONG maskChannelUnitSize=maskImage->getXDim()*maskImage->getYDim()*maskImage->getZDim();
-            for (V3DLONG p=0;p<maskChannelUnitSize;p++) {
-                if (maskData[p]>0) {
-                    indexData[p]=index;
-                    maskSizeCount++;
+
+            V3DLONG zmax=maskImage->getZDim();
+            V3DLONG ymax=maskImage->getYDim();
+            V3DLONG xmax=maskImage->getXDim();
+
+            for (V3DLONG z=0;z<zmax;z++) {
+                V3DLONG zoffset=z*xmax*ymax;
+                for (V3DLONG y=0;y<ymax;y++) {
+                    V3DLONG yoffset=y*xmax+zoffset;
+                    V3DLONG invertedYOffset=(ymax-1-y)*xmax+zoffset;
+                    for (V3DLONG x=0;x<xmax;x++) {
+                        V3DLONG offset=x+yoffset;
+                        V3DLONG invertedOffset=x+invertedYOffset;
+                        if (maskData[offset]>0) {
+                            if (flipYWhenLoadingMasks) {
+                                indexData[invertedOffset]=index;
+                            } else {
+                                indexData[offset]=index;
+                            }
+                            maskSizeCount++;
+                        }
+                    }
                 }
             }
+
             qDebug() << "Found mask of size=" << maskSizeCount;
             delete maskImage;
         }
@@ -207,7 +226,8 @@ My4DImage * ScreenPatternAnnotator::cubifyImage(My4DImage * sourceImage, int cub
     My4DImage * cubeImage=new My4DImage();
     cubeImage->loadImage(c_xmax, c_ymax, c_zmax, s_cmax, V3D_UINT8);
 
-    for (V3DLONG c=0;c<s_xmax;c++) {
+    V3DLONG sSize=sourceImage->getTotalUnitNumberPerChannel();
+    for (V3DLONG c=0;c<s_cmax;c++) {
         v3d_uint8 * cData=cubeImage->getRawDataAtChannel(c);
         v3d_uint8 * sData=sourceImage->getRawDataAtChannel(c);
         for (V3DLONG z=0;z<c_zmax;z++) {
@@ -216,20 +236,21 @@ My4DImage * ScreenPatternAnnotator::cubifyImage(My4DImage * sourceImage, int cub
                 V3DLONG yOffset=y*c_xmax + zOffset;
                 for (V3DLONG x=0;x<c_xmax;x++) {
                     V3DLONG offset=x+yOffset;
-                    V3DLONG cubeData[cubeSize*cubeSize];
+                    V3DLONG cubeData[cubeSize*cubeSize*cubeSize];
                     V3DLONG zStart=z*cubeSize;
-                    V3DLONG zEnd=zStart+cubeSize<s_zmax?zStart+cubeSize:s_zmax;
+                    V3DLONG zEnd=(zStart+cubeSize<s_zmax?(zStart+cubeSize):s_zmax);
                     V3DLONG yStart=y*cubeSize;
-                    V3DLONG yEnd=yStart+cubeSize<s_ymax?yStart+cubeSize:s_ymax;
+                    V3DLONG yEnd=(yStart+cubeSize<s_ymax?(yStart+cubeSize):s_ymax);
                     V3DLONG xStart=x*cubeSize;
-                    V3DLONG xEnd=xStart+cubeSize<s_xmax?xStart+cubeSize:s_xmax;
+                    V3DLONG xEnd=(xStart+cubeSize<s_xmax?(xStart+cubeSize):s_xmax);
                     V3DLONG cubeDataPosition=0;
                     for (V3DLONG z=zStart;z<zEnd;z++) {
                         V3DLONG s_zOffset=z*s_xmax*s_ymax;
                         for (V3DLONG y=yStart;y<yEnd;y++) {
                             V3DLONG s_yOffset=y*s_xmax + s_zOffset;
                             for (V3DLONG x=xStart;x<xEnd;x++) {
-                                cubeData[cubeDataPosition++]=sData[x+s_yOffset];
+                                V3DLONG sPosition=x+s_yOffset;
+                                cubeData[cubeDataPosition++]=sData[sPosition];
                             }
                         }
                     }
@@ -275,7 +296,25 @@ bool ScreenPatternAnnotator::annotate() {
         qDebug() << "ScreenPatternGenerator currently only supports 8-bit input data";
         return false;
     }
+    qDebug() << "Cubifying inputImage";
     inputImageCubified=cubifyImage(inputImage, CUBE_SIZE, CUBIFY_TYPE_AVERAGE);
+    qDebug() << "Done";
+
+
+
+
+    ImageLoader imageLoaderForTest;
+    QString filepathToTestInputCubify(returnFullPathWithOutputPrefix("inputImageCubified.v3dpbd"));
+    qDebug() << "Saving inputImage cubified to file=" << filepathToTestInputCubify;
+    bool saveTestStatus=imageLoaderForTest.saveImage(inputImageCubified, filepathToTestInputCubify);
+    if (!saveTestStatus) {
+        qDebug() << "ScreenPatternAnnotator::execute() Error during save of inputImage cubify test file";
+        return false;
+    }
+
+
+
+
 
     // Compute Global 256-bin Histogram
     V3DLONG xSize=inputImage->getXDim();
@@ -318,6 +357,25 @@ bool ScreenPatternAnnotator::annotate() {
         qDebug() << "Could not load compartmentIndexImage from file=" << compartmentIndexImageFilepath;
         return false;
     }
+    qDebug() << "Cubifying compartmentIndexImage";
+    compartmentIndexImageCubified=cubifyImage(compartmentIndexImage, CUBE_SIZE, CUBIFY_TYPE_MODE);
+    qDebug() << "Done";
+
+
+
+
+    QString filepathToTestIndexCubify(returnFullPathWithOutputPrefix("indexCubified.v3dpbd"));
+    qDebug() << "Saving indexImage cubified to file=" << filepathToTestIndexCubify;
+    saveTestStatus=imageLoaderForTest.saveImage(compartmentIndexImageCubified, filepathToTestIndexCubify);
+    if (!saveTestStatus) {
+        qDebug() << "ScreenPatternAnnotator::execute() Error during save of index cubify test file";
+        return false;
+    }
+
+
+
+
+
 
     // Load Abbreviation Index Map
     compartmentIndexAbbreviationMap.clear();
@@ -832,6 +890,7 @@ QString ScreenPatternAnnotator::returnFullPathWithOutputPrefix(QString filename)
 
 int ScreenPatternAnnotator::processArgs(vector<char*> *argList)
 {
+    bool flipYSet=false;
     for (int i=0;i<argList->size();i++) {
         QString arg=(*argList)[i];
         bool done=false;
@@ -858,9 +917,21 @@ int ScreenPatternAnnotator::processArgs(vector<char*> *argList)
             outputResourceDirPath=(*argList)[++i];
         } else if (arg=="-resourceDir") {
             resourceDirectoryPath=(*argList)[++i];
+        } else if (arg=="-flipYWhenLoadingMasks") {
+            QString tf = (*argList)[++i];
+            if (tf=="true") {
+                flipYWhenLoadingMasks=true;
+                flipYSet=true;
+            } else if (tf=="false") {
+                flipYWhenLoadingMasks=false;
+                flipYSet=true;
+            } else {
+                qDebug() << "-flipYWhenLoadingMasks must be followed by true or false";
+                return 0;
+            }
         }
     }
-    if (topLevelCompartmentMaskDirPath.length()>0 && outputResourceDirPath.length()>0) {
+    if (topLevelCompartmentMaskDirPath.length()>0 && outputResourceDirPath.length()>0 && flipYSet) {
         mode=MODE_COMPARTMENT_INDEX;
     } else {
         if (inputStackFilepath.length()<1) {
