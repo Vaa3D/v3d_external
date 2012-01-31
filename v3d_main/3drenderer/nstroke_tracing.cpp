@@ -4,21 +4,23 @@
  * @brief n-right-strokes curve drawing (refine)
  * This curve drawing method performs as follows:
  *  1. The user first draws the primary curve using right-mouse moving. This drawing
- *     is based on the method used in solveCurveCenter()(modified version).
- *  2. The user then draws (by right-mouse moving) the modifying-curve. This modifying curve
- *     is also got based on the method used in solveCurveCenter(). This curve represents
- *      the position that part of the primary curve should be.
- *  3. The curve refinement is then performed to get the refined curve.
- *  4. This refine process can be performed n times on the primary curve.
- *  5. The curve can also be extended on both ends by drawing extensions close to both ends.
- *  6. Press "Esc" to exit the curve refinement operation.
+ *     is based on the method used in solveCurveLineInter() and line intersection.
+ *     The intersection between the line of last two locs and the viewing line.
  *
- * extend/refine nearest neuron segment:
- *  When right-clicking on/near an existing curve, a menu is popupped.
- *  A menu item of "extend/refine nearest neuron segment" is added to allow
- *  users edit existing curves using same operations as in "n-right-strokes
- *  curve drawing (refine)".
- *
+1) smCurveLineInter:
+(1) get the nearest line (pa,pb) between line (t-2,t-1) and (loc0,loc1), where
+ t-2, t-1 are last two loc of the traced curve, loc0,loc1 are (near,far) loc on
+ the viewing line;
+(2) get the mass center between (pa,pb) as the candidate loc by using function
+  getCenterOfLineProfile().
+2) smCurveInterCenter:
+(1) get the nearest line (pa,pb) between line (t-2,t-1) and (loc0,loc1). Set pb
+  as one of candidate loc values;
+(2) get the mass center between (loc0,loc1) as another candidate loc by using function
+  getCenterOfLineProfile();
+(3) compare signal (mean+std) difference of two candidate locs and last two traced locs.
+ the candidate loc with less difference is the loc we want.
+
  * @author: Jianlong Zhou
  * @date: Jan 24, 2012
  *
@@ -44,7 +46,7 @@
 
 #define EPS 0.01
 
-void Renderer_gl1::solveCurveTracing(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index)
+void Renderer_gl1::solveCurveLineInter(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index)
 {
 	bool b_use_seriespointclick = (loc_vec_input.size()>0) ? true : false;
      if (b_use_seriespointclick==false && list_listCurvePos.size()<1)  return;
@@ -62,9 +64,13 @@ void Renderer_gl1::solveCurveTracing(vector <XYZ> & loc_vec_input, vector <XYZ> 
 	int chno = checkCurChannel();
 	if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
 	////////////////////////////////////////////////////////////////////////
-	qDebug()<<"\n solveCurveTracing: 3d curve in channel # "<<((chno<0)? chno :chno+1);
+	qDebug()<<"\n solveCurveLineInter: 3d curve in channel # "<<((chno<0)? chno :chno+1);
 
 	loc_vec.clear();
+
+     // add intersection point into listMarker
+     listMarker.clear();
+     int totalm=0;//total intersection point
 
 	int N = loc_vec_input.size();
 	if (b_use_seriespointclick)
@@ -96,13 +102,14 @@ void Renderer_gl1::solveCurveTracing(vector <XYZ> & loc_vec_input, vector <XYZ> 
 			}
 			else
 			{
-				int last_j = loc_vec.size()-1;
-				int last_j2 = loc_vec.size()-2;
+                    int NL = loc_vec.size();
+				int last_j = NL-1;
+				int last_j2 = NL-2;
 				XYZ lastpos, lastpos2;
-				if (last_j>=0 && b_use_last_approximate) //091114 PHC make it more stable by conditioned on previous location
+                    if (last_j>=0 && b_use_last_approximate) //091114 PHC make it more stable by conditioned on previous location
 				{
 					lastpos = loc_vec.at(last_j);
-					if (dataViewProcBox.isInner(lastpos, 0.5))
+                         if (dataViewProcBox.isInner(lastpos, 0.5))
 					{
 						XYZ v_1_0 = loc1-loc0, v_0_last=loc0-lastpos;
 						XYZ nearestloc = loc0-v_1_0*dot(v_0_last, v_1_0)/dot(v_1_0, v_1_0); //since loc0!=loc1, this is safe
@@ -112,40 +119,77 @@ void Renderer_gl1::solveCurveTracing(vector <XYZ> & loc_vec_input, vector <XYZ> 
 						XYZ D = v_1_0; normalize(D);
 						loc0 = nearestloc - D*(ranget);
 						loc1 = nearestloc + D*(ranget);
-					}
-				}
+                         }
+                    }
 
 				//if(last_j<0) //first loc
 				//	loc = getLocUsingMassCenter(true, lastpos, loc0, loc1, clipplane, chno);
 				//else
 				//	loc = getLocUsingMassCenter(false, lastpos, loc0, loc1, clipplane, chno);
-				
-				
+
 				// determine loc based on intersection of vector (lastpos2, lastpos) and (loc0,loc1)
-				if (last_j2>=0) 
+				if (last_j2>=0)
 				{
 					XYZ pa, pb;
 					double mua, mub;
 					lastpos2 = loc_vec.at(last_j2);
-					lineLineIntersect(lastpos2, lastpos, loc0,loc1, &pa, &pb, &mua, &mub);
-					
-					// pb is the point nearest to line (lastpos2,lastpos), loc should be on the line of loc0-loc1
-					loc = pb;
-					
-					// to see whether this is the right loc by comparing mean+sdev
-					LocationSimple pt, lastpt;
-					getRgnPropertyAt(loc, pt);
-					getRgnPropertyAt(lastpos, lastpt);
-					
-					loc.x=pt.mcenter.x;
-					loc.y=pt.mcenter.y;
-					loc.z=pt.mcenter.z;
-					/*
-					if (abs((pt.ave+pt.sdev)-(lastpt.ave+lastpt.sdev))>EPS) 
-					{
-						
-					}*/
-					
+					bool res=lineLineIntersect(lastpos2, lastpos, loc0, loc1, &pa, &pb, &mua, &mub);
+                         if(!res)
+                         {
+                              //no closest pos
+                              qDebug()<<"No intersection checking resutls!";
+                              loc=getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+                         }else
+                         {
+                              // to see whether this is the right loc by comparing mean+sdev
+                              if(selectMode==smCurveInterCenter)
+                              {
+                                   XYZ locc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+                                   XYZ loci = pb;
+
+                                   // the last "numPoint"'s average signal info
+                                   int numPoint = 8;
+                                   double lastpt_sig_sum = 0.0;
+                                   int num = 0;
+                                   for(int ii=0; ii<numPoint; ii++ )
+                                   {
+                                        int ind = NL-i;
+                                        if(ind>=0)
+                                        {
+                                             XYZ tmploc = loc_vec.at(ind);
+                                             LocationSimple tmppt;
+                                             getRgnPropertyAt(tmploc, tmppt);
+                                             lastpt_sig_sum += tmppt.ave+tmppt.sdev;
+                                             num++; //number of sums
+                                        }else
+                                        {
+                                             break;
+                                        }
+                                   }
+
+                                   double lastpt_sig = lastpt_sig_sum/num; // image signal
+                                   LocationSimple ptc, pti;
+                                   getRgnPropertyAt(locc, ptc);
+                                   getRgnPropertyAt(loci, pti);
+                                   double ptc_sig = ptc.ave + ptc.sdev;
+                                   double pti_sig = pti.ave + pti.sdev;
+
+                                   if (fabs(lastpt_sig-ptc_sig) > fabs(lastpt_sig-pti_sig))
+                                   {
+                                        loc=loci;
+                                        addMarker(pb); // use marker to display intersection pt
+                                   }else
+                                   {
+                                        loc=locc;
+                                   }
+
+                              }else if(selectMode == smCurveLineInter)
+                              {
+                                   loc=pb; //getCenterOfLineProfile(pa, pb, 0, chno);//no clipping plane
+                              }
+                         }
+
+
 				} else // for first two locs
 				{
 					loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
@@ -224,7 +268,7 @@ void Renderer_gl1::solveCurveTracing(vector <XYZ> & loc_vec_input, vector <XYZ> 
 	if (b_use_seriespointclick==false)
 		smooth_curve(loc_vec, 5);
 #endif
-     if (b_addthiscurve && selectMode==smCurveTracing)
+     if (b_addthiscurve && (selectMode==smCurveInterCenter || selectMode == smCurveLineInter))
      {
           addCurveSWC(loc_vec, chno);
           // for curve connection
@@ -423,7 +467,7 @@ bool Renderer_gl1::lineLineIntersect( XYZ p1,XYZ p2,XYZ p3,XYZ p4,XYZ *pa,XYZ *p
 	XYZ p13,p43,p21;
 	double d1343,d4321,d1321,d4343,d2121;
 	double numer,denom;
-	
+
 	p13.x = p1.x - p3.x;
 	p13.y = p1.y - p3.y;
 	p13.z = p1.z - p3.z;
@@ -437,29 +481,28 @@ bool Renderer_gl1::lineLineIntersect( XYZ p1,XYZ p2,XYZ p3,XYZ p4,XYZ *pa,XYZ *p
 	p21.z = p2.z - p1.z;
 	if (abs(p21.x) < EPS && abs(p21.y) < EPS && abs(p21.z) < EPS)
 		return false;
-	
+
 	d1343 = p13.x * p43.x + p13.y * p43.y + p13.z * p43.z;
 	d4321 = p43.x * p21.x + p43.y * p21.y + p43.z * p21.z;
 	d1321 = p13.x * p21.x + p13.y * p21.y + p13.z * p21.z;
 	d4343 = p43.x * p43.x + p43.y * p43.y + p43.z * p43.z;
 	d2121 = p21.x * p21.x + p21.y * p21.y + p21.z * p21.z;
-	
+
 	denom = d2121 * d4343 - d4321 * d4321;
 	if (abs(denom) < EPS)
 		return false;
 	numer = d1343 * d4321 - d1321 * d4343;
-	
+
 	*mua = numer / denom;
 	*mub = (d1343 + d4321 * (*mua)) / d4343;
-	
+
 	pa->x = p1.x + *mua * p21.x;
 	pa->y = p1.y + *mua * p21.y;
 	pa->z = p1.z + *mua * p21.z;
 	pb->x = p3.x + *mub * p43.x;
 	pb->y = p3.y + *mub * p43.y;
 	pb->z = p3.z + *mub * p43.z;
-	
+
 	return true;
 }
-
 

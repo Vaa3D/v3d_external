@@ -212,7 +212,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*actCurveCreate1=0, *actCurveCreate2=0, *actCurveCreate3=0, *actCurveCreate_pointclick=0,
 			*actCurveCreate_zoom=0, *actMarkerCreate_zoom=0,
 
-               *actCurveRefine=0, *actCurveEditRefine=0, *actCurveRubberDrag=0,  *actCurveTracing=0, // ZJL 110905
+               *actCurveRefine=0, *actCurveEditRefine=0, *actCurveRubberDrag=0,  *actCurveInterCenter=0,
+          *actCurveLineInter=0,// ZJL 110905
 
 			*actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
 	        *actMarkerAblateOne_imaging=0, *actMarkerAblateAll_imaging=0,
@@ -303,6 +304,20 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                listAct.append(act = new QAction("", w)); act->setSeparator(true);
 
                listAct.append(actCurveRefine = new QAction("n-right-strokes to define a 3D curve (refine)", w));
+               actCurveRefine->setIcon(QIcon(":/icons/strokeN.svg"));
+			actCurveRefine->setVisible(true);
+			actCurveRefine->setIconVisibleInMenu(true);
+
+               listAct.append(actCurveInterCenter = new QAction("n-right-strokes to define a 3D curve by intersection and center", w));
+               actCurveInterCenter->setIcon(QIcon(":/icons/strokeN.svg"));
+			actCurveInterCenter->setVisible(true);
+			actCurveInterCenter->setIconVisibleInMenu(true);
+
+               listAct.append(actCurveLineInter = new QAction("n-right-strokes to define a 3D curve by line intersection", w));
+               actCurveLineInter->setIcon(QIcon(":/icons/strokeN.svg"));
+			actCurveLineInter->setVisible(true);
+			actCurveLineInter->setIconVisibleInMenu(true);
+
 
                // add these menus if click is close to a seg
                // V3DLONG segid, ind;
@@ -330,15 +345,6 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                //      bHasSegID = true;
                // // End of ZJL
                // }
-
-			actCurveRefine->setIcon(QIcon(":/icons/strokeN.svg"));
-			actCurveRefine->setVisible(true);
-			actCurveRefine->setIconVisibleInMenu(true);
-
-               listAct.append(actCurveTracing = new QAction("n-right-strokes to define a 3D curve by tracing", w));
-               actCurveTracing->setIcon(QIcon(":/icons/strokeN.svg"));
-			actCurveTracing->setVisible(true);
-			actCurveTracing->setIconVisibleInMenu(true);
 
 
 			//if (!(((iDrawExternalParameter*)_idep)->b_local)) //only enable the menu for global 3d viewer. as it seems there is a bug in the local 3d viewer. by PHC, 100821
@@ -743,12 +749,19 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		b_addthiscurve = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
-     else if (act == actCurveTracing) // 20120124 ZJL
+     else if (act == actCurveInterCenter) // 20120124 ZJL
 	{
-		selectMode = smCurveTracing;
+		selectMode = smCurveInterCenter;
 		b_addthiscurve = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
+     else if (act == actCurveLineInter) // 20120124 ZJL
+	{
+		selectMode = smCurveLineInter;
+		b_addthiscurve = true;
+		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+	}
+
 
 
 #define __create_marker__ // dummy, just for easy locating
@@ -1573,7 +1586,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	}
 
      // For curve refine, ZJL 110905
-     else if (selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine || selectMode == smCurveTracing)
+     else if (selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine || selectMode == smCurveInterCenter || selectMode == smCurveLineInter)
      {
           _appendMarkerPos(x,y);
           if (b_move)
@@ -1598,12 +1611,12 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     solveCurveCenterV2(loc_vec_input, loc_vec0, 0);
                     selectMode = smCurveRefineLast; // switch to smCurveRefineLast
                }
-               else if(selectMode == smCurveTracing)
+               else if(selectMode == smCurveInterCenter || selectMode == smCurveLineInter)
                {
                     vector <XYZ> loc_vec_input;
                     vector <XYZ> loc_vec0;
                     loc_vec0.clear();
-                    solveCurveTracing(loc_vec_input, loc_vec0, 0);
+                    solveCurveLineInter(loc_vec_input, loc_vec0, 0);
                     selectMode = smCurveRefineLast; // switch to smCurveRefineLast
                }
                else
@@ -1649,7 +1662,7 @@ int Renderer_gl1::hitPen(int x, int y)
 	if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 ||
           // for curve refinement, 110831 ZJL
           selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine ||
-          selectMode == smCurveTracing)
+          selectMode == smCurveInterCenter || selectMode == smCurveLineInter)
 	{
 		qDebug("\t track-start ( %i, %i ) to define Curve", x,y);
 

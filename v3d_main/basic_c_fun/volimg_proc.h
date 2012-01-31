@@ -42,6 +42,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "volimg_proc_declare.h"
 
 #include <math.h>
+#include <stdio.h>
 
 //the actual definitions are below
 

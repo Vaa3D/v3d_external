@@ -65,9 +65,9 @@ void Renderer_gl1::solveCurveRefineLast()
      loc_vec_input.clear();
 
      // get the ith curve center
-     if(selectMode==smCurveTracing)
+     if(selectMode==smCurveInterCenter || selectMode == smCurveLineInter)
      {
-          solveCurveTracing(loc_vec_input, loc_veci, 0);
+          solveCurveLineInter(loc_vec_input, loc_veci, 0);
      }else
      {
           solveCurveCenterV2(loc_vec_input, loc_veci, 0);
