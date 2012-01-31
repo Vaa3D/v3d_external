@@ -498,6 +498,15 @@ void AnnotationWidget::annotateSelectedEntityWithOntologyTerm(const Entity *term
 
     if (selectedEntity == NULL) return; // Nothing to annotate
     if (termType == "Category" || termType == "Enum") return; // Cannot use these types to annotate
+
+
+    if (termType == "EnumText") {
+        // TODO: support this in the future by reimplementing the Console's logic here
+        QString msg = QString("Annotation with terms of type 'Enumeration Text' is not currently supported by this tool. Please use the FlyWorkstation Console to perform this annotation.");
+        showErrorDialog(msg);
+        return;
+    }
+
     if (*selectedEntity->entityType == "Annotation") return; // Cannot annotate annotations
 
     qDebug() << "Annotate"<<(selectedEntity==0?"":*selectedEntity->name)<<"with"<<(term == NULL ? "NULL" : *term->name) << "id="<< *term->id<< "type="<<termType;
