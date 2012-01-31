@@ -13,6 +13,7 @@ const int CUBE_SIZE = 5;
 
 const int CUBIFY_TYPE_AVERAGE=1;
 const int CUBIFY_TYPE_MODE=2;
+const int LOWER_ZONE_THRESHOLD=31;
 
 ScreenPatternAnnotator::ScreenPatternAnnotator()
 {
@@ -308,6 +309,60 @@ bool ScreenPatternAnnotator::annotate() {
     global256BinHistogram.compute(inputImage->getRawData() + channelSize*patternChannelIndex ,channelSize);
     V3DLONG* global256BinHistogramArray=global256BinHistogram.getHistogram();
 
+    // Compute Zone Thresholds using Histogram
+    zoneThresholds[0]=LOWER_ZONE_THRESHOLD; // hard-coded
+    V3DLONG total=0;
+    V3DLONG weight=0;
+    for (int h=(LOWER_ZONE_THRESHOLD+1);h<256;h++) {
+        total+=global256BinHistogramArray[h];
+        weight+=h*global256BinHistogramArray[h];
+    }
+    V3DLONG As = weight/total;
+    V3DLONG A1 = (As-LOWER_ZONE_THRESHOLD)/2+LOWER_ZONE_THRESHOLD;
+    total=0;
+    weight=0;
+    for (int h=As;h<256;h++) {
+        total+=global256BinHistogramArray[h];
+        weight+=h*global256BinHistogramArray[h];
+    }
+    V3DLONG A2 = weight/total;
+    qDebug() << "As=" << As << " A1=" << A1 << " A2=" << A2;
+    zoneThresholds[1]=A1;
+    zoneThresholds[2]=As;
+    zoneThresholds[3]=A2;
+    for (int t=0;t<4;t++) {
+        quantifierList.append(QString("Global.t%1=%2").arg(t).arg(zoneThresholds[t]));
+    }
+
+    // Compute Global Quantifiers
+    V3DLONG zt[5];
+    for (int g=0;g<5;g++) {
+        zt[g]=0;
+    }
+    v3d_uint8 * pData=inputImage->getRawDataAtChannel(patternChannelIndex);
+    V3DLONG totalVoxels=0;
+    for (V3DLONG p=0;p<inputImage->getTotalUnitNumberPerChannel();p++) {
+        v3d_uint8 v=pData[p];
+        totalVoxels++;
+        if (v<=zoneThresholds[0]) {
+            zt[0]++;
+        } else if (v<=zoneThresholds[1]) {
+            zt[1]++;
+        } else if (v<=zoneThresholds[2]) {
+            zt[2]++;
+        } else if (v<=zoneThresholds[3]) {
+            zt[3]++;
+        } else {
+            zt[4]++;
+        }
+    }
+    // Normalize
+    for (int g=0;g<5;g++) {
+        globalZoneLevels[g]=(zt[g]*1.0)/(1.0*totalVoxels);
+        QString gLine=QString("Global.z%1=%2").arg(g).arg(globalZoneLevels[g]);
+        quantifierList.append(gLine);
+    }
+
     // Create Output Directory
     if (!QFileInfo(outputDirectoryPath).isDir()) {
         QDir().mkpath(outputDirectoryPath);
@@ -372,6 +427,20 @@ bool ScreenPatternAnnotator::annotate() {
         QString abbreviation=compartmentIndexAbbreviationMap[index];
         createCompartmentAnnotation(index, abbreviation);
     }
+
+    // Write out Quantifier File
+    QString quantifierFilePath(returnFullPathWithOutputPrefix("quantifiers.txt"));
+    QFile quantifierFile(quantifierFilePath);
+    if (!quantifierFile.open(QIODevice::WriteOnly)) {
+        qDebug() << "Could not open file=" << quantifierFilePath;
+        return false;
+    }
+    QTextStream quantifierOutputStream(&quantifierFile);
+    for (int q=0;q<quantifierList.size();q++) {
+        quantifierOutputStream << quantifierList.at(q) << "\n";
+    }
+    quantifierOutputStream.flush();
+    quantifierFile.close();
 
     return true;
 }
@@ -494,6 +563,24 @@ void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbr
     delete viewableNormalizedCompartmentMIP;
     delete normalizedCompartmentHeatmapFullSize;
 
+    double * compartmentZoneFractions = quantifyCompartmentZones(inputImage, compartmentIndexImage, index, bb);
+    for (int g=0;g<5;g++) {
+        QString gLine=QString("%1.z%2=%3").arg(abbreviation).arg(g).arg(compartmentZoneFractions[g]);
+        quantifierList.append(gLine);
+    }
+
+    SPA_BoundingBox cubeBB;
+    cubeBB.x0 = bb.x0/CUBE_SIZE;
+    cubeBB.x1 = bb.x1/CUBE_SIZE;
+    cubeBB.y0 = bb.y0/CUBE_SIZE;
+    cubeBB.y1 = bb.y1/CUBE_SIZE;
+    cubeBB.z0 = bb.z0/CUBE_SIZE;
+    cubeBB.z1 = bb.z1/CUBE_SIZE;
+    double * compartmentCubeZoneFractions = quantifyCompartmentZones(inputImageCubified, compartmentIndexImageCubified, index, cubeBB);
+    for (int g=0;g<5;g++) {
+        QString gLine=QString("%1.c%2=%3").arg(abbreviation).arg(g).arg(compartmentCubeZoneFractions[g]);
+        quantifierList.append(gLine);
+    }
 
     // Cleanup
     delete compartmentHeatmap;
@@ -502,6 +589,54 @@ void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbr
     delete compartmentNormalizedImage;
     delete normalizedCompartmentHeatmap;
     delete normalizedCompartmentHeatmapMIP;
+    delete [] compartmentZoneFractions;
+    delete [] compartmentCubeZoneFractions;
+}
+
+double * ScreenPatternAnnotator::quantifyCompartmentZones(My4DImage * sourceImage, My4DImage * compartmentIndex, int index, SPA_BoundingBox bb) {
+
+    V3DLONG cz[5];
+    for (int z=0;z<5;z++) {
+        cz[z]=0;
+    }
+    v3d_uint8 * pData=sourceImage->getRawDataAtChannel(patternChannelIndex);
+    v3d_uint8 * iData=compartmentIndex->getRawData();
+    V3DLONG zmax=sourceImage->getZDim();
+    V3DLONG ymax=sourceImage->getYDim();
+    V3DLONG xmax=sourceImage->getXDim();
+    V3DLONG compartmentVoxelCount=0;
+    for (V3DLONG z=bb.z0;z<=bb.z1;z++) {
+        V3DLONG zoffset=z*ymax*xmax;
+        for (V3DLONG y=bb.y0;y<=bb.y1;y++) {
+            V3DLONG yoffset=y*xmax+zoffset;
+            for (V3DLONG x=bb.x0;x<=bb.x1;x++) {
+                V3DLONG offset=x+yoffset;
+                if (iData[offset]==index) {
+                    compartmentVoxelCount++;
+                    v3d_uint8 v=pData[offset];
+                    if (v<=zoneThresholds[0]) {
+                        cz[0]++;
+                    } else if (v<=zoneThresholds[1]) {
+                        cz[1]++;
+                    } else if (v<=zoneThresholds[2]) {
+                        cz[2]++;
+                    } else if (v<=zoneThresholds[3]) {
+                        cz[3]++;
+                    } else {
+                        cz[4]++;
+                    }
+                }
+            }
+        }
+    }
+    double * compartmentZoneFractions = new double[5];
+    for (int z=0;z<5;z++) {
+        double c=cz[z];
+        double v=compartmentVoxelCount;
+        double r=c/v;
+        compartmentZoneFractions[z]=r;
+    }
+    return compartmentZoneFractions;
 }
 
 My4DImage * ScreenPatternAnnotator::createViewableImage(My4DImage * sourceImage, int borderSize) {

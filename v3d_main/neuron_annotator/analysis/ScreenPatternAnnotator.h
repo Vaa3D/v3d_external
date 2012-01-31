@@ -87,6 +87,9 @@ private:
     My4DImage * compartmentIndexImageCubified;
     QMap<int, QString> compartmentIndexAbbreviationMap;
     bool flipYWhenLoadingMasks;
+    v3d_uint8 zoneThresholds[4];
+    double globalZoneLevels[5];
+    QList<QString> quantifierList;
 
 
     QString returnFullPathWithOutputPrefix(QString filename);
@@ -102,6 +105,7 @@ private:
     My4DImage * getChannelSubImageFromMask(My4DImage * sourceImage, int sourceChannel, int index, SPA_BoundingBox bb, bool normalize, double normalizationCutoff /* 0.0-1.0 */);
     My4DImage * createViewableImage(My4DImage * sourceImage, int borderSize);
     My4DImage * cubifyImage(My4DImage * sourceImage, int cubeSize, int type);
+    double * quantifyCompartmentZones(My4DImage * sourceImage, My4DImage * compartmentIndex, int index, SPA_BoundingBox bb);
 
 };
 
