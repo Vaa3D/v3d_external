@@ -52,6 +52,9 @@ QVariant Icons::getOntologyIcon(Entity *entity)
     else if (termType=="EnumItem")
         return getIcon("page.png");
 
+    else if (termType=="EnumText")
+        return getIcon("page_go.png");
+
     return QVariant();
 }
 
