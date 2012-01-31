@@ -1910,12 +1910,12 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         {
             for(int i=0; i<sz_img1[3]; i++)
             {
-                if(c1[i]==3) ref1 = i;
+                if(c1[i]==3) {ref1 = i; break;}
             }
 
             for(int i=0; i<sz_img2[3]; i++)
             {
-                if(c2[i]==3) ref2 = i;
+                if(c2[i]==3) {ref2 = i; break;}
             }
         }
         else
@@ -2126,7 +2126,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
 
                     for(V3DLONG ci=0; ci<sz_img2[3]; ci++)
                     {
-                        if(c2[ci]==c) offset_c2 = ci*pagesz;
+                        if(c2[ci]==c) {offset_c2 = ci*pagesz; b_img1=false;}
                     }
                     
                     for (V3DLONG k=0; k<sz_img1[2]; k++)
@@ -2365,7 +2365,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
 
                     for(V3DLONG ci=0; ci<sz_img2[3]; ci++)
                     {
-                        if(c2[ci]==c) offset_c2 = ci*pagesz;
+                        if(c2[ci]==c) {offset_c2 = ci*pagesz; b_img1=false;}
                     }
                     
                     for (V3DLONG k=0; k<sz_img1[2]; k++)
@@ -2606,7 +2606,7 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
 
                     for(V3DLONG ci=0; ci<sz_img2[3]; ci++)
                     {
-                        if(c2[ci]==c) offset_c2 = ci*pagesz;
+                        if(c2[ci]==c) {offset_c2 = ci*pagesz; b_img1=false;}
                     }
                     
                     for (V3DLONG k=0; k<sz_img1[2]; k++)
@@ -2629,11 +2629,11 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                                 
                                 if (b_img1)
                                 {
-                                    data1d[idx] = p1dImg1[offset_j1 + i];
+                                    data1d[idx] = ((float *)p1dImg1)[offset_j1 + i];
                                 }
                                 else
                                 {
-                                    data1d[idx] = p1dImg2[offset_j2 + i];
+                                    data1d[idx] = ((float *)p1dImg2)[offset_j2 + i];
                                 }
                             }
                         }
