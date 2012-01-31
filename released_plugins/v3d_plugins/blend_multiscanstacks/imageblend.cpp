@@ -389,7 +389,7 @@ bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *outpu
     // two images with the same size
     V3DLONG sx = szImg[0];
     V3DLONG sy = szImg[1];
-    V3DLONG sz = szImg[2]; 
+    V3DLONG sz = szImg[2];
     V3DLONG sc = szImg[3];
 
     V3DLONG pagesz_sub = sx*sy*sz;
@@ -400,248 +400,247 @@ bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *outpu
     V3DLONG tc = szImg[3];
 
     V3DLONG pagesz_tar = tx*ty*tz;
-    
+
     // anchor position
     REAL pos_score = 0;
-    V3DLONG pos_x = sx, pos_y = sy, pos_z = sz;
-    
+    V3DLONG pos_x = sx-1, pos_y = sy-1, pos_z = sz-1;
+    V3DLONG sx_ori = sx, sy_ori = sy, sz_ori = sz;
+
     V3DLONG *szPad = NULL;
     V3DLONG *szTar = NULL;
     V3DLONG *szSub = NULL;
     REAL *scale = NULL;
-    
-    try {
+
+    try
+    {
         szPad = new V3DLONG [3];
         szTar = new V3DLONG [3];
         szSub = new V3DLONG [3];
         scale = new REAL [3];
-    } 
-    catch (...) {
+    }
+    catch (...)
+    {
         cout<<"Fail to allocate memories."<<endl;
         return false;
     }
-    
+
     // initial offset
     V3DLONG offset[3];
     offset[0] = 0;
     offset[1] = 0;
     offset[2] = 0;
-    
+
     float overlap_percent = 0.1;
-    
+
     V3DLONG nbbx, nbby, nbbz;
-    
+
     scale[0] = 0.3;
     scale[1] = 0.3;
     scale[2] = 0.3;
-    
+
     nbbx = 1/scale[0] + 2;
     nbby = 1/scale[1] + 2;
     nbbz = 1/scale[2] + 2;
-    
+
     V3DLONG bsx = (offset[0]>0)?0:-offset[0];
     V3DLONG bsy = (offset[1]>0)?0:-offset[1];
     V3DLONG bsz = (offset[2]>0)?0:-offset[2];
-    
+
     if(bsx-nbbx>=0)
         bsx -= nbbx;
     else
         bsx = 0;
-    
+
     if(bsy-nbby>=0)
         bsy -= nbby;
     else
         bsy = 0;
-    
+
     if(bsz-nbbz>=0)
         bsz -= nbbz;
     else
         bsz = 0;
-    
+
     V3DLONG esx = (sx-1);
     V3DLONG esy = (sy-1);
     V3DLONG esz = (sz-1);
-    
+
     if(offset[0])
     {
         V3DLONG tmp = sx-1 + offset[0] - (tx-1);
-        
+
         if(tmp>0)
             esx = sx-1 -tmp;
     }
-    
+
     if(offset[1])
     {
         V3DLONG tmp = offset[1]+sy-1 - (ty-1);
-        
+
         if(tmp>0)
             esy = sy-1 - tmp;
     }
-    
+
     if(offset[2])
     {
         V3DLONG tmp = offset[2]+sz-1 - (tz-1);
-        
+
         if(tmp>0)
             esz = sz-1 -tmp;
     }
-    
+
     if(esx+nbbx<=sx-1)
         esx += nbbx;
     else
         esx = sx-1;
-    
+
     if(esy+nbby<=sy-1)
         esy += nbby;
     else
         esy = sy-1;
-    
+
     if(esz+nbbz<=sz-1)
         esz += nbbz;
     else
         esz = sz-1;
-    
+
     V3DLONG btx = (offset[0]>0)?offset[0]:0;
     V3DLONG bty = (offset[1]>0)?offset[1]:0;
     V3DLONG btz = (offset[2]>0)?offset[2]:0;
-    
+
     if(btx-nbbx>=0)
         btx -= nbbx;
     else
         btx = 0;
-    
+
     if(bty-nbby>=0)
         bty -= nbby;
     else
         bty = 0;
-    
+
     if(btz-nbbz>=0)
         btz -= nbbz;
     else
         btz = 0;
-    
+
     V3DLONG etx = (offset[0]>0)?(tx-1):pos_x;
     V3DLONG ety = (offset[1]>0)?(ty-1):pos_y;
     V3DLONG etz = (offset[2]>0)?(tz-1):pos_z;
-    
+
     if(offset[0]>0)
     {
         V3DLONG tmp = (tx-1) - (sx-1 + offset[0]);
-        
+
         if(tmp>0)
             etx = tx-1 - tmp;
     }
-    
+
     if(offset[1]>0)
     {
         V3DLONG tmp = (ty-1) - (sy-1 + offset[1]);
-        
+
         if(tmp>0)
             ety = ty-1 - tmp;
     }
-    
+
     if(offset[2]>0)
     {
         V3DLONG tmp = (tz-1) - (sz-1 + offset[2]);
-        
+
         if(tmp>0)
             etz = tz-1 - tmp;
     }
-    
+
     if(etx+nbbx<=tx-1)
         etx += nbbx;
     else
         etx = tx-1;
-    
+
     if(ety+nbby<=ty-1)
         ety += nbby;
     else
         ety = ty-1;
-    
+
     if(etz+nbbz<=tz-1)
         etz += nbbz;
     else
         etz = tz-1;
-    
-    V3DLONG bbsx = esx - bsx + 1; if(bbsx<0 || bbsx>sx) return -1; 
+
+    V3DLONG bbsx = esx - bsx + 1; if(bbsx<0 || bbsx>sx) return -1;
     V3DLONG bbsy = esy - bsy + 1; if(bbsy<0 || bbsy>sy) return -1;
     V3DLONG bbsz = esz - bsz + 1; if(bbsz<0 || bbsz>sz) return -1;
-    
-    V3DLONG bbtx = etx - btx + 1; if(bbtx<0 || bbtx>tx) return -1; 
+
+    V3DLONG bbtx = etx - btx + 1; if(bbtx<0 || bbtx>tx) return -1;
     V3DLONG bbty = ety - bty + 1; if(bbty<0 || bbty>ty) return -1;
     V3DLONG bbtz = etz - btz + 1; if(bbtz<0 || bbtz>tz) return -1;
-    
-    qDebug() << " testing ... boundary ... "<< bsx << bsy << bsz << esx << esy << esz << btx << bty << btz << etx << ety << etz;
-    qDebug() << " testing ... dims ... "<< bbsx << bbsy << bbsz << bbtx << bbty << bbtz;
-    qDebug() << "...";
-    
+
     float rate_x, rate_y, rate_z;
-    
-    rate_x = qMax( (float)bbsx/(float)sx, (float)bbtx/(float)tx); 
-    rate_y = qMax( (float)bbsy/(float)sy, (float)bbty/(float)ty); 
-    rate_z = qMax( (float)bbsz/(float)sz, (float)bbtz/(float)tz); 
-    
+
+    rate_x = qMax( (float)bbsx/(float)sx, (float)bbtx/(float)tx);
+    rate_y = qMax( (float)bbsy/(float)sy, (float)bbty/(float)ty);
+    rate_z = qMax( (float)bbsz/(float)sz, (float)bbtz/(float)tz);
+
     // crop options
     // planes
-    bool plane_yz=false, plane_xz=false, plane_xy=false; 
-    
-    if(rate_x < rate_y && rate_x < rate_z)
+    bool plane_yz=false, plane_xz=false, plane_xy=false;
+
+    if(rate_x <= rate_y && rate_x <= rate_z)
     {
         plane_yz = true;
-        
+
         bsy = 0; esy = sy-1;
         bbsy = sy;
-        
+
         bty = 0; ety = ty-1;
         bbty = ty;
-        
+
         bsz = 0; esz = sz-1;
         bbsz = sz;
-        
+
         btz = 0; etz = tz-1;
         bbtz = tz;
-        
+
     }
-    if(rate_y < rate_x && rate_y < rate_z)
+    else if(rate_y <= rate_x && rate_y <= rate_z)
     {
         plane_xz = true;
-        
+
         bsx = 0; esx = sx-1;
         bbsx = sx;
-        
+
         btx = 0; etx = tx-1;
         bbtx = tx;
-        
+
         bsz = 0; esz = sz-1;
         bbsz = sz;
-        
+
         btz = 0; etz = tz-1;
         bbtz = tz;
-        
+
     }
-    if(rate_z < rate_x && rate_z < rate_y)
+    else if(rate_z <= rate_x && rate_z <= rate_y)
     {
         plane_xy = true;
-        
+
         bsx = 0; esx = sx-1;
         bbsx = sx;
-        
+
         btx = 0; etx = tx-1;
         bbtx = tx;
-        
+
         bsy = 0; esy = sy-1;
         bbsy = sy;
-        
+
         bty = 0; ety = ty-1;
         bbty = ty;
-        
+
     }
-    
+
     //
-    qDebug() << "rate ..." << rate_x << rate_y << rate_z << "planes ..." << plane_yz << plane_xz << plane_xy;
+    qDebug() << " overlap ratio ..." << rate_x << rate_y << rate_z << "planes yz xz xy ..." << plane_yz << plane_xz << plane_xy;
     qDebug() << " current bounding box ... boundary ... "<< bsx << bsy << bsz << esx << esy << esz << btx << bty << btz << etx << ety << etz;
     qDebug() << " current bounding box ... dims ... "<< bbsx << bbsy << bbsz << bbtx << bbty << bbtz;
-    
+
     //
     REAL sum=0;
     for(V3DLONG k=bsz; k<=esz; k++)
@@ -653,20 +652,20 @@ bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *outpu
             for(V3DLONG i=bsx; i<=esx; i++)
             {
                 V3DLONG idx_o = offset_o_j + i;
-                
+
                 sum += p1dImg1[idx_o];
             }
         }
     }
     Tdata meanv = (Tdata) (sum/(bbsx*bbsy*bbsz));
-    
+
     // extract thick planes boundary bounding box
     //---------------------------------------------------------------------------------------------------------------
     if(plane_yz == true)
     {
-        // finding rich information plane from sub aV3DLONG x
+        // finding rich information plane from sub along x
         V3DLONG info_count=0, xpln=0, max_info=0;
-        
+
         // approach 1
         V3DLONG weights = bbsx*0.15;
         weights /= 2;
@@ -674,66 +673,66 @@ bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *outpu
         for(V3DLONG i=start_x; i<=end_x; i++) //
         {
             info_count = 0;
-            
+
             for(V3DLONG k=bsz; k<=esz; k++)
             {
                 V3DLONG offset_o_k = k*sx*sy;
                 for(V3DLONG j=bsy; j<=esy; j++)
                 {
                     V3DLONG idx_o = offset_o_k + j*sx + i;
-                    
+
                     if( p1dImg1[idx_o] > meanv)
                         info_count++;
                 }
             }
-            
+
             if(info_count > max_info)
             {
                 max_info = info_count;
                 xpln = i;
             }
-            
+
         }
-        
+
         if(xpln<start_x) xpln = start_x;
-        
+
         qDebug() << "xpln ..." << xpln;
-        
+
         // extraction
         V3DLONG b_bsx = xpln - weights; //
-        
+
         if(b_bsx>bsx)
             bsx = b_bsx;
-        
+
         V3DLONG e_esx = xpln + weights;
-        
+
         if(e_esx<esx)
             esx = e_esx;
-        
+
         bbsx = esx-bsx+1; // dims
-        
+
         // crop corresponding thick planes from tar image
         V3DLONG b_btx = bsx + offset[0] - nbbx;
-        
+
         if(b_btx>btx)
             btx = b_btx;
-        
+
         V3DLONG e_etx = esx + offset[0] + nbbx;
-        
+
         if(e_etx<etx)
             etx = e_etx;
-        
+
         bbtx = etx-btx+1;
-        
+
         qDebug() << " updated boundary ... "<< bsx << bsy << bsz << esx << esy << esz << btx << bty << btz << etx << ety << etz;
         qDebug() << " updated dims ... "<< bbsx << bbsy << bbsz << bbtx << bbty << bbtz;
-        
+
         V3DLONG pagesz_bb_sub = bbsx*bbsy*bbsz;
         V3DLONG pagesz_bb_tar = bbtx*bbty*bbtz;
-        
+
         // extract one plane from sub
         Tdata* p_sub = new Tdata [pagesz_bb_sub];
-        if (!p_sub) 
+        if (!p_sub)
         {
             printf("Fail to allocate memory.\n");
             return -1;
@@ -752,21 +751,20 @@ bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *outpu
                     {
                         V3DLONG idx = offset_j + (i-bsx);
                         V3DLONG idx_o = offset_o_j + i;
-                        
+
                         p_sub[idx] = p1dImg1[idx_o];
                     }
                 }
             }
         }
-        
+
         Tdata* p_tar = new Tdata [pagesz_bb_tar];
-        if (!p_tar) 
+        if (!p_tar)
         {
             printf("Fail to allocate memory.\n");
             return -1;
         }
-        
-        
+
         //REAL max_response = 0;
         // search the best match plane from tar
         for(V3DLONG k=btz; k<=etz; k++)
@@ -781,41 +779,41 @@ bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *outpu
                 {
                     V3DLONG idx = offset_j + (i-btx);
                     V3DLONG idx_o = offset_o_j + i;
-                    
+
                     p_tar[idx] = p1dImg2[idx_o];
                 }
             }
         }
-        
+
         //
         sx = bbsx; sy = bbsy; sz = bbsz;
         tx = bbtx; ty = bbty; tz = bbtz;
-        
-        V3DLONG sx_pad = sx+tx-1, sy_pad = sy+ty-1, sz_pad = sz+tz-1; 
-        
+
+        V3DLONG sx_pad = sx+tx-1, sy_pad = sy+ty-1, sz_pad = sz+tz-1;
+
         V3DLONG even_odd = sx_pad%2; // 0 for even 1 for odd
-        
+
         bool fftw_in_place = true;
-        
+
         if(fftw_in_place)
             sx_pad += (2-even_odd); //2*(sx_pad/2 + 1); // fftw_in_place
-        
+
         V3DLONG len_pad = sx_pad*sy_pad*sz_pad;
-        
+
         szPad[0] = sx_pad;
         szPad[1] = sy_pad;
         szPad[2] = sz_pad;
-        
+
         szTar[0] = tx;
         szTar[1] = ty;
         szTar[2] = tz;
-        
+
         szSub[0] = sx;
         szSub[1] = sy;
         szSub[2] = sz;
-        
+
         REAL* p_f_sub = new REAL [len_pad];
-        if (!p_f_sub) 
+        if (!p_f_sub)
         {
             printf("Fail to allocate memory.\n");
             return -1;
@@ -824,19 +822,18 @@ bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *outpu
         {
             // init
             memset(p_f_sub, 0, sizeof(REAL)*len_pad);
-            
-            //padding zeros for target imag
+
+            //padding zeros for subject image
             Y_IMG_REAL pOut(p_f_sub, szPad);
             Y_IMG_DATATYPE pIn(p_sub, szSub);
-            
+
             YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_DATATYPE> tmp;
             tmp.padding(pOut, pIn, true, fftw_in_place, even_odd, 3);
-            //tmp.padding_mirror_3D(pOut, pIn, true, fftw_in_place, even_odd);
-            
+
         }
-        
+
         REAL* p_f_tar = new REAL [len_pad];
-        if (!p_f_tar) 
+        if (!p_f_tar)
         {
             printf("Fail to allocate memory.\n");
             return -1;
@@ -845,59 +842,60 @@ bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *outpu
         {
             // init
             memset(p_f_tar, 0, sizeof(REAL)*len_pad);
-            
-            //padding zeros for target imag
+
+            //padding zeros for target image
             Y_IMG_REAL pOut(p_f_tar, szPad);
             Y_IMG_DATATYPE pIn(p_tar, szTar);
-            
+
             YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_DATATYPE> tmp;
             tmp.padding(pOut, pIn, false, fftw_in_place, even_odd, 3);
-            //tmp.padding_mirror_3D(pOut, pIn, false, fftw_in_place, even_odd);
-            
+
         }
-        
+
         //de-alloc
         if(p_sub) {delete []p_sub; p_sub=0;}
         if(p_tar) {delete []p_tar; p_tar=0;}
-        
-        
+
         // fft-ncc
         PEAKS pos_pcncc;
-        
-        pos_pcncc.x = (bsx - ((sx-1) - pos_x)) - btx + (bbsx-1);
+
+        pos_pcncc.x = (bsx - ((sx_ori-1) - pos_x)) - btx + (bbsx-1);
         pos_pcncc.y = pos_y;
         pos_pcncc.z = pos_z;
-        
+
+        qDebug()<<" init translations ... "<<pos_pcncc.x<<pos_pcncc.y<<pos_pcncc.z;
+
         Y_IMG_REAL pOut(p_f_sub, szPad);
         Y_IMG_REAL pIn(p_f_tar, szPad);
-        
+
         YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_REAL> tmp;
         tmp.fftnccp3D(pOut, pIn, szSub, szTar, even_odd, fftw_in_place, scale, &pos_pcncc); // consider +- 5 pixels offset
-        
+
         pos_score = pos_pcncc.value;
-        
-        qDebug() << " bb score ..." << pos_score << "offset ..." << bsx << btx << pos_pcncc.x << bbsx;
-        
-        pos_x = (sx-1) - (bsx - (btx + pos_pcncc.x - (bbsx-1))); pos_y = pos_pcncc.y; pos_z = pos_pcncc.z; //
-        
+
+        qDebug() << " bb cross correlation ..." << pos_score;
+        qDebug() << " estimated translations ... "<<pos_pcncc.x<<pos_pcncc.y<<pos_pcncc.z;
+
+        pos_x = (sx_ori-1) - (bsx - (btx + pos_pcncc.x - (bbsx-1))); pos_y = pos_pcncc.y; pos_z = pos_pcncc.z; //
+
         //de-alloc
         if(p_f_sub) {delete []p_f_sub; p_f_sub=0;}
         if(p_f_tar) {delete []p_f_tar; p_f_tar=0;}
-        
-        
+
+
     }
     else if(plane_xz == true)
     {
-        // finding rich information plane from sub aV3DLONG y
+        // finding rich information plane from sub along y
         V3DLONG info_count=0, ypln, max_info=0;
-        
+
         V3DLONG weights = bbsy*0.15;
         weights /= 2;
         V3DLONG start_y=bsy+weights+nbby, end_y=esy-weights-nbby;
-        for(V3DLONG j=start_y; j<=end_y; j++) // 
+        for(V3DLONG j=start_y; j<=end_y; j++) //
         {
             info_count = 0;
-            
+
             V3DLONG offset_o_j = j*sx;
             for(V3DLONG k=bsz; k<=esz; k++)
             {
@@ -905,57 +903,57 @@ bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *outpu
                 for(V3DLONG i=bsx; i<=esx; i++)
                 {
                     V3DLONG idx_o = offset_o_k + offset_o_j + i;
-                    
+
                     if( p1dImg1[idx_o] > meanv)
                         info_count++;
                 }
             }
-            
+
             if(info_count > max_info)
             {
                 max_info = info_count;
                 ypln = j;
             }
-            
+
         }
-        
+
         qDebug() << "plane ..." << ypln;
-        
+
         // extraction
         V3DLONG b_bsy = ypln - weights;
-        
+
         if(b_bsy>bsy)
             bsy = b_bsy;
-        
+
         V3DLONG e_esy = ypln + weights;
-        
+
         if(e_esy<esy)
             esy = e_esy;
-        
+
         bbsy = esy-bsy+1; // dims
-        
+
         // crop corresponding thick planes from tar image
         V3DLONG b_bty = bsy + offset[1] - nbby; //ypln + offset[1] - nbby;
-        
+
         if(b_bty>bty)
             bty = b_bty;
-        
+
         V3DLONG e_ety = esy + offset[1] + nbby; //ypln + offset[1] + nbby;
-        
+
         if(e_ety<ety)
             ety = e_ety;
-        
+
         bbty = ety-bty+1;
-        
+
         qDebug() << " updated boundary ... "<< bsx << bsy << bsz << esx << esy << esz << btx << bty << btz << etx << ety << etz;
         qDebug() << " updated dims ... "<< bbsx << bbsy << bbsz << bbtx << bbty << bbtz;
-        
+
         V3DLONG pagesz_bb_sub = bbsx*bbsy*bbsz;
         V3DLONG pagesz_bb_tar = bbtx*bbty*bbtz;
-        
+
         // extract one plane from sub
         Tdata* p_sub = new Tdata [pagesz_bb_sub];
-        if (!p_sub) 
+        if (!p_sub)
         {
             printf("Fail to allocate memory.\n");
             return -1;
@@ -974,21 +972,20 @@ bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *outpu
                     {
                         V3DLONG idx = offset_j + (i-bsx);
                         V3DLONG idx_o = offset_o_j + i;
-                        
+
                         p_sub[idx] = p1dImg1[idx_o];
                     }
                 }
             }
         }
-        
+
         Tdata* p_tar = new Tdata [pagesz_bb_tar];
-        if (!p_tar) 
+        if (!p_tar)
         {
             printf("Fail to allocate memory.\n");
             return -1;
         }
-        
-        
+
         //REAL max_response = 0;
         // search the best match plane from tar
         for(V3DLONG k=btz; k<=etz; k++)
@@ -1003,41 +1000,41 @@ bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *outpu
                 {
                     V3DLONG idx = offset_j + (i-btx);
                     V3DLONG idx_o = offset_o_j + i;
-                    
+
                     p_tar[idx] = p1dImg2[idx_o];
                 }
             }
         }
-        
+
         //
         sx = bbsx; sy = bbsy; sz = bbsz;
         tx = bbtx; ty = bbty; tz = bbtz;
-        
-        V3DLONG sx_pad = sx+tx-1, sy_pad = sy+ty-1, sz_pad = sz+tz-1; 
-        
+
+        V3DLONG sx_pad = sx+tx-1, sy_pad = sy+ty-1, sz_pad = sz+tz-1;
+
         V3DLONG even_odd = sx_pad%2; // 0 for even 1 for odd
-        
+
         bool fftw_in_place = true;
-        
+
         if(fftw_in_place)
             sx_pad += (2-even_odd); //2*(sx_pad/2 + 1); // fftw_in_place
-        
+
         V3DLONG len_pad = sx_pad*sy_pad*sz_pad;
-        
+
         szPad[0] = sx_pad;
         szPad[1] = sy_pad;
         szPad[2] = sz_pad;
-        
+
         szTar[0] = tx;
         szTar[1] = ty;
         szTar[2] = tz;
-        
+
         szSub[0] = sx;
         szSub[1] = sy;
         szSub[2] = sz;
-        
+
         REAL* p_f_sub = new REAL [len_pad];
-        if (!p_f_sub) 
+        if (!p_f_sub)
         {
             printf("Fail to allocate memory.\n");
             return -1;
@@ -1046,18 +1043,18 @@ bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *outpu
         {
             // init
             memset(p_f_sub, 0, sizeof(REAL)*len_pad);
-            
-            //padding zeros for target imag
+
+            //padding zeros for sub image
             Y_IMG_REAL pOut(p_f_sub, szPad);
             Y_IMG_DATATYPE pIn(p_sub, szSub);
-            
+
             YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_DATATYPE> tmp;
             tmp.padding(pOut, pIn, true, fftw_in_place, even_odd, 3);
-            
+
         }
-        
+
         REAL* p_f_tar = new REAL [len_pad];
-        if (!p_f_tar) 
+        if (!p_f_tar)
         {
             printf("Fail to allocate memory.\n");
             return -1;
@@ -1066,57 +1063,57 @@ bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *outpu
         {
             // init
             memset(p_f_tar, 0, sizeof(REAL)*len_pad);
-            
-            //padding zeros for target imag
+
+            //padding zeros for tar image
             Y_IMG_REAL pOut(p_f_tar, szPad);
             Y_IMG_DATATYPE pIn(p_tar, szTar);
-            
+
             YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_DATATYPE> tmp;
             tmp.padding(pOut, pIn, false, fftw_in_place, even_odd, 3);
-            
+
         }
-        
+
         //de-alloc
         if(p_sub) {delete []p_sub; p_sub=0;}
         if(p_tar) {delete []p_tar; p_tar=0;}
-        
-        
+
+
         // fft-ncc
         PEAKS pos_pcncc;
-        
+
         pos_pcncc.x = pos_x;
-        pos_pcncc.y =  (bsy - ((sy-1) - pos_y)) - bty + (bbsy-1);
+        pos_pcncc.y =  (bsy - ((sy_ori-1) - pos_y)) - bty + (bbsy-1);
         pos_pcncc.z = pos_z;
-        
+
         Y_IMG_REAL pOut(p_f_sub, szPad);
         Y_IMG_REAL pIn(p_f_tar, szPad);
-        
+
         YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_REAL> tmp;
         tmp.fftnccp3D(pOut, pIn, szSub, szTar, even_odd, fftw_in_place, scale, &pos_pcncc);
-        
+
         pos_score = pos_pcncc.value;
-        
-        qDebug() << " bb score ..." << pos_score << "offset ..." << bsy << bty << pos_pcncc.y << bbsy;
-        
-        pos_x = pos_pcncc.x; pos_y = (sy-1) - (bsy - (bty + pos_pcncc.y - (bbsy-1))); pos_z = pos_pcncc.z; //
-        
+
+        qDebug() << " bb normalized cross correlation ..." << pos_score;
+
+        pos_x = pos_pcncc.x; pos_y = (sy_ori-1) - (bsy - (bty + pos_pcncc.y - (bbsy-1))); pos_z = pos_pcncc.z; //
+
         //de-alloc
         if(p_f_sub) {delete []p_f_sub; p_f_sub=0;}
         if(p_f_tar) {delete []p_f_tar; p_f_tar=0;}
-        
+
     }
     else if(plane_xy == true)
     {
         // finding rich information plane from sub aV3DLONG z
         V3DLONG info_count=0, zpln, max_info=0;
-        
+
         V3DLONG weights = bbsz*0.15;
         weights /= 2;
         V3DLONG start_z=bsz+weights+nbbz, end_z=esz-weights-nbbz;
         for(V3DLONG k=start_z; k<=end_z; k++) //
         {
             info_count = 0;
-            
+
             V3DLONG offset_o_k = k*sx*sy;
             for(V3DLONG j=bsy; j<=esy; j++)
             {
@@ -1124,55 +1121,55 @@ bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *outpu
                 for(V3DLONG i=bsx; i<=esx; i++)
                 {
                     V3DLONG idx_o = offset_o_k + offset_o_j + i;
-                    
+
                     if( p1dImg1[idx_o] > meanv)
                         info_count++;
                 }
             }
-            
+
             if(info_count > max_info)
             {
                 max_info = info_count;
                 zpln = k;
             }
-            
+
         }
-        
+
         // extraction
         V3DLONG b_bsz = zpln - weights/2;
-        
+
         if(b_bsz>bsz)
             bsz = b_bsz;
-        
+
         V3DLONG e_esz = zpln + weights/2;
-        
+
         if(e_esz<esz)
             esz = e_esz;
-        
+
         bbsz = esz-bsz+1; // dims
-        
+
         // crop corresponding thick planes from tar image
         V3DLONG b_btz = bsz + offset[2] - nbbz;
-        
+
         if(b_btz>btz)
             btz = b_btz;
-        
+
         V3DLONG e_etz = esz + offset[2] + nbbz;
-        
+
         if(e_etz<etz)
             etz = e_etz;
-        
+
         bbtz = etz-btz+1;
-        
+
         qDebug() << " updated boundary ... "<< bsx << bsy << bsz << esx << esy << esz << btx << bty << btz << etx << ety << etz;
         qDebug() << " updated dims ... "<< bbsx << bbsy << bbsz << bbtx << bbty << bbtz;
-        
+
         V3DLONG pagesz_bb_sub = bbsx*bbsy*bbsz;
         V3DLONG pagesz_bb_tar = bbtx*bbty*bbtz;
-        
+
         // extract one plane from sub
         Tdata* p_sub = new Tdata [pagesz_bb_sub];
-        if (!p_sub) 
+        if (!p_sub)
         {
             printf("Fail to allocate memory.\n");
             return -1;
@@ -1191,21 +1188,20 @@ bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *outpu
                     {
                         V3DLONG idx = offset_j + (i-bsx);
                         V3DLONG idx_o = offset_o_j + i;
-                        
+
                         p_sub[idx] = p1dImg1[idx_o];
                     }
                 }
             }
         }
-        
+
         Tdata* p_tar = new Tdata [pagesz_bb_tar];
-        if (!p_tar) 
+        if (!p_tar)
         {
             printf("Fail to allocate memory.\n");
             return -1;
         }
-        
-        
+
         //REAL max_response = 0;
         // search the best match plane from tar
         for(V3DLONG k=btz; k<=etz; k++)
@@ -1220,41 +1216,41 @@ bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *outpu
                 {
                     V3DLONG idx = offset_j + (i-btx);
                     V3DLONG idx_o = offset_o_j + i;
-                    
+
                     p_tar[idx] = p1dImg2[idx_o];
                 }
             }
         }
-        
+
         //
         sx = bbsx; sy = bbsy; sz = bbsz;
         tx = bbtx; ty = bbty; tz = bbtz;
-        
-        V3DLONG sx_pad = sx+tx-1, sy_pad = sy+ty-1, sz_pad = sz+tz-1; 
-        
+
+        V3DLONG sx_pad = sx+tx-1, sy_pad = sy+ty-1, sz_pad = sz+tz-1;
+
         V3DLONG even_odd = sx_pad%2; // 0 for even 1 for odd
-        
+
         bool fftw_in_place = true;
-        
+
         if(fftw_in_place)
             sx_pad += (2-even_odd); //2*(sx_pad/2 + 1); // fftw_in_place
-        
+
         V3DLONG len_pad = sx_pad*sy_pad*sz_pad;
-        
+
         szPad[0] = sx_pad;
         szPad[1] = sy_pad;
         szPad[2] = sz_pad;
-        
+
         szTar[0] = tx;
         szTar[1] = ty;
         szTar[2] = tz;
-        
+
         szSub[0] = sx;
         szSub[1] = sy;
         szSub[2] = sz;
-        
+
         REAL* p_f_sub = new REAL [len_pad];
-        if (!p_f_sub) 
+        if (!p_f_sub)
         {
             printf("Fail to allocate memory.\n");
             return -1;
@@ -1263,18 +1259,18 @@ bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *outpu
         {
             // init
             memset(p_f_sub, 0, sizeof(REAL)*len_pad);
-            
-            //padding zeros for target imag
+
+            //padding zeros for sub image
             Y_IMG_REAL pOut(p_f_sub, szPad);
             Y_IMG_DATATYPE pIn(p_sub, szSub);
-            
+
             YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_DATATYPE> tmp;
             tmp.padding(pOut, pIn, true, fftw_in_place, even_odd, 3);
-            
+
         }
-        
+
         REAL* p_f_tar = new REAL [len_pad];
-        if (!p_f_tar) 
+        if (!p_f_tar)
         {
             printf("Fail to allocate memory.\n");
             return -1;
@@ -1283,56 +1279,56 @@ bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *outpu
         {
             // init
             memset(p_f_tar, 0, sizeof(REAL)*len_pad);
-            
-            //padding zeros for target imag
+
+            //padding zeros for tar image
             Y_IMG_REAL pOut(p_f_tar, szPad);
             Y_IMG_DATATYPE pIn(p_tar, szTar);
-            
+
             YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_DATATYPE> tmp;
             tmp.padding(pOut, pIn, false, fftw_in_place, even_odd, 3);
-            
+
         }
-        
+
         //de-alloc
         if(p_sub) {delete []p_sub; p_sub=0;}
         if(p_tar) {delete []p_tar; p_tar=0;}
-        
-        
+
+
         // fft-ncc
         PEAKS pos_pcncc;
-        
+
         pos_pcncc.x = pos_x;
         pos_pcncc.y = pos_y;
-        pos_pcncc.z = (bsz - ((sz-1) - pos_z)) - btz + (bbsz-1);
-        
+        pos_pcncc.z = (bsz - ((sz_ori-1) - pos_z)) - btz + (bbsz-1);
+
         Y_IMG_REAL pOut(p_f_sub, szPad);
         Y_IMG_REAL pIn(p_f_tar, szPad);
-        
+
         YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_REAL> tmp;
         tmp.fftnccp3D(pOut, pIn, szSub, szTar, even_odd, fftw_in_place, scale, &pos_pcncc);
-        
+
         pos_score = pos_pcncc.value;
-        
-        qDebug() << " bb score ..." << pos_score << "offset ..." << bsz << btz << pos_pcncc.z << bbsz;
-        
-        pos_x = pos_pcncc.x; pos_y = pos_pcncc.y; pos_z = (sz-1) - (bsz - (btz + pos_pcncc.z - (bbsz-1))); //
-        
+
+        qDebug() << " bb normalized cross correlation ..." << pos_score;
+
+        pos_x = pos_pcncc.x; pos_y = pos_pcncc.y; pos_z = (sz_ori-1) - (bsz - (btz + pos_pcncc.z - (bbsz-1))); //
+
         //de-alloc
         if(p_f_sub) {delete []p_f_sub; p_f_sub=0;}
-        if(p_f_tar) {delete []p_f_tar; p_f_tar=0;}	
+        if(p_f_tar) {delete []p_f_tar; p_f_tar=0;}
     }
-    
+
     //de-alloc
     if(szPad) {delete []szPad; szPad=0;}
     if(szSub) {delete []szSub; szSub=0;}
     if(szTar) {delete []szTar; szTar=0;}
     if(scale) {delete []scale; scale=0;}
-    
+
     // outputs
-    outputoffsets[0] = pos_x - sx + 1;
-    outputoffsets[1] = pos_y - sy + 1;
-    outputoffsets[2] = pos_z - sz + 1;
-    
+    outputoffsets[0] = pos_x - sx_ori + 1;
+    outputoffsets[1] = pos_y - sy_ori + 1;
+    outputoffsets[2] = pos_z - sz_ori + 1;
+
     return true;
 }
 
@@ -1341,39 +1337,39 @@ bool stitch_paired_images_with_refchan(Image4DSimple &p4DImage1, V3DLONG ref1, I
 {
     // stitching to obtain the translation offsets
     // image 1 will be translated to image 2
-    
+
     unsigned char* p1dImg1 = p4DImage1.getRawData();
     unsigned char* p1dImg2 = p4DImage2.getRawData();
-    
+
     V3DLONG *szImg = new V3DLONG [4];
-    
+
     szImg[0] = p4DImage1.getXDim();
     szImg[1] = p4DImage1.getYDim();
     szImg[2] = p4DImage1.getZDim();
     szImg[3] = p4DImage1.getCDim();
-    
+
     V3DLONG datatype_img = p4DImage1.getUnitBytes();
-    
+
     V3DLONG pagesz = szImg[0]*szImg[1]*szImg[2];
     V3DLONG totalplxs = datatype_img*pagesz*szImg[3];
-    
+
     V3DLONG offset1 = ref1*pagesz;
     V3DLONG offset2 = ref2*pagesz;
-    
+
     V3DLONG *offset=NULL;
     unsigned char* pTemImg = NULL;
-    
+
     try {
         offset = new V3DLONG [3];
         pTemImg = new unsigned char [totalplxs];
-        
+
         memset(pTemImg, 0, totalplxs); // init by 0
-    } 
+    }
     catch (...) {
         cout<<"Fail to allocate memory!"<<endl;
         return false;
     }
-    
+
     // align
     if(datatype_img == V3D_UINT8)
     {
@@ -1404,38 +1400,36 @@ bool stitch_paired_images_with_refchan(Image4DSimple &p4DImage1, V3DLONG ref1, I
         cout<<"The blender only support UINT8, UINT16 and FLOAT32 datatype"<<endl;
         return false;
     }
-    
+
     qDebug()<<"offset ..."<<offset[0]<<offset[1]<<offset[2];
-    
+
     // adjust image 1
     V3DLONG offset_tx, offset_ty, offset_tz, offset_sx, offset_sy, offset_sz;
 
-    //bug fixed. by Hanchuan Peng, 20110816. 
+    //
     if(offset[0]<0)
     {
-        offset_sx = 0; offset_tx = offset[0];
+        offset_sx = 0; offset_tx = -offset[0];
     }
     else
     {
-        offset_sx = -offset[0]; offset_tx = 0;
+        offset_sx = offset[0]; offset_tx = 0;
     }
-
     if(offset[1]<0)
     {
-        offset_sy = 0; offset_ty = offset[1];
+        offset_sy = 0; offset_ty = -offset[1];
     }
     else
     {
-        offset_sy = -offset[1]; offset_ty = 0;
+        offset_sy = offset[1]; offset_ty = 0;
     }
-
     if(offset[2]<0)
     {
-        offset_sz = 0; offset_tz = offset[2];
+        offset_sz = 0; offset_tz = -offset[2];
     }
     else
     {
-        offset_sz = -offset[2]; offset_tz = 0;
+        offset_sz = offset[2]; offset_tz = 0;
     }
 
     //
@@ -1450,28 +1444,44 @@ bool stitch_paired_images_with_refchan(Image4DSimple &p4DImage1, V3DLONG ref1, I
         for(V3DLONG k=k_start; k<sz_end; k++)
         {
             V3DLONG offset_k = offset_c + k*szImg[1]*szImg[0];
-            V3DLONG offset_k_t = offset_c + (k-k_start)*szImg[1]*szImg[0];
+
+            V3DLONG kk = k - k_start + offset_tz;
+            if(kk>=szImg[2]) break;
+
+            V3DLONG offset_k_t = offset_c + kk*szImg[1]*szImg[0];
+
             for(V3DLONG j=j_start; j<sy_end; j++)
             {
                 V3DLONG offset_j = offset_k + j*szImg[0];
-                V3DLONG offset_j_t = offset_k_t + (j-j_start)*szImg[0];
+
+                V3DLONG jj = j-j_start + offset_ty;
+                if(jj>=szImg[1]) break;
+
+                V3DLONG offset_j_t = offset_k_t + jj*szImg[0];
+
                 for(V3DLONG i=i_start; i<sx_end; i++)
                 {
+                    V3DLONG ii = i - i_start + offset_tx;
+                    if(ii>=szImg[0]) break;
+
+                    V3DLONG idx = offset_j + i;
+                    V3DLONG idx_t = offset_j_t + ii;
+
                     if(datatype_img == V3D_UINT8)
                     {
-                        pTemImg[offset_j_t + i - i_start] = p1dImg1[offset_j + i];
+                        pTemImg[idx] = p1dImg1[idx_t];
                     }
                     else if(datatype_img == V3D_UINT16)
                     {
                         unsigned short *p = (unsigned short *)pTemImg;
-                        
-                        p[offset_j_t + i - i_start] = ((unsigned short*)p1dImg1)[offset_j + i];
+
+                        p[idx] = ((unsigned short*)p1dImg1)[idx_t];
                     }
                     else if(datatype_img == V3D_FLOAT32)
                     {
                         float *p = (float *)pTemImg;
-                        
-                        p[offset_j_t + i - i_start] = ((float*)p1dImg1)[offset_j + i];
+
+                        p[idx] = ((float*)p1dImg1)[idx_t];
                     }
                     else
                     {
@@ -1483,20 +1493,19 @@ bool stitch_paired_images_with_refchan(Image4DSimple &p4DImage1, V3DLONG ref1, I
             }
         }
     }
-    
+
     for(V3DLONG i=0; i<totalplxs; i++)
     {
         p1dImg1[i] = pTemImg[i];
     }
-    
+
     // de-alloc
     if(pTemImg) {delete []pTemImg; pTemImg=NULL;}
     if(offset) {delete []offset; offset=NULL;}
-    
+
     //
     return true;
 }
-
 
 // func mutual information for pair images with the same size
 template <class Tdata>
