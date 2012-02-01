@@ -34,8 +34,18 @@ using namespace std;
 
 #define EMPTY 1
 
+#define SAMPLERATIO 0.3
+#define CUBEFACTOR 4
+
 //
 Q_EXPORT_PLUGIN2(blend_multiscanstacks, ImageBlendPlugin);
+
+//
+typedef struct
+{
+    REAL dx, dy, dz;
+    REAL coef;
+}TransStatistics;
 
 // color lut
 int getChannelNum(int r, int g, int b)
@@ -384,7 +394,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
 
 //
 template <class Tdata, class Y_IMG_DATATYPE>
-bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *outputoffsets)
+bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *&outputoffsets, REAL &coef)
 {
     // two images with the same size
     V3DLONG sx = szImg[0];
@@ -434,9 +444,9 @@ bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *outpu
 
     V3DLONG nbbx, nbby, nbbz;
 
-    scale[0] = 0.3;
-    scale[1] = 0.3;
-    scale[2] = 0.3;
+    scale[0] = SAMPLERATIO;
+    scale[1] = SAMPLERATIO;
+    scale[2] = SAMPLERATIO;
 
     nbbx = 1/scale[0] + 2;
     nbby = 1/scale[1] + 2;
@@ -1329,6 +1339,150 @@ bool ref_aligning(Tdata *p1dImg1, Tdata *p1dImg2, V3DLONG *szImg, V3DLONG *outpu
     outputoffsets[1] = pos_y - sy_ori + 1;
     outputoffsets[2] = pos_z - sz_ori + 1;
 
+    coef = pos_score;
+
+    //
+    return true;
+}
+
+//
+template <class Tdata, class Tidx, class Y_IMG_DATATYPE>
+bool transformations_detection(Tdata *p1dImg1, Tdata *p1dImg2, Tidx *szImg, int &transtype)
+{
+    /// transtype : 0 rigid; 1 non-rigid
+
+    // assume the dimensions same
+    Tidx sx = szImg[0];
+    Tidx sy = szImg[1];
+    Tidx sz = szImg[2];
+    Tidx sc = szImg[3];
+
+    // cubify
+    vector<TransStatistics> transList;
+
+    // block
+    Tidx cubesz_x = sx/CUBEFACTOR;
+    Tidx cubesz_y = sy/CUBEFACTOR;
+    Tidx cubesz_z = sz/CUBEFACTOR;
+
+    Tidx bx=cubesz_x;
+    Tidx by=cubesz_y;
+    Tidx bz=cubesz_z;
+    Tidx bc=sc; // =1 only the reference channel
+
+    Tidx szCube[4];
+    szCube[0] = bx;
+    szCube[1] = by;
+    szCube[2] = bz;
+    szCube[3] = bc;
+
+    Tidx offsetc = sx*sy*sz;
+    Tidx offsetz = sx*sy;
+    Tidx offsety = sx;
+
+    Tidx offsetc_block = bx*by*bz;
+    Tidx offsetz_block = bx*by;
+    Tidx offsety_block = bx;
+
+    //
+    Tidx xn = sx/bx;
+    Tidx yn = sy/by;
+    Tidx zn = sz/bz;
+
+    if( 2*(sx-xn*bx) > bx ) xn++;
+    if( 2*(sy-yn*by) > by ) yn++;
+    if( 2*(sz-zn*bz) > bz ) zn++;
+
+    //
+    Tdata *pCubeS=NULL, *pCubeT=NULL;
+    Tidx offset[3];
+    for (Tidx k=0; k<zn; k++)
+    {
+        for (Tidx j=0; j<yn; j++)
+        {
+            for (Tidx i=0; i<xn; i++)
+            {
+                // init
+                TransStatistics tranSta;
+
+                try
+                {
+                    y_new<Tdata, Tidx>(pCubeS, offsetc_block);
+                    y_new<Tdata, Tidx>(pCubeT, offsetc_block);
+
+                    memset(pCubeS, 0, sizeof(Tdata)*offsetc_block);
+                    memset(pCubeT, 0, sizeof(Tdata)*offsetc_block);
+                } catch (...) {
+                    cout<<"Fail to allocate memory for block!"<<endl;
+                    return false;
+                }
+
+                //
+                Tidx start_x = i*bx;
+                Tidx end_x = start_x + bx;
+
+                if(end_x>sx) end_x = sx;
+
+                Tidx start_y = j*by;
+                Tidx end_y = start_y + by;
+
+                if(end_y>sy) end_y = sy;
+
+                Tidx start_z = k*bz;
+                Tidx end_z = start_z + bz;
+
+                if(end_z>sz) end_z = sz;
+
+                //
+                if(end_x<start_x || end_y<start_y || end_z<start_z) continue;
+
+                //
+                for(Tidx kk=start_z; kk<end_z; kk++)
+                {
+                    Tidx offset_z_ori = kk*offsetz;
+                    Tidx offset_z_blk = (kk-start_z)*offsetz_block;
+
+                    for(Tidx jj=start_y; jj<end_y; jj++)
+                    {
+                        Tidx offset_y_ori = offset_z_ori + jj*offsety;
+                        Tidx offset_y_blk = offset_z_blk + (jj-start_y)*offsety_block;
+
+                        for(Tidx ii=start_x; ii<end_x; ii++)
+                        {
+                            Tidx offset_x_ori = offset_y_ori + ii;
+                            Tidx offset_x_blk = offset_y_blk + ii-start_x;
+
+                            pCubeS[offset_x_blk] = p1dImg1[offset_x_ori];
+                            pCubeT[offset_x_blk] = p1dImg2[offset_x_ori];
+                        }
+                    }
+                }
+
+                //
+                REAL coef;
+                ref_aligning<Tdata, Y_IMG_DATATYPE>(pCubeS, pCubeT, szCube, offset, coef);
+
+                tranSta.dx = offset[0];
+                tranSta.dy = offset[1];
+                tranSta.dz = offset[2];
+                tranSta.coef = coef;
+
+                transList.push_back(tranSta);
+
+                // de-alloc
+                y_del<Tdata>(pCubeS);
+                y_del<Tdata>(pCubeT);
+            }
+        }
+    }
+
+    //
+    for(Tidx i=0; i<transList.size(); i++)
+    {
+        qDebug()<<"i"<<i<<">>"<<transList.at(i).dx<<transList.at(i).dy<<transList.at(i).dz<<transList.at(i).coef;
+    }
+
+    //
     return true;
 }
 
@@ -1371,9 +1525,10 @@ bool stitch_paired_images_with_refchan(Image4DSimple &p4DImage1, V3DLONG ref1, I
     }
 
     // align
+    REAL coef;
     if(datatype_img == V3D_UINT8)
     {
-        if(!ref_aligning<unsigned char, Y_IMG_UINT8>((unsigned char*)p1dImg1+offset1, (unsigned char*)p1dImg2+offset2, szImg, offset))
+        if(!ref_aligning<unsigned char, Y_IMG_UINT8>((unsigned char*)p1dImg1+offset1, (unsigned char*)p1dImg2+offset2, szImg, offset, coef))
         {
             cout<<"Fail to align referece color channels."<<endl;
             return false;
@@ -1381,7 +1536,7 @@ bool stitch_paired_images_with_refchan(Image4DSimple &p4DImage1, V3DLONG ref1, I
     }
     else if(datatype_img == V3D_UINT16)
     {
-        if(!ref_aligning<unsigned short, Y_IMG_UINT16>((unsigned short*)(p1dImg1)+offset1, (unsigned short*)(p1dImg2)+offset2, szImg, offset))
+        if(!ref_aligning<unsigned short, Y_IMG_UINT16>((unsigned short*)(p1dImg1)+offset1, (unsigned short*)(p1dImg2)+offset2, szImg, offset, coef))
         {
             cout<<"Fail to align referece color channels."<<endl;
             return false;
@@ -1389,7 +1544,7 @@ bool stitch_paired_images_with_refchan(Image4DSimple &p4DImage1, V3DLONG ref1, I
     }
     else if(datatype_img == V3D_FLOAT32)
     {
-        if(!ref_aligning<REAL, Y_IMG_REAL>((REAL*)(p1dImg1)+offset1, (REAL*)(p1dImg2)+offset2, szImg, offset))
+        if(!ref_aligning<REAL, Y_IMG_REAL>((REAL*)(p1dImg1)+offset1, (REAL*)(p1dImg2)+offset2, szImg, offset, coef))
         {
             cout<<"Fail to align referece color channels."<<endl;
             return false;
