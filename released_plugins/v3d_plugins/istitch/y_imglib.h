@@ -4547,7 +4547,7 @@ template <class T1, class T2, class Y_IMG1, class Y_IMG2> void YImg<T1, T2, Y_IM
     T2 u_start = pos_x - nbbx; if(u_start<0) u_start = 0;
     T2 u_end = pos_x + nbbx; if(u_end>sx_pad_ori) u_end = sx_pad_ori;
 
-    qDebug()<< "bb... "<< nbbx << nbby << nbbz << w_start << w_end << v_start << v_end << u_start << u_end;
+    //qDebug()<< "bb... "<< nbbx << nbby << nbbz << w_start << w_end << v_start << v_end << u_start << u_end;
 
     // computing ncc
     T2 offset_z = sx_pad_ori*sy_pad;
