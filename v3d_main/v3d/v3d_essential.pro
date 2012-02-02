@@ -192,6 +192,8 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../3drenderer/gradients.h \
     ../3drenderer/hoverpoints.h \
     ../3drenderer/barFigureDialog.h \
+    ../3drenderer/heap.h \
+    ../3drenderer/fastmarching_linker.h \
 	../imaging/v3d_imaging.h \
 	../multithreadimageIO/v3d_multithreadimageIO.h \
     v3d_global_preference_dialog.h \

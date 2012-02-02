@@ -61,8 +61,16 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../neuron_tracing/neuron_tracing.h"
 
 #include "../imaging/v3d_imaging.h"
+#include "../basic_c_fun/v3d_curvetracepara.h"
+
+#include "fastmarching_linker.h"
 
 #endif //test_main_cpp
+
+
+#include "v3d_application.h"
+
+
 
 #define _IMAGING_MENU_
 
@@ -212,7 +220,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*actCurveCreate1=0, *actCurveCreate2=0, *actCurveCreate3=0, *actCurveCreate_pointclick=0,
 			*actCurveCreate_zoom=0, *actMarkerCreate_zoom=0,
 
-               *actCurveRefine=0, *actCurveEditRefine=0, *actCurveRubberDrag=0,  *actCurveInterCenter=0,
+               *actCurveRefine=0, *actCurveEditRefine=0, *actCurveRubberDrag=0,  *actCurveDirectionInter=0,
           *actCurveLineInter=0,// ZJL 110905
 
 			*actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
@@ -282,6 +290,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			actCurveCreate1->setVisible(true);
 			actCurveCreate1->setIconVisibleInMenu(true);
 
+               listAct.append(actCurveDirectionInter = new QAction("1-right-stroke to define a 3D curve by direction intersection", w));
+               actCurveDirectionInter->setIcon(QIcon(":/icons/stroke1.svg"));
+			actCurveDirectionInter->setVisible(true);
+			actCurveDirectionInter->setIconVisibleInMenu(true);
+
 			listAct.append(actCurveCreate2 = new QAction("2-right-strokes to define a 3D curve", w));
 
 			actCurveCreate2->setIcon(QIcon(":/icons/stroke2.svg"));
@@ -307,11 +320,6 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                actCurveRefine->setIcon(QIcon(":/icons/strokeN.svg"));
 			actCurveRefine->setVisible(true);
 			actCurveRefine->setIconVisibleInMenu(true);
-
-               listAct.append(actCurveInterCenter = new QAction("n-right-strokes to define a 3D curve by intersection and center", w));
-               actCurveInterCenter->setIcon(QIcon(":/icons/strokeN.svg"));
-			actCurveInterCenter->setVisible(true);
-			actCurveInterCenter->setIconVisibleInMenu(true);
 
                listAct.append(actCurveLineInter = new QAction("n-right-strokes to define a 3D curve by line intersection", w));
                actCurveLineInter->setIcon(QIcon(":/icons/strokeN.svg"));
@@ -749,9 +757,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		b_addthiscurve = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
-     else if (act == actCurveInterCenter) // 20120124 ZJL
+     else if (act == actCurveDirectionInter) // 20120124 ZJL
 	{
-		selectMode = smCurveInterCenter;
+		selectMode = smCurveDirectionInter;
 		b_addthiscurve = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
@@ -1586,7 +1594,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	}
 
      // For curve refine, ZJL 110905
-     else if (selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine || selectMode == smCurveInterCenter || selectMode == smCurveLineInter)
+     else if (selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine || selectMode == smCurveDirectionInter || selectMode == smCurveLineInter)
      {
           _appendMarkerPos(x,y);
           if (b_move)
@@ -1611,13 +1619,17 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     solveCurveCenterV2(loc_vec_input, loc_vec0, 0);
                     selectMode = smCurveRefineLast; // switch to smCurveRefineLast
                }
-               else if(selectMode == smCurveInterCenter || selectMode == smCurveLineInter)
+               else if(selectMode == smCurveDirectionInter || selectMode == smCurveLineInter)
                {
                     vector <XYZ> loc_vec_input;
                     vector <XYZ> loc_vec0;
                     loc_vec0.clear();
-                    solveCurveLineInter(loc_vec_input, loc_vec0, 0);
-                    selectMode = smCurveRefineLast; // switch to smCurveRefineLast
+                    solveCurveDirectionInter(loc_vec_input, loc_vec0, 0);
+
+                    // for comparison purpose
+                    //solveCurveCenter(loc_vec_input);
+
+                    //selectMode = smCurveRefineLast; // switch to smCurveRefineLast for refine mode
                }
                else
                     solveCurveRefineLast();
@@ -1662,7 +1674,7 @@ int Renderer_gl1::hitPen(int x, int y)
 	if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 ||
           // for curve refinement, 110831 ZJL
           selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine ||
-          selectMode == smCurveInterCenter || selectMode == smCurveLineInter)
+          selectMode == smCurveDirectionInter || selectMode == smCurveLineInter)
 	{
 		qDebug("\t track-start ( %i, %i ) to define Curve", x,y);
 
@@ -1687,7 +1699,8 @@ int Renderer_gl1::hitPen(int x, int y)
 		{
 			qDebug("\t click ( %i, %i ) for Markers to Curve", x,y);
 
-			solveMarkerCenter(); //////////
+               solveMarkerCenter();
+
 			cntCur3DCurveMarkers++;
 
 			listMarkerPos.clear();
@@ -2503,10 +2516,13 @@ void Renderer_gl1::solveCurveFromMarkers()
 
 #ifndef test_main_cpp
 	vector <XYZ> loc_vec_input;
+     loc_vec_input.clear();
 
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep); //by PHC, 090119
-	if (curImg)
+	My4DImage* curImg = 0;
+     if (w) curImg = v3dr_getImage4d(_idep); //by PHC, 090119
+
+     if (curImg)
 	{
 		curImg->update_3drenderer_neuron_view(w, this);
 		QList <LocationSimple> & listLoc = curImg->listLandmarks;
@@ -2526,14 +2542,150 @@ void Renderer_gl1::solveCurveFromMarkers()
 		}
 		updateLandmark();
 	}
+     // This is old method
+	// if (loc_vec_input.size()>0)
+	// {
+	// 	qDebug("now pass to solveCurveCenter for point-click-3d-curve");
+	// 	solveCurveCenter(loc_vec_input);
+	// }
 
-	if (loc_vec_input.size()>0)
+
+
+     // used to store final locs on the curve
+     vector <XYZ> loc_vec;
+     loc_vec.clear();
+
+     if (loc_vec_input.size()>0)
 	{
-		qDebug("now pass to solveCurveCenter for point-click-3d-curve");
-		solveCurveCenter(loc_vec_input);
-	}
+		qDebug("now get curve using fastmarching method");
+          // Using fast_marching method to get loc
+          for(int ii=0; ii<loc_vec_input.size()-1; ii++)
+          {
+               XYZ loc0=loc_vec_input.at(ii);
+               XYZ loc1=loc_vec_input.at(ii+1);
+
+               V3DLONG szx = curImg->getXDim();
+               V3DLONG szy = curImg->getYDim();
+               V3DLONG szz = curImg->getZDim();
+
+               MyMarker mloc0(loc0.x, loc0.y, loc0.z);
+               MyMarker mloc1(loc1.x, loc1.y, loc1.z);
+               unsigned char* pImg = curImg->getRawData();
+               vector<MyMarker*> outswc;
+               // call fastmarching
+               fastmarching_linker(mloc0, mloc1, pImg, outswc, szx, szy, szz);
+
+               loc_vec.push_back(loc0);
+
+               if(!outswc.empty())
+               {
+                    // the 1st loc in outswc is the last pos got in fm
+                    for(int j=outswc.size()-2; j>0; j-- )
+                    {
+                         XYZ loc;
+                         loc.x=outswc.at(j)->x;
+                         loc.y=outswc.at(j)->y;
+                         loc.z=outswc.at(j)->z;
+
+                         loc_vec.push_back(loc);
+                    }
+               }else
+               {
+                    loc_vec.push_back(loc1);
+               }
+
+          }
+
+
+          if(loc_vec.size()<1) return; // all points are outside the volume. ZJL 110913
+
+#ifndef test_main_cpp
+          // check if there is any existing neuron node is very close to the starting and ending points, if yes, then merge
+
+          MainWindow* V3Dmainwindow = 0;
+          V3Dmainwindow = v3dr_getV3Dmainwindow(_idep);
+
+          int N = loc_vec.size();
+          if (V3Dmainwindow && V3Dmainwindow->global_setting.b_3dcurve_autoconnecttips)
+          {
+               if (listNeuronTree.size()>0 && curEditingNeuron>0 && curEditingNeuron<=listNeuronTree.size())
+               {
+                    NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(curEditingNeuron-1)));
+                    if (p_tree)
+                    {
+                         V3DLONG n_id_start = findNearestNeuronNode_WinXY(list_listCurvePos.at(0).at(0).x, list_listCurvePos.at(0).at(0).y, p_tree);
+                         V3DLONG n_id_end = findNearestNeuronNode_WinXY(list_listCurvePos.at(0).at(N-1).x, list_listCurvePos.at(0).at(N-1).y, p_tree);
+                         qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
+
+                         double th_merge = 5;
+
+                         bool b_start_merged=false, b_end_merged=false;
+                         NeuronSWC cur_node;
+                         if (n_id_start>=0)
+                         {
+                              cur_node = p_tree->listNeuron.at(n_id_start);
+                              qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
+                              XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+                              if (dist_L2(cur_node_xyz, loc_vec.at(0))<th_merge)
+                              {
+                                   loc_vec.at(0) = cur_node_xyz;
+                                   b_start_merged = true;
+                                   qDebug()<<"force set the first point of this curve to the above neuron node as they are close.";
+                              }
+                         }
+                         if (n_id_end>=0)
+                         {
+                              cur_node = p_tree->listNeuron.at(n_id_end);
+                              qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
+                              XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+                              if (dist_L2(cur_node_xyz, loc_vec.at(N-1))<th_merge)
+                              {
+                                   loc_vec.at(N-1) = cur_node_xyz;
+                                   b_end_merged = true;
+                                   qDebug()<<"force set the last point of this curve to the above neuron node as they are close.";
+
+                              }
+                         }
+
+                         //a special operation is that if the end point is merged, but the start point is not merged,
+                         //then this segment is reversed direction to reflect the prior knowledge that a neuron normally grow out as branches
+                         if (b_start_merged==false && b_end_merged==true)
+                         {
+                              vector <XYZ> loc_vec_tmp = loc_vec;
+                              for (int i=0;i<N;i++)
+                                   loc_vec.at(i) = loc_vec_tmp.at(N-1-i);
+                         }
+                    }
+               }
+          }
+
+          //
+
+          //if (b_use_seriespointclick==false)
+          smooth_curve(loc_vec, 5);
+          ////////////////////////////////////////////////////////////////////////
+          int chno = checkCurChannel();
+          if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
+          ////////////////////////////////////////////////////////////////////////
+
+#endif
+          if (b_addthiscurve)
+          {
+               addCurveSWC(loc_vec, chno);
+          }
+          else //100821
+          {
+               b_addthiscurve = true; //in this case, always reset to default to draw curve to add to a swc instead of just  zoom
+               endSelectMode();
+          }
+
+     }
+
 #endif
 }
+
+
+
 
 #define __creat_marker___
 

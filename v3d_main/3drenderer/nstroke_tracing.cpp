@@ -13,7 +13,7 @@
  the viewing line;
 (2) get the mass center between (pa,pb) as the candidate loc by using function
   getCenterOfLineProfile().
-2) smCurveInterCenter:
+2) smCurveDirectionInter:
 (1) get the nearest line (pa,pb) between line (t-2,t-1) and (loc0,loc1). Set pb
   as one of candidate loc values;
 (2) get the mass center between (loc0,loc1) as another candidate loc by using function
@@ -44,9 +44,18 @@
 
 #endif //test_main_cpp
 
+#include "fastmarching_linker.h"
+
 #define EPS 0.01
 
-void Renderer_gl1::solveCurveLineInter(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index)
+#ifndef MIN
+#define MIN(a, b)  ( ((a)<(b))? (a) : (b) )
+#endif
+#ifndef MAX
+#define MAX(a, b)  ( ((a)>(b))? (a) : (b) )
+#endif
+
+void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index)
 {
 	bool b_use_seriespointclick = (loc_vec_input.size()>0) ? true : false;
      if (b_use_seriespointclick==false && list_listCurvePos.size()<1)  return;
@@ -122,11 +131,6 @@ void Renderer_gl1::solveCurveLineInter(vector <XYZ> & loc_vec_input, vector <XYZ
                          }
                     }
 
-				//if(last_j<0) //first loc
-				//	loc = getLocUsingMassCenter(true, lastpos, loc0, loc1, clipplane, chno);
-				//else
-				//	loc = getLocUsingMassCenter(false, lastpos, loc0, loc1, clipplane, chno);
-
 				// determine loc based on intersection of vector (lastpos2, lastpos) and (loc0,loc1)
 				if (last_j2>=0)
 				{
@@ -142,50 +146,57 @@ void Renderer_gl1::solveCurveLineInter(vector <XYZ> & loc_vec_input, vector <XYZ
                          }else
                          {
                               // to see whether this is the right loc by comparing mean+sdev
-                              if(selectMode==smCurveInterCenter)
+                              if(selectMode==smCurveDirectionInter)
                               {
-                                   XYZ locc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
                                    XYZ loci = pb;
 
-                                   // the last "numPoint"'s average signal info
-                                   int numPoint = 8;
-                                   double lastpt_sig_sum = 0.0;
-                                   int num = 0;
-                                   for(int ii=0; ii<numPoint; ii++ )
+                                   // check if pb is inside line seg of(loc0,loc1)
+                                   // confine pb inside (loc0,loc1), if outside, then use locc directly
+                                   if( !withinLineSegCheck( loc0, loc1, loci ) )
                                    {
-                                        int ind = NL-i;
-                                        if(ind>=0)
-                                        {
-                                             XYZ tmploc = loc_vec.at(ind);
-                                             LocationSimple tmppt;
-                                             getRgnPropertyAt(tmploc, tmppt);
-                                             lastpt_sig_sum += tmppt.ave+tmppt.sdev;
-                                             num++; //number of sums
-                                        }else
-                                        {
-                                             break;
-                                        }
-                                   }
-
-                                   double lastpt_sig = lastpt_sig_sum/num; // image signal
-                                   LocationSimple ptc, pti;
-                                   getRgnPropertyAt(locc, ptc);
-                                   getRgnPropertyAt(loci, pti);
-                                   double ptc_sig = ptc.ave + ptc.sdev;
-                                   double pti_sig = pti.ave + pti.sdev;
-
-                                   if (fabs(lastpt_sig-ptc_sig) > fabs(lastpt_sig-pti_sig))
-                                   {
-                                        loc=loci;
-                                        addMarker(pb); // use marker to display intersection pt
+                                        // pb is outside (loc0,loc), so search in (loc0,loc1)
+                                        loc=getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+                                        addMarker(loc); // for comparison purpose, delete it later
                                    }else
                                    {
-                                        loc=locc;
+                                        // search loc within a smaller ranger around loci
+                                        XYZ v_1_0 = loc1-loc0;
+                                        float length = dist_L2(loc0, loc1);
+                                        float ranget = length/5.0;
+                                        XYZ D = v_1_0; normalize(D);
+                                        loc0 = loci - D*(ranget);
+                                        loc1 = loci + D*(ranget);
+                                        loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
                                    }
+
+                                   // // Using fast_marching method to get loc
+                                   // double* pSubdata=0;
+                                   // V3DLONG sub_szx, sub_szy, sub_szz;
+                                   // XYZ sub_orig;
+                                   // getSubVolInfo(lastpos, loc0, loc1, sub_orig, pSubdata, sub_szx, sub_szy, sub_szz);
+
+                                   // MyMarker mlastpos(lastpos.x-sub_orig.x, lastpos.y-sub_orig.y, lastpos.z-sub_orig.z);
+                                   // MyMarker mloc0(loc0.x-sub_orig.x, loc0.y-sub_orig.y, loc0.z-sub_orig.z);
+                                   // MyMarker mloc1(loc1.x-sub_orig.x, loc1.y-sub_orig.y, loc1.z-sub_orig.z);
+                                   // vector<MyMarker*> outswc;
+
+                                   // fastmarching_linker(mlastpos, mloc0, mloc1, pSubdata, outswc, sub_szx, sub_szy, sub_szz);
+
+                                   // if(!outswc.empty())
+                                   // {
+                                   //      loc=getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+                                   //      addMarker(loc);
+                                   // }else
+                                   // {
+                                   //      loc.x = outswc.at(0)->x+sub_orig.x;
+                                   //      loc.y = outswc.at(0)->y+sub_orig.y;
+                                   //      loc.z = outswc.at(0)->z+sub_orig.z;
+                                   // }
+                                   // delete [] pSubdata; pSubdata=0;
 
                               }else if(selectMode == smCurveLineInter)
                               {
-                                   loc=pb; //getCenterOfLineProfile(pa, pb, 0, chno);//no clipping plane
+                                   loc=pb;
                               }
                          }
 
@@ -268,7 +279,7 @@ void Renderer_gl1::solveCurveLineInter(vector <XYZ> & loc_vec_input, vector <XYZ
 	if (b_use_seriespointclick==false)
 		smooth_curve(loc_vec, 5);
 #endif
-     if (b_addthiscurve && (selectMode==smCurveInterCenter || selectMode == smCurveLineInter))
+     if (b_addthiscurve && (selectMode==smCurveDirectionInter || selectMode == smCurveLineInter))
      {
           addCurveSWC(loc_vec, chno);
           // for curve connection
@@ -454,7 +465,7 @@ XYZ Renderer_gl1::getLocUsingMassCenter(bool firstloc, XYZ lastpos, XYZ P1, XYZ 
 }
 
 /*
- Calculate the line segment PaPb that is the shortest route between
+ @brief Calculate the line segment PaPb that is the shortest route between
  two lines P1P2 and P3P4. Calculate also the values of mua and mub where
  Pa = P1 + mua (P2 - P1)
  Pb = P3 + mub (P4 - P3)
@@ -506,3 +517,69 @@ bool Renderer_gl1::lineLineIntersect( XYZ p1,XYZ p2,XYZ p3,XYZ p4,XYZ *pa,XYZ *p
 	return true;
 }
 
+/*
+ *@brief Chech whether point pa is on the line (p1,p2) and within (p1,p2)
+*/
+bool Renderer_gl1::withinLineSegCheck( XYZ p1,XYZ p2,XYZ pa)
+{
+     XYZ p12 = p2-p1;
+     XYZ p1a = pa-p1;
+     bool colinear = norm(cross(p12, p1a))<EPS ;
+     double dotpro = dot(p12, p1a);
+     double dot12 = dot(p12, p12); // square length between 12
+     bool within = (dotpro>0 && dotpro<dot12);
+
+     return (colinear && within);
+}
+
+// get the control points of the primary curve
+
+void Renderer_gl1::getSubVolInfo(XYZ lastloc, XYZ loc0, XYZ loc1, XYZ &sub_orig, double* &pSubdata,
+                                V3DLONG &sub_szx, V3DLONG &sub_szy, V3DLONG &sub_szz)
+{
+     //
+     int boundary = 10;
+     XYZ minloc, maxloc;
+     minloc.x = MIN(lastloc.x, MIN(loc0.x, loc1.x)) - boundary;
+     minloc.y = MIN(lastloc.y, MIN(loc0.y, loc1.y)) - boundary;
+     minloc.z = MIN(lastloc.z, MIN(loc0.z, loc1.z)) - boundary;
+
+     maxloc.x = MAX(lastloc.x, MAX(loc0.x, loc1.x)) + boundary;
+     maxloc.y = MAX(lastloc.y, MAX(loc0.y, loc1.y)) + boundary;
+     maxloc.z = MAX(lastloc.z, MAX(loc0.z, loc1.z)) + boundary;
+
+     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+     My4DImage* curImg = 0;
+     if (w)
+          curImg = v3dr_getImage4d(_idep);
+
+
+     V3DLONG szx = curImg->getXDim();
+     V3DLONG szy = curImg->getYDim();
+     V3DLONG szz = curImg->getZDim();
+     minloc.x = qBound((V3DLONG)0, (V3DLONG)minloc.x, (V3DLONG)(szx-1));
+     minloc.y = qBound((V3DLONG)0, (V3DLONG)minloc.y, (V3DLONG)(szy-1));
+     minloc.z = qBound((V3DLONG)0, (V3DLONG)minloc.z, (V3DLONG)(szz-1));
+
+     maxloc.x = qBound((V3DLONG)0, (V3DLONG)maxloc.x, (V3DLONG)(szx-1));
+     maxloc.y = qBound((V3DLONG)0, (V3DLONG)maxloc.y, (V3DLONG)(szy-1));
+     maxloc.z = qBound((V3DLONG)0, (V3DLONG)maxloc.z, (V3DLONG)(szz-1));
+
+     // The data is from minloc to maxloc
+     sub_szx=maxloc.x-minloc.x+1;
+     sub_szy=maxloc.y-minloc.y+1;
+     sub_szz=maxloc.z-minloc.z+1;
+
+     sub_orig = minloc;
+
+     pSubdata = new double [sub_szx*sub_szy*sub_szz];
+     for(V3DLONG k=0; k<sub_szz; k++)
+          for(V3DLONG j=0; j<sub_szy; j++)
+               for(V3DLONG i=0; i<sub_szx; i++)
+               {
+                    V3DLONG ind = k*sub_szy*sub_szx + j*sub_szx + i;
+                    pSubdata[ind]=curImg->at(i,j,k);
+               }
+
+
+}

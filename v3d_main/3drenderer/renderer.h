@@ -68,7 +68,7 @@ public:
 					smCurveCreateM,
                          // for curve refinement, 110831 ZJL
                          smCurveRefineInit, smCurveRefineLast, smCurveEditRefine, smCurveRubberDrag,
-                      smCurveInterCenter, smCurveLineInter,
+                      smCurveDirectionInter, smCurveLineInter,
 					};
 protected:
 	RenderMode renderMode;
