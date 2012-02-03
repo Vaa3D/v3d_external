@@ -44,7 +44,7 @@
 
 #endif //test_main_cpp
 
-#include "fastmarching_linker.h"
+#include "../neuron_tracing/fastmarching_linker.h"
 
 #define EPS 0.01
 

@@ -63,7 +63,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../imaging/v3d_imaging.h"
 #include "../basic_c_fun/v3d_curvetracepara.h"
 
-#include "fastmarching_linker.h"
+#include "../neuron_tracing/fastmarching_linker.h"
 
 #endif //test_main_cpp
 
