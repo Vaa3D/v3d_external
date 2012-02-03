@@ -295,19 +295,21 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			actCurveDirectionInter->setVisible(true);
 			actCurveDirectionInter->setIconVisibleInMenu(true);
 
-			listAct.append(actCurveCreate2 = new QAction("2-right-strokes to define a 3D curve", w));
+            if (0) //disable two not-often used functions
+            {
+                listAct.append(actCurveCreate2 = new QAction("2-right-strokes to define a 3D curve", w));
 
-			actCurveCreate2->setIcon(QIcon(":/icons/stroke2.svg"));
-			actCurveCreate2->setVisible(true);
-			actCurveCreate2->setIconVisibleInMenu(true);
+                actCurveCreate2->setIcon(QIcon(":/icons/stroke2.svg"));
+                actCurveCreate2->setVisible(true);
+                actCurveCreate2->setIconVisibleInMenu(true);
 
-			listAct.append(actCurveCreate3 = new QAction("3-right-strokes to define a 3D curve", w));
-
-			actCurveCreate3->setIcon(QIcon(":/icons/stroke3.svg"));
-			actCurveCreate3->setVisible(true);
-			actCurveCreate3->setIconVisibleInMenu(true);
-
-               listAct.append(actCurveCreate_pointclick_fm = new QAction("Series of right-clicks to define a 3D curve using fast marching (Esc to finish)", w));
+                listAct.append(actCurveCreate3 = new QAction("3-right-strokes to define a 3D curve", w));
+                actCurveCreate3->setIcon(QIcon(":/icons/stroke3.svg"));
+                actCurveCreate3->setVisible(true);
+                actCurveCreate3->setIconVisibleInMenu(true);
+            }
+            
+            listAct.append(actCurveCreate_pointclick_fm = new QAction("Series of right-clicks to define a 3D curve (Esc to finish)", w));
 
 			actCurveCreate_pointclick_fm->setIcon(QIcon(":/icons/strokeN.svg"));
 			actCurveCreate_pointclick_fm->setVisible(true);
@@ -327,7 +329,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			actCurveRefine->setVisible(true);
 			actCurveRefine->setIconVisibleInMenu(true);
 
-               listAct.append(actCurveLineInter = new QAction("n-right-strokes to define a 3D curve by line intersection", w));
+               listAct.append(actCurveLineInter = new QAction("n-right-strokes to define a 3D curve by line intersection (still testing)", w));
                actCurveLineInter->setIcon(QIcon(":/icons/strokeN.svg"));
 			actCurveLineInter->setVisible(true);
 			actCurveLineInter->setIconVisibleInMenu(true);
