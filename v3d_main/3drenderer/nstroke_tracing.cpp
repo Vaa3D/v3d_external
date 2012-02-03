@@ -48,6 +48,8 @@
 
 #define EPS 0.01
 
+#define PI 3.14159265
+
 #ifndef MIN
 #define MIN(a, b)  ( ((a)<(b))? (a) : (b) )
 #endif
@@ -656,10 +658,10 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
 
                          loc_vec.push_back(loc);
                     }
-                   
+
                    //always remember to free the potential-memory-problematic fastmarching_linker return value
                    clean_fm_marker_vector(outswc);
-                   
+
                }else
                {
                     loc_vec.push_back(loc1);
@@ -732,6 +734,14 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
           }
 
           smooth_curve(loc_vec, 5);
+
+          // adaptive curve simpling
+          // local curve drawing
+          vector <XYZ> loc_vec_resampled;
+          int stepsize = 6; // sampling stepsize
+          loc_vec_resampled.clear();
+          adaptiveCurveResampling(loc_vec, loc_vec_resampled, stepsize);
+
           ////////////////////////////////////////////////////////////////////////
           int chno = checkCurChannel();
           if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
@@ -739,7 +749,7 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
 #endif
           if (b_addthiscurve)
           {
-               addCurveSWC(loc_vec, chno);
+               addCurveSWC(loc_vec_resampled, chno);
           }
           else //100821
           {
@@ -748,6 +758,80 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
           }
      }
 #endif
+}
+/**
+ * @brief The curve is resampled based on its local curvature:
+ *  L1(t-1,t), L2(t,t+1). If the angle between L1 and L2 is less than thresh_theta1. sample in stepsize.
+ *  If the angle is between thresh_theta1 and thresh_theta2, sample in smaller stepsize.
+ *  Otherwise, using original resolution.
+ *  Jianong Zhou 20120204
+*/
+void Renderer_gl1::adaptiveCurveResampling(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, int stepsize)
+{
+     int N = loc_vec.size();
+     loc_vec_resampled.clear();
+     loc_vec_resampled.push_back(loc_vec.at(0));
+
+     // used to control whether cur-to-nex locs are added
+     bool b_prestep_added = false;
+
+     for(int i=stepsize; i<N; i=i+stepsize)
+     {
+          XYZ loc_cur, loc_pre, loc_nex;
+          int ind_nex = ( (i+stepsize)>N )? (N-1):(i+stepsize);
+          loc_cur = loc_vec.at(i);
+          loc_pre = loc_vec.at(i-stepsize);
+          loc_nex = loc_vec.at(ind_nex);
+
+          XYZ v1 = loc_cur-loc_pre;
+          XYZ v2 = loc_nex-loc_cur;
+
+          // check the angle betwen v1 and v2
+          float cos_theta;
+          normalize(v1); normalize(v2);
+          float theta = acos( dot(v1,v2) ) * 180.0/PI; // radius to degree
+
+          // threshold theta
+          float thresh_theta1 = 30.0;
+          float thresh_theta2 = 60.0;
+
+          if(theta<thresh_theta1)
+          {
+               loc_vec_resampled.push_back(loc_vec.at(i));
+               b_prestep_added = false;
+          }
+          else if( (theta>=thresh_theta1) && (theta<=thresh_theta2) )
+          {
+               float new_step = stepsize/2;
+               int ind_start;
+               if(b_prestep_added)
+                    ind_start = i;
+               else
+                    ind_start = i-stepsize;
+
+               for( int j=ind_start+new_step; j<=ind_nex; j=j+new_step)
+               {
+                    loc_vec_resampled.push_back( loc_vec.at(j) );
+               }
+               b_prestep_added = true;
+
+          }
+          else if( theta>thresh_theta2 )
+          {
+               int ind_start;
+               if(b_prestep_added)
+                    ind_start = i;
+               else
+                    ind_start = i-stepsize;
+
+               for(int j=ind_start+1; j<=ind_nex; j++)
+               {
+                    loc_vec_resampled.push_back( loc_vec.at(j) );
+               }
+
+               b_prestep_added = true;
+          }
+     }
 }
 
 
