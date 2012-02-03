@@ -221,7 +221,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*actCurveCreate_zoom=0, *actMarkerCreate_zoom=0,
 
                *actCurveRefine=0, *actCurveEditRefine=0, *actCurveRubberDrag=0,  *actCurveDirectionInter=0,
-          *actCurveLineInter=0,// ZJL 110905
+          *actCurveLineInter=0, *actCurveCreate_pointclick_fm=0,// ZJL 110905
 
 			*actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
 	        *actMarkerAblateOne_imaging=0, *actMarkerAblateAll_imaging=0,
@@ -312,6 +312,12 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			actCurveCreate_pointclick->setIcon(QIcon(":/icons/strokeN.svg"));
 			actCurveCreate_pointclick->setVisible(true);
 			actCurveCreate_pointclick->setIconVisibleInMenu(true);
+
+               listAct.append(actCurveCreate_pointclick_fm = new QAction("Series of right-clicks to define a 3D curve using fast marching (Esc to finish)", w));
+
+			actCurveCreate_pointclick_fm->setIcon(QIcon(":/icons/strokeN.svg"));
+			actCurveCreate_pointclick_fm->setVisible(true);
+			actCurveCreate_pointclick_fm->setIconVisibleInMenu(true);
 
                // For curve refinement, ZJL 110831
                listAct.append(act = new QAction("", w)); act->setSeparator(true);
@@ -740,6 +746,14 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	else if (act == actCurveCreate_pointclick)
 	{
 		selectMode = smCurveCreate_pointclick;
+		b_addthiscurve = true;
+		cntCur3DCurveMarkers=0; //reset
+		//if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::CrossCursor)); }
+	}
+     else if (act == actCurveCreate_pointclick_fm)
+	{
+		selectMode = smCurveCreate_pointclick_fm;
 		b_addthiscurve = true;
 		cntCur3DCurveMarkers=0; //reset
 		//if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
@@ -1698,7 +1712,7 @@ int Renderer_gl1::hitPen(int x, int y)
 		if (listMarkerPos.size() >= N)
 		{
 			qDebug("\t click ( %i, %i ) for Markers to Curve", x,y);
-
+               b_addthismarker = true; // by ZJL 20120203 for prohibitting displaying a 3d local view window
                solveMarkerCenter();
 
 			cntCur3DCurveMarkers++;
@@ -2678,7 +2692,6 @@ void Renderer_gl1::solveCurveFromMarkers()
                b_addthiscurve = true; //in this case, always reset to default to draw curve to add to a swc instead of just  zoom
                endSelectMode();
           }
-
      }
 
 #endif
