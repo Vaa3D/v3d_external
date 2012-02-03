@@ -2022,6 +2022,7 @@ QStringList IStitchPlugin::funclist() const
 {
     return QStringList() << tr("v3dstitch")
                          << tr("istitch-subspace")
+                         << tr("istitch-grouping")
                          << tr("istitch-gc");
 }
 
@@ -6513,7 +6514,7 @@ int pistitching(SDATATYPE *subject1d, V3DLONG *sz_subject1d, SDATATYPE *target1d
     qDebug() << "time elapse ... " << end_t-start_t;
 
     //Output
-     //--------------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------------
     pos.x = pos_x; pos.y = pos_y; pos.z = pos_z; pos.value = pos_score;
 
     qDebug() << " finally..." << pos.x << pos.y << pos.z << pos.value << "offset ..." << pos_x - sx_ori +1 << pos_y - sy_ori +1 << pos_z - sz_ori +1;
@@ -11555,14 +11556,14 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
         if(infilelist->empty())
         {
             //print Help info
-            printf("\nUsage: v3d -x imageStitch.dylib -f v3dstitch -i <input_image_folder> -o <output_image_file> -p \"[#c <channalNo_reference> #x <downsample_factor_x> #y <downsample_factor_y> #z <downsample_factor_z> #l <overlap_ratio>] #sb [saving_tile_boundary 0/1] #si <saving_stitching_result 0/1>\"\n");
+            printf("\nUsage: v3d -x imageStitch.dylib -f istitch-grouping -i <input_image_folder> -o <output_file> -p \"#c <channalNo_reference>\"\n");
 
             return true;
         }
 
         char * infile = infilelist->at(0); // input_image_folder
         char * paras = NULL; // parameters
-        char * outfile = NULL; // output_image_file
+        char * outfile = NULL; // output_file
 
         if(output.size()>0) { outfilelist = (vector<char*> *)(output.at(0).p); outfile = outfilelist->at(0);}  // specify output
         if(input.size()>1) { paralist = (vector<char*> *)(input.at(1).p); paras =  paralist->at(0);} // parameters
@@ -11860,7 +11861,6 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
 
         }
 
-        // test
 //        for(int i=0; i<NTILES_I; i++)
 //        {
 //            //
@@ -11869,7 +11869,6 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
 //                qDebug()<<"current "<<j<<"previous "<<i<<"edge "<<vim.tilesList.at(j).record.at(i).score;
 //            }
 //        }
-
 
         // find mst of whole tiled images
         for(int i=0; i<NTILES; i++)
@@ -11929,13 +11928,27 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
 
         }
 
+//        for(V3DLONG i=0; i<NTILES; i++)
+//        {
+//            for(V3DLONG j=0; j<NTILES; j++)
+//            {
+//                qDebug()<<"udgraph ..."<<i<<j<<udgraph[i][j];
+//            }
+//        }
+
         // output
-        QString tg_filename = QFileInfo(m_InputFileName).path() + "/" + "igroups.txt"; // tiled image groups
+        QString tg_filename; // tiled image groups
+
+        if(!outfile)
+            tg_filename = QFileInfo(m_InputFileName).path() + "/" + "igroups.txt";
+        else
+            tg_filename = QString(outfile);
+
         FILE *pTGFile=0;
         pTGFile = fopen(tg_filename.toStdString().c_str(),"wt");
 
         V3DLONG count_group = 1;
-        for(V3DLONG i=0; i<NTILES_I; i++)
+        for(V3DLONG i=0; i<NTILES; i++)
         {
             if(visited[i])
             {
@@ -11984,8 +11997,6 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
             }
             fprintf(pTGFile, "\n");
             count_group++;
-
-
         }
         fclose(pTGFile);
 
