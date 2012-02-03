@@ -292,6 +292,7 @@ protected:
 	void solveCurveViews();
 	void solveCurveFromMarkers();
      // beginning of ZJL
+     void solveCurveFromMarkersFastMarching(); //using fast marching method
      void getPerpendPointDist(XYZ &P, XYZ &P0, XYZ &P1, XYZ &Pb, double &dist);
      void getRgnPropertyAt(XYZ &pos, LocationSimple &pt);
 
@@ -301,6 +302,8 @@ protected:
      void blendRubberNeuron();
      void solveCurveRubberDrag();
      void blendDraggedNeuron();
+
+     V3DLONG findNearestNeuronNode_Loc(XYZ &loc, NeuronTree *ptree);
 
      bool lineLineIntersect( XYZ p1,XYZ p2,XYZ p3,XYZ p4,XYZ *pa,XYZ *pb,
 									   double *mua, double *mub);

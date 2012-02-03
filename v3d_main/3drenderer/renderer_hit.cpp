@@ -307,17 +307,17 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			actCurveCreate3->setVisible(true);
 			actCurveCreate3->setIconVisibleInMenu(true);
 
-			listAct.append(actCurveCreate_pointclick = new QAction("Series of right-clicks to define a 3D polyline (Esc to finish)", w));
-
-			actCurveCreate_pointclick->setIcon(QIcon(":/icons/strokeN.svg"));
-			actCurveCreate_pointclick->setVisible(true);
-			actCurveCreate_pointclick->setIconVisibleInMenu(true);
-
                listAct.append(actCurveCreate_pointclick_fm = new QAction("Series of right-clicks to define a 3D curve using fast marching (Esc to finish)", w));
 
 			actCurveCreate_pointclick_fm->setIcon(QIcon(":/icons/strokeN.svg"));
 			actCurveCreate_pointclick_fm->setVisible(true);
 			actCurveCreate_pointclick_fm->setIconVisibleInMenu(true);
+
+			listAct.append(actCurveCreate_pointclick = new QAction("Series of right-clicks to define a 3D polyline (Esc to finish)", w));
+
+			actCurveCreate_pointclick->setIcon(QIcon(":/icons/strokeN.svg"));
+			actCurveCreate_pointclick->setVisible(true);
+			actCurveCreate_pointclick->setIconVisibleInMenu(true);
 
                // For curve refinement, ZJL 110831
                listAct.append(act = new QAction("", w)); act->setSeparator(true);
@@ -1532,6 +1532,15 @@ void Renderer_gl1::endSelectMode()
 			solveCurveFromMarkers(); //////////
 		}
 	}
+     if (selectMode == smCurveCreate_pointclick_fm)
+	{
+		if (cntCur3DCurveMarkers >=2)
+		{
+			qDebug("\t %i markers to solve Curve", cntCur3DCurveMarkers);
+
+			solveCurveFromMarkersFastMarching(); //////////
+		}
+	}
 	cntCur3DCurveMarkers = 0;
 
 	list_listCurvePos.clear();
@@ -1598,7 +1607,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 				vector <XYZ> loc_vec_input; //here as an empty input, so use list_listCurvePos internal
 				solveCurveCenter(loc_vec_input);
 			}
-               else if (selectMode == smCurveCreate2 || selectMode == smCurveCreate3 || selectMode == smCurveCreate_pointclick)
+               else if (selectMode == smCurveCreate2 || selectMode == smCurveCreate3)
 				solveCurveViews();
 
 			list_listCurvePos.clear();
@@ -1703,7 +1712,7 @@ int Renderer_gl1::hitPen(int x, int y)
           _appendMarkerPos(x, y);
           return 1;
      }
-	else if (selectMode == smCurveCreate_pointclick) //091226
+	else if (selectMode == smCurveCreate_pointclick || selectMode == smCurveCreate_pointclick_fm) //091226
 	{
 		_appendMarkerPos(x,y);
 
@@ -2556,144 +2565,12 @@ void Renderer_gl1::solveCurveFromMarkers()
 		}
 		updateLandmark();
 	}
-     // This is old method
-	// if (loc_vec_input.size()>0)
-	// {
-	// 	qDebug("now pass to solveCurveCenter for point-click-3d-curve");
-	// 	solveCurveCenter(loc_vec_input);
-	// }
 
-
-
-     // used to store final locs on the curve
-     vector <XYZ> loc_vec;
-     loc_vec.clear();
-
-     if (loc_vec_input.size()>0)
+	if (loc_vec_input.size()>0)
 	{
-		qDebug("now get curve using fastmarching method");
-          // Using fast_marching method to get loc
-          for(int ii=0; ii<loc_vec_input.size()-1; ii++)
-          {
-               XYZ loc0=loc_vec_input.at(ii);
-               XYZ loc1=loc_vec_input.at(ii+1);
-
-               V3DLONG szx = curImg->getXDim();
-               V3DLONG szy = curImg->getYDim();
-               V3DLONG szz = curImg->getZDim();
-
-               MyMarker mloc0(loc0.x, loc0.y, loc0.z);
-               MyMarker mloc1(loc1.x, loc1.y, loc1.z);
-               unsigned char* pImg = curImg->getRawData();
-               vector<MyMarker*> outswc;
-               // call fastmarching
-               fastmarching_linker(mloc0, mloc1, pImg, outswc, szx, szy, szz);
-
-               loc_vec.push_back(loc0);
-
-               if(!outswc.empty())
-               {
-                    // the 1st loc in outswc is the last pos got in fm
-                    for(int j=outswc.size()-2; j>0; j-- )
-                    {
-                         XYZ loc;
-                         loc.x=outswc.at(j)->x;
-                         loc.y=outswc.at(j)->y;
-                         loc.z=outswc.at(j)->z;
-
-                         loc_vec.push_back(loc);
-                    }
-               }else
-               {
-                    loc_vec.push_back(loc1);
-               }
-
-          }
-
-
-          if(loc_vec.size()<1) return; // all points are outside the volume. ZJL 110913
-
-#ifndef test_main_cpp
-          // check if there is any existing neuron node is very close to the starting and ending points, if yes, then merge
-
-          MainWindow* V3Dmainwindow = 0;
-          V3Dmainwindow = v3dr_getV3Dmainwindow(_idep);
-
-          int N = loc_vec.size();
-          if (V3Dmainwindow && V3Dmainwindow->global_setting.b_3dcurve_autoconnecttips)
-          {
-               if (listNeuronTree.size()>0 && curEditingNeuron>0 && curEditingNeuron<=listNeuronTree.size())
-               {
-                    NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(curEditingNeuron-1)));
-                    if (p_tree)
-                    {
-                         V3DLONG n_id_start = findNearestNeuronNode_WinXY(list_listCurvePos.at(0).at(0).x, list_listCurvePos.at(0).at(0).y, p_tree);
-                         V3DLONG n_id_end = findNearestNeuronNode_WinXY(list_listCurvePos.at(0).at(N-1).x, list_listCurvePos.at(0).at(N-1).y, p_tree);
-                         qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
-
-                         double th_merge = 5;
-
-                         bool b_start_merged=false, b_end_merged=false;
-                         NeuronSWC cur_node;
-                         if (n_id_start>=0)
-                         {
-                              cur_node = p_tree->listNeuron.at(n_id_start);
-                              qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
-                              XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
-                              if (dist_L2(cur_node_xyz, loc_vec.at(0))<th_merge)
-                              {
-                                   loc_vec.at(0) = cur_node_xyz;
-                                   b_start_merged = true;
-                                   qDebug()<<"force set the first point of this curve to the above neuron node as they are close.";
-                              }
-                         }
-                         if (n_id_end>=0)
-                         {
-                              cur_node = p_tree->listNeuron.at(n_id_end);
-                              qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
-                              XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
-                              if (dist_L2(cur_node_xyz, loc_vec.at(N-1))<th_merge)
-                              {
-                                   loc_vec.at(N-1) = cur_node_xyz;
-                                   b_end_merged = true;
-                                   qDebug()<<"force set the last point of this curve to the above neuron node as they are close.";
-
-                              }
-                         }
-
-                         //a special operation is that if the end point is merged, but the start point is not merged,
-                         //then this segment is reversed direction to reflect the prior knowledge that a neuron normally grow out as branches
-                         if (b_start_merged==false && b_end_merged==true)
-                         {
-                              vector <XYZ> loc_vec_tmp = loc_vec;
-                              for (int i=0;i<N;i++)
-                                   loc_vec.at(i) = loc_vec_tmp.at(N-1-i);
-                         }
-                    }
-               }
-          }
-
-          //
-
-          //if (b_use_seriespointclick==false)
-          smooth_curve(loc_vec, 5);
-          ////////////////////////////////////////////////////////////////////////
-          int chno = checkCurChannel();
-          if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
-          ////////////////////////////////////////////////////////////////////////
-
-#endif
-          if (b_addthiscurve)
-          {
-               addCurveSWC(loc_vec, chno);
-          }
-          else //100821
-          {
-               b_addthiscurve = true; //in this case, always reset to default to draw curve to add to a swc instead of just  zoom
-               endSelectMode();
-          }
-     }
-
+		qDebug("now pass to solveCurveCenter for point-click-3d-curve");
+		solveCurveCenter(loc_vec_input);
+	}
 #endif
 }
 

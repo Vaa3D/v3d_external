@@ -583,3 +583,192 @@ void Renderer_gl1::getSubVolInfo(XYZ lastloc, XYZ loc0, XYZ loc1, XYZ &sub_orig,
 
 
 }
+
+
+void Renderer_gl1::solveCurveFromMarkersFastMarching()
+{
+	qDebug("  Renderer_gl1::solveCurveMarkersFastMarching");
+
+#ifndef test_main_cpp
+	vector <XYZ> loc_vec_input;
+     loc_vec_input.clear();
+
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	My4DImage* curImg = 0;
+     if (w) curImg = v3dr_getImage4d(_idep); //by PHC, 090119
+
+     if (curImg)
+	{
+		curImg->update_3drenderer_neuron_view(w, this);
+		QList <LocationSimple> & listLoc = curImg->listLandmarks;
+		int spos = listLoc.size()-cntCur3DCurveMarkers;
+		XYZ cur_xyz;
+		int i;
+		for (i=spos;i<listLoc.size();i++)
+		{
+			cur_xyz.x = listLoc.at(i).x-1; //marker location is 1 based
+			cur_xyz.y = listLoc.at(i).y-1;
+			cur_xyz.z = listLoc.at(i).z-1;
+			loc_vec_input.push_back(cur_xyz);
+		}
+		for (i=listLoc.size()-1;i>=spos;i--)
+		{
+			listLoc.removeLast();
+		}
+		updateLandmark();
+	}
+
+     // loc_vec is used to store final locs on the curve
+     vector <XYZ> loc_vec;
+     loc_vec.clear();
+
+     if (loc_vec_input.size()>0)
+	{
+		qDebug("now get curve using fastmarching method");
+          // Using fast_marching method to get loc
+          for(int ii=0; ii<loc_vec_input.size()-1; ii++)
+          {
+               XYZ loc0=loc_vec_input.at(ii);
+               XYZ loc1=loc_vec_input.at(ii+1);
+
+               V3DLONG szx = curImg->getXDim();
+               V3DLONG szy = curImg->getYDim();
+               V3DLONG szz = curImg->getZDim();
+
+               MyMarker mloc0(loc0.x, loc0.y, loc0.z);
+               MyMarker mloc1(loc1.x, loc1.y, loc1.z);
+               unsigned char* pImg = curImg->getRawData();
+               vector<MyMarker*> outswc;
+               // call fastmarching
+               fastmarching_linker(mloc0, mloc1, pImg, outswc, szx, szy, szz);
+
+               loc_vec.push_back(loc0);
+
+               if(!outswc.empty())
+               {
+                    // the 1st loc in outswc is the last pos got in fm
+                    for(int j=outswc.size()-2; j>0; j-- )
+                    {
+                         XYZ loc;
+                         loc.x=outswc.at(j)->x;
+                         loc.y=outswc.at(j)->y;
+                         loc.z=outswc.at(j)->z;
+
+                         loc_vec.push_back(loc);
+                    }
+               }else
+               {
+                    loc_vec.push_back(loc1);
+               }
+
+          }
+
+
+          if(loc_vec.size()<1) return; // all points are outside the volume. ZJL 110913
+
+#ifndef test_main_cpp
+          // check if there is any existing neuron node is very close to the starting and ending points, if yes, then merge
+
+          MainWindow* V3Dmainwindow = 0;
+          V3Dmainwindow = v3dr_getV3Dmainwindow(_idep);
+
+          int N = loc_vec.size();
+
+          if (V3Dmainwindow && V3Dmainwindow->global_setting.b_3dcurve_autoconnecttips)
+          {
+               if (listNeuronTree.size()>0 && curEditingNeuron>0 && curEditingNeuron<=listNeuronTree.size())
+               {
+                    NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(curEditingNeuron-1)));
+                    if (p_tree)
+                    {
+                         V3DLONG n_id_start = findNearestNeuronNode_Loc(loc_vec.at(0), p_tree);
+                         V3DLONG n_id_end = findNearestNeuronNode_Loc(loc_vec.at(N-1), p_tree);
+                         qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
+
+                         double th_merge = 5;
+
+                         bool b_start_merged=false, b_end_merged=false;
+                         NeuronSWC cur_node;
+                         if (n_id_start>=0)
+                         {
+                              cur_node = p_tree->listNeuron.at(n_id_start);
+                              qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
+                              XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+                              if (dist_L2(cur_node_xyz, loc_vec.at(0))<th_merge)
+                              {
+                                   loc_vec.at(0) = cur_node_xyz;
+                                   b_start_merged = true;
+                                   qDebug()<<"force set the first point of this curve to the above neuron node as they are close.";
+                              }
+                         }
+                         if (n_id_end>=0)
+                         {
+                              cur_node = p_tree->listNeuron.at(n_id_end);
+                              qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
+                              XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+                              if (dist_L2(cur_node_xyz, loc_vec.at(N-1))<th_merge)
+                              {
+                                   loc_vec.at(N-1) = cur_node_xyz;
+                                   b_end_merged = true;
+                                   qDebug()<<"force set the last point of this curve to the above neuron node as they are close.";
+
+                              }
+                         }
+
+                         //a special operation is that if the end point is merged, but the start point is not merged,
+                         //then this segment is reversed direction to reflect the prior knowledge that a neuron normally grow out as branches
+                         if (b_start_merged==false && b_end_merged==true)
+                         {
+                              vector <XYZ> loc_vec_tmp = loc_vec;
+                              for (int i=0;i<N;i++)
+                                   loc_vec.at(i) = loc_vec_tmp.at(N-1-i);
+                         }
+                    }
+               }
+          }
+
+          smooth_curve(loc_vec, 5);
+          ////////////////////////////////////////////////////////////////////////
+          int chno = checkCurChannel();
+          if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
+          ////////////////////////////////////////////////////////////////////////
+#endif
+          if (b_addthiscurve)
+          {
+               addCurveSWC(loc_vec, chno);
+          }
+          else //100821
+          {
+               b_addthiscurve = true; //in this case, always reset to default to draw curve to add to a swc instead of just  zoom
+               endSelectMode();
+          }
+     }
+#endif
+}
+
+
+/**
+ * @brief This function is based on findNearestNeuronNode_WinXY(int cx, int cy,
+ *  NeuronTree* ptree).
+ */
+V3DLONG Renderer_gl1::findNearestNeuronNode_Loc(XYZ &loc, NeuronTree *ptree)
+{
+	if (!ptree) return -1;
+	QList <NeuronSWC> *p_listneuron = &(ptree->listNeuron);
+	if (!p_listneuron) return -1;
+
+	//qDebug()<<"win click position:"<<cx<<" "<<cy;
+     GLdouble px, py, pz, ix, iy, iz;
+
+	V3DLONG best_ind=-1; double best_dist=-1;
+	for (V3DLONG i=0;i<p_listneuron->size();i++)
+	{
+		ix = p_listneuron->at(i).x, iy = p_listneuron->at(i).y, iz = p_listneuron->at(i).z;
+
+		double cur_dist = (loc.x-ix)*(loc.x-ix)+(loc.y-iy)*(loc.y-iy)+(loc.z-iz)*(loc.z-iz);
+		if (i==0) {	best_dist = cur_dist; best_ind=0; }
+		else {	if (cur_dist<best_dist) {best_dist=cur_dist; best_ind = i;}}
+	}
+
+	return best_ind; //by PHC, 090209. return the index in the SWC file
+}
