@@ -39,7 +39,7 @@
 #include "../v3d/surfaceobj_geometry_dialog.h"
 #include "../neuron_editing/neuron_sim_scores.h"
 #include "../neuron_tracing/neuron_tracing.h"
-#include "../imaging/v3d_imaging.h"
+//#include "../imaging/v3d_imaging.h"
 #include "../basic_c_fun/v3d_curvetracepara.h"
 
 #endif //test_main_cpp
@@ -656,6 +656,10 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
 
                          loc_vec.push_back(loc);
                     }
+                   
+                   //always remember to free the potential-memory-problematic fastmarching_linker return value
+                   clean_fm_marker_vector(outswc);
+                   
                }else
                {
                     loc_vec.push_back(loc1);
