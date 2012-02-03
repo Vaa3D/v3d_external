@@ -11960,7 +11960,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
             visited[i] = count_group;
             fprintf(pTGFile, "%s \n", vim.tilesList.at(i).fn_image.c_str());
 
-            for(int j=i; j<NTILES_I; j++)
+            for(int j=i; j<NTILES; j++)
             {
                 if(visited[j] && visited[j]!=count_group)
                 {
