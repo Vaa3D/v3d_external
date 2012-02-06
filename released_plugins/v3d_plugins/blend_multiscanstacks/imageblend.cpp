@@ -1515,22 +1515,12 @@ bool transformations_detection(Tdata *p1dImg1, Tdata *p1dImg2, Tidx *szImg, int 
     std_z /= szSta;
     std_coef /= szSta;
 
-    for(Tidx i=0; i<szSta; i++)
-    {
-
-        qDebug()<<"..."<<transList.at(i).dx<<transList.at(i).dy<<transList.at(i).dz<<transList.at(i).coef;
-    }
-
-    qDebug()<<"std x, y, z, mean coef ..."<<std_x<<std_y<<std_z<<mean_coef;
-
     REAL f = 0; // likelihood
 
     f += std_x*std_x;
     f += std_y*std_y;
     f += std_z*std_z;
     f += (1-mean_coef)*(1-mean_coef);
-
-    qDebug()<<"likely ... "<<f;
 
     if(f<1.0)
         transtype = 0;
@@ -2108,9 +2098,15 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         if(b_morecolorstack_first && sz_img1[3]<sz_img2[3])
         {
             //
-            qDebug()<<"original stack 1 "<<p1dImg1<<sz_img1[0]<<sz_img1[1]<<sz_img1[2]<<sz_img1[3]<<p4DImage1.getTotalUnitNumber();
-            qDebug()<<"original stack 2 "<<p1dImg2<<sz_img2[0]<<sz_img2[1]<<sz_img2[2]<<sz_img2[3]<<p4DImage2.getTotalUnitNumber();
+            qDebug()<<"original stack 1 "<<m_InputFileName1<<p1dImg1<<sz_img1[0]<<sz_img1[1]<<sz_img1[2]<<sz_img1[3]<<p4DImage1.getTotalUnitNumber();
+            qDebug()<<"original stack 2 "<<m_InputFileName2<<p1dImg2<<sz_img2[0]<<sz_img2[1]<<sz_img2[2]<<sz_img2[3]<<p4DImage2.getTotalUnitNumber();
+
+            //
+            QString tmpName = m_InputFileName1;
+            m_InputFileName1 = m_InputFileName2;
+            m_InputFileName2 = tmpName;
             
+            //
             unsigned char *p1 = NULL;
             unsigned char *p2 = NULL;
             
@@ -2142,12 +2138,19 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             p1dImg2 = p4DImage2.getRawData();
             sz_img2[3] = p4DImage2.getCDim();
             
-            qDebug()<<"switched stack 1 "<<p1dImg1<< " "<<sz_img1[0]<< " "<<sz_img1[1]<< " "<<sz_img1[2]<< " "<<sz_img1[3]<< " "<<p4DImage1.getTotalUnitNumber();
-            qDebug()<<"switched stack 2 "<<p1dImg2<< " "<<sz_img2[0]<< " "<<sz_img2[1]<< " "<<sz_img2[2]<< " "<<sz_img2[3]<< " "<<p4DImage2.getTotalUnitNumber();
+            qDebug()<<"switched stack 1 "<<m_InputFileName1<<p1dImg1<<sz_img1[0]<<sz_img1[1]<<sz_img1[2]<<sz_img1[3]<<p4DImage1.getTotalUnitNumber();
+            qDebug()<<"switched stack 2 "<<m_InputFileName2<<p1dImg2<<sz_img2[0]<<sz_img2[1]<<sz_img2[2]<<sz_img2[3]<<p4DImage2.getTotalUnitNumber();
         }
         
         if( (QFileInfo(m_InputFileName1).suffix().toUpper().compare("LSM") == 0) && (QFileInfo(m_InputFileName2).suffix().toUpper().compare("LSM") == 0) )
         {
+//            char buf[512]; // read symbolic link
+//            int count = readlink(m_InputFileName1.toStdString().c_str(), buf, sizeof(buf));
+//            if (count >= 0) {
+//                buf[count] = '\0';
+//                printf("%s -> %s\n", m_InputFileName1.toStdString().c_str(), buf);
+//            }
+
             Y_LSMINFO<V3DLONG> lsminfo1(m_InputFileName1.toStdString());
             lsminfo1.loadHeader();
 
