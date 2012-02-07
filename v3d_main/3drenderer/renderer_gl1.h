@@ -252,6 +252,8 @@ protected:
 	QList <MarkerPos> listMarkerPos; //081221, screen projection position
 	QList< QList <MarkerPos> > list_listCurvePos; //screen projection position list for curve
 
+     QList <LocationSimple> listCurveMarkerPool; // used for curve drawing from marker pool
+
 	// computation
 	void _MarkerPos_to_NearFarPoint(const MarkerPos & pos, XYZ &loc0, XYZ &loc1);
 	double distanceOfMarkerPos(const MarkerPos & pos0, const MarkerPos & pos);
@@ -313,6 +315,7 @@ protected:
           V3DLONG &sub_szx, V3DLONG &sub_szy, V3DLONG &sub_szz);
 
      void solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index);
+     void solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index);
      bool withinLineSegCheck( XYZ p1,XYZ p2,XYZ pa); // check wether pa is within the line seg (p1,p1)
      XYZ getLocUsingMassCenter(bool firstloc, XYZ lastpos, XYZ p1, XYZ p2,
 			double clipplane[4]=0,	//clipplane==0 means no clip plane
