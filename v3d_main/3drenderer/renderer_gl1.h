@@ -306,6 +306,7 @@ protected:
      void blendDraggedNeuron();
 
      void adaptiveCurveResampling(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, int stepsize);
+     void resampleCurveStrokes(int index, int chno, vector<int> &ids);
 
      V3DLONG findNearestNeuronNode_Loc(XYZ &loc, NeuronTree *ptree);
 

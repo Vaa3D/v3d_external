@@ -39,9 +39,8 @@
 #include "../v3d/surfaceobj_geometry_dialog.h"
 #include "../neuron_editing/neuron_sim_scores.h"
 #include "../neuron_tracing/neuron_tracing.h"
-//#include "../imaging/v3d_imaging.h"
 #include "../basic_c_fun/v3d_curvetracepara.h"
-
+#include <map>
 #endif //test_main_cpp
 
 #include "../neuron_tracing/fastmarching_linker.h"
@@ -75,7 +74,7 @@ void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector
 	int chno = checkCurChannel();
 	if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
 	////////////////////////////////////////////////////////////////////////
-	qDebug()<<"\n solveCurveLineInter: 3d curve in channel # "<<((chno<0)? chno :chno+1);
+	qDebug()<<"\n solveCurveDirectionInter: 3d curve in channel # "<<((chno<0)? chno :chno+1);
 
 	loc_vec.clear();
 
@@ -637,16 +636,15 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
           }
      }
 
-
      // loc_vec is used to store final locs on the curve
      vector <XYZ> loc_vec;
      loc_vec.clear();
 
      if (loc_vec_input.size()>0)
 	{
-           V3DLONG szx = curImg->getXDim();
-           V3DLONG szy = curImg->getYDim();
-           V3DLONG szz = curImg->getZDim();
+          V3DLONG szx = curImg->getXDim();
+          V3DLONG szy = curImg->getYDim();
+          V3DLONG szz = curImg->getZDim();
 
 		qDebug("now get curve using fastmarching method");
           // Using fast_marching method to get loc
@@ -907,7 +905,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 	int chno = checkCurChannel();
 	if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
 	////////////////////////////////////////////////////////////////////////
-	qDebug()<<"\n solveCurveLineInter: 3d curve in channel # "<<((chno<0)? chno :chno+1);
+	qDebug()<<"\n solveCurveMarkerLists: 3d curve in channel # "<<((chno<0)? chno :chno+1);
 
 	loc_vec.clear();
 
@@ -927,44 +925,68 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
           V3DLONG szy = curImg->getYDim();
           V3DLONG szz = curImg->getZDim();
 
+          // resample curve strokes
+          vector<int> inds; // reserved stroke index
+          resampleCurveStrokes(0, chno, inds);
+
 		for (int i=0; i<N; i++)
 		{
-			const MarkerPos & pos = list_listCurvePos.at(index).at(i); // change from 0 to index for different curves, ZJL
-			////////////////////////////////////////////////////////////////////////
-			//100730 RZC, in View space, keep for dot(clip, pos)>=0
-			double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
-			clipplane[3] = viewClip;
-			ViewPlaneToModel(pos.MV, clipplane);
-			//qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
-			////////////////////////////////////////////////////////////////////////
-
-			XYZ loc0, loc1, lastloc0;
-			_MarkerPos_to_NearFarPoint(pos, loc0, loc1);
-
-			XYZ loc;
-			float length01 = dist_L2(loc0, loc1);
-			if (length01<1.0)
-			{
-				loc=(loc0+loc1)/2.0;
+               // check whether i is in inds
+               bool b_inds=false;
+               if(inds.empty())
+               {
+                    b_inds=true;
                }
-			else
-			{
-                    int last_j = loc_vec.size()-1;
+               else
+               {
+                    for(int ii=0; ii<inds.size(); ii++)
+                    {
+                         if(i == inds.at(ii))
+                         {
+                              b_inds=true;
+                              break;
+                         }
+                    }
+               }
 
-				XYZ lastpos, lastpos2;
-                    if (last_j>=0 && b_use_last_approximate) //091114 PHC make it more stable by conditioned on previous location
-				{
-					lastpos = loc_vec.at(last_j);
-                         if (dataViewProcBox.isInner(lastpos, 0.5))
-					{
-						XYZ v_1_0 = loc1-loc0, v_0_last=loc0-lastpos;
-						XYZ nearestloc = loc0-v_1_0*dot(v_0_last, v_1_0)/dot(v_1_0, v_1_0); //since loc0!=loc1, this is safe
+               // only process resampled strokes
+               if(i==0 || i==(N-1) || b_inds)
+               {
+                    const MarkerPos & pos = list_listCurvePos.at(index).at(i); // change from 0 to index for different curves, ZJL
 
-						double ranget = (length01/2.0)>10?10:(length01/2.0); //at most 30 pixels aparts
+                    //100730 RZC, in View space, keep for dot(clip, pos)>=0
+                    double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+                    clipplane[3] = viewClip;
+                    ViewPlaneToModel(pos.MV, clipplane);
 
-						XYZ D = v_1_0; normalize(D);
-						loc0 = nearestloc - D*(ranget);
-						loc1 = nearestloc + D*(ranget);
+                    XYZ loc0, loc1, lastloc0;
+                    _MarkerPos_to_NearFarPoint(pos, loc0, loc1);
+
+                    XYZ loc;
+                    float length01 = dist_L2(loc0, loc1);
+                    if (length01<1.0)
+                    {
+                         loc=(loc0+loc1)/2.0;
+                    }
+                    else
+                    {
+                         int last_j = loc_vec.size()-1;
+
+                         XYZ lastpos;
+                         if (last_j>=0 && b_use_last_approximate) //091114 PHC make it more stable by conditioned on previous location
+                         {
+                              lastpos = loc_vec.at(last_j);
+                              if (dataViewProcBox.isInner(lastpos, 0.5))
+                              {
+                                   XYZ v_1_0 = loc1-loc0, v_0_last=loc0-lastpos;
+                                   XYZ nearestloc = loc0-v_1_0*dot(v_0_last, v_1_0)/dot(v_1_0, v_1_0); //since loc0!=loc1, this is safe
+
+                                   double ranget = (length01/2.0)>10?10:(length01/2.0); //at most 30 pixels aparts
+
+                                   XYZ D = v_1_0; normalize(D);
+                                   loc0 = nearestloc - D*(ranget);
+                                   loc1 = nearestloc + D*(ranget);
+                              }
                          }
 
                          // use fastmarching to create curve between (lastloc0,lastloc1) and (loc0,loc1)
@@ -983,35 +1005,57 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                               tar_markers.push_back(mloci);
                          }
 
-                         // XYZ lastD = last_v_1_0; normalize(lastD);
-                         // XYZ last_v_1_0 = lastloc1-lastloc0;
-                         // float last_length = dist_L2(lastloc0, lastloc1);
+                         // sub_markers at the first stroke
+                         if(i==0)
+                         {
+                              // using a series of markers
+                              // XYZ v_1_0 = loc1-loc0;
+                              // XYZ D1 = v_1_0; normalize(D1);
 
-                         // for(int ii=0; ii<(int)(last_length+0.5); ii++)
-                         // {
-                         //      XYZ lastloci = lastloc0 + lastD*ii; // incease 1 each step
-                         //      MyMarker mlastloci = MyMarker(lastloci.x, lastloci.y, lastloci.z);
-                         //      sub_markers.puch_back(mlastloci);
-                         // }
+                              // float length1 = dist_L2(loc0, loc1);
+                              // int nstep = int(length1 + 0.5);
+                              // double step;
+                              // if(length1<0.5)
+                              //      step=1.0;
+                              // else
+                              //      step = length1/nstep;
 
-                         // sub_markers is the lastpos
-                         MyMarker mlastloc = MyMarker(lastpos.x, lastpos.y, lastpos.z);
-                         sub_markers.push_back(mlastloc);
+                              // for (int ii=0; ii<=nstep; ii++)
+                              // {
+                              //      XYZ loci1 = loc0 + D1*step*(ii);
+                              //      if (dataViewProcBox.isInner(loci1, 0.5))
+                              //      {
+                              //           MyMarker mloci1 = MyMarker(loci1.x, loci1.y, loci1.z);
+                              //           sub_markers.push_back(mloci1);
+                              //      }
+                              // }
+
+                              // using one marker of center of mass
+                              XYZ loci=getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+                              MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
+                              sub_markers.push_back(mloci);
+                         }
+                         else
+                         {
+                              // sub_markers is the lastpos
+                              MyMarker mlastloc = MyMarker(lastpos.x, lastpos.y, lastpos.z);
+                              sub_markers.push_back(mlastloc);
+                         }
 
                          unsigned char* pImg = curImg->getRawData();
 
                          // waiting time threshold
-                         clock_t time_thresh = 0.01; //10ms
+                         //clock_t time_thresh = 0.1; //100ms
 
                          // call fastmarching
                          // using time spend on each step to decide whether the tracing in this step is acceptable.
-                         clock_t t1=clock();
+                         //clock_t t1=clock();
                          fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz);
-                         if( (clock()-t1)*CLOCKS_PER_SEC > time_thresh )
-                         {
-                              loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
-                         }
-                         else
+                         // if( (clock()-t1)*CLOCKS_PER_SEC > time_thresh )
+                         // {
+                         //      loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+                         // }
+                         // else
                          {
                               if(!outswc.empty())
                               {
@@ -1038,20 +1082,18 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                          }
                          //always remember to free the potential-memory-problematic fastmarching_linker return value
                          clean_fm_marker_vector(outswc);
-                    }
-                    else
-                    {
-                         loc=getCenterOfLineProfile(loc0, loc1, clipplane, chno);
-                    }
-			}
 
-			if (dataViewProcBox.isInner(loc, 0.5))
-			{
-				dataViewProcBox.clamp(loc);
-				loc_vec.push_back(loc);
-			}
-		}
-	}
+                    }
+
+                    if (dataViewProcBox.isInner(loc, 0.5))
+                    {
+                         dataViewProcBox.clamp(loc);
+                         loc_vec.push_back(loc);
+                    }
+               }
+          }
+     }
+
 
      N = loc_vec.size(); //100722 RZC
      if(N<1) return; // all points are outside the volume. ZJL 110913
@@ -1123,77 +1165,147 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
      adaptiveCurveResampling(loc_vec, loc_vec_resampled, stepsize);
 
      N=loc_vec.size();
-
-     if (b_addthiscurve)
+     int NS = list_listCurvePos.at(index).size();
+     if(N>3*NS)
      {
-          addCurveSWC(loc_vec, chno);
+          if (QMessageBox::question(0, "", "The created curve may not correct. Do you want to continue create curve?", QMessageBox::Yes, QMessageBox::No)
+               == QMessageBox::Yes)
+          {
+               if (b_addthiscurve)
+               {
+                    addCurveSWC(loc_vec, chno);
+               }
+               else
+               {
+                    b_addthiscurve = true;
+                    endSelectMode();
+               }
+
+          }
      }
      else
      {
-          b_addthiscurve = true; //in this case, always reset to default to draw curve to add to a swc instead of just  zoom
-          endSelectMode();
+          if (b_addthiscurve)
+          {
+               addCurveSWC(loc_vec, chno);
+          }
+          else
+          {
+               b_addthiscurve = true; //in this case, always reset to default to draw curve to add to a swc instead of just  zoom
+               endSelectMode();
+          }
      }
+
 }
 
 
+/**
+ * Resample curve strokes:
+ * 1. compute max value on each stroke viewing direction, and get a vector of these max values
+ * 2. sort this vector, and return stroke indexes that their max values are above 10%
+*/
+void  Renderer_gl1::resampleCurveStrokes(int index, int chno, vector<int> &ids)
+{
+     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+     My4DImage* curImg = 0;
+     if (w)
+          curImg = v3dr_getImage4d(_idep);
 
-// void  Renderer_gl1::getMidValue()
-// {
-//      V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-//      My4DImage* curImg = 0;
-//      if (w)
-//           curImg = v3dr_getImage4d(_idep);
+	int N = list_listCurvePos.at(index).size();
+     vector<double> maxval;
+     maxval.clear();
 
-// 	int N = list_listCurvePos.at(index).size(); // change from 0 to index for different curves, ZJL
-//      vector<double> maxval;
-//      maxval.clear();
-//      for (int i=0; i<N; i++)
-//      {
-//           const MarkerPos & pos = list_listCurvePos.at(index).at(i); // change from 0 to index for different curves, ZJL
-//           ////////////////////////////////////////////////////////////////////////
-//           //100730 RZC, in View space, keep for dot(clip, pos)>=0
-//           double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
-//           clipplane[3] = viewClip;
-//           ViewPlaneToModel(pos.MV, clipplane);
-//           //qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
-//           ////////////////////////////////////////////////////////////////////////
+     for (int i=0; i<N; i++)
+     {
+          const MarkerPos & pos = list_listCurvePos.at(index).at(i); // change from 0 to index for different curves, ZJL
+          ////////////////////////////////////////////////////////////////////////
+          //100730 RZC, in View space, keep for dot(clip, pos)>=0
+          double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+          clipplane[3] = viewClip;
+          ViewPlaneToModel(pos.MV, clipplane);
+          //qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
+          ////////////////////////////////////////////////////////////////////////
 
-//           XYZ loc0, loc1;
-//           _MarkerPos_to_NearFarPoint(pos, loc0, loc1);
+          XYZ loc0, loc1;
+          _MarkerPos_to_NearFarPoint(pos, loc0, loc1);
 
-//           // get max value on each (loc0,loc)
+          // get max value on each (loc0,loc)
+          XYZ D = loc1-loc0; normalize(D);
 
-//           float length01 = dist_L2(loc0, loc1);
+		unsigned char* vp = 0;
+		switch (curImg->getDatatype())
+		{
+			case V3D_UINT8:
+				vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1);
+				break;
+			case V3D_UINT16:
+				vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(short int);
+				break;
+			case V3D_FLOAT32:
+				vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(float);
+				break;
+			default:
+				v3d_msg("Unsupported data type found. You should never see this.", 0);
+				return;
+		}
 
-//           double maxvali = 0.0;
-//           XYZ loc;
-//           XYZ D = loc1-loc0;  normalize(D);
-//           for(int ii=0; ii<(int)(length01+0.5); ii++)
-//           {
-//                loc = loc0 + D*ii;
-//                double vali=curImg->at(loc.x, loc.y, loc.z);
-//                if(vali>maxvali)
-//                     maxvali = vali;
-//           }
-//           maxval.push_back(maxvali);
-//      }
+          double length = norm(loc1-loc0);
+          float maxvali=0.0;
 
-//      // using map to sort maxval
-//      map<double, int> max_scor;
-//      for(int i=0; i<maxval.size(); i++)
-//      {
-//           max_score[maxval.at(i)] = i;
-//      }
+          double step;
+          int nstep = int(length + 0.5);
+          if(length<0.5)
+               step = 1.0;
+          else
+               step = length/nstep;
 
-//      map <double, int>::iterator it;
-//      vector<int> ids;
-//      int count=0;
-//      for(it=max_score.rbegin(); it!=max_score.rend(); it++)
-//      {
-//           count++;
-//           if(count >= max_score.size()/10.0)
-//                break;
-//           ids.push_back(it->second);
-//      }
+          for (int i=0; i<=nstep; i++)
+          {
+               XYZ P;
+               if(length<0.5)
+                    P = (loc0+loc1)*0.5;
+               else
+                    P= loc0 + D*step*(i);
+               float value;
+               switch (curImg->getDatatype())
+               {
+                    case V3D_UINT8:
+                         value = sampling3dAllTypesatBounding( vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                         break;
+                    case V3D_UINT16:
+                         value = sampling3dAllTypesatBounding( (short int *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                         break;
+                    case V3D_FLOAT32:
+                         value = sampling3dAllTypesatBounding( (float *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                         break;
+                    default:
+                         v3d_msg("Unsupported data type found. You should never see this.", 0);
+                         return;
+               }
 
-// }
+               if(value > maxvali)
+                    maxvali = value;
+          }
+
+          maxval.push_back(maxvali);
+     }
+
+     // using map to sort maxval
+     map<double, int> max_score;
+     for(int i=0; i<maxval.size(); i++)
+     {
+          max_score[maxval.at(i)] = i;
+     }
+
+     map<double, int>::reverse_iterator it;
+
+     int count=0;
+     for(it=max_score.rbegin(); it!=max_score.rend(); it++)
+     {
+          count++;
+          if(count >= max_score.size()/10.0)
+               break;
+          ids.push_back(it->second);
+     }
+
+}
