@@ -387,7 +387,7 @@ bool ScreenPatternAnnotator::annotate() {
     // compartment channel plane.
     ImageLoader imageLoaderForMip;
     My4DImage * mip=imageLoaderForMip.create2DMIPFromStack(imageGlobal16ColorImage);
-    addXYGhostPlaneFrom3DTo2D(imageGlobal16ColorImage, BA_20X_XYPLANE_Z_INDEX /* Z index */, 2 /* channel */, mip);
+    addXYGhostPlaneFrom3DTo2D(inputImage, BA_20X_XYPLANE_Z_INDEX /* Z index */, 2 /* channel */, mip);
     imageLoaderForMip.saveImage(mip, returnFullPathWithOutputPrefix("heatmap16ColorMIP.tif"));
 
     // Load Compartment Index
