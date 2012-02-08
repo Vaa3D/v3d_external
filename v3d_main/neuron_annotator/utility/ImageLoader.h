@@ -72,6 +72,7 @@ public:
     V3DLONG decompressPBD8(unsigned char * sourceData, unsigned char * targetData, V3DLONG sourceLength);
     V3DLONG decompressPBD16(unsigned char * sourceData, unsigned char * targetData, V3DLONG sourceLength);
     void create2DMIPFromStack(My4DImage * image, QString mipFilepath);
+    My4DImage* create2DMIPFromStack(My4DImage * image);
 
     bool mapChannels();
 

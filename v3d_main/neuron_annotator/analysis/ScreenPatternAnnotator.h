@@ -102,10 +102,13 @@ private:
     My4DImage * createSub3DImageFromMask(My4DImage * image, int index, SPA_BoundingBox bb);
     My4DImage * createNormalizedImage(My4DImage * image, int maskIndex);
     My4DImage * createMIPFromImage(My4DImage * image);
+
     My4DImage * getChannelSubImageFromMask(My4DImage * sourceImage, int sourceChannel, int index, SPA_BoundingBox bb, bool normalize, double normalizationCutoff /* 0.0-1.0 */);
     My4DImage * createViewableImage(My4DImage * sourceImage, int borderSize);
     My4DImage * cubifyImage(My4DImage * sourceImage, int cubeSize, int type);
     double * quantifyCompartmentZones(My4DImage * sourceImage, My4DImage * compartmentIndex, int index, SPA_BoundingBox bb);
+    void addXYGhostPlaneFrom3DTo2D(My4DImage* stackImage, int zOffset, int stackChannel, My4DImage* image);
+
 
 };
 

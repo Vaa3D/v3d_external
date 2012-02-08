@@ -14,6 +14,8 @@ const int CUBE_SIZE = 5;
 const int CUBIFY_TYPE_AVERAGE=1;
 const int CUBIFY_TYPE_MODE=2;
 const int LOWER_ZONE_THRESHOLD=31;
+const int BA_20X_XYPLANE_Z_INDEX=105;
+const int GHOST_INTENSITY_LEVEL=15;
 
 ScreenPatternAnnotator::ScreenPatternAnnotator()
 {
@@ -381,8 +383,12 @@ bool ScreenPatternAnnotator::annotate() {
     }
 
     // Create MIP
+    // First - we need to add an outline for the pattern to make sense - we will add a faint border from a
+    // compartment channel plane.
     ImageLoader imageLoaderForMip;
-    imageLoaderForMip.create2DMIPFromStack(imageGlobal16ColorImage, returnFullPathWithOutputPrefix("heatmap16ColorMIP.tif"));
+    My4DImage * mip=imageLoaderForMip.create2DMIPFromStack(imageGlobal16ColorImage);
+    addXYGhostPlaneFrom3DTo2D(imageGlobal16ColorImage, BA_20X_XYPLANE_Z_INDEX /* Z index */, 2 /* channel */, mip);
+    imageLoaderForMip.saveImage(mip, returnFullPathWithOutputPrefix("heatmap16ColorMIP.tif"));
 
     // Load Compartment Index
     ImageLoader compartmentIndexLoader;
@@ -1164,3 +1170,38 @@ My4DImage * ScreenPatternAnnotator::create3DHeatmapFromChannel(My4DImage * sourc
 }
 
 
+void ScreenPatternAnnotator::addXYGhostPlaneFrom3DTo2D(My4DImage* stackImage, int zOffset, int stackChannel, My4DImage* image)
+{
+    v3d_uint8* sData=stackImage->getRawDataAtChannel(stackChannel);
+    V3DLONG xmax=stackImage->getXDim();
+    V3DLONG ymax=stackImage->getYDim();
+    V3DLONG zmax=stackImage->getZDim();
+    if (xmax!=image->getXDim()) {
+        qDebug() << "addXYGhostPlaneFrom3Dto2D: x dimensions do not match";
+        return;
+    }
+    if (ymax!=image->getYDim()) {
+        qDebug() << "addXYGhostPlaneFrom3Dto2D: y dimensions do not match";
+    }
+    V3DLONG sStart=zOffset*xmax*ymax;
+    v3d_uint8* rData=image->getRawDataAtChannel(0);
+    v3d_uint8* gData=image->getRawDataAtChannel(1);
+    v3d_uint8* bData=image->getRawDataAtChannel(2);
+    for (V3DLONG i=0;i<xmax*ymax;i++) {
+        v3d_uint8 sv=sData[sStart+i];
+        if (sv>0) {
+            v3d_uint8 rv=rData[i];
+            if (rv<GHOST_INTENSITY_LEVEL) {
+                rData[i]=GHOST_INTENSITY_LEVEL;
+            }
+            v3d_uint8 gv=gData[i];
+            if (gv<GHOST_INTENSITY_LEVEL) {
+                gData[i]=GHOST_INTENSITY_LEVEL;
+            }
+            v3d_uint8 bv=bData[i];
+            if (bv<GHOST_INTENSITY_LEVEL) {
+                bData[i]=GHOST_INTENSITY_LEVEL;
+            }
+        }
+    }
+}

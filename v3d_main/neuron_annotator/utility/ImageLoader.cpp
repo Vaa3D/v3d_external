@@ -304,7 +304,14 @@ bool ImageLoader::mapChannels() {
     return saveStatus;
 }
 
-void ImageLoader::create2DMIPFromStack(My4DImage * image, QString mipFilepath) {
+void ImageLoader::create2DMIPFromStack(My4DImage *image, QString mipFilepath) {
+    My4DImage * mip=create2DMIPFromStack(image);
+    qDebug() << "Saving mip to file " << mipFilepath;
+    mip->saveImage(mipFilepath.toAscii().data());
+    delete mip;
+}
+
+My4DImage* ImageLoader::create2DMIPFromStack(My4DImage * image) {
     Image4DProxy<My4DImage> stackProxy(image);
     My4DImage * mip = new My4DImage();
     mip->loadImage( stackProxy.sx, stackProxy.sy, 1 /* z */, stackProxy.sc, V3D_UINT8 );
@@ -342,9 +349,7 @@ void ImageLoader::create2DMIPFromStack(My4DImage * image, QString mipFilepath) {
             }
         }
     }
-    qDebug() << "Saving mip to file " << mipFilepath;
-    mip->saveImage(mipFilepath.toAscii().data());
-    delete mip;
+    return mip;
 }
 
 void ImageLoader::convertType2Type1InPlace(My4DImage *image) {
