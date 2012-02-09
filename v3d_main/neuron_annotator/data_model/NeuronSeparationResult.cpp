@@ -10,9 +10,9 @@ namespace jfrc {
 std::istream& NeuronSeparationResult::loadChk4File(std::istream& is, bool debug)
 {
     // Read separation parameters
-    is.read((char*)&c, sizeof(double)); // TODO - what is "c"?
-    is.read((char*)&e, sizeof(double)); // TODO - what is "e"?
-    is.read((char*)&s, sizeof(int)); // TODO - what is "s"?
+    is.read((char*)&c, sizeof(double)); // "c" is the intensity z-score for seeding neuron fragments
+    is.read((char*)&e, sizeof(double)); // "e" is the intensity z-score for growing neuron fragments
+    is.read((char*)&s, sizeof(int)); // "s" is the minimum voxel size for a neuron fragment
     if (debug) {
         cout << "Parameters: c = " << c << "; e = " << e << "; s = " << s << endl;
     }

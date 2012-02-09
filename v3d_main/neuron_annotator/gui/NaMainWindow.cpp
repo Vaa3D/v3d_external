@@ -75,6 +75,7 @@ NaMainWindow::NaMainWindow()
     , undoStack(NULL)
 {
     ui.setupUi(this);
+    setAcceptDrops(true);
 
     // hide compartment map until it works correctly and is not so slow on Mac
     ui.compartmentSelectGroupBox->hide();
@@ -329,6 +330,71 @@ NaMainWindow::NaMainWindow()
     initializeStereo3DOptions();
     connectCustomCut();
 }
+
+/////////////////////////////////////////////////////
+// Drop volume files onto main window to view them //
+/////////////////////////////////////////////////////
+
+// Return file name if the dragged item can be usefully dropped into the NeuronAnnotator main window
+QString checkDragEvent(QDropEvent* event)
+{
+    if (! event->mimeData()->hasFormat("text/uri-list"))
+        return ""; // only files are accepted
+
+    QList<QUrl> urls = event->mimeData()->urls();
+    if (urls.isEmpty())
+        return "";
+
+    QString fileName = urls.first().toLocalFile();
+    if (fileName.isEmpty())
+        return "";
+
+    // check for recognized file extensions
+    QString fileExtension = QFileInfo(fileName).suffix().toLower();
+    if (fileExtension == "lsm")
+        return fileName;
+    if (fileExtension.startsWith("tif")) // tif or tiff
+        return fileName;
+    if (fileExtension.startsWith("v3d")) // v3draw or v3dpdb
+        return fileName;
+
+    return "";
+}
+
+void NaMainWindow::dragEnterEvent(QDragEnterEvent * event)
+{
+    QString fileName = checkDragEvent(event);
+    if (! fileName.isEmpty())
+        event->acceptProposedAction();
+    // qDebug() << "NaMainWindow::dragEnterEvent" << fileName << __FILE__ << __LINE__;
+}
+
+void NaMainWindow::dropEvent(QDropEvent * event)
+{
+    QString fileName = checkDragEvent(event);
+    if (fileName.isEmpty()) return;
+
+    // If this looks like a neuron separation directory, load it in NeuronAnnotator
+    QDir directory = QFileInfo(fileName).dir();
+    if (   QFile(directory.filePath("ConsolidatedLabel.v3dpbd")).exists()
+        || QFile(directory.filePath("ConsolidatedLabel.tif")).exists() )
+    {
+        qDebug() << "Found separated neurons directory";
+        openMulticolorImageStack(directory.absolutePath());
+    }
+    else
+    {
+        qDebug() << "Switching to Vaa3D default mode to view single image stack";
+        ui.actionV3DDefault->trigger(); // switch mode
+        emit defaultVaa3dFileLoadRequested(fileName);
+    }
+
+    // qDebug() << "NaMainWindow::dropEvent" << fileName << __FILE__ << __LINE__;
+}
+
+///////////////////////////////////
+// User clip planes in 3D viewer //
+///////////////////////////////////
 
 void NaMainWindow::connectCustomCut()
 {

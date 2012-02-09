@@ -119,6 +119,9 @@ public:
         if (naMainWindowIsActive==false) {
             if (naMainWindow==0) {
                 naMainWindow = new NaMainWindow();
+                // Allow NeuronAnnotator to activate file load in default window
+                connect(naMainWindow, SIGNAL(defaultVaa3dFileLoadRequested(QString)),
+                        mainWindow, SLOT(loadV3DFile(QString)));
             }
             activateMainWindowHelper(naMainWindow);
             naMainWindowIsActive=true;

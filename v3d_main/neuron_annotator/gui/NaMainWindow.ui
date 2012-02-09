@@ -1753,13 +1753,6 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <property name="title">
      <string>View</string>
     </property>
-    <widget class="QMenu" name="menuMode">
-     <property name="title">
-      <string>Mode</string>
-     </property>
-     <addaction name="actionV3DDefault"/>
-     <addaction name="actionNeuronAnnotator"/>
-    </widget>
     <widget class="QMenu" name="menuStereo_3D">
      <property name="title">
       <string>Stereo 3D</string>
@@ -1785,12 +1778,18 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <addaction name="actionShow_Brain_Compartments"/>
     <addaction name="separator"/>
     <addaction name="menuStereo_3D"/>
-    <addaction name="separator"/>
-    <addaction name="menuMode"/>
+   </widget>
+   <widget class="QMenu" name="menuWork_Mode">
+    <property name="title">
+     <string>Work-Mode</string>
+    </property>
+    <addaction name="actionV3DDefault"/>
+    <addaction name="actionNeuronAnnotator"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuView"/>
+   <addaction name="menuWork_Mode"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>

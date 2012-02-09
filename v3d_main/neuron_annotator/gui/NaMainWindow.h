@@ -89,6 +89,7 @@ public:
 signals:
     void channelVisibilityChanged(int, bool);
     void nutatingChanged(bool);
+    void defaultVaa3dFileLoadRequested(QString fileName);
 
 public slots:
     // void selectCurtain(int index);
@@ -147,6 +148,8 @@ protected:
     void addDirToRecentFilesList(QDir);
     void updateRecentFileActions();
     void connectCustomCut();
+    void dragEnterEvent(QDragEnterEvent *);
+    void dropEvent(QDropEvent *);
 
 private:
     DataFlowModel* dataFlowModel;
