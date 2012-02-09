@@ -5,7 +5,7 @@
 
 /******************************************************************************
  * Fast marching based region growing, will connect sub_marker and tar_marker
- * 
+ *
  * Input :  sub_marker      the subject marker
  *          tar_marker      the target marker
  *          inimg1d         original input image
@@ -21,6 +21,7 @@
 #include <map>
 #include <iostream> // cerr
 #include <set>
+#include <time.h>
 #include "heap.h"
 
 using namespace std;
@@ -47,8 +48,11 @@ void clean_fm_marker_vector(vector<MyMarker*> &outswc)
     }
 }
 
-template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<MyMarker> & tar_markers, T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, int cnn_type = 2)
+// if time==0, then do not consider consuming time, time is in seconds
+template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<MyMarker> & tar_markers, T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, float time, int cnn_type = 2)
 {
+     clock_t t1=clock(); // start time
+
         enum{ALIVE = -1, TRIAL = 0, FAR = 1};
 
         long tol_sz = sz0 * sz1 * sz2;
@@ -123,6 +127,11 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
         {
                 double process2 = (time_counter++)*1000.0/tol_sz;
                 if(process2 - process1 >= 1){cout<<"\r"<<((int)process2)/10.0<<"%";cout.flush(); process1 = process2;}
+                // time consuming until this pos
+                if((time!=0)&&((clock()-t1)*CLOCKS_PER_SEC > time ))
+                {
+                     return false;
+                }
 
                 HeapElemX* min_elem = heap.delete_min();
                 elems.erase(min_elem->img_ind);

@@ -590,7 +590,6 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
 {
 	qDebug("  Renderer_gl1::solveCurveMarkersFastMarching");
 
-#ifndef test_main_cpp
 	vector <XYZ> loc_vec_input;
      loc_vec_input.clear();
 
@@ -664,7 +663,7 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
                tar_markers.push_back(mloc1);
 
                // call fastmarching
-               fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz);
+               fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz, 0);
 
                loc_vec.push_back(loc0);
 
@@ -694,7 +693,6 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
 
           if(loc_vec.size()<1) return; // all points are outside the volume. ZJL 110913
 
-#ifndef test_main_cpp
           // check if there is any existing neuron node is very close to the starting and ending points, if yes, then merge
 
           MainWindow* V3Dmainwindow = 0;
@@ -763,11 +761,9 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
           loc_vec_resampled.clear();
           adaptiveCurveResampling(loc_vec, loc_vec_resampled, stepsize);
 
-          ////////////////////////////////////////////////////////////////////////
           int chno = checkCurChannel();
           if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
-          ////////////////////////////////////////////////////////////////////////
-#endif
+
           if (b_addthiscurve)
           {
                addCurveSWC(loc_vec_resampled, chno);
@@ -778,7 +774,6 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
                endSelectMode();
           }
      }
-#endif
 }
 /**
  * @brief The curve is resampled based on its local curvature:
@@ -901,10 +896,8 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 		b_use_last_approximate = V3Dmainwindow->global_setting.b_3dcurve_inertia;
 #endif
 
-	////////////////////////////////////////////////////////////////////////
 	int chno = checkCurChannel();
 	if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
-	////////////////////////////////////////////////////////////////////////
 	qDebug()<<"\n solveCurveMarkerLists: 3d curve in channel # "<<((chno<0)? chno :chno+1);
 
 	loc_vec.clear();
@@ -959,8 +952,25 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                     clipplane[3] = viewClip;
                     ViewPlaneToModel(pos.MV, clipplane);
 
-                    XYZ loc0, loc1, lastloc0;
+                    XYZ loc0, loc1;
                     _MarkerPos_to_NearFarPoint(pos, loc0, loc1);
+
+                    // prepare the first sub_markers used in fm
+                    // vector<MyMarker> sub_markers_1st;
+                    // if(i==0)
+                    // {
+                    //      XYZ v_1_0_1st = loc1-loc0;
+                    //      XYZ D_1st = v_1_0_1st; normalize(D_1st);
+                    //      float length_1st = dist_L2(loc0, loc1);
+
+                    //      for(int ii=0; ii<=(int)(length_1st+0.5); ii++)
+                    //      {
+                    //           XYZ loci = loc0 + D_1st*ii; // incease 1 each step
+                    //           MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
+                    //           sub_markers_1st.push_back(mloci);
+                    //      }
+                    // }
+
 
                     XYZ loc;
                     float length01 = dist_L2(loc0, loc1);
@@ -971,118 +981,100 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                     else
                     {
                          int last_j = loc_vec.size()-1;
-
                          XYZ lastpos;
-                         if (last_j>=0 && b_use_last_approximate) //091114 PHC make it more stable by conditioned on previous location
+                         if(last_j<0) //i==0
+                         {
+                              // always push_back the 1st loc
+                              loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+                         }
+                         else if (last_j>=0)
                          {
                               lastpos = loc_vec.at(last_j);
-                              if (dataViewProcBox.isInner(lastpos, 0.5))
+                              if(b_use_last_approximate) //091114 PHC make it more stable by conditioned on previous location
                               {
-                                   XYZ v_1_0 = loc1-loc0, v_0_last=loc0-lastpos;
-                                   XYZ nearestloc = loc0-v_1_0*dot(v_0_last, v_1_0)/dot(v_1_0, v_1_0); //since loc0!=loc1, this is safe
-
-                                   double ranget = (length01/2.0)>10?10:(length01/2.0); //at most 30 pixels aparts
-
-                                   XYZ D = v_1_0; normalize(D);
-                                   loc0 = nearestloc - D*(ranget);
-                                   loc1 = nearestloc + D*(ranget);
-                              }
-                         }
-
-                         // use fastmarching to create curve between (lastloc0,lastloc1) and (loc0,loc1)
-                         // create MyMarker list
-                         vector<MyMarker> sub_markers;
-                         vector<MyMarker> tar_markers;
-                         vector<MyMarker*> outswc;
-                         XYZ v_1_0 = loc1-loc0;
-                         XYZ D = v_1_0; normalize(D);
-                         float length = dist_L2(loc0, loc1);
-
-                         for(int i=0; i<(int)(length+0.5); i++)
-                         {
-                              XYZ loci = loc0 + D*i; // incease 1 each step
-                              MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
-                              tar_markers.push_back(mloci);
-                         }
-
-                         // sub_markers at the first stroke
-                         if(i==0)
-                         {
-                              // using a series of markers
-                              // XYZ v_1_0 = loc1-loc0;
-                              // XYZ D1 = v_1_0; normalize(D1);
-
-                              // float length1 = dist_L2(loc0, loc1);
-                              // int nstep = int(length1 + 0.5);
-                              // double step;
-                              // if(length1<0.5)
-                              //      step=1.0;
-                              // else
-                              //      step = length1/nstep;
-
-                              // for (int ii=0; ii<=nstep; ii++)
-                              // {
-                              //      XYZ loci1 = loc0 + D1*step*(ii);
-                              //      if (dataViewProcBox.isInner(loci1, 0.5))
-                              //      {
-                              //           MyMarker mloci1 = MyMarker(loci1.x, loci1.y, loci1.z);
-                              //           sub_markers.push_back(mloci1);
-                              //      }
-                              // }
-
-                              // using one marker of center of mass
-                              XYZ loci=getCenterOfLineProfile(loc0, loc1, clipplane, chno);
-                              MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
-                              sub_markers.push_back(mloci);
-                         }
-                         else
-                         {
-                              // sub_markers is the lastpos
-                              MyMarker mlastloc = MyMarker(lastpos.x, lastpos.y, lastpos.z);
-                              sub_markers.push_back(mlastloc);
-                         }
-
-                         unsigned char* pImg = curImg->getRawData();
-
-                         // waiting time threshold
-                         //clock_t time_thresh = 0.1; //100ms
-
-                         // call fastmarching
-                         // using time spend on each step to decide whether the tracing in this step is acceptable.
-                         //clock_t t1=clock();
-                         fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz);
-                         // if( (clock()-t1)*CLOCKS_PER_SEC > time_thresh )
-                         // {
-                         //      loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
-                         // }
-                         // else
-                         {
-                              if(!outswc.empty())
-                              {
-                                   // the 1st loc in outswc is the last pos got in fm
-                                   int nn = outswc.size();
-                                   for(int j=nn-1; j>0; j-- )
+                                   if (dataViewProcBox.isInner(lastpos, 0.5))
                                    {
-                                        XYZ locj;
-                                        locj.x=outswc.at(j)->x;
-                                        locj.y=outswc.at(j)->y;
-                                        locj.z=outswc.at(j)->z;
-
-                                        loc_vec.push_back(locj);
+                                        XYZ v_1_0 = loc1-loc0, v_0_last=loc0-lastpos;
+                                        XYZ nearestloc = loc0-v_1_0*dot(v_0_last, v_1_0)/dot(v_1_0, v_1_0); //since loc0!=loc1, this is safe
+                                        double ranget = (length01/2.0)>10?10:(length01/2.0); //at most 30 pixels aparts
+                                        XYZ D = v_1_0; normalize(D);
+                                        loc0 = nearestloc - D*(ranget);
+                                        loc1 = nearestloc + D*(ranget);
                                    }
-                                   // the last one
-                                   loc.x = outswc.at(0)->x;
-                                   loc.y = outswc.at(0)->y;
-                                   loc.z = outswc.at(0)->z;
                               }
-                              else
+
+
+                              // use fastmarching to create curve between (lastloc0,lastloc1) and (loc0,loc1)
+                              // create MyMarker list
+                              vector<MyMarker> sub_markers;
+                              vector<MyMarker> tar_markers;
+                              vector<MyMarker*> outswc;
+
+                              // for sub_markers
+                              // if(last_j==0)
+                              // {
+                              //      sub_markers = sub_markers_1st; //the first point
+                              // }
+                              // else
+                              {
+                                   // sub_markers is the lastpos
+                                   MyMarker mlastloc = MyMarker(lastpos.x, lastpos.y, lastpos.z);
+                                   sub_markers.push_back(mlastloc);
+                              }
+
+                              XYZ v_1_0 = loc1-loc0;
+                              XYZ D = v_1_0; normalize(D);
+                              float length = dist_L2(loc0, loc1);
+
+                              for(int ii=0; ii<(int)(length+0.5); ii++)
+                              {
+                                   XYZ loci = loc0 + D*ii; // incease 1 each step
+                                   MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
+                                   tar_markers.push_back(mloci);
+                              }
+
+                              unsigned char* pImg = curImg->getRawData();
+
+                              // waiting time threshold
+                              float time_thresh = 0.2; //in seconds
+
+                              // call fastmarching
+                              // using time spend on each step to decide whether the tracing in this step is acceptable.
+                              // if time is over time_thresh, then break and use center method
+                              // I found that the result is not so good when using this time limit
+                              bool res = fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz, 0.0);//time_thresh);
+                              if(!res)
                               {
                                    loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
                               }
-                         }
-                         //always remember to free the potential-memory-problematic fastmarching_linker return value
-                         clean_fm_marker_vector(outswc);
+                              else
+                              {
+                                   if(!outswc.empty())
+                                   {
+                                        // the 1st loc in outswc is the last pos got in fm
+                                        int nn = outswc.size();
+                                        for(int j=nn-1; j>0; j-- )
+                                        {
+                                             XYZ locj;
+                                             locj.x=outswc.at(j)->x;
+                                             locj.y=outswc.at(j)->y;
+                                             locj.z=outswc.at(j)->z;
 
+                                             loc_vec.push_back(locj);
+                                        }
+                                        // the last one
+                                        loc.x = outswc.at(0)->x;
+                                        loc.y = outswc.at(0)->y;
+                                        loc.z = outswc.at(0)->z;
+                                   }
+                                   else
+                                   {
+                                        loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+                                   }
+                              }
+                              //always remember to free the potential-memory-problematic fastmarching_linker return value
+                              clean_fm_marker_vector(outswc);
+                         }
                     }
 
                     if (dataViewProcBox.isInner(loc, 0.5))
@@ -1249,44 +1241,67 @@ void  Renderer_gl1::resampleCurveStrokes(int index, int chno, vector<int> &ids)
 				return;
 		}
 
-          double length = norm(loc1-loc0);
-          float maxvali=0.0;
+          // directly use max value on the line
+          // double length = norm(loc1-loc0);
+          // float maxvali=0.0;
 
-          double step;
-          int nstep = int(length + 0.5);
-          if(length<0.5)
-               step = 1.0;
-          else
-               step = length/nstep;
+          // double step;
+          // int nstep = int(length + 0.5);
+          // if(length<0.5)
+          //      step = 1.0;
+          // else
+          //      step = length/nstep;
 
-          for (int i=0; i<=nstep; i++)
+          // for (int i=0; i<=nstep; i++)
+          // {
+          //      XYZ P;
+          //      if(length<0.5)
+          //           P = (loc0+loc1)*0.5;
+          //      else
+          //           P= loc0 + D*step*(i);
+          //      float value;
+          //      switch (curImg->getDatatype())
+          //      {
+          //           case V3D_UINT8:
+          //                value = sampling3dAllTypesatBounding( vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+          //                break;
+          //           case V3D_UINT16:
+          //                value = sampling3dAllTypesatBounding( (short int *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+          //                break;
+          //           case V3D_FLOAT32:
+          //                value = sampling3dAllTypesatBounding( (float *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+          //                break;
+          //           default:
+          //                v3d_msg("Unsupported data type found. You should never see this.", 0);
+          //                return;
+          //      }
+
+          //      if(value > maxvali)
+          //           maxvali = value;
+          // }
+
+
+          // use value on center of mass for comparing
+          XYZ P  = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+          float value;
+          switch (curImg->getDatatype())
           {
-               XYZ P;
-               if(length<0.5)
-                    P = (loc0+loc1)*0.5;
-               else
-                    P= loc0 + D*step*(i);
-               float value;
-               switch (curImg->getDatatype())
-               {
-                    case V3D_UINT8:
-                         value = sampling3dAllTypesatBounding( vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
-                         break;
-                    case V3D_UINT16:
-                         value = sampling3dAllTypesatBounding( (short int *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
-                         break;
-                    case V3D_FLOAT32:
-                         value = sampling3dAllTypesatBounding( (float *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
-                         break;
-                    default:
-                         v3d_msg("Unsupported data type found. You should never see this.", 0);
-                         return;
-               }
-
-               if(value > maxvali)
-                    maxvali = value;
+               case V3D_UINT8:
+                    value = sampling3dAllTypesatBounding( vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                    break;
+               case V3D_UINT16:
+                    value = sampling3dAllTypesatBounding( (short int *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                    break;
+               case V3D_FLOAT32:
+                    value = sampling3dAllTypesatBounding( (float *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+                    break;
+               default:
+                    v3d_msg("Unsupported data type found. You should never see this.", 0);
+                    return;
           }
+          float maxvali=value;
 
+          // for two approaches
           maxval.push_back(maxvali);
      }
 
