@@ -128,7 +128,7 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
                 double process2 = (time_counter++)*1000.0/tol_sz;
                 if(process2 - process1 >= 1){cout<<"\r"<<((int)process2)/10.0<<"%";cout.flush(); process1 = process2;}
                 // time consuming until this pos
-                if((time!=0)&&((clock()-t1)*CLOCKS_PER_SEC > time ))
+                if((time!=0)&&(((clock()-t1) > time*CLOCKS_PER_SEC) ))
                 {
                      return false;
                 }

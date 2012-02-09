@@ -1746,6 +1746,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     vector <XYZ> loc_vec0;
                     loc_vec0.clear();
                     solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
+
                }
                else
                     solveCurveRefineLast();

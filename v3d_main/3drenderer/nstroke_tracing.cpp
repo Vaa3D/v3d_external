@@ -56,6 +56,9 @@
 #define MAX(a, b)  ( ((a)>(b))? (a) : (b) )
 #endif
 
+#define INSERT_NEIGHBOR(nei) {if (dataViewProcBox.isInner(nei, 0.5)) neibs_loci.push_back(nei);}
+
+
 void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index)
 {
 	bool b_use_seriespointclick = (loc_vec_input.size()>0) ? true : false;
@@ -974,107 +977,130 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 
                     XYZ loc;
                     float length01 = dist_L2(loc0, loc1);
-                    if (length01<1.0)
+                    int last_j = loc_vec.size()-1;
+                    XYZ lastpos;
+                    if(last_j<0) //i==0
                     {
-                         loc=(loc0+loc1)/2.0;
+                         // always push_back the 1st loc
+                         loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
                     }
-                    else
+                    else if (last_j>=0)
                     {
-                         int last_j = loc_vec.size()-1;
-                         XYZ lastpos;
-                         if(last_j<0) //i==0
+                         lastpos = loc_vec.at(last_j);
+                         if(b_use_last_approximate) //091114 PHC make it more stable by conditioned on previous location
                          {
-                              // always push_back the 1st loc
-                              loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+                              if (dataViewProcBox.isInner(lastpos, 0.5))
+                              {
+                                   XYZ v_1_0 = loc1-loc0, v_0_last=loc0-lastpos;
+                                   XYZ nearestloc = loc0-v_1_0*dot(v_0_last, v_1_0)/dot(v_1_0, v_1_0); //since loc0!=loc1, this is safe
+                                   double ranget = (length01/2.0)>10?10:(length01/2.0); //at most 30 pixels aparts
+                                   XYZ D = v_1_0; normalize(D);
+                                   loc0 = nearestloc - D*(ranget);
+                                   loc1 = nearestloc + D*(ranget);
+                              }
                          }
-                         else if (last_j>=0)
+
+
+                         // use fastmarching to create curve between (lastloc0,lastloc1) and (loc0,loc1)
+                         // create MyMarker list
+                         vector<MyMarker> sub_markers;
+                         vector<MyMarker> tar_markers;
+                         vector<MyMarker*> outswc;
+
+                         // for sub_markers
+                         // if(last_j<0 && i!=0)
+                         // {
+                         //      sub_markers = sub_markers_1st; //the first point
+                         // }
+                         // else
                          {
-                              lastpos = loc_vec.at(last_j);
-                              if(b_use_last_approximate) //091114 PHC make it more stable by conditioned on previous location
-                              {
-                                   if (dataViewProcBox.isInner(lastpos, 0.5))
-                                   {
-                                        XYZ v_1_0 = loc1-loc0, v_0_last=loc0-lastpos;
-                                        XYZ nearestloc = loc0-v_1_0*dot(v_0_last, v_1_0)/dot(v_1_0, v_1_0); //since loc0!=loc1, this is safe
-                                        double ranget = (length01/2.0)>10?10:(length01/2.0); //at most 30 pixels aparts
-                                        XYZ D = v_1_0; normalize(D);
-                                        loc0 = nearestloc - D*(ranget);
-                                        loc1 = nearestloc + D*(ranget);
-                                   }
-                              }
+                              // sub_markers is the lastpos
+                              MyMarker mlastloc = MyMarker(lastpos.x, lastpos.y, lastpos.z);
+                              sub_markers.push_back(mlastloc);
+                         }
 
+                         float length = dist_L2(loc0, loc1);
+                         if (length<1.0)
+                         {
+                              XYZ loci=(loc0+loc1)/2.0;
+                              MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
+                              tar_markers.push_back(mloci);
 
-                              // use fastmarching to create curve between (lastloc0,lastloc1) and (loc0,loc1)
-                              // create MyMarker list
-                              vector<MyMarker> sub_markers;
-                              vector<MyMarker> tar_markers;
-                              vector<MyMarker*> outswc;
+                              // add neighbors of loci
+                              // vector<XYZ> neibs_loci;
+                              // neibs_loci.clear();
+                              // INSERT_NEIGHBOR(XYZ(loci.x+1, loci.y, loci.z));
+                              // INSERT_NEIGHBOR(XYZ(loci.x-1, loci.y, loci.z));
+                              // INSERT_NEIGHBOR(XYZ(loci.x, loci.y+1, loci.z));
+                              // INSERT_NEIGHBOR(XYZ(loci.x, loci.y-1, loci.z));
+                              // INSERT_NEIGHBOR(XYZ(loci.x, loci.y, loci.z+1));
+                              // INSERT_NEIGHBOR(XYZ(loci.x, loci.y, loci.z-1));
+                              // INSERT_NEIGHBOR(loci);
 
-                              // for sub_markers
-                              // if(last_j==0)
+                              // set<XYZ> neibs_set;
+                              // for(int jj=0;jj<neibs_loci.size();jj++)
                               // {
-                              //      sub_markers = sub_markers_1st; //the first point
+                              //      neibs_set.insert(neibs_loci.at(jj));
                               // }
-                              // else
-                              {
-                                   // sub_markers is the lastpos
-                                   MyMarker mlastloc = MyMarker(lastpos.x, lastpos.y, lastpos.z);
-                                   sub_markers.push_back(mlastloc);
-                              }
-
+                              // set<XYZ>::iterator it;
+                              // for(it=neibs_set.begin(); it!=neibs_set.end(); it++)
+                              // {
+                              //      tar_markers.push_back(MyMarker(it->x, it->y, it->z));
+                              // }
+                         }
+                         else
+                         {
                               XYZ v_1_0 = loc1-loc0;
                               XYZ D = v_1_0; normalize(D);
-                              float length = dist_L2(loc0, loc1);
-
                               for(int ii=0; ii<(int)(length+0.5); ii++)
                               {
                                    XYZ loci = loc0 + D*ii; // incease 1 each step
                                    MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
                                    tar_markers.push_back(mloci);
                               }
+                         }
 
-                              unsigned char* pImg = curImg->getRawData();
+                         unsigned char* pImg = curImg->getRawData();
 
-                              // waiting time threshold
-                              float time_thresh = 0.2; //in seconds
+                         // waiting time threshold
+                         float time_thresh = 0.2; //in seconds
 
-                              // call fastmarching
-                              // using time spend on each step to decide whether the tracing in this step is acceptable.
-                              // if time is over time_thresh, then break and use center method
-                              // I found that the result is not so good when using this time limit
-                              bool res = fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz, 0.0);//time_thresh);
-                              if(!res)
+                         // call fastmarching
+                         // using time spend on each step to decide whether the tracing in this step is acceptable.
+                         // if time is over time_thresh, then break and use center method
+                         // I found that the result is not so good when using this time limit
+                         bool res = fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz,0.0);// time_thresh);
+                         if(!res)
+                         {
+                              loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+                         }
+                         else
+                         {
+                              if(!outswc.empty())
                               {
-                                   loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+                                   // the 1st loc in outswc is the last pos got in fm
+                                   int nn = outswc.size();
+                                   for(int j=nn-1; j>0; j-- )
+                                   {
+                                        XYZ locj;
+                                        locj.x=outswc.at(j)->x;
+                                        locj.y=outswc.at(j)->y;
+                                        locj.z=outswc.at(j)->z;
+
+                                        loc_vec.push_back(locj);
+                                   }
+                                   // the last one
+                                   loc.x = outswc.at(0)->x;
+                                   loc.y = outswc.at(0)->y;
+                                   loc.z = outswc.at(0)->z;
                               }
                               else
                               {
-                                   if(!outswc.empty())
-                                   {
-                                        // the 1st loc in outswc is the last pos got in fm
-                                        int nn = outswc.size();
-                                        for(int j=nn-1; j>0; j-- )
-                                        {
-                                             XYZ locj;
-                                             locj.x=outswc.at(j)->x;
-                                             locj.y=outswc.at(j)->y;
-                                             locj.z=outswc.at(j)->z;
-
-                                             loc_vec.push_back(locj);
-                                        }
-                                        // the last one
-                                        loc.x = outswc.at(0)->x;
-                                        loc.y = outswc.at(0)->y;
-                                        loc.z = outswc.at(0)->z;
-                                   }
-                                   else
-                                   {
-                                        loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
-                                   }
+                                   loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
                               }
-                              //always remember to free the potential-memory-problematic fastmarching_linker return value
-                              clean_fm_marker_vector(outswc);
                          }
+                         //always remember to free the potential-memory-problematic fastmarching_linker return value
+                         clean_fm_marker_vector(outswc);
                     }
 
                     if (dataViewProcBox.isInner(loc, 0.5))
