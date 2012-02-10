@@ -340,11 +340,11 @@ if [ $DOIT == "YES" ] && [ $SKIPV3DPLUGINS == "NO" ] && [ -e ../released_plugins
 
   mkdir -p ../bin/plugins
   if [ $SYSTEMBITS == "32" ]; then
-    rm -fr ../v3d/plugins/32bit
+    rm -fr ../bin/plugins/32bit
     mv -f v3d/plugins ../bin/plugins/32bit     #copy to the executable folder
   fi
   if [ $SYSTEMBITS == "64" ]; then
-    rm -fr ../v3d/plugins/64bit
+    rm -fr ../bin/plugins/64bit
     mv -f v3d/plugins ../bin/plugins/64bit     #copy to the executable folder
   fi
 fi

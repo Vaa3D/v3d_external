@@ -89,13 +89,13 @@ cd ../
 if [ -d ../released_plugins_more ]; then
   cd ../released_plugins_more
   sh build_plugindemo.sh $ARGS
-  cp -r v3d/plugins/* ../bin/.
+  cp -r v3d/plugins ../bin/.
 fi
 
 if [ -d ../released_plugins ]; then
   cd ../released_plugins
   sh build_plugindemo.sh $ARGS
-  cp -r v3d/plugins/* ../bin/.
+  cp -r v3d/plugins ../bin/.
 fi
 
 cd ../v3d_main
