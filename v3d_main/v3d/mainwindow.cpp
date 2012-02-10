@@ -1352,8 +1352,14 @@ void MainWindow::setCurrentFile(const QString &fileName)
 
     QSettings settings("HHMI", "Vaa3D");
     QStringList files = settings.value("recentFileList").toStringList();
-    files.removeAll(fileName);
-    files.prepend(QFileInfo(fileName).canonicalFilePath());
+    
+    QString curAddName = QFileInfo(fileName).canonicalFilePath();
+    if (curAddName.isEmpty())
+        curAddName = fileName;
+    
+    files.removeAll(curAddName);
+    files.prepend(curAddName);
+    
     while (files.size() > MaxRecentFiles)
         files.removeLast();
 
