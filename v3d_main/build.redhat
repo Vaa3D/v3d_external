@@ -83,24 +83,24 @@ echo =========================================================
 qmake vaa3d.pro $QARGS
 touch v3d_version_info.cpp
 make $ARGS
-cp vaa3d ../../v3d/.   #copy to the system's v3d folder
+cp vaa3d ../../bin/.   #copy to the system's v3d folder
 cd ../
 
 if [ -d ../released_plugins_more ]; then
-cd ../released_plugins_more
-sh build_plugindemo.sh $ARGS
-cp -r v3d/plugins ../v3d/.
+  cd ../released_plugins_more
+  sh build_plugindemo.sh $ARGS
+  cp -r v3d/plugins/* ../bin/.
 fi
 
-
-cd ../released_plugins
-sh build_plugindemo.sh $ARGS
-cp -r v3d/plugins ../v3d/.
-
+if [ -d ../released_plugins ]; then
+  cd ../released_plugins
+  sh build_plugindemo.sh $ARGS
+  cp -r v3d/plugins/* ../bin/.
+fi
 
 cd ../v3d_main
 
-cd ../v3d
+cd ../bin
 echo "Now run Vaa3D..."
 export LD_LIBRARY_PATH=../v3d_main/common_lib/lib
 ./vaa3d

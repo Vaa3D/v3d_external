@@ -314,11 +314,11 @@ fi
 if [ $DOIT == "YES" ]; then
   if [ $SYSTEMBITS == "32" ]; then
     rm -fr ../v3d/vaa3d.app
-    cp -r ./v3d/vaa3d.app ../v3d/.   #copy to the executable folder
+    cp -r ./v3d/vaa3d.app ../bin/.   #copy to the executable folder
   fi
   if [ $SYSTEMBITS == "64" ]; then
     rm -fr ../v3d/vaa3d64.app
-    cp -r ./v3d/vaa3d64.app ../v3d/. #copy to the executable folder
+    cp -r ./v3d/vaa3d64.app ../bin/. #copy to the executable folder
   fi  
 fi
 
@@ -341,11 +341,11 @@ if [ $DOIT == "YES" ] && [ $SKIPV3DPLUGINS == "NO" ] && [ -e ../released_plugins
   mkdir -p ../v3d/plugins
   if [ $SYSTEMBITS == "32" ]; then
     rm -fr ../v3d/plugins/32bit
-    mv -f v3d/plugins ../v3d/plugins/32bit     #copy to the executable folder
+    mv -f v3d/plugins ../bin/plugins/32bit     #copy to the executable folder
   fi
   if [ $SYSTEMBITS == "64" ]; then
     rm -fr ../v3d/plugins/64bit
-    mv -f v3d/plugins ../v3d/plugins/64bit     #copy to the executable folder
+    mv -f v3d/plugins ../bin/plugins/64bit     #copy to the executable folder
   fi
 fi
 
@@ -368,10 +368,10 @@ if [ $DOIT == "YES" ] && [ $SKIPV3DPLUGINS == "NO" ]; then
   
   mkdir -p ../v3d/plugins
   if [ $SYSTEMBITS == "32" ]; then
-    mv -f v3d/plugins/* ../v3d/plugins/32bit/.     #copy to the executable folder
+    mv -f v3d/plugins/* ../bin/plugins/32bit/.     #copy to the executable folder
   fi	
   if [ $SYSTEMBITS == "64" ]; then
-    mv -f v3d/plugins/* ../v3d/plugins/64bit/.     #copy to the executable folder
+    mv -f v3d/plugins/* ../bin/plugins/64bit/.     #copy to the executable folder
   fi	
   cd ../  ###
 fi
@@ -382,10 +382,10 @@ fi
 
 if [ $DOIT == "YES" ] && [ $SKIPV3DAPP == "NO" ]; then
   if [ $SYSTEMBITS == "32" ]; then
-    open v3d/vaa3d.app &
+    open bin/vaa3d.app &
   fi
   if [ $SYSTEMBITS == "64" ]; then
-    open v3d/vaa3d64.app &
+    open bin/vaa3d64.app &
   fi
 fi
 

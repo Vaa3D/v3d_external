@@ -1,6 +1,6 @@
 #!/bin/bash
 # 2010-08-07 by Hanchuan Peng
-# a convenience script for building teh system on Mac
+# a convenience script for building the system on Mac
 #
 # examples: 
 #    sh build.macx
