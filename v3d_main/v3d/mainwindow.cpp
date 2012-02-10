@@ -302,7 +302,6 @@ MainWindow::MainWindow()
 
     cl_plugin = false; // init
     connect(this, SIGNAL(imageLoaded2Plugin()), this, SLOT(updateRunPlugin())); // command line call plugin 20110426 YuY
-
 }
 
 //void MainWindow::postClose() //090812 RZC
@@ -396,8 +395,7 @@ void MainWindow::updateTriview()
 
 void MainWindow::updateRunPlugin() //20110426 YuY
 {
-
-    if(cl_plugin)
+    if (cl_plugin)
     {
         cl_plugin = false; // make sure plugin run only once 20110502 YuY
 
@@ -405,33 +403,49 @@ void MainWindow::updateRunPlugin() //20110426 YuY
         int numfind = 0; //20110429 YuY
 
         QString v3dpluginFind;
+        QStringList existingPluginsList = pluginLoader->getPluginNameList();
 
         QString canonicalFilePath = QFileInfo(pluginname).canonicalFilePath();
-        if (canonicalFilePath.size()==0) canonicalFilePath = pluginname;
+        if (canonicalFilePath.size()==0) 
+            canonicalFilePath = pluginname; //this would be the case when the partial file name is given
+        else
+            canonicalFilePath = QFileInfo(pluginname).fileName();
+        
+        v3d_msg(QString("Current canonical path = [")+canonicalFilePath+"]", 0);
 
-        foreach(QString qstr, pluginLoader->getPluginNameList())
+        foreach(QString qstr, existingPluginsList)
         {
             if (qstr==canonicalFilePath || QFileInfo(qstr).fileName() == canonicalFilePath) //20110429 YuY
             {
                 v3dpluginFind = qstr;
                 numfind++;
+                //v3d_msg(QString("Now find [")+canonicalFilePath+"]", 0);
             }
         }
 
-        if(!numfind) //20110427 YuY
+        if(numfind<=0) //20110427 YuY
         {
             // try find image name contains the input string from the end
-            foreach(QString qstr, pluginLoader->getPluginNameList())
+            foreach(QString qstr, existingPluginsList)
             {
-                if ( qstr.endsWith(canonicalFilePath) || QFileInfo(qstr).fileName().endsWith(canonicalFilePath) ) //20110429 YuY
+                if ( qstr.contains(canonicalFilePath) || 
+                    //qstr.endsWith(canonicalFilePath) || //by PHC, 20120210
+                    //QFileInfo(qstr).fileName().endsWith(canonicalFilePath) 
+                    QFileInfo(qstr).fileName().contains(canonicalFilePath) 
+                    ) //20110429 YuY
                 {
                     v3dpluginFind = qstr;
                     numfind++;
                 }
             }
         }
-
-        if(numfind > 1)	//20110429 YuY
+        
+        if (numfind<=0)
+        {
+            v3d_msg("Vaa3D really cannot find this plugin. Do nothing.");
+            return;
+        }
+        else if(numfind > 1)	//20110429 YuY
         {
             v3d_msg(QString("Too many choices. Please specify your plugin with whole name including absolute path and try again."), 1);
             return;
@@ -791,7 +805,8 @@ V3dR_MainWindow * MainWindow::find3DViewer(QString fileName)
         // try find image name contains the input string from the end
         for (int i=0; i<list_3Dview_win.size(); i++)
         {
-            if ( list_3Dview_win.at(i)->getDataTitle().endsWith(canonicalFilePath) || QFileInfo(list_3Dview_win.at(i)->getDataTitle()).fileName().endsWith(canonicalFilePath) ) //20110427 YuY
+            if ( list_3Dview_win.at(i)->getDataTitle().endsWith(canonicalFilePath) || 
+                QFileInfo(list_3Dview_win.at(i)->getDataTitle()).fileName().endsWith(canonicalFilePath) ) //20110427 YuY
             {
                 v3dRMWFind = list_3Dview_win.at(i);
                 numfind++;
@@ -1155,7 +1170,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
     {
         setCurrentFile(fileName);
 
-        emit imageLoaded2Plugin(); //20110426 YuY
+        emit imageLoaded2Plugin(); //20110426 YuY  //why need to send this signal?? PHC 2012-02-10
     }
 }
 
