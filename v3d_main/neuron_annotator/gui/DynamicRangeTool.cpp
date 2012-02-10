@@ -57,19 +57,7 @@ void DynamicRangeTool::setColorModel(DataColorModel& modelParam)
     if (&modelParam == dataColorModel) return;
     dataColorModel = &modelParam;
 
-    size_t numChannels = 0;
-    {
-        DataColorModel::Reader colorReader(*dataColorModel);
-        numChannels = colorReader.getNumberOfDataChannels();
-    } // release read lock
-    // Populate channel combobox
-    ui.comboBox->clear();
-    for(size_t c = 0; c < numChannels; ++c)
-        ui.comboBox->addItem(QString("Channel %1").arg(c + 1));
-
-    if ( (currentChannelIndex < 0) || (currentChannelIndex >= numChannels) )
-        currentChannelIndex = 0;
-    updateChannelData();
+    initializeColors();
 
     connect(this, SIGNAL(channelColorChanged(int,int)),
             &modelParam, SLOT(setChannelColor(int,int)));
@@ -77,6 +65,35 @@ void DynamicRangeTool::setColorModel(DataColorModel& modelParam)
             &modelParam, SLOT(setChannelHdrRange(int,qreal,qreal)));
     connect(this, SIGNAL(channelGammaChanged(int,qreal)),
             &modelParam, SLOT(setChannelGamma(int,qreal)));
+    connect(&modelParam, SIGNAL(colorsInitialized()),
+            this, SLOT(initializeColors()));
+}
+
+/* slot */
+void DynamicRangeTool::initializeColors()
+{
+    size_t numChannels = 0;
+    {
+        DataColorModel::Reader colorReader(*dataColorModel);
+        if (dataColorModel->readerIsStale(colorReader))
+            return;
+        numChannels = colorReader.getNumberOfDataChannels();
+        if (numChannels < 1)
+            return;
+    } // release read lock
+    if (currentChannelIndex < 1)
+        currentChannelIndex = 0;
+    if (currentChannelIndex >= numChannels)
+        currentChannelIndex = numChannels - 1;
+    // Populate channel combobox
+    // Ensure that channel box has an entry for each channel
+    if (ui.comboBox->count() != numChannels) {
+        ui.comboBox->clear();
+        for(size_t c = 0; c < numChannels; ++c)
+            ui.comboBox->addItem(QString("Channel %1").arg(c + 1));
+    }
+    ui.comboBox->setCurrentIndex(currentChannelIndex);
+    updateChannelData();
 }
 
 void DynamicRangeTool::setChannel(int channelIndex)
@@ -149,9 +166,12 @@ void DynamicRangeTool::updateChannelData()
         DataColorModel::Reader colorReader(*dataColorModel);
         if (dataColorModel->readerIsStale(colorReader))
             return;
+        size_t numChannels = colorReader.getNumberOfDataChannels();
+        if (numChannels < 1)
+            return; // can't do much with a color model with no colors
         if (currentChannelIndex < 0)
-            return;
-        if (currentChannelIndex >= colorReader.getNumberOfDataChannels())
+            return; // not a valid channel
+        if (currentChannelIndex >= numChannels)
             return;
         channelColor = colorReader.getChannelColor(currentChannelIndex);
         channelHdrMin = colorReader.getChannelHdrMin(currentChannelIndex);

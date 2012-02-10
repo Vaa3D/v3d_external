@@ -79,6 +79,7 @@ void DataColorModel::initialize()
         if (! d->initialize(volumeReader)) return;
     } // release locks
     // qDebug() << "Done resetting DataColorModel";
+    emit colorsInitialized();
     emit dataChanged();
 }
 

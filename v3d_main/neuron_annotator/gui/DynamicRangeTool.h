@@ -26,6 +26,7 @@ public slots:
     void setHdrMax(int max);
     void setGamma(double gamma);
     void resetColors();
+    void initializeColors();
 
 protected:
     void updateHdrWidgets();

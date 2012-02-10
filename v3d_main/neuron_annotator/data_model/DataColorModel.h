@@ -26,6 +26,9 @@ public:
     void setIncrementalColorSource(const DataColorModel& desiredColors, const DataColorModel& currentColors);
     bool setChannelUseSharedGamma(int index, bool useIt);
 
+signals:
+    void colorsInitialized();
+
 public slots:
     void initialize();
     void colorizeIncremental();
