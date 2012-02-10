@@ -41,6 +41,7 @@
 #include "../neuron_tracing/neuron_tracing.h"
 #include "../basic_c_fun/v3d_curvetracepara.h"
 #include <map>
+#include <set>
 #endif //test_main_cpp
 
 #include "../neuron_tracing/fastmarching_linker.h"
@@ -1026,7 +1027,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                               MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
                               tar_markers.push_back(mloci);
 
-                              // add neighbors of loci
+                              // //add neighbors of loci
                               // vector<XYZ> neibs_loci;
                               // neibs_loci.clear();
                               // INSERT_NEIGHBOR(XYZ(loci.x+1, loci.y, loci.z));
@@ -1037,11 +1038,13 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                               // INSERT_NEIGHBOR(XYZ(loci.x, loci.y, loci.z-1));
                               // INSERT_NEIGHBOR(loci);
 
-                              // set<XYZ> neibs_set;
+                              // set <XYZ> neibs_set;
                               // for(int jj=0;jj<neibs_loci.size();jj++)
                               // {
-                              //      neibs_set.insert(neibs_loci.at(jj));
+                              //      XYZ locj = neibs_loci.at(jj);
+                              //      neibs_set.insert(locj);
                               // }
+
                               // set<XYZ>::iterator it;
                               // for(it=neibs_set.begin(); it!=neibs_set.end(); it++)
                               // {
