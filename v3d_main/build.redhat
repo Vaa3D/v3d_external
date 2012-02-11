@@ -86,16 +86,20 @@ make $ARGS
 cp vaa3d ../../bin/.   #copy to the system's v3d folder
 cd ../
 
-if [ -d ../released_plugins_more ]; then
+echo `pwd`
+
+if [ -e ../released_plugins_more ]; then
   cd ../released_plugins_more
   sh build_plugindemo.sh $ARGS
-  cp -r v3d/plugins ../bin/.
+  mkdir -p ../bin/plugins
+  cp -r v3d/plugins/* ../bin/plugins/.
 fi
 
 if [ -d ../released_plugins ]; then
   cd ../released_plugins
   sh build_plugindemo.sh $ARGS
-  cp -r v3d/plugins ../bin/.
+  mkdir -p ../bin/plugins
+  cp -r v3d/plugins/* ../bin/plugins/.
 fi
 
 cd ../v3d_main
