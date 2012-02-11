@@ -320,12 +320,15 @@ if [ $DOIT == "YES" ]; then
     rm -fr ../v3d/vaa3d64.app
     cp -r ./v3d/vaa3d64.app ../bin/. #copy to the executable folder
   fi  
+  cd ../ # return to the root folder of the vaa3d codebase
 fi
+
 
 #build standard vaa3d plugins
 
-if [ $DOIT == "YES" ] && [ $SKIPV3DPLUGINS == "NO" ] && [ -e ../released_plugins_more/ ] ; then
-  cd ../released_plugins_more/
+#if [ $DOIT == "YES" ] && [ $SKIPV3DPLUGINS == "NO" ] && [ -e released_plugins_more/ ] ; then
+if [ $DOIT == "YES" ] && [ $SKIPV3DPLUGINS == "NO" ] ; then
+  cd released_plugins_more/
   echo =========================================================
   echo "Now build standard vaa3d plugins"
   echo =========================================================
@@ -338,22 +341,23 @@ if [ $DOIT == "YES" ] && [ $SKIPV3DPLUGINS == "NO" ] && [ -e ../released_plugins
   echo =========================================================
   sh build_plugindemo.sh $ARG_PLUGINS         #$*    # for plugins, just pass the args to the batch compiling script
 
-  mkdir -p ../bin/plugins
   if [ $SYSTEMBITS == "32" ]; then
-    rm -fr ../bin/plugins/32bit
-    mv -f v3d/plugins ../bin/plugins/32bit     #copy to the executable folder
+	mkdir -p ../bin/plugins/32bit
+    cp -fR v3d/plugins/* ../bin/plugins/32bit/     #copy to the executable folder
   fi
   if [ $SYSTEMBITS == "64" ]; then
-    rm -fr ../bin/plugins/64bit
-    mv -f v3d/plugins ../bin/plugins/64bit     #copy to the executable folder
+	mkdir -p ../bin/plugins/64bit
+    cp -fR v3d/plugins/* ../bin/plugins/64bit/     #copy to the executable folder
   fi
+  rm -fr v3d/plugins
+  cd ../
 fi
 
 
-#build the v3d plugins
+#build the vaa3d plugins
 
 if [ $DOIT == "YES" ] && [ $SKIPV3DPLUGINS == "NO" ]; then
-  cd ../released_plugins
+  cd released_plugins
   echo =========================================================
   echo "Now build more vaa3d plugins"
   echo =========================================================
@@ -365,14 +369,16 @@ if [ $DOIT == "YES" ] && [ $SKIPV3DPLUGINS == "NO" ]; then
   echo sh build_plugindemo.sh $ARG_PLUGINS    #$*
   echo =========================================================
   sh build_plugindemo.sh $ARG_PLUGINS         #$*    # for plugins, just pass the args to the batch compiling script
-  
-  mkdir -p ../bin/plugins
+
   if [ $SYSTEMBITS == "32" ]; then
-    mv -f v3d/plugins/* ../bin/plugins/32bit/.     #copy to the executable folder
+	mkdir -p ../bin/plugins/32bit
+    cp -fR v3d/plugins/* ../bin/plugins/32bit/     #copy to the executable folder
   fi	
   if [ $SYSTEMBITS == "64" ]; then
-    mv -f v3d/plugins/* ../bin/plugins/64bit/.     #copy to the executable folder
+	mkdir -p ../bin/plugins/64bit
+    cp -fR v3d/plugins/* ../bin/plugins/64bit/     #copy to the executable folder
   fi	
+  rm -fr v3d/plugins
   cd ../  ###
 fi
 
