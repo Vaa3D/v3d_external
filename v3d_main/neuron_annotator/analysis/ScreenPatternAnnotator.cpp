@@ -265,14 +265,14 @@ My4DImage * ScreenPatternAnnotator::cubifyImage(My4DImage * sourceImage, int cub
                         avg/=cubeDataPosition;
                         cData[offset]=avg;
                     } else if (type==CUBIFY_TYPE_MODE) {
-                        v3d_uint8 histogram[256];
+                        V3DLONG histogram[256];
                         for (int h=0;h<256;h++) {
                             histogram[h]=0;
                         }
                         for (V3DLONG a=0;a<cubeDataPosition;a++) {
                             histogram[cubeData[a]]++;
                         }
-                        v3d_uint8 hmax=0;
+                        V3DLONG hmax=0;
                         v3d_uint8 hval=0;
                         for (int h=0;h<256;h++) {
                             if (histogram[h]>hmax) {
@@ -744,7 +744,7 @@ My4DImage * ScreenPatternAnnotator::getChannelSubImageFromMask(My4DImage * sourc
 
     // First pass is to get accurate min/max for bounding box, which is tricky because we want to use a histogram to
     // apply the normalizationCutoff, so that outliers don't dominate the normalized range.
-    v3d_uint8 histogram[256];
+    V3DLONG histogram[256];
     int h=0;
     for (h=0;h<256;h++) {
         histogram[h]=0;
@@ -769,6 +769,7 @@ My4DImage * ScreenPatternAnnotator::getChannelSubImageFromMask(My4DImage * sourc
             }
         }
         double lowerThreshold=normalizationCutoff*hcount;
+        qDebug() << "hcount=" << hcount << " lowerThreshold=" << lowerThreshold;
         V3DLONG lowerCount=0;
         for (h=0;h<256;h++) {
             lowerCount+=histogram[h];
@@ -776,6 +777,7 @@ My4DImage * ScreenPatternAnnotator::getChannelSubImageFromMask(My4DImage * sourc
                 break;
             }
         }
+        qDebug() << "lowerCount=" << lowerCount;
         if (h==256) {
             qDebug() << "ERROR: could not find lower threshold for histogram";
             min=0;
@@ -783,6 +785,7 @@ My4DImage * ScreenPatternAnnotator::getChannelSubImageFromMask(My4DImage * sourc
             min=h*1.0;
         }
         double higherThreshold=(1.0-normalizationCutoff)*hcount;
+        qDebug() << "higherThreshold=" << higherThreshold;
         V3DLONG higherCount=hcount;
         for (h=255;h>-1;h--) {
             higherCount-=histogram[h];
@@ -790,6 +793,7 @@ My4DImage * ScreenPatternAnnotator::getChannelSubImageFromMask(My4DImage * sourc
                 break;
             }
         }
+        qDebug() << "higherCount=" << higherCount;
         if (h==-1) {
             qDebug() << "ERROR: could not find upper threshold for histogram";
             max=255.0;
