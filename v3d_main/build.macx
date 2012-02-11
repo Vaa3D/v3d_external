@@ -326,8 +326,13 @@ fi
 
 #build standard vaa3d plugins
 
-#if [ $DOIT == "YES" ] && [ $SKIPV3DPLUGINS == "NO" ] && [ -e released_plugins_more/ ] ; then
-if [ $DOIT == "YES" ] && [ $SKIPV3DPLUGINS == "NO" ] ; then
+if [ -e released_plugins_more ] ; then
+  echo "Find released_plugins_more linker folder..."
+else
+  echo "CANNOT find released_plugins_more. Do not try to build the standard Vaa3D plugins."
+fi
+
+if [ $DOIT == "YES" ] && [ $SKIPV3DPLUGINS == "NO" ] && [ -e released_plugins_more ] ; then
   cd released_plugins_more/
   echo =========================================================
   echo "Now build standard vaa3d plugins"
@@ -341,16 +346,16 @@ if [ $DOIT == "YES" ] && [ $SKIPV3DPLUGINS == "NO" ] ; then
   echo =========================================================
   sh build_plugindemo.sh $ARG_PLUGINS         #$*    # for plugins, just pass the args to the batch compiling script
 
+  cd ../
   if [ $SYSTEMBITS == "32" ]; then
-	mkdir -p ../bin/plugins/32bit
-    cp -fR v3d/plugins/* ../bin/plugins/32bit/     #copy to the executable folder
+	mkdir -p bin/plugins/32bit
+    cp -fR released_plugins_more/v3d/plugins/* bin/plugins/32bit/     #copy to the executable folder
   fi
   if [ $SYSTEMBITS == "64" ]; then
-	mkdir -p ../bin/plugins/64bit
-    cp -fR v3d/plugins/* ../bin/plugins/64bit/     #copy to the executable folder
+	mkdir -p bin/plugins/64bit
+    cp -fR released_plugins_more/v3d/plugins/* bin/plugins/64bit/     #copy to the executable folder
   fi
-  rm -fr v3d/plugins
-  cd ../
+  rm -fr released_plugins_more/v3d/plugins
 fi
 
 
@@ -370,16 +375,16 @@ if [ $DOIT == "YES" ] && [ $SKIPV3DPLUGINS == "NO" ]; then
   echo =========================================================
   sh build_plugindemo.sh $ARG_PLUGINS         #$*    # for plugins, just pass the args to the batch compiling script
 
+  cd ../
   if [ $SYSTEMBITS == "32" ]; then
-	mkdir -p ../bin/plugins/32bit
-    cp -fR v3d/plugins/* ../bin/plugins/32bit/     #copy to the executable folder
+	mkdir -p bin/plugins/32bit
+    cp -fR released_plugins/v3d/plugins/* bin/plugins/32bit/     #copy to the executable folder
   fi	
   if [ $SYSTEMBITS == "64" ]; then
-	mkdir -p ../bin/plugins/64bit
-    cp -fR v3d/plugins/* ../bin/plugins/64bit/     #copy to the executable folder
+	mkdir -p bin/plugins/64bit
+    cp -fR released_plugins/v3d/plugins/* bin/plugins/64bit/     #copy to the executable folder
   fi	
-  rm -fr v3d/plugins
-  cd ../  ###
+  rm -fr released_plugins/v3d/plugins
 fi
 
 
