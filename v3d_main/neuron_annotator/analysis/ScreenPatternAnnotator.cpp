@@ -319,15 +319,20 @@ bool ScreenPatternAnnotator::annotate() {
         total+=global256BinHistogramArray[h];
         weight+=h*global256BinHistogramArray[h];
     }
-    V3DLONG As = weight/total;
-    V3DLONG A1 = (As-LOWER_ZONE_THRESHOLD)/2+LOWER_ZONE_THRESHOLD;
-    total=0;
-    weight=0;
-    for (int h=As;h<256;h++) {
-        total+=global256BinHistogramArray[h];
-        weight+=h*global256BinHistogramArray[h];
+    V3DLONG A1 = LOWER_ZONE_THRESHOLD+1;
+    V3DLONG As = A1+1;
+    V3DLONG A2 = As+1;
+    if (total>0) {
+        As = weight/total;
+        A1 = (As-LOWER_ZONE_THRESHOLD)/2+LOWER_ZONE_THRESHOLD;
+        total=0;
+        weight=0;
+        for (int h=As;h<256;h++) {
+            total+=global256BinHistogramArray[h];
+            weight+=h*global256BinHistogramArray[h];
+        }
+        A2 = weight/total;
     }
-    V3DLONG A2 = weight/total;
     qDebug() << "As=" << As << " A1=" << A1 << " A2=" << A2;
     zoneThresholds[1]=A1;
     zoneThresholds[2]=As;
@@ -360,7 +365,11 @@ bool ScreenPatternAnnotator::annotate() {
     }
     // Normalize
     for (int g=0;g<5;g++) {
-        globalZoneLevels[g]=(zt[g]*1.0)/(1.0*totalVoxels);
+        if (totalVoxels>0) {
+            globalZoneLevels[g]=(zt[g]*1.0)/(1.0*totalVoxels);
+        } else {
+            globalZoneLevels[g]=0;
+        }
         QString gLine=QString("Global.z%1=%2").arg(g).arg(globalZoneLevels[g]);
         quantifierList.append(gLine);
     }
@@ -639,7 +648,10 @@ double * ScreenPatternAnnotator::quantifyCompartmentZones(My4DImage * sourceImag
     for (int z=0;z<5;z++) {
         double c=cz[z];
         double v=compartmentVoxelCount;
-        double r=c/v;
+        double r=0.0;
+        if (v>0.0) {
+            r=c/v;
+        }
         compartmentZoneFractions[z]=r;
     }
     return compartmentZoneFractions;
@@ -814,7 +826,10 @@ My4DImage * ScreenPatternAnnotator::getChannelSubImageFromMask(My4DImage * sourc
                 V3DLONG s_position = s_yoffset + (x-bb.x0);
                 if (iData[position]==index) {
                     if (normalize) {
-                        double nvalue=(255.0*((1.0*rData[position])-min))/(max-min);
+                        double nvalue=0.0;
+                        if ((max-min)!=0.0) {
+                            nvalue=(255.0*((1.0*rData[position])-min))/(max-min);
+                        }
                         v3d_uint8 nv=0;
                         if (nvalue>255.0) {
                             nv=255;
@@ -884,7 +899,10 @@ My4DImage * ScreenPatternAnnotator::createNormalizedImage(My4DImage * sourceImag
         v3d_uint8 * ndata=normalizedImage->getRawDataAtChannel(c);
         for (V3DLONG p=0;p<sourceImage->getTotalUnitNumberPerChannel();p++) {
             double value=cdata[p];
-            double nvalue=255.0*((value-min)/(max-min));
+            double nvalue=0.0;
+            if ((max-min)!=0.0) {
+                nvalue=255.0*((value-min)/(max-min));
+            }
             if (nvalue>255.0) {
                 nvalue=255.0;
             } else if (nvalue<0.0) {
