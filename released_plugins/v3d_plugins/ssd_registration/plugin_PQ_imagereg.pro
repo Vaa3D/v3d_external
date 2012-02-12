@@ -10,6 +10,7 @@ V3DPATH = ../../../v3d_main
 
 INCLUDEPATH  += $$V3DPATH/basic_c_fun
 INCLUDEPATH  += $$V3DPATH/jba/newmat11
+INCLUDEPATH  += $$V3DPATH/common_lib/include
 
 LIBS 	     += -L$$V3DPATH/common_lib/lib -lv3dtiff
 LIBS         += -L$$V3DPATH/jba/c++ -lv3dnewmat
