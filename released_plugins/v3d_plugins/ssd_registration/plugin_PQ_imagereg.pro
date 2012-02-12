@@ -46,5 +46,5 @@ SOURCES      += plugin_image_registration.cpp
 
 TARGET        = $$qtLibraryTarget(plugin_PQ_imagereg)
 
-DESTDIR       = ../../v3d/plugins/optic_lobe_aligner/ 
+DESTDIR       = ../../v3d/plugins/image_registration/SSD_registration 
 

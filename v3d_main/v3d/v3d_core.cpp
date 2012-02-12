@@ -2599,7 +2599,9 @@ void XFormView::drawSelectedLocations(QPainter *painter, QList <LocationSimple> 
 		}
 
 //20111017: disable this for now
-/*
+//20120211: BY PHC. enable again for colored display of markers. Note this is not an ultimate solution, as the color-display is different from my original design already
+        // thus when the display is gray now, the markers will still be white (and that is bad sometimes!)
+
 		switch(tmpLocation.howUseful())
 		{
 			case pxLocaUseful:
@@ -2630,7 +2632,7 @@ void XFormView::drawSelectedLocations(QPainter *painter, QList <LocationSimple> 
 				b_draw=0;
 				break;
 		}
-*/
+
 
 		//
 		curShape = tmpLocation.shape;//use the saved info
