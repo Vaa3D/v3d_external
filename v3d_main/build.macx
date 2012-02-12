@@ -388,6 +388,16 @@ if [ $DOIT == "YES" ] && [ $SKIPV3DPLUGINS == "NO" ]; then
 fi
 
 
+#now try to move the 3rd party jar file(s) to bin folder
+
+#if [ -f bin/plugins/64bit/imageIO/load_image_using_Bioformats/loci_tools.jar ]; then
+  
+for jarfile in `find bin/plugins -name \*.jar`; 
+do
+    echo "Find file [$jarfile]"
+    mv $jarfile bin/.
+done;
+
 
 #now automatically execute v3d
 
