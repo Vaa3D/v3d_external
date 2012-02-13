@@ -2144,12 +2144,12 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         
         if( (QFileInfo(m_InputFileName1).suffix().toUpper().compare("LSM") == 0) && (QFileInfo(m_InputFileName2).suffix().toUpper().compare("LSM") == 0) )
         {
-//            char buf[512]; // read symbolic link
-//            int count = readlink(m_InputFileName1.toStdString().c_str(), buf, sizeof(buf));
-//            if (count >= 0) {
-//                buf[count] = '\0';
-//                printf("%s -> %s\n", m_InputFileName1.toStdString().c_str(), buf);
-//            }
+            //            char buf[512]; // read symbolic link
+            //            int count = readlink(m_InputFileName1.toStdString().c_str(), buf, sizeof(buf));
+            //            if (count >= 0) {
+            //                buf[count] = '\0';
+            //                printf("%s -> %s\n", m_InputFileName1.toStdString().c_str(), buf);
+            //            }
 
             Y_LSMINFO<V3DLONG> lsminfo1(m_InputFileName1.toStdString());
             lsminfo1.loadHeader();
@@ -4434,9 +4434,11 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         sz_output[0] = sz_img1[0]; sz_output[1] = sz_img1[1]; sz_output[2] = sz_img1[2]; sz_output[3] = 1;
 
         QString savingName;
-        QString m_InputFileName(infile);
-        m_InputFileName.chop(4);
 
+        //
+        QString qs_filename_output=QString(outfile);
+
+        //
         if(datatype_img1 == V3D_UINT8)
         {
             //
@@ -4453,7 +4455,14 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                 return -1;
             }
 
-            savingName = QFileInfo(m_InputFileName).path().append(SEPCHAR).append("target_ref.v3draw");
+            if(outfile)
+            {
+                savingName=QFileInfo(qs_filename_output).path().append(SEPCHAR).append("target_ref.v3draw");
+            }
+            else
+            {
+                savingName=QFileInfo(m_InputFileName1).path().append(SEPCHAR).append("target_ref.v3draw");;
+            }
 
             //
             V3DLONG offset1 = ref1*pagesz;
@@ -4474,7 +4483,14 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             }
 
             //
-            savingName = QFileInfo(m_InputFileName).path().append(SEPCHAR).append("subject_ref.v3draw");
+            if(outfile)
+            {
+                savingName=QFileInfo(qs_filename_output).path().append(SEPCHAR).append("subject_ref.v3draw");
+            }
+            else
+            {
+                savingName=QFileInfo(m_InputFileName1).path().append(SEPCHAR).append("subject_ref.v3draw");;
+            }
 
             //
             V3DLONG offset2 = ref2*pagesz;
@@ -4495,7 +4511,14 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             }
 
             //
-            savingName = QFileInfo(m_InputFileName).path().append(SEPCHAR).append("subject_signal.v3draw");
+            if(outfile)
+            {
+                savingName=QFileInfo(qs_filename_output).path().append(SEPCHAR).append("subject_signal.v3draw");
+            }
+            else
+            {
+                savingName=QFileInfo(m_InputFileName1).path().append(SEPCHAR).append("subject_signal.v3draw");;
+            }
 
             //
             offset2 = (1-ref2)*pagesz;
@@ -4535,7 +4558,14 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                 return -1;
             }
 
-            savingName = QFileInfo(m_InputFileName).path().append(SEPCHAR).append("target_ref.v3draw");
+            if(outfile)
+            {
+                savingName=QFileInfo(qs_filename_output).path().append(SEPCHAR).append("target_ref.v3draw");
+            }
+            else
+            {
+                savingName=QFileInfo(m_InputFileName1).path().append(SEPCHAR).append("target_ref.v3draw");;
+            }
 
             //
             V3DLONG offset1 = ref1*pagesz;
@@ -4556,7 +4586,14 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             }
 
             //
-            savingName = QFileInfo(m_InputFileName).path().append(SEPCHAR).append("subject_ref.v3draw");
+            if(outfile)
+            {
+                savingName=QFileInfo(qs_filename_output).path().append(SEPCHAR).append("subject_ref.v3draw");
+            }
+            else
+            {
+                savingName=QFileInfo(m_InputFileName1).path().append(SEPCHAR).append("subject_ref.v3draw");;
+            }
 
             //
             V3DLONG offset2 = ref2*pagesz;
@@ -4577,7 +4614,14 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             }
 
             //
-            savingName = QFileInfo(m_InputFileName).path().append(SEPCHAR).append("subject_signal.v3draw");
+            if(outfile)
+            {
+                savingName=QFileInfo(qs_filename_output).path().append(SEPCHAR).append("subject_signal.v3draw");
+            }
+            else
+            {
+                savingName=QFileInfo(m_InputFileName1).path().append(SEPCHAR).append("subject_signal.v3draw");;
+            }
 
             //
             offset2 = (1-ref2)*pagesz;
@@ -4616,7 +4660,14 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                 return false;
             }
 
-            savingName = QFileInfo(m_InputFileName).path().append(SEPCHAR).append("target_ref.v3draw");
+            if(outfile)
+            {
+                savingName=QFileInfo(qs_filename_output).path().append(SEPCHAR).append("target_ref.v3draw");
+            }
+            else
+            {
+                savingName=QFileInfo(m_InputFileName1).path().append(SEPCHAR).append("target_ref.v3draw");;
+            }
 
             //
             V3DLONG offset1 = ref1*pagesz;
@@ -4637,7 +4688,14 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             }
 
             //
-            savingName = QFileInfo(m_InputFileName).path().append(SEPCHAR).append("subject_ref.v3draw");
+            if(outfile)
+            {
+                savingName=QFileInfo(qs_filename_output).path().append(SEPCHAR).append("subject_ref.v3draw");
+            }
+            else
+            {
+                savingName=QFileInfo(m_InputFileName1).path().append(SEPCHAR).append("subject_ref.v3draw");;
+            }
 
             //
             V3DLONG offset2 = ref2*pagesz;
@@ -4658,7 +4716,14 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             }
 
             //
-            savingName = QFileInfo(m_InputFileName).path().append(SEPCHAR).append("subject_signal.v3draw");
+            if(outfile)
+            {
+                savingName=QFileInfo(qs_filename_output).path().append(SEPCHAR).append("subject_signal.v3draw");
+            }
+            else
+            {
+                savingName=QFileInfo(m_InputFileName1).path().append(SEPCHAR).append("subject_signal.v3draw");;
+            }
 
             //
             offset2 = (1-ref2)*pagesz;
