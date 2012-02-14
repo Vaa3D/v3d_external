@@ -93,6 +93,7 @@ private:
 
 
     QString returnFullPathWithOutputPrefix(QString filename);
+    QString returnFullPathWithOutputPrefix(QString filename, QString subdirName);
     bool createCompartmentIndex();
     bool annotate();
     int getIndexFromCompartmentMaskFilename(QString filename);
@@ -108,6 +109,12 @@ private:
     My4DImage * cubifyImage(My4DImage * sourceImage, int cubeSize, int type);
     double * quantifyCompartmentZones(My4DImage * sourceImage, My4DImage * compartmentIndex, int index, SPA_BoundingBox bb);
     void addXYGhostPlaneFrom3DTo2D(My4DImage* stackImage, int zOffset, int stackChannel, My4DImage* image);
+    bool createOutputDirTree();
+    QString getOutputSubdirectory(QString dirName);
+    QString getMipsSubdirectoryPath();
+    QString getSupportingSubdirectoryPath();
+    QString getNormalizedSubdirectoryPath();
+    bool createOrVerifyDirectory(QString dirPath);
 
 
 };

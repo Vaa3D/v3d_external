@@ -17,6 +17,10 @@ const int LOWER_ZONE_THRESHOLD=31;
 const int BA_20X_XYPLANE_Z_INDEX=105;
 const int GHOST_INTENSITY_LEVEL=15;
 
+const QString MIPS_SUBDIR("mips");
+const QString SUPPORTING_SUBDIR("supportingFiles");
+const QString NORMALIZED_SUBDIR("normalized");
+
 ScreenPatternAnnotator::ScreenPatternAnnotator()
 {
     mode=MODE_UNDEFINED;
@@ -289,6 +293,54 @@ My4DImage * ScreenPatternAnnotator::cubifyImage(My4DImage * sourceImage, int cub
     return cubeImage;
 }
 
+QString ScreenPatternAnnotator::getMipsSubdirectoryPath() {
+    return getOutputSubdirectory(MIPS_SUBDIR);
+}
+
+QString ScreenPatternAnnotator::getSupportingSubdirectoryPath() {
+    return getOutputSubdirectory(SUPPORTING_SUBDIR);
+}
+
+QString ScreenPatternAnnotator::getNormalizedSubdirectoryPath() {
+    return getOutputSubdirectory(NORMALIZED_SUBDIR);
+}
+
+QString ScreenPatternAnnotator::getOutputSubdirectory(QString dirName) {
+    QString dirPath("");
+    if (outputDirectoryPath.length()>0) {
+        dirPath.append(outputDirectoryPath);
+        dirPath.append(QDir::separator());
+        dirPath.append(dirName);
+    }
+    return dirPath;
+}
+
+bool ScreenPatternAnnotator::createOrVerifyDirectory(QString dirPath) {
+    if (!QFileInfo(dirPath).isDir()) {
+        return QDir().mkpath(dirPath);
+    } else {
+        return true;
+    }
+}
+
+bool ScreenPatternAnnotator::createOutputDirTree() {
+    if (outputDirectoryPath.length()<1) {
+        qDebug() << "createOutputDirTree() outputDirectoryPath must be defined";
+        return false;
+    }
+    QString mipsDirPath=getMipsSubdirectoryPath();
+    QString supportingDirPath=getSupportingSubdirectoryPath();
+    QString normalizedDirPath=getNormalizedSubdirectoryPath();
+    if ( createOrVerifyDirectory(outputDirectoryPath) &&
+         createOrVerifyDirectory(mipsDirPath) &&
+         createOrVerifyDirectory(supportingDirPath) &&
+         createOrVerifyDirectory(normalizedDirPath) ) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 bool ScreenPatternAnnotator::annotate() {
 
     // Load Input Stack
@@ -374,9 +426,9 @@ bool ScreenPatternAnnotator::annotate() {
         quantifierList.append(gLine);
     }
 
-    // Create Output Directory
-    if (!QFileInfo(outputDirectoryPath).isDir()) {
-        QDir().mkpath(outputDirectoryPath);
+    if (!createOutputDirTree()) {
+        qDebug() << "ERROR: could not create output directory path=" << outputDirectoryPath;
+        return false;
     }
 
     // Create Global 16-Color Image
@@ -397,7 +449,7 @@ bool ScreenPatternAnnotator::annotate() {
     ImageLoader imageLoaderForMip;
     My4DImage * mip=imageLoaderForMip.create2DMIPFromStack(imageGlobal16ColorImage);
     addXYGhostPlaneFrom3DTo2D(inputImage, BA_20X_XYPLANE_Z_INDEX /* Z index */, 2 /* channel */, mip);
-    imageLoaderForMip.saveImage(mip, returnFullPathWithOutputPrefix("heatmap16ColorMIP.tif"));
+    imageLoaderForMip.saveImage(mip, returnFullPathWithOutputPrefix("heatmap16ColorMIP.tif", MIPS_SUBDIR));
 
     // Load Compartment Index
     ImageLoader compartmentIndexLoader;
@@ -444,7 +496,7 @@ bool ScreenPatternAnnotator::annotate() {
     }
 
     // Write out Quantifier File
-    QString quantifierFilePath(returnFullPathWithOutputPrefix("quantifiers.txt"));
+    QString quantifierFilePath(returnFullPathWithOutputPrefix("quantifiers.txt", SUPPORTING_SUBDIR));
     QFile quantifierFile(quantifierFilePath);
     if (!quantifierFile.open(QIODevice::WriteOnly)) {
         qDebug() << "Could not open file=" << quantifierFilePath;
@@ -548,7 +600,7 @@ void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbr
     My4DImage * viewableCompartmentMIP=createMIPFromImage(compartmentHeatmapFullSize);
     QString filenameCompartmentHeatmapFullSizeMIP=abbreviation;
     filenameCompartmentHeatmapFullSizeMIP.append("_heatmap16ColorMIP.tif");
-    QString savepathCompartmentHeatmapFullSizeMIP(returnFullPathWithOutputPrefix(filenameCompartmentHeatmapFullSizeMIP));
+    QString savepathCompartmentHeatmapFullSizeMIP(returnFullPathWithOutputPrefix(filenameCompartmentHeatmapFullSizeMIP, MIPS_SUBDIR));
     qDebug() << "Saving " << abbreviation << " 16-color heatmap MIP to file=" << savepathCompartmentHeatmapFullSizeMIP;
     saveStatus=imageLoaderForSave.saveImage(viewableCompartmentMIP, savepathCompartmentHeatmapFullSizeMIP);
     if (!saveStatus) {
@@ -560,7 +612,7 @@ void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbr
     My4DImage * normalizedCompartmentHeatmapFullSize=createViewableImage(normalizedCompartmentHeatmap, VIEWABLE_BORDER);
     QString filenameNormalizedCompartmentHeatmapFullSize=abbreviation;
     filenameNormalizedCompartmentHeatmapFullSize.append("_normalized_heatmap16Color.v3dpbd");
-    QString savepathNormalizedCompartmentHeatmapFullSize(returnFullPathWithOutputPrefix(filenameNormalizedCompartmentHeatmapFullSize));
+    QString savepathNormalizedCompartmentHeatmapFullSize(returnFullPathWithOutputPrefix(filenameNormalizedCompartmentHeatmapFullSize, NORMALIZED_SUBDIR));
     qDebug() << "Saving " << abbreviation << " normalized 16-color heatmap to file=" << savepathNormalizedCompartmentHeatmapFullSize;
     saveStatus=imageLoaderForSave.saveImage(normalizedCompartmentHeatmapFullSize, savepathNormalizedCompartmentHeatmapFullSize);
     if (!saveStatus) {
@@ -569,7 +621,7 @@ void ScreenPatternAnnotator::createCompartmentAnnotation(int index, QString abbr
     My4DImage * viewableNormalizedCompartmentMIP=createMIPFromImage(normalizedCompartmentHeatmapFullSize);
     QString filenameNormalizedCompartmentHeatmapFullSizeMIP=abbreviation;
     filenameNormalizedCompartmentHeatmapFullSizeMIP.append("_normalized_heatmap16ColorMIP.tif");
-    QString savepathNormalizedCompartmentHeatmapFullSizeMIP(returnFullPathWithOutputPrefix(filenameNormalizedCompartmentHeatmapFullSizeMIP));
+    QString savepathNormalizedCompartmentHeatmapFullSizeMIP(returnFullPathWithOutputPrefix(filenameNormalizedCompartmentHeatmapFullSizeMIP, MIPS_SUBDIR));
     qDebug() << "Saving " << abbreviation << " 16-color normalized heatmap MIP to file=" << savepathNormalizedCompartmentHeatmapFullSizeMIP;
     saveStatus=imageLoaderForSave.saveImage(viewableNormalizedCompartmentMIP, savepathNormalizedCompartmentHeatmapFullSizeMIP);
     if (!saveStatus) {
@@ -1016,6 +1068,12 @@ SPA_BoundingBox ScreenPatternAnnotator::findBoundingBoxFromIndex(int index) {
     bb.z0=z0;
     bb.z1=z1;
     return bb;
+}
+
+QString ScreenPatternAnnotator::returnFullPathWithOutputPrefix(QString filename, QString subdir) {
+    QString outputDirectoryPathCopy=outputDirectoryPath;
+    QString outputPrefixCopy=outputPrefix;
+    return outputDirectoryPathCopy.append(QDir::separator()).append(subdir).append(QDir::separator()).append(outputPrefixCopy).append("_").append(filename);
 }
 
 QString ScreenPatternAnnotator::returnFullPathWithOutputPrefix(QString filename) {
