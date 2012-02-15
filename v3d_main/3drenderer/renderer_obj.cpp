@@ -1374,8 +1374,9 @@ const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////
     {128, 255, 168},  //	16
     {255, 168, 128},  //	17
     {168, 128, 255}, //	18
-    //the following (19-274) is used for matlab heat map. 120209 by WYN
-    {0,0,131}, //19
+    {0, 0, 0}, //19 //totally black. PHC, 2012-02-15
+    //the following (20-275) is used for matlab heat map. 120209 by WYN
+    {0,0,131}, //20
     {0,0,135},
     {0,0,139},
     {0,0,143},
@@ -1630,7 +1631,7 @@ const GLubyte neuron_type_color[ ][3] = {///////////////////////////////////////
     {139,0,0},
     {135,0,0},
     {131,0,0},
-    {127,0,0} //274
+    {127,0,0} //275
 		};//////////////////////////////////////////////////////////////////////////////////
 const int neuron_type_color_num = sizeof(neuron_type_color)/(sizeof(GLubyte)*3);
 
