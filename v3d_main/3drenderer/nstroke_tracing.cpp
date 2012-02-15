@@ -40,6 +40,7 @@
 #include "../neuron_editing/neuron_sim_scores.h"
 #include "../neuron_tracing/neuron_tracing.h"
 #include "../basic_c_fun/v3d_curvetracepara.h"
+#include "../v3d/dialog_curve_trace_para.h"
 #include <map>
 #include <set>
 #endif //test_main_cpp
@@ -58,6 +59,7 @@
 #endif
 
 #define INSERT_NEIGHBOR(nei) {if (dataViewProcBox.isInner(nei, 0.5)) neibs_loci.push_back(nei);}
+
 
 
 void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index)
@@ -910,6 +912,14 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
      listMarker.clear();
      int totalm=0;//total intersection point
 
+     // vec used for second fastmarching
+     vector<XYZ> middle_vec;
+     middle_vec.clear();
+
+     V3DLONG szx = curImg->getXDim();
+     V3DLONG szy = curImg->getYDim();
+     V3DLONG szz = curImg->getZDim();
+
 	int N = loc_vec_input.size();
 	if (b_use_seriespointclick)
 	{
@@ -918,9 +928,6 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 	else //then use the moving mouse location, otherwise using the preset loc_vec_input (which is set by the 3d-curve-by-point-click function)
 	{
 		N = list_listCurvePos.at(index).size(); // change from 0 to index for different curves, ZJL
-          V3DLONG szx = curImg->getXDim();
-          V3DLONG szy = curImg->getYDim();
-          V3DLONG szz = curImg->getZDim();
 
           // resample curve strokes
           vector<int> inds; // reserved stroke index
@@ -984,6 +991,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                     {
                          // always push_back the 1st loc
                          loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+                         middle_vec.push_back(loc);
                     }
                     else if (last_j>=0)
                     {
@@ -1069,7 +1077,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                          float time_thresh = 0.2; //in seconds
 
                          // call fastmarching
-                         // using time spend on each step to decide whether the tracing in this step is acceptable.
+                         // using time spent on each step to decide whether the tracing in this step is acceptable.
                          // if time is over time_thresh, then break and use center method
                          // I found that the result is not so good when using this time limit
                          bool res = fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz,0.0);// time_thresh);
@@ -1091,6 +1099,12 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                                         locj.z=outswc.at(j)->z;
 
                                         loc_vec.push_back(locj);
+
+                                        // record the middle loc in this seg for the second fast marching
+                                        if((nn>6)&&(j==(int)(nn/2)))
+                                        {
+                                             middle_vec.push_back(locj);
+                                        }
                                    }
                                    // the last one
                                    loc.x = outswc.at(0)->x;
@@ -1115,7 +1129,83 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
           }
      }
 
+     N = loc_vec.size(); //100722 RZC
+     if(N<1) return; // all points are outside the volume. ZJL 110913
+/*
+     // append the last XYZ of loc_vec to middle_vec
+     middle_vec.push_back(loc_vec.at(loc_vec.size()-1));
+     loc_vec.clear();
 
+     loc_vec.push_back(middle_vec.at(0)); //append the first loc
+     // Do the second fastmarching for smoothing the curve
+     for(int jj=0;jj<middle_vec.size()-1; jj++)
+     {
+          // create MyMarker list
+          vector<MyMarker> sub_markers;
+          vector<MyMarker> tar_markers;
+          vector<MyMarker*> outswc;
+          XYZ loc;
+
+          // sub_markers
+          XYZ loc0=middle_vec.at(jj);
+          MyMarker mloc0 = MyMarker(loc0.x, loc0.y, loc0.z);
+          sub_markers.push_back(mloc0);
+
+          // tar_markers
+          XYZ loc1=middle_vec.at(jj+1);
+          MyMarker mloc1 = MyMarker(loc1.x, loc1.y, loc1.z);
+          tar_markers.push_back(mloc1);
+
+          unsigned char* pImg = curImg->getRawData();
+
+          // call fastmarching
+          bool res = fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz, 0.0);// time_thresh);
+          if(!res)
+          {
+               loc = loc1;
+          }
+          else
+          {
+               if(!outswc.empty())
+               {
+                    // the 1st loc in outswc is the last pos got in fm
+                    int nn = outswc.size();
+                    for(int j=nn-1; j>0; j-- )
+                    {
+                         XYZ locj;
+                         locj.x=outswc.at(j)->x;
+                         locj.y=outswc.at(j)->y;
+                         locj.z=outswc.at(j)->z;
+
+                         loc_vec.push_back(locj);
+
+                         // record the middle loc in this seg for the second fast marching
+                         if(j==nn/2)
+                         {
+                              middle_vec.push_back(locj);
+                         }
+                    }
+                    // the last one
+                    loc.x = outswc.at(0)->x;
+                    loc.y = outswc.at(0)->y;
+                    loc.z = outswc.at(0)->z;
+               }
+               else
+               {
+                    loc = loc1;
+               }
+          }
+          //always remember to free the potential-memory-problematic fastmarching_linker return value
+          clean_fm_marker_vector(outswc);
+
+
+          if (dataViewProcBox.isInner(loc, 0.5))
+          {
+               dataViewProcBox.clamp(loc);
+               loc_vec.push_back(loc);
+          }
+     } // end for the second fastmarching
+*/
      N = loc_vec.size(); //100722 RZC
      if(N<1) return; // all points are outside the volume. ZJL 110913
 
@@ -1352,4 +1442,284 @@ void  Renderer_gl1::resampleCurveStrokes(int index, int chno, vector<int> &ids)
           ids.push_back(it->second);
      }
 
+}
+
+
+void Renderer_gl1::solveCurveFromMarkersGD(bool b_customized_bb)
+{
+	qDebug("  Renderer_gl1::solveCurveMarkersGD");
+
+	vector <XYZ> loc_vec_input;
+     loc_vec_input.clear();
+
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+	My4DImage* curImg = 0;
+     if (w) curImg = v3dr_getImage4d(_idep); //by PHC, 090119
+
+     int chno = checkCurChannel();
+     if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
+
+     int nn=listCurveMarkerPool.size();
+     XYZ cur_xyz;
+     int i;
+     for (i=0;i<nn;i++)
+     {
+          cur_xyz.x = listCurveMarkerPool.at(i).x-1; //marker location is 1 based
+          cur_xyz.y = listCurveMarkerPool.at(i).y-1;
+          cur_xyz.z = listCurveMarkerPool.at(i).z-1;
+          loc_vec_input.push_back(cur_xyz);
+     }
+
+     // Prepare paras for GD, using default paras
+     CurveTracePara trace_para;
+	{
+		trace_para.sp_num_end_nodes = 1;
+		trace_para.b_deformcurve = false;
+	}
+
+     ParaShortestPath sp_para;
+	sp_para.edge_select       = trace_para.sp_graph_connect; // 090621 RZC: add sp_graph_connect selection
+	sp_para.background_select = trace_para.sp_graph_background; // 090829 RZC: add sp_graph_background selection
+	sp_para.node_step      = trace_para.sp_graph_resolution_step; // 090610 RZC: relax the odd constraint.
+	sp_para.outsample_step = trace_para.sp_downsample_step;
+	sp_para.smooth_winsize = trace_para.sp_smoothing_win_sz;
+
+	vector< vector<V_NeuronSWC_unit> > mmUnit;
+
+     V3DLONG szx = curImg->getXDim();
+     V3DLONG szy = curImg->getYDim();
+     V3DLONG szz = curImg->getZDim();
+     curImg->trace_z_thickness = this->thicknessZ;
+
+     // get bounding box
+     XYZ minloc, maxloc;
+	if (b_customized_bb == false)
+	{
+          curImg->trace_bounding_box = this->dataViewProcBox; //dataBox;
+          minloc.x = curImg->trace_bounding_box.x0;
+          minloc.y = curImg->trace_bounding_box.y0;
+          minloc.z = curImg->trace_bounding_box.z0;
+
+          maxloc.x = curImg->trace_bounding_box.x1;
+          maxloc.y = curImg->trace_bounding_box.y1;
+          maxloc.z = curImg->trace_bounding_box.z1;
+	}
+     else
+     {
+          bool res = boundingboxFromStroke(minloc, maxloc);
+          if(!res)
+          {
+               curImg->trace_bounding_box = this->dataViewProcBox; //dataBox;
+               minloc.x = curImg->trace_bounding_box.x0;
+               minloc.y = curImg->trace_bounding_box.y0;
+               minloc.z = curImg->trace_bounding_box.z0;
+
+               maxloc.x = curImg->trace_bounding_box.x1;
+               maxloc.y = curImg->trace_bounding_box.y1;
+               maxloc.z = curImg->trace_bounding_box.z1;
+          }
+     }
+
+     // loc_vec is used to store final locs on the curve
+     vector <XYZ> loc_vec;
+     loc_vec.clear();
+
+     if (loc_vec_input.size()>0)
+	{
+		qDebug("now get curve using GD find_shortest_path_graphimg >>> ");
+
+          loc_vec.push_back(loc_vec_input.at(0)); // the first loc is always here
+          for(int ii=0; ii<loc_vec_input.size()-1; ii++)
+          {
+               XYZ loc0=loc_vec_input.at(ii);
+               XYZ loc1=loc_vec_input.at(ii+1);
+
+               // call GD tracing
+               const char* s_error = find_shortest_path_graphimg(curImg->data4d_uint8[chno], szx, szy, szz,
+                    curImg->trace_z_thickness,
+                    minloc.x, minloc.y, minloc.z,
+                    maxloc.x, maxloc.y, maxloc.z,
+                    loc0.x, loc0.y, loc0.z,
+                    1,
+                    &(loc1.x), &(loc1.y), &(loc1.z),
+                    mmUnit,
+                    sp_para);
+
+               if (s_error)
+               {
+                    throw (const char*)s_error;
+                    return;
+               }
+
+               // append traced result to loc_vec
+               if(!mmUnit.empty())
+               {
+                    // only have one seg and get the first seg
+                    vector<V_NeuronSWC_unit> seg0 = mmUnit.at(0);
+                    int num = seg0.size();
+                    for(int j=num-1; j>1; j-- )
+                    {
+                         XYZ loc;
+                         loc.x=seg0.at(j).x;
+                         loc.y=seg0.at(j).y;
+                         loc.z=seg0.at(j).z;
+
+                         loc_vec.push_back(loc);
+                    }
+               }
+
+               loc_vec.push_back(loc1);
+          }
+
+          loc_vec.push_back(loc_vec_input.at(loc_vec_input.size()-1));
+
+          if(loc_vec.size()<1) return; // all points are outside the volume. ZJL 110913
+
+          // check if there is any existing neuron node is very close to the starting and ending points, if yes, then merge
+
+          MainWindow* V3Dmainwindow = 0;
+          V3Dmainwindow = v3dr_getV3Dmainwindow(_idep);
+
+          int N = loc_vec.size();
+
+          if (V3Dmainwindow && V3Dmainwindow->global_setting.b_3dcurve_autoconnecttips)
+          {
+               if (listNeuronTree.size()>0 && curEditingNeuron>0 && curEditingNeuron<=listNeuronTree.size())
+               {
+                    NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(curEditingNeuron-1)));
+                    if (p_tree)
+                    {
+                         V3DLONG n_id_start = findNearestNeuronNode_Loc(loc_vec.at(0), p_tree);
+                         V3DLONG n_id_end = findNearestNeuronNode_Loc(loc_vec.at(N-1), p_tree);
+                         qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
+
+                         double th_merge = 5;
+
+                         bool b_start_merged=false, b_end_merged=false;
+                         NeuronSWC cur_node;
+                         if (n_id_start>=0)
+                         {
+                              cur_node = p_tree->listNeuron.at(n_id_start);
+                              qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
+                              XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+                              if (dist_L2(cur_node_xyz, loc_vec.at(0))<th_merge)
+                              {
+                                   loc_vec.at(0) = cur_node_xyz;
+                                   b_start_merged = true;
+                                   qDebug()<<"force set the first point of this curve to the above neuron node as they are close.";
+                              }
+                         }
+                         if (n_id_end>=0)
+                         {
+                              cur_node = p_tree->listNeuron.at(n_id_end);
+                              qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
+                              XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+                              if (dist_L2(cur_node_xyz, loc_vec.at(N-1))<th_merge)
+                              {
+                                   loc_vec.at(N-1) = cur_node_xyz;
+                                   b_end_merged = true;
+                                   qDebug()<<"force set the last point of this curve to the above neuron node as they are close.";
+
+                              }
+                         }
+
+                         //a special operation is that if the end point is merged, but the start point is not merged,
+                         //then this segment is reversed direction to reflect the prior knowledge that a neuron normally grow out as branches
+                         if (b_start_merged==false && b_end_merged==true)
+                         {
+                              vector <XYZ> loc_vec_tmp = loc_vec;
+                              for (int i=0;i<N;i++)
+                                   loc_vec.at(i) = loc_vec_tmp.at(N-1-i);
+                         }
+                    }
+               }
+          }
+
+          smooth_curve(loc_vec, 5);
+
+          // adaptive curve simpling
+          vector <XYZ> loc_vec_resampled;
+          int stepsize = 6; // sampling stepsize
+          loc_vec_resampled.clear();
+          adaptiveCurveResampling(loc_vec, loc_vec_resampled, stepsize);
+
+          if (b_addthiscurve)
+          {
+               addCurveSWC(loc_vec_resampled, chno);
+          }
+          else //100821
+          {
+               b_addthiscurve = true; //in this case, always reset to default to draw curve to add to a swc instead of just  zoom
+               endSelectMode();
+          }
+     }
+}
+
+
+
+
+// get the bounding box from a stroke
+bool Renderer_gl1::boundingboxFromStroke(XYZ& minloc, XYZ& maxloc)
+{
+
+     int NC = list_listCurvePos.size();
+	int N = list_listCurvePos.at(0).size();
+
+	if (NC<1 || N <3)  return false; //data is not enough and use the whole image as the bounding box
+
+     // find min-max of x y z in loc_veci
+     float minx, miny, minz, maxx, maxy, maxz;
+
+     // Directly using stroke pos for minloc, maxloc
+     for (int i=0; i<N; i++)
+     {
+          const MarkerPos & pos = list_listCurvePos.at(0).at(i);
+          ////////////////////////////////////////////////////////////////////////
+          //100730 RZC, in View space, keep for dot(clip, pos)>=0
+          double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+          clipplane[3] = viewClip;
+          ViewPlaneToModel(pos.MV, clipplane);
+          //qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
+          ////////////////////////////////////////////////////////////////////////
+
+          XYZ loc0, loc1;
+          _MarkerPos_to_NearFarPoint(pos, loc0, loc1);
+
+          if(i==0)
+          {
+               minx=maxx=loc0.x; miny=maxy=loc0.y; minz=maxz=loc0.z;
+          }
+          if(minx>loc0.x) minx=loc0.x;
+          if(miny>loc0.y) miny=loc0.y;
+          if(minz>loc0.z) minz=loc0.z;
+
+          if(maxx<loc0.x) maxx=loc0.x;
+          if(maxy<loc0.y) maxy=loc0.y;
+          if(maxz<loc0.z) maxz=loc0.z;
+
+          if(minx>loc1.x) minx=loc1.x;
+          if(miny>loc1.y) miny=loc1.y;
+          if(minz>loc1.z) minz=loc1.z;
+
+          if(maxx<loc1.x) maxx=loc1.x;
+          if(maxy<loc1.y) maxy=loc1.y;
+          if(maxz<loc1.z) maxz=loc1.z;
+
+     }
+
+     //
+     int boundary = 10;
+
+     minloc.x = minx - boundary;
+     minloc.y = miny - boundary;
+     minloc.z = minz - boundary;
+
+     maxloc.x = maxx + boundary;
+     maxloc.y = maxy + boundary;
+     maxloc.z = maxz + boundary;
+
+     dataViewProcBox.clamp(minloc);
+     dataViewProcBox.clamp(maxloc);
+
+     return true;
 }

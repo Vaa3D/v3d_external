@@ -69,7 +69,8 @@ public:
                          // for curve refinement, 110831 ZJL
                       smCurveRefineInit, smCurveRefineLast, smCurveEditRefine, smCurveRubberDrag,
                       smCurveDirectionInter, smCurveLineInter, smCurveCreate_pointclick_fm,
-                      smCurveMarkerLists_fm, smCurveMarkerPool_fm,
+                      smCurveMarkerLists_fm, smCurveMarkerPool_fm, smCurveCreateMarkerGD,
+                      smCurveCreateTest,
 					};
 protected:
 	RenderMode renderMode;

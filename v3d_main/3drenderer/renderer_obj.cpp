@@ -1160,7 +1160,7 @@ void Renderer_gl1::addCurveSWC(vector<XYZ> &loc_list, int chno)
 		NeuronTree SS;
 
 		SS.n = -1;
-		SS.color = random_rgba8(255);
+		SS.color = RGBA8(255, 0,0,0);//random_rgba8(255);
 		SS.on = true;
 		SS.listNeuron = listNeuron;
 		SS.hashNeuron = hashNeuron;

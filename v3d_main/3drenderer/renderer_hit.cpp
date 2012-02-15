@@ -221,7 +221,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
                *actCurveRefine=0, *actCurveEditRefine=0, *actCurveRubberDrag=0,  *actCurveDirectionInter=0,
           *actCurveLineInter=0, *actCurveCreate_pointclick_fm=0, *actCurveMarkerLists_fm=0,
-          *actCurveMarkerPool_fm=0,// ZJL 110905
+          *actCurveMarkerPool_fm=0, *actCurveCreateMarkerGD=0, *actCurveCreateTest=0,// ZJL 110905
 
 			*actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
 	        *actMarkerAblateOne_imaging=0, *actMarkerAblateAll_imaging=0,
@@ -301,23 +301,23 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			actCurveMarkerLists_fm->setIconVisibleInMenu(true);
 
 
-            if (0) //disable two not-often used functions
-            {
-                listAct.append(actCurveCreate2 = new QAction("2-right-strokes to define a 3D curve", w));
+               if (0) //disable two not-often used functions
+               {
+                    listAct.append(actCurveCreate2 = new QAction("2-right-strokes to define a 3D curve", w));
 
-                actCurveCreate2->setIcon(QIcon(":/icons/stroke2.svg"));
-                actCurveCreate2->setVisible(true);
-                actCurveCreate2->setIconVisibleInMenu(true);
+                    actCurveCreate2->setIcon(QIcon(":/icons/stroke2.svg"));
+                    actCurveCreate2->setVisible(true);
+                    actCurveCreate2->setIconVisibleInMenu(true);
 
-                listAct.append(actCurveCreate3 = new QAction("3-right-strokes to define a 3D curve", w));
-                actCurveCreate3->setIcon(QIcon(":/icons/stroke3.svg"));
-                actCurveCreate3->setVisible(true);
-                actCurveCreate3->setIconVisibleInMenu(true);
-            }
+                    listAct.append(actCurveCreate3 = new QAction("3-right-strokes to define a 3D curve", w));
+                    actCurveCreate3->setIcon(QIcon(":/icons/stroke3.svg"));
+                    actCurveCreate3->setVisible(true);
+                    actCurveCreate3->setIconVisibleInMenu(true);
+               }
 
-            listAct.append(actCurveCreate_pointclick_fm = new QAction("Series of right-clicks to define a 3D curve (Esc to finish)", w));
+               listAct.append(actCurveCreate_pointclick_fm = new QAction("Series of right-clicks to define a 3D curve (Esc to finish)", w));
 
-            actCurveCreate_pointclick_fm->setIcon(QIcon(":/icons/strokeN.svg"));
+               actCurveCreate_pointclick_fm->setIcon(QIcon(":/icons/strokeN.svg"));
 			actCurveCreate_pointclick_fm->setVisible(true);
 			actCurveCreate_pointclick_fm->setIconVisibleInMenu(true);
 
@@ -330,17 +330,27 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
                if(listCurveMarkerPool.size()>=2)
                {
-                    listAct.append(actCurveMarkerPool_fm = new QAction("Using marker pool to define a 3D curve", w));
+                    listAct.append(actCurveMarkerPool_fm = new QAction("Using marker pool to define a 3D curve by FM", w));
 
                     actCurveMarkerPool_fm->setIcon(QIcon(":/icons/strokeN.svg"));
                     actCurveMarkerPool_fm->setVisible(true);
                     actCurveMarkerPool_fm->setIconVisibleInMenu(true);
+
+                    listAct.append(actCurveCreateMarkerGD = new QAction("Using marker pool to define a 3D curve by GD", w));
+
+                    actCurveCreateMarkerGD->setIcon(QIcon(":/icons/strokeN.svg"));
+                    actCurveCreateMarkerGD->setVisible(true);
+                    actCurveCreateMarkerGD->setIconVisibleInMenu(true);
 
                     // clear listCurveMarkerPool
                     listAct.append(actClearMarkerPool = new QAction("Clear curve marker pool", w));
                     actClearMarkerPool->setVisible(true);
                }
 
+               listAct.append(actCurveCreateTest = new QAction("Test multiple curve creation methods", w));
+			actCurveCreateTest->setIcon(QIcon(":/icons/strokeN.svg"));
+			actCurveCreateTest->setVisible(true);
+			actCurveCreateTest->setIconVisibleInMenu(true);
 
                // For curve refinement, ZJL 110831
                listAct.append(act = new QAction("", w)); act->setSeparator(true);
@@ -413,11 +423,6 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			listAct.append(actColor = new QAction("color", w));
 			//listAct.append(actEditNameComment = new QAction("name/comment", w));
 
-
-               listAct.append(act = new QAction("", w)); act->setSeparator(true); // ZJL
-               listAct.append(actAddtoMarkerPool = new QAction("add this marker to the curve marker pool", w));
-               listAct.append(actClearMarkerPool = new QAction("clear the curve marker pool", w));
-
 			// --------------------------------------------------------------------------------------------------
 			listAct.append(act = new QAction("", w)); act->setSeparator(true);
 			if (names[1]==stNeuronStructure)
@@ -443,6 +448,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			if (names[1]==stImageMarker)
 			{
 				currentMarkerName = names[2];
+
+                    listAct.append(act = new QAction("", w)); act->setSeparator(true); // ZJL
+                    listAct.append(actAddtoMarkerPool = new QAction("add this marker to the curve marker pool", w));
+                    listAct.append(actClearMarkerPool = new QAction("clear the curve marker pool", w));
+
 #ifdef _ALLOW_ADVANCE_PROCESSING_MENU_
 #ifdef _ALLOW_LOCAL_ZOOMIN_3D_VIEWER_
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
@@ -802,6 +812,27 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		//if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::CrossCursor)); }
 	}
+     else if (act == actCurveCreateMarkerGD)
+	{
+		selectMode = smCurveCreateMarkerGD;
+		b_addthiscurve = true;
+
+          if (QMessageBox::question(0, "", "Do you want to use a 1-right stroke to define a bounding box? Default bounding box is the whole image.", QMessageBox::Yes, QMessageBox::No)
+               == QMessageBox::No)
+          {
+               if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::WaitCursor)); }
+               bool b_boundingbox = false;
+               solveCurveFromMarkersGD(b_boundingbox);
+               // clear listCurveMarkerPool
+               listCurveMarkerPool.clear();
+               endSelectMode();
+          }
+          else
+          {
+               // use one stroke to define a curve and then get a custmized bounding box
+               if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+          }
+	}
      else if (act == actCurveCreate_pointclick_fm)
 	{
 		selectMode = smCurveCreate_pointclick_fm;
@@ -820,17 +851,17 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
           solveCurveFromMarkersFastMarching();
 
           // delete markers used for curve drawing
-          for(int i=0; i<curImg->listLandmarks.size(); i++)
-          {
-               for(int j=0; j<listCurveMarkerPool.size(); j++)
-               {
-                    if(listCurveMarkerPool.at(j).name == curImg->listLandmarks.at(i).name)
-                    {
-                         curImg->listLandmarks.removeAt(i);
-                         listMarker.removeAt(i);
-                    }
-               }
-          }
+          // for(int i=0; i<curImg->listLandmarks.size(); i++)
+          // {
+          //      for(int j=0; j<listCurveMarkerPool.size(); j++)
+          //      {
+          //           if(listCurveMarkerPool.at(j).name == curImg->listLandmarks.at(i).name)
+          //           {
+          //                curImg->listLandmarks.removeAt(i);
+          //                listMarker.removeAt(i);
+          //           }
+          //      }
+          // }
           // clear listCurveMarkerPool
           listCurveMarkerPool.clear();
 
@@ -840,6 +871,13 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
      else if (act == actCurveMarkerLists_fm) // 20120124 ZJL
 	{
 		selectMode = smCurveMarkerLists_fm;
+		b_addthiscurve = true;
+		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+	}
+
+     else if (act == actCurveCreateTest) // 20120124 ZJL
+	{
+		selectMode = smCurveCreateTest;
 		b_addthiscurve = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
@@ -1702,7 +1740,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 
      // For curve refine, ZJL 110905
      else if (selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine || selectMode == smCurveDirectionInter || selectMode == smCurveLineInter ||
-              selectMode == smCurveMarkerLists_fm)
+              selectMode == smCurveMarkerLists_fm || smCurveCreateMarkerGD || smCurveCreateTest)
      {
           _appendMarkerPos(x,y);
           if (b_move)
@@ -1734,9 +1772,6 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     loc_vec0.clear();
                     solveCurveDirectionInter(loc_vec_input, loc_vec0, 0);
 
-                    // for comparison purpose
-                    //solveCurveCenter(loc_vec_input);
-
                     //selectMode = smCurveRefineLast; // switch to smCurveRefineLast for refine mode
                }
                else if(selectMode == smCurveMarkerLists_fm)
@@ -1746,7 +1781,21 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     vector <XYZ> loc_vec0;
                     loc_vec0.clear();
                     solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
-
+               }
+               else if(selectMode == smCurveCreateMarkerGD)
+               {
+                    solveCurveFromMarkersGD(true); // ture means using customized bounding box
+                    endSelectMode();
+               }
+               else if(selectMode == smCurveCreateTest)
+               {
+                    // using two marker lists for fast marching to get a curve
+                    vector <XYZ> loc_vec_input;
+                    vector <XYZ> loc_vec0;
+                    loc_vec0.clear();
+                    solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
+                    // for comparison purpose
+                    solveCurveCenter(loc_vec_input);
                }
                else
                     solveCurveRefineLast();

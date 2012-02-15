@@ -308,6 +308,8 @@ protected:
      void adaptiveCurveResampling(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, int stepsize);
      void resampleCurveStrokes(int index, int chno, vector<int> &ids);
 
+     bool boundingboxFromStroke(XYZ& minloc, XYZ& maxloc);
+
      V3DLONG findNearestNeuronNode_Loc(XYZ &loc, NeuronTree *ptree);
 
      bool lineLineIntersect( XYZ p1,XYZ p2,XYZ p3,XYZ p4,XYZ *pa,XYZ *pb,
@@ -317,6 +319,7 @@ protected:
 
      void solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index);
      void solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index);
+     void solveCurveFromMarkersGD(bool b_customized_bb);
      bool withinLineSegCheck( XYZ p1,XYZ p2,XYZ pa); // check wether pa is within the line seg (p1,p1)
      XYZ getLocUsingMassCenter(bool firstloc, XYZ lastpos, XYZ p1, XYZ p2,
 			double clipplane[4]=0,	//clipplane==0 means no clip plane

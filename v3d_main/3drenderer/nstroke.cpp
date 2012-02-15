@@ -797,59 +797,60 @@ void Renderer_gl1::solveCurveCenterV2(vector <XYZ> & loc_vec_input, vector <XYZ>
 	// check if there is any existing neuron node is very close to the starting and ending points, if yes, then merge
 
 	N = loc_vec.size(); //100722 RZC
-	if (V3Dmainwindow && V3Dmainwindow->global_setting.b_3dcurve_autoconnecttips && b_use_seriespointclick==false)
-	{
-		if (listNeuronTree.size()>0 && curEditingNeuron>0 && curEditingNeuron<=listNeuronTree.size())
-		{
-			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(curEditingNeuron-1)));
-			if (p_tree)
-			{
+
+     if (V3Dmainwindow && V3Dmainwindow->global_setting.b_3dcurve_autoconnecttips && b_use_seriespointclick==false)
+     {
+          if (listNeuronTree.size()>0 && curEditingNeuron>0 && curEditingNeuron<=listNeuronTree.size())
+          {
+               NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(curEditingNeuron-1)));
+               if (p_tree)
+               {
                     // at(0) to at(index) ZJL 110901
-				V3DLONG n_id_start = findNearestNeuronNode_WinXY(list_listCurvePos.at(index).at(0).x, list_listCurvePos.at(index).at(0).y, p_tree);
-				V3DLONG n_id_end = findNearestNeuronNode_WinXY(list_listCurvePos.at(index).at(N-1).x, list_listCurvePos.at(index).at(N-1).y, p_tree);
-                                qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
+                    V3DLONG n_id_start = findNearestNeuronNode_WinXY(list_listCurvePos.at(index).at(0).x, list_listCurvePos.at(index).at(0).y, p_tree);
+                    V3DLONG n_id_end = findNearestNeuronNode_WinXY(list_listCurvePos.at(index).at(N-1).x, list_listCurvePos.at(index).at(N-1).y, p_tree);
+                    qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
 
-				double th_merge = 5;
+                    double th_merge = 5;
 
-				bool b_start_merged=false, b_end_merged=false;
-				NeuronSWC cur_node;
-				if (n_id_start>=0)
-				{
-					cur_node = p_tree->listNeuron.at(n_id_start);
-					qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
-					XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
-					if (dist_L2(cur_node_xyz, loc_vec.at(0))<th_merge)
-					{
-						loc_vec.at(0) = cur_node_xyz;
-						b_start_merged = true;
-						qDebug()<<"force set the first point of this curve to the above neuron node as they are close.";
-					}
-				}
-				if (n_id_end>=0)
-				{
-					cur_node = p_tree->listNeuron.at(n_id_end);
-					qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
-					XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
-					if (dist_L2(cur_node_xyz, loc_vec.at(N-1))<th_merge)
-					{
-						loc_vec.at(N-1) = cur_node_xyz;
-						b_end_merged = true;
-						qDebug()<<"force set the last point of this curve to the above neuron node as they are close.";
+                    bool b_start_merged=false, b_end_merged=false;
+                    NeuronSWC cur_node;
+                    if (n_id_start>=0)
+                    {
+                         cur_node = p_tree->listNeuron.at(n_id_start);
+                         qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
+                         XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+                         if (dist_L2(cur_node_xyz, loc_vec.at(0))<th_merge)
+                         {
+                              loc_vec.at(0) = cur_node_xyz;
+                              b_start_merged = true;
+                              qDebug()<<"force set the first point of this curve to the above neuron node as they are close.";
+                         }
+                    }
+                    if (n_id_end>=0)
+                    {
+                         cur_node = p_tree->listNeuron.at(n_id_end);
+                         qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
+                         XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+                         if (dist_L2(cur_node_xyz, loc_vec.at(N-1))<th_merge)
+                         {
+                              loc_vec.at(N-1) = cur_node_xyz;
+                              b_end_merged = true;
+                              qDebug()<<"force set the last point of this curve to the above neuron node as they are close.";
 
-					}
-				}
+                         }
+                    }
 
-				//a special operation is that if the end point is merged, but the start point is not merged,
-				//then this segment is reversed direction to reflect the prior knowledge that a neuron normally grow out as branches
-				if (b_start_merged==false && b_end_merged==true)
-				{
-					vector <XYZ> loc_vec_tmp = loc_vec;
-					for (int i=0;i<N;i++)
-						loc_vec.at(i) = loc_vec_tmp.at(N-1-i);
-				}
-			}
-		}
-	}
+                    //a special operation is that if the end point is merged, but the start point is not merged,
+                    //then this segment is reversed direction to reflect the prior knowledge that a neuron normally grow out as branches
+                    if (b_start_merged==false && b_end_merged==true)
+                    {
+                         vector <XYZ> loc_vec_tmp = loc_vec;
+                         for (int i=0;i<N;i++)
+                              loc_vec.at(i) = loc_vec_tmp.at(N-1-i);
+                    }
+               }
+          }
+     }
 
 	if (b_use_seriespointclick==false)
 		smooth_curve(loc_vec, 5);
