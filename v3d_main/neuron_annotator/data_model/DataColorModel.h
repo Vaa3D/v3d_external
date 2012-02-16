@@ -7,7 +7,8 @@
 #include <qrgb.h>
 
 
-//#include "PrivateDataColorModel.h"
+// forward declaration for QSharedData paradigm.
+// PrivateDataColorModel.h must only be included in .cpp files
 class PrivateDataColorModel;
 
 // DataColorModel converts multichannel 16-bit intensities
@@ -25,6 +26,7 @@ public:
     DataColorModel();
     explicit DataColorModel(const NaVolumeData& volumeDataParam);
     explicit DataColorModel(const DataColorModel& rhs);
+
     void setIncrementalColorSource(const DataColorModel& desiredColors, const DataColorModel& currentColors);
     bool setChannelUseSharedGamma(int index, bool useIt);
 

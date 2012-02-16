@@ -1,5 +1,7 @@
 #include "VolumeTexture.h"
 #include "PrivateVolumeTexture.h"
+#include "PrivateDataColorModel.h" // avoid compile error on msvc?
+#include "PrivateNeuronFragmentData.h" // avoid compile error on msvc?
 #include "NaSharedDataModel.cpp"
 
 template class NaSharedDataModel<jfrc::PrivateVolumeTexture>;
@@ -17,10 +19,12 @@ VolumeTexture::VolumeTexture()
 
 bool VolumeTexture::initializeGL()
 {
+    bool result = false;
     {
         Writer(*this); // acquire lock, waits for Readers to release their locks
-        d->initializeGL();
+        result = d->initializeGL();
     } // release lock
+    return result;
 }
 
 void VolumeTexture::setDataFlowModel(const DataFlowModel& dataFlowModel)

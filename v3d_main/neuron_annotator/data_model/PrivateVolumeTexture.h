@@ -55,7 +55,7 @@ public:
         // data[7] = 3;
     }
 
-    virtual void initializeGL()
+    virtual bool initializeGL()
     {
         // clear stale errors
         GLenum glErr;
@@ -69,6 +69,7 @@ public:
         else
             bInitialized = true;
         glActiveTextureARB(GL_TEXTURE0_ARB); // restore default
+        return true;
     }
 
     NeuronLabelTexture& setValueAt(size_t x, size_t y, size_t z, unsigned char neuronIndex)
@@ -160,7 +161,7 @@ public:
     }
 
     /// Actions to be taken once, when the GL context is created
-    virtual void initializeGL()
+    virtual bool initializeGL()
     {
         // clear stale errors
         GLenum glErr;
@@ -196,6 +197,7 @@ public:
         glActiveTextureARB(GL_TEXTURE0_ARB); // restore default
         if ((glErr = glGetError()) != GL_NO_ERROR)
             qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
+        return true;
     }
 
     bool update()
@@ -455,11 +457,18 @@ public:
 
     bool initializeGL()
     {
-        neuronVisibilityTexture.initializeGL();
-        neuronLabelTexture.initializeGL();
-        slicesXyz.initializeGL();
-        slicesYzx.initializeGL();
-        slicesZxy.initializeGL();
+        bool result = true;
+        if (!neuronVisibilityTexture.initializeGL())
+            result = false;
+        if (!neuronLabelTexture.initializeGL())
+            result = false;
+        if (!slicesXyz.initializeGL())
+            result = false;
+        if (!slicesYzx.initializeGL())
+            result = false;
+        if (!slicesZxy.initializeGL())
+            result = false;
+        return result;
     }
 
     Dimension originalImageSize; ///< Size of data volume being approximated by this texture set.
