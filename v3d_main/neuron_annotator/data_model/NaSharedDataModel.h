@@ -6,6 +6,7 @@
 // base class NaSharedDataSignaller .
 #include "NaSharedDataSignaller.h"
 
+
 // Sketch of how to use Qt copy-on-write methods to implement unified data model data flow objects.
 // Uses both QReadWriteLock and QSharedDataPointer to manage access to shared data.
 // QSharedDataPointer part is based on Employee example at

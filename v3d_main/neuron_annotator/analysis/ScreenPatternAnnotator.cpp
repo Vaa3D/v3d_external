@@ -243,7 +243,8 @@ My4DImage * ScreenPatternAnnotator::cubifyImage(My4DImage * sourceImage, int cub
                 V3DLONG yOffset=y*c_xmax + zOffset;
                 for (V3DLONG x=0;x<c_xmax;x++) {
                     V3DLONG offset=x+yOffset;
-                    V3DLONG cubeData[cubeSize*cubeSize*cubeSize];
+                    //V3DLONG cubeData[cubeSize*cubeSize*cubeSize];
+					V3DLONG *cubeData = new V3DLONG [cubeSize*cubeSize*cubeSize]; // by ZJL for windows compile
                     V3DLONG zStart=z*cubeSize;
                     V3DLONG zEnd=(zStart+cubeSize<s_zmax?(zStart+cubeSize):s_zmax);
                     V3DLONG yStart=y*cubeSize;
@@ -286,6 +287,7 @@ My4DImage * ScreenPatternAnnotator::cubifyImage(My4DImage * sourceImage, int cub
                         }
                         cData[offset]=hval;
                     }
+					if(cubeData){ delete []cubeData; cubeData=0;}
                 }
             }
         }

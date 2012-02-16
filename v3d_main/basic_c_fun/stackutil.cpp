@@ -3816,7 +3816,6 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 		}
 	}
 
-
 	//copy output data
 
 	switch (tmp_datatype)
@@ -3856,7 +3855,6 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 
 	return true;
 }
-
 
 
 bool saveImage(const char filename[], const unsigned char * data1d, const V3DLONG * sz, const int datatype)

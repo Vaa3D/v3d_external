@@ -6,6 +6,8 @@
 #include <vector>
 #include <qrgb.h>
 
+
+//#include "PrivateDataColorModel.h"
 class PrivateDataColorModel;
 
 // DataColorModel converts multichannel 16-bit intensities

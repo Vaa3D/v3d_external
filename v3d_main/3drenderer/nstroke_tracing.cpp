@@ -669,7 +669,7 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
                tar_markers.push_back(mloc1);
 
                // call fastmarching
-               fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz, 0);
+               fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz, 0, 2);
 
                loc_vec.push_back(loc0);
 

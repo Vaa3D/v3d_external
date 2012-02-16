@@ -49,12 +49,14 @@ void clean_fm_marker_vector(vector<MyMarker*> &outswc)
 }
 
 // if time==0, then do not consider consuming time, time is in seconds
-template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<MyMarker> & tar_markers, T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, float time, int cnn_type = 2)
-{
-     clock_t t1=clock(); // start time
+template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<MyMarker> & tar_markers, 
+										   T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, float time, int cnn_type = 2)
+{		
+        int ALIVE = -1;
+		int TRIAL = 0;
+		int FARST = 1;
 
-        enum{ALIVE = -1, TRIAL = 0, FAR = 1};
-
+		clock_t t1=clock(); // start time
         long tol_sz = sz0 * sz1 * sz2;
         long sz01 = sz0 * sz1;
         //int cnn_type = 2;  // ?
@@ -93,7 +95,7 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
 
         // initialization
         char * state = new char[tol_sz];
-        for(long i = 0; i < tol_sz; i++) state[i] = FAR;
+        for(long i = 0; i < tol_sz; i++) state[i] = FARST;
 
         vector<long> submarker_inds;
         for(long s = 0; s < sub_markers.size(); s++) {
@@ -170,7 +172,7 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
                                                 double new_dist = phi[min_ind] + (GI(index) + GI(min_ind))*factor*0.5;
                                                 long prev_ind = min_ind;
 
-                                                if(state[index] == FAR)
+                                                if(state[index] == FARST)
                                                 {
                                                         phi[index] = new_dist;
                                                         HeapElemX * elem = new HeapElemX(index, phi[index]);
