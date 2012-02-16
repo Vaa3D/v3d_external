@@ -81,7 +81,8 @@ void DynamicRangeTool::initializeColors()
         if (numChannels < 1)
             return;
     } // release read lock
-    if (currentChannelIndex < 1)
+    // Ensure that initial index is an actual color channel
+    if (currentChannelIndex < 0)
         currentChannelIndex = 0;
     if (currentChannelIndex >= numChannels)
         currentChannelIndex = numChannels - 1;

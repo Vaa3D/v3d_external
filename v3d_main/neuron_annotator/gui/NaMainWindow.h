@@ -94,6 +94,7 @@ signals:
 public slots:
     // void selectCurtain(int index);
     // void addNewCurtain();
+    void loadSingleStack(QString fileName); // switches to default vaa3d mode
     void onDataLoadStarted();
     void onDataLoadFinished();
     void openMulticolorImageStack(QString dirName);

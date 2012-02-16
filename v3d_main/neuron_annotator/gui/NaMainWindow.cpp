@@ -385,12 +385,20 @@ void NaMainWindow::dropEvent(QDropEvent * event)
     else
     {
         qDebug() << "Switching to Vaa3D default mode to view single image stack";
-        ui.actionV3DDefault->trigger(); // switch mode
-        emit defaultVaa3dFileLoadRequested(fileName);
+        loadSingleStack(fileName);
+        // ui.actionV3DDefault->trigger(); // switch mode
+        // emit defaultVaa3dFileLoadRequested(fileName);
     }
 
     // qDebug() << "NaMainWindow::dropEvent" << fileName << __FILE__ << __LINE__;
 }
+
+void NaMainWindow::loadSingleStack(QString fileName)
+{
+    ui.actionV3DDefault->trigger(); // switch mode
+    emit defaultVaa3dFileLoadRequested(fileName);
+}
+
 
 ///////////////////////////////////
 // User clip planes in 3D viewer //
