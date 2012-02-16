@@ -364,7 +364,7 @@ static int serve_fw__entityOutlineDeselected(ConsoleObserverService *soap)
 
 static int serve_fw__entitySelected(ConsoleObserverService *soap)
 {	struct fw__entitySelected soap_tmp_fw__entitySelected;
-        struct fw__entitySelectedResponse _param_5;
+	struct fw__entitySelectedResponse _param_5;
 	soap_default_fw__entitySelectedResponse(soap, &_param_5);
 	soap_default_fw__entitySelected(soap, &soap_tmp_fw__entitySelected);
 	soap->encodingStyle = NULL;

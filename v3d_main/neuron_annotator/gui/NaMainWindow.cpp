@@ -1141,6 +1141,10 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     return true;
 }
 
+void NaMainWindow::setTitle(QString title) {
+    setWindowTitle(QString("%1 - V3D Neuron Annotator").arg(title));
+}
+
 void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataChanged() signal
 {
     onDataLoadFinished();
@@ -1164,7 +1168,7 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
         }
     }
     QFileInfo lsmFileInfo(lsmName);
-    setWindowTitle(QString("%1 - V3D Neuron Annotator").arg(lsmFileInfo.fileName()));
+    setTitle(lsmFileInfo.fileName());
 
     {
         NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());

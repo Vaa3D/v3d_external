@@ -92,6 +92,12 @@
 <message name="getKeybindingsResponse">
 <part name="return" type="tns:ontologyKeyBindings" />
 </message>
+<message name="getParentEntityArray">
+<part name="childEntityId" type="xsd:long" />
+</message>
+<message name="getParentEntityArrayResponse">
+<part name="return" type="tns:entityArray" />
+</message>
 <message name="getParentEntityDataArray">
 <part name="childEntityId" type="xsd:long" />
 </message>
@@ -162,6 +168,10 @@
 <operation name="getKeybindings">
 <input message="tns:getKeybindings" />
 <output message="tns:getKeybindingsResponse" />
+</operation>
+<operation name="getParentEntityArray">
+<input message="tns:getParentEntityArray" />
+<output message="tns:getParentEntityArrayResponse" />
 </operation>
 <operation name="getParentEntityDataArray">
 <input message="tns:getParentEntityDataArray" />
@@ -306,6 +316,15 @@
 </output>
 </operation>
 <operation name="getKeybindings">
+<soap:operation soapAction="" />
+<input>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</input>
+<output>
+<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
+</output>
+</operation>
+<operation name="getParentEntityArray">
 <soap:operation soapAction="" />
 <input>
 <soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />

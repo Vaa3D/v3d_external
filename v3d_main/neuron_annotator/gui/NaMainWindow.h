@@ -121,6 +121,7 @@ public slots:
     void onHdrChannelChanged(NaZStackWidget::Color);
     void supportQuadStereo(bool b);
     void showDynamicRangeTool();
+    void setTitle(QString title);
 
 protected slots:
     void on3DViewerRotationChanged(const Rotation3D& rot);

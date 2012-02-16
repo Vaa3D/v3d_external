@@ -101,11 +101,33 @@ EntityAdapter &EntityAdapter::get()
   return obj;
 }
 
+EntityData* EntityAdapter::convert(cds::fw__entityData *fwEntityData, Entity *parent)
+{
+
+    EntityData *entityData = new EntityData();
+
+    if (fwEntityData->guid != NULL) entityData->id = new qint64(*fwEntityData->guid);
+    if (fwEntityData->orderIndex != NULL) entityData->orderIndex = new qint64(*fwEntityData->orderIndex);
+    if (fwEntityData->entityAttribute != NULL) entityData->attributeName = new QString(fwEntityData->entityAttribute->c_str());
+    if (fwEntityData->value != NULL) entityData->value = new QString(fwEntityData->value->c_str());
+    if (fwEntityData->user != NULL) entityData->user = new QString(fwEntityData->user->c_str());
+
+    entityData->parentEntity = parent;
+
+    if (fwEntityData->childEntity != NULL)
+    {
+        // Recursively convert children
+        entityData->childEntity = convert(fwEntityData->childEntity);
+    }
+
+    return entityData;
+}
+
 Entity* EntityAdapter::convert(cds::fw__entity *fwEntity)
 {
     Entity *entity = new Entity();
 
-    if (fwEntity->id != NULL) entity->id = new qint64(*fwEntity->id);
+    if (fwEntity->guid != NULL) entity->id = new qint64(*fwEntity->guid);
     if (fwEntity->name != NULL) entity->name = new QString(fwEntity->name->c_str());
     if (fwEntity->user != NULL) entity->user = new QString(fwEntity->user->c_str());
     if (fwEntity->entityType != NULL) entity->entityType = new QString(fwEntity->entityType->c_str());
@@ -119,47 +141,11 @@ Entity* EntityAdapter::convert(cds::fw__entity *fwEntity)
         for (int c = 0; c < children.size(); ++c)
         {
             cds::fw__entityData *childED = children[c];
-            EntityData *entityData = new EntityData();
-
-            if (childED->id != NULL) entityData->id = new qint64(*childED->id);
-            if (childED->orderIndex != NULL) entityData->orderIndex = new qint64(*childED->orderIndex);
-            if (childED->entityAttribute != NULL) entityData->attributeName = new QString(childED->entityAttribute->c_str());
-            if (childED->value != NULL) entityData->value = new QString(childED->value->c_str());
-            if (childED->user != NULL) entityData->user = new QString(childED->user->c_str());
-
-            entityData->parentEntity = entity;
-
-            if (childED->childEntity != NULL)
-            {
-                // Recursively convert children
-                entityData->childEntity = convert(childED->childEntity);
-            }
-
+            EntityData *entityData = convert(childED, entity);
             entity->entityDataSet.insert(entityData);
         }
     }
 
-    // TODO: DELETE ME! Here we artifically add the neuron number.
-    // This will be part of the model when we moved to the stiched pipeline, and then this piece of code can be deleted.
-//    if (entity->entityType!=0 && *entity->entityType == "Tif 2D Image")
-//    {
-//        QString filepath = entity->getValueByAttributeName("File Path");
-//        if (!filepath.isEmpty())
-//        {
-//            QRegExp rx("neuronSeparatorPipeline.PR.neuron(\\d+)\\.tif");
-//            if (rx.indexIn(filepath) != -1)
-//            {
-//                QString numStr = rx.cap(1);
-//                EntityData *entityData = new EntityData();
-//                entityData->attributeName = new QString("Number");
-//                entityData->value = new QString(numStr);
-//                entityData->id = new qint64(1);
-//                entityData->parentEntity = entity;
-//                entityData->user = new QString("none");
-//                entity->entityDataSet.insert(entityData);
-//            }
-//        }
-//    }
     return entity;
 }
 
@@ -171,6 +157,18 @@ QList<Entity *>* EntityAdapter::convert(cds::fw__entityArray *array)
     for (int c = 0; c < items.size(); ++c)
     {
         list->append(convert(items[c]));
+    }
+    return list;
+}
+
+QList<EntityData *>* EntityAdapter::convert(cds::fw__entityDataArray *array)
+{
+    QList<EntityData *> *list = new QList<EntityData *>;
+    if (array == NULL) return list;
+    std::vector<cds::fw__entityData *> items = array->item;
+    for (int c = 0; c < items.size(); ++c)
+    {
+        list->append(convert(items[c], NULL));
     }
     return list;
 }

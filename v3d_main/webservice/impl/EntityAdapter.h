@@ -26,8 +26,10 @@ private:
 
 public:
     static EntityAdapter &get(); // Get the singleton
+    static EntityData* convert(cds::fw__entityData *fwEntityData, Entity *parent);
     static Entity* convert(cds::fw__entity *fwEntity);
     static QList<Entity *>* convert(cds::fw__entityArray *array);
+    static QList<EntityData *>* convert(cds::fw__entityDataArray *array);
     static QMap<QKeySequence, qint64>* convert(cds::fw__ontologyKeyBindings *keyBindings);
     static OntologyAnnotation* convert(cds::fw__ontologyAnnotation *fwAnnotation);
     static cds::fw__ontologyAnnotation* convert(OntologyAnnotation* annotation);

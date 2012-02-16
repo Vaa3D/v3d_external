@@ -17,7 +17,7 @@ compiling, linking, and/or using OpenSSL is allowed.
 
 namespace cds {
 
-SOAP_SOURCE_STAMP("@(#) cdsC.cpp ver 2.8.3 2012-01-27 14:21:30 GMT")
+SOAP_SOURCE_STAMP("@(#) cdsC.cpp ver 2.8.3 2012-02-16 16:50:08 GMT")
 
 
 #ifndef WITH_NOGLOBAL
@@ -206,6 +206,10 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		return soap_in_fw__getParentEntityDataArray(soap, NULL, NULL, "fw:getParentEntityDataArray");
 	case SOAP_TYPE_cds_fw__getParentEntityDataArrayResponse:
 		return soap_in_fw__getParentEntityDataArrayResponse(soap, NULL, NULL, "fw:getParentEntityDataArrayResponse");
+	case SOAP_TYPE_cds_fw__getParentEntityArray:
+		return soap_in_fw__getParentEntityArray(soap, NULL, NULL, "fw:getParentEntityArray");
+	case SOAP_TYPE_cds_fw__getParentEntityArrayResponse:
+		return soap_in_fw__getParentEntityArrayResponse(soap, NULL, NULL, "fw:getParentEntityArrayResponse");
 	case SOAP_TYPE_cds_fw__getKeybindings:
 		return soap_in_fw__getKeybindings(soap, NULL, NULL, "fw:getKeybindings");
 	case SOAP_TYPE_cds_fw__getKeybindingsResponse:
@@ -399,6 +403,14 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		if (!soap_match_tag(soap, t, "fw:getParentEntityDataArrayResponse"))
 		{	*type = SOAP_TYPE_cds_fw__getParentEntityDataArrayResponse;
 			return soap_in_fw__getParentEntityDataArrayResponse(soap, NULL, NULL, NULL);
+		}
+		if (!soap_match_tag(soap, t, "fw:getParentEntityArray"))
+		{	*type = SOAP_TYPE_cds_fw__getParentEntityArray;
+			return soap_in_fw__getParentEntityArray(soap, NULL, NULL, NULL);
+		}
+		if (!soap_match_tag(soap, t, "fw:getParentEntityArrayResponse"))
+		{	*type = SOAP_TYPE_cds_fw__getParentEntityArrayResponse;
+			return soap_in_fw__getParentEntityArrayResponse(soap, NULL, NULL, NULL);
 		}
 		if (!soap_match_tag(soap, t, "fw:getKeybindings"))
 		{	*type = SOAP_TYPE_cds_fw__getKeybindings;
@@ -650,6 +662,10 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_putelement(struct soap *soap, const void *ptr, co
 		return soap_out_fw__getParentEntityDataArray(soap, tag, id, (const struct fw__getParentEntityDataArray *)ptr, "fw:getParentEntityDataArray");
 	case SOAP_TYPE_cds_fw__getParentEntityDataArrayResponse:
 		return soap_out_fw__getParentEntityDataArrayResponse(soap, tag, id, (const struct fw__getParentEntityDataArrayResponse *)ptr, "fw:getParentEntityDataArrayResponse");
+	case SOAP_TYPE_cds_fw__getParentEntityArray:
+		return soap_out_fw__getParentEntityArray(soap, tag, id, (const struct fw__getParentEntityArray *)ptr, "fw:getParentEntityArray");
+	case SOAP_TYPE_cds_fw__getParentEntityArrayResponse:
+		return soap_out_fw__getParentEntityArrayResponse(soap, tag, id, (const struct fw__getParentEntityArrayResponse *)ptr, "fw:getParentEntityArrayResponse");
 	case SOAP_TYPE_cds_fw__getKeybindings:
 		return soap_out_fw__getKeybindings(soap, tag, id, (const struct fw__getKeybindings *)ptr, "fw:getKeybindings");
 	case SOAP_TYPE_cds_fw__getKeybindingsResponse:
@@ -818,6 +834,12 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_markelement(struct soap *soap, const void *ptr, 
 		break;
 	case SOAP_TYPE_cds_fw__getParentEntityDataArrayResponse:
 		soap_serialize_fw__getParentEntityDataArrayResponse(soap, (const struct fw__getParentEntityDataArrayResponse *)ptr);
+		break;
+	case SOAP_TYPE_cds_fw__getParentEntityArray:
+		soap_serialize_fw__getParentEntityArray(soap, (const struct fw__getParentEntityArray *)ptr);
+		break;
+	case SOAP_TYPE_cds_fw__getParentEntityArrayResponse:
+		soap_serialize_fw__getParentEntityArrayResponse(soap, (const struct fw__getParentEntityArrayResponse *)ptr);
 		break;
 	case SOAP_TYPE_cds_fw__getKeybindings:
 		soap_serialize_fw__getKeybindings(soap, (const struct fw__getKeybindings *)ptr);
@@ -1071,6 +1093,10 @@ SOAP_FMAC3 void * SOAP_FMAC4 cds_instantiate(struct soap *soap, int t, const cha
 		return (void*)soap_instantiate_fw__getKeybindingsResponse(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_cds_fw__getKeybindings:
 		return (void*)soap_instantiate_fw__getKeybindings(soap, -1, type, arrayType, n);
+	case SOAP_TYPE_cds_fw__getParentEntityArrayResponse:
+		return (void*)soap_instantiate_fw__getParentEntityArrayResponse(soap, -1, type, arrayType, n);
+	case SOAP_TYPE_cds_fw__getParentEntityArray:
+		return (void*)soap_instantiate_fw__getParentEntityArray(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_cds_fw__getParentEntityDataArrayResponse:
 		return (void*)soap_instantiate_fw__getParentEntityDataArrayResponse(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_cds_fw__getParentEntityDataArray:
@@ -1381,6 +1407,18 @@ SOAP_FMAC3 int SOAP_FMAC4 cds_fdelete(struct soap_clist *p)
 			SOAP_DELETE((struct fw__getKeybindings*)p->ptr);
 		else
 			SOAP_DELETE_ARRAY((struct fw__getKeybindings*)p->ptr);
+		break;
+	case SOAP_TYPE_cds_fw__getParentEntityArrayResponse:
+		if (p->size < 0)
+			SOAP_DELETE((struct fw__getParentEntityArrayResponse*)p->ptr);
+		else
+			SOAP_DELETE_ARRAY((struct fw__getParentEntityArrayResponse*)p->ptr);
+		break;
+	case SOAP_TYPE_cds_fw__getParentEntityArray:
+		if (p->size < 0)
+			SOAP_DELETE((struct fw__getParentEntityArray*)p->ptr);
+		else
+			SOAP_DELETE_ARRAY((struct fw__getParentEntityArray*)p->ptr);
 		break;
 	case SOAP_TYPE_cds_fw__getParentEntityDataArrayResponse:
 		if (p->size < 0)
@@ -3341,7 +3379,7 @@ void fw__entity::soap_default(struct soap *soap)
 	this->fw__entity::entityStatus = NULL;
 	this->fw__entity::entityType = NULL;
 	this->fw__entity::entityDataSet = NULL;
-	this->fw__entity::id = NULL;
+	this->fw__entity::guid = NULL;
 	/* transient soap skipped */
 }
 
@@ -3363,8 +3401,8 @@ int fw__entity::soap_out(struct soap *soap, const char *tag, int id, const char 
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__entity(struct soap *soap, const char *tag, int id, const fw__entity *a, const char *type)
 {
-	if (((fw__entity*)a)->id)
-		soap_set_attr(soap, "id", soap_LONG642s(soap, *((fw__entity*)a)->id), 1);
+	if (((fw__entity*)a)->guid)
+		soap_set_attr(soap, "guid", soap_LONG642s(soap, *((fw__entity*)a)->guid), 1);
 	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_cds_fw__entity), type))
 		return soap->error;
 	if (soap_out_PointerTostd__string(soap, "name", -1, &(a->fw__entity::name), ""))
@@ -3401,14 +3439,14 @@ SOAP_FMAC3 fw__entity * SOAP_FMAC4 soap_in_fw__entity(struct soap *soap, const c
 			return (fw__entity *)a->soap_in(soap, tag, type);
 		}
 	}
-	{	const char *t = soap_attr_value(soap, "id", 0);
+	{	const char *t = soap_attr_value(soap, "guid", 0);
 		if (t)
 		{
-			if (!(((fw__entity*)a)->id = (LONG64 *)soap_malloc(soap, sizeof(LONG64))))
+			if (!(((fw__entity*)a)->guid = (LONG64 *)soap_malloc(soap, sizeof(LONG64))))
 			{	soap->error = SOAP_EOM;
 				return NULL;
 			}
-			if (soap_s2LONG64(soap, t, ((fw__entity*)a)->id))
+			if (soap_s2LONG64(soap, t, ((fw__entity*)a)->guid))
 			return NULL;
 		}
 		else if (soap->error)
@@ -3531,7 +3569,7 @@ void fw__entityData::soap_default(struct soap *soap)
 	this->fw__entityData::user = NULL;
 	this->fw__entityData::value = NULL;
 	this->fw__entityData::orderIndex = NULL;
-	this->fw__entityData::id = NULL;
+	this->fw__entityData::guid = NULL;
 	/* transient soap skipped */
 }
 
@@ -3553,8 +3591,8 @@ int fw__entityData::soap_out(struct soap *soap, const char *tag, int id, const c
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__entityData(struct soap *soap, const char *tag, int id, const fw__entityData *a, const char *type)
 {
-	if (((fw__entityData*)a)->id)
-		soap_set_attr(soap, "id", soap_LONG642s(soap, *((fw__entityData*)a)->id), 1);
+	if (((fw__entityData*)a)->guid)
+		soap_set_attr(soap, "guid", soap_LONG642s(soap, *((fw__entityData*)a)->guid), 1);
 	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_cds_fw__entityData), type))
 		return soap->error;
 	if (soap_out_PointerTofw__entityAttribute(soap, "entityAttribute", -1, &(a->fw__entityData::entityAttribute), ""))
@@ -3591,14 +3629,14 @@ SOAP_FMAC3 fw__entityData * SOAP_FMAC4 soap_in_fw__entityData(struct soap *soap,
 			return (fw__entityData *)a->soap_in(soap, tag, type);
 		}
 	}
-	{	const char *t = soap_attr_value(soap, "id", 0);
+	{	const char *t = soap_attr_value(soap, "guid", 0);
 		if (t)
 		{
-			if (!(((fw__entityData*)a)->id = (LONG64 *)soap_malloc(soap, sizeof(LONG64))))
+			if (!(((fw__entityData*)a)->guid = (LONG64 *)soap_malloc(soap, sizeof(LONG64))))
 			{	soap->error = SOAP_EOM;
 				return NULL;
 			}
-			if (soap_s2LONG64(soap, t, ((fw__entityData*)a)->id))
+			if (soap_s2LONG64(soap, t, ((fw__entityData*)a)->guid))
 			return NULL;
 		}
 		else if (soap->error)
@@ -4563,6 +4601,220 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getParentEntityDataArrayResponse(struct
 	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
 	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__getParentEntityDataArrayResponse %p -> %p\n", q, p));
 	*(struct fw__getParentEntityDataArrayResponse*)p = *(struct fw__getParentEntityDataArrayResponse*)q;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getParentEntityArray(struct soap *soap, struct fw__getParentEntityArray *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+	soap_default_LONG64(soap, &a->childEntityId);
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getParentEntityArray(struct soap *soap, const struct fw__getParentEntityArray *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+	soap_embedded(soap, &a->childEntityId, SOAP_TYPE_cds_LONG64);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__getParentEntityArray(struct soap *soap, const char *tag, int id, const struct fw__getParentEntityArray *a, const char *type)
+{
+	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_cds_fw__getParentEntityArray), type))
+		return soap->error;
+	if (soap_out_LONG64(soap, "childEntityId", -1, &a->childEntityId, ""))
+		return soap->error;
+	return soap_element_end_out(soap, tag);
+}
+
+SOAP_FMAC3 struct fw__getParentEntityArray * SOAP_FMAC4 soap_in_fw__getParentEntityArray(struct soap *soap, const char *tag, struct fw__getParentEntityArray *a, const char *type)
+{
+	size_t soap_flag_childEntityId = 1;
+	if (soap_element_begin_in(soap, tag, 0, type))
+		return NULL;
+	a = (struct fw__getParentEntityArray *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_cds_fw__getParentEntityArray, sizeof(struct fw__getParentEntityArray), 0, NULL, NULL, NULL);
+	if (!a)
+		return NULL;
+	soap_default_fw__getParentEntityArray(soap, a);
+	if (soap->body && !*soap->href)
+	{
+		for (;;)
+		{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap_flag_childEntityId && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_LONG64(soap, "childEntityId", &a->childEntityId, "xsd:long"))
+				{	soap_flag_childEntityId--;
+					continue;
+				}
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+				return NULL;
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else
+	{	a = (struct fw__getParentEntityArray *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_cds_fw__getParentEntityArray, 0, sizeof(struct fw__getParentEntityArray), 0, NULL);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	if ((soap->mode & SOAP_XML_STRICT) && (soap_flag_childEntityId > 0))
+	{	soap->error = SOAP_OCCURS;
+		return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getParentEntityArray(struct soap *soap, const struct fw__getParentEntityArray *a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getParentEntityArray);
+	if (soap_out_fw__getParentEntityArray(soap, tag?tag:"fw:getParentEntityArray", id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 struct fw__getParentEntityArray * SOAP_FMAC4 soap_get_fw__getParentEntityArray(struct soap *soap, struct fw__getParentEntityArray *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_fw__getParentEntityArray(soap, tag, p, type)))
+		if (soap_getindependent(soap))
+			return NULL;
+	return p;
+}
+
+SOAP_FMAC1 struct fw__getParentEntityArray * SOAP_FMAC2 soap_instantiate_fw__getParentEntityArray(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
+{
+	(void)type; (void)arrayType; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_fw__getParentEntityArray(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
+	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_cds_fw__getParentEntityArray, n, cds_fdelete);
+	if (!cp)
+		return NULL;
+	if (n < 0)
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__getParentEntityArray);
+		if (size)
+			*size = sizeof(struct fw__getParentEntityArray);
+	}
+	else
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__getParentEntityArray[n]);
+		if (!cp->ptr)
+		{	soap->error = SOAP_EOM;
+			return NULL;
+		}
+		if (size)
+			*size = n * sizeof(struct fw__getParentEntityArray);
+	}
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
+	return (struct fw__getParentEntityArray*)cp->ptr;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getParentEntityArray(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
+{
+	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__getParentEntityArray %p -> %p\n", q, p));
+	*(struct fw__getParentEntityArray*)p = *(struct fw__getParentEntityArray*)q;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getParentEntityArrayResponse(struct soap *soap, struct fw__getParentEntityArrayResponse *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+	a->return_ = NULL;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__getParentEntityArrayResponse(struct soap *soap, const struct fw__getParentEntityArrayResponse *a)
+{
+	(void)soap; (void)a; /* appease -Wall -Werror */
+	soap_serialize_PointerTofw__entityArray(soap, &a->return_);
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__getParentEntityArrayResponse(struct soap *soap, const char *tag, int id, const struct fw__getParentEntityArrayResponse *a, const char *type)
+{
+	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_cds_fw__getParentEntityArrayResponse), type))
+		return soap->error;
+	if (soap_out_PointerTofw__entityArray(soap, "return", -1, &a->return_, ""))
+		return soap->error;
+	return soap_element_end_out(soap, tag);
+}
+
+SOAP_FMAC3 struct fw__getParentEntityArrayResponse * SOAP_FMAC4 soap_in_fw__getParentEntityArrayResponse(struct soap *soap, const char *tag, struct fw__getParentEntityArrayResponse *a, const char *type)
+{
+	size_t soap_flag_return_ = 1;
+	if (soap_element_begin_in(soap, tag, 0, type))
+		return NULL;
+	a = (struct fw__getParentEntityArrayResponse *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_cds_fw__getParentEntityArrayResponse, sizeof(struct fw__getParentEntityArrayResponse), 0, NULL, NULL, NULL);
+	if (!a)
+		return NULL;
+	soap_default_fw__getParentEntityArrayResponse(soap, a);
+	if (soap->body && !*soap->href)
+	{
+		for (;;)
+		{	soap->error = SOAP_TAG_MISMATCH;
+			if (soap_flag_return_ && soap->error == SOAP_TAG_MISMATCH)
+				if (soap_in_PointerTofw__entityArray(soap, "return", &a->return_, "fw:entityArray"))
+				{	soap_flag_return_--;
+					continue;
+				}
+			if (soap->error == SOAP_TAG_MISMATCH)
+				soap->error = soap_ignore_element(soap);
+			if (soap->error == SOAP_NO_TAG)
+				break;
+			if (soap->error)
+				return NULL;
+		}
+		if (soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	else
+	{	a = (struct fw__getParentEntityArrayResponse *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_cds_fw__getParentEntityArrayResponse, 0, sizeof(struct fw__getParentEntityArrayResponse), 0, NULL);
+		if (soap->body && soap_element_end_in(soap, tag))
+			return NULL;
+	}
+	return a;
+}
+
+SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__getParentEntityArrayResponse(struct soap *soap, const struct fw__getParentEntityArrayResponse *a, const char *tag, const char *type)
+{
+	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_cds_fw__getParentEntityArrayResponse);
+	if (soap_out_fw__getParentEntityArrayResponse(soap, tag?tag:"fw:getParentEntityArrayResponse", id, a, type))
+		return soap->error;
+	return soap_putindependent(soap);
+}
+
+SOAP_FMAC3 struct fw__getParentEntityArrayResponse * SOAP_FMAC4 soap_get_fw__getParentEntityArrayResponse(struct soap *soap, struct fw__getParentEntityArrayResponse *p, const char *tag, const char *type)
+{
+	if ((p = soap_in_fw__getParentEntityArrayResponse(soap, tag, p, type)))
+		if (soap_getindependent(soap))
+			return NULL;
+	return p;
+}
+
+SOAP_FMAC1 struct fw__getParentEntityArrayResponse * SOAP_FMAC2 soap_instantiate_fw__getParentEntityArrayResponse(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
+{
+	(void)type; (void)arrayType; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_fw__getParentEntityArrayResponse(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
+	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_cds_fw__getParentEntityArrayResponse, n, cds_fdelete);
+	if (!cp)
+		return NULL;
+	if (n < 0)
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__getParentEntityArrayResponse);
+		if (size)
+			*size = sizeof(struct fw__getParentEntityArrayResponse);
+	}
+	else
+	{	cp->ptr = (void*)SOAP_NEW(struct fw__getParentEntityArrayResponse[n]);
+		if (!cp->ptr)
+		{	soap->error = SOAP_EOM;
+			return NULL;
+		}
+		if (size)
+			*size = n * sizeof(struct fw__getParentEntityArrayResponse);
+	}
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
+	return (struct fw__getParentEntityArrayResponse*)cp->ptr;
+}
+
+SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__getParentEntityArrayResponse(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
+{
+	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
+	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__getParentEntityArrayResponse %p -> %p\n", q, p));
+	*(struct fw__getParentEntityArrayResponse*)p = *(struct fw__getParentEntityArrayResponse*)q;
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__getKeybindings(struct soap *soap, struct fw__getKeybindings *a)

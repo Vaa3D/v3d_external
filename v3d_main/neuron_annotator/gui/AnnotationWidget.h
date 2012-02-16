@@ -49,6 +49,7 @@ public slots:
     void openAnnotatedBranch(AnnotatedBranch *annotatedBranch, bool openStack = true);
     void updateAnnotations(qint64 entityId, AnnotationList *annotations, UserColorMap *userColorMap);
     void communicationError(const QString & errorMessage);
+    void updateCurrentSample(Entity *sample);
     void consoleConnect();
     void consoleConnect(int retries);
     void consoleDisconnect();

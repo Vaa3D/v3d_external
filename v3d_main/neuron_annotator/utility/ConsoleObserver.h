@@ -33,6 +33,8 @@ signals:
     void closeAnnotationSession();
     void selectEntityById(const qint64 & entityId, const bool external);
     void communicationError(const QString & errorMessage);
+    void updateCurrentSample(Entity *sample);
+    void openStackWithVaa3d(QString filename);
 
 public slots:
     // These slots implement the console observer interface.
@@ -56,6 +58,8 @@ private slots:
     void entityViewRequestedError(const QString & error);
     void annotatedBranchViewRequestedResults(const void *results);
     void annotatedBranchViewRequestedError(const QString & error);
+    void annotatedBranchViewRequested2Results(const void *results);
+    void annotatedBranchViewRequested2Error(const QString & error);
     void annotationsChangedResults(const void *results);
     void annotationsChangedError(const QString & error);
     void loadAnnotationSessionResults(const void *results);
@@ -68,6 +72,7 @@ private:
     DataThread *loadOntologyThread;
     DataThread *entityViewRequestedThread;
     DataThread *annotatedBranchViewRequestedThread;
+    DataThread *annotatedBranchViewRequested2Thread;
     DataThread *annotationsChangedThread;
     DataThread *loadAnnotationSessionThread;
 
@@ -75,6 +80,7 @@ private:
     QMutex loadOntologyMutex;
     QMutex entityViewRequestedMutex;
     QMutex annotatedBranchViewRequestedMutex;
+    QMutex annotatedBranchViewRequested2Mutex;
     QMutex annotationsChangedMutex;
     QMutex loadAnnotationSessionMutex;
 };

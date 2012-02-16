@@ -202,6 +202,28 @@ void GetEntityThread::fetchData()
 }
 
 // ===========================================================
+// Get Parents
+// ===========================================================
+
+GetParentsThread::GetParentsThread(qint64 entityId, QObject *parent) :
+    DataThread(parent),
+    entityId(entityId)
+{
+}
+
+void GetParentsThread::fetchData()
+{
+    cds::fw__getParentEntityArrayResponse response;
+    if (proxy.getParentEntityArray(entityId, response) == SOAP_OK)
+    {
+        results = EntityAdapter::convert(response.return_);
+    }
+    else
+    {
+        errorMessage = new QString(proxy.soap_fault_string());
+    }
+}
+// ===========================================================
 // Get Entity Annotations
 // ===========================================================
 

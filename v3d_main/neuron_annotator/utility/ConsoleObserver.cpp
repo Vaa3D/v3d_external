@@ -14,11 +14,13 @@ ConsoleObserver::ConsoleObserver(NaMainWindow *naMainWindow, QObject *parent) :
     loadOntologyThread(0),
     entityViewRequestedThread(0),
     annotatedBranchViewRequestedThread(0),
+    annotatedBranchViewRequested2Thread(0),
     annotationsChangedThread(0),
     loadAnnotationSessionThread(0),
     loadOntologyMutex(QMutex::Recursive),
     entityViewRequestedMutex(QMutex::Recursive),
     annotatedBranchViewRequestedMutex(QMutex::Recursive),
+    annotatedBranchViewRequested2Mutex(QMutex::Recursive),
     annotationsChangedMutex(QMutex::Recursive),
     loadAnnotationSessionMutex(QMutex::Recursive)
 {
@@ -137,8 +139,21 @@ void ConsoleObserver::entityViewRequestedResults(const void *results)
         mainWindow->show();
         mainWindow->activateWindow();
         mainWindow->raise();
-        // TODO: begin process indication
         annotatedBranchViewRequested(*entity->id);
+    }
+    else if (type == "Image 3D")
+    {
+        QApplication::alert((QWidget *)mainWindow, 10000);
+        mainWindow->show();
+        mainWindow->activateWindow();
+        mainWindow->raise();
+
+        QString filepath = entity->getValueByAttributeName("File Path");
+        if (filepath != NULL)
+        {
+            qDebug() << "openStackWithVaa3d " << filepath;
+            emit openStackWithVaa3d(filepath);
+        }
     }
 
     entityViewRequestedThread = NULL;
@@ -187,6 +202,13 @@ void ConsoleObserver::annotatedBranchViewRequestedResults(const void *results)
 
     if (!filepath.isEmpty()) {
         emit openAnnotatedBranch(annotatedBranch);
+
+        annotatedBranchViewRequested2Thread = new GetParentsThread(*annotatedBranch->entity()->id);
+        connect(annotatedBranchViewRequested2Thread, SIGNAL(gotResults(const void *)),
+                this, SLOT(annotatedBranchViewRequested2Results(const void *)));
+        connect(annotatedBranchViewRequested2Thread, SIGNAL(gotError(const QString &)),
+                this, SLOT(annotatedBranchViewRequested2Error(const QString &)));
+        annotatedBranchViewRequested2Thread->start(QThread::NormalPriority);
     }
 
     annotatedBranchViewRequestedThread = NULL;
@@ -198,6 +220,34 @@ void ConsoleObserver::annotatedBranchViewRequestedError(const QString & error)
 
     emit communicationError(error);
     annotatedBranchViewRequestedThread = NULL;
+}
+
+void ConsoleObserver::annotatedBranchViewRequested2Results(const void *results)
+{
+    QMutexLocker locker(&annotatedBranchViewRequested2Mutex);
+
+    QList<Entity *>* parents = (QList<Entity *>*)results;
+    if (parents == NULL) return;
+
+    QListIterator<Entity *> i(*parents);
+    while (i.hasNext())
+    {
+        Entity *entity = i.next();
+        QString type = *entity->entityType;
+        if (type == "Sample") {
+            emit updateCurrentSample(entity);
+        }
+    }
+
+    annotatedBranchViewRequested2Thread = NULL;
+}
+
+void ConsoleObserver::annotatedBranchViewRequested2Error(const QString & error)
+{
+    QMutexLocker locker(&annotatedBranchViewRequested2Mutex);
+
+    emit communicationError(error);
+    annotatedBranchViewRequested2Thread = NULL;
 }
 
 //*******************************************************************************************

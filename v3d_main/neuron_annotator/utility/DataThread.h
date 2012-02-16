@@ -85,6 +85,21 @@ private:
 };
 
 // ===========================================================
+// Get Parents
+// ===========================================================
+
+class GetParentsThread : public DataThread
+{
+    Q_OBJECT
+
+public:
+    explicit GetParentsThread(qint64 entityId, QObject *parent = 0);
+    void fetchData();
+private:
+    qint64 entityId;
+};
+
+// ===========================================================
 // Get Entity Annotations
 // ===========================================================
 

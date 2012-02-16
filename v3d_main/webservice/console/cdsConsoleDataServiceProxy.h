@@ -121,9 +121,13 @@ class SOAP_CMAC ConsoleDataServiceProxy : public soap
 	virtual	int getKeybindings(LONG64 ontologyId, struct fw__getKeybindingsResponse &_param_16) { return getKeybindings(NULL, NULL, ontologyId, _param_16); }
 	virtual	int getKeybindings(const char *endpoint, const char *soap_action, LONG64 ontologyId, struct fw__getKeybindingsResponse &_param_16);
 
+	/// Web service operation 'getParentEntityArray' (returns error code or SOAP_OK)
+	virtual	int getParentEntityArray(LONG64 childEntityId, struct fw__getParentEntityArrayResponse &_param_17) { return getParentEntityArray(NULL, NULL, childEntityId, _param_17); }
+	virtual	int getParentEntityArray(const char *endpoint, const char *soap_action, LONG64 childEntityId, struct fw__getParentEntityArrayResponse &_param_17);
+
 	/// Web service operation 'getParentEntityDataArray' (returns error code or SOAP_OK)
-	virtual	int getParentEntityDataArray(LONG64 childEntityId, struct fw__getParentEntityDataArrayResponse &_param_17) { return getParentEntityDataArray(NULL, NULL, childEntityId, _param_17); }
-	virtual	int getParentEntityDataArray(const char *endpoint, const char *soap_action, LONG64 childEntityId, struct fw__getParentEntityDataArrayResponse &_param_17);
+	virtual	int getParentEntityDataArray(LONG64 childEntityId, struct fw__getParentEntityDataArrayResponse &_param_18) { return getParentEntityDataArray(NULL, NULL, childEntityId, _param_18); }
+	virtual	int getParentEntityDataArray(const char *endpoint, const char *soap_action, LONG64 childEntityId, struct fw__getParentEntityDataArrayResponse &_param_18);
 };
 
 } // namespace cds

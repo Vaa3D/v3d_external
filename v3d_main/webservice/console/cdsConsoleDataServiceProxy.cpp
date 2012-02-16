@@ -967,7 +967,61 @@ int ConsoleDataServiceProxy::getKeybindings(const char *endpoint, const char *so
 	return soap_closesock(soap);
 }
 
-int ConsoleDataServiceProxy::getParentEntityDataArray(const char *endpoint, const char *soap_action, LONG64 childEntityId, struct fw__getParentEntityDataArrayResponse &_param_17)
+int ConsoleDataServiceProxy::getParentEntityArray(const char *endpoint, const char *soap_action, LONG64 childEntityId, struct fw__getParentEntityArrayResponse &_param_17)
+{	struct soap *soap = this;
+	struct fw__getParentEntityArray soap_tmp_fw__getParentEntityArray;
+	if (endpoint)
+		soap_endpoint = endpoint;
+	if (!soap_endpoint)
+		soap_endpoint = "http://localhost:30001/axis2/services/cds";
+	if (!soap_action)
+		soap_action = "";
+	soap->encodingStyle = NULL;
+	soap_tmp_fw__getParentEntityArray.childEntityId = childEntityId;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_fw__getParentEntityArray(soap, &soap_tmp_fw__getParentEntityArray);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_fw__getParentEntityArray(soap, &soap_tmp_fw__getParentEntityArray, "fw:getParentEntityArray", NULL)
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	}
+	if (soap_end_count(soap))
+		return soap->error;
+	if (soap_connect(soap, soap_endpoint, soap_action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_fw__getParentEntityArray(soap, &soap_tmp_fw__getParentEntityArray, "fw:getParentEntityArray", NULL)
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap_closesock(soap);
+	if (!&_param_17)
+		return soap_closesock(soap);
+	soap_default_fw__getParentEntityArrayResponse(soap, &_param_17);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap_closesock(soap);
+	soap_get_fw__getParentEntityArrayResponse(soap, &_param_17, "fw:getParentEntityArrayResponse", "");
+	if (soap->error)
+		return soap_recv_fault(soap, 0);
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap_closesock(soap);
+	return soap_closesock(soap);
+}
+
+int ConsoleDataServiceProxy::getParentEntityDataArray(const char *endpoint, const char *soap_action, LONG64 childEntityId, struct fw__getParentEntityDataArrayResponse &_param_18)
 {	struct soap *soap = this;
 	struct fw__getParentEntityDataArray soap_tmp_fw__getParentEntityDataArray;
 	if (endpoint)
@@ -1003,15 +1057,15 @@ int ConsoleDataServiceProxy::getParentEntityDataArray(const char *endpoint, cons
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
-	if (!&_param_17)
+	if (!&_param_18)
 		return soap_closesock(soap);
-	soap_default_fw__getParentEntityDataArrayResponse(soap, &_param_17);
+	soap_default_fw__getParentEntityDataArrayResponse(soap, &_param_18);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_fw__getParentEntityDataArrayResponse(soap, &_param_17, "fw:getParentEntityDataArrayResponse", "");
+	soap_get_fw__getParentEntityDataArrayResponse(soap, &_param_18, "fw:getParentEntityDataArrayResponse", "");
 	if (soap->error)
 		return soap_recv_fault(soap, 0);
 	if (soap_body_end_in(soap)

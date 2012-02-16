@@ -246,6 +246,12 @@ void AnnotationWidget::updateAnnotations(qint64 entityId, AnnotationList *annota
     openAnnotatedBranch(annotatedBranch, false);
 }
 
+void AnnotationWidget::updateCurrentSample(Entity *sample)
+{
+    naMainWindow->setTitle(QString("%1, %2").arg(*sample->name).arg(this->annotatedBranch->name()));
+}
+
+
 //*************************************************************************************
 // Console link
 //*************************************************************************************
@@ -330,6 +336,8 @@ void AnnotationWidget::consoleConnect() {
     connect(consoleObserver, SIGNAL(updateAnnotations(qint64,AnnotationList*,UserColorMap*)), this, SLOT(updateAnnotations(qint64,AnnotationList*,UserColorMap*)));
     connect(consoleObserver, SIGNAL(selectEntityById(qint64,bool)), this, SLOT(selectEntityById(qint64,bool)));
     connect(consoleObserver, SIGNAL(communicationError(const QString&)), this, SLOT(communicationError(const QString&)));
+    connect(consoleObserver, SIGNAL(updateCurrentSample(Entity*)), this, SLOT(updateCurrentSample(Entity*)));
+    connect(consoleObserver, SIGNAL(openStackWithVaa3d(QString)), naMainWindow, SIGNAL(defaultVaa3dFileLoadRequested(QString)));
 
     consoleObserverService = new obs::ConsoleObserverServiceImpl();
 
