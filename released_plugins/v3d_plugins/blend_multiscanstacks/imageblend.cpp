@@ -3752,7 +3752,13 @@ bool ImageBlendPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             //
             qDebug()<<"original stack 1 "<<p1dImg1<<sz_img1[0]<<sz_img1[1]<<sz_img1[2]<<sz_img1[3]<<p4DImage1.getTotalUnitNumber();
             qDebug()<<"original stack 2 "<<p1dImg2<<sz_img2[0]<<sz_img2[1]<<sz_img2[2]<<sz_img2[3]<<p4DImage2.getTotalUnitNumber();
+            
+            //
+            QString tmpName = m_InputFileName1;
+            m_InputFileName1 = m_InputFileName2;
+            m_InputFileName2 = tmpName;
 
+            //
             unsigned char *p1 = NULL;
             unsigned char *p2 = NULL;
 
