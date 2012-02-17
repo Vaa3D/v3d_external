@@ -388,7 +388,7 @@ public:
             if (data.size() != numVoxels) {
                 // explicit cast to avoid iterator interpretation in MSVC
                 data.assign((size_t)numVoxels, (Voxel)0);
-                initializeGL();
+                // initializeGL();
             }
             return *this;
         }
