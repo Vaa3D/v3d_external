@@ -409,7 +409,11 @@ bool ImageLoader::loadImage(Image4DSimple * stackp, QString filepath)
     bool bSucceeded = true;
     QString msg(QString("Waiting on disk access for file ") + filepath);
     emit progressMessageChanged(msg);
-    if (filepath.endsWith(".tif") || filepath.endsWith(".lsm") || filepath.endsWith(".v3draw") || filepath.endsWith(".raw")) {
+    if (filepath.toLower().endsWith(".lsm")) {
+        stackp->loadImage(filepath.toAscii().data(), true);
+    } else if (filepath.toLower().endsWith(".tif") ||
+               filepath.toLower().endsWith(".v3draw") ||
+               filepath.toLower().endsWith(".raw")) {
         stackp->loadImage(filepath.toAscii().data());
     } else if (hasPbdExtension(filepath)) {
         if (loadRaw2StackPBD(filepath.toAscii().data(), stackp, true)!=0) {
