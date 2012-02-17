@@ -90,6 +90,7 @@ bool CLP::check_filename(QString fn)
         if ( (curfile_info.suffix().toUpper()=="ANO") ||
              (curfile_info.suffix().toUpper()=="APO" || 
               curfile_info.suffix().toUpper()=="SWC" ||
+              (curfile_info.suffix().toUpper()=="ESWC") || //enhanced SWC, by PHC, 20120217
               curfile_info.suffix().toUpper()=="OBJ" ||
               curfile_info.suffix().toUpper()=="V3DS") ||
              (curfile_info.suffix().toUpper()=="ATLAS") ||
@@ -110,7 +111,7 @@ bool CLP::check_filename(QString fn)
         }
         else
         {
-            v3d_msg(QString("error: your file [%1] has an extension V3D does not recognize.").arg(fn), 0);
+            v3d_msg(QString("error: your file [%1] has an extension Vaa3D does not recognize.").arg(fn), 0);
             return false;
         }
     }
@@ -394,7 +395,7 @@ int CLP::parse(int argc, char *argv[], void (*help)())
                             }
                             else
                             {
-                                qDebug()<<"parsing ..."<<key<<i<<"Unknown command. Type 'v3d -h' for usage";
+                                qDebug()<<"parsing ..."<<key<<i<<"Unknown command. Type 'vaa3d -h' for usage";
 
                                 i_v3d.clp_finished = true;
                                 return error(help);

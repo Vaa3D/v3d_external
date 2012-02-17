@@ -119,11 +119,15 @@ struct NeuronSWC : public BasicSurfObj
 	float x, y, z;		// point coordinates
 	float r;			// radius
 	V3DLONG pn;				// previous point index (-1 for the first point)
+    
+    V3DLONG level; //20120217, by PHC. for ESWC format
+    float fea_val; //20120217, by PHC. for ESWC format
 
-	V3DLONG seg_id, nodeinseg_id; //090925, 091027: for segment editing
+	V3DLONG seg_id; //this is reused for ESWC format, 20120217, by PHC
+    V3DLONG nodeinseg_id; //090925, 091027: for segment editing
 
 	operator XYZ() const { return XYZ(x, y, z); }
-	NeuronSWC () {n=type=pn=0; x=y=z=r=0; seg_id=nodeinseg_id=0;}
+	NeuronSWC () {n=type=pn=0; x=y=z=r=0; seg_id=-1; nodeinseg_id=0; fea_val=0; level=-1;}
 };
 
 // .v3ds label surfaces
@@ -191,6 +195,7 @@ struct NeuronTree : public BasicSurfObj
 
 NeuronTree readSWC_file(const QString& filename);
 bool writeSWC_file(const QString& filename, const NeuronTree& nt);
+bool writeESWC_file(const QString& filename, const NeuronTree& nt);
 
 //general operators
 

@@ -21,6 +21,7 @@ V3dApplication::V3dApplication(int & argc, char ** argv) :
 #endif
 }
 
+
 V3dApplication::~V3dApplication() {
     // Assuming Qt will delete mainWindow, neuronAnnotatorMainWindow
 }

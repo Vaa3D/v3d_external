@@ -92,6 +92,17 @@ void printHelp_v3d()
 	cout<<"    -v                           force to open a 3d viewer when loading an image, otherwise use the default v3d global setting (from \"Adjust Preference\")"<<endl;
     cout<<"    -na                          open NeuronAnnotator work-mode directly"<<endl;
     cout<<"    -cmd  [headless command-line arguments, intended for compute grid use. Try \'-cmd -h\' for more information on this option]"<<endl;
+    
+    //added by Hanchuan Peng, 20120217
+    V3dApplication* app = V3dApplication::getInstance();
+    if (!app) return;
+    MainWindow* mainWin=app->getMainWindow();
+    if (!mainWin) return;
+    QStringList existingPluginsList = mainWin->pluginLoader->getPluginNameList();
+    if (existingPluginsList.size()>0)
+        cout << endl << "Found [" << existingPluginsList.size() << "] plugins"<<endl;
+    for (int i=0;i<existingPluginsList.size();i++)
+        cout << "          " << existingPluginsList.at(i) << endl;
 
 	return;
 }

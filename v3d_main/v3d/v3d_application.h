@@ -1,4 +1,5 @@
 //last change: by Hanchuan Peng, 110828. add conditional compilation of mode menu
+//last change: by Hanchuan Peng, 120217. add a new constructor V3dApplication()
 
 #ifndef V3D_APPLICATION_H
 #define V3D_APPLICATION_H
@@ -36,7 +37,7 @@ private:
             // Remember the window size and position before deactivating
             QPoint windowPosition = qMainWindow->pos();
             QSize windowSize = qMainWindow->size();
-            QSettings settings("HHMI", "V3D");
+            QSettings settings("HHMI", "Vaa3D");
             settings.setValue("pos", windowPosition);
             settings.setValue("size", windowSize);
             qMainWindow->hide();
@@ -46,7 +47,7 @@ private:
     static void activateMainWindowHelper(QMainWindow* qMainWindow) {
         if (qMainWindow!=0) {
             theApp->installEventFilter(qMainWindow);
-            QSettings settings("HHMI", "V3D");
+            QSettings settings("HHMI", "Vaa3D");
             QPoint windowPosition = settings.value("pos", QPoint(10, 10)).toPoint();
             QSize windowSize = settings.value("size", QSize(1000, 700)).toSize();
             qMainWindow->move(windowPosition);
@@ -145,6 +146,14 @@ public:
     static V3dApplication* getInstance(int & argc, char ** argv) {
         if (theApp==0) {
             theApp = new V3dApplication(argc, argv);
+        }
+        return theApp;
+    }
+    static V3dApplication* getInstance() {
+        int a=0;
+        char ** p=0;
+        if (theApp==0) {
+            theApp = new V3dApplication(a, p);
         }
         return theApp;
     }

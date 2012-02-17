@@ -329,6 +329,10 @@ NeuronTree readSWC_file(const QString& filename)
         	else if (i==4) S.z = qsl[i].toFloat();
 			else if (i==5) S.r = qsl[i].toFloat();
         	else if (i==6) S.pn = qsl[i].toInt();
+            //the ESWC extension, by PHC, 20120217
+        	else if (i==7) S.seg_id = qsl[i].toInt();
+        	else if (i==8) S.level = qsl[i].toInt();
+        	else if (i==9) S.fea_val = qsl[i].toFloat();
         }
 
         //if (! listNeuron.contains(S)) // 081024
@@ -396,6 +400,52 @@ bool writeSWC_file(const QString& filename, const NeuronTree& nt)
 				p_pt->n, p_pt->type, p_pt->x, p_pt->y, p_pt->z, p_pt->r, p_pt->pn);
 	}
 
+	fclose(fp);
+#ifndef DISABLE_V3D_MSG
+	v3d_msg(QString("done with saving file: ")+filename, false);
+#endif
+	return true;
+}
+
+bool writeESWC_file(const QString& filename, const NeuronTree& nt)
+{
+	QString curFile = filename;
+	if (curFile.trimmed().isEmpty()) //then open a file dialog to choose file
+	{
+		curFile = QFileDialog::getSaveFileName(0,
+											   "Select a ESWC (enhanced SWC) file to save the neuronal or relational data... ",
+											   ".eswc",
+											   QObject::tr("Enhanced Neuron structure file (*.eswc);;(*.*)"
+														   ));
+#ifndef DISABLE_V3D_MSG
+		v3d_msg(QString("save file: %1").arg(curFile), false);
+#endif
+        
+		if (curFile.isEmpty()) //note that I used isEmpty() instead of isNull
+			return false;
+	}
+    
+	FILE * fp = fopen(curFile.toAscii(), "wt");
+	if (!fp)
+	{
+#ifndef DISABLE_V3D_MSG
+		v3d_msg("Could not open the file to save the neuron.");
+#endif
+		return false;
+	}
+    
+	fprintf(fp, "#name %s\n", qPrintable(nt.name.trimmed()));
+	fprintf(fp, "#comment %s\n", qPrintable(nt.comment.trimmed()));
+    
+	fprintf(fp, "##n,type,x,y,z,radius,parent\n");
+	NeuronSWC * p_pt=0;
+	for (int i=0;i<nt.listNeuron.size(); i++)
+	{
+		p_pt = (NeuronSWC *)(&(nt.listNeuron.at(i)));
+		fprintf(fp, "%ld %d %5.3f %5.3f %5.3f %5.3f %ld %ld %ld %5.3f\n",
+				p_pt->n, p_pt->type, p_pt->x, p_pt->y, p_pt->z, p_pt->r, p_pt->pn, p_pt->seg_id, p_pt->level, p_pt->fea_val);
+	}
+    
 	fclose(fp);
 #ifndef DISABLE_V3D_MSG
 	v3d_msg(QString("done with saving file: ")+filename, false);

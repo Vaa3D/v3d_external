@@ -977,6 +977,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
         }
         else if (curfile_info.suffix().toUpper()=="APO" ||
                  curfile_info.suffix().toUpper()=="SWC" ||
+                 curfile_info.suffix().toUpper()=="ESWC" ||
                  curfile_info.suffix().toUpper()=="OBJ" ||
                  curfile_info.suffix().toUpper()=="VAA3DS" ||
                  curfile_info.suffix().toUpper()=="V3DS")
@@ -993,7 +994,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 
             //set up data
             if (curfile_info.suffix().toUpper()=="APO") mypara_3Dview->pointcloud_file_list.append(fileName);
-            else if (curfile_info.suffix().toUpper()=="SWC") mypara_3Dview->swc_file_list.append(fileName);
+            else if (curfile_info.suffix().toUpper()=="SWC" || curfile_info.suffix().toUpper()=="ESWC") mypara_3Dview->swc_file_list.append(fileName);
             else if (curfile_info.suffix().toUpper()=="OBJ" || curfile_info.suffix().toUpper()=="V3DS" || curfile_info.suffix().toUpper()=="VAA3DS")
                 mypara_3Dview->surface_file = fileName;
             else {delete mypara_3Dview; mypara_3Dview=0; return;}
