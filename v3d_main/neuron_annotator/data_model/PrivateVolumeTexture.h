@@ -40,7 +40,7 @@ public:
         // test data for debugging
         width = height = depth = 8; // 8 works better than 5; it's a multiple of 8
         size_t numVoxels = width * height * depth;
-        data.assign(numVoxels, 0);
+        data.assign((size_t)numVoxels, (unsigned char)0);
         for (int i = 0; i < width; ++i)
              for (int j = 0; j < height; ++j)
                  for (int k = 0; k < depth; ++k)
@@ -90,7 +90,7 @@ public:
         depth = paddedTextureSize.z();
         size_t numVoxels = width * height * depth;
         if (data.size() != numVoxels)
-            data.assign(numVoxels, 0);
+            data.assign((size_t)numVoxels, (unsigned char)0);
         return *this;
     }
 
@@ -341,12 +341,14 @@ public:
 
         bool initializeGL()
         {
+            if (size.x() < 1) // Can't initialize that!
+                return false;
             // Allocate texture names from OpenGL
             if (textureIDs.size() != size.x())
             {
                 if (bHasTextureIDs && (textureIDs.size() > 0))
                     glDeleteTextures(textureIDs.size(), &textureIDs[0]);
-                textureIDs.assign(size.x(), 0);
+                textureIDs.assign((size_t)size.x(), (GLuint)0);
                 bHasTextureIDs = false;
             }
             if (! bHasTextureIDs) {
@@ -379,11 +381,14 @@ public:
 
         Stack& setSize(Dimension sizeParam)
         {
+            if (size == sizeParam)
+                return *this; // no change
             size = sizeParam;
             int numVoxels = sizeParam.numberOfVoxels();
             if (data.size() != numVoxels) {
-                data.assign(numVoxels, 0);
-                // initializeGLTextures();
+                // explicit cast to avoid iterator interpretation in MSVC
+                data.assign((size_t)numVoxels, (Voxel)0);
+                initializeGL();
             }
             return *this;
         }
