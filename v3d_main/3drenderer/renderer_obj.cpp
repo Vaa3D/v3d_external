@@ -142,8 +142,12 @@ void Renderer_gl1::loadObjectFilename(const QString& filename)
 	try {
 
 		// if create labelfield
-		if (filename.endsWith(".tif", Qt::CaseInsensitive) || filename.endsWith(".tiff", Qt::CaseInsensitive)
-				|| filename.endsWith(".raw", Qt::CaseInsensitive))
+		if (filename.endsWith(".tif", Qt::CaseInsensitive) || 
+            filename.endsWith(".tiff", Qt::CaseInsensitive) ||
+			filename.endsWith(".raw", Qt::CaseInsensitive) ||
+			filename.endsWith(".v3draw", Qt::CaseInsensitive) ||
+			filename.endsWith(".vaa3draw", Qt::CaseInsensitive) 
+            )
 		{
 			loadLabelfieldSurf(filename);
 		}
@@ -166,6 +170,12 @@ void Renderer_gl1::loadObjectFilename(const QString& filename)
 		}
 		// if swc
 		else if (filename.endsWith(".swc", Qt::CaseInsensitive))
+		{
+			type = stNeuronStructure;
+			loadNeuronTree(filename);
+		}
+		// if eswc
+		else if (filename.endsWith(".eswc", Qt::CaseInsensitive)) //PHC, 20120217
 		{
 			type = stNeuronStructure;
 			loadNeuronTree(filename);

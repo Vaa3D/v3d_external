@@ -333,6 +333,7 @@ NeuronTree readSWC_file(const QString& filename)
         	else if (i==7) S.seg_id = qsl[i].toInt();
         	else if (i==8) S.level = qsl[i].toInt();
         	else if (i==9) S.fea_val = qsl[i].toFloat();
+            //qDebug()<<"haha 9"<<endl;
         }
 
         //if (! listNeuron.contains(S)) // 081024
