@@ -50,7 +50,9 @@ void AnnotatedBranchTreeModel::setupModelData(Entity *entity, EntityTreeItem *pa
         while (i.hasNext())
         {
             EntityData *ed = i.next();
-            setupModelData(ed->childEntity, item, modelIndex);
+            if (!ed->attributeName->endsWith("Image")) {
+                setupModelData(ed->childEntity, item, modelIndex);
+            }
         }
     }
 }

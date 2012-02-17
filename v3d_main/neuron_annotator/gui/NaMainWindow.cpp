@@ -1163,6 +1163,7 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
     // good
     // ui.v3dr_glwidget->onVolumeDataChanged();
 
+/*
     QDir imageInputDirectory = dataFlowModel->getMultiColorImageStackNode()->getImageDir();
 
     // At this point it should be reasonable to set the window title
@@ -1176,7 +1177,8 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
         }
     }
     QFileInfo lsmFileInfo(lsmName);
-    setTitle(lsmFileInfo.fileName());
+    setTitle(lsmFileInfo.fileName())
+*/;
 
     {
         NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
