@@ -102,7 +102,7 @@ void printHelp_v3d()
     if (existingPluginsList.size()>0)
         cout << endl << "Found [" << existingPluginsList.size() << "] plugins"<<endl;
     for (int i=0;i<existingPluginsList.size();i++)
-        cout << "#" << i << "          " << existingPluginsList.at(i).toLocal8Bit().constData() << endl;
+        cout << "#" << i+1 << "          " << existingPluginsList.at(i).toLocal8Bit().constData() << endl;
 
 	return;
 }
