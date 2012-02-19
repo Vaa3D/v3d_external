@@ -348,12 +348,12 @@ if [ $DOIT == "YES" ] && [ $SKIPV3DPLUGINS == "NO" ] && [ -e released_plugins_mo
 
   cd ../
   if [ $SYSTEMBITS == "32" ]; then
-	mkdir -p bin/plugins/32bit
-    cp -fR released_plugins_more/v3d/plugins/* bin/plugins/32bit/     #copy to the executable folder
+	mkdir -p bin/plugins
+    cp -fR released_plugins_more/v3d/plugins/* bin/plugins/     #copy to the executable folder
   fi
   if [ $SYSTEMBITS == "64" ]; then
-	mkdir -p bin/plugins/64bit
-    cp -fR released_plugins_more/v3d/plugins/* bin/plugins/64bit/     #copy to the executable folder
+	mkdir -p bin/plugins  #../64bit
+    cp -fR released_plugins_more/v3d/plugins/* bin/plugins/     # ../64bit/ #copy to the executable folder
   fi
   rm -fr released_plugins_more/v3d/plugins
 fi
@@ -377,12 +377,14 @@ if [ $DOIT == "YES" ] && [ $SKIPV3DPLUGINS == "NO" ]; then
 
   cd ../
   if [ $SYSTEMBITS == "32" ]; then
-	mkdir -p bin/plugins/32bit
-    cp -fR released_plugins/v3d/plugins/* bin/plugins/32bit/     #copy to the executable folder
+	mkdir -p bin/plugins
+    cp -fR released_plugins/v3d/plugins/* bin/plugins/     #copy to the executable folder
   fi	
   if [ $SYSTEMBITS == "64" ]; then
-	mkdir -p bin/plugins/64bit
-    cp -fR released_plugins/v3d/plugins/* bin/plugins/64bit/     #copy to the executable folder
+#	mkdir -p bin/plugins/64bit
+#    cp -fR released_plugins/v3d/plugins/* bin/plugins/64bit/     #copy to the executable folder
+    mkdir -p bin/plugins
+    cp -fR released_plugins/v3d/plugins/* bin/plugins/     #copy to the executable folder
   fi	
   rm -fr released_plugins/v3d/plugins
 fi
