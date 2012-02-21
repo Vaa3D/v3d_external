@@ -1657,6 +1657,9 @@ void Renderer_gl1::drawNeuronTree(int index)
 	bool editable = listNeuronTree.at(index).editable;
 	NeuronSWC S0, S1;
 
+     // for neuron color: same as neuron label color (ZJL)
+     GLubyte neuronColor[3];
+
 	if (! on) return;
 
 //  for debug ////////////////////////////
@@ -1718,11 +1721,18 @@ void Renderer_gl1::drawNeuronTree(int index)
 				{
 					type = S1.seg_id %(neuron_type_color_num -5)+5; //090829, 091027 RZC: segment color using hanchuan's neuron_type_color
 				}
-				glColor3ubv( neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ] ); // 081230, 090331
+                    neuronColor[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
+                    neuronColor[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
+                    neuronColor[2] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][2];
+				glColor3ubv(neuronColor); // 081230, 090331
 			}
 			else
+               {
 				glColor3ubv(rgba.c);
-
+                    neuronColor[0] = rgba.c[0];
+                    neuronColor[1] = rgba.c[1];
+                    neuronColor[2] = rgba.c[2];
+               }
 
 			// (0,0,0)--(0,0,1) ==> S0--S1
 			XYZ D = S0 - S1;
@@ -1810,7 +1820,41 @@ void Renderer_gl1::drawNeuronTree(int index)
 		}
 		glPopMatrix();
 		valid = false;
+
 	}//for
+
+     // // display neuron label for testing comparison purpose ZJL 20120221
+     // bool b_neuronLabel=true;
+     // if(b_neuronLabel)
+     // {
+     //      XYZ label_loc; // it is located beside the first neuron
+     //      label_loc.x = listNeuron.at(0).x;
+     //      label_loc.y = listNeuron.at(0).y;
+     //      label_loc.z = listNeuron.at(0).z;
+
+     //      glPushAttrib(GL_ENABLE_BIT);
+	// 	glDisable(GL_DEPTH_TEST);
+	// 	glDisable(GL_STENCIL_TEST);
+	// 	glDisable(GL_BLEND);
+	// 	glDisable(GL_LIGHTING);
+	// 	disableClipBoundingBox();
+
+     //      //glColor4ub(neuronColor[0], neuronColor[1], neuronColor[2], 255);
+     //      glColor4ub(255, 0, 0, 255);
+
+     //      // move to the label position
+     //      glPushMatrix();
+     //      glTranslated(label_loc.x+index*5, label_loc.y+index*5, label_loc.z+index*5);
+
+     //      ((QGLWidget*)widget)->renderText(0., 0., 0., QString("%1").arg(index));
+     //      //char sbuf[20];	sprintf(sbuf, "%d", i+1);	drawString(0, 0, 0, sbuf);
+
+     //      glPopMatrix();
+
+	// 	glPopAttrib();
+     // }
+
+
 }
 
 void Renderer_gl1::drawNeuronTreeList()

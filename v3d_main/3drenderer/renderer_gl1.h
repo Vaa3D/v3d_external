@@ -310,6 +310,8 @@ protected:
 
      bool boundingboxFromStroke(XYZ& minloc, XYZ& maxloc);
 
+     void vecToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list);
+
      V3DLONG findNearestNeuronNode_Loc(XYZ &loc, NeuronTree *ptree);
 
      bool lineLineIntersect( XYZ p1,XYZ p2,XYZ p3,XYZ p4,XYZ *pa,XYZ *pb,
@@ -335,6 +337,13 @@ protected:
      V3DLONG edit_seg_id;
      int nDragWinSize;
      bool bInitDragPoints;
+
+     // for curve testing
+     bool bTestCurveBegin;
+     int testStrokeID;
+     QString testOutputDir;
+     NeuronTree testNeuronTree;
+
      // END of ZJL
 
 	// in renderer_obj2.cpp
@@ -415,6 +424,9 @@ private:
           draggedCenterIndex = -1; // ZJL 110921
           nDragWinSize = 3; // better be odd, ZJL 110921
           bInitDragPoints = false;
+          // for curve testing
+          bTestCurveBegin=false;
+          testStrokeID = 0;
 	}
 
 

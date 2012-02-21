@@ -1789,13 +1789,76 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                }
                else if(selectMode == smCurveCreateTest)
                {
+                    // select a folder to save swc file from a popup dialog
+                    //get the save directory name
+                    if(!bTestCurveBegin)
+                    {
+                         QDir curdir("./");
+                         testOutputDir = QFileDialog::getExistingDirectory(
+                              0,
+                              "Choose a directory under which all created SWC will be saved to",
+                              curdir.absoluteFilePath("./"),
+                              QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+                         if (!curdir.exists(testOutputDir))
+                              curdir.mkdir(testOutputDir);
+                         bTestCurveBegin=true;
+                         testStrokeID = 0;
+                    }
+                    // end dir selection
+                    QString strokeid = "/"+QString::number(testStrokeID);
+                    testStrokeID++;
+
                     // using two marker lists for fast marching to get a curve
                     vector <XYZ> loc_vec_input;
                     vector <XYZ> loc_vec0;
                     loc_vec0.clear();
                     solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
-                    // for comparison purpose
+
+                    // Save to a file
+                    QString filenameml;
+                    filenameml=testOutputDir + strokeid+ "_MarkerLists_fm"+".swc";
+                    writeSWC_file(filenameml, testNeuronTree);
+
+                    // curve from mean shift
                     solveCurveCenter(loc_vec_input);
+                    QString filenamecc;
+                    filenamecc=testOutputDir + strokeid+ "_MeanShift"+".swc";
+                    writeSWC_file(filenamecc, testNeuronTree);
+
+                    // curve from direction intersection
+                    loc_vec_input.clear();
+                    loc_vec0.clear();
+                    selectMode = smCurveDirectionInter;
+                    solveCurveDirectionInter(loc_vec_input, loc_vec0, 0);
+                    QString filenamedi;
+                    filenamedi=testOutputDir + strokeid+ "_DirInter"+".swc";
+                    writeSWC_file(filenamedi, testNeuronTree);
+
+                    if(listCurveMarkerPool.size()<2)
+                    {
+                         QMessageBox::question(0, "", "You need to create marker pool before hand to test marker \
+                             based curve creation methods by FM and GD. Marker pool based curve creation methods by FM and GD will not be tested this time!", QMessageBox::Ok);
+                    }
+                    else
+                    {
+                         // curve from FM
+                         selectMode = smCurveMarkerPool_fm;
+                         solveCurveFromMarkersFastMarching();
+                         QString filenamemp;
+                         filenamemp=testOutputDir + strokeid+ "_MarkerPool_fm"+".swc";
+                         writeSWC_file(filenamemp, testNeuronTree);
+
+                         // curve from GD
+                         solveCurveFromMarkersGD(false); //boundingbox is the whole image
+                         QString filenamegd;
+                         filenamegd=testOutputDir + strokeid+ "_MarkerPool_GD"+".swc";
+                         writeSWC_file(filenamegd, testNeuronTree);
+
+                    }
+                    // continue to use smCurveCreateTest mode
+                    selectMode = smCurveCreateTest;
+
                }
                else
                     solveCurveRefineLast();
@@ -2525,6 +2588,8 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
      if (b_addthiscurve)
      {
           addCurveSWC(loc_vec, chno);
+          // used to convert loc_vec to NeuronTree and save SWC in testing
+          vecToNeuronTree(testNeuronTree, loc_vec);
      }
      else //100821
      {
