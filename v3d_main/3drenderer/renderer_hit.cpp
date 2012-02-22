@@ -220,7 +220,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*actCurveCreate_zoom=0, *actMarkerCreate_zoom=0,
 
                *actCurveRefine=0, *actCurveEditRefine=0, *actCurveRubberDrag=0,  *actCurveDirectionInter=0,
-          *actCurveLineInter=0, *actCurveCreate_pointclick_fm=0, *actCurveMarkerLists_fm=0,
+          *actCurveCreate_pointclick_fm=0, *actCurveMarkerLists_fm=0,
           *actCurveMarkerPool_fm=0, *actCurveCreateMarkerGD=0, *actCurveCreateTest=0,// ZJL 110905
 
 			*actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
@@ -359,12 +359,6 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                actCurveRefine->setIcon(QIcon(":/icons/strokeN.svg"));
 			actCurveRefine->setVisible(true);
 			actCurveRefine->setIconVisibleInMenu(true);
-
-               listAct.append(actCurveLineInter = new QAction("n-right-strokes to define a 3D curve by line intersection (still testing)", w));
-               actCurveLineInter->setIcon(QIcon(":/icons/strokeN.svg"));
-			actCurveLineInter->setVisible(true);
-			actCurveLineInter->setIconVisibleInMenu(true);
-
 
                // add these menus if click is close to a seg
                // V3DLONG segid, ind;
@@ -896,12 +890,6 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
      else if (act == actCurveDirectionInter) // 20120124 ZJL
 	{
 		selectMode = smCurveDirectionInter;
-		b_addthiscurve = true;
-		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
-	}
-     else if (act == actCurveLineInter) // 20120124 ZJL
-	{
-		selectMode = smCurveLineInter;
 		b_addthiscurve = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
@@ -1739,7 +1727,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	}
 
      // For curve refine, ZJL 110905
-     else if (selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine || selectMode == smCurveDirectionInter || selectMode == smCurveLineInter ||
+     else if (selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine || selectMode == smCurveDirectionInter ||
               selectMode == smCurveMarkerLists_fm || smCurveCreateMarkerGD || smCurveCreateTest)
      {
           _appendMarkerPos(x,y);
@@ -1765,7 +1753,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     solveCurveCenterV2(loc_vec_input, loc_vec0, 0);
                     selectMode = smCurveRefineLast; // switch to smCurveRefineLast
                }
-               else if(selectMode == smCurveDirectionInter || selectMode == smCurveLineInter)
+               else if(selectMode == smCurveDirectionInter)
                {
                     vector <XYZ> loc_vec_input;
                     vector <XYZ> loc_vec0;
@@ -1903,7 +1891,7 @@ int Renderer_gl1::hitPen(int x, int y)
 	if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 ||
           // for curve refinement, 110831 ZJL
           selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine ||
-          selectMode == smCurveDirectionInter || selectMode == smCurveLineInter || selectMode == smCurveMarkerLists_fm)
+          selectMode == smCurveDirectionInter || selectMode == smCurveMarkerLists_fm)
 	{
 		qDebug("\t track-start ( %i, %i ) to define Curve", x,y);
 

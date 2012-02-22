@@ -176,9 +176,6 @@ void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector
                                         loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
                                    }
 
-                              }else if(selectMode == smCurveLineInter)
-                              {
-                                   loc=pb;
                               }
                          }
 
@@ -641,7 +638,7 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
                tar_markers.push_back(mloc1);
 
                // call fastmarching
-               fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz, 0, 2);
+               fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz, 0);
 
                if(!outswc.empty())
                {
