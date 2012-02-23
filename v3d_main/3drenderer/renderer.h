@@ -68,13 +68,14 @@ public:
 					smCurveCreateM,
                          // for curve refinement, 110831 ZJL
                       smCurveRefineInit, smCurveRefineLast, smCurveEditRefine, smCurveRubberDrag,
-                      smCurveDirectionInter, smCurveCreate_pointclick_fm,
+                      smCurveDirectionInter, smCurveCreate_pointclick_fm, smCurveRefine_fm,
                       smCurveMarkerLists_fm, smCurveMarkerPool_fm, smCurveCreateMarkerGD,
                       smCurveCreateTest,
 					};
 protected:
 	RenderMode renderMode;
 	SelectMode selectMode;
+     SelectMode refineMode;
 	void* widget;
 
 public:
@@ -291,6 +292,8 @@ private:
 	    viewClip = 1000000;  // no clip
 	    renderMode = rmMaxIntensityProjection;
 	    selectMode = smObject;
+
+         refineMode = smCurveRefine_fm;
 
 		//// perspective view frustum
 		screenW = screenH = 0;

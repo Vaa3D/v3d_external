@@ -311,6 +311,7 @@ protected:
      bool boundingboxFromStroke(XYZ& minloc, XYZ& maxloc);
 
      void vecToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list);
+     void getMidRandomLoc(MarkerPos pos, int chno, XYZ &mid_loc);
 
      V3DLONG findNearestNeuronNode_Loc(XYZ &loc, NeuronTree *ptree);
 

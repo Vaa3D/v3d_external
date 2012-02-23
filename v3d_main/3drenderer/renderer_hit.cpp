@@ -220,7 +220,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*actCurveCreate_zoom=0, *actMarkerCreate_zoom=0,
 
                *actCurveRefine=0, *actCurveEditRefine=0, *actCurveRubberDrag=0,  *actCurveDirectionInter=0,
-          *actCurveCreate_pointclick_fm=0, *actCurveMarkerLists_fm=0,
+          *actCurveCreate_pointclick_fm=0, *actCurveMarkerLists_fm=0, *actCurveRefine_fm=0,
           *actCurveMarkerPool_fm=0, *actCurveCreateMarkerGD=0, *actCurveCreateTest=0,// ZJL 110905
 
 			*actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
@@ -355,10 +355,15 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                // For curve refinement, ZJL 110831
                listAct.append(act = new QAction("", w)); act->setSeparator(true);
 
-               listAct.append(actCurveRefine = new QAction("n-right-strokes to define a 3D curve (refine)", w));
+               listAct.append(actCurveRefine = new QAction("n-right-strokes to define a 3D curve by mean shift (refine)", w));
                actCurveRefine->setIcon(QIcon(":/icons/strokeN.svg"));
 			actCurveRefine->setVisible(true);
 			actCurveRefine->setIconVisibleInMenu(true);
+
+               listAct.append(actCurveRefine_fm = new QAction("n-right-strokes to define a 3D curve by fast marching (refine)", w));
+               actCurveRefine_fm->setIcon(QIcon(":/icons/strokeN.svg"));
+			actCurveRefine_fm->setVisible(true);
+			actCurveRefine_fm->setIconVisibleInMenu(true);
 
                // add these menus if click is close to a seg
                // V3DLONG segid, ind;
@@ -884,6 +889,12 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	else if (act == actCurveRefine) // 110831 ZJL
 	{
 		selectMode = smCurveRefineInit;
+		b_addthiscurve = true;
+		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+	}
+     else if (act == actCurveRefine_fm) // 120223 ZJL
+	{
+		selectMode = smCurveRefine_fm;
 		b_addthiscurve = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
@@ -1727,7 +1738,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	}
 
      // For curve refine, ZJL 110905
-     else if (selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine || selectMode == smCurveDirectionInter ||
+     else if (selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine || selectMode == smCurveDirectionInter || smCurveRefine_fm ||
               selectMode == smCurveMarkerLists_fm || smCurveCreateMarkerGD || smCurveCreateTest)
      {
           _appendMarkerPos(x,y);
@@ -1751,7 +1762,22 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     vector <XYZ> loc_vec0;
                     loc_vec0.clear();
                     solveCurveCenterV2(loc_vec_input, loc_vec0, 0);
+                    refineMode = smCurveCreate1; // mean shift
                     selectMode = smCurveRefineLast; // switch to smCurveRefineLast
+               }
+               else if(selectMode == smCurveRefine_fm)
+               {
+                    // using two marker lists for fast marching to get a curve
+                    vector <XYZ> loc_vec_input;
+                    vector <XYZ> loc_vec0;
+                    loc_vec0.clear();
+                    solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
+                    refineMode = smCurveRefine_fm;
+                    selectMode = smCurveRefineLast; // switch to smCurveRefineLast for refine mode
+               }
+               else if (selectMode == smCurveRefineLast || selectMode == smCurveEditRefine )
+               {
+                    solveCurveRefineLast();
                }
                else if(selectMode == smCurveDirectionInter)
                {
@@ -1759,8 +1785,6 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     vector <XYZ> loc_vec0;
                     loc_vec0.clear();
                     solveCurveDirectionInter(loc_vec_input, loc_vec0, 0);
-
-                    //selectMode = smCurveRefineLast; // switch to smCurveRefineLast for refine mode
                }
                else if(selectMode == smCurveMarkerLists_fm)
                {
@@ -1777,24 +1801,46 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                }
                else if(selectMode == smCurveCreateTest)
                {
-                    // select a folder to save swc file from a popup dialog
-                    //get the save directory name
+                    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+                    My4DImage* curImg = 0;
+                    if (w) curImg = v3dr_getImage4d(_idep);
+
+                    QString imgname(curImg->getFileName()); //include path
+                    QFileInfo pathinfo(imgname);
+
+                    QString fname= pathinfo.baseName(); //only the file name without extension
+                    QString testOutputDir = pathinfo.absolutePath() + "/" + fname +"_testSWC";
+
+                    QDir curdir(testOutputDir);
+                    if (!curdir.exists())
+                         curdir.mkdir(testOutputDir);
+
+                    QString anofilename = testOutputDir + "/" + fname + "_curveTest.ano";
+                    FILE *fp;
                     if(!bTestCurveBegin)
                     {
-                         QDir curdir("./");
-                         testOutputDir = QFileDialog::getExistingDirectory(
-                              0,
-                              "Choose a directory under which all created SWC will be saved to",
-                              curdir.absoluteFilePath("./"),
-                              QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-
-                         if (!curdir.exists(testOutputDir))
-                              curdir.mkdir(testOutputDir);
                          bTestCurveBegin=true;
-                         testStrokeID = 0;
+                         fp=fopen(anofilename.toStdString().c_str(), "wt"); // open a new empty file
+                         if (!fp)
+                         {
+                              v3d_msg(QString("Fail to open file %1 to write.").arg(anofilename));
+                              return 1;
+                         }
+                         // write file name
+                         QString swcimg = "../" + pathinfo.fileName();
+                         fprintf(fp, "GRAYIMG=%s\n", swcimg.toStdString().c_str());
+                    } else
+                    {
+                         fp=fopen(anofilename.toStdString().c_str(), "at"); // open and append
+                         if (!fp)
+                         {
+                              v3d_msg(QString("Fail to open file %1 to write.").arg(anofilename));
+                              return 1;
+                         }
                     }
+
                     // end dir selection
-                    QString strokeid = "/"+QString::number(testStrokeID);
+                    QString strokeid = QString::number(testStrokeID);
                     testStrokeID++;
 
                     // using two marker lists for fast marching to get a curve
@@ -1804,24 +1850,30 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
 
                     // Save to a file
-                    QString filenameml;
-                    filenameml=testOutputDir + strokeid+ "_MarkerLists_fm"+".swc";
-                    writeSWC_file(filenameml, testNeuronTree);
+                    QString filenameml= strokeid+ "_MarkerLists_fm"+".swc";
+                    QString filenameml_ab=testOutputDir+"/"+filenameml;
+                    writeSWC_file(filenameml_ab, testNeuronTree);
+                    // save to ano
+                    fprintf(fp, "SWCFILE=%s\n", filenameml.toStdString().c_str());
 
                     // curve from mean shift
                     solveCurveCenter(loc_vec_input);
-                    QString filenamecc;
-                    filenamecc=testOutputDir + strokeid+ "_MeanShift"+".swc";
-                    writeSWC_file(filenamecc, testNeuronTree);
+                    QString filenamecc=strokeid+ "_MeanShift"+".swc";
+                    QString filenamecc_ab=testOutputDir + "/" +filenamecc ;
+                    writeSWC_file(filenamecc_ab, testNeuronTree);
+                    // save to ano
+                    fprintf(fp, "SWCFILE=%s\n", filenamecc.toStdString().c_str());
 
                     // curve from direction intersection
                     loc_vec_input.clear();
                     loc_vec0.clear();
                     selectMode = smCurveDirectionInter;
                     solveCurveDirectionInter(loc_vec_input, loc_vec0, 0);
-                    QString filenamedi;
-                    filenamedi=testOutputDir + strokeid+ "_DirInter"+".swc";
-                    writeSWC_file(filenamedi, testNeuronTree);
+                    QString filenamedi = strokeid+ "_DirInter"+".swc";
+                    QString filenamedi_ab=testOutputDir + "/" +filenamedi;
+                    writeSWC_file(filenamedi_ab, testNeuronTree);
+                    // save to ano
+                    fprintf(fp, "SWCFILE=%s\n", filenamedi.toStdString().c_str());
 
                     if(listCurveMarkerPool.size()<2)
                     {
@@ -1833,23 +1885,28 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                          // curve from FM
                          selectMode = smCurveMarkerPool_fm;
                          solveCurveFromMarkersFastMarching();
-                         QString filenamemp;
-                         filenamemp=testOutputDir + strokeid+ "_MarkerPool_fm"+".swc";
-                         writeSWC_file(filenamemp, testNeuronTree);
+                         QString filenamemp = strokeid+ "_MarkerPool_fm"+".swc";
+                         QString filenamemp_ab =testOutputDir + "/" + filenamemp;
+                         writeSWC_file(filenamemp_ab, testNeuronTree);
+                         // save to ano
+                         fprintf(fp, "SWCFILE=%s\n", filenamemp.toStdString().c_str());
 
                          // curve from GD
                          solveCurveFromMarkersGD(false); //boundingbox is the whole image
-                         QString filenamegd;
-                         filenamegd=testOutputDir + strokeid+ "_MarkerPool_GD"+".swc";
-                         writeSWC_file(filenamegd, testNeuronTree);
-
+                         QString filenamegd = strokeid+ "_MarkerPool_GD"+".swc";
+                         QString filenamegd_ab = testOutputDir + "/" +filenamegd;
+                         writeSWC_file(filenamegd_ab, testNeuronTree);
+                         // save to ano
+                         fprintf(fp, "SWCFILE=%s\n", filenamegd.toStdString().c_str());
                     }
                     // continue to use smCurveCreateTest mode
                     selectMode = smCurveCreateTest;
 
+                    // close file
+                    if(fp) fclose(fp);
+
                }
-               else
-                    solveCurveRefineLast();
+               // refine last
 
                list_listCurvePos.clear();
                //press Esc to endSelectMode();

@@ -43,6 +43,7 @@
 #include "../v3d/dialog_curve_trace_para.h"
 #include <map>
 #include <set>
+#include <time.h>
 #endif //test_main_cpp
 
 #include "../neuron_tracing/fastmarching_linker.h"
@@ -611,6 +612,10 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
      vector<XYZ> middle_vec;
      middle_vec.clear();
 
+     // set pregress dialog
+     PROGRESS_DIALOG( "Curve creating", widget);
+     PROGRESS_PERCENT(10);
+
      if (loc_vec_input.size()>0)
 	{
           middle_vec.push_back(loc_vec_input.front());//first marker
@@ -666,6 +671,10 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
                }
 
           }
+
+          loc_vec.push_back(loc_vec_input.back());
+
+          PROGRESS_PERCENT(60);
 
           // append the last XYZ of loc_vec to middle_vec
           middle_vec.push_back(loc_vec_input.back());// last marker
@@ -723,8 +732,9 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
                }
 
           } // end for the second fastmarching
+          loc_vec.push_back(middle_vec.back());
           //===============================================================================<<<<<<<<<<<<<
-
+          PROGRESS_PERCENT(80);
 
           if(loc_vec.size()<1) return; // all points are outside the volume. ZJL 110913
 
@@ -885,6 +895,7 @@ void Renderer_gl1::adaptiveCurveResampling(vector <XYZ> &loc_vec, vector <XYZ> &
                b_prestep_added = true;
           }
      }
+     loc_vec_resampled.push_back(loc_vec.back());
 }
 
 
@@ -950,6 +961,10 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
      V3DLONG szx = curImg->getXDim();
      V3DLONG szy = curImg->getYDim();
      V3DLONG szz = curImg->getZDim();
+
+     // set pregress dialog
+     PROGRESS_DIALOG( "Curve creating", widget);
+     PROGRESS_PERCENT(10);
 
 	int N = loc_vec_input.size();
 	if (b_use_seriespointclick)
@@ -1021,7 +1036,9 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                     if(last_j<0) //i==0
                     {
                          // always push_back the 1st loc
-                         loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+                         //loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+                         // get the loc with a random middle loc
+                         getMidRandomLoc(pos, chno, loc);
                          middle_vec.push_back(loc);
                     }
                     else if (last_j>=0)
@@ -1059,12 +1076,45 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                               sub_markers.push_back(mlastloc);
                          }
 
+
                          float length = dist_L2(loc0, loc1);
                          if (length<1.0)
                          {
-                              XYZ loci=(loc0+loc1)/2.0;
-                              MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
-                              tar_markers.push_back(mloci);
+                              // if(i == N-1) // last point
+                              // {
+                              //      int range=6;
+                              //      srand(clock());
+                              //      MarkerPos pos_temp = pos;
+                              //      for(int j=0; j<2*range; j++)
+                              //      {
+                              //           // generate pos and then get new loc
+                              //           int rand_x = rand()%(range+1); // generate value from 0~range
+                              //           int rand_y = rand()%(range+1); // generate value from 0~range
+                              //           // map rand from 0~range to -range/2~range/2
+                              //           rand_x = -range/2+rand_x;
+                              //           rand_y = -range/2+rand_y;
+                              //           pos_temp.x = pos.x + rand_x;
+                              //           pos_temp.y = pos.y + rand_y;
+
+                              //           _MarkerPos_to_NearFarPoint(pos_temp, loc0, loc1);
+                              //           XYZ v_1_0 = loc1-loc0;
+                              //           XYZ D = v_1_0; normalize(D);
+
+                              //           for(int ii=0; ii<(int)(length+0.5); ii++)
+                              //           {
+                              //                XYZ loci = loc0 + D*ii; // incease 1 each step
+                              //                MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
+                              //                tar_markers.push_back(mloci);
+                              //           }
+                              //      }
+                              // }
+                              // else
+                              {
+                                   XYZ loci=(loc0+loc1)/2.0;
+                                   MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
+                                   tar_markers.push_back(mloci);
+                              }
+
 
                               // //add neighbors of loci
                               // vector<XYZ> neibs_loci;
@@ -1097,42 +1147,72 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                          }
                          else
                          {
-                              XYZ v_1_0 = loc1-loc0;
-                              XYZ D = v_1_0; normalize(D);
-                              for(int ii=0; ii<(int)(length+0.5); ii++)
+                              // if(i == N-1) // last point
+                              // {
+                              //      int range=6;
+                              //      srand(clock());
+                              //      MarkerPos pos_temp = pos;
+                              //      for(int j=0; j<2*range; j++)
+                              //      {
+                              //           // generate pos and then get new loc
+                              //           int rand_x = rand()%(range+1); // generate value from 0~range
+                              //           int rand_y = rand()%(range+1); // generate value from 0~range
+                              //           // map rand from 0~range to -range/2~range/2
+                              //           rand_x = -range/2+rand_x;
+                              //           rand_y = -range/2+rand_y;
+                              //           pos_temp.x = pos.x + rand_x;
+                              //           pos_temp.y = pos.y + rand_y;
+                              //           XYZ loc00, loc11;
+                              //           _MarkerPos_to_NearFarPoint(pos_temp, loc00, loc11);
+                              //           XYZ v_1_0 = loc11-loc00;
+                              //           XYZ D = v_1_0; normalize(D);
+                              //           for(int ii=0; ii<(int)(length+0.5); ii++)
+                              //           {
+                              //                XYZ loci = loc00 + D*ii; // incease 1 each step
+                              //                MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
+                              //                tar_markers.push_back(mloci);
+                              //           }
+                              //      }
+                              // }
+                              // else
                               {
-                                   XYZ loci = loc0 + D*ii; // incease 1 each step
-                                   MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
-                                   tar_markers.push_back(mloci);
+                                   XYZ v_1_0 = loc1-loc0;
+                                   XYZ D = v_1_0; normalize(D);
+                                   for(int ii=0; ii<(int)(length+0.5); ii++)
+                                   {
+                                        XYZ loci = loc0 + D*ii; // incease 1 each step
+                                        MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
+                                        tar_markers.push_back(mloci);
 
-                                   // //add neighbors of loci
-                                   // vector<XYZ> neibs_loci;
-                                   // neibs_loci.clear();
-                                   // INSERT_NEIGHBOR(XYZ(loci.x+1, loci.y, loci.z));
-                                   // INSERT_NEIGHBOR(XYZ(loci.x-1, loci.y, loci.z));
-                                   // INSERT_NEIGHBOR(XYZ(loci.x, loci.y+1, loci.z));
-                                   // INSERT_NEIGHBOR(XYZ(loci.x, loci.y-1, loci.z));
-                                   // INSERT_NEIGHBOR(XYZ(loci.x, loci.y, loci.z+1));
-                                   // INSERT_NEIGHBOR(XYZ(loci.x, loci.y, loci.z-1));
+                                        // //add neighbors of loci
+                                        // vector<XYZ> neibs_loci;
+                                        // neibs_loci.clear();
+                                        // INSERT_NEIGHBOR(XYZ(loci.x+1, loci.y, loci.z));
+                                        // INSERT_NEIGHBOR(XYZ(loci.x-1, loci.y, loci.z));
+                                        // INSERT_NEIGHBOR(XYZ(loci.x, loci.y+1, loci.z));
+                                        // INSERT_NEIGHBOR(XYZ(loci.x, loci.y-1, loci.z));
+                                        // INSERT_NEIGHBOR(XYZ(loci.x, loci.y, loci.z+1));
+                                        // INSERT_NEIGHBOR(XYZ(loci.x, loci.y, loci.z-1));
 
-                                   // set <V3DLONG> neibs_set;
-                                   // for(int jj=0;jj<neibs_loci.size();jj++)
-                                   // {
-                                   //      XYZ locj = neibs_loci.at(jj);
-                                   //      V3DLONG locj1d = locj.z*szx*szy + locj.y*szx + locj.x;
-                                   //      neibs_set.insert(locj1d);
-                                   // }
+                                        // set <V3DLONG> neibs_set;
+                                        // for(int jj=0;jj<neibs_loci.size();jj++)
+                                        // {
+                                        //      XYZ locj = neibs_loci.at(jj);
+                                        //      V3DLONG locj1d = locj.z*szx*szy + locj.y*szx + locj.x;
+                                        //      neibs_set.insert(locj1d);
+                                        // }
 
-                                   // set<V3DLONG>::iterator it;
-                                   // for(it=neibs_set.begin(); it!=neibs_set.end(); it++)
-                                   // {
-                                   //      XYZ locj;
-                                   //      V3DLONG locj1d=*it;
-                                   //      locj.x=locj1d % szx;
-                                   //      locj.y=((locj1d-(int)locj.x)/szx) % szy;
-                                   //      locj.z=(locj1d-(int)locj.y*szx-(int)locj.x)/(szx*szy);
-                                   //      tar_markers.push_back(MyMarker(locj.x, locj.y, locj.z));
-                                   // }
+                                        // set<V3DLONG>::iterator it;
+                                        // for(it=neibs_set.begin(); it!=neibs_set.end(); it++)
+                                        // {
+                                        //      XYZ locj;
+                                        //      V3DLONG locj1d=*it;
+                                        //      locj.x=locj1d % szx;
+                                        //      locj.y=((locj1d-(int)locj.x)/szx) % szy;
+                                        //      locj.z=(locj1d-(int)locj.y*szx-(int)locj.x)/(szx*szy);
+                                        //      tar_markers.push_back(MyMarker(locj.x, locj.y, locj.z));
+                                        // }
+                                   }
                               }
                          }
 
@@ -1188,7 +1268,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 
           }
      }
-
+     PROGRESS_PERCENT(60);
      //===============================================================================>>>>>>>>>>>>
      // put the last element of loc_vec
      middle_vec.push_back(loc_vec.back());
@@ -1263,7 +1343,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
           }
      } // end for the second fastmarching
      //===============================================================================<<<<<<<<<<<<<
-
+     PROGRESS_PERCENT(90);
 
      N = loc_vec.size(); //100722 RZC
      if(N<1) return; // all points are outside the volume. ZJL 110913
@@ -1369,6 +1449,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                endSelectMode();
           }
      }
+
 
 }
 
@@ -1515,6 +1596,10 @@ void Renderer_gl1::solveCurveFromMarkersGD(bool b_customized_bb)
 	vector <XYZ> loc_vec_input;
      loc_vec_input.clear();
 
+     // set pregress dialog
+     PROGRESS_DIALOG( "Curve creating", widget);
+     PROGRESS_PERCENT(10);
+
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg = 0;
      if (w) curImg = v3dr_getImage4d(_idep); //by PHC, 090119
@@ -1583,6 +1668,8 @@ void Renderer_gl1::solveCurveFromMarkersGD(bool b_customized_bb)
           }
      }
 
+     PROGRESS_PERCENT(40);
+
      // loc_vec is used to store final locs on the curve
      vector <XYZ> loc_vec;
      loc_vec.clear();
@@ -1620,7 +1707,7 @@ void Renderer_gl1::solveCurveFromMarkersGD(bool b_customized_bb)
                     // only have one seg and get the first seg
                     vector<V_NeuronSWC_unit> seg0 = mmUnit.at(0);
                     int num = seg0.size();
-                    for(int j=num-1; j>1; j-- )
+                    for(int j=num-2; j>=0; j-- )
                     {
                          XYZ loc;
                          loc.x=seg0.at(j).x;
@@ -1629,12 +1716,15 @@ void Renderer_gl1::solveCurveFromMarkersGD(bool b_customized_bb)
 
                          loc_vec.push_back(loc);
                     }
+               }else
+               {
+                    loc_vec.push_back(loc1);
                }
-
-               loc_vec.push_back(loc1);
           }
 
-          loc_vec.push_back(loc_vec_input.at(loc_vec_input.size()-1));
+          PROGRESS_PERCENT(80);
+
+          loc_vec.push_back(loc_vec_input.back());
 
           if(loc_vec.size()<1) return; // all points are outside the volume. ZJL 110913
 
@@ -1698,6 +1788,8 @@ void Renderer_gl1::solveCurveFromMarkersGD(bool b_customized_bb)
                }
           }
 
+          PROGRESS_PERCENT(90);
+
           smooth_curve(loc_vec, 5);
 
           // adaptive curve simpling
@@ -1718,6 +1810,7 @@ void Renderer_gl1::solveCurveFromMarkersGD(bool b_customized_bb)
                endSelectMode();
           }
      }
+     PROGRESS_PERCENT(100);
 }
 
 
@@ -1827,5 +1920,72 @@ void  Renderer_gl1::vecToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list)
      SS.on = true;
      SS.listNeuron = listNeuron;
      SS.hashNeuron = hashNeuron;
+
+}
+
+/*
+ * Create random positions around pos. Then get loc using mean shift method on each pos.
+ * Sort the depth of all locs and get the loc at the middle of the sorted locs as the return value.
+*/
+void  Renderer_gl1::getMidRandomLoc(MarkerPos pos, int chno, XYZ &mid_loc)
+{
+     int range=6;
+     srand(clock()); // initialize random seek
+
+     vector <XYZ> rand_loc_vec;
+     rand_loc_vec.clear();
+
+     double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+     clipplane[3] = viewClip;
+     ViewPlaneToModel(pos.MV, clipplane);
+     XYZ loc0, loc1;
+     _MarkerPos_to_NearFarPoint(pos, loc0, loc1);
+
+     XYZ loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+     float dist = dist_L2(loc0, loc);
+     rand_loc_vec.push_back(loc);
+
+     // using map to sort dist
+     map<float, int> dist_score;
+     dist_score[dist] = 0;
+
+     for(int i=0; i<2*range; i++)
+     {
+          // generate pos and then get new loc
+          int rand_x = rand()%(range+1); // generate value from 0~range
+          int rand_y = rand()%(range+1); // generate value from 0~range
+          // map rand from 0~range to -range/2~range/2
+          rand_x = -range/2+rand_x;
+          rand_y = -range/2+rand_y;
+          pos.x = pos.x + rand_x;
+          pos.y = pos.y + rand_y;
+
+          ViewPlaneToModel(pos.MV, clipplane);
+
+          XYZ loc00, loc11;
+          _MarkerPos_to_NearFarPoint(pos, loc00, loc11);
+
+          XYZ loc_temp = getCenterOfLineProfile(loc00, loc11, clipplane, chno);
+          rand_loc_vec.push_back(loc_temp);
+          float dist_temp = dist_L2(loc00, loc_temp);
+
+          dist_score[dist_temp] = rand_loc_vec.size()-1;
+     }
+     // sort rand_loc_vec elements in depth order and get the middle loc
+     map<float, int>::iterator it;
+
+     int count=0;
+     int mid_index;
+     for(it=dist_score.begin(); it!=dist_score.end(); it++)
+     {
+          count++;
+          if(count == dist_score.size()/2)
+          {
+               mid_index = it->second;
+               break;
+          }
+     }
+     // get middle loc
+     mid_loc = rand_loc_vec.at(mid_index);
 
 }
