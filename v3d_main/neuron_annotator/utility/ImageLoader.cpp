@@ -695,10 +695,10 @@ V3DLONG ImageLoader::compressPBD8(unsigned char * compressionBuffer, unsigned ch
     unsigned char currentValue=0;
     int dbuffer[95];
     V3DLONG activeLiteralIndex=-1; // if -1 this means there is no literal mode started
-    for (int i=0;i<sourceBufferLength;i++) {
+    for (V3DLONG i=0;i<sourceBufferLength;i++) {
 
         if (p>=spaceLeft) {
-            printf("ImageLoader::compressPBD8 ran out of space p=%d\n", p);
+            printf("ImageLoader::compressPBD8 ran out of space p=%ld\n", p);
             return 0;
         }
 
@@ -712,7 +712,7 @@ V3DLONG ImageLoader::compressPBD8(unsigned char * compressionBuffer, unsigned ch
 
         int reTest=1;
         currentValue=sourceBuffer[i];
-        int currentPosition=i+1;
+        V3DLONG currentPosition=i+1;
         while(currentPosition<sourceBufferLength && reTest<128) { // 128 is the max number of repeats supported
             if (sourceBuffer[currentPosition++]==currentValue) {
                 reTest++;
@@ -730,11 +730,11 @@ V3DLONG ImageLoader::compressPBD8(unsigned char * compressionBuffer, unsigned ch
             activeLiteralIndex=-1;
         } else {
             double dfEfficiency=0.0;
-            int c=i;
+            V3DLONG c=i;
             if (i>0) { // I.e., if not first since we can't start with a difference encoding
                 // We need to evaluate difference encoding starting with the prior value
                 unsigned int priorValue=sourceBuffer[i-1];
-                int unitsToCheck=sourceBufferLength-i;
+                V3DLONG unitsToCheck=sourceBufferLength-i;
                 if (unitsToCheck>95) {
                     unitsToCheck=95; // 95 is max supported number of differences
                 }
@@ -768,11 +768,11 @@ V3DLONG ImageLoader::compressPBD8(unsigned char * compressionBuffer, unsigned ch
                 // Then use DF. We want to move forward in units of 4, and pick the correct encoding.
                 // Note that is doesn't matter if we pad extra 0s because we know what the correct
                 // length is from above.
-                int cp=i;
+                V3DLONG cp=i;
                 unsigned char d0,d1,d2,d3;
                 d0=d1=d2=d3=0;
                 while(cp<c) {
-                    int start=cp-i;
+                    V3DLONG start=cp-i;
                     d0=dbuffer[start];
                     if (cp+1<c) {
                         d1=dbuffer[start+1];
@@ -996,7 +996,7 @@ V3DLONG ImageLoader::compressPBD16(unsigned char * compressionBuffer, unsigned c
                 activeLiteralIndex=-1;
             } else if (dfEfficiency>1.0) {
 
-                int cp;
+                V3DLONG cp;
                 unsigned char d0,d1,d2,d3,d4;
 
                 if (dfType==3) {
