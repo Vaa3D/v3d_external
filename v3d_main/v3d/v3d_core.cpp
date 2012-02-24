@@ -2458,7 +2458,9 @@ void XFormView::drawPixmapType(QPainter *painter)
     int pwid = disp_width; //changed to disp_height/disp_width on 090212
 	int phei = disp_height;
     QPointF center(pwid/2.0, phei/2.0);
-
+	
+	QPointF curDisplayCenter_old = curDisplayCenter;
+	
 	if (m_scale>1)
 		painter->translate(curDisplayCenter - center);
 	else
@@ -2503,7 +2505,6 @@ void XFormView::drawPixmapType(QPainter *painter)
 		{
 			setCursor(Qt::CrossCursor);
 
-
 			// draw the Looking glass if necessary and possible. Note that when Looking glass is enabled, the m_scale is assumed to be 1
 			drawLookingGlassMap(painter, 0); //draw the anchored zoom-in map
 			if (bMouseCurorIn)
@@ -2524,6 +2525,74 @@ void XFormView::drawPixmapType(QPainter *painter)
 
 	// draw ROI
 	drawROI(painter);
+	
+	// draw mapviw win
+	b_displayMapviewWin = true;
+	if (b_displayMapviewWin) 
+	{
+		painter->scale(1.0/disp_scale, 1.0/disp_scale);
+		painter->translate(center);
+		painter->scale(1.0/m_scale, 1.0/m_scale);
+		painter->translate(-center);
+		if (m_scale>1)
+			painter->translate(center-curDisplayCenter_old);
+
+		// setPen to draw solid lines
+		painter->setPen(QPen(QColor(255, 255, 255, alpha), 3, Qt::SolidLine, Qt::FlatCap, Qt::BevelJoin));
+		painter->setBrush(Qt::NoBrush);
+		// determin the pos of mapview win
+		int mapwinWidth, mapwinHeight;
+		mapwinWidth = disp_width/5;
+		if (mapwinWidth<10) 
+		{
+			mapwinWidth=10;
+		} 
+		else if (mapwinWidth>100) 
+		{
+			mapwinWidth=100;
+		}
+		mapwinHeight = mapwinWidth*disp_height/disp_width;
+		
+		if (m_scale > 1)
+		{
+			//painter->setOpacity(0.5);
+			//painter->fillRect(disp_width-mapwinWidth, disp_height-mapwinHeight, mapwinWidth, mapwinHeight, QColor(255, 255, 255, alpha));
+			painter->setOpacity(1.0);
+			painter->drawRect(disp_width-mapwinWidth, disp_height-mapwinHeight, mapwinWidth, mapwinHeight);
+		}
+		
+		// draw scale bar 
+		//int barScale;
+		painter->setPen(QPen(QColor(255, 255, 255, alpha), 2, Qt::SolidLine, Qt::FlatCap, Qt::BevelJoin));
+		painter->setBrush(Qt::NoBrush);
+		painter->drawRect(7,  15, 6, 1);
+		painter->drawRect(10, 15, 1, 30);
+		painter->drawRect(7,  45, 6, 1);
+		
+		// draw the inner navigation window
+		int navwinWidth, navwinHeight;
+		int navwinScale = (m_scale>1)? m_scale : 1;  //4
+		navwinWidth = mapwinWidth/navwinScale;
+		navwinHeight = navwinWidth*disp_height/disp_width;
+		
+		int navstartX, navstartY;
+		QPointF centerMov = (center-curDisplayCenter_old)*mapwinWidth/(float)(disp_width * m_scale); 
+		
+		navstartX = disp_width - mapwinWidth/2 - navwinWidth/2 + centerMov.x();
+		navstartY = disp_height - mapwinHeight/2 - navwinHeight/2 + centerMov.y();
+		
+		painter->setPen(QPen(QColor(0, 0, 255, alpha), 2, Qt::SolidLine, Qt::FlatCap, Qt::BevelJoin));
+		painter->setBrush(Qt::NoBrush);
+		
+		if (m_scale > 1) 
+		{
+			painter->setOpacity(0.7);
+			painter->fillRect(navstartX, navstartY, navwinWidth, navwinHeight, QColor(150, 200, 255, alpha) );
+			painter->setOpacity(1.0);
+			painter->drawRect(navstartX, navstartY, navwinWidth, navwinHeight);
+		}
+	} // end b_displayMapviewWin
+	
 }
 
 

@@ -548,6 +548,10 @@ private:
 	My4DImage * imgData; //a reference to the real data stored in the XFormWidget
 
 	bool b_displayFocusCrossLine;
+	
+	bool b_displayScaleBar;   // for mapview. ZJL 20120224
+	bool b_displayMapviewWin; // for mapview. ZJL 20120224
+	
 	int focusPosInWidth, focusPosInHeight;
 
 	bool b_moveCurrentLandmark;
