@@ -151,13 +151,13 @@ bool compute_statistics_objects(My4DImage *grayimg, V3DLONG c, My4DImage * maski
 bool compute_statistics_objects(Vol3DSimple<unsigned char> *grayimg, Vol3DSimple<unsigned short int> * maskimg, LocationSimple * & p_ano, V3DLONG & n_objects);
 
 
-bool convert_data_to_8bit(void * &img, V3DLONG * sz, int datatype); 
+bool convert_data_to_8bit(void * &img, V3DLONG * sz, int datatype);
 
 QList <LocationSimple> readPosFile(const char * posFile); //080107. obsolete. try not to use. 090725
-QList <LocationSimple> readPosFile_usingMarkerCode(const char * posFile); 
-bool readSingleImageFile(char *imgSrcFile, unsigned char * & data1d, V3DLONG * & sz, ImagePixelType & datatype); 
+QList <LocationSimple> readPosFile_usingMarkerCode(const char * posFile);
+bool readSingleImageFile(char *imgSrcFile, unsigned char * & data1d, V3DLONG * & sz, ImagePixelType & datatype);
 
-QStringList importSeriesFileList_addnumbersort(const QString & individualFileName, TimePackType & timepacktype); 
+QStringList importSeriesFileList_addnumbersort(const QString & individualFileName, TimePackType & timepacktype);
 
 
 struct InvidualAtlasFileInfo
@@ -457,8 +457,8 @@ public:
 	void set_disp_width(int a) {disp_width = a;}
 	void set_disp_height(int a) {disp_height = a;}
 	void set_disp_scale(double a) {disp_scale = a; }
-	
-	// Converts point from mouse event coordinates to image coordinates 
+
+	// Converts point from mouse event coordinates to image coordinates
 	QPointF mouseEventToImageCoords(const QPoint& p);
 
     void mousePressEvent(QMouseEvent *e);
@@ -471,7 +471,7 @@ public:
     void enterEvent (QEvent * e);
     void leaveEvent (QEvent * e);
 
-	void wheelEvent(QWheelEvent * e); 
+	void wheelEvent(QWheelEvent * e);
 
     void dispHistogram();
 	QRect getRoiBoundingRect();
@@ -518,6 +518,9 @@ protected:
 
 public:
 	QPolygon roiPolygon;//061009
+
+     int viewType;  // xy, yz, or zx view, value is 1,2,3 respectively
+
 private:
     enum XFormType { VectorType, PixmapType, TextType};
 
@@ -548,10 +551,10 @@ private:
 	My4DImage * imgData; //a reference to the real data stored in the XFormWidget
 
 	bool b_displayFocusCrossLine;
-	
+
 	bool b_displayScaleBar;   // for mapview. ZJL 20120224
 	bool b_displayMapviewWin; // for mapview. ZJL 20120224
-	
+
 	int focusPosInWidth, focusPosInHeight;
 
 	bool b_moveCurrentLandmark;

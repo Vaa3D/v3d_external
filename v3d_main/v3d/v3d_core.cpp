@@ -1293,6 +1293,8 @@ XFormView::XFormView(QWidget *parent)
 	disp_width = disp_scale * pixmap.width();
 	disp_height = disp_scale * pixmap.height();
 
+     viewType = 1; //xy_view
+
 }
 
 bool XFormView::internal_only_imgplane_op()
@@ -2458,9 +2460,9 @@ void XFormView::drawPixmapType(QPainter *painter)
     int pwid = disp_width; //changed to disp_height/disp_width on 090212
 	int phei = disp_height;
     QPointF center(pwid/2.0, phei/2.0);
-	
+
 	QPointF curDisplayCenter_old = curDisplayCenter;
-	
+
 	if (m_scale>1)
 		painter->translate(curDisplayCenter - center);
 	else
@@ -2525,10 +2527,10 @@ void XFormView::drawPixmapType(QPainter *painter)
 
 	// draw ROI
 	drawROI(painter);
-	
+
 	// draw mapviw win
 	b_displayMapviewWin = true;
-	if (b_displayMapviewWin) 
+	if (b_displayMapviewWin)
 	{
 		painter->scale(1.0/disp_scale, 1.0/disp_scale);
 		painter->translate(center);
@@ -2543,56 +2545,73 @@ void XFormView::drawPixmapType(QPainter *painter)
 		// determin the pos of mapview win
 		int mapwinWidth, mapwinHeight;
 		mapwinWidth = disp_width/5;
-		if (mapwinWidth<10) 
+		if (mapwinWidth<10)
 		{
 			mapwinWidth=10;
-		} 
-		else if (mapwinWidth>100) 
+		}
+		else if (mapwinWidth>100)
 		{
 			mapwinWidth=100;
 		}
 		mapwinHeight = mapwinWidth*disp_height/disp_width;
-		
+
 		if (m_scale > 1)
 		{
 			//painter->setOpacity(0.5);
 			//painter->fillRect(disp_width-mapwinWidth, disp_height-mapwinHeight, mapwinWidth, mapwinHeight, QColor(255, 255, 255, alpha));
 			painter->setOpacity(1.0);
-			painter->drawRect(disp_width-mapwinWidth, disp_height-mapwinHeight, mapwinWidth, mapwinHeight);
+               if(viewType==1)
+                    painter->drawRect(disp_width-mapwinWidth, disp_height-mapwinHeight, mapwinWidth, mapwinHeight);
+               else if(viewType == 2)
+                    painter->drawRect(disp_width-mapwinWidth, 0, mapwinWidth, mapwinHeight);
+               else if(viewType == 3)
+                    painter->drawRect(0, disp_height-mapwinHeight, mapwinWidth, mapwinHeight);
 		}
-		
-		// draw scale bar 
+
+		// draw scale bar
 		//int barScale;
 		painter->setPen(QPen(QColor(255, 255, 255, alpha), 2, Qt::SolidLine, Qt::FlatCap, Qt::BevelJoin));
 		painter->setBrush(Qt::NoBrush);
 		painter->drawRect(7,  15, 6, 1);
 		painter->drawRect(10, 15, 1, 30);
 		painter->drawRect(7,  45, 6, 1);
-		
+
 		// draw the inner navigation window
 		int navwinWidth, navwinHeight;
 		int navwinScale = (m_scale>1)? m_scale : 1;  //4
 		navwinWidth = mapwinWidth/navwinScale;
 		navwinHeight = navwinWidth*disp_height/disp_width;
-		
+
 		int navstartX, navstartY;
-		QPointF centerMov = (center-curDisplayCenter_old)*mapwinWidth/(float)(disp_width * m_scale); 
-		
-		navstartX = disp_width - mapwinWidth/2 - navwinWidth/2 + centerMov.x();
-		navstartY = disp_height - mapwinHeight/2 - navwinHeight/2 + centerMov.y();
-		
+		QPointF centerMov = (center-curDisplayCenter_old)*mapwinWidth/(float)(disp_width * m_scale);
+
+          if(viewType==1)
+          {
+               navstartX = disp_width - mapwinWidth/2.0 - navwinWidth/2.0 + centerMov.x();
+               navstartY = disp_height - mapwinHeight/2.0 - navwinHeight/2.0 + centerMov.y();
+          }else if(viewType==2)
+		{
+               navstartX = disp_width - mapwinWidth/2.0 - navwinWidth/2.0 + centerMov.x();
+               navstartY =  mapwinHeight/2.0 - navwinHeight/2.0 + centerMov.y();
+          }else if(viewType==3)
+		{
+               navstartX =  mapwinWidth/2.0 - navwinWidth/2.0 + centerMov.x();
+               navstartY = disp_height - mapwinHeight/2.0 - navwinHeight/2.0 + centerMov.y();
+          }
+
 		painter->setPen(QPen(QColor(0, 0, 255, alpha), 2, Qt::SolidLine, Qt::FlatCap, Qt::BevelJoin));
 		painter->setBrush(Qt::NoBrush);
-		
-		if (m_scale > 1) 
+
+		if (m_scale > 1)
 		{
-			painter->setOpacity(0.7);
-			painter->fillRect(navstartX, navstartY, navwinWidth, navwinHeight, QColor(150, 200, 255, alpha) );
-			painter->setOpacity(1.0);
-			painter->drawRect(navstartX, navstartY, navwinWidth, navwinHeight);
+               painter->setOpacity(0.7);
+               painter->fillRect(navstartX, navstartY, navwinWidth, navwinHeight, QColor(150, 200, 255, alpha) );
+               painter->setOpacity(1.0);
+               painter->drawRect(navstartX, navstartY, navwinWidth, navwinHeight);
+
 		}
 	} // end b_displayMapviewWin
-	
+
 }
 
 
@@ -3716,18 +3735,22 @@ void XFormWidget::createGUI()
     xy_view->setFixedWidth(xy_view->get_disp_width());
     xy_view->setFixedHeight(xy_view->get_disp_height());
     xy_view->setFocusPolicy(Qt::ClickFocus);
+    xy_view->viewType = 1; // for map view window ZJL
 
     yz_view = new XFormView(viewGroup);
 	yz_view->setImgData(imgPlaneX, 0, colorRGB); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
     yz_view->setFixedWidth(yz_view->get_disp_width());
     yz_view->setFixedHeight(yz_view->get_disp_height());
     yz_view->setFocusPolicy(Qt::ClickFocus);
+    yz_view->viewType = 3;
+
 
     zx_view = new XFormView(viewGroup);
 	zx_view->setImgData(imgPlaneY, 0, colorRGB); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
     zx_view->setFixedWidth(zx_view->get_disp_width());
     zx_view->setFixedHeight(zx_view->get_disp_height());
     zx_view->setFocusPolicy(Qt::ClickFocus);
+    zx_view->viewType = 2;
 
 	//    viewGroup->setFixedWidth(xy_view->frameGeometry().width()+yz_view->frameGeometry().width());
 
