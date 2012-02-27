@@ -1293,8 +1293,6 @@ XFormView::XFormView(QWidget *parent)
 	disp_width = disp_scale * pixmap.width();
 	disp_height = disp_scale * pixmap.height();
 
-     viewType = 1; //xy_view
-
 }
 
 bool XFormView::internal_only_imgplane_op()
@@ -2528,10 +2526,11 @@ void XFormView::drawPixmapType(QPainter *painter)
 	// draw ROI
 	drawROI(painter);
 
-	// draw mapviw win
+	// draw mapview win
 	b_displayMapviewWin = true;
 	if (b_displayMapviewWin)
 	{
+          // transform back
 		painter->scale(1.0/disp_scale, 1.0/disp_scale);
 		painter->translate(center);
 		painter->scale(1.0/m_scale, 1.0/m_scale);
@@ -2560,43 +2559,64 @@ void XFormView::drawPixmapType(QPainter *painter)
 			//painter->setOpacity(0.5);
 			//painter->fillRect(disp_width-mapwinWidth, disp_height-mapwinHeight, mapwinWidth, mapwinHeight, QColor(255, 255, 255, alpha));
 			painter->setOpacity(1.0);
-               if(viewType==1)
-                    painter->drawRect(disp_width-mapwinWidth, disp_height-mapwinHeight, mapwinWidth, mapwinHeight);
-               else if(viewType == 2)
-                    painter->drawRect(disp_width-mapwinWidth, 0, mapwinWidth, mapwinHeight);
-               else if(viewType == 3)
-                    painter->drawRect(0, disp_height-mapwinHeight, mapwinWidth, mapwinHeight);
+               switch(Ptype)
+               {
+                    case imgPlaneZ: // xy_view
+                         painter->drawRect(disp_width-mapwinWidth, disp_height-mapwinHeight, mapwinWidth, mapwinHeight);
+                         break;
+                    case imgPlaneY: // zx_view
+                         painter->drawRect(disp_width-mapwinWidth, 0, mapwinWidth, mapwinHeight);
+                         break;
+                    case imgPlaneX: // yz_view
+                         painter->drawRect(0, disp_height-mapwinHeight, mapwinWidth, mapwinHeight);
+                         break;
+                    default:
+                         break;
+               }
+
 		}
 
 		// draw scale bar
-		//int barScale;
-		painter->setPen(QPen(QColor(255, 255, 255, alpha), 2, Qt::SolidLine, Qt::FlatCap, Qt::BevelJoin));
-		painter->setBrush(Qt::NoBrush);
-		painter->drawRect(7,  15, 6, 1);
-		painter->drawRect(10, 15, 1, 30);
-		painter->drawRect(7,  45, 6, 1);
+          if(m_scale > 1)
+          {
+               painter->setPen(QPen(QColor(255, 255, 255, alpha), 1, Qt::SolidLine, Qt::FlatCap, Qt::BevelJoin));
+               painter->setBrush(Qt::NoBrush);
+               painter->setOpacity(1.0);
+
+               painter->drawLine(10, 15, 15, 15);
+               painter->drawRect(10, 15, 1, 30);
+               painter->drawLine(10, 45, 15, 45);
+
+               // draw scale text: 30/m_scale
+               float disp_num=30.0/m_scale;
+               painter->drawText(12, 33, QString::number(disp_num, 'f', 2));
+          }
 
 		// draw the inner navigation window
 		int navwinWidth, navwinHeight;
-		int navwinScale = (m_scale>1)? m_scale : 1;  //4
+		float navwinScale = m_scale;
 		navwinWidth = mapwinWidth/navwinScale;
-		navwinHeight = navwinWidth*disp_height/disp_width;
+		navwinHeight = navwinWidth*mapwinHeight/mapwinWidth;
 
 		int navstartX, navstartY;
 		QPointF centerMov = (center-curDisplayCenter_old)*mapwinWidth/(float)(disp_width * m_scale);
 
-          if(viewType==1)
-          {
-               navstartX = disp_width - mapwinWidth/2.0 - navwinWidth/2.0 + centerMov.x();
-               navstartY = disp_height - mapwinHeight/2.0 - navwinHeight/2.0 + centerMov.y();
-          }else if(viewType==2)
+          switch(Ptype)
 		{
-               navstartX = disp_width - mapwinWidth/2.0 - navwinWidth/2.0 + centerMov.x();
-               navstartY =  mapwinHeight/2.0 - navwinHeight/2.0 + centerMov.y();
-          }else if(viewType==3)
-		{
-               navstartX =  mapwinWidth/2.0 - navwinWidth/2.0 + centerMov.x();
-               navstartY = disp_height - mapwinHeight/2.0 - navwinHeight/2.0 + centerMov.y();
+			case imgPlaneZ: // xy_view
+                    navstartX = disp_width - mapwinWidth/2.0 - navwinWidth/2.0 + centerMov.x();
+                    navstartY = disp_height - mapwinHeight/2.0 - navwinHeight/2.0 + centerMov.y();
+				break;
+               case imgPlaneY: // zx_view
+                    navstartX = disp_width - mapwinWidth/2.0 - navwinWidth/2.0 + centerMov.x();
+                    navstartY =  mapwinHeight/2.0 - navwinHeight/2.0 + centerMov.y();
+                    break;
+               case imgPlaneX: // yz_view
+                    navstartX =  mapwinWidth/2.0 - navwinWidth/2.0 + centerMov.x();
+                    navstartY = disp_height - mapwinHeight/2.0 - navwinHeight/2.0 + centerMov.y();
+                    break;
+               default:
+                    break;
           }
 
 		painter->setPen(QPen(QColor(0, 0, 255, alpha), 2, Qt::SolidLine, Qt::FlatCap, Qt::BevelJoin));
@@ -2651,7 +2671,7 @@ void XFormView::drawSelectedLocations(QPainter *painter, QList <LocationSimple> 
 	int b_draw = 0;
 
 	LocationSimple tmpLocation(0,0,0);
-    QPolygonF polygon;
+     QPolygonF polygon;
 
 	for (V3DLONG i=0;i<NLandmarks;i++)
 	{
@@ -3735,22 +3755,18 @@ void XFormWidget::createGUI()
     xy_view->setFixedWidth(xy_view->get_disp_width());
     xy_view->setFixedHeight(xy_view->get_disp_height());
     xy_view->setFocusPolicy(Qt::ClickFocus);
-    xy_view->viewType = 1; // for map view window ZJL
 
     yz_view = new XFormView(viewGroup);
 	yz_view->setImgData(imgPlaneX, 0, colorRGB); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
     yz_view->setFixedWidth(yz_view->get_disp_width());
     yz_view->setFixedHeight(yz_view->get_disp_height());
     yz_view->setFocusPolicy(Qt::ClickFocus);
-    yz_view->viewType = 3;
-
 
     zx_view = new XFormView(viewGroup);
 	zx_view->setImgData(imgPlaneY, 0, colorRGB); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
     zx_view->setFixedWidth(zx_view->get_disp_width());
     zx_view->setFixedHeight(zx_view->get_disp_height());
     zx_view->setFocusPolicy(Qt::ClickFocus);
-    zx_view->viewType = 2;
 
 	//    viewGroup->setFixedWidth(xy_view->frameGeometry().width()+yz_view->frameGeometry().width());
 

@@ -1,4 +1,4 @@
-
+// Feb 27, 2012      Hang Xiao
 
 #ifndef __FASTMARCHING_LINKER_H__
 #define __FASTMARCHING_LINKER_H__
@@ -236,6 +236,7 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
         //for(int i = 0; i < sub_markers.size(); i++) outswc.push_back(sub_markers[i]);
         //for(int i = 0; i < tar_markers.size(); i++) outswc.push_back(tar_markers[i]);
 
+		if(!elems.empty()) for(map<long, HeapElemX*>::iterator it = elems.begin(); it != elems.end(); it++) delete it->second;
         if(phi) {delete [] phi; phi = 0;}
         if(parent) {delete [] parent; parent = 0;}
         return true;

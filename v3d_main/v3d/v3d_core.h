@@ -519,8 +519,6 @@ protected:
 public:
 	QPolygon roiPolygon;//061009
 
-     int viewType;  // xy, yz, or zx view, value is 1,2,3 respectively
-
 private:
     enum XFormType { VectorType, PixmapType, TextType};
 

@@ -65,7 +65,7 @@ void Renderer_gl1::solveCurveRefineLast()
      loc_vec_input.clear();
 
      // get the ith curve center
-     if(selectMode==smCurveRefine_fm)
+     if(refineMode==smCurveRefine_fm)
      {
           solveCurveMarkerLists_fm(loc_vec_input, loc_veci, 0);
      }else

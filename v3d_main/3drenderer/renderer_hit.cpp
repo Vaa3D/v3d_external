@@ -220,7 +220,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*actCurveCreate_zoom=0, *actMarkerCreate_zoom=0,
 
                *actCurveRefine=0, *actCurveEditRefine=0, *actCurveRubberDrag=0,  *actCurveDirectionInter=0,
-          *actCurveCreate_pointclick_fm=0, *actCurveMarkerLists_fm=0, *actCurveRefine_fm=0,
+          *actCurveCreate_pointclick_fm=0, *actCurveMarkerLists_fm=0, *actCurveRefine_fm=0,*actCurveEditRefine_fm=0,
           *actCurveMarkerPool_fm=0, *actCurveCreateMarkerGD=0, *actCurveCreateTest=0,// ZJL 110905
 
 			*actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
@@ -577,11 +577,18 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
                               // ZJL 110913:
                               // Edit the curve by refining or extending as in "n-right-strokes to define a curve (refine)"
-                              listAct.append(actCurveEditRefine = new QAction("extend/refine nearest neuron-segment", w));
+                              listAct.append(actCurveEditRefine = new QAction("extend/refine nearest neuron-segment by mean shift", w));
                               actCurveEditRefine->setIcon(QIcon(":/icons/strokeN.svg"));
                               actCurveEditRefine->setVisible(true);
                               actCurveEditRefine->setIconVisibleInMenu(true);
                               //listAct.append(act = new QAction("", w));
+
+                              listAct.append(actCurveEditRefine_fm = new QAction("extend/refine nearest neuron-segment by fast marching", w));
+                              actCurveEditRefine_fm->setIcon(QIcon(":/icons/strokeN.svg"));
+                              actCurveEditRefine_fm->setVisible(true);
+                              actCurveEditRefine_fm->setIconVisibleInMenu(true);
+                              //listAct.append(act = new QAction("", w));
+
 
                               // Drag a curve to refine it by using rubber-band line like method
                               listAct.append(actCurveRubberDrag = new QAction("drag nearest neuron-segment", w));
@@ -1322,7 +1329,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		}
 	}
      // ZJL 110913
-	else if (act==actCurveEditRefine)
+	else if (act==actCurveEditRefine || act==actCurveEditRefine_fm)
 	{
 		if (NEURON_CONDITION)
 		{
@@ -1332,7 +1339,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			if (n_id>=0)
 			{
                     // using the pipeline of "n-right-strokes to define a curve (refine)"
-                    selectMode = smCurveEditRefine;
+                    if (act==actCurveEditRefine)
+                         selectMode = smCurveEditRefine;
+                    else
+                         selectMode = smCurveEditRefine_fm;
+
                     b_addthiscurve = true;
                     if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 
@@ -1738,8 +1749,9 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 	}
 
      // For curve refine, ZJL 110905
-     else if (selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine || selectMode == smCurveDirectionInter || smCurveRefine_fm ||
-              selectMode == smCurveMarkerLists_fm || smCurveCreateMarkerGD || smCurveCreateTest)
+     else if (selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine ||
+          selectMode == smCurveEditRefine_fm || selectMode == smCurveDirectionInter || selectMode == smCurveRefine_fm ||
+          selectMode == smCurveMarkerLists_fm || selectMode == smCurveCreateMarkerGD || selectMode == smCurveCreateTest)
      {
           _appendMarkerPos(x,y);
           if (b_move)
@@ -1762,7 +1774,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     vector <XYZ> loc_vec0;
                     loc_vec0.clear();
                     solveCurveCenterV2(loc_vec_input, loc_vec0, 0);
-                    refineMode = smCurveCreate1; // mean shift
+                    refineMode = smCurveRefine_ms; // mean shift
                     selectMode = smCurveRefineLast; // switch to smCurveRefineLast
                }
                else if(selectMode == smCurveRefine_fm)
@@ -1775,8 +1787,18 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     refineMode = smCurveRefine_fm;
                     selectMode = smCurveRefineLast; // switch to smCurveRefineLast for refine mode
                }
-               else if (selectMode == smCurveRefineLast || selectMode == smCurveEditRefine )
+               else if (selectMode == smCurveRefineLast)
                {
+                    solveCurveRefineLast();
+               }
+               else if (selectMode == smCurveEditRefine ) // edit with mean shift
+               {
+                    refineMode = smCurveRefine_ms;
+                    solveCurveRefineLast();
+               }
+               else if (selectMode == smCurveEditRefine_fm ) // edit with fm
+               {
+                    refineMode = smCurveRefine_fm;
                     solveCurveRefineLast();
                }
                else if(selectMode == smCurveDirectionInter)
@@ -1948,7 +1970,7 @@ int Renderer_gl1::hitPen(int x, int y)
 	if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 ||
           // for curve refinement, 110831 ZJL
           selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine ||
-          selectMode == smCurveDirectionInter || selectMode == smCurveMarkerLists_fm)
+          selectMode == smCurveEditRefine_fm || selectMode == smCurveDirectionInter || selectMode == smCurveMarkerLists_fm)
 	{
 		qDebug("\t track-start ( %i, %i ) to define Curve", x,y);
 
@@ -1998,9 +2020,9 @@ int Renderer_gl1::hitPen(int x, int y)
 			//qDebug("\t %i clicks to solve Marker", listMarkerPos.size());
 
 			if (selectMode == smMarkerCreate1)
-				solveMarkerCenter(); //////////
+                    solveMarkerCenter(); //////////
 			else
-				solveMarkerViews(); //////////
+                    solveMarkerViews(); //////////
 
 			listMarkerPos.clear();
 			if (selectMode != smMarkerCreate1) // make 1-click continue selected mode
