@@ -1161,64 +1161,69 @@ v3d_uint8 * ScreenPatternAnnotator::create16Color8BitLUT()
             if (i==0) {
                 lut16[index]    = 0;
                 lut16[index+256]= 0;
-                lut16[index+512]= 0;
+                lut16[index+512]= 0 + ((171*j)/16);
             } else if (i==1) {
                 lut16[index]    = 1;
                 lut16[index+256]= 1;
-                lut16[index+512]= 171;
+                lut16[index+512]= 171 + (((224-171)*j)/16);
             } else if (i==2) {
                 lut16[index]    = 1;
-                lut16[index+256]= 1;
+                lut16[index+256]= 1 + (((110-1)*j)/16);
                 lut16[index+512]= 224;
             } else if (i==3) {
                 lut16[index]    = 0;
-                lut16[index+256]= 110;
+                lut16[index+256]= 110 + (((171-110)*j)/16);
                 lut16[index+512]= 255;
             } else if (i==4) {
                 lut16[index]    = 1;
-                lut16[index+256]= 171;
+                lut16[index+256]= 171 + (((224-171)*j)/16);
                 lut16[index+512]= 254;
             } else if (i==5) {
                 lut16[index]    = 1;
                 lut16[index+256]= 224;
-                lut16[index+512]= 254;
+                lut16[index+512]= 254 - (((254-1)*j)/16);
             } else if (i==6) {
-                lut16[index]    = 1;
+                lut16[index]    = 1 + (((190-1)*j)/16);
                 lut16[index+256]= 254;
                 lut16[index+512]= 1;
             } else if (i==7) {
-                lut16[index]    = 190;
+                lut16[index]    = 190 + (((255-190)*j)/16);
                 lut16[index+256]= 255;
                 lut16[index+512]= 0;
             } else if (i==8) {
                 lut16[index]    = 255;
-                lut16[index+256]= 255;
+                lut16[index+256]= 255 - (((255-224)*j)/16);
                 lut16[index+512]= 0;
             } else if (i==9) {
                 lut16[index]    = 255;
-                lut16[index+256]= 224;
+                lut16[index+256]= 224 - (((224-141)*j)/16);
                 lut16[index+512]= 0;
             } else if (i==10) {
-                lut16[index]    = 255;
-                lut16[index+256]= 141;
+                lut16[index]    = 255 - (((255-250)*j)/16);
+                lut16[index+256]= 141 - (((141-94)*j)/16);
                 lut16[index+512]= 0;
             } else if (i==11) {
-                lut16[index]    = 250;
-                lut16[index+256]= 94;
+                lut16[index]    = 250 - (((250-245)*j)/16);
+                lut16[index+256]= 94 - (((94-0)*j)/16);
                 lut16[index+512]= 0;
             } else if (i==12) {
                 lut16[index]    = 245;
                 lut16[index+256]= 0;
-                lut16[index+512]= 0;
+                lut16[index+512]= 0 + (((185-0)*j)/16);
             } else if (i==13) {
-                lut16[index]    = 245;
-                lut16[index+256]= 0;
-                lut16[index+512]= 185;
+                lut16[index]    = 245 - (((245-222)*j)/16);
+                lut16[index+256]= 0 + (((180-0)*j)/16);
+                lut16[index+512]= 185 + (((222-185)*j)/16);
             } else if (i==14) {
-                lut16[index]    = 222;
-                lut16[index+256]= 180;
-                lut16[index+512]= 222;
+                lut16[index]    = 222 + (((237-222)*j)/16);
+                lut16[index+256]= 180 + (((215-180)*j)/16);
+                lut16[index+512]= 222 + (((237-222)*j)/16);
             } else if (i==15) {
+                lut16[index]    = 237 + (((255-237)*j)/16);
+                lut16[index+256]= 215 + (((255-215)*j)/16);
+                lut16[index+512]= 237 + (((255-237)*j)/16);
+            }
+            if (index==255) {
                 lut16[index]    = 255;
                 lut16[index+256]= 255;
                 lut16[index+512]= 255;
