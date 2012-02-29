@@ -2541,9 +2541,9 @@ void XFormView::drawPixmapType(QPainter *painter)
 		// setPen to draw solid lines
 		painter->setPen(QPen(QColor(255, 255, 255, alpha), 3, Qt::SolidLine, Qt::FlatCap, Qt::BevelJoin));
 		painter->setBrush(Qt::NoBrush);
-		// determin the pos of mapview win
+		// determin the size of mapview win
 		int mapwinWidth, mapwinHeight;
-		mapwinWidth = disp_width/5;
+		mapwinWidth = (int)(disp_width/5.0 + 0.5);
 		if (mapwinWidth<10)
 		{
 			mapwinWidth=10;
@@ -2552,13 +2552,12 @@ void XFormView::drawPixmapType(QPainter *painter)
 		{
 			mapwinWidth=100;
 		}
-		mapwinHeight = mapwinWidth*disp_height/disp_width;
+		mapwinHeight = (int)(mapwinWidth* ((float)disp_height/disp_width) + 0.5);
 
+          // draw mapview win
 		if (m_scale > 1)
 		{
-			//painter->setOpacity(0.5);
-			//painter->fillRect(disp_width-mapwinWidth, disp_height-mapwinHeight, mapwinWidth, mapwinHeight, QColor(255, 255, 255, alpha));
-			painter->setOpacity(1.0);
+               painter->setOpacity(1.0);
                switch(Ptype)
                {
                     case imgPlaneZ: // xy_view
@@ -2577,26 +2576,23 @@ void XFormView::drawPixmapType(QPainter *painter)
 		}
 
 		// draw scale bar
-          if(m_scale > 1)
-          {
-               painter->setPen(QPen(QColor(255, 255, 255, alpha), 1, Qt::SolidLine, Qt::FlatCap, Qt::BevelJoin));
-               painter->setBrush(Qt::NoBrush);
-               painter->setOpacity(1.0);
+          painter->setPen(QPen(QColor(255, 255, 255, alpha), 1, Qt::SolidLine, Qt::FlatCap, Qt::BevelJoin));
+          painter->setBrush(Qt::NoBrush);
+          painter->setOpacity(1.0);
 
-               painter->drawLine(10, 15, 15, 15);
-               painter->drawRect(10, 15, 1, 30);
-               painter->drawLine(10, 45, 15, 45);
+          painter->drawLine(10, 15, 15, 15);
+          painter->drawRect(10, 15, 1, 30);
+          painter->drawLine(10, 45, 15, 45);
 
-               // draw scale text: 30/m_scale
-               float disp_num=30.0/m_scale;
-               painter->drawText(12, 33, QString::number(disp_num, 'f', 2));
-          }
+          // draw scale text: 30/m_scale
+          float disp_num=30.0/m_scale;
+          painter->drawText(12, 33, QString::number(disp_num, 'f', 2));
 
 		// draw the inner navigation window
 		int navwinWidth, navwinHeight;
 		float navwinScale = m_scale;
-		navwinWidth = mapwinWidth/navwinScale;
-		navwinHeight = navwinWidth*mapwinHeight/mapwinWidth;
+		navwinWidth =int(mapwinWidth/navwinScale);
+		navwinHeight = int(navwinWidth*mapwinHeight/(float)mapwinWidth + 0.5);
 
 		int navstartX, navstartY;
 		QPointF centerMov = (center-curDisplayCenter_old)*mapwinWidth/(float)(disp_width * m_scale);
@@ -2604,16 +2600,16 @@ void XFormView::drawPixmapType(QPainter *painter)
           switch(Ptype)
 		{
 			case imgPlaneZ: // xy_view
-                    navstartX = disp_width - mapwinWidth/2.0 - navwinWidth/2.0 + centerMov.x();
-                    navstartY = disp_height - mapwinHeight/2.0 - navwinHeight/2.0 + centerMov.y();
+                    navstartX = int(disp_width - mapwinWidth/2.0 - navwinWidth/2.0 + centerMov.x() + 0.5);
+                    navstartY = int(disp_height - mapwinHeight/2.0 - navwinHeight/2.0 + centerMov.y() + 0.5);
 				break;
                case imgPlaneY: // zx_view
-                    navstartX = disp_width - mapwinWidth/2.0 - navwinWidth/2.0 + centerMov.x();
-                    navstartY =  mapwinHeight/2.0 - navwinHeight/2.0 + centerMov.y();
+                    navstartX = int(disp_width - mapwinWidth/2.0 - navwinWidth/2.0 + centerMov.x() + 0.5);
+                    navstartY = int(mapwinHeight/2.0 - navwinHeight/2.0 + centerMov.y() + 0.5);
                     break;
                case imgPlaneX: // yz_view
-                    navstartX =  mapwinWidth/2.0 - navwinWidth/2.0 + centerMov.x();
-                    navstartY = disp_height - mapwinHeight/2.0 - navwinHeight/2.0 + centerMov.y();
+                    navstartX = int(mapwinWidth/2.0 - navwinWidth/2.0 + centerMov.x() + 0.5);
+                    navstartY = int(disp_height - mapwinHeight/2.0 - navwinHeight/2.0 + centerMov.y() + 0.5);
                     break;
                default:
                     break;
