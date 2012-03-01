@@ -446,11 +446,11 @@ void Renderer_gl1::paint()
 	bShowCSline = bShowAxes;
 	bShowFSline = bShowBoundingBox;
 
-        prepareVol();
+     prepareVol();
 
-        if (!b_renderTextureLast) {
-            renderVol();
-        }
+     if (!b_renderTextureLast) {
+          renderVol();
+     }
 
 	if (sShowMarkers>0 || sShowSurfObjects>0)
 	{

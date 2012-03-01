@@ -154,29 +154,25 @@ void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector
                          }else
                          {
                               // to see whether this is the right loc by comparing mean+sdev
-                              if(selectMode==smCurveDirectionInter)
+                              XYZ loci = pb;
+
+                              // check if pb is inside line seg of(loc0,loc1)
+                              // confine pb inside (loc0,loc1), if outside, then use locc directly
+                              if( !withinLineSegCheck( loc0, loc1, loci ) )
                               {
-                                   XYZ loci = pb;
-
-                                   // check if pb is inside line seg of(loc0,loc1)
-                                   // confine pb inside (loc0,loc1), if outside, then use locc directly
-                                   if( !withinLineSegCheck( loc0, loc1, loci ) )
-                                   {
-                                        // pb is outside (loc0,loc), so search in (loc0,loc1)
-                                        loc=getCenterOfLineProfile(loc0, loc1, clipplane, chno);
-                                        //addMarker(loc); // for comparison purpose, delete it later
-                                   }else
-                                   {
-                                        // search loc within a smaller ranger around loci
-                                        XYZ v_1_0 = loc1-loc0;
-                                        float length = dist_L2(loc0, loc1);
-                                        float ranget = length/5.0;
-                                        XYZ D = v_1_0; normalize(D);
-                                        loc0 = loci - D*(ranget);
-                                        loc1 = loci + D*(ranget);
-                                        loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
-                                   }
-
+                                   // pb is outside (loc0,loc), so search in (loc0,loc1)
+                                   loc=getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+                                   //addMarker(loc); // for comparison purpose, delete it later
+                              }else
+                              {
+                                   // search loc within a smaller ranger around loci
+                                   XYZ v_1_0 = loc1-loc0;
+                                   float length = dist_L2(loc0, loc1);
+                                   float ranget = length/5.0;
+                                   XYZ D = v_1_0; normalize(D);
+                                   loc0 = loci - D*(ranget);
+                                   loc1 = loci + D*(ranget);
+                                   loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
                               }
                          }
 

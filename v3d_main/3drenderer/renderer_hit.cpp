@@ -1837,10 +1837,13 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     if (!curdir.exists())
                          curdir.mkdir(testOutputDir);
 
-                    QString anofilename = testOutputDir + "/" + fname + "_curveTest.ano";
+                    QString strokeid = QString::number(testStrokeID);
+                    testStrokeID++;
+
+                    QString anofilename = testOutputDir + "/" + strokeid + "_" + fname + "_curveTest.ano";
                     FILE *fp;
-                    if(!bTestCurveBegin)
-                    {
+                    // if(!bTestCurveBegin)
+                    // {
                          bTestCurveBegin=true;
                          fp=fopen(anofilename.toStdString().c_str(), "wt"); // open a new empty file
                          if (!fp)
@@ -1851,24 +1854,23 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                          // write file name
                          QString swcimg = "../" + pathinfo.fileName();
                          fprintf(fp, "GRAYIMG=%s\n", swcimg.toStdString().c_str());
-                    } else
-                    {
-                         fp=fopen(anofilename.toStdString().c_str(), "at"); // open and append
-                         if (!fp)
-                         {
-                              v3d_msg(QString("Fail to open file %1 to write.").arg(anofilename));
-                              return 1;
-                         }
-                    }
+                    // } else
+                    // {
+                    //      fp=fopen(anofilename.toStdString().c_str(), "at"); // open and append
+                    //      if (!fp)
+                    //      {
+                    //           v3d_msg(QString("Fail to open file %1 to write.").arg(anofilename));
+                    //           return 1;
+                    //      }
+                    // } // end dir selection
 
-                    // end dir selection
-                    QString strokeid = QString::number(testStrokeID);
-                    testStrokeID++;
+
 
                     // using two marker lists for fast marching to get a curve
                     vector <XYZ> loc_vec_input;
                     vector <XYZ> loc_vec0;
                     loc_vec0.clear();
+                    selectMode = smCurveMarkerLists_fm;
                     solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
 
                     // Save to a file
@@ -1879,6 +1881,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     fprintf(fp, "SWCFILE=%s\n", filenameml.toStdString().c_str());
 
                     // curve from mean shift
+                    loc_vec_input.clear();
+                    selectMode = smCurveCreate1;
                     solveCurveCenter(loc_vec_input);
                     QString filenamecc=strokeid+ "_MeanShift"+".swc";
                     QString filenamecc_ab=testOutputDir + "/" +filenamecc ;
