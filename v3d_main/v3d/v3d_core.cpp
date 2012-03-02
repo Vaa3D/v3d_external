@@ -2580,13 +2580,14 @@ void XFormView::drawPixmapType(QPainter *painter)
           painter->setBrush(Qt::NoBrush);
           painter->setOpacity(1.0);
 
-          painter->drawLine(10, 15, 15, 15);
-          painter->drawRect(10, 15, 1, 30);
-          painter->drawLine(10, 45, 15, 45);
+          painter->drawLine(9, 14, 15, 15);
+          //painter->drawRect(10, 15, 1, 30);
+		painter->drawLine(10, 15, 10, 45);
+          painter->drawLine(9, 46, 15, 45);
 
           // draw scale text: 30/m_scale
           float disp_num=30.0/m_scale;
-          painter->drawText(12, 33, QString::number(disp_num, 'f', 2));
+          painter->drawText(12, 33, QString::number(disp_num, 'f', 1));
 
 		// draw the inner navigation window
 		int navwinWidth, navwinHeight;
