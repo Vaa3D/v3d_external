@@ -1155,7 +1155,107 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                 QMessageBox::warning(0, "warning: fail to create window", "You fail to open a new window for the specified image. The file may have certain problem, or is simply too big but you don't have enough memory.");
                 v3d_msg(QString("Fail to create window for the file [%1]\n").arg(fileName));
             }
-        }
+        }/*else if (curfile_info.suffix().toUpper()=="HRAW") // For openning hierarchical data from large data set. ZJL 20120302 
+        {
+			QString hraw_prefix = "test";
+			try
+            {
+                size_t start_t = clock();
+				
+                //XFormWidget *child = createMdiChild();
+				QString basename="./"+curfile_info.completeBaseName();
+				string prefix = basename.toStdString(); 
+				ImageMapView mapview;
+				mapview.setPara(prefix, L+l, M+m, N+n, l, m, n);
+				
+				unsigned char * outimg1d = 0; 
+				long x0 = 10, y0 = 20, z0 = 65;
+				V3DLONG outsz[4] = {100, 280, 51, 1};
+				mapview.getImage(2, outimg1d, x0, y0, z0, outsz[0], outsz[1], outsz[2]);
+				
+				
+				XFormWidget *child = newImageWindow(tr("Test image"));
+				
+				Image4DSimple *p4DImage = new Image4DSimple();
+				
+				p4DImage->setData(outimg1d, sz[0], sz[1], sz[2], sz[3]);
+
+				
+				My4DImage *pmy4dimg= new My4DImage();
+				pmy4dimg->setNewImageData(outimg1d, outsz[0], outsz[1], outsz[2] 1, V3D_UINT8); //V3DLONG nszt=-1, TimePackType tpk=TIME_PACK_NONE);//nszt==-1 will not reset the ntimepoints and pack type
+				
+				child->setImgData(imgPlaneX, pmy4dimg, colorGray);//(ImagePlaneDisplayType ptype, My4DImage * pdata, ImageDisplayColorType ctype);
+				child->setImgData(imgPlaneY, pmy4dimg, colorGray);//(ImagePlaneDisplayType ptype, My4DImage * pdata, ImageDisplayColorType ctype);
+				child->setImgData(imgPlaneZ, pmy4dimg, colorGray);//(ImagePlaneDisplayType ptype, My4DImage * pdata, ImageDisplayColorType ctype);
+				
+				if (b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer))
+				{
+					child->doImage3DView();
+				}
+				
+				size_t end_t = clock();
+				qDebug()<<"time consume ..."<<end_t-start_t;
+
+				
+                if (child->loadFile(fileName))
+                {
+                    if(!child) return;
+                    if(!child->getImageData()) return;
+					
+					
+                    //if(child->getValidZslice()<child->getImageData()->getZDim()-1) return; // avoid crash when the child is closed by user, Dec 29, 2010 by YuY
+                    //bug!!! by PHC. This is a very bad bug. 2011-02-09. this makes all subsequent operations unable to finish. should be disabled!!.
+					
+					
+                    statusBar()->showMessage(QString("File [%1] loaded").arg(fileName), 2000);
+					
+                    if (global_setting.b_autoConvert2_8bit)
+                    {
+                        if (global_setting.default_rightshift_bits<0) //when set as -1 or other <0 values, then invoke the dialog.
+                        {
+                            if (child->getImageData()->getDatatype()==V3D_UINT16)
+                                child->popupImageProcessingDialog(tr(" -- convert 16bit image to 8 bit"));
+                            else if (child->getImageData()->getDatatype()==V3D_FLOAT32)
+                                child->popupImageProcessingDialog(tr(" -- convert 32bit (single-precision float) image to 8 bit"));
+                        }
+                        else //otherwise do the conversion directly
+                        {
+                            if (child->getImageData()->getDatatype()==V3D_UINT16)
+                                child->getImageData()->proj_general_convert16bit_to_8bit(global_setting.default_rightshift_bits);
+                            else if (child->getImageData()->getDatatype()==V3D_FLOAT32)
+                                child->getImageData()->proj_general_convert32bit_to_8bit(global_setting.default_rightshift_bits);
+                        }
+                    }
+					
+                    if (global_setting.b_yaxis_up)
+                    {
+                        child->getImageData()->flip(axis_y);
+                    }
+					
+                    child->show();
+                    //workspace->cascade(); //080821 //110805, by PHC, since RZC claims the resize MDI works now, so this should not be needed.
+					
+                   
+					
+                    if (b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer))
+                    {
+                        child->doImage3DView();
+                    }
+					
+                    size_t end_t = clock();
+                    qDebug()<<"time consume ..."<<end_t-start_t;
+                }
+                else
+                {
+                    child->close();
+                }
+            }
+            catch(...)
+            {
+                QMessageBox::warning(0, "warning: fail to create window", "You fail to open a new window for the specified image. The file may have certain problem, or is simply too big but you don't have enough memory.");
+                v3d_msg(QString("Fail to create window for the file [%1]\n").arg(fileName));
+            }
+		}*/ // end hraw
         else // changed by YuY Nov. 19, 2010. Msg corrected by PHC, 2011-06-04
         {
             v3d_msg(QString("The file [%1] cannot be opened properly! Check the data type or file extension; or use the special Vaa3D file IO plugin (e.g. BioFormat plugin, etc); or convert the file format to something Vaa3D can read (e.g. a standard TIF file).").arg(fileName), 1);

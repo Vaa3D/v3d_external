@@ -1901,13 +1901,13 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     // save to ano
                     fprintf(fp, "SWCFILE=%s\n", filenamedi.toStdString().c_str());
 
-                    if(listCurveMarkerPool.size()<2)
+                    if(listCurveMarkerPool.size() > 2)
                     {
-                         QMessageBox::question(0, "", "You need to create marker pool before hand to test marker \
-                             based curve creation methods by FM and GD. Marker pool based curve creation methods by FM and GD will not be tested this time!", QMessageBox::Ok);
-                    }
-                    else
-                    {
+                         // QMessageBox::question(0, "", "You need to create marker pool before hand to test marker \
+                    //          based curve creation methods by FM and GD. Marker pool based curve creation methods by FM and GD will not be tested this time!", QMessageBox::Ok);
+                    // }
+                    // else
+                    // {
                          // curve from FM
                          selectMode = smCurveMarkerPool_fm;
                          solveCurveFromMarkersFastMarching();
