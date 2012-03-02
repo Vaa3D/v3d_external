@@ -1470,28 +1470,28 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 
      if(selectMode == smCurveMarkerLists_fm || selectMode == smCurveRefine_fm)
      {
-          N=loc_vec.size();
-          int NS = list_listCurvePos.at(index).size();
-          if(N>3*NS)
-          {
-               if (QMessageBox::question(0, "", "The created curve may not correct. Do you want to continue create curve?", QMessageBox::Yes, QMessageBox::No)
-                    == QMessageBox::Yes)
-               {
-                    if (b_addthiscurve)
-                    {
-                         addCurveSWC(loc_vec, chno);
-                         // used to convert loc_vec to NeuronTree and save SWC in testing
-                         vecToNeuronTree(testNeuronTree, loc_vec);
-                    }
-                    else
-                    {
-                         b_addthiscurve = true;
-                         endSelectMode();
-                    }
+          // N=loc_vec.size();
+          // int NS = list_listCurvePos.at(index).size();
+          // if(N>8*NS)
+          // {
+          //      if (QMessageBox::question(0, "", "The created curve may not correct. Do you want to continue create curve?", QMessageBox::Yes, QMessageBox::No)
+          //           == QMessageBox::Yes)
+          //      {
+          //           if (b_addthiscurve)
+          //           {
+          //                addCurveSWC(loc_vec, chno);
+          //                // used to convert loc_vec to NeuronTree and save SWC in testing
+          //                vecToNeuronTree(testNeuronTree, loc_vec);
+          //           }
+          //           else
+          //           {
+          //                b_addthiscurve = true;
+          //                endSelectMode();
+          //           }
 
-               }
-          }
-          else
+          //      }
+          // }
+          // else
           {
                if (b_addthiscurve)
                {

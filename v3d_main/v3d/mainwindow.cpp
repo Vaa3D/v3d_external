@@ -1168,11 +1168,17 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 				ImageMapView mapview;
 				mapview.setPara(prefix, L+l, M+m, N+n, l, m, n);
 				
+				int L = log(8)/log(2.0);
+				int M = log(8)/log(2.0);
+				int N = log(8)/log(2.0);
+				int l = log(256)/log(2.0);
+				int m = log(128)/log(2.0);
+				int n = log(64)/log(2.0);
+				
 				unsigned char * outimg1d = 0; 
 				long x0 = 10, y0 = 20, z0 = 65;
 				V3DLONG outsz[4] = {100, 280, 51, 1};
 				mapview.getImage(2, outimg1d, x0, y0, z0, outsz[0], outsz[1], outsz[2]);
-				
 				
 				XFormWidget *child = newImageWindow(tr("Test image"));
 				
@@ -1255,7 +1261,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                 QMessageBox::warning(0, "warning: fail to create window", "You fail to open a new window for the specified image. The file may have certain problem, or is simply too big but you don't have enough memory.");
                 v3d_msg(QString("Fail to create window for the file [%1]\n").arg(fileName));
             }
-		}*/ // end hraw
+		} */// end hraw
         else // changed by YuY Nov. 19, 2010. Msg corrected by PHC, 2011-06-04
         {
             v3d_msg(QString("The file [%1] cannot be opened properly! Check the data type or file extension; or use the special Vaa3D file IO plugin (e.g. BioFormat plugin, etc); or convert the file format to something Vaa3D can read (e.g. a standard TIF file).").arg(fileName), 1);
