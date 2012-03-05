@@ -2586,7 +2586,8 @@ void XFormView::drawPixmapType(QPainter *painter)
           painter->drawLine(9, 46, 15, 45);
 
           // draw scale text: 30/m_scale
-          float disp_num=30.0/m_scale;
+          double zoomf = imgData->getXWidget()->disp_zoom; // zoom factor
+          float disp_num=30.0/(m_scale * zoomf);
           painter->drawText(12, 33, QString::number(disp_num, 'f', 1));
 
 		// draw the inner navigation window
