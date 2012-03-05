@@ -121,7 +121,8 @@ bool is3DviewerFunc(char *funcname)
 			(string(funcname) == "v3dsetCS") ||
 			(string(funcname) == "v3dsetClip0") ||
 			(string(funcname) == "v3dsetClip1") ||
-			(string(funcname) == "v3dlookAlong") );
+			(string(funcname) == "v3dlookAlong") ||
+            (string(funcname) == "v3dget3dvinfo") );
 
 }
 
@@ -432,7 +433,28 @@ void MainWindow::switch3dviewercontrol(V3dR_MainWindow *existing_3dviewer)
 	{
 		existing_3dviewer->getGLWidget()->modelRotation(pSoapPara->v3dmsgxyzf->x, pSoapPara->v3dmsgxyzf->y, pSoapPara->v3dmsgxyzf->z);
 	}
+    else if(string(pSoapPara->str_func) == "v3dget3dvinfo")
+	{        
+        pSoapPara->v3dmsggetinfo->xrot = existing_3dviewer->getGLWidget()->xRot();
+        pSoapPara->v3dmsggetinfo->yrot = existing_3dviewer->getGLWidget()->yRot();
+        pSoapPara->v3dmsggetinfo->zrot = existing_3dviewer->getGLWidget()->zRot();
+        
+        pSoapPara->v3dmsggetinfo->zoom = existing_3dviewer->getGLWidget()->zoom();
+        
+        pSoapPara->v3dmsggetinfo->xshift = existing_3dviewer->getGLWidget()->xShift();
+        pSoapPara->v3dmsggetinfo->yshift = existing_3dviewer->getGLWidget()->yShift();
+        pSoapPara->v3dmsggetinfo->zshift = existing_3dviewer->getGLWidget()->zShift();
+        
+        pSoapPara->v3dmsggetinfo->gotinfo = true;
+        
+	}
+    else
+    {
+        v3d_msg(QString("Unknown operation."), 1);
+        return;
+    }
 	
+    return;
 }
 
 void MainWindow::do3dfunc()
