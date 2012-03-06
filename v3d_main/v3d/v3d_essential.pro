@@ -224,6 +224,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     v3d_core.h \
     xformwidget.h \
     mainwindow.h \
+    mapview.h \
     DownloadManager.h \
     v3d_actions.h \
     v3d_commandlineparser.h \
@@ -287,6 +288,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     main.cpp \
     mainwindow.cpp \
     mainwindow_interface.cpp \
+    mapview.cpp \
     v3d_core.cpp \
     v3dimgproc_entry.cpp \
     my4dimage.cpp \

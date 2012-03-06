@@ -74,6 +74,8 @@ Sept 30, 2008: disable  open in the same window function, also add flip image fu
 
 #include "DownloadManager.h" // CMB 08-Oct-2010
 
+#include "mapview.h"
+
 #ifdef __v3d_custom_toolbar__
 #include "../custom_toolbar/v3d_custom_toolbar.h" // Hang Aug-08-2011
 #endif
@@ -406,11 +408,11 @@ void MainWindow::updateRunPlugin() //20110426 YuY
         QStringList existingPluginsList = pluginLoader->getPluginNameList();
 
         QString canonicalFilePath = QFileInfo(pluginname).canonicalFilePath();
-        if (canonicalFilePath.size()==0) 
+        if (canonicalFilePath.size()==0)
             canonicalFilePath = pluginname; //this would be the case when the partial file name is given
         else
             canonicalFilePath = QFileInfo(pluginname).fileName();
-        
+
         v3d_msg(QString("Current canonical path = [")+canonicalFilePath+"]", 0);
 
         foreach(QString qstr, existingPluginsList)
@@ -428,10 +430,10 @@ void MainWindow::updateRunPlugin() //20110426 YuY
             // try find image name contains the input string from the end
             foreach(QString qstr, existingPluginsList)
             {
-                if ( qstr.contains(canonicalFilePath) || 
+                if ( qstr.contains(canonicalFilePath) ||
                     //qstr.endsWith(canonicalFilePath) || //by PHC, 20120210
-                    //QFileInfo(qstr).fileName().endsWith(canonicalFilePath) 
-                    QFileInfo(qstr).fileName().contains(canonicalFilePath) 
+                    //QFileInfo(qstr).fileName().endsWith(canonicalFilePath)
+                    QFileInfo(qstr).fileName().contains(canonicalFilePath)
                     ) //20110429 YuY
                 {
                     v3dpluginFind = qstr;
@@ -439,7 +441,7 @@ void MainWindow::updateRunPlugin() //20110426 YuY
                 }
             }
         }
-        
+
         if (numfind<=0)
         {
             v3d_msg("Vaa3D really cannot find this plugin. Do nothing.");
@@ -805,7 +807,7 @@ V3dR_MainWindow * MainWindow::find3DViewer(QString fileName)
         // try find image name contains the input string from the end
         for (int i=0; i<list_3Dview_win.size(); i++)
         {
-            if ( list_3Dview_win.at(i)->getDataTitle().endsWith(canonicalFilePath) || 
+            if ( list_3Dview_win.at(i)->getDataTitle().endsWith(canonicalFilePath) ||
                 QFileInfo(list_3Dview_win.at(i)->getDataTitle()).fileName().endsWith(canonicalFilePath) ) //20110427 YuY
             {
                 v3dRMWFind = list_3Dview_win.at(i);
@@ -1155,113 +1157,92 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                 QMessageBox::warning(0, "warning: fail to create window", "You fail to open a new window for the specified image. The file may have certain problem, or is simply too big but you don't have enough memory.");
                 v3d_msg(QString("Fail to create window for the file [%1]\n").arg(fileName));
             }
-        }/*else if (curfile_info.suffix().toUpper()=="HRAW") // For openning hierarchical data from large data set. ZJL 20120302 
+        }
+		else if (curfile_info.suffix().toUpper()=="HRAW") // For openning hierarchical data from large data set. ZJL 20120302
         {
-			QString hraw_prefix = "test";
-			try
-            {
-                size_t start_t = clock();
-				
-                //XFormWidget *child = createMdiChild();
-				QString basename="./"+curfile_info.completeBaseName();
-				string prefix = basename.toStdString(); 
-				ImageMapView mapview;
-				mapview.setPara(prefix, L+l, M+m, N+n, l, m, n);
-				
-				int L = log(8)/log(2.0);
-				int M = log(8)/log(2.0);
-				int N = log(8)/log(2.0);
-				int l = log(256)/log(2.0);
-				int m = log(128)/log(2.0);
-				int n = log(64)/log(2.0);
-				
-				unsigned char * outimg1d = 0; 
-				long x0 = 10, y0 = 20, z0 = 65;
-				V3DLONG outsz[4] = {100, 280, 51, 1};
-				mapview.getImage(2, outimg1d, x0, y0, z0, outsz[0], outsz[1], outsz[2]);
-				
-				XFormWidget *child = newImageWindow(tr("Test image"));
-				
-				Image4DSimple *p4DImage = new Image4DSimple();
-				
-				p4DImage->setData(outimg1d, sz[0], sz[1], sz[2], sz[3]);
+			QString basename = curfile_info.baseName();
+			
+			QString hraw_prefix = curfile_info.absolutePath() + "/" + basename.left(basename.indexOf(".")); // before the first "." 
+			
+			string prefix = hraw_prefix.toStdString();
+			//string prefix ="/Users/zhouj/work/v3d_data/gaussian_ball/test";
+			
+             try
+             {
+                  size_t start_t = clock();
 
-				
-				My4DImage *pmy4dimg= new My4DImage();
-				pmy4dimg->setNewImageData(outimg1d, outsz[0], outsz[1], outsz[2] 1, V3D_UINT8); //V3DLONG nszt=-1, TimePackType tpk=TIME_PACK_NONE);//nszt==-1 will not reset the ntimepoints and pack type
-				
-				child->setImgData(imgPlaneX, pmy4dimg, colorGray);//(ImagePlaneDisplayType ptype, My4DImage * pdata, ImageDisplayColorType ctype);
-				child->setImgData(imgPlaneY, pmy4dimg, colorGray);//(ImagePlaneDisplayType ptype, My4DImage * pdata, ImageDisplayColorType ctype);
-				child->setImgData(imgPlaneZ, pmy4dimg, colorGray);//(ImagePlaneDisplayType ptype, My4DImage * pdata, ImageDisplayColorType ctype);
-				
-				if (b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer))
-				{
-					child->doImage3DView();
-				}
-				
-				size_t end_t = clock();
-				qDebug()<<"time consume ..."<<end_t-start_t;
+                  int L = log(8)/log(2.0);
+                  int M = log(8)/log(2.0);
+                  int N = log(8)/log(2.0);
+                  int l = log(256)/log(2.0);
+                  int m = log(128)/log(2.0);
+                  int n = log(64)/log(2.0);
 
-				
-                if (child->loadFile(fileName))
-                {
-                    if(!child) return;
-                    if(!child->getImageData()) return;
-					
-					
-                    //if(child->getValidZslice()<child->getImageData()->getZDim()-1) return; // avoid crash when the child is closed by user, Dec 29, 2010 by YuY
-                    //bug!!! by PHC. This is a very bad bug. 2011-02-09. this makes all subsequent operations unable to finish. should be disabled!!.
-					
-					
-                    statusBar()->showMessage(QString("File [%1] loaded").arg(fileName), 2000);
-					
-                    if (global_setting.b_autoConvert2_8bit)
-                    {
-                        if (global_setting.default_rightshift_bits<0) //when set as -1 or other <0 values, then invoke the dialog.
-                        {
+                  
+                  ImageMapView mapview;
+                  mapview.setPara(prefix, L+l, M+m, N+n, l, m, n);
+
+                  unsigned char * outimg1d = 0;
+				 
+                  long x0 = 0, y0 = 0, z0 = 0;
+                  V3DLONG outsz[4] = {256, 128, 64, 1};
+                  mapview.getImage(0, outimg1d, x0, y0, z0, outsz[0], outsz[1], outsz[2]);
+				 
+                  XFormWidget *child = createMdiChild();
+
+                  child->setImageData(outimg1d, outsz[0], outsz[1], outsz[2], outsz[3], V3D_UINT8);
+				 
+                  child->mypara_3Dview.image4d = child->getImageData();
+
+				 child->hraw_prefix = hraw_prefix; //for mapview control
+				 child->mapview = mapview; 
+				 
+				 child->setWindowTitle_Prefix(hraw_prefix.toAscii());
+				 child->setWindowTitle_Suffix("");
+
+				 
+                  child->reset();
+
+				 if (global_setting.b_autoConvert2_8bit)
+                  {
+                       if (global_setting.default_rightshift_bits<0) //when set as -1 or other <0 values, then invoke the dialog.
+                       {
                             if (child->getImageData()->getDatatype()==V3D_UINT16)
-                                child->popupImageProcessingDialog(tr(" -- convert 16bit image to 8 bit"));
+                                 child->popupImageProcessingDialog(tr(" -- convert 16bit image to 8 bit"));
                             else if (child->getImageData()->getDatatype()==V3D_FLOAT32)
-                                child->popupImageProcessingDialog(tr(" -- convert 32bit (single-precision float) image to 8 bit"));
-                        }
-                        else //otherwise do the conversion directly
-                        {
+                                 child->popupImageProcessingDialog(tr(" -- convert 32bit (single-precision float) image to 8 bit"));
+                       }
+                       else //otherwise do the conversion directly
+                       {
                             if (child->getImageData()->getDatatype()==V3D_UINT16)
-                                child->getImageData()->proj_general_convert16bit_to_8bit(global_setting.default_rightshift_bits);
+                                 child->getImageData()->proj_general_convert16bit_to_8bit(global_setting.default_rightshift_bits);
                             else if (child->getImageData()->getDatatype()==V3D_FLOAT32)
-                                child->getImageData()->proj_general_convert32bit_to_8bit(global_setting.default_rightshift_bits);
-                        }
-                    }
-					
-                    if (global_setting.b_yaxis_up)
-                    {
-                        child->getImageData()->flip(axis_y);
-                    }
-					
-                    child->show();
-                    //workspace->cascade(); //080821 //110805, by PHC, since RZC claims the resize MDI works now, so this should not be needed.
-					
-                   
-					
-                    if (b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer))
-                    {
-                        child->doImage3DView();
-                    }
-					
-                    size_t end_t = clock();
-                    qDebug()<<"time consume ..."<<end_t-start_t;
-                }
-                else
-                {
-                    child->close();
-                }
-            }
-            catch(...)
-            {
-                QMessageBox::warning(0, "warning: fail to create window", "You fail to open a new window for the specified image. The file may have certain problem, or is simply too big but you don't have enough memory.");
-                v3d_msg(QString("Fail to create window for the file [%1]\n").arg(fileName));
-            }
-		} */// end hraw
+                                 child->getImageData()->proj_general_convert32bit_to_8bit(global_setting.default_rightshift_bits);
+                       }
+                  }
+
+                  if (global_setting.b_yaxis_up)
+                  {
+                       child->getImageData()->flip(axis_y);
+                  }
+
+                  child->show();
+
+                  if (b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer))
+                  {
+                       child->doImage3DView();
+                  }
+
+                  size_t end_t = clock();
+                  qDebug()<<"time consume ..."<<end_t-start_t;
+
+             }
+             catch(...)
+             {
+                  QMessageBox::warning(0, "warning: fail to create window", "You fail to open a new window for the specified image. The file may have certain problem, or is simply too big but you don't have enough memory.");
+                  v3d_msg(QString("Fail to create window for the file [%1]\n").arg(fileName));
+             }
+        } // end hraw
         else // changed by YuY Nov. 19, 2010. Msg corrected by PHC, 2011-06-04
         {
             v3d_msg(QString("The file [%1] cannot be opened properly! Check the data type or file extension; or use the special Vaa3D file IO plugin (e.g. BioFormat plugin, etc); or convert the file format to something Vaa3D can read (e.g. a standard TIF file).").arg(fileName), 1);
@@ -1459,14 +1440,14 @@ void MainWindow::setCurrentFile(const QString &fileName)
 
     QSettings settings("HHMI", "Vaa3D");
     QStringList files = settings.value("recentFileList").toStringList();
-    
+
     QString curAddName = QFileInfo(fileName).canonicalFilePath();
     if (curAddName.isEmpty())
         curAddName = fileName;
-    
+
     files.removeAll(curAddName);
     files.prepend(curAddName);
-    
+
     while (files.size() > MaxRecentFiles)
         files.removeLast();
 

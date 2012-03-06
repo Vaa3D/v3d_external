@@ -1257,6 +1257,8 @@ XFormView::XFormView(QWidget *parent)
 {
     setAttribute(Qt::WA_MouseTracking);
 
+	hraw_prefix = QString("");
+
     Gtype = PixmapType;
     m_scale = 1.0;
 	//  m_shear = 0.0;
@@ -1810,28 +1812,53 @@ void XFormView::mouseMoveEvent (QMouseEvent * e)
 	curMousePos = e->pos()/disp_scale;
 
     //090212. for panning
-	if (m_scale>1)
+	if (hraw_prefix.isEmpty())
 	{
-		if ((e->buttons() & Qt::LeftButton))
-		{
-			{
-				setCursor(myCursor); //maybe repeated set? is this necessary?
+          if (m_scale>1)
+          {
+               if ((e->buttons() & Qt::LeftButton))
+               {
+                    {
+                         setCursor(myCursor); //maybe repeated set? is this necessary?
 
-				curDisplayCenter = curDisplayCenter0 + QPointF(curMousePos.x()*disp_scale-dragStartPosition.x(), curMousePos.y()*disp_scale-dragStartPosition.y());
-				//qDebug()<<curDisplayCenter.x()<<" "<<curDisplayCenter.y();
+                         curDisplayCenter = curDisplayCenter0 + QPointF(curMousePos.x()*disp_scale-dragStartPosition.x(), curMousePos.y()*disp_scale-dragStartPosition.y());
+                         //qDebug()<<curDisplayCenter.x()<<" "<<curDisplayCenter.y();
 
-				if (curDisplayCenter.x() < (2-m_scale)*disp_width/2.0-1)
-					curDisplayCenter.setX((2-m_scale)*disp_width/2.0-1);
-				else if (curDisplayCenter.x() > m_scale*disp_width/2.0)
-					curDisplayCenter.setX(m_scale*disp_width/2.0);
+                         if (curDisplayCenter.x() < (2-m_scale)*disp_width/2.0-1)
+                              curDisplayCenter.setX((2-m_scale)*disp_width/2.0-1);
+                         else if (curDisplayCenter.x() > m_scale*disp_width/2.0)
+                              curDisplayCenter.setX(m_scale*disp_width/2.0);
 
-				if (curDisplayCenter.y() < (2-m_scale)*disp_height/2.0-1)
-					curDisplayCenter.setY((2-m_scale)*disp_height/2.0-1);
-				else if (curDisplayCenter.y() > m_scale*disp_height/2.0)
-					curDisplayCenter.setY(m_scale*disp_height/2.0);
-			}
-		}
+                         if (curDisplayCenter.y() < (2-m_scale)*disp_height/2.0-1)
+                              curDisplayCenter.setY((2-m_scale)*disp_height/2.0-1);
+                         else if (curDisplayCenter.y() > m_scale*disp_height/2.0)
+                              curDisplayCenter.setY(m_scale*disp_height/2.0);
+                    }
+               }
+          }
 	}
+     else // for mapview. ZJL 20120305
+     {
+          if ((e->buttons() & Qt::LeftButton))
+          {
+               // ImageMapView mapview;
+               // mapview.setPara(hraw_prefix.toStdString(), L+l, M+m, N+n, l, m, n);
+               // unsigned char * outimg1d = 0;
+
+               // // decide x0,y0,z0 based on mouse move
+               // long x0 = 0, y0 = 0, z0 = 0;
+               // V3DLONG outsz[4] = {256, 128, 64, 1};
+               // mapview.getImage(0, outimg1d, x0, y0, z0, outsz[0], outsz[1], outsz[2]);
+
+               // imgData = setImg;
+               // // set image data
+               // switch (Ptype)
+               // {
+               //      case imgPlaneX:
+               //           setImgData(imgPlaneX, imgData, colorRGB);
+               // }
+          }
+     }
 	update();
 }
 
@@ -2925,6 +2952,7 @@ void XFormWidget::initialize()
 {
     imgData = 0;
     openFileNameLabel = QString(""); //"/Users/hanchuanpeng/work/v3d/test1.raw"
+	hraw_prefix = QString(""); // for mapview control
 
 	mypara_3Dview.b_use_512x512x256 = true;
 	mypara_3Dview.b_still_open = false;
@@ -3740,46 +3768,52 @@ void XFormWidget::createGUI()
 	bLinkFocusViews = true;
 	bDisplayFocusCross = true;
 
-    /* Set up the data related GUI */
-    dataGroup = new QGroupBox(this);
-    dataGroup->setTitle("Image data");
+     /* Set up the data related GUI */
+     dataGroup = new QGroupBox(this);
+     dataGroup->setTitle("Image data");
 
-    viewGroup = new QGroupBox(dataGroup);
-    viewGroup->setTitle("Views [XY: upper-left] [ZY: upper-right] [XZ: lower-left]");
-    //viewGroup->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);
+     viewGroup = new QGroupBox(dataGroup);
+     viewGroup->setTitle("Views [XY: upper-left] [ZY: upper-right] [XZ: lower-left]");
+     //viewGroup->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);
 
-    xy_view = new XFormView(viewGroup);
+     xy_view = new XFormView(viewGroup);
 	xy_view->setImgData(imgPlaneZ, 0, colorRGB); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
-    xy_view->setFixedWidth(xy_view->get_disp_width());
-    xy_view->setFixedHeight(xy_view->get_disp_height());
-    xy_view->setFocusPolicy(Qt::ClickFocus);
+     xy_view->setFixedWidth(xy_view->get_disp_width());
+     xy_view->setFixedHeight(xy_view->get_disp_height());
+     xy_view->setFocusPolicy(Qt::ClickFocus);
+	xy_view->hraw_prefix = hraw_prefix; //for mapview control
+     xy_view->mapview = mapview;
 
-    yz_view = new XFormView(viewGroup);
+     yz_view = new XFormView(viewGroup);
 	yz_view->setImgData(imgPlaneX, 0, colorRGB); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
-    yz_view->setFixedWidth(yz_view->get_disp_width());
-    yz_view->setFixedHeight(yz_view->get_disp_height());
-    yz_view->setFocusPolicy(Qt::ClickFocus);
+     yz_view->setFixedWidth(yz_view->get_disp_width());
+     yz_view->setFixedHeight(yz_view->get_disp_height());
+     yz_view->setFocusPolicy(Qt::ClickFocus);
+	yz_view->hraw_prefix = hraw_prefix;
+     yz_view->mapview = mapview;
 
-    zx_view = new XFormView(viewGroup);
+     zx_view = new XFormView(viewGroup);
 	zx_view->setImgData(imgPlaneY, 0, colorRGB); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
-    zx_view->setFixedWidth(zx_view->get_disp_width());
-    zx_view->setFixedHeight(zx_view->get_disp_height());
-    zx_view->setFocusPolicy(Qt::ClickFocus);
+     zx_view->setFixedWidth(zx_view->get_disp_width());
+     zx_view->setFixedHeight(zx_view->get_disp_height());
+     zx_view->setFocusPolicy(Qt::ClickFocus);
+	zx_view->hraw_prefix = hraw_prefix;
+     zx_view->mapview = mapview;
 
 	//    viewGroup->setFixedWidth(xy_view->frameGeometry().width()+yz_view->frameGeometry().width());
 
-    // information group
+     // information group
 
-    infoGroup = new QGroupBox(dataGroup);
-    infoGroup->setTitle("Information of your selections");
+     infoGroup = new QGroupBox(dataGroup);
+     infoGroup->setTitle("Information of your selections");
 
-    focusPointFeatureWidget = new MyTextBrowser(infoGroup);
+     focusPointFeatureWidget = new MyTextBrowser(infoGroup);
 	//	focusPointFeatureWidget->setFixedWidth(qMax(200, xy_view->width()+yz_view->width()));
 	focusPointFeatureWidget->setFixedWidth(qMax(200, xy_view->get_disp_width()+yz_view->get_disp_width()));
 	//focusPointFeatureWidget->setFixedHeight(50);
 	//focusPointFeatureWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
 
-    //viewGroup->setFixedWidth(xy_view->width()+yz_view->width()+10);
+     //viewGroup->setFixedWidth(xy_view->width()+yz_view->width()+10);
 	//    viewGroup->setMinimumSize(xy_view->width()+yz_view->width(), xy_view->height()+zx_view->height()+50);
 	//    viewGroup->setFixedWidth(xy_view->width()+yz_view->width()+10);
 
@@ -4045,6 +4079,8 @@ void XFormWidget::updateDataRelatedGUI()
 		xy_view->setFixedWidth(xy_view->get_disp_width());
 		xy_view->setFixedHeight(xy_view->get_disp_height());
 		imgData->set_xy_view(xy_view);
+		xy_view->hraw_prefix = hraw_prefix; // for mapview control
+          xy_view->mapview = mapview;
 
 		//
 		yz_view->setImgData(imgPlaneX, imgData, Ctype);
@@ -4063,6 +4099,8 @@ void XFormWidget::updateDataRelatedGUI()
 		yz_view->setFixedWidth(yz_view->get_disp_width());
 		yz_view->setFixedHeight(yz_view->get_disp_height());
 		imgData->set_yz_view(yz_view);
+		yz_view->hraw_prefix = hraw_prefix; // for mapview control
+          yz_view->mapview = mapview;
 
 		//
 		zx_view->setImgData(imgPlaneY, imgData, Ctype);
@@ -4081,7 +4119,8 @@ void XFormWidget::updateDataRelatedGUI()
 		zx_view->setFixedWidth(zx_view->get_disp_width());
 		zx_view->setFixedHeight(zx_view->get_disp_height());
 		imgData->set_zx_view(zx_view);
-
+		zx_view->hraw_prefix = hraw_prefix; // for mapview control
+          zx_view->mapview = mapview;
 
 		if (b_use_dispzoom)
 		{

@@ -41,6 +41,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../basic_c_fun/volimg_proc.h"
 //#include "../3drenderer/v3dr_common.h"
 
+#include "mapview.h"
+
 class V3dR_MainWindow;
 class V3dR_GLWidget;
 class MainWindow;
@@ -201,6 +203,9 @@ public:
 	bool b_use_dispzoom;
 
 	bool bDispMarkerLabel;
+
+     QString hraw_prefix; // for mapview control
+     ImageMapView mapview; // mapview
 
 protected:
 	virtual void changeEvent(QEvent* e);    //110802 RZC

@@ -83,6 +83,8 @@ Jan 28-30, 2010: PHC. further adjusting codes for v2.440 and above
 
 #include "colormap.h"
 
+#include "mapview.h"
+
 #include "arthurwidgets.h"
 
 #include "../cellseg/template_matching_seg.h"
@@ -518,6 +520,8 @@ protected:
 
 public:
 	QPolygon roiPolygon;//061009
+	QString hraw_prefix; // for mapview control. ZJL 20120305
+     ImageMapView mapview; // mapview data. ZJL 20120305
 
 private:
     enum XFormType { VectorType, PixmapType, TextType};
