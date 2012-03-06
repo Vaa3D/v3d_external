@@ -29,7 +29,8 @@ public:
     enum Color {
         COLOR_RED = 1,
         COLOR_GREEN = 2,
-        COLOR_BLUE = 3
+        COLOR_BLUE = 3,
+        COLOR_NC82 = 4
     };
 
     NaZStackWidget(QWidget* parent);
@@ -68,6 +69,7 @@ public slots:
     void setRedChannel();
     void setGreenChannel();
     void setBlueChannel();
+    void setNc82Channel();
     void setCurrentZSlice(int sliceNum);
     void updateROIsize(int boxSize);
     void setHDRCheckState(bool state);

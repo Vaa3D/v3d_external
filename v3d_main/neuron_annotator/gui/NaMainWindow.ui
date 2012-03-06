@@ -606,7 +606,7 @@ intensity range in the yellow search box.</string>
                              <string notr="true">color: rgb(255, 0, 0);</string>
                             </property>
                             <property name="text">
-                             <string>R</string>
+                             <string>1</string>
                             </property>
                             <property name="checkable">
                              <bool>true</bool>
@@ -634,7 +634,7 @@ intensity range in the yellow search box.</string>
                              <string notr="true">color: rgb(0, 128, 0);</string>
                             </property>
                             <property name="text">
-                             <string>G</string>
+                             <string>2</string>
                             </property>
                             <property name="checkable">
                              <bool>true</bool>
@@ -653,13 +653,32 @@ intensity range in the yellow search box.</string>
                              <string notr="true">color: rgb(0, 0, 255);</string>
                             </property>
                             <property name="text">
-                             <string>B</string>
+                             <string>3</string>
                             </property>
                             <property name="checkable">
                              <bool>true</bool>
                             </property>
                             <property name="checked">
                              <bool>false</bool>
+                            </property>
+                            <property name="autoExclusive">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QPushButton" name="HDRNc82_pushButton">
+                            <property name="enabled">
+                             <bool>false</bool>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">color: rgb(0, 0, 0);</string>
+                            </property>
+                            <property name="text">
+                             <string>nc82</string>
+                            </property>
+                            <property name="checkable">
+                             <bool>true</bool>
                             </property>
                             <property name="autoExclusive">
                              <bool>true</bool>
@@ -1433,7 +1452,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                    <item>
                     <widget class="QPushButton" name="redToggleButton">
                      <property name="text">
-                      <string>r</string>
+                      <string>1</string>
                      </property>
                      <property name="checkable">
                       <bool>true</bool>
@@ -1446,7 +1465,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                    <item>
                     <widget class="QPushButton" name="greenToggleButton">
                      <property name="text">
-                      <string>g</string>
+                      <string>2</string>
                      </property>
                      <property name="checkable">
                       <bool>true</bool>
@@ -1459,7 +1478,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
                    <item>
                     <widget class="QPushButton" name="blueToggleButton">
                      <property name="text">
-                      <string>b</string>
+                      <string>3</string>
                      </property>
                      <property name="checkable">
                       <bool>true</bool>

@@ -444,7 +444,8 @@ void NaZStackWidget::wheelEvent(QWheelEvent * e) // mouse wheel
     { // ctrl-scroll to shift HDR color/data channel
         // qDebug() << "modified scroll" << sc;
         const int min_color = COLOR_RED;
-		const int max_color = min((int)sc, (int)COLOR_BLUE);
+        // const int max_color = min((int)sc, (int)COLOR_BLUE);
+        const int max_color = (int)sc;
         if (max_color <= 1) return; // no other colors to change to
         int old_color = cur_c;
         int new_color = old_color;
@@ -902,6 +903,10 @@ void NaZStackWidget::setGreenChannel() {
 
 void NaZStackWidget::setBlueChannel() {
     setColorChannel(COLOR_BLUE);
+}
+
+void NaZStackWidget::setNc82Channel() {
+    setColorChannel(COLOR_NC82);
 }
 
 void NaZStackWidget::updateROIsize(int boxSize)

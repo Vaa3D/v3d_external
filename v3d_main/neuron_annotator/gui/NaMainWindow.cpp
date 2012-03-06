@@ -152,6 +152,8 @@ NaMainWindow::NaMainWindow()
             ui.naZStackWidget, SLOT(setGreenChannel()));
     connect(ui.HDRBlue_pushButton, SIGNAL(clicked()),
             ui.naZStackWidget, SLOT(setBlueChannel()));
+    connect(ui.HDRNc82_pushButton, SIGNAL(clicked()),
+            ui.naZStackWidget, SLOT(setNc82Channel()));
     connect(ui.naZStackWidget, SIGNAL(curColorChannelChanged(NaZStackWidget::Color)),
             this, SLOT(onHdrChannelChanged(NaZStackWidget::Color)));
     ui.naZStackWidget->setHDRCheckState(false);
@@ -583,6 +585,9 @@ void NaMainWindow::onHdrChannelChanged(NaZStackWidget::Color channel)
         break;
     case NaZStackWidget::COLOR_BLUE:
         ui.HDRBlue_pushButton->setChecked(true);
+        break;
+    case NaZStackWidget::COLOR_NC82:
+        ui.HDRNc82_pushButton->setChecked(true);
         break;
     }
 }
@@ -1184,6 +1189,7 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
         NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
         if (! volumeReader.hasReadLock()) return;
         const Image4DProxy<My4DImage>& imgProxy = volumeReader.getOriginalImageProxy();
+        const Image4DProxy<My4DImage>& refProxy = volumeReader.getReferenceImageProxy();
 
         setZRange(1, imgProxy.sz);
         // Start in middle of volume
@@ -1192,6 +1198,7 @@ void NaMainWindow::processUpdatedVolumeData() // activated by volumeData::dataCh
         ui.HDRRed_pushButton->setEnabled(imgProxy.sc > 1);
         ui.HDRGreen_pushButton->setEnabled(imgProxy.sc > 1);
         ui.HDRBlue_pushButton->setEnabled(imgProxy.sc > 2);
+        ui.HDRNc82_pushButton->setEnabled(refProxy.sc > 0);
     }
 
     {
