@@ -312,6 +312,7 @@ protected:
 
      void vecToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list);
      void getMidRandomLoc(MarkerPos pos, int chno, XYZ &mid_loc);
+     double distance_between_2lines(NeuronTree &line1, NeuronTree &line2);
 
      V3DLONG findNearestNeuronNode_Loc(XYZ &loc, NeuronTree *ptree);
 

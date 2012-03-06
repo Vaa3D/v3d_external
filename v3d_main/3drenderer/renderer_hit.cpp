@@ -1864,14 +1864,13 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     //      }
                     // } // end dir selection
 
-
-
                     // using two marker lists for fast marching to get a curve
                     vector <XYZ> loc_vec_input;
                     vector <XYZ> loc_vec0;
                     loc_vec0.clear();
                     selectMode = smCurveMarkerLists_fm;
                     solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
+                    NeuronTree tree_ml = testNeuronTree;
 
                     // Save to a file
                     QString filenameml= strokeid+ "_MarkerLists_fm"+".swc";
@@ -1884,6 +1883,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     loc_vec_input.clear();
                     selectMode = smCurveCreate1;
                     solveCurveCenter(loc_vec_input);
+                    NeuronTree tree_cc = testNeuronTree;
                     QString filenamecc=strokeid+ "_MeanShift"+".swc";
                     QString filenamecc_ab=testOutputDir + "/" +filenamecc ;
                     writeSWC_file(filenamecc_ab, testNeuronTree);
@@ -1895,22 +1895,20 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     loc_vec0.clear();
                     selectMode = smCurveDirectionInter;
                     solveCurveDirectionInter(loc_vec_input, loc_vec0, 0);
+                    NeuronTree tree_di = testNeuronTree;
                     QString filenamedi = strokeid+ "_DirInter"+".swc";
                     QString filenamedi_ab=testOutputDir + "/" +filenamedi;
                     writeSWC_file(filenamedi_ab, testNeuronTree);
                     // save to ano
                     fprintf(fp, "SWCFILE=%s\n", filenamedi.toStdString().c_str());
 
+                    NeuronTree tree_mp, tree_gd;
                     if(listCurveMarkerPool.size() > 2)
                     {
-                         // QMessageBox::question(0, "", "You need to create marker pool before hand to test marker \
-                    //          based curve creation methods by FM and GD. Marker pool based curve creation methods by FM and GD will not be tested this time!", QMessageBox::Ok);
-                    // }
-                    // else
-                    // {
                          // curve from FM
                          selectMode = smCurveMarkerPool_fm;
                          solveCurveFromMarkersFastMarching();
+                         tree_mp = testNeuronTree;
                          QString filenamemp = strokeid+ "_MarkerPool_fm"+".swc";
                          QString filenamemp_ab =testOutputDir + "/" + filenamemp;
                          writeSWC_file(filenamemp_ab, testNeuronTree);
@@ -1919,16 +1917,49 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 
                          // curve from GD
                          solveCurveFromMarkersGD(false); //boundingbox is the whole image
+                         tree_gd = testNeuronTree;
                          QString filenamegd = strokeid+ "_MarkerPool_GD"+".swc";
                          QString filenamegd_ab = testOutputDir + "/" +filenamegd;
                          writeSWC_file(filenamegd_ab, testNeuronTree);
                          // save to ano
                          fprintf(fp, "SWCFILE=%s\n", filenamegd.toStdString().c_str());
                     }
+
+                    // distance computation
+                    // for writing curve distance information
+                    QString distfilename = testOutputDir + "/" + strokeid + "_" + fname + "_Distance.txt";
+                    FILE *fpdist;
+
+                    fpdist=fopen(distfilename.toStdString().c_str(), "wt"); // open a new empty file
+                    if (!fpdist)
+                    {
+                         v3d_msg(QString("Fail to open file %1 to write.").arg(distfilename));
+                         return 1;
+                    }
+                    if(listCurveMarkerPool.size() > 2) // the ground truth is the curve from GD
+                    {
+                         // computer distance from GD-curve to other curves
+                         fprintf(fpdist, "The ground truth curve is the curve from GD method.\n");
+                         fprintf(fpdist, "Distance between curves of GD and Markerlists_fm          = %.4f\n", distance_between_2lines(tree_gd, tree_ml));
+                         fprintf(fpdist, "Distance between curves of GD and mean_shift              = %.4f\n", distance_between_2lines(tree_gd, tree_cc));
+                         fprintf(fpdist, "Distance between curves of GD and direction_intersection  = %.4f\n", distance_between_2lines(tree_gd, tree_di));
+                         fprintf(fpdist, "Distance between curves of GD and Marker_pool_fm          = %.4f\n", distance_between_2lines(tree_gd, tree_mp));
+                    }
+                    else // the ground truth is the curve from Markerlists_fm
+                    {
+                         // computer distance from GD-curve to other curves
+                         fprintf(fpdist, "The ground truth curve is the curve from Markerlists_fm.\n");
+                         fprintf(fpdist, "Distance between curves of Markerlists_fm and mean_shift              = %.4f\n", distance_between_2lines(tree_ml, tree_cc));
+                         fprintf(fpdist, "Distance between curves of Markerlists_fm and direction_intersection  = %.4f\n", distance_between_2lines(tree_ml, tree_di));
+                    }
+
+                    // clear MarkerPool for the next drawing
+                    listCurveMarkerPool.clear();
                     // continue to use smCurveCreateTest mode
                     selectMode = smCurveCreateTest;
 
                     // close file
+                    if(fpdist) fclose(fpdist);
                     if(fp) fclose(fp);
 
                }

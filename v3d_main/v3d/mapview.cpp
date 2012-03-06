@@ -1,7 +1,8 @@
 #include <iostream>
 #include <sstream>
 #include <cmath>
-#include <string>
+//#include <string>
+#include <string.h>
 
 //#include "stackutil.h"
 #include "mapview.h"

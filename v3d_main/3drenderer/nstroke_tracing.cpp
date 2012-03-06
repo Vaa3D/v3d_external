@@ -49,8 +49,9 @@
 #include "../neuron_tracing/fastmarching_linker.h"
 
 #define EPS 0.01
-
 #define PI 3.14159265
+#define MAX_DOUBLE 1.79769e+308
+#define INF 1.0e300
 
 #ifndef MIN
 #define MIN(a, b)  ( ((a)<(b))? (a) : (b) )
@@ -2045,3 +2046,79 @@ void  Renderer_gl1::getMidRandomLoc(MarkerPos pos, int chno, XYZ &mid_loc)
      mid_loc = rand_loc_vec.at(mid_index);
 
 }
+
+
+double Renderer_gl1::distance_between_2lines(NeuronTree &line1, NeuronTree &line2)
+{
+     int size1=line1.listNeuron.size();
+     int size2=line2.listNeuron.size();
+
+     if(size1==0 || size2==0) return INF;
+     double sum_dist1 = 0.0;
+     for(int i = 0; i < size1; i++)
+     {
+          NeuronSWC ns1 = line1.listNeuron.at(i);
+          XYZ loc1(ns1.x, ns1.y, ns1.z);
+          double min_dist = MAX_DOUBLE;
+          for(int j = 0; j < size2; j++)
+          {
+               NeuronSWC ns2 = line2.listNeuron.at(j);
+               XYZ loc2(ns2.x, ns2.y, ns2.z);
+               double dst = dist_L2(loc1, loc1);
+               min_dist = MIN(dst, min_dist);
+          }
+          sum_dist1 += min_dist;
+     }
+     double sum_dist2 = 0.0;
+     for(int j = 0; j < size2; j++)
+     {
+          NeuronSWC ns2 = line2.listNeuron.at(j);
+          XYZ loc2(ns2.x, ns2.y, ns2.z);
+          double min_dist = MAX_DOUBLE;
+          for(int i = 0; i < size1; i++)
+          {
+               NeuronSWC ns1 = line1.listNeuron.at(i);
+               XYZ loc1(ns1.x, ns1.y, ns1.z);
+               double dst = dist_L2(loc1, loc2);
+               min_dist = MIN(dst, min_dist);
+          }
+          sum_dist2 += min_dist;
+     }
+     return (sum_dist1/size1 + sum_dist2/size2)/2.0;
+}
+
+// // use percentage
+// double distance_between_lines1(vector<MyMarker*> & line1, vector<MyMarker*> & line2, double thresh = 2.0)
+// {
+//     if(line1.empty() || line2.empty()) return INF;
+//     double sum1 = 0.0;
+//     for(int i = 0; i < line1.size(); i++)
+//     {
+//         MyMarker * marker1 = line1[i];
+//         double min_dist = MAX_DOUBLE;
+//         for(int j = 0; j < line2.size(); j++)
+//         {
+//             MyMarker * marker2 = line2[j];
+//             double dst = dist(*marker1, *marker2);
+//             min_dist = MIN(dst, min_dist);
+//         }
+//         sum1 += (min_dist >= thresh) ? 1.0 : 0.0;
+//     }
+//     double sum2 = 0.0;
+//     for(int j = 0; j < line2.size(); j++)
+//     {
+//         MyMarker * marker2 = line2[j];
+//         double min_dist = MAX_DOUBLE;
+//         for(int i = 0; i < line1.size(); i++)
+//         {
+//             MyMarker * marker1 = line1[i];
+//             double dst = dist(*marker1, *marker2);
+//             min_dist = MIN(dst, min_dist);
+//         }
+//         sum2 += (min_dist >= thresh) ? 1.0 : 0.0;
+//     }
+//     sum1 /= line1.size();
+//     sum2 /= line2.size();
+//     return MAX(sum1, sum2);
+//     //return (sum1/line1.size() + sum2/line2.size())/2.0;
+// }
