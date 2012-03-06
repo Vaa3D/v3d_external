@@ -309,6 +309,9 @@ protected:
      void resampleCurveStrokes(int index, int chno, vector<int> &ids);
 
      bool boundingboxFromStroke(XYZ& minloc, XYZ& maxloc);
+     //Using boundingboxFromStroke() get boundingbox and then get subvol
+     void getSubVolFromStroke(double* &pSubdata, XYZ &sub_orig, V3DLONG &sub_szx, V3DLONG &sub_szy, V3DLONG &sub_szz);
+
 
      void vecToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list);
      void getMidRandomLoc(MarkerPos pos, int chno, XYZ &mid_loc);

@@ -499,8 +499,38 @@ bool Renderer_gl1::withinLineSegCheck( XYZ p1,XYZ p2,XYZ pa)
      return (colinear && within);
 }
 
-// get the control points of the primary curve
 
+// get bounding volume from a stroke
+void Renderer_gl1::getSubVolFromStroke(double* &pSubdata, XYZ &sub_orig, V3DLONG &sub_szx,
+     V3DLONG &sub_szy, V3DLONG &sub_szz)
+{
+     XYZ minloc, maxloc;
+     boundingboxFromStroke(minloc, maxloc);
+
+     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+     My4DImage* curImg = 0;
+     if (w)
+          curImg = v3dr_getImage4d(_idep);
+
+     // The data is from minloc to maxloc
+     sub_szx=abs(maxloc.x-minloc.x)+1;
+     sub_szy=abs(maxloc.y-minloc.y)+1;
+     sub_szz=abs(maxloc.z-minloc.z)+1;
+
+     sub_orig = minloc;
+
+     pSubdata = new double [sub_szx*sub_szy*sub_szz];
+     for(V3DLONG k=0; k<sub_szz; k++)
+          for(V3DLONG j=0; j<sub_szy; j++)
+               for(V3DLONG i=0; i<sub_szx; i++)
+               {
+                    V3DLONG ind = k*sub_szy*sub_szx + j*sub_szx + i;
+                    pSubdata[ind]=curImg->at(minloc.x+i, minloc.y+j, minloc.z+k);
+               }
+
+}
+
+// get the control points of the primary curve
 void Renderer_gl1::getSubVolInfo(XYZ lastloc, XYZ loc0, XYZ loc1, XYZ &sub_orig, double* &pSubdata,
                                 V3DLONG &sub_szx, V3DLONG &sub_szy, V3DLONG &sub_szz)
 {
@@ -547,8 +577,6 @@ void Renderer_gl1::getSubVolInfo(XYZ lastloc, XYZ loc0, XYZ loc1, XYZ &sub_orig,
                     V3DLONG ind = k*sub_szy*sub_szx + j*sub_szx + i;
                     pSubdata[ind]=curImg->at(i,j,k);
                }
-
-
 }
 
 
@@ -1009,6 +1037,12 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
           return ;
      }
 
+     // get subvolume from stroke for FM
+     XYZ sub_orig;
+     double* pSubdata;
+     V3DLONG sub_szx, sub_szy, sub_szz;
+     getSubVolFromStroke(pSubdata, sub_orig, sub_szx, sub_szy, sub_szz);
+
 	int N = loc_vec_input.size();
 	if (b_use_seriespointclick)
 	{
@@ -1282,7 +1316,43 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                          // using time spent on each step to decide whether the tracing in this step is acceptable.
                          // if time is over time_thresh, then break and use center method
                          // I found that the result is not so good when using this time limit
-                         fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz,0.0);// time_thresh);
+
+                         // This version uses full image as the bounding box
+                         // fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz,0.0);// time_thresh);
+
+                         // if(!outswc.empty())
+                         // {
+                         //      // the 1st loc in outswc is the last pos got in fm
+                         //      int nn = outswc.size();
+                         //      for(int j=nn-1; j>0; j-- )
+                         //      {
+                         //           XYZ locj;
+                         //           locj.x=outswc.at(j)->x;
+                         //           locj.y=outswc.at(j)->y;
+                         //           locj.z=outswc.at(j)->z;
+
+                         //           loc_vec.push_back(locj);
+
+                         //           // record the middle loc in this seg for the second fast marching
+                         //           if((nn>6)&&(j==(int)(nn/2)))
+                         //           {
+                         //                middle_vec.push_back(locj);
+                         //           }
+                         //      }
+                         //      // the last one
+                         //      loc.x = outswc.at(0)->x;
+                         //      loc.y = outswc.at(0)->y;
+                         //      loc.z = outswc.at(0)->z;
+                         // }
+                         // else
+                         // {
+                         //      loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+                         // }
+
+
+                         //====================================================
+                         // using stroke to creating a bounding box and do FM
+                         fastmarching_linker(sub_markers, tar_markers, pSubdata, outswc, sub_szx, sub_szy, sub_szz,0.0);// time_thresh);
 
                          if(!outswc.empty())
                          {
@@ -1291,9 +1361,9 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                               for(int j=nn-1; j>0; j-- )
                               {
                                    XYZ locj;
-                                   locj.x=outswc.at(j)->x;
-                                   locj.y=outswc.at(j)->y;
-                                   locj.z=outswc.at(j)->z;
+                                   locj.x=outswc.at(j)->x + sub_orig.x;
+                                   locj.y=outswc.at(j)->y + sub_orig.y;
+                                   locj.z=outswc.at(j)->z + sub_orig.z;
 
                                    loc_vec.push_back(locj);
 
@@ -1304,9 +1374,9 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                                    }
                               }
                               // the last one
-                              loc.x = outswc.at(0)->x;
-                              loc.y = outswc.at(0)->y;
-                              loc.z = outswc.at(0)->z;
+                              loc.x = outswc.at(0)->x + sub_orig.x;
+                              loc.y = outswc.at(0)->y + sub_orig.y;
+                              loc.z = outswc.at(0)->z + sub_orig.z;
                          }
                          else
                          {
@@ -1356,8 +1426,40 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
           MyMarker mloc1 = MyMarker(loc1.x, loc1.y, loc1.z);
           tar_markers.push_back(mloc1);
 
-          // call fastmarching
-          bool res = fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz, 0.0);// time_thresh);
+          // call fastmarching. This version searches the whole volume
+          // bool res = fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz, 0.0);// time_thresh);
+          // if(!res)
+          // {
+          //      loc = loc1;
+          // }
+          // else
+          // {
+          //      if(!outswc.empty())
+          //      {
+          //           // the 1st loc in outswc is the last pos got in fm
+          //           int nn = outswc.size();
+          //           for(int j=nn-1; j>0; j-- )
+          //           {
+          //                XYZ locj;
+          //                locj.x=outswc.at(j)->x;
+          //                locj.y=outswc.at(j)->y;
+          //                locj.z=outswc.at(j)->z;
+
+          //                loc_vec.push_back(locj);
+          //           }
+          //           // the last one
+          //           loc.x = outswc.at(0)->x;
+          //           loc.y = outswc.at(0)->y;
+          //           loc.z = outswc.at(0)->z;
+          //      }
+          //      else
+          //      {
+          //           loc = loc1;
+          //      }
+          // }
+
+          // this version searches the subvolume decided by the stroke bounding box
+          bool res = fastmarching_linker(sub_markers, tar_markers, pSubdata, outswc, sub_szx, sub_szy, sub_szz, 0.0);// time_thresh);
           if(!res)
           {
                loc = loc1;
@@ -1371,22 +1473,24 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                     for(int j=nn-1; j>0; j-- )
                     {
                          XYZ locj;
-                         locj.x=outswc.at(j)->x;
-                         locj.y=outswc.at(j)->y;
-                         locj.z=outswc.at(j)->z;
+                         locj.x=outswc.at(j)->x + sub_orig.x;
+                         locj.y=outswc.at(j)->y + sub_orig.y;
+                         locj.z=outswc.at(j)->z + sub_orig.z;
 
                          loc_vec.push_back(locj);
                     }
                     // the last one
-                    loc.x = outswc.at(0)->x;
-                    loc.y = outswc.at(0)->y;
-                    loc.z = outswc.at(0)->z;
+                    loc.x = outswc.at(0)->x + sub_orig.x;
+                    loc.y = outswc.at(0)->y + sub_orig.y;
+                    loc.z = outswc.at(0)->z + sub_orig.z;
                }
                else
                {
                     loc = loc1;
                }
           }
+
+
           //always remember to free the potential-memory-problematic fastmarching_linker return value
           clean_fm_marker_vector(outswc);
 
@@ -1399,6 +1503,9 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
      } // end for the second fastmarching
      //===============================================================================<<<<<<<<<<<<<
      PROGRESS_PERCENT(90);
+
+     // clean pSubdata of subvolume boundingbox
+     if(pSubdata) {delete [] pSubdata; pSubdata=0;}
 
      N = loc_vec.size(); //100722 RZC
      if(N<1) return; // all points are outside the volume. ZJL 110913
@@ -1471,43 +1578,18 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 
      if(selectMode == smCurveMarkerLists_fm || selectMode == smCurveRefine_fm)
      {
-          // N=loc_vec.size();
-          // int NS = list_listCurvePos.at(index).size();
-          // if(N>8*NS)
-          // {
-          //      if (QMessageBox::question(0, "", "The created curve may not correct. Do you want to continue create curve?", QMessageBox::Yes, QMessageBox::No)
-          //           == QMessageBox::Yes)
-          //      {
-          //           if (b_addthiscurve)
-          //           {
-          //                addCurveSWC(loc_vec, chno);
-          //                // used to convert loc_vec to NeuronTree and save SWC in testing
-          //                vecToNeuronTree(testNeuronTree, loc_vec);
-          //           }
-          //           else
-          //           {
-          //                b_addthiscurve = true;
-          //                endSelectMode();
-          //           }
-
-          //      }
-          // }
-          // else
+          if (b_addthiscurve)
           {
-               if (b_addthiscurve)
-               {
-                    addCurveSWC(loc_vec, chno);
-                    // used to convert loc_vec to NeuronTree and save SWC in testing
-                    vecToNeuronTree(testNeuronTree, loc_vec);
-               }
-               else
-               {
-                    b_addthiscurve = true; //in this case, always reset to default to draw curve to add to a swc instead of just  zoom
-                    endSelectMode();
-               }
+               addCurveSWC(loc_vec, chno);
+               // used to convert loc_vec to NeuronTree and save SWC in testing
+               vecToNeuronTree(testNeuronTree, loc_vec);
+          }
+          else
+          {
+               b_addthiscurve = true; //in this case, always reset to default to draw curve to add to a swc instead of just  zoom
+               endSelectMode();
           }
      }
-
 }
 
 
@@ -2047,7 +2129,9 @@ void  Renderer_gl1::getMidRandomLoc(MarkerPos pos, int chno, XYZ &mid_loc)
 
 }
 
-
+/**
+ * compute distance between two neuron lines
+ */
 double Renderer_gl1::distance_between_2lines(NeuronTree &line1, NeuronTree &line2)
 {
      int size1=line1.listNeuron.size();
