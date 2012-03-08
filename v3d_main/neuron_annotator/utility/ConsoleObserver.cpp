@@ -141,7 +141,13 @@ void ConsoleObserver::entityViewRequestedResults(const void *results)
         mainWindow->raise();
         annotatedBranchViewRequested(*entity->id);
     }
-    else if (type == "Image 3D")
+    else if (type == "Image 3D" ||
+             type == "Aligned Brain Stack" ||
+             type == "LSM Stack" ||
+             type == "Stitched V3D Raw Stack" ||
+             type == "SWC File" ||
+             type == "Vaa3d ANO File" ||
+             type == "Tif 3D Image")
     {
         QApplication::alert((QWidget *)mainWindow, 10000);
         mainWindow->show();
