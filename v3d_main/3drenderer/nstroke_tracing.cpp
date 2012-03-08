@@ -1043,6 +1043,8 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
      V3DLONG sub_szx, sub_szy, sub_szz;
      getSubVolFromStroke(pSubdata, sub_orig, sub_szx, sub_szy, sub_szz);
 
+     bool b_useStrokeBB = true;
+
 	int N = loc_vec_input.size();
 	if (b_use_seriespointclick)
 	{
@@ -1116,6 +1118,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                          //loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
                          // get the loc with a random middle loc
                          getMidRandomLoc(pos, chno, loc);
+
                          middle_vec.push_back(loc);
                     }
                     else if (last_j>=0)
@@ -1142,13 +1145,17 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                          vector<MyMarker*> outswc;
 
                          // for sub_markers
-                         // if(last_j<0 && i!=0)
+                         // if(last_j<0 && i==0)
                          // {
                          //      sub_markers = sub_markers_1st; //the first point
                          // }
                          // else
                          {
                               // sub_markers is the lastpos
+                              if(b_useStrokeBB) // use stroke bounding box
+                              {
+                                   lastpos = lastpos-sub_orig;
+                              }
                               MyMarker mlastloc = MyMarker(lastpos.x, lastpos.y, lastpos.z);
                               sub_markers.push_back(mlastloc);
                          }
@@ -1188,6 +1195,10 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                               // else
                               {
                                    XYZ loci=(loc0+loc1)/2.0;
+                                   if(b_useStrokeBB) // use stroke bounding box
+                                   {
+                                        loci = loci-sub_orig;
+                                   }
                                    MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
                                    tar_markers.push_back(mloci);
                               }
@@ -1259,6 +1270,8 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                                         for(int ii=0; ii<(int)(length+0.5); ii++)
                                         {
                                              XYZ loci = loc00 + D*ii; // incease 1 each step
+                                             if(b_useStrokeBB)  loci = loci-sub_orig; // use stroke bounding box
+
                                              MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
                                              tar_markers.push_back(mloci);
                                         }
@@ -1271,6 +1284,8 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                                    for(int ii=0; ii<(int)(length+0.5); ii++)
                                    {
                                         XYZ loci = loc0 + D*ii; // incease 1 each step
+                                        if(b_useStrokeBB)  loci = loci-sub_orig; // use stroke bounding box
+
                                         MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
                                         tar_markers.push_back(mloci);
 
@@ -1318,69 +1333,71 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                          // I found that the result is not so good when using this time limit
 
                          // This version uses full image as the bounding box
-                         // fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz,0.0);// time_thresh);
-
-                         // if(!outswc.empty())
-                         // {
-                         //      // the 1st loc in outswc is the last pos got in fm
-                         //      int nn = outswc.size();
-                         //      for(int j=nn-1; j>0; j-- )
-                         //      {
-                         //           XYZ locj;
-                         //           locj.x=outswc.at(j)->x;
-                         //           locj.y=outswc.at(j)->y;
-                         //           locj.z=outswc.at(j)->z;
-
-                         //           loc_vec.push_back(locj);
-
-                         //           // record the middle loc in this seg for the second fast marching
-                         //           if((nn>6)&&(j==(int)(nn/2)))
-                         //           {
-                         //                middle_vec.push_back(locj);
-                         //           }
-                         //      }
-                         //      // the last one
-                         //      loc.x = outswc.at(0)->x;
-                         //      loc.y = outswc.at(0)->y;
-                         //      loc.z = outswc.at(0)->z;
-                         // }
-                         // else
-                         // {
-                         //      loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
-                         // }
-
-
-                         //====================================================
-                         // using stroke to creating a bounding box and do FM
-                         fastmarching_linker(sub_markers, tar_markers, pSubdata, outswc, sub_szx, sub_szy, sub_szz,0.0);// time_thresh);
-
-                         if(!outswc.empty())
+                         if(!b_useStrokeBB)
                          {
-                              // the 1st loc in outswc is the last pos got in fm
-                              int nn = outswc.size();
-                              for(int j=nn-1; j>0; j-- )
+                              fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz,0.0);// time_thresh);
+
+                              if(!outswc.empty())
                               {
-                                   XYZ locj;
-                                   locj.x=outswc.at(j)->x + sub_orig.x;
-                                   locj.y=outswc.at(j)->y + sub_orig.y;
-                                   locj.z=outswc.at(j)->z + sub_orig.z;
-
-                                   loc_vec.push_back(locj);
-
-                                   // record the middle loc in this seg for the second fast marching
-                                   if((nn>6)&&(j==(int)(nn/2)))
+                                   // the 1st loc in outswc is the last pos got in fm
+                                   int nn = outswc.size();
+                                   for(int j=nn-1; j>0; j-- )
                                    {
-                                        middle_vec.push_back(locj);
+                                        XYZ locj;
+                                        locj.x=outswc.at(j)->x;
+                                        locj.y=outswc.at(j)->y;
+                                        locj.z=outswc.at(j)->z;
+
+                                        loc_vec.push_back(locj);
+
+                                        // record the middle loc in this seg for the second fast marching
+                                        if((nn>6)&&(j==(int)(nn/2)))
+                                        {
+                                             middle_vec.push_back(locj);
+                                        }
                                    }
+                                   // the last one
+                                   loc.x = outswc.at(0)->x;
+                                   loc.y = outswc.at(0)->y;
+                                   loc.z = outswc.at(0)->z;
                               }
-                              // the last one
-                              loc.x = outswc.at(0)->x + sub_orig.x;
-                              loc.y = outswc.at(0)->y + sub_orig.y;
-                              loc.z = outswc.at(0)->z + sub_orig.z;
+                              else
+                              {
+                                   loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+                              }
                          }
-                         else
+                         else  // using stroke to creating a bounding box and do FM
                          {
-                              loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+                              fastmarching_linker(sub_markers, tar_markers, pSubdata, outswc, sub_szx, sub_szy, sub_szz, 0.0);// time_thresh);
+
+                              if(!outswc.empty())
+                              {
+                                   // the 1st loc in outswc is the last pos got in fm
+                                   int nn = outswc.size();
+                                   for(int j=nn-1; j>0; j-- )
+                                   {
+                                        XYZ locj;
+                                        locj.x=outswc.at(j)->x + sub_orig.x;
+                                        locj.y=outswc.at(j)->y + sub_orig.y;
+                                        locj.z=outswc.at(j)->z + sub_orig.z;
+
+                                        loc_vec.push_back(locj);
+
+                                        // record the middle loc in this seg for the second fast marching
+                                        if((nn>6)&&(j==(int)(nn/2)))
+                                        {
+                                             middle_vec.push_back(locj);
+                                        }
+                                   }
+                                   // the last one
+                                   loc.x = outswc.at(0)->x + sub_orig.x;
+                                   loc.y = outswc.at(0)->y + sub_orig.y;
+                                   loc.z = outswc.at(0)->z + sub_orig.z;
+                              }
+                              else
+                              {
+                                   loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+                              }
                          }
                          //always remember to free the potential-memory-problematic fastmarching_linker return value
                          clean_fm_marker_vector(outswc);
@@ -1396,7 +1413,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
           }
      }
      PROGRESS_PERCENT(60);
-     //===============================================================================>>>>>>>>>>>>
+     //===============================================================================>>>>>>>>>>>> second fastmarching
      // put the last element of loc_vec
      middle_vec.push_back(loc_vec.back());
      N = loc_vec.size();
@@ -1418,78 +1435,85 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 
           // sub_markers
           XYZ loc0=middle_vec.at(jj);
+
+          if(b_useStrokeBB) loc0 = loc0-sub_orig; //using bb
+
           MyMarker mloc0 = MyMarker(loc0.x, loc0.y, loc0.z);
           sub_markers.push_back(mloc0);
 
           // tar_markers
           XYZ loc1=middle_vec.at(jj+1);
+          if(b_useStrokeBB) loc1 = loc1-sub_orig; //using bb
           MyMarker mloc1 = MyMarker(loc1.x, loc1.y, loc1.z);
           tar_markers.push_back(mloc1);
 
           // call fastmarching. This version searches the whole volume
-          // bool res = fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz, 0.0);// time_thresh);
-          // if(!res)
-          // {
-          //      loc = loc1;
-          // }
-          // else
-          // {
-          //      if(!outswc.empty())
-          //      {
-          //           // the 1st loc in outswc is the last pos got in fm
-          //           int nn = outswc.size();
-          //           for(int j=nn-1; j>0; j-- )
-          //           {
-          //                XYZ locj;
-          //                locj.x=outswc.at(j)->x;
-          //                locj.y=outswc.at(j)->y;
-          //                locj.z=outswc.at(j)->z;
-
-          //                loc_vec.push_back(locj);
-          //           }
-          //           // the last one
-          //           loc.x = outswc.at(0)->x;
-          //           loc.y = outswc.at(0)->y;
-          //           loc.z = outswc.at(0)->z;
-          //      }
-          //      else
-          //      {
-          //           loc = loc1;
-          //      }
-          // }
-
-          // this version searches the subvolume decided by the stroke bounding box
-          bool res = fastmarching_linker(sub_markers, tar_markers, pSubdata, outswc, sub_szx, sub_szy, sub_szz, 0.0);// time_thresh);
-          if(!res)
+          if(!b_useStrokeBB)
           {
-               loc = loc1;
-          }
-          else
-          {
-               if(!outswc.empty())
-               {
-                    // the 1st loc in outswc is the last pos got in fm
-                    int nn = outswc.size();
-                    for(int j=nn-1; j>0; j-- )
-                    {
-                         XYZ locj;
-                         locj.x=outswc.at(j)->x + sub_orig.x;
-                         locj.y=outswc.at(j)->y + sub_orig.y;
-                         locj.z=outswc.at(j)->z + sub_orig.z;
-
-                         loc_vec.push_back(locj);
-                    }
-                    // the last one
-                    loc.x = outswc.at(0)->x + sub_orig.x;
-                    loc.y = outswc.at(0)->y + sub_orig.y;
-                    loc.z = outswc.at(0)->z + sub_orig.z;
-               }
-               else
+               bool res = fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz, 0.0);// time_thresh);
+               if(!res)
                {
                     loc = loc1;
                }
-          }
+               else
+               {
+                    if(!outswc.empty())
+                    {
+                         // the 1st loc in outswc is the last pos got in fm
+                         int nn = outswc.size();
+                         for(int j=nn-1; j>0; j-- )
+                         {
+                              XYZ locj;
+                              locj.x=outswc.at(j)->x;
+                              locj.y=outswc.at(j)->y;
+                              locj.z=outswc.at(j)->z;
 
+                              loc_vec.push_back(locj);
+                         }
+                         // the last one
+                         loc.x = outswc.at(0)->x;
+                         loc.y = outswc.at(0)->y;
+                         loc.z = outswc.at(0)->z;
+                    }
+                    else
+                    {
+                         loc = loc1;
+                    }
+               }
+          }
+          else // this version searches the subvolume decided by the stroke bounding box
+          {
+               bool res = fastmarching_linker(sub_markers, tar_markers, pSubdata, outswc, sub_szx, sub_szy, sub_szz, 0.0);// time_thresh);
+               if(!res)
+               {
+                    loc = loc1;
+               }
+               else
+               {
+                    if(!outswc.empty())
+                    {
+                         // the 1st loc in outswc is the last pos got in fm
+                         int nn = outswc.size();
+                         for(int j=nn-1; j>0; j-- )
+                         {
+                              XYZ locj;
+                              locj.x=outswc.at(j)->x + sub_orig.x;
+                              locj.y=outswc.at(j)->y + sub_orig.y;
+                              locj.z=outswc.at(j)->z + sub_orig.z;
+
+                              loc_vec.push_back(locj);
+                         }
+                         // the last one
+                         loc.x = outswc.at(0)->x + sub_orig.x;
+                         loc.y = outswc.at(0)->y + sub_orig.y;
+                         loc.z = outswc.at(0)->z + sub_orig.z;
+                    }
+                    else
+                    {
+                         loc = loc1;
+                    }
+               }
+          }
 
           //always remember to free the potential-memory-problematic fastmarching_linker return value
           clean_fm_marker_vector(outswc);
@@ -1911,7 +1935,6 @@ void Renderer_gl1::solveCurveFromMarkersGD(bool b_customized_bb)
                                    loc_vec.at(N-1) = cur_node_xyz;
                                    b_end_merged = true;
                                    qDebug()<<"force set the last point of this curve to the above neuron node as they are close.";
-
                               }
                          }
 
@@ -2206,3 +2229,279 @@ double Renderer_gl1::distance_between_2lines(NeuronTree &line1, NeuronTree &line
 //     return MAX(sum1, sum2);
 //     //return (sum1/line1.size() + sum2/line2.size())/2.0;
 // }
+
+void Renderer_gl1::swcBoundingBox(NeuronTree &line, XYZ &minloc, XYZ &maxloc)
+{
+     int N = line.listNeuron.size();
+
+	if ( N <= 0 )  return; //data is not enough and use the whole image as the bounding box
+
+     // find min-max of x y z in loc_veci
+     double minx, miny, minz, maxx, maxy, maxz;
+
+     // Directly using stroke pos for minloc, maxloc
+     for (int i=0; i<N; i++)
+     {
+          NeuronSWC ns = line.listNeuron.at(i);
+
+          if(i==0)
+          {
+               minx=maxx=ns.x; miny=maxy=ns.y; minz=maxz=ns.z;
+          }
+
+          if(minx>ns.x) minx=ns.x;
+          if(miny>ns.y) miny=ns.y;
+          if(minz>ns.z) minz=ns.z;
+
+          if(maxx<ns.x) maxx=ns.x;
+          if(maxy<ns.y) maxy=ns.y;
+          if(maxz<ns.z) maxz=ns.z;
+     }
+
+     minloc.x = minx;
+     minloc.y = miny;
+     minloc.z = minz;
+
+     maxloc.x = maxx;
+     maxloc.y = maxy;
+     maxloc.z = maxz;
+}
+
+
+
+void Renderer_gl1::MIP_XY_YZ_XZ(unsigned char * &pXY, unsigned char* &pYZ, unsigned char* &pXZ, XYZ &minloc, XYZ &maxloc)
+{
+     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+     My4DImage* curImg = 0;
+     if (w)
+          curImg = v3dr_getImage4d(_idep);
+
+     // The data is from minloc to maxloc
+     V3DLONG sub_szx=abs(maxloc.x-minloc.x)+1;
+     V3DLONG sub_szy=abs(maxloc.y-minloc.y)+1;
+     V3DLONG sub_szz=abs(maxloc.z-minloc.z)+1;
+
+     if(pXY) {delete []pXY; pXY=0;}
+     if(pYZ) {delete []pYZ; pYZ=0;}
+     if(pXZ) {delete []pXZ; pXZ=0;}
+
+     V3DLONG offset_xy = sub_szx*sub_szy;
+     V3DLONG offset_yz = sub_szy*sub_szz;
+     V3DLONG offset_xz = sub_szx*sub_szz;
+
+     pXY = new unsigned char [3 * offset_xy]; //RGB color image
+     pYZ = new unsigned char [3 * offset_yz]; //RGB color image
+     pXZ = new unsigned char [3 * offset_xz]; //RGB color image
+
+     memset(pXY, 0, 3*offset_xy);
+     memset(pYZ, 0, 3*offset_yz);
+     memset(pXZ, 0, 3*offset_xz);
+
+     int chno = checkCurChannel();
+	if (chno<0 || chno>dim4-1)   chno = 0; //default first channel
+
+     // get MIP_YZ
+     for(V3DLONG k=0; k<sub_szy; k++)
+     {
+          for(V3DLONG j=0; j<sub_szz; j++)
+          {
+               V3DLONG ind_yz = k*sub_szz + j;
+               for(V3DLONG i=0; i<sub_szx; i++)
+               {
+                    unsigned char value = curImg->at(minloc.x+i, minloc.y+k, minloc.z+j, chno);
+                    if(pYZ[ind_yz] < value)
+                    {
+                         pYZ[ind_yz] = value;
+                         pYZ[ind_yz + offset_yz] = value;
+                         pYZ[ind_yz + 2*offset_yz] = value;
+                    }
+               }
+          }
+     }
+
+     // get MIP_XY
+     for(V3DLONG j=0; j<sub_szy; j++)
+     {
+          for(V3DLONG i=0; i<sub_szx; i++)
+          {
+               V3DLONG ind_xy = j*sub_szx + i;
+               for(V3DLONG k=0; k<sub_szz; k++)
+               {
+                    unsigned char value = curImg->at(minloc.x+i, minloc.y+j, minloc.z+k, chno);
+                    if(pXY[ind_xy] < value)
+                    {
+                         pXY[ind_xy] = value;
+                         pXY[ind_xy + offset_xy] = value;
+                         pXY[ind_xy + 2*offset_xy] = value;
+                    }
+               }
+          }
+     }
+
+     // get MIP_XZ
+     for(V3DLONG k=0; k<sub_szz; k++)
+     {
+          for(V3DLONG j=0; j<sub_szx; j++)
+          {
+               V3DLONG ind_xz = k*sub_szx + j;
+               for(V3DLONG i=0; i<sub_szy; i++)
+               {
+                    unsigned char value = curImg->at(minloc.x+j, minloc.y+i, minloc.z+k, chno);
+                    if(pXZ[ind_xz] < value)
+                    {
+                         pXZ[ind_xz] = value;
+                         pXZ[ind_xz + offset_xz] = value;
+                         pXZ[ind_xz + 2*offset_xz] = value;
+                    }
+               }
+          }
+     }
+
+}
+
+void Renderer_gl1::projectSWC_XY_YZ_XZ(unsigned char * &pXY, unsigned char * &pYZ, unsigned char * &pXZ, XYZ &minloc, XYZ &maxloc, NeuronTree &line, unsigned char color[3])
+{
+     V3DLONG sub_szx=abs(maxloc.x-minloc.x)+1;
+     V3DLONG sub_szy=abs(maxloc.y-minloc.y)+1;
+     V3DLONG sub_szz=abs(maxloc.z-minloc.z)+1;
+
+     V3DLONG offset_xy = sub_szx*sub_szy;
+     V3DLONG offset_yz = sub_szy*sub_szz;
+     V3DLONG offset_xz = sub_szx*sub_szz;
+
+     int N=line.listNeuron.size();
+
+     if(N<=0) return;
+
+     int c_size = 0; // cross size
+     // Project on XY
+     for(int k = 0; k < N; k++)
+     {
+          NeuronSWC ns = line.listNeuron.at(k);
+          for(int j=0; j<sub_szy; j++)
+          {
+               for(int i=0; i<sub_szx; i++)
+               {
+                    V3DLONG ind_xy=j*sub_szx + i;
+                    int xx = (int) ns.x - minloc.x;
+                    int yy = (int) ns.y - minloc.y;
+
+                    V3DLONG ind_swc = yy*sub_szx + xx;
+
+                    if(ind_xy == ind_swc)
+                    {
+                         // draw a cross. rr is size of cross
+                         for(int rr =-c_size; rr<=c_size; rr++)
+                         {
+                              int ii = i+rr;
+                              if(ii < 0) ii=0;
+                              if(ii >= sub_szx) ii = sub_szx-1;
+                              V3DLONG ind_x = j*sub_szx + ii;
+
+                              pXY[ind_x] = color[0];               // one color value
+                              pXY[ind_x + offset_xy] = color[1];
+                              pXY[ind_x + 2*offset_xy] = color[2];
+
+                              int jj = j+rr;
+                              if(jj < 0) jj = 0;
+                              if(jj >= sub_szy) jj = sub_szy-1;
+                              V3DLONG ind_y = jj*sub_szx + i;
+
+                              pXY[ind_y] = color[0];               // one color value
+                              pXY[ind_y + offset_xy] = color[1];
+                              pXY[ind_y + 2*offset_xy] = color[2];
+                         }
+                    }
+               }
+          }
+
+     }
+
+     // Project on YZ
+     for(int k = 0; k < N; k++)
+     {
+          NeuronSWC ns = line.listNeuron.at(k);
+          for(int j=0; j<sub_szy; j++)
+          {
+               for(int i=0; i<sub_szz; i++)
+               {
+                    V3DLONG ind_yz=j*sub_szz + i;
+                    int zz = (int) ns.z - minloc.z;
+                    int yy = (int) ns.y - minloc.y;
+
+                    V3DLONG ind_swc = yy*sub_szz + zz;
+
+                    if(ind_yz == ind_swc)
+                    {
+                         // draw a cross. rr is size of cross
+                         for(int rr =-c_size; rr<=c_size; rr++)
+                         {
+                              int ii = i+rr;
+                              if(ii < 0) ii=0;
+                              if(ii >= sub_szz) ii = sub_szz-1;
+                              V3DLONG ind_z = j*sub_szz + ii;
+
+                              pYZ[ind_z] = color[0];              // one coglor value
+                              pYZ[ind_z + offset_yz] = color[1];
+                              pYZ[ind_z + 2*offset_yz] = color[2];
+
+                              int jj = j+rr;
+                              if(jj < 0) jj = 0;
+                              if(jj >= sub_szy) jj = sub_szy-1;
+                              V3DLONG ind_y = jj*sub_szz + i;
+
+                              pYZ[ind_y] = color[0];               // one color value
+                              pYZ[ind_y + offset_yz] = color[1];
+                              pYZ[ind_y + 2*offset_yz] = color[2];
+                         }
+                    }
+               }
+          }
+
+     }
+
+
+     // Project on XZ
+     for(int k = 0; k < N; k++)
+     {
+          NeuronSWC ns = line.listNeuron.at(k);
+          for(int j=0; j<sub_szz; j++)
+          {
+               for(int i=0; i<sub_szx; i++)
+               {
+                    V3DLONG ind_xz=j*sub_szx + i;
+                    int zz = (int) ns.z - minloc.z;
+                    int xx = (int) ns.x - minloc.x;
+
+                    V3DLONG ind_swc = zz*sub_szx + xx;
+
+                    if(ind_xz == ind_swc)
+                    {
+                         // draw a cross. rr is size of cross
+                         for(int rr =-c_size; rr<=c_size; rr++)
+                         {
+                              int ii = i+rr;
+                              if(ii < 0) ii=0;
+                              if(ii >= sub_szx) ii = sub_szx-1;
+                              V3DLONG ind_x = j*sub_szx + ii;
+
+                              pXZ[ind_x] = color[0];              // one coglor value
+                              pXZ[ind_x + offset_xz] = color[1];
+                              pXZ[ind_x + 2*offset_xz] = color[2];
+
+                              int jj = j+rr;
+                              if(jj < 0) jj = 0;
+                              if(jj >= sub_szz) jj = sub_szz-1;
+                              V3DLONG ind_z = jj*sub_szx + i;
+
+                              pXZ[ind_z] = color[0];               // one color value
+                              pXZ[ind_z + offset_xz] = color[1];
+                              pXZ[ind_z + 2*offset_xz] = color[2];
+                         }
+                    }
+               }
+          }
+
+     }
+
+}

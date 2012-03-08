@@ -333,6 +333,10 @@ protected:
 			int chno=0,    			//must be a valid channel number
 			float *value=0			//if value!=0, output value at center
 			);
+     // for curve testing
+     void swcBoundingBox(NeuronTree &line, XYZ &minloc, XYZ &maxloc);
+     void MIP_XY_YZ_XZ(unsigned char * &pXY, unsigned char * &pYZ, unsigned char * &pXZ, XYZ &minloc, XYZ &maxloc);
+     void projectSWC_XY_YZ_XZ(unsigned char * &pXY, unsigned char * &pYZ, unsigned char * &pXZ, XYZ &minloc, XYZ &maxloc, NeuronTree &line, unsigned char color[3]);
 
      void updateDraggedNeuronXYZ();
      V3DLONG findNearestNeuronNode_WinXYV2(int cx, int cy);

@@ -95,6 +95,21 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 		if (v3dr_getColorDialog( &qc, w))  list[i].color = RGBA8FromQColor( qc ); \
 	} \
 }
+
+#define MIN_BB(minbb, loc) \
+{ \
+    if(minbb.x > loc.x) minbb.x = loc.x; \
+    if(minbb.y > loc.y) minbb.y = loc.y; \
+    if(minbb.z > loc.z) minbb.z = loc.z; \
+}
+
+#define MAX_BB(maxbb, loc) \
+{ \
+    if(maxbb.x < loc.x) maxbb.x = loc.x; \
+    if(maxbb.y < loc.y) maxbb.y = loc.y; \
+    if(maxbb.z < loc.z) maxbb.z = loc.z; \
+}
+
 //#define LIST_COLOR_A(list, i, w) \
 //{ \
 //	if (i>=0 && i<list.size()) \
@@ -1952,6 +1967,160 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                          fprintf(fpdist, "Distance between curves of Markerlists_fm and mean_shift              = %.4f\n", distance_between_2lines(tree_ml, tree_cc));
                          fprintf(fpdist, "Distance between curves of Markerlists_fm and direction_intersection  = %.4f\n", distance_between_2lines(tree_ml, tree_di));
                     }
+
+                    // projection image computation
+                    // 1. get max SWC boundingbox
+                    XYZ minbb, maxbb;
+                    if(listCurveMarkerPool.size() > 2) // the ground truth is the curve from GD
+                    {
+                         swcBoundingBox(tree_gd, minbb, maxbb);
+                         XYZ minloc_ml, maxloc_ml;
+                         swcBoundingBox(tree_ml, minloc_ml, maxloc_ml);
+                         XYZ minloc_cc, maxloc_cc;
+                         swcBoundingBox(tree_cc, minloc_cc, maxloc_cc);
+                         XYZ minloc_di, maxloc_di;
+                         swcBoundingBox(tree_di, minloc_di, maxloc_di);
+                         XYZ minloc_mp, maxloc_mp;
+                         swcBoundingBox(tree_mp, minloc_mp, maxloc_mp);
+
+                         MIN_BB(minbb, minloc_ml);
+                         MAX_BB(maxbb, maxloc_ml);
+
+                         MIN_BB(minbb, minloc_cc);
+                         MAX_BB(maxbb, maxloc_cc);
+
+                         MIN_BB(minbb, minloc_di);
+                         MAX_BB(maxbb, maxloc_di);
+
+                         MIN_BB(minbb, minloc_mp);
+                         MAX_BB(maxbb, maxloc_mp);
+                    } else
+                    {
+                         swcBoundingBox(tree_ml, minbb, maxbb);
+                         XYZ minloc_cc, maxloc_cc;
+                         swcBoundingBox(tree_cc, minloc_cc, maxloc_cc);
+                         XYZ minloc_di, maxloc_di;
+                         swcBoundingBox(tree_di, minloc_di, maxloc_di);
+
+                         MIN_BB(minbb, minloc_cc);
+                         MAX_BB(maxbb, maxloc_cc);
+
+                         MIN_BB(minbb, minloc_di);
+                         MAX_BB(maxbb, maxloc_di);
+                    }
+
+                    // add boundary to minbb and maxbb
+                    int boundary = 30;
+
+                    minbb.x = minbb.x - boundary;
+                    minbb.y = minbb.y - boundary;
+                    minbb.z = minbb.z - boundary;
+
+                    maxbb.x = maxbb.x + boundary;
+                    maxbb.y = maxbb.y + boundary;
+                    maxbb.z = maxbb.z + boundary;
+
+                    dataViewProcBox.clamp(minbb);
+                    dataViewProcBox.clamp(maxbb);
+
+                    // 2. get subvolume in boundingbox and get MAX Intensity Projection on XY, YZ plane
+                    // use whole size of image
+                    //==============================================
+                    //minbb.x =0; minbb.y=0; minbb.z=0;
+                    //maxbb.x =dim1-1; maxbb.y=dim2-1; maxbb.z=dim3-1;
+                    //=============================================
+                    unsigned char * pXY=0;
+                    unsigned char * pYZ=0;
+                    unsigned char * pXZ=0;
+                    MIP_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb);
+
+                    // 3. project SWC to MIP_XY, MIP_YZ planes
+                    unsigned char curve_color[ ][3] = {
+                         {200, 20,  0  },  // red,      ml  0
+                         {0,   200, 20 },  // green,    cc  1
+                         {0,   20,  200},  // blue,     di  2
+                         {200, 0,   200},  // purple,   mp  3
+                         {220, 200, 0  },  // yellow,   gd  4
+                         {0,   200, 200},  // cyan,
+                         {188, 94,  37 },  // coffee,
+                         {180, 200, 120},  // asparagus,
+                         {250, 100, 120},  // salmon,
+                         {120, 200, 200},  // ice,
+                         {100, 120, 200},  // orchid,
+                    };
+
+                    if(listCurveMarkerPool.size() > 2) // the ground truth is the curve from GD
+                    {
+                         projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_gd, curve_color[4]);
+                         projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_ml, curve_color[0]);
+                         projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_cc, curve_color[1]);
+                         projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_di, curve_color[2]);
+                         projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_mp, curve_color[3]);
+                    }else
+                    {
+                         projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_ml, curve_color[0]);
+                         projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_cc, curve_color[1]);
+                         projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_di, curve_color[2]);
+                    }
+
+                    // 4. save image
+                    // 4.1 combine pXY, pYZ
+                    V3DLONG sz[3];
+                    sz[0]=maxbb.x-minbb.x+1; sz[1]=maxbb.y-minbb.y+1;
+                    sz[2]=maxbb.z-minbb.z+1;
+
+                    unsigned char* pXY_YZ_XZ = new unsigned char [3 * (sz[1]+sz[2]) * (sz[0]+sz[2]) ];
+
+                    V3DLONG offset_xy_yz_xz = (sz[1]+sz[2])*(sz[0]+sz[2]);
+                    V3DLONG offset_xy = sz[1]*sz[0];
+                    V3DLONG offset_yz = sz[1]*sz[2];
+                    V3DLONG offset_xz = sz[0]*sz[2];
+                    memset(pXY_YZ_XZ, 0 , 3*offset_xy_yz_xz);
+
+                    // combine pXZ
+                    for(V3DLONG z=0; z<sz[2]; z++)
+                    {
+                         for(V3DLONG x=0; x<sz[0]; x++)
+                         {
+                              V3DLONG ind_xz=z*sz[0] + x;
+                              V3DLONG ind = (z)*(sz[0]+sz[2]) + x;
+                              pXY_YZ_XZ[ind] = pXZ[ind_xz];
+                              pXY_YZ_XZ[ind + offset_xy_yz_xz] = pXZ[ind_xz + offset_xz];
+                              pXY_YZ_XZ[ind + 2*offset_xy_yz_xz] = pXZ[ind_xz + 2*offset_xz];
+                         }
+                    }
+
+                    // combine pXY_pYZ
+                    for(V3DLONG y=0; y<sz[1]; y++)
+                    {
+                         for(V3DLONG x=0; x<sz[0]; x++)
+                         {
+                              V3DLONG ind_xy=y*sz[0] + x;
+                              V3DLONG ind = (y+sz[2])*(sz[0]+sz[2]) + x;
+                              pXY_YZ_XZ[ind] = pXY[ind_xy];
+                              pXY_YZ_XZ[ind + offset_xy_yz_xz] = pXY[ind_xy + offset_xy];
+                              pXY_YZ_XZ[ind + 2*offset_xy_yz_xz] = pXY[ind_xy + 2*offset_xy];
+                         }
+                         for(V3DLONG z=0; z<sz[2]; z++)
+                         {
+                              V3DLONG ind_yz=y*sz[2] + z;
+                              V3DLONG ind = (y+sz[2])*(sz[0]+sz[2]) + (sz[0] + z);
+                              pXY_YZ_XZ[ind] = pYZ[ind_yz];
+                              pXY_YZ_XZ[ind + offset_xy_yz_xz] = pYZ[ind_yz + offset_yz];
+                              pXY_YZ_XZ[ind + 2*offset_xy_yz_xz] = pYZ[ind_yz + 2*offset_yz];
+                         }
+                    }
+
+                    // 4.2 Save image
+                    V3DLONG img_sz[4];
+                    img_sz[0]=sz[0]+sz[2]; img_sz[1]=sz[1]+sz[2]; img_sz[2]=1; img_sz[3]=3;
+                    QString imgfilename = testOutputDir + "/" + strokeid + "_" + fname + "_CompareImg.tiff";
+                    saveImage(imgfilename.toStdString().c_str(), pXY_YZ_XZ, img_sz, V3D_UINT8);
+                    // clear memory
+                    if(pXY) {delete [] pXY; pXY=0;}
+                    if(pYZ) {delete [] pYZ; pYZ=0;}
+                    if(pXZ) {delete [] pXZ; pXZ=0;}
+                    if(pXY_YZ_XZ) {delete [] pXY_YZ_XZ; pXY_YZ_XZ=0;}
 
                     // clear MarkerPool for the next drawing
                     listCurveMarkerPool.clear();
