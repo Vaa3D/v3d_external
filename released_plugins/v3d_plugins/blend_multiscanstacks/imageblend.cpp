@@ -97,7 +97,35 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
     V3DLONG pagesz = szInput[0]*szInput[1]*szInput[2];
     
     bool b_blankplanefound;
-    
+
+    // find NULL channel first
+    V3DLONG nullc = -1;
+    for(V3DLONG c=0; c<szInput[3]; c++) // image 1
+    {
+        V3DLONG offset_c = c*pagesz;
+        V3DLONG sumint = 0;
+        for (V3DLONG k=0; k<szInput[2]; k++)
+        {
+            V3DLONG offset_k = offset_c + k*szInput[0]*szInput[1];
+            for(V3DLONG j=0; j<szInput[1]; j++)
+            {
+                V3DLONG offset_j = offset_k + j*szInput[0];
+                for(V3DLONG i=0; i<szInput[0]; i++)
+                {
+                    V3DLONG idx = offset_j + i;
+
+                    sumint += pInput[idx];
+                }
+            }
+        }
+
+        if(sumint<EMPTY)
+        {
+            nullc = c;
+        }
+    }
+
+    // cutting
     // along z +
     b_blankplanefound=true;
     while (b_blankplanefound) 
@@ -113,6 +141,8 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
             {
                 sum = 0;
                 
+                if(c==nullc) continue;
+
                 V3DLONG offset_c = c*pagesz + offset_k;
                 for(V3DLONG j=0; j<szInput[1]; j++)
                 {
@@ -138,6 +168,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
                 break;
             }
         }
+        b_blankplanefound=false;
     }
     
     // along z -
@@ -154,6 +185,8 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
             for(V3DLONG c=0; c<colordim; c++)
             {
                 sum = 0;
+
+                if(c==nullc) continue;
                 
                 V3DLONG offset_c = c*pagesz + offset_k;
                 for(V3DLONG j=0; j<szInput[1]; j++)
@@ -180,6 +213,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
                 break;
             }
         }
+        b_blankplanefound=false;
     }
     
     // along y +
@@ -196,6 +230,8 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
             for(V3DLONG c=0; c<colordim; c++)
             {
                 sum = 0;
+
+                if(c==nullc) continue;
                 
                 V3DLONG offset_c = c*pagesz + offset_j;
                 for(V3DLONG k=0; k<szInput[2]; k++)
@@ -223,6 +259,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
                 break;
             }
         }
+        b_blankplanefound=false;
     }
     
     // along y -
@@ -239,6 +276,8 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
             for(V3DLONG c=0; c<colordim; c++)
             {
                 sum = 0;
+
+                if(c==nullc) continue;
                 
                 V3DLONG offset_c = c*pagesz + offset_j;
                 for(V3DLONG k=0; k<szInput[2]; k++)
@@ -266,6 +305,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
                 break;
             }
         }
+        b_blankplanefound=false;
     }
     
     // along x +
@@ -280,6 +320,8 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
             for(V3DLONG c=0; c<colordim; c++)
             {
                 sum = 0;
+
+                if(c==nullc) continue;
                 
                 V3DLONG offset_c = c*pagesz;
                 for(V3DLONG k=0; k<szInput[2]; k++)
@@ -308,6 +350,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
                 break;
             }
         }
+        b_blankplanefound=false;
     }
     
     // along x -
@@ -322,6 +365,8 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
             for(V3DLONG c=0; c<colordim; c++)
             {
                 sum = 0;
+
+                if(c==nullc) continue;
                 
                 V3DLONG offset_c = c*pagesz;
                 for(V3DLONG k=0; k<szInput[2]; k++)
@@ -350,6 +395,7 @@ void img_cutting(Tdata *pInput, V3DLONG *szInput, Tdata* &pOutput, V3DLONG* szOu
                 break;
             }
         }
+        b_blankplanefound=false;
     }
     
     //
