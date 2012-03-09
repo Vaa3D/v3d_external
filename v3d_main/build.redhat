@@ -104,7 +104,17 @@ fi
 
 cd ../v3d_main
 
-cd ../bin
+#now try to move the 3rd party jar file(s) to bin folder
+
+cd ..
+for jarfile in `find bin/plugins -name \*.jar`;
+do
+    echo "Find file [$jarfile]"
+    mv $jarfile bin/.
+done;
+
+
+cd bin
 echo "Now run Vaa3D..."
 export LD_LIBRARY_PATH=../v3d_main/common_lib/lib
 ./vaa3d
