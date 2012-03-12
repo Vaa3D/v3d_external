@@ -229,7 +229,7 @@ void RendererNeuronAnnotator::shaderTexBegin(bool stream)
                 shader->begin(); //must before setUniform
                 shader->setUniform1i("volume",   0); //GL_TEXTURE0
                 shader->setUniform1i("colormap", 1); //GL_TEXTURE1, 2D
-                shader->setUniform1i("neuronVisibility", 2); // GL_TEXTURE2, 1D
+                shader->setUniform1i("neuronVisibility", 2); // GL_TEXTURE2, 2D 256x256 neuron index
                 shader->setUniform1i("neuronLabel", 3);
 
                 // float n = FILL_CHANNEL-1; // 0-based
@@ -282,7 +282,7 @@ void RendererNeuronAnnotator::shaderTexBegin(bool stream)
                  */
 
                 glActiveTextureARB(GL_TEXTURE2_ARB); // neuron visibility
-                glEnable(GL_TEXTURE_1D);
+                glEnable(GL_TEXTURE_2D);
                 glActiveTextureARB(GL_TEXTURE3_ARB); // neuron label
                 glEnable(GL_TEXTURE_3D);
                 glActiveTextureARB(GL_TEXTURE0_ARB);
@@ -303,7 +303,7 @@ void RendererNeuronAnnotator::shaderTexEnd()
                 glActiveTextureARB(GL_TEXTURE1_ARB); // color map
                 glDisable(GL_TEXTURE_2D);
                 glActiveTextureARB(GL_TEXTURE2_ARB); // neuron visibility
-                glDisable(GL_TEXTURE_1D);
+                glDisable(GL_TEXTURE_2D);
                 glActiveTextureARB(GL_TEXTURE3_ARB); // neuron label
                 glDisable(GL_TEXTURE_3D);
                 glActiveTextureARB(GL_TEXTURE0_ARB);

@@ -22,7 +22,7 @@ namespace jfrc {
 ///              Reference intensity is stored in channel 4.
 ///  2) colormap - 4x256xRGBA 2D texture used to convert data intensities to colors.
 ///                Fast gamma correction is done with the colormap.
-///  3) neuronVisiblity - MAX_NEURON_INDEXxbyte 1D texture encoding visibility of each neuron fragment.
+///  3) neuronVisiblity - MAX_NEURON_INDEXxbyte 2D texture encoding visibility of each neuron fragment.
 ///  4) neuronLabel - 3D label field containing neuron index at each voxel
 
 
@@ -141,8 +141,9 @@ private:
     bool bInitialized;
 };
 
-// Largest texture size on my Mac.
-#define MAX_NEURON_INDEX 16384
+// Largest texture size on my Mac is 16384
+// So we use a 2D 256x256 texture instead of a 1D 1x65536 texture.
+#define MAX_NEURON_INDEX 65536
 
 /// OpenGL texture object for communicating visibility of each neuron fragment to the GLSL shader.
 /// 1 x maxNeurons grayscale image with one pixel per neuron fragment.
@@ -174,7 +175,7 @@ public:
         while ((glErr = glGetError()) != GL_NO_ERROR)
             qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
         glActiveTextureARB(textureUnit);
-        glEnable(GL_TEXTURE_1D);
+        glEnable(GL_TEXTURE_2D);
         glGenTextures(1, &textureID);
         if ((glErr = glGetError()) != GL_NO_ERROR)
             qDebug() << "OpenGL error" << glErr << __FILE__ << __LINE__;
@@ -182,19 +183,20 @@ public:
             bInitialized = true;
 
         glActiveTextureARB(textureUnit);
-        glEnable(GL_TEXTURE_1D);
-        glBindTexture(GL_TEXTURE_1D, textureID);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, textureID);
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // MUST use nearest filter
-        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // MUST use nearest filter
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // MUST use nearest filter
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // MUST use nearest filter
         // qDebug() << "uploading neuron visibility" << __FILE__ << __LINE__;
 
-        glTexImage1D(GL_TEXTURE_1D, // target
+        glTexImage2D(GL_TEXTURE_2D, // target
                         0, // level
                         GL_RGBA, // texture format
-                        visibilities.size(), // width
+                        256, // width
+                        256, // height
                         0, // border
                         GL_RGBA, // image format
                         GL_UNSIGNED_BYTE, // image type
@@ -276,26 +278,27 @@ public:
         }
         GLenum glErr;
         glActiveTextureARB(textureUnit);
-        glEnable(GL_TEXTURE_1D);
-        glBindTexture(GL_TEXTURE_1D, textureID);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, textureID);
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); // GLSL will replace TexEnv
-        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // MUST use nearest filter
-        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // MUST use nearest filter
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // MUST use nearest filter
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // MUST use nearest filter
         // qDebug() << "uploading neuron visibility" << __FILE__ << __LINE__;
 
-        glTexImage1D(GL_TEXTURE_1D, // target
+        glTexImage2D(GL_TEXTURE_2D, // target
                         0, // level
                         GL_RGBA, // texture format
-                        visibilities.size(), // width
+                        256, // width
+                        256, // height
                         0, // border
                         GL_RGBA, // image format
                         GL_UNSIGNED_BYTE, // image type
                         &visibilities.front());
 
         /*
-        glTexSubImage1D(GL_TEXTURE_1D, // target
+        glTexSubImage2D(GL_TEXTURE_2D, // target
                         0, // level
                         0, // offset
                         visibilities.size(), // width
