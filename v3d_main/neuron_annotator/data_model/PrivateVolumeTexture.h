@@ -22,7 +22,7 @@ namespace jfrc {
 ///              Reference intensity is stored in channel 4.
 ///  2) colormap - 4x256xRGBA 2D texture used to convert data intensities to colors.
 ///                Fast gamma correction is done with the colormap.
-///  3) neuronVisiblity - 256xbyte 1D texture encoding visibility of each neuron fragment.
+///  3) neuronVisiblity - MAX_NEURON_INDEXxbyte 1D texture encoding visibility of each neuron fragment.
 ///  4) neuronLabel - 3D label field containing neuron index at each voxel
 
 
@@ -30,6 +30,10 @@ class NeuronLabelTexture
 {
 
 public:
+    typedef unsigned char uint8;
+    typedef unsigned short uint16;
+    typedef uint16 LabelType;
+
     NeuronLabelTexture()
         : textureID(0)
         , textureUnit(GL_TEXTURE3_ARB) // each texture used by a shader might need a separate texture unit
@@ -40,7 +44,7 @@ public:
         // test data for debugging
         width = height = depth = 8; // 8 works better than 5; it's a multiple of 8
         size_t numVoxels = width * height * depth;
-        data.assign((size_t)numVoxels, (unsigned char)0);
+        data.assign((size_t)(numVoxels), (LabelType)0);
         for (int i = 0; i < width; ++i)
              for (int j = 0; j < height; ++j)
                  for (int k = 0; k < depth; ++k)
@@ -72,7 +76,7 @@ public:
         return true;
     }
 
-    NeuronLabelTexture& setValueAt(size_t x, size_t y, size_t z, unsigned char neuronIndex)
+    NeuronLabelTexture& setValueAt(size_t x, size_t y, size_t z, LabelType neuronIndex)
     {
         size_t offset = x + y * width + z * width * height;
         assert(x >= 0); assert(x < width);
@@ -90,7 +94,7 @@ public:
         depth = paddedTextureSize.z();
         size_t numVoxels = width * height * depth;
         if (data.size() != numVoxels)
-            data.assign((size_t)numVoxels, (unsigned char)0);
+            data.assign((size_t)numVoxels, (LabelType)0);
         return *this;
     }
 
@@ -110,13 +114,13 @@ public:
         // copy texture from host RAM to GPU device
         glTexImage3D(GL_TEXTURE_3D, // target
                         0, // level
-                        GL_INTENSITY8, // texture format
+                        GL_INTENSITY16, // texture format
                         width,
                         height,
                         depth,
                         0, // border
                         GL_RED, // image format
-                        GL_UNSIGNED_BYTE, // image type
+                        GL_UNSIGNED_SHORT, // image type
                         &data.front());
         bool bSucceeded = true;
         GLenum glErr;
@@ -132,18 +136,20 @@ public:
 private:
     GLuint textureID;
     GLenum textureUnit;
-    std::vector<unsigned char> data;
+    std::vector<LabelType> data;
     size_t width, height, depth;
     bool bInitialized;
 };
 
+// Largest texture size on my Mac.
+#define MAX_NEURON_INDEX 16384
 
 /// OpenGL texture object for communicating visibility of each neuron fragment to the GLSL shader.
 /// 1 x maxNeurons grayscale image with one pixel per neuron fragment.
 class NeuronVisibilityTexture
 {
 public:
-    explicit NeuronVisibilityTexture(int maxNeurons = 256)
+    explicit NeuronVisibilityTexture(int maxNeurons = MAX_NEURON_INDEX)
         : visibilities(maxNeurons, 0x000000ff) // visible, neither selected nor highlighted
         , textureID(0)
         , neuronSelectionModel(NULL)

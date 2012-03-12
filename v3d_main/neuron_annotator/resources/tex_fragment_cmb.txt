@@ -28,7 +28,7 @@ void main()
     // Use 3D texture coordinate in texture unit 3 to get neuron label position
     float neuronIx = texture3D(neuronLabel, gl_TexCoord[3].xyz).r;
     // prepare to multiply neuron colors by visibility value; so neurons will toggle on/off
-    vec4 visSel = texture1D(neuronVisibility, neuronIx);
+    vec4 visSel = texture1D(neuronVisibility, neuronIx * 4); // Hard code "4" because max texture size is 16384 while 16-bit volume has 65536 possible values
     float visibility = visSel.x;
     float selectedness = visSel.y;
 

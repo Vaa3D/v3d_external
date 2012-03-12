@@ -116,7 +116,7 @@ void MipFragmentData::updateFromVolumeData()
                         fragmentMinimumIntensities[refIndex] = referenceIntensity;
 
                     // Neurons and Background
-                    unsigned char maskIndex = maskProxy.value8bit_at(x,y,z,0);
+                    int maskIndex = maskProxy.value_at(x,y,z,0);
                     float previousIntensity = intensityProxy.value_at(x, y, maskIndex, 0);
                     float intensity = 0;
                     for (int c = 0; c < imageC; c++) {
