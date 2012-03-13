@@ -2023,7 +2023,8 @@ QStringList IStitchPlugin::funclist() const
     return QStringList() << tr("v3dstitch")
                          << tr("istitch-subspace")
                          << tr("istitch-grouping")
-                         << tr("istitch-gc");
+                         << tr("istitch-gc")
+                         << tr("Help");
 }
 
 // Multiscale pairwise images stitching with thick planes (e.g. 10 pixels width) in boundary bounding box
@@ -9841,8 +9842,6 @@ int roi_navigating(V3DPluginCallback2 &callback, QWidget *parent)
             callback.updateImageWindow(newwin);
 
         }
-
-
     }
 
     return true;
@@ -9851,7 +9850,15 @@ int roi_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 // image stitch plugin dofunc
 bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output, V3DPluginCallback2 & callback,  QWidget * parent)
 {
-    if (func_name == tr("v3dstitch"))
+    if (func_name == tr("Help"))
+    {
+        //print Help info
+        printf("\nStitching Plugin Usage: \tvaa3d \n\n\t-x imageStitch \n\t-f v3dstitch \n\t-i <input_image_folder> \n\t-o <output_image_file> \n\t-p \"[#c <channalNo_reference> #x <downsample_factor_x> #y <downsample_factor_y> #z <downsample_factor_z> #l <overlap_ratio> #sb <saving_tile_boundary 0/1> #si <saving_stitching_result 0/1>]\"\n\n");
+
+
+        return true;
+    }
+    else if (func_name == tr("v3dstitch"))
     {
         if(input.size()<1) return false; // no inputs
 
@@ -9861,7 +9868,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
         if(infilelist->empty())
         {
             //print Help info
-            printf("\nUsage: v3d -x imageStitch.dylib -f v3dstitch -i <input_image_folder> -o <output_image_file> -p \"[#c <channalNo_reference> #x <downsample_factor_x> #y <downsample_factor_y> #z <downsample_factor_z> #l <overlap_ratio>] #sb [saving_tile_boundary 0/1] #si <saving_stitching_result 0/1>\"\n");
+            printf("\nUsage: v3d -x imageStitch.dylib -f v3dstitch -i <input_image_folder> -o <output_image_file> -p \"[#c <channalNo_reference> #x <downsample_factor_x> #y <downsample_factor_y> #z <downsample_factor_z> #l <overlap_ratio>] #sb <saving_tile_boundary 0/1> #si <saving_stitching_result 0/1>\"\n");
 
 
             return true;
