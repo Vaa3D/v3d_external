@@ -9853,7 +9853,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
     if (func_name == tr("Help"))
     {
         //print Help info
-        printf("\nStitching Plugin Usage: \tvaa3d \n\n\t-x imageStitch \n\t-f v3dstitch \n\t-i <input_image_folder> \n\t-o <output_image_file> \n\t-p \"[#c <channalNo_reference> #x <downsample_factor_x> #y <downsample_factor_y> #z <downsample_factor_z> #l <overlap_ratio> #sb <saving_tile_boundary 0/1> #si <saving_stitching_result 0/1>]\"\n\n");
+        printf("\nUsage: \tvaa3d \n\t-x imageStitch \n\t-f v3dstitch \n\t-i <input_image_folder> \n\t-o <output_image_file> \n\t-p \"[#c <channalNo_reference> #x <downsample_factor_x> #y <downsample_factor_y> #z <downsample_factor_z> #l <overlap_ratio> #sb <saving_tile_boundary 0/1> #si <saving_stitching_result 0/1>]\"\n\n");
 
 
         return true;

@@ -11,5 +11,9 @@ make install
 qmake
 make
 
+3. format of the order information file of tiled images
+
+<image_name> #row #column
+
 Feb 3, 2011
 Contact us: Hanchuan Peng (pengh@janelia.hhmi.org)
