@@ -790,6 +790,7 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 
 	char endianCodeData;
 	fread(&endianCodeData, 1, 1, fid);
+	printf("The data endian code is [%c]\n", endianCodeData);
 	if (endianCodeData!='B' && endianCodeData!='L')
 	{
 		printf("This program only supports big- or little- endian but not other format. Check your data endian.\n");
@@ -800,6 +801,7 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 
 	char endianCodeMachine;
 	endianCodeMachine = checkMachineEndian();
+	printf("The machine endian code is [%c]\n", endianCodeMachine);
 	if (endianCodeMachine!='B' && endianCodeMachine!='L')
 	{
 		printf("This program only supports big- or little- endian but not other format. Check your data endian.\n");
@@ -958,6 +960,10 @@ int loadRaw2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 				swap4bytes((void *)(img+i*unitSize));
 			}
 		}
+	}
+	else
+	{
+	  printf("No swapping of data\n");
 	}
 
 
