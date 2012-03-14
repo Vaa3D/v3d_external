@@ -1257,7 +1257,7 @@ XFormView::XFormView(QWidget *parent)
 {
     setAttribute(Qt::WA_MouseTracking);
 
-	hraw_prefix = QString("");
+    //hraw_prefix = QString("");
 
     Gtype = PixmapType;
     m_scale = 1.0;
@@ -1812,7 +1812,7 @@ void XFormView::mouseMoveEvent (QMouseEvent * e)
 	curMousePos = e->pos()/disp_scale;
 
     //090212. for panning
-	if (hraw_prefix.isEmpty())
+    if (mapview_paras.hraw_prefix.isEmpty())
 	{
           if (m_scale>1)
           {
@@ -2554,7 +2554,7 @@ void XFormView::drawPixmapType(QPainter *painter)
 	drawROI(painter);
 
 	// draw mapview win
-	b_displayMapviewWin = true;
+    bool b_displayMapviewWin = true;
 	if (b_displayMapviewWin)
 	{
           // transform back
@@ -2952,7 +2952,7 @@ void XFormWidget::initialize()
 {
     imgData = 0;
     openFileNameLabel = QString(""); //"/Users/hanchuanpeng/work/v3d/test1.raw"
-	hraw_prefix = QString(""); // for mapview control
+    //hraw_prefix = QString(""); // for mapview control
 
 	mypara_3Dview.b_use_512x512x256 = true;
 	mypara_3Dview.b_still_open = false;
@@ -3012,6 +3012,18 @@ void XFormWidget::initialize()
 
     lookingGlassCheckBox = NULL;
 
+    // for mapview. 20120309 ZJL
+    xSlider_mapv = NULL;
+    ySlider_mapv = NULL;
+    zSlider_mapv = NULL;
+    zoomSlider_mapv = NULL;
+
+    xValueSpinBox_mapv = NULL;
+    yValueSpinBox_mapv = NULL;
+    zValueSpinBox_mapv = NULL;
+    zoomSpinBox_mapv = NULL;
+    mvControlWin = NULL;
+
     colorRedType = NULL;
 	colorGreenType = NULL;
 	colorBlueType = NULL;
@@ -3067,10 +3079,128 @@ XFormWidget::~XFormWidget()
 	cleanData();
 }
 
+// for mapview ZJL
+void XFormWidget::createMapviewControlWin()
+{
+    mvControlWin = new QWidget(this);
+    mvControlWin->setWindowTitle("Mapview Control");
+    mvControlWin->setWindowFlags( Qt::Widget
+            | Qt::Tool
+            | Qt::CustomizeWindowHint | Qt::WindowTitleHint  //only title bar, disable buttons on title bar
+            //| Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint  //only close buttons on title bar
+            );
+
+    mvControlWin->setFixedWidth(250);
+    mvControlWin->setFixedHeight(150);
+
+    QGridLayout *layout = new QGridLayout(mvControlWin);
+
+    //QGroupBox* xyzGroup = new QGroupBox(mvControlWin);
+    //xyzGroup->setTitle("XYZ Navigation");
+
+    xSlider_mapv = new QScrollBar(Qt::Horizontal);
+    xSlider_mapv->setRange(1, imgData->getXDim()); //need redefine range
+    xSlider_mapv->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    QLabel* xSliderLabel_mapv = new QLabel("X");
+
+    xValueSpinBox_mapv = new QSpinBox;
+    xValueSpinBox_mapv->setRange(1, imgData->getXDim());
+    xValueSpinBox_mapv->setSingleStep(1);
+    xValueSpinBox_mapv->setValue(yz_view->focusPlaneCoord());
+
+    ySlider_mapv = new QScrollBar(Qt::Horizontal);
+    ySlider_mapv->setRange(1, imgData->getYDim()); //need redefine range
+    ySlider_mapv->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    QLabel* ySliderLabel_mapv = new QLabel("Y");
+
+    yValueSpinBox_mapv = new QSpinBox;
+    yValueSpinBox_mapv->setRange(1, imgData->getYDim());
+    yValueSpinBox_mapv->setSingleStep(1);
+    yValueSpinBox_mapv->setValue(zx_view->focusPlaneCoord());
+
+    zSlider_mapv = new QScrollBar(Qt::Horizontal);
+    zSlider_mapv->setRange(1, imgData->getZDim()); //need redefine range
+    zSlider_mapv->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    QLabel* zSliderLabel_mapv = new QLabel("Z");
+
+    zValueSpinBox_mapv = new QSpinBox;
+    zValueSpinBox_mapv->setRange(1, imgData->getZDim());
+    zValueSpinBox_mapv->setSingleStep(1);
+    zValueSpinBox_mapv->setValue(xy_view->focusPlaneCoord());
+
+    // zoom slider
+    zoomSlider_mapv = new QScrollBar(Qt::Horizontal);
+    zoomSlider_mapv->setRange(1, 100); //need redefine range
+    zoomSlider_mapv->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    QLabel* zoomLabel_mapv = new QLabel("Zoom");
+
+    zoomSpinBox_mapv = new QSpinBox;
+    zoomSpinBox_mapv->setRange(1, 100);
+    zoomSpinBox_mapv->setSingleStep(1);
+    zoomSpinBox_mapv->setValue(1);
+
+    // layout for mv control window
+    layout->addWidget(zSliderLabel_mapv, 0, 0, 1, 1);
+    layout->addWidget(zSlider_mapv, 0, 1, 1, 13);
+    layout->addWidget(zValueSpinBox_mapv, 0, 14, 1, 6);
+
+    layout->addWidget(xSliderLabel_mapv, 1, 0, 1, 1);
+    layout->addWidget(xSlider_mapv, 1, 1, 1, 13);
+    layout->addWidget(xValueSpinBox_mapv, 1, 14, 1, 6);
+
+    layout->addWidget(ySliderLabel_mapv, 2, 0, 1, 1);
+    layout->addWidget(ySlider_mapv, 2, 1, 1, 13);
+    layout->addWidget(yValueSpinBox_mapv, 2, 14, 1, 6);
+
+    layout->addWidget(zoomLabel_mapv, 3, 0, 1, 1);
+    layout->addWidget(zoomSlider_mapv, 3, 1, 1, 13);
+    layout->addWidget(zoomSpinBox_mapv, 3, 14, 1, 6);
+
+    // setup connections
+    connect(xSlider_mapv, SIGNAL(valueChanged(int)), yz_view, SLOT(changeFocusPlane(int)));
+    connect(ySlider_mapv, SIGNAL(valueChanged(int)), zx_view, SLOT(changeFocusPlane(int)));
+    connect(zSlider_mapv, SIGNAL(valueChanged(int)), xy_view, SLOT(changeFocusPlane(int)));
+
+    connect(zoomSlider_mapv, SIGNAL(valueChanged(int)), xy_view, SLOT(changeScale(int)));
+    connect(zoomSlider_mapv, SIGNAL(valueChanged(int)), yz_view, SLOT(changeScale(int)));
+    connect(zoomSlider_mapv, SIGNAL(valueChanged(int)), zx_view, SLOT(changeScale(int)));
+    //printf("connect status[%d]\n",a);
+
+    connect(xValueSpinBox_mapv, SIGNAL(valueChanged(int)), xSlider_mapv, SLOT(setValue(int)));
+    connect(xSlider_mapv, SIGNAL(valueChanged(int)), xValueSpinBox_mapv, SLOT(setValue(int)));
+
+    connect(yValueSpinBox_mapv, SIGNAL(valueChanged(int)), ySlider_mapv, SLOT(setValue(int)));
+    connect(ySlider_mapv, SIGNAL(valueChanged(int)), yValueSpinBox_mapv, SLOT(setValue(int)));
+
+    connect(zValueSpinBox_mapv, SIGNAL(valueChanged(int)), zSlider_mapv, SLOT(setValue(int)));
+    connect(zSlider_mapv, SIGNAL(valueChanged(int)), zValueSpinBox_mapv, SLOT(setValue(int)));
+
+    connect(zoomSpinBox_mapv, SIGNAL(valueChanged(int)), zoomSlider_mapv, SLOT(setValue(int)));
+    connect(zoomSlider_mapv, SIGNAL(valueChanged(int)), zoomSpinBox_mapv, SLOT(setValue(int)));
+
+    //set the navigation event connection
+    connect(xy_view, SIGNAL(focusXChanged(int)), xSlider_mapv, SLOT(setValue(int)));
+    connect(xy_view, SIGNAL(focusYChanged(int)), ySlider_mapv, SLOT(setValue(int)));
+    connect(xy_view, SIGNAL(focusZChanged(int)), zSlider_mapv, SLOT(setValue(int)));
+
+    connect(yz_view, SIGNAL(focusXChanged(int)), xSlider_mapv, SLOT(setValue(int)));
+    connect(yz_view, SIGNAL(focusYChanged(int)), ySlider_mapv, SLOT(setValue(int)));
+    connect(yz_view, SIGNAL(focusZChanged(int)), zSlider_mapv, SLOT(setValue(int)));
+
+    connect(zx_view, SIGNAL(focusXChanged(int)), xSlider_mapv, SLOT(setValue(int)));
+    connect(zx_view, SIGNAL(focusYChanged(int)), ySlider_mapv, SLOT(setValue(int)));
+    connect(zx_view, SIGNAL(focusZChanged(int)), zSlider_mapv, SLOT(setValue(int)));
+
+    mvControlWin->show();
+}
+
+
 void XFormWidget::closeEvent(QCloseEvent *event) //080814: this function is specially added to assure the image data will be cleaned; so that have more memory for other stacks.
 //note the reason to overload this closeEvent function but not use the QWidget destructor is because seems Qt has a build-in bug in freeing ArthurFrame object in QString freeing
 {
 	qDebug("***v3d: XFormWidget::closeEvent");
+
+    if(mvControlWin) mvControlWin->close();
 
 	printf("Now going to free memory for this image or data of this window. .... ");
 	cleanData();
@@ -3781,7 +3911,8 @@ void XFormWidget::createGUI()
      xy_view->setFixedWidth(xy_view->get_disp_width());
      xy_view->setFixedHeight(xy_view->get_disp_height());
      xy_view->setFocusPolicy(Qt::ClickFocus);
-	xy_view->hraw_prefix = hraw_prefix; //for mapview control
+    //xy_view->hraw_prefix = hraw_prefix; //for mapview control
+    xy_view->mapview_paras = mapview_paras;
      xy_view->mapview = mapview;
 
      yz_view = new XFormView(viewGroup);
@@ -3789,7 +3920,8 @@ void XFormWidget::createGUI()
      yz_view->setFixedWidth(yz_view->get_disp_width());
      yz_view->setFixedHeight(yz_view->get_disp_height());
      yz_view->setFocusPolicy(Qt::ClickFocus);
-	yz_view->hraw_prefix = hraw_prefix;
+    //yz_view->hraw_prefix = hraw_prefix;
+    yz_view->mapview_paras = mapview_paras;
      yz_view->mapview = mapview;
 
      zx_view = new XFormView(viewGroup);
@@ -3797,7 +3929,8 @@ void XFormWidget::createGUI()
      zx_view->setFixedWidth(zx_view->get_disp_width());
      zx_view->setFixedHeight(zx_view->get_disp_height());
      zx_view->setFocusPolicy(Qt::ClickFocus);
-	zx_view->hraw_prefix = hraw_prefix;
+    //zx_view->hraw_prefix = hraw_prefix;
+    zx_view->mapview_paras = mapview_paras;
      zx_view->mapview = mapview;
 
 	//    viewGroup->setFixedWidth(xy_view->frameGeometry().width()+yz_view->frameGeometry().width());
@@ -4079,7 +4212,8 @@ void XFormWidget::updateDataRelatedGUI()
 		xy_view->setFixedWidth(xy_view->get_disp_width());
 		xy_view->setFixedHeight(xy_view->get_disp_height());
 		imgData->set_xy_view(xy_view);
-		xy_view->hraw_prefix = hraw_prefix; // for mapview control
+        //xy_view->hraw_prefix = hraw_prefix; // for mapview control
+        xy_view->mapview_paras = mapview_paras;
           xy_view->mapview = mapview;
 
 		//
@@ -4099,8 +4233,9 @@ void XFormWidget::updateDataRelatedGUI()
 		yz_view->setFixedWidth(yz_view->get_disp_width());
 		yz_view->setFixedHeight(yz_view->get_disp_height());
 		imgData->set_yz_view(yz_view);
-		yz_view->hraw_prefix = hraw_prefix; // for mapview control
-          yz_view->mapview = mapview;
+        //yz_view->hraw_prefix = hraw_prefix; // for mapview control
+        yz_view->mapview_paras = mapview_paras;
+        yz_view->mapview = mapview;
 
 		//
 		zx_view->setImgData(imgPlaneY, imgData, Ctype);
@@ -4119,7 +4254,8 @@ void XFormWidget::updateDataRelatedGUI()
 		zx_view->setFixedWidth(zx_view->get_disp_width());
 		zx_view->setFixedHeight(zx_view->get_disp_height());
 		imgData->set_zx_view(zx_view);
-		zx_view->hraw_prefix = hraw_prefix; // for mapview control
+        //zx_view->hraw_prefix = hraw_prefix; // for mapview control
+        zx_view->mapview_paras = mapview_paras;
           zx_view->mapview = mapview;
 
 		if (b_use_dispzoom)

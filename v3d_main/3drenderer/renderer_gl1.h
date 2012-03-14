@@ -310,8 +310,9 @@ protected:
 
      bool boundingboxFromStroke(XYZ& minloc, XYZ& maxloc);
      //Using boundingboxFromStroke() get boundingbox and then get subvol
-     void getSubVolFromStroke(double* &pSubdata, XYZ &sub_orig, V3DLONG &sub_szx, V3DLONG &sub_szy, V3DLONG &sub_szz);
-
+     void getSubVolFromStroke(double* &pSubdata, int chno, XYZ &sub_orig, V3DLONG &sub_szx, V3DLONG &sub_szy, V3DLONG &sub_szz);
+     void getSubVolFrom2Points(vector<MarkerPos> & pos, int chno, double* &pSubdata, XYZ &sub_orig, V3DLONG &sub_szx,
+     V3DLONG &sub_szy, V3DLONG &sub_szz);
 
      void vecToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list);
      void getMidRandomLoc(MarkerPos pos, int chno, XYZ &mid_loc);

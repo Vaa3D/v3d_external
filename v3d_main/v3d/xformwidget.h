@@ -50,6 +50,9 @@ class ChannelTabWidget;
 
 #define DELETE_AND_ZERO(p)	{ if ((p)!=NULL) delete (p); (p) = NULL; }
 
+
+
+
 struct iDrawExternalParameter
 {
 	My4DImage* image4d;
@@ -119,6 +122,7 @@ struct iDrawExternalParameter
      }
 };
 
+
 class XFormWidget : public QWidget, public TriviewControl //class XFormWidget : public QMainWindow
 {
     Q_OBJECT;
@@ -183,6 +187,9 @@ public:
 	ImageDisplayColorType getColorType() {return Ctype;}
     QRadioButton* colorMapRadioButton() {return colorMapDispType;} //110723 RZC
 
+    // for mapview ZJL
+    void createMapviewControlWin();
+
 	iDrawExternalParameter mypara_3Dview;
 	iDrawExternalParameter mypara_3Dlocalview;
 	V3D_atlas_viewerDialog *atlasViewerDlg;
@@ -204,7 +211,9 @@ public:
 
 	bool bDispMarkerLabel;
 
-     QString hraw_prefix; // for mapview control
+    // mapview
+    // QString hraw_prefix; // for mapview control
+     Mapview_Paras mapview_paras; // for mapview control
      ImageMapView mapview; // mapview
 
 protected:
@@ -276,6 +285,13 @@ private:
 
     ChannelTabWidget *channelTabXView;//110722 RZC
     ChannelTabWidget *channelTabGlass;//110801 RZC
+
+    // for Mapview. 20120309 ZJL
+    QWidget *mvControlWin;
+    QScrollBar *xSlider_mapv, *ySlider_mapv, *zSlider_mapv;
+    QSpinBox *xValueSpinBox_mapv, *yValueSpinBox_mapv, *zValueSpinBox_mapv, *zoomSpinBox_mapv;
+    QScrollBar *zoomSlider_mapv;
+
 
 	MyTextBrowser *focusPointFeatureWidget;
 

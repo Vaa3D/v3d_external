@@ -500,8 +500,91 @@ bool Renderer_gl1::withinLineSegCheck( XYZ p1,XYZ p2,XYZ pa)
 }
 
 
+
+
+// get bounding volume from two stroke points
+// c is channel
+void Renderer_gl1::getSubVolFrom2Points(vector<MarkerPos> & pos, int chno, double* &pSubdata, XYZ &sub_orig, V3DLONG &sub_szx,
+     V3DLONG &sub_szy, V3DLONG &sub_szz)
+{
+     XYZ minloc, maxloc;
+     boundingboxFromStroke(minloc, maxloc);
+
+     // find min-max of x y z in loc_veci
+     float minx, miny, minz, maxx, maxy, maxz;
+
+     // Directly using stroke pos for minloc, maxloc
+     for(int i=0; i<pos.size(); i++ )
+     {
+          double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+          clipplane[3] = viewClip;
+          ViewPlaneToModel(pos.at(i).MV, clipplane);
+
+          XYZ loc0, loc1;
+          _MarkerPos_to_NearFarPoint(pos.at(i), loc0, loc1);
+
+          if(i==0)
+          {
+               minx=maxx=loc0.x; miny=maxy=loc0.y; minz=maxz=loc0.z;
+          }
+          if(minx>loc0.x) minx=loc0.x;
+          if(miny>loc0.y) miny=loc0.y;
+          if(minz>loc0.z) minz=loc0.z;
+
+          if(maxx<loc0.x) maxx=loc0.x;
+          if(maxy<loc0.y) maxy=loc0.y;
+          if(maxz<loc0.z) maxz=loc0.z;
+
+          if(minx>loc1.x) minx=loc1.x;
+          if(miny>loc1.y) miny=loc1.y;
+          if(minz>loc1.z) minz=loc1.z;
+
+          if(maxx<loc1.x) maxx=loc1.x;
+          if(maxy<loc1.y) maxy=loc1.y;
+          if(maxz<loc1.z) maxz=loc1.z;
+     }
+
+     int boundary = 5;
+
+     minloc.x = minx - boundary;
+     minloc.y = miny - boundary;
+     minloc.z = minz - boundary;
+
+     maxloc.x = maxx + boundary;
+     maxloc.y = maxy + boundary;
+     maxloc.z = maxz + boundary;
+
+     dataViewProcBox.clamp(minloc);
+     dataViewProcBox.clamp(maxloc);
+
+     // get data buffer
+     V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+     My4DImage* curImg = 0;
+     if (w)
+          curImg = v3dr_getImage4d(_idep);
+
+     // The data is from minloc to maxloc
+     sub_szx=abs(maxloc.x-minloc.x)+1;
+     sub_szy=abs(maxloc.y-minloc.y)+1;
+     sub_szz=abs(maxloc.z-minloc.z)+1;
+
+     sub_orig = minloc;
+
+     pSubdata = new double [sub_szx*sub_szy*sub_szz];
+     for(V3DLONG k=0; k<sub_szz; k++)
+          for(V3DLONG j=0; j<sub_szy; j++)
+               for(V3DLONG i=0; i<sub_szx; i++)
+               {
+                    V3DLONG ind = k*sub_szy*sub_szx + j*sub_szx + i;
+                    pSubdata[ind]=curImg->at(minloc.x+i, minloc.y+j, minloc.z+k, chno);
+               }
+
+}
+
+
+
 // get bounding volume from a stroke
-void Renderer_gl1::getSubVolFromStroke(double* &pSubdata, XYZ &sub_orig, V3DLONG &sub_szx,
+void Renderer_gl1::getSubVolFromStroke(double* &pSubdata, int c, XYZ &sub_orig, V3DLONG &sub_szx,
      V3DLONG &sub_szy, V3DLONG &sub_szz)
 {
      XYZ minloc, maxloc;
@@ -525,10 +608,12 @@ void Renderer_gl1::getSubVolFromStroke(double* &pSubdata, XYZ &sub_orig, V3DLONG
                for(V3DLONG i=0; i<sub_szx; i++)
                {
                     V3DLONG ind = k*sub_szy*sub_szx + j*sub_szx + i;
-                    pSubdata[ind]=curImg->at(minloc.x+i, minloc.y+j, minloc.z+k);
+                    pSubdata[ind]=curImg->at(minloc.x+i, minloc.y+j, minloc.z+k, c);
                }
 
 }
+
+
 
 // get the control points of the primary curve
 void Renderer_gl1::getSubVolInfo(XYZ lastloc, XYZ loc0, XYZ loc1, XYZ &sub_orig, double* &pSubdata,
@@ -1041,7 +1126,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
      XYZ sub_orig;
      double* pSubdata;
      V3DLONG sub_szx, sub_szy, sub_szz;
-     getSubVolFromStroke(pSubdata, sub_orig, sub_szx, sub_szy, sub_szz);
+     getSubVolFromStroke(pSubdata, chno, sub_orig, sub_szx, sub_szy, sub_szz);
 
      bool b_useStrokeBB = true;
 
@@ -1062,6 +1147,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 		{
                // check whether i is in inds
                bool b_inds=false;
+
                if(inds.empty())
                {
                     b_inds=true;
@@ -1082,6 +1168,18 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                if(i==0 || i==(N-1) || b_inds)
                {
                     const MarkerPos & pos = list_listCurvePos.at(index).at(i); // change from 0 to index for different curves, ZJL
+
+                    // preparing the two-markerpos decided boundingbox
+                    // bool b_use2PointsBB = true; // control bool
+                    // vector<MarkerPos> pos_vec;
+                    // double* pSubdata2;
+                    // XYZ sub_orig2;
+                    // V3DLONG sub_szx2, sub_szy2, sub_szz2;
+                    // pos_vec.clear();
+                    // MarkerPos pos_next = list_listCurvePos.at(index).at(i_next);
+                    // pos_vec.push_back(pos);
+                    // pos_vec.push_back(pos_next);
+                    // getSubVolFrom2Points(pos_vec, chno, pSubdata2, sub_orig2, sub_szx2, sub_szy2, sub_szz2);
 
                     //100730 RZC, in View space, keep for dot(clip, pos)>=0
                     double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
@@ -1289,8 +1387,6 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                                         MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
                                         tar_markers.push_back(mloci);
 
-                                        //
-                                        //
                                         //      //add neighbors of loci
                                         //      vector<XYZ> neibs_loci;
                                         //      neibs_loci.clear();
@@ -1369,7 +1465,6 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                          else  // using stroke to creating a bounding box and do FM
                          {
                               fastmarching_linker(sub_markers, tar_markers, pSubdata, outswc, sub_szx, sub_szy, sub_szz, 0.0);// time_thresh);
-
                               if(!outswc.empty())
                               {
                                    // the 1st loc in outswc is the last pos got in fm
@@ -1412,6 +1507,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 
           }
      }
+
      PROGRESS_PERCENT(60);
      //===============================================================================>>>>>>>>>>>> second fastmarching
      // put the last element of loc_vec

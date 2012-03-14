@@ -1177,16 +1177,15 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                   int l = log(256)/log(2.0);
                   int m = log(128)/log(2.0);
                   int n = log(64)/log(2.0);
-
                   
                   ImageMapView mapview;
                   mapview.setPara(prefix, L+l, M+m, N+n, l, m, n);
 
                   unsigned char * outimg1d = 0;
 				 
-                  long x0 = 0, y0 = 0, z0 = 0;
+                  V3DLONG origin[3] = {0, 0, 0};
                   V3DLONG outsz[4] = {256, 128, 64, 1};
-                  mapview.getImage(0, outimg1d, x0, y0, z0, outsz[0], outsz[1], outsz[2]);
+                  mapview.getImage(0, outimg1d, origin[0], origin[1], origin[2], outsz[0], outsz[1], outsz[2]);
 				 
                   XFormWidget *child = createMdiChild();
 
@@ -1194,7 +1193,17 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 				 
                   child->mypara_3Dview.image4d = child->getImageData();
 
-				 child->hraw_prefix = hraw_prefix; //for mapview control
+                 //child->hraw_prefix = hraw_prefix; //for mapview control
+
+                 // mapview control
+                 Mapview_Paras mv_paras;
+                 mv_paras.L=L; mv_paras.M=M; mv_paras.N=N;
+                 mv_paras.l=l; mv_paras.M=m; mv_paras.n=n;
+                 mv_paras.origin[0] = origin[0]; mv_paras.origin[1] = origin[1]; mv_paras.origin[2] = origin[2];
+                 mv_paras.outsz[0] = outsz[0]; mv_paras.outsz[2] = outsz[2]; mv_paras.outsz[3] = outsz[3]; mv_paras.outsz[3] = outsz[3];
+                 mv_paras.hraw_prefix=hraw_prefix;
+
+                 child->mapview_paras = mv_paras;
 				 child->mapview = mapview; 
 				 
 				 child->setWindowTitle_Prefix(hraw_prefix.toAscii());
@@ -1227,6 +1236,9 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                   }
 
                   child->show();
+
+                  // create mapview control window
+                  child->createMapviewControlWin();
 
                   if (b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer))
                   {

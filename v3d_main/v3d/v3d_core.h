@@ -162,6 +162,23 @@ bool readSingleImageFile(char *imgSrcFile, unsigned char * & data1d, V3DLONG * &
 QStringList importSeriesFileList_addnumbersort(const QString & individualFileName, TimePackType & timepacktype);
 
 
+// for mapview paras. ZJL
+struct Mapview_Paras {
+    int L, M, N, l, m, n;//Level
+    V3DLONG outsz[4];    //output size
+    V3DLONG origin[3];   //top-left corner pos
+    QString hraw_prefix; //prefix of files
+
+    Mapview_Paras()
+    {
+        hraw_prefix=QString("");
+        outsz[0]=outsz[1]=outsz[2]=outsz[3]=0;
+        origin[0]=origin[1]=origin[2]=0;
+        L = M = N = l = m = n = 0;
+    }
+};
+
+
 struct InvidualAtlasFileInfo
 {
 	int n;			  // index
@@ -520,7 +537,8 @@ protected:
 
 public:
 	QPolygon roiPolygon;//061009
-	QString hraw_prefix; // for mapview control. ZJL 20120305
+    //QString hraw_prefix; // for mapview control. ZJL 20120305
+    Mapview_Paras mapview_paras;
      ImageMapView mapview; // mapview data. ZJL 20120305
 
 private:
@@ -553,9 +571,6 @@ private:
 	My4DImage * imgData; //a reference to the real data stored in the XFormWidget
 
 	bool b_displayFocusCrossLine;
-
-	bool b_displayScaleBar;   // for mapview. ZJL 20120224
-	bool b_displayMapviewWin; // for mapview. ZJL 20120224
 
 	int focusPosInWidth, focusPosInHeight;
 
