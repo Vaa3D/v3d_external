@@ -5,7 +5,7 @@
 #include "../../v3d/v3d_core.h"
 
 // At default display, show reference channel at max 60% gray
-#define REF_CHANNEL_DIMNESS_FACTOR 0.6
+// #define REF_CHANNEL_DIMNESS_FACTOR 0.6
 
 // NaVolumeDataLoadableStack used to be an inner class of NaVolumeData,
 // but inner classes cannot be QObjects.

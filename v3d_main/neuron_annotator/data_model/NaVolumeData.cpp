@@ -303,7 +303,8 @@ bool NaVolumeData::Writer::loadStacks()
             m_data, SIGNAL(progressMessageChanged(QString)));
     qDebug() << "NaVolumeData::Writer::loadStacks() starting maskStack.load()";
 
-    My4DImage* initialReferenceStack = new My4DImage();
+    m_data->referenceStack = new My4DImage();
+    My4DImage* initialReferenceStack = m_data->referenceStack;
     LoadableStack referenceStack(initialReferenceStack, m_data->referenceStackFilePath, 2);
     connect(&referenceStack, SIGNAL(progressValueChanged(int, int)),
             m_data, SLOT(setStackLoadProgress(int, int)));
@@ -367,19 +368,24 @@ bool NaVolumeData::Writer::loadStacks()
     m_data->neuronMaskProxy = Image4DProxy<My4DImage>(m_data->neuronMaskStack);
     m_data->neuronMaskProxy.set_minmax(m_data->neuronMaskStack->p_vmin, m_data->neuronMaskStack->p_vmax);
 
-    qDebug() << "Calling normalizeReferenceStack...";
-    normalizeReferenceStack(initialReferenceStack);
-    qDebug() << "Done calling normalizeReferenceStack";
+    // qDebug() << "Calling normalizeReferenceStack...";
+    // normalizeReferenceStack(initialReferenceStack);
+    // qDebug() << "Done calling normalizeReferenceStack";
+    m_data->referenceStack->updateminmaxvalues();
+    m_data->referenceImageProxy = Image4DProxy<My4DImage>(m_data->referenceStack);
+    m_data->referenceImageProxy.set_minmax(m_data->referenceStack->p_vmin, m_data->referenceStack->p_vmax);
 
     return true;
 }
 
+/*
 bool NaVolumeData::Writer::normalizeReferenceStack(My4DImage* initialReferenceStack)
 {
     int datatype=(int)initialReferenceStack->getDatatype();
     qDebug() << "NaVolume::Writer::normalizeReferenceStack - datatype=" << datatype;
     m_data->referenceStack=new My4DImage();
-    m_data->referenceStack->loadImage(initialReferenceStack->getXDim(), initialReferenceStack->getYDim(), initialReferenceStack->getZDim(), 1 /* number of channels */, 1 /* bytes per channel */);
+    m_data->referenceStack->loadImage(initialReferenceStack->getXDim(), initialReferenceStack->getYDim(), initialReferenceStack->getZDim(), 1 , 1 );
+    /*
     Image4DProxy<My4DImage> initialProxy(initialReferenceStack);
     Image4DProxy<My4DImage> referenceProxy(m_data->referenceStack);
 
@@ -416,6 +422,7 @@ bool NaVolumeData::Writer::normalizeReferenceStack(My4DImage* initialReferenceSt
 
     return true;
 }
+ */
 
 //////////////////////////////////
 // NaVolumeData::Reader methods //

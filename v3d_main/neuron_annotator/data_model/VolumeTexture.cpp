@@ -44,7 +44,7 @@ void VolumeTexture::setDataFlowModel(const DataFlowModel& dataFlowModel)
 /* slot */
 bool VolumeTexture::updateVolume()
 {
-    qDebug() << "VolumeTexture::updateVolume()" << __FILE__ << __LINE__;
+    // qDebug() << "VolumeTexture::updateVolume()" << __FILE__ << __LINE__;
     bool bSucceeded = true; // avoid signalling before unlocking
     if (NULL == volumeData) return false;
     int numSlices = 0;

@@ -86,7 +86,7 @@ bool PrivateDataColorModel::initialize(const NaVolumeData::Reader& volumeReader)
                 color = qRgb(0, 0, 255); // blue
             }
             else {
-                color = qRgb(255, 255, 255); // white
+                color = qRgb(170, 170, 170); // white/gray reference
             }
         }
         ChannelColorModel channelModel(color);
@@ -98,7 +98,7 @@ bool PrivateDataColorModel::initialize(const NaVolumeData::Reader& volumeReader)
         }
         else // reference channel
         {
-            channelModel.setDataRange(refProxy.vmin[0], refProxy.vmax[0] / REF_CHANNEL_DIMNESS_FACTOR); // darken reference by giving it a higher hdr max
+            channelModel.setDataRange(refProxy.vmin[0], refProxy.vmax[0]); // darken reference by giving it a higher hdr max
             channelModel.resetHdrRange();
             channelModel.bUseSharedGamma = false; // Don't apply shared gamma to reference channel
         }
