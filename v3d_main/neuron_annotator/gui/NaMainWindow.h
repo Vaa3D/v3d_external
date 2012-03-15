@@ -90,6 +90,7 @@ signals:
     void channelVisibilityChanged(int, bool);
     void nutatingChanged(bool);
     void defaultVaa3dFileLoadRequested(QString fileName);
+    void crosshairVisibilityChanged(bool);
 
 public slots:
     // void selectCurtain(int index);
@@ -123,6 +124,7 @@ public slots:
     void supportQuadStereo(bool b);
     void showDynamicRangeTool();
     void setTitle(QString title);
+    void setCrosshairVisibility(bool);
 
 protected slots:
     void on3DViewerRotationChanged(const Rotation3D& rot);
@@ -152,6 +154,7 @@ protected:
     void connectCustomCut();
     void dragEnterEvent(QDragEnterEvent *);
     void dropEvent(QDropEvent *);
+    void retrieveCrosshairVisibilitySetting();
 
 private:
     DataFlowModel* dataFlowModel;
@@ -183,6 +186,7 @@ private:
     DynamicRangeTool* dynamicRangeTool;
 
     bool isInCustomCutMode;
+    bool bShowCrosshair;
 };
 
 #endif // NAMAINWINDOW_H

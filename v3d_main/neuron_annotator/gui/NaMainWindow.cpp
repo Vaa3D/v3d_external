@@ -73,6 +73,7 @@ NaMainWindow::NaMainWindow()
     , neuronSelector(this)
     , isInCustomCutMode(false)
     , undoStack(NULL)
+    , bShowCrosshair(true) // default to on
 {
     ui.setupUi(this);
     setAcceptDrops(true);
@@ -273,11 +274,16 @@ NaMainWindow::NaMainWindow()
 
     // Crosshair
     connect(ui.actionShow_Crosshair, SIGNAL(toggled(bool)),
+            this, SLOT(setCrosshairVisibility(bool)));
+    connect(this, SIGNAL(crosshairVisibilityChanged(bool)),
+            ui.actionShow_Crosshair, SLOT(setChecked(bool)));
+    connect(this, SIGNAL(crosshairVisibilityChanged(bool)),
             ui.naLargeMIPWidget, SLOT(showCrosshair(bool)));
-    connect(ui.actionShow_Crosshair, SIGNAL(toggled(bool)),
+    connect(this, SIGNAL(crosshairVisibilityChanged(bool)),
             ui.v3dr_glwidget, SLOT(showCrosshair(bool)));
-    connect(ui.actionShow_Crosshair, SIGNAL(toggled(bool)),
+    connect(this, SIGNAL(crosshairVisibilityChanged(bool)),
             ui.naZStackWidget, SLOT(showCrosshair(bool)));
+    retrieveCrosshairVisibilitySetting();
 
     // Axes
     // TODO I want a small set of axes that sits in the lower left corner.  The gigantic axes are less useful.
@@ -331,6 +337,26 @@ NaMainWindow::NaMainWindow()
     initializeContextMenus();
     initializeStereo3DOptions();
     connectCustomCut();
+}
+
+/* slot */
+void NaMainWindow::setCrosshairVisibility(bool b)
+{
+    if (bShowCrosshair == b) return; // no change
+    bShowCrosshair = b;
+    QSettings settings("HHMI", "V3D");
+    settings.setValue("NaCrosshairVisibility", bShowCrosshair);
+    emit crosshairVisibilityChanged(bShowCrosshair);
+}
+
+void NaMainWindow::retrieveCrosshairVisibilitySetting()
+{
+    QSettings settings("HHMI", "V3D");
+    bool bVisible = true; // default to "on"
+    QVariant val = settings.value("NaCrosshairVisibility");
+    if (! val.isNull())
+        bVisible = val.toBool();
+    setCrosshairVisibility(bVisible);
 }
 
 /////////////////////////////////////////////////////
