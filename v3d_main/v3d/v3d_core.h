@@ -164,7 +164,8 @@ QStringList importSeriesFileList_addnumbersort(const QString & individualFileNam
 
 // for mapview paras. ZJL
 struct Mapview_Paras {
-    int L, M, N, l, m, n;//Level
+    int L, M, N, l, m, n;//block
+    int level;           //current level
     V3DLONG outsz[4];    //output size
     V3DLONG origin[3];   //top-left corner pos
     QString hraw_prefix; //prefix of files
@@ -175,6 +176,7 @@ struct Mapview_Paras {
         outsz[0]=outsz[1]=outsz[2]=outsz[3]=0;
         origin[0]=origin[1]=origin[2]=0;
         L = M = N = l = m = n = 0;
+        level=0;
     }
 };
 
@@ -537,9 +539,6 @@ protected:
 
 public:
 	QPolygon roiPolygon;//061009
-    //QString hraw_prefix; // for mapview control. ZJL 20120305
-    Mapview_Paras mapview_paras;
-     ImageMapView mapview; // mapview data. ZJL 20120305
 
 private:
     enum XFormType { VectorType, PixmapType, TextType};

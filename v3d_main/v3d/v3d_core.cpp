@@ -1812,53 +1812,29 @@ void XFormView::mouseMoveEvent (QMouseEvent * e)
 	curMousePos = e->pos()/disp_scale;
 
     //090212. for panning
-    if (mapview_paras.hraw_prefix.isEmpty())
-	{
-          if (m_scale>1)
-          {
-               if ((e->buttons() & Qt::LeftButton))
-               {
-                    {
-                         setCursor(myCursor); //maybe repeated set? is this necessary?
+    if (m_scale>1)
+    {
+       if ((e->buttons() & Qt::LeftButton))
+       {
+            {
+                 setCursor(myCursor); //maybe repeated set? is this necessary?
 
-                         curDisplayCenter = curDisplayCenter0 + QPointF(curMousePos.x()*disp_scale-dragStartPosition.x(), curMousePos.y()*disp_scale-dragStartPosition.y());
-                         //qDebug()<<curDisplayCenter.x()<<" "<<curDisplayCenter.y();
+                 curDisplayCenter = curDisplayCenter0 + QPointF(curMousePos.x()*disp_scale-dragStartPosition.x(), curMousePos.y()*disp_scale-dragStartPosition.y());
+                 //qDebug()<<curDisplayCenter.x()<<" "<<curDisplayCenter.y();
 
-                         if (curDisplayCenter.x() < (2-m_scale)*disp_width/2.0-1)
-                              curDisplayCenter.setX((2-m_scale)*disp_width/2.0-1);
-                         else if (curDisplayCenter.x() > m_scale*disp_width/2.0)
-                              curDisplayCenter.setX(m_scale*disp_width/2.0);
+                 if (curDisplayCenter.x() < (2-m_scale)*disp_width/2.0-1)
+                      curDisplayCenter.setX((2-m_scale)*disp_width/2.0-1);
+                 else if (curDisplayCenter.x() > m_scale*disp_width/2.0)
+                      curDisplayCenter.setX(m_scale*disp_width/2.0);
 
-                         if (curDisplayCenter.y() < (2-m_scale)*disp_height/2.0-1)
-                              curDisplayCenter.setY((2-m_scale)*disp_height/2.0-1);
-                         else if (curDisplayCenter.y() > m_scale*disp_height/2.0)
-                              curDisplayCenter.setY(m_scale*disp_height/2.0);
-                    }
-               }
-          }
-	}
-     else // for mapview. ZJL 20120305
-     {
-          if ((e->buttons() & Qt::LeftButton))
-          {
-               // ImageMapView mapview;
-               // mapview.setPara(hraw_prefix.toStdString(), L+l, M+m, N+n, l, m, n);
-               // unsigned char * outimg1d = 0;
+                 if (curDisplayCenter.y() < (2-m_scale)*disp_height/2.0-1)
+                      curDisplayCenter.setY((2-m_scale)*disp_height/2.0-1);
+                 else if (curDisplayCenter.y() > m_scale*disp_height/2.0)
+                      curDisplayCenter.setY(m_scale*disp_height/2.0);
+            }
+       }
+    }
 
-               // // decide x0,y0,z0 based on mouse move
-               // long x0 = 0, y0 = 0, z0 = 0;
-               // V3DLONG outsz[4] = {256, 128, 64, 1};
-               // mapview.getImage(0, outimg1d, x0, y0, z0, outsz[0], outsz[1], outsz[2]);
-
-               // imgData = setImg;
-               // // set image data
-               // switch (Ptype)
-               // {
-               //      case imgPlaneX:
-               //           setImgData(imgPlaneX, imgData, colorRGB);
-               // }
-          }
-     }
 	update();
 }
 
@@ -3098,46 +3074,55 @@ void XFormWidget::createMapviewControlWin()
     //QGroupBox* xyzGroup = new QGroupBox(mvControlWin);
     //xyzGroup->setTitle("XYZ Navigation");
 
+    // get X Y Z size
+    V3DLONG dimx = pow( 2, mapview_paras.L+mapview_paras.l-mapview_paras.level );
+    V3DLONG dimy = pow( 2, mapview_paras.M+mapview_paras.m-mapview_paras.level );
+    V3DLONG dimz = pow( 2, mapview_paras.N+mapview_paras.n-mapview_paras.level );
+
+    // zoom range
+    int dim_zoom= MIN( MIN(mapview_paras.L+mapview_paras.l, mapview_paras.M+mapview_paras.m),
+                       mapview_paras.N+mapview_paras.n );
+
     xSlider_mapv = new QScrollBar(Qt::Horizontal);
-    xSlider_mapv->setRange(1, imgData->getXDim()); //need redefine range
+    xSlider_mapv->setRange(0, dimx-1); //need redefine range
     xSlider_mapv->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     QLabel* xSliderLabel_mapv = new QLabel("X");
 
     xValueSpinBox_mapv = new QSpinBox;
-    xValueSpinBox_mapv->setRange(1, imgData->getXDim());
+    xValueSpinBox_mapv->setRange(0, dimx-1);
     xValueSpinBox_mapv->setSingleStep(1);
-    xValueSpinBox_mapv->setValue(yz_view->focusPlaneCoord());
+    xValueSpinBox_mapv->setValue(mapview_paras.origin[0]);
 
     ySlider_mapv = new QScrollBar(Qt::Horizontal);
-    ySlider_mapv->setRange(1, imgData->getYDim()); //need redefine range
+    ySlider_mapv->setRange(0, dimy-1); //need redefine range
     ySlider_mapv->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     QLabel* ySliderLabel_mapv = new QLabel("Y");
 
     yValueSpinBox_mapv = new QSpinBox;
-    yValueSpinBox_mapv->setRange(1, imgData->getYDim());
+    yValueSpinBox_mapv->setRange(0, dimy-1);
     yValueSpinBox_mapv->setSingleStep(1);
-    yValueSpinBox_mapv->setValue(zx_view->focusPlaneCoord());
+    yValueSpinBox_mapv->setValue(mapview_paras.origin[1]);
 
     zSlider_mapv = new QScrollBar(Qt::Horizontal);
-    zSlider_mapv->setRange(1, imgData->getZDim()); //need redefine range
+    zSlider_mapv->setRange(0, dimz-1); //need redefine range
     zSlider_mapv->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     QLabel* zSliderLabel_mapv = new QLabel("Z");
 
     zValueSpinBox_mapv = new QSpinBox;
-    zValueSpinBox_mapv->setRange(1, imgData->getZDim());
+    zValueSpinBox_mapv->setRange(0, dimz-1);
     zValueSpinBox_mapv->setSingleStep(1);
-    zValueSpinBox_mapv->setValue(xy_view->focusPlaneCoord());
+    zValueSpinBox_mapv->setValue(mapview_paras.origin[2]);
 
     // zoom slider
     zoomSlider_mapv = new QScrollBar(Qt::Horizontal);
-    zoomSlider_mapv->setRange(1, 100); //need redefine range
+    zoomSlider_mapv->setRange(0, dim_zoom-1); //need redefine range
     zoomSlider_mapv->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     QLabel* zoomLabel_mapv = new QLabel("Zoom");
 
     zoomSpinBox_mapv = new QSpinBox;
-    zoomSpinBox_mapv->setRange(1, 100);
+    zoomSpinBox_mapv->setRange(0, dim_zoom-1);
     zoomSpinBox_mapv->setSingleStep(1);
-    zoomSpinBox_mapv->setValue(1);
+    zoomSpinBox_mapv->setValue(mapview_paras.level);
 
     // layout for mv control window
     layout->addWidget(zSliderLabel_mapv, 0, 0, 1, 1);
@@ -3157,14 +3142,11 @@ void XFormWidget::createMapviewControlWin()
     layout->addWidget(zoomSpinBox_mapv, 3, 14, 1, 6);
 
     // setup connections
-    connect(xSlider_mapv, SIGNAL(valueChanged(int)), yz_view, SLOT(changeFocusPlane(int)));
-    connect(ySlider_mapv, SIGNAL(valueChanged(int)), zx_view, SLOT(changeFocusPlane(int)));
-    connect(zSlider_mapv, SIGNAL(valueChanged(int)), xy_view, SLOT(changeFocusPlane(int)));
+    connect(xSlider_mapv, SIGNAL(valueChanged(int)), this, SLOT(changeXOffset_mapv(int)));
+    connect(ySlider_mapv, SIGNAL(valueChanged(int)), this, SLOT(changeYOffset_mapv(int)));
+    connect(zSlider_mapv, SIGNAL(valueChanged(int)), this, SLOT(changeZOffset_mapv(int)));
 
-    connect(zoomSlider_mapv, SIGNAL(valueChanged(int)), xy_view, SLOT(changeScale(int)));
-    connect(zoomSlider_mapv, SIGNAL(valueChanged(int)), yz_view, SLOT(changeScale(int)));
-    connect(zoomSlider_mapv, SIGNAL(valueChanged(int)), zx_view, SLOT(changeScale(int)));
-    //printf("connect status[%d]\n",a);
+    connect(zoomSlider_mapv, SIGNAL(valueChanged(int)), this, SLOT(changeLevel_mapv(int)));
 
     connect(xValueSpinBox_mapv, SIGNAL(valueChanged(int)), xSlider_mapv, SLOT(setValue(int)));
     connect(xSlider_mapv, SIGNAL(valueChanged(int)), xValueSpinBox_mapv, SLOT(setValue(int)));
@@ -3178,20 +3160,68 @@ void XFormWidget::createMapviewControlWin()
     connect(zoomSpinBox_mapv, SIGNAL(valueChanged(int)), zoomSlider_mapv, SLOT(setValue(int)));
     connect(zoomSlider_mapv, SIGNAL(valueChanged(int)), zoomSpinBox_mapv, SLOT(setValue(int)));
 
-    //set the navigation event connection
-    connect(xy_view, SIGNAL(focusXChanged(int)), xSlider_mapv, SLOT(setValue(int)));
-    connect(xy_view, SIGNAL(focusYChanged(int)), ySlider_mapv, SLOT(setValue(int)));
-    connect(xy_view, SIGNAL(focusZChanged(int)), zSlider_mapv, SLOT(setValue(int)));
-
-    connect(yz_view, SIGNAL(focusXChanged(int)), xSlider_mapv, SLOT(setValue(int)));
-    connect(yz_view, SIGNAL(focusYChanged(int)), ySlider_mapv, SLOT(setValue(int)));
-    connect(yz_view, SIGNAL(focusZChanged(int)), zSlider_mapv, SLOT(setValue(int)));
-
-    connect(zx_view, SIGNAL(focusXChanged(int)), xSlider_mapv, SLOT(setValue(int)));
-    connect(zx_view, SIGNAL(focusYChanged(int)), ySlider_mapv, SLOT(setValue(int)));
-    connect(zx_view, SIGNAL(focusZChanged(int)), zSlider_mapv, SLOT(setValue(int)));
-
     mvControlWin->show();
+}
+
+void XFormWidget::updateMapviewControlWin(int level)
+{
+    mapview_paras.level = level;
+    V3DLONG dimx = pow( 2, mapview_paras.L+mapview_paras.l-mapview_paras.level );
+    V3DLONG dimy = pow( 2, mapview_paras.M+mapview_paras.m-mapview_paras.level );
+    V3DLONG dimz = pow( 2, mapview_paras.N+mapview_paras.n-mapview_paras.level );
+
+    xSlider_mapv->setRange(0, dimx-1);
+    yValueSpinBox_mapv->setRange(0, dimx-1);
+    yValueSpinBox_mapv->setValue(mapview_paras.origin[0]);
+
+    ySlider_mapv->setRange(0, dimy-1);
+    yValueSpinBox_mapv->setRange(0, dimy-1);
+    yValueSpinBox_mapv->setValue(mapview_paras.origin[1]);
+
+    zSlider_mapv->setRange(0, dimz-1);
+    zValueSpinBox_mapv->setRange(0, dimz-1);
+    zValueSpinBox_mapv->setValue(mapview_paras.origin[2]);
+
+}
+
+void XFormWidget::changeXOffset_mapv(int x)
+{
+    mapview_paras.origin[0] = x;
+    updateMapview();
+}
+
+void XFormWidget::changeYOffset_mapv(int y)
+{
+    mapview_paras.origin[1] = y;
+    updateMapview();
+}
+
+
+void XFormWidget::changeZOffset_mapv(int z)
+{
+    mapview_paras.origin[2] = z;
+    updateMapview();
+}
+
+void XFormWidget::changeLevel_mapv(int level)
+{
+    mapview_paras.level = level;
+    updateMapviewControlWin(level);
+    updateMapview();
+}
+
+void XFormWidget::updateMapview()
+{
+     // retrieve image from blocks
+     unsigned char * outimg1d = 0;
+
+     mapview.getImage(mapview_paras.level, outimg1d, mapview_paras.origin[0], mapview_paras.origin[1], mapview_paras.origin[2],
+                      mapview_paras.outsz[0], mapview_paras.outsz[1], mapview_paras.outsz[2]);
+
+     this->setImageData(outimg1d, mapview_paras.outsz[0], mapview_paras.outsz[1], mapview_paras.outsz[2], mapview_paras.outsz[3], V3D_UINT8);
+
+     this->reset();
+
 }
 
 
@@ -3911,27 +3941,18 @@ void XFormWidget::createGUI()
      xy_view->setFixedWidth(xy_view->get_disp_width());
      xy_view->setFixedHeight(xy_view->get_disp_height());
      xy_view->setFocusPolicy(Qt::ClickFocus);
-    //xy_view->hraw_prefix = hraw_prefix; //for mapview control
-    xy_view->mapview_paras = mapview_paras;
-     xy_view->mapview = mapview;
 
      yz_view = new XFormView(viewGroup);
 	yz_view->setImgData(imgPlaneX, 0, colorRGB); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
      yz_view->setFixedWidth(yz_view->get_disp_width());
      yz_view->setFixedHeight(yz_view->get_disp_height());
      yz_view->setFocusPolicy(Qt::ClickFocus);
-    //yz_view->hraw_prefix = hraw_prefix;
-    yz_view->mapview_paras = mapview_paras;
-     yz_view->mapview = mapview;
 
      zx_view = new XFormView(viewGroup);
 	zx_view->setImgData(imgPlaneY, 0, colorRGB); //because the second parameter is 0 (NULL pointer), then just load the default maps for this view
      zx_view->setFixedWidth(zx_view->get_disp_width());
      zx_view->setFixedHeight(zx_view->get_disp_height());
      zx_view->setFocusPolicy(Qt::ClickFocus);
-    //zx_view->hraw_prefix = hraw_prefix;
-    zx_view->mapview_paras = mapview_paras;
-     zx_view->mapview = mapview;
 
 	//    viewGroup->setFixedWidth(xy_view->frameGeometry().width()+yz_view->frameGeometry().width());
 
@@ -4212,9 +4233,6 @@ void XFormWidget::updateDataRelatedGUI()
 		xy_view->setFixedWidth(xy_view->get_disp_width());
 		xy_view->setFixedHeight(xy_view->get_disp_height());
 		imgData->set_xy_view(xy_view);
-        //xy_view->hraw_prefix = hraw_prefix; // for mapview control
-        xy_view->mapview_paras = mapview_paras;
-          xy_view->mapview = mapview;
 
 		//
 		yz_view->setImgData(imgPlaneX, imgData, Ctype);
@@ -4233,9 +4251,6 @@ void XFormWidget::updateDataRelatedGUI()
 		yz_view->setFixedWidth(yz_view->get_disp_width());
 		yz_view->setFixedHeight(yz_view->get_disp_height());
 		imgData->set_yz_view(yz_view);
-        //yz_view->hraw_prefix = hraw_prefix; // for mapview control
-        yz_view->mapview_paras = mapview_paras;
-        yz_view->mapview = mapview;
 
 		//
 		zx_view->setImgData(imgPlaneY, imgData, Ctype);
@@ -4254,9 +4269,6 @@ void XFormWidget::updateDataRelatedGUI()
 		zx_view->setFixedWidth(zx_view->get_disp_width());
 		zx_view->setFixedHeight(zx_view->get_disp_height());
 		imgData->set_zx_view(zx_view);
-        //zx_view->hraw_prefix = hraw_prefix; // for mapview control
-        zx_view->mapview_paras = mapview_paras;
-          zx_view->mapview = mapview;
 
 		if (b_use_dispzoom)
 		{

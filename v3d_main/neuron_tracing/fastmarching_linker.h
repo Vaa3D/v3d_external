@@ -43,7 +43,7 @@ void clean_fm_marker_vector(vector<MyMarker*> &outswc)
 {
     for (V3DLONG i=outswc.size()-1;i>=0;i--)
     {
-        if (outswc.at(i)) {delete outswc.at(i);}
+         if (outswc.at(i)) {delete outswc.at(i); outswc.at(i)=0; }
         outswc.pop_back();
     }
 }

@@ -1161,12 +1161,12 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 		else if (curfile_info.suffix().toUpper()=="HRAW") // For openning hierarchical data from large data set. ZJL 20120302
         {
 			QString basename = curfile_info.baseName();
-			
-			QString hraw_prefix = curfile_info.absolutePath() + "/" + basename.left(basename.indexOf(".")); // before the first "." 
-			
+
+			QString hraw_prefix = curfile_info.absolutePath() + "/" + basename.left(basename.indexOf(".")); // before the first "."
+
 			string prefix = hraw_prefix.toStdString();
 			//string prefix ="/Users/zhouj/work/v3d_data/gaussian_ball/test";
-			
+
              try
              {
                   size_t start_t = clock();
@@ -1177,42 +1177,38 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                   int l = log(256)/log(2.0);
                   int m = log(128)/log(2.0);
                   int n = log(64)/log(2.0);
-                  
+                  int level = 0;
+
                   ImageMapView mapview;
-                  mapview.setPara(prefix, L+l, M+m, N+n, l, m, n);
+                  mapview.setPara(prefix, L, M, N, l, m, n);
 
                   unsigned char * outimg1d = 0;
-				 
                   V3DLONG origin[3] = {0, 0, 0};
                   V3DLONG outsz[4] = {256, 128, 64, 1};
-                  mapview.getImage(0, outimg1d, origin[0], origin[1], origin[2], outsz[0], outsz[1], outsz[2]);
-				 
-                  XFormWidget *child = createMdiChild();
+                  mapview.getImage(level, outimg1d, origin[0], origin[1], origin[2], outsz[0], outsz[1], outsz[2]);
 
+                  XFormWidget *child = createMdiChild();
                   child->setImageData(outimg1d, outsz[0], outsz[1], outsz[2], outsz[3], V3D_UINT8);
-				 
                   child->mypara_3Dview.image4d = child->getImageData();
 
-                 //child->hraw_prefix = hraw_prefix; //for mapview control
+                  // mapview control
+                  Mapview_Paras mv_paras;
+                  mv_paras.L=L; mv_paras.M=M; mv_paras.N=N;
+                  mv_paras.l=l; mv_paras.M=m; mv_paras.n=n;
+                  mv_paras.origin[0] = origin[0]; mv_paras.origin[1] = origin[1]; mv_paras.origin[2] = origin[2];
+                  mv_paras.outsz[0] = outsz[0]; mv_paras.outsz[1] = outsz[1]; mv_paras.outsz[2] = outsz[2]; mv_paras.outsz[3] = outsz[3]; mv_paras.outsz[3] = outsz[3];
+                  mv_paras.hraw_prefix=hraw_prefix;
+                  mv_paras.level = level;
 
-                 // mapview control
-                 Mapview_Paras mv_paras;
-                 mv_paras.L=L; mv_paras.M=M; mv_paras.N=N;
-                 mv_paras.l=l; mv_paras.M=m; mv_paras.n=n;
-                 mv_paras.origin[0] = origin[0]; mv_paras.origin[1] = origin[1]; mv_paras.origin[2] = origin[2];
-                 mv_paras.outsz[0] = outsz[0]; mv_paras.outsz[2] = outsz[2]; mv_paras.outsz[3] = outsz[3]; mv_paras.outsz[3] = outsz[3];
-                 mv_paras.hraw_prefix=hraw_prefix;
+                  child->mapview_paras = mv_paras;
+                  child->mapview = mapview;
 
-                 child->mapview_paras = mv_paras;
-				 child->mapview = mapview; 
-				 
-				 child->setWindowTitle_Prefix(hraw_prefix.toAscii());
-				 child->setWindowTitle_Suffix("");
+                  child->setWindowTitle_Prefix(hraw_prefix.toAscii());
+                  child->setWindowTitle_Suffix("");
 
-				 
                   child->reset();
 
-				 if (global_setting.b_autoConvert2_8bit)
+                  if (global_setting.b_autoConvert2_8bit)
                   {
                        if (global_setting.default_rightshift_bits<0) //when set as -1 or other <0 values, then invoke the dialog.
                        {

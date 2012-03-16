@@ -1551,6 +1551,9 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                               }
                          }
                     }
+
+                    //if(pSubdata2) {delete [] pSubdata2; pSubdata2=0;}
+
                     //always remember to free the potential-memory-problematic fastmarching_linker return value
                     clean_fm_marker_vector(outswc);
                }
@@ -1558,6 +1561,11 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
      }
 
      PROGRESS_PERCENT(60);
+
+     // clean pSubdata of subvolume boundingbox
+     //if(pSubdata) {delete [] pSubdata; pSubdata=0;}
+
+
      // //===============================================================================>>>>>>>>>>>> second fastmarching
      // // put the last element of loc_vec
      // middle_vec.push_back(loc_vec.back());
@@ -1672,9 +1680,6 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
      // } // end for the second fastmarching
      // //===============================================================================<<<<<<<<<<<<<
      PROGRESS_PERCENT(90);
-
-     // clean pSubdata of subvolume boundingbox
-     if(pSubdata) {delete [] pSubdata; pSubdata=0;}
 
      N = loc_vec.size(); //100722 RZC
      if(N<1) return; // all points are outside the volume. ZJL 110913

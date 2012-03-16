@@ -52,7 +52,6 @@ class ChannelTabWidget;
 
 
 
-
 struct iDrawExternalParameter
 {
 	My4DImage* image4d;
@@ -187,9 +186,6 @@ public:
 	ImageDisplayColorType getColorType() {return Ctype;}
     QRadioButton* colorMapRadioButton() {return colorMapDispType;} //110723 RZC
 
-    // for mapview ZJL
-    void createMapviewControlWin();
-
 	iDrawExternalParameter mypara_3Dview;
 	iDrawExternalParameter mypara_3Dlocalview;
 	V3D_atlas_viewerDialog *atlasViewerDlg;
@@ -210,6 +206,11 @@ public:
 	bool b_use_dispzoom;
 
 	bool bDispMarkerLabel;
+
+    // for mapview ZJL
+    void createMapviewControlWin();
+    void updateMapviewControlWin(int level);
+    void updateMapview();
 
     // mapview
     // QString hraw_prefix; // for mapview control
@@ -372,6 +373,12 @@ public slots:
 	void updateViews(); //090615: a convenient function to call my4dimage updateViews()
 
 	void updateTriview(); // call MainWindow updateTriview() Dec-21-2010 YuY
+
+    // for mapview
+    void changeXOffset_mapv(int x);
+    void changeYOffset_mapv(int y);
+    void changeZOffset_mapv(int z);
+    void changeLevel_mapv(int level);
 
 
 signals:
