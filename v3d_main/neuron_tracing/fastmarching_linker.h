@@ -49,9 +49,9 @@ void clean_fm_marker_vector(vector<MyMarker*> &outswc)
 }
 
 // if time==0, then do not consider consuming time, time is in seconds
-template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<MyMarker> & tar_markers, 
+template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<MyMarker> & tar_markers,
 										   T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, float time, int cnn_type = 2)
-{		
+{
         int ALIVE = -1;
 		int TRIAL = 0;
 		int FARST = 1;
@@ -239,6 +239,7 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
 		if(!elems.empty()) for(map<long, HeapElemX*>::iterator it = elems.begin(); it != elems.end(); it++) delete it->second;
         if(phi) {delete [] phi; phi = 0;}
         if(parent) {delete [] parent; parent = 0;}
+        if(state) {delete [] state; state = 0;}
         return true;
 }
 
