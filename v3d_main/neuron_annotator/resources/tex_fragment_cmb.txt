@@ -81,10 +81,10 @@ void main()
         vec3 neuronColor = aC1 + aC2 + aC3 + aC4;
         float alpha = alphaMax;
 
-        // Selected neurons are opaque, and have a high brightness
+        // Selected neurons are (mostly) opaque, and have a high brightness
         // For numerical stability, compute alpha part first
         float aScale1 = selectedness * 0.9 / (dataAlphaMax + 0.01); // avoid NaN
-        vec3 selectedColor = aC1 * aScale1 + aC2 * aScale1 + aC3 * aScale1; // no reference channel in selected
+        vec3 selectedColor = aScale1 * (aC1 + aC2 + aC3); // no reference channel in selected
         float selectedAlpha = selectedness * (dataAlphaMax + 0.5); // selected neurons are mostly opaque
 
         if (blend_mode == 1) {
@@ -102,7 +102,8 @@ void main()
 
         // This blending was not working on linux (selectedColor had NaN?)
         float a2 = 1.0 - selectedness; // complement of selectedness
-        oColor.rgb = selectedColor + neuronColor * a2; // OK, now that NaN is elided
+        oColor.rgb = mix(neuronColor, selectedColor, selectedness);
+        // oColor.rgb = selectedColor + neuronColor * a2; // OK, now that NaN is elided
         alpha = selectedAlpha + alpha * a2;
         oColor.a = pow(alpha, 1.5); // reduce effect of small intensities
 
