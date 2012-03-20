@@ -1945,6 +1945,9 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     QString distfilename = testOutputDir + "/" + strokeid + "_" + fname + "_Distance.txt";
                     FILE *fpdist;
 
+                    // distance threshold for the whole Test
+                    const static double dist_threshold = 3.0;
+
                     fpdist=fopen(distfilename.toStdString().c_str(), "wt"); // open a new empty file
                     if (!fpdist)
                     {
@@ -1954,18 +1957,59 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     if(listCurveMarkerPool.size() > 2) // the ground truth is the curve from GD
                     {
                          // computer distance from GD-curve to other curves
+                         double dist_gd_ml = distance_between_2lines(tree_gd, tree_ml);
+                         double dist_gd_cc = distance_between_2lines(tree_gd, tree_cc);
+                         double dist_gd_di = distance_between_2lines(tree_gd, tree_di);
+                         double dist_gd_mp = distance_between_2lines(tree_gd, tree_mp);
+                         static int ml_success = 0;
+                         static int cc_success = 0;
+                         static int di_success = 0;
+                         static int mp_success = 0;
+                         static int num_test = 0;
+                         num_test ++;
+
+                         if(dist_gd_ml <= dist_threshold) ml_success++;
+                         if(dist_gd_cc <= dist_threshold) cc_success++;
+                         if(dist_gd_di <= dist_threshold) di_success++;
+                         if(dist_gd_mp <= dist_threshold) mp_success++;
+                         float ml_succ_rate = (float)ml_success/num_test;
+                         float cc_succ_rate = (float)cc_success/num_test;
+                         float di_succ_rate = (float)di_success/num_test;
+                         float mp_succ_rate = (float)mp_success/num_test;
+
                          fprintf(fpdist, "The ground truth curve is the curve from GD method.\n");
-                         fprintf(fpdist, "Distance between curves of GD and Markerlists_fm          = %.4f\n", distance_between_2lines(tree_gd, tree_ml));
-                         fprintf(fpdist, "Distance between curves of GD and mean_shift              = %.4f\n", distance_between_2lines(tree_gd, tree_cc));
-                         fprintf(fpdist, "Distance between curves of GD and direction_intersection  = %.4f\n", distance_between_2lines(tree_gd, tree_di));
-                         fprintf(fpdist, "Distance between curves of GD and Marker_pool_fm          = %.4f\n", distance_between_2lines(tree_gd, tree_mp));
+                         fprintf(fpdist, "The distance_threshold  = %.4f\n", dist_threshold);
+                         fprintf(fpdist, "Distance between curves of GD and Markerlists_fm                     = %.4f\n",   dist_gd_ml);
+                         fprintf(fpdist, "Rate of distance between GD and Markerlists_fm below dist_threshold  = %.4f\n\n", ml_succ_rate);
+
+                         fprintf(fpdist, "Distance between curves of GD and mean_shift                         = %.4f\n",   dist_gd_cc);
+                         fprintf(fpdist, "Rate of distance between GD and mean_shift below dist_threshold      = %.4f\n\n", cc_succ_rate);
+
+                         fprintf(fpdist, "Distance between curves of GD and direction_intersection             = %.4f\n",   dist_gd_di);
+                         fprintf(fpdist, "Rate of distance between GD and dir_inter below dist_threshold       = %.4f\n\n", di_succ_rate);
+
+                         fprintf(fpdist, "Distance between curves of GD and Marker_pool_fm                     = %.4f\n",   dist_gd_mp);
+                         fprintf(fpdist, "Rate of distance between GD and Marker_pool below dist_threshold     = %.4f\n\n", mp_succ_rate);
                     }
                     else // the ground truth is the curve from Markerlists_fm
                     {
                          // computer distance from GD-curve to other curves
+                         double dist_ml_cc = distance_between_2lines(tree_ml, tree_cc);
+                         double dist_ml_di = distance_between_2lines(tree_ml, tree_di);
+                         static int ml_cc_success = 0;
+                         static int ml_di_success = 0;
+                         static int ml_num_test = 0;
+                         ml_num_test ++;
+
+                         if(dist_ml_cc <= dist_threshold) ml_cc_success++;
+                         if(dist_ml_di <= dist_threshold) ml_di_success++;
+                         float ml_cc_succ_rate = (float)ml_cc_success/ml_num_test;
+                         float ml_di_succ_rate = (float)ml_di_success/ml_num_test;
+
+                         // computer distance from GD-curve to other curves
                          fprintf(fpdist, "The ground truth curve is the curve from Markerlists_fm.\n");
-                         fprintf(fpdist, "Distance between curves of Markerlists_fm and mean_shift              = %.4f\n", distance_between_2lines(tree_ml, tree_cc));
-                         fprintf(fpdist, "Distance between curves of Markerlists_fm and direction_intersection  = %.4f\n", distance_between_2lines(tree_ml, tree_di));
+                         fprintf(fpdist, "Distance between curves of Markerlists_fm and mean_shift              = %.4f\n", dist_ml_cc);
+                         fprintf(fpdist, "Distance between curves of Markerlists_fm and direction_intersection  = %.4f\n", dist_ml_di);
                     }
 
                     // projection image computation
@@ -2754,6 +2798,12 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 
 			XYZ loc0, loc1;
 			_MarkerPos_to_NearFarPoint(pos, loc0, loc1);
+
+
+                qDebug()<<"loc0.x, loc0.y, loc0.z:" << loc0.x << loc0.y <<loc0.z;
+                qDebug()<<"loc1.x, loc1.y, loc1.z:" << loc1.x << loc1.y <<loc1.z;
+
+
 
 			XYZ loc;
 			float length01 = dist_L2(loc0, loc1);

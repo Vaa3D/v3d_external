@@ -511,8 +511,8 @@ void Renderer_gl1::getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, do
 
      // find min-max of x y z in loc_veci
      float minx, miny, minz, maxx, maxy, maxz;
-     // minx = miny = minz = INF;
-     // maxx = maxy = maxz = 0;
+     minx = miny = minz = INF;
+     maxx = maxy = maxz = 0;
 
      // Directly using stroke pos for minloc, maxloc
      for(int i=0; i<pos.size(); i++ )
@@ -524,11 +524,11 @@ void Renderer_gl1::getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, do
           XYZ loc0, loc1;
           _MarkerPos_to_NearFarPoint(pos.at(i), loc0, loc1);
 
-          if(i==0)
-          {
-               minx=maxx=loc0.x; miny=maxy=loc0.y; minz=maxz=loc0.z;
-          }
-          else
+          // if(i==0)
+          // {
+          //      minx=maxx=loc0.x; miny=maxy=loc0.y; minz=maxz=loc0.z;
+          // }
+          // else
           {
                if(minx>loc0.x) minx=loc0.x;
                if(miny>loc0.y) miny=loc0.y;
@@ -570,11 +570,13 @@ void Renderer_gl1::getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, do
           curImg = v3dr_getImage4d(_idep);
 
      // The data is from minloc to maxloc
-     sub_szx=abs(maxloc.x-minloc.x)+1;
-     sub_szy=abs(maxloc.y-minloc.y)+1;
-     sub_szz=abs(maxloc.z-minloc.z)+1;
+     sub_szx = maxloc.x-minloc.x +1;
+     sub_szy = maxloc.y-minloc.y +1;
+     sub_szz = maxloc.z-minloc.z +1;
 
      sub_orig = minloc;
+
+     //if(pSubdata) {delete [] pSubdata; pSubdata=0;}
 
      pSubdata = new double [sub_szx*sub_szy*sub_szz];
      for(V3DLONG k=0; k<sub_szz; k++)
@@ -653,6 +655,8 @@ void Renderer_gl1::getSubVolFrom4Points(XYZ & loc0_last, XYZ & loc1_last, XYZ & 
 
      sub_orig = minloc;
 
+     //if(pSubdata) {delete [] pSubdata; pSubdata=0;}
+
      pSubdata = new double [sub_szx*sub_szy*sub_szz];
      for(V3DLONG k=0; k<sub_szz; k++)
           for(V3DLONG j=0; j<sub_szy; j++)
@@ -684,6 +688,8 @@ void Renderer_gl1::getSubVolFromStroke(double* &pSubdata, int c, XYZ &sub_orig, 
      sub_szz=abs(maxloc.z-minloc.z)+1;
 
      sub_orig = minloc;
+
+     //if(pSubdata) {delete [] pSubdata; pSubdata=0;}
 
      pSubdata = new double [sub_szx*sub_szy*sub_szz];
      for(V3DLONG k=0; k<sub_szz; k++)
@@ -1205,7 +1211,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
      XYZ sub_orig;
      double* pSubdata;
      V3DLONG sub_szx, sub_szy, sub_szz;
-     bool b_useStrokeBB =false; // use the stroke decided BB
+     bool b_useStrokeBB = false; // use the stroke decided BB
      bool b_use2PointsBB = !b_useStrokeBB; // use the two-point decided BB
 
      if(b_useStrokeBB)
@@ -1223,6 +1229,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
           // resample curve strokes
           vector<int> inds; // reserved stroke index
           resampleCurveStrokes(0, chno, inds);
+
 
           int last_i; // used for computing 2points_bb
 
@@ -1259,6 +1266,9 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                     XYZ loc0, loc1;
                     _MarkerPos_to_NearFarPoint(pos, loc0, loc1);
                     float length01 = dist_L2(loc0, loc1);
+
+                    qDebug()<<"loc0.x, loc0.y, loc0.z:" << loc0.x << loc0.y <<loc0.z;
+                    qDebug()<<"loc1.x, loc1.y, loc1.z:" << loc1.x << loc1.y <<loc1.z;
 
                     // preparing the two-markerpos decided boundingbox
 
@@ -1304,14 +1314,12 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 
                          // getSubVolFrom4Points(loc0_last, loc1_last, loc0, loc1, chno, pSubdata2, sub_orig2, sub_szx2, sub_szy2, sub_szz2);
 
-
                          qDebug()<<"Debug last_i= "<< last_i;
                          qDebug()<<"Debug i= "<< i;
                          qDebug()<<"Debug sub_szx2= "<< sub_szx2;
                          qDebug()<<"Debug sub_szy2= "<< sub_szy2;
                          qDebug()<<"Debug sub_szz2= "<< sub_szz2;
                          qDebug()<<"Debug sub_orig2= "<< sub_orig2.x << sub_orig2.y << sub_orig2.z;
-
 
                           // update last_i for the next loop
                          last_i = i;
@@ -1327,15 +1335,20 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 
                     if(i==1)//(last_j<0) //i==0
                     {
-                         // always push_back the 1st loc
+                         double clipplane0[4] = { 0.0,  0.0, -1.0,  0 };
+                         clipplane0[3] = viewClip;
                          const MarkerPos & pos_0 = list_listCurvePos.at(index).at(0);
-                         ViewPlaneToModel(pos_0.MV, clipplane);
+                         ViewPlaneToModel(pos_0.MV, clipplane0);
 
                          XYZ loc00, loc01;
                          _MarkerPos_to_NearFarPoint(pos_0, loc00, loc01);
 
+                         qDebug()<<"loc00.x, loc00.y, loc00.z:" << loc00.x << loc00.y <<loc00.z;
+                         qDebug()<<"loc01.x, loc01.y, loc01.z:" << loc01.x << loc01.y <<loc01.z;
+
                          //==============================================================>>>>>>
                          XYZ loci = getCenterOfLineProfile(loc00, loc01, clipplane, chno);
+                         qDebug()<<"loci.x, loci.y, loci.z:" << loci.x << loci.y <<loci.z;
                          if(b_useStrokeBB)
                               loci = loci-sub_orig;
                          else if(b_use2PointsBB)
@@ -1343,30 +1356,44 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 
                          MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
                          sub_markers.push_back(mloci);
-
                          //==============================================================<<<<<<<
 
                          // get the loc with a random middle loc
                          //getMidRandomLoc(pos, chno, loc);
                          //middle_vec.push_back(loc);
 
-                         // XYZ v_1_0_1st = loc01-loc00;
-                         // XYZ D_1st = v_1_0_1st; normalize(D_1st);
                          // float length_1st = dist_L2(loc00, loc01);
                          // if (length_1st<1.0)
                          // {
-                         //      XYZ loci=(loc00+loc01)/2.0;
-                         //      if(b_useStrokeBB) // use stroke bounding box
-                         //           loci = loci-sub_orig;
-                         //      else if(b_use2PointsBB)
-                         //           loci = loci-sub_orig2;
+                              // XYZ loci=(loc00+loc01)/2.0;
+                              // qDebug()<<"loc00.x, loc00.y, loc00.z:" << loc00.x << loc00.y <<loc00.z;
+                              // qDebug()<<"loc01.x, loc01.y, loc01.z:" << loc01.x << loc01.y <<loc01.z;
+                              // qDebug()<<"loci.x, loci.y, loci.z:" << loci.x << loci.y <<loci.z;
+                              // if(b_useStrokeBB) // use stroke bounding box
+                              //      loci = loci-sub_orig;
+                              // else if(b_use2PointsBB)
+                              // {
+                              //      loci = loci-sub_orig2;
 
-                         //      MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
-                         //      sub_markers.push_back(mloci);
+                              //      assert( (int) (loci.x+0.5)>=0 );
+                              //      assert( (int) (loci.x+0.5)< sub_szx2 );
+                              //      assert( (int) (loci.y+0.5)>=0 );
+                              //      assert( (int) (loci.y+0.5)< sub_szy2);
+                              //      assert( (int) (loci.z+0.5)>=0);
+                              //      assert( (int) (loci.z+0.5)< sub_szz2 );
+                              // }
+
+
+                              // MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
+
+                              // sub_markers.push_back(mloci);
 
                          // }
                          // else
                          // {
+                         //      XYZ v_1_0_1st = loc01-loc00;
+                         //      XYZ D_1st = v_1_0_1st; normalize(D_1st);
+
                          //      for(int ii=0; ii<=(int)(length_1st+0.5); ii++)
                          //      {
                          //           XYZ loci = loc00 + D_1st*ii; // incease 1 each step
@@ -1457,10 +1484,6 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                                         middle_vec.push_back(locj);
                                    }
                               }
-                              // the last one
-                              // loc.x = outswc.at(0)->x + sub_orig.x;
-                              // loc.y = outswc.at(0)->y + sub_orig.y;
-                              // loc.z = outswc.at(0)->z + sub_orig.z;
                          }
                          else
                          {
@@ -1475,6 +1498,9 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                     else if (b_use2PointsBB)  // using stroke to creating a bounding box and do FM
                     {
                          fastmarching_linker(sub_markers, tar_markers, pSubdata2, outswc, sub_szx2, sub_szy2, sub_szz2, 0.0);// time_thresh);
+
+                         if(pSubdata2) {delete []pSubdata2; pSubdata2=0;}
+
                          if(!outswc.empty())
                          {
                               // the 1st loc in outswc is the last pos got in fm
@@ -1496,10 +1522,6 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                                         middle_vec.push_back(locj);
                                    }
                               }
-                              // the last one
-                              // loc.x = outswc.at(0)->x + sub_orig2.x;
-                              // loc.y = outswc.at(0)->y + sub_orig2.y;
-                              // loc.z = outswc.at(0)->z + sub_orig2.z;
                          }
                          else
                          {
@@ -1536,10 +1558,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                                         middle_vec.push_back(locj);
                                    }
                               }
-                              // the last one
-                              // loc.x = outswc.at(0)->x;
-                              // loc.y = outswc.at(0)->y;
-                              // loc.z = outswc.at(0)->z;
+
                          }
                          else
                          {
@@ -1552,18 +1571,15 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                          }
                     }
 
-                    //if(pSubdata2) {delete [] pSubdata2; pSubdata2=0;}
-
                     //always remember to free the potential-memory-problematic fastmarching_linker return value
                     clean_fm_marker_vector(outswc);
                }
           }
      }
+     // clean pSubdata of subvolume boundingbox
+     if(pSubdata) {delete [] pSubdata; pSubdata=0;}
 
      PROGRESS_PERCENT(60);
-
-     // clean pSubdata of subvolume boundingbox
-     //if(pSubdata) {delete [] pSubdata; pSubdata=0;}
 
 
      // //===============================================================================>>>>>>>>>>>> second fastmarching
