@@ -48,6 +48,8 @@
 
 #include "../neuron_tracing/fastmarching_linker.h"
 
+#include "line_box_intersection_check.h"
+
 #define EPS 0.01
 #define PI 3.14159265
 #define MAX_DOUBLE 1.79769e+308
@@ -523,6 +525,15 @@ void Renderer_gl1::getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, do
 
           XYZ loc0, loc1;
           _MarkerPos_to_NearFarPoint(pos.at(i), loc0, loc1);
+
+          // XYZ loc0_t, loc1_t;
+          // _MarkerPos_to_NearFarPoint(pos.at(i), loc0_t, loc1_t);
+
+          // XYZ loc0, loc1;
+          // // check line_box intersection points
+          // CheckLineBox( dataViewProcBox.V0(), dataViewProcBox.V1(), loc0_t, loc1_t, loc0);
+          // CheckLineBox( dataViewProcBox.V0(), dataViewProcBox.V1(), loc1_t, loc0_t, loc1);
+
 
           // if(i==0)
           // {
@@ -1265,11 +1276,19 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 
                     XYZ loc0, loc1;
                     _MarkerPos_to_NearFarPoint(pos, loc0, loc1);
-                    float length01 = dist_L2(loc0, loc1);
+
+                    // XYZ loc0_t, loc1_t;
+                    // _MarkerPos_to_NearFarPoint(pos, loc0_t, loc1_t);
+
+                    // XYZ loc0, loc1;
+                    // // check line_box intersection points
+                    // CheckLineBox( dataViewProcBox.V0(), dataViewProcBox.V1(), loc0_t, loc1_t, loc0);
+                    // CheckLineBox( dataViewProcBox.V0(), dataViewProcBox.V1(), loc1_t, loc0_t, loc1);
 
                     qDebug()<<"loc0.x, loc0.y, loc0.z:" << loc0.x << loc0.y <<loc0.z;
                     qDebug()<<"loc1.x, loc1.y, loc1.z:" << loc1.x << loc1.y <<loc1.z;
 
+                    float length01 = dist_L2(loc0, loc1);
                     // preparing the two-markerpos decided boundingbox
 
                     int last_j = loc_vec.size()-1;

@@ -192,6 +192,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../3drenderer/gradients.h \
     ../3drenderer/hoverpoints.h \
     ../3drenderer/barFigureDialog.h \
+    ../3drenderer/line_box_intersection_check.h \
     ../neuron_tracing/heap.h \
     ../neuron_tracing/fastmarching_linker.h \
 	../imaging/v3d_imaging.h \
