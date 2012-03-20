@@ -59,6 +59,7 @@ std::ostream& NeuronSeparationResult::saveChk4File(std::ostream& os)
         // TODO - eliminated channel id
     }
     // TODO - rest of data
+	return os;
 }
 
 

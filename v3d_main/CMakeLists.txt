@@ -38,11 +38,11 @@ include_directories( ${QT_INCLUDES} )
 
 find_package(OpenGL REQUIRED)
 
-option( V3D_USE_OWN_TIFF "Use the TIFF library source code distributed with v3d" OFF)
+option( V3D_USE_OWN_TIFF "Use the TIFF library source code distributed with v3d" ON )
 
 add_subdirectory( common_lib )
 
-if( V3D_USE_OWN_TIFF )
+if( NOT V3D_USE_OWN_TIFF )
   # mark_as_advanced(TIFF_LIBRARY)
   # mark_as_advanced(TIFF_INCLUDE_DIR)
   # include_directories(BEFORE "${CMAKE_CURRENT_SOURCE_DIR}/common_lib/include")

@@ -108,3 +108,77 @@ if(UNIX)
     endif(V3D_USE_OWN_TIFF)
 endif(UNIX)
 
+# Windows build of (previously unpacked) tiff library
+if(MSVC AND V3D_USE_OWN_TIFF)
+    # You might need to manually unpack the tiff source code before this will work
+    find_path(TIFF_SOURCE_DIR 
+        NAMES libtiff/tiffio.h
+        PATHS 
+            "${CMAKE_CURRENT_SOURCE_DIR}/tiff-4.0.1"
+        NO_DEFAULT_PATH)
+    # message("TIFF_SOURCE_DIR = ${TIFF_SOURCE_DIR}")
+    if(TIFF_SOURCE_DIR)
+        # Rules deduced from reading libtiff/Makefile.vc Mar 19 2012 CMB
+        # Copy/rename tif_config.vc.h, tiffconf.vc.h
+        # Include vc specific files BEFORE regular tiff includes
+        include_directories(${CMAKE_CURRENT_BINARY_DIR})
+        configure_file(${TIFF_SOURCE_DIR}/libtiff/tif_config.vc.h
+            ${CMAKE_CURRENT_BINARY_DIR}/tif_config.h)
+        configure_file(${TIFF_SOURCE_DIR}/libtiff/tiffconf.vc.h
+            ${CMAKE_CURRENT_BINARY_DIR}/tiffconf.h)
+        include_directories(${TIF_SOURCE_DIR}/libtiff)
+        set(TIFF_SOURCES
+            ${TIFF_SOURCE_DIR}/libtiff/tif_aux.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_close.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_codec.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_color.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_compress.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_dir.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_dirinfo.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_dirread.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_dirwrite.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_dumpmode.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_error.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_extension.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_fax3.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_fax3sm.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_getimage.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_jbig.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_jpeg.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_jpeg_12.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_ojpeg.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_flush.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_luv.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_lzw.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_next.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_open.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_packbits.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_pixarlog.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_predict.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_print.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_read.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_stream.cxx
+            ${TIFF_SOURCE_DIR}/libtiff/tif_swab.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_strip.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_thunder.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_tile.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_version.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_warning.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_write.c
+            ${TIFF_SOURCE_DIR}/libtiff/tif_zip.c
+            )
+        option(V3D_TIFF_USE_WIN_CRT_LIB TRUE)
+        if (V3D_TIFF_USE_WIN_CRT_LIB)
+            set(TIFF_SOURCES ${TIFF_SOURCES} ${TIFF_SOURCE_DIR}/libtiff/tif_unix.c)
+            add_definitions(-DAVOID_WIN32_FILEIO)
+        else()
+            set(TIFF_SOURCES ${TIFF_SOURCES} ${TIFF_SOURCE_DIR}/libtiff/tif_win32.c)
+            add_definitions(-DUSE_WIN32_FILEIO)
+        endif()
+        set(TIFF_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR};${TIFF_SOURCE_DIR}/libtiff" CACHE PATH "" FORCE)
+        # To keep things simple, don't support JPEG, PACKBITS, ZIP etc, but do support LZW
+        add_definitions(-DLZW_SUPPORT)
+        add_library(libtiff STATIC ${TIFF_SOURCES})
+        set(TIFF_LIBRARY libtiff CACHE STRING "" FORCE)
+    endif()
+endif()

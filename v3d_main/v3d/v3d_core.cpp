@@ -3075,9 +3075,9 @@ void XFormWidget::createMapviewControlWin()
     //xyzGroup->setTitle("XYZ Navigation");
 
     // get X Y Z size
-    V3DLONG dimx = pow( 2, mapview_paras.L+mapview_paras.l-mapview_paras.level );
-    V3DLONG dimy = pow( 2, mapview_paras.M+mapview_paras.m-mapview_paras.level );
-    V3DLONG dimz = pow( 2, mapview_paras.N+mapview_paras.n-mapview_paras.level );
+    V3DLONG dimx = pow( 2.0, mapview_paras.L+mapview_paras.l-mapview_paras.level );
+    V3DLONG dimy = pow( 2.0, mapview_paras.M+mapview_paras.m-mapview_paras.level );
+    V3DLONG dimz = pow( 2.0, mapview_paras.N+mapview_paras.n-mapview_paras.level );
 
     // zoom range
     int dim_zoom= MIN( MIN(mapview_paras.L+mapview_paras.l, mapview_paras.M+mapview_paras.m),
@@ -3166,9 +3166,9 @@ void XFormWidget::createMapviewControlWin()
 void XFormWidget::updateMapviewControlWin(int level)
 {
     mapview_paras.level = level;
-    V3DLONG dimx = pow( 2, mapview_paras.L+mapview_paras.l-mapview_paras.level );
-    V3DLONG dimy = pow( 2, mapview_paras.M+mapview_paras.m-mapview_paras.level );
-    V3DLONG dimz = pow( 2, mapview_paras.N+mapview_paras.n-mapview_paras.level );
+    V3DLONG dimx = pow( 2.0, mapview_paras.L+mapview_paras.l-mapview_paras.level );
+    V3DLONG dimy = pow( 2.0, mapview_paras.M+mapview_paras.m-mapview_paras.level );
+    V3DLONG dimz = pow( 2.0, mapview_paras.N+mapview_paras.n-mapview_paras.level );
 
     xSlider_mapv->setRange(0, dimx-1);
     yValueSpinBox_mapv->setRange(0, dimx-1);

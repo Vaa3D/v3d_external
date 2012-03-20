@@ -35,7 +35,7 @@ protected:
 
 private:
     Ui::DynamicRangeTool ui;
-    size_t currentChannelIndex;
+    int currentChannelIndex;
     DataColorModel* dataColorModel;
     QColor channelColor;
     int channelHdrMin;

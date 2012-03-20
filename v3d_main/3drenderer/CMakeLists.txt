@@ -21,6 +21,7 @@ set(3DRenderer_SRCS
   v3dr_mainwindow.cpp
   v3dr_surfaceDialog.cpp
   nstroke.cpp
+  nstroke_tracing.cpp
   )
 
 # QT4_ADD_RESOURCES(V3D_RENDERER_RCC_SRCS "3drenderer.qrc")

@@ -371,6 +371,7 @@ public:
                     return false;
                 }
             }
+			return true;
         }
 
         explicit Stack(const Stack& rhs)
@@ -467,6 +468,7 @@ public:
         case Stack::Z:
             return slicesZxy.getTexIDPtr();
         }
+		return slicesXyz.getTexIDPtr();
     }
 
     bool initializeGL()

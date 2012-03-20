@@ -4,6 +4,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../v3dbase)
 include_directories(../v3d)
 include_directories(../3drenderer)
+include_directories(${Boost_INCLUDE_DIR})
 
 file(GLOB NA_UI_FILES gui/*.ui)
 QT4_WRAP_UI(NA_UI_SRCS 

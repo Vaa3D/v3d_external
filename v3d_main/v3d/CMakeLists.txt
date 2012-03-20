@@ -30,6 +30,7 @@ set(V3D_SRCS
   v3d_commandlineparser.cpp
   pluginfunchandler.cpp
   ChannelTable.cpp
+  mapview.cpp
   v3d_actions.cpp)
 
 set(V3D_RCCS 

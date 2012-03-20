@@ -62,7 +62,7 @@ struct para_template_matching_cellseg
 		channo=0;
 		szx=5; szy=5; szz=1; //dim
 		stdx=3.0; stdy=3.0; stdz=0.5; //std
-		t_pixval=50; t_rgnval=20; t_corrcoef=0.3; //thresholds
+		t_pixval=50; t_rgnval=20; t_corrcoef=0.3f; //thresholds
 		merge_radius = 20;
 		kernel=0; //0 - Gaussian
 	}
