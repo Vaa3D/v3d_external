@@ -132,7 +132,8 @@ void errorPrint()
 // plugin func
 QStringList RefExtractPlugin::funclist() const
 {
-    return QStringList() << tr("refExtract");
+    return QStringList() << tr("refExtract")
+                         << tr("ref2mip");
 }
 
 bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output, V3DPluginCallback2 & callback,  QWidget * parent)
@@ -330,6 +331,225 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                 return false;
             }
         }
+
+        //
+        return true;
+    }
+    else if (func_name == tr("ref2mip"))
+    {
+        if(input.size()<1 || (input.size()==1 && output.size()<1) ) // no inputs
+        {
+            //print Help info
+            errorPrint();
+            return true;
+        }
+
+        vector<char*> * infilelist;
+        vector<char*> * paralist;
+        vector<char*> * outfilelist;
+
+        char * infile = NULL; //input_image_file
+        char * paras = NULL; // parameters
+        char * outfile = NULL; // output_image_file
+
+        if(input.size()>0) {infilelist = (vector<char*> *)(input.at(0).p);}
+        if(output.size()>0) { outfilelist = (vector<char*> *)(output.at(0).p);}  // specify output
+        if(input.size()>1) { paralist = (vector<char*> *)(input.at(1).p); paras =  paralist->at(0);} // parameters
+        if(!infilelist->empty()) { infile = infilelist->at(0); }
+        if(!outfilelist->empty()) { outfile = outfilelist->at(0); }
+
+        // init
+        V3DLONG channel_ref = 0;
+
+        QString qs_filename_img_input(infile);
+        QString qs_filename_img_output;
+
+        // parsing parameters
+        if(paras)
+        {
+            int argc = 0;
+            int len = strlen(paras);
+            int posb[1000];
+
+            for(int i = 0; i < len; i++)
+            {
+                if(i==0 && paras[i] != ' ' && paras[i] != '\t')
+                {
+                    posb[argc++] = i;
+                }
+                else if((paras[i-1] == ' ' || paras[i-1] == '\t') && (paras[i] != ' ' && paras[i] != '\t'))
+                {
+                    posb[argc++] = i;
+                }
+            }
+
+            char **argv = NULL;
+            try
+            {
+                argv =  new char* [argc];
+                for(int i = 0; i < argc; i++)
+                {
+                    argv[i] = paras + posb[i];
+                }
+            }
+            catch(...)
+            {
+                printf("\nError: fail to allocate memory!\n");
+                return false;
+            }
+
+            for(int i = 0; i < len; i++)
+            {
+                if(paras[i]==' ' || paras[i]=='\t')
+                    paras[i]='\0';
+            }
+
+            char* key;
+            for(int i=0; i<argc; i++)
+            {
+                if(i+1 != argc) // check that we haven't finished parsing yet
+                {
+                    key = argv[i];
+
+                    qDebug()<<">>key ..."<<key;
+
+                    if (*key == '#')
+                    {
+                        while(*++key)
+                        {
+                            if (!strcmp(key, "c"))
+                            {
+                                channel_ref = atoi( argv[i+1] ) - 1; // red 1 green 2 blue 3
+                                i++;
+                            }
+                            else
+                            {
+                                cout<<"parsing ..."<<key<<i<<"Unknown command. Type 'v3d -x plugin_name -f function_name' for usage"<<endl;
+                                return false;
+                            }
+
+                        }
+                    }
+                    else
+                    {
+                        cout<<"parsing ..."<<key<<i<<"Unknown command. Type 'v3d -x plugin_name -f function_name' for usage"<<endl;
+                        return false;
+                    }
+
+                }
+            }
+
+
+            QString qs_basename_input=QFileInfo(qs_filename_img_input).baseName();
+            QString qs_filename_output=QString(outfile);
+            QString qs_pathname_output=QFileInfo(qs_filename_output).path();
+
+            if(outfile)
+            {
+                qs_filename_img_output=qs_filename_output;
+            }
+            else
+            {
+                qs_filename_img_output=qs_pathname_output+"/"+qs_basename_input+"_mip.tif";
+            }
+
+            // error check
+            if(qs_filename_img_input==NULL || qs_filename_img_output==NULL)
+            {
+                printf("\nERROR: invalid input file name (target or subject)!\n");
+                errorPrint();
+                return false;
+            }
+            if(channel_ref<0)
+            {
+                printf("\nERROR: invalid reference channel! Assume R(1)G(2)B(3) ...!\n");
+                errorPrint();
+                return false;
+            }
+        }
+
+        //
+        V3DLONG *sz_relative = 0;
+        unsigned char* relative1d = 0;
+        int datatype_tile = 0;
+        if(QFile(QString(infile)).exists())
+        {
+            if (loadImage(const_cast<char *>(infile), relative1d, sz_relative, datatype_tile)!=true)
+            {
+                fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",infile);
+                return false;
+            }
+        }
+        else
+        {
+            cout<<"The input file does not exist!"<<endl;
+            return false;
+        }
+
+        //
+        V3DLONG offset_c = channel_ref*sz_relative[0]*sz_relative[1]*sz_relative[2];
+
+        unsigned char *pOutput = NULL;
+        if(datatype_tile == V3D_UINT8)
+        {
+            if(extconv<unsigned char, V3DLONG>((unsigned char *)relative1d + offset_c, sz_relative[0], sz_relative[1], sz_relative[2], pOutput)!=true)
+            {
+                printf("Fail to call function extconv! \n");
+                return false;
+            }
+        }
+        else if(datatype_tile == V3D_UINT16)
+        {
+            if(extconv<unsigned short, V3DLONG>((unsigned short *)relative1d + offset_c, sz_relative[0], sz_relative[1], sz_relative[2], pOutput)!=true)
+            {
+                printf("Fail to call function extconv! \n");
+                return false;
+            }
+
+        }
+        else if(datatype_tile == V3D_FLOAT32)
+        {
+            // current not supported
+        }
+        else
+        {
+            printf("Currently this program only support UINT8, UINT16, and FLOAT32 datatype.\n");
+            return false;
+        }
+
+        // generate z-MIP images (.tif)
+
+        for(V3DLONG j=0; j<sz_relative[1]; j++)
+        {
+            V3DLONG offset_j = j*sz_relative[0];
+            for(V3DLONG i=0; i<sz_relative[0]; i++)
+            {
+                V3DLONG val = 0;
+                for(V3DLONG k=0; k<sz_relative[2]; k++)
+                {
+                    val += pOutput[ k*sz_relative[0]*sz_relative[1] + offset_j + i ];
+                }
+                val /= sz_relative[2];
+
+                pOutput[offset_j + i] = val;
+            }
+        }
+
+
+        // save
+        if(qs_filename_img_output!=NULL)
+        {
+            sz_relative[2]=1;
+            sz_relative[3]=1;
+            if(!saveImage(qPrintable(qs_filename_img_output),pOutput,sz_relative,V3D_UINT8))
+            {
+                printf("ERROR: saveImage() return false!\n");
+                return false;
+            }
+        }
+
+        //
+        if(pOutput) {delete []pOutput; pOutput=NULL;}
 
         //
         return true;
