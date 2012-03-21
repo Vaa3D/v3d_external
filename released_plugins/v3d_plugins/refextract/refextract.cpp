@@ -524,12 +524,13 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             V3DLONG offset_j = j*sz_relative[0];
             for(V3DLONG i=0; i<sz_relative[0]; i++)
             {
-                V3DLONG val = 0;
+                int val = 0;
                 for(V3DLONG k=0; k<sz_relative[2]; k++)
                 {
-                    val += pOutput[ k*sz_relative[0]*sz_relative[1] + offset_j + i ];
+                   int curval = pOutput[ k*sz_relative[0]*sz_relative[1] + offset_j + i ];
+
+		   if(val < curval) val = curval;
                 }
-                val /= sz_relative[2];
 
                 pOutput[offset_j + i] = val;
             }
