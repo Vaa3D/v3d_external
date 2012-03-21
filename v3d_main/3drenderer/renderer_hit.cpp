@@ -1956,16 +1956,44 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     }
                     if(listCurveMarkerPool.size() > 2) // the ground truth is the curve from GD
                     {
+                         // ======================================================
+                         // get previous records for *_success & num_test
+                         // FILE *pre_fpdist;
+                         // pre_fpdist=fopen(distfilename.toStdString().c_str(), "r");
+
+                         // int ml_success, cc_success, di_success, mp_success;
+                         // int num_test;
+
+                         // if(pre_fpdist) // this file is not here for the first time
+                         // {
+                         //      fscanf(pre_fpdist, "%d", num_test);
+                         //      fscanf(pre_fpdist, "%d %d %d %d", ml_success, cc_success, di_success, mp_success);
+                         // }
+                         // else
+                         // {
+                         //      // initialize nums for the first time
+                         //      ml_success = 0;
+                         //      cc_success = 0;
+                         //      di_success = 0;
+                         //      mp_success = 0;
+                         //      num_test = 0;
+                         // }
+                         // fclose(pre_fpdist);
+                         // =======================================================
+
+
                          // computer distance from GD-curve to other curves
-                         double dist_gd_ml = distance_between_2lines(tree_gd, tree_ml);
-                         double dist_gd_cc = distance_between_2lines(tree_gd, tree_cc);
-                         double dist_gd_di = distance_between_2lines(tree_gd, tree_di);
-                         double dist_gd_mp = distance_between_2lines(tree_gd, tree_mp);
                          static int ml_success = 0;
                          static int cc_success = 0;
                          static int di_success = 0;
                          static int mp_success = 0;
                          static int num_test = 0;
+
+                         double dist_gd_ml = distance_between_2lines(tree_gd, tree_ml);
+                         double dist_gd_cc = distance_between_2lines(tree_gd, tree_cc);
+                         double dist_gd_di = distance_between_2lines(tree_gd, tree_di);
+                         double dist_gd_mp = distance_between_2lines(tree_gd, tree_mp);
+
                          num_test ++;
 
                          if(dist_gd_ml <= dist_threshold) ml_success++;
@@ -1977,6 +2005,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                          float di_succ_rate = (float)di_success/num_test;
                          float mp_succ_rate = (float)mp_success/num_test;
 
+                         fprintf(fpdist, "%d\n", num_test); // total test num
+                         fprintf(fpdist, "%d %d %d %d\n", ml_success, cc_success, di_success, mp_success);// success num above dist_threshold
                          fprintf(fpdist, "The ground truth curve is the curve from GD method.\n");
                          fprintf(fpdist, "The distance_threshold  = %.4f\n", dist_threshold);
                          fprintf(fpdist, "Distance between curves of GD and Markerlists_fm                     = %.4f\n",   dist_gd_ml);
@@ -2798,12 +2828,6 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 
 			XYZ loc0, loc1;
 			_MarkerPos_to_NearFarPoint(pos, loc0, loc1);
-
-
-                qDebug()<<"loc0.x, loc0.y, loc0.z:" << loc0.x << loc0.y <<loc0.z;
-                qDebug()<<"loc1.x, loc1.y, loc1.z:" << loc1.x << loc1.y <<loc1.z;
-
-
 
 			XYZ loc;
 			float length01 = dist_L2(loc0, loc1);

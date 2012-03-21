@@ -313,8 +313,10 @@ protected:
      void getSubVolFromStroke(double* &pSubdata, int chno, XYZ &sub_orig, V3DLONG &sub_szx, V3DLONG &sub_szy, V3DLONG &sub_szz);
      void getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, double* &pSubdata, XYZ &sub_orig, V3DLONG &sub_szx,
           V3DLONG &sub_szy, V3DLONG &sub_szz);
-     void getSubVolFrom4Points(XYZ & loc0_last, XYZ & loc1_last, XYZ & loc0, XYZ & loc1, int chno, double* &pSubdata,
+     void getSubVolFrom3Points(XYZ & loc0_last, XYZ & loc0, XYZ & loc1, int chno, double* &pSubdata,
           XYZ &sub_orig, V3DLONG &sub_szx, V3DLONG &sub_szy, V3DLONG &sub_szz);
+
+     bool mergeFirstNode(const MarkerPos &pos, XYZ &mean_loc, XYZ &nearest_loc);
 
      void vecToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list);
      void getMidRandomLoc(MarkerPos pos, int chno, XYZ &mid_loc);

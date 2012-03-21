@@ -569,9 +569,9 @@ void Renderer_gl1::getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, do
      maxloc.y = maxy + boundary;
      maxloc.z = maxz + boundary;
 
-     if (!dataViewProcBox.isInner(minloc, 0.1))
+     if (!dataViewProcBox.isInner(minloc, 0.5))
           dataViewProcBox.clamp(minloc);
-     if (!dataViewProcBox.isInner(maxloc, 0.1))
+     if (!dataViewProcBox.isInner(maxloc, 0.5))
           dataViewProcBox.clamp(maxloc);
 
      // get data buffer
@@ -603,7 +603,7 @@ void Renderer_gl1::getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, do
 
 // get bounding volume from two stroke points
 // chno is channel
-void Renderer_gl1::getSubVolFrom4Points(XYZ & loc0_last, XYZ & loc1_last, XYZ & loc0, XYZ & loc1, int chno, double* &pSubdata,
+void Renderer_gl1::getSubVolFrom3Points(XYZ & loc0_last, XYZ & loc0, XYZ & loc1, int chno, double* &pSubdata,
      XYZ &sub_orig, V3DLONG &sub_szx, V3DLONG &sub_szy, V3DLONG &sub_szz)
 {
      XYZ minloc, maxloc;
@@ -629,14 +629,6 @@ void Renderer_gl1::getSubVolFrom4Points(XYZ & loc0_last, XYZ & loc1_last, XYZ & 
      if(maxy<loc0_last.y) maxy=loc0_last.y;
      if(maxz<loc0_last.z) maxz=loc0_last.z;
 
-
-     if(minx>loc1_last.x) minx=loc1_last.x;
-     if(miny>loc1_last.y) miny=loc1_last.y;
-     if(minz>loc1_last.z) minz=loc1_last.z;
-
-     if(maxx<loc1_last.x) maxx=loc1_last.x;
-     if(maxy<loc1_last.y) maxy=loc1_last.y;
-     if(maxz<loc1_last.z) maxz=loc1_last.z;
 
      int boundary = 5;
 
@@ -1222,7 +1214,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
      XYZ sub_orig;
      double* pSubdata;
      V3DLONG sub_szx, sub_szy, sub_szz;
-     bool b_useStrokeBB = true; // use the stroke decided BB
+     bool b_useStrokeBB = true;           // use the stroke decided BB
      bool b_use2PointsBB = !b_useStrokeBB; // use the two-point decided BB
 
      if(b_useStrokeBB)
@@ -1297,11 +1289,42 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                     double* pSubdata2;
                     XYZ sub_orig2;
                     V3DLONG sub_szx2, sub_szy2, sub_szz2;
+                    XYZ loci0; //meanshift point for i==0
+                    if(i==1)
+                    {
+                         last_i=0; // for the first time run
 
-                    if(i==1) last_i=0; // for the first time run
+                         const MarkerPos & pos_0 = list_listCurvePos.at(index).at(0);
+                         double clipplane0[4] = { 0.0,  0.0, -1.0,  0 };
+                         clipplane0[3] = viewClip;
+                         ViewPlaneToModel(pos_0.MV, clipplane0);
+                         XYZ loc00, loc01;
+                         _MarkerPos_to_NearFarPoint(pos_0, loc00, loc01);
+
+                         // XYZ loc00_t, loc01_t;
+                         // _MarkerPos_to_NearFarPoint(pos, loc00_t, loc01_t);
+
+                         // XYZ loc00, loc01;
+                         // // check line_box intersection points
+                         // CheckLineBox( dataViewProcBox.V0(), dataViewProcBox.V1(), loc00_t, loc01_t, loc00);
+                         // CheckLineBox( dataViewProcBox.V0(), dataViewProcBox.V1(), loc01_t, loc00_t, loc01);
+
+                         qDebug()<<"loc00.x, loc00.y, loc00.z:" << loc00.x << loc00.y <<loc00.z;
+                         qDebug()<<"loc01.x, loc01.y, loc01.z:" << loc01.x << loc01.y <<loc01.z;
+
+                         loci0 = getCenterOfLineProfile(loc00, loc01, clipplane, chno);
+
+                         XYZ nearest_loc;
+                         XYZ mean_loc=loci0;
+                         if( mergeFirstNode(pos_0, mean_loc, nearest_loc) ) // if there is a nearest curve, use the nearest loc as the start point
+                         {
+                              loci0 = nearest_loc;
+                         }
+                    }
 
                     if(b_use2PointsBB)
                     {
+                         // using 2 points on stroke to get BB
                          pos_vec.clear();
                          MarkerPos pos_last = list_listCurvePos.at(index).at(last_i);
                          pos_vec.push_back(pos_last);
@@ -1309,29 +1332,28 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 
                          getSubVolFrom2MarkerPos(pos_vec, chno, pSubdata2, sub_orig2, sub_szx2, sub_szy2, sub_szz2);
 
+                         // ===============================>>>>>>>>>>>>>>>>>>>
+                         // using 3 loc points to get BB
                          // using lastpos infor to get loc
-                         // if (last_j>=0)
+                         // XYZ lastpos;
+                         // if(i==1)
+                         //      lastpos = loci0;
+                         // else
+                         //      lastpos = loc_vec.at(last_j);
+                         // if (dataViewProcBox.isInner(lastpos, 0.5))
                          // {
-                         //      XYZ lastpos = loc_vec.at(last_j);
-                         //      if (dataViewProcBox.isInner(lastpos, 0.5))
-                         //      {
-                         //           XYZ v_1_0 = loc1-loc0, v_0_last=loc0-lastpos;
-                         //           XYZ nearestloc = loc0-v_1_0*dot(v_0_last, v_1_0)/dot(v_1_0, v_1_0); //since loc0!=loc1, this is safe
+                         //      XYZ v_1_0 = loc1-loc0, v_0_last=loc0-lastpos;
+                         //      XYZ nearestloc = loc0-v_1_0*dot(v_0_last, v_1_0)/dot(v_1_0, v_1_0); //since loc0!=loc1, this is safe
 
-                         //           double ranget = (length01/2.0)>10?10:(length01/2.0); //at most 30 pixels aparts
+                         //      double ranget = (length01/2.0)>10?10:(length01/2.0); //at most 30 pixels aparts
 
-                         //           XYZ D = v_1_0; normalize(D);
-                         //           loc0 = nearestloc - D*(ranget);
-                         //           loc1 = nearestloc + D*(ranget);
-                         //      }
+                         //      XYZ D = v_1_0; normalize(D);
+                         //      loc0 = nearestloc - D*(ranget);
+                         //      loc1 = nearestloc + D*(ranget);
+                         //      getSubVolFrom3Points(lastpos, loc0, loc1, chno, pSubdata2, sub_orig2, sub_szx2, sub_szy2, sub_szz2);
                          // }
+                         // ================================<<<<<<<<<<<<<<<<<<<<<<<
 
-                         // MarkerPos pos_last = list_listCurvePos.at(index).at(last_i);
-                         // ViewPlaneToModel(pos_last.MV, clipplane);
-                         // XYZ loc0_last, loc1_last;
-                         // _MarkerPos_to_NearFarPoint(pos_last, loc0_last, loc1_last);
-
-                         // getSubVolFrom4Points(loc0_last, loc1_last, loc0, loc1, chno, pSubdata2, sub_orig2, sub_szx2, sub_szy2, sub_szz2);
 
                          qDebug()<<"Debug last_i= "<< last_i;
                          qDebug()<<"Debug i= "<< i;
@@ -1354,20 +1376,11 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 
                     if(i==1)//(last_j<0) //i==0
                     {
-                         double clipplane0[4] = { 0.0,  0.0, -1.0,  0 };
-                         clipplane0[3] = viewClip;
-                         const MarkerPos & pos_0 = list_listCurvePos.at(index).at(0);
-                         ViewPlaneToModel(pos_0.MV, clipplane0);
+                         XYZ loci = loci0;
 
-                         XYZ loc00, loc01;
-                         _MarkerPos_to_NearFarPoint(pos_0, loc00, loc01);
+                         // start point for second marching
+                         middle_vec.push_back(loci);
 
-                         qDebug()<<"loc00.x, loc00.y, loc00.z:" << loc00.x << loc00.y <<loc00.z;
-                         qDebug()<<"loc01.x, loc01.y, loc01.z:" << loc01.x << loc01.y <<loc01.z;
-
-                         //==============================================================>>>>>>
-                         XYZ loci = getCenterOfLineProfile(loc00, loc01, clipplane, chno);
-                         qDebug()<<"loci.x, loci.y, loci.z:" << loci.x << loci.y <<loci.z;
                          if(b_useStrokeBB)
                               loci = loci-sub_orig;
                          else if(b_use2PointsBB)
@@ -1597,126 +1610,165 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                }
           }
      }
-     // clean pSubdata of subvolume boundingbox
-     if(pSubdata) {delete [] pSubdata; pSubdata=0;}
 
      PROGRESS_PERCENT(60);
 
+     //===============================================================================>>>>>>>>>>>> second fastmarching
+     // put the last element of loc_vec
+     //middle_vec.push_back(loc_vec.back());
+     N = loc_vec.size();
+     if(N<1) return; // all points are outside the volume. ZJL 110913
 
-     // //===============================================================================>>>>>>>>>>>> second fastmarching
-     // // put the last element of loc_vec
-     // middle_vec.push_back(loc_vec.back());
-     // N = loc_vec.size();
-     // if(N<1) return; // all points are outside the volume. ZJL 110913
+     // append the last XYZ of loc_vec to middle_vec
+     middle_vec.push_back(loc_vec.at(loc_vec.size()-1));
+     loc_vec.clear();
 
-     // // append the last XYZ of loc_vec to middle_vec
-     // middle_vec.push_back(loc_vec.at(loc_vec.size()-1));
-     // loc_vec.clear();
+     loc_vec.push_back(middle_vec.at(0)); //append the first loc
+     // Do the second fastmarching for smoothing the curve
+     for(int jj=0;jj<middle_vec.size()-1; jj++)
+     {
+          // create MyMarker list
+          vector<MyMarker> sub_markers;
+          vector<MyMarker> tar_markers;
+          vector<MyMarker*> outswc;
+          XYZ loc;
 
-     // loc_vec.push_back(middle_vec.at(0)); //append the first loc
-     // // Do the second fastmarching for smoothing the curve
-     // for(int jj=0;jj<middle_vec.size()-1; jj++)
-     // {
-     //      // create MyMarker list
-     //      vector<MyMarker> sub_markers;
-     //      vector<MyMarker> tar_markers;
-     //      vector<MyMarker*> outswc;
-     //      XYZ loc;
+          // sub_markers
+          XYZ loc0=middle_vec.at(jj);
 
-     //      // sub_markers
-     //      XYZ loc0=middle_vec.at(jj);
+          if(b_useStrokeBB) loc0 = loc0-sub_orig; //using bb
 
-     //      if(b_useStrokeBB) loc0 = loc0-sub_orig; //using bb
+          MyMarker mloc0 = MyMarker(loc0.x, loc0.y, loc0.z);
+          sub_markers.push_back(mloc0);
 
-     //      MyMarker mloc0 = MyMarker(loc0.x, loc0.y, loc0.z);
-     //      sub_markers.push_back(mloc0);
-
-     //      // tar_markers
-     //      XYZ loc1=middle_vec.at(jj+1);
-     //      if(b_useStrokeBB) loc1 = loc1-sub_orig; //using bb
-     //      MyMarker mloc1 = MyMarker(loc1.x, loc1.y, loc1.z);
-     //      tar_markers.push_back(mloc1);
-
-     //      // call fastmarching. This version searches the whole volume
-     //      if(!b_useStrokeBB)
-     //      {
-     //           bool res = fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz, 0.0);// time_thresh);
-     //           if(!res)
-     //           {
-     //                loc = loc1;
-     //           }
-     //           else
-     //           {
-     //                if(!outswc.empty())
-     //                {
-     //                     // the 1st loc in outswc is the last pos got in fm
-     //                     int nn = outswc.size();
-     //                     for(int j=nn-1; j>0; j-- )
-     //                     {
-     //                          XYZ locj;
-     //                          locj.x=outswc.at(j)->x;
-     //                          locj.y=outswc.at(j)->y;
-     //                          locj.z=outswc.at(j)->z;
-
-     //                          loc_vec.push_back(locj);
-     //                     }
-     //                     // the last one
-     //                     loc.x = outswc.at(0)->x;
-     //                     loc.y = outswc.at(0)->y;
-     //                     loc.z = outswc.at(0)->z;
-     //                }
-     //                else
-     //                {
-     //                     loc = loc1;
-     //                }
-     //           }
-     //      }
-     //      else // this version searches the subvolume decided by the stroke bounding box
-     //      {
-     //           bool res = fastmarching_linker(sub_markers, tar_markers, pSubdata, outswc, sub_szx, sub_szy, sub_szz, 0.0);// time_thresh);
-     //           if(!res)
-     //           {
-     //                loc = loc1;
-     //           }
-     //           else
-     //           {
-     //                if(!outswc.empty())
-     //                {
-     //                     // the 1st loc in outswc is the last pos got in fm
-     //                     int nn = outswc.size();
-     //                     for(int j=nn-1; j>0; j-- )
-     //                     {
-     //                          XYZ locj;
-     //                          locj.x=outswc.at(j)->x + sub_orig.x;
-     //                          locj.y=outswc.at(j)->y + sub_orig.y;
-     //                          locj.z=outswc.at(j)->z + sub_orig.z;
-
-     //                          loc_vec.push_back(locj);
-     //                     }
-     //                     // the last one
-     //                     loc.x = outswc.at(0)->x + sub_orig.x;
-     //                     loc.y = outswc.at(0)->y + sub_orig.y;
-     //                     loc.z = outswc.at(0)->z + sub_orig.z;
-     //                }
-     //                else
-     //                {
-     //                     loc = loc1;
-     //                }
-     //           }
-     //      }
-
-     //      //always remember to free the potential-memory-problematic fastmarching_linker return value
-     //      clean_fm_marker_vector(outswc);
+          // tar_markers
+          XYZ loc1=middle_vec.at(jj+1);
+          if(b_useStrokeBB) loc1 = loc1-sub_orig; //using bb
+          MyMarker mloc1 = MyMarker(loc1.x, loc1.y, loc1.z);
+          tar_markers.push_back(mloc1);
 
 
-     //      if (dataViewProcBox.isInner(loc, 0.5))
-     //      {
-     //           dataViewProcBox.clamp(loc);
-     //           loc_vec.push_back(loc);
-     //      }
-     // } // end for the second fastmarching
-     // //===============================================================================<<<<<<<<<<<<<
+          if(b_useStrokeBB) // this version searches the subvolume decided by the stroke bounding box
+          {
+               bool res = fastmarching_linker(sub_markers, tar_markers, pSubdata, outswc, sub_szx, sub_szy, sub_szz, 0.0);// time_thresh);
+               if(!res)
+               {
+                    loc = loc1;
+               }
+               else
+               {
+                    if(!outswc.empty())
+                    {
+                         // the 1st loc in outswc is the last pos got in fm
+                         int nn = outswc.size();
+                         for(int j=nn-1; j>0; j-- )
+                         {
+                              XYZ locj;
+                              locj.x=outswc.at(j)->x + sub_orig.x;
+                              locj.y=outswc.at(j)->y + sub_orig.y;
+                              locj.z=outswc.at(j)->z + sub_orig.z;
+
+                              loc_vec.push_back(locj);
+                         }
+                         // the last one
+                         loc.x = outswc.at(0)->x + sub_orig.x;
+                         loc.y = outswc.at(0)->y + sub_orig.y;
+                         loc.z = outswc.at(0)->z + sub_orig.z;
+                    }
+                    else
+                    {
+                         loc = loc1;
+                    }
+               }
+          }
+          // else if (b_use2PointsBB)  // using stroke to creating a bounding box and do FM
+          // {
+          //      fastmarching_linker(sub_markers, tar_markers, pSubdata2, outswc, sub_szx2, sub_szy2, sub_szz2, 0.0);// time_thresh);
+
+          //      //if(pSubdata2) {delete []pSubdata2; pSubdata2=0;}
+
+          //      if(!outswc.empty())
+          //      {
+          //           // the 1st loc in outswc is the last pos got in fm
+          //           int nn = outswc.size();
+          //           for(int j=nn-1; j>=0; j-- )
+          //           {
+          //                XYZ locj;
+          //                locj.x=outswc.at(j)->x + sub_orig2.x;
+          //                locj.y=outswc.at(j)->y + sub_orig2.y;
+          //                locj.z=outswc.at(j)->z + sub_orig2.z;
+
+          //                loc_vec.push_back(locj);
+
+          //                // record the middle loc in this seg for the second fast marching
+          //                if((last_i==0) && (j==nn-1))
+          //                     middle_vec.push_back(locj); // this is the first loc of the curve
+          //                if((nn>6)&&(j==(int)(nn/2)))
+          //                {
+          //                     middle_vec.push_back(locj);
+          //                }
+          //           }
+          //      }
+          //      else
+          //      {
+          //           loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+          //           if(dataViewProcBox.isInner(loc, 0.5))
+          //           {
+          //                dataViewProcBox.clamp(loc);
+          //                loc_vec.push_back(loc);
+          //           }
+          //      }
+          // }
+          // call fastmarching. This version searches the whole volume
+          else if(!b_useStrokeBB && !b_use2PointsBB)
+          {
+               bool res = fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz, 0.0);// time_thresh);
+               if(!res)
+               {
+                    loc = loc1;
+               }
+               else
+               {
+                    if(!outswc.empty())
+                    {
+                         // the 1st loc in outswc is the last pos got in fm
+                         int nn = outswc.size();
+                         for(int j=nn-1; j>0; j-- )
+                         {
+                              XYZ locj;
+                              locj.x=outswc.at(j)->x;
+                              locj.y=outswc.at(j)->y;
+                              locj.z=outswc.at(j)->z;
+
+                              loc_vec.push_back(locj);
+                         }
+                         // the last one
+                         loc.x = outswc.at(0)->x;
+                         loc.y = outswc.at(0)->y;
+                         loc.z = outswc.at(0)->z;
+                    }
+                    else
+                    {
+                         loc = loc1;
+                    }
+               }
+          }
+
+          //always remember to free the potential-memory-problematic fastmarching_linker return value
+          clean_fm_marker_vector(outswc);
+
+
+          if (dataViewProcBox.isInner(loc, 0.5))
+          {
+               dataViewProcBox.clamp(loc);
+               loc_vec.push_back(loc);
+          }
+     } // end for the second fastmarching
+     //===============================================================================<<<<<<<<<<<<<
      PROGRESS_PERCENT(90);
+
+     // clean pSubdata of subvolume boundingbox
+     if(pSubdata) {delete [] pSubdata; pSubdata=0;}
 
      N = loc_vec.size(); //100722 RZC
      if(N<1) return; // all points are outside the volume. ZJL 110913
@@ -2690,6 +2742,48 @@ void Renderer_gl1::projectSWC_XY_YZ_XZ(unsigned char * &pXY, unsigned char * &pY
 }
 
 
+bool Renderer_gl1::mergeFirstNode(const MarkerPos &pos, XYZ &mean_loc, XYZ &nearest_loc)
+{
+     MainWindow* V3Dmainwindow = 0;
+	V3Dmainwindow = v3dr_getV3Dmainwindow(_idep);
+
+     if (V3Dmainwindow && V3Dmainwindow->global_setting.b_3dcurve_autoconnecttips)
+     {
+          if (listNeuronTree.size()>0 && curEditingNeuron>0 && curEditingNeuron<=listNeuronTree.size())
+          {
+               NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(curEditingNeuron-1)));
+               if (p_tree)
+               {
+                    // at(0) to at(index) ZJL 110901
+                    V3DLONG n_id_start = findNearestNeuronNode_WinXY(pos.x, pos.y, p_tree);
+
+                    double th_merge = 5;
+
+                    bool b_start_merged=false;
+                    NeuronSWC cur_node;
+                    if (n_id_start>=0)
+                    {
+                         cur_node = p_tree->listNeuron.at(n_id_start);
+                         qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
+                         XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
+                         if (dist_L2(cur_node_xyz, mean_loc)<th_merge)
+                         {
+                              nearest_loc = cur_node_xyz;
+                              b_start_merged = true;
+                              qDebug()<<"force set the first point of this curve to the above neuron node as they are close.";
+                              return true;
+                         }
+
+                    }
+
+               }
+          }
+     }
+     return false;
+}
+
+
+
 // decide a bounding box using two MarkerPos
 // void boundingVolFrom2Points()
 // {
@@ -2726,4 +2820,39 @@ void Renderer_gl1::projectSWC_XY_YZ_XZ(unsigned char * &pXY, unsigned char * &pY
 //      loc0 = nearestloc - D*(ranget);
 //      loc1 = nearestloc + D*(ranget);
 
+// }
+
+// void createFileName()
+// {
+//      QString individualFileName = foldername + prefix + QString("_") + qstr_time + QString("_%1").arg(1) + suffix;
+
+//      //
+// 	QStringList myList;
+// 	myList.clear();
+
+// 	// get the image files namelist in the directory
+// 	QFileInfo fileInfo(individualFileName);
+// 	QString curFilePath = fileInfo.path();
+// 	QString curSuffix = fileInfo.suffix();
+
+// 	QDir dir(curFilePath);
+// 	if (!dir.exists())
+// 	{
+// 		qWarning("Cannot find the directory and now mkdir.");
+// 		bool success_mkdir = dir.mkdir(curFilePath);
+
+// 		qDebug()<<"mkdir "<<curFilePath<<success_mkdir;
+// 	}
+
+// 	QStringList imgfilters;
+// 	imgfilters.append("*." + curSuffix);
+// 	foreach (QString file, dir.entryList(imgfilters, QDir::Files, QDir::Name))
+// 	{
+// 		myList += QFileInfo(dir, file).absoluteFilePath();
+// 	}
+
+// 	QString qs_fn = foldername + prefix + QString("_") + qstr_time + QString("_%1").arg(myList.size()+1) + suffix;
+
+// 	qDebug()<<"filename: "<<qs_fn;
+// 	return qs_fn;
 // }
