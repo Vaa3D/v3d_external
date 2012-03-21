@@ -128,6 +128,9 @@ endif()
 if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
     set_target_properties(v3d PROPERTIES
         OUTPUT_NAME NeuronAnnotator)
+else()
+    set_target_properties(v3d PROPERTIES
+        OUTPUT_NAME vaa3d)
 endif()
 
 target_link_libraries( v3d
@@ -228,7 +231,7 @@ if(APPLE)
     else(V3D_MAC_CREATE_BUNDLE)
         # Don't create a bundle, just a v3d folder containing v3d and plugins
         # Place v3d in a folder called "v3d"
-        set(V3D_INSTALL_DIR "v3d" CACHE INTERNAL "Relative path where V3D will be installed")
+        set(V3D_INSTALL_DIR "vaa3d" CACHE INTERNAL "Relative path where V3D will be installed")
         install(TARGETS v3d
             DESTINATION ${V3D_INSTALL_DIR}
             COMPONENT v3d)
@@ -307,7 +310,16 @@ if (V3D_BUILD_BINARY_DIR)
         RUNTIME_OUTPUT_DIRECTORY "${V3D_BUILD_BINARY_DIR}")
     if (MSVC)
         # hack to get around the "Debug" and "Release" directories cmake tries to add on Windows
-        set_target_properties (v3d PROPERTIES PREFIX "../")
+        # But the PREFIX trick does not work with MSVC 2010
+        # set_target_properties (v3d PROPERTIES PREFIX "../")
+        if(V3D_BUILD_BINARY_DIR)
+            set_target_properties(v3d PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${V3D_BUILD_BINARY_DIR})
+            set_target_properties(v3d PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${V3D_BUILD_BINARY_DIR})
+            set_target_properties(v3d PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${V3D_BUILD_BINARY_DIR})
+            set_target_properties(v3d PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${V3D_BUILD_BINARY_DIR})
+            set_target_properties(v3d PROPERTIES LIBRARY_OUTPUT_DIRECTORY_RELEASE ${V3D_BUILD_BINARY_DIR})
+            set_target_properties(v3d PROPERTIES LIBRARY_OUTPUT_DIRECTORY_DEBUG ${V3D_BUILD_BINARY_DIR})
+        endif()
     endif()
 endif()
 

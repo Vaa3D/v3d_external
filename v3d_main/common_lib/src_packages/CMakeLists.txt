@@ -1,4 +1,5 @@
-#
+# TODO - the two code blocks for Windows/non-Windows building of tiff library should be merged.
+# In particular, the full cmakeization used for Windows should be used for all platforms.
 #
 
 if (NOT MSVC)
@@ -109,6 +110,7 @@ if(UNIX)
 endif(UNIX)
 
 # Windows build of (previously unpacked) tiff library
+# TODO -generalize this stanza for all platforms
 if(MSVC AND V3D_USE_OWN_TIFF)
     # You might need to manually unpack the tiff source code before this will work
     find_path(TIFF_SOURCE_DIR 
@@ -116,69 +118,79 @@ if(MSVC AND V3D_USE_OWN_TIFF)
         PATHS 
             "${CMAKE_CURRENT_SOURCE_DIR}/tiff-4.0.1"
         NO_DEFAULT_PATH)
+    mark_as_advanced(TIFF_SOURCE_DIR)
     # message("TIFF_SOURCE_DIR = ${TIFF_SOURCE_DIR}")
     if(TIFF_SOURCE_DIR)
-        # Rules deduced from reading libtiff/Makefile.vc Mar 19 2012 CMB
-        # Copy/rename tif_config.vc.h, tiffconf.vc.h
-        # Include vc specific files BEFORE regular tiff includes
-        include_directories(${CMAKE_CURRENT_BINARY_DIR})
-        configure_file(${TIFF_SOURCE_DIR}/libtiff/tif_config.vc.h
-            ${CMAKE_CURRENT_BINARY_DIR}/tif_config.h)
-        configure_file(${TIFF_SOURCE_DIR}/libtiff/tiffconf.vc.h
-            ${CMAKE_CURRENT_BINARY_DIR}/tiffconf.h)
-        include_directories(${TIF_SOURCE_DIR}/libtiff)
-        set(TIFF_SOURCES
-            ${TIFF_SOURCE_DIR}/libtiff/tif_aux.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_close.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_codec.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_color.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_compress.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_dir.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_dirinfo.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_dirread.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_dirwrite.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_dumpmode.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_error.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_extension.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_fax3.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_fax3sm.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_getimage.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_jbig.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_jpeg.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_jpeg_12.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_ojpeg.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_flush.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_luv.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_lzw.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_next.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_open.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_packbits.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_pixarlog.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_predict.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_print.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_read.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_stream.cxx
-            ${TIFF_SOURCE_DIR}/libtiff/tif_swab.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_strip.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_thunder.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_tile.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_version.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_warning.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_write.c
-            ${TIFF_SOURCE_DIR}/libtiff/tif_zip.c
+        file(GLOB TIFF_HEADERS "${TIFF_SOURCE_DIR}/libtiff/*.h" "${TIFF_SOURCE_DIR}/libtiff/*.hxx")
+        set(TIFF_SOURCES0
+            tif_aux.c
+            tif_close.c
+            tif_codec.c
+            tif_color.c
+            tif_compress.c
+            tif_dir.c
+            tif_dirinfo.c
+            tif_dirread.c
+            tif_dirwrite.c
+            tif_dumpmode.c
+            tif_error.c
+            tif_extension.c
+            tif_fax3.c
+            tif_fax3sm.c
+            tif_getimage.c
+            tif_jbig.c
+            tif_jpeg.c
+            tif_jpeg_12.c
+            tif_ojpeg.c
+            tif_flush.c
+            tif_luv.c
+            tif_lzw.c
+            tif_next.c
+            tif_open.c
+            tif_packbits.c
+            tif_pixarlog.c
+            tif_predict.c
+            tif_print.c
+            tif_read.c
+            tif_stream.cxx
+            tif_swab.c
+            tif_strip.c
+            tif_thunder.c
+            tif_tile.c
+            tif_version.c
+            tif_warning.c
+            tif_write.c
+            tif_zip.c
             )
-        option(V3D_TIFF_USE_WIN_CRT_LIB TRUE)
-        if (V3D_TIFF_USE_WIN_CRT_LIB)
-            set(TIFF_SOURCES ${TIFF_SOURCES} ${TIFF_SOURCE_DIR}/libtiff/tif_unix.c)
-            add_definitions(-DAVOID_WIN32_FILEIO)
-        else()
-            set(TIFF_SOURCES ${TIFF_SOURCES} ${TIFF_SOURCE_DIR}/libtiff/tif_win32.c)
-            add_definitions(-DUSE_WIN32_FILEIO)
-        endif()
-        set(TIFF_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR};${TIFF_SOURCE_DIR}/libtiff" CACHE PATH "" FORCE)
+		if(MSVC)
+		    # Rules deduced from reading libtiff/Makefile.vc Mar 19 2012 CMB
+			# Copy/rename tif_config.vc.h, tiffconf.vc.h
+			# Include vc specific files BEFORE regular tiff includes
+	        include_directories(${CMAKE_CURRENT_BINARY_DIR})
+		    configure_file(${TIFF_SOURCE_DIR}/libtiff/tif_config.vc.h
+			    ${CMAKE_CURRENT_BINARY_DIR}/tif_config.h)
+			configure_file(${TIFF_SOURCE_DIR}/libtiff/tiffconf.vc.h
+				${CMAKE_CURRENT_BINARY_DIR}/tiffconf.h)
+			option(V3D_TIFF_USE_WIN_CRT_LIB "Build tiff library using windows common runtime" TRUE)
+			if (V3D_TIFF_USE_WIN_CRT_LIB)
+				set(TIFF_SOURCES0 ${TIFF_SOURCES0} tif_unix.c)
+				add_definitions(-DAVOID_WIN32_FILEIO)
+			else()
+				set(TIFF_SOURCES0 ${TIFF_SOURCES0} tif_win32.c)
+				add_definitions(-DUSE_WIN32_FILEIO)
+			endif()
+	        set(TIFF_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR};${TIFF_SOURCE_DIR}/libtiff" CACHE PATH "" FORCE)
+		else(MSVC) # if(UNIX)?
+			set(TIFF_SOURCES0 ${TIFF_SOURCES0} tif_unix.c)			
+	        set(TIFF_INCLUDE_DIR "${TIFF_SOURCE_DIR}/libtiff" CACHE PATH "" FORCE)
+		endif(MSVC)
+		foreach(SRC ${TIFF_SOURCES0})
+			set(TIFF_SOURCES ${TIFF_SOURCES} "${TIFF_SOURCE_DIR}/libtiff/${SRC}")
+		endforeach()
+		include_directories(${TIFF_INCLUDE_DIR})
         # To keep things simple, don't support JPEG, PACKBITS, ZIP etc, but do support LZW
         add_definitions(-DLZW_SUPPORT)
-        add_library(libtiff STATIC ${TIFF_SOURCES})
+        add_library(libtiff STATIC ${TIFF_SOURCES} ${TIFF_HEADERS})
         set(TIFF_LIBRARY libtiff CACHE STRING "" FORCE)
     endif()
 endif()

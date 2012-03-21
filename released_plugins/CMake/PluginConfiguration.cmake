@@ -68,11 +68,17 @@ if (V3D_BUILD_BINARY_DIR)
     set_target_properties(${PLUGIN_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${V3D_BUILD_BINARY_DIR}/plugins/${PLUGIN_DIRECTORY_NAME}"
         LIBRARY_OUTPUT_DIRECTORY "${V3D_BUILD_BINARY_DIR}/plugins/${PLUGIN_DIRECTORY_NAME}"
-        ARCHIVE_OUTPUT_DIRECTORY "${V3D_BUILD_BINARY_DIR}/plugins/${PLUGIN_DIRECTORY_NAME}")
-    if (MSVC)
-        # hack to get around the "Debug" and "Release" directories cmake tries to add on Windows
-        set_target_properties (${PLUGIN_NAME} PROPERTIES PREFIX "../")
-    endif()
+        ARCHIVE_OUTPUT_DIRECTORY "${V3D_BUILD_BINARY_DIR}/plugins/${PLUGIN_DIRECTORY_NAME}"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${V3D_BUILD_BINARY_DIR}/plugins/${PLUGIN_DIRECTORY_NAME}"
+        LIBRARY_OUTPUT_DIRECTORY_RELEASE "${V3D_BUILD_BINARY_DIR}/plugins/${PLUGIN_DIRECTORY_NAME}"
+        ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${V3D_BUILD_BINARY_DIR}/plugins/${PLUGIN_DIRECTORY_NAME}"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${V3D_BUILD_BINARY_DIR}/plugins/${PLUGIN_DIRECTORY_NAME}"
+        LIBRARY_OUTPUT_DIRECTORY_DEBUG "${V3D_BUILD_BINARY_DIR}/plugins/${PLUGIN_DIRECTORY_NAME}"
+        ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${V3D_BUILD_BINARY_DIR}/plugins/${PLUGIN_DIRECTORY_NAME}")
+    # if (MSVC)
+    #     # hack to get around the "Debug" and "Release" directories cmake tries to add on Windows
+    #     set_target_properties (${PLUGIN_NAME} PROPERTIES PREFIX "../")
+    # endif()
 endif()
 
 
@@ -97,6 +103,9 @@ else()
       COMPONENT Plugins
     )
 endif()
+
+# Decorate target name in Visual Studio, so plugins will be placed alphabetically together
+set_target_properties(${PLUGIN_NAME} PROPERTIES PROJECT_LABEL "Plugin -- ${PLUGIN_NAME}")
 
 endfunction(configure_v3d_plugin_common)
 

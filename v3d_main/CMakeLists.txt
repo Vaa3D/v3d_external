@@ -97,7 +97,7 @@ find_path(QT4_DEMOS_INCLUDE_DIR
 	Demos/shared
    )
 
-find_library(QT4_DEMOS_LIBRARY
+find_library(QT4_DEMOS_LIBRARY_RELEASE
   demo_shared
   HINTS 
         ${QT_LIBRARY_DIR}/..
@@ -110,6 +110,23 @@ find_library(QT4_DEMOS_LIBRARY
 	Demos/shared
 	demos/shared/release # Windows
   )
+find_library(QT4_DEMOS_LIBRARY_DEBUG
+  demo_shared
+  HINTS 
+        ${QT_LIBRARY_DIR}/..
+        /Developer/Examples/Qt
+	/usr/lib/qt4
+	/usr/local/Trolltech/Qt-${QTVERSION}
+	"C:/Qt/${QTVERSION}"
+  PATH_SUFFIXES
+	demos/shared
+	Demos/shared
+	demos/shared/debug # Windows
+  )
+set(QT4_DEMOS_LIBRARY "${QT4_DEMOS_LIBRARY_RELEASE}" CACHE PATH "")
+if (MSVC AND QT4_DEMOS_LIBRARY_RELEASE AND QT4_DEMOS_LIBRARY_DEBUG)
+    set(QT4_DEMOS_LIBRARY optimized "${QT4_DEMOS_LIBRARY_RELEASE}" debug "${QT4_DEMOS_LIBRARY_DEBUG}" CACHE PATH "" FORCE)
+endif()
 
 if(NOT QT4_DEMOS_INCLUDE_DIR)
   message(FATAL "You need to install the Qt4 demo files")

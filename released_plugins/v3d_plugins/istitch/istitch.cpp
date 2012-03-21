@@ -7078,11 +7078,11 @@ int group_stitching_wrap(V3DPluginCallback2 &callback, QWidget *parent)
     // whether the user with configuration prior knowledge
     if(QMessageBox::Yes == QMessageBox::question (0, "", QString("Do you have the order information file of tiled images?"), QMessageBox::Yes, QMessageBox::No))
     {
-        group_stitching_wc(callback, parent);
+        return group_stitching_wc(callback, parent);
     }
     else
     {
-        group_stitching(callback, parent);
+        return group_stitching(callback, parent);
     }
 
 }

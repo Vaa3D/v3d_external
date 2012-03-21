@@ -394,7 +394,7 @@ class PointNavigateDialog : public QDialog
 	Q_OBJECT
 	
 public:
-        PointNavigateDialog(QWidget *parentWidget, long *sz)
+        PointNavigateDialog(QWidget *parentWidget, V3DLONG *sz)
 	{		
 		// create a dialog
 		v_x = new QSpinBox(); 
@@ -468,7 +468,7 @@ class RegionNavigateDialog : public QDialog
 	Q_OBJECT
 	
 public:
-        RegionNavigateDialog(QWidget *parentWidget, long *sz)
+    RegionNavigateDialog(QWidget *parentWidget, V3DLONG *sz)
 	{		
 		// create a dialog
 		label_rgn = new QLabel(QObject::tr("Choose A Region "));

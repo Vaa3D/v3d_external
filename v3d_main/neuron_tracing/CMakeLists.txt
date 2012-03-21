@@ -19,11 +19,13 @@ find_path(BOOST_LOCAL_PATH boost
     PATHS "${CMAKE_CURRENT_SOURCE_DIR}/../common_lib/src_packages/boost_1_46_0"
     NO_DEFAULT_PATH
 )
+mark_as_advanced(BOOST_LOCAL_PATH)
 if(BOOST_LOCAL_PATH)
     set(BOOST_ROOT ${BOOST_LOCAL_PATH})
 endif()
 find_package(Boost COMPONENTS)
 mark_as_advanced(Boost_LIB_DIAGNOSTIC_DEFINITIONS)
+mark_as_advanced(Boost_DIR)
 mark_as_advanced(CLEAR Boost_INCLUDE_DIR)
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIR})

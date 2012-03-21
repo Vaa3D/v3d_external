@@ -1,5 +1,5 @@
 # Top level cmake to build v3d, standard v3d plugins, and platform-specific installers
-project(V3DPackage)
+project(Vaa3D)
 cmake_minimum_required(VERSION 2.6)
 
 include(CTest)
@@ -24,24 +24,28 @@ if(APPLE)
 elseif(WIN32)
     set(PLATFORM_FLAVOR "Windows")
     if(MSVC)
-		set(PLATFORM_FLAVOR ${PLATFORM_FLAVOR}_MSVC)
-	else()
-		set(PLATFORM_FLAVOR ${PLATFORM_FLAVOR}_MSYS)
-	endif()
-	string(REGEX MATCH "Win64" BUILD_WIN64 "${CMAKE_GENERATOR}")
-	if(BUILD_WIN64)
-	    set(PLATFORM_FLAVOR ${PLATFORM_FLAVOR}_64)
-	else()
-	    set(PLATFORM_FLAVOR ${PLATFORM_FLAVOR}_32)
-	endif()
+        if(MSVC10)
+            set(PLATFORM_FLAVOR ${PLATFORM_FLAVOR}_MSVC10)
+        else()
+            set(PLATFORM_FLAVOR ${PLATFORM_FLAVOR}_MSVC)
+        endif()
+    else()
+        set(PLATFORM_FLAVOR ${PLATFORM_FLAVOR}_MSYS)
+    endif()
+    string(REGEX MATCH "Win64" BUILD_WIN64 "${CMAKE_GENERATOR}")
+    if(BUILD_WIN64)
+        set(PLATFORM_FLAVOR ${PLATFORM_FLAVOR}_64)
+    else()
+        set(PLATFORM_FLAVOR ${PLATFORM_FLAVOR}_32)
+    endif()
 else()
-	# Assume for the time being that not-windows and not-mac means Linux
-	set(PLATFORM_FLAVOR "Linux")
-	if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-	    set(PLATFORM_FLAVOR ${PLATFORM_FLAVOR}_64)
-	else()
-	    set(PLATFORM_FLAVOR ${PLATFORM_FLAVOR}_32)
-	endif()
+    # Assume for the time being that not-windows and not-mac means Linux
+    set(PLATFORM_FLAVOR "Linux")
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        set(PLATFORM_FLAVOR ${PLATFORM_FLAVOR}_64)
+    else()
+        set(PLATFORM_FLAVOR ${PLATFORM_FLAVOR}_32)
+    endif()
 endif()
 
 # Default to building fat binaries, even on Leopard
@@ -57,6 +61,8 @@ add_definitions(-DV3D_PLATFORM_NAME=\"${V3D_PLATFORM_NAME}\") # so we can access
 # I want to have a runnable arrangement of Vaa3D and plugins in the build area
 set(V3D_STAGING_BASE_DIR "${CMAKE_BINARY_DIR}/v3d/${V3D_PLATFORM_NAME}" CACHE PATH "Build location for v3d and plugin binaries.")
 set(V3D_BUILD_BINARY_DIR ${V3D_STAGING_BASE_DIR} CACHE INTERNAL "Location of v3d executable and plugins." FORCE)
+# Plugins use "V3D_BINARY_DIR"
+set(V3D_BINARY_DIR "${V3D_BUILD_BINARY_DIR}" CACHE PATH "Where to put plugins directory")
 
 # Build V3D
 add_subdirectory(v3d_main)
@@ -110,8 +116,8 @@ set(CPACK_PACKAGE_VENDOR "Howard Hughes Medical Institute Janelia Farm Research 
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/LICENSE")
 set(CPACK_PACKAGE_VERSION "${V3D_VERSION}")
 set(CPACK_PACKAGE_CONTACT "brunsc at janelia.hhmi.org")
-set(CPACK_PACKAGE_INSTALL_DIRECTORY v3d)
-set(CPACK_PACKAGE_EXECUTABLES "v3d.exe" "v3d")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY vaa3d)
+set(CPACK_PACKAGE_EXECUTABLES "vaa3d.exe" "vaa3d")
 
 # Component arrangement in NSIS installer (and possible mac package installer, if we make one)
 set(CPACK_COMPONENT_V3D_REQUIRED TRUE)

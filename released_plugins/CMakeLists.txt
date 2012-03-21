@@ -13,9 +13,14 @@ include(CTest)
 
 # include(CPack) # save cpack for parent directory
 
+# message("Looking for fftw library")
+# message("$ENV{PROGRAMW6432}/fftw64_3.3.1")
 find_library(FFTW_LIBRARY
     NAMES libfftw3f.a v3dfftw3f libfftw3f.a fftw3f libfftw3f-3
-    PATHS "$ENV{PROGRAMFILES}/fftw")
+    PATHS 
+        "$ENV{PROGRAMFILES}/fftw"
+        "$ENV{PROGRAMW6432}/fftw64_3.3.1"
+)
 find_library(FFTW_THREADS_LIBRARY
     NAMES libfftw3f_threads.a v3dfftw3f_threads libfftw3f_threads.a fftw3f_threads )
 if(NOT FFTW_LIBRARY)
@@ -23,11 +28,13 @@ if(NOT FFTW_LIBRARY)
 endif()
 
 if(FFTW_LIBRARY)
+    get_filename_component(FFTW_LIB_DIR "${FFTW_LIBRARY}" PATH)
     find_path(FFTW_INCLUDE_DIR
         NAME "fftw3.h"
         PATHS
             "${V3DMAINDIR}/common_lib/include"
             /usr/local/include
+            ${FFTW_LIB_DIR}
     )
     include_directories("${FFTW_INCLUDE_DIR}")
 endif()
