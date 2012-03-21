@@ -1,5 +1,9 @@
 // Linx box intersection check.
 // http://www.3dkingdoms.com/weekly/weekly.php?a=3
+#ifndef LINE_BOX_INTERSECTION_CHECK_H
+#define LINE_BOX_INTERSECTION_CHECK_H
+
+#include "../basic_c_fun/color_xyz.h"
 
 int inline GetIntersection( float fDst1, float fDst2, XYZ P1, XYZ P2, XYZ &Hit) {
      if ( (fDst1 * fDst2) >= 0.0f) return 0;
@@ -40,3 +44,5 @@ int CheckLineBox( XYZ B1, XYZ B2, XYZ L1, XYZ L2, XYZ &Hit)
 
      return false;
 }
+
+#endif

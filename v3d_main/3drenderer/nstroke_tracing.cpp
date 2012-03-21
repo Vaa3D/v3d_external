@@ -1222,7 +1222,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
      XYZ sub_orig;
      double* pSubdata;
      V3DLONG sub_szx, sub_szy, sub_szz;
-     bool b_useStrokeBB = false; // use the stroke decided BB
+     bool b_useStrokeBB = true; // use the stroke decided BB
      bool b_use2PointsBB = !b_useStrokeBB; // use the two-point decided BB
 
      if(b_useStrokeBB)
@@ -1518,7 +1518,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                     {
                          fastmarching_linker(sub_markers, tar_markers, pSubdata2, outswc, sub_szx2, sub_szy2, sub_szz2, 0.0);// time_thresh);
 
-                         if(pSubdata2) {delete []pSubdata2; pSubdata2=0;}
+                         //if(pSubdata2) {delete []pSubdata2; pSubdata2=0;}
 
                          if(!outswc.empty())
                          {
@@ -1592,6 +1592,8 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 
                     //always remember to free the potential-memory-problematic fastmarching_linker return value
                     clean_fm_marker_vector(outswc);
+
+                    if(pSubdata2) {delete []pSubdata2; pSubdata2=0;}
                }
           }
      }
