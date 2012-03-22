@@ -5,6 +5,8 @@ cmake_minimum_required(VERSION 2.6)
 include(CTest)
 
 set(V3D_PACKAGE_AS_NEURON_ANNOTATOR OFF CACHE BOOL "Whether to package custom NeuronAnnotator mode")
+# V3D_PACKAGE_AS_NEURON_ANNOTATOR is not working well, at least on Windows
+mark_as_advanced(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
 
 # It is important on Windows for both v3d and plugins to use same build type.
 if(NOT CMAKE_BUILD_TYPE)
@@ -106,7 +108,7 @@ if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
     set(CPACK_PACKAGE_NAME NeuronAnnotator)
     set(CPACK_PACKAGE_FILE_NAME "InstallNeuronAnnotator-${V3D_VERSION}-${V3D_PLATFORM_NAME}")
 else()
-    set(CPACK_PACKAGE_NAME v3d)
+    set(CPACK_PACKAGE_NAME Vaa3d)
     set(CPACK_PACKAGE_FILE_NAME "InstallVaa3D-${V3D_VERSION}-${V3D_PLATFORM_NAME}")
 endif()
 # name of dmg file
@@ -116,7 +118,11 @@ set(CPACK_PACKAGE_VENDOR "Howard Hughes Medical Institute Janelia Farm Research 
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/LICENSE")
 set(CPACK_PACKAGE_VERSION "${V3D_VERSION}")
 set(CPACK_PACKAGE_CONTACT "brunsc at janelia.hhmi.org")
-set(CPACK_PACKAGE_INSTALL_DIRECTORY vaa3d)
+if(WIN32)
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY Vaa3d) # Upper case folder looks better on Windows
+else()
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY vaa3d)
+endif()
 set(CPACK_PACKAGE_EXECUTABLES "vaa3d.exe" "vaa3d")
 
 # Component arrangement in NSIS installer (and possible mac package installer, if we make one)
@@ -127,6 +133,18 @@ set(CPACK_COMPONENT_PLUGINS_DESCRIPTION "Standard plugin extensions to Vaa3D")
 set(CPACK_COMPONENT_RUNTIMELIBRARIES_DEPENDS v3d)
 set(CPACK_COMPONENT_RUNTIMELIBRARIES_DESCRIPTION "Qt, Tiff, and other dynamic libraries needed by Vaa3D")
 set(CPACK_COMPONENTS_ALL_IN_ONE_PACKAGE TRUE) # Just one stgz installer, please
+if(BUILD_WIN64)
+    # Default install to "Program Files", not "Program Files(86)" on 64-bit machine
+    set(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES64")
+    # Install MSVC2010 runtime on machines lacking MSVC2010
+    install(PROGRAMS
+        v3d_main/cmake_installer/msvc10/vcredist_x64.exe
+        DESTINATION ${V3D_INSTALL_DIR}
+        COMPONENT RuntimeLibraries)
+    # set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS ${CPACK_NSIS_EXTRA_INSTALL_COMMANDS} "ExecWait \\\"$INSTDIR\\\\bin\\\\vcredist_x64.exe\\\" ")
+    # quiet version
+    set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS ${CPACK_NSIS_EXTRA_INSTALL_COMMANDS} "ExecWait \\\"$INSTDIR\\\\bin\\\\vcredist_x64.exe /passive /norestart\\\" ")
+endif()
 
 # Mac installer is a .dmg disk image containing an application bundle,
 # a link to the /Applications folder, and a background image encouraging

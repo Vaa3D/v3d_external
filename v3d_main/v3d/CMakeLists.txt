@@ -251,10 +251,12 @@ else(APPLE)
         set(LIB_PATHS
             "${TIFF_INCLUDE_DIR}/../bin"
             "${QT_LIBRARY_DIR}/../bin"
+            "${FFTW_INCLUDE_DIR}"
             "${CXX_BINDIR}")
         set(SHLIBS zlib1.dll jpeg62.dll libtiff3.dll
             QtCore4.dll QtGui4.dll QtNetwork4.dll QtOpenGL4.dll QtXml4.dll
-            mingwm10.dll "libgcc_s_dw2-1.dll" "libstdc++-6.dll")
+            mingwm10.dll "libgcc_s_dw2-1.dll" "libstdc++-6.dll"
+            libfftw3f-3.dll)
     endif()
     if(UNIX AND NOT APPLE) # Linux
         set(LIB_PATHS "")

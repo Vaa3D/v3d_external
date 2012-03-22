@@ -37,6 +37,7 @@ if(FFTW_LIBRARY)
             ${FFTW_LIB_DIR}
     )
     include_directories("${FFTW_INCLUDE_DIR}")
+    
 endif()
 
 find_path(V3D_BINARY_DIR v3d)
