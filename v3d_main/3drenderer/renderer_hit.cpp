@@ -1846,11 +1846,21 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     QFileInfo pathinfo(imgname);
 
                     QString fname= pathinfo.baseName(); //only the file name without extension
-                    QString testOutputDir = pathinfo.absolutePath() + "/" + fname +"_testSWC";
+                    QString testOutputDir;
+                    if(listCurveMarkerPool.size() > 2)
+                    {
+                         testOutputDir = pathinfo.absolutePath() + "/GDBased_" + fname +"_testSWC";
+                    }
+                    else
+                    {
+                         testOutputDir = pathinfo.absolutePath() + "/FM2Based_" + fname +"_testSWC";
+                    }
 
                     QDir curdir(testOutputDir);
                     if (!curdir.exists())
                          curdir.mkdir(testOutputDir);
+
+                    // get number of tests already had from dir's .txt
 
                     QString strokeid = QString::number(testStrokeID);
                     testStrokeID++;

@@ -316,7 +316,7 @@ protected:
      void getSubVolFrom3Points(XYZ & loc0_last, XYZ & loc0, XYZ & loc1, int chno, double* &pSubdata,
           XYZ &sub_orig, V3DLONG &sub_szx, V3DLONG &sub_szy, V3DLONG &sub_szz);
 
-     bool mergeFirstNode(const MarkerPos &pos, XYZ &mean_loc, XYZ &nearest_loc);
+     bool mergeFirstNode(const MarkerPos &pos, XYZ &loc00, XYZ &loc01, XYZ &nearest_loc);
 
      void vecToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list);
      void getMidRandomLoc(MarkerPos pos, int chno, XYZ &mid_loc);
