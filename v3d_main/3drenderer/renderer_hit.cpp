@@ -1861,11 +1861,14 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                          curdir.mkdir(testOutputDir);
 
                     // get number of tests already had from dir's .txt
+                    int test_id_num;
+                    QString cursurfix=QString("txt");
+                    createLastTestID(testOutputDir, cursurfix, test_id_num);
 
-                    QString strokeid = QString::number(testStrokeID);
-                    testStrokeID++;
 
-                    QString anofilename = testOutputDir + "/" + strokeid + "_" + fname + "_curveTest.ano";
+                    QString test_id = QString::number(test_id_num);
+
+                    QString anofilename = testOutputDir + "/" + test_id + "_" + fname + "_curveTest.ano";
                     FILE *fp;
                     // if(!bTestCurveBegin)
                     // {
@@ -1898,7 +1901,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     NeuronTree tree_ml = testNeuronTree;
 
                     // Save to a file
-                    QString filenameml= strokeid+ "_MarkerLists_fm"+".swc";
+                    QString filenameml= test_id+ "_MarkerLists_fm"+".swc";
                     QString filenameml_ab=testOutputDir+"/"+filenameml;
                     writeSWC_file(filenameml_ab, testNeuronTree);
                     // save to ano
@@ -1909,7 +1912,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     selectMode = smCurveCreate1;
                     solveCurveCenter(loc_vec_input);
                     NeuronTree tree_cc = testNeuronTree;
-                    QString filenamecc=strokeid+ "_MeanShift"+".swc";
+                    QString filenamecc=test_id+ "_MeanShift"+".swc";
                     QString filenamecc_ab=testOutputDir + "/" +filenamecc ;
                     writeSWC_file(filenamecc_ab, testNeuronTree);
                     // save to ano
@@ -1921,7 +1924,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     selectMode = smCurveDirectionInter;
                     solveCurveDirectionInter(loc_vec_input, loc_vec0, 0);
                     NeuronTree tree_di = testNeuronTree;
-                    QString filenamedi = strokeid+ "_DirInter"+".swc";
+                    QString filenamedi = test_id+ "_DirInter"+".swc";
                     QString filenamedi_ab=testOutputDir + "/" +filenamedi;
                     writeSWC_file(filenamedi_ab, testNeuronTree);
                     // save to ano
@@ -1934,7 +1937,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                          selectMode = smCurveMarkerPool_fm;
                          solveCurveFromMarkersFastMarching();
                          tree_mp = testNeuronTree;
-                         QString filenamemp = strokeid+ "_MarkerPool_fm"+".swc";
+                         QString filenamemp = test_id+ "_MarkerPool_fm"+".swc";
                          QString filenamemp_ab =testOutputDir + "/" + filenamemp;
                          writeSWC_file(filenamemp_ab, testNeuronTree);
                          // save to ano
@@ -1943,7 +1946,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                          // curve from GD
                          solveCurveFromMarkersGD(false); //boundingbox is the whole image
                          tree_gd = testNeuronTree;
-                         QString filenamegd = strokeid+ "_MarkerPool_GD"+".swc";
+                         QString filenamegd = test_id+ "_MarkerPool_GD"+".swc";
                          QString filenamegd_ab = testOutputDir + "/" +filenamegd;
                          writeSWC_file(filenamegd_ab, testNeuronTree);
                          // save to ano
@@ -1952,13 +1955,12 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 
                     // distance computation
                     // for writing curve distance information
-                    QString distfilename = testOutputDir + "/" + strokeid + "_" + fname + "_Distance.txt";
-                    FILE *fpdist;
+                    QString distfilename = testOutputDir + "/" + test_id + "_" + fname + "_Distance.txt";
 
                     // distance threshold for the whole Test
                     const static double dist_threshold = 3.0;
 
-                    fpdist=fopen(distfilename.toStdString().c_str(), "wt"); // open a new empty file
+                    FILE *fpdist=fopen(distfilename.toStdString().c_str(), "wt"); // open a new empty file
                     if (!fpdist)
                     {
                          v3d_msg(QString("Fail to open file %1 to write.").arg(distfilename));
@@ -1968,43 +1970,36 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     {
                          // ======================================================
                          // get previous records for *_success & num_test
-                         // FILE *pre_fpdist;
-                         // pre_fpdist=fopen(distfilename.toStdString().c_str(), "r");
+                         FILE *pre_fpdist;
+                         pre_fpdist=fopen(distfilename.toStdString().c_str(), "r");
 
-                         // int ml_success, cc_success, di_success, mp_success;
-                         // int num_test;
+                         int ml_success, cc_success, di_success, mp_success;
+                         int num_test;
 
-                         // if(pre_fpdist) // this file is not here for the first time
-                         // {
-                         //      fscanf(pre_fpdist, "%d", num_test);
-                         //      fscanf(pre_fpdist, "%d %d %d %d", ml_success, cc_success, di_success, mp_success);
-                         // }
-                         // else
-                         // {
-                         //      // initialize nums for the first time
-                         //      ml_success = 0;
-                         //      cc_success = 0;
-                         //      di_success = 0;
-                         //      mp_success = 0;
-                         //      num_test = 0;
-                         // }
-                         // fclose(pre_fpdist);
+                         if(pre_fpdist) // this file is not here for the first time
+                         {
+                              fscanf(pre_fpdist, "%d", num_test);
+                              fscanf(pre_fpdist, "%d %d %d %d", ml_success, cc_success, di_success, mp_success);
+                         }
+                         else
+                         {
+                              // initialize nums for the first time
+                              ml_success = 0;
+                              cc_success = 0;
+                              di_success = 0;
+                              mp_success = 0;
+                              num_test = 0;
+                         }
+                         fclose(pre_fpdist);
                          // =======================================================
 
+                         num_test ++;
 
                          // computer distance from GD-curve to other curves
-                         static int ml_success = 0;
-                         static int cc_success = 0;
-                         static int di_success = 0;
-                         static int mp_success = 0;
-                         static int num_test = 0;
-
                          double dist_gd_ml = distance_between_2lines(tree_gd, tree_ml);
                          double dist_gd_cc = distance_between_2lines(tree_gd, tree_cc);
                          double dist_gd_di = distance_between_2lines(tree_gd, tree_di);
                          double dist_gd_mp = distance_between_2lines(tree_gd, tree_mp);
-
-                         num_test ++;
 
                          if(dist_gd_ml <= dist_threshold) ml_success++;
                          if(dist_gd_cc <= dist_threshold) cc_success++;
@@ -2033,12 +2028,32 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     }
                     else // the ground truth is the curve from Markerlists_fm
                     {
+                         // ======================================================
+                         // get previous records for *_success & num_test
+                         FILE *pre_fpdist;
+                         pre_fpdist=fopen(distfilename.toStdString().c_str(), "r");
+
+                         int ml_cc_success, ml_di_success;
+                         int ml_num_test;
+
+                         if(pre_fpdist)
+                         {
+                              fscanf(pre_fpdist, "%d", ml_num_test);
+                              fscanf(pre_fpdist, "%d %d", ml_cc_success, ml_di_success);
+                         }
+                         else // this file is not here for the first time
+                         {
+                              // initialize nums for the first time
+                              ml_cc_success = 0;
+                              ml_di_success = 0;
+                              ml_num_test = 0;
+                         }
+                         fclose(pre_fpdist);
+                         // =========================================================
                          // computer distance from GD-curve to other curves
                          double dist_ml_cc = distance_between_2lines(tree_ml, tree_cc);
                          double dist_ml_di = distance_between_2lines(tree_ml, tree_di);
-                         static int ml_cc_success = 0;
-                         static int ml_di_success = 0;
-                         static int ml_num_test = 0;
+
                          ml_num_test ++;
 
                          if(dist_ml_cc <= dist_threshold) ml_cc_success++;
@@ -2047,9 +2062,15 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                          float ml_di_succ_rate = (float)ml_di_success/ml_num_test;
 
                          // computer distance from GD-curve to other curves
+                         fprintf(fpdist, "%d\n", ml_num_test); // total test num
+                         fprintf(fpdist, "%d %d\n", ml_cc_success, ml_di_success);// success num above dist_threshold
+
                          fprintf(fpdist, "The ground truth curve is the curve from Markerlists_fm.\n");
                          fprintf(fpdist, "Distance between curves of Markerlists_fm and mean_shift              = %.4f\n", dist_ml_cc);
+                         fprintf(fpdist, "Rate of distance between FM and mean_shift below dist_threshold       = %.4f\n\n", ml_cc_succ_rate);
+
                          fprintf(fpdist, "Distance between curves of Markerlists_fm and direction_intersection  = %.4f\n", dist_ml_di);
+                         fprintf(fpdist, "Rate of distance between FM and direc_intersec below dist_threshold   = %.4f\n\n", ml_di_succ_rate);
                     }
 
                     // projection image computation
@@ -2198,7 +2219,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     // 4.2 Save image
                     V3DLONG img_sz[4];
                     img_sz[0]=sz[0]+sz[2]; img_sz[1]=sz[1]+sz[2]; img_sz[2]=1; img_sz[3]=3;
-                    QString imgfilename = testOutputDir + "/" + strokeid + "_" + fname + "_CompareImg.tiff";
+                    QString imgfilename = testOutputDir + "/" + test_id + "_" + fname + "_CompareImg.tiff";
                     saveImage(imgfilename.toStdString().c_str(), pXY_YZ_XZ, img_sz, V3D_UINT8);
                     // clear memory
                     if(pXY) {delete [] pXY; pXY=0;}

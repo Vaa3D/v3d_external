@@ -342,6 +342,7 @@ protected:
      void swcBoundingBox(NeuronTree &line, XYZ &minloc, XYZ &maxloc);
      void MIP_XY_YZ_XZ(unsigned char * &pXY, unsigned char * &pYZ, unsigned char * &pXZ, XYZ &minloc, XYZ &maxloc);
      void projectSWC_XY_YZ_XZ(unsigned char * &pXY, unsigned char * &pYZ, unsigned char * &pXZ, XYZ &minloc, XYZ &maxloc, NeuronTree &line, unsigned char color[3]);
+     void createLastTestID(QString &curFilePath, QString &curSuffix, int &test_id);
 
      void updateDraggedNeuronXYZ();
      V3DLONG findNearestNeuronNode_WinXYV2(int cx, int cy);
@@ -354,8 +355,7 @@ protected:
 
      // for curve testing
      bool bTestCurveBegin;
-     int testStrokeID;
-     QString testOutputDir;
+
      NeuronTree testNeuronTree;
 
      // END of ZJL
@@ -440,8 +440,7 @@ private:
           bInitDragPoints = false;
           // for curve testing
           bTestCurveBegin=false;
-          testStrokeID = 0;
-	}
+     }
 
 
 // Surface Object //////////////////////////////////////////////////////////////////////////////////////////////////

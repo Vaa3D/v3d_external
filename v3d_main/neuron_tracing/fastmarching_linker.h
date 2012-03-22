@@ -70,7 +70,7 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
                 int y = tar_markers[i].y + 0.5;
                 int z = tar_markers[i].z + 0.5;
                 long ind = z*sz01 + y*sz0 + x;
-                //assert(x >= 0 && x < sz0 && y >= 0 && y < sz1 && z >= 0 && z < sz2);
+                assert(x >= 0 && x < sz0 && y >= 0 && y < sz1 && z >= 0 && z < sz2);
                 tar_map[ind] = tar_markers[i];
         }
 
@@ -80,7 +80,7 @@ template<class T> bool fastmarching_linker(vector<MyMarker> &sub_markers,vector<
                 int y = sub_markers[i].y + 0.5;
                 int z = sub_markers[i].z + 0.5;
                 long ind = z*sz01 + y*sz0 + x;
-                //assert(x >= 0 && x < sz0 && y >= 0 && y < sz1 && z >= 0 && z < sz2);
+                assert(x >= 0 && x < sz0 && y >= 0 && y < sz1 && z >= 0 && z < sz2);
                 sub_map[ind] = sub_markers[i];
         }
 

@@ -746,6 +746,7 @@ void Renderer_gl1::getSubVolInfo(XYZ lastloc, XYZ loc0, XYZ loc1, XYZ &sub_orig,
 
      sub_orig = minloc;
 
+     //if(pSubdata) {delete [] pSubdata; pSubdata=0;}
      pSubdata = new double [sub_szx*sub_szy*sub_szz];
      for(V3DLONG k=0; k<sub_szz; k++)
           for(V3DLONG j=0; j<sub_szy; j++)
@@ -1347,6 +1348,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 
                               // XYZ loc00_t, loc01_t;
                               // _MarkerPos_to_NearFarPoint(pos, loc00_t, loc01_t);
+                         // ==============================================<<<<<<<<<<<<<<<<<<<<<<<
 
                               // XYZ loc00, loc01;
                               // // check line_box intersection points
@@ -2918,35 +2920,32 @@ bool Renderer_gl1::mergeFirstNode(const MarkerPos &pos, XYZ &loc00, XYZ &loc01, 
 
 // }
 
-// void createFileName(QString &curFilePath, QString &curSuffix, int fileid)
-// {
-//      //
-// 	QStringList myList;
-// 	myList.clear();
+void Renderer_gl1::createLastTestID(QString &curFilePath, QString &curSuffix, int &test_id)
+{
+     //
+	QStringList myList;
+	myList.clear();
 
-// 	// get the image files namelist in the directory
-// 	// QFileInfo fileInfo(individualFileName);
-// 	// QString curFilePath = fileInfo.path();
-// 	// QString curSuffix = fileInfo.suffix();
+	// get the image files namelist in the directory
+	// QFileInfo fileInfo(individualFileName);
+	// QString curFilePath = fileInfo.path();
+	// QString curSuffix = fileInfo.suffix();
 
-// 	QDir dir(curFilePath);
-// 	if (!dir.exists())
-// 	{
-// 		qWarning("Cannot find the directory and now mkdir.");
-// 		bool success_mkdir = dir.mkdir(curFilePath);
+	QDir dir(curFilePath);
+	if (!dir.exists())
+	{
+		qWarning("Cannot find the directory and now mkdir.");
+		bool success_mkdir = dir.mkdir(curFilePath);
 
-// 		qDebug()<<"mkdir "<<curFilePath<<success_mkdir;
-// 	}
+		qDebug()<<"mkdir "<<curFilePath<<success_mkdir;
+	}
 
-// 	QStringList imgfilters;
-// 	imgfilters.append("*." + curSuffix);
-// 	foreach (QString file, dir.entryList(imgfilters, QDir::Files, QDir::Name))
-// 	{
-// 		myList += QFileInfo(dir, file).absoluteFilePath();
-// 	}
+	QStringList imgfilters;
+	imgfilters.append("*." + curSuffix);
+	foreach (QString file, dir.entryList(imgfilters, QDir::Files, QDir::Name))
+	{
+		myList += QFileInfo(dir, file).absoluteFilePath();
+	}
 
-// 	QString qs_fn = foldername + prefix + QString("_") + qstr_time + QString("_%1").arg(myList.size()+1) + suffix;
-
-// 	qDebug()<<"filename: "<<qs_fn;
-// 	return qs_fn;
-// }
+     test_id = myList.size() + 1;
+}
