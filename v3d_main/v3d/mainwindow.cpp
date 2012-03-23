@@ -1165,18 +1165,24 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 			QString hraw_prefix = curfile_info.absolutePath() + "/" + basename.left(basename.indexOf(".")); // before the first "."
 
 			string prefix = hraw_prefix.toStdString();
-			//string prefix ="/Users/zhouj/work/v3d_data/gaussian_ball/test";
+			//string prefix ="/Volumes/PengMapView/mapview_testdata/ananya/test";
 
              try
              {
                   size_t start_t = clock();
 
-                  int L = log(8)/log(2.0);
-                  int M = log(8)/log(2.0);
-                  int N = log(8)/log(2.0);
-                  int l = log(256)/log(2.0);
-                  int m = log(128)/log(2.0);
-                  int n = log(64)/log(2.0);
+                  // contents of .hraw file
+                  // L, M, N, l, m, n
+                  // level : level nums
+                  // outsz[3]
+
+
+                  int L = 14; //log(8)/log(2.0);
+                  int M = 38; //log(8)/log(2.0);
+                  int N = 3;  //log(8)/log(2.0);
+                  int l = 512;//log(256)/log(2.0);
+                  int m = 256;//log(128)/log(2.0);
+                  int n = 64; //log(64)/log(2.0);
                   int level = 0;
 
                   ImageMapView mapview;
@@ -1184,7 +1190,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
 
                   unsigned char * outimg1d = 0;
                   V3DLONG origin[3] = {0, 0, 0};
-                  V3DLONG outsz[4] = {256, 128, 64, 1};
+                  V3DLONG outsz[4] = {512, 256, 64, 1};
+
                   mapview.getImage(level, outimg1d, origin[0], origin[1], origin[2], outsz[0], outsz[1], outsz[2]);
 
                   XFormWidget *child = createMdiChild();
@@ -1194,7 +1201,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                   // mapview control
                   Mapview_Paras mv_paras;
                   mv_paras.L=L; mv_paras.M=M; mv_paras.N=N;
-                  mv_paras.l=l; mv_paras.M=m; mv_paras.n=n;
+                  mv_paras.l=l; mv_paras.m=m; mv_paras.n=n;
                   mv_paras.origin[0] = origin[0]; mv_paras.origin[1] = origin[1]; mv_paras.origin[2] = origin[2];
                   mv_paras.outsz[0] = outsz[0]; mv_paras.outsz[1] = outsz[1]; mv_paras.outsz[2] = outsz[2]; mv_paras.outsz[3] = outsz[3]; mv_paras.outsz[3] = outsz[3];
                   mv_paras.hraw_prefix=hraw_prefix;

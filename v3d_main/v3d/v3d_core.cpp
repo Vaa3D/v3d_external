@@ -1257,8 +1257,6 @@ XFormView::XFormView(QWidget *parent)
 {
     setAttribute(Qt::WA_MouseTracking);
 
-    //hraw_prefix = QString("");
-
     Gtype = PixmapType;
     m_scale = 1.0;
 	//  m_shear = 0.0;
@@ -2529,7 +2527,7 @@ void XFormView::drawPixmapType(QPainter *painter)
 	// draw ROI
 	drawROI(painter);
 
-	// draw mapview win
+	// draw mapview win only for normal data - one level
     bool b_displayMapviewWin = true;
 	if (b_displayMapviewWin)
 	{
@@ -2632,6 +2630,12 @@ void XFormView::drawPixmapType(QPainter *painter)
 
 		}
 	} // end b_displayMapviewWin
+
+     // display mapview for hraw multi-level image
+     // if(mapview_paras.hraw_prefix != "")
+     // {
+
+     // }
 
 }
 
@@ -2928,7 +2932,6 @@ void XFormWidget::initialize()
 {
     imgData = 0;
     openFileNameLabel = QString(""); //"/Users/hanchuanpeng/work/v3d/test1.raw"
-    //hraw_prefix = QString(""); // for mapview control
 
 	mypara_3Dview.b_use_512x512x256 = true;
 	mypara_3Dview.b_still_open = false;
@@ -3071,45 +3074,47 @@ void XFormWidget::createMapviewControlWin()
 
     QGridLayout *layout = new QGridLayout(mvControlWin);
 
-    //QGroupBox* xyzGroup = new QGroupBox(mvControlWin);
-    //xyzGroup->setTitle("XYZ Navigation");
-
     // get X Y Z size
-    V3DLONG dimx = pow( 2.0, mapview_paras.L+mapview_paras.l-mapview_paras.level );
-    V3DLONG dimy = pow( 2.0, mapview_paras.M+mapview_paras.m-mapview_paras.level );
-    V3DLONG dimz = pow( 2.0, mapview_paras.N+mapview_paras.n-mapview_paras.level );
+    V3DLONG ts0, ts1, ts2;
+    V3DLONG bs0, bs1, bs2; // block size
+    V3DLONG dimx, dimy, dimz;
+    mapview.getImageSize(mapview_paras.level, ts0, ts1, ts2, bs0, bs1, bs2);
+    dimx = ts0*bs0; dimy = ts1*bs1; dimz = ts2*bs2;
+
+    // V3DLONG dimx = pow( 2.0, mapview_paras.L+mapview_paras.l-mapview_paras.level );
+    // V3DLONG dimy = pow( 2.0, mapview_paras.M+mapview_paras.m-mapview_paras.level );
+    // V3DLONG dimz = pow( 2.0, mapview_paras.N+mapview_paras.n-mapview_paras.level );
 
     // zoom range
-    int dim_zoom= MIN( MIN(mapview_paras.L+mapview_paras.l, mapview_paras.M+mapview_paras.m),
-                       mapview_paras.N+mapview_paras.n );
+    int dim_zoom= 10; //MIN( MIN(mapview_paras.L+mapview_paras.l, mapview_paras.M+mapview_paras.m), mapview_paras.N+mapview_paras.n );
 
     xSlider_mapv = new QScrollBar(Qt::Horizontal);
-    xSlider_mapv->setRange(0, dimx-1); //need redefine range
+    xSlider_mapv->setRange(0, dimx-1-mapview_paras.outsz[0]); //need redefine range
     xSlider_mapv->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     QLabel* xSliderLabel_mapv = new QLabel("X");
 
     xValueSpinBox_mapv = new QSpinBox;
-    xValueSpinBox_mapv->setRange(0, dimx-1);
+    xValueSpinBox_mapv->setRange(0, dimx-1-mapview_paras.outsz[0]);
     xValueSpinBox_mapv->setSingleStep(1);
     xValueSpinBox_mapv->setValue(mapview_paras.origin[0]);
 
     ySlider_mapv = new QScrollBar(Qt::Horizontal);
-    ySlider_mapv->setRange(0, dimy-1); //need redefine range
+    ySlider_mapv->setRange(0, dimy-1-mapview_paras.outsz[1]); //need redefine range
     ySlider_mapv->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     QLabel* ySliderLabel_mapv = new QLabel("Y");
 
     yValueSpinBox_mapv = new QSpinBox;
-    yValueSpinBox_mapv->setRange(0, dimy-1);
+    yValueSpinBox_mapv->setRange(0, dimy-1-mapview_paras.outsz[1]);
     yValueSpinBox_mapv->setSingleStep(1);
     yValueSpinBox_mapv->setValue(mapview_paras.origin[1]);
 
     zSlider_mapv = new QScrollBar(Qt::Horizontal);
-    zSlider_mapv->setRange(0, dimz-1); //need redefine range
+    zSlider_mapv->setRange(0, dimz-1-mapview_paras.outsz[2]); //need redefine range
     zSlider_mapv->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     QLabel* zSliderLabel_mapv = new QLabel("Z");
 
     zValueSpinBox_mapv = new QSpinBox;
-    zValueSpinBox_mapv->setRange(0, dimz-1);
+    zValueSpinBox_mapv->setRange(0, dimz-1-mapview_paras.outsz[2]);
     zValueSpinBox_mapv->setSingleStep(1);
     zValueSpinBox_mapv->setValue(mapview_paras.origin[2]);
 
@@ -3166,20 +3171,28 @@ void XFormWidget::createMapviewControlWin()
 void XFormWidget::updateMapviewControlWin(int level)
 {
     mapview_paras.level = level;
-    V3DLONG dimx = pow( 2.0, mapview_paras.L+mapview_paras.l-mapview_paras.level );
-    V3DLONG dimy = pow( 2.0, mapview_paras.M+mapview_paras.m-mapview_paras.level );
-    V3DLONG dimz = pow( 2.0, mapview_paras.N+mapview_paras.n-mapview_paras.level );
 
-    xSlider_mapv->setRange(0, dimx-1);
-    yValueSpinBox_mapv->setRange(0, dimx-1);
-    yValueSpinBox_mapv->setValue(mapview_paras.origin[0]);
+    // get X Y Z size
+    V3DLONG ts0, ts1, ts2;
+    V3DLONG bs0, bs1, bs2; // block size
+    V3DLONG dimx, dimy, dimz;
+    mapview.getImageSize(mapview_paras.level, ts0, ts1, ts2, bs0, bs1, bs2);
+    dimx = ts0*bs0; dimy = ts1*bs1; dimz = ts2*bs2;
 
-    ySlider_mapv->setRange(0, dimy-1);
-    yValueSpinBox_mapv->setRange(0, dimy-1);
+    // V3DLONG dimx = pow( 2.0, mapview_paras.L+mapview_paras.l-mapview_paras.level );
+    // V3DLONG dimy = pow( 2.0, mapview_paras.M+mapview_paras.m-mapview_paras.level );
+    // V3DLONG dimz = pow( 2.0, mapview_paras.N+mapview_paras.n-mapview_paras.level );
+
+    xSlider_mapv->setRange(0, dimx-1-mapview_paras.outsz[0]);
+    xValueSpinBox_mapv->setRange(0, dimx-1-mapview_paras.outsz[0]);
+    xValueSpinBox_mapv->setValue(mapview_paras.origin[0]);
+
+    ySlider_mapv->setRange(0, dimy-1-mapview_paras.outsz[1]);
+    yValueSpinBox_mapv->setRange(0, dimy-1-mapview_paras.outsz[1]);
     yValueSpinBox_mapv->setValue(mapview_paras.origin[1]);
 
-    zSlider_mapv->setRange(0, dimz-1);
-    zValueSpinBox_mapv->setRange(0, dimz-1);
+    zSlider_mapv->setRange(0, dimz-1-mapview_paras.outsz[2]);
+    zValueSpinBox_mapv->setRange(0, dimz-1-mapview_paras.outsz[2]);
     zValueSpinBox_mapv->setValue(mapview_paras.origin[2]);
 
 }
