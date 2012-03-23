@@ -587,7 +587,7 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
     }
     else if (func_name == tr("createTemplate"))
     {
-        if(input.size()<1 || (input.size()==1 && output.size()<1) ) // no inputs
+        if(input.size()<1) // no inputs
         {
             //print Help info
             errorPrint();
@@ -602,6 +602,8 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         char * paras = NULL; // parameters
         char * outfile = NULL; // output_image_file
 
+        qDebug()<<"test ..."<<input.size()<<output.size();
+
         if(input.size()>0) {infilelist = (vector<char*> *)(input.at(0).p);}
         if(output.size()>0) { outfilelist = (vector<char*> *)(output.at(0).p);}  // specify output
         if(input.size()>1) { paralist = (vector<char*> *)(input.at(1).p); paras =  paralist->at(0);} // parameters
@@ -611,9 +613,13 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         // init
         V3DLONG channel_ref = 0;
 
+        qDebug()<<"running template creation ....";
+
         QStringList imgList = importSeriesFileList_addnumbersort(infile);
         QString qs_filename_img_input = imgList.at(0);
         QString qs_filename_img_output;
+
+        qDebug()<<"one input file ... "<<qPrintable(qs_filename_img_input);
 
         // parsing parameters
         if(paras)
@@ -782,6 +788,9 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
 
             cnt++;
         }
+
+        for(V3DLONG i=0; i<totalplxs; i++)
+            pOutput[i] /= (float)cnt;
 
         // save
         if(qs_filename_img_output!=NULL)
