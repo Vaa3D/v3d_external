@@ -602,18 +602,26 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
         char * paras = NULL; // parameters
         char * outfile = NULL; // output_image_file
 
-        qDebug()<<"test ..."<<input.size()<<output.size();
+        //qDebug()<<"test ..."<<input.size()<<output.size();
 
-        if(input.size()>0) {infilelist = (vector<char*> *)(input.at(0).p);}
-        if(output.size()>0) { outfilelist = (vector<char*> *)(output.at(0).p);}  // specify output
-        if(input.size()>1) { paralist = (vector<char*> *)(input.at(1).p); paras =  paralist->at(0);} // parameters
-        if(!infilelist->empty()) { infile = infilelist->at(0); }
-        if(!outfilelist->empty()) { outfile = outfilelist->at(0); }
+        if(!input.empty())
+        {
+            if(input.size()>0) {infilelist = (vector<char*> *)(input.at(0).p);}
+            if(input.size()>1) { paralist = (vector<char*> *)(input.at(1).p); paras =  paralist->at(0);} // parameters
+            if(!infilelist->empty()) { infile = infilelist->at(0); }
+        }
+
+        if(!output.empty())
+        {
+            if(output.size()>0) { outfilelist = (vector<char*> *)(output.at(0).p);}  // specify output
+            if(!infilelist->empty()) { infile = infilelist->at(0); }
+            if(!outfilelist->empty()) { outfile = outfilelist->at(0); }
+        }
 
         // init
         V3DLONG channel_ref = 0;
 
-        qDebug()<<"running template creation ....";
+        //qDebug()<<"running template creation ....";
 
         QStringList imgList = importSeriesFileList_addnumbersort(infile);
         QString qs_filename_img_input = imgList.at(0);
@@ -696,32 +704,37 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                 }
             }
 
-            QString qs_basename_input=QFileInfo(qs_filename_img_input).baseName();
-            QString qs_filename_output=QString(outfile);
-            QString qs_pathname_output=QFileInfo(qs_filename_output).path();
-
-            if(outfile)
-            {
-                qs_filename_img_output=qs_filename_output;
-            }
-            else
-            {
-                qs_filename_img_output=qs_pathname_output+"/"+qs_basename_input+"_template.v3draw";
-            }
-
-            // error check
-            if(qs_filename_img_input==NULL || qs_filename_img_output==NULL)
-            {
-                printf("\nERROR: invalid input file name (target or subject)!\n");
-                errorPrint();
-                return false;
-            }
             if(channel_ref<0)
             {
                 printf("\nERROR: invalid reference channel! Assume R(1)G(2)B(3) ...!\n");
                 errorPrint();
                 return false;
             }
+        }
+
+        if(outfile)
+        {
+            QString qs_filename_output=QString(outfile);
+            //QString qs_pathname_output=QFileInfo(qs_filename_output).path();
+
+            qs_filename_img_output=qs_filename_output;
+        }
+        else
+        {
+            QString qs_basename_input=QFileInfo(qs_filename_img_input).baseName();
+            QString qs_pathname_output=QFileInfo(qs_filename_img_input).path();
+
+            qs_filename_img_output=qs_pathname_output+"/"+qs_basename_input+"_template.v3draw";
+        }
+
+        qDebug()<<"The output file ..."<<qPrintable(qs_filename_img_output);
+
+        // error check
+        if(qs_filename_img_input==NULL || qs_filename_img_output==NULL)
+        {
+            printf("\nERROR: invalid input file name (target or subject)!\n");
+            errorPrint();
+            return false;
         }
 
         //
