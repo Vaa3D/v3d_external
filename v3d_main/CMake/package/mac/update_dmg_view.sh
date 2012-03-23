@@ -16,14 +16,14 @@ echo ${v3d_version}
 device=$(hdiutil attach -readwrite -noverify -noautoopen temprw.dmg | egrep '^/dev/' | sed 1q | awk '{print $1}')
 sleep 2
 
-mkdir /Volumes/v3d-${v3d_version}/.background
+mkdir /Volumes/Vaa3d-${v3d_version}/.background
 # background file must not be hidden when setting background
-chflags nohidden /Volumes/v3d-${v3d_version}/background.png
+chflags nohidden /Volumes/Vaa3d-${v3d_version}/background.png
 
 # Use applescript language to arrange view
 echo "
    tell application \"Finder\"
-     tell disk \"v3d-${v3d_version}\"
+     tell disk \"Vaa3d-${v3d_version}\"
            open
            set current view of container window to icon view
            set toolbar visible of container window to false
@@ -35,7 +35,7 @@ echo "
            set text size of theViewOptions to 16
            set bgFile to file \":background.png\"
            set background picture of theViewOptions to bgFile
-           set position of item \"v3d.app\" of container window to {80, 110}
+           set position of item \"Vaa3d.app\" of container window to {80, 110}
            set position of item \"Applications\" of container window to {350, 110}
            update without registering applications
            delay 2
@@ -44,9 +44,9 @@ echo "
 " | osascript
 
 # Rehide the background image
-chflags hidden /Volumes/v3d-${v3d_version}/background.png
+chflags hidden /Volumes/Vaa3d-${v3d_version}/background.png
 sleep 2
 
-cp "/Volumes/v3d-${v3d_version}/.DS_Store" "./DS_Store_v3d_${v3d_version}"
-hdiutil detach "/Volumes/v3d-${v3d_version}"
+cp "/Volumes/Vaa3d-${v3d_version}/.DS_Store" "./DS_Store_v3d_${v3d_version}"
+hdiutil detach "/Volumes/Vaa3d-${v3d_version}"
 

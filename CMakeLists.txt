@@ -86,7 +86,7 @@ if(EXISTS "${BINARY_PLUGIN_DIR}")
     set(PLUGIN_DESTINATION_DIR "./bin/plugins")
     # Don't install plugins separate from app bundle on apple
     if(V3D_MAC_CREATE_BUNDLE AND BUNDLE_BUILD_DIR AND APPLE)
-        set(PLUGIN_DESTINATION_DIR "./v3d.app/Contents/MacOS/plugins")
+        set(PLUGIN_DESTINATION_DIR "./Vaa3d.app/Contents/MacOS/plugins")
     endif()
     install(DIRECTORY "${BINARY_PLUGIN_DIR}"
         DESTINATION "${PLUGIN_DESTINATION_DIR}"
@@ -165,7 +165,7 @@ if(APPLE)
         if(V3D_PACKAGE_AS_NEURON_ANNOTATOR)
             set(CPACK_BUNDLE_NAME NeuronAnnotator)
         else()
-            set(CPACK_BUNDLE_NAME v3d)
+            set(CPACK_BUNDLE_NAME Vaa3d)
         endif()
         set(CPACK_BUNDLE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/v3d_main/v3d/v3d.icns")
         set(CPACK_BUNDLE_PLIST "${CMAKE_CURRENT_BINARY_DIR}/Info.plist")

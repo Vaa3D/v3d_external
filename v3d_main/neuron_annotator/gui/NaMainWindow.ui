@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>(No image loaded) - V3D NeuronAnnotator</string>
+   <string>(No image loaded) - Vaa3D NeuronAnnotator</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
