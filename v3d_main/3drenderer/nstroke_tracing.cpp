@@ -1231,7 +1231,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 	{
 		N = list_listCurvePos.at(index).size(); // change from 0 to index for different curves, ZJL
 
-          if(b_useLog2Method)
+          if(true)//(b_useLog2Method)
           {
                double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
                clipplane[3] = viewClip;
@@ -1249,31 +1249,38 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                     nearpos_vec.push_back(MyMarker(loc0.x, loc0.y, loc0.z));
                     farpos_vec.push_back(MyMarker(loc1.x, loc1.y, loc1.z));
                }
+               FILE *nfile=fopen("/groups/peng/home/zhouj/work/near_marker.txt", "wt");
+               for(int ii=0; ii<nearpos_vec.size(); ii++)
+                    fprintf(nfile, "%f %f %f\n", nearpos_vec.at(ii).x, nearpos_vec.at(ii).y, nearpos_vec.at(ii).z);
+               fclose(nfile);
+               FILE *ffile=fopen("/groups/peng/home/zhouj/work/far_marker.txt", "wt");
+               for(int ii=0; ii<farpos_vec.size(); ii++)
+                    fprintf(ffile, "%f %f %f\n", farpos_vec.at(ii).x, farpos_vec.at(ii).y, farpos_vec.at(ii).z);
+               fclose(ffile);
 
-               // call fastmarching
-               vector<MyMarker*> outswc;     outswc.clear();
+               // // call fastmarching
+               // vector<MyMarker*> outswc;     outswc.clear();
+               // // process outswc
+               // if(!outswc.empty())
+               // {
+               //      // the 1st loc in outswc is the last pos got in fm
+               //      int nn = outswc.size();
+               //      for(int j=nn-1; j>=0; j-- )
+               //      {
+               //           XYZ locj;
+               //           locj.x=outswc.at(j)->x;
+               //           locj.y=outswc.at(j)->y;
+               //           locj.z=outswc.at(j)->z;
 
-               // process outswc
-               if(!outswc.empty())
-               {
-                    // the 1st loc in outswc is the last pos got in fm
-                    int nn = outswc.size();
-                    for(int j=nn-1; j>=0; j-- )
-                    {
-                         XYZ locj;
-                         locj.x=outswc.at(j)->x;
-                         locj.y=outswc.at(j)->y;
-                         locj.z=outswc.at(j)->z;
+               //           loc_vec.push_back(locj);
+               //      }
 
-                         loc_vec.push_back(locj);
-                    }
-
-               }else
-               {
-                    v3d_msg("Fastmarching failed for curve drawing!", 0);
-               }
+               // }else
+               // {
+               //      v3d_msg("Fastmarching failed for curve drawing!", 0);
+               // }
           }
-          else // not using b_useLog2Method
+          //else // not using b_useLog2Method
           {
 
                // resample curve strokes
