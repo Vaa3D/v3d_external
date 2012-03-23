@@ -92,9 +92,9 @@ bool PrivateVolumeTexture::populateVolume(const NaVolumeData::Reader& volumeRead
     // qDebug() << "x, y, z Scale =" << xScale << yScale << zScale << __FILE__ << __LINE__;
     std::vector<double> channelIntensities(imageProxy.sc + 1, 0.0); // For colorReader::blend() interface; +1 for reference channel
     if (zEnd < 0) // -1 means actual final z
-        zEnd = usedTextureSize.z();
+        zEnd = (int)usedTextureSize.z();
     if (zEnd > usedTextureSize.z())
-        zEnd = usedTextureSize.z();
+        zEnd = (int)usedTextureSize.z();
     for(int z = zBegin; z < zEnd; ++z)
     {
         // qDebug() << z << __FILE__ << __LINE__;
@@ -175,19 +175,19 @@ bool PrivateVolumeTexture::Stack::populateGLTextures() const
     QTime stopwatch;
     stopwatch.start();
     // qDebug() << "PrivateVolumeTexture::Stack::populateGLTextures()" << __FILE__ << __LINE__;
-    int numberOfSlices = size.x();
-    int width = size.y();
-    int height = size.z();
+    size_t numberOfSlices = size.x();
+    GLsizei width = (GLsizei)size.y();
+    GLsizei height = (GLsizei)size.z();
 
     // Double check that we have the right number of texture names
     if (textureIDs.size() != (numberOfSlices + 1))
     {
         if (textureIDs.size() > 0) {
-            glDeleteTextures(textureIDs.size(), &textureIDs.front());
+            glDeleteTextures((GLsizei)textureIDs.size(), &textureIDs.front());
             // textureIDs.clear();
         }
         const_cast<std::vector<GLuint>& >(textureIDs).assign(numberOfSlices + 1, 0);
-        glGenTextures(numberOfSlices + 1, const_cast<GLuint*>(&textureIDs.front()));
+        glGenTextures((GLsizei)(numberOfSlices + 1), const_cast<GLuint*>(&textureIDs.front()));
         // Check for GL errors
         {
             GLenum err = glGetError();

@@ -115,7 +115,7 @@ const PrivateDataColorModel::ChannelColorModel& PrivateDataColorModel::getRefere
 QRgb PrivateDataColorModel::blend(const double channelIntensities[]) const {
     int red, green, blue;
     red = green = blue = 0;
-    int sc = channelColors.size();
+    int sc = (int)channelColors.size();
     for (int c = 0; c < sc; ++c) {
         if (channelIntensities[c] == 0.0)
             continue;
@@ -136,7 +136,7 @@ QRgb PrivateDataColorModel::blend(const double channelIntensities[]) const {
 QRgb PrivateDataColorModel::blendInvisible(const double channelIntensities[]) const {
     int red, green, blue;
     red = green = blue = 0;
-    int sc = channelColors.size();
+    int sc = (int)channelColors.size();
     for (int c = 0; c < sc; ++c) {
         if (channelIntensities[c] == 0.0)
             continue;

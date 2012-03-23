@@ -47,7 +47,7 @@ bool VolumeTexture::updateVolume()
     // qDebug() << "VolumeTexture::updateVolume()" << __FILE__ << __LINE__;
     bool bSucceeded = true; // avoid signalling before unlocking
     if (NULL == volumeData) return false;
-    int numSlices = 0;
+    size_t numSlices = 0;
     {
         NaVolumeData::Reader volumeReader(*volumeData); // acquire lock
         if(! volumeReader.hasReadLock())

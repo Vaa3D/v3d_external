@@ -65,6 +65,7 @@ bool ScreenPatternAnnotator::execute()
     } else if (mode==MODE_UNDEFINED) {
         return false;
     }
+    return false;
 }
 
 bool ScreenPatternAnnotator::createCompartmentIndex() {
@@ -110,7 +111,7 @@ bool ScreenPatternAnnotator::createCompartmentIndex() {
                 return false;
             }
             QString abbreviation=getAbbreviationFromCompartmentMaskFilename(fileInfo.fileName());
-            if (!abbreviation.size()>0) {
+            if (!(abbreviation.size()>0)) {
                 qDebug() << "ScreenPatternAnnotator::createCompartmentIndex() could not parse abbreviation from filename=" << fileInfo.fileName();
                 return false;
             }

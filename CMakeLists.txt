@@ -137,13 +137,13 @@ if(BUILD_WIN64)
     # Default install to "Program Files", not "Program Files(86)" on 64-bit machine
     set(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES64")
     # Install MSVC2010 runtime on machines lacking MSVC2010
+    set(MS_REDIST_EXE vcredist_x64_msvc10sp1.exe)
     install(PROGRAMS
-        v3d_main/cmake_installer/msvc10/vcredist_x64.exe
+        v3d_main/cmake_installer/msvc10/${MS_REDIST_EXE}
         DESTINATION ${V3D_INSTALL_DIR}
         COMPONENT RuntimeLibraries)
-    # set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS ${CPACK_NSIS_EXTRA_INSTALL_COMMANDS} "ExecWait \\\"$INSTDIR\\\\bin\\\\vcredist_x64.exe\\\" ")
     # quiet version
-    set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS ${CPACK_NSIS_EXTRA_INSTALL_COMMANDS} "ExecWait \\\"$INSTDIR\\\\bin\\\\vcredist_x64.exe /passive /norestart\\\" ")
+    set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS ${CPACK_NSIS_EXTRA_INSTALL_COMMANDS} "ExecWait \\\"$INSTDIR\\\\bin\\\\${MS_REDIST_EXE} /passive /norestart\\\" ")
 endif()
 
 # Mac installer is a .dmg disk image containing an application bundle,

@@ -33,7 +33,7 @@ NaVolumeDataLoadableStack::NaVolumeDataLoadableStack(My4DImage* stackpParam, QSt
 
 bool NaVolumeDataLoadableStack::load()
 {
-    setRelativeProgress(0.02); // getting here *is* finite progress
+    setRelativeProgress(0.02f); // getting here *is* finite progress
     // qDebug() << "NaVolumeData::LoadableStack::load() filename=" << filename;
     QString fullFilepath=determineFullFilepath();
     ImageLoader imageLoader;

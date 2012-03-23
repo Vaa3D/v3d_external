@@ -17,7 +17,7 @@ public:
     virtual ~PrivateDataColorModel();
 
     int getNumberOfDataChannels() const {
-        return channelColors.size(); // +1 for reference
+        return (int)channelColors.size(); // +1 for reference
     }
 
     bool initialize(const NaVolumeData::Reader& volumeReader);

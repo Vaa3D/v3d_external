@@ -18,7 +18,7 @@ PrivateNeuronFragmentData::~PrivateNeuronFragmentData()
 
 int PrivateNeuronFragmentData::getNumberOfFragments() const
 {
-    return fragmentVoxelCount.size();
+    return (int)fragmentVoxelCount.size();
 }
 
 const std::vector<int>& PrivateNeuronFragmentData::getFragmentSizes() const // in voxels

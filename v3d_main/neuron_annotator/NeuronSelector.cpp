@@ -404,8 +404,9 @@ QList<ImageMarker> NeuronSelector::highlightIndexNeuron()
         }
     } // release read lock
     // qDebug() << listLandmarks.size() << "landmarks found";
-    if (listLandmarks.size() > 0)
+    if (listLandmarks.size() > 0) {
         // qDebug() << listLandmarks[0].radius << __FILE__ << __LINE__;
+    }
     return listLandmarks;
 }
 

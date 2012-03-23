@@ -49,7 +49,7 @@ public:
              for (int j = 0; j < height; ++j)
                  for (int k = 0; k < depth; ++k)
                  {
-                     int ix = k * width * height + j * width + i;
+                     int ix = (int)(k * width * height + j * width + i);
                      assert(ix < numVoxels);
                      assert((ix % 48) >= 0); // number of fragments in realLinkTest + 2
                      data[ix] = (ix % 48);
@@ -115,9 +115,9 @@ public:
         glTexImage3D(GL_TEXTURE_3D, // target
                         0, // level
                         GL_INTENSITY16, // texture format
-                        width,
-                        height,
-                        depth,
+                        (GLsizei)width,
+                        (GLsizei)height,
+                        (GLsizei)depth,
                         0, // border
                         GL_RED, // image format
                         GL_UNSIGNED_SHORT, // image type
@@ -356,12 +356,12 @@ public:
             if (textureIDs.size() != size.x())
             {
                 if (bHasTextureIDs && (textureIDs.size() > 0))
-                    glDeleteTextures(textureIDs.size(), &textureIDs[0]);
+                    glDeleteTextures((GLsizei)textureIDs.size(), &textureIDs[0]);
                 textureIDs.assign((size_t)size.x(), (GLuint)0);
                 bHasTextureIDs = false;
             }
             if (! bHasTextureIDs) {
-                glGenTextures(textureIDs.size(), &textureIDs[0]);
+                glGenTextures((GLsizei)textureIDs.size(), &textureIDs[0]);
             }
             // Check for GL errors
             {
@@ -394,10 +394,10 @@ public:
             if (size == sizeParam)
                 return *this; // no change
             size = sizeParam;
-            int numVoxels = sizeParam.numberOfVoxels();
+            size_t numVoxels = sizeParam.numberOfVoxels();
             if (data.size() != numVoxels) {
                 // explicit cast to avoid iterator interpretation in MSVC
-                data.assign((size_t)numVoxels, (Voxel)0);
+                data.assign(numVoxels, (Voxel)0);
                 // initializeGL();
             }
             return *this;

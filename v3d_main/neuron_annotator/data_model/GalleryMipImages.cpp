@@ -31,7 +31,7 @@ void GalleryMipImages::update()
         Writer mipWriter(*this); // acquire write lock
 
         int height = GalleryButton::ThumbnailPixelHeight;
-        int nFrags = mipReader.getNumImages() - 2;
+        int nFrags = (int)mipReader.getNumImages() - 2;
         if (nFrags < 0) return; // not enough upstream data
         if (overlayMipList.size() != 2) // nothing allocated yet
             mipWriter.allocateImages(nFrags);

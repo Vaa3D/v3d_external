@@ -88,7 +88,7 @@ void CustomClipPlanes::simpleUndoPlane(int planeIndex)
     // qDebug() << "removing plane" << planeIndex + 1;
     int topPlaneIndex = nextClipPlaneIndex - 1;
     if (topPlaneIndex < 0)
-        topPlaneIndex = size() - 1;
+        topPlaneIndex = (int)size() - 1;
     if (planeIndex == topPlaneIndex)
         nextClipPlaneIndex = topPlaneIndex;
     (*this)[planeIndex].disable();

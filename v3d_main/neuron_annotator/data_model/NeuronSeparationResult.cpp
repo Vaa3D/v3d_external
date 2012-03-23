@@ -50,10 +50,10 @@ std::ostream& NeuronSeparationResult::saveChk4File(std::ostream& os)
     os.write((const char*)&c, sizeof(double));
     os.write((const char*)&e, sizeof(double));
     os.write((const char*)&s, sizeof(int));
-    int numberOfInputImages = inputImageFileNames.size();
+    int numberOfInputImages = (int)inputImageFileNames.size();
     os.write((const char*)&numberOfInputImages, sizeof(int));
     for (int i = 0; i < numberOfInputImages; ++i) {
-        int nameLength = inputImageFileNames[i].size();
+        int nameLength = (int)inputImageFileNames[i].size();
         os.write((const char*)&nameLength, sizeof(int));
         os.write(inputImageFileNames[0].c_str(), nameLength);
         // TODO - eliminated channel id
