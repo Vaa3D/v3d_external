@@ -48,6 +48,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "v3dr_glwidget.h"
 #include "barFigureDialog.h"
 
+#include <fstream>
+#include <sstream>
 
 #ifndef test_main_cpp
 
@@ -1956,6 +1958,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     // distance computation
                     // for writing curve distance information
                     QString distfilename = testOutputDir + "/" + test_id + "_" + fname + "_Distance.txt";
+                    QString pre_distfilename = testOutputDir + "/" +  QString::number(test_id_num-1) + "_" + fname + "_Distance.txt";
 
                     // distance threshold for the whole Test
                     const static double dist_threshold = 3.0;
@@ -1969,19 +1972,9 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     if(listCurveMarkerPool.size() > 2) // the ground truth is the curve from GD
                     {
                          // ======================================================
-                         // get previous records for *_success & num_test
-                         FILE *pre_fpdist;
-                         pre_fpdist=fopen(distfilename.toStdString().c_str(), "r");
-
                          int ml_success, cc_success, di_success, mp_success;
                          int num_test;
-
-                         if(pre_fpdist) // this file is not here for the first time
-                         {
-                              fscanf(pre_fpdist, "%d", num_test);
-                              fscanf(pre_fpdist, "%d %d %d %d", ml_success, cc_success, di_success, mp_success);
-                         }
-                         else
+                         if(test_id_num==1)
                          {
                               // initialize nums for the first time
                               ml_success = 0;
@@ -1990,7 +1983,19 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                               mp_success = 0;
                               num_test = 0;
                          }
-                         fclose(pre_fpdist);
+                         else
+                         {
+                              ifstream fpredist(pre_distfilename.toStdString().c_str());
+
+                              if(fpredist.is_open())
+                              {
+                                   string line;
+                                   getline(fpredist, line);
+                                   istringstream buffer(line);
+                                   buffer >> num_test >> ml_success >> cc_success >> di_success >> mp_success;
+                              }
+                              fpredist.close();
+                         }
                          // =======================================================
 
                          num_test ++;
@@ -2010,8 +2015,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                          float di_succ_rate = (float)di_success/num_test;
                          float mp_succ_rate = (float)mp_success/num_test;
 
-                         fprintf(fpdist, "%d\n", num_test); // total test num
-                         fprintf(fpdist, "%d %d %d %d\n", ml_success, cc_success, di_success, mp_success);// success num above dist_threshold
+                         //fprintf(fpdist, "%d\n", num_test); // total test num
+                         fprintf(fpdist, "%d %d %d %d %d\n", num_test, ml_success, cc_success, di_success, mp_success);// total test num, success num above dist_threshold
                          fprintf(fpdist, "The ground truth curve is the curve from GD method.\n");
                          fprintf(fpdist, "The distance_threshold  = %.4f\n", dist_threshold);
                          fprintf(fpdist, "Distance between curves of GD and Markerlists_fm                     = %.4f\n",   dist_gd_ml);
@@ -2029,26 +2034,31 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     else // the ground truth is the curve from Markerlists_fm
                     {
                          // ======================================================
-                         // get previous records for *_success & num_test
-                         FILE *pre_fpdist;
-                         pre_fpdist=fopen(distfilename.toStdString().c_str(), "r");
-
                          int ml_cc_success, ml_di_success;
                          int ml_num_test;
 
-                         if(pre_fpdist)
-                         {
-                              fscanf(pre_fpdist, "%d", ml_num_test);
-                              fscanf(pre_fpdist, "%d %d", ml_cc_success, ml_di_success);
-                         }
-                         else // this file is not here for the first time
+                         if(test_id_num==1)
                          {
                               // initialize nums for the first time
                               ml_cc_success = 0;
                               ml_di_success = 0;
                               ml_num_test = 0;
+                              qDebug()<<"ml_num_test:"<< ml_num_test << "ml_cc_success: "<<ml_cc_success<<"ml_di_success: "<<ml_di_success;
                          }
-                         fclose(pre_fpdist);
+                         else
+                         {
+                              ifstream fpredist(pre_distfilename.toStdString().c_str());
+
+                              if(fpredist.is_open())
+                              {
+                                   string line;
+                                   getline(fpredist, line);
+                                   istringstream buffer(line);
+                                   buffer >>ml_num_test>>ml_cc_success>>ml_di_success;
+                              }
+                              fpredist.close();
+                         }
+
                          // =========================================================
                          // computer distance from GD-curve to other curves
                          double dist_ml_cc = distance_between_2lines(tree_ml, tree_cc);
@@ -2062,8 +2072,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                          float ml_di_succ_rate = (float)ml_di_success/ml_num_test;
 
                          // computer distance from GD-curve to other curves
-                         fprintf(fpdist, "%d\n", ml_num_test); // total test num
-                         fprintf(fpdist, "%d %d\n", ml_cc_success, ml_di_success);// success num above dist_threshold
+                         //fprintf(fpdist, "%d\n", ml_num_test); // total test num
+                         fprintf(fpdist, "%i %i %i\n", ml_num_test, ml_cc_success, ml_di_success);// total test num, success num above dist_threshold
 
                          fprintf(fpdist, "The ground truth curve is the curve from Markerlists_fm.\n");
                          fprintf(fpdist, "Distance between curves of Markerlists_fm and mean_shift              = %.4f\n", dist_ml_cc);

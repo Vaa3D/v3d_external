@@ -45,4 +45,59 @@ int CheckLineBox( XYZ B1, XYZ B2, XYZ L1, XYZ L2, XYZ &Hit)
      return false;
 }
 
+
+// http://www.garagegames.com/community/blogs/view/309
+bool line_box_intersect(const XYZ &start, const XYZ &end,  const BoundingBox &box, float *time)
+{
+     float st,et,fst = 0;
+     float fet = 1;
+     float v0x = box.V0().x;
+     float v1x = box.V1().x;
+     float const *bmin = &v0x; //&(box.V0().x);
+     float const *bmax = &v1x; //&(box.V1().x);
+     float const *si = &start.x;
+     float const *ei = &end.x;
+
+     for (int i = 0; i < 3; i++) {
+          if (*si < *ei) {
+               if (*si > *bmax || *ei < *bmin)
+                    return false;
+               float di = *ei - *si;
+               st = (*si < *bmin)? (*bmin - *si) / di: 0;
+               et = (*ei > *bmax)? (*bmax - *si) / di: 1;
+          }
+          else {
+               if (*ei > *bmax || *si < *bmin)
+                    return false;
+               float di = *ei - *si;
+               st = (*si > *bmax)? (*bmax - *si) / di: 0;
+               et = (*ei < *bmin)? (*bmin - *si) / di: 1;
+          }
+
+          if (st > fst) fst = st;
+          if (et < fet) fet = et;
+          if (fet < fst)
+               return false;
+          bmin++; bmax++;
+          si++; ei++;
+     }
+
+     *time = fst;
+     return true;
+}
+
+void getIntersectPt(const XYZ &start, const XYZ &end,  const BoundingBox &box, XYZ &hit)
+{
+     float time;
+
+     if (line_box_intersect(start, end,  box, &time))
+     {
+          hit = start + time * (end - start);
+     }
+     else
+     {
+          hit = start;
+     }
+}
+
 #endif

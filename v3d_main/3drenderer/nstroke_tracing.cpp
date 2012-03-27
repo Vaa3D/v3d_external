@@ -64,6 +64,34 @@
 
 #define INSERT_NEIGHBOR(nei) {if (dataViewProcBox.isInner(nei, 0.5)) neibs_loci.push_back(nei);}
 
+#define GET_INTERSEC_POINT(loc0, loc1, hit_loc, success) \
+{ \
+     XYZ v_1_0 = loc1-loc0; \
+     XYZ D = v_1_0; normalize(D); \
+     XYZ loci; \
+     float length=dist_L2(loc0, loc1); \
+     for(int ii=0; ii< length; ii++) \
+     { \
+          loci = loc0 + D*ii; \
+          if(dataViewProcBox.isInner(loci, 0.5)) \
+          { \
+               hit_loc = loci; \
+               success = true; \
+               break; \
+          } \
+     } \
+}
+
+#define INTERSET_POINTS_WITH_DATA(loc0_t, loc1_t, loc0, loc1) \
+{ \
+     bool success0 = false; \
+     bool success1 = false; \
+     GET_INTERSEC_POINT(loc0_t, loc1_t, loc0, success0); \
+     if(!success0) loc0=loc0_t; \
+     GET_INTERSEC_POINT(loc1_t, loc0_t, loc1, success1); \
+     if(!success1) loc1=loc1_t; \
+}
+
 
 
 void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index)
@@ -523,17 +551,23 @@ void Renderer_gl1::getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, do
           clipplane[3] = viewClip;
           ViewPlaneToModel(pos.at(i).MV, clipplane);
 
+          XYZ loc0_t, loc1_t;
+          _MarkerPos_to_NearFarPoint(pos.at(i), loc0_t, loc1_t);
+
+          // get intersection point of (loc0,loc1) with data volume
           XYZ loc0, loc1;
-          _MarkerPos_to_NearFarPoint(pos.at(i), loc0, loc1);
+          INTERSET_POINTS_WITH_DATA(loc0_t, loc1_t, loc0, loc1);
 
           // XYZ loc0_t, loc1_t;
           // _MarkerPos_to_NearFarPoint(pos.at(i), loc0_t, loc1_t);
 
           // XYZ loc0, loc1;
-          // // check line_box intersection points
-          // CheckLineBox( dataViewProcBox.V0(), dataViewProcBox.V1(), loc0_t, loc1_t, loc0);
-          // CheckLineBox( dataViewProcBox.V0(), dataViewProcBox.V1(), loc1_t, loc0_t, loc1);
-
+          // // // check line_box intersection points
+          // // CheckLineBox( dataViewProcBox.V0(), dataViewProcBox.V1(), loc0_t, loc1_t, loc0);
+          // // CheckLineBox( dataViewProcBox.V0(), dataViewProcBox.V1(), loc1_t, loc0_t, loc1);
+          // // use another intersection version
+          // getIntersectPt(loc0_t, loc1_t,  dataViewProcBox, loc0);
+          // getIntersectPt(loc1_t, loc0_t,  dataViewProcBox, loc1);
 
           // if(i==0)
           // {
@@ -559,7 +593,7 @@ void Renderer_gl1::getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, do
           }
      }
 
-     int boundary = 5;
+     int boundary = 0; // need to test for this boundary value. It seems that 0 is OK
 
      minloc.x = minx - boundary;
      minloc.y = miny - boundary;
@@ -608,18 +642,23 @@ void Renderer_gl1::getSubVolFrom3Points(XYZ & loc0_last, XYZ & loc0, XYZ & loc1,
 {
      XYZ minloc, maxloc;
 
+     // get intersection point of (loc0,loc1) with data volume
+     XYZ hit_loc0, hit_loc1;
+     INTERSET_POINTS_WITH_DATA(loc0, loc1, hit_loc0, hit_loc1);
+
+
      // find min-max of x y z in loc_veci
      float minx, miny, minz, maxx, maxy, maxz;
 
-     minx=maxx=loc0.x; miny=maxy=loc0.y; minz=maxz=loc0.z;
+     minx=maxx=hit_loc0.x; miny=maxy=hit_loc0.y; minz=maxz=hit_loc0.z;
 
-     if(minx>loc1.x) minx=loc1.x;
-     if(miny>loc1.y) miny=loc1.y;
-     if(minz>loc1.z) minz=loc1.z;
+     if(minx>hit_loc1.x) minx=hit_loc1.x;
+     if(miny>hit_loc1.y) miny=hit_loc1.y;
+     if(minz>hit_loc1.z) minz=hit_loc1.z;
 
-     if(maxx<loc1.x) maxx=loc1.x;
-     if(maxy<loc1.y) maxy=loc1.y;
-     if(maxz<loc1.z) maxz=loc1.z;
+     if(maxx<hit_loc1.x) maxx=hit_loc1.x;
+     if(maxy<hit_loc1.y) maxy=hit_loc1.y;
+     if(maxz<hit_loc1.z) maxz=hit_loc1.z;
 
      if(minx>loc0_last.x) minx=loc0_last.x;
      if(miny>loc0_last.y) miny=loc0_last.y;
@@ -1215,9 +1254,14 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
      XYZ sub_orig;
      double* pSubdata;
      V3DLONG sub_szx, sub_szy, sub_szz;
-     bool b_useStrokeBB = true;           // use the stroke decided BB
+     bool b_useStrokeBB = false;           // use the stroke decided BB
      bool b_use2PointsBB = !b_useStrokeBB; // use the two-point decided BB
-     bool b_useLog2Method=false;
+     //bool b_useLog2Method=false;
+
+     vector<XYZ> nearpos_vec, farpos_vec; // for near/far locs testing
+     nearpos_vec.clear();
+     farpos_vec.clear();
+
 
      if(b_useStrokeBB)
           getSubVolFromStroke(pSubdata, chno, sub_orig, sub_szx, sub_szy, sub_szz);
@@ -1231,56 +1275,56 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 	{
 		N = list_listCurvePos.at(index).size(); // change from 0 to index for different curves, ZJL
 
-          if(true)//(b_useLog2Method)
-          {
-               double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
-               clipplane[3] = viewClip;
+          // if(b_useLog2Method)
+          // {
+          //      double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+          //      clipplane[3] = viewClip;
 
-               vector<MyMarker> nearpos_vec, farpos_vec;
-               nearpos_vec.clear();
-               farpos_vec.clear();
-               for(int ii=0; ii<N; ii++)
-               {
-                    const MarkerPos & pos = list_listCurvePos.at(index).at(ii);
-                    ViewPlaneToModel(pos.MV, clipplane);
-                    XYZ loc0, loc1;
-                    _MarkerPos_to_NearFarPoint(pos, loc0, loc1);
+          //      vector<MyMarker> nearpos_vec, farpos_vec;
+          //      nearpos_vec.clear();
+          //      farpos_vec.clear();
+          //      for(int ii=0; ii<N; ii++)
+          //      {
+          //           const MarkerPos & pos = list_listCurvePos.at(index).at(ii);
+          //           ViewPlaneToModel(pos.MV, clipplane);
+          //           XYZ loc0, loc1;
+          //           _MarkerPos_to_NearFarPoint(pos, loc0, loc1);
 
-                    nearpos_vec.push_back(MyMarker(loc0.x, loc0.y, loc0.z));
-                    farpos_vec.push_back(MyMarker(loc1.x, loc1.y, loc1.z));
-               }
-               FILE *nfile=fopen("/groups/peng/home/zhouj/work/near_marker.txt", "wt");
-               for(int ii=0; ii<nearpos_vec.size(); ii++)
-                    fprintf(nfile, "%f %f %f\n", nearpos_vec.at(ii).x, nearpos_vec.at(ii).y, nearpos_vec.at(ii).z);
-               fclose(nfile);
-               FILE *ffile=fopen("/groups/peng/home/zhouj/work/far_marker.txt", "wt");
-               for(int ii=0; ii<farpos_vec.size(); ii++)
-                    fprintf(ffile, "%f %f %f\n", farpos_vec.at(ii).x, farpos_vec.at(ii).y, farpos_vec.at(ii).z);
-               fclose(ffile);
+          //           nearpos_vec.push_back(MyMarker(loc0.x, loc0.y, loc0.z));
+          //           farpos_vec.push_back(MyMarker(loc1.x, loc1.y, loc1.z));
+          //      }
+          //      // FILE *nfile=fopen("/groups/peng/home/zhouj/work/near_marker.txt", "wt");
+          //      // for(int ii=0; ii<nearpos_vec.size(); ii++)
+          //      //      fprintf(nfile, "%f %f %f\n", nearpos_vec.at(ii).x, nearpos_vec.at(ii).y, nearpos_vec.at(ii).z);
+          //      // fclose(nfile);
+          //      // FILE *ffile=fopen("/groups/peng/home/zhouj/work/far_marker.txt", "wt");
+          //      // for(int ii=0; ii<farpos_vec.size(); ii++)
+          //      //      fprintf(ffile, "%f %f %f\n", farpos_vec.at(ii).x, farpos_vec.at(ii).y, farpos_vec.at(ii).z);
+          //      // fclose(ffile);
 
-               // // call fastmarching
-               // vector<MyMarker*> outswc;     outswc.clear();
-               // // process outswc
-               // if(!outswc.empty())
-               // {
-               //      // the 1st loc in outswc is the last pos got in fm
-               //      int nn = outswc.size();
-               //      for(int j=nn-1; j>=0; j-- )
-               //      {
-               //           XYZ locj;
-               //           locj.x=outswc.at(j)->x;
-               //           locj.y=outswc.at(j)->y;
-               //           locj.z=outswc.at(j)->z;
+          //      // // call fastmarching
+          //      vector<MyMarker*> outswc;     outswc.clear();
+          //      // process outswc
+          //      if(!outswc.empty())
+          //      {
+          //           // the 1st loc in outswc is the last pos got in fm
+          //           int nn = outswc.size();
+          //           for(int j=nn-1; j>=0; j-- )
+          //           {
+          //                XYZ locj;
+          //                locj.x=outswc.at(j)->x;
+          //                locj.y=outswc.at(j)->y;
+          //                locj.z=outswc.at(j)->z;
 
-               //           loc_vec.push_back(locj);
-               //      }
+          //                loc_vec.push_back(locj);
+          //           }
 
-               // }else
-               // {
-               //      v3d_msg("Fastmarching failed for curve drawing!", 0);
-               // }
-          }
-          //else // not using b_useLog2Method
+          //      }else
+          //      {
+          //           v3d_msg("Fastmarching failed for curve drawing!", 0);
+          //      }
+          // }
+          // else // not using b_useLog2Method
           {
 
                // resample curve strokes
@@ -1318,16 +1362,33 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                          clipplane[3] = viewClip;
                          ViewPlaneToModel(pos.MV, clipplane);
 
+                         // XYZ loc0, loc1;
+                         // _MarkerPos_to_NearFarPoint(pos, loc0, loc1);
+
+                         // this is intersection points with view volume
+                         XYZ loc0_t, loc1_t;
+                         _MarkerPos_to_NearFarPoint(pos, loc0_t, loc1_t);
+
+                         // get intersection points with data volume
                          XYZ loc0, loc1;
-                         _MarkerPos_to_NearFarPoint(pos, loc0, loc1);
+                         INTERSET_POINTS_WITH_DATA(loc0_t, loc1_t, loc0, loc1);
+
+                         // near/far pos locs for testing
+                         nearpos_vec.push_back(loc0);
+                         farpos_vec.push_back(loc1);
 
                          // XYZ loc0_t, loc1_t;
                          // _MarkerPos_to_NearFarPoint(pos, loc0_t, loc1_t);
 
                          // XYZ loc0, loc1;
-                         // // check line_box intersection points
-                         // CheckLineBox( dataViewProcBox.V0(), dataViewProcBox.V1(), loc0_t, loc1_t, loc0);
-                         // CheckLineBox( dataViewProcBox.V0(), dataViewProcBox.V1(), loc1_t, loc0_t, loc1);
+                         // // // check line_box intersection points
+                         // // CheckLineBox( dataViewProcBox.V0(), dataViewProcBox.V1(), loc0_t, loc1_t, loc0);
+                         // // CheckLineBox( dataViewProcBox.V0(), dataViewProcBox.V1(), loc1_t, loc0_t, loc1);
+                         // // use another intersection version
+                         // getIntersectPt(loc0_t, loc1_t,  dataViewProcBox, loc0);
+                         // getIntersectPt(loc1_t, loc0_t,  dataViewProcBox, loc1);
+
+
 
                          qDebug()<<"loc0.x, loc0.y, loc0.z:" << loc0.x << loc0.y <<loc0.z;
                          qDebug()<<"loc1.x, loc1.y, loc1.z:" << loc1.x << loc1.y <<loc1.z;
@@ -1350,12 +1411,18 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                               double clipplane0[4] = { 0.0,  0.0, -1.0,  0 };
                               clipplane0[3] = viewClip;
                               ViewPlaneToModel(pos_0.MV, clipplane0);
+                              // XYZ loc00, loc01;
+                              // _MarkerPos_to_NearFarPoint(pos_0, loc00, loc01);
+
+                              // get intersection points with data volume
+                              XYZ loc00_t, loc01_t;
+                              _MarkerPos_to_NearFarPoint(pos_0, loc00_t, loc01_t);
                               XYZ loc00, loc01;
-                              _MarkerPos_to_NearFarPoint(pos_0, loc00, loc01);
+                              INTERSET_POINTS_WITH_DATA(loc00_t, loc01_t, loc00, loc01);
 
                               // XYZ loc00_t, loc01_t;
                               // _MarkerPos_to_NearFarPoint(pos, loc00_t, loc01_t);
-                         // ==============================================<<<<<<<<<<<<<<<<<<<<<<<
+                              // ==============================================<<<<<<<<<<<<<<<<<<<<<<<
 
                               // XYZ loc00, loc01;
                               // // check line_box intersection points
@@ -1369,7 +1436,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 
                               XYZ nearest_loc;
                               XYZ mean_loc=loci0;
-                              if( mergeFirstNode(pos_0, loc00, loc01, nearest_loc) ) // if there is a nearest curve, use the nearest loc as the start point
+                              if( mergeFirstNode(pos_0, loci0, nearest_loc) ) // if there is a nearest curve, use the nearest loc as the start point
                               {
                                    loci0 = nearest_loc;
                               }
@@ -1449,29 +1516,22 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                               // double clipplane0[4] = { 0.0,  0.0, -1.0,  0 };
                               // clipplane0[3] = viewClip;
                               // ViewPlaneToModel(pos_0.MV, clipplane0);
+                              // XYZ loc00_t, loc01_t;
+                              // _MarkerPos_to_NearFarPoint(pos_0, loc00_t, loc01_t);
+                              // // get intersect points with data volume
                               // XYZ loc00, loc01;
-                              // _MarkerPos_to_NearFarPoint(pos_0, loc00, loc01);
-
+                              // INTERSET_POINTS_WITH_DATA(loc00_t, loc01_t, loc00, loc01);
 
                               // float length_1st = dist_L2(loc00, loc01);
                               // if (length_1st<1.0)
                               // {
                               //      XYZ loci=(loc00+loc01)/2.0;
-                              //      qDebug()<<"loc00.x, loc00.y, loc00.z:" << loc00.x << loc00.y <<loc00.z;
-                              //      qDebug()<<"loc01.x, loc01.y, loc01.z:" << loc01.x << loc01.y <<loc01.z;
-                              //      qDebug()<<"loci.x, loci.y, loci.z:" << loci.x << loci.y <<loci.z;
+
                               //      if(b_useStrokeBB) // use stroke bounding box
                               //           loci = loci-sub_orig;
                               //      else if(b_use2PointsBB)
                               //      {
                               //           loci = loci-sub_orig2;
-
-                              //           assert( (int) (loci.x+0.5)>=0 );
-                              //           assert( (int) (loci.x+0.5)< sub_szx2 );
-                              //           assert( (int) (loci.y+0.5)>=0 );
-                              //           assert( (int) (loci.y+0.5)< sub_szy2);
-                              //           assert( (int) (loci.z+0.5)>=0);
-                              //           assert( (int) (loci.z+0.5)< sub_szz2 );
                               //      }
 
                               //      MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
@@ -1676,6 +1736,18 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                }
           } // end of if(b_useLog2Method)
      }
+
+     // Save near/far locs for testing:
+     FILE *nfile=fopen("/groups/peng/home/zhouj/work/near_marker.txt", "wt");
+     for(int ii=0; ii<nearpos_vec.size(); ii++)
+          fprintf(nfile, "%f %f %f\n", nearpos_vec.at(ii).x, nearpos_vec.at(ii).y, nearpos_vec.at(ii).z);
+     fclose(nfile);
+     FILE *ffile=fopen("/groups/peng/home/zhouj/work/far_marker.txt", "wt");
+     for(int ii=0; ii<farpos_vec.size(); ii++)
+          fprintf(ffile, "%f %f %f\n", farpos_vec.at(ii).x, farpos_vec.at(ii).y, farpos_vec.at(ii).z);
+     fclose(ffile);
+
+
 
      PROGRESS_PERCENT(60);
 
@@ -2809,7 +2881,7 @@ void Renderer_gl1::projectSWC_XY_YZ_XZ(unsigned char * &pXY, unsigned char * &pY
 }
 
 
-bool Renderer_gl1::mergeFirstNode(const MarkerPos &pos, XYZ &loc00, XYZ &loc01, XYZ &nearest_loc)
+bool Renderer_gl1::mergeFirstNode(const MarkerPos &pos, XYZ &mean_loc, XYZ &nearest_loc)
 {
      MainWindow* V3Dmainwindow = 0;
 	V3Dmainwindow = v3dr_getV3Dmainwindow(_idep);
@@ -2835,49 +2907,49 @@ bool Renderer_gl1::mergeFirstNode(const MarkerPos &pos, XYZ &loc00, XYZ &loc01, 
                          XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
 
                          // using the line (loc00, loc01 to justify)
-                         float length_1st = dist_L2(loc00, loc01);
-                         if (length_1st<1.0)
-                         {
-                              XYZ loci=(loc00+loc01)/2.0;
-                              if (dist_L2(cur_node_xyz, loci)<th_merge)
-                              {
-                                   nearest_loc = cur_node_xyz;
-                                   b_start_merged = true;
-                                   qDebug()<<"force set the first point of this curve to the above neuron node as they are close.";
-                                   return true;
-                              }else
-                                   return false;
-
-                         }
-                         else
-                         {
-                              XYZ v_1_0_1st = loc01-loc00;
-                              XYZ D_1st = v_1_0_1st; normalize(D_1st);
-
-                              for(int ii=0; ii<=(int)(length_1st+0.5); ii++)
-                              {
-                                   XYZ loci = loc00 + D_1st*ii; // incease 1 each step
-
-                                   if (dist_L2(cur_node_xyz, loci)<th_merge)
-                                   {
-                                        nearest_loc = cur_node_xyz;
-                                        b_start_merged = true;
-                                        qDebug()<<"force set the first point of this curve to the above neuron node as they are close.";
-                                        return true;
-                                   }
-
-                              }
-                              return false;
-                         }
-
-                         // // using mean_loc to justify
-                         // if (dist_L2(cur_node_xyz, mean_loc)<th_merge)
+                         // float length_1st = dist_L2(loc00, loc01);
+                         // if (length_1st<1.0)
                          // {
-                         //      nearest_loc = cur_node_xyz;
-                         //      b_start_merged = true;
-                         //      qDebug()<<"force set the first point of this curve to the above neuron node as they are close.";
-                         //      return true;
+                         //      XYZ loci=(loc00+loc01)/2.0;
+                         //      if (dist_L2(cur_node_xyz, loci)<th_merge)
+                         //      {
+                         //           nearest_loc = cur_node_xyz;
+                         //           b_start_merged = true;
+                         //           qDebug()<<"force set the first point of this curve to the above neuron node as they are close.";
+                         //           return true;
+                         //      }else
+                         //           return false;
+
                          // }
+                         // else
+                         // {
+                         //      XYZ v_1_0_1st = loc01-loc00;
+                         //      XYZ D_1st = v_1_0_1st; normalize(D_1st);
+
+                         //      for(int ii=0; ii<=(int)(length_1st+0.5); ii++)
+                         //      {
+                         //           XYZ loci = loc00 + D_1st*ii; // incease 1 each step
+
+                         //           if (dist_L2(cur_node_xyz, loci)<th_merge)
+                         //           {
+                         //                nearest_loc = cur_node_xyz;
+                         //                b_start_merged = true;
+                         //                qDebug()<<"force set the first point of this curve to the above neuron node as they are close.";
+                         //                return true;
+                         //           }
+
+                         //      }
+                         //      return false;
+                         // }
+
+                         // using mean_loc to justify
+                         if (dist_L2(cur_node_xyz, mean_loc)<th_merge)
+                         {
+                              nearest_loc = cur_node_xyz;
+                              b_start_merged = true;
+                              qDebug()<<"force set the first point of this curve to the above neuron node as they are close.";
+                              return true;
+                         }
 
                     }
 
