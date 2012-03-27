@@ -1027,6 +1027,7 @@ void RendererNeuronAnnotator::paint()
     switch(stereo3DMode)
     {
     case STEREO_OFF:
+        glDrawBuffer(GL_BACK); // Avoid flicker on non-Quadro Mac
         paint_mono();
         break;
     case STEREO_LEFT_EYE:

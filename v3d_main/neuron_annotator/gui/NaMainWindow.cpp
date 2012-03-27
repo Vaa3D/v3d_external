@@ -75,6 +75,16 @@ NaMainWindow::NaMainWindow()
     , undoStack(NULL)
     , bShowCrosshair(true) // default to on
 {
+    // Set up potential 3D stereo modes before creating QGLWidget.
+    QGLFormat glFormat = QGLFormat::defaultFormat();
+    glFormat.setStereo(true);
+    glFormat.setDoubleBuffer(true);
+    if (glFormat.stereo())
+        qDebug() << "Attempting to set 3D stereo format";
+    else
+        qDebug() << "Failed to make stereo 3D default QGLFormat";
+    QGLFormat::setDefaultFormat(glFormat);
+
     ui.setupUi(this);
     setAcceptDrops(true);
 

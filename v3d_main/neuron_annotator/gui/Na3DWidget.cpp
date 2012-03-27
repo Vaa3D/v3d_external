@@ -37,11 +37,19 @@ Na3DWidget::Na3DWidget(QWidget* parent)
 //    glFormat.setStereo(true);
 	// Causes crash on Windows
     // setFormat(glFormat);
+    QGLFormat glFormat(format());
+    glFormat.setStereo(true);
+    setFormat(glFormat);
+
     bHasQuadStereo = true;
     if (! context()->format().stereo())
         bHasQuadStereo = false;
     if (! context()->format().doubleBuffer())
         bHasQuadStereo = false;
+    if(bHasQuadStereo)
+        qDebug() << "Quad buffer stereo 3D is supported";
+    else
+        qDebug() << "Quad buffer stereo 3D is NOT supported";
     emit quadStereoSupported(bHasQuadStereo);
 
     rotateCursor = new QCursor(QPixmap(":/pic/rotate_icon.png"), 5, 5);
@@ -97,6 +105,12 @@ void Na3DWidget::setUndoStack(QUndoStack& undoStackParam) // for undo/redo custo
 /* virtual */
 void Na3DWidget::initializeGL()
 {
+    GLboolean hasStereo;
+    glGetBooleanv(GL_STEREO, &hasStereo);
+    if(hasStereo)
+        qDebug() << "OpenGL context supports stereo 3D";
+    else
+        qDebug() << "OpenGL context does not support stereo 3D";
     V3dR_GLWidget::initializeGL();
     volumeTexture.initializeGL();
 }
