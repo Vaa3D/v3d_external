@@ -82,6 +82,25 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #ifndef __STACKUTIL_CPP__
 #define __STACKUTIL_CPP__
 
+// 64-bit and 32-bit checking
+// Windows
+#if _WIN32 || _WIN64
+#if _WIN64
+#define ENVIRONMENT64
+#else
+#define ENVIRONMENT32
+#endif
+#endif
+
+// GCC
+#if __GNUC__
+#if __x86_64__ || __ppc64__
+#define ENVIRONMENT64
+#else
+#define ENVIRONMENT32
+#endif
+#endif
+
 //#include "../elementmexheader.h"
 
 #include <stdio.h>
@@ -3583,25 +3602,33 @@ int saveStack2MRC(const char * filename, const unsigned char * img, const V3DLON
 
 bool ensure_file_exists_and_size_not_too_big(char *filename, V3DLONG sz_thres)
 {
-	FILE * fid = fopen(filename, "rb");
-	if (!fid)
-	{
-		printf("The file [%s] does not exist or cannot be read.\n", filename);
-		return false;
-	}
+#ifdef ENVIRONMENT32
 
-	fseek (fid, 0, SEEK_END);
-	V3DLONG fileSize = ftell(fid);
-	rewind(fid);
-	fclose(fid);
+    FILE * fid = fopen(filename, "rb");
+    if (!fid)
+    {
+        printf("The file [%s] does not exist or cannot be read.\n", filename);
+        return false;
+    }
 
-	if(fileSize>sz_thres)
-	{
-		printf("The file [%s] has a too big size [= %ld bytes ] > [%ld bytes] which is the limit of the loadImage function. Do nothing. \n", filename, fileSize, sz_thres);
-		return false;
-	}
+    fseek (fid, 0, SEEK_END);
+    V3DLONG fileSize = ftell(fid);
+    rewind(fid);
+    fclose(fid);
 
-	return true;
+    if(fileSize>sz_thres)
+    {
+        printf("The file [%s] has a too big size [= %ld bytes ] > [%ld bytes] which is the limit of the loadImage function. Do nothing. \n", filename, fileSize, sz_thres);
+        return false;
+    }
+
+    return true;
+
+#else
+
+    return true;
+
+#endif
 }
 
 
@@ -3673,11 +3700,11 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 	{
 		if (b_VERBOSE_PRINT)
 			printf("The data is not with a TIF/LSM surfix, -- now this program assumes it is RAW format defined by Hanchuan Peng. \n");
-		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*ZZBIG)) //RAW file at most should be 1.5G bytes
-		{
-			printf("The RAW file may not exist or may be too big to load.\n");
-			return false;
-		}
+                if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*ZZBIG)) //RAW file at most should be 1.5G bytes
+                {
+                        printf("The RAW file may not exist or may be too big to load.\n");
+                        return false;
+                }
 
 		if (loadRaw2Stack(imgSrcFile, tmp_data1d, tmp_sz, tmp_datatype))
 		{
