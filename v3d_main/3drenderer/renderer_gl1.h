@@ -311,7 +311,7 @@ protected:
      bool boundingboxFromStroke(XYZ& minloc, XYZ& maxloc);
      //Using boundingboxFromStroke() get boundingbox and then get subvol
      void getSubVolFromStroke(double* &pSubdata, int chno, XYZ &sub_orig, V3DLONG &sub_szx, V3DLONG &sub_szy, V3DLONG &sub_szz);
-     void getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, double* &pSubdata, XYZ &sub_orig, V3DLONG &sub_szx,
+     void getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, double* &pSubdata, XYZ &sub_orig, XYZ &max_loc, V3DLONG &sub_szx,
           V3DLONG &sub_szy, V3DLONG &sub_szz);
      void getSubVolFrom3Points(XYZ & loc0_last, XYZ & loc0, XYZ & loc1, int chno, double* &pSubdata,
           XYZ &sub_orig, V3DLONG &sub_szx, V3DLONG &sub_szy, V3DLONG &sub_szz);

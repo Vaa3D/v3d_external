@@ -73,7 +73,7 @@
      for(int ii=0; ii< length; ii++) \
      { \
           loci = loc0 + D*ii; \
-          if(dataViewProcBox.isInner(loci, 0.5)) \
+          if(dataViewProcBox.isInner(loci, 0.0)) \
           { \
                hit_loc = loci; \
                success = true; \
@@ -132,12 +132,10 @@ void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector
 		{
 			const MarkerPos & pos = list_listCurvePos.at(index).at(i); // change from 0 to index for different curves, ZJL
 			////////////////////////////////////////////////////////////////////////
-			//100730 RZC, in View space, keep for dot(clip, pos)>=0
-			double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+               double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
 			clipplane[3] = viewClip;
 			ViewPlaneToModel(pos.MV, clipplane);
-			//qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
-			////////////////////////////////////////////////////////////////////////
+               ////////////////////////////////////////////////////////////////////////
 
 			XYZ loc0, loc1;
 			_MarkerPos_to_NearFarPoint(pos, loc0, loc1);
@@ -534,7 +532,7 @@ bool Renderer_gl1::withinLineSegCheck( XYZ p1,XYZ p2,XYZ pa)
 
 // get bounding volume from two stroke points
 // chno is channel
-void Renderer_gl1::getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, double* &pSubdata, XYZ &sub_orig, V3DLONG &sub_szx,
+void Renderer_gl1::getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, double* &pSubdata, XYZ &sub_orig, XYZ &max_loc, V3DLONG &sub_szx,
      V3DLONG &sub_szy, V3DLONG &sub_szz)
 {
      XYZ minloc, maxloc;
@@ -593,7 +591,7 @@ void Renderer_gl1::getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, do
           }
      }
 
-     int boundary = 0; // need to test for this boundary value. It seems that 0 is OK
+     int boundary = 5; // need to test for this boundary value. It seems that 0 is OK
 
      minloc.x = minx - boundary;
      minloc.y = miny - boundary;
@@ -620,6 +618,7 @@ void Renderer_gl1::getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, do
      sub_szz = maxloc.z-minloc.z +1;
 
      sub_orig = minloc;
+     max_loc = maxloc;
 
      //if(pSubdata) {delete [] pSubdata; pSubdata=0;}
 
@@ -1402,6 +1401,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                          double* pSubdata2;
                          XYZ sub_orig2;
                          V3DLONG sub_szx2, sub_szy2, sub_szz2;
+                         BoundingBox bb_2Points;
                          XYZ loci0; //meanshift point for i==0
                          if(i==1)
                          {
@@ -1449,9 +1449,9 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                               MarkerPos pos_last = list_listCurvePos.at(index).at(last_i);
                               pos_vec.push_back(pos_last);
                               pos_vec.push_back(pos);
-
-                              getSubVolFrom2MarkerPos(pos_vec, chno, pSubdata2, sub_orig2, sub_szx2, sub_szy2, sub_szz2);
-
+                              XYZ max_loc2;
+                              getSubVolFrom2MarkerPos(pos_vec, chno, pSubdata2, sub_orig2, max_loc2, sub_szx2, sub_szy2, sub_szz2);
+                              bb_2Points = BoundingBox(sub_orig2, max_loc2);
                               // ===============================>>>>>>>>>>>>>>>>>>>
                               // using 3 loc points to get BB
                               // using lastpos infor to get loc
@@ -1597,13 +1597,32 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                               for(int ii=0; ii<(int)(length+0.5); ii++)
                               {
                                    XYZ loci = loc0 + D*ii; // incease 1 each step
-                                   if(b_useStrokeBB)
-                                        loci = loci-sub_orig; // use stroke bounding box
-                                   else if(b_use2PointsBB)
-                                        loci = loci-sub_orig2;
 
-                                   MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
-                                   tar_markers.push_back(mloci);
+                                   if(b_useStrokeBB)
+                                   {
+
+                                        loci = loci-sub_orig; // use stroke bounding box
+                                        MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
+                                        tar_markers.push_back(mloci);
+                                   }
+                                   else if(b_use2PointsBB)
+                                   {
+                                        if(bb_2Points.isInner(loci, 0))
+                                        {
+                                             loci = loci-sub_orig2;
+
+                                             assert(loci.x>=0 &&loci.x<sub_szx2 && loci.y>=0 && loci.y<sub_szy2 && loci.z>=0 && loci.z<sub_szz2);
+
+                                             MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
+                                             tar_markers.push_back(mloci);
+                                        }
+                                   }
+                                   else
+                                   {
+                                        MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
+                                        tar_markers.push_back(mloci);
+                                   }
+
                               }
 
                          } // end of tar_markers
