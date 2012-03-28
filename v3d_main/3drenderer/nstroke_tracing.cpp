@@ -1756,19 +1756,21 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
           } // end of if(b_useLog2Method)
      }
 
-     // Save near/far locs for testing:
-     FILE *nfile=fopen("/groups/peng/home/zhouj/work/near_marker.txt", "wt");
-     for(int ii=0; ii<nearpos_vec.size(); ii++)
-          fprintf(nfile, "%f %f %f\n", nearpos_vec.at(ii).x, nearpos_vec.at(ii).y, nearpos_vec.at(ii).z);
-     fclose(nfile);
-     FILE *ffile=fopen("/groups/peng/home/zhouj/work/far_marker.txt", "wt");
-     for(int ii=0; ii<farpos_vec.size(); ii++)
-          fprintf(ffile, "%f %f %f\n", farpos_vec.at(ii).x, farpos_vec.at(ii).y, farpos_vec.at(ii).z);
-     fclose(ffile);
+     // // Save near/far locs for testing:
+     // FILE *nfile=fopen("/groups/peng/home/zhouj/work/near_marker.txt", "wt");
+     // for(int ii=0; ii<nearpos_vec.size(); ii++)
+     //      fprintf(nfile, "%f %f %f\n", nearpos_vec.at(ii).x, nearpos_vec.at(ii).y, nearpos_vec.at(ii).z);
+     // fclose(nfile);
+     // FILE *ffile=fopen("/groups/peng/home/zhouj/work/far_marker.txt", "wt");
+     // for(int ii=0; ii<farpos_vec.size(); ii++)
+     //      fprintf(ffile, "%f %f %f\n", farpos_vec.at(ii).x, farpos_vec.at(ii).y, farpos_vec.at(ii).z);
+     // fclose(ffile);
 
 
 
      PROGRESS_PERCENT(60);
+     // clean pSubdata of subvolume boundingbox
+     //if(pSubdata) {delete [] pSubdata; pSubdata=0;}
 
      // //===============================================================================>>>>>>>>>>>> second fastmarching
      // N = loc_vec.size();
@@ -1924,9 +1926,6 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
      // } // end for the second fastmarching
      // //===============================================================================<<<<<<<<<<<<<
      PROGRESS_PERCENT(90);
-
-     // clean pSubdata of subvolume boundingbox
-     if(pSubdata) {delete [] pSubdata; pSubdata=0;}
 
      N = loc_vec.size(); //100722 RZC
      if(N<1) return; // all points are outside the volume. ZJL 110913

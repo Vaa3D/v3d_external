@@ -3066,7 +3066,6 @@ void XFormWidget::createMapviewControlWin()
     mvControlWin->setWindowFlags( Qt::Widget
             | Qt::Tool
             | Qt::CustomizeWindowHint | Qt::WindowTitleHint  //only title bar, disable buttons on title bar
-            //| Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint  //only close buttons on title bar
             );
 
     mvControlWin->setFixedWidth(250);

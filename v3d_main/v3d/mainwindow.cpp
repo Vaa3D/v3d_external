@@ -1176,7 +1176,6 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                   // level : level nums
                   // outsz[3]
 
-
                   int L = 14; //log(8)/log(2.0);
                   int M = 38; //log(8)/log(2.0);
                   int N = 3;  //log(8)/log(2.0);
