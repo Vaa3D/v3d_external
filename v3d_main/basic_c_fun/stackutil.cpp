@@ -1989,6 +1989,8 @@ int loadTif2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 {
 	int b_error=0;
 
+    try //120329
+    {
 	//fprintf(stderr, "Verify file existence.\n");
 	FILE *tmp = fopen(filename, "r");
 	if (!tmp) {fprintf(stderr, "The file [%s] does not exist.\n", filename); b_error=1; return b_error;}
@@ -2108,6 +2110,12 @@ int loadTif2Stack(char * filename, unsigned char * & img, V3DLONG * & sz, int & 
 		Kill_Stack(tmpstack);
 		tmpstack=0;
 	}
+    }
+ catch (...) {
+     printf("An exception is caught for tiff file reading.\n");
+     b_error=1;
+}
+
 
 	return b_error;
 
