@@ -114,34 +114,27 @@
 }
 
 
-#define PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig) \
+#define PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, i) \
 { \
      if(!outswc.empty()) \
      { \
-          int nn = outswc.size(); \
-          for(int j=nn-1; j>=0; j-- ) \
+          V3DLONG nn = outswc.size(); \
+          if(i == 1) \
+          { \
+              XYZ loci; \
+              loci.x=outswc.at(0)->x + sub_orig.x; \
+              loci.y=outswc.at(0)->y + sub_orig.y; \
+              loci.z=outswc.at(0)->z + sub_orig.z; \
+              loc_vec.push_back(loci); \
+          } \
+          for(V3DLONG j=1; j<nn; j++ ) \
           { \
                XYZ locj; \
                locj.x=outswc.at(j)->x + sub_orig.x; \
                locj.y=outswc.at(j)->y + sub_orig.y; \
                locj.z=outswc.at(j)->z + sub_orig.z; \
-               loc_vec.push_back(locj); \
- \
-               if((last_i==0) && (j==nn-1)) \
-                    middle_vec.push_back(locj); \
-               if((nn>6)&&(j==(int)(nn/2))) \
-               { \
-                    middle_vec.push_back(locj); \
-               } \
-          } \
-     } \
-     else \
-     { \
-          loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno); \
-          if(dataViewProcBox.isInner(loc, 0.5)) \
-          { \
-               dataViewProcBox.clamp(loc); \
-               loc_vec.push_back(loc); \
+               /*if(!(loc_vec.back().x == locj.x && loc_vec.back().y == locj.y && loc_vec.back().z == locj.z)) \*/
+                  loc_vec.push_back(locj); \
           } \
      } \
 }
@@ -1625,18 +1618,18 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
                          if (b_useStrokeBB)  // using stroke to creating a bounding box and do FM
                          {
                               fastmarching_linker(sub_markers, tar_markers, pSubdata, outswc, sub_szx, sub_szy, sub_szz, 0.0);// time_thresh);
-                              PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig);
+                              PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, i);
                          }
                          else if (b_use2PointsBB)  // using stroke to creating a bounding box and do FM
                          {
                               fastmarching_linker(sub_markers, tar_markers, pSubdata2, outswc, sub_szx2, sub_szy2, sub_szz2, 0.0);// time_thresh);
-                              PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig2);
+                              PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig2, i);
                          }
                          else  // This version uses full image as the bounding box
                          {
                               fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz,0.0);// time_thresh);
                               XYZ sub_orig = XYZ(0,0,0);
-                              PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig);
+                              PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, i);
                          }
 
                          //always remember to free the potential-memory-problematic fastmarching_linker return value
@@ -1909,7 +1902,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
 	}
 
 	if (b_use_seriespointclick==false)
-		smooth_curve(loc_vec, 7);
+		smooth_curve(loc_vec, 5);
 #endif
 
      // adaptive curve simpling
