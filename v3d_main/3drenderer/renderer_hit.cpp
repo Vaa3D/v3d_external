@@ -312,7 +312,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			actCurveDirectionInter->setVisible(true);
 			actCurveDirectionInter->setIconVisibleInMenu(true);
 
-               listAct.append(actCurveMarkerLists_fm = new QAction("1-right-stroke to define a 3D curve (fm for marker lists--still testing)", w));
+               listAct.append(actCurveMarkerLists_fm = new QAction("1-right-stroke to define a 3D curve (adjacent-pair fast-marching)", w));
                actCurveMarkerLists_fm->setIcon(QIcon(":/icons/stroke1.svg"));
 			actCurveMarkerLists_fm->setVisible(true);
 			actCurveMarkerLists_fm->setIconVisibleInMenu(true);
@@ -347,7 +347,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
                if(listCurveMarkerPool.size()>=1)
                {
-                    listAct.append(actCurveFrom1Marker_fm = new QAction("Start from the 1st pooled marker to define a 3D curve by FM", w));
+                    listAct.append(actCurveFrom1Marker_fm = new QAction("Start from the 1st pooled marker to define a 3D curve by adjacent-pair fast-marching", w));
 
                     actCurveFrom1Marker_fm->setIcon(QIcon(":/icons/stroke1.svg"));
                     actCurveFrom1Marker_fm->setVisible(true);
@@ -386,7 +386,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			actCurveRefine->setVisible(true);
 			actCurveRefine->setIconVisibleInMenu(true);
 
-               listAct.append(actCurveRefine_fm = new QAction("n-right-strokes to define a 3D curve by fast marching (refine)", w));
+               listAct.append(actCurveRefine_fm = new QAction("n-right-strokes to define a 3D curve by adjacent-pair fast marching (refine)", w));
                actCurveRefine_fm->setIcon(QIcon(":/icons/strokeN.svg"));
 			actCurveRefine_fm->setVisible(true);
 			actCurveRefine_fm->setIconVisibleInMenu(true);
@@ -609,7 +609,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                               actCurveEditRefine->setIconVisibleInMenu(true);
                               //listAct.append(act = new QAction("", w));
 
-                              listAct.append(actCurveEditRefine_fm = new QAction("extend/refine nearest neuron-segment by fast marching", w));
+                              listAct.append(actCurveEditRefine_fm = new QAction("extend/refine nearest neuron-segment by adjacent-pair fast marching", w));
                               actCurveEditRefine_fm->setIcon(QIcon(":/icons/strokeN.svg"));
                               actCurveEditRefine_fm->setVisible(true);
                               actCurveEditRefine_fm->setIconVisibleInMenu(true);
