@@ -3074,18 +3074,14 @@ void XFormWidget::createMapviewControlWin()
     QGridLayout *layout = new QGridLayout(mvControlWin);
 
     // get X Y Z size
-    V3DLONG ts0, ts1, ts2;
+    V3DLONG ts0, ts1, ts2; // block nums
     V3DLONG bs0, bs1, bs2; // block size
     V3DLONG dimx, dimy, dimz;
     mapview.getImageSize(mapview_paras.level, ts0, ts1, ts2, bs0, bs1, bs2);
     dimx = ts0*bs0; dimy = ts1*bs1; dimz = ts2*bs2;
 
-    // V3DLONG dimx = pow( 2.0, mapview_paras.L+mapview_paras.l-mapview_paras.level );
-    // V3DLONG dimy = pow( 2.0, mapview_paras.M+mapview_paras.m-mapview_paras.level );
-    // V3DLONG dimz = pow( 2.0, mapview_paras.N+mapview_paras.n-mapview_paras.level );
-
     // zoom range
-    int dim_zoom= 10; //MIN( MIN(mapview_paras.L+mapview_paras.l, mapview_paras.M+mapview_paras.m), mapview_paras.N+mapview_paras.n );
+    int dim_zoom= 10;
 
     xSlider_mapv = new QScrollBar(Qt::Horizontal);
     xSlider_mapv->setRange(0, dimx-1-mapview_paras.outsz[0]); //need redefine range
@@ -3146,12 +3142,6 @@ void XFormWidget::createMapviewControlWin()
     layout->addWidget(zoomSpinBox_mapv, 3, 14, 1, 6);
 
     // setup connections
-    connect(xSlider_mapv, SIGNAL(valueChanged(int)), this, SLOT(changeXOffset_mapv(int)));
-    connect(ySlider_mapv, SIGNAL(valueChanged(int)), this, SLOT(changeYOffset_mapv(int)));
-    connect(zSlider_mapv, SIGNAL(valueChanged(int)), this, SLOT(changeZOffset_mapv(int)));
-
-    connect(zoomSlider_mapv, SIGNAL(valueChanged(int)), this, SLOT(changeLevel_mapv(int)));
-
     connect(xValueSpinBox_mapv, SIGNAL(valueChanged(int)), xSlider_mapv, SLOT(setValue(int)));
     connect(xSlider_mapv, SIGNAL(valueChanged(int)), xValueSpinBox_mapv, SLOT(setValue(int)));
 
@@ -3164,6 +3154,11 @@ void XFormWidget::createMapviewControlWin()
     connect(zoomSpinBox_mapv, SIGNAL(valueChanged(int)), zoomSlider_mapv, SLOT(setValue(int)));
     connect(zoomSlider_mapv, SIGNAL(valueChanged(int)), zoomSpinBox_mapv, SLOT(setValue(int)));
 
+    connect(xSlider_mapv,    SIGNAL(valueChanged(int)), this, SLOT(changeXOffset_mapv(int)));
+    connect(ySlider_mapv,    SIGNAL(valueChanged(int)), this, SLOT(changeYOffset_mapv(int)));
+    connect(zSlider_mapv,    SIGNAL(valueChanged(int)), this, SLOT(changeZOffset_mapv(int)));
+    connect(zoomSlider_mapv, SIGNAL(valueChanged(int)), this, SLOT(changeLevel_mapv(int)));
+
     mvControlWin->show();
 }
 
@@ -3172,15 +3167,12 @@ void XFormWidget::updateMapviewControlWin(int level)
     mapview_paras.level = level;
 
     // get X Y Z size
-    V3DLONG ts0, ts1, ts2;
+    V3DLONG ts0, ts1, ts2; // block nums
     V3DLONG bs0, bs1, bs2; // block size
     V3DLONG dimx, dimy, dimz;
     mapview.getImageSize(mapview_paras.level, ts0, ts1, ts2, bs0, bs1, bs2);
-    dimx = ts0*bs0; dimy = ts1*bs1; dimz = ts2*bs2;
 
-    // V3DLONG dimx = pow( 2.0, mapview_paras.L+mapview_paras.l-mapview_paras.level );
-    // V3DLONG dimy = pow( 2.0, mapview_paras.M+mapview_paras.m-mapview_paras.level );
-    // V3DLONG dimz = pow( 2.0, mapview_paras.N+mapview_paras.n-mapview_paras.level );
+    dimx = ts0*bs0;   dimy = ts1*bs1;   dimz = ts2*bs2;
 
     xSlider_mapv->setRange(0, dimx-1-mapview_paras.outsz[0]);
     xValueSpinBox_mapv->setRange(0, dimx-1-mapview_paras.outsz[0]);

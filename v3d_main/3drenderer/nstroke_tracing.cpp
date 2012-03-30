@@ -62,33 +62,42 @@
 #define MAX(a, b)  ( ((a)>(b))? (a) : (b) )
 #endif
 
-#define INSERT_NEIGHBOR(nei) {if (dataViewProcBox.isInner(nei, 0.5)) neibs_loci.push_back(nei);}
+//#define INSERT_NEIGHBOR(nei) {if (dataViewProcBox.isInner(nei, 0.5)) neibs_loci.push_back(nei);}
 
-#define GET_INTERSEC_POINT(loc0, loc1, hit_loc, success) \
+#define GET_DIRECTED_INTERSEC_POINT(loc0, loc1, hit_loc, success) \
 { \
+/* qDebug() << dataViewProcBox.x0 << " " <<  dataViewProcBox.x1 << " " << dataViewProcBox.y0 << " " <<  dataViewProcBox.y1 << " " <<dataViewProcBox.z0 << " " <<  dataViewProcBox.z1 << " " ; */ \  
+    if (dataViewProcBox.isInner(loc0, 0)) \
+    { \
+       success = true; hit_loc = loc0;\
+     } \
+    else \
+    { \
      XYZ v_1_0 = loc1-loc0; \
      XYZ D = v_1_0; normalize(D); \
      XYZ loci; \
      float length=dist_L2(loc0, loc1); \
+    success = false; \
      for(int ii=0; ii< length; ii++) \
      { \
           loci = loc0 + D*ii; \
-          if(dataViewProcBox.isInner(loci, 0.0)) \
+          if (dataViewProcBox.isInner(loci, 0)) \
           { \
                hit_loc = loci; \
                success = true; \
                break; \
           } \
      } \
+  }\
 }
 
 #define INTERSET_POINTS_WITH_DATA(loc0_t, loc1_t, loc0, loc1) \
 { \
      bool success0 = false; \
      bool success1 = false; \
-     GET_INTERSEC_POINT(loc0_t, loc1_t, loc0, success0); \
+     GET_DIRECTED_INTERSEC_POINT(loc0_t, loc1_t, loc0, success0); \
      if(!success0) loc0=loc0_t; \
-     GET_INTERSEC_POINT(loc1_t, loc0_t, loc1, success1); \
+     GET_DIRECTED_INTERSEC_POINT(loc1_t, loc0_t, loc1, success1); \
      if(!success1) loc1=loc1_t; \
 }
 
@@ -1381,7 +1390,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 
                     // near/far pos locs for b_useTitltedBB
                     if(b_useTiltedBB)
-                    { // beginning of non b_useTitltedBB
+                    {
                          nearpos_vec.push_back(loc0);
                          farpos_vec.push_back(loc1);
                     }

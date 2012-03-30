@@ -1719,7 +1719,8 @@ void Renderer_gl1::drawNeuronTree(int index)
 				int type = S1.type; 			 // 090925
 				if (editable)
 				{
-					type = S1.seg_id %(neuron_type_color_num -5)+5; //090829, 091027 RZC: segment color using hanchuan's neuron_type_color
+                    int ncolorused = neuron_type_color_num; if (neuron_type_color_num>19) ncolorused = 19; //added by PHC, 20120330                        
+					type = S1.seg_id %(ncolorused -5)+5; //090829, 091027 RZC: segment color using hanchuan's neuron_type_color
 				}
                     neuronColor[0] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][0];
                     neuronColor[1] =  neuron_type_color[ (type>=0 && type<neuron_type_color_num)? type : 0 ][1];
