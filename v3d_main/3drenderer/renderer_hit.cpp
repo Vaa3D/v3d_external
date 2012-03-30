@@ -344,34 +344,25 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			actCurveCreate_pointclick->setVisible(true);
 			actCurveCreate_pointclick->setIconVisibleInMenu(true);
 
-
-               if(listCurveMarkerPool.size()>=1)
+               if(listCurveMarkerPool.size()>=2)
                {
-                    listAct.append(actCurveFrom1Marker_fm = new QAction("Start from the 1st pooled marker to define a 3D curve by adjacent-pair fast-marching", w));
+                    listAct.append(actCurveMarkerPool_fm = new QAction("Using marker pool to define a 3D curve by FM", w));
 
-                    actCurveFrom1Marker_fm->setIcon(QIcon(":/icons/stroke1.svg"));
-                    actCurveFrom1Marker_fm->setVisible(true);
-                    actCurveFrom1Marker_fm->setIconVisibleInMenu(true);
+                    actCurveMarkerPool_fm->setIcon(QIcon(":/icons/strokeN.svg"));
+                    actCurveMarkerPool_fm->setVisible(true);
+                    actCurveMarkerPool_fm->setIconVisibleInMenu(true);
 
-                    if(listCurveMarkerPool.size()>=2)
-                    {
-                         listAct.append(actCurveMarkerPool_fm = new QAction("Using marker pool to define a 3D curve by FM", w));
+                    listAct.append(actCurveCreateMarkerGD = new QAction("Using marker pool to define a 3D curve by GD", w));
 
-                         actCurveMarkerPool_fm->setIcon(QIcon(":/icons/strokeN.svg"));
-                         actCurveMarkerPool_fm->setVisible(true);
-                         actCurveMarkerPool_fm->setIconVisibleInMenu(true);
+                    actCurveCreateMarkerGD->setIcon(QIcon(":/icons/strokeN.svg"));
+                    actCurveCreateMarkerGD->setVisible(true);
+                    actCurveCreateMarkerGD->setIconVisibleInMenu(true);
 
-                         listAct.append(actCurveCreateMarkerGD = new QAction("Using marker pool to define a 3D curve by GD", w));
-
-                         actCurveCreateMarkerGD->setIcon(QIcon(":/icons/strokeN.svg"));
-                         actCurveCreateMarkerGD->setVisible(true);
-                         actCurveCreateMarkerGD->setIconVisibleInMenu(true);
-
-                         // clear listCurveMarkerPool
-                         listAct.append(actClearMarkerPool = new QAction("Clear curve marker pool", w));
-                         actClearMarkerPool->setVisible(true);
-                    }
+                    // clear listCurveMarkerPool
+                    listAct.append(actClearMarkerPool = new QAction("Clear curve marker pool", w));
+                    actClearMarkerPool->setVisible(true);
                }
+
 
                listAct.append(actCurveCreateTest = new QAction("Test multiple curve creation methods", w));
 			actCurveCreateTest->setIcon(QIcon(":/icons/strokeN.svg"));
@@ -478,6 +469,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
                     listAct.append(actAddtoMarkerPool = new QAction("add this marker to the curve marker pool", w));
                     listAct.append(actClearMarkerPool = new QAction("clear the curve marker pool", w));
 
+
 #ifdef _ALLOW_ADVANCE_PROCESSING_MENU_
 #ifdef _ALLOW_LOCAL_ZOOMIN_3D_VIEWER_
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
@@ -570,6 +562,13 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 #endif
 #endif
 				}
+
+
+                    listAct.append(actCurveFrom1Marker_fm = new QAction("Start from this marker to define a 3D curve by adjacent-pair fast-marching", w));
+                    actCurveFrom1Marker_fm->setIcon(QIcon(":/icons/stroke1.svg"));
+                    actCurveFrom1Marker_fm->setVisible(true);
+                    actCurveFrom1Marker_fm->setIconVisibleInMenu(true);
+
 #endif //test_main_cpp
 			}
 
@@ -911,6 +910,22 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	{
 		selectMode = smCurveFrom1Marker_fm;
 		b_addthiscurve = true;
+
+          if (w && curImg)
+		{
+			int tmpind = names[2]-1;
+			if (tmpind>=0)
+			{
+				if (tmpind<curImg->last_hit_landmark) //in this case shift the last hit forward
+					curImg->last_hit_landmark--;
+				else if (tmpind==curImg->last_hit_landmark) //in this case remove the last hit
+					curImg->last_hit_landmark = -1;
+				LocationSimple mk = curImg->listLandmarks.at(tmpind); //get the specified landmark
+                    curveStartMarker.x= mk.x;  curveStartMarker.y = mk.y; curveStartMarker.z= mk.z;
+
+			}
+		}
+
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
      else if (act == actCurveCreateTest) // 20120124 ZJL

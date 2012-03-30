@@ -236,6 +236,8 @@ protected:
 	float sampleScale[5];
 	V3DLONG bufSize[5]; //(x,y,z,c,t) 090731: add time dim
 
+     XYZ curveStartMarker; // ZJL
+
 private:
 	void init_members()
 	{
@@ -245,6 +247,8 @@ private:
 		sShowTrack = 0;
 		curChannel = 0;
           sShowRubberBand = 0; // ZJL 110921
+
+          curveStartMarker = XYZ(0,0,0);
 
 		bShowBoundingBox = true;
 		bShowBoundingBox2 = false;

@@ -66,7 +66,7 @@
 
 #define GET_DIRECTED_INTERSEC_POINT(loc0, loc1, hit_loc, success) \
 { \
-/* qDebug() << dataViewProcBox.x0 << " " <<  dataViewProcBox.x1 << " " << dataViewProcBox.y0 << " " <<  dataViewProcBox.y1 << " " <<dataViewProcBox.z0 << " " <<  dataViewProcBox.z1 << " " ; */ \  
+/* qDebug() << dataViewProcBox.x0 << " " <<  dataViewProcBox.x1 << " " << dataViewProcBox.y0 << " " <<  dataViewProcBox.y1 << " " <<dataViewProcBox.z0 << " " <<  dataViewProcBox.z1 << " " ; */ \
     if (dataViewProcBox.isInner(loc0, 0)) \
     { \
        success = true; hit_loc = loc0;\
@@ -596,9 +596,9 @@ void Renderer_gl1::getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, do
 
      if(selectMode == smCurveFrom1Marker_fm)
      {
-          minx = maxx = listCurveMarkerPool.at(0).x - 1;
-          miny = maxy = listCurveMarkerPool.at(0).y - 1;
-          minz = maxz = listCurveMarkerPool.at(0).z - 1;
+          minx = maxx = curveStartMarker.x - 1;
+          miny = maxy = curveStartMarker.y - 1;
+          minz = maxz = curveStartMarker.z - 1;
      }
      else
      {
@@ -1466,8 +1466,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                               {
                                    if(selectMode == smCurveFrom1Marker_fm)
                                    {
-                                        LocationSimple loci_marker = listCurveMarkerPool.at(0);
-                                        loci.x = loci_marker.x-1; loci.y = loci_marker.y-1; loci.z = loci_marker.z-1;
+                                        loci.x = curveStartMarker.x-1; loci.y = curveStartMarker.y-1; loci.z = curveStartMarker.z-1;
                                         loci = loci-sub_orig2;
                                    }
                                    else
