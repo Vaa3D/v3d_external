@@ -133,7 +133,7 @@
                locj.x=outswc.at(j)->x + sub_orig.x; \
                locj.y=outswc.at(j)->y + sub_orig.y; \
                locj.z=outswc.at(j)->z + sub_orig.z; \
-               /*if(!(loc_vec.back().x == locj.x && loc_vec.back().y == locj.y && loc_vec.back().z == locj.z)) \*/
+               /*if(!(loc_vec.back().x == locj.x && loc_vec.back().y == locj.y && loc_vec.back().z == locj.z)) */ \
                   loc_vec.push_back(locj); \
           } \
      } \
