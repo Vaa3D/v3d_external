@@ -176,7 +176,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
 			if (listNeuronTree.at(names[2]-1).editable) qsName += " (editing)";
 			NeuronTree *p_tree = (NeuronTree *)&(listNeuronTree.at(names[2]-1));
-			qsInfo = info_NeuronNode(findNearestNeuronNode_WinXY(cx, cy, p_tree), p_tree);
+            double best_dist;
+			qsInfo = info_NeuronNode(findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist), p_tree);
 		}break;
 
 		case stPointCloud: {//apo
@@ -1276,7 +1277,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
 		if (p_tree)
 		{
-			V3DLONG n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree);
+            double best_dist;
+			V3DLONG n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);
 			qDebug("detect nearest neuron node [%d] for the [%d] neuron", n_id, names[2]-1);
 
 			NeuronSWC cur_node;
@@ -1335,7 +1337,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
 			V3DLONG n_id;
-			if (p_tree)	{n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree);}
+            double best_dist;
+			if (p_tree)	{n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
 				double d = curImg->proj_trace_measureLengthNeuronSeg(n_id, p_tree);
@@ -1353,7 +1356,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
 			V3DLONG n_id;
-			if (p_tree)	{n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree);}
+			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
 				curImg->proj_trace_changeNeuronSegType(n_id, p_tree);
@@ -1367,7 +1370,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
 			V3DLONG n_id;
-			if (p_tree)	{n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree);}
+			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
 				curImg->proj_trace_changeNeuronSegRadius(n_id, p_tree);
@@ -1382,7 +1385,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
 			V3DLONG n_id;
-			if (p_tree)	{n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree);}
+			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
                     // using the pipeline of "n-right-strokes to define a curve (refine)"
@@ -1408,7 +1411,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
 			V3DLONG n_id;
-			if (p_tree)	{n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree);}
+			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
                     selectMode = smCurveRubberDrag;
@@ -1427,7 +1430,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
 			V3DLONG n_id;
-			if (p_tree)	{n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree);}
+			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
 				curImg->proj_trace_deleteNeuronSeg(n_id, p_tree);
@@ -1442,7 +1445,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
 			if (p_tree)
 			{
-				V3DLONG n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree);
+                double best_dist;
+				V3DLONG n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);
 				qDebug("detect nearest neuron node [%d] for the [%d] neuron", n_id, names[2]-1);
 
 				NeuronSWC cur_node;
@@ -1507,7 +1511,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
 			V3DLONG n_id;
-			if (p_tree)	{n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree);}
+			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
 				curImg->proj_trace_joinNearbyNeuronSegs_pathclick(n_id, p_tree);
@@ -1521,7 +1525,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
 			V3DLONG n_id;
-			if (p_tree)	{n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree);}
+			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
 				curImg->proj_trace_joinNearbyNeuronSegs_markclick(n_id, p_tree);
@@ -1535,7 +1539,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
 			V3DLONG n_id;
-			if (p_tree)	{n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree);}
+			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
 				curImg->proj_trace_joinAllNeuronSegs(n_id, p_tree);
@@ -1550,7 +1554,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
 			V3DLONG n_id;
-			if (p_tree)	{n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree);}
+			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
 				curImg->proj_trace_deformNeuronSeg(n_id, p_tree);
@@ -1564,7 +1568,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
 			V3DLONG n_id;
-			if (p_tree)	{n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree);}
+			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
 				curImg->proj_trace_profileNeuronSeg(n_id, p_tree, true);
@@ -1578,7 +1582,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
 			V3DLONG n_id;
-			if (p_tree)	{n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree);}
+			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
 				curImg->proj_trace_mergeOneClosebyNeuronSeg(n_id, p_tree);
@@ -1598,7 +1602,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	else if (act==actDispNeuronNodeInfo)
 	{
 		NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
-		V3DLONG n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree);
+        double best_dist; 
+		V3DLONG n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);
 		QString tmpstr, tmpstr1;
 		tmpstr.setNum(n_id); tmpstr.prepend("The neuron node has row index ");
 		tmpstr.append("\n");
@@ -2661,7 +2666,7 @@ QString Renderer_gl1::info_SurfVertex(int n_id, Triangle * face, int label)
 
 
 
-V3DLONG Renderer_gl1::findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * ptree) //find the nearest node in a neuron in XY project of the display window
+V3DLONG Renderer_gl1::findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * ptree, double &best_dist) //find the nearest node in a neuron in XY project of the display window
 {
 	if (!ptree) return -1;
 	QList <NeuronSWC> *p_listneuron = &(ptree->listNeuron);
@@ -2670,7 +2675,7 @@ V3DLONG Renderer_gl1::findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * p
 	//qDebug()<<"win click position:"<<cx<<" "<<cy;
      GLdouble px, py, pz, ix, iy, iz;
 
-	V3DLONG best_ind=-1; double best_dist=-1;
+	V3DLONG best_ind=-1; best_dist=-1;
 	for (V3DLONG i=0;i<p_listneuron->size();i++)
 	{
 		ix = p_listneuron->at(i).x, iy = p_listneuron->at(i).y, iz = p_listneuron->at(i).z;
@@ -2957,8 +2962,9 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(curEditingNeuron-1)));
 			if (p_tree)
 			{
-				V3DLONG n_id_start = findNearestNeuronNode_WinXY(list_listCurvePos.at(0).at(0).x, list_listCurvePos.at(0).at(0).y, p_tree);
-				V3DLONG n_id_end = findNearestNeuronNode_WinXY(list_listCurvePos.at(0).at(N-1).x, list_listCurvePos.at(0).at(N-1).y, p_tree);
+                double best_dist;
+				V3DLONG n_id_start = findNearestNeuronNode_WinXY(list_listCurvePos.at(0).at(0).x, list_listCurvePos.at(0).at(0).y, p_tree, best_dist);
+				V3DLONG n_id_end = findNearestNeuronNode_WinXY(list_listCurvePos.at(0).at(N-1).x, list_listCurvePos.at(0).at(N-1).y, p_tree, best_dist);
                                 qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
 
 				double th_merge = 5;

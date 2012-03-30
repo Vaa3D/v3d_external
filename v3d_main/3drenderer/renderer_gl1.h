@@ -216,7 +216,7 @@ public:
 	QString info_SurfVertex(int vertex_i, Triangle * triangle, int label);
 
 	QList <NeuronTree> * getHandleNeuronTrees() {return &listNeuronTree;}
-	V3DLONG findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * ptree);	//find the nearest node in a neuron in XY project of the display window.//return the index of the respective neuron node
+	V3DLONG findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * ptree, double & best_dist);	//find the nearest node in a neuron in XY project of the display window.//return the index of the respective neuron node
 
 	QList <CellAPO> *getHandleAPOCellList() {return &listCell;}
 
@@ -316,7 +316,7 @@ protected:
      void getSubVolFrom3Points(XYZ & loc0_last, XYZ & loc0, XYZ & loc1, int chno, double* &pSubdata,
           XYZ &sub_orig, V3DLONG &sub_szx, V3DLONG &sub_szy, V3DLONG &sub_szz);
 
-     bool mergeFirstNode(const MarkerPos &pos, XYZ &mean_loc, XYZ &nearest_loc);
+     bool pickSeedpointFromExistingCurves(const MarkerPos &pos, XYZ &nearest_loc); //change to this name, by PHC, 20120330
 
      void vecToNeuronTree(NeuronTree &SS, vector<XYZ> loc_list);
      void getMidRandomLoc(MarkerPos pos, int chno, XYZ &mid_loc);

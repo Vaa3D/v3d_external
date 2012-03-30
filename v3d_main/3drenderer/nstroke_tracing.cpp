@@ -289,8 +289,9 @@ void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector
 			if (p_tree)
 			{
                     // at(0) to at(index) ZJL 110901
-				V3DLONG n_id_start = findNearestNeuronNode_WinXY(list_listCurvePos.at(index).at(0).x, list_listCurvePos.at(index).at(0).y, p_tree);
-				V3DLONG n_id_end = findNearestNeuronNode_WinXY(list_listCurvePos.at(index).at(N-1).x, list_listCurvePos.at(index).at(N-1).y, p_tree);
+                double best_dist;
+				V3DLONG n_id_start = findNearestNeuronNode_WinXY(list_listCurvePos.at(index).at(0).x, list_listCurvePos.at(index).at(0).y, p_tree, best_dist);
+				V3DLONG n_id_end = findNearestNeuronNode_WinXY(list_listCurvePos.at(index).at(N-1).x, list_listCurvePos.at(index).at(N-1).y, p_tree, best_dist);
                                 qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
 
 				double th_merge = 5;
@@ -1252,11 +1253,27 @@ V3DLONG Renderer_gl1::findNearestNeuronNode_Loc(XYZ &loc, NeuronTree *ptree)
 }
 
 
-void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index)
+void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //used for marker-pool type curve-generating
+                                            vector <XYZ> & loc_vec,  //the ouput 3D curve
+                                            int index //the idnex to which stroke this function is computing on, assuming there may be multiple strokes
+                                            )
 {
 	bool b_use_seriespointclick = (loc_vec_input.size()>0) ? true : false;
-     if (b_use_seriespointclick==false && list_listCurvePos.size()<1)  return;
-
+    if (b_use_seriespointclick==false && list_listCurvePos.size()<1)  return;
+    if (index < 0 || index>=list_listCurvePos.size()) 
+    {
+        v3d_msg("The index variable in solveCurveMarkerLists_fm() is incorrect. Chgeck your program.\n");
+      return;//by PHC
+    }
+    else
+    {
+        if (list_listCurvePos.at(index).size()<=0)
+        {
+            v3d_msg("You enter an empty curve for solveCurveMarkerLists_fm(). Check your code.\n");
+            return;
+        }
+    }
+        
 	bool b_use_last_approximate=true;
 
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
@@ -1389,7 +1406,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                     INTERSET_POINTS_WITH_DATA(loc0_t, loc1_t, loc0, loc1);
 
                     // near/far pos locs for b_useTitltedBB
-                    if(b_useTiltedBB)
+                    if(b_useTiltedBB) // still not finished
                     {
                          nearpos_vec.push_back(loc0);
                          farpos_vec.push_back(loc1);
@@ -1407,21 +1424,25 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                          V3DLONG sub_szx2, sub_szy2, sub_szz2;
                          BoundingBox bb_2Points;
                          XYZ loci0; //meanshift point for i==0
-                         if(i==1)
+                         if(i==1) //only do this for the first point
                          {
-                              last_i=0; // for the first time run
+                             //the logic of this section need change. no need to use meanshift before the testing of the potential intersection point with existing curves
 
-                              XYZ loc00, loc01;
-                              MARKERPOS_TO_NEAR_FAR_LOCS(0, loc00, loc01);
-                              loci0 = getCenterOfLineProfile(loc00, loc01, clipplane, chno);
+                             const MarkerPos & pos_0 = list_listCurvePos.at(index).at(0); //get the first point, note that already check list_listCurvePos.at(index) has at least one node 
+                             XYZ nearest_loc;
+                             if( pickSeedpointFromExistingCurves(pos_0, nearest_loc) ) // if there is a nearest curve, use the nearest loc as the start point
+                             {
+                                 loci0 = nearest_loc;
+                                 v3d_msg("Use the existing curve point as starting location.\n",0);
+                             }
+                             else //use mean-shift
+                             {
+                                 XYZ loc00, loc01;
+                                 MARKERPOS_TO_NEAR_FAR_LOCS(0, loc00, loc01);
+                                 loci0 = getCenterOfLineProfile(loc00, loc01, clipplane, chno);
+                             }
 
-                              XYZ nearest_loc;
-                              XYZ mean_loc=loci0;
-                              const MarkerPos & pos_0 = list_listCurvePos.at(index).at(0);
-                              if( mergeFirstNode(pos_0, loci0, nearest_loc) ) // if there is a nearest curve, use the nearest loc as the start point
-                              {
-                                   loci0 = nearest_loc;
-                              }
+                             last_i=0; // for the first time run
                          }
 
                          if(b_use2PointsBB)
@@ -2800,10 +2821,10 @@ void Renderer_gl1::projectSWC_XY_YZ_XZ(unsigned char * &pXY, unsigned char * &pY
 }
 
 
-bool Renderer_gl1::mergeFirstNode(const MarkerPos &pos, XYZ &mean_loc, XYZ &nearest_loc)
+bool Renderer_gl1::pickSeedpointFromExistingCurves(const MarkerPos &pos, XYZ &nearest_loc)
 {
      MainWindow* V3Dmainwindow = 0;
-	V3Dmainwindow = v3dr_getV3Dmainwindow(_idep);
+	 V3Dmainwindow = v3dr_getV3Dmainwindow(_idep);
 
      if (V3Dmainwindow && V3Dmainwindow->global_setting.b_3dcurve_autoconnecttips)
      {
@@ -2812,66 +2833,17 @@ bool Renderer_gl1::mergeFirstNode(const MarkerPos &pos, XYZ &mean_loc, XYZ &near
                NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(curEditingNeuron-1)));
                if (p_tree)
                {
-                    // at(0) to at(index) ZJL 110901
-                    V3DLONG n_id_start = findNearestNeuronNode_WinXY(pos.x, pos.y, p_tree);
-
-                    double th_merge = 5;
-
-                    bool b_start_merged=false;
-                    NeuronSWC cur_node;
-                    if (n_id_start>=0)
-                    {
-                         cur_node = p_tree->listNeuron.at(n_id_start);
-                         qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
-                         XYZ cur_node_xyz = XYZ(cur_node.x, cur_node.y, cur_node.z);
-
-                         // using the line (loc00, loc01 to justify)
-                         // float length_1st = dist_L2(loc00, loc01);
-                         // if (length_1st<1.0)
-                         // {
-                         //      XYZ loci=(loc00+loc01)/2.0;
-                         //      if (dist_L2(cur_node_xyz, loci)<th_merge)
-                         //      {
-                         //           nearest_loc = cur_node_xyz;
-                         //           b_start_merged = true;
-                         //           qDebug()<<"force set the first point of this curve to the above neuron node as they are close.";
-                         //           return true;
-                         //      }else
-                         //           return false;
-
-                         // }
-                         // else
-                         // {
-                         //      XYZ v_1_0_1st = loc01-loc00;
-                         //      XYZ D_1st = v_1_0_1st; normalize(D_1st);
-
-                         //      for(int ii=0; ii<=(int)(length_1st+0.5); ii++)
-                         //      {
-                         //           XYZ loci = loc00 + D_1st*ii; // incease 1 each step
-
-                         //           if (dist_L2(cur_node_xyz, loci)<th_merge)
-                         //           {
-                         //                nearest_loc = cur_node_xyz;
-                         //                b_start_merged = true;
-                         //                qDebug()<<"force set the first point of this curve to the above neuron node as they are close.";
-                         //                return true;
-                         //           }
-
-                         //      }
-                         //      return false;
-                         // }
-
-                         // using mean_loc to justify
-                         if (dist_L2(cur_node_xyz, mean_loc)<th_merge)
-                         {
-                              nearest_loc = cur_node_xyz;
-                              b_start_merged = true;
-                              qDebug()<<"force set the first point of this curve to the above neuron node as they are close.";
-                              return true;
-                         }
-
-                    }
-
+                   double best_dist;
+                   V3DLONG n_id_start = findNearestNeuronNode_WinXY(pos.x, pos.y, p_tree, best_dist);
+                   if (best_dist<=5 && n_id_start>=0) //this means it is valid!
+                   {
+                       nearest_loc = p_tree->listNeuron.at(n_id_start);
+                       return true;
+                   }
+                   else
+                   {
+                       return false;
+                   }
                }
           }
      }

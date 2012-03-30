@@ -2415,7 +2415,8 @@ int Renderer_gl1::hitMenu(int x, int y, bool b_glwidget)
 
                     if (listNeuronTree.at(hitNames[2]-1).editable) qsName += " (editing)";
                     NeuronTree *p_tree = (NeuronTree *)&(listNeuronTree.at(hitNames[2]-1));
-                    qsInfo = info_NeuronNode(findNearestNeuronNode_WinXY(x, y, p_tree), p_tree);
+                    double bd;
+                    qsInfo = info_NeuronNode(findNearestNeuronNode_WinXY(x, y, p_tree, bd), p_tree);
             }break;
 
             case stPointCloud: {//apo
