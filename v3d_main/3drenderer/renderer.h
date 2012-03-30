@@ -63,13 +63,13 @@ public:
 					};
 	enum SelectMode {smObject=0, smMultipleObject,
 					smMarkerCreate1, smMarkerCreate2, smMarkerCreate3,
-					smMarkerRefineT, smMarkerRefineC,
+                         smMarkerRefineT, smMarkerRefineC,
 					smCurveCreate1, smCurveCreate2, smCurveCreate3, smCurveCreate_pointclick,
 					smCurveCreateM,
                          // for curve refinement, 110831 ZJL
                       smCurveRefineInit, smCurveRefineLast, smCurveEditRefine, smCurveEditRefine_fm, smCurveRubberDrag,
                       smCurveDirectionInter, smCurveCreate_pointclick_fm, smCurveRefine_fm, smCurveRefine_ms,
-                      smCurveMarkerLists_fm, smCurveMarkerPool_fm, smCurveCreateMarkerGD,
+                      smCurveMarkerLists_fm, smCurveMarkerPool_fm, smCurveCreateMarkerGD,smCurveFrom1Marker_fm,
                       smCurveCreateTest,
 					};
 protected:

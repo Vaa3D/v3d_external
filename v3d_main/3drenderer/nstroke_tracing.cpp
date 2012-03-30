@@ -93,6 +93,51 @@
 }
 
 
+#define MARKERPOS_TO_NEAR_FAR_LOCS(i, loc0, loc1) \
+{ \
+     const MarkerPos & pos = list_listCurvePos.at(index).at(i); \
+     double clipplane[4] = { 0.0,  0.0, -1.0,  0 }; \
+     clipplane[3] = viewClip; \
+     ViewPlaneToModel(pos.MV, clipplane); \
+     XYZ loc0_t, loc1_t; \
+     _MarkerPos_to_NearFarPoint(pos, loc0_t, loc1_t); \
+     INTERSET_POINTS_WITH_DATA(loc0_t, loc1_t, loc0, loc1); \
+}
+
+
+#define PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig) \
+{ \
+     if(!outswc.empty()) \
+     { \
+          int nn = outswc.size(); \
+          for(int j=nn-1; j>=0; j-- ) \
+          { \
+               XYZ locj; \
+               locj.x=outswc.at(j)->x + sub_orig.x; \
+               locj.y=outswc.at(j)->y + sub_orig.y; \
+               locj.z=outswc.at(j)->z + sub_orig.z; \
+               loc_vec.push_back(locj); \
+ \
+               if((last_i==0) && (j==nn-1)) \
+                    middle_vec.push_back(locj); \
+               if((nn>6)&&(j==(int)(nn/2))) \
+               { \
+                    middle_vec.push_back(locj); \
+               } \
+          } \
+     } \
+     else \
+     { \
+          loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno); \
+          if(dataViewProcBox.isInner(loc, 0.5)) \
+          { \
+               dataViewProcBox.clamp(loc); \
+               loc_vec.push_back(loc); \
+          } \
+     } \
+}
+
+
 
 void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index)
 {
@@ -539,8 +584,18 @@ void Renderer_gl1::getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, do
 
      // find min-max of x y z in loc_veci
      float minx, miny, minz, maxx, maxy, maxz;
-     minx = miny = minz = INF;
-     maxx = maxy = maxz = 0;
+
+     if(selectMode == smCurveFrom1Marker_fm)
+     {
+          minx = maxx = listCurveMarkerPool.at(0).x - 1;
+          miny = maxy = listCurveMarkerPool.at(0).y - 1;
+          minz = maxz = listCurveMarkerPool.at(0).z - 1;
+     }
+     else
+     {
+          minx = miny = minz = INF;
+          maxx = maxy = maxz = 0;
+     }
 
      // Directly using stroke pos for minloc, maxloc
      for(int i=0; i<pos.size(); i++ )
@@ -591,7 +646,7 @@ void Renderer_gl1::getSubVolFrom2MarkerPos(vector<MarkerPos> & pos, int chno, do
           }
      }
 
-     int boundary = 5; // need to test for this boundary value. It seems that 0 is OK
+     int boundary = 3; // need to test for this boundary value. It seems that 0 is OK
 
      minloc.x = minx - boundary;
      minloc.y = miny - boundary;
@@ -1255,7 +1310,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
      V3DLONG sub_szx, sub_szy, sub_szz;
      bool b_useStrokeBB = false;           // use the stroke decided BB
      bool b_use2PointsBB = !b_useStrokeBB; // use the two-point decided BB
-     //bool b_useLog2Method=false;
+     bool b_useTiltedBB=false;
 
      vector<XYZ> nearpos_vec, farpos_vec; // for near/far locs testing
      nearpos_vec.clear();
@@ -1274,124 +1329,64 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 	{
 		N = list_listCurvePos.at(index).size(); // change from 0 to index for different curves, ZJL
 
-          // if(b_useLog2Method)
-          // {
-          //      double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
-          //      clipplane[3] = viewClip;
+          // resample curve strokes
+          vector<int> inds; // reserved stroke index
+          resampleCurveStrokes(0, chno, inds);
 
-          //      vector<MyMarker> nearpos_vec, farpos_vec;
-          //      nearpos_vec.clear();
-          //      farpos_vec.clear();
-          //      for(int ii=0; ii<N; ii++)
-          //      {
-          //           const MarkerPos & pos = list_listCurvePos.at(index).at(ii);
-          //           ViewPlaneToModel(pos.MV, clipplane);
-          //           XYZ loc0, loc1;
-          //           _MarkerPos_to_NearFarPoint(pos, loc0, loc1);
-
-          //           nearpos_vec.push_back(MyMarker(loc0.x, loc0.y, loc0.z));
-          //           farpos_vec.push_back(MyMarker(loc1.x, loc1.y, loc1.z));
-          //      }
-          //      // FILE *nfile=fopen("/groups/peng/home/zhouj/work/near_marker.txt", "wt");
-          //      // for(int ii=0; ii<nearpos_vec.size(); ii++)
-          //      //      fprintf(nfile, "%f %f %f\n", nearpos_vec.at(ii).x, nearpos_vec.at(ii).y, nearpos_vec.at(ii).z);
-          //      // fclose(nfile);
-          //      // FILE *ffile=fopen("/groups/peng/home/zhouj/work/far_marker.txt", "wt");
-          //      // for(int ii=0; ii<farpos_vec.size(); ii++)
-          //      //      fprintf(ffile, "%f %f %f\n", farpos_vec.at(ii).x, farpos_vec.at(ii).y, farpos_vec.at(ii).z);
-          //      // fclose(ffile);
-
-          //      // // call fastmarching
-          //      vector<MyMarker*> outswc;     outswc.clear();
-          //      // process outswc
-          //      if(!outswc.empty())
-          //      {
-          //           // the 1st loc in outswc is the last pos got in fm
-          //           int nn = outswc.size();
-          //           for(int j=nn-1; j>=0; j-- )
-          //           {
-          //                XYZ locj;
-          //                locj.x=outswc.at(j)->x;
-          //                locj.y=outswc.at(j)->y;
-          //                locj.z=outswc.at(j)->z;
-
-          //                loc_vec.push_back(locj);
-          //           }
-
-          //      }else
-          //      {
-          //           v3d_msg("Fastmarching failed for curve drawing!", 0);
-          //      }
-          // }
-          // else // not using b_useLog2Method
+          if(b_useTiltedBB)
           {
+               XYZ loci0, loci1;
+               MARKERPOS_TO_NEAR_FAR_LOCS(0, loci0, loci1);
+               nearpos_vec.push_back(loci0);
+               farpos_vec.push_back(loci1);
+          }
 
-               // resample curve strokes
-               vector<int> inds; // reserved stroke index
-               resampleCurveStrokes(0, chno, inds);
+          int last_i; // used for computing 2points_bb
+          for (int i=1; i<N; i++) // 0 must be in
+          {
+               // check whether i is in inds
+               bool b_inds=false;
 
-               int last_i; // used for computing 2points_bb
-               for (int i=1; i<N; i++) // 0 must be in
+               if(inds.empty())
                {
-                    // check whether i is in inds
-                    bool b_inds=false;
-
-                    if(inds.empty())
+                    b_inds=true;
+               }
+               else
+               {
+                    for(int ii=1; ii<inds.size(); ii++)
                     {
-                         b_inds=true;
-                    }
-                    else
-                    {
-                         for(int ii=1; ii<inds.size(); ii++)
+                         if(i == inds.at(ii))
                          {
-                              if(i == inds.at(ii))
-                              {
-                                   b_inds=true;
-                                   break;
-                              }
+                              b_inds=true;
+                              break;
                          }
                     }
+               }
 
-                    // only process resampled strokes
-                    if(i==1 || i==(N-1) || b_inds) // make sure to include the last N-1 pos
-                    {
-                         const MarkerPos & pos = list_listCurvePos.at(index).at(i); // change from 0 to index for different curves, ZJL
-                         //100730 RZC, in View space, keep for dot(clip, pos)>=0
-                         double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
-                         clipplane[3] = viewClip;
-                         ViewPlaneToModel(pos.MV, clipplane);
+               // only process resampled strokes
+               if(i==1 || i==(N-1) || b_inds) // make sure to include the last N-1 pos
+               {
+                    const MarkerPos & pos = list_listCurvePos.at(index).at(i); // change from 0 to index for different curves, ZJL
+                    double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+                    clipplane[3] = viewClip;
+                    ViewPlaneToModel(pos.MV, clipplane);
 
-                         // XYZ loc0, loc1;
-                         // _MarkerPos_to_NearFarPoint(pos, loc0, loc1);
+                    // this is intersection points with view volume
+                    XYZ loc0_t, loc1_t;
+                    _MarkerPos_to_NearFarPoint(pos, loc0_t, loc1_t);
 
-                         // this is intersection points with view volume
-                         XYZ loc0_t, loc1_t;
-                         _MarkerPos_to_NearFarPoint(pos, loc0_t, loc1_t);
+                    //get intersection points with data volume
+                    XYZ loc0, loc1;
+                    INTERSET_POINTS_WITH_DATA(loc0_t, loc1_t, loc0, loc1);
 
-                         // get intersection points with data volume
-                         XYZ loc0, loc1;
-                         INTERSET_POINTS_WITH_DATA(loc0_t, loc1_t, loc0, loc1);
-
-                         // near/far pos locs for testing
+                    // near/far pos locs for b_useTitltedBB
+                    if(b_useTiltedBB)
+                    { // beginning of non b_useTitltedBB
                          nearpos_vec.push_back(loc0);
                          farpos_vec.push_back(loc1);
-
-                         // XYZ loc0_t, loc1_t;
-                         // _MarkerPos_to_NearFarPoint(pos, loc0_t, loc1_t);
-
-                         // XYZ loc0, loc1;
-                         // // // check line_box intersection points
-                         // // CheckLineBox( dataViewProcBox.V0(), dataViewProcBox.V1(), loc0_t, loc1_t, loc0);
-                         // // CheckLineBox( dataViewProcBox.V0(), dataViewProcBox.V1(), loc1_t, loc0_t, loc1);
-                         // // use another intersection version
-                         // getIntersectPt(loc0_t, loc1_t,  dataViewProcBox, loc0);
-                         // getIntersectPt(loc1_t, loc0_t,  dataViewProcBox, loc1);
-
-
-
-                         qDebug()<<"loc0.x, loc0.y, loc0.z:" << loc0.x << loc0.y <<loc0.z;
-                         qDebug()<<"loc1.x, loc1.y, loc1.z:" << loc1.x << loc1.y <<loc1.z;
-
+                    }
+                    else// beginning of non b_useTitltedBB
+                    {
                          float length01 = dist_L2(loc0, loc1);
                          // preparing the two-markerpos decided boundingbox
 
@@ -1407,35 +1402,13 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                          {
                               last_i=0; // for the first time run
 
-                              const MarkerPos & pos_0 = list_listCurvePos.at(index).at(0);
-                              double clipplane0[4] = { 0.0,  0.0, -1.0,  0 };
-                              clipplane0[3] = viewClip;
-                              ViewPlaneToModel(pos_0.MV, clipplane0);
-                              // XYZ loc00, loc01;
-                              // _MarkerPos_to_NearFarPoint(pos_0, loc00, loc01);
-
-                              // get intersection points with data volume
-                              XYZ loc00_t, loc01_t;
-                              _MarkerPos_to_NearFarPoint(pos_0, loc00_t, loc01_t);
                               XYZ loc00, loc01;
-                              INTERSET_POINTS_WITH_DATA(loc00_t, loc01_t, loc00, loc01);
-
-                              // XYZ loc00_t, loc01_t;
-                              // _MarkerPos_to_NearFarPoint(pos, loc00_t, loc01_t);
-                              // ==============================================<<<<<<<<<<<<<<<<<<<<<<<
-
-                              // XYZ loc00, loc01;
-                              // // check line_box intersection points
-                              // CheckLineBox( dataViewProcBox.V0(), dataViewProcBox.V1(), loc00_t, loc01_t, loc00);
-                              // CheckLineBox( dataViewProcBox.V0(), dataViewProcBox.V1(), loc01_t, loc00_t, loc01);
-
-                              qDebug()<<"loc00.x, loc00.y, loc00.z:" << loc00.x << loc00.y <<loc00.z;
-                              qDebug()<<"loc01.x, loc01.y, loc01.z:" << loc01.x << loc01.y <<loc01.z;
-
+                              MARKERPOS_TO_NEAR_FAR_LOCS(0, loc00, loc01);
                               loci0 = getCenterOfLineProfile(loc00, loc01, clipplane, chno);
 
                               XYZ nearest_loc;
                               XYZ mean_loc=loci0;
+                              const MarkerPos & pos_0 = list_listCurvePos.at(index).at(0);
                               if( mergeFirstNode(pos_0, loci0, nearest_loc) ) // if there is a nearest curve, use the nearest loc as the start point
                               {
                                    loci0 = nearest_loc;
@@ -1449,30 +1422,10 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                               MarkerPos pos_last = list_listCurvePos.at(index).at(last_i);
                               pos_vec.push_back(pos_last);
                               pos_vec.push_back(pos);
+
                               XYZ max_loc2;
                               getSubVolFrom2MarkerPos(pos_vec, chno, pSubdata2, sub_orig2, max_loc2, sub_szx2, sub_szy2, sub_szz2);
                               bb_2Points = BoundingBox(sub_orig2, max_loc2);
-                              // ===============================>>>>>>>>>>>>>>>>>>>
-                              // using 3 loc points to get BB
-                              // using lastpos infor to get loc
-                              // XYZ lastpos;
-                              // if(i==1)
-                              //      lastpos = loci0;
-                              // else
-                              //      lastpos = loc_vec.at(last_j);
-                              // if (dataViewProcBox.isInner(lastpos, 0.5))
-                              // {
-                              //      XYZ v_1_0 = loc1-loc0, v_0_last=loc0-lastpos;
-                              //      XYZ nearestloc = loc0-v_1_0*dot(v_0_last, v_1_0)/dot(v_1_0, v_1_0); //since loc0!=loc1, this is safe
-
-                              //      double ranget = (length01/2.0)>10?10:(length01/2.0); //at most 30 pixels aparts
-
-                              //      XYZ D = v_1_0; normalize(D);
-                              //      loc0 = nearestloc - D*(ranget);
-                              //      loc1 = nearestloc + D*(ranget);
-                              //      getSubVolFrom3Points(lastpos, loc0, loc1, chno, pSubdata2, sub_orig2, sub_szx2, sub_szy2, sub_szz2);
-                              // }
-                              // ================================<<<<<<<<<<<<<<<<<<<<<<<
 
                               qDebug()<<"Debug last_i= "<< last_i;
                               qDebug()<<"Debug i= "<< i;
@@ -1491,7 +1444,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                          vector<MyMarker> tar_markers; tar_markers.clear();
                          vector<MyMarker*> outswc;     outswc.clear();
 
-                         if(i==1)//(last_j<0) //i==0
+                         if(i==1)//
                          {
                               // using meanshift to get the first point
                               XYZ loci = loci0;
@@ -1501,10 +1454,19 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                               if(b_useStrokeBB)
                                    loci = loci-sub_orig;
                               else if(b_use2PointsBB)
-                                   loci = loci-sub_orig2;
-
-                              MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
-                              sub_markers.push_back(mloci);
+                              {
+                                   if(selectMode == smCurveFrom1Marker_fm)
+                                   {
+                                        LocationSimple loci_marker = listCurveMarkerPool.at(0);
+                                        loci.x = loci_marker.x-1; loci.y = loci_marker.y-1; loci.z = loci_marker.z-1;
+                                        loci = loci-sub_orig2;
+                                   }
+                                   else
+                                   {
+                                        loci = loci-sub_orig2;
+                                   }
+                              }
+                              sub_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
                               //==============================================================<<<<<<<
 
                               // get the loc with a random middle loc
@@ -1533,9 +1495,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                               //      {
                               //           loci = loci-sub_orig2;
                               //      }
-
-                              //      MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
-                              //      sub_markers.push_back(mloci);
+                              //      sub_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
                               // }
                               // else
                               // {
@@ -1545,22 +1505,26 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                               //      for(int ii=0; ii< length_1st; ii++)
                               //      {
                               //           loci = loc00 + D_1st*ii; // incease 1 each step
-                              //           if(dataViewProcBox.isInner(loci, 0.5))
+                              //           if(b_useStrokeBB)
                               //           {
-                              //                if(b_useStrokeBB)
-                              //                     loci = loci-sub_orig;
-                              //                else if(b_use2PointsBB)
+                              //                loci = loci-sub_orig;
+                              //                sub_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
+                              //           }
+                              //           else if(b_use2PointsBB)
+                              //           {
+                              //                if(bb_2Points.isInner(loci, 0))
+                              //                {
                               //                     loci = loci-sub_orig2;
-                              //                MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
-                              //                sub_markers.push_back(mloci);
+                              //                     sub_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
+                              //                }
+                              //           }
+                              //           else
+                              //           {
+                              //                sub_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
                               //           }
                               //      }
-                              //      if(b_useStrokeBB)
-                              //           loci = loc01-sub_orig;
-                              //      else if(b_use2PointsBB)
-                              //           loci = loc01-sub_orig2;
-                              //      sub_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
                               // }// end of if (length_1st<1.0)
+                              // // =================================================================
 
                          }
                          else
@@ -1572,8 +1536,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                               else if(b_use2PointsBB)
                                    lastpos = lastpos-sub_orig2;
 
-                              MyMarker mlastloc = MyMarker(lastpos.x, lastpos.y, lastpos.z);
-                              sub_markers.push_back(mlastloc);
+                              sub_markers.push_back(MyMarker(lastpos.x, lastpos.y, lastpos.z));
                          } // end of preparing sub_markers
 
                          // preparing tar_markers
@@ -1586,9 +1549,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                               else if(b_use2PointsBB)
                                    loci = loci-sub_orig2;
 
-                              MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
-                              tar_markers.push_back(mloci);
-
+                              tar_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
                          }
                          else
                          {
@@ -1600,10 +1561,8 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 
                                    if(b_useStrokeBB)
                                    {
-
                                         loci = loci-sub_orig; // use stroke bounding box
-                                        MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
-                                        tar_markers.push_back(mloci);
+                                        tar_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
                                    }
                                    else if(b_use2PointsBB)
                                    {
@@ -1611,16 +1570,14 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                                         {
                                              loci = loci-sub_orig2;
 
-                                             assert(loci.x>=0 &&loci.x<sub_szx2 && loci.y>=0 && loci.y<sub_szy2 && loci.z>=0 && loci.z<sub_szz2);
+                                             //assert(loci.x>=0 && loci.x<sub_szx2 && loci.y>=0 && loci.y<sub_szy2 && loci.z>=0 && loci.z<sub_szz2);
 
-                                             MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
-                                             tar_markers.push_back(mloci);
+                                             tar_markers.push_back( MyMarker(loci.x, loci.y, loci.z));
                                         }
                                    }
                                    else
                                    {
-                                        MyMarker mloci = MyMarker(loci.x, loci.y, loci.z);
-                                        tar_markers.push_back(mloci);
+                                        tar_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
                                    }
 
                               }
@@ -1639,131 +1596,67 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
                          if (b_useStrokeBB)  // using stroke to creating a bounding box and do FM
                          {
                               fastmarching_linker(sub_markers, tar_markers, pSubdata, outswc, sub_szx, sub_szy, sub_szz, 0.0);// time_thresh);
-                              if(!outswc.empty())
-                              {
-                                   // the 1st loc in outswc is the last pos got in fm
-                                   int nn = outswc.size();
-                                   for(int j=nn-1; j>=0; j-- )
-                                   {
-                                        XYZ locj;
-                                        locj.x=outswc.at(j)->x + sub_orig.x;
-                                        locj.y=outswc.at(j)->y + sub_orig.y;
-                                        locj.z=outswc.at(j)->z + sub_orig.z;
-
-                                        loc_vec.push_back(locj);
-
-                                        // record the middle loc in this seg for the second fast marching
-                                        if((last_i==0) && (j==nn-1))
-                                             middle_vec.push_back(locj); // this is the first loc of the curve
-                                        if((nn>6)&&(j==(int)(nn/2)))
-                                        {
-                                             middle_vec.push_back(locj);
-                                        }
-                                   }
-                              }
-                              else
-                              {
-                                   loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
-                                   if(dataViewProcBox.isInner(loc, 0.5))
-                                   {
-                                        dataViewProcBox.clamp(loc);
-                                        loc_vec.push_back(loc);
-                                   }
-                              }
+                              PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig);
                          }
                          else if (b_use2PointsBB)  // using stroke to creating a bounding box and do FM
                          {
                               fastmarching_linker(sub_markers, tar_markers, pSubdata2, outswc, sub_szx2, sub_szy2, sub_szz2, 0.0);// time_thresh);
-
-                              //if(pSubdata2) {delete []pSubdata2; pSubdata2=0;}
-
-                              if(!outswc.empty())
-                              {
-                                   // the 1st loc in outswc is the last pos got in fm
-                                   int nn = outswc.size();
-                                   for(int j=nn-1; j>=0; j-- )
-                                   {
-                                        XYZ locj;
-                                        locj.x=outswc.at(j)->x + sub_orig2.x;
-                                        locj.y=outswc.at(j)->y + sub_orig2.y;
-                                        locj.z=outswc.at(j)->z + sub_orig2.z;
-
-                                        loc_vec.push_back(locj);
-
-                                        // record the middle loc in this seg for the second fast marching
-                                        if((last_i==0) && (j==nn-1))
-                                             middle_vec.push_back(locj); // this is the first loc of the curve
-                                        if((nn>6)&&(j==(int)(nn/2)))
-                                        {
-                                             middle_vec.push_back(locj);
-                                        }
-                                   }
-                              }
-                              else
-                              {
-                                   loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
-                                   if(dataViewProcBox.isInner(loc, 0.5))
-                                   {
-                                        dataViewProcBox.clamp(loc);
-                                        loc_vec.push_back(loc);
-                                   }
-                              }
+                              PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig2);
                          }
                          else  // This version uses full image as the bounding box
                          {
                               fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz,0.0);// time_thresh);
-
-                              if(!outswc.empty())
-                              {
-                                   // the 1st loc in outswc is the last pos got in fm
-                                   int nn = outswc.size();
-                                   for(int j=nn-1; j>=0; j-- )
-                                   {
-                                        XYZ locj;
-                                        locj.x=outswc.at(j)->x;
-                                        locj.y=outswc.at(j)->y;
-                                        locj.z=outswc.at(j)->z;
-
-                                        loc_vec.push_back(locj);
-
-                                        // record the middle loc in this seg for the second fast marching
-                                        if((last_i==0) && (j==nn-1))
-                                             middle_vec.push_back(locj); // this is the first loc of the curve
-                                        if((nn>6)&&(j==(int)(nn/2)))
-                                        {
-                                             middle_vec.push_back(locj);
-                                        }
-                                   }
-
-                              }
-                              else
-                              {
-                                   loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
-                                   if(dataViewProcBox.isInner(loc, 0.5))
-                                   {
-                                        dataViewProcBox.clamp(loc);
-                                        loc_vec.push_back(loc);
-                                   }
-                              }
+                              XYZ sub_orig = XYZ(0,0,0);
+                              PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig);
                          }
 
                          //always remember to free the potential-memory-problematic fastmarching_linker return value
                          clean_fm_marker_vector(outswc);
 
                          if(pSubdata2) {delete []pSubdata2; pSubdata2=0;}
-                    }
+                    } // end of non b_useTitltedBB
                }
-          } // end of if(b_useLog2Method)
+          }
+
+          // using titled BB for curve
+          if(b_useTiltedBB)
+          {
+               // fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz,0.0);// time_thresh);
+
+               // if(!outswc.empty())
+               // {
+               //      // the 1st loc in outswc is the last pos got in fm
+               //      int nn = outswc.size();
+               //      for(int j=nn-1; j>=0; j-- )
+               //      {
+               //           XYZ locj;
+               //           locj.x=outswc.at(j)->x;
+               //           locj.y=outswc.at(j)->y;
+               //           locj.z=outswc.at(j)->z;
+
+               //           loc_vec.push_back(locj);
+               //      }
+
+               // }
+               // else
+               // {
+               //      return;
+               // }
+               //always remember to free the potential-memory-problematic fastmarching_linker return value
+               //clean_fm_marker_vector(outswc);
+
+          }// end of b_useTitltedBB
+
      }
 
      // // Save near/far locs for testing:
-     // FILE *nfile=fopen("/groups/peng/home/zhouj/work/near_marker.txt", "wt");
+     // FILE *nfile=fopen("/groups/peng/home/zhouj/work/near_marker.marker", "wt");
      // for(int ii=0; ii<nearpos_vec.size(); ii++)
-     //      fprintf(nfile, "%f %f %f\n", nearpos_vec.at(ii).x, nearpos_vec.at(ii).y, nearpos_vec.at(ii).z);
+     //      fprintf(nfile, "%f,%f,%f,5,1,,\n", nearpos_vec.at(ii).x+1, nearpos_vec.at(ii).y+1, nearpos_vec.at(ii).z+1);
      // fclose(nfile);
-     // FILE *ffile=fopen("/groups/peng/home/zhouj/work/far_marker.txt", "wt");
+     // FILE *ffile=fopen("/groups/peng/home/zhouj/work/far_marker.marker", "wt");
      // for(int ii=0; ii<farpos_vec.size(); ii++)
-     //      fprintf(ffile, "%f %f %f\n", farpos_vec.at(ii).x, farpos_vec.at(ii).y, farpos_vec.at(ii).z);
+     //      fprintf(ffile, "%f,%f,%f,5,1,,\n", farpos_vec.at(ii).x+1, farpos_vec.at(ii).y+1, farpos_vec.at(ii).z+1);
      // fclose(ffile);
 
 
@@ -1927,7 +1820,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
      // //===============================================================================<<<<<<<<<<<<<
      PROGRESS_PERCENT(90);
 
-     N = loc_vec.size(); //100722 RZC
+     N = loc_vec.size();
      if(N<1) return; // all points are outside the volume. ZJL 110913
 
 #ifndef test_main_cpp
@@ -1987,20 +1880,20 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector
 	}
 
 	if (b_use_seriespointclick==false)
-		smooth_curve(loc_vec, 5);
+		smooth_curve(loc_vec, 7);
 #endif
 
      // adaptive curve simpling
      vector <XYZ> loc_vec_resampled;
-     int stepsize = 6; // sampling stepsize
+     int stepsize = 5; // sampling stepsize
      loc_vec_resampled.clear();
      adaptiveCurveResampling(loc_vec, loc_vec_resampled, stepsize);
 
-     if(selectMode == smCurveMarkerLists_fm || selectMode == smCurveRefine_fm)
+     if(selectMode == smCurveMarkerLists_fm || selectMode == smCurveRefine_fm || selectMode == smCurveFrom1Marker_fm)
      {
           if (b_addthiscurve)
           {
-               addCurveSWC(loc_vec, chno);
+               addCurveSWC(loc_vec_resampled, chno);
                // used to convert loc_vec to NeuronTree and save SWC in testing
                vecToNeuronTree(testNeuronTree, loc_vec);
           }
@@ -2977,45 +2870,6 @@ bool Renderer_gl1::mergeFirstNode(const MarkerPos &pos, XYZ &mean_loc, XYZ &near
      return false;
 }
 
-
-
-// decide a bounding box using two MarkerPos
-// void boundingVolFrom2Points()
-// {
-//      double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
-//      clipplane[3] = viewClip;
-
-//      XYZ loc0_0, loc0_1; //near_far pos
-//      ViewPlaneToModel(pos0.MV, clipplane);
-//      _MarkerPos_to_NearFarPoint(pos0, loc0_0, loc0_1);
-
-//      XYZ loc1_0, loc1_1;
-//      ViewPlaneToModel(pos1.MV, clipplane);
-//      _MarkerPos_to_NearFarPoint(pos1, loc1_0, loc1_1);
-
-//      XYZ near0, far1; //get biggest near far pos
-//      double dist;
-//      XYZ Pb;
-//      getPerpendPointDist(loc0_0, loc1_0, loc1_1, Pb, dist);
-//      bool b_inside0 = withinLineSegCheck(loc1_0, loc1_1, Pb);
-//      if(b_inside0) near0 = loc1_0;
-//      else near0 = loc0_0;
-
-//      getPerpendPointDist(loc0_1, loc1_0, loc1_1, Pb, dist);
-//      bool b_inside1 = withinLineSegCheck(loc1_0, loc1_1, Pb);
-//      if(b_inside1) far1 = loc1_1;
-//      else far1 = loc0_0;
-
-//      XYZ v_1_0 = loc1-loc0, v_0_last=loc0-lastpos;
-//      XYZ nearestloc = loc0-v_1_0*dot(v_0_last, v_1_0)/dot(v_1_0, v_1_0); //since loc0!=loc1, this is safe
-
-//      double ranget = (length01/2.0)>10?10:(length01/2.0); //at most 30 pixels aparts
-
-//      XYZ D = v_1_0; normalize(D);
-//      loc0 = nearestloc - D*(ranget);
-//      loc1 = nearestloc + D*(ranget);
-
-// }
 
 void Renderer_gl1::createLastTestID(QString &curFilePath, QString &curSuffix, int &test_id)
 {
