@@ -119,26 +119,54 @@
      if(!outswc.empty()) \
      { \
           V3DLONG nn = outswc.size(); \
-          if(i == 1) \
+          if (nn>=1) \
           { \
+            if(i == 1) \
+            { \
               XYZ loci; \
               loci.x=outswc.at(0)->x + sub_orig.x; \
               loci.y=outswc.at(0)->y + sub_orig.y; \
               loci.z=outswc.at(0)->z + sub_orig.z; \
               loc_vec.push_back(loci); \
-          } \
-          for(V3DLONG j=1; j<nn; j++ ) \
-          { \
+            } \
+            for(V3DLONG j=0; j<nn; j++ ) \
+            { \
                XYZ locj; \
                locj.x=outswc.at(j)->x + sub_orig.x; \
                locj.y=outswc.at(j)->y + sub_orig.y; \
                locj.z=outswc.at(j)->z + sub_orig.z; \
-               /*if(!(loc_vec.back().x == locj.x && loc_vec.back().y == locj.y && loc_vec.back().z == locj.z)) */ \
+               if(loc_vec.back().x != locj.x || loc_vec.back().y != locj.y || loc_vec.back().z != locj.z)  \
                   loc_vec.push_back(locj); \
-          } \
+            } \
+          }\
      } \
 }
 
+/*
+#define PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, i) \
+{ \
+if(!outswc.empty()) \
+{ \
+V3DLONG nn = outswc.size(); \
+if(i == 1) \
+{ \
+XYZ loci; \
+loci.x=outswc.at(0)->x + sub_orig.x; \
+loci.y=outswc.at(0)->y + sub_orig.y; \
+loci.z=outswc.at(0)->z + sub_orig.z; \
+loc_vec.push_back(loci); \
+} \
+for(V3DLONG j=1; j<nn; j++ ) \
+{ \
+XYZ locj; \
+locj.x=outswc.at(j)->x + sub_orig.x; \
+locj.y=outswc.at(j)->y + sub_orig.y; \
+locj.z=outswc.at(j)->z + sub_orig.z; \
+loc_vec.push_back(locj); \
+} \
+} \
+}
+*/
 
 
 void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index)
@@ -1467,9 +1495,8 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
                          vector<MyMarker> tar_markers; tar_markers.clear();
                          vector<MyMarker*> outswc;     outswc.clear();
 
-                         if(i==1)//
+                         if (i==1)//
                          {
-                              // using meanshift to get the first point
                               XYZ loci = loci0;
                               // start point for second marching
                               middle_vec.push_back(loci);
@@ -1680,8 +1707,6 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
      // for(int ii=0; ii<farpos_vec.size(); ii++)
      //      fprintf(ffile, "%f,%f,%f,5,1,,\n", farpos_vec.at(ii).x+1, farpos_vec.at(ii).y+1, farpos_vec.at(ii).z+1);
      // fclose(ffile);
-
-
 
      PROGRESS_PERCENT(60);
      // clean pSubdata of subvolume boundingbox
