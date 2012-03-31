@@ -1,3 +1,30 @@
+/*
+ * Copyright (c)2006-2010  Hanchuan Peng (Janelia Farm, Howard Hughes Medical Institute).
+ * All rights reserved.
+ */
+
+
+/************
+ ********* LICENSE NOTICE ************
+ 
+ This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
+ 
+ You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
+ 
+ 1. This package is free for non-profit research, but needs a special license for any commercial purpose. Please contact Hanchuan Peng for details.
+ 
+ 2. You agree to appropriately cite this work in your related studies and publications.
+ 
+ Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) “V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,” Nature Biotechnology, Vol. 28, No. 4, pp. 348-353, DOI: 10.1038/nbt.1612. ( http://penglab.janelia.org/papersall/docpdf/2010_NBT_V3D.pdf )
+ 
+ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstruction of 3D neuron structures using a graph-augmented deformable model,” Bioinformatics, Vol. 26, pp. i38-i46, 2010. ( http://penglab.janelia.org/papersall/docpdf/2010_Bioinfo_GD_ISMB2010.pdf )
+ 
+ 3. This software is provided by the copyright holders (Hanchuan Peng), Howard Hughes Medical Institute, Janelia Farm Research Campus, and contributors "as is" and any express or implied warranties, including, but not limited to, any implied warranties of merchantability, non-infringement, or fitness for a particular purpose are disclaimed. In no event shall the copyright owner, Howard Hughes Medical Institute, Janelia Farm Research Campus, or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; reasonable royalties; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.
+ 
+ 4. Neither the name of the Howard Hughes Medical Institute, Janelia Farm Research Campus, nor Hanchuan Peng, may be used to endorse or promote products derived from this software without specific prior written permission.
+ 
+ *************/
+
 
 /**
  * @file nstroke_tracing.cpp
@@ -23,6 +50,7 @@
 
  * @author: Jianlong Zhou
  * @date: Jan 24, 2012
+ * Last change by PHC, 20120330. fix a few bugs.
  *
  */
 
@@ -135,8 +163,9 @@
                locj.x=outswc.at(j)->x + sub_orig.x; \
                locj.y=outswc.at(j)->y + sub_orig.y; \
                locj.z=outswc.at(j)->z + sub_orig.z; \
-               if(loc_vec.back().x != locj.x || loc_vec.back().y != locj.y || loc_vec.back().z != locj.z)  \
-                  loc_vec.push_back(locj); \
+			{    cout<<"before push j="<<j<< " "<< locj.x << " "<<locj.y << " " << locj.z <<endl;}\
+               if (loc_vec.size()<=0 || loc_vec.back().x != locj.x || loc_vec.back().y != locj.y || loc_vec.back().z != locj.z)  \
+               {   loc_vec.push_back(locj); cout<<"push j="<<j<< " "<< locj.x << " "<<locj.y << " " << locj.z <<endl;}\
             } \
           }\
      } \
@@ -364,7 +393,7 @@ void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector
      {
           addCurveSWC(loc_vec, chno);
           // used to convert loc_vec to NeuronTree and save SWC in testing
-          vecToNeuronTree(testNeuronTree, loc_vec);
+          //vecToNeuronTree(testNeuronTree, loc_vec);
      }
      else //100821
      {
@@ -1161,7 +1190,7 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
           {
                addCurveSWC(loc_vec_resampled, chno);
                // used to convert loc_vec to NeuronTree and save SWC in testing
-               vecToNeuronTree(testNeuronTree, loc_vec);
+               //vecToNeuronTree(testNeuronTree, loc_vec);
           }
           else //100821
           {
@@ -1176,23 +1205,25 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
  *  If the angle is between thresh_theta1 and thresh_theta2, sample in smaller stepsize.
  *  Otherwise, using original resolution.
  *  Jianong Zhou 20120204
+ * this function seems will produce redundant resampling. revised by PHC 20120330
 */
 void Renderer_gl1::adaptiveCurveResampling(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, int stepsize)
 {
      int N = loc_vec.size();
+	if (N<=0 || stepsize<=0) return;
+	
      loc_vec_resampled.clear();
-     loc_vec_resampled.push_back(loc_vec.at(0));
+     loc_vec_resampled.push_back(loc_vec.at(0)); //should have at least one entry now
 
      // used to control whether cur-to-nex locs are added
      bool b_prestep_added = false;
 
      for(int i=stepsize; i<N; i=i+stepsize)
      {
-          XYZ loc_cur, loc_pre, loc_nex;
           int ind_nex = ( (i+stepsize)>=N )? (N-1):(i+stepsize);
-          loc_cur = loc_vec.at(i);
-          loc_pre = loc_vec.at(i-stepsize);
-          loc_nex = loc_vec.at(ind_nex);
+          XYZ & loc_cur = loc_vec.at(i);
+          XYZ & loc_pre = loc_vec.at(i-stepsize);
+          XYZ & loc_nex = loc_vec.at(ind_nex);
 
           XYZ v1 = loc_cur-loc_pre;
           XYZ v2 = loc_nex-loc_cur;
@@ -1208,7 +1239,12 @@ void Renderer_gl1::adaptiveCurveResampling(vector <XYZ> &loc_vec, vector <XYZ> &
 
           if(theta<thresh_theta1)
           {
-               loc_vec_resampled.push_back(loc_vec.at(i));
+			  XYZ & loc_end = loc_vec_resampled.back();
+			  XYZ & loc_this = loc_vec.at(i);
+			  
+			  if (loc_end.x!=loc_this.x || loc_end.y!=loc_this.y || loc_end.z!=loc_this.z)
+				  loc_vec_resampled.push_back( loc_this );
+
                b_prestep_added = false;
           }
           else if( (theta>=thresh_theta1) && (theta<=thresh_theta2) )
@@ -1222,7 +1258,11 @@ void Renderer_gl1::adaptiveCurveResampling(vector <XYZ> &loc_vec, vector <XYZ> &
 
                for( int j=ind_start+new_step; j<=ind_nex; j=j+new_step)
                {
-                    loc_vec_resampled.push_back( loc_vec.at(j) );
+				   XYZ & loc_end = loc_vec_resampled.back();
+				   XYZ & loc_this = loc_vec.at(j);
+
+				   if (loc_end.x!=loc_this.x || loc_end.y!=loc_this.y || loc_end.z!=loc_this.z)
+					   loc_vec_resampled.push_back( loc_this );
                }
                b_prestep_added = true;
 
@@ -1237,7 +1277,11 @@ void Renderer_gl1::adaptiveCurveResampling(vector <XYZ> &loc_vec, vector <XYZ> &
 
                for(int j=ind_start+1; j<=ind_nex; j++)
                {
-                    loc_vec_resampled.push_back( loc_vec.at(j) );
+				   XYZ & loc_end = loc_vec_resampled.back();
+				   XYZ & loc_this = loc_vec.at(j);
+				   
+				   if (loc_end.x!=loc_this.x || loc_end.y!=loc_this.y || loc_end.z!=loc_this.z)
+					   loc_vec_resampled.push_back( loc_this );
                }
 
                b_prestep_added = true;
@@ -1934,7 +1978,11 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
      vector <XYZ> loc_vec_resampled;
      int stepsize = 5; // sampling stepsize
      loc_vec_resampled.clear();
-     adaptiveCurveResampling(loc_vec, loc_vec_resampled, stepsize);
+     adaptiveCurveResampling(loc_vec, loc_vec_resampled, stepsize); //this function should be the source of the redundant intermediate points
+	//	loc_vec_resampled = loc_vec;
+	
+	//the intensity-based resampled method could lead to totally wrong path (especially for binary image). 
+	//Need to use a better and more evenly spaced method. by PHC, 20120330.
 
      if(selectMode == smCurveMarkerLists_fm || selectMode == smCurveRefine_fm || selectMode == smCurveFrom1Marker_fm)
      {
@@ -1942,7 +1990,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
           {
                addCurveSWC(loc_vec_resampled, chno);
                // used to convert loc_vec to NeuronTree and save SWC in testing
-               vecToNeuronTree(testNeuronTree, loc_vec);
+               //vecToNeuronTree(testNeuronTree, loc_vec);
           }
           else
           {
@@ -2300,7 +2348,7 @@ void Renderer_gl1::solveCurveFromMarkersGD(bool b_customized_bb)
           {
                addCurveSWC(loc_vec_resampled, chno);
                // used to convert loc_vec to NeuronTree and save SWC in testing
-               vecToNeuronTree(testNeuronTree, loc_vec);
+               //vecToNeuronTree(testNeuronTree, loc_vec);
           }
           else //100821
           {
