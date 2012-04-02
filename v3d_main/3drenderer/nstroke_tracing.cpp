@@ -6,23 +6,23 @@
 
 /************
  ********* LICENSE NOTICE ************
- 
+
  This folder contains all source codes for the V3D project, which is subject to the following conditions if you want to use it.
- 
+
  You will ***have to agree*** the following terms, *before* downloading/using/running/editing/changing any portion of codes in this package.
- 
+
  1. This package is free for non-profit research, but needs a special license for any commercial purpose. Please contact Hanchuan Peng for details.
- 
+
  2. You agree to appropriately cite this work in your related studies and publications.
- 
+
  Peng, H., Ruan, Z., Long, F., Simpson, J.H., and Myers, E.W. (2010) “V3D enables real-time 3D visualization and quantitative analysis of large-scale biological image data sets,” Nature Biotechnology, Vol. 28, No. 4, pp. 348-353, DOI: 10.1038/nbt.1612. ( http://penglab.janelia.org/papersall/docpdf/2010_NBT_V3D.pdf )
- 
+
  Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstruction of 3D neuron structures using a graph-augmented deformable model,” Bioinformatics, Vol. 26, pp. i38-i46, 2010. ( http://penglab.janelia.org/papersall/docpdf/2010_Bioinfo_GD_ISMB2010.pdf )
- 
+
  3. This software is provided by the copyright holders (Hanchuan Peng), Howard Hughes Medical Institute, Janelia Farm Research Campus, and contributors "as is" and any express or implied warranties, including, but not limited to, any implied warranties of merchantability, non-infringement, or fitness for a particular purpose are disclaimed. In no event shall the copyright owner, Howard Hughes Medical Institute, Janelia Farm Research Campus, or contributors be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; reasonable royalties; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.
- 
+
  4. Neither the name of the Howard Hughes Medical Institute, Janelia Farm Research Campus, nor Hanchuan Peng, may be used to endorse or promote products derived from this software without specific prior written permission.
- 
+
  *************/
 
 
@@ -1211,7 +1211,7 @@ void Renderer_gl1::adaptiveCurveResampling(vector <XYZ> &loc_vec, vector <XYZ> &
 {
      int N = loc_vec.size();
 	if (N<=0 || stepsize<=0) return;
-	
+
      loc_vec_resampled.clear();
      loc_vec_resampled.push_back(loc_vec.at(0)); //should have at least one entry now
 
@@ -1241,7 +1241,7 @@ void Renderer_gl1::adaptiveCurveResampling(vector <XYZ> &loc_vec, vector <XYZ> &
           {
 			  XYZ & loc_end = loc_vec_resampled.back();
 			  XYZ & loc_this = loc_vec.at(i);
-			  
+
 			  if (loc_end.x!=loc_this.x || loc_end.y!=loc_this.y || loc_end.z!=loc_this.z)
 				  loc_vec_resampled.push_back( loc_this );
 
@@ -1279,7 +1279,7 @@ void Renderer_gl1::adaptiveCurveResampling(vector <XYZ> &loc_vec, vector <XYZ> &
                {
 				   XYZ & loc_end = loc_vec_resampled.back();
 				   XYZ & loc_this = loc_vec.at(j);
-				   
+
 				   if (loc_end.x!=loc_this.x || loc_end.y!=loc_this.y || loc_end.z!=loc_this.z)
 					   loc_vec_resampled.push_back( loc_this );
                }
@@ -1325,7 +1325,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
 {
 	bool b_use_seriespointclick = (loc_vec_input.size()>0) ? true : false;
     if (b_use_seriespointclick==false && list_listCurvePos.size()<1)  return;
-    if (index < 0 || index>=list_listCurvePos.size()) 
+    if (index < 0 || index>=list_listCurvePos.size())
     {
         v3d_msg("The index variable in solveCurveMarkerLists_fm() is incorrect. Chgeck your program.\n");
       return;//by PHC
@@ -1338,7 +1338,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
             return;
         }
     }
-        
+
 	bool b_use_last_approximate=true;
 
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
@@ -1357,10 +1357,6 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
 	qDebug()<<"\n solveCurveMarkerLists: 3d curve in channel # "<<((chno<0)? chno :chno+1);
 
 	loc_vec.clear();
-
-     // vec used for second fastmarching
-     vector<XYZ> middle_vec;
-     middle_vec.clear();
 
      V3DLONG szx = curImg->getXDim();
      V3DLONG szy = curImg->getYDim();
@@ -1403,7 +1399,14 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
      bool b_use2PointsBB = !b_useStrokeBB; // use the two-point decided BB
      bool b_useTiltedBB=false;
 
-     vector<XYZ> nearpos_vec, farpos_vec; // for near/far locs testing
+     if(selectMode == smCurveTiltedBB_fm)
+     {
+          b_useTiltedBB = true;
+          b_useStrokeBB = false;
+          b_use2PointsBB = false;
+     }
+
+     vector<MyMarker> nearpos_vec, farpos_vec; // for near/far locs testing
      nearpos_vec.clear();
      farpos_vec.clear();
 
@@ -1428,8 +1431,8 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
           {
                XYZ loci0, loci1;
                MARKERPOS_TO_NEAR_FAR_LOCS(0, loci0, loci1);
-               nearpos_vec.push_back(loci0);
-               farpos_vec.push_back(loci1);
+               nearpos_vec.push_back(MyMarker(loci0.x, loci0.y, loci0.z));
+               farpos_vec.push_back(MyMarker(loci1.x, loci1.y, loci1.z) );
           }
 
           int last_i; // used for computing 2points_bb
@@ -1473,8 +1476,8 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
                     // near/far pos locs for b_useTitltedBB
                     if(b_useTiltedBB) // still not finished
                     {
-                         nearpos_vec.push_back(loc0);
-                         farpos_vec.push_back(loc1);
+                         nearpos_vec.push_back(MyMarker(loc0.x, loc0.y, loc0.z));
+                         farpos_vec.push_back(MyMarker(loc1.x, loc1.y, loc1.z));
                     }
                     else// beginning of non b_useTitltedBB
                     {
@@ -1493,7 +1496,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
                          {
                              //the logic of this section need change. no need to use meanshift before the testing of the potential intersection point with existing curves
 
-                             const MarkerPos & pos_0 = list_listCurvePos.at(index).at(0); //get the first point, note that already check list_listCurvePos.at(index) has at least one node 
+                             const MarkerPos & pos_0 = list_listCurvePos.at(index).at(0); //get the first point, note that already check list_listCurvePos.at(index) has at least one node
                              XYZ nearest_loc;
                              if( pickSeedpointFromExistingCurves(pos_0, nearest_loc) ) // if there is a nearest curve, use the nearest loc as the start point
                              {
@@ -1522,12 +1525,12 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
                               getSubVolFrom2MarkerPos(pos_vec, chno, pSubdata2, sub_orig2, max_loc2, sub_szx2, sub_szy2, sub_szz2);
                               bb_2Points = BoundingBox(sub_orig2, max_loc2);
 
-                              qDebug()<<"Debug last_i= "<< last_i;
-                              qDebug()<<"Debug i= "<< i;
-                              qDebug()<<"Debug sub_szx2= "<< sub_szx2;
-                              qDebug()<<"Debug sub_szy2= "<< sub_szy2;
-                              qDebug()<<"Debug sub_szz2= "<< sub_szz2;
-                              qDebug()<<"Debug sub_orig2= "<< sub_orig2.x << sub_orig2.y << sub_orig2.z;
+                              // qDebug()<<"Debug last_i= "<< last_i;
+                              // qDebug()<<"Debug i= "<< i;
+                              // qDebug()<<"Debug sub_szx2= "<< sub_szx2;
+                              // qDebug()<<"Debug sub_szy2= "<< sub_szy2;
+                              // qDebug()<<"Debug sub_szz2= "<< sub_szz2;
+                              // qDebug()<<"Debug sub_orig2= "<< sub_orig2.x << sub_orig2.y << sub_orig2.z;
 
                               // update last_i for the next loop
                               last_i = i;
@@ -1542,8 +1545,6 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
                          if (i==1)//
                          {
                               XYZ loci = loci0;
-                              // start point for second marching
-                              middle_vec.push_back(loci);
 
                               if(b_useStrokeBB)
                                    loci = loci-sub_orig;
@@ -1678,7 +1679,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
                          } // end of tar_markers
 
                          // waiting time threshold
-                         float time_thresh = 0.2; //in seconds
+                         //float time_thresh = 0.2; //in seconds
 
                          // call fastmarching
                          // using time spent on each step to decide whether the tracing in this step is acceptable.
@@ -1688,17 +1689,17 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
                          XYZ loc;
                          if (b_useStrokeBB)  // using stroke to creating a bounding box and do FM
                          {
-                              fastmarching_linker(sub_markers, tar_markers, pSubdata, outswc, sub_szx, sub_szy, sub_szz, 0.0);// time_thresh);
+                              fastmarching_linker(sub_markers, tar_markers, pSubdata, outswc, sub_szx, sub_szy, sub_szz);// 0.0);// time_thresh);
                               PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, i);
                          }
                          else if (b_use2PointsBB)  // using stroke to creating a bounding box and do FM
                          {
-                              fastmarching_linker(sub_markers, tar_markers, pSubdata2, outswc, sub_szx2, sub_szy2, sub_szz2, 0.0);// time_thresh);
+                              fastmarching_linker(sub_markers, tar_markers, pSubdata2, outswc, sub_szx2, sub_szy2, sub_szz2);//, 0.0);// time_thresh);
                               PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig2, i);
                          }
                          else  // This version uses full image as the bounding box
                          {
-                              fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz,0.0);// time_thresh);
+                              fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz);//,0.0);// time_thresh);
                               XYZ sub_orig = XYZ(0,0,0);
                               PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, i);
                          }
@@ -1714,29 +1715,12 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
           // using titled BB for curve
           if(b_useTiltedBB)
           {
-               // fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz,0.0);// time_thresh);
-
-               // if(!outswc.empty())
-               // {
-               //      // the 1st loc in outswc is the last pos got in fm
-               //      int nn = outswc.size();
-               //      for(int j=nn-1; j>=0; j-- )
-               //      {
-               //           XYZ locj;
-               //           locj.x=outswc.at(j)->x;
-               //           locj.y=outswc.at(j)->y;
-               //           locj.z=outswc.at(j)->z;
-
-               //           loc_vec.push_back(locj);
-               //      }
-
-               // }
-               // else
-               // {
-               //      return;
-               // }
+               vector<MyMarker *> outswc;
+               fastmarching_drawing3(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz);
+               XYZ sub_orig = XYZ(0,0,0);
+               PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, 1);
                //always remember to free the potential-memory-problematic fastmarching_linker return value
-               //clean_fm_marker_vector(outswc);
+               clean_fm_marker_vector(outswc);
 
           }// end of b_useTitltedBB
 
@@ -1752,163 +1736,9 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
      //      fprintf(ffile, "%f,%f,%f,5,1,,\n", farpos_vec.at(ii).x+1, farpos_vec.at(ii).y+1, farpos_vec.at(ii).z+1);
      // fclose(ffile);
 
-     PROGRESS_PERCENT(60);
      // clean pSubdata of subvolume boundingbox
      //if(pSubdata) {delete [] pSubdata; pSubdata=0;}
 
-     // //===============================================================================>>>>>>>>>>>> second fastmarching
-     // N = loc_vec.size();
-     // if(N<1) return; // all points are outside the volume. ZJL 110913
-
-     // // append the last XYZ of loc_vec to middle_vec
-     // middle_vec.push_back(loc_vec.at(loc_vec.size()-1));
-     // loc_vec.clear();
-
-     // loc_vec.push_back(middle_vec.at(0)); //append the first loc
-     // // Do the second fastmarching for smoothing the curve
-     // for(int jj=0;jj<middle_vec.size()-1; jj++)
-     // {
-     //      // create MyMarker list
-     //      vector<MyMarker> sub_markers;
-     //      vector<MyMarker> tar_markers;
-     //      vector<MyMarker*> outswc;
-     //      XYZ loc;
-
-     //      // sub_markers
-     //      XYZ loc0=middle_vec.at(jj);
-
-     //      if(b_useStrokeBB)
-     //           loc0 = loc0-sub_orig; //using bb
-
-     //      MyMarker mloc0 = MyMarker(loc0.x, loc0.y, loc0.z);
-     //      sub_markers.push_back(mloc0);
-
-     //      // tar_markers
-     //      XYZ loc1=middle_vec.at(jj+1);
-     //      if(b_useStrokeBB)
-     //           loc1 = loc1-sub_orig; //using bb
-
-     //      MyMarker mloc1 = MyMarker(loc1.x, loc1.y, loc1.z);
-     //      tar_markers.push_back(mloc1);
-
-
-     //      if(b_useStrokeBB) // this version searches the subvolume decided by the stroke bounding box
-     //      {
-     //           bool res = fastmarching_linker(sub_markers, tar_markers, pSubdata, outswc, sub_szx, sub_szy, sub_szz, 0.0);// time_thresh);
-     //           if(!res)
-     //           {
-     //                loc = loc1;
-     //           }
-     //           else
-     //           {
-     //                if(!outswc.empty())
-     //                {
-     //                     // the 1st loc in outswc is the last pos got in fm
-     //                     int nn = outswc.size();
-     //                     for(int j=nn-1; j>0; j-- )
-     //                     {
-     //                          XYZ locj;
-     //                          locj.x=outswc.at(j)->x + sub_orig.x;
-     //                          locj.y=outswc.at(j)->y + sub_orig.y;
-     //                          locj.z=outswc.at(j)->z + sub_orig.z;
-
-     //                          loc_vec.push_back(locj);
-     //                     }
-     //                     // the last one
-     //                     loc.x = outswc.at(0)->x + sub_orig.x;
-     //                     loc.y = outswc.at(0)->y + sub_orig.y;
-     //                     loc.z = outswc.at(0)->z + sub_orig.z;
-     //                }
-     //                else
-     //                {
-     //                     loc = loc1;
-     //                }
-     //           }
-     //      }
-     //      // else if (b_use2PointsBB)  // using stroke to creating a bounding box and do FM
-     //      // {
-     //      //      fastmarching_linker(sub_markers, tar_markers, pSubdata2, outswc, sub_szx2, sub_szy2, sub_szz2, 0.0);// time_thresh);
-
-     //      //      //if(pSubdata2) {delete []pSubdata2; pSubdata2=0;}
-
-     //      //      if(!outswc.empty())
-     //      //      {
-     //      //           // the 1st loc in outswc is the last pos got in fm
-     //      //           int nn = outswc.size();
-     //      //           for(int j=nn-1; j>=0; j-- )
-     //      //           {
-     //      //                XYZ locj;
-     //      //                locj.x=outswc.at(j)->x + sub_orig2.x;
-     //      //                locj.y=outswc.at(j)->y + sub_orig2.y;
-     //      //                locj.z=outswc.at(j)->z + sub_orig2.z;
-
-     //      //                loc_vec.push_back(locj);
-
-     //      //                // record the middle loc in this seg for the second fast marching
-     //      //                if((last_i==0) && (j==nn-1))
-     //      //                     middle_vec.push_back(locj); // this is the first loc of the curve
-     //      //                if((nn>6)&&(j==(int)(nn/2)))
-     //      //                {
-     //      //                     middle_vec.push_back(locj);
-     //      //                }
-     //      //           }
-     //      //      }
-     //      //      else
-     //      //      {
-     //      //           loc = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
-     //      //           if(dataViewProcBox.isInner(loc, 0.5))
-     //      //           {
-     //      //                dataViewProcBox.clamp(loc);
-     //      //                loc_vec.push_back(loc);
-     //      //           }
-     //      //      }
-     //      // }
-     //      // call fastmarching. This version searches the whole volume
-     //      else if(!b_useStrokeBB && !b_use2PointsBB)
-     //      {
-     //           bool res = fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz, 0.0);// time_thresh);
-     //           if(!res)
-     //           {
-     //                loc = loc1;
-     //           }
-     //           else
-     //           {
-     //                if(!outswc.empty())
-     //                {
-     //                     // the 1st loc in outswc is the last pos got in fm
-     //                     int nn = outswc.size();
-     //                     for(int j=nn-1; j>0; j-- )
-     //                     {
-     //                          XYZ locj;
-     //                          locj.x=outswc.at(j)->x;
-     //                          locj.y=outswc.at(j)->y;
-     //                          locj.z=outswc.at(j)->z;
-
-     //                          loc_vec.push_back(locj);
-     //                     }
-     //                     // the last one
-     //                     loc.x = outswc.at(0)->x;
-     //                     loc.y = outswc.at(0)->y;
-     //                     loc.z = outswc.at(0)->z;
-     //                }
-     //                else
-     //                {
-     //                     loc = loc1;
-     //                }
-     //           }
-     //      }
-
-     //      //always remember to free the potential-memory-problematic fastmarching_linker return value
-     //      clean_fm_marker_vector(outswc);
-
-
-     //      if (dataViewProcBox.isInner(loc, 0.5))
-     //      {
-     //           dataViewProcBox.clamp(loc);
-     //           loc_vec.push_back(loc);
-     //      }
-     // } // end for the second fastmarching
-     // //===============================================================================<<<<<<<<<<<<<
      PROGRESS_PERCENT(90);
 
      N = loc_vec.size();
@@ -1980,11 +1810,12 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
      loc_vec_resampled.clear();
      adaptiveCurveResampling(loc_vec, loc_vec_resampled, stepsize); //this function should be the source of the redundant intermediate points
 	//	loc_vec_resampled = loc_vec;
-	
-	//the intensity-based resampled method could lead to totally wrong path (especially for binary image). 
+
+	//the intensity-based resampled method could lead to totally wrong path (especially for binary image).
 	//Need to use a better and more evenly spaced method. by PHC, 20120330.
 
-     if(selectMode == smCurveMarkerLists_fm || selectMode == smCurveRefine_fm || selectMode == smCurveFrom1Marker_fm)
+     if(selectMode == smCurveMarkerLists_fm || selectMode == smCurveRefine_fm || selectMode == smCurveFrom1Marker_fm ||
+          selectMode == smCurveTiltedBB_fm)
      {
           if (b_addthiscurve)
           {
