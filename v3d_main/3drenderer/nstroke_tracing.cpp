@@ -1678,15 +1678,15 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
           }// end of b_useTitltedBB
      }
 
-     // Save near/far locs for testing:
-     FILE *nfile=fopen("/groups/peng/home/zhouj/work/near.marker", "wt");
-     for(int ii=0; ii<nearpos_vec.size(); ii++)
-          fprintf(nfile, "%f,%f,%f,5,1,,\n", nearpos_vec.at(ii).x+1, nearpos_vec.at(ii).y+1, nearpos_vec.at(ii).z+1);
-     fclose(nfile);
-     FILE *ffile=fopen("/groups/peng/home/zhouj/work/far.marker", "wt");
-     for(int ii=0; ii<farpos_vec.size(); ii++)
-          fprintf(ffile, "%f,%f,%f,5,1,,\n", farpos_vec.at(ii).x+1, farpos_vec.at(ii).y+1, farpos_vec.at(ii).z+1);
-     fclose(ffile);
+     // // Save near/far locs for testing:
+     // FILE *nfile=fopen("/groups/peng/home/zhouj/work/near.marker", "wt");
+     // for(int ii=0; ii<nearpos_vec.size(); ii++)
+     //      fprintf(nfile, "%f,%f,%f,5,1,,\n", nearpos_vec.at(ii).x+1, nearpos_vec.at(ii).y+1, nearpos_vec.at(ii).z+1);
+     // fclose(nfile);
+     // FILE *ffile=fopen("/groups/peng/home/zhouj/work/far.marker", "wt");
+     // for(int ii=0; ii<farpos_vec.size(); ii++)
+     //      fprintf(ffile, "%f,%f,%f,5,1,,\n", farpos_vec.at(ii).x+1, farpos_vec.at(ii).y+1, farpos_vec.at(ii).z+1);
+     // fclose(ffile);
 
 
      PROGRESS_PERCENT(90);
