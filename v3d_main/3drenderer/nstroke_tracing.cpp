@@ -160,6 +160,7 @@
             for(V3DLONG j=0; j<nn; j++ ) \
             { \
                XYZ locj; \
+               assert(outswc[j]); \
                locj.x=outswc.at(j)->x + sub_orig.x; \
                locj.y=outswc.at(j)->y + sub_orig.y; \
                locj.z=outswc.at(j)->z + sub_orig.z; \
@@ -1410,7 +1411,6 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
      nearpos_vec.clear();
      farpos_vec.clear();
 
-
      if(b_useStrokeBB)
           getSubVolFromStroke(pSubdata, chno, sub_orig, sub_szx, sub_szy, sub_szz);
 
@@ -1432,7 +1432,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
                XYZ loci0, loci1;
                MARKERPOS_TO_NEAR_FAR_LOCS(0, loci0, loci1);
                nearpos_vec.push_back(MyMarker(loci0.x, loci0.y, loci0.z));
-               farpos_vec.push_back(MyMarker(loci1.x, loci1.y, loci1.z) );
+               farpos_vec.push_back(MyMarker(loci1.x, loci1.y, loci1.z));
           }
 
           int last_i; // used for computing 2points_bb
@@ -1561,65 +1561,10 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
                                    }
                               }
                               sub_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
-                              //==============================================================<<<<<<<
 
                               // get the loc with a random middle loc
                               //getMidRandomLoc(pos, chno, loc);
                               //middle_vec.push_back(loc);
-
-                              // // using line to get first point
-                              // const MarkerPos & pos_0 = list_listCurvePos.at(index).at(0);
-                              // double clipplane0[4] = { 0.0,  0.0, -1.0,  0 };
-                              // clipplane0[3] = viewClip;
-                              // ViewPlaneToModel(pos_0.MV, clipplane0);
-                              // XYZ loc00_t, loc01_t;
-                              // _MarkerPos_to_NearFarPoint(pos_0, loc00_t, loc01_t);
-                              // // get intersect points with data volume
-                              // XYZ loc00, loc01;
-                              // INTERSET_POINTS_WITH_DATA(loc00_t, loc01_t, loc00, loc01);
-
-                              // float length_1st = dist_L2(loc00, loc01);
-                              // if (length_1st<1.0)
-                              // {
-                              //      XYZ loci=(loc00+loc01)/2.0;
-
-                              //      if(b_useStrokeBB) // use stroke bounding box
-                              //           loci = loci-sub_orig;
-                              //      else if(b_use2PointsBB)
-                              //      {
-                              //           loci = loci-sub_orig2;
-                              //      }
-                              //      sub_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
-                              // }
-                              // else
-                              // {
-                              //      XYZ v_1_0_1st = loc01-loc00;
-                              //      XYZ D_1st = v_1_0_1st; normalize(D_1st);
-                              //      XYZ loci;
-                              //      for(int ii=0; ii< length_1st; ii++)
-                              //      {
-                              //           loci = loc00 + D_1st*ii; // incease 1 each step
-                              //           if(b_useStrokeBB)
-                              //           {
-                              //                loci = loci-sub_orig;
-                              //                sub_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
-                              //           }
-                              //           else if(b_use2PointsBB)
-                              //           {
-                              //                if(bb_2Points.isInner(loci, 0))
-                              //                {
-                              //                     loci = loci-sub_orig2;
-                              //                     sub_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
-                              //                }
-                              //           }
-                              //           else
-                              //           {
-                              //                sub_markers.push_back(MyMarker(loci.x, loci.y, loci.z));
-                              //           }
-                              //      }
-                              // }// end of if (length_1st<1.0)
-                              // // =================================================================
-
                          }
                          else
                          {
@@ -1663,9 +1608,6 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
                                         if(bb_2Points.isInner(loci, 0))
                                         {
                                              loci = loci-sub_orig2;
-
-                                             //assert(loci.x>=0 && loci.x<sub_szx2 && loci.y>=0 && loci.y<sub_szy2 && loci.z>=0 && loci.z<sub_szz2);
-
                                              tar_markers.push_back( MyMarker(loci.x, loci.y, loci.z));
                                         }
                                    }
@@ -1709,35 +1651,37 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
 
                          if(pSubdata2) {delete []pSubdata2; pSubdata2=0;}
                     } // end of non b_useTitltedBB
-               }
-          }
+               } // end of if(i==1 || i==(N-1) || b_inds)
+
+               // clean pSubdata of subvolume boundingbox
+               if (b_useStrokeBB){ if(pSubdata) {delete [] pSubdata; pSubdata=0;} }
+
+          } // end of for (int i=1; i<N; i++)
 
           // using titled BB for curve
           if(b_useTiltedBB)
           {
                vector<MyMarker *> outswc;
                fastmarching_drawing3(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz);
+               qDebug()<<"size of outswc:" << outswc.size();
                XYZ sub_orig = XYZ(0,0,0);
                PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, 1);
                //always remember to free the potential-memory-problematic fastmarching_linker return value
                clean_fm_marker_vector(outswc);
 
           }// end of b_useTitltedBB
-
      }
 
      // // Save near/far locs for testing:
-     // FILE *nfile=fopen("/groups/peng/home/zhouj/work/near_marker.marker", "wt");
+     // FILE *nfile=fopen("/groups/peng/home/zhouj/work/near.marker", "wt");
      // for(int ii=0; ii<nearpos_vec.size(); ii++)
      //      fprintf(nfile, "%f,%f,%f,5,1,,\n", nearpos_vec.at(ii).x+1, nearpos_vec.at(ii).y+1, nearpos_vec.at(ii).z+1);
      // fclose(nfile);
-     // FILE *ffile=fopen("/groups/peng/home/zhouj/work/far_marker.marker", "wt");
+     // FILE *ffile=fopen("/groups/peng/home/zhouj/work/far.marker", "wt");
      // for(int ii=0; ii<farpos_vec.size(); ii++)
      //      fprintf(ffile, "%f,%f,%f,5,1,,\n", farpos_vec.at(ii).x+1, farpos_vec.at(ii).y+1, farpos_vec.at(ii).z+1);
      // fclose(ffile);
 
-     // clean pSubdata of subvolume boundingbox
-     //if(pSubdata) {delete [] pSubdata; pSubdata=0;}
 
      PROGRESS_PERCENT(90);
 
@@ -1746,7 +1690,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
 
 #ifndef test_main_cpp
 	// check if there is any existing neuron node is very close to the starting and ending points, if yes, then merge
-	if (V3Dmainwindow && V3Dmainwindow->global_setting.b_3dcurve_autoconnecttips && b_use_seriespointclick==false && (selectMode == smCurveMarkerLists_fm || selectMode == smCurveRefine_fm) )
+	if (V3Dmainwindow && V3Dmainwindow->global_setting.b_3dcurve_autoconnecttips && b_use_seriespointclick==false && (selectMode == smCurveMarkerLists_fm || selectMode == smCurveRefine_fm || selectMode == smCurveFrom1Marker_fm || selectMode == smCurveTiltedBB_fm) )
 	{
 		if (listNeuronTree.size()>0 && curEditingNeuron>0 && curEditingNeuron<=listNeuronTree.size())
 		{
@@ -1806,7 +1750,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
 
      // adaptive curve simpling
      vector <XYZ> loc_vec_resampled;
-     int stepsize = 5; // sampling stepsize
+     int stepsize = 3; // sampling stepsize 5
      loc_vec_resampled.clear();
      adaptiveCurveResampling(loc_vec, loc_vec_resampled, stepsize); //this function should be the source of the redundant intermediate points
 	//	loc_vec_resampled = loc_vec;

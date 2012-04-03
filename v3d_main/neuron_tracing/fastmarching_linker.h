@@ -1031,6 +1031,7 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 
 template<class T> bool fastmarching_drawing3(vector<MyMarker> & near_markers, vector<MyMarker> &far_markers, T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, int cnn_type = 2)
 {
+     long sz01 = (long)sz0*sz1;
 	cout<<"welcome to fastmarching_drawing_dynamicly"<<endl;
 	assert(near_markers.size() == far_markers.size() && near_markers.size() >= 2);
 
@@ -1053,7 +1054,15 @@ template<class T> bool fastmarching_drawing3(vector<MyMarker> & near_markers, ve
 
 	for(int i = 2; i < near_markers.size(); i++)
 	{
-		cout<<"fm-linker between ray "<<i-1<<" and ray "<<i<<endl;
+          if(near_markers[i].ind(sz0, sz01) == near_marker2.ind(sz0, sz01) || far_markers[i].ind(sz0, sz01) == far_marker2.ind(sz0,sz01)) // omit ray i
+          {
+               cout<<"ray "<<i<<" is duplicated "<<endl;
+               continue;
+          }
+          else
+          {
+               cout<<"fm-linker between ray "<<i-1<<" and ray "<<i<<endl;
+          }
 
 		near_marker1 = near_marker2;    far_marker1 = far_marker2;
 		near_marker2 = near_markers[i]; far_marker2 = far_markers[i];
