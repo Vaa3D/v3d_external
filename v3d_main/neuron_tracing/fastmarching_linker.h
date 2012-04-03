@@ -1040,11 +1040,15 @@ template<class T> bool fastmarching_drawing3(vector<MyMarker> & near_markers, ve
 	MyMarker near_marker2 = near_markers[0];
 	MyMarker far_marker2 = far_markers[0];
 
+     set<MyMarker*> start_ray;
 	map<MyMarker*, double> sub_markers, tar_markers;
      //	GET_LINE_MARKER_MAP(near_marker1, far_marker1, sub_markers);
 	GET_LINE_MARKER_MAP(near_marker2, far_marker2, tar_markers);
-	for(map<MyMarker*, double>::iterator it = tar_markers.begin(); it != tar_markers.end(); it++) it->second = 0.0;
-
+	for(map<MyMarker*, double>::iterator it = tar_markers.begin(); it != tar_markers.end(); it++)
+     {
+          it->second = 0.0;
+          start_ray.insert(it->first);
+     }
      //	cout<<"fm-linker between ray 0 and ray 1"<<endl;
 	vector<MyMarker*> all_markers, par_tree;
 	//fastmarching_linker(sub_markers, tar_markers, inimg1d, par_tree, sz0, sz1, sz2, near_marker1, far_marker1, near_marker2, far_marker2, cnn_type);
@@ -1096,15 +1100,21 @@ template<class T> bool fastmarching_drawing3(vector<MyMarker> & near_markers, ve
 		new_marker = new MyMarker(p->x, p->y, p->z); outswc.push_back(new_marker);
 		child_marker->parent = new_marker;
 		child_marker = new_marker;
-		p = p->parent;
+		if(p->parent == 0) break;
+          p = p->parent;
 	}
 
-	for(int i = 0; i < all_markers.size(); i++) delete all_markers[i];
+
+     bool ret = (start_ray.find(p) != start_ray.end());
+
+     // reverse and smooth
+     reverse(outswc.begin(), outswc.end());
+     //smooth_curve(outswc, 4);
+
+     for(int i = 0; i < all_markers.size(); i++) delete all_markers[i];
 	all_markers.clear();
 
-	// reverse and smooth
-	reverse(outswc.begin(), outswc.end());
-	//smooth_curve(outswc, 4);
+     return ret;
 }
 
 #endif

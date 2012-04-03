@@ -1447,18 +1447,25 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
                // check whether i is in inds
                bool b_inds=false;
 
-               if(inds.empty())
+               // if(b_useTiltedBB)
+               // {
+               //      b_inds = true;
+               // }
+               // else
                {
-                    b_inds=true;
-               }
-               else
-               {
-                    for(int ii=1; ii<inds.size(); ii++)
+                    if(inds.empty())
                     {
-                         if(i == inds.at(ii))
+                         b_inds=true;
+                    }
+                    else
+                    {
+                         for(int ii=1; ii<inds.size(); ii++)
                          {
-                              b_inds=true;
-                              break;
+                              if(i == inds.at(ii))
+                              {
+                                   b_inds=true;
+                                   break;
+                              }
                          }
                     }
                }
@@ -1659,31 +1666,34 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
                     } // end of non b_useTitltedBB
                } // end of if(i==1 || i==(N-1) || b_inds)
 
-               // clean pSubdata of subvolume boundingbox
-               if (b_useStrokeBB){ if(pSubdata) {delete [] pSubdata; pSubdata=0;} }
-
           } // end of for (int i=1; i<N; i++)
+
+          // clean pSubdata of subvolume boundingbox
+          if (b_useStrokeBB){ if(pSubdata) {delete [] pSubdata; pSubdata=0;} }
 
           // using titled BB for curve
           if(b_useTiltedBB)
           {
                vector<MyMarker *> outswc;
-               fastmarching_drawing3(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz);
+               if(!fastmarching_drawing3(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz))
+               {
+                    v3d_msg("Error in creating the curve", 0);
+               }
+
                qDebug()<<"size of outswc:" << outswc.size();
                XYZ sub_orig = XYZ(0,0,0);
                PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, 1);
                //always remember to free the potential-memory-problematic fastmarching_linker return value
                clean_fm_marker_vector(outswc);
-
           }// end of b_useTitltedBB
      }
 
      // // Save near/far locs for testing:
-     // FILE *nfile=fopen("/groups/peng/home/zhouj/work/near.marker", "wt");
+     // FILE *nfile=fopen("/groups/peng/penglab/Zhou/cut/near.marker", "wt");
      // for(int ii=0; ii<nearpos_vec.size(); ii++)
      //      fprintf(nfile, "%f,%f,%f,5,1,,\n", nearpos_vec.at(ii).x+1, nearpos_vec.at(ii).y+1, nearpos_vec.at(ii).z+1);
      // fclose(nfile);
-     // FILE *ffile=fopen("/groups/peng/home/zhouj/work/far.marker", "wt");
+     // FILE *ffile=fopen("/groups/peng/penglab/Zhou/cut/far.marker", "wt");
      // for(int ii=0; ii<farpos_vec.size(); ii++)
      //      fprintf(ffile, "%f,%f,%f,5,1,,\n", farpos_vec.at(ii).x+1, farpos_vec.at(ii).y+1, farpos_vec.at(ii).z+1);
      // fclose(ffile);

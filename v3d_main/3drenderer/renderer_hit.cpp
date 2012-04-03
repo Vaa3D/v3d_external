@@ -1917,8 +1917,6 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     int test_id_num;
                     QString cursurfix=QString("txt");
                     createLastTestID(testOutputDir, cursurfix, test_id_num);
-
-
                     QString test_id = QString::number(test_id_num);
 
                     QString anofilename = testOutputDir + "/" + test_id + "_" + fname + "_curveTest.ano";
@@ -1935,25 +1933,51 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     QString swcimg = "../" + pathinfo.fileName();
                     fprintf(fp, "GRAYIMG=%s\n", swcimg.toStdString().c_str());
 
-                    // using two marker lists for fast marching to get a curve
+                    // using two marker lists (2PointsBB) for fast marching to get a curve
                     vector <XYZ> loc_vec_input;
                     vector <XYZ> loc_vec0;
+                    clock_t t1;
+
                     loc_vec0.clear();
                     selectMode = smCurveMarkerLists_fm;
+                    t1=clock(); // time
                     solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
+                    float time_ml = (float)(clock()-t1)/CLOCKS_PER_SEC;
                     NeuronTree tree_ml = testNeuronTree;
 
                     // Save to a file
-                    QString filenameml= test_id+ "_MarkerLists_fm"+".swc";
+                    QString filenameml= test_id+ "_MarkerLists2PointsBB_fm"+".swc";
                     QString filenameml_ab=testOutputDir+"/"+filenameml;
                     writeSWC_file(filenameml_ab, testNeuronTree);
                     // save to ano
                     fprintf(fp, "SWCFILE=%s\n", filenameml.toStdString().c_str());
+                    // ===================================================================
+
+                    // using two marker lists (OneStrokeBB) for fast marching to get a curve
+                    loc_vec_input.clear();
+                    loc_vec0.clear();
+                    selectMode = smCurveMarkerLists_fm; //smCurveUseStrokeBB_fm; //============================================ to change
+                    t1=clock(); // time
+                    solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
+                    float time_ml_StrokeBB = (float)(clock()-t1)/CLOCKS_PER_SEC;
+                    NeuronTree tree_ml_StrokeBB = testNeuronTree;
+
+                    // Save to a file
+                    QString filenameml_StrokeBB= test_id+ "_MarkerListsOneStrokeBB_fm"+".swc";
+                    QString filenameml_ab_StrokeBB=testOutputDir+"/"+filenameml_StrokeBB;
+                    writeSWC_file(filenameml_ab_StrokeBB, testNeuronTree);
+                    // save to ano
+                    fprintf(fp, "SWCFILE=%s\n", filenameml_StrokeBB.toStdString().c_str());
+                    // float time_ml_StrokeBB = time_ml;
+                    // NeuronTree tree_ml_StrokeBB = tree_ml;
+                    // ===================================================================
 
                     // curve from mean shift
                     loc_vec_input.clear();
                     selectMode = smCurveCreate1;
+                    t1=clock(); // time
                     solveCurveCenter(loc_vec_input);
+                    float time_cc = (float)(clock()-t1)/CLOCKS_PER_SEC;
                     NeuronTree tree_cc = testNeuronTree;
                     QString filenamecc=test_id+ "_MeanShift"+".swc";
                     QString filenamecc_ab=testOutputDir + "/" +filenamecc ;
@@ -1965,7 +1989,9 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     loc_vec_input.clear();
                     loc_vec0.clear();
                     selectMode = smCurveDirectionInter;
+                    t1 = clock();
                     solveCurveDirectionInter(loc_vec_input, loc_vec0, 0);
+                    float time_di = (float)(clock()-t1)/CLOCKS_PER_SEC;
                     NeuronTree tree_di = testNeuronTree;
                     QString filenamedi = test_id+ "_DirInter"+".swc";
                     QString filenamedi_ab=testOutputDir + "/" +filenamedi;
@@ -1974,11 +2000,14 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     fprintf(fp, "SWCFILE=%s\n", filenamedi.toStdString().c_str());
 
                     NeuronTree tree_mp, tree_gd;
+                    float time_mp, time_gd;
                     if(listCurveMarkerPool.size() > 2)
                     {
                          // curve from FM
                          selectMode = smCurveMarkerPool_fm;
+                         t1 = clock(); // time
                          solveCurveFromMarkersFastMarching();
+                         time_mp = (float)(clock()-t1)/CLOCKS_PER_SEC;
                          tree_mp = testNeuronTree;
                          QString filenamemp = test_id+ "_MarkerPool_fm"+".swc";
                          QString filenamemp_ab =testOutputDir + "/" + filenamemp;
@@ -1987,7 +2016,9 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                          fprintf(fp, "SWCFILE=%s\n", filenamemp.toStdString().c_str());
 
                          // curve from GD
+                         t1 = clock();
                          solveCurveFromMarkersGD(false); //boundingbox is the whole image
+                         time_gd = (float)(clock()-t1)/CLOCKS_PER_SEC;
                          tree_gd = testNeuronTree;
                          QString filenamegd = test_id+ "_MarkerPool_GD"+".swc";
                          QString filenamegd_ab = testOutputDir + "/" +filenamegd;
@@ -2013,12 +2044,13 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     if(listCurveMarkerPool.size() > 2) // the ground truth is the curve from GD
                     {
                          // ======================================================
-                         int ml_success, cc_success, di_success, mp_success;
+                         int ml_success, ml_strokeBB_success, cc_success, di_success, mp_success;
                          int num_test;
                          if(test_id_num==1)
                          {
                               // initialize nums for the first time
                               ml_success = 0;
+                              ml_strokeBB_success = 0;
                               cc_success = 0;
                               di_success = 0;
                               mp_success = 0;
@@ -2033,7 +2065,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                                    string line;
                                    getline(fpredist, line);
                                    istringstream buffer(line);
-                                   buffer >> num_test >> ml_success >> cc_success >> di_success >> mp_success;
+                                   buffer >> num_test >> ml_success >>  ml_strokeBB_success >> cc_success >> di_success >> mp_success;
                               }
                               fpredist.close();
                          }
@@ -2043,48 +2075,60 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 
                          // computer distance from GD-curve to other curves
                          double dist_gd_ml = distance_between_2lines(tree_gd, tree_ml);
+                         double dist_gd_ml_StrokeBB = distance_between_2lines(tree_gd, tree_ml_StrokeBB);
                          double dist_gd_cc = distance_between_2lines(tree_gd, tree_cc);
                          double dist_gd_di = distance_between_2lines(tree_gd, tree_di);
                          double dist_gd_mp = distance_between_2lines(tree_gd, tree_mp);
 
                          if(dist_gd_ml <= dist_threshold) ml_success++;
+                         if(dist_gd_ml_StrokeBB <= dist_threshold) ml_strokeBB_success++;
                          if(dist_gd_cc <= dist_threshold) cc_success++;
                          if(dist_gd_di <= dist_threshold) di_success++;
                          if(dist_gd_mp <= dist_threshold) mp_success++;
                          float ml_succ_rate = (float)ml_success/num_test;
+                         float ml_strokeBB_succ_rate = (float)ml_strokeBB_success/num_test;
                          float cc_succ_rate = (float)cc_success/num_test;
                          float di_succ_rate = (float)di_success/num_test;
                          float mp_succ_rate = (float)mp_success/num_test;
 
                          //fprintf(fpdist, "%d\n", num_test); // total test num
-                         fprintf(fpdist, "%d %d %d %d %d\n", num_test, ml_success, cc_success, di_success, mp_success);// total test num, success num above dist_threshold
+                         fprintf(fpdist, "%d %d %d %d %d %d\n", num_test, ml_success, ml_strokeBB_success, cc_success, di_success, mp_success);// total test num, success num above dist_threshold
                          fprintf(fpdist, "The ground truth curve is the curve from GD method.\n");
+                         fprintf(fpdist, "Time consuming for the curve from GD method: %.4f\n\n", time_gd);
                          fprintf(fpdist, "The distance_threshold  = %.4f\n", dist_threshold);
-                         fprintf(fpdist, "Distance between curves of GD and Markerlists_fm                     = %.4f\n",   dist_gd_ml);
-                         fprintf(fpdist, "Rate of distance between GD and Markerlists_fm below dist_threshold  = %.4f\n\n", ml_succ_rate);
+                         fprintf(fpdist, "Distance between curves of GD and Markerlists2PointsBB_fm                       = %.4f\n",   dist_gd_ml);
+                         fprintf(fpdist, "Rate of distance between GD and Markerlists2PointsBB_fm below dist_threshold    = %.4f\n", ml_succ_rate);
+                         fprintf(fpdist, "Time consuming for the curve from Markerlists2PointsBB_fm                       = %.4f s\n\n", time_ml);
+
+                         fprintf(fpdist, "Distance between curves of GD and MarkerlistsOneStrokeBB_fm                     = %.4f\n",   dist_gd_ml_StrokeBB);
+                         fprintf(fpdist, "Rate of distance between GD and MarkerlistsOneStrokeBB_fm below dist_threshold  = %.4f\n", ml_strokeBB_succ_rate);
+                         fprintf(fpdist, "Time consuming for the curve from MarkerlistsOneStrokeBB_fm                     = %.4f s\n\n", time_ml_StrokeBB);
 
                          fprintf(fpdist, "Distance between curves of GD and mean_shift                         = %.4f\n",   dist_gd_cc);
-                         fprintf(fpdist, "Rate of distance between GD and mean_shift below dist_threshold      = %.4f\n\n", cc_succ_rate);
+                         fprintf(fpdist, "Rate of distance between GD and mean_shift below dist_threshold      = %.4f\n", cc_succ_rate);
+                         fprintf(fpdist, "Time consuming for the curve from mean_shift                         = %.4f s\n\n", time_cc);
 
                          fprintf(fpdist, "Distance between curves of GD and direction_intersection             = %.4f\n",   dist_gd_di);
-                         fprintf(fpdist, "Rate of distance between GD and dir_inter below dist_threshold       = %.4f\n\n", di_succ_rate);
+                         fprintf(fpdist, "Rate of distance between GD and dir_inter below dist_threshold       = %.4f\n", di_succ_rate);
+                         fprintf(fpdist, "Time consuming for the curve from dir_inter                          = %.4f s\n\n", time_di);
 
                          fprintf(fpdist, "Distance between curves of GD and Marker_pool_fm                     = %.4f\n",   dist_gd_mp);
                          fprintf(fpdist, "Rate of distance between GD and Marker_pool below dist_threshold     = %.4f\n\n", mp_succ_rate);
+                         fprintf(fpdist, "Time consuming for the curve from Marker_pool                        = %.4f s\n\n", time_mp);
                     }
                     else // the ground truth is the curve from Markerlists_fm
                     {
                          // ======================================================
-                         int ml_cc_success, ml_di_success;
+                         int ml_mlStrokeBB_success, ml_cc_success, ml_di_success;
                          int ml_num_test;
 
                          if(test_id_num==1)
                          {
                               // initialize nums for the first time
+                              ml_mlStrokeBB_success = 0;
                               ml_cc_success = 0;
                               ml_di_success = 0;
                               ml_num_test = 0;
-                              qDebug()<<"ml_num_test:"<< ml_num_test << "ml_cc_success: "<<ml_cc_success<<"ml_di_success: "<<ml_di_success;
                          }
                          else
                          {
@@ -2095,33 +2139,46 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                                    string line;
                                    getline(fpredist, line);
                                    istringstream buffer(line);
-                                   buffer >>ml_num_test>>ml_cc_success>>ml_di_success;
+                                   buffer >> ml_num_test >> ml_mlStrokeBB_success >> ml_cc_success >> ml_di_success;
                               }
                               fpredist.close();
                          }
 
                          // =========================================================
                          // computer distance from GD-curve to other curves
+                         double dist_ml_mlStrokeBB = distance_between_2lines(tree_ml, tree_ml_StrokeBB);
                          double dist_ml_cc = distance_between_2lines(tree_ml, tree_cc);
                          double dist_ml_di = distance_between_2lines(tree_ml, tree_di);
 
                          ml_num_test ++;
 
+                         if(dist_ml_mlStrokeBB <= dist_threshold) ml_mlStrokeBB_success++;
                          if(dist_ml_cc <= dist_threshold) ml_cc_success++;
                          if(dist_ml_di <= dist_threshold) ml_di_success++;
+
+                         float ml_mlStrokeBB_succ_rate = (float)ml_mlStrokeBB_success/ml_num_test;
                          float ml_cc_succ_rate = (float)ml_cc_success/ml_num_test;
                          float ml_di_succ_rate = (float)ml_di_success/ml_num_test;
 
                          // computer distance from GD-curve to other curves
                          //fprintf(fpdist, "%d\n", ml_num_test); // total test num
-                         fprintf(fpdist, "%i %i %i\n", ml_num_test, ml_cc_success, ml_di_success);// total test num, success num above dist_threshold
+                         fprintf(fpdist, "%d %d %d %d\n", ml_num_test, ml_mlStrokeBB_success, ml_cc_success, ml_di_success);// total test num, success num above dist_threshold
 
-                         fprintf(fpdist, "The ground truth curve is the curve from Markerlists_fm.\n");
-                         fprintf(fpdist, "Distance between curves of Markerlists_fm and mean_shift              = %.4f\n", dist_ml_cc);
-                         fprintf(fpdist, "Rate of distance between FM and mean_shift below dist_threshold       = %.4f\n\n", ml_cc_succ_rate);
+                         fprintf(fpdist, "The ground truth curve is the curve from Markerlists2PointsBB_fm (FM2PointsBB_fm).\n");
+                         fprintf(fpdist, "The distance_threshold  = %.4f\n", dist_threshold);
+                         fprintf(fpdist, "Time consuming for the curve from FM2PointsBB_fm                                   = %.4f s\n\n", time_ml);
 
-                         fprintf(fpdist, "Distance between curves of Markerlists_fm and direction_intersection  = %.4f\n", dist_ml_di);
-                         fprintf(fpdist, "Rate of distance between FM and direc_intersec below dist_threshold   = %.4f\n\n", ml_di_succ_rate);
+                         fprintf(fpdist, "Distance between curves of FM2PointsBB_fm and FMOneStrokeBB_fm                     = %.4f\n", dist_ml_mlStrokeBB);
+                         fprintf(fpdist, "Rate of distance between FM2PointsBB_fm and FMOneStrokeBB_fm below dist_threshold  = %.4f\n", ml_mlStrokeBB_succ_rate);
+                         fprintf(fpdist, "Time consuming for the curve from FMOneStrokeBB                                    = %.4f s\n\n", time_ml_StrokeBB);
+
+                         fprintf(fpdist, "Distance between curves of FM2PointsBB_fm and mean_shift                           = %.4f\n", dist_ml_cc);
+                         fprintf(fpdist, "Rate of distance between FM2PointsBB_fm and mean_shift below dist_threshold        = %.4f\n", ml_cc_succ_rate);
+                         fprintf(fpdist, "Time consuming for the curve from mean_shift                                       = %.4f s\n\n", time_cc);
+
+                         fprintf(fpdist, "Distance between curves of FM2PointsBB_fm and direction_intersection               = %.4f\n", dist_ml_di);
+                         fprintf(fpdist, "Rate of distance between FM2PointsBB_fm and direc_intersec below dist_threshold    = %.4f\n", ml_di_succ_rate);
+                         fprintf(fpdist, "Time consuming for the curve from direc_intersec                                   = %.4f s\n\n", time_di);
                     }
 
                     // projection image computation
@@ -2132,6 +2189,8 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                          swcBoundingBox(tree_gd, minbb, maxbb);
                          XYZ minloc_ml, maxloc_ml;
                          swcBoundingBox(tree_ml, minloc_ml, maxloc_ml);
+                         XYZ minloc_mlstrokeBB, maxloc_mlstrokeBB;
+                         swcBoundingBox(tree_ml_StrokeBB, minloc_mlstrokeBB, maxloc_mlstrokeBB);
                          XYZ minloc_cc, maxloc_cc;
                          swcBoundingBox(tree_cc, minloc_cc, maxloc_cc);
                          XYZ minloc_di, maxloc_di;
@@ -2141,6 +2200,9 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 
                          MIN_BB(minbb, minloc_ml);
                          MAX_BB(maxbb, maxloc_ml);
+
+                         MIN_BB(minbb, minloc_mlstrokeBB);
+                         MAX_BB(maxbb, maxloc_mlstrokeBB);
 
                          MIN_BB(minbb, minloc_cc);
                          MAX_BB(maxbb, maxloc_cc);
@@ -2153,10 +2215,15 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     } else
                     {
                          swcBoundingBox(tree_ml, minbb, maxbb);
+                         XYZ minloc_mlstrokeBB, maxloc_mlstrokeBB;
+                         swcBoundingBox(tree_ml_StrokeBB, minloc_mlstrokeBB, maxloc_mlstrokeBB);
                          XYZ minloc_cc, maxloc_cc;
                          swcBoundingBox(tree_cc, minloc_cc, maxloc_cc);
                          XYZ minloc_di, maxloc_di;
                          swcBoundingBox(tree_di, minloc_di, maxloc_di);
+
+                         MIN_BB(minbb, minloc_mlstrokeBB);
+                         MAX_BB(maxbb, maxloc_mlstrokeBB);
 
                          MIN_BB(minbb, minloc_cc);
                          MAX_BB(maxbb, maxloc_cc);
@@ -2197,7 +2264,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                          {0,   20,  200},  // blue,     di  2
                          {200, 0,   200},  // purple,   mp  3
                          {220, 200, 0  },  // yellow,   gd  4
-                         {0,   200, 200},  // cyan,
+                         {0,   200, 200},  // cyan,     mlStrokeBB 5
                          {188, 94,  37 },  // coffee,
                          {180, 200, 120},  // asparagus,
                          {250, 100, 120},  // salmon,
@@ -2209,12 +2276,14 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     {
                          projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_gd, curve_color[4]);
                          projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_ml, curve_color[0]);
+                         projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_ml_StrokeBB, curve_color[5]);
                          projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_cc, curve_color[1]);
                          projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_di, curve_color[2]);
                          projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_mp, curve_color[3]);
                     }else
                     {
                          projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_ml, curve_color[0]);
+                         projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_ml_StrokeBB, curve_color[5]);
                          projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_cc, curve_color[1]);
                          projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_di, curve_color[2]);
                     }
