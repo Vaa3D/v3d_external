@@ -1035,24 +1035,24 @@ template<class T> bool fastmarching_drawing3(vector<MyMarker> & near_markers, ve
 	cout<<"welcome to fastmarching_drawing_dynamicly"<<endl;
 	assert(near_markers.size() == far_markers.size() && near_markers.size() >= 2);
 
-	MyMarker near_marker1 = near_markers[0];
-	MyMarker far_marker1 = far_markers[0];
-	MyMarker near_marker2 = near_markers[1];
-	MyMarker far_marker2 = far_markers[1];
+	MyMarker near_marker1;// = near_markers[0];
+	MyMarker far_marker1;// = far_markers[0];
+	MyMarker near_marker2 = near_markers[0];
+	MyMarker far_marker2 = far_markers[0];
 
 	map<MyMarker*, double> sub_markers, tar_markers;
-	GET_LINE_MARKER_MAP(near_marker1, far_marker1, sub_markers);
+     //	GET_LINE_MARKER_MAP(near_marker1, far_marker1, sub_markers);
 	GET_LINE_MARKER_MAP(near_marker2, far_marker2, tar_markers);
-	for(map<MyMarker*, double>::iterator it = sub_markers.begin(); it != sub_markers.end(); it++) it->second = 0.0;
+	for(map<MyMarker*, double>::iterator it = tar_markers.begin(); it != tar_markers.end(); it++) it->second = 0.0;
 
-	cout<<"fm-linker between ray 0 and ray 1"<<endl;
+     //	cout<<"fm-linker between ray 0 and ray 1"<<endl;
 	vector<MyMarker*> all_markers, par_tree;
-	fastmarching_linker(sub_markers, tar_markers, inimg1d, par_tree, sz0, sz1, sz2, near_marker1, far_marker1, near_marker2, far_marker2, cnn_type);
-	all_markers.insert(all_markers.end(), par_tree.begin(), par_tree.end()); par_tree.clear();
-	for(map<MyMarker*, double>::iterator it = sub_markers.begin(); it != sub_markers.end(); it++) all_markers.push_back(it->first);
+	//fastmarching_linker(sub_markers, tar_markers, inimg1d, par_tree, sz0, sz1, sz2, near_marker1, far_marker1, near_marker2, far_marker2, cnn_type);
+	//all_markers.insert(all_markers.end(), par_tree.begin(), par_tree.end()); par_tree.clear();
+	//for(map<MyMarker*, double>::iterator it = sub_markers.begin(); it != sub_markers.end(); it++) all_markers.push_back(it->first);
 	for(map<MyMarker*, double>::iterator it = tar_markers.begin(); it != tar_markers.end(); it++) all_markers.push_back(it->first);
 
-	for(int i = 2; i < near_markers.size(); i++)
+	for(int i = 1; i < near_markers.size(); i++)
 	{
           if(near_markers[i].ind(sz0, sz01) == near_marker2.ind(sz0, sz01) || far_markers[i].ind(sz0, sz01) == far_marker2.ind(sz0,sz01)) // omit ray i
           {

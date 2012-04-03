@@ -1400,6 +1400,12 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
      bool b_use2PointsBB = !b_useStrokeBB; // use the two-point decided BB
      bool b_useTiltedBB=false;
 
+     if(selectMode == smCurveUseStrokeBB_fm)
+     {
+          b_useStrokeBB = true;
+          b_use2PointsBB = !b_useStrokeBB;
+     }
+
      if(selectMode == smCurveTiltedBB_fm)
      {
           b_useTiltedBB = true;
@@ -1672,15 +1678,15 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
           }// end of b_useTitltedBB
      }
 
-     // // Save near/far locs for testing:
-     // FILE *nfile=fopen("/groups/peng/home/zhouj/work/near.marker", "wt");
-     // for(int ii=0; ii<nearpos_vec.size(); ii++)
-     //      fprintf(nfile, "%f,%f,%f,5,1,,\n", nearpos_vec.at(ii).x+1, nearpos_vec.at(ii).y+1, nearpos_vec.at(ii).z+1);
-     // fclose(nfile);
-     // FILE *ffile=fopen("/groups/peng/home/zhouj/work/far.marker", "wt");
-     // for(int ii=0; ii<farpos_vec.size(); ii++)
-     //      fprintf(ffile, "%f,%f,%f,5,1,,\n", farpos_vec.at(ii).x+1, farpos_vec.at(ii).y+1, farpos_vec.at(ii).z+1);
-     // fclose(ffile);
+     // Save near/far locs for testing:
+     FILE *nfile=fopen("/groups/peng/home/zhouj/work/near.marker", "wt");
+     for(int ii=0; ii<nearpos_vec.size(); ii++)
+          fprintf(nfile, "%f,%f,%f,5,1,,\n", nearpos_vec.at(ii).x+1, nearpos_vec.at(ii).y+1, nearpos_vec.at(ii).z+1);
+     fclose(nfile);
+     FILE *ffile=fopen("/groups/peng/home/zhouj/work/far.marker", "wt");
+     for(int ii=0; ii<farpos_vec.size(); ii++)
+          fprintf(ffile, "%f,%f,%f,5,1,,\n", farpos_vec.at(ii).x+1, farpos_vec.at(ii).y+1, farpos_vec.at(ii).z+1);
+     fclose(ffile);
 
 
      PROGRESS_PERCENT(90);
@@ -1690,7 +1696,9 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
 
 #ifndef test_main_cpp
 	// check if there is any existing neuron node is very close to the starting and ending points, if yes, then merge
-	if (V3Dmainwindow && V3Dmainwindow->global_setting.b_3dcurve_autoconnecttips && b_use_seriespointclick==false && (selectMode == smCurveMarkerLists_fm || selectMode == smCurveRefine_fm || selectMode == smCurveFrom1Marker_fm || selectMode == smCurveTiltedBB_fm) )
+	if (V3Dmainwindow && V3Dmainwindow->global_setting.b_3dcurve_autoconnecttips && b_use_seriespointclick==false &&
+          (selectMode == smCurveMarkerLists_fm || selectMode == smCurveRefine_fm || selectMode == smCurveFrom1Marker_fm ||
+               selectMode == smCurveUseStrokeBB_fm || selectMode == smCurveTiltedBB_fm) )
 	{
 		if (listNeuronTree.size()>0 && curEditingNeuron>0 && curEditingNeuron<=listNeuronTree.size())
 		{
@@ -1759,7 +1767,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
 	//Need to use a better and more evenly spaced method. by PHC, 20120330.
 
      if(selectMode == smCurveMarkerLists_fm || selectMode == smCurveRefine_fm || selectMode == smCurveFrom1Marker_fm ||
-          selectMode == smCurveTiltedBB_fm)
+          selectMode == smCurveTiltedBB_fm || selectMode == smCurveUseStrokeBB_fm)
      {
           if (b_addthiscurve)
           {

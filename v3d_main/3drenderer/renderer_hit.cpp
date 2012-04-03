@@ -1923,27 +1923,17 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 
                     QString anofilename = testOutputDir + "/" + test_id + "_" + fname + "_curveTest.ano";
                     FILE *fp;
-                    // if(!bTestCurveBegin)
-                    // {
-                         bTestCurveBegin=true;
-                         fp=fopen(anofilename.toStdString().c_str(), "wt"); // open a new empty file
-                         if (!fp)
-                         {
-                              v3d_msg(QString("Fail to open file %1 to write.").arg(anofilename));
-                              return 1;
-                         }
-                         // write file name
-                         QString swcimg = "../" + pathinfo.fileName();
-                         fprintf(fp, "GRAYIMG=%s\n", swcimg.toStdString().c_str());
-                    // } else
-                    // {
-                    //      fp=fopen(anofilename.toStdString().c_str(), "at"); // open and append
-                    //      if (!fp)
-                    //      {
-                    //           v3d_msg(QString("Fail to open file %1 to write.").arg(anofilename));
-                    //           return 1;
-                    //      }
-                    // } // end dir selection
+
+                    bTestCurveBegin=true;
+                    fp=fopen(anofilename.toStdString().c_str(), "wt"); // open a new empty file
+                    if (!fp)
+                    {
+                         v3d_msg(QString("Fail to open file %1 to write.").arg(anofilename));
+                         return 1;
+                    }
+                    // write file name
+                    QString swcimg = "../" + pathinfo.fileName();
+                    fprintf(fp, "GRAYIMG=%s\n", swcimg.toStdString().c_str());
 
                     // using two marker lists for fast marching to get a curve
                     vector <XYZ> loc_vec_input;
