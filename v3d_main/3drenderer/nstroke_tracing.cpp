@@ -394,7 +394,7 @@ void Renderer_gl1::solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector
      {
           addCurveSWC(loc_vec, chno);
           // used to convert loc_vec to NeuronTree and save SWC in testing
-          //vecToNeuronTree(testNeuronTree, loc_vec);
+          vecToNeuronTree(testNeuronTree, loc_vec);
      }
      else //100821
      {
@@ -1026,32 +1026,34 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
                tar_markers.push_back(mloc1);
 
                // call fastmarching
-               fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz, 0);
+               fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz);
+               XYZ sub_orig = XYZ(0,0,0);
+               PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, ii+1);
 
-               if(!outswc.empty())
-               {
-                    // the 1st loc in outswc is the last pos got in fm
-                    for(int j=outswc.size()-2; j>=0; j-- )
-                    {
-                         XYZ loc;
-                         loc.x=outswc.at(j)->x;
-                         loc.y=outswc.at(j)->y;
-                         loc.z=outswc.at(j)->z;
+               // if(!outswc.empty())
+               // {
+               //      // the 1st loc in outswc is the last pos got in fm
+               //      for(int j=0; j<=outswc.size()-2; j++ )
+               //      {
+               //           XYZ loc;
+               //           loc.x=outswc.at(j)->x;
+               //           loc.y=outswc.at(j)->y;
+               //           loc.z=outswc.at(j)->z;
 
-                         loc_vec.push_back(loc);
-                         if(j==outswc.size()/2) // save middle point
-                         {
-                              middle_vec.push_back(loc);
-                         }
-                    }
+               //           loc_vec.push_back(loc);
+               //           if(j==outswc.size()/2) // save middle point
+               //           {
+               //                middle_vec.push_back(loc);
+               //           }
+               //      }
 
-                   //always remember to free the potential-memory-problematic fastmarching_linker return value
-                   clean_fm_marker_vector(outswc);
+               //     //always remember to free the potential-memory-problematic fastmarching_linker return value
+               //     clean_fm_marker_vector(outswc);
 
-               }else
-               {
-                    loc_vec.push_back(loc1);
-               }
+               // }else
+               // {
+               //      loc_vec.push_back(loc1);
+               // }
 
           }
 
@@ -1059,61 +1061,62 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
 
           PROGRESS_PERCENT(60);
 
-          // append the last XYZ of loc_vec to middle_vec
-          middle_vec.push_back(loc_vec_input.back());// last marker
-
-          //===============================================================================>>>>>>>>>>>>
           int N = loc_vec.size();
           if(N<1) return; // all points are outside the volume. ZJL 110913
 
-          loc_vec.clear();
+          // // append the last XYZ of loc_vec to middle_vec
+          // middle_vec.push_back(loc_vec_input.back());// last marker
 
-          loc_vec.push_back(middle_vec.at(0)); //append the first loc
-          // Do the second fastmarching for smoothing the curve
-          for(int jj=0;jj<middle_vec.size()-1; jj++)
-          {
-               // create MyMarker list
-               vector<MyMarker> sub_markers;
-               vector<MyMarker> tar_markers;
-               vector<MyMarker*> outswc;
-               XYZ loc;
+          // //===============================================================================>>>>>>>>>>>>
 
-               // sub_markers
-               XYZ loc0=middle_vec.at(jj);
-               MyMarker mloc0 = MyMarker(loc0.x, loc0.y, loc0.z);
-               sub_markers.push_back(mloc0);
+          // loc_vec.clear();
 
-               // tar_markers
-               XYZ loc1=middle_vec.at(jj+1);
-               MyMarker mloc1 = MyMarker(loc1.x, loc1.y, loc1.z);
-               tar_markers.push_back(mloc1);
+          // loc_vec.push_back(middle_vec.at(0)); //append the first loc
+          // // Do the second fastmarching for smoothing the curve
+          // for(int jj=0;jj<middle_vec.size()-1; jj++)
+          // {
+          //      // create MyMarker list
+          //      vector<MyMarker> sub_markers;
+          //      vector<MyMarker> tar_markers;
+          //      vector<MyMarker*> outswc;
+          //      XYZ loc;
 
-               // call fastmarching
-               fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz, 0.0);// time_thresh);
+          //      // sub_markers
+          //      XYZ loc0=middle_vec.at(jj);
+          //      MyMarker mloc0 = MyMarker(loc0.x, loc0.y, loc0.z);
+          //      sub_markers.push_back(mloc0);
 
-               if(!outswc.empty())
-               {
-                    // the 1st loc in outswc is the last pos got in fm
-                    int nn = outswc.size();
-                    for(int j=nn-2; j>=0; j-- )
-                    {
-                         XYZ locj;
-                         locj.x=outswc.at(j)->x;
-                         locj.y=outswc.at(j)->y;
-                         locj.z=outswc.at(j)->z;
+          //      // tar_markers
+          //      XYZ loc1=middle_vec.at(jj+1);
+          //      MyMarker mloc1 = MyMarker(loc1.x, loc1.y, loc1.z);
+          //      tar_markers.push_back(mloc1);
 
-                         loc_vec.push_back(locj);
-                    }
-                    //always remember to free the potential-memory-problematic fastmarching_linker return value
-                    clean_fm_marker_vector(outswc);
-               }
-               else
-               {
-                    loc_vec.push_back(loc1);
-               }
+          //      // call fastmarching
+          //      fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz);
 
-          } // end for the second fastmarching
-          loc_vec.push_back(middle_vec.back());
+          //      if(!outswc.empty())
+          //      {
+          //           // the 1st loc in outswc is the last pos got in fm
+          //           int nn = outswc.size();
+          //           for(int j=nn-2; j>=0; j-- )
+          //           {
+          //                XYZ locj;
+          //                locj.x=outswc.at(j)->x;
+          //                locj.y=outswc.at(j)->y;
+          //                locj.z=outswc.at(j)->z;
+
+          //                loc_vec.push_back(locj);
+          //           }
+          //           //always remember to free the potential-memory-problematic fastmarching_linker return value
+          //           clean_fm_marker_vector(outswc);
+          //      }
+          //      else
+          //      {
+          //           loc_vec.push_back(loc1);
+          //      }
+
+          // } // end for the second fastmarching
+          // loc_vec.push_back(middle_vec.back());
           //===============================================================================<<<<<<<<<<<<<
           PROGRESS_PERCENT(80);
 
@@ -1191,7 +1194,7 @@ void Renderer_gl1::solveCurveFromMarkersFastMarching()
           {
                addCurveSWC(loc_vec_resampled, chno);
                // used to convert loc_vec to NeuronTree and save SWC in testing
-               //vecToNeuronTree(testNeuronTree, loc_vec);
+               vecToNeuronTree(testNeuronTree, loc_vec_resampled);
           }
           else //100821
           {
@@ -1404,6 +1407,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
      {
           b_useStrokeBB = true;
           b_use2PointsBB = !b_useStrokeBB;
+          b_useTiltedBB = false;
      }
 
      if(selectMode == smCurveTiltedBB_fm)
@@ -1447,25 +1451,18 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
                // check whether i is in inds
                bool b_inds=false;
 
-               // if(b_useTiltedBB)
-               // {
-               //      b_inds = true;
-               // }
-               // else
+               if(inds.empty())
                {
-                    if(inds.empty())
+                    b_inds=true;
+               }
+               else
+               {
+                    for(int ii=1; ii<inds.size(); ii++)
                     {
-                         b_inds=true;
-                    }
-                    else
-                    {
-                         for(int ii=1; ii<inds.size(); ii++)
+                         if(i == inds.at(ii))
                          {
-                              if(i == inds.at(ii))
-                              {
-                                   b_inds=true;
-                                   break;
-                              }
+                              b_inds=true;
+                              break;
                          }
                     }
                }
@@ -1537,13 +1534,6 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
                               XYZ max_loc2;
                               getSubVolFrom2MarkerPos(pos_vec, chno, pSubdata2, sub_orig2, max_loc2, sub_szx2, sub_szy2, sub_szz2);
                               bb_2Points = BoundingBox(sub_orig2, max_loc2);
-
-                              // qDebug()<<"Debug last_i= "<< last_i;
-                              // qDebug()<<"Debug i= "<< i;
-                              // qDebug()<<"Debug sub_szx2= "<< sub_szx2;
-                              // qDebug()<<"Debug sub_szy2= "<< sub_szy2;
-                              // qDebug()<<"Debug sub_szz2= "<< sub_szz2;
-                              // qDebug()<<"Debug sub_orig2= "<< sub_orig2.x << sub_orig2.y << sub_orig2.z;
 
                               // update last_i for the next loop
                               last_i = i;
@@ -1633,28 +1623,25 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
 
                          } // end of tar_markers
 
-                         // waiting time threshold
-                         //float time_thresh = 0.2; //in seconds
 
                          // call fastmarching
                          // using time spent on each step to decide whether the tracing in this step is acceptable.
                          // if time is over time_thresh, then break and use center method
                          // I found that the result is not so good when using this time limit
-
                          XYZ loc;
                          if (b_useStrokeBB)  // using stroke to creating a bounding box and do FM
                          {
-                              fastmarching_linker(sub_markers, tar_markers, pSubdata, outswc, sub_szx, sub_szy, sub_szz);// 0.0);// time_thresh);
+                              fastmarching_linker(sub_markers, tar_markers, pSubdata, outswc, sub_szx, sub_szy, sub_szz);
                               PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, i);
                          }
                          else if (b_use2PointsBB)  // using stroke to creating a bounding box and do FM
                          {
-                              fastmarching_linker(sub_markers, tar_markers, pSubdata2, outswc, sub_szx2, sub_szy2, sub_szz2);//, 0.0);// time_thresh);
+                              fastmarching_linker(sub_markers, tar_markers, pSubdata2, outswc, sub_szx2, sub_szy2, sub_szz2);
                               PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig2, i);
                          }
                          else  // This version uses full image as the bounding box
                          {
-                              fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz);//,0.0);// time_thresh);
+                              fastmarching_linker(sub_markers, tar_markers, pImg, outswc, szx, szy, szz);
                               XYZ sub_orig = XYZ(0,0,0);
                               PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, i);
                          }
@@ -1665,9 +1652,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
                          if(pSubdata2) {delete []pSubdata2; pSubdata2=0;}
                     } // end of non b_useTitltedBB
                } // end of if(i==1 || i==(N-1) || b_inds)
-
           } // end of for (int i=1; i<N; i++)
-
           // clean pSubdata of subvolume boundingbox
           if (b_useStrokeBB){ if(pSubdata) {delete [] pSubdata; pSubdata=0;} }
 
@@ -1680,7 +1665,6 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
                     v3d_msg("Error in creating the curve", 0);
                }
 
-               qDebug()<<"size of outswc:" << outswc.size();
                XYZ sub_orig = XYZ(0,0,0);
                PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, 1);
                //always remember to free the potential-memory-problematic fastmarching_linker return value
@@ -1783,7 +1767,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
           {
                addCurveSWC(loc_vec_resampled, chno);
                // used to convert loc_vec to NeuronTree and save SWC in testing
-               //vecToNeuronTree(testNeuronTree, loc_vec);
+               vecToNeuronTree(testNeuronTree, loc_vec_resampled);
           }
           else
           {
@@ -2141,7 +2125,7 @@ void Renderer_gl1::solveCurveFromMarkersGD(bool b_customized_bb)
           {
                addCurveSWC(loc_vec_resampled, chno);
                // used to convert loc_vec to NeuronTree and save SWC in testing
-               //vecToNeuronTree(testNeuronTree, loc_vec);
+               vecToNeuronTree(testNeuronTree, loc_vec_resampled);
           }
           else //100821
           {
@@ -2330,17 +2314,17 @@ void  Renderer_gl1::getMidRandomLoc(MarkerPos pos, int chno, XYZ &mid_loc)
  */
 double Renderer_gl1::distance_between_2lines(NeuronTree &line1, NeuronTree &line2)
 {
-     int size1=line1.listNeuron.size();
-     int size2=line2.listNeuron.size();
+     V3DLONG size1=line1.listNeuron.size();
+     V3DLONG size2=line2.listNeuron.size();
 
      if(size1==0 || size2==0) return INF;
      double sum_dist1 = 0.0;
-     for(int i = 0; i < size1; i++)
+     for(V3DLONG i = 0; i < size1; i++)
      {
           NeuronSWC ns1 = line1.listNeuron.at(i);
           XYZ loc1(ns1.x, ns1.y, ns1.z);
           double min_dist = MAX_DOUBLE;
-          for(int j = 0; j < size2; j++)
+          for(V3DLONG j = 0; j < size2; j++)
           {
                NeuronSWC ns2 = line2.listNeuron.at(j);
                XYZ loc2(ns2.x, ns2.y, ns2.z);
@@ -2350,12 +2334,12 @@ double Renderer_gl1::distance_between_2lines(NeuronTree &line1, NeuronTree &line
           sum_dist1 += min_dist;
      }
      double sum_dist2 = 0.0;
-     for(int j = 0; j < size2; j++)
+     for(V3DLONG j = 0; j < size2; j++)
      {
           NeuronSWC ns2 = line2.listNeuron.at(j);
           XYZ loc2(ns2.x, ns2.y, ns2.z);
           double min_dist = MAX_DOUBLE;
-          for(int i = 0; i < size1; i++)
+          for(V3DLONG i = 0; i < size1; i++)
           {
                NeuronSWC ns1 = line1.listNeuron.at(i);
                XYZ loc1(ns1.x, ns1.y, ns1.z);
