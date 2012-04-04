@@ -149,12 +149,6 @@ using namespace std;
 
 #include "../basic_c_fun/volimg_proc.h"
 
-//#if !defined(WIN32) // skip under win32
-#if defined(__APPLE__) //081124
-//#include "../neurolabi/c/tz_dimage_lib.h"
-//#include "../neurolabi/c/tz_fimage_lib.h"
-#endif
-
 #include "../3drenderer/v3dr_mainwindow.h" //v3d_drawmain-->v3dr_mainwindow, by RZC 20080921
 #include "../3drenderer/v3dr_glwidget.h" //090710 by RZC for XFormWidget::doImage3DView
 #include "../3drenderer/renderer_gl1.h" //090117 by RZC for My4DImage::update_3drenderer_neuron_view
