@@ -770,44 +770,49 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 		// assert(!mask_values.empty());
 	}
 
-	// refresh the values in tar_markers
-	for(map<MyMarker*, double>::iterator it = tar_markers.begin(); it != tar_markers.end(); it++)
-	{
-		MyMarker * tar_marker = it->first;
-		int x = tar_marker->x + 0.5;
-		int y = tar_marker->y + 0.5;
-		int z = tar_marker->z + 0.5;
-		long ind = z*sz01 + y*sz0 + x;
-		it->second = phi[ind];
-	}
 
-	// refresh the parent information for tar_markers
-	for(vector<long>::iterator it = marched_inds.begin(); it != marched_inds.end(); it++)
-	{
-		// tar_marker is not added
-		long ind = *it;
-		MyMarker * child_marker = tar_map[ind];
+     // refresh the score values and parent info in tar_markers
+     for(map<MyMarker*, double>::iterator it = tar_markers.begin(); it != tar_markers.end(); it++)
+     {
+          MyMarker * tar_marker = it->first;
+          int x = tar_marker->x + 0.5;
+          int y = tar_marker->y + 0.5;
+          int z = tar_marker->z + 0.5;
+          long ind = z*sz01 + y*sz0 + x;
+          if(state[ind] != ALIVE || tar_marker != tar_map[ind])
+          {
+               tar_marker->parent = 0;
+               it->second = INF;
+               continue;
+          }
+          it->second = phi[ind];
 
-		ind = parent[ind];
-		while(sub_map.find(ind) == sub_map.end())
-		{
-			int i = ind % sz0;
-			int j = ind/sz0 % sz1;
-			int k = ind/sz01 % sz2;
-			MyMarker * new_marker = new MyMarker(i,j,k);
-			child_marker->parent = new_marker;
-			new_marker->parent = 0;
-			new_marker->radius = 5;//markerRadius(inimg1d, in_sz, *new_marker, thresh);
-			par_tree.push_back(new_marker);
-			child_marker = new_marker;
-			ind = parent[ind];
-		}
-		MyMarker * sub_marker = sub_map[ind];
-		child_marker->parent = sub_marker;
-		// sub_marker is not added
-		//par_tree.push_back(sub_marker);
-	}
-	cout<<par_tree.size()<<" markers in par_tree"<<endl;
+          // find the path from tar_marker
+          // tar_marker is not added
+          MyMarker * child_marker = tar_marker;
+
+          ind = parent[ind];
+          while(sub_map.find(ind) == sub_map.end())
+          {
+               int i = ind % sz0;
+               int j = ind/sz0 % sz1;
+               int k = ind/sz01 % sz2;
+               MyMarker * new_marker = new MyMarker(i,j,k);
+               child_marker->parent = new_marker;
+               new_marker->parent = 0;
+               new_marker->radius = 5;//markerRadius(inimg1d, in_sz, *new_marker, thresh);
+               par_tree.push_back(new_marker);
+               child_marker = new_marker;
+               ind = parent[ind];
+          }
+          MyMarker * sub_marker = sub_map[ind];
+          child_marker->parent = sub_marker;
+          // sub_marker is not added
+          //par_tree.push_back(sub_marker);
+     }
+
+     cout<<par_tree.size()<<" markers in par_tree"<<endl;
+
 
 	if(phi) {delete [] phi; phi = 0;}
 	if(parent) {delete [] parent; parent = 0;}
@@ -1000,34 +1005,44 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 
 }
 
+
+
 #ifndef GET_LINE_MARKER_MAP
 #define GET_LINE_MARKER_MAP(marker1, marker2, marker_map) \
 {\
-	double dst = sqrt((marker1.x - marker2.x) * (marker1.x - marker2.x) + \
-			(marker1.y - marker2.y) * (marker1.y - marker2.y) + \
-			(marker1.z - marker2.z) * (marker1.z - marker2.z));\
-	if(dst==0.0) \
-	{\
-		MyMarker * marker = new MyMarker(marker1);\
-		marker_map.insert(pair<MyMarker*, double>(marker, INF));\
-	}\
-	else\
-	{\
-		double tx = (marker2.x - marker1.x) / dst;\
-		double ty = (marker2.y - marker1.y) / dst;\
-		double tz = (marker2.z - marker1.z) / dst;\
-		for(double r = 0.0; r < dst+1; r++)\
-		{\
-			int x = marker1.x + tx * r + 0.5;\
-			int y = marker1.y + ty * r + 0.5;\
-			int z = marker1.z + tz * r + 0.5;\
-			MyMarker * marker = new MyMarker(x,y,z);\
-			marker_map.insert(pair<MyMarker*, double>(marker, INF));\
-		}\
-	}\
+    double dst = sqrt((marker1.x - marker2.x) * (marker1.x - marker2.x) + \
+            (marker1.y - marker2.y) * (marker1.y - marker2.y) + \
+            (marker1.z - marker2.z) * (marker1.z - marker2.z));\
+    set<MyMarker> unique_markers;\
+    if(dst==0.0) \
+    {\
+        MyMarker * marker = new MyMarker(marker1);\
+        marker_map.insert(pair<MyMarker*, float>(marker, INF));\
+    }\
+    else\
+    {\
+        double tx = (marker2.x - marker1.x) / dst;\
+        double ty = (marker2.y - marker1.y) / dst;\
+        double tz = (marker2.z - marker1.z) / dst;\
+        for(double r = 0.0; r < dst+1; r++) \
+        {\
+            int x = marker1.x + tx * r + 0.5;\
+            int y = marker1.y + ty * r + 0.5;\
+            int z = marker1.z + tz * r + 0.5;\
+            if(unique_markers.find(MyMarker(x,y,z)) == unique_markers.end())\
+            {\
+                MyMarker * marker = new MyMarker(x,y,z);\
+                marker_map.insert(pair<MyMarker*, float>(marker, INF));\
+                unique_markers.insert(*marker);\
+            }\
+        }\
+    }\
+    unique_markers.clear();\
 }
 
 #endif
+
+
 
 template<class T> bool fastmarching_drawing3(vector<MyMarker> & near_markers, vector<MyMarker> &far_markers, T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, int cnn_type = 2)
 {

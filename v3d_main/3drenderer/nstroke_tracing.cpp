@@ -1407,7 +1407,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
      {
           b_useStrokeBB = true;
           b_use2PointsBB = !b_useStrokeBB;
-          b_useTiltedBB = false;
+          b_useTiltedBB =  !b_useStrokeBB;
      }
 
      if(selectMode == smCurveTiltedBB_fm)

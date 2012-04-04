@@ -1951,8 +1951,9 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     writeSWC_file(filenameml_ab, testNeuronTree);
                     // save to ano
                     fprintf(fp, "SWCFILE=%s\n", filenameml.toStdString().c_str());
+
                     // ===================================================================
-                    // // using two marker lists (OneStrokeBB) for fast marching to get a curve
+                    // using two marker lists (OneStrokeBB) for fast marching to get a curve
                     // loc_vec_input.clear();
                     // loc_vec0.clear();
                     // selectMode = smCurveUseStrokeBB_fm; //============================================ to change
