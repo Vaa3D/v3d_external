@@ -1913,6 +1913,142 @@ void  Renderer_gl1::resampleCurveStrokes(int index, int chno, vector<int> &ids)
 }
 
 
+
+// void  Renderer_gl1::resampleCurveStrokes2(int index, int chno, vector<int> &ids)
+// {
+// #define DIST
+//      V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+//      My4DImage* curImg = 0;
+//      if (w)
+//           curImg = v3dr_getImage4d(_idep);
+
+// 	int N = list_listCurvePos.at(index).size();
+//      vector<double> maxval;
+//      maxval.clear();
+
+
+//      // push_back the first index
+//      ids.push_back(0);
+
+//      for (int i=0; i<N; i++)
+//      {
+//           const MarkerPos & pos = list_listCurvePos.at(index).at(i);
+
+
+//           double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+//           clipplane[3] = viewClip;
+//           ViewPlaneToModel(pos.MV, clipplane);
+
+//           XYZ loc0, loc1;
+//           _MarkerPos_to_NearFarPoint(pos, loc0, loc1);
+
+//           // get max value on each (loc0,loc)
+//           XYZ D = loc1-loc0; normalize(D);
+
+// 		unsigned char* vp = 0;
+// 		switch (curImg->getDatatype())
+// 		{
+// 			case V3D_UINT8:
+// 				vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1);
+// 				break;
+// 			case V3D_UINT16:
+// 				vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(short int);
+// 				break;
+// 			case V3D_FLOAT32:
+// 				vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1)*sizeof(float);
+// 				break;
+// 			default:
+// 				v3d_msg("Unsupported data type found. You should never see this.", 0);
+// 				return;
+// 		}
+
+//           // directly use max value on the line
+//           // double length = norm(loc1-loc0);
+//           // float maxvali=0.0;
+
+//           // double step;
+//           // int nstep = int(length + 0.5);
+//           // if(length<0.5)
+//           //      step = 1.0;
+//           // else
+//           //      step = length/nstep;
+
+//           // for (int i=0; i<=nstep; i++)
+//           // {
+//           //      XYZ P;
+//           //      if(length<0.5)
+//           //           P = (loc0+loc1)*0.5;
+//           //      else
+//           //           P= loc0 + D*step*(i);
+//           //      float value;
+//           //      switch (curImg->getDatatype())
+//           //      {
+//           //           case V3D_UINT8:
+//           //                value = sampling3dAllTypesatBounding( vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+//           //                break;
+//           //           case V3D_UINT16:
+//           //                value = sampling3dAllTypesatBounding( (short int *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+//           //                break;
+//           //           case V3D_FLOAT32:
+//           //                value = sampling3dAllTypesatBounding( (float *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+//           //                break;
+//           //           default:
+//           //                v3d_msg("Unsupported data type found. You should never see this.", 0);
+//           //                return;
+//           //      }
+
+//           //      if(value > maxvali)
+//           //           maxvali = value;
+//           // }
+
+
+//           // use value on center of mass for comparing
+//           XYZ P  = getCenterOfLineProfile(loc0, loc1, clipplane, chno);
+//           float value;
+//           switch (curImg->getDatatype())
+//           {
+//                case V3D_UINT8:
+//                     value = sampling3dAllTypesatBounding( vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+//                     break;
+//                case V3D_UINT16:
+//                     value = sampling3dAllTypesatBounding( (short int *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+//                     break;
+//                case V3D_FLOAT32:
+//                     value = sampling3dAllTypesatBounding( (float *)vp, dim1, dim2, dim3,  P.x, P.y, P.z, dataViewProcBox.box, clipplane);
+//                     break;
+//                default:
+//                     v3d_msg("Unsupported data type found. You should never see this.", 0);
+//                     return;
+//           }
+//           float maxvali=value;
+
+//           // for two approaches
+//           maxval.push_back(maxvali);
+//      }
+
+//      // using map to sort maxval
+//      map<double, int> max_score;
+//      for(int i=0; i<maxval.size(); i++)
+//      {
+//           max_score[maxval.at(i)] = i;
+//      }
+
+//      map<double, int>::reverse_iterator it;
+
+//      int count=0;
+//      for(it=max_score.rbegin(); it!=max_score.rend(); it++)
+//      {
+//           count++;
+//           if(count >= max_score.size()/10.0)
+//                break;
+//           ids.push_back(it->second);
+//      }
+
+// }
+
+
+
+
 void Renderer_gl1::solveCurveFromMarkersGD(bool b_customized_bb)
 {
 	qDebug("  Renderer_gl1::solveCurveMarkersGD");

@@ -618,8 +618,9 @@ template<class T> bool fastmarching_drawing2(vector<MyMarker> & near_markers, ve
  * max_int is set to 255 always
  * markers in tar_markers and sub_markers are not included
  * *****************************************************************************/
-template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers, map<MyMarker*, double> & tar_markers, T * inimg1d, vector<MyMarker*> & par_tree, int sz0, int sz1, int sz2, int cnn_type = 2)
+template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers, map<MyMarker*, double> & tar_markers, T * inimg1d, vector<MyMarker*> & par_tree, int sz0, int sz1, int sz2, int stop_num, int cnn_type = 2)
 {
+     stop_num = MIN(stop_num, tar_markers.size());
 	enum{ALIVE = -1, TRIAL = 0, FAR = 1};
 
 	long tol_sz = sz0 * sz1 * sz2;
@@ -711,7 +712,7 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 		if(tar_map.find(min_ind) != tar_map.end())
 		{
 			marched_inds.push_back(min_ind);
-			if(marched_inds.size() >= tar_markers.size()/2) break;
+			if(marched_inds.size() > stop_num) break;
 		}
 
 		delete min_elem;
@@ -824,7 +825,7 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 // Please make sure
 // 1. sub_markers are located between nm1 and fm1
 //
-template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers, map<MyMarker*, double> & tar_markers, T * inimg1d, vector<MyMarker*> & par_tree, int sz0, int sz1, int sz2, MyMarker nm1, MyMarker fm1, MyMarker nm2, MyMarker fm2, int cnn_type = 2)
+template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers, map<MyMarker*, double> & tar_markers, T * inimg1d, vector<MyMarker*> & par_tree, int sz0, int sz1, int sz2, MyMarker nm1, MyMarker fm1, MyMarker nm2, MyMarker fm2, int stop_num, int cnn_type = 2)
 {
 	assert(par_tree.empty());
 	long sz01 = sz0 * sz1;
@@ -969,7 +970,7 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 		tar_marker->y = margin + dst_rect01;
 		tar_marker->z = margin;
 	}
-	fastmarching_linker(sub_markers, tar_markers, outimg1d, par_tree, bsz0, bsz1, bsz2, cnn_type);
+	fastmarching_linker(sub_markers, tar_markers, outimg1d, par_tree, bsz0, bsz1, bsz2, stop_num, cnn_type);
 	for(map<MyMarker*, double>::iterator it = sub_markers.begin(); it != sub_markers.end(); it++)
 	{
 		MyMarker * sub_marker = it->first;
@@ -1088,14 +1089,15 @@ template<class T> bool fastmarching_drawing3(vector<MyMarker> & near_markers, ve
 
 		sub_markers.clear(); sub_markers = tar_markers;
 		tar_markers.clear(); GET_LINE_MARKER_MAP(near_marker2, far_marker2, tar_markers);
-		fastmarching_linker(sub_markers, tar_markers, inimg1d, par_tree, sz0, sz1, sz2, near_marker1, far_marker1, near_marker2, far_marker2, cnn_type);
+          int stop_num = (i == (near_markers.size()-1))? 1 : (tar_markers.size()+1)/2;
+		fastmarching_linker(sub_markers, tar_markers, inimg1d, par_tree, sz0, sz1, sz2, near_marker1, far_marker1, near_marker2, far_marker2, stop_num, cnn_type);
 		all_markers.insert(all_markers.end(), par_tree.begin(), par_tree.end()); par_tree.clear();
 		for(map<MyMarker*, double>::iterator it = tar_markers.begin(); it != tar_markers.end(); it++) all_markers.push_back(it->first);
 	}
 
 	// extract the best trajectory
 	double min_score = 0;
-	MyMarker * min_marker = 0;
+    	MyMarker * min_marker = 0;
 	for(map<MyMarker*, double>::iterator it = tar_markers.begin(); it != tar_markers.end(); it++)
 	{
 		MyMarker * marker = it->first;
