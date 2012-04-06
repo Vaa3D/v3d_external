@@ -1674,16 +1674,18 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
           }// end of b_useTitltedBB
      }
 
-     // // Save near/far locs for testing:
-     // FILE *nfile=fopen("/groups/peng/penglab/Zhou/cut/near.marker", "wt");
-     // for(int ii=0; ii<nearpos_vec.size(); ii++)
-     //      fprintf(nfile, "%f,%f,%f,5,1,,\n", nearpos_vec.at(ii).x+1, nearpos_vec.at(ii).y+1, nearpos_vec.at(ii).z+1);
-     // fclose(nfile);
-     // FILE *ffile=fopen("/groups/peng/penglab/Zhou/cut/far.marker", "wt");
-     // for(int ii=0; ii<farpos_vec.size(); ii++)
-     //      fprintf(ffile, "%f,%f,%f,5,1,,\n", farpos_vec.at(ii).x+1, farpos_vec.at(ii).y+1, farpos_vec.at(ii).z+1);
-     // fclose(ffile);
-
+     // Save near/far locs for testing:
+if (0)
+{
+    FILE *nfile=fopen("near.marker", "wt");
+     for(int ii=0; ii<nearpos_vec.size(); ii++)
+          fprintf(nfile, "%f,%f,%f,5,1,,\n", nearpos_vec.at(ii).x+1, nearpos_vec.at(ii).y+1, nearpos_vec.at(ii).z+1);
+     fclose(nfile);
+     FILE *ffile=fopen("far.marker", "wt");
+     for(int ii=0; ii<farpos_vec.size(); ii++)
+          fprintf(ffile, "%f,%f,%f,5,1,,\n", farpos_vec.at(ii).x+1, farpos_vec.at(ii).y+1, farpos_vec.at(ii).z+1);
+     fclose(ffile);
+}
 
      PROGRESS_PERCENT(90);
 
@@ -1754,7 +1756,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
 
      // adaptive curve simpling
      vector <XYZ> loc_vec_resampled;
-     int stepsize = 3; // sampling stepsize 5
+     int stepsize = 7; // sampling stepsize 5
      loc_vec_resampled.clear();
      adaptiveCurveResampling(loc_vec, loc_vec_resampled, stepsize); //this function should be the source of the redundant intermediate points
 	//	loc_vec_resampled = loc_vec;
@@ -1907,7 +1909,8 @@ void  Renderer_gl1::resampleCurveStrokes(int index, int chno, vector<int> &ids)
      for(it=max_score.rbegin(); it!=max_score.rend(); it++)
      {
           count++;
-          if(count >= max_score.size()/10.0)
+         if(count >= max_score.size()/1) //tentatively make it no downsampling. by PHC 20120405. 
+//          if(count >= max_score.size()/10.0)
                break;
           ids.push_back(it->second);
      }

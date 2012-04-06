@@ -401,7 +401,8 @@ vector <V_NeuronSWC> decompose_V_NeuronSWC(V_NeuronSWC & in_swc)
 			 || (nodelink.nlink ==2 && nodelink.in_link.size()==0)) // pure-out point
 			{
 				istart = i;
-				qDebug("start from #%d", V3DLONG(cur_node.n));
+				if (0)
+                    qDebug("start from #%d", V3DLONG(cur_node.n));
 				break; //find a start point
 			}
 		}
