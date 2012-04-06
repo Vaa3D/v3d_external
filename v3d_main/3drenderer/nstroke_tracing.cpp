@@ -1660,11 +1660,13 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
           if(b_useTiltedBB)
           {
                vector<MyMarker *> outswc;
-               if(!fastmarching_drawing3(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz))
+               //if(!fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz))
+               if(!fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1)) //replace the above method, may produce better res?? 20120405, PHC
                {
                     v3d_msg("Error in creating the curve", 0);
                }
 
+              //if fail, should not add curve? 120405, PHC?
                XYZ sub_orig = XYZ(0,0,0);
                PROCESS_OUTSWC_TO_CURVE(outswc, sub_orig, 1);
                //always remember to free the potential-memory-problematic fastmarching_linker return value
