@@ -985,11 +985,10 @@ V3dR_MainWindow * V3d_PluginLoader::find3DViewerByName(QString fileName)
 }
 
 
-//the following 4 functions added PHC 20120406 to allow uses to access the surface data objects in a 3D viewer
+//the following 12 functions are added PHC 20120406 to allow uses to access the surface data objects in a 3D viewer
 
-QList <NeuronTree> * V3d_PluginLoader::getHandleNeuronTrees_3DGlobalViewer(v3dhandle image_window)
+QList <NeuronTree> * getHandleNeuronTrees_3DGLWidget(V3dR_GLWidget *vi) //a utility function
 {
-	V3dR_GLWidget * vi = (V3dR_GLWidget *)(getView3DControl(image_window));
     if (!vi) return 0;
     else
     {
@@ -1001,9 +1000,23 @@ QList <NeuronTree> * V3d_PluginLoader::getHandleNeuronTrees_3DGlobalViewer(v3dha
     }    
 }
 
-QList <CellAPO>    * V3d_PluginLoader::getHandleAPOCellList_3DGlobalViewer(v3dhandle image_window)
+QList <NeuronTree> * V3d_PluginLoader::getHandleNeuronTrees_3DGlobalViewer(v3dhandle image_window)
 {
 	V3dR_GLWidget * vi = (V3dR_GLWidget *)(getView3DControl(image_window));
+    return getHandleNeuronTrees_3DGLWidget(vi);
+}
+
+QList <NeuronTree> * V3d_PluginLoader::getHandleNeuronTrees_Any3DViewer(V3dR_MainWindow *w)
+{
+    if (!w) return 0;
+	V3dR_GLWidget * vi = w->getGLWidget();
+    return getHandleNeuronTrees_3DGLWidget(vi);
+}
+
+//=======
+
+QList <CellAPO>    * getHandleAPOCellList_3DGLWidget(V3dR_GLWidget *vi) //a utility function
+{
     if (!vi) return 0;
     else
     {
@@ -1012,6 +1025,35 @@ QList <CellAPO>    * V3d_PluginLoader::getHandleAPOCellList_3DGlobalViewer(v3dha
             return 0;
         else
             return gp->getHandleAPOCellList();
+    }    
+}
+
+QList <CellAPO>    * V3d_PluginLoader::getHandleAPOCellList_3DGlobalViewer(v3dhandle image_window)
+{
+	V3dR_GLWidget * vi = (V3dR_GLWidget *)(getView3DControl(image_window));
+    return getHandleAPOCellList_3DGLWidget(vi);
+}
+
+QList <CellAPO>    * V3d_PluginLoader::getHandleAPOCellList_Any3DViewer(V3dR_MainWindow *w) 
+{
+    if (!w) return 0;
+	V3dR_GLWidget * vi = w->getGLWidget();
+    return getHandleAPOCellList_3DGLWidget(vi);
+}
+
+//====
+
+QList <LabelSurf> getListLabelSurf_3DGLWidget(V3dR_GLWidget *vi) //a utility function
+{
+    QList <LabelSurf> mylabelsurf;
+    if (!vi) return mylabelsurf;
+    else
+    {
+        Renderer_gl1 * gp = (Renderer_gl1 *)(vi->getRenderer());
+        if (!gp)
+            return mylabelsurf;
+        else
+            return gp->getListLabelSurf();
     }    
 }
 
@@ -1020,86 +1062,21 @@ QList <LabelSurf> V3d_PluginLoader::getListLabelSurf_3DGlobalViewer(v3dhandle im
     QList <LabelSurf> mylabelsurf;
     
 	V3dR_GLWidget * vi = (V3dR_GLWidget *)(getView3DControl(image_window));
-    if (!vi) return mylabelsurf;
-    else
-    {
-        Renderer_gl1 * gp = (Renderer_gl1 *)(vi->getRenderer());
-        if (!gp)
-            return mylabelsurf;
-        else
-            return gp->getListLabelSurf();
-    }    
-}
-
-bool V3d_PluginLoader::setListLabelSurf_3DGlobalViewer(v3dhandle image_window, QList <LabelSurf> listLabelSurfinput)
-{
-	V3dR_GLWidget * vi = (V3dR_GLWidget *)(getView3DControl(image_window));
-    if (!vi) return false;
-    else
-    {
-        Renderer_gl1 * gp = (Renderer_gl1 *)(vi->getRenderer());
-        if (!gp)
-            return false;
-        else
-        {
-            gp->setListLabelSurf(listLabelSurfinput);
-            return true;
-        }
-    }        
-}
-
-//added PHC 20120406 to allow uses to access the surface data objects in a 3D viewer
-QList <NeuronTree> * V3d_PluginLoader::getHandleNeuronTrees_Any3DViewer(V3dR_MainWindow *w)
-{
-    if (!w) return 0;
-	V3dR_GLWidget * vi = w->getGLWidget();
-    if (!vi) return 0;
-    else
-    {
-        Renderer_gl1 * gp = (Renderer_gl1 *)(vi->getRenderer());
-        if (!gp)
-            return 0;
-        else
-            return gp->getHandleNeuronTrees();
-    }        
-}
-
-QList <CellAPO>    * V3d_PluginLoader::getHandleAPOCellList_Any3DViewer(V3dR_MainWindow *w) 
-{
-    if (!w) return 0;
-	V3dR_GLWidget * vi = w->getGLWidget();
-    if (!vi) return 0;
-    else
-    {
-        Renderer_gl1 * gp = (Renderer_gl1 *)(vi->getRenderer());
-        if (!gp)
-            return 0;
-        else
-            return gp->getHandleAPOCellList();
-    }       
+    return getListLabelSurf_3DGLWidget(vi);
 }
 
 QList <LabelSurf> V3d_PluginLoader::getListLabelSurf_Any3DViewer(V3dR_MainWindow *w)
 {
     QList <LabelSurf> mylabelsurf;
-    
     if (!w) return mylabelsurf;
 	V3dR_GLWidget * vi = w->getGLWidget();
-    if (!vi) return mylabelsurf;
-    else
-    {
-        Renderer_gl1 * gp = (Renderer_gl1 *)(vi->getRenderer());
-        if (!gp)
-            return mylabelsurf;
-        else
-            return gp->getListLabelSurf();
-    }       
+    return getListLabelSurf_3DGLWidget(vi);
 }
 
-bool V3d_PluginLoader::setListLabelSurf_Any3DViewer(V3dR_MainWindow *w, QList <LabelSurf> listLabelSurfinput)
+//==========
+
+bool setListLabelSurf_3DGLWidget(V3dR_GLWidget *vi, QList <LabelSurf> listLabelSurfinput) //a utility function
 {
-    if (!w) return false;
-	V3dR_GLWidget * vi = w->getGLWidget();
     if (!vi) return false;
     else
     {
@@ -1112,5 +1089,18 @@ bool V3d_PluginLoader::setListLabelSurf_Any3DViewer(V3dR_MainWindow *w, QList <L
             return true;
         }
     }            
+}
+
+bool V3d_PluginLoader::setListLabelSurf_3DGlobalViewer(v3dhandle image_window, QList <LabelSurf> listLabelSurfinput)
+{
+	V3dR_GLWidget * vi = (V3dR_GLWidget *)(getView3DControl(image_window));
+    return setListLabelSurf_3DGLWidget(vi, listLabelSurfinput);
+}
+
+bool V3d_PluginLoader::setListLabelSurf_Any3DViewer(V3dR_MainWindow *w, QList <LabelSurf> listLabelSurfinput)
+{
+    if (!w) return false;
+	V3dR_GLWidget * vi = w->getGLWidget();
+    return setListLabelSurf_3DGLWidget(vi, listLabelSurfinput);
 }
 
