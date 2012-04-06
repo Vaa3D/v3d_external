@@ -196,6 +196,7 @@ HEADERS += ../basic_c_fun/mg_utilities.h \
     ../neuron_tracing/heap.h \
     ../neuron_tracing/fastmarching_linker.h \
 	../imaging/v3d_imaging.h \
+    ../neuron_toolbox/vaa3d_neurontoolbox.h \
 	../multithreadimageIO/v3d_multithreadimageIO.h \
     v3d_global_preference_dialog.h \
     v3d_compile_constraints.h \
@@ -283,6 +284,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../3drenderer/hoverpoints.cpp \
     ../3drenderer/barFigureDialog.cpp \
 	../imaging/v3d_imaging.cpp \
+    ../neuron_toolbox/vaa3d_neurontoolbox.cpp \
 	../multithreadimageIO/v3d_multithreadimageIO.cpp \
     v3d_version_info.cpp \
     v3d_application.cpp \

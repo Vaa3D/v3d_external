@@ -65,6 +65,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../imaging/v3d_imaging.h"
 #include "../basic_c_fun/v3d_curvetracepara.h"
 
+#include "../neuron_toolbox/vaa3d_neurontoolbox.h"
 
 #endif //test_main_cpp
 
@@ -255,6 +256,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*actNeuronOneSegMergeToCloseby=0, *actNeuronAllSegMergeToCloseby=0,
 
 			*actDispNeuronNodeInfo=0,	*actAveDistTwoNeurons=0, *actDispNeuronMorphoInfo=0,
+            *actDoNeuronToolBoxPlugin=0,
 
 			*actDispSurfVertexInfo=0,
 			*actComputeSurfArea=0, *actComputeSurfVolume=0;
@@ -595,6 +597,21 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				listAct.append(actDispNeuronMorphoInfo = new QAction("display morphology info for the whole neuron", w));
 				listAct.append(actDispNeuronNodeInfo = new QAction("display nearest neuron-node info", w));
 
+                //check the existence of a neuron_toolbox plugin, if yes, then create a menu. If no, do nothing. by PHC, 20120406
+                {
+                    QFile qf("plugins/neuron_toolbox");
+                    if (!qf.exists())
+                    {
+                        v3d_msg("Cannot find ./plugins/neuron_toolbox directory!", 0);
+                    }
+                    else
+                    {
+                        listAct.append(act = new QAction("", w)); act->setSeparator(true);
+                        listAct.append(actDoNeuronToolBoxPlugin = new QAction("NeuronToolbox", w));
+                        listAct.append(act = new QAction("", w)); act->setSeparator(true);
+                    }
+                }
+                
 				if (listNeuronTree.size()>=1 && w && curImg)
 				//by PHC. only enable the following pop-up menu when there is the image data, only one neuron (presumably the one being reconstructed
 				//this may be revised later so that the raw image can contain multiple neurons. But as of now (090206), I only allow one neuron being reconstructed at a time
@@ -1688,6 +1705,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		ts2.setNum(names[2]); tmpstr += ts2 + "<br>" + get_neuron_morpho_features_str(&(listNeuronTree.at(names[2]-1)));
 		QMessageBox::information(0, "neuron info", tmpstr);
 		qDebug() << tmpstr;
+	}
+	else if (act==actDoNeuronToolBoxPlugin)
+	{
+        vaa3d_neurontoolbox_paras np;
+        doNeuronToolBoxPlugin(curXWidget->getMainControlWindow(), np);
 	}
 
 #endif //tes_main_cpp
