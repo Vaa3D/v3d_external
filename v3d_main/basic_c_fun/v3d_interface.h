@@ -155,6 +155,8 @@ public:
 
 class TriviewControl; //added by PHC, 2010-Dec-08
 class View3DControl;
+class MainWindow;
+class V3dR_MainWindow;
 
 class V3DPluginCallback2 : public V3DPluginCallback
 {
@@ -164,6 +166,12 @@ public:
 	virtual View3DControl * getView3DControl(v3dhandle image_window) = 0;
 	virtual View3DControl * getLocalView3DControl(v3dhandle image_window) = 0;
 	virtual TriviewControl * getTriviewControl(v3dhandle image_window) = 0;
+  
+    //added PHC 20120406. add a main window handle, to allow access everything in Vaa3D
+    
+    virtual MainWindow * getVaa3DMainWindow() = 0; 
+    virtual QList <V3dR_MainWindow *> getListAll3DViewers() = 0; 
+    virtual V3dR_MainWindow * find3DViewerByName(QString fileName) = 0; //the name can be partially matched    
     
     //added PHC 20120406 to allow uses to access the surface data objects in a 3D viewer
 	virtual QList <NeuronTree> * getHandleNeuronTrees_3DGlobalViewer(v3dhandle image_window) = 0;

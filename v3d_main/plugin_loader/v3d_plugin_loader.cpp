@@ -959,6 +959,31 @@ TriviewControl * V3d_PluginLoader::getTriviewControl(v3dhandle image_window)
 	return tvi;
 }
 
+//added PHC 20120406. add a main window handle, to allow access everything in Vaa3D
+
+MainWindow * V3d_PluginLoader::getVaa3DMainWindow()
+{
+    return v3d_mainwindow;
+}
+
+QList <V3dR_MainWindow *> V3d_PluginLoader::getListAll3DViewers()
+{
+    QList <V3dR_MainWindow *> mylist;
+    if (v3d_mainwindow)
+        return v3d_mainwindow->list_3Dview_win;
+    else
+        return mylist;
+}
+
+V3dR_MainWindow * V3d_PluginLoader::find3DViewerByName(QString fileName) 
+{
+    if (v3d_mainwindow)
+        return v3d_mainwindow->find3DViewer(fileName);
+    else
+        return 0;
+}
+
+
 //the following 4 functions added PHC 20120406 to allow uses to access the surface data objects in a 3D viewer
 
 QList <NeuronTree> * V3d_PluginLoader::getHandleNeuronTrees_3DGlobalViewer(v3dhandle image_window)

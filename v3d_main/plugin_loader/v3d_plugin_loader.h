@@ -143,6 +143,12 @@ public:
 	virtual View3DControl * getLocalView3DControl(v3dhandle image_window);
 	virtual TriviewControl * getTriviewControl(v3dhandle image_window); //aded by PHC, 2010-12-08
 
+    //added PHC 20120406. add a main window handle, to allow access everything in Vaa3D
+    
+    virtual MainWindow * getVaa3DMainWindow(); 
+    virtual QList <V3dR_MainWindow *> getListAll3DViewers(); 
+    virtual V3dR_MainWindow * find3DViewerByName(QString fileName); //the name can be partially matched    
+    
     //added PHC 20120406 to allow uses to access the surface data objects in a 3D viewer
 	virtual QList <NeuronTree> * getHandleNeuronTrees_3DGlobalViewer(v3dhandle image_window); 
 	virtual QList <CellAPO>    * getHandleAPOCellList_3DGlobalViewer(v3dhandle image_window);   
