@@ -1399,9 +1399,9 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
      XYZ sub_orig;
      double* pSubdata;
      V3DLONG sub_szx, sub_szy, sub_szz;
-     bool b_useStrokeBB = false;           // use the stroke decided BB
+     bool b_useStrokeBB  = true;           // use the stroke decided BB
      bool b_use2PointsBB = !b_useStrokeBB; // use the two-point decided BB
-     bool b_useTiltedBB=false;
+     bool b_useTiltedBB  = false;             // use tilted BB
     bool b_useSerialBBox=false; //added by PHC 20120405
 
      if(selectMode == smCurveUseStrokeBB_fm)
@@ -1678,6 +1678,8 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
                //always remember to free the potential-memory-problematic fastmarching_linker return value
                clean_fm_marker_vector(outswc);
           }// end of b_useTitltedBB
+          //clean pSubdata of subvolume boundingbox
+          if(b_useStrokeBB) {if(pSubdata) {delete [] pSubdata; pSubdata=0;}}
      }
 
      // Save near/far locs for testing:

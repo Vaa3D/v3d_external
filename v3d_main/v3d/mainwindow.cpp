@@ -1162,7 +1162,7 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
         {
 			QString basename = curfile_info.baseName();
 
-			QString hraw_prefix = curfile_info.absolutePath() + "/" + basename.left(basename.indexOf(".")); // before the first "."
+			QString hraw_prefix = "test";//""curfile_info.absolutePath()  + basename.left(basename.indexOf(".")); // before the first "."
 
 			string prefix = hraw_prefix.toStdString();
 			//string prefix ="/Volumes/PengMapView/mapview_testdata/ananya/test";

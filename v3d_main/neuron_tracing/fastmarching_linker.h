@@ -1147,18 +1147,18 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 {
 	cout<<"welcome to fastmarching_drawing4"<<endl;
 	assert(near_markers.size() == far_markers.size());
-    
+
 	MyMarker nm1, nm2, fm1, fm2;
 	nm2 = near_markers[0];
 	fm2 = far_markers[0];
 	long sz01 = sz0 * sz1;
-    
-	set<MyMarker> all_mask;
+
+	vector<MyMarker> all_mask;
 	for(int m = 1; m < near_markers.size(); m++)
 	{
 		nm1 = nm2; fm1 = fm2;
 		nm2 = near_markers[m]; fm2 = far_markers[m];
-        
+
 		// 1. calc rt
 		double rt[3] = {0.0, 0.0, 0.0};
 		if(nm1 != fm1)
@@ -1167,8 +1167,8 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 			double ty1 = fm1.y - nm1.y;
 			double tz1 = fm1.z - nm1.z;
 			double dst1 = sqrt(tx1 * tx1 + ty1 * ty1 + tz1 * tz1);
-			rt[0] = tx1 / dst1; 
-			rt[1] = ty1 / dst1; 
+			rt[0] = tx1 / dst1;
+			rt[1] = ty1 / dst1;
 			rt[2] = tz1 / dst1;
 		}
 		else if(nm2 != fm2)
@@ -1177,8 +1177,8 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 			double ty2 = fm2.y - nm2.y;
 			double tz2 = fm2.z - nm2.z;
 			double dst2 = sqrt(tx2 * tx2 + ty2 * ty2 + tz2 * tz2);
-			rt[0] = tx2 / dst2; 
-			rt[1] = ty2 / dst2; 
+			rt[0] = tx2 / dst2;
+			rt[1] = ty2 / dst2;
 			rt[2] = tz2 / dst2;
 		}
 		else
@@ -1190,19 +1190,19 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 		double n1n2[3] = {nm2.x - nm1.x, nm2.y - nm1.y, nm2.z - nm1.z};
 		MAKE_UNIT(n1n2);
 		double n2n1[3] = {-n1n2[0], -n1n2[1], -n1n2[2]};
-        
-		double f1f2[3] = {fm2.x - fm1.x, fm2.y - fm1.y, fm2.z - fm1.z}; 
+
+		double f1f2[3] = {fm2.x - fm1.x, fm2.y - fm1.y, fm2.z - fm1.z};
 		MAKE_UNIT(f1f2);
 		double f2f1[3] = {-f1f2[0], -f1f2[1], -f1f2[2]};
-        
+
 		double n1f1[3] = {rt[0], rt[1], rt[2]};
 		double f1n1[3] = {-rt[0], -rt[1], -rt[2]};
-        
+
 		double n2f2[3] = {rt[0], rt[1], rt[2]};
 		double f2n2[3] = {-rt[0], -rt[1], -rt[2]};
-        
+
 		int margin = 5;
-        
+
 		// 1. get initial rectangel
 		MyMarker rect[4] = {nm1, nm2, fm2, fm1};
 		double cos_n1, cos_n2, cos_f1, cos_f2;
@@ -1226,7 +1226,7 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 			double d = dist(fm1, fm2) * (-cos_f1);
 			rect[3] = MyMarker(fm1.x + d * rt[0], fm1.y + d * rt[1], fm1.z + d * rt[2]);
 		}
-        
+
 		// 2. add margin
 		double a[3];
 		a[0] = rect[3].x - rect[0].x;
@@ -1234,26 +1234,26 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 		a[2] = rect[3].z - rect[0].z;
 		double la = sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
 		a[0] /= la; a[1] /= la; a[2] /= la;
-        
+
 		double b[3];
 		b[0] = rect[1].x - rect[0].x;
 		b[1] = rect[1].y - rect[0].y;
 		b[2] = rect[1].z - rect[0].z;
 		double lb = sqrt(b[0] * b[0] + b[1] * b[1] + b[2] * b[2]);
 		b[0] /= lb; b[1] /= lb; b[2] /= lb;
-        
+
 		double c[3];
 		c[0] = a[1] * b[2] - a[2] * b[1];
 		c[1] = a[2] * b[0] - a[0] * b[2];
 		c[2] = a[0] * b[1] - a[1] * b[0];
 		double lc = sqrt(c[0] * c[0] + c[1] * c[1] + c[2] * c[2]);
 		c[0] /= lc; c[1] /= lc; c[2] /= lc;
-        
+
 		MyMarker o;
 		o.x = rect[0].x - margin * a[0] - margin * b[0] - margin * c[0];
 		o.y = rect[0].y - margin * a[1] - margin * b[1] - margin * c[1];
 		o.z = rect[0].z - margin * a[2] - margin * b[2] - margin * c[2];
-        
+
 		long bsz0 = dist(rect[0], rect[3]) + 1 + 2 * margin + 0.5;
 		long bsz1 = dist(rect[0], rect[1]) + 1 + 2 * margin + 0.5;
 		long bsz2 = 1 + 2 * margin + 0.5;
@@ -1267,9 +1267,9 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 					long ii = o.x + i * a[0] + j * b[0] + k * c[0] + 0.5;
 					long jj = o.y + i * a[1] + j * b[1] + k * c[1] + 0.5;
 					long kk = o.z + i * a[2] + j * b[2] + k * c[2] + 0.5;
-					if(ii >= 0 && ii < sz0 && jj >= 0 && jj < sz1 && kk >= 0 && kk < sz2) 
+					if(ii >= 0 && ii < sz0 && jj >= 0 && jj < sz1 && kk >= 0 && kk < sz2)
 					{
-						all_mask.insert(MyMarker(ii,jj,kk));
+						all_mask.push_back(MyMarker(ii,jj,kk));
 					}
 				}
 			}
@@ -1278,7 +1278,7 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 	// prepare boundingbox
 	long mx = MAX_INT, my = MAX_INT, mz = MAX_INT;
 	long Mx = 0, My = 0, Mz = 0;
-	for(set<MyMarker>::iterator it = all_mask.begin(); it != all_mask.end(); it++)
+	for(vector<MyMarker>::iterator it = all_mask.begin(); it != all_mask.end(); it++)
 	{
 		MyMarker marker = *it;
 		mx = MIN(mx , marker.x);
@@ -1288,14 +1288,14 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 		My = MAX(My, marker.y);
 		Mz = MAX(Mz, marker.z);
 	}
-    
+
 	long msz0 = Mx - mx + 1;
 	long msz1 = My - my + 1;
 	long msz2 = Mz - mz + 1;
 	long msz01 = msz0 * msz1;
 	long mtol_sz = msz2 * msz01;
 	unsigned char * mskimg1d = new unsigned char[mtol_sz]; memset(mskimg1d, 0, mtol_sz);
-	for(set<MyMarker>::iterator it = all_mask.begin(); it != all_mask.end(); it++)
+	for(vector<MyMarker>::iterator it = all_mask.begin(); it != all_mask.end(); it++)
 	{
 		MyMarker marker = *it;
 		MyMarker m_marker = MyMarker(marker.x - mx, marker.y - my, marker.z - mz);
@@ -1303,12 +1303,12 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 	}
 	nm1 = near_markers[0]; fm1 = far_markers[0];
 	nm2 = *near_markers.rbegin(); fm2 = *far_markers.rbegin();
-    
+
 	nm1 = MyMarker(nm1.x - mx, nm1.y - my, nm1.z - mz);
 	nm2 = MyMarker(nm2.x - mx, nm2.y - my, nm2.z - mz);
 	fm1 = MyMarker(fm1.x - mx, fm1.y - my, fm1.z - mz);
 	fm2 = MyMarker(fm2.x - mx, fm2.y - my, fm2.z - mz);
-    
+
 	vector<MyMarker> sub_markers, tar_markers;
 	GET_LINE_MARKERS(nm1, fm1, sub_markers);
 	GET_LINE_MARKERS(nm2, fm2, tar_markers);
@@ -1320,7 +1320,7 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 		outswc[i]->z += mz;
 	}
 	return true;
-    
+
 }
 
 
