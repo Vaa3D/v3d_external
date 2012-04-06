@@ -87,7 +87,7 @@ public:
     void setNeuronIndex(int index) {neuronIndex = index;}
     int getNeuronIndex() {return neuronIndex;}
     virtual void preparingRenderer();
-
+    
 protected:
 	virtual void choiceRenderer();
 	virtual void settingRenderer(); // for setting the default renderer state when initialize

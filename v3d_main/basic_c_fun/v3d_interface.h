@@ -164,6 +164,12 @@ public:
 	virtual View3DControl * getView3DControl(v3dhandle image_window) = 0;
 	virtual View3DControl * getLocalView3DControl(v3dhandle image_window) = 0;
 	virtual TriviewControl * getTriviewControl(v3dhandle image_window) = 0;
+    
+    //added PHC 20120406 to allow uses to access the surface data objects in a 3D viewer
+	virtual QList <NeuronTree> * getHandleNeuronTrees_3DGlobalViewer(v3dhandle image_window) = 0;
+	virtual QList <CellAPO>    * getHandleAPOCellList_3DGlobalViewer(v3dhandle image_window) = 0;        
+    virtual QList <LabelSurf> getListLabelSurf_3DGlobalViewer(v3dhandle image_window) = 0;
+    virtual bool setListLabelSurf_3DGlobalViewer(v3dhandle image_window, QList <LabelSurf> listLabelSurfinput) = 0;
 };
 
 class V3DPluginInterface2
