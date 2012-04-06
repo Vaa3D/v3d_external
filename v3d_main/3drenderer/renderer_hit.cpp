@@ -239,7 +239,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
                *actCurveRefine=0, *actCurveEditRefine=0, *actCurveRubberDrag=0,  *actCurveDirectionInter=0,
           *actCurveCreate_pointclick_fm=0, *actCurveMarkerLists_fm=0, *actCurveRefine_fm=0,*actCurveEditRefine_fm=0,
-          *actCurveMarkerPool_fm=0, *actCurveCreateMarkerGD=0, *actCurveFrom1Marker_fm=0, *actCurveTiltedBB_fm=0,
+          *actCurveMarkerPool_fm=0, *actCurveCreateMarkerGD=0, *actCurveFrom1Marker_fm=0, *actCurveTiltedBB_fm=0, *actCurveTiltedBB_fm_sbbox=0,
           *actCurveCreateTest=0,// ZJL 110905
 
 			*actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
@@ -319,11 +319,16 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			actCurveMarkerLists_fm->setVisible(true);
 			actCurveMarkerLists_fm->setIconVisibleInMenu(true);
 
-               listAct.append(actCurveTiltedBB_fm = new QAction("1-right-stroke to define a 3D curve (adjacent-pair fast-marching in tilted BB)", w));
+               listAct.append(actCurveTiltedBB_fm = new QAction("1-right-stroke to define a 3D curve (adjacent-pair fast-marching - global optimal)", w));
                actCurveTiltedBB_fm->setIcon(QIcon(":/icons/stroke1.svg"));
 			actCurveTiltedBB_fm->setVisible(true);
 			actCurveTiltedBB_fm->setIconVisibleInMenu(true);
 
+            listAct.append(actCurveTiltedBB_fm_sbbox = new QAction("1-right-stroke to define a 3D curve (adjacent-pair fast-marching - serial BBoxes)", w));
+            actCurveTiltedBB_fm_sbbox->setIcon(QIcon(":/icons/stroke1.svg"));
+			actCurveTiltedBB_fm_sbbox->setVisible(true);
+			actCurveTiltedBB_fm_sbbox->setIconVisibleInMenu(true);
+            
                if (0) //disable two not-often used functions
                {
                     listAct.append(actCurveCreate2 = new QAction("2-right-strokes to define a 3D curve", w));
@@ -917,6 +922,12 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		b_addthiscurve = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
+     else if (act == actCurveTiltedBB_fm_sbbox) // 20120124 ZJL
+     {
+         selectMode = smCurveTiltedBB_fm_sbbox;
+         b_addthiscurve = true;
+         if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+     }
      else if (act == actCurveFrom1Marker_fm) // 20120328 ZJL
 	{
 		selectMode = smCurveFrom1Marker_fm;
@@ -1814,7 +1825,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
      else if (selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine ||
           selectMode == smCurveEditRefine_fm || selectMode == smCurveDirectionInter || selectMode == smCurveRefine_fm ||
           selectMode == smCurveMarkerLists_fm || selectMode == smCurveFrom1Marker_fm || selectMode == smCurveCreateMarkerGD ||
-          selectMode == smCurveTiltedBB_fm || selectMode == smCurveCreateTest)
+          selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox || selectMode == smCurveCreateTest)
      {
           _appendMarkerPos(x,y);
           if (b_move)
@@ -1871,7 +1882,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
                     loc_vec0.clear();
                     solveCurveDirectionInter(loc_vec_input, loc_vec0, 0);
                }
-               else if(selectMode == smCurveMarkerLists_fm || selectMode == smCurveFrom1Marker_fm || selectMode == smCurveTiltedBB_fm)
+               else if(selectMode == smCurveMarkerLists_fm || selectMode == smCurveFrom1Marker_fm || selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox)
                {
                     // using two marker lists for fast marching to get a curve
                     vector <XYZ> loc_vec_input;

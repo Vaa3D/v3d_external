@@ -70,7 +70,7 @@ public:
                       smCurveRefineInit, smCurveRefineLast, smCurveEditRefine, smCurveEditRefine_fm, smCurveRubberDrag,
                       smCurveDirectionInter, smCurveCreate_pointclick_fm, smCurveRefine_fm, smCurveRefine_ms,
                       smCurveMarkerLists_fm, smCurveMarkerPool_fm, smCurveCreateMarkerGD,smCurveFrom1Marker_fm,
-                      smCurveTiltedBB_fm, smCurveUseStrokeBB_fm, smCurveCreateTest,
+                      smCurveTiltedBB_fm, smCurveTiltedBB_fm_sbbox, smCurveUseStrokeBB_fm, smCurveCreateTest,
 					};
 protected:
 	RenderMode renderMode;

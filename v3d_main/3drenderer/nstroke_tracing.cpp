@@ -1402,6 +1402,7 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
      bool b_useStrokeBB = false;           // use the stroke decided BB
      bool b_use2PointsBB = !b_useStrokeBB; // use the two-point decided BB
      bool b_useTiltedBB=false;
+    bool b_useSerialBBox=false; //added by PHC 20120405
 
      if(selectMode == smCurveUseStrokeBB_fm)
      {
@@ -1410,11 +1411,13 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
           b_useTiltedBB =  !b_useStrokeBB;
      }
 
-     if(selectMode == smCurveTiltedBB_fm)
+     if(selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox)
      {
           b_useTiltedBB = true;
           b_useStrokeBB = false;
           b_use2PointsBB = false;
+         
+         b_useSerialBBox = (selectMode == smCurveTiltedBB_fm_sbbox)? true : false;
      }
 
      vector<MyMarker> nearpos_vec, farpos_vec; // for near/far locs testing
@@ -1660,9 +1663,12 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
           if(b_useTiltedBB)
           {
                vector<MyMarker *> outswc;
-               //if(!fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz))
-               if(!fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1)) //replace the above method, may produce better res?? 20120405, PHC
-               {
+               bool b_res = (b_useSerialBBox) ?
+                  fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1) //replace the above method, 20120405, PHC
+              : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1); // 20120405, PHC
+
+              if (!b_res)
+              {
                     v3d_msg("Error in creating the curve", 0);
                }
 
@@ -1696,7 +1702,7 @@ if (0)
 	// check if there is any existing neuron node is very close to the starting and ending points, if yes, then merge
 	if (V3Dmainwindow && V3Dmainwindow->global_setting.b_3dcurve_autoconnecttips && b_use_seriespointclick==false &&
           (selectMode == smCurveMarkerLists_fm || selectMode == smCurveRefine_fm || selectMode == smCurveFrom1Marker_fm ||
-               selectMode == smCurveUseStrokeBB_fm || selectMode == smCurveTiltedBB_fm) )
+               selectMode == smCurveUseStrokeBB_fm || selectMode == smCurveTiltedBB_fm || selectMode==smCurveTiltedBB_fm_sbbox) )
 	{
 		if (listNeuronTree.size()>0 && curEditingNeuron>0 && curEditingNeuron<=listNeuronTree.size())
 		{
@@ -1765,7 +1771,7 @@ if (0)
 	//Need to use a better and more evenly spaced method. by PHC, 20120330.
 
      if(selectMode == smCurveMarkerLists_fm || selectMode == smCurveRefine_fm || selectMode == smCurveFrom1Marker_fm ||
-          selectMode == smCurveTiltedBB_fm || selectMode == smCurveUseStrokeBB_fm)
+          selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox || selectMode == smCurveUseStrokeBB_fm)
      {
           if (b_addthiscurve)
           {
