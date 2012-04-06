@@ -42,6 +42,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) ‚ÄúAutomatic reconstr
 #include "../basic_c_fun/v3d_interface.h"
 #include "../3drenderer/v3dr_glwidget.h"
 #include "../3drenderer/renderer_gl1.h"
+#include "../3drenderer/v3dr_mainwindow.h"
 #include "../v3d/mainwindow.h"
 #include "../v3d/v3d_core.h"
 #include "v3d_plugin_loader.h"
@@ -1046,3 +1047,70 @@ bool V3d_PluginLoader::setListLabelSurf_3DGlobalViewer(v3dhandle image_window, Q
         }
     }        
 }
+
+//added PHC 20120406 to allow uses to access the surface data objects in a 3D viewer
+QList <NeuronTree> * V3d_PluginLoader::getHandleNeuronTrees_Any3DViewer(V3dR_MainWindow *w)
+{
+    if (!w) return 0;
+	V3dR_GLWidget * vi = w->getGLWidget();
+    if (!vi) return 0;
+    else
+    {
+        Renderer_gl1 * gp = (Renderer_gl1 *)(vi->getRenderer());
+        if (!gp)
+            return 0;
+        else
+            return gp->getHandleNeuronTrees();
+    }        
+}
+
+QList <CellAPO>    * V3d_PluginLoader::getHandleAPOCellList_Any3DViewer(V3dR_MainWindow *w) 
+{
+    if (!w) return 0;
+	V3dR_GLWidget * vi = w->getGLWidget();
+    if (!vi) return 0;
+    else
+    {
+        Renderer_gl1 * gp = (Renderer_gl1 *)(vi->getRenderer());
+        if (!gp)
+            return 0;
+        else
+            return gp->getHandleAPOCellList();
+    }       
+}
+
+QList <LabelSurf> V3d_PluginLoader::getListLabelSurf_Any3DViewer(V3dR_MainWindow *w)
+{
+    QList <LabelSurf> mylabelsurf;
+    
+    if (!w) return mylabelsurf;
+	V3dR_GLWidget * vi = w->getGLWidget();
+    if (!vi) return mylabelsurf;
+    else
+    {
+        Renderer_gl1 * gp = (Renderer_gl1 *)(vi->getRenderer());
+        if (!gp)
+            return mylabelsurf;
+        else
+            return gp->getListLabelSurf();
+    }       
+}
+
+bool V3d_PluginLoader::setListLabelSurf_Any3DViewer(V3dR_MainWindow *w, QList <LabelSurf> listLabelSurfinput)
+{
+    if (!w) return false;
+	V3dR_GLWidget * vi = w->getGLWidget();
+    if (!vi) return false;
+    else
+    {
+        Renderer_gl1 * gp = (Renderer_gl1 *)(vi->getRenderer());
+        if (!gp)
+            return false;
+        else
+        {
+            gp->setListLabelSurf(listLabelSurfinput);
+            return true;
+        }
+    }            
+}
+

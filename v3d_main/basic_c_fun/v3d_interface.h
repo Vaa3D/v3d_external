@@ -173,11 +173,17 @@ public:
     virtual QList <V3dR_MainWindow *> getListAll3DViewers() = 0; 
     virtual V3dR_MainWindow * find3DViewerByName(QString fileName) = 0; //the name can be partially matched    
     
-    //added PHC 20120406 to allow uses to access the surface data objects in a 3D viewer
+    //added PHC 20120406 to allow uses to access the surface data objects in a 3D viewer, but based on a tri-view
 	virtual QList <NeuronTree> * getHandleNeuronTrees_3DGlobalViewer(v3dhandle image_window) = 0;
 	virtual QList <CellAPO>    * getHandleAPOCellList_3DGlobalViewer(v3dhandle image_window) = 0;        
     virtual QList <LabelSurf> getListLabelSurf_3DGlobalViewer(v3dhandle image_window) = 0;
     virtual bool setListLabelSurf_3DGlobalViewer(v3dhandle image_window, QList <LabelSurf> listLabelSurfinput) = 0;
+
+    //added PHC 20120406 to allow uses to access the surface data objects in a 3D viewer
+	virtual QList <NeuronTree> * getHandleNeuronTrees_Any3DViewer(V3dR_MainWindow *w) = 0;
+	virtual QList <CellAPO>    * getHandleAPOCellList_Any3DViewer(V3dR_MainWindow *w) = 0;        
+    virtual QList <LabelSurf> getListLabelSurf_Any3DViewer(V3dR_MainWindow *w) = 0;
+    virtual bool setListLabelSurf_Any3DViewer(V3dR_MainWindow *w, QList <LabelSurf> listLabelSurfinput) = 0;    
 };
 
 class V3DPluginInterface2
