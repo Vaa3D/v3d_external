@@ -1,6 +1,7 @@
 //plugin_image_registration.cpp
 //by Lei Qu 2011-04-08
 // Add command line interface and multiple datatype support by Yang Yu Dec. 8, 2011
+// 20120410 by PHC. some refinement.
 
 #include "plugin_image_registration.h"
 
@@ -701,18 +702,24 @@ bool iWarper(Tdata *p,Tidx *sz_img,
 
 void errorPrint()
 {
-    printf("\nUsage: v3d -x imagereg.dylib -f rigidreg -o <output_warped_image> -p \"#t <template.img> #ct <refchannel_template> #s <source.img> #cs <refchannel_source> [#ds <downsample_ratio> #n <max_iters> #m <step_inimultiplyfactor> #a <step_annealing_rate> #ms <min_step>]\"\n");
+    printf("\nUsage: vaa3d -x imagereg.dylib -f rigidreg -o <output_warped_image> -p \"#t <template.img> #ct <refchannel_template> #s <source.img> #cs <refchannel_source> [#ds <downsample_ratio> #n <max_iters> #m <step_inimultiplyfactor> #a <step_annealing_rate> #ms <min_step>]\"\n");
+    printf("Reference channel numbers must start from 1.\n");
 }
 
 // function call
 QStringList ImageRegistrationPlugin::funclist() const
 {
-    return QStringList() << tr("rigidreg");
+    return QStringList() << tr("rigidreg") << tr("help");
 }
 
 bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output, V3DPluginCallback2 & callback,  QWidget * parent)
 {
-    if (func_name == tr("rigidreg"))
+    if (func_name == tr("help"))
+    {
+        errorPrint();
+        return true;
+    }
+    else if (func_name == tr("rigidreg"))
     {
         if(input.size()<1 || (input.size()==1 && output.size()<1) ) // no inputs
         {
@@ -757,7 +764,7 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
         {
             int argc = 0;
             int len = strlen(paras);
-            int posb[1000];
+            int posb[2048];
 
             for(int i = 0; i < len; i++)
             {
