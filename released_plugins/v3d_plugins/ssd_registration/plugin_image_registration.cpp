@@ -28,7 +28,8 @@ void releasememory_nonrigid_FFD(long *&,long *&,unsigned char *&,unsigned char *
 QStringList ImageRegistrationPlugin::menulist() const
 {
     return QStringList()
-            << tr("rigid registration...");
+            << tr("rigid registration...")
+    << tr("About");
 }
 
 void ImageRegistrationPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &callback, QWidget *parent)
@@ -36,6 +37,10 @@ void ImageRegistrationPlugin::domenu(const QString &menu_name, V3DPluginCallback
     if(menu_name==tr("rigid registration..."))
     {
         RigidAffineRegistration(callback, parent,0);
+    }
+    else if (menu_name==tr("About"))
+    {
+        v3d_msg("This is a 3D SSD registration program developed in Hanchuan Peng lab.");)
     }
 }
 
@@ -109,7 +114,7 @@ void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const 
         }
         if(l_refchannel<0 || l_refchannel>=4)
         {
-            printf("ERROR: invalid reference channel!\n");
+            printf("ERROR: invalid reference channel (should start from 1 and less than 4)!\n");
             return;
         }
 
