@@ -32,6 +32,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 v3d_basicdatatype.h: by Hanchuan Peng
 2010-05-19
 2011-02-15: add v3d_ in front of some basic data types 
+2012-04-10: add V3D_THREEBYTE to make the  V3D_FLOAT32 type has a default value of 4 instead of 3 when forced to convert to int
 */
 
 #ifndef __V3D_BASICDATATYPE_H__
@@ -72,7 +73,7 @@ typedef void* v3dhandle;
 
 #endif
 
-enum ImagePixelType {V3D_UNKNOWN, V3D_UINT8, V3D_UINT16, V3D_FLOAT32};
+enum ImagePixelType {V3D_UNKNOWN, V3D_UINT8, V3D_UINT16, V3D_THREEBYTE, V3D_FLOAT32};
 enum TimePackType {TIME_PACK_NONE,TIME_PACK_Z,TIME_PACK_C}; 
 
 
