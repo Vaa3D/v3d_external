@@ -169,7 +169,10 @@ void ChannelTabWidget::syncSharedData(const ChannelSharedData & data) //except b
 void ChannelTable::updateXFormWidget(int plane) // plane<=0 for all planes
 {
 	if (plane>0)
-	qDebug("ChannelTable::updateXFormWidget( %d )", plane);
+	{
+        //qDebug("ChannelTable::updateXFormWidget( %d )", plane);
+        printf("CT update ( %i ) ", plane);
+    }
 
 	if (! xform) return;
 	My4DImage* img4d = xform->getImageData();
