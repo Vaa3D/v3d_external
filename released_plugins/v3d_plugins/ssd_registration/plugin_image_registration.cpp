@@ -41,7 +41,7 @@ void ImageRegistrationPlugin::domenu(const QString &menu_name, V3DPluginCallback
     }
     else if (menu_name==tr("About"))
     {
-        v3d_msg("This is a 3D SSD registration program developed in Hanchuan Peng lab.");)
+        v3d_msg("This is a 3D SSD registration program developed in Hanchuan Peng lab.");
     }
 }
 
