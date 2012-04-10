@@ -1357,7 +1357,7 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
 
         //
         freeMemory<unsigned char>(p_img_sub_warp);
-        freeMemory2<unsigned char, unsigned char>(p_img_tar_input, p_img_sub_input);
+        freeMemory2<unsigned char, unsigned char>(p_img_tar_input, p_img_sub_input); //a crash happen here why?? PHC 20120410. also the image is all black for 2D SSD, why. Also a crash for do_menu for 2D case too. need debug.
 
         printf("\n Time elapse %f seconds for warping!\n", float(clock() - t_rigidreg)/1.0e6f);
 
