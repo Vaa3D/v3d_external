@@ -551,24 +551,28 @@ bool iNormalizer(Tdata *p, Tidx sz, double *&pOutput)
         return false;
     }
 
-    Tdata max_v = -1e9;
-
-    for(long i=0;i<sz;i++)
+    Tdata max_v = p[0]; //note that already verified sz>=1
+    Tdata min_v = p[0]; //note that already verified sz>=1
+    for(V3DLONG i=1;i<sz;i++)
     {
-        max_v = (p[i]>max_v)? p[i] : max_v;
+        if (p[i]>max_v)
+            max_v = p[i];
+        else if (p[i]<min_v)
+            min_v = p[i];
     }
 
-    if(max_v==0)
+    max_v -= min_v;
+    
+    if (max_v==0)
     {
-        // max_v -= min_v; [-1 0]
-
-        printf("Currently we do not support this data!\n");
+        v3d_msg("You data consists of all-the-same values. You don't need registration, do you??\n", 0);
+        freeMemory<double>(pOutput);
         return false;
     }
-
+    
     for(long i=0;i<sz;i++)
     {
-        pOutput[i]=double(p[i])/double(max_v);
+        pOutput[i] = (double(p[i]) - min_v)/double(max_v);
     }
 
     return true;
@@ -586,8 +590,10 @@ bool iInterpolater(Tdata *p, Tidx *sz_img_input,
         return false;
     }
 
-    if(vec4D_grid_int.size()!=sz_img_input[1] || vec4D_grid_int[0].size()!=sz_img_input[0] ||
-            vec4D_grid_int[0][0].size()!=sz_img_input[2] || vec4D_grid_int[0][0][0].size()!=3)
+    if(V3DLONG(vec4D_grid_int.size()) != V3DLONG(sz_img_input[1]) || 
+       V3DLONG(vec4D_grid_int[0].size()) != V3DLONG(sz_img_input[0]) ||
+       V3DLONG(vec4D_grid_int[0][0].size()) != V3DLONG(sz_img_input[2]) || 
+       V3DLONG(vec4D_grid_int[0][0][0].size()) != 3)
     {
         printf("\nERROR: Invalid input grid size, it should be same as input image size!\n");
         return false;
