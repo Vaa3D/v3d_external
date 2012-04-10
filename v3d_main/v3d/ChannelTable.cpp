@@ -171,7 +171,8 @@ void ChannelTable::updateXFormWidget(int plane) // plane<=0 for all planes
 	if (plane>0)
 	{
         //qDebug("ChannelTable::updateXFormWidget( %d )", plane);
-        printf("CT update ( %i ) ", plane);
+        printf("CTU_%i ", plane);
+        fflush(stdout);
     }
 
 	if (! xform) return;
