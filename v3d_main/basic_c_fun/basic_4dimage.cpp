@@ -31,6 +31,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 /*
  * basic_4dimage.cpp
  * last update: 100819: Hanchuan Peng. use MYLIB only for Llinux and Mac, but not WIN32. FIXME: add VC support later.
+ * 20120410: add curFileSurfix check for the potential strcmp crashing. by Hanchuan Peng
  */
 
 #include "v3d_message.h"
@@ -64,8 +65,8 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 	char * curFileSurfix = getSurfix(imgSrcFile);
 	printf("The current input file has the surfix [%s]\n", curFileSurfix);
 
-	if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0 ||
-		strcasecmp(curFileSurfix, "lsm")==0 ) //read tiff/lsm stacks
+	if (curFileSurfix && (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0 ||
+		strcasecmp(curFileSurfix, "lsm")==0) ) //read tiff/lsm stacks
 	{
             printf("Image4DSimple::loadImage loading filename=%s\n", filename);
 
@@ -128,7 +129,7 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 #endif
 		
 	}
-	else if ( strcasecmp(curFileSurfix, "mrc")==0 ) //read mrc stacks
+	else if ( curFileSurfix && strcasecmp(curFileSurfix, "mrc")==0 ) //read mrc stacks
 	{
 		if (loadMRC2Stack(imgSrcFile, data1d, tmp_sz, tmp_datatype))
 		{
@@ -138,23 +139,23 @@ void Image4DSimple::loadImage(char filename[], bool b_useMyLib)
 		}
 	}
 #ifdef _ALLOW_WORKMODE_MENU_    
-        else if ( ImageLoader::hasPbdExtension(QString(filename)) ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
-        {
-            ImageLoader imageLoader;
-            QString imageSrcFile(imgSrcFile);
-            if (!imageLoader.loadImage(this, imageSrcFile)) {
-                v3d_msg("Error happens in v3dpbd file reading. Stop. \n", false);
-                b_error=1;
-                return;
-            }
-            // The following few lines are to avoid disturbing the existing code below
-            tmp_datatype=this->getDatatype();
-            tmp_sz=new V3DLONG[4];
-            tmp_sz[0]=this->getXDim();
-            tmp_sz[1]=this->getYDim();
-            tmp_sz[2]=this->getZDim();
-            tmp_sz[3]=this->getCDim();
+    else if ( curFileSurfix && ImageLoader::hasPbdExtension(QString(filename)) ) // read v3dpbd - pack-bit-difference encoding for sparse stacks
+    {
+        ImageLoader imageLoader;
+        QString imageSrcFile(imgSrcFile);
+        if (!imageLoader.loadImage(this, imageSrcFile)) {
+            v3d_msg("Error happens in v3dpbd file reading. Stop. \n", false);
+            b_error=1;
+            return;
         }
+        // The following few lines are to avoid disturbing the existing code below
+        tmp_datatype=this->getDatatype();
+        tmp_sz=new V3DLONG[4];
+        tmp_sz[0]=this->getXDim();
+        tmp_sz[1]=this->getYDim();
+        tmp_sz[2]=this->getZDim();
+        tmp_sz[3]=this->getCDim();
+    }
 #endif    
 	else //then assume it is Hanchuan's RAW format
 	{
@@ -424,7 +425,7 @@ bool Image4DSimple::saveImage(const char filename[])
 	//061009
 	char * curFileSurfix = getSurfix((char *)filename);
 	printf("The current output file has the surfix [%s]\n", curFileSurfix);
-	if (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0) //read tiff stacks
+	if (curFileSurfix && (strcasecmp(curFileSurfix, "tif")==0 || strcasecmp(curFileSurfix, "tiff")==0)) //read tiff stacks
 	{
 		if (saveStack2Tif(filename, data1d, mysz, dt)!=0)
 		{

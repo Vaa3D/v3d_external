@@ -386,7 +386,11 @@ void RigidAffineRegistration(V3DPluginCallback &callback, QWidget *parent,const 
             if(p_img_sub_resize) 			{delete []p_img_sub_resize;			p_img_sub_resize=0;}
 
             printf("\t>> Save warped subject image to file:[%s] \n",qPrintable(qs_filename_img_sub2tar));
+            
+            qDebug()<<"p_img8u_sub_warp="<<p_img8u_sub_warp;
+            qDebug()<<sz_img_tar_input[0] << " " <<sz_img_tar_input[1] << " " <<sz_img_tar_input[2] << " " <<sz_img_tar_input[3]; 
             if(!saveImage(qPrintable(qs_filename_img_sub2tar),p_img8u_sub_warp,sz_img_tar_input,1))
+//                if(!saveImage("111.raw",p_img8u_sub_warp,sz_img_tar_input,1))
             {
                 printf("ERROR: q_save64f01_image() return false!\n");
                 releasememory_rigidaffine(sz_img_tar_input,sz_img_sub_input,p_img_tar_input,p_img_sub_input,p_img8u_tar,p_img8u_sub,p_img64f_tar,p_img64f_sub,p_img8u_sub_warp);
@@ -1154,7 +1158,6 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
         }
         freeMemory<unsigned char>(p_tar);
 
-
         //
         switch (datatype_sub_input) {
             case 1:
@@ -1312,8 +1315,11 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
                     freeMemory2<unsigned char, unsigned char>(p_img_sub_resize, p_img_sub_warp);
                     return false;
                 }
-
-
+                if(!saveImage(qPrintable(qs_filename_img_sub2tar),p_img_sub_resize,sz_img_output,datatype_sub_input))
+                {
+                    printf("ERROR: saveImage() return false!\n");
+                    return false;
+                }
             }
             else if(datatype_sub_input == 2)
             {
@@ -1346,18 +1352,18 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
             }
             freeMemory<unsigned char>(p_img_sub_resize);
 
-            printf("\t>> Save warped subject image to file:[%s] \n",qPrintable(qs_filename_img_sub2tar));
-            if(!saveImage(qPrintable(qs_filename_img_sub2tar),p_img_sub_warp,sz_img_output,datatype_sub_input))
-            {
-                printf("ERROR: saveImage() return false!\n");
-                return false;
-            }
+//            printf("\t>> Save warped subject image to file:[%s] \n",qPrintable(qs_filename_img_sub2tar));
+//            if(!saveImage(qPrintable(qs_filename_img_sub2tar),p_img_sub_warp,sz_img_output,datatype_sub_input))
+//            {
+//                printf("ERROR: saveImage() return false!\n");
+//                return false;
+//            }
 
         }
 
         //
-        freeMemory<unsigned char>(p_img_sub_warp);
-        freeMemory2<unsigned char, unsigned char>(p_img_tar_input, p_img_sub_input); //a crash happen here why?? PHC 20120410. also the image is all black for 2D SSD, why. Also a crash for do_menu for 2D case too. need debug.
+//        freeMemory<unsigned char>(p_img_sub_warp);
+//        freeMemory2<unsigned char, unsigned char>(p_img_tar_input, p_img_sub_input); //a crash happen here why?? PHC 20120410. also the image is all black for 2D SSD, why. Also a crash for do_menu for 2D case too. need debug.
 
         printf("\n Time elapse %f seconds for warping!\n", float(clock() - t_rigidreg)/1.0e6f);
 

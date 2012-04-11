@@ -1088,7 +1088,8 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
                   (curfile_info.suffix().toUpper()=="VAA3DRAW5") ||
                   (curfile_info.suffix().toUpper()=="MRC") ||
                   (curfile_info.suffix().toUpper()=="V3DPBD") ||
-                  (curfile_info.suffix().toUpper()=="VAA3DPBD")
+                  (curfile_info.suffix().toUpper()=="VAA3DPBD") ||
+                  curfile_info.suffix().isEmpty() //then invoke raw reader in this case, 20120410. PHC
                   )
         {
             try
@@ -1154,109 +1155,109 @@ void MainWindow::loadV3DFile(QString fileName, bool b_putinrecentfilelist, bool 
             }
             catch(...)
             {
-                QMessageBox::warning(0, "warning: fail to create window", "You fail to open a new window for the specified image. The file may have certain problem, or is simply too big but you don't have enough memory.");
+                v3d_msg("You fail to open a new window for the specified image. The file may have certain problem, or is simply too big but you don't have enough memory.");
                 v3d_msg(QString("Fail to create window for the file [%1]\n").arg(fileName));
             }
         }
-		else if (curfile_info.suffix().toUpper()=="HRAW") // For openning hierarchical data from large data set. ZJL 20120302
-        {
-			QString basename = curfile_info.baseName();
-
-			QString hraw_prefix = "test";//""curfile_info.absolutePath()  + basename.left(basename.indexOf(".")); // before the first "."
-
-			string prefix = hraw_prefix.toStdString();
-			//string prefix ="/Volumes/PengMapView/mapview_testdata/ananya/test";
-
-             try
-             {
-                  size_t start_t = clock();
-
-                  // contents of .hraw file
-                  // L, M, N, l, m, n
-                  // level : level nums
-                  // outsz[3]
-
-                  int L = 14; //log(8)/log(2.0);
-                  int M = 38; //log(8)/log(2.0);
-                  int N = 3;  //log(8)/log(2.0);
-                  int l = 512;//log(256)/log(2.0);
-                  int m = 256;//log(128)/log(2.0);
-                  int n = 64; //log(64)/log(2.0);
-                  int level = 0;
-
-                  ImageMapView mapview;
-                  mapview.setPara(prefix, L, M, N, l, m, n);
-
-                  unsigned char * outimg1d = 0;
-                  V3DLONG origin[3] = {0, 0, 0};
-                  V3DLONG outsz[4] = {512, 256, 64, 1};
-
-                  mapview.getImage(level, outimg1d, origin[0], origin[1], origin[2], outsz[0], outsz[1], outsz[2]);
-
-                  XFormWidget *child = createMdiChild();
-                  child->setImageData(outimg1d, outsz[0], outsz[1], outsz[2], outsz[3], V3D_UINT8);
-                  child->mypara_3Dview.image4d = child->getImageData();
-
-                  // mapview control
-                  Mapview_Paras mv_paras;
-                  mv_paras.L=L; mv_paras.M=M; mv_paras.N=N;
-                  mv_paras.l=l; mv_paras.m=m; mv_paras.n=n;
-                  mv_paras.origin[0] = origin[0]; mv_paras.origin[1] = origin[1]; mv_paras.origin[2] = origin[2];
-                  mv_paras.outsz[0] = outsz[0]; mv_paras.outsz[1] = outsz[1]; mv_paras.outsz[2] = outsz[2]; mv_paras.outsz[3] = outsz[3]; mv_paras.outsz[3] = outsz[3];
-                  mv_paras.hraw_prefix=hraw_prefix;
-                  mv_paras.level = level;
-
-                  child->mapview_paras = mv_paras;
-                  child->mapview = mapview;
-
-                  child->setWindowTitle_Prefix(hraw_prefix.toAscii());
-                  child->setWindowTitle_Suffix("");
-
-                  child->reset();
-
-                  if (global_setting.b_autoConvert2_8bit)
-                  {
-                       if (global_setting.default_rightshift_bits<0) //when set as -1 or other <0 values, then invoke the dialog.
-                       {
-                            if (child->getImageData()->getDatatype()==V3D_UINT16)
-                                 child->popupImageProcessingDialog(tr(" -- convert 16bit image to 8 bit"));
-                            else if (child->getImageData()->getDatatype()==V3D_FLOAT32)
-                                 child->popupImageProcessingDialog(tr(" -- convert 32bit (single-precision float) image to 8 bit"));
-                       }
-                       else //otherwise do the conversion directly
-                       {
-                            if (child->getImageData()->getDatatype()==V3D_UINT16)
-                                 child->getImageData()->proj_general_convert16bit_to_8bit(global_setting.default_rightshift_bits);
-                            else if (child->getImageData()->getDatatype()==V3D_FLOAT32)
-                                 child->getImageData()->proj_general_convert32bit_to_8bit(global_setting.default_rightshift_bits);
-                       }
-                  }
-
-                  if (global_setting.b_yaxis_up)
-                  {
-                       child->getImageData()->flip(axis_y);
-                  }
-
-                  child->show();
-
-                  // create mapview control window
-                  child->createMapviewControlWin();
-
-                  if (b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer))
-                  {
-                       child->doImage3DView();
-                  }
-
-                  size_t end_t = clock();
-                  qDebug()<<"time consume ..."<<end_t-start_t;
-
-             }
-             catch(...)
-             {
-                  QMessageBox::warning(0, "warning: fail to create window", "You fail to open a new window for the specified image. The file may have certain problem, or is simply too big but you don't have enough memory.");
-                  v3d_msg(QString("Fail to create window for the file [%1]\n").arg(fileName));
-             }
-        } // end hraw
+//		else if (curfile_info.suffix().toUpper()=="HRAW") // For openning hierarchical data from large data set. ZJL 20120302
+//        {
+//			QString basename = curfile_info.baseName();
+//
+//			QString hraw_prefix = "test";//""curfile_info.absolutePath()  + basename.left(basename.indexOf(".")); // before the first "."
+//
+//			string prefix = hraw_prefix.toStdString();
+//			//string prefix ="/Volumes/PengMapView/mapview_testdata/ananya/test";
+//
+//             try
+//             {
+//                  size_t start_t = clock();
+//
+//                  // contents of .hraw file
+//                  // L, M, N, l, m, n
+//                  // level : level nums
+//                  // outsz[3]
+//
+//                  int L = 14; //log(8)/log(2.0);
+//                  int M = 38; //log(8)/log(2.0);
+//                  int N = 3;  //log(8)/log(2.0);
+//                  int l = 512;//log(256)/log(2.0);
+//                  int m = 256;//log(128)/log(2.0);
+//                  int n = 64; //log(64)/log(2.0);
+//                  int level = 0;
+//
+//                  ImageMapView mapview;
+//                  mapview.setPara(prefix, L, M, N, l, m, n);
+//
+//                  unsigned char * outimg1d = 0;
+//                  V3DLONG origin[3] = {0, 0, 0};
+//                  V3DLONG outsz[4] = {512, 256, 64, 1};
+//
+//                  mapview.getImage(level, outimg1d, origin[0], origin[1], origin[2], outsz[0], outsz[1], outsz[2]);
+//
+//                  XFormWidget *child = createMdiChild();
+//                  child->setImageData(outimg1d, outsz[0], outsz[1], outsz[2], outsz[3], V3D_UINT8);
+//                  child->mypara_3Dview.image4d = child->getImageData();
+//
+//                  // mapview control
+//                  Mapview_Paras mv_paras;
+//                  mv_paras.L=L; mv_paras.M=M; mv_paras.N=N;
+//                  mv_paras.l=l; mv_paras.m=m; mv_paras.n=n;
+//                  mv_paras.origin[0] = origin[0]; mv_paras.origin[1] = origin[1]; mv_paras.origin[2] = origin[2];
+//                  mv_paras.outsz[0] = outsz[0]; mv_paras.outsz[1] = outsz[1]; mv_paras.outsz[2] = outsz[2]; mv_paras.outsz[3] = outsz[3]; mv_paras.outsz[3] = outsz[3];
+//                  mv_paras.hraw_prefix=hraw_prefix;
+//                  mv_paras.level = level;
+//
+//                  child->mapview_paras = mv_paras;
+//                  child->mapview = mapview;
+//
+//                  child->setWindowTitle_Prefix(hraw_prefix.toAscii());
+//                  child->setWindowTitle_Suffix("");
+//
+//                  child->reset();
+//
+//                  if (global_setting.b_autoConvert2_8bit)
+//                  {
+//                       if (global_setting.default_rightshift_bits<0) //when set as -1 or other <0 values, then invoke the dialog.
+//                       {
+//                            if (child->getImageData()->getDatatype()==V3D_UINT16)
+//                                 child->popupImageProcessingDialog(tr(" -- convert 16bit image to 8 bit"));
+//                            else if (child->getImageData()->getDatatype()==V3D_FLOAT32)
+//                                 child->popupImageProcessingDialog(tr(" -- convert 32bit (single-precision float) image to 8 bit"));
+//                       }
+//                       else //otherwise do the conversion directly
+//                       {
+//                            if (child->getImageData()->getDatatype()==V3D_UINT16)
+//                                 child->getImageData()->proj_general_convert16bit_to_8bit(global_setting.default_rightshift_bits);
+//                            else if (child->getImageData()->getDatatype()==V3D_FLOAT32)
+//                                 child->getImageData()->proj_general_convert32bit_to_8bit(global_setting.default_rightshift_bits);
+//                       }
+//                  }
+//
+//                  if (global_setting.b_yaxis_up)
+//                  {
+//                       child->getImageData()->flip(axis_y);
+//                  }
+//
+//                  child->show();
+//
+//                  // create mapview control window
+//                  child->createMapviewControlWin();
+//
+//                  if (b_forceopen3dviewer || (global_setting.b_autoOpenImg3DViewer))
+//                  {
+//                       child->doImage3DView();
+//                  }
+//
+//                  size_t end_t = clock();
+//                  qDebug()<<"time consume ..."<<end_t-start_t;
+//
+//             }
+//             catch(...)
+//             {
+//                  QMessageBox::warning(0, "warning: fail to create window", "You fail to open a new window for the specified image. The file may have certain problem, or is simply too big but you don't have enough memory.");
+//                  v3d_msg(QString("Fail to create window for the file [%1]\n").arg(fileName));
+//             }
+//        } // end hraw
         else // changed by YuY Nov. 19, 2010. Msg corrected by PHC, 2011-06-04
         {
             v3d_msg(QString("The file [%1] cannot be opened properly! Check the data type or file extension; or use the special Vaa3D file IO plugin (e.g. BioFormat plugin, etc); or convert the file format to something Vaa3D can read (e.g. a standard TIF file).").arg(fileName), 1);

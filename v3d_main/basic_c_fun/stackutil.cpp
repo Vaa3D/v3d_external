@@ -76,6 +76,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
  *           benched tested the >3G v3draw file read. This problem is not found for Linux 64bit. Is that a new Mac std libc bug?? 
  *           Anyway, I have now used a 2G buffer to read >2G data. I have not changed the saveStack2Raw functions. It seems they work in the Matlab mex functions. Thus I assumed
  *           they don't need to change. Need tests anyway.
+ * 20120410: fix a bug when strcasecmp_l() taking a NULL parameter so that it crashes
  */
 
 
@@ -3664,7 +3665,7 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 	char * curFileSuffix = getSurfix(imgSrcFile);
 	if (b_VERBOSE_PRINT)
 		printf("The current input file has the surfix [%s]\n", curFileSuffix);
-	if (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0) //read tiff stacks
+	if (curFileSuffix && (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0)) //read tiff stacks
 	{
 		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*2047)) //tif file at most should be 900M bytes
 		{
@@ -3677,7 +3678,7 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 			return false;
 		}
 	}
-	else if ( strcasecmp(curFileSuffix, "lsm")==0 ) //read lsm stacks
+	else if ( curFileSuffix && strcasecmp(curFileSuffix, "lsm")==0 ) //read lsm stacks
 	{
 		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*2047)) //lsm file at most should be 900M bytes
 		{
@@ -3690,7 +3691,22 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 			return false;
 		}
 	}
-	else if ( strcasecmp(curFileSuffix, "raw5")==0 ) //read lsm stacks
+	else if ( curFileSuffix && strcasecmp(curFileSuffix, "mrc")==0 ) //read MRC stacks
+	{
+		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*ZZBIG)) //MRC file at most should be 1.5G bytes
+		{
+			printf("The MRC file may not exist or may be too big to load.\n");
+			return false;
+		}
+        
+		if (loadMRC2Stack(imgSrcFile, tmp_data1d, tmp_sz, tmp_datatype))
+		{
+			if (b_VERBOSE_PRINT)
+				printf("The data doesn't look like a correct MRC file. \n");
+			return false;
+		}
+	}
+	else if ( curFileSuffix && strcasecmp(curFileSuffix, "raw5")==0 ) //read lsm stacks
 	{
 		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*ZZBIG)) //
 		{
@@ -3794,9 +3810,9 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 	char * curFileSuffix = getSurfix(imgSrcFile);
 	if (b_VERBOSE_PRINT)
 		printf("The current input file has the surfix [%s]\n", curFileSuffix);
-	if (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0) //read tiff stacks
+	if (curFileSuffix && (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0)) //read tiff stacks
 	{
-		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*900)) //tif file at most should be 900M bytes
+		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*2047)) //tif file at most should be 900M bytes
 		{
 			printf("The tif file may not exist or may be too big to load.\n");
 			return false;
@@ -3807,9 +3823,9 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 			return false;
 		}
 	}
-	else if ( strcasecmp(curFileSuffix, "lsm")==0 ) //read lsm stacks
+	else if ( curFileSuffix && strcasecmp(curFileSuffix, "lsm")==0 ) //read lsm stacks
 	{
-		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*900)) //lsm file at most should be 900M bytes
+		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*2047)) //lsm file at most should be 900M bytes
 		{
 			printf("The lsm file may not exist or may be too big to load.\n");
 			return false;
@@ -3820,7 +3836,7 @@ bool loadImage(char imgSrcFile[], unsigned char *& data1d, V3DLONG * &sz, int & 
 			return false;
 		}
 	}
-	else if ( strcasecmp(curFileSuffix, "mrc")==0 ) //read MRC stacks
+	else if ( curFileSuffix && strcasecmp(curFileSuffix, "mrc")==0 ) //read MRC stacks
 	{
 		if (!ensure_file_exists_and_size_not_too_big(imgSrcFile, (V3DLONG)1024*1024*ZZBIG)) //MRC file at most should be 1.5G bytes
 		{
@@ -3921,7 +3937,9 @@ bool saveImage(const char filename[], const unsigned char * data1d, const V3DLON
 	char * curFileSuffix = getSurfix((char *)filename);
     if (b_VERBOSE_PRINT)
 		printf("The current input file has the surfix [%s]\n", curFileSuffix);
-	if (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0) //write tiff stacks
+    
+    //it seems when curFileSuffix is NULL then strcasecmp() has a crashing bug. thus check now. 20120410. by PHC
+	if (curFileSuffix && (strcasecmp(curFileSuffix, "tif")==0 || strcasecmp(curFileSuffix, "tiff")==0)) //write tiff stacks
 	{
 		if (saveStack2Tif(filename, data1d, sz, dt))
 		{
@@ -3929,7 +3947,7 @@ bool saveImage(const char filename[], const unsigned char * data1d, const V3DLON
 			return false;
 		}
 	}
-	else if (strcasecmp(curFileSuffix, "raw5")==0) //write .raw5 data
+	else if (curFileSuffix && strcasecmp(curFileSuffix, "raw5")==0) //write .raw5 data
 	{
 		if (saveStack2Raw5d(filename, data1d, sz, dt))
 		{
