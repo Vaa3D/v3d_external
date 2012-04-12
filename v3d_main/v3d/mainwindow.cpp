@@ -2216,9 +2216,9 @@ void MainWindow::createActions()
     procGeneral_automarker_roi = new QAction(tr("AuroMarker (for bounding box of defined region of interest)"), this);
     connect(procGeneral_automarker_roi, SIGNAL(triggered()), this, SLOT(func_procGeneral_automarker_roi()));
 
-    procGeneral_split_channels = new QAction(tr("split color channels"), this);
+    procGeneral_split_channels = new QAction(tr("split color channels (also see ColorChannel plugin for a better version)"), this);
     connect(procGeneral_split_channels, SIGNAL(triggered()), this, SLOT(func_procGeneral_split_channels()));
-    procGeneral_extract_a_channel = new QAction(tr("extract a color channel"), this);
+    procGeneral_extract_a_channel = new QAction(tr("extract a color channel (also see ColorChannel plugin for a better version)"), this);
     connect(procGeneral_extract_a_channel, SIGNAL(triggered()), this, SLOT(func_procGeneral_extract_a_channel()));
     procGeneral_crop_image_minMaxBox = new QAction(tr("crop image (minMax Bounding Box)"), this);
     connect(procGeneral_crop_image_minMaxBox, SIGNAL(triggered()), this, SLOT(func_procGeneral_crop_image_minMaxBox()));
