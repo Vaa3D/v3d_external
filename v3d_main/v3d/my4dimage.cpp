@@ -2350,7 +2350,7 @@ bool My4DImage::scaleintensity(int channo, double lower_th, double higher_th, do
 {
 	if (channo>=getCDim())
 	{
-		v3d_msg("Invalid chan parameter in invertcolor();\n");
+		v3d_msg("Invalid chan parameter in scaleintensity();\n");
 		return false;
 	}
 

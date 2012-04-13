@@ -4707,7 +4707,7 @@ bool XFormWidget::setImageData(unsigned char *ndata1d, V3DLONG nsz0, V3DLONG nsz
     updateDataRelatedGUI();
     ////////////////////////////
 
-	v3d_msg("success in set up image data", 0);
+	v3d_msg("succeed in setting up image data.\n", 0);
 	return true;
 }
 
