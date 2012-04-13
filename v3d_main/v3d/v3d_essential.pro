@@ -255,6 +255,7 @@ SOURCES += ../basic_c_fun/mg_utilities.cpp \
     ../basic_c_fun/v3d_message.cpp \
     ../basic_c_fun/basic_surf_objs.cpp \
     ../basic_c_fun/basic_4dimage.cpp \
+    ../basic_c_fun/basic_4dimage_create.cpp \
     ../plugin_loader/v3d_plugin_loader.cpp \
     ../plugin_loader/pluginDialog.cpp \
     ../graph/dijk.cpp \
