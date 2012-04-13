@@ -666,11 +666,11 @@ v3dhandle V3d_PluginLoader::newImageWindow(QString name)
 	}
 	return v3dhandle(w);
 }
-void V3d_PluginLoader::updateImageWindow(v3dhandle image_window)
+void V3d_PluginLoader::updateImageWindow(v3dhandle image_window, bool b_forceUpdateChannelMinMaxValues) //by PHC, 20120412
 {
 	if (v3d_mainwindow)
 	{
-		XFormWidget* w = v3d_mainwindow->updateImageWindow(image_window);
+		XFormWidget* w = v3d_mainwindow->updateImageWindow(image_window, b_forceUpdateChannelMinMaxValues);
 		qDebug() << "V3d_PluginLoader updateImageWindow: " << w <<"/"<< image_window;
 	}
 

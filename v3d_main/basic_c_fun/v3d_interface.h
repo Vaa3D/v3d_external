@@ -41,6 +41,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 * 2010-06-03: add two others function to extract and assemble the results of different channels
 * 2010-08-03: add pushObjectIn3DWindow, pushImageIn3DWindow, pushTimepointIn3DWindow, open/close(ROI)3DWindow
 * 2010-08-04: "com.janelia.v3d.V3DPluginInterface/1.1"
+* 2012-04: add a few more functions to allow direct access of 3D surface objects
+* 2012-04-12: extend the updateImageWindow() function to allow it also update the min max value is asked to do so 
 * ********************************************************************************************************
 */
 
@@ -99,7 +101,7 @@ public:
 	virtual v3dhandle currentImageWindow() = 0;
 	virtual v3dhandle curHiddenSelectedWindow() = 0; //by PHC, 20101009. curHiddenSelectedWindow may not be the *currentImageWindow* if the selection is done from a 3d viewer
 	virtual v3dhandle newImageWindow(QString name="new_image") = 0;
-	virtual void updateImageWindow(v3dhandle image_window) = 0;
+	virtual void updateImageWindow(v3dhandle image_window, bool b_forceUpdateChannelMinMaxValues=false) = 0; //by PHC, 20120412
 
 	virtual QString getImageName(v3dhandle image_window) const = 0;
 	virtual void setImageName(v3dhandle image_window, QString name) = 0;

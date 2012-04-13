@@ -101,7 +101,7 @@ public:
 	virtual v3dhandle curHiddenSelectedWindow(); //by PHC 101009
 
 	virtual v3dhandle newImageWindow(QString name);
-	virtual void updateImageWindow(v3dhandle image_window);
+	virtual void updateImageWindow(v3dhandle image_window, bool b_forceUpdateChannelMinMaxValues); //by PHC, 20120412
 
 	virtual QString getImageName(v3dhandle image_window) const;
 	virtual void setImageName(v3dhandle image_window, QString name);

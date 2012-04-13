@@ -111,6 +111,24 @@ XFormWidget* MainWindow::updateImageWindow(void* window)
 	}
 	return w;
 }
+XFormWidget* MainWindow::updateImageWindow(void* window, bool b_forceUpdateChannelMinMaxValues) //20120412. by PHC
+{
+	XFormWidget* w = validateImageWindow(window);
+	if (w)
+	{
+        //force to update min max update code here
+        if (b_forceUpdateChannelMinMaxValues)
+        {
+            if (w->getImageData())
+                w->getImageData()->updateminmaxvalues();
+        }
+		w->show();
+		w->updateViews();
+		//updateWorkspace(); //seems no need
+	}
+	return w;
+}
+
 XFormWidget* MainWindow::setImageName(void* window, const QString &name)
 {
 	XFormWidget* w = validateImageWindow(window);

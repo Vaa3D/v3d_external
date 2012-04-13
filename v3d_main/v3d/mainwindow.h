@@ -565,6 +565,7 @@ public:	//2009-2010: used by V3D_PluginLoader 	// in mainwindow_interface.cpp
 	QStringList allWindowNameList();
 	XFormWidget* newImageWindow(const QString &name);
 	XFormWidget* updateImageWindow(void* window);
+	XFormWidget* updateImageWindow(void* window, bool b_forceUpdateChannelMinMaxValues); //20120412
 	XFormWidget* setImageName(void* window, const QString &name);
 	My4DImage* getImage(void* window);
 	bool setImage(void* window, Image4DSimple *image);
