@@ -32,13 +32,11 @@ Na3DWidget::Na3DWidget(QWidget* parent)
     // This method for eliminating tearing artifacts works but is supposedly obsolete;
     // http://stackoverflow.com/questions/5174428/how-to-change-qglformat-for-an-existing-qglwidget-at-runtime
     // valgrind has some complaints about the context
-    // QGLFormat glFormat(context()->format());
-    // glFormat.setDoubleBuffer(true); // attempt to reduce tearing on Mac
-//    glFormat.setStereo(true);
-	// Causes crash on Windows
-    // setFormat(glFormat);
     QGLFormat glFormat(format());
+    glFormat.setDoubleBuffer(true);
+#ifdef ENABLE_STEREO
     glFormat.setStereo(true);
+#endif
     setFormat(glFormat);
 
     bHasQuadStereo = true;
@@ -107,8 +105,10 @@ void Na3DWidget::initializeGL()
 {
     GLboolean hasStereo;
     glGetBooleanv(GL_STEREO, &hasStereo);
-    if(hasStereo)
+    if(hasStereo) {
         qDebug() << "OpenGL context supports stereo 3D";
+        glDrawBuffer(GL_BACK);
+    }
     else
         qDebug() << "OpenGL context does not support stereo 3D";
     V3dR_GLWidget::initializeGL();

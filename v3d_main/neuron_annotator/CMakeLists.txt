@@ -50,6 +50,17 @@ QT4_WRAP_CPP(NA_MOC_SRCS
 file(GLOB NA_SRCS "*.cpp" "*/*.cpp" "gui/trees/*.cpp" "../webservice/*/*.cpp")
 add_definitions(-DWITH_PURE_VIRTUAL -DWITH_NONAMESPACES) # needed for webservice soap stuff
 
+# 3D Stereo detection hoses Mac/ Off by default for now.
+if(WIN32)
+    set(DEFAULT_ENABLE_STEREO TRUE)
+else()
+    set(DEFAULT_ENABLE_STEREO FALSE)
+endif()
+set(NA_ENABLE_3D_STEREO ${DEFAULT_ENABLE_STEREO} CACHE BOOL "Whether to compile in support for hardware 3D stereoscopic viewing")
+if(NA_ENABLE_3D_STEREO)
+    add_definitions(-DENABLE_STEREO)
+endif()
+
 add_library(NeuronAnnotatorLib STATIC 
     ${NA_UI_SRCS} ${NA_MOC_SRCS} ${NA_SRCS}
 )

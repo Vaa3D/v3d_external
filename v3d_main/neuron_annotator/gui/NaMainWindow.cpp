@@ -77,7 +77,9 @@ NaMainWindow::NaMainWindow()
 {
     // Set up potential 3D stereo modes before creating QGLWidget.
     QGLFormat glFormat = QGLFormat::defaultFormat();
+#ifdef ENABLE_STEREO
     glFormat.setStereo(true);
+#endif
     glFormat.setDoubleBuffer(true);
     if (glFormat.stereo())
         qDebug() << "Attempting to set 3D stereo format";
