@@ -141,3 +141,90 @@ void Image4DSimple::createBlankImage(V3DLONG imgsz0, V3DLONG imgsz1, V3DLONG img
 	return;
 }
 
+bool convert_data_to_8bit(void * &img, V3DLONG * sz, int datatype)
+{
+	if (!img || !sz)
+	{
+		fprintf(stderr, "The input to convert_data_to_8bit() are invalid [%s][%d].\n", __FILE__, __LINE__);
+		return false;
+	}
+    
+	if (datatype!=2 && datatype!=4)
+	{
+		fprintf(stderr, "This function convert_type2uint8_3dimg_1dpt() is designed to convert 16 bit and single-precision-float only [%s][%d].\n", __FILE__, __LINE__);
+		return false;
+	}
+    
+	if (sz[0]<1 || sz[1]<1 || sz[2]<1 || sz[3]<1)
+	{
+		fprintf(stderr, "Input image size is not valid [%s][%d].\n", __FILE__, __LINE__);
+		return false;
+	}
+    
+	V3DLONG totalunits = sz[0] * sz[1] * sz[2] * sz[3];
+	unsigned char * outimg = new unsigned char [totalunits];
+	if (!outimg)
+	{
+		fprintf(stderr, "Fail to allocate memory. [%s][%d].\n", __FILE__, __LINE__);
+		return false;
+	}
+    
+	if (datatype==2) //following is new method 090718, PHC
+	{
+		unsigned short int * tmpimg = (unsigned short int *)img;
+		V3DLONG i; double maxvv=tmpimg[0];
+		for (i=0;i<totalunits;i++)
+		{
+			maxvv = (maxvv<tmpimg[i]) ? tmpimg[i] : maxvv;
+		}
+		if (maxvv>255.0)
+		{
+			maxvv = 255.0/maxvv;
+            for (/*V3DLONG*/ i=0;i<totalunits;i++)
+			{
+				outimg[i] = (unsigned char)(double(tmpimg[i])*maxvv);
+			}
+		}
+		else
+		{
+            for (/*V3DLONG*/ i=0;i<totalunits;i++)
+			{
+				outimg[i] = (unsigned char)(tmpimg[i]); //then no need to rescale
+			}
+		}
+	}
+	else
+	{
+		float * tmpimg = (float *)img;
+		V3DLONG i; double maxvv=tmpimg[0], minvv=tmpimg[0];
+		for (i=0;i<totalunits;i++)
+		{
+			if (tmpimg[i]>maxvv) maxvv = tmpimg[i];
+			else if (tmpimg[i]<minvv) minvv = tmpimg[i];
+		}
+		if (maxvv!=minvv)
+		{
+			double w = 255.0/(maxvv-minvv);
+            for (/*V3DLONG*/ i=0;i<totalunits;i++)
+			{
+				outimg[i] = (unsigned char)(double(tmpimg[i]-minvv)*w);
+			}
+		}
+		else
+		{
+            for (/*V3DLONG*/ i=0;i<totalunits;i++)
+			{
+				outimg[i] = (unsigned char)(tmpimg[i]); //then no need to rescale. If the original value is small than 0 or bigger than 255, then let it be during the type-conversion
+			}
+		}
+	}
+    
+	//copy to output data
+    
+	delete [] ((unsigned char *)img); //as I know img was originally allocated as (unsigned char *)
+	img = outimg;
+    
+	return true;
+}
+
+
