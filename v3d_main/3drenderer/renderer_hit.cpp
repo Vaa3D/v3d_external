@@ -1717,7 +1717,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		QMessageBox::information(0, "neuron info", tmpstr);
 		qDebug() << tmpstr;
 	}
-	else if (act==actDoNeuronToolBoxPlugin)
+	else if (act==actDoNeuronToolBoxPlugin) //still testing. 20120413, PHC
 	{
 		vaa3d_neurontoolbox_paras np;
 		np.OPS = "Neuron Toolbox";
@@ -1726,9 +1726,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		double best_dist;
 		np.n_id = findNearestNeuronNode_WinXY(cx, cy, &testNeuronTree, best_dist);
 		np.win = (V3dR_MainWindow *)w->getMainWindow();
-		v3d_msg(np.nt.file);
-		//doNeuronToolBoxPlugin(curXWidget->getMainControlWindow(), np);
-		doNeuronToolBoxPlugin((MainWindow *)(w->getMainWindow()), np);
+        
+        printf("the main window pointer = [%p]\n", ((iDrawExternalParameter*)_idep)->V3Dmainwindow);
+		doNeuronToolBoxPlugin(((iDrawExternalParameter*)_idep)->V3Dmainwindow, np);
 	}
 
 #endif //tes_main_cpp

@@ -73,8 +73,6 @@ bool doNeuronToolBoxPlugin(MainWindow* mainwindow, const vaa3d_neurontoolbox_par
 		}
 		
 		QString fullpath = pluginsDir.absoluteFilePath(fileList.at(0)); //always just use the first file (assume it is the only one) found in the folder as the "correct" dll
-		//the real dll name should be "microimaging.dll"
-	
     	QPluginLoader* loader = new QPluginLoader(fullpath);
         if (!loader)
         {
@@ -82,8 +80,6 @@ bool doNeuronToolBoxPlugin(MainWindow* mainwindow, const vaa3d_neurontoolbox_par
         	return false;
         }
 
-	
-		
 //		v3d_msg(fullpath, 0);
 		
 		V3d_PluginLoader mypluginloader(mainwindow);
