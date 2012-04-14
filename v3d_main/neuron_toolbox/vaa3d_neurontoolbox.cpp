@@ -34,6 +34,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 #include "../plugin_loader/v3d_plugin_loader.h"
 
 #include "../v3d/mainwindow.h"
+#include "../basic_c_fun/v3d_interface.h"
 //#include "../3drenderer/v3dr_mainwindow.h"
 //#include "../v3d/v3d_core.h"
 
@@ -43,18 +44,10 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 bool doNeuronToolBoxPlugin(MainWindow* mainwindow, const vaa3d_neurontoolbox_paras & p)
 {
 	v3d_msg(QString("Now try to run NeuronToolbox [%1]").arg(p.OPS), 0);
+
 	
 	try 
 	{
-		const char* filename=p.imgp->getFileName();
-		XFormWidget *curw = mainwindow->findMdiChild(QString(filename)); 
-
-		if (!curw)
-		{
-			v3d_msg("No window open yet.");
-			return false;
-		}
-
 		QDir pluginsDir = QDir(qApp->applicationDirPath());
 #if defined(Q_OS_WIN)
 		if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
@@ -81,23 +74,36 @@ bool doNeuronToolBoxPlugin(MainWindow* mainwindow, const vaa3d_neurontoolbox_par
 		
 		QString fullpath = pluginsDir.absoluteFilePath(fileList.at(0)); //always just use the first file (assume it is the only one) found in the folder as the "correct" dll
 		//the real dll name should be "microimaging.dll"
-		
+	
     	QPluginLoader* loader = new QPluginLoader(fullpath);
         if (!loader)
         {
-        	qDebug("ERROR in V3d_PluginLoader::searchPluginFiles the imaging module(%s)", qPrintable(fullpath));
+        	qDebug("unable to load neuron_toolbox plugin");
         	return false;
         }
+
+	
 		
-		v3d_msg(fullpath, 0);
+//		v3d_msg(fullpath, 0);
 		
 		V3d_PluginLoader mypluginloader(mainwindow);
+
 		//mypluginloader.runPlugin(loader, QString("about this plugin"));
 
-		curw->getImageData()->setCustomStructPointer((void *)(&p)); //to pass parameters to the imaging plugin
+//		curw->getImageData()->setCustomStructPointer((void *)(&p)); //to pass parameters to the imaging plugin
 		
-		mypluginloader.runPlugin(loader, p.OPS);
+//		mypluginloader.runPlugin(loader, p.OPS);
 		//mypluginloader.runPlugin(loader, "about");
+
+		V3DPluginArgList input;
+		V3DPluginArgList output;
+		V3DPluginArgItem arg;
+		arg.p = (void *)(&p);
+		input<<arg;
+
+		mypluginloader.callPluginFunc(fullpath, "neuron_toolbox", input, output);
+	//	MainWindow * mainWin = qobject_cast<MainWindow*>(qApp->topLevelWidgets().at(0));	
+		//mainwindow->pluginLoader->callPluginFunc(fullpath, "neuron_toolbox", input, output); 
 			
 	}
 	catch (...)

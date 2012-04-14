@@ -42,18 +42,23 @@ from this software without specific prior written permission.
 
 #include "../v3d_basicdatatype.h"
 #include "../basic_4dimage.h"
+#include "../basic_surf_objs.h"
 #include "../v3d_interface.h"
 
 struct vaa3d_neurontoolbox_paras
 {
 	QString OPS; //operation
-	
-	Image4DSimple *imgp; //the image data for a plugin to call	
-	V3DLONG xs, ys, zs; //starting coordinates (in pixel space)
-	V3DLONG xe, ye, ze; //ending coordinates (in pixel space)
-	double xrez, yrez, zrez; //imaging step size in 3D (in physical space, and also assuming the unit (e.g. micron) is unchanging)
 
-	LandmarkList list_landmarks; //a series of 3D locations for ablation
+	NeuronTree nt;//the neuron selected
+	V3dR_MainWindow * win;//current 3D Viewer
+	V3DLONG n_id;
+
+//	Image4DSimple *imgp; //the image data for a plugin to call	
+//	V3DLONG xs, ys, zs; //starting coordinates (in pixel space)
+//	V3DLONG xe, ye, ze; //ending coordinates (in pixel space)
+//	double xrez, yrez, zrez; //imaging step size in 3D (in physical space, and also assuming the unit (e.g. micron) is unchanging)
+
+//	LandmarkList list_landmarks; //a series of 3D locations for ablation
 };
 
 #endif

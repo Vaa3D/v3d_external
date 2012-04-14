@@ -599,103 +599,114 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
                 //check the existence of a neuron_toolbox plugin, if yes, then create a menu. If no, do nothing. by PHC, 20120406
                 {
-                    QFile qf("plugins/neuron_toolbox");
-                    if (!qf.exists())
-                    {
-                        v3d_msg("Cannot find ./plugins/neuron_toolbox directory!", 0);
-                    }
-                    else
-                    {
-                        listAct.append(act = new QAction("", w)); act->setSeparator(true);
-                        listAct.append(actDoNeuronToolBoxPlugin = new QAction("NeuronToolbox", w));
-                        listAct.append(act = new QAction("", w)); act->setSeparator(true);
-                    }
-                }
-                
-				if (listNeuronTree.size()>=1 && w && curImg)
-				//by PHC. only enable the following pop-up menu when there is the image data, only one neuron (presumably the one being reconstructed
-				//this may be revised later so that the raw image can contain multiple neurons. But as of now (090206), I only allow one neuron being reconstructed at a time
-				{
-					listAct.append(actMarkerCreateNearestNeuronNode = new QAction("create marker from the nearest neuron-node", w));
-
-					if (listNeuronTree.at(names[2]-1).editable==false)
-					{
-						listAct.append(act = new QAction("", w)); act->setSeparator(true);
-						listAct.append(actNeuronToEditable = new QAction("edit this neuron (*only 1 editable neuron at one time*)", w));
-					}
-
-					if (listNeuronTree.at(names[2]-1).editable==true) //this requires V_NeuronSWC
-					{
-						listAct.append(act = new QAction("", w)); act->setSeparator(true);
-
-                              // ZJL 110913:
-                              // Edit the curve by refining or extending as in "n-right-strokes to define a curve (refine)"
-                              listAct.append(actCurveEditRefine = new QAction("extend/refine nearest neuron-segment by mean shift", w));
-                              actCurveEditRefine->setIcon(QIcon(":/icons/strokeN.svg"));
-                              actCurveEditRefine->setVisible(true);
-                              actCurveEditRefine->setIconVisibleInMenu(true);
-                              //listAct.append(act = new QAction("", w));
-
-                              listAct.append(actCurveEditRefine_fm = new QAction("extend/refine nearest neuron-segment by adjacent-pair fast marching", w));
-                              actCurveEditRefine_fm->setIcon(QIcon(":/icons/strokeN.svg"));
-                              actCurveEditRefine_fm->setVisible(true);
-                              actCurveEditRefine_fm->setIconVisibleInMenu(true);
-                              //listAct.append(act = new QAction("", w));
-
-
-                              // Drag a curve to refine it by using rubber-band line like method
-                              listAct.append(actCurveRubberDrag = new QAction("drag nearest neuron-segment", w));
-                              actCurveRubberDrag->setIcon(QIcon(":/icons/click3.svg"));
-                              actCurveRubberDrag->setVisible(true);
-                              actCurveRubberDrag->setIconVisibleInMenu(true);
-                              listAct.append(act = new QAction("", w));
-
-                              act->setSeparator(true);
-                              // End of ZJL
-
-						listAct.append(actDispRecNeuronSegInfo = new QAction("display nearest neuron-segment info", w));
-						listAct.append(actChangeNeuronSegType = new QAction("change nearest neuron-segment type", w));
-						listAct.append(actChangeNeuronSegRadius = new QAction("change nearest neuron-segment radius", w));
-						listAct.append(actReverseNeuronSeg = new QAction("reverse nearest neuron-segment link order", w));
-						listAct.append(actDeleteNeuronSeg = new QAction("delete the nearest neuron-segment", w));
-						//listAct.append(actNeuronOneSegMergeToCloseby = new QAction("merge a terminal-segment to nearby segments", w));
-
-						listAct.append(actNeuronAllSegMergeToCloseby = new QAction("merge nearby segments", w));
-						if (curImg->tracedNeuron.isJointed()==false)
-						{
-							listAct.append(actBreakNeuronSegNearestNeuronNode = new QAction("break the segment using nearest neuron-node", w));
-							//listAct.append(actJoinNeuronSegs_nearby_pathclick = new QAction("join nearby (direct-connected) neuron segments", w));
-							listAct.append(actJoinNeuronSegs_all = new QAction("join *all* neuron-segments (and remove all duplicated nodes)", w));
-						}
-						if (curImg->tracedNeuron.isJointed())
-						{
-							listAct.append(actDecomposeNeuron = new QAction("decompose to *simple* neuron-segments", w));
-						}
-						listAct.append(act = new QAction("", w)); act->setSeparator(true);
-						listAct.append(actNeuronFinishEditing = new QAction("finish editing this neuron", w));
-
-						if (curImg->valid())
-						{
-							listAct.append(act = new QAction("", w)); act->setSeparator(true);
-							listAct.append(actNeuronSegDeform = new QAction("deform the neuron-segment", w));
-							listAct.append(actNeuronSegProfile = new QAction("neuron-segment intensity profile", w));
-						}
-					}
-				}
-#else
-				listAct.append(act = new QAction("", w)); act->setSeparator(true);
-				if (listNeuronTree.size()==1 && w && curImg)
-					//by PHC. only enable the following pop-up menu when there is the image data, only one neuron (presumably the one being reconstructed
-					//this may be revised later so that the raw image can contain multiple neurons. But as of now (090206), I only allow one neuron being reconstructed at a time
-				{
-					listAct.append(actDeleteNeuronSeg = new QAction("delete the line segment", w));
-				}
+			QDir pluginsDir = QDir(qApp->applicationDirPath());
+#if defined(Q_OS_WIN)
+			if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
+				pluginsDir.cdUp();
+#elif defined(Q_OS_MAC)
+			if (pluginsDir.dirName() == "MacOS") {
+				pluginsDir.cdUp();
+				pluginsDir.cdUp();
+				pluginsDir.cdUp();
+			}
 #endif
-				if (listNeuronTree.size()>=2)
+			if (pluginsDir.cd("plugins/neuron_toolbox")==false) 
+			{
+				v3d_msg("Cannot find ./plugins/neuron_toolbox directory!");
+				return false;
+			}
+			else
+			{
+				listAct.append(act = new QAction("", w)); act->setSeparator(true);
+				listAct.append(actDoNeuronToolBoxPlugin = new QAction("NeuronToolbox", w));
+				listAct.append(act = new QAction("", w)); act->setSeparator(true);
+			}
+		}
+
+		if (listNeuronTree.size()>=1 && w && curImg)
+			//by PHC. only enable the following pop-up menu when there is the image data, only one neuron (presumably the one being reconstructed
+			//this may be revised later so that the raw image can contain multiple neurons. But as of now (090206), I only allow one neuron being reconstructed at a time
+		{
+			listAct.append(actMarkerCreateNearestNeuronNode = new QAction("create marker from the nearest neuron-node", w));
+
+			if (listNeuronTree.at(names[2]-1).editable==false)
+			{
+				listAct.append(act = new QAction("", w)); act->setSeparator(true);
+				listAct.append(actNeuronToEditable = new QAction("edit this neuron (*only 1 editable neuron at one time*)", w));
+			}
+
+			if (listNeuronTree.at(names[2]-1).editable==true) //this requires V_NeuronSWC
+			{
+				listAct.append(act = new QAction("", w)); act->setSeparator(true);
+
+				// ZJL 110913:
+				// Edit the curve by refining or extending as in "n-right-strokes to define a curve (refine)"
+				listAct.append(actCurveEditRefine = new QAction("extend/refine nearest neuron-segment by mean shift", w));
+				actCurveEditRefine->setIcon(QIcon(":/icons/strokeN.svg"));
+				actCurveEditRefine->setVisible(true);
+				actCurveEditRefine->setIconVisibleInMenu(true);
+				//listAct.append(act = new QAction("", w));
+
+				listAct.append(actCurveEditRefine_fm = new QAction("extend/refine nearest neuron-segment by adjacent-pair fast marching", w));
+				actCurveEditRefine_fm->setIcon(QIcon(":/icons/strokeN.svg"));
+				actCurveEditRefine_fm->setVisible(true);
+				actCurveEditRefine_fm->setIconVisibleInMenu(true);
+				//listAct.append(act = new QAction("", w));
+
+
+				// Drag a curve to refine it by using rubber-band line like method
+				listAct.append(actCurveRubberDrag = new QAction("drag nearest neuron-segment", w));
+				actCurveRubberDrag->setIcon(QIcon(":/icons/click3.svg"));
+				actCurveRubberDrag->setVisible(true);
+				actCurveRubberDrag->setIconVisibleInMenu(true);
+				listAct.append(act = new QAction("", w));
+
+				act->setSeparator(true);
+				// End of ZJL
+
+				listAct.append(actDispRecNeuronSegInfo = new QAction("display nearest neuron-segment info", w));
+				listAct.append(actChangeNeuronSegType = new QAction("change nearest neuron-segment type", w));
+				listAct.append(actChangeNeuronSegRadius = new QAction("change nearest neuron-segment radius", w));
+				listAct.append(actReverseNeuronSeg = new QAction("reverse nearest neuron-segment link order", w));
+				listAct.append(actDeleteNeuronSeg = new QAction("delete the nearest neuron-segment", w));
+				//listAct.append(actNeuronOneSegMergeToCloseby = new QAction("merge a terminal-segment to nearby segments", w));
+
+				listAct.append(actNeuronAllSegMergeToCloseby = new QAction("merge nearby segments", w));
+				if (curImg->tracedNeuron.isJointed()==false)
+				{
+					listAct.append(actBreakNeuronSegNearestNeuronNode = new QAction("break the segment using nearest neuron-node", w));
+					//listAct.append(actJoinNeuronSegs_nearby_pathclick = new QAction("join nearby (direct-connected) neuron segments", w));
+					listAct.append(actJoinNeuronSegs_all = new QAction("join *all* neuron-segments (and remove all duplicated nodes)", w));
+				}
+				if (curImg->tracedNeuron.isJointed())
+				{
+					listAct.append(actDecomposeNeuron = new QAction("decompose to *simple* neuron-segments", w));
+				}
+				listAct.append(act = new QAction("", w)); act->setSeparator(true);
+				listAct.append(actNeuronFinishEditing = new QAction("finish editing this neuron", w));
+
+				if (curImg->valid())
 				{
 					listAct.append(act = new QAction("", w)); act->setSeparator(true);
-					listAct.append(actAveDistTwoNeurons = new QAction("distances of two neurons", w));
+					listAct.append(actNeuronSegDeform = new QAction("deform the neuron-segment", w));
+					listAct.append(actNeuronSegProfile = new QAction("neuron-segment intensity profile", w));
 				}
+			}
+		}
+#else
+		listAct.append(act = new QAction("", w)); act->setSeparator(true);
+		if (listNeuronTree.size()==1 && w && curImg)
+			//by PHC. only enable the following pop-up menu when there is the image data, only one neuron (presumably the one being reconstructed
+			//this may be revised later so that the raw image can contain multiple neurons. But as of now (090206), I only allow one neuron being reconstructed at a time
+		{
+			listAct.append(actDeleteNeuronSeg = new QAction("delete the line segment", w));
+		}
+#endif
+		if (listNeuronTree.size()>=2)
+		{
+			listAct.append(act = new QAction("", w)); act->setSeparator(true);
+			listAct.append(actAveDistTwoNeurons = new QAction("distances of two neurons", w));
+		}
 #endif
 			}
 
@@ -757,18 +768,18 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		update = 1;
 		switch (names[1])
 		{
-		case stLabelSurface:
-			LIST_ON(listLabelSurf, names[2]-1, false);
-			break;
-		case stNeuronStructure:
-			LIST_ON(listNeuronTree, names[2]-1, false);
-			break;
-		case stPointCloud:
-			LIST_ON(listCell, names[2]-1, false);
-			break;
-		case stImageMarker:
-			LIST_ON(listMarker, names[2]-1, false);
-			break;
+			case stLabelSurface:
+				LIST_ON(listLabelSurf, names[2]-1, false);
+				break;
+			case stNeuronStructure:
+				LIST_ON(listNeuronTree, names[2]-1, false);
+				break;
+			case stPointCloud:
+				LIST_ON(listCell, names[2]-1, false);
+				break;
+			case stImageMarker:
+				LIST_ON(listMarker, names[2]-1, false);
+				break;
 		}
 	}
 	else if (act == actColor)
@@ -776,18 +787,18 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		update = 1;
 		switch (names[1])
 		{
-		case stLabelSurface:
-			LIST_COLOR(listLabelSurf, names[2]-1, w);
-			break;
-		case stNeuronStructure:
-			LIST_COLOR(listNeuronTree, names[2]-1, w);
-			break;
-		case stPointCloud:
-			LIST_COLOR(listCell, names[2]-1, w);
-			break;
-		case stImageMarker:
-			LIST_COLOR(listMarker, names[2]-1, w);
-			break;
+			case stLabelSurface:
+				LIST_COLOR(listLabelSurf, names[2]-1, w);
+				break;
+			case stNeuronStructure:
+				LIST_COLOR(listNeuronTree, names[2]-1, w);
+				break;
+			case stPointCloud:
+				LIST_COLOR(listCell, names[2]-1, w);
+				break;
+			case stImageMarker:
+				LIST_COLOR(listMarker, names[2]-1, w);
+				break;
 		}
 	}
 	else if (act == actSaveSurfaceObj)
@@ -808,9 +819,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				break;
 		}
 	}
-     else if (act == actAddtoMarkerPool) //ZJL
-     {
-          if (w && curImg)
+	else if (act == actAddtoMarkerPool) //ZJL
+	{
+		if (w && curImg)
 		{
 			int tmpind = names[2]-1;
 			if (tmpind>=0)
@@ -823,15 +834,15 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
 				LocationSimple mk = curImg->listLandmarks.at(tmpind); //get the specified landmark
 
-                    // add to listCurveMarkerPool
-                    listCurveMarkerPool.push_back(mk);
+				// add to listCurveMarkerPool
+				listCurveMarkerPool.push_back(mk);
 			}
 		}
-     }
-     else if (act == actClearMarkerPool) //ZJL
-     {
-          listCurveMarkerPool.clear();
-     }
+	}
+	else if (act == actClearMarkerPool) //ZJL
+	{
+		listCurveMarkerPool.clear();
+	}
 
 #ifndef test_main_cpp
 	else if (act == actLockSceneEditObjGeometry)
@@ -871,28 +882,28 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		//if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::CrossCursor)); }
 	}
-     else if (act == actCurveCreateMarkerGD)
+	else if (act == actCurveCreateMarkerGD)
 	{
 		selectMode = smCurveCreateMarkerGD;
 		b_addthiscurve = true;
 
-          if (QMessageBox::question(0, "", "Do you want to use a 1-right stroke to define a bounding box? Default bounding box is the whole image.", QMessageBox::Yes, QMessageBox::No)
-               == QMessageBox::No)
-          {
-               if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::WaitCursor)); }
-               bool b_boundingbox = false;
-               solveCurveFromMarkersGD(b_boundingbox);
-               // clear listCurveMarkerPool
-               listCurveMarkerPool.clear();
-               endSelectMode();
-          }
-          else
-          {
-               // use one stroke to define a curve and then get a custmized bounding box
-               if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
-          }
+		if (QMessageBox::question(0, "", "Do you want to use a 1-right stroke to define a bounding box? Default bounding box is the whole image.", QMessageBox::Yes, QMessageBox::No)
+				== QMessageBox::No)
+		{
+			if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::WaitCursor)); }
+			bool b_boundingbox = false;
+			solveCurveFromMarkersGD(b_boundingbox);
+			// clear listCurveMarkerPool
+			listCurveMarkerPool.clear();
+			endSelectMode();
+		}
+		else
+		{
+			// use one stroke to define a curve and then get a custmized bounding box
+			if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+		}
 	}
-     else if (act == actCurveCreate_pointclick_fm)
+	else if (act == actCurveCreate_pointclick_fm)
 	{
 		selectMode = smCurveCreate_pointclick_fm;
 		b_addthiscurve = true;
@@ -900,57 +911,57 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		//if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::CrossCursor)); }
 	}
-     else if (act == actCurveMarkerPool_fm) // using fastmarching to trace curve through a marker pool
+	else if (act == actCurveMarkerPool_fm) // using fastmarching to trace curve through a marker pool
 	{//ZJL
 		selectMode = smCurveMarkerPool_fm;
 		b_addthiscurve = true;
 		//if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::CrossCursor)); }
 
-          // solve Curve
-          solveCurveFromMarkersFastMarching();
+		// solve Curve
+		solveCurveFromMarkersFastMarching();
 
-          // delete markers used for curve drawing
-          // for(int i=0; i<curImg->listLandmarks.size(); i++)
-          // {
-          //      for(int j=0; j<listCurveMarkerPool.size(); j++)
-          //      {
-          //           if(listCurveMarkerPool.at(j).name == curImg->listLandmarks.at(i).name)
-          //           {
-          //                curImg->listLandmarks.removeAt(i);
-          //                listMarker.removeAt(i);
-          //           }
-          //      }
-          // }
-          // clear listCurveMarkerPool
-          listCurveMarkerPool.clear();
+		// delete markers used for curve drawing
+		// for(int i=0; i<curImg->listLandmarks.size(); i++)
+		// {
+		//      for(int j=0; j<listCurveMarkerPool.size(); j++)
+		//      {
+		//           if(listCurveMarkerPool.at(j).name == curImg->listLandmarks.at(i).name)
+		//           {
+		//                curImg->listLandmarks.removeAt(i);
+		//                listMarker.removeAt(i);
+		//           }
+		//      }
+		// }
+		// clear listCurveMarkerPool
+		listCurveMarkerPool.clear();
 
-          endSelectMode();
+		endSelectMode();
 
 	}
-     else if (act == actCurveMarkerLists_fm) // 20120124 ZJL
+	else if (act == actCurveMarkerLists_fm) // 20120124 ZJL
 	{
 		selectMode = smCurveMarkerLists_fm;
 		b_addthiscurve = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
-     else if (act == actCurveTiltedBB_fm) // 20120124 ZJL
+	else if (act == actCurveTiltedBB_fm) // 20120124 ZJL
 	{
 		selectMode = smCurveTiltedBB_fm;
 		b_addthiscurve = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
-     else if (act == actCurveTiltedBB_fm_sbbox) // 20120124 ZJL
-     {
-         selectMode = smCurveTiltedBB_fm_sbbox;
-         b_addthiscurve = true;
-         if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
-     }
-     else if (act == actCurveFrom1Marker_fm) // 20120328 ZJL
+	else if (act == actCurveTiltedBB_fm_sbbox) // 20120124 ZJL
+	{
+		selectMode = smCurveTiltedBB_fm_sbbox;
+		b_addthiscurve = true;
+		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+	}
+	else if (act == actCurveFrom1Marker_fm) // 20120328 ZJL
 	{
 		selectMode = smCurveFrom1Marker_fm;
 		b_addthiscurve = true;
 
-          if (w && curImg)
+		if (w && curImg)
 		{
 			int tmpind = names[2]-1;
 			if (tmpind>=0)
@@ -960,14 +971,14 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				else if (tmpind==curImg->last_hit_landmark) //in this case remove the last hit
 					curImg->last_hit_landmark = -1;
 				LocationSimple mk = curImg->listLandmarks.at(tmpind); //get the specified landmark
-                    curveStartMarker.x= mk.x;  curveStartMarker.y = mk.y; curveStartMarker.z= mk.z;
+				curveStartMarker.x= mk.x;  curveStartMarker.y = mk.y; curveStartMarker.z= mk.z;
 
 			}
 		}
 
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
-     else if (act == actCurveCreateTest) // 20120124 ZJL
+	else if (act == actCurveCreateTest) // 20120124 ZJL
 	{
 		selectMode = smCurveCreateTest;
 		b_addthiscurve = true;
@@ -985,13 +996,13 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		b_addthiscurve = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
-     else if (act == actCurveRefine_fm) // 120223 ZJL
+	else if (act == actCurveRefine_fm) // 120223 ZJL
 	{
 		selectMode = smCurveRefine_fm;
 		b_addthiscurve = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
-     else if (act == actCurveDirectionInter) // 20120124 ZJL
+	else if (act == actCurveDirectionInter) // 20120124 ZJL
 	{
 		selectMode = smCurveDirectionInter;
 		b_addthiscurve = true;
@@ -1148,9 +1159,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			if (ok1)
 			{
 				//QList <LocationSimple> rlist = curImg->autoMarkerFromImg(chno-1, this->dataBox, this->thicknessZ); //change to the following 091113, PHC
-//				qDebug()<<"viewproc box:"<<this->dataViewProcBox.x0<<" "<<this->dataViewProcBox.x1<<" "<<
-//					this->dataViewProcBox.y0<<" "<<this->dataViewProcBox.y1<<" " <<
-//					this->dataViewProcBox.z0<<" "<<this->dataViewProcBox.z1<<" ";
+				//				qDebug()<<"viewproc box:"<<this->dataViewProcBox.x0<<" "<<this->dataViewProcBox.x1<<" "<<
+				//					this->dataViewProcBox.y0<<" "<<this->dataViewProcBox.y1<<" " <<
+				//					this->dataViewProcBox.z0<<" "<<this->dataViewProcBox.z1<<" ";
 				QList <LocationSimple> rlist = curImg->autoMarkerFromImg(chno-1, this->dataViewProcBox, this->thicknessZ);
 				curImg->listLandmarks <<(rlist);
 				updateLandmark(); //update the landmark list in 3D viewer.
@@ -1165,7 +1176,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		if (w && curImg)
 		{
 			bool ok = true; //QMessageBox::warning(0, QObject::tr("3D View"), QObject::tr("Are you sure to delete this marker?"),
-					        //                     QMessageBox::Yes | QMessageBox::Cancel,   QMessageBox::Yes)	== QMessageBox::Yes;
+			//                     QMessageBox::Yes | QMessageBox::Cancel,   QMessageBox::Yes)	== QMessageBox::Yes;
 
 			int tmpind = names[2]-1;
 			if (tmpind>=0 && ok)
@@ -1222,8 +1233,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			curImg->cur_hit_landmark = names[2]-1;
 
 			qDebug()<<"viewproc box:"<<this->dataViewProcBox.x0<<" "<<this->dataViewProcBox.x1<<" "<<
-			this->dataViewProcBox.y0<<" "<<this->dataViewProcBox.y1<<" " <<
-			this->dataViewProcBox.z0<<" "<<this->dataViewProcBox.z1<<" ";
+				this->dataViewProcBox.y0<<" "<<this->dataViewProcBox.y1<<" " <<
+				this->dataViewProcBox.z0<<" "<<this->dataViewProcBox.z1<<" ";
 
 			curImg->trace_bounding_box = this->dataViewProcBox; //dataBox
 			curImg->trace_z_thickness = this->thicknessZ;
@@ -1239,9 +1250,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
 			curImg->cur_hit_landmark = names[2]-1;
 
-//			qDebug()<<"viewproc box:"<<this->dataViewProcBox.x0<<" "<<this->dataViewProcBox.x1<<" "<<
-//			this->dataViewProcBox.y0<<" "<<this->dataViewProcBox.y1<<" " <<
-//			this->dataViewProcBox.z0<<" "<<this->dataViewProcBox.z1<<" ";
+			//			qDebug()<<"viewproc box:"<<this->dataViewProcBox.x0<<" "<<this->dataViewProcBox.x1<<" "<<
+			//			this->dataViewProcBox.y0<<" "<<this->dataViewProcBox.y1<<" " <<
+			//			this->dataViewProcBox.z0<<" "<<this->dataViewProcBox.z1<<" ";
 
 			curImg->trace_bounding_box = this->dataViewProcBox; //dataBox
 			curImg->trace_z_thickness = this->thicknessZ;
@@ -1315,7 +1326,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
 		if (p_tree)
 		{
-            double best_dist;
+			double best_dist;
 			V3DLONG n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);
 			qDebug("detect nearest neuron node [%d] for the [%d] neuron", n_id, names[2]-1);
 
@@ -1375,7 +1386,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		{
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
 			V3DLONG n_id;
-            double best_dist;
+			double best_dist;
 			if (p_tree)	{n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
@@ -1416,7 +1427,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			}
 		}
 	}
-     // ZJL 110913
+	// ZJL 110913
 	else if (act==actCurveEditRefine || act==actCurveEditRefine_fm)
 	{
 		if (NEURON_CONDITION)
@@ -1426,23 +1437,23 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
-                    // using the pipeline of "n-right-strokes to define a curve (refine)"
-                    if (act==actCurveEditRefine)
-                         selectMode = smCurveEditRefine;
-                    else
-                         selectMode = smCurveEditRefine_fm;
+				// using the pipeline of "n-right-strokes to define a curve (refine)"
+				if (act==actCurveEditRefine)
+					selectMode = smCurveEditRefine;
+				else
+					selectMode = smCurveEditRefine_fm;
 
-                    b_addthiscurve = true;
-                    if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+				b_addthiscurve = true;
+				if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 
-                    // get seg_id and then using "n-right-strokes" refine pipeline
-                    edit_seg_id = p_tree->listNeuron.at(n_id).seg_id;
+				// get seg_id and then using "n-right-strokes" refine pipeline
+				edit_seg_id = p_tree->listNeuron.at(n_id).seg_id;
 
 			}
 		}
 	}
 
-     // ZJL 110921
+	// ZJL 110921
 	else if (act==actCurveRubberDrag)
 	{
 		if (NEURON_CONDITION)
@@ -1452,11 +1463,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			if (p_tree)	{double best_dist; n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);}
 			if (n_id>=0)
 			{
-                    selectMode = smCurveRubberDrag;
-                    if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+				selectMode = smCurveRubberDrag;
+				if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 
-                    // get seg_id and then using "n-right-strokes" refine pipeline
-                    edit_seg_id = p_tree->listNeuron.at(n_id).seg_id;
+				// get seg_id and then using "n-right-strokes" refine pipeline
+				edit_seg_id = p_tree->listNeuron.at(n_id).seg_id;
 
 			}
 		}
@@ -1483,7 +1494,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
 			if (p_tree)
 			{
-                double best_dist;
+				double best_dist;
 				V3DLONG n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);
 				qDebug("detect nearest neuron node [%d] for the [%d] neuron", n_id, names[2]-1);
 
@@ -1493,25 +1504,25 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 					cur_node = p_tree->listNeuron.at(n_id);
 					qDebug()<<cur_node.x<<" "<<cur_node.y<<" "<<cur_node.z;
 
-//					//first add an additional marker
-//					int ii;
-//					ImageMarker *p_marker=0; bool b_exist_marker=false;
-//					for (ii=0;ii<listMarker.size();ii++)
-//					{
-//						p_marker = (ImageMarker *)(&(listMarker.at(ii)));
-//						qDebug()<<ii<<" "<<p_marker->x<<" "<<p_marker->y<<" "<<p_marker->z;
-//						if (cur_node.x==p_marker->x && cur_node.y==p_marker->y && cur_node.z==p_marker->z)
-//						{
-//							b_exist_marker=true;
-//							break;
-//						}
-//					}
-//					if (b_exist_marker) {qDebug("you select an existing marker [%d], - do nothing.", ii+1);}
-//					else
-//					{
-//						XYZ loc(cur_node.x, cur_node.y, cur_node.z);
-//						addMarker(loc);
-//					}
+					//					//first add an additional marker
+					//					int ii;
+					//					ImageMarker *p_marker=0; bool b_exist_marker=false;
+					//					for (ii=0;ii<listMarker.size();ii++)
+					//					{
+					//						p_marker = (ImageMarker *)(&(listMarker.at(ii)));
+					//						qDebug()<<ii<<" "<<p_marker->x<<" "<<p_marker->y<<" "<<p_marker->z;
+					//						if (cur_node.x==p_marker->x && cur_node.y==p_marker->y && cur_node.z==p_marker->z)
+					//						{
+					//							b_exist_marker=true;
+					//							break;
+					//						}
+					//					}
+					//					if (b_exist_marker) {qDebug("you select an existing marker [%d], - do nothing.", ii+1);}
+					//					else
+					//					{
+					//						XYZ loc(cur_node.x, cur_node.y, cur_node.z);
+					//						addMarker(loc);
+					//					}
 
 					//now break the seg
 					curImg->proj_trace_breakNeuronSeg(n_id, p_tree);
@@ -1530,9 +1541,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			for (int ci=0;ci<p_tree->listNeuron.size();ci++)
 			{
 				if (p_tree->listNeuron.at(ci).x==c_pos->x &&
-				    p_tree->listNeuron.at(ci).y==c_pos->y &&
-					p_tree->listNeuron.at(ci).z==c_pos->z
-					)
+						p_tree->listNeuron.at(ci).y==c_pos->y &&
+						p_tree->listNeuron.at(ci).z==c_pos->z
+				   )
 					n_id=ci; //n_id==ci; //110814 RZC fixed by Eclipse indigo, but this act never be executed, so no effect.
 			}
 
@@ -1640,20 +1651,20 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	else if (act==actDispNeuronNodeInfo)
 	{
 		NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(names[2]-1)));
-        double best_dist;
+		double best_dist;
 		V3DLONG n_id = findNearestNeuronNode_WinXY(cx, cy, p_tree, best_dist);
 		QString tmpstr, tmpstr1;
 		tmpstr.setNum(n_id); tmpstr.prepend("The neuron node has row index ");
 		tmpstr.append("\n");
 		tmpstr.append(info_NeuronNode(n_id, p_tree));
 
-//		tmpstr1.setNum(p_tree->listNeuron.at(n_id).n); tmpstr1.prepend("\nnode number (1st col in SWC) = "); tmpstr.append(tmpstr1);
-//		tmpstr1.setNum(p_tree->listNeuron.at(n_id).type); tmpstr1.prepend("\ntype (2th col) = "); tmpstr.append(tmpstr1);
-//		tmpstr1.setNum(p_tree->listNeuron.at(n_id).x); tmpstr1.prepend("\nx coord (3rd col) = "); tmpstr.append(tmpstr1);
-//		tmpstr1.setNum(p_tree->listNeuron.at(n_id).y); tmpstr1.prepend("\ny coord (4th col) = "); tmpstr.append(tmpstr1);
-//		tmpstr1.setNum(p_tree->listNeuron.at(n_id).z); tmpstr1.prepend("\nz coord (5th col) = "); tmpstr.append(tmpstr1);
-//		tmpstr1.setNum(p_tree->listNeuron.at(n_id).r); tmpstr1.prepend("\nradius (6th col) = "); tmpstr.append(tmpstr1);
-//		tmpstr1.setNum(p_tree->listNeuron.at(n_id).pn); tmpstr1.prepend("\nparent number (7th col) = "); tmpstr.append(tmpstr1);
+		//		tmpstr1.setNum(p_tree->listNeuron.at(n_id).n); tmpstr1.prepend("\nnode number (1st col in SWC) = "); tmpstr.append(tmpstr1);
+		//		tmpstr1.setNum(p_tree->listNeuron.at(n_id).type); tmpstr1.prepend("\ntype (2th col) = "); tmpstr.append(tmpstr1);
+		//		tmpstr1.setNum(p_tree->listNeuron.at(n_id).x); tmpstr1.prepend("\nx coord (3rd col) = "); tmpstr.append(tmpstr1);
+		//		tmpstr1.setNum(p_tree->listNeuron.at(n_id).y); tmpstr1.prepend("\ny coord (4th col) = "); tmpstr.append(tmpstr1);
+		//		tmpstr1.setNum(p_tree->listNeuron.at(n_id).z); tmpstr1.prepend("\nz coord (5th col) = "); tmpstr.append(tmpstr1);
+		//		tmpstr1.setNum(p_tree->listNeuron.at(n_id).r); tmpstr1.prepend("\nradius (6th col) = "); tmpstr.append(tmpstr1);
+		//		tmpstr1.setNum(p_tree->listNeuron.at(n_id).pn); tmpstr1.prepend("\nparent number (7th col) = "); tmpstr.append(tmpstr1);
 
 		QMessageBox::information(0, "neuron node info", tmpstr);
 	}
@@ -1708,8 +1719,16 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	}
 	else if (act==actDoNeuronToolBoxPlugin)
 	{
-        vaa3d_neurontoolbox_paras np;
-        doNeuronToolBoxPlugin(curXWidget->getMainControlWindow(), np);
+		vaa3d_neurontoolbox_paras np;
+		np.OPS = "Neuron Toolbox";
+		np.nt = listNeuronTree.at(names[2]-1);
+	//	np.nt = p_tree;
+		double best_dist;
+		np.n_id = findNearestNeuronNode_WinXY(cx, cy, &testNeuronTree, best_dist);
+		np.win = (V3dR_MainWindow *)w->getMainWindow();
+		v3d_msg(np.nt.file);
+		//doNeuronToolBoxPlugin(curXWidget->getMainControlWindow(), np);
+		doNeuronToolBoxPlugin((MainWindow *)(w->getMainWindow()), np);
 	}
 
 #endif //tes_main_cpp
@@ -1759,7 +1778,7 @@ void Renderer_gl1::endSelectMode()
 			solveCurveFromMarkers(); //////////
 		}
 	}
-     if (selectMode == smCurveCreate_pointclick_fm)
+	if (selectMode == smCurveCreate_pointclick_fm)
 	{
 		if (cntCur3DCurveMarkers >=2)
 		{
@@ -1782,27 +1801,27 @@ void Renderer_gl1::endSelectMode()
 
 void Renderer_gl1::_appendMarkerPos(int x, int y)
 {
-		MarkerPos pos;
-		pos.x = x;
-		pos.y = y;
-		for (int i=0; i<4; i++)
-			pos.view[i] = viewport[i];
-		for (int i=0; i<16; i++)
-		{
-			pos.P[i]  = projectionMatrix[i];
-			pos.MV[i] = markerViewMatrix[i];
-		}
-		listMarkerPos.append(pos);
-		//qDebug("\t (%d, %d) listMarkerPos.size = %d", x,y, listMarkerPos.size());
+	MarkerPos pos;
+	pos.x = x;
+	pos.y = y;
+	for (int i=0; i<4; i++)
+		pos.view[i] = viewport[i];
+	for (int i=0; i<16; i++)
+	{
+		pos.P[i]  = projectionMatrix[i];
+		pos.MV[i] = markerViewMatrix[i];
+	}
+	listMarkerPos.append(pos);
+	//qDebug("\t (%d, %d) listMarkerPos.size = %d", x,y, listMarkerPos.size());
 }
 
 int Renderer_gl1::movePen(int x, int y, bool b_move)
 {
 	//qDebug("  Renderer_gl1::movePen");
 
-//	//100731 RZC
-//	if (renderMode==rmCrossSection)
-//		selectObj(x,y, false, 0); //no menu, no tip, just for lastSliceType
+	//	//100731 RZC
+	//	if (renderMode==rmCrossSection)
+	//		selectObj(x,y, false, 0); //no menu, no tip, just for lastSliceType
 
 	// define a curve //091023
 	if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3)
@@ -1834,7 +1853,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 				vector <XYZ> loc_vec_input; //here as an empty input, so use list_listCurvePos internal
 				solveCurveCenter(loc_vec_input);
 			}
-               else if (selectMode == smCurveCreate2 || selectMode == smCurveCreate3)
+			else if (selectMode == smCurveCreate2 || selectMode == smCurveCreate3)
 				solveCurveViews();
 
 			list_listCurvePos.clear();
@@ -1843,625 +1862,625 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 		}
 	}
 
-     // For curve refine, ZJL 110905
-     else if (selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine ||
-          selectMode == smCurveEditRefine_fm || selectMode == smCurveDirectionInter || selectMode == smCurveRefine_fm ||
-          selectMode == smCurveMarkerLists_fm || selectMode == smCurveFrom1Marker_fm || selectMode == smCurveCreateMarkerGD ||
-          selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox || selectMode == smCurveCreateTest)
-     {
-          _appendMarkerPos(x,y);
-          if (b_move)
-          {
-               //qDebug("\t track ( %i, %i ) to refine Curve", x,y);
-               this->sShowTrack = 1;
-               return 1; //display 2d track
-          }
-          // else release button
-          qDebug("\t track-end ( %i, %i ) to refine Curve (%i points)", x,y, listMarkerPos.size());
-          if (listMarkerPos.size() >=3) //drop short click
-               list_listCurvePos.append(listMarkerPos);
-          listMarkerPos.clear();
-          if (list_listCurvePos.size() >= 1)
-          {
-               //qDebug("\t %i tracks to solve Curve", list_listCurvePos.size());
-               if (selectMode == smCurveRefineInit)
-               {
-                    vector <XYZ> loc_vec_input;
-                    vector <XYZ> loc_vec0;
-                    loc_vec0.clear();
-                    solveCurveCenterV2(loc_vec_input, loc_vec0, 0);
-                    refineMode = smCurveRefine_ms; // mean shift
-                    selectMode = smCurveRefineLast; // switch to smCurveRefineLast
-               }
-               else if(selectMode == smCurveRefine_fm)
-               {
-                    // using two marker lists for fast marching to get a curve
-                    vector <XYZ> loc_vec_input;
-                    vector <XYZ> loc_vec0;
-                    loc_vec0.clear();
-                    solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
-                    refineMode = smCurveRefine_fm;
-                    selectMode = smCurveRefineLast; // switch to smCurveRefineLast for refine mode
-               }
-               else if (selectMode == smCurveRefineLast)
-               {
-                    solveCurveRefineLast();
-               }
-               else if (selectMode == smCurveEditRefine ) // edit with mean shift
-               {
-                    refineMode = smCurveRefine_ms;
-                    solveCurveRefineLast();
-               }
-               else if (selectMode == smCurveEditRefine_fm ) // edit with fm
-               {
-                    refineMode = smCurveRefine_fm;
-                    solveCurveRefineLast();
-               }
-               else if(selectMode == smCurveDirectionInter)
-               {
-                    vector <XYZ> loc_vec_input;
-                    vector <XYZ> loc_vec0;
-                    loc_vec0.clear();
-                    solveCurveDirectionInter(loc_vec_input, loc_vec0, 0);
-               }
-               else if(selectMode == smCurveMarkerLists_fm || selectMode == smCurveFrom1Marker_fm || selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox)
-               {
-                    // using two marker lists for fast marching to get a curve
-                    vector <XYZ> loc_vec_input;
-                    vector <XYZ> loc_vec0;
-                    loc_vec0.clear();
-                    solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
-
-                    if(selectMode == smCurveFrom1Marker_fm)
-                    {
-                         endSelectMode();
-                    }
-               }
-               else if(selectMode == smCurveCreateMarkerGD)
-               {
-                    solveCurveFromMarkersGD(true); // ture means using customized bounding box
-                    endSelectMode();
-               }
-               else if(selectMode == smCurveCreateTest)
-               {
-                    V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
-                    My4DImage* curImg = 0;
-                    if (w) curImg = v3dr_getImage4d(_idep);
-
-                    QString imgname(curImg->getFileName()); //include path
-                    QFileInfo pathinfo(imgname);
-
-                    QString fname= pathinfo.baseName(); //only the file name without extension
-                    QString testOutputDir;
-                    if(listCurveMarkerPool.size() > 2)
-                    {
-                         testOutputDir = pathinfo.absolutePath() + "/GDBased_" + fname +"_testSWC";
-                    }
-                    else
-                    {
-                         testOutputDir = pathinfo.absolutePath() + "/FM2Based_" + fname +"_testSWC";
-                    }
-
-                    QDir curdir(testOutputDir);
-                    if (!curdir.exists())
-                         curdir.mkdir(testOutputDir);
-
-                    // get number of tests already had from dir's .txt
-                    int test_id_num;
-                    QString cursurfix=QString("txt");
-                    createLastTestID(testOutputDir, cursurfix, test_id_num);
-                    QString test_id = QString::number(test_id_num);
-
-                    QString anofilename = testOutputDir + "/" + test_id + "_" + fname + "_curveTest.ano";
-                    FILE *fp;
-
-                    bTestCurveBegin=true;
-                    fp=fopen(anofilename.toStdString().c_str(), "wt"); // open a new empty file
-                    if (!fp)
-                    {
-                         v3d_msg(QString("Fail to open file %1 to write.").arg(anofilename));
-                         return 1;
-                    }
-                    // write file name
-                    QString swcimg = "../" + pathinfo.fileName();
-                    fprintf(fp, "GRAYIMG=%s\n", swcimg.toStdString().c_str());
-
-                    // using two marker lists (2PointsBB) for fast marching to get a curve
-                    vector <XYZ> loc_vec_input;
-                    vector <XYZ> loc_vec0;
-                    clock_t t1;
-
-                    loc_vec0.clear();
-                    selectMode = smCurveMarkerLists_fm;
-                    t1=clock(); // time
-                    solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
-                    clock_t time_ml = (clock()-t1);
-                    NeuronTree tree_ml = testNeuronTree;
-
-                    // Save to a file
-                    QString filenameml= test_id+ "_MarkerLists2PointsBB_fm"+".swc";
-                    QString filenameml_ab=testOutputDir+"/"+filenameml;
-                    writeSWC_file(filenameml_ab, testNeuronTree);
-                    // save to ano
-                    fprintf(fp, "SWCFILE=%s\n", filenameml.toStdString().c_str());
-
-                    // ===================================================================
-                    // using two marker lists (OneStrokeBB) for fast marching to get a curve
-                    // loc_vec_input.clear();
-                    // loc_vec0.clear();
-                    // selectMode = smCurveUseStrokeBB_fm; //============================================ to change
-                    // t1=clock(); // time
-                    // solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
-                    // clock_t time_ml_StrokeBB = (clock()-t1);
-                    // NeuronTree tree_ml_StrokeBB = testNeuronTree;
-
-                    // // Save to a file
-                    // QString filenameml_StrokeBB= test_id+ "_MarkerListsOneStrokeBB_fm"+".swc";
-                    // QString filenameml_ab_StrokeBB=testOutputDir+"/"+filenameml_StrokeBB;
-                    // writeSWC_file(filenameml_ab_StrokeBB, testNeuronTree);
-                    // // save to ano
-                    // fprintf(fp, "SWCFILE=%s\n", filenameml_StrokeBB.toStdString().c_str());
-
-
-                    // using two marker lists (OneStrokeBB) for fast marching to get a curve
-                    loc_vec_input.clear();
-                    loc_vec0.clear();
-                    selectMode = smCurveTiltedBB_fm;
-                    t1=clock(); // time
-                    solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
-                    clock_t time_ml_tiltedBB = (clock()-t1);
-                    NeuronTree tree_ml_tiltedBB = testNeuronTree;
-
-                    // Save to a file
-                    QString filenameml_tiltedBB= test_id+ "_MarkerListsTiltedBB_fm"+".swc";
-                    QString filenameml_ab_tiltedBB=testOutputDir+"/"+filenameml_tiltedBB;
-                    writeSWC_file(filenameml_ab_tiltedBB, testNeuronTree);
-                    // save to ano
-                    fprintf(fp, "SWCFILE=%s\n", filenameml_tiltedBB.toStdString().c_str());
-                    // ===================================================================
-
-                    // curve from mean shift
-                    loc_vec_input.clear();
-                    selectMode = smCurveCreate1;
-                    t1=clock(); // time
-                    solveCurveCenter(loc_vec_input);
-                    clock_t time_cc = (clock()-t1);
-                    NeuronTree tree_cc = testNeuronTree;
-                    QString filenamecc=test_id+ "_MeanShift"+".swc";
-                    QString filenamecc_ab=testOutputDir + "/" +filenamecc ;
-                    writeSWC_file(filenamecc_ab, testNeuronTree);
-                    // save to ano
-                    fprintf(fp, "SWCFILE=%s\n", filenamecc.toStdString().c_str());
-
-                    // curve from direction intersection
-                    loc_vec_input.clear();
-                    loc_vec0.clear();
-                    selectMode = smCurveDirectionInter;
-                    t1 = clock();
-                    solveCurveDirectionInter(loc_vec_input, loc_vec0, 0);
-                    clock_t time_di = clock()-t1;
-                    NeuronTree tree_di = testNeuronTree;
-                    QString filenamedi = test_id+ "_DirInter"+".swc";
-                    QString filenamedi_ab=testOutputDir + "/" +filenamedi;
-                    writeSWC_file(filenamedi_ab, testNeuronTree);
-                    // save to ano
-                    fprintf(fp, "SWCFILE=%s\n", filenamedi.toStdString().c_str());
-
-                    NeuronTree tree_mp, tree_gd;
-                    clock_t time_mp, time_gd;
-                    if(listCurveMarkerPool.size() > 2)
-                    {
-                         // curve from FM
-                         selectMode = smCurveMarkerPool_fm;
-                         t1 = clock(); // time
-                         solveCurveFromMarkersFastMarching();
-                         time_mp = (clock()-t1); // /CLOCKS_PER_SEC;
-                         tree_mp = testNeuronTree;
-                         QString filenamemp = test_id+ "_MarkerPool_fm"+".swc";
-                         QString filenamemp_ab =testOutputDir + "/" + filenamemp;
-                         writeSWC_file(filenamemp_ab, testNeuronTree);
-                         // save to ano
-                         fprintf(fp, "SWCFILE=%s\n", filenamemp.toStdString().c_str());
-
-                         // curve from GD
-                         t1 = clock();
-                         solveCurveFromMarkersGD(false); //boundingbox is the whole image
-                         time_gd = (clock()-t1);
-                         tree_gd = testNeuronTree;
-                         QString filenamegd = test_id+ "_MarkerPool_GD"+".swc";
-                         QString filenamegd_ab = testOutputDir + "/" +filenamegd;
-                         writeSWC_file(filenamegd_ab, testNeuronTree);
-                         // save to ano
-                         fprintf(fp, "SWCFILE=%s\n", filenamegd.toStdString().c_str());
-                    }
-
-                    // distance computation
-                    // for writing curve distance information
-                    QString distfilename = testOutputDir + "/" + test_id + "_" + fname + "_Distance.txt";
-                    QString pre_distfilename = testOutputDir + "/" +  QString::number(test_id_num-1) + "_" + fname + "_Distance.txt";
-
-                    // distance threshold for the whole Test
-                    const static double dist_threshold = 3.0;
-
-                    FILE *fpdist=fopen(distfilename.toStdString().c_str(), "wt"); // open a new empty file
-                    if (!fpdist)
-                    {
-                         v3d_msg(QString("Fail to open file %1 to write.").arg(distfilename));
-                         return 1;
-                    }
-                    if(listCurveMarkerPool.size() > 2) // the ground truth is the curve from GD
-                    {
-                         // ======================================================
-                         int ml_success, ml_tiltedBB_success, ml_strokeBB_success, cc_success, di_success, mp_success;
-                         int num_test;
-                         if(test_id_num==1)
-                         {
-                              // initialize nums for the first time
-                              ml_success = 0;
-                              ml_tiltedBB_success = 0;
-                              ml_strokeBB_success = 0;
-                              cc_success = 0;
-                              di_success = 0;
-                              mp_success = 0;
-                              num_test = 0;
-                         }
-                         else
-                         {
-                              ifstream fpredist(pre_distfilename.toStdString().c_str());
-
-                              if(fpredist.is_open())
-                              {
-                                   string line;
-                                   getline(fpredist, line);
-                                   istringstream buffer(line);
-                                   buffer >> num_test >> ml_success >> ml_tiltedBB_success >>  ml_strokeBB_success >> cc_success >> di_success >> mp_success;
-                              }
-                              fpredist.close();
-                         }
-                         // =======================================================
-
-                         num_test ++;
-
-                         // computer distance from GD-curve to other curves
-                         double dist_gd_ml = distance_between_2lines(tree_gd, tree_ml);
-                         //double dist_gd_ml_StrokeBB = distance_between_2lines(tree_gd, tree_ml_StrokeBB);
-                         double dist_gd_ml_tiltedBB = distance_between_2lines(tree_gd, tree_ml_tiltedBB);
-                         double dist_gd_cc = distance_between_2lines(tree_gd, tree_cc);
-                         double dist_gd_di = distance_between_2lines(tree_gd, tree_di);
-                         double dist_gd_mp = distance_between_2lines(tree_gd, tree_mp);
-
-                         if(dist_gd_ml <= dist_threshold) ml_success++;
-                         if(dist_gd_ml_tiltedBB <= dist_threshold) ml_tiltedBB_success++;
-                         //if(dist_gd_ml_StrokeBB <= dist_threshold) ml_strokeBB_success++;
-                         if(dist_gd_cc <= dist_threshold) cc_success++;
-                         if(dist_gd_di <= dist_threshold) di_success++;
-                         if(dist_gd_mp <= dist_threshold) mp_success++;
-
-                         float ml_succ_rate = (float)ml_success/num_test;
-                         float ml_tiltedBB_succ_rate = (float)ml_tiltedBB_success/num_test;
-                         //float ml_strokeBB_succ_rate = (float)ml_strokeBB_success/num_test;
-                         float cc_succ_rate = (float)cc_success/num_test;
-                         float di_succ_rate = (float)di_success/num_test;
-                         float mp_succ_rate = (float)mp_success/num_test;
-
-                         //fprintf(fpdist, "%d\n", num_test); // total test num
-                         fprintf(fpdist, "%d %d %d %d %d %d %d\n", num_test, ml_success, ml_tiltedBB_success, ml_strokeBB_success, cc_success, di_success, mp_success);// total test num, success num above dist_threshold
-                         fprintf(fpdist, "The ground truth curve is the curve from GD method.\n");
-                         fprintf(fpdist, "Time consuming for the curve from GD method: %ld CLOCKS, %f s\n\n", time_gd, (double)time_gd/CLOCKS_PER_SEC);
-                         fprintf(fpdist, "The distance_threshold  = %.4f\n\n", dist_threshold);
-
-                         fprintf(fpdist, "Distance between curves of GD and Markerlists2PointsBB_fm                       = %.4f\n",   dist_gd_ml);
-                         fprintf(fpdist, "Rate of distance between GD and Markerlists2PointsBB_fm below dist_threshold    = %.2f %% \n", ml_succ_rate*100);
-                         fprintf(fpdist, "Time consuming for the curve from Markerlists2PointsBB_fm                       = %ld CLOCKS, %f s\n\n", time_ml, (double)time_ml/CLOCKS_PER_SEC);
-
-                         fprintf(fpdist, "Distance between curves of GD and MarkerlistsTiltedBB_fm                        = %.4f\n",   dist_gd_ml_tiltedBB);
-                         fprintf(fpdist, "Rate of distance between GD and MarkerlistsTiltedBB_fm below dist_threshold     = %.2f %% \n", ml_tiltedBB_succ_rate*100);
-                         fprintf(fpdist, "Time consuming for the curve from MarkerlistsTiltedBB_fm                        = %ld CLOCKS, %f s\n\n", time_ml_tiltedBB, (double)time_ml_tiltedBB/CLOCKS_PER_SEC);
-
-                         // fprintf(fpdist, "Distance between curves of GD and MarkerlistsOneStrokeBB_fm                     = %.4f\n",   dist_gd_ml_StrokeBB);
-                         // fprintf(fpdist, "Rate of distance between GD and MarkerlistsOneStrokeBB_fm below dist_threshold  = %.2f %% \n", ml_strokeBB_succ_rate*100);
-                         // fprintf(fpdist, "Time consuming for the curve from MarkerlistsOneStrokeBB_fm                     = %ld CLOCKS, %f s\n\n", time_ml_StrokeBB, (double)time_ml_StrokeBB/CLOCKS_PER_SEC);
-
-                         fprintf(fpdist, "Distance between curves of GD and mean_shift                         = %.4f\n",   dist_gd_cc);
-                         fprintf(fpdist, "Rate of distance between GD and mean_shift below dist_threshold      = %.2f %% \n", cc_succ_rate*100);
-                         fprintf(fpdist, "Time consuming for the curve from mean_shift                         = %ld CLOCKS, %f s\n\n", time_cc, (double)time_cc/CLOCKS_PER_SEC);
-
-                         fprintf(fpdist, "Distance between curves of GD and direction_intersection             = %.4f\n",   dist_gd_di);
-                         fprintf(fpdist, "Rate of distance between GD and dir_inter below dist_threshold       = %.2f %% \n", di_succ_rate*100);
-                         fprintf(fpdist, "Time consuming for the curve from dir_inter                          = %ld CLOCKS, %f s\n\n", time_di, (double)time_di/CLOCKS_PER_SEC);
-
-                         fprintf(fpdist, "Distance between curves of GD and Marker_pool_fm                     = %.4f\n",   dist_gd_mp);
-                         fprintf(fpdist, "Rate of distance between GD and Marker_pool below dist_threshold     = %.2f %% \n", mp_succ_rate*100);
-                         fprintf(fpdist, "Time consuming for the curve from Marker_pool                        = %ld CLOCKS, %f s\n\n", time_mp, (double)time_mp/CLOCKS_PER_SEC);
-                    }
-                    else // the ground truth is the curve from Markerlists_fm
-                    {
-                         // ======================================================
-                         int ml_mlTiltedBB_success, ml_mlStrokeBB_success, ml_cc_success, ml_di_success;
-                         int ml_num_test;
-
-                         if(test_id_num==1)
-                         {
-                              // initialize nums for the first time
-                              ml_mlTiltedBB_success = 0;
-                              ml_mlStrokeBB_success = 0;
-                              ml_cc_success = 0;
-                              ml_di_success = 0;
-                              ml_num_test = 0;
-                         }
-                         else
-                         {
-                              ifstream fpredist(pre_distfilename.toStdString().c_str());
-
-                              if(fpredist.is_open())
-                              {
-                                   string line;
-                                   getline(fpredist, line);
-                                   istringstream buffer(line);
-                                   buffer >> ml_num_test >> ml_mlTiltedBB_success >> ml_mlStrokeBB_success >> ml_cc_success >> ml_di_success;
-                              }
-                              fpredist.close();
-                         }
-
-                         // =========================================================
-                         // computer distance from GD-curve to other curves
-                         double dist_ml_cc = distance_between_2lines(tree_ml, tree_cc);
-                         double dist_ml_di = distance_between_2lines(tree_ml, tree_di);
-                         //double dist_ml_mlStrokeBB = distance_between_2lines(tree_ml, tree_ml_StrokeBB);
-                         double dist_ml_mlTiltedBB = distance_between_2lines(tree_ml, tree_ml_tiltedBB);
-
-                         ml_num_test ++;
-
-                         if(dist_ml_mlTiltedBB <= dist_threshold) ml_mlTiltedBB_success++;
-                         //if(dist_ml_mlStrokeBB <= dist_threshold) ml_mlStrokeBB_success++;
-                         if(dist_ml_cc <= dist_threshold) ml_cc_success++;
-                         if(dist_ml_di <= dist_threshold) ml_di_success++;
-
-                         float ml_mlTiltedBB_succ_rate = (float)ml_mlTiltedBB_success/ml_num_test;
-                         //float ml_mlStrokeBB_succ_rate = (float)ml_mlStrokeBB_success/ml_num_test;
-                         float ml_cc_succ_rate = (float)ml_cc_success/ml_num_test;
-                         float ml_di_succ_rate = (float)ml_di_success/ml_num_test;
-
-                         // computer distance from GD-curve to other curves
-                         //fprintf(fpdist, "%d\n", ml_num_test); // total test num
-                         fprintf(fpdist, "%d %d %d %d %d\n", ml_num_test, ml_mlTiltedBB_success, ml_mlStrokeBB_success, ml_cc_success, ml_di_success);// total test num, success num above dist_threshold
-
-                         fprintf(fpdist, "The ground truth curve is the curve from Markerlists2PointsBB_fm (FM2PointsBB_fm).\n");
-                         fprintf(fpdist, "The distance_threshold  = %.4f\n", dist_threshold);
-                         fprintf(fpdist, "Time consuming for the curve from FM2PointsBB_fm                                   = %ld CLOCKS, %f s\n\n", time_ml, (double)time_ml/CLOCKS_PER_SEC);
-
-                         fprintf(fpdist, "Distance between curves of FM2PointsBB_fm and FMTiltedBB_fm                        = %.4f\n", dist_ml_mlTiltedBB);
-                         fprintf(fpdist, "Rate of distance between FM2PointsBB_fm and FMTiltedBB_fm below dist_threshold     = %.2f %% \n", ml_mlTiltedBB_succ_rate*100);
-                         fprintf(fpdist, "Time consuming for the curve from FMTiltedBB_fm                                    = %ld CLOCKS, %f s\n\n", time_ml_tiltedBB, (double)time_ml_tiltedBB/CLOCKS_PER_SEC);
-
-
-                         // fprintf(fpdist, "Distance between curves of FM2PointsBB_fm and FMOneStrokeBB_fm                     = %.4f\n", dist_ml_mlStrokeBB);
-                         // fprintf(fpdist, "Rate of distance between FM2PointsBB_fm and FMOneStrokeBB_fm below dist_threshold  = %.2f %% \n", ml_mlStrokeBB_succ_rate*100);
-                         // fprintf(fpdist, "Time consuming for the curve from FMOneStrokeBB_fm                                 = %ld CLOCKS, %f s\n\n", time_ml_StrokeBB, (double)time_ml_StrokeBB/CLOCKS_PER_SEC);
-
-                         fprintf(fpdist, "Distance between curves of FM2PointsBB_fm and mean_shift                           = %.4f\n", dist_ml_cc);
-                         fprintf(fpdist, "Rate of distance between FM2PointsBB_fm and mean_shift below dist_threshold        = %.2f %%\n", ml_cc_succ_rate*100);
-                         fprintf(fpdist, "Time consuming for the curve from mean_shift                                       = %ld CLOCKS, %f s\n\n", time_cc, (double)time_cc/CLOCKS_PER_SEC);
-
-                         fprintf(fpdist, "Distance between curves of FM2PointsBB_fm and direction_intersection               = %.4f\n", dist_ml_di);
-                         fprintf(fpdist, "Rate of distance between FM2PointsBB_fm and direc_intersec below dist_threshold    = %.2f %%\n", ml_di_succ_rate*100);
-                         fprintf(fpdist, "Time consuming for the curve from direc_intersec                                   = %ld CLOCKS, %f s\n\n", time_di, (double)time_di/CLOCKS_PER_SEC);
-                    }
-
-                    // projection image computation
-                    // 1. get max SWC boundingbox
-                    XYZ minbb, maxbb;
-                    if(listCurveMarkerPool.size() > 2) // the ground truth is the curve from GD
-                    {
-                         swcBoundingBox(tree_gd, minbb, maxbb);
-                         XYZ minloc_ml, maxloc_ml;
-                         swcBoundingBox(tree_ml, minloc_ml, maxloc_ml);
-                         XYZ minloc_cc, maxloc_cc;
-                         swcBoundingBox(tree_cc, minloc_cc, maxloc_cc);
-                         XYZ minloc_di, maxloc_di;
-                         swcBoundingBox(tree_di, minloc_di, maxloc_di);
-                         XYZ minloc_mp, maxloc_mp;
-                         swcBoundingBox(tree_mp, minloc_mp, maxloc_mp);
-                         XYZ minloc_mltiltedBB, maxloc_mltiltedBB;
-                         swcBoundingBox(tree_ml_tiltedBB, minloc_mltiltedBB, maxloc_mltiltedBB);
-                         // XYZ minloc_mlstrokeBB, maxloc_mlstrokeBB;
-                         // swcBoundingBox(tree_ml_StrokeBB, minloc_mlstrokeBB, maxloc_mlstrokeBB);
-
-                         MIN_BB(minbb, minloc_ml);
-                         MAX_BB(maxbb, maxloc_ml);
-
-                         MIN_BB(minbb, minloc_cc);
-                         MAX_BB(maxbb, maxloc_cc);
-
-                         MIN_BB(minbb, minloc_di);
-                         MAX_BB(maxbb, maxloc_di);
-
-                         MIN_BB(minbb, minloc_mp);
-                         MAX_BB(maxbb, maxloc_mp);
-
-                         MIN_BB(minbb, minloc_mltiltedBB);
-                         MAX_BB(maxbb, maxloc_mltiltedBB);
-
-                         // MIN_BB(minbb, minloc_mlstrokeBB);
-                         // MAX_BB(maxbb, maxloc_mlstrokeBB);
-
-                    } else
-                    {
-                         swcBoundingBox(tree_ml, minbb, maxbb);
-                         XYZ minloc_cc, maxloc_cc;
-                         swcBoundingBox(tree_cc, minloc_cc, maxloc_cc);
-                         XYZ minloc_di, maxloc_di;
-                         swcBoundingBox(tree_di, minloc_di, maxloc_di);
-                         XYZ minloc_mltiltedBB, maxloc_mltiltedBB;
-                         swcBoundingBox(tree_ml_tiltedBB, minloc_mltiltedBB, maxloc_mltiltedBB);
-                         // XYZ minloc_mlstrokeBB, maxloc_mlstrokeBB;
-                         // swcBoundingBox(tree_ml_StrokeBB, minloc_mlstrokeBB, maxloc_mlstrokeBB);
-
-                         MIN_BB(minbb, minloc_cc);
-                         MAX_BB(maxbb, maxloc_cc);
-
-                         MIN_BB(minbb, minloc_di);
-                         MAX_BB(maxbb, maxloc_di);
-
-                         MIN_BB(minbb, minloc_mltiltedBB);
-                         MAX_BB(maxbb, maxloc_mltiltedBB);
-
-                         // MIN_BB(minbb, minloc_mlstrokeBB);
-                         // MAX_BB(maxbb, maxloc_mlstrokeBB);
-                    }
-
-                    // add boundary to minbb and maxbb
-                    int boundary = 30;
-
-                    minbb.x = minbb.x - boundary;
-                    minbb.y = minbb.y - boundary;
-                    minbb.z = minbb.z - boundary;
-
-                    maxbb.x = maxbb.x + boundary;
-                    maxbb.y = maxbb.y + boundary;
-                    maxbb.z = maxbb.z + boundary;
-
-                    dataViewProcBox.clamp(minbb);
-                    dataViewProcBox.clamp(maxbb);
-
-                    // 2. get subvolume in boundingbox and get MAX Intensity Projection on XY, YZ plane
-                    // use whole size of image
-                    //==============================================
-                    //minbb.x =0; minbb.y=0; minbb.z=0;
-                    //maxbb.x =dim1-1; maxbb.y=dim2-1; maxbb.z=dim3-1;
-                    //=============================================
-                    unsigned char * pXY=0;
-                    unsigned char * pYZ=0;
-                    unsigned char * pXZ=0;
-                    MIP_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb);
-
-                    // 3. project SWC to MIP_XY, MIP_YZ planes
-                    unsigned char curve_color[ ][3] = {
-                         {200, 20,  0  },  // red,      ml  0
-                         {0,   200, 20 },  // green,    cc  1
-                         {0,   20,  200},  // blue,     di  2
-                         {200, 0,   200},  // purple,   mp  3
-                         {220, 200, 0  },  // yellow,   gd  4
-                         {0,   200, 200},  // cyan,     mlStrokeBB 5
-                         {188, 94,  37 },  // coffee,   mltiltedBB 6
-                         {180, 200, 120},  // asparagus,
-                         {250, 100, 120},  // salmon,
-                         {120, 200, 200},  // ice,
-                         {100, 120, 200},  // orchid,
-                    };
-
-                    if(listCurveMarkerPool.size() > 2) // the ground truth is the curve from GD
-                    {
-                         projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_gd, curve_color[4]);
-                         projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_ml, curve_color[0]);
-                         //projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_ml_StrokeBB, curve_color[5]);
-                         projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_ml_tiltedBB, curve_color[6]);
-                         projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_cc, curve_color[1]);
-                         projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_di, curve_color[2]);
-                         projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_mp, curve_color[3]);
-                    }else
-                    {
-                         projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_ml, curve_color[0]);
-                         //projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_ml_StrokeBB, curve_color[5]);
-                         projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_ml_tiltedBB, curve_color[6]);
-                         projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_cc, curve_color[1]);
-                         projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_di, curve_color[2]);
-                    }
-
-                    // 4. save image
-                    // 4.1 combine pXY, pYZ
-                    V3DLONG sz[3];
-                    sz[0]=maxbb.x-minbb.x+1; sz[1]=maxbb.y-minbb.y+1;
-                    sz[2]=maxbb.z-minbb.z+1;
-
-                    unsigned char* pXY_YZ_XZ = new unsigned char [3 * (sz[1]+sz[2]) * (sz[0]+sz[2]) ];
-
-                    V3DLONG offset_xy_yz_xz = (sz[1]+sz[2])*(sz[0]+sz[2]);
-                    V3DLONG offset_xy = sz[1]*sz[0];
-                    V3DLONG offset_yz = sz[1]*sz[2];
-                    V3DLONG offset_xz = sz[0]*sz[2];
-                    memset(pXY_YZ_XZ, 0 , 3*offset_xy_yz_xz);
-
-                    // combine pXZ
-                    for(V3DLONG z=0; z<sz[2]; z++)
-                    {
-                         for(V3DLONG x=0; x<sz[0]; x++)
-                         {
-                              V3DLONG ind_xz=z*sz[0] + x;
-                              V3DLONG ind = (z)*(sz[0]+sz[2]) + x;
-                              pXY_YZ_XZ[ind] = pXZ[ind_xz];
-                              pXY_YZ_XZ[ind + offset_xy_yz_xz] = pXZ[ind_xz + offset_xz];
-                              pXY_YZ_XZ[ind + 2*offset_xy_yz_xz] = pXZ[ind_xz + 2*offset_xz];
-                         }
-                    }
-
-                    // combine pXY_pYZ
-                    for(V3DLONG y=0; y<sz[1]; y++)
-                    {
-                         for(V3DLONG x=0; x<sz[0]; x++)
-                         {
-                              V3DLONG ind_xy=y*sz[0] + x;
-                              V3DLONG ind = (y+sz[2])*(sz[0]+sz[2]) + x;
-                              pXY_YZ_XZ[ind] = pXY[ind_xy];
-                              pXY_YZ_XZ[ind + offset_xy_yz_xz] = pXY[ind_xy + offset_xy];
-                              pXY_YZ_XZ[ind + 2*offset_xy_yz_xz] = pXY[ind_xy + 2*offset_xy];
-                         }
-                         for(V3DLONG z=0; z<sz[2]; z++)
-                         {
-                              V3DLONG ind_yz=y*sz[2] + z;
-                              V3DLONG ind = (y+sz[2])*(sz[0]+sz[2]) + (sz[0] + z);
-                              pXY_YZ_XZ[ind] = pYZ[ind_yz];
-                              pXY_YZ_XZ[ind + offset_xy_yz_xz] = pYZ[ind_yz + offset_yz];
-                              pXY_YZ_XZ[ind + 2*offset_xy_yz_xz] = pYZ[ind_yz + 2*offset_yz];
-                         }
-                    }
-
-                    // 4.2 Save image
-                    V3DLONG img_sz[4];
-                    img_sz[0]=sz[0]+sz[2]; img_sz[1]=sz[1]+sz[2]; img_sz[2]=1; img_sz[3]=3;
-                    QString imgfilename = testOutputDir + "/" + test_id + "_" + fname + "_CompareImg.tiff";
-                    saveImage(imgfilename.toStdString().c_str(), pXY_YZ_XZ, img_sz, V3D_UINT8);
-                    // clear memory
-                    if(pXY) {delete [] pXY; pXY=0;}
-                    if(pYZ) {delete [] pYZ; pYZ=0;}
-                    if(pXZ) {delete [] pXZ; pXZ=0;}
-                    if(pXY_YZ_XZ) {delete [] pXY_YZ_XZ; pXY_YZ_XZ=0;}
-
-                    // clear MarkerPool for the next drawing
-                    listCurveMarkerPool.clear();
-                    // continue to use smCurveCreateTest mode
-                    selectMode = smCurveCreateTest;
-
-                    // close file
-                    if(fpdist) fclose(fpdist);
-                    if(fp) fclose(fp);
-
-               }
-               // refine last
-
-               list_listCurvePos.clear();
-               //press Esc to endSelectMode();
-          }
-     } // end of curve refine ZJL 110905
-
-     // for rubber drag the curve
-     else if (selectMode == smCurveRubberDrag)
-     {
-          _appendMarkerPos(x, y);
-          _updateDragPoints(x,y);
-          if (b_move)
-          {
-               this->sShowRubberBand = 1;
-               return 1; //display 2d track
-          }
-          // else release button
-          listMarkerPos.clear();
-          bInitDragPoints = false; // prepare for the next drag
-          solveCurveRubberDrag();
-          DraggedNeurons.clear();
-          // press Esc to endSelectMode();
-     }
-     this->sShowRubberBand = 0;
+	// For curve refine, ZJL 110905
+	else if (selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine ||
+			selectMode == smCurveEditRefine_fm || selectMode == smCurveDirectionInter || selectMode == smCurveRefine_fm ||
+			selectMode == smCurveMarkerLists_fm || selectMode == smCurveFrom1Marker_fm || selectMode == smCurveCreateMarkerGD ||
+			selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox || selectMode == smCurveCreateTest)
+	{
+		_appendMarkerPos(x,y);
+		if (b_move)
+		{
+			//qDebug("\t track ( %i, %i ) to refine Curve", x,y);
+			this->sShowTrack = 1;
+			return 1; //display 2d track
+		}
+		// else release button
+		qDebug("\t track-end ( %i, %i ) to refine Curve (%i points)", x,y, listMarkerPos.size());
+		if (listMarkerPos.size() >=3) //drop short click
+			list_listCurvePos.append(listMarkerPos);
+		listMarkerPos.clear();
+		if (list_listCurvePos.size() >= 1)
+		{
+			//qDebug("\t %i tracks to solve Curve", list_listCurvePos.size());
+			if (selectMode == smCurveRefineInit)
+			{
+				vector <XYZ> loc_vec_input;
+				vector <XYZ> loc_vec0;
+				loc_vec0.clear();
+				solveCurveCenterV2(loc_vec_input, loc_vec0, 0);
+				refineMode = smCurveRefine_ms; // mean shift
+				selectMode = smCurveRefineLast; // switch to smCurveRefineLast
+			}
+			else if(selectMode == smCurveRefine_fm)
+			{
+				// using two marker lists for fast marching to get a curve
+				vector <XYZ> loc_vec_input;
+				vector <XYZ> loc_vec0;
+				loc_vec0.clear();
+				solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
+				refineMode = smCurveRefine_fm;
+				selectMode = smCurveRefineLast; // switch to smCurveRefineLast for refine mode
+			}
+			else if (selectMode == smCurveRefineLast)
+			{
+				solveCurveRefineLast();
+			}
+			else if (selectMode == smCurveEditRefine ) // edit with mean shift
+			{
+				refineMode = smCurveRefine_ms;
+				solveCurveRefineLast();
+			}
+			else if (selectMode == smCurveEditRefine_fm ) // edit with fm
+			{
+				refineMode = smCurveRefine_fm;
+				solveCurveRefineLast();
+			}
+			else if(selectMode == smCurveDirectionInter)
+			{
+				vector <XYZ> loc_vec_input;
+				vector <XYZ> loc_vec0;
+				loc_vec0.clear();
+				solveCurveDirectionInter(loc_vec_input, loc_vec0, 0);
+			}
+			else if(selectMode == smCurveMarkerLists_fm || selectMode == smCurveFrom1Marker_fm || selectMode == smCurveTiltedBB_fm || selectMode == smCurveTiltedBB_fm_sbbox)
+			{
+				// using two marker lists for fast marching to get a curve
+				vector <XYZ> loc_vec_input;
+				vector <XYZ> loc_vec0;
+				loc_vec0.clear();
+				solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
+
+				if(selectMode == smCurveFrom1Marker_fm)
+				{
+					endSelectMode();
+				}
+			}
+			else if(selectMode == smCurveCreateMarkerGD)
+			{
+				solveCurveFromMarkersGD(true); // ture means using customized bounding box
+				endSelectMode();
+			}
+			else if(selectMode == smCurveCreateTest)
+			{
+				V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+				My4DImage* curImg = 0;
+				if (w) curImg = v3dr_getImage4d(_idep);
+
+				QString imgname(curImg->getFileName()); //include path
+				QFileInfo pathinfo(imgname);
+
+				QString fname= pathinfo.baseName(); //only the file name without extension
+				QString testOutputDir;
+				if(listCurveMarkerPool.size() > 2)
+				{
+					testOutputDir = pathinfo.absolutePath() + "/GDBased_" + fname +"_testSWC";
+				}
+				else
+				{
+					testOutputDir = pathinfo.absolutePath() + "/FM2Based_" + fname +"_testSWC";
+				}
+
+				QDir curdir(testOutputDir);
+				if (!curdir.exists())
+					curdir.mkdir(testOutputDir);
+
+				// get number of tests already had from dir's .txt
+				int test_id_num;
+				QString cursurfix=QString("txt");
+				createLastTestID(testOutputDir, cursurfix, test_id_num);
+				QString test_id = QString::number(test_id_num);
+
+				QString anofilename = testOutputDir + "/" + test_id + "_" + fname + "_curveTest.ano";
+				FILE *fp;
+
+				bTestCurveBegin=true;
+				fp=fopen(anofilename.toStdString().c_str(), "wt"); // open a new empty file
+				if (!fp)
+				{
+					v3d_msg(QString("Fail to open file %1 to write.").arg(anofilename));
+					return 1;
+				}
+				// write file name
+				QString swcimg = "../" + pathinfo.fileName();
+				fprintf(fp, "GRAYIMG=%s\n", swcimg.toStdString().c_str());
+
+				// using two marker lists (2PointsBB) for fast marching to get a curve
+				vector <XYZ> loc_vec_input;
+				vector <XYZ> loc_vec0;
+				clock_t t1;
+
+				loc_vec0.clear();
+				selectMode = smCurveMarkerLists_fm;
+				t1=clock(); // time
+				solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
+				clock_t time_ml = (clock()-t1);
+				NeuronTree tree_ml = testNeuronTree;
+
+				// Save to a file
+				QString filenameml= test_id+ "_MarkerLists2PointsBB_fm"+".swc";
+				QString filenameml_ab=testOutputDir+"/"+filenameml;
+				writeSWC_file(filenameml_ab, testNeuronTree);
+				// save to ano
+				fprintf(fp, "SWCFILE=%s\n", filenameml.toStdString().c_str());
+
+				// ===================================================================
+				// using two marker lists (OneStrokeBB) for fast marching to get a curve
+				// loc_vec_input.clear();
+				// loc_vec0.clear();
+				// selectMode = smCurveUseStrokeBB_fm; //============================================ to change
+				// t1=clock(); // time
+				// solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
+				// clock_t time_ml_StrokeBB = (clock()-t1);
+				// NeuronTree tree_ml_StrokeBB = testNeuronTree;
+
+				// // Save to a file
+				// QString filenameml_StrokeBB= test_id+ "_MarkerListsOneStrokeBB_fm"+".swc";
+				// QString filenameml_ab_StrokeBB=testOutputDir+"/"+filenameml_StrokeBB;
+				// writeSWC_file(filenameml_ab_StrokeBB, testNeuronTree);
+				// // save to ano
+				// fprintf(fp, "SWCFILE=%s\n", filenameml_StrokeBB.toStdString().c_str());
+
+
+				// using two marker lists (OneStrokeBB) for fast marching to get a curve
+				loc_vec_input.clear();
+				loc_vec0.clear();
+				selectMode = smCurveTiltedBB_fm;
+				t1=clock(); // time
+				solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
+				clock_t time_ml_tiltedBB = (clock()-t1);
+				NeuronTree tree_ml_tiltedBB = testNeuronTree;
+
+				// Save to a file
+				QString filenameml_tiltedBB= test_id+ "_MarkerListsTiltedBB_fm"+".swc";
+				QString filenameml_ab_tiltedBB=testOutputDir+"/"+filenameml_tiltedBB;
+				writeSWC_file(filenameml_ab_tiltedBB, testNeuronTree);
+				// save to ano
+				fprintf(fp, "SWCFILE=%s\n", filenameml_tiltedBB.toStdString().c_str());
+				// ===================================================================
+
+				// curve from mean shift
+				loc_vec_input.clear();
+				selectMode = smCurveCreate1;
+				t1=clock(); // time
+				solveCurveCenter(loc_vec_input);
+				clock_t time_cc = (clock()-t1);
+				NeuronTree tree_cc = testNeuronTree;
+				QString filenamecc=test_id+ "_MeanShift"+".swc";
+				QString filenamecc_ab=testOutputDir + "/" +filenamecc ;
+				writeSWC_file(filenamecc_ab, testNeuronTree);
+				// save to ano
+				fprintf(fp, "SWCFILE=%s\n", filenamecc.toStdString().c_str());
+
+				// curve from direction intersection
+				loc_vec_input.clear();
+				loc_vec0.clear();
+				selectMode = smCurveDirectionInter;
+				t1 = clock();
+				solveCurveDirectionInter(loc_vec_input, loc_vec0, 0);
+				clock_t time_di = clock()-t1;
+				NeuronTree tree_di = testNeuronTree;
+				QString filenamedi = test_id+ "_DirInter"+".swc";
+				QString filenamedi_ab=testOutputDir + "/" +filenamedi;
+				writeSWC_file(filenamedi_ab, testNeuronTree);
+				// save to ano
+				fprintf(fp, "SWCFILE=%s\n", filenamedi.toStdString().c_str());
+
+				NeuronTree tree_mp, tree_gd;
+				clock_t time_mp, time_gd;
+				if(listCurveMarkerPool.size() > 2)
+				{
+					// curve from FM
+					selectMode = smCurveMarkerPool_fm;
+					t1 = clock(); // time
+					solveCurveFromMarkersFastMarching();
+					time_mp = (clock()-t1); // /CLOCKS_PER_SEC;
+					tree_mp = testNeuronTree;
+					QString filenamemp = test_id+ "_MarkerPool_fm"+".swc";
+					QString filenamemp_ab =testOutputDir + "/" + filenamemp;
+					writeSWC_file(filenamemp_ab, testNeuronTree);
+					// save to ano
+					fprintf(fp, "SWCFILE=%s\n", filenamemp.toStdString().c_str());
+
+					// curve from GD
+					t1 = clock();
+					solveCurveFromMarkersGD(false); //boundingbox is the whole image
+					time_gd = (clock()-t1);
+					tree_gd = testNeuronTree;
+					QString filenamegd = test_id+ "_MarkerPool_GD"+".swc";
+					QString filenamegd_ab = testOutputDir + "/" +filenamegd;
+					writeSWC_file(filenamegd_ab, testNeuronTree);
+					// save to ano
+					fprintf(fp, "SWCFILE=%s\n", filenamegd.toStdString().c_str());
+				}
+
+				// distance computation
+				// for writing curve distance information
+				QString distfilename = testOutputDir + "/" + test_id + "_" + fname + "_Distance.txt";
+				QString pre_distfilename = testOutputDir + "/" +  QString::number(test_id_num-1) + "_" + fname + "_Distance.txt";
+
+				// distance threshold for the whole Test
+				const static double dist_threshold = 3.0;
+
+				FILE *fpdist=fopen(distfilename.toStdString().c_str(), "wt"); // open a new empty file
+				if (!fpdist)
+				{
+					v3d_msg(QString("Fail to open file %1 to write.").arg(distfilename));
+					return 1;
+				}
+				if(listCurveMarkerPool.size() > 2) // the ground truth is the curve from GD
+				{
+					// ======================================================
+					int ml_success, ml_tiltedBB_success, ml_strokeBB_success, cc_success, di_success, mp_success;
+					int num_test;
+					if(test_id_num==1)
+					{
+						// initialize nums for the first time
+						ml_success = 0;
+						ml_tiltedBB_success = 0;
+						ml_strokeBB_success = 0;
+						cc_success = 0;
+						di_success = 0;
+						mp_success = 0;
+						num_test = 0;
+					}
+					else
+					{
+						ifstream fpredist(pre_distfilename.toStdString().c_str());
+
+						if(fpredist.is_open())
+						{
+							string line;
+							getline(fpredist, line);
+							istringstream buffer(line);
+							buffer >> num_test >> ml_success >> ml_tiltedBB_success >>  ml_strokeBB_success >> cc_success >> di_success >> mp_success;
+						}
+						fpredist.close();
+					}
+					// =======================================================
+
+					num_test ++;
+
+					// computer distance from GD-curve to other curves
+					double dist_gd_ml = distance_between_2lines(tree_gd, tree_ml);
+					//double dist_gd_ml_StrokeBB = distance_between_2lines(tree_gd, tree_ml_StrokeBB);
+					double dist_gd_ml_tiltedBB = distance_between_2lines(tree_gd, tree_ml_tiltedBB);
+					double dist_gd_cc = distance_between_2lines(tree_gd, tree_cc);
+					double dist_gd_di = distance_between_2lines(tree_gd, tree_di);
+					double dist_gd_mp = distance_between_2lines(tree_gd, tree_mp);
+
+					if(dist_gd_ml <= dist_threshold) ml_success++;
+					if(dist_gd_ml_tiltedBB <= dist_threshold) ml_tiltedBB_success++;
+					//if(dist_gd_ml_StrokeBB <= dist_threshold) ml_strokeBB_success++;
+					if(dist_gd_cc <= dist_threshold) cc_success++;
+					if(dist_gd_di <= dist_threshold) di_success++;
+					if(dist_gd_mp <= dist_threshold) mp_success++;
+
+					float ml_succ_rate = (float)ml_success/num_test;
+					float ml_tiltedBB_succ_rate = (float)ml_tiltedBB_success/num_test;
+					//float ml_strokeBB_succ_rate = (float)ml_strokeBB_success/num_test;
+					float cc_succ_rate = (float)cc_success/num_test;
+					float di_succ_rate = (float)di_success/num_test;
+					float mp_succ_rate = (float)mp_success/num_test;
+
+					//fprintf(fpdist, "%d\n", num_test); // total test num
+					fprintf(fpdist, "%d %d %d %d %d %d %d\n", num_test, ml_success, ml_tiltedBB_success, ml_strokeBB_success, cc_success, di_success, mp_success);// total test num, success num above dist_threshold
+					fprintf(fpdist, "The ground truth curve is the curve from GD method.\n");
+					fprintf(fpdist, "Time consuming for the curve from GD method: %ld CLOCKS, %f s\n\n", time_gd, (double)time_gd/CLOCKS_PER_SEC);
+					fprintf(fpdist, "The distance_threshold  = %.4f\n\n", dist_threshold);
+
+					fprintf(fpdist, "Distance between curves of GD and Markerlists2PointsBB_fm                       = %.4f\n",   dist_gd_ml);
+					fprintf(fpdist, "Rate of distance between GD and Markerlists2PointsBB_fm below dist_threshold    = %.2f %% \n", ml_succ_rate*100);
+					fprintf(fpdist, "Time consuming for the curve from Markerlists2PointsBB_fm                       = %ld CLOCKS, %f s\n\n", time_ml, (double)time_ml/CLOCKS_PER_SEC);
+
+					fprintf(fpdist, "Distance between curves of GD and MarkerlistsTiltedBB_fm                        = %.4f\n",   dist_gd_ml_tiltedBB);
+					fprintf(fpdist, "Rate of distance between GD and MarkerlistsTiltedBB_fm below dist_threshold     = %.2f %% \n", ml_tiltedBB_succ_rate*100);
+					fprintf(fpdist, "Time consuming for the curve from MarkerlistsTiltedBB_fm                        = %ld CLOCKS, %f s\n\n", time_ml_tiltedBB, (double)time_ml_tiltedBB/CLOCKS_PER_SEC);
+
+					// fprintf(fpdist, "Distance between curves of GD and MarkerlistsOneStrokeBB_fm                     = %.4f\n",   dist_gd_ml_StrokeBB);
+					// fprintf(fpdist, "Rate of distance between GD and MarkerlistsOneStrokeBB_fm below dist_threshold  = %.2f %% \n", ml_strokeBB_succ_rate*100);
+					// fprintf(fpdist, "Time consuming for the curve from MarkerlistsOneStrokeBB_fm                     = %ld CLOCKS, %f s\n\n", time_ml_StrokeBB, (double)time_ml_StrokeBB/CLOCKS_PER_SEC);
+
+					fprintf(fpdist, "Distance between curves of GD and mean_shift                         = %.4f\n",   dist_gd_cc);
+					fprintf(fpdist, "Rate of distance between GD and mean_shift below dist_threshold      = %.2f %% \n", cc_succ_rate*100);
+					fprintf(fpdist, "Time consuming for the curve from mean_shift                         = %ld CLOCKS, %f s\n\n", time_cc, (double)time_cc/CLOCKS_PER_SEC);
+
+					fprintf(fpdist, "Distance between curves of GD and direction_intersection             = %.4f\n",   dist_gd_di);
+					fprintf(fpdist, "Rate of distance between GD and dir_inter below dist_threshold       = %.2f %% \n", di_succ_rate*100);
+					fprintf(fpdist, "Time consuming for the curve from dir_inter                          = %ld CLOCKS, %f s\n\n", time_di, (double)time_di/CLOCKS_PER_SEC);
+
+					fprintf(fpdist, "Distance between curves of GD and Marker_pool_fm                     = %.4f\n",   dist_gd_mp);
+					fprintf(fpdist, "Rate of distance between GD and Marker_pool below dist_threshold     = %.2f %% \n", mp_succ_rate*100);
+					fprintf(fpdist, "Time consuming for the curve from Marker_pool                        = %ld CLOCKS, %f s\n\n", time_mp, (double)time_mp/CLOCKS_PER_SEC);
+				}
+				else // the ground truth is the curve from Markerlists_fm
+				{
+					// ======================================================
+					int ml_mlTiltedBB_success, ml_mlStrokeBB_success, ml_cc_success, ml_di_success;
+					int ml_num_test;
+
+					if(test_id_num==1)
+					{
+						// initialize nums for the first time
+						ml_mlTiltedBB_success = 0;
+						ml_mlStrokeBB_success = 0;
+						ml_cc_success = 0;
+						ml_di_success = 0;
+						ml_num_test = 0;
+					}
+					else
+					{
+						ifstream fpredist(pre_distfilename.toStdString().c_str());
+
+						if(fpredist.is_open())
+						{
+							string line;
+							getline(fpredist, line);
+							istringstream buffer(line);
+							buffer >> ml_num_test >> ml_mlTiltedBB_success >> ml_mlStrokeBB_success >> ml_cc_success >> ml_di_success;
+						}
+						fpredist.close();
+					}
+
+					// =========================================================
+					// computer distance from GD-curve to other curves
+					double dist_ml_cc = distance_between_2lines(tree_ml, tree_cc);
+					double dist_ml_di = distance_between_2lines(tree_ml, tree_di);
+					//double dist_ml_mlStrokeBB = distance_between_2lines(tree_ml, tree_ml_StrokeBB);
+					double dist_ml_mlTiltedBB = distance_between_2lines(tree_ml, tree_ml_tiltedBB);
+
+					ml_num_test ++;
+
+					if(dist_ml_mlTiltedBB <= dist_threshold) ml_mlTiltedBB_success++;
+					//if(dist_ml_mlStrokeBB <= dist_threshold) ml_mlStrokeBB_success++;
+					if(dist_ml_cc <= dist_threshold) ml_cc_success++;
+					if(dist_ml_di <= dist_threshold) ml_di_success++;
+
+					float ml_mlTiltedBB_succ_rate = (float)ml_mlTiltedBB_success/ml_num_test;
+					//float ml_mlStrokeBB_succ_rate = (float)ml_mlStrokeBB_success/ml_num_test;
+					float ml_cc_succ_rate = (float)ml_cc_success/ml_num_test;
+					float ml_di_succ_rate = (float)ml_di_success/ml_num_test;
+
+					// computer distance from GD-curve to other curves
+					//fprintf(fpdist, "%d\n", ml_num_test); // total test num
+					fprintf(fpdist, "%d %d %d %d %d\n", ml_num_test, ml_mlTiltedBB_success, ml_mlStrokeBB_success, ml_cc_success, ml_di_success);// total test num, success num above dist_threshold
+
+					fprintf(fpdist, "The ground truth curve is the curve from Markerlists2PointsBB_fm (FM2PointsBB_fm).\n");
+					fprintf(fpdist, "The distance_threshold  = %.4f\n", dist_threshold);
+					fprintf(fpdist, "Time consuming for the curve from FM2PointsBB_fm                                   = %ld CLOCKS, %f s\n\n", time_ml, (double)time_ml/CLOCKS_PER_SEC);
+
+					fprintf(fpdist, "Distance between curves of FM2PointsBB_fm and FMTiltedBB_fm                        = %.4f\n", dist_ml_mlTiltedBB);
+					fprintf(fpdist, "Rate of distance between FM2PointsBB_fm and FMTiltedBB_fm below dist_threshold     = %.2f %% \n", ml_mlTiltedBB_succ_rate*100);
+					fprintf(fpdist, "Time consuming for the curve from FMTiltedBB_fm                                    = %ld CLOCKS, %f s\n\n", time_ml_tiltedBB, (double)time_ml_tiltedBB/CLOCKS_PER_SEC);
+
+
+					// fprintf(fpdist, "Distance between curves of FM2PointsBB_fm and FMOneStrokeBB_fm                     = %.4f\n", dist_ml_mlStrokeBB);
+					// fprintf(fpdist, "Rate of distance between FM2PointsBB_fm and FMOneStrokeBB_fm below dist_threshold  = %.2f %% \n", ml_mlStrokeBB_succ_rate*100);
+					// fprintf(fpdist, "Time consuming for the curve from FMOneStrokeBB_fm                                 = %ld CLOCKS, %f s\n\n", time_ml_StrokeBB, (double)time_ml_StrokeBB/CLOCKS_PER_SEC);
+
+					fprintf(fpdist, "Distance between curves of FM2PointsBB_fm and mean_shift                           = %.4f\n", dist_ml_cc);
+					fprintf(fpdist, "Rate of distance between FM2PointsBB_fm and mean_shift below dist_threshold        = %.2f %%\n", ml_cc_succ_rate*100);
+					fprintf(fpdist, "Time consuming for the curve from mean_shift                                       = %ld CLOCKS, %f s\n\n", time_cc, (double)time_cc/CLOCKS_PER_SEC);
+
+					fprintf(fpdist, "Distance between curves of FM2PointsBB_fm and direction_intersection               = %.4f\n", dist_ml_di);
+					fprintf(fpdist, "Rate of distance between FM2PointsBB_fm and direc_intersec below dist_threshold    = %.2f %%\n", ml_di_succ_rate*100);
+					fprintf(fpdist, "Time consuming for the curve from direc_intersec                                   = %ld CLOCKS, %f s\n\n", time_di, (double)time_di/CLOCKS_PER_SEC);
+				}
+
+				// projection image computation
+				// 1. get max SWC boundingbox
+				XYZ minbb, maxbb;
+				if(listCurveMarkerPool.size() > 2) // the ground truth is the curve from GD
+				{
+					swcBoundingBox(tree_gd, minbb, maxbb);
+					XYZ minloc_ml, maxloc_ml;
+					swcBoundingBox(tree_ml, minloc_ml, maxloc_ml);
+					XYZ minloc_cc, maxloc_cc;
+					swcBoundingBox(tree_cc, minloc_cc, maxloc_cc);
+					XYZ minloc_di, maxloc_di;
+					swcBoundingBox(tree_di, minloc_di, maxloc_di);
+					XYZ minloc_mp, maxloc_mp;
+					swcBoundingBox(tree_mp, minloc_mp, maxloc_mp);
+					XYZ minloc_mltiltedBB, maxloc_mltiltedBB;
+					swcBoundingBox(tree_ml_tiltedBB, minloc_mltiltedBB, maxloc_mltiltedBB);
+					// XYZ minloc_mlstrokeBB, maxloc_mlstrokeBB;
+					// swcBoundingBox(tree_ml_StrokeBB, minloc_mlstrokeBB, maxloc_mlstrokeBB);
+
+					MIN_BB(minbb, minloc_ml);
+					MAX_BB(maxbb, maxloc_ml);
+
+					MIN_BB(minbb, minloc_cc);
+					MAX_BB(maxbb, maxloc_cc);
+
+					MIN_BB(minbb, minloc_di);
+					MAX_BB(maxbb, maxloc_di);
+
+					MIN_BB(minbb, minloc_mp);
+					MAX_BB(maxbb, maxloc_mp);
+
+					MIN_BB(minbb, minloc_mltiltedBB);
+					MAX_BB(maxbb, maxloc_mltiltedBB);
+
+					// MIN_BB(minbb, minloc_mlstrokeBB);
+					// MAX_BB(maxbb, maxloc_mlstrokeBB);
+
+				} else
+				{
+					swcBoundingBox(tree_ml, minbb, maxbb);
+					XYZ minloc_cc, maxloc_cc;
+					swcBoundingBox(tree_cc, minloc_cc, maxloc_cc);
+					XYZ minloc_di, maxloc_di;
+					swcBoundingBox(tree_di, minloc_di, maxloc_di);
+					XYZ minloc_mltiltedBB, maxloc_mltiltedBB;
+					swcBoundingBox(tree_ml_tiltedBB, minloc_mltiltedBB, maxloc_mltiltedBB);
+					// XYZ minloc_mlstrokeBB, maxloc_mlstrokeBB;
+					// swcBoundingBox(tree_ml_StrokeBB, minloc_mlstrokeBB, maxloc_mlstrokeBB);
+
+					MIN_BB(minbb, minloc_cc);
+					MAX_BB(maxbb, maxloc_cc);
+
+					MIN_BB(minbb, minloc_di);
+					MAX_BB(maxbb, maxloc_di);
+
+					MIN_BB(minbb, minloc_mltiltedBB);
+					MAX_BB(maxbb, maxloc_mltiltedBB);
+
+					// MIN_BB(minbb, minloc_mlstrokeBB);
+					// MAX_BB(maxbb, maxloc_mlstrokeBB);
+				}
+
+				// add boundary to minbb and maxbb
+				int boundary = 30;
+
+				minbb.x = minbb.x - boundary;
+				minbb.y = minbb.y - boundary;
+				minbb.z = minbb.z - boundary;
+
+				maxbb.x = maxbb.x + boundary;
+				maxbb.y = maxbb.y + boundary;
+				maxbb.z = maxbb.z + boundary;
+
+				dataViewProcBox.clamp(minbb);
+				dataViewProcBox.clamp(maxbb);
+
+				// 2. get subvolume in boundingbox and get MAX Intensity Projection on XY, YZ plane
+				// use whole size of image
+				//==============================================
+				//minbb.x =0; minbb.y=0; minbb.z=0;
+				//maxbb.x =dim1-1; maxbb.y=dim2-1; maxbb.z=dim3-1;
+				//=============================================
+				unsigned char * pXY=0;
+				unsigned char * pYZ=0;
+				unsigned char * pXZ=0;
+				MIP_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb);
+
+				// 3. project SWC to MIP_XY, MIP_YZ planes
+				unsigned char curve_color[ ][3] = {
+					{200, 20,  0  },  // red,      ml  0
+					{0,   200, 20 },  // green,    cc  1
+					{0,   20,  200},  // blue,     di  2
+					{200, 0,   200},  // purple,   mp  3
+					{220, 200, 0  },  // yellow,   gd  4
+					{0,   200, 200},  // cyan,     mlStrokeBB 5
+					{188, 94,  37 },  // coffee,   mltiltedBB 6
+					{180, 200, 120},  // asparagus,
+					{250, 100, 120},  // salmon,
+					{120, 200, 200},  // ice,
+					{100, 120, 200},  // orchid,
+				};
+
+				if(listCurveMarkerPool.size() > 2) // the ground truth is the curve from GD
+				{
+					projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_gd, curve_color[4]);
+					projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_ml, curve_color[0]);
+					//projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_ml_StrokeBB, curve_color[5]);
+					projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_ml_tiltedBB, curve_color[6]);
+					projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_cc, curve_color[1]);
+					projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_di, curve_color[2]);
+					projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_mp, curve_color[3]);
+				}else
+				{
+					projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_ml, curve_color[0]);
+					//projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_ml_StrokeBB, curve_color[5]);
+					projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_ml_tiltedBB, curve_color[6]);
+					projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_cc, curve_color[1]);
+					projectSWC_XY_YZ_XZ(pXY, pYZ, pXZ, minbb, maxbb, tree_di, curve_color[2]);
+				}
+
+				// 4. save image
+				// 4.1 combine pXY, pYZ
+				V3DLONG sz[3];
+				sz[0]=maxbb.x-minbb.x+1; sz[1]=maxbb.y-minbb.y+1;
+				sz[2]=maxbb.z-minbb.z+1;
+
+				unsigned char* pXY_YZ_XZ = new unsigned char [3 * (sz[1]+sz[2]) * (sz[0]+sz[2]) ];
+
+				V3DLONG offset_xy_yz_xz = (sz[1]+sz[2])*(sz[0]+sz[2]);
+				V3DLONG offset_xy = sz[1]*sz[0];
+				V3DLONG offset_yz = sz[1]*sz[2];
+				V3DLONG offset_xz = sz[0]*sz[2];
+				memset(pXY_YZ_XZ, 0 , 3*offset_xy_yz_xz);
+
+				// combine pXZ
+				for(V3DLONG z=0; z<sz[2]; z++)
+				{
+					for(V3DLONG x=0; x<sz[0]; x++)
+					{
+						V3DLONG ind_xz=z*sz[0] + x;
+						V3DLONG ind = (z)*(sz[0]+sz[2]) + x;
+						pXY_YZ_XZ[ind] = pXZ[ind_xz];
+						pXY_YZ_XZ[ind + offset_xy_yz_xz] = pXZ[ind_xz + offset_xz];
+						pXY_YZ_XZ[ind + 2*offset_xy_yz_xz] = pXZ[ind_xz + 2*offset_xz];
+					}
+				}
+
+				// combine pXY_pYZ
+				for(V3DLONG y=0; y<sz[1]; y++)
+				{
+					for(V3DLONG x=0; x<sz[0]; x++)
+					{
+						V3DLONG ind_xy=y*sz[0] + x;
+						V3DLONG ind = (y+sz[2])*(sz[0]+sz[2]) + x;
+						pXY_YZ_XZ[ind] = pXY[ind_xy];
+						pXY_YZ_XZ[ind + offset_xy_yz_xz] = pXY[ind_xy + offset_xy];
+						pXY_YZ_XZ[ind + 2*offset_xy_yz_xz] = pXY[ind_xy + 2*offset_xy];
+					}
+					for(V3DLONG z=0; z<sz[2]; z++)
+					{
+						V3DLONG ind_yz=y*sz[2] + z;
+						V3DLONG ind = (y+sz[2])*(sz[0]+sz[2]) + (sz[0] + z);
+						pXY_YZ_XZ[ind] = pYZ[ind_yz];
+						pXY_YZ_XZ[ind + offset_xy_yz_xz] = pYZ[ind_yz + offset_yz];
+						pXY_YZ_XZ[ind + 2*offset_xy_yz_xz] = pYZ[ind_yz + 2*offset_yz];
+					}
+				}
+
+				// 4.2 Save image
+				V3DLONG img_sz[4];
+				img_sz[0]=sz[0]+sz[2]; img_sz[1]=sz[1]+sz[2]; img_sz[2]=1; img_sz[3]=3;
+				QString imgfilename = testOutputDir + "/" + test_id + "_" + fname + "_CompareImg.tiff";
+				saveImage(imgfilename.toStdString().c_str(), pXY_YZ_XZ, img_sz, V3D_UINT8);
+				// clear memory
+				if(pXY) {delete [] pXY; pXY=0;}
+				if(pYZ) {delete [] pYZ; pYZ=0;}
+				if(pXZ) {delete [] pXZ; pXZ=0;}
+				if(pXY_YZ_XZ) {delete [] pXY_YZ_XZ; pXY_YZ_XZ=0;}
+
+				// clear MarkerPool for the next drawing
+				listCurveMarkerPool.clear();
+				// continue to use smCurveCreateTest mode
+				selectMode = smCurveCreateTest;
+
+				// close file
+				if(fpdist) fclose(fpdist);
+				if(fp) fclose(fp);
+
+			}
+			// refine last
+
+			list_listCurvePos.clear();
+			//press Esc to endSelectMode();
+		}
+	} // end of curve refine ZJL 110905
+
+	// for rubber drag the curve
+	else if (selectMode == smCurveRubberDrag)
+	{
+		_appendMarkerPos(x, y);
+		_updateDragPoints(x,y);
+		if (b_move)
+		{
+			this->sShowRubberBand = 1;
+			return 1; //display 2d track
+		}
+		// else release button
+		listMarkerPos.clear();
+		bInitDragPoints = false; // prepare for the next drag
+		solveCurveRubberDrag();
+		DraggedNeurons.clear();
+		// press Esc to endSelectMode();
+	}
+	this->sShowRubberBand = 0;
 
 	this->sShowTrack = 0;
 	return 0; //no 2d track to display
@@ -2471,15 +2490,15 @@ int Renderer_gl1::hitPen(int x, int y)
 {
 	qDebug("  Renderer_gl1::hitPen");
 
-//	//100731 RZC
-//	if (renderMode==rmCrossSection)
-//		selectObj(x,y, false, 0); //no menu, no tip, just for lastSliceType
+	//	//100731 RZC
+	//	if (renderMode==rmCrossSection)
+	//		selectObj(x,y, false, 0); //no menu, no tip, just for lastSliceType
 
 	// define a curve //091023
 	if (selectMode == smCurveCreate1 || selectMode == smCurveCreate2 || selectMode == smCurveCreate3 ||
-          // for curve refinement, 110831 ZJL
-          selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine ||
-          selectMode == smCurveEditRefine_fm || selectMode == smCurveDirectionInter || selectMode == smCurveMarkerLists_fm)
+			// for curve refinement, 110831 ZJL
+			selectMode == smCurveRefineInit || selectMode == smCurveRefineLast || selectMode == smCurveEditRefine ||
+			selectMode == smCurveEditRefine_fm || selectMode == smCurveDirectionInter || selectMode == smCurveMarkerLists_fm)
 	{
 		qDebug("\t track-start ( %i, %i ) to define Curve", x,y);
 
@@ -2488,12 +2507,12 @@ int Renderer_gl1::hitPen(int x, int y)
 		// endSlectMode() in movePen
 		return 1;
 	}
-     // for rubber drag the curve
-     else if (selectMode == smCurveRubberDrag)
-     {
-          _appendMarkerPos(x, y);
-          return 1;
-     }
+	// for rubber drag the curve
+	else if (selectMode == smCurveRubberDrag)
+	{
+		_appendMarkerPos(x, y);
+		return 1;
+	}
 	else if (selectMode == smCurveCreate_pointclick || selectMode == smCurveCreate_pointclick_fm) //091226
 	{
 		_appendMarkerPos(x,y);
@@ -2503,14 +2522,14 @@ int Renderer_gl1::hitPen(int x, int y)
 		if (listMarkerPos.size() >= N)
 		{
 			qDebug("\t click ( %i, %i ) for Markers to Curve", x,y);
-               b_addthismarker = true; // by ZJL 20120203 for prohibitting displaying a 3d local view window
-               solveMarkerCenter();
+			b_addthismarker = true; // by ZJL 20120203 for prohibitting displaying a 3d local view window
+			solveMarkerCenter();
 
 			cntCur3DCurveMarkers++;
 
 			listMarkerPos.clear();
-//			if (selectMode != smCurveCreate_pointclick) // make 1-click continue selected mode
-//				endSelectMode();
+			//			if (selectMode != smCurveCreate_pointclick) // make 1-click continue selected mode
+			//				endSelectMode();
 		}
 		return 1;
 	}
@@ -2529,9 +2548,9 @@ int Renderer_gl1::hitPen(int x, int y)
 			//qDebug("\t %i clicks to solve Marker", listMarkerPos.size());
 
 			if (selectMode == smMarkerCreate1)
-                    solveMarkerCenter(); //////////
+				solveMarkerCenter(); //////////
 			else
-                    solveMarkerViews(); //////////
+				solveMarkerViews(); //////////
 
 			listMarkerPos.clear();
 			if (selectMode != smMarkerCreate1) // make 1-click continue selected mode
@@ -2646,8 +2665,8 @@ void Renderer_gl1::editSurfaceObjAnnotation(int dc, int st, int i) // i is 1-bas
 				{
 					landmarkView.fetchData(&(imgData->listLandmarks), ind_min);
 					qDebug("edit landmark [%ld]. data fetched [%s][%s][%d]", ind_min,
-						   imgData->listLandmarks.at(ind_min).name.c_str(), imgData->listLandmarks.at(ind_min).comments.c_str(),
-						   int(imgData->listLandmarks.at(ind_min).shape));
+							imgData->listLandmarks.at(ind_min).name.c_str(), imgData->listLandmarks.at(ind_min).comments.c_str(),
+							int(imgData->listLandmarks.at(ind_min).shape));
 
 					//important: set the shape of the landmark
 					LocationSimple * p_tmp_location = (LocationSimple *) & (imgData->listLandmarks.at(ind_min));
@@ -2821,7 +2840,7 @@ V3DLONG Renderer_gl1::findNearestNeuronNode_WinXY(int cx, int cy, NeuronTree * p
 	if (!p_listneuron) return -1;
 
 	//qDebug()<<"win click position:"<<cx<<" "<<cy;
-     GLdouble px, py, pz, ix, iy, iz;
+	GLdouble px, py, pz, ix, iy, iz;
 
 	V3DLONG best_ind=-1; best_dist=-1;
 	for (V3DLONG i=0;i<p_listneuron->size();i++)
@@ -2925,8 +2944,8 @@ void Renderer_gl1::showLineProfile(int marker1, int marker2) // 0-based
 
 	//QVector<int> vec(300);	for (int i=0; i<vec.size(); i++) vec[i] = i; // for debug
 
-    //int nChannel = MIN(3, dim4); // up to 3 channels
-    int nChannel = dim4;
+	//int nChannel = MIN(3, dim4); // up to 3 channels
+	int nChannel = dim4;
 	QVector< QVector<int> > vvec;
 	QStringList labelsLT;
 	for (int i=0; i<nChannel; i++)
@@ -2961,21 +2980,21 @@ QVector<int> Renderer_gl1::getLineProfile(XYZ P1, XYZ P2, int chno)
 		double step = length/nstep;
 		normalize(D);
 
-//		unsigned char* vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1);
+		//		unsigned char* vp = data4dp + (chno + volTimePoint*dim4)*(dim3*dim2*dim1);
 		Image4DProxy<Image4DSimple> img4dp( curImg );
 		img4dp.set_minmax(curImg->p_vmin, curImg->p_vmax);
 
 		for (int i=0; i<nstep; i++)
 		{
 			XYZ P = P1 + D*step*(i);
-//			XYZ P = P1 + (P2-P1)*(double(i)/(nstep-1));
+			//			XYZ P = P1 + (P2-P1)*(double(i)/(nstep-1));
 			int ix = int(P.x +0.5);
 			int iy = int(P.y +0.5);
 			int iz = int(P.z +0.5);
 
 			float value = sampling3dUINT8( img4dp, (chno + volTimePoint*dim4), ix, iy, iz, 1,1,1);
-//			float value = sampling3dUINT8( vp, dim1, dim2, dim3, ix, iy, iz, 1,1,1);
-//			float value = sampling3dUINT8at( vp, dim1, dim2, dim3, P.x, P.y, P.z);
+			//			float value = sampling3dUINT8( vp, dim1, dim2, dim3, ix, iy, iz, 1,1,1);
+			//			float value = sampling3dUINT8at( vp, dim1, dim2, dim3, P.x, P.y, P.z);
 
 			prof << int(value);
 		}
@@ -3097,7 +3116,7 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 		}
 	}
 
-     if(loc_vec.size()<1) return; // all points are outside the volume. ZJL 110913
+	if(loc_vec.size()<1) return; // all points are outside the volume. ZJL 110913
 
 #ifndef test_main_cpp
 	// check if there is any existing neuron node is very close to the starting and ending points, if yes, then merge
@@ -3110,10 +3129,10 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 			NeuronTree *p_tree = (NeuronTree *)(&(listNeuronTree.at(curEditingNeuron-1)));
 			if (p_tree)
 			{
-                double best_dist;
+				double best_dist;
 				V3DLONG n_id_start = findNearestNeuronNode_WinXY(list_listCurvePos.at(0).at(0).x, list_listCurvePos.at(0).at(0).y, p_tree, best_dist);
 				V3DLONG n_id_end = findNearestNeuronNode_WinXY(list_listCurvePos.at(0).at(N-1).x, list_listCurvePos.at(0).at(N-1).y, p_tree, best_dist);
-                                qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
+				qDebug("detect nearest neuron node [%ld] for curve-start and node [%ld] for curve-end for the [%d] neuron", n_id_start, n_id_end, curEditingNeuron);
 
 				double th_merge = 5;
 
@@ -3162,19 +3181,19 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 	if (b_use_seriespointclick==false)
 		smooth_curve(loc_vec, 5);
 #endif
-     if (b_addthiscurve)
-     {
-          addCurveSWC(loc_vec, chno);
-          // used to convert loc_vec to NeuronTree and save SWC in testing
-          vecToNeuronTree(testNeuronTree, loc_vec);
-     }
-     else //100821
-     {
-          b_addthiscurve = true; //in this case, always reset to default to draw curve to add to a swc instead of just  zoom
-          endSelectMode();
+	if (b_addthiscurve)
+	{
+		addCurveSWC(loc_vec, chno);
+		// used to convert loc_vec to NeuronTree and save SWC in testing
+		vecToNeuronTree(testNeuronTree, loc_vec);
+	}
+	else //100821
+	{
+		b_addthiscurve = true; //in this case, always reset to default to draw curve to add to a swc instead of just  zoom
+		endSelectMode();
 
-          produceZoomViewOf3DRoi(loc_vec);
-     }
+		produceZoomViewOf3DRoi(loc_vec);
+	}
 }
 
 void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
@@ -3214,7 +3233,7 @@ void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 		my -= margin; My += margin; if (my<0) my=0; if (My>curImg->getYDim()-1) My = curImg->getYDim()-1;
 		mz -= margin; Mz += margin; if (mz<0) mz=0; if (Mz>curImg->getZDim()-1) Mz = curImg->getZDim()-1;
 
-//by PHC 101008
+		//by PHC 101008
 		if (b_imaging && curXWidget)
 		{
 			b_imaging = false; //reset the status
@@ -3324,13 +3343,13 @@ void Renderer_gl1::solveCurveFromMarkers()
 
 #ifndef test_main_cpp
 	vector <XYZ> loc_vec_input;
-     loc_vec_input.clear();
+	loc_vec_input.clear();
 
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 	My4DImage* curImg = 0;
-     if (w) curImg = v3dr_getImage4d(_idep); //by PHC, 090119
+	if (w) curImg = v3dr_getImage4d(_idep); //by PHC, 090119
 
-     if (curImg)
+	if (curImg)
 	{
 		curImg->update_3drenderer_neuron_view(w, this);
 		QList <LocationSimple> & listLoc = curImg->listLandmarks;
@@ -3561,8 +3580,8 @@ bool Renderer_gl1::isInBound(const XYZ & loc, float factor, bool b_message)
 {
 	float dZ = MAX((dim1+dim2+dim3)/3.0*factor, 10);
 	if (loc.z >= -dZ  &&  loc.z < dim3+dZ &&
-		loc.y >= -dZ  &&  loc.y < dim2+dZ &&
-		loc.x >= -dZ  &&  loc.x < dim1+dZ)
+			loc.y >= -dZ  &&  loc.y < dim2+dZ &&
+			loc.x >= -dZ  &&  loc.x < dim1+dZ)
 	{
 		return true;
 	}
@@ -3571,9 +3590,9 @@ bool Renderer_gl1::isInBound(const XYZ & loc, float factor, bool b_message)
 		printf("*** ERROR: location is out of bound in solveMarker()!\n");
 		if (b_message)
 			QMessageBox::warning( 0, "warning",
-				QObject::tr("ERROR: location is out of image bound too much!\n\n location: (%1, %2, %3) \n\n").arg(loc.x).arg(loc.y).arg(loc.z) +
-				QObject::tr(" bound: X[0, %1) Y[0, %2) Z[0, %3)\n\n").arg(dim1).arg(dim2).arg(dim3) +
-				QObject::tr("3D View: Please make clicks in different view directions and click the same 3D location.\n\n") );
+					QObject::tr("ERROR: location is out of image bound too much!\n\n location: (%1, %2, %3) \n\n").arg(loc.x).arg(loc.y).arg(loc.z) +
+					QObject::tr(" bound: X[0, %1) Y[0, %2) Z[0, %3)\n\n").arg(dim1).arg(dim2).arg(dim3) +
+					QObject::tr("3D View: Please make clicks in different view directions and click the same 3D location.\n\n") );
 		return false;
 	}
 }
@@ -3603,7 +3622,7 @@ XYZ Renderer_gl1::getTranslateOfMarkerPos(const MarkerPos & pos, const ImageMark
 	ColumnVector Y = PM.i() * pY;
 	Y = Y / Y(4);
 	cout << "refine from: " << X.t() //<< endl
-	     << "         to: " << Y.t() << endl;;
+		<< "         to: " << Y.t() << endl;;
 
 	XYZ loc(Y(1), Y(2), Y(3));
 	return loc;
@@ -3651,27 +3670,27 @@ double Renderer_gl1::distanceOfMarkerPos(const MarkerPos & pos0, const MarkerPos
 	double dist = fabs(dot(H, X1-Y1));
 	return dist;
 
-//	// pos's epipolar line in pos0's image space
-//
-//	Matrix P0(4,4);		P0 << pos0.P;   P0 = P0.t();    // OpenGL is row-inner / C is column-inner
-//	Matrix M0(4,4);		M0 << pos0.MV;  M0 = M0.t();
-//	Matrix PM0 = P0 * M0;
-//
-//	ColumnVector X0 = PM0 * Y0;
-//	X0 = X0 / X0(4);
-//	ColumnVector X1 = PM0 * Y1;
-//	X1 = X1 / X1(4);
-//
-//	XYZ A(X0(1), X0(2), X0(3));
-//	XYZ B(X1(1), X1(2), X1(3));
-//	XYZ L = cross(A, B);
-//
-//	// point to line in image
-//
-//	double x0 = (pos0.x              - pos0.view[0])*2.0/pos0.view[2] -1;
-//	double y0 = (pos0.view[3]-pos0.y - pos0.view[1])*2.0/pos0.view[3] -1; // OpenGL is bottom to top
-//	double dist = fabs(x0*L.x + y0*L.y + L.z)/sqrt(L.x*L.x + L.y*L.y);
-//	return dist;
+	//	// pos's epipolar line in pos0's image space
+	//
+	//	Matrix P0(4,4);		P0 << pos0.P;   P0 = P0.t();    // OpenGL is row-inner / C is column-inner
+	//	Matrix M0(4,4);		M0 << pos0.MV;  M0 = M0.t();
+	//	Matrix PM0 = P0 * M0;
+	//
+	//	ColumnVector X0 = PM0 * Y0;
+	//	X0 = X0 / X0(4);
+	//	ColumnVector X1 = PM0 * Y1;
+	//	X1 = X1 / X1(4);
+	//
+	//	XYZ A(X0(1), X0(2), X0(3));
+	//	XYZ B(X1(1), X1(2), X1(3));
+	//	XYZ L = cross(A, B);
+	//
+	//	// point to line in image
+	//
+	//	double x0 = (pos0.x              - pos0.view[0])*2.0/pos0.view[2] -1;
+	//	double y0 = (pos0.view[3]-pos0.y - pos0.view[1])*2.0/pos0.view[3] -1; // OpenGL is bottom to top
+	//	double dist = fabs(x0*L.x + y0*L.y + L.z)/sqrt(L.x*L.x + L.y*L.y);
+	//	return dist;
 }
 
 XYZ Renderer_gl1::getLocationOfListMarkerPos()
@@ -3723,7 +3742,7 @@ XYZ Renderer_gl1::getPointOnPlane(XYZ P1, XYZ P2, double plane[4]) //100731
 	//  t = -------------
 	//        (A - B)*N
 	double t = (P1.x*plane[0] + P1.y*plane[1] + P1.z*plane[2] + plane[3])
-				/((P1.x-P2.x)*plane[0] + (P1.y-P2.y)*plane[1] + (P1.z-P2.z)*plane[2]);
+		/((P1.x-P2.x)*plane[0] + (P1.y-P2.y)*plane[1] + (P1.z-P2.z)*plane[2]);
 
 	XYZ loc = P1 + t*(P2-P1);
 	return loc;
@@ -3736,51 +3755,51 @@ XYZ Renderer_gl1::getPointOnSections(XYZ P1, XYZ P2, double F_plane[4]) //100801
 	XYZ P = P2; // from the far location
 	XYZ loc;
 
-	#define REPLACE_NEAR( plane ) { \
-		loc = getPointOnPlane(P1,P2, plane); \
-		if (dist_L2(loc,P2) > dist_L2(P,P2) && dataViewProcBox.isInner(loc, 0.5)) \
-			P = loc; \
-	}
+#define REPLACE_NEAR( plane ) { \
+	loc = getPointOnPlane(P1,P2, plane); \
+	if (dist_L2(loc,P2) > dist_L2(P,P2) && dataViewProcBox.isInner(loc, 0.5)) \
+	P = loc; \
+}
 
 	//qDebug("  P1(%g %g %g)  P2(%g %g %g)", P1.x,P1.y,P1.z, P2.x,P2.y,P2.z);
-	if (bXSlice)
+if (bXSlice)
+{
+	plane[0] = -1; plane[1] = 0; plane[2] = 0; plane[3] = start1+ VOL_X0*(size1-1);
+	REPLACE_NEAR( plane );
+	//qDebug("  X-(%g %g %g)", loc.x,loc.y,loc.z);
+}
+if (bYSlice)
+{
+	plane[0] = 0; plane[1] = -1; plane[2] = 0; plane[3] = start2+ VOL_Y0*(size2-1);
+	REPLACE_NEAR( plane );
+	//qDebug("  Y-(%g %g %g)", loc.x,loc.y,loc.z);
+}
+if (bZSlice)
+{
+	plane[0] = 0; plane[1] = 0; plane[2] = -1; plane[3] = start3+ VOL_Z0*(size3-1);
+	REPLACE_NEAR( plane );
+	//qDebug("  Z-(%g %g %g)", loc.x,loc.y,loc.z);
+}
+if (bFSlice)
+{
+	if (F_plane)
+		for (int i=0; i<4; i++) plane[i] = F_plane[i];
+	else
 	{
-		plane[0] = -1; plane[1] = 0; plane[2] = 0; plane[3] = start1+ VOL_X0*(size1-1);
-		REPLACE_NEAR( plane );
-		//qDebug("  X-(%g %g %g)", loc.x,loc.y,loc.z);
+		////////////////////////////////////////////////////////////////////////
+		//100730 RZC, in View space, keep for dot(clip, pos)>=0
+		double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
+		clipplane[3] = viewClip;
+		ViewPlaneToModel(markerViewMatrix, clipplane);
+		//qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
+		////////////////////////////////////////////////////////////////////////
+		for (int i=0; i<4; i++) plane[i] = clipplane[i];
 	}
-	if (bYSlice)
-	{
-		plane[0] = 0; plane[1] = -1; plane[2] = 0; plane[3] = start2+ VOL_Y0*(size2-1);
-		REPLACE_NEAR( plane );
-		//qDebug("  Y-(%g %g %g)", loc.x,loc.y,loc.z);
-	}
-	if (bZSlice)
-	{
-		plane[0] = 0; plane[1] = 0; plane[2] = -1; plane[3] = start3+ VOL_Z0*(size3-1);
-		REPLACE_NEAR( plane );
-		//qDebug("  Z-(%g %g %g)", loc.x,loc.y,loc.z);
-	}
-	if (bFSlice)
-	{
-		if (F_plane)
-			for (int i=0; i<4; i++) plane[i] = F_plane[i];
-		else
-		{
-			////////////////////////////////////////////////////////////////////////
-			//100730 RZC, in View space, keep for dot(clip, pos)>=0
-			double clipplane[4] = { 0.0,  0.0, -1.0,  0 };
-			clipplane[3] = viewClip;
-			ViewPlaneToModel(markerViewMatrix, clipplane);
-			//qDebug()<<"   clipplane:"<<clipplane[0]<<clipplane[1]<<clipplane[2]<<clipplane[3];
-			////////////////////////////////////////////////////////////////////////
-			for (int i=0; i<4; i++) plane[i] = clipplane[i];
-		}
-		REPLACE_NEAR( plane );
-		//qDebug("  F-(%g %g %g)", loc.x,loc.y,loc.z);
-	}
-	//qDebug("  P(%g %g %g)", P.x,P.y,P.z);
-	return P;
+	REPLACE_NEAR( plane );
+	//qDebug("  F-(%g %g %g)", loc.x,loc.y,loc.z);
+}
+//qDebug("  P(%g %g %g)", P.x,P.y,P.z);
+return P;
 }
 
 
@@ -3789,7 +3808,7 @@ XYZ Renderer_gl1::getCenterOfLineProfile(XYZ P1, XYZ P2,
 		double clipplane[4],	//clipplane==0 means no clip plane
 		int chno,    			//must be a valid channel number
 		float *p_value			//if p_value!=0, output value at center
-	)
+		)
 {
 	if (renderMode==rmCrossSection)
 	{
@@ -3901,7 +3920,7 @@ XYZ Renderer_gl1::getCenterOfLineProfile(XYZ P1, XYZ P2,
 
 #define NUM_ITER_POSITION 10
 bool fit_center_position(unsigned char ***img3d, V3DLONG dim0, V3DLONG dim1, V3DLONG dim2,
-							XYZ & P)
+		XYZ & P)
 {
 #ifndef test_main_cpp
 
@@ -3960,10 +3979,10 @@ XYZ Renderer_gl1::getCenterOfLocal(XYZ P)
 	}
 #endif
 
-//	// guarantee that the location is in image
-//	if (loc.x < 0) loc.x = 0;  if (loc.x >= dim1) loc.x = dim1-1;
-//	if (loc.y < 0) loc.y = 0;  if (loc.y >= dim2) loc.y = dim2-1;
-//	if (loc.z < 0) loc.z = 0;  if (loc.z >= dim3) loc.z = dim3-1;
+	//	// guarantee that the location is in image
+	//	if (loc.x < 0) loc.x = 0;  if (loc.x >= dim1) loc.x = dim1-1;
+	//	if (loc.y < 0) loc.y = 0;  if (loc.y >= dim2) loc.y = dim2-1;
+	//	if (loc.z < 0) loc.z = 0;  if (loc.z >= dim3) loc.z = dim3-1;
 
 	return P;
 }
