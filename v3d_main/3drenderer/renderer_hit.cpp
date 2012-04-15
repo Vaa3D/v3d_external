@@ -1722,9 +1722,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		vaa3d_neurontoolbox_paras np;
 		np.OPS = "Neuron Toolbox";
 		np.nt = listNeuronTree.at(names[2]-1);
-	//	np.nt = p_tree;
 		double best_dist;
-		np.n_id = findNearestNeuronNode_WinXY(cx, cy, &testNeuronTree, best_dist);
+		np.n_id = findNearestNeuronNode_WinXY(cx, cy, &np.nt, best_dist);
 		np.win = (V3dR_MainWindow *)w->getMainWindow();
         
         printf("the main window pointer = [%p]\n", ((iDrawExternalParameter*)_idep)->V3Dmainwindow);
