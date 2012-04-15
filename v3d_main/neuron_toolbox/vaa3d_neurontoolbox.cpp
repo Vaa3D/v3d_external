@@ -82,7 +82,9 @@ bool doNeuronToolBoxPlugin(MainWindow* mainwindow, const vaa3d_neurontoolbox_par
 
 //		v3d_msg(fullpath, 0);
 		
-		V3d_PluginLoader mypluginloader(mainwindow);
+	//	V3d_PluginLoader mypluginloader(mainwindow);
+		V3d_PluginLoader* mypluginloader = mainwindow->pluginLoader;
+
 
 		//mypluginloader.runPlugin(loader, QString("about this plugin"));
 
@@ -97,7 +99,7 @@ bool doNeuronToolBoxPlugin(MainWindow* mainwindow, const vaa3d_neurontoolbox_par
 		arg.p = (void *)(&p);
 		input<<arg;
 
-		mypluginloader.callPluginFunc(fullpath, "neuron_toolbox", input, output);
+		mypluginloader->callPluginFunc(fullpath, "neuron_toolbox", input, output);
 	//	MainWindow * mainWin = qobject_cast<MainWindow*>(qApp->topLevelWidgets().at(0));	
 		//mainwindow->pluginLoader->callPluginFunc(fullpath, "neuron_toolbox", input, output); 
 			
