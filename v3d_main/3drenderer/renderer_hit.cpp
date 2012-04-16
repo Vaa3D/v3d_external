@@ -1719,15 +1719,15 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 	}
 	else if (act==actDoNeuronToolBoxPlugin) //still testing. 20120413, PHC
 	{
-		vaa3d_neurontoolbox_paras np;
-		np.OPS = "Neuron Toolbox";
-		np.nt = listNeuronTree.at(names[2]-1);
+		vaa3d_neurontoolbox_paras* np = new vaa3d_neurontoolbox_paras;
+		np->OPS = "Neuron Toolbox";
+		np->nt = listNeuronTree.at(names[2]-1);
 		double best_dist;
-		np.n_id = findNearestNeuronNode_WinXY(cx, cy, &np.nt, best_dist);
-		np.win = (V3dR_MainWindow *)w->getMainWindow();
+		np->n_id = findNearestNeuronNode_WinXY(cx, cy, &np->nt, best_dist);
+		np->win = (V3dR_MainWindow *)w->getMainWindow();
         
         printf("the main window pointer = [%p]\n", ((iDrawExternalParameter*)_idep)->V3Dmainwindow);
-		doNeuronToolBoxPlugin(((iDrawExternalParameter*)_idep)->V3Dmainwindow, np);
+		doNeuronToolBoxPlugin(((iDrawExternalParameter*)_idep)->V3Dmainwindow, *np);
 	}
 
 #endif //tes_main_cpp
