@@ -31,7 +31,8 @@ set(V3D_SRCS
   pluginfunchandler.cpp
   ChannelTable.cpp
   mapview.cpp
-  ../neuron_toolbox/vaa3d_neurontoolbox.cpp
+  # ../neuron_toolbox/vaa3d_neurontoolbox.cpp
+  ../basic_c_fun/basic_4dimage_create.cpp
   v3d_actions.cpp)
 
 set(V3D_RCCS 
