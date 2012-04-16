@@ -306,7 +306,11 @@ protected:
      void blendDraggedNeuron();
 
      void adaptiveCurveResampling(vector <XYZ> &loc_vec, vector <XYZ> &loc_vec_resampled, int stepsize);
+     //void resampleCurveStrokes(QList <MarkerPos> &listCurvePos, int chno, vector<int> &ids);
+     void resampleCurveStrokes2(QList <MarkerPos> &listCurvePos, int chno, vector<int> &ids);
+
      void resampleCurveStrokes(int index, int chno, vector<int> &ids);
+
 
      bool boundingboxFromStroke(XYZ& minloc, XYZ& maxloc);
      //Using boundingboxFromStroke() get boundingbox and then get subvol

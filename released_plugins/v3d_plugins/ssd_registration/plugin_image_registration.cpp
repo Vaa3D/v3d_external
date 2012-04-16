@@ -987,7 +987,7 @@ bool ImageRegistrationPlugin::dofunc(const QString & func_name, const V3DPluginA
 
         double d_downsample_ratio_tar[3],d_downsample_ratio_sub[3];
         for(int i=0;i<3;i++)
-        {            
+        {
             // 2D case
             if(sz_img_tar_input[i]==1)
             {
