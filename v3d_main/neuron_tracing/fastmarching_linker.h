@@ -627,7 +627,7 @@ template<class T> bool fastmarching_drawing2(vector<MyMarker> & near_markers, ve
 template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers, map<MyMarker*, double> & tar_markers, T * inimg1d, vector<MyMarker*> & par_tree, int sz0, int sz1, int sz2, int stop_num, int cnn_type = 2)
 {
      stop_num = MIN(stop_num, tar_markers.size());
-	enum{ALIVE = -1, TRIAL = 0, FAR = 1};
+	enum{ALIVE = -1, TRIAL = 0, FAR_ = 1};
 
 	long tol_sz = sz0 * sz1 * sz2;
 	long sz01 = sz0 * sz1;
@@ -672,7 +672,7 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 
 	// initialization
 	char * state = new char[tol_sz];
-	for(long i = 0; i < tol_sz; i++) state[i] = FAR;
+	for(long i = 0; i < tol_sz; i++) state[i] = FAR_;
 
 	vector<long> submarker_inds;
 	for(map<MyMarker*, double>::iterator it = sub_markers.begin(); it != sub_markers.end(); it++)
@@ -751,7 +751,7 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 						double new_dist = phi[min_ind] + (GI(index) + GI(min_ind))*factor*0.5;
 						long prev_ind = min_ind;
 
-						if(state[index] == FAR)
+						if(state[index] == FAR_)
 						{
 							phi[index] = new_dist;
 							HeapElemX * elem = new HeapElemX(index, phi[index]);
