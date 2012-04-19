@@ -1664,8 +1664,9 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
           {
                vector<MyMarker *> outswc;
                bool b_res = (b_useSerialBBox) ?
-                  fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1) //replace the above method, 20120405, PHC
-              : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1); // 20120405, PHC
+                  fastmarching_drawing_serialbboxes(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1, 5) //replace the above method, 20120405, PHC
+                  //fastmarching_drawing5(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1) //replace the above method, 20120405, PHC
+              : fastmarching_drawing_dynamic(nearpos_vec, farpos_vec, pImg, outswc, szx, szy, szz, 1, 5); // 20120405, PHC
 
               if (!b_res)
               {
@@ -2872,3 +2873,4 @@ void Renderer_gl1::createLastTestID(QString &curFilePath, QString &curSuffix, in
 
      test_id = myList.size() + 1;
 }
+
