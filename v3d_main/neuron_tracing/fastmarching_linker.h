@@ -21,6 +21,76 @@ using namespace std;
 #define MAX_INT  2147483647
 #endif
 
+#ifndef MAX_DOUBLE
+#define MAX_DOUBLE 1.79768e+308        //actual: 1.79769e+308
+#endif
+
+// Get the project point from one point to line (nm,fm) in 3d
+#ifndef GET_POINT_TO_LINE_PROJECT
+#define GET_POINT_TO_LINE_PROJECT(inmarker, outmarker, nm, fm)  \
+{\
+	double dx0 = fm.x - nm.x;\
+	double dy0 = fm.y - nm.y;\
+	double dz0 = fm.z - nm.z;\
+	double dd0 = sqrt(dx0*dx0 + dy0*dy0 + dz0*dz0);\
+	assert(dd0 != 0.0);\
+	dx0 /= dd0; dy0 /= dd0; dz0 /= dd0;\
+	double dx1 = inmarker.x - nm.x;\
+	double dy1 = inmarker.y - nm.y;\
+	double dz1 = inmarker.z - nm.z;\
+	double dd1 = sqrt(dx1*dx1 + dy1*dy1 + dz1*dz1);\
+	dx1 /= dd1; dy1 /= dd1; dz1 /= dd1;\
+	double cos_theta = dx0 * dx1 + dy0 * dy1 + dz0 * dz1;\
+	double len = dd1 * cos_theta;\
+	outmarker.x = nm.x + dx0 * len;\
+	outmarker.y = nm.y + dy0 * len;\
+	outmarker.z = nm.z + dz0 * len;\
+}
+
+#endif
+
+// convert marker in original coordinate to new coordinate
+// a, b, c  the vector of new coordinate axis according to original coordinate, make sure |a| = |b| = |c| = 1
+// inmarker is marker in current coordinate
+// outmarker is marker in new coordinate
+#ifndef GET_POSITION_IN_NEW_COORDINATE
+#define GET_POSITION_IN_NEW_COORDINATE(inmarker, outmarker, orig, a, b, c) \
+{\
+        double dx = inmarker[0] - orig_marker[0];\
+        double dy = inmarker[1] - orig_marker[1];\
+        double dz = inmarker[2] - orig_marker[2];\
+        double dd = sqrt(dx*dx + dy*dy + dz*dz);\
+        if(dd == 0.0)\
+		{\
+			outmarker[0] = 0;\
+			outmarker[1] = 0;\
+			outmarker[2] = 0;\
+		}\
+        else\
+		{\
+			dx /= dd; dy /= dd; dz /= dd;\
+			double cos_theta_x = dx * aa[0] + dy * aa[1] + dz * aa[2];\
+			double cos_theta_y = dx * bb[0] + dy * bb[1] + dz * bb[2];\
+			double cos_theta_z = dx * cc[0] + dy * cc[1] + dz * cc[2];\
+			outmarker[0] = dd * cos_theta_x;\
+			outmarker[1] = dd * cos_theta_y;\
+			outmarker[2] = dd * cos_theta_z;\
+		}\
+}
+#endif
+
+// inmarker is in new coordinate system
+// outmarker is in current coordinate system
+#ifndef GET_POSITION_IN_ORIG_COORDINATE
+#define GET_POSITION_IN_ORIG_COORDINATE(inmarker, outmarker, orig, a, b, c) \
+{\
+		outmarker[0] = orig[0] + inmarker[0] * a[0] + inmarker[1] * b[0] + inmarker[2] * c[0];\
+		outmarker[1] = orig[1] + inmarker[0] * a[1] + inmarker[1] * b[1] + inmarker[2] * c[1];\
+		outmarker[2] = orig[2] + inmarker[0] * a[2] + inmarker[1] * b[2] + inmarker[2] * c[2];\
+}
+#endif
+
+
 //#define GI(ind) exp(li*pow((1-(inimg1d[ind]-min_int)/max_int),2))
 
 #define GI(ind) givals[(int)((inimg1d[ind] - min_int)/max_int*255)]
@@ -99,6 +169,11 @@ struct MyMarker
      bool operator!=(const MyMarker & other) const{
           return (z!=other.z || y!=other.y || x!=other.x);
      }
+
+	double & operator [] (const int i) {
+		assert(i >= 0 && i <= 2);
+		return (i==0) ? x : ((i==1) ? y : z);
+	}
 
      long long ind(long long sz0, long long sz01)
      {
@@ -831,7 +906,7 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 // Please make sure
 // 1. sub_markers are located between nm1 and fm1
 //
-template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers, map<MyMarker*, double> & tar_markers, T * inimg1d, vector<MyMarker*> & par_tree, int sz0, int sz1, int sz2, MyMarker nm1, MyMarker fm1, MyMarker nm2, MyMarker fm2, int stop_num, int cnn_type = 2)
+template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers, map<MyMarker*, double> & tar_markers, T * inimg1d, vector<MyMarker*> & par_tree, int sz0, int sz1, int sz2, MyMarker nm1, MyMarker fm1, MyMarker nm2, MyMarker fm2, int stop_num, int cnn_type = 2, int margin = 5)
 {
 	assert(par_tree.empty());
 	long sz01 = sz0 * sz1;
@@ -878,7 +953,7 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 	double n2f2[3] = {rt[0], rt[1], rt[2]};
 	double f2n2[3] = {-rt[0], -rt[1], -rt[2]};
 
-	int margin = 5;
+	//int margin = 5;
 
 	// 1. get initial rectangel
 	MyMarker rect[4] = {nm1, nm2, fm2, fm1};
@@ -1051,7 +1126,7 @@ template<class T> bool fastmarching_linker(map<MyMarker*, double> & sub_markers,
 
 
 
-template<class T> bool fastmarching_drawing_dynamic(vector<MyMarker> & near_markers, vector<MyMarker> &far_markers, T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, int cnn_type = 2)
+template<class T> bool fastmarching_drawing_dynamic(vector<MyMarker> & near_markers, vector<MyMarker> &far_markers, T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, int cnn_type = 2, int margin = 5)
 {
      long sz01 = (long)sz0*sz1;
 	cout<<"welcome to fastmarching_drawing_dynamicly"<<endl;
@@ -1096,7 +1171,7 @@ template<class T> bool fastmarching_drawing_dynamic(vector<MyMarker> & near_mark
 		sub_markers.clear(); sub_markers = tar_markers;
 		tar_markers.clear(); GET_LINE_MARKER_MAP(near_marker2, far_marker2, tar_markers);
           int stop_num = (i == (near_markers.size()-1))? 1 : (tar_markers.size()+1)/2;
-		fastmarching_linker(sub_markers, tar_markers, inimg1d, par_tree, sz0, sz1, sz2, near_marker1, far_marker1, near_marker2, far_marker2, stop_num, cnn_type);
+		fastmarching_linker(sub_markers, tar_markers, inimg1d, par_tree, sz0, sz1, sz2, near_marker1, far_marker1, near_marker2, far_marker2, stop_num, cnn_type, margin);
 		all_markers.insert(all_markers.end(), par_tree.begin(), par_tree.end()); par_tree.clear();
 		for(map<MyMarker*, double>::iterator it = tar_markers.begin(); it != tar_markers.end(); it++) all_markers.push_back(it->first);
 	}
@@ -1143,7 +1218,7 @@ template<class T> bool fastmarching_drawing_dynamic(vector<MyMarker> & near_mark
 
 // calculate the bounding box containing all near_markers and far_markers and margin
 // then do fastmarching from the first ray to last ray
-template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near_markers, vector<MyMarker> &far_markers, T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, int cnn_type = 2)
+template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near_markers, vector<MyMarker> &far_markers, T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, int cnn_type = 2, int margin = 5)
 {
 	cout<<"welcome to fastmarching_drawing4"<<endl;
 	assert(near_markers.size() == far_markers.size());
@@ -1323,9 +1398,318 @@ template<class T> bool fastmarching_drawing_serialbboxes(vector<MyMarker> & near
 
 }
 
+// like drawing4, but the bound box is much smaller
+template<class T> bool fastmarching_drawing5(vector<MyMarker> & near_markers, vector<MyMarker> &far_markers, T * inimg1d, vector<MyMarker *> &outswc, int sz0, int sz1, int sz2, int cnn_type = 2)
+{
+	assert(near_markers.size() == far_markers.size());
+
+	long sz01 = sz0 * sz1;
+
+	MyMarker nm1, nm2, fm1, fm2;
+	nm2 = near_markers[0];
+	fm2 = far_markers[0];
+
+	vector<MyMarker> all_mask;  // use vector instead of set to save time
+	for(int m = 1; m < near_markers.size(); m++)
+	{
+		nm1 = nm2; fm1 = fm2;
+		nm2 = near_markers[m]; fm2 = far_markers[m];
+
+		// 1. calc rt
+		double rt[3] = {0.0, 0.0, 0.0};
+		if(nm1 != fm1)
+		{
+			double tx1 = fm1.x - nm1.x;
+			double ty1 = fm1.y - nm1.y;
+			double tz1 = fm1.z - nm1.z;
+			double dst1 = sqrt(tx1 * tx1 + ty1 * ty1 + tz1 * tz1);
+			rt[0] = tx1 / dst1; 
+			rt[1] = ty1 / dst1; 
+			rt[2] = tz1 / dst1;
+		}
+		else if(nm2 != fm2)
+		{
+			double tx2 = fm2.x - nm2.x;
+			double ty2 = fm2.y - nm2.y;
+			double tz2 = fm2.z - nm2.z;
+			double dst2 = sqrt(tx2 * tx2 + ty2 * ty2 + tz2 * tz2);
+			rt[0] = tx2 / dst2; 
+			rt[1] = ty2 / dst2; 
+			rt[2] = tz2 / dst2;
+		}
+		else
+		{
+			cerr<<"Error : nm1 == nm2 && fm1 == fm2"<<endl;
+			return false;
+		}
+		// 2. calc different vectors
+		double n1n2[3] = {nm2.x - nm1.x, nm2.y - nm1.y, nm2.z - nm1.z};
+		MAKE_UNIT(n1n2);
+		double n2n1[3] = {-n1n2[0], -n1n2[1], -n1n2[2]};
+
+		double f1f2[3] = {fm2.x - fm1.x, fm2.y - fm1.y, fm2.z - fm1.z}; 
+		MAKE_UNIT(f1f2);
+		double f2f1[3] = {-f1f2[0], -f1f2[1], -f1f2[2]};
+
+		double n1f1[3] = {rt[0], rt[1], rt[2]};
+		double f1n1[3] = {-rt[0], -rt[1], -rt[2]};
+
+		double n2f2[3] = {rt[0], rt[1], rt[2]};
+		double f2n2[3] = {-rt[0], -rt[1], -rt[2]};
+
+		int margin = 5;
+
+		// 1. get initial rectangel
+		MyMarker rect[4] = {nm1, nm2, fm2, fm1};
+		double cos_n1, cos_n2, cos_f1, cos_f2;
+		if((cos_n1 = COS_THETA_UNIT(n1f1, n1n2)) < 0.0)
+		{
+			double d = dist(nm1, nm2) * (-cos_n1);
+			rect[0] = MyMarker(nm1.x - d * rt[0], nm1.y - d * rt[1], nm1.z - d * rt[2]);
+		}
+		if((cos_n2 = COS_THETA_UNIT(n2f2, n2n1)) < 0.0)
+		{
+			double d = dist(nm1, nm2) * (-cos_n2);
+			rect[1] = MyMarker(nm2.x - d * rt[0], nm2.y - d * rt[1], nm2.z - d * rt[2]);
+		}
+		if((cos_f2 = COS_THETA_UNIT(f2n2, f2f1)) < 0.0)
+		{
+			double d = dist(fm1, fm2) * (-cos_f2);
+			rect[2] = MyMarker(fm2.x + d * rt[0], fm2.y + d * rt[1], fm2.z + d * rt[2]);
+		}
+		if((cos_f1 = COS_THETA_UNIT(f1n1, f1f2)) < 0.0)
+		{
+			double d = dist(fm1, fm2) * (-cos_f1);
+			rect[3] = MyMarker(fm1.x + d * rt[0], fm1.y + d * rt[1], fm1.z + d * rt[2]);
+		}
+
+		// 2. add margin
+		double a[3];
+		a[0] = rect[3].x - rect[0].x;
+		a[1] = rect[3].y - rect[0].y;
+		a[2] = rect[3].z - rect[0].z;
+		double la = sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
+		a[0] /= la; a[1] /= la; a[2] /= la;
+
+		double b[3];
+		b[0] = rect[1].x - rect[0].x;
+		b[1] = rect[1].y - rect[0].y;
+		b[2] = rect[1].z - rect[0].z;
+		double lb = sqrt(b[0] * b[0] + b[1] * b[1] + b[2] * b[2]);
+		b[0] /= lb; b[1] /= lb; b[2] /= lb;
+
+		double c[3]; // c = a x b
+		c[0] = a[1] * b[2] - a[2] * b[1];
+		c[1] = a[2] * b[0] - a[0] * b[2];
+		c[2] = a[0] * b[1] - a[1] * b[0];
+		double lc = sqrt(c[0] * c[0] + c[1] * c[1] + c[2] * c[2]);
+		c[0] /= lc; c[1] /= lc; c[2] /= lc;
+
+		MyMarker o;
+		o.x = rect[0].x - margin * a[0] - margin * b[0] - margin * c[0];
+		o.y = rect[0].y - margin * a[1] - margin * b[1] - margin * c[1];
+		o.z = rect[0].z - margin * a[2] - margin * b[2] - margin * c[2];
+
+		long bsz0 = dist(rect[0], rect[3]) + 1 + 2 * margin + 0.5;
+		long bsz1 = dist(rect[0], rect[1]) + 1 + 2 * margin + 0.5;
+		long bsz2 = 1 + 2 * margin + 0.5;
+		long bsz01 = bsz0 * bsz1;
+		for(long k = 0; k < bsz2; k++)
+		{
+			for(long j = 0; j < bsz1; j++)
+			{
+				for(long i = 0; i < bsz0; i++)
+				{
+					long ii = o.x + i * a[0] + j * b[0] + k * c[0] + 0.5;
+					long jj = o.y + i * a[1] + j * b[1] + k * c[1] + 0.5;
+					long kk = o.z + i * a[2] + j * b[2] + k * c[2] + 0.5;
+					if(ii >= 0 && ii < sz0 && jj >= 0 && jj < sz1 && kk >= 0 && kk < sz2) 
+					{
+						all_mask.push_back(MyMarker(ii,jj,kk));
+					}
+				}
+			}
+		}
+	}
+	
+	// calculate pca for projection points
+	vector<MyMarker> prjct3d_markers;
+	MyMarker orig_marker;
+	orig_marker.x = (near_markers[0].x + far_markers[0].x)/2.0;
+	orig_marker.y = (near_markers[0].y + far_markers[0].y)/2.0;
+	orig_marker.z = (near_markers[0].z + far_markers[0].z)/2.0;
+	prjct3d_markers.push_back(orig_marker);
+
+	// get the center of mass
+	MyMarker mid_marker = orig_marker;
+	int num_rays = near_markers.size();
+	for(int m = 1; m < num_rays; m++)
+	{
+		MyMarker nm = near_markers[m];
+		MyMarker fm = far_markers[m];
+		MyMarker prjct3d_marker;
+		GET_POINT_TO_LINE_PROJECT(orig_marker, prjct3d_marker, nm, fm);
+		prjct3d_markers.push_back(prjct3d_marker);
+
+		mid_marker.x += prjct3d_marker.x;
+		mid_marker.y += prjct3d_marker.y;
+		mid_marker.z += prjct3d_marker.z;
+	}
+
+	mid_marker.x /= num_rays;
+	mid_marker.y /= num_rays;
+	mid_marker.z /= num_rays;
+
+	vector<MyMarker> prjct2d_markers;
+	prjct2d_markers.push_back(MyMarker(0,0,0));
+	double dx = mid_marker.x - orig_marker.x;
+	double dy = mid_marker.y - orig_marker.y;
+	double dz = mid_marker.z - orig_marker.z;
+	double dd = sqrt(dx*dx + dy*dy + dz*dz);
+	assert(dd != 0.0); 
+	dx /= dd; dy /= dd; dz /= dd;
+
+	double a[3] = {dx, dy, dz};
+	double b[3], c[3];
+	c[0] = far_markers[0].x - near_markers[0].x;
+	c[1] = far_markers[0].y - near_markers[0].y;
+	c[2] = far_markers[0].z - near_markers[0].z;
+	double lc = sqrt(c[0] * c[0] + c[1] * c[1] + c[2] * c[2]);
+	assert(lc != 0); 
+	c[0] /= lc; c[1] /= lc; c[2] /= lc;
+	// b = c x a
+	b[0] = c[1] * a[2] - c[2] * a[1];
+	b[1] = c[2] * a[0] - c[0] * a[2];
+	b[2] = c[0] * a[1] - c[1] * a[0];
+
+	// get center of mass in new coordinate system
+	
+	double avg_x = 0, avg_y = 0, avg_z = 0;
+
+	for(int m = 1; m < prjct3d_markers.size(); m++)
+	{
+		MyMarker marker = prjct3d_markers[m];
+		dx = marker.x - orig_marker.x;
+		dy = marker.y - orig_marker.y;
+		dz = marker.z - orig_marker.z;
+		dd = sqrt(dx*dx + dy*dy + dz*dz);
+		assert(dd != 0.0);
+		dx /= dd; dy /= dd; dz /= dd;
+		double cos_theta_x = dx * a[0] + dy * a[1] + dz * a[2];
+		double cos_theta_y = dx * b[0] + dy * b[1] + dz * b[2];
+		double x = dd * cos_theta_x;
+		double y = dd * cos_theta_y;
+		double z = 0.0;
+		prjct2d_markers.push_back(MyMarker(x,y,z));
+		avg_x += x;
+		avg_y += y;
+		avg_z += z;
+	}
+	avg_x /= num_rays; avg_y /= num_rays; avg_z /= num_rays;
+
+	// get the orientation
+	double alpha = 0.0, beta = 0.0, gama = 0.0;
+	for(int m = 0; m < prjct2d_markers.size(); m++)
+	{
+		alpha += (prjct2d_markers[m].x - avg_x) * (prjct2d_markers[m].x - avg_x);
+		beta +=  2*(prjct2d_markers[m].x - avg_x) * (prjct2d_markers[m].y - avg_y);
+		gama +=  (prjct2d_markers[m].y - avg_y) * (prjct2d_markers[m].y - avg_y);
+	}
+	//alpha /= num_rays; beta /= num_rays; gama /= num_rays;
+	double theta = 0.5 * atan(beta/(alpha-gama));
+	double cos_theta = cos(theta);
+	double sin_theta = sin(theta);
+	
+	// create new coordinate system
+	double aa[3], bb[3];
+	double cc[3] = {c[0], c[1], c[2]};
+	aa[0] = cos_theta * a[0] + sin_theta * b[0];
+	aa[1] = cos_theta * a[1] + sin_theta * b[1];
+	aa[2] = cos_theta * a[2] + sin_theta * b[2];
+
+	bb[0] = cc[1] * aa[2] - cc[2] * aa[1];
+	bb[1] = cc[2] * aa[0] - cc[0] * aa[2];
+	bb[2] = cc[0] * aa[1] - cc[1] * aa[0];
+
+	vector<MyMarker> new_mask;
+	double mx = MAX_DOUBLE, my = MAX_DOUBLE, mz = MAX_DOUBLE;
+	double Mx = - MAX_DOUBLE, My = - MAX_DOUBLE, Mz = -MAX_DOUBLE;
+	for(int i = 0; i < all_mask.size(); i++)
+	{
+		MyMarker marker = all_mask[i];
+		dx = marker.x - mid_marker.x;
+		dy = marker.y - mid_marker.y;
+		dz = marker.z - mid_marker.z;
+		dd = sqrt(dx*dx + dy*dy + dz*dz);
+		assert(dd != 0.0);
+		dx /= dd; dy /= dd; dz /= dd;
+		double cos_theta_x = dx * aa[0] + dy * aa[1] + dz * aa[2];
+		double cos_theta_y = dx * bb[0] + dy * bb[1] + dz * bb[2];
+		double cos_theta_z = dx * cc[0] + dy * cc[1] + dz * cc[2];
+		double x = dd * cos_theta_x;
+		double y = dd * cos_theta_y;
+		double z = dd * cos_theta_z;
+		mx = MIN(x, mx); my = MIN(y, my); mz = MIN(z, mz);
+		Mx = MAX(x, Mx); My = MAX(y, My); Mz = MAX(z, Mz);
+		new_mask.push_back(MyMarker(x,y,z));
+	}
+
+	long msz0 = Mx - mx + 0.5 + 1;
+	long msz1 = My - my + 0.5 + 1;
+	long msz2 = Mz - mz + 0.5 + 1;
+	long msz01 = msz0 * msz1;
+	long mtol_sz = msz2 * msz01;
+	unsigned char * outimg1d = new unsigned char[mtol_sz]; memset(outimg1d, 0, mtol_sz);
+
+	// get new index in new coordinate system for all mask_markers
+	for(int m = 0; m < all_mask.size(); m++)
+	{
+		MyMarker marker1 = all_mask[m];
+		long ind1 = marker1.ind(sz0, sz01);
+
+		MyMarker marker2 = new_mask[m];
+		int x = marker2.x - mx + 0.5;
+		int y = marker2.y - my + 0.5;
+		int z = marker2.z - mz + 0.5;
+		long ind2 = z * msz01 + y * msz0 + x;
+		outimg1d[ind2] = inimg1d[ind1];
+	}
+	nm1 = near_markers[0]; fm1 = far_markers[0];
+	nm2 = *near_markers.rbegin(); fm2 = *far_markers.rbegin();
+
+	// convert to index in bounding box
+	MyMarker new_nm1, new_fm1, new_nm2, new_fm2;
+	orig_marker.x = mid_marker.x + mx * aa[0] + my * bb[0] + mz * cc[0];
+	orig_marker.y = mid_marker.y + mx * aa[1] + my * bb[1] + mz * cc[1];
+	orig_marker.z = mid_marker.z + mx * aa[2] + my * bb[2] + mz * cc[2];
+	GET_POSITION_IN_NEW_COORDINATE(nm1, new_nm1, orig_marker, aa, bb, cc);
+	GET_POSITION_IN_NEW_COORDINATE(fm1, new_fm1, orig_marker, aa, bb, cc);
+	GET_POSITION_IN_NEW_COORDINATE(nm2, new_nm2, orig_marker, aa, bb, cc);
+	GET_POSITION_IN_NEW_COORDINATE(fm2, new_fm2, orig_marker, aa, bb, cc);
+
+	vector<MyMarker> sub_markers, tar_markers;
+	GET_LINE_MARKERS(new_nm1, new_fm1, sub_markers);
+	GET_LINE_MARKERS(new_nm2, new_fm2, tar_markers);
+	fastmarching_linker(sub_markers, tar_markers, outimg1d, outswc, msz0, msz1, msz2, cnn_type);
+	for(int i = 0; i < outswc.size(); i++)
+	{
+		double x = outswc[i]->x;
+		double y = outswc[i]->y;
+		double z = outswc[i]->z;
+
+		outswc[i]->x = orig_marker.x + x * aa[0] + y * bb[0] + z * cc[0];
+		outswc[i]->y = orig_marker.y + x * aa[1] + y * bb[1] + z * cc[1];
+		outswc[i]->z = orig_marker.z + x * aa[2] + y * bb[2] + z * cc[2];
+	}
+	
+	if(outimg1d){delete [] outimg1d; outimg1d = 0;}
+
+	return true;
+}
 
 
 #endif
+
 
 
 
