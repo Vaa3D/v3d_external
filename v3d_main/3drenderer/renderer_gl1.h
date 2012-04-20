@@ -276,7 +276,7 @@ protected:
 	int lastSliceType; //for cross-section
 	int currentMarkerName;
 	XYZ getCenterOfMarkerPos(const MarkerPos& pos);
-	void solveMarkerCenter();
+	double solveMarkerCenter();
 	void solveMarkerViews();
 	void refineMarkerTranslate();
 	void refineMarkerCenter();
@@ -334,7 +334,7 @@ protected:
           V3DLONG &sub_szx, V3DLONG &sub_szy, V3DLONG &sub_szz);
 
      void solveCurveDirectionInter(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index);
-     void solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index);
+     double solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input, vector <XYZ> &loc_vec, int index);
      void solveCurveFromMarkersGD(bool b_customized_bb);
      bool withinLineSegCheck( XYZ p1,XYZ p2,XYZ pa); // check wether pa is within the line seg (p1,p1)
      XYZ getLocUsingMassCenter(bool firstloc, XYZ lastpos, XYZ p1, XYZ p2,

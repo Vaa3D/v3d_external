@@ -72,7 +72,7 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include "v3d_application.h"
 
-
+double total_etime; //added by PHC, 20120412, as a convenient way to know the total elipsed time for a lengthy operation
 
 //#define _IMAGING_MENU_
 
@@ -861,6 +861,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		selectMode = smCurveCreate1;
 		b_addthiscurve = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+        total_etime = 0; //reset the timer
 	}
 	else if (act == actCurveCreate2)
 	{
@@ -881,6 +882,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		cntCur3DCurveMarkers=0; //reset
 		//if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::CrossCursor)); }
+        total_etime = 0; //reset the timer
 	}
 	else if (act == actCurveCreateMarkerGD)
 	{
@@ -943,18 +945,21 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		selectMode = smCurveMarkerLists_fm;
 		b_addthiscurve = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+        total_etime = 0; //reset the timer
 	}
 	else if (act == actCurveTiltedBB_fm) // 20120124 ZJL
 	{
 		selectMode = smCurveTiltedBB_fm;
 		b_addthiscurve = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+        total_etime = 0; //reset the timer
 	}
 	else if (act == actCurveTiltedBB_fm_sbbox) // 20120124 ZJL
 	{
 		selectMode = smCurveTiltedBB_fm_sbbox;
 		b_addthiscurve = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+        total_etime = 0; //reset the timer
 	}
 	else if (act == actCurveFrom1Marker_fm) // 20120328 ZJL
 	{
@@ -1019,6 +1024,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		selectMode = smMarkerCreate1;
 		b_addthismarker = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::CrossCursor)); }
+        total_etime = 0; //reset the timer
 	}
 	else if (act == actMarkerCreate2)
 	{
@@ -1765,7 +1771,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
 void Renderer_gl1::endSelectMode()
 {
-	qDebug("  Renderer_gl1::endSelectMode");
+	qDebug() << "  Renderer_gl1::endSelectMode" << " total elapsed time = [" << total_etime << "] milliseconds";
+    total_etime = 0;
+    
 	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
 
 	if (selectMode == smCurveCreate_pointclick)
@@ -1928,7 +1936,7 @@ int Renderer_gl1::movePen(int x, int y, bool b_move)
 				vector <XYZ> loc_vec_input;
 				vector <XYZ> loc_vec0;
 				loc_vec0.clear();
-				solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
+				total_etime += solveCurveMarkerLists_fm(loc_vec_input, loc_vec0, 0);
 
 				if(selectMode == smCurveFrom1Marker_fm)
 				{
@@ -2547,13 +2555,15 @@ int Renderer_gl1::hitPen(int x, int y)
 			//qDebug("\t %i clicks to solve Marker", listMarkerPos.size());
 
 			if (selectMode == smMarkerCreate1)
-				solveMarkerCenter(); //////////
+				total_etime += solveMarkerCenter(); //////////
 			else
 				solveMarkerViews(); //////////
 
 			listMarkerPos.clear();
 			if (selectMode != smMarkerCreate1) // make 1-click continue selected mode
-				endSelectMode();
+            {
+                endSelectMode();
+            }
 		}
 		return 1;
 	}
@@ -3429,9 +3439,12 @@ XYZ Renderer_gl1::getCenterOfMarkerPos(const MarkerPos& pos)
 	return loc;
 }
 
-void Renderer_gl1::solveMarkerCenter()
+double Renderer_gl1::solveMarkerCenter()
 {
-	if (listMarkerPos.size()<1)  return;
+    QTime t;
+    t.start();
+    
+	if (listMarkerPos.size()<1)  return t.elapsed();
 
 	const MarkerPos & pos = listMarkerPos.at(0);
 
@@ -3451,6 +3464,8 @@ void Renderer_gl1::solveMarkerCenter()
 		loc_vec.push_back(loc);
 		produceZoomViewOf3DRoi(loc_vec);
 	}
+    
+    return t.elapsed(); //note that the elapsed time may not be correct for the zoom-in view generation, as it calls endSelectMode(0 in which I reset the total_etime., by PHC, 20120419
 }
 
 void Renderer_gl1::solveMarkerViews()

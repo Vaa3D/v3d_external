@@ -1322,24 +1322,27 @@ V3DLONG Renderer_gl1::findNearestNeuronNode_Loc(XYZ &loc, NeuronTree *ptree)
 }
 
 
-void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //used for marker-pool type curve-generating
+double Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //used for marker-pool type curve-generating
                                             vector <XYZ> & loc_vec,  //the ouput 3D curve
                                             int index //the idnex to which stroke this function is computing on, assuming there may be multiple strokes
                                             )
 {
+    QTime t;
+    t.start();
+    
 	bool b_use_seriespointclick = (loc_vec_input.size()>0) ? true : false;
-    if (b_use_seriespointclick==false && list_listCurvePos.size()<1)  return;
+    if (b_use_seriespointclick==false && list_listCurvePos.size()<1)  return -1;
     if (index < 0 || index>=list_listCurvePos.size())
     {
         v3d_msg("The index variable in solveCurveMarkerLists_fm() is incorrect. Chgeck your program.\n");
-      return;//by PHC
+      return -1;//by PHC
     }
     else
     {
         if (list_listCurvePos.at(index).size()<=0)
         {
             v3d_msg("You enter an empty curve for solveCurveMarkerLists_fm(). Check your code.\n");
-            return;
+            return -1;
         }
     }
 
@@ -1387,12 +1390,12 @@ void Renderer_gl1::solveCurveMarkerLists_fm(vector <XYZ> & loc_vec_input,  //use
                     break;
                default:
                     v3d_msg("Unsupported data type found. You should never see this.", 0);
-                    return ;
+                    return t.elapsed();
           }
      }else
      {
           v3d_msg("No data available. You should never see this.", 0);
-          return ;
+          return t.elapsed();
      }
 
      // get subvolume from stroke for FM
@@ -1699,7 +1702,7 @@ if (0)
      PROGRESS_PERCENT(90);
 
      N = loc_vec.size();
-     if(N<1) return; // all points are outside the volume. ZJL 110913
+     if(N<1) return t.elapsed(); // all points are outside the volume. ZJL 110913
 
 #ifndef test_main_cpp
 	// check if there is any existing neuron node is very close to the starting and ending points, if yes, then merge
@@ -1788,6 +1791,8 @@ if (0)
                endSelectMode();
           }
      }
+    
+    return t.elapsed();
 }
 
 
