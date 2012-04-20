@@ -1,9 +1,9 @@
 /* refextract.CPP
  * created by Yang Yu, Dec 16, 2011
  */
+// update dofunc() interface by Jianlong Zhou, 2012-04-19
 
-
-// 
+//
 
 #ifndef __REFEXTRACT_SRC_CPP__
 #define __REFEXTRACT_SRC_CPP__
@@ -77,15 +77,15 @@ template<class Tdata, class Tidx>
 bool extconv(Tdata *p, Tidx sx, Tidx sy, Tidx sz, unsigned char *&pOutput)
 {
     //
-    if(p==NULL) 
+    if(p==NULL)
     {
         printf("\nError: inputs are invalid!\n");
         return false;
     }
-    
-    // 
+
+    //
     Tidx pagesz = sx*sy*sz;
-    
+
     //
     freeMemory<unsigned char>(pOutput);
     try
@@ -99,19 +99,19 @@ bool extconv(Tdata *p, Tidx sx, Tidx sy, Tidx sz, unsigned char *&pOutput)
         freeMemory<unsigned char>(pOutput);
         return false;
     }
-    
+
     //
-    double max_v=-INF; 
+    double max_v=-INF;
     double min_v=INF;
-    
+
     for(Tidx i=0; i<pagesz; i++)
     {
         Tdata val = p[i];
-        
+
         if(max_v<val) max_v=val;
         if(min_v>val) min_v=val;
     }
-    
+
     //
     max_v -= min_v;
     if(max_v==0)
@@ -119,12 +119,12 @@ bool extconv(Tdata *p, Tidx sx, Tidx sy, Tidx sz, unsigned char *&pOutput)
         printf("\nError: uniform data are not supported!\n");
         return false;
     }
-    
+
     for(Tidx i=0; i<pagesz; i++)
     {
         pOutput[i] = 255*((double)p[i]-min_v)/max_v;
     }
-    
+
     //
     return true;
 }
@@ -155,7 +155,7 @@ void RefExtractPlugin::domenu(const QString &menu_name, V3DPluginCallback2 &call
 
 void errorPrint()
 {
-    printf("\nUsage: v3d -x refExtract.dylib -f refExtract -i <input_image> -o <output_image> -p \"#c <refchannel> \"\n");
+    printf("\nUsage: v3d -x refExtract -f refExtract -i <input_image> -o <output_image> -p \"#c <refchannel> \"\n");
 }
 
 // plugin func
@@ -163,12 +163,18 @@ QStringList RefExtractPlugin::funclist() const
 {
     return QStringList() << tr("refExtract")
                          << tr("ref2mip")
-                         << tr("createTemplate");
+                         << tr("createTemplate")
+                         << tr("help");
 }
 
 bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output, V3DPluginCallback2 & callback,  QWidget * parent)
 {
-    if (func_name == tr("refExtract"))
+     if (func_name == tr("help"))
+     {
+          errorPrint();
+          return true;
+     }
+     else if (func_name == tr("refExtract"))
     {
         if(input.size()<1 || (input.size()==1 && output.size()<1) ) // no inputs
         {
@@ -176,34 +182,34 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             errorPrint();
             return true;
         }
-        
+
         vector<char*> * infilelist;
         vector<char*> * paralist;
         vector<char*> * outfilelist;
-        
+
         char * infile = NULL; //input_image_file
         char * paras = NULL; // parameters
         char * outfile = NULL; // output_image_file
-        
+
         if(input.size()>0) {infilelist = (vector<char*> *)(input.at(0).p);}
         if(output.size()>0) { outfilelist = (vector<char*> *)(output.at(0).p);}  // specify output
         if(input.size()>1) { paralist = (vector<char*> *)(input.at(1).p); paras =  paralist->at(0);} // parameters
         if(!infilelist->empty()) { infile = infilelist->at(0); }
         if(!outfilelist->empty()) { outfile = outfilelist->at(0); }
-        
+
         // init
         V3DLONG channel_ref = 0;
-        
+
         QString qs_filename_img_input(infile);
         QString qs_filename_img_output;
-        
+
         // parsing parameters
         if(paras)
         {
             int argc = 0;
             int len = strlen(paras);
             int posb[1000];
-            
+
             for(int i = 0; i < len; i++)
             {
                 if(i==0 && paras[i] != ' ' && paras[i] != '\t')
@@ -215,7 +221,7 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                     posb[argc++] = i;
                 }
             }
-            
+
             char **argv = NULL;
             try
             {
@@ -230,22 +236,22 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                 printf("\nError: fail to allocate memory!\n");
                 return false;
             }
-            
+
             for(int i = 0; i < len; i++)
             {
                 if(paras[i]==' ' || paras[i]=='\t')
                     paras[i]='\0';
             }
-            
+
             char* key;
             for(int i=0; i<argc; i++)
             {
                 if(i+1 != argc) // check that we haven't finished parsing yet
                 {
                     key = argv[i];
-                    
+
                     qDebug()<<">>key ..."<<key;
-                    
+
                     if (*key == '#')
                     {
                         while(*++key)
@@ -260,7 +266,7 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                                 cout<<"parsing ..."<<key<<i<<"Unknown command. Type 'v3d -x plugin_name -f function_name' for usage"<<endl;
                                 return false;
                             }
-                            
+
                         }
                     }
                     else
@@ -268,15 +274,15 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                         cout<<"parsing ..."<<key<<i<<"Unknown command. Type 'v3d -x plugin_name -f function_name' for usage"<<endl;
                         return false;
                     }
-                    
+
                 }
             }
-            
-            
+
+
             QString qs_basename_input=QFileInfo(qs_filename_img_input).baseName();
             QString qs_filename_output=QString(outfile);
             QString qs_pathname_output=QFileInfo(qs_filename_output).path();
-            
+
             if(outfile)
             {
                 qs_filename_img_output=qs_filename_output;
@@ -285,7 +291,7 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             {
                 qs_filename_img_output=qs_pathname_output+"/"+qs_basename_input+"_8bit.v3draw";
             }
-            
+
             // error check
             if(qs_filename_img_input==NULL || qs_filename_img_output==NULL)
             {
@@ -299,9 +305,9 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
                 errorPrint();
                 return false;
             }
-            
+
         }
-        
+
         //
         V3DLONG *sz_relative = 0;
         unsigned char* relative1d = 0;
@@ -319,10 +325,10 @@ bool RefExtractPlugin::dofunc(const QString & func_name, const V3DPluginArgList 
             cout<<"The input file does not exist!"<<endl;
             return false;
         }
-        
+
         //
         V3DLONG offset_c = channel_ref*sz_relative[0]*sz_relative[1]*sz_relative[2];
-        
+
         unsigned char *pOutput = NULL;
         if(datatype_tile == V3D_UINT8)
         {

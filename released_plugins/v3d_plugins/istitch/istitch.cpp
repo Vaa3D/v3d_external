@@ -17,7 +17,7 @@
  *
  */
 
-// 
+//
 
 #ifndef __ISTITCH_SRC_CPP__
 #define __ISTITCH_SRC_CPP__
@@ -48,8 +48,8 @@
 // extracrt roi image
 #include "../basic_c_fun/customary_structs/v3d_imaging_para.h"
 
-// 
-class PL 
+//
+class PL
 {
 public:
     PL(){}
@@ -103,7 +103,7 @@ int cmpt_ncc_imagepair(SDATATYPE *subject1d, V3DLONG *sz_subject1d, SDATATYPE *t
     //
     V3DLONG sx = sz_subject1d[0];
     V3DLONG sy = sz_subject1d[1];
-    V3DLONG sz = sz_subject1d[2]; 
+    V3DLONG sz = sz_subject1d[2];
     V3DLONG sc = sz_subject1d[3];
 
     V3DLONG pagesz_sub = sx*sy*sz;
@@ -209,7 +209,7 @@ int cmpt_ncc_imagepair(SDATATYPE *subject1d, V3DLONG *sz_subject1d, SDATATYPE *t
     //
     return true;
 
-}		
+}
 
 // Multiscale pairwise images stitching with thick planes (e.g. 10 pixels width) in boundary bounding box
 template <class SDATATYPE, class Y_IMG_DATATYPE>
@@ -223,7 +223,7 @@ int stitching_bb_thickplanes(SDATATYPE *subject1d, V3DLONG *sz_subject1d, SDATAT
     //
     V3DLONG sx = sz_subject1d[0];
     V3DLONG sy = sz_subject1d[1];
-    V3DLONG sz = sz_subject1d[2]; 
+    V3DLONG sz = sz_subject1d[2];
     V3DLONG sc = sz_subject1d[3];
 
     V3DLONG pagesz_sub = sx*sy*sz;
@@ -1734,7 +1734,7 @@ int pairwise_stitching(char *fn_target, V3DLONG ch_tar, char *fn_subject, V3DLON
     return true;
 }
 
-// 
+//
 void printHelp_v3d_stitch_pair()
 {
     cout<<endl<<"v3d_stitch_pair: a single pair image-stitching program developed by Yang Yu, Peng Lab, Janelia Farm Research Campus."<<endl;
@@ -1758,7 +1758,7 @@ void printHelp_v3d_stitch_pair()
 
 
 #ifndef __ISTITCH_FUNC_CALL__
-// 
+//
 int main(int argc, char **argv)
 {
     //
@@ -2024,7 +2024,7 @@ QStringList IStitchPlugin::funclist() const
                          << tr("istitch-subspace")
                          << tr("istitch-grouping")
                          << tr("istitch-gc")
-                         << tr("Help");
+                         << tr("help");
 }
 
 // Multiscale pairwise images stitching with thick planes (e.g. 10 pixels width) in boundary bounding box
@@ -2039,7 +2039,7 @@ int stitching_bb_thickplanes(SDATATYPE *subject1d, V3DLONG *sz_subject1d, SDATAT
     //
     V3DLONG sx = sz_subject1d[0];
     V3DLONG sy = sz_subject1d[1];
-    V3DLONG sz = sz_subject1d[2]; 
+    V3DLONG sz = sz_subject1d[2];
     V3DLONG sc = sz_subject1d[3];
 
     V3DLONG pagesz_sub = sx*sy*sz;
@@ -3325,7 +3325,7 @@ int stitching_bb_thickplanes(SDATATYPE *subject1d, V3DLONG *sz_subject1d, SDATAT
 }
 
 // pairwise image blending function
-template <class SDATATYPE> 
+template <class SDATATYPE>
 int pwi_fusing(SDATATYPE *p_mask, SDATATYPE *data1d, SDATATYPE *subject1d, V3DLONG *sz_subject, SDATATYPE *target1d, V3DLONG *sz_target, V3DLONG *offset, bool axes_show, QString m_InputFileName, V3DLONG new_sz0, V3DLONG new_sz1, V3DLONG new_sz2, V3DLONG pagesz_overlap, V3DLONG sub_c, V3DLONG tar_c)
 {
     //
@@ -3526,7 +3526,7 @@ int pwi_fusing(SDATATYPE *p_mask, SDATATYPE *data1d, SDATATYPE *subject1d, V3DLO
 }
 
 // group images blending function
-template <class SDATATYPE> 
+template <class SDATATYPE>
 int groupi_fusing(SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, V3DLONG vx, V3DLONG vy, V3DLONG vz, V3DLONG vc, bool axes_show)
 {
     // for boundary counting
@@ -3706,7 +3706,7 @@ int groupi_fusing(SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL
 }
 
 // group images blending function
-template <class SDATATYPE> 
+template <class SDATATYPE>
 int region_groupfusing(SDATATYPE *pVImg, Y_VIM<REAL, V3DLONG, indexed_t<V3DLONG, REAL>, LUT<V3DLONG> > vim, unsigned char *relative1d,
                        V3DLONG vx, V3DLONG vy, V3DLONG vz, V3DLONG vc, V3DLONG rx, V3DLONG ry, V3DLONG rz, V3DLONG rc,
                        V3DLONG tile2vi_zs, V3DLONG tile2vi_ys, V3DLONG tile2vi_xs,
@@ -3769,14 +3769,14 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
     V3DLONG vy = vim.sz[1];
     V3DLONG vz = vim.sz[2];
     V3DLONG vc = vim.sz[3];
-    
+
     V3DLONG pagesz = vx*vy*vz;
     V3DLONG imgsz = pagesz*vc;
-    
+
     bool fftw_in_place = true;
-    
+
     REAL *pTmp = NULL;
-    
+
     if(flagFusion)
     {
         try {
@@ -3810,7 +3810,7 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
                 V3DLONG *sz_ref = 0;
                 int datatype_ref = 0;
                 unsigned char* ref1d = 0;
-                
+
                 //
                 if (loadImage(const_cast<char *>(vim.tilesList.at(ii).fn_image.c_str()), ref1d, sz_ref, datatype_ref)!=true)
                 {
@@ -3818,7 +3818,7 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
                     return false;
                 }
                 V3DLONG rx=sz_ref[0], ry=sz_ref[1], rz=sz_ref[2], rc=sz_ref[3];
-                
+
                 //
                 V3DLONG tile2vi_xs = vim.lut[ii].start_pos[0]-vim.min_vim[0];
                 V3DLONG tile2vi_xe = vim.lut[ii].end_pos[0]-vim.min_vim[0];
@@ -3826,21 +3826,21 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
                 V3DLONG tile2vi_ye = vim.lut[ii].end_pos[1]-vim.min_vim[1];
                 V3DLONG tile2vi_zs = vim.lut[ii].start_pos[2]-vim.min_vim[2];
                 V3DLONG tile2vi_ze = vim.lut[ii].end_pos[2]-vim.min_vim[2];
-                
+
                 V3DLONG x_start = (0 > tile2vi_xs) ? 0 : tile2vi_xs;
                 V3DLONG x_end = (vx-1 < tile2vi_xe) ? vx-1 : tile2vi_xe;
                 V3DLONG y_start = (0 > tile2vi_ys) ? 0 : tile2vi_ys;
                 V3DLONG y_end = (vy-1 < tile2vi_ye) ? vy-1 : tile2vi_ye;
                 V3DLONG z_start = (0 > tile2vi_zs) ? 0 : tile2vi_zs;
                 V3DLONG z_end = (vz-1 < tile2vi_ze) ? vz-1 : tile2vi_ze;
-                
+
                 x_end++;
                 y_end++;
                 z_end++;
-                
+
                 //suppose all tiles with same color dimensions
                 Tdata *prelative = (Tdata *)ref1d;
-                
+
                 for(V3DLONG c=0; c<rc; c++)
                 {
                     V3DLONG o_c = c*vx*vy*vz;
@@ -3849,7 +3849,7 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
                     {
                         V3DLONG o_k = o_c + k*vx*vy;
                         V3DLONG o_r_k = o_r_c + (k-z_start)*rx*ry;
-                        
+
                         for(V3DLONG j=y_start; j<y_end; j++)
                         {
                             V3DLONG o_j = o_k + j*vx;
@@ -3858,9 +3858,9 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
                             {
                                 V3DLONG idx = o_j + i;
                                 V3DLONG idx_r = o_r_j + (i-x_start);
-                                
+
                                 float val = (float)(prelative[idx_r]);
-                                
+
                                 //
                                 float coef;
                                 if(!computeWeights(vim, i, j, k, ii, coef) )
@@ -3868,14 +3868,14 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
                                     printf("Fail to call function computeWeights!\n");
                                     return false;
                                 }
-                                
+
                                 pTmp[idx] += (Tdata)(val*coef); // linear blending
-                                
+
                             }
                         }
                     }
                 }
-                
+
                 //de-alloc
                 if(ref1d) {delete []ref1d; ref1d=0;}
                 if(sz_ref) {delete []sz_ref; sz_ref=0;}
@@ -3883,47 +3883,47 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
 
             continue;
         }
-        
+
         //
         V3DLONG i = ii; // current tile g
         V3DLONG j = vim.tilesList.at(ii).predecessor; // parent tile f
-        
+
         V3DLONG jx_s, jy_s, jz_s, jx_e, jy_e, jz_e;
         V3DLONG ix_s, iy_s, iz_s, ix_e, iy_e, iz_e;
-        
+
         jx_s = vim.lut[j].start_pos[0] + vim.min_vim[0];
         jy_s = vim.lut[j].start_pos[1] + vim.min_vim[1];
         jz_s = vim.lut[j].start_pos[2] + vim.min_vim[2];
-        
+
         jx_e = vim.lut[j].end_pos[0] + vim.min_vim[0];
         jy_e = vim.lut[j].end_pos[1] + vim.min_vim[1];
         jz_e = vim.lut[j].end_pos[2] + vim.min_vim[2];
-        
+
         ix_s = vim.lut[i].start_pos[0] + vim.min_vim[0];
         iy_s = vim.lut[i].start_pos[1] + vim.min_vim[1];
         iz_s = vim.lut[i].start_pos[2] + vim.min_vim[2];
-        
+
         ix_e = vim.lut[i].end_pos[0] + vim.min_vim[0];
         iy_e = vim.lut[i].end_pos[1] + vim.min_vim[1];
         iz_e = vim.lut[i].end_pos[2] + vim.min_vim[2];
-        
+
         // load image f
         V3DLONG *sz_f = 0;
         int datatype_f = 0;
         unsigned char* f1d = 0;
-        
+
         if (loadImage(const_cast<char *>(vim.tilesList.at(j).fn_image.c_str()), f1d, sz_f, datatype_f)!=true)
         {
             fprintf (stderr, "Error happens in reading the subject file [%s]. Exit. \n",vim.tilesList.at(j).fn_image.c_str());
             return false;
         }
         V3DLONG fx=sz_f[0], fy=sz_f[1], fz=sz_f[2], fc=sz_f[3];
-        
+
         // load image g
         V3DLONG *sz_g = 0;
         int datatype_g = 0;
         unsigned char* g1d = 0;
-        
+
         //
         if (loadImage(const_cast<char *>(vim.tilesList.at(i).fn_image.c_str()), g1d, sz_g, datatype_g)!=true)
         {
@@ -3931,16 +3931,16 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
             return false;
         }
         V3DLONG gx=sz_g[0], gy=sz_g[1], gz=sz_g[2], gc=sz_g[3];
-        
+
         // overlap image from f and g
         V3DLONG start_x = qMax(jx_s, ix_s);
         V3DLONG start_y = qMax(jy_s, iy_s);
         V3DLONG start_z = qMax(jz_s, iz_s);
-        
+
         V3DLONG end_x = qMin(jx_e, ix_e);
         V3DLONG end_y = qMin(jy_e, iy_e);
         V3DLONG end_z = qMin(jz_e, iz_e);
-        
+
         V3DLONG dimxol= end_x-start_x+1;
         V3DLONG dimyol= end_y-start_y+1;
         V3DLONG dimzol= end_z-start_z+1;
@@ -3955,17 +3955,17 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
         }
 
         V3DLONG *szOL = new V3DLONG [3];
-        
+
         szOL[0] = dimxol;
         szOL[1] = dimyol;
         szOL[2] = dimzol;
-        
+
         V3DLONG pagesz_ol = dimxol*dimyol*dimzol;
-        
+
         Tdata *fol1d = NULL;
         Tdata *gol1d = NULL;
-        
-        try 
+
+        try
         {
             // suppose fc = gc = vc
             fol1d = new Tdata [pagesz_ol];
@@ -3973,38 +3973,38 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
 
             memset(fol1d, 0.0, sizeof(Tdata)*pagesz_ol);
             memset(gol1d, 0.0, sizeof(Tdata)*pagesz_ol);
-        } 
-        catch (...) 
+        }
+        catch (...)
         {
             printf("Fail to allocate memory for fol1d and gol1d.\n");
-            
+
             y_del<Tdata>(fol1d);
             y_del<Tdata>(gol1d);
-            
+
             return false;
         }
-        
+
         V3DLONG offsets_fc = channel*fx*fy*fz; // ref channel
         V3DLONG offsets_gc = channel*gx*gy*gz;
-        
+
         for(V3DLONG z=start_z; z<end_z; z++)
         {
             V3DLONG offsets_fz = offsets_fc + (z-jz_s)*fx*fy;
             V3DLONG offsets_gz = offsets_gc + (z-iz_s)*gx*gy;
-            
+
             V3DLONG offsets_olz = (z-start_z)*dimxol*dimyol;
-            
+
             for(V3DLONG y=start_y; y<end_y; y++)
             {
                 V3DLONG offsets_fy = offsets_fz + (y-jy_s)*fx;
                 V3DLONG offsets_gy = offsets_gz + (y-iy_s)*gx;
-                
+
                 V3DLONG offsets_oly = offsets_olz + (y-start_y)*dimxol;
-                
+
                 for(V3DLONG x=start_x; x<end_x; x++)
                 {
                     V3DLONG idx = offsets_oly + x - start_x;
-                    
+
                     fol1d[idx] = ((Tdata *)f1d)[offsets_fy + (x-jx_s)];
                     gol1d[idx] = ((Tdata *)g1d)[offsets_gy + (x-ix_s)];
                 }
@@ -4227,15 +4227,15 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
         //        rPEAKS pos;
         //        Y_IMG_REAL pOut(gol1d, szOL);
         //        Y_IMG_REAL pIn(fol1d, szOL);
-        
+
         //        YImg<REAL, V3DLONG, Y_IMG_REAL, Y_IMG_REAL> tmp;
         //        tmp.fftpcsubspace3D(pOut, pIn, even_odd, fftw_in_place, &pos); // subpixel shifts
-        
+
         //        // subpixel translation estimation
         //        (&vim.tilesList.at(j))->offsets_sa[0] += pos.x;
         //        (&vim.tilesList.at(j))->offsets_sa[1] += pos.y;
         //        (&vim.tilesList.at(j))->offsets_sa[2] += pos.z;
-        
+
         //        // de-alloc
         //        y_del<REAL>(fol1d);
         //        y_del<REAL>(gol1d);
@@ -4632,7 +4632,7 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
         V3DLONG *sz_relative = 0;
         int datatype_relative = 0;
         unsigned char* relative1d = 0;
-        
+
         //
         if (loadImage(const_cast<char *>(vim.tilesList.at(ii).fn_image.c_str()), relative1d, sz_relative, datatype_relative)!=true)
         {
@@ -4640,7 +4640,7 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
             return false;
         }
         V3DLONG rx=sz_relative[0], ry=sz_relative[1], rz=sz_relative[2], rc=sz_relative[3];
-        
+
         // subpixel translate
         rPEAKS pos;
         pos.x = vim.tilesList.at(ii).offsets_sa[0] - vim.lut[ii].start_pos[0];
@@ -4658,9 +4658,9 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
         try
         {
             V3DLONG szRelative = rx_pad*ry*rz*rc;
-            
+
             prelative = new REAL [szRelative];
-            
+
             for(V3DLONG c=0; c<rc; c++)
             {
                 V3DLONG offset_c = c*rx*ry*rz;
@@ -4686,12 +4686,12 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
                     }
                 }
             }
-            
+
         }
         catch (...)
         {
             y_del<REAL>(prelative);
-            
+
             cout<<"Fail to allocate memory!"<<endl;
             return false;
         }
@@ -4721,14 +4721,14 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
         V3DLONG tile2vi_ye = vim.lut[ii].end_pos[1]-vim.min_vim[1];
         V3DLONG tile2vi_zs = vim.lut[ii].start_pos[2]-vim.min_vim[2];
         V3DLONG tile2vi_ze = vim.lut[ii].end_pos[2]-vim.min_vim[2];
-        
+
         V3DLONG x_start = (0 > tile2vi_xs) ? 0 : tile2vi_xs;
         V3DLONG x_end = (vx-1 < tile2vi_xe) ? vx-1 : tile2vi_xe;
         V3DLONG y_start = (0 > tile2vi_ys) ? 0 : tile2vi_ys;
         V3DLONG y_end = (vy-1 < tile2vi_ye) ? vy-1 : tile2vi_ye;
         V3DLONG z_start = (0 > tile2vi_zs) ? 0 : tile2vi_zs;
         V3DLONG z_end = (vz-1 < tile2vi_ze) ? vz-1 : tile2vi_ze;
-        
+
         x_end++;
         y_end++;
         z_end++;
@@ -4742,12 +4742,12 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
 
         z_start += effectiveEnvelope[4];
         z_end -= rz - effectiveEnvelope[5];
-        
+
         //suppose all tiles with same color dimensions
         if(rc>vc)
             rc = vc;
-        
-        //        
+
+        //
         for(V3DLONG c=0; c<rc; c++)
         {
             V3DLONG o_c = c*vx*vy*vz;
@@ -4759,7 +4759,7 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
 
                 V3DLONG o_k = o_c + k*vx*vy;
                 V3DLONG o_r_k = o_r_c + (k_idx)*rx_pad*ry;
-                
+
                 for(V3DLONG j=y_start; j<y_end; j++)
                 {
                     V3DLONG j_idx = j-y_start + effectiveEnvelope[2];
@@ -4774,9 +4774,9 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
 
                         V3DLONG idx = o_j + i;
                         V3DLONG idx_r = o_r_j + (i_idx);
-                        
+
                         REAL val = (REAL)(prelative[idx_r]);
-                        
+
                         //
                         REAL coef;
                         if(!computeWeights(vim, i, j, k, ii, coef) )
@@ -4784,49 +4784,49 @@ template <class Tdata, class Y_IMG_DATATYPE> bool iSubspaceStitching(Tdata *pVIm
                             printf("Fail to call function computeWeights!\n");
                             return false;
                         }
-                        
+
                         pTmp[idx] += (Tdata)(val*coef); // linear blending
-                        
+
                     }
                 }
             }
         }
-        
+
         //de-alloc
         y_del<REAL>(prelative);
         y_del<unsigned char>(relative1d);
         y_del<V3DLONG>(sz_relative);
     }
-    
+
     float minval, maxval;
-    for(V3DLONG c=0; c<vc; c++) 
+    for(V3DLONG c=0; c<vc; c++)
     {
         V3DLONG offsets = c*pagesz;
-        
+
         minval=1e9;
         maxval=-1e9;
-        for (V3DLONG i=0; i<pagesz; i++) 
+        for (V3DLONG i=0; i<pagesz; i++)
         {
             V3DLONG idx = offsets+i;
-            
+
             float val=pTmp[idx];
-            
+
             if(minval>val) minval = val;
             if(maxval<val) maxval = val;
         }
         maxval -= minval;
-        
-        for (V3DLONG i=0; i<pagesz; i++) 
+
+        for (V3DLONG i=0; i<pagesz; i++)
         {
             V3DLONG idx = offsets+i;
-            
+
             pVImg[idx] = (Tdata) ((REAL)intensityrange * (pTmp[idx] - minval)/maxval);
         }
     }
-    
+
     //de-alloc
     y_del<REAL>(pTmp);
-    
+
     return true;
 }
 
@@ -9850,7 +9850,7 @@ int roi_navigating(V3DPluginCallback2 &callback, QWidget *parent)
 // image stitch plugin dofunc
 bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & input, V3DPluginArgList & output, V3DPluginCallback2 & callback,  QWidget * parent)
 {
-    if (func_name == tr("Help"))
+    if (func_name == tr("help"))
     {
         //print Help info
         printf("\nUsage: \tvaa3d \n\t-x imageStitch \n\t-f v3dstitch \n\t-i <input_image_folder> \n\t-o <output_image_file> \n\t-p \"[#c <channalNo_reference> #x <downsample_factor_x> #y <downsample_factor_y> #z <downsample_factor_z> #l <overlap_ratio> #sb <saving_tile_boundary 0/1> #si <saving_stitching_result 0/1>]\"\n\n");
@@ -9868,7 +9868,7 @@ bool IStitchPlugin::dofunc(const QString & func_name, const V3DPluginArgList & i
         if(infilelist->empty())
         {
             //print Help info
-            printf("\nUsage: v3d -x imageStitch.dylib -f v3dstitch -i <input_image_folder> -o <output_image_file> -p \"[#c <channalNo_reference> #x <downsample_factor_x> #y <downsample_factor_y> #z <downsample_factor_z> #l <overlap_ratio>] #sb <saving_tile_boundary 0/1> #si <saving_stitching_result 0/1>\"\n");
+            printf("\nUsage: v3d -x imageStitch -f v3dstitch -i <input_image_folder> -o <output_image_file> -p \"[#c <channalNo_reference> #x <downsample_factor_x> #y <downsample_factor_y> #z <downsample_factor_z> #l <overlap_ratio>] #sb <saving_tile_boundary 0/1> #si <saving_stitching_result 0/1>\"\n");
 
 
             return true;

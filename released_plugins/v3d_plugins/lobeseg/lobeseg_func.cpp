@@ -218,7 +218,7 @@ void printHelp()
     printf("\t [#N]                               the number of control points.\n");
     printf("\t [#S]                               output the seperating surface.\n");
     printf("\n");
-    printf("Demo :\t v3d -x liblobeseg_debug.dylib -f lobeseg -i input.tif -o output.tif -p \"#s #N 20 #p 30x0+100x30 #k left #S\"\n");
+    printf("Demo :\t v3d -x lobeseg -f lobeseg -i input.tif -o output.tif -p \"#s #N 20 #p 30x0+100x30 #k left #S\"\n");
     printf("Version: 0.91 (Copyright: Hanchuan Peng)\n");
     return;
 }
@@ -277,7 +277,7 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 	}
 	cout<<"paras = \""<<paras<<"\""<<endl;
 	int argc = split(paras, argv);
-	
+
 	char optstring[] = "hsSi:o:c:A:B:G:n:p:k:N:";
 	int c;
 	optind = 0;
@@ -288,7 +288,7 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 			case 'h' : printHelp(); return true;
 			case 's' : single_side = true; cout<<"single_side = true"<<endl; break;
 			case 'S' : is_surf = true; break;
-			case 'p' : 
+			case 'p' :
 					   if (strcmp (optarg, "(null)") == 0 || optarg[0] == '-')
 					   {
 						   strcpy(err_str, "Found illegal or NULL parameter for the option -p");
@@ -341,7 +341,7 @@ bool lobeseg(const V3DPluginArgList & input, V3DPluginArgList & output)
 						   };
 					   }
 					   break;
-			case 'N' : 
+			case 'N' :
 					   if (strcmp (optarg, "(null)") == 0 || optarg[0] == '-')
 					   {
 						   strcpy(err_str, "Found illegal or NULL parameter for the option -N");
