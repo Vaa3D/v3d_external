@@ -2483,3 +2483,8 @@ v3d_main/neuron_annotator/data_model/Dimension.h
 v3d_main/neuron_annotator/data_model/Dimension.cpp
 v3d_main/neuron_annotator/data_model/CustomClipPlanes.h
 v3d_main/neuron_annotator/data_model/CustomClipPlanes.cpp
+v3d_main/neuron_annotator/tests/test_load_mp4.cpp
+v3d_main/neuron_annotator/utility/FFMpegVideo.h
+v3d_main/neuron_annotator/utility/FFMpegVideo.cpp
+v3d_main/neuron_annotator/utility/loadV3dFFMpeg.h
+v3d_main/neuron_annotator/utility/loadV3dFFMpeg.cpp

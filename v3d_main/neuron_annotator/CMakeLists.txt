@@ -61,11 +61,37 @@ if(NA_ENABLE_3D_STEREO)
     add_definitions(-DENABLE_STEREO)
 endif()
 
-add_library(NeuronAnnotatorLib STATIC 
+# Permit loading 3D volumes from movie files
+find_library(AVDEVICE_LIBRARY avdevice PATHS /usr/local/lib)
+find_library(AVFORMAT_LIBRARY avformat PATHS /usr/local/lib)
+find_library(AVFILTER_LIBRARY avfilter PATHS /usr/local/lib)
+find_library(AVCODEC_LIBRARY avcodec PATHS /usr/local/lib)
+find_library(SWSCALE_LIBRARY swscale PATHS /usr/local/lib)
+find_library(AVUTIL_LIBRARY avutil PATHS /usr/local/lib)
+find_package(ZLIB)
+find_path(AVCODEC_INCLUDE_DIR
+    libavcodec/avcodec.h
+    PATHS
+        /usr/local/include
+)
+set(have_avcodec false)
+if(AVCODEC_LIBRARY AND AVCODEC_INCLUDE_DIR)
+    set(have_avcodec true)
+endif()
+set(V3D_ENABLE_LOAD_MOVIE ${have_avcodec} CACHE BOOL "Whether to load 3D volumes from movies using libavcodec")
+if(V3D_ENABLE_LOAD_MOVIE)
+    include_directories(${AVCODEC_INCLUDE_DIR})
+    add_definitions(-DV3D_ENABLE_LOAD_MOVIE)
+endif()
+
+add_library(NeuronAnnotatorLib STATIC
     ${NA_UI_SRCS} ${NA_MOC_SRCS} ${NA_SRCS}
 )
 add_custom_target(NaGeneratedFiles DEPENDS ${NA_UI_SRCS})
 add_dependencies(NeuronAnnotatorLib NaGeneratedFiles)
+if(V3D_ENABLE_LOAD_MOVIE)
+    target_link_libraries(NeuronAnnotatorLib ${AVCODEC_LIBRARY})
+endif()
 
 add_subdirectory(tests)
 
