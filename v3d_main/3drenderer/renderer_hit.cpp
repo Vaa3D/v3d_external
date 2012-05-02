@@ -610,12 +610,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				pluginsDir.cdUp();
 			}
 #endif
-			if (pluginsDir.cd("plugins/neuron_toolbox")==false) 
-			{
-				v3d_msg("Cannot find ./plugins/neuron_toolbox directory!");
-				return false;
-			}
-			else
+			if (pluginsDir.cd("plugins/neuron_toolbox")==true) 
 			{
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				listAct.append(actDoNeuronToolBoxPlugin = new QAction("NeuronToolbox", w));
