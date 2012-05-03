@@ -81,8 +81,10 @@ bool PrivateVolumeTexture::populateVolume(const NaVolumeData::Reader& volumeRead
         // minData[c] = colorReader.getChannelDataMin(c);
         // rangeData[c] = 255.0 / (colorReader.getChannelDataMax(c) - colorReader.getChannelDataMin(c));
     }
-    minData[refIx] = referenceProxy.vmin[0];
-    rangeData[refIx] = 255.0 / (referenceProxy.vmax[0] - referenceProxy.vmin[0]);
+    if (volumeReader.hasReferenceImage()) {
+        minData[refIx] = referenceProxy.vmin[0];
+        rangeData[refIx] = 255.0 / (referenceProxy.vmax[0] - referenceProxy.vmin[0]);
+    }
 
     // Use stupid box filter for now.  Once that's working, use Lanczos for better sampling.
     // TODO
@@ -95,6 +97,9 @@ bool PrivateVolumeTexture::populateVolume(const NaVolumeData::Reader& volumeRead
         zEnd = (int)usedTextureSize.z();
     if (zEnd > usedTextureSize.z())
         zEnd = (int)usedTextureSize.z();
+    int channelCount = imageProxy.sc;
+    if (volumeReader.hasReferenceImage())
+        channelCount += 1;
     for(int z = zBegin; z < zEnd; ++z)
     {
         // qDebug() << z << __FILE__ << __LINE__;
@@ -113,19 +118,22 @@ bool PrivateVolumeTexture::populateVolume(const NaVolumeData::Reader& volumeRead
                 // but accept any non-background value in its place.
                 int neuronIndex = 0;
                 // Average over multiple voxels in input image
-                channelIntensities.assign(refIx + 1, 0.0);
+                channelIntensities.assign(channelCount, 0.0);
                 for(int sx = x0; sx < x1; ++sx)
                     for(int sy = y0; sy < y1; ++sy)
                         for(int sz = z0; sz < z1; ++sz)
                         {
                             for (int c = 0; c < imageProxy.sc; ++c)
                                 channelIntensities[c] += imageProxy.value_at(sx, sy, sz, c);
-                            channelIntensities[refIx] += referenceProxy.value_at(sx, sy, sz, 0);
-                            if (neuronIndex == 0) // take first non-zero value
-                                neuronIndex = (int)labelProxy.value_at(sx, sy, sz, 0);
+                            if (volumeReader.hasReferenceImage())
+                                channelIntensities[refIx] += referenceProxy.value_at(sx, sy, sz, 0);
+                            if (volumeReader.hasNeuronMask()) {
+                                if (neuronIndex == 0) // take first non-zero value
+                                    neuronIndex = (int)labelProxy.value_at(sx, sy, sz, 0);
+                            }
                             weight += 1.0;
                         }
-                for (int c = 0; c <= refIx; ++c) // Normalize
+                for (int c = 0; c < channelCount; ++c) // Normalize
                     if (weight > 0)
                         channelIntensities[c]  = ((channelIntensities[c] / weight) - minData[c]) * rangeData[c];
                 // Swap red and blue from RGBA to BGRA, for Windows texture efficiency

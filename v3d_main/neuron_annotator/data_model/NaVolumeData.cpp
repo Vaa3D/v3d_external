@@ -4,6 +4,7 @@
 #include <cassert>
 
 #include "../utility/ImageLoader.h"
+#include "../utility/loadV3dFFMpeg.h"
 
 using namespace std;
 
@@ -239,6 +240,15 @@ void NaVolumeData::loadVolumeDataFromFiles()
     emit dataChanged();
 }
 
+/* slot */
+bool NaVolumeData::loadSingleImageMovieVolume(QString fileName)
+{
+    NaVolumeData::Writer volumeWriter(*this);
+    if (! volumeWriter.loadSingleImageMovieVolume(fileName) )
+        return false;
+    emit dataChanged();
+}
+
 //////////////////////////////////
 // NaVolumeData::Writer methods //
 //////////////////////////////////
@@ -273,6 +283,40 @@ void NaVolumeData::Writer::clearImageData()
         delete m_data->emptyImage;
         m_data->emptyImage = NULL;
     }
+}
+
+bool NaVolumeData::Writer::loadSingleImageMovieVolume(QString fileName)
+{
+    qDebug() << "NaVolumeData::Writer::loadSingleImageMovieVolume" << fileName;
+#ifdef USE_FFMPEG
+    My4DImage* img = new My4DImage();
+    if (! loadRaw2StackFFMpeg(fileName.toStdString().c_str(), img) ) {
+        delete img;
+        return false;
+    }
+    return setSingleImageVolume(img);
+#else
+    return false;
+#endif
+}
+
+bool NaVolumeData::Writer::setSingleImageVolume(My4DImage* img)
+{
+    qDebug() << "NaVolumeData::Writer::loadSingleImageMovieVolume";
+    if (m_data->originalImageStack == img)
+        return false; // no change
+    if (NULL == img)
+        return false;
+    if (NULL != m_data->originalImageStack)
+    {
+        delete m_data->originalImageStack;
+        m_data->originalImageStack = NULL;
+    }
+    m_data->originalImageStack = img;
+    img->updateminmaxvalues();
+    m_data->originalImageProxy = Image4DProxy<My4DImage>(m_data->originalImageStack);
+    m_data->originalImageProxy.set_minmax(m_data->originalImageStack->p_vmin, m_data->originalImageStack->p_vmax);
+    return true;
 }
 
 bool NaVolumeData::Writer::loadStacks()
@@ -377,52 +421,6 @@ bool NaVolumeData::Writer::loadStacks()
 
     return true;
 }
-
-/*
-bool NaVolumeData::Writer::normalizeReferenceStack(My4DImage* initialReferenceStack)
-{
-    int datatype=(int)initialReferenceStack->getDatatype();
-    qDebug() << "NaVolume::Writer::normalizeReferenceStack - datatype=" << datatype;
-    m_data->referenceStack=new My4DImage();
-    m_data->referenceStack->loadImage(initialReferenceStack->getXDim(), initialReferenceStack->getYDim(), initialReferenceStack->getZDim(), 1 , 1 );
-    /*
-    Image4DProxy<My4DImage> initialProxy(initialReferenceStack);
-    Image4DProxy<My4DImage> referenceProxy(m_data->referenceStack);
-
-    qDebug() << "Populating reference with initial data";
-    int zDim=initialReferenceStack->getZDim();
-    int yDim=initialReferenceStack->getYDim();
-    int xDim=initialReferenceStack->getXDim();
-    if (initialReferenceStack->getDatatype()==2) {
-        for (int z=0;z<zDim;z++) {
-            for (int y=0;y<yDim;y++) {
-                for (int x=0;x<xDim;x++) {
-                    int value=(*initialProxy.at_uint16(x,y,z,0))/16; // convert from 12-bit to 8-bit
-                    referenceProxy.put8bit_fit_at(x,y,z,0,value); // For some reason, the Y-dim seems to need inversion
-                }
-            }
-        }
-    } else { // datatype==1
-        for (int z=0;z<zDim;z++) {
-            for (int y=0;y<yDim;y++) {
-                for (int x=0;x<xDim;x++) {
-                    referenceProxy.put8bit_fit_at(x,y,z,0, (*initialProxy.at_uint8(x,y,z,0))); // For some reason, the Y-dim seems to need inversion
-                }
-            }
-        }
-    }
-    initialReferenceStack->cleanExistData();
-    delete initialReferenceStack;
-    m_data->referenceStack->updateminmaxvalues();
-
-    m_data->referenceImageProxy = Image4DProxy<My4DImage>(m_data->referenceStack);
-    m_data->referenceImageProxy.set_minmax(m_data->referenceStack->p_vmin, m_data->referenceStack->p_vmax);
-
-    qDebug() << "Finished loading reference stack";
-
-    return true;
-}
- */
 
 //////////////////////////////////
 // NaVolumeData::Reader methods //

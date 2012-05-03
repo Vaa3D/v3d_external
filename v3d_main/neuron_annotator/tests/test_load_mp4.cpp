@@ -16,7 +16,9 @@ int main(int argc, char **argv)
     }
 
     My4DImage *img = new My4DImage();
+#ifdef USE_FFMPEG
     loadRaw2StackFFMpeg(argv[1], img);
+#endif
 
     return 0;
 }

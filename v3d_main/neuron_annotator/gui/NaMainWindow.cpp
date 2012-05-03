@@ -25,7 +25,7 @@
 #include "../NeuronSelector.h"
 #include "FragmentGalleryWidget.h"
 #include "AnnotationWidget.h"
-// #include "CurtainWidget.h"
+#include "../utility/loadV3dFFMpeg.h"
 
 using namespace std;
 
@@ -124,6 +124,10 @@ NaMainWindow::NaMainWindow()
     // hide the File->Open 3D Image stack menu item
     ui.menuFile->removeAction(ui.actionLoad_Tiff);
     ui.menuFile->removeAction(ui.actionCell_Counter_3D_2ch_lsm);
+
+#ifdef USE_FFMPEG
+    ui.actionOpen_Single_Movie_Stack->setVisible(true);
+#endif
 
     // visualize compartment map
     //QDockWidget *dock = new QDockWidget(tr("Compartment Map"), this);
@@ -349,6 +353,68 @@ NaMainWindow::NaMainWindow()
     initializeContextMenus();
     initializeStereo3DOptions();
     connectCustomCut();
+}
+
+/* slot */
+void NaMainWindow::on_actionOpen_Single_Movie_Stack_triggered()
+{
+    qDebug() << "NaMainWindow::on_actionOpen_Single_Movie_Stack_triggered";
+    QString initialDialogPath = QDir::currentPath();
+    // Use previous annotation path as initial file browser location
+    QSettings settings("HHMI", "V3D");
+    QString previousAnnotationDirString = settings.value("NeuronAnnotatorPreviousAnnotationPath").toString();
+    if (! previousAnnotationDirString.isEmpty()) {
+        QDir previousAnnotationDir(previousAnnotationDirString);
+        if (previousAnnotationDir.exists() && previousAnnotationDir.isReadable())
+        {
+            initialDialogPath = previousAnnotationDir.path();
+            // qDebug() << "Annotation directory path = " << initialDialogPath;
+        }
+    }
+
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    "Select MPEG4 format volume data",
+                                                    initialDialogPath);
+
+    // qDebug() << dirName;
+
+    // If user presses cancel, QFileDialog::getOpenFileName returns a null string
+    if (fileName.isEmpty()) // Silently do nothing when user presses Cancel.  No error dialogs please!
+        return;
+
+    QFile movieFile(fileName);
+
+    if (! movieFile.exists() )
+    {
+        QMessageBox::warning(this, tr("No such file"),
+                             QString("'%1'\n No such file.\nIs the file share mounted?\nHas the directory moved?").arg(fileName));
+        return;
+    }
+
+    // Remember parent directory to ease browsing next time
+    QDir parentDir = QFileInfo(movieFile).dir();
+    if (parentDir.exists()) {
+        // qDebug() << "Saving annotation dir parent path " << parentDir.path();
+        settings.setValue("NeuronAnnotatorPreviousAnnotationPath", parentDir.path());
+    }
+    else {
+        qDebug() << "Problem saving parent directory of " << fileName;
+    }
+
+    if (! loadSingleVolumeMovieFile(fileName))
+        QMessageBox::warning(this, tr("Could not load movie volume"),
+                                      "Error loading movie volume.  Please check the movie file.");
+}
+
+/* slot */
+bool NaMainWindow::loadSingleVolumeMovieFile(QString fileName)
+{
+    onDataLoadStarted();
+    DataFlowModel* dfm = new DataFlowModel();
+    setDataFlowModel(*dfm);
+    bool result = dataFlowModel->getVolumeData().loadSingleImageMovieVolume(fileName);
+    onDataLoadFinished();
+    return result;
 }
 
 /* slot */
@@ -941,6 +1007,11 @@ void NaMainWindow::openMulticolorImageStack(QString dirName)
 void NaMainWindow::addDirToRecentFilesList(QDir imageDir)
 {
     QString fileName = imageDir.absolutePath();
+    addFileNameToRecentFilesList(fileName);
+}
+
+void NaMainWindow::addFileNameToRecentFilesList(QString fileName)
+{
     if (fileName.isEmpty()) return;
     QSettings settings("HHMI", "V3D");
     QStringList files = settings.value("NeuronAnnotatorRecentFileList").toStringList();
@@ -1070,23 +1141,18 @@ void NaMainWindow::on_actionScreenShot_triggered() {
 
 }
 
-bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
+void NaMainWindow::setDataFlowModel(DataFlowModel& dataFlowModelParam)
 {
-    assert(! dataFlowModel);
-    dataFlowModel = new DataFlowModel();
-
-    // TODO - deprecate processUpdatedVolumeData() in favor of using downstream data flow components.
+    if (dataFlowModel == &dataFlowModelParam)
+        return; // no change
+    if (NULL != dataFlowModel)
+        deleteDataFlowModel();
+    dataFlowModel = &dataFlowModelParam;
     ui.v3dr_glwidget->setDataFlowModel(*dataFlowModel);
     ui.naLargeMIPWidget->setDataFlowModel(*dataFlowModel);
     ui.naZStackWidget->setDataFlowModel(*dataFlowModel);
     ui.fragmentGalleryWidget->setDataFlowModel(*dataFlowModel);
     neuronSelector.setDataFlowModel(*dataFlowModel);
-    connectContextMenus(dataFlowModel->getNeuronSelectionModel());
-    if (dynamicRangeTool)
-        dynamicRangeTool->setColorModel(dataFlowModel->getDataColorModel());
-
-    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(initialized()),
-            this, SLOT(processUpdatedVolumeData()));
 
     // Progress if NaVolumeData file load
     // TODO - this is a lot of connection boilerplate code.  This should be abstracted into a single call or specialized ProgressManager class.
@@ -1111,9 +1177,22 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(visibilityChanged()),
             this, SLOT(onSelectionModelVisibilityChanged()));
 
-    // Annotation model update - obsolete.
-    // causes extra full update of viewer.
-    // connect(dataFlowModel, SIGNAL(modelUpdated(QString)), ui.v3dr_glwidget, SLOT(annotationModelUpdate(QString)));
+}
+
+bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
+{
+    assert(! dataFlowModel);
+    DataFlowModel* dfm = new DataFlowModel();
+
+    // TODO - deprecate processUpdatedVolumeData() in favor of using downstream data flow components.
+    setDataFlowModel(*dfm);
+
+    connectContextMenus(dataFlowModel->getNeuronSelectionModel());
+    if (dynamicRangeTool)
+        dynamicRangeTool->setColorModel(dataFlowModel->getDataColorModel());
+
+    connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(initialized()),
+            this, SLOT(processUpdatedVolumeData()));
 
     // Both mip images and selection model need to be in place to update gallery
     connect(&dataFlowModel->getGalleryMipImages(), SIGNAL(dataChanged()),
@@ -1129,11 +1208,6 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     ui.naZStackWidget->setVolumeData(&dataFlowModel->getVolumeData());
     connect(ui.naZStackWidget, SIGNAL(hdrRangeChanged(int,qreal,qreal)),
             &dataFlowModel->getDataColorModel(), SLOT(setChannelHdrRange(int,qreal,qreal)));
-
-    // Connect annotation widget to neuron selection
-    // But NOT every time a new image is loaded!
-    // connect(neuronSelector, SIGNAL(neuronSelected(int)),
-    //         ui.annotationFrame, SLOT(selectNeuron(int)));
 
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(selectionCleared()),
             ui.annotationFrame, SLOT(deselectNeurons()));

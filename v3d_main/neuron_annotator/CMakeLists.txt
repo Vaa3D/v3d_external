@@ -78,10 +78,10 @@ set(have_avcodec false)
 if(AVCODEC_LIBRARY AND AVCODEC_INCLUDE_DIR)
     set(have_avcodec true)
 endif()
-set(V3D_ENABLE_LOAD_MOVIE ${have_avcodec} CACHE BOOL "Whether to load 3D volumes from movies using libavcodec")
-if(V3D_ENABLE_LOAD_MOVIE)
+set(USE_FFMPEG ${have_avcodec} CACHE BOOL "Whether to load 3D volumes from movies using libavcodec")
+if(USE_FFMPEG)
     include_directories(${AVCODEC_INCLUDE_DIR})
-    add_definitions(-DV3D_ENABLE_LOAD_MOVIE)
+    add_definitions(-DUSE_FFMPEG)
 endif()
 
 add_library(NeuronAnnotatorLib STATIC
@@ -89,8 +89,25 @@ add_library(NeuronAnnotatorLib STATIC
 )
 add_custom_target(NaGeneratedFiles DEPENDS ${NA_UI_SRCS})
 add_dependencies(NeuronAnnotatorLib NaGeneratedFiles)
-if(V3D_ENABLE_LOAD_MOVIE)
-    target_link_libraries(NeuronAnnotatorLib ${AVCODEC_LIBRARY})
+if(USE_FFMPEG)
+    target_link_libraries(NeuronAnnotatorLib
+        ${AVUTIL_LIBRARY}
+        ${AVFORMAT_LIBRARY}
+        ${SWSCALE_LIBRARY}
+        ${AVCODEC_LIBRARY}
+        ${BZIP2_LIBRARIES}
+        ${ZLIB_LIBRARY}
+    )
+    if(APPLE)
+        find_library(CORE_FOUNDATION_FRAMEWORK CoreFoundation)
+        find_library(CORE_VIDEO_FRAMEWORK CoreVideo)
+        find_library(VIDEO_DECODE_ACCELERATION_FRAMEWORK VideoDecodeAcceleration)
+        target_link_libraries(NeuronAnnotatorLib
+            ${VIDEO_DECODE_ACCELERATION_FRAMEWORK}
+            ${CORE_VIDEO_FRAMEWORK}
+            ${CORE_FOUNDATION_FRAMEWORK}
+        )
+    endif()
 endif()
 
 add_subdirectory(tests)

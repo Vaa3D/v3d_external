@@ -2,7 +2,7 @@
 #include "FFMpegVideo.h"
 #include <iostream>
 
-#ifdef V3D_ENABLE_LOAD_MOVIE
+#ifdef USE_FFMPEG
 
 using namespace std;
 
@@ -20,8 +20,9 @@ bool loadRaw2StackFFMpeg(const char* fileName, Image4DSimple* img)
         Image4DProxy<Image4DSimple> proxy(img);
 
         int frameCount = 0;
-        while (video.readNextFrame())
+        for (int z = 0; z < sz; ++z)
         {
+            video.fetchFrame(z);
             int z = frameCount;
             frameCount++;
             for(int c = 0; c < sc; ++c) {
@@ -43,6 +44,6 @@ bool loadRaw2StackFFMpeg(const char* fileName, Image4DSimple* img)
     return false;
 }
 
-#endif // V3D_ENABLE_LOAD_MOVIE
+#endif // USE_FFMPEG
 
 

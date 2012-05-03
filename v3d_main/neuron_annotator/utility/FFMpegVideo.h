@@ -1,11 +1,25 @@
 #ifndef FFMPEGVIDEO_H
 #define FFMPEGVIDEO_H
 
-#ifdef V3D_ENABLE_LOAD_MOVIE
+/*
+ * FFMpegVideo.h
+ * May 2012 Christopher Bruns
+ * The FFMpegVideo class is a C++ wrapper around the poorly documented
+ * libavcodec movie API used by ffmpeg.  I made extensive use of Nathan
+ * Clack's implemention in the whisk project.
+ *
+ * The FFMpegVideo.h and FFMpegVideo.cpp files depend only on the libavcodec
+ * and allied sets of libraries.  To compartmentalize and reduce dependencies
+ * I placed the Vaa3d specific use of this class into a separate set of
+ * source files: loadV3dFFMpeg.h/cpp
+ */
+
+#ifdef USE_FFMPEG
 
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
+#include <libavutil/pixfmt.h>
 }
 
 #include <string>
@@ -26,9 +40,9 @@ public:
     FFMpegVideo();
     FFMpegVideo(const std::string& fileName);
     virtual ~FFMpegVideo();
-    void open(const std::string& fileName, PixelFormat formatParam = PIX_FMT_RGB24);
-    bool readNextFrame(int target = 0);
+    void open(const std::string& fileName, enum PixelFormat formatParam = PIX_FMT_RGB24);
     uint8_t getPixelIntensity(int x, int y, Channel c = GRAY) const;
+    bool fetchFrame(int targetFrameIndex = 0);
     int getNumberOfFrames() const;
     int getWidth() const;
     int getHeight() const;
@@ -40,6 +54,8 @@ protected:
     void initialize();
     static void maybeInitFFMpegLib();
     static void avtry(int result, const std::string& msg);
+    bool readNextFrame(int targetFrameIndex = 0);
+    int seekToFrame(int targetFrameIndex = 0);
 
     AVFormatContext *pFormatCtx;
     AVCodecContext *pCtx;
@@ -53,10 +69,10 @@ protected:
     PixelFormat format;
     int numBytes;
     int numFrames;
-    int last;
+    int previousFrameIndex;
     int sc; // number of color channels
 };
 
-#endif // V3D_ENABLE_LOAD_MOVIE
+#endif // USE_FFMPEG
 
 #endif // FFMPEGVIDEO_H

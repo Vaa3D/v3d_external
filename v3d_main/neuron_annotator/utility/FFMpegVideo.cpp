@@ -1,6 +1,6 @@
 #include "FFMpegVideo.h"
 
-#ifdef V3D_ENABLE_LOAD_MOVIE
+#ifdef USE_FFMPEG
 
 extern "C"
 {
@@ -93,7 +93,7 @@ FFMpegVideo::~FFMpegVideo()
     // Don't need to free pCodec?
 }
 
-void FFMpegVideo::open(const std::string& fileName, PixelFormat formatParam)
+void FFMpegVideo::open(const std::string& fileName, enum PixelFormat formatParam)
 {
     format = formatParam;
     sc = getNumberOfChannels();
@@ -146,10 +146,48 @@ void FFMpegVideo::open(const std::string& fileName, PixelFormat formatParam)
     /* Give some info on stderr about the file & stream */
     //dump_format(pFormatCtx, 0, fname, 0);
 
-    last = -1;
+    previousFrameIndex = -1;
 }
 
-bool FFMpegVideo::readNextFrame(int target)
+bool FFMpegVideo::fetchFrame(int targetFrameIndex)
+{
+    if ((targetFrameIndex < 0) || (targetFrameIndex > numFrames))
+        return false;
+    if (targetFrameIndex == (previousFrameIndex + 1))
+        if (! readNextFrame(targetFrameIndex))
+            return false;
+    else
+        if (seekToFrame(targetFrameIndex) < 0)
+            return false;
+    previousFrameIndex = targetFrameIndex;
+}
+
+// \returns current frame on success, otherwise -1
+int FFMpegVideo::seekToFrame(int targetFrameIndex)
+{
+    int64_t duration = pFormatCtx->streams[videoStream]->duration;
+    int64_t ts = av_rescale(duration,targetFrameIndex,numFrames);
+    int64_t tol = av_rescale(duration,1,2*numFrames);
+    if ( (targetFrameIndex < 0) || (targetFrameIndex >= numFrames) ) {
+        return -1;
+    }
+    int result = avformat_seek_file( pFormatCtx, //format context
+                            videoStream,//stream id
+                            0,               //min timestamp
+                            ts,              //target timestamp
+                            ts,              //max timestamp
+                            0); //AVSEEK_FLAG_ANY),//flags
+    if (result < 0)
+        return -1;
+
+    avcodec_flush_buffers(pCtx);
+    if (! readNextFrame(targetFrameIndex))
+        return -1;
+
+    return targetFrameIndex;
+}
+
+bool FFMpegVideo::readNextFrame(int targetFrameIndex)
 {
     AVPacket packet = {0};
     int finished = 0;
@@ -177,15 +215,22 @@ bool FFMpegVideo::readNextFrame(int target)
             finished=1;
         }
 #if 0 // very useful for debugging
-        printf("Packet - pts:%5d dts:%5d (%5d) - flag: %1d - finished: %3d - Frame pts:%5d %5d\n",
-               (int)packet.pts,(int)packet.dts,target,
+        cout << "Packet - pts:" << (int)packet.pts;
+        cout << " dts:" << (int)packet.dts;
+        cout << " - flag: " << packet.flags;
+        cout << " - finished: " << finished;
+        cout << " - Frame pts:" << (int)pRaw->pts;
+        cout << " " << (int)pRaw->best_effort_timestamp;
+        cout << endl;
+        /* printf("Packet - pts:%5d dts:%5d (%5d) - flag: %1d - finished: %3d - Frame pts:%5d %5d\n",
+               (int)packet.pts,(int)packet.dts,
                packet.flags,finished,
-               (int)pRaw->pts,(int)pRaw->best_effort_timestamp);
+               (int)pRaw->pts,(int)pRaw->best_effort_timestamp); */
 #endif
         if(!finished)
             if (packet.pts == AV_NOPTS_VALUE)
                 throw std::runtime_error("");
-    } while( (!finished) || (pRaw->best_effort_timestamp < target) );
+    } while ( (!finished) || (pRaw->best_effort_timestamp < targetFrameIndex));
 
     sws_scale(Sctx,              // sws context
               pRaw->data,        // src slice
@@ -197,6 +242,7 @@ bool FFMpegVideo::readNextFrame(int target)
 
     av_free_packet(&packet);
 
+    previousFrameIndex = targetFrameIndex;
     return true;
 }
 
@@ -228,7 +274,8 @@ int FFMpegVideo::getNumberOfChannels() const
     return 0;
 }
 
-void FFMpegVideo::initialize() {
+void FFMpegVideo::initialize()
+{
     Sctx = NULL;
     pRaw = NULL;
     pFrameRGB = NULL;
@@ -262,5 +309,5 @@ void FFMpegVideo::avtry(int result, const std::string& msg) {
 
 bool FFMpegVideo::b_is_one_time_inited = false;
 
-#endif // V3D_ENABLE_LOAD_MOVIE
+#endif // USE_FFMPEG
 

@@ -5,7 +5,7 @@ add_executable(test_load_chk4 test_load_chk4.cpp)
 target_link_libraries(test_load_chk4 NeuronAnnotatorLib)
 # add_test(test_load_chk4 test_load_chk4)
 
-if(V3D_ENABLE_LOAD_MOVIE)
+if(USE_FFMPEG)
     find_library(CORE_FOUNDATION_FRAMEWORK CoreFoundation)
     find_library(CORE_VIDEO_FRAMEWORK CoreVideo)
     find_library(VIDEO_DECODE_ACCELERATION_FRAMEWORK VideoDecodeAcceleration)
@@ -42,5 +42,5 @@ if(V3D_ENABLE_LOAD_MOVIE)
             ${CORE_VIDEO_FRAMEWORK}
             ${CORE_FOUNDATION_FRAMEWORK}
         )
-   endif()
+    endif()
 endif()

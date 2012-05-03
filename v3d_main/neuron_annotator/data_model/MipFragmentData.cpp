@@ -30,6 +30,11 @@ void MipFragmentData::updateFromVolumeData()
         NaVolumeData::Reader volumeReader(volumeData);
         if (! volumeReader.hasReadLock()) return; // Don't worry; we'll get another data push later.
 
+        int layerCount = volumeReader.getNumberOfNeurons() + 1; // +1 for background
+        if (volumeReader.hasReferenceImage())
+            layerCount += 1;
+        const int refIndex = volumeReader.getNumberOfNeurons() + 1;
+
         // acquire write lock on Mip data
         Writer mipWriter(*this);
         // perhaps it took some time to acquire the write lock, so check the volume again
@@ -43,8 +48,8 @@ void MipFragmentData::updateFromVolumeData()
         mipWriter.clearImageData();
 
 		// clear max/min cache - AFTER clearImageData();
-        fragmentMaximumIntensities.assign(volumeReader.getNumberOfNeurons() + 2, 0);
-        fragmentMinimumIntensities.assign(volumeReader.getNumberOfNeurons() + 2, 0);
+        fragmentMaximumIntensities.assign(layerCount, 0);
+        fragmentMinimumIntensities.assign(layerCount, 0);
 		// qDebug() << "fragmentMaximumIntensities.size() =" << fragmentMaximumIntensities.size();
 		// qDebug() << "fragmentMinimumIntensities.size() =" << fragmentMinimumIntensities.size();
 
@@ -64,7 +69,7 @@ void MipFragmentData::updateFromVolumeData()
         fragmentZValues->loadImage(
                 originalProxy.sx,
                 originalProxy.sy,
-                volumeReader.getNumberOfNeurons() + 2, // +1 reference/nc82 channel
+                layerCount, // +1 reference/nc82 channel
                 1, // only one channel, containing z values
                 V3D_UINT16 );
         // clear each byte to xFF, should result in -1?
@@ -75,7 +80,7 @@ void MipFragmentData::updateFromVolumeData()
         fragmentIntensities->loadImage(
                 originalProxy.sx,
                 originalProxy.sy,
-                volumeReader.getNumberOfNeurons() + 2, // +1 reference/nc82 channel is stored in slice nFrags+1
+                layerCount, // +1 reference/nc82 channel is stored in slice nFrags+1
                 1, // only one channel, containing z intensities
                 V3D_UINT16 );
         // initialize to zero
@@ -92,7 +97,6 @@ void MipFragmentData::updateFromVolumeData()
         int imageZ = originalProxy.sz;
         int imageC = originalProxy.sc;
         // Reference/nc82 channel appears after all of the neuron/fragments
-        const int refIndex = volumeReader.getNumberOfNeurons() + 1;
 		// qDebug() << "refIndex =" << refIndex;
 		// qDebug() << "fragmentMaximumIntensities.size() =" << fragmentMaximumIntensities.size();
 		// qDebug() << "fragmentMinimumIntensities.size() =" << fragmentMinimumIntensities.size();
@@ -102,21 +106,25 @@ void MipFragmentData::updateFromVolumeData()
             {
                 for (int x = 0; x < imageX; x++)
                 {
-                    // Reference/nc82
-                    float referenceIntensity = referenceProxy.value_at(x,y,z,0);
-                    float previousReferenceIntensity = intensityProxy.value_at(x, y, refIndex, 0);
-                    if (referenceIntensity > previousReferenceIntensity) {
-                        intensityProxy.put_at(x, y, refIndex, 0, referenceIntensity);
-                        zProxy.put_at(x, y, refIndex, 0, z);
+                    if (volumeReader.hasReferenceImage()) {
+                        // Reference/nc82
+                        float referenceIntensity = referenceProxy.value_at(x,y,z,0);
+                        float previousReferenceIntensity = intensityProxy.value_at(x, y, refIndex, 0);
+                        if (referenceIntensity > previousReferenceIntensity) {
+                            intensityProxy.put_at(x, y, refIndex, 0, referenceIntensity);
+                            zProxy.put_at(x, y, refIndex, 0, z);
+                        }
+                        // update max/min cache
+                        if (referenceIntensity > fragmentMaximumIntensities[refIndex])
+                            fragmentMaximumIntensities[refIndex] = referenceIntensity;
+                        if (referenceIntensity < fragmentMinimumIntensities[refIndex])
+                            fragmentMinimumIntensities[refIndex] = referenceIntensity;
                     }
-                    // update max/min cache
-                    if (referenceIntensity > fragmentMaximumIntensities[refIndex])
-                        fragmentMaximumIntensities[refIndex] = referenceIntensity;
-                    if (referenceIntensity < fragmentMinimumIntensities[refIndex])
-                        fragmentMinimumIntensities[refIndex] = referenceIntensity;
 
                     // Neurons and Background
-                    int maskIndex = maskProxy.value_at(x,y,z,0);
+                    int maskIndex = 0;
+                    if (volumeReader.hasNeuronMask())
+                        maskIndex = maskProxy.value_at(x,y,z,0);
                     float previousIntensity = intensityProxy.value_at(x, y, maskIndex, 0);
                     float intensity = 0;
                     for (int c = 0; c < imageC; c++) {

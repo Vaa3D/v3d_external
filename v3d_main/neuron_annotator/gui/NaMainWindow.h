@@ -83,6 +83,7 @@ public:
     void setNeuronAnnotatorModeCheck(bool checkState);
     void handleCoordinatedCloseEvent(QCloseEvent *event);
     bool loadAnnotationSessionFromDirectory(QDir imageInputDirectory);
+    bool loadSingleVolumeMovieFile(QString fileName);
     bool deleteDataFlowModel();
     DataFlowModel* getDataFlowModel() const;
 
@@ -91,6 +92,7 @@ signals:
     void nutatingChanged(bool);
     void defaultVaa3dFileLoadRequested(QString fileName);
     void crosshairVisibilityChanged(bool);
+    void openSingleMovieStackRequested(QString fileName);
 
 public slots:
     // void selectCurtain(int index);
@@ -103,6 +105,7 @@ public slots:
     void on_actionNeuronAnnotator_triggered();
     void on_actionQuit_triggered();
     void on_actionOpen_triggered();
+    void on_actionOpen_Single_Movie_Stack_triggered();
     void on_action3D_Volume_triggered();
     void on_action2D_MIP_triggered();
     void on_actionScreenShot_triggered();
@@ -144,12 +147,14 @@ protected slots:
     void toggleCustomCutMode();
 
 protected:
+    void setDataFlowModel(DataFlowModel& dataFlowModelParam);
     void initializeContextMenus();
     void initializeStereo3DOptions();
     void connectContextMenus(const NeuronSelectionModel& neuronSelectionModel);
     void closeEvent(QCloseEvent *event);
     // Recent files list
     void addDirToRecentFilesList(QDir);
+    void addFileNameToRecentFilesList(QString fileName);
     void updateRecentFileActions();
     void connectCustomCut();
     void dragEnterEvent(QDragEnterEvent *);

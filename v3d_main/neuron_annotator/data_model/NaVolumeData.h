@@ -55,6 +55,7 @@ public slots:
     void setProgressValue(int progressValue);
     void setProgressMessage(QString message) {emit progressMessageChanged(message);}
     void setStackLoadProgress(int progressValue, int stackIndex);
+    bool loadSingleImageMovieVolume(QString fileName);
 
 private:
     QString originalImageStackFilePath;
@@ -86,11 +87,14 @@ public:
         const Image4DProxy<My4DImage>& getOriginalImageProxy() const;
         const Image4DProxy<My4DImage>& getReferenceImageProxy() const;
         ImagePixelType getOriginalDatatype() const {return m_data->originalImageStack->getDatatype();}
+        bool hasReferenceImage() const {return m_data->referenceStack != NULL;}
+        bool hasNeuronMask() const {return m_data->neuronMaskStack != NULL;}
         int getNumberOfNeurons() const {
-			int numNeurons = m_data->neuronMaskStack->getChannalMaxIntensity(0);
-			// qDebug() << "Number of neurons =" << numNeurons;
-			return numNeurons;
-		}
+            if (NULL == m_data->neuronMaskStack) return 0;
+            int numNeurons = m_data->neuronMaskStack->getChannalMaxIntensity(0);
+            // qDebug() << "Number of neurons =" << numNeurons;
+            return numNeurons;
+        }
         const QList<LocationSimple>& getLandmarks() const {return m_data->originalImageStack->listLandmarks;}
 
     private:
@@ -123,6 +127,9 @@ public:
         void clearImageData();
         void clearLandmarks();
         void setLandmarks(const QList<LocationSimple>);
+
+        bool loadSingleImageMovieVolume(QString fileName);
+        bool setSingleImageVolume(My4DImage* img);
 
     private:
         NaVolumeData * m_data;
