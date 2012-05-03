@@ -40,6 +40,7 @@ public slots:
     void setChannelHdrRange(int index, qreal min, qreal max);
     void setChannelGamma(int index, qreal gamma);
     void setSharedGamma(qreal gamma);
+    void setReferenceGamma(qreal gamma);
     // void setGamma(qreal gamma); // all channels
     void setChannelVisibility(int channel, bool isVisible);
     void resetColors();

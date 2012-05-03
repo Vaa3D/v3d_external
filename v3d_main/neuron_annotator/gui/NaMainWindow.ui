@@ -1417,16 +1417,16 @@ You can also resize the box by Ctrl + left mouse click.</string>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_6">
                 <property name="spacing">
-                 <number>5</number>
+                 <number>2</number>
                 </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
+                <property name="margin">
                  <number>0</number>
                 </property>
                 <item>
                  <widget class="GammaWidget" name="sharedGammaWidget"/>
+                </item>
+                <item>
+                 <widget class="GammaWidget" name="referenceGammaWidget"/>
                 </item>
                 <item>
                  <widget class="QFrame" name="sharedColorFrame">

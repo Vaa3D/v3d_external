@@ -90,6 +90,9 @@ NaMainWindow::NaMainWindow()
     ui.setupUi(this);
     setAcceptDrops(true);
 
+    // hide neuron gallery until there are neurons to show
+    ui.mipsFrame->setVisible(false);
+
     // hide compartment map until it works correctly and is not so slow on Mac
     ui.compartmentSelectGroupBox->hide();
 
@@ -156,6 +159,12 @@ NaMainWindow::NaMainWindow()
     ui.progressWidgetZ->hide();
 
     // ui.gammaWidget_Zstack->hide();
+    // Distinguish the two gamma sliders
+    ui.sharedGammaWidget->gamma_label->setText("N "); // "neurons"
+    ui.sharedGammaWidget->setToolTip(tr("Brightness/gamma of data"));
+    ui.referenceGammaWidget->gamma_label->setText("R "); // "reference"
+    ui.referenceGammaWidget->setToolTip(tr("Brightness/gamma of reference channel"));
+
     ui.BoxSize_spinBox->setMinimum(MINSZBOX);
     
     // Wire up Z-stack / HDR viewer
@@ -401,6 +410,7 @@ void NaMainWindow::on_actionOpen_Single_Movie_Stack_triggered()
         qDebug() << "Problem saving parent directory of " << fileName;
     }
 
+    ui.mipsFrame->setVisible(false);
     if (! loadSingleVolumeMovieFile(fileName))
         QMessageBox::warning(this, tr("Could not load movie volume"),
                                       "Error loading movie volume.  Please check the movie file.");
@@ -709,11 +719,15 @@ void NaMainWindow::onColorModelChanged()
         ui.greenToggleButton->setChecked(colorReader.getChannelVisibility(1));
         ui.blueToggleButton->setChecked(colorReader.getChannelVisibility(2));
 
-        // TODO - implement global gamma
+        // Gamma
         ui.sharedGammaWidget->setGammaBrightness(colorReader.getSharedGamma());
+        const int refIndex = 3;
+        NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
+        if (volumeReader.hasReadLock() && volumeReader.hasReferenceImage())
+            ui.referenceGammaWidget->setGammaBrightness(colorReader.getChannelGamma(refIndex));
 
         // Communicate reference channel changes between NeuronSelectionModel and DataColorModel
-        bReferenceColorIsVisible = colorReader.getChannelVisibility(3);
+        bReferenceColorIsVisible = colorReader.getChannelVisibility(refIndex);
         NeuronSelectionModel::Reader selectionReader(dataFlowModel->getNeuronSelectionModel());
         if (! selectionReader.hasReadLock()) return;
         bReferenceOverlayIsVisible = selectionReader.getOverlayStatusList()[DataFlowModel::REFERENCE_MIP_INDEX];
@@ -989,6 +1003,7 @@ void NaMainWindow::openMulticolorImageStack(QString dirName)
                  return;
     }
 
+    ui.mipsFrame->setVisible(true);
     onDataLoadStarted();
     if (!loadAnnotationSessionFromDirectory(imageDir)) {
         QMessageBox::warning(this, tr("Could not load image directory"),
@@ -1172,6 +1187,8 @@ void NaMainWindow::setDataFlowModel(DataFlowModel& dataFlowModelParam)
             &dataFlowModel->getDataColorModel(), SLOT(resetColors()));
     connect(ui.sharedGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
             &dataFlowModel->getDataColorModel(), SLOT(setSharedGamma(qreal)));
+    connect(ui.referenceGammaWidget, SIGNAL(gammaBrightnessChanged(qreal)),
+            &dataFlowModel->getDataColorModel(), SLOT(setReferenceGamma(qreal)));
     connect(&dataFlowModel->getDataColorModel(), SIGNAL(dataChanged()),
             this, SLOT(onColorModelChanged()));
     connect(&dataFlowModel->getNeuronSelectionModel(), SIGNAL(visibilityChanged()),
@@ -1381,6 +1398,22 @@ void NaMainWindow::updateGalleries()
 {
     updateOverlayGallery();
     updateNeuronGallery();
+    // Show or hide galleries depending on data structures
+    // In particular, hide galleries when there is no reference, nor any neurons.
+    bool bShowGalleries = false;
+    if (NULL == dataFlowModel)
+        ; // bShowGalleries = false;
+    else {
+        NaVolumeData::Reader volumeReader(dataFlowModel->getVolumeData());
+        if (volumeReader.hasReadLock()) {
+            if ( (volumeReader.getNumberOfNeurons() > 0)
+                || (volumeReader.hasReferenceImage()) )
+            {
+                bShowGalleries = true;
+            }
+        }
+    }
+    ui.mipsFrame->setVisible(bShowGalleries);
 }
 
 void NaMainWindow::initializeOverlayGallery()

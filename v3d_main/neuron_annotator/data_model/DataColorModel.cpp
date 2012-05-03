@@ -119,6 +119,11 @@ void DataColorModel::setSharedGamma(qreal gammaParam) // for all channels
     emit dataChanged();
 }
 
+void DataColorModel::setReferenceGamma(qreal gamma)
+{
+    setChannelGamma(3, gamma);
+}
+
 void DataColorModel::setChannelGamma(int index, qreal gamma)
 {
     if (d.constData()->getChannelGamma(index) == gamma) return;
