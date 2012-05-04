@@ -370,7 +370,7 @@ void NaMainWindow::on_actionOpen_Single_Movie_Stack_triggered()
     qDebug() << "NaMainWindow::on_actionOpen_Single_Movie_Stack_triggered";
     QString initialDialogPath = QDir::currentPath();
     // Use previous annotation path as initial file browser location
-    QSettings settings("HHMI", "V3D");
+    QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
     QString previousAnnotationDirString = settings.value("NeuronAnnotatorPreviousAnnotationPath").toString();
     if (! previousAnnotationDirString.isEmpty()) {
         QDir previousAnnotationDir(previousAnnotationDirString);
@@ -423,6 +423,9 @@ bool NaMainWindow::loadSingleVolumeMovieFile(QString fileName)
     DataFlowModel* dfm = new DataFlowModel();
     setDataFlowModel(*dfm);
     bool result = dataFlowModel->getVolumeData().loadSingleImageMovieVolume(fileName);
+    // No reference channel for single volumes
+    if (result)
+        ui.referenceGammaWidget->setVisible(false);
     onDataLoadFinished();
     return result;
 }
@@ -432,14 +435,14 @@ void NaMainWindow::setCrosshairVisibility(bool b)
 {
     if (bShowCrosshair == b) return; // no change
     bShowCrosshair = b;
-    QSettings settings("HHMI", "V3D");
+    QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
     settings.setValue("NaCrosshairVisibility", bShowCrosshair);
     emit crosshairVisibilityChanged(bShowCrosshair);
 }
 
 void NaMainWindow::retrieveCrosshairVisibilitySetting()
 {
-    QSettings settings("HHMI", "V3D");
+    QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
     bool bVisible = true; // default to "on"
     QVariant val = settings.value("NaCrosshairVisibility");
     if (! val.isNull())
@@ -471,7 +474,7 @@ QString checkDragEvent(QDropEvent* event)
         return fileName;
     if (fileExtension.startsWith("tif")) // tif or tiff
         return fileName;
-    if (fileExtension.startsWith("v3d")) // v3draw or v3dpdb
+    if (fileExtension.startsWith("Vaa3D")) // v3draw or v3dpdb
         return fileName;
 
     return "";
@@ -896,7 +899,7 @@ void NaMainWindow::handleCoordinatedCloseEvent(QCloseEvent *e)
         // These settings affect both NaMainWindow and classic V3D MainWindows.  So only use
         // NaMainWindow settings if the NaMainWindow is visible.
         qDebug() << "Saving NaMainWindow size and position";
-        QSettings settings("HHMI", "V3D");
+        QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
         settings.setValue("pos", pos());
         settings.setValue("size", size());
     }
@@ -936,7 +939,7 @@ void NaMainWindow::on_actionOpen_triggered()
 {
     QString initialDialogPath = QDir::currentPath();
     // Use previous annotation path as initial file browser location
-    QSettings settings("HHMI", "V3D");
+    QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
     QString previousAnnotationDirString = settings.value("NeuronAnnotatorPreviousAnnotationPath").toString();
     if (! previousAnnotationDirString.isEmpty()) {
         QDir previousAnnotationDir(previousAnnotationDirString);
@@ -1028,7 +1031,7 @@ void NaMainWindow::addDirToRecentFilesList(QDir imageDir)
 void NaMainWindow::addFileNameToRecentFilesList(QString fileName)
 {
     if (fileName.isEmpty()) return;
-    QSettings settings("HHMI", "V3D");
+    QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
     QStringList files = settings.value("NeuronAnnotatorRecentFileList").toStringList();
     if ( (files.size() > 0) && (files[0] == fileName) )
         return; // this dir is already the top entry as is
@@ -1044,7 +1047,7 @@ void NaMainWindow::addFileNameToRecentFilesList(QString fileName)
 
 void NaMainWindow::updateRecentFileActions()
 {
-    QSettings settings("HHMI", "V3D");
+    QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
     QStringList files = settings.value("NeuronAnnotatorRecentFileList").toStringList();
     ui.menuOpen_Recent->setEnabled(files.size() > 0);
     for (int i = 0; i < MaxRecentFiles; ++i)
@@ -1280,6 +1283,10 @@ bool NaMainWindow::loadAnnotationSessionFromDirectory(QDir imageInputDirectory)
     // Load session
     if (! dataFlowModel->loadVolumeData()) return false;
     // dataChanged() signal will be emitted if load succeeds
+
+    // Show reference brightness slider in single neuron mode
+    ui.referenceGammaWidget->setVisible(true);
+
     return true;
 }
 
