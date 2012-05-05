@@ -246,6 +246,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 			*actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
 	        *actMarkerAblateOne_imaging=0, *actMarkerAblateAll_imaging=0,
 			*actMarkerOne_imaging=0, *actMarkerAll_imaging=0,
+			*act_imaging_pinpoint_n_shoot=0, *act_imaging_cut_3d_curve=0,
+
 			//need to add more surgical operations here later, such as curve_ablating (without displaying the curve first), etc. by PHC, 20101105
 
 			*actNeuronToEditable=0, *actDecomposeNeuron=0, *actNeuronFinishEditing=0,
@@ -434,6 +436,9 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				listAct.append(act = new QAction("", w)); act->setSeparator(true);
 				listAct.append(actCurveCreate_zoom_imaging = new QAction("Zoom-in imaging: 1-right-stroke ROI", w));
 				listAct.append(actMarkerCreate_zoom_imaging = new QAction("Zoom-in imaging: 1-right-click ROI", w));
+				listAct.append(act = new QAction("", w)); act->setSeparator(true);
+				listAct.append(act_imaging_pinpoint_n_shoot = new QAction("Pinpoint-N-shoot", w));
+				listAct.append(act_imaging_cut_3d_curve = new QAction("Cut-3D-curve", w));
 #endif
 //#endif
 			}
@@ -1061,6 +1066,13 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 #ifndef test_main_cpp
 
 #define __v3d_imaging_func__ // dummy, just for easy locating
+	else if (act == actMarkerCreate_zoom_imaging)
+	{
+		selectMode = smMarkerCreate1;
+		b_addthismarker = false;
+		b_imaging = true;
+		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+	}
 	else if (act == actCurveCreate_zoom_imaging)
 	{
 		selectMode = smCurveCreate1;
@@ -1068,11 +1080,21 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		b_imaging = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
-	else if (act == actMarkerCreate_zoom_imaging)
+	//added by Hanchuan Peng, 120506.
+	else if (act == act_imaging_pinpoint_n_shoot)
 	{
 		selectMode = smMarkerCreate1;
-		b_addthismarker = false;
-		b_imaging = true;
+		b_addthismarker = true;
+		b_imaging = false;
+		b_ablation = true;
+		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
+	}
+	else if (act == act_imaging_cut_3d_curve)
+	{
+		selectMode = smCurveCreate1;
+		b_addthiscurve = true;
+		b_imaging = false;
+		b_ablation = true;
 		if (w) { oldCursor = w->cursor(); w->setCursor(QCursor(Qt::PointingHandCursor)); }
 	}
 	else if (act == actMarkerAblateOne_imaging || act == actMarkerAblateAll_imaging)
@@ -3190,11 +3212,21 @@ void Renderer_gl1::solveCurveCenter(vector <XYZ> & loc_vec_input)
 		addCurveSWC(loc_vec, chno);
 		// used to convert loc_vec to NeuronTree and save SWC in testing
 		vecToNeuronTree(testNeuronTree, loc_vec);
+
+		//added by PHC, 120506
+		if (b_ablation)
+			ablate3DLocationSeries(loc_vec);
+		if (b_imaging)
+			produceZoomViewOf3DRoi(loc_vec);
 	}
 	else //100821
 	{
 		b_addthiscurve = true; //in this case, always reset to default to draw curve to add to a swc instead of just  zoom
 		endSelectMode();
+
+		//added by PHC, 120506
+		if (b_ablation)
+			ablate3DLocationSeries(loc_vec);
 
 		produceZoomViewOf3DRoi(loc_vec);
 	}
@@ -3277,6 +3309,65 @@ void Renderer_gl1::produceZoomViewOf3DRoi(vector <XYZ> & loc_vec)
 	}
 #endif //test_main_cpp
 }
+
+
+void Renderer_gl1::ablate3DLocationSeries(vector <XYZ> & loc_vec) //added 120506, PHC
+{
+	V3dR_GLWidget* w = (V3dR_GLWidget*)widget;
+#ifndef test_main_cpp
+	My4DImage* curImg = 0;       if (w) curImg = v3dr_getImage4d(_idep);
+	XFormWidget* curXWidget = 0; if (w) curXWidget = v3dr_getXWidget(_idep);
+
+	if (w && curImg && curXWidget && loc_vec.size()>0)
+	{
+		double mx, Mx, my, My, mz, Mz;
+		mx = Mx = loc_vec.at(0).x;
+		my = My = loc_vec.at(0).y;
+		mz = Mz = loc_vec.at(0).z;
+
+		v3d_imaging_paras myimagingp;
+		myimagingp.OPS = "Marker Ablation from 3D Viewer";
+		myimagingp.imgp = (Image4DSimple *)curImg; //the image data for a plugin to call
+
+		for (V3DLONG i=1; i<loc_vec.size(); i++)
+		{
+			XYZ & curpos = loc_vec.at(i);
+			LocationSimple loc;
+			loc.x = curpos.x;
+			loc.y = curpos.y;
+			loc.z = curpos.z;
+
+			if (loc.x>=0 && loc.x<curImg->getXDim() && 
+				loc.y>=0 && loc.y<curImg->getYDim() && 
+				loc.z>=0 && loc.z<curImg->getZDim())
+				myimagingp.list_landmarks.push_back(loc);
+		}
+
+		if (b_ablation && w && curImg && curXWidget && myimagingp.list_landmarks.size()>0) 
+		{
+			b_ablation = false; //reset the status. by Hanchuan peng, 120506
+
+			//set the hiddenSelectWidget for the V3D mainwindow
+			if (!curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+			{
+				v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+				return;
+			}
+
+			//do imaging
+			if (curXWidget->getMainControlWindow()->setCurHiddenSelectedWindow(curXWidget))
+			{
+				v3d_imaging(curXWidget->getMainControlWindow(), myimagingp);
+			}
+			else
+			{
+				v3d_msg("Fail to set up the curHiddenSelectedXWidget for the Vaa3D mainwindow. Do nothing.");
+			}
+		}
+	}
+#endif //test_main_cpp
+}
+
 
 void Renderer_gl1::solveCurveViews()
 {
@@ -3444,19 +3535,34 @@ double Renderer_gl1::solveMarkerCenter()
 	const MarkerPos & pos = listMarkerPos.at(0);
 
 	XYZ loc = getCenterOfMarkerPos(pos);
+	vector <XYZ> loc_vec;
 
 	if (dataViewProcBox.isInner(loc, 0.5)) //100725 RZC
 		dataViewProcBox.clamp(loc); //100722 RZC
 
-	if (b_addthismarker) //100822, PHC
+	if (b_addthismarker) //100822, PHC, 120506
+	{
 		addMarker(loc);
+		if (b_ablation)
+		{
+			loc_vec.push_back(loc);
+			ablate3DLocationSeries(loc_vec);
+		}
+		if (b_imaging)
+		{
+			loc_vec.push_back(loc);
+			produceZoomViewOf3DRoi(loc_vec);
+		}
+	}
 	else //then zoom-in, 100822, PHC
 	{
 		b_addthismarker = true; //in this case, always reset to default to add a marker instead of just  zoom
 		endSelectMode();
 
-		vector <XYZ> loc_vec;
 		loc_vec.push_back(loc);
+		if (b_ablation)
+			ablate3DLocationSeries(loc_vec);
+
 		produceZoomViewOf3DRoi(loc_vec);
 	}
     

@@ -290,6 +290,7 @@ protected:
 	bool b_addthiscurve; //for 1-stroke curve based zoom-in, PHC 100821
 	bool b_addthismarker; //for 1-click based zoom-in, PHC 100821
 	bool b_imaging; //for v3d_imaging, PHC 101008
+	bool b_ablation; //for 3D imaging, PHC, 120506
 	void solveCurveCenter(vector <XYZ> & loc_vec_input);
 	void solveCurveViews();
 	void solveCurveFromMarkers();
@@ -369,6 +370,7 @@ protected:
 
 	//for local view
 	void produceZoomViewOf3DRoi(vector <XYZ> & loc_vec);
+	void ablate3DLocationSeries(vector <XYZ> & loc_vec); //added by PHC, 120506
 
 
 // Volume Parameters /////////////////////////////////////////////
@@ -437,6 +439,7 @@ private:
 		SLICE_COLOR = XYZW(1,1,1,1);
 
 		b_imaging = false; //101008
+		b_ablation = false; //120506
           b_renderTextureLast = false;
           edit_seg_id = -1; // ZJL 110913
           draggedCenterIndex = -1; // ZJL 110921
