@@ -38,6 +38,7 @@ QT4_WRAP_CPP(QT_MOC_SRCS
   )
 
 include_directories( ${V3D_BINARY_DIR}/v3dbase )
+include_directories( ${CMAKE_BINARY_DIR}/cellseg )
 
 add_library( 3drenderer 
     ${QT_MOC_SRCS}
