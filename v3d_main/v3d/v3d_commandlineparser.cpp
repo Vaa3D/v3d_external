@@ -50,7 +50,7 @@ void V3D_CL_INTERFACE::copy(const V3D_CL_INTERFACE& input)
     pluginfunc = input.pluginfunc;
     hideV3D = input.hideV3D;
     pluginhelp = input.pluginhelp;
-    
+
     for(int i=0; i<input.fileList.size(); i++)
     {
         fileList.push_back(input.fileList.at(i));
@@ -88,14 +88,14 @@ bool CLP::check_filename(QString fn)
     else if(curfile_info.isFile())
     {
         if ( (curfile_info.suffix().toUpper()=="ANO") ||
-             (curfile_info.suffix().toUpper()=="APO" || 
+             (curfile_info.suffix().toUpper()=="APO" ||
               curfile_info.suffix().toUpper()=="SWC" ||
               (curfile_info.suffix().toUpper()=="ESWC") || //enhanced SWC, by PHC, 20120217
               curfile_info.suffix().toUpper()=="OBJ" ||
               curfile_info.suffix().toUpper()=="V3DS") ||
              (curfile_info.suffix().toUpper()=="ATLAS") ||
              (curfile_info.suffix().toUpper()=="ZIP") ||
-             (curfile_info.suffix().toUpper()=="LSM") || 
+             (curfile_info.suffix().toUpper()=="LSM") ||
              (curfile_info.suffix().toUpper()=="TIF")  ||
              (curfile_info.suffix().toUpper()=="TIFF") ||
              (curfile_info.suffix().toUpper()=="MRC") ||
@@ -105,7 +105,7 @@ bool CLP::check_filename(QString fn)
              (curfile_info.suffix().toUpper()=="V3DPBD") ||
              (curfile_info.suffix().toUpper()=="IMG") ||
              (curfile_info.suffix().toUpper()=="HDR") ||
-             (curfile_info.suffix().toUpper()=="NII") ||  
+             (curfile_info.suffix().toUpper()=="NII") ||
              fn.contains("://") ) // url
         {
             return true;
@@ -130,7 +130,7 @@ int CLP::parse(int argc, char *argv[], void (*help)())
     else
     {
         vector<char *> parList; // read from configuration file
-        
+
         // command arguments parsing
         char* key;
 
@@ -165,10 +165,10 @@ int CLP::parse(int argc, char *argv[], void (*help)())
                     else if(!strcmp(key, "na"))
                     {
                         key++; // skip "na"
-                        
+
                         i_v3d.openV3D = true;
                         i_v3d.openNeuronAnnotator = true;
-                        
+
                         break;
                     }
                 }
@@ -198,12 +198,12 @@ int CLP::parse(int argc, char *argv[], void (*help)())
                     while (i+1<argc) {
                         i_v3d.cmdArgList.push_back(argv[++i]);
                     }
-                    
+
 #ifdef _ALLOW_WORKMODE_MENU_
                     CommandManager commandManager(&(i_v3d.cmdArgList));
                     commandManager.execute();
 #endif
-                    
+
                     i_v3d.clp_finished=true;
                     return true;
                 }
@@ -227,24 +227,24 @@ int CLP::parse(int argc, char *argv[], void (*help)())
                 key = argv[i];
                 if(*key == OPTION_CHAR)
                 {
-                    while (*++key) 
+                    while (*++key)
                     {
                         if(!strcmp(key, "x"))
                         {
                             flagx++;
-                            
-                            if(i+1>=argc)   
+
+                            if(i+1>=argc)
                                 return error(help);
-                            
+
                             // launch V3D
                             i_v3d.openV3D = true;
-                            
+
                             // plugin command
                             i_v3d.pluginname = argv[i+1];
                         }
                     }
                 }
-                
+
                 if(flagh && flagx)
                 {
                     i_v3d.hideV3D = true; // do not open v3d GUI
@@ -281,7 +281,7 @@ int CLP::parse(int argc, char *argv[], void (*help)())
                     if (*key == OPTION_CHAR)
                     {
                         while(*++key)
-                        {                            
+                        {
                             if (!strcmp(key, "i"))
                             {
                                 // open V3D
@@ -291,20 +291,20 @@ int CLP::parse(int argc, char *argv[], void (*help)())
                                 {
                                     char *filename = argv[i+1];
 
-                                    if( check_filename(QString(filename)) )
-                                    {                                        
+                                    //if( check_filename(QString(filename)) ) // do not check name in order to use any extension file in -i. Jianlong Zhou 2012-05-04
+                                    {
                                         i_v3d.fileList.push_back(filename);
                                         i++;
                                     }
-                                    else
-                                    {
-                                        cout << "The file format is not supported or the file does not exist."<<endl;
-                                        return false;
-                                    }
+                                    // else //commented by ZJL 2012-05-04
+                                    // {
+                                    //     cout << "The file format is not supported or the file does not exist."<<endl;
+                                    //     return false;
+                                    // }
                                 }
                             }
                             else if (!strcmp(key, "o"))
-                            {                                
+                            {
                                 while(i+1<argc && !QString(argv[i+1]).startsWith(OPTION_CHAR) )
                                 {
                                     char *filename = argv[i+1]; // allow all kinds of file format
@@ -341,7 +341,7 @@ int CLP::parse(int argc, char *argv[], void (*help)())
                                 // plugin function
                                 i_v3d.pluginfunc = argv[i+1];
                                 i++;
-                                
+
                                 i_v3d.hideV3D = true; // do not open v3d GUI
 
                                 qDebug()<<"call plugin function ..."<<i_v3d.pluginfunc;
@@ -352,7 +352,7 @@ int CLP::parse(int argc, char *argv[], void (*help)())
                                 while(i+1<argc && !QString(argv[i+1]).startsWith(OPTION_CHAR) )
                                 {
                                     char *strparameters = argv[i+1];
-                                    
+
                                     i_v3d.cmdArgList.push_back(strparameters);
                                     i++;
                                 }
@@ -360,18 +360,18 @@ int CLP::parse(int argc, char *argv[], void (*help)())
                             else if(!strcmp(key, "pf"))
                             {
                                 key++; // skip "pf"
-                                
+
                                 // plugin function parameters from configuration file
                                 if(i+1<argc)
                                 {
                                     char *fn = argv[i+1];
                                     ifstream pConfigFile(fn);
-                                    
+
                                     string str;
-                                    
+
                                     if(pConfigFile.is_open())
                                     {
-                                        
+
                                         while( !pConfigFile.eof() )
                                         {
                                             while( getline(pConfigFile, str) )
@@ -379,7 +379,7 @@ int CLP::parse(int argc, char *argv[], void (*help)())
                                                 //istringstream iss(str);
                                                 parList.push_back((char *)(str.c_str()));
 
-                                            } 
+                                            }
                                         }
                                     }
                                     else
@@ -387,12 +387,12 @@ int CLP::parse(int argc, char *argv[], void (*help)())
                                         cout << "Unable to open the file"<<endl;
                                         return false;
                                     }
-                                    
+
                                     pConfigFile.close();
-                                    
+
                                 }
                                 i++;
-                                
+
                             }
                             else
                             {
@@ -412,13 +412,13 @@ int CLP::parse(int argc, char *argv[], void (*help)())
                 }
 
             }
-            
+
             //
             for(int i=0; i<parList.size(); i++)
             {
                 i_v3d.cmdArgList.push_back(parList.at(i));
             }
-            
+
         }
     }
 
