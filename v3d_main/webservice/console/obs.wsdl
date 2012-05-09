@@ -8,22 +8,15 @@
 <part name="rootId" type="xsd:long" />
 </message>
 <message name="ontologyChangedResponse" />
-<message name="entityOutlineSelected">
-<part name="uniqueId" type="xsd:string" />
-<part name="clearAll" type="xsd:boolean" />
-</message>
-<message name="entityOutlineSelectedResponse" />
-<message name="entityOutlineDeselected">
-<part name="uniqueId" type="xsd:string" />
-</message>
-<message name="entityOutlineDeselectedResponse" />
 <message name="entitySelected">
-<part name="entityId" type="xsd:long" />
+<part name="category" type="xsd:string" />
+<part name="entityId" type="xsd:string" />
 <part name="clearAll" type="xsd:boolean" />
 </message>
 <message name="entitySelectedResponse" />
 <message name="entityDeselected">
-<part name="entityId" type="xsd:long" />
+<part name="category" type="xsd:string" />
+<part name="entityId" type="xsd:string" />
 </message>
 <message name="entityDeselectedResponse" />
 <message name="entityChanged">
@@ -53,19 +46,11 @@
 <input message="tns:ontologyChanged" />
 <output message="tns:ontologyChangedResponse" />
 </operation>
-<operation name="entityOutlineSelected" parameterOrder="uniqueId clearAll">
-<input message="tns:entityOutlineSelected" />
-<output message="tns:entityOutlineSelectedResponse" />
-</operation>
-<operation name="entityOutlineDeselected">
-<input message="tns:entityOutlineDeselected" />
-<output message="tns:entityOutlineDeselectedResponse" />
-</operation>
-<operation name="entitySelected" parameterOrder="entityId clearAll">
+<operation name="entitySelected" parameterOrder="category entityId clearAll">
 <input message="tns:entitySelected" />
 <output message="tns:entitySelectedResponse" />
 </operation>
-<operation name="entityDeselected">
+<operation name="entityDeselected" parameterOrder="category entityId">
 <input message="tns:entityDeselected" />
 <output message="tns:entityDeselectedResponse" />
 </operation>
@@ -102,24 +87,6 @@
 </output>
 </operation>
 <operation name="ontologyChanged">
-<soap:operation soapAction="" />
-<input>
-<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
-</input>
-<output>
-<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
-</output>
-</operation>
-<operation name="entityOutlineSelected">
-<soap:operation soapAction="" />
-<input>
-<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
-</input>
-<output>
-<soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />
-</output>
-</operation>
-<operation name="entityOutlineDeselected">
 <soap:operation soapAction="" />
 <input>
 <soap:body use="literal" namespace="http://ws.FlyWorkstation.it.janelia.org/" />

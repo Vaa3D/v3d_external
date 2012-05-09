@@ -359,8 +359,8 @@ void AnnotationWidget::consoleConnect() {
     qDebug() << "Received console approval to run on port:"<<consoleObserverService->port();
     connect(consoleObserverService, SIGNAL(ontologySelected(qint64)), consoleObserver, SLOT(ontologySelected(qint64)));
     connect(consoleObserverService, SIGNAL(ontologyChanged(qint64)), consoleObserver, SLOT(ontologyChanged(qint64)));
-    connect(consoleObserverService, SIGNAL(entitySelected(qint64,bool)), consoleObserver, SLOT(entitySelected(qint64,bool)));
-    connect(consoleObserverService, SIGNAL(entityDeselected(qint64)), consoleObserver, SLOT(entityDeselected(qint64)));
+    connect(consoleObserverService, SIGNAL(entitySelected(const QString &, const QString &,bool)), consoleObserver, SLOT(entitySelected(const QString &,const QString &,bool)));
+    connect(consoleObserverService, SIGNAL(entityDeselected(const QString &, const QString &)), consoleObserver, SLOT(entityDeselected(const QString &,const QString &)));
     connect(consoleObserverService, SIGNAL(entityViewRequested(qint64)), consoleObserver, SLOT(entityViewRequested(qint64)));
     connect(consoleObserverService, SIGNAL(annotationsChanged(qint64)), consoleObserver, SLOT(annotationsChanged(qint64)));
     connect(consoleObserverService, SIGNAL(sessionSelected(qint64)), consoleObserver, SLOT(sessionSelected(qint64)));

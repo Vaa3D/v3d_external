@@ -75,32 +75,26 @@ class SOAP_CMAC ConsoleObserverService : public soap
 	/// Web service operation 'ontologyChanged' (returns error code or SOAP_OK)
 	virtual	int ontologyChanged(LONG64 rootId, struct fw__ontologyChangedResponse &_param_2) SOAP_PURE_VIRTUAL;
 
-	/// Web service operation 'entityOutlineSelected' (returns error code or SOAP_OK)
-	virtual	int entityOutlineSelected(std::string _uniqueId, bool _clearAll, struct fw__entityOutlineSelectedResponse &_param_3) SOAP_PURE_VIRTUAL;
-
-	/// Web service operation 'entityOutlineDeselected' (returns error code or SOAP_OK)
-	virtual	int entityOutlineDeselected(std::string uniqueId, struct fw__entityOutlineDeselectedResponse &_param_4) SOAP_PURE_VIRTUAL;
-
 	/// Web service operation 'entitySelected' (returns error code or SOAP_OK)
-	virtual	int entitySelected(LONG64 _entityId, bool _clearAll, struct fw__entitySelectedResponse &_param_5) SOAP_PURE_VIRTUAL;
+	virtual	int entitySelected(std::string _category, std::string _entityId, bool _clearAll, struct fw__entitySelectedResponse &_param_3) SOAP_PURE_VIRTUAL;
 
 	/// Web service operation 'entityDeselected' (returns error code or SOAP_OK)
-	virtual	int entityDeselected(LONG64 entityId, struct fw__entityDeselectedResponse &_param_6) SOAP_PURE_VIRTUAL;
+	virtual	int entityDeselected(std::string _category, std::string _entityId, struct fw__entityDeselectedResponse &_param_4) SOAP_PURE_VIRTUAL;
 
 	/// Web service operation 'entityChanged' (returns error code or SOAP_OK)
-	virtual	int entityChanged(LONG64 entityId, struct fw__entityChangedResponse &_param_7) SOAP_PURE_VIRTUAL;
+	virtual	int entityChanged(LONG64 entityId, struct fw__entityChangedResponse &_param_5) SOAP_PURE_VIRTUAL;
 
 	/// Web service operation 'entityViewRequested' (returns error code or SOAP_OK)
-	virtual	int entityViewRequested(LONG64 entityId, struct fw__entityViewRequestedResponse &_param_8) SOAP_PURE_VIRTUAL;
+	virtual	int entityViewRequested(LONG64 entityId, struct fw__entityViewRequestedResponse &_param_6) SOAP_PURE_VIRTUAL;
 
 	/// Web service operation 'annotationsChanged' (returns error code or SOAP_OK)
-	virtual	int annotationsChanged(LONG64 entityId, struct fw__annotationsChangedResponse &_param_9) SOAP_PURE_VIRTUAL;
+	virtual	int annotationsChanged(LONG64 entityId, struct fw__annotationsChangedResponse &_param_7) SOAP_PURE_VIRTUAL;
 
 	/// Web service operation 'sessionSelected' (returns error code or SOAP_OK)
-	virtual	int sessionSelected(LONG64 sessionId, struct fw__sessionSelectedResponse &_param_10) SOAP_PURE_VIRTUAL;
+	virtual	int sessionSelected(LONG64 sessionId, struct fw__sessionSelectedResponse &_param_8) SOAP_PURE_VIRTUAL;
 
 	/// Web service operation 'sessionDeselected' (returns error code or SOAP_OK)
-	virtual	int sessionDeselected(struct fw__sessionDeselectedResponse &_param_11) SOAP_PURE_VIRTUAL;
+	virtual	int sessionDeselected(struct fw__sessionDeselectedResponse &_param_9) SOAP_PURE_VIRTUAL;
 };
 
 } // namespace obs

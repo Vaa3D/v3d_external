@@ -87,19 +87,27 @@ void ConsoleObserver::ontologyChanged(qint64 rootId)
 // entitySelected event
 //*******************************************************************************************
 
-void ConsoleObserver::entitySelected(qint64 entityId, bool clearAll)
+void ConsoleObserver::entitySelected(const QString & category, const QString & uniqueId, bool clearAll)
 {
-    qDebug() << "Got signal entitySelected:" << entityId << "clearAll?=" << clearAll;
-    emit selectEntityById(entityId, true);
+    qDebug() << "Got signal entitySelected:" << uniqueId << "category="<<category<< "clearAll?=" << clearAll;
+    if (category == "mainViewer" || category == "secViewer") {
+        QStringList list = uniqueId.split(QRegExp("/"));
+        QString idStr = list.last().split("_").last();
+        bool ok;
+        qint64 entityId = (qint64)idStr.toLongLong(&ok);
+        if (ok) {
+            emit selectEntityById(entityId, true);
+        }
+    }
 }
 
 //*******************************************************************************************
 // entityDeselected event
 //*******************************************************************************************
 
-void ConsoleObserver::entityDeselected(qint64 entityId)
+void ConsoleObserver::entityDeselected(const QString & category, const QString & uniqueId)
 {
-    qDebug() << "Got signal entityDeselected:" << entityId;
+    qDebug() << "Got signal entityDeselected:" << uniqueId<< "category="<<category;
 }
 
 //*******************************************************************************************

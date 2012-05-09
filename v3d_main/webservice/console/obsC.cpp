@@ -17,7 +17,7 @@ compiling, linking, and/or using OpenSSL is allowed.
 
 namespace obs {
 
-SOAP_SOURCE_STAMP("@(#) obsC.cpp ver 2.8.3 2012-02-16 16:50:08 GMT")
+SOAP_SOURCE_STAMP("@(#) obsC.cpp ver 2.8.3 2012-05-09 13:27:12 GMT")
 
 
 #ifndef WITH_NOGLOBAL
@@ -204,14 +204,6 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		return soap_in_fw__entitySelected(soap, NULL, NULL, "fw:entitySelected");
 	case SOAP_TYPE_obs_fw__entitySelectedResponse:
 		return soap_in_fw__entitySelectedResponse(soap, NULL, NULL, "fw:entitySelectedResponse");
-	case SOAP_TYPE_obs_fw__entityOutlineDeselected:
-		return soap_in_fw__entityOutlineDeselected(soap, NULL, NULL, "fw:entityOutlineDeselected");
-	case SOAP_TYPE_obs_fw__entityOutlineDeselectedResponse:
-		return soap_in_fw__entityOutlineDeselectedResponse(soap, NULL, NULL, "fw:entityOutlineDeselectedResponse");
-	case SOAP_TYPE_obs_fw__entityOutlineSelected:
-		return soap_in_fw__entityOutlineSelected(soap, NULL, NULL, "fw:entityOutlineSelected");
-	case SOAP_TYPE_obs_fw__entityOutlineSelectedResponse:
-		return soap_in_fw__entityOutlineSelectedResponse(soap, NULL, NULL, "fw:entityOutlineSelectedResponse");
 	case SOAP_TYPE_obs_fw__ontologyChanged:
 		return soap_in_fw__ontologyChanged(soap, NULL, NULL, "fw:ontologyChanged");
 	case SOAP_TYPE_obs_fw__ontologyChangedResponse:
@@ -309,22 +301,6 @@ SOAP_FMAC3 void * SOAP_FMAC4 soap_getelement(struct soap *soap, int *type)
 		if (!soap_match_tag(soap, t, "fw:entitySelectedResponse"))
 		{	*type = SOAP_TYPE_obs_fw__entitySelectedResponse;
 			return soap_in_fw__entitySelectedResponse(soap, NULL, NULL, NULL);
-		}
-		if (!soap_match_tag(soap, t, "fw:entityOutlineDeselected"))
-		{	*type = SOAP_TYPE_obs_fw__entityOutlineDeselected;
-			return soap_in_fw__entityOutlineDeselected(soap, NULL, NULL, NULL);
-		}
-		if (!soap_match_tag(soap, t, "fw:entityOutlineDeselectedResponse"))
-		{	*type = SOAP_TYPE_obs_fw__entityOutlineDeselectedResponse;
-			return soap_in_fw__entityOutlineDeselectedResponse(soap, NULL, NULL, NULL);
-		}
-		if (!soap_match_tag(soap, t, "fw:entityOutlineSelected"))
-		{	*type = SOAP_TYPE_obs_fw__entityOutlineSelected;
-			return soap_in_fw__entityOutlineSelected(soap, NULL, NULL, NULL);
-		}
-		if (!soap_match_tag(soap, t, "fw:entityOutlineSelectedResponse"))
-		{	*type = SOAP_TYPE_obs_fw__entityOutlineSelectedResponse;
-			return soap_in_fw__entityOutlineSelectedResponse(soap, NULL, NULL, NULL);
 		}
 		if (!soap_match_tag(soap, t, "fw:ontologyChanged"))
 		{	*type = SOAP_TYPE_obs_fw__ontologyChanged;
@@ -450,14 +426,6 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_putelement(struct soap *soap, const void *ptr, co
 		return soap_out_fw__entitySelected(soap, tag, id, (const struct fw__entitySelected *)ptr, "fw:entitySelected");
 	case SOAP_TYPE_obs_fw__entitySelectedResponse:
 		return soap_out_fw__entitySelectedResponse(soap, tag, id, (const struct fw__entitySelectedResponse *)ptr, "fw:entitySelectedResponse");
-	case SOAP_TYPE_obs_fw__entityOutlineDeselected:
-		return soap_out_fw__entityOutlineDeselected(soap, tag, id, (const struct fw__entityOutlineDeselected *)ptr, "fw:entityOutlineDeselected");
-	case SOAP_TYPE_obs_fw__entityOutlineDeselectedResponse:
-		return soap_out_fw__entityOutlineDeselectedResponse(soap, tag, id, (const struct fw__entityOutlineDeselectedResponse *)ptr, "fw:entityOutlineDeselectedResponse");
-	case SOAP_TYPE_obs_fw__entityOutlineSelected:
-		return soap_out_fw__entityOutlineSelected(soap, tag, id, (const struct fw__entityOutlineSelected *)ptr, "fw:entityOutlineSelected");
-	case SOAP_TYPE_obs_fw__entityOutlineSelectedResponse:
-		return soap_out_fw__entityOutlineSelectedResponse(soap, tag, id, (const struct fw__entityOutlineSelectedResponse *)ptr, "fw:entityOutlineSelectedResponse");
 	case SOAP_TYPE_obs_fw__ontologyChanged:
 		return soap_out_fw__ontologyChanged(soap, tag, id, (const struct fw__ontologyChanged *)ptr, "fw:ontologyChanged");
 	case SOAP_TYPE_obs_fw__ontologyChangedResponse:
@@ -526,18 +494,6 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_markelement(struct soap *soap, const void *ptr, 
 	case SOAP_TYPE_obs_fw__entitySelectedResponse:
 		soap_serialize_fw__entitySelectedResponse(soap, (const struct fw__entitySelectedResponse *)ptr);
 		break;
-	case SOAP_TYPE_obs_fw__entityOutlineDeselected:
-		soap_serialize_fw__entityOutlineDeselected(soap, (const struct fw__entityOutlineDeselected *)ptr);
-		break;
-	case SOAP_TYPE_obs_fw__entityOutlineDeselectedResponse:
-		soap_serialize_fw__entityOutlineDeselectedResponse(soap, (const struct fw__entityOutlineDeselectedResponse *)ptr);
-		break;
-	case SOAP_TYPE_obs_fw__entityOutlineSelected:
-		soap_serialize_fw__entityOutlineSelected(soap, (const struct fw__entityOutlineSelected *)ptr);
-		break;
-	case SOAP_TYPE_obs_fw__entityOutlineSelectedResponse:
-		soap_serialize_fw__entityOutlineSelectedResponse(soap, (const struct fw__entityOutlineSelectedResponse *)ptr);
-		break;
 	case SOAP_TYPE_obs_fw__ontologyChanged:
 		soap_serialize_fw__ontologyChanged(soap, (const struct fw__ontologyChanged *)ptr);
 		break;
@@ -572,18 +528,10 @@ SOAP_FMAC3 void * SOAP_FMAC4 obs_instantiate(struct soap *soap, int t, const cha
 		return (void*)soap_instantiate_fw__ontologyChangedResponse(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_obs_fw__ontologyChanged:
 		return (void*)soap_instantiate_fw__ontologyChanged(soap, -1, type, arrayType, n);
-	case SOAP_TYPE_obs_fw__entityOutlineSelectedResponse:
-		return (void*)soap_instantiate_fw__entityOutlineSelectedResponse(soap, -1, type, arrayType, n);
-	case SOAP_TYPE_obs_std__string:
-		return (void*)soap_instantiate_std__string(soap, -1, type, arrayType, n);
-	case SOAP_TYPE_obs_fw__entityOutlineSelected:
-		return (void*)soap_instantiate_fw__entityOutlineSelected(soap, -1, type, arrayType, n);
-	case SOAP_TYPE_obs_fw__entityOutlineDeselectedResponse:
-		return (void*)soap_instantiate_fw__entityOutlineDeselectedResponse(soap, -1, type, arrayType, n);
-	case SOAP_TYPE_obs_fw__entityOutlineDeselected:
-		return (void*)soap_instantiate_fw__entityOutlineDeselected(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_obs_fw__entitySelectedResponse:
 		return (void*)soap_instantiate_fw__entitySelectedResponse(soap, -1, type, arrayType, n);
+	case SOAP_TYPE_obs_std__string:
+		return (void*)soap_instantiate_std__string(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_obs_fw__entitySelected:
 		return (void*)soap_instantiate_fw__entitySelected(soap, -1, type, arrayType, n);
 	case SOAP_TYPE_obs_fw__entityDeselectedResponse:
@@ -661,41 +609,17 @@ SOAP_FMAC3 int SOAP_FMAC4 obs_fdelete(struct soap_clist *p)
 		else
 			SOAP_DELETE_ARRAY((struct fw__ontologyChanged*)p->ptr);
 		break;
-	case SOAP_TYPE_obs_fw__entityOutlineSelectedResponse:
+	case SOAP_TYPE_obs_fw__entitySelectedResponse:
 		if (p->size < 0)
-			SOAP_DELETE((struct fw__entityOutlineSelectedResponse*)p->ptr);
+			SOAP_DELETE((struct fw__entitySelectedResponse*)p->ptr);
 		else
-			SOAP_DELETE_ARRAY((struct fw__entityOutlineSelectedResponse*)p->ptr);
+			SOAP_DELETE_ARRAY((struct fw__entitySelectedResponse*)p->ptr);
 		break;
 	case SOAP_TYPE_obs_std__string:
 		if (p->size < 0)
 			SOAP_DELETE((std::string*)p->ptr);
 		else
 			SOAP_DELETE_ARRAY((std::string*)p->ptr);
-		break;
-	case SOAP_TYPE_obs_fw__entityOutlineSelected:
-		if (p->size < 0)
-			SOAP_DELETE((struct fw__entityOutlineSelected*)p->ptr);
-		else
-			SOAP_DELETE_ARRAY((struct fw__entityOutlineSelected*)p->ptr);
-		break;
-	case SOAP_TYPE_obs_fw__entityOutlineDeselectedResponse:
-		if (p->size < 0)
-			SOAP_DELETE((struct fw__entityOutlineDeselectedResponse*)p->ptr);
-		else
-			SOAP_DELETE_ARRAY((struct fw__entityOutlineDeselectedResponse*)p->ptr);
-		break;
-	case SOAP_TYPE_obs_fw__entityOutlineDeselected:
-		if (p->size < 0)
-			SOAP_DELETE((struct fw__entityOutlineDeselected*)p->ptr);
-		else
-			SOAP_DELETE_ARRAY((struct fw__entityOutlineDeselected*)p->ptr);
-		break;
-	case SOAP_TYPE_obs_fw__entitySelectedResponse:
-		if (p->size < 0)
-			SOAP_DELETE((struct fw__entitySelectedResponse*)p->ptr);
-		else
-			SOAP_DELETE_ARRAY((struct fw__entitySelectedResponse*)p->ptr);
 		break;
 	case SOAP_TYPE_obs_fw__entitySelected:
 		if (p->size < 0)
@@ -2776,29 +2700,35 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__entityChangedResponse(struct soap *soap
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__entityDeselected(struct soap *soap, struct fw__entityDeselected *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_default_LONG64(soap, &a->entityId);
+	soap_default_std__string(soap, &a->_category);
+	soap_default_std__string(soap, &a->_entityId);
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__entityDeselected(struct soap *soap, const struct fw__entityDeselected *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	soap_serialize_std__string(soap, &a->_category);
+	soap_serialize_std__string(soap, &a->_entityId);
 }
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__entityDeselected(struct soap *soap, const char *tag, int id, const struct fw__entityDeselected *a, const char *type)
 {
 	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_obs_fw__entityDeselected), type))
 		return soap->error;
-	if (soap_out_LONG64(soap, "entityId", -1, &a->entityId, ""))
+	if (soap_out_std__string(soap, "category", -1, &a->_category, ""))
+		return soap->error;
+	if (soap_out_std__string(soap, "entityId", -1, &a->_entityId, ""))
 		return soap->error;
 	return soap_element_end_out(soap, tag);
 }
 
 SOAP_FMAC3 struct fw__entityDeselected * SOAP_FMAC4 soap_in_fw__entityDeselected(struct soap *soap, const char *tag, struct fw__entityDeselected *a, const char *type)
 {
-	size_t soap_flag_entityId = 1;
+	size_t soap_flag__category = 1;
+	size_t soap_flag__entityId = 1;
 	if (soap_element_begin_in(soap, tag, 0, type))
 		return NULL;
-	a = (struct fw__entityDeselected *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_obs_fw__entityDeselected, sizeof(struct fw__entityDeselected), 0, NULL, NULL, NULL);
+	a = (struct fw__entityDeselected *)soap_class_id_enter(soap, soap->id, a, SOAP_TYPE_obs_fw__entityDeselected, sizeof(struct fw__entityDeselected), soap->type, soap->arrayType);
 	if (!a)
 		return NULL;
 	soap_default_fw__entityDeselected(soap, a);
@@ -2806,9 +2736,14 @@ SOAP_FMAC3 struct fw__entityDeselected * SOAP_FMAC4 soap_in_fw__entityDeselected
 	{
 		for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
-			if (soap_flag_entityId && soap->error == SOAP_TAG_MISMATCH)
-				if (soap_in_LONG64(soap, "entityId", &a->entityId, "xsd:long"))
-				{	soap_flag_entityId--;
+			if (soap_flag__category && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
+				if (soap_in_std__string(soap, NULL, &a->_category, "xsd:string"))
+				{	soap_flag__category--;
+					continue;
+				}
+			if (soap_flag__entityId && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
+				if (soap_in_std__string(soap, NULL, &a->_entityId, "xsd:string"))
+				{	soap_flag__entityId--;
 					continue;
 				}
 			if (soap->error == SOAP_TAG_MISMATCH)
@@ -2822,11 +2757,11 @@ SOAP_FMAC3 struct fw__entityDeselected * SOAP_FMAC4 soap_in_fw__entityDeselected
 			return NULL;
 	}
 	else
-	{	a = (struct fw__entityDeselected *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_obs_fw__entityDeselected, 0, sizeof(struct fw__entityDeselected), 0, NULL);
+	{	a = (struct fw__entityDeselected *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_obs_fw__entityDeselected, 0, sizeof(struct fw__entityDeselected), 0, soap_copy_fw__entityDeselected);
 		if (soap->body && soap_element_end_in(soap, tag))
 			return NULL;
 	}
-	if ((soap->mode & SOAP_XML_STRICT) && (soap_flag_entityId > 0))
+	if ((soap->mode & SOAP_XML_STRICT) && (soap_flag__category > 0 || soap_flag__entityId > 0))
 	{	soap->error = SOAP_OCCURS;
 		return NULL;
 	}
@@ -2979,20 +2914,25 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__entityDeselectedResponse(struct soap *s
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__entitySelected(struct soap *soap, struct fw__entitySelected *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_default_LONG64(soap, &a->_entityId);
+	soap_default_std__string(soap, &a->_category);
+	soap_default_std__string(soap, &a->_entityId);
 	soap_default_bool(soap, &a->_clearAll);
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__entitySelected(struct soap *soap, const struct fw__entitySelected *a)
 {
 	(void)soap; (void)a; /* appease -Wall -Werror */
+	soap_serialize_std__string(soap, &a->_category);
+	soap_serialize_std__string(soap, &a->_entityId);
 }
 
 SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__entitySelected(struct soap *soap, const char *tag, int id, const struct fw__entitySelected *a, const char *type)
 {
 	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_obs_fw__entitySelected), type))
 		return soap->error;
-	if (soap_out_LONG64(soap, "entityId", -1, &a->_entityId, ""))
+	if (soap_out_std__string(soap, "category", -1, &a->_category, ""))
+		return soap->error;
+	if (soap_out_std__string(soap, "entityId", -1, &a->_entityId, ""))
 		return soap->error;
 	if (soap_out_bool(soap, "clearAll", -1, &a->_clearAll, ""))
 		return soap->error;
@@ -3001,11 +2941,12 @@ SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__entitySelected(struct soap *soap, const c
 
 SOAP_FMAC3 struct fw__entitySelected * SOAP_FMAC4 soap_in_fw__entitySelected(struct soap *soap, const char *tag, struct fw__entitySelected *a, const char *type)
 {
+	size_t soap_flag__category = 1;
 	size_t soap_flag__entityId = 1;
 	size_t soap_flag__clearAll = 1;
 	if (soap_element_begin_in(soap, tag, 0, type))
 		return NULL;
-	a = (struct fw__entitySelected *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_obs_fw__entitySelected, sizeof(struct fw__entitySelected), 0, NULL, NULL, NULL);
+	a = (struct fw__entitySelected *)soap_class_id_enter(soap, soap->id, a, SOAP_TYPE_obs_fw__entitySelected, sizeof(struct fw__entitySelected), soap->type, soap->arrayType);
 	if (!a)
 		return NULL;
 	soap_default_fw__entitySelected(soap, a);
@@ -3013,8 +2954,13 @@ SOAP_FMAC3 struct fw__entitySelected * SOAP_FMAC4 soap_in_fw__entitySelected(str
 	{
 		for (;;)
 		{	soap->error = SOAP_TAG_MISMATCH;
-			if (soap_flag__entityId && soap->error == SOAP_TAG_MISMATCH)
-				if (soap_in_LONG64(soap, NULL, &a->_entityId, "xsd:long"))
+			if (soap_flag__category && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
+				if (soap_in_std__string(soap, NULL, &a->_category, "xsd:string"))
+				{	soap_flag__category--;
+					continue;
+				}
+			if (soap_flag__entityId && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
+				if (soap_in_std__string(soap, NULL, &a->_entityId, "xsd:string"))
 				{	soap_flag__entityId--;
 					continue;
 				}
@@ -3034,11 +2980,11 @@ SOAP_FMAC3 struct fw__entitySelected * SOAP_FMAC4 soap_in_fw__entitySelected(str
 			return NULL;
 	}
 	else
-	{	a = (struct fw__entitySelected *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_obs_fw__entitySelected, 0, sizeof(struct fw__entitySelected), 0, NULL);
+	{	a = (struct fw__entitySelected *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_obs_fw__entitySelected, 0, sizeof(struct fw__entitySelected), 0, soap_copy_fw__entitySelected);
 		if (soap->body && soap_element_end_in(soap, tag))
 			return NULL;
 	}
-	if ((soap->mode & SOAP_XML_STRICT) && (soap_flag__entityId > 0 || soap_flag__clearAll > 0))
+	if ((soap->mode & SOAP_XML_STRICT) && (soap_flag__category > 0 || soap_flag__entityId > 0 || soap_flag__clearAll > 0))
 	{	soap->error = SOAP_OCCURS;
 		return NULL;
 	}
@@ -3186,423 +3132,6 @@ SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__entitySelectedResponse(struct soap *soa
 	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
 	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__entitySelectedResponse %p -> %p\n", q, p));
 	*(struct fw__entitySelectedResponse*)p = *(struct fw__entitySelectedResponse*)q;
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__entityOutlineDeselected(struct soap *soap, struct fw__entityOutlineDeselected *a)
-{
-	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_default_std__string(soap, &a->uniqueId);
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__entityOutlineDeselected(struct soap *soap, const struct fw__entityOutlineDeselected *a)
-{
-	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_serialize_std__string(soap, &a->uniqueId);
-}
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__entityOutlineDeselected(struct soap *soap, const char *tag, int id, const struct fw__entityOutlineDeselected *a, const char *type)
-{
-	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_obs_fw__entityOutlineDeselected), type))
-		return soap->error;
-	if (soap_out_std__string(soap, "uniqueId", -1, &a->uniqueId, ""))
-		return soap->error;
-	return soap_element_end_out(soap, tag);
-}
-
-SOAP_FMAC3 struct fw__entityOutlineDeselected * SOAP_FMAC4 soap_in_fw__entityOutlineDeselected(struct soap *soap, const char *tag, struct fw__entityOutlineDeselected *a, const char *type)
-{
-	size_t soap_flag_uniqueId = 1;
-	if (soap_element_begin_in(soap, tag, 0, type))
-		return NULL;
-	a = (struct fw__entityOutlineDeselected *)soap_class_id_enter(soap, soap->id, a, SOAP_TYPE_obs_fw__entityOutlineDeselected, sizeof(struct fw__entityOutlineDeselected), soap->type, soap->arrayType);
-	if (!a)
-		return NULL;
-	soap_default_fw__entityOutlineDeselected(soap, a);
-	if (soap->body && !*soap->href)
-	{
-		for (;;)
-		{	soap->error = SOAP_TAG_MISMATCH;
-			if (soap_flag_uniqueId && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
-				if (soap_in_std__string(soap, "uniqueId", &a->uniqueId, "xsd:string"))
-				{	soap_flag_uniqueId--;
-					continue;
-				}
-			if (soap->error == SOAP_TAG_MISMATCH)
-				soap->error = soap_ignore_element(soap);
-			if (soap->error == SOAP_NO_TAG)
-				break;
-			if (soap->error)
-				return NULL;
-		}
-		if (soap_element_end_in(soap, tag))
-			return NULL;
-	}
-	else
-	{	a = (struct fw__entityOutlineDeselected *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_obs_fw__entityOutlineDeselected, 0, sizeof(struct fw__entityOutlineDeselected), 0, soap_copy_fw__entityOutlineDeselected);
-		if (soap->body && soap_element_end_in(soap, tag))
-			return NULL;
-	}
-	if ((soap->mode & SOAP_XML_STRICT) && (soap_flag_uniqueId > 0))
-	{	soap->error = SOAP_OCCURS;
-		return NULL;
-	}
-	return a;
-}
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__entityOutlineDeselected(struct soap *soap, const struct fw__entityOutlineDeselected *a, const char *tag, const char *type)
-{
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_obs_fw__entityOutlineDeselected);
-	if (soap_out_fw__entityOutlineDeselected(soap, tag?tag:"fw:entityOutlineDeselected", id, a, type))
-		return soap->error;
-	return soap_putindependent(soap);
-}
-
-SOAP_FMAC3 struct fw__entityOutlineDeselected * SOAP_FMAC4 soap_get_fw__entityOutlineDeselected(struct soap *soap, struct fw__entityOutlineDeselected *p, const char *tag, const char *type)
-{
-	if ((p = soap_in_fw__entityOutlineDeselected(soap, tag, p, type)))
-		if (soap_getindependent(soap))
-			return NULL;
-	return p;
-}
-
-SOAP_FMAC1 struct fw__entityOutlineDeselected * SOAP_FMAC2 soap_instantiate_fw__entityOutlineDeselected(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
-{
-	(void)type; (void)arrayType; /* appease -Wall -Werror */
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_fw__entityOutlineDeselected(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
-	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_obs_fw__entityOutlineDeselected, n, obs_fdelete);
-	if (!cp)
-		return NULL;
-	if (n < 0)
-	{	cp->ptr = (void*)SOAP_NEW(struct fw__entityOutlineDeselected);
-		if (size)
-			*size = sizeof(struct fw__entityOutlineDeselected);
-	}
-	else
-	{	cp->ptr = (void*)SOAP_NEW(struct fw__entityOutlineDeselected[n]);
-		if (!cp->ptr)
-		{	soap->error = SOAP_EOM;
-			return NULL;
-		}
-		if (size)
-			*size = n * sizeof(struct fw__entityOutlineDeselected);
-	}
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
-	return (struct fw__entityOutlineDeselected*)cp->ptr;
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__entityOutlineDeselected(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
-{
-	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__entityOutlineDeselected %p -> %p\n", q, p));
-	*(struct fw__entityOutlineDeselected*)p = *(struct fw__entityOutlineDeselected*)q;
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__entityOutlineDeselectedResponse(struct soap *soap, struct fw__entityOutlineDeselectedResponse *a)
-{
-	(void)soap; (void)a; /* appease -Wall -Werror */
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__entityOutlineDeselectedResponse(struct soap *soap, const struct fw__entityOutlineDeselectedResponse *a)
-{
-	(void)soap; (void)a; /* appease -Wall -Werror */
-}
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__entityOutlineDeselectedResponse(struct soap *soap, const char *tag, int id, const struct fw__entityOutlineDeselectedResponse *a, const char *type)
-{
-	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_obs_fw__entityOutlineDeselectedResponse), type))
-		return soap->error;
-	return soap_element_end_out(soap, tag);
-}
-
-SOAP_FMAC3 struct fw__entityOutlineDeselectedResponse * SOAP_FMAC4 soap_in_fw__entityOutlineDeselectedResponse(struct soap *soap, const char *tag, struct fw__entityOutlineDeselectedResponse *a, const char *type)
-{
-	if (soap_element_begin_in(soap, tag, 0, type))
-		return NULL;
-	a = (struct fw__entityOutlineDeselectedResponse *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_obs_fw__entityOutlineDeselectedResponse, sizeof(struct fw__entityOutlineDeselectedResponse), 0, NULL, NULL, NULL);
-	if (!a)
-		return NULL;
-	soap_default_fw__entityOutlineDeselectedResponse(soap, a);
-	if (soap->body && !*soap->href)
-	{
-		for (;;)
-		{	soap->error = SOAP_TAG_MISMATCH;
-			if (soap->error == SOAP_TAG_MISMATCH)
-				soap->error = soap_ignore_element(soap);
-			if (soap->error == SOAP_NO_TAG)
-				break;
-			if (soap->error)
-				return NULL;
-		}
-		if (soap_element_end_in(soap, tag))
-			return NULL;
-	}
-	else
-	{	a = (struct fw__entityOutlineDeselectedResponse *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_obs_fw__entityOutlineDeselectedResponse, 0, sizeof(struct fw__entityOutlineDeselectedResponse), 0, NULL);
-		if (soap->body && soap_element_end_in(soap, tag))
-			return NULL;
-	}
-	return a;
-}
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__entityOutlineDeselectedResponse(struct soap *soap, const struct fw__entityOutlineDeselectedResponse *a, const char *tag, const char *type)
-{
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_obs_fw__entityOutlineDeselectedResponse);
-	if (soap_out_fw__entityOutlineDeselectedResponse(soap, tag?tag:"fw:entityOutlineDeselectedResponse", id, a, type))
-		return soap->error;
-	return soap_putindependent(soap);
-}
-
-SOAP_FMAC3 struct fw__entityOutlineDeselectedResponse * SOAP_FMAC4 soap_get_fw__entityOutlineDeselectedResponse(struct soap *soap, struct fw__entityOutlineDeselectedResponse *p, const char *tag, const char *type)
-{
-	if ((p = soap_in_fw__entityOutlineDeselectedResponse(soap, tag, p, type)))
-		if (soap_getindependent(soap))
-			return NULL;
-	return p;
-}
-
-SOAP_FMAC1 struct fw__entityOutlineDeselectedResponse * SOAP_FMAC2 soap_instantiate_fw__entityOutlineDeselectedResponse(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
-{
-	(void)type; (void)arrayType; /* appease -Wall -Werror */
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_fw__entityOutlineDeselectedResponse(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
-	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_obs_fw__entityOutlineDeselectedResponse, n, obs_fdelete);
-	if (!cp)
-		return NULL;
-	if (n < 0)
-	{	cp->ptr = (void*)SOAP_NEW(struct fw__entityOutlineDeselectedResponse);
-		if (size)
-			*size = sizeof(struct fw__entityOutlineDeselectedResponse);
-	}
-	else
-	{	cp->ptr = (void*)SOAP_NEW(struct fw__entityOutlineDeselectedResponse[n]);
-		if (!cp->ptr)
-		{	soap->error = SOAP_EOM;
-			return NULL;
-		}
-		if (size)
-			*size = n * sizeof(struct fw__entityOutlineDeselectedResponse);
-	}
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
-	return (struct fw__entityOutlineDeselectedResponse*)cp->ptr;
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__entityOutlineDeselectedResponse(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
-{
-	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__entityOutlineDeselectedResponse %p -> %p\n", q, p));
-	*(struct fw__entityOutlineDeselectedResponse*)p = *(struct fw__entityOutlineDeselectedResponse*)q;
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__entityOutlineSelected(struct soap *soap, struct fw__entityOutlineSelected *a)
-{
-	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_default_std__string(soap, &a->_uniqueId);
-	soap_default_bool(soap, &a->_clearAll);
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__entityOutlineSelected(struct soap *soap, const struct fw__entityOutlineSelected *a)
-{
-	(void)soap; (void)a; /* appease -Wall -Werror */
-	soap_serialize_std__string(soap, &a->_uniqueId);
-}
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__entityOutlineSelected(struct soap *soap, const char *tag, int id, const struct fw__entityOutlineSelected *a, const char *type)
-{
-	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_obs_fw__entityOutlineSelected), type))
-		return soap->error;
-	if (soap_out_std__string(soap, "uniqueId", -1, &a->_uniqueId, ""))
-		return soap->error;
-	if (soap_out_bool(soap, "clearAll", -1, &a->_clearAll, ""))
-		return soap->error;
-	return soap_element_end_out(soap, tag);
-}
-
-SOAP_FMAC3 struct fw__entityOutlineSelected * SOAP_FMAC4 soap_in_fw__entityOutlineSelected(struct soap *soap, const char *tag, struct fw__entityOutlineSelected *a, const char *type)
-{
-	size_t soap_flag__uniqueId = 1;
-	size_t soap_flag__clearAll = 1;
-	if (soap_element_begin_in(soap, tag, 0, type))
-		return NULL;
-	a = (struct fw__entityOutlineSelected *)soap_class_id_enter(soap, soap->id, a, SOAP_TYPE_obs_fw__entityOutlineSelected, sizeof(struct fw__entityOutlineSelected), soap->type, soap->arrayType);
-	if (!a)
-		return NULL;
-	soap_default_fw__entityOutlineSelected(soap, a);
-	if (soap->body && !*soap->href)
-	{
-		for (;;)
-		{	soap->error = SOAP_TAG_MISMATCH;
-			if (soap_flag__uniqueId && (soap->error == SOAP_TAG_MISMATCH || soap->error == SOAP_NO_TAG))
-				if (soap_in_std__string(soap, NULL, &a->_uniqueId, "xsd:string"))
-				{	soap_flag__uniqueId--;
-					continue;
-				}
-			if (soap_flag__clearAll && soap->error == SOAP_TAG_MISMATCH)
-				if (soap_in_bool(soap, NULL, &a->_clearAll, "xsd:boolean"))
-				{	soap_flag__clearAll--;
-					continue;
-				}
-			if (soap->error == SOAP_TAG_MISMATCH)
-				soap->error = soap_ignore_element(soap);
-			if (soap->error == SOAP_NO_TAG)
-				break;
-			if (soap->error)
-				return NULL;
-		}
-		if (soap_element_end_in(soap, tag))
-			return NULL;
-	}
-	else
-	{	a = (struct fw__entityOutlineSelected *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_obs_fw__entityOutlineSelected, 0, sizeof(struct fw__entityOutlineSelected), 0, soap_copy_fw__entityOutlineSelected);
-		if (soap->body && soap_element_end_in(soap, tag))
-			return NULL;
-	}
-	if ((soap->mode & SOAP_XML_STRICT) && (soap_flag__uniqueId > 0 || soap_flag__clearAll > 0))
-	{	soap->error = SOAP_OCCURS;
-		return NULL;
-	}
-	return a;
-}
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__entityOutlineSelected(struct soap *soap, const struct fw__entityOutlineSelected *a, const char *tag, const char *type)
-{
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_obs_fw__entityOutlineSelected);
-	if (soap_out_fw__entityOutlineSelected(soap, tag?tag:"fw:entityOutlineSelected", id, a, type))
-		return soap->error;
-	return soap_putindependent(soap);
-}
-
-SOAP_FMAC3 struct fw__entityOutlineSelected * SOAP_FMAC4 soap_get_fw__entityOutlineSelected(struct soap *soap, struct fw__entityOutlineSelected *p, const char *tag, const char *type)
-{
-	if ((p = soap_in_fw__entityOutlineSelected(soap, tag, p, type)))
-		if (soap_getindependent(soap))
-			return NULL;
-	return p;
-}
-
-SOAP_FMAC1 struct fw__entityOutlineSelected * SOAP_FMAC2 soap_instantiate_fw__entityOutlineSelected(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
-{
-	(void)type; (void)arrayType; /* appease -Wall -Werror */
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_fw__entityOutlineSelected(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
-	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_obs_fw__entityOutlineSelected, n, obs_fdelete);
-	if (!cp)
-		return NULL;
-	if (n < 0)
-	{	cp->ptr = (void*)SOAP_NEW(struct fw__entityOutlineSelected);
-		if (size)
-			*size = sizeof(struct fw__entityOutlineSelected);
-	}
-	else
-	{	cp->ptr = (void*)SOAP_NEW(struct fw__entityOutlineSelected[n]);
-		if (!cp->ptr)
-		{	soap->error = SOAP_EOM;
-			return NULL;
-		}
-		if (size)
-			*size = n * sizeof(struct fw__entityOutlineSelected);
-	}
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
-	return (struct fw__entityOutlineSelected*)cp->ptr;
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__entityOutlineSelected(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
-{
-	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__entityOutlineSelected %p -> %p\n", q, p));
-	*(struct fw__entityOutlineSelected*)p = *(struct fw__entityOutlineSelected*)q;
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__entityOutlineSelectedResponse(struct soap *soap, struct fw__entityOutlineSelectedResponse *a)
-{
-	(void)soap; (void)a; /* appease -Wall -Werror */
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_serialize_fw__entityOutlineSelectedResponse(struct soap *soap, const struct fw__entityOutlineSelectedResponse *a)
-{
-	(void)soap; (void)a; /* appease -Wall -Werror */
-}
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_out_fw__entityOutlineSelectedResponse(struct soap *soap, const char *tag, int id, const struct fw__entityOutlineSelectedResponse *a, const char *type)
-{
-	if (soap_element_begin_out(soap, tag, soap_embedded_id(soap, id, a, SOAP_TYPE_obs_fw__entityOutlineSelectedResponse), type))
-		return soap->error;
-	return soap_element_end_out(soap, tag);
-}
-
-SOAP_FMAC3 struct fw__entityOutlineSelectedResponse * SOAP_FMAC4 soap_in_fw__entityOutlineSelectedResponse(struct soap *soap, const char *tag, struct fw__entityOutlineSelectedResponse *a, const char *type)
-{
-	if (soap_element_begin_in(soap, tag, 0, type))
-		return NULL;
-	a = (struct fw__entityOutlineSelectedResponse *)soap_id_enter(soap, soap->id, a, SOAP_TYPE_obs_fw__entityOutlineSelectedResponse, sizeof(struct fw__entityOutlineSelectedResponse), 0, NULL, NULL, NULL);
-	if (!a)
-		return NULL;
-	soap_default_fw__entityOutlineSelectedResponse(soap, a);
-	if (soap->body && !*soap->href)
-	{
-		for (;;)
-		{	soap->error = SOAP_TAG_MISMATCH;
-			if (soap->error == SOAP_TAG_MISMATCH)
-				soap->error = soap_ignore_element(soap);
-			if (soap->error == SOAP_NO_TAG)
-				break;
-			if (soap->error)
-				return NULL;
-		}
-		if (soap_element_end_in(soap, tag))
-			return NULL;
-	}
-	else
-	{	a = (struct fw__entityOutlineSelectedResponse *)soap_id_forward(soap, soap->href, (void*)a, 0, SOAP_TYPE_obs_fw__entityOutlineSelectedResponse, 0, sizeof(struct fw__entityOutlineSelectedResponse), 0, NULL);
-		if (soap->body && soap_element_end_in(soap, tag))
-			return NULL;
-	}
-	return a;
-}
-
-SOAP_FMAC3 int SOAP_FMAC4 soap_put_fw__entityOutlineSelectedResponse(struct soap *soap, const struct fw__entityOutlineSelectedResponse *a, const char *tag, const char *type)
-{
-	register int id = soap_embed(soap, (void*)a, NULL, 0, tag, SOAP_TYPE_obs_fw__entityOutlineSelectedResponse);
-	if (soap_out_fw__entityOutlineSelectedResponse(soap, tag?tag:"fw:entityOutlineSelectedResponse", id, a, type))
-		return soap->error;
-	return soap_putindependent(soap);
-}
-
-SOAP_FMAC3 struct fw__entityOutlineSelectedResponse * SOAP_FMAC4 soap_get_fw__entityOutlineSelectedResponse(struct soap *soap, struct fw__entityOutlineSelectedResponse *p, const char *tag, const char *type)
-{
-	if ((p = soap_in_fw__entityOutlineSelectedResponse(soap, tag, p, type)))
-		if (soap_getindependent(soap))
-			return NULL;
-	return p;
-}
-
-SOAP_FMAC1 struct fw__entityOutlineSelectedResponse * SOAP_FMAC2 soap_instantiate_fw__entityOutlineSelectedResponse(struct soap *soap, int n, const char *type, const char *arrayType, size_t *size)
-{
-	(void)type; (void)arrayType; /* appease -Wall -Werror */
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "soap_instantiate_fw__entityOutlineSelectedResponse(%d, %s, %s)\n", n, type?type:"", arrayType?arrayType:""));
-	struct soap_clist *cp = soap_link(soap, NULL, SOAP_TYPE_obs_fw__entityOutlineSelectedResponse, n, obs_fdelete);
-	if (!cp)
-		return NULL;
-	if (n < 0)
-	{	cp->ptr = (void*)SOAP_NEW(struct fw__entityOutlineSelectedResponse);
-		if (size)
-			*size = sizeof(struct fw__entityOutlineSelectedResponse);
-	}
-	else
-	{	cp->ptr = (void*)SOAP_NEW(struct fw__entityOutlineSelectedResponse[n]);
-		if (!cp->ptr)
-		{	soap->error = SOAP_EOM;
-			return NULL;
-		}
-		if (size)
-			*size = n * sizeof(struct fw__entityOutlineSelectedResponse);
-	}
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Instantiated location=%p\n", cp->ptr));
-	return (struct fw__entityOutlineSelectedResponse*)cp->ptr;
-}
-
-SOAP_FMAC3 void SOAP_FMAC4 soap_copy_fw__entityOutlineSelectedResponse(struct soap *soap, int st, int tt, void *p, size_t len, const void *q, size_t n)
-{
-	(void)soap; (void)st; (void)len; (void)n; /* appease -Wall -Werror */
-	DBGLOG(TEST, SOAP_MESSAGE(fdebug, "Copying struct fw__entityOutlineSelectedResponse %p -> %p\n", q, p));
-	*(struct fw__entityOutlineSelectedResponse*)p = *(struct fw__entityOutlineSelectedResponse*)q;
 }
 
 SOAP_FMAC3 void SOAP_FMAC4 soap_default_fw__ontologyChanged(struct soap *soap, struct fw__ontologyChanged *a)

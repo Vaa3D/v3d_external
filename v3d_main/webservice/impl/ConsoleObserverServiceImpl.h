@@ -23,10 +23,8 @@ public:
     inline int port() const { return _port; }
     virtual int ontologySelected(LONG64 rootId, struct fw__ontologySelectedResponse &response);
     virtual int ontologyChanged(LONG64 rootId, struct fw__ontologyChangedResponse &response);
-    virtual int entityOutlineSelected(std::string uniqueId, bool clearAll, struct fw__entityOutlineSelectedResponse &response);
-    virtual int entityOutlineDeselected(std::string uniqueId, struct fw__entityOutlineDeselectedResponse &response);
-    virtual int entitySelected(LONG64 entityId, bool clearAll, struct fw__entitySelectedResponse &response);
-    virtual int entityDeselected(LONG64 entityId, struct fw__entityDeselectedResponse &response);
+    virtual int entitySelected(std::string category, std::string uniqueId, bool clearAll, struct fw__entitySelectedResponse &_param_3);
+    virtual int entityDeselected(std::string category, std::string uniqueId, struct fw__entityDeselectedResponse &_param_4);
     virtual int entityChanged(LONG64 entityId, struct fw__entityChangedResponse &response);
     virtual int entityViewRequested(LONG64 entityId, struct fw__entityViewRequestedResponse &response);
     virtual int annotationsChanged(LONG64 entityId, struct fw__annotationsChangedResponse &response);
@@ -37,10 +35,8 @@ public:
 signals:
     void ontologySelected(qint64 rootId);
     void ontologyChanged(qint64 rootId);
-    void entityOutlineSelected(std::string uniqueId, bool clearAll);
-    void entityOutlineDeselected(std::string uniqueId);
-    void entitySelected(qint64 entityId, bool clearAll);
-    void entityDeselected(qint64 entityId);
+    void entitySelected(const QString & category, const QString & uniqueId, bool clearAll);
+    void entityDeselected(const QString & category, const QString & uniqueId);
     void entityChanged(qint64 entityId);
     void entityViewRequested(qint64 entityId);
     void annotationsChanged(qint64 entityId);

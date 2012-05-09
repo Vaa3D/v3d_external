@@ -100,9 +100,9 @@ char *ConsoleDataServiceProxy::soap_sprint_fault(char *buf, size_t len)
 }
 #endif
 
-int ConsoleDataServiceProxy::selectOutlineEntity(const char *endpoint, const char *soap_action, std::string _uniqueId, bool _clearAll, struct fw__selectOutlineEntityResponse &_param_1)
+int ConsoleDataServiceProxy::getEntityById(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__getEntityByIdResponse &_param_1)
 {	struct soap *soap = this;
-	struct fw__selectOutlineEntity soap_tmp_fw__selectOutlineEntity;
+	struct fw__getEntityById soap_tmp_fw__getEntityById;
 	if (endpoint)
 		soap_endpoint = endpoint;
 	if (!soap_endpoint)
@@ -110,18 +110,17 @@ int ConsoleDataServiceProxy::selectOutlineEntity(const char *endpoint, const cha
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
-	soap_tmp_fw__selectOutlineEntity._uniqueId = _uniqueId;
-	soap_tmp_fw__selectOutlineEntity._clearAll = _clearAll;
+	soap_tmp_fw__getEntityById.entityId = entityId;
 	soap_begin(soap);
 	soap_serializeheader(soap);
-	soap_serialize_fw__selectOutlineEntity(soap, &soap_tmp_fw__selectOutlineEntity);
+	soap_serialize_fw__getEntityById(soap, &soap_tmp_fw__getEntityById);
 	if (soap_begin_count(soap))
 		return soap->error;
 	if (soap->mode & SOAP_IO_LENGTH)
 	{	if (soap_envelope_begin_out(soap)
 		 || soap_putheader(soap)
 		 || soap_body_begin_out(soap)
-		 || soap_put_fw__selectOutlineEntity(soap, &soap_tmp_fw__selectOutlineEntity, "fw:selectOutlineEntity", NULL)
+		 || soap_put_fw__getEntityById(soap, &soap_tmp_fw__getEntityById, "fw:getEntityById", NULL)
 		 || soap_body_end_out(soap)
 		 || soap_envelope_end_out(soap))
 			 return soap->error;
@@ -132,20 +131,20 @@ int ConsoleDataServiceProxy::selectOutlineEntity(const char *endpoint, const cha
 	 || soap_envelope_begin_out(soap)
 	 || soap_putheader(soap)
 	 || soap_body_begin_out(soap)
-	 || soap_put_fw__selectOutlineEntity(soap, &soap_tmp_fw__selectOutlineEntity, "fw:selectOutlineEntity", NULL)
+	 || soap_put_fw__getEntityById(soap, &soap_tmp_fw__getEntityById, "fw:getEntityById", NULL)
 	 || soap_body_end_out(soap)
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
 	if (!&_param_1)
 		return soap_closesock(soap);
-	soap_default_fw__selectOutlineEntityResponse(soap, &_param_1);
+	soap_default_fw__getEntityByIdResponse(soap, &_param_1);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_fw__selectOutlineEntityResponse(soap, &_param_1, "fw:selectOutlineEntityResponse", "");
+	soap_get_fw__getEntityByIdResponse(soap, &_param_1, "fw:getEntityByIdResponse", "");
 	if (soap->error)
 		return soap_recv_fault(soap, 0);
 	if (soap_body_end_in(soap)
@@ -155,9 +154,9 @@ int ConsoleDataServiceProxy::selectOutlineEntity(const char *endpoint, const cha
 	return soap_closesock(soap);
 }
 
-int ConsoleDataServiceProxy::deselectOutlineEntity(const char *endpoint, const char *soap_action, std::string uniqueId, struct fw__deselectOutlineEntityResponse &_param_2)
+int ConsoleDataServiceProxy::removeAnnotation(const char *endpoint, const char *soap_action, LONG64 annotationId, struct fw__removeAnnotationResponse &_param_2)
 {	struct soap *soap = this;
-	struct fw__deselectOutlineEntity soap_tmp_fw__deselectOutlineEntity;
+	struct fw__removeAnnotation soap_tmp_fw__removeAnnotation;
 	if (endpoint)
 		soap_endpoint = endpoint;
 	if (!soap_endpoint)
@@ -165,17 +164,17 @@ int ConsoleDataServiceProxy::deselectOutlineEntity(const char *endpoint, const c
 	if (!soap_action)
 		soap_action = "";
 	soap->encodingStyle = NULL;
-	soap_tmp_fw__deselectOutlineEntity.uniqueId = uniqueId;
+	soap_tmp_fw__removeAnnotation.annotationId = annotationId;
 	soap_begin(soap);
 	soap_serializeheader(soap);
-	soap_serialize_fw__deselectOutlineEntity(soap, &soap_tmp_fw__deselectOutlineEntity);
+	soap_serialize_fw__removeAnnotation(soap, &soap_tmp_fw__removeAnnotation);
 	if (soap_begin_count(soap))
 		return soap->error;
 	if (soap->mode & SOAP_IO_LENGTH)
 	{	if (soap_envelope_begin_out(soap)
 		 || soap_putheader(soap)
 		 || soap_body_begin_out(soap)
-		 || soap_put_fw__deselectOutlineEntity(soap, &soap_tmp_fw__deselectOutlineEntity, "fw:deselectOutlineEntity", NULL)
+		 || soap_put_fw__removeAnnotation(soap, &soap_tmp_fw__removeAnnotation, "fw:removeAnnotation", NULL)
 		 || soap_body_end_out(soap)
 		 || soap_envelope_end_out(soap))
 			 return soap->error;
@@ -186,20 +185,20 @@ int ConsoleDataServiceProxy::deselectOutlineEntity(const char *endpoint, const c
 	 || soap_envelope_begin_out(soap)
 	 || soap_putheader(soap)
 	 || soap_body_begin_out(soap)
-	 || soap_put_fw__deselectOutlineEntity(soap, &soap_tmp_fw__deselectOutlineEntity, "fw:deselectOutlineEntity", NULL)
+	 || soap_put_fw__removeAnnotation(soap, &soap_tmp_fw__removeAnnotation, "fw:removeAnnotation", NULL)
 	 || soap_body_end_out(soap)
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
 	if (!&_param_2)
 		return soap_closesock(soap);
-	soap_default_fw__deselectOutlineEntityResponse(soap, &_param_2);
+	soap_default_fw__removeAnnotationResponse(soap, &_param_2);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_fw__deselectOutlineEntityResponse(soap, &_param_2, "fw:deselectOutlineEntityResponse", "");
+	soap_get_fw__removeAnnotationResponse(soap, &_param_2, "fw:removeAnnotationResponse", "");
 	if (soap->error)
 		return soap_recv_fault(soap, 0);
 	if (soap_body_end_in(soap)
@@ -209,7 +208,331 @@ int ConsoleDataServiceProxy::deselectOutlineEntity(const char *endpoint, const c
 	return soap_closesock(soap);
 }
 
-int ConsoleDataServiceProxy::selectEntity(const char *endpoint, const char *soap_action, LONG64 _entityId, bool _clearAll, struct fw__selectEntityResponse &_param_3)
+int ConsoleDataServiceProxy::getOntology(const char *endpoint, const char *soap_action, LONG64 rootId, struct fw__getOntologyResponse &_param_3)
+{	struct soap *soap = this;
+	struct fw__getOntology soap_tmp_fw__getOntology;
+	if (endpoint)
+		soap_endpoint = endpoint;
+	if (!soap_endpoint)
+		soap_endpoint = "http://localhost:30001/axis2/services/cds";
+	if (!soap_action)
+		soap_action = "";
+	soap->encodingStyle = NULL;
+	soap_tmp_fw__getOntology.rootId = rootId;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_fw__getOntology(soap, &soap_tmp_fw__getOntology);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_fw__getOntology(soap, &soap_tmp_fw__getOntology, "fw:getOntology", NULL)
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	}
+	if (soap_end_count(soap))
+		return soap->error;
+	if (soap_connect(soap, soap_endpoint, soap_action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_fw__getOntology(soap, &soap_tmp_fw__getOntology, "fw:getOntology", NULL)
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap_closesock(soap);
+	if (!&_param_3)
+		return soap_closesock(soap);
+	soap_default_fw__getOntologyResponse(soap, &_param_3);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap_closesock(soap);
+	soap_get_fw__getOntologyResponse(soap, &_param_3, "fw:getOntologyResponse", "");
+	if (soap->error)
+		return soap_recv_fault(soap, 0);
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap_closesock(soap);
+	return soap_closesock(soap);
+}
+
+int ConsoleDataServiceProxy::getAnnotationSession(const char *endpoint, const char *soap_action, LONG64 sessionId, struct fw__getAnnotationSessionResponse &_param_4)
+{	struct soap *soap = this;
+	struct fw__getAnnotationSession soap_tmp_fw__getAnnotationSession;
+	if (endpoint)
+		soap_endpoint = endpoint;
+	if (!soap_endpoint)
+		soap_endpoint = "http://localhost:30001/axis2/services/cds";
+	if (!soap_action)
+		soap_action = "";
+	soap->encodingStyle = NULL;
+	soap_tmp_fw__getAnnotationSession.sessionId = sessionId;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_fw__getAnnotationSession(soap, &soap_tmp_fw__getAnnotationSession);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_fw__getAnnotationSession(soap, &soap_tmp_fw__getAnnotationSession, "fw:getAnnotationSession", NULL)
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	}
+	if (soap_end_count(soap))
+		return soap->error;
+	if (soap_connect(soap, soap_endpoint, soap_action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_fw__getAnnotationSession(soap, &soap_tmp_fw__getAnnotationSession, "fw:getAnnotationSession", NULL)
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap_closesock(soap);
+	if (!&_param_4)
+		return soap_closesock(soap);
+	soap_default_fw__getAnnotationSessionResponse(soap, &_param_4);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap_closesock(soap);
+	soap_get_fw__getAnnotationSessionResponse(soap, &_param_4, "fw:getAnnotationSessionResponse", "");
+	if (soap->error)
+		return soap_recv_fault(soap, 0);
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap_closesock(soap);
+	return soap_closesock(soap);
+}
+
+int ConsoleDataServiceProxy::getEntityTree(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__getEntityTreeResponse &_param_5)
+{	struct soap *soap = this;
+	struct fw__getEntityTree soap_tmp_fw__getEntityTree;
+	if (endpoint)
+		soap_endpoint = endpoint;
+	if (!soap_endpoint)
+		soap_endpoint = "http://localhost:30001/axis2/services/cds";
+	if (!soap_action)
+		soap_action = "";
+	soap->encodingStyle = NULL;
+	soap_tmp_fw__getEntityTree.entityId = entityId;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_fw__getEntityTree(soap, &soap_tmp_fw__getEntityTree);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_fw__getEntityTree(soap, &soap_tmp_fw__getEntityTree, "fw:getEntityTree", NULL)
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	}
+	if (soap_end_count(soap))
+		return soap->error;
+	if (soap_connect(soap, soap_endpoint, soap_action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_fw__getEntityTree(soap, &soap_tmp_fw__getEntityTree, "fw:getEntityTree", NULL)
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap_closesock(soap);
+	if (!&_param_5)
+		return soap_closesock(soap);
+	soap_default_fw__getEntityTreeResponse(soap, &_param_5);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap_closesock(soap);
+	soap_get_fw__getEntityTreeResponse(soap, &_param_5, "fw:getEntityTreeResponse", "");
+	if (soap->error)
+		return soap_recv_fault(soap, 0);
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap_closesock(soap);
+	return soap_closesock(soap);
+}
+
+int ConsoleDataServiceProxy::getAnnotationsForEntity(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__getAnnotationsForEntityResponse &_param_6)
+{	struct soap *soap = this;
+	struct fw__getAnnotationsForEntity soap_tmp_fw__getAnnotationsForEntity;
+	if (endpoint)
+		soap_endpoint = endpoint;
+	if (!soap_endpoint)
+		soap_endpoint = "http://localhost:30001/axis2/services/cds";
+	if (!soap_action)
+		soap_action = "";
+	soap->encodingStyle = NULL;
+	soap_tmp_fw__getAnnotationsForEntity.entityId = entityId;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_fw__getAnnotationsForEntity(soap, &soap_tmp_fw__getAnnotationsForEntity);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_fw__getAnnotationsForEntity(soap, &soap_tmp_fw__getAnnotationsForEntity, "fw:getAnnotationsForEntity", NULL)
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	}
+	if (soap_end_count(soap))
+		return soap->error;
+	if (soap_connect(soap, soap_endpoint, soap_action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_fw__getAnnotationsForEntity(soap, &soap_tmp_fw__getAnnotationsForEntity, "fw:getAnnotationsForEntity", NULL)
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap_closesock(soap);
+	if (!&_param_6)
+		return soap_closesock(soap);
+	soap_default_fw__getAnnotationsForEntityResponse(soap, &_param_6);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap_closesock(soap);
+	soap_get_fw__getAnnotationsForEntityResponse(soap, &_param_6, "fw:getAnnotationsForEntityResponse", "");
+	if (soap->error)
+		return soap_recv_fault(soap, 0);
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap_closesock(soap);
+	return soap_closesock(soap);
+}
+
+int ConsoleDataServiceProxy::getAnnotationsForEntities(const char *endpoint, const char *soap_action, ns2__longArray *entityIds, struct fw__getAnnotationsForEntitiesResponse &_param_7)
+{	struct soap *soap = this;
+	struct fw__getAnnotationsForEntities soap_tmp_fw__getAnnotationsForEntities;
+	if (endpoint)
+		soap_endpoint = endpoint;
+	if (!soap_endpoint)
+		soap_endpoint = "http://localhost:30001/axis2/services/cds";
+	if (!soap_action)
+		soap_action = "";
+	soap->encodingStyle = NULL;
+	soap_tmp_fw__getAnnotationsForEntities.entityIds = entityIds;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_fw__getAnnotationsForEntities(soap, &soap_tmp_fw__getAnnotationsForEntities);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_fw__getAnnotationsForEntities(soap, &soap_tmp_fw__getAnnotationsForEntities, "fw:getAnnotationsForEntities", NULL)
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	}
+	if (soap_end_count(soap))
+		return soap->error;
+	if (soap_connect(soap, soap_endpoint, soap_action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_fw__getAnnotationsForEntities(soap, &soap_tmp_fw__getAnnotationsForEntities, "fw:getAnnotationsForEntities", NULL)
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap_closesock(soap);
+	if (!&_param_7)
+		return soap_closesock(soap);
+	soap_default_fw__getAnnotationsForEntitiesResponse(soap, &_param_7);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap_closesock(soap);
+	soap_get_fw__getAnnotationsForEntitiesResponse(soap, &_param_7, "fw:getAnnotationsForEntitiesResponse", "");
+	if (soap->error)
+		return soap_recv_fault(soap, 0);
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap_closesock(soap);
+	return soap_closesock(soap);
+}
+
+int ConsoleDataServiceProxy::getUserAnnotationColor(const char *endpoint, const char *soap_action, std::string username, struct fw__getUserAnnotationColorResponse &_param_8)
+{	struct soap *soap = this;
+	struct fw__getUserAnnotationColor soap_tmp_fw__getUserAnnotationColor;
+	if (endpoint)
+		soap_endpoint = endpoint;
+	if (!soap_endpoint)
+		soap_endpoint = "http://localhost:30001/axis2/services/cds";
+	if (!soap_action)
+		soap_action = "";
+	soap->encodingStyle = NULL;
+	soap_tmp_fw__getUserAnnotationColor.username = username;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_fw__getUserAnnotationColor(soap, &soap_tmp_fw__getUserAnnotationColor);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_fw__getUserAnnotationColor(soap, &soap_tmp_fw__getUserAnnotationColor, "fw:getUserAnnotationColor", NULL)
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	}
+	if (soap_end_count(soap))
+		return soap->error;
+	if (soap_connect(soap, soap_endpoint, soap_action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_fw__getUserAnnotationColor(soap, &soap_tmp_fw__getUserAnnotationColor, "fw:getUserAnnotationColor", NULL)
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap_closesock(soap);
+	if (!&_param_8)
+		return soap_closesock(soap);
+	soap_default_fw__getUserAnnotationColorResponse(soap, &_param_8);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap_closesock(soap);
+	soap_get_fw__getUserAnnotationColorResponse(soap, &_param_8, "fw:getUserAnnotationColorResponse", "");
+	if (soap->error)
+		return soap_recv_fault(soap, 0);
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap_closesock(soap);
+	return soap_closesock(soap);
+}
+
+int ConsoleDataServiceProxy::selectEntity(const char *endpoint, const char *soap_action, LONG64 _entityId, bool _clearAll, struct fw__selectEntityResponse &_param_9)
 {	struct soap *soap = this;
 	struct fw__selectEntity soap_tmp_fw__selectEntity;
 	if (endpoint)
@@ -246,15 +569,15 @@ int ConsoleDataServiceProxy::selectEntity(const char *endpoint, const char *soap
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
-	if (!&_param_3)
+	if (!&_param_9)
 		return soap_closesock(soap);
-	soap_default_fw__selectEntityResponse(soap, &_param_3);
+	soap_default_fw__selectEntityResponse(soap, &_param_9);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_fw__selectEntityResponse(soap, &_param_3, "fw:selectEntityResponse", "");
+	soap_get_fw__selectEntityResponse(soap, &_param_9, "fw:selectEntityResponse", "");
 	if (soap->error)
 		return soap_recv_fault(soap, 0);
 	if (soap_body_end_in(soap)
@@ -264,7 +587,7 @@ int ConsoleDataServiceProxy::selectEntity(const char *endpoint, const char *soap
 	return soap_closesock(soap);
 }
 
-int ConsoleDataServiceProxy::deselectEntity(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__deselectEntityResponse &_param_4)
+int ConsoleDataServiceProxy::deselectEntity(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__deselectEntityResponse &_param_10)
 {	struct soap *soap = this;
 	struct fw__deselectEntity soap_tmp_fw__deselectEntity;
 	if (endpoint)
@@ -300,339 +623,15 @@ int ConsoleDataServiceProxy::deselectEntity(const char *endpoint, const char *so
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
-	if (!&_param_4)
-		return soap_closesock(soap);
-	soap_default_fw__deselectEntityResponse(soap, &_param_4);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap_closesock(soap);
-	soap_get_fw__deselectEntityResponse(soap, &_param_4, "fw:deselectEntityResponse", "");
-	if (soap->error)
-		return soap_recv_fault(soap, 0);
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_end_recv(soap))
-		return soap_closesock(soap);
-	return soap_closesock(soap);
-}
-
-int ConsoleDataServiceProxy::getEntityById(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__getEntityByIdResponse &_param_5)
-{	struct soap *soap = this;
-	struct fw__getEntityById soap_tmp_fw__getEntityById;
-	if (endpoint)
-		soap_endpoint = endpoint;
-	if (!soap_endpoint)
-		soap_endpoint = "http://localhost:30001/axis2/services/cds";
-	if (!soap_action)
-		soap_action = "";
-	soap->encodingStyle = NULL;
-	soap_tmp_fw__getEntityById.entityId = entityId;
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_fw__getEntityById(soap, &soap_tmp_fw__getEntityById);
-	if (soap_begin_count(soap))
-		return soap->error;
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	if (soap_envelope_begin_out(soap)
-		 || soap_putheader(soap)
-		 || soap_body_begin_out(soap)
-		 || soap_put_fw__getEntityById(soap, &soap_tmp_fw__getEntityById, "fw:getEntityById", NULL)
-		 || soap_body_end_out(soap)
-		 || soap_envelope_end_out(soap))
-			 return soap->error;
-	}
-	if (soap_end_count(soap))
-		return soap->error;
-	if (soap_connect(soap, soap_endpoint, soap_action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_fw__getEntityById(soap, &soap_tmp_fw__getEntityById, "fw:getEntityById", NULL)
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_end_send(soap))
-		return soap_closesock(soap);
-	if (!&_param_5)
-		return soap_closesock(soap);
-	soap_default_fw__getEntityByIdResponse(soap, &_param_5);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap_closesock(soap);
-	soap_get_fw__getEntityByIdResponse(soap, &_param_5, "fw:getEntityByIdResponse", "");
-	if (soap->error)
-		return soap_recv_fault(soap, 0);
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_end_recv(soap))
-		return soap_closesock(soap);
-	return soap_closesock(soap);
-}
-
-int ConsoleDataServiceProxy::removeAnnotation(const char *endpoint, const char *soap_action, LONG64 annotationId, struct fw__removeAnnotationResponse &_param_6)
-{	struct soap *soap = this;
-	struct fw__removeAnnotation soap_tmp_fw__removeAnnotation;
-	if (endpoint)
-		soap_endpoint = endpoint;
-	if (!soap_endpoint)
-		soap_endpoint = "http://localhost:30001/axis2/services/cds";
-	if (!soap_action)
-		soap_action = "";
-	soap->encodingStyle = NULL;
-	soap_tmp_fw__removeAnnotation.annotationId = annotationId;
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_fw__removeAnnotation(soap, &soap_tmp_fw__removeAnnotation);
-	if (soap_begin_count(soap))
-		return soap->error;
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	if (soap_envelope_begin_out(soap)
-		 || soap_putheader(soap)
-		 || soap_body_begin_out(soap)
-		 || soap_put_fw__removeAnnotation(soap, &soap_tmp_fw__removeAnnotation, "fw:removeAnnotation", NULL)
-		 || soap_body_end_out(soap)
-		 || soap_envelope_end_out(soap))
-			 return soap->error;
-	}
-	if (soap_end_count(soap))
-		return soap->error;
-	if (soap_connect(soap, soap_endpoint, soap_action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_fw__removeAnnotation(soap, &soap_tmp_fw__removeAnnotation, "fw:removeAnnotation", NULL)
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_end_send(soap))
-		return soap_closesock(soap);
-	if (!&_param_6)
-		return soap_closesock(soap);
-	soap_default_fw__removeAnnotationResponse(soap, &_param_6);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap_closesock(soap);
-	soap_get_fw__removeAnnotationResponse(soap, &_param_6, "fw:removeAnnotationResponse", "");
-	if (soap->error)
-		return soap_recv_fault(soap, 0);
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_end_recv(soap))
-		return soap_closesock(soap);
-	return soap_closesock(soap);
-}
-
-int ConsoleDataServiceProxy::getOntology(const char *endpoint, const char *soap_action, LONG64 rootId, struct fw__getOntologyResponse &_param_7)
-{	struct soap *soap = this;
-	struct fw__getOntology soap_tmp_fw__getOntology;
-	if (endpoint)
-		soap_endpoint = endpoint;
-	if (!soap_endpoint)
-		soap_endpoint = "http://localhost:30001/axis2/services/cds";
-	if (!soap_action)
-		soap_action = "";
-	soap->encodingStyle = NULL;
-	soap_tmp_fw__getOntology.rootId = rootId;
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_fw__getOntology(soap, &soap_tmp_fw__getOntology);
-	if (soap_begin_count(soap))
-		return soap->error;
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	if (soap_envelope_begin_out(soap)
-		 || soap_putheader(soap)
-		 || soap_body_begin_out(soap)
-		 || soap_put_fw__getOntology(soap, &soap_tmp_fw__getOntology, "fw:getOntology", NULL)
-		 || soap_body_end_out(soap)
-		 || soap_envelope_end_out(soap))
-			 return soap->error;
-	}
-	if (soap_end_count(soap))
-		return soap->error;
-	if (soap_connect(soap, soap_endpoint, soap_action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_fw__getOntology(soap, &soap_tmp_fw__getOntology, "fw:getOntology", NULL)
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_end_send(soap))
-		return soap_closesock(soap);
-	if (!&_param_7)
-		return soap_closesock(soap);
-	soap_default_fw__getOntologyResponse(soap, &_param_7);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap_closesock(soap);
-	soap_get_fw__getOntologyResponse(soap, &_param_7, "fw:getOntologyResponse", "");
-	if (soap->error)
-		return soap_recv_fault(soap, 0);
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_end_recv(soap))
-		return soap_closesock(soap);
-	return soap_closesock(soap);
-}
-
-int ConsoleDataServiceProxy::getAnnotationSession(const char *endpoint, const char *soap_action, LONG64 sessionId, struct fw__getAnnotationSessionResponse &_param_8)
-{	struct soap *soap = this;
-	struct fw__getAnnotationSession soap_tmp_fw__getAnnotationSession;
-	if (endpoint)
-		soap_endpoint = endpoint;
-	if (!soap_endpoint)
-		soap_endpoint = "http://localhost:30001/axis2/services/cds";
-	if (!soap_action)
-		soap_action = "";
-	soap->encodingStyle = NULL;
-	soap_tmp_fw__getAnnotationSession.sessionId = sessionId;
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_fw__getAnnotationSession(soap, &soap_tmp_fw__getAnnotationSession);
-	if (soap_begin_count(soap))
-		return soap->error;
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	if (soap_envelope_begin_out(soap)
-		 || soap_putheader(soap)
-		 || soap_body_begin_out(soap)
-		 || soap_put_fw__getAnnotationSession(soap, &soap_tmp_fw__getAnnotationSession, "fw:getAnnotationSession", NULL)
-		 || soap_body_end_out(soap)
-		 || soap_envelope_end_out(soap))
-			 return soap->error;
-	}
-	if (soap_end_count(soap))
-		return soap->error;
-	if (soap_connect(soap, soap_endpoint, soap_action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_fw__getAnnotationSession(soap, &soap_tmp_fw__getAnnotationSession, "fw:getAnnotationSession", NULL)
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_end_send(soap))
-		return soap_closesock(soap);
-	if (!&_param_8)
-		return soap_closesock(soap);
-	soap_default_fw__getAnnotationSessionResponse(soap, &_param_8);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap_closesock(soap);
-	soap_get_fw__getAnnotationSessionResponse(soap, &_param_8, "fw:getAnnotationSessionResponse", "");
-	if (soap->error)
-		return soap_recv_fault(soap, 0);
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_end_recv(soap))
-		return soap_closesock(soap);
-	return soap_closesock(soap);
-}
-
-int ConsoleDataServiceProxy::getEntityTree(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__getEntityTreeResponse &_param_9)
-{	struct soap *soap = this;
-	struct fw__getEntityTree soap_tmp_fw__getEntityTree;
-	if (endpoint)
-		soap_endpoint = endpoint;
-	if (!soap_endpoint)
-		soap_endpoint = "http://localhost:30001/axis2/services/cds";
-	if (!soap_action)
-		soap_action = "";
-	soap->encodingStyle = NULL;
-	soap_tmp_fw__getEntityTree.entityId = entityId;
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_fw__getEntityTree(soap, &soap_tmp_fw__getEntityTree);
-	if (soap_begin_count(soap))
-		return soap->error;
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	if (soap_envelope_begin_out(soap)
-		 || soap_putheader(soap)
-		 || soap_body_begin_out(soap)
-		 || soap_put_fw__getEntityTree(soap, &soap_tmp_fw__getEntityTree, "fw:getEntityTree", NULL)
-		 || soap_body_end_out(soap)
-		 || soap_envelope_end_out(soap))
-			 return soap->error;
-	}
-	if (soap_end_count(soap))
-		return soap->error;
-	if (soap_connect(soap, soap_endpoint, soap_action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_fw__getEntityTree(soap, &soap_tmp_fw__getEntityTree, "fw:getEntityTree", NULL)
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_end_send(soap))
-		return soap_closesock(soap);
-	if (!&_param_9)
-		return soap_closesock(soap);
-	soap_default_fw__getEntityTreeResponse(soap, &_param_9);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap_closesock(soap);
-	soap_get_fw__getEntityTreeResponse(soap, &_param_9, "fw:getEntityTreeResponse", "");
-	if (soap->error)
-		return soap_recv_fault(soap, 0);
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_end_recv(soap))
-		return soap_closesock(soap);
-	return soap_closesock(soap);
-}
-
-int ConsoleDataServiceProxy::getAnnotationsForEntity(const char *endpoint, const char *soap_action, LONG64 entityId, struct fw__getAnnotationsForEntityResponse &_param_10)
-{	struct soap *soap = this;
-	struct fw__getAnnotationsForEntity soap_tmp_fw__getAnnotationsForEntity;
-	if (endpoint)
-		soap_endpoint = endpoint;
-	if (!soap_endpoint)
-		soap_endpoint = "http://localhost:30001/axis2/services/cds";
-	if (!soap_action)
-		soap_action = "";
-	soap->encodingStyle = NULL;
-	soap_tmp_fw__getAnnotationsForEntity.entityId = entityId;
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_fw__getAnnotationsForEntity(soap, &soap_tmp_fw__getAnnotationsForEntity);
-	if (soap_begin_count(soap))
-		return soap->error;
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	if (soap_envelope_begin_out(soap)
-		 || soap_putheader(soap)
-		 || soap_body_begin_out(soap)
-		 || soap_put_fw__getAnnotationsForEntity(soap, &soap_tmp_fw__getAnnotationsForEntity, "fw:getAnnotationsForEntity", NULL)
-		 || soap_body_end_out(soap)
-		 || soap_envelope_end_out(soap))
-			 return soap->error;
-	}
-	if (soap_end_count(soap))
-		return soap->error;
-	if (soap_connect(soap, soap_endpoint, soap_action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_fw__getAnnotationsForEntity(soap, &soap_tmp_fw__getAnnotationsForEntity, "fw:getAnnotationsForEntity", NULL)
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_end_send(soap))
-		return soap_closesock(soap);
 	if (!&_param_10)
 		return soap_closesock(soap);
-	soap_default_fw__getAnnotationsForEntityResponse(soap, &_param_10);
+	soap_default_fw__deselectEntityResponse(soap, &_param_10);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_fw__getAnnotationsForEntityResponse(soap, &_param_10, "fw:getAnnotationsForEntityResponse", "");
+	soap_get_fw__deselectEntityResponse(soap, &_param_10, "fw:deselectEntityResponse", "");
 	if (soap->error)
 		return soap_recv_fault(soap, 0);
 	if (soap_body_end_in(soap)
@@ -642,115 +641,7 @@ int ConsoleDataServiceProxy::getAnnotationsForEntity(const char *endpoint, const
 	return soap_closesock(soap);
 }
 
-int ConsoleDataServiceProxy::getAnnotationsForEntities(const char *endpoint, const char *soap_action, ns2__longArray *entityIds, struct fw__getAnnotationsForEntitiesResponse &_param_11)
-{	struct soap *soap = this;
-	struct fw__getAnnotationsForEntities soap_tmp_fw__getAnnotationsForEntities;
-	if (endpoint)
-		soap_endpoint = endpoint;
-	if (!soap_endpoint)
-		soap_endpoint = "http://localhost:30001/axis2/services/cds";
-	if (!soap_action)
-		soap_action = "";
-	soap->encodingStyle = NULL;
-	soap_tmp_fw__getAnnotationsForEntities.entityIds = entityIds;
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_fw__getAnnotationsForEntities(soap, &soap_tmp_fw__getAnnotationsForEntities);
-	if (soap_begin_count(soap))
-		return soap->error;
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	if (soap_envelope_begin_out(soap)
-		 || soap_putheader(soap)
-		 || soap_body_begin_out(soap)
-		 || soap_put_fw__getAnnotationsForEntities(soap, &soap_tmp_fw__getAnnotationsForEntities, "fw:getAnnotationsForEntities", NULL)
-		 || soap_body_end_out(soap)
-		 || soap_envelope_end_out(soap))
-			 return soap->error;
-	}
-	if (soap_end_count(soap))
-		return soap->error;
-	if (soap_connect(soap, soap_endpoint, soap_action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_fw__getAnnotationsForEntities(soap, &soap_tmp_fw__getAnnotationsForEntities, "fw:getAnnotationsForEntities", NULL)
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_end_send(soap))
-		return soap_closesock(soap);
-	if (!&_param_11)
-		return soap_closesock(soap);
-	soap_default_fw__getAnnotationsForEntitiesResponse(soap, &_param_11);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap_closesock(soap);
-	soap_get_fw__getAnnotationsForEntitiesResponse(soap, &_param_11, "fw:getAnnotationsForEntitiesResponse", "");
-	if (soap->error)
-		return soap_recv_fault(soap, 0);
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_end_recv(soap))
-		return soap_closesock(soap);
-	return soap_closesock(soap);
-}
-
-int ConsoleDataServiceProxy::getUserAnnotationColor(const char *endpoint, const char *soap_action, std::string username, struct fw__getUserAnnotationColorResponse &_param_12)
-{	struct soap *soap = this;
-	struct fw__getUserAnnotationColor soap_tmp_fw__getUserAnnotationColor;
-	if (endpoint)
-		soap_endpoint = endpoint;
-	if (!soap_endpoint)
-		soap_endpoint = "http://localhost:30001/axis2/services/cds";
-	if (!soap_action)
-		soap_action = "";
-	soap->encodingStyle = NULL;
-	soap_tmp_fw__getUserAnnotationColor.username = username;
-	soap_begin(soap);
-	soap_serializeheader(soap);
-	soap_serialize_fw__getUserAnnotationColor(soap, &soap_tmp_fw__getUserAnnotationColor);
-	if (soap_begin_count(soap))
-		return soap->error;
-	if (soap->mode & SOAP_IO_LENGTH)
-	{	if (soap_envelope_begin_out(soap)
-		 || soap_putheader(soap)
-		 || soap_body_begin_out(soap)
-		 || soap_put_fw__getUserAnnotationColor(soap, &soap_tmp_fw__getUserAnnotationColor, "fw:getUserAnnotationColor", NULL)
-		 || soap_body_end_out(soap)
-		 || soap_envelope_end_out(soap))
-			 return soap->error;
-	}
-	if (soap_end_count(soap))
-		return soap->error;
-	if (soap_connect(soap, soap_endpoint, soap_action)
-	 || soap_envelope_begin_out(soap)
-	 || soap_putheader(soap)
-	 || soap_body_begin_out(soap)
-	 || soap_put_fw__getUserAnnotationColor(soap, &soap_tmp_fw__getUserAnnotationColor, "fw:getUserAnnotationColor", NULL)
-	 || soap_body_end_out(soap)
-	 || soap_envelope_end_out(soap)
-	 || soap_end_send(soap))
-		return soap_closesock(soap);
-	if (!&_param_12)
-		return soap_closesock(soap);
-	soap_default_fw__getUserAnnotationColorResponse(soap, &_param_12);
-	if (soap_begin_recv(soap)
-	 || soap_envelope_begin_in(soap)
-	 || soap_recv_header(soap)
-	 || soap_body_begin_in(soap))
-		return soap_closesock(soap);
-	soap_get_fw__getUserAnnotationColorResponse(soap, &_param_12, "fw:getUserAnnotationColorResponse", "");
-	if (soap->error)
-		return soap_recv_fault(soap, 0);
-	if (soap_body_end_in(soap)
-	 || soap_envelope_end_in(soap)
-	 || soap_end_recv(soap))
-		return soap_closesock(soap);
-	return soap_closesock(soap);
-}
-
-int ConsoleDataServiceProxy::reservePort(const char *endpoint, const char *soap_action, std::string clientName, struct fw__reservePortResponse &_param_13)
+int ConsoleDataServiceProxy::reservePort(const char *endpoint, const char *soap_action, std::string clientName, struct fw__reservePortResponse &_param_11)
 {	struct soap *soap = this;
 	struct fw__reservePort soap_tmp_fw__reservePort;
 	if (endpoint)
@@ -786,15 +677,15 @@ int ConsoleDataServiceProxy::reservePort(const char *endpoint, const char *soap_
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
-	if (!&_param_13)
+	if (!&_param_11)
 		return soap_closesock(soap);
-	soap_default_fw__reservePortResponse(soap, &_param_13);
+	soap_default_fw__reservePortResponse(soap, &_param_11);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_fw__reservePortResponse(soap, &_param_13, "fw:reservePortResponse", "");
+	soap_get_fw__reservePortResponse(soap, &_param_11, "fw:reservePortResponse", "");
 	if (soap->error)
 		return soap_recv_fault(soap, 0);
 	if (soap_body_end_in(soap)
@@ -804,7 +695,7 @@ int ConsoleDataServiceProxy::reservePort(const char *endpoint, const char *soap_
 	return soap_closesock(soap);
 }
 
-int ConsoleDataServiceProxy::registerClient(const char *endpoint, const char *soap_action, int _port, std::string _endpointUrl, struct fw__registerClientResponse &_param_14)
+int ConsoleDataServiceProxy::registerClient(const char *endpoint, const char *soap_action, int _port, std::string _endpointUrl, struct fw__registerClientResponse &_param_12)
 {	struct soap *soap = this;
 	struct fw__registerClient soap_tmp_fw__registerClient;
 	if (endpoint)
@@ -841,15 +732,124 @@ int ConsoleDataServiceProxy::registerClient(const char *endpoint, const char *so
 	 || soap_envelope_end_out(soap)
 	 || soap_end_send(soap))
 		return soap_closesock(soap);
-	if (!&_param_14)
+	if (!&_param_12)
 		return soap_closesock(soap);
-	soap_default_fw__registerClientResponse(soap, &_param_14);
+	soap_default_fw__registerClientResponse(soap, &_param_12);
 	if (soap_begin_recv(soap)
 	 || soap_envelope_begin_in(soap)
 	 || soap_recv_header(soap)
 	 || soap_body_begin_in(soap))
 		return soap_closesock(soap);
-	soap_get_fw__registerClientResponse(soap, &_param_14, "fw:registerClientResponse", "");
+	soap_get_fw__registerClientResponse(soap, &_param_12, "fw:registerClientResponse", "");
+	if (soap->error)
+		return soap_recv_fault(soap, 0);
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap_closesock(soap);
+	return soap_closesock(soap);
+}
+
+int ConsoleDataServiceProxy::selectOutlineEntity(const char *endpoint, const char *soap_action, std::string _uniqueId, bool _clearAll, struct fw__selectOutlineEntityResponse &_param_13)
+{	struct soap *soap = this;
+	struct fw__selectOutlineEntity soap_tmp_fw__selectOutlineEntity;
+	if (endpoint)
+		soap_endpoint = endpoint;
+	if (!soap_endpoint)
+		soap_endpoint = "http://localhost:30001/axis2/services/cds";
+	if (!soap_action)
+		soap_action = "";
+	soap->encodingStyle = NULL;
+	soap_tmp_fw__selectOutlineEntity._uniqueId = _uniqueId;
+	soap_tmp_fw__selectOutlineEntity._clearAll = _clearAll;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_fw__selectOutlineEntity(soap, &soap_tmp_fw__selectOutlineEntity);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_fw__selectOutlineEntity(soap, &soap_tmp_fw__selectOutlineEntity, "fw:selectOutlineEntity", NULL)
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	}
+	if (soap_end_count(soap))
+		return soap->error;
+	if (soap_connect(soap, soap_endpoint, soap_action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_fw__selectOutlineEntity(soap, &soap_tmp_fw__selectOutlineEntity, "fw:selectOutlineEntity", NULL)
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap_closesock(soap);
+	if (!&_param_13)
+		return soap_closesock(soap);
+	soap_default_fw__selectOutlineEntityResponse(soap, &_param_13);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap_closesock(soap);
+	soap_get_fw__selectOutlineEntityResponse(soap, &_param_13, "fw:selectOutlineEntityResponse", "");
+	if (soap->error)
+		return soap_recv_fault(soap, 0);
+	if (soap_body_end_in(soap)
+	 || soap_envelope_end_in(soap)
+	 || soap_end_recv(soap))
+		return soap_closesock(soap);
+	return soap_closesock(soap);
+}
+
+int ConsoleDataServiceProxy::deselectOutlineEntity(const char *endpoint, const char *soap_action, std::string uniqueId, struct fw__deselectOutlineEntityResponse &_param_14)
+{	struct soap *soap = this;
+	struct fw__deselectOutlineEntity soap_tmp_fw__deselectOutlineEntity;
+	if (endpoint)
+		soap_endpoint = endpoint;
+	if (!soap_endpoint)
+		soap_endpoint = "http://localhost:30001/axis2/services/cds";
+	if (!soap_action)
+		soap_action = "";
+	soap->encodingStyle = NULL;
+	soap_tmp_fw__deselectOutlineEntity.uniqueId = uniqueId;
+	soap_begin(soap);
+	soap_serializeheader(soap);
+	soap_serialize_fw__deselectOutlineEntity(soap, &soap_tmp_fw__deselectOutlineEntity);
+	if (soap_begin_count(soap))
+		return soap->error;
+	if (soap->mode & SOAP_IO_LENGTH)
+	{	if (soap_envelope_begin_out(soap)
+		 || soap_putheader(soap)
+		 || soap_body_begin_out(soap)
+		 || soap_put_fw__deselectOutlineEntity(soap, &soap_tmp_fw__deselectOutlineEntity, "fw:deselectOutlineEntity", NULL)
+		 || soap_body_end_out(soap)
+		 || soap_envelope_end_out(soap))
+			 return soap->error;
+	}
+	if (soap_end_count(soap))
+		return soap->error;
+	if (soap_connect(soap, soap_endpoint, soap_action)
+	 || soap_envelope_begin_out(soap)
+	 || soap_putheader(soap)
+	 || soap_body_begin_out(soap)
+	 || soap_put_fw__deselectOutlineEntity(soap, &soap_tmp_fw__deselectOutlineEntity, "fw:deselectOutlineEntity", NULL)
+	 || soap_body_end_out(soap)
+	 || soap_envelope_end_out(soap)
+	 || soap_end_send(soap))
+		return soap_closesock(soap);
+	if (!&_param_14)
+		return soap_closesock(soap);
+	soap_default_fw__deselectOutlineEntityResponse(soap, &_param_14);
+	if (soap_begin_recv(soap)
+	 || soap_envelope_begin_in(soap)
+	 || soap_recv_header(soap)
+	 || soap_body_begin_in(soap))
+		return soap_closesock(soap);
+	soap_get_fw__deselectOutlineEntityResponse(soap, &_param_14, "fw:deselectOutlineEntityResponse", "");
 	if (soap->error)
 		return soap_recv_fault(soap, 0);
 	if (soap_body_end_in(soap)

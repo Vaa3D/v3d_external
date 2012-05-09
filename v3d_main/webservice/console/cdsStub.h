@@ -301,98 +301,8 @@ public:
 };
 #endif
 
-#ifndef SOAP_TYPE_cds_fw__selectOutlineEntityResponse
-#define SOAP_TYPE_cds_fw__selectOutlineEntityResponse (42)
-/* fw:selectOutlineEntityResponse */
-struct fw__selectOutlineEntityResponse
-{
-#ifdef WITH_NOEMPTYSTRUCT
-private:
-	char dummy;	/* dummy member to enable compilation */
-#endif
-};
-#endif
-
-#ifndef SOAP_TYPE_cds_fw__selectOutlineEntity
-#define SOAP_TYPE_cds_fw__selectOutlineEntity (46)
-/* fw:selectOutlineEntity */
-struct fw__selectOutlineEntity
-{
-public:
-	std::string _uniqueId;	/* required element of type xsd:string */
-	bool _clearAll;	/* required element of type xsd:boolean */
-};
-#endif
-
-#ifndef SOAP_TYPE_cds_fw__deselectOutlineEntityResponse
-#define SOAP_TYPE_cds_fw__deselectOutlineEntityResponse (47)
-/* fw:deselectOutlineEntityResponse */
-struct fw__deselectOutlineEntityResponse
-{
-#ifdef WITH_NOEMPTYSTRUCT
-private:
-	char dummy;	/* dummy member to enable compilation */
-#endif
-};
-#endif
-
-#ifndef SOAP_TYPE_cds_fw__deselectOutlineEntity
-#define SOAP_TYPE_cds_fw__deselectOutlineEntity (50)
-/* fw:deselectOutlineEntity */
-struct fw__deselectOutlineEntity
-{
-public:
-	std::string uniqueId;	/* required element of type xsd:string */
-};
-#endif
-
-#ifndef SOAP_TYPE_cds_fw__selectEntityResponse
-#define SOAP_TYPE_cds_fw__selectEntityResponse (51)
-/* fw:selectEntityResponse */
-struct fw__selectEntityResponse
-{
-#ifdef WITH_NOEMPTYSTRUCT
-private:
-	char dummy;	/* dummy member to enable compilation */
-#endif
-};
-#endif
-
-#ifndef SOAP_TYPE_cds_fw__selectEntity
-#define SOAP_TYPE_cds_fw__selectEntity (54)
-/* fw:selectEntity */
-struct fw__selectEntity
-{
-public:
-	LONG64 _entityId;	/* required element of type xsd:long */
-	bool _clearAll;	/* required element of type xsd:boolean */
-};
-#endif
-
-#ifndef SOAP_TYPE_cds_fw__deselectEntityResponse
-#define SOAP_TYPE_cds_fw__deselectEntityResponse (55)
-/* fw:deselectEntityResponse */
-struct fw__deselectEntityResponse
-{
-#ifdef WITH_NOEMPTYSTRUCT
-private:
-	char dummy;	/* dummy member to enable compilation */
-#endif
-};
-#endif
-
-#ifndef SOAP_TYPE_cds_fw__deselectEntity
-#define SOAP_TYPE_cds_fw__deselectEntity (58)
-/* fw:deselectEntity */
-struct fw__deselectEntity
-{
-public:
-	LONG64 entityId;	/* required element of type xsd:long */
-};
-#endif
-
 #ifndef SOAP_TYPE_cds_fw__getEntityByIdResponse
-#define SOAP_TYPE_cds_fw__getEntityByIdResponse (59)
+#define SOAP_TYPE_cds_fw__getEntityByIdResponse (42)
 /* fw:getEntityByIdResponse */
 struct fw__getEntityByIdResponse
 {
@@ -402,7 +312,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__getEntityById
-#define SOAP_TYPE_cds_fw__getEntityById (62)
+#define SOAP_TYPE_cds_fw__getEntityById (45)
 /* fw:getEntityById */
 struct fw__getEntityById
 {
@@ -412,7 +322,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__removeAnnotationResponse
-#define SOAP_TYPE_cds_fw__removeAnnotationResponse (63)
+#define SOAP_TYPE_cds_fw__removeAnnotationResponse (46)
 /* fw:removeAnnotationResponse */
 struct fw__removeAnnotationResponse
 {
@@ -424,7 +334,7 @@ private:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__removeAnnotation
-#define SOAP_TYPE_cds_fw__removeAnnotation (66)
+#define SOAP_TYPE_cds_fw__removeAnnotation (49)
 /* fw:removeAnnotation */
 struct fw__removeAnnotation
 {
@@ -434,7 +344,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__getOntologyResponse
-#define SOAP_TYPE_cds_fw__getOntologyResponse (67)
+#define SOAP_TYPE_cds_fw__getOntologyResponse (50)
 /* fw:getOntologyResponse */
 struct fw__getOntologyResponse
 {
@@ -444,7 +354,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__getOntology
-#define SOAP_TYPE_cds_fw__getOntology (70)
+#define SOAP_TYPE_cds_fw__getOntology (53)
 /* fw:getOntology */
 struct fw__getOntology
 {
@@ -454,7 +364,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__getAnnotationSessionResponse
-#define SOAP_TYPE_cds_fw__getAnnotationSessionResponse (71)
+#define SOAP_TYPE_cds_fw__getAnnotationSessionResponse (54)
 /* fw:getAnnotationSessionResponse */
 struct fw__getAnnotationSessionResponse
 {
@@ -464,7 +374,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__getAnnotationSession
-#define SOAP_TYPE_cds_fw__getAnnotationSession (75)
+#define SOAP_TYPE_cds_fw__getAnnotationSession (58)
 /* fw:getAnnotationSession */
 struct fw__getAnnotationSession
 {
@@ -474,7 +384,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__getEntityTreeResponse
-#define SOAP_TYPE_cds_fw__getEntityTreeResponse (76)
+#define SOAP_TYPE_cds_fw__getEntityTreeResponse (59)
 /* fw:getEntityTreeResponse */
 struct fw__getEntityTreeResponse
 {
@@ -484,7 +394,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__getEntityTree
-#define SOAP_TYPE_cds_fw__getEntityTree (79)
+#define SOAP_TYPE_cds_fw__getEntityTree (62)
 /* fw:getEntityTree */
 struct fw__getEntityTree
 {
@@ -494,7 +404,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__getAnnotationsForEntityResponse
-#define SOAP_TYPE_cds_fw__getAnnotationsForEntityResponse (80)
+#define SOAP_TYPE_cds_fw__getAnnotationsForEntityResponse (63)
 /* fw:getAnnotationsForEntityResponse */
 struct fw__getAnnotationsForEntityResponse
 {
@@ -504,7 +414,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__getAnnotationsForEntity
-#define SOAP_TYPE_cds_fw__getAnnotationsForEntity (84)
+#define SOAP_TYPE_cds_fw__getAnnotationsForEntity (67)
 /* fw:getAnnotationsForEntity */
 struct fw__getAnnotationsForEntity
 {
@@ -514,7 +424,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__getAnnotationsForEntitiesResponse
-#define SOAP_TYPE_cds_fw__getAnnotationsForEntitiesResponse (85)
+#define SOAP_TYPE_cds_fw__getAnnotationsForEntitiesResponse (68)
 /* fw:getAnnotationsForEntitiesResponse */
 struct fw__getAnnotationsForEntitiesResponse
 {
@@ -524,7 +434,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__getAnnotationsForEntities
-#define SOAP_TYPE_cds_fw__getAnnotationsForEntities (89)
+#define SOAP_TYPE_cds_fw__getAnnotationsForEntities (72)
 /* fw:getAnnotationsForEntities */
 struct fw__getAnnotationsForEntities
 {
@@ -534,7 +444,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__getUserAnnotationColorResponse
-#define SOAP_TYPE_cds_fw__getUserAnnotationColorResponse (90)
+#define SOAP_TYPE_cds_fw__getUserAnnotationColorResponse (73)
 /* fw:getUserAnnotationColorResponse */
 struct fw__getUserAnnotationColorResponse
 {
@@ -544,7 +454,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__getUserAnnotationColor
-#define SOAP_TYPE_cds_fw__getUserAnnotationColor (93)
+#define SOAP_TYPE_cds_fw__getUserAnnotationColor (76)
 /* fw:getUserAnnotationColor */
 struct fw__getUserAnnotationColor
 {
@@ -553,8 +463,53 @@ public:
 };
 #endif
 
+#ifndef SOAP_TYPE_cds_fw__selectEntityResponse
+#define SOAP_TYPE_cds_fw__selectEntityResponse (77)
+/* fw:selectEntityResponse */
+struct fw__selectEntityResponse
+{
+#ifdef WITH_NOEMPTYSTRUCT
+private:
+	char dummy;	/* dummy member to enable compilation */
+#endif
+};
+#endif
+
+#ifndef SOAP_TYPE_cds_fw__selectEntity
+#define SOAP_TYPE_cds_fw__selectEntity (81)
+/* fw:selectEntity */
+struct fw__selectEntity
+{
+public:
+	LONG64 _entityId;	/* required element of type xsd:long */
+	bool _clearAll;	/* required element of type xsd:boolean */
+};
+#endif
+
+#ifndef SOAP_TYPE_cds_fw__deselectEntityResponse
+#define SOAP_TYPE_cds_fw__deselectEntityResponse (82)
+/* fw:deselectEntityResponse */
+struct fw__deselectEntityResponse
+{
+#ifdef WITH_NOEMPTYSTRUCT
+private:
+	char dummy;	/* dummy member to enable compilation */
+#endif
+};
+#endif
+
+#ifndef SOAP_TYPE_cds_fw__deselectEntity
+#define SOAP_TYPE_cds_fw__deselectEntity (85)
+/* fw:deselectEntity */
+struct fw__deselectEntity
+{
+public:
+	LONG64 entityId;	/* required element of type xsd:long */
+};
+#endif
+
 #ifndef SOAP_TYPE_cds_fw__reservePortResponse
-#define SOAP_TYPE_cds_fw__reservePortResponse (94)
+#define SOAP_TYPE_cds_fw__reservePortResponse (86)
 /* fw:reservePortResponse */
 struct fw__reservePortResponse
 {
@@ -564,7 +519,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__reservePort
-#define SOAP_TYPE_cds_fw__reservePort (97)
+#define SOAP_TYPE_cds_fw__reservePort (89)
 /* fw:reservePort */
 struct fw__reservePort
 {
@@ -574,7 +529,7 @@ public:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__registerClientResponse
-#define SOAP_TYPE_cds_fw__registerClientResponse (98)
+#define SOAP_TYPE_cds_fw__registerClientResponse (90)
 /* fw:registerClientResponse */
 struct fw__registerClientResponse
 {
@@ -586,13 +541,58 @@ private:
 #endif
 
 #ifndef SOAP_TYPE_cds_fw__registerClient
-#define SOAP_TYPE_cds_fw__registerClient (101)
+#define SOAP_TYPE_cds_fw__registerClient (93)
 /* fw:registerClient */
 struct fw__registerClient
 {
 public:
 	int _port;	/* required element of type xsd:int */
 	std::string _endpointUrl;	/* required element of type xsd:string */
+};
+#endif
+
+#ifndef SOAP_TYPE_cds_fw__selectOutlineEntityResponse
+#define SOAP_TYPE_cds_fw__selectOutlineEntityResponse (94)
+/* fw:selectOutlineEntityResponse */
+struct fw__selectOutlineEntityResponse
+{
+#ifdef WITH_NOEMPTYSTRUCT
+private:
+	char dummy;	/* dummy member to enable compilation */
+#endif
+};
+#endif
+
+#ifndef SOAP_TYPE_cds_fw__selectOutlineEntity
+#define SOAP_TYPE_cds_fw__selectOutlineEntity (97)
+/* fw:selectOutlineEntity */
+struct fw__selectOutlineEntity
+{
+public:
+	std::string _uniqueId;	/* required element of type xsd:string */
+	bool _clearAll;	/* required element of type xsd:boolean */
+};
+#endif
+
+#ifndef SOAP_TYPE_cds_fw__deselectOutlineEntityResponse
+#define SOAP_TYPE_cds_fw__deselectOutlineEntityResponse (98)
+/* fw:deselectOutlineEntityResponse */
+struct fw__deselectOutlineEntityResponse
+{
+#ifdef WITH_NOEMPTYSTRUCT
+private:
+	char dummy;	/* dummy member to enable compilation */
+#endif
+};
+#endif
+
+#ifndef SOAP_TYPE_cds_fw__deselectOutlineEntity
+#define SOAP_TYPE_cds_fw__deselectOutlineEntity (101)
+/* fw:deselectOutlineEntity */
+struct fw__deselectOutlineEntity
+{
+public:
+	std::string uniqueId;	/* required element of type xsd:string */
 };
 #endif
 

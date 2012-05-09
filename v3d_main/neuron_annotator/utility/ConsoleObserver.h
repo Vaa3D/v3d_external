@@ -42,8 +42,8 @@ public slots:
     // a new event is received from the console.
     void ontologySelected(qint64 rootId);
     void ontologyChanged(qint64 rootId);
-    void entitySelected(qint64 entityId, bool clearAll);
-    void entityDeselected(qint64 entityId);
+    void entitySelected(const QString & category, const QString & uniqueId, bool clearAll);
+    void entityDeselected(const QString & category, const QString & uniqueId);
     void entityViewRequested(qint64 entityId);
     void annotationsChanged(qint64 entityId);
     void sessionSelected(qint64 sessionId);

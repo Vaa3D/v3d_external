@@ -97,28 +97,19 @@ int ConsoleObserverServiceImpl::ontologyChanged(LONG64 rootId, struct fw__ontolo
     return SOAP_OK;
 }
 
-int ConsoleObserverServiceImpl::entityOutlineSelected(std::string uniqueId, bool clearAll, struct fw__entityOutlineSelectedResponse &response)
+int ConsoleObserverServiceImpl::entitySelected(std::string category, std::string uniqueId, bool clearAll, struct fw__entitySelectedResponse &_param_3)
 {
-    emit entityOutlineSelected(uniqueId, clearAll);
+    QString categoryStr = QString::fromStdString(category);
+    QString uniqueIdStr = QString::fromStdString(uniqueId);
+    emit entitySelected(categoryStr, uniqueIdStr, clearAll);
     return SOAP_OK;
 }
 
-int ConsoleObserverServiceImpl::entityOutlineDeselected(std::string uniqueId, struct fw__entityOutlineDeselectedResponse &response)
-{
-    emit entityOutlineDeselected(uniqueId);
-    return SOAP_OK;
-}
-
-int ConsoleObserverServiceImpl::entitySelected(LONG64 entityId, bool clearAll, struct fw__entitySelectedResponse &response)
-{
-    qDebug() << "ConsoleObserverServiceImpl::entitySelected"<<entityId;
-    emit entitySelected(entityId, clearAll);
-    return SOAP_OK;
-}
-
-int ConsoleObserverServiceImpl::entityDeselected(LONG64 entityId, struct fw__entityDeselectedResponse &response)
-{
-    emit entityDeselected(entityId);
+int ConsoleObserverServiceImpl::entityDeselected(std::string category, std::string uniqueId, struct fw__entityDeselectedResponse &_param_4)
+{    
+    QString categoryStr = QString::fromStdString(category);
+    QString uniqueIdStr = QString::fromStdString(uniqueId);
+    emit entityDeselected(categoryStr, uniqueIdStr);
     return SOAP_OK;
 }
 
@@ -130,7 +121,6 @@ int ConsoleObserverServiceImpl::entityChanged(LONG64 entityId, struct fw__entity
 
 int ConsoleObserverServiceImpl::entityViewRequested(LONG64 entityId, struct fw__entityViewRequestedResponse &response)
 {
-    qDebug() << "ConsoleObserverServiceImpl::entityViewRequested"<<entityId;
     emit entityViewRequested(entityId);
     return SOAP_OK;
 }
