@@ -106,6 +106,9 @@ bool CLP::check_filename(QString fn)
              (curfile_info.suffix().toUpper()=="IMG") ||
              (curfile_info.suffix().toUpper()=="HDR") ||
              (curfile_info.suffix().toUpper()=="NII") ||
+             (curfile_info.suffix().toUpper()=="MARKER") || // added for reading marker file in -i by ZJL, 2012-05-10
+             (curfile_info.suffix().toUpper()=="TXT") ||    // added for reading txt file in -i by ZJL, 2012-05-10
+             (curfile_info.suffix().toUpper()=="DOMAIN") || // added for reading domain file in -i by ZJL, 2012-05-10
              fn.contains("://") ) // url
         {
             return true;
@@ -291,16 +294,16 @@ int CLP::parse(int argc, char *argv[], void (*help)())
                                 {
                                     char *filename = argv[i+1];
 
-                                    //if( check_filename(QString(filename)) ) // do not check name in order to use any extension file in -i. Jianlong Zhou 2012-05-04
+                                    if( check_filename(QString(filename)) ) // do not check name in order to use any extension file in -i?? Jianlong Zhou 2012-05-04
                                     {
                                         i_v3d.fileList.push_back(filename);
                                         i++;
                                     }
-                                    // else //commented by ZJL 2012-05-04
-                                    // {
-                                    //     cout << "The file format is not supported or the file does not exist."<<endl;
-                                    //     return false;
-                                    // }
+                                    else
+                                    {
+                                        cout << "The file format is not supported or the file does not exist."<<endl;
+                                        return false;
+                                    }
                                 }
                             }
                             else if (!strcmp(key, "o"))
