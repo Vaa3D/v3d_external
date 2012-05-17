@@ -461,7 +461,7 @@ bool ScreenPatternAnnotator::annotate() {
     }
     compartmentIndexImage=new My4DImage();
     QString resourceDirectoryPathCopy=resourceDirectoryPath;
-    QString compartmentIndexImageFilepath=resourceDirectoryPathCopy.append(QDir::separator()).append("compartmentIndex.v3dpbd");
+    QString compartmentIndexImageFilepath=resourceDirectoryPathCopy.append(QDir::separator()).append("maskIndex.v3dpbd");
     if (!compartmentIndexLoader.loadImage(compartmentIndexImage, compartmentIndexImageFilepath)) {
         qDebug() << "Could not load compartmentIndexImage from file=" << compartmentIndexImageFilepath;
         return false;
@@ -473,7 +473,7 @@ bool ScreenPatternAnnotator::annotate() {
     // Load Abbreviation Index Map
     compartmentIndexAbbreviationMap.clear();
     QString resourceDirectoryPathCopy2=resourceDirectoryPath;
-    QString abbreviationMapFilepath=resourceDirectoryPathCopy2.append(QDir::separator()).append("compartmentAbbreviationIndex.txt");
+    QString abbreviationMapFilepath=resourceDirectoryPathCopy2.append(QDir::separator()).append("maskNameIndex.txt");
     QFile abbreviationMapFile(abbreviationMapFilepath);
     if (!abbreviationMapFile.open(QIODevice::ReadOnly)) {
         qDebug() << "Could not open file=" << abbreviationMapFilepath << " to read";
