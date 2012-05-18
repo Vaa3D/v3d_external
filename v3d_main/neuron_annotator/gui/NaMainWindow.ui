@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1217</width>
-    <height>1050</height>
+    <width>1367</width>
+    <height>1044</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -1315,7 +1315,13 @@ You can also resize the box by Ctrl + left mouse click.</string>
                         <property name="minimumSize">
                          <size>
                           <width>128</width>
-                          <height>196</height>
+                          <height>5</height>
+                         </size>
+                        </property>
+                        <property name="maximumSize">
+                         <size>
+                          <width>16777215</width>
+                          <height>5</height>
                          </size>
                         </property>
                         <property name="font">
@@ -1720,7 +1726,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1217</width>
+     <width>1367</width>
      <height>22</height>
     </rect>
    </property>
@@ -1777,12 +1783,13 @@ You can also resize the box by Ctrl + left mouse click.</string>
       <string>Stereo 3D</string>
      </property>
      <addaction name="actionMono_Off"/>
+     <addaction name="actionQuadro_120_Hz"/>
+     <addaction name="actionChecker_Interleaved_3DTV"/>
+     <addaction name="actionRow_Interleaved_Zalman"/>
      <addaction name="actionLeft_eye_view"/>
      <addaction name="actionRight_eye_view"/>
-     <addaction name="actionQuadro_120_Hz"/>
      <addaction name="actionAnaglyph_Red_Cyan"/>
      <addaction name="actionAnaglyph_Green_Magenta"/>
-     <addaction name="actionRow_Interleaved_Zalman"/>
      <addaction name="separator"/>
      <addaction name="actionSwap_Eyes"/>
     </widget>
@@ -2067,7 +2074,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <bool>true</bool>
    </property>
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Row Interleaved (Zalman)</string>
@@ -2147,6 +2154,19 @@ You can also resize the box by Ctrl + left mouse click.</string>
    </property>
    <property name="visible">
     <bool>false</bool>
+   </property>
+  </action>
+  <action name="actionCurrent_MIP">
+   <property name="text">
+    <string>Current MIP</string>
+   </property>
+  </action>
+  <action name="actionChecker_Interleaved_3DTV">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Checker Interleaved (3DTV)</string>
    </property>
   </action>
  </widget>

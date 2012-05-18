@@ -90,6 +90,7 @@ public slots:
     void setStereoAnaglyphRedCyan(bool);
     void setStereoAnaglyphGreenMagenta(bool);
     void setStereoRowInterleaved(bool);
+    void setStereoCheckerInterleaved(bool b);
     void setStereoMode(int);
     void setCustomCutMode();
     void cancelCustomCutMode();

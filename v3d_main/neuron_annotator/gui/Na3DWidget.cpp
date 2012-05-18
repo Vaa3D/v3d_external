@@ -237,13 +237,21 @@ void Na3DWidget::setStereoAnaglyphGreenMagenta(bool b)
 
 void Na3DWidget::setStereoRowInterleaved(bool b)
 {
+    qDebug() << "Na3DWidget::setStereoRowInterleaved(" << b << __FILE__ << __LINE__;
     if (b)
         setStereoMode(RendererNeuronAnnotator::STEREO_ROW_INTERLEAVED);
 }
 
+void Na3DWidget::setStereoCheckerInterleaved(bool b)
+{
+    qDebug() << "Na3DWidget::setStereoCheckerInterleaved(" << b << __FILE__ << __LINE__;
+    if (b)
+        setStereoMode(RendererNeuronAnnotator::STEREO_CHECKER_INTERLEAVED);
+}
 
 void Na3DWidget::setStereoMode(int m)
 {
+    qDebug() << "Na3DWidget::setStereoMode()" << m << __FILE__ << __LINE__;
     if (! getRendererNa()) return;
     getRendererNa()->setStereoMode(m);
     update();

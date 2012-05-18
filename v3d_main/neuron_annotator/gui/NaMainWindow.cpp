@@ -626,6 +626,7 @@ void NaMainWindow::initializeStereo3DOptions()
     stereoModeGroup->addAction(ui.actionAnaglyph_Red_Cyan);
     stereoModeGroup->addAction(ui.actionAnaglyph_Green_Magenta);
     stereoModeGroup->addAction(ui.actionRow_Interleaved_Zalman);
+    stereoModeGroup->addAction(ui.actionChecker_Interleaved_3DTV);
 
     connect(ui.actionMono_Off, SIGNAL(toggled(bool)),
             ui.v3dr_glwidget, SLOT(setStereoOff(bool)));
@@ -641,6 +642,8 @@ void NaMainWindow::initializeStereo3DOptions()
             ui.v3dr_glwidget, SLOT(setStereoAnaglyphGreenMagenta(bool)));
     connect(ui.actionRow_Interleaved_Zalman, SIGNAL(toggled(bool)),
             ui.v3dr_glwidget, SLOT(setStereoRowInterleaved(bool)));
+    connect(ui.actionChecker_Interleaved_3DTV, SIGNAL(toggled(bool)),
+            ui.v3dr_glwidget, SLOT(setStereoCheckerInterleaved(bool)));
 
     connect(ui.v3dr_glwidget, SIGNAL(quadStereoSupported(bool)),
             this, SLOT(supportQuadStereo(bool)));

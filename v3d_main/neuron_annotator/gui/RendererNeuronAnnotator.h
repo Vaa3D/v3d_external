@@ -23,14 +23,15 @@ public:
         STEREO_QUAD_BUFFERED,
         STEREO_ANAGLYPH_RED_CYAN,
         STEREO_ANAGLYPH_GREEN_MAGENTA,
-        STEREO_ROW_INTERLEAVED
+        STEREO_ROW_INTERLEAVED,
+        STEREO_CHECKER_INTERLEAVED
     };
 
 public:
     RendererNeuronAnnotator(void* widget);
     virtual ~RendererNeuronAnnotator();
-    virtual void paint();
-    void paint_mono();
+    virtual void paint(); // for stereo viewing
+    void paint_mono(bool clear=true);
     virtual void setupData(void* data);
     virtual int  _getBufFillSize(int w);
     virtual int  _getTexFillSize(int w);

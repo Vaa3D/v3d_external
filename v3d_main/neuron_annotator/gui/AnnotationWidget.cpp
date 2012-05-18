@@ -351,7 +351,7 @@ void AnnotationWidget::consoleConnect() {
         }
         else if (ui->ontologyTreeView->isVisible()) {
             QString msg = QString("Could not connect to the Console: %1").arg(*consoleObserverService->errorMessage());
-            showErrorDialog(msg);
+            // showErrorDialog(msg);
         }
         return;
     }
