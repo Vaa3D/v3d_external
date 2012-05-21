@@ -2488,3 +2488,5 @@ v3d_main/neuron_annotator/utility/FFMpegVideo.h
 v3d_main/neuron_annotator/utility/FFMpegVideo.cpp
 v3d_main/neuron_annotator/utility/loadV3dFFMpeg.h
 v3d_main/neuron_annotator/utility/loadV3dFFMpeg.cpp
+v3d_main/neuron_annotator/data_model/IntensityHistogram.cpp
+v3d_main/neuron_annotator/data_model/IntensityHistogram.h

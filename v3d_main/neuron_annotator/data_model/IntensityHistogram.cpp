@@ -1,6 +1,7 @@
 #include "IntensityHistogram.h"
 #include <iostream>
 #include <cassert>
+#include <limits>
 
 using namespace std;
 

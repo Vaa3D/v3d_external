@@ -66,6 +66,8 @@ public:
     void applyCustomCut(const CameraModel&);
     void applyCutPlaneInImageFrame(Vector3D point, Vector3D direction);
     void setUndoStack(QUndoStack& undoStackParam); // for undo/redo custom clip planes
+    Stereo3DMode getStereoMode() const {return stereo3DMode;}
+    bool getStereoSwapEyes() const {return bStereoSwapEyes;}
     using Renderer_gl2::sampleScaleX;
     using Renderer_gl2::sampleScaleY;
     using Renderer_gl2::sampleScaleZ;
