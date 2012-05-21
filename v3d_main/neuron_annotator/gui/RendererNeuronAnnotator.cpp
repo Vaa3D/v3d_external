@@ -1159,35 +1159,47 @@ public:
         glPopAttrib();
     }
 
-    void fillStencil(int width, int height)
+    void fillStencil(RendererNeuronAnnotator& renderer)
     {
+        int width = renderer.getScreenWidth();
+        int height = renderer.getScreenHeight();
+
+        // Remember current OpenGL state
         glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT | GL_POLYGON_BIT | GL_STENCIL_BUFFER_BIT);
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();
+
+        // Modify only the stencil buffer
         glDisable(GL_LIGHTING); // no shading
         glDisable(GL_DEPTH_TEST); // don't modify depth buffer
         glDisable(GL_BLEND);
-        glViewport(0, 0, width, height);
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        glMatrixMode(GL_PROJECTION);
-        glOrtho(0.0, width, 0.0, height, -1.0, 1.0); // 2D orthographic projection
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
         glDrawBuffer(GL_BACK);
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // don't modify color buffer
         glDepthMask(GL_FALSE);
         glEnable(GL_STENCIL_TEST);
+
+        // Draw a rectangle over the full screen, into the stencil buffer
+        // using the simplest possible OpenGL geometry
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        glViewport(0, 0, width, height);
+        glOrtho(0.0, width, 0.0, height, -1.0, 1.0); // 2D orthographic projection
+
         glClearStencil(0);
         glClear(GL_STENCIL_BUFFER_BIT);
         glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE); // Modify the stencil buffer everywhere
         glStencilFunc(GL_ALWAYS, 1, 1);
         glColor4f(1,1,1,0); // All ones
+        // Use stippling trick to get the screen-space mask we need
         glEnable(GL_POLYGON_STIPPLE);
         glPolygonStipple(stipple);
         glRecti(0, 0, width, height);
+
+        // Restore OpenGL state
         glMatrixMode(GL_PROJECTION);
         glPopMatrix();
         glMatrixMode(GL_MODELVIEW);
@@ -1261,7 +1273,7 @@ void RendererNeuronAnnotator::paint()
         {
             {
                 RowInterleavedStereoView v(StereoEyeView::LEFT, bStereoSwapEyes? StereoEyeView::RIGHT : StereoEyeView::LEFT);
-                v.fillStencil(screenW, screenH);
+                v.fillStencil(*this);
                 paint_mono();
             }
             {
@@ -1275,7 +1287,7 @@ void RendererNeuronAnnotator::paint()
         {
             {
                 CheckerInterleavedStereoView v(StereoEyeView::LEFT, bStereoSwapEyes? StereoEyeView::RIGHT : StereoEyeView::LEFT);
-                v.fillStencil(screenW, screenH);
+                v.fillStencil(*this);
                 paint_mono();
             }
             {

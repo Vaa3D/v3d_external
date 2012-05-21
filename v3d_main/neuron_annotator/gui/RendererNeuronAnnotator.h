@@ -44,6 +44,8 @@ public:
     virtual void drawUnitFrontSlice(int line=0) {
         // qDebug() << "drawUnitFrontSlice";
     }
+    virtual int getScreenWidth() const {return screenW;}
+    virtual int getScreenHeight() const {return screenH;}
     //
     void setDepthClip(float totalDepthInGlUnits);
     void updateDepthClip();
