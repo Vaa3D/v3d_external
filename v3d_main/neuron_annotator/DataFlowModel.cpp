@@ -17,7 +17,7 @@ DataFlowModel::DataFlowModel(QObject* parentParam /* = NULL */)
     // Allocate data flow objects, in order, to automatically set up multithreaded data stream
     , volumeData(/* this */) // load from disk (cannot move qobject with a parent to a QThread)
     , neuronSelectionModel(volumeData) // which layers are shown?
-    , dataColorModel(volumeData) // choose colors
+    , dataColorModel(volumeData, true) // choose colors
     , neuronFragmentData(volumeData)
     , zSliceColors(volumeData, dataColorModel, neuronSelectionModel)
     , mipFragmentData(volumeData /* , this */) // project in Z, slice on fragment index

@@ -224,6 +224,12 @@ void NaVolumeData::loadVolumeDataFromFiles()
         return;
     }
 
+    // populate histograms
+    histograms.assign((size_t)(originalImageProxy.sc + 1), IntensityHistogram());
+    for(int c = 0; c < originalImageProxy.sc; ++c)
+        histograms[c].populate(originalImageProxy, c);
+    histograms[originalImageProxy.sc].populate(referenceImageProxy);
+
     // nerd report
     size_t data_size = 0;
     data_size += originalImageStack->getTotalBytes();
@@ -425,6 +431,11 @@ bool NaVolumeData::Writer::loadStacks()
 //////////////////////////////////
 // NaVolumeData::Reader methods //
 //////////////////////////////////
+
+const IntensityHistogram& NaVolumeData::Reader::getHistogram(int channelIndex) const
+{
+    return m_data->histograms[channelIndex];
+}
 
 const Image4DProxy<My4DImage>& NaVolumeData::Reader::getNeuronMaskProxy() const
 {

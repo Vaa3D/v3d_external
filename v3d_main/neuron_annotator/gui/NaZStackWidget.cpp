@@ -54,6 +54,8 @@ NaZStackWidget::NaZStackWidget(QWidget * parent)
     connect(this, SIGNAL(curColorChannelChanged(NaZStackWidget::Color)), this, SLOT(updateHDRView()));
     connect(this, SIGNAL(mouseLeftDragEvent(int, int, QPoint)),
             this, SLOT(onMouseLeftDragEvent(int, int, QPoint)));
+    connect(&cameraModel, SIGNAL(focusChanged(Vector3D)),
+            this, SLOT(update()));
 }
 
 NaZStackWidget::~NaZStackWidget() {}

@@ -104,6 +104,7 @@ RESOURCES += ../neuron_annotator/resources.qrc
 HEADERS += \
     ../neuron_annotator/data_model/CustomClipPlanes.h \
     ../neuron_annotator/data_model/Dimension.h \
+    ../neuron_annotator/data_model/IntensityHistogram.h \
     ../neuron_annotator/data_model/NaLockableData.h \
     ../neuron_annotator/data_model/NaVolumeData.h \
     ../neuron_annotator/data_model/MipFragmentData.h \
@@ -206,6 +207,7 @@ SOURCES += \
     ../neuron_annotator/MultiColorImageStackNode.cpp \
     ../neuron_annotator/data_model/CustomClipPlanes.cpp \
     ../neuron_annotator/data_model/Dimension.cpp \
+    ../neuron_annotator/data_model/IntensityHistogram.cpp \
     ../neuron_annotator/data_model/NaLockableData.cpp \
     ../neuron_annotator/data_model/NaVolumeData.cpp \
     ../neuron_annotator/data_model/MipFragmentData.cpp \

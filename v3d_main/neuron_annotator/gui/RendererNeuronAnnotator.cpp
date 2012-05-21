@@ -16,6 +16,8 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     , slabDepth(0)
 {
     // qDebug() << "RendererNeuronAnnotator constructor" << this;
+    shaderTex3D = NULL;
+    shaderTex2D = NULL;
 
     // black background for consistency with other viewers
     RGBA32f bg_color;

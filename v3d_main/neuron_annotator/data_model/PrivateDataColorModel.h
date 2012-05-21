@@ -19,8 +19,8 @@ public:
     int getNumberOfDataChannels() const {
         return (int)channelColors.size(); // +1 for reference
     }
-
     bool initialize(const NaVolumeData::Reader& volumeReader);
+    bool autoCorrect(const NaVolumeData::Reader& volumeReader);
     const ChannelColorModel& getReferenceChannel() const;
     QRgb blend(const double channelIntensities[]) const;
     QRgb blendInvisible(const double channelIntensities[]) const; // Ignores channel visibility

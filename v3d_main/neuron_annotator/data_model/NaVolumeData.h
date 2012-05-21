@@ -3,6 +3,7 @@
 
 #include "NaLockableData.h"
 #include "../../v3d/v3d_core.h"
+#include "IntensityHistogram.h"
 
 // At default display, show reference channel at max 60% gray
 // #define REF_CHANNEL_DIMNESS_FACTOR 0.6
@@ -69,6 +70,7 @@ private:
     Image4DProxy<My4DImage> neuronMaskProxy;
     Image4DProxy<My4DImage> referenceImageProxy;
     std::vector<int> stackLoadProgressValues;
+    std::vector<IntensityHistogram> histograms;
     int currentProgress;
 
 public:
@@ -86,6 +88,7 @@ public:
         const Image4DProxy<My4DImage>& getNeuronMaskProxy() const;
         const Image4DProxy<My4DImage>& getOriginalImageProxy() const;
         const Image4DProxy<My4DImage>& getReferenceImageProxy() const;
+        const IntensityHistogram& getHistogram(int channelIndex) const;
         ImagePixelType getOriginalDatatype() const {return m_data->originalImageStack->getDatatype();}
         bool hasReferenceImage() const {return m_data->referenceStack != NULL;}
         bool hasNeuronMask() const {return m_data->neuronMaskStack != NULL;}

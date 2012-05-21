@@ -57,6 +57,30 @@ void PrivateDataColorModel::colorizeIncremental(
     }
 }
 
+bool PrivateDataColorModel::autoCorrect(const NaVolumeData::Reader& volumeReader)
+{
+    if (! volumeReader.hasReadLock()) return false;
+    const Image4DProxy<My4DImage>& volProxy = volumeReader.getOriginalImageProxy();
+    if (volProxy.sx <= 0) return false; // data not populated yet?
+    // Add one for reference channel
+    int numChannels = volProxy.sc + 1;
+    for (int channel = 0; channel < numChannels; ++channel)
+    {
+        ChannelColorModel& channelModel = channelColors[channel];
+        const IntensityHistogram& hist = volumeReader.getHistogram(channel);
+        // Use quantile range
+        int rangeMin = hist.quantileIntensity(0.50);
+        int rangeMax = hist.quantileIntensity(1.00);
+        if (channel == volProxy.sc) // reference channel
+        {
+            rangeMin = hist.quantileIntensity(0.10);
+            rangeMax = hist.quantileIntensity(1.00);
+        }
+        qDebug() << "Data channel" << channel << "adjusted range is" << rangeMin << "to" << rangeMax;
+        channelModel.setHdrRange(rangeMin, rangeMax);
+    }
+}
+
 bool PrivateDataColorModel::initialize(const NaVolumeData::Reader& volumeReader)
 {
     setSharedGamma(1.0);
