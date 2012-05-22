@@ -134,6 +134,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
 #define IS_VOLUME() 	(namelen>=3 && names[0]==dcVolume)
 #define IS_SURFACE() 	(namelen>=3 && names[0]==dcSurface)
+#define NEURON_CONDITION  (listNeuronTree.size()>=1 && w && curImg) //only allow one neuron, and assume it is the one being reconstructed from image
+
 	//qDebug("	namelen=%d, names[0]=%d", namelen, names[0]);
 
 	lastSliceType = vsSliceNone; //for define maker on cross-section slice
@@ -242,6 +244,8 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
           *actCurveCreate_pointclick_fm=0, *actCurveMarkerLists_fm=0, *actCurveRefine_fm=0,*actCurveEditRefine_fm=0,
           *actCurveMarkerPool_fm=0, *actCurveCreateMarkerGD=0, *actCurveFrom1Marker_fm=0, *actCurveTiltedBB_fm=0, *actCurveTiltedBB_fm_sbbox=0,
           *actCurveCreateTest=0,// ZJL 110905
+    
+            *actClearedAllGeneratedObjects=0, //PHC 120522
 
 			*actCurveCreate_zoom_imaging=0, *actMarkerCreate_zoom_imaging=0,
 	        *actMarkerAblateOne_imaging=0, *actMarkerAblateAll_imaging=0,
@@ -441,6 +445,11 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 				listAct.append(act_imaging_cut_3d_curve = new QAction("Cut-3D-curve", w));
 #endif
 //#endif
+                if (NEURON_CONDITION)
+                {
+                    listAct.append(act = new QAction("", w)); act->setSeparator(true);
+                    listAct.append(actClearedAllGeneratedObjects = new QAction("Clear all generated surface objects (e.g. traced neuron)", w));
+                }
 			}
 #endif
 #endif
@@ -1383,7 +1392,6 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 
 
 #define __actions_of_neuron__ // dummy, just for easy locating
-#define NEURON_CONDITION  (listNeuronTree.size()>=1 && w && curImg) //only allow one neuron, and assume it is the one being reconstructed from image
 
 	else if (act==actNeuronToEditable || act==actDecomposeNeuron)
 	{
@@ -1752,6 +1760,16 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
         printf("the main window pointer = [%p]\n", ((iDrawExternalParameter*)_idep)->V3Dmainwindow);
 		doNeuronToolBoxPlugin(((iDrawExternalParameter*)_idep)->V3Dmainwindow, *np);
 	}
+    else if (act==actClearedAllGeneratedObjects)
+    {
+		if (NEURON_CONDITION)
+		{
+            curImg->tracedNeuron.seg.clear();
+            curImg->update_3drenderer_neuron_view();
+        }
+    }
+    
+
 
 #endif //tes_main_cpp
 
@@ -1780,7 +1798,7 @@ int Renderer_gl1::processHit(int namelen, int names[], int cx, int cy, bool b_me
 		if (a>0)
 			QMessageBox::information(0, "Surface Volume", QString("The surface volume is: %1").arg(a));
 	}
-
+    
 	return update;
 }
 
