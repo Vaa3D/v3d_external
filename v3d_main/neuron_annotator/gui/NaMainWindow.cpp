@@ -74,6 +74,7 @@ NaMainWindow::NaMainWindow()
     , isInCustomCutMode(false)
     , undoStack(NULL)
     , bShowCrosshair(true) // default to on
+    , viewMode(VIEW_SINGLE_STACK)
 {
     // Set up potential 3D stereo modes before creating QGLWidget.
     QGLFormat glFormat = QGLFormat::defaultFormat();
@@ -355,13 +356,62 @@ NaMainWindow::NaMainWindow()
     connect(ui.actionDynamic_range, SIGNAL(triggered(bool)),
             this, SLOT(showDynamicRangeTool()));
 
-    // Experimental curtain interface
-    // connect(ui.curtainBox, SIGNAL(activated(int)),
-    //         this, SLOT(selectCurtain(int)));
+    connect(ui.actionFull_Screen, SIGNAL(toggled(bool)),
+            this, SLOT(setFullScreen(bool)));
+    connect(ui.actionExit_Full_Screen, SIGNAL(toggled(bool)),
+            this, SLOT(exitFullScreen()));
 
     initializeContextMenus();
     initializeStereo3DOptions();
     connectCustomCut();
+}
+
+/* slot */
+void NaMainWindow::setViewMode(ViewMode mode)
+{
+    if (mode == viewMode)
+        return; // no change
+    viewMode = mode;
+    if (mode == VIEW_SINGLE_STACK) {
+        ui.mipsFrame->setVisible(false);
+        ui.annotationFrame->setVisible(false);
+    }
+    if (mode == VIEW_NEURON_SEPARATION) {
+        ui.mipsFrame->setVisible(true);
+        ui.annotationFrame->setVisible(true);
+    }
+}
+
+/* slot */
+void NaMainWindow::exitFullScreen()
+{
+    if (viewMode == VIEW_NEURON_SEPARATION)
+    {
+        ui.annotationFrame->show();
+        ui.mipsFrame->show();
+    }
+    ui.viewerSelectorAndControlFrame->show();
+    statusBar()->show();
+    showNormal();
+}
+
+/* slot */
+void NaMainWindow::setFullScreen(bool b)
+{
+    if (isFullScreen() == b)
+        return;
+    if (b)
+    {
+        ui.annotationFrame->hide();
+        ui.mipsFrame->hide();
+        ui.viewerSelectorAndControlFrame->hide();
+        statusBar()->hide();
+        showFullScreen();
+    }
+    else
+    {
+        exitFullScreen();
+    }
 }
 
 /* slot */
@@ -410,6 +460,7 @@ void NaMainWindow::on_actionOpen_Single_Movie_Stack_triggered()
         qDebug() << "Problem saving parent directory of " << fileName;
     }
 
+    setViewMode(VIEW_SINGLE_STACK);
     ui.mipsFrame->setVisible(false);
     if (! loadSingleVolumeMovieFile(fileName))
         QMessageBox::warning(this, tr("Could not load movie volume"),
@@ -512,6 +563,13 @@ void NaMainWindow::dropEvent(QDropEvent * event)
     // qDebug() << "NaMainWindow::dropEvent" << fileName << __FILE__ << __LINE__;
 }
 
+void NaMainWindow::moveEvent ( QMoveEvent * event )
+{
+    qDebug() << "NaMainWindow::moveEvent()" << __FILE__ << __LINE__;
+    ui.v3dr_glwidget->updateScreenPosition();
+    QMainWindow::moveEvent(event);
+}
+
 void NaMainWindow::loadSingleStack(QString fileName)
 {
     ui.actionV3DDefault->trigger(); // switch mode
@@ -562,29 +620,6 @@ void NaMainWindow::toggleCustomCutMode()
 }
 
 /* slot */
-/*
-void NaMainWindow::selectCurtain(int index)
-{
-    if (index == 0)
-        addNewCurtain();
-    else
-        qDebug() << "TODO - actually select a curtain";
-}
-*/
-
-/* slot */
-/*
-void NaMainWindow::addNewCurtain()
-{
-    int index = ui.curtainBox->count();
-    QString name("Curtain %1"); name = name.arg(index);
-    ui.curtainBox->addItem(name);
-    ui.curtainBox->setCurrentIndex(index);
-    qDebug() << "TODO - actually add a curtain";
-}
-*/
-
-/* slot */
 void NaMainWindow::showDynamicRangeTool()
 {
     // qDebug() << "NaMainWindow::showDynamicRangeTool";
@@ -627,6 +662,7 @@ void NaMainWindow::initializeStereo3DOptions()
     stereoModeGroup->addAction(ui.actionAnaglyph_Green_Magenta);
     stereoModeGroup->addAction(ui.actionRow_Interleaved_Zalman);
     stereoModeGroup->addAction(ui.actionChecker_Interleaved_3DTV);
+    stereoModeGroup->addAction(ui.actionColumn_Interleaved);
 
     connect(ui.actionMono_Off, SIGNAL(toggled(bool)),
             ui.v3dr_glwidget, SLOT(setStereoOff(bool)));
@@ -644,6 +680,8 @@ void NaMainWindow::initializeStereo3DOptions()
             ui.v3dr_glwidget, SLOT(setStereoRowInterleaved(bool)));
     connect(ui.actionChecker_Interleaved_3DTV, SIGNAL(toggled(bool)),
             ui.v3dr_glwidget, SLOT(setStereoCheckerInterleaved(bool)));
+    connect(ui.actionColumn_Interleaved, SIGNAL(toggled(bool)),
+            ui.v3dr_glwidget, SLOT(setStereoColumnInterleaved(bool)));
 
     connect(ui.v3dr_glwidget, SIGNAL(quadStereoSupported(bool)),
             this, SLOT(supportQuadStereo(bool)));
@@ -1009,7 +1047,7 @@ void NaMainWindow::openMulticolorImageStack(QString dirName)
                  return;
     }
 
-    ui.mipsFrame->setVisible(true);
+    setViewMode(VIEW_NEURON_SEPARATION);
     onDataLoadStarted();
     if (!loadAnnotationSessionFromDirectory(imageDir)) {
         QMessageBox::warning(this, tr("Could not load image directory"),

@@ -1786,6 +1786,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
      <addaction name="actionQuadro_120_Hz"/>
      <addaction name="actionChecker_Interleaved_3DTV"/>
      <addaction name="actionRow_Interleaved_Zalman"/>
+     <addaction name="actionColumn_Interleaved"/>
      <addaction name="actionLeft_eye_view"/>
      <addaction name="actionRight_eye_view"/>
      <addaction name="actionAnaglyph_Red_Cyan"/>
@@ -1795,6 +1796,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     </widget>
     <addaction name="actionShow_all_neurons_in_empty_space"/>
     <addaction name="actionClear_Hide_All"/>
+    <addaction name="actionFull_Screen"/>
     <addaction name="separator"/>
     <addaction name="actionShow_Crosshair"/>
     <addaction name="actionLink_viewers"/>
@@ -1804,6 +1806,7 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <addaction name="actionShow_Brain_Compartments"/>
     <addaction name="separator"/>
     <addaction name="menuStereo_3D"/>
+    <addaction name="actionExit_Full_Screen"/>
    </widget>
    <widget class="QMenu" name="menuWork_Mode">
     <property name="title">
@@ -2167,6 +2170,36 @@ You can also resize the box by Ctrl + left mouse click.</string>
    </property>
    <property name="text">
     <string>Checker Interleaved (3DTV)</string>
+   </property>
+  </action>
+  <action name="actionFull_Screen">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Full Screen</string>
+   </property>
+   <property name="shortcut">
+    <string>F</string>
+   </property>
+  </action>
+  <action name="actionExit_Full_Screen">
+   <property name="text">
+    <string>Exit Full Screen</string>
+   </property>
+   <property name="shortcut">
+    <string>Esc</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="actionColumn_Interleaved">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Column Interleaved</string>
    </property>
   </action>
  </widget>

@@ -1150,9 +1150,9 @@ public:
 
         // Left image in the zero regions
         if (eye == LEFT)
-            glStencilFunc( GL_EQUAL, 0, 1 );
+            glStencilFunc( GL_EQUAL, 0, ~0 );
         else
-            glStencilFunc( GL_NOTEQUAL, 0, 1 );
+            glStencilFunc( GL_NOTEQUAL, 0, ~0 );
         CHECK_GLErrorString_throw();
     }
 
@@ -1193,13 +1193,44 @@ public:
 
         glClearStencil(0);
         glClear(GL_STENCIL_BUFFER_BIT);
-        glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE); // Modify the stencil buffer everywhere
-        glStencilFunc(GL_ALWAYS, 1, 1);
+        // glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE); // Modify the stencil buffer everywhere
+        glStencilOp(GL_INVERT, GL_INVERT, GL_INVERT); // Modify the stencil buffer everywhere
+        glStencilFunc(GL_ALWAYS, ~0, ~0);
+
         glColor4f(1,1,1,0); // All ones
-        // Use stippling trick to get the screen-space mask we need
-        glEnable(GL_POLYGON_STIPPLE);
-        glPolygonStipple(stipple);
-        glRecti(0, 0, width, height);
+        glLineWidth(1.0);
+        glDisable(GL_LINE_SMOOTH);
+
+        // It might not be possible to guarantee the registration of the stippling.  So use GL_LINES
+        if ( (renderer.getStereoMode() == RendererNeuronAnnotator::STEREO_ROW_INTERLEAVED)
+            || (renderer.getStereoMode() == RendererNeuronAnnotator::STEREO_CHECKER_INTERLEAVED) )
+        {
+            int offset = 0;
+            // blank alternate rows
+            if (renderer.getScreenRowParity())
+                offset = 1;
+            glBegin(GL_LINES);
+            for(float y = 0.5 - offset + height; y >= 0; y -= 2) {
+                glVertex3f(0, y, 0);
+                glVertex3f(width, y, 0);
+            }
+            glEnd();
+        }
+
+        if ( (renderer.getStereoMode() == RendererNeuronAnnotator::STEREO_COLUMN_INTERLEAVED)
+            || (renderer.getStereoMode() == RendererNeuronAnnotator::STEREO_CHECKER_INTERLEAVED) )
+        {
+            // blank alternate columns
+            int offset = 1;
+            if (renderer.getScreenColumnParity())
+                offset = 0;
+            glBegin(GL_LINES);
+            for(float x = 0.5 - offset; x <= width; x += 2) {
+                glVertex3f(x, 0, 0);
+                glVertex3f(x, height, 0);
+            }
+            glEnd();
+        }
 
         // Restore OpenGL state
         glMatrixMode(GL_PROJECTION);
@@ -1272,6 +1303,7 @@ void RendererNeuronAnnotator::paint()
         }
         break;
     case STEREO_ROW_INTERLEAVED:
+    case STEREO_COLUMN_INTERLEAVED:
         {
             {
                 RowInterleavedStereoView v(StereoEyeView::LEFT, bStereoSwapEyes? StereoEyeView::RIGHT : StereoEyeView::LEFT);
@@ -1287,13 +1319,17 @@ void RendererNeuronAnnotator::paint()
         }    
     case STEREO_CHECKER_INTERLEAVED:
         {
+            GLubyte* stipple = checkStipple0;
+            qDebug() << screenRowParity << screenColumnParity;
+            if ( (screenRowParity != screenColumnParity) )
+                stipple = checkStipple1;
             {
-                CheckerInterleavedStereoView v(StereoEyeView::LEFT, bStereoSwapEyes? StereoEyeView::RIGHT : StereoEyeView::LEFT);
+                CheckerInterleavedStereoView v(StereoEyeView::LEFT, bStereoSwapEyes? StereoEyeView::RIGHT : StereoEyeView::LEFT, stipple);
                 v.fillStencil(*this);
                 paint_mono();
             }
             {
-                CheckerInterleavedStereoView v(StereoEyeView::RIGHT, bStereoSwapEyes? StereoEyeView::LEFT : StereoEyeView::RIGHT);
+                CheckerInterleavedStereoView v(StereoEyeView::RIGHT, bStereoSwapEyes? StereoEyeView::LEFT : StereoEyeView::RIGHT, stipple);
                 // DO NOT CLEAR
                 paint_mono(false);
             }

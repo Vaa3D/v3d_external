@@ -88,6 +88,7 @@ void DataColorModel::initialize()
 
 void DataColorModel::setChannelColor(int index, /*QRgb*/ int color)
 {
+    if (d.constData()->getNumberOfDataChannels() <= index) return;
     if (d.constData()->getChannelColor(index) == color) return;
     {
         Writer colorWriter(*this);

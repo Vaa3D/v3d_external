@@ -19,6 +19,8 @@ Na3DWidget::Na3DWidget(QWidget* parent)
         , bClickIsWaiting(false)
         , undoStack(NULL)
         , cachedRelativeScale(1.0)
+        , stereo3DMode(RendererNeuronAnnotator::STEREO_OFF)
+        , bStereoSwapEyes(false)
 {
     if (renderer) {
         delete renderer;
@@ -90,6 +92,33 @@ Na3DWidget::~Na3DWidget()
 {
     delete _idep; _idep = NULL;
     if (rotateCursor) delete rotateCursor; rotateCursor = NULL;
+}
+
+/* slot */
+void Na3DWidget::updateScreenPosition()  // for stencil based 3D modes
+{
+    qDebug() << "Na3DWidget::updateScreenPosition()" << __FILE__ << __LINE__;
+    if (getRendererNa())
+    {
+        QPoint p = mapToGlobal(QPoint(0, 0));
+        bool rp = (p.y() % 2) != 0;
+        bool cp = (p.x() % 2) != 0;
+        qDebug() << p.x() << p.y() << rp << cp;
+        bool bChanged = false;
+        if (getRendererNa()->setScreenRowParity( rp ))
+            bChanged = true;
+        if (getRendererNa()->setScreenColumnParity( cp ))
+            bChanged = true;
+        if (bChanged)
+            update();
+    }
+}
+
+/* virtual */
+void Na3DWidget::moveEvent(QMoveEvent * event)
+{
+    updateScreenPosition();
+    V3dR_GLWidget::moveEvent(event);
 }
 
 void Na3DWidget::setUndoStack(QUndoStack& undoStackParam) // for undo/redo custom clip planes
@@ -242,16 +271,24 @@ void Na3DWidget::setStereoRowInterleaved(bool b)
         setStereoMode(RendererNeuronAnnotator::STEREO_ROW_INTERLEAVED);
 }
 
+void Na3DWidget::setStereoColumnInterleaved(bool b)
+{
+    qDebug() << "Na3DWidget::setStereoColumnInterleaved(" << b << __FILE__ << __LINE__;
+    if (b)
+        setStereoMode(RendererNeuronAnnotator::STEREO_COLUMN_INTERLEAVED);
+}
+
 void Na3DWidget::setStereoCheckerInterleaved(bool b)
 {
-    qDebug() << "Na3DWidget::setStereoCheckerInterleaved(" << b << __FILE__ << __LINE__;
+    // qDebug() << "Na3DWidget::setStereoCheckerInterleaved(" << b << __FILE__ << __LINE__;
     if (b)
         setStereoMode(RendererNeuronAnnotator::STEREO_CHECKER_INTERLEAVED);
 }
 
 void Na3DWidget::setStereoMode(int m)
 {
-    qDebug() << "Na3DWidget::setStereoMode()" << m << __FILE__ << __LINE__;
+    // qDebug() << "Na3DWidget::setStereoMode()" << m << __FILE__ << __LINE__;
+    stereo3DMode = (RendererNeuronAnnotator::Stereo3DMode)m;
     if (! getRendererNa()) return;
     getRendererNa()->setStereoMode(m);
     update();
@@ -987,6 +1024,9 @@ void Na3DWidget::choiceRenderer()
         setAlphaBlending(_renderMode == Renderer::rmAlphaBlendingProjection);
         if (undoStack)
             getRendererNa()->setUndoStack(*undoStack);
+        // Retain setting for stereo3D
+        getRendererNa()->setStereoMode(stereo3DMode);
+        updateScreenPosition();
     }
 }
 

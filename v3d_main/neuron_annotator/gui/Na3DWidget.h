@@ -37,6 +37,7 @@ public:
     virtual void keyPressEvent(QKeyEvent *e);
     virtual void keyReleaseEvent(QKeyEvent *e);
     virtual void resizeEvent(QResizeEvent * event);
+    virtual void moveEvent(QMoveEvent * event);
     virtual void setDataFlowModel(const DataFlowModel&);
     void resetVolumeBoundary();
     virtual RendererNeuronAnnotator* getRendererNa()   {return dynamic_cast<RendererNeuronAnnotator*>(renderer);}
@@ -90,6 +91,7 @@ public slots:
     void setStereoAnaglyphRedCyan(bool);
     void setStereoAnaglyphGreenMagenta(bool);
     void setStereoRowInterleaved(bool);
+    void setStereoColumnInterleaved(bool);
     void setStereoCheckerInterleaved(bool b);
     void setStereoMode(int);
     void setCustomCutMode();
@@ -98,6 +100,7 @@ public slots:
     void setSlabThickness(int); // range 2-1000 voxels
     void setSlabPosition(int); // range -500 - +500 voxels
     void clipSlab(); // Apply clip plane to current slab
+    void updateScreenPosition(); // for stencil based 3D modes
 
 protected slots:
     // focus setting should be done via cameraModel, not with these methods.
@@ -139,6 +142,8 @@ protected:
     jfrc::VolumeTexture volumeTexture;
     QUndoStack* undoStack;
     qreal cachedRelativeScale;
+    RendererNeuronAnnotator::Stereo3DMode stereo3DMode;
+    bool bStereoSwapEyes;
 };
 
 #endif // NA3DWIDGET_H

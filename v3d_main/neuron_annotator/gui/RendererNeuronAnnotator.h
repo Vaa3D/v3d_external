@@ -24,6 +24,7 @@ public:
         STEREO_ANAGLYPH_RED_CYAN,
         STEREO_ANAGLYPH_GREEN_MAGENTA,
         STEREO_ROW_INTERLEAVED,
+        STEREO_COLUMN_INTERLEAVED,
         STEREO_CHECKER_INTERLEAVED
     };
 
@@ -68,6 +69,8 @@ public:
     void setUndoStack(QUndoStack& undoStackParam); // for undo/redo custom clip planes
     Stereo3DMode getStereoMode() const {return stereo3DMode;}
     bool getStereoSwapEyes() const {return bStereoSwapEyes;}
+    bool getScreenRowParity() const {return screenRowParity;}
+    bool getScreenColumnParity() const {return screenColumnParity;}
     using Renderer_gl2::sampleScaleX;
     using Renderer_gl2::sampleScaleY;
     using Renderer_gl2::sampleScaleZ;
@@ -87,6 +90,22 @@ signals:
 public slots:
     void setAlphaBlending(bool);
     void setStereoMode(int);
+    // For use in stencilled display modes
+    bool setScreenRowParity(bool b) {
+        qDebug() << "setScreenRowParity()" << b << __FILE__ << __LINE__;
+        if (screenRowParity != b) {
+            screenRowParity = b;
+            return true; // value changed
+        }
+        return false;
+    }
+    bool setScreenColumnParity(bool b) {
+        if (screenColumnParity != b) {
+            screenColumnParity = b;
+            return true;
+        }
+        return false;
+    }
     void setShowCornerAxes(bool b);
     bool setSlabThickness(int); // range 2-1000 voxels
     void clipSlab(const CameraModel& cameraModel); // Apply clip plane to current slab
@@ -112,6 +131,8 @@ protected:
 
     Stereo3DMode stereo3DMode;
     bool bStereoSwapEyes;
+    bool screenRowParity; // is the topmost pixel on an odd scan line?
+    bool screenColumnParity; // is the leftmost pixel on an odd screen column?
     bool bShowCornerAxes;
     bool bShowClipGuide;
 

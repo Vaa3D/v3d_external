@@ -77,6 +77,11 @@ class NaMainWindow : public QMainWindow
         VIEWER_WAIT_LOADING_SCREEN
     };
 
+    enum ViewMode {
+        VIEW_SINGLE_STACK,
+        VIEW_NEURON_SEPARATION
+    };
+
 public:
     NaMainWindow();
     void setV3DDefaultModeCheck(bool checkState);
@@ -95,8 +100,9 @@ signals:
     void openSingleMovieStackRequested(QString fileName);
 
 public slots:
-    // void selectCurtain(int index);
-    // void addNewCurtain();
+    void exitFullScreen();
+    void setFullScreen(bool);
+    void setViewMode(ViewMode mode);
     void loadSingleStack(QString fileName); // switches to default vaa3d mode
     void onDataLoadStarted();
     void onDataLoadFinished();
@@ -160,6 +166,7 @@ protected:
     void dragEnterEvent(QDragEnterEvent *);
     void dropEvent(QDropEvent *);
     void retrieveCrosshairVisibilitySetting();
+    void moveEvent ( QMoveEvent * event );
 
 private:
     DataFlowModel* dataFlowModel;
@@ -192,6 +199,7 @@ private:
 
     bool isInCustomCutMode;
     bool bShowCrosshair;
+    ViewMode viewMode;
 };
 
 #endif // NAMAINWINDOW_H
