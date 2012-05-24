@@ -92,7 +92,7 @@ public slots:
     void setStereoMode(int);
     // For use in stencilled display modes
     bool setScreenRowParity(bool b) {
-        qDebug() << "setScreenRowParity()" << b << __FILE__ << __LINE__;
+        // qDebug() << "setScreenRowParity()" << b << __FILE__ << __LINE__;
         if (screenRowParity != b) {
             screenRowParity = b;
             return true; // value changed

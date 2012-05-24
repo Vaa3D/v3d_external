@@ -21,6 +21,8 @@ public:
             const MipFragmentData& mipFragmentData,
             const DataColorModel& colorModel);
 
+    virtual ~MipFragmentColors();
+
 public slots:
     virtual void update();
 

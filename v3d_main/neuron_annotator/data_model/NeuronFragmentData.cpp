@@ -30,6 +30,7 @@ NeuronFragmentData::NeuronFragmentData(const NaVolumeData& naVolumeDataParam)
 /* slot */
 void NeuronFragmentData::update()
 {
+    if (bAbortWrite) return;
     // qDebug() << "NeuronFragmentData::update()" << __FILE__ << __LINE__;
     if (!naVolumeData) return;
     { // stack block containing read/write locks
@@ -60,6 +61,7 @@ void NeuronFragmentData::update()
             hueChannelX[1] = 1.0;
             hueChannelY[1] = 0.0;
         }
+        if (bAbortWrite) return;
         for (int z = 0; z < fragmentProxy.sz; ++z) {
             for (int y = 0; y < fragmentProxy.sy; ++y) {
                 for (int x = 0; x < fragmentProxy.sx; ++x)
@@ -76,6 +78,8 @@ void NeuronFragmentData::update()
                     }
                 }
             }
+            if (bAbortWrite)
+                return;
         }
         // Save final hue values
         for (int f = 0; f < sf; ++f)

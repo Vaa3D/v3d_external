@@ -374,7 +374,7 @@ void NaMainWindow::setViewMode(ViewMode mode)
     viewMode = mode;
     if (mode == VIEW_SINGLE_STACK) {
         ui.mipsFrame->setVisible(false);
-        ui.annotationFrame->setVisible(false);
+        ui.annotationFrame->setVisible(true);
     }
     if (mode == VIEW_NEURON_SEPARATION) {
         ui.mipsFrame->setVisible(true);
@@ -387,9 +387,9 @@ void NaMainWindow::exitFullScreen()
 {
     if (viewMode == VIEW_NEURON_SEPARATION)
     {
-        ui.annotationFrame->show();
         ui.mipsFrame->show();
     }
+    ui.annotationFrame->show();
     ui.viewerSelectorAndControlFrame->show();
     statusBar()->show();
     showNormal();
@@ -565,7 +565,7 @@ void NaMainWindow::dropEvent(QDropEvent * event)
 
 void NaMainWindow::moveEvent ( QMoveEvent * event )
 {
-    qDebug() << "NaMainWindow::moveEvent()" << __FILE__ << __LINE__;
+    // qDebug() << "NaMainWindow::moveEvent()" << __FILE__ << __LINE__;
     ui.v3dr_glwidget->updateScreenPosition();
     QMainWindow::moveEvent(event);
 }

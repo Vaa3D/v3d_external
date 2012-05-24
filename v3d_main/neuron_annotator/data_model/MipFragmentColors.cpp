@@ -14,9 +14,18 @@ MipFragmentColors::MipFragmentColors(const MipFragmentData& mipFragmentDataParam
             this, SLOT(update()));
 }
 
+MipFragmentColors::~MipFragmentColors()
+{
+    bAbortWrite = true;
+    Writer writer(*this);
+    while (! fragmentMips.isEmpty())
+        delete fragmentMips.takeFirst();
+}
+
 /* slot */
 void MipFragmentColors::update()
 {
+    if (bAbortWrite) return;
     // qDebug() << "MipFragmentColors::update()" << __FILE__ << __LINE__;
     // Flush signal/slot queue, which can fill up when dragging gamma slider.
     SlotMerger slotMerger(statusOfUpdateSlot);
@@ -59,6 +68,7 @@ void MipFragmentColors::update()
 
         if (! mipReader.refreshLock()) return;
         if (dataColorModel.readerIsStale(colorReader)) return;
+        if (bAbortWrite) return;
 
         // qDebug() << "MipFragmentColors::update()" << __FILE__ << __LINE__;
 
@@ -87,6 +97,7 @@ void MipFragmentColors::update()
                 // qDebug() << "stale color reader";
                 return;
             }
+            if (bAbortWrite) return;
         }
         // qDebug() << "MipFragmentColors::update()" << __FILE__ << __LINE__;
         // Reference image

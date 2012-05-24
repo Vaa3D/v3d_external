@@ -42,6 +42,7 @@ protected:
 
     QReadWriteLock lock; // used for multiple-read/single-write thread-safe locking
     QThread * thread;
+    volatile bool bAbortWrite; // flag hint to stop writing, even if data is in an inconsistent state, because destructor is waiting.
 };
 
 

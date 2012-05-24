@@ -111,6 +111,7 @@ NaVolumeData::NaVolumeData()
 
 NaVolumeData::~NaVolumeData()
 {
+    bAbortWrite = true;
     Writer volumeWriter(*this); // Wait for readers to finish before deleting
     volumeWriter.clearImageData();
 }
@@ -217,18 +218,18 @@ void NaVolumeData::loadVolumeDataFromFiles()
             // method NaVolumeData::Writer::normalizeReferenceStack(), rather than revert it here.
             // flipY(referenceStack);
             // qDebug() << stopwatch.elapsed();
+
+            // populate histograms
+            histograms.assign((size_t)(originalImageProxy.sc + 1), IntensityHistogram());
+            for(int c = 0; c < originalImageProxy.sc; ++c)
+                histograms[c].populate(originalImageProxy, c);
+            histograms[originalImageProxy.sc].populate(referenceImageProxy);
         }
     } // release locks before emit
     if (! stacksLoaded) {
         emit progressAborted(QString("Problem loading stacks"));
         return;
     }
-
-    // populate histograms
-    histograms.assign((size_t)(originalImageProxy.sc + 1), IntensityHistogram());
-    for(int c = 0; c < originalImageProxy.sc; ++c)
-        histograms[c].populate(originalImageProxy, c);
-    histograms[originalImageProxy.sc].populate(referenceImageProxy);
 
     // nerd report
     size_t data_size = 0;
@@ -327,6 +328,7 @@ bool NaVolumeData::Writer::setSingleImageVolume(My4DImage* img)
 
 bool NaVolumeData::Writer::loadStacks()
 {
+    if (m_data->bAbortWrite) return false;
     QTime stopwatch;
     stopwatch.start();
 
@@ -361,6 +363,8 @@ bool NaVolumeData::Writer::loadStacks()
     connect(&referenceStack, SIGNAL(progressMessageChanged(QString)),
             m_data, SIGNAL(progressMessageChanged(QString)));
     qDebug() << "NaVolumeData::Writer::loadStacks() starting referenceStack.load()";
+
+    if (m_data->bAbortWrite) return false;
 
     // There are some bugs with multithreaded image loading, so make it an option.
     bool bUseMultithreadedLoader = false;
@@ -402,10 +406,13 @@ bool NaVolumeData::Writer::loadStacks()
         // Non-threaded sequential loading
         m_data->setProgressMessage("Loading multicolor brain images...");
         originalStack.load();
+        if (m_data->bAbortWrite) return false;
         m_data->setProgressMessage("Loading neuron fragment locations...");
         maskStack.load();
+        if (m_data->bAbortWrite) return false;
         m_data->setProgressMessage("Loading nc82 synaptic reference image...");
         referenceStack.load();
+        if (m_data->bAbortWrite) return false;
     }
 
     qDebug() << "NaVolumeData::Writer::loadStacks() done loading all stacks in " << stopwatch.elapsed() / 1000.0 << " seconds";
@@ -417,6 +424,8 @@ bool NaVolumeData::Writer::loadStacks()
     // m_data->neuronMaskStack->updateminmaxvalues();
     m_data->neuronMaskProxy = Image4DProxy<My4DImage>(m_data->neuronMaskStack);
     m_data->neuronMaskProxy.set_minmax(m_data->neuronMaskStack->p_vmin, m_data->neuronMaskStack->p_vmax);
+
+    if (m_data->bAbortWrite) return false;
 
     // qDebug() << "Calling normalizeReferenceStack...";
     // normalizeReferenceStack(initialReferenceStack);

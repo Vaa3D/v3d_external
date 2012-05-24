@@ -97,13 +97,13 @@ Na3DWidget::~Na3DWidget()
 /* slot */
 void Na3DWidget::updateScreenPosition()  // for stencil based 3D modes
 {
-    qDebug() << "Na3DWidget::updateScreenPosition()" << __FILE__ << __LINE__;
+    // qDebug() << "Na3DWidget::updateScreenPosition()" << __FILE__ << __LINE__;
     if (getRendererNa())
     {
         QPoint p = mapToGlobal(QPoint(0, 0));
         bool rp = (p.y() % 2) != 0;
         bool cp = (p.x() % 2) != 0;
-        qDebug() << p.x() << p.y() << rp << cp;
+        // qDebug() << p.x() << p.y() << rp << cp;
         bool bChanged = false;
         if (getRendererNa()->setScreenRowParity( rp ))
             bChanged = true;
@@ -266,14 +266,14 @@ void Na3DWidget::setStereoAnaglyphGreenMagenta(bool b)
 
 void Na3DWidget::setStereoRowInterleaved(bool b)
 {
-    qDebug() << "Na3DWidget::setStereoRowInterleaved(" << b << __FILE__ << __LINE__;
+    // qDebug() << "Na3DWidget::setStereoRowInterleaved(" << b << __FILE__ << __LINE__;
     if (b)
         setStereoMode(RendererNeuronAnnotator::STEREO_ROW_INTERLEAVED);
 }
 
 void Na3DWidget::setStereoColumnInterleaved(bool b)
 {
-    qDebug() << "Na3DWidget::setStereoColumnInterleaved(" << b << __FILE__ << __LINE__;
+    // qDebug() << "Na3DWidget::setStereoColumnInterleaved(" << b << __FILE__ << __LINE__;
     if (b)
         setStereoMode(RendererNeuronAnnotator::STEREO_COLUMN_INTERLEAVED);
 }
@@ -747,7 +747,7 @@ int Na3DWidget::neuronAt(QPoint pos)
 
 void Na3DWidget::highlightNeuronAtPosition(QPoint pos)
 {
-    qDebug() << "Na3DWidget::highlightNeuronAtPosition" << pos << __FILE__ << __LINE__;
+    // qDebug() << "Na3DWidget::highlightNeuronAtPosition" << pos << __FILE__ << __LINE__;
     if (!getRendererNa()) return;
     // avoid crash w/ NaN markerViewMatrix
     if (getRendererNa()->hasBadMarkerViewMatrix()) {

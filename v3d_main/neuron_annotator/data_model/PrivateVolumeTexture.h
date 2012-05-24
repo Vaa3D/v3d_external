@@ -348,6 +348,8 @@ public:
             : bHasTextureIDs(false)
         {}
 
+        virtual ~Stack();
+
         bool initializeGL()
         {
             if (size.x() < 1) // Can't initialize that!

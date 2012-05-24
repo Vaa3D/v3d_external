@@ -4,6 +4,7 @@
 NaLockableData::NaLockableData()
     : thread(NULL)
     , lock(QReadWriteLock::Recursive)
+    , bAbortWrite(false)
 {
     thread = new QThread(this); // is this too circular?
     thread->start();
@@ -13,6 +14,7 @@ NaLockableData::NaLockableData()
 /* virtual */
 NaLockableData::~NaLockableData()
 {
+    bAbortWrite = true;
     // Acquire a write lock before we delete this object,
     // so pending Readers have a chance to finish.
     // As usual, acquire the lock in a local block.

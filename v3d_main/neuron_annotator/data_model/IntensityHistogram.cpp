@@ -13,11 +13,15 @@ IntensityHistogram::IntensityHistogram()
 void IntensityHistogram::populate(const Image4DProxy<My4DImage>& image, int channel_index)
 {
     V3DLONG c = channel_index;
+    if ( (c < 0) || (c >= image.sc) ) {
+        qDebug() << "Channel index error in IntensityHistogram::populate()" << channel_index << image.sc << __FILE__ << __LINE__;
+        return;
+    }
     // assert(image.has_minmax());
     min_intensity = image.vmin[c];
     max_intensity = image.vmax[c];
     // Initialize to zero
-    data.assign((size_t)max_intensity, (size_t)0);
+    data.assign((size_t)max_intensity + 1, (size_t)0);
     total_counts = 0;
     for (V3DLONG z = 0; z < image.sz; ++z) {
         for (V3DLONG y = 0; y < image.sy; ++y) {

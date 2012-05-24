@@ -176,6 +176,15 @@ bool PrivateVolumeTexture::uploadVolumeTexturesToVideoCardGL() const
 // PrivateVolumeTexture::Stack methods //
 /////////////////////////////////////////
 
+
+PrivateVolumeTexture::Stack::~Stack()
+{
+    if (textureIDs.size() > 0) {
+        glDeleteTextures((GLsizei)textureIDs.size(), &textureIDs.front());
+        textureIDs.clear();
+    }
+}
+
 // Run once to create (but not populate/update) opengl textures
 
 bool PrivateVolumeTexture::Stack::populateGLTextures() const
@@ -192,7 +201,7 @@ bool PrivateVolumeTexture::Stack::populateGLTextures() const
     {
         if (textureIDs.size() > 0) {
             glDeleteTextures((GLsizei)textureIDs.size(), &textureIDs.front());
-            // textureIDs.clear();
+            // textureIDs.clear(); // non const method
         }
         const_cast<std::vector<GLuint>& >(textureIDs).assign(numberOfSlices + 1, 0);
         glGenTextures((GLsizei)(numberOfSlices + 1), const_cast<GLuint*>(&textureIDs.front()));

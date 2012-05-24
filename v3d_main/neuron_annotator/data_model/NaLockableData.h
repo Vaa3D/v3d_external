@@ -47,6 +47,7 @@ protected:
 
     QReadWriteLock lock; // used for multiple-read/single-write thread-safe locking
     QThread * thread; // call constructor with NULL parent to automatically create a thread for NaLocaableData object.
+    volatile bool bAbortWrite; // hint to abandon writing because destructor is waiting
 
 
 protected:

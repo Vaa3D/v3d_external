@@ -7,6 +7,7 @@
 NaSharedDataSignaller::NaSharedDataSignaller() // no parent, because it has its own QThread
     : thread(new QThread(this))
     , lock(QReadWriteLock::NonRecursive)
+    , bAbortWrite(false)
 {
     thread->start();
     this->moveToThread(thread);
@@ -15,6 +16,7 @@ NaSharedDataSignaller::NaSharedDataSignaller() // no parent, because it has its 
 /* virtual */
 NaSharedDataSignaller::~NaSharedDataSignaller()
 {
+    bAbortWrite = true;
     thread->quit();
     thread->wait(500);
 }

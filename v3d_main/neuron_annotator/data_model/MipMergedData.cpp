@@ -183,6 +183,7 @@ MipMergedData::MipMergedData(
 /* virtual */
 MipMergedData::~MipMergedData()
 {
+    bAbortWrite = true;
     Writer writer(*this);
     writer.clearData();
 }
@@ -190,6 +191,7 @@ MipMergedData::~MipMergedData()
 /* virtual */
 void MipMergedData::update()
 {
+    if (bAbortWrite) return;
 
     QTime stopwatch;
     stopwatch.start();
@@ -204,6 +206,7 @@ void MipMergedData::update()
         Writer mipMergedWriter(*this);
         mipMergedWriter.clearData();
 
+        if (bAbortWrite) return;
         layerZValues = new My4DImage();
         layerZValues->loadImage(
                 fragmentZProxy.sx,
@@ -216,6 +219,7 @@ void MipMergedData::update()
         memset(layerZValues->getRawData(), 255, layerZValues->getTotalBytes());
         layerZProxy = Image4DProxy<My4DImage>(layerZValues);
 
+        if (bAbortWrite) return;
         layerIntensities = new My4DImage();
         layerIntensities->loadImage(
                 fragmentZProxy.sx,
@@ -227,6 +231,7 @@ void MipMergedData::update()
         memset(layerIntensities->getRawData(), 0, layerIntensities->getTotalBytes());
         layerIntensityProxy = Image4DProxy<My4DImage>(layerIntensities);
 
+        if (bAbortWrite) return;
         layerData = new My4DImage();
         layerData->loadImage(
                 fragmentZProxy.sx,
@@ -238,6 +243,7 @@ void MipMergedData::update()
         memset(layerData->getRawData(), 0, layerData->getTotalBytes());
         layerDataProxy = Image4DProxy<My4DImage>(layerData);
 
+        if (bAbortWrite) return;
         layerNeurons = new My4DImage();
         layerNeurons->loadImage(
                 fragmentZProxy.sx,
@@ -248,6 +254,7 @@ void MipMergedData::update()
                 V3D_UINT16);
         memset(layerNeurons->getRawData(), 0, layerNeurons->getTotalBytes());
         layerNeuronProxy = Image4DProxy<My4DImage>(layerNeurons);
+        if (bAbortWrite) return;
 
         // Leaf level of binary tree contains individual fragment mips (includes background but not reference)
         QList<MipMergeLayer*> levelLayers;
@@ -267,6 +274,7 @@ void MipMergedData::update()
                         layerDataProxy.put_at(x, y, z, c,
                                               fragmentDataProxy.value_at(x, y, z, c));
                 }
+            if (bAbortWrite) return; // short circuit on reload
             MipMergeLayer * newLayer = new MipMergeLayer(*this, z, true, NULL, NULL);
             // qDebug() << z << newLayer;
             layers << newLayer; // store permanently
@@ -275,6 +283,7 @@ void MipMergedData::update()
         // Build up rest of binary tree, rooted at final merged fragment mip
         int nextSliceIndex = levelSize;
         while (levelLayers.size() > 1) {
+            if (bAbortWrite) return; // short circuit on reload
             QList<MipMergeLayer*> previousLevelLayers = levelLayers;
             levelLayers.clear();
             while (! previousLevelLayers.isEmpty())
@@ -402,6 +411,8 @@ bool MipMergedData::recomputeLayerTree()
     // updating is ascending order should be OK
     for (int i = 0; i < layers.size(); ++i)
     {
+        if (bAbortWrite)
+            return false; // shortcut bomb out during data reload
         layers[i]->updateWithoutSignal();
         // qDebug() << "MipMergedData::recomputeLayerTree()"
         //        << i << layers[i]->isVisible() << layers[i]->getIndex() << layers[i]->getProxyIndex()

@@ -14,6 +14,8 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
     , bShowClipGuide(false)
     , slabThickness(1000)
     , slabDepth(0)
+    , screenRowParity(false)
+    , screenColumnParity(false)
 {
     // qDebug() << "RendererNeuronAnnotator constructor" << this;
     shaderTex3D = NULL;
@@ -40,6 +42,8 @@ RendererNeuronAnnotator::RendererNeuronAnnotator(void* w)
 
     // VOLUME_FILTER = 0; // Use sharp voxel boundaries (at least for testing)
     tryTexNPT = true; // Don't use Vaa3D rescale of image dimensions (because we are taking care of that...)
+
+    total_rgbaBuf = rgbaBuf = NULL;
 }
 
 static void turn_off_specular()
@@ -58,6 +62,12 @@ RendererNeuronAnnotator::~RendererNeuronAnnotator()
     // VolumeTexture manages the texture memory, not base class.  So set to NULL before it gets a chance to clear it.
     Xslice_data = Yslice_data = Zslice_data = NULL;
     Xtex_list = Ytex_list = Ztex_list = NULL;
+    data4dp = NULL;
+    if (NULL != total_rgbaBuf)
+        delete [] total_rgbaBuf;
+    total_rgbaBuf = rgbaBuf = NULL;
+    rgbaBuf_Xzy = NULL;
+    rgbaBuf_Yzx = NULL;
 }
 
 void RendererNeuronAnnotator::setUndoStack(QUndoStack& undoStackParam)
@@ -111,7 +121,7 @@ void RendererNeuronAnnotator::clipSlab(const CameraModel& cameraModel) // Apply 
 /* slot */
 void RendererNeuronAnnotator::setStereoMode(int m)
 {
-    qDebug() << "Stereo mode = " << (Stereo3DMode) m << __FILE__ << __LINE__;
+    // qDebug() << "Stereo mode = " << (Stereo3DMode) m << __FILE__ << __LINE__;
     stereo3DMode = (Stereo3DMode) m;
 }
 
@@ -136,9 +146,9 @@ void RendererNeuronAnnotator::setAlphaBlending(bool b)
 static QString resourceTextFile(QString filename)
 {
     //QFile inputFile(":/subdir/input.txt");
-        qDebug() << "Load shader: " << filename;
+    // qDebug() << "Load shader: " << filename;
 
-        QFile inputFile(filename);
+    QFile inputFile(filename);
     if (inputFile.open(QIODevice::ReadOnly)==false)
         qDebug() << "   *** ERROR in Load shader: " << filename;
 
@@ -165,13 +175,13 @@ static void linkGLShader(cwc::glShaderManager& SMgr,
 /* virtual */
 void RendererNeuronAnnotator::loadShader()
 {
-    qDebug() << "RendererNeuronAnnotator::loadShader()";
+    // qDebug() << "RendererNeuronAnnotator::loadShader()";
     cleanShader(); //090705
     makeCurrent(); //ensure right context when multiple views animation or mouse drop
 
     try {
 
-            qDebug("+++++++++ shader for Surface Object");
+            // qDebug("+++++++++ shader for Surface Object");
             linkGLShader(SMgr, shaderObj, //0,0);
                             //0,
                             Q_CSTR(resourceTextFile(":/shader/lighting.txt") + resourceTextFile(":/shader/color_vertex.txt")),
@@ -185,7 +195,7 @@ void RendererNeuronAnnotator::loadShader()
                     QString deftexlod = "#undef TEX_LOD \n";
             #endif
 
-            qDebug("+++++++++ shader for Volume texture2D");
+            // qDebug("+++++++++ shader for Volume texture2D");
             // glGetIntegerv(GL_MAX_CLIP_PLANES, &maxGLClipPlanes);
             bool bUseClassicV3dShader = false;
             QString volVertexShaderName(":/neuron_annotator/resources/color_vertex_cmb.txt");
@@ -202,7 +212,7 @@ void RendererNeuronAnnotator::loadShader()
                                 defClip +
                                 QString("#undef TEX3D \n") + deftexlod + resourceTextFile(volFragmentShaderName)));
 
-            qDebug("+++++++++ shader for Volume texture3D");
+            // qDebug("+++++++++ shader for Volume texture3D");
             linkGLShader(SMgr, shaderTex3D,
                          Q_CSTR(
                                 defClip +
@@ -215,7 +225,7 @@ void RendererNeuronAnnotator::loadShader()
         qDebug() << "ERROR: shader loading failed";
     }
 
-    qDebug("+++++++++ GLSL shader setup finished.");
+    // qDebug("+++++++++ GLSL shader setup finished.");
 
     glGenTextures(1, &texColormap);
     initColormap();
@@ -472,7 +482,7 @@ XYZ RendererNeuronAnnotator::screenPositionToVolumePosition(const QPoint& screen
                                 return loc;
                 }
 
-                qDebug()<<"iter ..."<<chno<<"vp ..."<<vp;
+                // qDebug()<<"iter ..."<<chno<<"vp ..."<<vp;
 
                 float sum = 0;
                 for (int i=0; i<200; i++) // iteration, (1/f)^200 is big enough
@@ -564,7 +574,7 @@ XYZ RendererNeuronAnnotator::screenPositionToVolumePosition(const QPoint& screen
                     selectchno = chno;
                     selectloc = loc;
 
-                    qDebug()<<"select channel no ..."<<selectchno;
+                    // qDebug()<<"select channel no ..."<<selectchno;
                 }
 
             }
@@ -572,7 +582,7 @@ XYZ RendererNeuronAnnotator::screenPositionToVolumePosition(const QPoint& screen
             // qDebug()<<"chno ..."<<chno<<"dim4 ..."<<dim4;
 
         }
-        qDebug()<<"0-based pos ... "<<selectloc.x<<selectloc.y<<selectloc.z;
+        // qDebug()<<"0-based pos ... "<<selectloc.x<<selectloc.y<<selectloc.z;
 
         return selectloc;
 }
@@ -583,7 +593,7 @@ void RendererNeuronAnnotator::loadVol()
     cleanVol(); // 081006: move to before setting imageX/Y/Z, 090705 move to first line
     cleanTexStreamBuffer(); //091012
 
-    qDebug("  Renderer_gl1::loadVol");
+    // qDebug("  Renderer_gl1::loadVol");
     makeCurrent(); //ensure right context when multiple views animation or mouse drop, 081105
 
     if ( bufSize[3]<1 ) return; // no image data, 081002
@@ -601,11 +611,11 @@ void RendererNeuronAnnotator::loadVol()
     bool ok;
     if ( !(ok = supported_TexNPT()) )
             tryTexNPT = 0;
-    qDebug()<< QString("	ARB_texture_non_power_of_two          %1 supported ").arg(ok?"":"NOT");
+    // qDebug()<< QString("	ARB_texture_non_power_of_two          %1 supported ").arg(ok?"":"NOT");
 
     if ( !(ok = supported_TexCompression()) )
             tryTexCompress = 0;
-    qDebug()<< QString("	ARB_texture_compression               %1 supported ").arg(ok?"":"NOT");
+    // qDebug()<< QString("	ARB_texture_compression               %1 supported ").arg(ok?"":"NOT");
 
     if ( !(ok = supported_Tex3D()) )
             tryTex3D = 0;
@@ -614,7 +624,7 @@ void RendererNeuronAnnotator::loadVol()
     if ( !(ok = supported_TexStream()) )
             if (tryTexStream != -1)
                     tryTexStream = 0;
-    qDebug()<< QString("	texture stream (need PBO and GLSL)    %1 supported ").arg(ok?"":"NOT");
+    // qDebug()<< QString("	texture stream (need PBO and GLSL)    %1 supported ").arg(ok?"":"NOT");
 
     ok = supported_GL2();
     qDebug()<< QString("	GLSL (and OpenGL 2.0)                 %1 supported ").arg(ok?"":"NOT");
@@ -639,24 +649,24 @@ void RendererNeuronAnnotator::loadVol()
     //
     ////////////////////////////////////////////////////////////////
     QTime qtime;  qtime.start();
-    qDebug("   setupStack start --- try %s", try_vol_state());
+    // qDebug("   setupStack start --- try %s", try_vol_state());
 
     // fillX = _getTexFillSize(imageX);
     // fillY = _getTexFillSize(imageY);
     // fillZ = _getTexFillSize(imageZ);
-    qDebug("   sampleScale = %gx%gx%g""   sampledImage = %dx%dx%d""   fillTexture = %dx%dx%d",
-                    sampleScaleX, sampleScaleY, sampleScaleZ,  imageX, imageY, imageZ,  fillX, fillY, fillZ);
+    // qDebug("   sampleScale = %gx%gx%g""   sampledImage = %dx%dx%d""   fillTexture = %dx%dx%d",
+    //                 sampleScaleX, sampleScaleY, sampleScaleZ,  imageX, imageY, imageZ,  fillX, fillY, fillZ);
 
     if (tryTex3D && supported_Tex3D())
     {
-        qDebug() << "Renderer_gl1::loadVol() - creating 3D texture ID\n";
-            glGenTextures(1, &tex3D);		//qDebug("	tex3D = %u", tex3D);
+        // qDebug() << "Renderer_gl1::loadVol() - creating 3D texture ID\n";
+        glGenTextures(1, &tex3D);		//qDebug("	tex3D = %u", tex3D);
     }
     if (!tex3D || tryTexStream !=0) //stream = -1/1/2
     {
             //tryTex3D = 0; //091015: no need, because tex3D & tex_stream_buffer is not related now.
 
-        qDebug() << "Renderer_gl1::loadVol() - creating data structures for managing 2D texture slice set\n";
+        // qDebug() << "Renderer_gl1::loadVol() - creating data structures for managing 2D texture slice set\n";
 
 
             CHECK_GLErrorString_throw(); // can throw const char* exception, RZC 080925
@@ -668,7 +678,7 @@ void RendererNeuronAnnotator::loadVol()
             // optimized copy slice data in setupStackTexture, by RZC 2008-10-04
     }
 
-    qDebug("   setupStack: id & buffer ....................... cost time = %g sec", qtime.elapsed()*0.001);
+    // qDebug("   setupStack: id & buffer ....................... cost time = %g sec", qtime.elapsed()*0.001);
 
 
     ///////////////////////////////////////
@@ -1320,7 +1330,7 @@ void RendererNeuronAnnotator::paint()
     case STEREO_CHECKER_INTERLEAVED:
         {
             GLubyte* stipple = checkStipple0;
-            qDebug() << screenRowParity << screenColumnParity;
+            // qDebug() << screenRowParity << screenColumnParity;
             if ( (screenRowParity != screenColumnParity) )
                 stipple = checkStipple1;
             {
@@ -1483,7 +1493,7 @@ void RendererNeuronAnnotator::paint_mono(bool clearColorFirst)
 
 void RendererNeuronAnnotator::setupData(void* idep)
 {
-    qDebug("  RendererNeuronAnnotator::setupData");
+    // qDebug("  RendererNeuronAnnotator::setupData");
     // cleanData();
 
     isSimulatedData = false;
@@ -1536,9 +1546,9 @@ void RendererNeuronAnnotator::paintClipGuide()
 void RendererNeuronAnnotator::paintCornerAxes()
 {
     // Keep rotation of scene, but not scale nor translation.
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
     glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glPushAttrib(GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT); // save color and depth test
         glMatrixMode(GL_PROJECTION);
@@ -1591,9 +1601,9 @@ void RendererNeuronAnnotator::paintCornerAxes()
             glVertex3f(0, 0, 1); // z1
         glEnd();
     glPopAttrib();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
     glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
 }
 
