@@ -1806,7 +1806,6 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <addaction name="actionShow_Brain_Compartments"/>
     <addaction name="separator"/>
     <addaction name="menuStereo_3D"/>
-    <addaction name="actionExit_Full_Screen"/>
    </widget>
    <widget class="QMenu" name="menuWork_Mode">
     <property name="title">
@@ -2181,17 +2180,6 @@ You can also resize the box by Ctrl + left mouse click.</string>
    </property>
    <property name="shortcut">
     <string>F</string>
-   </property>
-  </action>
-  <action name="actionExit_Full_Screen">
-   <property name="text">
-    <string>Exit Full Screen</string>
-   </property>
-   <property name="shortcut">
-    <string>Esc</string>
-   </property>
-   <property name="visible">
-    <bool>false</bool>
    </property>
   </action>
   <action name="actionColumn_Interleaved">

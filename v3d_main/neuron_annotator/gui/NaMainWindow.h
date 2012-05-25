@@ -87,6 +87,7 @@ public:
     void setV3DDefaultModeCheck(bool checkState);
     void setNeuronAnnotatorModeCheck(bool checkState);
     void handleCoordinatedCloseEvent(QCloseEvent *event);
+    virtual void keyPressEvent(QKeyEvent *e);
     bool loadAnnotationSessionFromDirectory(QDir imageInputDirectory);
     bool loadSingleVolumeMovieFile(QString fileName);
     bool deleteDataFlowModel();

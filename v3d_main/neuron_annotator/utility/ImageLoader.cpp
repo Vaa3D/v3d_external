@@ -44,10 +44,14 @@ ImageLoader::ImageLoader()
 
 ImageLoader::~ImageLoader()
 {
-    if (compressionBuffer!=0)
+    if (compressionBuffer != NULL) {
         delete [] compressionBuffer;
-    if (keyread!=0)
+        compressionBuffer = NULL;
+    }
+    if (keyread != NULL) {
         delete [] keyread;
+        keyread = NULL;
+    }
     // Note we do not delete image because we do this explicitly only if error
 }
 
@@ -1213,6 +1217,7 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
         }
 #endif
 
+        if (keyread != NULL) {delete [] keyread;}
         keyread = new char [lenkey+1];
         if (!keyread)
         {
@@ -1311,11 +1316,8 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
             }
         }
 
-        V3DLONG * sz = new V3DLONG [4]; // reallocate the memory if the input parameter is non-null. Note that this requests the input is also an NULL point, the same to img.
-        if (!sz)
-        {
-            return exitWithError("Fail to allocate memory.");
-        }
+        std::vector<V3DLONG> sz(4, 0); // avoid memory leak
+        // V3DLONG * sz = new V3DLONG [4]; // reallocate the memory if the input parameter is non-null. Note that this requests the input is also an NULL point, the same to img.
 
         V3DLONG totalUnit = 1;
         for (i=0;i<4;i++)
@@ -1331,6 +1333,7 @@ int ImageLoader::loadRaw2StackPBD(char * filename, Image4DSimple * & image, bool
         V3DLONG compressedBytes=fileSize-headerSize;
         maxDecompressionSize=totalUnit*unitSize;
 
+        if (compressionBuffer != NULL) {delete [] compressionBuffer;}
         compressionBuffer = new unsigned char [compressedBytes];
 
         V3DLONG remainingBytes = compressedBytes;
@@ -1422,8 +1425,10 @@ int ImageLoader::exitWithError(QString errorMessage) {
 //        decompressionThread->~QFuture();
     if (compressionBuffer!=0)
         delete [] compressionBuffer;
-    if (keyread!=0)
-        delete keyread;
+    if (keyread!=0) {
+        delete [] keyread;
+        keyread = NULL;
+    }
     if (fid!=0)
         fclose(fid);
     int berror=1;

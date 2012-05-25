@@ -422,6 +422,12 @@ void Na3DWidget::keyPressEvent(QKeyEvent *e)
 {
     updateCursor();
     V3dR_GLWidget::keyPressEvent(e);
+    // Don't let base class implementation swallow escape key event.  Main Window wants to see escape key too.
+    if (e->key() == Qt::Key_Escape)
+    {
+        // qDebug() << "escape pressed in 3D viewer";
+        QGLWidget::keyPressEvent(e);
+    }
 }
 
 /* virtual */

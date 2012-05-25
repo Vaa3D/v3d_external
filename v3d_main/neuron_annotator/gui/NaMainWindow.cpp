@@ -358,12 +358,22 @@ NaMainWindow::NaMainWindow()
 
     connect(ui.actionFull_Screen, SIGNAL(toggled(bool)),
             this, SLOT(setFullScreen(bool)));
-    connect(ui.actionExit_Full_Screen, SIGNAL(toggled(bool)),
-            this, SLOT(exitFullScreen()));
 
     initializeContextMenus();
     initializeStereo3DOptions();
     connectCustomCut();
+}
+
+/* virtual */
+void NaMainWindow::keyPressEvent(QKeyEvent *event)
+{
+    // Press <ESC> to exit full screen mode
+    if (event->key() == Qt::Key_Escape)
+    {
+        // qDebug() << "escape pressed in main window";
+        exitFullScreen();
+    }
+    QMainWindow::keyPressEvent(event);
 }
 
 /* slot */
@@ -385,6 +395,8 @@ void NaMainWindow::setViewMode(ViewMode mode)
 /* slot */
 void NaMainWindow::exitFullScreen()
 {
+    if (! isFullScreen())
+        return;
     if (viewMode == VIEW_NEURON_SEPARATION)
     {
         ui.mipsFrame->show();
