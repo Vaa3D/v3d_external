@@ -297,7 +297,7 @@ bool NaVolumeData::Writer::loadSingleImageMovieVolume(QString fileName)
     qDebug() << "NaVolumeData::Writer::loadSingleImageMovieVolume" << fileName;
 #ifdef USE_FFMPEG
     My4DImage* img = new My4DImage();
-    if (! loadRaw2StackFFMpeg(fileName.toStdString().c_str(), img) ) {
+    if (! loadStackFFMpeg(fileName.toStdString().c_str(), *img) ) {
         delete img;
         return false;
     }

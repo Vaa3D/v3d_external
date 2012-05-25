@@ -6,7 +6,31 @@
 
 using namespace std;
 
-bool loadRaw2StackFFMpeg(const char* fileName, Image4DSimple* img)
+bool saveStackFFMpeg(std::ostream& os, const Image4DSimple& img)
+{
+    try {
+        Image4DProxy<Image4DSimple> proxy(const_cast<Image4DSimple*>(&img));
+        FFMpegEncoder encoder(os, proxy.sx, proxy.sy);
+        for (int z = 0; z < proxy.sz; ++z) {
+            for (int y = 0; y < proxy.sy; ++y) {
+                for (int x = 0; x < proxy.sx; ++x)
+                {
+                    double red   = proxy.value_at(x, y, z, 0);
+                    double green = proxy.value_at(x, y, z, 1);
+                    double blue  = proxy.value_at(x, y, z, 2);
+                    // TODO write value
+                }
+            }
+            encoder.write_frame();
+        }
+        encoder.write_delayed_frames();
+        return true;
+    } catch (...) {}
+
+    return false;
+}
+
+bool loadStackFFMpeg(const char* fileName, Image4DSimple& img)
 {
     try {
         FFMpegVideo video(fileName);
@@ -16,8 +40,8 @@ bool loadRaw2StackFFMpeg(const char* fileName, Image4DSimple* img)
         int sc = video.getNumberOfChannels();
         cout << "Number of frames = " << sz << endl;
 
-        img->createBlankImage(sx, sy, sz, sc, 1); // 1 byte = 8 bits per value
-        Image4DProxy<Image4DSimple> proxy(img);
+        img.createBlankImage(sx, sy, sz, sc, 1); // 1 byte = 8 bits per value
+        Image4DProxy<Image4DSimple> proxy(&img);
 
         int frameCount = 0;
         for (int z = 0; z < sz; ++z)

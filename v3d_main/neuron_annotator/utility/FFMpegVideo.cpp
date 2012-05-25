@@ -149,6 +149,25 @@ void FFMpegVideo::open(const std::string& fileName, enum PixelFormat formatParam
     previousFrameIndex = -1;
 }
 
+// Open a new video file for writing
+void FFMpegVideo::write(const std::string& fileName, int width, int height)
+{
+
+
+    enum PixelFormat format = PIX_FMT_RGB24;
+
+    /* Create data buffer */
+    numBytes = avpicture_get_size( format, pCtx->width, pCtx->height ); // RGB24 format
+    if (! (buffer   = (uint8_t*)av_malloc(numBytes + FF_INPUT_BUFFER_PADDING_SIZE)) ) // RGB24 format
+        throw std::runtime_error("");
+
+    /* Init buffers */
+    avpicture_fill( (AVPicture * ) pFrameRGB, buffer, format,
+                    pCtx->width, pCtx->height );
+
+
+}
+
 bool FFMpegVideo::fetchFrame(int targetFrameIndex)
 {
     if ((targetFrameIndex < 0) || (targetFrameIndex > numFrames))
@@ -308,6 +327,159 @@ void FFMpegVideo::avtry(int result, const std::string& msg) {
 }
 
 bool FFMpegVideo::b_is_one_time_inited = false;
+
+
+
+///////////////////////////
+// FFMpegEncoder methods //
+///////////////////////////
+
+
+FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height)
+    : picture_raw(NULL)
+    , picture_rgb(NULL)
+    , pFormatCtx(NULL)
+{
+    FFMpegVideo::maybeInitFFMpegLib();
+
+    AVOutputFormat * fmt = guess_format(NULL, file_name, NULL);
+    if (!fmt)
+        fmt = guess_format("mpeg", NULL, NULL);
+    if (!fmt)
+        throw std::runtime_error("Unable to deduce video format");
+    pFormatCtx = av_alloc_format_context();
+    if (NULL == pFormatCtx)
+        throw std::runtime_error("Unable to allocate format context");
+    pFormatCtx->oformat = fmt;
+
+    AVStream * video_st = av_new_stream(pFormatCtx, 0);
+    AVCodecContext * pCtx = &video_st->codec;
+    pCtx->codec_id = fmt->video_codec;
+    pCtx->codec_type = CODEC_TYPE_VIDEO;
+    // resolution must be a multiple of two
+    pCtx->bit_rate = 400000; // ?
+    pCtx->width = width;
+    pCtx->height = height;
+    pCtx->time_base = (AVRational){1, 25};
+    pCtx->gop_size = 10; // emit one intra frame every ten frames
+    pCtx->max_b_frames = 0;
+    pCtx->pix_fmt = PIX_FMT_YUV420P;
+
+    if (av_set_parameters(pFormatCtx, NULL) < 0)
+        throw std::runtime_error("Error setting format parameters");
+
+    AVCodec * pCodec = avcodec_find_encoder(pCtx->codec_id);
+    if (avcodec_open2(pCtx, pCodec, NULL) < 0)
+        throw std::runtime_error("");
+
+    /* open the output file, if needed */
+    if (!(fmt->flags & AVFMT_NOFILE))
+        if (url_fopen(&pFormatCtx->pb, file_name, URL_WRONLY) < 0)
+             throw std::runtime_error("Error opening output video file");
+
+    /* Get framebuffers */
+    if (! (picture_raw = avcodec_alloc_frame()) ) // final frame format
+        throw std::runtime_error("");
+    if (! (picture_rgb = avcodec_alloc_frame()) ) // rgb version I can understand easily
+        throw std::runtime_error("");
+
+    av_write_header(pFormatCtx);
+
+    if (! output_stream.good())
+        throw std::runtime_error("Error using movie output stream");
+
+    /* the image can be allocated by any means and av_image_alloc() is
+         * just the most convenient way if av_malloc() is to be used */
+    av_image_alloc(picture_raw->data, picture_raw->linesize,
+                   pCtx->width, pCtx->height, pCtx->pix_fmt, 1);
+    av_image_alloc(picture_rgb->data, picture_rgb->linesize,
+                   pCtx->width, pCtx->height, PIX_FMT_RGB24, 1);
+
+    /* Init scale & convert */
+    if (! (Sctx=sws_getContext(
+            width,
+            height,
+            PIX_FMT_RGB24,
+            pCtx->width,
+            pCtx->height,
+            pCtx->pix_fmt,
+            SWS_BICUBIC,NULL,NULL,NULL)) )
+        throw std::runtime_error("");
+}
+
+void FFMpegEncoder::write_frame()
+{
+    // TODO - populate frame
+
+    // convert from RGB24 to YUV
+    sws_scale(Sctx,              // sws context
+              picture_rgb->data,        // src slice
+              picture_rgb->linesize,    // src stride
+              0,                      // src slice origin y
+              pCtx->height,      // src slice height
+              picture_raw->data,        // dst
+              picture_raw->linesize );  // dst stride
+
+    /* encode the image */
+    // use non-deprecated avcodec_encode_video2(...)
+    AVPacket packet;
+    av_init_packet(&packet);
+    packet.data = NULL;
+    packet.size = 0;
+
+    int got_packet;
+    int ret = avcodec_encode_video2(pCtx,
+                                    &packet,
+                                    picture_raw,
+                                    &got_packet);
+    if (ret < 0)
+        throw std::runtime_error("Video encoding failed");
+    if (got_packet)
+    {
+        output_stream.write((const char *)packet.data, packet.size);
+        av_destruct_packet(&packet);
+        std::cout << "encoding frame" << std::endl;
+    }
+}
+
+void FFMpegEncoder::write_delayed_frames()
+{
+    AVPacket packet;
+    while (true) {
+        av_init_packet(&packet);
+        packet.data = NULL;
+        packet.size = 0;
+        int got_packet;
+        int ret = avcodec_encode_video2(pCtx, &packet, NULL, &got_packet);
+        if ( (ret < 0) || (! got_packet) )
+            break;
+        std::cout << "got extra packet" << std::endl;
+        output_stream.write((const char *)packet.data, packet.size);
+        av_destruct_packet(&packet);
+    }
+}
+
+/* virtual */
+FFMpegEncoder::~FFMpegEncoder()
+{
+    /* add sequence end code to have a real mpeg file */
+    uint8_t end_code[] = {0x00, 0x00, 0x01, 0xb7};
+    output_stream.write((const char*)end_code, 4);
+    output_stream.flush();
+
+    avcodec_close(pCtx);
+    av_free(pCtx);
+    pCtx = NULL;
+    av_free(picture_raw->data[0]);
+    av_free(picture_raw);
+    picture_raw = NULL;
+    av_free(picture_rgb->data[0]);
+    av_free(picture_rgb);
+    picture_rgb = NULL;
+}
+
+
+
 
 #endif // USE_FFMPEG
 

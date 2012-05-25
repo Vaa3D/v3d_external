@@ -75,9 +75,16 @@ void NaLargeMIPWidget::showContextMenu(QPoint point)
 void NaLargeMIPWidget::updatePixmap()
 {
     if (! mipMergedData) return;
-    MipMergedData::Reader mipReader(*mipMergedData);
-    if (! mipReader.hasReadLock()) return;
-    pixmap = QPixmap::fromImage(*mipReader.getImage());
+    {
+        MipMergedData::Reader mipReader(*mipMergedData);
+        if (! mipReader.hasReadLock()) return;
+        // Tanya saw a crash at QPixmap::fromImage(*mipReader.getImage()) 5/25/2012.
+        // So I broke this into smaller steps with more bailout opportunities.
+        const QImage * img = mipReader.getImage();
+        if (img == NULL) return;
+        if (img->isNull()) return;
+        pixmap = QPixmap::fromImage(*img);
+    }
     updateDefaultScale();
 }
 

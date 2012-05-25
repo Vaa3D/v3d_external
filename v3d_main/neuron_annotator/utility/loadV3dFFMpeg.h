@@ -4,8 +4,10 @@
 #ifdef USE_FFMPEG
 
 #include "../../v3d/v3d_core.h" // Image4DSimple
+#include <iostream>
 
-bool loadRaw2StackFFMpeg(const char* fileName, Image4DSimple* img);
+bool loadStackFFMpeg(const char* fileName, Image4DSimple& img);
+bool saveStackFFMpeg(std::ostream& os, const Image4DSimple& img);
 
 #endif // USE_FFMPEG
 

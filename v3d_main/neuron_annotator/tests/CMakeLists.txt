@@ -10,12 +10,8 @@ if(USE_FFMPEG)
     find_library(CORE_VIDEO_FRAMEWORK CoreVideo)
     find_library(VIDEO_DECODE_ACCELERATION_FRAMEWORK VideoDecodeAcceleration)
     find_package(BZip2)
-    add_executable(test_load_mp4
-        test_load_mp4.cpp
-        ../utility/loadV3dFFMpeg.cpp
-        ../utility/FFMpegVideo.cpp
-    )
-    target_link_libraries(test_load_mp4
+    set(WAY_TOO_MANY_LINK_LIBRARIES
+        # due to way too much tight coupling of source files
         ${AVUTIL_LIBRARY}
         ${AVFORMAT_LIBRARY}
         ${SWSCALE_LIBRARY}
@@ -36,11 +32,24 @@ if(USE_FFMPEG)
         worm_straighten_c
         cellseg
     )
-    if(APPLE)
-        target_link_libraries(test_load_mp4
-            ${VIDEO_DECODE_ACCELERATION_FRAMEWORK}
-            ${CORE_VIDEO_FRAMEWORK}
-            ${CORE_FOUNDATION_FRAMEWORK}
+
+    set(test_progs test_load_mp4 test_write_mp4)
+    foreach(test_prog ${test_progs})
+        add_executable(${test_prog}
+            ${test_prog}.cpp
+            ../utility/loadV3dFFMpeg.cpp
+            ../utility/FFMpegVideo.cpp
         )
-    endif()
+        target_link_libraries(${test_prog}
+            ${WAY_TOO_MANY_LINK_LIBRARIES}
+        )
+        if(APPLE)
+            target_link_libraries(${test_prog}
+                ${VIDEO_DECODE_ACCELERATION_FRAMEWORK}
+                ${CORE_VIDEO_FRAMEWORK}
+                ${CORE_FOUNDATION_FRAMEWORK}
+            )
+        endif()
+    endforeach()
+
 endif()
