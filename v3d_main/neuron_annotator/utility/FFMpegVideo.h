@@ -53,17 +53,17 @@ public:
     int getNumberOfChannels() const;
 
     void write(const std::string& fileName, int width, int height);
+    static void maybeInitFFMpegLib();
 
 protected:
     static bool b_is_one_time_inited;
 
     void initialize();
-    static void maybeInitFFMpegLib();
     static void avtry(int result, const std::string& msg);
     bool readNextFrame(int targetFrameIndex = 0);
     int seekToFrame(int targetFrameIndex = 0);
 
-    AVFormatContext *pFormatCtx;
+    AVFormatContext *container;
     AVCodecContext *pCtx;
     AVCodec *pCodec;
     AVFrame *pRaw;
@@ -87,12 +87,12 @@ class FFMpegEncoder
 public:
     FFMpegEncoder(const char * file_name, int width, int height);
     void write_frame();
-    void write_delayed_frames();
     virtual ~FFMpegEncoder();
 
 protected:
-    AVFormatContext *pFormatCtx;
-    AVFrame *picture_raw;
+    AVFormatContext *container;
+    AVCodecContext *pCtx;
+    AVFrame *picture_yuv;
     AVFrame *picture_rgb;
     struct SwsContext *Sctx;
 };

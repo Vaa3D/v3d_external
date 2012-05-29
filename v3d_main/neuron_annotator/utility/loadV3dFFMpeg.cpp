@@ -6,11 +6,11 @@
 
 using namespace std;
 
-bool saveStackFFMpeg(std::ostream& os, const Image4DSimple& img)
+bool saveStackFFMpeg(const char * file_name, const Image4DSimple& img)
 {
     try {
         Image4DProxy<Image4DSimple> proxy(const_cast<Image4DSimple*>(&img));
-        FFMpegEncoder encoder(os, proxy.sx, proxy.sy);
+        FFMpegEncoder encoder(file_name, proxy.sx, proxy.sy);
         for (int z = 0; z < proxy.sz; ++z) {
             for (int y = 0; y < proxy.sy; ++y) {
                 for (int x = 0; x < proxy.sx; ++x)
@@ -23,7 +23,6 @@ bool saveStackFFMpeg(std::ostream& os, const Image4DSimple& img)
             }
             encoder.write_frame();
         }
-        encoder.write_delayed_frames();
         return true;
     } catch (...) {}
 

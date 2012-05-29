@@ -19,13 +19,10 @@ int main(int argc, char **argv)
     }
 
     string input_file_name(argv[1]);
+    string output_file_name(argv[2]);
     My4DImage img;
     loadStackFFMpeg(input_file_name.c_str(), img);
-
-    string output_file_name(argv[2]);
-    ofstream output_stream(output_file_name.c_str());
-    saveStackFFMpeg(output_stream, img);
-    output_stream.close();
+    saveStackFFMpeg(output_file_name.c_str(), img);
 
     return 0;
 }

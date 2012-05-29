@@ -6,8 +6,8 @@
 #include "../../v3d/v3d_core.h" // Image4DSimple
 #include <iostream>
 
-bool loadStackFFMpeg(const char* fileName, Image4DSimple& img);
-bool saveStackFFMpeg(std::ostream& os, const Image4DSimple& img);
+bool loadStackFFMpeg(const char* fileName, Image4DSimple& image);
+bool saveStackFFMpeg(const char * fileName, const Image4DSimple& image);
 
 #endif // USE_FFMPEG
 
