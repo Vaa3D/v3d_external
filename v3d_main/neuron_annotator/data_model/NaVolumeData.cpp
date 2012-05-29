@@ -73,21 +73,22 @@ void NaVolumeDataLoadableStack::setRelativeProgress(float relativeProgress)
 
 QString NaVolumeDataLoadableStack::determineFullFilepath()
 {
-    QString f1=filename;
-    QString v3dpbdTestFilename=f1.append(".v3dpbd");
-    QFile v3dpbdTestFile(v3dpbdTestFilename);
-    if (v3dpbdTestFile.exists())
-        return v3dpbdTestFilename;
-
-    QString f2=filename;
-    QString v3drawTestFilename=f2.append(".v3draw");
-    QFile v3drawTestFile(v3drawTestFilename);
-    if (v3drawTestFile.exists())
-        return v3drawTestFilename;
-
-    QString f3=filename;
-    QString tifFilename=f3.append(".tif");
-    return tifFilename;
+    const char * extensions[] = {
+#ifdef USE_FFMPEG
+        ".mp4",
+#endif
+        ".v3dpbd",
+        ".vd3raw",
+        ".tif",
+        ".tif" // extra entry for when USE_FFMPEG is undefined
+    };
+    for (int e = 0; e < 4; ++e)
+    {
+        QString fn = filename + extensions[e];
+        if (QFile(fn).exists())
+            return fn;
+    }
+    return filename + ".tif"; // even though the file doesn't exist...
 }
 
 
@@ -250,10 +251,21 @@ void NaVolumeData::loadVolumeDataFromFiles()
 /* slot */
 bool NaVolumeData::loadSingleImageMovieVolume(QString fileName)
 {
-    NaVolumeData::Writer volumeWriter(*this);
-    if (! volumeWriter.loadSingleImageMovieVolume(fileName) )
-        return false;
-    emit dataChanged();
+    bool bSucceeded = false;
+    emit progressMessageChanged("Loading single volume file"); // emit outside of lock block
+    emit progressValueChanged(1); // show a bit of blue
+    {
+        NaVolumeData::Writer volumeWriter(*this);
+        bSucceeded = volumeWriter.loadSingleImageMovieVolume(fileName);
+    } // release lock before emit
+    if (bSucceeded) {
+        emit progressCompleted();
+        emit dataChanged();
+    }
+    else {
+        emit progressAborted("Volume load failed");
+    }
+    return bSucceeded;
 }
 
 //////////////////////////////////
@@ -301,7 +313,9 @@ bool NaVolumeData::Writer::loadSingleImageMovieVolume(QString fileName)
         delete img;
         return false;
     }
-    return setSingleImageVolume(img);
+    if (! setSingleImageVolume(img))
+        return false;
+    return true;
 #else
     return false;
 #endif
@@ -323,6 +337,10 @@ bool NaVolumeData::Writer::setSingleImageVolume(My4DImage* img)
     img->updateminmaxvalues();
     m_data->originalImageProxy = Image4DProxy<My4DImage>(m_data->originalImageStack);
     m_data->originalImageProxy.set_minmax(m_data->originalImageStack->p_vmin, m_data->originalImageStack->p_vmax);
+    // Populate histgrams
+    m_data->histograms.assign((size_t)(m_data->originalImageProxy.sc), IntensityHistogram());
+    for(int c = 0; c < m_data->originalImageProxy.sc; ++c)
+        m_data->histograms[c].populate(m_data->originalImageProxy, c);
     return true;
 }
 

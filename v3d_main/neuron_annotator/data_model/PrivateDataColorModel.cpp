@@ -62,8 +62,9 @@ bool PrivateDataColorModel::autoCorrect(const NaVolumeData::Reader& volumeReader
     if (! volumeReader.hasReadLock()) return false;
     const Image4DProxy<My4DImage>& volProxy = volumeReader.getOriginalImageProxy();
     if (volProxy.sx <= 0) return false; // data not populated yet?
-    // Add one for reference channel
-    int numChannels = volProxy.sc + 1;
+    int numChannels = volProxy.sc;
+    if (volumeReader.hasReferenceImage())
+        numChannels += 1; // Add one for reference channel
     for (int channel = 0; channel < numChannels; ++channel)
     {
         ChannelColorModel& channelModel = channelColors[channel];

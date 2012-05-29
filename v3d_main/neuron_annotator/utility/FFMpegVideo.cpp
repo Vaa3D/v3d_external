@@ -353,23 +353,65 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height)
         throw std::runtime_error("Unable to deduce video format");
     container->oformat = fmt;
 
-    AVCodec * codec = avcodec_find_encoder(CODEC_ID_MPEG4);
-    if (NULL == codec)
-        throw std::runtime_error("Unable to find Mpeg4 codec");
+    fmt->video_codec = CODEC_ID_MPEG4;
+    // fmt->video_codec = CODEC_ID_H264; // fails to write
 
-    AVStream * video_st = avformat_new_stream(container, codec);
+    AVStream * video_st = avformat_new_stream(container, NULL);
 
-    pCtx = avcodec_alloc_context3(codec);
-    pCtx->codec_id = CODEC_ID_MPEG4;
+    pCtx = video_st->codec;
+    pCtx->codec_id = fmt->video_codec;
     pCtx->codec_type = AVMEDIA_TYPE_VIDEO;
     // resolution must be a multiple of two
     pCtx->width = width;
     pCtx->height = height;
-    pCtx->bit_rate = 400000; // ?
+
+    // bit_rate determines image quality
+    pCtx->bit_rate = width * height * 4; // ?
+    // pCtx->qmax = 50; // no effect?
+
     pCtx->time_base = (AVRational){1, 25};
+    // pCtx->time_base = (AVRational){1, 10};
     pCtx->gop_size = 12; // emit one intra frame every twelve frames
     // pCtx->max_b_frames = 0;
     pCtx->pix_fmt = PIX_FMT_YUV420P;
+    if (fmt->flags & AVFMT_GLOBALHEADER)
+        pCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+
+    if (pCtx->codec_id == CODEC_ID_H264)
+    {
+        // http://stackoverflow.com/questions/3553003/encoding-h-264-with-libavcodec-x264
+        pCtx->coder_type = 1;  // coder = 1
+        pCtx->flags|=CODEC_FLAG_LOOP_FILTER;   // flags=+loop
+        pCtx->me_cmp|= 1;  // cmp=+chroma, where CHROMA = 1
+        // pCtx->partitions|=X264_PART_I8X8+X264_PART_I4X4+X264_PART_P8X8+X264_PART_B8X8; // partitions=+parti8x8+parti4x4+partp8x8+partb8x8
+        pCtx->me_method=ME_HEX;    // me_method=hex
+        pCtx->me_subpel_quality = 7;   // subq=7
+        pCtx->me_range = 16;   // me_range=16
+        pCtx->gop_size = 250;  // g=250
+        pCtx->keyint_min = 25; // keyint_min=25
+        pCtx->scenechange_threshold = 40;  // sc_threshold=40
+        pCtx->i_quant_factor = 0.71; // i_qfactor=0.71
+        pCtx->b_frame_strategy = 1;  // b_strategy=1
+        pCtx->qcompress = 0.6; // qcomp=0.6
+        pCtx->qmin = 10;   // qmin=10
+        pCtx->qmax = 51;   // qmax=51
+        pCtx->max_qdiff = 4;   // qdiff=4
+        pCtx->max_b_frames = 3;    // bf=3
+        pCtx->refs = 3;    // refs=3
+        // pCtx->directpred = 1;  // directpred=1
+        pCtx->trellis = 1; // trellis=1
+        // pCtx->flags2|=CODEC_FLAG2_BPYRAMID+CODEC_FLAG2_MIXED_REFS+CODEC_FLAG2_WPRED+CODEC_FLAG2_8X8DCT+CODEC_FLAG2_FASTPSKIP;  // flags2=+bpyramid+mixed_refs+wpred+dct8x8+fastpskip
+        // pCtx->weighted_p_pred = 2; // wpredp=2
+        // libx264-main.ffpreset preset
+        // pCtx->flags2|=CODEC_FLAG2_8X8DCT;
+        // pCtx->flags2^=CODEC_FLAG2_8X8DCT;    // flags2=-dct8x8
+    }
+
+    AVCodec * codec = avcodec_find_encoder(pCtx->codec_id);
+    if (NULL == codec)
+        throw std::runtime_error("Unable to find Mpeg4 codec");
+    if (codec->pix_fmts)
+        pCtx->pix_fmt = codec->pix_fmts[0];
     if (avcodec_open2(pCtx, codec, NULL) < 0)
         throw std::runtime_error("Error opening codec");
 
@@ -405,10 +447,14 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height)
     avformat_write_header(container, NULL);
 }
 
+void FFMpegEncoder::setPixelIntensity(int x, int y, int c, uint8_t value)
+{
+    uint8_t * ptr = picture_rgb->data[0] + y * picture_rgb->linesize[0] + x * 3 + c;
+    *ptr = value;
+}
+
 void FFMpegEncoder::write_frame()
 {
-    // TODO - populate frame
-
     // convert from RGB24 to YUV
     sws_scale(Sctx,              // sws context
               picture_rgb->data,        // src slice
@@ -434,7 +480,7 @@ void FFMpegEncoder::write_frame()
         throw std::runtime_error("Video encoding failed");
     if (got_packet)
     {
-        std::cout << "encoding frame" << std::endl;
+        // std::cout << "encoding frame" << std::endl;
         int result = av_write_frame(container, &packet);
         av_destruct_packet(&packet);
     }

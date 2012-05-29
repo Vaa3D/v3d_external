@@ -344,6 +344,7 @@ void MipMergedData::toggleNeuronVisibility(int index, bool status) // update a s
 void MipMergedData::toggleOverlayVisibility(int index, bool status)
 {
     if (DataFlowModel::BACKGROUND_MIP_INDEX == index) {
+        if (layers.size() < 1) return;
         // background is in layer zero
         if (status == layers[0]->isVisible()) return;
         {

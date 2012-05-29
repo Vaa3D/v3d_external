@@ -385,10 +385,12 @@ void NaMainWindow::setViewMode(ViewMode mode)
     if (mode == VIEW_SINGLE_STACK) {
         ui.mipsFrame->setVisible(false);
         ui.annotationFrame->setVisible(true);
+        ui.referenceGammaWidget->setVisible(false);
     }
     if (mode == VIEW_NEURON_SEPARATION) {
         ui.mipsFrame->setVisible(true);
         ui.annotationFrame->setVisible(true);
+        ui.referenceGammaWidget->setVisible(true);
     }
 }
 
@@ -473,7 +475,6 @@ void NaMainWindow::on_actionOpen_Single_Movie_Stack_triggered()
     }
 
     setViewMode(VIEW_SINGLE_STACK);
-    ui.mipsFrame->setVisible(false);
     if (! loadSingleVolumeMovieFile(fileName))
         QMessageBox::warning(this, tr("Could not load movie volume"),
                                       "Error loading movie volume.  Please check the movie file.");
@@ -486,9 +487,6 @@ bool NaMainWindow::loadSingleVolumeMovieFile(QString fileName)
     DataFlowModel* dfm = new DataFlowModel();
     setDataFlowModel(*dfm);
     bool result = dataFlowModel->getVolumeData().loadSingleImageMovieVolume(fileName);
-    // No reference channel for single volumes
-    if (result)
-        ui.referenceGammaWidget->setVisible(false);
     onDataLoadFinished();
     return result;
 }

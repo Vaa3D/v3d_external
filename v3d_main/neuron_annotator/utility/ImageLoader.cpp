@@ -4,6 +4,7 @@
 #include <QDir>
 #include "../../v3d/v3d_core.h"
 #include "../../basic_c_fun/v3d_basicdatatype.h"
+#include "loadV3dFFMpeg.h"
 #include "ImageLoader.h"
 #include <cassert>
 
@@ -410,21 +411,30 @@ bool ImageLoader::validateFile() {
 
 bool ImageLoader::loadImage(Image4DSimple * stackp, QString filepath)
 {
-    bool bSucceeded = true;
+    bool bSucceeded = false;
+    QString extension = QFileInfo(filepath).suffix().toLower();
     QString msg(QString("Waiting on disk access for file ") + filepath);
     emit progressMessageChanged(msg);
     if (filepath.toLower().endsWith(".lsm")) {
         stackp->loadImage(filepath.toAscii().data(), true);
+        bSucceeded = true;
     } else if (filepath.toLower().endsWith(".tif") ||
                filepath.toLower().endsWith(".v3draw") ||
                filepath.toLower().endsWith(".raw")) {
         stackp->loadImage(filepath.toAscii().data());
+        bSucceeded = true;
     } else if (hasPbdExtension(filepath)) {
-        if (loadRaw2StackPBD(filepath.toAscii().data(), stackp, true)!=0) {
+        if (loadRaw2StackPBD(filepath.toAscii().data(), stackp, true) == 0)
+            bSucceeded = true;
+        else
             qDebug() << "Error with loadRaw2StackPBD";
-            bSucceeded = false;
-        }
     }
+#ifdef USE_FFMPEG
+    else if (extension == "mp4") {
+        if (loadStackFFMpeg(filepath.toStdString().c_str(), *stackp))
+            bSucceeded = true;
+    }
+#endif
     return bSucceeded;
 }
 
@@ -439,8 +449,10 @@ bool ImageLoader::saveImage(My4DImage *stackp, QString filepath) {
     return saveImage(stackp, filepath, false);
 }
 
-bool ImageLoader::saveImage(My4DImage * stackp, QString filepath, bool saveTo8bit) {
+bool ImageLoader::saveImage(My4DImage * stackp, QString filepath, bool saveTo8bit)
+{
     qDebug() << "Saving to file " << filepath;
+    QString extension = QFileInfo(filepath).suffix().toLower();
     if (saveTo8bit) {
         convertType2Type1InPlace(stackp);
     }
@@ -453,10 +465,19 @@ bool ImageLoader::saveImage(My4DImage * stackp, QString filepath, bool saveTo8bi
         unsigned char* data = 0;
         data = stackp->getRawData();
         saveStack2RawPBD(filepath.toAscii().data(), stackp->getDatatype(), data, sz);
-    } else {
+    }
+#ifdef USE_FFMPEG
+    else if (extension == "mp4") {
+        if (! stackp->p_vmin)
+            stackp->updateminmaxvalues();
+        if (saveStackFFMpeg(filepath.toStdString().c_str(), *stackp))
+            return true;
+    }
+#endif
+    else {
         stackp->saveImage(filepath.toAscii().data());
     }
-	return true;
+    return true;
 }
 
 
@@ -860,7 +881,7 @@ V3DLONG ImageLoader::compressPBD16(unsigned char * compressionBuffer, unsigned c
     for (V3DLONG i=0;i<source16BufferLength;i++) {
 
         if (p>=spaceLeft) {
-            printf("ImageLoader::compressPBD16 ran out of space p=%d\n", p);
+            qDebug() << "ImageLoader::compressPBD16 ran out of space p=" << p;
             return 0;
         }
 
