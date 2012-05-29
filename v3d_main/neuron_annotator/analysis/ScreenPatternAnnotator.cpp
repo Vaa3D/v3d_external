@@ -5,6 +5,7 @@
 const int ScreenPatternAnnotator::MODE_UNDEFINED=-1;
 const int ScreenPatternAnnotator::MODE_ANNOTATE=0;
 const int ScreenPatternAnnotator::MODE_COMPARTMENT_INDEX=1;
+const int ScreenPatternAnnotator::MODE_INDEX=2;
 
 const int VIEWABLE_DIMENSION = 256;
 const int VIEWABLE_BORDER = 10;
@@ -62,6 +63,8 @@ bool ScreenPatternAnnotator::execute()
         return createCompartmentIndex();
     } else if (mode==MODE_ANNOTATE) {
         return annotate();
+    } else if (mode==MODE_INDEX) {
+        return updateIndex();
     } else if (mode==MODE_UNDEFINED) {
         return false;
     }
@@ -232,7 +235,9 @@ My4DImage * ScreenPatternAnnotator::cubifyImage(My4DImage * sourceImage, int cub
     V3DLONG c_zmax=s_zmax/cubeSize;
 
     My4DImage * cubeImage=new My4DImage();
+    qDebug() << "cubifyImage() calling loadImage()";
     cubeImage->loadImage(c_xmax, c_ymax, c_zmax, s_cmax, V3D_UINT8);
+    qDebug() << "cubifyImage() after loadImage()";
 
     V3DLONG sSize=sourceImage->getTotalUnitNumberPerChannel();
     for (V3DLONG c=0;c<s_cmax;c++) {
@@ -293,6 +298,7 @@ My4DImage * ScreenPatternAnnotator::cubifyImage(My4DImage * sourceImage, int cub
             }
         }
     }
+    qDebug() << "Returning cubeImage";
     return cubeImage;
 }
 
@@ -468,27 +474,32 @@ bool ScreenPatternAnnotator::annotate() {
     }
     qDebug() << "Cubifying compartmentIndexImage";
     compartmentIndexImageCubified=cubifyImage(compartmentIndexImage, CUBE_SIZE, CUBIFY_TYPE_MODE);
-    qDebug() << "Done";
+    qDebug() << "Done with cubifyImage()";
 
     // Load Abbreviation Index Map
     compartmentIndexAbbreviationMap.clear();
     QString resourceDirectoryPathCopy2=resourceDirectoryPath;
     QString abbreviationMapFilepath=resourceDirectoryPathCopy2.append(QDir::separator()).append("maskNameIndex.txt");
     QFile abbreviationMapFile(abbreviationMapFilepath);
+    qDebug() << "Opening abbreviationMap file=" << abbreviationMapFilepath;
     if (!abbreviationMapFile.open(QIODevice::ReadOnly)) {
         qDebug() << "Could not open file=" << abbreviationMapFilepath << " to read";
         return false;
     }
+    qDebug() << "Successfully opened file";
     while(!abbreviationMapFile.atEnd()) {
         QString abLine=abbreviationMapFile.readLine();
         abLine=abLine.trimmed();
-        QList<QString> abList=abLine.split(" ");
-        QString indexString=abList.at(0);
-        int indexKey=indexString.toInt();
-        QString abbreviationValue=abList.at(1);
-        compartmentIndexAbbreviationMap[indexKey]=abbreviationValue;
+	if (abLine.length()>0) {
+	  QList<QString> abList=abLine.split(QRegExp("\\s+"));
+	  QString indexString=abList.at(0);
+	  int indexKey=indexString.toInt();
+	  QString abbreviationValue=abList.at(1);
+	  compartmentIndexAbbreviationMap[indexKey]=abbreviationValue;
+	}
     }
     abbreviationMapFile.close();
+    qDebug() << "Done with abbreviationMapFile";
 
     // Perform Compartment Annotations
     QList<int> compartmentIndexList=compartmentIndexAbbreviationMap.keys();
@@ -1126,10 +1137,24 @@ int ScreenPatternAnnotator::processArgs(vector<char*> *argList)
                 qDebug() << "-flipYWhenLoadingMasks must be followed by true or false";
                 return 0;
             }
-        }
+        } else if (arg=="-compartmentIndexFile") {
+	  compartmentIndexFile=(*argList)[++i];
+	} else if (arg=="-compartmentNameIndexFile") {
+	  compartmentNameIndexFile=(*argList)[++i];
+	} else if (arg=="-maskBinaryFile") {
+	  maskBinaryFile=(*argList)[++i];
+	} else if (arg=="-outputIndexFile") {
+	  outputIndexFile=(*argList)[++i];
+	} else if (arg=="-outputNameIndexFile") {
+	  outputNameIndexFile=(*argList)[++i];
+	} else if (arg=="-outputRGBFile") {
+	  outputRGBFile=(*argList)[++i];
+	}
     }
     if (topLevelCompartmentMaskDirPath.length()>0 && outputResourceDirPath.length()>0 && flipYSet) {
         mode=MODE_COMPARTMENT_INDEX;
+    } else if (compartmentIndexFile.length()>0) {
+        mode=MODE_INDEX;
     } else {
         if (inputStackFilepath.length()<1) {
             qDebug() << "inputStackFilepath has invalid length";
@@ -1292,4 +1317,261 @@ void ScreenPatternAnnotator::addXYGhostPlaneFrom3DTo2D(My4DImage* stackImage, in
             }
         }
     }
+}
+
+/*
+
+updateIndex()
+
+This is a custom method for creating a new mask index file (and corresponding name and RGB file) from
+pre-existing files.
+
+The input files are:
+
+1) compartment index file
+2) compartment name file
+3) binary mask file
+
+The outputs are:
+
+1) mask index file
+2) mask name file
+3) RGB file showing colored mask indices
+
+These are the steps for the process:
+
+1) load the compartment index file
+
+2) load the binary mask file
+
+3) create an index mask file
+
+4) populate the index mask file with entries mapped-to the compartment file, assigning a special index
+to positions which are active in the mask file but do not belong to a compartment
+
+5) create a virtual-box-partition of the mask space (e.g., 20x20x20 voxels) and sequentially assign
+the non-active but masked voxels to these boxes, as they are non-zero
+
+6) output the new mask index file
+
+7) using the name-map, create a new name index file
+
+8) using random colors for each index, create a new RGB file
+
+*/
+
+bool ScreenPatternAnnotator::updateIndex() {
+
+  ImageLoader compartmentIndexLoader;
+  My4DImage * compartmentIndexImage = compartmentIndexLoader.loadImage(compartmentIndexFile);
+
+  ImageLoader binaryMaskLoader;
+  My4DImage * binaryMaskImage = binaryMaskLoader.loadImage(maskBinaryFile);
+
+  V3DLONG xdim=binaryMaskImage->getXDim();
+  V3DLONG ydim=binaryMaskImage->getYDim();
+  V3DLONG zdim=binaryMaskImage->getZDim();
+
+  if (xdim!=compartmentIndexImage->getXDim()) {
+    qDebug() << "Xdims do not match";
+    return false;
+  }
+
+  if (ydim!=compartmentIndexImage->getYDim()) {
+    qDebug() << "Ydims do not match";
+    return false;
+  }
+
+  if (zdim!=compartmentIndexImage->getZDim()) {
+    qDebug() << "Zdims do not match";
+    return false;
+  }
+
+  My4DImage * compartmentMaskImage = new My4DImage();
+  compartmentMaskImage->loadImage(binaryMaskImage->getXDim(), binaryMaskImage->getYDim(), binaryMaskImage->getZDim(), 1, V3D_UINT8);
+
+  My4DImage * outsideMaskImage = new My4DImage();
+  outsideMaskImage->loadImage(binaryMaskImage->getXDim(), binaryMaskImage->getYDim(), binaryMaskImage->getZDim(),
+			      1, V3D_UINT8);
+
+  v3d_uint8 * maskData=binaryMaskImage->getRawDataAtChannel(0);
+
+  v3d_uint8 * cmaskData=compartmentMaskImage->getRawDataAtChannel(0);
+  v3d_uint8 * omaskData=outsideMaskImage->getRawDataAtChannel(0);
+
+  v3d_uint8 * compartmentData=compartmentIndexImage->getRawDataAtChannel(0);
+
+  QMap<int,int> compartmentToMaskMap;
+  QMap<QString,int> outsideToMaskMap;
+
+  double OUTSIDE_CUBE_PERC = 0.10;
+  V3DLONG OUTSIDE_CUBE_LENGTH = OUTSIDE_CUBE_PERC * xdim;
+
+  qDebug() << "Using OUTSIDE_CUBE_LENGTH=" << OUTSIDE_CUBE_LENGTH;
+
+  for (V3DLONG z=0;z<zdim;z++) {
+    for (V3DLONG y=0;y<ydim;y++) {
+      for (V3DLONG x=0;x<xdim;x++) {
+	V3DLONG position=z*ydim*xdim+y*xdim+x;
+	int maskValue=maskData[position];
+	if (maskValue==0) {
+	  cmaskData[position]=0;
+	  omaskData[position]=0;
+	} else {
+	  int compartmentValue=compartmentData[position];
+	  int maskIndexValue=0;
+	  if (compartmentValue==0) {
+	    // Outside
+	    int outsideX=x/OUTSIDE_CUBE_LENGTH;
+	    int outsideY=y/OUTSIDE_CUBE_LENGTH;
+	    int outsideZ=z/OUTSIDE_CUBE_LENGTH;
+	    QString outsideKey=QString("%1 %2 %3").arg(outsideX).arg(outsideY).arg(outsideZ);
+	    int outsideIndexValue=0;
+	    if (outsideToMaskMap.contains(outsideKey)) {
+	      outsideIndexValue=outsideToMaskMap[outsideKey];
+	    } else {
+	      int nextOutsideIndexValue=outsideToMaskMap.size()+1;
+	      outsideToMaskMap[outsideKey]=nextOutsideIndexValue;
+	      outsideIndexValue=nextOutsideIndexValue;
+	    }
+	    omaskData[position]=outsideIndexValue;
+	  } else {
+	    // Inside
+	    int maskIndexValue=0;
+	    if (compartmentToMaskMap.contains(compartmentValue)) {
+	      maskIndexValue=compartmentToMaskMap[compartmentValue];
+	    } else {
+	      int nextMaskIndexValue=compartmentToMaskMap.size()+1;
+	      compartmentToMaskMap[compartmentValue]=nextMaskIndexValue;
+	      maskIndexValue=nextMaskIndexValue;
+	    }
+	    cmaskData[position]=maskIndexValue;
+	  }
+	}
+      }
+    }
+  }
+
+  // We now have the compartment and outside masks populated, so we need to build the final
+  // index by combining both results. We will do this by re-using the compartment results,
+  // but add the outside results starting with the highest compartment index + 1.
+  V3DLONG dataLength=xdim*ydim*zdim;
+  int startingOutsideIndex=compartmentToMaskMap.size()+1;
+  for (V3DLONG i=0;i<dataLength;i++) {
+    if (omaskData[i]>0) {
+      int index=omaskData[i]+startingOutsideIndex-1; // -1 is to handle omask starts at 1
+      cmaskData[i]=index;
+    }
+  }
+
+  // Now, cmaskData contains the whole index
+  ImageLoader cmaskSaver;
+  cmaskSaver.saveImage(compartmentMaskImage, outputIndexFile);
+
+  // Load the original abbreviations from the compartment index file
+  QMap<int,QString> compartmentNameMap;
+  QFile inputNameIndexQFile(compartmentNameIndexFile);
+  qDebug() << "Opening compartmentNameIndexFile=" << compartmentNameIndexFile;
+  if (!inputNameIndexQFile.open(QIODevice::ReadOnly)) {
+    qDebug() << "Could not open file=" << compartmentNameIndexFile << " to read";
+    return false;
+  }
+  qDebug() << "Successfully opened file";
+  while(!inputNameIndexQFile.atEnd()) {
+    QString abLine=inputNameIndexQFile.readLine();
+    abLine=abLine.trimmed();
+    if (abLine.length()>0) {
+      QList<QString> abList=abLine.split(QRegExp("\\s+"));
+      if (abList.length()>1) {
+	QString indexString=abList.at(0);
+	int indexNumber=indexString.toInt();
+	QString abbreviation=abList.at(1);
+	compartmentNameMap[indexNumber]=abbreviation;
+	qDebug() << "Assigned " << indexString << " to " << abbreviation;
+      }
+    }
+  }
+  inputNameIndexQFile.close();
+  qDebug() << "Done with abbreviationMapFile";
+
+  // Migrate to mask name map
+  QMap<int,QString> maskNameMap;
+  QList<int> compartmentKeyList=compartmentToMaskMap.keys();
+  for (int i=0;i<compartmentKeyList.length();i++) {
+    int compartmentIndex=compartmentKeyList.at(i);
+    int maskIndex=compartmentToMaskMap[compartmentIndex];
+    QString compartmentName=compartmentNameMap[compartmentIndex];
+    maskNameMap[maskIndex]=compartmentName;
+    qDebug() << "Adding mask index=" << maskIndex << " as name=" << compartmentName;
+  }
+  
+  // Add outside components
+  QList<QString> outsideKeyList=outsideToMaskMap.keys();
+  for (int i=0;i<outsideKeyList.length();i++) {
+    QString outsideKey=outsideKeyList.at(i);
+    int baseIndex=outsideToMaskMap[outsideKey];
+    int outsideIndex=baseIndex+startingOutsideIndex-1;
+    QString outsideName=QString("NonComp-%1").arg(baseIndex);
+    maskNameMap[outsideIndex]=outsideName;
+    qDebug() << "Adding outside index=" << outsideIndex << " as name=" << outsideName << " for key=" << outsideKey;
+  }
+
+  // Generate RGB file to visualize result
+  QMap<int,int> Rmap;
+  QMap<int,int> Gmap;
+  QMap<int,int> Bmap;
+  QMap<int,QString> rgbStringMap;
+  QList<int> indexList=maskNameMap.keys();
+  for (int k=0;k<indexList.size();k++) {
+    int index=indexList.at(k);
+    int r=qrand() % 256;
+    int g=qrand() % 256;
+    int b=qrand() % 256;
+    Rmap[index]=r;
+    Gmap[index]=g;
+    Bmap[index]=b;
+    QString rgbString=QString("( %1 %2 %3 )").arg(r).arg(g).arg(b);
+    rgbStringMap[index]=rgbString;
+  }
+  My4DImage * rgbImage=new My4DImage();
+  rgbImage->loadImage(xdim,ydim,zdim,3,V3D_UINT8);
+  v3d_uint8 * r0=rgbImage->getRawDataAtChannel(0);
+  v3d_uint8 * r1=rgbImage->getRawDataAtChannel(1);
+  v3d_uint8 * r2=rgbImage->getRawDataAtChannel(2);
+  for (V3DLONG p=0;p<dataLength;p++) {
+    int maskValue=cmaskData[p];
+    if (maskValue==0) {
+      r0[p]=0;
+      r1[p]=0;
+      r2[p]=0;
+    } else {
+      int r=Rmap[maskValue];
+      int g=Gmap[maskValue];
+      int b=Bmap[maskValue];
+      r0[p]=r;
+      r1[p]=g;
+      r2[p]=b;
+    }
+  }
+  ImageLoader rgbSaver;
+  rgbSaver.saveImage(rgbImage, outputRGBFile);
+
+  // Create mask name file
+  QFile nameFile(outputNameIndexFile);
+  if (!nameFile.open(QIODevice::WriteOnly)) {
+    qDebug() << "Could not open file=" << outputNameIndexFile;
+    return false;
+  }
+  QTextStream nameOutputStream(&nameFile);
+  for (int k=0;k<indexList.size();k++) {
+    int index=indexList.at(k);
+    QString name=maskNameMap[index];
+    QString rgbString=rgbStringMap[index];
+    nameOutputStream << index << " " << name << " " << rgbString << "\n";
+    qDebug() << "Wrote index=" << index << " name=" << name << " rgb=" << rgbString;
+  }
+  nameOutputStream.flush();
+  nameFile.close();
+
+  return true;
 }
