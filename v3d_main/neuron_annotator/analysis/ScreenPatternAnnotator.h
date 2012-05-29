@@ -28,6 +28,7 @@ public:
     static const int MODE_UNDEFINED;
     static const int MODE_ANNOTATE;
     static const int MODE_COMPARTMENT_INDEX;
+    static const int MODE_INDEX;
 
     ScreenPatternAnnotator();
 
@@ -57,6 +58,15 @@ public:
         usage.append("   -topLevelCompartmentMaskDir <dir path>                                                               \n");
         usage.append("   -outputResourceDir <resource dir path>                                                               \n");
         usage.append("   -flipYWhenLoadingMasks <true/false>                                                                  \n");
+	usage.append("                                                                                                        \n");
+	usage.append(" To generate an updated index file containing separate entries for a single unlabeled index:            \n");
+	usage.append("                                                                                                        \n");
+	usage.append("   -compartmentIndexFile <compartmentIndexFile>                                                         \n");
+	usage.append("   -compartmentNameIndexFile <compartmentNameIndexFile>                                                 \n");
+	usage.append("   -maskBinaryFile <mask binary file>                                                                   \n");
+	usage.append("   -outputIndexFile <output index file>                                                                 \n");
+	usage.append("   -outputNameIndexFile <output name index file>                                                        \n");
+	usage.append("   -outputRGBFile <output RGB file>                                                                     \n");
         return usage;
     }
 
@@ -71,6 +81,15 @@ public:
 private:
 
     int mode;
+
+    // For updating index file
+    QString compartmentIndexFile;
+    QString compartmentNameIndexFile;
+    QString maskBinaryFile;
+    QString outputIndexFile;
+    QString outputNameIndexFile;
+    QString outputRGBFile;
+
     QString inputStackFilepath;
     QString outputDirectoryPath;
     QString resourceDirectoryPath;
@@ -115,6 +134,7 @@ private:
     QString getSupportingSubdirectoryPath();
     QString getNormalizedSubdirectoryPath();
     bool createOrVerifyDirectory(QString dirPath);
+    bool updateIndex();
 
 
 };
