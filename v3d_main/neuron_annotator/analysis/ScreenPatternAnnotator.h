@@ -98,6 +98,7 @@ private:
     My4DImage * inputImage;
     My4DImage * inputImageCubified;
     My4DImage * imageGlobal16ColorImage;
+    My4DImage * compositeMaskImage;
     HistogramSimple global256BinHistogram;
     v3d_uint8 * lut16Color;
     QString topLevelCompartmentMaskDirPath;
@@ -126,6 +127,7 @@ private:
     My4DImage * getChannelSubImageFromMask(My4DImage * sourceImage, int sourceChannel, int index, SPA_BoundingBox bb, bool normalize, double normalizationCutoff /* 0.0-1.0 */);
     My4DImage * createViewableImage(My4DImage * sourceImage, int borderSize);
     My4DImage * cubifyImage(My4DImage * sourceImage, int cubeSize, int type);
+    My4DImage * createCompositeMaskImage(My4DImage * sourceImage, My4DImage * indexImage);
     double * quantifyCompartmentZones(My4DImage * sourceImage, My4DImage * compartmentIndex, int index, SPA_BoundingBox bb);
     void addXYGhostPlaneFrom3DTo2D(My4DImage* stackImage, int zOffset, int stackChannel, My4DImage* image);
     bool createOutputDirTree();

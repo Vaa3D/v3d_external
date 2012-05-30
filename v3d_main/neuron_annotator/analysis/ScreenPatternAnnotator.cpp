@@ -30,6 +30,7 @@ ScreenPatternAnnotator::ScreenPatternAnnotator()
     patternChannelIndex=-1;
     lut16Color=0;
     imageGlobal16ColorImage=0;
+    compositeMaskImage=0;
     compartmentIndexImage=0;
     compartmentIndexImageCubified=0;
     flipYWhenLoadingMasks=true;
@@ -51,6 +52,9 @@ ScreenPatternAnnotator::~ScreenPatternAnnotator()
     }
     if (compartmentIndexImage!=0) {
         delete compartmentIndexImage;
+    }
+    if (compositeMaskImage!=0) {
+      delete compositeMaskImage;
     }
     if (compartmentIndexImageCubified!=0) {
         delete compartmentIndexImageCubified;
@@ -476,6 +480,25 @@ bool ScreenPatternAnnotator::annotate() {
     compartmentIndexImageCubified=cubifyImage(compartmentIndexImage, CUBE_SIZE, CUBIFY_TYPE_MODE);
     qDebug() << "Done with cubifyImage()";
 
+    // Create Composite Mask
+    ImageLoader imageLoaderForComposite;
+    if (compositeMaskImage!=0) {
+      delete compositeMaskImage;
+    }
+    compositeMaskImage = createCompositeMaskImage(imageGlobal16ColorImage, compartmentIndexImage);
+    QString compositeFilepathToSave(returnFullPathWithOutputPrefix("compositeMask.v3dpbd"));
+    qDebug() << "Saving compositeMaskImage to file=" << compositeFilepathToSave;
+    bool saveCompositeStatus=imageLoaderForComposite.saveImage(compositeMaskImage, compositeFilepathToSave);
+    if (!saveCompositeStatus) {
+      qDebug() << "ScreenPatternAnnotator::execute() Error during save of composite mask image";
+      return false;
+    }
+
+    // Create composite MIP
+    ImageLoader imageLoaderForCompositeMip;
+    My4DImage * compositeMip=imageLoaderForCompositeMip.create2DMIPFromStack(compositeMaskImage);
+    imageLoaderForCompositeMip.saveImage(compositeMip, returnFullPathWithOutputPrefix("compositeMaskMIP.tif", MIPS_SUBDIR));
+
     // Load Abbreviation Index Map
     compartmentIndexAbbreviationMap.clear();
     QString resourceDirectoryPathCopy2=resourceDirectoryPath;
@@ -525,6 +548,51 @@ bool ScreenPatternAnnotator::annotate() {
 
     return true;
 }
+
+// Here, we will treat any non-zero position in the index image as being part-of the composite, and then
+// filter the sourceImage accordingly
+
+My4DImage * ScreenPatternAnnotator::createCompositeMaskImage(My4DImage * sourceImage, My4DImage * indexImage) {
+  My4DImage * compositeImage=new My4DImage();
+  compositeImage->loadImage(sourceImage->getXDim(), sourceImage->getYDim(), sourceImage->getZDim(), sourceImage->getCDim(), V3D_UINT8);
+  int xdim=indexImage->getXDim();
+  int ydim=indexImage->getYDim();
+  int zdim=indexImage->getZDim();
+  int cdim=sourceImage->getCDim();
+  if (xdim!=sourceImage->getXDim() ||
+      ydim!=sourceImage->getYDim() ||
+      zdim!=sourceImage->getZDim()) {
+    qDebug() << "ScreenPatternAnnotator::createCompositeMaskImage() source and index dimensions do not match";
+    return 0;
+  }
+  QList<v3d_uint8*> sdataList;
+  QList<v3d_uint8*> cdataList;
+  for (int c=0;c<cdim;c++) {
+    v3d_uint8* sdata=sourceImage->getRawDataAtChannel(c);
+    sdataList.append(sdata);
+    v3d_uint8* cdata=compositeImage->getRawDataAtChannel(c);
+    cdataList.append(cdata);
+  }
+  v3d_uint8* idata=indexImage->getRawDataAtChannel(0);
+  for (V3DLONG z=0;z<zdim;z++) {
+    for (V3DLONG y=0;y<ydim;y++) {
+      for (V3DLONG x=0;x<xdim;x++) {
+	V3DLONG position=z*y*x+y*x+x;
+	for (int c=0;c<cdim;c++) {
+	  v3d_uint8* sdata=sdataList[c];
+	  v3d_uint8* cdata=cdataList[c];
+	  if (idata[position]==0) {
+	    cdata[position]=0;
+	  } else {
+	    cdata[position]=sdata[position];
+	  }
+	}
+      }
+    }
+  }
+  return compositeImage;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
