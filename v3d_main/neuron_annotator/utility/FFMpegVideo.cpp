@@ -18,6 +18,27 @@ using namespace std;
 
 QMutex FFMpegVideo::mutex;
 
+// Avoid link error on some macs
+#ifdef __APPLE__
+extern "C" {
+#include <stdlib.h>
+#include <errno.h>
+// #include "compiler/compiler.h"
+
+/*
+ * Darwin doesn't have posix_memalign(), provide a private
+ * weak alternative
+ */
+int __weak posix_memalign(void **ptr, size_t align, size_t size)
+{
+       if (*ptr)
+               return 0;
+
+       return ENOMEM;
+}
+}
+#endif
+
 /////////////////////////////
 // AVPacketWrapper methods //
 /////////////////////////////
@@ -373,7 +394,7 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum
         pCtx->b_frame_strategy = 1;
         pCtx->trellis = 1;
         pCtx->pre_me = 2;
-        pCtx->quantizer_noise_shaping = 2;
+        // pCtx->quantizer_noise_shaping = 2; // deprecated
         // TODO
     }
 

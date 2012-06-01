@@ -73,24 +73,48 @@ if(NA_ENABLE_3D_STEREO)
 endif()
 
 # Permit loading 3D volumes from movie files
-find_library(AVDEVICE_LIBRARY avdevice PATHS /usr/local/lib)
-find_library(AVFORMAT_LIBRARY avformat PATHS /usr/local/lib)
-find_library(AVFILTER_LIBRARY avfilter PATHS /usr/local/lib)
-find_library(AVCODEC_LIBRARY avcodec PATHS /usr/local/lib)
-find_library(SWSCALE_LIBRARY swscale PATHS /usr/local/lib)
-find_library(AVUTIL_LIBRARY avutil PATHS /usr/local/lib)
-find_package(ZLIB)
-find_path(AVCODEC_INCLUDE_DIR
-    libavcodec/avcodec.h
-    PATHS
-        /usr/local/include
-)
-set(have_avcodec false)
-if(AVCODEC_LIBRARY AND AVCODEC_INCLUDE_DIR)
-    set(have_avcodec true)
-endif()
-set(USE_FFMPEG ${have_avcodec} CACHE BOOL "Whether to load 3D volumes from movies using libavcodec")
+
+# Movie loading required libavcodec from ffmpeg
+# FFMpeg requires YASM
+set(USE_FFMPEG FALSE CACHE BOOL "Whether to load 3D volumes from movies using libavcodec")
 if(USE_FFMPEG)
+    include(ExternalProject)
+    ExternalProject_Add(
+        Yasm-1-2-0
+        URL http://www.tortall.net/projects/yasm/releases/yasm-1.2.0.tar.gz
+        URL_MD5 4cfc0686cf5350dd1305c4d905eb55a6
+        SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/yasm/src
+        INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/yasm/install
+        UPDATE_COMMAND ""
+        CONFIGURE_COMMAND <SOURCE_DIR>/configure
+            --prefix=<INSTALL_DIR>
+        BUILD_IN_SOURCE 1
+    )
+    set(av_dir "${CMAKE_CURRENT_BINARY_DIR}/libavcodec")
+    ExternalProject_Add(
+        LibAvcodec-0-11
+        DEPENDS Yasm-1-2-0
+        URL http://ffmpeg.org/releases/ffmpeg-0.11.tar.gz
+        SOURCE_DIR ${av_dir}/src
+        BINARY_DIR ${av_dir}/build
+        INSTALL_DIR ${av_dir}/install
+        UPDATE_COMMAND ""
+        CONFIGURE_COMMAND <SOURCE_DIR>/configure
+            --prefix=<INSTALL_DIR>
+            --yasmexe=${CMAKE_CURRENT_BINARY_DIR}/yasm/install/bin/yasm
+            --arch=x86_64
+            --disable-vda
+    )
+    set(AVCODEC_INCLUDE_DIR "${av_dir}/install/include")
+    set(AVDEVICE_LIBRARY ${av_dir}/install/lib/libavdevice.a)
+    set(AVFORMAT_LIBRARY ${av_dir}/install/lib/libavformat.a)
+    set(AVFILTER_LIBRARY ${av_dir}/install/lib/libavfilter.a)
+    set(AVCODEC_LIBRARY ${av_dir}/install/lib/libavcodec.a)
+    set(SWSCALE_LIBRARY ${av_dir}/install/lib/libswscale.a)
+    set(AVUTIL_LIBRARY ${av_dir}/install/lib/libavutil.a)
+
+    find_package(ZLIB)
+
     include_directories(${AVCODEC_INCLUDE_DIR})
     add_definitions(-DUSE_FFMPEG)
 endif()
@@ -101,6 +125,7 @@ add_library(NeuronAnnotatorLib STATIC
 add_custom_target(NaGeneratedFiles DEPENDS ${NA_UI_SRCS})
 add_dependencies(NeuronAnnotatorLib NaGeneratedFiles)
 if(USE_FFMPEG)
+    add_dependencies(NeuronAnnotatorLib LibAvcodec-0-11)
     target_link_libraries(NeuronAnnotatorLib
         ${AVUTIL_LIBRARY}
         ${AVFORMAT_LIBRARY}
@@ -112,9 +137,9 @@ if(USE_FFMPEG)
     if(APPLE)
         find_library(CORE_FOUNDATION_FRAMEWORK CoreFoundation)
         find_library(CORE_VIDEO_FRAMEWORK CoreVideo)
-        find_library(VIDEO_DECODE_ACCELERATION_FRAMEWORK VideoDecodeAcceleration)
+        # find_library(VIDEO_DECODE_ACCELERATION_FRAMEWORK VideoDecodeAcceleration)
         target_link_libraries(NeuronAnnotatorLib
-            ${VIDEO_DECODE_ACCELERATION_FRAMEWORK}
+            # ${VIDEO_DECODE_ACCELERATION_FRAMEWORK}
             ${CORE_VIDEO_FRAMEWORK}
             ${CORE_FOUNDATION_FRAMEWORK}
         )
