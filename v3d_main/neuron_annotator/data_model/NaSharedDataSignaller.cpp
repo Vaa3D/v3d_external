@@ -17,7 +17,11 @@ NaSharedDataSignaller::NaSharedDataSignaller() // no parent, because it has its 
 NaSharedDataSignaller::~NaSharedDataSignaller()
 {
     bAbortWrite = true;
-    thread->quit();
-    thread->wait(500);
+    {
+        // acquire write lock to wait for reading clients to finish
+        QWriteLocker writeLock(&lock);
+        thread->quit();
+        thread->wait(500);
+    }
 }
 

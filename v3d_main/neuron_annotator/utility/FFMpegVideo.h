@@ -24,6 +24,7 @@ extern "C" {
 #include <libavutil/imgutils.h>
 }
 
+#include <QMutex>
 #include <string>
 #include <stdexcept>
 #include <iostream>
@@ -41,6 +42,10 @@ public:
         ALPHA = 3
     };
 
+    // Some libavcodec calls are not reentrant
+    static QMutex mutex;
+    static void maybeInitFFMpegLib();
+
     FFMpegVideo();
     FFMpegVideo(const std::string& fileName);
     virtual ~FFMpegVideo();
@@ -51,9 +56,6 @@ public:
     int getWidth() const;
     int getHeight() const;
     int getNumberOfChannels() const;
-
-    void write(const std::string& fileName, int width, int height);
-    static void maybeInitFFMpegLib();
 
 protected:
     static bool b_is_one_time_inited;
@@ -87,7 +89,7 @@ class FFMpegEncoder
 public:
     typedef FFMpegVideo::Channel Channel;
 
-    FFMpegEncoder(const char * file_name, int width, int height);
+    FFMpegEncoder(const char * file_name, int width, int height, enum CodecID codec_id = CODEC_ID_MPEG4);
     virtual ~FFMpegEncoder();
     void setPixelIntensity(int x, int y, int c, uint8_t value);
     void write_frame();

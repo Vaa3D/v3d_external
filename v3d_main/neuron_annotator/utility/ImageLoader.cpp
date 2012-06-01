@@ -470,7 +470,8 @@ bool ImageLoader::saveImage(My4DImage * stackp, QString filepath, bool saveTo8bi
     else if (extension == "mp4") {
         if (! stackp->p_vmin)
             stackp->updateminmaxvalues();
-        if (saveStackFFMpeg(filepath.toStdString().c_str(), *stackp))
+        // CODEC_ID_MPEG4 is the only codec I have found so far to work with the Quicktime player
+        if (saveStackFFMpeg(filepath.toStdString().c_str(), *stackp, CODEC_ID_MPEG4))
             return true;
     }
 #endif

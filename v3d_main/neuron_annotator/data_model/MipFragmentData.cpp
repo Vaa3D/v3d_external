@@ -44,6 +44,13 @@ void MipFragmentData::updateFromVolumeData()
         const Image4DProxy<My4DImage>& referenceProxy = volumeReader.getReferenceImageProxy();
         const Image4DProxy<My4DImage>& maskProxy = volumeReader.getNeuronMaskProxy();
 
+        // Sanity check
+        if (originalProxy.sx < 1) return;
+        if (originalProxy.sy < 1) return;
+        if (originalProxy.sz < 1) return;
+        if (originalProxy.sc < 1) return;
+        if (originalProxy.su < 1) return;
+
         // Allocate mip images
         mipWriter.clearImageData();
 

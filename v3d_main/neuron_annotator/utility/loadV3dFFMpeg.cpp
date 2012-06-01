@@ -6,7 +6,7 @@
 
 using namespace std;
 
-bool saveStackFFMpeg(const char * file_name, const My4DImage& img)
+bool saveStackFFMpeg(const char * file_name, const My4DImage& img, enum CodecID codec_id)
 {
     try {
         Image4DProxy<My4DImage> proxy(const_cast<My4DImage*>(&img));
@@ -27,7 +27,7 @@ bool saveStackFFMpeg(const char * file_name, const My4DImage& img)
                 }
             }
         }
-        FFMpegEncoder encoder(file_name, proxy.sx, proxy.sy);
+        FFMpegEncoder encoder(file_name, proxy.sx, proxy.sy, codec_id);
         for (int z = 0; z < proxy.sz; ++z) {
             for (int y = 0; y < proxy.sy; ++y) {
                 for (int x = 0; x < proxy.sx; ++x) {

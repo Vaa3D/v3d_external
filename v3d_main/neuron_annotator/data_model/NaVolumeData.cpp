@@ -55,7 +55,8 @@ bool NaVolumeDataLoadableStack::load()
     }
     */
     setRelativeProgress(0.75);
-    stackp->updateminmaxvalues();
+    if (! stackp->p_vmin)
+        stackp->updateminmaxvalues();
     setRelativeProgress(1.0);
     emit finished();
     return true;
@@ -71,14 +72,14 @@ void NaVolumeDataLoadableStack::setRelativeProgress(float relativeProgress)
     emit progressValueChanged(progressValue, stackIndex);
 }
 
-QString NaVolumeDataLoadableStack::determineFullFilepath()
+QString NaVolumeDataLoadableStack::determineFullFilepath() const
 {
     const char * extensions[] = {
 #ifdef USE_FFMPEG
         ".mp4",
 #endif
         ".v3dpbd",
-        ".vd3raw",
+        ".v3draw",
         ".tif",
         ".tif" // extra entry for when USE_FFMPEG is undefined
     };
@@ -212,6 +213,7 @@ void NaVolumeData::loadVolumeDataFromFiles()
 
         // Temporary kludge to counteract complicated flipping that occurs during neuron separation.
         if (stacksLoaded) {
+            qDebug() << "Loading image data into memory from disk took " << stopwatch.elapsed() / 1000.0 << " seconds";
             qDebug() << "Flipping Y-axis of images to compensate for unfortunate 2011-2012 data issues" << stopwatch.elapsed() << __FILE__ << __LINE__;
             flipY(originalImageStack);
             flipY(neuronMaskStack);
@@ -334,7 +336,8 @@ bool NaVolumeData::Writer::setSingleImageVolume(My4DImage* img)
         m_data->originalImageStack = NULL;
     }
     m_data->originalImageStack = img;
-    img->updateminmaxvalues();
+    if (! img->p_vmin)
+        img->updateminmaxvalues();
     m_data->originalImageProxy = Image4DProxy<My4DImage>(m_data->originalImageStack);
     m_data->originalImageProxy.set_minmax(m_data->originalImageStack->p_vmin, m_data->originalImageStack->p_vmax);
     // Populate histgrams
@@ -385,7 +388,20 @@ bool NaVolumeData::Writer::loadStacks()
     if (m_data->bAbortWrite) return false;
 
     // There are some bugs with multithreaded image loading, so make it an option.
-    bool bUseMultithreadedLoader = false;
+    bool bUseMultithreadedLoader = true;
+    // Tiff loading is not reentrant, so don't multithread tiff loading.
+    int tiff_count = 0;
+    if (originalStack.determineFullFilepath().endsWith(".tif"))
+        ++tiff_count;
+    if (maskStack.determineFullFilepath().endsWith(".tif"))
+        ++tiff_count;
+    if (referenceStack.determineFullFilepath().endsWith(".tif"))
+        ++tiff_count;
+    if (tiff_count > 1)
+    {
+        bUseMultithreadedLoader = false;
+        qDebug() << "Using single thread loader because there are nonreentrant tiff files to load.";
+    }
     if (bUseMultithreadedLoader)
     {
         // Load each file in a separate thread.  This assumes that loading code is reentrant...
@@ -419,6 +435,7 @@ bool NaVolumeData::Writer::loadStacks()
             }
             QCoreApplication::processEvents(); // let progress signals through
         }
+        if (m_data->bAbortWrite) return false;
     }
     else {
         // Non-threaded sequential loading
@@ -435,11 +452,13 @@ bool NaVolumeData::Writer::loadStacks()
 
     qDebug() << "NaVolumeData::Writer::loadStacks() done loading all stacks in " << stopwatch.elapsed() / 1000.0 << " seconds";
 
-    // m_data->originalImageStack->updateminmaxvalues();
+    if (! m_data->originalImageStack->p_vmin)
+        m_data->originalImageStack->updateminmaxvalues();
     m_data->originalImageProxy = Image4DProxy<My4DImage>(m_data->originalImageStack);
     m_data->originalImageProxy.set_minmax(m_data->originalImageStack->p_vmin, m_data->originalImageStack->p_vmax);
 
-    // m_data->neuronMaskStack->updateminmaxvalues();
+    if (! m_data->neuronMaskStack->p_vmin)
+        m_data->neuronMaskStack->updateminmaxvalues();
     m_data->neuronMaskProxy = Image4DProxy<My4DImage>(m_data->neuronMaskStack);
     m_data->neuronMaskProxy.set_minmax(m_data->neuronMaskStack->p_vmin, m_data->neuronMaskStack->p_vmax);
 
@@ -448,7 +467,8 @@ bool NaVolumeData::Writer::loadStacks()
     // qDebug() << "Calling normalizeReferenceStack...";
     // normalizeReferenceStack(initialReferenceStack);
     // qDebug() << "Done calling normalizeReferenceStack";
-    m_data->referenceStack->updateminmaxvalues();
+    if (! m_data->referenceStack->p_vmin)
+        m_data->referenceStack->updateminmaxvalues();
     m_data->referenceImageProxy = Image4DProxy<My4DImage>(m_data->referenceStack);
     m_data->referenceImageProxy.set_minmax(m_data->referenceStack->p_vmin, m_data->referenceStack->p_vmax);
 

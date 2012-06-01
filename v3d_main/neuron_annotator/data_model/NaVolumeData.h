@@ -17,6 +17,7 @@ class NaVolumeDataLoadableStack : public QObject
 public:
     NaVolumeDataLoadableStack(My4DImage* stackp, QString filename, int stackIndex = -1);
     virtual bool load();
+    QString determineFullFilepath() const;
 
 signals:
     void progressValueChanged(int progressValue, int stackIndex);
@@ -26,7 +27,6 @@ signals:
 
 private:
     void setRelativeProgress(float relativeProgress);
-    QString determineFullFilepath();
 
     My4DImage* stackp;
     QString filename;

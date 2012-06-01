@@ -7,6 +7,7 @@ extern "C"
 #include <libswscale/swscale.h>
 }
 
+#include <QMutexLocker>
 #include <stdexcept>
 #include <iostream>
 
@@ -15,6 +16,7 @@ using namespace std;
 // Translated to C++ by Christopher Bruns May 2012
 // from ffmeg_adapt.c in whisk package by Nathan Clack, Mark Bolstadt, Michael Meeuwisse
 
+QMutex FFMpegVideo::mutex;
 
 /////////////////////////////
 // AVPacketWrapper methods //
@@ -54,7 +56,9 @@ void AVPacketWrapper::free()
 
 FFMpegVideo::FFMpegVideo() {initialize();}
 
-FFMpegVideo::FFMpegVideo(const std::string& fileName) {
+FFMpegVideo::FFMpegVideo(const std::string& fileName)
+{
+    QMutexLocker lock(&FFMpegVideo::mutex);
     initialize();
     open(fileName);
 }
@@ -62,6 +66,7 @@ FFMpegVideo::FFMpegVideo(const std::string& fileName) {
 /* virtual */
 FFMpegVideo::~FFMpegVideo()
 {
+    QMutexLocker lock(&FFMpegVideo::mutex);
     if (NULL != Sctx) {
         sws_freeContext(Sctx);
         Sctx = NULL;
@@ -147,25 +152,6 @@ void FFMpegVideo::open(const std::string& fileName, enum PixelFormat formatParam
     //dump_format(container, 0, fname, 0);
 
     previousFrameIndex = -1;
-}
-
-// Open a new video file for writing
-void FFMpegVideo::write(const std::string& fileName, int width, int height)
-{
-
-
-    enum PixelFormat format = PIX_FMT_RGB24;
-
-    /* Create data buffer */
-    numBytes = avpicture_get_size( format, pCtx->width, pCtx->height ); // RGB24 format
-    if (! (buffer   = (uint8_t*)av_malloc(numBytes + FF_INPUT_BUFFER_PADDING_SIZE)) ) // RGB24 format
-        throw std::runtime_error("");
-
-    /* Init buffers */
-    avpicture_fill( (AVPicture * ) pFrameRGB, buffer, format,
-                    pCtx->width, pCtx->height );
-
-
 }
 
 bool FFMpegVideo::fetchFrame(int targetFrameIndex)
@@ -335,11 +321,16 @@ bool FFMpegVideo::b_is_one_time_inited = false;
 ///////////////////////////
 
 
-FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height)
+FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum CodecID codec_id)
     : picture_yuv(NULL)
     , picture_rgb(NULL)
     , container(NULL)
 {
+    if (0 != (width % 2))
+        cerr << "WARNING: Video width is not a multiple of 2" << endl;
+    if (0 != (height % 2))
+        cerr << "WARNING: Video height is not a multiple of 2" << endl;
+
     FFMpegVideo::maybeInitFFMpegLib();
 
     container = avformat_alloc_context();
@@ -353,7 +344,7 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height)
         throw std::runtime_error("Unable to deduce video format");
     container->oformat = fmt;
 
-    fmt->video_codec = CODEC_ID_MPEG4;
+    fmt->video_codec = codec_id;
     // fmt->video_codec = CODEC_ID_H264; // fails to write
 
     AVStream * video_st = avformat_new_stream(container, NULL);
@@ -368,6 +359,23 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height)
     // bit_rate determines image quality
     pCtx->bit_rate = width * height * 4; // ?
     // pCtx->qmax = 50; // no effect?
+
+    // "high quality" parameters from http://www.cs.ait.ac.th/~on/mplayer/pl/menc-feat-enc-libavcodec.html
+    // vcodec=mpeg4:mbd=2:mv0:trell:v4mv:cbp:last_pred=3:predia=2:dia=2:vmax_b_frames=2:vb_strategy=1:precmp=2:cmp=2:subcmp=2:preme=2:vme=5:naq:qns=2
+    if (false)
+    // if (pCtx->codec_id == CODEC_ID_MPEG4)
+    {
+        pCtx->mb_decision = 2;
+        pCtx->last_predictor_count = 3;
+        pCtx->pre_dia_size = 2;
+        pCtx->dia_size = 2;
+        pCtx->max_b_frames = 2;
+        pCtx->b_frame_strategy = 1;
+        pCtx->trellis = 1;
+        pCtx->pre_me = 2;
+        pCtx->quantizer_noise_shaping = 2;
+        // TODO
+    }
 
     pCtx->time_base = (AVRational){1, 25};
     // pCtx->time_base = (AVRational){1, 10};
@@ -412,8 +420,11 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height)
         throw std::runtime_error("Unable to find Mpeg4 codec");
     if (codec->pix_fmts)
         pCtx->pix_fmt = codec->pix_fmts[0];
-    if (avcodec_open2(pCtx, codec, NULL) < 0)
-        throw std::runtime_error("Error opening codec");
+    {
+        QMutexLocker lock(&FFMpegVideo::mutex);
+        if (avcodec_open2(pCtx, codec, NULL) < 0)
+            throw std::runtime_error("Error opening codec");
+    }
 
     /* Get framebuffers */
     if (! (picture_yuv = avcodec_alloc_frame()) ) // final frame format
@@ -442,8 +453,11 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height)
 
     /* open the output file */
     if (!(fmt->flags & AVFMT_NOFILE))
+    {
+        QMutexLocker lock(&FFMpegVideo::mutex);
         if (avio_open(&container->pb, file_name, AVIO_FLAG_WRITE) < 0)
              throw std::runtime_error("Error opening output video file");
+    }
     avformat_write_header(container, NULL);
 }
 
@@ -491,13 +505,19 @@ FFMpegEncoder::~FFMpegEncoder()
 {
     int result = av_write_frame(container, NULL); // flush
     result = av_write_trailer(container);
-    avio_close(container->pb);
+    {
+        QMutexLocker lock(&FFMpegVideo::mutex);
+        avio_close(container->pb);
+    }
     for (int i = 0; i < container->nb_streams; ++i)
         av_freep(container->streams[i]);
     av_free(container);
     container = NULL;
 
-    avcodec_close(pCtx);
+    {
+        QMutexLocker lock(&FFMpegVideo::mutex);
+        avcodec_close(pCtx);
+    }
     av_free(pCtx);
     pCtx = NULL;
     av_free(picture_yuv->data[0]);

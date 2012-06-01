@@ -20,10 +20,10 @@ NaLockableData::~NaLockableData()
     // As usual, acquire the lock in a local block.
     {
         NaLockableDataBaseWriteLocker(*this);
+        // Stop our private computing thread.
+        thread->quit();
+        thread->wait(500);
     }
-    // Stop our private computing thread.
-    thread->quit();
-    thread->wait(500);
 }
 
 QReadWriteLock * NaLockableData::getLock() const {
