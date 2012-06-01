@@ -47,7 +47,18 @@ QT4_WRAP_CPP(NA_MOC_SRCS
     ../webservice/impl/ConsoleObserverServiceImpl.h
 )
 
-file(GLOB NA_SRCS "*.cpp" "*/*.cpp" "gui/trees/*.cpp" "../webservice/*/*.cpp")
+file(GLOB NA_SRCS 
+    "*.cpp" 
+    # "*/*.cpp" # don't want "tests"
+    "analysis/*.cpp" 
+    "data_model/*.cpp" 
+    "entity_model/*.cpp" 
+    "geometry/*.cpp" 
+    "gui/*.cpp" 
+    "utility/*.cpp" 
+    "gui/trees/*.cpp" 
+    "../webservice/*/*.cpp")
+
 add_definitions(-DWITH_PURE_VIRTUAL -DWITH_NONAMESPACES) # needed for webservice soap stuff
 
 # 3D Stereo detection hoses Mac/ Off by default for now.

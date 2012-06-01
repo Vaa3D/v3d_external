@@ -77,16 +77,16 @@ NaMainWindow::NaMainWindow()
     , viewMode(VIEW_SINGLE_STACK)
 {
     // Set up potential 3D stereo modes before creating QGLWidget.
-    QGLFormat glFormat = QGLFormat::defaultFormat();
 #ifdef ENABLE_STEREO
+    QGLFormat glFormat = QGLFormat::defaultFormat();
     glFormat.setStereo(true);
-#endif
     glFormat.setDoubleBuffer(true);
     if (glFormat.stereo())
         qDebug() << "Attempting to set 3D stereo format";
     else
         qDebug() << "Failed to make stereo 3D default QGLFormat";
     QGLFormat::setDefaultFormat(glFormat);
+#endif
 
     ui.setupUi(this);
     setAcceptDrops(true);
@@ -649,6 +649,7 @@ void NaMainWindow::onDataLoadStarted()
     if (currentIndex != VIEWER_WAIT_LOADING_SCREEN)
         recentViewer = currentIndex;
     ui.viewerStackedWidget->setCurrentIndex(VIEWER_WAIT_LOADING_SCREEN);
+    update();
 }
 
 void NaMainWindow::onDataLoadFinished()
@@ -657,6 +658,7 @@ void NaMainWindow::onDataLoadFinished()
         undoStack->clear();
     ui.viewerStackedWidget->setCurrentIndex(recentViewer);
     ui.viewerControlTabWidget->setEnabled(true);
+    update();
 }
 
 void NaMainWindow::initializeStereo3DOptions()
