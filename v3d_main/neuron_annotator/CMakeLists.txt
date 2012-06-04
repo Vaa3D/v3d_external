@@ -72,6 +72,12 @@ if(NA_ENABLE_3D_STEREO)
     add_definitions(-DENABLE_STEREO)
 endif()
 
+add_library(NeuronAnnotatorLib STATIC
+    ${NA_UI_SRCS} ${NA_MOC_SRCS} ${NA_SRCS}
+)
+add_custom_target(NaGeneratedFiles DEPENDS ${NA_UI_SRCS})
+add_dependencies(NeuronAnnotatorLib NaGeneratedFiles)
+
 # Permit loading 3D volumes from movie files
 
 # Movie loading required libavcodec from ffmpeg
@@ -104,6 +110,7 @@ if(USE_FFMPEG)
             --yasmexe=${CMAKE_CURRENT_BINARY_DIR}/yasm/install/bin/yasm
             --arch=x86_64
             --disable-vda
+            --extra-cflags="-D__STDC_CONSTANT_MACROS"
     )
     set(AVCODEC_INCLUDE_DIR "${av_dir}/install/include")
     set(AVDEVICE_LIBRARY ${av_dir}/install/lib/libavdevice.a)
@@ -117,22 +124,19 @@ if(USE_FFMPEG)
 
     include_directories(${AVCODEC_INCLUDE_DIR})
     add_definitions(-DUSE_FFMPEG)
-endif()
+    add_definitions(-D__STDC_CONSTANT_MACROS)
 
-add_library(NeuronAnnotatorLib STATIC
-    ${NA_UI_SRCS} ${NA_MOC_SRCS} ${NA_SRCS}
-)
-add_custom_target(NaGeneratedFiles DEPENDS ${NA_UI_SRCS})
-add_dependencies(NeuronAnnotatorLib NaGeneratedFiles)
-if(USE_FFMPEG)
     add_dependencies(NeuronAnnotatorLib LibAvcodec-0-11)
+    find_package(Threads)
     target_link_libraries(NeuronAnnotatorLib
-        ${AVUTIL_LIBRARY}
-        ${AVFORMAT_LIBRARY}
         ${SWSCALE_LIBRARY}
+        ${AVDEVICE_LIBRARY}
+        ${AVFORMAT_LIBRARY}
         ${AVCODEC_LIBRARY}
+        ${AVUTIL_LIBRARY}
         ${BZIP2_LIBRARIES}
         ${ZLIB_LIBRARY}
+        ${CMAKE_THREAD_LIBS_INIT}
     )
     if(APPLE)
         find_library(CORE_FOUNDATION_FRAMEWORK CoreFoundation)

@@ -65,16 +65,23 @@ void NutateThread::unpause() {paused = false;}
 // NaMainWindow //
 //////////////////
 
-NaMainWindow::NaMainWindow()
-    : nutateThread(NULL)
+NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
+    : QMainWindow(parent, flags)
+    , nutateThread(NULL)
     , statusProgressBar(NULL)
+    , neuronSelector(this)
+    , undoStack(NULL)
+    , showAllNeuronsInEmptySpaceAction(NULL)
+    , hideAllAction(NULL)
+    , selectNoneAction(NULL)
+    , neuronContextMenu(NULL)
+    , viewerContextMenu(NULL)
     , recentViewer(VIEWER_3D)
     , dynamicRangeTool(NULL)
-    , neuronSelector(this)
     , isInCustomCutMode(false)
-    , undoStack(NULL)
     , bShowCrosshair(true) // default to on
     , viewMode(VIEW_SINGLE_STACK)
+    , recentFileActions(NaMainWindow::maxRecentFiles, NULL)
 {
     // Set up potential 3D stereo modes before creating QGLWidget.
 #ifdef ENABLE_STEREO
@@ -102,7 +109,7 @@ NaMainWindow::NaMainWindow()
     // neuronSelector = new NeuronSelector(this);
 
     // Create stubs for recent file menu
-    for (int i = 0; i < MaxRecentFiles; ++i) {
+    for (int i = 0; i < maxRecentFiles; ++i) {
         recentFileActions[i] = new OpenFileAction(this);
         ui.menuOpen_Recent->addAction(recentFileActions[i]);
         recentFileActions[i]->setVisible(false);
@@ -1091,7 +1098,7 @@ void NaMainWindow::addFileNameToRecentFilesList(QString fileName)
     files.removeAll(fileName);
     files.removeAll(QString());
     files.prepend(fileName);
-    while (files.size() > MaxRecentFiles)
+    while (files.size() > maxRecentFiles)
             files.removeLast();
     settings.setValue("NeuronAnnotatorRecentFileList", files);
     updateRecentFileActions();
@@ -1103,7 +1110,7 @@ void NaMainWindow::updateRecentFileActions()
     QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
     QStringList files = settings.value("NeuronAnnotatorRecentFileList").toStringList();
     ui.menuOpen_Recent->setEnabled(files.size() > 0);
-    for (int i = 0; i < MaxRecentFiles; ++i)
+    for (int i = 0; i < maxRecentFiles; ++i)
     {
         if ( (i < files.size() && (! files[i].isEmpty())) ) { // active
             recentFileActions[i]->setFileName(files[i]);

@@ -83,7 +83,7 @@ class NaMainWindow : public QMainWindow
     };
 
 public:
-    NaMainWindow();
+    NaMainWindow(QWidget * parent = 0, Qt::WindowFlags flags = 0);
     void setV3DDefaultModeCheck(bool checkState);
     void setNeuronAnnotatorModeCheck(bool checkState);
     void handleCoordinatedCloseEvent(QCloseEvent *event);
@@ -170,22 +170,21 @@ protected:
     void moveEvent ( QMoveEvent * event );
 
 private:
-    DataFlowModel* dataFlowModel;
-    Ui::NaMainWindow ui;
+    QString suggestedExportFilenameFromCurrentState(const NeuronSelectionModel::Reader&);
     void initializeNeuronGallery();
     void initializeOverlayGallery();
     void updateNeuronGallery();
     void updateOverlayGallery();
-    QList<GalleryButton*> overlayGalleryButtonList;
-    QList<GalleryButton*> neuronGalleryButtonList;
+    static const int maxRecentFiles = 10;
+
+    DataFlowModel* dataFlowModel;
+    Ui::NaMainWindow ui;
     CameraModel sharedCameraModel; // optional camera sharing
     NutateThread *nutateThread;
     NeuronSelector neuronSelector;
     QLabel * statusProgressMessage;
     QProgressBar * statusProgressBar;
-    enum { MaxRecentFiles = 10 }; // clever trick to get constant in header and also use it
-    OpenFileAction *recentFileActions[MaxRecentFiles];
-    QString suggestedExportFilenameFromCurrentState(const NeuronSelectionModel::Reader&);
+
     QUndoStack* undoStack;
 
     // Actions for viewer context menus
@@ -201,6 +200,11 @@ private:
     bool isInCustomCutMode;
     bool bShowCrosshair;
     ViewMode viewMode;
+
+    QList<GalleryButton*> overlayGalleryButtonList;
+    QList<GalleryButton*> neuronGalleryButtonList;
+
+    std::vector<OpenFileAction*> recentFileActions;
 };
 
 #endif // NAMAINWINDOW_H
