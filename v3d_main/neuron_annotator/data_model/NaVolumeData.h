@@ -51,12 +51,25 @@ public:
     explicit NaVolumeData();
     virtual ~NaVolumeData();
 
+signals:
+    void referenceLoaded();
+    void channelLoaded(int channel_index);
+    void channelsLoaded(int channel_count);
+    void neuronMaskLoaded();
+
 public slots:
+    bool loadChannels(QString fileName); // includes loading general volumes
+    bool loadSingleImageMovieVolume(QString fileName);
+
+protected slots:
     void loadVolumeDataFromFiles(); // Assumes file name paths have already been set
     void setProgressValue(int progressValue);
     void setProgressMessage(QString message) {emit progressMessageChanged(message);}
     void setStackLoadProgress(int progressValue, int stackIndex);
-    bool loadSingleImageMovieVolume(QString fileName);
+
+    bool loadReference(QString fileName);
+    bool loadOneChannel(QString fileName, int channel_index = 0);
+    bool loadNeuronMask(QString fileName);
 
 private:
     QString originalImageStackFilePath;
@@ -133,6 +146,11 @@ public:
 
         bool loadSingleImageMovieVolume(QString fileName);
         bool setSingleImageVolume(My4DImage* img);
+
+        bool loadReference(QString fileName);
+        bool loadOneChannel(QString fileName, int channel_index = 0);
+        int  loadChannels(QString fileName); // includes loading general volumes
+        bool loadNeuronMask(QString fileName);
 
     private:
         NaVolumeData * m_data;

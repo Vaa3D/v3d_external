@@ -1750,6 +1750,8 @@ You can also resize the box by Ctrl + left mouse click.</string>
     <addaction name="actionOpen"/>
     <addaction name="menuOpen_Recent"/>
     <addaction name="actionOpen_Single_Movie_Stack"/>
+    <addaction name="actionOpen_Reference_Channel"/>
+    <addaction name="actionOpen_Neuron_Mask"/>
     <addaction name="separator"/>
     <addaction name="menuExport"/>
     <addaction name="separator"/>
@@ -1822,6 +1824,9 @@ You can also resize the box by Ctrl + left mouse click.</string>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionOpen">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Open MultiColor Stack Folder...</string>
    </property>
@@ -2151,11 +2156,14 @@ You can also resize the box by Ctrl + left mouse click.</string>
    </property>
   </action>
   <action name="actionOpen_Single_Movie_Stack">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>Open Single Movie Stack...</string>
+    <string>Open single stack...</string>
    </property>
    <property name="visible">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionCurrent_MIP">
@@ -2188,6 +2196,22 @@ You can also resize the box by Ctrl + left mouse click.</string>
    </property>
    <property name="text">
     <string>Column Interleaved</string>
+   </property>
+  </action>
+  <action name="actionOpen_Reference_Channel">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Open reference channel...</string>
+   </property>
+  </action>
+  <action name="actionOpen_Neuron_Mask">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Open neuron mask...</string>
    </property>
   </action>
  </widget>

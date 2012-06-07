@@ -29,6 +29,7 @@ extern "C" {
  * Darwin doesn't have posix_memalign(), provide a private
  * weak alternative
  */
+    /*
 int __weak posix_memalign(void **ptr, size_t align, size_t size)
 {
        if (*ptr)
@@ -36,6 +37,7 @@ int __weak posix_memalign(void **ptr, size_t align, size_t size)
 
        return ENOMEM;
 }
+*/
 }
 #endif
 

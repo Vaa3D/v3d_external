@@ -98,9 +98,11 @@ if(USE_FFMPEG)
     )
     set(av_dir "${CMAKE_CURRENT_BINARY_DIR}/libavcodec")
     ExternalProject_Add(
-        LibAvcodec-0-11
+        LibAvcodec-0-10-2-head2012Apr25
         DEPENDS Yasm-1-2-0
-        URL http://ffmpeg.org/releases/ffmpeg-0.11.tar.gz
+        # URL http://ffmpeg.org/releases/ffmpeg-0.10.3.tar.gz
+        # Use the exact distribution I developed against
+        URL ${CMAKE_CURRENT_SOURCE_DIR}/utility/ffmpeg-HEAD-cab15f9.tar.gz
         SOURCE_DIR ${av_dir}/src
         BINARY_DIR ${av_dir}/build
         INSTALL_DIR ${av_dir}/install
@@ -113,12 +115,12 @@ if(USE_FFMPEG)
             --extra-cflags="-D__STDC_CONSTANT_MACROS"
     )
     set(AVCODEC_INCLUDE_DIR "${av_dir}/install/include")
-    set(AVDEVICE_LIBRARY ${av_dir}/install/lib/libavdevice.a)
-    set(AVFORMAT_LIBRARY ${av_dir}/install/lib/libavformat.a)
-    set(AVFILTER_LIBRARY ${av_dir}/install/lib/libavfilter.a)
-    set(AVCODEC_LIBRARY ${av_dir}/install/lib/libavcodec.a)
-    set(SWSCALE_LIBRARY ${av_dir}/install/lib/libswscale.a)
-    set(AVUTIL_LIBRARY ${av_dir}/install/lib/libavutil.a)
+    set(AVDEVICE_LIBRARY ${av_dir}/install/lib/libavdevice.a CACHE INTERNAL "path to a library")
+    set(AVFORMAT_LIBRARY ${av_dir}/install/lib/libavformat.a CACHE INTERNAL "path to a library")
+    set(AVFILTER_LIBRARY ${av_dir}/install/lib/libavfilter.a CACHE INTERNAL "path to a library")
+    set(AVCODEC_LIBRARY ${av_dir}/install/lib/libavcodec.a CACHE INTERNAL "path to a library")
+    set(SWSCALE_LIBRARY ${av_dir}/install/lib/libswscale.a CACHE INTERNAL "path to a library")
+    set(AVUTIL_LIBRARY ${av_dir}/install/lib/libavutil.a CACHE INTERNAL "path to a library")
 
     find_package(ZLIB)
 
@@ -126,7 +128,7 @@ if(USE_FFMPEG)
     add_definitions(-DUSE_FFMPEG)
     add_definitions(-D__STDC_CONSTANT_MACROS)
 
-    add_dependencies(NeuronAnnotatorLib LibAvcodec-0-11)
+    add_dependencies(NeuronAnnotatorLib LibAvcodec-0-10-2-head2012Apr25)
     find_package(Threads)
     target_link_libraries(NeuronAnnotatorLib
         ${SWSCALE_LIBRARY}

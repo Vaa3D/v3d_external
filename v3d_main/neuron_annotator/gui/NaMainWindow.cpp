@@ -490,12 +490,17 @@ void NaMainWindow::on_actionOpen_Single_Movie_Stack_triggered()
 /* slot */
 bool NaMainWindow::loadSingleVolumeMovieFile(QString fileName)
 {
+    bool bSucceeded = false; // start pessimistic
     onDataLoadStarted();
     DataFlowModel* dfm = new DataFlowModel();
     setDataFlowModel(*dfm);
-    bool result = dataFlowModel->getVolumeData().loadSingleImageMovieVolume(fileName);
+
+    int num_channels = dataFlowModel->getVolumeData().loadChannels(fileName);
+    if (num_channels > 0)
+        bSucceeded = true;
+
     onDataLoadFinished();
-    return result;
+    return bSucceeded;
 }
 
 /* slot */

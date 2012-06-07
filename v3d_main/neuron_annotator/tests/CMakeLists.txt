@@ -33,8 +33,8 @@ if(USE_FFMPEG)
         cellseg
     )
 
-    # set(test_progs test_load_mp4 test_write_mp4)
-    set(test_progs "")
+    set(test_progs test_load_mp4 test_write_mp4)
+    # set(test_progs "")
     foreach(test_prog ${test_progs})
         add_executable(${test_prog}
             ${test_prog}.cpp

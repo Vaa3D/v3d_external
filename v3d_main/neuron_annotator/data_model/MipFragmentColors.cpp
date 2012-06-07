@@ -36,17 +36,22 @@ void MipFragmentColors::update()
     size_t data_size = 0;
     // qDebug() << "MipFragmentColors::update()" << __FILE__ << __LINE__;
     {
+        DataColorModel::Reader colorReader(dataColorModel); // readlock two of two
+        if (dataColorModel.readerIsStale(colorReader)) return;
+
         MipFragmentData::Reader mipReader(mipFragmentData); // readlock one of two
         if (! mipReader.hasReadLock()) return;
         if (mipReader.getNumberOfDataChannels() == 0) return; // what's the use?
-        DataColorModel::Reader colorReader(dataColorModel); // readlock two of two
-        if (dataColorModel.readerIsStale(colorReader)) return;
+        const Image4DProxy<My4DImage> mipProxy = mipReader.getMipProxy();
+        if (mipProxy.nbytes == 0)
+            return; // upstream data is invalid
+
         if (! (colorReader.getNumberOfDataChannels() == mipReader.getNumberOfDataChannels()) )
         {
             qDebug() << "Error: color model does not match data model";
             return;
         }
-        const Image4DProxy<My4DImage> mipProxy = mipReader.getMipProxy();
+
         const Image4DProxy<My4DImage> intensityProxy = mipReader.getIntensityProxy();
         int refIndex = intensityProxy.sz - 1; // relative to fragment indices
 

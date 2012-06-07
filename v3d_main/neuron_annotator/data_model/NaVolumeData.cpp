@@ -251,6 +251,27 @@ void NaVolumeData::loadVolumeDataFromFiles()
 }
 
 /* slot */
+bool NaVolumeData::loadChannels(QString fileName) // includes loading general volumes
+{
+    bool bSucceeded = false;
+    int channel_count = 0;
+    emit progressMessageChanged("Loading single volume file"); // emit outside of lock block
+    {
+        Writer writer(*this);
+        channel_count = writer.loadChannels(fileName);
+        if (channel_count > 0)
+            bSucceeded = true;
+    } // release lock before emitting
+    if (bSucceeded) {
+        emit channelsLoaded(channel_count);
+        emit dataChanged();
+    }
+    else
+        emit progressAborted("Data stack load failed");
+    return bSucceeded;
+}
+
+/* slot */
 bool NaVolumeData::loadSingleImageMovieVolume(QString fileName)
 {
     bool bSucceeded = false;
@@ -269,6 +290,59 @@ bool NaVolumeData::loadSingleImageMovieVolume(QString fileName)
     }
     return bSucceeded;
 }
+
+/* slot */
+bool NaVolumeData::loadReference(QString fileName)
+{
+    bool bSucceeded = false;
+    emit progressMessageChanged("Loading reference channel"); // emit outside of lock block
+    {
+        Writer writer(*this);
+        if (writer.loadReference(fileName))
+            bSucceeded = true;
+    }
+
+    if (bSucceeded)
+        emit referenceLoaded();
+    else
+        emit progressAborted("Reference load failed");
+    return bSucceeded;
+}
+
+/* slot */
+bool NaVolumeData::loadOneChannel(QString fileName, int channel_index) // includes loading general volumes
+{
+    bool bSucceeded = false;
+    emit progressMessageChanged(QString("Loading data channel %1").arg(channel_index)); // emit outside of lock block
+    {
+        Writer writer(*this);
+        if (writer.loadOneChannel(fileName, channel_index))
+            bSucceeded = true;
+    }
+    if (bSucceeded)
+        emit channelLoaded(channel_index);
+    else
+        emit progressAborted("Channel load failed");
+    return bSucceeded;
+}
+
+/* slot */
+bool NaVolumeData::loadNeuronMask(QString fileName)
+{
+    bool bSucceeded = false;
+    emit progressMessageChanged("Loading neuron mask"); // emit outside of lock block
+    {
+        Writer writer(*this);
+        if (writer.loadNeuronMask(fileName))
+            bSucceeded = true;
+    }
+    if (bSucceeded)
+        emit neuronMaskLoaded();
+    else
+        emit progressAborted("Neuron mask load failed");
+    return bSucceeded;
+}
+
 
 //////////////////////////////////
 // NaVolumeData::Writer methods //
@@ -323,9 +397,25 @@ bool NaVolumeData::Writer::loadSingleImageMovieVolume(QString fileName)
 #endif
 }
 
+int NaVolumeData::Writer::loadChannels(QString fileName) // includes loading general volumes
+{
+    qDebug() << "NaVolumeData::Writer::loadChannels()" << fileName;
+    My4DImage* img = new My4DImage();
+    ImageLoader loader;
+    if (! loader.loadImage(img, fileName) ) {
+        delete img;
+        return 0;
+    }
+    if (! setSingleImageVolume(img)) {
+        delete img;
+        return 0;
+    }
+    return img->getCDim();
+}
+
 bool NaVolumeData::Writer::setSingleImageVolume(My4DImage* img)
 {
-    qDebug() << "NaVolumeData::Writer::loadSingleImageMovieVolume";
+    qDebug() << "NaVolumeData::Writer::setSingleImageVolume";
     if (m_data->originalImageStack == img)
         return false; // no change
     if (NULL == img)
@@ -340,7 +430,8 @@ bool NaVolumeData::Writer::setSingleImageVolume(My4DImage* img)
         img->updateminmaxvalues();
     m_data->originalImageProxy = Image4DProxy<My4DImage>(m_data->originalImageStack);
     m_data->originalImageProxy.set_minmax(m_data->originalImageStack->p_vmin, m_data->originalImageStack->p_vmax);
-    // Populate histgrams
+    // TODO - for speed, deprecate or move histogram computation
+    // Populate histograms
     m_data->histograms.assign((size_t)(m_data->originalImageProxy.sc), IntensityHistogram());
     for(int c = 0; c < m_data->originalImageProxy.sc; ++c)
         m_data->histograms[c].populate(m_data->originalImageProxy, c);
@@ -474,6 +565,25 @@ bool NaVolumeData::Writer::loadStacks()
 
     return true;
 }
+
+bool NaVolumeData::Writer::loadReference(QString fileName)
+{
+    assert(false); // TODO
+    return false;
+}
+
+bool NaVolumeData::Writer::loadOneChannel(QString fileName, int channel_index) // includes loading general volumes
+{
+    assert(false); // TODO
+    return false;
+}
+
+bool NaVolumeData::Writer::loadNeuronMask(QString fileName)
+{
+    assert(false); // TODO
+    return false;
+}
+
 
 //////////////////////////////////
 // NaVolumeData::Reader methods //

@@ -679,26 +679,32 @@ void AnnotationWidget::selectEntity(const Entity *entity)
 
 void AnnotationWidget::selectEntity(const Entity *entity, const bool external)
 {
-    QMutexLocker locker(&mutex);
     qDebug() << "AnnotationWidget::selectEntity"<<(entity==0?"None":*entity->name)<<"external?"<<external;
 
-    if ((selectedEntity==entity) || (selectedEntity!=0 && entity!=0 && *selectedEntity->id==*entity->id)) return;
-    selectedEntity = entity;
-    ui->annotatedBranchTreeView->clearSelection();
-    if (entity!=0) ui->annotatedBranchTreeView->selectEntity(*entity->id);
+    {
+        QMutexLocker locker(&mutex);
+
+        if ((selectedEntity==entity) || (selectedEntity!=0 && entity!=0 && *selectedEntity->id==*entity->id)) return;
+        selectedEntity = entity;
+        ui->annotatedBranchTreeView->clearSelection();
+        if (entity!=0) ui->annotatedBranchTreeView->selectEntity(*entity->id);
+    } // release lock before emit
     emit entitySelected(selectedEntity);
 
-    if (!external)
     {
-        if (entity!=0)
+        QMutexLocker locker(&mutex);
+        if (!external)
         {
-            qDebug() << "AnnotationWidget::selectEntity (notifying console)"<<*entity->id;
-            selectEntityThread = new SelectEntityThread(*entity->id);
-            selectEntityThread->start(QThread::NormalPriority);
-        }
-        else
-        {
-            // TODO: deselectEntity event?
+            if (entity!=0)
+            {
+                qDebug() << "AnnotationWidget::selectEntity (notifying console)"<<*entity->id;
+                selectEntityThread = new SelectEntityThread(*entity->id);
+                selectEntityThread->start(QThread::NormalPriority);
+            }
+            else
+            {
+                // TODO: deselectEntity event?
+            }
         }
     }
 }
@@ -726,18 +732,20 @@ void AnnotationWidget::selectEntityById(const qint64 & entityId)
 
 void AnnotationWidget::selectEntityById(const qint64 & entityId, const bool external)
 {
-    QMutexLocker locker(&mutex);
     qDebug() << "AnnotationWidget::selectEntityById"<<entityId<<"external?"<<external;
+    {
+        QMutexLocker locker(&mutex);
 
-    if (annotatedBranch==0) return;
-    Entity *entity = annotatedBranch->getEntityById(entityId);
-    if (entity!=0) selectEntity(entity, external);
+        if (annotatedBranch==0) return;
+        Entity *entity = annotatedBranch->getEntityById(entityId);
+        if (entity!=0) selectEntity(entity, external);
+    }
 }
 
 void AnnotationWidget::selectNeuron(int index)
 {
-    QMutexLocker locker(&mutex);
     qDebug() << "AnnotationWidget::selectNeuron"<<index;
+    QMutexLocker locker(&mutex);
 
     if (!annotatedBranch) return;
 
