@@ -481,26 +481,7 @@ void NaMainWindow::on_actionOpen_Single_Movie_Stack_triggered()
         qDebug() << "Problem saving parent directory of " << fileName;
     }
 
-    setViewMode(VIEW_SINGLE_STACK);
-    if (! loadSingleVolumeMovieFile(fileName))
-        QMessageBox::warning(this, tr("Could not load movie volume"),
-                                      "Error loading movie volume.  Please check the movie file.");
-}
-
-/* slot */
-bool NaMainWindow::loadSingleVolumeMovieFile(QString fileName)
-{
-    bool bSucceeded = false; // start pessimistic
-    onDataLoadStarted();
-    DataFlowModel* dfm = new DataFlowModel();
-    setDataFlowModel(*dfm);
-
-    int num_channels = dataFlowModel->getVolumeData().loadChannels(fileName);
-    if (num_channels > 0)
-        bSucceeded = true;
-
-    onDataLoadFinished();
-    return bSucceeded;
+    loadSingleStack(fileName);
 }
 
 /* slot */
@@ -592,10 +573,24 @@ void NaMainWindow::moveEvent ( QMoveEvent * event )
     QMainWindow::moveEvent(event);
 }
 
+/* slot */
 void NaMainWindow::loadSingleStack(QString fileName)
 {
-    ui.actionV3DDefault->trigger(); // switch mode
-    emit defaultVaa3dFileLoadRequested(fileName);
+    mainWindowStopWatch.start();
+    bool useVaa3dClassic = false;
+    if (useVaa3dClassic) {
+        // Open in Vaa3D classic mode
+        ui.actionV3DDefault->trigger(); // switch mode
+        emit defaultVaa3dFileLoadRequested(fileName);
+    }
+    else
+    {
+        setViewMode(VIEW_SINGLE_STACK);
+        onDataLoadStarted();
+        DataFlowModel* dfm = new DataFlowModel();
+        setDataFlowModel(*dfm);
+        emit singleStackLoadRequested(fileName);
+    }
 }
 
 
@@ -670,6 +665,7 @@ void NaMainWindow::onDataLoadFinished()
         undoStack->clear();
     ui.viewerStackedWidget->setCurrentIndex(recentViewer);
     ui.viewerControlTabWidget->setEnabled(true);
+    qDebug() << "Data load took" << mainWindowStopWatch.elapsed()/1000.0 << "seconds";
     update();
 }
 
@@ -1071,6 +1067,7 @@ void NaMainWindow::openMulticolorImageStack(QString dirName)
                  return;
     }
 
+    mainWindowStopWatch.start();
     setViewMode(VIEW_NEURON_SEPARATION);
     onDataLoadStarted();
     if (!loadAnnotationSessionFromDirectory(imageDir)) {
@@ -1247,6 +1244,12 @@ void NaMainWindow::setDataFlowModel(DataFlowModel& dataFlowModelParam)
             this, SLOT(completeProgress()));
     connect(&dataFlowModel->getVolumeData(), SIGNAL(progressAborted(QString)),
             this, SLOT(abortProgress(QString)));
+
+    // Loading single stack
+    connect(this, SIGNAL(singleStackLoadRequested(QString)),
+            &dataFlowModel->getVolumeData(), SLOT(loadChannels(QString)));
+    connect(&dataFlowModel->getVolumeData(), SIGNAL(channelsLoaded(int)),
+            this, SLOT(onDataLoadFinished()));
 
     // Color toggling
     connect(this, SIGNAL(channelVisibilityChanged(int,bool)),

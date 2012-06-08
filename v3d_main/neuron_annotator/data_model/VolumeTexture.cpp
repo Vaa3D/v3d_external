@@ -56,6 +56,7 @@ bool VolumeTexture::updateVolume()
         numSlices = d->usedTextureSize.z();
     } // release lock before emit
     if (numSlices < 1) return false;
+
     emit progressMessageChanged("Sampling volume for 3D viewer");
     float progress = 1.0; // out of 100
     emit progressValueChanged(int(progress));

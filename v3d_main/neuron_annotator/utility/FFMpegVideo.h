@@ -56,24 +56,27 @@ public:
     int getWidth() const;
     int getHeight() const;
     int getNumberOfChannels() const;
+    bool readNextFrame(int targetFrameIndex = 0);
+    int seekToFrame(int targetFrameIndex = 0);
+
+    // make certain members public, for use by MpegTexture class
+    AVFrame *pRaw;
+    AVFormatContext *container;
+    AVCodecContext *pCtx;
+    int videoStream;
 
 protected:
     static bool b_is_one_time_inited;
 
     void initialize();
     static void avtry(int result, const std::string& msg);
-    bool readNextFrame(int targetFrameIndex = 0);
-    int seekToFrame(int targetFrameIndex = 0);
 
-    AVFormatContext *container;
-    AVCodecContext *pCtx;
     AVCodec *pCodec;
-    AVFrame *pRaw;
     AVFrame *pFrameRGB;
     uint8_t *buffer,
             *blank;
     struct SwsContext *Sctx;
-    int videoStream, width, height;
+    int width, height;
     PixelFormat format;
     int numBytes;
     int numFrames;

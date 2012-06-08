@@ -89,7 +89,6 @@ public:
     void handleCoordinatedCloseEvent(QCloseEvent *event);
     virtual void keyPressEvent(QKeyEvent *e);
     bool loadAnnotationSessionFromDirectory(QDir imageInputDirectory);
-    bool loadSingleVolumeMovieFile(QString fileName);
     bool deleteDataFlowModel();
     DataFlowModel* getDataFlowModel() const;
 
@@ -98,13 +97,13 @@ signals:
     void nutatingChanged(bool);
     void defaultVaa3dFileLoadRequested(QString fileName);
     void crosshairVisibilityChanged(bool);
-    void openSingleMovieStackRequested(QString fileName);
+    void singleStackLoadRequested(QString fileName);
 
 public slots:
     void exitFullScreen();
     void setFullScreen(bool);
     void setViewMode(ViewMode mode);
-    void loadSingleStack(QString fileName); // switches to default vaa3d mode
+    void loadSingleStack(QString fileName);
     void onDataLoadStarted();
     void onDataLoadFinished();
     void openMulticolorImageStack(QString dirName);
@@ -205,6 +204,7 @@ private:
     QList<GalleryButton*> neuronGalleryButtonList;
 
     std::vector<OpenFileAction*> recentFileActions;
+    QTime mainWindowStopWatch;
 };
 
 #endif // NAMAINWINDOW_H

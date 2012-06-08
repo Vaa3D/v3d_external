@@ -181,13 +181,15 @@ bool FFMpegVideo::fetchFrame(int targetFrameIndex)
 {
     if ((targetFrameIndex < 0) || (targetFrameIndex > numFrames))
         return false;
-    if (targetFrameIndex == (previousFrameIndex + 1))
+    if (targetFrameIndex == (previousFrameIndex + 1)) {
         if (! readNextFrame(targetFrameIndex))
             return false;
+    }
     else
         if (seekToFrame(targetFrameIndex) < 0)
             return false;
     previousFrameIndex = targetFrameIndex;
+    return true;
 }
 
 // \returns current frame on success, otherwise -1
@@ -223,7 +225,7 @@ bool FFMpegVideo::readNextFrame(int targetFrameIndex)
         finished = 0;
         av_free_packet(&packet);
         int result = av_read_frame( container, &packet ); // !!NOTE: see docs on packet.convergence_duration for proper seeking
-        if (result < 0) {
+        if (result != 0) {
             av_free_packet(&packet);
             return false;
         }
@@ -385,7 +387,7 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum
 
     // "high quality" parameters from http://www.cs.ait.ac.th/~on/mplayer/pl/menc-feat-enc-libavcodec.html
     // vcodec=mpeg4:mbd=2:mv0:trell:v4mv:cbp:last_pred=3:predia=2:dia=2:vmax_b_frames=2:vb_strategy=1:precmp=2:cmp=2:subcmp=2:preme=2:vme=5:naq:qns=2
-    if (false)
+    if (false) // does not help
     // if (pCtx->codec_id == CODEC_ID_MPEG4)
     {
         pCtx->mb_decision = 2;
@@ -393,9 +395,12 @@ FFMpegEncoder::FFMpegEncoder(const char * file_name, int width, int height, enum
         pCtx->pre_dia_size = 2;
         pCtx->dia_size = 2;
         pCtx->max_b_frames = 2;
-        pCtx->b_frame_strategy = 1;
-        pCtx->trellis = 1;
+        pCtx->b_frame_strategy = 2;
+        pCtx->trellis = 2;
+        pCtx->compression_level = 2;
+        pCtx->global_quality = 300;
         pCtx->pre_me = 2;
+        pCtx->mv0_threshold = 1;
         // pCtx->quantizer_noise_shaping = 2; // deprecated
         // TODO
     }
