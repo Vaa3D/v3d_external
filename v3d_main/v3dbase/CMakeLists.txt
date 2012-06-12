@@ -15,6 +15,7 @@ QT4_WRAP_UI(QT_UI_SRCS
   ../v3d/dialog_update_downloading.ui
   ../v3d/dialog_update_checking.ui
   ../v3d/v3d_global_preference.ui
+  ../v3d/dialog_curve_trace.ui
   )
 
 QT4_WRAP_CPP(QT_MOC_SRCS

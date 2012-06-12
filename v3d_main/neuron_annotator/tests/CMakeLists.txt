@@ -33,29 +33,35 @@ if(USE_FFMPEG)
         cellseg
     )
 
-    QT4_WRAP_CPP(TEST_MPEG_MOC_SRCS
-        ../utility/MpegTexture.h
-    )
-    add_executable(test_mpeg_texture
-        test_mpeg_texture.cpp
-        ../utility/FFMpegVideo.cpp
-        ../utility/MpegTexture.cpp
-        ${TEST_MPEG_MOC_SRCS}
-    )
-    target_link_libraries(test_mpeg_texture
-        ${AVUTIL_LIBRARY}
-        ${AVFORMAT_LIBRARY}
-        ${SWSCALE_LIBRARY}
-        ${AVCODEC_LIBRARY}
-        ${OPENGL_gl_LIBRARY}
-        ${QT_QTCORE_LIBRARY}
-        ${BZIP2_LIBRARIES}
-        ${ZLIB_LIBRARY}
-    )
+    if(APPLE)
+        QT4_WRAP_CPP(TEST_MPEG_MOC_SRCS
+            ../utility/MpegTexture.h
+        )
+        add_executable(test_mpeg_texture
+            test_mpeg_texture.cpp
+            ../utility/FFMpegVideo.cpp
+            ../utility/MpegTexture.cpp
+            ${TEST_MPEG_MOC_SRCS}
+        )
+        target_link_libraries(test_mpeg_texture
+            ${AVUTIL_LIBRARY}
+            ${AVFORMAT_LIBRARY}
+            ${SWSCALE_LIBRARY}
+            ${AVCODEC_LIBRARY}
+            ${OPENGL_gl_LIBRARY}
+            ${QT_QTCORE_LIBRARY}
+            ${BZIP2_LIBRARIES}
+            ${ZLIB_LIBRARY}
+        )
+    endif()
 
     # These tests use My4DImage, and therefore must link to all of Vaa3D
-    set(test_progs test_load_mp4 test_write_mp4)
-    # set(test_progs "")
+    if (APPLE)
+        set(test_progs test_load_mp4 test_write_mp4)
+    else()
+        set(test_progs "")
+    endif()
+    find_package(Threads)
     foreach(test_prog ${test_progs})
         add_executable(${test_prog}
             ${test_prog}.cpp
@@ -65,6 +71,7 @@ if(USE_FFMPEG)
         )
         target_link_libraries(${test_prog}
             ${WAY_TOO_MANY_LINK_LIBRARIES}
+            ${CMAKE_THREAD_LIBS_INIT}
         )
         if(APPLE)
             target_link_libraries(${test_prog}
