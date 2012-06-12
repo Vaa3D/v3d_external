@@ -26,7 +26,7 @@
 #include "FragmentGalleryWidget.h"
 #include "AnnotationWidget.h"
 #include "../utility/loadV3dFFMpeg.h"
-#include "../utility/mpegTexture.h"
+#include "../utility/MpegTexture.h"
 
 using namespace std;
 
