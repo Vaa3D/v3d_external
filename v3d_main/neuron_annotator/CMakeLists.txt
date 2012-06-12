@@ -35,16 +35,21 @@ message(STATUS "Finished examining header files")
 # message("${NA_MOC_FILES}")
 
 # Only headers with "Q_OBJECT" macro go here in QT4_WRAP_CPP stanza
+if(USE_FFMPEG)
+    set(WRAP_OPTIONS "-DUSE_FFMPEG")
+endif()
 QT4_WRAP_CPP(NA_MOC_SRCS
     ${NA_MOC_FILES}
     geometry/CameraModel.h
     utility/ConsoleObserver.h
     utility/DataThread.h
     utility/ImageLoader.h
+    utility/MpegTexture.h
     DataFlowModel.h
     ExportFile.h
     NeuronSelector.h
     ../webservice/impl/ConsoleObserverServiceImpl.h
+    OPTIONS ${WRAP_OPTIONS}
 )
 
 file(GLOB NA_SRCS 

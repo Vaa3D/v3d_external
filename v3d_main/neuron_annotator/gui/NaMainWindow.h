@@ -15,7 +15,7 @@
 #include "DynamicRangeTool.h"
 #include "../NeuronSelector.h"
 
-// class NeuronSelector;
+class MpegTexture;
 
 class NutateThread : public QThread
 {
@@ -104,6 +104,7 @@ public slots:
     void setFullScreen(bool);
     void setViewMode(ViewMode mode);
     void loadSingleStack(QString fileName);
+    void loadSingleStack(QString fileName, bool useVaa3dClassic);
     void onDataLoadStarted();
     void onDataLoadFinished();
     void openMulticolorImageStack(QString dirName);
@@ -115,6 +116,7 @@ public slots:
     void on_action3D_Volume_triggered();
     void on_action2D_MIP_triggered();
     void on_actionScreenShot_triggered();
+    void on_actionLoad_movie_as_texture_triggered();
     void setZRange(int minZ, int maxZ); // update number of z slices
     void unifyCameras(bool bDoUnify); // keep all zoom, focus, rotate the same
     void setNutate(bool bDoNutate);
@@ -205,6 +207,10 @@ private:
 
     std::vector<OpenFileAction*> recentFileActions;
     QTime mainWindowStopWatch;
+
+#ifdef USE_FFMPEG
+    MpegTexture* mpegTexture;
+#endif
 };
 
 #endif // NAMAINWINDOW_H

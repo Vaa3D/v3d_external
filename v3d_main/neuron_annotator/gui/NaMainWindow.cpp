@@ -26,6 +26,7 @@
 #include "FragmentGalleryWidget.h"
 #include "AnnotationWidget.h"
 #include "../utility/loadV3dFFMpeg.h"
+#include "../utility/mpegTexture.h"
 
 using namespace std;
 
@@ -82,6 +83,9 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     , bShowCrosshair(true) // default to on
     , viewMode(VIEW_SINGLE_STACK)
     , recentFileActions(NaMainWindow::maxRecentFiles, NULL)
+#ifdef USE_FFMPEG
+    , mpegTexture(new MpegTexture(GL_TEXTURE4_ARB, this))
+#endif
 {
     // Set up potential 3D stereo modes before creating QGLWidget.
 #ifdef ENABLE_STEREO
@@ -137,7 +141,9 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     ui.menuFile->removeAction(ui.actionCell_Counter_3D_2ch_lsm);
 
 #ifdef USE_FFMPEG
-    ui.actionOpen_Single_Movie_Stack->setVisible(true);
+    ui.actionLoad_movie_as_texture->setVisible(true);
+#else
+    ui.actionLoad_movie_as_texture->setVisible(false);
 #endif
 
     // visualize compartment map
@@ -436,6 +442,55 @@ void NaMainWindow::setFullScreen(bool b)
 }
 
 /* slot */
+void NaMainWindow::on_actionLoad_movie_as_texture_triggered()
+{
+#ifdef USE_FFMPEG
+    qDebug() << "NaMainWindow::on_actionLoad_movie_as_texture_triggered()";
+    QString initialDialogPath = QDir::currentPath();
+    // Use previous annotation path as initial file browser location
+    QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
+    QString previousAnnotationDirString = settings.value("NeuronAnnotatorPreviousAnnotationPath").toString();
+    if (! previousAnnotationDirString.isEmpty()) {
+        QDir previousAnnotationDir(previousAnnotationDirString);
+        if (previousAnnotationDir.exists() && previousAnnotationDir.isReadable())
+        {
+            initialDialogPath = previousAnnotationDir.path();
+            // qDebug() << "Annotation directory path = " << initialDialogPath;
+        }
+    }
+
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    "Select MPEG4 format volume data",
+                                                    initialDialogPath);
+
+
+    if (fileName.isEmpty()) // Silently do nothing when user presses Cancel.  No error dialogs please!
+        return;
+
+    QFile movieFile(fileName);
+
+    if (! movieFile.exists() )
+    {
+        QMessageBox::warning(this, tr("No such file"),
+                             QString("'%1'\n No such file.\nIs the file share mounted?\nHas the directory moved?").arg(fileName));
+        return;
+    }
+
+    // Remember parent directory to ease browsing next time
+    QDir parentDir = QFileInfo(movieFile).dir();
+    if (parentDir.exists()) {
+        // qDebug() << "Saving annotation dir parent path " << parentDir.path();
+        settings.setValue("NeuronAnnotatorPreviousAnnotationPath", parentDir.path());
+    }
+    else {
+        qDebug() << "Problem saving parent directory of " << fileName;
+    }
+
+    mpegTexture->loadFile(fileName);
+#endif
+}
+
+/* slot */
 void NaMainWindow::on_actionOpen_Single_Movie_Stack_triggered()
 {
     qDebug() << "NaMainWindow::on_actionOpen_Single_Movie_Stack_triggered";
@@ -481,7 +536,7 @@ void NaMainWindow::on_actionOpen_Single_Movie_Stack_triggered()
         qDebug() << "Problem saving parent directory of " << fileName;
     }
 
-    loadSingleStack(fileName);
+    loadSingleStack(fileName, false);
 }
 
 /* slot */
@@ -558,7 +613,7 @@ void NaMainWindow::dropEvent(QDropEvent * event)
     else
     {
         qDebug() << "Switching to Vaa3D default mode to view single image stack";
-        loadSingleStack(fileName);
+        loadSingleStack(fileName, false);
         // ui.actionV3DDefault->trigger(); // switch mode
         // emit defaultVaa3dFileLoadRequested(fileName);
     }
@@ -576,8 +631,13 @@ void NaMainWindow::moveEvent ( QMoveEvent * event )
 /* slot */
 void NaMainWindow::loadSingleStack(QString fileName)
 {
+    loadSingleStack(fileName, true); // default to classic mode
+}
+
+/* slot */
+void NaMainWindow::loadSingleStack(QString fileName, bool useVaa3dClassic)
+{
     mainWindowStopWatch.start();
-    bool useVaa3dClassic = false;
     if (useVaa3dClassic) {
         // Open in Vaa3D classic mode
         ui.actionV3DDefault->trigger(); // switch mode

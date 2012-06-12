@@ -77,13 +77,18 @@ void AVPacketWrapper::free()
 // FFMpegVideo methods //
 /////////////////////////
 
-FFMpegVideo::FFMpegVideo() {initialize();}
+FFMpegVideo::FFMpegVideo(PixelFormat pixelFormat)
+{
+    initialize();
+    format = pixelFormat;
+}
 
-FFMpegVideo::FFMpegVideo(const std::string& fileName)
+FFMpegVideo::FFMpegVideo(const std::string& fileName, PixelFormat pixelFormat)
 {
     QMutexLocker lock(&FFMpegVideo::mutex);
     initialize();
-    open(fileName);
+    format = pixelFormat;
+    open(fileName, pixelFormat);
 }
 
 /* virtual */
@@ -150,26 +155,36 @@ void FFMpegVideo::open(const std::string& fileName, enum PixelFormat formatParam
         throw std::runtime_error("");
 
     /* Create data buffer */
-    numBytes = avpicture_get_size( format, pCtx->width, pCtx->height ); // RGB24 format
-    if (! (buffer   = (uint8_t*)av_malloc(numBytes + FF_INPUT_BUFFER_PADDING_SIZE)) ) // RGB24 format
-        throw std::runtime_error("");
-    if (! (blank    = (uint8_t*)av_mallocz(avpicture_get_size(pCtx->pix_fmt,width,height))) ) // native codec format
-        throw std::runtime_error("");
+    if (format == PIX_FMT_NONE) {
+        numBytes = 0;
+        buffer = NULL;
+        blank = NULL;
+        pFrameRGB = NULL;
+        Sctx = NULL;
+    }
+    else {
+        numBytes = avpicture_get_size( format, pCtx->width, pCtx->height ); // RGB24 format
+        if (! (buffer   = (uint8_t*)av_malloc(numBytes + FF_INPUT_BUFFER_PADDING_SIZE)) ) // RGB24 format
+            throw std::runtime_error("");
+        if (! (blank    = (uint8_t*)av_mallocz(avpicture_get_size(pCtx->pix_fmt,width,height))) ) // native codec format
+            throw std::runtime_error("");
 
-    /* Init buffers */
-    avpicture_fill( (AVPicture * ) pFrameRGB, buffer, format,
-                    pCtx->width, pCtx->height );
+        /* Init buffers */
+        avpicture_fill( (AVPicture * ) pFrameRGB, buffer, format,
+                        pCtx->width, pCtx->height );
 
-    /* Init scale & convert */
-    if (! (Sctx=sws_getContext(
-            pCtx->width,
-            pCtx->height,
-            pCtx->pix_fmt,
-            width,
-            height,
-            format,
-            SWS_BICUBIC,NULL,NULL,NULL)) )
-        throw std::runtime_error("");
+        /* Init scale & convert */
+        if (! (Sctx=sws_getContext(
+                pCtx->width,
+                pCtx->height,
+                pCtx->pix_fmt,
+                width,
+                height,
+                format,
+                SWS_POINT, // fastest?
+                NULL,NULL,NULL)) )
+            throw std::runtime_error("");
+    }
 
     /* Give some info on stderr about the file & stream */
     //dump_format(container, 0, fname, 0);
@@ -220,6 +235,14 @@ int FFMpegVideo::seekToFrame(int targetFrameIndex)
 bool FFMpegVideo::readNextFrame(int targetFrameIndex)
 {
     AVPacket packet = {0};
+    av_init_packet(&packet);
+    bool result = readNextFrameWithPacket(targetFrameIndex, packet, pRaw);
+    av_free_packet(&packet);
+    return result;
+}
+
+bool FFMpegVideo::readNextFrameWithPacket(int targetFrameIndex, AVPacket& packet, AVFrame* pYuv)
+{
     int finished = 0;
     do {
         finished = 0;
@@ -234,14 +257,14 @@ bool FFMpegVideo::readNextFrame(int targetFrameIndex)
             av_free_packet(&packet);
             continue;
         }
-        result = avcodec_decode_video2( pCtx, pRaw, &finished, &packet );
+        result = avcodec_decode_video2( pCtx, pYuv, &finished, &packet );
         if (result <= 0) {
             av_free_packet(&packet);
             return false;
         }
         if(pCtx->codec_id==CODEC_ID_RAWVIDEO && !finished)
         {
-            avpicture_fill( (AVPicture * ) pRaw, blank, pCtx->pix_fmt,width, height ); // set to blank frame
+            avpicture_fill( (AVPicture * ) pYuv, blank, pCtx->pix_fmt,width, height ); // set to blank frame
             finished=1;
         }
 #if 0 // very useful for debugging
@@ -249,28 +272,28 @@ bool FFMpegVideo::readNextFrame(int targetFrameIndex)
         cout << " dts:" << (int)packet.dts;
         cout << " - flag: " << packet.flags;
         cout << " - finished: " << finished;
-        cout << " - Frame pts:" << (int)pRaw->pts;
-        cout << " " << (int)pRaw->best_effort_timestamp;
+        cout << " - Frame pts:" << (int)pYuv->pts;
+        cout << " " << (int)pYuv->best_effort_timestamp;
         cout << endl;
         /* printf("Packet - pts:%5d dts:%5d (%5d) - flag: %1d - finished: %3d - Frame pts:%5d %5d\n",
                (int)packet.pts,(int)packet.dts,
                packet.flags,finished,
-               (int)pRaw->pts,(int)pRaw->best_effort_timestamp); */
+               (int)pYuv->pts,(int)pYuv->best_effort_timestamp); */
 #endif
         if(!finished)
             if (packet.pts == AV_NOPTS_VALUE)
                 throw std::runtime_error("");
-    } while ( (!finished) || (pRaw->best_effort_timestamp < targetFrameIndex));
+    } while ( (!finished) || (pYuv->best_effort_timestamp < targetFrameIndex));
 
-    sws_scale(Sctx,              // sws context
-              pRaw->data,        // src slice
-              pRaw->linesize,    // src stride
-              0,                      // src slice origin y
-              pCtx->height,      // src slice height
-              pFrameRGB->data,        // dst
-              pFrameRGB->linesize );  // dst stride
-
-    av_free_packet(&packet);
+    if (format != PIX_FMT_NONE) {
+        sws_scale(Sctx,              // sws context
+                  pYuv->data,        // src slice
+                  pYuv->linesize,    // src stride
+                  0,                      // src slice origin y
+                  pCtx->height,      // src slice height
+                  pFrameRGB->data,        // dst
+                  pFrameRGB->linesize );  // dst stride
+    }
 
     previousFrameIndex = targetFrameIndex;
     return true;
@@ -291,6 +314,9 @@ int FFMpegVideo::getNumberOfChannels() const
 {
     switch(format)
     {
+    case PIX_FMT_BGRA:
+        return 4;
+        break;
     case PIX_FMT_RGB24:
         return 3;
         break;

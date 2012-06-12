@@ -61,6 +61,7 @@ if(USE_FFMPEG)
             ${test_prog}.cpp
             ../utility/loadV3dFFMpeg.cpp
             ../utility/FFMpegVideo.cpp
+            # ${TEST_MPEG_MOC_SRCS}
         )
         target_link_libraries(${test_prog}
             ${WAY_TOO_MANY_LINK_LIBRARIES}

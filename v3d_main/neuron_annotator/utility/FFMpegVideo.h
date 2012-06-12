@@ -46,8 +46,8 @@ public:
     static QMutex mutex;
     static void maybeInitFFMpegLib();
 
-    FFMpegVideo();
-    FFMpegVideo(const std::string& fileName);
+    FFMpegVideo(PixelFormat pixelFormat=PIX_FMT_RGB24);
+    FFMpegVideo(const std::string& fileName, PixelFormat pixelFormat=PIX_FMT_RGB24);
     virtual ~FFMpegVideo();
     void open(const std::string& fileName, enum PixelFormat formatParam = PIX_FMT_RGB24);
     uint8_t getPixelIntensity(int x, int y, Channel c = GRAY) const;
@@ -57,13 +57,16 @@ public:
     int getHeight() const;
     int getNumberOfChannels() const;
     bool readNextFrame(int targetFrameIndex = 0);
+    bool readNextFrameWithPacket(int targetFrameIndex, AVPacket& packet, AVFrame* pYuv);
     int seekToFrame(int targetFrameIndex = 0);
 
     // make certain members public, for use by MpegTexture class
+    AVFrame *pFrameRGB;
     AVFrame *pRaw;
     AVFormatContext *container;
     AVCodecContext *pCtx;
     int videoStream;
+    int previousFrameIndex;
 
 protected:
     static bool b_is_one_time_inited;
@@ -72,15 +75,13 @@ protected:
     static void avtry(int result, const std::string& msg);
 
     AVCodec *pCodec;
-    AVFrame *pFrameRGB;
     uint8_t *buffer,
             *blank;
     struct SwsContext *Sctx;
     int width, height;
     PixelFormat format;
-    int numBytes;
+    size_t numBytes;
     int numFrames;
-    int previousFrameIndex;
     int sc; // number of color channels
 };
 

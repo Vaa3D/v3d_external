@@ -1,13 +1,24 @@
 #ifndef MPEGTEXTURE_H
 #define MPEGTEXTURE_H
 
+// MpegTexture class is designed to help load an MPEG4 movie file
+// directly into a 3D OpenGL texture.
+
+#ifdef USE_FFMPEG
+
 #include "FFMpegVideo.h"
+extern "C"
+{
+#include <libswscale/swscale.h>
+}
+
 #include <QObject>
 #include <QThread>
 #include <QString>
 #include <QTime>
-#include <QDebug>
 #include <QReadWriteLock>
+#include <QFutureWatcher>
+#include <QList>
 
 #if defined(__APPLE__)
 #include <OpenGL/gl.h>
@@ -15,97 +26,102 @@
 #include <GL/gl.h>
 #endif
 
+extern "C" {
+    struct SwsContext;
+}
+
+#include <vector>
 
 // Read an mpeg4 file and populates a YUV texture volume, in its own thread.
-class YuvLoader : public QObject
+class MpegLoader : public QObject
 {
     Q_OBJECT
 
 public:
-    YuvLoader();
-    virtual ~YuvLoader();
+    MpegLoader(PixelFormat pixelFormat);
+    virtual ~MpegLoader();
+    void deleteData();
 
 signals:
+    void headerLoaded(int, int, int); // fires as soon as the movie dimensions are known
+    void frameDecoded(int); // fires once per frame decoded
     void mpegFileLoadFinished(bool bSucceeded);
-    void frameDecoded(int);
 
 public slots:
     bool loadMpegFile(QString fileName);
 
 public:
     QReadWriteLock lock;
-    size_t sx, sy, sz;
-    size_t frameBytes;
-
-protected:
-    void deleteFrames();
-
+    size_t width, height, depth;
     QThread * thread;
-    uint8_t * frames;
+    PixelFormat pixelFormat;
+    size_t frameBytes;
+    uint8_t * frame_data;
+    std::vector<AVFrame*> frames;
 };
 
 
-// Reads a YUV volume and writes a BGRA volume
-class BgraConverter : public QObject
+// BlockScaler converts one consecutive substack from YUV format to BGRA
+class BlockScaler : public QObject
 {
     Q_OBJECT
 
 public:
-    BgraConverter();
-    virtual ~BgraConverter();
+    BlockScaler(QObject * parent = NULL);
+    virtual ~BlockScaler();
+    void setup(int firstFrameParam, int finalFrameParam,
+               MpegLoader& mpegLoaderParam, uint8_t * dataParam);
+    void load();
 
-signals:
-    void loadRequested(QString fileName);
-    void convertFinished(bool);
-    void frameConverted(int);
-
-public slots:
-    bool convertFrame(int);
-    void onLoadFinished(bool);
-
-public:
-    QReadWriteLock lock;
-
-protected:
-    void deleteFrames();
-
-    size_t sx, sy, sz;
-    size_t frameBytes;
-    YuvLoader yuvLoader;
-    QThread * thread;
-    uint8_t * frames;
+    QTime timer;
+    int firstFrame, finalFrame;
+    size_t height, sliceBytesOut;
+    MpegLoader* mpegLoader;
+    SwsContext* Sctx;
+    AVFrame* pFrameBgra;
+    uint8_t * data;
+    uint8_t * buffer;
 };
-
 
 class MpegTexture : public QObject
 {
     Q_OBJECT
 
 public:
-    MpegTexture(GLenum textureUnit = GL_TEXTURE0_ARB);
-    virtual ~MpegTexture();
-    void loadFile(QString fileName) {
-        emit loadRequested(fileName);
-    }
+    static const int numScalingThreads = 6;
 
-    // uploadToVideoCard() MUST be called from OpenGL thread!
-    bool uploadToVideoCard();
+    MpegTexture(GLenum textureUnit = GL_TEXTURE0_ARB, QObject * parent = NULL);
+    virtual ~MpegTexture();
+    void loadFile(QString fileName);
 
 signals:
     void loadRequested(QString fileName);
     void loadFinished(bool bSucceeded);
+    void textureUploaded();
 
 public slots:
+    void onHeaderLoaded(int, int, int);
     void gotFrame(int);
+    // uploadToVideoCard() MUST be called from OpenGL thread!
+    bool uploadToVideoCard();
+
+protected slots:
+    void blockScaleFinished();
 
 protected:
     void deleteData();
 
+    QTime timer; // for performance testing
+    QList<QFutureWatcher<void>* > blockScaleWatchers;
+    int completedBlocks;
     GLsizei width, height, depth;
     GLuint textureId;
     GLenum textureUnit;
-    char * texture_data;
-    BgraConverter bgraConverter;
+    uint8_t * texture_data;
+    MpegLoader mpegLoader;
+    QList<BlockScaler*> scalers;
 };
+
+#endif // USE_FFMPEG
 
 #endif // MPEGTEXTURE_H
