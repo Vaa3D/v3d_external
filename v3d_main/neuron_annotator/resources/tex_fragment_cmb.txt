@@ -42,13 +42,15 @@ void main()
     // vColor is the scaled intensity of 3 data channels(in r,g,b) plus nc82 reference(in a)
 #ifdef TEX3D
         vec4 vColor = texture3D(volume, gl_TexCoord[0].xyz);
+        // vec4 vColor = vec4(0, 1, 0, 1);
 #else
         vec4 vColor = texture2D(volume, gl_TexCoord[0].xy);
 #endif
-	if (format_bgra==1)
-	{
-		vColor.rgba = vColor.bgra;
-	}
+
+    if (format_bgra == 1)
+    {
+        vColor.rgba = vColor.bgra;
+    }
 
     // C1...C4 are the colorized, gamma-ed, HDR-ed versions of the channel data
 #ifdef TEX_LOD // only works in vertex shader!!!

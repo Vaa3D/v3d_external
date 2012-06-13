@@ -85,9 +85,6 @@ add_dependencies(NeuronAnnotatorLib NaGeneratedFiles)
 
 # Permit loading 3D volumes from movie files
 
-# Movie loading required libavcodec from ffmpeg
-# FFMpeg requires YASM
-set(USE_FFMPEG FALSE CACHE BOOL "Whether to load 3D volumes from movies using libavcodec")
 if(USE_FFMPEG)
     include(ExternalProject)
     ExternalProject_Add(
@@ -102,6 +99,10 @@ if(USE_FFMPEG)
         BUILD_IN_SOURCE 1
     )
     set(av_dir "${CMAKE_CURRENT_BINARY_DIR}/libavcodec")
+    if(APPLE)
+        # trying to avoid weird _posix_memalign link errors
+        set(AV_CONFIG_FLAGS --enable-memalign-hack)
+    endif()
     ExternalProject_Add(
         LibAvcodec-0-10-2-head2012Apr25
         DEPENDS Yasm-1-2-0
@@ -118,6 +119,7 @@ if(USE_FFMPEG)
             --arch=x86_64
             --disable-vda
             --extra-cflags="-D__STDC_CONSTANT_MACROS"
+            ${AV_CONFIG_FLAGS}
     )
     set(AVCODEC_INCLUDE_DIR "${av_dir}/install/include")
     set(AVDEVICE_LIBRARY ${av_dir}/install/lib/libavdevice.a CACHE INTERNAL "path to a library")
@@ -130,7 +132,6 @@ if(USE_FFMPEG)
     find_package(ZLIB)
 
     include_directories(${AVCODEC_INCLUDE_DIR})
-    add_definitions(-DUSE_FFMPEG)
     add_definitions(-D__STDC_CONSTANT_MACROS)
 
     add_dependencies(NeuronAnnotatorLib LibAvcodec-0-10-2-head2012Apr25)

@@ -101,6 +101,7 @@ public slots:
     void setSlabPosition(int); // range -500 - +500 voxels
     void clipSlab(); // Apply clip plane to current slab
     void updateScreenPosition(); // for stencil based 3D modes
+    void start3dTextureMode(int textureId);
 
 protected slots:
     // focus setting should be done via cameraModel, not with these methods.

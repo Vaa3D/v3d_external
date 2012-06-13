@@ -88,6 +88,7 @@ signals:
     void slabThicknessChanged(int);
 
 public slots:
+    void start3dTextureMode(int textureId);
     void setAlphaBlending(bool);
     void setStereoMode(int);
     // For use in stencilled display modes

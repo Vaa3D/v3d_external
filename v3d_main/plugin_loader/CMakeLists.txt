@@ -21,3 +21,4 @@ add_executable(get_plugin_versions
     get_plugin_versions.cpp)
 target_link_libraries(get_plugin_versions 
     ${QT_QTCORE_LIBRARY})
+add_dependencies(get_plugin_versions v3d)

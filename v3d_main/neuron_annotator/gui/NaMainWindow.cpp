@@ -84,7 +84,7 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     , viewMode(VIEW_SINGLE_STACK)
     , recentFileActions(NaMainWindow::maxRecentFiles, NULL)
 #ifdef USE_FFMPEG
-    , mpegTexture(new MpegTexture(GL_TEXTURE4_ARB, this))
+    , mpegTexture(NULL)
 #endif
 {
     // Set up potential 3D stereo modes before creating QGLWidget.
@@ -141,6 +141,10 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     ui.menuFile->removeAction(ui.actionCell_Counter_3D_2ch_lsm);
 
 #ifdef USE_FFMPEG
+    // Alert the renderer the moment an mp4 texture is loaded
+    mpegTexture = new MpegTexture(GL_TEXTURE0_ARB, this);
+    connect(mpegTexture, SIGNAL(textureUploaded(int)),
+            ui.v3dr_glwidget, SLOT(start3dTextureMode(int)));
     ui.actionLoad_movie_as_texture->setVisible(true);
 #else
     ui.actionLoad_movie_as_texture->setVisible(false);

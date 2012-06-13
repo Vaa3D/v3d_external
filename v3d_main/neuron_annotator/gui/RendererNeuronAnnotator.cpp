@@ -251,7 +251,7 @@ void RendererNeuronAnnotator::shaderTexBegin(bool stream)
                 shader->setUniform1i("blend_mode", renderMode);
                 shader->setUniform1i("format_bgra", format_bgra);
 
-                // Hard coded first clip plane for testing
+                // Define clip planes
                 for (int p = 0; p < customClipPlanes.size(); ++p)
                 {
                     const double* v = &customClipPlanes[p][0];
@@ -298,11 +298,13 @@ void RendererNeuronAnnotator::shaderTexBegin(bool stream)
                 glEnable(GL_TEXTURE_2D);
                 glActiveTextureARB(GL_TEXTURE3_ARB); // neuron label
                 glEnable(GL_TEXTURE_3D);
-                glActiveTextureARB(GL_TEXTURE0_ARB);
 
                 // switch back to volume data texture
                 glActiveTextureARB(GL_TEXTURE0_ARB); // volume
-                glEnable(GL_TEXTURE_2D);
+                if (texture_unit0_3D)
+                    glEnable(GL_TEXTURE_3D);
+                else
+                    glEnable(GL_TEXTURE_2D);
         }
 }
 
@@ -312,7 +314,10 @@ void RendererNeuronAnnotator::shaderTexEnd()
         {
                 // off colormap
                 glActiveTextureARB(GL_TEXTURE0_ARB); // volume
-                glDisable(GL_TEXTURE_2D);
+                if (texture_unit0_3D)
+                    glDisable(GL_TEXTURE_3D);
+                else
+                    glDisable(GL_TEXTURE_2D);
                 glActiveTextureARB(GL_TEXTURE1_ARB); // color map
                 glDisable(GL_TEXTURE_2D);
                 glActiveTextureARB(GL_TEXTURE2_ARB); // neuron visibility
@@ -801,7 +806,16 @@ void RendererNeuronAnnotator::cleanVol()
     // I manage the texture memory, not you.  So set to NULL before you get a chance to clear it.
     Xslice_data = Yslice_data = Zslice_data = NULL;
     Xtex_list = Ytex_list = Ztex_list = NULL;
+    tex3D = 0;
     Renderer_gl1::cleanVol();
+}
+
+/* slot */
+void RendererNeuronAnnotator::start3dTextureMode(int textureId)
+{
+    tex3D = textureId;
+    tryTex3D = (tex3D > 0);
+    texture_unit0_3D = tryTex3D;
 }
 
 // copied from renderer_tex.cpp
@@ -881,34 +895,71 @@ void RendererNeuronAnnotator::_drawStack( double ts, double th, double tw,
                         // to 3D textures.  I'm using 3D texture for the neuron labels because
                         // its easier; I'm using 2D textures for the volume because that is what
                         // is working already.
-                        glMultiTexCoord2dARB(GL_TEXTURE0_ARB, tw0, th0);
+
+                        // Texture unit zero(0) holds the RGBA volume colors
+                        if (b_tex3d)  {
+                            if (stack_i==1) glMultiTexCoord3dARB(GL_TEXTURE0_ARB, tw0, th0, tss +idts);
+                            else if (stack_i==2) glMultiTexCoord3dARB(GL_TEXTURE0_ARB, tw0, tss +idts, th0);
+                            else if (stack_i==3) glMultiTexCoord3dARB(GL_TEXTURE0_ARB, tss +idts, tw0, th0);
+                        }
+                        else
+                            glMultiTexCoord2dARB(GL_TEXTURE0_ARB, tw0, th0);
+                        // Texture unit three(3) holds the 16-bit neuron index mask.  This texture is always 3D.
                         if (stack_i==1) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tw0, th0, tss +idts);
                         else if (stack_i==2) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tw0, tss +idts, th0);
                         else if (stack_i==3) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tss +idts, tw0, th0);
+                        // Vertex coordinates are always in 3D
                         if      (stack_i==1) glVertex3d(w0, h0, s +ids);
                         else if (stack_i==2) glVertex3d(w0, s +ids, h0);
                         else if (stack_i==3) glVertex3d(s +ids, w0, h0);
 
-                        if (!b_tex3d)  glMultiTexCoord2dARB(GL_TEXTURE0_ARB, tw1, th0);
+                        // Texture unit zero(0) holds the RGBA volume colors
+                        if (b_tex3d)  {
+                            if (stack_i==1) glMultiTexCoord3dARB(GL_TEXTURE0_ARB, tw1, th0, tss +idts);
+                            else if (stack_i==2) glMultiTexCoord3dARB(GL_TEXTURE0_ARB, tw1, tss +idts, th0);
+                            else if (stack_i==3) glMultiTexCoord3dARB(GL_TEXTURE0_ARB, tss +idts, tw1, th0);
+                        }
+                        else
+                            glMultiTexCoord2dARB(GL_TEXTURE0_ARB, tw1, th0);
+                        // Texture unit three(3) holds the 16-bit neuron index mask.  This texture is always 3D.
                         if (stack_i==1) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tw1, th0, tss +idts);
                         else if (stack_i==2) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tw1, tss +idts, th0);
                         else if (stack_i==3) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tss +idts, tw1, th0);
+                        // Vertex coordinates are always in 3D
                         if      (stack_i==1) glVertex3d(w1, h0, s +ids);
                         else if (stack_i==2) glVertex3d(w1, s +ids, h0);
                         else if (stack_i==3) glVertex3d(s +ids, w1, h0);
 
-                        if (!b_tex3d)  glMultiTexCoord2dARB(GL_TEXTURE0_ARB, tw1, th1);
+                        // Texture unit zero(0) holds the RGBA volume colors
+                        if (b_tex3d)  {
+                            if (stack_i==1) glMultiTexCoord3dARB(GL_TEXTURE0_ARB, tw1, th1, tss +idts);
+                            else if (stack_i==2) glMultiTexCoord3dARB(GL_TEXTURE0_ARB, tw1, tss +idts, th1);
+                            else if (stack_i==3) glMultiTexCoord3dARB(GL_TEXTURE0_ARB, tss +idts, tw1, th1);
+                        }
+                        else
+                            glMultiTexCoord2dARB(GL_TEXTURE0_ARB, tw1, th1);
+                        // Texture unit three(3) holds the 16-bit neuron index mask.  This texture is always 3D.
                         if (stack_i==1) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tw1, th1, tss +idts);
                         else if (stack_i==2) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tw1, tss +idts, th1);
                         else if (stack_i==3) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tss +idts, tw1, th1);
+                        // Vertex coordinates are always in 3D
                         if      (stack_i==1) glVertex3d(w1, h1, s +ids);
                         else if (stack_i==2) glVertex3d(w1, s +ids, h1);
                         else if (stack_i==3) glVertex3d(s +ids, w1, h1);
 
-                        if (!b_tex3d)  glMultiTexCoord2dARB(GL_TEXTURE0_ARB, tw0, th1);
+                        // Texture unit zero(0) holds the RGBA volume colors
+                        if (b_tex3d)  {
+                            if (stack_i==1) glMultiTexCoord3dARB(GL_TEXTURE0_ARB, tw0, th1, tss +idts);
+                            else if (stack_i==2) glMultiTexCoord3dARB(GL_TEXTURE0_ARB, tw0, tss +idts, th1);
+                            else if (stack_i==3) glMultiTexCoord3dARB(GL_TEXTURE0_ARB, tss +idts, tw0, th1);
+                        }
+                        else
+                            glMultiTexCoord2dARB(GL_TEXTURE0_ARB, tw0, th1);
+                        // Texture unit three(3) holds the 16-bit neuron index mask.  This texture is always 3D.
                         if (stack_i==1) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tw0, th1, tss +idts);
                         else if (stack_i==2) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tw0, tss +idts, th1);
                         else if (stack_i==3) glMultiTexCoord3dARB(GL_TEXTURE3_ARB, tss +idts, tw0, th1);
+                        // Vertex coordinates are always in 3D
                         if      (stack_i==1) glVertex3d(w0, h1, s +ids);
                         else if (stack_i==2) glVertex3d(w0, s +ids, h1);
                         else if (stack_i==3) glVertex3d(s +ids, w0, h1);

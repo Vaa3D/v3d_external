@@ -40,6 +40,13 @@ find_package(OpenGL REQUIRED)
 
 option( V3D_USE_OWN_TIFF "Use the TIFF library source code distributed with v3d" ON )
 
+# Movie loading required libavcodec from ffmpeg
+# FFMpeg requires YASM
+set(USE_FFMPEG FALSE CACHE BOOL "Whether to load 3D volumes from movies using libavcodec")
+if(USE_FFMPEG)
+    add_definitions(-DUSE_FFMPEG)
+endif()
+
 add_subdirectory( common_lib )
 
 if( NOT V3D_USE_OWN_TIFF )
@@ -140,7 +147,7 @@ find_path(TMP_OSX_SYSROOT MacOSX10.5.sdk PATHS /Developer/SDKs NO_DEFAULT_PATH)
 mark_as_advanced(TMP_OSX_SYSROOT)
 if(APPLE AND TMP_OSX_SYSROOT)
     if(NOT V3D_INITIALIZED_MAX_OSX_TO_DEFAULT) # Only force it the first time.
-        set(CMAKE_OSX_ARCHITECTURES "i386;x86_64" CACHE STRING 
+        set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING 
             "Build architectures for OSX" FORCE)
         set(CMAKE_OSX_DEPLOYMENT_TARGET "10.5" CACHE STRING 
             "Minimum OS X version to target for deployment (at runtime); newer APIs weak linked. Set to empty string for default value." FORCE)

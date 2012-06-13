@@ -54,10 +54,10 @@ else()
     endif()
 endif()
 
-# Default to building fat binaries, even on Leopard
+# Default to building 64 bit binaries
 if(APPLE)
     if(NOT CMAKE_OSX_ARCHITECTURES)
-         set(CMAKE_OSX_ARCHITECTURES i386 x86_64)
+         set(CMAKE_OSX_ARCHITECTURES x86_64)
     endif()
 endif()
 

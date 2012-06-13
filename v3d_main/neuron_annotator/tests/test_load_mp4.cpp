@@ -1,4 +1,10 @@
 
+#ifdef __APPLE__
+extern "C" {
+    extern int posix_memalign();
+}
+#endif
+
 #include "../utility/loadV3dFFMpeg.h"
 #include "../../v3d/v3d_application.h"
 

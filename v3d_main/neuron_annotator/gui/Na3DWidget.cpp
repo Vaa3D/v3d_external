@@ -95,6 +95,15 @@ Na3DWidget::~Na3DWidget()
 }
 
 /* slot */
+void Na3DWidget::start3dTextureMode(int textureId)
+{
+    RendererNeuronAnnotator* ra = getRendererNa();
+    if (!ra) return;
+    ra->start3dTextureMode(textureId);
+    update();
+}
+
+/* slot */
 void Na3DWidget::updateScreenPosition()  // for stencil based 3D modes
 {
     // qDebug() << "Na3DWidget::updateScreenPosition()" << __FILE__ << __LINE__;

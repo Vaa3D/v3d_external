@@ -15,3 +15,5 @@ add_library( worm_straighten_c ${WormStraighten_SRCS} )
 
 target_link_libraries( worm_straighten_c )
 
+add_dependencies( worm_straighten_c ${TIFF_LIBRARY} )
+

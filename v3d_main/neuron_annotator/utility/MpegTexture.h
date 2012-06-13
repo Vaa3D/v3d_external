@@ -26,10 +26,6 @@ extern "C"
 #include <GL/gl.h>
 #endif
 
-extern "C" {
-    struct SwsContext;
-}
-
 #include <vector>
 
 // Read an mpeg4 file and populates a YUV texture volume, in its own thread.
@@ -97,7 +93,7 @@ public:
 signals:
     void loadRequested(QString fileName);
     void loadFinished(bool bSucceeded);
-    void textureUploaded();
+    void textureUploaded(int textureId);
 
 public slots:
     void onHeaderLoaded(int, int, int);

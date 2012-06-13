@@ -53,6 +53,7 @@ if(USE_FFMPEG)
             ${BZIP2_LIBRARIES}
             ${ZLIB_LIBRARY}
         )
+        add_dependencies(test_mpeg_texture LibAvcodec-0-10-2-head2012Apr25)
     endif()
 
     # These tests use My4DImage, and therefore must link to all of Vaa3D

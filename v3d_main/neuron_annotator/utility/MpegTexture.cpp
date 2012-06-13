@@ -356,7 +356,7 @@ bool MpegTexture::uploadToVideoCard()
     qDebug() << "Uploading 3D volume texture took"
              << stopwatch.elapsed()
              << "milliseconds";
-    emit textureUploaded();
+    emit textureUploaded(textureId);
     return true;
 }
 

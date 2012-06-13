@@ -57,8 +57,9 @@ EntityData* Entity::getEntityDataByAttributeName(const QString & attrName) const
 
 const QString& Entity::getValueByAttributeName(const QString & attrName) const
 {
+    static QString emptyString; // To avoid returning reference to temporary
     EntityData* ed = getEntityDataByAttributeName(attrName);
-    if (ed == 0 || ed->value == 0) return QString();
+    if (ed == 0 || ed->value == 0) return emptyString;
     return *ed->value;
 }
 
