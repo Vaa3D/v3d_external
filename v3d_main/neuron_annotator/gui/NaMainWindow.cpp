@@ -146,8 +146,10 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
     connect(mpegTexture, SIGNAL(textureUploaded(int)),
             ui.v3dr_glwidget, SLOT(start3dTextureMode(int)));
     ui.actionLoad_movie_as_texture->setVisible(true);
+    ui.actionLoad_texture_into_Reference->setVisible(true);
 #else
     ui.actionLoad_movie_as_texture->setVisible(false);
+    ui.actionLoad_texture_into_Reference->setVisible(false);
 #endif
 
     // visualize compartment map
@@ -445,11 +447,8 @@ void NaMainWindow::setFullScreen(bool b)
     }
 }
 
-/* slot */
-void NaMainWindow::on_actionLoad_movie_as_texture_triggered()
+QString NaMainWindow::getStackPathWithDialog()
 {
-#ifdef USE_FFMPEG
-    qDebug() << "NaMainWindow::on_actionLoad_movie_as_texture_triggered()";
     QString initialDialogPath = QDir::currentPath();
     // Use previous annotation path as initial file browser location
     QSettings settings(QSettings::UserScope, "HHMI", "Vaa3D");
@@ -464,12 +463,12 @@ void NaMainWindow::on_actionLoad_movie_as_texture_triggered()
     }
 
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    "Select MPEG4 format volume data",
-                                                    initialDialogPath);
-
+                                                    "Select volume file",
+                                                    initialDialogPath,
+                                                    tr("Stacks (*.lsm *.tif *.tiff *.mp4 *.v3draw *.v3dpbd)"));
 
     if (fileName.isEmpty()) // Silently do nothing when user presses Cancel.  No error dialogs please!
-        return;
+        return "";
 
     QFile movieFile(fileName);
 
@@ -477,7 +476,7 @@ void NaMainWindow::on_actionLoad_movie_as_texture_triggered()
     {
         QMessageBox::warning(this, tr("No such file"),
                              QString("'%1'\n No such file.\nIs the file share mounted?\nHas the directory moved?").arg(fileName));
-        return;
+        return "";
     }
 
     // Remember parent directory to ease browsing next time
@@ -490,7 +489,26 @@ void NaMainWindow::on_actionLoad_movie_as_texture_triggered()
         qDebug() << "Problem saving parent directory of " << fileName;
     }
 
+    return fileName;
+}
+
+/* slot */
+void NaMainWindow::on_actionLoad_movie_as_texture_triggered()
+{
+#ifdef USE_FFMPEG
+    QString fileName = getStackPathWithDialog();
+    if (fileName.isEmpty()) return;
     mpegTexture->loadFile(fileName);
+#endif
+}
+
+/* slot */
+void NaMainWindow::on_actionLoad_texture_into_Reference_triggered()
+{
+#ifdef USE_FFMPEG
+    QString fileName = getStackPathWithDialog();
+    if (fileName.isEmpty()) return;
+    mpegTexture->loadFile(fileName, BlockScaler::CHANNEL_ALPHA);
 #endif
 }
 

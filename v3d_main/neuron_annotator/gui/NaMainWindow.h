@@ -91,6 +91,7 @@ public:
     bool loadAnnotationSessionFromDirectory(QDir imageInputDirectory);
     bool deleteDataFlowModel();
     DataFlowModel* getDataFlowModel() const;
+    QString getStackPathWithDialog();
 
 signals:
     void channelVisibilityChanged(int, bool);
@@ -117,6 +118,7 @@ public slots:
     void on_action2D_MIP_triggered();
     void on_actionScreenShot_triggered();
     void on_actionLoad_movie_as_texture_triggered();
+    void on_actionLoad_texture_into_Reference_triggered();
     void setZRange(int minZ, int maxZ); // update number of z slices
     void unifyCameras(bool bDoUnify); // keep all zoom, focus, rotate the same
     void setNutate(bool bDoNutate);

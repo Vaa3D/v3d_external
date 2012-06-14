@@ -120,26 +120,35 @@ BlockScaler::BlockScaler(QObject * parent)
     , pFrameBgra(NULL)
     , data(NULL)
     , buffer(NULL)
+    , channel(CHANNEL_RGB)
 {}
 
-void BlockScaler::setup(int firstFrameParam, int finalFrameParam, MpegLoader& mpegLoaderParam, uint8_t * dataParam)
+void BlockScaler::setup(int firstFrameParam, int finalFrameParam,
+                        MpegLoader& mpegLoaderParam, uint8_t * dataParam,
+                        Channel channelParam)
 {
     timer.start();
     firstFrame = firstFrameParam;
     finalFrame = finalFrameParam;
     mpegLoader = &mpegLoaderParam;
     data = dataParam;
+    channel = channelParam;
     height = mpegLoader->height;
+    width = mpegLoader->width;
+    qDebug() << "Channel =" << (int)channel << __FILE__ << __LINE__;
 
-    int width = mpegLoader->width;
     pFrameBgra = avcodec_alloc_frame();
-    size_t size = avpicture_get_size(PIX_FMT_BGRA, width, height)
+    sliceBytesOut = height * width * 4;
+    PixelFormat pixelFormat = PIX_FMT_BGRA;
+    if (channel != CHANNEL_RGB) {
+        pixelFormat = PIX_FMT_GRAY8;
+    }
+    size_t size = avpicture_get_size(pixelFormat, width, height)
                   + FF_INPUT_BUFFER_PADDING_SIZE;
     qDebug() << "size =" << size << __FILE__ << __LINE__;
     buffer = (uint8_t*)av_malloc(size);
-    avpicture_fill( (AVPicture * ) pFrameBgra, buffer, PIX_FMT_BGRA,
+    avpicture_fill( (AVPicture * ) pFrameBgra, buffer, pixelFormat,
                     width, height );
-    sliceBytesOut = height * width * 4;
     if (NULL != Sctx)
         sws_freeContext(Sctx);
     Sctx = sws_getContext(
@@ -148,7 +157,7 @@ void BlockScaler::setup(int firstFrameParam, int finalFrameParam, MpegLoader& mp
             PIX_FMT_YUV420P,
             width,
             height,
-            PIX_FMT_BGRA,
+            pixelFormat,
             SWS_POINT, // fastest? We are not scaling, so...
             NULL,NULL,NULL);
 }
@@ -175,8 +184,12 @@ BlockScaler::~BlockScaler()
 
 void BlockScaler::load()
 {
+    qDebug() << "Channel =" << (int)channel << __FILE__ << __LINE__;
+    const size_t linesize_out = 4 * width;
+    const size_t channel_offset = (size_t) channel;
     for (int z = firstFrame; z <= finalFrame; ++z) {
         AVFrame * frame = mpegLoader->frames[z];
+        uint8_t* slice_out = data + z * sliceBytesOut;
         sws_scale(Sctx,              // sws context
                   frame->data,        // src slice
                   frame->linesize,    // src stride
@@ -184,7 +197,36 @@ void BlockScaler::load()
                   height,      // src slice height
                   pFrameBgra->data,
                   pFrameBgra->linesize);
-        memcpy(data + z * sliceBytesOut, pFrameBgra->data[0], sliceBytesOut);
+        // Import three channels, RGB
+        if (channel == CHANNEL_RGB) {
+            // Copy the entire frame (alpha will be overwritten)
+            // memcpy(slice_out, pFrameBgra->data[0], sliceBytesOut);
+            // PIX_FMT_BGRA0 fails to zero alpha channel, so I will
+            for (int y = 0; y < height; ++y)
+            {
+                uint32_t* sl_in = (uint32_t*)(pFrameBgra->data[0] + y * pFrameBgra->linesize[0]);
+                uint32_t* sl_out = (uint32_t*)(slice_out + y * linesize_out);
+                for (int x = 0; x < width; ++x) {
+                    // Overwrite BGR, without overwriting A
+                    // (little endian only?)
+                    sl_out[x] &= 0xff000000; // clear RGB
+                    sl_out[x] |= (sl_in[x] & 0x00ffffff); // RGB-in + A-out
+                }
+            }
+        }
+        // Copy just one channel
+        else {
+            for (int y = 0; y < height; ++y)
+            {
+                // input scan line
+                uint8_t* sl_in = pFrameBgra->data[0] + y * pFrameBgra->linesize[0];
+                // output scan line
+                uint8_t* sl_out = slice_out + y * linesize_out + channel_offset;
+                for (int x = 0; x < width; ++x) {
+                    sl_out[4*x] = sl_in[x];
+                }
+            }
+        }
     }
     qDebug() << "Converting frames" << firstFrame << "to" << finalFrame
             << "took" << timer.elapsed()/1000.0 << "seconds";
@@ -203,7 +245,7 @@ MpegTexture::MpegTexture(GLenum textureUnit, QObject * parent)
     , depth(0)
     , textureUnit(textureUnit)
     , textureId(0)
-    , mpegLoader(PIX_FMT_YUV420P) // TODO internal format for speed testing
+    , mpegLoader(PIX_FMT_YUV420P) // Use internal format for fast first pass of rescaling
 {
     FFMpegVideo::maybeInitFFMpegLib();
     connect(this, SIGNAL(loadRequested(QString)),
@@ -227,9 +269,10 @@ MpegTexture::~MpegTexture()
         glDeleteTextures(1, &textureId);
 }
 
-void MpegTexture::loadFile(QString fileName)
+void MpegTexture::loadFile(QString fileName, BlockScaler::Channel channel)
 {
     qDebug() << "MpegTexture::loadFile()" << fileName << __FILE__ << __LINE__;
+    currentLoadChannel = channel;
     timer.start();
     emit loadRequested(fileName);
 }
@@ -237,19 +280,30 @@ void MpegTexture::loadFile(QString fileName)
 /* slot */
 void MpegTexture::onHeaderLoaded(int x, int y, int z)
 {
-    // qDebug() << "MpegTexture::onHeaderLoaded" << x << y << z;
-    width = x;
-    height = y;
-    depth = z;
-    deleteData();
-    size_t size = 4 * (size_t)width * (size_t)height * (size_t)depth;
-    qDebug() << "size =" << size << __FILE__ << __LINE__;
-    texture_data = (uint8_t*) malloc(size);
-    if (texture_data == NULL) {
-        qDebug() << "Failed to allocate memory";
-    }
+    // TODO - kill any outstanding scaling jobs
     scalers.clear();
     blockScaleWatchers.clear();
+
+    // qDebug() << "MpegTexture::onHeaderLoaded" << x << y << z;
+    // Only allocate memory if we need to, especially for loading single channels
+    if ( (width != x)
+        || (height != y)
+        || (depth != z) )
+    {
+        deleteData();
+        width = x;
+        height = y;
+        depth = z;
+        size_t size = 4 * (size_t)width * (size_t)height * (size_t)depth;
+        qDebug() << "size =" << size << __FILE__ << __LINE__;
+        texture_data = (uint8_t*) malloc(size);
+        if (texture_data == NULL) {
+            qDebug() << "Failed to allocate memory";
+        }
+        memset(texture_data, 0, size);
+    }
+
+    // Ready a set of scalers for the new data
     for (int i = 0; i < MpegTexture::numScalingThreads; ++i) {
         scalers << new BlockScaler(this);
         blockScaleWatchers << new QFutureWatcher<void>(this);
@@ -272,7 +326,9 @@ void MpegTexture::gotFrame(int f)
     if (f == lastInSection) {
         // qDebug() << "scaling frames" << firstInSection << "to" << lastInSection;
         int ix = int(section) - 1;
-        scalers[ix]->setup(firstInSection, lastInSection, mpegLoader, texture_data);
+        // Notice support for loading just one channel
+        scalers[ix]->setup(firstInSection, lastInSection, mpegLoader,
+                           texture_data, currentLoadChannel);
         QFuture<void> future = QtConcurrent::run(scalers[ix], &BlockScaler::load);
         // Create a way to signal when the scaling is done
         blockScaleWatchers[ix]->setFuture(future);
@@ -366,6 +422,7 @@ void MpegTexture::deleteData()
         free(texture_data);
         texture_data = NULL;
     }
+    width = height = depth = 0;
 }
 
 #endif // USE_FFMPEG

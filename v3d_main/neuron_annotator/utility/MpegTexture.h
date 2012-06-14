@@ -63,20 +63,30 @@ class BlockScaler : public QObject
     Q_OBJECT
 
 public:
+    enum Channel {
+        CHANNEL_RED = 0,
+        CHANNEL_GREEN = 1,
+        CHANNEL_BLUE = 2,
+        CHANNEL_ALPHA = 3,
+        CHANNEL_RGB = 4
+    };
+
     BlockScaler(QObject * parent = NULL);
     virtual ~BlockScaler();
     void setup(int firstFrameParam, int finalFrameParam,
-               MpegLoader& mpegLoaderParam, uint8_t * dataParam);
+               MpegLoader& mpegLoaderParam, uint8_t * dataParam,
+               Channel channelParam);
     void load();
 
     QTime timer;
     int firstFrame, finalFrame;
-    size_t height, sliceBytesOut;
+    size_t width, height, sliceBytesOut;
     MpegLoader* mpegLoader;
     SwsContext* Sctx;
     AVFrame* pFrameBgra;
     uint8_t * data;
     uint8_t * buffer;
+    Channel channel;
 };
 
 class MpegTexture : public QObject
@@ -88,7 +98,7 @@ public:
 
     MpegTexture(GLenum textureUnit = GL_TEXTURE0_ARB, QObject * parent = NULL);
     virtual ~MpegTexture();
-    void loadFile(QString fileName);
+    void loadFile(QString fileName, BlockScaler::Channel channel=BlockScaler::CHANNEL_RGB);
 
 signals:
     void loadRequested(QString fileName);
@@ -113,9 +123,10 @@ protected:
     GLsizei width, height, depth;
     GLuint textureId;
     GLenum textureUnit;
-    uint8_t * texture_data;
+    uint8_t * texture_data; // z*y*x*BGRA, ready for glTexImage3D()
     MpegLoader mpegLoader;
     QList<BlockScaler*> scalers;
+    BlockScaler::Channel currentLoadChannel;
 };
 
 #endif // USE_FFMPEG
