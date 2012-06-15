@@ -57,7 +57,7 @@ void MpegLoader::deleteData()
 /* slot */
 bool MpegLoader::loadMpegFile(QString fileName)
 {
-    qDebug() << "MpegLoader::loadMpegFile()" << fileName << __FILE__ << __LINE__;
+    // qDebug() << "MpegLoader::loadMpegFile()" << fileName << __FILE__ << __LINE__;
     QTime timer;
     timer.start();
     bool bSucceeded = true; // start optimistic
@@ -74,7 +74,7 @@ bool MpegLoader::loadMpegFile(QString fileName)
             frameBytes = avpicture_get_size(PIX_FMT_YUV420P, width, height);
             // Allocated frame memory for all frames in (fast?) YUV format
             size_t size = (size_t)depth * (size_t)frameBytes;
-            qDebug() << "size =" << size << __FILE__ << __LINE__;
+            // qDebug() << "size =" << size << __FILE__ << __LINE__;
             frame_data = (uint8_t*)av_malloc(size);
             frames.assign(depth, NULL);
             for (int z = 0; z < depth; ++z)
@@ -95,8 +95,9 @@ bool MpegLoader::loadMpegFile(QString fileName)
                 emit frameDecoded(z);
             }
         }
-        if (bSucceeded)
-            qDebug() << "Number of frames found =" << depth;
+        if (bSucceeded) {
+            // qDebug() << "Number of frames found =" << depth;
+        }
         qDebug() << "File decode took" << timer.elapsed()/1000.0 << "seconds";
         emit mpegFileLoadFinished(bSucceeded);
         return bSucceeded;
@@ -135,20 +136,23 @@ void BlockScaler::setup(int firstFrameParam, int finalFrameParam,
     channel = channelParam;
     height = mpegLoader->height;
     width = mpegLoader->width;
-    qDebug() << "Channel =" << (int)channel << __FILE__ << __LINE__;
+    // qDebug() << "Channel =" << (int)channel << __FILE__ << __LINE__;
 
     pFrameBgra = avcodec_alloc_frame();
     sliceBytesOut = height * width * 4;
     PixelFormat pixelFormat = PIX_FMT_BGRA;
+    /*
     if (channel != CHANNEL_RGB) {
         pixelFormat = PIX_FMT_GRAY8;
     }
+     */
     size_t size = avpicture_get_size(pixelFormat, width, height)
                   + FF_INPUT_BUFFER_PADDING_SIZE;
-    qDebug() << "size =" << size << __FILE__ << __LINE__;
+    // qDebug() << "size =" << size << __FILE__ << __LINE__;
     buffer = (uint8_t*)av_malloc(size);
     avpicture_fill( (AVPicture * ) pFrameBgra, buffer, pixelFormat,
                     width, height );
+    // Create scaling context for converting from YUV to RGB
     if (NULL != Sctx)
         sws_freeContext(Sctx);
     Sctx = sws_getContext(
@@ -184,7 +188,7 @@ BlockScaler::~BlockScaler()
 
 void BlockScaler::load()
 {
-    qDebug() << "Channel =" << (int)channel << __FILE__ << __LINE__;
+    // qDebug() << "Channel =" << (int)channel << __FILE__ << __LINE__;
     const size_t linesize_out = 4 * width;
     const size_t channel_offset = (size_t) channel;
     for (int z = firstFrame; z <= finalFrame; ++z) {
@@ -204,6 +208,7 @@ void BlockScaler::load()
             // PIX_FMT_BGRA0 fails to zero alpha channel, so I will
             for (int y = 0; y < height; ++y)
             {
+                // convert pointers to do four bytes at a time
                 uint32_t* sl_in = (uint32_t*)(pFrameBgra->data[0] + y * pFrameBgra->linesize[0]);
                 uint32_t* sl_out = (uint32_t*)(slice_out + y * linesize_out);
                 for (int x = 0; x < width; ++x) {
@@ -223,7 +228,7 @@ void BlockScaler::load()
                 // output scan line
                 uint8_t* sl_out = slice_out + y * linesize_out + channel_offset;
                 for (int x = 0; x < width; ++x) {
-                    sl_out[4*x] = sl_in[x];
+                    sl_out[4*x] = sl_in[4*x]; // always copy red channel
                 }
             }
         }
@@ -237,8 +242,9 @@ void BlockScaler::load()
 // class MpegTexture //
 ///////////////////////
 
-MpegTexture::MpegTexture(GLenum textureUnit, QObject * parent)
+MpegTexture::MpegTexture(GLenum textureUnit, QGLWidget * widget, QObject * parent)
     : QObject(parent)
+    , glWidget(widget)
     , texture_data(NULL)
     , width(0)
     , height(0)
@@ -259,6 +265,10 @@ MpegTexture::MpegTexture(GLenum textureUnit, QObject * parent)
     // be the same as the OpenGL thread
     connect(this, SIGNAL(loadFinished(bool)),
             this, SLOT(uploadToVideoCard()));
+
+    // Load a sequence of volumes
+    connect(this, SIGNAL(textureUploaded(int)),
+            this, SLOT(loadNextVolume()));
 }
 
 /* virtual */
@@ -271,7 +281,7 @@ MpegTexture::~MpegTexture()
 
 void MpegTexture::loadFile(QString fileName, BlockScaler::Channel channel)
 {
-    qDebug() << "MpegTexture::loadFile()" << fileName << __FILE__ << __LINE__;
+    // qDebug() << "MpegTexture::loadFile()" << fileName << __FILE__ << __LINE__;
     currentLoadChannel = channel;
     timer.start();
     emit loadRequested(fileName);
@@ -295,7 +305,7 @@ void MpegTexture::onHeaderLoaded(int x, int y, int z)
         height = y;
         depth = z;
         size_t size = 4 * (size_t)width * (size_t)height * (size_t)depth;
-        qDebug() << "size =" << size << __FILE__ << __LINE__;
+        // qDebug() << "size =" << size << __FILE__ << __LINE__;
         texture_data = (uint8_t*) malloc(size);
         if (texture_data == NULL) {
             qDebug() << "Failed to allocate memory";
@@ -342,7 +352,7 @@ void MpegTexture::gotFrame(int f)
 void MpegTexture::blockScaleFinished()
 {
     ++completedBlocks;
-    qDebug() << completedBlocks << "scaling blocks completed";
+    // qDebug() << completedBlocks << "scaling blocks completed";
     if (completedBlocks >= MpegTexture::numScalingThreads) {
         completedBlocks = 0;
         qDebug() << "Total load time =" << timer.elapsed()/1000.0 << "seconds";
@@ -353,9 +363,11 @@ void MpegTexture::blockScaleFinished()
 /* slot */
 bool MpegTexture::uploadToVideoCard()
 {
+    // qDebug() << "MpegTexture::uploadToVideoCard()";
     QTime stopwatch;
     stopwatch.start();
-    qDebug() << "MpegTexture::uploadToVideoCard()";
+    if (NULL != glWidget)
+        glWidget->makeCurrent();
     {
         // check for previous errors
         GLenum err = glGetError();
@@ -388,7 +400,7 @@ bool MpegTexture::uploadToVideoCard()
             return false;
         }
     }
-    qDebug() << width << height << depth << (long)texture_data;
+    // qDebug() << width << height << depth << (long)texture_data;
     // Load the data onto video card
     glTexImage3D(GL_TEXTURE_3D,
         0, ///< mipmap level; zero means base level
@@ -409,6 +421,8 @@ bool MpegTexture::uploadToVideoCard()
             return false;
         }
     }
+    if (NULL != glWidget)
+        glWidget->doneCurrent();
     qDebug() << "Uploading 3D volume texture took"
              << stopwatch.elapsed()
              << "milliseconds";

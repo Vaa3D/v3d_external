@@ -48,6 +48,8 @@ add_library( 3drenderer
 target_link_libraries( 3drenderer ${QT_QTOPENGL_LIBRARY} ${OPENGL_LIBRARIES} )
 target_link_libraries( 3drenderer imaging )
 
+add_dependencies(3drenderer v3dbase)
+
 # Avoid link error on Mac Snow Leopard
 if(APPLE)
   target_link_libraries( 3drenderer "-framework CoreServices" )

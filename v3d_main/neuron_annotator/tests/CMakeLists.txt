@@ -33,29 +33,6 @@ if(USE_FFMPEG)
         cellseg
     )
 
-    if(APPLE)
-        QT4_WRAP_CPP(TEST_MPEG_MOC_SRCS
-            ../utility/MpegTexture.h
-        )
-        add_executable(test_mpeg_texture
-            test_mpeg_texture.cpp
-            ../utility/FFMpegVideo.cpp
-            ../utility/MpegTexture.cpp
-            ${TEST_MPEG_MOC_SRCS}
-        )
-        target_link_libraries(test_mpeg_texture
-            ${AVUTIL_LIBRARY}
-            ${AVFORMAT_LIBRARY}
-            ${SWSCALE_LIBRARY}
-            ${AVCODEC_LIBRARY}
-            ${OPENGL_gl_LIBRARY}
-            ${QT_QTCORE_LIBRARY}
-            ${BZIP2_LIBRARIES}
-            ${ZLIB_LIBRARY}
-        )
-        add_dependencies(test_mpeg_texture LibAvcodec-0-10-2-head2012Apr25)
-    endif()
-
     # These tests use My4DImage, and therefore must link to all of Vaa3D
     if (APPLE)
         set(test_progs test_load_mp4 test_write_mp4)

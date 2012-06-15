@@ -142,7 +142,7 @@ NaMainWindow::NaMainWindow(QWidget * parent, Qt::WindowFlags flags)
 
 #ifdef USE_FFMPEG
     // Alert the renderer the moment an mp4 texture is loaded
-    mpegTexture = new MpegTexture(GL_TEXTURE0_ARB, this);
+    mpegTexture = new MpegTexture(GL_TEXTURE0_ARB, ui.v3dr_glwidget, this);
     connect(mpegTexture, SIGNAL(textureUploaded(int)),
             ui.v3dr_glwidget, SLOT(start3dTextureMode(int)));
     ui.actionLoad_movie_as_texture->setVisible(true);
@@ -506,9 +506,26 @@ void NaMainWindow::on_actionLoad_movie_as_texture_triggered()
 void NaMainWindow::on_actionLoad_texture_into_Reference_triggered()
 {
 #ifdef USE_FFMPEG
-    QString fileName = getStackPathWithDialog();
-    if (fileName.isEmpty()) return;
-    mpegTexture->loadFile(fileName, BlockScaler::CHANNEL_ALPHA);
+    // Hijack this method to load a sequence of volumes
+    QString dirName = QFileDialog::getExistingDirectory();
+    if (dirName.isEmpty()) return;
+    QDir dir(dirName);
+    mpegTexture->queueVolume(dir.filePath("ConsolidatedSignal2.mp4"),
+                             BlockScaler::CHANNEL_RGB);
+    mpegTexture->queueVolume(dir.filePath("Reference2.mp4"),
+                             BlockScaler::CHANNEL_ALPHA);
+    mpegTexture->queueVolume(dir.filePath("ConsolidatedSignal2Red.mp4"),
+                             BlockScaler::CHANNEL_RED);
+    mpegTexture->queueVolume(dir.filePath("ConsolidatedSignal2Green.mp4"),
+                             BlockScaler::CHANNEL_GREEN);
+    mpegTexture->queueVolume(dir.filePath("ConsolidatedSignal2Blue.mp4"),
+                             BlockScaler::CHANNEL_BLUE);
+
+    mpegTexture->loadNextVolume();
+
+    // QString fileName = getStackPathWithDialog();
+    // if (fileName.isEmpty()) return;
+    // mpegTexture->loadFile(fileName, BlockScaler::CHANNEL_ALPHA);
 #endif
 }
 

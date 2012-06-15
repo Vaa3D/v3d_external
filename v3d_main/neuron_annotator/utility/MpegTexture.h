@@ -19,6 +19,8 @@ extern "C"
 #include <QReadWriteLock>
 #include <QFutureWatcher>
 #include <QList>
+#include <QGLWidget>
+#include <QDir>
 
 #if defined(__APPLE__)
 #include <OpenGL/gl.h>
@@ -27,6 +29,7 @@ extern "C"
 #endif
 
 #include <vector>
+#include <deque>
 
 // Read an mpeg4 file and populates a YUV texture volume, in its own thread.
 class MpegLoader : public QObject
@@ -64,11 +67,11 @@ class BlockScaler : public QObject
 
 public:
     enum Channel {
-        CHANNEL_RED = 0,
+        CHANNEL_RED = 2, // 2 not 0 because pixels are in bgra order?
         CHANNEL_GREEN = 1,
-        CHANNEL_BLUE = 2,
+        CHANNEL_BLUE = 0,
         CHANNEL_ALPHA = 3,
-        CHANNEL_RGB = 4
+        CHANNEL_RGB = 37
     };
 
     BlockScaler(QObject * parent = NULL);
@@ -89,6 +92,14 @@ public:
     Channel channel;
 };
 
+struct QueuedVolume
+{
+    QueuedVolume(QString fn, BlockScaler::Channel c)
+        : fileName(fn), channel(c) {}
+    QString fileName;
+    BlockScaler::Channel channel;
+};
+
 class MpegTexture : public QObject
 {
     Q_OBJECT
@@ -96,9 +107,15 @@ class MpegTexture : public QObject
 public:
     static const int numScalingThreads = 6;
 
-    MpegTexture(GLenum textureUnit = GL_TEXTURE0_ARB, QObject * parent = NULL);
+    MpegTexture(GLenum textureUnit = GL_TEXTURE0_ARB,
+                QGLWidget * glWidget = NULL,
+                QObject * parent = NULL);
     virtual ~MpegTexture();
     void loadFile(QString fileName, BlockScaler::Channel channel=BlockScaler::CHANNEL_RGB);
+
+    void queueVolume(QString fileName, BlockScaler::Channel channel) {
+        volumeQueue.push_back(QueuedVolume(fileName, channel));
+    }
 
 signals:
     void loadRequested(QString fileName);
@@ -110,6 +127,12 @@ public slots:
     void gotFrame(int);
     // uploadToVideoCard() MUST be called from OpenGL thread!
     bool uploadToVideoCard();
+    void loadNextVolume() {
+        if (volumeQueue.empty()) return;
+        QueuedVolume v = volumeQueue.front();
+        volumeQueue.pop_front();
+        loadFile(v.fileName, v.channel);
+    }
 
 protected slots:
     void blockScaleFinished();
@@ -127,6 +150,8 @@ protected:
     MpegLoader mpegLoader;
     QList<BlockScaler*> scalers;
     BlockScaler::Channel currentLoadChannel;
+    QGLWidget* glWidget;
+    std::deque<QueuedVolume> volumeQueue;
 };
 
 #endif // USE_FFMPEG
