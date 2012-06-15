@@ -39,6 +39,8 @@ Peng, H, Ruan, Z., Atasoy, D., and Sternson, S. (2010) “Automatic reconstructi
 
 #include <ctype.h>
 
+#include <unistd.h>
+
 #include "mg_utilities.h"
 #include "mg_image_lib.h"
 
@@ -279,9 +281,16 @@ TIFF *Open_Tiff(const char *file_name, const char *mode)
       TIFFSetWarningHandler(NULL);
     }
 
-  tif = TIFFOpen(file_name,mode);
-  if (tif == NULL)
-    error("cannot opening TIFF file %s", file_name);
+  tif=NULL;
+  int retries=3;
+  while(retries>0 && tif==NULL) {
+    tif = TIFFOpen(file_name,mode);
+    if (tif == NULL) {
+      retries--;
+      fprintf(stderr, "cannot open TIFF file %s remaining retries=%d", file_name, retries);
+      sleep(1);
+    }
+  }
   return (tif);
 }    
 
